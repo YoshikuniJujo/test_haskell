@@ -1,16 +1,20 @@
+{-# LANGUAGE TupleSections #-}
+
 module Main where
 
-import TDList
+import System.Environment
+import Data.Maybe
 import Control.Applicative
 import Control.Monad
-import System.Environment
+
+import TDList
 
 next :: (Eq a, Num b, Ord b) => a -> TDList a b -> TDList a b
-next v tdl = foldl setTM [] $ [(f, t, d) | f <- allKeys tdl, t <- allKeys tdl,
-	let d = minM (get tdl f t) $ liftM2 (+) (get tdl f v) (get tdl v t)]
+next v tdl = foldl (uncurry . setDist) [] [(f, t) | f <- keys, t <- keys]
 	where
-	setTM tdl (i, j, Just v) = set tdl i j v
-	setTM tdl _ = tdl
+	keys = allKeys tdl
+	setDist l f t = maybe l (set l f t) $
+		minM (get tdl f t) $ liftM2 (+) (get tdl f v) (get tdl v t)
 
 getRoute :: (Eq a, Num b, Ord b) => TDList a b -> TDList a b
 getRoute tdl = foldr next tdl $ allKeys tdl
