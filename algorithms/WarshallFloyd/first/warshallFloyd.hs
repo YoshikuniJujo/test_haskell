@@ -9,6 +9,12 @@ import Control.Monad
 
 import TDList
 
+main = do
+	fp : _ <- getArgs
+	dists <- readDists <$> readFile fp
+	putStrLn $ showTDList dists
+	putStr $ showTDList $ getRoute dists
+
 next :: (Eq a, Num b, Ord b) => a -> TDList a b -> TDList a b
 next v tdl = foldl (uncurry . setDist) [] [(f, t) | f <- keys, t <- keys]
 	where
@@ -18,12 +24,6 @@ next v tdl = foldl (uncurry . setDist) [] [(f, t) | f <- keys, t <- keys]
 
 getRoute :: (Eq a, Num b, Ord b) => TDList a b -> TDList a b
 getRoute tdl = foldr next tdl $ allKeys tdl
-
-main = do
-	fp : _ <- getArgs
-	dists <- readDists <$> readFile fp
-	putStrLn $ showTDList dists
-	putStr $ showTDList $ getRoute dists
 
 readDists :: String -> TDList Int Int
 readDists = foldl (uncurry3 . set) [] . map (\[x, y, z] -> (x, y, z)) .
