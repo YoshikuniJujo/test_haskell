@@ -1,0 +1,105 @@
+parser Triv:
+
+{
+
+import Data.Char
+
+}
+
+top body3
+
+body3 :: { [(String, [String])] }
+	= comments b:body2			-> { b }
+
+body2 :: { [(String, [String])] }
+	= c:command planeString b:body2		-> { c : b }
+	/ c:command				-> { [c] }
+
+body :: { [String] }
+	= b:body comments s:stringn		-> { b ++ [s] }
+	/ comments s:stringn			-> { [s] }
+	/ s:stringn				-> { [s] }
+
+string :: String
+	= c:char !nl s:string			-> { c : s }
+	/ c:char				-> { [c] }
+
+stringn :: String
+	= c:charn s:stringn			-> { c : s }
+	/ c:charn				-> { [c] }
+
+charn :: Char
+	= char
+	/ nl					-> { '\n' }
+
+char :: Char =
+	c:Char		&{ c `notElem` "%\r\n" }	-> { c }
+
+command :: { (String, [String]) }
+	= '\\' s:symbol option as:arguments		-> { (s, as) }
+
+symbol :: String
+	= c:symChar s:symbol			-> { c : s }
+	/ c:symChar				-> { [c] }
+
+option :: String
+	= '[' s:symbol ']'			-> { s }
+	/					-> { "" }
+
+argChar :: Char
+	= c:Char	&{ c `notElem` "{}" }	-> { c }
+	/ a:argument				-> { '\t' }
+
+argString :: String
+	= c:argChar s:argString			-> { c : s }
+	/ c:argChar				-> { [c] }
+
+argument :: String
+	= '{' s:argString '}'			-> { s }
+
+arguments :: { [String] }
+	= a:argument as:arguments		-> { a : as }
+	/					-> { [] }
+--	/ a:argument				-> { [a] }
+
+symChar :: Char
+	= c:Char	&{ c `notElem` " \t\r\n\\{}[]" }	-> { c }
+
+planeString :: String
+	= c:planeChar s:planeString		-> { c : s }
+	/					-> { "" }
+--	/ c:planeChar				-> { [c] }
+
+planeChar :: Char
+	= c:Char	&{ c `notElem` "%\\{}" }	-> { c }
+	/ comment					-> { '\t' }
+	/ '\\' '\\'					-> { '\\' }
+
+comments :: { [String] }
+	= c:comment cs:comments			-> { c : cs }
+	/					-> { [] }
+--	/ c:comment				-> { [c] }
+
+comment :: { String }
+	= prcnt s:string nl			-> { s }
+
+prcnt :: { () } =
+	c:Char		&{ c == '%' }		-> { () }
+
+nl :: { () }
+--	c:Char		&{ c == '\n' }		-> { () }
+	= '\r' '\n'				-> { () }
+	/ '\n'					-> { () }
+
+dummy :: {()} =
+	  l:dummy "a" dummy -> { () }
+	/ "a" dummy 	-> { () }
+
+{
+
+-- eval :: String -> [	][sString]
+eval str = case trivbody3 (trivParse "expression" str) of
+	Parsed v _ _ -> v
+	NoParse e -> error (show e)
+
+}
