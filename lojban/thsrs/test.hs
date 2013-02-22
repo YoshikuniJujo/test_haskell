@@ -2,6 +2,8 @@ import Triv
 import System.Environment
 import Data.Tree
 import Control.Arrow
+import TreeTools
+import Data.List
 
 type Result = Tree (String, [(String, String)])
 
@@ -9,7 +11,19 @@ data WordsTree
 	= WNode String [(String, String)] [WordsTree]
 	deriving Show
 
-main = getArgs >>= getParsed . head >>= print . mkWTree
+main = getArgs >>= getParsed . head >>=
+	mapM_ (putStr . showTreeIndented showWords 0) . mkWTree
+--	mapM_ (putStr . showTreeIndented showSecOnly 0) . mkWTree
+
+showSecOnly :: Int -> (String, [(String, String)]) -> String
+showSecOnly _ (sec, _) = sec
+
+showWords :: Int -> (String, [(String, String)]) -> String
+showWords ind (sec, ws) = sec ++ if null ws then "" else "\n" ++
+	intercalate "\n" (map ((replicate (ind + 6) ' ' ++) . showW) ws)
+
+showW :: (String, String) -> String
+showW (jbo, en) = jbo ++ "\t" ++ en
 
 getParsed fn = do
 	tex <- readFile fn

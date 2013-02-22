@@ -1,0 +1,1468 @@
+Structures
+    Set, group, mass
+          girzu	group
+          gunma	jointly `mass'
+          cmima	member
+          pagbu	part
+          klesi	class
+          jbini	between
+          cuxna	choose
+          mupli	example
+          basti	replace `substitute'
+          kampu	common
+          fadni	ordinary
+          rirci	rare
+          ralju	principal
+          steci	specific `special'
+          manfo	uniform
+          vrici	miscellaneous `various'
+          cnano	norm
+          bende	crew `band'
+    Chaos/order
+          stura	structure
+          ciste	system
+          morna	pattern `form'
+          ganzu	organize
+          cnici	orderly `neat'
+          kalsa	chaotic
+          cunso	random `chance'
+          pluja	complicated `complex'
+          sampu	simple
+          krati	represent `proxy'
+          sarxe	harmonious
+          vanbi	environment `ambient'
+          javni	rule
+    Linear order
+          porsi	sequence
+          liste	list
+          fatne	reverse
+          lidne	precede `leader'
+    Range
+          korbi	edge `border, curb'
+          jimte	limit
+          traji	superlative `extreme'
+          milxe	mild
+          bancu	beyond
+    Comparison
+          karbi	compare
+          mapti	fit `match'
+          cimni	infinite
+          zasni	temporary `transient'
+          mutce	much
+          barda	big `large'
+          cmalu	small
+          zmadu	more
+          mleca	less
+          zenba	increase `augment'
+          jdika	decrease
+          stodi	constant `stable'
+          cenba	vary
+          banro	grow
+          ctaru	tide
+          jmina	add `augment'
+          banzu	suffice
+          dukse	excess
+          claxu	without `lack'
+          dunli	equal
+          simsa	similar
+          drata	other
+          mintu	same `identical'
+          frica	differ
+          dukti	opposite `contrary'
+    Mathematics
+          cmaci	mathematics
+          mekso	MEX
+          namcu	number
+          kancu	count
+          kanji	calculate `reckon'
+          saclu	decimal
+          sumji	sum
+          vimcu	remove
+          pilji	multiply `multiply'
+          dilcu	quotient `division'
+          frinu	fraction
+          tenfa	exponential
+          dugri	logarithm
+          fancu	function
+          sumti	argument
+          sinso	sine
+          tanjo	tangent
+          xadba	half
+          judri	address
+Information
+    Language
+          bangu	language
+          sinxa	sign
+          fanva	translate
+          cmavo	structure word
+          gadri	article
+          gerna	grammar
+          jufra	sentence `phrase'
+          rafsi	affix
+          rimni	rhyme
+          slaka	syllable
+          tanru	phrase compound
+          valsi	word
+          broda	predicate var 1
+          brode	predicate var 2
+          brodi	predicate var 3
+          brodo	predicate var 4
+          brodu	predicate var 5
+          cmene	name
+          gismu	root word
+          lujvo	affix compound
+          lerfu	letteral
+          pandi	punctuate
+    Information carriers
+          ciska	write `scribe'
+          tcidu	read
+          cukta	book
+          xatra	letter
+          karni	journal
+          cartu	chart
+          benji	transfer `send'
+          cradi	radio
+          tivni	television
+          fonxa	telephone
+          skami	computer
+          vidni	video
+          kacma	camera
+    Message
+          notci	message `note'
+          mifra	code `cipher'
+          mipri	secret
+          mrilu	mail
+          tcita	label `tag'
+          citri	history
+          lisri	story
+          cusku	express
+          tavla	talk `palaver'
+          skicu	describe
+          stidi	suggest
+          jarco	show
+          cmoni	moan
+          frumu	frown
+          cisma	smile
+          pinka	comment
+    Communication
+          casnu	discuss
+          spuda	reply `respond'
+          preti	question `query'
+          danfu	answer
+          cpedu	request
+          darlu	argue
+          fraxu	forgive
+          friti	offer
+          kajde	warn `caution'
+          nupre	promise
+          pante	protest
+          pikci	beg `supplicate'
+          rinsa	greet
+          tcica	deceive `cheat, trick'
+    Cognition
+          mucti	immaterial
+          menli	mind `mental'
+          xanri	imaginary `unreal'
+          pruxi	spirit
+          sanji	conscious
+          pensi	think `pensive'
+          prenu	person
+          sevzi	self
+          sidbo	idea
+          nabmi	problem
+          cilre	learn
+          ctuca	teach
+          ckule	school
+          datni	data
+          djuno	know
+          facki	discover `find'
+          fatci	fact
+          jdice	decide
+          jetnu	true
+          jitfa	false
+          jijnu	intuit
+          jimpe	understand `comprehend'
+          jinvi	opine
+          kanxe	conjunction
+          krici	believe `creed'
+          logji	logic
+          morji	remember `memory'
+          natfe	deny
+          nuzba	news
+          senpi	doubt `skeptic'
+          sitna	cite
+          smadi	guess `surmise'
+          sruma	assume
+          tugni	agree
+          vlina	alternation
+          vreji	record
+          xusra	assert
+          zasti	exist
+          bridi	predicate
+          birti	certain
+          ciksi	explain
+          cipra	test `proof'
+          lanli	analyze
+          saske	science
+          sucta	abstract
+          tadji	method
+          tadni	study
+          jicmu	basis
+          manri	reference
+          mansa	satisfy
+          simlu	seem
+          smuni	meaning
+          srana	pertain `concerns'
+Space
+      cimde	dimension
+      canlu	space `volume'
+      diklo	local
+      stuzi	site `position'
+    Relative position
+          nenri	in `inner'
+          bartu	out
+          mlana	side `lateral'
+          lamji	adjacent
+          pritu	right
+          zunle	left
+          crane	front
+          trixe	behind
+          cpana	upon
+          gapru	above `up'
+          cnita	beneath
+          dizlo	low
+          galtu	high
+          ragve	across
+          berti	north
+          snanu	south
+          stici	west
+          stuna	east
+          darno	far
+          jibni	near
+          sruri	surround
+          vasru	contain `vessel'
+          kalri	open
+          ganlo	closed
+          jorne	joined
+          kruca	intersect `cross'
+          midju	middle
+          sepli	apart `separate'
+    Orientation
+          sraji	vertical `upright'
+          pinta	level `horizontal'
+          salpo	slope
+    Range
+          tcena	stretch
+          kuspe	range `span'
+          loldi	floor
+          drudi	roof
+    Dimensions
+          tordu	short
+          clani	long
+          jarki	narrow
+          ganra	broad
+          cinla	thin `lean'
+          rotsu	thick `stout'
+          plana	plump
+          condi	deep
+          caxno	shallow
+    Forms
+          tarmi	shape `form'
+        Point
+              mokca	point `moment'
+              jipno	tip `point'
+              kojna	corner
+        Line
+              linji	line
+              sirji	straight
+              kruvi	curve
+              clupa	loop
+              sarlu	spiral
+              jgena	knot
+              jimca	branch `limb'
+        Surface
+              sefta	surface
+              jganu	angle
+              plita	plane
+              kurfa	square
+              karda	card
+              cukla	round `circular'
+              djine	ring
+              punli	swelling
+              kevna	cavity `cave'
+        Body
+              bliku	block
+              kubli	cube
+              tanbo	board
+              konju	cone
+              slanu	cylinder
+              tubnu	tube
+              lenjo	lens
+              cfine	wedge
+        Material shapes
+              gacri	cover
+              lunbe	bare
+              derxi	heap
+              bolci	ball
+              dirgo	drop
+              boxfo	sheet `foil'
+              karli	collar
+              cilta	thread `filament'
+              tapla	tile
+              cinje	wrinkle
+              fenra	crack
+              foldi	field
+              senta	layer `stratum'
+              snuji	sandwich
+              panlo	slice
+              papri	page `paper'
+              bakfu	bundle `pack'
+              skuro	groove `furrow'
+              bidju	bead
+              genxu	hook
+              grana	rod
+              jesni	needle
+              calku	shell
+              pilka	crust `peel'
+              dasri	ribbon
+              culno	full
+              kunti	empty `vacant'
+              tagji	snug `tight'
+              kluza	loose `blouse'
+              trati	taut
+              korcu	bent `crooked, corkscrew'
+              bargu	arch
+Time
+      cabna	now
+      balvi	future `later'
+      purci	past `earlier'
+      temci	time
+      citno	young `junior'
+      clira	early
+      lerci	late
+    Day
+          djedi	full day
+          cerni	morning
+          donri	daytime
+          nicte	night
+          vanci	evening
+          murse	glimmering
+    Calendar
+          detri	date
+          jeftu	week
+          masti	month
+          nanca	year
+          cedra	era
+          citsi	season
+          dunra	winter
+          vensa	spring `vernal'
+          crisa	summer
+          critu	autumn
+    Clock
+          junla	clock
+          tcika	time of day
+          cacra	hour
+          mentu	minute
+          snidu	second
+Processes
+      pruce	process
+      fasnu	event `happen'
+      tcini	situation `state'
+      tarti	behave
+      lifri	experience `life'
+      bapli	force `compel'
+      cfari	initiate
+      ranji	continue
+      fanmo	end `final'
+      rapli	repeat
+      kansa	with `accompany'
+      cumki	possible `maybe'
+      lakne	probable `likely'
+      fanta	prevent
+      binxo	become
+      canci	vanish
+      farvi	develop `evolve'
+      cafne	often
+      dikni	regular `cyclical'
+      vitci	irregular `intermittent'
+      dimna	fate `doom'
+      xaksu	use up
+      festi	waste
+      krefu	recur
+      rarna	natural
+      renvi	survive
+      rilti	rhythm
+      stika	adjust
+      suksa	sudden
+      vitno	permanent `eternal'
+    Causality
+          gasnu	do
+          jalge	result
+          krinu	reason
+          mukti	motive
+          nibli	necessitate
+          rinka	cause
+          zukte	act
+          krasi	source `origin'
+          sarcu	necessary
+          nitcu	need
+    Controlling processes
+          jitro	control
+          gidva	guide
+          xlura	influence `lure'
+          bredi	ready
+          denpa	wait `pause'
+          sisti	cease
+          dicra	interrupt `disturb, disrupt'
+          zunti	interfere `hinder'
+          fliba	fail `baffle'
+          frili	easy `freely'
+          nandu	difficult `hard'
+          vlipa	powerful
+          kakne	able `can'
+          sutra	fast `swift'
+          masno	slow
+          platu	plan `plot'
+          prali	profit
+          randa	yield `surrender'
+          snada	succeed `accomplish'
+          snuti	accidental
+          srera	err
+          troci	try
+    Interactive activity
+          cuntu	affair
+          lacri	rely
+          selfu	serve
+          pleji	pay
+          sidju	help `aid'
+        Command
+              jatna	captain
+              minde	command
+              tinbe	obey
+              curmi	let `permit'
+              fuzme	responsible
+              sfasa	punish `spank, castigate'
+        Conflict
+              fapro	oppose
+              damba	fight `combat'
+              jinga	win `gain'
+              nutli	neutral
+              panpi	peace
+              jivna	compete `rival'
+              bradi	enemy `adversary'
+              venfu	revenge `avenge'
+Movement
+      farna	direction
+      penmi	meet
+    Self-moving
+        Abstract
+              klama	come
+              litru	travel
+              cliva	leave
+              xruti	return
+              pluta	route
+              stali	remain `stay'
+        Active movement
+              bajra	run
+              cadzu	walk
+              cpare	climb
+              stapa	step
+              plipe	leap
+              vofli	flight `fly'
+              limna	swim
+              sfubu	dive `swoop'
+              carna	turn
+              jersi	chase `pursue'
+              rivbi	avoid `evade'
+              pagre	pass through
+              sakli	slide `slip'
+              spoja	explode
+              porpi	break
+              preja	spread
+              bikla	whip `beat, lash'
+              gunro	roll `trundle'
+        Equilibrium
+              zvati	at
+              lanxe	balance
+              cando	idle
+              vreta	reclining `rest'
+              sarji	support
+              fulta	float
+              dandu	hang `dangle, suspend'
+              jinru	immerse
+              zutse	sit
+              sanli	stand
+        Passive motion
+              farlu	fall
+              torni	twist `torsion'
+              slilu	oscillate
+              flecu	flow `flush'
+              jetce	jet
+    Manipulating objects
+          galfi	modify `alter'
+          sisku	seek
+          jmaji	gather
+          sabji	provide `supply'
+          fatri	distribute
+          fendi	divide
+        Move
+              simxu	mutual
+              muvdu	move
+              ralte	retain
+              jgari	grasp `grip'
+              bevri	carry `bear'
+              renro	throw
+              cecla	launcher
+              punji	put
+              lafti	lift
+              setca	insert
+              catke	shove
+              rinju	restrain
+              danre	pressure
+              desku	shake
+              janli	collide
+              tunlo	swallow
+              daspo	destroy `despoil'
+              kavbu	capture `catch'
+              lacpu	pull
+        Surface
+              cinba	kiss `buss'
+              pencu	touch
+              darxi	hit
+              batci	bite
+              sraku	scratch
+              guska	scrape
+              polje	fold
+              prina	print
+              barna	mark
+              spali	polish
+              mosra	friction `rub'
+              tikpa	kick
+        Volume
+              satre	stroke
+              zalvi	grind `pulverize'
+              katna	cut
+              kakpa	dig
+              plixa	plow
+              marxa	mash
+              tisna	fill `stuff'
+        Fluids
+              sputu	spit
+              jicla	stir
+              cokcu	soak up
+              rinci	drain
+              sakci	suck
+Physical world
+    Ontology
+          dacti	object `thing'
+          spisa	piece
+          ckini	related `akin, kin'
+          tcila	detail
+          ckaji	quality
+          jinzi	innate
+          panra	parallel
+    Basic notions
+          ratni	atom
+          kantu	quantum
+          selci	cell
+          nejni	energy
+          dirce	radiate
+          boxna	wave
+          maksi	magnet
+          dikca	electric `charge'
+    Physical properties
+          jdari	firm `hard'
+          tsali	strong
+          ruble	weak `feeble'
+          tinsa	stiff
+          ranti	soft
+          ralci	delicate `fragile'
+          pruni	elastic `springy'
+          junta	weight
+          linto	lightweight
+          tilju	heavy `weighty'
+          glare	hot `warm'
+          lenku	cold `cool'
+          cilmo	moist
+          sudga	dry
+          denmi	dense
+          viknu	viscous `thick'
+          snipa	sticky
+          kinli	sharp `keen'
+          klina	clear
+          minra	reflect `mirror'
+          tengu	texture
+          xutla	smooth
+          rufsu	rough
+    Measures
+          merli	measure
+          ckilu	scale
+          gradu	unit `degree, grad'
+          klani	quantity
+          parbi	ratio `rate'
+          satci	exact `precise'
+        Metric
+              mitre	meter
+              radno	radian
+              stero	steradian
+              litce	liter
+              grake	gram
+              molro	mole
+              kelvo	kelvin
+              xampo	ampere
+              delno	candela `candle-power'
+        Non-metric
+              gutci	cubit `foot'
+              minli	mile
+              kramu	acre
+              bunda	pound
+              dekpu	gallon `peck'
+        Exponents of 10
+              dekto	10 metric `deka'
+              xecto	100 metric `hecto'
+              kilto	1000 metric `kilo'
+              megdo	1E6 metric `mega'
+              gigdo	1E9 metric `giga'
+              terto	1E12 metric `tera'
+              petso	1E15 metric `peta'
+              xexso	1E18 metric `exa'
+              zetro	1E21 `zetta'
+              gotro	1E24 `yotta'
+              decti	.1 metric `deci'
+              centi	.01 metric `centi'
+              milti	.001 metric `milli'
+              mikri	1E-6 metric `micro'
+              nanvi	1E-9 metric `nano'
+              picti	1E-12 metric `pico'
+              femti	1E-15 metric `femto'
+              xatsi	1E-18 metric `atto'
+              zepti	1E-21 `zepto'
+              gocti	1E-24 `yocto'
+    Substances
+          marji	material `matter'
+          fagri	fire
+          lindi	lightning
+        Aggregate state
+              sligu	solid
+              panje	sponge
+              pulce	dust `pulverized'
+              purmo	powder
+              pesxu	paste
+              jduli	jelly
+              litki	liquid
+              lakse	wax
+              fonmo	foam
+              gapci	gas
+              danmo	smoke
+        Phase transitions
+              runme	melt `runny'
+              dunja	freeze `jell'
+              runta	dissolve
+              lunsa	condense
+              febvi	boil
+              jelca	burn
+        Chemical categories
+              xukmi	chemical
+              jilka	alkali
+              slami	acid
+              jinme	metal
+              jinsa	clean
+              mixre	mixture
+        Chemical elements
+              cidro	hydrogen
+              kijno	oxygen
+              trano	nitrogen
+              tabno	carbon
+              sliri	sulfur
+              kliru	chlorine
+              navni	neon
+              sodna	sodium
+              margu	mercury
+              rijno	silver `argent'
+              solji	gold
+              tunka	copper
+              nikle	nickel
+              tinci	tin
+              zinki	zinc
+              tirse	iron
+              cnisa	lead
+              romge	chrome
+Nature
+    Cosmos
+          munje	universe
+          tarci	star
+          plini	planet
+          mluni	satellite `moon'
+          kensa	outer space
+          solri	solar
+          terdi	earth `terrestrial'
+          lunra	lunar
+    Earth
+          tumla	land
+          cmana	mountain
+        Hydrosphere
+              djacu	water `aqua-'
+              xamsi	sea
+              zbani	bay
+              daplu	island
+              jmifa	shoal `reef'
+              rirxe	river
+              jinto	well
+              lalxu	lake `lagoon'
+        Atmosphere
+              tsani	sky
+              vacri	air
+              tcima	weather `climate'
+              brife	breeze
+              dilnu	cloud
+              bumru	fog
+              carvi	rain
+              snime	snow
+              bisli	ice
+              bratu	hail
+        Minerals
+              kunra	mineral `mined'
+              rokci	rock
+              krili	crystal
+              jemna	gem
+              kliti	clay
+              canre	sand
+              bakri	chalk
+              silna	salt
+              kolme	coal
+              ctile	petroleum `oil'
+              tarla	tar
+              dertu	dirt
+Life
+      jutsi	species
+      jmive	live
+      morsi	dead `mort-'
+      catra	kill `slaughter'
+      makcu	mature
+      xadni	body
+      panzi	offspring
+      jgina	gene
+      lanbi	protein `albumin'
+      cecmu	community
+      fusra	rotten `rot'
+      ferti	fertile
+      jurme	germ
+      vidru	virus
+    Plants
+          spati	plant
+          tricu	tree
+          ckunu	conifer `cone'
+          srasu	grass
+          clika	mossy
+          mledi	mold
+        Body parts
+              genja	root
+              balji	bulb `bulge'
+              stani	stalk
+              pezli	leaf
+              xrula	flower
+              grute	fruit
+              tsiju	seed
+              narge	nut
+              jbari	berry
+              dembi	bean
+              gurni	grain
+              stagi	vegetable `stalky'
+        Flowers
+              rozgu	rose
+              tujli	tulip
+              latna	lotus
+        Fruits
+              badna	banana
+              nimre	citrus `lime'
+              plise	apple
+              perli	pear
+              guzme	melon
+              figre	fig
+        Vegetables
+              kobli	cabbage `cole-'
+              tamca	tomato
+              sluni	onion
+              sunga	garlic
+              patlu	potato
+              samcu	cassava `yam'
+        Grain
+              bavmi	barley
+              cunmi	millet
+              mavji	oats
+              maxri	wheat
+              mraji	rye
+              sobde	soya
+              sorgu	sorghum
+              xruba	buckwheat `rhubarb'
+              zumri	maize
+              rismi	rice
+        Other particular plants
+              cindu	oak
+              tanko	tobacco
+              marna	hemp `marijuana'
+    Animals
+          danlu	animal
+          cilce	wild
+        Classes of animals
+              curnu	worm
+              cinki	insect
+              finpe	fish `fin'
+              banfi	amphibian
+              respa	reptile
+              cipni	bird
+              mabru	mammal
+        Particular animals
+              jukni	spider `arachnid'
+              jalra	cockroach
+              sfani	fly
+              toldi	butterfly
+              manti	ant
+              bifce	bee
+              civla	louse
+              since	snake
+              jipci	chicken
+              xruki	turkey
+              datka	duck
+              gunse	goose
+              ractu	rabbit
+              ratcu	rat
+              smacu	mouse
+              xanto	elephant
+              xarju	pig `hog'
+              bakni	bovine `ox'
+              lanme	sheep `lanolin, lamb'
+              kanba	goat `kid, billy, baa'
+              mirli	deer
+              kumte	camel
+              xirma	horse
+              xasli	donkey `ass'
+              cribe	bear
+              mlatu	cat
+              cinfo	lion
+              tirxu	tiger
+              gerku	dog
+              labno	wolf `lobo'
+              lorxu	fox
+              smani	monkey `simian'
+              remna	human
+        Body parts
+              rango	organ
+              stedu	head
+              flira	face
+              mebri	brow
+              kanla	eye `ocular'
+              nazbi	nose `nasal'
+              kerlo	ear `aural, earlobe'
+              moklu	mouth `oral'
+              ctebi	lip `labial'
+              tance	tongue
+              xedja	jaw
+              denci	tooth `dental'
+              galxe	throat `gullet'
+              cnebo	neck
+              janco	shoulder
+              birka	arm
+              tuple	leg
+              xance	hand
+              jamfu	foot
+              cidni	knee
+              degji	finger `digit'
+              tamji	thumb
+              cinza	tongs
+              nalci	wing
+              cutne	chest
+              tatru	breast `teat'
+              betfu	abdomen `belly'
+              plibu	pubic
+              pinji	penis
+              vlagi	vulva
+              zargu	buttock `arse'
+              ganxo	anus `asshole\s arsehole'
+              rebla	tail
+        Skin derivatives
+              kerfa	hair
+              sunla	wool
+              pimlu	feather `plume'
+              jgalu	claw `talon'
+              sufti	hoof
+              jirna	horn
+        Internal organs
+              ciblu	blood
+              bongu	bone
+              sluji	muscle
+              nirna	nerve
+              cigla	gland
+              besna	brain
+              risna	heart `cardiac'
+              fepri	lung `pulmonary'
+              canti	gut `entrails'
+              livga	liver
+              vibna	vagina
+              gutra	womb `uterus'
+              ganti	testicle `testes'
+    Physiology
+          vasxu	breathe `vascular'
+          kafke	cough
+          senci	sneeze
+          xasne	sweat
+        Digestion
+              citka	eat
+              pinxe	drink
+              cidja	food `feed'
+              vindu	poison `venom'
+              vikmi	excrete
+              kalci	feces `shit'
+              pinca	urine `piss'
+              vamtu	vomit
+        Reproduction
+              cinse	sexual
+              fetsi	female `fem-'
+              nakni	male `masculine'
+              rorci	procreate
+              gletu	copulate `coitus'
+              sovda	egg `ovum'
+              tarbi	embryo
+              cifnu	infant
+              verba	child
+              jbena	born `bear'
+        Health/Decease
+              kanro	healthy
+              bilma	ill
+              jinku	vaccine
+              kenra	cancer
+              spita	hospital
+        Behaviour
+              frati	react
+              bacru	utter
+              krixa	cry out
+              cikna	awake
+              sipna	sleep
+              kalte	hunt
+              kelci	play
+              tcaci	custom `habit'
+              xabju	dwell `inhabit'
+              zdani	nest `den'
+    Perception
+          ganse	sense
+          tunta	poke `stab'
+          zgana	observe
+          carmi	intense
+          kandi	dim
+          savru	noise `clamor'
+          kukte	delicious `cooked, tasty'
+          cpina	pungent
+        Hearing
+              sance	sound
+              tirna	hear
+              cladu	loud
+              smaji	quiet `silent'
+              siclu	whistle
+              tonga	tone
+              voksa	voice
+        Vision
+              gusni	illumine `light'
+              viska	see `vision'
+              catlu	look
+              jvinu	view
+              manku	dark
+              ctino	shadow `shade'
+              skari	color
+              xekri	black
+              blabi	white
+              grusi	gray
+              xunre	red
+              pelxu	yellow
+              crino	green
+              blanu	blue
+              bunre	brown
+              cicna	cyan
+              narju	orange
+              nukni	magenta `fuchsin'
+              zirpu	purple
+        Odor
+              panci	odor `fragrance'
+              sumne	smell
+        Taste
+              vrusi	taste `flavor'
+              titla	sweet
+              kurki	bitter `acrid'
+              slari	sour
+        Others
+              cortu	pain `hurt'
+              xagji	hunger
+              taske	thirst
+              tatpi	tired
+Psychology
+    Emotions, Affects
+          cinmo	emotion
+          badri	sad
+          ckeji	ashamed
+          jgira	pride
+          kecti	pity
+          kufra	comfort
+          manci	wonder
+          prami	love
+          steba	frustration
+          zungi	guilt
+          cinri	interesting `interests'
+          burna	embarrassed
+          cumla	humble `humility'
+          kucli	curious
+          xebni	hate
+          xalni	panic
+          xanka	nervous `anxious'
+          dunku	anguish
+          dirba	dear
+          gleki	happy `gay'
+          jilra	jealous
+          junri	serious
+          klaku	weep
+          terpa	fear `terror'
+          xenru	regret `rue'
+          fengu	angry
+          pluka	pleasant
+          raktu	trouble
+          spaji	surprise
+          jenca	shock
+          zdile	amusing `amused'
+          rigni	disgusting `repugnant'
+          xajmi	funny `comic'
+          betri	tragedy `tragic'
+          fanza	annoy
+    Attitude
+          zanru	approve
+          xalbo	levity `frivolous'
+          vajni	important `significant'
+          trina	attract
+          talsa	challenge
+          surla	relax
+          senva	dream `reverie'
+          ranxi	irony
+          pendo	friend
+          pacna	hope
+          nelci	fond `likes'
+          jundi	attentive `attend'
+          kurji	take care of `care'
+          djica	desire
+          dapma	curse `damn'
+          ckire	grateful
+          ckasu	ridicule `scoff'
+          cfipu	confusing
+          cizra	strange `bizarre'
+          cmila	laugh `smile'
+    Evaluation
+          xrani	injure `hurt'
+          zabna	favorable
+          xarnu	stubborn
+          xendo	kind
+          xamgu	good
+          xlali	bad `mal-'
+          vifne	fresh
+          virnu	brave `valiant, virtue'
+          stati	talent
+          stace	honest
+          snura	secure
+          sinma	esteem
+          prane	perfect
+          mulno	complete
+          misno	famous
+          melbi	beautiful
+          mabla	derogative
+          lazni	lazy
+          kusru	cruel
+          jursa	severe `harsh'
+          vlile	violent
+          juxre	clumsy `awkward'
+          funca	luck `fortune'
+          fenki	crazy `frenzy'
+          drani	correct `right'
+          fange	alien `foreign'
+          darsi	audacity `dare'
+          curve	pure
+          cnino	new
+          slabu	old
+          clite	polite
+          ckape	peril
+          bandu	defend
+          marbi	shelter `harbor'
+          banli	great `grand'
+          basna	emphasize `accent'
+          racli	sane `rational'
+          prije	wise `sage'
+          bebna	foolish `boob'
+          bilga	obliged
+          zifre	free
+          marde	morals
+          palci	evil
+          vrude	virtue
+          certu	expert
+          cfila	flaw
+Socium
+      jikca	socialize `social'
+      sivni	private
+    Family
+          lanzu	family `clan'
+          speni	married `spouse'
+          ninmu	woman `women'
+          nanmu	man
+          dzena	elder
+          rirni	parent `rear'
+          mamta	mother `mom'
+          patfu	father `pop, padre'
+          nanla	boy `lad'
+          nixli	girl
+          bersa	son
+          tixnu	daughter
+          bruna	brother
+          mensi	sister
+          tunba	sibling
+          famti	aunt or uncle
+          tamne	cousin
+    Social Institutions
+          ritli	rite
+          salci	celebrate
+          nobli	noble
+          mikce	doctor `medic'
+          zajba	gymnast
+          vitke	guest `visit'
+          xotli	hotel
+        Governement
+              turni	govern
+              kamni	committee
+              catni	authority
+              vipsi	deputy `vice'
+              jecta	polity `state'
+              jansu	diplomat `consul'
+              jaspu	passport
+              pikta	ticket
+        Law
+              flalu	law
+              pajni	judge
+              zekri	crime
+              pulji	police
+              pinfu	prisoner `captive'
+        War
+              gunta	attack
+              jamna	war
+              bilni	military
+              jenmi	army
+              sonci	soldier
+    Economics
+        Property
+              gubni	public
+              ponse	possess
+              cpacu	get `acquire'
+              cirko	lose
+              jbera	borrow
+              dunda	give `donate'
+              lebna	take
+              pindi	poor `indigent'
+              ricfu	rich
+              dejni	owe `debt-or'
+              cerda	heir
+        Money
+              jdini	money `dinero'
+              sicni	coin `specie'
+              rupnu	dollar `ruble'
+              fepni	cent `penny'
+              banxa	bank
+              zivle	invest
+        Trade
+              canja	exchange
+              vamji	value
+              jdima	price
+              vecnu	sell `vend'
+              kargu	costly
+              janta	account
+              cnemu	reward
+        Business
+              kagni	company
+              cteki	tax
+              zarci	market `mart'
+              jibri	job
+              jerna	earn
+              briju	office `bureau'
+              binra	insure
+              gusta	restaurant
+              barja	bar
+Human Culture
+    Nations, Cultures
+          kulnu	culture
+          natmi	nation
+    Geography
+          tutra	territory
+          gugde	country
+          jarbu	suburb
+          tcadu	city `town'
+          nurma	rural
+          panka	park
+          bemro	North American
+          dzipo	Antarctican
+          friko	African
+          ketco	South American `Quechua'
+          xazdo	Asiatic
+          ropno	European
+    Multi-ethnic cultures
+          glico	English
+          softo	Soviet
+          xispo	Hispanic
+          xrabo	Arabic
+          baxso	Malay-Indonesian `Bahasa'
+          polno	Polynesian
+          semto	Semitic
+          spano	Spanish
+          srito	Sanskrit
+          latmo	Latin
+          lojbo	Lojbanic
+    Nationalities
+          brito	British
+          filso	Palestinian `Philistine'
+          gento	Argentinian
+          jerxo	Algerian
+          jordo	Jordanian
+          kadno	Canadian
+          libjo	Libyan
+          lubno	Lebanese
+          merko	American
+          mexno	Mexican
+          misro	Egyptian `Mizraim'
+          morko	Moroccan
+          rakso	Iraqi
+          sadjo	Saudi
+          sirxo	Syrian
+          sralo	Australian
+          bengo	Bengali
+          bindo	Indonesian
+          brazo	Brazilian
+          dotco	German `Deutsch'
+          fraso	French `France'
+          jungo	Chinese
+          kisto	Pakistani
+          meljo	Malaysian
+          ponjo	Japanese `Nippon'
+          porto	Portuguese
+          rusko	Russian
+          skoto	Scottish
+          slovo	Slavic
+          vukro	Ukrainian
+          xebro	Hebrew
+          xelso	Greek `Hellas'
+          xindo	Hindi
+          xurdo	Urdi
+    Religion
+          lijda	religion
+          cevni	god `divinity'
+          censa	holy `sacred'
+          makfa	magic
+          malsi	temple
+          crida	fairy
+          ranmi	myth
+        Particular religions
+              budjo	Buddhist
+              dadjo	Taoist
+              jegvo	Jehovist
+              muslo	Islamic
+              xriso	Christian
+    Art
+          larcu	art
+          muzga	museum
+          cfika	fiction
+          pemci	poem
+          prosa	prose
+          pixra	picture
+          draci	drama
+          tigni	perform
+          skina	cinema
+          zgike	music
+          sanga	sing
+          dansu	dance
+          damri	drum
+          flani	flute
+          jgita	guitar `guitar'
+          pipno	piano
+          tabra	trumpet `brass'
+          xagri	reed
+Technology
+    Technological processes
+          fenso	sew
+          jivbu	weave
+          nivji	knit
+          lasna	fasten `lash'
+          gundi	industry
+          fanri	factory `foundry'
+          cange	farm `grange, agrarian'
+          purdi	garden
+          crepu	harvest `reap'
+          sombo	sow
+          spofu	broken
+          cikre	repair `fix'
+          gunka	work
+          cupra	produce
+          finti	invent
+          zbasu	make
+          fukpi	copy
+          jadni	adorn
+          jukpa	cook
+          macnu	manual
+          zmiku	automatic
+          lumci	wash
+          molki	mill
+          pilno	use `employ'
+          sazri	operate
+          sorcu	store
+    Artificial substances
+          zbabu	soap
+          jalna	starch
+        Materials
+              blaci	glass
+              staku	ceramic
+              gasta	steel
+              lastu	brass
+              ransu	bronze
+              ckabu	rubber
+              slasi	plastic
+              bukpu	cloth
+              mapni	cotton
+              matli	linen
+              silka	silk
+              korka	cork
+              mudri	wood `lumber'
+              skapi	pelt `skin'
+              cinta	paint
+        Beverages
+              xalka	alcohol
+              jikru	liquor
+              vanju	wine
+              birje	beer
+              jisra	juice
+              sodva	soda
+              ckafi	coffee
+              tcati	tea
+        Foods
+              sanmi	meal
+              rectu	meat `flesh'
+              grasu	grease
+              ladru	milk `lactic'
+              kruji	cream
+              matne	butter
+              cirla	cheese
+              sakta	sugar `sucrose'
+              cakla	chocolate
+              nanba	bread
+              salta	salad
+              sanso	sauce
+              stasu	soup `stew'
+              tsapi	seasoning
+              sigja	cigar
+    Artifacts
+          rutni	artifact
+        Tools, Devices
+              tutci	tool
+              mruli	hammer
+              dinko	nail
+              pijne	pin
+              burcu	brush
+              balre	blade
+              canpa	shovel
+              dakfu	knife
+              jinci	shears
+              klupe	screw
+              komcu	comb
+              pinsi	pencil
+              penbi	pen
+              xinmo	ink
+              pelji	paper `page'
+              smuci	spoon
+              forca	fork
+              sacki	match
+              janbe	bell
+              lanci	flag `banner'
+              matci	mat
+              julne	net
+              murta	curtain
+        Containers
+              dacru	drawer
+              baktu	bucket
+              botpi	bottle
+              tanxe	box `trunk'
+              lante	can
+              dakli	sack
+              kabri	cup
+              lanka	basket
+              patxu	pot
+              palne	tray `pan, platter'
+              palta	plate `platter'
+              tansi	pan
+        Machines, Apparatus
+              minji	machine
+              cabra	apparatus
+              matra	motor
+              livla	fuel
+              pambe	pump
+              toknu	oven
+              xarci	weapon `arms'
+              jbama	bomb
+              danti	projectile
+    Machine parts
+          greku	frame
+          tsina	stage
+          zbepi	pedestal `base'
+          kamju	column
+          garna	rail `bar'
+          kajna	shelf `counter'
+          batke	button
+          xislu	wheel
+          jabre	brake
+          linsi	chain `links'
+          pulni	pulley
+          skori	cord
+          jendu	axle `spindle'
+          vraga	lever
+    Transport
+          dargu	road
+          klaji	street `avenue'
+          naxle	canal
+          vinji	airplane
+          skiji	ski
+          falnu	sail
+          carce	cart
+          cripu	bridge
+          jakne	rocket
+          tcana	station
+          marce	vehicle
+          sabnu	cabin
+          bloti	boat
+          trene	train
+          karce	car
+    House
+          ginka	camp
+          dinju	building
+          kumfa	room
+          bitmu	wall
+          vorme	door
+          canko	window
+          balni	balcony
+          serti	stairs
+          nilce	furniture
+          jubme	table
+          stizu	chair `stool'
+          ckana	bed
+          sfofa	sofa
+          kicne	cushion
+          stela	lock
+          ckiku	key
+    Dress
+          dasni	wear
+          taxfu	garment
+          kosta	coat
+          pastu	robe `tunic'
+          skaci	skirt
+          creka	shirt
+          palku	pants
+          daski	pocket
+          gluta	glove
+          cutci	shoe
+          smoka	sock
+          mapku	cap
+          santa	umbrella

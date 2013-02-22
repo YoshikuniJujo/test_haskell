@@ -1,0 +1,126 @@
+Structures
+    Set, group, mass
+    Chaos/order
+    Linear order
+    Range
+    Comparison
+    Mathematics
+Information
+    Language
+    Information carriers
+    Message
+    Communication
+    Cognition
+Space
+    Relative position
+    Orientation
+    Range
+    Dimensions
+    Forms
+        Point
+        Line
+        Surface
+        Body
+        Material shapes
+Time
+    Day
+    Calendar
+    Clock
+Processes
+    Causality
+    Controlling processes
+    Interactive activity
+        Command
+        Conflict
+Movement
+    Self-moving
+        Abstract
+        Active movement
+        Equilibrium
+        Passive motion
+    Manipulating objects
+        Move
+        Surface
+        Volume
+        Fluids
+Physical world
+    Ontology
+    Basic notions
+    Physical properties
+    Measures
+        Metric
+        Non-metric
+        Exponents of 10
+    Substances
+        Aggregate state
+        Phase transitions
+        Chemical categories
+        Chemical elements
+Nature
+    Cosmos
+    Earth
+        Hydrosphere
+        Atmosphere
+        Minerals
+Life
+    Plants
+        Body parts
+        Flowers
+        Fruits
+        Vegetables
+        Grain
+        Other particular plants
+    Animals
+        Classes of animals
+        Particular animals
+        Body parts
+        Skin derivatives
+        Internal organs
+    Physiology
+        Digestion
+        Reproduction
+        Health/Decease
+        Behaviour
+    Perception
+        Hearing
+        Vision
+        Odor
+        Taste
+        Others
+Psychology
+    Emotions, Affects
+    Attitude
+    Evaluation
+Socium
+    Family
+    Social Institutions
+        Governement
+        Law
+        War
+    Economics
+        Property
+        Money
+        Trade
+        Business
+Human Culture
+    Nations, Cultures
+    Geography
+    Multi-ethnic cultures
+    Nationalities
+    Religion
+        Particular religions
+    Art
+Technology
+    Technological processes
+    Artificial substances
+        Materials
+        Beverages
+        Foods
+    Artifacts
+        Tools, Devices
+        Containers
+        Machines, Apparatus
+    Machine parts
+    Transport
+    House
+    Dress
