@@ -10,8 +10,9 @@ testTree = Node "section" [
 
 showTreeIndented :: (Int -> a -> String) -> Int -> Tree a -> String
 showTreeIndented sh ind (Node v s) =
-	replicate ind ' ' ++  sh ind v ++ "\n" ++
-	concatMap (showTreeIndented sh $ ind + 4) s
+	sh ind v ++ concatMap (showTreeIndented sh $ ind + 1) s
 
 printTreeIndented :: Show a => Tree a -> IO ()
-printTreeIndented = putStr . showTreeIndented (const show) 0
+printTreeIndented = putStr . showTreeIndented sh 0
+	where
+	sh i x = replicate (i * 4) ' ' ++ show x ++ "\n"

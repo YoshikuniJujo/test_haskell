@@ -19,8 +19,9 @@ showSecOnly :: Int -> (String, [(String, String)]) -> String
 showSecOnly _ (sec, _) = sec
 
 showWords :: Int -> (String, [(String, String)]) -> String
-showWords ind (sec, ws) = sec ++ if null ws then "" else "\n" ++
-	intercalate "\n" (map ((replicate (ind + 6) ' ' ++) . showW) ws)
+showWords ind (sec, ws) =
+	replicate (ind * 4) ' ' ++ sec ++ "\n" ++
+	unlines (map ((replicate (ind * 4 + 6) ' ' ++) . showW) ws)
 
 showW :: (String, String) -> String
 showW (jbo, en) = jbo ++ "\t" ++ en
