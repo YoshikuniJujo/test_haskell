@@ -11,7 +11,7 @@ data WordsTree
 	= WNode String [(String, String)] [WordsTree]
 	deriving Show
 
-type CountTree = Tree (String, Int)
+type CountTree = Tree (String, Int, Int)
 
 countWords :: Result -> Int
 countWords (Node (_, ws) ts) = length ws + sum (map countWords ts)
@@ -19,20 +19,21 @@ countWords (Node (_, ws) ts) = length ws + sum (map countWords ts)
 resultToCountTree :: Result -> CountTree
 resultToCountTree n@(Node (sn, ws) ts) =
 --	Node (sn, countWords n) $ map resultToCountTree ts
-	Node (sn, length ws) $ map resultToCountTree ts
+	Node (sn, length ws, countWords n) $ map resultToCountTree ts
 
-showCount ind (sn, num) =
+showCount ind (sn, num, total) =
 	replicate (ind * 4) ' ' ++ sn ++
-	replicate (32 - length sn - ind * 4) ' ' ++
-	" (" ++ show num ++ ")\n"
+	replicate (34 - length sn - ind * 4 - length (show num)) ' ' ++
+	show num ++
+	(if num == total then "" else replicate (4 - length (show num)) ' ' ++ "(" ++ show total ++ ")") ++ "\n"
 
 printCountTree :: CountTree -> IO ()
 printCountTree = putStr . showTreeIndented showCount 0
 
 main = getArgs >>= getParsed . head >>=
-	mapM_ (putStr . showTreeIndented showWords 0) . mkWTree
+--	mapM_ (putStr . showTreeIndented showWords 0) . mkWTree
 --	mapM_ (putStr . showTreeIndented showSecOnly 0) . mkWTree
---	mapM_ (printCountTree . resultToCountTree) . mkWTree
+	mapM_ (printCountTree . resultToCountTree) . mkWTree
 
 showSecOnly :: Int -> (String, [(String, String)]) -> String
 showSecOnly _ (sec, _) = sec
