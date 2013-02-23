@@ -31,13 +31,3 @@ run is d p = run (mi `delete` is) (next mi d p) p
 
 r :: [[Int]] -> [Int]
 r p = run [1 .. length p - 1] (head p) p
-
-{-
-minIndex :: (Ord a, Bounded a) => [a] -> Int
-minIndex = mi 0 0 maxBound
-	where
-	mi i j m [] = i
-	mi i j m (x : xs)
-		| m > x = mi j (j + 1) x xs
-		| otherwise = mi i (j + 1) m xs
--}
