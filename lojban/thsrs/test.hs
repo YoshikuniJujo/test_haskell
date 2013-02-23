@@ -11,9 +11,25 @@ data WordsTree
 	= WNode String [(String, String)] [WordsTree]
 	deriving Show
 
+type CountTree = Tree (String, Int)
+
+countWords :: Result -> Int
+countWords (Node (_, ws) ts) = length ws + sum (map countWords ts)
+
+resultToCountTree :: Result -> CountTree
+resultToCountTree n@(Node (sn, _) ts) =
+	Node (sn, countWords n) $ map resultToCountTree ts
+
+showCount ind (sn, num) =
+	replicate (ind * 4) ' ' ++ sn ++ " (" ++ show num ++ ")\n"
+
+printCountTree :: CountTree -> IO ()
+printCountTree = putStr . showTreeIndented showCount 0
+
 main = getArgs >>= getParsed . head >>=
 	mapM_ (putStr . showTreeIndented showWords 0) . mkWTree
 --	mapM_ (putStr . showTreeIndented showSecOnly 0) . mkWTree
+--	mapM_ (printCountTree . resultToCountTree) . mkWTree
 
 showSecOnly :: Int -> (String, [(String, String)]) -> String
 showSecOnly _ (sec, _) = sec
