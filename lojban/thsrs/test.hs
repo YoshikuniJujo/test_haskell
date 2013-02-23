@@ -17,11 +17,14 @@ countWords :: Result -> Int
 countWords (Node (_, ws) ts) = length ws + sum (map countWords ts)
 
 resultToCountTree :: Result -> CountTree
-resultToCountTree n@(Node (sn, _) ts) =
-	Node (sn, countWords n) $ map resultToCountTree ts
+resultToCountTree n@(Node (sn, ws) ts) =
+--	Node (sn, countWords n) $ map resultToCountTree ts
+	Node (sn, length ws) $ map resultToCountTree ts
 
 showCount ind (sn, num) =
-	replicate (ind * 4) ' ' ++ sn ++ " (" ++ show num ++ ")\n"
+	replicate (ind * 4) ' ' ++ sn ++
+	replicate (32 - length sn - ind * 4) ' ' ++
+	" (" ++ show num ++ ")\n"
 
 printCountTree :: CountTree -> IO ()
 printCountTree = putStr . showTreeIndented showCount 0
