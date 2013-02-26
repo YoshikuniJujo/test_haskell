@@ -1,0 +1,13 @@
+Structures            84
+Information          118
+Space                108
+Time                  28
+Processes             81
+Movement              90
+Physical world       122
+Nature                40
+Life                 235
+Psychology           101
+Socium                77
+Human Culture         89
+Technology           169

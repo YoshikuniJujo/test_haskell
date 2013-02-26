@@ -30,10 +30,18 @@ showCount ind (sn, num, total) =
 printCountTree :: CountTree -> IO ()
 printCountTree = putStr . showTreeIndented showCount 0
 
+resultToSecCount :: Result -> (String, Int)
+resultToSecCount n@(Node (sn, _) _) = (sn, countWords n)
+
 main = getArgs >>= getParsed . head >>=
 --	mapM_ (putStr . showTreeIndented showWords 0) . mkWTree
 --	mapM_ (putStr . showTreeIndented showSecOnly 0) . mkWTree
-	mapM_ (printCountTree . resultToCountTree) . mkWTree
+--	mapM_ (printCountTree . resultToCountTree) . mkWTree
+	mapM_ (putStrLn . showSecNums . resultToSecCount) . mkWTree
+
+showSecNums :: (String, Int) -> String
+showSecNums (sec, num) =
+	sec ++ replicate (24 - length sec - length (show num)) ' ' ++ show num
 
 showSecOnly :: Int -> (String, [(String, String)]) -> String
 showSecOnly _ (sec, _) = sec
