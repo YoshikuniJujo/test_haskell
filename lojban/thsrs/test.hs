@@ -5,7 +5,9 @@ import Control.Arrow
 import TreeTools
 import Data.List
 
-type Result = Tree (String, [(String, String)])
+import Result
+
+-- type Result = Tree (String, [(String, String)])
 
 data WordsTree
 	= WNode String [(String, String)] [WordsTree]
@@ -37,7 +39,8 @@ main = getArgs >>= getParsed . head >>=
 --	mapM_ (putStr . showTreeIndented showWords 0) . mkWTree
 --	mapM_ (putStr . showTreeIndented showSecOnly 0) . mkWTree
 --	mapM_ (printCountTree . resultToCountTree) . mkWTree
-	mapM_ (putStrLn . showSecNums . resultToSecCount) . mkWTree
+--	mapM_ (putStrLn . showSecNums . resultToSecCount) . mkWTree
+	putStr . resultToXml . mkWTree
 
 showSecNums :: (String, Int) -> String
 showSecNums (sec, num) =
