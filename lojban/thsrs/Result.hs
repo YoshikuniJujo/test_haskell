@@ -19,4 +19,4 @@ rtx (Node (title, ws) secs) =
 	concatMap rtx secs ++ "</section>"
 
 wordsToXml (loj, en) =
-	"<word jbo=\"" ++ loj ++ "\" en=\"" ++ en ++ "\"/>"
+	"<item title=\"" ++ loj ++ "\" description=\"" ++ en ++ "\"/>"

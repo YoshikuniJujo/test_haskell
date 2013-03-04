@@ -1,1470 +1,1470 @@
 <?xml version="1.0" ?>
 <top><section title="Structures">
 <section title="Set, group, mass">
-<word jbo="girzu" en="group"/>
-<word jbo="gunma" en="jointly `mass'"/>
-<word jbo="cmima" en="member"/>
-<word jbo="pagbu" en="part"/>
-<word jbo="klesi" en="class"/>
-<word jbo="jbini" en="between"/>
-<word jbo="cuxna" en="choose"/>
-<word jbo="mupli" en="example"/>
-<word jbo="basti" en="replace `substitute'"/>
-<word jbo="kampu" en="common"/>
-<word jbo="fadni" en="ordinary"/>
-<word jbo="rirci" en="rare"/>
-<word jbo="ralju" en="principal"/>
-<word jbo="steci" en="specific `special'"/>
-<word jbo="manfo" en="uniform"/>
-<word jbo="vrici" en="miscellaneous `various'"/>
-<word jbo="cnano" en="norm"/>
-<word jbo="bende" en="crew `band'"/>
+<item title="girzu" description="group"/>
+<item title="gunma" description="jointly `mass'"/>
+<item title="cmima" description="member"/>
+<item title="pagbu" description="part"/>
+<item title="klesi" description="class"/>
+<item title="jbini" description="between"/>
+<item title="cuxna" description="choose"/>
+<item title="mupli" description="example"/>
+<item title="basti" description="replace `substitute'"/>
+<item title="kampu" description="common"/>
+<item title="fadni" description="ordinary"/>
+<item title="rirci" description="rare"/>
+<item title="ralju" description="principal"/>
+<item title="steci" description="specific `special'"/>
+<item title="manfo" description="uniform"/>
+<item title="vrici" description="miscellaneous `various'"/>
+<item title="cnano" description="norm"/>
+<item title="bende" description="crew `band'"/>
 </section><section title="Chaos/order">
-<word jbo="stura" en="structure"/>
-<word jbo="ciste" en="system"/>
-<word jbo="morna" en="pattern `form'"/>
-<word jbo="ganzu" en="organize"/>
-<word jbo="cnici" en="orderly `neat'"/>
-<word jbo="kalsa" en="chaotic"/>
-<word jbo="cunso" en="random `chance'"/>
-<word jbo="pluja" en="complicated `complex'"/>
-<word jbo="sampu" en="simple"/>
-<word jbo="krati" en="represent `proxy'"/>
-<word jbo="sarxe" en="harmonious"/>
-<word jbo="vanbi" en="environment `ambient'"/>
-<word jbo="javni" en="rule"/>
+<item title="stura" description="structure"/>
+<item title="ciste" description="system"/>
+<item title="morna" description="pattern `form'"/>
+<item title="ganzu" description="organize"/>
+<item title="cnici" description="orderly `neat'"/>
+<item title="kalsa" description="chaotic"/>
+<item title="cunso" description="random `chance'"/>
+<item title="pluja" description="complicated `complex'"/>
+<item title="sampu" description="simple"/>
+<item title="krati" description="represent `proxy'"/>
+<item title="sarxe" description="harmonious"/>
+<item title="vanbi" description="environment `ambient'"/>
+<item title="javni" description="rule"/>
 </section><section title="Linear order">
-<word jbo="porsi" en="sequence"/>
-<word jbo="liste" en="list"/>
-<word jbo="fatne" en="reverse"/>
-<word jbo="lidne" en="precede `leader'"/>
+<item title="porsi" description="sequence"/>
+<item title="liste" description="list"/>
+<item title="fatne" description="reverse"/>
+<item title="lidne" description="precede `leader'"/>
 </section><section title="Range">
-<word jbo="korbi" en="edge `border, curb'"/>
-<word jbo="jimte" en="limit"/>
-<word jbo="traji" en="superlative `extreme'"/>
-<word jbo="milxe" en="mild"/>
-<word jbo="bancu" en="beyond"/>
+<item title="korbi" description="edge `border, curb'"/>
+<item title="jimte" description="limit"/>
+<item title="traji" description="superlative `extreme'"/>
+<item title="milxe" description="mild"/>
+<item title="bancu" description="beyond"/>
 </section><section title="Comparison">
-<word jbo="karbi" en="compare"/>
-<word jbo="mapti" en="fit `match'"/>
-<word jbo="cimni" en="infinite"/>
-<word jbo="zasni" en="temporary `transient'"/>
-<word jbo="mutce" en="much"/>
-<word jbo="barda" en="big `large'"/>
-<word jbo="cmalu" en="small"/>
-<word jbo="zmadu" en="more"/>
-<word jbo="mleca" en="less"/>
-<word jbo="zenba" en="increase `augment'"/>
-<word jbo="jdika" en="decrease"/>
-<word jbo="stodi" en="constant `stable'"/>
-<word jbo="cenba" en="vary"/>
-<word jbo="banro" en="grow"/>
-<word jbo="ctaru" en="tide"/>
-<word jbo="jmina" en="add `augment'"/>
-<word jbo="banzu" en="suffice"/>
-<word jbo="dukse" en="excess"/>
-<word jbo="claxu" en="without `lack'"/>
-<word jbo="dunli" en="equal"/>
-<word jbo="simsa" en="similar"/>
-<word jbo="drata" en="other"/>
-<word jbo="mintu" en="same `identical'"/>
-<word jbo="frica" en="differ"/>
-<word jbo="dukti" en="opposite `contrary'"/>
+<item title="karbi" description="compare"/>
+<item title="mapti" description="fit `match'"/>
+<item title="cimni" description="infinite"/>
+<item title="zasni" description="temporary `transient'"/>
+<item title="mutce" description="much"/>
+<item title="barda" description="big `large'"/>
+<item title="cmalu" description="small"/>
+<item title="zmadu" description="more"/>
+<item title="mleca" description="less"/>
+<item title="zenba" description="increase `augment'"/>
+<item title="jdika" description="decrease"/>
+<item title="stodi" description="constant `stable'"/>
+<item title="cenba" description="vary"/>
+<item title="banro" description="grow"/>
+<item title="ctaru" description="tide"/>
+<item title="jmina" description="add `augment'"/>
+<item title="banzu" description="suffice"/>
+<item title="dukse" description="excess"/>
+<item title="claxu" description="without `lack'"/>
+<item title="dunli" description="equal"/>
+<item title="simsa" description="similar"/>
+<item title="drata" description="other"/>
+<item title="mintu" description="same `identical'"/>
+<item title="frica" description="differ"/>
+<item title="dukti" description="opposite `contrary'"/>
 </section><section title="Mathematics">
-<word jbo="cmaci" en="mathematics"/>
-<word jbo="mekso" en="MEX"/>
-<word jbo="namcu" en="number"/>
-<word jbo="kancu" en="count"/>
-<word jbo="kanji" en="calculate `reckon'"/>
-<word jbo="saclu" en="decimal"/>
-<word jbo="sumji" en="sum"/>
-<word jbo="vimcu" en="remove"/>
-<word jbo="pilji" en="multiply `multiply'"/>
-<word jbo="dilcu" en="quotient `division'"/>
-<word jbo="frinu" en="fraction"/>
-<word jbo="tenfa" en="exponential"/>
-<word jbo="dugri" en="logarithm"/>
-<word jbo="fancu" en="function"/>
-<word jbo="sumti" en="argument"/>
-<word jbo="sinso" en="sine"/>
-<word jbo="tanjo" en="tangent"/>
-<word jbo="xadba" en="half"/>
-<word jbo="judri" en="address"/>
+<item title="cmaci" description="mathematics"/>
+<item title="mekso" description="MEX"/>
+<item title="namcu" description="number"/>
+<item title="kancu" description="count"/>
+<item title="kanji" description="calculate `reckon'"/>
+<item title="saclu" description="decimal"/>
+<item title="sumji" description="sum"/>
+<item title="vimcu" description="remove"/>
+<item title="pilji" description="multiply `multiply'"/>
+<item title="dilcu" description="quotient `division'"/>
+<item title="frinu" description="fraction"/>
+<item title="tenfa" description="exponential"/>
+<item title="dugri" description="logarithm"/>
+<item title="fancu" description="function"/>
+<item title="sumti" description="argument"/>
+<item title="sinso" description="sine"/>
+<item title="tanjo" description="tangent"/>
+<item title="xadba" description="half"/>
+<item title="judri" description="address"/>
 </section></section><section title="Information">
 <section title="Language">
-<word jbo="bangu" en="language"/>
-<word jbo="sinxa" en="sign"/>
-<word jbo="fanva" en="translate"/>
-<word jbo="cmavo" en="structure word"/>
-<word jbo="gadri" en="article"/>
-<word jbo="gerna" en="grammar"/>
-<word jbo="jufra" en="sentence `phrase'"/>
-<word jbo="rafsi" en="affix"/>
-<word jbo="rimni" en="rhyme"/>
-<word jbo="slaka" en="syllable"/>
-<word jbo="tanru" en="phrase compound"/>
-<word jbo="valsi" en="word"/>
-<word jbo="broda" en="predicate var 1"/>
-<word jbo="brode" en="predicate var 2"/>
-<word jbo="brodi" en="predicate var 3"/>
-<word jbo="brodo" en="predicate var 4"/>
-<word jbo="brodu" en="predicate var 5"/>
-<word jbo="cmene" en="name"/>
-<word jbo="gismu" en="root word"/>
-<word jbo="lujvo" en="affix compound"/>
-<word jbo="lerfu" en="letteral"/>
-<word jbo="pandi" en="punctuate"/>
+<item title="bangu" description="language"/>
+<item title="sinxa" description="sign"/>
+<item title="fanva" description="translate"/>
+<item title="cmavo" description="structure word"/>
+<item title="gadri" description="article"/>
+<item title="gerna" description="grammar"/>
+<item title="jufra" description="sentence `phrase'"/>
+<item title="rafsi" description="affix"/>
+<item title="rimni" description="rhyme"/>
+<item title="slaka" description="syllable"/>
+<item title="tanru" description="phrase compound"/>
+<item title="valsi" description="word"/>
+<item title="broda" description="predicate var 1"/>
+<item title="brode" description="predicate var 2"/>
+<item title="brodi" description="predicate var 3"/>
+<item title="brodo" description="predicate var 4"/>
+<item title="brodu" description="predicate var 5"/>
+<item title="cmene" description="name"/>
+<item title="gismu" description="root word"/>
+<item title="lujvo" description="affix compound"/>
+<item title="lerfu" description="letteral"/>
+<item title="pandi" description="punctuate"/>
 </section><section title="Information carriers">
-<word jbo="ciska" en="write `scribe'"/>
-<word jbo="tcidu" en="read"/>
-<word jbo="cukta" en="book"/>
-<word jbo="xatra" en="letter"/>
-<word jbo="karni" en="journal"/>
-<word jbo="cartu" en="chart"/>
-<word jbo="benji" en="transfer `send'"/>
-<word jbo="cradi" en="radio"/>
-<word jbo="tivni" en="television"/>
-<word jbo="fonxa" en="telephone"/>
-<word jbo="skami" en="computer"/>
-<word jbo="vidni" en="video"/>
-<word jbo="kacma" en="camera"/>
+<item title="ciska" description="write `scribe'"/>
+<item title="tcidu" description="read"/>
+<item title="cukta" description="book"/>
+<item title="xatra" description="letter"/>
+<item title="karni" description="journal"/>
+<item title="cartu" description="chart"/>
+<item title="benji" description="transfer `send'"/>
+<item title="cradi" description="radio"/>
+<item title="tivni" description="television"/>
+<item title="fonxa" description="telephone"/>
+<item title="skami" description="computer"/>
+<item title="vidni" description="video"/>
+<item title="kacma" description="camera"/>
 </section><section title="Message">
-<word jbo="notci" en="message `note'"/>
-<word jbo="mifra" en="code `cipher'"/>
-<word jbo="mipri" en="secret"/>
-<word jbo="mrilu" en="mail"/>
-<word jbo="tcita" en="label `tag'"/>
-<word jbo="citri" en="history"/>
-<word jbo="lisri" en="story"/>
-<word jbo="cusku" en="express"/>
-<word jbo="tavla" en="talk `palaver'"/>
-<word jbo="skicu" en="describe"/>
-<word jbo="stidi" en="suggest"/>
-<word jbo="jarco" en="show"/>
-<word jbo="cmoni" en="moan"/>
-<word jbo="frumu" en="frown"/>
-<word jbo="cisma" en="smile"/>
-<word jbo="pinka" en="comment"/>
+<item title="notci" description="message `note'"/>
+<item title="mifra" description="code `cipher'"/>
+<item title="mipri" description="secret"/>
+<item title="mrilu" description="mail"/>
+<item title="tcita" description="label `tag'"/>
+<item title="citri" description="history"/>
+<item title="lisri" description="story"/>
+<item title="cusku" description="express"/>
+<item title="tavla" description="talk `palaver'"/>
+<item title="skicu" description="describe"/>
+<item title="stidi" description="suggest"/>
+<item title="jarco" description="show"/>
+<item title="cmoni" description="moan"/>
+<item title="frumu" description="frown"/>
+<item title="cisma" description="smile"/>
+<item title="pinka" description="comment"/>
 </section><section title="Communication">
-<word jbo="casnu" en="discuss"/>
-<word jbo="spuda" en="reply `respond'"/>
-<word jbo="preti" en="question `query'"/>
-<word jbo="danfu" en="answer"/>
-<word jbo="cpedu" en="request"/>
-<word jbo="darlu" en="argue"/>
-<word jbo="fraxu" en="forgive"/>
-<word jbo="friti" en="offer"/>
-<word jbo="kajde" en="warn `caution'"/>
-<word jbo="nupre" en="promise"/>
-<word jbo="pante" en="protest"/>
-<word jbo="pikci" en="beg `supplicate'"/>
-<word jbo="rinsa" en="greet"/>
-<word jbo="tcica" en="deceive `cheat, trick'"/>
+<item title="casnu" description="discuss"/>
+<item title="spuda" description="reply `respond'"/>
+<item title="preti" description="question `query'"/>
+<item title="danfu" description="answer"/>
+<item title="cpedu" description="request"/>
+<item title="darlu" description="argue"/>
+<item title="fraxu" description="forgive"/>
+<item title="friti" description="offer"/>
+<item title="kajde" description="warn `caution'"/>
+<item title="nupre" description="promise"/>
+<item title="pante" description="protest"/>
+<item title="pikci" description="beg `supplicate'"/>
+<item title="rinsa" description="greet"/>
+<item title="tcica" description="deceive `cheat, trick'"/>
 </section><section title="Cognition">
-<word jbo="mucti" en="immaterial"/>
-<word jbo="menli" en="mind `mental'"/>
-<word jbo="xanri" en="imaginary `unreal'"/>
-<word jbo="pruxi" en="spirit"/>
-<word jbo="sanji" en="conscious"/>
-<word jbo="pensi" en="think `pensive'"/>
-<word jbo="prenu" en="person"/>
-<word jbo="sevzi" en="self"/>
-<word jbo="sidbo" en="idea"/>
-<word jbo="nabmi" en="problem"/>
-<word jbo="cilre" en="learn"/>
-<word jbo="ctuca" en="teach"/>
-<word jbo="ckule" en="school"/>
-<word jbo="datni" en="data"/>
-<word jbo="djuno" en="know"/>
-<word jbo="facki" en="discover `find'"/>
-<word jbo="fatci" en="fact"/>
-<word jbo="jdice" en="decide"/>
-<word jbo="jetnu" en="true"/>
-<word jbo="jitfa" en="false"/>
-<word jbo="jijnu" en="intuit"/>
-<word jbo="jimpe" en="understand `comprehend'"/>
-<word jbo="jinvi" en="opine"/>
-<word jbo="kanxe" en="conjunction"/>
-<word jbo="krici" en="believe `creed'"/>
-<word jbo="logji" en="logic"/>
-<word jbo="morji" en="remember `memory'"/>
-<word jbo="natfe" en="deny"/>
-<word jbo="nuzba" en="news"/>
-<word jbo="senpi" en="doubt `skeptic'"/>
-<word jbo="sitna" en="cite"/>
-<word jbo="smadi" en="guess `surmise'"/>
-<word jbo="sruma" en="assume"/>
-<word jbo="tugni" en="agree"/>
-<word jbo="vlina" en="alternation"/>
-<word jbo="vreji" en="record"/>
-<word jbo="xusra" en="assert"/>
-<word jbo="zasti" en="exist"/>
-<word jbo="bridi" en="predicate"/>
-<word jbo="birti" en="certain"/>
-<word jbo="ciksi" en="explain"/>
-<word jbo="cipra" en="test `proof'"/>
-<word jbo="lanli" en="analyze"/>
-<word jbo="saske" en="science"/>
-<word jbo="sucta" en="abstract"/>
-<word jbo="tadji" en="method"/>
-<word jbo="tadni" en="study"/>
-<word jbo="jicmu" en="basis"/>
-<word jbo="manri" en="reference"/>
-<word jbo="mansa" en="satisfy"/>
-<word jbo="simlu" en="seem"/>
-<word jbo="smuni" en="meaning"/>
-<word jbo="srana" en="pertain `concerns'"/>
+<item title="mucti" description="immaterial"/>
+<item title="menli" description="mind `mental'"/>
+<item title="xanri" description="imaginary `unreal'"/>
+<item title="pruxi" description="spirit"/>
+<item title="sanji" description="conscious"/>
+<item title="pensi" description="think `pensive'"/>
+<item title="prenu" description="person"/>
+<item title="sevzi" description="self"/>
+<item title="sidbo" description="idea"/>
+<item title="nabmi" description="problem"/>
+<item title="cilre" description="learn"/>
+<item title="ctuca" description="teach"/>
+<item title="ckule" description="school"/>
+<item title="datni" description="data"/>
+<item title="djuno" description="know"/>
+<item title="facki" description="discover `find'"/>
+<item title="fatci" description="fact"/>
+<item title="jdice" description="decide"/>
+<item title="jetnu" description="true"/>
+<item title="jitfa" description="false"/>
+<item title="jijnu" description="intuit"/>
+<item title="jimpe" description="understand `comprehend'"/>
+<item title="jinvi" description="opine"/>
+<item title="kanxe" description="conjunction"/>
+<item title="krici" description="believe `creed'"/>
+<item title="logji" description="logic"/>
+<item title="morji" description="remember `memory'"/>
+<item title="natfe" description="deny"/>
+<item title="nuzba" description="news"/>
+<item title="senpi" description="doubt `skeptic'"/>
+<item title="sitna" description="cite"/>
+<item title="smadi" description="guess `surmise'"/>
+<item title="sruma" description="assume"/>
+<item title="tugni" description="agree"/>
+<item title="vlina" description="alternation"/>
+<item title="vreji" description="record"/>
+<item title="xusra" description="assert"/>
+<item title="zasti" description="exist"/>
+<item title="bridi" description="predicate"/>
+<item title="birti" description="certain"/>
+<item title="ciksi" description="explain"/>
+<item title="cipra" description="test `proof'"/>
+<item title="lanli" description="analyze"/>
+<item title="saske" description="science"/>
+<item title="sucta" description="abstract"/>
+<item title="tadji" description="method"/>
+<item title="tadni" description="study"/>
+<item title="jicmu" description="basis"/>
+<item title="manri" description="reference"/>
+<item title="mansa" description="satisfy"/>
+<item title="simlu" description="seem"/>
+<item title="smuni" description="meaning"/>
+<item title="srana" description="pertain `concerns'"/>
 </section></section><section title="Space">
-<word jbo="cimde" en="dimension"/>
-<word jbo="canlu" en="space `volume'"/>
-<word jbo="diklo" en="local"/>
-<word jbo="stuzi" en="site `position'"/>
+<item title="cimde" description="dimension"/>
+<item title="canlu" description="space `volume'"/>
+<item title="diklo" description="local"/>
+<item title="stuzi" description="site `position'"/>
 <section title="Relative position">
-<word jbo="nenri" en="in `inner'"/>
-<word jbo="bartu" en="out"/>
-<word jbo="mlana" en="side `lateral'"/>
-<word jbo="lamji" en="adjacent"/>
-<word jbo="pritu" en="right"/>
-<word jbo="zunle" en="left"/>
-<word jbo="crane" en="front"/>
-<word jbo="trixe" en="behind"/>
-<word jbo="cpana" en="upon"/>
-<word jbo="gapru" en="above `up'"/>
-<word jbo="cnita" en="beneath"/>
-<word jbo="dizlo" en="low"/>
-<word jbo="galtu" en="high"/>
-<word jbo="ragve" en="across"/>
-<word jbo="berti" en="north"/>
-<word jbo="snanu" en="south"/>
-<word jbo="stici" en="west"/>
-<word jbo="stuna" en="east"/>
-<word jbo="darno" en="far"/>
-<word jbo="jibni" en="near"/>
-<word jbo="sruri" en="surround"/>
-<word jbo="vasru" en="contain `vessel'"/>
-<word jbo="kalri" en="open"/>
-<word jbo="ganlo" en="closed"/>
-<word jbo="jorne" en="joined"/>
-<word jbo="kruca" en="intersect `cross'"/>
-<word jbo="midju" en="middle"/>
-<word jbo="sepli" en="apart `separate'"/>
+<item title="nenri" description="in `inner'"/>
+<item title="bartu" description="out"/>
+<item title="mlana" description="side `lateral'"/>
+<item title="lamji" description="adjacent"/>
+<item title="pritu" description="right"/>
+<item title="zunle" description="left"/>
+<item title="crane" description="front"/>
+<item title="trixe" description="behind"/>
+<item title="cpana" description="upon"/>
+<item title="gapru" description="above `up'"/>
+<item title="cnita" description="beneath"/>
+<item title="dizlo" description="low"/>
+<item title="galtu" description="high"/>
+<item title="ragve" description="across"/>
+<item title="berti" description="north"/>
+<item title="snanu" description="south"/>
+<item title="stici" description="west"/>
+<item title="stuna" description="east"/>
+<item title="darno" description="far"/>
+<item title="jibni" description="near"/>
+<item title="sruri" description="surround"/>
+<item title="vasru" description="contain `vessel'"/>
+<item title="kalri" description="open"/>
+<item title="ganlo" description="closed"/>
+<item title="jorne" description="joined"/>
+<item title="kruca" description="intersect `cross'"/>
+<item title="midju" description="middle"/>
+<item title="sepli" description="apart `separate'"/>
 </section><section title="Orientation">
-<word jbo="sraji" en="vertical `upright'"/>
-<word jbo="pinta" en="level `horizontal'"/>
-<word jbo="salpo" en="slope"/>
+<item title="sraji" description="vertical `upright'"/>
+<item title="pinta" description="level `horizontal'"/>
+<item title="salpo" description="slope"/>
 </section><section title="Range">
-<word jbo="tcena" en="stretch"/>
-<word jbo="kuspe" en="range `span'"/>
-<word jbo="loldi" en="floor"/>
-<word jbo="drudi" en="roof"/>
+<item title="tcena" description="stretch"/>
+<item title="kuspe" description="range `span'"/>
+<item title="loldi" description="floor"/>
+<item title="drudi" description="roof"/>
 </section><section title="Dimensions">
-<word jbo="tordu" en="short"/>
-<word jbo="clani" en="long"/>
-<word jbo="jarki" en="narrow"/>
-<word jbo="ganra" en="broad"/>
-<word jbo="cinla" en="thin `lean'"/>
-<word jbo="rotsu" en="thick `stout'"/>
-<word jbo="plana" en="plump"/>
-<word jbo="condi" en="deep"/>
-<word jbo="caxno" en="shallow"/>
+<item title="tordu" description="short"/>
+<item title="clani" description="long"/>
+<item title="jarki" description="narrow"/>
+<item title="ganra" description="broad"/>
+<item title="cinla" description="thin `lean'"/>
+<item title="rotsu" description="thick `stout'"/>
+<item title="plana" description="plump"/>
+<item title="condi" description="deep"/>
+<item title="caxno" description="shallow"/>
 </section><section title="Forms">
-<word jbo="tarmi" en="shape `form'"/>
+<item title="tarmi" description="shape `form'"/>
 <section title="Point">
-<word jbo="mokca" en="point `moment'"/>
-<word jbo="jipno" en="tip `point'"/>
-<word jbo="kojna" en="corner"/>
+<item title="mokca" description="point `moment'"/>
+<item title="jipno" description="tip `point'"/>
+<item title="kojna" description="corner"/>
 </section><section title="Line">
-<word jbo="linji" en="line"/>
-<word jbo="sirji" en="straight"/>
-<word jbo="kruvi" en="curve"/>
-<word jbo="clupa" en="loop"/>
-<word jbo="sarlu" en="spiral"/>
-<word jbo="jgena" en="knot"/>
-<word jbo="jimca" en="branch `limb'"/>
+<item title="linji" description="line"/>
+<item title="sirji" description="straight"/>
+<item title="kruvi" description="curve"/>
+<item title="clupa" description="loop"/>
+<item title="sarlu" description="spiral"/>
+<item title="jgena" description="knot"/>
+<item title="jimca" description="branch `limb'"/>
 </section><section title="Surface">
-<word jbo="sefta" en="surface"/>
-<word jbo="jganu" en="angle"/>
-<word jbo="plita" en="plane"/>
-<word jbo="kurfa" en="square"/>
-<word jbo="karda" en="card"/>
-<word jbo="cukla" en="round `circular'"/>
-<word jbo="djine" en="ring"/>
-<word jbo="punli" en="swelling"/>
-<word jbo="kevna" en="cavity `cave'"/>
+<item title="sefta" description="surface"/>
+<item title="jganu" description="angle"/>
+<item title="plita" description="plane"/>
+<item title="kurfa" description="square"/>
+<item title="karda" description="card"/>
+<item title="cukla" description="round `circular'"/>
+<item title="djine" description="ring"/>
+<item title="punli" description="swelling"/>
+<item title="kevna" description="cavity `cave'"/>
 </section><section title="Body">
-<word jbo="bliku" en="block"/>
-<word jbo="kubli" en="cube"/>
-<word jbo="tanbo" en="board"/>
-<word jbo="konju" en="cone"/>
-<word jbo="slanu" en="cylinder"/>
-<word jbo="tubnu" en="tube"/>
-<word jbo="lenjo" en="lens"/>
-<word jbo="cfine" en="wedge"/>
+<item title="bliku" description="block"/>
+<item title="kubli" description="cube"/>
+<item title="tanbo" description="board"/>
+<item title="konju" description="cone"/>
+<item title="slanu" description="cylinder"/>
+<item title="tubnu" description="tube"/>
+<item title="lenjo" description="lens"/>
+<item title="cfine" description="wedge"/>
 </section><section title="Material shapes">
-<word jbo="gacri" en="cover"/>
-<word jbo="lunbe" en="bare"/>
-<word jbo="derxi" en="heap"/>
-<word jbo="bolci" en="ball"/>
-<word jbo="dirgo" en="drop"/>
-<word jbo="boxfo" en="sheet `foil'"/>
-<word jbo="karli" en="collar"/>
-<word jbo="cilta" en="thread `filament'"/>
-<word jbo="tapla" en="tile"/>
-<word jbo="cinje" en="wrinkle"/>
-<word jbo="fenra" en="crack"/>
-<word jbo="foldi" en="field"/>
-<word jbo="senta" en="layer `stratum'"/>
-<word jbo="snuji" en="sandwich"/>
-<word jbo="panlo" en="slice"/>
-<word jbo="papri" en="page `paper'"/>
-<word jbo="bakfu" en="bundle `pack'"/>
-<word jbo="skuro" en="groove `furrow'"/>
-<word jbo="bidju" en="bead"/>
-<word jbo="genxu" en="hook"/>
-<word jbo="grana" en="rod"/>
-<word jbo="jesni" en="needle"/>
-<word jbo="calku" en="shell"/>
-<word jbo="pilka" en="crust `peel'"/>
-<word jbo="dasri" en="ribbon"/>
-<word jbo="culno" en="full"/>
-<word jbo="kunti" en="empty `vacant'"/>
-<word jbo="tagji" en="snug `tight'"/>
-<word jbo="kluza" en="loose `blouse'"/>
-<word jbo="trati" en="taut"/>
-<word jbo="korcu" en="bent `crooked, corkscrew'"/>
-<word jbo="bargu" en="arch"/>
+<item title="gacri" description="cover"/>
+<item title="lunbe" description="bare"/>
+<item title="derxi" description="heap"/>
+<item title="bolci" description="ball"/>
+<item title="dirgo" description="drop"/>
+<item title="boxfo" description="sheet `foil'"/>
+<item title="karli" description="collar"/>
+<item title="cilta" description="thread `filament'"/>
+<item title="tapla" description="tile"/>
+<item title="cinje" description="wrinkle"/>
+<item title="fenra" description="crack"/>
+<item title="foldi" description="field"/>
+<item title="senta" description="layer `stratum'"/>
+<item title="snuji" description="sandwich"/>
+<item title="panlo" description="slice"/>
+<item title="papri" description="page `paper'"/>
+<item title="bakfu" description="bundle `pack'"/>
+<item title="skuro" description="groove `furrow'"/>
+<item title="bidju" description="bead"/>
+<item title="genxu" description="hook"/>
+<item title="grana" description="rod"/>
+<item title="jesni" description="needle"/>
+<item title="calku" description="shell"/>
+<item title="pilka" description="crust `peel'"/>
+<item title="dasri" description="ribbon"/>
+<item title="culno" description="full"/>
+<item title="kunti" description="empty `vacant'"/>
+<item title="tagji" description="snug `tight'"/>
+<item title="kluza" description="loose `blouse'"/>
+<item title="trati" description="taut"/>
+<item title="korcu" description="bent `crooked, corkscrew'"/>
+<item title="bargu" description="arch"/>
 </section></section></section><section title="Time">
-<word jbo="cabna" en="now"/>
-<word jbo="balvi" en="future `later'"/>
-<word jbo="purci" en="past `earlier'"/>
-<word jbo="temci" en="time"/>
-<word jbo="citno" en="young `junior'"/>
-<word jbo="clira" en="early"/>
-<word jbo="lerci" en="late"/>
+<item title="cabna" description="now"/>
+<item title="balvi" description="future `later'"/>
+<item title="purci" description="past `earlier'"/>
+<item title="temci" description="time"/>
+<item title="citno" description="young `junior'"/>
+<item title="clira" description="early"/>
+<item title="lerci" description="late"/>
 <section title="Day">
-<word jbo="djedi" en="full day"/>
-<word jbo="cerni" en="morning"/>
-<word jbo="donri" en="daytime"/>
-<word jbo="nicte" en="night"/>
-<word jbo="vanci" en="evening"/>
-<word jbo="murse" en="glimmering"/>
+<item title="djedi" description="full day"/>
+<item title="cerni" description="morning"/>
+<item title="donri" description="daytime"/>
+<item title="nicte" description="night"/>
+<item title="vanci" description="evening"/>
+<item title="murse" description="glimmering"/>
 </section><section title="Calendar">
-<word jbo="detri" en="date"/>
-<word jbo="jeftu" en="week"/>
-<word jbo="masti" en="month"/>
-<word jbo="nanca" en="year"/>
-<word jbo="cedra" en="era"/>
-<word jbo="citsi" en="season"/>
-<word jbo="dunra" en="winter"/>
-<word jbo="vensa" en="spring `vernal'"/>
-<word jbo="crisa" en="summer"/>
-<word jbo="critu" en="autumn"/>
+<item title="detri" description="date"/>
+<item title="jeftu" description="week"/>
+<item title="masti" description="month"/>
+<item title="nanca" description="year"/>
+<item title="cedra" description="era"/>
+<item title="citsi" description="season"/>
+<item title="dunra" description="winter"/>
+<item title="vensa" description="spring `vernal'"/>
+<item title="crisa" description="summer"/>
+<item title="critu" description="autumn"/>
 </section><section title="Clock">
-<word jbo="junla" en="clock"/>
-<word jbo="tcika" en="time of day"/>
-<word jbo="cacra" en="hour"/>
-<word jbo="mentu" en="minute"/>
-<word jbo="snidu" en="second"/>
+<item title="junla" description="clock"/>
+<item title="tcika" description="time of day"/>
+<item title="cacra" description="hour"/>
+<item title="mentu" description="minute"/>
+<item title="snidu" description="second"/>
 </section></section><section title="Processes">
-<word jbo="pruce" en="process"/>
-<word jbo="fasnu" en="event `happen'"/>
-<word jbo="tcini" en="situation `state'"/>
-<word jbo="tarti" en="behave"/>
-<word jbo="lifri" en="experience `life'"/>
-<word jbo="bapli" en="force `compel'"/>
-<word jbo="cfari" en="initiate"/>
-<word jbo="ranji" en="continue"/>
-<word jbo="fanmo" en="end `final'"/>
-<word jbo="rapli" en="repeat"/>
-<word jbo="kansa" en="with `accompany'"/>
-<word jbo="cumki" en="possible `maybe'"/>
-<word jbo="lakne" en="probable `likely'"/>
-<word jbo="fanta" en="prevent"/>
-<word jbo="binxo" en="become"/>
-<word jbo="canci" en="vanish"/>
-<word jbo="farvi" en="develop `evolve'"/>
-<word jbo="cafne" en="often"/>
-<word jbo="dikni" en="regular `cyclical'"/>
-<word jbo="vitci" en="irregular `intermittent'"/>
-<word jbo="dimna" en="fate `doom'"/>
-<word jbo="xaksu" en="use up"/>
-<word jbo="festi" en="waste"/>
-<word jbo="krefu" en="recur"/>
-<word jbo="rarna" en="natural"/>
-<word jbo="renvi" en="survive"/>
-<word jbo="rilti" en="rhythm"/>
-<word jbo="stika" en="adjust"/>
-<word jbo="suksa" en="sudden"/>
-<word jbo="vitno" en="permanent `eternal'"/>
+<item title="pruce" description="process"/>
+<item title="fasnu" description="event `happen'"/>
+<item title="tcini" description="situation `state'"/>
+<item title="tarti" description="behave"/>
+<item title="lifri" description="experience `life'"/>
+<item title="bapli" description="force `compel'"/>
+<item title="cfari" description="initiate"/>
+<item title="ranji" description="continue"/>
+<item title="fanmo" description="end `final'"/>
+<item title="rapli" description="repeat"/>
+<item title="kansa" description="with `accompany'"/>
+<item title="cumki" description="possible `maybe'"/>
+<item title="lakne" description="probable `likely'"/>
+<item title="fanta" description="prevent"/>
+<item title="binxo" description="become"/>
+<item title="canci" description="vanish"/>
+<item title="farvi" description="develop `evolve'"/>
+<item title="cafne" description="often"/>
+<item title="dikni" description="regular `cyclical'"/>
+<item title="vitci" description="irregular `intermittent'"/>
+<item title="dimna" description="fate `doom'"/>
+<item title="xaksu" description="use up"/>
+<item title="festi" description="waste"/>
+<item title="krefu" description="recur"/>
+<item title="rarna" description="natural"/>
+<item title="renvi" description="survive"/>
+<item title="rilti" description="rhythm"/>
+<item title="stika" description="adjust"/>
+<item title="suksa" description="sudden"/>
+<item title="vitno" description="permanent `eternal'"/>
 <section title="Causality">
-<word jbo="gasnu" en="do"/>
-<word jbo="jalge" en="result"/>
-<word jbo="krinu" en="reason"/>
-<word jbo="mukti" en="motive"/>
-<word jbo="nibli" en="necessitate"/>
-<word jbo="rinka" en="cause"/>
-<word jbo="zukte" en="act"/>
-<word jbo="krasi" en="source `origin'"/>
-<word jbo="sarcu" en="necessary"/>
-<word jbo="nitcu" en="need"/>
+<item title="gasnu" description="do"/>
+<item title="jalge" description="result"/>
+<item title="krinu" description="reason"/>
+<item title="mukti" description="motive"/>
+<item title="nibli" description="necessitate"/>
+<item title="rinka" description="cause"/>
+<item title="zukte" description="act"/>
+<item title="krasi" description="source `origin'"/>
+<item title="sarcu" description="necessary"/>
+<item title="nitcu" description="need"/>
 </section><section title="Controlling processes">
-<word jbo="jitro" en="control"/>
-<word jbo="gidva" en="guide"/>
-<word jbo="xlura" en="influence `lure'"/>
-<word jbo="bredi" en="ready"/>
-<word jbo="denpa" en="wait `pause'"/>
-<word jbo="sisti" en="cease"/>
-<word jbo="dicra" en="interrupt `disturb, disrupt'"/>
-<word jbo="zunti" en="interfere `hinder'"/>
-<word jbo="fliba" en="fail `baffle'"/>
-<word jbo="frili" en="easy `freely'"/>
-<word jbo="nandu" en="difficult `hard'"/>
-<word jbo="vlipa" en="powerful"/>
-<word jbo="kakne" en="able `can'"/>
-<word jbo="sutra" en="fast `swift'"/>
-<word jbo="masno" en="slow"/>
-<word jbo="platu" en="plan `plot'"/>
-<word jbo="prali" en="profit"/>
-<word jbo="randa" en="yield `surrender'"/>
-<word jbo="snada" en="succeed `accomplish'"/>
-<word jbo="snuti" en="accidental"/>
-<word jbo="srera" en="err"/>
-<word jbo="troci" en="try"/>
+<item title="jitro" description="control"/>
+<item title="gidva" description="guide"/>
+<item title="xlura" description="influence `lure'"/>
+<item title="bredi" description="ready"/>
+<item title="denpa" description="wait `pause'"/>
+<item title="sisti" description="cease"/>
+<item title="dicra" description="interrupt `disturb, disrupt'"/>
+<item title="zunti" description="interfere `hinder'"/>
+<item title="fliba" description="fail `baffle'"/>
+<item title="frili" description="easy `freely'"/>
+<item title="nandu" description="difficult `hard'"/>
+<item title="vlipa" description="powerful"/>
+<item title="kakne" description="able `can'"/>
+<item title="sutra" description="fast `swift'"/>
+<item title="masno" description="slow"/>
+<item title="platu" description="plan `plot'"/>
+<item title="prali" description="profit"/>
+<item title="randa" description="yield `surrender'"/>
+<item title="snada" description="succeed `accomplish'"/>
+<item title="snuti" description="accidental"/>
+<item title="srera" description="err"/>
+<item title="troci" description="try"/>
 </section><section title="Interactive activity">
-<word jbo="cuntu" en="affair"/>
-<word jbo="lacri" en="rely"/>
-<word jbo="selfu" en="serve"/>
-<word jbo="pleji" en="pay"/>
-<word jbo="sidju" en="help `aid'"/>
+<item title="cuntu" description="affair"/>
+<item title="lacri" description="rely"/>
+<item title="selfu" description="serve"/>
+<item title="pleji" description="pay"/>
+<item title="sidju" description="help `aid'"/>
 <section title="Command">
-<word jbo="jatna" en="captain"/>
-<word jbo="minde" en="command"/>
-<word jbo="tinbe" en="obey"/>
-<word jbo="curmi" en="let `permit'"/>
-<word jbo="fuzme" en="responsible"/>
-<word jbo="sfasa" en="punish `spank, castigate'"/>
+<item title="jatna" description="captain"/>
+<item title="minde" description="command"/>
+<item title="tinbe" description="obey"/>
+<item title="curmi" description="let `permit'"/>
+<item title="fuzme" description="responsible"/>
+<item title="sfasa" description="punish `spank, castigate'"/>
 </section><section title="Conflict">
-<word jbo="fapro" en="oppose"/>
-<word jbo="damba" en="fight `combat'"/>
-<word jbo="jinga" en="win `gain'"/>
-<word jbo="nutli" en="neutral"/>
-<word jbo="panpi" en="peace"/>
-<word jbo="jivna" en="compete `rival'"/>
-<word jbo="bradi" en="enemy `adversary'"/>
-<word jbo="venfu" en="revenge `avenge'"/>
+<item title="fapro" description="oppose"/>
+<item title="damba" description="fight `combat'"/>
+<item title="jinga" description="win `gain'"/>
+<item title="nutli" description="neutral"/>
+<item title="panpi" description="peace"/>
+<item title="jivna" description="compete `rival'"/>
+<item title="bradi" description="enemy `adversary'"/>
+<item title="venfu" description="revenge `avenge'"/>
 </section></section></section><section title="Movement">
-<word jbo="farna" en="direction"/>
-<word jbo="penmi" en="meet"/>
+<item title="farna" description="direction"/>
+<item title="penmi" description="meet"/>
 <section title="Self-moving">
 <section title="Abstract">
-<word jbo="klama" en="come"/>
-<word jbo="litru" en="travel"/>
-<word jbo="cliva" en="leave"/>
-<word jbo="xruti" en="return"/>
-<word jbo="pluta" en="route"/>
-<word jbo="stali" en="remain `stay'"/>
+<item title="klama" description="come"/>
+<item title="litru" description="travel"/>
+<item title="cliva" description="leave"/>
+<item title="xruti" description="return"/>
+<item title="pluta" description="route"/>
+<item title="stali" description="remain `stay'"/>
 </section><section title="Active movement">
-<word jbo="bajra" en="run"/>
-<word jbo="cadzu" en="walk"/>
-<word jbo="cpare" en="climb"/>
-<word jbo="stapa" en="step"/>
-<word jbo="plipe" en="leap"/>
-<word jbo="vofli" en="flight `fly'"/>
-<word jbo="limna" en="swim"/>
-<word jbo="sfubu" en="dive `swoop'"/>
-<word jbo="carna" en="turn"/>
-<word jbo="jersi" en="chase `pursue'"/>
-<word jbo="rivbi" en="avoid `evade'"/>
-<word jbo="pagre" en="pass through"/>
-<word jbo="sakli" en="slide `slip'"/>
-<word jbo="spoja" en="explode"/>
-<word jbo="porpi" en="break"/>
-<word jbo="preja" en="spread"/>
-<word jbo="bikla" en="whip `beat, lash'"/>
-<word jbo="gunro" en="roll `trundle'"/>
+<item title="bajra" description="run"/>
+<item title="cadzu" description="walk"/>
+<item title="cpare" description="climb"/>
+<item title="stapa" description="step"/>
+<item title="plipe" description="leap"/>
+<item title="vofli" description="flight `fly'"/>
+<item title="limna" description="swim"/>
+<item title="sfubu" description="dive `swoop'"/>
+<item title="carna" description="turn"/>
+<item title="jersi" description="chase `pursue'"/>
+<item title="rivbi" description="avoid `evade'"/>
+<item title="pagre" description="pass through"/>
+<item title="sakli" description="slide `slip'"/>
+<item title="spoja" description="explode"/>
+<item title="porpi" description="break"/>
+<item title="preja" description="spread"/>
+<item title="bikla" description="whip `beat, lash'"/>
+<item title="gunro" description="roll `trundle'"/>
 </section><section title="Equilibrium">
-<word jbo="zvati" en="at"/>
-<word jbo="lanxe" en="balance"/>
-<word jbo="cando" en="idle"/>
-<word jbo="vreta" en="reclining `rest'"/>
-<word jbo="sarji" en="support"/>
-<word jbo="fulta" en="float"/>
-<word jbo="dandu" en="hang `dangle, suspend'"/>
-<word jbo="jinru" en="immerse"/>
-<word jbo="zutse" en="sit"/>
-<word jbo="sanli" en="stand"/>
+<item title="zvati" description="at"/>
+<item title="lanxe" description="balance"/>
+<item title="cando" description="idle"/>
+<item title="vreta" description="reclining `rest'"/>
+<item title="sarji" description="support"/>
+<item title="fulta" description="float"/>
+<item title="dandu" description="hang `dangle, suspend'"/>
+<item title="jinru" description="immerse"/>
+<item title="zutse" description="sit"/>
+<item title="sanli" description="stand"/>
 </section><section title="Passive motion">
-<word jbo="farlu" en="fall"/>
-<word jbo="torni" en="twist `torsion'"/>
-<word jbo="slilu" en="oscillate"/>
-<word jbo="flecu" en="flow `flush'"/>
-<word jbo="jetce" en="jet"/>
+<item title="farlu" description="fall"/>
+<item title="torni" description="twist `torsion'"/>
+<item title="slilu" description="oscillate"/>
+<item title="flecu" description="flow `flush'"/>
+<item title="jetce" description="jet"/>
 </section></section><section title="Manipulating objects">
-<word jbo="galfi" en="modify `alter'"/>
-<word jbo="sisku" en="seek"/>
-<word jbo="jmaji" en="gather"/>
-<word jbo="sabji" en="provide `supply'"/>
-<word jbo="fatri" en="distribute"/>
-<word jbo="fendi" en="divide"/>
+<item title="galfi" description="modify `alter'"/>
+<item title="sisku" description="seek"/>
+<item title="jmaji" description="gather"/>
+<item title="sabji" description="provide `supply'"/>
+<item title="fatri" description="distribute"/>
+<item title="fendi" description="divide"/>
 <section title="Move">
-<word jbo="simxu" en="mutual"/>
-<word jbo="muvdu" en="move"/>
-<word jbo="ralte" en="retain"/>
-<word jbo="jgari" en="grasp `grip'"/>
-<word jbo="bevri" en="carry `bear'"/>
-<word jbo="renro" en="throw"/>
-<word jbo="cecla" en="launcher"/>
-<word jbo="punji" en="put"/>
-<word jbo="lafti" en="lift"/>
-<word jbo="setca" en="insert"/>
-<word jbo="catke" en="shove"/>
-<word jbo="rinju" en="restrain"/>
-<word jbo="danre" en="pressure"/>
-<word jbo="desku" en="shake"/>
-<word jbo="janli" en="collide"/>
-<word jbo="tunlo" en="swallow"/>
-<word jbo="daspo" en="destroy `despoil'"/>
-<word jbo="kavbu" en="capture `catch'"/>
-<word jbo="lacpu" en="pull"/>
+<item title="simxu" description="mutual"/>
+<item title="muvdu" description="move"/>
+<item title="ralte" description="retain"/>
+<item title="jgari" description="grasp `grip'"/>
+<item title="bevri" description="carry `bear'"/>
+<item title="renro" description="throw"/>
+<item title="cecla" description="launcher"/>
+<item title="punji" description="put"/>
+<item title="lafti" description="lift"/>
+<item title="setca" description="insert"/>
+<item title="catke" description="shove"/>
+<item title="rinju" description="restrain"/>
+<item title="danre" description="pressure"/>
+<item title="desku" description="shake"/>
+<item title="janli" description="collide"/>
+<item title="tunlo" description="swallow"/>
+<item title="daspo" description="destroy `despoil'"/>
+<item title="kavbu" description="capture `catch'"/>
+<item title="lacpu" description="pull"/>
 </section><section title="Surface">
-<word jbo="cinba" en="kiss `buss'"/>
-<word jbo="pencu" en="touch"/>
-<word jbo="darxi" en="hit"/>
-<word jbo="batci" en="bite"/>
-<word jbo="sraku" en="scratch"/>
-<word jbo="guska" en="scrape"/>
-<word jbo="polje" en="fold"/>
-<word jbo="prina" en="print"/>
-<word jbo="barna" en="mark"/>
-<word jbo="spali" en="polish"/>
-<word jbo="mosra" en="friction `rub'"/>
-<word jbo="tikpa" en="kick"/>
+<item title="cinba" description="kiss `buss'"/>
+<item title="pencu" description="touch"/>
+<item title="darxi" description="hit"/>
+<item title="batci" description="bite"/>
+<item title="sraku" description="scratch"/>
+<item title="guska" description="scrape"/>
+<item title="polje" description="fold"/>
+<item title="prina" description="print"/>
+<item title="barna" description="mark"/>
+<item title="spali" description="polish"/>
+<item title="mosra" description="friction `rub'"/>
+<item title="tikpa" description="kick"/>
 </section><section title="Volume">
-<word jbo="satre" en="stroke"/>
-<word jbo="zalvi" en="grind `pulverize'"/>
-<word jbo="katna" en="cut"/>
-<word jbo="kakpa" en="dig"/>
-<word jbo="plixa" en="plow"/>
-<word jbo="marxa" en="mash"/>
-<word jbo="tisna" en="fill `stuff'"/>
+<item title="satre" description="stroke"/>
+<item title="zalvi" description="grind `pulverize'"/>
+<item title="katna" description="cut"/>
+<item title="kakpa" description="dig"/>
+<item title="plixa" description="plow"/>
+<item title="marxa" description="mash"/>
+<item title="tisna" description="fill `stuff'"/>
 </section><section title="Fluids">
-<word jbo="sputu" en="spit"/>
-<word jbo="jicla" en="stir"/>
-<word jbo="cokcu" en="soak up"/>
-<word jbo="rinci" en="drain"/>
-<word jbo="sakci" en="suck"/>
+<item title="sputu" description="spit"/>
+<item title="jicla" description="stir"/>
+<item title="cokcu" description="soak up"/>
+<item title="rinci" description="drain"/>
+<item title="sakci" description="suck"/>
 </section></section></section><section title="Physical world">
 <section title="Ontology">
-<word jbo="dacti" en="object `thing'"/>
-<word jbo="spisa" en="piece"/>
-<word jbo="ckini" en="related `akin, kin'"/>
-<word jbo="tcila" en="detail"/>
-<word jbo="ckaji" en="quality"/>
-<word jbo="jinzi" en="innate"/>
-<word jbo="panra" en="parallel"/>
+<item title="dacti" description="object `thing'"/>
+<item title="spisa" description="piece"/>
+<item title="ckini" description="related `akin, kin'"/>
+<item title="tcila" description="detail"/>
+<item title="ckaji" description="quality"/>
+<item title="jinzi" description="innate"/>
+<item title="panra" description="parallel"/>
 </section><section title="Basic notions">
-<word jbo="ratni" en="atom"/>
-<word jbo="kantu" en="quantum"/>
-<word jbo="selci" en="cell"/>
-<word jbo="nejni" en="energy"/>
-<word jbo="dirce" en="radiate"/>
-<word jbo="boxna" en="wave"/>
-<word jbo="maksi" en="magnet"/>
-<word jbo="dikca" en="electric `charge'"/>
+<item title="ratni" description="atom"/>
+<item title="kantu" description="quantum"/>
+<item title="selci" description="cell"/>
+<item title="nejni" description="energy"/>
+<item title="dirce" description="radiate"/>
+<item title="boxna" description="wave"/>
+<item title="maksi" description="magnet"/>
+<item title="dikca" description="electric `charge'"/>
 </section><section title="Physical properties">
-<word jbo="jdari" en="firm `hard'"/>
-<word jbo="tsali" en="strong"/>
-<word jbo="ruble" en="weak `feeble'"/>
-<word jbo="tinsa" en="stiff"/>
-<word jbo="ranti" en="soft"/>
-<word jbo="ralci" en="delicate `fragile'"/>
-<word jbo="pruni" en="elastic `springy'"/>
-<word jbo="junta" en="weight"/>
-<word jbo="linto" en="lightweight"/>
-<word jbo="tilju" en="heavy `weighty'"/>
-<word jbo="glare" en="hot `warm'"/>
-<word jbo="lenku" en="cold `cool'"/>
-<word jbo="cilmo" en="moist"/>
-<word jbo="sudga" en="dry"/>
-<word jbo="denmi" en="dense"/>
-<word jbo="viknu" en="viscous `thick'"/>
-<word jbo="snipa" en="sticky"/>
-<word jbo="kinli" en="sharp `keen'"/>
-<word jbo="klina" en="clear"/>
-<word jbo="minra" en="reflect `mirror'"/>
-<word jbo="tengu" en="texture"/>
-<word jbo="xutla" en="smooth"/>
-<word jbo="rufsu" en="rough"/>
+<item title="jdari" description="firm `hard'"/>
+<item title="tsali" description="strong"/>
+<item title="ruble" description="weak `feeble'"/>
+<item title="tinsa" description="stiff"/>
+<item title="ranti" description="soft"/>
+<item title="ralci" description="delicate `fragile'"/>
+<item title="pruni" description="elastic `springy'"/>
+<item title="junta" description="weight"/>
+<item title="linto" description="lightweight"/>
+<item title="tilju" description="heavy `weighty'"/>
+<item title="glare" description="hot `warm'"/>
+<item title="lenku" description="cold `cool'"/>
+<item title="cilmo" description="moist"/>
+<item title="sudga" description="dry"/>
+<item title="denmi" description="dense"/>
+<item title="viknu" description="viscous `thick'"/>
+<item title="snipa" description="sticky"/>
+<item title="kinli" description="sharp `keen'"/>
+<item title="klina" description="clear"/>
+<item title="minra" description="reflect `mirror'"/>
+<item title="tengu" description="texture"/>
+<item title="xutla" description="smooth"/>
+<item title="rufsu" description="rough"/>
 </section><section title="Measures">
-<word jbo="merli" en="measure"/>
-<word jbo="ckilu" en="scale"/>
-<word jbo="gradu" en="unit `degree, grad'"/>
-<word jbo="klani" en="quantity"/>
-<word jbo="parbi" en="ratio `rate'"/>
-<word jbo="satci" en="exact `precise'"/>
+<item title="merli" description="measure"/>
+<item title="ckilu" description="scale"/>
+<item title="gradu" description="unit `degree, grad'"/>
+<item title="klani" description="quantity"/>
+<item title="parbi" description="ratio `rate'"/>
+<item title="satci" description="exact `precise'"/>
 <section title="Metric">
-<word jbo="mitre" en="meter"/>
-<word jbo="radno" en="radian"/>
-<word jbo="stero" en="steradian"/>
-<word jbo="litce" en="liter"/>
-<word jbo="grake" en="gram"/>
-<word jbo="molro" en="mole"/>
-<word jbo="kelvo" en="kelvin"/>
-<word jbo="xampo" en="ampere"/>
-<word jbo="delno" en="candela `candle-power'"/>
+<item title="mitre" description="meter"/>
+<item title="radno" description="radian"/>
+<item title="stero" description="steradian"/>
+<item title="litce" description="liter"/>
+<item title="grake" description="gram"/>
+<item title="molro" description="mole"/>
+<item title="kelvo" description="kelvin"/>
+<item title="xampo" description="ampere"/>
+<item title="delno" description="candela `candle-power'"/>
 </section><section title="Non-metric">
-<word jbo="gutci" en="cubit `foot'"/>
-<word jbo="minli" en="mile"/>
-<word jbo="kramu" en="acre"/>
-<word jbo="bunda" en="pound"/>
-<word jbo="dekpu" en="gallon `peck'"/>
+<item title="gutci" description="cubit `foot'"/>
+<item title="minli" description="mile"/>
+<item title="kramu" description="acre"/>
+<item title="bunda" description="pound"/>
+<item title="dekpu" description="gallon `peck'"/>
 </section><section title="Exponents of 10">
-<word jbo="dekto" en="10 metric `deka'"/>
-<word jbo="xecto" en="100 metric `hecto'"/>
-<word jbo="kilto" en="1000 metric `kilo'"/>
-<word jbo="megdo" en="1E6 metric `mega'"/>
-<word jbo="gigdo" en="1E9 metric `giga'"/>
-<word jbo="terto" en="1E12 metric `tera'"/>
-<word jbo="petso" en="1E15 metric `peta'"/>
-<word jbo="xexso" en="1E18 metric `exa'"/>
-<word jbo="zetro" en="1E21 `zetta'"/>
-<word jbo="gotro" en="1E24 `yotta'"/>
-<word jbo="decti" en=".1 metric `deci'"/>
-<word jbo="centi" en=".01 metric `centi'"/>
-<word jbo="milti" en=".001 metric `milli'"/>
-<word jbo="mikri" en="1E-6 metric `micro'"/>
-<word jbo="nanvi" en="1E-9 metric `nano'"/>
-<word jbo="picti" en="1E-12 metric `pico'"/>
-<word jbo="femti" en="1E-15 metric `femto'"/>
-<word jbo="xatsi" en="1E-18 metric `atto'"/>
-<word jbo="zepti" en="1E-21 `zepto'"/>
-<word jbo="gocti" en="1E-24 `yocto'"/>
+<item title="dekto" description="10 metric `deka'"/>
+<item title="xecto" description="100 metric `hecto'"/>
+<item title="kilto" description="1000 metric `kilo'"/>
+<item title="megdo" description="1E6 metric `mega'"/>
+<item title="gigdo" description="1E9 metric `giga'"/>
+<item title="terto" description="1E12 metric `tera'"/>
+<item title="petso" description="1E15 metric `peta'"/>
+<item title="xexso" description="1E18 metric `exa'"/>
+<item title="zetro" description="1E21 `zetta'"/>
+<item title="gotro" description="1E24 `yotta'"/>
+<item title="decti" description=".1 metric `deci'"/>
+<item title="centi" description=".01 metric `centi'"/>
+<item title="milti" description=".001 metric `milli'"/>
+<item title="mikri" description="1E-6 metric `micro'"/>
+<item title="nanvi" description="1E-9 metric `nano'"/>
+<item title="picti" description="1E-12 metric `pico'"/>
+<item title="femti" description="1E-15 metric `femto'"/>
+<item title="xatsi" description="1E-18 metric `atto'"/>
+<item title="zepti" description="1E-21 `zepto'"/>
+<item title="gocti" description="1E-24 `yocto'"/>
 </section></section><section title="Substances">
-<word jbo="marji" en="material `matter'"/>
-<word jbo="fagri" en="fire"/>
-<word jbo="lindi" en="lightning"/>
+<item title="marji" description="material `matter'"/>
+<item title="fagri" description="fire"/>
+<item title="lindi" description="lightning"/>
 <section title="Aggregate state">
-<word jbo="sligu" en="solid"/>
-<word jbo="panje" en="sponge"/>
-<word jbo="pulce" en="dust `pulverized'"/>
-<word jbo="purmo" en="powder"/>
-<word jbo="pesxu" en="paste"/>
-<word jbo="jduli" en="jelly"/>
-<word jbo="litki" en="liquid"/>
-<word jbo="lakse" en="wax"/>
-<word jbo="fonmo" en="foam"/>
-<word jbo="gapci" en="gas"/>
-<word jbo="danmo" en="smoke"/>
+<item title="sligu" description="solid"/>
+<item title="panje" description="sponge"/>
+<item title="pulce" description="dust `pulverized'"/>
+<item title="purmo" description="powder"/>
+<item title="pesxu" description="paste"/>
+<item title="jduli" description="jelly"/>
+<item title="litki" description="liquid"/>
+<item title="lakse" description="wax"/>
+<item title="fonmo" description="foam"/>
+<item title="gapci" description="gas"/>
+<item title="danmo" description="smoke"/>
 </section><section title="Phase transitions">
-<word jbo="runme" en="melt `runny'"/>
-<word jbo="dunja" en="freeze `jell'"/>
-<word jbo="runta" en="dissolve"/>
-<word jbo="lunsa" en="condense"/>
-<word jbo="febvi" en="boil"/>
-<word jbo="jelca" en="burn"/>
+<item title="runme" description="melt `runny'"/>
+<item title="dunja" description="freeze `jell'"/>
+<item title="runta" description="dissolve"/>
+<item title="lunsa" description="condense"/>
+<item title="febvi" description="boil"/>
+<item title="jelca" description="burn"/>
 </section><section title="Chemical categories">
-<word jbo="xukmi" en="chemical"/>
-<word jbo="jilka" en="alkali"/>
-<word jbo="slami" en="acid"/>
-<word jbo="jinme" en="metal"/>
-<word jbo="jinsa" en="clean"/>
-<word jbo="mixre" en="mixture"/>
+<item title="xukmi" description="chemical"/>
+<item title="jilka" description="alkali"/>
+<item title="slami" description="acid"/>
+<item title="jinme" description="metal"/>
+<item title="jinsa" description="clean"/>
+<item title="mixre" description="mixture"/>
 </section><section title="Chemical elements">
-<word jbo="cidro" en="hydrogen"/>
-<word jbo="kijno" en="oxygen"/>
-<word jbo="trano" en="nitrogen"/>
-<word jbo="tabno" en="carbon"/>
-<word jbo="sliri" en="sulfur"/>
-<word jbo="kliru" en="chlorine"/>
-<word jbo="navni" en="neon"/>
-<word jbo="sodna" en="sodium"/>
-<word jbo="margu" en="mercury"/>
-<word jbo="rijno" en="silver `argent'"/>
-<word jbo="solji" en="gold"/>
-<word jbo="tunka" en="copper"/>
-<word jbo="nikle" en="nickel"/>
-<word jbo="tinci" en="tin"/>
-<word jbo="zinki" en="zinc"/>
-<word jbo="tirse" en="iron"/>
-<word jbo="cnisa" en="lead"/>
-<word jbo="romge" en="chrome"/>
+<item title="cidro" description="hydrogen"/>
+<item title="kijno" description="oxygen"/>
+<item title="trano" description="nitrogen"/>
+<item title="tabno" description="carbon"/>
+<item title="sliri" description="sulfur"/>
+<item title="kliru" description="chlorine"/>
+<item title="navni" description="neon"/>
+<item title="sodna" description="sodium"/>
+<item title="margu" description="mercury"/>
+<item title="rijno" description="silver `argent'"/>
+<item title="solji" description="gold"/>
+<item title="tunka" description="copper"/>
+<item title="nikle" description="nickel"/>
+<item title="tinci" description="tin"/>
+<item title="zinki" description="zinc"/>
+<item title="tirse" description="iron"/>
+<item title="cnisa" description="lead"/>
+<item title="romge" description="chrome"/>
 </section></section></section><section title="Nature">
 <section title="Cosmos">
-<word jbo="munje" en="universe"/>
-<word jbo="tarci" en="star"/>
-<word jbo="plini" en="planet"/>
-<word jbo="mluni" en="satellite `moon'"/>
-<word jbo="kensa" en="outer space"/>
-<word jbo="solri" en="solar"/>
-<word jbo="terdi" en="earth `terrestrial'"/>
-<word jbo="lunra" en="lunar"/>
+<item title="munje" description="universe"/>
+<item title="tarci" description="star"/>
+<item title="plini" description="planet"/>
+<item title="mluni" description="satellite `moon'"/>
+<item title="kensa" description="outer space"/>
+<item title="solri" description="solar"/>
+<item title="terdi" description="earth `terrestrial'"/>
+<item title="lunra" description="lunar"/>
 </section><section title="Earth">
-<word jbo="tumla" en="land"/>
-<word jbo="cmana" en="mountain"/>
+<item title="tumla" description="land"/>
+<item title="cmana" description="mountain"/>
 <section title="Hydrosphere">
-<word jbo="djacu" en="water `aqua-'"/>
-<word jbo="xamsi" en="sea"/>
-<word jbo="zbani" en="bay"/>
-<word jbo="daplu" en="island"/>
-<word jbo="jmifa" en="shoal `reef'"/>
-<word jbo="rirxe" en="river"/>
-<word jbo="jinto" en="well"/>
-<word jbo="lalxu" en="lake `lagoon'"/>
+<item title="djacu" description="water `aqua-'"/>
+<item title="xamsi" description="sea"/>
+<item title="zbani" description="bay"/>
+<item title="daplu" description="island"/>
+<item title="jmifa" description="shoal `reef'"/>
+<item title="rirxe" description="river"/>
+<item title="jinto" description="well"/>
+<item title="lalxu" description="lake `lagoon'"/>
 </section><section title="Atmosphere">
-<word jbo="tsani" en="sky"/>
-<word jbo="vacri" en="air"/>
-<word jbo="tcima" en="weather `climate'"/>
-<word jbo="brife" en="breeze"/>
-<word jbo="dilnu" en="cloud"/>
-<word jbo="bumru" en="fog"/>
-<word jbo="carvi" en="rain"/>
-<word jbo="snime" en="snow"/>
-<word jbo="bisli" en="ice"/>
-<word jbo="bratu" en="hail"/>
+<item title="tsani" description="sky"/>
+<item title="vacri" description="air"/>
+<item title="tcima" description="weather `climate'"/>
+<item title="brife" description="breeze"/>
+<item title="dilnu" description="cloud"/>
+<item title="bumru" description="fog"/>
+<item title="carvi" description="rain"/>
+<item title="snime" description="snow"/>
+<item title="bisli" description="ice"/>
+<item title="bratu" description="hail"/>
 </section><section title="Minerals">
-<word jbo="kunra" en="mineral `mined'"/>
-<word jbo="rokci" en="rock"/>
-<word jbo="krili" en="crystal"/>
-<word jbo="jemna" en="gem"/>
-<word jbo="kliti" en="clay"/>
-<word jbo="canre" en="sand"/>
-<word jbo="bakri" en="chalk"/>
-<word jbo="silna" en="salt"/>
-<word jbo="kolme" en="coal"/>
-<word jbo="ctile" en="petroleum `oil'"/>
-<word jbo="tarla" en="tar"/>
-<word jbo="dertu" en="dirt"/>
+<item title="kunra" description="mineral `mined'"/>
+<item title="rokci" description="rock"/>
+<item title="krili" description="crystal"/>
+<item title="jemna" description="gem"/>
+<item title="kliti" description="clay"/>
+<item title="canre" description="sand"/>
+<item title="bakri" description="chalk"/>
+<item title="silna" description="salt"/>
+<item title="kolme" description="coal"/>
+<item title="ctile" description="petroleum `oil'"/>
+<item title="tarla" description="tar"/>
+<item title="dertu" description="dirt"/>
 </section></section></section><section title="Life">
-<word jbo="jutsi" en="species"/>
-<word jbo="jmive" en="live"/>
-<word jbo="morsi" en="dead `mort-'"/>
-<word jbo="catra" en="kill `slaughter'"/>
-<word jbo="makcu" en="mature"/>
-<word jbo="xadni" en="body"/>
-<word jbo="panzi" en="offspring"/>
-<word jbo="jgina" en="gene"/>
-<word jbo="lanbi" en="protein `albumin'"/>
-<word jbo="cecmu" en="community"/>
-<word jbo="fusra" en="rotten `rot'"/>
-<word jbo="ferti" en="fertile"/>
-<word jbo="jurme" en="germ"/>
-<word jbo="vidru" en="virus"/>
+<item title="jutsi" description="species"/>
+<item title="jmive" description="live"/>
+<item title="morsi" description="dead `mort-'"/>
+<item title="catra" description="kill `slaughter'"/>
+<item title="makcu" description="mature"/>
+<item title="xadni" description="body"/>
+<item title="panzi" description="offspring"/>
+<item title="jgina" description="gene"/>
+<item title="lanbi" description="protein `albumin'"/>
+<item title="cecmu" description="community"/>
+<item title="fusra" description="rotten `rot'"/>
+<item title="ferti" description="fertile"/>
+<item title="jurme" description="germ"/>
+<item title="vidru" description="virus"/>
 <section title="Plants">
-<word jbo="spati" en="plant"/>
-<word jbo="tricu" en="tree"/>
-<word jbo="ckunu" en="conifer `cone'"/>
-<word jbo="srasu" en="grass"/>
-<word jbo="clika" en="mossy"/>
-<word jbo="mledi" en="mold"/>
+<item title="spati" description="plant"/>
+<item title="tricu" description="tree"/>
+<item title="ckunu" description="conifer `cone'"/>
+<item title="srasu" description="grass"/>
+<item title="clika" description="mossy"/>
+<item title="mledi" description="mold"/>
 <section title="Body parts">
-<word jbo="genja" en="root"/>
-<word jbo="balji" en="bulb `bulge'"/>
-<word jbo="stani" en="stalk"/>
-<word jbo="pezli" en="leaf"/>
-<word jbo="xrula" en="flower"/>
-<word jbo="grute" en="fruit"/>
-<word jbo="tsiju" en="seed"/>
-<word jbo="narge" en="nut"/>
-<word jbo="jbari" en="berry"/>
-<word jbo="dembi" en="bean"/>
-<word jbo="gurni" en="grain"/>
-<word jbo="stagi" en="vegetable `stalky'"/>
+<item title="genja" description="root"/>
+<item title="balji" description="bulb `bulge'"/>
+<item title="stani" description="stalk"/>
+<item title="pezli" description="leaf"/>
+<item title="xrula" description="flower"/>
+<item title="grute" description="fruit"/>
+<item title="tsiju" description="seed"/>
+<item title="narge" description="nut"/>
+<item title="jbari" description="berry"/>
+<item title="dembi" description="bean"/>
+<item title="gurni" description="grain"/>
+<item title="stagi" description="vegetable `stalky'"/>
 </section><section title="Flowers">
-<word jbo="rozgu" en="rose"/>
-<word jbo="tujli" en="tulip"/>
-<word jbo="latna" en="lotus"/>
+<item title="rozgu" description="rose"/>
+<item title="tujli" description="tulip"/>
+<item title="latna" description="lotus"/>
 </section><section title="Fruits">
-<word jbo="badna" en="banana"/>
-<word jbo="nimre" en="citrus `lime'"/>
-<word jbo="plise" en="apple"/>
-<word jbo="perli" en="pear"/>
-<word jbo="guzme" en="melon"/>
-<word jbo="figre" en="fig"/>
+<item title="badna" description="banana"/>
+<item title="nimre" description="citrus `lime'"/>
+<item title="plise" description="apple"/>
+<item title="perli" description="pear"/>
+<item title="guzme" description="melon"/>
+<item title="figre" description="fig"/>
 </section><section title="Vegetables">
-<word jbo="kobli" en="cabbage `cole-'"/>
-<word jbo="tamca" en="tomato"/>
-<word jbo="sluni" en="onion"/>
-<word jbo="sunga" en="garlic"/>
-<word jbo="patlu" en="potato"/>
-<word jbo="samcu" en="cassava `yam'"/>
+<item title="kobli" description="cabbage `cole-'"/>
+<item title="tamca" description="tomato"/>
+<item title="sluni" description="onion"/>
+<item title="sunga" description="garlic"/>
+<item title="patlu" description="potato"/>
+<item title="samcu" description="cassava `yam'"/>
 </section><section title="Grain">
-<word jbo="bavmi" en="barley"/>
-<word jbo="cunmi" en="millet"/>
-<word jbo="mavji" en="oats"/>
-<word jbo="maxri" en="wheat"/>
-<word jbo="mraji" en="rye"/>
-<word jbo="sobde" en="soya"/>
-<word jbo="sorgu" en="sorghum"/>
-<word jbo="xruba" en="buckwheat `rhubarb'"/>
-<word jbo="zumri" en="maize"/>
-<word jbo="rismi" en="rice"/>
+<item title="bavmi" description="barley"/>
+<item title="cunmi" description="millet"/>
+<item title="mavji" description="oats"/>
+<item title="maxri" description="wheat"/>
+<item title="mraji" description="rye"/>
+<item title="sobde" description="soya"/>
+<item title="sorgu" description="sorghum"/>
+<item title="xruba" description="buckwheat `rhubarb'"/>
+<item title="zumri" description="maize"/>
+<item title="rismi" description="rice"/>
 </section><section title="Other particular plants">
-<word jbo="cindu" en="oak"/>
-<word jbo="tanko" en="tobacco"/>
-<word jbo="marna" en="hemp `marijuana'"/>
+<item title="cindu" description="oak"/>
+<item title="tanko" description="tobacco"/>
+<item title="marna" description="hemp `marijuana'"/>
 </section></section><section title="Animals">
-<word jbo="danlu" en="animal"/>
-<word jbo="cilce" en="wild"/>
+<item title="danlu" description="animal"/>
+<item title="cilce" description="wild"/>
 <section title="Classes of animals">
-<word jbo="curnu" en="worm"/>
-<word jbo="cinki" en="insect"/>
-<word jbo="finpe" en="fish `fin'"/>
-<word jbo="banfi" en="amphibian"/>
-<word jbo="respa" en="reptile"/>
-<word jbo="cipni" en="bird"/>
-<word jbo="mabru" en="mammal"/>
+<item title="curnu" description="worm"/>
+<item title="cinki" description="insect"/>
+<item title="finpe" description="fish `fin'"/>
+<item title="banfi" description="amphibian"/>
+<item title="respa" description="reptile"/>
+<item title="cipni" description="bird"/>
+<item title="mabru" description="mammal"/>
 </section><section title="Particular animals">
-<word jbo="jukni" en="spider `arachnid'"/>
-<word jbo="jalra" en="cockroach"/>
-<word jbo="sfani" en="fly"/>
-<word jbo="toldi" en="butterfly"/>
-<word jbo="manti" en="ant"/>
-<word jbo="bifce" en="bee"/>
-<word jbo="civla" en="louse"/>
-<word jbo="since" en="snake"/>
-<word jbo="jipci" en="chicken"/>
-<word jbo="xruki" en="turkey"/>
-<word jbo="datka" en="duck"/>
-<word jbo="gunse" en="goose"/>
-<word jbo="ractu" en="rabbit"/>
-<word jbo="ratcu" en="rat"/>
-<word jbo="smacu" en="mouse"/>
-<word jbo="xanto" en="elephant"/>
-<word jbo="xarju" en="pig `hog'"/>
-<word jbo="bakni" en="bovine `ox'"/>
-<word jbo="lanme" en="sheep `lanolin, lamb'"/>
-<word jbo="kanba" en="goat `kid, billy, baa'"/>
-<word jbo="mirli" en="deer"/>
-<word jbo="kumte" en="camel"/>
-<word jbo="xirma" en="horse"/>
-<word jbo="xasli" en="donkey `ass'"/>
-<word jbo="cribe" en="bear"/>
-<word jbo="mlatu" en="cat"/>
-<word jbo="cinfo" en="lion"/>
-<word jbo="tirxu" en="tiger"/>
-<word jbo="gerku" en="dog"/>
-<word jbo="labno" en="wolf `lobo'"/>
-<word jbo="lorxu" en="fox"/>
-<word jbo="smani" en="monkey `simian'"/>
-<word jbo="remna" en="human"/>
+<item title="jukni" description="spider `arachnid'"/>
+<item title="jalra" description="cockroach"/>
+<item title="sfani" description="fly"/>
+<item title="toldi" description="butterfly"/>
+<item title="manti" description="ant"/>
+<item title="bifce" description="bee"/>
+<item title="civla" description="louse"/>
+<item title="since" description="snake"/>
+<item title="jipci" description="chicken"/>
+<item title="xruki" description="turkey"/>
+<item title="datka" description="duck"/>
+<item title="gunse" description="goose"/>
+<item title="ractu" description="rabbit"/>
+<item title="ratcu" description="rat"/>
+<item title="smacu" description="mouse"/>
+<item title="xanto" description="elephant"/>
+<item title="xarju" description="pig `hog'"/>
+<item title="bakni" description="bovine `ox'"/>
+<item title="lanme" description="sheep `lanolin, lamb'"/>
+<item title="kanba" description="goat `kid, billy, baa'"/>
+<item title="mirli" description="deer"/>
+<item title="kumte" description="camel"/>
+<item title="xirma" description="horse"/>
+<item title="xasli" description="donkey `ass'"/>
+<item title="cribe" description="bear"/>
+<item title="mlatu" description="cat"/>
+<item title="cinfo" description="lion"/>
+<item title="tirxu" description="tiger"/>
+<item title="gerku" description="dog"/>
+<item title="labno" description="wolf `lobo'"/>
+<item title="lorxu" description="fox"/>
+<item title="smani" description="monkey `simian'"/>
+<item title="remna" description="human"/>
 </section><section title="Body parts">
-<word jbo="rango" en="organ"/>
-<word jbo="stedu" en="head"/>
-<word jbo="flira" en="face"/>
-<word jbo="mebri" en="brow"/>
-<word jbo="kanla" en="eye `ocular'"/>
-<word jbo="nazbi" en="nose `nasal'"/>
-<word jbo="kerlo" en="ear `aural, earlobe'"/>
-<word jbo="moklu" en="mouth `oral'"/>
-<word jbo="ctebi" en="lip `labial'"/>
-<word jbo="tance" en="tongue"/>
-<word jbo="xedja" en="jaw"/>
-<word jbo="denci" en="tooth `dental'"/>
-<word jbo="galxe" en="throat `gullet'"/>
-<word jbo="cnebo" en="neck"/>
-<word jbo="janco" en="shoulder"/>
-<word jbo="birka" en="arm"/>
-<word jbo="tuple" en="leg"/>
-<word jbo="xance" en="hand"/>
-<word jbo="jamfu" en="foot"/>
-<word jbo="cidni" en="knee"/>
-<word jbo="degji" en="finger `digit'"/>
-<word jbo="tamji" en="thumb"/>
-<word jbo="cinza" en="tongs"/>
-<word jbo="nalci" en="wing"/>
-<word jbo="cutne" en="chest"/>
-<word jbo="tatru" en="breast `teat'"/>
-<word jbo="betfu" en="abdomen `belly'"/>
-<word jbo="plibu" en="pubic"/>
-<word jbo="pinji" en="penis"/>
-<word jbo="vlagi" en="vulva"/>
-<word jbo="zargu" en="buttock `arse'"/>
-<word jbo="ganxo" en="anus `asshole\s arsehole'"/>
-<word jbo="rebla" en="tail"/>
+<item title="rango" description="organ"/>
+<item title="stedu" description="head"/>
+<item title="flira" description="face"/>
+<item title="mebri" description="brow"/>
+<item title="kanla" description="eye `ocular'"/>
+<item title="nazbi" description="nose `nasal'"/>
+<item title="kerlo" description="ear `aural, earlobe'"/>
+<item title="moklu" description="mouth `oral'"/>
+<item title="ctebi" description="lip `labial'"/>
+<item title="tance" description="tongue"/>
+<item title="xedja" description="jaw"/>
+<item title="denci" description="tooth `dental'"/>
+<item title="galxe" description="throat `gullet'"/>
+<item title="cnebo" description="neck"/>
+<item title="janco" description="shoulder"/>
+<item title="birka" description="arm"/>
+<item title="tuple" description="leg"/>
+<item title="xance" description="hand"/>
+<item title="jamfu" description="foot"/>
+<item title="cidni" description="knee"/>
+<item title="degji" description="finger `digit'"/>
+<item title="tamji" description="thumb"/>
+<item title="cinza" description="tongs"/>
+<item title="nalci" description="wing"/>
+<item title="cutne" description="chest"/>
+<item title="tatru" description="breast `teat'"/>
+<item title="betfu" description="abdomen `belly'"/>
+<item title="plibu" description="pubic"/>
+<item title="pinji" description="penis"/>
+<item title="vlagi" description="vulva"/>
+<item title="zargu" description="buttock `arse'"/>
+<item title="ganxo" description="anus `asshole\s arsehole'"/>
+<item title="rebla" description="tail"/>
 </section><section title="Skin derivatives">
-<word jbo="kerfa" en="hair"/>
-<word jbo="sunla" en="wool"/>
-<word jbo="pimlu" en="feather `plume'"/>
-<word jbo="jgalu" en="claw `talon'"/>
-<word jbo="sufti" en="hoof"/>
-<word jbo="jirna" en="horn"/>
+<item title="kerfa" description="hair"/>
+<item title="sunla" description="wool"/>
+<item title="pimlu" description="feather `plume'"/>
+<item title="jgalu" description="claw `talon'"/>
+<item title="sufti" description="hoof"/>
+<item title="jirna" description="horn"/>
 </section><section title="Internal organs">
-<word jbo="ciblu" en="blood"/>
-<word jbo="bongu" en="bone"/>
-<word jbo="sluji" en="muscle"/>
-<word jbo="nirna" en="nerve"/>
-<word jbo="cigla" en="gland"/>
-<word jbo="besna" en="brain"/>
-<word jbo="risna" en="heart `cardiac'"/>
-<word jbo="fepri" en="lung `pulmonary'"/>
-<word jbo="canti" en="gut `entrails'"/>
-<word jbo="livga" en="liver"/>
-<word jbo="vibna" en="vagina"/>
-<word jbo="gutra" en="womb `uterus'"/>
-<word jbo="ganti" en="testicle `testes'"/>
+<item title="ciblu" description="blood"/>
+<item title="bongu" description="bone"/>
+<item title="sluji" description="muscle"/>
+<item title="nirna" description="nerve"/>
+<item title="cigla" description="gland"/>
+<item title="besna" description="brain"/>
+<item title="risna" description="heart `cardiac'"/>
+<item title="fepri" description="lung `pulmonary'"/>
+<item title="canti" description="gut `entrails'"/>
+<item title="livga" description="liver"/>
+<item title="vibna" description="vagina"/>
+<item title="gutra" description="womb `uterus'"/>
+<item title="ganti" description="testicle `testes'"/>
 </section></section><section title="Physiology">
-<word jbo="vasxu" en="breathe `vascular'"/>
-<word jbo="kafke" en="cough"/>
-<word jbo="senci" en="sneeze"/>
-<word jbo="xasne" en="sweat"/>
+<item title="vasxu" description="breathe `vascular'"/>
+<item title="kafke" description="cough"/>
+<item title="senci" description="sneeze"/>
+<item title="xasne" description="sweat"/>
 <section title="Digestion">
-<word jbo="citka" en="eat"/>
-<word jbo="pinxe" en="drink"/>
-<word jbo="cidja" en="food `feed'"/>
-<word jbo="vindu" en="poison `venom'"/>
-<word jbo="vikmi" en="excrete"/>
-<word jbo="kalci" en="feces `shit'"/>
-<word jbo="pinca" en="urine `piss'"/>
-<word jbo="vamtu" en="vomit"/>
+<item title="citka" description="eat"/>
+<item title="pinxe" description="drink"/>
+<item title="cidja" description="food `feed'"/>
+<item title="vindu" description="poison `venom'"/>
+<item title="vikmi" description="excrete"/>
+<item title="kalci" description="feces `shit'"/>
+<item title="pinca" description="urine `piss'"/>
+<item title="vamtu" description="vomit"/>
 </section><section title="Reproduction">
-<word jbo="cinse" en="sexual"/>
-<word jbo="fetsi" en="female `fem-'"/>
-<word jbo="nakni" en="male `masculine'"/>
-<word jbo="rorci" en="procreate"/>
-<word jbo="gletu" en="copulate `coitus'"/>
-<word jbo="sovda" en="egg `ovum'"/>
-<word jbo="tarbi" en="embryo"/>
-<word jbo="cifnu" en="infant"/>
-<word jbo="verba" en="child"/>
-<word jbo="jbena" en="born `bear'"/>
+<item title="cinse" description="sexual"/>
+<item title="fetsi" description="female `fem-'"/>
+<item title="nakni" description="male `masculine'"/>
+<item title="rorci" description="procreate"/>
+<item title="gletu" description="copulate `coitus'"/>
+<item title="sovda" description="egg `ovum'"/>
+<item title="tarbi" description="embryo"/>
+<item title="cifnu" description="infant"/>
+<item title="verba" description="child"/>
+<item title="jbena" description="born `bear'"/>
 </section><section title="Health/Decease">
-<word jbo="kanro" en="healthy"/>
-<word jbo="bilma" en="ill"/>
-<word jbo="jinku" en="vaccine"/>
-<word jbo="kenra" en="cancer"/>
-<word jbo="spita" en="hospital"/>
+<item title="kanro" description="healthy"/>
+<item title="bilma" description="ill"/>
+<item title="jinku" description="vaccine"/>
+<item title="kenra" description="cancer"/>
+<item title="spita" description="hospital"/>
 </section><section title="Behaviour">
-<word jbo="frati" en="react"/>
-<word jbo="bacru" en="utter"/>
-<word jbo="krixa" en="cry out"/>
-<word jbo="cikna" en="awake"/>
-<word jbo="sipna" en="sleep"/>
-<word jbo="kalte" en="hunt"/>
-<word jbo="kelci" en="play"/>
-<word jbo="tcaci" en="custom `habit'"/>
-<word jbo="xabju" en="dwell `inhabit'"/>
-<word jbo="zdani" en="nest `den'"/>
+<item title="frati" description="react"/>
+<item title="bacru" description="utter"/>
+<item title="krixa" description="cry out"/>
+<item title="cikna" description="awake"/>
+<item title="sipna" description="sleep"/>
+<item title="kalte" description="hunt"/>
+<item title="kelci" description="play"/>
+<item title="tcaci" description="custom `habit'"/>
+<item title="xabju" description="dwell `inhabit'"/>
+<item title="zdani" description="nest `den'"/>
 </section></section><section title="Perception">
-<word jbo="ganse" en="sense"/>
-<word jbo="tunta" en="poke `stab'"/>
-<word jbo="zgana" en="observe"/>
-<word jbo="carmi" en="intense"/>
-<word jbo="kandi" en="dim"/>
-<word jbo="savru" en="noise `clamor'"/>
-<word jbo="kukte" en="delicious `cooked, tasty'"/>
-<word jbo="cpina" en="pungent"/>
+<item title="ganse" description="sense"/>
+<item title="tunta" description="poke `stab'"/>
+<item title="zgana" description="observe"/>
+<item title="carmi" description="intense"/>
+<item title="kandi" description="dim"/>
+<item title="savru" description="noise `clamor'"/>
+<item title="kukte" description="delicious `cooked, tasty'"/>
+<item title="cpina" description="pungent"/>
 <section title="Hearing">
-<word jbo="sance" en="sound"/>
-<word jbo="tirna" en="hear"/>
-<word jbo="cladu" en="loud"/>
-<word jbo="smaji" en="quiet `silent'"/>
-<word jbo="siclu" en="whistle"/>
-<word jbo="tonga" en="tone"/>
-<word jbo="voksa" en="voice"/>
+<item title="sance" description="sound"/>
+<item title="tirna" description="hear"/>
+<item title="cladu" description="loud"/>
+<item title="smaji" description="quiet `silent'"/>
+<item title="siclu" description="whistle"/>
+<item title="tonga" description="tone"/>
+<item title="voksa" description="voice"/>
 </section><section title="Vision">
-<word jbo="gusni" en="illumine `light'"/>
-<word jbo="viska" en="see `vision'"/>
-<word jbo="catlu" en="look"/>
-<word jbo="jvinu" en="view"/>
-<word jbo="manku" en="dark"/>
-<word jbo="ctino" en="shadow `shade'"/>
-<word jbo="skari" en="color"/>
-<word jbo="xekri" en="black"/>
-<word jbo="blabi" en="white"/>
-<word jbo="grusi" en="gray"/>
-<word jbo="xunre" en="red"/>
-<word jbo="pelxu" en="yellow"/>
-<word jbo="crino" en="green"/>
-<word jbo="blanu" en="blue"/>
-<word jbo="bunre" en="brown"/>
-<word jbo="cicna" en="cyan"/>
-<word jbo="narju" en="orange"/>
-<word jbo="nukni" en="magenta `fuchsin'"/>
-<word jbo="zirpu" en="purple"/>
+<item title="gusni" description="illumine `light'"/>
+<item title="viska" description="see `vision'"/>
+<item title="catlu" description="look"/>
+<item title="jvinu" description="view"/>
+<item title="manku" description="dark"/>
+<item title="ctino" description="shadow `shade'"/>
+<item title="skari" description="color"/>
+<item title="xekri" description="black"/>
+<item title="blabi" description="white"/>
+<item title="grusi" description="gray"/>
+<item title="xunre" description="red"/>
+<item title="pelxu" description="yellow"/>
+<item title="crino" description="green"/>
+<item title="blanu" description="blue"/>
+<item title="bunre" description="brown"/>
+<item title="cicna" description="cyan"/>
+<item title="narju" description="orange"/>
+<item title="nukni" description="magenta `fuchsin'"/>
+<item title="zirpu" description="purple"/>
 </section><section title="Odor">
-<word jbo="panci" en="odor `fragrance'"/>
-<word jbo="sumne" en="smell"/>
+<item title="panci" description="odor `fragrance'"/>
+<item title="sumne" description="smell"/>
 </section><section title="Taste">
-<word jbo="vrusi" en="taste `flavor'"/>
-<word jbo="titla" en="sweet"/>
-<word jbo="kurki" en="bitter `acrid'"/>
-<word jbo="slari" en="sour"/>
+<item title="vrusi" description="taste `flavor'"/>
+<item title="titla" description="sweet"/>
+<item title="kurki" description="bitter `acrid'"/>
+<item title="slari" description="sour"/>
 </section><section title="Others">
-<word jbo="cortu" en="pain `hurt'"/>
-<word jbo="xagji" en="hunger"/>
-<word jbo="taske" en="thirst"/>
-<word jbo="tatpi" en="tired"/>
+<item title="cortu" description="pain `hurt'"/>
+<item title="xagji" description="hunger"/>
+<item title="taske" description="thirst"/>
+<item title="tatpi" description="tired"/>
 </section></section></section><section title="Psychology">
 <section title="Emotions, Affects">
-<word jbo="cinmo" en="emotion"/>
-<word jbo="badri" en="sad"/>
-<word jbo="ckeji" en="ashamed"/>
-<word jbo="jgira" en="pride"/>
-<word jbo="kecti" en="pity"/>
-<word jbo="kufra" en="comfort"/>
-<word jbo="manci" en="wonder"/>
-<word jbo="prami" en="love"/>
-<word jbo="steba" en="frustration"/>
-<word jbo="zungi" en="guilt"/>
-<word jbo="cinri" en="interesting `interests'"/>
-<word jbo="burna" en="embarrassed"/>
-<word jbo="cumla" en="humble `humility'"/>
-<word jbo="kucli" en="curious"/>
-<word jbo="xebni" en="hate"/>
-<word jbo="xalni" en="panic"/>
-<word jbo="xanka" en="nervous `anxious'"/>
-<word jbo="dunku" en="anguish"/>
-<word jbo="dirba" en="dear"/>
-<word jbo="gleki" en="happy `gay'"/>
-<word jbo="jilra" en="jealous"/>
-<word jbo="junri" en="serious"/>
-<word jbo="klaku" en="weep"/>
-<word jbo="terpa" en="fear `terror'"/>
-<word jbo="xenru" en="regret `rue'"/>
-<word jbo="fengu" en="angry"/>
-<word jbo="pluka" en="pleasant"/>
-<word jbo="raktu" en="trouble"/>
-<word jbo="spaji" en="surprise"/>
-<word jbo="jenca" en="shock"/>
-<word jbo="zdile" en="amusing `amused'"/>
-<word jbo="rigni" en="disgusting `repugnant'"/>
-<word jbo="xajmi" en="funny `comic'"/>
-<word jbo="betri" en="tragedy `tragic'"/>
-<word jbo="fanza" en="annoy"/>
+<item title="cinmo" description="emotion"/>
+<item title="badri" description="sad"/>
+<item title="ckeji" description="ashamed"/>
+<item title="jgira" description="pride"/>
+<item title="kecti" description="pity"/>
+<item title="kufra" description="comfort"/>
+<item title="manci" description="wonder"/>
+<item title="prami" description="love"/>
+<item title="steba" description="frustration"/>
+<item title="zungi" description="guilt"/>
+<item title="cinri" description="interesting `interests'"/>
+<item title="burna" description="embarrassed"/>
+<item title="cumla" description="humble `humility'"/>
+<item title="kucli" description="curious"/>
+<item title="xebni" description="hate"/>
+<item title="xalni" description="panic"/>
+<item title="xanka" description="nervous `anxious'"/>
+<item title="dunku" description="anguish"/>
+<item title="dirba" description="dear"/>
+<item title="gleki" description="happy `gay'"/>
+<item title="jilra" description="jealous"/>
+<item title="junri" description="serious"/>
+<item title="klaku" description="weep"/>
+<item title="terpa" description="fear `terror'"/>
+<item title="xenru" description="regret `rue'"/>
+<item title="fengu" description="angry"/>
+<item title="pluka" description="pleasant"/>
+<item title="raktu" description="trouble"/>
+<item title="spaji" description="surprise"/>
+<item title="jenca" description="shock"/>
+<item title="zdile" description="amusing `amused'"/>
+<item title="rigni" description="disgusting `repugnant'"/>
+<item title="xajmi" description="funny `comic'"/>
+<item title="betri" description="tragedy `tragic'"/>
+<item title="fanza" description="annoy"/>
 </section><section title="Attitude">
-<word jbo="zanru" en="approve"/>
-<word jbo="xalbo" en="levity `frivolous'"/>
-<word jbo="vajni" en="important `significant'"/>
-<word jbo="trina" en="attract"/>
-<word jbo="talsa" en="challenge"/>
-<word jbo="surla" en="relax"/>
-<word jbo="senva" en="dream `reverie'"/>
-<word jbo="ranxi" en="irony"/>
-<word jbo="pendo" en="friend"/>
-<word jbo="pacna" en="hope"/>
-<word jbo="nelci" en="fond `likes'"/>
-<word jbo="jundi" en="attentive `attend'"/>
-<word jbo="kurji" en="take care of `care'"/>
-<word jbo="djica" en="desire"/>
-<word jbo="dapma" en="curse `damn'"/>
-<word jbo="ckire" en="grateful"/>
-<word jbo="ckasu" en="ridicule `scoff'"/>
-<word jbo="cfipu" en="confusing"/>
-<word jbo="cizra" en="strange `bizarre'"/>
-<word jbo="cmila" en="laugh `smile'"/>
+<item title="zanru" description="approve"/>
+<item title="xalbo" description="levity `frivolous'"/>
+<item title="vajni" description="important `significant'"/>
+<item title="trina" description="attract"/>
+<item title="talsa" description="challenge"/>
+<item title="surla" description="relax"/>
+<item title="senva" description="dream `reverie'"/>
+<item title="ranxi" description="irony"/>
+<item title="pendo" description="friend"/>
+<item title="pacna" description="hope"/>
+<item title="nelci" description="fond `likes'"/>
+<item title="jundi" description="attentive `attend'"/>
+<item title="kurji" description="take care of `care'"/>
+<item title="djica" description="desire"/>
+<item title="dapma" description="curse `damn'"/>
+<item title="ckire" description="grateful"/>
+<item title="ckasu" description="ridicule `scoff'"/>
+<item title="cfipu" description="confusing"/>
+<item title="cizra" description="strange `bizarre'"/>
+<item title="cmila" description="laugh `smile'"/>
 </section><section title="Evaluation">
-<word jbo="xrani" en="injure `hurt'"/>
-<word jbo="zabna" en="favorable"/>
-<word jbo="xarnu" en="stubborn"/>
-<word jbo="xendo" en="kind"/>
-<word jbo="xamgu" en="good"/>
-<word jbo="xlali" en="bad `mal-'"/>
-<word jbo="vifne" en="fresh"/>
-<word jbo="virnu" en="brave `valiant, virtue'"/>
-<word jbo="stati" en="talent"/>
-<word jbo="stace" en="honest"/>
-<word jbo="snura" en="secure"/>
-<word jbo="sinma" en="esteem"/>
-<word jbo="prane" en="perfect"/>
-<word jbo="mulno" en="complete"/>
-<word jbo="misno" en="famous"/>
-<word jbo="melbi" en="beautiful"/>
-<word jbo="mabla" en="derogative"/>
-<word jbo="lazni" en="lazy"/>
-<word jbo="kusru" en="cruel"/>
-<word jbo="jursa" en="severe `harsh'"/>
-<word jbo="vlile" en="violent"/>
-<word jbo="juxre" en="clumsy `awkward'"/>
-<word jbo="funca" en="luck `fortune'"/>
-<word jbo="fenki" en="crazy `frenzy'"/>
-<word jbo="drani" en="correct `right'"/>
-<word jbo="fange" en="alien `foreign'"/>
-<word jbo="darsi" en="audacity `dare'"/>
-<word jbo="curve" en="pure"/>
-<word jbo="cnino" en="new"/>
-<word jbo="slabu" en="old"/>
-<word jbo="clite" en="polite"/>
-<word jbo="ckape" en="peril"/>
-<word jbo="bandu" en="defend"/>
-<word jbo="marbi" en="shelter `harbor'"/>
-<word jbo="banli" en="great `grand'"/>
-<word jbo="basna" en="emphasize `accent'"/>
-<word jbo="racli" en="sane `rational'"/>
-<word jbo="prije" en="wise `sage'"/>
-<word jbo="bebna" en="foolish `boob'"/>
-<word jbo="bilga" en="obliged"/>
-<word jbo="zifre" en="free"/>
-<word jbo="marde" en="morals"/>
-<word jbo="palci" en="evil"/>
-<word jbo="vrude" en="virtue"/>
-<word jbo="certu" en="expert"/>
-<word jbo="cfila" en="flaw"/>
+<item title="xrani" description="injure `hurt'"/>
+<item title="zabna" description="favorable"/>
+<item title="xarnu" description="stubborn"/>
+<item title="xendo" description="kind"/>
+<item title="xamgu" description="good"/>
+<item title="xlali" description="bad `mal-'"/>
+<item title="vifne" description="fresh"/>
+<item title="virnu" description="brave `valiant, virtue'"/>
+<item title="stati" description="talent"/>
+<item title="stace" description="honest"/>
+<item title="snura" description="secure"/>
+<item title="sinma" description="esteem"/>
+<item title="prane" description="perfect"/>
+<item title="mulno" description="complete"/>
+<item title="misno" description="famous"/>
+<item title="melbi" description="beautiful"/>
+<item title="mabla" description="derogative"/>
+<item title="lazni" description="lazy"/>
+<item title="kusru" description="cruel"/>
+<item title="jursa" description="severe `harsh'"/>
+<item title="vlile" description="violent"/>
+<item title="juxre" description="clumsy `awkward'"/>
+<item title="funca" description="luck `fortune'"/>
+<item title="fenki" description="crazy `frenzy'"/>
+<item title="drani" description="correct `right'"/>
+<item title="fange" description="alien `foreign'"/>
+<item title="darsi" description="audacity `dare'"/>
+<item title="curve" description="pure"/>
+<item title="cnino" description="new"/>
+<item title="slabu" description="old"/>
+<item title="clite" description="polite"/>
+<item title="ckape" description="peril"/>
+<item title="bandu" description="defend"/>
+<item title="marbi" description="shelter `harbor'"/>
+<item title="banli" description="great `grand'"/>
+<item title="basna" description="emphasize `accent'"/>
+<item title="racli" description="sane `rational'"/>
+<item title="prije" description="wise `sage'"/>
+<item title="bebna" description="foolish `boob'"/>
+<item title="bilga" description="obliged"/>
+<item title="zifre" description="free"/>
+<item title="marde" description="morals"/>
+<item title="palci" description="evil"/>
+<item title="vrude" description="virtue"/>
+<item title="certu" description="expert"/>
+<item title="cfila" description="flaw"/>
 </section></section><section title="Socium">
-<word jbo="jikca" en="socialize `social'"/>
-<word jbo="sivni" en="private"/>
+<item title="jikca" description="socialize `social'"/>
+<item title="sivni" description="private"/>
 <section title="Family">
-<word jbo="lanzu" en="family `clan'"/>
-<word jbo="speni" en="married `spouse'"/>
-<word jbo="ninmu" en="woman `women'"/>
-<word jbo="nanmu" en="man"/>
-<word jbo="dzena" en="elder"/>
-<word jbo="rirni" en="parent `rear'"/>
-<word jbo="mamta" en="mother `mom'"/>
-<word jbo="patfu" en="father `pop, padre'"/>
-<word jbo="nanla" en="boy `lad'"/>
-<word jbo="nixli" en="girl"/>
-<word jbo="bersa" en="son"/>
-<word jbo="tixnu" en="daughter"/>
-<word jbo="bruna" en="brother"/>
-<word jbo="mensi" en="sister"/>
-<word jbo="tunba" en="sibling"/>
-<word jbo="famti" en="aunt or uncle"/>
-<word jbo="tamne" en="cousin"/>
+<item title="lanzu" description="family `clan'"/>
+<item title="speni" description="married `spouse'"/>
+<item title="ninmu" description="woman `women'"/>
+<item title="nanmu" description="man"/>
+<item title="dzena" description="elder"/>
+<item title="rirni" description="parent `rear'"/>
+<item title="mamta" description="mother `mom'"/>
+<item title="patfu" description="father `pop, padre'"/>
+<item title="nanla" description="boy `lad'"/>
+<item title="nixli" description="girl"/>
+<item title="bersa" description="son"/>
+<item title="tixnu" description="daughter"/>
+<item title="bruna" description="brother"/>
+<item title="mensi" description="sister"/>
+<item title="tunba" description="sibling"/>
+<item title="famti" description="aunt or uncle"/>
+<item title="tamne" description="cousin"/>
 </section><section title="Social Institutions">
-<word jbo="ritli" en="rite"/>
-<word jbo="salci" en="celebrate"/>
-<word jbo="nobli" en="noble"/>
-<word jbo="mikce" en="doctor `medic'"/>
-<word jbo="zajba" en="gymnast"/>
-<word jbo="vitke" en="guest `visit'"/>
-<word jbo="xotli" en="hotel"/>
+<item title="ritli" description="rite"/>
+<item title="salci" description="celebrate"/>
+<item title="nobli" description="noble"/>
+<item title="mikce" description="doctor `medic'"/>
+<item title="zajba" description="gymnast"/>
+<item title="vitke" description="guest `visit'"/>
+<item title="xotli" description="hotel"/>
 <section title="Governement">
-<word jbo="turni" en="govern"/>
-<word jbo="kamni" en="committee"/>
-<word jbo="catni" en="authority"/>
-<word jbo="vipsi" en="deputy `vice'"/>
-<word jbo="jecta" en="polity `state'"/>
-<word jbo="jansu" en="diplomat `consul'"/>
-<word jbo="jaspu" en="passport"/>
-<word jbo="pikta" en="ticket"/>
+<item title="turni" description="govern"/>
+<item title="kamni" description="committee"/>
+<item title="catni" description="authority"/>
+<item title="vipsi" description="deputy `vice'"/>
+<item title="jecta" description="polity `state'"/>
+<item title="jansu" description="diplomat `consul'"/>
+<item title="jaspu" description="passport"/>
+<item title="pikta" description="ticket"/>
 </section><section title="Law">
-<word jbo="flalu" en="law"/>
-<word jbo="pajni" en="judge"/>
-<word jbo="zekri" en="crime"/>
-<word jbo="pulji" en="police"/>
-<word jbo="pinfu" en="prisoner `captive'"/>
+<item title="flalu" description="law"/>
+<item title="pajni" description="judge"/>
+<item title="zekri" description="crime"/>
+<item title="pulji" description="police"/>
+<item title="pinfu" description="prisoner `captive'"/>
 </section><section title="War">
-<word jbo="gunta" en="attack"/>
-<word jbo="jamna" en="war"/>
-<word jbo="bilni" en="military"/>
-<word jbo="jenmi" en="army"/>
-<word jbo="sonci" en="soldier"/>
+<item title="gunta" description="attack"/>
+<item title="jamna" description="war"/>
+<item title="bilni" description="military"/>
+<item title="jenmi" description="army"/>
+<item title="sonci" description="soldier"/>
 </section></section><section title="Economics">
 <section title="Property">
-<word jbo="gubni" en="public"/>
-<word jbo="ponse" en="possess"/>
-<word jbo="cpacu" en="get `acquire'"/>
-<word jbo="cirko" en="lose"/>
-<word jbo="jbera" en="borrow"/>
-<word jbo="dunda" en="give `donate'"/>
-<word jbo="lebna" en="take"/>
-<word jbo="pindi" en="poor `indigent'"/>
-<word jbo="ricfu" en="rich"/>
-<word jbo="dejni" en="owe `debt-or'"/>
-<word jbo="cerda" en="heir"/>
+<item title="gubni" description="public"/>
+<item title="ponse" description="possess"/>
+<item title="cpacu" description="get `acquire'"/>
+<item title="cirko" description="lose"/>
+<item title="jbera" description="borrow"/>
+<item title="dunda" description="give `donate'"/>
+<item title="lebna" description="take"/>
+<item title="pindi" description="poor `indigent'"/>
+<item title="ricfu" description="rich"/>
+<item title="dejni" description="owe `debt-or'"/>
+<item title="cerda" description="heir"/>
 </section><section title="Money">
-<word jbo="jdini" en="money `dinero'"/>
-<word jbo="sicni" en="coin `specie'"/>
-<word jbo="rupnu" en="dollar `ruble'"/>
-<word jbo="fepni" en="cent `penny'"/>
-<word jbo="banxa" en="bank"/>
-<word jbo="zivle" en="invest"/>
+<item title="jdini" description="money `dinero'"/>
+<item title="sicni" description="coin `specie'"/>
+<item title="rupnu" description="dollar `ruble'"/>
+<item title="fepni" description="cent `penny'"/>
+<item title="banxa" description="bank"/>
+<item title="zivle" description="invest"/>
 </section><section title="Trade">
-<word jbo="canja" en="exchange"/>
-<word jbo="vamji" en="value"/>
-<word jbo="jdima" en="price"/>
-<word jbo="vecnu" en="sell `vend'"/>
-<word jbo="kargu" en="costly"/>
-<word jbo="janta" en="account"/>
-<word jbo="cnemu" en="reward"/>
+<item title="canja" description="exchange"/>
+<item title="vamji" description="value"/>
+<item title="jdima" description="price"/>
+<item title="vecnu" description="sell `vend'"/>
+<item title="kargu" description="costly"/>
+<item title="janta" description="account"/>
+<item title="cnemu" description="reward"/>
 </section><section title="Business">
-<word jbo="kagni" en="company"/>
-<word jbo="cteki" en="tax"/>
-<word jbo="zarci" en="market `mart'"/>
-<word jbo="jibri" en="job"/>
-<word jbo="jerna" en="earn"/>
-<word jbo="briju" en="office `bureau'"/>
-<word jbo="binra" en="insure"/>
-<word jbo="gusta" en="restaurant"/>
-<word jbo="barja" en="bar"/>
+<item title="kagni" description="company"/>
+<item title="cteki" description="tax"/>
+<item title="zarci" description="market `mart'"/>
+<item title="jibri" description="job"/>
+<item title="jerna" description="earn"/>
+<item title="briju" description="office `bureau'"/>
+<item title="binra" description="insure"/>
+<item title="gusta" description="restaurant"/>
+<item title="barja" description="bar"/>
 </section></section></section><section title="Human Culture">
 <section title="Nations, Cultures">
-<word jbo="kulnu" en="culture"/>
-<word jbo="natmi" en="nation"/>
+<item title="kulnu" description="culture"/>
+<item title="natmi" description="nation"/>
 </section><section title="Geography">
-<word jbo="tutra" en="territory"/>
-<word jbo="gugde" en="country"/>
-<word jbo="jarbu" en="suburb"/>
-<word jbo="tcadu" en="city `town'"/>
-<word jbo="nurma" en="rural"/>
-<word jbo="panka" en="park"/>
-<word jbo="bemro" en="North American"/>
-<word jbo="dzipo" en="Antarctican"/>
-<word jbo="friko" en="African"/>
-<word jbo="ketco" en="South American `Quechua'"/>
-<word jbo="xazdo" en="Asiatic"/>
-<word jbo="ropno" en="European"/>
+<item title="tutra" description="territory"/>
+<item title="gugde" description="country"/>
+<item title="jarbu" description="suburb"/>
+<item title="tcadu" description="city `town'"/>
+<item title="nurma" description="rural"/>
+<item title="panka" description="park"/>
+<item title="bemro" description="North American"/>
+<item title="dzipo" description="Antarctican"/>
+<item title="friko" description="African"/>
+<item title="ketco" description="South American `Quechua'"/>
+<item title="xazdo" description="Asiatic"/>
+<item title="ropno" description="European"/>
 </section><section title="Multi-ethnic cultures">
-<word jbo="glico" en="English"/>
-<word jbo="softo" en="Soviet"/>
-<word jbo="xispo" en="Hispanic"/>
-<word jbo="xrabo" en="Arabic"/>
-<word jbo="baxso" en="Malay-Indonesian `Bahasa'"/>
-<word jbo="polno" en="Polynesian"/>
-<word jbo="semto" en="Semitic"/>
-<word jbo="spano" en="Spanish"/>
-<word jbo="srito" en="Sanskrit"/>
-<word jbo="latmo" en="Latin"/>
-<word jbo="lojbo" en="Lojbanic"/>
+<item title="glico" description="English"/>
+<item title="softo" description="Soviet"/>
+<item title="xispo" description="Hispanic"/>
+<item title="xrabo" description="Arabic"/>
+<item title="baxso" description="Malay-Indonesian `Bahasa'"/>
+<item title="polno" description="Polynesian"/>
+<item title="semto" description="Semitic"/>
+<item title="spano" description="Spanish"/>
+<item title="srito" description="Sanskrit"/>
+<item title="latmo" description="Latin"/>
+<item title="lojbo" description="Lojbanic"/>
 </section><section title="Nationalities">
-<word jbo="brito" en="British"/>
-<word jbo="filso" en="Palestinian `Philistine'"/>
-<word jbo="gento" en="Argentinian"/>
-<word jbo="jerxo" en="Algerian"/>
-<word jbo="jordo" en="Jordanian"/>
-<word jbo="kadno" en="Canadian"/>
-<word jbo="libjo" en="Libyan"/>
-<word jbo="lubno" en="Lebanese"/>
-<word jbo="merko" en="American"/>
-<word jbo="mexno" en="Mexican"/>
-<word jbo="misro" en="Egyptian `Mizraim'"/>
-<word jbo="morko" en="Moroccan"/>
-<word jbo="rakso" en="Iraqi"/>
-<word jbo="sadjo" en="Saudi"/>
-<word jbo="sirxo" en="Syrian"/>
-<word jbo="sralo" en="Australian"/>
-<word jbo="bengo" en="Bengali"/>
-<word jbo="bindo" en="Indonesian"/>
-<word jbo="brazo" en="Brazilian"/>
-<word jbo="dotco" en="German `Deutsch'"/>
-<word jbo="fraso" en="French `France'"/>
-<word jbo="jungo" en="Chinese"/>
-<word jbo="kisto" en="Pakistani"/>
-<word jbo="meljo" en="Malaysian"/>
-<word jbo="ponjo" en="Japanese `Nippon'"/>
-<word jbo="porto" en="Portuguese"/>
-<word jbo="rusko" en="Russian"/>
-<word jbo="skoto" en="Scottish"/>
-<word jbo="slovo" en="Slavic"/>
-<word jbo="vukro" en="Ukrainian"/>
-<word jbo="xebro" en="Hebrew"/>
-<word jbo="xelso" en="Greek `Hellas'"/>
-<word jbo="xindo" en="Hindi"/>
-<word jbo="xurdo" en="Urdi"/>
+<item title="brito" description="British"/>
+<item title="filso" description="Palestinian `Philistine'"/>
+<item title="gento" description="Argentinian"/>
+<item title="jerxo" description="Algerian"/>
+<item title="jordo" description="Jordanian"/>
+<item title="kadno" description="Canadian"/>
+<item title="libjo" description="Libyan"/>
+<item title="lubno" description="Lebanese"/>
+<item title="merko" description="American"/>
+<item title="mexno" description="Mexican"/>
+<item title="misro" description="Egyptian `Mizraim'"/>
+<item title="morko" description="Moroccan"/>
+<item title="rakso" description="Iraqi"/>
+<item title="sadjo" description="Saudi"/>
+<item title="sirxo" description="Syrian"/>
+<item title="sralo" description="Australian"/>
+<item title="bengo" description="Bengali"/>
+<item title="bindo" description="Indonesian"/>
+<item title="brazo" description="Brazilian"/>
+<item title="dotco" description="German `Deutsch'"/>
+<item title="fraso" description="French `France'"/>
+<item title="jungo" description="Chinese"/>
+<item title="kisto" description="Pakistani"/>
+<item title="meljo" description="Malaysian"/>
+<item title="ponjo" description="Japanese `Nippon'"/>
+<item title="porto" description="Portuguese"/>
+<item title="rusko" description="Russian"/>
+<item title="skoto" description="Scottish"/>
+<item title="slovo" description="Slavic"/>
+<item title="vukro" description="Ukrainian"/>
+<item title="xebro" description="Hebrew"/>
+<item title="xelso" description="Greek `Hellas'"/>
+<item title="xindo" description="Hindi"/>
+<item title="xurdo" description="Urdi"/>
 </section><section title="Religion">
-<word jbo="lijda" en="religion"/>
-<word jbo="cevni" en="god `divinity'"/>
-<word jbo="censa" en="holy `sacred'"/>
-<word jbo="makfa" en="magic"/>
-<word jbo="malsi" en="temple"/>
-<word jbo="crida" en="fairy"/>
-<word jbo="ranmi" en="myth"/>
+<item title="lijda" description="religion"/>
+<item title="cevni" description="god `divinity'"/>
+<item title="censa" description="holy `sacred'"/>
+<item title="makfa" description="magic"/>
+<item title="malsi" description="temple"/>
+<item title="crida" description="fairy"/>
+<item title="ranmi" description="myth"/>
 <section title="Particular religions">
-<word jbo="budjo" en="Buddhist"/>
-<word jbo="dadjo" en="Taoist"/>
-<word jbo="jegvo" en="Jehovist"/>
-<word jbo="muslo" en="Islamic"/>
-<word jbo="xriso" en="Christian"/>
+<item title="budjo" description="Buddhist"/>
+<item title="dadjo" description="Taoist"/>
+<item title="jegvo" description="Jehovist"/>
+<item title="muslo" description="Islamic"/>
+<item title="xriso" description="Christian"/>
 </section></section><section title="Art">
-<word jbo="larcu" en="art"/>
-<word jbo="muzga" en="museum"/>
-<word jbo="cfika" en="fiction"/>
-<word jbo="pemci" en="poem"/>
-<word jbo="prosa" en="prose"/>
-<word jbo="pixra" en="picture"/>
-<word jbo="draci" en="drama"/>
-<word jbo="tigni" en="perform"/>
-<word jbo="skina" en="cinema"/>
-<word jbo="zgike" en="music"/>
-<word jbo="sanga" en="sing"/>
-<word jbo="dansu" en="dance"/>
-<word jbo="damri" en="drum"/>
-<word jbo="flani" en="flute"/>
-<word jbo="jgita" en="guitar `guitar'"/>
-<word jbo="pipno" en="piano"/>
-<word jbo="tabra" en="trumpet `brass'"/>
-<word jbo="xagri" en="reed"/>
+<item title="larcu" description="art"/>
+<item title="muzga" description="museum"/>
+<item title="cfika" description="fiction"/>
+<item title="pemci" description="poem"/>
+<item title="prosa" description="prose"/>
+<item title="pixra" description="picture"/>
+<item title="draci" description="drama"/>
+<item title="tigni" description="perform"/>
+<item title="skina" description="cinema"/>
+<item title="zgike" description="music"/>
+<item title="sanga" description="sing"/>
+<item title="dansu" description="dance"/>
+<item title="damri" description="drum"/>
+<item title="flani" description="flute"/>
+<item title="jgita" description="guitar `guitar'"/>
+<item title="pipno" description="piano"/>
+<item title="tabra" description="trumpet `brass'"/>
+<item title="xagri" description="reed"/>
 </section></section><section title="Technology">
 <section title="Technological processes">
-<word jbo="fenso" en="sew"/>
-<word jbo="jivbu" en="weave"/>
-<word jbo="nivji" en="knit"/>
-<word jbo="lasna" en="fasten `lash'"/>
-<word jbo="gundi" en="industry"/>
-<word jbo="fanri" en="factory `foundry'"/>
-<word jbo="cange" en="farm `grange, agrarian'"/>
-<word jbo="purdi" en="garden"/>
-<word jbo="crepu" en="harvest `reap'"/>
-<word jbo="sombo" en="sow"/>
-<word jbo="spofu" en="broken"/>
-<word jbo="cikre" en="repair `fix'"/>
-<word jbo="gunka" en="work"/>
-<word jbo="cupra" en="produce"/>
-<word jbo="finti" en="invent"/>
-<word jbo="zbasu" en="make"/>
-<word jbo="fukpi" en="copy"/>
-<word jbo="jadni" en="adorn"/>
-<word jbo="jukpa" en="cook"/>
-<word jbo="macnu" en="manual"/>
-<word jbo="zmiku" en="automatic"/>
-<word jbo="lumci" en="wash"/>
-<word jbo="molki" en="mill"/>
-<word jbo="pilno" en="use `employ'"/>
-<word jbo="sazri" en="operate"/>
-<word jbo="sorcu" en="store"/>
+<item title="fenso" description="sew"/>
+<item title="jivbu" description="weave"/>
+<item title="nivji" description="knit"/>
+<item title="lasna" description="fasten `lash'"/>
+<item title="gundi" description="industry"/>
+<item title="fanri" description="factory `foundry'"/>
+<item title="cange" description="farm `grange, agrarian'"/>
+<item title="purdi" description="garden"/>
+<item title="crepu" description="harvest `reap'"/>
+<item title="sombo" description="sow"/>
+<item title="spofu" description="broken"/>
+<item title="cikre" description="repair `fix'"/>
+<item title="gunka" description="work"/>
+<item title="cupra" description="produce"/>
+<item title="finti" description="invent"/>
+<item title="zbasu" description="make"/>
+<item title="fukpi" description="copy"/>
+<item title="jadni" description="adorn"/>
+<item title="jukpa" description="cook"/>
+<item title="macnu" description="manual"/>
+<item title="zmiku" description="automatic"/>
+<item title="lumci" description="wash"/>
+<item title="molki" description="mill"/>
+<item title="pilno" description="use `employ'"/>
+<item title="sazri" description="operate"/>
+<item title="sorcu" description="store"/>
 </section><section title="Artificial substances">
-<word jbo="zbabu" en="soap"/>
-<word jbo="jalna" en="starch"/>
+<item title="zbabu" description="soap"/>
+<item title="jalna" description="starch"/>
 <section title="Materials">
-<word jbo="blaci" en="glass"/>
-<word jbo="staku" en="ceramic"/>
-<word jbo="gasta" en="steel"/>
-<word jbo="lastu" en="brass"/>
-<word jbo="ransu" en="bronze"/>
-<word jbo="ckabu" en="rubber"/>
-<word jbo="slasi" en="plastic"/>
-<word jbo="bukpu" en="cloth"/>
-<word jbo="mapni" en="cotton"/>
-<word jbo="matli" en="linen"/>
-<word jbo="silka" en="silk"/>
-<word jbo="korka" en="cork"/>
-<word jbo="mudri" en="wood `lumber'"/>
-<word jbo="skapi" en="pelt `skin'"/>
-<word jbo="cinta" en="paint"/>
+<item title="blaci" description="glass"/>
+<item title="staku" description="ceramic"/>
+<item title="gasta" description="steel"/>
+<item title="lastu" description="brass"/>
+<item title="ransu" description="bronze"/>
+<item title="ckabu" description="rubber"/>
+<item title="slasi" description="plastic"/>
+<item title="bukpu" description="cloth"/>
+<item title="mapni" description="cotton"/>
+<item title="matli" description="linen"/>
+<item title="silka" description="silk"/>
+<item title="korka" description="cork"/>
+<item title="mudri" description="wood `lumber'"/>
+<item title="skapi" description="pelt `skin'"/>
+<item title="cinta" description="paint"/>
 </section><section title="Beverages">
-<word jbo="xalka" en="alcohol"/>
-<word jbo="jikru" en="liquor"/>
-<word jbo="vanju" en="wine"/>
-<word jbo="birje" en="beer"/>
-<word jbo="jisra" en="juice"/>
-<word jbo="sodva" en="soda"/>
-<word jbo="ckafi" en="coffee"/>
-<word jbo="tcati" en="tea"/>
+<item title="xalka" description="alcohol"/>
+<item title="jikru" description="liquor"/>
+<item title="vanju" description="wine"/>
+<item title="birje" description="beer"/>
+<item title="jisra" description="juice"/>
+<item title="sodva" description="soda"/>
+<item title="ckafi" description="coffee"/>
+<item title="tcati" description="tea"/>
 </section><section title="Foods">
-<word jbo="sanmi" en="meal"/>
-<word jbo="rectu" en="meat `flesh'"/>
-<word jbo="grasu" en="grease"/>
-<word jbo="ladru" en="milk `lactic'"/>
-<word jbo="kruji" en="cream"/>
-<word jbo="matne" en="butter"/>
-<word jbo="cirla" en="cheese"/>
-<word jbo="sakta" en="sugar `sucrose'"/>
-<word jbo="cakla" en="chocolate"/>
-<word jbo="nanba" en="bread"/>
-<word jbo="salta" en="salad"/>
-<word jbo="sanso" en="sauce"/>
-<word jbo="stasu" en="soup `stew'"/>
-<word jbo="tsapi" en="seasoning"/>
-<word jbo="sigja" en="cigar"/>
+<item title="sanmi" description="meal"/>
+<item title="rectu" description="meat `flesh'"/>
+<item title="grasu" description="grease"/>
+<item title="ladru" description="milk `lactic'"/>
+<item title="kruji" description="cream"/>
+<item title="matne" description="butter"/>
+<item title="cirla" description="cheese"/>
+<item title="sakta" description="sugar `sucrose'"/>
+<item title="cakla" description="chocolate"/>
+<item title="nanba" description="bread"/>
+<item title="salta" description="salad"/>
+<item title="sanso" description="sauce"/>
+<item title="stasu" description="soup `stew'"/>
+<item title="tsapi" description="seasoning"/>
+<item title="sigja" description="cigar"/>
 </section></section><section title="Artifacts">
-<word jbo="rutni" en="artifact"/>
+<item title="rutni" description="artifact"/>
 <section title="Tools, Devices">
-<word jbo="tutci" en="tool"/>
-<word jbo="mruli" en="hammer"/>
-<word jbo="dinko" en="nail"/>
-<word jbo="pijne" en="pin"/>
-<word jbo="burcu" en="brush"/>
-<word jbo="balre" en="blade"/>
-<word jbo="canpa" en="shovel"/>
-<word jbo="dakfu" en="knife"/>
-<word jbo="jinci" en="shears"/>
-<word jbo="klupe" en="screw"/>
-<word jbo="komcu" en="comb"/>
-<word jbo="pinsi" en="pencil"/>
-<word jbo="penbi" en="pen"/>
-<word jbo="xinmo" en="ink"/>
-<word jbo="pelji" en="paper `page'"/>
-<word jbo="smuci" en="spoon"/>
-<word jbo="forca" en="fork"/>
-<word jbo="sacki" en="match"/>
-<word jbo="janbe" en="bell"/>
-<word jbo="lanci" en="flag `banner'"/>
-<word jbo="matci" en="mat"/>
-<word jbo="julne" en="net"/>
-<word jbo="murta" en="curtain"/>
+<item title="tutci" description="tool"/>
+<item title="mruli" description="hammer"/>
+<item title="dinko" description="nail"/>
+<item title="pijne" description="pin"/>
+<item title="burcu" description="brush"/>
+<item title="balre" description="blade"/>
+<item title="canpa" description="shovel"/>
+<item title="dakfu" description="knife"/>
+<item title="jinci" description="shears"/>
+<item title="klupe" description="screw"/>
+<item title="komcu" description="comb"/>
+<item title="pinsi" description="pencil"/>
+<item title="penbi" description="pen"/>
+<item title="xinmo" description="ink"/>
+<item title="pelji" description="paper `page'"/>
+<item title="smuci" description="spoon"/>
+<item title="forca" description="fork"/>
+<item title="sacki" description="match"/>
+<item title="janbe" description="bell"/>
+<item title="lanci" description="flag `banner'"/>
+<item title="matci" description="mat"/>
+<item title="julne" description="net"/>
+<item title="murta" description="curtain"/>
 </section><section title="Containers">
-<word jbo="dacru" en="drawer"/>
-<word jbo="baktu" en="bucket"/>
-<word jbo="botpi" en="bottle"/>
-<word jbo="tanxe" en="box `trunk'"/>
-<word jbo="lante" en="can"/>
-<word jbo="dakli" en="sack"/>
-<word jbo="kabri" en="cup"/>
-<word jbo="lanka" en="basket"/>
-<word jbo="patxu" en="pot"/>
-<word jbo="palne" en="tray `pan, platter'"/>
-<word jbo="palta" en="plate `platter'"/>
-<word jbo="tansi" en="pan"/>
+<item title="dacru" description="drawer"/>
+<item title="baktu" description="bucket"/>
+<item title="botpi" description="bottle"/>
+<item title="tanxe" description="box `trunk'"/>
+<item title="lante" description="can"/>
+<item title="dakli" description="sack"/>
+<item title="kabri" description="cup"/>
+<item title="lanka" description="basket"/>
+<item title="patxu" description="pot"/>
+<item title="palne" description="tray `pan, platter'"/>
+<item title="palta" description="plate `platter'"/>
+<item title="tansi" description="pan"/>
 </section><section title="Machines, Apparatus">
-<word jbo="minji" en="machine"/>
-<word jbo="cabra" en="apparatus"/>
-<word jbo="matra" en="motor"/>
-<word jbo="livla" en="fuel"/>
-<word jbo="pambe" en="pump"/>
-<word jbo="toknu" en="oven"/>
-<word jbo="xarci" en="weapon `arms'"/>
-<word jbo="jbama" en="bomb"/>
-<word jbo="danti" en="projectile"/>
+<item title="minji" description="machine"/>
+<item title="cabra" description="apparatus"/>
+<item title="matra" description="motor"/>
+<item title="livla" description="fuel"/>
+<item title="pambe" description="pump"/>
+<item title="toknu" description="oven"/>
+<item title="xarci" description="weapon `arms'"/>
+<item title="jbama" description="bomb"/>
+<item title="danti" description="projectile"/>
 </section></section><section title="Machine parts">
-<word jbo="greku" en="frame"/>
-<word jbo="tsina" en="stage"/>
-<word jbo="zbepi" en="pedestal `base'"/>
-<word jbo="kamju" en="column"/>
-<word jbo="garna" en="rail `bar'"/>
-<word jbo="kajna" en="shelf `counter'"/>
-<word jbo="batke" en="button"/>
-<word jbo="xislu" en="wheel"/>
-<word jbo="jabre" en="brake"/>
-<word jbo="linsi" en="chain `links'"/>
-<word jbo="pulni" en="pulley"/>
-<word jbo="skori" en="cord"/>
-<word jbo="jendu" en="axle `spindle'"/>
-<word jbo="vraga" en="lever"/>
+<item title="greku" description="frame"/>
+<item title="tsina" description="stage"/>
+<item title="zbepi" description="pedestal `base'"/>
+<item title="kamju" description="column"/>
+<item title="garna" description="rail `bar'"/>
+<item title="kajna" description="shelf `counter'"/>
+<item title="batke" description="button"/>
+<item title="xislu" description="wheel"/>
+<item title="jabre" description="brake"/>
+<item title="linsi" description="chain `links'"/>
+<item title="pulni" description="pulley"/>
+<item title="skori" description="cord"/>
+<item title="jendu" description="axle `spindle'"/>
+<item title="vraga" description="lever"/>
 </section><section title="Transport">
-<word jbo="dargu" en="road"/>
-<word jbo="klaji" en="street `avenue'"/>
-<word jbo="naxle" en="canal"/>
-<word jbo="vinji" en="airplane"/>
-<word jbo="skiji" en="ski"/>
-<word jbo="falnu" en="sail"/>
-<word jbo="carce" en="cart"/>
-<word jbo="cripu" en="bridge"/>
-<word jbo="jakne" en="rocket"/>
-<word jbo="tcana" en="station"/>
-<word jbo="marce" en="vehicle"/>
-<word jbo="sabnu" en="cabin"/>
-<word jbo="bloti" en="boat"/>
-<word jbo="trene" en="train"/>
-<word jbo="karce" en="car"/>
+<item title="dargu" description="road"/>
+<item title="klaji" description="street `avenue'"/>
+<item title="naxle" description="canal"/>
+<item title="vinji" description="airplane"/>
+<item title="skiji" description="ski"/>
+<item title="falnu" description="sail"/>
+<item title="carce" description="cart"/>
+<item title="cripu" description="bridge"/>
+<item title="jakne" description="rocket"/>
+<item title="tcana" description="station"/>
+<item title="marce" description="vehicle"/>
+<item title="sabnu" description="cabin"/>
+<item title="bloti" description="boat"/>
+<item title="trene" description="train"/>
+<item title="karce" description="car"/>
 </section><section title="House">
-<word jbo="ginka" en="camp"/>
-<word jbo="dinju" en="building"/>
-<word jbo="kumfa" en="room"/>
-<word jbo="bitmu" en="wall"/>
-<word jbo="vorme" en="door"/>
-<word jbo="canko" en="window"/>
-<word jbo="balni" en="balcony"/>
-<word jbo="serti" en="stairs"/>
-<word jbo="nilce" en="furniture"/>
-<word jbo="jubme" en="table"/>
-<word jbo="stizu" en="chair `stool'"/>
-<word jbo="ckana" en="bed"/>
-<word jbo="sfofa" en="sofa"/>
-<word jbo="kicne" en="cushion"/>
-<word jbo="stela" en="lock"/>
-<word jbo="ckiku" en="key"/>
+<item title="ginka" description="camp"/>
+<item title="dinju" description="building"/>
+<item title="kumfa" description="room"/>
+<item title="bitmu" description="wall"/>
+<item title="vorme" description="door"/>
+<item title="canko" description="window"/>
+<item title="balni" description="balcony"/>
+<item title="serti" description="stairs"/>
+<item title="nilce" description="furniture"/>
+<item title="jubme" description="table"/>
+<item title="stizu" description="chair `stool'"/>
+<item title="ckana" description="bed"/>
+<item title="sfofa" description="sofa"/>
+<item title="kicne" description="cushion"/>
+<item title="stela" description="lock"/>
+<item title="ckiku" description="key"/>
 </section><section title="Dress">
-<word jbo="dasni" en="wear"/>
-<word jbo="taxfu" en="garment"/>
-<word jbo="kosta" en="coat"/>
-<word jbo="pastu" en="robe `tunic'"/>
-<word jbo="skaci" en="skirt"/>
-<word jbo="creka" en="shirt"/>
-<word jbo="palku" en="pants"/>
-<word jbo="daski" en="pocket"/>
-<word jbo="gluta" en="glove"/>
-<word jbo="cutci" en="shoe"/>
-<word jbo="smoka" en="sock"/>
-<word jbo="mapku" en="cap"/>
-<word jbo="santa" en="umbrella"/>
+<item title="dasni" description="wear"/>
+<item title="taxfu" description="garment"/>
+<item title="kosta" description="coat"/>
+<item title="pastu" description="robe `tunic'"/>
+<item title="skaci" description="skirt"/>
+<item title="creka" description="shirt"/>
+<item title="palku" description="pants"/>
+<item title="daski" description="pocket"/>
+<item title="gluta" description="glove"/>
+<item title="cutci" description="shoe"/>
+<item title="smoka" description="sock"/>
+<item title="mapku" description="cap"/>
+<item title="santa" description="umbrella"/>
 </section></section></top>
