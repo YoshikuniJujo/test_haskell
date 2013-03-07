@@ -1,0 +1,249 @@
+parser Some:
+
+{
+
+import Data.Char
+
+}
+
+top Xiragans
+
+Xiragans :: String
+	= xs:Xiragans x:Xiragan		-> { xs ++ x }
+	/				-> { "" }
+
+Xiragan :: String
+	= t:XiraganTailAEO a:XiraganAEO	-> { t ++ a }
+	/ XiraganNormal
+	/ t:OtherTailI v:CIVowel	-> { t ++ v }
+	/ t:CJTailI v:CJCIVowel		-> { t ++ v }
+	/ TailI
+	/ t:TailU v:CUVowel		-> { t ++ v }
+	/ TailU
+	/ Dot
+	/ Y
+	/ N
+	/ M
+	/ IVowel
+	/ VowelI
+	/ UVowel
+	/ VowelU
+	/ Vowel
+	/ Consonant
+	/ space				-> { "" }
+
+XiraganNormal :: String
+	= XiraganTailAEO
+
+Y :: String
+	= "y"				-> { "ぅ" }
+
+N :: String
+	= "n" ! "p" ! "b"		-> { "ん" }
+	/ "n"				-> { "ヌ" }
+
+M :: String
+	= "m" ! "p" ! "b"		-> { "ム" }
+	/ "m"				-> { "ん" }
+
+Vowel :: String
+	= "a"				-> { "あ" }
+	/ "e"				-> { "え" }
+	/ "i"				-> { "い" }
+	/ "o"				-> { "お" }
+	/ "u"				-> { "う" }
+
+IVowel :: String
+	= "ia"				-> { "や" }
+	/ "ii"				-> { "ユぃ" }
+	/ "iu"				-> { "ゆ" }
+	/ "ie"				-> { "ユぇ" }
+	/ "io"				-> { "よ" }
+
+VowelI :: String
+	= "ai"				-> { "あユ" }
+	/ "ei"				-> { "えユ" }
+	/ "oi"				-> { "おユ" }
+
+UVowel :: String
+	= "ua"				-> { "わ" }
+	/ "ui"				-> { "ゐ" }
+	/ "uu"				-> { "うぅ" }
+	/ "ue"				-> { "ゑ" }
+	/ "uo"				-> { "を" }
+
+VowelU :: String
+	= "au"				-> { "あウ" }
+	/ "eu"				-> { "えウ" }
+	/ "ou"				-> { "おウ" }
+
+CIVowel :: String
+	= "a"				-> { "ゃ" }
+	/ "e"				-> { "ぃぇ" }
+	/ "i"				-> { "ぃ" }
+	/ "o"				-> { "ょ" }
+	/ "u"				-> { "ゅ" }
+
+CJCIVowel :: String
+	= "a"				-> { "ぃゃ" }
+	/ "e"				-> { "ぃぇ" }
+	/ "i"				-> { "ぃ" }
+	/ "o"				-> { "ぃょ" }
+	/ "u"				-> { "ぃゅ" }
+
+CUVowel :: String
+	= "a"				-> { "ぁ" }
+	/ "e"				-> { "ぇ" }
+	/ "i"				-> { "ぃ" }
+	/ "o"				-> { "ぉ" }
+	/ "u"				-> { "ぅ" }
+
+Consonant :: String
+	= "b"				-> { "ブ" }
+	/ "c"				-> { "シ" }
+	/ "d"				-> { "ド" }
+	/ "f"				-> { "フゥ" }
+	/ "g"				-> { "グ" }
+	/ "j"				-> { "ジ" }
+	/ "k"				-> { "ク" }
+	/ "l"				-> { "ル" }
+	/ "p"				-> { "プ" }
+	/ "r"				-> { "ルゥ" }
+	/ "s"				-> { "ス" }
+	/ "t"				-> { "ト" }
+	/ "v"				-> { "ヴ" }
+	/ "x"				-> { "ハゥ" }
+
+XiraganTailAEO :: String
+	= "dja"				-> { "ぢゃ" }
+	/ "dje"				-> { "ぢぇ" }
+	/ "djo"				-> { "ぢょ" }
+	/ "dza"				-> { "づぁ" }
+	/ "dze"				-> { "づぇ" }
+	/ "dzo"				-> { "づぉ" }
+	/ "tca"				-> { "ちゃ" }
+	/ "tce"				-> { "ちぇ" }
+	/ "tco"				-> { "ちょ" }
+	/ "tsa"				-> { "つぁ" }
+	/ "tse"				-> { "つぇ" }
+	/ "tso"				-> { "つぉ" }
+	/ "'a"				-> { "は" }
+	/ "'e"				-> { "へ" }
+	/ "'o"				-> { "ほ" }
+	/ "ba"				-> { "ば" }
+	/ "be"				-> { "べ" }
+	/ "bo"				-> { "ぼ" }
+	/ "ca"				-> { "しゃ" }
+	/ "ce"				-> { "しぇ" }
+	/ "co"				-> { "しょ" }
+	/ "da"				-> { "だ" }
+	/ "de"				-> { "で" }
+	/ "do"				-> { "ど" }
+	/ "fa"				-> { "ふぁ" }
+	/ "fe"				-> { "ふぇ" }
+	/ "fo"				-> { "ふぉ" }
+	/ "ga"				-> { "が" }
+	/ "ge"				-> { "げ" }
+	/ "go"				-> { "ご" }
+	/ "ja"				-> { "じゃ" }
+	/ "je"				-> { "じぇ" }
+	/ "jo"				-> { "じょ" }
+	/ "ka"				-> { "か" }
+	/ "ke"				-> { "け" }
+	/ "ko"				-> { "こ" }
+	/ "la"				-> { "ら" }
+	/ "le"				-> { "れ" }
+	/ "lo"				-> { "ろ" }
+	/ "ma"				-> { "ま" }
+	/ "me"				-> { "め" }
+	/ "mo"				-> { "も" }
+	/ "na"				-> { "な" }
+	/ "ne"				-> { "ね" }
+	/ "no"				-> { "の" }
+	/ "pa"				-> { "ぱ" }
+	/ "pe"				-> { "ぺ" }
+	/ "po"				-> { "ぽ" }
+	/ "ra"				-> { "るぁ" }
+	/ "re"				-> { "るぇ" }
+	/ "ro"				-> { "るぉ" }
+	/ "sa"				-> { "さ" }
+	/ "se"				-> { "せ" }
+	/ "so"				-> { "そ" }
+	/ "ta"				-> { "た" }
+	/ "te"				-> { "て" }
+	/ "to"				-> { "と" }
+	/ "va"				-> { "う\"ぁ" }
+	/ "ve"				-> { "う\"ぇ" }
+	/ "vo"				-> { "う\"ぉ" }
+	/ "xa"				-> { "はぁ" }
+	/ "xe"				-> { "はぇ" }
+	/ "xo"				-> { "はぉ" }
+	/ "za"				-> { "ざ" }
+	/ "ze"				-> { "ぜ" }
+	/ "zo"				-> { "ぞ" }
+
+TailI :: String = CJTailI / OtherTailI
+
+OtherTailI :: String
+	= "dji"				-> { "ぢ" }
+	/ "dzi"				-> { "づぃ" }
+	/ "tci"				-> { "ち" }
+	/ "tsi"				-> { "つぃ" }
+	/ "'i"				-> { "ひ" }
+	/ "bi"				-> { "び" }
+	/ "di"				-> { "でぃ" }
+	/ "fi"				-> { "ふぃ" }
+	/ "gi"				-> { "ぎ" }
+	/ "ki"				-> { "き" }
+	/ "li"				-> { "り" }
+	/ "mi"				-> { "み" }
+	/ "ni"				-> { "に" }
+	/ "pi"				-> { "ぴ" }
+	/ "ri"				-> { "るぃ" }
+	/ "si"				-> { "すぃ" }
+	/ "ti"				-> { "てぃ" }
+	/ "vi"				-> { "う\"ぃ" }
+	/ "xi"				-> { "はぃ" }
+	/ "zi"				-> { "ずぃ" }
+
+CJTailI :: String
+	= "ci"				-> { "し" }
+	/ "ji"				-> { "じ" }
+
+TailU :: String
+	= "dju"				-> { "ぢゅ" }
+	/ "dzu"				-> { "づ" }
+	/ "tcu"				-> { "ちゅ" }
+	/ "tsu"				-> { "つ" }
+	/ "'u"				-> { "ふ" }
+	/ "bu"				-> { "ぶ" }
+	/ "cu"				-> { "しゅ" }
+	/ "ju"				-> { "じゅ" }
+	/ "ku"				-> { "く" }
+	/ "lu"				-> { "る" }
+	/ "nu"				-> { "ぬ" }
+	/ "ru"				-> { "るぅ" }
+	/ "xu"				-> { "はぅ" }
+
+XiraganAEO :: String
+	= "i"				-> { "ユ" }
+	/ "u"				-> { "ウ" }
+
+Dot :: String
+	= "."				-> { "っ" }
+
+dummy :: {()}
+	= l:dummy "a" dummy		-> { () }
+	/ "a" dummy			-> { () }
+
+space :: { () }
+	= c:Char	&{ isSpace c }	-> { () }
+
+{
+
+eval :: String -> String
+eval str = case someXiragans (someParse "expression" str) of
+	Parsed v _ _ -> v
+	NoParse e -> error $ show e
+
+}
