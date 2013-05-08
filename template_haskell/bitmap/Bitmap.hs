@@ -43,7 +43,7 @@ mkBody bmp = [
 	mkLit 'importantColors 0,
 	return ('colors, ListE $ map (intLit3 . snd) $ colorDic bmp),
 	return ('image, ListE $ map intLit $ convertImage (map fst $ colorDic bmp) $ concat $
-				bmpBody bmp)
+				reverse $ bmpBody bmp)
  ]
 
 mkLit :: Name -> Int -> Q (Name, Exp)
