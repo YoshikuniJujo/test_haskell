@@ -1,4 +1,8 @@
 import Parser
+import System.Environment
+
+main :: IO ()
+main = getArgs >>= readFile . head >>= print . calc . (\(Right r) -> r) . parseDef
 
 calc :: [Def] -> Lambda
 calc ds = case filter ((== "result") . defVar) ds of
