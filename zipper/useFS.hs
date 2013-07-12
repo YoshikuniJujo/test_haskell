@@ -1,9 +1,13 @@
-{-# LANGUAGE PackageImports #-}
+{-# LANGUAGE PackageImports, TupleSections #-}
 
 import ReadDirectory
 
 import "monads-tf" Control.Monad.State
 import System.IO
+
+testShell :: IO ()
+testShell = (runStateT shell . (, []) =<< getDir "root")
+	>> return ()
 
 type FileSystemM = StateT FSZipper IO
 
