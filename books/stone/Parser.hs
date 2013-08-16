@@ -11,6 +11,33 @@ import Control.Applicative
 
 import Infix
 
+power :: Op -> Int
+power "*" = 7
+power "%" = 7
+power "/" = 7
+power "+" = 6
+power "-" = 6
+power "=" = 0
+power "<" = 3
+power "==" = 3
+power other = error other
+
+ix :: Statement -> Statement
+ix (If e b mb) = If (ixe e) (map ix b) (map ix <$> mb)
+ix (While e b) = While (ixe e) (map ix b)
+ix (Expr e) = Expr $ ixe e
+
+ixe :: Expr -> Expr
+ixe = mapInfix ixf . solveInfix power
+
+ixp :: Primary -> Primary
+ixp (PExpr e) = PExpr $ ixe e
+ixp o = o
+
+ixf :: Factor -> Factor
+ixf (Positive p) = Positive $ ixp p
+ixf (Negative p) = Negative $ ixp p
+
 type Program = [Statement]
 data Statement
 	= If Expr Block (Maybe Block)
@@ -32,7 +59,7 @@ type Op = String
 
 stoneParse :: String -> Maybe Program
 stoneParse src = case runError $ program $ parse src of
-	Right (r, _) -> Just r
+	Right (r, _) -> Just $ map ix r
 	Left _ -> Nothing
 
 data StoneToken
@@ -66,8 +93,8 @@ factor :: Factor
 	/ p:primary				{ Positive p }
 
 expr :: Expr
-	= hf:factor ofs:((Op op):lexer f:factor { (op, f) })*
-						{ UInfix hf ofs }
+	= hf:factor ofs:((Op op):lexer f:factor { (op, Atom f) })*
+						{ UInfix (Atom hf) ofs }
 
 block :: Block
 	= OBrace:lexer _:(EOL:lexer)?
