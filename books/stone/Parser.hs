@@ -1,6 +1,16 @@
 {-# LANGUAGE QuasiQuotes, TypeFamilies #-}
 
 module Parser (
+	stoneParse,
+	Program,
+	Statement(..),
+	Block,
+	Expr,
+	Factor,
+	Primary(..),
+	Number,
+	Identifier,
+	Op
 ) where
 
 import Prelude hiding (lex)
@@ -9,34 +19,7 @@ import Text.Papillon
 
 import Control.Applicative
 
-import Infix
-
-power :: Op -> Int
-power "*" = 7
-power "%" = 7
-power "/" = 7
-power "+" = 6
-power "-" = 6
-power "=" = 0
-power "<" = 3
-power "==" = 3
-power other = error other
-
-ix :: Statement -> Statement
-ix (If e b mb) = If (ixe e) (map ix b) (map ix <$> mb)
-ix (While e b) = While (ixe e) (map ix b)
-ix (Expr e) = Expr $ ixe e
-
-ixe :: Expr -> Expr
-ixe = mapInfix ixf . solveInfix power
-
-ixp :: Primary -> Primary
-ixp (PExpr e) = PExpr $ ixe e
-ixp o = o
-
-ixf :: Factor -> Factor
-ixf (Positive p) = Positive $ ixp p
-ixf (Negative p) = Negative $ ixp p
+import Operator
 
 type Program = [Statement]
 data Statement
@@ -45,13 +28,15 @@ data Statement
 	| Expr Expr
 	deriving Show
 type Block = [Statement]
-type Expr = Infix Op Factor
-data Factor = Positive Primary | Negative Primary deriving Show
+type Expr = Primary
+type Factor = Primary
 data Primary
-	= PExpr Expr
-	| PNumber Number
+	= PNumber Number
 	| PIdentifier Identifier
 	| PString String
+	| PNegative Primary
+	| POp Op
+	| PInfix Primary Op Primary
 	deriving Show
 type Number = Int
 type Identifier = String
@@ -59,7 +44,7 @@ type Op = String
 
 stoneParse :: String -> Maybe Program
 stoneParse src = case runError $ program $ parse src of
-	Right (r, _) -> Just $ map ix r
+	Right (r, _) -> Just r
 	Left _ -> Nothing
 
 data StoneToken
@@ -80,21 +65,36 @@ lex str = case runError $ testLexer $ parse str of
 	Right (r, _) -> r
 	Left _ -> error "lex error"
 
+getPower :: Primary -> (Int, Inf)
+getPower (POp "=") = (-1, R)
+getPower (POp "||") = (2, R)
+getPower (POp "&&") = (3, R)
+getPower (POp op)
+	| op `elem` ["==", "<", "<=", ">", ">="] = (4, L)
+	| op `elem` ["+", "-"] = (6, L)
+	| op `elem` ["*", "/", "%"] = (7, L)
+	| op `elem` ["^"] = (8, R)
+getPower t = error $ "getPower: " ++ show t ++ " is not operator"
+
+reduce :: Primary -> Primary -> Primary -> Primary
+reduce l (POp o) r = PInfix l o r
+reduce _ o _ = error $ "reduce: " ++ show o ++ " is not operator"
+
 [papillon|
 
 primary :: Primary
-	= OParen:lexer e:expr CParen:lexer	{ PExpr e }
+	= OParen:lexer e:expr CParen:lexer	{ e }
 	/ (Number n):lexer			{ PNumber n }
 	/ (Identifier i):lexer			{ PIdentifier i }
 	/ (String s):lexer			{ PString s }
 
 factor :: Factor
-	= (Op "-"):lexer p:primary		{ Negative p }
-	/ p:primary				{ Positive p }
+	= (Op "-"):lexer p:primary		{ PNegative p }
+	/ p:primary				{ p }
 
 expr :: Expr
-	= hf:factor ofs:((Op op):lexer f:factor { (op, Atom f) })*
-						{ UInfix (Atom hf) ofs }
+	= hf:factor ofs:((Op op):lexer f:factor { [POp op, f] })*
+		{ operator getPower reduce $ hf : concat ofs }
 
 block :: Block
 	= OBrace:lexer _:(EOL:lexer)?
