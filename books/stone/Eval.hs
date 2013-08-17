@@ -1,6 +1,9 @@
 {-# Language PackageImports #-}
 
 module Eval (
+	eval,
+	stoneParse,
+	printObject
 ) where
 
 import Parser
@@ -16,10 +19,18 @@ data Object
 	| ONULL
 	deriving Show
 
+printObject :: Object -> IO ()
+printObject = putStrLn . showObject
+
+showObject :: Object -> String
+showObject (ONumber n) = show n
+showObject ONULL = "()"
+showObject o = error $ "showObject: " ++ show o
+
 type Env = [(String, Object)]
 
-eval :: Program -> State Env Object
-eval = fmap last . mapM evalStatement
+eval :: Program -> State Env [Object]
+eval = mapM evalStatement
 
 evalStatement :: Statement -> State Env Object
 evalStatement (If e tb eb) = do
