@@ -2,7 +2,8 @@ module Examples (
 	exam1,
 	exam2,
 	myExam,
-	ifExam
+	ifExam,
+	funExam
 ) where
 
 import Parser

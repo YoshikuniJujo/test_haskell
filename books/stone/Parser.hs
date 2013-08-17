@@ -10,7 +10,9 @@ module Parser (
 	Primary(..),
 	Number,
 	Identifier,
-	Op
+	Op,
+
+	Function
 ) where
 
 import Prelude hiding (lex)
@@ -31,6 +33,7 @@ data Statement
 type Block = [Statement]
 type Expr = Primary
 type Factor = Primary
+type Function = ([Identifier], Block)
 data Primary
 	= PNumber Number
 	| PIdentifier Identifier
@@ -38,7 +41,7 @@ data Primary
 	| PNegative Primary
 	| POp Op
 	| PInfix Primary Op Primary
-	| PFunction [Identifier] Block
+	| PFunction Function -- [Identifier] Block
 	| PApply Primary [Primary]
 	deriving Show
 type Number = Int
@@ -134,7 +137,7 @@ paramList :: [Identifier]
 
 def :: Primary
 	= (Identifier "def"):lexer (Identifier n):lexer pl:paramList b:block
-		{ PInfix (PIdentifier n) "=" (PFunction pl b) }
+		{ PInfix (PIdentifier n) "=" (PFunction (pl, b)) }
 
 args :: [Expr] = e0:expr es:(Comma:lexer e:expr { e })*
 						{ e0 : es }

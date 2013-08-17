@@ -3,44 +3,24 @@
 module Eval (
 	eval,
 	stoneParse,
-	printObject
+	printObject,
+	initialEnv
 ) where
 
 import Parser
 import Examples
+import Env
+
 import Data.Maybe
 import Control.Applicative
 import "monads-tf" Control.Monad.State
 
-data Object
-	= ONumber Int
-	| OString String
-	| OBool Bool
-	| ONULL
-	deriving Show
+type Eval = State (Env Function)
 
-printObject :: Object -> IO ()
-printObject = putStrLn . showObject
-
-showObject :: Object -> String
-showObject (ONumber n) = show n
-showObject ONULL = "()"
-showObject o = error $ "showObject: " ++ show o
-
-type Env = [(String, Object)]
-
-putValue :: String -> Object -> Env -> Env
-putValue var val = ((var, val) :)
-
-getValue :: String -> Env -> Object
-getValue var = fromJust . lookup var
-
-type Eval = State Env
-
-eval :: Program -> Eval [Object]
+eval :: Program -> Eval [Object Function]
 eval = mapM evalStatement
 
-evalStatement :: Statement -> Eval Object
+evalStatement :: Statement -> Eval (Object Function)
 evalStatement (If e tb eb) = do
 	b <- evalPrimary e
 	case b of
@@ -55,7 +35,7 @@ evalStatement (While e blk) = do
 			evalStatement (While e blk)
 evalStatement (Expr e) = evalPrimary e
 
-evalPrimary :: Primary -> Eval Object
+evalPrimary :: Primary -> Eval (Object Function)
 evalPrimary (PNumber n) = return $ ONumber n
 evalPrimary (PIdentifier i) = gets $ getValue i
 evalPrimary (PString s) = return $ OString s
@@ -68,8 +48,17 @@ evalPrimary (PInfix pl o pr) = do
 	l <- evalPrimary pl
 	r <- evalPrimary pr
 	return $ getOp o l r
+evalPrimary (PFunction f) = return $ OFunction f
+evalPrimary (PApply fp args) = do
+	OFunction (ps, blk) <- evalPrimary fp
+	vs <- mapM evalPrimary args
+	modify newEnv
+	modify $ flip (foldr $ uncurry putValue) $ zip ps vs
+	rs <- eval blk
+	modify popEnv
+	return $ last rs
 
-getOp :: String -> Object -> Object -> Object
+getOp :: String -> (Object a) -> (Object a) -> (Object a)
 getOp "+" (ONumber l) (ONumber r) = ONumber $ l + r
 getOp "-" (ONumber l) (ONumber r) = ONumber $ l - r
 getOp "*" (ONumber l) (ONumber r) = ONumber $ l * r
