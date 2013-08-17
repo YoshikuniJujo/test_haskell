@@ -99,8 +99,8 @@ primary :: Primary
 	/ (String s):lexer			{ PString s }
 
 factor :: Factor
-	= (Op "-"):lexer p:primary		{ PNegative p }
-	/ p:primary				{ p }
+	= (Op "-"):lexer p:primary'		{ PNegative p }
+	/ p:primary'				{ p }
 
 expr :: Expr
 	= hf:factor ofs:((Op op):lexer f:factor { [POp op, f] })*
