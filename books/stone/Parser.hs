@@ -15,6 +15,7 @@ module Parser (
 
 import Prelude hiding (lex)
 import Data.Char
+import Data.Maybe
 import Text.Papillon
 
 import Control.Applicative
@@ -37,6 +38,8 @@ data Primary
 	| PNegative Primary
 	| POp Op
 	| PInfix Primary Op Primary
+	| PFunction [Identifier] Block
+	| PApply Primary [Primary]
 	deriving Show
 type Number = Int
 type Identifier = String
@@ -57,6 +60,7 @@ data StoneToken
 	| OBrace
 	| CBrace
 	| Semicolon
+	| Comma
 	| EOL
 	deriving Show
 
@@ -81,6 +85,9 @@ reduce l (POp o) r = PInfix l o r
 reduce _ o _ = error $ "reduce: " ++ show o ++ " is not operator"
 
 [papillon|
+
+primary' :: Primary
+	= p:primary al:postfix?			{ maybe p (PApply p) al }
 
 primary :: Primary
 	= OParen:lexer e:expr CParen:lexer	{ e }
@@ -109,11 +116,31 @@ statement :: Statement
 						{ If t ib eb }
 	/ (Identifier "while"):lexer t:expr b:block
 						{ While t b }
-	/ e:expr				{ Expr e }
+	/ e:expr al:args?	{ maybe (Expr e) (Expr . PApply e) al }
 
 program :: Program
-	= ss:(s:statement _:(EOL:lexer / Semicolon:lexer) { s })+
+	= ss:(ds:(d:def { Expr d } / s:statement { s })
+		_:(EOL:lexer / Semicolon:lexer) { ds })+
 						{ ss }
+
+param :: Identifier
+	= (Identifier i):lexer			{ i }
+
+params :: [Identifier] = p0:param ps:(Comma:lexer p:param { p })*
+						{ p0 : ps }
+
+paramList :: [Identifier]
+	= OParen:lexer ps:params? CParen:lexer	{ fromMaybe [] ps }
+
+def :: Primary
+	= (Identifier "def"):lexer (Identifier n):lexer pl:paramList b:block
+		{ PInfix (PIdentifier n) "=" (PFunction pl b) }
+
+args :: [Expr] = e0:expr es:(Comma:lexer e:expr { e })*
+						{ e0 : es }
+
+postfix :: [Expr] = OParen:lexer as:args? CParen:lexer
+						{ fromMaybe [] as }
 
 testLexer :: [StoneToken] = ts:lexer* _:spaces !_:[True]	{ ts }
 
@@ -129,6 +156,7 @@ lexer :: StoneToken
 	/ _:spaces '{'				{ OBrace }
 	/ _:spaces '}'				{ CBrace }
 	/ _:spaces ';'				{ Semicolon }
+	/ _:spaces ','				{ Comma }
 	/ _:spaces '=' '='			{ Op "==" }
 	/ _:spaces '<' '='			{ Op "<=" }
 	/ _:spaces '>' '='			{ Op ">=" }
