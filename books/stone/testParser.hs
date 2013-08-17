@@ -1,11 +1,8 @@
 import Parser
+import Examples
 
 import Control.Applicative
 import Data.Maybe
-
-exam1, exam2, myExam :: IO Program
-[exam1, exam2, myExam] = map (fmap (fromJust . stoneParse) . readFile)
-	["example1.stone", "example2.stone", "myExample.stone"]
 
 printProgram :: Program -> IO ()
 printProgram = putStr . showProgram

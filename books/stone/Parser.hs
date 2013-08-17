@@ -98,8 +98,10 @@ expr :: Expr
 
 block :: Block
 	= OBrace:lexer _:(EOL:lexer)?
-		ss:(s:statement _:(EOL:lexer / Semicolon:lexer) { s })+
-		CBrace:lexer			{ ss }
+		s0:statement
+		ss:(_:(EOL:lexer / Semicolon:lexer) s:statement { s })*
+		_:(EOL:lexer)?
+		CBrace:lexer			{ s0 : ss }
 
 statement :: Statement
 	= (Identifier "if"):lexer t:expr ib:block
