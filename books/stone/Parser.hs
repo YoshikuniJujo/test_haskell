@@ -41,9 +41,11 @@ data Primary
 	| PNegative Primary
 	| POp Op
 	| PInfix Primary Op Primary
-	| PFunction Function -- [Identifier] Block
-	| PClosure Function -- [Identifier] Block
+	| PFunction Function
+	| PClosure Function
 	| PApply Primary [Primary]
+	| PDot Primary Identifier
+	| PClass (Maybe Identifier) Block
 	deriving Show
 type Number = Integer
 type Identifier = String
@@ -65,6 +67,7 @@ data StoneToken
 	| CBrace
 	| Semicolon
 	| Comma
+	| Dot
 	| EOL
 	deriving Show
 
@@ -91,7 +94,7 @@ reduce _ o _ = error $ "reduce: " ++ show o ++ " is not operator"
 [papillon|
 
 primary' :: Primary
-	= p:primary al:postfix?			{ maybe p (PApply p) al }
+	= p:primary pf:postfix*			{ foldl (flip ($)) p pf }
 
 primary :: Primary
 	= (Identifier "fun"):lexer pl:paramList b:block
@@ -122,10 +125,13 @@ statement :: Statement
 						{ If t ib eb }
 	/ (Identifier "while"):lexer t:expr b:block
 						{ While t b }
-	/ e:expr al:args?	{ maybe (Expr e) (Expr . PApply e) al }
+	/ s:simple				{ Expr s }
+
+simple :: Primary
+	= e:expr al:args?			{ maybe e (PApply e) al }
 
 program :: Program
-	= ss:(ds:(d:def { Expr d } / s:statement { s })
+	= ss:(ds:(d:defclass { Expr d } / d:def { Expr d } / s:statement { s })
 		_:(EOL:lexer / Semicolon:lexer) { ds })+
 						{ ss }
 
@@ -145,8 +151,23 @@ def :: Primary
 args :: [Expr] = e0:expr es:(Comma:lexer e:expr { e })*
 						{ e0 : es }
 
-postfix :: [Expr] = OParen:lexer as:args? CParen:lexer
-						{ fromMaybe [] as }
+postfix :: Primary -> Primary
+	= OParen:lexer as:args? CParen:lexer	{ flip PApply $ fromMaybe [] as }
+	/ Dot:lexer (Identifier i):lexer	{ flip PDot i }
+
+member :: Statement
+	= d:def					{ Expr d }
+	/ s:simple				{ Expr s }
+
+classBody :: Block
+	= OBrace:lexer m:member?
+		ms:(_:(Semicolon:lexer / EOL:lexer) m:member? { m })* CBrace:lexer
+						{ catMaybes $ m : ms }
+
+defclass :: Primary
+	= (Identifier "class"):lexer (Identifier n):lexer
+		ms:((Identifier "extends"):lexer (Identifier s):lexer { s })?
+		b:classBody	{ PInfix (PIdentifier n) "=" (PClass ms b) }
 
 testLexer :: [StoneToken] = ts:lexer* _:spaces !_:[True]	{ ts }
 
@@ -163,6 +184,7 @@ lexer :: StoneToken
 	/ _:spaces '}'				{ CBrace }
 	/ _:spaces ';'				{ Semicolon }
 	/ _:spaces ','				{ Comma }
+	/ _:spaces '.'				{ Dot }
 	/ _:spaces '=' '='			{ Op "==" }
 	/ _:spaces '<' '='			{ Op "<=" }
 	/ _:spaces '>' '='			{ Op ">=" }
