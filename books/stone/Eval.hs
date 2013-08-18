@@ -37,12 +37,12 @@ evalStatement (Expr e) = evalPrimary e
 
 evalPrimary :: Primary -> Eval (Object Function)
 evalPrimary (PNumber n) = return $ ONumber n
-evalPrimary (PIdentifier i) = gets $ getValue i
+evalPrimary (PIdentifier i) = getValue i
 evalPrimary (PString s) = return $ OString s
 evalPrimary (POp _) = error "evalPrimary: can't eval"
 evalPrimary (PInfix (PIdentifier i) "=" p) = do
 	r <- evalPrimary p
-	modify $ putValue i r
+	putValueG i r
 	return r
 evalPrimary (PInfix pl o pr) = do
 	l <- evalPrimary pl
@@ -52,10 +52,10 @@ evalPrimary (PFunction f) = return $ OFunction f
 evalPrimary (PApply fp args) = do
 	OFunction (ps, blk) <- evalPrimary fp
 	vs <- mapM evalPrimary args
-	modify newEnv
-	modify $ flip (foldr $ uncurry putValue) $ zip ps vs
+	newEnv
+	zipWithM_ putValue ps vs
 	rs <- eval blk
-	modify popEnv
+	popEnv
 	return $ last rs
 
 getOp :: String -> (Object a) -> (Object a) -> (Object a)
