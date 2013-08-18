@@ -14,13 +14,15 @@ import Env
 import Data.Maybe
 import Control.Applicative
 import "monads-tf" Control.Monad.State
+import "monads-tf" Control.Monad.Identity
 
-type Eval = State (Env Function)
+type Eval = StateT (Env IO Function) IO
+type Obj = Object IO Function
 
-eval :: Program -> Eval [Object Function]
+eval :: Program -> Eval [Obj]
 eval = mapM evalStatement
 
-evalStatement :: Statement -> Eval (Object Function)
+evalStatement :: Statement -> Eval Obj
 evalStatement (If e tb eb) = do
 	b <- evalPrimary e
 	case b of
@@ -35,7 +37,7 @@ evalStatement (While e blk) = do
 			evalStatement (While e blk)
 evalStatement (Expr e) = evalPrimary e
 
-evalPrimary :: Primary -> Eval (Object Function)
+evalPrimary :: Primary -> Eval Obj
 evalPrimary (PNumber n) = return $ ONumber n
 evalPrimary (PIdentifier i) = getValue i
 evalPrimary (PString s) = return $ OString s
@@ -70,7 +72,7 @@ evalPrimary (PClosure f) = do
 	eid <- newCEnv
 	return $ OClosure eid f
 
-getOp :: String -> (Object a) -> (Object a) -> (Object a)
+getOp :: String -> Obj -> Obj -> Obj
 getOp "+" (ONumber l) (ONumber r) = ONumber $ l + r
 getOp "-" (ONumber l) (ONumber r) = ONumber $ l - r
 getOp "*" (ONumber l) (ONumber r) = ONumber $ l * r

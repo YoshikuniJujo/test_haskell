@@ -10,5 +10,5 @@ main :: IO ()
 main = do
 	fp : _ <- getArgs
 	src <- readFile fp
-	mapM_ printObject $
-		(maybe undefined eval $ stoneParse src) `evalState` initialEnv
+	mapM_ printObject =<<
+		(maybe undefined eval $ stoneParse src) `evalStateT` initialEnv
