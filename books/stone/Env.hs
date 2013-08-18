@@ -5,7 +5,7 @@ module Env (
 	printObject,
 
 	Env,
-	initialEnv,
+	mkInitialEnv,
 	putValueG,
 	putValue,
 	getValue,
@@ -20,7 +20,7 @@ import Data.Maybe
 import "monads-tf" Control.Monad.State
 
 data Object m f
-	= ONumber Int
+	= ONumber Integer
 	| OString String
 	| OBool Bool
 	| ONULL
@@ -38,18 +38,20 @@ printObject :: Object m a -> IO ()
 printObject = putStrLn . showObject
 
 showObject :: Object m a -> String
+showObject (OString s) = show s
 showObject (ONumber n) = show n
 showObject ONULL = "()"
 showObject (OFunction _) = "()"
 showObject (OClosure _ _) = "()"
+showObject (ONative _) = "()"
 showObject o = error $ "showObject: error"
 
 type EnvGen m a = [(String, Object m a)]
 
 type Env m a = ([EnvGen m a], [(EnvID, EnvGen m a)], EnvGen m a)
 
-initialEnv :: Env m a
-initialEnv = ([], [], [])
+mkInitialEnv :: EnvGen m a -> Env m a
+mkInitialEnv ie = ([], [], ie)
 
 putValueG :: Monad m => String -> Object m a -> StateT (Env m a) m ()
 putValueG var val = StateT $ return . (() ,) . putValueG_ var val

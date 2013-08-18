@@ -45,7 +45,7 @@ data Primary
 	| PClosure Function -- [Identifier] Block
 	| PApply Primary [Primary]
 	deriving Show
-type Number = Int
+type Number = Integer
 type Identifier = String
 type Op = String
 
@@ -57,7 +57,7 @@ stoneParse src = case runError $ program $ parse src of
 data StoneToken
 	= Identifier String
 	| Op String
-	| Number Int
+	| Number Integer
 	| String String
 	| OParen
 	| CParen

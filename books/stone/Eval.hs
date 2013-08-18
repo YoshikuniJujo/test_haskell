@@ -12,6 +12,7 @@ import Examples
 import Env
 
 import Data.Maybe
+import Data.Time
 import Control.Applicative
 import "monads-tf" Control.Monad.State
 import "monads-tf" Control.Monad.Identity
@@ -68,12 +69,16 @@ evalPrimary (PApply fp args) = do
 			rs <- eval blk
 			exitClosureEnv eid
 			return $ last rs
+		ONative f -> lift . f =<< mapM evalPrimary args
 evalPrimary (PClosure f) = do
 	eid <- newCEnv
 	return $ OClosure eid f
 
 getOp :: String -> Obj -> Obj -> Obj
 getOp "+" (ONumber l) (ONumber r) = ONumber $ l + r
+getOp "+" (OString s1) (OString s2) = OString $ s1 ++ s2
+getOp "+" (ONumber n) (OString s) = OString $ show n ++ s
+getOp "+" (OString s) (ONumber n) = OString $ s ++ show n
 getOp "-" (ONumber l) (ONumber r) = ONumber $ l - r
 getOp "*" (ONumber l) (ONumber r) = ONumber $ l * r
 getOp "%" (ONumber l) (ONumber r) = ONumber $ l `mod` r
@@ -81,3 +86,21 @@ getOp ">" (ONumber l) (ONumber r) = OBool $ l > r
 getOp "<" (ONumber l) (ONumber r) = OBool $ l < r
 getOp "==" (ONumber l) (ONumber r) = OBool $ l == r
 getOp op _ _ = error $ "getOp: " ++ op ++ " yet defined"
+
+initialEnv :: Env IO Function
+initialEnv = mkInitialEnv [
+	("print", ONative nfPrint),
+	("currentTime", ONative currentTime)
+ ]
+
+nfPrint, currentTime :: [Obj] -> IO Obj
+nfPrint [OString s] = putStrLn s >> return ONULL
+currentTime [] = do
+	t <- getCurrentTime
+	return $ ONumber $ diffTimeToMSec $ diffUTCTime t baseTime
+
+baseTime :: UTCTime
+baseTime = UTCTime (fromGregorian 1980 1 1) 0
+
+diffTimeToMSec :: NominalDiffTime -> Integer
+diffTimeToMSec = round . (* 1000)
