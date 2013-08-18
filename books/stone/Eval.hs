@@ -17,8 +17,8 @@ import Control.Applicative
 import "monads-tf" Control.Monad.State
 import "monads-tf" Control.Monad.Identity
 
-type Eval = StateT (Env IO Function) IO
-type Obj = Object IO Function
+type Eval = StateT (Env IO Block) IO
+type Obj = Object IO Block
 
 eval :: Program -> Eval [Obj]
 eval = mapM evalStatement
@@ -47,6 +47,13 @@ evalPrimary (PInfix (PIdentifier i) "=" p) = do
 	r <- evalPrimary p
 	putValueG i r
 	return r
+evalPrimary (PInfix (PDot px i) "=" p) = do
+	OObject eid <- evalPrimary px
+	r <- evalPrimary p
+	intoClosureEnv eid
+	putValue i r
+	exitClosureEnv eid
+	return r
 evalPrimary (PInfix pl o pr) = do
 	l <- evalPrimary pl
 	r <- evalPrimary pr
@@ -73,6 +80,27 @@ evalPrimary (PApply fp args) = do
 evalPrimary (PClosure f) = do
 	eid <- newCEnv
 	return $ OClosure eid f
+evalPrimary (PClass s b) = return $ OClass s b
+evalPrimary (PDot pc "new") = do
+	OClass s b <- evalPrimary pc
+	eid <- newCEnv
+	runClass s
+	eval b
+	return $ OObject eid
+evalPrimary (PDot po m) = do
+	OObject eid <- evalPrimary po
+	intoClosureEnv eid
+	o <- evalPrimary (PIdentifier m)
+	exitClosureEnv eid
+	return o
+
+runClass :: Maybe Identifier -> Eval ()
+runClass (Just sn) = do
+	OClass s b' <- evalPrimary (PIdentifier sn)
+	runClass s
+	eval b'
+	return ()
+runClass _ = return ()
 
 getOp :: String -> Obj -> Obj -> Obj
 getOp "+" (ONumber l) (ONumber r) = ONumber $ l + r
@@ -87,7 +115,7 @@ getOp "<" (ONumber l) (ONumber r) = OBool $ l < r
 getOp "==" (ONumber l) (ONumber r) = OBool $ l == r
 getOp op _ _ = error $ "getOp: " ++ op ++ " yet defined"
 
-initialEnv :: Env IO Function
+initialEnv :: Env IO Block
 initialEnv = mkInitialEnv [
 	("print", ONative nfPrint),
 	("currentTime", ONative currentTime)
@@ -95,6 +123,7 @@ initialEnv = mkInitialEnv [
 
 nfPrint, currentTime :: [Obj] -> IO Obj
 nfPrint [OString s] = putStrLn s >> return ONULL
+nfPrint [ONumber n] = print n >> return ONULL
 currentTime [] = do
 	t <- getCurrentTime
 	return $ ONumber $ diffTimeToMSec $ diffUTCTime t baseTime

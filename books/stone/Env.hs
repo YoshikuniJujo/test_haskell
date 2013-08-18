@@ -19,14 +19,16 @@ module Env (
 import Data.Maybe
 import "monads-tf" Control.Monad.State
 
-data Object m f
+data Object m b
 	= ONumber Integer
 	| OString String
 	| OBool Bool
 	| ONULL
-	| OFunction f
-	| OClosure EnvID f
-	| ONative ([Object m f] -> m (Object m f))
+	| OFunction ([String], b)
+	| OClosure EnvID ([String], b)
+	| ONative ([Object m b] -> m (Object m b))
+	| OClass (Maybe String) b
+	| OObject EnvID
 
 data EnvID = EnvID Int deriving (Eq, Show)
 
@@ -44,6 +46,8 @@ showObject ONULL = "()"
 showObject (OFunction _) = "()"
 showObject (OClosure _ _) = "()"
 showObject (ONative _) = "()"
+showObject (OClass _ _) = "()"
+showObject (OObject eid) = "(object: " ++ show eid ++ ")"
 showObject o = error $ "showObject: error"
 
 type EnvGen m a = [(String, Object m a)]
