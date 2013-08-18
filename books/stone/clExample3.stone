@@ -1,0 +1,4 @@
+x = 1
+def foo(i) { x = i; x + 1}
+foo(5)
+x
