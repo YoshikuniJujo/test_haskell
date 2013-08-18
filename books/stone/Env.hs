@@ -11,7 +11,9 @@ module Env (
 	getValue,
 	newEnv,
 	popEnv,
-	newCEnv
+	newCEnv,
+	intoClosureEnv,
+	exitClosureEnv
 ) where
 
 import Data.Maybe
@@ -39,6 +41,7 @@ showObject :: Object a -> String
 showObject (ONumber n) = show n
 showObject ONULL = "()"
 showObject (OFunction _) = "()"
+showObject (OClosure _ _) = "()"
 showObject o = error $ "showObject: error"
 
 type EnvGen a = [(String, Object a)]
@@ -89,9 +92,20 @@ popEnv_ _ = error "popEnv: can't pop env"
 
 newCEnv :: Monad m => StateT (Env a) m EnvID
 newCEnv = do
-	(envs@(env : _), cenvs@((ei, _) : _), topEnv) <- get
-	put (envs, (succ ei, env) : cenvs, topEnv)
-	return $ succ ei
+	e <- get
+	case e of
+		(envs@(env : _), cenvs@((ei, _) : _), topEnv) -> do
+			put (envs, (succ ei, env) : cenvs, topEnv)
+			return $ succ ei
+		(_, cenvs@((ei, _) : _), topEnv) -> do
+			put ([], (succ ei, []) : cenvs, topEnv)
+			return $ succ ei
+		(envs@(env : _), _, topEnv) -> do
+			put (envs, [(EnvID 0, env)], topEnv)
+			return $ EnvID 0
+		(_, _, topEnv) -> do
+			put ([], [(EnvID 0, [])], topEnv)
+			return $ EnvID 0
 
 intoClosureEnv :: Monad m => EnvID -> StateT (Env a) m ()
 intoClosureEnv eid = do

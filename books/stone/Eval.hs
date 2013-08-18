@@ -50,13 +50,25 @@ evalPrimary (PInfix pl o pr) = do
 	return $ getOp o l r
 evalPrimary (PFunction f) = return $ OFunction f
 evalPrimary (PApply fp args) = do
-	OFunction (ps, blk) <- evalPrimary fp
-	vs <- mapM evalPrimary args
-	newEnv
-	zipWithM_ putValue ps vs
-	rs <- eval blk
-	popEnv
-	return $ last rs
+	f <- evalPrimary fp
+	case f of
+		OFunction (ps, blk) -> do
+			vs <- mapM evalPrimary args
+			newEnv
+			zipWithM_ putValue ps vs
+			rs <- eval blk
+			popEnv
+			return $ last rs
+		OClosure eid (ps, blk) -> do
+			vs <- mapM evalPrimary args
+			intoClosureEnv eid
+			zipWithM_ putValue ps vs
+			rs <- eval blk
+			exitClosureEnv eid
+			return $ last rs
+evalPrimary (PClosure f) = do
+	eid <- newCEnv
+	return $ OClosure eid f
 
 getOp :: String -> (Object a) -> (Object a) -> (Object a)
 getOp "+" (ONumber l) (ONumber r) = ONumber $ l + r

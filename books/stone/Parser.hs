@@ -42,6 +42,7 @@ data Primary
 	| POp Op
 	| PInfix Primary Op Primary
 	| PFunction Function -- [Identifier] Block
+	| PClosure Function -- [Identifier] Block
 	| PApply Primary [Primary]
 	deriving Show
 type Number = Int
@@ -93,7 +94,9 @@ primary' :: Primary
 	= p:primary al:postfix?			{ maybe p (PApply p) al }
 
 primary :: Primary
-	= OParen:lexer e:expr CParen:lexer	{ e }
+	= (Identifier "fun"):lexer pl:paramList b:block
+						{ PClosure (pl, b) }
+	/ OParen:lexer e:expr CParen:lexer	{ e }
 	/ (Number n):lexer			{ PNumber n }
 	/ (Identifier i):lexer			{ PIdentifier i }
 	/ (String s):lexer			{ PString s }
