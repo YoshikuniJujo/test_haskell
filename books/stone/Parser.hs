@@ -45,7 +45,9 @@ data Primary
 	| PClosure Function
 	| PApply Primary [Primary]
 	| PDot Primary Identifier
+	| PIndex Primary Primary
 	| PClass (Maybe Identifier) Block
+	| PArray [Primary]
 	deriving Show
 type Number = Integer
 type Identifier = String
@@ -65,6 +67,8 @@ data StoneToken
 	| CParen
 	| OBrace
 	| CBrace
+	| OBracket
+	| CBracket
 	| Semicolon
 	| Comma
 	| Dot
@@ -97,7 +101,9 @@ primary' :: Primary
 	= p:primary pf:postfix*			{ foldl (flip ($)) p pf }
 
 primary :: Primary
-	= (Identifier "fun"):lexer pl:paramList b:block
+	= OBracket:lexer e:elements CBracket:lexer
+						{ PArray e }
+	/ (Identifier "fun"):lexer pl:paramList b:block
 						{ PClosure (pl, b) }
 	/ OParen:lexer e:expr CParen:lexer	{ e }
 	/ (Number n):lexer			{ PNumber n }
@@ -154,6 +160,7 @@ args :: [Expr] = e0:expr es:(Comma:lexer e:expr { e })*
 postfix :: Primary -> Primary
 	= OParen:lexer as:args? CParen:lexer	{ flip PApply $ fromMaybe [] as }
 	/ Dot:lexer (Identifier i):lexer	{ flip PDot i }
+	/ OBracket:lexer e:expr CBracket:lexer	{ flip PIndex e }
 
 member :: Statement
 	= d:def					{ Expr d }
@@ -169,6 +176,9 @@ defclass :: Primary
 		ms:((Identifier "extends"):lexer (Identifier s):lexer { s })?
 		b:classBody	{ PInfix (PIdentifier n) "=" (PClass ms b) }
 
+elements :: [Primary]
+	= e0:expr es:(Comma:lexer e:expr { e })*		{ e0 : es }
+
 testLexer :: [StoneToken] = ts:lexer* _:spaces !_:[True]	{ ts }
 
 lexer :: StoneToken
@@ -182,6 +192,8 @@ lexer :: StoneToken
 	/ _:spaces ')'				{ CParen }
 	/ _:spaces '{'				{ OBrace }
 	/ _:spaces '}'				{ CBrace }
+	/ _:spaces '['				{ OBracket }
+	/ _:spaces ']'				{ CBracket }
 	/ _:spaces ';'				{ Semicolon }
 	/ _:spaces ','				{ Comma }
 	/ _:spaces '.'				{ Dot }

@@ -13,6 +13,7 @@ import Env
 
 import Data.Maybe
 import Data.Time
+import Data.Array
 import Control.Applicative
 import "monads-tf" Control.Monad.State
 import "monads-tf" Control.Monad.Identity
@@ -54,6 +55,13 @@ evalPrimary (PInfix (PDot px i) "=" p) = do
 	putValue i r
 	exitClosureEnv eid
 	return r
+evalPrimary (PInfix (PIndex pa pi) "=" px) = do
+	OArray aid <- evalPrimary pa
+	ONumber i <- evalPrimary pi
+	x <- evalPrimary px
+	putToArray aid i x
+	return x
+	
 evalPrimary (PInfix pl o pr) = do
 	l <- evalPrimary pl
 	r <- evalPrimary pr
@@ -93,6 +101,15 @@ evalPrimary (PDot po m) = do
 	o <- evalPrimary (PIdentifier m)
 	exitClosureEnv eid
 	return o
+evalPrimary (PArray ps) = do
+	os <- mapM evalPrimary ps
+	aid <- newArray $ listArray (0, fromIntegral $ length os - 1) os
+	return $ OArray aid
+evalPrimary (PIndex pa pi) = do
+	OArray a <- evalPrimary pa
+	ONumber i <- evalPrimary pi
+	arr <- getArray a
+	return $ arr ! i
 
 runClass :: Maybe Identifier -> Eval ()
 runClass (Just sn) = do
