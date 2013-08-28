@@ -3,3 +3,6 @@
 環境を導入するときには StateT Env IO () を使う必要があるだろう。
 ErrorT を使う必要があるな。
 ErrorT (StateT Env IO) a のような感じ。
+
+(a b c) と (a . (b . (c . ()))) とは同じものとして扱うべきか。
+
