@@ -1,0 +1,5 @@
+2013.08.28 Wed.
+
+環境を導入するときには StateT Env IO () を使う必要があるだろう。
+ErrorT を使う必要があるな。
+ErrorT (StateT Env IO) a のような感じ。

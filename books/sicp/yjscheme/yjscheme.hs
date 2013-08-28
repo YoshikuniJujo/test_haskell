@@ -1,4 +1,4 @@
-{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE QuasiQuotes, PackageImports #-}
 
 module Main where
 
@@ -6,26 +6,56 @@ import Text.Papillon
 import Data.Char
 import System.IO
 import Control.Applicative
+import "monads-tf" Control.Monad.State
 
 main :: IO ()
 main = do
-	doWhile_ $ do
-		putStr "yjscheme> "
-		hFlush stdout
-		ln <- getLine
-		case ln of
-			":q" -> return False
-			_ -> do	putStrLn $ maybe "parse error" showObj $
-					eval <$> prs ln
-				return True
+	flip runStateT initEnv $ do
+		doWhile_ $ do
+			ln <- lift $ do
+				putStr "yjscheme> "
+				hFlush stdout
+				getLine
+			case ln of
+				":q" -> return False
+				_ -> do	case prs ln of
+						Just p -> do
+							r <- eval p
+							lift $ printObj r
+						Nothing -> lift $ putStrLn 
+							"parse error"
+					return True
+	return ()
+
+type Env = [(String, Object)]
+
+printObj :: Maybe Object -> IO ()
+printObj (Just o) = putStrLn $ showObj o
+printObj _ = putStrLn "can't eval"
+
+initEnv :: Env
+initEnv = [
+	("+", OSubr "+" undefined),
+	("-", OSubr "-" undefined),
+	("*", OSubr "*" undefined),
+	("/", OSubr "/" undefined)
+ ]
 
 doWhile_ :: Monad m => m Bool -> m ()
 doWhile_ act = do
 	b <- act
 	if b then doWhile_ act else return ()
 
-eval :: Object -> Object
-eval i@(IntO _) = i
+eval :: Object -> StateT Env IO (Maybe Object)
+eval i@(OInt _) = return $ return i
+eval (OVar v) = gets $ lookup v
+{-
+eval (OList os) = do
+	f : args <- mapM eval os
+	case f of
+		OSubr _ s -> Just <$> s args
+		_ -> Nothing
+		-}
 
 prs :: String -> Maybe Object
 prs src = case runError $ scm $ parse src of
@@ -33,14 +63,24 @@ prs src = case runError $ scm $ parse src of
 	_ -> Nothing
 
 data Object
-	= IntO Integer
-	deriving Show
+	= OInt Integer
+	| OVar String
+	| OList [Object]
+	| OSubr String ([Object] -> StateT Env IO Object)
 
-showObj (IntO i) = show i
+showObj :: Object -> String
+showObj (OInt i) = show i
+showObj (OVar v) = v
+showObj (OSubr n _) = "#<subr " ++ n ++ ">"
 
 data Tkn
-	= IntL Integer
-	| Other
+	= TIntL Integer
+	| TVar String
+	| TOParen
+	| TCParen
+
+isVar :: Char -> Bool
+isVar = (||) <$> isAlpha <*> (`elem` "+-*/")
 
 [papillon|
 
@@ -48,13 +88,19 @@ scm :: Object
 	= o:obj _:spaces !_	{ o }
 
 obj :: Object
-	= (IntL i):lx		{ IntO i }
+	= (TIntL i):lx		{ OInt i }
+	/ (TVar v):lx		{ OVar v }
+	/ TOParen:lx os:obj* TCParen:lx
+				{ OList os }
 
 lx :: Tkn
 	= s:spaces w:word	{ w }
 
 word :: Tkn
-	= ds:<isDigit>+		{ IntL $ read ds }
+	= ds:<isDigit>+		{ TIntL $ read ds }
+	/ v:<isVar>+		{ TVar v }
+	/ '('			{ TOParen }
+	/ ')'			{ TCParen }
 
 spaces = _:<isSpace>*
 
