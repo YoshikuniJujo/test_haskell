@@ -20,13 +20,10 @@ main = do
 	_ <- runErrorT $ flip runStateT initEnv $ do
 		doWhile_ $ do
 			ln <- prompt 0 ""
-			case ln of
-				" :q" -> return False
-				_ -> do	case prs ln of
-						Just p -> printObj $ eval p
-						Nothing -> liftIO $ putStrLn 
-							$ "parse error: " ++ ln
-					return True
+			case prs ln of
+				Just p -> printObj $ eval p
+				Nothing -> liftIO $ putStrLn $ "parse error: " ++ ln
+			return True
 	return ()
 
 type Env = [(String, Object)]
@@ -39,10 +36,9 @@ prompt d s = do
 		getLine
 	let	s' = s ++ " " ++ n
 		d' = dpt s'
-	if s' == " :q" then return s' else
-		if maybe False (> 0) d'
-			then prompt (fromJust d') s'
-			else return s'
+	if maybe False (> 0) d'
+		then prompt (fromJust d') s'
+		else return s'
 
 printObj :: SchemeM Object -> SchemeM ()
 printObj o = catchError (o >>= liftIO . putStrLn . showObj) $ \e ->
