@@ -4,11 +4,12 @@ module Main where
 
 import Text.Papillon
 import Data.Char
+import Data.Maybe
+import Data.Ratio
 import System.IO
 -- import Control.Applicative
 import "monads-tf" Control.Monad.State
 import "monads-tf" Control.Monad.Error
-import Data.Ratio
 
 type SchemeM = StateT Env (ErrorT Err IO)
 type Err = String
@@ -17,7 +18,7 @@ main :: IO ()
 main = do
 	_ <- runErrorT $ flip runStateT initEnv $ do
 		doWhile_ $ do
-			ln <- prompt ""
+			ln <- prompt 0 ""
 			case ln of
 				" :q" -> return False
 				_ -> do	case prs ln of
@@ -29,16 +30,17 @@ main = do
 
 type Env = [(String, Object)]
 
-prompt :: String -> SchemeM String
-prompt s = do
+prompt :: Int -> String -> SchemeM String
+prompt d s = do
 	n <- liftIO $ do
-		putStr "yjscheme> "
+		putStr $ "yjscheme:" ++ show d ++ ">"
 		hFlush stdout
 		getLine
-	let s' = s ++ " " ++ n
+	let	s' = s ++ " " ++ n
+		d' = dpt s'
 	if s' == " :q" then return s' else
-		if maybe False (> 0) $ dpt s'
-			then prompt s'
+		if maybe False (> 0) d'
+			then prompt (fromJust d') s'
 			else return s'
 
 printObj :: SchemeM Object -> SchemeM ()
