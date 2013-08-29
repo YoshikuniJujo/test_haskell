@@ -134,7 +134,7 @@ ors (OCons x r) = do
 	ret <- eval x
 	case ret of
 		OBool False -> ors r
-		_ -> return x
+		_ -> return ret
 ors ONil = return $ OBool False
 ors o = throwError $ "*** ERROR: proper list required for function application or macro use: " ++
 	showObj (OCons (OVar "or") o)
