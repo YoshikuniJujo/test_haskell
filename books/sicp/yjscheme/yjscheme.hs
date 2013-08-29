@@ -33,7 +33,7 @@ type Env = [(String, Object)]
 prompt :: Int -> String -> SchemeM String
 prompt d s = do
 	n <- liftIO $ do
-		putStr $ "yjscheme:" ++ show d ++ ">"
+		putStr $ "yjscheme:" ++ show d ++ "> "
 		hFlush stdout
 		getLine
 	let	s' = s ++ " " ++ n
@@ -53,7 +53,8 @@ initEnv = [
 	("-", OSubr "-" sub),
 	("*", OSubr "*" $ foldListl (iop (*)) $ OInt 1),
 	("/", OSubr "/" div'),
-	("quote", OSyntax "quote" car)
+	("quote", OSyntax "quote" car),
+	("define", OSyntax "define" define)
  ]
 
 iop :: (forall a . Num a => a -> a -> a) -> Object -> Object -> SchemeM Object
@@ -103,6 +104,13 @@ castToDouble x = throwError $ "castToDouble: can't cast: " ++ show x
 car :: Object -> SchemeM Object
 car (OCons a _) = return a
 car _ = throwError "car: not cons "
+
+define :: Object -> SchemeM Object
+define (OCons v@(OVar var) (OCons val ONil)) = do
+	r <- eval val
+	modify ((var, r) :)
+	return v
+define o = throwError $ "*** ERROR: syntax-error: " ++ showObj o
 
 doWhile_ :: Monad m => m Bool -> m ()
 doWhile_ act = do
