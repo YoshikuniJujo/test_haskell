@@ -126,6 +126,7 @@ showObj (ORational r) = show (numerator r) ++ "/" ++ show (denominator r)
 showObj (OVar v) = v
 showObj (OSubr n _) = "#<subr " ++ n ++ ">"
 showObj (OSyntax n _) = "#<syntax " ++ n ++ ">"
+showObj (OCons (OVar "quote") (OCons a ONil)) = "'" ++ showObj a
 showObj c@(OCons _ _) = showCons False c
 showObj ONil = "()"
 
@@ -144,6 +145,7 @@ data Tkn
 	| TOParen
 	| TCParen
 	| TDot
+	| TQuote
 
 isVar :: Char -> Bool
 isVar = (||) <$> isAlpha <*> (`elem` "+-*/")
@@ -160,6 +162,7 @@ obj :: Object
 				{ foldr OCons ONil os }
 	/ TOParen:lx as:obj* TDot:lx d:obj TCParen:lx
 				{ foldr OCons d as }
+	/ TQuote:lx o:obj	{ OCons (OVar "quote") $ OCons o ONil}
 
 lx :: Tkn
 	= _:spaces w:word	{ w }
@@ -170,6 +173,7 @@ word :: Tkn
 	/ '('			{ TOParen }
 	/ ')'			{ TCParen }
 	/ '.'			{ TDot }
+	/ '\''			{ TQuote }
 
 spaces = _:<isSpace>*
 
