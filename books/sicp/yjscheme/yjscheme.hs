@@ -82,6 +82,11 @@ initEnv = [
 	(EVar "<", OSubr "<" $ bopSeq (<)),
 	(EVar ">", OSubr ">" $ bopSeq (>)),
 	(EVar "=", OSubr "=" $ bopSeq (==)),
+--	(EVar "and", OSubr "and" $ foldListl (bbop (&&)) $ OBool True),
+--	(EVar "or", OSubr "or" $ foldListl (bbop (||)) $ OBool False),
+	(EVar "and", OSubr "and" ands),
+	(EVar "or", OSubr "or" ors),
+	(EVar "not", OSubr "not" nots),
 	(EVar "quote", OSyntax "quote" car),
 	(EVar "define", OSyntax "define" define),
 	(EVar "display", OSubr "display" display),
@@ -107,6 +112,30 @@ bopSeq _ _ = throwError $ "bopSeq: bad"
 bop :: (forall a . Ord a => a -> a -> Bool) -> Object -> Object -> SchemeM Object
 bop op (OInt n) (OInt m) = return $ OBool $ n `op` m
 bop _ _ _ = throwError $ "bop: bad "
+
+bbop :: (Bool -> Bool -> Bool) -> Object -> Object -> SchemeM Object
+bbop op (OBool b) (OBool c) = return $ OBool $ b `op` c
+bbop _ _ _ = throwError $ "bbop: bad"
+
+ands :: Object -> SchemeM Object
+ands (OCons (OBool False) _) = return $ OBool False
+ands (OCons o ONil) = return o
+ands (OCons _ r) = ands r
+ands ONil = return $ OBool True
+ands o = throwError $ "*** ERROR: proper list required for function application or macro use: " ++
+	showObj (OCons (OVar "and") o)
+
+ors :: Object -> SchemeM Object
+ors (OCons (OBool False) r) = ors r
+ors (OCons o _) = return o
+ors ONil = return $ OBool False
+ors o = throwError $ "*** ERROR: proper list required for function application or macro use: " ++
+	showObj (OCons (OVar "or") o)
+
+nots :: Object -> SchemeM Object
+nots (OCons (OBool False) ONil) = return $ OBool True
+nots (OCons _ ONil) = return $ OBool False
+nots _ = throwError $ "*** ERROR: wrong number of arguments: not requires 1, but got x"
 
 andList :: Object -> Object
 andList (OCons (OBool True) d) = andList d
