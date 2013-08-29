@@ -1,4 +1,4 @@
-{-# LANGUAGE QuasiQuotes, PackageImports, RankNTypes #-}
+{-# LANGUAGE QuasiQuotes, PackageImports, RankNTypes, TupleSections #-}
 
 module Main where
 
@@ -9,15 +9,46 @@ import Data.Ratio
 import System.IO
 import System.Exit
 -- import Control.Applicative
+import Control.Arrow
 import "monads-tf" Control.Monad.State
 import "monads-tf" Control.Monad.Error
 
-type SchemeM = StateT Env (ErrorT Err IO)
+type SchemeM = StateT ((EID, Maybe (EID, Env)), Env) (ErrorT Err IO)
 type Err = String
+type Env = [(EKey, Object)]
+data EKey = EVar String | EID EID deriving (Eq, Show)
+type EID = Int
+topEID :: EID
+topEID = 0
+
+nowEnv :: SchemeM EID
+nowEnv = do
+	((_, here), _) <- get
+	return $ case here of
+		Just (eid, _) -> eid
+		_ -> 0
+
+newEnv :: SchemeM EID
+newEnv = do
+	((maxID, here), tenv) <- get
+	let	newID = succ maxID
+	put ((newID, here), (EID newID, OEnv newID $ maybe [] snd here) : tenv)
+	return $ newID
+
+intoEnv :: EID -> SchemeM ()
+intoEnv eid = do
+	((maxID, here), tenv) <- get
+	case here of
+		Just (oeid, oenv) ->
+			put ((maxID, (eid ,) . (\(OEnv _ e) -> e) <$>
+					lookup (EID eid) tenv),
+				(EID oeid, OEnv oeid oenv) : tenv)
+		_ -> put ((maxID, (eid ,) . (\(OEnv _ e) -> e) <$>
+					lookup (EID eid) tenv), tenv)
 
 main :: IO ()
 main = do
-	_ <- runErrorT $ flip runStateT initEnv $ do
+	_ <- runErrorT $ flip runStateT ((topEID, Nothing), initEnv) $ do
 		doWhile_ $ do
 			ln <- prompt 0 ""
 			case prs ln of
@@ -25,8 +56,6 @@ main = do
 				Nothing -> liftIO $ putStrLn $ "parse error: " ++ ln
 			return True
 	return ()
-
-type Env = [(String, Object)]
 
 prompt :: Int -> String -> SchemeM String
 prompt d s = do
@@ -46,15 +75,17 @@ printObj o = catchError (o >>= liftIO . putStrLn . showObj) $ \e ->
 
 initEnv :: Env
 initEnv = [
-	("+", OSubr "+" $ foldListl (iop (+)) $ OInt 0),
-	("-", OSubr "-" sub),
-	("*", OSubr "*" $ foldListl (iop (*)) $ OInt 1),
-	("/", OSubr "/" div'),
-	("quote", OSyntax "quote" car),
-	("define", OSyntax "define" define),
-	("display", OSubr "display" display),
-	("exit", OSubr "exit" exit),
-	("load", OSubr "load" load)
+	(EVar "+", OSubr "+" $ foldListl (iop (+)) $ OInt 0),
+	(EVar "-", OSubr "-" sub),
+	(EVar "*", OSubr "*" $ foldListl (iop (*)) $ OInt 1),
+	(EVar "/", OSubr "/" div'),
+	(EVar "quote", OSyntax "quote" car),
+	(EVar "define", OSyntax "define" define),
+	(EVar "display", OSubr "display" display),
+	(EVar "exit", OSubr "exit" exit),
+	(EVar "load", OSubr "load" load),
+	(EVar "top-env", OSubr "top-env" topEnv),
+	(EVar "lambda", OSyntax "lambda" $ lambda Nothing)
  ]
 
 iop :: (forall a . Num a => a -> a -> a) -> Object -> Object -> SchemeM Object
@@ -108,8 +139,14 @@ car _ = throwError "car: not cons "
 define :: Object -> SchemeM Object
 define (OCons v@(OVar var) (OCons val ONil)) = do
 	r <- eval val
-	modify ((var, r) :)
+	case r of
+		OClosure Nothing eid as bd -> modify $
+			second ((EVar var, OClosure (Just var) eid as bd) :)
+		_ -> modify $ second ((EVar var, r) :)
 	return v
+define (OCons (OCons fn@(OVar n) as) bd) =
+	define $ OCons fn $ OCons
+		(OCons (OSyntax "lambda" $ lambda $ Just n) $ OCons as bd) ONil
 define o = throwError $ "*** ERROR: syntax-error: " ++ showObj o
 
 display :: Object -> SchemeM Object
@@ -134,6 +171,16 @@ load (OCons (OString fp) ONil) = do
 
 load _ = throwError "*** ERROR: load: bad arguments"
 
+topEnv :: Object -> SchemeM Object
+topEnv ONil = OEnv topEID . snd <$> get
+topEnv _ = throwError "*** ERROR: topEnv: bad arguments"
+
+lambda :: Maybe String -> Object -> SchemeM Object
+lambda n (OCons as bd) = do
+	eid <- newEnv
+	return $ OClosure n eid as bd
+lambda _ o = throwError $ "*** ERROR: malformed lambda: " ++ showObj o
+
 doWhile_ :: Monad m => m Bool -> m ()
 doWhile_ act = do
 	b <- act
@@ -144,18 +191,56 @@ eval i@(OInt _) = return i
 eval d@(ODouble _) = return d
 eval s@(OString _) = return s
 eval (OVar var) = do
-	mval <- gets $ lookup var
-	case mval of
-		Just val -> return val
-		Nothing -> throwError $ "*** ERROR: unbound variable: " ++ var
+	((_, h), _) <- get
+	let lval = case h of
+		Just (_, henv) -> lookup (EVar var) henv
+		Nothing -> Nothing
+	mval <- gets $ (lookup $ EVar var) . snd
+	case (lval, mval) of
+		(Just v, _) -> return v
+		(_, Just val) -> return val
+		(_, _) -> throwError $ "*** ERROR: unbound variable: " ++ var
 eval o@(OCons f_ args_) = do
 	f <- eval f_
 	case f of
 		OSubr _ s -> s =<< mapList eval args_
 		OSyntax _ s -> s args_
+		OClosure _ eid as bd -> do
+			args <- mapList eval args_
+			eid' <- nowEnv
+			intoEnv eid
+			r <- apply as args bd
+			intoEnv eid'
+			return $ lastList r
 		_ -> throwError $ "*** ERROR: invalid application: " ++ showObj o
 eval ONil = return ONil
+eval o@(OSyntax _ _) = return o
 eval _ = throwError "eval: not yet constructed"
+
+apply :: Object -> Object -> Object -> SchemeM Object
+apply vs as bd = do
+	_ <- zipWithList def vs as
+	mapList eval bd
+
+def :: Object -> Object -> SchemeM Object
+def v@(OVar var) val = do
+	((maxID, Just (hid, henv)), tenv) <- get
+	put ((maxID, Just (hid, (EVar var, val) : henv)), tenv)
+	return v
+def _ _ = throwError "def: bad"
+
+zipWithList :: (Object -> Object -> SchemeM Object) ->
+	Object -> Object -> SchemeM Object
+zipWithList f (OCons a d) (OCons a' d') =
+	OCons <$> (f a a') <*> zipWithList f d d'
+zipWithList _ ONil _ = return ONil
+zipWithList _ _ ONil = return ONil
+zipWithList _ _ _ = throwError "zipWithList: bad"
+
+lastList :: Object -> Object
+lastList (OCons a ONil) = a
+lastList (OCons _ d) = lastList d
+lastList _ = error "lastList: bad"
 
 mapList :: (Object -> SchemeM Object) -> Object -> SchemeM Object
 mapList _ ONil = return ONil
@@ -195,6 +280,8 @@ data Object
 	| OTrue
 	| OSubr String (Object -> SchemeM Object)
 	| OSyntax String (Object -> SchemeM Object)
+	| OEnv EID Env
+	| OClosure (Maybe String) EID Object Object
 
 instance Show Object where
 	show (ODouble d) = "(ODouble " ++ show d ++ ")"
@@ -213,6 +300,8 @@ showObj c@(OCons _ _) = showCons False c
 showObj ONil = "()"
 showObj OTrue = "#t"
 showObj OUndef = "#<undef>"
+showObj (OEnv eid _) = "#<env " ++ show eid ++ ">"
+showObj (OClosure n _ _ _) = "#<closure " ++ fromMaybe "#f" n ++ ">"
 
 showCons :: Bool -> Object -> String
 showCons l (OCons a d) = (if l then id else ("(" ++) . (++ ")")) $
