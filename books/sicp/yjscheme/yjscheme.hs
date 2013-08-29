@@ -17,20 +17,29 @@ main :: IO ()
 main = do
 	_ <- runErrorT $ flip runStateT initEnv $ do
 		doWhile_ $ do
-			ln <- liftIO $ do
-				putStr "yjscheme> "
-				hFlush stdout
-				getLine
+			ln <- prompt ""
 			case ln of
-				":q" -> return False
+				" :q" -> return False
 				_ -> do	case prs ln of
 						Just p -> printObj $ eval p
 						Nothing -> liftIO $ putStrLn 
-							"parse error"
+							$ "parse error " ++ ln
 					return True
 	return ()
 
 type Env = [(String, Object)]
+
+prompt :: String -> SchemeM String
+prompt s = do
+	n <- liftIO $ do
+		putStr "yjscheme> "
+		hFlush stdout
+		getLine
+	let s' = s ++ " " ++ n
+	if s' == " :q" then return s' else
+		if maybe False (> 0) $ dpt s'
+			then prompt s'
+			else return s'
 
 printObj :: SchemeM Object -> SchemeM ()
 printObj o = catchError (o >>= liftIO . putStrLn . showObj) $ \e ->
@@ -126,6 +135,11 @@ foldListl _ o0 ONil = return o0
 foldListl f o0 (OCons a d) = flip (foldListl f) d =<< f o0 a
 foldListl _ _ _ = throwError "foldListl: not list"
 
+dpt :: String -> Maybe Int
+dpt src = case runError $ depth $ parse src of
+	Right (r, _) -> Just r
+	_ -> Nothing
+
 prs :: String -> Maybe Object
 prs src = case runError $ scm $ parse src of
 	Right (r, _) -> Just r
@@ -178,6 +192,11 @@ isVar :: Char -> Bool
 isVar = (||) <$> isAlpha <*> (`elem` "+-*/")
 
 [papillon|
+
+depth :: Int
+	= TOParen:lx _:obj* d:depth	{ d + 1 }
+	/ TCParen:lx			{ - 1 }
+	/				{ 0 }
 
 scm :: Object
 	= o:obj _:spaces !_	{ o }
