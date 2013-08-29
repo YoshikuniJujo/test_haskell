@@ -1,4 +1,4 @@
-{-# LANGUAGE QuasiQuotes, PackageImports #-}
+{-# LANGUAGE QuasiQuotes, PackageImports, RankNTypes #-}
 
 module Main where
 
@@ -45,12 +45,20 @@ initEnv = [
 	("quote", OSyntax "quote" car)
  ]
 
-iop :: (Integer -> Integer -> Integer) -> Object -> Object -> SchemeM Object
+iop :: (forall a . Num a => a -> a -> a) -> Object -> Object -> SchemeM Object
 iop op (OInt n) (OInt m) = return $ OInt $ n `op` m
-iop _ _ _ = throwError "iop: bad"
+iop op (ODouble d) (ODouble e) = return $ ODouble $ d `op` e
+iop op n@(OInt _) e@(ODouble _) = flip (iop op) e =<< castToDouble n
+iop op d@(ODouble _) m@(OInt _) = iop op d =<< castToDouble m
+iop _ x y = throwError $ "iop: bad " ++ showObj x ++ " " ++ showObj y
 
-rop :: (Rational -> Rational -> Rational) -> Object -> Object -> SchemeM Object
-rop op (ORational n) (ORational m) = return $ ORational $ n `op` m
+rop :: (forall a . Fractional a => a -> a -> a) -> Object -> Object -> SchemeM Object
+rop op (ODouble d) (ODouble e) = return $ ODouble $ d `op` e
+rop op (ORational n) (ORational m) = do
+	let r = n `op` m
+	if denominator r == 1
+		then return $ OInt $ numerator r
+		else return $ ORational r
 rop _ _ _ = throwError "rop: bad"
 
 sub :: Object -> SchemeM Object
@@ -60,15 +68,26 @@ sub _ = throwError "sub: bad"
 
 div' :: Object -> SchemeM Object
 div' (OCons (OInt n) ONil) = return $ ORational $ recip $ fromIntegral n
+div' (OCons (ODouble d) ONil) = return $ ODouble $ recip d
+div' (OCons n@(ODouble _) ms) = do
+	rop (/) n =<< castToDouble =<<
+		foldListl (iop (*)) (OInt 1) ms
 div' (OCons n ms) = do
 	n' <- castToRational n
 	rop (/) n' =<< castToRational =<<
-		foldListl (iop (*)) (OInt 0) ms
+		foldListl (iop (*)) (OInt 1) ms
 div' _ = throwError "div': bad"
 
 castToRational :: Object -> SchemeM Object
 castToRational (OInt n) = return $ ORational $ fromIntegral n
+castToRational (ODouble d) = return $ ORational $ toRational d
 castToRational _ = throwError $ "castToRational: can't cast"
+
+castToDouble :: Object -> SchemeM Object
+castToDouble (OInt n) = return $ ODouble $ fromIntegral n
+castToDouble (ORational r) = return $ ODouble $ fromRational r
+castToDouble d@(ODouble _) = return d
+castToDouble x = throwError $ "castToDouble: can't cast: " ++ show x
 
 car :: Object -> SchemeM Object
 car (OCons a _) = return a
@@ -81,6 +100,7 @@ doWhile_ act = do
 
 eval :: Object -> SchemeM Object
 eval i@(OInt _) = return i
+eval d@(ODouble _) = return d
 eval (OVar var) = do
 	mval <- gets $ lookup var
 	case mval of
@@ -114,15 +134,21 @@ prs src = case runError $ scm $ parse src of
 data Object
 	= OInt Integer
 	| ORational Rational
+	| ODouble Double
 	| OVar String
 	| OCons Object Object
 	| ONil
 	| OSubr String (Object -> SchemeM Object)
 	| OSyntax String (Object -> SchemeM Object)
 
+instance Show Object where
+	show (ODouble d) = "(ODouble " ++ show d ++ ")"
+	show _ = "show Object: yet"
+
 showObj :: Object -> String
 showObj (OInt i) = show i
 showObj (ORational r) = show (numerator r) ++ "/" ++ show (denominator r)
+showObj (ODouble d) = show d
 showObj (OVar v) = v
 showObj (OSubr n _) = "#<subr " ++ n ++ ">"
 showObj (OSyntax n _) = "#<syntax " ++ n ++ ">"
@@ -141,6 +167,7 @@ showCons _ _ = error "not cons"
 
 data Tkn
 	= TIntL Integer
+	| TDoubleL Double
 	| TVar String
 	| TOParen
 	| TCParen
@@ -157,6 +184,7 @@ scm :: Object
 
 obj :: Object
 	= (TIntL i):lx		{ OInt i }
+	/ (TDoubleL d):lx	{ ODouble d }
 	/ (TVar v):lx		{ OVar v }
 	/ TOParen:lx os:obj* TCParen:lx
 				{ foldr OCons ONil os }
@@ -168,7 +196,9 @@ lx :: Tkn
 	= _:spaces w:word	{ w }
 
 word :: Tkn
-	= ds:<isDigit>+		{ TIntL $ read ds }
+	= n:<isDigit>+ '.' d:<isDigit>+
+				{ TDoubleL $ read $ n ++ "." ++ d }
+	/ ds:<isDigit>+		{ TIntL $ read ds }
 	/ v:<isVar>+		{ TVar v }
 	/ '('			{ TOParen }
 	/ ')'			{ TCParen }
