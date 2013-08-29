@@ -89,7 +89,8 @@ initEnv = [
 	(EVar "load", OSubr "load" load),
 	(EVar "top-env", OSubr "top-env" topEnv),
 	(EVar "lambda", OSyntax "lambda" $ lambda Nothing),
-	(EVar "cond", OSyntax "cond" cond)
+	(EVar "cond", OSyntax "cond" cond),
+	(EVar "if", OSyntax "if" ifs)
  ]
 
 iop :: (forall a . Num a => a -> a -> a) -> Object -> Object -> SchemeM Object
@@ -210,6 +211,20 @@ cond (OCons (OCons test proc) rest) = do
 cond ONil = return OUndef
 cond o = throwError $ "*** ERROR: syntax-error: " ++
 	showObj (OCons (OVar "cond") o)
+
+ifs :: Object -> SchemeM Object
+ifs (OCons test (OCons thn (OCons els ONil))) = do
+	t <- eval test
+	case t of
+		OBool False -> eval els
+		_ -> eval thn
+ifs (OCons test (OCons thn ONil)) = do
+	t <- eval test
+	case t of
+		OBool False -> return OUndef
+		_ -> eval thn
+ifs o = throwError $ "*** ERROR: syntax-error: malformed if: " ++
+	showObj (OCons (OVar "if") o)
 
 doWhile_ :: Monad m => m Bool -> m ()
 doWhile_ act = do
