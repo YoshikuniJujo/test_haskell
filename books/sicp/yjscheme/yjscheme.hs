@@ -79,13 +79,17 @@ initEnv = [
 	(EVar "-", OSubr "-" sub),
 	(EVar "*", OSubr "*" $ foldListl (iop (*)) $ OInt 1),
 	(EVar "/", OSubr "/" div'),
+	(EVar "<", OSubr "<" $ bopSeq (<)),
+	(EVar ">", OSubr ">" $ bopSeq (>)),
+	(EVar "=", OSubr "=" $ bopSeq (==)),
 	(EVar "quote", OSyntax "quote" car),
 	(EVar "define", OSyntax "define" define),
 	(EVar "display", OSubr "display" display),
 	(EVar "exit", OSubr "exit" exit),
 	(EVar "load", OSubr "load" load),
 	(EVar "top-env", OSubr "top-env" topEnv),
-	(EVar "lambda", OSyntax "lambda" $ lambda Nothing)
+	(EVar "lambda", OSyntax "lambda" $ lambda Nothing),
+	(EVar "cond", OSyntax "cond" cond)
  ]
 
 iop :: (forall a . Num a => a -> a -> a) -> Object -> Object -> SchemeM Object
@@ -94,6 +98,20 @@ iop op (ODouble d) (ODouble e) = return $ ODouble $ d `op` e
 iop op n@(OInt _) e@(ODouble _) = flip (iop op) e =<< castToDouble n
 iop op d@(ODouble _) m@(OInt _) = iop op d =<< castToDouble m
 iop _ x y = throwError $ "iop: bad " ++ showObj x ++ " " ++ showObj y
+
+bopSeq :: (forall a . Ord a => a -> a -> Bool) -> Object -> SchemeM Object
+bopSeq op o@(OCons _ d) = andList <$> zipWithList (bop op) o d
+bopSeq _ _ = throwError $ "bopSeq: bad"
+
+bop :: (forall a . Ord a => a -> a -> Bool) -> Object -> Object -> SchemeM Object
+bop op (OInt n) (OInt m) = return $ OBool $ n `op` m
+bop _ _ _ = throwError $ "bop: bad "
+
+andList :: Object -> Object
+andList (OCons (OBool True) d) = andList d
+andList (OCons (OBool False) _) = OBool False
+andList ONil = OBool True
+andList _ = error $ "andList: bad"
 
 rop :: (forall a . Fractional a => a -> a -> a) -> Object -> Object -> SchemeM Object
 rop op (ODouble d) (ODouble e) = return $ ODouble $ d `op` e
@@ -166,7 +184,7 @@ load :: Object -> SchemeM Object
 load (OCons (OString fp) ONil) = do
 	src <- liftIO $ readFile fp
 	case prsf src of
-		Just os -> mapM_ eval os >> return OTrue
+		Just os -> mapM_ eval os >> return (OBool True)
 		_ -> throwError "*** ERROR: parse error"
 
 load _ = throwError "*** ERROR: load: bad arguments"
@@ -180,6 +198,16 @@ lambda n (OCons as bd) = do
 	eid <- newEnv
 	return $ OClosure n eid as bd
 lambda _ o = throwError $ "*** ERROR: malformed lambda: " ++ showObj o
+
+cond :: Object -> SchemeM Object
+cond (OCons (OCons test proc) rest) = do
+	t <- eval test
+	case t of
+		OBool False -> cond rest
+		_ -> lastList <$> mapList eval proc
+cond ONil = return OUndef
+cond o = throwError $ "*** ERROR: syntax-error: " ++
+	showObj (OCons (OVar "cond") o)
 
 doWhile_ :: Monad m => m Bool -> m ()
 doWhile_ act = do
@@ -214,6 +242,7 @@ eval o@(OCons f_ args_) = do
 			return $ lastList r
 		_ -> throwError $ "*** ERROR: invalid application: " ++ showObj o
 eval ONil = return ONil
+eval o@(OBool _) = return o
 eval o@(OSyntax _ _) = return o
 eval _ = throwError "eval: not yet constructed"
 
@@ -259,7 +288,7 @@ prsf src = case runError $ scmf $ parse src of
 	_ -> Nothing
 
 dpt :: String -> Maybe Int
-dpt src = case runError $ depth $ parse src of
+dpt src = case runError $ depth' $ parse src of
 	Right (r, _) -> Just r
 	_ -> Nothing
 
@@ -277,7 +306,7 @@ data Object
 	| OCons Object Object
 	| ONil
 	| OUndef
-	| OTrue
+	| OBool Bool
 	| OSubr String (Object -> SchemeM Object)
 	| OSyntax String (Object -> SchemeM Object)
 	| OEnv EID Env
@@ -298,7 +327,8 @@ showObj (OSyntax n _) = "#<syntax " ++ n ++ ">"
 showObj (OCons (OVar "quote") (OCons a ONil)) = "'" ++ showObj a
 showObj c@(OCons _ _) = showCons False c
 showObj ONil = "()"
-showObj OTrue = "#t"
+showObj (OBool True) = "#t"
+showObj (OBool False) = "#f"
 showObj OUndef = "#<undef>"
 showObj (OEnv eid _) = "#<env " ++ show eid ++ ">"
 showObj (OClosure n _ _ _) = "#<closure " ++ fromMaybe "#f" n ++ ">"
@@ -318,18 +348,22 @@ data Tkn
 	| TStringL String
 	| TVar String
 	| TTrue
+	| TFalse
 	| TOParen
 	| TCParen
 	| TDot
 	| TQuote
 
 isVar :: Char -> Bool
-isVar = (||) <$> isAlpha <*> (`elem` "+-*/")
+isVar = (||) <$> isAlpha <*> (`elem` "+-*/<=>")
 
 [papillon|
 
 scmf :: [Object]
 	= os:obj* _:spaces !_	{ os }
+
+depth' :: Int
+	= d:depth _:spaces !_	{ d }
 
 depth :: Int
 	= TOParen:lx _:obj* d:depth	{ d + 1 }
@@ -349,7 +383,8 @@ obj :: Object
 	/ TOParen:lx as:obj* TDot:lx d:obj TCParen:lx
 				{ foldr OCons d as }
 	/ TQuote:lx o:obj	{ OCons (OVar "quote") $ OCons o ONil}
-	/ TTrue:lx		{ OTrue }
+	/ TTrue:lx		{ OBool True }
+	/ TFalse:lx		{ OBool False }
 
 lx :: Tkn
 	= _:spaces w:word	{ w }
@@ -357,7 +392,8 @@ lx :: Tkn
 word :: Tkn
 	= n:<isDigit>+ '.' d:<isDigit>+
 				{ TDoubleL $ read $ n ++ "." ++ d }
-	/ ds:<isDigit>+		{ TIntL $ read ds }
+	/ mm:('-' { '-' })? ds:<isDigit>+
+				{ TIntL $ read $ maybe ds (: ds) mm }
 	/ s:string		{ TStringL s }
 	/ v:<isVar>+		{ TVar v }
 	/ '('			{ TOParen }
@@ -365,6 +401,7 @@ word :: Tkn
 	/ '.'			{ TDot }
 	/ '\''			{ TQuote }
 	/ '#' 't'		{ TTrue }
+	/ '#' 'f'		{ TFalse }
 
 string :: String = '"' s:(<(`notElem` "\"\\")> / '\\' c:esc { c })* '"'
 				{ s }
