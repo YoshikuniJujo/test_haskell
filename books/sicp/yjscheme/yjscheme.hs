@@ -53,7 +53,8 @@ initEnv = [
 	("quote", OSyntax "quote" car),
 	("define", OSyntax "define" define),
 	("display", OSubr "display" display),
-	("exit", OSubr "exit" exit)
+	("exit", OSubr "exit" exit),
+	("load", OSubr "load" load)
  ]
 
 iop :: (forall a . Num a => a -> a -> a) -> Object -> Object -> SchemeM Object
@@ -124,6 +125,15 @@ exit (OCons (OInt ec) ONil)
 		return OUndef
 exit _ = throwError "*** ERROR: bad arguments"
 
+load :: Object -> SchemeM Object
+load (OCons (OString fp) ONil) = do
+	src <- liftIO $ readFile fp
+	case prsf src of
+		Just os -> mapM_ eval os >> return OTrue
+		_ -> throwError "*** ERROR: parse error"
+
+load _ = throwError "*** ERROR: load: bad arguments"
+
 doWhile_ :: Monad m => m Bool -> m ()
 doWhile_ act = do
 	b <- act
@@ -158,6 +168,11 @@ foldListl _ o0 ONil = return o0
 foldListl f o0 (OCons a d) = flip (foldListl f) d =<< f o0 a
 foldListl _ _ _ = throwError "foldListl: not list"
 
+prsf :: String -> Maybe [Object]
+prsf src = case runError $ scmf $ parse src of
+	Right (r, _) -> Just r
+	_ -> Nothing
+
 dpt :: String -> Maybe Int
 dpt src = case runError $ depth $ parse src of
 	Right (r, _) -> Just r
@@ -177,6 +192,7 @@ data Object
 	| OCons Object Object
 	| ONil
 	| OUndef
+	| OTrue
 	| OSubr String (Object -> SchemeM Object)
 	| OSyntax String (Object -> SchemeM Object)
 
@@ -195,6 +211,7 @@ showObj (OSyntax n _) = "#<syntax " ++ n ++ ">"
 showObj (OCons (OVar "quote") (OCons a ONil)) = "'" ++ showObj a
 showObj c@(OCons _ _) = showCons False c
 showObj ONil = "()"
+showObj OTrue = "#t"
 showObj OUndef = "#<undef>"
 
 showCons :: Bool -> Object -> String
@@ -211,6 +228,7 @@ data Tkn
 	| TDoubleL Double
 	| TStringL String
 	| TVar String
+	| TTrue
 	| TOParen
 	| TCParen
 	| TDot
@@ -220,6 +238,9 @@ isVar :: Char -> Bool
 isVar = (||) <$> isAlpha <*> (`elem` "+-*/")
 
 [papillon|
+
+scmf :: [Object]
+	= os:obj* _:spaces !_	{ os }
 
 depth :: Int
 	= TOParen:lx _:obj* d:depth	{ d + 1 }
@@ -239,6 +260,7 @@ obj :: Object
 	/ TOParen:lx as:obj* TDot:lx d:obj TCParen:lx
 				{ foldr OCons d as }
 	/ TQuote:lx o:obj	{ OCons (OVar "quote") $ OCons o ONil}
+	/ TTrue:lx		{ OTrue }
 
 lx :: Tkn
 	= _:spaces w:word	{ w }
@@ -253,6 +275,7 @@ word :: Tkn
 	/ ')'			{ TCParen }
 	/ '.'			{ TDot }
 	/ '\''			{ TQuote }
+	/ '#' 't'		{ TTrue }
 
 string :: String = '"' s:(<(`notElem` "\"\\")> / '\\' c:esc { c })* '"'
 				{ s }
