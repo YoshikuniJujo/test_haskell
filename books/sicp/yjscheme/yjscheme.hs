@@ -200,6 +200,8 @@ lambda n (OCons as bd) = do
 lambda _ o = throwError $ "*** ERROR: malformed lambda: " ++ showObj o
 
 cond :: Object -> SchemeM Object
+cond (OCons (OCons (OVar "else") proc) ONil) =
+	lastList <$> mapList eval proc
 cond (OCons (OCons test proc) rest) = do
 	t <- eval test
 	case t of
