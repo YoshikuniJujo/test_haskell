@@ -7,31 +7,33 @@ import Data.Char
 import System.IO
 import Control.Applicative
 import "monads-tf" Control.Monad.State
+import "monads-tf" Control.Monad.Error
+
+type SchemeM = StateT Env (ErrorT Err IO)
+type Err = String
 
 main :: IO ()
 main = do
-	flip runStateT initEnv $ do
+	runErrorT $ flip runStateT initEnv $ do
 		doWhile_ $ do
-			ln <- lift $ do
+			ln <- liftIO $ do
 				putStr "yjscheme> "
 				hFlush stdout
 				getLine
 			case ln of
 				":q" -> return False
 				_ -> do	case prs ln of
-						Just p -> do
-							r <- eval p
-							lift $ printObj r
-						Nothing -> lift $ putStrLn 
+						Just p -> printObj $ eval p
+						Nothing -> liftIO $ putStrLn 
 							"parse error"
 					return True
 	return ()
 
 type Env = [(String, Object)]
 
-printObj :: Maybe Object -> IO ()
-printObj (Just o) = putStrLn $ showObj o
-printObj _ = putStrLn "can't eval"
+printObj :: SchemeM Object -> SchemeM ()
+printObj o = catchError (o >>= liftIO . putStrLn . showObj) $ \e ->
+	liftIO (putStrLn e)
 
 initEnv :: Env
 initEnv = [
@@ -46,9 +48,13 @@ doWhile_ act = do
 	b <- act
 	if b then doWhile_ act else return ()
 
-eval :: Object -> StateT Env IO (Maybe Object)
-eval i@(OInt _) = return $ return i
-eval (OVar v) = gets $ lookup v
+eval :: Object -> SchemeM Object
+eval i@(OInt _) = return i
+eval (OVar var) = do
+	mval <- gets $ lookup var
+	case mval of
+		Just val -> return val
+		Nothing -> throwError $ "*** ERROR: unbound variable: " ++ var
 {-
 eval (OList os) = do
 	f : args <- mapM eval os
@@ -66,7 +72,7 @@ data Object
 	= OInt Integer
 	| OVar String
 	| OList [Object]
-	| OSubr String ([Object] -> StateT Env IO Object)
+	| OSubr String ([Object] -> SchemeM Object)
 
 showObj :: Object -> String
 showObj (OInt i) = show i
