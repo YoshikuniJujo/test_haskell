@@ -7,6 +7,7 @@ import Data.Char
 import Data.Maybe
 import Data.Ratio
 import System.IO
+import System.Exit
 -- import Control.Applicative
 import "monads-tf" Control.Monad.State
 import "monads-tf" Control.Monad.Error
@@ -24,7 +25,7 @@ main = do
 				_ -> do	case prs ln of
 						Just p -> printObj $ eval p
 						Nothing -> liftIO $ putStrLn 
-							$ "parse error " ++ ln
+							$ "parse error: " ++ ln
 					return True
 	return ()
 
@@ -54,7 +55,9 @@ initEnv = [
 	("*", OSubr "*" $ foldListl (iop (*)) $ OInt 1),
 	("/", OSubr "/" div'),
 	("quote", OSyntax "quote" car),
-	("define", OSyntax "define" define)
+	("define", OSyntax "define" define),
+	("display", OSubr "display" display),
+	("exit", OSubr "exit" exit)
  ]
 
 iop :: (forall a . Num a => a -> a -> a) -> Object -> Object -> SchemeM Object
@@ -112,6 +115,19 @@ define (OCons v@(OVar var) (OCons val ONil)) = do
 	return v
 define o = throwError $ "*** ERROR: syntax-error: " ++ showObj o
 
+display :: Object -> SchemeM Object
+display (OCons (OString s) ONil) = liftIO (putStr s) >> return OUndef
+display (OCons v ONil) = liftIO (putStr $ showObj v) >> return OUndef
+display _ = throwError $ "*** ERROR: not implemented yet"
+
+exit :: Object -> SchemeM Object
+exit ONil = liftIO exitSuccess >> return OUndef
+exit (OCons (OInt ec) ONil)
+	| ec == 0 = exit ONil
+	| otherwise = liftIO (exitWith $ ExitFailure $ fromIntegral ec) >>
+		return OUndef
+exit _ = throwError "*** ERROR: bad arguments"
+
 doWhile_ :: Monad m => m Bool -> m ()
 doWhile_ act = do
 	b <- act
@@ -120,6 +136,7 @@ doWhile_ act = do
 eval :: Object -> SchemeM Object
 eval i@(OInt _) = return i
 eval d@(ODouble _) = return d
+eval s@(OString _) = return s
 eval (OVar var) = do
 	mval <- gets $ lookup var
 	case mval of
@@ -159,9 +176,11 @@ data Object
 	= OInt Integer
 	| ORational Rational
 	| ODouble Double
+	| OString String
 	| OVar String
 	| OCons Object Object
 	| ONil
+	| OUndef
 	| OSubr String (Object -> SchemeM Object)
 	| OSyntax String (Object -> SchemeM Object)
 
@@ -173,12 +192,14 @@ showObj :: Object -> String
 showObj (OInt i) = show i
 showObj (ORational r) = show (numerator r) ++ "/" ++ show (denominator r)
 showObj (ODouble d) = show d
+showObj (OString s) = show s
 showObj (OVar v) = v
 showObj (OSubr n _) = "#<subr " ++ n ++ ">"
 showObj (OSyntax n _) = "#<syntax " ++ n ++ ">"
 showObj (OCons (OVar "quote") (OCons a ONil)) = "'" ++ showObj a
 showObj c@(OCons _ _) = showCons False c
 showObj ONil = "()"
+showObj OUndef = "#<undef>"
 
 showCons :: Bool -> Object -> String
 showCons l (OCons a d) = (if l then id else ("(" ++) . (++ ")")) $
@@ -192,6 +213,7 @@ showCons _ _ = error "not cons"
 data Tkn
 	= TIntL Integer
 	| TDoubleL Double
+	| TStringL String
 	| TVar String
 	| TOParen
 	| TCParen
@@ -214,6 +236,7 @@ scm :: Object
 obj :: Object
 	= (TIntL i):lx		{ OInt i }
 	/ (TDoubleL d):lx	{ ODouble d }
+	/ (TStringL s):lx	{ OString s }
 	/ (TVar v):lx		{ OVar v }
 	/ TOParen:lx os:obj* TCParen:lx
 				{ foldr OCons ONil os }
@@ -228,11 +251,18 @@ word :: Tkn
 	= n:<isDigit>+ '.' d:<isDigit>+
 				{ TDoubleL $ read $ n ++ "." ++ d }
 	/ ds:<isDigit>+		{ TIntL $ read ds }
+	/ s:string		{ TStringL s }
 	/ v:<isVar>+		{ TVar v }
 	/ '('			{ TOParen }
 	/ ')'			{ TCParen }
 	/ '.'			{ TDot }
 	/ '\''			{ TQuote }
+
+string :: String = '"' s:(<(`notElem` "\"\\")> / '\\' c:esc { c })* '"'
+				{ s }
+
+esc :: Char
+	= 'n'			{ '\n' }
 
 spaces = _:<isSpace>*
 
