@@ -101,8 +101,11 @@ initEnv = [
 iop :: (forall a . Num a => a -> a -> a) -> Object -> Object -> SchemeM Object
 iop op (OInt n) (OInt m) = return $ OInt $ n `op` m
 iop op (ODouble d) (ODouble e) = return $ ODouble $ d `op` e
+iop op (ORational r) (ORational s) = return $ ORational $ r `op` s
 iop op n@(OInt _) e@(ODouble _) = flip (iop op) e =<< castToDouble n
 iop op d@(ODouble _) m@(OInt _) = iop op d =<< castToDouble m
+iop op n@(OInt _) s@(ORational _) = flip (iop op) s =<< castToRational n
+iop op r@(ORational _) m@(OInt _) = iop op r =<< castToRational m
 iop _ x y = throwError $ "iop: bad " ++ showObj x ++ " " ++ showObj y
 
 bopSeq :: (forall a . Ord a => a -> a -> Bool) -> Object -> SchemeM Object
