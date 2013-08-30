@@ -106,6 +106,8 @@ iop op n@(OInt _) e@(ODouble _) = flip (iop op) e =<< castToDouble n
 iop op d@(ODouble _) m@(OInt _) = iop op d =<< castToDouble m
 iop op n@(OInt _) s@(ORational _) = flip (iop op) s =<< castToRational n
 iop op r@(ORational _) m@(OInt _) = iop op r =<< castToRational m
+iop op d@(ODouble _) s@(ORational _) = iop op d =<< castToDouble s
+iop op r@(ORational _) e@(ODouble _) = flip (iop op) e =<< castToDouble r
 iop _ x y = throwError $ "iop: bad " ++ showObj x ++ " " ++ showObj y
 
 bopSeq :: (forall a . Ord a => a -> a -> Bool) -> Object -> SchemeM Object
@@ -114,7 +116,10 @@ bopSeq _ _ = throwError $ "bopSeq: bad"
 
 bop :: (forall a . Ord a => a -> a -> Bool) -> Object -> Object -> SchemeM Object
 bop op (OInt n) (OInt m) = return $ OBool $ n `op` m
-bop _ _ _ = throwError $ "bop: bad "
+bop op (ODouble d) (ODouble e) = return $ OBool $ d `op` e
+bop op (ORational r) (ORational s) = return $ OBool $ r `op` s
+bop op d@(ODouble _) m@(OInt _) = bop op d =<< castToDouble m
+bop _ x y = throwError $ "bop: bad " ++ showObj x ++ " " ++ showObj y
 
 bbop :: (Bool -> Bool -> Bool) -> Object -> Object -> SchemeM Object
 bbop op (OBool b) (OBool c) = return $ OBool $ b `op` c
@@ -164,6 +169,8 @@ rop _ _ _ = throwError "rop: bad"
 
 sub :: Object -> SchemeM Object
 sub (OCons (OInt n) ONil) = return $ OInt $ - n
+sub (OCons (ODouble d) ONil) = return $ ODouble $ - d
+sub (OCons (ORational r) ONil) = return $ ORational $ - r
 sub (OCons n ms) = iop (-) n =<< foldListl (iop (+)) (OInt 0) ms
 sub _ = throwError "sub: bad"
 
@@ -182,6 +189,7 @@ div' _ = throwError "div': bad"
 castToRational :: Object -> SchemeM Object
 castToRational (OInt n) = return $ ORational $ fromIntegral n
 castToRational (ODouble d) = return $ ORational $ toRational d
+castToRational r@(ORational _) = return r
 castToRational _ = throwError $ "castToRational: can't cast"
 
 castToDouble :: Object -> SchemeM Object
@@ -411,7 +419,7 @@ data Tkn
 	| TQuote
 
 isVar :: Char -> Bool
-isVar = (||) <$> isAlpha <*> (`elem` "+-*/<=>")
+isVar = (||) <$> isAlpha <*> (`elem` "+-*/<=>?")
 
 [papillon|
 
