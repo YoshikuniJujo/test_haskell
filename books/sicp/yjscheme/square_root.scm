@@ -14,6 +14,9 @@
 (define (good-enough? guess x)
   (< (abs (- (square guess) x)) 0.001))
 
+(define (good-enough? guess x)
+  (< (abs (- (/ guess (improve guess x)) 1)) 0.001))
+
 (define (sqrt-iter guess x)
   (if (good-enough? guess x)
     guess
