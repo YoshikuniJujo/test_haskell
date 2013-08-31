@@ -206,14 +206,29 @@ define :: Object -> SchemeM Object
 define (OCons v@(OVar var) (OCons val ONil)) = do
 	r <- eval val
 	case r of
-		OClosure Nothing eid as bd -> modify $
-			second ((EVar var, OClosure (Just var) eid as bd) :)
-		_ -> modify $ second ((EVar var, r) :)
+		OClosure fn_ eid as bd -> do
+			let fn = Just $ fromMaybe var fn_
+			defineVar var $ OClosure fn eid as bd
+			neid <- nowEnv
+			intoEnv eid
+			defineVar var $ OClosure fn eid as bd
+			intoEnv neid
+			modify $ second ((EVar "hoge", OString "hage") :)
+		{- modify $
+			second ((EVar var, OClosure (Just var) eid as bd) :) -}
+		_ -> defineVar var r -- modify $ second ((EVar var, r) :)
 	return v
 define (OCons (OCons fn@(OVar n) as) bd) =
 	define $ OCons fn $ OCons
 		(OCons (OSyntax "lambda" $ lambda $ Just n) $ OCons as bd) ONil
 define o = throwError $ "*** ERROR: syntax-error: " ++ showObj o
+
+defineVar :: String -> Object -> SchemeM ()
+defineVar var val = do
+	((maxID, mhere), tenv) <- get
+	case mhere of
+		Just (hid, henv) -> put ((maxID, Just (hid, (EVar var, val) : henv)), tenv)
+		Nothing -> put ((maxID, mhere), (EVar var, val) : tenv)
 
 display :: Object -> SchemeM Object
 display (OCons (OString s) ONil) = liftIO (putStr s) >> return OUndef
@@ -292,6 +307,7 @@ eval (OVar var) = do
 		(Just v, _) -> return v
 		(_, Just val) -> return val
 		(_, _) -> throwError $ "*** ERROR: unbound variable: " ++ var
+			++ " " ++ show h
 eval o@(OCons f_ args_) = do
 	f <- eval f_
 	case f of
