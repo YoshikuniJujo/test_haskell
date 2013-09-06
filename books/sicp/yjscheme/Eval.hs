@@ -15,6 +15,7 @@ import Control.Applicative
 eval :: Object -> SchemeM Object
 eval i@(OInt _) = return i
 eval d@(ODouble _) = return d
+eval r@(ORational _) =  return r
 eval (OVar v) = getValue v
 eval (OCons f_ as_) = do
 	f <- eval f_

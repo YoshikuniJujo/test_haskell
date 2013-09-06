@@ -15,5 +15,6 @@ initEnv = fromList [
 	("+", OSubr "+" $ foldlCons add (OInt 0)),
 	("-", OSubr "-" subAll),
 	("*", OSubr "*" $ foldlCons mul (OInt 1)),
+	("/", OSubr "/" divAll),
 	("exit", OSubr "exit" exit)
  ]

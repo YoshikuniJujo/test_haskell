@@ -11,11 +11,14 @@ module Object (
 
 import Env
 
+import Data.Ratio
+
 type SchemeM = EnvT Object IO
 
 data Object
 	= OInt Integer
 	| ODouble Double
+	| ORational Rational
 	| OVar String
 	| OCons Object Object
 	| ONil
@@ -25,6 +28,7 @@ data Object
 showObj :: Object -> String
 showObj (OInt i) = show i
 showObj (ODouble d) = show d
+showObj (ORational r) = show (numerator r) ++ "/" ++ show (denominator r)
 showObj (OVar v) = v
 showObj c@(OCons _ _) = showCons False c
 showObj ONil = "()"

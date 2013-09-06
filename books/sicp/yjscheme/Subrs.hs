@@ -11,6 +11,7 @@ module Subrs (
 	add,
 	subAll,
 	mul,
+	divAll,
 	exit
 ) where
 
@@ -18,14 +19,16 @@ import Eval
 
 import "monads-tf" Control.Monad.Trans
 import System.Exit
+import Data.Ratio
 
 add, mul, sub :: Object -> Object -> SchemeM Object
 add = preCast $ numOp "+" (+)
 mul = preCast $ numOp "*" (*)
 sub = preCast $ numOp "-" (-)
 
-subAll :: Object -> SchemeM Object
+subAll, divAll :: Object -> SchemeM Object
 subAll = oneOrMore "-" (numFun "-" negate) sub
+divAll = oneOrMore "/" (fracFun "/" recip) $ preCast divide
 
 exit :: Object -> SchemeM Object
 exit ONil = liftIO exitSuccess >> return OUndef
@@ -40,13 +43,26 @@ preCast :: (Object -> Object -> SchemeM Object) ->
 preCast op x y = uncurry op $ castNum2 x y
 
 castNum2 :: Object -> Object -> (Object, Object)
+castNum2 (OInt i) s@(ORational _) = (ORational $ fromIntegral i, s)
+castNum2 r@(ORational _) (OInt j) = (r, ORational $ fromIntegral j)
 castNum2 (OInt i) e@(ODouble _) = (ODouble $ fromIntegral i, e)
 castNum2 d@(ODouble _) (OInt j) = (d, ODouble $ fromIntegral j)
+castNum2 (ORational r) e@(ODouble _) = (ODouble $ fromRational r, e)
+castNum2 d@(ODouble _) (ORational s) = (d, ODouble $ fromRational s)
 castNum2 x y = (x, y)
 
 numFun :: String -> (forall a . Num a => a -> a) -> Object -> SchemeM Object
 numFun _ f (OInt i) = return $ OInt $ f i
+numFun _ f (ORational r) = return $ ORational $ f r
+numFun _ f (ODouble d) = return $ ODouble $ f d
 numFun n _ x = throwError $
+	"*** ERROR: operation " ++ n ++ " is not defined on object " ++ showObj x
+
+fracFun :: String -> (forall a . Fractional a => a -> a) -> Object -> SchemeM Object
+fracFun _ f (OInt i) = return $ ORational $ f $ fromIntegral i
+fracFun _ f (ORational r) = return $ ORational $ f r
+fracFun _ f (ODouble d) = return $ ODouble $ f d
+fracFun n _ x = throwError $
 	"*** ERROR: operation " ++ n ++ " is not defined on object " ++ showObj x
 
 numOp :: String -> (forall a . Num a => a -> a -> a) -> Object -> Object ->
@@ -67,5 +83,11 @@ oneOrMore _ _ _ o = throwError $
 	"*** ERROR: proper list required for function application or macro use: " ++
 	showObj o
 
--- div' :: Object -> Object -> Either String Object
--- div' (OInt i1) (OInt i2) = 
+divide :: Object -> Object -> SchemeM Object
+divide (OInt i) (OInt j) = let r = fromIntegral i / fromIntegral j in
+	return $ if denominator r == 1 then OInt $ numerator r else ORational r
+divide (ORational r) (ORational s) = let t = r / s in
+	return $ if denominator t == 1 then OInt $ numerator t else ORational t
+divide (ODouble d) (ODouble e) = return $ ODouble $ d / e
+divide x y = throwError $ "*** ERROR: operation / is not defined between " ++
+	showObj x ++ " and " ++ showObj y
