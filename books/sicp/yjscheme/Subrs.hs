@@ -20,9 +20,9 @@ import "monads-tf" Control.Monad.Trans
 import System.Exit
 
 add, mul, sub :: Object -> Object -> SchemeM Object
-add = numOp "+" (+)
-mul = numOp "*" (*)
-sub = numOp "-" (-)
+add = preCast $ numOp "+" (+)
+mul = preCast $ numOp "*" (*)
+sub = preCast $ numOp "-" (-)
 
 subAll :: Object -> SchemeM Object
 subAll = oneOrMore "-" (numFun "-" negate) sub
@@ -35,6 +35,15 @@ exit (OCons (OInt ec) ONil)
 		return OUndef
 exit _ = throwError "*** ERROR: bad arguments"
 
+preCast :: (Object -> Object -> SchemeM Object) ->
+	(Object -> Object -> SchemeM Object)
+preCast op x y = uncurry op $ castNum2 x y
+
+castNum2 :: Object -> Object -> (Object, Object)
+castNum2 (OInt i) e@(ODouble _) = (ODouble $ fromIntegral i, e)
+castNum2 d@(ODouble _) (OInt j) = (d, ODouble $ fromIntegral j)
+castNum2 x y = (x, y)
+
 numFun :: String -> (forall a . Num a => a -> a) -> Object -> SchemeM Object
 numFun _ f (OInt i) = return $ OInt $ f i
 numFun n _ x = throwError $
@@ -42,7 +51,8 @@ numFun n _ x = throwError $
 
 numOp :: String -> (forall a . Num a => a -> a -> a) -> Object -> Object ->
 	SchemeM Object
-numOp _ op (OInt i1) (OInt i2) = return $ OInt $ i1 `op` i2
+numOp _ op (OInt i) (OInt j) = return $ OInt $ i `op` j
+numOp _ op (ODouble d) (ODouble e) = return $ ODouble $ d `op` e
 numOp n _ x y = throwError $
 	"*** ERROR: operation " ++ n ++ " is not defined between " ++
 	showObj x ++ " and " ++ showObj y

@@ -17,6 +17,7 @@ prs src = case runError $ scm $ parse src of
 
 data Tkn
 	= TIntL Integer
+	| TDoubleL Double
 	| TVar String
 	| TOParen
 	| TCParen
@@ -32,6 +33,7 @@ scm :: Object
 
 obj :: Object
 	= (TIntL i):lx		{ OInt i }
+	/ (TDoubleL d):lx	{ ODouble d }
 	/ (TVar v):lx		{ OVar v }
 	/ TOParen:lx os:obj* TCParen:lx
 				{ foldr OCons ONil os }
@@ -42,7 +44,9 @@ lx :: Tkn
 	= _:spaces w:word	{ w }
 
 word :: Tkn
-	= ds:<isDigit>+		{ TIntL $ read ds }
+	= n:<isDigit>+ '.' d:<isDigit>+
+				{ TDoubleL $ read $ n ++ "." ++ d }
+	/ ds:<isDigit>+		{ TIntL $ read ds }
 	/ v:<isVar>+		{ TVar v }
 	/ '('			{ TOParen }
 	/ ')'			{ TCParen }
