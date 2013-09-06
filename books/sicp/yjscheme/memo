@@ -164,3 +164,23 @@ Main - InitialEnv -+- Parser - Object
 まずは、プロンプトを出すあたりかな。
 
 Object と Env の癒着をはがせないな。
+
+InitEnv を別にするのと、それぞれの演算についても別にしようかな。
+
+Main - InitialEnv -+- Subroutines - Object
+                   |
+		   +- Parser - Object
+		   |
+		   +- Eval -+- Object
+		            |
+			    +- Environment
+
+逆ならできるかな?
+
+Main - InitialEnv -+- Subroutines - Object - Environment
+                   |
+		   +- Parser - Object - ...
+		   |
+		   +- Eval - Object - ...
+
+こうするか?
