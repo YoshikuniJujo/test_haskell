@@ -7,6 +7,7 @@ module Eval (
 	foldlCons,
 	SchemeM,
 	define, getEID,
+	lastCons, mapCons,
 ) where
 
 import Object
@@ -29,6 +30,7 @@ eval (OCons f_ as_) = do
 		o -> error $ "eval: bad in function: " ++ showObj o
 eval n@ONil = return n
 eval u@OUndef = return u
+eval b@(OBool _) = return b
 eval s@(OSubr _ _) = return s
 eval s@(OSyntax _ _) = return s
 eval c@(OClosure _ _ _ _) = return c

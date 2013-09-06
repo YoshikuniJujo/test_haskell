@@ -25,6 +25,8 @@ data Tkn
 	= TIntL Integer
 	| TDoubleL Double
 	| TVar String
+	| TTrue
+	| TFalse
 	| TOParen
 	| TCParen
 	| TDot
@@ -53,6 +55,8 @@ obj :: Object
 				{ foldr OCons ONil os }
 	/ TOParen:lx as:obj* TDot:lx d:obj TCParen:lx
 				{ foldr OCons d as }
+	/ TTrue:lx		{ OBool True }
+	/ TFalse:lx		{ OBool False }
 
 lx :: Tkn
 	= _:spaces w:word	{ w }
@@ -65,6 +69,8 @@ word :: Tkn
 	/ '('			{ TOParen }
 	/ ')'			{ TCParen }
 	/ '.'			{ TDot }
+	/ '#' 't'		{ TTrue }
+	/ '#' 'f'		{ TFalse }
 
 spaces = _:<isSpace>*
 

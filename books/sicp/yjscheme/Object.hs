@@ -24,6 +24,7 @@ data Object
 	| OVar String
 	| OCons Object Object
 	| ONil
+	| OBool Bool
 	| OUndef
 	| OSubr String (Object -> SchemeM Object)
 	| OSyntax String (Object -> SchemeM Object)
@@ -36,6 +37,8 @@ showObj (ORational r) = show (numerator r) ++ "/" ++ show (denominator r)
 showObj (OVar v) = v
 showObj c@(OCons _ _) = showCons False c
 showObj ONil = "()"
+showObj (OBool True) = "#t"
+showObj (OBool False) = "#f"
 showObj OUndef = "#<undef>"
 showObj (OSubr n _) = "#<subr " ++ n ++ ">"
 showObj (OSyntax n _) = "#<syntax " ++ n ++ ">"

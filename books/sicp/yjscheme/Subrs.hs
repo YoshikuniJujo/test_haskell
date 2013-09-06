@@ -15,6 +15,7 @@ module Subrs (
 	exit,
 	def,
 	lambda,
+	cond,
 ) where
 
 import Eval
@@ -114,3 +115,14 @@ lambda n (OCons as bd) = do
 	return $ OClosure n eid as bd
 lambda _ o = throwError $ "*** ERROR: malformed lambda: " ++
 	showObj (OCons (OVar "lambda") o)
+
+cond :: Object -> SchemeM Object
+cond (OCons (OCons (OVar "else") proc) ONil) = lastCons =<< mapCons eval proc
+cond (OCons (OCons test proc) rest) = do
+	t <- eval test
+	case t of
+		OBool False -> cond rest
+		_ -> lastCons =<< mapCons eval proc
+cond ONil = return OUndef
+cond o = throwError $ "*** ERROR: syntax-error: " ++
+	showObj (OCons (OVar "cond") o)

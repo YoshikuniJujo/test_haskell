@@ -18,5 +18,6 @@ initEnv = fromList [
 	("/", OSubr "/" divAll),
 	("exit", OSubr "exit" exit),
 	("define", OSyntax "define" def),
-	("lambda", OSyntax "lambda" $ lambda Nothing)
+	("lambda", OSyntax "lambda" $ lambda Nothing),
+	("cond", OSyntax "cond" cond)
  ]
