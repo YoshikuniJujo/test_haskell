@@ -1,9 +1,8 @@
-{-# LANGUAGE QuasiQuotes, PackageImports, RankNTypes, TupleSections #-}
+{-# LANGUAGE PackageImports, RankNTypes, TupleSections #-}
 
 module Main where
 
 import Text.Papillon
-import Data.Char
 import Data.Maybe
 import Data.Ratio
 import System.IO
@@ -13,38 +12,8 @@ import Control.Arrow
 import "monads-tf" Control.Monad.State
 import "monads-tf" Control.Monad.Error
 
-type SchemeM = StateT ((EID, Maybe (EID, Env)), Env) (ErrorT Err IO)
-type Err = String
-type Env = [(EKey, Object)]
-data EKey = EVar String | EID EID deriving (Eq, Show)
-type EID = Int
-topEID :: EID
-topEID = 0
-
-nowEnv :: SchemeM EID
-nowEnv = do
-	((_, here), _) <- get
-	return $ case here of
-		Just (eid, _) -> eid
-		_ -> 0
-
-newEnv :: SchemeM EID
-newEnv = do
-	((maxID, here), tenv) <- get
-	let	newID = succ maxID
-	put ((newID, here), (EID newID, OEnv newID $ maybe [] snd here) : tenv)
-	return $ newID
-
-intoEnv :: EID -> SchemeM ()
-intoEnv eid = do
-	((maxID, here), tenv) <- get
-	case here of
-		Just (oeid, oenv) ->
-			put ((maxID, (eid ,) . (\(OEnv _ e) -> e) <$>
-					lookup (EID eid) tenv),
-				(EID oeid, OEnv oeid oenv) : tenv)
-		_ -> put ((maxID, (eid ,) . (\(OEnv _ e) -> e) <$>
-					lookup (EID eid) tenv), tenv)
+import Parser
+import Eval
 
 main :: IO ()
 main = do
@@ -56,6 +25,10 @@ main = do
 				Nothing -> liftIO $ putStrLn $ "parse error: " ++ ln
 			return True
 	return ()
+	where
+	doWhile_ act = do
+		b <- act
+		if b then doWhile_ act else return ()
 
 prompt :: Int -> String -> SchemeM String
 prompt d s = do
@@ -92,7 +65,6 @@ initEnv = [
 	(EVar "display", OSubr "display" display),
 	(EVar "exit", OSubr "exit" exit),
 	(EVar "load", OSubr "load" load),
-	(EVar "top-env", OSubr "top-env" topEnv),
 	(EVar "lambda", OSyntax "lambda" $ lambda Nothing),
 	(EVar "cond", OSyntax "cond" cond),
 	(EVar "if", OSyntax "if" ifs)
@@ -223,13 +195,6 @@ define (OCons (OCons fn@(OVar n) as) bd) =
 		(OCons (OSyntax "lambda" $ lambda $ Just n) $ OCons as bd) ONil
 define o = throwError $ "*** ERROR: syntax-error: " ++ showObj o
 
-defineVar :: String -> Object -> SchemeM ()
-defineVar var val = do
-	((maxID, mhere), tenv) <- get
-	case mhere of
-		Just (hid, henv) -> put ((maxID, Just (hid, (EVar var, val) : henv)), tenv)
-		Nothing -> put ((maxID, mhere), (EVar var, val) : tenv)
-
 display :: Object -> SchemeM Object
 display (OCons (OString s) ONil) = liftIO (putStr s) >> return OUndef
 display (OCons v ONil) = liftIO (putStr $ showObj v) >> return OUndef
@@ -251,10 +216,6 @@ load (OCons (OString fp) ONil) = do
 		_ -> throwError "*** ERROR: parse error"
 
 load _ = throwError "*** ERROR: load: bad arguments"
-
-topEnv :: Object -> SchemeM Object
-topEnv ONil = OEnv topEID . snd <$> get
-topEnv _ = throwError "*** ERROR: topEnv: bad arguments"
 
 lambda :: Maybe String -> Object -> SchemeM Object
 lambda n (OCons as bd) = do
@@ -287,208 +248,3 @@ ifs (OCons test (OCons thn ONil)) = do
 		_ -> eval thn
 ifs o = throwError $ "*** ERROR: syntax-error: malformed if: " ++
 	showObj (OCons (OVar "if") o)
-
-doWhile_ :: Monad m => m Bool -> m ()
-doWhile_ act = do
-	b <- act
-	if b then doWhile_ act else return ()
-
-eval :: Object -> SchemeM Object
-eval i@(OInt _) = return i
-eval d@(ODouble _) = return d
-eval s@(OString _) = return s
-eval (OVar var) = do
-	((_, h), _) <- get
-	let lval = case h of
-		Just (_, henv) -> lookup (EVar var) henv
-		Nothing -> Nothing
-	mval <- gets $ (lookup $ EVar var) . snd
-	case (lval, mval) of
-		(Just v, _) -> return v
-		(_, Just val) -> return val
-		(_, _) -> throwError $ "*** ERROR: unbound variable: " ++ var
-			++ " " ++ show h
-eval o@(OCons f_ args_) = do
-	f <- eval f_
-	case f of
-		OSubr _ s -> s =<< mapList eval args_
-		OSyntax _ s -> s args_
-		OClosure _ eid as bd -> do
-			args <- mapList eval args_
-			eid' <- nowEnv
-			intoEnv eid
-			r <- apply as args bd
-			intoEnv eid'
-			return $ lastList r
-		_ -> throwError $ "*** ERROR: invalid application: " ++ showObj o
-eval ONil = return ONil
-eval o@(OBool _) = return o
-eval o@(OSyntax _ _) = return o
-eval _ = throwError "eval: not yet constructed"
-
-apply :: Object -> Object -> Object -> SchemeM Object
-apply vs as bd = do
-	_ <- zipWithList def vs as
-	mapList eval bd
-
-def :: Object -> Object -> SchemeM Object
-def v@(OVar var) val = do
-	((maxID, Just (hid, henv)), tenv) <- get
-	put ((maxID, Just (hid, (EVar var, val) : henv)), tenv)
-	return v
-def _ _ = throwError "def: bad"
-
-zipWithList :: (Object -> Object -> SchemeM Object) ->
-	Object -> Object -> SchemeM Object
-zipWithList f (OCons a d) (OCons a' d') =
-	OCons <$> (f a a') <*> zipWithList f d d'
-zipWithList _ ONil _ = return ONil
-zipWithList _ _ ONil = return ONil
-zipWithList _ _ _ = throwError "zipWithList: bad"
-
-lastList :: Object -> Object
-lastList (OCons a ONil) = a
-lastList (OCons _ d) = lastList d
-lastList _ = error "lastList: bad"
-
-mapList :: (Object -> SchemeM Object) -> Object -> SchemeM Object
-mapList _ ONil = return ONil
-mapList f (OCons a d) = OCons <$> f a <*> mapList f d
-mapList _ _ = throwError "mapList: not list"
-
-foldListl :: (Object -> Object -> SchemeM Object) -> Object -> Object ->
-	SchemeM Object
-foldListl _ o0 ONil = return o0
-foldListl f o0 (OCons a d) = flip (foldListl f) d =<< f o0 a
-foldListl _ _ _ = throwError "foldListl: not list"
-
-prsf :: String -> Maybe [Object]
-prsf src = case runError $ scmf $ parse src of
-	Right (r, _) -> Just r
-	_ -> Nothing
-
-dpt :: String -> Maybe Int
-dpt src = case runError $ depth' $ parse src of
-	Right (r, _) -> Just r
-	_ -> Nothing
-
-prs :: String -> Maybe Object
-prs src = case runError $ scm $ parse src of
-	Right (r, _) -> Just r
-	_ -> Nothing
-
-data Object
-	= OInt Integer
-	| ORational Rational
-	| ODouble Double
-	| OString String
-	| OVar String
-	| OCons Object Object
-	| ONil
-	| OUndef
-	| OBool Bool
-	| OSubr String (Object -> SchemeM Object)
-	| OSyntax String (Object -> SchemeM Object)
-	| OEnv EID Env
-	| OClosure (Maybe String) EID Object Object
-
-instance Show Object where
-	show (ODouble d) = "(ODouble " ++ show d ++ ")"
-	show _ = "show Object: yet"
-
-showObj :: Object -> String
-showObj (OInt i) = show i
-showObj (ORational r) = show (numerator r) ++ "/" ++ show (denominator r)
-showObj (ODouble d) = show d
-showObj (OString s) = show s
-showObj (OVar v) = v
-showObj (OSubr n _) = "#<subr " ++ n ++ ">"
-showObj (OSyntax n _) = "#<syntax " ++ n ++ ">"
-showObj (OCons (OVar "quote") (OCons a ONil)) = "'" ++ showObj a
-showObj c@(OCons _ _) = showCons False c
-showObj ONil = "()"
-showObj (OBool True) = "#t"
-showObj (OBool False) = "#f"
-showObj OUndef = "#<undef>"
-showObj (OEnv eid _) = "#<env " ++ show eid ++ ">"
-showObj (OClosure n _ _ _) = "#<closure " ++ fromMaybe "#f" n ++ ">"
-
-showCons :: Bool -> Object -> String
-showCons l (OCons a d) = (if l then id else ("(" ++) . (++ ")")) $
-	case d of
-		OCons _ _ -> showObj a ++ " " ++ showCons True d
-		ONil -> showObj a
-		_ -> showObj a ++ " . " ++ showObj d
-showCons l ONil = if l then "" else "()"
-showCons _ _ = error "not cons"
-
-data Tkn
-	= TIntL Integer
-	| TDoubleL Double
-	| TStringL String
-	| TVar String
-	| TTrue
-	| TFalse
-	| TOParen
-	| TCParen
-	| TDot
-	| TQuote
-
-isVar :: Char -> Bool
-isVar = (||) <$> isAlpha <*> (`elem` "+-*/<=>?")
-
-[papillon|
-
-scmf :: [Object]
-	= os:obj* _:spaces !_	{ os }
-
-depth' :: Int
-	= d:depth _:spaces !_	{ d }
-
-depth :: Int
-	= TOParen:lx _:obj* d:depth	{ d + 1 }
-	/ TCParen:lx			{ - 1 }
-	/				{ 0 }
-
-scm :: Object
-	= o:obj _:spaces !_	{ o }
-
-obj :: Object
-	= (TIntL i):lx		{ OInt i }
-	/ (TDoubleL d):lx	{ ODouble d }
-	/ (TStringL s):lx	{ OString s }
-	/ (TVar v):lx		{ OVar v }
-	/ TOParen:lx os:obj* TCParen:lx
-				{ foldr OCons ONil os }
-	/ TOParen:lx as:obj* TDot:lx d:obj TCParen:lx
-				{ foldr OCons d as }
-	/ TQuote:lx o:obj	{ OCons (OVar "quote") $ OCons o ONil}
-	/ TTrue:lx		{ OBool True }
-	/ TFalse:lx		{ OBool False }
-
-lx :: Tkn
-	= _:spaces w:word	{ w }
-
-word :: Tkn
-	= n:<isDigit>+ '.' d:<isDigit>+
-				{ TDoubleL $ read $ n ++ "." ++ d }
-	/ mm:('-' { '-' })? ds:<isDigit>+
-				{ TIntL $ read $ maybe ds (: ds) mm }
-	/ s:string		{ TStringL s }
-	/ v:<isVar>+		{ TVar v }
-	/ '('			{ TOParen }
-	/ ')'			{ TCParen }
-	/ '.'			{ TDot }
-	/ '\''			{ TQuote }
-	/ '#' 't'		{ TTrue }
-	/ '#' 'f'		{ TFalse }
-
-string :: String = '"' s:(<(`notElem` "\"\\")> / '\\' c:esc { c })* '"'
-				{ s }
-
-esc :: Char
-	= 'n'			{ '\n' }
-
-spaces = _:<isSpace>*
-
-|]
