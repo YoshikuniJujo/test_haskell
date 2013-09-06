@@ -18,6 +18,7 @@ module Eval (
 	intoEnv,
 	EKey(..),
 	Env,
+	topEID,
 ) where
 
 import Env

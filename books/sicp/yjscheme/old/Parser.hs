@@ -1,14 +1,6 @@
 {-# LANGUAGE QuasiQuotes, TypeFamilies #-}
 
-module Parser (
-	prsf, dpt, prs,
-	
-	SchemeM,
-	Env, EID, topEID, EKey(..),
-	Object(..), showObj,
-
-	defineVar, nowEnv, newEnv, intoEnv,
-) where
+module Parser (prsf, dpt, prs) where
 
 import Text.Papillon
 import Data.Char

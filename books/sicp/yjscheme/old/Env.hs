@@ -18,6 +18,7 @@ type SchemeM = EnvM (ErrorT Err IO)
 type Err = String
 
 type EnvM = StateT ((EID, Maybe (EID, Env)), Env)
+-- data Env = Env [(EKey, Object)]
 type Env = [(EKey, Object)]
 data EKey = EVar String | EID EID deriving (Eq, Show)
 type EID = Int

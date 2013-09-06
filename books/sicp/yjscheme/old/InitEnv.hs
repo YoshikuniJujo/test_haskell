@@ -1,6 +1,14 @@
 {-# LANGUAGE RankNTypes, PackageImports #-}
 
-module InitEnv (initEnv, eval) where
+module InitEnv (
+	initEnv,
+	eval,
+	Object(..),
+	showObj,
+	topEID,
+	EKey(..),
+	SchemeM,
+) where
 
 import Eval
 
