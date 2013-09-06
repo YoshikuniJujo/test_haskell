@@ -7,6 +7,17 @@ module Eval (
 	zipWithList,
 	lastList,
 	mapList,
+
+	Object(..),
+	showObj,
+	SchemeM,
+
+	newEnv,
+	defineVar,
+	nowEnv,
+	intoEnv,
+	EKey(..),
+	Env,
 ) where
 
 import Env

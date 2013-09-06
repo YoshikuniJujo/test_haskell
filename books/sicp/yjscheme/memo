@@ -113,3 +113,18 @@ Main +- Parser - Env
      +- Eval - Env
 
 のような構造。
+
+上を
+
+Main +- Parser - Obj
+     |
+     +- Eval - Env - Obj
+
+のようにしよう。
+今の構造では無理だな。
+
+Main +- Parser - Env
+     |
+     +- InitEnv - Eval - Env
+
+としよう。
