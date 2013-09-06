@@ -27,6 +27,9 @@ initEnv = fromList [
 	("lambda", OSyntax "lambda" $ lambda Nothing),
 	("cond", OSyntax "cond" cond),
 	("if", OSyntax "if" ifs),
+	("and", OSyntax "and" ands),
+	("or", OSyntax "or" ors),
+	("not", OSubr "not" nots),
 	("load", OSubr "load" load)
  ]
 

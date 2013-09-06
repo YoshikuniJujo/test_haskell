@@ -18,6 +18,9 @@ module Subrs (
 	cond,
 	bopSeq,
 	ifs,
+	ands,
+	ors,
+	nots,
 ) where
 
 import Eval
@@ -160,3 +163,31 @@ ifs (OCons test (OCons thn ONil)) = do
 		_ -> eval thn
 ifs o = throwError $ "*** ERROR: syntax-error: malformed if: " ++
 	showObj (OCons (OVar "if") o)
+
+ands, ors, nots :: Object -> SchemeM Object
+ands (OCons x r) = do
+	ret <- eval x
+	case ret of
+		OBool False -> return ret
+		_ -> case r of
+			ONil -> return ret
+			_ -> ands r
+ands ONil =  return $ OBool True
+ands o = throwError $
+	"*** ERROR: proper list required for function application of macro use: "
+	++ showObj (OCons (OVar "and") o)
+
+ors (OCons x r) = do
+	ret <- eval x
+	case ret of
+		OBool False -> ors r
+		_ -> return ret
+ors ONil = return $ OBool False
+ors o = throwError $
+	"*** ERROR: proper list required for function application of macro use: "
+	++ showObj (OCons (OVar "or") o)
+
+nots (OCons (OBool False) ONil) = return $ OBool True
+nots (OCons _ ONil) = return $ OBool False
+nots _ = throwError $
+	"*** ERROR: wrong number of arguments: not requires 1, but got x"
