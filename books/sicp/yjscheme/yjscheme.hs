@@ -5,6 +5,7 @@ module Main where
 import InitEnv
 
 import Data.Maybe
+import Data.Char
 import System.IO
 import Control.Monad
 import "monads-tf" Control.Monad.Trans
@@ -26,6 +27,6 @@ prompt d s = do
 		getLine
 	let	s' = s ++ " " ++ n
 		d' = dpt s'
-	if maybe False (> 0) d'
+	if maybe False (> 0) d' || all isSpace s'
 		then prompt (fromJust d') s'
 		else return s'

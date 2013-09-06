@@ -198,3 +198,15 @@ cast2 :: Object -> Object -> (Object, Object) といった感じかな。
 とりあえず ODouble を作ろう。
 
 その前に module の構造を上記のようにしておこう。
+
+closure を作ることを考える。
+現在の stack top の EID を持つ closure を作れば良い。
+
+closure を走らせる、つまり apply のときには、
+EID の最大値 + 1 を ID とする環境を作成する。
+outer には closure の EID をとる。
+そして、その環境の EID を stack に積み、
+そこで変数のバインディング(define)を行う。
+そして、中身を実行したら stack を pop する。
+
+まずは EID の最大値を保存する必要があるな。

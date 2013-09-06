@@ -13,7 +13,8 @@ module Subrs (
 	mul,
 	divAll,
 	exit,
-	def
+	def,
+	lambda,
 ) where
 
 import Eval
@@ -96,7 +97,20 @@ divide x y = throwError $ "*** ERROR: operation / is not defined between " ++
 def :: Object -> SchemeM Object
 def (OCons v@(OVar var) (OCons val ONil)) = do
 	r <- eval val
-	define var r
+	case r of
+		OClosure Nothing eid as bd ->
+			define var $ OClosure (Just var) eid as bd
+		_ -> define var r
 	return v
+def (OCons (OCons fn@(OVar n) as) bd) =
+	def $ OCons fn $ OCons
+		(OCons (OSyntax "lambda" $ lambda $ Just n) $ OCons as bd) ONil
 def o = throwError $ "*** ERROR: syntax-error: " ++
 	showObj (OCons (OVar "define") o)
+
+lambda :: Maybe String -> Object -> SchemeM Object
+lambda n (OCons as bd) = do
+	eid <- getEID
+	return $ OClosure n eid as bd
+lambda _ o = throwError $ "*** ERROR: malformed lambda: " ++
+	showObj (OCons (OVar "lambda") o)

@@ -5,13 +5,15 @@ module Object (
 
 	Environment, fromList,
 	EnvT, runEnvT,
-	define, getValue,
-	throwError, catchError
+	define, getValue, getEID, newEnv, popEnv,
+	throwError, catchError,
+	EID,
 ) where
 
 import Env
 
 import Data.Ratio
+import Data.Maybe
 
 type SchemeM = EnvT Object IO
 
@@ -22,9 +24,10 @@ data Object
 	| OVar String
 	| OCons Object Object
 	| ONil
+	| OUndef
 	| OSubr String (Object -> SchemeM Object)
 	| OSyntax String (Object -> SchemeM Object)
-	| OUndef
+	| OClosure (Maybe String) EID Object Object
 
 showObj :: Object -> String
 showObj (OInt i) = show i
@@ -33,9 +36,10 @@ showObj (ORational r) = show (numerator r) ++ "/" ++ show (denominator r)
 showObj (OVar v) = v
 showObj c@(OCons _ _) = showCons False c
 showObj ONil = "()"
+showObj OUndef = "#<undef>"
 showObj (OSubr n _) = "#<subr " ++ n ++ ">"
 showObj (OSyntax n _) = "#<syntax " ++ n ++ ">"
-showObj OUndef = "#<undef>"
+showObj (OClosure n _ _ _) = "#<closure " ++ fromMaybe "#f" n ++ ">"
 
 showCons :: Bool -> Object -> String
 showCons l (OCons a d) = (if l then id else ("(" ++ ) . (++ ")")) $

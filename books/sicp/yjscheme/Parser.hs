@@ -30,7 +30,7 @@ data Tkn
 	| TDot
 
 isVar :: Char -> Bool
-isVar = (||) <$> isAlpha <*> (`elem` "+-*/<=>?")
+isVar = (||) <$> isAlphaNum <*> (`elem` "+-*/<=>?")
 
 [papillon|
 

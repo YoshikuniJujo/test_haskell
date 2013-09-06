@@ -17,5 +17,6 @@ initEnv = fromList [
 	("*", OSubr "*" $ foldlCons mul (OInt 1)),
 	("/", OSubr "/" divAll),
 	("exit", OSubr "exit" exit),
-	("define", OSyntax "define" def)
+	("define", OSyntax "define" def),
+	("lambda", OSyntax "lambda" $ lambda Nothing)
  ]
