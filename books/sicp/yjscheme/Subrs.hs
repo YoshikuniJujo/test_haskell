@@ -21,6 +21,7 @@ module Subrs (
 	ands,
 	ors,
 	nots,
+	display,
 ) where
 
 import Eval
@@ -191,3 +192,8 @@ nots (OCons (OBool False) ONil) = return $ OBool True
 nots (OCons _ ONil) = return $ OBool False
 nots _ = throwError $
 	"*** ERROR: wrong number of arguments: not requires 1, but got x"
+
+display :: Object -> SchemeM Object
+display (OCons (OString s) ONil) = liftIO (putStr s) >> return OUndef
+display (OCons v ONil) = liftIO (putStr $ showObj v) >> return OUndef
+display _ = throwError $ "*** ERROR: not implemented yet"

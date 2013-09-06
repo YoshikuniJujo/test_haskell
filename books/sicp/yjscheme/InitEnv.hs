@@ -30,7 +30,8 @@ initEnv = fromList [
 	("and", OSyntax "and" ands),
 	("or", OSyntax "or" ors),
 	("not", OSubr "not" nots),
-	("load", OSubr "load" load)
+	("load", OSubr "load" load),
+	("display", OSubr "display" display)
  ]
 
 load :: Object -> SchemeM Object
