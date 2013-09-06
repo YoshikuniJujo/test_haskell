@@ -143,3 +143,24 @@ closure の中でその closure 自身を参照できる必要がある。
 つまり、単純なコピーだけでは駄目ということ。
 
 書き直したほうが早そうなので、今まで作ってきたものは、old directory に移そうと思う。
+
+心機一転また書き直そう。
+ちゃんと設計しよう。
+
+まずは Object.hs を作り、それを import する Parser を作る。
+つまり、parse すれば Object が返る。
+Environment は Object に頼らない一般的なものとして書く。
+Eval が Object と Environment を import し、
+そのうえに InitialEnv として、いくつかの組み込みの subr を定義する。
+load だけば parser が必要なので、Main で定義する。
+と思ったが下のようにしてしまおうかな。
+
+Main - InitialEnv -+- Parser - Object
+                   |
+                   +- Eval -+- Object
+                            |
+	                    +- Environment
+
+まずは、プロンプトを出すあたりかな。
+
+Object と Env の癒着をはがせないな。
