@@ -1,6 +1,6 @@
 module Eval (
 	eval,
-	Env, nullEnv,
+	Env, fromList,
 	EnvT, runEnvT,
 	Object(..), showObj,
 	throwError, catchError,

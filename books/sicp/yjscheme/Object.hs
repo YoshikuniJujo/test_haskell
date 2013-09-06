@@ -3,7 +3,7 @@ module Object (
 	Object(..),
 	showObj,
 
-	Env, nullEnv,
+	Env, fromList,
 	EnvT, runEnvT,
 	getValue,
 	throwError, catchError

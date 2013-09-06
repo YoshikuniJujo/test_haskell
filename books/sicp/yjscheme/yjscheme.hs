@@ -9,7 +9,7 @@ import "monads-tf" Control.Monad.Trans
 import InitEnv
 
 main :: IO ()
-main = runEnvT testEnv $ forever $ do
+main = runEnvT initEnv $ forever $ do
 	ln <- prompt
 	flip catchError (liftIO . putStrLn) $ do
 		ret <- case prs ln of

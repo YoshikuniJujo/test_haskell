@@ -1,7 +1,7 @@
 {-# LANGUAGE PackageImports #-}
 
 module Env (
-	Env, nullEnv,
+	Env, fromList,
 	EnvT, runEnvT,
 	define,
 	getValue,
@@ -16,8 +16,8 @@ import "monads-tf" Control.Monad.Error
 type Env v = [(String, v)]
 type EnvT v m = StateT (Env v) (ErrorT String m)
 
-nullEnv :: Env v
-nullEnv = []
+fromList :: [(String, v)] -> Env v
+fromList = id
 
 runEnvT :: Monad m => Env v -> EnvT v m a -> m a
 runEnvT ie act = do

@@ -1,10 +1,17 @@
-{-# LANGUAGE PackageImports #-}
+{-# LANGUAGE PackageImports, RankNTypes #-}
 
 module Subrs (
-	EnvT, runEnvT, testEnv,
-	Object,
+	Env, fromList,
+	EnvT, runEnvT,
+	Object(..),
 	eval,
-	throwError, catchError
+	throwError, catchError,
+
+	foldlCons,
+	add,
+	subAll,
+	mul,
+	exit
 ) where
 
 import Eval
@@ -12,43 +19,13 @@ import Eval
 import "monads-tf" Control.Monad.Trans
 import System.Exit
 
-testEnv :: Env Object
-testEnv = [
-	("+", OSubr "+" $ foldlCons add (OInt 0)),
-	("-", OSubr "-" subAll),
-	("*", OSubr "*" $ foldlCons mul (OInt 1)),
-	("exit", OSubr "exit" exit)
- ]
-
-add :: Object -> Object -> SchemeM Object
-add (OInt i1) (OInt i2) = return $ OInt $ i1 + i2
-add x y = throwError $ "*** ERROR: operation + is not defined between " ++
-	showObj x ++ " and " ++ showObj y
-
-mul :: Object -> Object -> SchemeM Object
-mul (OInt i1) (OInt i2) = return $ OInt $ i1 * i2
-mul x y = throwError $ "*** ERROR: operation * is not defined between " ++
-	showObj x ++ " and " ++ showObj y
+add, mul, sub :: Object -> Object -> SchemeM Object
+add = numOp "+" (+)
+mul = numOp "*" (*)
+sub = numOp "-" (-)
 
 subAll :: Object -> SchemeM Object
-subAll (OCons (OInt i) ONil) = return $ OInt $ - i
-subAll (OCons o ONil) =
-	throwError $ "*** ERROR: operation - is not defined on object " ++ showObj o
-subAll (OCons i0 is) = foldlCons sub i0 is
-subAll ONil = throwError $
-	"*** ERROR: procedure requires at least one argument: (-)"
-subAll o = throwError $
-	"*** ERROR: proper list required for function application or macro use: " ++
-	showObj o
-
-sub :: Object -> Object -> SchemeM Object
-sub (OInt i1) (OInt i2) = return $ OInt $ i1 - i2
-sub x y = throwError $ "*** ERROR: operation - is not defined between " ++
-	showObj x ++ " and " ++ showObj y
-
--- div' :: Object -> Object -> Either String Object
--- div' (OInt i1) (OInt i2) = 
-
+subAll = oneOrMore "-" (numFun "-" negate) sub
 
 exit :: Object -> SchemeM Object
 exit ONil = liftIO exitSuccess >> return OUndef
@@ -57,3 +34,28 @@ exit (OCons (OInt ec) ONil)
 	| otherwise = liftIO (exitWith $ ExitFailure $ fromIntegral ec) >>
 		return OUndef
 exit _ = throwError "*** ERROR: bad arguments"
+
+numFun :: String -> (forall a . Num a => a -> a) -> Object -> SchemeM Object
+numFun _ f (OInt i) = return $ OInt $ f i
+numFun n _ x = throwError $
+	"*** ERROR: operation " ++ n ++ " is not defined on object " ++ showObj x
+
+numOp :: String -> (forall a . Num a => a -> a -> a) -> Object -> Object ->
+	SchemeM Object
+numOp _ op (OInt i1) (OInt i2) = return $ OInt $ i1 `op` i2
+numOp n _ x y = throwError $
+	"*** ERROR: operation " ++ n ++ " is not defined between " ++
+	showObj x ++ " and " ++ showObj y
+
+oneOrMore :: String -> (Object -> SchemeM Object) ->
+	(Object -> Object -> SchemeM Object) -> Object -> SchemeM Object
+oneOrMore _ f _ (OCons o ONil) = f o
+oneOrMore _ _ op (OCons o0 os) = foldlCons op o0 os
+oneOrMore n _ _ ONil = throwError $
+	"*** ERROR: procedure requires at least one argument: (" ++ n ++ ")"
+oneOrMore _ _ _ o = throwError $
+	"*** ERROR: proper list required for function application or macro use: " ++
+	showObj o
+
+-- div' :: Object -> Object -> Either String Object
+-- div' (OInt i1) (OInt i2) = 
