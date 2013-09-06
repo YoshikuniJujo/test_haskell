@@ -3,7 +3,7 @@ module Object (
 	Object(..),
 	showObj,
 
-	Environment, fromList,
+	Environment, mkInitEnv,
 	EnvT, runEnvT,
 	define, getValue, getEID, newEnv, popEnv,
 	throwError, catchError,

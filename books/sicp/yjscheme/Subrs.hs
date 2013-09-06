@@ -1,7 +1,7 @@
 {-# LANGUAGE PackageImports, RankNTypes #-}
 
 module Subrs (
-	Environment, fromList,
+	Environment, mkInitEnv,
 	SchemeM, runEnvT,
 	Object(..),
 	eval,

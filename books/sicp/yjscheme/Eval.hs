@@ -1,6 +1,6 @@
 module Eval (
 	eval,
-	Environment, fromList,
+	Environment, mkInitEnv,
 	EnvT, runEnvT,
 	Object(..), showObj,
 	throwError, catchError,
