@@ -8,7 +8,6 @@ import "monads-tf" Control.Monad.State
 import "monads-tf" Control.Monad.Error
 
 import Parser
-import Eval
 import InitEnv
 
 main :: IO ()

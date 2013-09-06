@@ -1,6 +1,6 @@
 {-# LANGUAGE RankNTypes, PackageImports #-}
 
-module InitEnv (initEnv) where
+module InitEnv (initEnv, eval) where
 
 import Eval
 
