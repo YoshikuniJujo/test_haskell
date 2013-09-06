@@ -6,8 +6,7 @@ import System.IO
 import Control.Monad
 import "monads-tf" Control.Monad.Trans
 
-import Parser
-import Eval
+import InitEnv
 
 main :: IO ()
 main = runEnvT testEnv $ forever $ do

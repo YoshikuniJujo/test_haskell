@@ -184,3 +184,17 @@ Main - InitialEnv -+- Subroutines - Object - Environment
 		   +- Eval - Object - ...
 
 こうするか?
+
+and や or には eval が必要なので、
+
+Main - InitialEnv -+- Parser - Object - Env
+                   |
+		   +- Subrs - Eval - Object - Env
+
+こうなるかな。
+cast についてちゃんとやらなくちゃな。
+cast2 :: Object -> Object -> (Object, Object) といった感じかな。
+また forall をうまく活用する必要があるな。
+とりあえず ODouble を作ろう。
+
+その前に module の構造を上記のようにしておこう。
