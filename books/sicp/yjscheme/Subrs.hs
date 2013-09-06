@@ -17,6 +17,7 @@ module Subrs (
 	lambda,
 	cond,
 	bopSeq,
+	ifs,
 ) where
 
 import Eval
@@ -145,3 +146,17 @@ andCons (OCons (OBool True) d) = andCons d
 andCons (OCons (OBool False) _) = OBool False
 andCons ONil = OBool True
 andCons _ = error $ "andCons: bad"
+
+ifs :: Object -> SchemeM Object
+ifs (OCons test (OCons thn (OCons els ONil))) = do
+	t <- eval test
+	case t of
+		OBool False -> eval els
+		_ -> eval thn
+ifs (OCons test (OCons thn ONil)) = do
+	t <- eval test
+	case t of
+		OBool False -> return OUndef
+		_ -> eval thn
+ifs o = throwError $ "*** ERROR: syntax-error: malformed if: " ++
+	showObj (OCons (OVar "if") o)
