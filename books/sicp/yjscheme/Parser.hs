@@ -62,9 +62,11 @@ lx :: Tkn
 	= _:spaces w:word	{ w }
 
 word :: Tkn
-	= n:<isDigit>+ '.' d:<isDigit>+
-				{ TDoubleL $ read $ n ++ "." ++ d }
-	/ ds:<isDigit>+		{ TIntL $ read ds }
+	= mm:('-' { '-' })? n:<isDigit>+ '.' d:<isDigit>+
+				{ TDoubleL $ read $ maybe (n ++ "." ++ d)
+					(: n ++ "." ++ d) mm }
+	/ mm:('-' { '-' })? ds:<isDigit>+
+				{ TIntL $ read $ maybe ds (: ds) mm }
 	/ v:<isVar>+		{ TVar v }
 	/ '('			{ TOParen }
 	/ ')'			{ TCParen }

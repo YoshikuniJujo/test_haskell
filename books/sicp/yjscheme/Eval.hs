@@ -7,7 +7,7 @@ module Eval (
 	foldlCons,
 	SchemeM,
 	define, getEID,
-	lastCons, mapCons,
+	lastCons, mapCons, zipWithCons,
 ) where
 
 import Object

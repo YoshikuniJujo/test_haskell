@@ -16,11 +16,13 @@ module Subrs (
 	def,
 	lambda,
 	cond,
+	bopSeq,
 ) where
 
 import Eval
 
 import "monads-tf" Control.Monad.Trans
+import Control.Applicative
 import System.Exit
 import Data.Ratio
 
@@ -126,3 +128,20 @@ cond (OCons (OCons test proc) rest) = do
 cond ONil = return OUndef
 cond o = throwError $ "*** ERROR: syntax-error: " ++
 	showObj (OCons (OVar "cond") o)
+
+bopSeq :: String -> (forall a . Ord a => a -> a -> Bool) -> Object -> SchemeM Object
+bopSeq _ op o@(OCons _ d) = andCons <$> zipWithCons (preCast $ bop op) o d
+bopSeq n _ o = throwError $ "*** ERROR: wrong number of arguments for #<subr " ++
+	n ++ ">: " ++ showObj (OCons (OVar n) o)
+
+bop :: (forall a . Ord a => a -> a -> Bool) -> Object -> Object -> SchemeM Object
+bop op (OInt i) (OInt j) = return $ OBool $ i `op` j
+bop op (ODouble d) (ODouble e) = return $ OBool $ d `op` e
+bop op (ORational r) (ORational s) = return $ OBool $ r `op` s
+bop _ x y = throwError $ "bop: " ++ showObj x ++ " " ++ showObj y
+
+andCons :: Object -> Object
+andCons (OCons (OBool True) d) = andCons d
+andCons (OCons (OBool False) _) = OBool False
+andCons ONil = OBool True
+andCons _ = error $ "andCons: bad"
