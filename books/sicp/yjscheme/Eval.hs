@@ -1,11 +1,12 @@
 module Eval (
 	eval,
-	Env, fromList,
+	Environment, fromList,
 	EnvT, runEnvT,
 	Object(..), showObj,
 	throwError, catchError,
 	foldlCons,
-	SchemeM
+	SchemeM,
+	define
 ) where
 
 import Object
@@ -21,9 +22,11 @@ eval (OCons f_ as_) = do
 	f <- eval f_
 	case f of
 		OSubr _ s -> s =<< mapCons eval as_
+		OSyntax _ s -> s as_
 		_ -> error "eval: bad"
 eval ONil = return ONil
 eval s@(OSubr _ _) = return s
+eval s@(OSyntax _ _) = return s
 eval u@OUndef = return u
 
 mapCons :: (Object -> SchemeM Object) -> Object -> SchemeM Object

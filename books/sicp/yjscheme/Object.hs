@@ -3,9 +3,9 @@ module Object (
 	Object(..),
 	showObj,
 
-	Env, fromList,
+	Environment, fromList,
 	EnvT, runEnvT,
-	getValue,
+	define, getValue,
 	throwError, catchError
 ) where
 
@@ -23,6 +23,7 @@ data Object
 	| OCons Object Object
 	| ONil
 	| OSubr String (Object -> SchemeM Object)
+	| OSyntax String (Object -> SchemeM Object)
 	| OUndef
 
 showObj :: Object -> String
@@ -33,6 +34,7 @@ showObj (OVar v) = v
 showObj c@(OCons _ _) = showCons False c
 showObj ONil = "()"
 showObj (OSubr n _) = "#<subr " ++ n ++ ">"
+showObj (OSyntax n _) = "#<syntax " ++ n ++ ">"
 showObj OUndef = "#<undef>"
 
 showCons :: Bool -> Object -> String

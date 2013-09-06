@@ -1,7 +1,7 @@
 {-# LANGUAGE PackageImports, RankNTypes #-}
 
 module Subrs (
-	Env, fromList,
+	Environment, fromList,
 	SchemeM, runEnvT,
 	Object(..),
 	eval,
@@ -12,7 +12,8 @@ module Subrs (
 	subAll,
 	mul,
 	divAll,
-	exit
+	exit,
+	def
 ) where
 
 import Eval
@@ -91,3 +92,11 @@ divide (ORational r) (ORational s) = let t = r / s in
 divide (ODouble d) (ODouble e) = return $ ODouble $ d / e
 divide x y = throwError $ "*** ERROR: operation / is not defined between " ++
 	showObj x ++ " and " ++ showObj y
+
+def :: Object -> SchemeM Object
+def (OCons v@(OVar var) (OCons val ONil)) = do
+	r <- eval val
+	define var r
+	return v
+def o = throwError $ "*** ERROR: syntax-error: " ++
+	showObj (OCons (OVar "define") o)
