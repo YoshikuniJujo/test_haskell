@@ -1,6 +1,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 
 module Parser (
+	prsf,
 	prs,
 	dpt,
 	showObj
@@ -10,6 +11,11 @@ import Text.Papillon
 import Data.Char
 
 import Object
+
+prsf :: String -> Maybe [Object]
+prsf src = case runError $ scmf $ parse src of
+	Right (r, _) -> Just r
+	_ -> Nothing
 
 prs :: String -> Maybe Object
 prs src = case runError $ scm $ parse src of
@@ -24,6 +30,7 @@ dpt src = case runError $ depth $ parse src of
 data Tkn
 	= TIntL Integer
 	| TDoubleL Double
+	| TStringL String
 	| TVar String
 	| TTrue
 	| TFalse
@@ -35,6 +42,9 @@ isVar :: Char -> Bool
 isVar = (||) <$> isAlphaNum <*> (`elem` "+-*/<=>?")
 
 [papillon|
+
+scmf :: [Object]
+	= os:obj* _:spaces !_		{ os }
 
 depth :: Int
 	= d:depth_ _:spaces !_		{ d }
@@ -50,6 +60,7 @@ scm :: Object
 obj :: Object
 	= (TIntL i):lx		{ OInt i }
 	/ (TDoubleL d):lx	{ ODouble d }
+	/ (TStringL s):lx	{ OString s }
 	/ (TVar v):lx		{ OVar v }
 	/ TOParen:lx os:obj* TCParen:lx
 				{ foldr OCons ONil os }
@@ -67,12 +78,19 @@ word :: Tkn
 					(: n ++ "." ++ d) mm }
 	/ mm:('-' { '-' })? ds:<isDigit>+
 				{ TIntL $ read $ maybe ds (: ds) mm }
+	/ s:string		{ TStringL s }
 	/ v:<isVar>+		{ TVar v }
 	/ '('			{ TOParen }
 	/ ')'			{ TCParen }
 	/ '.'			{ TDot }
 	/ '#' 't'		{ TTrue }
 	/ '#' 'f'		{ TFalse }
+
+string :: String = '"' s:(<(`notElem` "\"\\")> / '\\' c:esc { c })* '"'
+				{ s }
+
+esc :: Char
+	= 'n'			{ '\n' }
 
 spaces = _:<isSpace>*
 

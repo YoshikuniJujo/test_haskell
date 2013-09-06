@@ -21,6 +21,7 @@ data Object
 	= OInt Integer
 	| ODouble Double
 	| ORational Rational
+	| OString String
 	| OVar String
 	| OCons Object Object
 	| ONil
@@ -34,6 +35,7 @@ showObj :: Object -> String
 showObj (OInt i) = show i
 showObj (ODouble d) = show d
 showObj (ORational r) = show (numerator r) ++ "/" ++ show (denominator r)
+showObj (OString s) = show s
 showObj (OVar v) = v
 showObj c@(OCons _ _) = showCons False c
 showObj ONil = "()"

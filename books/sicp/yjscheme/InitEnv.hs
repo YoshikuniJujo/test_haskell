@@ -1,3 +1,5 @@
+{-# LANGUAGE PackageImports #-}
+
 module InitEnv (
 	prs, dpt, eval,
 
@@ -9,6 +11,7 @@ module InitEnv (
 
 import Parser
 import Subrs
+import "monads-tf" Control.Monad.Trans
 
 initEnv :: Environment Object
 initEnv = fromList [
@@ -22,5 +25,14 @@ initEnv = fromList [
 	("exit", OSubr "exit" exit),
 	("define", OSyntax "define" def),
 	("lambda", OSyntax "lambda" $ lambda Nothing),
-	("cond", OSyntax "cond" cond)
+	("cond", OSyntax "cond" cond),
+	("load", OSubr "load" load)
  ]
+
+load :: Object -> SchemeM Object
+load (OCons (OString fp) ONil) = do
+	src <- liftIO $ readFile fp
+	case prsf src of
+		Just os -> mapM_ eval os >> return (OBool True)
+		_ -> throwError "*** ERROR: parse error"
+load _ = throwError "*** ERROR: load: bad arguments"
