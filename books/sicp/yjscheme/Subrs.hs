@@ -2,7 +2,7 @@
 
 module Subrs (
 	Env, fromList,
-	EnvT, runEnvT,
+	SchemeM, runEnvT,
 	Object(..),
 	eval,
 	throwError, catchError,

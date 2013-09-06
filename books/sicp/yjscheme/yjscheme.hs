@@ -2,23 +2,30 @@
 
 module Main where
 
+import InitEnv
+
+import Data.Maybe
 import System.IO
 import Control.Monad
 import "monads-tf" Control.Monad.Trans
 
-import InitEnv
-
 main :: IO ()
 main = runEnvT initEnv $ forever $ do
-	ln <- prompt
+	ln <- prompt 0 ""
 	flip catchError (liftIO . putStrLn) $ do
 		ret <- case prs ln of
 			Just obj -> eval obj
 			_ -> throwError "*** READ-ERROR:\n"
 		liftIO $ putStrLn $ showObj ret
 
-prompt :: EnvT Object IO String
-prompt = liftIO $ do
-	putStr "yjscheme> "
-	hFlush stdout
-	getLine
+prompt :: Int -> String -> SchemeM String
+prompt d s = do
+	n <- liftIO $ do
+		putStr $ "yjscheme:" ++ show d ++ "> "
+		hFlush stdout
+		getLine
+	let	s' = s ++ " " ++ n
+		d' = dpt s'
+	if maybe False (> 0) d'
+		then prompt (fromJust d') s'
+		else return s'

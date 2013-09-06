@@ -1,7 +1,7 @@
 module InitEnv (
-	prs, eval,
+	prs, dpt, eval,
 
-	EnvT, runEnvT,
+	SchemeM, runEnvT,
 	initEnv,
 	Object, showObj,
 	throwError, catchError,

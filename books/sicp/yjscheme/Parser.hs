@@ -2,6 +2,7 @@
 
 module Parser (
 	prs,
+	dpt,
 	showObj
 ) where
 
@@ -12,6 +13,11 @@ import Object
 
 prs :: String -> Maybe Object
 prs src = case runError $ scm $ parse src of
+	Right (r, _) -> Just r
+	_ -> Nothing
+
+dpt :: String -> Maybe Int
+dpt src = case runError $ depth $ parse src of
 	Right (r, _) -> Just r
 	_ -> Nothing
 
@@ -27,6 +33,14 @@ isVar :: Char -> Bool
 isVar = (||) <$> isAlpha <*> (`elem` "+-*/<=>?")
 
 [papillon|
+
+depth :: Int
+	= d:depth_ _:spaces !_		{ d }
+
+depth_ :: Int
+	= TOParen:lx _:obj* d:depth	{ d + 1 }
+	/ TCParen:lx			{ - 1 }
+	/				{ 0 }
 
 scm :: Object
 	= o:obj _:spaces !_	{ o }
