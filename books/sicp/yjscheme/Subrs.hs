@@ -22,6 +22,7 @@ module Subrs (
 	ors,
 	nots,
 	display,
+	expt,
 ) where
 
 import Eval
@@ -101,6 +102,19 @@ divide (ORational r) (ORational s) = let t = r / s in
 divide (ODouble d) (ODouble e) = return $ ODouble $ d / e
 divide x y = throwError $ "*** ERROR: operation / is not defined between " ++
 	showObj x ++ " and " ++ showObj y
+
+expt :: Object -> SchemeM Object
+expt (OCons (OInt i) (OCons (OInt j) ONil)) = return $ OInt $ i ^ j
+expt (OCons (ORational r) (OCons (OInt j) ONil)) = return $ ORational $ r ^ j
+expt (OCons (ODouble d) (OCons (OInt j) ONil)) = return $ ODouble $ d ^ j
+expt (OCons (OInt i) (OCons (ODouble e) ONil)) =
+	return $ ODouble $ fromIntegral i ** e
+expt (OCons (ORational r) (OCons (ODouble e) ONil)) =
+	return $ ODouble $ fromRational r ** e
+expt (OCons (ODouble d) (OCons (ODouble e) ONil)) = return $ ODouble $ d ** e
+expt (OCons n (OCons (ORational s) ONil)) =
+	expt (OCons n (OCons (ODouble $ fromRational s) ONil))
+expt _ = throwError "*** ERROR: wrong number of arguments for #<closure expt>"
 
 def :: Object -> SchemeM Object
 def (OCons v@(OVar var) (OCons val ONil)) = do

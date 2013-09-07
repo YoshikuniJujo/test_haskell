@@ -11,13 +11,14 @@ import Control.Monad
 import "monads-tf" Control.Monad.Trans
 
 main :: IO ()
-main = runEnvT initEnv $ forever $ do
-	ln <- prompt 0 ""
-	flip catchError (liftIO . putStrLn) $ do
-		ret <- case prs ln of
-			Just obj -> eval obj
-			_ -> throwError "*** READ-ERROR:\n"
-		liftIO $ putStrLn $ showObj ret
+main = runEnvT initEnv $ do
+	forever $ do
+		ln <- prompt 0 ""
+		flip catchError (liftIO . putStrLn) $ do
+			ret <- case prs ln of
+				Just obj -> eval obj
+				_ -> throwError "*** READ-ERROR:\n"
+			liftIO $ putStrLn $ showObj ret
 
 prompt :: Int -> String -> SchemeM String
 prompt d s = do

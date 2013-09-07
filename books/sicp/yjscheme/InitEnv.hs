@@ -22,6 +22,7 @@ initEnv = mkInitEnv [
 	(">", OSubr ">" $ bopSeq ">" (>)),
 	("<", OSubr "<" $ bopSeq "<" (<)),
 	("=", OSubr "=" $ bopSeq "=" (==)),
+	("expt", OSubr "expt" expt),
 	("exit", OSubr "exit" exit),
 	("define", OSyntax "define" def),
 	("lambda", OSyntax "lambda" $ lambda Nothing),
