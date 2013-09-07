@@ -220,7 +220,7 @@ quotient, remainder :: Object -> SchemeM Object
 quotient (OCons (OInt i) (OCons (OInt j) ONil)) = return $ OInt $ i `div` j
 quotient o = throwError $ "*** ERROR: integer required: " ++ showObj
 	(OCons (OVar "quotient") o)
-remainder (OCons (OInt i) (OCons (OInt j) ONil)) = return $ OInt $ i `mod` j
+remainder (OCons (OInt i) (OCons (OInt j) ONil)) = return $ OInt $ i `rem` j
 remainder o = throwError $ "*** ERROR: integer required: " ++ showObj
 	(OCons (OVar "remainder") o)
 
