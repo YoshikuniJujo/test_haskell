@@ -18,7 +18,6 @@ type EnvT v m = StateT (Environment v) (ErrorT String m)
 
 type Environment v = (EID, ([EID], Map EID (Env1 v)))
 data Env1 v = Env {
-	envID :: EID,
 	outEnvID :: Maybe EID,
 	envBody :: Env v
  }
@@ -26,7 +25,7 @@ type EID = Int
 type Env v = [(String, v)]
 
 mkInitEnv :: [(String, v)] -> Environment v
-mkInitEnv e = (0, ([0], fromList [(0, Env 0 Nothing e)]))
+mkInitEnv e = (0, ([0], fromList [(0, Env Nothing e)]))
 
 getEnv :: EID -> Map EID (Env1 v) -> Env1 v
 getEnv eid envs = case Data.Map.lookup eid envs of
@@ -43,8 +42,8 @@ getV _ _ = error "bad"
 
 def :: String -> v -> Environment v -> Environment v
 def var val (meid, (eids@(eid : _), envs)) = let
-	Env _ oeid body = getEnv eid envs
-	env = Env eid oeid $ (var, val) : body in
+	Env oeid body = getEnv eid envs
+	env = Env oeid $ (var, val) : body in
 	(meid, (eids, insert eid env envs))
 def  _ _ _ = error "bad"
 
@@ -72,7 +71,7 @@ newEnv :: Monad m => EID -> EnvT v m ()
 newEnv outer = do
 	(meid, (eids, envs)) <- get
 	let	meid' = succ meid
-		env = Env meid' (Just outer) []
+		env = Env (Just outer) []
 	put (meid', (meid' : eids, insert meid' env envs))
 
 popEnv :: Monad m => EnvT v m ()
