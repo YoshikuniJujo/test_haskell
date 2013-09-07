@@ -23,6 +23,9 @@ module Subrs (
 	nots,
 	display,
 	expt,
+	quotient,
+	remainder,
+	logbit,
 ) where
 
 import Eval
@@ -31,6 +34,7 @@ import "monads-tf" Control.Monad.Trans
 import Control.Applicative
 import System.Exit
 import Data.Ratio
+import Data.Bits
 
 add, mul, sub :: Object -> Object -> SchemeM Object
 add = preCast $ numOp "+" (+)
@@ -211,3 +215,17 @@ display :: Object -> SchemeM Object
 display (OCons (OString s) ONil) = liftIO (putStr s) >> return OUndef
 display (OCons v ONil) = liftIO (putStr $ showObj v) >> return OUndef
 display _ = throwError $ "*** ERROR: not implemented yet"
+
+quotient, remainder :: Object -> SchemeM Object
+quotient (OCons (OInt i) (OCons (OInt j) ONil)) = return $ OInt $ i `div` j
+quotient o = throwError $ "*** ERROR: integer required: " ++ showObj
+	(OCons (OVar "quotient") o)
+remainder (OCons (OInt i) (OCons (OInt j) ONil)) = return $ OInt $ i `mod` j
+remainder o = throwError $ "*** ERROR: integer required: " ++ showObj
+	(OCons (OVar "remainder") o)
+
+logbit :: Object -> SchemeM Object
+logbit (OCons (OInt i) (OCons (OInt j) ONil)) =
+	return $ OBool $ j `testBit` fromIntegral i
+logbit o = throwError $ "*** ERROR: integer required: " ++ showObj
+	(OCons (OVar "logbit") o)

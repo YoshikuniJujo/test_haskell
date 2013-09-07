@@ -27,6 +27,7 @@ data Object
 	| ONil
 	| OBool Bool
 	| OUndef
+	| OError
 	| OSubr String (Object -> SchemeM Object)
 	| OSyntax String (Object -> SchemeM Object)
 	| OClosure (Maybe String) EID Object Object
@@ -45,6 +46,7 @@ showObj OUndef = "#<undef>"
 showObj (OSubr n _) = "#<subr " ++ n ++ ">"
 showObj (OSyntax n _) = "#<syntax " ++ n ++ ">"
 showObj (OClosure n _ _ _) = "#<closure " ++ fromMaybe "#f" n ++ ">"
+showObj OError = "#<error>"
 
 showCons :: Bool -> Object -> String
 showCons l (OCons a d) = (if l then id else ("(" ++ ) . (++ ")")) $

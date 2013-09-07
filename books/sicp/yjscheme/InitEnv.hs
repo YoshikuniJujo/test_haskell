@@ -5,7 +5,7 @@ module InitEnv (
 
 	SchemeM, runEnvT,
 	initEnv,
-	Object, showObj,
+	Object(OError), showObj,
 	throwError, catchError,
 ) where
 
@@ -22,7 +22,10 @@ initEnv = mkInitEnv [
 	(">", OSubr ">" $ bopSeq ">" (>)),
 	("<", OSubr "<" $ bopSeq "<" (<)),
 	("=", OSubr "=" $ bopSeq "=" (==)),
+	("quotient", OSubr "quotient" quotient),
+	("remainder", OSubr "remainder" remainder),
 	("expt", OSubr "expt" expt),
+	("logbit?", OSubr "logbit?" logbit),
 	("exit", OSubr "exit" exit),
 	("define", OSyntax "define" def),
 	("lambda", OSyntax "lambda" $ lambda Nothing),

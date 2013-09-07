@@ -12,13 +12,13 @@ import "monads-tf" Control.Monad.Trans
 
 main :: IO ()
 main = runEnvT initEnv $ do
+	_ <- runSrc "(load \"library.scm\")"
 	forever $ do
 		ln <- prompt 0 ""
-		flip catchError (liftIO . putStrLn) $ do
-			ret <- case prs ln of
-				Just obj -> eval obj
-				_ -> throwError "*** READ-ERROR:\n"
-			liftIO $ putStrLn $ showObj ret
+		ret <- runSrc ln
+		case ret of
+			OError -> return ()
+			_ -> liftIO $ putStrLn $ showObj ret
 
 prompt :: Int -> String -> SchemeM String
 prompt d s = do
@@ -31,3 +31,9 @@ prompt d s = do
 	if maybe False (> 0) d' || all isSpace s'
 		then prompt (fromJust d') s'
 		else return s'
+
+runSrc :: String -> SchemeM Object
+runSrc src = flip catchError ((>> return OError) . liftIO . putStrLn) $
+	case prs src of
+		Just obj -> eval obj
+		_ -> throwError "*** READ-ERROR:"
