@@ -2,7 +2,7 @@
 
 module Subrs (
 	Environment, mkInitEnv,
-	SchemeM, runEnvT,
+	SchemeM, runEnvT, runSchemeM,
 	Object(..),
 	eval,
 	throwError, catchError,
@@ -27,16 +27,19 @@ module Subrs (
 	remainder,
 	logbit,
 	rndm,
+	runtime,
 ) where
 
 import Eval
 
 import "monads-tf" Control.Monad.Trans
+import "monads-tf" Control.Monad.Reader
 import Control.Applicative
 import System.Exit
 import System.Random
 import Data.Ratio
 import Data.Bits
+import Data.Time
 
 add, mul, sub :: Object -> Object -> SchemeM Object
 add = preCast $ numOp "+" (+)
@@ -236,3 +239,12 @@ rndm :: Object -> SchemeM Object
 rndm (OCons (OInt i) ONil) = liftIO $ OInt <$> randomRIO (0, i - 1)
 rndm o = throwError $ "*** ERROR: wrong number or wrong type of arguments: " ++
 	showObj (OCons (OVar "random") o)
+
+runtime :: Object -> SchemeM Object
+runtime ONil = do
+	b <- ask
+	n <- liftIO getCurrentTime
+	let d = diffUTCTime n b
+	return $ OInt $ floor $ d * 1000000
+runtime o = throwError $ "*** ERROR: " ++
+	showObj (OCons (OVar "runtime") o)

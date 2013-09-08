@@ -9,16 +9,19 @@ import Data.Char
 import System.IO
 import Control.Monad
 import "monads-tf" Control.Monad.Trans
+import Data.Time
 
 main :: IO ()
-main = runEnvT initEnv $ do
-	_ <- runSrc "(load \"library.scm\")"
-	forever $ do
-		ln <- prompt 0 ""
-		ret <- runSrc ln
-		case ret of
-			OError -> return ()
-			_ -> liftIO $ putStrLn $ showObj ret
+main = do
+	ct <- getCurrentTime
+	runSchemeM ct initEnv $ do
+		_ <- runSrc "(load \"library.scm\")"
+		forever $ do
+			ln <- prompt 0 ""
+			ret <- runSrc ln
+			case ret of
+				OError -> return ()
+				_ -> liftIO $ putStrLn $ showObj ret
 
 prompt :: Int -> String -> SchemeM String
 prompt d s = do

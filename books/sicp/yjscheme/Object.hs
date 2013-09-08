@@ -1,10 +1,12 @@
+{-# LANGUAGE PackageImports #-}
+
 module Object (
 	SchemeM,
 	Object(..),
 	showObj,
 
 	Environment, mkInitEnv,
-	EnvT, runEnvT,
+	EnvT, runEnvT, runSchemeM,
 	define, getValue, getEID, newEnv, popEnv,
 	throwError, catchError,
 	EID,
@@ -14,8 +16,14 @@ import Env
 
 import Data.Ratio
 import Data.Maybe
+import Data.Time
 
-type SchemeM = EnvT Object IO
+import "monads-tf" Control.Monad.Reader
+
+type SchemeM = EnvT Object (ReaderT UTCTime IO)
+
+runSchemeM :: UTCTime -> Environment Object -> SchemeM a -> IO a
+runSchemeM it env = (`runReaderT` it) . runEnvT env
 
 data Object
 	= OInt Integer

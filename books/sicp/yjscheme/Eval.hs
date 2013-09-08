@@ -1,7 +1,7 @@
 module Eval (
 	eval,
 	Environment, mkInitEnv,
-	EnvT, runEnvT,
+	EnvT, runEnvT, runSchemeM,
 	Object(..), showObj,
 	throwError, catchError,
 	foldlCons,

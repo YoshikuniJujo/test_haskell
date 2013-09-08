@@ -3,7 +3,7 @@
 module InitEnv (
 	prs, dpt, eval,
 
-	SchemeM, runEnvT,
+	SchemeM, runEnvT, runSchemeM,
 	initEnv,
 	Object(OError), showObj,
 	throwError, catchError,
@@ -36,7 +36,8 @@ initEnv = mkInitEnv [
 	("or", OSyntax "or" ors),
 	("not", OSubr "not" nots),
 	("load", OSubr "load" load),
-	("display", OSubr "display" display)
+	("display", OSubr "display" display),
+	("runtime", OSubr "runtime" runtime)
  ]
 
 load :: Object -> SchemeM Object
