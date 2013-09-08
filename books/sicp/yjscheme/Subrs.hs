@@ -26,6 +26,7 @@ module Subrs (
 	quotient,
 	remainder,
 	logbit,
+	rndm,
 ) where
 
 import Eval
@@ -33,6 +34,7 @@ import Eval
 import "monads-tf" Control.Monad.Trans
 import Control.Applicative
 import System.Exit
+import System.Random
 import Data.Ratio
 import Data.Bits
 
@@ -229,3 +231,8 @@ logbit (OCons (OInt i) (OCons (OInt j) ONil)) =
 	return $ OBool $ j `testBit` fromIntegral i
 logbit o = throwError $ "*** ERROR: integer required: " ++ showObj
 	(OCons (OVar "logbit") o)
+
+rndm :: Object -> SchemeM Object
+rndm (OCons (OInt i) ONil) = liftIO $ OInt <$> randomRIO (0, i - 1)
+rndm o = throwError $ "*** ERROR: wrong number or wrong type of arguments: " ++
+	showObj (OCons (OVar "random") o)

@@ -26,6 +26,7 @@ initEnv = mkInitEnv [
 	("remainder", OSubr "remainder" remainder),
 	("expt", OSubr "expt" expt),
 	("logbit?", OSubr "logbit?" logbit),
+	("random", OSubr "random" rndm),
 	("exit", OSubr "exit" exit),
 	("define", OSyntax "define" def),
 	("lambda", OSyntax "lambda" $ lambda Nothing),

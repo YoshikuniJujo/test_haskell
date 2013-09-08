@@ -1,3 +1,5 @@
+(load "examples/tools.scm")
+
 (define (expmod base exp m)
   (cond ((= exp 0) 1)
 	((even? exp)
@@ -11,3 +13,8 @@
   (define (try-it a)
     (= (expmod a n n) a))
   (try-it (+ 1 (random (- n 1)))))
+
+(define (fast-prime? n times)
+  (cond ((= times 0) true)
+	((fermat-test n) (fast-prime? n (- times 1)))
+	(else false)))
