@@ -89,6 +89,7 @@ numOp :: String -> (forall a . Num a => a -> a -> a) -> Object -> Object ->
 	SchemeM Object
 numOp _ op (OInt i) (OInt j) = return $ OInt $ i `op` j
 numOp _ op (ODouble d) (ODouble e) = return $ ODouble $ d `op` e
+numOp _ op (ORational r) (ORational s) = return $ ORational $ r `op` s
 numOp n _ x y = throwError $
 	"*** ERROR: operation " ++ n ++ " is not defined between " ++
 	showObj x ++ " and " ++ showObj y
