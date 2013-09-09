@@ -33,6 +33,8 @@ module Subrs (
 	errors,
 	sins,
 	coss,
+	logs,
+	exps,
 ) where
 
 import Eval
@@ -292,6 +294,8 @@ dfun _ f (OCons (ORational r) ONil) = return $ ODouble $ f $ fromRational r
 dfun n _ o = throwError $ "wrong number or types of arguments for #<subr " ++ n ++
 	"> :" ++ showObj (OCons (OVar n) o)
 
-sins, coss :: Object -> SchemeM Object
+sins, coss, logs, exps :: Object -> SchemeM Object
 sins = dfun "sin" sin
 coss = dfun "cos" cos
+logs = dfun "log" log
+exps = dfun "exp" exp

@@ -40,7 +40,7 @@ data Tkn
 	| TQuote
 
 isVar :: Char -> Bool
-isVar = (||) <$> isAlphaNum <*> (`elem` "+-*/<=>?")
+isVar = (||) <$> isAlphaNum <*> (`elem` "+-*/<=>?^")
 
 [papillon|
 

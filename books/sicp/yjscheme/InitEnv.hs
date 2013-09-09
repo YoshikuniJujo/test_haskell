@@ -42,7 +42,9 @@ initEnv = mkInitEnv [
 	("let", OSyntax "let" lets),
 	("error", OSubr "error" errors),
 	("sin", OSubr "sin" sins),
-	("cos", OSubr "cos" coss)
+	("cos", OSubr "cos" coss),
+	("log", OSubr "log" logs),
+	("exp", OSubr "exp" exps)
  ]
 
 load :: Object -> SchemeM Object
