@@ -4,3 +4,4 @@
 (define (cube x) (* x x x))
 (define (identity x) x)
 (define (inc x) (+ x 1))
+(define (average x y) (/ (+ x y) 2))
