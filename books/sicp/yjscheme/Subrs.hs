@@ -30,6 +30,9 @@ module Subrs (
 	runtime,
 	quote,
 	lets,
+	errors,
+	sins,
+	coss,
 ) where
 
 import Eval
@@ -273,3 +276,22 @@ lets o@(OCons vvs body) = do
 		showObj (OCons (OVar "let") o)
 lets o = throwError $ "*** ERROR: syntax-error: malformed let: " ++
 	showObj (OCons (OVar "let") o)
+
+cons2list :: Object -> SchemeM [Object]
+cons2list ONil = return []
+cons2list (OCons a d) = (a :) <$> cons2list d
+cons2list o = throwError $ "*** ERROR: not list: " ++ showObj o
+
+errors :: Object -> SchemeM Object
+errors o = throwError . ("*** ERROR: " ++) . unwords . map showObj =<< cons2list o
+
+dfun :: String -> (Double -> Double) -> Object -> SchemeM Object
+dfun _ f (OCons (ODouble d) ONil) = return $ ODouble $ f d
+dfun _ f (OCons (OInt i) ONil) = return $ ODouble $ f $ fromIntegral i
+dfun _ f (OCons (ORational r) ONil) = return $ ODouble $ f $ fromRational r
+dfun n _ o = throwError $ "wrong number or types of arguments for #<subr " ++ n ++
+	"> :" ++ showObj (OCons (OVar n) o)
+
+sins, coss :: Object -> SchemeM Object
+sins = dfun "sin" sin
+coss = dfun "cos" cos
