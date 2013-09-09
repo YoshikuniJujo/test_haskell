@@ -37,6 +37,7 @@ data Tkn
 	| TOParen
 	| TCParen
 	| TDot
+	| TQuote
 
 isVar :: Char -> Bool
 isVar = (||) <$> isAlphaNum <*> (`elem` "+-*/<=>?")
@@ -66,6 +67,7 @@ obj :: Object
 				{ foldr OCons ONil os }
 	/ TOParen:lx as:obj* TDot:lx d:obj TCParen:lx
 				{ foldr OCons d as }
+	/ TQuote:lx o:obj	{ OCons (OVar "quote") $ OCons o ONil }
 	/ TTrue:lx		{ OBool True }
 	/ TFalse:lx		{ OBool False }
 
@@ -83,6 +85,7 @@ word :: Tkn
 	/ '('			{ TOParen }
 	/ ')'			{ TCParen }
 	/ '.'			{ TDot }
+	/ '\''			{ TQuote }
 	/ '#' 't'		{ TTrue }
 	/ '#' 'f'		{ TFalse }
 

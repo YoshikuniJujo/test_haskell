@@ -28,6 +28,7 @@ module Subrs (
 	logbit,
 	rndm,
 	runtime,
+	quote,
 ) where
 
 import Eval
@@ -249,3 +250,8 @@ runtime ONil = do
 	return $ OInt $ floor $ d * 1000000
 runtime o = throwError $ "*** ERROR: " ++
 	showObj (OCons (OVar "runtime") o)
+
+quote :: Object -> SchemeM Object
+quote (OCons o ONil) = return o
+quote o = throwError $ "*** ERROR: malformed quote: " ++
+	showObj (OCons (OVar "quote") o)

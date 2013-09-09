@@ -37,7 +37,8 @@ initEnv = mkInitEnv [
 	("not", OSubr "not" nots),
 	("load", OSubr "load" load),
 	("display", OSubr "display" display),
-	("runtime", OSubr "runtime" runtime)
+	("runtime", OSubr "runtime" runtime),
+	("quote", OSyntax "quote" quote)
  ]
 
 load :: Object -> SchemeM Object

@@ -46,6 +46,7 @@ showObj (ODouble d) = show d
 showObj (ORational r) = show (numerator r) ++ "/" ++ show (denominator r)
 showObj (OString s) = show s
 showObj (OVar v) = v
+showObj (OCons (OVar "quote") (OCons a ONil)) = "'" ++ showObj a
 showObj c@(OCons _ _) = showCons False c
 showObj ONil = "()"
 showObj (OBool True) = "#t"
