@@ -48,7 +48,8 @@ initEnv = mkInitEnv [
 	("cons", OSubr "cons" cons),
 	("car", OSubr "car" cars),
 	("cdr", OSubr "cdr" cdrs),
-	("list", OSubr "list" list)
+	("list", OSubr "list" list),
+	("null?", OSubr "null?" nulls)
  ]
 
 load :: Object -> SchemeM Object

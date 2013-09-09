@@ -39,6 +39,7 @@ module Subrs (
 	cars,
 	cdrs,
 	list,
+	nulls,
 ) where
 
 import Eval
@@ -319,3 +320,9 @@ cdrs o = throwError $ "*** ERROR: wrong number or types of arguments: cdr: " ++
 
 list :: Object -> SchemeM Object
 list = return
+
+nulls :: Object -> SchemeM Object
+nulls (OCons ONil ONil) = return $ OBool True
+nulls (OCons _ ONil) = return $ OBool False
+nulls o = throwError $ "*** ERROR: wrong number of arguments: null?: " ++
+	showObj (OCons (OVar "null?") o)
