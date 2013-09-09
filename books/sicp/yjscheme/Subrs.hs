@@ -38,6 +38,7 @@ module Subrs (
 	cons,
 	cars,
 	cdrs,
+	list,
 ) where
 
 import Eval
@@ -315,3 +316,6 @@ cars o = throwError $ "*** ERROR: wrong number or types of arguments: car: " ++
 cdrs (OCons (OCons _ d) ONil) = return d
 cdrs o = throwError $ "*** ERROR: wrong number or types of arguments: cdr: " ++
 	showObj (OCons (OVar "cdr") o)
+
+list :: Object -> SchemeM Object
+list = return
