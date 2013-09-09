@@ -257,19 +257,19 @@ quote (OCons o ONil) = return o
 quote o = throwError $ "*** ERROR: malformed quote: " ++
 	showObj (OCons (OVar "quote") o)
 
-car, cdr :: Object -> SchemeM Object
-car (OCons a _) = return a
-car _ = throwError "car: bad"
-cdr (OCons _ d) = return d
-cdr _ = throwError "cdr: bad"
+car, cdr :: String -> Object -> SchemeM Object
+car _ (OCons a _) = return a
+car err _ = throwError err
+cdr _ (OCons _ d) = return d
+cdr err _ = throwError err
 
 lets :: Object -> SchemeM Object
-lets o@(OCons vvs body) = flip catchError (const $ throwError errStr) $ do
-	vars <- mapCons car vvs
-	vals <- mapCons ((car =<<) . cdr) vvs
+lets o@(OCons vvs body) = do
+	vars <- mapCons (car err) vvs
+	vals <- mapCons ((car err =<<) . cdr err) vvs
 	eval $ OCons (OCons (OVar "lambda") (OCons vars body)) vals
 	where
-	errStr = "*** ERROR: syntax-error: malformed let: " ++
+	err = "*** ERROR: syntax-error: malformed let: " ++
 		showObj (OCons (OVar "let") o)
 lets o = throwError $ "*** ERROR: syntax-error: malformed let: " ++
 	showObj (OCons (OVar "let") o)
