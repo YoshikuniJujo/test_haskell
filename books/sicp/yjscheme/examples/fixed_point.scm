@@ -1,3 +1,5 @@
+(load "examples/tools.scm")
+
 (define tolerance 0.00001)
 
 (define (fixed-point f first-guess)
@@ -21,3 +23,9 @@
 	next
 	(try next))))
   (try first-guess))
+
+(define (x^x=1000 x)
+  (/ (log 1000) (log x)))
+
+(define (x^x=1000avg x)
+  (average x (x^x=1000 x)))
