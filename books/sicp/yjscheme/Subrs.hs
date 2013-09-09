@@ -29,6 +29,7 @@ module Subrs (
 	rndm,
 	runtime,
 	quote,
+	lets,
 ) where
 
 import Eval
@@ -255,3 +256,20 @@ quote :: Object -> SchemeM Object
 quote (OCons o ONil) = return o
 quote o = throwError $ "*** ERROR: malformed quote: " ++
 	showObj (OCons (OVar "quote") o)
+
+car, cdr :: Object -> SchemeM Object
+car (OCons a _) = return a
+car _ = throwError "car: bad"
+cdr (OCons _ d) = return d
+cdr _ = throwError "cdr: bad"
+
+lets :: Object -> SchemeM Object
+lets o@(OCons vvs body) = flip catchError (const $ throwError errStr) $ do
+	vars <- mapCons car vvs
+	vals <- mapCons ((car =<<) . cdr) vvs
+	eval $ OCons (OCons (OVar "lambda") (OCons vars body)) vals
+	where
+	errStr = "*** ERROR: syntax-error: malformed let: " ++
+		showObj (OCons (OVar "let") o)
+lets o = throwError $ "*** ERROR: syntax-error: malformed let: " ++
+	showObj (OCons (OVar "let") o)

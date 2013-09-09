@@ -210,3 +210,8 @@ outer には closure の EID をとる。
 そして、中身を実行したら stack を pop する。
 
 まずは EID の最大値を保存する必要があるな。
+
+2013.09.09 Mon.
+
+OCons vvs body -> OCons (OCons (OVar "lambda") (OCons (mapCons car vvs) body))
+			(mapCons (car . cdr) vvs)
