@@ -1,4 +1,6 @@
-(define (square x) (* x x))
-(define (cube x) (* x x x))
 (define true #t)
 (define false #f)
+(define (square x) (* x x))
+(define (cube x) (* x x x))
+(define (identity x) x)
+(define (inc x) (+ x 1))
