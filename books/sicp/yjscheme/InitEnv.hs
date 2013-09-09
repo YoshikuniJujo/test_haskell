@@ -45,7 +45,7 @@ initEnv = mkInitEnv [
 	("cos", OSubr "cos" coss),
 	("log", OSubr "log" logs),
 	("exp", OSubr "exp" exps),
-	("cons", OSubr "cons" cons),
+	("cons", OSubr "cons" conss),
 	("car", OSubr "car" cars),
 	("cdr", OSubr "cdr" cdrs),
 	("list", OSubr "list" list),

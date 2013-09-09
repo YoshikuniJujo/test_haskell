@@ -4,6 +4,9 @@ module Object (
 	SchemeM,
 	Object(..),
 	showObj,
+	cons,
+	car, cdr,
+	cons2list,
 
 	Environment, mkInitEnv,
 	EnvT, runEnvT, runSchemeM,
@@ -19,6 +22,7 @@ import Data.Maybe
 import Data.Time
 
 import "monads-tf" Control.Monad.Reader
+import Control.Applicative
 
 type SchemeM = EnvT Object (ReaderT UTCTime IO)
 
@@ -39,6 +43,20 @@ data Object
 	| OSubr String (Object -> SchemeM Object)
 	| OSyntax String (Object -> SchemeM Object)
 	| OClosure (Maybe String) EID Object Object
+
+cons :: Object -> Object -> SchemeM Object
+cons a d = return $ OCons a d
+
+car, cdr :: String -> Object -> SchemeM Object
+car _ (OCons a _) = return a
+car err _ = throwError err
+cdr _ (OCons _ d) = return d
+cdr err _ = throwError err
+
+cons2list :: Object -> SchemeM [Object]
+cons2list ONil = return []
+cons2list (OCons a d) = (a :) <$> cons2list d
+cons2list o = throwError $ "*** ERROR: not list: " ++ showObj o
 
 showObj :: Object -> String
 showObj (OInt i) = show i

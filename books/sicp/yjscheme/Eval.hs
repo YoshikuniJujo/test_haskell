@@ -8,6 +8,10 @@ module Eval (
 	SchemeM,
 	define, getEID,
 	lastCons, mapCons, zipWithCons,
+
+	cons,
+	car, cdr,
+	cons2list,
 ) where
 
 import Object
