@@ -44,7 +44,10 @@ initEnv = mkInitEnv [
 	("sin", OSubr "sin" sins),
 	("cos", OSubr "cos" coss),
 	("log", OSubr "log" logs),
-	("exp", OSubr "exp" exps)
+	("exp", OSubr "exp" exps),
+	("cons", OSubr "cons" cons),
+	("car", OSubr "car" cars),
+	("cdr", OSubr "cdr" cdrs)
  ]
 
 load :: Object -> SchemeM Object

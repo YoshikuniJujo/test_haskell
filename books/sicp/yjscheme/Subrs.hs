@@ -35,6 +35,9 @@ module Subrs (
 	coss,
 	logs,
 	exps,
+	cons,
+	cars,
+	cdrs,
 ) where
 
 import Eval
@@ -299,3 +302,16 @@ sins = dfun "sin" sin
 coss = dfun "cos" cos
 logs = dfun "log" log
 exps = dfun "exp" exp
+
+cons :: Object -> SchemeM Object
+cons (OCons a (OCons b ONil)) = return $ OCons a b
+cons o = throwError $ "*** ERROR: wrong number of arguments: cons requires 2: " ++
+	showObj (OCons (OVar "cons") o)
+
+cars, cdrs :: Object -> SchemeM Object
+cars (OCons (OCons a _) ONil) = return a
+cars o = throwError $ "*** ERROR: wrong number or types of arguments: car: " ++
+	showObj (OCons (OVar "car") o)
+cdrs (OCons (OCons _ d) ONil) = return d
+cdrs o = throwError $ "*** ERROR: wrong number or types of arguments: cdr: " ++
+	showObj (OCons (OVar "cdr") o)
