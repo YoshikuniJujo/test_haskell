@@ -53,9 +53,12 @@ initEnv = mkInitEnv [
  ]
 
 load :: Object -> SchemeM Object
-load (OCons (OString fp) ONil) = do
-	src <- liftIO $ readFile fp
-	case prsf src of
-		Just os -> mapM_ eval os >> return (OBool True)
-		_ -> throwError "*** ERROR: parse error"
-load _ = throwError "*** ERROR: load: bad arguments"
+load o = do
+	l <- cons2list o
+	case l of
+		[OString fp] -> do
+			src <- liftIO $ readFile fp
+			case prsf src of
+				Just os -> mapM_ eval os >> return (OBool True)
+				_ -> throwError "*** ERROR: parse error"
+		_ -> throwError "*** ERROR: load: bad arguments"

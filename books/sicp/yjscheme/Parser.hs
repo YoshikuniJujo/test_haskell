@@ -64,10 +64,10 @@ obj :: Object
 	/ (TStringL s):lx	{ OString s }
 	/ (TVar v):lx		{ OVar v }
 	/ TOParen:lx os:obj* TCParen:lx
-				{ foldr OCons ONil os }
+				{ foldr imcons ONil os }
 	/ TOParen:lx as:obj* TDot:lx d:obj TCParen:lx
-				{ foldr OCons d as }
-	/ TQuote:lx o:obj	{ OCons (OVar "quote") $ OCons o ONil }
+				{ foldr imcons d as }
+	/ TQuote:lx o:obj	{ imcons (OVar "quote") $ imcons o ONil }
 	/ TTrue:lx		{ OBool True }
 	/ TFalse:lx		{ OBool False }
 

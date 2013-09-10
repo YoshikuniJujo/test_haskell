@@ -8,6 +8,7 @@ module Subrs (
 	throwError, catchError,
 
 	foldlCons,
+	cons2list,
 	add,
 	subAll,
 	mul,
@@ -64,11 +65,13 @@ divAll = oneOrMore "/" (fracFun "/" recip) $ preCast divide
 
 exit :: Object -> SchemeM Object
 exit ONil = liftIO exitSuccess >> return OUndef
-exit (OCons (OInt ec) ONil)
-	| ec == 0 = exit ONil
-	| otherwise = liftIO (exitWith $ ExitFailure $ fromIntegral ec) >>
-		return OUndef
-exit _ = throwError "*** ERROR: bad arguments"
+exit o = do
+	l <- cons2list o
+	case l of
+		[OInt 0] -> exit ONil
+		[OInt ec] -> liftIO (exitWith $ ExitFailure $ fromIntegral ec) >>
+			return OUndef
+		_ -> throwError "*** ERROR: bad arguments"
 
 preCast :: (Object -> Object -> SchemeM Object) ->
 	(Object -> Object -> SchemeM Object)
@@ -108,13 +111,13 @@ numOp n _ x y = throwError $
 
 oneOrMore :: String -> (Object -> SchemeM Object) ->
 	(Object -> Object -> SchemeM Object) -> Object -> SchemeM Object
-oneOrMore _ f _ (OCons o ONil) = f o
-oneOrMore _ _ op (OCons o0 os) = foldlCons op o0 os
-oneOrMore n _ _ ONil = throwError $
-	"*** ERROR: procedure requires at least one argument: (" ++ n ++ ")"
-oneOrMore _ _ _ o = throwError $
-	"*** ERROR: proper list required for function application or macro use: " ++
-	showObj o
+oneOrMore n f op o = do
+	l <- cons2list o
+	case l of
+		[o'] -> f o'
+		o0 : os -> foldM op o0 os
+		[] -> throwError $
+			"*** ERROR: procedure requires at least one argument: (" ++ n ++ ")"
 
 divide :: Object -> Object -> SchemeM Object
 divide (OInt i) (OInt j) = let r = fromIntegral i / fromIntegral j in
@@ -126,54 +129,84 @@ divide x y = throwError $ "*** ERROR: operation / is not defined between " ++
 	showObj x ++ " and " ++ showObj y
 
 expt :: Object -> SchemeM Object
-expt (OCons (OInt i) (OCons (OInt j) ONil)) = return $ OInt $ i ^ j
-expt (OCons (ORational r) (OCons (OInt j) ONil)) = return $ ORational $ r ^ j
-expt (OCons (ODouble d) (OCons (OInt j) ONil)) = return $ ODouble $ d ^ j
-expt (OCons (OInt i) (OCons (ODouble e) ONil)) =
-	return $ ODouble $ fromIntegral i ** e
-expt (OCons (ORational r) (OCons (ODouble e) ONil)) =
-	return $ ODouble $ fromRational r ** e
-expt (OCons (ODouble d) (OCons (ODouble e) ONil)) = return $ ODouble $ d ** e
-expt (OCons n (OCons (ORational s) ONil)) =
-	expt (OCons n (OCons (ODouble $ fromRational s) ONil))
-expt _ = throwError "*** ERROR: wrong number of arguments for #<closure expt>"
+expt o = do
+	l <- cons2list o
+	case l of
+		[OInt i, OInt j] -> return $ OInt $ i ^ j
+		[ORational r, OInt j] -> return $ ORational $ r ^ j
+		[ODouble d, OInt j] -> return $ ODouble $ d ^ j
+		[OInt i, ODouble e] -> return $ ODouble $ fromIntegral i ** e
+		[ORational r, ODouble e] -> return $ ODouble $ fromRational r ** e
+		[ODouble d, ODouble e] -> return $ ODouble $ d ** e
+		[n, ORational s] -> do
+			c <- cons n =<< cons (ODouble $ fromRational s) ONil
+			expt c
+		_ -> throwError
+			"*** ERROR: wrong number of arguments for #<closure expt>"
 
 def :: Object -> SchemeM Object
-def (OCons v@(OVar var) (OCons val ONil)) = do
-	r <- eval val
-	case r of
-		OClosure Nothing eid as bd ->
-			define var $ OClosure (Just var) eid as bd
-		_ -> define var r
-	return v
-def (OCons (OCons fn@(OVar n) as) bd) =
-	def $ OCons fn $ OCons
-		(OCons (OSyntax "lambda" $ lambda $ Just n) $ OCons as bd) ONil
-def o = throwError . ("*** ERROR: syntax-error: " ++) . showObj =<<
-	cons (OVar "define") o
+def o = do
+	err <- ("*** ERROR: syntax-error: " ++) . showObj <$>
+		cons (OVar "define") o
+	a <- car err o
+	d <- cdr err o
+	case a of
+		v@(OVar var) -> do
+			r <- eval =<< car err d
+			case r of
+				OClosure Nothing eid as bd ->
+					define var $ OClosure (Just var) eid as bd
+				_ -> define var r
+			return v
+		_ -> do	fn <- car err a
+			as <- cdr err a
+			case fn of
+				OVar n -> do
+					l <- cons (OSyntax "lambda" $
+						lambda $ Just n) =<< cons as d
+					r <- cons fn =<< cons l ONil
+					def r
+				_ -> throwError err
 
 lambda :: Maybe String -> Object -> SchemeM Object
-lambda n (OCons as bd) = do
+lambda n o = do
+	err <- ("*** ERROR: malformed lambda: " ++) . showObj <$>
+		cons (OVar "lambda") o
+	a <- car err o
+	d <- cdr err o
 	eid <- getEID
-	return $ OClosure n eid as bd
-lambda _ o = throwError . ("*** ERROR: malformed lambda: " ++) . showObj =<<
-	cons (OVar "lambda") o
+	return $ OClosure n eid a d
 
 cond :: Object -> SchemeM Object
-cond (OCons (OCons (OVar "else") proc) ONil) = lastCons =<< mapCons eval proc
-cond (OCons (OCons test proc) rest) = do
-	t <- eval test
-	case t of
-		OBool False -> cond rest
-		_ -> lastCons =<< mapCons eval proc
 cond ONil = return OUndef
-cond o = throwError . ("*** ERROR: syntax-error: " ++) . showObj =<<
-	cons (OVar "cond") o
+cond o = do
+	err <- ("*** ERROR: syntax-error: " ++) . showObj <$> cons (OVar "cond") o
+	a <- car err o
+	d <- cdr err o
+	case d of
+		ONil -> do
+			a' <- car err a
+			d' <- cdr err a
+			case a' of
+				OVar "else" -> lastCons =<< mapCons eval d'
+				test -> do
+					t <- eval test
+					case t of
+						OBool False -> return OUndef
+						_ -> lastCons =<< mapCons eval d'
+		_ -> do	t <- eval =<< car err a
+			d' <- cdr err a
+			case t of
+				OBool False -> cond d
+				_ -> lastCons =<< mapCons eval d'
 
 bopSeq :: String -> (forall a . Ord a => a -> a -> Bool) -> Object -> SchemeM Object
-bopSeq _ op o@(OCons _ d) = andCons <$> zipWithCons (preCast $ bop op) o d
-bopSeq n _ o = throwError . (("*** ERROR: wrong number of arguments for #<subr " ++
-	n ++ ">: ") ++) . showObj =<< cons (OVar n) o
+bopSeq n op o = do
+	l <- cons2list o
+	case l of
+		oa@(_ : os) -> OBool . all isTrue <$> zipWithM (preCast $ bop op) oa os
+		_ -> throwError . (("*** ERROR: wrong number of arguments for #<subr " ++
+			n ++ ">: ") ++) . showObj =<< cons (OVar n) o
 
 bop :: (forall a . Ord a => a -> a -> Bool) -> Object -> Object -> SchemeM Object
 bop op (OInt i) (OInt j) = return $ OBool $ i `op` j
@@ -181,77 +214,98 @@ bop op (ODouble d) (ODouble e) = return $ OBool $ d `op` e
 bop op (ORational r) (ORational s) = return $ OBool $ r `op` s
 bop _ x y = throwError $ "bop: " ++ showObj x ++ " " ++ showObj y
 
-andCons :: Object -> Object
-andCons (OCons (OBool True) d) = andCons d
-andCons (OCons (OBool False) _) = OBool False
-andCons ONil = OBool True
-andCons _ = error $ "andCons: bad"
+isTrue :: Object -> Bool
+isTrue (OBool False) = False
+isTrue _ = True
 
 ifs :: Object -> SchemeM Object
-ifs (OCons test (OCons thn (OCons els ONil))) = do
-	t <- eval test
-	case t of
-		OBool False -> eval els
-		_ -> eval thn
-ifs (OCons test (OCons thn ONil)) = do
-	t <- eval test
-	case t of
-		OBool False -> return OUndef
-		_ -> eval thn
-ifs o = throwError . ("*** ERROR: syntax-error: malformed if: " ++) .
-	showObj =<< cons (OVar "if") o
+ifs o = do
+	err <- ("*** ERROR: syntax-error: malformed if: " ++) .
+		showObj <$> cons (OVar "if") o
+	l <- cons2list o
+	case l of
+		[test, thn, els] -> do
+			t <- eval test
+			case t of
+				OBool False -> eval els
+				_ -> eval thn
+		[test, thn] -> do
+			t <- eval test
+			case t of
+				OBool False -> return OUndef
+				_ -> eval thn
+		_ -> throwError err
 
 ands, ors, nots :: Object -> SchemeM Object
-ands (OCons x r) = do
-	ret <- eval x
+ands ONil =  return $ OBool True
+ands o = do
+	err <- ("*** ERROR: proper list required for function application of macro use: " ++) . showObj <$> cons (OVar "and") o
+	ret <- eval =<< car err o
+	d <- cdr err o
 	case ret of
 		OBool False -> return ret
-		_ -> case r of
+		_ -> case d of
 			ONil -> return ret
-			_ -> ands r
-ands ONil =  return $ OBool True
-ands o = throwError .
-	("*** ERROR: proper list required for function application of macro use: "
-	++) . showObj =<< cons (OVar "and") o
+			_ -> ands d
 
-ors (OCons x r) = do
-	ret <- eval x
-	case ret of
-		OBool False -> ors r
-		_ -> return ret
 ors ONil = return $ OBool False
-ors o = throwError .
-	("*** ERROR: proper list required for function application of macro use: "
-	++) . showObj =<< cons (OVar "or") o
+ors o = do
+	err <- ("*** ERROR: proper list required for function application of macro use: " ++) . showObj <$> cons (OVar "or") o
+	ret <- eval =<< car err o
+	d <- cdr err o
+	case ret of
+		OBool False -> ors d
+		_ -> return ret
 
-nots (OCons (OBool False) ONil) = return $ OBool True
-nots (OCons _ ONil) = return $ OBool False
-nots _ = throwError $
-	"*** ERROR: wrong number of arguments: not requires 1, but got x"
+nots o = do
+	l <- cons2list o
+	case l of
+		[OBool False] -> return $ OBool True
+		[_] -> return $ OBool False
+		_ -> throwError $
+			"*** ERROR: wrong number of arguments: not requires 1, but got x"
 
 display :: Object -> SchemeM Object
-display (OCons (OString s) ONil) = liftIO (putStr s) >> return OUndef
-display (OCons v ONil) = liftIO (putStr $ showObj v) >> return OUndef
-display _ = throwError $ "*** ERROR: not implemented yet"
+display o = do
+	l <- cons2list o
+	case l of
+		[OString s] -> liftIO (putStr s) >> return OUndef
+		[v] -> liftIO (putStr $ showObj v) >> return OUndef
+		_ -> throwError $ "*** ERROR: not implemented yet"
 
 quotient, remainder :: Object -> SchemeM Object
-quotient (OCons (OInt i) (OCons (OInt j) ONil)) = return $ OInt $ i `div` j
-quotient o = throwError . ("*** ERROR: integer required: " ++) . showObj =<<
-	cons (OVar "quotient") o
-remainder (OCons (OInt i) (OCons (OInt j) ONil)) = return $ OInt $ i `rem` j
-remainder o = throwError . ("*** ERROR: integer required: " ++) . showObj =<<
-	cons (OVar "remainder") o
+quotient o = do
+	l <- cons2list o
+	err <- ("*** ERROR: integer required: " ++) . showObj <$>
+		cons (OVar "quotient") o
+	case l of
+		[OInt i, OInt j] -> return $ OInt $ i `div` j
+		_ -> throwError err
+remainder o = do
+	l <- cons2list o
+	err <- ("*** ERROR: integer required: " ++) . showObj <$>
+		cons (OVar "remainder") o
+	case l of
+		[OInt i, OInt j] -> return $ OInt $ i `rem` j
+		_ -> throwError err
 
 logbit :: Object -> SchemeM Object
-logbit (OCons (OInt i) (OCons (OInt j) ONil)) =
-	return $ OBool $ j `testBit` fromIntegral i
-logbit o = throwError . ("*** ERROR: integer required: " ++) . showObj =<<
-	cons (OVar "logbit") o
+logbit o = do
+	l <- cons2list o
+	err <- ("*** ERROR: integer required: " ++) . showObj <$>
+		cons (OVar "logbit") o
+	case l of
+		[OInt i, OInt j] -> return $ OBool $ j `testBit` fromIntegral i
+		_ -> throwError err
 
 rndm :: Object -> SchemeM Object
-rndm (OCons (OInt i) ONil) = liftIO $ OInt <$> randomRIO (0, i - 1)
-rndm o = throwError . ("*** ERROR: wrong number or wrong type of arguments: " ++) .
-	showObj =<< cons (OVar "random") o
+rndm o = do
+	l <- cons2list o
+	err <- ("*** ERROR: wrong number or wrong type of arguments: " ++) .
+		showObj <$> cons (OVar "random") o
+	case l of
+		[OInt i] -> liftIO $ OInt <$> randomRIO (0, i - 1)
+		_ -> throwError err
 
 runtime :: Object -> SchemeM Object
 runtime ONil = do
@@ -262,9 +316,13 @@ runtime ONil = do
 runtime o = throwError . ("*** ERROR: " ++) . showObj =<< cons (OVar "runtime") o
 
 quote :: Object -> SchemeM Object
-quote (OCons o ONil) = return o
-quote o = throwError . ("*** ERROR: malformed quote: " ++) . showObj =<<
-	cons (OVar "quote") o
+quote o = do
+	l <- cons2list o
+	err <- ("*** ERROR: malformed quote: " ++) . showObj <$>
+		cons (OVar "quote") o
+	case l of
+		[o'] -> return o'
+		_ -> throwError err
 
 lets :: Object -> SchemeM Object
 lets o = do

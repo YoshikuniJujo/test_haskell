@@ -2,8 +2,10 @@
 
 module Object (
 	SchemeM,
-	Object(..),
+	Object(OInt, ODouble, ORational, OString, OVar, ONil, OBool, OUndef,
+		OError, OSubr, OSyntax, OClosure),
 	showObj,
+	imcons,
 	cons,
 	car, cdr,
 	cons2list,
@@ -13,6 +15,8 @@ module Object (
 	define, getValue, getEID, newEnv, popEnv,
 	throwError, catchError,
 	EID,
+
+	lastCons, foldlCons, zipWithCons, mapCons,
 ) where
 
 import Env
@@ -43,6 +47,9 @@ data Object
 	| OSubr String (Object -> SchemeM Object)
 	| OSyntax String (Object -> SchemeM Object)
 	| OClosure (Maybe String) EID Object Object
+
+imcons :: Object -> Object -> Object
+imcons a d = OCons a d
 
 cons :: Object -> Object -> SchemeM Object
 cons a d = return $ OCons a d
@@ -83,3 +90,28 @@ showCons l (OCons a d) = (if l then id else ("(" ++ ) . (++ ")")) $
 		_ -> showObj a ++ " . " ++ showObj d
 showCons l ONil = if l then "" else "()"
 showCons _ _ = error "not cons"
+
+lastCons :: Object -> SchemeM Object
+lastCons (OCons a ONil) = return a
+lastCons (OCons _ d) = lastCons d
+lastCons o = throwError $ "*** ERROR: lastCons: not list: " ++ showObj o
+
+foldlCons :: (Object -> Object -> SchemeM Object) -> Object -> Object ->
+	SchemeM Object
+foldlCons _ o0 ONil = return o0
+foldlCons f o0 (OCons a d) = flip (foldlCons f) d =<< f o0 a
+foldlCons _ _ _ = throwError "foldlCons: bad"
+
+zipWithCons :: (Object -> Object -> SchemeM Object) -> Object -> Object ->
+	SchemeM Object
+zipWithCons f (OCons a d) (OCons a' d') = OCons <$> f a a' <*> zipWithCons f d d'
+zipWithCons _ ONil _ = return ONil
+zipWithCons _ _ ONil = return ONil
+zipWithCons _ _ _ = throwError "zipWithCons: bad"
+
+mapCons :: (Object -> SchemeM Object) -> Object -> SchemeM Object
+mapCons _ ONil = return ONil
+mapCons f (OCons a d) = OCons <$> f a <*> mapCons f d
+mapCons _ o = throwError $
+	"*** ERROR: proper list required for function application or macro use: "
+	++ showObj o
