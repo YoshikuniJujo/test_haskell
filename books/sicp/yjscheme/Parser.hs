@@ -4,7 +4,8 @@ module Parser (
 	prsf,
 	prs,
 	dpt,
-	showObj
+	showObj,
+	showObjM,
 ) where
 
 import Text.Papillon

@@ -5,7 +5,7 @@ module InitEnv (
 
 	SchemeM, runEnvT, runSchemeM,
 	initEnv,
-	Object(OError), showObj,
+	Object(OError), showObj, showObjM,
 	throwError, catchError,
 ) where
 

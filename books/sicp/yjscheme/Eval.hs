@@ -39,7 +39,7 @@ eval o = do
 		OClosure _ eid ps bd -> do
 			as <- mapCons eval as_
 			apply eid ps as bd
-		o' -> error $ "eval: bad in function: " ++ showObj o'
+		o' -> throwError $ "eval: bad in function: " ++ showObj o'
 
 def :: Object -> Object -> SchemeM Object
 def v@(OVar var) val = define var val >> return v

@@ -4,6 +4,7 @@ module Object (
 	SchemeM,
 	Object(OInt, ODouble, ORational, OString, OVar, ONil, OBool, OUndef,
 		OError, OSubr, OSyntax, OClosure),
+	showObjM,
 	showObj,
 	imcons,
 	cons,
@@ -80,6 +81,14 @@ cons2list o = (:) <$> car err o <*> (cons2list =<< cdr err o)
 	where
 	err = "*** ERROR: not list: " ++ showObj o
 
+showObjM :: Object -> SchemeM String
+showObjM o@(OMCons _ _) = showConsM False o
+{- do
+	a <- showObjM =<< car "" o
+	d <- showObjM =<< cdr "" o
+	return $ "(" ++ a ++ " . " ++  d ++ ")" -}
+showObjM o = return $ showObj o
+
 showObj :: Object -> String
 showObj (OInt i) = show i
 showObj (ODouble d) = show d
@@ -106,6 +115,26 @@ showCons l (OCons a d) = (if l then id else ("(" ++ ) . (++ ")")) $
 		_ -> showObj a ++ " . " ++ showObj d
 showCons l ONil = if l then "" else "()"
 showCons _ _ = error "not cons"
+
+showConsM :: Bool -> Object -> SchemeM String
+showConsM l ONil = return $ if l then "" else "()"
+showConsM l o = do
+	a <- car "not cons" o
+	d <- cdr "not cons" o
+	(if l then id else ("(" ++) . (++ ")")) <$>
+		case d of
+			OCons _ _ -> do
+				sa <- showObjM a
+				sd <- showConsM True d
+				return $ sa ++ " " ++ sd
+			OMCons _ _ -> do
+				sa <- showObjM a
+				sd <- showConsM True d
+				return $ sa ++ " " ++ sd
+			ONil -> showObjM a
+			_ -> do sa <- showObjM a
+				sd <- showObjM d
+				return $ sa ++ " . " ++ sd
 
 lastCons :: Object -> SchemeM Object
 lastCons o = do

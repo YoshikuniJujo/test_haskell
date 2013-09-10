@@ -21,7 +21,7 @@ main = do
 			ret <- runSrc ln
 			case ret of
 				OError -> return ()
-				_ -> liftIO $ putStrLn $ showObj ret
+				_ -> liftIO . putStrLn =<< showObjM ret
 
 prompt :: Int -> String -> SchemeM String
 prompt d s = do
