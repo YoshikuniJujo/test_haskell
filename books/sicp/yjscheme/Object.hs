@@ -62,8 +62,9 @@ cdr err _ = throwError err
 
 cons2list :: Object -> SchemeM [Object]
 cons2list ONil = return []
-cons2list (OCons a d) = (a :) <$> cons2list d
-cons2list o = throwError $ "*** ERROR: not list: " ++ showObj o
+cons2list o = (:) <$> car err o <*> (cons2list =<< cdr err o)
+	where
+	err = "*** ERROR: not list: " ++ showObj o
 
 showObj :: Object -> String
 showObj (OInt i) = show i
@@ -92,26 +93,47 @@ showCons l ONil = if l then "" else "()"
 showCons _ _ = error "not cons"
 
 lastCons :: Object -> SchemeM Object
-lastCons (OCons a ONil) = return a
-lastCons (OCons _ d) = lastCons d
-lastCons o = throwError $ "*** ERROR: lastCons: not list: " ++ showObj o
+lastCons o = do
+	a <- car err o
+	d <- cdr err o
+	case d of
+		ONil -> return a
+		_ -> lastCons d
+	where
+	err = "*** ERROR: lastCons: not list: " ++ showObj o
 
 foldlCons :: (Object -> Object -> SchemeM Object) -> Object -> Object ->
 	SchemeM Object
 foldlCons _ o0 ONil = return o0
-foldlCons f o0 (OCons a d) = flip (foldlCons f) d =<< f o0 a
-foldlCons _ _ _ = throwError "foldlCons: bad"
+foldlCons f o0 os = do
+	a <- car err os
+	d <- cdr err os
+	r <- f o0 a
+	foldlCons f r d
+	where
+	err = "foldlCons: bad"
 
 zipWithCons :: (Object -> Object -> SchemeM Object) -> Object -> Object ->
 	SchemeM Object
-zipWithCons f (OCons a d) (OCons a' d') = OCons <$> f a a' <*> zipWithCons f d d'
 zipWithCons _ ONil _ = return ONil
 zipWithCons _ _ ONil = return ONil
-zipWithCons _ _ _ = throwError "zipWithCons: bad"
+zipWithCons f o o' = do
+	a <- car err o
+	d <- cdr err o
+	a' <- car err o'
+	d' <- cdr err o'
+	ra <- f a a'
+	rd <- zipWithCons f d d'
+	cons ra rd
+	where
+	err = "zipWithCons: bad"
 
 mapCons :: (Object -> SchemeM Object) -> Object -> SchemeM Object
 mapCons _ ONil = return ONil
-mapCons f (OCons a d) = OCons <$> f a <*> mapCons f d
-mapCons _ o = throwError $
-	"*** ERROR: proper list required for function application or macro use: "
-	++ showObj o
+mapCons f o = do
+	a <- f =<< car err o
+	d <- mapCons f =<< cdr err o
+	cons a d
+	where
+	err = "*** ERROR: proper list required for function application or macro use: "
+		++ showObj o

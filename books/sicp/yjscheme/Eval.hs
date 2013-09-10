@@ -43,7 +43,7 @@ eval o = do
 
 def :: Object -> Object -> SchemeM Object
 def v@(OVar var) val = define var val >> return v
-def _ _ = throwError "def: bad"
+def v val = throwError $ "def: bad: " ++ showObj v ++ " " ++ showObj val
 
 apply :: EID -> Object -> Object -> Object -> SchemeM Object
 apply eid ps as bd = do
