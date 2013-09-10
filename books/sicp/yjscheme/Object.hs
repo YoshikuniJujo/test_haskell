@@ -26,12 +26,21 @@ import Data.Maybe
 import Data.Time
 
 import "monads-tf" Control.Monad.Reader
+import "monads-tf" Control.Monad.State
 import Control.Applicative
 
-type SchemeM = EnvT Object (ReaderT UTCTime IO)
+type SchemeM = EnvT Object (StateT ConsEnv (ReaderT UTCTime IO))
+
+type ConsEnv = (CID, [(CID, Object)])
+type CID = Int
+
+nCons :: Monad m => Object -> Object -> ConsEnv -> m ((CID, CID), ConsEnv)
+nCons a d (mcid, cenv) = return ((mcid + 1, mcid), (mcid + 2, (mcid + 1, a) : (mcid, d) : cenv))
+getC :: CID -> ConsEnv -> Object
+getC cid (_, cenv) = fromJust $ lookup cid cenv
 
 runSchemeM :: UTCTime -> Environment Object -> SchemeM a -> IO a
-runSchemeM it env = (`runReaderT` it) . runEnvT env
+runSchemeM it env = (`runReaderT` it) . flip evalStateT (0, []) . runEnvT env
 
 data Object
 	= OInt Integer
@@ -40,6 +49,7 @@ data Object
 	| OString String
 	| OVar String
 	| OCons Object Object
+	| OMCons CID CID
 	| ONil
 	| OBool Bool
 	| OUndef
@@ -52,12 +62,16 @@ imcons :: Object -> Object -> Object
 imcons a d = OCons a d
 
 cons :: Object -> Object -> SchemeM Object
-cons a d = return $ OCons a d
+cons a d = do
+	(aid, did) <- lift $ lift $ StateT $ nCons a d
+	return $ OMCons aid did
 
 car, cdr :: String -> Object -> SchemeM Object
 car _ (OCons a _) = return a
+car _ (OMCons a _) = lift $ gets $ getC a
 car err _ = throwError err
 cdr _ (OCons _ d) = return d
+cdr _ (OMCons _ d) = lift $ gets $ getC d
 cdr err _ = throwError err
 
 cons2list :: Object -> SchemeM [Object]
@@ -74,6 +88,7 @@ showObj (OString s) = show s
 showObj (OVar v) = v
 showObj (OCons (OVar "quote") (OCons a ONil)) = "'" ++ showObj a
 showObj c@(OCons _ _) = showCons False c
+showObj (OMCons c1 c2) = "(#" ++ show c1 ++ " . #" ++ show c2 ++ ")"
 showObj ONil = "()"
 showObj (OBool True) = "#t"
 showObj (OBool False) = "#f"
