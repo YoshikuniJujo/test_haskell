@@ -5,6 +5,7 @@ module Area (
 	mkArea,
 	hSepArea,
 	vSepArea,
+	vSepAreaLog,
 	addStr,
 	Draw(..),
 	Position, PosX(..), PosY(..)
@@ -58,6 +59,13 @@ vSepArea (Area x y w h) dot r = do
 		w'' = w - w'
 		x' = x + w'
 	tell [VLine dot x' y h]
+	return (Area x y w' h, Area x' y w'' h)
+
+vSepAreaLog :: Area -> Len -> AreaM (Area, Area)
+vSepAreaLog (Area x y w h) r = do
+	let	w' = r
+		w'' = w - w'
+		x' = x + w'
 	return (Area x y w' h, Area x' y w'' h)
 
 addStr :: Area -> Position -> Bold -> Size -> String -> AreaM ()
