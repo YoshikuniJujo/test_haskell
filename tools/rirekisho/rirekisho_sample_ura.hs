@@ -54,9 +54,18 @@ mkBaseArea1 = do
 	(_, douki) <- vSepAreaLog area4 20
 	(kibou, area6) <- vSepArea area5 False 400
 	(_, kibou1) <- hSepAreaLog kibou 15
+	(_, kibou2) <- hSepAreaLog kibou1 30
+	(_, kibouB) <- vSepAreaLog kibou2 15
 	(station, area7) <- hSepArea area6 False 45
 	(time, area8) <- hSepArea area7 False 45
+	(_, time1) <- vSepAreaLog time 30
+	(yaku, time2) <- vSepAreaLog time1 30
+	(hour, time3) <- vSepAreaLog time2 30
+	(hourU, time4) <- vSepAreaLog time3 45
+	(min, minU) <- vSepAreaLog time4 30
 	(fuyou, area9) <- hSepArea area8 False 45
+	(_, fuyou1) <- vSepAreaLog fuyou 80
+	(num, numU) <- vSepAreaLog fuyou1 50
 	(haigu, haigufuyou) <- vSepArea area9 False 80
 	addStr gakka (Left, Top) False 12 "得意な学科"
 	addStr health (Left, Top) False 12 "健康状態"
@@ -83,6 +92,18 @@ mkBaseArea1 = do
 		"ブランド構築に携わってまいりました。その経験を生かし、" ++
 		"ほかのメディアやイベントプロデュースなどさらに大きな" ++
 		"フィールドで幅を広げたく、応募いたしました。"
+	addStr kibouB (Left, Top) False 12
+		"職種: メディアプランナーを希望します。"
+	addStr station (Center, Bottom) False 15 "JR 中央駅 目黒駅"
+	addStr yaku (Center, Bottom) False 15 "約"
+	addStr hour (Center, Bottom) False 15 "1"
+	addStr hourU (Center, Bottom) False 15 "時間"
+	addStr min (Center, Bottom) False 15 "20"
+	addStr minU (Center, Bottom) False 15 "分"
+	addStr num (Center, Bottom) False 15 "0"
+	addStr numU (Center, Bottom) False 15 "人"
+	addStr haigu (Center, Bottom) False 15 "有"
+	addStr haigufuyou (Center, Bottom) False 15 "有"
 
 mkBaseArea2 = do
 	baseArea2 <- mkArea 50 850 600 100
