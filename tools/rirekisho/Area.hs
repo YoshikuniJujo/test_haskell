@@ -5,6 +5,7 @@ module Area (
 	mkArea,
 	hSepArea,
 	vSepArea,
+	hSepAreaLog,
 	vSepAreaLog,
 	addStr,
 	Draw(..),
@@ -51,6 +52,13 @@ hSepArea (Area x y w h) dot r = do
 		h'' = h - h'
 		y' = y + h'
 	tell [HLine dot x y' w]
+	return (Area x y w h', Area x y' w h'')
+
+hSepAreaLog :: Area -> Len -> AreaM (Area, Area)
+hSepAreaLog (Area x y w h) r = do
+	let	h' = r
+		h'' = h - h'
+		y' = y + h'
 	return (Area x y w h', Area x y' w h'')
 
 vSepArea :: Area -> Bool -> Len -> AreaM (Area, Area)
