@@ -1,19 +1,22 @@
 import DrawArea
+import Parse
 import Tools
 import Prelude hiding (Left, Right)
 import qualified Prelude as P
 -- import Control.Applicative
 import Control.Monad
+import Data.Maybe
 
 main :: IO ()
 main = do
+	dat <- readData "rirekisho.dat"
 	svg <- runArea 707 1000 $ do
-		mkBaseArea0
+		mkBaseArea0 dat
 		mkBaseArea1
 	putStr svg
 
-mkBaseArea0 :: AreaM ()
-mkBaseArea0 = do
+mkBaseArea0 :: [(String, Either String [String])] -> AreaM ()
+mkBaseArea0 dat = do
 	baseArea0 <- mkArea 50 80 600 290
 	(nameRubi, area1) <- hSepArea baseArea0 True 16
 	(name, area2) <- hSepArea area1 False 64
@@ -42,10 +45,10 @@ mkBaseArea0 = do
 	(nameR3, nameR4) <- vSepAreaLog nameR2 100
 	(_, name2) <- vSepAreaLog name 150
 	(name3, name4) <- vSepAreaLog name2 100
-	addStr nameR3 (Left, Middle) False 10 "にっけい"
-	addStr name3 (Left, Middle) True 35 "日経"
-	addStr nameR4 (Left, Middle) False 10 "たろう"
-	addStr name4 (Left, Middle) True 35 "太郎"
+	addStr nameR3 (Left, Middle) False 10 $ getVal "miyojiRubi"
+	addStr name3 (Left, Middle) True 35 $ getVal "miyoji"
+	addStr nameR4 (Left, Middle) False 10 $ getVal "namaeRubi"
+	addStr name4 (Left, Middle) True 35 $ getVal "namae"
 	addStr birth (Left, Middle) False 10 "生年月日"
 	(_, birth1) <- vSepAreaLog birth 100
 	(year, birth2) <- vSepAreaLog birth1 50
@@ -73,29 +76,28 @@ mkBaseArea0 = do
 	(paddrT1, paddrT2) <- hSepAreaLog paddrT 20
 	(contactT1, contactT2) <- hSepAreaLog contactT 20
 	(contact1, contact2) <- hSepAreaLog contact 20
-	addStr year (Center, Middle) False 17 "1974"
+	let [y, m, d, a] = getVals "birth"
+	addStr year (Center, Middle) False 17 y
 	addStr yearU (Center, Middle) False 17 "年"
-	addStr month (Center, Middle) False 17 "8"
+	addStr month (Center, Middle) False 17 m
 	addStr monthU (Center, Middle) False 17 "月"
-	addStr day (Center, Middle) False 17 "16"
+	addStr day (Center, Middle) False 17 d
 	addStr dayU (Center, Middle) False 17 "日生"
 	addStr age (Left, Middle) False 17 "(満"
-	addStr age (Center, Middle) False 17 "36"
+	addStr age (Center, Middle) False 17 a
 	addStr age (Right, Middle) False 17 "歳)"
 	addStr sex (Left, Middle) False 10 "性別"
-	addStr sex (Center, Middle) False 17 "男"
+	addStr sex (Center, Middle) False 17 $ getVal "sex"
 	addStr addrRubi (Left, Middle) False 10 "ふりがな"
-	addStr addrR1 (Center, Middle) False 10 $
-		"とうきょうとちよだくかんだかじちょう"
+	addStr addrR1 (Center, Middle) False 10 $ getVal "addressRubi"
 	addStr addr (Left, Top) False 10 "現 住 所"
 	addStr post1 (Left, Top) False 12 "〒("
 --	addStr post2 (Center, Top) False 12 "000-0145"
-	addStr post2_1 (Center, Top) False 12 "000"
+	addStr post2_1 (Center, Top) False 12 $ getVal "ynum1"
 	addStr post2_2 (Center, Top) False 12 "-"
-	addStr post2_3 (Center, Top) False 12 "0145"
+	addStr post2_3 (Center, Top) False 12 $ getVal "ynum2"
 	addStr post3 (Right, Top) False 12 ")"
-	addStr addr1 (Center, Middle) False 14
-		"東京都千代田区神田鍛治町3-6-X ポヨンD棟102号室"
+	addStr addr1 (Center, Middle) False 14 $ getVal "address"
 	addStr tel (Left, Top) False 10 "TEL"
 	addStr tel1 (Center, Middle) False 17 "03-XXXX-7330"
 	addStr fax (Left, Top) False 10 "FAX"
@@ -122,6 +124,9 @@ mkBaseArea0 = do
 	addStr cpost3 (Right, Top) False 12 ")"
 	addStr cont2 (Center, Top) False 12
 		"(現住所以外に連絡を希望する場合のみ記入)"
+	where
+	getVal t = let P.Left v = fromJust $ lookup t dat in v
+	getVals t = let P.Right vs = fromJust $ lookup t dat in vs
 
 mkBaseArea1 :: AreaM ()
 mkBaseArea1 = do
