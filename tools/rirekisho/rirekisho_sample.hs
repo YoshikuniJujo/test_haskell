@@ -12,7 +12,7 @@ main = do
 	dat <- readData "rirekisho.dat"
 	svg <- runArea 707 1000 $ do
 		mkBaseArea0 dat
-		mkBaseArea1
+		mkBaseArea1 dat
 	putStr svg
 
 mkBaseArea0 :: [(String, Either String [String])] -> AreaM ()
@@ -99,22 +99,20 @@ mkBaseArea0 dat = do
 	addStr post3 (Right, Top) False 12 ")"
 	addStr addr1 (Center, Middle) False 14 $ getVal "address"
 	addStr tel (Left, Top) False 10 "TEL"
-	addStr tel1 (Center, Middle) False 17 "03-XXXX-7330"
+	addStr tel1 (Center, Middle) False 17 $ getVal "tel"
 	addStr fax (Left, Top) False 10 "FAX"
-	addStr fax1 (Center, Middle) False 17 "03-XXXX-6992"
+	addStr fax1 (Center, Middle) False 17 $ getVal "fax"
 	addStr phoneT (Center, Middle) False 15 "携帯電話"
-	addStr phone (Center, Middle) False 17 "090-XXXX-1111"
+	addStr phone (Center, Middle) False 17 $ getVal "pphone"
 	addStr maddrT (Center, Middle) False 15 "Email"
-	addStr maddr (Center, Middle) False 17 "XXXX@nikkeihr.co.jp"
+	addStr maddr (Center, Middle) False 17 $ getVal "email"
 	addStr paddrT1 (Center, Middle) False 15 "携帯電話"
 	addStr paddrT2 (Center, Middle) False 10 "メールアドレス"
-	addStr paddr (Center, Middle) False 17 "nikkei@XX.ne.jp"
+	addStr paddr (Center, Middle) False 12 $ getVal "pemail"
 	addStr contactT1 (Left, Middle) False 10 "都合の良い"
 	addStr contactT2 (Left, Top) False 10 "連絡方法と時間帯"
-	addStr contact1 (Left, Middle) False 10
-		"携帯電話のメールにご連絡お願いします。"
-	addStr contact2 (Left, Top) False 10
-		"電話連絡も携帯で、17時以降が都合がよいです。"
+	addStr contact1 (Left, Middle) False 10 $ getVal "tocontactme1"
+	addStr contact2 (Left, Top) False 10 $ getVal "tocontactme2"
 	addStr contRubi (Left, Middle) False 10 "ふりがな"
 	addStr cTel (Left, Top) False 10 "TEL"
 	addStr cFax (Left, Top) False 10 "FAX"
@@ -128,8 +126,8 @@ mkBaseArea0 dat = do
 	getVal t = let P.Left v = fromJust $ lookup t dat in v
 	getVals t = let P.Right vs = fromJust $ lookup t dat in vs
 
-mkBaseArea1 :: AreaM ()
-mkBaseArea1 = do
+mkBaseArea1 :: [(String, Either String [String])] -> AreaM ()
+mkBaseArea1 dat = do
 	baseArea1 <- mkArea 50 380 600 570
 	(area0, area1) <- hSepArea baseArea1 False 24
 	(year, area2) <- vSepArea area0 True 80
@@ -139,12 +137,9 @@ mkBaseArea1 = do
 	addStr title (Center, Middle) False 12
 		"学歴・職歴など(項目順にまとめて書く)"
 	has <- unfoldrM mkHistArea area1
-	zipWithM addHist has [
-		Title "学歴",
-		History 1990 4 $ koukou ++ "入学",
-		History 1993 3 $ koukou ++ "卒業",
-		History 1993 4 $ daigaku ++ "入学",
-		History 2007 4 $ daigaku ++ "卒業",
+	zipWithM addHist has $ [
+		Title "学歴"] ++
+		readHists (getVals "school") ++ [
 		Title "職歴",
 		History 1997 4 "X岩株式会社入社(広告代理店 従業員105人)",
 		Memo $ "・新入社員研修でビジネスマナー, マーケティングの" ++
@@ -159,6 +154,18 @@ mkBaseArea1 = do
 		End
 	 ]
 	return ()
+	where
+	getVal t = let P.Left v = fromJust $ lookup t dat in v
+	getVals t = let P.Right vs = fromJust $ lookup t dat in vs
+
+readHists :: [String] -> [History]
+readHists = map (uncurry3 History . readHistory)
+
+readHistory :: String -> (Int, Int, String)
+readHistory str = let [y, m, h] = words str in (read y, read m, h)
+
+uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
+uncurry3 f (x, y, z) = f x y z
 
 koukou, daigaku :: String
 koukou = "東京都立東X高等学校"
