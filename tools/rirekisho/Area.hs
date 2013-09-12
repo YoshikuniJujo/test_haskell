@@ -1,6 +1,7 @@
 {-# LANGUAGE PackageImports #-}
 
 module Area (
+	Area(..), areaOK,
 	AreaM, runAreaM,
 	mkArea,
 	hSepArea,
@@ -31,6 +32,9 @@ data Draw
 data Area
 	= Area Pos Pos Len Len
 	deriving Show
+
+areaOK :: Area -> Bool
+areaOK (Area _ _ w h) = w > 0 && h > 0
 
 type Position = (PosX, PosY)
 
