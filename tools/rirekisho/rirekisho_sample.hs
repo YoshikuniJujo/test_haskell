@@ -26,11 +26,11 @@ mkBaseArea0 = do
 	(area6, area7) <- hSepArea area5 False 28
 	(phoneT, area7_1) <- vSepArea area6 False 80
 	(phone, area7_2) <- vSepArea area7_1 False 160
-	(maddrT, maddr) <- vSepArea area7_2 False 80
+	(maddrT, maddr) <- vSepArea area7_2 False 90
 	(area8, area9) <- hSepArea area7 False 40
 	(paddrT, area10) <- vSepArea area8 False 80
 	(paddr, area11) <- vSepArea area10 False 160
-	(contactT, contact) <- vSepArea area11 False 80
+	(contactT, contact) <- vSepArea area11 False 90
 	(area12, area13) <- vSepArea area9 False 460
 	(contRubi, cont) <- hSepArea area12 True 16
 	(cTel, cFax) <- hSepArea area13 False 28
@@ -107,8 +107,8 @@ mkBaseArea0 = do
 	addStr paddrT1 (Center, Middle) False 15 "携帯電話"
 	addStr paddrT2 (Center, Middle) False 10 "メールアドレス"
 	addStr paddr (Center, Middle) False 17 "nikkei@XX.ne.jp"
-	addStr contactT1 (Left, Middle) False 8.5 "都合の良い"
-	addStr contactT2 (Left, Top) False 8.5 "連絡方法と時間帯"
+	addStr contactT1 (Left, Middle) False 10 "都合の良い"
+	addStr contactT2 (Left, Top) False 10 "連絡方法と時間帯"
 	addStr contact1 (Left, Middle) False 10
 		"携帯電話のメールにご連絡お願いします。"
 	addStr contact2 (Left, Top) False 10
