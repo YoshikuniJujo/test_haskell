@@ -9,6 +9,7 @@ module Area (
 	hSepAreaLog,
 	vSepAreaLog,
 	addStr,
+	addMLStr,
 	Draw(..),
 	Position, PosX(..), PosY(..)
 ) where
@@ -83,6 +84,21 @@ vSepAreaLog (Area x y w h) r = do
 addStr :: Area -> Position -> Bold -> Size -> String -> AreaM ()
 addStr (Area x y w h) (px, py) b s str =
 	tell [Str b (getX px x w s $ myLength str) (getY py y h s) s str]
+
+addMLStr :: Area -> Position -> Size -> String -> AreaM ()
+addMLStr (Area x y w h) (px, py) s str =
+	tell $ zipWith (\str' y' ->
+		Str False (getX px x w s $ myLength str') y' s str')
+		(reverse sepStr) $
+		iterate (subtract s) $ getY py y h $
+			s * fromIntegral (length sepStr)
+	where
+	charPLine = floor $ w / s
+	sepStr = nGroups (charPLine - 2) str
+
+nGroups :: Int -> [a] -> [[a]]
+nGroups _ [] = []
+nGroups n xs = take n xs : nGroups n (drop n xs)
 
 myLength :: String -> Int
 myLength "" = 0

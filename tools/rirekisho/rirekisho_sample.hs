@@ -1,4 +1,5 @@
 import DrawArea
+import Tools
 import Prelude hiding (Left, Right)
 import qualified Prelude as P
 -- import Control.Applicative
@@ -178,9 +179,3 @@ mkHistArea a0@(Area _ _ _ h)
 		(a2, a2_) <- vSepArea a1 True 80
 		(a3, a4) <- vSepArea a2_ False 40
 		return $ Just ((a2, a3, a4), rest)
-
-unfoldrM :: Monad m => (b -> m (Maybe (a, b))) -> b -> m [a]
-unfoldrM f z = f z >>= step
-	where
-	step (Just (a, b')) = liftM (a :) $ unfoldrM f b'
-	step Nothing = return []
