@@ -31,8 +31,7 @@ mkBaseArea0 dat = do
 		(1990, 9, "TOEIC公開テスト スコア850取得")
 	 ] -}
 	addStr tokki (Left, Top) False 12 "その他特記すべき事項"
-	addStr tokki (Center, Middle) False 17
-		"TOEICスコア 900以上を目指して、現在勉強中"
+	addStr tokki (Center, Middle) False 17 $ getVal "tokki"
 	where
 	getVal t = let P.Left v = fromJust $ lookup t dat in v
 	getVals t = let P.Right vs = fromJust $ lookup t dat in vs
@@ -92,18 +91,11 @@ mkBaseArea1 dat = do
 	addStr fuyou (Left, Top) False 12 "扶養家族(配偶者を除く)"
 	addStr haigu (Left, Top) False 12 "配偶者"
 	addStr haigufuyou (Left, Top) False 12 "配偶者の扶養義務"
-	addMLStr gakkaB (Center, Middle) 12 $
-		"ウェブスキル全般。特にウェブ広告に携わって" ++
-		"まいりましたので、ウェブの知識は豊富です。"
-	addMLStr health (Center, Middle) 12 "きわめて良好"
-	addMLStr hobby (Center, Middle) 12 
-		"ギャンブルやマニアックな趣味"
-	addMLStr sports (Center, Middle) 12 "野球"
-	addMLStr douki (Left, Middle) 12 $
-		"広告代理店に入社以来、紙媒体やウェブの広告制作、" ++
-		"ブランド構築に携わってまいりました。その経験を生かし、" ++
-		"ほかのメディアやイベントプロデュースなどさらに大きな" ++
-		"フィールドで幅を広げたく、応募いたしました。"
+	addMLStr gakkaB (Left, Middle) 12 $ getVal "gakka"
+	addMLStr health (Center, Middle) 12 $ getVal "health"
+	addMLStr hobby (Center, Middle) 12 $ getVal "hobby"
+	addMLStr sports (Center, Middle) 12 $ getVal "sports"
+	addMLStr douki (Left, Middle) 12 $ getVal "douki"
 	addStr kibouB (Left, Top) False 12
 		"職種: メディアプランナーを希望します。"
 	addStr station (Center, Bottom) False 15 "JR 中央駅 目黒駅"
@@ -116,6 +108,9 @@ mkBaseArea1 dat = do
 	addStr numU (Center, Bottom) False 15 "人"
 	addStr haigu (Center, Bottom) False 15 "有"
 	addStr haigufuyou (Center, Bottom) False 15 "有"
+	where
+	getVal t = let P.Left v = fromJust $ lookup t dat in v
+	getVals t = let P.Right vs = fromJust $ lookup t dat in vs
 
 mkBaseArea2 dat = do
 	baseArea2 <- mkArea 50 850 600 100

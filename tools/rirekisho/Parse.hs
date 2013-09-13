@@ -32,10 +32,10 @@ title :: String
 	= s:<isAlphaNum>+	{ s }
 
 value :: Either String [String]
-	= !'.' s:(c:[c `notElem` "\\\n"] { Just c } / '\\' '\n' { Nothing })+
-				{ Left $ catMaybes s }
-	/ '\\' 'l' 'i' 's' 't' '\n' ms:(!'.' s:<(`notElem` "\n")>+ '\n' { s })*
+	= '\\' 'l' 'i' 's' 't' '\n' ms:(!'.' s:<(`notElem` "\n")>+ '\n' { s })*
 		'.'
 				{ Right ms }
+	/ !'.' s:(c:[c `notElem` "\\\n"] { Just c } / '\\' '\n' { Nothing })*
+				{ Left $ catMaybes s }
 
 |]

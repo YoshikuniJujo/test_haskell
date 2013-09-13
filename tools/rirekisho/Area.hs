@@ -16,6 +16,7 @@ module Area (
 
 import "monads-tf" Control.Monad.Writer
 import Prelude hiding (Left, Right)
+import Data.Char
 
 type Pos = Double
 type Len = Double
@@ -94,11 +95,29 @@ addMLStr (Area x y w h) (px, py) s str =
 			s * fromIntegral (length sepStr)
 	where
 	charPLine = floor $ w / s
-	sepStr = nGroups (charPLine - 2) str
+	sepStr = myNGroups (charPLine - 2) str
 
 nGroups :: Int -> [a] -> [[a]]
 nGroups _ [] = []
 nGroups n xs = take n xs : nGroups n (drop n xs)
+
+myNGroups :: Int -> String -> [String]
+myNGroups _ "" = []
+myNGroups n xs = myTake (2 * n) xs : myNGroups n (myDrop (2 * n) xs)
+
+myTake, myDrop :: Int -> String -> String
+myTake _ "" = ""
+myTake n (c : cs)
+	| n <= 0 = ""
+	| isAscii c = c : myTake (n - 1) cs
+	| n > 1 = c : myTake (n - 2) cs
+	| otherwise = ""
+myDrop _ "" = ""
+myDrop n ca@(c : cs)
+	| n <= 0 = ca
+	| isAscii c = myDrop (n - 1) cs
+	| n > 1 = myDrop (n - 2) cs
+	| otherwise = ca
 
 myLength :: String -> Int
 myLength "" = 0
