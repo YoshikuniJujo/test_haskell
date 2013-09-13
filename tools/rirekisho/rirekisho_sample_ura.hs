@@ -96,21 +96,40 @@ mkBaseArea1 dat = do
 	addMLStr hobby (Center, Middle) 12 $ getVal "hobby"
 	addMLStr sports (Center, Middle) 12 $ getVal "sports"
 	addMLStr douki (Left, Middle) 12 $ getVal "douki"
-	addStr kibouB (Left, Top) False 12
-		"職種: メディアプランナーを希望します。"
-	addStr station (Center, Bottom) False 15 "JR 中央駅 目黒駅"
+	kas <- unfoldrM mkKibouArea kibouB
+	zipWithM addKibou kas $ map readKibou $ getVals "kibou"
+	addStr station (Center, Bottom) False 15 $ getVal "station" -- "JR 中央駅 目黒駅"
 	addStr yaku (Center, Bottom) False 15 "約"
-	addStr hour (Center, Bottom) False 15 "1"
+	addStr hour (Center, Bottom) False 15 $ takeWhile (/= ':') $ getVal "time"
 	addStr hourU (Center, Bottom) False 15 "時間"
-	addStr min (Center, Bottom) False 15 "20"
+	addStr min (Center, Bottom) False 15 $
+		tail $ dropWhile (/= ':') $ getVal "time"
 	addStr minU (Center, Bottom) False 15 "分"
-	addStr num (Center, Bottom) False 15 "0"
+	addStr num (Center, Bottom) False 15 $ getVal "fuyou"
 	addStr numU (Center, Bottom) False 15 "人"
-	addStr haigu (Center, Bottom) False 15 "有"
-	addStr haigufuyou (Center, Bottom) False 15 "有"
+	addStr haigu (Center, Bottom) False 15 $ getVal "haigu"
+	addStr haigufuyou (Center, Bottom) False 15 $ getVal "haiguFuyou"
 	where
 	getVal t = let P.Left v = fromJust $ lookup t dat in v
 	getVals t = let P.Right vs = fromJust $ lookup t dat in vs
+
+readKibou :: String -> (String, String)
+readKibou str = let [t, v] = words str in (t, v)
+
+addKibou :: (Area, Area, Area) -> (String, String) -> AreaM ()
+addKibou (ta, ca, va) (t, v) = do
+	addStr ta (Left, Middle) False 12 t
+	addStr ca (Center, Middle) False 12 ":"
+	addStr va (Left, Middle) False 12 v
+
+mkKibouArea :: Area -> AreaM (Maybe ((Area, Area, Area), Area))
+mkKibouArea a0@(Area _ _ _ h)
+	| h < 20 = return Nothing
+	| otherwise = do
+		(a1, rest) <- hSepAreaLog a0 20
+		(a2, a2_) <- vSepAreaLog a1 50
+		(a3, a4) <- vSepAreaLog a2_ 6
+		return $ Just ((a2, a3, a4), rest)
 
 mkBaseArea2 dat = do
 	baseArea2 <- mkArea 50 850 600 100
