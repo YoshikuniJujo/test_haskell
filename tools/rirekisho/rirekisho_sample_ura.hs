@@ -1,16 +1,22 @@
 import DrawArea
+import Parse
 import Tools
 import Prelude hiding (Left, Right)
+import qualified Prelude as P
 import Control.Monad
+import Data.Maybe
 
 main :: IO ()
-main = (putStr =<<) . runArea 707 1000 $ do
-	mkBaseArea0
-	mkBaseArea1
-	mkBaseArea2
+main = do
+	dat <- readData "rirekisho.dat"
+	(putStr =<<) . runArea 707 1000 $ do
+		mkBaseArea0 dat
+		mkBaseArea1 dat
+		mkBaseArea2 dat
 
-mkBaseArea0, mkBaseArea1, mkBaseArea2 :: AreaM ()
-mkBaseArea0 = do
+mkBaseArea0, mkBaseArea1, mkBaseArea2 ::
+	[(String, Either String[String])] -> AreaM ()
+mkBaseArea0 dat = do
 	baseArea0 <- mkArea 50 80 600 330
 	(area0, area1) <- hSepArea baseArea0 False 24
 	(year, area2) <- vSepArea area0 True 80
@@ -20,13 +26,16 @@ mkBaseArea0 = do
 	addStr title (Center, Middle) False 12 "免許・資格"
 	(area3, tokki) <- hSepArea area1 False 256
 	las <- unfoldrM mkLicenseArea area3
-	zipWithM addLicense las [
+	zipWithM addLicense las $ map readLicense $ getVals "license" {- [
 		(1990, 5, "普通自動車第一種運転免許取得"),
 		(1990, 9, "TOEIC公開テスト スコア850取得")
-	 ]
+	 ] -}
 	addStr tokki (Left, Top) False 12 "その他特記すべき事項"
 	addStr tokki (Center, Middle) False 17
 		"TOEICスコア 900以上を目指して、現在勉強中"
+	where
+	getVal t = let P.Left v = fromJust $ lookup t dat in v
+	getVals t = let P.Right vs = fromJust $ lookup t dat in vs
 
 mkLicenseArea :: Area -> AreaM (Maybe ((Area, Area, Area), Area))
 mkLicenseArea a0@(Area _ _ _ h)
@@ -37,13 +46,16 @@ mkLicenseArea a0@(Area _ _ _ h)
 		(a3, a4) <- vSepArea a2_ False 40
 		return $ Just ((a2, a3, a4), rest)
 
+readLicense :: String -> (Int, Int, String)
+readLicense str = let [y, m, l] = words str in (read y, read m, l)
+
 addLicense :: (Area, Area, Area) -> (Int, Int, String) -> AreaM ()
 addLicense (ya, ma, la) (y, m, l) = do
 	addStr ya (Center, Middle) False 17 $ show y
 	addStr ma (Center, Middle) False 17 $ show m
 	addStr la (Left, Middle) False 17 l
 
-mkBaseArea1 = do
+mkBaseArea1 dat = do
 	baseArea1 <- mkArea 50 420 600 420
 	(area0, area1) <- hSepArea baseArea1 False 80
 	(gakka, health) <- vSepArea area0 False 300
@@ -105,7 +117,7 @@ mkBaseArea1 = do
 	addStr haigu (Center, Bottom) False 15 "有"
 	addStr haigufuyou (Center, Bottom) False 15 "有"
 
-mkBaseArea2 = do
+mkBaseArea2 dat = do
 	baseArea2 <- mkArea 50 850 600 100
 	addStr baseArea2 (Left, Top) False 12
 		"採用者側の記入欄(志望者は記入しないこと)"

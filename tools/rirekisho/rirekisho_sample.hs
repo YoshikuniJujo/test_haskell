@@ -140,17 +140,10 @@ mkBaseArea1 dat = do
 	zipWithM addHist has $ [
 		Title "学歴"] ++
 		readHists (getVals "school") ++ [
-		Title "職歴",
-		History 1997 4 "X岩株式会社入社(広告代理店 従業員105人)",
-		Memo $ "・新入社員研修でビジネスマナー, マーケティングの" ++
-			"基礎知識など, 業務の基礎知識を得る",
-		History 2001 7 "本社マルチメディア創作部に配属",
-		Memo $ "・食品メーカー等を担当, 新製品の紙媒体, WEBなどの広告" ++
-			"制作に携わる",
-		History 2002 5 "一身上の都合により退社",
-		History 2002 5 "アーX広告株式会社入社(広告代理店業 従業員350人)",
-		Title "賞罰",
-		Title "なし",
+		Title "職歴"] ++
+		readHists (getVals "jobs") ++ [
+		Title "賞罰"] ++
+		readHists (getVals "shoubatsu") ++ [
 		End
 	 ]
 	return ()
@@ -159,10 +152,12 @@ mkBaseArea1 dat = do
 	getVals t = let P.Right vs = fromJust $ lookup t dat in vs
 
 readHists :: [String] -> [History]
-readHists = map (uncurry3 History . readHistory)
+readHists = map readHistory
 
-readHistory :: String -> (Int, Int, String)
-readHistory str = let [y, m, h] = words str in (read y, read m, h)
+readHistory :: String -> History
+readHistory str = case words str of
+	["なし"] -> Title "なし"
+	[y, m, h] -> History (read y) (read m) h
 
 uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (x, y, z) = f x y z
