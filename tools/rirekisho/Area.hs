@@ -107,12 +107,28 @@ myNGroups n xs = myTake (2 * n) xs : myNGroups n (myDrop (2 * n) xs)
 
 myTake, myDrop :: Int -> String -> String
 myTake _ "" = ""
+myTake 2 (' ' : c : _)
+	| isAscii c = ""
+myTake n (c : '。' : cs)
+	| n > 1 = c : '。' : myTake (n - 4) cs
+	| otherwise = ""
+myTake n (c : '、' : cs)
+	| n > 1 = c : '、' : myTake (n - 4) cs
+	| otherwise = ""
 myTake n (c : cs)
 	| n <= 0 = ""
 	| isAscii c = c : myTake (n - 1) cs
 	| n > 1 = c : myTake (n - 2) cs
 	| otherwise = ""
 myDrop _ "" = ""
+myDrop 2 ca@(' ' : c : cs)
+	| isAscii c = ca
+myDrop n ca@(_ : '。' : cs)
+	| n > 1 = myDrop (n - 4) cs
+	| otherwise = ca
+myDrop n ca@(_ : '、' : cs)
+	| n > 1 = myDrop (n - 4) cs
+	| otherwise = ca
 myDrop n ca@(c : cs)
 	| n <= 0 = ca
 	| isAscii c = myDrop (n - 1) cs
