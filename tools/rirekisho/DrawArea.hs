@@ -29,7 +29,7 @@ draw t (Rectangle x y w h) = do
 	penup t
 	goto t x y
 	setheading t 0
-	pensize t 2
+	pensize t 4
 	pendown t
 	replicateM_ 2 $ do
 		forward t w
@@ -40,16 +40,16 @@ draw t (HLine dot x y w) = do
 	penup t
 	goto t x y
 	setheading t 0
-	pensize t 1
+	pensize t 2
 	pendown t
-	if dot then dotForward t 3 w else forward t w
+	if dot then dotForward t 10 w else forward t w
 draw t (VLine dot x y w) = do
 	penup t
 	goto t x y
 	setheading t (- 90)
-	pensize t 1
+	pensize t 2
 	pendown t
-	if dot then dotForward t 3 w else forward t w
+	if dot then dotForward t 10 w else forward t w
 draw t (Str b x y s str) = do
 	penup t
 	goto t x y
