@@ -215,3 +215,22 @@ outer には closure の EID をとる。
 
 OCons vvs body -> OCons (OCons (OVar "lambda") (OCons (mapCons car vvs) body))
 			(mapCons (car . cdr) vvs)
+
+2013.09.11 Wed.
+
+performance をチェックする前に。
+
+2013.09.15 Sun.
+
+performance のチェックのために。
+まずは cabal 化しよう。
+そして、compile した ./dist/yjscheme を試す。
+そして、次に、yjscheme hoge.scm で hoge.scm を preload するようにする。
+これは対話環境を開く前に (load "hoge.scm") をすれば良いだけなので簡単だろう。
+で、それができたら、yjscheme -e "(some expression)" hoge.scm ができるようにする。
+これもそんなに難しいところは無いと思う。
+つまり (load "hoge.scm") の次に (some expression) をして終了させれば良い。
+ただし、今後のことを考えて System.Console.GetOpt を使おうかな。
+ここらへんは多少繁雑になるかもしれない。
+その後は -prof あたりを使って、profiling を取り、最適化について考える。
+そのときのモデルケースは (cc 100 us-coins) にしよう。
