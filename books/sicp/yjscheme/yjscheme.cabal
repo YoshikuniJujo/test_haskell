@@ -1,0 +1,23 @@
+build-type:	Simple
+cabal-version:	>= 1.8
+
+name:		yjscheme
+version:	0.0.1
+stability:	Experimental
+author:		Yoshikuni Jujo <PAF01143@nifty.ne.jp>
+maintainer:	Yoshikuni Jujo <PAF01143@nifty.ne.jp>
+homepage:	https://skami.iocikun.jp/haskell/packages/yjscheme
+
+license:	BSD3
+license-file:	LICENSE
+
+category:	Language
+synopsis:	yet another scheme
+description:
+	blah blah blah
+
+executable	yjscheme
+  main-is:		yjscheme.hs
+  other-modules:	Env, Object, Eval, Subrs, Parser, InitEnv
+  build-depends:	base > 3 && < 5, time, random, containers, papillon, monads-tf
+  ghc-options:		-Wall

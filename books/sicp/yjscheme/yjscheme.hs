@@ -11,11 +11,16 @@ import Control.Monad
 import "monads-tf" Control.Monad.Trans
 import Data.Time
 
+import System.Environment
+import System.Console.GetOpt
+import Control.Applicative
+
 main :: IO ()
 main = do
+	(_opts, args, _errs) <- getOpt Permute [] <$> getArgs
 	ct <- getCurrentTime
 	runSchemeM ct initEnv $ do
-		_ <- runSrc "(load \"library.scm\")"
+		mapM_ (runSrc . ("(load \"" ++) . (++ "\")")) $ "library.scm" : args
 		forever $ do
 			ln <- prompt 0 ""
 			ret <- runSrc ln
