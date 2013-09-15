@@ -25,6 +25,7 @@ import Env
 import Data.Ratio
 import Data.Maybe
 import Data.Time
+import Data.Map
 
 import "monads-tf" Control.Monad.Reader
 import "monads-tf" Control.Monad.State
@@ -32,16 +33,17 @@ import Control.Applicative
 
 type SchemeM = EnvT Object (StateT ConsEnv (ReaderT UTCTime IO))
 
-type ConsEnv = (CID, [(CID, Object)])
+type ConsEnv = (CID, Map CID Object)
 type CID = Int
 
 nCons :: Monad m => Object -> Object -> ConsEnv -> m ((CID, CID), ConsEnv)
-nCons a d (mcid, cenv) = return ((mcid + 1, mcid), (mcid + 2, (mcid + 1, a) : (mcid, d) : cenv))
+nCons a d (mcid, cenv) = return ((mcid + 1, mcid), (mcid + 2,
+	insert (mcid + 1) a $ insert mcid d cenv))
 getC :: CID -> ConsEnv -> Object
-getC cid (_, cenv) = fromJust $ lookup cid cenv
+getC cid (_, cenv) = fromJust $ Data.Map.lookup cid cenv
 
 runSchemeM :: UTCTime -> Environment Object -> SchemeM a -> IO a
-runSchemeM it env = (`runReaderT` it) . flip evalStateT (0, []) . runEnvT env
+runSchemeM it env = (`runReaderT` it) . flip evalStateT (0, Data.Map.empty) . runEnvT env
 
 data Object
 	= OInt Integer

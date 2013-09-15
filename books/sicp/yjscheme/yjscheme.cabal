@@ -20,4 +20,4 @@ executable	yjscheme
   main-is:		yjscheme.hs
   other-modules:	Env, Object, Eval, Subrs, Parser, InitEnv
   build-depends:	base > 3 && < 5, time, random, containers, papillon, monads-tf
-  ghc-options:		-Wall
+  ghc-options:		-Wall -O2 -prof -auto-all -osuf .o
