@@ -15,12 +15,32 @@ import System.Environment
 import System.Console.GetOpt
 import Control.Applicative
 
+data Option = Expression String
+	deriving Show
+
+optDescrs :: [OptDescr Option]
+optDescrs = [
+		Option ['e'] [] (ReqArg Expression "expression") "run expression"
+ ]
+
+getExpression :: [Option] -> Maybe String
+getExpression [] = Nothing
+getExpression (Expression e : _) = Just e
+-- getExpression (_ : os) = getExpression os
+
 main :: IO ()
 main = do
-	(_opts, args, _errs) <- getOpt Permute [] <$> getArgs
+	(opts, args, _errs) <-
+		getOpt Permute optDescrs <$> getArgs
 	ct <- getCurrentTime
 	runSchemeM ct initEnv $ do
 		mapM_ (runSrc . ("(load \"" ++) . (++ "\")")) $ "library.scm" : args
+		case getExpression opts of
+			Just e -> runSrc e >>= liftIO . putStrLn . showObj
+			_ -> runInteractive
+
+runInteractive :: SchemeM ()
+runInteractive = do
 		forever $ do
 			ln <- prompt 0 ""
 			ret <- runSrc ln
