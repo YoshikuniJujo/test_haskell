@@ -42,6 +42,7 @@ module Subrs (
 	list,
 	nulls,
 	undef,
+	isPair,
 ) where
 
 import Eval
@@ -399,3 +400,10 @@ undef :: Object -> SchemeM Object
 undef ONil = return OUndef
 undef _ = throwError $
 	"*** ERROR: wrong number of arguments: undefined requires 0, but got some"
+
+isPair :: Object -> SchemeM Object
+isPair o = do
+	l <- cons2list o
+	case l of
+		[o'] -> OBool <$> isCons o'
+		_ -> throwError "*** ERROR: isPair bad"

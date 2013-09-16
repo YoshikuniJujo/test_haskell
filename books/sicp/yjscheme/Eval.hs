@@ -9,7 +9,7 @@ module Eval (
 	define, getEID,
 	lastCons, mapCons, zipWithCons,
 
-	cons,
+	cons, isCons,
 	car, cdr,
 	cons2list,
 ) where
