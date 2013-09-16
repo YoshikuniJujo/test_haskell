@@ -41,6 +41,7 @@ module Subrs (
 	cdrs,
 	list,
 	nulls,
+	undef,
 ) where
 
 import Eval
@@ -212,6 +213,7 @@ bop :: (forall a . Ord a => a -> a -> Bool) -> Object -> Object -> SchemeM Objec
 bop op (OInt i) (OInt j) = return $ OBool $ i `op` j
 bop op (ODouble d) (ODouble e) = return $ OBool $ d `op` e
 bop op (ORational r) (ORational s) = return $ OBool $ r `op` s
+bop op (OBool b) (OBool c) = return $ OBool $ b `op` c
 bop _ x y = throwError $ "bop: " ++ showObj x ++ " " ++ showObj y
 
 isTrue :: Object -> Bool
@@ -392,3 +394,8 @@ nulls o = do
 		_ -> throwError .
 			("*** ERROR: wrong number of arguments: null?: " ++) .
 			showObj =<< cons (OVar "null?") o
+
+undef :: Object -> SchemeM Object
+undef ONil = return OUndef
+undef _ = throwError $
+	"*** ERROR: wrong number of arguments: undefined requires 0, but got some"

@@ -32,7 +32,10 @@ eval s@(OSyntax _ _) = return s
 eval c@(OClosure _ _ _ _) = return c
 eval o = do
 	f <- eval =<< car "*** ERROR" o
-	as_ <- cdr "*** ERROR" o
+	as__ <- cdr "*** ERROR" o
+	as_ <- case as__ of
+		v@(OVar _) -> eval v
+		_ -> return as__
 	case f of
 		OSubr _ s -> s =<< mapCons eval as_
 		OSyntax _ s -> s as_
@@ -41,14 +44,20 @@ eval o = do
 			apply eid ps as bd
 		o' -> throwError $ "eval: bad in function: " ++ showObj o'
 
-def :: Object -> Object -> SchemeM Object
-def v@(OVar var) val = define var val >> return v
-def v val = throwError $ "def: bad: " ++ showObj v ++ " " ++ showObj val
-
 apply :: EID -> Object -> Object -> Object -> SchemeM Object
 apply eid ps as bd = do
 	newEnv eid
-	_ <- zipWithCons def ps as
+	defArgs ps as
 	r <- lastCons =<< mapCons eval bd
 	popEnv
 	return r
+
+defArgs :: Object -> Object -> SchemeM ()
+defArgs ONil ONil = return ()
+defArgs (OVar var) val = define var val
+defArgs vara vala = do
+	(OVar var) <- car "defArgs" vara
+	val <- car "defArgs" vala
+	vars <- cdr "defArgs" vara
+	vals <- cdr "defArgs" vala
+	define var val >> defArgs vars vals

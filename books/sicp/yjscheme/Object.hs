@@ -7,6 +7,7 @@ module Object (
 	showObjM,
 	showObj,
 	imcons,
+	isCons,
 	cons,
 	car, cdr,
 	cons2list,
@@ -68,6 +69,11 @@ cons :: Object -> Object -> SchemeM Object
 cons a d = do
 	(aid, did) <- lift $ lift $ StateT $ nCons a d
 	return $ OMCons aid did
+
+isCons :: Object -> SchemeM Bool
+isCons (OCons _ _) = return True
+isCons (OMCons _ _) = return True
+isCons _ = return False
 
 car, cdr :: String -> Object -> SchemeM Object
 car _ (OCons a _) = return a

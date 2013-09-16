@@ -26,3 +26,14 @@
 
 (define us-coins (list 50 25 10 5 1))
 (define uk-coins (list 100 50 20 10 5 2 1 0.5))
+
+(define (same-parity x . xs)
+  (define (sp na)
+    (if (null? na)
+      ()
+      (let ((n (car na))
+	    (ns (cdr na)))
+	(if (= (even? x) (even? n))
+	  (cons n (sp ns))
+	  (sp ns)))))
+  (cons x (sp xs)))

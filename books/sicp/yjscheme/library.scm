@@ -24,3 +24,13 @@
   (if (null? lst1)
     lst2
     (cons (car lst1) (append (cdr lst1) lst2))))
+
+(define (map proc items)
+  (if (null? items)
+    ()
+    (cons (proc (car items))
+	  (map proc (cdr items)))))
+
+(define (for-each proc items)
+  (cond ((null? items) (undefined))
+	(else (proc (car items)) (for-each proc (cdr items)))))
