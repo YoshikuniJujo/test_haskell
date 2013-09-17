@@ -412,7 +412,7 @@ isPair o = do
 
 apply :: Object -> SchemeM Object
 apply o = do
-	l <- cons2list o
+	l <- cons2list =<< mapCons eval o
 	case l of
-		[f, as] -> eval =<< cons f as
+		[f, as] -> eval' =<< cons f as
 		_ -> throwError "*** ERROR: apply"

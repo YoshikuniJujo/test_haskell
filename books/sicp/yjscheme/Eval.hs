@@ -1,5 +1,5 @@
 module Eval (
-	eval,
+	eval, eval',
 	Environment, mkInitEnv,
 	EnvT, runEnvT, runSchemeM,
 	Object(..), showObj, showObjM,
@@ -17,7 +17,7 @@ module Eval (
 import Object
 -- import Control.Applicative
 
-eval :: Object -> SchemeM Object
+eval, eval' :: Object -> SchemeM Object
 eval i@(OInt _) = return i
 eval d@(ODouble _) = return d
 eval r@(ORational _) =  return r
@@ -42,6 +42,19 @@ eval o = do
 		OClosure _ eid ps bd -> do
 			as <- mapCons eval as_
 			apply eid ps as bd
+		o' -> throwError $ "eval: bad in function: " ++ showObj o'
+
+eval' o = do
+	f <- eval =<< car "*** ERROR" o
+	as__ <- cdr "*** ERROR" o
+	as_ <- case as__ of
+		v@(OVar _) -> eval v
+		_ -> return as__
+	case f of
+		OSubr _ s -> s as_
+		OSyntax _ s -> s as_
+		OClosure _ eid ps bd -> do
+			apply eid ps as_ bd
 		o' -> throwError $ "eval: bad in function: " ++ showObj o'
 
 apply :: EID -> Object -> Object -> Object -> SchemeM Object
