@@ -2,7 +2,7 @@ module Eval (
 	eval,
 	Environment, mkInitEnv,
 	EnvT, runEnvT, runSchemeM,
-	Object(..), showObj,
+	Object(..), showObj, showObjM,
 	throwError, catchError,
 	foldlCons,
 	SchemeM,
@@ -56,8 +56,11 @@ defArgs :: Object -> Object -> SchemeM ()
 defArgs ONil ONil = return ()
 defArgs (OVar var) val = define var val
 defArgs vara vala = do
-	(OVar var) <- car "defArgs" vara
-	val <- car "defArgs" vala
-	vars <- cdr "defArgs" vara
-	vals <- cdr "defArgs" vala
+	svar <- showObjM vara
+	sval <- showObjM vala
+	let emsg = "*** ERROR: defArgs: " ++ svar ++ " " ++ sval
+	(OVar var) <- car emsg vara
+	val <- car emsg vala
+	vars <- cdr emsg vara
+	vals <- cdr emsg vala
 	define var val >> defArgs vars vals

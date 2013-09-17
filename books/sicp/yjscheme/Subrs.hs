@@ -43,6 +43,7 @@ module Subrs (
 	nulls,
 	undef,
 	isPair,
+	apply,
 ) where
 
 import Eval
@@ -369,8 +370,9 @@ conss o = do
 cars, cdrs :: Object -> SchemeM Object
 cars o = do
 	l <- cons2list o
-	emsg <- ("*** ERROR: wrong number or types of arguments: car: " ++) .
-		showObj <$> cons (OVar "car") o
+	emsg <- ("*** ERROR: wrong number or types of arguments: car: " ++) <$>
+		showObjM o
+--		showObj <$> cons (OVar "car") o
 	case l of
 		[o'] -> car emsg o'
 		_ -> throwError emsg
@@ -407,3 +409,10 @@ isPair o = do
 	case l of
 		[o'] -> OBool <$> isCons o'
 		_ -> throwError "*** ERROR: isPair bad"
+
+apply :: Object -> SchemeM Object
+apply o = do
+	l <- cons2list o
+	case l of
+		[f, as] -> eval =<< cons f as
+		_ -> throwError "*** ERROR: apply"

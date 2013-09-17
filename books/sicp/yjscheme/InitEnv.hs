@@ -51,7 +51,8 @@ initEnv = mkInitEnv [
 	("list", OSubr "list" list),
 	("null?", OSubr "null?" nulls),
 	("undefined", OSubr "undefined" undef),
-	("pair?", OSubr "pair?" isPair)
+	("pair?", OSubr "pair?" isPair),
+	("apply", OSubr "apply" apply)
  ]
 
 load :: Object -> SchemeM Object
