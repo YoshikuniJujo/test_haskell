@@ -68,7 +68,10 @@ title = "Haskell入門"
 author = "重城 良国"
 
 pages :: [Turtle -> IO ()]
-pages = [titlePage, page1, page2, page3, page4, page5, page6]
+pages = [
+	titlePage, page1, page2, page3, page4, page5, page6, page7, page8, page9,
+	page10
+ ]
 
 page1 :: Turtle -> IO ()
 page1 t = do
@@ -123,7 +126,7 @@ mkFunGraph t = do
 	write t fontName semiBigF "入力2"
 	backward t (height * 1 / 5 + semiBigF / 2)
 	left t 90
-	forward t (width * 3 / 20)
+	forward t (width * 5 / 40)
 	x <- xcor t
 	arrow t (width * 1 / 10)
 	setheading t $ - 90
@@ -131,7 +134,24 @@ mkFunGraph t = do
 	left t 90
 	setx t x
 	arrow t (width * 1 / 10)
---	goto t (
+	setheading t 0
+	goto t (width * 135 / 364) (height * 2 / 5)
+	pensize t 2
+	pendown t
+	replicateM_ 2 $ do
+		forward t (width * 1 / 4)
+		right t 90
+		forward t (height * 7 / 20)
+		right t 90
+	penup t
+	goto t (width * 13 / 20) (height * 23 / 40)
+	pendown t
+	arrow t (width * 1 / 10)
+	setheading t (- 90)
+	forward t $ semiBigF / 2
+	left t 90
+	forward t (12 * rt)
+	write t fontName semiBigF "出力"
 
 arrow :: Turtle -> Double -> IO ()
 arrow t l = do
@@ -147,16 +167,25 @@ arrow t l = do
 	forward t (12 * rt)
 	endfill t
 
-{-
-page6 :: Turtle -> IO ()
-page6 t = do
+page7 :: Turtle -> IO ()
+page7 t = do
 	clear t
 	writeTopTitle t "第一級関数とは?"
 
-page7 :: Turtle -> IO ()
-page7 t = do
+page8 :: Turtle -> IO ()
+page8 t = do
 	text t "関数が第一級オブジェクトであるということ"
-	-}
+
+page9 :: Turtle -> IO ()
+page9 t = do
+	writeNextTitle t "第一級オブジェクトとは?"
+
+page10 :: Turtle -> IO ()
+page10 t = do
+	text t "* 関数の引数になれる"
+	text t "* 関数の返り値になれる"
+	text t "* 変数に格納可能である"
+	text t "* データ構造に格納可能である"
 
 dvArrow :: Turtle -> IO ()
 dvArrow t = do
@@ -209,6 +238,16 @@ writeTopTitle t ttl = do
 	let sz = bigF
 	goto t ((width - sz * myLength ttl) / 2) ((height - sz) / 6)
 	write t fontName sz ttl
+	forward t $ sz * myLength ttl
+
+writeNextTitle :: Turtle -> String -> IO ()
+writeNextTitle t ttl = do
+	let sz = bigF
+	setx t $ (width - sz * myLength ttl) / 2
+	setheading t $ -90
+	forward t $ sz * 2
+	write t fontName sz ttl
+	left t 90
 	forward t $ sz * myLength ttl
 
 writeTitle :: Turtle -> String -> IO ()
