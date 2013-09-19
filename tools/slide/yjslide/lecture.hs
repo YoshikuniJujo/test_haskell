@@ -23,10 +23,17 @@ normalF = 12 * rt
 
 main :: IO ()
 main = do
-	pages' <- (flip fmap getArgs) $ \args -> case args of
-		n : _ -> drop (read n) pages
-		_ -> pages
-	pagesRef <- newIORef $ zip (map mkSVGFileName [0 .. ]) pages'
+	(bfn, pages') <- (flip fmap getArgs) $ \args -> case args of
+		"-" : m : n : _ -> (Nothing,
+			take (read n - read m) $ drop (read m) pages)
+		f : m : n : _ -> (Just f,
+			take (read n - read m) $ drop (read m) pages)
+		"-" : n : _ -> (Nothing, drop (read n) pages)
+		f : n : _ -> (Just f, drop (read n) pages)
+		"-" : _ -> (Nothing, pages)
+		f : _ -> (Just f, pages)
+		_ -> (Nothing, pages)
+	pagesRef <- newIORef $ zip (map (mkSVGFileName bfn) [0 .. ]) pages'
 	f <- openField
 --	threadDelay 1000000
 	topleft f
@@ -45,18 +52,22 @@ main = do
 						sleep t 500
 						hideturtle t
 						svg <- getSVG t
-						writeFile fn $
-							showSVG width height svg
+						case fn of
+							Just f -> writeFile f $
+								showSVG width
+									height svg
+							_ -> return ()
 						modifyIORef pagesRef tail
 						return True
 					_ -> return False
 			_ -> return True
 	waitField f
 
-mkSVGFileName :: Int -> String
-mkSVGFileName n = "lecture" ++ addZero (show n) ++ ".svg"
+mkSVGFileName :: Maybe String -> Int -> Maybe String
+mkSVGFileName (Just bfn) n = Just $ bfn ++ addZero (show n) ++ ".svg"
 	where
 	addZero s = replicate (2 - length s) '0' ++ s
+mkSVGFileName _ _ = Nothing
 
 titlePage :: Turtle -> IO ()
 titlePage t = do
@@ -69,17 +80,25 @@ author = "重城 良国"
 
 pages :: [Turtle -> IO ()]
 pages = [
-	titlePage, page1, page2, page3, page4, page5, page6, page7, page8, page9,
-	page10
+	titlePage, what1, what2, what3, what4,
+	pure1 0,
+	function1, function2,
+	functionCheck1, functionCheck2, functionCheck3, functionCheck4,
+	functionCheck5, functionCheck6, functionCheck7, functionCheck8,
+	functionCheck9, functionCheck10,
+	pure1 1,
+	firstclass1, firstclass2, firstclass3, firstclass4,
+	pure1 2,
+	pure1 3
  ]
 
-page1 :: Turtle -> IO ()
-page1 t = do
+what1 :: Turtle -> IO ()
+what1 t = do
 	clear t
 	writeTopTitle t "Haskellとは何か?"
 
-page2 :: Turtle -> IO ()
-page2 t = do
+what2 :: Turtle -> IO ()
+what2 t = do
 	setheading t $ - 90
 	forward t $ 10 * rt
 	setx t $ width / 3
@@ -89,8 +108,8 @@ page2 t = do
 	text t "アメリカの記号論理学者"
 	text t "名前の由来はこの人"
 
-page3 :: Turtle -> IO ()
-page3 t = do
+what3 :: Turtle -> IO ()
+what3 t = do
 	replicateM_ 23 $ undo t
 	setx t $ width * 2 / 3
 	image t "HaskellBCurry.jpg" (279 * rt / 2) (343 * rt / 2)
@@ -100,23 +119,56 @@ page3 t = do
 	text t "* 静的型付"
 	text t "* 遅延評価"
 
-page4 :: Turtle -> IO ()
-page4 t = do
+what4 :: Turtle -> IO ()
+what4 t = do
 	backward t $ 50 * rt
 	dvArrow t
 	text t "概念の本質的な部分をそのまま表現できる"
 
-page5 :: Turtle -> IO ()
-page5 t = do
+pure1 :: Int -> Turtle -> IO ()
+pure1 n t = do
+	clear t
+	writeTopTitle t "純粋関数型言語"
+	(if n == 1 then withRed t else id) $ semititle t "* 第一級関数"
+	(if n == 2 then withRed t else id) $ semititle t "* 参照透過"
+	(if n == 3 then withRed t else id) $ semititle t "* 静的型付"
+	(if n == 4 then withRed t else id) $ semititle t "* 遅延評価"
+
+withRed :: Turtle -> IO a -> IO a
+withRed t act = do
+	pencolor t "red"
+	r <- act
+	pencolor t "black"
+	return r
+
+function1 :: Turtle -> IO ()
+function1 t = do
 	clear t
 	writeTopTitle t "関数とは?"
 
-page6 :: Turtle -> IO ()
-page6 t = do
+function2 :: Turtle -> IO ()
+function2 t = do
 	text t ""
-	text t "入力値を出力値へ変えるルール"
+	text t "0個以上の入力値をひとつの出力値へ変えるルール"
 	goto t (width * 1 / 10) (height * 5 / 10)
 	mkFunGraph t
+
+functionCheck1, functionCheck2, functionCheck3, functionCheck4, functionCheck5
+	:: Turtle -> IO ()
+functionCheck1 t = do
+	clear t
+	writeTopTitle t "関数とは?(練習問題)"
+	semititle t "以下の「関数」の入力と出力を述べよ"
+
+functionCheck2 t = text t "足し算"
+functionCheck3 t = text t "翻訳"
+functionCheck4 t = text t "2"
+functionCheck5 t = text t "与えられた文字列を表示する機能"
+functionCheck6 t = text t "" >> text t "答え"
+functionCheck7 t = text t "足し算: 数 -> 数 -> 数"
+functionCheck8 t = text t "翻訳: ある言語の文 -> 別の言語の文"
+functionCheck9 t = text t "2: 0個の入力を取り、出力として数を返す"
+functionCheck10 t = text t "与えられた文字列を表示する機能: 文字列 -> 動作"
 
 mkFunGraph :: Turtle -> IO ()
 mkFunGraph t = do
@@ -167,21 +219,21 @@ arrow t l = do
 	forward t (12 * rt)
 	endfill t
 
-page7 :: Turtle -> IO ()
-page7 t = do
+firstclass1 :: Turtle -> IO ()
+firstclass1 t = do
 	clear t
 	writeTopTitle t "第一級関数とは?"
 
-page8 :: Turtle -> IO ()
-page8 t = do
+firstclass2 :: Turtle -> IO ()
+firstclass2 t = do
 	text t "関数が第一級オブジェクトであるということ"
 
-page9 :: Turtle -> IO ()
-page9 t = do
+firstclass3 :: Turtle -> IO ()
+firstclass3 t = do
 	writeNextTitle t "第一級オブジェクトとは?"
 
-page10 :: Turtle -> IO ()
-page10 t = do
+firstclass4 :: Turtle -> IO ()
+firstclass4 t = do
 	text t "* 関数の引数になれる"
 	text t "* 関数の返り値になれる"
 	text t "* 変数に格納可能である"

@@ -2,3 +2,4 @@
 /lojban/xiragan/Some.hs
 /template_haskell/bitmap/out.bmp
 dist/
+/tools/slide/yjslide/*.svg
