@@ -475,9 +475,9 @@ writeNextTitle t ttl = do
 	let sz = bigF
 	setheading t $ -90
 	forward t $ sz * 2
+	left t 90
 	setx t $ (width - sz * myLength ttl) / 2
 	write t fontName sz ttl
-	left t 90
 	forward t $ sz * myLength ttl
 
 writeTitle :: Turtle -> String -> IO ()
