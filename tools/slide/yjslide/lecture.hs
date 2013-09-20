@@ -4,12 +4,14 @@ import Graphics.X11.Turtle
 import Text.XML.YJSVG hiding (topleft)
 import Control.Concurrent
 import Control.Monad
+import Control.Applicative
 import Data.IORef
 import Data.Char
 import System.Environment
+import System.IO.Unsafe
 
 rt, width, height :: Double
-rt = 1
+rt = unsafePerformIO $ read <$> readFile "ratio.txt"
 width = 512 * rt
 height = 375 * rt
 
@@ -59,7 +61,7 @@ main = do
 							_ -> return ()
 						modifyIORef pagesRef tail
 						return True
-					_ -> return False
+					_ -> return True
 			_ -> return True
 	waitField f
 
@@ -80,7 +82,8 @@ author = "重城 良国"
 
 pages :: [Turtle -> IO ()]
 pages = [
-	titlePage, what1, what2, what3, what4, what5, what6, what7,
+	titlePage, what1, what2, what3, what4, what5, what6, what7, what7_5,
+	what8, what9, what10, what11, what12,
 	pure1 0,
 	function1, function2,
 	functionCheck1, functionCheck2, functionCheck3, functionCheck4,
@@ -89,6 +92,9 @@ pages = [
 	pure1 1,
 	firstclass1, firstclass2, firstclass3, firstclass4, firstclass5,
 	higherOrder1, higherOrder2, higherOrder3, higherOrder4,
+	higherOrder5,
+	higherOrderCheck1, higherOrderCheck2, higherOrderCheck3,
+	higherOrderCheck4, higherOrderCheck5, higherOrderCheck6,
 	pure1 2,
 	pure1 3,
 	pure1 4
@@ -115,28 +121,83 @@ what3 t = do
 	replicateM_ 23 $ undo t
 	setx t $ width * 2 / 3
 	image t "HaskellBCurry.jpg" (279 * rt / 2) (343 * rt / 2)
-	semititle t "純粋関数型言語"
-	text t "* 第一級関数"
-	text t "* 参照透過"
-	text t "* 静的型付"
-	text t "* 遅延評価"
+	text t "遅延評価型の関数型言語の乱立"
+	setx t $ width / 3
+	dvLArrow t 12
+	text t "1990年 標準としてのHaskell 1.0"
+	setx t $ width / 3
+	dvLArrow t 12
+	text t "Haskell 98、Haskell'、Haskell 2010"
+	text t "と進化"
+	setx t $ width / 3
+	dvLArrow t 12
+	text t "ghc(代表的な処理系)内での拡張機能として進化は続く"
+	y <- ycor t
+	setx t $ width * 5 / 32
+	setheading t $ - 90
+	forward t $ normalF * 3 / 2
+	left t 90
+	arrow t $ 12 * rt
+	sety t y
+	itext t 1 "十分に吟味されたものが次の標準に取り込まれる"
 
 what4 :: Turtle -> IO ()
 what4 t = do
+	replicateM_ 115 $ undo t
+	text t "研究者の努力の結晶"
+
+what5 :: Turtle -> IO ()
+what5 t = do
+	setx t $ width / 3
+	dvLArrow t 12
+	text t "Haskellを学ぶということは"
+	itext t 1 "彼らの成果を刈り取ること"
+	text t ""
+
+what6 :: Turtle -> IO ()
+what6 t = do
+	text t "難しい理論の理解が必要?"
+
+what7 :: Turtle -> IO ()
+what7 t = do
+	setx t $ width / 3
+	dvLArrow t 12
+	text t "難しい理論は「利用者が簡単に使う」ためにある"
+
+what7_5 :: Turtle -> IO ()
+what7_5 t = do
+	itext t 1 "レゴブロックを使うのにひとつひとつのブロックの"
+	itext t 1 "作りかたを知る必要はない"
+
+what8 :: Turtle -> IO ()
+what8 t = do
+	replicateM_ 103 $ undo t
+	setx t $ width * 2 / 3
+--	image t "HaskellBCurry.jpg" (279 * rt / 2) (343 * rt / 2)
+	text t "純粋関数型言語であり"
+	itext t 1 "* 第一級関数"
+	itext t 1 "* 参照透過"
+	itext t 1 "* 静的型付"
+	itext t 1 "* 遅延評価"
+	text t "という特徴を持つ"
+
+what9 :: Turtle -> IO ()
+what9 t = do
 	backward t $ 50 * rt
-	dvArrow t
+	dvLArrow t 12
 	text t "概念の本質的な部分をそのまま表現できる"
 	text t ""
 
-what5, what6, what7 :: Turtle -> IO ()
-what5 t = text t "例: 小さい方から10個の素数が欲しい"
-what6 t = text t "=> すべての素数を求める"
-what7 t = text t "-> 小さい方から10個取り出す"
+what10, what11, what12 :: Turtle -> IO ()
+what10 t = text t "例: 小さい方から10個の素数が欲しい"
+what11 t = text t "=> すべての素数を求める"
+what12 t = text t "-> 小さい方から10個取り出す"
 
 pure1 :: Int -> Turtle -> IO ()
 pure1 n t = do
 	clear t
-	writeTopTitle t "純粋関数型言語"
+	writeTopTitle t "Haskell の特徴"
+	(if n == 0 then withRed t else id) $ semititle t "純粋関数型言語"
 	(if n == 1 then withRed t else id) $ semititle t "* 第一級関数"
 	(if n == 2 then withRed t else id) $ semititle t "* 参照透過"
 	(if n == 3 then withRed t else id) $ semititle t "* 静的型付"
@@ -261,6 +322,9 @@ higherOrder1 t = do
 	clear t
 	writeTopTitle t "高階関数"
 	text t "高階関数とは引数または返り値が関数であるような関数"
+
+higherOrder2 :: Turtle -> IO ()
+higherOrder2 t = do
 	text t "つまり"
 	text t ""
 	text t "関数が第一級オブジェクトである"
@@ -270,23 +334,51 @@ higherOrder1 t = do
 	text t ""
 	text t "ということ"
 
-higherOrder2 :: Turtle -> IO ()
-higherOrder2 t = do
+higherOrder3 :: Turtle -> IO ()
+higherOrder3 t = do
 	replicateM_ 55 $ undo t
 	text t "何がうれしいの?"
 	text t ""
 
-higherOrder3 :: Turtle -> IO ()
-higherOrder3 t = do
+higherOrder4 :: Turtle -> IO ()
+higherOrder4 t = do
 	text t "* より高レベルな抽象化"
 	itext t 1 "枠組だけを定義することが可能"
 	itext t 1 "例: リストの要素のすべてに何かする"
 
-higherOrder4 :: Turtle -> IO ()
-higherOrder4 t = do
+higherOrder5 :: Turtle -> IO ()
+higherOrder5 t = do
 	setx t $ width / 3
 	dvArrow t
 	text t "他の言語の「構文」が普通の関数となる"
+
+higherOrderCheck1 :: Turtle -> IO ()
+higherOrderCheck1 t = do
+	clear t
+	writeTopTitle t "高階関数(練習問題)"
+	semititle t "以下の関数を定義せよ"
+
+higherOrderCheck2 :: Turtle -> IO ()
+higherOrderCheck2 t = text t "与えられた関数を3回適用する関数"
+
+higherOrderCheck3 :: Turtle -> IO ()
+higherOrderCheck3 t = do
+	text t "10を底とした対数を求める関数を返す関数"
+	itext t 1 "(ちなみに、logBase 10 1000 => 3)"
+	text t ""
+
+higherOrderCheck4 :: Turtle -> IO ()
+higherOrderCheck4 t = text t "答え:"
+
+higherOrderCheck5 :: Turtle -> IO ()
+higherOrderCheck5 t = do
+	text t "与えられた関数を3回適用する関数"
+	itext t 1 "threeTimes fun x = fun (fun (fun x))"
+
+higherOrderCheck6 :: Turtle -> IO ()
+higherOrderCheck6 t = do
+	text t "10を底とした対数を求める関数を返す関数"
+	itext t 1 "log10 = \\x -> logBase 10 x"
 
 dvArrow :: Turtle -> IO ()
 dvArrow t = do
@@ -302,7 +394,29 @@ dvArrow t = do
 	pendown t
 	forward t $ 24 * rt
 	setheading t 0
-	forward t 3
+	forward t $ 3 * rt
+	beginfill t
+	backward t $ 12 * rt
+	setheading t $ -60
+	forward t $ 12 * rt
+	endfill t
+	penup t
+
+dvLArrow :: Turtle -> Double -> IO ()
+dvLArrow t l = do
+	setheading t $ -90
+	forward t $ 12 * rt
+	pendown t
+	forward t $ l * rt
+	penup t
+	backward t $ l * rt
+	left t 90
+	forward t $ 6 * rt
+	right t 90
+	pendown t
+	forward t $ l * rt
+	setheading t 0
+	forward t $ 3 * rt
 	beginfill t
 	backward t $ 12 * rt
 	setheading t $ -60
