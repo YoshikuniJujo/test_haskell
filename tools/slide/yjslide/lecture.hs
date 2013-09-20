@@ -87,7 +87,8 @@ pages = [
 	functionCheck5, functionCheck6, functionCheck7, functionCheck8,
 	functionCheck9, functionCheck10,
 	pure1 1,
-	firstclass1, firstclass2, firstclass3, firstclass4,
+	firstclass1, firstclass2, firstclass3, firstclass4, firstclass5,
+	higherOrder1, higherOrder2, higherOrder3, higherOrder4,
 	pure1 2,
 	pure1 3,
 	pure1 4
@@ -195,7 +196,7 @@ mkFunGraph t = do
 	arrow t (width * 1 / 10)
 	setheading t 0
 	goto t (width * 135 / 364) (height * 2 / 5)
-	pensize t 2
+	pensize t $ 2 * rt
 	pendown t
 	replicateM_ 2 $ do
 		forward t (width * 1 / 4)
@@ -203,6 +204,7 @@ mkFunGraph t = do
 		forward t (height * 7 / 20)
 		right t 90
 	penup t
+	pensize t $ 1 * rt
 	goto t (width * 13 / 20) (height * 23 / 40)
 	pendown t
 	arrow t (width * 1 / 10)
@@ -215,7 +217,7 @@ mkFunGraph t = do
 arrow :: Turtle -> Double -> IO ()
 arrow t l = do
 	pendown t
-	pensize t (3 * rt)
+	pensize t $ 3 * rt
 	forward t l
 	left t 90
 	penup t
@@ -225,6 +227,7 @@ arrow t l = do
 	right t 120
 	forward t (12 * rt)
 	endfill t
+	pensize t $ 1 * rt
 
 firstclass1 :: Turtle -> IO ()
 firstclass1 t = do
@@ -245,6 +248,45 @@ firstclass4 t = do
 	text t "* 関数の返り値になれる"
 	text t "* 変数に格納可能である"
 	text t "* データ構造に格納可能である"
+	text t ""
+
+firstclass5 :: Turtle -> IO ()
+firstclass5 t = do
+	text t "例:"
+	text t "定義: twice fun x = fun (fun x)"
+	text t "使用例: twice sqrt 9 => 1.7320508075688772"
+
+higherOrder1 :: Turtle -> IO ()
+higherOrder1 t = do
+	clear t
+	writeTopTitle t "高階関数"
+	text t "高階関数とは引数または返り値が関数であるような関数"
+	text t "つまり"
+	text t ""
+	text t "関数が第一級オブジェクトである"
+	setx t $ width / 3
+	dvArrow t
+	text t "高階関数が書ける"
+	text t ""
+	text t "ということ"
+
+higherOrder2 :: Turtle -> IO ()
+higherOrder2 t = do
+	replicateM_ 55 $ undo t
+	text t "何がうれしいの?"
+	text t ""
+
+higherOrder3 :: Turtle -> IO ()
+higherOrder3 t = do
+	text t "* より高レベルな抽象化"
+	itext t 1 "枠組だけを定義することが可能"
+	itext t 1 "例: リストの要素のすべてに何かする"
+
+higherOrder4 :: Turtle -> IO ()
+higherOrder4 t = do
+	setx t $ width / 3
+	dvArrow t
+	text t "他の言語の「構文」が普通の関数となる"
 
 dvArrow :: Turtle -> IO ()
 dvArrow t = do
@@ -288,7 +330,16 @@ text t txt = do
 	setheading t $ - 90
 	forward t $ normalF * 2
 	setheading t 0
-	setx t $ width / 6
+	setx t $ width / 8
+	write t fontName normalF txt
+	forward t $ normalF * myLength txt
+
+itext :: Turtle -> Double -> String -> IO ()
+itext t i txt = do
+	setheading t $ - 90
+	forward t $ normalF * 2
+	setheading t 0
+	setx t $ width / 8 + i * normalF * 4
 	write t fontName normalF txt
 	forward t $ normalF * myLength txt
 
