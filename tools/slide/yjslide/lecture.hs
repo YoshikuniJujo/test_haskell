@@ -10,6 +10,9 @@ import Data.Char
 import System.Environment
 import System.IO.Unsafe
 
+st :: Bool
+st = unsafePerformIO $ read <$> readFile "show_turtle.txt"
+
 rt, width, height :: Double
 rt = unsafePerformIO $ read <$> readFile "ratio.txt"
 width = 512 * rt
@@ -41,6 +44,7 @@ main = do
 	topleft f
 	t <- newTurtle f
 	shape t "turtle"
+	hideturtle t
 	penup t
 	onkeypress f $ \c -> do
 		case c of
@@ -49,7 +53,7 @@ main = do
 				ps <- readIORef pagesRef
 				case ps of
 					(fn, p) : ps -> do
-						showturtle t
+						when st $ showturtle t
 						p t
 						sleep t 500
 						hideturtle t
@@ -171,7 +175,7 @@ what7_5 t = do
 
 what8 :: Turtle -> IO ()
 what8 t = do
-	silentundo t 103
+	silentundo t $ if st then 103 else 97
 	setx t $ width * 2 / 3
 	text t "純粋関数型言語であり"
 	itext t 1 "* 第一級関数"
@@ -469,9 +473,9 @@ writeTopTitle t ttl = do
 writeNextTitle :: Turtle -> String -> IO ()
 writeNextTitle t ttl = do
 	let sz = bigF
-	setx t $ (width - sz * myLength ttl) / 2
 	setheading t $ -90
 	forward t $ sz * 2
+	setx t $ (width - sz * myLength ttl) / 2
 	write t fontName sz ttl
 	left t 90
 	forward t $ sz * myLength ttl
