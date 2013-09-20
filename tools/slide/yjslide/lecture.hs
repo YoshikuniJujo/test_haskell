@@ -118,7 +118,7 @@ what2 t = do
 
 what3 :: Turtle -> IO ()
 what3 t = do
-	replicateM_ 23 $ undo t
+	silentundo t 23
 	setx t $ width * 2 / 3
 	image t "HaskellBCurry.jpg" (279 * rt / 2) (343 * rt / 2)
 	text t "遅延評価型の関数型言語の乱立"
@@ -143,7 +143,7 @@ what3 t = do
 
 what4 :: Turtle -> IO ()
 what4 t = do
-	replicateM_ 115 $ undo t
+	silentundo t 115
 	text t "研究者の努力の結晶"
 
 what5 :: Turtle -> IO ()
@@ -171,9 +171,8 @@ what7_5 t = do
 
 what8 :: Turtle -> IO ()
 what8 t = do
-	replicateM_ 103 $ undo t
+	silentundo t 103
 	setx t $ width * 2 / 3
---	image t "HaskellBCurry.jpg" (279 * rt / 2) (343 * rt / 2)
 	text t "純粋関数型言語であり"
 	itext t 1 "* 第一級関数"
 	itext t 1 "* 参照透過"
@@ -195,13 +194,16 @@ what12 t = text t "-> 小さい方から10個取り出す"
 
 pure1 :: Int -> Turtle -> IO ()
 pure1 n t = do
+	flushoff t
+	hideturtle t
 	clear t
-	writeTopTitle t "Haskell の特徴"
+	writeTopTitle t "Haskellの特徴"
 	(if n == 0 then withRed t else id) $ semititle t "純粋関数型言語"
 	(if n == 1 then withRed t else id) $ semititle t "* 第一級関数"
 	(if n == 2 then withRed t else id) $ semititle t "* 参照透過"
 	(if n == 3 then withRed t else id) $ semititle t "* 静的型付"
 	(if n == 4 then withRed t else id) $ semititle t "* 遅延評価"
+	flushon t
 
 withRed :: Turtle -> IO a -> IO a
 withRed t act = do
@@ -336,7 +338,7 @@ higherOrder2 t = do
 
 higherOrder3 :: Turtle -> IO ()
 higherOrder3 t = do
-	replicateM_ 55 $ undo t
+	silentundo t 55
 	text t "何がうれしいの?"
 	text t ""
 
