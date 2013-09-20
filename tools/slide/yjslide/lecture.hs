@@ -80,7 +80,7 @@ author = "重城 良国"
 
 pages :: [Turtle -> IO ()]
 pages = [
-	titlePage, what1, what2, what3, what4,
+	titlePage, what1, what2, what3, what4, what5, what6, what7,
 	pure1 0,
 	function1, function2,
 	functionCheck1, functionCheck2, functionCheck3, functionCheck4,
@@ -89,7 +89,8 @@ pages = [
 	pure1 1,
 	firstclass1, firstclass2, firstclass3, firstclass4,
 	pure1 2,
-	pure1 3
+	pure1 3,
+	pure1 4
  ]
 
 what1 :: Turtle -> IO ()
@@ -124,6 +125,12 @@ what4 t = do
 	backward t $ 50 * rt
 	dvArrow t
 	text t "概念の本質的な部分をそのまま表現できる"
+	text t ""
+
+what5, what6, what7 :: Turtle -> IO ()
+what5 t = text t "例: 小さい方から10個の素数が欲しい"
+what6 t = text t "=> すべての素数を求める"
+what7 t = text t "-> 小さい方から10個取り出す"
 
 pure1 :: Int -> Turtle -> IO ()
 pure1 n t = do
