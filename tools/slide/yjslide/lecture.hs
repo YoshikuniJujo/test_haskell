@@ -314,8 +314,8 @@ firstclass3 t = do
 firstclass4 :: Turtle -> IO ()
 firstclass4 t = do
 	text t "* リテラルとして表現できる"
-	text t "* 変数に格納可能である"
-	text t "* データ構造に格納可能である"
+	text t "* 変数に格納できる"
+	text t "* データ構造に格納できる"
 	text t "* 関数の引数になれる"
 	text t "* 関数の返り値になれる"
 
@@ -328,11 +328,11 @@ firstclassExam1 t = do
 	itext t 1 "\\x -> x * x"
 
 firstclassExam2 t = do
-	text t "* 変数に格納可能である"
+	text t "* 変数に格納できる"
 	itext t 1 "square = \\x -> x * x"
 
 firstclassExam3 t = do
-	text t "* データ構造に格納可能である"
+	text t "* データ構造に格納できる"
 	itext t 1 "[\\x -> x * x]"
 
 firstclassExam4 t = do
