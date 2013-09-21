@@ -94,7 +94,9 @@ pages = [
 	functionCheck5, functionCheck6, functionCheck7, functionCheck8,
 	functionCheck9, functionCheck10,
 	pure1 1,
-	firstclass1, firstclass2, firstclass3, firstclass4, firstclass5,
+	firstclass1, firstclass2, firstclass3, firstclass4, -- firstclass5,
+	firstclassExam1, firstclassExam2, firstclassExam3,
+	firstclassExam4, firstclassExam5,
 	higherOrder1, higherOrder2, higherOrder3, higherOrder4,
 	higherOrder5,
 	higherOrderCheck1, higherOrderCheck2, higherOrderCheck3,
@@ -311,17 +313,37 @@ firstclass3 t = do
 
 firstclass4 :: Turtle -> IO ()
 firstclass4 t = do
-	text t "* 関数の引数になれる"
-	text t "* 関数の返り値になれる"
+	text t "* リテラルとして表現できる"
 	text t "* 変数に格納可能である"
 	text t "* データ構造に格納可能である"
-	text t ""
+	text t "* 関数の引数になれる"
+	text t "* 関数の返り値になれる"
 
-firstclass5 :: Turtle -> IO ()
-firstclass5 t = do
-	text t "例:"
-	text t "定義: twice fun x = fun (fun x)"
-	text t "使用例: twice sqrt 9 => 1.7320508075688772"
+firstclassExam1, firstclassExam2, firstclassExam3, firstclassExam4,
+	firstclassExam5 :: Turtle -> IO ()
+
+firstclassExam1 t = do
+	silentundo t 51
+	text t "* リテラルとして表現できる"
+	itext t 1 "\\x -> x * x"
+
+firstclassExam2 t = do
+	text t "* 変数に格納可能である"
+	itext t 1 "square = \\x -> x * x"
+
+firstclassExam3 t = do
+	text t "* データ構造に格納可能である"
+	itext t 1 "[\\x -> x * x]"
+
+firstclassExam4 t = do
+	text t "* 関数の引数になれる"
+	itext t 1 "twice fun x = fun (fun x)"
+	itext t 1 "twice sqrt 9 => 1.7320508075688772"
+
+firstclassExam5 t = do
+	text t "* 関数の返り値になれる"
+	itext t 1 "addN n = \\x -> x + n"
+	itext t 1 "(addN 3) 8 => 11"
 
 higherOrder1 :: Turtle -> IO ()
 higherOrder1 t = do
