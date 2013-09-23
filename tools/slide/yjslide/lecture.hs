@@ -40,15 +40,16 @@ main = do
 		"-" : _ -> (Nothing, pages, 0)
 		f : _ -> (Just f, pages, 0)
 		_ -> (Nothing, pages, 0)
-	pagesRef <- newIORef $ zip (map (mkSVGFileName bfn) [0 .. ]) pages'
-	pageNRef <- newIORef [bn ..]
+	pagesRef <- newIORef $ zip (map (mkSVGFileName bfn) [1 .. ]) pages'
+	pageNRef <- newIORef [bn + 1 ..]
+	let allN = bn + length pages'
 	f <- openField
 --	threadDelay 1000000
 	topleft f
 	n <- newTurtle f
 	hideturtle n
 	penup n
-	goto n (width * 46 / 50) (height * 48 / 50)
+	goto n (width * 44 / 50) (height * 48 / 50)
 	t <- newTurtle f
 	shape t "turtle"
 	hideturtle t
@@ -65,6 +66,9 @@ main = do
 							write n fontName (12 * rt)
 								. show
 								=<< popRef pageNRef
+							forward n (20 * rt)
+							write n fontName (12 * rt) $ "/" ++ show allN
+							backward n (20 * rt)
 						when st $ showturtle t
 						p t
 						sleep t 500
@@ -133,6 +137,8 @@ pages = [
 	whatIsTypeCheck4, whatIsTypeCheck5, whatIsTypeCheck6,
 	staticTyping1, staticTyping2, staticTyping3, staticTyping4,
 	staticTyping5, staticTyping6, staticTyping7, staticTyping8,
+	typeFlexibility1, typeFlexibility2, typeFlexibility3,
+	typeFlexibility4, typeFlexibility5, typeFlexibility6,
 	pure1 4
  ]
 
@@ -314,7 +320,7 @@ functionCheck2 t = text t "足し算"
 functionCheck3 t = text t "翻訳"
 functionCheck5 t = text t "与えられた文字列を表示する機能"
 functionCheck6 t = text t "" >> text t "答え"
-functionCheck7 t = text t "足し算: 数 -> 数 -> 数"
+functionCheck7 t = text t "足し算: 2つの数 -> 数"
 functionCheck8 t = text t "翻訳: ある言語の文 -> 別の言語の文"
 functionCheck10 t = text t "与えられた文字列を表示する機能: 文字列 -> 動作"
 
@@ -627,6 +633,35 @@ staticTyping8 t = do
 	setx t $ width / 3
 	dvArrowL t 12
 	itext t 2 "楽ちん"
+
+typeFlexibility1, typeFlexibility2, typeFlexibility3, typeFlexibility4
+	:: Turtle -> IO ()
+typeFlexibility1 t = do
+	clear t
+	writeTopTitle t "型の柔軟性"
+typeFlexibility2 t = do
+	text t "Haskellでは柔軟な型を持つ関数は作れないの?"
+typeFlexibility3 t = do
+	setx t $ width / 6
+	setheading t $ -90
+	forward t $ normalF * 13 / 8
+	left t 90
+	arrow t $ 12 * rt
+	left t 90
+	forward t $ normalF * 13 / 8
+	itext t 1 "柔軟性の範囲を正確に決めておけば良い"
+	text t ""
+typeFlexibility4 t = do
+	text t "例: 関数idはすべての型の値を取り同じ型の値を返す関数"
+typeFlexibility5 t = do
+	itext t 1 "id は「正確に」すべての型の値が取れる"
+	text t ""
+typeFlexibility6 t = do
+	text t "言うなれば"
+	text t ""
+	semititle t "「厳密に定義された曖昧さ」"
+	text t ""
+	itext t 4 "ということ"
 
 dvArrowL :: Turtle -> Double -> IO ()
 dvArrowL t l = do
