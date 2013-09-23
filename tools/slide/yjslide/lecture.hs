@@ -125,6 +125,8 @@ pages = [
 	transparency1, transparency2, transparency3, transparency4,
 	transparency5, transparency6, transparency7, transparency8,
 	pure1 3,
+	whatIsType1,
+	staticTyping1,
 	pure1 4
  ]
 
@@ -246,7 +248,7 @@ what9 t = do
 	text t "純粋関数型言語であり"
 	itext t 1 "* 第一級関数"
 	itext t 1 "* 参照透過性"
-	itext t 1 "* 静的型付"
+	itext t 1 "* 静的型付け"
 	itext t 1 "* 遅延評価"
 	text t "という特徴を持つ"
 
@@ -271,7 +273,7 @@ pure1 n t = do
 	(if n == 0 then withRed t else id) $ semititle t "純粋関数型言語"
 	(if n == 1 then withRed t else id) $ semititle t "* 第一級関数"
 	(if n == 2 then withRed t else id) $ semititle t "* 参照透過性"
-	(if n == 3 then withRed t else id) $ semititle t "* 静的型付"
+	(if n == 3 then withRed t else id) $ semititle t "* 静的型付け"
 	(if n == 4 then withRed t else id) $ semititle t "* 遅延評価"
 	flushon t
 
@@ -523,9 +525,9 @@ transparency6 t = do
 	setx t $ width / 3
 	dvArrow t
 	text t "関数適用はその出力である値に置き換えることができる"
-	itext t 1 $ "fun x => 3"
-	itext t 1 $ "fun' (fun x) == fun' 3"
-	text t "この場合、fun x と 3 は全く同じ物と考えてよい"
+	itext t 1 $ "f x => 3"
+	itext t 1 $ "g (f x) == g 3"
+	text t "この場合、f x と 3 は全く同じ物と考えてよい"
 	text t ""
 
 transparency7 t = do
@@ -548,6 +550,16 @@ transparency8 t = do
 	penup t
 	pensize t 1
 	text t "「置き換え規則」である"
+
+whatIsType1 :: Turtle -> IO ()
+whatIsType1 t = do
+	clear t
+	writeTopTitle t "型とは?"
+
+staticTyping1 :: Turtle -> IO ()
+staticTyping1 t = do
+	clear t
+	writeTopTitle t "静的型付け"
 
 dvArrow :: Turtle -> IO ()
 dvArrow t = do
