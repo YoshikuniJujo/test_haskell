@@ -128,8 +128,11 @@ pages = [
 	whatIsType1, whatIsType2, whatIsType3, whatIsType3_1,
 	whatIsType4, whatIsType4_5,
 	whatIsType5, whatIsType6, whatIsType7,
-	whatIsType8,
-	staticTyping1,
+	whatIsType8, whatIsType9, whatIsType10,
+	whatIsTypeCheck1, whatIsTypeCheck2, whatIsTypeCheck3,
+	whatIsTypeCheck4, whatIsTypeCheck5, whatIsTypeCheck6,
+	staticTyping1, staticTyping2, staticTyping3, staticTyping4,
+	staticTyping5, staticTyping6, staticTyping7, staticTyping8,
 	pure1 4
  ]
 
@@ -572,15 +575,80 @@ whatIsType5 t = text t "例:"
 whatIsType6 t = text t "絶対値 => 数の集合から数の集合への写像"
 whatIsType7 t = text t "文字コードを返す関数 => 文字の集合から数の集合への写像"
 
-whatIsType8 :: Turtle -> IO ()
+whatIsType8, whatIsType9 :: Turtle -> IO ()
 whatIsType8 t = do
-	silentundo t $ if st then 94 else 76
+	silentundo t $ if st then 94 else 85
 	semititle t "関数の型"
+whatIsType9 t = do
+	text t "関数にも型がある"
+	text t "Type1 の値を取り、Type2 の値を返す関数の型を"
+	text t "Haskell では Type1 -> Type2 と表記する"
+	text t ""
+whatIsType10 t = do
+	semititle t "型の宣言"
+	text t "Haskell では var :: Type のような形で型を宣言する"
 
-staticTyping1 :: Turtle -> IO ()
+whatIsTypeCheck1, whatIsTypeCheck2, whatIsTypeCheck3,
+	whatIsTypeCheck4, whatIsTypeCheck5
+	:: Turtle -> IO ()
+whatIsTypeCheck1 t = do
+	clear t
+	writeTopTitle t "型とは?(練習問題)"
+	text t "以下の関数の型を Haskell で宣言せよ"
+	text t ""
+whatIsTypeCheck2 t = text t "Int 型の値を取りその絶対値を返す関数 abs"
+whatIsTypeCheck3 t = do
+	text t "Char 型の値を取り文字コード(Int)を返す関数 ord"
+	text t ""
+whatIsTypeCheck4 t = text t "答え"
+whatIsTypeCheck5 t = text t "絶対値を返す関数: abs :: Int -> Int"
+whatIsTypeCheck6 t = text t "文字コードを返す関数: ord :: Char -> Int"
+
+staticTyping1, staticTyping2, staticTyping3, staticTyping4,
+	staticTyping5, staticTyping6, staticTyping7, staticTyping8
+	:: Turtle -> IO ()
 staticTyping1 t = do
 	clear t
-	writeTopTitle t "静的型付け"
+	writeTopTitle t "静的型付けとは?"
+staticTyping2 t = semititle t "動的型付けとは?"
+staticTyping3 t = do
+	text t "* 関数は定義域と値域を持たない"
+	itext t 1 "(定義域: 入力の範囲 値域: 出力の範囲)"
+staticTyping4 t = text t "* 関数はあらゆる型の値を入力される可能性がある"
+staticTyping5 t = text t "* 関数はあらゆる型の値を出力する可能性がある"
+staticTyping6 t = do
+	setx t $ width / 3
+	dvArrowL t 12
+	text t "あらゆる値に対して動作を保証する必要がある"
+staticTyping7 t = do
+	semititle t "静的型付けの場合"
+	text t "* 決められた範囲の値についてだけ定義すれば良い"
+staticTyping8 t = do
+	setx t $ width / 3
+	dvArrowL t 12
+	itext t 2 "楽ちん"
+
+dvArrowL :: Turtle -> Double -> IO ()
+dvArrowL t l = do
+	setheading t $ -90
+	forward t $ 12 * rt
+	pendown t
+	forward t $ l * rt
+	penup t
+	backward t $ l * rt
+	left t 90
+	forward t $ 6 * rt
+	right t 90
+	pendown t
+	forward t $ l * rt
+	setheading t 0
+	forward t $ 3 * rt
+	beginfill t
+	backward t $ 12 * rt
+	setheading t $ -60
+	forward t $ 12 * rt
+	endfill t
+	penup t
 
 dvArrow :: Turtle -> IO ()
 dvArrow t = do
