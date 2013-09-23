@@ -22,7 +22,8 @@ height = 375 * rt
 fontName :: String
 fontName = "KochiGothic"
 
-bigF, semiBigF, normalF :: Double
+biggerF, bigF, semiBigF, normalF :: Double
+biggerF = 36 * rt
 bigF = 24 * rt
 semiBigF = 15 * rt
 normalF = 12 * rt
@@ -94,7 +95,7 @@ mkSVGFileName _ _ = Nothing
 
 titlePage :: Turtle -> IO ()
 titlePage t = do
-	writeTitle t title
+	writeTitle t title "第1回 Haskell の特徴"
 	writeRB t author
 
 title, author :: String
@@ -115,12 +116,14 @@ pages = [
 	firstclass1, firstclass2, firstclass3, firstclass4, -- firstclass5,
 	firstclassExam1, firstclassExam2, firstclassExam3,
 	firstclassExam4, firstclassExam5,
-	syntax1,
+	syntax1, syntax2, syntax3,
 	higherOrder1, higherOrder2, higherOrder3, higherOrder4,
 	higherOrder5,
 	higherOrderCheck1, higherOrderCheck2, higherOrderCheck3,
 	higherOrderCheck4, higherOrderCheck5, higherOrderCheck6,
 	pure1 2,
+	transparency1, transparency2, transparency3, transparency4,
+	transparency5, transparency6, transparency7, transparency8,
 	pure1 3,
 	pure1 4
  ]
@@ -153,7 +156,7 @@ what3 t = do
 	setx t $ width / 3
 	dvLArrow t 12
 	text t "Haskell 98、Haskell'、Haskell 2010"
-	text t "と進化"
+	itext t 4 "と進化した"
 	setx t $ width / 3
 	dvLArrow t 12
 	text t "ghc(代表的な処理系)内での拡張機能として進化は続く"
@@ -197,19 +200,19 @@ what7_5 t = do
 what7_6 :: Turtle -> IO ()
 what7_6 t = do
 	silentundo t $ if st then 103 else 97
-	semititle t "何が出来るの?"
+	semititle t "何ができるの?"
 
 what7_7 :: Turtle -> IO ()
 what7_7 t = do
-	text t "* C言語に出来ることは何でも"
+	text t "* C言語にできることは何でも"
 
 what7_8 :: Turtle -> IO ()
 what7_8 t = do
 	itext t 0.5 "FFIという機能でCの関数が使える"
-	setx t $ width / 8
 	setheading t $ -90
 	forward t $ normalF * 13 / 8
 	left t 90
+	setx t $ width / 8
 
 what7_9 :: Turtle -> IO ()
 what7_9 t = do
@@ -230,13 +233,8 @@ what8_2 t = do
 
 what8_3 :: Turtle -> IO ()
 what8_3 t = do
-	text t "* programming に本質的な様々な概念を"
+	text t "* プログラミングに本質的な様々な概念を"
 	itext t 1 "新たな光のもとに別の視点から見ることができる"
-
-what8_4 :: Turtle -> IO ()
-what8_4 t = do
-	silentundo t $ if st then 100 else 91
-	writeTitle t "特徴"
 
 what9 :: Turtle -> IO ()
 what9 t = do
@@ -247,7 +245,7 @@ what9 t = do
 	setx t $ width * 2 / 3
 	text t "純粋関数型言語であり"
 	itext t 1 "* 第一級関数"
-	itext t 1 "* 参照透過"
+	itext t 1 "* 参照透過性"
 	itext t 1 "* 静的型付"
 	itext t 1 "* 遅延評価"
 	text t "という特徴を持つ"
@@ -272,7 +270,7 @@ pure1 n t = do
 	writeTopTitle t "Haskellの特徴"
 	(if n == 0 then withRed t else id) $ semititle t "純粋関数型言語"
 	(if n == 1 then withRed t else id) $ semititle t "* 第一級関数"
-	(if n == 2 then withRed t else id) $ semititle t "* 参照透過"
+	(if n == 2 then withRed t else id) $ semititle t "* 参照透過性"
 	(if n == 3 then withRed t else id) $ semititle t "* 静的型付"
 	(if n == 4 then withRed t else id) $ semititle t "* 遅延評価"
 	flushon t
@@ -411,7 +409,7 @@ firstclassExam5 t = do
 	itext t 1 "addN n = \\x -> x + n"
 	itext t 1 "(addN 3) 8 => 11"
 
-syntax1 :: Turtle -> IO ()
+syntax1, syntax2, syntax3 :: Turtle -> IO ()
 syntax1 t = do
 	clear t
 	writeTopTitle t "ここまでに出てきた構文"
@@ -420,6 +418,13 @@ syntax1 t = do
 	text t "* 定義: var = expression"
 	text t "* 関数定義: fun parm1 parm2 = expression"
 	text t "* 関数適用: fun arg1 arg2"
+	text t ""
+syntax2 t = do
+	text t "(注1) 変数の定義と"
+	itext t 1 "0個の引数を取る関数の定義とは同じこと"
+syntax3 t = do
+	text t "(注2) 関数適用の結果を `=> value' のような"
+	itext t 1 "形で示すが、これは Haskell の構文ではない。"
 
 higherOrder1 :: Turtle -> IO ()
 higherOrder1 t = do
@@ -483,6 +488,66 @@ higherOrderCheck6 :: Turtle -> IO ()
 higherOrderCheck6 t = do
 	text t "10を底とした対数を求める関数を返す関数"
 	itext t 1 "log10 = \\x -> logBase 10 x"
+
+transparency1, transparency2, transparency3, transparency4, transparency5,
+	transparency6, transparency7, transparency8
+	:: Turtle -> IO ()
+transparency1 t = do
+	clear t
+	writeTopTitle t "参照透過性とは?"
+
+transparency2 t = do
+	text t "同じ関数を同じ入力で呼び出せば"
+	itext t 1 "出力は常に同じであるという性質"
+	text t ""
+
+transparency3 t = do
+	text t "参照透過ではない例"
+
+transparency4 t = do
+	itext t 1 "C 言語"
+	itext t 1 "counter() => 0"
+	itext t 1 "counter() => 1"
+	itext t 1 "counter() => 2"
+	itext t 1 ""
+
+transparency5 t = do
+	itext t 1 "Ruby"
+	itext t 1 "counter.count => 0"
+	itext t 1 "counter.count => 1"
+	itext t 1 "counter.count => 2"
+
+transparency6 t = do
+	silentundo t $ if st then 90 else 90
+	text t "Haskell では同じ入力からは常に同じ出力"
+	setx t $ width / 3
+	dvArrow t
+	text t "関数適用はその出力である値に置き換えることができる"
+	itext t 1 $ "fun x => 3"
+	itext t 1 $ "fun' (fun x) == fun' 3"
+	text t "この場合、fun x と 3 は全く同じ物と考えてよい"
+	text t ""
+
+transparency7 t = do
+	semititle t "Haskell での「関数」とは"
+	text t "動作や手続き?"
+
+transparency8 t = do
+	let v = normalF * 9 / 8
+	setheading t 90
+	forward t v
+	setx t $ width / 8
+	y <- ycor t
+	pensize t 2
+	pendown t
+	goto t (width / 3) (y + v)
+	penup t
+	forward t v
+	pendown t
+	goto t (width / 8) (y + v)
+	penup t
+	pensize t 1
+	text t "「置き換え規則」である"
 
 dvArrow :: Turtle -> IO ()
 dvArrow t = do
@@ -578,16 +643,20 @@ writeNextTitle t ttl = do
 	write t fontName sz ttl
 	forward t $ sz * myLength ttl
 
-writeTitle :: Turtle -> String -> IO ()
-writeTitle t ttl = do
-	let sz = bigF
+writeTitle :: Turtle -> String -> String -> IO ()
+writeTitle t ttl subTtl = do
+	let	sz = biggerF
+		szn = normalF
 	goto t ((width - sz * myLength ttl) / 2) ((height - sz) / 2)
 	write t fontName sz ttl
 	forward t $ sz * myLength ttl
+	goto t ((width - szn * myLength subTtl) / 2) ((height - sz) / 2 + szn * 2)
+	write t fontName szn subTtl
+	forward t $ szn * myLength subTtl
 
 writeRB :: Turtle -> String -> IO ()
 writeRB t str = do
 	let sz = normalF
-	goto t (width * 3 / 4) (height * 3 / 4)
+	goto t (width * 3 / 4) (height * 7 / 8)
 	write t fontName sz str
 	forward t $ width * 3 / 16
