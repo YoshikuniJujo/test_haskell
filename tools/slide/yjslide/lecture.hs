@@ -109,9 +109,9 @@ pages = [
 	what9, what10, what11, what12, what13,
 	pure1 0,
 	function1, function2,
-	functionCheck1, functionCheck2, functionCheck3, functionCheck4,
+	functionCheck1, functionCheck2, functionCheck3,
 	functionCheck5, functionCheck6, functionCheck7, functionCheck8,
-	functionCheck9, functionCheck10,
+	functionCheck10,
 	pure1 1,
 	firstclass1, firstclass2, firstclass3, firstclass4, -- firstclass5,
 	firstclassExam1, firstclassExam2, firstclassExam3,
@@ -125,7 +125,10 @@ pages = [
 	transparency1, transparency2, transparency3, transparency4,
 	transparency5, transparency6, transparency7, transparency8,
 	pure1 3,
-	whatIsType1,
+	whatIsType1, whatIsType2, whatIsType3, whatIsType3_1,
+	whatIsType4, whatIsType4_5,
+	whatIsType5, whatIsType6, whatIsType7,
+	whatIsType8,
 	staticTyping1,
 	pure1 4
  ]
@@ -296,7 +299,8 @@ function2 t = do
 	goto t (width * 1 / 10) (height * 5 / 10)
 	mkFunGraph t
 
-functionCheck1, functionCheck2, functionCheck3, functionCheck4, functionCheck5
+functionCheck1, functionCheck2, functionCheck3, functionCheck5,
+	functionCheck6, functionCheck7, functionCheck8, functionCheck10
 	:: Turtle -> IO ()
 functionCheck1 t = do
 	clear t
@@ -305,12 +309,10 @@ functionCheck1 t = do
 
 functionCheck2 t = text t "足し算"
 functionCheck3 t = text t "翻訳"
-functionCheck4 t = text t "2"
 functionCheck5 t = text t "与えられた文字列を表示する機能"
 functionCheck6 t = text t "" >> text t "答え"
 functionCheck7 t = text t "足し算: 数 -> 数 -> 数"
 functionCheck8 t = text t "翻訳: ある言語の文 -> 別の言語の文"
-functionCheck9 t = text t "2: 0個の入力を取り、出力として数を返す"
 functionCheck10 t = text t "与えられた文字列を表示する機能: 文字列 -> 動作"
 
 mkFunGraph :: Turtle -> IO ()
@@ -551,10 +553,29 @@ transparency8 t = do
 	pensize t 1
 	text t "「置き換え規則」である"
 
-whatIsType1 :: Turtle -> IO ()
-whatIsType1 t = do
-	clear t
-	writeTopTitle t "型とは?"
+whatIsType1, whatIsType2, whatIsType3, whatIsType3_1,
+	whatIsType4, whatIsType4_5,
+	whatIsType5, whatIsType6, whatIsType7 :: Turtle -> IO ()
+whatIsType1 t = clear t >> writeTopTitle t "型とは?"
+whatIsType2 t = semititle t "値の集合"
+whatIsType3 t = do
+	text t "Int: 1, 2, 3, ..."
+	text t "Char: 'a', 'b', 'c' ..."
+whatIsType3_1 t = do
+	text t "* 値valが型Typeに属するとき「valはType型の値」という"
+	text t ""
+whatIsType4 t = semititle t "再び... 関数とは?"
+whatIsType4_5 t = do
+	text t "ある集合に属する値を他の集合に属する値に写像するもの"
+	itext t 3 "(写像: 入力から出力を得ること)"
+whatIsType5 t = text t "例:"
+whatIsType6 t = text t "絶対値 => 数の集合から数の集合への写像"
+whatIsType7 t = text t "文字コードを返す関数 => 文字の集合から数の集合への写像"
+
+whatIsType8 :: Turtle -> IO ()
+whatIsType8 t = do
+	silentundo t $ if st then 94 else 76
+	semititle t "関数の型"
 
 staticTyping1 :: Turtle -> IO ()
 staticTyping1 t = do
