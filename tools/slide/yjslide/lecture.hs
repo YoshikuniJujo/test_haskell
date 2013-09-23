@@ -10,8 +10,9 @@ import Data.Char
 import System.Environment
 import System.IO.Unsafe
 
-st :: Bool
+st, sp :: Bool
 st = unsafePerformIO $ read <$> readFile "show_turtle.txt"
+sp = unsafePerformIO $ read <$> readFile "show_page.txt"
 
 rt, width, height :: Double
 rt = unsafePerformIO $ read <$> readFile "ratio.txt"
@@ -28,20 +29,25 @@ normalF = 12 * rt
 
 main :: IO ()
 main = do
-	(bfn, pages') <- (flip fmap getArgs) $ \args -> case args of
+	(bfn, pages', bn) <- (flip fmap getArgs) $ \args -> case args of
 		"-" : m : n : _ -> (Nothing,
-			take (read n - read m) $ drop (read m) pages)
+			take (read n - read m) $ drop (read m) pages, read m)
 		f : m : n : _ -> (Just f,
-			take (read n - read m) $ drop (read m) pages)
-		"-" : n : _ -> (Nothing, drop (read n) pages)
-		f : n : _ -> (Just f, drop (read n) pages)
-		"-" : _ -> (Nothing, pages)
-		f : _ -> (Just f, pages)
-		_ -> (Nothing, pages)
+			take (read n - read m) $ drop (read m) pages, read m)
+		"-" : n : _ -> (Nothing, drop (read n) pages, read n)
+		f : n : _ -> (Just f, drop (read n) pages, read n)
+		"-" : _ -> (Nothing, pages, 0)
+		f : _ -> (Just f, pages, 0)
+		_ -> (Nothing, pages, 0)
 	pagesRef <- newIORef $ zip (map (mkSVGFileName bfn) [0 .. ]) pages'
+	pageNRef <- newIORef [bn ..]
 	f <- openField
 --	threadDelay 1000000
 	topleft f
+	n <- newTurtle f
+	hideturtle n
+	penup n
+	goto n (width * 46 / 50) (height * 48 / 50)
 	t <- newTurtle f
 	shape t "turtle"
 	hideturtle t
@@ -53,6 +59,11 @@ main = do
 				ps <- readIORef pagesRef
 				case ps of
 					(fn, p) : ps -> do
+						when sp $ do
+							clear n
+							write n fontName (12 * rt)
+								. show
+								=<< popRef pageNRef
 						when st $ showturtle t
 						p t
 						sleep t 500
@@ -68,6 +79,12 @@ main = do
 					_ -> return True
 			_ -> return True
 	waitField f
+
+popRef :: IORef [a] -> IO a
+popRef ref = do
+	ret <- head <$> readIORef ref
+	modifyIORef ref tail
+	return ret
 
 mkSVGFileName :: Maybe String -> Int -> Maybe String
 mkSVGFileName (Just bfn) n = Just $ bfn ++ addZero (show n) ++ ".svg"
@@ -87,7 +104,8 @@ author = "重城 良国"
 pages :: [Turtle -> IO ()]
 pages = [
 	titlePage, what1, what2, what3, what4, what5, what6, what7, what7_5,
-	what8, what9, what10, what11, what12,
+	what7_6, what7_7, what7_8, what7_9, what8_1, what8_2, what8_3,
+	what9, what10, what11, what12, what13,
 	pure1 0,
 	function1, function2,
 	functionCheck1, functionCheck2, functionCheck3, functionCheck4,
@@ -97,6 +115,7 @@ pages = [
 	firstclass1, firstclass2, firstclass3, firstclass4, -- firstclass5,
 	firstclassExam1, firstclassExam2, firstclassExam3,
 	firstclassExam4, firstclassExam5,
+	syntax1,
 	higherOrder1, higherOrder2, higherOrder3, higherOrder4,
 	higherOrder5,
 	higherOrderCheck1, higherOrderCheck2, higherOrderCheck3,
@@ -175,9 +194,56 @@ what7_5 t = do
 	itext t 1 "レゴブロックを使うのにひとつひとつのブロックの"
 	itext t 1 "作りかたを知る必要はない"
 
-what8 :: Turtle -> IO ()
-what8 t = do
+what7_6 :: Turtle -> IO ()
+what7_6 t = do
 	silentundo t $ if st then 103 else 97
+	semititle t "何が出来るの?"
+
+what7_7 :: Turtle -> IO ()
+what7_7 t = do
+	text t "* C言語に出来ることは何でも"
+
+what7_8 :: Turtle -> IO ()
+what7_8 t = do
+	itext t 0.5 "FFIという機能でCの関数が使える"
+	setx t $ width / 8
+	setheading t $ -90
+	forward t $ normalF * 13 / 8
+	left t 90
+
+what7_9 :: Turtle -> IO ()
+what7_9 t = do
+	arrow t $ width / 20
+	left t 90
+	forward t $ normalF * 13 / 8
+	itext t 1 "実用的な言語"
+	text t ""
+
+what8_1 :: Turtle -> IO ()
+what8_1 t = do
+	semititle t "他の言語を使い続けるとしても"
+
+what8_2 :: Turtle -> IO ()
+what8_2 t = do
+	text t "* Haskell を学ぶことによって"
+	itext t 1 "得られる様々な抽象化の手法は使える"
+
+what8_3 :: Turtle -> IO ()
+what8_3 t = do
+	text t "* programming に本質的な様々な概念を"
+	itext t 1 "新たな光のもとに別の視点から見ることができる"
+
+what8_4 :: Turtle -> IO ()
+what8_4 t = do
+	silentundo t $ if st then 100 else 91
+	writeTitle t "特徴"
+
+what9 :: Turtle -> IO ()
+what9 t = do
+--	silentundo t $ if st then 100 else 91
+--	silentundo t $ if st then 5 else 4
+	clear t
+	writeTopTitle t "Haskell の特徴"
 	setx t $ width * 2 / 3
 	text t "純粋関数型言語であり"
 	itext t 1 "* 第一級関数"
@@ -186,17 +252,17 @@ what8 t = do
 	itext t 1 "* 遅延評価"
 	text t "という特徴を持つ"
 
-what9 :: Turtle -> IO ()
-what9 t = do
+what10 :: Turtle -> IO ()
+what10 t = do
 	backward t $ 50 * rt
 	dvLArrow t 12
 	text t "概念の本質的な部分をそのまま表現できる"
 	text t ""
 
-what10, what11, what12 :: Turtle -> IO ()
-what10 t = text t "例: 小さい方から10個の素数が欲しい"
-what11 t = text t "=> すべての素数を求める"
-what12 t = text t "-> 小さい方から10個取り出す"
+what11, what12, what13 :: Turtle -> IO ()
+what11 t = text t "例: 小さい方から10個の素数が欲しい"
+what12 t = text t "=> すべての素数を求める"
+what13 t = text t "-> 小さい方から10個取り出す"
 
 pure1 :: Int -> Turtle -> IO ()
 pure1 n t = do
@@ -344,6 +410,16 @@ firstclassExam5 t = do
 	text t "* 関数の返り値になれる"
 	itext t 1 "addN n = \\x -> x + n"
 	itext t 1 "(addN 3) 8 => 11"
+
+syntax1 :: Turtle -> IO ()
+syntax1 t = do
+	clear t
+	writeTopTitle t "ここまでに出てきた構文"
+	text t "* 関数リテラル: \\parm -> expression"
+	text t "* リストリテラル: [expression1, expression2, ... ]"
+	text t "* 定義: var = expression"
+	text t "* 関数定義: fun parm1 parm2 = expression"
+	text t "* 関数適用: fun arg1 arg2"
 
 higherOrder1 :: Turtle -> IO ()
 higherOrder1 t = do
