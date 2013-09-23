@@ -95,7 +95,7 @@ mkSVGFileName _ _ = Nothing
 
 titlePage :: Turtle -> IO ()
 titlePage t = do
-	writeTitle t title "第1回 Haskell の特徴"
+	writeTitle t title "第1回 Haskellの特徴"
 	writeRB t author
 
 title, author :: String
@@ -228,7 +228,7 @@ what8_1 t = do
 
 what8_2 :: Turtle -> IO ()
 what8_2 t = do
-	text t "* Haskell を学ぶことによって"
+	text t "* Haskellを学ぶことによって"
 	itext t 1 "得られる様々な抽象化の手法は使える"
 
 what8_3 :: Turtle -> IO ()
@@ -241,7 +241,7 @@ what9 t = do
 --	silentundo t $ if st then 100 else 91
 --	silentundo t $ if st then 5 else 4
 	clear t
-	writeTopTitle t "Haskell の特徴"
+	writeTopTitle t "Haskellの特徴"
 	setx t $ width * 2 / 3
 	text t "純粋関数型言語であり"
 	itext t 1 "* 第一級関数"
@@ -423,8 +423,8 @@ syntax2 t = do
 	text t "(注1) 変数の定義と"
 	itext t 1 "0個の引数を取る関数の定義とは同じこと"
 syntax3 t = do
-	text t "(注2) 関数適用の結果を `=> value' のような"
-	itext t 1 "形で示すが、これは Haskell の構文ではない。"
+	text t "(注2) 関数適用の結果を`=> value'のような"
+	itext t 1 "形で示すが、これはHaskellの構文ではない。"
 
 higherOrder1 :: Turtle -> IO ()
 higherOrder1 t = do
@@ -519,7 +519,7 @@ transparency5 t = do
 
 transparency6 t = do
 	silentundo t $ if st then 90 else 90
-	text t "Haskell では同じ入力からは常に同じ出力"
+	text t "Haskellでは同じ入力からは常に同じ出力"
 	setx t $ width / 3
 	dvArrow t
 	text t "関数適用はその出力である値に置き換えることができる"
@@ -529,7 +529,7 @@ transparency6 t = do
 	text t ""
 
 transparency7 t = do
-	semititle t "Haskell での「関数」とは"
+	semititle t "Haskellでの「関数」とは"
 	text t "動作や手続き?"
 
 transparency8 t = do
