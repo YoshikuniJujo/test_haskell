@@ -146,7 +146,8 @@ pages = [
 	lazyEvaluation5, lazyEvaluation6, lazyEvaluation7, lazyEvaluation8,
 	lazyEvaluation9, lazyEvaluation10, lazyEvaluation11, lazyEvaluation12,
 	lazyEvaluationCheck1, lazyEvaluationCheck2, lazyEvaluationCheck3,
-	lazyEvaluationCheck4, lazyEvaluationCheck5, lazyEvaluationCheck6
+	lazyEvaluationCheck4, lazyEvaluationCheck5, lazyEvaluationCheck6,
+	summary1, summary2, summary3, summary4, summary5, summary6, summary7
  ]
 
 what1 :: Turtle -> IO ()
@@ -756,6 +757,22 @@ lazyEvaluationCheck6 t = do
 	text t "take 10 ones"
 	itext t 1 "先行性: onesの完全な評価のため値がかえらない"
 	itext t 1 "遅延性: 1が10個はいったリストがかえる"
+
+summary1, summary2, summary3, summary4,
+	summary5, summary6, summary7
+	:: Turtle -> IO ()
+summary1 t = do
+	hideturtle t
+	clear t
+	writeTopTitle t "まとめ"
+	text t ""
+	showturtle t
+summary2 t = text t "* 関数とは「置き換え規則」である"
+summary3 t = text t "* 型は入力と出力の値の範囲を示す"
+summary4 t = text t "* 高階関数によって枠組の抽象化が可能"
+summary5 t = text t "* 参照透過性は上記「関数」の性質に本質的"
+summary6 t = text t "* 静的型付けは値の範囲が決まるので楽"
+summary7 t = text t "* 遅延評価によって問題を自然に決り分けられる"
 
 dvArrowL :: Turtle -> Double -> IO ()
 dvArrowL t l = do
