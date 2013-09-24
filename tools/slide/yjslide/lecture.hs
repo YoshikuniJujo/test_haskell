@@ -142,7 +142,8 @@ pages = [
 	typeFlexibility1, typeFlexibility2, typeFlexibility3,
 	typeFlexibility4, typeFlexibility5, typeFlexibility6,
 	pure1 4,
-	lazyEvaluation1, lazyEvaluation2
+	lazyEvaluation1, lazyEvaluation2, lazyEvaluation3, lazyEvaluation4,
+	lazyEvaluation5, lazyEvaluation6, lazyEvaluation7
  ]
 
 what1 :: Turtle -> IO ()
@@ -166,7 +167,7 @@ what3 t = do
 	silentundo t 23
 	setx t $ width * 2 / 3
 	image t "HaskellBCurry.jpg" (279 * rt / 2) (343 * rt / 2)
-	text t "非正格関数型言語の乱立"
+	text t "遅延評価する関数型言語の乱立"
 	setx t $ width / 3
 	dvLArrow t 12
 	text t "1990年 標準としてのHaskell 1.0"
@@ -264,7 +265,7 @@ what9 t = do
 	itext t 1 "* 第一級関数"
 	itext t 1 "* 参照透過性"
 	itext t 1 "* 静的型付け"
-	itext t 1 "* 非正格"
+	itext t 1 "* 遅延性"
 	text t "という特徴を持つ"
 
 what10 :: Turtle -> IO ()
@@ -289,7 +290,7 @@ pure1 n t = do
 	(if n == 1 then withRed t else id) $ semititle t "* 第一級関数"
 	(if n == 2 then withRed t else id) $ semititle t "* 参照透過性"
 	(if n == 3 then withRed t else id) $ semititle t "* 静的型付け"
-	(if n == 4 then withRed t else id) $ semititle t "* 非正格"
+	(if n == 4 then withRed t else id) $ semititle t "* 遅延性"
 	flushon t
 
 withRed :: Turtle -> IO a -> IO a
@@ -666,12 +667,40 @@ typeFlexibility6 t = do
 	text t ""
 	itext t 4 "ということ"
 
-lazyEvaluation1, lazyEvaluation2 :: Turtle -> IO ()
+lazyEvaluation1, lazyEvaluation2, lazyEvaluation3, lazyEvaluation4,
+	lazyEvaluation5, lazyEvaluation6, lazyEvaluation7
+	:: Turtle -> IO ()
 lazyEvaluation1 t = do
 	clear t
-	writeTopTitle t "非正格とは?"
+	writeTopTitle t "遅延性とは?"
 lazyEvaluation2 t = do
-	text t "評価の際に不必要な構造は評価しないということ"
+	text t "使わない構造は展開されないということ"
+	text t ""
+	text t "* 引数部分に無限ループがあったとしても"
+	itext t 1 "その引数が使われていなければ問題ない"
+	text t "* 無限リストを使うこともできる"
+	text t ""
+lazyEvaluation3 t = do
+	text t "例1: myIf 関数"
+	setheading t 90
+	forward t $ normalF * 19 / 8
+	setx t $ width * 51 / 144
+	setheading t $ -90
+	forward t $ normalF * 55 / 32
+	left t 90
+lazyEvaluation4 t = do
+	arrow t $ 12 * rt
+	left t 90
+	forward t $ normalF * 55 / 32
+	itext t 3 "正格評価だとthen部もelse部も先に評価"
+lazyEvaluation5 t = do
+	itext t 1 "遅延評価なら問題ない"
+	text t ""
+lazyEvaluation6 t = do
+	text t "例2: 無限リスト"
+lazyEvaluation7 t = do
+	itext t 1 "fibs = 0 : 1 : zipWith (+) fibs (tail fibs)"
+	itext t 1 "print $ take 100 fibs"
 
 dvArrowL :: Turtle -> Double -> IO ()
 dvArrowL t l = do
