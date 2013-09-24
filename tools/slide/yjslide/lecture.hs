@@ -143,7 +143,10 @@ pages = [
 	typeFlexibility4, typeFlexibility5, typeFlexibility6,
 	pure1 4,
 	lazyEvaluation1, lazyEvaluation2, lazyEvaluation3, lazyEvaluation4,
-	lazyEvaluation5, lazyEvaluation6, lazyEvaluation7
+	lazyEvaluation5, lazyEvaluation6, lazyEvaluation7, lazyEvaluation8,
+	lazyEvaluation9, lazyEvaluation10, lazyEvaluation11, lazyEvaluation12,
+	lazyEvaluationCheck1, lazyEvaluationCheck2, lazyEvaluationCheck3,
+	lazyEvaluationCheck4, lazyEvaluationCheck5, lazyEvaluationCheck6
  ]
 
 what1 :: Turtle -> IO ()
@@ -378,6 +381,15 @@ arrow t l = do
 	forward t (12 * rt)
 	endfill t
 	pensize t $ 1 * rt
+
+rightArrow :: Turtle -> IO ()
+rightArrow t = do
+	setheading t $ -90
+	forward t $ normalF * 55 / 32
+	left t 90
+	arrow t $ 12 * rt
+	left t 90
+	forward t $ normalF * 55 / 32
 
 firstclass1 :: Turtle -> IO ()
 firstclass1 t = do
@@ -668,7 +680,8 @@ typeFlexibility6 t = do
 	itext t 4 "ということ"
 
 lazyEvaluation1, lazyEvaluation2, lazyEvaluation3, lazyEvaluation4,
-	lazyEvaluation5, lazyEvaluation6, lazyEvaluation7
+	lazyEvaluation5, lazyEvaluation6, lazyEvaluation7, lazyEvaluation8,
+	lazyEvaluation9, lazyEvaluation10, lazyEvaluation11, lazyEvaluation12
 	:: Turtle -> IO ()
 lazyEvaluation1 t = do
 	clear t
@@ -682,17 +695,12 @@ lazyEvaluation2 t = do
 	text t ""
 lazyEvaluation3 t = do
 	text t "例1: myIf 関数"
-	setheading t 90
-	forward t $ normalF * 19 / 8
-	setx t $ width * 51 / 144
-	setheading t $ -90
-	forward t $ normalF * 55 / 32
-	left t 90
 lazyEvaluation4 t = do
-	arrow t $ 12 * rt
-	left t 90
-	forward t $ normalF * 55 / 32
-	itext t 3 "正格評価だとthen部もelse部も先に評価"
+	setheading t 90
+	forward t $ normalF * 18 / 8
+	setx t $ width * 51 / 144
+	rightArrow t
+	itext t 3 "先行評価だとthen部もelse部も先に評価"
 lazyEvaluation5 t = do
 	itext t 1 "遅延評価なら問題ない"
 	text t ""
@@ -701,6 +709,53 @@ lazyEvaluation6 t = do
 lazyEvaluation7 t = do
 	itext t 1 "fibs = 0 : 1 : zipWith (+) fibs (tail fibs)"
 	itext t 1 "print $ take 100 fibs"
+lazyEvaluation8 t = do
+	hideturtle t
+	clear t
+	writeTopTitle t "遅延性とは?"
+	showturtle t
+	text t "遅延性という言葉は使われていない"
+	setx t $ width / 7
+	rightArrow t
+	itext t 1 "このスライド用に造語"
+	text t ""
+lazyEvaluation9 t = do
+	text t "どうしてそんなことを?"
+lazyEvaluation10 t = do
+	text t "* 遅延評価と遅延型をまとめて表現したかった"
+lazyEvaluation11 t = do
+	text t "* 遅延型も造語"
+	itext t 1 "遅延リストは普遍的な遅延するデータ構造のひとつ"
+	itext t 1 "Haskell ではデータ構造の評価は遅延する"
+lazyEvaluation12 t = do
+	text t "* 正確に言うと"
+	itext t 1 "「遅延評価と弱頭部正規形までの簡約」となるだろう"
+
+lazyEvaluationCheck1, lazyEvaluationCheck2, lazyEvaluationCheck3,
+	lazyEvaluationCheck4, lazyEvaluationCheck5, lazyEvaluationCheck6
+	:: Turtle -> IO ()
+lazyEvaluationCheck1 t =  do
+	hideturtle t
+	clear t
+	writeTopTitle t "遅延性とは?(練習問題)"
+	showturtle t
+	text t "以下の例について先行性と遅延性の"
+	itext t 1 "それぞれについてどうなるか答えよ"
+	text t ""
+lazyEvaluationCheck2 t =
+	text t "x = x; const y z = yのときのconst 8 x"
+lazyEvaluationCheck3 t = do
+	text t "ones = 1 : onesのときのtake 10 ones"
+	text t ""
+lazyEvaluationCheck4 t = text t "答え:"
+lazyEvaluationCheck5 t = do
+	text t "const 8 x"
+	itext t 1 "先行性: 無限ループにより値がかえらない"
+	itext t 1 "遅延性: 値8がかえる"
+lazyEvaluationCheck6 t = do
+	text t "take 10 ones"
+	itext t 1 "先行性: onesの完全な評価のため値がかえらない"
+	itext t 1 "遅延性: 1が10個はいったリストがかえる"
 
 dvArrowL :: Turtle -> Double -> IO ()
 dvArrowL t l = do
