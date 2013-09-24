@@ -32,17 +32,19 @@ main :: IO ()
 main = do
 	(bfn, pages', bn) <- (flip fmap getArgs) $ \args -> case args of
 		"-" : m : n : _ -> (Nothing,
-			take (read n - read m) $ drop (read m) pages, read m)
+			take (read n - read m + 1) $
+				drop (read m - 1) pages, read m)
 		f : m : n : _ -> (Just f,
-			take (read n - read m) $ drop (read m) pages, read m)
-		"-" : n : _ -> (Nothing, drop (read n) pages, read n)
-		f : n : _ -> (Just f, drop (read n) pages, read n)
-		"-" : _ -> (Nothing, pages, 0)
-		f : _ -> (Just f, pages, 0)
-		_ -> (Nothing, pages, 0)
+			take (read n - read m + 1) $
+				drop (read m - 1) pages, read m)
+		"-" : n : _ -> (Nothing, drop (read n - 1) pages, read n)
+		f : n : _ -> (Just f, drop (read n - 1) pages, read n)
+		"-" : _ -> (Nothing, pages, 1)
+		f : _ -> (Just f, pages, 1)
+		_ -> (Nothing, pages, 1)
 	pagesRef <- newIORef $ zip (map (mkSVGFileName bfn) [1 .. ]) pages'
-	pageNRef <- newIORef [bn + 1 ..]
-	let allN = bn + length pages'
+	pageNRef <- newIORef [bn ..]
+	let allN = bn + length pages' - 1
 	f <- openField
 --	threadDelay 1000000
 	topleft f
@@ -66,9 +68,9 @@ main = do
 							write n fontName (12 * rt)
 								. show
 								=<< popRef pageNRef
-							forward n (20 * rt)
+							forward n (24 * rt)
 							write n fontName (12 * rt) $ "/" ++ show allN
-							backward n (20 * rt)
+							backward n (24 * rt)
 						when st $ showturtle t
 						p t
 						sleep t 500
@@ -139,7 +141,8 @@ pages = [
 	staticTyping5, staticTyping6, staticTyping7, staticTyping8,
 	typeFlexibility1, typeFlexibility2, typeFlexibility3,
 	typeFlexibility4, typeFlexibility5, typeFlexibility6,
-	pure1 4
+	pure1 4,
+	lazyEvaluation1, lazyEvaluation2
  ]
 
 what1 :: Turtle -> IO ()
@@ -163,7 +166,7 @@ what3 t = do
 	silentundo t 23
 	setx t $ width * 2 / 3
 	image t "HaskellBCurry.jpg" (279 * rt / 2) (343 * rt / 2)
-	text t "遅延評価型の関数型言語の乱立"
+	text t "非正格関数型言語の乱立"
 	setx t $ width / 3
 	dvLArrow t 12
 	text t "1990年 標準としてのHaskell 1.0"
@@ -261,7 +264,7 @@ what9 t = do
 	itext t 1 "* 第一級関数"
 	itext t 1 "* 参照透過性"
 	itext t 1 "* 静的型付け"
-	itext t 1 "* 遅延評価"
+	itext t 1 "* 非正格"
 	text t "という特徴を持つ"
 
 what10 :: Turtle -> IO ()
@@ -286,7 +289,7 @@ pure1 n t = do
 	(if n == 1 then withRed t else id) $ semititle t "* 第一級関数"
 	(if n == 2 then withRed t else id) $ semititle t "* 参照透過性"
 	(if n == 3 then withRed t else id) $ semititle t "* 静的型付け"
-	(if n == 4 then withRed t else id) $ semititle t "* 遅延評価"
+	(if n == 4 then withRed t else id) $ semititle t "* 非正格"
 	flushon t
 
 withRed :: Turtle -> IO a -> IO a
@@ -662,6 +665,13 @@ typeFlexibility6 t = do
 	semititle t "「厳密に定義された曖昧さ」"
 	text t ""
 	itext t 4 "ということ"
+
+lazyEvaluation1, lazyEvaluation2 :: Turtle -> IO ()
+lazyEvaluation1 t = do
+	clear t
+	writeTopTitle t "非正格とは?"
+lazyEvaluation2 t = do
+	text t "評価の際に不必要な構造は評価しないということ"
 
 dvArrowL :: Turtle -> Double -> IO ()
 dvArrowL t l = do
