@@ -15,38 +15,16 @@ picture :: (Double, Double, FilePath)
 picture = (139.5, 171.5, "HaskellBCurry.jpg")
 
 pages :: [Turtle -> IO ()]
-pages = [titlePage] ++
-	whats1 ++ whats2 ++ whats3 ++ whats4 ++ whats5 ++
-	[pure1 0] ++
-	functions1 ++ functionChecks1 ++
-	[pure1 1] ++
-	firstclasses1 ++ firstclassExams1 ++ syntaxes1 ++
-	higherOrders1 ++ higherOrders2 ++ [
-
-	higherOrderCheck1, higherOrderCheck2, higherOrderCheck3,
-	higherOrderCheck4, higherOrderCheck5, higherOrderCheck6,
-	pure1 2,
-	transparency1, transparency2, transparency3, transparency4,
-	transparency5, transparency6, transparency7, transparency8,
-	pure1 3,
-	whatIsType1, whatIsType2, whatIsType3, whatIsType3_1,
-	whatIsType4, whatIsType4_5,
-	whatIsType5, whatIsType6, whatIsType7,
-	whatIsType8, whatIsType9, whatIsType10,
-	whatIsTypeCheck1, whatIsTypeCheck2, whatIsTypeCheck3,
-	whatIsTypeCheck4, whatIsTypeCheck5, whatIsTypeCheck6,
-	staticTyping1, staticTyping2, staticTyping3, staticTyping4,
-	staticTyping5, staticTyping6, staticTyping7, staticTyping8,
-	typeFlexibility1, typeFlexibility2, typeFlexibility3,
-	typeFlexibility4, typeFlexibility5, typeFlexibility6,
-	pure1 4,
-	lazyEvaluation1, lazyEvaluation2, lazyEvaluation3, lazyEvaluation4,
-	lazyEvaluation5, lazyEvaluation6, lazyEvaluation7, lazyEvaluation8,
-	lazyEvaluation9, lazyEvaluation10, lazyEvaluation11, lazyEvaluation12,
-	lazyEvaluationCheck1, lazyEvaluationCheck2, lazyEvaluationCheck3,
-	lazyEvaluationCheck4, lazyEvaluationCheck5, lazyEvaluationCheck6,
-	summary1, summary2, summary3, summary4, summary5, summary6, summary7
- ]
+pages = concat [
+	[titlePage], whats1, whats2, whats3, whats4, whats5,
+	[pure1 0], functions1, functionChecks1,
+	[pure1 1], firstclasses1, firstclassExams1, syntaxes1,
+		higherOrders1, higherOrders2, higherOrderChecks1,
+	[pure1 2], transparencies1, transparencies2,
+	[pure1 3], whatIsTypes1, whatIsTypes2, whatIsTypeChecks1,
+		staticTypings1, typeFlexibilities1,
+	[pure1 4], lazyEvaluations1, lazyEvaluations2, lazyEvaluationChecks1,
+	summaries1]
 
 titlePage :: Turtle -> IO ()
 titlePage t = writeTitle t title subtitle author
@@ -331,35 +309,37 @@ higherOrder5 t = do
 	dvArrow t
 	text t "他の言語の「構文」が普通の関数となる"
 
-higherOrderCheck1 :: Turtle -> IO ()
+higherOrderChecks1 :: [Turtle -> IO ()]
+higherOrderChecks1 = [
+	higherOrderCheck1, higherOrderCheck2, higherOrderCheck3,
+	higherOrderCheck4, higherOrderCheck5, higherOrderCheck6
+ ]
+
+higherOrderCheck1, higherOrderCheck2, higherOrderCheck3,
+	higherOrderCheck4, higherOrderCheck5, higherOrderCheck6
+	:: Turtle -> IO ()
 higherOrderCheck1 t = do
 	writeTopTitle t "高階関数(練習問題)"
 	semititle t "以下の関数を定義せよ"
-
-higherOrderCheck2 :: Turtle -> IO ()
 higherOrderCheck2 t = text t "与えられた関数を3回適用する関数"
-
-higherOrderCheck3 :: Turtle -> IO ()
 higherOrderCheck3 t = do
 	text t "10を底とした対数を求める関数を返す関数"
 	itext t 1 "(ちなみに、logBase 10 1000 => 3)"
 	text t ""
-
-higherOrderCheck4 :: Turtle -> IO ()
 higherOrderCheck4 t = text t "答え:"
-
-higherOrderCheck5 :: Turtle -> IO ()
 higherOrderCheck5 t = do
 	text t "与えられた関数を3回適用する関数"
 	itext t 1 "threeTimes fun x = fun (fun (fun x))"
-
-higherOrderCheck6 :: Turtle -> IO ()
 higherOrderCheck6 t = do
 	text t "10を底とした対数を求める関数を返す関数"
 	itext t 1 "log10 = \\x -> logBase 10 x"
 
-transparency1, transparency2, transparency3, transparency4, transparency5,
-	transparency6, transparency7, transparency8
+transparencies1 :: [Turtle -> IO ()]
+transparencies1 = [
+	transparency1, transparency2, transparency3, transparency4, transparency5
+ ]
+
+transparency1, transparency2, transparency3, transparency4, transparency5
 	:: Turtle -> IO ()
 transparency1 t = writeTopTitle t "参照透過性とは?"
 transparency2 t = do
@@ -380,6 +360,10 @@ transparency5 t = do
 	itext t 1 "counter.count => 1"
 	itext t 1 "counter.count => 2"
 
+transparencies2 :: [Turtle -> IO ()]
+transparencies2 = [transparency6, transparency7, transparency8]
+
+transparency6, transparency7, transparency8 :: Turtle -> IO ()
 transparency6 t = do
 	writeTopTitle t "参照透過性とは?"
 	text t "Haskellでは同じ入力からは常に同じ出力"
@@ -390,11 +374,9 @@ transparency6 t = do
 	itext t 1 $ "g (f x) == g 3"
 	text t "この場合、f x と 3 は全く同じ物と考えてよい"
 	text t ""
-
 transparency7 t = do
 	semititle t "Haskellでの「関数」とは"
 	text t "動作や手続き?"
-
 transparency8 t = do
 	let v = normalF * 9 / 8
 	setheading t 90
@@ -411,6 +393,12 @@ transparency8 t = do
 	penup t
 	pensize t 1
 	text t "「置き換え規則」である"
+
+whatIsTypes1 :: [Turtle -> IO ()]
+whatIsTypes1 = [
+	whatIsType1, whatIsType2, whatIsType3, whatIsType3_1, whatIsType4,
+	whatIsType4_5, whatIsType5, whatIsType6, whatIsType7
+ ]
 
 whatIsType1, whatIsType2, whatIsType3, whatIsType3_1,
 	whatIsType4, whatIsType4_5,
@@ -431,6 +419,9 @@ whatIsType5 t = text t "例:"
 whatIsType6 t = text t "絶対値 => 数の集合から数の集合への写像"
 whatIsType7 t = text t "文字コードを返す関数 => 文字の集合から数の集合への写像"
 
+whatIsTypes2 :: [Turtle -> IO ()]
+whatIsTypes2 = [whatIsType8, whatIsType9, whatIsType10]
+
 whatIsType8, whatIsType9, whatIsType10 :: Turtle -> IO ()
 whatIsType8 t = do
 	writeTopTitle t "型とは?"
@@ -443,6 +434,12 @@ whatIsType9 t = do
 whatIsType10 t = do
 	semititle t "型の宣言"
 	text t "Haskell では var :: Type のような形で型を宣言する"
+
+whatIsTypeChecks1 :: [Turtle -> IO ()]
+whatIsTypeChecks1 = [
+	whatIsTypeCheck1, whatIsTypeCheck2, whatIsTypeCheck3,
+	whatIsTypeCheck4, whatIsTypeCheck5, whatIsTypeCheck6
+ ]
 
 whatIsTypeCheck1, whatIsTypeCheck2, whatIsTypeCheck3,
 	whatIsTypeCheck4, whatIsTypeCheck5, whatIsTypeCheck6
@@ -458,6 +455,12 @@ whatIsTypeCheck3 t = do
 whatIsTypeCheck4 t = text t "答え"
 whatIsTypeCheck5 t = text t "絶対値を返す関数: abs :: Int -> Int"
 whatIsTypeCheck6 t = text t "文字コードを返す関数: ord :: Char -> Int"
+
+staticTypings1 :: [Turtle -> IO ()]
+staticTypings1 = [
+	staticTyping1, staticTyping2, staticTyping3, staticTyping4,
+	staticTyping5, staticTyping6, staticTyping7, staticTyping8
+ ]
 
 staticTyping1, staticTyping2, staticTyping3, staticTyping4,
 	staticTyping5, staticTyping6, staticTyping7, staticTyping8
@@ -481,6 +484,12 @@ staticTyping8 t = do
 	setx t $ width / 3
 	dvArrowL t 12
 	itext t 2 "楽ちん"
+
+typeFlexibilities1 :: [Turtle -> IO ()]
+typeFlexibilities1 = [
+	typeFlexibility1, typeFlexibility2, typeFlexibility3, typeFlexibility4,
+	typeFlexibility5, typeFlexibility6
+ ]
 
 typeFlexibility1, typeFlexibility2, typeFlexibility3, typeFlexibility4,
 	typeFlexibility5, typeFlexibility6
@@ -509,9 +518,14 @@ typeFlexibility6 t = do
 	text t ""
 	itext t 4 "ということ"
 
+lazyEvaluations1 :: [Turtle -> IO ()]
+lazyEvaluations1 = [
+	lazyEvaluation1, lazyEvaluation2, lazyEvaluation3, lazyEvaluation4,
+	lazyEvaluation5, lazyEvaluation6, lazyEvaluation7
+ ]
+
 lazyEvaluation1, lazyEvaluation2, lazyEvaluation3, lazyEvaluation4,
-	lazyEvaluation5, lazyEvaluation6, lazyEvaluation7, lazyEvaluation8,
-	lazyEvaluation9, lazyEvaluation10, lazyEvaluation11, lazyEvaluation12
+	lazyEvaluation5, lazyEvaluation6, lazyEvaluation7
 	:: Turtle -> IO ()
 lazyEvaluation1 t = writeTopTitle t "遅延性とは?"
 lazyEvaluation2 t = do
@@ -537,6 +551,15 @@ lazyEvaluation6 t = do
 lazyEvaluation7 t = do
 	itext t 1 "fibs = 0 : 1 : zipWith (+) fibs (tail fibs)"
 	itext t 1 "print $ take 100 fibs"
+
+lazyEvaluations2 :: [Turtle -> IO ()]
+lazyEvaluations2 = [
+	lazyEvaluation8, lazyEvaluation9, lazyEvaluation10, lazyEvaluation11,
+	lazyEvaluation12
+ ]
+
+lazyEvaluation8, lazyEvaluation9, lazyEvaluation10, lazyEvaluation11,
+	lazyEvaluation12 :: Turtle -> IO ()
 lazyEvaluation8 t = do
 	writeTopTitle t "遅延性とは?"
 	text t "遅延性という言葉は使われていない"
@@ -555,6 +578,12 @@ lazyEvaluation11 t = do
 lazyEvaluation12 t = do
 	text t "* 正確に言うと"
 	itext t 1 "「遅延評価と弱頭部正規形までの簡約」となるだろう"
+
+lazyEvaluationChecks1 :: [Turtle -> IO ()]
+lazyEvaluationChecks1 = [
+	lazyEvaluationCheck1, lazyEvaluationCheck2, lazyEvaluationCheck3,
+	lazyEvaluationCheck4, lazyEvaluationCheck5, lazyEvaluationCheck6
+ ]
 
 lazyEvaluationCheck1, lazyEvaluationCheck2, lazyEvaluationCheck3,
 	lazyEvaluationCheck4, lazyEvaluationCheck5, lazyEvaluationCheck6
@@ -579,8 +608,12 @@ lazyEvaluationCheck6 t = do
 	itext t 1 "先行性: onesの完全な評価のため値がかえらない"
 	itext t 1 "遅延性: 1が10個はいったリストがかえる"
 
-summary1, summary2, summary3, summary4,
-	summary5, summary6, summary7
+summaries1 :: [Turtle -> IO ()]
+summaries1 = [
+	summary1, summary2, summary3, summary4, summary5, summary6, summary7
+ ]
+
+summary1, summary2, summary3, summary4, summary5, summary6, summary7
 	:: Turtle -> IO ()
 summary1 t = writeTopTitle t "まとめ" >> text t ""
 summary2 t = text t "* 関数とは「置き換え規則」である"
