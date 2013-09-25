@@ -21,9 +21,8 @@ pages = [titlePage] ++
 	functions1 ++ functionChecks1 ++
 	[pure1 1] ++
 	firstclasses1 ++ firstclassExams1 ++ syntaxes1 ++
-	higherOrders1 ++ [
-	higherOrder3, higherOrder4,
-	higherOrder5,
+	higherOrders1 ++ higherOrders2 ++ [
+
 	higherOrderCheck1, higherOrderCheck2, higherOrderCheck3,
 	higherOrderCheck4, higherOrderCheck5, higherOrderCheck6,
 	pure1 2,
@@ -311,7 +310,10 @@ higherOrder2 t = do
 	text t ""
 	text t "ということ"
 
-higherOrder3 :: Turtle -> IO ()
+higherOrders2 :: [Turtle -> IO ()]
+higherOrders2 = [higherOrder3, higherOrder4, higherOrder5]
+
+higherOrder3, higherOrder4, higherOrder5 :: Turtle -> IO ()
 higherOrder3 t = do
 	writeTopTitle t "高階関数"
 	hideturtle t
@@ -320,14 +322,10 @@ higherOrder3 t = do
 	showturtle t
 	text t "何がうれしいの?"
 	text t ""
-
-higherOrder4 :: Turtle -> IO ()
 higherOrder4 t = do
 	text t "* より高レベルな抽象化"
 	itext t 1 "枠組だけを定義することが可能"
 	itext t 1 "例: リストの要素のすべてに何かする"
-
-higherOrder5 :: Turtle -> IO ()
 higherOrder5 t = do
 	setx t $ width / 3
 	dvArrow t
