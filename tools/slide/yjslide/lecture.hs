@@ -1,111 +1,18 @@
 module Main where
 
+import Lecture
 import Graphics.X11.Turtle
-import Text.XML.YJSVG hiding (topleft)
-import Control.Concurrent
-import Control.Monad
-import Control.Applicative
-import Data.IORef
-import Data.Char
-import System.Environment
-import System.IO.Unsafe
-
-st, sp :: Bool
-st = unsafePerformIO $ read <$> readFile "show_turtle.txt"
-sp = unsafePerformIO $ read <$> readFile "show_page.txt"
-
-rt, width, height :: Double
-rt = unsafePerformIO $ read <$> readFile "ratio.txt"
-width = 512 * rt
-height = 375 * rt
-
-fontName :: String
-fontName = "KochiGothic"
-
-biggerF, bigF, semiBigF, normalF :: Double
-biggerF = 36 * rt
-bigF = 24 * rt
-semiBigF = 15 * rt
-normalF = 12 * rt
 
 main :: IO ()
-main = do
-	(bfn, pages', bn) <- (flip fmap getArgs) $ \args -> case args of
-		"-" : m : n : _ -> (Nothing,
-			take (read n - read m + 1) $
-				drop (read m - 1) pages, read m)
-		f : m : n : _ -> (Just f,
-			take (read n - read m + 1) $
-				drop (read m - 1) pages, read m)
-		"-" : n : _ -> (Nothing, drop (read n - 1) pages, read n)
-		f : n : _ -> (Just f, drop (read n - 1) pages, read n)
-		"-" : _ -> (Nothing, pages, 1)
-		f : _ -> (Just f, pages, 1)
-		_ -> (Nothing, pages, 1)
-	pagesRef <- newIORef $ zip (map (mkSVGFileName bfn) [1 .. ]) pages'
-	pageNRef <- newIORef [bn ..]
-	let allN = bn + length pages' - 1
-	f <- openField
---	threadDelay 1000000
-	topleft f
-	n <- newTurtle f
-	hideturtle n
-	penup n
-	goto n (width * 44 / 50) (height * 48 / 50)
-	t <- newTurtle f
-	shape t "turtle"
-	hideturtle t
-	penup t
-	onkeypress f $ \c -> do
-		case c of
-			'q' -> return False
-			' ' -> do
-				ps <- readIORef pagesRef
-				case ps of
-					(fn, p) : ps -> do
-						when sp $ do
-							clear n
-							write n fontName (12 * rt)
-								. show
-								=<< popRef pageNRef
-							forward n (24 * rt)
-							write n fontName (12 * rt) $ "/" ++ show allN
-							backward n (24 * rt)
-						when st $ showturtle t
-						p t
-						sleep t 500
-						hideturtle t
-						svg <- getSVG t
-						case fn of
-							Just f -> writeFile f $
-								showSVG width
-									height svg
-							_ -> return ()
-						modifyIORef pagesRef tail
-						return True
-					_ -> return True
-			_ -> return True
-	waitField f
+main = runLecture pages
 
-popRef :: IORef [a] -> IO a
-popRef ref = do
-	ret <- head <$> readIORef ref
-	modifyIORef ref tail
-	return ret
-
-mkSVGFileName :: Maybe String -> Int -> Maybe String
-mkSVGFileName (Just bfn) n = Just $ bfn ++ addZero (show n) ++ ".svg"
-	where
-	addZero s = replicate (2 - length s) '0' ++ s
-mkSVGFileName _ _ = Nothing
-
-titlePage :: Turtle -> IO ()
-titlePage t = writeTitle t title subtitle author
-
-title, author :: String
+title, subtitle, author :: String
 title = "Haskell入門"
 subtitle = "第1回 Haskellの特徴"
 author = "重城 良国"
+
+picture :: (Double, Double, FilePath)
+picture = (139.5, 171.5, "HaskellBCurry.jpg")
 
 pages :: [Turtle -> IO ()]
 pages = titlePage : whats1 ++ whats2 ++ whats3 ++ [
@@ -117,7 +24,7 @@ pages = titlePage : whats1 ++ whats2 ++ whats3 ++ [
 	functionCheck5, functionCheck6, functionCheck7, functionCheck8,
 	functionCheck10,
 	pure1 1,
-	firstclass1, firstclass2, firstclass3, firstclass4, -- firstclass5,
+	firstclass1, firstclass2, firstclass3, firstclass4,
 	firstclassExam1, firstclassExam2, firstclassExam3,
 	firstclassExam4, firstclassExam5,
 	syntax1, syntax2, syntax3,
@@ -148,6 +55,9 @@ pages = titlePage : whats1 ++ whats2 ++ whats3 ++ [
 	summary1, summary2, summary3, summary4, summary5, summary6, summary7
  ]
 
+titlePage :: Turtle -> IO ()
+titlePage t = writeTitle t title subtitle author
+
 whatTitleStr :: String
 whatTitleStr = "Haskellとは何か?"
 
@@ -155,7 +65,7 @@ whatTitle :: Turtle -> IO ()
 whatTitle t = do
 	flushoff t
 	writeTopTitle t whatTitleStr
-	writeImage t (width * 2 / 3) "HaskellBCurry.jpg"
+	writeImage t (width * 2 / 3) False picture
 	flushon t
 
 whats1 :: [Turtle -> IO ()]
@@ -164,11 +74,8 @@ whats1 = [what1, what2]
 what1, what2 :: Turtle -> IO ()
 what1 t = writeTopTitle t whatTitleStr
 what2 t = do
+	writeImage t (width / 3) True picture
 	setheading t $ - 90
-	forward t $ 10 * rt
-	setx t $ width / 3
-	image t "HaskellBCurry.jpg" (279 * rt / 2) (343 * rt / 2)
-	forward t (343 * rt / 2)
 	text t "Haskell Brooks Curry (1900.9.12 - 1982 9.1)"
 	text t "アメリカの記号論理学者"
 	text t "名前の由来はこの人"
@@ -196,7 +103,7 @@ what3_4 t = do
 	setheading t $ - 90
 	forward t $ normalF * 3 / 2
 	left t 90
-	arrow t $ 12 * rt
+	arrow t $ width / 28
 	sety t y
 	itext t 1 "十分に吟味されたものが次の標準に取り込まれる"
 
@@ -255,7 +162,7 @@ what9 t = do
 
 what10 :: Turtle -> IO ()
 what10 t = do
-	backward t $ 50 * rt
+	backward t $ width / 10
 	dvLArrow t 12
 	text t "概念の本質的な部分をそのまま表現できる"
 	text t ""
@@ -280,20 +187,11 @@ pure1 n t = do
 	speed t "slow"
 	flushon t
 
-withRed :: Turtle -> IO a -> IO a
-withRed t act = do
-	pencolor t "red"
-	r <- act
-	pencolor t "black"
-	return r
-
 function1 :: Turtle -> IO ()
 function1 t = writeTopTitle t "関数とは?"
 function2 :: Turtle -> IO ()
 function2 t = do
-	text t ""
 	text t "0個以上の入力値をひとつの出力値へ変えるルール"
-	goto t (width * 1 / 10) (height * 5 / 10)
 	mkFunGraph t
 
 functionCheck1, functionCheck2, functionCheck3, functionCheck5,
@@ -313,10 +211,11 @@ functionCheck10 t = text t "与えられた文字列を表示する機能: 文�
 
 mkFunGraph :: Turtle -> IO ()
 mkFunGraph t = do
-	write t fontName semiBigF "入力1"
+	goto t (width * 1 / 10) (height * 5 / 10)
+	graphWrite t "入力1"
 	setheading t $ - 90
 	forward t (height * 1 / 5)
-	write t fontName semiBigF "入力2"
+	graphWrite t "入力2"
 	backward t (height * 1 / 5 + semiBigF / 2)
 	left t 90
 	forward t (width * 5 / 40)
@@ -329,47 +228,15 @@ mkFunGraph t = do
 	arrow t (width * 1 / 10)
 	setheading t 0
 	goto t (width * 135 / 364) (height * 2 / 5)
-	pensize t $ 2 * rt
-	pendown t
-	replicateM_ 2 $ do
-		forward t (width * 1 / 4)
-		right t 90
-		forward t (height * 7 / 20)
-		right t 90
-	penup t
-	pensize t $ 1 * rt
+	drawRect t (width / 4) (height * 7 / 20)
 	goto t (width * 13 / 20) (height * 23 / 40)
 	pendown t
 	arrow t (width * 1 / 10)
 	setheading t (- 90)
 	forward t $ semiBigF / 2
 	left t 90
-	forward t (12 * rt)
-	write t fontName semiBigF "出力"
-
-arrow :: Turtle -> Double -> IO ()
-arrow t l = do
-	pendown t
-	pensize t $ 3 * rt
-	forward t l
-	left t 90
-	penup t
-	backward t (6 * rt)
-	beginfill t
-	forward t (12 * rt)
-	right t 120
-	forward t (12 * rt)
-	endfill t
-	pensize t $ 1 * rt
-
-rightArrow :: Turtle -> IO ()
-rightArrow t = do
-	setheading t $ -90
-	forward t $ normalF * 55 / 32
-	left t 90
-	arrow t $ 12 * rt
-	left t 90
-	forward t $ normalF * 55 / 32
+	forward t normalF
+	graphWrite t "出力"
 
 firstclass1 :: Turtle -> IO ()
 firstclass1 t = writeTopTitle t "第一級関数とは?"
@@ -496,22 +363,18 @@ transparency1, transparency2, transparency3, transparency4, transparency5,
 	transparency6, transparency7, transparency8
 	:: Turtle -> IO ()
 transparency1 t = writeTopTitle t "参照透過性とは?"
-
 transparency2 t = do
 	text t "同じ関数を同じ入力で呼び出せば"
 	itext t 1 "出力は常に同じであるという性質"
 	text t ""
-
 transparency3 t = do
 	text t "参照透過ではない例"
-
 transparency4 t = do
 	itext t 1 "C 言語"
 	itext t 1 "counter() => 0"
 	itext t 1 "counter() => 1"
 	itext t 1 "counter() => 2"
 	itext t 1 ""
-
 transparency5 t = do
 	itext t 1 "Ruby"
 	itext t 1 "counter.count => 0"
@@ -519,7 +382,7 @@ transparency5 t = do
 	itext t 1 "counter.count => 2"
 
 transparency6 t = do
-	silentundo t $ if st then 90 else 90
+	writeTopTitle t "参照透過性とは?"
 	text t "Haskellでは同じ入力からは常に同じ出力"
 	setx t $ width / 3
 	dvArrow t
@@ -569,9 +432,9 @@ whatIsType5 t = text t "例:"
 whatIsType6 t = text t "絶対値 => 数の集合から数の集合への写像"
 whatIsType7 t = text t "文字コードを返す関数 => 文字の集合から数の集合への写像"
 
-whatIsType8, whatIsType9 :: Turtle -> IO ()
+whatIsType8, whatIsType9, whatIsType10 :: Turtle -> IO ()
 whatIsType8 t = do
-	silentundo t $ if st then 94 else 85
+	writeTopTitle t "型とは?"
 	semititle t "関数の型"
 whatIsType9 t = do
 	text t "関数にも型がある"
@@ -583,7 +446,7 @@ whatIsType10 t = do
 	text t "Haskell では var :: Type のような形で型を宣言する"
 
 whatIsTypeCheck1, whatIsTypeCheck2, whatIsTypeCheck3,
-	whatIsTypeCheck4, whatIsTypeCheck5
+	whatIsTypeCheck4, whatIsTypeCheck5, whatIsTypeCheck6
 	:: Turtle -> IO ()
 whatIsTypeCheck1 t = do
 	writeTopTitle t "型とは?(練習問題)"
@@ -620,7 +483,8 @@ staticTyping8 t = do
 	dvArrowL t 12
 	itext t 2 "楽ちん"
 
-typeFlexibility1, typeFlexibility2, typeFlexibility3, typeFlexibility4
+typeFlexibility1, typeFlexibility2, typeFlexibility3, typeFlexibility4,
+	typeFlexibility5, typeFlexibility6
 	:: Turtle -> IO ()
 typeFlexibility1 t = writeTopTitle t "型の柔軟性"
 typeFlexibility2 t = text t "Haskellでは柔軟な型を持つ関数は作れないの?"
@@ -629,7 +493,7 @@ typeFlexibility3 t = do
 	setheading t $ -90
 	forward t $ normalF * 13 / 8
 	left t 90
-	arrow t $ 12 * rt
+	arrow t $ width / 35
 	left t 90
 	forward t $ normalF * 13 / 8
 	itext t 1 "柔軟性の範囲を正確に決めておけば良い"
@@ -726,156 +590,3 @@ summary4 t = text t "* 高階関数によって枠組の抽象化が可能"
 summary5 t = text t "* 参照透過性は上記「関数」の性質に本質的"
 summary6 t = text t "* 静的型付けは値の範囲が決まるので楽"
 summary7 t = text t "* 遅延評価によって問題を自然に切り分けられる"
-
-writeImage :: Turtle -> Double -> FilePath -> IO ()
-writeImage t x fp = do
-	hideturtle t
-	speed t "fastest"
-	goto t (width * 2 / 3) (68.5 * rt)
-	position t >>= print
-	image t fp (279 * rt / 2) (343 * rt / 2)
-	setx t $ width / 8
-	speed t "slow"
-	showturtle t
-
-dvArrowL :: Turtle -> Double -> IO ()
-dvArrowL t l = do
-	setheading t $ -90
-	forward t $ 12 * rt
-	pendown t
-	forward t $ l * rt
-	penup t
-	backward t $ l * rt
-	left t 90
-	forward t $ 6 * rt
-	right t 90
-	pendown t
-	forward t $ l * rt
-	setheading t 0
-	forward t $ 3 * rt
-	beginfill t
-	backward t $ 12 * rt
-	setheading t $ -60
-	forward t $ 12 * rt
-	endfill t
-	penup t
-
-dvArrow :: Turtle -> IO ()
-dvArrow t = do
-	setheading t $ -90
-	forward t $ 12 * rt
-	pendown t
-	forward t $ 24 * rt
-	penup t
-	backward t $ 24 * rt
-	left t 90
-	forward t $ 6 * rt
-	right t 90
-	pendown t
-	forward t $ 24 * rt
-	setheading t 0
-	forward t $ 3 * rt
-	beginfill t
-	backward t $ 12 * rt
-	setheading t $ -60
-	forward t $ 12 * rt
-	endfill t
-	penup t
-
-dvLArrow :: Turtle -> Double -> IO ()
-dvLArrow t l = do
-	setheading t $ -90
-	forward t $ 12 * rt
-	pendown t
-	forward t $ l * rt
-	penup t
-	backward t $ l * rt
-	left t 90
-	forward t $ 6 * rt
-	right t 90
-	pendown t
-	forward t $ l * rt
-	setheading t 0
-	forward t $ 3 * rt
-	beginfill t
-	backward t $ 12 * rt
-	setheading t $ -60
-	forward t $ 12 * rt
-	endfill t
-	penup t
-
-myLength :: String -> Double
-myLength "" = 0
-myLength (c : cs)
-	| isAscii c = 0.7 + myLength cs
-	| otherwise = 1.4 + myLength cs
-
-semititle :: Turtle -> String -> IO ()
-semititle t txt = do
-	setheading t $ - 90
-	forward t $ semiBigF * 2
-	setheading t 0
-	setx t $ width / 12
-	write t fontName semiBigF txt
-	forward t $ semiBigF * myLength txt
-
-text :: Turtle -> String -> IO ()
-text t txt = do
-	setheading t $ - 90
-	forward t $ normalF * 2
-	setheading t 0
-	setx t $ width / 8
-	write t fontName normalF txt
-	forward t $ normalF * myLength txt
-
-itext :: Turtle -> Double -> String -> IO ()
-itext t i txt = do
-	setheading t $ - 90
-	forward t $ normalF * 2
-	setheading t 0
-	setx t $ width / 8 + i * normalF * 4
-	write t fontName normalF txt
-	forward t $ normalF * myLength txt
-
-writeTopTitle :: Turtle -> String -> IO ()
-writeTopTitle t ttl = do
-	let sz = bigF
-	hideturtle t
-	clear t
-	goto t ((width - sz * myLength ttl) / 2) ((height - sz) / 6)
-	write t fontName sz ttl
-	forward t $ sz * myLength ttl
-	setx t $ width / 8
-	showturtle t
-
-writeNextTitle :: Turtle -> String -> IO ()
-writeNextTitle t ttl = do
-	let sz = bigF
-	setheading t $ -90
-	forward t $ sz * 2
-	left t 90
-	setx t $ (width - sz * myLength ttl) / 2
-	write t fontName sz ttl
-	forward t $ sz * myLength ttl
-
-writeTitle :: Turtle -> String -> String -> String -> IO ()
-writeTitle t ttl subTtl at = do
-	let	sz = biggerF
-		szn = normalF
-	hideturtle t
-	speed t "fastest"
-	goto t ((width - sz * myLength ttl) / 2) ((height - sz) / 2)
-	write t fontName sz ttl
-	forward t $ sz * myLength ttl
-	goto t ((width - szn * myLength subTtl) / 2) ((height - sz) / 2 + szn * 2)
-	write t fontName szn subTtl
-	forward t $ szn * myLength subTtl
-	writeRB t at
-	speed t "slow"
-
-writeRB :: Turtle -> String -> IO ()
-writeRB t str = do
-	let sz = normalF
-	goto t (width * 3 / 4) (height * 7 / 8)
-	write t fontName sz str
-	forward t $ width * 3 / 16
