@@ -110,7 +110,6 @@ writeImage t x bot (w, h, fp) = do
 	hideturtle t
 	speed t "fastest"
 	goto t x (68.5 * rt)
-	position t >>= print
 	image t fp (w * rt) (h * rt)
 	speed t "slow"
 	showturtle t

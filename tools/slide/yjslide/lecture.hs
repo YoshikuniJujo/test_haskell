@@ -15,10 +15,8 @@ picture :: (Double, Double, FilePath)
 picture = (139.5, 171.5, "HaskellBCurry.jpg")
 
 pages :: [Turtle -> IO ()]
-pages = titlePage : whats1 ++ whats2 ++ whats3 ++ [
-	what7_6, what7_7, what7_8, what7_9, what8_1, what8_2, what8_3,
-	what9, what10, what11, what12, what13,
-	pure1 0,
+pages = titlePage : whats1 ++ whats2 ++ whats3 ++ whats4 ++ whats5 ++
+	[pure1 0] ++ [
 	function1, function2,
 	functionCheck1, functionCheck2, functionCheck3,
 	functionCheck5, functionCheck6, functionCheck7, functionCheck8,
@@ -126,6 +124,9 @@ what7_5 t = do
 	itext t 1 "レゴブロックを使うのにひとつひとつのブロックの"
 	itext t 1 "作りかたを知る必要はない"
 
+whats4 :: [Turtle -> IO ()]
+whats4 = [what7_6, what7_7, what7_8, what7_9, what8_1, what8_2, what8_3]
+
 what7_6, what7_7, what7_8, what7_9, what8_1, what8_2, what8_3
 	:: Turtle -> IO ()
 what7_6 t = whatTitle t >> semititle t "何ができるの?"
@@ -150,7 +151,10 @@ what8_3 t = do
 	text t "* プログラミングに本質的な様々な概念を"
 	itext t 1 "新たな光のもとに別の視点から見ることができる"
 
-what9 :: Turtle -> IO ()
+whats5 :: [Turtle -> IO ()]
+whats5 = [what9, what10, what11, what12, what13]
+
+what9, what10, what11, what12, what13 :: Turtle -> IO ()
 what9 t = do
 	writeTopTitle t "Haskellの特徴"
 	text t "純粋関数型言語であり"
@@ -159,15 +163,11 @@ what9 t = do
 	itext t 1 "* 静的型付け"
 	itext t 1 "* 遅延性"
 	text t "という特徴を持つ"
-
-what10 :: Turtle -> IO ()
 what10 t = do
 	backward t $ width / 10
 	dvLArrow t 12
 	text t "概念の本質的な部分をそのまま表現できる"
 	text t ""
-
-what11, what12, what13 :: Turtle -> IO ()
 what11 t = text t "例: 小さい方から10個の素数が欲しい"
 what12 t = text t "=> すべての素数を求める"
 what13 t = text t "-> 小さい方から10個取り出す"
