@@ -520,19 +520,23 @@ typeFlexibility6 t = do
 
 lazyEvaluations1 :: [Turtle -> IO ()]
 lazyEvaluations1 = [
-	lazyEvaluation1, lazyEvaluation2, lazyEvaluation3, lazyEvaluation4,
-	lazyEvaluation5, lazyEvaluation6, lazyEvaluation7
+	lazyEvaluation1, lazyEvaluation2, lazyEvaluation2_1, lazyEvaluation2_2,
+	lazyEvaluation3, lazyEvaluation4, lazyEvaluation5, lazyEvaluation6,
+	lazyEvaluation7
  ]
 
-lazyEvaluation1, lazyEvaluation2, lazyEvaluation3, lazyEvaluation4,
+lazyEvaluation1, lazyEvaluation2, lazyEvaluation2_1, lazyEvaluation2_2,
+	lazyEvaluation3, lazyEvaluation4,
 	lazyEvaluation5, lazyEvaluation6, lazyEvaluation7
 	:: Turtle -> IO ()
 lazyEvaluation1 t = writeTopTitle t "遅延性とは?"
 lazyEvaluation2 t = do
 	text t "使わない構造は展開されないということ"
 	text t ""
+lazyEvaluation2_1 t = do
 	text t "* 引数部分に無限ループがあったとしても"
 	itext t 1 "その引数が使われていなければ問題ない"
+lazyEvaluation2_2 t = do
 	text t "* 無限リストを使うこともできる"
 	text t ""
 lazyEvaluation3 t = do
