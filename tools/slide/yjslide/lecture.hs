@@ -15,17 +15,12 @@ picture :: (Double, Double, FilePath)
 picture = (139.5, 171.5, "HaskellBCurry.jpg")
 
 pages :: [Turtle -> IO ()]
-pages = titlePage : whats1 ++ whats2 ++ whats3 ++ whats4 ++ whats5 ++
-	[pure1 0] ++ [
-	function1, function2,
-	functionCheck1, functionCheck2, functionCheck3,
-	functionCheck5, functionCheck6, functionCheck7, functionCheck8,
-	functionCheck10,
-	pure1 1,
-	firstclass1, firstclass2, firstclass3, firstclass4,
-	firstclassExam1, firstclassExam2, firstclassExam3,
-	firstclassExam4, firstclassExam5,
-	syntax1, syntax2, syntax3,
+pages = [titlePage] ++
+	whats1 ++ whats2 ++ whats3 ++ whats4 ++ whats5 ++
+	[pure1 0] ++
+	functions1 ++ functionChecks1 ++
+	[pure1 1] ++
+	firstclasses1 ++ firstclassExams1 ++ syntaxes1 ++ [
 	higherOrder1, higherOrder2, higherOrder3, higherOrder4,
 	higherOrder5,
 	higherOrderCheck1, higherOrderCheck2, higherOrderCheck3,
@@ -187,30 +182,13 @@ pure1 n t = do
 	speed t "slow"
 	flushon t
 
-function1 :: Turtle -> IO ()
+functions1 :: [Turtle -> IO ()]
+functions1 = [function1, function2]
+
+function1, function2 :: Turtle -> IO ()
 function1 t = writeTopTitle t "関数とは?"
-function2 :: Turtle -> IO ()
 function2 t = do
 	text t "0個以上の入力値をひとつの出力値へ変えるルール"
-	mkFunGraph t
-
-functionCheck1, functionCheck2, functionCheck3, functionCheck5,
-	functionCheck6, functionCheck7, functionCheck8, functionCheck10
-	:: Turtle -> IO ()
-functionCheck1 t = do
-	writeTopTitle t "関数とは?(練習問題)"
-	semititle t "以下の「関数」の入力と出力を述べよ"
-
-functionCheck2 t = text t "足し算"
-functionCheck3 t = text t "翻訳"
-functionCheck5 t = text t "与えられた文字列を表示する機能"
-functionCheck6 t = text t "" >> text t "答え"
-functionCheck7 t = text t "足し算: 2つの数 -> 数"
-functionCheck8 t = text t "翻訳: ある言語の文 -> 別の言語の文"
-functionCheck10 t = text t "与えられた文字列を表示する機能: 文字列 -> 動作"
-
-mkFunGraph :: Turtle -> IO ()
-mkFunGraph t = do
 	goto t (width * 1 / 10) (height * 5 / 10)
 	graphWrite t "入力1"
 	setheading t $ - 90
@@ -238,17 +216,32 @@ mkFunGraph t = do
 	forward t normalF
 	graphWrite t "出力"
 
-firstclass1 :: Turtle -> IO ()
+functionChecks1 :: [Turtle -> IO ()]
+functionChecks1 = [
+	functionCheck1, functionCheck2, functionCheck3, functionCheck5,
+	functionCheck6, functionCheck7, functionCheck8, functionCheck10]
+
+functionCheck1, functionCheck2, functionCheck3, functionCheck5,
+	functionCheck6, functionCheck7, functionCheck8, functionCheck10
+	:: Turtle -> IO ()
+functionCheck1 t = do
+	writeTopTitle t "関数とは?(練習問題)"
+	semititle t "以下の「関数」の入力と出力を述べよ"
+functionCheck2 t = text t "足し算"
+functionCheck3 t = text t "翻訳"
+functionCheck5 t = text t "与えられた文字列を表示する機能"
+functionCheck6 t = text t "" >> text t "答え"
+functionCheck7 t = text t "足し算: 2つの数 -> 数"
+functionCheck8 t = text t "翻訳: ある言語の文 -> 別の言語の文"
+functionCheck10 t = text t "与えられた文字列を表示する機能: 文字列 -> 動作"
+
+firstclasses1 :: [Turtle -> IO ()]
+firstclasses1 = [firstclass1, firstclass2, firstclass3, firstclass4]
+
+firstclass1, firstclass2, firstclass3, firstclass4 :: Turtle -> IO ()
 firstclass1 t = writeTopTitle t "第一級関数とは?"
-firstclass2 :: Turtle -> IO ()
-firstclass2 t = do
-	text t "関数が第一級オブジェクトであるということ"
-
-firstclass3 :: Turtle -> IO ()
-firstclass3 t = do
-	writeNextTitle t "第一級オブジェクトとは?"
-
-firstclass4 :: Turtle -> IO ()
+firstclass2 t = text t "関数が第一級オブジェクトであるということ"
+firstclass3 t = writeNextTitle t "第一級オブジェクトとは?"
 firstclass4 t = do
 	text t "* リテラルとして表現できる"
 	text t "* 変数に格納できる"
@@ -256,31 +249,33 @@ firstclass4 t = do
 	text t "* 関数の引数になれる"
 	text t "* 関数の返り値になれる"
 
+firstclassExams1 :: [Turtle -> IO ()]
+firstclassExams1 = [firstclassExam1, firstclassExam2, firstclassExam3,
+	firstclassExam4, firstclassExam5]
+
 firstclassExam1, firstclassExam2, firstclassExam3, firstclassExam4,
 	firstclassExam5 :: Turtle -> IO ()
-
 firstclassExam1 t = do
-	silentundo t 51
+	writeTopTitle t "第一級関数とは?"
 	text t "* リテラルとして表現できる"
 	itext t 1 "\\x -> x * x"
-
 firstclassExam2 t = do
 	text t "* 変数に格納できる"
 	itext t 1 "square = \\x -> x * x"
-
 firstclassExam3 t = do
 	text t "* データ構造に格納できる"
 	itext t 1 "[\\x -> x * x]"
-
 firstclassExam4 t = do
 	text t "* 関数の引数になれる"
 	itext t 1 "twice fun x = fun (fun x)"
 	itext t 1 "twice sqrt 9 => 1.7320508075688772"
-
 firstclassExam5 t = do
 	text t "* 関数の返り値になれる"
 	itext t 1 "addN n = \\x -> x + n"
 	itext t 1 "(addN 3) 8 => 11"
+
+syntaxes1 :: [Turtle -> IO ()]
+syntaxes1 = [syntax1, syntax2, syntax3]
 
 syntax1, syntax2, syntax3 :: Turtle -> IO ()
 syntax1 t = do
