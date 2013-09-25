@@ -20,8 +20,9 @@ pages = [titlePage] ++
 	[pure1 0] ++
 	functions1 ++ functionChecks1 ++
 	[pure1 1] ++
-	firstclasses1 ++ firstclassExams1 ++ syntaxes1 ++ [
-	higherOrder1, higherOrder2, higherOrder3, higherOrder4,
+	firstclasses1 ++ firstclassExams1 ++ syntaxes1 ++
+	higherOrders1 ++ [
+	higherOrder3, higherOrder4,
 	higherOrder5,
 	higherOrderCheck1, higherOrderCheck2, higherOrderCheck3,
 	higherOrderCheck4, higherOrderCheck5, higherOrderCheck6,
@@ -293,12 +294,13 @@ syntax3 t = do
 	text t "(注2) 関数適用の結果を`=> value'のような"
 	itext t 1 "形で示すが、これはHaskellの構文ではない。"
 
-higherOrder1 :: Turtle -> IO ()
+higherOrders1 :: [Turtle -> IO ()]
+higherOrders1 = [higherOrder1, higherOrder2]
+
+higherOrder1, higherOrder2 :: Turtle -> IO ()
 higherOrder1 t = do
 	writeTopTitle t "高階関数"
 	text t "高階関数とは引数または返り値が関数であるような関数"
-
-higherOrder2 :: Turtle -> IO ()
 higherOrder2 t = do
 	text t "つまり"
 	text t ""
@@ -311,7 +313,11 @@ higherOrder2 t = do
 
 higherOrder3 :: Turtle -> IO ()
 higherOrder3 t = do
-	silentundo t 55
+	writeTopTitle t "高階関数"
+	hideturtle t
+	text t "高階関数とは引数または返り値が関数であるような関数"
+	text t ""
+	showturtle t
 	text t "何がうれしいの?"
 	text t ""
 
