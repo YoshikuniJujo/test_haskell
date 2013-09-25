@@ -100,17 +100,15 @@ mkSVGFileName (Just bfn) n = Just $ bfn ++ addZero (show n) ++ ".svg"
 mkSVGFileName _ _ = Nothing
 
 titlePage :: Turtle -> IO ()
-titlePage t = do
-	writeTitle t title "第1回 Haskellの特徴"
-	writeRB t author
+titlePage t = writeTitle t title subtitle author
 
 title, author :: String
 title = "Haskell入門"
+subtitle = "第1回 Haskellの特徴"
 author = "重城 良国"
 
 pages :: [Turtle -> IO ()]
-pages = [
-	titlePage, what1, what2, what3, what4, what5, what6, what7, what7_5,
+pages = titlePage : whats1 ++ whats2 ++ whats3 ++ [
 	what7_6, what7_7, what7_8, what7_9, what8_1, what8_2, what8_3,
 	what9, what10, what11, what12, what13,
 	pure1 0,
@@ -150,12 +148,21 @@ pages = [
 	summary1, summary2, summary3, summary4, summary5, summary6, summary7
  ]
 
-what1 :: Turtle -> IO ()
-what1 t = do
-	clear t
-	writeTopTitle t "Haskellとは何か?"
+whatTitleStr :: String
+whatTitleStr = "Haskellとは何か?"
 
-what2 :: Turtle -> IO ()
+whatTitle :: Turtle -> IO ()
+whatTitle t = do
+	flushoff t
+	writeTopTitle t whatTitleStr
+	writeImage t (width * 2 / 3) "HaskellBCurry.jpg"
+	flushon t
+
+whats1 :: [Turtle -> IO ()]
+whats1 = [what1, what2]
+
+what1, what2 :: Turtle -> IO ()
+what1 t = writeTopTitle t whatTitleStr
 what2 t = do
 	setheading t $ - 90
 	forward t $ 10 * rt
@@ -166,19 +173,21 @@ what2 t = do
 	text t "アメリカの記号論理学者"
 	text t "名前の由来はこの人"
 
-what3 :: Turtle -> IO ()
-what3 t = do
-	silentundo t 23
-	setx t $ width * 2 / 3
-	image t "HaskellBCurry.jpg" (279 * rt / 2) (343 * rt / 2)
-	text t "遅延評価する関数型言語の乱立"
+whats2 :: [Turtle -> IO ()]
+whats2 = [what3_1, what3_2, what3_3, what3_4]
+
+what3_1, what3_2, what3_3, what3_4 :: Turtle -> IO ()
+what3_1 t = whatTitle t >> text t "遅延評価する関数型言語の乱立"
+what3_2 t = do
 	setx t $ width / 3
 	dvLArrow t 12
 	text t "1990年 標準としてのHaskell 1.0"
+what3_3 t = do
 	setx t $ width / 3
 	dvLArrow t 12
 	text t "Haskell 98、Haskell'、Haskell 2010"
-	itext t 4 "と進化した"
+	itext t 4 "と進化"
+what3_4 t = do
 	setx t $ width / 3
 	dvLArrow t 12
 	text t "ghc(代表的な処理系)内での拡張機能として進化は続く"
@@ -191,80 +200,52 @@ what3 t = do
 	sety t y
 	itext t 1 "十分に吟味されたものが次の標準に取り込まれる"
 
-what4 :: Turtle -> IO ()
-what4 t = do
-	silentundo t 115
-	text t "研究者の努力の結晶"
-
-what5 :: Turtle -> IO ()
+whats3 :: [Turtle -> IO ()]
+whats3 = [what4, what5, what6, what7, what7_5]
+what4, what5, what6, what7, what7_5 :: Turtle -> IO ()
+what4 t = whatTitle t >> text t "研究者の努力の結晶"
 what5 t = do
 	setx t $ width / 3
 	dvLArrow t 12
 	text t "Haskellを学ぶということは"
 	itext t 1 "彼らの成果を刈り取ること"
 	text t ""
-
-what6 :: Turtle -> IO ()
-what6 t = do
-	text t "難しい理論の理解が必要?"
-
-what7 :: Turtle -> IO ()
+what6 t = text t "難しい理論の理解が必要?"
 what7 t = do
 	setx t $ width / 3
 	dvLArrow t 12
 	text t "難しい理論は「利用者が簡単に使う」ためにある"
-
-what7_5 :: Turtle -> IO ()
 what7_5 t = do
 	itext t 1 "レゴブロックを使うのにひとつひとつのブロックの"
 	itext t 1 "作りかたを知る必要はない"
 
-what7_6 :: Turtle -> IO ()
-what7_6 t = do
-	silentundo t $ if st then 103 else 97
-	semititle t "何ができるの?"
-
-what7_7 :: Turtle -> IO ()
-what7_7 t = do
-	text t "* C言語にできることは何でも"
-
-what7_8 :: Turtle -> IO ()
+what7_6, what7_7, what7_8, what7_9, what8_1, what8_2, what8_3
+	:: Turtle -> IO ()
+what7_6 t = whatTitle t >> semititle t "何ができるの?"
+what7_7 t = text t "* C言語にできることは何でも"
 what7_8 t = do
 	itext t 0.5 "FFIという機能でCの関数が使える"
 	setheading t $ -90
 	forward t $ normalF * 13 / 8
 	left t 90
 	setx t $ width / 8
-
-what7_9 :: Turtle -> IO ()
 what7_9 t = do
 	arrow t $ width / 20
 	left t 90
 	forward t $ normalF * 13 / 8
 	itext t 1 "実用的な言語"
 	text t ""
-
-what8_1 :: Turtle -> IO ()
-what8_1 t = do
-	semititle t "他の言語を使い続けるとしても"
-
-what8_2 :: Turtle -> IO ()
+what8_1 t = semititle t "他の言語を使い続けるとしても"
 what8_2 t = do
 	text t "* Haskellを学ぶことによって"
 	itext t 1 "得られる様々な抽象化の手法は使える"
-
-what8_3 :: Turtle -> IO ()
 what8_3 t = do
 	text t "* プログラミングに本質的な様々な概念を"
 	itext t 1 "新たな光のもとに別の視点から見ることができる"
 
 what9 :: Turtle -> IO ()
 what9 t = do
---	silentundo t $ if st then 100 else 91
---	silentundo t $ if st then 5 else 4
-	clear t
 	writeTopTitle t "Haskellの特徴"
-	setx t $ width * 2 / 3
 	text t "純粋関数型言語であり"
 	itext t 1 "* 第一級関数"
 	itext t 1 "* 参照透過性"
@@ -290,11 +271,13 @@ pure1 n t = do
 	hideturtle t
 	clear t
 	writeTopTitle t "Haskellの特徴"
+	speed t "fastest"
 	(if n == 0 then withRed t else id) $ semititle t "純粋関数型言語"
 	(if n == 1 then withRed t else id) $ semititle t "* 第一級関数"
 	(if n == 2 then withRed t else id) $ semititle t "* 参照透過性"
 	(if n == 3 then withRed t else id) $ semititle t "* 静的型付け"
 	(if n == 4 then withRed t else id) $ semititle t "* 遅延性"
+	speed t "slow"
 	flushon t
 
 withRed :: Turtle -> IO a -> IO a
@@ -305,10 +288,7 @@ withRed t act = do
 	return r
 
 function1 :: Turtle -> IO ()
-function1 t = do
-	clear t
-	writeTopTitle t "関数とは?"
-
+function1 t = writeTopTitle t "関数とは?"
 function2 :: Turtle -> IO ()
 function2 t = do
 	text t ""
@@ -320,7 +300,6 @@ functionCheck1, functionCheck2, functionCheck3, functionCheck5,
 	functionCheck6, functionCheck7, functionCheck8, functionCheck10
 	:: Turtle -> IO ()
 functionCheck1 t = do
-	clear t
 	writeTopTitle t "関数とは?(練習問題)"
 	semititle t "以下の「関数」の入力と出力を述べよ"
 
@@ -393,10 +372,7 @@ rightArrow t = do
 	forward t $ normalF * 55 / 32
 
 firstclass1 :: Turtle -> IO ()
-firstclass1 t = do
-	clear t
-	writeTopTitle t "第一級関数とは?"
-
+firstclass1 t = writeTopTitle t "第一級関数とは?"
 firstclass2 :: Turtle -> IO ()
 firstclass2 t = do
 	text t "関数が第一級オブジェクトであるということ"
@@ -441,7 +417,6 @@ firstclassExam5 t = do
 
 syntax1, syntax2, syntax3 :: Turtle -> IO ()
 syntax1 t = do
-	clear t
 	writeTopTitle t "ここまでに出てきた構文"
 	text t "* 関数リテラル: \\parm -> expression"
 	text t "* リストリテラル: [expression1, expression2, ... ]"
@@ -450,15 +425,14 @@ syntax1 t = do
 	text t "* 関数適用: fun arg1 arg2"
 	text t ""
 syntax2 t = do
-	text t "(注1) 変数の定義と"
-	itext t 1 "0個の引数を取る関数の定義とは同じこと"
+	text t "(注1) 変数の定義と0個の引数を取る関数の定義"
+	itext t 1 "とは同じこと"
 syntax3 t = do
 	text t "(注2) 関数適用の結果を`=> value'のような"
 	itext t 1 "形で示すが、これはHaskellの構文ではない。"
 
 higherOrder1 :: Turtle -> IO ()
 higherOrder1 t = do
-	clear t
 	writeTopTitle t "高階関数"
 	text t "高階関数とは引数または返り値が関数であるような関数"
 
@@ -493,7 +467,6 @@ higherOrder5 t = do
 
 higherOrderCheck1 :: Turtle -> IO ()
 higherOrderCheck1 t = do
-	clear t
 	writeTopTitle t "高階関数(練習問題)"
 	semititle t "以下の関数を定義せよ"
 
@@ -522,9 +495,7 @@ higherOrderCheck6 t = do
 transparency1, transparency2, transparency3, transparency4, transparency5,
 	transparency6, transparency7, transparency8
 	:: Turtle -> IO ()
-transparency1 t = do
-	clear t
-	writeTopTitle t "参照透過性とは?"
+transparency1 t = writeTopTitle t "参照透過性とは?"
 
 transparency2 t = do
 	text t "同じ関数を同じ入力で呼び出せば"
@@ -582,7 +553,7 @@ transparency8 t = do
 whatIsType1, whatIsType2, whatIsType3, whatIsType3_1,
 	whatIsType4, whatIsType4_5,
 	whatIsType5, whatIsType6, whatIsType7 :: Turtle -> IO ()
-whatIsType1 t = clear t >> writeTopTitle t "型とは?"
+whatIsType1 t = writeTopTitle t "型とは?"
 whatIsType2 t = semititle t "値の集合"
 whatIsType3 t = do
 	text t "Int: 1, 2, 3, ..."
@@ -615,7 +586,6 @@ whatIsTypeCheck1, whatIsTypeCheck2, whatIsTypeCheck3,
 	whatIsTypeCheck4, whatIsTypeCheck5
 	:: Turtle -> IO ()
 whatIsTypeCheck1 t = do
-	clear t
 	writeTopTitle t "型とは?(練習問題)"
 	text t "以下の関数の型を Haskell で宣言せよ"
 	text t ""
@@ -631,7 +601,6 @@ staticTyping1, staticTyping2, staticTyping3, staticTyping4,
 	staticTyping5, staticTyping6, staticTyping7, staticTyping8
 	:: Turtle -> IO ()
 staticTyping1 t = do
-	clear t
 	writeTopTitle t "静的型付けとは?"
 staticTyping2 t = semititle t "動的型付けとは?"
 staticTyping3 t = do
@@ -653,11 +622,8 @@ staticTyping8 t = do
 
 typeFlexibility1, typeFlexibility2, typeFlexibility3, typeFlexibility4
 	:: Turtle -> IO ()
-typeFlexibility1 t = do
-	clear t
-	writeTopTitle t "型の柔軟性"
-typeFlexibility2 t = do
-	text t "Haskellでは柔軟な型を持つ関数は作れないの?"
+typeFlexibility1 t = writeTopTitle t "型の柔軟性"
+typeFlexibility2 t = text t "Haskellでは柔軟な型を持つ関数は作れないの?"
 typeFlexibility3 t = do
 	setx t $ width / 6
 	setheading t $ -90
@@ -684,9 +650,7 @@ lazyEvaluation1, lazyEvaluation2, lazyEvaluation3, lazyEvaluation4,
 	lazyEvaluation5, lazyEvaluation6, lazyEvaluation7, lazyEvaluation8,
 	lazyEvaluation9, lazyEvaluation10, lazyEvaluation11, lazyEvaluation12
 	:: Turtle -> IO ()
-lazyEvaluation1 t = do
-	clear t
-	writeTopTitle t "遅延性とは?"
+lazyEvaluation1 t = writeTopTitle t "遅延性とは?"
 lazyEvaluation2 t = do
 	text t "使わない構造は展開されないということ"
 	text t ""
@@ -711,10 +675,7 @@ lazyEvaluation7 t = do
 	itext t 1 "fibs = 0 : 1 : zipWith (+) fibs (tail fibs)"
 	itext t 1 "print $ take 100 fibs"
 lazyEvaluation8 t = do
-	hideturtle t
-	clear t
 	writeTopTitle t "遅延性とは?"
-	showturtle t
 	text t "遅延性という言葉は使われていない"
 	setx t $ width / 7
 	rightArrow t
@@ -736,10 +697,7 @@ lazyEvaluationCheck1, lazyEvaluationCheck2, lazyEvaluationCheck3,
 	lazyEvaluationCheck4, lazyEvaluationCheck5, lazyEvaluationCheck6
 	:: Turtle -> IO ()
 lazyEvaluationCheck1 t =  do
-	hideturtle t
-	clear t
 	writeTopTitle t "遅延性とは?(練習問題)"
-	showturtle t
 	text t "以下の例について先行性と遅延性の"
 	itext t 1 "それぞれについてどうなるか答えよ"
 	text t ""
@@ -761,18 +719,24 @@ lazyEvaluationCheck6 t = do
 summary1, summary2, summary3, summary4,
 	summary5, summary6, summary7
 	:: Turtle -> IO ()
-summary1 t = do
-	hideturtle t
-	clear t
-	writeTopTitle t "まとめ"
-	text t ""
-	showturtle t
+summary1 t = writeTopTitle t "まとめ" >> text t ""
 summary2 t = text t "* 関数とは「置き換え規則」である"
 summary3 t = text t "* 型は入力と出力の値の範囲を示す"
 summary4 t = text t "* 高階関数によって枠組の抽象化が可能"
 summary5 t = text t "* 参照透過性は上記「関数」の性質に本質的"
 summary6 t = text t "* 静的型付けは値の範囲が決まるので楽"
-summary7 t = text t "* 遅延評価によって問題を自然に決り分けられる"
+summary7 t = text t "* 遅延評価によって問題を自然に切り分けられる"
+
+writeImage :: Turtle -> Double -> FilePath -> IO ()
+writeImage t x fp = do
+	hideturtle t
+	speed t "fastest"
+	goto t (width * 2 / 3) (68.5 * rt)
+	position t >>= print
+	image t fp (279 * rt / 2) (343 * rt / 2)
+	setx t $ width / 8
+	speed t "slow"
+	showturtle t
 
 dvArrowL :: Turtle -> Double -> IO ()
 dvArrowL t l = do
@@ -876,9 +840,13 @@ itext t i txt = do
 writeTopTitle :: Turtle -> String -> IO ()
 writeTopTitle t ttl = do
 	let sz = bigF
+	hideturtle t
+	clear t
 	goto t ((width - sz * myLength ttl) / 2) ((height - sz) / 6)
 	write t fontName sz ttl
 	forward t $ sz * myLength ttl
+	setx t $ width / 8
+	showturtle t
 
 writeNextTitle :: Turtle -> String -> IO ()
 writeNextTitle t ttl = do
@@ -890,16 +858,20 @@ writeNextTitle t ttl = do
 	write t fontName sz ttl
 	forward t $ sz * myLength ttl
 
-writeTitle :: Turtle -> String -> String -> IO ()
-writeTitle t ttl subTtl = do
+writeTitle :: Turtle -> String -> String -> String -> IO ()
+writeTitle t ttl subTtl at = do
 	let	sz = biggerF
 		szn = normalF
+	hideturtle t
+	speed t "fastest"
 	goto t ((width - sz * myLength ttl) / 2) ((height - sz) / 2)
 	write t fontName sz ttl
 	forward t $ sz * myLength ttl
 	goto t ((width - szn * myLength subTtl) / 2) ((height - sz) / 2 + szn * 2)
 	write t fontName szn subTtl
 	forward t $ szn * myLength subTtl
+	writeRB t at
+	speed t "slow"
 
 writeRB :: Turtle -> String -> IO ()
 writeRB t str = do
