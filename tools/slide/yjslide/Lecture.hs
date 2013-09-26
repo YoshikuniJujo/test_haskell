@@ -3,7 +3,7 @@ module Lecture (
 	height, width,
 	runLecture,
 	text, itext, semititle, writeTopTitle, writeNextTitle, writeTitle,
-	dvArrow, dvArrowL, dvLArrow, writeImage,
+	dvArrow, dvArrowShort, dvLArrow, writeImageCenter, writeImageRight,
 	arrow, rightArrow,
 	withRed, drawRect, graphWrite,
 
@@ -113,6 +113,12 @@ mkSVGFileName (Just bfn) n = Just $ bfn ++ addZero (show n) ++ ".svg"
 	addZero s = replicate (3 - length s) '0' ++ s
 mkSVGFileName _ _ = Nothing
 
+writeImageRight :: Turtle -> (Double, Double, FilePath) -> IO ()
+writeImageRight t picture = writeImage t (width * 2 / 3) False picture
+
+writeImageCenter :: Turtle -> (Double, Double, FilePath) -> IO ()
+writeImageCenter t picture = writeImage t (width / 3) True picture
+
 writeImage :: Turtle -> Double -> Bool -> (Double, Double, FilePath) -> IO ()
 writeImage t x bot (w, h, fp) = do
 	hideturtle t
@@ -125,6 +131,7 @@ writeImage t x bot (w, h, fp) = do
 
 dvArrowL :: Turtle -> Double -> IO ()
 dvArrowL t l = do
+	setx t $ width / 3
 	setheading t $ -90
 	forward t $ 12 * rt
 	pendown t
@@ -145,8 +152,12 @@ dvArrowL t l = do
 	endfill t
 	penup t
 
+dvArrowShort :: Turtle -> IO ()
+dvArrowShort t = dvArrowL t 12
+
 dvArrow :: Turtle -> IO ()
 dvArrow t = do
+	setx t $ width / 3
 	setheading t $ -90
 	forward t $ 12 * rt
 	pendown t

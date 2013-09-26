@@ -12,7 +12,7 @@ subtitle = "第1回 Haskellの特徴"
 
 pages :: [[Turtle -> IO ()]]
 pages = [
-	[titlePage], whats1, whats2, whats3, whats4,
+	titlePage, whats1, whats2, whats3, whats4,
 	whats5,
 	[pure1 0], functions1, functionChecks1,
 	[pure1 1], firstclasses1, firstclassExams1, syntaxes1,
@@ -23,32 +23,28 @@ pages = [
 	[pure1 4], lazyEvaluations1, lazyEvaluations2, lazyEvaluationChecks1,
 	summaries1]
 
-titlePage :: Turtle -> IO ()
-titlePage t = writeTitle t subtitle
+titlePage :: [Turtle -> IO ()]
+titlePage = [flip writeTitle subtitle]
 
 whats5 :: [Turtle -> IO ()]
-whats5 = [what9, what10, what11, what12, what13]
-
-what9, what10, what11, what12, what13 :: Turtle -> IO ()
-what9 t = do
+whats5 = [\t -> do
 	flushoff t
 	writeTopTitle t "Haskellの特徴"
-	writeImage t (width * 2 / 3) False picture
+	writeImageRight t picture
 	flushon t
 	text t "純粋関数型言語であり"
 	itext t 1 "* 第一級関数"
 	itext t 1 "* 参照透過性"
 	itext t 1 "* 静的型付け"
 	itext t 1 "* 遅延性"
-	text t "という特徴を持つ"
-what10 t = do
+	text t "という特徴を持つ", \t -> do
 	backward t $ width / 10
 	dvLArrow t 12
 	text t "概念の本質的な部分をそのまま表現できる"
-	text t ""
-what11 t = text t "例: 小さい方から10個の素数が欲しい"
-what12 t = text t "=> すべての素数を求める"
-what13 t = text t "-> 小さい方から10個取り出す"
+	text t "", \t -> do
+	text t "例: 小さい方から10個の素数が欲しい", \t -> do
+	text t "=> すべての素数を求める", \t -> do
+	text t "-> 小さい方から10個取り出す"]
 
 pure1 :: Int -> Turtle -> IO ()
 pure1 n t = do
@@ -165,7 +161,6 @@ higherOrder2 t = do
 	text t "つまり"
 	text t ""
 	text t "関数が第一級オブジェクトである"
-	setx t $ width / 3
 	dvArrow t
 	text t "高階関数が書ける"
 	text t ""
@@ -188,7 +183,6 @@ higherOrder4 t = do
 	itext t 1 "枠組だけを定義することが可能"
 	itext t 1 "例: リストの要素のすべてに何かする"
 higherOrder5 t = do
-	setx t $ width / 3
 	dvArrow t
 	text t "他の言語の「構文」が普通の関数となる"
 
@@ -250,7 +244,6 @@ transparency6, transparency7, transparency8 :: Turtle -> IO ()
 transparency6 t = do
 	writeTopTitle t "参照透過性とは?"
 	text t "Haskellでは同じ入力からは常に同じ出力"
-	setx t $ width / 3
 	dvArrow t
 	text t "関数適用はその出力である値に置き換えることができる"
 	itext t 1 $ "f x => 3"
@@ -357,15 +350,13 @@ staticTyping3 t = do
 staticTyping4 t = text t "* 関数はあらゆる型の値を入力される可能性がある"
 staticTyping5 t = text t "* 関数はあらゆる型の値を出力する可能性がある"
 staticTyping6 t = do
-	setx t $ width / 3
-	dvArrowL t 12
+	dvArrowShort t
 	text t "あらゆる値に対して動作を保証する必要がある"
 staticTyping7 t = do
 	semititle t "静的型付けの場合"
 	text t "* 決められた範囲の値についてだけ定義すれば良い"
 staticTyping8 t = do
-	setx t $ width / 3
-	dvArrowL t 12
+	dvArrowShort t
 	itext t 2 "楽ちん"
 
 typeFlexibilities1 :: [Turtle -> IO ()]

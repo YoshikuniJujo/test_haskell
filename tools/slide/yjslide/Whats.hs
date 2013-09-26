@@ -15,7 +15,7 @@ whatTitle :: Turtle -> IO ()
 whatTitle t = do
 	flushoff t
 	writeTopTitle t whatTitleStr
-	writeImage t (width * 2 / 3) False picture
+	writeImageRight t picture
 	flushon t
 
 whats1 :: [Turtle -> IO ()]
@@ -24,7 +24,7 @@ whats1 = [what1, what2]
 what1, what2 :: Turtle -> IO ()
 what1 t = writeTopTitle t whatTitleStr
 what2 t = do
-	writeImage t (width / 3) True picture
+	writeImageCenter t picture
 	setheading t $ - 90
 	text t "Haskell Brooks Curry (1900.9.12 - 1982 9.1)"
 	text t "アメリカの記号論理学者"
