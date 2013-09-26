@@ -10,8 +10,8 @@ main = runLecture pages
 subtitle :: String
 subtitle = "第1回 Haskellの特徴"
 
-pages :: [Turtle -> IO ()]
-pages = concat [
+pages :: [[Turtle -> IO ()]]
+pages = [
 	[titlePage], whats1, whats2, whats3, whats4,
 	whats5,
 	[pure1 0], functions1, functionChecks1,

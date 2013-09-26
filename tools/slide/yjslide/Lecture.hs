@@ -41,7 +41,7 @@ bigF = 24 * rt
 semiBigF = 15 * rt
 normalF = 12 * rt
 
-runLecture :: [Turtle -> IO ()] -> IO ()
+runLecture :: [[Turtle -> IO ()]] -> IO ()
 runLecture pgs = do
 	(bfn, pages', bn) <- (flip fmap getArgs) $ \args -> case args of
 		"-" : m : n : _ -> (Nothing,
@@ -55,8 +55,10 @@ runLecture pgs = do
 		"-" : _ -> (Nothing, pgs, 1)
 		f : _ -> (Just f, pgs, 1)
 		_ -> (Nothing, pgs, 1)
-	pagesRef <- newIORef $ zip (map (mkSVGFileName bfn) [1 .. ]) pages'
-	pageNRef <- newIORef [bn ..]
+	let pages'' = concat pages'
+	pagesRef <- newIORef $ zip (map (mkSVGFileName bfn) [1 .. ]) pages''
+	pageNRef <- newIORef $ concat $
+		zipWith replicate (map length pages') [bn ..]
 	let allN = bn + length pages' - 1
 	fld <- openField
 	topleft fld
