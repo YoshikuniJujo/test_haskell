@@ -6,6 +6,8 @@ module Lecture (
 	dvArrow, dvArrowL, dvLArrow, writeImage,
 	arrow, rightArrow,
 	withRed, drawRect, graphWrite,
+
+	graphArrowString
 ) where
 
 import Graphics.X11.Turtle
@@ -16,6 +18,10 @@ import Data.IORef
 import Data.Char
 import System.Environment
 import System.IO.Unsafe
+
+title, author :: String
+title = "Haskell入門"
+author = "重城 良国"
 
 st, sp :: Bool
 st = unsafePerformIO $ read <$> readFile "show_turtle.txt"
@@ -102,7 +108,7 @@ popRef ref = do
 mkSVGFileName :: Maybe String -> Int -> Maybe String
 mkSVGFileName (Just bfn) n = Just $ bfn ++ addZero (show n) ++ ".svg"
 	where
-	addZero s = replicate (2 - length s) '0' ++ s
+	addZero s = replicate (3 - length s) '0' ++ s
 mkSVGFileName _ _ = Nothing
 
 writeImage :: Turtle -> Double -> Bool -> (Double, Double, FilePath) -> IO ()
@@ -218,6 +224,7 @@ writeTopTitle :: Turtle -> String -> IO ()
 writeTopTitle t ttl = do
 	let sz = bigF
 	hideturtle t
+	setheading t 0
 	clear t
 	goto t ((width - sz * myLength ttl) / 2) ((height - sz) / 6)
 	write t fontName sz ttl
@@ -235,19 +242,19 @@ writeNextTitle t ttl = do
 	write t fontName sz ttl
 	forward t $ sz * myLength ttl
 
-writeTitle :: Turtle -> String -> String -> String -> IO ()
-writeTitle t ttl subTtl at = do
+writeTitle :: Turtle -> String -> IO ()
+writeTitle t subTtl = do
 	let	sz = biggerF
 		szn = normalF
 	hideturtle t
 	speed t "fastest"
-	goto t ((width - sz * myLength ttl) / 2) ((height - sz) / 2)
-	write t fontName sz ttl
-	forward t $ sz * myLength ttl
+	goto t ((width - sz * myLength title) / 2) ((height - sz) / 2)
+	write t fontName sz title
+	forward t $ sz * myLength title
 	goto t ((width - szn * myLength subTtl) / 2) ((height - sz) / 2 + szn * 2)
 	write t fontName szn subTtl
 	forward t $ szn * myLength subTtl
-	writeRB t at
+	writeRB t author
 	speed t "slow"
 
 writeRB :: Turtle -> String -> IO ()
@@ -288,8 +295,10 @@ rightArrow t = do
 	left t 90
 	forward t $ normalF * 55 / 32
 
-drawRect :: Turtle -> Double -> Double -> IO ()
-drawRect t w h = do
+drawRect :: Turtle -> Double -> Double -> Double -> Double -> IO ()
+drawRect t x y w h = do
+	setheading t 0
+	goto t (width * x / 100) (height * y / 100)
 	pensize t $ 2 * rt
 	pendown t
 	replicateM_ 2 $ forward t w >> right t 90 >> forward t h >> right t 90
@@ -298,3 +307,19 @@ drawRect t w h = do
 
 graphWrite :: Turtle -> String -> IO ()
 graphWrite t str = write t fontName semiBigF str
+
+graphArrowString ::
+	Turtle -> Double -> Double -> Maybe String -> Maybe String -> IO ()
+graphArrowString t x y bstr astr = do
+	goto t (width * x / 100) (height * y / 100)
+	setheading t 0
+	flip (maybe $ return ()) bstr $ \s -> do
+		graphWrite t s
+		forward t $ semiBigF * (myLength s + 1)
+	left t 90
+	forward t $ semiBigF / 2
+	right t 90
+	arrow t (width / 10)
+	forward t $ semiBigF
+	right t 90
+	maybe (return ()) (graphWrite t) astr

@@ -1,22 +1,19 @@
 module Main where
 
-import Lecture
 import Graphics.X11.Turtle
+import Lecture
+import Whats
 
 main :: IO ()
 main = runLecture pages
 
-title, subtitle, author :: String
-title = "Haskell入門"
+subtitle :: String
 subtitle = "第1回 Haskellの特徴"
-author = "重城 良国"
-
-picture :: (Double, Double, FilePath)
-picture = (139.5, 171.5, "HaskellBCurry.jpg")
 
 pages :: [Turtle -> IO ()]
 pages = concat [
-	[titlePage], whats1, whats2, whats3, whats4, whats5,
+	[titlePage], whats1, whats2, whats3, whats4,
+	whats5,
 	[pure1 0], functions1, functionChecks1,
 	[pure1 1], firstclasses1, firstclassExams1, syntaxes1,
 		higherOrders1, higherOrders2, higherOrderChecks1,
@@ -27,109 +24,17 @@ pages = concat [
 	summaries1]
 
 titlePage :: Turtle -> IO ()
-titlePage t = writeTitle t title subtitle author
-
-whatTitleStr :: String
-whatTitleStr = "Haskellとは何か?"
-
-whatTitle :: Turtle -> IO ()
-whatTitle t = do
-	flushoff t
-	writeTopTitle t whatTitleStr
-	writeImage t (width * 2 / 3) False picture
-	flushon t
-
-whats1 :: [Turtle -> IO ()]
-whats1 = [what1, what2]
-
-what1, what2 :: Turtle -> IO ()
-what1 t = writeTopTitle t whatTitleStr
-what2 t = do
-	writeImage t (width / 3) True picture
-	setheading t $ - 90
-	text t "Haskell Brooks Curry (1900.9.12 - 1982 9.1)"
-	text t "アメリカの記号論理学者"
-	text t "名前の由来はこの人"
-
-whats2 :: [Turtle -> IO ()]
-whats2 = [what3_1, what3_2, what3_3, what3_4]
-
-what3_1, what3_2, what3_3, what3_4 :: Turtle -> IO ()
-what3_1 t = whatTitle t >> text t "遅延評価する関数型言語の乱立"
-what3_2 t = do
-	setx t $ width / 3
-	dvLArrow t 12
-	text t "1990年 標準としてのHaskell 1.0"
-what3_3 t = do
-	setx t $ width / 3
-	dvLArrow t 12
-	text t "Haskell 98、Haskell'、Haskell 2010"
-	itext t 4 "と進化"
-what3_4 t = do
-	setx t $ width / 3
-	dvLArrow t 12
-	text t "ghc(代表的な処理系)内での拡張機能として進化は続く"
-	y <- ycor t
-	setx t $ width * 5 / 32
-	setheading t $ - 90
-	forward t $ normalF * 3 / 2
-	left t 90
-	arrow t $ width / 28
-	sety t y
-	itext t 1 "十分に吟味されたものが次の標準に取り込まれる"
-
-whats3 :: [Turtle -> IO ()]
-whats3 = [what4, what5, what6, what7, what7_5]
-what4, what5, what6, what7, what7_5 :: Turtle -> IO ()
-what4 t = whatTitle t >> text t "研究者の努力の結晶"
-what5 t = do
-	setx t $ width / 3
-	dvLArrow t 12
-	text t "Haskellを学ぶということは"
-	itext t 1 "彼らの成果を刈り取ること"
-	text t ""
-what6 t = text t "難しい理論の理解が必要?"
-what7 t = do
-	setx t $ width / 3
-	dvLArrow t 12
-	text t "難しい理論は「利用者が簡単に使う」ためにある"
-what7_5 t = do
-	itext t 1 "レゴブロックを使うのにひとつひとつのブロックの"
-	itext t 1 "作りかたを知る必要はない"
-
-whats4 :: [Turtle -> IO ()]
-whats4 = [what7_6, what7_7, what7_8, what7_9, what8_1, what8_2, what8_3]
-
-what7_6, what7_7, what7_8, what7_9, what8_1, what8_2, what8_3
-	:: Turtle -> IO ()
-what7_6 t = whatTitle t >> semititle t "何ができるの?"
-what7_7 t = text t "* C言語にできることは何でも"
-what7_8 t = do
-	itext t 0.5 "FFIという機能でCの関数が使える"
-	setheading t $ -90
-	forward t $ normalF * 13 / 8
-	left t 90
-	setx t $ width / 8
-what7_9 t = do
-	arrow t $ width / 20
-	left t 90
-	forward t $ normalF * 13 / 8
-	itext t 1 "実用的な言語"
-	text t ""
-what8_1 t = semititle t "他の言語を使い続けるとしても"
-what8_2 t = do
-	text t "* Haskellを学ぶことによって"
-	itext t 1 "得られる様々な抽象化の手法は使える"
-what8_3 t = do
-	text t "* プログラミングに本質的な様々な概念を"
-	itext t 1 "新たな光のもとに別の視点から見ることができる"
+titlePage t = writeTitle t subtitle
 
 whats5 :: [Turtle -> IO ()]
 whats5 = [what9, what10, what11, what12, what13]
 
 what9, what10, what11, what12, what13 :: Turtle -> IO ()
 what9 t = do
+	flushoff t
 	writeTopTitle t "Haskellの特徴"
+	writeImage t (width * 2 / 3) False picture
+	flushon t
 	text t "純粋関数型言語であり"
 	itext t 1 "* 第一級関数"
 	itext t 1 "* 参照透過性"
@@ -167,32 +72,10 @@ function1, function2 :: Turtle -> IO ()
 function1 t = writeTopTitle t "関数とは?"
 function2 t = do
 	text t "0個以上の入力値をひとつの出力値へ変えるルール"
-	goto t (width * 1 / 10) (height * 5 / 10)
-	graphWrite t "入力1"
-	setheading t $ - 90
-	forward t (height * 1 / 5)
-	graphWrite t "入力2"
-	backward t (height * 1 / 5 + semiBigF / 2)
-	left t 90
-	forward t (width * 5 / 40)
-	x <- xcor t
-	arrow t (width * 1 / 10)
-	setheading t $ - 90
-	forward t (height * 1 / 5)
-	left t 90
-	setx t x
-	arrow t (width * 1 / 10)
-	setheading t 0
-	goto t (width * 135 / 364) (height * 2 / 5)
-	drawRect t (width / 4) (height * 7 / 20)
-	goto t (width * 13 / 20) (height * 23 / 40)
-	pendown t
-	arrow t (width * 1 / 10)
-	setheading t (- 90)
-	forward t $ semiBigF / 2
-	left t 90
-	forward t normalF
-	graphWrite t "出力"
+	graphArrowString t 10 50 (Just "入力1") Nothing
+	graphArrowString t 10 70 (Just "入力2") Nothing
+	drawRect t (13500 / 364) (200 / 5) (width / 4) (height * 7 / 20)
+	graphArrowString t (130 / 2) (235 / 4) Nothing (Just "出力")
 
 functionChecks1 :: [Turtle -> IO ()]
 functionChecks1 = [
