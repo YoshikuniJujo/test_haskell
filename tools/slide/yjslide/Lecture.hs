@@ -301,8 +301,10 @@ drawRect t x y w h = do
 	penup t
 	pensize t $ 1 * rt
 
-graphWrite :: Turtle -> String -> IO ()
-graphWrite t str = write t fontName semiBigF str
+graphWrite :: Turtle -> Double -> Double -> String -> IO ()
+graphWrite t x y str = do
+	goto t (width * x / 100) (height * y / 100)
+	write t fontName semiBigF str
 
 graphArrowString ::
 	Turtle -> Double -> Double -> Maybe String -> Maybe String -> IO ()
@@ -310,7 +312,7 @@ graphArrowString t x y bstr astr = do
 	goto t (width * x / 100) (height * y / 100)
 	setheading t 0
 	flip (maybe $ return ()) bstr $ \s -> do
-		graphWrite t s
+		write t fontName semiBigF s
 		forward t $ semiBigF * (myLength s + 1)
 	left t 90
 	forward t $ semiBigF / 2
@@ -318,7 +320,7 @@ graphArrowString t x y bstr astr = do
 	arrow t (width / 10)
 	forward t $ semiBigF
 	right t 90
-	maybe (return ()) (graphWrite t) astr
+	maybe (return ()) (write t fontName semiBigF) astr
 
 xmark :: Turtle -> String -> IO ()
 xmark t str = do

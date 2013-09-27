@@ -62,21 +62,14 @@ what7_5 t = do
 	itext t 1 "作りかたを知る必要はない"
 
 whats4 :: [Turtle -> IO ()]
-whats4 = [what7_6, what7_7, what7_8, what7_9, what8_1, what8_2, what8_3]
-
-what7_6, what7_7, what7_8, what7_9, what8_1, what8_2, what8_3
-	:: Turtle -> IO ()
-what7_6 t = whatTitle t >> semititle t "何ができるの?"
-what7_7 t = text t "* C言語にできることは何でも"
-what7_8 t = do
-	itext t 0.5 "FFIという機能でCの関数が使える"
-what7_9 t = do
+whats4 = [\t -> do
+	whatTitle t >> semititle t "何ができるの?", \t -> do
+	text t "* たいていのことはできる", \t -> do
+	text t "* FFIという機能でCの関数が使える", \t -> do
 	arrowIText t 0 "実用的な言語"
-	text t ""
-what8_1 t = semititle t "他の言語を使い続けるとしても"
-what8_2 t = do
+	text t "", \t -> do
+	semititle t "他の言語を使い続けるとしても", \t -> do
 	text t "* Haskellを学ぶことによって"
-	itext t 1 "得られる様々な抽象化の手法は使える"
-what8_3 t = do
+	itext t 1 "得られる様々な抽象化の手法は使える", \t -> do
 	text t "* プログラミングに本質的な様々な概念を"
-	itext t 1 "新たな光のもとに別の視点から見ることができる"
+	itext t 1 "新たな光のもとに別の視点から見ることができる"]
