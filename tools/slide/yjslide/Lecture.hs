@@ -3,7 +3,8 @@ module Lecture (
 	text, itext, semititle, writeTopTitle, writeNextTitle, writeTitle,
 	dvArrow, dvArrowShort, writeImageCenter, writeImageRight,
 	arrow, rightArrow, withRed, drawRect, graphWrite,
-	graphArrowString, xmark, arrowIText, preLine
+	graphArrowString, xmark, arrowIText, preLine,
+	haskellBCurry
 ) where
 
 import Graphics.X11.Turtle
@@ -18,6 +19,9 @@ import System.IO.Unsafe
 title, author :: String
 title = "Haskell入門"
 author = "重城 良国"
+
+haskellBCurry :: (Double, Double, FilePath)
+haskellBCurry = (139.5, 171.5, "HaskellBCurry.jpg")
 
 st, sp :: Bool
 st = unsafePerformIO $ read <$> readFile "show_turtle.txt"
@@ -165,28 +169,6 @@ dvArrow t = do
 	right t 90
 	pendown t
 	forward t $ 24 * rt
-	setheading t 0
-	forward t $ 3 * rt
-	beginfill t
-	backward t $ 12 * rt
-	setheading t $ -60
-	forward t $ 12 * rt
-	endfill t
-	penup t
-
-dvLArrow :: Turtle -> Double -> IO ()
-dvLArrow t l = do
-	setheading t $ -90
-	forward t $ 12 * rt
-	pendown t
-	forward t $ l * rt
-	penup t
-	backward t $ l * rt
-	left t 90
-	forward t $ 6 * rt
-	right t 90
-	pendown t
-	forward t $ l * rt
 	setheading t 0
 	forward t $ 3 * rt
 	beginfill t

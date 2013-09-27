@@ -1,12 +1,9 @@
 module Whats (
-	picture, whats1, whats2, whats3, whats4
+	whats1, whats2, whats3, whats4
 ) where
 
 import Graphics.X11.Turtle
 import Lecture
-
-picture :: (Double, Double, FilePath)
-picture = (139.5, 171.5, "HaskellBCurry.jpg")
 
 whatTitleStr :: String
 whatTitleStr = "Haskellとは何か?"
@@ -15,7 +12,7 @@ whatTitle :: Turtle -> IO ()
 whatTitle t = do
 	flushoff t
 	writeTopTitle t whatTitleStr
-	writeImageRight t picture
+	writeImageRight t haskellBCurry
 	flushon t
 
 whats1 :: [Turtle -> IO ()]
@@ -24,7 +21,7 @@ whats1 = [what1, what2]
 what1, what2 :: Turtle -> IO ()
 what1 t = writeTopTitle t whatTitleStr
 what2 t = do
-	writeImageCenter t picture
+	writeImageCenter t haskellBCurry
 	setheading t $ - 90
 	text t "Haskell Brooks Curry (1900.9.12 - 1982 9.1)"
 	text t "アメリカの記号論理学者"
