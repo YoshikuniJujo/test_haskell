@@ -207,15 +207,15 @@ whatIsTypes2 = [\t -> do
 	semititle t "関数の型", \t -> do
 	text t "関数にも型がある"
 	text t "Type1 の値を取り、Type2 の値を返す関数の型を"
-	text t "Haskell では Type1 -> Type2 と表記する"
+	text t "Haskellでは Type1 -> Type2 と表記する"
 	text t "", \t -> do
 	semititle t "型の宣言"
-	text t "Haskell では var :: Type のような形で型を宣言する"]
+	text t "Haskellでは var :: Type のような形で型を宣言する"]
 
 whatIsTypeChecks1 :: Page
 whatIsTypeChecks1 = [\t -> do
 	writeTopTitle t "型とは?(練習問題)"
-	text t "以下の関数の型を Haskell で宣言せよ"
+	text t "以下の関数の型をHaskellで宣言せよ"
 	text t "", \t -> do
 	text t "Int 型の値を取りその絶対値を返す関数 abs", \t -> do
 	text t "Char 型の値を取り文字コード(Int)を返す関数 ord"
@@ -282,7 +282,7 @@ lazyEvaluations2 = [\t -> do
 	text t "* 遅延評価と遅延型をまとめて表現したかった", \t -> do
 	text t "* 遅延型も造語"
 	itext t 1 "遅延リストは普遍的な遅延するデータ構造のひとつ"
-	itext t 1 "Haskell ではデータ構造の評価は遅延する", \t -> do
+	itext t 1 "Haskellではデータ構造の評価は遅延する", \t -> do
 	text t "* 正確に言うと"
 	itext t 1 "「遅延評価と弱頭部正規形までの簡約」となるだろう"]
 
