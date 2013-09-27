@@ -1,6 +1,5 @@
 module Main where
 
-import Graphics.X11.Turtle
 import Lecture
 
 main :: IO ()
@@ -9,9 +8,9 @@ main = runLecture pages
 subtitle :: String
 subtitle = "第2回 Haskellの特徴"
 
-pages :: [[Turtle -> IO ()]]
+pages :: [Page]
 pages = [
-	titlePage, -- whats1, whats2, whats3, whats4,
+	titlePage,
 	feature,
 	pure 0, functions, functionChecks,
 	pure 1, firstclasses1, firstclassExams1, syntaxes1,
@@ -22,15 +21,13 @@ pages = [
 	pure 4, lazyEvaluations1, lazyEvaluations2, lazyEvaluationChecks1,
 	summaries1]
 
-titlePage :: [Turtle -> IO ()]
+titlePage :: Page
 titlePage = [flip writeTitle subtitle]
 
-feature :: [Turtle -> IO ()]
+feature :: Page
 feature = [\t -> do
-	flushoff t
 	writeTopTitle t "Haskellの特徴"
 	writeImageRight t haskellBCurry
-	flushon t
 	text t "純粋関数型言語であり"
 	itext t 1 "* 第一級関数"
 	itext t 1 "* 参照透過性"
@@ -44,22 +41,18 @@ feature = [\t -> do
 	text t "=> すべての素数を求める", \t -> do
 	text t "-> 小さい方から10個取り出す"]
 
-pure :: Int -> [Turtle -> IO ()]
+pure :: Int -> Page
 pure n = [\t -> do
-	flushoff t
-	hideturtle t
-	clear t
 	writeTopTitle t "Haskellの特徴"
-	speed t "fastest"
-	(if n == 0 then withRed t else id) $ semititle t "純粋関数型言語"
-	(if n == 1 then withRed t else id) $ semititle t "* 第一級関数"
-	(if n == 2 then withRed t else id) $ semititle t "* 参照透過性"
-	(if n == 3 then withRed t else id) $ semititle t "* 静的型付け"
-	(if n == 4 then withRed t else id) $ semititle t "* 遅延性"
-	speed t "slow"
-	flushon t]
+	oneshot t $ do
+		(if n == 0 then withRed t else id) $ semititle t "純粋関数型言語"
+		(if n == 1 then withRed t else id) $ semititle t "* 第一級関数"
+		(if n == 2 then withRed t else id) $ semititle t "* 参照透過性"
+		(if n == 3 then withRed t else id) $ semititle t "* 静的型付け"
+		(if n == 4 then withRed t else id) $ semititle t "* 遅延性"
+	]
 
-functions :: [Turtle -> IO ()]
+functions :: Page
 functions = [\t -> do
 	writeTopTitle t "関数とは?", \t -> do
 	text t "0個以上の入力値をひとつの出力値へ変えるルール"
@@ -68,7 +61,7 @@ functions = [\t -> do
 	drawRect t (13500 / 364) (200 / 5) 25 35
 	graphArrowString t (130 / 2) (235 / 4) Nothing (Just "出力")]
 
-functionChecks :: [Turtle -> IO ()]
+functionChecks :: Page
 functionChecks = [\t -> do
 	writeTopTitle t "関数とは?(練習問題)"
 	semititle t "以下の「関数」の入力と出力を述べよ", \t -> do
@@ -80,7 +73,7 @@ functionChecks = [\t -> do
 	text t "翻訳: ある言語の文 -> 別の言語の文", \t -> do
 	text t "与えられた文字列を表示する機能: 文字列 -> 動作"]
 
-firstclasses1 :: [Turtle -> IO ()]
+firstclasses1 :: Page
 firstclasses1 = [\t -> do
 	writeTopTitle t "第一級関数とは?", \t -> do
 	text t "関数が第一級オブジェクトであるということ", \t -> do
@@ -91,7 +84,7 @@ firstclasses1 = [\t -> do
 	text t "* 関数の引数になれる"
 	text t "* 関数の返り値になれる"]
 
-firstclassExams1 :: [Turtle -> IO ()]
+firstclassExams1 :: Page
 firstclassExams1 = [\t -> do
 	writeTopTitle t "第一級関数とは?"
 	text t "* リテラルとして表現できる"
@@ -107,7 +100,7 @@ firstclassExams1 = [\t -> do
 	itext t 1 "addN n = \\x -> x + n"
 	itext t 1 "(addN 3) 8 => 11"]
 
-syntaxes1 :: [Turtle -> IO ()]
+syntaxes1 :: Page
 syntaxes1 = [\t -> do
 	writeTopTitle t "ここまでに出てきた構文", \t -> do
 	text t "* 関数リテラル: \\parm -> expression", \t -> do
@@ -121,7 +114,7 @@ syntaxes1 = [\t -> do
 	text t "(注2) 関数適用の結果を`=> value'のような"
 	itext t 1 "形で示すが、これはHaskellの構文ではない。"]
 
-higherOrders1 :: [Turtle -> IO ()]
+higherOrders1 :: Page
 higherOrders1 = [\t -> do
 	writeTopTitle t "高階関数"
 	text t "高階関数とは引数または返り値が関数であるような関数", \t -> do
@@ -133,13 +126,12 @@ higherOrders1 = [\t -> do
 	text t ""
 	text t "ということ"]
 
-higherOrders2 :: [Turtle -> IO ()]
+higherOrders2 :: Page
 higherOrders2 = [\t -> do
 	writeTopTitle t "高階関数"
-	hideturtle t
-	text t "高階関数とは引数または返り値が関数であるような関数"
+	oneshot t $
+		text t "高階関数とは引数または返り値が関数であるような関数"
 	text t ""
-	showturtle t
 	text t "何がうれしいの?"
 	text t "", \t -> do
 	text t "* より高レベルな抽象化"
@@ -148,7 +140,7 @@ higherOrders2 = [\t -> do
 	dvArrow t
 	text t "他の言語の「構文」が普通の関数となる"]
 
-higherOrderChecks1 :: [Turtle -> IO ()]
+higherOrderChecks1 :: Page
 higherOrderChecks1 = [\t -> do
 	writeTopTitle t "高階関数(練習問題)"
 	semititle t "以下の関数を定義せよ", \t -> do
@@ -162,7 +154,7 @@ higherOrderChecks1 = [\t -> do
 	text t "10を底とした対数を求める関数を返す関数"
 	itext t 1 "log10 = \\x -> logBase 10 x"]
 
-transparencies1 :: [Turtle -> IO ()]
+transparencies1 :: Page
 transparencies1 = [\t -> do
 	writeTopTitle t "参照透過性とは?", \t -> do
 	text t "同じ関数を同じ入力で呼び出せば"
@@ -179,7 +171,7 @@ transparencies1 = [\t -> do
 	itext t 1 "counter.count => 1"
 	itext t 1 "counter.count => 2"]
 
-transparencies2 :: [Turtle -> IO ()]
+transparencies2 :: Page
 transparencies2 = [\t -> do
 	writeTopTitle t "参照透過性とは?"
 	text t "Haskellでは同じ入力からは常に同じ出力"
@@ -194,7 +186,7 @@ transparencies2 = [\t -> do
 	xmark t "動作や手続き?"
 	text t "「置き換え規則」である"]
 
-whatIsTypes1 :: [Turtle -> IO ()]
+whatIsTypes1 :: Page
 whatIsTypes1 = [\t -> do
 	writeTopTitle t "型とは?", \t -> do
 	semititle t "値の集合", \t -> do
@@ -209,7 +201,7 @@ whatIsTypes1 = [\t -> do
 	text t "絶対値 => 数の集合から数の集合への写像", \t -> do
 	text t "文字コードを返す関数 => 文字の集合から数の集合への写像"]
 
-whatIsTypes2 :: [Turtle -> IO ()]
+whatIsTypes2 :: Page
 whatIsTypes2 = [\t -> do
 	writeTopTitle t "型とは?"
 	semititle t "関数の型", \t -> do
@@ -220,7 +212,7 @@ whatIsTypes2 = [\t -> do
 	semititle t "型の宣言"
 	text t "Haskell では var :: Type のような形で型を宣言する"]
 
-whatIsTypeChecks1 :: [Turtle -> IO ()]
+whatIsTypeChecks1 :: Page
 whatIsTypeChecks1 = [\t -> do
 	writeTopTitle t "型とは?(練習問題)"
 	text t "以下の関数の型を Haskell で宣言せよ"
@@ -232,7 +224,7 @@ whatIsTypeChecks1 = [\t -> do
 	text t "絶対値を返す関数: abs :: Int -> Int", \t -> do
 	text t "文字コードを返す関数: ord :: Char -> Int"]
 
-staticTypings1 :: [Turtle -> IO ()]
+staticTypings1 :: Page
 staticTypings1 = [\t -> do
 	writeTopTitle t "静的型付けとは?", \t -> do
 	semititle t "動的型付けとは?", \t -> do
@@ -247,7 +239,7 @@ staticTypings1 = [\t -> do
 	dvArrowShort t
 	itext t 2 "楽ちん"]
 
-typeFlexibilities1 :: [Turtle -> IO ()]
+typeFlexibilities1 :: Page
 typeFlexibilities1 = [\t -> do
 	writeTopTitle t "型の柔軟性", \t -> do
 	text t "Haskellでは柔軟な型を持つ関数は作れないの?", \t -> do
@@ -262,7 +254,7 @@ typeFlexibilities1 = [\t -> do
 	text t ""
 	itext t 4 "ということ"]
 
-lazyEvaluations1 :: [Turtle -> IO ()]
+lazyEvaluations1 :: Page
 lazyEvaluations1 = [\t -> do
 	writeTopTitle t "遅延性とは?", \t -> do
 	text t "使わない構造は展開されないということ"
@@ -280,7 +272,7 @@ lazyEvaluations1 = [\t -> do
 	itext t 1 "fibs = 0 : 1 : zipWith (+) fibs (tail fibs)"
 	itext t 1 "print $ take 100 fibs"]
 
-lazyEvaluations2 :: [Turtle -> IO ()]
+lazyEvaluations2 :: Page
 lazyEvaluations2 = [\t -> do
 	writeTopTitle t "遅延性とは?"
 	text t "遅延性という言葉は使われていない"
@@ -294,7 +286,7 @@ lazyEvaluations2 = [\t -> do
 	text t "* 正確に言うと"
 	itext t 1 "「遅延評価と弱頭部正規形までの簡約」となるだろう"]
 
-lazyEvaluationChecks1 :: [Turtle -> IO ()]
+lazyEvaluationChecks1 :: Page
 lazyEvaluationChecks1 = [\t -> do
 	writeTopTitle t "遅延性とは?(練習問題)"
 	text t "以下の例について先行性と遅延性の"
@@ -311,7 +303,7 @@ lazyEvaluationChecks1 = [\t -> do
 	itext t 1 "先行性: onesの完全な評価のため値がかえらない"
 	itext t 1 "遅延性: 1が10個はいったリストがかえる"]
 
-summaries1 :: [Turtle -> IO ()]
+summaries1 :: Page
 summaries1 = [\t ->
 	writeTopTitle t "まとめ" >> text t "", \t ->
 	text t "* 関数とは「置き換え規則」である", \t ->

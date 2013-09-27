@@ -1,10 +1,11 @@
 module Lecture (
+	Page,
 	runLecture,
 	text, itext, semititle, writeTopTitle, writeNextTitle, writeTitle,
 	dvArrow, dvArrowShort, writeImageCenter, writeImageRight,
 	arrow, rightArrow, withRed, drawRect, graphWrite,
 	graphArrowString, xmark, arrowIText, preLine,
-	haskellBCurry
+	haskellBCurry, oneshot,
 ) where
 
 import Graphics.X11.Turtle
@@ -15,6 +16,8 @@ import Data.IORef
 import Data.Char
 import System.Environment
 import System.IO.Unsafe
+
+type Page = [Turtle -> IO ()]
 
 title, author :: String
 title = "Haskell入門"
@@ -342,3 +345,10 @@ arrowIText t i str = do
 
 preLine :: Turtle -> IO ()
 preLine t = setheading t 90 >> forward t (normalF * 9 / 4)
+
+oneshot :: Turtle -> IO () -> IO ()
+oneshot t act = do
+	hideturtle t
+	act
+	showturtle t
+--	showturtle t
