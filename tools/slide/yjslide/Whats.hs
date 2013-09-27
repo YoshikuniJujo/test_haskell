@@ -36,41 +36,29 @@ whats2 = [what3_1, what3_2, what3_3, what3_4]
 what3_1, what3_2, what3_3, what3_4 :: Turtle -> IO ()
 what3_1 t = whatTitle t >> text t "遅延評価する関数型言語の乱立"
 what3_2 t = do
-	setx t $ width / 3
-	dvLArrow t 12
+	dvArrowShort t
 	text t "1990年 標準としてのHaskell 1.0"
 what3_3 t = do
-	setx t $ width / 3
-	dvLArrow t 12
+	dvArrowShort t
 	text t "Haskell 98、Haskell'、Haskell 2010"
 	itext t 4 "と進化"
 what3_4 t = do
-	setx t $ width / 3
-	dvLArrow t 12
+	dvArrowShort t
 	text t "ghc(代表的な処理系)内での拡張機能として進化は続く"
-	y <- ycor t
-	setx t $ width * 5 / 32
-	setheading t $ - 90
-	forward t $ normalF * 3 / 2
-	left t 90
-	arrow t $ width / 28
-	sety t y
-	itext t 1 "十分に吟味されたものが次の標準に取り込まれる"
+	arrowIText t 1 "十分に吟味されたものが次の標準に取り込まれる"
 
 whats3 :: [Turtle -> IO ()]
 whats3 = [what4, what5, what6, what7, what7_5]
 what4, what5, what6, what7, what7_5 :: Turtle -> IO ()
 what4 t = whatTitle t >> text t "研究者の努力の結晶"
 what5 t = do
-	setx t $ width / 3
-	dvLArrow t 12
+	dvArrowShort t
 	text t "Haskellを学ぶということは"
 	itext t 1 "彼らの成果を刈り取ること"
 	text t ""
 what6 t = text t "難しい理論の理解が必要?"
 what7 t = do
-	setx t $ width / 3
-	dvLArrow t 12
+	dvArrowShort t
 	text t "難しい理論は「利用者が簡単に使う」ためにある"
 what7_5 t = do
 	itext t 1 "レゴブロックを使うのにひとつひとつのブロックの"
@@ -85,15 +73,8 @@ what7_6 t = whatTitle t >> semititle t "何ができるの?"
 what7_7 t = text t "* C言語にできることは何でも"
 what7_8 t = do
 	itext t 0.5 "FFIという機能でCの関数が使える"
-	setheading t $ -90
-	forward t $ normalF * 13 / 8
-	left t 90
-	setx t $ width / 8
 what7_9 t = do
-	arrow t $ width / 20
-	left t 90
-	forward t $ normalF * 13 / 8
-	itext t 1 "実用的な言語"
+	arrowIText t 0 "実用的な言語"
 	text t ""
 what8_1 t = semititle t "他の言語を使い続けるとしても"
 what8_2 t = do

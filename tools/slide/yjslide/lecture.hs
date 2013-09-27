@@ -38,8 +38,7 @@ whats5 = [\t -> do
 	itext t 1 "* 静的型付け"
 	itext t 1 "* 遅延性"
 	text t "という特徴を持つ", \t -> do
-	backward t $ width / 10
-	dvLArrow t 12
+	dvArrowShort t
 	text t "概念の本質的な部分をそのまま表現できる"
 	text t "", \t -> do
 	text t "例: 小さい方から10個の素数が欲しい", \t -> do
@@ -70,7 +69,7 @@ function2 t = do
 	text t "0個以上の入力値をひとつの出力値へ変えるルール"
 	graphArrowString t 10 50 (Just "入力1") Nothing
 	graphArrowString t 10 70 (Just "入力2") Nothing
-	drawRect t (13500 / 364) (200 / 5) (width / 4) (height * 7 / 20)
+	drawRect t (13500 / 364) (200 / 5) 25 35
 	graphArrowString t (130 / 2) (235 / 4) Nothing (Just "出力")
 
 functionChecks1 :: [Turtle -> IO ()]
@@ -254,20 +253,7 @@ transparency7 t = do
 	semititle t "Haskellでの「関数」とは"
 	text t "動作や手続き?"
 transparency8 t = do
-	let v = normalF * 9 / 8
-	setheading t 90
-	forward t v
-	setx t $ width / 8
-	y <- ycor t
-	pensize t 2
-	pendown t
-	goto t (width / 3) (y + v)
-	penup t
-	forward t v
-	pendown t
-	goto t (width / 8) (y + v)
-	penup t
-	pensize t 1
+	xmark t "動作や手続き?"
 	text t "「置き換え規則」である"
 
 whatIsTypes1 :: [Turtle -> IO ()]
@@ -371,14 +357,7 @@ typeFlexibility1, typeFlexibility2, typeFlexibility3, typeFlexibility4,
 typeFlexibility1 t = writeTopTitle t "型の柔軟性"
 typeFlexibility2 t = text t "Haskellでは柔軟な型を持つ関数は作れないの?"
 typeFlexibility3 t = do
-	setx t $ width / 6
-	setheading t $ -90
-	forward t $ normalF * 13 / 8
-	left t 90
-	arrow t $ width / 35
-	left t 90
-	forward t $ normalF * 13 / 8
-	itext t 1 "柔軟性の範囲を正確に決めておけば良い"
+	arrowIText t 1 "柔軟性の範囲を正確に決めておけば良い"
 	text t ""
 typeFlexibility4 t = do
 	text t "例: 関数idはすべての型の値を取り同じ型の値を返す関数"
@@ -416,11 +395,8 @@ lazyEvaluation2_2 t = do
 lazyEvaluation3 t = do
 	text t "例1: myIf 関数"
 lazyEvaluation4 t = do
-	setheading t 90
-	forward t $ normalF * 18 / 8
-	setx t $ width * 51 / 144
-	rightArrow t
-	itext t 3 "先行評価だとthen部もelse部も先に評価"
+	preLine t
+	arrowIText t 3 "先行評価だとthen部もelse部も先に評価"
 lazyEvaluation5 t = do
 	itext t 1 "遅延評価なら問題ない"
 	text t ""
@@ -441,9 +417,7 @@ lazyEvaluation8, lazyEvaluation9, lazyEvaluation10, lazyEvaluation11,
 lazyEvaluation8 t = do
 	writeTopTitle t "遅延性とは?"
 	text t "遅延性という言葉は使われていない"
-	setx t $ width / 7
-	rightArrow t
-	itext t 1 "このスライド用に造語"
+	arrowIText t 1 "このスライド用に造語"
 	text t ""
 lazyEvaluation9 t = do
 	text t "どうしてそんなことを?"

@@ -1,13 +1,9 @@
 module Lecture (
-	normalF, semiBigF, bigF, biggerF,
-	height, width,
 	runLecture,
 	text, itext, semititle, writeTopTitle, writeNextTitle, writeTitle,
-	dvArrow, dvArrowShort, dvLArrow, writeImageCenter, writeImageRight,
-	arrow, rightArrow,
-	withRed, drawRect, graphWrite,
-
-	graphArrowString
+	dvArrow, dvArrowShort, writeImageCenter, writeImageRight,
+	arrow, rightArrow, withRed, drawRect, graphWrite,
+	graphArrowString, xmark, arrowIText, preLine
 ) where
 
 import Graphics.X11.Turtle
@@ -314,7 +310,9 @@ drawRect t x y w h = do
 	goto t (width * x / 100) (height * y / 100)
 	pensize t $ 2 * rt
 	pendown t
-	replicateM_ 2 $ forward t w >> right t 90 >> forward t h >> right t 90
+	replicateM_ 2 $
+		forward t (width * w / 100) >> right t 90 >>
+		forward t (height * h / 100) >> right t 90
 	penup t
 	pensize t $ 1 * rt
 
@@ -336,3 +334,29 @@ graphArrowString t x y bstr astr = do
 	forward t $ semiBigF
 	right t 90
 	maybe (return ()) (graphWrite t) astr
+
+xmark :: Turtle -> String -> IO ()
+xmark t str = do
+	let v = normalF * 9 / 8
+	setheading t 90
+	forward t v
+	setx t $ width / 8
+	y <- ycor t
+	pensize t 2
+	pendown t
+	goto t (width / 8 + myLength str * normalF) (y + v)
+	penup t
+	forward t v
+	pendown t
+	goto t (width / 8) (y + v)
+	penup t
+	pensize t 1
+
+arrowIText :: Turtle -> Double -> String -> IO ()
+arrowIText t i str = do
+	setx t $ width * 5 / 64 + 4 * i * normalF
+	rightArrow t
+	itext t i str
+
+preLine :: Turtle -> IO ()
+preLine t = setheading t 90 >> forward t (normalF * 9 / 4)
