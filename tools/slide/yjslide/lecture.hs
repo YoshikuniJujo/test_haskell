@@ -109,11 +109,11 @@ firstclassExams1 = [\t -> do
 
 syntaxes1 :: [Turtle -> IO ()]
 syntaxes1 = [\t -> do
-	writeTopTitle t "ここまでに出てきた構文"
-	text t "* 関数リテラル: \\parm -> expression"
-	text t "* リストリテラル: [expression1, expression2, ... ]"
-	text t "* 定義: var = expression"
-	text t "* 関数定義: fun parm1 parm2 = expression"
+	writeTopTitle t "ここまでに出てきた構文", \t -> do
+	text t "* 関数リテラル: \\parm -> expression", \t -> do
+	text t "* リストリテラル: [expression1, expression2, ... ]", \t -> do
+	text t "* 定義: var = expression", \t -> do
+	text t "* 関数定義: fun parm1 parm2 = expression", \t -> do
 	text t "* 関数適用: fun arg1 arg2"
 	text t "", \t -> do
 	text t "(注1) 変数の定義と0個の引数を取る関数の定義"
