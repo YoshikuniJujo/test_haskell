@@ -11,7 +11,7 @@ subtitle = "第1回 ミニマルな本質"
 pages :: [Page]
 pages = [
 	titlePage, whats1, whats2, whats3, whats4,
-	attention, definition
+	attention, definition, policy
  ]
 
 titlePage :: Page
@@ -23,9 +23,9 @@ attention = [\t -> do
 	text t ""
 	semititle t "例題を通してHaskellの本質を見ていきたい", \t -> do
 	text t ""
-	text t "* わずかな構文でどれだけのことができるかという例", \t -> do
-	text t "* Haskellによる抽象化の本質を示す", \t -> do
-	text t "* 実際のプログラミングのやりかたを示すわけではない"
+	semititle t "* わずかな構文でどれだけのことができるか", \t -> do
+	semititle t "* Haskellによる抽象化の本質を示す", \t -> do
+	semititle t "* 実際のプログラミングのやりかたではない"
  ]
 
 definition :: Page
@@ -58,3 +58,12 @@ definition = [\t -> do
 	indexY y = top + (h + yspace) * fromIntegral y
 	blockX x = left + 2.5 + (w + xspace) * fromIntegral x
 	blockY y = top + (h + yspace) * fromIntegral y
+
+policy :: Page
+policy = [\t -> do
+	writeTopTitle t "方針"
+	text t "", \t -> do
+	semititle t "* 組み込みの整数型は使わない", \t -> do
+	semititle t "* 整数型とそれを処理する関数を作る", \t -> do
+	semititle t "* 位置は上記の整数型を使った新しい型とする"
+ ]
