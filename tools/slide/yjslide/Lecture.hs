@@ -14,6 +14,7 @@ import Control.Monad
 import Control.Applicative
 import Data.IORef
 import Data.Char
+import Data.List
 import System.Environment
 import System.IO.Unsafe
 
@@ -58,10 +59,10 @@ runLecture pgs = do
 		"-" : _ -> (Nothing, pgs, 1)
 		f : _ -> (Just f, pgs, 1)
 		_ -> (Nothing, pgs, 1)
-	let pages'' = concat pages'
+	let pages'' = intercalate [const $ return ()] pages'
 	pagesRef <- newIORef $ zip (map (mkSVGFileName bfn) [1 .. ]) pages''
 	pageNRef <- newIORef $ concat $
-		zipWith replicate (map length pages') [bn ..]
+		zipWith replicate (map ((+ 1) . length) pages') [bn ..]
 	let allN = bn + length pages' - 1
 	fld <- openField
 	topleft fld
@@ -272,11 +273,11 @@ arrow t l = do
 	forward t l
 	left t 90
 	penup t
-	backward t (6 * rt)
+	backward t (5 * rt)
 	beginfill t
-	forward t (12 * rt)
+	forward t (10 * rt)
 	right t 120
-	forward t (12 * rt)
+	forward t (10 * rt)
 	endfill t
 	pensize t $ 1 * rt
 
@@ -285,7 +286,7 @@ rightArrow t = do
 	setheading t $ -90
 	forward t $ normalF * 55 / 32
 	left t 90
-	arrow t $ 12 * rt
+	arrow t $ 8 * rt
 	left t 90
 	forward t $ normalF * 55 / 32
 

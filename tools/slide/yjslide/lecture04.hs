@@ -6,7 +6,7 @@ main :: IO ()
 main = runLecture pages
 
 subtitle :: String
-subtitle = "第4回 Haskellで使われる手法1 リスト"
+subtitle = "第4回 リストとそれを扱う関数"
 
 pages :: [Page]
 pages = [
@@ -29,8 +29,8 @@ noLoop = [\t -> do
 	text t "ループもない状態変化もない"
 	arrowIText t 1 "一体どうすればいい?"
 	text t "", \t -> do
-	text t "リストを作る"
-	arrowIText t 1 "map, filter でリストを操作"
+	text t "リストを作る", \t -> do
+	arrowIText t 1 "map, filter でリストを操作", \t -> do
 	arrowIText t 1 "foldr でまとめる", \t -> do
 	dvArrow t
 	text t "リストと高階関数を駆使"
@@ -40,11 +40,11 @@ makeList :: Page
 makeList = [\t -> do
 	writeTopTitle t "リストの生成", \t -> do
 	semititle t "enumFrom関数", \t -> do
-	text t "* 無限リストを作る"
-	itext t 1 "enumFrom 3 => [3, 4, 5, ...]"
+	text t "指定した値から始まる無限リストを作る", \t -> do
+	text t "例: enumFrom 3 => [3, 4, 5, ...]", \t -> do
 	semititle t "enumFromTo関数", \t -> do
-	text t "* リストを作る"
-	itext t 1 "enumFromTo 3 8 => [3, 4, 5, 6, 7, 8]"
+	text t "始めと終わりの値を指定することでリストを作る", \t -> do
+	text t "例: enumFromTo 3 8 => [3, 4, 5, 6, 7, 8]"
 	text t "", \t -> do
 	arrowIText t 0 "上記2つの関数には構文糖が用意されていて"
 	itext t 1 "[3 ..]や[3 .. 8]のように書ける"
@@ -54,7 +54,7 @@ makeList2 :: Page
 makeList2 = [\t -> do
 	writeTopTitle t "リストの生成", \t -> do
 	semititle t "iterate関数", \t -> do
-	text t "無限リストを作る"
+	text t "指定した関数を0, 1, 2 ... 回適用した無限リストを作る"
 	text t "iterate f x => [x, f x, f (f x), f (f (f x)), ...]"
 	text t "", \t -> do
 	text t "例: iterate (* 2) 1 => [1, 2, 4, 8, 16, ...]"
@@ -83,7 +83,7 @@ filterFun = [\t -> do
 	text t "filter p xs で"
 	text t "p x の値がTrueのものだけ集めたリストを返す", \t -> do
 	text t "例: filter even [1, 2, 3, 4, 5] => [2, 4]"
-	text t ""
+	text t "", \t -> do
 	semititle t "takeWhile関数", \t -> do
 	text t "takeWhile p xs で"
 	text t "p x の値がTrueであるあいだだけリストの値を取り出す", \t -> do
@@ -96,7 +96,7 @@ foldrFun = [\t -> do
 	semititle t "foldr関数", \t -> do
 	text t "演算子を右結合でリストの要素に次々と適用していく"
 	text t "foldr op x0 [x1, x2, x3 ...] =>"
-	itext t 1 "x1 `op` (x2 `op` (x3 `op` ...))", \t -> do
+	itext t 1 "x1 `op` (x2 `op` (x3 `op` ... `op` x0)...))", \t -> do
 	text t "x1 : (x2 : (x3 : []))で(:)をopに[]をx0に置き換える", \t -> do
 	semititle t "sum関数", \t -> do
 	text t "sum = foldr (+) 0", \t -> do
@@ -136,7 +136,7 @@ zoromeDef = [\t -> do
 	writeTopTitle t "例題"
 	text t "", \t -> do
 	semititle t "* 0から与えられた数までのぞろ目の和を求める", \t -> do
-	semititle t "* ぞろ目とは333や777などの同じ数の連続", \t -> do
+	semititle t "* ぞろ目とは333や777などの同じ数字の連続", \t -> do
 	semititle t "* 1, 2, 3 ... 9といった1桁の数もぞろ目と考える"
 	text t "", \t -> do
 	text t "この例題について考えていこう"
@@ -195,7 +195,7 @@ zoromeAns1List = [\t -> do
 	text t "", \t -> do
 	mapM_ (text t) za1l, \t -> do
 	text t "* [1 ..]は[1, 2, 3, 4, ...]ということ"
-	itext t 1 "つまりすべての自然数"
+	itext t 1 "つまりすべての自然数", \t -> do
 	text t "* それぞれ表記をshowで求めてisZoromeでfilterする"
  ]
 
