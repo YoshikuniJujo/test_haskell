@@ -17,8 +17,9 @@ pages = [
 	minimal5' 3, syntaxApply,
 	minimal5' 4, syntaxData, syntaxData2,
 	minimal5' 5, syntaxCase,
-	funDef, multiArgFun, operator, list, list2, string,
-	summary
+	funDef, multiArgFun, operator, list, list2, string, tuple,
+	summary,
+	typeDef1, typeDef2
  ]
 
 titlePage :: Page
@@ -232,6 +233,24 @@ string = [\t -> do
 	text t "ということ"
  ]
 
+tuple :: Page
+tuple = [\t -> do
+	writeTopTitle t "タプル"
+	text t "リストと同様にタプルも文法的に特別扱いされている"
+	text t "", \t -> do
+	text t "組み込みのタプルは以下のように定義される"
+	text t "(,) a b = (,) a b"
+	text t "(,,) a b c = (,,) a b c"
+	text t "(,,,) a b c d = (,,,) a b c d"
+	itext t 1 "..."
+	text t "", \t -> do
+	itext t 1 "(,,) 1 2 3", \t -> do
+	dvArrow t
+	preLine t
+	itext t 3 "構文糖"
+	itext t 1 "(1, 2, 3)"
+ ]
+
 summary :: Page
 summary = [\t -> do
 	writeTopTitle t "まとめ"
@@ -240,4 +259,38 @@ summary = [\t -> do
 	text t "* 本質的に必要な構文には他に型クラスに関するものがある", \t -> do
 	text t "* 多くの型は効率等を考慮しなければこの枠組で定義可能", \t -> do
 	text t "* IO型はこの枠組内で定義することができない"
+ ]
+
+typeDef1 :: Page
+typeDef1 = [\t -> do
+	writeTopTitle t "追加: 型宣言"
+	text t "", \t -> do
+	text t "* 今までの例では型宣言をしてこなかった", \t -> do
+	text t "* ほとんどの場合Haskellでは型推論が利く"
+	text t "", \t -> do
+	semititle t "しかし、型宣言はしたほうがいい", \t -> do
+	text t "* 関数の中身を考える前に型を考える", \t -> do
+	itext t 1 "- 入力と出力の範囲をまずは明確にする"
+	itext t 1 "- 頭を整理することができる"
+	itext t 1 "- 自分が何をしようとしているのかが明確になる", \t -> do
+	text t "* 型宣言はドキュメントとして優れる", \t -> do
+	itext t 1 "- 与えられるものと得られるものの種類がわかる"
+	itext t 1 "- 実際のコードとの齟齬がありえない"
+ ]
+
+typeDef2 :: Page
+typeDef2 = [\t -> do
+	writeTopTitle t "追加: 型宣言"
+	text t "", \t -> do
+	semititle t "[変数] :: [型]"
+	text t "", \t -> do
+	text t "* 型は型定数や型変数を型適用で結合したもの"
+	itext t 1 "Maybe a や [] Int 等", \t -> do
+	text t "* 関数の型は[入力型] -> [出力型]で表される"
+	text t "", \t -> do
+	text t "例: Int型のリストを取りString型の値を返す関数something"
+	itext t 1 "something :: [Int] -> String"
+	text t "", \t -> do
+	text t "型に関してもリストとタプルは特別扱いで例えば、"
+	itext t 1 "[Int], (Int, Bool, String)などと書ける"
  ]
