@@ -135,7 +135,7 @@ numSummary = [\t -> do
 	text t "", \t -> do
 	text t "* 「型」と「関数」はセットでひとつの抽象となる", \t -> do
 	text t "* incとdecに見るように関数とは入力から出力への「写像」", \t -> do
-	text t "* addとsubでは「再帰的定義」という手法が使われている"
+	text t "* addとsubは「再帰関数」である"
  ]
 
 posTypeDef :: Page
