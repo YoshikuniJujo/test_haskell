@@ -6,6 +6,8 @@ module Lecture (
 	arrow, rightArrow, withRed, drawRect, graphWrite,
 	graphArrowString, xmark, arrowIText, preLine,
 	haskellBCurry, oneshot,
+	itext', hLine,
+	Turtle,
 ) where
 
 import Graphics.X11.Turtle
@@ -215,6 +217,28 @@ itext t i txt = do
 	write t fontName normalF txt
 	forward t $ normalF * myLength txt
 
+itext' :: Turtle -> Double -> String -> IO ()
+itext' t i txt = do
+	setheading t $ - 90
+	forward t $ normalF * 2
+	setheading t 0
+	setx t $ width / 8 + i * normalF * 4
+	write' t fontName normalF txt
+
+write' :: Turtle -> String -> Double -> String -> IO ()
+write' _ _ _ "" = return ()
+write' t fn fs ('_' : '{' : ca)
+	= do
+		let	(c, '}' : cs) = span (/= '}') ca
+		write t fn (fs * 3 / 4) c
+		forward t (normalF * 1 / 2 * fromIntegral (length c))
+		write' t fn fs cs
+write' t fn fs (c : cs)
+	= do
+		write t fn fs [c]
+		forward t (normalF * 2 / 3)
+		write' t fn fs cs
+
 writeTopTitle :: Turtle -> String -> IO ()
 writeTopTitle t ttl = do
 	let sz = bigF
@@ -354,3 +378,13 @@ oneshot t act = do
 	hideturtle t
 	act
 	showturtle t
+
+hLine :: Turtle -> Double -> Double -> IO ()
+hLine t b l = do
+	setheading t $ - 90
+	forward t $ normalF / 2
+	left t 90
+	setx t $ b * width / 100
+	pendown t
+	forward t $ l * width / 100
+	penup t
