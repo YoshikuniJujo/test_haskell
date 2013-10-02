@@ -14,7 +14,8 @@ pages = [
 	functionIO1, functionIO2,
 	lazyList1, lazyList2,
 	ioMachine1, ioMachine2, ioMachine3, ioMachine4, ioMachine5,
-	ioMachine6, ioMachine7, ioMachine8, ioMachine9
+	ioMachine6, ioMachine7, ioMachine8, ioMachine9,
+	ioMonad1, ioMonad2, ioMonad3
  ]
 
 titlePage :: Page
@@ -43,7 +44,7 @@ prelude1 = [\t -> do
 	semititle t "* HaskellではIO monadという仕組みを使う", \t -> do
 	semititle t "* 理解しづらいことで有名", \t -> do
 	itext t 1 "まぎらわしさがある"
-	itext t 1 "説明のしかたがまずい"
+	itext t 1 "説明のしかたがまずい", \t -> do
 	dvArrowShort t
 	text t "「わかりやすく説明してみようじゃないか」という野望"
  ]
@@ -277,4 +278,51 @@ ioMachine9 = [\t -> do
 	text t "", \t -> do
 	text t "こうして"
 	semititle t "I/OにはIO monadが使われるようになりましたとさ"
+	text t ""
+	text t ""
+	semititle t "ということでこのあとは", \t -> do
+	dvArrow t
+	semititle t "IO monadについて見ていこう"
+ ]
+
+ioMonad1 :: Page
+ioMonad1 = [\t -> do
+	writeTopTitle t "IO monad"
+	text t "", \t -> do
+	semititle t "* monadについて詳しくは第8回あたりにやる予定"
+	itext t 1 "(あるいはもっと後に)", \t -> do
+	semititle t "* とりあえず今は以下の関数だけで良い"
+	itext t 1 "return :: a -> m a"
+	itext t 1 "(>>=) :: m a -> (a -> m b) -> m b"
+	semititle t "* 上記の関数をIO monadに限定すると"
+	itext t 1 "return :: a -> IO a"
+	itext t 1 "(>>=) :: IO a -> (a -> IO b) -> IO b"
+ ]
+
+ioMonad2 :: Page
+ioMonad2 = [\t -> do
+	writeTopTitle t "return"
+	text t "", \t -> do
+	semititle t "* returnって何?", \t -> do
+	semititle t "* 何もせずにその値を返す機械を作る関数", \t -> do
+	semititle t "* 例えばreturn 8は何もせずに8を出力する機械", \t -> do
+	dvArrow t
+	semititle t "return \"Hello, world!\" >>= putStrLn"
+	text t "やっと、これができた!"
+ ]
+
+ioMonad3 :: Page
+ioMonad3 = [\t -> do
+	writeTopTitle t "monad則 その1"
+	text t "", \t -> do
+	text t "* monad則というものが3つある", \t -> do
+	text t "* monadを使う人がびっくりしないための規則", \t -> do
+	text t "* そのうちのひとつを以下に示す", \t -> do
+	semititle t "monad則1: return x >>= f == f x", \t -> do
+	text t "* IO monadもこれを満たす"
+	text t "よって"
+	semititle t "return \"Hello, world!\" >>= putStrLn"
+	dvArrowShort t
+	semititle t "putStrLn \"Hello, world!\""
+	text t "とできる"
  ]
