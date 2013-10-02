@@ -95,7 +95,7 @@ baseFunDef = [\t -> do
 	text t "inc Five = Six"
 	text t "inc Six = Error"
 	text t "inc Error = Error"
-	replicateM_ 7 $ preLine t, \t -> do
+	replicateM_ 8 $ preLine t, \t -> do
 	itext t 4 "dec Zero = Error"
 	itext t 4 "dec One = Zero"
 	itext t 4 "dec Two = One"

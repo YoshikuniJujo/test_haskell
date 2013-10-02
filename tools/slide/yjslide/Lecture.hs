@@ -371,7 +371,7 @@ arrowIText t i str = do
 	itext t i str
 
 preLine :: Turtle -> IO ()
-preLine t = setheading t 90 >> forward t (normalF * 37 / 16)
+preLine t = setheading t 90 >> forward t (normalF * 2)
 
 oneshot :: Turtle -> IO () -> IO ()
 oneshot t act = do
