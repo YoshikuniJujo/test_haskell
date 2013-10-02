@@ -72,3 +72,35 @@ fun arg1 arg2 ...
 
 反復的定義の話は正格評価の話をしなければならないので、
 後でもう一度触れることにしよう。
+
+2013.10.02 Wed.
+
+IO monadの話のなかで、do記法に触れる必要があるな。
+そしたら例題->演習といった感じか。
+
+遅延IOの話はiterateeを紹介するときでいいだろう。
+
+第1回 ミニマルな本質
+第2回 特徴
+第3回 最小限の意味論と構文糖
+第4回 リスト
+第5回 再帰関数
+第6回 IO monad
+(ここまで作った、以下予定)
+第7回 型クラス
+第8回 monad
+第9回 monad transfer library
+第10回 type families
+第11回 array, bytestring
+第12回 Map (Hashにもちょっと触れる)
+第13回 GADTs
+第14回 functor, applicative, monad
+第15回 free monad
+第16回 operational monad
+第17回 template haskell
+第18回 QuasiQuotes
+第19回 parser (papillon の紹介)
+第20回 遅延IOとiteratee
+
+どこかで queue にも触れたいな
+finger tree面白いな
