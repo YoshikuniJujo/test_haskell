@@ -89,25 +89,31 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 (ここまで作った、以下予定)
 第7回 型クラス
 第8回 moduleシステム
+第9回 落ち穂拾い
 ---
-第9回 monad
-第10回 type families
-第11回 monad transfer library
-第12回 array, bytestring
-第13回 Map (Hashにもちょっと触れる)
-第14回 GADTs
-第15回 ffi
+第10回 monad
+第11回 type families
+第12回 monad transfer library
+第13回 array, bytestring
+第14回 Map (Hashにもちょっと触れる)
+第15回 GADTs
+第16回 ffi
 ---
-第16回 functor, applicative, monad
-第17回 free monad
-第18回 operational monad
-第19回 template haskell
-第20回 QuasiQuotes
-第21回 parser (papillon の紹介)
-第22回 unsafePerformIO, unsafeInterleaveIO
-第23回 遅延IOとiteratee
-第24回 Arrow
-第25回 Sequence (finger tree, queue)
+第17回 functor, applicative, monad
+第18回 free monad
+第19回 operational monad
+第20回 template haskell
+第21回 QuasiQuotes
+第22回 parser (papillon の紹介)
+第23回 unsafePerformIO, unsafeInterleaveIO
+第24回 遅延IOとiteratee
+第25回 Arrow
+第26回 Sequence (finger tree, queue)
 
 どこかで queue にも触れたいな
 finger tree面白いな
+
+どこかで _ と if ... then ... else と guard について触れる必要があるな
+あとは let ... in ..., where ...,
+type と newtype もどこかで触れなければならないな。
+Int と Integer について、も。

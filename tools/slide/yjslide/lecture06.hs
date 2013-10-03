@@ -16,7 +16,10 @@ pages = [
 	ioMachine1, ioMachine2, ioMachine3, ioMachine4, ioMachine5,
 	ioMachine6, ioMachine7, ioMachine8, ioMachine9,
 	ioMonad1, ioMonad2, ioMonad3,
-	helloWorld1, helloWorld2, ghcE, helloType
+	helloWorld1, helloWorld2, ghcE, helloType,
+	ioExamples1, ioExamples2, ioExamples3,
+	ioLambda1, ioLambda2, doNotation,
+	doNotationExamples1, doNotationExamples2, doNotationExamples3
  ]
 
 titlePage :: Page
@@ -382,4 +385,133 @@ helloType = [\t -> do
 	text t ""
 	semititle t "main :: IO ()", \t -> do
 	semititle t "main = putStrLn \"Hello, world!\""
+ ]
+
+ioExamples1 :: Page
+ioExamples1 = [\t -> do
+	writeTopTitle t "例題"
+	text t ".を入力するまで挨拶を続けるプログラム"
+	text t "", \t -> do
+	text t "main :: IO ()"
+	text t "main = getLine >>= \\name -> case name of"
+	itext t 1 "\".\" -> return ()"
+	itext t 1 "_ -> putStrLn (\"Hello, \" ++ name ++ \"!\")"
+	itext t 2 ">>= \\_ -> main"
+ ]
+
+ioExamples2 :: Page
+ioExamples2 = [\t -> do
+	writeTopTitle t "例題"
+	text t ".を入力するまでの値の総和を表示するプログラム"
+	text t "", \t -> do
+	text t "main :: IO ()"
+	text t "main = getSum >>= print"
+	text t ""
+	text t "getSum :: IO Integer"
+	text t "getSum = getLine >>= \\input -> case input of"
+	itext t 1 "\".\" -> return 0"
+	itext t 1 "_ -> getSum >>= return . (read input +)"
+ ]
+
+ioExamples3 :: Page
+ioExamples3 = [\t -> do
+	writeTopTitle t "例題"
+	text t "文字列と数を入力し文字列をその回数くりかえすプログラム", \t -> do
+	text t "ついでに文字列を逆にしてくりかえしてみる"
+	text t "", \t -> do
+	text t "main :: IO ()"
+	text t "main ="
+	itext t 0.5 "getLine >>= \\str ->"
+	itext t 0.5 "getLine >>= \\n ->"
+	itext t 0.5 "putStrLn (concat $ replicate (read n) str) >>= \\_ ->"
+	itext t 0.5 "putStrLn (concat $ replicate (read n)"
+	itext t 6 "$ reverse str)"
+ ]
+
+ioLambda1 :: Page
+ioLambda1 = [\t -> do
+	writeTopTitle t ">>= \\var ->"
+	text t "", \t -> do
+	text t "* input >>= \\var -> output var という構造がよく出てくる"
+	text t "* このネスト構造をよく見てみよう"
+	itext t 1 "input1 >>= \\var1 ->"
+	itext t 2 "(input2 >>= \\var2 -> (output var1 var2))"
+	text t "* \\v1 -> (\\v2 -> f v1 v2)のような感じ"
+	itext t 1 "\\v1 -> (\\v2 -> (\\v3 -> (\\v4 -> ... と続けられる"
+	dvArrowShort t
+	text t "しかしネストを反映したインデントだと見づらい"
+ ]
+
+ioLambda2 :: Page
+ioLambda2 = [\t -> do
+	writeTopTitle t ">>= \\var ->"
+	text t "", \t -> do
+	text t "* インデントをそろえると見やすい"
+	itext t 1 "input1 >>= \\var1 ->"
+	itext t 1 "input2 >>= \\var2 ->"
+	itext t 1 "input3 >>= \\var3 ->"
+	itext t 1 "input4 >>= \\var4 ->"
+	itext t 1 "fun var1 var2 var3 var4"
+	text t "", \t -> do
+	text t "よく使う書きかたなのでより書きやすい構文糖がある"
+ ]
+
+doNotation :: Page
+doNotation = [\t -> do
+	writeTopTitle t "do記法"
+	text t "", \t -> do
+	text t "* 前の例は以下のように書ける", \t -> do
+	itext t 0.5 "do"
+	itext t 1 "var1 <- input1"
+	itext t 1 "var2 <- input2"
+	itext t 1 "var3 <- input3"
+	itext t 1 "var4 <- input4"
+	itext t 1 "fun var1 var2 var3 var4"
+ ]
+
+doNotationExamples1 :: Page
+doNotationExamples1 = [\t -> do
+	writeTopTitle t "do記法(例題)"
+	text t ".を入力するまで挨拶を続けるプログラム"
+	text t "", \t -> do
+	text t "main :: IO ()"
+	text t "main = do"
+	itext t 1 "name <- getLine"
+	itext t 1 "case name of"
+	itext t 2 "\".\" -> return ()"
+	itext t 2 "_ -> do"
+	itext t 3 "putStrLn (\"Hello, \" ++ name ++ \"!\")"
+	itext t 3 "main"
+ ]
+
+doNotationExamples2 :: Page
+doNotationExamples2 = [\t -> do
+	writeTopTitle t "do記法(例題)"
+	text t ".を入力するまでの値の総和を求めるプログラム", \t -> do
+	text t "main :: IO ()"
+	text t "main = do"
+	itext t 1 "s <- getSum"
+	itext t 1 "print s"
+	text t "getSum :: IO Integer"
+	text t "getSum = do"
+	itext t 1 "input <- getLine"
+	itext t 1 "case input of"
+	itext t 2 "\".\" -> return 0"
+	itext t 2 "_ -> do"
+	itext t 3 "s <- getSum"
+	itext t 3 "return $ read input + s"
+ ]
+
+doNotationExamples3 :: Page
+doNotationExamples3 = [\t -> do
+	writeTopTitle t "do記法(例題)"
+	text t "文字列と数を入力すると文字列を回数分くりかえして表示", \t -> do
+	text t "ついでにひっくりかえして表示"
+	text t "", \t -> do
+	text t "main :: IO ()"
+	text t "main = do"
+	itext t 0.5 "str <- getLine"
+	itext t 0.5 "n <- getLine"
+	itext t 0.5 "putStrLn $ concat $ replicate (read n) str"
+	itext t 0.5 "putStrLn $ concat $ replicate (read n) $ reverse str"
  ]
