@@ -117,3 +117,23 @@ finger tree面白いな
 あとは let ... in ..., where ...,
 type と newtype もどこかで触れなければならないな。
 Int と Integer について、も。
+
+2013.10.03
+
+IO monad を
+
+type IO a = World -> (a, World)
+として説明するやりかたに違和感を感じるのだが。
+ひとつひとつの説明は確かに合っているような気はするが。
+
+置き換えということを考える。
+Worldはすべて異なると考える。
+
+putStrLn "Hello, world!" :: World -> ((), World)
+
+putStrLn "Hello, world!" world0 :: ((), World)
+
+getLine :: World -> (Char, World)
+getLine world0 :: (Char, World)
+
+評価 -- 動作
