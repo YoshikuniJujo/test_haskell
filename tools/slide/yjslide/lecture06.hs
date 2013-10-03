@@ -19,7 +19,9 @@ pages = [
 	helloWorld1, helloWorld2, ghcE, helloType,
 	ioExamples1, ioExamples2, ioExamples3,
 	ioLambda1, ioLambda2, doNotation,
-	doNotationExamples1, doNotationExamples2, doNotationExamples3
+	doNotationExamples1, doNotationExamples2, doNotationExamples3,
+	doNotationSummary,
+	summary
  ]
 
 titlePage :: Page
@@ -514,4 +516,29 @@ doNotationExamples3 = [\t -> do
 	itext t 0.5 "n <- getLine"
 	itext t 0.5 "putStrLn $ concat $ replicate (read n) str"
 	itext t 0.5 "putStrLn $ concat $ replicate (read n) $ reverse str"
+ ]
+
+doNotationSummary :: Page
+doNotationSummary = [\t -> do
+	writeTopTitle t "do記法(まとめ)"
+	text t "", \t -> do
+	text t "* do記法は構文糖"
+	text t "* 'input >>= \\var ->' が 'var <- input' になる"
+	text t "* 'action >>= \\_ ->' は 'action' と書ける"
+	text t "* インデントを利用した書きかたと利用しない書きかたの2つ"
+	itext t 1 "インデントを利用しないときは do { ...; ...; ...; }"
+	text t "* let var = expression という書きかたでローカルな変数も"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "* かなり疲れた"
+	text t "* よくわからなくなっている"
+	text t "* 前段はすぐに理解できなくても良い"
+	text t "* do記法でプログラムが書ければ良い"
+	text t "* ただしその背後にある論理をときどき意識してみると良い"
+	text t "* このパートは2つに分けるべきかもしれない"
+	text t "* そして、do記法を利用したより実践的なほうを先にすべきかも"
+	text t "* いずれにしても疲れた"
  ]
