@@ -239,9 +239,9 @@ tuple = [\t -> do
 	text t "リストと同様にタプルも文法的に特別扱いされている"
 	text t "", \t -> do
 	text t "組み込みのタプルは以下のように定義される"
-	text t "(,) a b = (,) a b"
-	text t "(,,) a b c = (,,) a b c"
-	text t "(,,,) a b c d = (,,,) a b c d"
+	text t "data (,) a b = (,) a b"
+	text t "data (,,) a b c = (,,) a b c"
+	text t "data (,,,) a b c d = (,,,) a b c d"
 	itext t 1 "..."
 	text t "", \t -> do
 	itext t 1 "(,,) 1 2 3", \t -> do
