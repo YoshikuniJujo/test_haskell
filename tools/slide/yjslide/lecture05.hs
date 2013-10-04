@@ -30,16 +30,16 @@ titlePage = [flip writeTitle subtitle]
 
 prelude :: Page
 prelude = [\t -> do
-	writeTopTitle t "はじめに", \t -> do
-	semititle t "* リストを扱う関数は再帰的に定義されている", \t -> do
-	semititle t "* 再帰関数を学ぶことで", \t -> do
+	writeTopTitle t "はじめに"
+	text t "", \t -> do
+	text t "* リストを扱う関数は再帰的に定義されている", \t -> do
+	text t "* 再帰関数を学ぶことで", \t -> do
 	itext t 1 "それらの関数の中身を知ることができる", \t -> do
 	itext t 1 "より広い範囲の関数を定義することができる", \t -> do
-	semititle t "* 既存の関数が使えるときはそっちを使うべき", \t -> do
+	text t "* 既存の関数が使えるときはそっちを使うべき", \t -> do
 	itext t 1 "ただし「学習のため」や「とりあえず作ってみる」"
 	itext t 1 "といった場合は再帰関数を作ることもある", \t -> do
-	semititle t "* 直接、再帰を使わないと表現できないことも", \t -> do
-	itext t 1 "が、そういう場面は稀である"
+	text t "* 直接、再帰を使ったほうがわかりやすいこともある"
  ]
 
 simple :: Page
@@ -51,11 +51,10 @@ simple = [\t -> do
 	text t "sumTo 0 = 0"
 	text t "sumTo n = n + sumTo (n - 1)"
 	text t "", \t -> do
-	text t "これは"
-	itext t 1 "0から0までの和は0であり、"
-	itext t 1 "0からnまでの和は0からn - 1までの和にnを足したもの"
-	text t "と読める"
-	text t "", \t -> do
+	text t "0から0までの和: 0"
+	text t "0からnまでの和: n + (0からn - 1までの和)"
+	text t "動作の定義", \t -> do
+	xmark t "動作の定義"
 	arrowIText t 0 "性質を定義している"
  ]
 
@@ -80,9 +79,8 @@ summary1 :: Page
 summary1 = [\t -> do
 	writeTopTitle t "ここまでのまとめ"
 	text t "", \t -> do
-	semititle t "* 大事なのはここ", \t -> do
-	itext t 1 "k = 0の値を定義", \t -> do
-	itext t 1 "k = nの値をk = n - 1の値を使って定義", \t -> do
+	semititle t "k = 0の値を定義", \t -> do
+	semititle t "k = nの値をk = n - 1の値を使って定義", \t -> do
 	dvArrowShort t
 	itext t 1 "すべての値が定義される"
  ]
@@ -98,15 +96,15 @@ iterative2 :: Page
 iterative2 = [\t -> do
 	writeTopTitle t "反復的プロセス"
 	text t "", \t -> do
-	text t "再帰関数によって表現されるプロセスには大きく分けて"
-	itext t 1 "* 再帰的プロセス"
-	itext t 1 "* 反復的プロセス"
-	text t "の2つがある", \t -> do
-	semititle t "再帰的プロセス", \t -> do
-	text t "sumTo n = n + sumTo (n - 1) は再帰的プロセスとなる", \t -> do
-	text t "sumTo (n - 1) の実行中に文脈 n + ... の記憶が必要", \t -> do
-	semititle t "反復的プロセス", \t -> do
-	text t "次に呼び出されるプロセスは何も覚えておかなくて良い"
+	text t "再帰関数によって表現される2種類のプロセス", \t -> do
+	itext t 1 "- 再帰的プロセス"
+	itext t 1 "- 反復的プロセス"
+	text t "", \t -> do
+	text t "* 再帰的プロセス", \t -> do
+	itext t 1 "sumTo n = n + sumTo (n - 1) は再帰的プロセス", \t -> do
+	itext t 1 "sumTo (n - 1)の実行中に文脈(n + ...)を保持", \t -> do
+	text t "* 反復的プロセス", \t -> do
+	itext t 1 "呼び出されるプロセスは文脈を保持しない"
  ]
 
 iterative3 :: Page
@@ -130,14 +128,14 @@ iterative4 :: Page
 iterative4 = [\t -> do
 	writeTopTitle t "反復的プロセス(まとめ)"
 	text t "", \t -> do
-	semititle t "* 関数は次に呼び出される関数に置き換えられる"
+	text t "* 関数は次に呼び出される関数に置き換えられる"
 	itext t 1 "呼び出しの文脈を覚えておく必要はない", \t -> do
-	semititle t "* 状態を保存するための追加の変数が必要になる", \t -> do
-	semititle t "* 空間効率(メモリ使用量)を改善する鍵となる"
-	itext t 1 "Haskellでは正格評価のための仕組みが必要となる", \t -> do
-	semititle t "* 再帰的プロセスと反復的プロセスの使い分け"
-	itext t 1 "おおまかには「わかりやすさ」の再帰的プロセスと"
-	itext t 1 "「効率」の反復的プロセスと考えておく"
+	text t "* 状態を保存するための追加の変数が必要になる", \t -> do
+	text t "* 空間効率(メモリ使用量)を改善する鍵となる", \t -> do
+	itext t 1 "Haskellでは正格評価のための仕組みも必要となる"
+	text t "", \t -> do
+	text t "大事なのは", \t -> do
+	semititle t "「再帰的プロセスと反復的プロセスの使い分け」"
  ]
 
 recursiveList :: Page
@@ -163,7 +161,7 @@ recursiveList2 = [\t -> do
 	itext t 1 "ints :: [Integer]"
 	itext t 1 "ints = 1 : map (+ 1) ints"
 	text t "", \t -> do
-	text t "展開してみる"
+	text t "展開してみる(map f (x : xs) = f x : map f xs)"
 	arrowIText t 1 "1 : map (+ 1) ints", \t -> do
 	arrowIText t 1 "1 : map (+ 1) (1 : map (+ 1) ints)", \t -> do
 	arrowIText t 1 "1 : (1 + 1) : map (+ 1) (map (+ 1) ints)", \t -> do
@@ -179,14 +177,14 @@ fibonacci1 = [\t -> do
 	writeTopTitle t fibTitle
 	text t "例としてフィボナッチ数列について見ていこう"
 	text t "", \t -> do
-	semititle t "フィボナッチ数列とは?", \t -> do
-	text t "直前の2つの数の和が次の数となるような数列", \t -> do
-	text t "数学的に表記するとこうなる"
-	itext' t 1 "x_{0} = 0"
-	itext' t 1 "x_{1} = 1"
-	itext' t 1 "x_{n+2} = x_{n+1} + x_{n}", \t -> do
+	text t "フィボナッチ数列とは?", \t -> do
+	itext t 1 "直前の2つの数の和が次の数となるような数列", \t -> do
+	itext t 1 "数学的に表記するとこうなる"
+	itext' t 2 "x_{0} = 0"
+	itext' t 2 "x_{1} = 1"
+	itext' t 2 "x_{n+2} = x_{n+1} + x_{n}", \t -> do
+	text t "つまり"
 	text t "0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144 ..."
-	text t "ということ"
  ]
 
 fibonacci2 :: Page
@@ -210,15 +208,15 @@ fibonacci2 = [\t -> do
 
 fibonacci3 :: Page
 fibonacci3 = [\t -> do
-	writeTopTitle t fibTitle
-	text t "", \t -> do
+	writeTopTitle t fibTitle, \t -> do
 	text t "なんで、こんなに遅いの?"
-	text t "フィボナッチ数列の40番目ならせいぜい40回の足し算のはず", \t -> do
+	text t "フィボナッチ数列の40番目なら39回の足し算では?", \t -> do
 	dvArrowShort t
 	text t "本当は1億6558万140回の足し算をしている"
 	text t "", \t -> do
-	text t "fib n = fib (n - 1) + fib (n - 2)をよく見ると"
-	text t "fib (n - 1)を求めるときfib (n - 2)の計算がダブっている"
+	text t "fib n = fib (n - 1) + fib (n - 2)", \t -> do
+	arrowIText t 1 "fib (n - 1)の計算でfib (n - 2)の計算をする"
+	arrowIText t 1 "fib (n - 2)の計算がダブる"
 	text t "", \t -> do
 	text t "計算量はだいたい2倍2倍で増加している", \t -> do
 	text t "つまりO(2^n)の時間と空間が必要となる"
@@ -232,12 +230,13 @@ fibonacci4 = [\t -> do
 	itext t 1 "今回は反復的プロセスを使ってみよう"
 	text t "", \t -> do
 	text t "反復的プロセスにするにはどうしたら良いか"
-	arrowIText t 1 "関数の引数にすべての情報を乗っければ良い", \t -> do
-	text t "n番目を求めるにはn-1番目とn-2番目の値が必要", \t -> do
-	itext t 1 "fibIter a _ 0 = a"
-	itext t 1 "fibIter a b n = fib b (a + b) (n - 1)"
-	itext t 1 "fibI = fibIter 0 1", \t -> do
-	text t "n-1番目とn番目からn番目とn+1番目を求めている"
+	arrowIText t 1 "関数の引数にすべての情報を乗っければ良い"
+	text t "", \t -> do
+	text t "f(n), f(n+1) => f(n+1), f(n) + f(n+1)", \t -> do
+	text t ""
+	text t "fibIter a _ 0 = a"
+	text t "fibIter a b n = fib b (a + b) (n - 1)"
+	text t "fibI = fibIter 0 1"
  ]
 
 fibonacci5 :: Page
@@ -320,9 +319,9 @@ sumFun = [\t -> do
 	text t "sum (x : xs) = x + sum xs"
 	text t "", \t -> do
 	text t "Num a => はクラス制約"
-	itext t 1 "クラス制約は第7回あたりでやる「型クラス」で"
-	text t "空リストの内の値の合計は0"
-	text t "xとxsの合計の和が全体の合計となる"
+	itext t 1 "クラス制約は第7回あたりでやる「型クラス」で", \t -> do
+	text t "空リストの合計は0", \t -> do
+	text t "xと(xsの合計)の和が全体の合計となる"
  ]
 
 mapFun :: Page
@@ -333,10 +332,11 @@ mapFun = [\t -> do
 	text t "map _ [] = []"
 	text t "map f (x : xs) = f x : map f xs"
 	text t "", \t -> do
-	text t "空リストのすべての要素に関数を適用した結果は空リスト", \t -> do
-	text t "xに関数を適用した結果をxsのすべての要素に"
-	itext t 1 "関数を適用した結果の頭に足したものは"
-	itext t 1 "x : xs のすべての要素に関数を適用したもの"
+	text t "空リストのすべての要素に関数fを適用した結果は空リスト", \t -> do
+	text t "xに関数fを適用した結果 :"
+	itext t 1 "xsのすべての要素に関数fを適用した結果", \t -> do
+	dvArrowShort t
+	text t "x : xs のすべての要素に関数fを適用したもの"
  ]
 
 filterFun :: Page
@@ -349,11 +349,11 @@ filterFun = [\t -> do
 	itext t 1 "| p x = x : filter p xs"
 	itext t 1 "| otherwise = filter p xs"
 	text t "", \t -> do
-	text t "ガードについてはどこかで触れる必要があるな -> 自分"
 	text t "空リストから何を抽出しようとしても空リスト"
-	text t "もしもxが条件を満たすならxsのうちの条件を満たすものの"
-	itext t 1 "リストにxを足したもの"
-	text t "条件を満たさないならxsのうちの条件を満たすものを集めたもの"
+	text t "xが条件を満たす"
+	arrowIText t 1 "x : (xsをfilterしたリスト)"
+	text t "条件を満たさない"
+	arrowIText t 1 "xsをfilterしたリスト"
  ]
 
 foldrFun :: Page
@@ -364,38 +364,33 @@ foldrFun = [\t -> do
 	text t "foldr _ v [] = v "
 	text t "foldr op v (x : xs) = x `op` foldr op v xs"
 	text t "", \t -> do
-	text t "空リストはvになる"
-	text t "x : xsの':'がopで置き換えられる"
+	text t "空リストならばv"
+	text t "x `op` (xsをvを最右としてopで右結合したもの)"
 	text t "", \t -> do
-	text t "リストを扱う再帰的プロセスの枠組を抽象化している"
+	semititle t "リストを扱う再帰的プロセスの枠組を抽象化"
  ]
 
 foldlFun :: Page
 foldlFun = [\t -> do
 	writeTopTitle t "foldl"
+	text t "foldlは左結合で要素に演算子を適用していく関数"
 	text t "", \t -> do
 	text t "foldl :: (a -> b -> a) -> a -> [b] -> a"
 	text t "foldl _ v [] = v"
 	text t "foldl op v (x : xs) = foldl op (v `op` x) xs"
 	text t "", \t -> do
-	text t "foldlは左結合で要素に演算子を適用していく関数"
-	text t "vにxを演算子で結合したものがvに蓄積されていく"
+	text t "空リストならvに蓄積された値を返す", \t -> do
+	text t "vにxを演算子opで結合して次の値へ"
+	arrowIText t 1 "vにxを演算子で結合したものがvに蓄積されていく"
 	text t "", \t -> do
-	text t "リストに対する反復的プロセスの枠組を抽象化している"
+	semititle t "リストに対する反復的プロセスの枠組を抽象化"
  ]
 
 summary :: Page
 summary = [\t -> do
 	writeTopTitle t "まとめ"
 	text t "", \t -> do
-	text t "* 疲れてきた", \t -> do
 	text t "* 再帰関数の定義のしかたについて学んだ", \t -> do
 	text t "* 大きく分けて再帰的プロセスと反復的プロセスがある", \t -> do
-	text t "* リストを扱う再帰関数についても学んだ", \t -> do
-	text t "* 疲れてきてすこしよくわからなくなっている", \t -> do
-	text t "* すこし休んだほうが良さそうだ", \t -> do
-	text t "* 第6回にIOについてやる", \t -> do
-	text t "* 第7回に型クラスについてやる", \t -> do
-	text t "* 第8回にmonadについてやる", \t -> do
-	text t "* template haskell, iteratee とかもやりたい"
+	text t "* リストを扱う再帰関数についても学んだ"
  ]

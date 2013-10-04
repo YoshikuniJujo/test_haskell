@@ -18,6 +18,7 @@ pages = [
 	minimal5' 4, syntaxData, syntaxData2,
 	minimal5' 5, syntaxCase,
 	funDef, multiArgFun, operator, list, list2, string, tuple,
+	ifClause, guard,
 	summary,
 	typeDef1, typeDef2
  ]
@@ -231,6 +232,35 @@ string = [\t -> do
 	arrowIText t 1 "['h', 'e', 'l', 'l', 'o']" 
 	arrowIText t 1 "'h' : 'e' : 'l' : 'l' : 'o' : []"
 	text t "ということ"
+ ]
+
+ifClause :: Page
+ifClause = [\t -> do
+	writeTopTitle t "if ... then ... else ..."
+	text t "", \t -> do
+	text t "if [test] then [texp] else [eexp]"
+	text t "", \t -> do
+	text t "これは以下の構文糖と考えられる"
+	text t "", \t -> do
+	text t "case [test] of"
+	itext t 1 "True -> [texp]"
+	itext t 1 "_ -> [eexp]"
+ ]
+
+guard :: Page
+guard = [\t -> do
+	writeTopTitle t "ガード節"
+	text t "関数定義にはガード節をつけられる"
+	text t "", \t -> do
+	text t "fun x"
+	itext t 1 "| p x = ..."
+	itext t 1 "| q x = ..."
+	itext t 1 "| otherwise = ..."
+	text t "", \t -> do
+	text t "上は以下と同じこと"
+	text t "", \t -> do
+	text t "fun x = if p x then ... else if q x then ... else ..."
+	
  ]
 
 tuple :: Page
