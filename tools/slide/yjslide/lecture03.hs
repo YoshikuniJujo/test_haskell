@@ -20,7 +20,7 @@ pages = [
 	funDef, multiArgFun, operator, list, list2, string, tuple,
 	ifClause, guard,
 	summary,
-	typeDef1, typeDef2
+	typeDef1, typeDef2, typeSynonym
  ]
 
 titlePage :: Page
@@ -323,4 +323,19 @@ typeDef2 = [\t -> do
 	text t "", \t -> do
 	text t "型に関してもリストとタプルは特別扱いで例えば、"
 	itext t 1 "[Int], (Int, Bool, String)などと書ける"
+ ]
+
+typeSynonym :: Page
+typeSynonym = [\t -> do
+	writeTopTitle t "追加: 型に別名を与える"
+	text t "", \t -> do
+	text t "名前から年齢を得る関数", \t -> do
+	text t "型宣言は以下のようになるだろう"
+	itext t 1 "age :: String -> [(String, Int)] -> Int"
+	text t "", \t -> do
+	text t "しかしtypeを使えばよりわかりやすく書ける", \t -> do
+	itext t 1 "type Name = String"
+	itext t 1 "type Age = Int"
+	itext t 1 "type NADataBase = [(Name, Age)]"
+	itext t 1 "age :: Name -> NADataBase -> Age"
  ]
