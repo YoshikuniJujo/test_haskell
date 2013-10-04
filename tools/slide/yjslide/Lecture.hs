@@ -308,7 +308,7 @@ arrow t l = do
 rightArrow :: Turtle -> IO ()
 rightArrow t = do
 	setheading t $ -90
-	forward t $ normalF * 55 / 32
+	forward t $ normalF * 3 / 2
 	left t 90
 	arrow t $ 8 * rt
 	left t 90

@@ -289,18 +289,17 @@ lazyEvaluations2 = [\t -> do
 lazyEvaluationChecks1 :: Page
 lazyEvaluationChecks1 = [\t -> do
 	writeTopTitle t "遅延性とは?(練習問題)"
-	text t "以下の例について先行性と遅延性の"
-	itext t 1 "それぞれについてどうなるか答えよ"
+	text t "以下について先行性と遅延性でどうなるか答えよ"
 	text t "", \t -> do
 	text t "x = x; const y z = yのときのconst 8 x", \t -> do
 	text t "ones = 1 : onesのときのtake 10 ones"
 	text t "", \t -> do
 	text t "答え:", \t -> do
-	text t "const 8 x"
-	itext t 1 "先行性: 無限ループにより値がかえらない"
+	text t "const 8 x", \t -> do
+	itext t 1 "先行性: 無限ループにより値がかえらない", \t -> do
 	itext t 1 "遅延性: 値8がかえる", \t -> do
-	text t "take 10 ones"
-	itext t 1 "先行性: onesの完全な評価のため値がかえらない"
+	text t "take 10 ones", \t -> do
+	itext t 1 "先行性: onesの完全な評価のため値がかえらない", \t -> do
 	itext t 1 "遅延性: 1が10個はいったリストがかえる"]
 
 summaries1 :: Page
