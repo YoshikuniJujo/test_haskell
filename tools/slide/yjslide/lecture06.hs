@@ -75,7 +75,7 @@ prelude2 = [\t -> do
 prelude2_5 :: Page
 prelude2_5 = [\t -> do
 	writeTopTitle t "はじめに"
-	semititle t "説明の戦略", \t -> do
+	text t "説明の戦略", \t -> do
 	text t "* I/Oを実現させた漢たちの架空の歴史をたどる", \t -> do
 	text t "* 実際の歴史がどうだったかは知らない", \t -> do
 	text t "* 今の形に至るまでの思考経路を想像", \t -> do
