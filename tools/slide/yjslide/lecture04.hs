@@ -39,23 +39,25 @@ noLoop = [\t -> do
 makeList :: Page
 makeList = [\t -> do
 	writeTopTitle t "リストの生成", \t -> do
-	semititle t "enumFrom関数", \t -> do
-	text t "指定した値から始まる無限リストを作る", \t -> do
-	text t "例: enumFrom 3 => [3, 4, 5, ...]", \t -> do
-	semititle t "enumFromTo関数", \t -> do
-	text t "始めと終わりの値を指定することでリストを作る", \t -> do
-	text t "例: enumFromTo 3 8 => [3, 4, 5, 6, 7, 8]"
+	text t "* enumFrom関数", \t -> do
+	itext t 1 "指定した値から始まる無限リストを作る", \t -> do
+	itext t 1 "例: enumFrom 3 => [3, 4, 5, ...]", \t -> do
+	text t "* enumFromTo関数", \t -> do
+	itext t 1 "始めと終わりの値を指定することでリストを作る", \t -> do
+	itext t 1 "例: enumFromTo 3 8 => [3, 4, 5, 6, 7, 8]"
 	text t "", \t -> do
-	arrowIText t 0 "上記2つの関数には構文糖が用意されていて"
-	itext t 1 "[3 ..]や[3 .. 8]のように書ける"
+	arrowIText t 0 "構文糖により以下のように書ける", \t -> do
+	semititle t "[3 ..]", \t -> do
+	semititle t "[3 .. 8]"
  ]
 
 makeList2 :: Page
 makeList2 = [\t -> do
 	writeTopTitle t "リストの生成", \t -> do
-	semititle t "iterate関数", \t -> do
-	text t "指定した関数を0, 1, 2 ... 回適用した無限リストを作る"
-	text t "iterate f x => [x, f x, f (f x), f (f (f x)), ...]"
+	text t "* iterate関数", \t -> do
+	itext t 1 "関数を0, 1, 2 ... 回適用した無限リストを作る"
+	itext t 1 "iterate f x", \t -> do
+	itext t 2 "=> [x, f x, f (f x), f (f (f x)), ...]"
 	text t "", \t -> do
 	text t "例: iterate (* 2) 1 => [1, 2, 4, 8, 16, ...]"
  ]
@@ -63,47 +65,48 @@ makeList2 = [\t -> do
 mapZipWith :: Page
 mapZipWith = [\t -> do
 	writeTopTitle t "map", \t -> do
-	semititle t "map関数", \t -> do
-	text t "関数をリストの要素すべてに適用する"
-	text t "map f [x1, x2, x3 ...] => [f x1, f x2, f x3 ...]", \t -> do
-	semititle t "zipWith関数", \t -> do
-	text t "2引数関数を2つのリストのそれぞれの要素に適用する"
-	text t "zipWith f [x1, x2 ...] [y1, y2 ...]"
-	itext t 1 "=> [f x1 y1, f x2 y2 ...]", \t -> do
-	semititle t "concatMap関数", \t -> do
-	text t "concatMap f list == concat (map f list)", \t -> do
-	text t "concat [[1,2],[3,4],[5,6,7]] => [1,2,3,4,5,6,7]", \t -> do
-	text t "mapによって作られたリストのリストを平らにする"
+	text t "* map関数", \t -> do
+	itext t 1 "関数をリストの要素すべてに適用する", \t -> do
+	itext t 1 "map f [x1, x2, x3 ...] => [f x1, f x2, f x3 ...]", \t -> do
+	text t "* zipWith関数", \t -> do
+	itext t 1 "2引数関数を2つのリストのそれぞれの要素に適用する", \t -> do
+	itext t 1 "zipWith f [x1, x2 ...] [y1, y2 ...]"
+	itext t 2 "=> [f x1 y1, f x2 y2 ...]", \t -> do
+	text t "* concatMap関数", \t -> do
+	itext t 1 "concatMap f list == concat (map f list)", \t -> do
+	itext t 1 "concat [[1,2],[3,4],[5,6,7]] => [1,2,3,4,5,6,7]", \t -> do
+	itext t 1 "mapによって作られたリストのリストを平らにする"
  ]
 
 filterFun :: Page
 filterFun = [\t -> do
 	writeTopTitle t "filter", \t -> do
-	semititle t "filter関数", \t -> do
-	text t "filter p xs で"
-	text t "p x の値がTrueのものだけ集めたリストを返す", \t -> do
+	text t "* filter関数", \t -> do
+	itext t 1 "filter p xs で"
+	itext t 1 "p x の値がTrueのものだけ集めたリストを返す", \t -> do
 	text t "例: filter even [1, 2, 3, 4, 5] => [2, 4]"
 	text t "", \t -> do
-	semititle t "takeWhile関数", \t -> do
-	text t "takeWhile p xs で"
-	text t "p x の値がTrueであるあいだだけリストの値を取り出す", \t -> do
-	text t "例: takeWhile (< 5) [2, 3, 5, 4, 3] => [2, 3]"
+	text t "* takeWhile関数", \t -> do
+	itext t 1 "takeWhile p xs で"
+	itext t 1 "p x の値がTrueのあいだリストの値を取り出す", \t -> do
+	itext t 1 "例: takeWhile (< 5) [2, 3, 5, 4, 3] => [2, 3]"
  ]
 
 foldrFun :: Page
 foldrFun = [\t -> do
 	writeTopTitle t "foldr", \t -> do
-	semititle t "foldr関数", \t -> do
-	text t "演算子を右結合でリストの要素に次々と適用していく"
-	text t "foldr op x0 [x1, x2, x3 ...] =>"
-	itext t 1 "x1 `op` (x2 `op` (x3 `op` ... `op` x0)...))", \t -> do
-	text t "x1 : (x2 : (x3 : []))で(:)をopに[]をx0に置き換える", \t -> do
-	semititle t "sum関数", \t -> do
-	text t "sum = foldr (+) 0", \t -> do
-	text t "x1 + (x2 + (x3 + 0))", \t -> do
-	semititle t "and関数", \t -> do
-	text t "and = foldr (&&) True", \t -> do
-	text t "x1 && (x2 && (x3 && True))"
+	text t "* foldr関数", \t -> do
+	itext t 1 "演算子を右結合でリストの要素に次々と適用していく", \t -> do
+	itext t 1 "foldr op x0 [x1, x2, x3 ...] =>"
+	itext t 2 "x1 `op` (x2 `op` (x3 `op` ... `op` x0)...))", \t -> do
+	itext t 1 "x1 : (x2 : (x3 : []))の"
+	itext t 2 "(:)をopに[]をx0に置き換える", \t -> do
+	text t "* sum関数", \t -> do
+	itext t 1 "sum = foldr (+) 0", \t -> do
+	itext t 1 "x1 + (x2 + (x3 + 0))", \t -> do
+	text t "*and関数", \t -> do
+	itext t 1 "and = foldr (&&) True", \t -> do
+	itext t 1 "x1 && (x2 && (x3 && True))"
  ]
 
 dollar :: Page
@@ -135,9 +138,9 @@ zoromeDef :: Page
 zoromeDef = [\t -> do
 	writeTopTitle t "例題"
 	text t "", \t -> do
-	semititle t "* 0から与えられた数までのぞろ目の和を求める", \t -> do
-	semititle t "* ぞろ目とは333や777などの同じ数字の連続", \t -> do
-	semititle t "* 1, 2, 3 ... 9といった1桁の数もぞろ目と考える"
+	text t "* 0から与えられた数までのぞろ目の和を求める", \t -> do
+	itext t 1 "- ぞろ目とは333や777などの同じ数字の連続", \t -> do
+	itext t 1 "- 1, 2, 3 ... 9といった1桁の数もぞろ目と考える"
 	text t "", \t -> do
 	text t "この例題について考えていこう"
  ]
@@ -167,8 +170,8 @@ za2l = [
 zoromeAnswer1 :: Page
 zoromeAnswer1 = [\t -> do
 	writeTopTitle t "解1", \t -> do
-	mapM_ (text t) za1p
-	mapM_ (text t) za1l
+	mapM_ (text t) za1p, \t -> do
+	mapM_ (text t) za1l, \t -> do
 	mapM_ (text t) za1s, \t -> do
 	text t "すべての自然数から成るリストを作成", \t -> do
 	arrowIText t 1 "isZoromeでfilterしぞろ目だけのリストを作る", \t -> do
@@ -211,22 +214,22 @@ zoromeAns1Sum = [\t -> do
 zoromeAnswer2Pre :: Page
 zoromeAnswer2Pre = [\t -> do
 	writeTopTitle t "解2"
-	text t "* 解1は非効率"
+	text t "* 解1は非効率", \t -> do
 	itext t 1 "わずかなぞろ目を探すためにすべての整数をチェック", \t -> do
-	text t "* ぞろ目は以下の特徴を持つ"
-	itext t 1 "- 1のぞろ目に1から9までの整数をかけたもの"
+	text t "* ぞろ目は以下の特徴を持つ", \t -> do
+	itext t 1 "- 1のぞろ目に1から9までの整数をかけたもの", \t -> do
 	itext t 1 "- 1のぞろ目は1 + 10 + 100 + 100 + ...", \t -> do
 	text t "* 上記性質を利用すればぞろ目のみのリストを生成できる", \t -> do
-	text t "* sumZorome は変えなくて良い"
-	itext t 1 "数え上げと和を求めるロジックがきれいに分離"
+	text t "* sumZorome は変えなくて良い", \t -> do
+	arrowIText t 1 "数え上げと和を求めるロジックがきれいに分離"
  ]
 
 zoromeAnswer2 :: Page
 zoromeAnswer2 = [\t -> do
 	writeTopTitle t "解2"
 	text t ""
-	mapM_ (text t) za2o
-	mapM_ (text t) za2l
+	mapM_ (text t) za2o, \t -> do
+	mapM_ (text t) za2l, \t -> do
 	mapM_ (text t) za1s, \t -> do
 	text t "1のぞろ目のリストを作る", \t -> do
 	arrowIText t 1 "それぞれに1から9をかけてそれらを結合する"
@@ -259,13 +262,13 @@ zoromeAns2List2 = [\t -> do
 	writeTopTitle t "リスト内包表記"
 	text t ""
 	mapM_ (text t) za2l, \t -> do
-	text t "* 上記のようなパターンはよく使われる"
-	itext t 1 "xsとysの要素のすべての組み合わせについて処理する", \t -> do
-	arrowIText t 1 "特別な表記法が用意されている"
+	text t "* 上記のようなパターンはよく使われる", \t -> do
+	itext t 1 "xsとysの要素のすべての組み合わせについて処理", \t -> do
+	arrowIText t 1 "特別な表記法が用意されている", \t -> do
 	itext t 2 "[f x y | x <- xs, y <- ys] のような形", \t -> do
 	text t "* リスト内包表記と呼ぶ", \t -> do
-	text t "* これを使って書き換えると"
-	itext t 1 "[o * n | o <- ones, n <- [1 .. 9]]"
+	text t "* これを使って書き換えると", \t -> do
+	semititle t "[o * n | o <- ones, n <- [1 .. 9]]"
  ]
 
 summary :: Page

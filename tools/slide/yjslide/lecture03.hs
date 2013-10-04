@@ -263,12 +263,12 @@ summary = [\t -> do
 
 typeDef1 :: Page
 typeDef1 = [\t -> do
-	writeTopTitle t "追加: 型宣言"
-	text t "", \t -> do
+	writeTopTitle t "追加: 型宣言", \t -> do
 	text t "* 今までの例では型宣言をしてこなかった", \t -> do
 	text t "* ほとんどの場合Haskellでは型推論が利く"
-	text t "", \t -> do
-	semititle t "しかし、型宣言はしたほうがいい", \t -> do
+	text t ""
+	text t "しかし", \t -> do
+	semititle t "型宣言はしたほうがいい", \t -> do
 	text t "* 関数の中身を考える前に型を考える", \t -> do
 	itext t 1 "- 入力と出力の範囲をまずは明確にする"
 	itext t 1 "- 頭を整理することができる"
