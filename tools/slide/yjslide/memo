@@ -87,36 +87,44 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第5回 再帰関数
 第6回 IO monad
 (ここまで作った、以下予定)
-第7回 型クラス
+第7回 型クラス (newtypeの話題もここに入れよう)
 第8回 moduleシステム
 第9回 落ち穂拾い
 ---
 第10回 monad
 第11回 type families
 第12回 monad transfer library
-第13回 array, bytestring
-第14回 Map (Hashにもちょっと触れる)
-第15回 GADTs
-第16回 ffi
+第13回 正格評価(foldl'あたりから入ると良さそうだ)
+第14回 array, bytestring
+第15回 Map (Hashにもちょっと触れる)
+第16回 GADTs
+第17回 ffi
+第18回 unbox型
 ---
-第17回 functor, applicative, monad
-第18回 free monad
-第19回 operational monad
-第20回 template haskell
-第21回 QuasiQuotes
-第22回 parser (papillon の紹介)
-第23回 unsafePerformIO, unsafeInterleaveIO
-第24回 遅延IOとiteratee
-第25回 Arrow
-第26回 Sequence (finger tree, queue)
+第19回 functor, applicative, monad
+第20回 free monad
+第21回 operational monad
+第22回 template haskell
+第23回 QuasiQuotes
+第24回 parser (papillon の紹介)
+第25回 unsafePerformIO, unsafeInterleaveIO
+第26回 遅延IOとiteratee
+第27回 Arrow
+第28回 Sequence (finger tree, queue)
 
 どこかで queue にも触れたいな
 finger tree面白いな
 
-どこかで _ と if ... then ... else と guard について触れる必要があるな
+Preludeについても触れておく必要があるな
 あとは let ... in ..., where ...,
-type と newtype もどこかで触れなければならないな。
+newtype もどこかで触れなければならないな。
 Int と Integer について、も。
+field label についても、か。
+pattern guardはHaskell 2010に入ってるので初級編で触れておこうかな。
+ffiも2010に入ってるな。
+
+正格評価についてもどこかで触れる必要があるな。
+それとunbox型も、かな。
 
 2013.10.03
 
@@ -137,3 +145,5 @@ getLine :: World -> (Char, World)
 getLine world0 :: (Char, World)
 
 評価 -- 動作
+
+deriving Eq, Ord, Enum, Ix, Bounded, Read, Show
