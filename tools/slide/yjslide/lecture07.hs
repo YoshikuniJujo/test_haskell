@@ -13,7 +13,9 @@ pages = [
 	titlePage, prelude,
 	simpleExam1, simpleExam2, eqShowSummary,
 --	duckTyping, color, vegetable, fruit, fortune
-	naDatabase
+--	naDatabase
+	grow, buri, bora, growing, growInt, future,
+	futureGrowing1, futureGrowing2, futureSummary
  ]
 
 titlePage :: Page
@@ -155,4 +157,149 @@ naDatabase = [\t -> do
 	text t "tellAge :: NADatabase => db -> Name -> db -> IO ()"
 	text t "tellAge n db = putStrLn $ n ++ \"さんは\" ++"
 	itext t 1 "show getAge db ++ \"歳です\""
+ ]
+
+grow :: Page
+grow = [\t -> do
+	writeTopTitle t "成長する", \t -> do
+	text t "class Growable a where"
+	itext t 1 "grow :: a -> a"
+	itext t 1 "isGoal :: a -> Bool"
+	text t "", \t -> do
+	text t "data Human = Baby | Child | Adult | Old", \t -> do
+	text t "instance Growable Human where", \t -> do
+	itext t 1 "grow Baby = Child"
+	itext t 1 "grow Child = Adult"
+	itext t 1 "grow Adult = Old"
+	itext t 1 "grow Old = Old", \t -> do
+	itext t 1 "isGoal Old = True"
+	itext t 1 "isGoal _ = False"
+ ]
+
+buri :: Page
+buri = [\t -> do
+	writeTopTitle t "ブリ"
+	text t "", \t -> do
+	text t "data Buri = Tsubasu | Hamachi | Mejiro | Buri"
+	text t "", \t -> do
+	text t "instance Growable Buri where"
+	itext t 1 "grow Tsubasu = Hamachi"
+	itext t 1 "grow Hamachi = Mejiro"
+	itext t 1 "grow Mejiro = Buri"
+	itext t 1 "grow Buri = Buri", \t -> do
+	itext t 1 "isGoal Buri = True"
+	itext t 1 "isGoal _ = False"
+ ]
+
+bora :: Page
+bora = [\t -> do
+	writeTopTitle t "ボラ"
+	text t "", \t -> do
+	text t "data Bora = Oboko | Subashiri | Ina | Bora | Todo"
+	text t "", \t -> do
+	text t "instance Growable Bora where"
+	itext t 1 "grow Oboko = Subashiri"
+	itext t 1 "grow Subashiri = Ina"
+	itext t 1 "grow Ina = Bora"
+	itext t 1 "grow Bora = Todo"
+	itext t 1 "grow Todo = Todo", \t -> do
+	itext t 1 "isGoal Todo = True"
+	itext t 1 "isGoal _ = False"
+ ]
+
+growing :: Page
+growing = [\t -> do
+	writeTopTitle t "ヒトもサカナも成長する"
+	text t "", \t -> do
+	text t "grow Baby => Child"
+	text t "grow Child => Adult"
+	text t "isGoal Adult => True"
+	text t "", \t -> do
+	text t "grow Tsubasu => Hamachi"
+	text t "grow Hamachi => Mejiro"
+	text t "isGoal Buri => True"
+	text t "", \t -> do
+	text t "grow Oboko => Subashiri"
+	text t "grow Subashiri => Ina"
+	text t "isGoal Todo => True"
+ ]
+
+growInt :: Page
+growInt = [\t -> do
+	writeTopTitle t "整数も成長する"
+	text t "", \t -> do
+	text t "instance Growable Int where"
+	itext t 1 "grow n = n + 1", \t -> do
+	itext t 1 "isGoal = (maxBound ==)"
+	text t "", \t -> do
+	text t "grow 3 => 4"
+	text t "grow 111 => 112"
+	text t "isGoal 2147483647 => True"
+ ]
+
+future :: Page
+future = [\t -> do
+	writeTopTitle t "将来を表示する関数"
+	text t "", \t -> do
+	text t "printFuture :: (Growable a, Show a) => IO ()"
+	text t "printFuture = do"
+	itext t 1 "print x"
+	itext t 1 "if isGoal x"
+	itext t 2 "then return ()"
+	itext t 2 "else printFuture $ grow x"
+ ]
+
+futureGrowing1 :: Page
+futureGrowing1 = [\t -> do
+	writeTopTitle t "将来を表示してみる(1)"
+	text t "", \t -> do
+	text t "> printFuture Baby"
+	text t "Baby"
+	text t "Child"
+	text t "Adult"
+	text t "Old"
+	text t "", \t -> do
+	text t "> printFuture Tsubasu"
+	text t "Tsubasu"
+	text t "Hamachi"
+	text t "Mejiro"
+	text t "Buri"
+ ]
+
+futureGrowing2 :: Page
+futureGrowing2 = [\t -> do
+	writeTopTitle t "将来を表示している(2)"
+	text t "", \t -> do
+	text t "> printFuture Subashiri"
+	text t "Subashiri"
+	text t "Ina"
+	text t "Bora"
+	text t "Todo"
+	text t "", \t -> do
+	text t "> printFuture (2147483644 :: Int)"
+	text t "2147483644"
+	text t "2147483645"
+	text t "2147483646"
+	text t "2147483647"
+ ]
+
+futureSummary :: Page
+futureSummary = [\t -> do
+	writeTopTitle t "ここまでのまとめ"
+	text t "", \t -> do
+	text t "* 型クラスは複数の型に共通する性質を表現する", \t -> do
+	text t "* 今回は「成長する」という性質をくくり出した", \t -> do
+	text t "* 「Growable =>」という「型制約」をつけた関数のなかで"
+	arrowIText t 1 "growとisGoalが使える", \t -> do
+	text t "* growとisGoalだけしか使わない関数ならば"
+	arrowIText t 1 "Growableのインスタンスである型すべてを扱える"
+ ]
+
+queuePrelude :: Page
+queuePrelude = [\t -> do
+	writeTopTitle t "キュー(はじめに)"
+	text t "", \t -> do
+	text t "* 続く例題ではキューの話をする"
+	text t "* C言語やschemeなどではおそらくリンクトリストを使う"
+	text t "* Haskellのリストはimmutableなのでキューとしては使えない"
  ]
