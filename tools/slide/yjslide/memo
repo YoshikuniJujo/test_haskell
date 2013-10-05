@@ -147,3 +147,8 @@ getLine world0 :: (Char, World)
 評価 -- 動作
 
 deriving Eq, Ord, Enum, Ix, Bounded, Read, Show
+
+2013.10.05 Sat.
+
+baby -> toddler/infant -> child -> teenager/adolescent -> young adult ->
+	adult -> middle-aged person -> senior citizen
