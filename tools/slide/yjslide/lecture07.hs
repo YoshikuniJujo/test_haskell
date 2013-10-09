@@ -15,7 +15,9 @@ pages = [
 --	duckTyping, color, vegetable, fruit, fortune
 --	naDatabase
 	grow, buri, bora, growing, growInt, future,
-	futureGrowing1, futureGrowing2, futureSummary
+	futureGrowing1, futureGrowing2, futureSummary,
+	queuePrelude, queue1, queue2, queue3, queue4, queue5,
+	queue6, queue7
  ]
 
 titlePage :: Page
@@ -166,7 +168,7 @@ grow = [\t -> do
 	itext t 1 "grow :: a -> a"
 	itext t 1 "isGoal :: a -> Bool"
 	text t "", \t -> do
-	text t "data Human = Baby | Child | Adult | Old", \t -> do
+	text t "data Human = Baby | Child | Adult | Old deriving Show", \t -> do
 	text t "instance Growable Human where", \t -> do
 	itext t 1 "grow Baby = Child"
 	itext t 1 "grow Child = Adult"
@@ -181,6 +183,7 @@ buri = [\t -> do
 	writeTopTitle t "ブリ"
 	text t "", \t -> do
 	text t "data Buri = Tsubasu | Hamachi | Mejiro | Buri"
+	itext t 1 "deriving Show"
 	text t "", \t -> do
 	text t "instance Growable Buri where"
 	itext t 1 "grow Tsubasu = Hamachi"
@@ -196,6 +199,7 @@ bora = [\t -> do
 	writeTopTitle t "ボラ"
 	text t "", \t -> do
 	text t "data Bora = Oboko | Subashiri | Ina | Bora | Todo"
+	itext t 1 "deriving Show"
 	text t "", \t -> do
 	text t "instance Growable Bora where"
 	itext t 1 "grow Oboko = Subashiri"
@@ -268,7 +272,7 @@ futureGrowing1 = [\t -> do
 
 futureGrowing2 :: Page
 futureGrowing2 = [\t -> do
-	writeTopTitle t "将来を表示している(2)"
+	writeTopTitle t "将来を表示してみる(2)"
 	text t "", \t -> do
 	text t "> printFuture Subashiri"
 	text t "Subashiri"
@@ -299,7 +303,102 @@ queuePrelude :: Page
 queuePrelude = [\t -> do
 	writeTopTitle t "キュー(はじめに)"
 	text t "", \t -> do
-	text t "* 続く例題ではキューの話をする"
-	text t "* C言語やschemeなどではおそらくリンクトリストを使う"
-	text t "* Haskellのリストはimmutableなのでキューとしては使えない"
+	text t "* 続く例題ではキューの話をする", \t -> do
+	text t "* C言語やschemeなどではおそらくリンクトリストを使う", \t -> do
+	text t "* Haskellのリストはimmutableでキューとしては使えない", \t -> do
+	itext t 1 "- 使えるけれど効率の問題がある", \t -> do
+	text t "* キューに関してはいくつかの解決策がある", \t -> do
+	itext t 1 "- 状態変化を許してIO内でenqueue, dequeueを行う"
+	itext t 1 "- ([a], [a])型を使い、償却定数時間とする"
+	itext t 1 "- Sequence型を使い、両端キューにも対応する", \t -> do
+	text t "* 今回は状態変化を許さず償却定数時間となるキューを扱う"
+ ]
+
+queue1 :: Page
+queue1 = [\t -> do
+	writeTopTitle t "キュー(はじめに)"
+	text t "", \t -> do
+	text t "* 人工的な例", \t -> do
+	itext t 1 "- 現実的な例ではない", \t -> do
+	text t "* キューの実装を後回しにする", \t -> do
+	itext t 1 "- キューの実装を後からさしかえることができる"
+ ]
+
+queue2 :: Page
+queue2 = [\t -> do
+	writeTopTitle t "キュー(クラス定義)"
+	text t "", \t -> do
+	text t "class Queue q where"
+	itext t 1 "empty :: q a"
+	itext t 1 "enqueue :: a -> q a -> q a"
+	itext t 1 "dequeue :: q a -> (a, q a)"
+ ]
+
+queue3 :: Page
+queue3 = [\t -> do
+	writeTopTitle t "キュー(リストによる実装)", \t -> do
+	text t "instance Queue [] where"
+	itext t 1 "empty = []"
+	itext t 1 "enqueue x xs = x : xs"
+	itext t 1 "dequeue xs = (last xs, init xs)"
+	text t "", \t -> do
+	text t "last [x] = x"
+	text t "last (_ : xs) = last xs"
+	text t "init [x] = []"
+	text t "init (x : xs) = x : init xs", \t -> do
+	text t "* リストを末尾まで走査するのでこれらはO(n)", \t -> do
+	text t "* 効率が悪いが簡単", \t -> do
+	arrowIText t 0 "とりあえずこれを使っておき、あとでさしかえれば良い"
+ ]
+
+queue4 :: Page
+queue4 = [\t -> do
+	writeTopTitle t "キューを使うプログラム", \t -> do
+	text t "getMessage :: Queue q => q String -> IO (q String)"
+	text t "getMessage ms = do"
+	itext t 1 "m <- getLine"
+	itext t 1 "if m == \".\""
+	itext t 2 "then return ms"
+	itext t 2 "else getMessages $ enqueue m ms", \t -> do
+	text t "readMessage :: Queue q => q String -> IO ()"
+	text t "readMessage ms = if isEmpty q"
+	itext t 1 "then return ()"
+	itext t 1 "else do"
+	itext t 2 "let (m, ms') = dequeue q"
+	itext t 2 "putStrLn m"
+	itext t 2 "readMessages ms"
+ ]
+
+queue5 :: Page
+queue5 = [\t -> do
+	writeTopTitle t "キューを使うプログラム"
+	text t "", \t -> do
+	text t "main :: IO ()"
+	text t "main = getMessages (empty :: [String]) >>= readMessages"
+ ]
+
+queue6 :: Page
+queue6 = [\t -> do
+	writeTopTitle t "キュー(償却定数時間)"
+	text t "* すこしの工夫で線形時間から償却定数時間にできる"
+	text t "", \t -> do
+	text t "data TwoList a = TowList [a] [a]"
+	text t "instance Queue TwoList"
+	itext t 1 "empty = TwoList [] []"
+	itext t 1 "isEmpty (TwoList [] []) = True"
+	itext t 1 "isEmpty _ = False"
+	itext t 1 "enqueue x (TwoList es ds) = TwoList (x : es) ds"
+	itext t 1 "dequeue (TwoList es []) ="
+	itext t 2 "dequeue (TwoList [] $ reverse es)"
+	itext t 1 "dequeue (TwoList es (x : ds)) = (x, TwoList es ds)"
+ ]
+
+queue7 :: Page
+queue7 = [\t -> do
+	writeTopTitle t "キュー(既存のプログラムの変更)"
+	text t "* 型注釈を変えるだけで良い"
+	text t "", \t -> do
+	text t "main :: IO ()"
+	text t "main = getMessage (empty :: TwoList String) >>="
+	itext t 1 "readMessages"
  ]

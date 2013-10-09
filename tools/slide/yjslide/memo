@@ -91,26 +91,32 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第8回 moduleシステム
 第9回 落ち穂拾い
 ---
-第10回 monad
-第11回 type families
-第12回 monad transfer library
-第13回 正格評価(foldl'あたりから入ると良さそうだ)
-第14回 array, bytestring
-第15回 Map (Hashにもちょっと触れる)
-第16回 GADTs
-第17回 ffi
-第18回 unbox型
+第10回 テスト
+第11回 monad
+第12回 type families
+第13回 monad transfer library
+第14回 プロファイリング
+第15回 正格評価(foldl'あたりから入ると良さそうだ)
+第16回 array, bytestring
+第17回 Map (Hashにもちょっと触れる)
+第18回 GADTs
+第19回 ffi
+第20回 unbox型
 ---
-第19回 functor, applicative, monad
-第20回 free monad
-第21回 operational monad
-第22回 template haskell
-第23回 QuasiQuotes
-第24回 parser (papillon の紹介)
-第25回 unsafePerformIO, unsafeInterleaveIO
-第26回 遅延IOとiteratee
-第27回 Arrow
-第28回 Sequence (finger tree, queue)
+第21回 functor, applicative, monad
+第22回 free monad
+第23回 operational monad
+第24回 forall
+第25回 ST monad
+第26回 ref, mvar, chan, tvar
+第27回 stm
+第28回 template haskell
+第29回 QuasiQuotes
+第30回 parser (papillon の紹介)
+第31回 unsafePerformIO, unsafeInterleaveIO
+第32回 遅延IOとiteratee
+第33回 Arrow
+第34回 Sequence (finger tree, queue)
 
 どこかで queue にも触れたいな
 finger tree面白いな
@@ -122,9 +128,23 @@ Int と Integer について、も。
 field label についても、か。
 pattern guardはHaskell 2010に入ってるので初級編で触れておこうかな。
 ffiも2010に入ってるな。
+-- や {- ... -}コメントについて。
+.lhs についてはどうしようかな。
+落ち穂拾いのところで簡単に触れておこう。
+型注釈についても触れとこう。
 
 正格評価についてもどこかで触れる必要があるな。
 それとunbox型も、かな。
+
+ST monad や stm についても触れたい。
+ST monad について触れるなら forall についても触れる必要があるだろう。
+stm について触れる際に ref, mvar, chan, tvar あたりにも触れることにする。
+
+profiling の話もいれる必要があるな。
+
+第7回のキューの例をよりスムーズにするために、
+第6回のIOのところでIOに関する再帰的プロセスと反復的プロセスについて
+例を挙げておく必要があるだろう。
 
 2013.10.03
 
@@ -152,3 +172,7 @@ deriving Eq, Ord, Enum, Ix, Bounded, Read, Show
 
 baby -> toddler/infant -> child -> teenager/adolescent -> young adult ->
 	adult -> middle-aged person -> senior citizen
+
+2013.10.09 Wed.
+
+class定義におけるデフォルトの定義について触れること。
