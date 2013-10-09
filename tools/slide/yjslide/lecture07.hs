@@ -332,6 +332,7 @@ queue2 = [\t -> do
 	text t "", \t -> do
 	text t "class Queue q where"
 	itext t 1 "empty :: q a"
+	itext t 1 "isEmpty :: q a -> Bool"
 	itext t 1 "enqueue :: a -> q a -> q a"
 	itext t 1 "dequeue :: q a -> (a, q a)"
  ]
@@ -341,6 +342,7 @@ queue3 = [\t -> do
 	writeTopTitle t "キュー(リストによる実装)", \t -> do
 	text t "instance Queue [] where"
 	itext t 1 "empty = []"
+	itext t 1 "isEmpty = null"
 	itext t 1 "enqueue x xs = x : xs"
 	itext t 1 "dequeue xs = (last xs, init xs)"
 	text t "", \t -> do
