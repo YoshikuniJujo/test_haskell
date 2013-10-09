@@ -17,7 +17,9 @@ pages = [
 	grow, buri, bora, growing, growInt, future,
 	futureGrowing1, futureGrowing2, futureSummary,
 	queuePrelude, queue1, queue2, queue3, queue4, queue5,
-	queue6, queue7
+	queue6, queue7,
+	defaultMethod,
+	summary
  ]
 
 titlePage :: Page
@@ -401,4 +403,31 @@ queue7 = [\t -> do
 	text t "main :: IO ()"
 	text t "main = getMessage (empty :: TwoList String) >>="
 	itext t 1 "readMessages"
+ ]
+
+defaultMethod :: Page
+defaultMethod = [\t -> do
+	writeTopTitle t "デフォルトメソッド"
+	text t "", \t -> do
+	text t "class Eq a => Growable a of"
+	itext t 1 "grow :: a -> a"
+	itext t 1 "isGoal :: a -> Bool"
+	itext t 1 "isGoal x = grow x == grow x"
+	text t "", \t -> do
+	text t "* isGoalはinstance宣言で定義しなければデフォルトの定義", \t -> do
+	text t "* Eq a =>は文脈(==)を使うために必要", \t -> do
+	text t "* この定義ではGrowableであるためにはEqである必要がある"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* 型クラスは複数の型に共通の性質をくくり出すもの", \t -> do
+	text t "* data = ... deriving (...)で簡単にインスタンス化できる", \t -> do
+	itext t 1 "- Eq, Show等", \t -> do
+	text t "* 見方を変えればインターフェースと実装の分離とも", \t -> do
+	text t "* class定義に文脈をつけることができる", \t -> do
+	itext t 1 "- このclassのinstanceであるならば...のinstance", \t -> do
+	text t "* デフォルトメソッドを用意することもできる"
  ]
