@@ -127,6 +127,7 @@ newtype もどこかで触れなければならないな。
 Int と Integer について、も。
 field label についても、か。
 pattern guardはHaskell 2010に入ってるので初級編で触れておこうかな。
+view patternもついでに
 ffiも2010に入ってるな。
 -- や {- ... -}コメントについて。
 .lhs についてはどうしようかな。
