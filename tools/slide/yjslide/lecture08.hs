@@ -12,7 +12,8 @@ pages :: [Page]
 pages = [
 	titlePage, prelude, hello, mainModule, preludeModule,
 	importDataChar, onlyChr, qualifiedChar, asChar, importSummary,
-	helloExport, helloImport, helloExportProblem
+	helloExport, helloImport, helloExportProblem, exportTypes, exportClasses,
+	importList, fileName, aboutPrelude, summary
  ]
 
 titlePage :: Page
@@ -186,5 +187,83 @@ helloExportProblem = [\t -> do
 
 importやexportのときに、変数名、型名、型構築子名についても。
 またSome(..)という形についても。
+classのほうも。
 
 -}
+
+exportTypes :: Page
+exportTypes = [\t -> do
+	writeTopTitle t "型のエクスポート"
+	text t "", \t -> do
+	text t "module ExportType(Some(Some, Other)) where"
+	text t ""
+	text t "data Some = Some Int | Other Char"
+	text t "", \t -> do
+	text t "* すべての型構築子をエクスポートする場合の省略記法", \t -> do
+	dvArrowShort t
+	itext t 1 "module ExportType(Some(..)) where"
+ ]
+
+exportClasses :: Page
+exportClasses = [\t -> do
+	writeTopTitle t "クラスのエクスポート"
+	text t "", \t -> do
+	text t "module ExportClass(Some(some, other)) where"
+	text t ""
+	text t "class Some a where"
+	itext t 1 "some :: a"
+	itext t 1 "other :: a"
+	text t "", \t -> do
+	text t "* すべてのメソッドをエクスポートする場合の省略記法", \t -> do
+	dvArrowShort t
+	itext t 1 "module ExportClass(Some(..)) where"
+ ]
+
+importList :: Page
+importList = [\t -> do
+	writeTopTitle t "型、型クラスのインポート"
+	text t "", \t -> do
+	text t "* 型、型クラスのエクスポートと同じようにする"
+	itext t 1 "- import(Some(..))等"
+ ]
+
+fileName :: Page
+fileName = [\t -> do
+	writeTopTitle t "モジュールファイル"
+	text t "", \t -> do
+	text t "* モジュールの階層構造はディレクトリ構造で表される", \t -> do
+	text t "* パスの通っているディレクトリをトップとする", \t -> do
+	itext t 1 "- カレントディレクトリにもパスが通っている", \t -> do
+	itext t 1 "- パスを通すには -i[directory] とすれば良い", \t -> do
+	text t "* Foo.Bar.Bazならば./Foo/Bar/Baz.hsに置けば良い"
+ ]
+
+aboutPrelude :: Page
+aboutPrelude = [\t -> do
+	writeTopTitle t "import Prelude"
+	text t "", \t -> do
+	text t "* Preludeは暗黙にインポートされる", \t -> do
+	text t "* 明示的にimportするのはインポートしない名前がある場合", \t -> do
+	text t "* import Prelude ()", \t -> do
+	itext t 1 "- Preludeに定義されている名前をインポートしない", \t -> do
+	text t "* import Prelude ((+))", \t -> do
+	itext t 1 "- Preludeからは演算子+のみをインポート", \t -> do
+	itext t 1 "- 演算子はインポートリストに書くときは()でくくる", \t -> do
+	text t "* import Prelude hiding (head, tail)", \t -> do
+	itext t 1 "- Preludeからheadとtail以外をインポートする"
+
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* 1ファイル1モジュール、ファイル名は[モジュール名].hs", \t -> do
+	itext t 1 "- Mainモジュールのみ[自由].hs", \t -> do
+	text t "* インポートにはいくつかのやりかたがある", \t -> do
+	text t "* エクスポートする名前を指定することでカプセル化できる", \t -> do
+	text t "* 型や型クラスのインポート/エクスポートの構文", \t -> do
+	text t "* 演算子のインポート/エクスポートの構文", \t -> do
+	text t "* Preludeは暗黙のインポート", \t -> do
+	itext t 1 "- 同じ名前を使いたい場合などは明示的にインポート"
+ ]
