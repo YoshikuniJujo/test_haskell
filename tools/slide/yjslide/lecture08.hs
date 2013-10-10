@@ -11,7 +11,8 @@ subtitle = "第8回 モジュール"
 pages :: [Page]
 pages = [
 	titlePage, prelude, hello, mainModule, preludeModule,
-	importDataChar, onlyChr, qualifiedChar, asChar, importSummary
+	importDataChar, onlyChr, qualifiedChar, asChar, importSummary,
+	helloExport, helloImport, helloExportProblem
  ]
 
 titlePage :: Page
@@ -131,6 +132,54 @@ importSummary = [\t -> do
 	text t "", \t -> do
 	text t "importはOK?"
 	text t "次はexportについて見ていこう"
+ ]
+
+helloExport :: Page
+helloExport = [\t -> do
+	writeTopTitle t "Hello export"
+	text t "", \t -> do
+	text t "% cat Hello.hs"
+	text t "module Hello where"
+	text t ""
+	text t "helloWorld :: String"
+	text t "helloWorld = hello ++ \", \" ++ world ++ \"!\""
+	text t ""
+	text t "hello :: String"
+	text t "hello = \"Hello\""
+	text t ""
+	text t "world :: String"
+	text t "world = \"world\""
+ ]
+
+helloImport :: Page
+helloImport = [\t -> do
+	writeTopTitle t "Hello import"
+	text t "", \t -> do
+	text t "module Main where"
+	text t "import Hello (helloWorld)"
+	text t ""
+	text t "main :: IO ()"
+	text t "main = putStrLn helloWorld"
+	text t "", \t -> do
+	text t "* 1モジュール1ファイル", \t -> do
+	text t "* ファイル名は[モジュール名].hsとする", \t -> do
+	itext t 1 "- Mainモジュールのファイル名は[自由].hs", \t -> do
+	text t "* module Hello whereだとトップレベルの定義全てがexport"
+ ]
+
+helloExportProblem :: Page
+helloExportProblem = [\t -> do
+	writeTopTitle t "問題点"
+	text t "", \t -> do
+	text t "* モジュールHelloがexportしたいのはhelloWorldだけ", \t -> do
+	text t "* hello, worldは内部的に使われている定義", \t -> do
+	text t "* このままだと実装の詳細がさらされてしまっている", \t -> do
+	text t ""
+	text t "exportする変数を指定しよう", \t -> do
+	dvArrowShort t
+	text t "module Hello (helloWorld) where"
+	text t "", \t -> do
+	text t "これで、helloWorldのみがexportされる"
  ]
 
 {-

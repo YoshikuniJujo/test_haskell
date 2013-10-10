@@ -180,3 +180,8 @@ baby -> toddler/infant -> child -> teenager/adolescent -> young adult ->
 
 class定義におけるデフォルトの定義について触れること。
 「落ち穂拾い」で default も扱おうかな。
+
+2013.10.10 Thr.
+
+次はexport/import list に型や型内部の詳細を入れる方法
+Some, Some(Some), Some(..)といった形
