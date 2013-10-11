@@ -21,7 +21,8 @@ pages = [
 	ioLambda1, ioLambda2, doNotation,
 	doNotationExamples1, doNotationExamples2, doNotationExamples3,
 	doNotationSummary,
-	summary
+	summary,
+	recLoop1, recLoop2
  ]
 
 titlePage :: Page
@@ -541,4 +542,36 @@ summary = [\t -> do
 	text t "* このパートは2つに分けるべきかもしれない"
 	text t "* そして、do記法を利用したより実践的なほうを先にすべきかも"
 	text t "* いずれにしても疲れた"
+ ]
+
+recLoop1 :: Page
+recLoop1 = [\t -> do
+	writeTopTitle t "追加:再帰的プロセス"
+	text t "", \t -> do
+	text t "\".\"が入力されるまでの総和を求める関数"
+	text t "", \t -> do
+	text t "getSum :: IO Integer"
+	text t "getSum = do"
+	itext t 1 "input <- getLine"
+	itext t 1 "case input of"
+	itext t 2 "\".\" -> return 0"
+	itext t 2 "_ -> getSum >>= return . (read input +)"
+	text t "", \t -> do
+	text t "これは再帰的プロセスとなる。以下のように考えられる", \t -> do
+	text t "getSum = input + getSum"
+ ]
+
+recLoop2 :: Page
+recLoop2 = [\t -> do
+	writeTopTitle t "追加:反復的プロセス"
+	text t "", \t -> do
+	text t "getSumIter :: Integer -> IO Integer"
+	text t "getSumIter i = do"
+	itext t 1 "input <- getLine"
+	itext t 1 "case input of"
+	itext t 2 "\".\" -> return i"
+	itext t 2 "_ -> getSumIter (i + read input)"
+	text t ""
+	text t "getSum :: IO Integer"
+	text t "getSum = getSumIter 0"
  ]

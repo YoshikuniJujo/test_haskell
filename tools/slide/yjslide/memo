@@ -115,8 +115,9 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第30回 parser (papillon の紹介)
 第31回 unsafePerformIO, unsafeInterleaveIO
 第32回 遅延IOとiteratee
-第33回 Arrow
-第34回 Sequence (finger tree, queue)
+第33回 可変長引数 (Text.Printf等)
+第34回 Arrow
+第35回 Sequence (finger tree, queue)
 
 どこかで queue にも触れたいな
 finger tree面白いな
@@ -188,3 +189,9 @@ class定義におけるデフォルトの定義について触れること。
 
 次はexport/import list に型や型内部の詳細を入れる方法
 Some, Some(Some), Some(..)といった形
+
+2013.10.11 Fri.
+
+getSum = (+) <$> getI <+> getSum
+
+getSumIter i = getSumIter . (+ i) <$> getI
