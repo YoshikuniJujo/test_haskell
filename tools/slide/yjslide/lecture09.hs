@@ -155,7 +155,7 @@ doLet = [\t -> do
 
 topPatMatch :: Page
 topPatMatch = [\t -> do
-	writeTopTitle t "トップでのパターンマッチ", \t -> do
+	writeTopTitle t "パターン束縛", \t -> do
 	text t "* モジュールトップでもパターンマッチは使える", \t -> do
 	itext t 1 "- let構文、where節でも同様"
 	text t "", \t -> do
