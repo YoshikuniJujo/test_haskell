@@ -16,7 +16,8 @@ pages = [
 	index' 3, offside1, offside2,
 	index' 4, whereClause, letin, doLet,
 	index' 5, topPatMatch, lambdaPatMatch, doPatMatch,
-	index' 6
+	index' 6, asPattern,
+	index' 7
  ]
 
 titlePage :: Page
@@ -189,4 +190,18 @@ doPatMatch = [\t -> do
 	text t "do someIO"
 	itext t 0.5 "x : xs <- retListIO"
 	itext t 0.5 "otherIO x"
+ ]
+
+asPattern :: Page
+asPattern = [\t -> do
+	writeTopTitle t "アズパターン"
+	text t "", \t -> do
+	text t "* 例えばリストのheadとtailだけでなく全体も使いたい", \t -> do
+	itext t 1 "dupHead (x : xs) = x : x : xs", \t -> do
+	text t "* 全体をx : xsのように分けたうえで再度結合している", \t -> do
+	arrowIText t 1 "美しくない", \t -> do
+	text t "* 全体を変数に束縛したうえでパターンマッチすれば良い", \t -> do
+	arrowIText t 1 "できるよ", \t -> do
+	dvArrowShort t
+	text t "dupHead xs@(x : _) = x : xs"
  ]
