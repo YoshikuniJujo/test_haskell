@@ -97,26 +97,27 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第13回 monad transfer library
 第14回 プロファイリング
 第15回 正格評価(foldl'あたりから入ると良さそうだ)
-第16回 array, bytestring
-第17回 Map (Hashにもちょっと触れる)
-第18回 GADTs
-第19回 ffi
-第20回 unbox型
+第16回 パターンマッチと正格評価(遅延パターン、bang pattern等)
+第17回 array, bytestring
+第18回 Map (Hashにもちょっと触れる)
+第19回 GADTs
+第20回 ffi
+第21回 unbox型
 ---
-第21回 functor, applicative, monad
-第22回 free monad
-第23回 operational monad
-第24回 forall
-第25回 ST monad
-第26回 ref, mvar, chan, tvar
-第27回 stm
-第28回 template haskell
-第29回 QuasiQuotes
-第30回 parser (papillon の紹介)
-第31回 unsafePerformIO, unsafeInterleaveIO
-第32回 遅延IOとiteratee
-第33回 可変長引数 (Text.Printf等)
-第34回 Arrow
+第22回 functor, applicative, monad
+第23回 free monad
+第24回 operational monad
+第25回 forall
+第26回 ST monad
+第27回 ref, mvar, chan, tvar
+第28回 stm
+第29回 template haskell
+第30回 QuasiQuotes
+第31回 parser (papillon の紹介)
+第32回 unsafePerformIO, unsafeInterleaveIO
+第33回 遅延IOとiteratee
+第34回 可変長引数 (Text.Printf等)
+第35回 Arrow
 第35回 Sequence (finger tree, queue)
 
 どこかで queue にも触れたいな

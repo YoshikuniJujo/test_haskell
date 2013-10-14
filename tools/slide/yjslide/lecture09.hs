@@ -17,7 +17,8 @@ pages = [
 	index' 4, whereClause, letin, doLet,
 	index' 5, topPatMatch, lambdaPatMatch, doPatMatch,
 	index' 6, asPattern,
-	index' 7
+	index' 7, lazyPattern1, lazyPattern2,
+	index' 8
  ]
 
 titlePage :: Page
@@ -42,7 +43,7 @@ contentsList = [
 	"letやwhereによる変数のローカルな定義",
 	"いろいろな場所でのパターンマッチ",
 	"アズパターン",
-	"不可反駁パターン",
+	"遅延パターン",
 	"フィールドラベル",
 	"パターンガード",
 	"ビューパターン"
@@ -204,4 +205,35 @@ asPattern = [\t -> do
 	arrowIText t 1 "できるよ", \t -> do
 	dvArrowShort t
 	text t "dupHead xs@(x : _) = x : xs"
+ ]
+
+lazyPattern1 :: Page
+lazyPattern1 = [\t -> do
+	writeTopTitle t "遅延パターン"
+	text t "", \t -> do
+	text t "* 以下の場合、パターンマッチをすぐに行う", \t -> do
+	itext t 1 "- case構文や関数の仮引数部、かつ", \t -> do
+	itext t 1 "- 単純な仮引数やワイルドパターンでない", \t -> do
+	arrowIText t 1 "そうしないとどのパターンにマッチするかわからない", \t -> do
+	text t "* パターン照合を遅延させる", \t -> do
+	itext t 1 "- 値の中身を見ずにパターンマッチを成功とする", \t -> do
+	arrowIText t 1 "不可反駁パターンとも"
+	text t "", \t -> do
+	semititle t "パターンの前に'~'をつける"
+ ]
+
+lazyPattern2 :: Page
+lazyPattern2 = [\t -> do
+	writeTopTitle t "遅延パターン"
+	text t "たとえば、2のべき乗のリストを作る"
+	text t "", \t -> do
+	text t "* iterate (* 2) 1とすれば良い", \t -> do
+	text t "* もっと違うやりかたでやろう!", \t -> do
+	itext t 1 "consMap f y0 (x : xs) = y0 : consMap f (f x) xs", \t -> do
+	itext t 1 "expo2 = consMap (* 2) 1 expo2", \t -> do
+	text t "* expo2の最初の値を得るときexpo2の(x : xs)でのマッチ", \t -> do
+	arrowIText t 1 "無限ループ", \t -> do
+	arrowIText t 1 "パターンマッチを遅らせてやれば良い", \t -> do
+	itext t 1 "consMap' f y0 ~(x : xs) = y0 : consMap f (f x) xs", \t -> do
+	itext t 1 "expo2' = consMap' (* 2) 1 expo2'"
  ]
