@@ -18,7 +18,7 @@ pages = [
 	index' 5, topPatMatch, lambdaPatMatch, doPatMatch,
 	index' 6, asPattern,
 	index' 7, lazyPattern1, lazyPattern2,
-	index' 8
+	index' 8, fieldLabel1, fieldLabel2
  ]
 
 titlePage :: Page
@@ -236,4 +236,38 @@ lazyPattern2 = [\t -> do
 	arrowIText t 1 "パターンマッチを遅らせてやれば良い", \t -> do
 	itext t 1 "consMap' f y0 ~(x : xs) = y0 : consMap f (f x) xs", \t -> do
 	itext t 1 "expo2' = consMap' (* 2) 1 expo2'"
+ ]
+
+fieldLabel1 :: Page
+fieldLabel1 = [\t -> do
+	writeTopTitle t "フィールドラベル", \t -> do
+	text t "* data宣言でフィールドにラベルを付ける記法がある", \t -> do
+	itext t 1 "data Human = Human String String Int", \t -> do
+	dvArrowShort t
+	itext t 1 "data Human = Human {"
+	itext t 2 "firstName :: String,"
+	itext t 2 "secondName :: String,"
+	itext t 2 "age :: Int }"
+	text t "フィールドラベルはいろいろな場面で使える", \t -> do
+	itext t 1 "- 新たに値を作る", \t -> do
+	itext t 1 "- フィールドの値をセットする", \t -> do
+	itext t 1 "- フィールドの値を得る", \t -> do
+	itext t 1 "- パターンマッチ"
+ ]
+
+fieldLabel2 :: Page
+fieldLabel2 = [\t -> do
+	writeTopTitle t "フィールドラベル", \t -> do
+	text t "* 新たに値を作る"
+	itext t 1 "taro = Human {"
+	itext t 2 "firstName = \"太郎\""
+	itext t 2 "secondName =\"山田\""
+	itext t 2 "age = 56 }", \t -> do
+	text t "* フィールドの値をセットする"
+	itext t 1 "taro' = taro { age = 83 }", \t -> do
+	text t "* フィールドの値を得る"
+	itext t 1 "secondName taro => \"山田\""
+	text t "* パターンマッチ"
+	itext t 1 "name Human { firstName = f, secondName = s } ="
+	itext t 2 "s ++ f"
  ]
