@@ -119,6 +119,8 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第34回 可変長引数 (Text.Printf等)
 第35回 Arrow
 第35回 Sequence (finger tree, queue)
+---
+第36回 モナド内包表記
 
 どこかで queue にも触れたいな
 finger tree面白いな

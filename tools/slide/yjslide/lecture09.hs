@@ -18,7 +18,9 @@ pages = [
 	index' 5, topPatMatch, lambdaPatMatch, doPatMatch,
 	index' 6, asPattern,
 	index' 7, lazyPattern1, lazyPattern2,
-	index' 8, fieldLabel1, fieldLabel2
+	index' 8, fieldLabel1, fieldLabel2,
+	index' 9, listComprehension,
+	index' 10, patternGuard
  ]
 
 titlePage :: Page
@@ -45,6 +47,7 @@ contentsList = [
 	"アズパターン",
 	"遅延パターン",
 	"フィールドラベル",
+	"リスト内包表記",
 	"パターンガード",
 	"ビューパターン"
  ]
@@ -270,4 +273,35 @@ fieldLabel2 = [\t -> do
 	text t "* パターンマッチ"
 	itext t 1 "name Human { firstName = f, secondName = s } ="
 	itext t 2 "s ++ f"
+ ]
+
+listComprehension :: Page
+listComprehension = [\t -> do
+	writeTopTitle t "リスト内包表記"
+	text t "", \t -> do
+	text t "* 本質的にはfilterとconcatMapに脱糖される糖衣構文", \t -> do
+	itext t 1 "例: [x + y | x <- [5, 4], y <- [1, 2 3]]"
+	itext t 2 "=> [6, 7, 8, 5, 6, 7]", \t -> do
+	itext t 1 "例2:[x + y | x <- [5, 4], y <- [1, 2, 3],"
+	itext t 2 "x * y < 12] => [6, 7, 5, 6]", \t -> do
+	text t "* '|'の左側が最終的な結果", \t -> do
+	text t "* '|'の右側は値の取り出しまたは条件を','でつないだもの", \t -> do
+	text t "* 値の取り出しにはパターンマッチが使える", \t -> do
+	itext t 1 "- マッチしなければ最終的な結果にいれない"
+ ]
+
+patternGuard :: Page
+patternGuard = [\t -> do
+	writeTopTitle t "パターンガード"
+	text t "", \t -> do
+	text t "* Haskell 2010で新たに採用された便利構文", \t -> do
+	text t "* 関数のガードのところに対する自然な拡張", \t -> do
+	text t "* ガード部にリスト内包表記の'|'の右側が使える"
+	text t "", \t -> do
+	text t "例:"
+	text t "addLookup env var1 var2"
+	itext t 1 "| Just val1 <- lookup env var1,"
+	itext t 1 ", Just val2 <- lookup env var2 ="
+	itext t 2 "val1 + val2"
+	text t "addLookup _ _ _ = 0"
  ]
