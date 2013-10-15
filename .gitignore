@@ -4,3 +4,6 @@
 dist/
 /tools/slide/yjslide/*.svg
 /tools/slide/yjslide/svgs/
+tmp/
+*.prof
+*.png
