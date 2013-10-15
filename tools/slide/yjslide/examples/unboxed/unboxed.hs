@@ -19,19 +19,11 @@ main = do
 	case tail args of
 		"boxed" : _ -> print $ 4 * getPi4 0 1 i
 		"unboxed" : _ -> print $ 4 * (D# (getPi4' 0.0## 1.0## ui))
+		_ -> error "bad arguments"
 
 getPi4 :: Double -> Double -> Word -> Double
 getPi4 p _ 0 = p
 getPi4 p i n = getPi4 (p + recip i) (negate $ i + signum i * 2) (n - 1)
-
-getPi :: Word -> Double
-getPi n = 4 * getPi4 0 1 n
-
-times :: Word
-times = 5000000
-
-myPi :: Double
-myPi = getPi 5000000
 
 getPi4' :: Double# -> Double# -> Word# -> Double#
 getPi4' p _ 0## = p
