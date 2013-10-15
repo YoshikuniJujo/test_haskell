@@ -10,3 +10,4 @@ tmp/
 /tools/slide/yjslide/examples/unboxed/unboxed
 *.hi
 *.o
+/tools/rirekisho/rirekisho.dat
