@@ -86,21 +86,21 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第4回 リスト
 第5回 再帰関数
 第6回 IO monad
-(ここまで作った、以下予定)
 第7回 型クラス (newtypeの話題もここに入れよう)
 第8回 moduleシステム
 第9回 落ち穂拾い
+(ここまで作った、以下予定)
 ---
 第10回 テスト
 第11回 monad
 第12回 type families
 第13回 monad transfer library
-第14回 プロファイリング
-第15回 正格評価(foldl'あたりから入ると良さそうだ)
-第16回 パターンマッチと正格評価(遅延パターン、bang pattern等)
-第17回 array, bytestring
-第18回 Map (Hashにもちょっと触れる)
-第19回 GADTs
+第14回 GADTs
+第15回 プロファイリング
+第16回 正格評価(foldl'あたりから入ると良さそうだ)
+第17回 パターンマッチと正格評価(遅延パターン、bang pattern等)
+第18回 array, bytestring
+第19回 Map (Hashにもちょっと触れる)
 第20回 ffi
 第21回 unbox型
 ---
@@ -118,9 +118,8 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第33回 遅延IOとiteratee
 第34回 可変長引数 (Text.Printf等)
 第35回 Arrow
-第35回 Sequence (finger tree, queue)
----
-第36回 モナド内包表記
+第36回 Sequence (finger tree, queue)
+第37回 モナド内包表記 monad comprehension
 
 どこかで queue にも触れたいな
 finger tree面白いな
