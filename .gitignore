@@ -7,3 +7,6 @@ dist/
 tmp/
 *.prof
 *.png
+/tools/slide/yjslide/examples/unboxed/unboxed
+*.hi
+*.o
