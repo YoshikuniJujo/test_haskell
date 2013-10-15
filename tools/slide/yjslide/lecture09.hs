@@ -15,12 +15,17 @@ pages = [
 	index' 2, literate,
 	index' 3, offside1, offside2,
 	index' 4, whereClause, letin, doLet,
-	index' 5, topPatMatch, lambdaPatMatch, doPatMatch,
-	index' 6, asPattern,
-	index' 7, lazyPattern1, lazyPattern2,
-	index' 8, fieldLabel1, fieldLabel2,
-	index' 9, listComprehension,
-	index' 10, patternGuard
+	index' 5, typeSynonym,
+	index' 6, aboutNewtype,
+	index' 7, topPatMatch, lambdaPatMatch, doPatMatch,
+	index' 8, asPattern,
+	index' 9, lazyPattern1, lazyPattern2,
+	index' 10, fieldLabel1, fieldLabel2,
+	index' 11, listComprehension,
+	index' 12, patternGuard,
+	index' 13, viewPattern,
+	index' 0,
+	summary
  ]
 
 titlePage :: Page
@@ -43,6 +48,8 @@ contentsList = [
 	"文芸的プログラミング",
 	"オフサイドルール",
 	"letやwhereによる変数のローカルな定義",
+	"タイプシノニム",
+	"newtype",
 	"いろいろな場所でのパターンマッチ",
 	"アズパターン",
 	"遅延パターン",
@@ -155,6 +162,36 @@ doLet = [\t -> do
 	text t "do someIO"
 	itext t 0.5 "let x = 8"
 	itext t 0.5 "otherIO x"
+ ]
+
+typeSynonym :: Page
+typeSynonym = [\t -> do
+	writeTopTitle t "タイプシノニム"
+	text t "", \t -> do
+	text t "* タイプには別名をつけることができる", \t -> do
+	text t "* type [別名] = [型]という形"
+	text t "* 別名なので元の型と同じものである"
+	text t "", \t -> do
+	text t "例:"
+	text t "type Name = String"
+	text t "type NameList = [Name]"
+ ]
+
+aboutNewtype :: Page
+aboutNewtype = [\t -> do
+	writeTopTitle t "newtype"
+	text t "", \t -> do
+	text t "* data宣言で新しい型を作るとき", \t -> do
+	itext t 1 "- 型構築子がひとつ", \t -> do
+	itext t 1 "- 型構築子が取る型もひとつの場合", \t -> do
+	itext t 1 "- つまり、既存の型をwrapする場合", \t -> do
+	arrowIText t 1 "newtypeが使える", \t -> do
+	text t "* 意味的にはdata宣言とほぼ同じ", \t -> do
+	text t "* dataとの違いはオーバーヘッドが生じないこと", \t -> do
+	text t "* typeとは異なり元の型とは区別される"
+	text t "", \t -> do
+	text t "例:"
+	text t "newtype Name = Name String"
  ]
 
 topPatMatch :: Page
@@ -304,4 +341,35 @@ patternGuard = [\t -> do
 	itext t 1 ", Just val2 <- lookup env var2 ="
 	itext t 2 "val1 + val2"
 	text t "addLookup _ _ _ = 0"
+ ]
+
+viewPattern :: Page
+viewPattern = [\t -> do
+	writeTopTitle t "ビューパターン"
+	text t "", \t -> do
+	text t "* Haskell 2010には取り入れられていない拡張機能", \t -> do
+	text t "* コードの先頭に{-# LANGUAGE ViewPatterns #-}が必要", \t -> do
+	text t "* パターンガードとすこし似ている", \t -> do
+	text t "* パターンマッチの前に関数適用することができる"
+	text t "", \t -> do
+	text t "addLookup env"
+	itext t 1 "((`lookup` env) -> Just val1)"
+	itext t 1 "((`lookup` env) -> Just val2) = val1 + val2"
+	text t "addLookup _ _ _ = 0"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* 第8回までの講義で触れられなかった機能", \t -> do
+	text t "* 多くは表記に関する話", \t -> do
+	text t "* これらの機能を使いこなせばより簡潔にきれいに書ける", \t -> do
+	text t "* 今回で初級編は終わり", \t -> do
+	text t "* 次回からは中級編", \t -> do
+	text t "* 中級編の内容", \t -> do
+	itext t 1 "- テスト、プロファイリング", \t -> do
+	itext t 1 "- いろいろなモナド", \t -> do
+	itext t 1 "- 正格評価", \t -> do
+	itext t 1 "- 実行効率の改善について"
  ]
