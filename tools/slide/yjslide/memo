@@ -90,36 +90,43 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第8回 moduleシステム
 第9回 落ち穂拾い
 (ここまで作った、以下予定)
+第10回 ghcの使いかた (runghc, ghciやその他のオプションについて)
 ---
-第10回 テスト
-第11回 monad
-第12回 type families
-第13回 monad transfer library
-第14回 GADTs
-第15回 プロファイリング
-第16回 正格評価(foldl'あたりから入ると良さそうだ)
-第17回 パターンマッチと正格評価(遅延パターン、bang pattern等)
-第18回 array, bytestring
-第19回 Map (Hashにもちょっと触れる)
-第20回 ffi
-第21回 unbox型
+第11回 テスト
+第12回 monad
+第13回 type families
+第14回 monad transfer library
+第15回 GADTs
+第16回 プロファイリング
+第17回 正格評価(foldl'あたりから入ると良さそうだ)
+第18回 パターンマッチと正格評価(遅延パターン、bang pattern等)
+第19回 array, bytestring
+第20回 Map (Hashにもちょっと触れる)
+第21回 zipper
+第22回 例外処理
+第23回 ffi
+第24回 unbox型
+第25回 cabalの使いかた(テストの自動化も含めて)
 ---
-第22回 functor, applicative, monad
-第23回 free monad
-第24回 operational monad
-第25回 forall
-第26回 ST monad
-第27回 ref, mvar, chan, tvar
-第28回 stm
-第29回 template haskell
-第30回 QuasiQuotes
-第31回 parser (papillon の紹介)
-第32回 unsafePerformIO, unsafeInterleaveIO
-第33回 遅延IOとiteratee
-第34回 可変長引数 (Text.Printf等)
-第35回 Arrow
-第36回 Sequence (finger tree, queue)
-第37回 モナド内包表記 monad comprehension
+第26回 functor, applicative, monad
+第27回 free monad
+第28回 operational monad
+第29回 並行実行
+第30回 forall
+第31回 ST monad
+第32回 ref, mvar, chan, tvar
+第33回 stm
+第34回 template haskell
+第35回 QuasiQuotes
+第36回 parser (papillon の紹介)
+第37回 unsafePerformIO, unsafeInterleaveIO
+第38回 遅延IOとiteratee
+第39回 可変長引数 (Text.Printf等)
+第40回 Arrow
+第41回 Foldable
+第42回 Traversable
+第43回 Sequence (finger tree, queue)
+第44回 モナド内包表記 monad comprehension
 
 どこかで queue にも触れたいな
 finger tree面白いな
@@ -154,7 +161,16 @@ profiling の話もいれる必要があるな。
 第6回のIOのところでIOに関する再帰的プロセスと反復的プロセスについて
 例を挙げておく必要があるだろう。
 
+並列実行について触れるかどうか。
+並行実行については触れておきたいな。<- stmより前がいいだろう。
+例外処理も必要だな。
+
 zipperについてどこかで触れたいな。
+Foldableについても触れたいな。
+Traversableについても触れる必要があるかも。
+
+RULESも面白い機能ではある。
+INLINEについても見ておく必要がある。
 
 2013.10.03
 
