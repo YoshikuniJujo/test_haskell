@@ -8,6 +8,13 @@ tmp/
 *.prof
 *.png
 /tools/slide/yjslide/examples/unboxed/unboxed
+/tools/slide/yjslide/examples/unboxed/small
 *.hi
+*.s
 *.o
 /tools/rirekisho/rirekisho.dat
+/tools/slide/yjslide/examples/profiling/some
+*.aux
+*.hp
+*.pdf
+*.ps
