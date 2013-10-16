@@ -3,7 +3,7 @@ module Main where
 import Lecture
 
 subtitle :: String
-subtitle = "第11回 テスト"
+subtitle = "第12回 テスト"
 
 main :: IO ()
 main = runLecture pages
