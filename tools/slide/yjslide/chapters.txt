@@ -1,0 +1,101 @@
+IO monadの話のなかで、do記法に触れる必要があるな。
+そしたら例題->演習といった感じか。
+
+遅延IOの話はiterateeを紹介するときでいいだろう。
+
+第1回 ミニマルな本質
+第2回 特徴
+第3回 最小限の意味論と構文糖
+第4回 リスト
+第5回 再帰関数
+第6回 IO monad
+第7回 型クラス (newtypeの話題もここに入れよう)
+第8回 moduleシステム
+第9回 落ち穂拾い
+第10回 ghcの使いかた (runghc, ghciやその他のオプションについて)
+---
+(ここまで作った、以下予定)
+第11回 ドキュメンテーション(haddock)
+第12回 テスト(型によるチェック、展開による証明、doctest, quickcheck, hunit)
+第13回 monad
+第14回 type families
+第15回 monad transfer library
+第16回 GADTs
+第17回 プロファイリング
+第18回 正格評価(foldl'あたりから入ると良さそうだ)
+第19回 パターンマッチと正格評価(遅延パターン、bang pattern等)
+第20回 array, bytestring
+第21回 Map (Hashにもちょっと触れる)
+第22回 zipper
+第23回 例外処理
+第24回 ffi
+第25回 unbox型
+第26回 cabalの使いかた(テストの自動化も含めて)
+---
+第27回 functor, applicative, monad
+第28回 free monad
+第29回 operational monad
+第30回 並行実行
+第31回 forall
+第32回 ST monad
+第33回 ref, mvar, chan, tvar
+第34回 stm
+第35回 正格評価、非正格評価、正規形、頭部正規形、弱頭部正規形
+第35回 deepseq
+第36回 並列実行
+第37回 template haskell
+第38回 QuasiQuotes
+第39回 parser (papillon の紹介)
+第40回 unsafePerformIO, unsafeInterleaveIO
+第41回 遅延IOとiteratee
+第42回 可変長引数 (Text.Printf等)
+第43回 Arrow
+第44回 Foldable
+第45回 Traversable
+第46回 Sequence (finger tree, queue)
+第47回 モナド内包表記 monad comprehension
+
+どこかで queue にも触れたいな
+finger tree面白いな
+
+Preludeについても触れておく必要があるな
+あとは let ... in ..., where ...,
+newtype もどこかで触れなければならないな。
+Int と Integer について、も。
+field label についても、か。
+pattern guardはHaskell 2010に入ってるので初級編で触れておこうかな。
+view patternもついでに
+ffiも2010に入ってるな。
+-- や {- ... -}コメントについて。
+.lhs についてはどうしようかな。
+落ち穂拾いのところで簡単に触れておこう。
+型注釈についても触れとこう。
+それとas patternもだな。
+irrefutable patternも。
+
+bang patternについてはどこか別の場所で触れる必要がある。
+
+正格評価についてもどこかで触れる必要があるな。
+それとunbox型も、かな。
+
+ST monad や stm についても触れたい。
+ST monad について触れるなら forall についても触れる必要があるだろう。
+stm について触れる際に ref, mvar, chan, tvar あたりにも触れることにする。
+
+profiling の話もいれる必要があるな。
+
+第7回のキューの例をよりスムーズにするために、
+第6回のIOのところでIOに関する再帰的プロセスと反復的プロセスについて
+例を挙げておく必要があるだろう。
+
+並列実行について触れるかどうか。
+並行実行については触れておきたいな。<- stmより前がいいだろう。
+例外処理も必要だな。
+
+zipperについてどこかで触れたいな。
+Foldableについても触れたいな。
+Traversableについても触れる必要があるかも。
+haddockにも触れる必要があるな。
+
+RULESも面白い機能ではある。
+INLINEについても見ておく必要がある。

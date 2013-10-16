@@ -92,41 +92,45 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第10回 ghcの使いかた (runghc, ghciやその他のオプションについて)
 ---
 (ここまで作った、以下予定)
-第11回 テスト
-第12回 monad
-第13回 type families
-第14回 monad transfer library
-第15回 GADTs
-第16回 プロファイリング
-第17回 正格評価(foldl'あたりから入ると良さそうだ)
-第18回 パターンマッチと正格評価(遅延パターン、bang pattern等)
-第19回 array, bytestring
-第20回 Map (Hashにもちょっと触れる)
-第21回 zipper
-第22回 例外処理
-第23回 ffi
-第24回 unbox型
-第25回 cabalの使いかた(テストの自動化も含めて)
+第11回 ドキュメンテーション(haddock)
+第12回 テスト(型によるチェック、展開による証明、doctest, quickcheck, hunit)
+第13回 monad
+第14回 type families
+第15回 monad transfer library
+第16回 GADTs
+第17回 プロファイリング
+第18回 正格評価(foldl'あたりから入ると良さそうだ)
+第19回 パターンマッチと正格評価(遅延パターン、bang pattern等)
+第20回 array, bytestring
+第21回 Map (Hashにもちょっと触れる)
+第22回 zipper
+第23回 例外処理
+第24回 ffi
+第25回 unbox型
+第26回 cabalの使いかた(テストの自動化も含めて)
 ---
-第26回 functor, applicative, monad
-第27回 free monad
-第28回 operational monad
-第29回 並行実行
-第30回 forall
-第31回 ST monad
-第32回 ref, mvar, chan, tvar
-第33回 stm
-第34回 template haskell
-第35回 QuasiQuotes
-第36回 parser (papillon の紹介)
-第37回 unsafePerformIO, unsafeInterleaveIO
-第38回 遅延IOとiteratee
-第39回 可変長引数 (Text.Printf等)
-第40回 Arrow
-第41回 Foldable
-第42回 Traversable
-第43回 Sequence (finger tree, queue)
-第44回 モナド内包表記 monad comprehension
+第27回 functor, applicative, monad
+第28回 free monad
+第29回 operational monad
+第30回 並行実行
+第31回 forall
+第32回 ST monad
+第33回 ref, mvar, chan, tvar
+第34回 stm
+第35回 正格評価、非正格評価、正規形、頭部正規形、弱頭部正規形
+第35回 deepseq
+第36回 並列実行
+第37回 template haskell
+第38回 QuasiQuotes
+第39回 parser (papillon の紹介)
+第40回 unsafePerformIO, unsafeInterleaveIO
+第41回 遅延IOとiteratee
+第42回 可変長引数 (Text.Printf等)
+第43回 Arrow
+第44回 Foldable
+第45回 Traversable
+第46回 Sequence (finger tree, queue)
+第47回 モナド内包表記 monad comprehension
 
 どこかで queue にも触れたいな
 finger tree面白いな
@@ -168,6 +172,7 @@ profiling の話もいれる必要があるな。
 zipperについてどこかで触れたいな。
 Foldableについても触れたいな。
 Traversableについても触れる必要があるかも。
+haddockにも触れる必要があるな。
 
 RULESも面白い機能ではある。
 INLINEについても見ておく必要がある。
@@ -221,3 +226,30 @@ getSumIter i = getSumIter . (+ i) <$> getI
 また、パターン束縛が遅延パターンになっていることについて。
 不可反駁パターンよりも遅延パターンのほうがわかりやすいかも。
 いろいろな場所でのパターンマッチではなく、パターン束縛と呼ぼうかな。
+
+2013.10.16 Wed.
+
+hunitの使いかた。
+
+runTestTT
+~?
+~=?
+~?=
+~:
+
+title ~: [
+	someIO ~? "error message",
+	expect ~=? test,
+	test ~?= expect
+ ]
+
+正規形(normal form):
+	完全に簡約済みの形
+頭部正規形(head normal form):
+	引数部に簡約可能な部分があっても良い
+弱頭部正規形(weak head normal form):
+	上記に加え、
+	ラムダ式の本体部に簡約可能な部分があっても良い
+
+弱頭部正規形はアルファ変換無しでname captureの問題を解決する。
+グラフ簡約と相性がいいらしい。
