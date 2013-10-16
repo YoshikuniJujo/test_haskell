@@ -37,8 +37,8 @@ definition = [\t -> do
 	text t "", \t -> do
 	text t "以下のような「街」における"
 	text t "地点(x, y) から地点(x', y') への道のりを求める"
-	forM_ [0 .. 2] $ \y -> do
-		forM_ [0 .. 2] $ \x -> do
+	forM_ [0 .. 2 :: Int] $ \y -> do
+		forM_ [0 .. 2 :: Int] $ \x -> do
 			when (y == 0) $
 				graphWrite t (indexX x) (indexY y) $ show x
 			when (y > 0 && x == 0) $
