@@ -13,7 +13,9 @@ pages = [
 	titlePage, prelude,
 	interpreter1, interpreter2,
 	interactive1, interactive2,
-	compiler1, compiler2, compiler3, compiler4
+	compiler1, compiler2, compiler3, compiler4,
+	profiler1,
+	summary
  ]
 
 titlePage :: Page
@@ -149,4 +151,35 @@ compiler4 = [\t -> do
 	text t "./some +RTS -K400m -RTS", \t -> do
 	itext t 1 "- スタックサイズをデフォルトの8Mから400Mに"
 	arrowIText t 1 "ghc some.hs -with-rtsopts=\"-K400m\"としても"
+ ]
+
+profiler1 :: Page
+profiler1 = [\t -> do
+	writeTopTitle t "プロファイラ"
+	text t "", \t -> do
+	text t "% ghc -prof -fprof-auto -rtsopts some.hs"
+	text t "% ./some +RTS -p -h", \t -> do
+	itext t 1 "some.profとsome.hpができる", \t -> do
+	itext t 1 "some.profを見るとボトルネックを知ることができる", \t -> do
+	text t "% hp2ps some.hp"
+	text t "% ps2pdf some.ps"
+	text t "% firefox some.pdf", \t -> do
+	itext t 1 "メモリの使用状況を見ることができる"
+	text t "", \t -> do
+	semititle t "詳細はプロファイリングの回で"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* ghcの基本的な使いかたについてまとめた", \t -> do
+	text t "* 典型的な流れとしては", \t -> do
+	itext t 1 "- ghci some.hsで関数ごとのチェック", \t -> do
+	itext t 1 "- runghc some.hsで動作をチェックする", \t -> do
+	itext t 1 "- ghc some.hsでコンパイル", \t -> do
+	itext t 1 "- 以下でプロファイリング", \t -> do
+	itext t 2 "ghc -prof -fprof-auto -rtsopts some.hs"
+	itext t 2 "./some +RTS -p -h", \t -> do
+	text t "* 分割コンパイルやCコードの使用等も可能"
  ]
