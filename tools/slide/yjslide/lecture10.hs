@@ -161,7 +161,7 @@ profiler1 = [\t -> do
 	text t "% ./some +RTS -p -h", \t -> do
 	itext t 1 "some.profとsome.hpができる", \t -> do
 	itext t 1 "some.profを見るとボトルネックを知ることができる", \t -> do
-	text t "% hp2ps some.hp"
+	text t "% hp2ps -c some.hp"
 	text t "% ps2pdf some.ps"
 	text t "% firefox some.pdf", \t -> do
 	itext t 1 "メモリの使用状況を見ることができる"
