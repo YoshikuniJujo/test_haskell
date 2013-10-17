@@ -55,6 +55,10 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第47回 Traversable
 第48回 Sequence (finger tree, queue)
 第49回 モナド内包表記 monad comprehension
+第50回 プラグマ
+	(LANGUAGE, OPTIONS_GHC, WARNING, DEPRECATED, INLINE, RULES,
+		SPECIALIZE, UNPACK, SOURCE)
+	-> 場合によってはいくつかに分けよう
 
 どこかで queue にも触れたいな
 finger tree面白いな
