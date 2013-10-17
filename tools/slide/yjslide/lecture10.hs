@@ -61,8 +61,9 @@ interpreter2 = [\t -> do
 	text t "* ghc -e [表現] [ファイル名]", \t -> do
 	itext t 1 "- モジュールを読み込みその文脈で表現を評価実行", \t -> do
 	itext t 1 "- ファイル名が指定されなければPreludeの文脈で", \t -> do
-	text t "* runghc [ファイル名]", \t -> do
-	itext t 1 "- ghc -e main [ファイル名]と同じ", \t -> do
+	text t "* runghc [ファイル名] [引数]", \t -> do
+	itext t 1 "- ghc -e main [ファイル名]と類似", \t -> do
+	itext t 1 "- [引数]を取ることができる", \t -> do
 	itext t 1 "- runghc -Wall [ファイル名]とするのは良い習慣"
  ]
 
