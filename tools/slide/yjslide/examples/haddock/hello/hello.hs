@@ -1,3 +1,12 @@
+module Main where
+
 import Hello
 
-main = putStrLn $ greeting "world"
+-- |
+-- main
+
+main = putStrLn $ greeting world
+
+world = "world"
+-- ^
+-- world
