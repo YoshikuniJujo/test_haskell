@@ -19,3 +19,4 @@ tmp/
 *.pdf
 *.ps
 .*.swp
+/tools/slide/yjslide/examples/haddock/hello/html/
