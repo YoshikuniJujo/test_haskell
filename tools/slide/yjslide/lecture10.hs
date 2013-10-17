@@ -13,7 +13,7 @@ pages = [
 	titlePage, prelude,
 	interpreter1, interpreter2,
 	interactive1, interactive2,
-	compiler1, compiler2, compiler3, compiler4,
+	compiler1, compiler2, compiler3, compiler4, compiler5,
 	profiler1,
 	summary
  ]
@@ -101,8 +101,8 @@ compiler1 = [\t -> do
 	text t "* 最も単純な例", \t -> do
 	itext t 1 "ghc hello.hs"
 	itext t 1 "./hello => Hello, world!", \t -> do
-	text t "* ghcはimportされているモジュールを追いかけてくれる"
-	text t "* 更新されているモジュールだけを再コンパイルしてくれる"
+	text t "* ghcはimportされているモジュールを追いかけてくれる", \t -> do
+	text t "* 更新されているモジュールだけを再コンパイルしてくれる", \t -> do
 	arrowIText t 1 "makeの機能が組み込まれているということ"
  ]
 
@@ -138,8 +138,7 @@ compiler3 = [\t -> do
 
 compiler4 :: Page
 compiler4 = [\t -> do
-	writeTopTitle t "コンパイラ"
-	text t "", \t -> do
+	writeTopTitle t "コンパイラ", \t -> do
 	text t "* スタックサイズ", \t -> do
 	itext t 1 "./some"
 	itext t 1 "Stack space overflow: ...", \t -> do
@@ -151,6 +150,18 @@ compiler4 = [\t -> do
 	text t "./some +RTS -K400m -RTS", \t -> do
 	itext t 1 "- スタックサイズをデフォルトの8Mから400Mに"
 	arrowIText t 1 "ghc some.hs -with-rtsopts=\"-K400m\"としても"
+ ]
+
+compiler5 :: Page
+compiler5 = [\t -> do
+	writeTopTitle t "コンパイラ"
+	text t "", \t -> do
+	text t "* -Oをつけると最適化される", \t -> do
+	text t "* -Oと-O1は同じ", \t -> do
+	text t "* -O2だともっと徹底的に最適化を行う", \t -> do
+	text t "* -O2をつけても-Oよりも改善することはあまりない", \t -> do
+	text t "* コンパイル時間はひどく悪化するらしい", \t -> do
+	arrowIText t 1 "-O2は使わないほうが良さそう"
  ]
 
 profiler1 :: Page
@@ -181,5 +192,6 @@ summary = [\t -> do
 	itext t 1 "- 以下でプロファイリング", \t -> do
 	itext t 2 "ghc -prof -fprof-auto -rtsopts some.hs"
 	itext t 2 "./some +RTS -p -h", \t -> do
+	itext t 1 "- ghc -O some.hs を試す等", \t -> do
 	text t "* 分割コンパイルやCコードの使用等も可能"
  ]
