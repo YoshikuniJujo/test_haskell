@@ -10,7 +10,7 @@ main = runLecture pages
 
 pages :: [Page]
 pages = [
-	titlePage, prelude
+	titlePage, prelude, typeCheck
  ]
 
 titlePage :: Page
@@ -27,7 +27,23 @@ prelude = [\t -> do
 	itext t 1 "- 手作業での簡約が証明となる", \t -> do
 	text t "* 数学的に扱えない部分についてはテストが必要となる", \t -> do
 	itext t 1 "- 入力の型(つまり範囲)が決まっている", \t -> do
-	arrowIText t 1 "ランダムな値を生成してテストすることが可能", \t -> do
-	arrowIText t 1 "QuickCheck", \t -> do
-	itext t 1 ""
+	arrowIText t 2 "ランダムな値を生成してテストすることが可能", \t -> do
+	arrowIText t 2 "QuickCheck", \t -> do
+	itext t 1 "- IOが絡むもの、境界条件などの決まった値のテスト", \t -> do
+	arrowIText t 2 "HUnit"
+ ]
+
+typeCheck :: Page
+typeCheck = [\t -> do
+	writeTopTitle t "型によるチェック", \t -> do
+	text t "* 型の不整合によるバグ", \t -> do
+	itext t 1 "- 動的型付けの言語では起こり得る", \t -> do
+	itext t 1 "- 静的型付けの言語ではコンパイル時にチェック", \t -> do
+	text t "例: (python)"
+	text t "x = input(\"string/number? \")"
+	text t "if x == \"string\":"
+	itext t 1 "y = \"Hello\""
+	text t "else:"
+	itext t 1 "y = 88"
+	text t "print(y + \", world!\")"
  ]

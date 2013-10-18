@@ -14,8 +14,8 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第9回 落ち穂拾い
 第10回 ghcの使いかた (runghc, ghciやその他のオプションについて)
 ---
-(ここまで作った、以下予定)
 第11回 ドキュメンテーション(haddock)
+(ここまで作った、以下予定)
 第12回 テスト(型によるチェック、展開による証明、doctest, quickcheck, hunit)
 第13回 monad
 第14回 type families
