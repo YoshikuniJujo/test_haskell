@@ -11,7 +11,9 @@ main = runLecture pages
 pages :: [Page]
 pages = [
 	titlePage, prelude, showType, basic, example, parameter, moduleEx,
-	sections, markup1, markup2,
+	sections,
+	classEx, dataEx,
+	markup1, markup2,
 	summary
  ]
 
@@ -22,16 +24,13 @@ prelude :: Page
 prelude = [\t -> do
 	writeTopTitle t "はじめに"
 	text t "", \t -> do
-	text t "* コメントからドキュメントを生成しよう", \t -> do
-	itext t 1 "- 日本語で書くと他言語の人にはノイズになる", \t -> do
-	itext t 1 "- 英語は苦手", \t -> do
-	itext t 1 "- 使用例くらいなら書けるかな", \t -> do
-	text t "* haddockを使おう", \t -> do
+	text t "* ライブラリにドキュメントをつける", \t -> do
+	text t "* ドキュメントとコードを別に作る", \t -> do
+	arrowIText t 1 "同期の問題がある", \t -> do
+	text t "* コメントからドキュメントを生成する", \t -> do
+	arrowIText t 1 "haddockを使おう", \t -> do
 	text t "* 関数の型は自動的に表示してくれる", \t -> do
-	itext t 1 "- 仕事は半分終わったようなもの", \t -> do
-	itext t 1 "- 使用例以外は暇なときに辞書でも引きながら書くか", \t -> do
-	dvArrowShort t
-	itext t 1 "そんな感じ"
+	text t "* 使用例はdoctestで自動テストが可能"
  ]
 
 showType :: Page
@@ -53,12 +52,12 @@ basic :: Page
 basic = [\t -> do
 	writeTopTitle t "基本"
 	text t "", \t -> do
-	text t "-- |make greeting"
+	text t "-- |To make greeting."
 	text t "greeting name = \"Hello, \" ++ name ++ \"!\""
 	text t "", \t -> do
 	text t "これは以下と同じ", \t -> do
 	text t "greeting name = \"Hello, \" ++ name ++ \"!\""
-	text t "-- ^make greeting"
+	text t "-- ^To make greeting."
 	text t "", \t -> do
 	text t "* 上から説明するときは'|'", \t -> do
 	text t "* 下から説明するときは'^'"
@@ -80,12 +79,41 @@ example = [\t -> do
 	text t "Examples: 1 Tried: 1 Errors: 0 Failures: 0"
  ]
 
+classEx :: Page
+classEx = [\t -> do
+	writeTopTitle t "クラス"
+	text t "", \t -> do
+	text t "* クラス全体とそれぞれのメソッドに説明がつけられる"
+	text t "", \t -> do
+	text t "-- |The queue is FIFO container."
+	text t "class Queue q where"
+	itext t 1 "empty :: q a"
+	itext t 1 "-- ^To use as initial queue."
+	itext t 1 "enqueue :: a -> a q -> q a"
+	itext t 1 "-- ^To put something in the queue."
+	itext t 1 "..."
+ ]
+
+dataEx :: Page
+dataEx = [\t -> do
+	writeTopTitle t "データ宣言"
+	text t "", \t -> do
+	text t "* データ宣言とそれぞれの構築子に説明がつけられる"
+	text t "", \t -> do
+	text t "-- |2-dimentional shapes"
+	text t "data Shape"
+	itext t 1 "= Rectangle Double Double Double Double"
+	itext t 1 "-- ^Rectangle has left, top, width and height."
+	itext t 1 "| Circle Double Double Double"
+	itext t 1 "-- ^Circle has center x, center y and radius."
+ ]
+
 parameter :: Page
 parameter = [\t -> do
 	writeTopTitle t "引数の説明"
 	text t "", \t -> do
-	text t "greeting :: String -- ^your name"
-	itext t 1 "-> String -- ^greeting"
+	text t "greeting :: String -- ^Your name"
+	itext t 1 "-> String -- ^The result greeting"
 	text t "", \t -> do
 	text t "* 型宣言のところに引数の説明をつけることができる"
  ]
@@ -145,7 +173,9 @@ summary :: Page
 summary = [\t -> do
 	writeTopTitle t "まとめ"
 	text t "", \t -> do
-	text t "* 英語を書くのが苦手な人でも便利に使える機能がある", \t -> do
-	text t "* 特に使用例(>>>)はdoctestと組み合わせて使うと便利", \t -> do
-	text t "* 他はURLが載せられるあたりは使えるかな"
+	text t "* 使用例(>>>)はdoctestと組み合わせて使うと便利", \t -> do
+	text t "* 強調、リンク、列挙等のマークアップが使える"
+	text t "", \t -> do
+	text t "* 詳細は以下参照"
+	text t "http://www.haskell.org/haddock/doc/html/index.html"
  ]
