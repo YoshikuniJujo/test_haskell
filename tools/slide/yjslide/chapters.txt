@@ -117,3 +117,5 @@ ViewPatternsは効率に関する問題がある気がする。
 GeneralizedNewtypeDerivingも「いけてる」気がする。
 
 ScopedTypeVariablesも「いけてる」と思う。
+
+どこかに時間の扱いも入れときたいな。
