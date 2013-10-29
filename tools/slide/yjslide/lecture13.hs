@@ -123,8 +123,8 @@ proof5 = [\t -> do
 	writeTopTitle t "手作業での証明(まとめ)"
 	text t "", \t -> do
 	text t "* Haskellには正しいことを証明できる部分がある", \t -> do
-	text t "* 多くの部分ではこのような証明は困難だが"
-	itext t 1 "証明済みの部分に自信が持てるということは強力", \t -> do
+	text t "* 多くの部分ではこのような証明は困難", \t -> do
+	text t "* しかし、証明済みの部分に自信が持てることは強力", \t -> do
 	text t "* 「証明」は「すべての値」で正しいことを示す", \t -> do
 	itext t 1 "- これはテストでは到達困難なレベルの自信", \t -> do
 	text t "* もちろん証明にまちがいがある場合もある"
@@ -142,7 +142,7 @@ quickCheck = [\t -> do
 	text t "* その性質は型 a -> Bool を持つ関数となる", \t -> do
 	text t "* 慣習として prop_ をプレフィックスとする"
 	text t "", \t -> do
-	text t "prop_lengthMap xs = length xs == length (map (* 10) xs)"
+	text t "prop_lengthMap xs = length xs == length (map (* 10) xs)", \t -> do
 	text t "> quickCheck prop_lengthMap"
 	text t "+++ OK, passed 100 tests."
  ]
