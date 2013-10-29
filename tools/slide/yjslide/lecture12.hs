@@ -11,7 +11,9 @@ main = runLecture pages
 pages :: [Page]
 pages = [
 	titlePage, prelude, randomTypes, stdGen, randoms, randomR, invariable,
-	getStdGen, useGetStdGen
+	getStdGen, useGetStdGen, setStdGen, ios, variable,
+	split, newStdGen, splitSummary,
+	instanceRandom, instanceRandomPol
  ]
 
 titlePage :: Page
@@ -132,4 +134,112 @@ useGetStdGen = [\t -> do
 	dvArrowShort t
 	text t "試行1: [2, 2, 4, 6, 4, 3, 6, 2, 1, 4]", \t -> do
 	text t "試行2: [1, 1, 2, 6, 5, 3, 1, 4, 5, 3]"
+ ]
+
+setStdGen :: Page
+setStdGen = [\t -> do
+	writeTopTitle t "setStdGen"
+	text t "", \t -> do
+	text t "* 種の値を更新する", \t -> do
+	itext t 1 "setStdGen :: StdGen -> IO ()", \t -> do
+	itext t 1 "> g <- getStdGen"
+	itext t 1 "> random g :: (Int, StdGen)"
+	itext t 1 "> setStdGen $ snd it", \t -> do
+	dvArrowShort t
+	text t "この流れをまとめてしてくれる関数がある", \t -> do
+	itext t 1 "getStdRandom :: (StdGen -> (a, StdGen)) -> IO a", \t -> do
+	itext t 1 "> getStdGen => 2049318214 1"
+	itext t 1 "> getStdRandom random"
+	itext t 1 "> getStdGen => 1008136518 1655838864"
+ ]
+
+ios :: Page
+ios = [\t -> do
+	writeTopTitle t "randomIO, randomRIO"
+	text t "", \t -> do
+	text t "* より簡単に使える関数"
+	itext t 1 "randomIO :: IO a"
+	itext t 1 "randomIO = getStdRandom random", \t -> do
+	itext t 1 "randomRIO :: (a, a) -> IO a"
+	itext t 1 "randomRIO r = getStdRandom $ randomR r", \t -> do
+	text t "> randomIO "
+	text t "1194332419"
+	text t "> randomIO"
+	text t "923507800"
+	text t "> randomRIO (1, 6)"
+	text t "5"
+ ]
+
+variable :: Page
+variable = [\t -> do
+	writeTopTitle t "ここまでのまとめ"
+	text t "", \t -> do
+	text t "* 起動ごとに異なる乱数値を得るにはgetStdGenを使う", \t -> do
+	text t "* 保存されている種の更新にはsetStdGenを使う", \t -> do
+	text t "* getStdRandomを使えば値の入手と種の更新を同時にできる", \t -> do
+	itext t 1 "- マルチスレッドで使う場合はこっちを使うべき", \t -> do
+	text t "* 使いやすいrandomIOとrandomRIOが用意されている"
+ ]
+
+split :: Page
+split = [\t -> do
+	writeTopTitle t "split"
+	text t "", \t -> do
+	text t "* ランダムの種を2つに分けることができる", \t -> do
+	itext t 1 "split :: g -> (g, g)", \t -> do
+	itext t 1 "> g <- getStdGen"
+	itext t 1 "> let (g1, g2) = split g"
+	itext t 1 "> take 10 $ randoms g1 :: [Int]"
+	itext t 1 "> take 10 $ randoms g2 :: [Int]"
+ ]
+
+newStdGen :: Page
+newStdGen = [\t -> do
+	writeTopTitle t "newStdGen"
+	text t "", \t -> do
+	text t "* ランダムの種を2つに分けて片方を保存し片方を返す関数", \t -> do
+	itext t 1 "newStdGen :: IO StdGen", \t -> do
+	itext t 1 "> g1 <- newStdGen"
+	itext t 1 "> g2 <- newStdGen"
+	itext t 1 "> g3 <- newStdGen"
+	itext t 1 "> take 10 $ randoms g1 :: [Int]"
+	itext t 1 "> take 10 $ randoms g2 :: [Int]"
+	itext t 1 "> take 10 $ randoms g3 :: [Int]", \t -> do
+	text t "* getStdGenだとまるごと取ってきちゃう感じ", \t -> do
+	text t "* newStdGenだとすこしずつ削って使う感じ"
+ ]
+
+splitSummary :: Page
+splitSummary = [\t -> do
+	writeTopTitle t "ここまでのまとめ"
+	text t "", \t -> do
+	text t "* ランダムの種は2つに分けることができる", \t -> do
+	text t "* 複数の系列のランダム値を使いたいときに便利", \t -> do
+	text t "* newStdGenを使えば新しい種を何度でも入手可能", \t -> do
+	text t "* getStdGenはまるごと取ってくる感じ", \t -> do
+	text t "* newStdGenはすこしずつ削って使う感じ"
+ ]
+
+instanceRandom :: Page
+instanceRandom = [\t -> do
+	writeTopTitle t "自作の型をランダムで使う"
+	text t "", \t -> do
+	text t "* Randomクラスのインスタンスにする", \t -> do
+	arrowIText t 1 "今まで紹介してきた関数がその型の上で使える", \t -> do
+	text t "* randomRとrandomを定義すれば良い"
+	text t "", \t -> do
+	text t "極座標の例:", \t -> do
+	text t "data Pol = Pol Double Double"
+ ]
+
+instanceRandomPol :: Page
+instanceRandomPol = [\t -> do
+	writeTopTitle t "極座標をランダムで入手"
+	text t "", \t -> do
+	text t "instance Random Pol where"
+	itext t 1 "random g = randomR (Pol 0 0) (Pol 100 $ 2 * pi)"
+	itext t 1 "randomR (Pol dmin amin, Pol dmax amax) ="
+	itext t 2 "(d, g') = randomR (dmin, dmax) g"
+	itext t 2 "(a, g'') = randomR (amin, amax) g' in"
+	itext t 2 "(Pol d a, g'')"
  ]
