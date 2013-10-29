@@ -111,3 +111,7 @@ ViewPatternsは効率に関する問題がある気がする。
 
 またOverloadedStringsは「いけてる」気がする。
 これもどこかで触れたいな。
+
+GeneralizedNewtypeDerivingも「いけてる」気がする。
+
+ScopedTypeVariablesも「いけてる」と思う。
