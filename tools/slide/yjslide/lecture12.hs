@@ -13,7 +13,8 @@ pages = [
 	titlePage, prelude, randomTypes, stdGen, randoms, randomR, invariable,
 	getStdGen, useGetStdGen, setStdGen, ios, variable,
 	split, newStdGen, splitSummary,
-	instanceRandom, instanceRandomPol
+	instanceRandom, instanceRandomPol, instanceRandomPol2,
+	instanceRandomPolUse, instanceRandomSummary, summary
  ]
 
 titlePage :: Page
@@ -237,9 +238,59 @@ instanceRandomPol = [\t -> do
 	writeTopTitle t "極座標をランダムで入手"
 	text t "", \t -> do
 	text t "instance Random Pol where"
-	itext t 1 "random g = randomR (Pol 0 0) (Pol 100 $ 2 * pi)"
-	itext t 1 "randomR (Pol dmin amin, Pol dmax amax) ="
+	itext t 1 "random g = randomR (Pol 0 0) (Pol 100 (2 * pi))"
+	itext t 1 "randomR (Pol dmin amin, Pol dmax amax) g ="
 	itext t 2 "(d, g') = randomR (dmin, dmax) g"
 	itext t 2 "(a, g'') = randomR (amin, amax) g' in"
 	itext t 2 "(Pol d a, g'')"
+ ]
+
+instanceRandomPol2 :: Page
+instanceRandomPol2 = [\t -> do
+	writeTopTitle t "極座標をランダムで入手"
+	text t "", \t -> do
+	text t "random g = randomR (Pol 0 0) (Pol 100 (2 * pi)) ", \t -> do
+	itext t 1 "- 次に定義するrandomRを使っている", \t -> do
+	itext t 1 "- 距離はとりあえず0から100まで", \t -> do
+	itext t 1 "- 角度は0から2\x03c0まで", \t -> do
+	text t "randomR (Pol dmin amin, Pol dmax amax) g =", \t -> do
+	itext t 1 "(d, g') = randomR (dmin, dmax) g", \t -> do
+	itext t 2 "- 距離はdminからdmaxの範囲のランダム値", \t -> do
+	itext t 1 "(a, g'') = randomR (amin, amax) g' in", \t -> do
+	itext t 2 "- 角度はaminからamaxの範囲のランダム値", \t -> do
+	itext t 1 "(Pol d a, g'')"
+ ]
+
+instanceRandomPolUse :: Page
+instanceRandomPolUse = [\t -> do
+	writeTopTitle t "極座標をランダムで入手"
+	text t "", \t -> do
+	text t "> randomIO :: IO Pol"
+	text t "Pol 61.15303936941166 4.251066312657999", \t -> do
+	text t "> randomIO :: IO Pol"
+	text t "Pol 80.0939538435434 3.0725675489984137", \t -> do
+	text t "> g <- getStdGen", \t -> do
+	text t "take 10 $ randoms g :: [Pol]"
+	text t "[Pol 82.5146420164557 5.390267779550682, ... ]"
+ ]
+
+instanceRandomSummary :: Page
+instanceRandomSummary = [\t -> do
+	writeTopTitle t "ここまでのまとめ"
+	text t "", \t -> do
+	text t "* ランダム値が欲しければRandomクラスのインスタンスに", \t -> do
+	text t "* randomとrandomRを定義すれば良い", \t -> do
+	text t "* その型を構成する型のrandomやrandomRを使えば簡単"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* ランダム値の使いかたを学んだ", \t -> do
+	text t "* 種を指定すれば決まった値を得ることができる", \t -> do
+	text t "* システムが提供する種で起動ごとに違う乱数", \t -> do
+	text t "* 種を2つに分けることができる", \t -> do
+	itext t 1 "- 複数の乱数列が作れる", \t -> do
+	text t "* 自分で作った型も乱数として扱うことができる"
  ]
