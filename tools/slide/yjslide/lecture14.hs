@@ -12,7 +12,7 @@ pages :: [Page]
 pages = [
 	titlePage, prelude,
 	monadLaws, monadLaw1, monadLaw2, monadLaw12, monadLaw3, monadLaw3',
-	useMaybe, useMaybe2, useMaybe3
+	useMaybe, useMaybe2, useMaybe3, useMaybe4
  ]
 
 titlePage :: Page
@@ -154,7 +154,7 @@ useMaybe = [\t -> do
 	text t "* ある値がリストの何番目にあるか調べる関数を考えよう", \t -> do
 	itext t 1 "elemIndex1 :: Eq a => Int -> a -> [a] -> Int"
 	itext t 1 "elemIndex1 n x0 (x : xs)"
-	itext t 2 "| x0 == x = n"
+	itext t 2 "| x == x0 = n"
 	itext t 2 "| otherwise = elemIndex1 (n + 1) xs"
 	itext t 1 "elemIndex1 _ _ [] = error \"not exist\"", \t -> do
 	arrowIText t 1 "リストに存在しない値を探した場合異常終了", \t -> do
@@ -177,5 +177,26 @@ useMaybe3 :: Page
 useMaybe3 = [\t -> do
 	writeTopTitle t "Maybeを使う"
 	text t "", \t -> do
-	text t ""
+	text t "* Maybeを使って書いてみる", \t -> do
+	itext t 0.5 "elemIndex2 :: Eq a => Int -> a -> [a] -> Maybe Int"
+	itext t 0.5 "elemIndex2 n x0 (x : xs)"
+	itext t 2 "| x == x0 = Just n"
+	itext t 2 "| otheriwse = elemIndex2 (n + 1) xs"
+	itext t 0.5 "elemIndex2 _ _ [] = Nothing", \t -> do
+	arrowIText t 1 "リストに存在しない値を探した場合Nothingを返す", \t -> do
+	arrowIText t 1 "いいね"
+ ]
+
+useMaybe4 :: Page
+useMaybe4 = [\t -> do
+	writeTopTitle t "Maybeを使う"
+	text t "", \t -> do
+	text t "* 別の関数を考える", \t -> do
+	text t "* リストのi番目を返す関数", \t -> do
+	text t "* リストの長さが足りなければNothingを返す", \t -> do
+	itext t 1 "maybeIndex :: [a] -> Int -> Maybe a"
+	itext t 1 "maybeIndex (x : xs) 0 = Just x"
+	itext t 1 "maybeIndex (x : xs) n"
+	itext t 2 "| n > 0 = maybeIndex xs (n - 1)"
+	itext t 1 "maybeIndex _ _ = Nothing"
  ]
