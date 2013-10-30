@@ -11,7 +11,7 @@ main = runLecture pages
 pages :: [Page]
 pages = [
 	titlePage, prelude,
-	monadLaws, monadLaw1, monadLaw2, monadLaw12, monadLaw3, monadLaw3',
+--	monadLaws, monadLaw1, monadLaw2, monadLaw12, monadLaw3, monadLaw3',
 	useMaybe, useMaybe2, useMaybe3, useMaybe4
  ]
 
@@ -28,12 +28,19 @@ prelude = [\t -> do
 	itext t 1 "- IOは特殊なので他のモナドとは区別する必要がある"
 	text t "", \t -> do
 	text t "* モナドとは何か?", \t -> do
+	itext t 1 "- 複数の型に共通する構造をくくり出したもの", \t -> do
+	itext t 1 "- 一見して共通点のない構造に同じ関数が使える", \t -> do
+	itext t 1 "- 具体例を見ていくのが一番わかりやすい"
+ ]
+
+{-
 	itext t 1 "以下の型の関数を持つ型m", \t -> do
 	itext t 1 "return :: a -> m a"
 	itext t 1 "(>>=) :: m a -> (a -> m b) -> m b", \t -> do
 	text t "今は理解できなくていい", \t -> do
 	arrowIText t 1 "モナドの理解はじわじわと深めていけば良い"
  ]
+ -}
 
 monadLaws :: Page
 monadLaws = [\t -> do
@@ -149,7 +156,6 @@ useMaybe :: Page
 useMaybe = [\t -> do
 	writeTopTitle t "Maybeを使う"
 	text t "", \t -> do
-	text t "* ここからが本番", \t -> do
 	text t "* 失敗する可能性のある関数を考える", \t -> do
 	text t "* ある値がリストの何番目にあるか調べる関数を考えよう", \t -> do
 	itext t 1 "elemIndex1 :: Eq a => Int -> a -> [a] -> Int"
@@ -177,7 +183,7 @@ useMaybe3 :: Page
 useMaybe3 = [\t -> do
 	writeTopTitle t "Maybeを使う"
 	text t "", \t -> do
-	text t "* Maybeを使って書いてみる", \t -> do
+	text t "* さっきの関数をMaybeを使って書いてみる", \t -> do
 	itext t 0.5 "elemIndex2 :: Eq a => Int -> a -> [a] -> Maybe Int"
 	itext t 0.5 "elemIndex2 n x0 (x : xs)"
 	itext t 2 "| x == x0 = Just n"
