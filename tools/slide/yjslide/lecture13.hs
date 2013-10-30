@@ -250,5 +250,8 @@ quickCheckSummary = [\t -> do
 	itext t 1 "- Randomクラスのインスタンスにする", \t -> do
 	itext t 1 "- Arbitraryクラスのインスタンスにする", \t -> do
 	itext t 1 "- arbitrary = choose (min, max)とする", \t -> do
-	itext t 1 "- shrinkは定義しなくても良い"
+	itext t 1 "- shrinkは定義しなくても良い", \t -> do
+	text t "* Integerを使うときは注意が必要", \t -> do
+	itext t 1 "- デフォルトでは-100から100の範囲", \t -> do
+	itext t 1 "- quickCheckWith (stdArgs{ maxSize = 1000 }) ..."
  ]
