@@ -12,7 +12,9 @@ pages :: [Page]
 pages = [
 	titlePage, prelude, typeCheck, typeCheck2,
 	proof, proof2, proof3, proof4, proof5,
-	quickCheck
+	quickCheck, quickCheckFalse, quickCheckInteger,
+	quickCheckMul, quickCheckList, quickCheckTypes, quickCheckAll,
+	quickCheckSummary
  ]
 
 titlePage :: Page
@@ -140,9 +142,113 @@ quickCheck = [\t -> do
 	text t "", \t -> do
 	text t "* すべての値で必ず成り立つと期待される性質を記述する", \t -> do
 	text t "* その性質は型 a -> Bool を持つ関数となる", \t -> do
-	text t "* 慣習として prop_ をプレフィックスとする"
+	text t "* prop_ をプレフィックスとする"
 	text t "", \t -> do
-	text t "prop_lengthMap xs = length xs == length (map (* 10) xs)", \t -> do
+	text t "prop_lengthMap xs = length xs == length (map (* 8) xs)", \t -> do
 	text t "> quickCheck prop_lengthMap"
 	text t "+++ OK, passed 100 tests."
+ ]
+
+quickCheckFalse :: Page
+quickCheckFalse = [\t -> do
+	writeTopTitle t "QuickCheck"
+	text t "", \t -> do
+	text t "* 誤った値があった場合", \t -> do
+	itext t 1 "- できるだけ単純な結果を探してくれる", \t -> do
+	text t "prop_lessThan288 :: Int -> Bool"
+	text t "prop_lessThan288 = (< 288)", \t -> do
+	text t "> quickCheck prop_lessThan288"
+	text t "*** Failed! Falsifiable (after 31 tests and 9 shrinks):"
+	text t "288", \t -> do
+	itext t 1 "- 値の範囲をせばめできるだけ小さな値を求めた", \t -> do
+	itext t 1 "- 範囲を9回せばめたことを示す", \t -> do
+	itext t 1 "- できるだけ「小さい」失敗する値として288を返した"
+ ]
+
+quickCheckInteger :: Page
+quickCheckInteger = [\t -> do
+	writeTopTitle t "QuickCheck"
+	text t "", \t -> do
+	text t "* Int等のBoundedクラスのインスタンス", \t -> do
+	arrowIText t 1 "全範囲の値をチェックする", \t -> do
+	text t "* Integerをチェックする際には注意が必要", \t -> do
+	itext t 1 "- 指定された範囲の値だけチェック", \t -> do
+	itext t 1 "- デフォルトでは-100から100まで", \t -> do
+	itext t 1 "- 明示的に変更する必要がある", \t -> do
+	text t "例:"
+	text t "> quickCheckWith (stdArgs { maxSize = 1000 }) (< 100)"
+	text t "*** Failed! Falsifiable (after 15 tests and 3 shrinks):"
+	text t "100"
+ ]
+
+quickCheckMul :: Page
+quickCheckMul = [\t -> do
+	writeTopTitle t "QuickCheck"
+	text t "", \t -> do
+	text t "* 複数の引数を持つ関数もチェック可能"
+	text t "", \t -> do
+	text t "例:"
+	text t "prop_exp2 :: Integer -> Integer -> Bool"
+	text t "prop_exp2 x y = x `shiftL` fromInteger y =="
+	itext t 1 "floor (fromInteger x * 2 ** fromInteger y)", \t -> do
+	text t "> quickCheck prop_exp2"
+	text t "+++ OK, passed 100 tests."
+ ]
+
+quickCheckList :: Page
+quickCheckList = [\t -> do
+	writeTopTitle t "QuickCheck"
+	text t "", \t -> do
+	text t "* リストやタプルを引数に取る関数もチェック可能"
+	text t "", \t -> do
+	text t "例:"
+	text t "prop_sorted :: [Int] -> Bool"
+	text t "prop_sorted = isSorted . sort", \t -> do
+	text t "> quickCheck prop_sorted"
+	text t "+++ OK, passed 100 tests."
+ ]
+
+quickCheckTypes :: Page
+quickCheckTypes = [\t -> do
+	writeTopTitle t "QuickCheck"
+	text t "", \t -> do
+	text t "* 自分で作った型を引数として取る関数もチェック可能", \t -> do
+	text t "* Arbitraryクラスのインスタンスとすれば良い", \t -> do
+	text t "* 以下の関数を定義する", \t -> do
+	itext t 1 "arbitrary :: Gen a"
+	itext t 1 "shrink :: a -> [a]", \t -> do
+	text t "* 自分で作った型をRandomクラスのインスタンスにする", \t -> do
+	text t "* arbitraryは以下のように定義しておけば良い", \t -> do
+	itext t 1 "arbitrary = choose (min, max)", \t -> do
+	text t "* shrinkは失敗したときに値の範囲を狭めていくための関数", \t -> do
+	itext t 1 "- その値が失敗したときに試す値のリストを返す"
+ ]
+
+quickCheckAll :: Page
+quickCheckAll = [\t -> do
+	writeTopTitle t "QuickCheck"
+	text t "", \t -> do
+	text t "* テストをghciからではなくrunghcで行いたい", \t -> do
+	text t "* main = do"
+	itext t 1 "prop_foo"
+	itext t 1 "prop_bar"
+	itext t 1 "..."
+	itext t 1 "とすれば良い", \t -> do
+	text t "* ボイラープレートが嫌いな人のために"
+	itext t 1 "main = $quickCheckAll"
+	itext t 1 "とすることができる"
+ ]
+
+quickCheckSummary :: Page
+quickCheckSummary = [\t -> do
+	writeTopTitle t "QuickCheck(まとめ)"
+	text t "", \t -> do
+	text t "* ランダムな値を使ってテストすることができる", \t -> do
+	text t "* Bool値を返す関数を作り、名前をprop_fooとする", \t -> do
+	text t "* main = $quickCheckAllとすればrunghcでテストできる", \t -> do
+	text t "* 自分で作った型をテストに使いたい", \t -> do
+	itext t 1 "- Randomクラスのインスタンスにする", \t -> do
+	itext t 1 "- Arbitraryクラスのインスタンスにする", \t -> do
+	itext t 1 "- arbitrary = choose (min, max)とする", \t -> do
+	itext t 1 "- shrinkは定義しなくても良い"
  ]
