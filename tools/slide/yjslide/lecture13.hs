@@ -14,7 +14,9 @@ pages = [
 	proof, proof2, proof3, proof4, proof5,
 	quickCheck, quickCheckFalse, quickCheckInteger,
 	quickCheckMul, quickCheckList, quickCheckTypes, quickCheckAll,
-	quickCheckSummary
+	quickCheckSummary,
+	hunitPrelude, hunitNotIO, hunitMessage, hunitIO, hunitSummary,
+	summary
  ]
 
 titlePage :: Page
@@ -254,4 +256,92 @@ quickCheckSummary = [\t -> do
 	text t "* Integerを使うときは注意が必要", \t -> do
 	itext t 1 "- デフォルトでは-100から100の範囲", \t -> do
 	itext t 1 "- quickCheckWith (stdArgs{ maxSize = 1000 }) ..."
+ ]
+
+hunitPrelude :: Page
+hunitPrelude = [\t -> do
+	writeTopTitle t "HUnit"
+	text t "", \t -> do
+	text t "* 決まった値でテストを行いたいとき", \t -> do
+	itext t 1 "- 境界条件をテストするときなど", \t -> do
+	text t "* IOが絡む関数をテストするとき", \t -> do
+	dvArrowShort t
+	itext t 1 "HUnitが有用"
+ ]
+
+hunitNotIO :: Page
+hunitNotIO = [\t -> do
+	writeTopTitle t "HUnit"
+	text t "", \t -> do
+	text t "* main = runTestTT $ \"test name\" ~: [ ... ]", \t -> do
+	text t "* ... の部分に複数のテストを書けば良い", \t -> do
+	text t "* ~?, ~=?, ~?=の三種の演算子が用意されている", \t -> do
+	itext t 1 "- [テスト] ~? [メッセージ]", \t -> do
+	itext t 1 "- [期待する値] ~=? [チェックする値]", \t -> do
+	itext t 1 "- [チェックする値] ~?= [期待する値]", \t -> do
+	text t "例:"
+	itext t 1 "isAscii 'あ' ~? \"'あ' is not ASCII\"", \t -> do
+	itext t 1 "9 ~=? 3 + 5", \t -> do
+	itext t 1 "3 + 5 ~?= 9"
+ ]
+
+hunitMessage :: Page
+hunitMessage = [\t -> do
+	writeTopTitle t "HUnit"
+	text t "", \t -> do
+	text t "* テストにはタイトルをつけることができる", \t -> do
+	text t "* ~:演算子を使う", \t -> do
+	itext t 1 "- [タイトル] ~: [テスト]", \t -> do
+	text t "例:"
+	itext t 1 "\"'3 + 5' is expected to be 9\" ~: 9 ~=? 3 + 5"
+	text t "", \t -> do
+	text t "### Failure in: test name:1:'3 + 5' is expected to be 9"
+	text t "expected: 9"
+	text t " but got: 8"
+	text t "Cases: 1 Tried: 1 Errors: 0 Failures: 1"
+ ]
+
+hunitIO :: Page
+hunitIO = [\t -> do
+	writeTopTitle t "HUnit"
+	text t "", \t -> do
+	text t "* IOの関わるテスト", \t -> do
+	itext t 1 "- 最終結果のみではなく途中経過もチェックしたい", \t -> do
+	itext t 1 "- 前提条件や事後条件もチェックしたい", \t -> do
+	text t "* @?, @=?, @?=の3つの関数が用意されている", \t -> do
+	itext t 1 "- ~?, ~=?, ~?=と似ている", \t -> do
+	itext t 1 "- IOのなかで使うことができる", \t -> do
+	text t "例:"
+	text t "do"
+	preLine t
+	itext t 1 "doesFileExist file @? \"File is not exist.\""
+	itext t 1 "cnt <- readFile file"
+	itext t 1 "\"foo\\n\" @=? cnt"
+ ]
+
+hunitSummary :: Page
+hunitSummary = [\t -> do
+	writeTopTitle t "HUnit"
+	text t "", \t -> do
+	text t "* HUnitの使いかたを学んだ", \t -> do
+	text t "* main = runTestTT $ \"test title\" ~: [ ... ]", \t -> do
+	text t "* IO以外では~?, ~=?, ~?=を使う", \t -> do
+	text t "* IO内では@?, @=?, @?=が使える", \t -> do
+	text t "* ~:でテストのタイトルをつけることができる"
+
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* Haskellでのテストについて学んだ", \t -> do
+	text t "* 型の設計をきちんとする", \t -> do
+	itext t 1 "- 型チェック自体がテストになる", \t -> do
+	text t "* 手作業での証明", \t -> do
+	itext t 1 "- 数学的な証明が可能な部分がある", \t -> do
+	text t "* 満たすべき性質を列挙しランダム値によるテスト", \t -> do
+	arrowIText t 1 "QuickCheck", \t -> do
+	text t "* 用意したテストを実行する", \t -> do
+	arrowIText t 1 "HUnit"
  ]
