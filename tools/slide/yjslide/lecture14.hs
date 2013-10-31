@@ -12,7 +12,8 @@ pages :: [Page]
 pages = [
 	titlePage, prelude,
 --	monadLaws, monadLaw1, monadLaw2, monadLaw12, monadLaw3, monadLaw3',
-	useMaybe, useMaybe2, useMaybe3, useMaybe4
+	useMaybe, useMaybe2, useMaybe3, useMaybe4, useMaybe5, useMaybe6,
+	useMaybe7, useMaybe8, useMaybe9, useMaybe10
  ]
 
 titlePage :: Page
@@ -162,7 +163,8 @@ useMaybe = [\t -> do
 	itext t 1 "elemIndex1 n x0 (x : xs)"
 	itext t 2 "| x == x0 = n"
 	itext t 2 "| otherwise = elemIndex1 (n + 1) xs"
-	itext t 1 "elemIndex1 _ _ [] = error \"not exist\"", \t -> do
+	itext t 1 "elemIndex1 _ _ [] = error \"not exist\""
+	text t "", \t -> do
 	arrowIText t 1 "リストに存在しない値を探した場合異常終了", \t -> do
 	arrowIText t 1 "うれしくない"
  ]
@@ -188,7 +190,8 @@ useMaybe3 = [\t -> do
 	itext t 0.5 "elemIndex2 n x0 (x : xs)"
 	itext t 2 "| x == x0 = Just n"
 	itext t 2 "| otheriwse = elemIndex2 (n + 1) xs"
-	itext t 0.5 "elemIndex2 _ _ [] = Nothing", \t -> do
+	itext t 0.5 "elemIndex2 _ _ [] = Nothing"
+	text t "", \t -> do
 	arrowIText t 1 "リストに存在しない値を探した場合Nothingを返す", \t -> do
 	arrowIText t 1 "いいね"
  ]
@@ -204,5 +207,103 @@ useMaybe4 = [\t -> do
 	itext t 1 "maybeIndex (x : xs) 0 = Just x"
 	itext t 1 "maybeIndex (x : xs) n"
 	itext t 2 "| n > 0 = maybeIndex xs (n - 1)"
-	itext t 1 "maybeIndex _ _ = Nothing"
+	itext t 1 "maybeIndex _ _ = Nothing", \t -> do
+	text t "* elemIndexを使いやすくしておく"
+	itext t 1 "elemIndex :: Eq a => a -> [a] -> Maybe Int"
+	itext t 1 "elemIndex = elemIndex2 0"
+ ]
+
+useMaybe5 :: Page
+useMaybe5 = [\t -> do
+	writeTopTitle t "Maybeを使う"
+	text t "", \t -> do
+	text t "* 以下の関数がある", \t -> do
+	itext t 1 "elemIndex :: Eq a => a -> [a] -> Maybe Int"
+	itext t 1 "maybeIndex :: [a] -> Int -> Maybe a", \t -> do
+	text t "* あるリストでxがある位置に別のリストで何があるか", \t -> do
+	itext t 1 "samePos :: Eq a => a -> [a] -> [b] -> Maybe b"
+	itext t 1 "samePos x xs ys = case elemIndex x xs of"
+	itext t 2 "Just i -> maybeIndex ys i"
+	itext t 2 "_ -> Nothing"
+ ]
+
+useMaybe6 :: Page
+useMaybe6 = [\t -> do
+	writeTopTitle t "Maybeを使う"
+	text t "", \t -> do
+	text t "* ある数で100をわった時のあまりを求める関数", \t -> do
+	itext t 1 "mod100 :: Int -> Maybe Int"
+	itext t 1 "mod100 0 = Nothing"
+	itext t 1 "mod100 n = Just $ 100 `mod` n", \t -> do
+	text t "* あるリストでxがある位置に別のリストで何があるか", \t -> do
+	text t "* それを求めてさらにそれで100をわったあまりを求める関数", \t -> do
+	itext t 0.5 "samePosMod :: Eq a => a -> [a] -> [Int] -> Maybe Int"
+	itext t 0.5 "samePosMod x xs ys = case elemIndex x xs of"
+	itext t 2 "Just i -> case maybeIndex ys i of"
+	itext t 3 "Just n -> mod100 n"
+	itext t 3 "_ -> Nothing"
+	itext t 2 "_ -> Nothing"
+ ]
+
+useMaybe7 :: Page
+useMaybe7 = [\t -> do
+	writeTopTitle t "Maybeを使う"
+	text t "", \t -> do
+	text t "* 何度も出てくる構造がある", \t -> do
+	itext t 1 "case m of"
+	itext t 2 "Just x -> case f x of"
+	itext t 3 "Just y -> case g y of"
+	itext t 4 "Just z -> ..."
+	itext t 4 "_ -> Nothing"
+	itext t 3 "_ -> Nothing"
+	itext t 2 "_ -> Nothing", \t -> do
+	text t "* 計算の途中に失敗があれば全体も失敗するような構造", \t -> do
+	text t "* m, f, gの型はMaybe a, a -> Maybe b, b -> Maybe c"
+ ]
+
+useMaybe8 :: Page
+useMaybe8 = [\t -> do
+	writeTopTitle t "Maybeを使う"
+	text t "", \t -> do
+	text t "* 以下の構造を作る高階関数を作る", \t -> do
+	itext t 1 "case m of"
+	itext t 2 "Just x -> f x"
+	itext t 2 "_ -> Nothing", \t -> do
+	text t "* とりあえずpipeという名前にしておく", \t -> do
+	itext t 1 "pipe :: Maybe a -> (a -> Maybe b) -> Maybe b"
+	itext t 1 "pipe (Just x) f = f x"
+	itext t 1 "pipe _ _ = Nothing", \t -> do
+	text t "* さっきの構造は以下のように表せる", \t -> do
+	itext t 1 "m `pipe` f `pipe` g ..."
+ ]
+
+useMaybe9 :: Page
+useMaybe9 = [\t -> do
+	writeTopTitle t "Maybeを使う"
+	text t "", \t -> do
+	text t "elemIndex :: Eq a => a -> [a] -> Maybe Int"
+	text t "maybeIndex :: [a] -> Int -> Maybe a"
+	text t "mod100 :: Int -> Maybe Int"
+	text t "", \t -> do
+	text t "samePosMod100 :: Eq a => a -> [a] -> [Int] -> Maybe Int", \t -> do
+	text t "samePosMod100 x xs ys ="
+	itext t 1 "elemIndex x xs `pipe` maybeIndex ys `pipe` mod100"
+	text t "", \t -> do
+	text t "* インデックスを求め整数を取り出し100をわったあまりを", \t -> do
+	text t "* 途中でNothingとなれば結果もNothingとなる"
+ ]
+
+useMaybe10 :: Page
+useMaybe10 = [\t -> do
+	writeTopTitle t "Maybeを使う"
+	text t "", \t -> do
+	semititle t "pipe :: Maybe a -> (a -> Maybe b) -> Maybe b"
+	text t "", \t -> do
+	text t "* 以下の構造を作る高階関数", \t -> do
+	itext t 1 "case m of"
+	itext t 2 "Just x -> f x"
+	itext t 2 "_ -> Nothing", \t -> do
+	text t "* 意味としては", \t -> do
+	itext t 1 "- 計算に失敗しなければ次の関数に値をわたす", \t -> do
+	itext t 1 "- 失敗したらそれ以降はNothingをわたしていく"
  ]
