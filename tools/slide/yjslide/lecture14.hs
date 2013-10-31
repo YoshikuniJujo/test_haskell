@@ -13,7 +13,9 @@ pages = [
 	titlePage, prelude,
 --	monadLaws, monadLaw1, monadLaw2, monadLaw12, monadLaw3, monadLaw3',
 	useMaybe, useMaybe2, useMaybe3, useMaybe4, useMaybe5, useMaybe6,
-	useMaybe7, useMaybe8, useMaybe9, useMaybe10
+	useMaybe7, useMaybe8, useMaybe9, useMaybe10,
+	state, state2, state3, state4, state5, state6,
+	maybeState
  ]
 
 titlePage :: Page
@@ -153,9 +155,12 @@ monadLaw3' = [\t -> do
 	text t "...ここまでは前置き"
  ]
 
+maybeTitle :: String
+maybeTitle = "失敗の可能性のある計算"
+
 useMaybe :: Page
 useMaybe = [\t -> do
-	writeTopTitle t "Maybeを使う"
+	writeTopTitle t maybeTitle
 	text t "", \t -> do
 	text t "* 失敗する可能性のある関数を考える", \t -> do
 	text t "* ある値がリストの何番目にあるか調べる関数を考えよう", \t -> do
@@ -171,7 +176,7 @@ useMaybe = [\t -> do
 
 useMaybe2 :: Page
 useMaybe2 = [\t -> do
-	writeTopTitle t "Maybeを使う"
+	writeTopTitle t maybeTitle
 	text t "", \t -> do
 	text t "* 値が存在していたならばその位置を返す", \t -> do
 	text t "* 存在しなければ存在しなかったことを示す値を返す", \t -> do
@@ -183,7 +188,7 @@ useMaybe2 = [\t -> do
 
 useMaybe3 :: Page
 useMaybe3 = [\t -> do
-	writeTopTitle t "Maybeを使う"
+	writeTopTitle t maybeTitle
 	text t "", \t -> do
 	text t "* さっきの関数をMaybeを使って書いてみる", \t -> do
 	itext t 0.5 "elemIndex2 :: Eq a => Int -> a -> [a] -> Maybe Int"
@@ -198,7 +203,7 @@ useMaybe3 = [\t -> do
 
 useMaybe4 :: Page
 useMaybe4 = [\t -> do
-	writeTopTitle t "Maybeを使う"
+	writeTopTitle t maybeTitle
 	text t "", \t -> do
 	text t "* 別の関数を考える", \t -> do
 	text t "* リストのi番目を返す関数", \t -> do
@@ -215,7 +220,7 @@ useMaybe4 = [\t -> do
 
 useMaybe5 :: Page
 useMaybe5 = [\t -> do
-	writeTopTitle t "Maybeを使う"
+	writeTopTitle t maybeTitle
 	text t "", \t -> do
 	text t "* 以下の関数がある", \t -> do
 	itext t 1 "elemIndex :: Eq a => a -> [a] -> Maybe Int"
@@ -229,7 +234,7 @@ useMaybe5 = [\t -> do
 
 useMaybe6 :: Page
 useMaybe6 = [\t -> do
-	writeTopTitle t "Maybeを使う"
+	writeTopTitle t maybeTitle
 	text t "", \t -> do
 	text t "* ある数で100をわった時のあまりを求める関数", \t -> do
 	itext t 1 "mod100 :: Int -> Maybe Int"
@@ -247,7 +252,7 @@ useMaybe6 = [\t -> do
 
 useMaybe7 :: Page
 useMaybe7 = [\t -> do
-	writeTopTitle t "Maybeを使う"
+	writeTopTitle t maybeTitle
 	text t "", \t -> do
 	text t "* 何度も出てくる構造がある", \t -> do
 	itext t 1 "case m of"
@@ -263,7 +268,7 @@ useMaybe7 = [\t -> do
 
 useMaybe8 :: Page
 useMaybe8 = [\t -> do
-	writeTopTitle t "Maybeを使う"
+	writeTopTitle t maybeTitle
 	text t "", \t -> do
 	text t "* 以下の構造を作る高階関数を作る", \t -> do
 	itext t 1 "case m of"
@@ -279,7 +284,7 @@ useMaybe8 = [\t -> do
 
 useMaybe9 :: Page
 useMaybe9 = [\t -> do
-	writeTopTitle t "Maybeを使う"
+	writeTopTitle t maybeTitle
 	text t "", \t -> do
 	text t "elemIndex :: Eq a => a -> [a] -> Maybe Int"
 	text t "maybeIndex :: [a] -> Int -> Maybe a"
@@ -295,7 +300,7 @@ useMaybe9 = [\t -> do
 
 useMaybe10 :: Page
 useMaybe10 = [\t -> do
-	writeTopTitle t "Maybeを使う"
+	writeTopTitle t maybeTitle
 	text t "", \t -> do
 	semititle t "pipe :: Maybe a -> (a -> Maybe b) -> Maybe b"
 	text t "", \t -> do
@@ -306,4 +311,104 @@ useMaybe10 = [\t -> do
 	text t "* 意味としては", \t -> do
 	itext t 1 "- 計算に失敗しなければ次の関数に値をわたす", \t -> do
 	itext t 1 "- 失敗したらそれ以降はNothingをわたしていく"
+ ]
+
+stateTitle :: String
+stateTitle = "状態を持った計算"
+
+state :: Page
+state = [\t -> do
+	writeTopTitle t stateTitle
+	text t "", \t -> do
+	text t "* 状態を変化させながらプログラムするというパラダイム", \t -> do
+	text t "* それを関数型言語のなかでエミュレートする", \t -> do
+	text t "* 状態を取って値と状態を返す関数を考える", \t -> do
+	itext t 1 "s -> (a, s)", \t -> do
+	text t "* メモリ機能付きの電卓を考えてみる", \t -> do
+	text t "* 状態モナドについては後でまた扱う", \t -> do
+	itext t 1 "- ここでは細かいところは理解しなくても良い"
+ ]
+
+state2 :: Page
+state2 = [\t -> do
+	writeTopTitle t stateTitle, \t -> do
+	text t "* 状態を使う関数の型に名前をつける", \t -> do
+	itext t 1 "type Calc a = Int -> (a, Int)", \t -> do
+	text t "* メモリを扱う関数を作る", \t -> do
+	itext t 1 "memoryClear :: Calc ()"
+	itext t 1 "memoryClear = \\_ -> ((), 0)"
+	itext t 1 "", \t -> do
+	itext t 1 "memoryPlus, memoryMinus :: Int -> Calc ()"
+	itext t 1 "memoryPlus x = \\m -> ((), m + x)", \t -> do
+	itext t 1 "memoryMinus x = \\m -> ((), m - x)"
+	itext t 1 "", \t -> do
+	itext t 1 "memoryRecall :: Calc Int"
+	itext t 1 "memoryRecall = \\m -> (m, m)"
+ ]
+
+state3 :: Page
+state3 = [\t -> do
+	writeTopTitle t stateTitle
+	text t "", \t -> do
+	text t "* ただの数をCalcにする関数", \t -> do
+	itext t 1 "liftNum :: Int -> Calc Int"
+	itext t 1 "liftNum x = \\m -> (x, m)", \t -> do
+	text t "* 計算をつなげる関数", \t -> do
+	itext t 1 "(>>>=) :: Calc a -> (a -> Calc b) -> Calc b"
+	itext t 1 "c >>>= f = \\m -> let (x, m') = c m in f x m'", \t -> do
+	itext t 1 "- 計算cの結果をfに適用するということ", \t -> do
+	itext t 1 "- cにメモリの値mを与える", \t -> do
+	itext t 1 "- 結果xと新しいメモリの状態m'が得られる", \t -> do
+	itext t 1 "- 結果xと新しいメモリの状態m'をfに与える"
+ ]
+
+state4 :: Page
+state4 = [\t -> do
+	writeTopTitle t stateTitle
+	text t "", \t -> do
+	text t "* 計算を実行する関数", \t -> do
+	itext t 1 "runCalc :: StateInt a -> a"
+	itext t 1 "runCalc c = fst $ c 0", \t -> do
+	itext t 1 "- メモリの初期値0を与えfstで結果を取り出す"
+ ]
+
+state5 :: Page
+state5 = [\t -> do
+	writeTopTitle t stateTitle
+	text t "", \t -> do
+	text t "* (3 + 2) * (11 - 3)を計算してみる"
+	itext t 1 "calc :: Calc Int"
+	itext t 1 "calc ="
+	preLine t
+	itext t 2.5 "memoryPlus 3 >>>= \\_ ->"
+	itext t 2.5 "memoryPlus 2 >>>= \\_ ->"
+	itext t 2.5 "memoryRecall >>>= \\x ->"
+	itext t 2.5 "memoryClear >>>= \\_ ->"
+	itext t 2.5 "memoryPlus 11 >>>= \\_ ->"
+	itext t 2.5 "memoryMinus 3 >>>= \\_ ->"
+	itext t 2.5 "memoryRecall >>>= \\y ->"
+	itext t 2.5 "liftNum (x * y)"
+ ]
+
+state6 :: Page
+state6 = [\t -> do
+	writeTopTitle t stateTitle
+	text t "", \t -> do
+	text t "> runCalc calc"
+	text t "40", \t -> do
+	text t "状態を持った計算をエミュレートできた", \t -> do
+	semititle t "(>>>=) :: Calc a -> (a -> Calc b) -> Calc b", \t -> do
+	text t "* 見えないところで状態mをわたしている", \t -> do
+	text t "* 状態を扱う関数は別に定義してある", \t -> do
+	itext t 1 "- 状態を変化させる関数", \t -> do
+	itext t 1 "- 状態を結果として見えるようにする関数", \t -> do
+	semititle t "liftNumber :: Int -> Calc Int", \t -> do
+	text t "* 普通の数を計算のなかに入れるための関数"
+ ]
+
+maybeState :: Page
+maybeState = [\t -> do
+	writeTopTitle t "「つなぐ」関数"
+	text t "", \t -> do
+	text t ""
  ]
