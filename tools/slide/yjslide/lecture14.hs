@@ -15,7 +15,10 @@ pages = [
 	useMaybe, useMaybe2, useMaybe3, useMaybe4, useMaybe5, useMaybe6,
 	useMaybe7, useMaybe8, useMaybe9, useMaybe10,
 	state, state2, state3, state4, state5, state6,
-	maybeState
+	connect, wrap, monadBaseFun,
+	monadBaseLaw, monadLaw1, monadLaw2, monadLaw3,
+	whatsMonad, thatsMonad, monadClass, maybeMonad, doNotation,
+	summary
  ]
 
 titlePage :: Page
@@ -59,6 +62,8 @@ monadLaws = [\t -> do
 	itext t 1 "- 自分でオリジナルなモナドを作るときに必要", \t -> do
 	itext t 1 "- 何となくそういう決まりがある程度の理解でOK"
  ]
+
+{-
 
 monadLaw1 :: Page
 monadLaw1 = [\t -> do
@@ -154,6 +159,8 @@ monadLaw3' = [\t -> do
 	text t "", \t -> do
 	text t "...ここまでは前置き"
  ]
+
+-}
 
 maybeTitle :: String
 maybeTitle = "失敗の可能性のある計算"
@@ -406,9 +413,200 @@ state6 = [\t -> do
 	text t "* 普通の数を計算のなかに入れるための関数"
  ]
 
-maybeState :: Page
-maybeState = [\t -> do
-	writeTopTitle t "「つなぐ」関数"
+connect :: Page
+connect = [\t -> do
+	writeTopTitle t "「つなぐ」関数", \t -> do
+	text t "* 失敗の可能性のある計算", \t -> do
+	semititle t "pipe :: Maybe a -> (a -> Maybe b) -> Maybe b"
 	text t "", \t -> do
-	text t ""
+	text t "* 状態を持つ計算", \t -> do
+	semititle t "(>>>=) :: Calc a -> (a -> Calc b) -> Calc b"
+	text t "", \t -> do
+	text t "* 入出力を扱う計算", \t -> do
+	semititle t "(>>=) :: IO a -> (a -> IO b) -> IO b"
+	text t "", \t -> do
+	text t "* 型のなかに共通の構造がある", \t -> do
+	semititle t "(>>=) :: m a -> (a -> m b) -> m b"
+ ]
+
+wrap :: Page
+wrap = [\t -> do
+	writeTopTitle t "「つつむ」関数", \t -> do
+	text t "* 失敗の可能性のある計算", \t -> do
+	semititle t "Just :: a -> Maybe a"
+	text t "", \t -> do
+	text t "* 状態を持つ計算", \t -> do
+	semititle t "liftNumber :: Int -> Calc Int"
+	text t "", \t -> do
+	text t "* 入出力を扱う計算", \t -> do
+	semititle t "return :: a -> IO a"
+	text t "", \t -> do
+	text t "* 型のなかに共通の構造がある", \t -> do
+	semititle t "return :: a -> m a"
+ ]
+
+monadBaseFun :: Page
+monadBaseFun = [\t -> do
+	writeTopTitle t "モナドの持つ2つの関数"
+	text t "", \t -> do
+	semititle t "return :: a -> m a", \t -> do
+	semititle t "(>>=) :: m a -> (a -> m b) -> m b"
+	text t "", \t -> do
+	text t "* returnは裸の値を包み込む関数", \t -> do
+	text t "* m >>= fを考えてみる", \t -> do
+	itext t 1 "- mは包まれた値", \t -> do
+	itext t 1 "- fは値を加工しながら包みこむ関数", \t -> do
+	itext t 1 "- (>>=)は包装を解いてfに渡す関数", \t -> do
+	text t "* 裸の値を包みこむ関数に、包装された値を与えられる", \t -> do
+	text t "* 実例を多く見ていくことが理解するこつ"
+ ]
+
+monadBaseLaw :: Page
+monadBaseLaw = [\t -> do
+	writeTopTitle t "モナド則"
+	text t "", \t -> do
+	text t "* モナドがモナドであるために3つの法則がある", \t -> do
+	text t "* モナド則は以下のことを保証している", \t -> do
+	itext t 0.5 "- returnが包み込む以外何もしないということ...(1)", \t -> do
+	itext t 0.5 "- 左結合でも右結合でも結果が同じであること...(2)", \t -> do
+	text t "* モナド則", \t -> do
+	itext t 0.5 "1. return x >>= f <-(同じ)-> f x", \t -> do
+	itext t 0.5 "2. m >>= return <-(同じ)-> m", \t -> do
+	itext t 0.5 "3. (m >>= f) >>= g <-(同じ)-> m >>= (\\x -> f x >>= g)", \t -> do
+	text t "* モナド則1と2は(1)を保証している", \t -> do
+	text t "* モナド則3が(2)を保証している", \t -> do
+	text t "* それぞれ見ていこう"
+ ]
+
+monadLaw1 :: Page
+monadLaw1 = [\t -> do
+	writeTopTitle t "モナド則1"
+	text t "", \t -> do
+	semititle t "1. return x >>= f <-(同じ)-> f x"
+	text t "", \t -> do
+	text t "* 以下が等しいということ", \t -> do
+	itext t 1 "- 包み込んだものの包装を解いてfに与えてる", \t -> do
+	itext t 1 "- そのままの値をfに与える", \t -> do
+	text t "* returnが値を変化させないことを保証している", \t -> do
+	itext t 1 "- 正確には値を変化させないように「見える」", \t -> do
+	itext t 1 "- 包み込みと包装を解くこととが逆関数であれば良い", \t -> do
+	text t "* returnで包み込んだあと包装を解けば同じものになる"
+ ]
+
+monadLaw2 :: Page
+monadLaw2 = [\t -> do
+	writeTopTitle t "モナド則2"
+	text t "", \t -> do
+	semititle t "2. m >>= return <-(同じ)-> m"
+	text t "", \t -> do
+	text t "* 以下が等しいということ", \t -> do
+	itext t 1 "- 包装されたものの包装を解きそれを包み込む", \t -> do
+	itext t 1 "- もともとの包装されたもの", \t -> do
+	text t "* returnは包みかたを変化させないことを保証している", \t -> do
+	itext t 1 "- 正確には包みかたを変化させないように「見える」", \t -> do
+	text t "* 包装を解いたものをreturnで包み込めば同じものになる"
+ ]
+
+monadLaw3 :: Page
+monadLaw3 = [\t -> do
+	writeTopTitle t "モナド則3"
+	text t "", \t -> do
+	semititle t "3. (m >>= f) >>= g"
+	isemititle t 1 "<-(同じ)-> m >>= (\\x -> f x >>= g)", \t -> do
+	text t "* これは形を変えたほうがわかりやすい", \t -> do
+	text t "* 以下の関数を考える", \t -> do
+	itext t 1 "(>=>) :: (a -> m b) -> (b -> m c) -> (a -> m c)"
+	itext t 1 "f >=> g = \\x -> f x >>= g", \t -> do
+	text t "* すると以下のようになる"
+	text t "", \t -> do
+	semititle t "3. (f >=> g) >=> h <-(同じ)-> f >=> (g >=> h) ", \t -> do
+	text t "* つまり結合則である"
+ ]
+
+whatsMonad :: Page
+whatsMonad = [\t -> do
+	writeTopTitle t "モナドとは?"
+	text t "", \t -> do
+	text t "* 以下の型の関数を持つ", \t -> do
+	itext t 1 "return :: a -> m a", \t -> do
+	itext t 1 "(>>=) :: m a -> (a -> m b) -> m b", \t -> do
+	text t "* それらの関数が以下の法則を満たす", \t -> do
+	itext t 1 "1. return x >>= f == f x", \t -> do
+	itext t 1 "2. m >>= return == m", \t -> do
+	itext t 1 "3. (m >>= f) >>= g == m >>= (\\x -> f x >>= g)"
+	dvArrowShort t
+	itext t 2 "モナド"
+ ]
+
+thatsMonad :: Page
+thatsMonad = [\t -> do
+	writeTopTitle t "モナドとは?"
+	text t "", \t -> do
+	text t "* 特定の構造を持った関数によって扱える容器", \t -> do
+	text t "* それ以外の条件はない", \t -> do
+	arrowIText t 1 "まったく違うものが同じモナドとして共通に扱える"
+	text t "", \t -> do
+	text t "* 中身は違うけど共通した構造を持つもの", \t -> do
+	arrowIText t 1 "Haskellでは型クラスでまとめて扱える", \t -> do
+	dvArrowShort t
+	text t "Monadクラスが用意されている"
+ ]
+
+monadClass :: Page
+monadClass = [\t -> do
+	writeTopTitle t "Monadクラス"
+	text t "", \t -> do
+	text t "* 定義は以下のような感じ", \t -> do
+	itext t 1 "class Monad m where"
+	itext t 2 "(>>=) :: m a -> (a m b) -> m b"
+	itext t 2 "return :: a -> m a"
+	itext t 2 "fail :: String -> m a", \t -> do
+	text t "* 本質的にはfailは関係ない", \t -> do
+	itext t 1 "- do記法でパターンマッチが失敗したときのため", \t -> do
+	itext t 1 "- 失敗をうまく扱えるタイプのモナドでは有用"
+ ]
+
+maybeMonad :: Page
+maybeMonad = [\t -> do
+	writeTopTitle t "Maybe monad"
+	text t "", \t -> do
+	text t "* MaybeはMonadクラスのインスタンスである", \t -> do
+	text t "* 定義は以下のようになっている", \t -> do
+	itext t 1 "instance Monad Maybe where"
+	itext t 2 "Just x >>= k = k x"
+	itext t 2 "Nothing >>= _ = Nothing"
+	itext t 2 "return = Just"
+	itext t 2 "fail _ = Nothing"
+ ]
+
+doNotation :: Page
+doNotation = [\t -> do
+	writeTopTitle t "do記法"
+	text t "", \t -> do
+	text t "* IOモナドのところでdo記法を学んだ", \t -> do
+	itext t 1 "- Monadクラスのインスタンスであれば何にでも", \t -> do
+	text t "* Maybeモナドで見てみよう", \t -> do
+	itext t 1 "samePosMod100 x xs ys = do"
+	itext t 2 "i <- elemIndex x xs"
+	itext t 2 "n <- maybeIndex ys i"
+	itext t 2 "mod100 n"
+	text t "", \t -> do
+	arrowIText t 1 "読みやすくなった"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* モナドは以下の関数を持つ", \t -> do
+	itext t 1 "return :: a -> m a", \t -> do
+	itext t 1 "(>>=) :: m a -> (a -> m b) -> m b", \t -> do
+	text t "* 上記関数が以下の法則を満たせばmはモナドである", \t -> do
+	itext t 1 "return x >>= f == f x", \t -> do
+	itext t 1 "m >>= return == m", \t -> do
+	itext t 1 "(m >>= f) >>= g == m >>= (\\x -> f x >>= g)", \t -> do
+	text t "* Haskellには型クラスMonadが用意されている", \t -> do
+	text t "* Monadクラスのインスタンスにする", \t -> do
+	itext t 1 "- 多くのポリモルフィックな関数が使える", \t -> do
+	itext t 1 "- do記法が使える"
  ]

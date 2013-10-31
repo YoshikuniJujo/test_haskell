@@ -1,7 +1,8 @@
 module Lecture (
 	Page,
 	runLecture,
-	text, itext, semititle, writeTopTitle, writeNextTitle, writeTitle,
+	text, itext, semititle, isemititle,
+	writeTopTitle, writeNextTitle, writeTitle,
 	dvArrow, dvArrowShort, writeImageCenter, writeImageRight,
 	arrow, rightArrow, withRed, drawRect, graphWrite,
 	graphArrowString, xmark, arrowIText, preLine,
@@ -196,6 +197,15 @@ semititle t txt = do
 	forward t $ semiBigF * 2
 	setheading t 0
 	setx t $ width / 12
+	write t fontName semiBigF txt
+	forward t $ semiBigF * myLength txt
+
+isemititle :: Turtle -> Double -> String -> IO ()
+isemititle t i txt = do
+	setheading t $ - 90
+	forward t $ normalF * 2
+	setheading t 0
+	setx t $ width / 12 + i * semiBigF * 4
 	write t fontName semiBigF txt
 	forward t $ semiBigF * myLength txt
 
