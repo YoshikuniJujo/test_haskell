@@ -19,12 +19,13 @@ pages = [
 	monadList1 5, readerMonad, readerMonad2, readerMonad3,
 		readerMonad4,
 	monadList1 6, writerMonad, writerMonad2, writerMonad3,
-		writerMonad4,
+		writerMonad4, writerMonad5,
 	{-
 	monadList1 7, contMonad, contMonad2, contMonad3, contMonad4, contMonad5,
 		contMonad6,
 	-}
-	monadList1 7
+	monadList1 7, ioMonad, ioMonad2, ioMonad3, ioMonad4, ioMonad5, ioMonad6,
+	summary
  ]
 
 titlePage :: Page
@@ -437,6 +438,15 @@ writerMonad3 :: Page
 writerMonad3 = [\t -> do
 	writeTopTitle t "Writerモナド"
 	text t "", \t -> do
+	text t "* 出力用の関数を作る", \t -> do
+	itext t 1 "tell :: String -> Writer ()"
+	itext t 1 "tell msg = Writer ((), msg)"
+ ]
+
+writerMonad4 :: Page
+writerMonad4 = [\t -> do
+	writeTopTitle t "Writerモナド"
+	text t "", \t -> do
 	text t "使用例:", \t -> do
 	text t "two :: Writer Int"
 	text t "two = do"
@@ -449,8 +459,8 @@ writerMonad3 = [\t -> do
 	itext t 1 "return $ x + y"
  ]
 
-writerMonad4 :: Page
-writerMonad4 = [\t -> do
+writerMonad5 :: Page
+writerMonad5 = [\t -> do
 	writeTopTitle t "Writerモナド"
 	text t "", \t -> do
 	text t "使用例:", \t -> do
@@ -564,4 +574,100 @@ contMonadN = [\t -> do
 	itext t 1 "", \t -> do
 	itext t 1 "f' :: d -> (e -> c) -> c"
 	itext t 1 "f' x = \\k -> k (f x)"
+ ]
+
+ioMonad :: Page
+ioMonad = [\t -> do
+	writeTopTitle t "IOモナド"
+	text t "", \t -> do
+	text t "* IOモナドはここまで挙げた他のモナドと性質が違う", \t -> do
+	itext t 1 "- returnや>>=はプリミティブとして用意されている", \t -> do
+	itext t 1 "- モナド以外のインターフェースを持たない", \t -> do
+	itext t 1 "- IOで包まれたら裸にすることはできない", \t -> do
+	text t "* IO同士をモナドの流儀でつなぐと便利だった", \t -> do
+	itext t 1 "(>>=) :: IO a -> (a -> IO b) -> IO b", \t -> do
+	itext t 1 "a -> IO bにc -> aをつなげれば間で処理ができる", \t -> do
+	itext t 1 "getCurrentTime >>= putStrLn . show", \t -> do
+	arrowIText t 2 "getCurrentTimeとputStrLn間のshowという処理"
+ ]
+
+ioMonad2 :: Page
+ioMonad2 = [\t -> do
+	writeTopTitle t "IOモナド"
+	text t "", \t -> do
+	text t "* モナドの定義をよく見てみると", \t -> do
+	itext t 1 "- m aからaを取り出す関数はない", \t -> do
+	itext t 1 "- IOからは逃れられない", \t -> do
+	text t "* IO aとは何か?", \t -> do
+	itext t 1 "- 命令書き", \t -> do
+	itext t 1 "- 機械", \t -> do
+	text t "* ioFunA x >>= ioFunBの意味は?", \t -> do
+	itext t 1 "- 2つの命令書きまたは機械をつなげる", \t -> do
+	itext t 1 "- その結果より大きな命令書きまたは機械ができる"
+ ]
+
+ioMonad3 :: Page
+ioMonad3 = [\t -> do
+	writeTopTitle t "IOモナド"
+	text t "", \t -> do
+	text t "* IO aのaの意味", \t -> do
+	text t "* IO Stringで考えてみる", \t -> do
+	itext t 1 "- Stringを返す動作と考えて良い", \t -> do
+	itext t 1 "- しかし、本当はすこし違う", \t -> do
+	itext t 1 "- 純粋にHaskellの中だけで考えると", \t -> do
+	itext t 1 "- IO StringはString -> IO bとつなぐことができる", \t -> do
+	itext t 1 "- それだけの意味でしかない"
+ ]
+
+ioMonad4 :: Page
+ioMonad4 = [\t -> do
+	writeTopTitle t "IOモナド"
+	text t "", \t -> do
+	text t "* a -> IO bのaの意味", \t -> do
+	text t "* String -> IO bで考えてみる", \t -> do
+	itext t 1 "- Stringで何かする動作と考えて良い", \t -> do
+	itext t 1 "- しかし、本当はすこし違う", \t -> do
+	itext t 1 "- 純粋にHaskellの中だけで考えた場合、意味がふたつ", \t -> do
+	itext t 1 "- まずはIO Stringとつなぐことができる", \t -> do
+	itext t 1 "- もうひとつはa -> Stringとつなぐことができる", \t -> do
+	itext t 1 "- それだけの意味"
+ ]
+
+ioMonad5 :: Page
+ioMonad5 = [\t -> do
+	writeTopTitle t "IOモナド"
+	text t "", \t -> do
+	text t "* IO aのaは凸型でありa -> IO bのaは凹型", \t -> do
+	text t "* 同じ形の凸と凹ならばつなぐことができる", \t -> do
+	text t "* c -> a型の関数は凹の形を変えるアダプター", \t -> do
+	text t "* a -> IO bをc -> IO bという凹型に変えられる", \t -> do
+	text t "* そのようにして組み立てたブロックが処理系にわたされる", \t -> do
+	text t "* 処理系がそのブロックを動作に変える"
+ ]
+
+ioMonad6 :: Page
+ioMonad6 = [\t -> do
+	writeTopTitle t "IOモナド"
+	text t "", \t -> do
+	text t "* 実用的にはもっと簡単に考えて良い", \t -> do
+	text t "* IO aはa型の値を返す", \t -> do
+	text t "* m >>= fはmから返り値を取り出しfに与える", \t -> do
+	text t "* 一度IOで包まれたらIOは外せない", \t -> do
+	text t "* よって純粋な計算と副作用のある計算とを分離できる", \t -> do
+	text t "* その程度の理解で良い"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* いろいろなモナドを見てきた", \t -> do
+	text t "* すぐには理解できないと思う", \t -> do
+	text t "* 理解するこつは2つ", \t -> do
+	itext t 1 "- 自分でそのモナドの定義を書いてみる", \t -> do
+	itext t 1 "- そのモナドを使ってみる", \t -> do
+	text t "* モナド則を満たすreturnと(>>=)があれば何でもモナド", \t -> do
+	text t "* 型変数を取る型を扱っているとき", \t -> do
+	itext t 1 "- いつのまにかreturnと(>>=)を定義してたりする", \t -> do
+	itext t 1 "- それはすでにモナドである"
  ]
