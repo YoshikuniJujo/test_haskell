@@ -11,16 +11,14 @@ main = runLecture pages
 pages :: [Page]
 pages = [
 	titlePage, prelude, monadList0,
-	monadList1 1, identityMonad, identityMonad2, identityMonad3,
-		identityMonad4,
-	monadList1 2, maybeMonad, maybeMonad2,
-	monadList1 3, errorMonad, errorMonad2, errorMonad3, errorMonad4,
-	monadList1 4, listMonad,
+	monadList1 1, maybeMonad, maybeMonad2,
+	monadList1 2, errorMonad, errorMonad2, errorMonad3, errorMonad4,
+	monadList1 3, listMonad, listMonad2, listMonad3,
+	monadList1 4,
 	monadList1 5,
 	monadList1 6,
 	monadList1 7,
-	monadList1 8,
-	monadList1 9
+	monadList1 8
  ]
 
 titlePage :: Page
@@ -39,7 +37,7 @@ prelude = [\t -> do
 
 monadList :: [String]
 monadList = [
-	"Identity", "Maybe", "Error", "List", "State", "Reader", "Writer",
+	"Maybe", "Error", "List", "State", "Reader", "Writer",
 	"Cont", "IO"]
 
 showMonadList :: Int -> Int -> String -> Turtle -> IO ()
@@ -112,9 +110,7 @@ maybeMonad :: Page
 maybeMonad = [\t -> do
 	writeTopTitle t "Maybeモナド"
 	text t "", \t -> do
-	text t "* Identityモナドは単純すぎてかえってわかりづらい", \t -> do
-	text t "* Maybeモナドが最もわかりやすいかもしれない", \t -> do
-	text t "* 基本的には全回の復習となる", \t -> do
+	text t "* 基本的には前回の復習となる", \t -> do
 	text t "* 失敗する可能性のある計算の連鎖を表現できる", \t -> do
 	text t "* 型は以下のようになる", \t -> do
 	itext t 1 "data Maybe a = Just a | Nothing", \t -> do
@@ -145,7 +141,7 @@ errorMonad = [\t -> do
 	itext t 1 "- 失敗の理由が知りたくなるかもしれない", \t -> do
 	itext t 1 "- 人間が読むなら失敗の理由は文字列で良いだろう", \t -> do
 	text t "* Either a bは型aまたは型bの値を格納できるdata型", \t -> do
-	itext t 1 "Either a b = Left a | Right b", \t -> do
+	itext t 1 "data Either a b = Left a | Right b", \t -> do
 	text t "* Either String aをErrorモナドとして見ていこう"
  ]
 
@@ -207,3 +203,36 @@ listMonad = [\t -> do
 	itext t 1 "- 複数の値に次の関数を適用し", \t -> do
 	itext t 1 "- それぞれに対し複数の値を返す"
  ]
+
+listMonad2 :: Page
+listMonad2 = [\t -> do
+	writeTopTitle t "Listモナド"
+	text t "", \t -> do
+	text t "インスタンス宣言は以下のようになる", \t -> do
+	itext t 1 "instance Monad [] where"
+	itext t 2 "return x = [x]"
+	itext t 2 "m >>= f = concat $ map f m"
+	text t "", \t -> do
+	text t "* 値を包み込むとはその値ひとつから成るリストを作ること", \t -> do
+	text t "* mに含まれる複数の値のそれぞれに対してfを適用する", \t -> do
+	text t "* fはリストを返すのでmap f mはリストのリストになる", \t -> do
+	text t "* それぞれの値がそれぞれ候補となるので", \t -> do
+	itext t 1 "- concatでリストを平坦にする"
+ ]
+
+listMonad3 :: Page
+listMonad3 = [\t -> do
+	writeTopTitle t "Listモナド"
+	text t "", \t -> do
+	text t "使用例:", \t -> do
+	text t "* 将棋の桂馬が3回動いたときにどこにいるかを調べる", \t -> do
+	itext t 1 "kmove :: (Int, Int) -> [(Int, Int)]"
+	itext t 1 "kmove (x, y) = [(x - 1, y + 2), (x + 1, y + 2)]"
+	itext t 1 "", \t -> do
+	itext t 1 "keima3 :: [(Int, Int)]"
+	itext t 1 "keima3 = do"
+	itext t 2 "k1 <- kmove (2, 1)"
+	itext t 2 "k2 <- kmove k1"
+	itext t 2 "kmove k2"
+ ]
+
