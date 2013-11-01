@@ -20,8 +20,11 @@ pages = [
 		readerMonad4,
 	monadList1 6, writerMonad, writerMonad2, writerMonad3,
 		writerMonad4,
-	monadList1 7, contMonad, contMonad2,
-	monadList1 8
+	{-
+	monadList1 7, contMonad, contMonad2, contMonad3, contMonad4, contMonad5,
+		contMonad6,
+	-}
+	monadList1 7
  ]
 
 titlePage :: Page
@@ -40,8 +43,7 @@ prelude = [\t -> do
 
 monadList :: [String]
 monadList = [
-	"Maybe", "Error", "List", "State", "Reader", "Writer",
-	"Cont", "IO"]
+	"Maybe", "Error", "List", "State", "Reader", "Writer", "IO"]
 
 showMonadList :: Int -> Int -> String -> Turtle -> IO ()
 showMonadList n i f = \t ->
@@ -297,7 +299,7 @@ stateMonad4 = [\t -> do
 	text t "m >>= f = \\s -> let (v, s') = m s in f v s'"
 	text t "", \t -> do
 	text t "* return xは状態を変えずにxを返す", \t -> do
-	text t "* m >>= fはまずはmに状態を適用して得た値をfに適用する", \t -> do
+	text t "* m >>= fはまずはmを状態に適用して得た値にfを適用する", \t -> do
 	itext t 1 "- (f v)がs -> (a, s)であることに注意", \t -> do
 	itext t 1 "- (f v)に新しい状態s'を与えている"
  ]
@@ -465,18 +467,90 @@ contMonad = [\t -> do
 	text t "", \t -> do
 	text t "* 継続渡しスタイル(CPS)のモナド", \t -> do
 	text t "* CPSとは何か?", \t -> do
-	itext t 1 "- 関数の結果を次の関数にわたす", \t -> do
-	itext t 1 "- その結果をさらに次の関数にわたす", \t -> do
-	itext t 1 "- 最後にその結果を最終的に処理する関数にわたす", \t -> do
-	itext t 1 "- そういうスタイルの計算方法", \t -> do
-	text t "* CPSではf(g(h(x)))は以下のようになる", \t -> do
-	itext t 1 "- h(x)を計算し", \t -> do
-	itext t 1 "- その結果をgにわたし", \t -> do
-	itext t 1 "- その結果をfに渡す"
+	text t "* f(g(h(x)))を考えてみよう", \t -> do
+	itext t 1 "- xにhを適用し、それをgに、さらにfにわたす", \t -> do
+	text t "* 「それをgに、さらにfにわたす」がh(x)の時点での継続", \t -> do
+	text t "* 継続渡しは関数の適用時に裏で行われている", \t -> do
+	text t "* その値が次に適用される関数を継続と呼ぶ", \t -> do
+	text t "* どこにでもあるものに名前をつける", \t -> do
+	arrowIText t 1 "制御することができるようになる"
  ]
 
 contMonad2 :: Page
 contMonad2 = [\t -> do
+	writeTopTitle t "Continuationモナド"
+	text t "", \t -> do
+	text t "* Haskellで明示的に継続を扱ってみよう", \t -> do
+	text t "* 関数hから継続渡しスタイルの関数h'を作る", \t -> do
+	itext t 1 "h' x = \\k -> k (h x)", \t -> do
+	text t "* h' x gはg(h x)に簡約される", \t -> do
+	text t "* つまりh'は第2引数に「継続」を取る", \t -> do
+	text t "* 関数gも継続渡しスタイルにすると", \t -> do
+	itext t 1 "h' x (\\y -> g' y f)", \t -> do
+	text t "* 関数fも継続渡しスタイルにすると", \t -> do
+	itext t 1 "h' x (\\y -> g' y (\\z -> f' z id))"
+ ]
+
+contMonad3 :: Page
+contMonad3 = [\t -> do
+	writeTopTitle t "Continuationモナド"
+	text t "", \t -> do
+	text t "* h', g', f'をつなぐ関数をつくる", \t -> do
+	itext t 1 "c `cont` f = \\k -> c (\\a -> f a k)"
+	text t "", \t -> do
+	semititle t "h' x (\\y -> g' y (\\z -> f' z id))", \t -> do
+	dvArrowShort t
+	semititle t "h' x `cont` g' `cont` f' $ id", \t -> do
+	arrowIText t 2 "演習問題:ここの説明終了後に各自簡約せよ"
+ ]
+
+-- h' x `cont` g' `cont` f' $ id
+-- (\k -> h' x (\y -> g' y k)) `cont` f' $ id
+-- \k' -> (\k -> h' x (\y -> g' y k)) (\z -> f' z k') $ id
+-- \k' -> h' x (\y -> g' y (\z -> f' z k')) $ id
+-- h' x (\y -> g' y (\z -> f' z id))
+
+contMonad4 :: Page
+contMonad4 = [\t -> do
+	writeTopTitle t "Continuationモナド"
+	text t "", \t -> do
+	text t "* 名前をつければ制御可能となる", \t -> do
+	arrowIText t 1 "引数となれば制御可能となる", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 1 "h' x `cont` (\\y _ -> j' y) `cont` g' `cont` f'", \t -> do
+	itext t 1 "- h xはgやfは無視してjにわたされる", \t -> do
+	itext t 1 "- f(g(h(x)))であれば不可能なこと", \t -> do
+	text t "* 何がうれしいの?", \t -> do
+	itext t 1 "- C言語等のbreakに相当する機能を作ることができる"
+ ]
+
+contMonad5 :: Page
+contMonad5 = [\t -> do
+	writeTopTitle t "Continuationモナド"
+	text t "", \t -> do
+	text t "* 今まで見てきたもののモナド的な側面を見ていこう", \t -> do
+	text t "* まずは型を見ていこう", \t -> do
+	itext t 1 "h :: a -> bのときh' :: a -> (b -> c) -> c", \t -> do
+	itext t 1 "c `cont` f = \\k -> c (\\a -> f a k)から"
+	itext t 1 "cont :: ((a -> r) -> r) -> (a -> (b -> r) -> r)"
+	itext t 4 "-> ((b -> r) -> r)", \t -> do
+	text t "* 型シノニムを定義する", \t -> do
+	itext t 1 "type Cont r a = (a -> r) -> r", \t -> do
+	itext t 1 "cont :: Cont a -> (a -> Cont b) -> Cont b", \t -> do
+	text t "* よってcontは>>=であることがわかる"
+ ]
+
+contMonad6 :: Page
+contMonad6 = [\t -> do
+	writeTopTitle t "Continuationモナド"
+	text t "", \t -> do
+	text t "* returnと>>=の定義を見てみよう", \t -> do
+	itext t 1 "return x = \\k -> k x"
+	itext t 1 "c >>= f = \\k -> c (\\a -> f a k)"
+ ]
+
+contMonadN :: Page
+contMonadN = [\t -> do
 	writeTopTitle t "Continuationモナド"
 	text t "", \t -> do
 	text t "* f(g(h(x)))の例を書き換えてみる", \t -> do

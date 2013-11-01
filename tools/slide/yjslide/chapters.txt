@@ -52,14 +52,15 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第44回 unsafePerformIO, unsafeInterleaveIO
 第45回 遅延IOとiteratee
 第46回 可変長引数 (Text.Printf等)
-第47回 Arrow
-第48回 Foldable
-第49回 Traversable
-第50回 Sequence (finger tree, queue)
+第47回 継続モナド
+第48回 Arrow
+第49回 Foldable
+第50回 Traversable
+第51回 Sequence (finger tree, queue)
 ---
-第51回 モナド内包表記 monad comprehension
-第52回 LANGUAGEプラグマ
-第53回 その他のプラグマ
+第52回 モナド内包表記 monad comprehension
+第53回 LANGUAGEプラグマ
+第54回 その他のプラグマ
 	(OPTIONS_GHC, WARNING, DEPRECATED, INLINE, RULES,
 		SPECIALIZE, UNPACK, SOURCE)
 	-> 場合によってはいくつかに分けよう
