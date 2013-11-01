@@ -125,3 +125,6 @@ ScopedTypeVariablesも「いけてる」と思う。
 どこかでMonadPlusについても触れたいな。
 
 型クラスにおける関数のデフォルト定義について触れているか確かめること。
+
+以下の型レベルの機能については理解したうえで入れるかどうか検討すること
+	DataKinds, TypeOperators, ScopedTypeVariables, ConstraintKinds
