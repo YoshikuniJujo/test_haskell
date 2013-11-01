@@ -186,7 +186,7 @@ errorMonad4 = [\t -> do
 	text t "使用例:", \t -> do
 	text t "lookupMod100 :: a -> [(a, Int)] -> Either String Int"
 	text t "lookupMod100 x dict = do"
-	itext t 1 "n <- lookup x dict"
+	itext t 1 "n <- eitherLookup x dict"
 	itext t 1 "mod100 n"
 	text t "", \t -> do
 	text t "* エラーの理由がわかる", \t -> do
