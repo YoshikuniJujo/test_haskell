@@ -14,7 +14,8 @@ pages = [
 	monadList1 1, maybeMonad, maybeMonad2,
 	monadList1 2, errorMonad, errorMonad2, errorMonad3, errorMonad4,
 	monadList1 3, listMonad, listMonad2, listMonad3,
-	monadList1 4,
+	monadList1 4, stateMonad, stateMonad2, stateMonad3, stateMonad4,
+		stateMonad5, stateMonad6, stateMonad7,
 	monadList1 5,
 	monadList1 6,
 	monadList1 7,
@@ -236,3 +237,111 @@ listMonad3 = [\t -> do
 	itext t 2 "kmove k2"
  ]
 
+stateMonad :: Page
+stateMonad = [\t -> do
+	writeTopTitle t "Stateモナド"
+	text t "", \t -> do
+	text t "* 今まで見てきたのは失敗の可能性のある計算", \t -> do
+	itext t 1 "- Listモナドはその自然な拡張", \t -> do
+	text t "* Stateモナドはすこし性質が違う", \t -> do
+	text t "* 状態を持つ計算を表現するモナド", \t -> do
+	text t "* >>=は目に見えるところでは返り値をわたしている", \t -> do
+	itext t 1 "- 裏では状態をわたしている"
+ ]
+
+stateMonad2 :: Page
+stateMonad2 = [\t -> do
+	writeTopTitle t "Stateモナド"
+	text t "", \t -> do
+	text t "* モナドを使わないで状態を扱う場合", \t -> do
+	itext t 1 "- s -> (a, s)という型を持つ関数を使う", \t -> do
+	itext t 1 "- 状態を取り、返り値と状態を返す", \t -> do
+	itext t 1 "- 返された状態は次の関数にわたされる", \t -> do
+	text t "* ランダムの例", \t -> do
+	itext t 1 "random :: StdGen -> (Int, StdGen)", \t -> do
+	itext t 1 "twoRandoms :: StdGen -> ((Int, Int), StdGen)"
+	itext t 1 "twoRandoms g = let"
+	itext t 2 "(n1, g1) = random g"
+	itext t 2 "(n2, g2) = random g1 in"
+	itext t 2 "((n1, n2), g2)"
+ ]
+
+stateMonad3 :: Page
+stateMonad3 = [\t -> do
+	writeTopTitle t "Stateモナド"
+	text t "", \t -> do
+	text t "* 以下の構造がある", \t -> do
+	itext t 1 "someFun s0 = let"
+	itext t 2 "(x1, s1) = fun1 s"
+	itext t 2 "(x2, s2) = fun2 s1"
+	itext t 2 "(x3, s3) = fun3 s2"
+	itext t 2 "..."
+	itext t 2 "in f x1 x2 x3 ...", \t -> do
+	text t "* このような構造を抽出したのがStateモナドとなる", \t -> do
+	itext t 1 "- 上の構造では最後の関数がそれまでの値を参照", \t -> do
+	itext t 1 "- Stateモナドではもっと自由度が高い", \t -> do
+	itext t 1 "- が、本質的には上の構造と同じ"
+ ]
+
+stateMonad4 :: Page
+stateMonad4 = [\t -> do
+	writeTopTitle t "Stateモナド"
+	text t "", \t -> do
+	text t "* まずはMonadクラスのインスタンスではないバージョン", \t -> do
+	itext t 1 "- return, >>=は本当は別の名前にするべきだが", \t -> do
+	itext t 1 "- とりあえずは、そのままにする", \t -> do
+	text t "type State s a = s -> (a, s)"
+	text t "return x = \\s -> (x, s)"
+	text t "m >>= f = \\s -> let (v, s') = m s in f v s'"
+	text t "", \t -> do
+	text t "* return xは状態を変えずにxを返す", \t -> do
+	text t "* m >>= fはまずはmに状態を適用して得た値をfに適用する", \t -> do
+	itext t 1 "- (f v)がs -> (a, s)であることに注意", \t -> do
+	itext t 1 "- (f v)に新しい状態s'を与えている"
+ ]
+
+stateMonad5 :: Page
+stateMonad5 = [\t -> do
+	writeTopTitle t "Stateモナド"
+	text t "", \t -> do
+	text t "* Monadクラスのインスタンスにする", \t -> do
+	itext t 1 "- そのためにnewtypeとする必要がある", \t -> do
+	text t "newtype State s a = State { runState :: s -> (a, s) }"
+	text t "", \t -> do
+	text t "instance Monad (State s) where"
+	itext t 1 "return x = State $ \\s -> (a, s)"
+	itext t 1 "State m >>= f = State $ \\s -> let"
+	itext t 2 "(v, s') = m s in"
+	itext t 2 "runState (f v) s'"
+	text t "", \t -> do
+	text t "* StateやrunStateはnewtypeの衣の着脱をしてるだけ"
+ ]
+
+stateMonad6 :: Page
+stateMonad6 = [\t -> do
+	writeTopTitle t "Stateモナド"
+	text t "", \t -> do
+	text t "* 状態の更新と入手のための関数を作る", \t -> do
+	itext t 1 "put :: s -> State s ()"
+	itext t 1 "put s = State $ \\_ -> ((), s)", \t -> do
+	itext t 1 "get :: State s s"
+	itext t 1 "get = State $ \\s -> (s, s)"
+ ]
+
+stateMonad7 :: Page
+stateMonad7 = [\t -> do
+	writeTopTitle t "Stateモナド"
+	text t "", \t -> do
+	text t "getRandom :: State StdGen Int"
+	text t "getRandom = do"
+	itext t 1 "g <- get"
+	itext t 1 "let (x, g') = random g"
+	itext t 1 "put g'"
+	itext t 1 "return x"
+	text t "", \t -> do
+	text t "fun :: State StdGen Int"
+	text t "fun = do"
+	itext t 1 "x <- getRandom"
+	itext t 1 "y <- getRandom"
+	itext t 1 "return $ x * y"
+ ]

@@ -1,3 +1,9 @@
+{-# LANGUAGE PackageImports #-}
+
+import System.Random
+import "monads-tf" Control.Monad.State
+import "monads-tf" Control.Monad.Identity
+
 type StateInt a = Int -> (a, Int)
 
 memoryClear :: StateInt ()
@@ -30,3 +36,9 @@ calc =	memoryPlus 3 >>>= \_ ->
 	memoryMinus 3 >>>= \_ ->
 	memoryRecall >>>= \y ->
 	liftNum (x * y)
+
+fun :: State StdGen Int
+fun = do
+	x <- StateT $ Identity . random
+	y <- StateT $ Identity . random
+	return $ x * y
