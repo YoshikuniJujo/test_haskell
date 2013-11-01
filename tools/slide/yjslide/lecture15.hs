@@ -16,8 +16,10 @@ pages = [
 	monadList1 3, listMonad, listMonad2, listMonad3,
 	monadList1 4, stateMonad, stateMonad2, stateMonad3, stateMonad4,
 		stateMonad5, stateMonad6, stateMonad7,
-	monadList1 5,
-	monadList1 6,
+	monadList1 5, readerMonad, readerMonad2, readerMonad3,
+		readerMonad4,
+	monadList1 6, writerMonad, writerMonad2, writerMonad3,
+		writerMonad4,
 	monadList1 7,
 	monadList1 8
  ]
@@ -343,4 +345,116 @@ stateMonad7 = [\t -> do
 	itext t 1 "x <- getRandom"
 	itext t 1 "y <- getRandom"
 	itext t 1 "return $ x * y"
+ ]
+
+readerMonad :: Page
+readerMonad = [\t -> do
+	writeTopTitle t "Readerモナド"
+	text t "", \t -> do
+	text t "* ReaderモナドはStateモナドと似ている", \t -> do
+	text t "* 違いはReaderモナドでは状態を変化させられない点", \t -> do
+	text t "* それぞれの計算が初期状態を共有しているという構造", \t -> do
+	text t "* 初期状態は「環境」と考えることもできる"
+ ]
+
+readerMonad2 :: Page
+readerMonad2 = [\t -> do
+	writeTopTitle t "Readerモナド"
+	text t "", \t -> do
+	text t "newtype Reader e a = Reader { runReader :: (e -> a) }"
+	text t "", \t -> do
+	text t "instance Monad (Reader e) where"
+	itext t 1 "return x = Reader $ \\_ -> x"
+	itext t 1 "Reader r >>= f = Reader $ \\e -> (f (r e)) e"
+	text t "", \t -> do
+	text t "* return xは環境に関係なくxを返す", \t -> do
+	text t "* Reader r >>= fは環境を取って", \t -> do
+	itext t 1 "- その環境にrを適用した結果の値にfを適用する", \t -> do
+	itext t 1 "- その結果返ってきた(f (r e))自体もe -> aなので", \t -> do
+	itext t 1 "- それにeを与える"
+ ]
+
+readerMonad3 :: Page
+readerMonad3 = [\t -> do
+	writeTopTitle t "Readerモナド"
+	text t "", \t -> do
+	text t "* 環境を問い合わせる関数も定義しておく", \t -> do
+	itext t 1 "ask :: Reader e e"
+	itext t 1 "ask = Reader $ \\e -> e"
+ ]
+
+readerMonad4 :: Page
+readerMonad4 = [\t -> do
+	writeTopTitle t "Readerモナド"
+	text t "", \t -> do
+	text t "使用例:", \t -> do
+	text t "getVal :: String -> Reader [(String, Int)] Int"
+	text t "getVal var = do"
+	itext t 1 "env <- ask"
+	itext t 1 "return $ fromMaybe 0 $ lookup var env",\t -> do
+	text t "addVals ::"
+	itext t 1 "String -> String -> Reader [(String, Int)] Int"
+	text t "addVals varX varY = do"
+	itext t 1 "x <- getVal varX"
+	itext t 1 "y <- getVal varY"
+	itext t 1 "return $ x + y"
+ ]
+
+writerMonad :: Page
+writerMonad = [\t -> do
+	writeTopTitle t "Writerモナド"
+	text t "", \t -> do
+	text t "* Stateモナドが入出力両方の機能だとして", \t -> do
+	itext t 1 "- Readerモナドが入力機能を提供しているならば", \t -> do
+	itext t 1 "- Writerモナドは出力機能を提供していると言える", \t -> do
+	text t "* Stateモナドでは出力は次の入力に使われた", \t -> do
+	text t "* Writerモナドには入力はない", \t -> do
+	text t "* 出力は「使われる」代わりに「蓄えられる」", \t -> do
+	text t "* 典型的な使い道はログを取ること", \t -> do
+	text t "* 今回はログとしてStringを使うことにする"
+ ]
+
+writerMonad2 :: Page
+writerMonad2 = [\t -> do
+	writeTopTitle t "Writerモナド"
+	text t "", \t -> do
+	text t "newtype Writer a = Writer { runWriter :: (a, String) }", \t -> do
+	text t "instance Monad Writer where"
+	itext t 1 "return x = Writer (x, \"\")"
+	itext t 1 "Writer (x, log) >>= f = let"
+	itext t 2 "(x', log') = runWriter $ f x in"
+	itext t 2 "Writer (x', log ++ log')"
+	text t "", \t -> do
+	text t "* return xはその値とログとして空文字列を返す", \t -> do
+	text t "* Writer (x, log) >>= fはxにfを適用する", \t -> do
+	itext t 1 "- その結果出てきた値を返り値とし", \t -> do
+	itext t 1 "- 新たなログを前のログに追加する"
+ ]
+
+writerMonad3 :: Page
+writerMonad3 = [\t -> do
+	writeTopTitle t "Writerモナド"
+	text t "", \t -> do
+	text t "使用例:", \t -> do
+	text t "two :: Writer Int"
+	text t "two = do"
+	itext t 1 "tell \"This is number 2.\\n\""
+	itext t 1 "return 2", \t -> do
+	text t ""
+	text t "add :: Int -> Int -> Writer Int"
+	text t "add x y = do"
+	itext t 1 "tell \"Addition done.\\n\""
+	itext t 1 "return $ x + y"
+ ]
+
+writerMonad4 :: Page
+writerMonad4 = [\t -> do
+	writeTopTitle t "Writerモナド"
+	text t "", \t -> do
+	text t "使用例:", \t -> do
+	text t "twoPlusTwo :: Writer Int"
+	text t "twoPlusTwo = do"
+	itext t 1 "x <- two"
+	itext t 1 "y <- two"
+	itext t 1 "add x y"
  ]
