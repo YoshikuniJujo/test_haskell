@@ -20,7 +20,7 @@ pages = [
 		readerMonad4,
 	monadList1 6, writerMonad, writerMonad2, writerMonad3,
 		writerMonad4,
-	monadList1 7,
+	monadList1 7, contMonad, contMonad2,
 	monadList1 8
  ]
 
@@ -457,4 +457,37 @@ writerMonad4 = [\t -> do
 	itext t 1 "x <- two"
 	itext t 1 "y <- two"
 	itext t 1 "add x y"
+ ]
+
+contMonad :: Page
+contMonad = [\t -> do
+	writeTopTitle t "Continuationモナド"
+	text t "", \t -> do
+	text t "* 継続渡しスタイル(CPS)のモナド", \t -> do
+	text t "* CPSとは何か?", \t -> do
+	itext t 1 "- 関数の結果を次の関数にわたす", \t -> do
+	itext t 1 "- その結果をさらに次の関数にわたす", \t -> do
+	itext t 1 "- 最後にその結果を最終的に処理する関数にわたす", \t -> do
+	itext t 1 "- そういうスタイルの計算方法", \t -> do
+	text t "* CPSではf(g(h(x)))は以下のようになる", \t -> do
+	itext t 1 "- h(x)を計算し", \t -> do
+	itext t 1 "- その結果をgにわたし", \t -> do
+	itext t 1 "- その結果をfに渡す"
+ ]
+
+contMonad2 :: Page
+contMonad2 = [\t -> do
+	writeTopTitle t "Continuationモナド"
+	text t "", \t -> do
+	text t "* f(g(h(x)))の例を書き換えてみる", \t -> do
+	itext t 1 "h' x (\\y -> g' y (\\z -> f' z id))"
+	itext t 1 "", \t -> do
+	itext t 1 "h' :: a -> (b -> c) -> c"
+	itext t 1 "h' x = \\k -> k (h x)"
+	itext t 1 "", \t -> do
+	itext t 1 "g' :: b -> (d -> c) -> c"
+	itext t 1 "g' x = \\k -> k (g x)"
+	itext t 1 "", \t -> do
+	itext t 1 "f' :: d -> (e -> c) -> c"
+	itext t 1 "f' x = \\k -> k (f x)"
  ]
