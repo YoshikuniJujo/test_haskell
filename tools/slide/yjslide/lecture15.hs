@@ -305,9 +305,9 @@ stateMonad5 = [\t -> do
 	writeTopTitle t "Stateモナド"
 	text t "", \t -> do
 	text t "* Monadクラスのインスタンスにする", \t -> do
-	itext t 1 "- そのためにnewtypeとする必要がある", \t -> do
-	text t "newtype State s a = State { runState :: s -> (a, s) }"
+	itext t 1 "- そのためにnewtypeとする必要がある"
 	text t "", \t -> do
+	text t "newtype State s a = State { runState :: s -> (a, s) }", \t -> do
 	text t "instance Monad (State s) where"
 	itext t 1 "return x = State $ \\s -> (a, s)"
 	itext t 1 "State m >>= f = State $ \\s -> let"
@@ -337,8 +337,7 @@ stateMonad7 = [\t -> do
 	itext t 1 "g <- get"
 	itext t 1 "let (x, g') = random g"
 	itext t 1 "put g'"
-	itext t 1 "return x"
-	text t "", \t -> do
+	itext t 1 "return x", \t -> do
 	text t "fun :: State StdGen Int"
 	text t "fun = do"
 	itext t 1 "x <- getRandom"
