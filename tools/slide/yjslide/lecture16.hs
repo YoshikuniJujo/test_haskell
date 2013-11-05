@@ -15,7 +15,11 @@ pages = [
 	identityFunInt, identityFunInt2, identityFunChar, identityFuns,
 	identityClass, identityClassFun, dataFamilySummary,
 	associatedDataType, associatedDataType2, associatedDataTypeSummary,
-	typeSynonymFamilies
+	typeSynonymFamilies, identitySynonym, identitySynonymFunInt,
+	identitySynonymFunChar, identitySynonymFunSummary,
+	typeSynonymFamiliesSummary,
+	associatedTypeSynonym, associatedTypeSynonymSummary,
+	summary
  ]
 
 titlePage :: Page
@@ -237,7 +241,7 @@ associatedDataType2 = [\t -> do
 	itext t 1 "fromIdentity :: Identity a -> a"
 	text t "", \t -> do
 	text t "instance HaveIdentity Int where"
-	itext t 1 "data Identity Int = PrimeFuctors [Int]"
+	itext t 1 "data Identity Int = PrimeFactors [Int]"
 	itext t 1 "...", \t -> do
 	text t "instance HaveIdentity Char where"
 	itext t 1 "data Identity Char = CharID CharClass Int"
@@ -260,5 +264,123 @@ typeSynonymFamilies :: Page
 typeSynonymFamilies = [\t -> do
 	writeTopTitle t "型シノニム族"
 	text t "", \t -> do
-	text t ""
+	text t "* データ型に対してデータ族があるように", \t -> do
+	text t "* 型シノニムに対して型シノニム族がある", \t -> do
+	text t "* リスト型の型シノニムを見てみよう", \t -> do
+	itext t 1 "type List a = [a]", \t -> do
+	itext t 1 "- すべての型aに対して同じ構造", \t -> do
+	text t "* それぞれの型aに対して別々の構造としたいときもある", \t -> do
+	text t "* データ族のときと同じ例で見ていこう"
+ ]
+
+identitySynonym :: Page
+identitySynonym = [\t -> do
+	writeTopTitle t "型シノニム族"
+	text t "", \t -> do
+	text t "type family Identity a"
+	text t "", \t -> do
+	text t "type instance Identity Int = [Int]", \t -> do
+	text t "type instance Identity Char = (CharClass, Int)"
+ ]
+
+identitySynonymFunInt :: Page
+identitySynonymFunInt = [\t -> do
+	writeTopTitle t "型シノニム族"
+	text t "", \t -> do
+	text t "toIdentityInt :: Int -> Maybe (Identity Int)"
+	text t "toIdentityInt n"
+	itext t 1 "| n > 0 = Just $ primeFactors 2 n"
+	itext t 1 "| otherwise = Nothing"
+	text t "", \t -> do
+	text t "fromIdentityInt :: Identity Int -> Int"
+	text t "fromIdentityInt = product"
+ ]
+
+identitySynonymFunChar :: Page
+identitySynonymFunChar = [\t -> do
+	writeTopTitle t "型シノニム族"
+	text t "", \t -> do
+	text t "toIdentityChar :: Char -> Maybe (Identity Char)"
+	text t "toIdentityChar c"
+	itext t 1 "| isUpper c = (Upper, ord c - ord 'A')"
+	itext t 1 "| isLower c = (Lower, ord c - ord 'a')"
+	itext t 1 "| isDigit c = (Digit, ord c - ord '0')"
+	itext t 1 "| otherwise = Nothing"
+	text t "", \t -> do
+	text t "fromIdentityChar :: Identity Char -> Char"
+	text t "fromIdentityChar (Upper, n) = chr $ ord 'A' + n"
+	text t "fromIdentityChar (Lower, n) = chr $ ord 'a' + n"
+	text t "fromIdentityChar (Digit, n) = chr $ ord '0' + n"
+ ]
+
+identitySynonymFunSummary :: Page
+identitySynonymFunSummary = [\t -> do
+	writeTopTitle t "型シノニム族"
+	text t "", \t -> do
+	text t "* 新しいデータ型ではなく既存のタイプへの別名となる", \t -> do
+	text t "* データ族と同様に型クラスと一緒に使うことで本領発揮", \t -> do
+	itext t 1 "class HaveIdentity a where"
+	itext t 2 "toIdentity :: a -> Maybe (Identity a)"
+	itext t 2 "fromIdentity :: Identity a -> a", \t -> do
+	itext t 1 "instance HaveIdentity Int where"
+	itext t 2 "toIdentity = toIdentityInt"
+	itext t 2 "fromIdentity = fromIdentityInt", \t -> do
+	itext t 1 "instance HaveIdentity Char where"
+	itext t 2 "toIdentity = toIdentityChar"
+	itext t 2 "fromIdentity = fromIdentityChar"
+ ]
+
+typeSynonymFamiliesSummary :: Page
+typeSynonymFamiliesSummary = [\t -> do
+	writeTopTitle t "型シノニム族(まとめ)"
+	text t "", \t -> do
+	text t "* 型に別名をつけるとき", \t -> do
+	itext t 1 "- 型をグループにまとめることができる", \t -> do
+	text t "* 型シノニム族の宣言", \t -> do
+	itext t 1 "type family Identity a", \t -> do
+	text t "* 型シノニム族のインスタンスの定義", \t -> do
+	itext t 1 "type instance Identity Int = [Int]"
+	itext t 1 "type instance Identity Char = (CharClass, Int)", \t -> do
+	text t "* 型クラスと一緒に使うことで本領を発揮する"
+ ]
+
+associatedTypeSynonym :: Page
+associatedTypeSynonym = [\t -> do
+	writeTopTitle t "関連型シノニム"
+	text t "", \t -> do
+	text t "* 型クラスと一緒に使うとき用の構文糖が用意されている", \t -> do
+	itext t 1 "class HaveIdentity where"
+	itext t 2 "type Identity a"
+	itext t 2 "toIdentity :: a -> Maybe (Identity a)"
+	itext t 2 "fromIdentity :: Identity a -> a", \t -> do
+	itext t 1 "instance HaveIdentity Int where"
+	itext t 2 "type Identity Int = [Int]"
+	itext t 2 "...", \t -> do
+	itext t 1 "instance HaveIdentity Char where"
+	itext t 2 "type Identity Char = (CharClass, Int)"
+	itext t 2 "..."
+ ]
+
+associatedTypeSynonymSummary :: Page
+associatedTypeSynonymSummary = [\t -> do
+	writeTopTitle t "関連型シノニム(まとめ)"
+	text t "", \t -> do
+	text t "* 型シノニム族も型クラスと一緒に使われることが多い", \t -> do
+	text t "* 特別な構文が用意されている", \t -> do
+	itext t 1 "- その型族が宣言されたクラスでしか使えない", \t -> do
+	itext t 1 "- familyやinstanceを省略する"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* 型族について学んだ", \t -> do
+	text t "* 構造の違う型をグループとしてまとめることができる", \t -> do
+	text t "* 型クラスと一緒に使うと便利", \t -> do
+	text t "* 記法には以下の特徴がある", \t -> do
+	itext t 1 "- トップレベルではfamilyやinstanceをつける", \t -> do
+	itext t 1 "- クラスやインスタンス宣言のなかではつけない", \t -> do
+	text t "* クラス内で宣言されたものは関連型と呼ばれる", \t -> do
+	text t "* とくに関連型シノニムは次回のmonads-tfで使われている"
  ]
