@@ -128,3 +128,8 @@ ScopedTypeVariablesも「いけてる」と思う。
 
 以下の型レベルの機能については理解したうえで入れるかどうか検討すること
 	DataKinds, TypeOperators, ScopedTypeVariables, ConstraintKinds
+
+どこかで「代数的データ型(algebraic data type)」という用語の説明が必要だ。
+
+kindについてもどこかで触れたい。
+GADTsあたりで触れられるだろうか。
