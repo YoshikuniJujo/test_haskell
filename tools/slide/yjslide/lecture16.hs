@@ -13,7 +13,9 @@ pages = [
 	titlePage, prelude, whats, classify,
 	dataFamilies, identity, identityFamily,
 	identityFunInt, identityFunInt2, identityFunChar, identityFuns,
-	identityClass, identityClassFun, dataFamilySummary
+	identityClass, identityClassFun, dataFamilySummary,
+	associatedDataType, associatedDataType2, associatedDataTypeSummary,
+	typeSynonymFamilies
  ]
 
 titlePage :: Page
@@ -26,7 +28,9 @@ prelude = [\t -> do
 	text t "* 型族(type families)について学ぶ", \t -> do
 	text t "* 型族はHaskell 2010には取り込まれていない", \t -> do
 	text t "* ghcの拡張機能", \t -> do
-	text t "* ソースコードに{-# LANGUAGE TypeFamilies #-}をつける"
+	text t "* ソースコードに{-# LANGUAGE TypeFamilies #-}をつける", \t -> do
+	text t "* 型族にはいろいろな用途がある", \t -> do
+	itext t 1 "- 今回は型クラスでの使用という側面にしぼって紹介"
  ]
 
 whats :: Page
@@ -204,8 +208,57 @@ dataFamilySummary = [\t -> do
 	itext t 1 "- Identity aは型aによって違う構造を取る", \t -> do
 	text t "* Identityが型族であることを宣言する", \t -> do
 	itext t 1 "data family Identity a", \t -> do
-	text t "* 型族のインスタンスを作る", \t -> do
+	text t "* 型族のインスタンスを定義する", \t -> do
 	itext t 1 "data instance Identity Int = ..."
 	itext t 1 "data instance Identity Char = ...", \t -> do
 	text t "* 型族は型クラスのなかで使ったときに本領を発揮する"
+ ]
+
+associatedDataType :: Page
+associatedDataType = [\t -> do
+	writeTopTitle t "関連データ型"
+	text t "", \t -> do
+	text t "* 関連データ型(associated data type)はデータ族の構文糖", \t -> do
+	text t "* 型族は型クラスのなかで使われることが多い", \t -> do
+	text t "* 型クラスと関連して使われるデータ族を特別扱いする構文", \t -> do
+	text t "* 関連データ型として宣言されたデータ族は", \t -> do
+	itext t 1 "- 省略された構文が使える", \t -> do
+	itext t 1 "- それが宣言されたクラス内でのみ使用可", \t -> do
+	text t "* さっきの例を関連データ型で定義してみる"
+ ]
+
+associatedDataType2 :: Page
+associatedDataType2 = [\t -> do
+	writeTopTitle t "関連データ型"
+	text t "", \t -> do
+	text t "class HaveIdentity a where"
+	itext t 1 "data Identity a"
+	itext t 1 "toIdentity :: a -> Maybe (Identity a)"
+	itext t 1 "fromIdentity :: Identity a -> a"
+	text t "", \t -> do
+	text t "instance HaveIdentity Int where"
+	itext t 1 "data Identity Int = PrimeFuctors [Int]"
+	itext t 1 "...", \t -> do
+	text t "instance HaveIdentity Char where"
+	itext t 1 "data Identity Char = CharID CharClass Int"
+	itext t 1 "..."
+ ]
+
+associatedDataTypeSummary :: Page
+associatedDataTypeSummary = [\t -> do
+	writeTopTitle t "関連データ型(まとめ)"
+	text t "", \t -> do
+	text t "* 関連データ型はデータ族の構文糖", \t -> do
+	itext t 1 "- 宣言されたクラスでのみ使用可という制限がある", \t -> do
+	text t "* データ族の宣言はclass定義のなかで行われる", \t -> do
+	itext t 1 "- familyは省略される", \t -> do
+	text t "* データ族のインスタンスの定義はinstance定義のなかで", \t -> do
+	itext t 1 "- instanceは省略される"
+ ]
+
+typeSynonymFamilies :: Page
+typeSynonymFamilies = [\t -> do
+	writeTopTitle t "型シノニム族"
+	text t "", \t -> do
+	text t ""
  ]
