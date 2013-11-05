@@ -11,7 +11,9 @@ main = runLecture pages
 pages :: [Page]
 pages = [
 	titlePage, prelude, whats, classify,
-	dataFamilies, identity, identityFamily
+	dataFamilies, identity, identityFamily,
+	identityFunInt, identityFunInt2, identityFunChar, identityFuns,
+	identityClass, identityClassFun, dataFamilySummary
  ]
 
 titlePage :: Page
@@ -60,7 +62,7 @@ dataFamilies :: Page
 dataFamilies = [\t -> do
 	writeTopTitle t "データ族"
 	text t "", \t -> do
-	text t "* まずは普通の変数を含むデータ型について見てみる", \t -> do
+	text t "* まずは普通の「変数を含むデータ型」について見てみる", \t -> do
 	text t "* 例としてリストを考えてみよう", \t -> do
 	itext t 1 "data [] a = a : ([] a) | []", \t -> do
 	itext t 1 "わかりやすく名前を変えてみる", \t -> do
@@ -94,7 +96,116 @@ identityFamily = [\t -> do
 	itext t 1 "- Identity IntやIdentity Charを別々に定義できる"
 	text t "", \t -> do
 	text t "data instance Identity Int = PrimeFactors [Int]"
+	itext t 1 "deriving Show"
 	text t "", \t -> do
-	text t "data CharClass = Upper | Lower | Digit"
+	text t "data CharClass = Upper | Lower | Digit deriving Show"
 	text t "data instance Identity Char = CharID CharClass Int"
+	itext t 1 "deriving Show"
+ ]
+
+identityFunInt :: Page
+identityFunInt = [\t -> do
+	writeTopTitle t "データ族"
+	text t "", \t -> do
+	text t "primeFactors :: Int -> Int -> [Int]"
+	text t "primeFactors f n"
+	itext t 1 "| f <= 0 || n <= 0 = []"
+	itext t 1 "| f > n = []"
+	itext t 1 "| n `mod` f == 0 = f : primeFactors f (n `div` f)"
+	itext t 1 "| otherwise = primeFactors (f + 1) n"
+	text t "", \t -> do
+	text t "toIdentityInt :: Int -> Maybe (Identity Int)"
+	text t "toIdentityInt n"
+	itext t 1 "| n > 0 = Just $ PrimeFactors $ primeFactors 2 n"
+	itext t 1 "| otherwise = Nothing"
+ ]
+
+identityFunInt2 :: Page
+identityFunInt2 = [\t -> do
+	writeTopTitle t "データ族"
+	text t "", \t -> do
+	text t "fromIdentityInt :: Identity Int -> Int"
+	text t "fromIdentityInt (PrimeFactors pfs) = product pfs"
+	text t "", \t -> do
+	text t "* IntとIdentity Intを相互変換する関数を定義した"
+ ]
+
+identityFunChar :: Page
+identityFunChar = [\t -> do
+	writeTopTitle t "データ族"
+	text t "", \t -> do
+	text t "toIdentityChar :: Char -> Maybe (Identity Char)"
+	text t "toIdentityChar c"
+	itext t 0.5 "| isUpper c = Just $ CharID Upper $ ord c - ord 'A'"
+	itext t 0.5 "| isLower c = Just $ CharID Lower $ ord c - ord 'a'"
+	itext t 0.5 "| isDigit c = Just $ CharID Digit $ ord c - ord '0'"
+	itext t 0.5 "| otherwise = Nothing"
+	text t "", \t -> do
+	text t "fromIdentityChar :: Identity Char -> Char"
+	text t "fromIdentityChar (CharID Upper n) = chr $ ord 'A' + n"
+	text t "fromIdentityChar (CharID Lower n) = chr $ ord 'a' + n"
+	text t "fromIdentityChar (CharID Digit n) = chr $ ord '0' + n"
+ ]
+
+identityFuns :: Page
+identityFuns = [\t -> do
+	writeTopTitle t "データ族"
+	text t "", \t -> do
+	text t "* IntとIdentity Intとを相互に変換する関数を定義した", \t -> do
+	itext t 1 "toIdentityInt :: Int -> Myabe (Identity Int)"
+	itext t 1 "fromIdentityInt :: Identity Int -> Int", \t -> do
+	text t "* CharとIdentity Charとを相互に変換する関数を定義した", \t -> do
+	itext t 1 "toIdentityChar :: Char -> Maybe (Identity Char)"
+	itext t 1 "fromIdentityChar :: Identity Char -> Char", \t -> do
+	text t "* 実のところここまでなら型族を使うメリットは少ない", \t -> do
+	itext t 1 "- IdentityIntとIdentityCharを使っても同じ", \t -> do
+	itext t 1 "- コードがわかりやすくなるというメリットはある", \t -> do
+	text t "* 型クラスと一緒に使うと本領を発揮する"
+ ]
+
+identityClass :: Page
+identityClass = [\t -> do
+	writeTopTitle t "データ族"
+	text t "", \t -> do
+	text t "class HaveIdentity a where"
+	itext t 1 "toIdentity :: a -> Maybe (Identity a)"
+	itext t 1 "fromIdentity :: Identity a -> a"
+	text t "", \t -> do
+	text t "instance HaveIdentity Int where"
+	itext t 1 "toIdentity = toIdentityInt"
+	itext t 1 "fromIdentity = fromIdentityInt"
+	text t "", \t -> do
+	text t "instance HaveIdentity Char where"
+	itext t 1 "toIdentity = toIdentityChar"
+	itext t 1 "fromIdentity = fromIdentityChar"
+ ]
+
+identityClassFun :: Page
+identityClassFun = [\t -> do
+	writeTopTitle t "データ族"
+	text t "", \t -> do
+	text t "* HaveIdentityを使った関数の例", \t -> do
+	itext t 1 "- FlexibleContexts拡張が必要", \t -> do
+	text t "", \t -> do
+	text t "printIdentity ::"
+	itext t 1 "(HaveIdentity a, Show (Identity a)) => a -> IO ()"
+	text t "printIdentity x = case toIdentity x of"
+	itext t 1 "Just i -> print i"
+	itext t 1 "Nothing -> putStrLn \"no identity\""
+ ]
+
+dataFamilySummary :: Page
+dataFamilySummary = [\t -> do
+	writeTopTitle t "データ族(まとめ)"
+	text t "", \t -> do
+	text t "* 型aのリストは[] aである", \t -> do
+	itext t 1 "- [] aはどんな型aに対しても同じ構造", \t -> do
+	text t "* 型aのアイデンティティはIdentity aである", \t -> do
+	itext t 1 "- Identity aは型aによって違う構造を取る", \t -> do
+	text t "* Identityが型族であることを宣言する", \t -> do
+	itext t 1 "data family Identity a", \t -> do
+	text t "* 型族のインスタンスを作る", \t -> do
+	itext t 1 "data instance Identity Int = ..."
+	itext t 1 "data instance Identity Char = ...", \t -> do
+	text t "* 型族は型クラスのなかで使ったときに本領を発揮する"
  ]

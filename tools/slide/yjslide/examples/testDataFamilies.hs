@@ -101,4 +101,6 @@ instance HaveIdentity Char where
 	fromIdentity = fromIdentityChar
 
 printIdentity :: (HaveIdentity a, Show (Identity a)) => a -> IO ()
-printIdentity = print . toIdentity
+printIdentity x = case toIdentity x of
+	Just i -> print i
+	Nothing -> putStrLn "no identity"
