@@ -11,7 +11,8 @@ main = runLecture pages
 pages :: [Page]
 pages = [
 	titlePage, prelude,
-	examErrorState, examErrorState2, examErrorState3
+	examErrorState, examErrorState2, examErrorState3, examErrorState4,
+	examErrorState5, examErrorState6, examErrorStateSummary
  ]
 
 titlePage :: Page
@@ -69,6 +70,69 @@ examErrorState3 = [\t -> do
 	itext t 2 "case x s of"
 	itext t 3 "Just (v, s') -> runStateMaybe (f v) s'"
 	itext t 3 "_ -> Nothing"
+ ]
+
+examErrorState4 :: Page
+examErrorState4 = [\t -> do
+	writeTopTitle t "失敗と状態のある計算", \t -> do
+	text t "* 基本的な関数を定義する", \t -> do
+	itext t 1 "put :: s -> StateMaybe s ()"
+	itext t 1 "put s = StateMaybe $ \\_ -> Just ((), s)"
+	itext t 1 "", \t -> do
+	itext t 1 "get :: StateMaybe s s"
+	itext t 1 "get = StateMaybe $ \\s -> Just (s, s)"
+	itext t 1 "", \t -> do
+	itext t 1 "modify :: (s -> s) -> StateMaybe s ()"
+	itext t 1 "modify f = get >>= put . f"
+	itext t 1 "", \t -> do
+	itext t 1 "nothing :: StateMaybe s a"
+	itext t 1 "nothing = StateMaybe $ \\_ -> Nothing"
+
+ ]
+
+examErrorState5 :: Page
+examErrorState5 = [\t -> do
+	writeTopTitle t "失敗と状態のある計算"
+	text t "", \t -> do
+	text t "* 使用例", \t -> do
+	itext t 1 "addMemory :: Int -> StateMaybe Int ()"
+	itext t 1 "addMemory n = modify (+ n)"
+	itext t 1 "", \t -> do
+	itext t 1 "subMemory :: Int -> StateMaybe Int ()"
+	itext t 1 "subMemory n = modify (subtract n) >> checkMemory"
+	itext t 1 "", \t -> do
+	itext t 1 "checkMemory :: StateMaybe Int ()"
+	itext t 1 "checkMemory = do"
+	itext t 2 "s <- get"
+	itext t 2 "when (s < 0) nothing"
+ ]
+
+examErrorState6 :: Page
+examErrorState6 = [\t -> do
+	writeTopTitle t "失敗と状態のある計算"
+	text t "", \t -> do
+	text t "* 使用例", \t -> do
+	itext t 1 "subAll :: Int -> [Int] -> StateMaybe Int Int"
+	itext t 1 "subAll x ys = do"
+	itext t 2 "addMemory n"
+	itext t 2 "mapM_ subMemory ss"
+	itext t 2 "get"
+	text t "", \t -> do
+	text t "* 状態としてメモリーを持った計算", \t -> do
+	text t "* 引き算の結果が負になったらその時点でNothingを返す"
+ ]
+
+examErrorStateSummary :: Page
+examErrorStateSummary = [\t -> do
+	writeTopTitle t "失敗と状態のある計算(まとめ)"
+	text t "", \t -> do
+	text t "* 失敗する可能性のある状態を持つ計算を実装した", \t -> do
+	text t "* MaybeモナドとStateモナドの両方の性質を持つ", \t -> do
+	text t "* 型は以下のようになる", \t -> do
+	itext t 1 "data StateMaybe s a = StateMaybe {"
+	itext t 2 "runStateMaybe :: s -> Maybe (a, s) }", \t -> do
+	text t "* 基本となる以下の関数を定義した", \t -> do
+	itext t 1 "return, (>>=), put, get, modify, nothing"
  ]
 
 preludeMonadsTf :: Page

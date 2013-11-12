@@ -23,7 +23,6 @@
 * 第11回はきちんとした英語で書き直そう
 
 * 第17回の次にやること
-	- StateMaybeにput, get, nothingを実装し、使用例を示す。
 	- StateIO
 	- StateTを示す
 	- MaybeState
