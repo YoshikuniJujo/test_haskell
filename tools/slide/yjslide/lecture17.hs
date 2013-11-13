@@ -12,7 +12,8 @@ pages :: [Page]
 pages = [
 	titlePage, prelude,
 	examErrorState, examErrorState2, examErrorState3, examErrorState4,
-	examErrorState5, examErrorState6, examErrorStateSummary
+	examErrorState5, examErrorState6, examErrorStateSummary,
+	examStateIO
  ]
 
 titlePage :: Page
@@ -40,7 +41,7 @@ examErrorState = [\t -> do
 	itext t 1 "Just x >>= f = f x"
 	itext t 1 "Nothing >>= f = Nothing", \t -> do
 	text t "* 状態を取る計算は以下のようになる", \t -> do
-	itext t 1 "data State s a = State { runState :: s -> (a, s) }"
+	itext t 1 "newtype State s a = State { runState :: s -> (a, s) }"
 	itext t 1 "return a = State $ \\s -> (a, s)"
 	itext t 1 "(State x) >>= f = State $ \\s ->"
 	itext t 2 "let (v, s') = x s in runState (f v) s'"
@@ -52,9 +53,9 @@ examErrorState2 = [\t -> do
 	text t "", \t -> do
 	text t "* それぞれの型の定義をよく見る", \t -> do
 	itext t 1 "data Maybe a = Just a | Nothing"
-	itext t 1 "data State s a = State { runState :: s -> (a, s) }", \t -> do
+	itext t 1 "newtype State s a = State { runState :: s -> (a, s) }", \t -> do
 	text t "* この2つを合わせた型を作ってみよう", \t -> do
-	itext t 1 "data StateMaybe = StateMaybe {"
+	itext t 1 "newtype StateMaybe = StateMaybe {"
 	itext t 2 "runStateMaybe :: s -> Maybe (a, s) }"
  ]
 
@@ -63,7 +64,7 @@ examErrorState3 = [\t -> do
 	writeTopTitle t "失敗と状態のある計算"
 	text t "", \t -> do
 	text t "* モナドにする", \t -> do
-	itext t 1 "data StateMaybe = StateMaybe {"
+	itext t 1 "newtype StateMaybe = StateMaybe {"
 	itext t 2 "runStateMaybe :: s -> Maybe (a, s) }", \t -> do
 	itext t 1 "return a = StateMaybe $ \\s -> Just (a, s)"
 	itext t 1 "StateMaybe x >>= f = StateMaybe $ \\s ->"
@@ -129,10 +130,26 @@ examErrorStateSummary = [\t -> do
 	text t "* 失敗する可能性のある状態を持つ計算を実装した", \t -> do
 	text t "* MaybeモナドとStateモナドの両方の性質を持つ", \t -> do
 	text t "* 型は以下のようになる", \t -> do
-	itext t 1 "data StateMaybe s a = StateMaybe {"
+	itext t 1 "newtype StateMaybe s a = StateMaybe {"
 	itext t 2 "runStateMaybe :: s -> Maybe (a, s) }", \t -> do
 	text t "* 基本となる以下の関数を定義した", \t -> do
 	itext t 1 "return, (>>=), put, get, modify, nothing"
+ ]
+
+examStateIO :: Page
+examStateIO = [\t -> do
+	writeTopTitle t "状態と入出力のある計算"
+	text t "", \t -> do
+	text t "* 状態と入出力の両方を持つ計算ができれば便利", \t -> do
+	text t "* StateIO型を定義してみよう", \t -> do
+	itext t 1 "newtype StateIO s a = StateIO {"
+	itext t 2 "runStateIO :: s -> IO (a, s) }"
+	itext t 1 "", \t -> do
+	itext t 1 "instance Monad (StateIO s) where"
+	itext t 2 "return x = StateIO $ \\s -> return (x, s)"
+	itext t 2 "StateIO x >>= f = StateIO $ \\s -> do"
+	itext t 3 "(v, s') <- x s"
+	itext t 3 "runStateIO (f v) s'"
  ]
 
 preludeMonadsTf :: Page
