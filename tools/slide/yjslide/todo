@@ -23,12 +23,18 @@
 * 第11回はきちんとした英語で書き直そう
 
 * 第17回の次にやること
-	- StateIO
+	- StateMaybeとStateIOを比較
+		型と(>>=)の定義
+		liftを一般化すればStateMaybeにも使えることを示す
+			lookupの例が良いかな?
 	- StateTを示す
+		liftの一般化のときに出てきたliftに加えputとgetを持つ
+		MonadStateクラスを示す。
 	- MaybeState
 	- MaybeIO
 	- MaybeTを示す
 	- liftについて
+		MonadTransによるliftの一般化
 	- class MonadTransについて
 	- class MonadStateについて
 	- ErrorMonadについて

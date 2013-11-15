@@ -13,7 +13,8 @@ pages = [
 	titlePage, prelude,
 	examErrorState, examErrorState2, examErrorState3, examErrorState4,
 	examErrorState5, examErrorState6, examErrorStateSummary,
-	examStateIO
+	examStateIO, examStateIO2, examStateIO3, examStateIO4, examStateIO5,
+	examStateIO6
  ]
 
 titlePage :: Page
@@ -41,7 +42,8 @@ examErrorState = [\t -> do
 	itext t 1 "Just x >>= f = f x"
 	itext t 1 "Nothing >>= f = Nothing", \t -> do
 	text t "* 状態を取る計算は以下のようになる", \t -> do
-	itext t 1 "newtype State s a = State { runState :: s -> (a, s) }"
+	itext t 1 "newtype State s a = State {"
+	itext t 2 "runState :: s -> (a, s) }"
 	itext t 1 "return a = State $ \\s -> (a, s)"
 	itext t 1 "(State x) >>= f = State $ \\s ->"
 	itext t 2 "let (v, s') = x s in runState (f v) s'"
@@ -53,7 +55,8 @@ examErrorState2 = [\t -> do
 	text t "", \t -> do
 	text t "* それぞれの型の定義をよく見る", \t -> do
 	itext t 1 "data Maybe a = Just a | Nothing"
-	itext t 1 "newtype State s a = State { runState :: s -> (a, s) }", \t -> do
+	itext t 1 "newtype State s a = State {"
+	itext t 2 "runState :: s -> (a, s) }", \t -> do
 	text t "* この2つを合わせた型を作ってみよう", \t -> do
 	itext t 1 "newtype StateMaybe = StateMaybe {"
 	itext t 2 "runStateMaybe :: s -> Maybe (a, s) }"
@@ -150,6 +153,74 @@ examStateIO = [\t -> do
 	itext t 2 "StateIO x >>= f = StateIO $ \\s -> do"
 	itext t 3 "(v, s') <- x s"
 	itext t 3 "runStateIO (f v) s'"
+ ]
+
+examStateIO2 :: Page
+examStateIO2 = [\t -> do
+	writeTopTitle t "状態と入出力のある計算"
+	text t "", \t -> do
+	text t "* 基本的な関数の定義", \t -> do
+	itext t 1 "put :: s -> StateIO s ()"
+	itext t 1 "put x = StateIO $ \\_ -> return ((), x)"
+	itext t 1 "", \t -> do
+	itext t 1 "get :: StateIO s s"
+	itext t 1 "get = StateIO $ \\s -> return (s, s)"
+	itext t 1 "", \t -> do
+	itext t 1 "modify :: (s -> s) -> StateIO s ()"
+	itext t 1 "modify f = get >>= put . f"
+ ]
+
+examStateIO3 :: Page
+examStateIO3 = [\t -> do
+	writeTopTitle t "状態と入出力のある計算"
+	text t "", \t -> do
+	text t "* 使用例", \t -> do
+	itext t 1 "add :: Int -> StateIO Int ()"
+	itext t 1 "add x = do"
+	itext t 2 "modify (+ x)"
+	itext t 2 "StateIO $ \\s -> do"
+	itext t 3 "putStrLn $ \"add \" ++ show x"
+	itext t 3 "return ((), s)"
+ ]
+
+examStateIO4 :: Page
+examStateIO4 = [\t -> do
+	writeTopTitle t "状態と入出力のある計算"
+	text t "", \t -> do
+	text t "* 使用例", \t -> do
+	itext t 1 "test :: StateIO Int Int"
+	itext t 1 "test = do"
+	itext t 2 "add 8"
+	itext t 2 "add 9"
+	itext t 2 "s <- get"
+	itext t 2 "add s"
+	itext t 2 "get"
+ ]
+
+examStateIO5 :: Page
+examStateIO5 = [\t -> do
+	writeTopTitle t "状態と入出力のある計算"
+	text t "", \t -> do
+	text t "* StateIO内でのIOの実行", \t -> do
+	itext t 1 "- addの例では以下のようになっている", \t -> do
+	itext t 1 "StateIO $ \\s -> do"
+	itext t 2 "putStrLn $ \"add \" ++ show x"
+	itext t 2 "return ((), s)", \t -> do
+	itext t 1 "- この構造を関数としてまとめてみる", \t -> do
+	itext t 1 "lift :: IO a -> StateIO s a"
+	itext t 1 "lift io = StateIO $ \\s -> do"
+	itext t 2 "ret <- io"
+	itext t 2 "return (ret, s)"
+ ]
+
+examStateIO6 :: Page
+examStateIO6 = [\t -> do
+	writeTopTitle t "状態と入出力のある計算"
+	text t "", \t -> do
+	text t "* liftを使ってaddを書き換える", \t -> do
+	itext t 1 "add x = do"
+	itext t 2 "modify (+ x)"
+	itext t 2 "lift $ putStrLn $ \"add \" ++ show x"
  ]
 
 preludeMonadsTf :: Page
