@@ -16,7 +16,9 @@ pages = [
 	examStateIO, examStateIO2, examStateIO3, examStateIO4, examStateIO5,
 	examStateIO6, examStateIOSummary,
 	stateMaybeStateIO,
-	stateT, stateT2, stateTSummary
+	stateT, stateT2, stateTSummary,
+	maybeState, maybeState2, maybeState3, maybeState4, maybeState5,
+	maybeStateSummary
  ]
 
 titlePage :: Page
@@ -296,6 +298,86 @@ stateTSummary = [\t -> do
 	text t "* 基本的な関数を定義した", \t -> do
 	itext t 1 "(>>=), put, get", \t -> do
 	text t "* 持ち上げ関数liftをより一般的にした"
+ ]
+
+maybeState :: Page
+maybeState = [\t -> do
+	writeTopTitle t "失敗と状態のある計算"
+	text t "", \t -> do
+	text t "* 失敗と状態のある計算をさっきは以下のようにした", \t -> do
+	itext t 1 "newtype StateMaybe s a = StateMaybe {"
+	itext t 2 "runStateMaybe :: s -> Maybe (a, s) }", \t -> do
+	text t "* 以下のようにすることも考えられる", \t -> do
+	itext t 1 "newtype MaybeState s a = MaybeState {"
+	itext t 2 "runMaybeState :: s -> (Maybe a, s) }", \t -> do
+	text t "* Maybe (a, s)ではなく(Maybe a, s)とした"
+ ]
+
+maybeState2 :: Page
+maybeState2 = [\t -> do
+	writeTopTitle t "失敗と状態のある計算2"
+	text t "", \t -> do
+	text t "* モナド関数の定義", \t -> do
+	itext t 1 "return :: a -> MaybeState s a"
+	itext t 1 "return x = MaybeState $ \\s -> (Just x, s)", \t -> do
+	itext t 1 "(>>=) :: MaybeState s a -> (a -> MaybeState s b)"
+	itext t 2 "-> MaybeState s b"
+	itext t 1 "MaybeState x >>= f = MaybeState $ \\s ->"
+	itext t 2 "case x s of"
+	itext t 3 "(Just v, s') -> runMaybeState (f v) s'"
+	itext t 3 "(Nothing, s') -> (Nothing, s')"
+ ]
+
+maybeState3 :: Page
+maybeState3 = [\t -> do
+	writeTopTitle t "失敗と状態のある計算2"
+	text t "", \t -> do
+	text t "* 状態用の関数の定義", \t -> do
+	itext t 1 "put :: s -> MaybeState s ()"
+	itext t 1 "put x = MaybeState $ \\_ -> (Just (), x)", \t -> do
+	itext t 1 "get :: MaybeState s s"
+	itext t 1 "get = MaybeState $ \\s -> (Just s, s)"
+	text t "", \t -> do
+	text t "* エラー用の関数の定義", \t -> do
+	itext t 1 "nothing :: MaybeState s a"
+	itext t 1 "nothing = MaybeState $ \\s -> (Nothing, s)"
+ ]
+
+maybeState4 :: Page
+maybeState4 = [\t -> do
+	writeTopTitle t "失敗と状態のある計算2"
+	text t "", \t -> do
+	text t "* 使用例"
+	itext t 1 "addMemory, subMemory :: Int -> MaybeState Int ()"
+	itext t 1 "addMemory n = modify (+ n)", \t -> do
+	itext t 1 "subMemory n = modify (subtract n) >> checkMemory"
+	itext t 1 "", \t -> do
+	itext t 1 "checkMemory :: MaybeState Int ()"
+	itext t 1 "checkMemory = do"
+	itext t 2 "s <- get"
+	itext t 2 "when (s < 0) nothing"
+ ]
+
+maybeState5 :: Page
+maybeState5 = [\t -> do
+	writeTopTitle t "失敗と状態のある計算2"
+	text t "", \t -> do
+	text t "* 使用例", \t -> do
+	itext t 1 "subAll :: Int -> [Int] -> MaybeState Int Int"
+	itext t 1 "subAll n ss = do"
+	itext t 2 "addMemory n"
+	itext t 2 "mapM_ subAll ss"
+	itext t 2 "get"
+ ]
+
+maybeStateSummary :: Page
+maybeStateSummary = [\t -> do
+	writeTopTitle t "失敗と状態のある計算2(まとめ)"
+	text t "", \t -> do
+	text t "* 失敗と状態のある計算の作りかたのもうひとつの例", \t -> do
+	itext t 1 "- Maybe (a, s)ではなく(Maybe a, s)とした", \t -> do
+	text t "* 前の定義とは違い、エラー後も状態が渡され続ける", \t -> do
+	itext t 1 "- 対話環境でのエラー等にはこっち"
  ]
 
 preludeMonadsTf :: Page
