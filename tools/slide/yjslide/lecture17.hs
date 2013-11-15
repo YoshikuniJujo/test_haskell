@@ -14,7 +14,9 @@ pages = [
 	examErrorState, examErrorState2, examErrorState3, examErrorState4,
 	examErrorState5, examErrorState6, examErrorStateSummary,
 	examStateIO, examStateIO2, examStateIO3, examStateIO4, examStateIO5,
-	examStateIO6
+	examStateIO6, examStateIOSummary,
+	stateMaybeStateIO,
+	stateT, stateT2, stateTSummary
  ]
 
 titlePage :: Page
@@ -221,6 +223,79 @@ examStateIO6 = [\t -> do
 	itext t 1 "add x = do"
 	itext t 2 "modify (+ x)"
 	itext t 2 "lift $ putStrLn $ \"add \" ++ show x"
+ ]
+
+examStateIOSummary :: Page
+examStateIOSummary = [\t -> do
+	writeTopTitle t "状態と入出力を持つ計算(まとめ)"
+	text t "", \t -> do
+	text t "* 状態と入出力を持つ計算を作った", \t -> do
+	text t "* 型は以下の通り", \t -> do
+	itext t 1 "newtype StateIO s a = StateIO {"
+	itext t 2 "runStateIO :: s -> IO (a, s) }", \t -> do
+	text t "* 基本的な関数を定義した", \t -> do
+	itext t 1 "put, get, modify", \t -> do
+	text t "* IOをStateIOに「持ち上げる」関数を定義した", \t -> do
+	itext t 1 "lift :: IO a -> StateIO s a"
+	itext t 1 "lift io = StateIO $ \\s -> do"
+	itext t 2 "ret <- io"
+	itext t 2 "return (ret, s)"
+ ]
+
+stateMaybeStateIO :: Page
+stateMaybeStateIO = [\t -> do
+	writeTopTitle t "StateMaybeとStateIO"
+	text t "", \t -> do
+	text t "* 型の比較", \t -> do
+	itext t 1 "newtype StateMaybe s a = StateMaybe {"
+	itext t 2 "runStateMaybe :: s -> Maybe (a, s) }", \t -> do
+	itext t 1 "newtype StateIO s a = StateIO {"
+	itext t 2 "runStateIO :: s -> IO (a, s) }", \t -> do
+	text t "* これらを以下のようにまとめることができる", \t -> do
+	itext t 1 "newtype StateT s m a = StateT {"
+	itext t 2 "runStateT :: s -> m (a, s) }", \t -> do
+	text t "* StateTは基盤となるモナドに状態を追加する"
+ ]
+
+stateT :: Page
+stateT = [\t -> do
+	writeTopTitle t "StateT", \t -> do
+	text t "* 基本的な関数の定義", \t -> do
+	itext t 1 "(>>=) :: StateT s m a -> (a -> StateT s m b) ->"
+	itext t 2 "StateT s m b", \t -> do
+	itext t 1 "StateT x >>= f = StateT $ \\s -> do"
+	itext t 2 "(v, s') <- x s"
+	itext t 2 "runStateT (f v) s'"
+	itext t 1 "", \t -> do
+	itext t 1 "put :: s -> StateT s m ()"
+	itext t 1 "put x = StateT $ \\_ -> return ((), x)"
+	itext t 1 "", \t -> do
+	itext t 1 "get :: StateT s m s"
+	itext t 1 "get = StateT $ \\s -> return (s, s)"
+ ]
+
+stateT2 :: Page
+stateT2 = [\t -> do
+	writeTopTitle t "StateT"
+	text t "", \t -> do
+	text t "* liftを定義する", \t -> do
+	itext t 1 "lift :: m a -> StateIO s m a"
+	itext t 1 "lift m = StateIO $ \\s -> do"
+	itext t 2 "ret <- m"
+	itext t 2 "return (ret, s)"
+ ]
+
+stateTSummary :: Page
+stateTSummary = [\t -> do
+	writeTopTitle t "StateT(まとめ)"
+	text t "", \t -> do
+	text t "* 他のモナドに状態を追加するモナド変換子を作った", \t -> do
+	text t "* 型は以下のようになる", \t -> do
+	itext t 1 "newtype StateT s m a = StateT {"
+	itext t 2 "runStateT :: s -> m (a, s) }", \t -> do
+	text t "* 基本的な関数を定義した", \t -> do
+	itext t 1 "(>>=), put, get", \t -> do
+	text t "* 持ち上げ関数liftをより一般的にした"
  ]
 
 preludeMonadsTf :: Page
