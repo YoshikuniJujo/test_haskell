@@ -22,18 +22,18 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第16回 型族
 (ここまで作った、以下予定)
 第17回 モナド変換子
-第18回 GADTs
+第18回 例外処理(できたらScopedTypeVariablesについて触れよう)
 第19回 プロファイリング
 第20回 正格評価(foldl'あたりから入ると良さそうだ)
 第21回 パターンマッチと正格性(遅延パターン、bang pattern等)
 第22回 array, bytestring
 第23回 Map (Hashにもちょっと触れる)
 第24回 zipper
-第25回 例外処理
-第26回 ffi
-第27回 unbox型
-第28回 cabalの使いかた(テストの自動化も含めて)
+第25回 ffi
+第26回 unbox型
+第27回 cabalの使いかた(テストの自動化も含めて)
 ---
+第28回 GADTs
 第29回 functor, applicative, monad
 第30回 free monad
 第31回 operational monad
@@ -119,6 +119,7 @@ ViewPatternsは効率に関する問題がある気がする。
 GeneralizedNewtypeDerivingも「いけてる」気がする。
 
 ScopedTypeVariablesも「いけてる」と思う。
+	-> 例外処理のあたりに入れると良いかもしれない
 
 どこかに時間の扱いも入れときたいな。
 
