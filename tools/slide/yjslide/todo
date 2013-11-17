@@ -23,7 +23,6 @@
 * 第11回はきちんとした英語で書き直そう
 
 * 第17回の次にやること
-	- MaybeIO
 	- MaybeTを示す
 	- liftについて
 		MonadTransによるliftの一般化

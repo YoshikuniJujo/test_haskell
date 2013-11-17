@@ -18,7 +18,8 @@ pages = [
 	stateMaybeStateIO,
 	stateT, stateT2, stateTSummary,
 	maybeState, maybeState2, maybeState3, maybeState4, maybeState5,
-	maybeStateSummary
+	maybeStateSummary,
+	maybeIO, maybeIO2, maybeIO3, maybeIO4, maybeIOSummary
  ]
 
 titlePage :: Page
@@ -319,7 +320,8 @@ maybeState2 = [\t -> do
 	text t "", \t -> do
 	text t "* モナド関数の定義", \t -> do
 	itext t 1 "return :: a -> MaybeState s a"
-	itext t 1 "return x = MaybeState $ \\s -> (Just x, s)", \t -> do
+	itext t 1 "return x = MaybeState $ \\s -> (Just x, s)"
+	itext t 1 "", \t -> do
 	itext t 1 "(>>=) :: MaybeState s a -> (a -> MaybeState s b)"
 	itext t 2 "-> MaybeState s b"
 	itext t 1 "MaybeState x >>= f = MaybeState $ \\s ->"
@@ -366,7 +368,7 @@ maybeState5 = [\t -> do
 	itext t 1 "subAll :: Int -> [Int] -> MaybeState Int Int"
 	itext t 1 "subAll n ss = do"
 	itext t 2 "addMemory n"
-	itext t 2 "mapM_ subAll ss"
+	itext t 2 "mapM_ subMemory ss"
 	itext t 2 "get"
  ]
 
@@ -378,6 +380,78 @@ maybeStateSummary = [\t -> do
 	itext t 1 "- Maybe (a, s)ではなく(Maybe a, s)とした", \t -> do
 	text t "* 前の定義とは違い、エラー後も状態が渡され続ける", \t -> do
 	itext t 1 "- 対話環境でのエラー等にはこっち"
+ ]
+
+maybeIO :: Page
+maybeIO = [\t -> do
+	writeTopTitle t "失敗と入出力のある計算"
+	text t "", \t -> do
+	text t "* 今度は失敗と入出力のある計算について考えてみる", \t -> do
+	text t "* 例: ファイルの読み出し前にファイルの存在をチェック", \t -> do
+	itext t 1 "- ファイルが存在すればその内容を返し", \t -> do
+	itext t 1 "- 存在しなければ、その後の計算は行わない"
+ ]
+
+maybeIO2 :: Page
+maybeIO2 = [\t -> do
+	writeTopTitle t "失敗と入出力のある計算", \t -> do
+	text t "* 型とモナド関数を定義する", \t -> do
+	itext t 1 "newtype MaybeIO a = MaybeIO {"
+	itext t 2 "runMaybeIO :: IO (Maybe a) }", \t -> do
+	itext t 1 "return :: a -> MaybeIO a"
+	itext t 1 "return x = MaybeIO $ return $ Just x", \t -> do
+	itext t 1 "(>>=) :: MaybeIO a -> (a -> MaybeIO b) ->"
+	itext t 2 "MaybeIO b"
+	itext t 1 "MaybeIO io >>= f = do"
+	itext t 2 "mx <- io"
+	itext t 2 "case mx of"
+	itext t 3 "Just x -> f x"
+	itext t 3 "_ -> return Nothing"
+ ]
+
+maybeIO3 :: Page
+maybeIO3 = [\t -> do
+	writeTopTitle t "失敗と入出力のある計算"
+	text t "", \t -> do
+	text t "* 失敗用の関数を定義", \t -> do
+	itext t 1 "nothing :: MaybeIO a"
+	itext t 1 "nothing = MaybeIO $ return Nothing", \t -> do
+	text t "* ファイルを読み込む関数", \t -> do
+	itext t 1 "- ファイルが存在しなければNothingを返す", \t -> do
+	itext t 1 "- 厳密には例外を補足する必要がある", \t -> do
+	itext t 1 "maybeReadFile :: FilePath -> MaybeIO String"
+	itext t 1 "maybeReadFile fp = do"
+	itext t 2 "ex <- doesFileExist fp"
+	itext t 2 "if ex"
+	preLine t
+	itext t 3 "then readFile fp"
+	itext t 3 "else nothing"
+ ]
+
+maybeIO4 :: Page
+maybeIO4 = [\t -> do
+	writeTopTitle t "失敗と入出力のある計算"
+	text t "", \t -> do
+	text t "* 使用例", \t -> do
+	itext t 1 "test :: MaybeIO ()"
+	itext t 1 "test = do"
+	itext t 2 "fp <- getLine"
+	itext t 2 "cnt <- maybeReadFile fp"
+	itext t 2 "putStr cnt"
+	text t "", \t -> do
+	text t "* 入力した名前のファイルを読み込む", \t -> do
+	text t "* ファイルが存在しなければその後の計算は行われない"
+ ]
+
+maybeIOSummary :: Page
+maybeIOSummary = [\t -> do
+	writeTopTitle t "失敗と入出力のある計算"
+	text t "", \t -> do
+	text t "* 失敗と入出力のある計算のモナドを定義した", \t -> do
+	text t "* 予想可能な例外が存在するIOを扱う場合", \t -> do
+	itext t 1 "- 例外を補足しこの種のモナドにしたほうがクリーン", \t -> do
+	itext t 1 "- 例外を本当に例外的な場面だけに", \t -> do
+	text t "* 例外処理に関しては後の講義で行う"
  ]
 
 preludeMonadsTf :: Page
