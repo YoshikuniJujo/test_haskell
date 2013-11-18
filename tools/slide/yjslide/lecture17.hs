@@ -19,7 +19,7 @@ pages = [
 	stateT, stateT2, stateTSummary,
 	maybeState, maybeState2, maybeState3, maybeState4, maybeState5,
 	maybeStateSummary,
-	maybeIO, maybeIO2, maybeIO3, maybeIO4, maybeIOSummary
+	maybeIO, maybeIO2, maybeIO3, maybeIO4, maybeIO5, maybeIOSummary
  ]
 
 titlePage :: Page
@@ -402,10 +402,10 @@ maybeIO2 = [\t -> do
 	itext t 1 "return x = MaybeIO $ return $ Just x", \t -> do
 	itext t 1 "(>>=) :: MaybeIO a -> (a -> MaybeIO b) ->"
 	itext t 2 "MaybeIO b"
-	itext t 1 "MaybeIO io >>= f = do"
+	itext t 1 "MaybeIO io >>= f = MaybeIO $ do"
 	itext t 2 "mx <- io"
 	itext t 2 "case mx of"
-	itext t 3 "Just x -> f x"
+	itext t 3 "Just x -> runMaybeIO $ f x"
 	itext t 3 "_ -> return Nothing"
  ]
 
@@ -416,28 +416,37 @@ maybeIO3 = [\t -> do
 	text t "* 失敗用の関数を定義", \t -> do
 	itext t 1 "nothing :: MaybeIO a"
 	itext t 1 "nothing = MaybeIO $ return Nothing", \t -> do
-	text t "* ファイルを読み込む関数", \t -> do
-	itext t 1 "- ファイルが存在しなければNothingを返す", \t -> do
-	itext t 1 "- 厳密には例外を補足する必要がある", \t -> do
-	itext t 1 "maybeReadFile :: FilePath -> MaybeIO String"
-	itext t 1 "maybeReadFile fp = do"
-	itext t 2 "ex <- doesFileExist fp"
-	itext t 2 "if ex"
-	preLine t
-	itext t 3 "then readFile fp"
-	itext t 3 "else nothing"
+	text t "* IOをMaybeIOに持ち上げる関数", \t -> do
+	itext t 1 "lift :: IO a -> MaybeIO a"
+	itext t 1 "lift io = MaybeIO $ io >>= return . Just"
  ]
 
 maybeIO4 :: Page
 maybeIO4 = [\t -> do
 	writeTopTitle t "失敗と入出力のある計算"
 	text t "", \t -> do
+	text t "* ファイルを読み込む関数", \t -> do
+	itext t 1 "- ファイルが存在しなければNothingを返す", \t -> do
+	itext t 1 "- 厳密には例外を補足する必要がある", \t -> do
+	itext t 1 "maybeReadFile :: FilePath -> MaybeIO String"
+	itext t 1 "maybeReadFile fp = do"
+	itext t 2 "ex <- lift $ doesFileExist fp"
+	itext t 2 "if ex"
+	preLine t
+	itext t 3 "then lift $ readFile fp"
+	itext t 3 "else nothing"
+ ]
+
+maybeIO5 :: Page
+maybeIO5 = [\t -> do
+	writeTopTitle t "失敗と入出力のある計算"
+	text t "", \t -> do
 	text t "* 使用例", \t -> do
 	itext t 1 "test :: MaybeIO ()"
 	itext t 1 "test = do"
-	itext t 2 "fp <- getLine"
+	itext t 2 "fp <- lift getLine"
 	itext t 2 "cnt <- maybeReadFile fp"
-	itext t 2 "putStr cnt"
+	itext t 2 "lift $ putStr cnt"
 	text t "", \t -> do
 	text t "* 入力した名前のファイルを読み込む", \t -> do
 	text t "* ファイルが存在しなければその後の計算は行われない"
