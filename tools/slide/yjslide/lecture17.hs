@@ -19,7 +19,8 @@ pages = [
 	stateT, stateT2, stateTSummary,
 	maybeState, maybeState2, maybeState3, maybeState4, maybeState5,
 	maybeStateSummary,
-	maybeIO, maybeIO2, maybeIO3, maybeIO4, maybeIO5, maybeIOSummary
+	maybeIO, maybeIO2, maybeIO3, maybeIO4, maybeIO5, maybeIOSummary,
+	maybeStateMaybeIO, maybeStateMaybeIO2
  ]
 
 titlePage :: Page
@@ -303,7 +304,7 @@ stateTSummary = [\t -> do
 
 maybeState :: Page
 maybeState = [\t -> do
-	writeTopTitle t "失敗と状態のある計算"
+	writeTopTitle t "失敗と状態のある計算2"
 	text t "", \t -> do
 	text t "* 失敗と状態のある計算をさっきは以下のようにした", \t -> do
 	itext t 1 "newtype StateMaybe s a = StateMaybe {"
@@ -454,13 +455,43 @@ maybeIO5 = [\t -> do
 
 maybeIOSummary :: Page
 maybeIOSummary = [\t -> do
-	writeTopTitle t "失敗と入出力のある計算"
+	writeTopTitle t "失敗と入出力のある計算(まとめ)"
 	text t "", \t -> do
 	text t "* 失敗と入出力のある計算のモナドを定義した", \t -> do
 	text t "* 予想可能な例外が存在するIOを扱う場合", \t -> do
 	itext t 1 "- 例外を補足しこの種のモナドにしたほうがクリーン", \t -> do
 	itext t 1 "- 例外を本当に例外的な場面だけに", \t -> do
 	text t "* 例外処理に関しては後の講義で行う"
+ ]
+
+maybeStateMaybeIO :: Page
+maybeStateMaybeIO = [\t -> do
+	writeTopTitle t "MaybeStateとMaybeIO"
+	text t "", \t -> do
+	text t "* 型の比較", \t -> do
+	itext t 1 "newtype MaybeState s a = MaybeState {"
+	itext t 2 "runMaybeState :: s -> (Maybe a, s) }", \t -> do
+	itext t 1 "newType MaybeIO a = MaybeIO {"
+	itext t 2 "runMaybeIO :: IO (Maybe a) }", \t -> do
+	text t "* s -> (Maybe a, s)の部分は実質的には以下と同じ", \t -> do
+	itext t 1 "State s (Maybe a)", \t -> do
+	text t "* よって以下のようになる", \t -> do
+	itext t 1 "newtype MaybeState s a = MaybeState {"
+	itext t 2 "runMaybeState :: State s (Maybe a) }"
+ ]
+
+maybeStateMaybeIO2 :: Page
+maybeStateMaybeIO2 = [\t -> do
+	writeTopTitle t "MaybeStateとMaybeIO"
+	text t "", \t -> do
+	text t "* 型の比較", \t -> do
+	itext t 1 "newtype MaybeState s a = MaybeState {"
+	itext t 2 "runMaybeState :: State s (Maybe a) }", \t -> do
+	itext t 1 "newtype MaybeIO = MaybeIO {"
+	itext t 2 "runMaybeIO :: IO (Maybe a) }", \t -> do
+	text t "* これらは以下のようにまとめられる", \t -> do
+	itext t 1 "newtype MaybeT m a = MaybeT {"
+	itext t 2 "runMaybeT :: m (Maybe a) }"
  ]
 
 preludeMonadsTf :: Page
