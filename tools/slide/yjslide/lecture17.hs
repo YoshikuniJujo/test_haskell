@@ -20,7 +20,8 @@ pages = [
 	maybeState, maybeState2, maybeState3, maybeState4, maybeState5,
 	maybeStateSummary,
 	maybeIO, maybeIO2, maybeIO3, maybeIO4, maybeIO5, maybeIOSummary,
-	maybeStateMaybeIO, maybeStateMaybeIO2, maybeT, maybeT2, maybeTSummary
+	maybeStateMaybeIO, maybeStateMaybeIO2, maybeT, maybeT2, maybeTSummary,
+	lift
  ]
 
 titlePage :: Page
@@ -528,6 +529,19 @@ maybeTSummary = [\t -> do
 	text t "* 失敗する可能性を追加するMaybeTを定義した", \t -> do
 	text t "* nothingに到った時点で残りの計算は行われない", \t -> do
 	text t "* 基盤となるモナドはliftで失敗する可能性のあるモナドへ"
+ ]
+
+lift :: Page
+lift = [\t -> do
+	writeTopTitle t "lift"
+	text t "", \t -> do
+	text t "* StateTとMaybeTの両方でliftを定義した", \t -> do
+	text t "* それぞれのliftの型は以下の通り", \t -> do
+	itext t 1 "Monad m => m a -> StateT m a", \t -> do
+	itext t 1 "Monad m => m a -> MaybeT m a", \t -> do
+	text t "* これらをクラス関数にまとめられる", \t -> do
+	itext t 1 "class MonadTrans t where"
+	itext t 2 "lift :: Monad m => m a -> t m a"
  ]
 
 preludeMonadsTf :: Page
