@@ -21,8 +21,3 @@
 * どこかでgetArgsの使いかたを説明する必要があるな
 
 * 第11回はきちんとした英語で書き直そう
-
-* 第17回の次にやること
-	- class MonadTransについて
-	- class MonadStateについて
-	- ErrorMonadについて

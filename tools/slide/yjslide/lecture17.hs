@@ -21,7 +21,8 @@ pages = [
 	maybeStateSummary,
 	maybeIO, maybeIO2, maybeIO3, maybeIO4, maybeIO5, maybeIOSummary,
 	maybeStateMaybeIO, maybeStateMaybeIO2, maybeT, maybeT2, maybeTSummary,
-	lift
+	lift, liftSummary, orgFunPrelude, orgFun, orgFun2, orgFunSummary,
+	summary
  ]
 
 titlePage :: Page
@@ -542,6 +543,75 @@ lift = [\t -> do
 	text t "* これらをクラス関数にまとめられる", \t -> do
 	itext t 1 "class MonadTrans t where"
 	itext t 2 "lift :: Monad m => m a -> t m a"
+ ]
+
+liftSummary :: Page
+liftSummary = [\t -> do
+	writeTopTitle t "ここまでのまとめ"
+	text t "", \t -> do
+	text t "* モナドを積み重ねていく仕組みについて見てきた", \t -> do
+	text t "* lift関数を持つStateTやMaybeTについて見た", \t -> do
+	text t "* lift関数は基盤となるモナドを持ち上げる", \t -> do
+	text t "* lift関数をMonadTransクラスのメソッドとした"
+ ]
+
+orgFunPrelude :: Page
+orgFunPrelude = [\t -> do
+	writeTopTitle t "特有の関数"
+	text t "", \t -> do
+	text t "* StateTやMaybeTにはモナド関数以外に特有の関数がある", \t -> do
+	itext t 1 "- StateTであればputやget", \t -> do
+	itext t 1 "- MaybeTであればnothing", \t -> do
+	text t "* それらをクラス関数とすると便利", \t -> do
+	itext t 1 "- StateTを使わないで同じ性質のモナドを作れる", \t -> do
+	itext t 1 "- 他の変換子を積み上げたモナドもput, getが使える"
+ ]
+
+orgFun :: Page
+orgFun = [\t -> do
+	writeTopTitle t "特有の関数"
+	text t "", \t -> do
+	text t "* put, getを提供するクラスを定義する", \t -> do
+	itext t 1 "class Monad m => MonadState m where"
+	itext t 2 "type StateType m"
+	itext t 2 "get :: m (StateType m)"
+	itext t 2 "put :: StateType m -> m ()"
+ ]
+
+orgFun2 :: Page
+orgFun2 = [\t -> do
+	writeTopTitle t "特有の関数"
+	text t "", \t -> do
+	text t "* MonadStateクラスのモナドをMaybeTで持ち上げるとする", \t -> do
+	text t "* 事前に以下のインスタンス宣言をしておく", \t -> do
+	itext t 1 "instance MonadState m =>"
+	itext t 1.5 "MonadState (MaybeT m) where"
+	itext t 2 "type StateType (MaybeT m) = StateType m"
+	itext t 2 "get = lift get"
+	itext t 2 "put = lift . put", \t -> do
+	text t "* すると持ち上げ後のモナドでもgetとputが自然に使える"
+ ]
+
+orgFunSummary :: Page
+orgFunSummary = [\t -> do
+	writeTopTitle t "特有の関数(まとめ)"
+	text t "", \t -> do
+	text t "* モナド変換子に特有な関数をクラス関数とすると便利", \t -> do
+	itext t 1 "- 多段モナドで下のモナドの関数を自然に使える", \t -> do
+	itext t 1 "- 同様のふるまいをする違う実装のモナドが作れる"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* いろいろな性質を持つモナドを組み合わせる", \t -> do
+	text t "* 下のモナドを上のモナドに持ち上げるliftを書く", \t -> do
+	text t "* liftはMonadTransクラスのメソッドとした", \t -> do
+	text t "* モナド変換子ごとにそれぞれのクラスを作成", \t -> do
+	itext t 1 "- 特有の関数はそこにまとめておけば良い", \t -> do
+	text t "* StateTとMaybeT以外にも多くのモナド変換子が考えられる", \t -> do
+	text t "* monads-tfパッケージにまとまっている"
  ]
 
 preludeMonadsTf :: Page
