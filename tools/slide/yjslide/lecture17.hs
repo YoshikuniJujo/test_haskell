@@ -20,7 +20,7 @@ pages = [
 	maybeState, maybeState2, maybeState3, maybeState4, maybeState5,
 	maybeStateSummary,
 	maybeIO, maybeIO2, maybeIO3, maybeIO4, maybeIO5, maybeIOSummary,
-	maybeStateMaybeIO, maybeStateMaybeIO2
+	maybeStateMaybeIO, maybeStateMaybeIO2, maybeT, maybeT2, maybeTSummary
  ]
 
 titlePage :: Page
@@ -492,6 +492,42 @@ maybeStateMaybeIO2 = [\t -> do
 	text t "* これらは以下のようにまとめられる", \t -> do
 	itext t 1 "newtype MaybeT m a = MaybeT {"
 	itext t 2 "runMaybeT :: m (Maybe a) }"
+ ]
+
+maybeT :: Page
+maybeT = [\t -> do
+	writeTopTitle t "MaybeT"
+	text t "", \t -> do
+	text t "* モナド関数", \t -> do
+	itext t 1 "return x = MaybeT $ return $ Just x", \t -> do
+	itext t 1 "MaybeT m >>= f = MaybeT $ do"
+	itext t 2 "v <- m"
+	itext t 2 "case v of"
+	itext t 3 "Just x -> runMaybeT $ f x"
+	itext t 3 "_ -> return Nothing", \t -> do
+	text t "* エラー用の関数", \t -> do
+	itext t 1 "nothing :: Monad m => m a -> MaybeT m a"
+	itext t 1 "nothing = MaybeT $ return Nothing"
+ ]
+
+maybeT2 :: Page
+maybeT2 = [\t -> do
+	writeTopTitle t "MaybeT"
+	text t "", \t -> do
+	text t "* 持ち上げ関数"
+	itext t 1 "lift :: Monad m => m a -> MaybeT m a"
+	itext t 1 "lift m = MaybeT $ do"
+	itext t 2 "v <- m"
+	itext t 2 "return $ Just v"
+ ]
+
+maybeTSummary :: Page
+maybeTSummary = [\t -> do
+	writeTopTitle t "MaybeT(まとめ)"
+	text t "", \t -> do
+	text t "* 失敗する可能性を追加するMaybeTを定義した", \t -> do
+	text t "* nothingに到った時点で残りの計算は行われない", \t -> do
+	text t "* 基盤となるモナドはliftで失敗する可能性のあるモナドへ"
  ]
 
 preludeMonadsTf :: Page
