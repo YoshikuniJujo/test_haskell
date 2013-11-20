@@ -22,46 +22,47 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第16回 型族
 第17回 モナド変換子
 (ここまで作った、以下予定)
-第18回 例外処理(できたらScopedTypeVariablesについて触れよう)
-第19回 プロファイリング
-第20回 正格評価(foldl'あたりから入ると良さそうだ)
-第21回 パターンマッチと正格性(遅延パターン、bang pattern等)
-第22回 array, bytestring
-第23回 Map (Hashにもちょっと触れる)
-第24回 zipper
-第25回 ffi
+第18回 存在型とcast
+第19回 例外処理(できたらScopedTypeVariablesについて触れよう)
+第20回 プロファイリング
+第21回 正格評価(foldl'あたりから入ると良さそうだ、bottomについても)
+第22回 パターンマッチと正格性(遅延パターン、bang pattern等)
+第23回 zipper
+第24回 array, bytestring
+第25回 Map (Hashにもちょっと触れる)
 第26回 unbox型
-第27回 cabalの使いかた(テストの自動化も含めて)
+第27回 ffi
+第28回 cabalの使いかた(テストの自動化も含めて)
 ---
-第28回 GADTs
-第29回 functor, applicative, monad
-第30回 free monad
-第31回 operational monad
-第32回 並行実行
-第33回 forall(ランクN多相)
-第34回 ST monad
-第35回 ref, mvar, chan, tvar
-第36回 stm
-第37回 正格評価、非正格評価、グラフ簡約
-第38回 正規形、頭部正規形、弱頭部正規形
-第39回 deepseq
-第40回 並列実行
-第41回 template haskell
-第42回 QuasiQuotes
-第43回 parser (papillon の紹介)
-第44回 unsafePerformIO, unsafeInterleaveIO
-第45回 遅延IOと例外処理
-第46回 iteratee
-第47回 可変長引数 (Text.Printf等)
-第48回 継続モナド
-第49回 Arrow
-第50回 Foldable
-第51回 Traversable
-第52回 Sequence (finger tree, queue)
+第29回 GADTs
+第30回 functor, applicative, monad
+第31回 free monad
+第32回 operational monad
+第33回 並行実行
+第34回 forall(ランクN多相)
+第35回 ST monad
+第36回 ref, mvar, chan, tvar
+第37回 stm
+第38回 正格評価、非正格評価、グラフ簡約
+第39回 正規形、頭部正規形、弱頭部正規形
+第40回 deepseq
+第41回 並列実行
+第42回 template haskell
+第43回 QuasiQuotes
+第44回 parser (papillon の紹介)
+第45回 unsafePerformIO, unsafeInterleaveIO
+第46回 遅延IOと例外処理
+第47回 iteratee
+第48回 可変長引数 (Text.Printf等)
+第49回 継続モナド
+第50回 Arrow
+第51回 Foldable
+第52回 Traversable
+第53回 Sequence (finger tree, queue)
 ---
-第53回 モナド内包表記 monad comprehension
-第54回 LANGUAGEプラグマ
-第55回 その他のプラグマ
+第54回 モナド内包表記 monad comprehension
+第55回 LANGUAGEプラグマ
+第56回 その他のプラグマ
 	(OPTIONS_GHC, WARNING, DEPRECATED, INLINE, RULES,
 		SPECIALIZE, UNPACK, SOURCE)
 	-> 場合によってはいくつかに分けよう
