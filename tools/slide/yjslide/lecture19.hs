@@ -1,18 +1,16 @@
 import Lecture
 
 subtitle :: String
-subtitle = "第19回 存在型"
+subtitle = "第19回 Showクラス"
 
 main :: IO ()
 main = runLecture pages
 
 pages :: [Page]
 pages = [
-	titlePage, prelude,
-	showBox, showBox2, showBoxClass,
-	typeable, cast, cast2, cast3, cast4,
-	fromEx,
-	summary
+	titlePage, prelude, prelude2, prelude3,
+	showClass, showClass2,
+	animal, animal2, animal3, animal4, animal5
  ]
 
 titlePage :: Page
@@ -22,164 +20,146 @@ prelude :: Page
 prelude = [\t -> do
 	writeTopTitle t "はじめに"
 	text t "", \t -> do
-	text t "* 存在型(existential types)について学ぼう", \t -> do
-	text t "* Haskell 2010にはないGHCの拡張機能", \t -> do
-	text t "* {-# LANGUAGE ExistentialQuantification #-}が必要", \t -> do
-	text t "* 例えば以下のような定義が可能になる", \t -> do
-	itext t 1 "data Any = forall t . Any t", \t -> do
-	text t "* つまりdata宣言の左辺にない型変数が右辺で使える", \t -> do
-	text t "* 型構築子の型を見てみる", \t -> do
-	itext t 1 "Any :: t -> Anything", \t -> do
-	text t "* つまりあらゆる型からAnything型が作れる"
+	text t "* Showクラスについて見ていく", \t -> do
+	itext t 1 "- 値を表示するためのクラス", \t -> do
+	text t "* 新しい概念は出てこない", \t -> do
+	itext t 1 "- 今までの概念の組み合わせかたを学ぶ", \t -> do
+	text t "* 基本は簡単", \t -> do
+	itext t 1 "- Stringへの変換を定義すればいいだけ", \t -> do
+	text t "* 見やすく表示するためにやや複雑になっている", \t -> do
+	itext t 1 "- 一番外側の括弧は表示したくない", \t -> do
+	itext t 1 "- 文字列は文字列らしく表示したい"
  ]
 
-showBox :: Page
-showBox = [\t -> do
-	writeTopTitle t "ShowBox"
+prelude2 :: Page
+prelude2 = [\t -> do
+	writeTopTitle t "今回の目的"
 	text t "", \t -> do
-	text t "* Any型にはほとんど実用性がない", \t -> do
-	text t "* あらゆる型をまとめることができるが", \t -> do
-	itext t 1 "- それらの型に共通して使える関数があまりない", \t -> do
-	text t "* ある程度実用的な例を考えてみる", \t -> do
-	itext t 1 "data ShowBox = forall s . Show s => SB s", \t -> do
-	text t "* 共通に使える関数としてshowを使うことができる", \t -> do
-	text t "* リストを作ってみる", \t -> do
-	itext t 1 "heteroList :: [ShowBox]"
-	itext t 1 "heteroList = [SB (), SB 5, SB True]"
+	text t "* 自分で作った型を表示する", \t -> do
+	itext t 1 "- 普通はderiving Showで足りる", \t -> do
+	itext t 1 "- 次回に学ぶ存在型ではderivingが利かない", \t -> do
+	itext t 1 "- 存在型をきれいに表示したい", \t -> do
+	text t "* Haskellでのプログラムの手法を学ぶ"
  ]
 
-showBox2 :: Page
-showBox2 = [\t -> do
-	writeTopTitle t "ShowBox"
+prelude3 :: Page
+prelude3 = [\t -> do
+	writeTopTitle t "注意点"
 	text t "", \t -> do
-	text t "* ShowBoxを扱う関数を作る", \t -> do
-	itext t 1 "showSB :: ShowBox -> String"
-	itext t 1 "showSB (SB s) = show s", \t -> do
-	text t "* この関数は実のところ重要な性質を表現している", \t -> do
-	itext t 1 "- SBはShowクラスに属する型sからShowBoxを作る", \t -> do
-	arrowIText t 2 "(SB s)というパターンマッチはその逆である", \t -> do
-	arrowIText t 2 "ShowBoxからShowクラスに属する任意の型を", \t -> do
-	itext t 1 "- showはShowクラスに属する型sからStringを作る", \t -> do
-	text t "* (SB s)でパターンマッチした値の型は発散している", \t -> do
-	itext t 1 "- showによって特定の型に収束させる必要がある"
+	text t "* 普通は型の定義のあとにderiving Showをつければ足りる", \t -> do
+	text t "* 特にReadクラスのインスタンスにもする場合", \t -> do
+	itext t 1 "- deriving (Show, Read)とするのが良い", \t -> do
+	itext t 1 "- readとshowは互いに逆関数となるのが望ましい", \t -> do
+	itext t 1 "- showを手書きしたら、それに合わせてreadも手書き", \t -> do
+	itext t 1 "- 例外はあるがとくに理由がなければこれを守るべき", \t -> do
+	text t "* 今回の内容はすべてderiving Showだけですむ", \t -> do
+	itext t 1 "- deriving Showが何をしているのか見ていく", \t -> do
+	text t "* deriving Showが使えなくても同じことができるように"
  ]
 
-showBoxClass :: Page
-showBoxClass = [\t -> do
-	writeTopTitle t "ShowBox"
+showClass :: Page
+showClass = [\t -> do
+	writeTopTitle t "Showクラスの定義"
 	text t "", \t -> do
-	text t "* SBは複数の型をひとつの型に収束させる", \t -> do
-	text t "* (SB s)はひとつの型を複数の型に発散させる", \t -> do
-	text t "* showはそれら複数の型を再度単一の型に収束させる"
+	text t "type ShowS = String -> String"
 	text t "", \t -> do
-	text t "* SBは型sからShowBoxを作る関数", \t -> do
-	text t "* ShowBoxから型sを取り出すことは不可能", \t -> do
-	itext t 1 "fromSB :: Show s => ShowBox -> s"
-	itext t 1 "fromSB (SB x) = x", \t -> do
-	itext t 1 "- sは任意の型でなければならない", \t -> do
-	itext t 1 "- xの型はもとの(SB x)によって決まってしまう", \t -> do
-	itext t 1 "- よって上の関数には型の不整合がある"
+	text t "class Show a where"
+	itext t 1 "showsPrec :: Int -> a -> ShowS"
+	itext t 1 "show :: a -> String"
+	itext t 1 "showList :: [a] -> ShowS"
+	itext t 1 "", \t -> do
+	itext t 1 "showsPrec _ x s = show x ++ s"
+	itext t 1 "show x = showsPrec 0 x \"\""
+	itext t 1 "showList ls s = ..."
  ]
 
-typeable :: Page
-typeable = [\t -> do
-	writeTopTitle t "Typeable"
+showClass2 :: Page
+showClass2 = [\t -> do
+	writeTopTitle t "クラス関数の説明"
 	text t "", \t -> do
-	text t "* Typeableクラス", \t -> do
-	itext t 1 "class Typeable a where"
-	itext t 2 "typeOf :: a -> TypeRep", \t -> do
-	text t "* typeOfを使えば値の型を得ることができる", \t -> do
-	text t "* 通常であればこの関数には実用性はない", \t -> do
-	itext t 1 "- 通常の値であれば型は実行前に決定する", \t -> do
-	text t "* 存在型に使うことで威力を発揮する", \t -> do
-	itext t 1 "- (SB x)で得られるxの型は不定", \t -> do
-	itext t 1 "- typeOf関数を使うことでTypeRep型に収束する"
+	text t "* showsPrecとshowのどちらかひとつを定義", \t -> do
+	itext t 1 "- もう一方とshowListは自動的に定義される", \t -> do
+	text t "* showは単純な定義", \t -> do
+	itext t 1 "- 単にその型を文字列に変換すれば良い", \t -> do
+	text t "* showsPrecは括弧の制御をしたい場合に使う", \t -> do
+	itext t 1 "- Some 8はJustをつけるとJust (Some 8)となる", \t -> do
+	text t "* showListにはその型のリストの表示方法を定義する", \t -> do
+	itext t 1 "- 普通の型はデフォルトの定義で良い", \t -> do
+	itext t 1 "- デフォルトでは[1, 2, 3 ...]のような表示となる", \t -> do
+	itext t 1 "- 文字のリストの場合は\"hello\"のように表示したい"
  ]
 
-cast :: Page
-cast = [\t -> do
-	writeTopTitle t "unsafeCoerce"
+animal :: Page
+animal = [\t -> do
+	writeTopTitle t "簡単な例"
 	text t "", \t -> do
-	text t "* unsafeCoerceという関数がある", \t -> do
-	itext t 1 "- unsafeCoerce :: a -> b", \t -> do
-	text t "* unsafe...という名前の関数は「危険」", \t -> do
-	itext t 1 "- Haskellで保証されている何らかの性質の破壊", \t -> do
-	text t "* unsafeCoerceはC言語の型キャストと同じ", \t -> do
-	itext t 1 "- 内部表現はそのままで型だけ変換する"
-	text t "", \t -> do
-	arrowIText t 0 "型と内部表現のあいだで不整合が生じ得る"
+	text t "* 例えば犬と猫を含む動物型を考える", \t -> do
+	itext t 1 "data Animal = Dog String | Cat String", \t -> do
+	itext t 1 "instance Show Animal where"
+	itext t 2 "show (Dog n) = \"Dog \" ++ show n"
+	itext t 2 "show (Cat n) = \"Cat \" ++ show n", \t -> do
+	arrowIText t 1 "簡単", \t -> do
+	text t "しかし、", \t -> do
+	itext t 1 "> print $ Just (Dog \"pochi\")"
+	itext t 1 "Just Dog \"pochi\""
  ]
 
-cast2 :: Page
-cast2 = [\t -> do
-	writeTopTitle t "cast"
+animal2 :: Page
+animal2 = [\t -> do
+	writeTopTitle t "括弧をつける"
 	text t "", \t -> do
-	text t "* unsafeCoerceをそのまま使うのは危険", \t -> do
-	itext t 1 "- Haskellの持つ良い性質を捨てることになる", \t -> do
-	text t "* 今やりたいことは?", \t -> do
-	text t "* (SB x)で得られるxをもとの型にもどしたい", \t -> do
-	itext t 1 "- 期待される型がxのもとの型と同じならJust xを", \t -> do
-	itext t 1 "- そうでないならNothingを返せば良い", \t -> do
-	text t "* xの型をチェック", \t -> do
-	arrowIText t 1 "その型が期待されている型であればxを返し", \t -> do
-	arrowIText t 1 "そうでなければNothingを返せば良い"
+	text t "* 括弧を適切につけるには", \t -> do
+	itext t 1 "- 型構築子の優先順位を考慮する必要がある", \t -> do
+	itext t 1 "- 例えば以下のような例で", \t -> do
+	itext t 2 "infixl 6 :+:"
+	itext t 2 "infixl 7 :*:", \t -> do
+	itext t 1 "- (3 :+: 4) :*: (2 :+: (5 :*: 3))の表示は", \t -> do
+	itext t 2 "(3 :+: 4) :*: (2 :+: 5 :*: 3)", \t -> do
+	text t "* つまり、より優先度の高い構築子が内側にある場合", \t -> do
+	itext t 1 "- 括弧は省略できる"
  ]
 
-cast3 :: Page
-cast3 = [\t -> do
-	writeTopTitle t "cast"
+animal3 :: Page
+animal3 = [\t -> do
+	writeTopTitle t "関数適用の優先度"
 	text t "", \t -> do
-	text t "* まずは言葉通りに実装してみる", \t -> do
-	itext t 1 "cast :: (Typeable a, Typeable b) => a -> Maybe b"
-	itext t 1 "cast x = r"
-	itext t 2 "where"
-	itext t 2 "r = if typeOf x == typeOf (fromJust r)"
-	itext t 3 "then Just x"
-	itext t 3 "else Nothing", \t -> do
-	text t "* これは型チェックを通らない", \t -> do
-	itext t 1 "- aとbの型が異なる場合、then Just xが問題になる", \t -> do
-	itext t 1 "- 上の場合実際にはthen部は実行されないが", \t -> do
-	itext t 1 "- then部がMaybe b型でないと型の不整合が起こる"
+	text t "* 関数適用の優先度は演算子の優先度より高い", \t -> do
+	text t "* 演算子の優先度は0から9なので", \t -> do
+	itext t 1 "- 関数適用の優先度は10とする", \t -> do
+	text t "* 型構築子に関しても同じこと", \t -> do
+	text t "* しばらくは普通の型構築子のみを考える", \t -> do
+	text t "* つまり優先度10の場合のみを考えていく", \t -> do
+	text t "* この場合以下のようになる", \t -> do
+	itext t 1 "- 外側の優先度が10であるときは括弧の表示が必要", \t -> do
+	itext t 1 "- 内側のshowに自分の優先度が10であることを伝える", \t -> do
+	itext t 1 "- ただし一番外側にいる場合を0としたいので", \t -> do
+	itext t 2 "渡していく数は(+ 1)された値となる"
  ]
 
-cast4 :: Page
-cast4 = [\t -> do
-	writeTopTitle t "cast"
+animal4 :: Page
+animal4 = [\t -> do
+	writeTopTitle t "今いる場所の優先度"
 	text t "", \t -> do
-	text t "* then部は型a /= 型bのときもMaybe b型である必要がある", \t -> do
-	text t "* 正しい定義はこうなる", \t -> do
-	itext t 1 "cast :: (Typeable a, Typeable b) => a -> Maybe b"
-	itext t 1 "cast x = r"
-	itext t 2 "where"
-	itext t 2 "r = if typeOf x == typeOf (fromJust r)"
-	itext t 3 "then Just $ unsafeCoerce x"
-	itext t 3 "else Nothing", \t -> do
-	text t "* 実際には実行されることのない型変換が必要になる"
+	text t "* showsPrecの型を見てみよう", \t -> do
+	itext t 1 "Int -> a -> ShowS", \t -> do
+	itext t 1 "- ここでのIntが今いる場所の結合強度となる", \t -> do
+	text t "* よってその値を取ってそれが10より大ならば括弧が必要", \t -> do
+	itext t 1 "showsPrec d x = if (d > 10)"
+	itext t 2 "then 括弧必要"
+	itext t 2 "else 括弧不要", \t -> do
+	text t "* またshowsPrecのなかでさらにshowする場合", \t -> do
+	itext t 1 "showsPrec 11 inner"
  ]
 
-fromEx :: Page
-fromEx = [\t -> do
-	writeTopTitle t "存在型からの値の取り出し"
+animal5 :: Page
+animal5 = [\t -> do
+	writeTopTitle t "ShowSについて"
 	text t "", \t -> do
-	text t "* 今定義したcast関数を使う", \t -> do
-	text t "* Typeableクラスのインスタンスである必要がある", \t -> do
-	itext t 1 "data Any = forall t . Typeable t => Any t", \t -> do
-	text t "* 取り出し関数", \t -> do
-	itext t 1 "fromAny :: Typeable t => Any -> Maybe t", \t -> do
-	itext t 1 "fromAny (Any t) = cast t", \t -> do
-	text t "* 例えばStringとして取り出す場合", \t -> do
-	itext t 1 "- まず(Any t)で取り出したtは複数の型である", \t -> do
-	itext t 1 "- その複数の型をcastでStringに収束させる", \t -> do
-	itext t 2 "cast :: Typeable a => a -> Maybe String"
- ]
-
-summary :: Page
-summary = [\t -> do
-	writeTopTitle t "まとめ"
-	text t "", \t -> do
-	text t "* あらゆる型からひとつの型にまとめる方法を見た", \t -> do
-	text t "* その型からもとの値を取り出す方法を見た", \t -> do
-	text t "* もとの値と異なる型で取り出そうとすればNothingとなる", \t -> do
-	text t "* この機構は次回の「例外処理」で使われている", \t -> do
-	text t "* 新たに定義された例外を自動的に一般的な例外に変換"
+	text t "* ここでShowSについて見てみよう", \t -> do
+	itext t 1 "type ShowS = String -> String", \t -> do
+	text t "* リスト構造の特徴として(++)は右結合でつなげたい", \t -> do
+	itext t 1 "- このへんの議論は差分リストとしてどこかでやる", \t -> do
+	itext t 1 "- ((as ++ bs) ++ cs) ++ dsを以下のように変換する", \t -> do
+	itext t 2 "as ++ (bs ++ (cs ++ ds))", \t -> do
+	itext t 1 "- そのための仕組みがShowSである"
  ]
