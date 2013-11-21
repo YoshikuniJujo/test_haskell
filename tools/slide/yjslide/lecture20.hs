@@ -12,7 +12,8 @@ pages = [
 	showBox, showBox2, showBoxClass,
 	typeable, cast, cast2, cast3, cast4,
 	fromEx,
-	summary
+	summary,
+	typeableAdd
  ]
 
 titlePage :: Page
@@ -182,4 +183,19 @@ summary = [\t -> do
 	text t "* もとの値と異なる型で取り出そうとすればNothingとなる", \t -> do
 	text t "* この機構は次回の「例外処理」で使われている", \t -> do
 	text t "* 新たに定義された例外を自動的に一般的な例外に変換"
+ ]
+
+typeableAdd :: Page
+typeableAdd = [\t -> do
+	writeTopTitle t "Typeableについて(追加)"
+	text t "", \t -> do
+	text t "* typeOf関数はTypeRepを返す", \t -> do
+	itext t 1 "typeOf :: a -> TypeRep", \t -> do
+	text t "* TypeRepはいくつかの関数で組み立てられる", \t -> do
+	itext t 1 "mkTyCon3 :: String -> String -> String -> TyCon", \t -> do
+	itext t 1 "mkTyConApp :: TyCon -> [TypeRep] -> TypeRep", \t -> do
+	itext t 1 "mkAppTy :: TypeRep -> TypeRep -> TypeRep", \t -> do
+	itext t 1 "mkFunTy :: TypeRep -> TypeRep -> TypeRep", \t -> do
+	text t "* ただし通常はderiving Typeableを使う", \t -> do
+	itext t 1 "- DeriveDataTypeable拡張が必要"
  ]
