@@ -11,7 +11,9 @@ pages = [
 	titlePage, prelude, prelude2, prelude3,
 	showClass, showClass2,
 	animal, animal2, animal3, animal4, animal5, animal6, animal7,
-	calc
+	calc, calc2, calc3,
+	aboutShowList, aboutShowList2, aboutShowList3, aboutShowList4,
+	summary
  ]
 
 titlePage :: Page
@@ -195,5 +197,97 @@ calc :: Page
 calc = [\t -> do
 	writeTopTitle t "より複雑な例"
 	text t "", \t -> do
-	text t "* より複雑な例を見ていこう"
+	text t "* より複雑な例を見ていこう", \t -> do
+	itext t 1 "infixl 6 :+:"
+	itext t 1 "infixl 7 :*:"
+	itext t 1 "data Calc = N Int | Calc :+: Calc | Calc :*: Calc", \t -> do
+	text t "* もちろんderiving Showで問題ない", \t -> do
+	text t "* ここでは「あえて」手書きしてみよう"
+ ]
+
+calc2 :: Page
+calc2 = [\t -> do
+	writeTopTitle t "より複雑な例"
+	text t "", \t -> do
+	text t "* インスタンス宣言は以下のようになる", \t -> do
+	itext t 0 "instance Show Calc where"
+	itext t 1 "showsPrec d (N n) = showParen (d > 10) $"
+	itext t 2 "showString \"N \" . showsPrec 11 n", \t -> do
+	itext t 1 "showsPrec d (l :+: r) = showParen (d > 6) $"
+	itext t 2 "showsPrec 7 l . showString \" :+: \" ."
+	itext t 3 "showsPrec 7 r", \t -> do
+	itext t 1 "showsPrec d (l :*: r) = showParen (d > 7) $"
+	itext t 2 "showPrec 8 l . showString \" :*: \" ."
+	itext t 3 "showsPrec 8 r"
+ ]
+
+calc3 :: Page
+calc3 = [\t -> do
+	writeTopTitle t "より複雑な例"
+	text t "", \t -> do
+	text t "* 本質的にはAnimalの例と同じ", \t -> do
+	text t "* より細かく括弧づけの制御をしているだけ"
+ ]
+
+aboutShowList :: Page
+aboutShowList = [\t -> do
+	writeTopTitle t "showListについて"
+	text t "", \t -> do
+	text t "* showListはShowのクラス関数になっている", \t -> do
+	itext t 1 "- Stringは実は[Char]である", \t -> do
+	itext t 1 "- 普通にすると\"['h', 'e', 'l' ...]\"となる", \t -> do
+	itext t 1 "- そんなの嫌! \"hello\"がいい", \t -> do
+	itext t 1 "- 特別な仕組みが必要", \t -> do
+	arrowIText t 1 "showListをShowのクラス関数にした"
+ ]
+
+aboutShowList2 :: Page
+aboutShowList2 = [\t -> do
+	writeTopTitle t "リストの表示"
+	text t "", \t -> do
+	text t "* リストをShowクラスのインスタンスにする", \t -> do
+	itext t 1 "instance Show a => Show [a] where"
+	itext t 2 "showsPrec _ = showList", \t -> do
+	text t "* [a]型のshowsPrecはa型のshowListで定義される", \t -> do
+	arrowIText t 1 "a型によって[a]型の表示を変えることができる"
+ ]
+
+aboutShowList3 :: Page
+aboutShowList3 = [\t -> do
+	writeTopTitle t "デフォルトの定義"
+	text t "", \t -> do
+	text t "* 普通はデフォルトの定義で良い", \t -> do
+	text t "* デフォルトの定義は同じ型のshowsで定義される", \t -> do
+	itext t 1 "shows = showsPrec 0"
+	itext t 1 "", \t -> do
+	itext t 1 "showList :: [a] -> ShowS"
+	itext t 1 "showList [] s = \"[]\" ++ s"
+	itext t 1 "showList (x : xs) s = '[' : shows x (showl xs)"
+	itext t 2 "where"
+	itext t 2 "showl [] = ']' : s"
+	itext t 2 "showl (y : ys) = ', ' : shows y (showl ys)"
+ ]
+
+aboutShowList4 :: Page
+aboutShowList4 = [\t -> do
+	writeTopTitle t "Char型での定義"
+	text t "", \t -> do
+	text t "* Char型は独自のshowListを持つ", \t -> do
+	text t "* それによりString型は\"hello\"のように表示できる", \t -> do
+	itext t 1 "showList cs = showChar '\"' . showLitString cs ."
+	itext t 2 "showChar '\"'"
+	itext t 1 "", \t -> do
+	itext t 1 "showLitString (c : cs) ="
+	itext t 2 "showLitChar c . showLitString cs"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* Showクラスの内部を見てみた", \t -> do
+	text t "* 普段はderiving Showとしておけば良い", \t -> do
+	text t "* deriving Showが裏でしていることを見た", \t -> do
+	text t "* derivingが使えない場面で役に立つ", \t -> do
+	text t "* クラスや関数の作りかたの参考になる"
  ]
