@@ -22,6 +22,10 @@ instance Life SomeLife where
 	toLife = id
 	fromLife = Just
 
+data Bacteria = Bacteria deriving (Typeable, Show)
+
+instance Life Bacteria
+
 data Animal = forall a . Life a => Animal a deriving Typeable
 
 instance Show Animal where
