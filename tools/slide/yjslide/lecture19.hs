@@ -10,7 +10,8 @@ pages :: [Page]
 pages = [
 	titlePage, prelude, prelude2, prelude3,
 	showClass, showClass2,
-	animal, animal2, animal3, animal4, animal5
+	animal, animal2, animal3, animal4, animal5, animal6, animal7,
+	calc
  ]
 
 titlePage :: Page
@@ -157,9 +158,42 @@ animal5 = [\t -> do
 	text t "", \t -> do
 	text t "* ここでShowSについて見てみよう", \t -> do
 	itext t 1 "type ShowS = String -> String", \t -> do
-	text t "* リスト構造の特徴として(++)は右結合でつなげたい", \t -> do
-	itext t 1 "- このへんの議論は差分リストとしてどこかでやる", \t -> do
-	itext t 1 "- ((as ++ bs) ++ cs) ++ dsを以下のように変換する", \t -> do
-	itext t 2 "as ++ (bs ++ (cs ++ ds))", \t -> do
-	itext t 1 "- そのための仕組みがShowSである"
+	itext t 1 "- これは前回やった「差分リスト」である", \t -> do
+	text t "* 以下の関数を定義する", \t -> do
+	itext t 1 "showString :: String -> ShowS"
+	itext t 1 "showString s = \\s' -> s ++ s'", \t -> do
+	text t "* これを使うと以下のようにできる", \t -> do
+	itext t 1 "showString \"hello\" . showString \"world\""
+	itext t 1 "- これは\"hello\"と\"world\"を結合している"
+ ]
+
+animal6 :: Page
+animal6 = [\t -> do
+	writeTopTitle t "括弧をつける関数"
+	text t "", \t -> do
+	text t "* 今、問題となっているのは括弧をつけるつけないの話", \t -> do
+	text t "* ブール値を取ってShowSを括弧の処理済みのShowSに変える", \t -> do
+	itext t 1 "showParen :: Bool -> ShowS -> ShowS"
+	itext t 1 "showParen True f ="
+	itext t 2 "showString \"(\" . f . showString \")\""
+	itext t 1 "showParen _ f = f"
+ ]
+
+animal7 :: Page
+animal7 = [\t -> do
+	writeTopTitle t "最初の例を改良する"
+	text t "", \t -> do
+	text t "* これらを使って最初の例を改良してみる", \t -> do
+	itext t 1 "instance Show Animal where"
+	itext t 2 "showsPrec d (Dog n) = showParen (d > 10) $"
+	itext t 3 "showString \"Dog \" . showsPrec 11 n"
+	itext t 2 "showsPrec d (Cat n) = showParen (d > 10) $"
+	itext t 3 "showString \"Cat \" . showsPrec 11 n"
+ ]
+
+calc :: Page
+calc = [\t -> do
+	writeTopTitle t "より複雑な例"
+	text t "", \t -> do
+	text t "* より複雑な例を見ていこう"
  ]
