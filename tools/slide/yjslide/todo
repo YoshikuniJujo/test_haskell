@@ -22,6 +22,24 @@
 
 * 第11回はきちんとした英語で書き直そう
 
-* ScopedTypeVariablesの説明を追加しよう
+* 第23回
+	- 前半はもっと簡単な感じにしよう
+		いろいろな例外処理のしかたを紹介する
+	- 後半でcatchをより深く見ていく
+		ここで自作の例外型の定義等を行う
+	- throw, throwIO
+	- handle
+	- cathes
+	- try
+	- bracket, finally, onException, bracketOnError
+	- evaluate
+	- assert
+* 第24回
+	- IOError == IOExceptionについて
+	- ioError
+	- catchJust, handleJust
+	- tryJust
 
-* withLifeIOの使用例と説明を追加すること
+* 並行プログラミングのあたりで
+	- throwTo
+	- mask
