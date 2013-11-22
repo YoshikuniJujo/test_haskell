@@ -12,7 +12,8 @@ pages = [
 	life, life2, life3, life4, life5, life6, life7, life8, life9, life10,
 	life11, life12, life13, life14,
 	life15, life16, life17, life18, life19,
-	life20, life21, life22, life23, life24
+	life20, life21, life22, life23, life24,
+	summary
  ]
 
 titlePage :: Page
@@ -358,5 +359,24 @@ life24 = [\t -> do
 	text t "* 面白い関数が作れる", \t -> do
 	itext t 1 "withLifeIO :: (Life l1, Life l2) =>"
 	itext t 2 "l1 -> (l2 -> IO ()) -> IO ()"
-	itext t 1 "withLifeIO l f = maybe (return ()) f $ castLife l"
+	itext t 1 "withLifeIO l f = maybe (return ()) f $ castLife l", \t -> do
+	text t "* 特定のタイプに属する値にのみ関数を適用する", \t -> do
+	itext t 1 "withLifeIO (Author \"souseki\" $ \\(h :: Human) ->"
+	itext t 2 "print h", \t -> do
+	arrowIText t 2 "Human (Author \"souseki\")", \t -> do
+	itext t 1 "withLifeIO Bacteria $ \\(h :: Human) -> print h"
+	arrowIText t 2 "何もしない"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* 型の階層構造を作ってみた", \t -> do
+	text t "* 階層内での型キャストが可能", \t -> do
+	text t "* キャストできない場合はNothingが返る", \t -> do
+	arrowIText t 1 "安全", \t -> do
+	text t "* 特定の範囲の型のみを抽出したり", \t -> do
+	text t "* 特定の範囲の型のみにIOアクションを実行したりできる", \t -> do
+	text t "* 次回の例外処理にこの仕組みが使われている"
  ]
