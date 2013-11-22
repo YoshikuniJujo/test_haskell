@@ -11,7 +11,8 @@ pages = [
 	titlePage, prelude,
 	typeVarScope, typeVarScope2, typeVarScope3, typeVarScope4, typeVarScope5,
 	typeVarScopeSummary,
-	patternSignature
+	patternSignature, patternSignature2, patternSignature3,
+	summary
  ]
 
 titlePage :: Page
@@ -23,9 +24,7 @@ prelude = [\t -> do
 	text t "", \t -> do
 	text t "* ScopedTypeVariablesという言語拡張がある", \t -> do
 	text t "* 型変数のスコープを広げる", \t -> do
-	text t "* 型シグネチャをつけられる場所が増える", \t -> do
-	itext t 1 "- パターンに型シグネチャをつけられる", \t -> do
-	itext t 1 "- 関数定義の結果に型シグネチャをつけられる", \t -> do
+	text t "* パターンに型シグネチャをつけられる", \t -> do
 	text t "* {-# LANGUAGE ScopedTypeVariables #-}とする必要がある"
  ]
 
@@ -119,4 +118,40 @@ patternSignature = [\t -> do
 	text t "* 現在はScopedTypeVariablesを使う", \t -> do
 	itext t 1 "- 型変数をスコープに入れるという点で類似した機能", \t -> do
 	itext t 1 "one (x :: a) = show (1 :: a)"
+ ]
+
+patternSignature2 :: Page
+patternSignature2 = [\t -> do
+	writeTopTitle t "パターンシグネチャ"
+	text t "", \t -> do
+	text t "* 型変数のスコープという話とは違う使いかたもできる", \t -> do
+	itext t 1 "withOne :: (Num a, Show a) => (a -> a) -> String"
+	itext t 1 "withOne f = show $ f 1", \t -> do
+	itext t 1 "> withOne $ \\x -> x + 3 * 8"
+	itext t 1 "\"25\"", \t -> do
+	itext t 1 "> withOne $ \\x -> (x :: Double) + 3 * 8"
+	itext t 1 "\"25.0\"", \t -> do
+	itext t 1 "> withOne $ \\x -> 3 * 8"
+	itext t 1 "\"24\"", \t -> do
+	text t "* \"24.0\"を出力させるにはどうすればいいか"
+ ]
+
+patternSignature3 :: Page
+patternSignature3 = [\t -> do
+	writeTopTitle t "パターンシグネチャ"
+	text t "", \t -> do
+	text t "* パターンシグネチャを使えばスマートに解決できる", \t -> do
+	itext t 1 "> withOne $ \\(x :: Double) -> 3 * 8"
+	itext t 1 "\"24.0\""
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* ScopedTypeVariablesについて学んだ", \t -> do
+	text t "* 型変数のスコープを関数全体に広げることができる", \t -> do
+	text t "* ScopedTypeVariablesでパターンシグネチャが使える", \t -> do
+	text t "* パターンシグネチャは型変数を導入する以外にも使える", \t -> do
+	text t "* ラムダ記法を使ったある様の表現をシンプルにする"
  ]
