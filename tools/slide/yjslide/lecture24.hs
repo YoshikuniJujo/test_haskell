@@ -129,7 +129,8 @@ finallySummary = [\t -> do
 	itext t 1 "bracket ::"
 	itext t 2 "IO a -> (a -> IO c) -> (a -> IO c) -> IO c", \t -> do
 	text t "* 例外発生時にだけ行いたい後処理", \t -> do
-	itext t 1 "onError :: IO a -> IO b -> IO a"
+	itext t 1 "onError :: IO a -> IO b -> IO a", \t -> do
+	text t "* これらの後処理は同じ例外を再度発生させる"
  ]
 
 syncAsync :: Page
