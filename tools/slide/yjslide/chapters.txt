@@ -14,61 +14,62 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第9回 落ち穂拾い
 第10回 ghcの使いかた (runghc, ghciやその他のオプションについて)
 ---
-第11回 ドキュメンテーション(haddock)
-第12回 ランダム
-第13回 テスト(型によるチェック、展開による証明、doctest, quickcheck, hunit)
-第14回 モナド
-第15回 いろいろなモナド
-第16回 型族
-第17回 モナド変換子
-第18回 差分リスト
-第19回 Showクラス
-第20回 存在型とcast
-第21回 ScopedTypeVariables拡張
-第22回 型の階層
+第11回 ファイル入出力
+第12回 ドキュメンテーション(haddock)
+第13回 ランダム
+第14回 テスト(型によるチェック、展開による証明、doctest, quickcheck, hunit)
+第15回 モナド
+第16回 いろいろなモナド
+第17回 型族
+第18回 モナド変換子
+第19回 差分リスト
+第20回 Showクラス
+第21回 存在型とcast
+第22回 ScopedTypeVariables拡張
+第23回 型の階層
 (ここまで作った、以下予定)
-第23回 例外処理
-第24回 入出力例外
-第25回 プロファイリング
-第26回 正格評価(foldl'あたりから入ると良さそうだ、bottomについても)
-第27回 パターンマッチと正格性(遅延パターン、bang pattern等)
-第28回 zipper
-第29回 array, bytestring
-第30回 Map (Hashにもちょっと触れる)
-第31回 unbox型
-第32回 ffi
-第33回 cabalの使いかた(テストの自動化も含めて)
+第24回 例外処理
+第25回 入出力例外
+第26回 プロファイリング
+第27回 正格評価(foldl'あたりから入ると良さそうだ、bottomについても)
+第28回 パターンマッチと正格性(遅延パターン、bang pattern等)
+第29回 zipper
+第30回 array, bytestring
+第31回 Map (Hashにもちょっと触れる)
+第32回 unbox型
+第33回 ffi
+第34回 cabalの使いかた(テストの自動化も含めて)
 ---
-第34回 GADTs
-第35回 functor, applicative, monad
-第36回 free monad
-第37回 operational monad
-第38回 並行実行
-第39回 forall(ランクN多相)
-第40回 ST monad
-第41回 ref, mvar, chan, tvar
-第42回 stm
-第43回 正格評価、非正格評価、グラフ簡約
-第44回 正規形、頭部正規形、弱頭部正規形
-第45回 deepseq
-第46回 並列実行
-第47回 template haskell
-第48回 QuasiQuotes
-第49回 parser (papillon の紹介)
-第50回 unsafePerformIO, unsafeInterleaveIO
-第51回 遅延IOと例外処理
-第52回 iteratee
-第53回 可変長引数 (Text.Printf等)
-第54回 継続モナド
-第55回 Arrow
-第56回 Foldable
-第57回 Traversable
-第58回 Sequence (finger tree, queue)
+第35回 GADTs
+第36回 functor, applicative, monad
+第37回 free monad
+第38回 operational monad
+第39回 並行実行
+第40回 forall(ランクN多相)
+第41回 ST monad
+第42回 ref, mvar, chan, tvar
+第43回 stm
+第44回 正格評価、非正格評価、グラフ簡約
+第45回 正規形、頭部正規形、弱頭部正規形
+第46回 deepseq
+第47回 並列実行
+第48回 template haskell
+第49回 QuasiQuotes
+第50回 parser (papillon の紹介)
+第51回 unsafePerformIO, unsafeInterleaveIO
+第52回 遅延IOと例外処理
+第53回 iteratee
+第54回 可変長引数 (Text.Printf等)
+第55回 継続モナド
+第56回 Arrow
+第57回 Foldable
+第58回 Traversable
+第59回 Sequence (finger tree, queue)
 ---
-第59回 readsPrecについて
-第60回 モナド内包表記 monad comprehension
-第61回 LANGUAGEプラグマ
-第62回 その他のプラグマ
+第60回 readsPrecについて
+第61回 モナド内包表記 monad comprehension
+第62回 LANGUAGEプラグマ
+第63回 その他のプラグマ
 	(OPTIONS_GHC, WARNING, DEPRECATED, INLINE, RULES,
 		SPECIALIZE, UNPACK, SOURCE)
 	-> 場合によってはいくつかに分けよう

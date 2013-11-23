@@ -3,25 +3,22 @@ module Main where
 import Lecture
 
 subtitle :: String
-subtitle = "第17回 モナド変換子"
+subtitle = "第17回 型族"
 
 main :: IO ()
 main = runLecture pages
 
 pages :: [Page]
 pages = [
-	titlePage, prelude,
-	examErrorState, examErrorState2, examErrorState3, examErrorState4,
-	examErrorState5, examErrorState6, examErrorStateSummary,
-	examStateIO, examStateIO2, examStateIO3, examStateIO4, examStateIO5,
-	examStateIO6, examStateIOSummary,
-	stateMaybeStateIO,
-	stateT, stateT2, stateTSummary,
-	maybeState, maybeState2, maybeState3, maybeState4, maybeState5,
-	maybeStateSummary,
-	maybeIO, maybeIO2, maybeIO3, maybeIO4, maybeIO5, maybeIOSummary,
-	maybeStateMaybeIO, maybeStateMaybeIO2, maybeT, maybeT2, maybeTSummary,
-	lift, liftSummary, orgFunPrelude, orgFun, orgFun2, orgFunSummary,
+	titlePage, prelude, whats, classify,
+	dataFamilies, identity, identityFamily,
+	identityFunInt, identityFunInt2, identityFunChar, identityFuns,
+	identityClass, identityClassFun, dataFamilySummary,
+	associatedDataType, associatedDataType2, associatedDataTypeSummary,
+	typeSynonymFamilies, identitySynonym, identitySynonymFunInt,
+	identitySynonymFunChar, identitySynonymFunSummary,
+	typeSynonymFamiliesSummary,
+	associatedTypeSynonym, associatedTypeSynonymSummary,
 	summary
  ]
 
@@ -32,591 +29,358 @@ prelude :: Page
 prelude = [\t -> do
 	writeTopTitle t "はじめに"
 	text t "", \t -> do
-	text t "* 「第15回 いろいろなモナド」でいろいろなモナドを見た", \t -> do
-	text t "* それらのモナドを組み合わせて使いたくなることがある", \t -> do
-	itext t 1 "- 失敗する可能性のある状態を取る計算", \t -> do
-	itext t 1 "- 環境を持ちログを記録する計算", \t -> do
-	itext t 1 "- などなど", \t -> do
-	text t "* IOモナドと組み合わせて使いたくなることもある"
+	text t "* 型族(type families)について学ぶ", \t -> do
+	text t "* 型族はHaskell 2010には取り込まれていない", \t -> do
+	text t "* ghcの拡張機能", \t -> do
+	text t "* ソースコードに{-# LANGUAGE TypeFamilies #-}をつける", \t -> do
+	text t "* 型族にはいろいろな用途がある", \t -> do
+	itext t 1 "- 今回は型クラスでの使用という側面にしぼって紹介"
  ]
 
-examErrorState :: Page
-examErrorState = [\t -> do
-	writeTopTitle t "失敗と状態のある計算"
+whats :: Page
+whats = [\t -> do
+	writeTopTitle t "型族とは?"
 	text t "", \t -> do
-	text t "* 失敗の可能性のある計算は以下のようになる", \t -> do
-	itext t 1 "data Maybe a = Just a | Nothing"
-	itext t 1 "return = Just"
-	itext t 1 "Just x >>= f = f x"
-	itext t 1 "Nothing >>= f = Nothing", \t -> do
-	text t "* 状態を取る計算は以下のようになる", \t -> do
-	itext t 1 "newtype State s a = State {"
-	itext t 2 "runState :: s -> (a, s) }"
-	itext t 1 "return a = State $ \\s -> (a, s)"
-	itext t 1 "(State x) >>= f = State $ \\s ->"
-	itext t 2 "let (v, s') = x s in runState (f v) s'"
+	text t "* Maybeについて見てみよう", \t -> do
+	itext t 1 "data Maybe a = Just a | Nothing", \t -> do
+	itext t 1 "- Maybeはすべての型aに対して同じ構造を取る", \t -> do
+	text t "* Hoge IntとHoge Charとで違う構造の型を作りたい", \t -> do
+	itext t 1 "- 今までの枠組では不可能", \t -> do
+	itext t 1 "- Hoge aはaごとに違う定義を取らなければならない", \t -> do
+	text t "* 中身の構造の違うデータ型や型シノニムをひとまとまりに", \t -> do
+	arrowIText t 1 "それが型族", \t -> do
+	arrowIText t 1 "具体例を挙げないとよくわからないと思う"
  ]
 
-examErrorState2 :: Page
-examErrorState2 = [\t -> do
-	writeTopTitle t "失敗と状態のある計算"
+classify :: Page
+classify = [\t -> do
+	writeTopTitle t "分類"
 	text t "", \t -> do
-	text t "* それぞれの型の定義をよく見る", \t -> do
-	itext t 1 "data Maybe a = Just a | Nothing"
-	itext t 1 "newtype State s a = State {"
-	itext t 2 "runState :: s -> (a, s) }", \t -> do
-	text t "* この2つを合わせた型を作ってみよう", \t -> do
-	itext t 1 "newtype StateMaybe = StateMaybe {"
-	itext t 2 "runStateMaybe :: s -> Maybe (a, s) }"
+	text t "* 型族(type families)には以下の2つがある", \t -> do
+	itext t 1 "- データ族(data families)", \t -> do
+	itext t 1 "- 型シノニム族(type synonym families)"
+	text t "", \t -> do
+	text t "* 上のそれぞれについて関連型(associated)が対応する", \t -> do
+	itext t 1 "- 関連データ型(associated data type)", \t -> do
+	itext t 1 "- 関連型シノニム(associated type synonym)", \t -> do
+	text t "* 関連型は型族の構文糖なので、型族が理解できれば良い"
  ]
 
-examErrorState3 :: Page
-examErrorState3 = [\t -> do
-	writeTopTitle t "失敗と状態のある計算"
+dataFamilies :: Page
+dataFamilies = [\t -> do
+	writeTopTitle t "データ族"
 	text t "", \t -> do
-	text t "* モナドにする", \t -> do
-	itext t 1 "newtype StateMaybe = StateMaybe {"
-	itext t 2 "runStateMaybe :: s -> Maybe (a, s) }", \t -> do
-	itext t 1 "return a = StateMaybe $ \\s -> Just (a, s)"
-	itext t 1 "StateMaybe x >>= f = StateMaybe $ \\s ->"
-	itext t 2 "case x s of"
-	itext t 3 "Just (v, s') -> runStateMaybe (f v) s'"
-	itext t 3 "_ -> Nothing"
+	text t "* まずは普通の「変数を含むデータ型」について見てみる", \t -> do
+	text t "* 例としてリストを考えてみよう", \t -> do
+	itext t 1 "data [] a = a : ([] a) | []", \t -> do
+	itext t 1 "わかりやすく名前を変えてみる", \t -> do
+	itext t 1 "data List a = Cons a (List a) | Nil", \t -> do
+	text t "* 型aが何であっても同じ構造を共有している", \t -> do
+	text t "* 同じ構造でない同じ種類のデータ型も考えられる", \t -> do
+	text t "* 違う構造のデータ型を同じ種類の型としてまとめたい"
  ]
 
-examErrorState4 :: Page
-examErrorState4 = [\t -> do
-	writeTopTitle t "失敗と状態のある計算", \t -> do
-	text t "* 基本的な関数を定義する", \t -> do
-	itext t 1 "put :: s -> StateMaybe s ()"
-	itext t 1 "put s = StateMaybe $ \\_ -> Just ((), s)"
-	itext t 1 "", \t -> do
-	itext t 1 "get :: StateMaybe s s"
-	itext t 1 "get = StateMaybe $ \\s -> Just (s, s)"
-	itext t 1 "", \t -> do
-	itext t 1 "modify :: (s -> s) -> StateMaybe s ()"
-	itext t 1 "modify f = get >>= put . f"
-	itext t 1 "", \t -> do
-	itext t 1 "nothing :: StateMaybe s a"
-	itext t 1 "nothing = StateMaybe $ \\_ -> Nothing"
-
+identity :: Page
+identity = [\t -> do
+	writeTopTitle t "データ族"
+	text t "", \t -> do
+	text t "* たとえば、値のアイデンティティを考えようと思う", \t -> do
+	itext t 1 "- 整数のアイデンティティは素因数分解の結果", \t -> do
+	itext t 1 "- 文字のアイデンティティは文字の種類と何番目か", \t -> do
+	itext t 1 "- と、勝手に決めたとする", \t -> do
+	text t "* Identity Intは素因数分解の結果を格納", \t -> do
+	text t "* Identity Charは文字の種類と何番目かを格納", \t -> do
+	text t "* data Identity a = ...のような定義は不可能", \t -> do
+	text t "* 型族を使う"
  ]
 
-examErrorState5 :: Page
-examErrorState5 = [\t -> do
-	writeTopTitle t "失敗と状態のある計算"
+identityFamily :: Page
+identityFamily = [\t -> do
+	writeTopTitle t "データ族"
 	text t "", \t -> do
-	text t "* 使用例", \t -> do
-	itext t 1 "addMemory :: Int -> StateMaybe Int ()"
-	itext t 1 "addMemory n = modify (+ n)"
-	itext t 1 "", \t -> do
-	itext t 1 "subMemory :: Int -> StateMaybe Int ()"
-	itext t 1 "subMemory n = modify (subtract n) >> checkMemory"
-	itext t 1 "", \t -> do
-	itext t 1 "checkMemory :: StateMaybe Int ()"
-	itext t 1 "checkMemory = do"
-	itext t 2 "s <- get"
-	itext t 2 "when (s < 0) nothing"
+	text t "data family Identity a"
+	text t "", \t -> do
+	text t "* データ族を宣言した", \t -> do
+	itext t 1 "- Identity IntやIdentity Charを別々に定義できる"
+	text t "", \t -> do
+	text t "data instance Identity Int = PrimeFactors [Int]"
+	itext t 1 "deriving Show"
+	text t "", \t -> do
+	text t "data CharClass = Upper | Lower | Digit deriving Show"
+	text t "data instance Identity Char = CharID CharClass Int"
+	itext t 1 "deriving Show"
  ]
 
-examErrorState6 :: Page
-examErrorState6 = [\t -> do
-	writeTopTitle t "失敗と状態のある計算"
+identityFunInt :: Page
+identityFunInt = [\t -> do
+	writeTopTitle t "データ族"
 	text t "", \t -> do
-	text t "* 使用例", \t -> do
-	itext t 1 "subAll :: Int -> [Int] -> StateMaybe Int Int"
-	itext t 1 "subAll x ys = do"
-	itext t 2 "addMemory n"
-	itext t 2 "mapM_ subMemory ss"
-	itext t 2 "get"
+	text t "primeFactors :: Int -> Int -> [Int]"
+	text t "primeFactors f n"
+	itext t 1 "| f <= 0 || n <= 0 = []"
+	itext t 1 "| f > n = []"
+	itext t 1 "| n `mod` f == 0 = f : primeFactors f (n `div` f)"
+	itext t 1 "| otherwise = primeFactors (f + 1) n"
 	text t "", \t -> do
-	text t "* 状態としてメモリーを持った計算", \t -> do
-	text t "* 引き算の結果が負になったらその時点でNothingを返す"
+	text t "toIdentityInt :: Int -> Maybe (Identity Int)"
+	text t "toIdentityInt n"
+	itext t 1 "| n > 0 = Just $ PrimeFactors $ primeFactors 2 n"
+	itext t 1 "| otherwise = Nothing"
  ]
 
-examErrorStateSummary :: Page
-examErrorStateSummary = [\t -> do
-	writeTopTitle t "失敗と状態のある計算(まとめ)"
+identityFunInt2 :: Page
+identityFunInt2 = [\t -> do
+	writeTopTitle t "データ族"
 	text t "", \t -> do
-	text t "* 失敗する可能性のある状態を持つ計算を実装した", \t -> do
-	text t "* MaybeモナドとStateモナドの両方の性質を持つ", \t -> do
-	text t "* 型は以下のようになる", \t -> do
-	itext t 1 "newtype StateMaybe s a = StateMaybe {"
-	itext t 2 "runStateMaybe :: s -> Maybe (a, s) }", \t -> do
-	text t "* 基本となる以下の関数を定義した", \t -> do
-	itext t 1 "return, (>>=), put, get, modify, nothing"
+	text t "fromIdentityInt :: Identity Int -> Int"
+	text t "fromIdentityInt (PrimeFactors pfs) = product pfs"
+	text t "", \t -> do
+	text t "* IntとIdentity Intを相互変換する関数を定義した"
  ]
 
-examStateIO :: Page
-examStateIO = [\t -> do
-	writeTopTitle t "状態と入出力のある計算"
+identityFunChar :: Page
+identityFunChar = [\t -> do
+	writeTopTitle t "データ族"
 	text t "", \t -> do
-	text t "* 状態と入出力の両方を持つ計算ができれば便利", \t -> do
-	text t "* StateIO型を定義してみよう", \t -> do
-	itext t 1 "newtype StateIO s a = StateIO {"
-	itext t 2 "runStateIO :: s -> IO (a, s) }"
-	itext t 1 "", \t -> do
-	itext t 1 "instance Monad (StateIO s) where"
-	itext t 2 "return x = StateIO $ \\s -> return (x, s)"
-	itext t 2 "StateIO x >>= f = StateIO $ \\s -> do"
-	itext t 3 "(v, s') <- x s"
-	itext t 3 "runStateIO (f v) s'"
+	text t "toIdentityChar :: Char -> Maybe (Identity Char)"
+	text t "toIdentityChar c"
+	itext t 0.5 "| isUpper c = Just $ CharID Upper $ ord c - ord 'A'"
+	itext t 0.5 "| isLower c = Just $ CharID Lower $ ord c - ord 'a'"
+	itext t 0.5 "| isDigit c = Just $ CharID Digit $ ord c - ord '0'"
+	itext t 0.5 "| otherwise = Nothing"
+	text t "", \t -> do
+	text t "fromIdentityChar :: Identity Char -> Char"
+	text t "fromIdentityChar (CharID Upper n) = chr $ ord 'A' + n"
+	text t "fromIdentityChar (CharID Lower n) = chr $ ord 'a' + n"
+	text t "fromIdentityChar (CharID Digit n) = chr $ ord '0' + n"
  ]
 
-examStateIO2 :: Page
-examStateIO2 = [\t -> do
-	writeTopTitle t "状態と入出力のある計算"
+identityFuns :: Page
+identityFuns = [\t -> do
+	writeTopTitle t "データ族"
 	text t "", \t -> do
-	text t "* 基本的な関数の定義", \t -> do
-	itext t 1 "put :: s -> StateIO s ()"
-	itext t 1 "put x = StateIO $ \\_ -> return ((), x)"
-	itext t 1 "", \t -> do
-	itext t 1 "get :: StateIO s s"
-	itext t 1 "get = StateIO $ \\s -> return (s, s)"
-	itext t 1 "", \t -> do
-	itext t 1 "modify :: (s -> s) -> StateIO s ()"
-	itext t 1 "modify f = get >>= put . f"
+	text t "* IntとIdentity Intとを相互に変換する関数を定義した", \t -> do
+	itext t 1 "toIdentityInt :: Int -> Myabe (Identity Int)"
+	itext t 1 "fromIdentityInt :: Identity Int -> Int", \t -> do
+	text t "* CharとIdentity Charとを相互に変換する関数を定義した", \t -> do
+	itext t 1 "toIdentityChar :: Char -> Maybe (Identity Char)"
+	itext t 1 "fromIdentityChar :: Identity Char -> Char", \t -> do
+	text t "* 実のところここまでなら型族を使うメリットは少ない", \t -> do
+	itext t 1 "- IdentityIntとIdentityCharを使っても同じ", \t -> do
+	itext t 1 "- コードがわかりやすくなるというメリットはある", \t -> do
+	text t "* 型クラスと一緒に使うと本領を発揮する"
  ]
 
-examStateIO3 :: Page
-examStateIO3 = [\t -> do
-	writeTopTitle t "状態と入出力のある計算"
+identityClass :: Page
+identityClass = [\t -> do
+	writeTopTitle t "データ族"
 	text t "", \t -> do
-	text t "* 使用例", \t -> do
-	itext t 1 "add :: Int -> StateIO Int ()"
-	itext t 1 "add x = do"
-	itext t 2 "modify (+ x)"
-	itext t 2 "StateIO $ \\s -> do"
-	itext t 3 "putStrLn $ \"add \" ++ show x"
-	itext t 3 "return ((), s)"
+	text t "class HaveIdentity a where"
+	itext t 1 "toIdentity :: a -> Maybe (Identity a)"
+	itext t 1 "fromIdentity :: Identity a -> a"
+	text t "", \t -> do
+	text t "instance HaveIdentity Int where"
+	itext t 1 "toIdentity = toIdentityInt"
+	itext t 1 "fromIdentity = fromIdentityInt"
+	text t "", \t -> do
+	text t "instance HaveIdentity Char where"
+	itext t 1 "toIdentity = toIdentityChar"
+	itext t 1 "fromIdentity = fromIdentityChar"
  ]
 
-examStateIO4 :: Page
-examStateIO4 = [\t -> do
-	writeTopTitle t "状態と入出力のある計算"
+identityClassFun :: Page
+identityClassFun = [\t -> do
+	writeTopTitle t "データ族"
 	text t "", \t -> do
-	text t "* 使用例", \t -> do
-	itext t 1 "test :: StateIO Int Int"
-	itext t 1 "test = do"
-	itext t 2 "add 8"
-	itext t 2 "add 9"
-	itext t 2 "s <- get"
-	itext t 2 "add s"
-	itext t 2 "get"
+	text t "* HaveIdentityを使った関数の例", \t -> do
+	itext t 1 "- FlexibleContexts拡張が必要", \t -> do
+	text t "", \t -> do
+	text t "printIdentity ::"
+	itext t 1 "(HaveIdentity a, Show (Identity a)) => a -> IO ()"
+	text t "printIdentity x = case toIdentity x of"
+	itext t 1 "Just i -> print i"
+	itext t 1 "Nothing -> putStrLn \"no identity\""
  ]
 
-examStateIO5 :: Page
-examStateIO5 = [\t -> do
-	writeTopTitle t "状態と入出力のある計算"
+dataFamilySummary :: Page
+dataFamilySummary = [\t -> do
+	writeTopTitle t "データ族(まとめ)"
 	text t "", \t -> do
-	text t "* StateIO内でのIOの実行", \t -> do
-	itext t 1 "- addの例では以下のようになっている", \t -> do
-	itext t 1 "StateIO $ \\s -> do"
-	itext t 2 "putStrLn $ \"add \" ++ show x"
-	itext t 2 "return ((), s)", \t -> do
-	itext t 1 "- この構造を関数としてまとめてみる", \t -> do
-	itext t 1 "lift :: IO a -> StateIO s a"
-	itext t 1 "lift io = StateIO $ \\s -> do"
-	itext t 2 "ret <- io"
-	itext t 2 "return (ret, s)"
+	text t "* 型aのリストは[] aである", \t -> do
+	itext t 1 "- [] aはどんな型aに対しても同じ構造", \t -> do
+	text t "* 型aのアイデンティティはIdentity aである", \t -> do
+	itext t 1 "- Identity aは型aによって違う構造を取る", \t -> do
+	text t "* Identityが型族であることを宣言する", \t -> do
+	itext t 1 "data family Identity a", \t -> do
+	text t "* 型族のインスタンスを定義する", \t -> do
+	itext t 1 "data instance Identity Int = ..."
+	itext t 1 "data instance Identity Char = ...", \t -> do
+	text t "* 型族は型クラスのなかで使ったときに本領を発揮する"
  ]
 
-examStateIO6 :: Page
-examStateIO6 = [\t -> do
-	writeTopTitle t "状態と入出力のある計算"
+associatedDataType :: Page
+associatedDataType = [\t -> do
+	writeTopTitle t "関連データ型"
 	text t "", \t -> do
-	text t "* liftを使ってaddを書き換える", \t -> do
-	itext t 1 "add x = do"
-	itext t 2 "modify (+ x)"
-	itext t 2 "lift $ putStrLn $ \"add \" ++ show x"
+	text t "* 関連データ型(associated data type)はデータ族の構文糖", \t -> do
+	text t "* 型族は型クラスのなかで使われることが多い", \t -> do
+	text t "* 型クラスと関連して使われるデータ族を特別扱いする構文", \t -> do
+	text t "* 関連データ型として宣言されたデータ族は", \t -> do
+	itext t 1 "- 省略された構文が使える", \t -> do
+	itext t 1 "- それが宣言されたクラス内でのみ使用可", \t -> do
+	text t "* さっきの例を関連データ型で定義してみる"
  ]
 
-examStateIOSummary :: Page
-examStateIOSummary = [\t -> do
-	writeTopTitle t "状態と入出力を持つ計算(まとめ)"
+associatedDataType2 :: Page
+associatedDataType2 = [\t -> do
+	writeTopTitle t "関連データ型"
 	text t "", \t -> do
-	text t "* 状態と入出力を持つ計算を作った", \t -> do
-	text t "* 型は以下の通り", \t -> do
-	itext t 1 "newtype StateIO s a = StateIO {"
-	itext t 2 "runStateIO :: s -> IO (a, s) }", \t -> do
-	text t "* 基本的な関数を定義した", \t -> do
-	itext t 1 "put, get, modify", \t -> do
-	text t "* IOをStateIOに「持ち上げる」関数を定義した", \t -> do
-	itext t 1 "lift :: IO a -> StateIO s a"
-	itext t 1 "lift io = StateIO $ \\s -> do"
-	itext t 2 "ret <- io"
-	itext t 2 "return (ret, s)"
+	text t "class HaveIdentity a where"
+	itext t 1 "data Identity a"
+	itext t 1 "toIdentity :: a -> Maybe (Identity a)"
+	itext t 1 "fromIdentity :: Identity a -> a"
+	text t "", \t -> do
+	text t "instance HaveIdentity Int where"
+	itext t 1 "data Identity Int = PrimeFactors [Int]"
+	itext t 1 "...", \t -> do
+	text t "instance HaveIdentity Char where"
+	itext t 1 "data Identity Char = CharID CharClass Int"
+	itext t 1 "..."
  ]
 
-stateMaybeStateIO :: Page
-stateMaybeStateIO = [\t -> do
-	writeTopTitle t "StateMaybeとStateIO"
+associatedDataTypeSummary :: Page
+associatedDataTypeSummary = [\t -> do
+	writeTopTitle t "関連データ型(まとめ)"
 	text t "", \t -> do
-	text t "* 型の比較", \t -> do
-	itext t 1 "newtype StateMaybe s a = StateMaybe {"
-	itext t 2 "runStateMaybe :: s -> Maybe (a, s) }", \t -> do
-	itext t 1 "newtype StateIO s a = StateIO {"
-	itext t 2 "runStateIO :: s -> IO (a, s) }", \t -> do
-	text t "* これらを以下のようにまとめることができる", \t -> do
-	itext t 1 "newtype StateT s m a = StateT {"
-	itext t 2 "runStateT :: s -> m (a, s) }", \t -> do
-	text t "* StateTは基盤となるモナドに状態を追加する"
+	text t "* 関連データ型はデータ族の構文糖", \t -> do
+	itext t 1 "- 宣言されたクラスでのみ使用可という制限がある", \t -> do
+	text t "* データ族の宣言はclass定義のなかで行われる", \t -> do
+	itext t 1 "- familyは省略される", \t -> do
+	text t "* データ族のインスタンスの定義はinstance定義のなかで", \t -> do
+	itext t 1 "- instanceは省略される"
  ]
 
-stateT :: Page
-stateT = [\t -> do
-	writeTopTitle t "StateT", \t -> do
-	text t "* 基本的な関数の定義", \t -> do
-	itext t 1 "(>>=) :: StateT s m a -> (a -> StateT s m b) ->"
-	itext t 2 "StateT s m b", \t -> do
-	itext t 1 "StateT x >>= f = StateT $ \\s -> do"
-	itext t 2 "(v, s') <- x s"
-	itext t 2 "runStateT (f v) s'"
-	itext t 1 "", \t -> do
-	itext t 1 "put :: s -> StateT s m ()"
-	itext t 1 "put x = StateT $ \\_ -> return ((), x)"
-	itext t 1 "", \t -> do
-	itext t 1 "get :: StateT s m s"
-	itext t 1 "get = StateT $ \\s -> return (s, s)"
+typeSynonymFamilies :: Page
+typeSynonymFamilies = [\t -> do
+	writeTopTitle t "型シノニム族"
+	text t "", \t -> do
+	text t "* データ型に対してデータ族があるように", \t -> do
+	text t "* 型シノニムに対して型シノニム族がある", \t -> do
+	text t "* リスト型の型シノニムを見てみよう", \t -> do
+	itext t 1 "type List a = [a]", \t -> do
+	itext t 1 "- すべての型aに対して同じ構造", \t -> do
+	text t "* それぞれの型aに対して別々の構造としたいときもある", \t -> do
+	text t "* データ族のときと同じ例で見ていこう"
  ]
 
-stateT2 :: Page
-stateT2 = [\t -> do
-	writeTopTitle t "StateT"
+identitySynonym :: Page
+identitySynonym = [\t -> do
+	writeTopTitle t "型シノニム族"
 	text t "", \t -> do
-	text t "* liftを定義する", \t -> do
-	itext t 1 "lift :: m a -> StateIO s m a"
-	itext t 1 "lift m = StateIO $ \\s -> do"
-	itext t 2 "ret <- m"
-	itext t 2 "return (ret, s)"
+	text t "type family Identity a"
+	text t "", \t -> do
+	text t "type instance Identity Int = [Int]", \t -> do
+	text t "type instance Identity Char = (CharClass, Int)"
  ]
 
-stateTSummary :: Page
-stateTSummary = [\t -> do
-	writeTopTitle t "StateT(まとめ)"
+identitySynonymFunInt :: Page
+identitySynonymFunInt = [\t -> do
+	writeTopTitle t "型シノニム族"
 	text t "", \t -> do
-	text t "* 他のモナドに状態を追加するモナド変換子を作った", \t -> do
-	text t "* 型は以下のようになる", \t -> do
-	itext t 1 "newtype StateT s m a = StateT {"
-	itext t 2 "runStateT :: s -> m (a, s) }", \t -> do
-	text t "* 基本的な関数を定義した", \t -> do
-	itext t 1 "(>>=), put, get", \t -> do
-	text t "* 持ち上げ関数liftをより一般的にした"
+	text t "toIdentityInt :: Int -> Maybe (Identity Int)"
+	text t "toIdentityInt n"
+	itext t 1 "| n > 0 = Just $ primeFactors 2 n"
+	itext t 1 "| otherwise = Nothing"
+	text t "", \t -> do
+	text t "fromIdentityInt :: Identity Int -> Int"
+	text t "fromIdentityInt = product"
  ]
 
-maybeState :: Page
-maybeState = [\t -> do
-	writeTopTitle t "失敗と状態のある計算2"
+identitySynonymFunChar :: Page
+identitySynonymFunChar = [\t -> do
+	writeTopTitle t "型シノニム族"
 	text t "", \t -> do
-	text t "* 失敗と状態のある計算をさっきは以下のようにした", \t -> do
-	itext t 1 "newtype StateMaybe s a = StateMaybe {"
-	itext t 2 "runStateMaybe :: s -> Maybe (a, s) }", \t -> do
-	text t "* 以下のようにすることも考えられる", \t -> do
-	itext t 1 "newtype MaybeState s a = MaybeState {"
-	itext t 2 "runMaybeState :: s -> (Maybe a, s) }", \t -> do
-	text t "* Maybe (a, s)ではなく(Maybe a, s)とした"
+	text t "toIdentityChar :: Char -> Maybe (Identity Char)"
+	text t "toIdentityChar c"
+	itext t 1 "| isUpper c = (Upper, ord c - ord 'A')"
+	itext t 1 "| isLower c = (Lower, ord c - ord 'a')"
+	itext t 1 "| isDigit c = (Digit, ord c - ord '0')"
+	itext t 1 "| otherwise = Nothing"
+	text t "", \t -> do
+	text t "fromIdentityChar :: Identity Char -> Char"
+	text t "fromIdentityChar (Upper, n) = chr $ ord 'A' + n"
+	text t "fromIdentityChar (Lower, n) = chr $ ord 'a' + n"
+	text t "fromIdentityChar (Digit, n) = chr $ ord '0' + n"
  ]
 
-maybeState2 :: Page
-maybeState2 = [\t -> do
-	writeTopTitle t "失敗と状態のある計算2"
+identitySynonymFunSummary :: Page
+identitySynonymFunSummary = [\t -> do
+	writeTopTitle t "型シノニム族"
 	text t "", \t -> do
-	text t "* モナド関数の定義", \t -> do
-	itext t 1 "return :: a -> MaybeState s a"
-	itext t 1 "return x = MaybeState $ \\s -> (Just x, s)"
-	itext t 1 "", \t -> do
-	itext t 1 "(>>=) :: MaybeState s a -> (a -> MaybeState s b)"
-	itext t 2 "-> MaybeState s b"
-	itext t 1 "MaybeState x >>= f = MaybeState $ \\s ->"
-	itext t 2 "case x s of"
-	itext t 3 "(Just v, s') -> runMaybeState (f v) s'"
-	itext t 3 "(Nothing, s') -> (Nothing, s')"
+	text t "* 新しいデータ型ではなく既存のタイプへの別名となる", \t -> do
+	text t "* データ族と同様に型クラスと一緒に使うことで本領発揮", \t -> do
+	itext t 1 "class HaveIdentity a where"
+	itext t 2 "toIdentity :: a -> Maybe (Identity a)"
+	itext t 2 "fromIdentity :: Identity a -> a", \t -> do
+	itext t 1 "instance HaveIdentity Int where"
+	itext t 2 "toIdentity = toIdentityInt"
+	itext t 2 "fromIdentity = fromIdentityInt", \t -> do
+	itext t 1 "instance HaveIdentity Char where"
+	itext t 2 "toIdentity = toIdentityChar"
+	itext t 2 "fromIdentity = fromIdentityChar"
  ]
 
-maybeState3 :: Page
-maybeState3 = [\t -> do
-	writeTopTitle t "失敗と状態のある計算2"
+typeSynonymFamiliesSummary :: Page
+typeSynonymFamiliesSummary = [\t -> do
+	writeTopTitle t "型シノニム族(まとめ)"
 	text t "", \t -> do
-	text t "* 状態用の関数の定義", \t -> do
-	itext t 1 "put :: s -> MaybeState s ()"
-	itext t 1 "put x = MaybeState $ \\_ -> (Just (), x)", \t -> do
-	itext t 1 "get :: MaybeState s s"
-	itext t 1 "get = MaybeState $ \\s -> (Just s, s)"
-	text t "", \t -> do
-	text t "* エラー用の関数の定義", \t -> do
-	itext t 1 "nothing :: MaybeState s a"
-	itext t 1 "nothing = MaybeState $ \\s -> (Nothing, s)"
+	text t "* 型に別名をつけるとき", \t -> do
+	itext t 1 "- 型をグループにまとめることができる", \t -> do
+	text t "* 型シノニム族の宣言", \t -> do
+	itext t 1 "type family Identity a", \t -> do
+	text t "* 型シノニム族のインスタンスの定義", \t -> do
+	itext t 1 "type instance Identity Int = [Int]"
+	itext t 1 "type instance Identity Char = (CharClass, Int)", \t -> do
+	text t "* 型クラスと一緒に使うことで本領を発揮する"
  ]
 
-maybeState4 :: Page
-maybeState4 = [\t -> do
-	writeTopTitle t "失敗と状態のある計算2"
+associatedTypeSynonym :: Page
+associatedTypeSynonym = [\t -> do
+	writeTopTitle t "関連型シノニム"
 	text t "", \t -> do
-	text t "* 使用例"
-	itext t 1 "addMemory, subMemory :: Int -> MaybeState Int ()"
-	itext t 1 "addMemory n = modify (+ n)", \t -> do
-	itext t 1 "subMemory n = modify (subtract n) >> checkMemory"
-	itext t 1 "", \t -> do
-	itext t 1 "checkMemory :: MaybeState Int ()"
-	itext t 1 "checkMemory = do"
-	itext t 2 "s <- get"
-	itext t 2 "when (s < 0) nothing"
+	text t "* 型クラスと一緒に使うとき用の構文糖が用意されている", \t -> do
+	itext t 1 "class HaveIdentity where"
+	itext t 2 "type Identity a"
+	itext t 2 "toIdentity :: a -> Maybe (Identity a)"
+	itext t 2 "fromIdentity :: Identity a -> a", \t -> do
+	itext t 1 "instance HaveIdentity Int where"
+	itext t 2 "type Identity Int = [Int]"
+	itext t 2 "...", \t -> do
+	itext t 1 "instance HaveIdentity Char where"
+	itext t 2 "type Identity Char = (CharClass, Int)"
+	itext t 2 "..."
  ]
 
-maybeState5 :: Page
-maybeState5 = [\t -> do
-	writeTopTitle t "失敗と状態のある計算2"
+associatedTypeSynonymSummary :: Page
+associatedTypeSynonymSummary = [\t -> do
+	writeTopTitle t "関連型シノニム(まとめ)"
 	text t "", \t -> do
-	text t "* 使用例", \t -> do
-	itext t 1 "subAll :: Int -> [Int] -> MaybeState Int Int"
-	itext t 1 "subAll n ss = do"
-	itext t 2 "addMemory n"
-	itext t 2 "mapM_ subMemory ss"
-	itext t 2 "get"
- ]
-
-maybeStateSummary :: Page
-maybeStateSummary = [\t -> do
-	writeTopTitle t "失敗と状態のある計算2(まとめ)"
-	text t "", \t -> do
-	text t "* 失敗と状態のある計算の作りかたのもうひとつの例", \t -> do
-	itext t 1 "- Maybe (a, s)ではなく(Maybe a, s)とした", \t -> do
-	text t "* 前の定義とは違い、エラー後も状態が渡され続ける", \t -> do
-	itext t 1 "- 対話環境でのエラー等にはこっち"
- ]
-
-maybeIO :: Page
-maybeIO = [\t -> do
-	writeTopTitle t "失敗と入出力のある計算"
-	text t "", \t -> do
-	text t "* 今度は失敗と入出力のある計算について考えてみる", \t -> do
-	text t "* 例: ファイルの読み出し前にファイルの存在をチェック", \t -> do
-	itext t 1 "- ファイルが存在すればその内容を返し", \t -> do
-	itext t 1 "- 存在しなければ、その後の計算は行わない"
- ]
-
-maybeIO2 :: Page
-maybeIO2 = [\t -> do
-	writeTopTitle t "失敗と入出力のある計算", \t -> do
-	text t "* 型とモナド関数を定義する", \t -> do
-	itext t 1 "newtype MaybeIO a = MaybeIO {"
-	itext t 2 "runMaybeIO :: IO (Maybe a) }", \t -> do
-	itext t 1 "return :: a -> MaybeIO a"
-	itext t 1 "return x = MaybeIO $ return $ Just x", \t -> do
-	itext t 1 "(>>=) :: MaybeIO a -> (a -> MaybeIO b) ->"
-	itext t 2 "MaybeIO b"
-	itext t 1 "MaybeIO io >>= f = MaybeIO $ do"
-	itext t 2 "mx <- io"
-	itext t 2 "case mx of"
-	itext t 3 "Just x -> runMaybeIO $ f x"
-	itext t 3 "_ -> return Nothing"
- ]
-
-maybeIO3 :: Page
-maybeIO3 = [\t -> do
-	writeTopTitle t "失敗と入出力のある計算"
-	text t "", \t -> do
-	text t "* 失敗用の関数を定義", \t -> do
-	itext t 1 "nothing :: MaybeIO a"
-	itext t 1 "nothing = MaybeIO $ return Nothing", \t -> do
-	text t "* IOをMaybeIOに持ち上げる関数", \t -> do
-	itext t 1 "lift :: IO a -> MaybeIO a"
-	itext t 1 "lift io = MaybeIO $ io >>= return . Just"
- ]
-
-maybeIO4 :: Page
-maybeIO4 = [\t -> do
-	writeTopTitle t "失敗と入出力のある計算"
-	text t "", \t -> do
-	text t "* ファイルを読み込む関数", \t -> do
-	itext t 1 "- ファイルが存在しなければNothingを返す", \t -> do
-	itext t 1 "- 厳密には例外を補足する必要がある", \t -> do
-	itext t 1 "maybeReadFile :: FilePath -> MaybeIO String"
-	itext t 1 "maybeReadFile fp = do"
-	itext t 2 "ex <- lift $ doesFileExist fp"
-	itext t 2 "if ex"
-	preLine t
-	itext t 3 "then lift $ readFile fp"
-	itext t 3 "else nothing"
- ]
-
-maybeIO5 :: Page
-maybeIO5 = [\t -> do
-	writeTopTitle t "失敗と入出力のある計算"
-	text t "", \t -> do
-	text t "* 使用例", \t -> do
-	itext t 1 "test :: MaybeIO ()"
-	itext t 1 "test = do"
-	itext t 2 "fp <- lift getLine"
-	itext t 2 "cnt <- maybeReadFile fp"
-	itext t 2 "lift $ putStr cnt"
-	text t "", \t -> do
-	text t "* 入力した名前のファイルを読み込む", \t -> do
-	text t "* ファイルが存在しなければその後の計算は行われない"
- ]
-
-maybeIOSummary :: Page
-maybeIOSummary = [\t -> do
-	writeTopTitle t "失敗と入出力のある計算(まとめ)"
-	text t "", \t -> do
-	text t "* 失敗と入出力のある計算のモナドを定義した", \t -> do
-	text t "* 予想可能な例外が存在するIOを扱う場合", \t -> do
-	itext t 1 "- 例外を補足しこの種のモナドにしたほうがクリーン", \t -> do
-	itext t 1 "- 例外を本当に例外的な場面だけに", \t -> do
-	text t "* 例外処理に関しては後の講義で行う"
- ]
-
-maybeStateMaybeIO :: Page
-maybeStateMaybeIO = [\t -> do
-	writeTopTitle t "MaybeStateとMaybeIO"
-	text t "", \t -> do
-	text t "* 型の比較", \t -> do
-	itext t 1 "newtype MaybeState s a = MaybeState {"
-	itext t 2 "runMaybeState :: s -> (Maybe a, s) }", \t -> do
-	itext t 1 "newType MaybeIO a = MaybeIO {"
-	itext t 2 "runMaybeIO :: IO (Maybe a) }", \t -> do
-	text t "* s -> (Maybe a, s)の部分は実質的には以下と同じ", \t -> do
-	itext t 1 "State s (Maybe a)", \t -> do
-	text t "* よって以下のようになる", \t -> do
-	itext t 1 "newtype MaybeState s a = MaybeState {"
-	itext t 2 "runMaybeState :: State s (Maybe a) }"
- ]
-
-maybeStateMaybeIO2 :: Page
-maybeStateMaybeIO2 = [\t -> do
-	writeTopTitle t "MaybeStateとMaybeIO"
-	text t "", \t -> do
-	text t "* 型の比較", \t -> do
-	itext t 1 "newtype MaybeState s a = MaybeState {"
-	itext t 2 "runMaybeState :: State s (Maybe a) }", \t -> do
-	itext t 1 "newtype MaybeIO = MaybeIO {"
-	itext t 2 "runMaybeIO :: IO (Maybe a) }", \t -> do
-	text t "* これらは以下のようにまとめられる", \t -> do
-	itext t 1 "newtype MaybeT m a = MaybeT {"
-	itext t 2 "runMaybeT :: m (Maybe a) }"
- ]
-
-maybeT :: Page
-maybeT = [\t -> do
-	writeTopTitle t "MaybeT"
-	text t "", \t -> do
-	text t "* モナド関数", \t -> do
-	itext t 1 "return x = MaybeT $ return $ Just x", \t -> do
-	itext t 1 "MaybeT m >>= f = MaybeT $ do"
-	itext t 2 "v <- m"
-	itext t 2 "case v of"
-	itext t 3 "Just x -> runMaybeT $ f x"
-	itext t 3 "_ -> return Nothing", \t -> do
-	text t "* エラー用の関数", \t -> do
-	itext t 1 "nothing :: Monad m => m a -> MaybeT m a"
-	itext t 1 "nothing = MaybeT $ return Nothing"
- ]
-
-maybeT2 :: Page
-maybeT2 = [\t -> do
-	writeTopTitle t "MaybeT"
-	text t "", \t -> do
-	text t "* 持ち上げ関数"
-	itext t 1 "lift :: Monad m => m a -> MaybeT m a"
-	itext t 1 "lift m = MaybeT $ do"
-	itext t 2 "v <- m"
-	itext t 2 "return $ Just v"
- ]
-
-maybeTSummary :: Page
-maybeTSummary = [\t -> do
-	writeTopTitle t "MaybeT(まとめ)"
-	text t "", \t -> do
-	text t "* 失敗する可能性を追加するMaybeTを定義した", \t -> do
-	text t "* nothingに到った時点で残りの計算は行われない", \t -> do
-	text t "* 基盤となるモナドはliftで失敗する可能性のあるモナドへ"
- ]
-
-lift :: Page
-lift = [\t -> do
-	writeTopTitle t "lift"
-	text t "", \t -> do
-	text t "* StateTとMaybeTの両方でliftを定義した", \t -> do
-	text t "* それぞれのliftの型は以下の通り", \t -> do
-	itext t 1 "Monad m => m a -> StateT m a", \t -> do
-	itext t 1 "Monad m => m a -> MaybeT m a", \t -> do
-	text t "* これらをクラス関数にまとめられる", \t -> do
-	itext t 1 "class MonadTrans t where"
-	itext t 2 "lift :: Monad m => m a -> t m a"
- ]
-
-liftSummary :: Page
-liftSummary = [\t -> do
-	writeTopTitle t "ここまでのまとめ"
-	text t "", \t -> do
-	text t "* モナドを積み重ねていく仕組みについて見てきた", \t -> do
-	text t "* lift関数を持つStateTやMaybeTについて見た", \t -> do
-	text t "* lift関数は基盤となるモナドを持ち上げる", \t -> do
-	text t "* lift関数をMonadTransクラスのメソッドとした"
- ]
-
-orgFunPrelude :: Page
-orgFunPrelude = [\t -> do
-	writeTopTitle t "特有の関数"
-	text t "", \t -> do
-	text t "* StateTやMaybeTにはモナド関数以外に特有の関数がある", \t -> do
-	itext t 1 "- StateTであればputやget", \t -> do
-	itext t 1 "- MaybeTであればnothing", \t -> do
-	text t "* それらをクラス関数とすると便利", \t -> do
-	itext t 1 "- StateTを使わないで同じ性質のモナドを作れる", \t -> do
-	itext t 1 "- 他の変換子を積み上げたモナドもput, getが使える"
- ]
-
-orgFun :: Page
-orgFun = [\t -> do
-	writeTopTitle t "特有の関数"
-	text t "", \t -> do
-	text t "* put, getを提供するクラスを定義する", \t -> do
-	itext t 1 "class Monad m => MonadState m where"
-	itext t 2 "type StateType m"
-	itext t 2 "get :: m (StateType m)"
-	itext t 2 "put :: StateType m -> m ()"
- ]
-
-orgFun2 :: Page
-orgFun2 = [\t -> do
-	writeTopTitle t "特有の関数"
-	text t "", \t -> do
-	text t "* MonadStateクラスのモナドをMaybeTで持ち上げるとする", \t -> do
-	text t "* 事前に以下のインスタンス宣言をしておく", \t -> do
-	itext t 1 "instance MonadState m =>"
-	itext t 1.5 "MonadState (MaybeT m) where"
-	itext t 2 "type StateType (MaybeT m) = StateType m"
-	itext t 2 "get = lift get"
-	itext t 2 "put = lift . put", \t -> do
-	text t "* すると持ち上げ後のモナドでもgetとputが自然に使える"
- ]
-
-orgFunSummary :: Page
-orgFunSummary = [\t -> do
-	writeTopTitle t "特有の関数(まとめ)"
-	text t "", \t -> do
-	text t "* モナド変換子に特有な関数をクラス関数とすると便利", \t -> do
-	itext t 1 "- 多段モナドで下のモナドの関数を自然に使える", \t -> do
-	itext t 1 "- 同様のふるまいをする違う実装のモナドが作れる"
+	text t "* 型シノニム族も型クラスと一緒に使われることが多い", \t -> do
+	text t "* 特別な構文が用意されている", \t -> do
+	itext t 1 "- その型族が宣言されたクラスでしか使えない", \t -> do
+	itext t 1 "- familyやinstanceを省略する"
  ]
 
 summary :: Page
 summary = [\t -> do
 	writeTopTitle t "まとめ"
 	text t "", \t -> do
-	text t "* いろいろな性質を持つモナドを組み合わせる", \t -> do
-	text t "* 下のモナドを上のモナドに持ち上げるliftを書く", \t -> do
-	text t "* liftはMonadTransクラスのメソッドとした", \t -> do
-	text t "* モナド変換子ごとにそれぞれのクラスを作成", \t -> do
-	itext t 1 "- 特有の関数はそこにまとめておけば良い", \t -> do
-	text t "* StateTとMaybeT以外にも多くのモナド変換子が考えられる", \t -> do
-	text t "* monads-tfパッケージにまとまっている"
- ]
-
-preludeMonadsTf :: Page
-preludeMonadsTf = [\t -> do
-	text t "* そういったことを行うためのパッケージが用意されている", \t -> do
-	itext t 1 "- パッケージは「第28回 cabalの使いかた」で", \t -> do
-	itext t 1 "- パッケージの名前はmonads-tf"
+	text t "* 型族について学んだ", \t -> do
+	text t "* 構造の違う型をグループとしてまとめることができる", \t -> do
+	text t "* 型クラスと一緒に使うと便利", \t -> do
+	text t "* 記法には以下の特徴がある", \t -> do
+	itext t 1 "- トップレベルではfamilyやinstanceをつける", \t -> do
+	itext t 1 "- クラスやインスタンス宣言のなかではつけない", \t -> do
+	text t "* クラス内で宣言されたものは関連型と呼ばれる", \t -> do
+	text t "* とくに関連型シノニムは次回のmonads-tfで使われている"
  ]
