@@ -14,7 +14,7 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第9回 落ち穂拾い
 第10回 ghcの使いかた (runghc, ghciやその他のオプションについて)
 ---
-第11回 ファイル入出力
+(未) 第11回 ファイル入出力
 第12回 ドキュメンテーション(haddock)
 第13回 ランダム
 第14回 テスト(型によるチェック、展開による証明、doctest, quickcheck, hunit)
@@ -41,7 +41,7 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第34回 cabalの使いかた(テストの自動化も含めて)
 ---
 第35回 GADTs
-第36回 functor, applicative, monad
+第36回 functor, applicative, monad (MonadPlusの話題にも触れたい)
 第37回 free monad
 第38回 operational monad
 第39回 並行実行
@@ -148,3 +148,5 @@ GADTsあたりで触れられるだろうか。
 
 どこかでファイルの入出力についても触れる必要があるな。
 初級編のどこかで触れるべきかもしれないな。
+
+guardについてどこかで触れる必要がある。
