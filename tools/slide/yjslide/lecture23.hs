@@ -8,7 +8,8 @@ main = runLecture pages
 
 pages :: [Page]
 pages = [
-	titlePage, prelude, prelude2, prelude3, resource
+	titlePage, prelude, prelude2, prelude3,
+	resource, resource2
 --	exceptionOccur, exceptionCatchAll,
 --	selectException, selectException2, selectException3,
 --	hierarchy
@@ -65,7 +66,7 @@ resource = [\t -> do
 	writeTopTitle t "リソースの解放"
 	text t "", \t -> do
 	text t "* 例外を捕捉したくなる場面にはいくつかある", \t -> do
-	text t "* 例外が発生してから捕捉するまでのコードを実行されない", \t -> do
+	text t "* 例外が発生してから捕捉するまでのコードは実行されない", \t -> do
 	text t "* 何らかのリソースを確保した場合", \t -> do
 	itext t 1 "- それが解放されることを保証したい", \t -> do
 	text t "* この場合、例外の捕捉は以下のようになる", \t -> do
@@ -74,6 +75,17 @@ resource = [\t -> do
 	itext t 1 "- 同じ例外をもう一度投げ直す", \t -> do
 	text t "* この枠組を抽象化した関数が用意されている", \t -> do
 	text t "bracket :: IO a -> (a -> IO b) -> (a -> IO c) -> IO c"
+ ]
+
+resource2 :: Page
+resource2 = [\t -> do
+	writeTopTitle t "リソースの解放"
+	text t "", \t -> do
+	text t "* 使いかた", \t -> do
+	itext t 1 "bracket ::"
+	itext t 2 "IO a -> (a -> IO b) -> (a -> IO c) -> IO c"
+	itext t 1 "bracket [確保] [解放] [行いたい処理]", \t -> do
+	text t "例: bracket (openFile \"file\" ReadMode) hClose hGetLine"
  ]
 
 prelude_ :: Page

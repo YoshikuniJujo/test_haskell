@@ -2,6 +2,7 @@
 
 import Control.Exception
 import Control.Applicative
+import System.IO
 
 maybeReadFile :: FilePath -> IO (Maybe String)
 maybeReadFile fp = (Just <$> readFile fp)
@@ -28,3 +29,6 @@ instance Some Bool
 
 whichError :: Int
 whichError = error "urk" + (1 `div` 0)
+
+readFirstLine :: FilePath -> IO String
+readFirstLine fp = bracket (openFile fp ReadMode) hClose hGetLine
