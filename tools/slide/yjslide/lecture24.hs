@@ -9,9 +9,10 @@ main = runLecture pages
 pages :: [Page]
 pages = [
 	titlePage, prelude, prelude2, prelude3,
-	resource, resource2, finalizer, onError,
+	resource, resource2, finalizer, onError, finallySummary,
 	syncAsync, syncAsync2, syncAsync3,
-	useTry, useTry2, useTry3, useTry4, useTry5, useTry6
+	useTry, useTry2, useTry3, useTry4, useTry5, useTry6, useTrySummary,
+	useCatch
 --	exceptionOccur, exceptionCatchAll,
 --	selectException, selectException2, selectException3,
 --	hierarchy
@@ -116,6 +117,19 @@ onError = [\t -> do
 	text t "", \t -> do
 	text t "例: readFile \"test.txt\" `onException`"
 	itext t 2 "putStrLn \"read error\""
+ ]
+
+finallySummary :: Page
+finallySummary = [\t -> do
+	writeTopTitle t "後処理(まとめ)"
+	text t "", \t -> do
+	text t "* 例外の発生にかかわらず必ず実行したい後処理", \t -> do
+	itext t 1 "finally :: IO a -> IO b -> IO a", \t -> do
+	text t "* 後処理のなかで典型的なものがリソースの解放処理", \t -> do
+	itext t 1 "bracket ::"
+	itext t 2 "IO a -> (a -> IO c) -> (a -> IO c) -> IO c", \t -> do
+	text t "* 例外発生時にだけ行いたい後処理", \t -> do
+	itext t 1 "onError :: IO a -> IO b -> IO a"
  ]
 
 syncAsync :: Page
@@ -262,6 +276,26 @@ useTry6 = [\t -> do
 	text t "* 今は以下のように考えておけば良い", \t -> do
 	itext t 1 "guard True = Just ()"
 	itext t 1 "guard _ = Nothing"
+ ]
+
+useTrySummary :: Page
+useTrySummary = [\t -> do
+	writeTopTitle t "同期例外の捕捉(まとめ)"
+	text t "", \t -> do
+	text t "* 同期例外の捕捉にはtryを使う", \t -> do
+	itext t 1 "try :: Exception e => IO a -> IO (Either e e)", \t -> do
+	text t "* 型eを決めてやる必要がある", \t -> do
+	text t "* より細かく制御するためにはtryJustを使う", \t -> do
+	itext t 1 "tryJust :: Exception e =>"
+	itext t 2 "(e -> Maybe b) -> IO a -> IO (Either b a)", \t -> do
+	text t "* (e -> Maybe b)型の関数で捕捉する例外をしぼり込む"
+ ]
+
+useCatch :: Page
+useCatch = [\t -> do
+	writeTopTitle t "非同期例外の捕捉"
+	text t "", \t -> do
+	text t "* 非同期例外の捕捉にはtryは使わない"
  ]
 
 prelude_ :: Page
