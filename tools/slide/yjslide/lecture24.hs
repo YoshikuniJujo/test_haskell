@@ -296,7 +296,13 @@ useCatch :: Page
 useCatch = [\t -> do
 	writeTopTitle t "非同期例外の捕捉"
 	text t "", \t -> do
-	text t "* 非同期例外の捕捉にはtryは使わない"
+	text t "* 非同期例外の捕捉にはtryは使わない", \t -> do
+	text t "* tryを使うと例外処理はmaskの外で行われることになる", \t -> do
+	text t "* たとえば、", \t -> do
+	itext t 1 "- getLine中にCtrl+Cを捕捉してretryするようなとき", \t -> do
+	itext t 1 "- 例外処理がmaskの外にあると", \t -> do
+	itext t 1 "- 例外処理中にCtrl+Cを受け取り例外終了する可能性", \t -> do
+	text t "* 例外の捕捉からもれてしまう可能性がある"
  ]
 
 prelude_ :: Page
