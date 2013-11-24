@@ -15,7 +15,9 @@ pages = [
 	useCatch, useCatch2, useCatch3, useCatch4, useCatch5, useCatchSummary,
 	useCatches, useCatches2, useCatchesSummary,
 	catchAll, catchAll2, catchAllSummary,
-	myException
+	useEvaluate, useEvaluate2, useEvaluate3, useEvaluate4, useEvaluateSummary,
+	useThrow
+--	myException
 --	exceptionOccur, exceptionCatchAll,
 --	selectException, selectException2, selectException3,
 --	hierarchy
@@ -435,13 +437,6 @@ catchAll = [\t -> do
 	itext t 1 "- 例外時のデフォルトの動作よりもおだやかに終了"
  ]
 
-myException :: Page
-myException = [\t -> do
-	writeTopTitle t "自作の例外型を使う"
-	text t "", \t -> do
-	text t "* 例外型を自分で作ることができる"
- ]
-
 catchAll2 :: Page
 catchAll2 = [\t -> do
 	writeTopTitle t "すべての例外の捕捉"
@@ -463,6 +458,89 @@ catchAllSummary = [\t -> do
 	text t "* すべての例外を捕捉するのは以下のときくらい", \t -> do
 	itext t 1 "- プログラムをきれいに終了させたい", \t -> do
 	text t "* その場合にはSomeException型を使えば良い"
+ ]
+
+useEvaluate :: Page
+useEvaluate = [\t -> do
+	writeTopTitle t "純粋なコードの例外"
+	text t "", \t -> do
+	text t "* 純粋なコードはIOに入れないと例外を捕捉できない", \t -> do
+	text t "* 例えば以下のようになる", \t -> do
+	itext t 1 "> try $ print $ 1 `div` 0"
+	itext t 2 ":: IO (Either ArithException ())"
+	itext t 1 "Left divide by zero"
+ ]
+
+useEvaluate2 :: Page
+useEvaluate2 = [\t -> do
+	writeTopTitle t "純粋なコードの例外"
+	text t "", \t -> do
+	text t "* 以下のようなコードを考える", \t -> do
+	itext t 1 "printDiv0 :: IO ()"
+	itext t 1 "printDiv0 = do"
+	itext t 2 "r <- try $ return $ 1 `div` 0"
+	itext t 3 ":: IO (Either ArithException Int)"
+	itext t 2 "case r of"
+	itext t 3 "Left e -> print e"
+	itext t 3 "Right n -> print n", \t -> do
+	itext t 1 "> printDiv0"
+	itext t 1 "*** Exception: divide by zero", \t -> do
+	text t "* なぜか例外が捕捉されない"
+ ]
+
+useEvaluate3 :: Page
+useEvaluate3 = [\t -> do
+	writeTopTitle t "純粋なコードの例外"
+	text t "", \t -> do
+	text t "* 例外が捕捉されなかったのはなぜか?", \t -> do
+	itext t 1 "- Haskellにおいて式は遅延評価されるので", \t -> do
+	itext t 1 "- return $ 1 `div` 0の時点では式は評価されない", \t -> do
+	itext t 1 "- Right n -> print nの時点で値が必要となり", \t -> do
+	itext t 1 "- 1 `div` 0が評価され例外が発生する", \t -> do
+	text t "* 式が書かれている場所で例外を捕捉するには", \t -> do
+	itext t 1 "- その時点での式の評価を強制する必要がある", \t -> do
+	text t "* evaluateを使う", \t -> do
+	itext t 1 "evaluate :: a -> IO a"
+ ]
+
+useEvaluate4 :: Page
+useEvaluate4 = [\t -> do
+	writeTopTitle t "純粋なコードの例外"
+	text t "", \t -> do
+	text t "* printDiv0を書き換える", \t -> do
+	itext t 1 "printDiv0 = do"
+	itext t 2 "r <- try $ evaluate $ 1 `div` 0"
+	itext t 3 ":: IO (Either ArithException Int)"
+	itext t 2 "case r of"
+	itext t 3 "Left e -> print e"
+	itext t 3 "Right n -> print n", \t -> do
+	itext t 1 "> printDiv0"
+	itext t 1 "divide by zero", \t -> do
+	text t "* 例外が捕捉された"
+ ]
+
+useEvaluateSummary :: Page
+useEvaluateSummary = [\t -> do
+	writeTopTitle t "純粋なコードの例外(まとめ)"
+	text t "", \t -> do
+	text t "* 純粋なコードから例外を捕捉するにはIOに入れる", \t -> do
+	text t "* そのIO内でそのコードが評価される必要がある", \t -> do
+	text t "* それを保証するための関数がevaluateである", \t -> do
+	itext t 1 "evaluate :: a -> IO a"
+ ]
+
+useThrow :: Page
+useThrow = [\t -> do
+	writeTopTitle t "例外を投げる"
+	text t "", \t -> do
+	text t "* 例外を自分で投げることができる"
+ ]
+
+myException :: Page
+myException = [\t -> do
+	writeTopTitle t "自作の例外型を使う"
+	text t "", \t -> do
+	text t "* 例外型を自分で作ることができる"
  ]
 
 prelude_ :: Page

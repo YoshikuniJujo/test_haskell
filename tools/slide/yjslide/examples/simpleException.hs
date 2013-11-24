@@ -32,3 +32,19 @@ whichError = error "urk" + (1 `div` 0)
 
 readFirstLine :: FilePath -> IO String
 readFirstLine fp = bracket (openFile fp ReadMode) hClose hGetLine
+
+printDiv0 :: IO ()
+printDiv0 = do
+	r <- try $ return $ 1 `div` 0 :: IO (Either ArithException Int)
+	case r of
+		Left e -> print e
+		Right n -> print n
+
+printDiv0' :: IO ()
+printDiv0' = do
+	r <- try $ evaluate $ 1 `div` 0 :: IO (Either ArithException Int)
+	case r of
+		Left e -> print e
+		Right n -> print n
+
+-- data MyException = MyException
