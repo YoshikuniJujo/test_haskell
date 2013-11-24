@@ -12,7 +12,10 @@ pages = [
 	resource, resource2, finalizer, onError, finallySummary,
 	syncAsync, syncAsync2, syncAsync3,
 	useTry, useTry2, useTry3, useTry4, useTry5, useTry6, useTrySummary,
-	useCatch
+	useCatch, useCatch2, useCatch3, useCatch4, useCatch5, useCatchSummary,
+	useCatches, useCatches2, useCatchesSummary,
+	catchAll, catchAll2, catchAllSummary,
+	myException
 --	exceptionOccur, exceptionCatchAll,
 --	selectException, selectException2, selectException3,
 --	hierarchy
@@ -302,7 +305,164 @@ useCatch = [\t -> do
 	itext t 1 "- getLine中にCtrl+Cを捕捉してretryするようなとき", \t -> do
 	itext t 1 "- 例外処理がmaskの外にあると", \t -> do
 	itext t 1 "- 例外処理中にCtrl+Cを受け取り例外終了する可能性", \t -> do
-	text t "* 例外の捕捉からもれてしまう可能性がある"
+	text t "* 例外の捕捉からもれてしまう可能性がある", \t -> do
+	text t "* catchを使う", \t -> do
+	itext t 1 "catch :: Exception e =>"
+	itext t 2 "IO a -> (e -> IO a) -> IO a"
+ ]
+
+useCatch2 :: Page
+useCatch2 = [\t -> do
+	writeTopTitle t "非同期例外の捕捉"
+	text t "", \t -> do
+	text t "* 例を見てみよう", \t -> do
+	itext t 1 "> getLine `catch` \\(e :: AsyncException) -> "
+	itext t 2 "print e >> return \"\"", \t -> do
+	itext t 1 "Ctrl-C", \t -> do
+	itext t 1 "user interrupt"
+	itext t 1 "\"\""
+ ]
+
+useCatch3 :: Page
+useCatch3 = [\t -> do
+	writeTopTitle t "非同期例外の捕捉"
+	text t "", \t -> do
+	text t "* tryJustと同様のcatchJustがある", \t -> do
+	itext t 1 "catchJust :: Exception e => (e -> Maybe b) ->"
+	itext t 2 "IO a -> (b -> IO a) -> IO a", \t -> do
+	text t "* これは仮想的なcatchTrueと同じこと", \t -> do
+	itext t 1 "catchTrue :: Exception e => (e -> Bool) ->"
+	itext t 2 "IO a -> (e -> IO a) -> IO a", \t -> do
+	text t "* BoolではなくMaybe bにしているのは", \t -> do
+	itext t 1 "- Bool値を求めるだけでなく追加の処理を行える"
+ ]
+
+useCatch4 :: Page
+useCatch4 = [\t -> do
+	writeTopTitle t "非同期例外の捕捉"
+	text t "", \t -> do
+	text t "* catchJustによる例外のしぼりこみ", \t -> do
+	itext t 1 "> catchJust (guard . (== UserInterrupt)"
+	itext t 3 ":: AsyncException -> Maybe ())"
+	itext t 2 "getLine (const $ return \"\")", \t -> do
+	itext t 1 "Ctrl-C", \t -> do
+	itext t 1 "\"\""
+ ]
+
+useCatch5 :: Page
+useCatch5 = [\t -> do
+	writeTopTitle t "非同期例外の捕捉"
+	text t "", \t -> do
+	text t "* catch, catchJustの引数の順番を変えただけの関数がある", \t -> do
+	itext t 1 "handle :: Exception e =>"
+	itext t 2 "(e -> IO a) -> IO a -> IO a", \t -> do
+	itext t 1 "handleJust :: Exception e => (e -> Maybe b) ->"
+	itext t 2 "(b -> IO a) -> IO a -> IO a", \t -> do
+	text t "* 以下のようなスタイルで使うと便利", \t -> do
+	itext t 1 "handle someHandler $ do"
+	itext t 2 "runSomeIO"
+	itext t 2 "runNextIO"
+ ]
+
+useCatchSummary :: Page
+useCatchSummary = [\t -> do
+	writeTopTitle t "非同期例外の捕捉(まとめ)"
+	text t "", \t -> do
+	text t "* 非同期例外はcatchを使って捕捉する", \t -> do
+	text t "* 例外処理は非同期例外がmaskされた状態で実行される", \t -> do
+	text t "* 捕捉する例外をしぼりこむにはcatchJustを使う", \t -> do
+	text t "* ScopedTypeVariables拡張を使うと書きやすい", \t -> do
+	itext t 1 "catch getLine $ \\(e :: AsyncException) -> ...", \t -> do
+	text t "* 場面合わせてhandle, handleJustを使う"
+ ]
+
+useCatches :: Page
+useCatches = [\t -> do
+	writeTopTitle t "複数種類の例外の捕捉"
+	text t "", \t -> do
+	text t "* 複数の種類の例外を捕捉したい場合", \t -> do
+	itext t 0 "expr"
+	preLine t
+	itext t 1 "`catch` \\(ex :: ArithException) -> handleArith ex"
+	itext t 1 "`catch` \\(ex :: IOException) -> handleIO ex", \t -> do
+	text t "* しかし、これには問題がある", \t -> do
+	itext t 1 "- 例外の捕捉を2度行っているため非効率", \t -> do
+	itext t 1 "- ひとつめの例外処理中に生じた例外を"
+	itext t 2 "ふたつめの例外処理が捕捉してしまう", \t -> do
+	text t "* catches関数を使う", \t -> do
+	itext t 1 "catches :: IO a -> [Handler a] -> IO a"
+ ]
+
+useCatches2 :: Page
+useCatches2 = [\t -> do
+	writeTopTitle t "複数種類の例外の捕捉"
+	text t "", \t -> do
+	text t "* Handler aとは何か?", \t -> do
+	itext t 1 "data Handler a = forall e . Exception e =>"
+	itext t 2 "Handler (e -> IO a)", \t -> do
+	text t "* 複数の型をひとつの型にまとめる", \t -> do
+	itext t 1 "- 存在型を使っている", \t -> do
+	text t "* 以下のように使う", \t -> do
+	itext t 0 "expr `catches` ["
+	itext t 0.8 "Handler (\\(ex :: ArithException) -> handleArith ex,"
+	itext t 0.8 "Handler (\\(ex :: IOException) -> handleIO ex ]"
+ ]
+
+useCatchesSummary :: Page
+useCatchesSummary = [\t -> do
+	writeTopTitle t "複数種類の例外の捕捉(まとめ)"
+	text t "", \t -> do
+	text t "* 複数の種類の例外を捕捉するにはcathesを使う", \t -> do
+	text t "* catchesは例外処理関数のリストを取る", \t -> do
+	text t "* 例外処理関数はそれぞれ型が異なる", \t -> do
+	text t "* 型をまとめるためにHandlerを使う"
+ ]
+
+catchAll :: Page
+catchAll = [\t -> do
+	writeTopTitle t "すべての例外の捕捉"
+	text t "", \t -> do
+	text t "* すべての例外を捕捉しようと思ったら", \t -> do
+	itext t 1 "- まずは「本当にそれが必要か」考えること", \t -> do
+	text t "* すべての例外を捕捉することが不適切である例", \t -> do
+	itext t 1 "- readFileでファイルがないときは\"\"を返したい", \t -> do
+	itext t 1 "- こういうときに「すべての例外を捕捉」すると", \t -> do
+	itext t 1 "- ユーザーがCtrl-Cで終了しようとしたとき", \t -> do
+	itext t 1 "- 「空文字列を使い処理を続行」となってしまう", \t -> do
+	text t "* すべての例外を捕捉する場面は以下の場合以外あまりない", \t -> do
+	itext t 1 "- プログラムのトップレベルにおいて", \t -> do
+	itext t 1 "- 例外をなんらかの形で記録または表示して", \t -> do
+	itext t 1 "- 例外時のデフォルトの動作よりもおだやかに終了"
+ ]
+
+myException :: Page
+myException = [\t -> do
+	writeTopTitle t "自作の例外型を使う"
+	text t "", \t -> do
+	text t "* 例外型を自分で作ることができる"
+ ]
+
+catchAll2 :: Page
+catchAll2 = [\t -> do
+	writeTopTitle t "すべての例外の捕捉"
+	text t "", \t -> do
+	text t "* 例外は階層構造になっている", \t -> do
+	text t "* 最上位にある型はSomeException", \t -> do
+	text t "* SomeExceptionを使えばすべての例外が捕捉できる", \t -> do
+	itext t 1 "runProgram `catch` \\(e :: SomeExpression) ->"
+	itext t 2 "handleError e"
+ ]
+
+catchAllSummary :: Page
+catchAllSummary = [\t -> do
+	writeTopTitle t "すべての例外の捕捉(まとめ)"
+	text t "", \t -> do
+	text t "* できるだけ限定して例外を捕捉するべき", \t -> do
+	text t "* 例外自体には興味がなく「どんなときも」行いたい後処理", \t -> do
+	itext t 1 "- bracket, finally, onExceptionを使う", \t -> do
+	text t "* すべての例外を捕捉するのは以下のときくらい", \t -> do
+	itext t 1 "- プログラムをきれいに終了させたい", \t -> do
+	text t "* その場合にはSomeException型を使えば良い"
  ]
 
 prelude_ :: Page
