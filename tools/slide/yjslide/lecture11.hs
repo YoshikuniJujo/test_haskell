@@ -10,7 +10,10 @@ pages :: [Page]
 pages = [
 	titlePage, prelude,
 	useInteract, useInteract2, useInteract3, useInteract4, useInteract5,
-	useInteractSummary
+	useInteractSummary,
+	useGetContents, useGetContents2, useGetContents3, useGetContents4,
+	useGetContents5,
+	usePutStr, badReadWrite, badReadWrite2
  ]
 
 titlePage :: Page
@@ -112,4 +115,119 @@ useInteractSummary = [\t -> do
 	itext t 1 "- ファイルを読み書きするにはリダイレクトを使う", \t -> do
 	text t "* IOモナドというパラダイムより手前にあるやりかた", \t -> do
 	text t "* 積極的に使おう"
+ ]
+
+useGetContents :: Page
+useGetContents = [\t -> do
+	writeTopTitle t "遅延リストを使う"
+	text t "", \t -> do
+	text t "* interactでは標準入力からの入力しか使えない", \t -> do
+	text t "* 複数の入力を扱いたい", \t -> do
+	text t "* それぞれの入力に対してひとつのリストを割り当てる", \t -> do
+	text t "* リストの要素が必要とされたときに入力値が読み込まれる", \t -> do
+	text t "* コード側から見たイメージはひとつの大きなリストがある", \t -> do
+	text t "* 動作としてのイメージは読み込みたびに大きくなるリスト", \t -> do
+	text t "* リストの前のほうの要素は2回以上使われなければGCされる", \t -> do
+	arrowIText t 1 "定数空間でファイルの読み込みが可能"
+ ]
+
+useGetContents2 :: Page
+useGetContents2 = [\t -> do
+	writeTopTitle t "遅延リストを使う", \t -> do
+	text t "* このパラダイムを採用している関数に以下のものがある", \t -> do
+	itext t 1 "readFile :: FilePath -> IO String", \t -> do
+	itext t 1 "getContents :: IO String", \t -> do
+	itext t 1 "hGetContents :: Handle -> IO String", \t -> do
+	text t "* getContentsは標準入力とリストを結びつける", \t -> do
+	itext t 1 "- Stringは[Char]の別名であることに注意", \t -> do
+	text t "* 以下でinputという遅延リストと標準入力が結びつけられる", \t -> do
+	itext t 1 "input <- getContents", \t -> do
+	text t "* interactはgetContentsを使って以下のように書ける", \t -> do
+	itext t 1 "interact f = do"
+	itext t 2 "input <- getContents"
+	itext t 2 "putStr (f input)"
+ ]
+
+useGetContents3 :: Page
+useGetContents3 = [\t -> do
+	writeTopTitle t "遅延リストを使う"
+	text t "", \t -> do
+	text t "* ファイルを読み込む", \t -> do
+	itext t 1 "readFile :: FilePath -> IO String", \t -> do
+	text t "* FilePathはStringの別名なのでファイル名は文字列で指定", \t -> do
+	text t "* 以下でリストcntとファイル\"some.txt\"とが結びつく", \t -> do
+	itext t 1 "cnt <- readFile \"some.txt\"", \t -> do
+	text t "* cntの要素が必要となるたびにファイルから読み込む", \t -> do
+	itext t 1 "- unsafeInteraleaveIOという関数が使われている", \t -> do
+	itext t 1 "- この関数については後のほうの講義で扱う"
+ ]
+
+useGetContents4 :: Page
+useGetContents4 = [\t -> do
+	writeTopTitle t "遅延リストを使う"
+	text t "", \t -> do
+	text t "* readFileとgetContentsはhGetContentsで定義されている", \t -> do
+	itext t 1 "getContents = hGetContents stdin", \t -> do
+	itext t 1 "readFile name ="
+	itext t 2 "openFile name ReadMode >>= hGetContents", \t -> do
+	text t "* stdinは最初から用意されているHandle", \t -> do
+	text t "* openFileはファイルを指定してHandleを返す関数", \t -> do
+	text t "* Handleについては後でやる"
+ ]
+
+useGetContents5 :: Page
+useGetContents5 = [\t -> do
+	writeTopTitle t "遅延リストを使う"
+	text t "", \t -> do
+	text t "* ファイルを読み込んで表示する関数", \t -> do
+	itext t 1 "putTestFile :: IO ()"
+	itext t 1 "putTestFile = do"
+	itext t 2 "cnt <- readFile \"test.txt\""
+	itext t 2 "putStr cnt", \t -> do
+	text t "* もちろん以下のように書いても良い", \t -> do
+	itext t 1 "putTestFile = readFile \"test.txt\" >>= putStr"
+ ]
+
+usePutStr :: Page
+usePutStr = [\t -> do
+	writeTopTitle t "出力"
+	text t "", \t -> do
+	text t "* 文字列を出力する関数には以下のものがある", \t -> do
+	itext t 1 "writeFile :: FilePath -> String -> IO ()", \t -> do
+	itext t 1 "appendFile :: FilePath -> String -> IO ()", \t -> do
+	itext t 1 "putStr :: String -> IO ()", \t -> do
+	itext t 1 "hPutStr :: Handle -> String -> IO ()", \t -> do
+	text t "* writeFileはファイルへの書き出し", \t -> do
+	text t "* appendFileはファイルへの追加書き込み", \t -> do
+	text t "* putStrは標準出力への書き出し", \t -> do
+	text t "* より基本的な関数としてhPutStrがある"
+ ]
+
+badReadWrite :: Page
+badReadWrite = [\t -> do
+	writeTopTitle t "落とし穴"
+	text t "", \t -> do
+	text t "* readFileによって得られるのは遅延リストである", \t -> do
+	text t "* readFileはリストの最後の要素が評価されると終了する", \t -> do
+	text t "* 以下の例を見てみよう", \t -> do
+	itext t 1 "main :: IO ()"
+	itext t 1 "main = do"
+	itext t 2 "cnt <- readFile \"tmp.txt\""
+	itext t 2 "writeFile \"tmp.txt\" cnt", \t -> do
+	text t "* これを実行すると以下のエラーが生じる", \t -> do
+	itext t 1 "some.hs: tmp.txt:"
+	itext t 2 "openFile: resource busy (file is locked)", \t -> do
+	text t "* tmp.txtが使用中なので書き込み用に開けなかった"
+ ]
+
+badReadWrite2 :: Page
+badReadWrite2 = [\t -> do
+	writeTopTitle t "落とし穴"
+	text t "", \t -> do
+	text t "* 遅延リストに関係づけられたIO処理はIO全体に散らばる", \t -> do
+	text t "* プログラムが複雑になると予期せぬエラーを生じ得る", \t -> do
+	text t "* 読み込みエラーがコードの広い範囲に生じ得るため", \t -> do
+	itext t 1 "- 例外を捕捉するのも難しくなる", \t -> do
+	dvArrowShort t
+	text t "readFileやgetContentsの使用は単純なコードのみとすべし"
  ]
