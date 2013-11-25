@@ -30,19 +30,3 @@
 * 並行プログラミングのあたりで
 	- throwTo
 	- mask
-
-* 第11回
-	- 次は文字コードの話
-	- 改行の話
-	- バッファリングの話
-	- BinaryModeの話
-	- seekの話
-	- hWaitForInput, hReadyの話
-	- より低レベルな出力の話
-		hPutBuf
-		hGetBuf
-		hGetBufSome
-		hGetBufNonBlocking
-	- hSetEncoding
-	- hSetNewLineMode
-	- withBinaryFile, openBinaryFile
