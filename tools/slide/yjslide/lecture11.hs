@@ -13,7 +13,8 @@ pages = [
 	useInteractSummary,
 	useGetContents, useGetContents2, useGetContents3, useGetContents4,
 	useGetContents5,
-	usePutStr, badReadWrite, badReadWrite2
+	usePutStr, badReadWrite, badReadWrite2,
+	useGetLine, useOpenFile, useOpenFile2, useHIsEOF
  ]
 
 titlePage :: Page
@@ -229,5 +230,68 @@ badReadWrite2 = [\t -> do
 	text t "* 読み込みエラーがコードの広い範囲に生じ得るため", \t -> do
 	itext t 1 "- 例外を捕捉するのも難しくなる", \t -> do
 	dvArrowShort t
-	text t "readFileやgetContentsの使用は単純なコードのみとすべし"
+	text t "readFileやgetContentsはIOの部分が単純なコードにのみ", \t -> do
+	itext t 1 "- フィルタ的な用途にしぼる", \t -> do
+	itext t 1 "- 走査は一回のみとする"
+ ]
+
+useGetLine :: Page
+useGetLine = [\t -> do
+	writeTopTitle t "行単位の読み込み"
+	text t "", \t -> do
+	text t "* 遅延リストとIOの絡み合いによる問題を回避したい", \t -> do
+	text t "* そのためには行単位の読み込みが使える", \t -> do
+	text t "* readFile等よりもよりIOモナドのパラダイムに忠実", \t -> do
+	itext t 1 "getLine :: IO String", \t -> do
+	itext t 1 "hGetLine :: Handle -> IO String", \t -> do
+	text t "* 使ってみる", \t -> do
+	itext t 1 "> getLine"
+	itext t 1 "hello"
+	itext t 1 "\"hello\"", \t -> do
+	text t "* ファイルからの読み込みにはファイルを開きHandleを入手"
+ ]
+
+useOpenFile :: Page
+useOpenFile = [\t -> do
+	writeTopTitle t "ファイルを開く"
+	text t "", \t -> do
+	text t "* ファイル入出力にはHandleを使う", \t -> do
+	text t "* ファイルを開いてHandleを入手する関数が用意されている", \t -> do
+	itext t 1 "openFile :: FilePath -> IOMode -> IO Handle", \t -> do
+	text t "* ファイルを閉じる関数", \t -> do
+	itext t 1 "hClose :: Handle -> IO ()", \t -> do
+	text t "* 使い終わったHandleを確実に閉じてくれる関数", \t -> do
+	itext t 1 "withFile :: FilePath -> IOMode ->"
+	itext t 3 "(Handle -> IO r) -> IO r", \t -> do
+	text t "* withFileだけ覚えておけば良い"
+ ]
+
+useOpenFile2 :: Page
+useOpenFile2 = [\t -> do
+	writeTopTitle t "ファイルを開く"
+	text t "", \t -> do
+	text t "* IOModeとは何か", \t -> do
+	itext t 1 "data IOMode"
+	itext t 2 "= ReadMode"
+	itext t 2 "| WriteMode"
+	itext t 2 "| AppendMode"
+	itext t 2 "| ReadWriteMode", \t -> do
+	text t "* 読んで字のごとし"
+ ]
+
+useHIsEOF :: Page
+useHIsEOF = [\t -> do
+	writeTopTitle t "ファイルの終了をチェック"
+	text t "", \t -> do
+	text t "* ファイルの終了をチェックする関数", \t -> do
+	itext t 1 "hIsEOF :: Handle -> IO Bool", \t -> do
+	text t "* 文字列を表示して改行を出力する関数", \t -> do
+	itext t 1 "putStrLn :: String -> IO ()", \t -> do
+	text t "* ファイルの中身を表示する関数を作る", \t -> do
+	itext t 1 "printFile :: FilePath -> IO ()"
+	itext t 1 "printFile fp = withFile fp ReadMode $ \\h -> do"
+	itext t 2 "eof <- hIsEOF h"
+	itext t 2 "if eof"
+	itext t 3 "then return ()"
+	itext t 3 "else hGetLine h >>= putStrLn"
  ]

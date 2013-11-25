@@ -20,7 +20,7 @@
 	- -Oについて説明する必要がある
 * どこかでgetArgsの使いかたを説明する必要があるな
 
-* 第11回はきちんとした英語で書き直そう
+* 第12回はきちんとした英語で書き直そう
 
 * 第24回
 	- IOError == IOExceptionについて
@@ -30,3 +30,8 @@
 * 並行プログラミングのあたりで
 	- throwTo
 	- mask
+
+* 第11回
+	- hSetEncoding
+	- hSetNewLineMode
+	- withBinaryFile, openBinaryFile
