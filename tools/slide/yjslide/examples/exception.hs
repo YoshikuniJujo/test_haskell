@@ -40,3 +40,24 @@ instance Exception MJException where
 instance Exception IJException where
 	toException = jToException
 	fromException = jFromException
+
+data HumanError = forall e . Exception e => HumanError e deriving Typeable
+
+instance Show HumanError where
+	show (HumanError e) = show e
+
+instance Exception HumanError
+
+humanErrorToException :: Exception e => e -> SomeException
+humanErrorToException = toException . HumanError
+
+humanErrorFromException :: Exception e => SomeException -> Maybe e
+humanErrorFromException se = do
+	HumanError e <- fromException se
+	cast e
+
+data ManError = ManError deriving (Show, Typeable)
+
+instance Exception ManError where
+	toException = humanErrorToException
+	fromException = humanErrorFromException

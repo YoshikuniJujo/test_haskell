@@ -1,8 +1,9 @@
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables, DeriveDataTypeable #-}
 
 import Control.Exception
 import Control.Applicative
 import System.IO
+import Data.Typeable
 
 maybeReadFile :: FilePath -> IO (Maybe String)
 maybeReadFile fp = (Just <$> readFile fp)
@@ -47,4 +48,6 @@ printDiv0' = do
 		Left e -> print e
 		Right n -> print n
 
--- data MyException = MyException
+data MyException = MyException deriving (Typeable, Show)
+
+instance Exception MyException

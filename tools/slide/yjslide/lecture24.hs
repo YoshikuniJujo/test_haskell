@@ -16,8 +16,10 @@ pages = [
 	useCatches, useCatches2, useCatchesSummary,
 	catchAll, catchAll2, catchAllSummary,
 	useEvaluate, useEvaluate2, useEvaluate3, useEvaluate4, useEvaluateSummary,
-	useThrow, useThrow2, useThrowSummary
---	myException
+	useThrow, useThrow2, useThrowSummary,
+	myException, myException2, myException3, myExceptionSummary,
+	myHierarchy, myHierarchy2, myHierarchy3, myHierarchy4, myHierarchy5,
+	summary
 --	exceptionOccur, exceptionCatchAll,
 --	selectException, selectException2, selectException3,
 --	hierarchy
@@ -134,7 +136,7 @@ finallySummary = [\t -> do
 	itext t 1 "bracket ::"
 	itext t 2 "IO a -> (a -> IO c) -> (a -> IO c) -> IO c", \t -> do
 	text t "* 例外発生時にだけ行いたい後処理", \t -> do
-	itext t 1 "onError :: IO a -> IO b -> IO a", \t -> do
+	itext t 1 "onException :: IO a -> IO b -> IO a", \t -> do
 	text t "* これらの後処理は同じ例外を再度発生させる"
  ]
 
@@ -183,7 +185,7 @@ syncAsync3 = [\t -> do
 	itext t 2 "ブロックの範囲が広くなる", \t -> do
 	arrowIText t 2 "長時間にわたって非同期例外に反応しない", \t -> do
 	arrowIText t 2 "不要なパフォーマンスの低下", \t -> do
-	text t "* よって、同期例外の捕捉にはcatch関数は使わない", \t -> do
+	text t "* 同期例外の捕捉に向いた関数が用意されている", \t -> do
 	itext t 1 "- try関数を使う"
  ]
 
@@ -375,7 +377,7 @@ useCatchSummary = [\t -> do
 	text t "* 捕捉する例外をしぼりこむにはcatchJustを使う", \t -> do
 	text t "* ScopedTypeVariables拡張を使うと書きやすい", \t -> do
 	itext t 1 "catch getLine $ \\(e :: AsyncException) -> ...", \t -> do
-	text t "* 場面合わせてhandle, handleJustを使う"
+	text t "* 場面に合わせてhandle, handleJustを使う"
  ]
 
 useCatches :: Page
@@ -573,7 +575,139 @@ myException :: Page
 myException = [\t -> do
 	writeTopTitle t "自作の例外型を使う"
 	text t "", \t -> do
-	text t "* 例外型を自分で作ることができる"
+	text t "* 例外型を自分で作ることができる", \t -> do
+	text t "* DeriveDataTypeable拡張が必要", \t -> do
+	text t "* TypeableとShowをderiveした型を作り", \t -> do
+	text t "* Exceptionクラスのインスタンスにする", \t -> do
+	text t "* クラス関数はデフォルトのものを使えば良い", \t -> do
+	itext t 1 "data MyException = MyException"
+	itext t 2 "deriving (Typeable, Show)"
+	itext t 1 "instance Exception MyException", \t -> do
+	itext t 1 "> throw MyException"
+	itext t 1 "*** Exception: MyException"
+ ]
+
+myException2 :: Page
+myException2 = [\t -> do
+	writeTopTitle t "自作の例外型を使う"
+	text t "", \t -> do
+	text t "* 捕捉してみる", \t -> do
+	itext t 1 "> try $ throwIO MyException"
+	itext t 2 ":: IO (Either MyException ())"
+	itext t 1 "Left MyException", \t -> do
+	text t "* SomeExceptionとして捕捉してみる", \t -> do
+	itext t 1 "> throwIO MyException `catch`"
+	itext t 2 "\\(e :: SomeException) -> print e"
+	itext t 1 "MyException"
+ ]
+
+myException3 :: Page
+myException3 = [\t -> do
+	writeTopTitle t "自作の例外型を使う"
+	text t "", \t -> do
+	text t "* ExceptionクラスはSomeExceptionとの相互変換関数を定義", \t -> do
+	itext t 1 "toException :: e -> SomeException"
+	itext t 1 "fromException :: SomeException -> Maybe e", \t -> do
+	text t "* デフォルトの定義は以下のようになっている", \t -> do
+	itext t 1 "toException = SomeException"
+	itext t 1 "fromException (SomeException e) = cast e"
+ ]
+
+myExceptionSummary :: Page
+myExceptionSummary = [\t -> do
+	writeTopTitle t "自作の例外型を使う(まとめ)"
+	text t "", \t -> do
+	text t "* TypeableとShowクラスのインスタンスにする", \t -> do
+	itext t 1 "- Typeableはderivingを使うと良い", \t -> do
+	itext t 1 "- Showは表示したい形式を自分で定義しても良い", \t -> do
+	text t "* Exceptionクラスのインスタンスにする", \t -> do
+	itext t 1 "- クラス関数はデフォルトのものを使う"
+ ]
+
+myHierarchy :: Page
+myHierarchy = [\t -> do
+	writeTopTitle t "階層構造を作る"
+	text t "", \t -> do
+	text t "* 例外の階層構造を作ることができる", \t -> do
+	text t "* SomeExceptionが最上位の階層となる", \t -> do
+	text t "* その下に階層構造を作ることでより柔軟な捕捉が可能", \t -> do
+	itext t 1 "- 下の階層の例外は上位の例外型で捕捉できる", \t -> do
+	text t "* 以下の例を考えていこう", \t -> do
+	itext t 1 "- HumanError型を作る", \t -> do
+	itext t 1 "- その下にManError型とWomanError型をつくる"
+ ]
+
+myHierarchy2 :: Page
+myHierarchy2 = [\t -> do
+	writeTopTitle t "階層構造を作る"
+	text t "", \t -> do
+	text t "* HumanError型を作る", \t -> do
+	itext t 1 "data HumanError = forall e . Exception e =>"
+	itext t 2 "HumanError e deriving Typeable"
+	itext t 1 "instance Show HumanError where"
+	itext t 2 "show (HumanError e) = show e", \t -> do
+	text t "* Exceptionクラスのインスタンスにする", \t -> do
+	itext t 1 "instance Exception HumanError"
+ ]
+
+myHierarchy3 :: Page
+myHierarchy3 = [\t -> do
+	writeTopTitle t "階層構造を作る"
+	text t "", \t -> do
+	text t "* HumanErrorに属する型とSomeExceptionとの相互変換関数", \t -> do
+	itext t 1 "humanErrorToException"
+	itext t 2 ":: Exception e => e -> SomeException"
+	itext t 1 "humanErrorToException = toException . HumanError"
+	itext t 1 "", \t -> do
+	itext t 1 "humanErrorFromException"
+	itext t 2 ":: Exception e => SomeException -> Maybe e"
+	itext t 1 "humanErrorFromException se = do"
+	itext t 2 "HumanError e <- fromException se"
+	itext t 2 "cast e"
+ ]
+
+myHierarchy4 :: Page
+myHierarchy4 = [\t -> do
+	writeTopTitle t "階層構造を作る", \t -> do
+	text t "* ManError型", \t -> do
+	itext t 1 "data ManError = ManError"
+	itext t 2 "deriving (Typeable, Show)"
+	itext t 1 "instance Exception ManError where"
+	itext t 2 "toException = humanErrorToException"
+	itext t 2 "fromException = humanErrorFromException", \t -> do
+	text t "* WomanError型", \t -> do
+	itext t 1 "data WomanError = WomanError"
+	itext t 2 "deriving (Typeable, Show)"
+	itext t 1 "instance Exception WomanError where"
+	itext t 2 "toException = humanErrorToException"
+	itext t 2 "fromException = humanErrorFromException"
+ ]
+
+myHierarchy5 :: Page
+myHierarchy5 = [\t -> do
+	writeTopTitle t "階層構造を作る"
+	text t "", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 1 "> try $ throwIO ManError"
+	itext t 2 ":: IO (Either ManError ())"
+	itext t 1 "Left ManError", \t -> do
+	itext t 1 "> try $ throwIO ManError"
+	itext t 2 ":: IO (Either HumanError ())"
+	itext t 1 "Left ManError"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* 後処理が必要なときはbracket, finally, onException", \t -> do
+	text t "* 同期例外の捕捉にはtryを使ったほうが良い", \t -> do
+	text t "* 非同期例外の捕捉にはcatchを使うべき", \t -> do
+	text t "* 複数の例外を扱う場合にはcatchesが使える", \t -> do
+	text t "* tryJustやcatchJustで例外をしぼりこむと良い", \t -> do
+	text t "* SomeExceptionですべての例外の捕捉ができる", \t -> do
+	text t "* 新たに例外型を作ることができる", \t -> do
+	text t "* 例外型の階層構造を作ることができる"
  ]
 
 prelude_ :: Page

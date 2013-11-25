@@ -23,14 +23,12 @@
 * 第11回はきちんとした英語で書き直そう
 
 * 第23回
-	- evaluate
-	- throw, throwIO
-	- assert
 	- 自作の例外型の定義
 
 * 第24回
 	- IOError == IOExceptionについて
 	- ioError
+	- assert
 
 * 並行プログラミングのあたりで
 	- throwTo
