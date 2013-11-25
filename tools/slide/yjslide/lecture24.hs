@@ -16,7 +16,7 @@ pages = [
 	useCatches, useCatches2, useCatchesSummary,
 	catchAll, catchAll2, catchAllSummary,
 	useEvaluate, useEvaluate2, useEvaluate3, useEvaluate4, useEvaluateSummary,
-	useThrow
+	useThrow, useThrow2, useThrowSummary
 --	myException
 --	exceptionOccur, exceptionCatchAll,
 --	selectException, selectException2, selectException3,
@@ -533,7 +533,40 @@ useThrow :: Page
 useThrow = [\t -> do
 	writeTopTitle t "例外を投げる"
 	text t "", \t -> do
-	text t "* 例外を自分で投げることができる"
+	text t "* 例外を自分で投げることができる", \t -> do
+	text t "* 純粋なコードのなかで例外を投げるにはthrowを使う", \t -> do
+	itext t 1 "throw :: Exception e => e -> a", \t -> do
+	itext t 1 "- 評価されたときに例外を投げる", \t -> do
+	text t "* IOのなかで例外を投げるにはthrowIOを使う", \t -> do
+	itext t 1 "throwIO :: Ecxeption e => e -> IO a", \t -> do
+	itext t 1 "- IOモナドのなかで使われたときに例外を投げる"
+ ]
+
+useThrow2 :: Page
+useThrow2 = [\t -> do
+	writeTopTitle t "例外を投げる"
+	text t "", \t -> do
+	text t "* throwとthrowIOの違いを見てみる", \t -> do
+	itext t 1 "> (>>) (print \"hello\") $!"
+	itext t 2 "throw (ErrorCall \"error\")"
+	itext t 1 "*** Exception: something", \t -> do
+	itext t 1 "> (>>) (print \"hello\") $!"
+	itext t 2 "throwIO (ErrorCall \"error\")"
+	itext t 1 "\"hello\""
+	itext t 1 "*** Exception: something", \t -> do
+	text t "* ($!)については「正格評価」でやる", \t -> do
+	itext t 1 "今は第2引数の評価を強制すると考えておけば良い"
+ ]
+
+useThrowSummary :: Page
+useThrowSummary = [\t -> do
+	writeTopTitle t "例外を投げる(まとめ)"
+	text t "", \t -> do
+	text t "* 例外を投げるには", \t -> do
+	itext t 1 "- 純粋なコードではthrowを使う", \t -> do
+	itext t 1 "- IO内ではthrowIOを使う", \t -> do
+	text t "* throwIOを使えば例外の生じる場所を保証できる", \t -> do
+	text t "* throwを使った場合、評価された時点で例外が発生する"
  ]
 
 myException :: Page
