@@ -13,7 +13,7 @@ tmp/
 *.s
 *.o
 /tools/rirekisho/rirekisho.dat
-/tools/slide/yjslide/examples/profiling/some
+/tools/slide/yjslide/examples/profiling/old/some
 *.aux
 *.hp
 *.pdf
