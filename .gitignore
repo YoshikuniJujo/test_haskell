@@ -14,6 +14,9 @@ tmp/
 *.o
 /tools/rirekisho/rirekisho.dat
 /tools/slide/yjslide/examples/profiling/old/some
+/tools/slide/yjslide/examples/profiling/new/profiling
+/tools/slide/yjslide/examples/profiling/new/prog
+/tools/slide/yjslide/examples/profiling/new/fib2
 *.aux
 *.hp
 *.pdf
