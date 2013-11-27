@@ -17,6 +17,8 @@ tmp/
 /tools/slide/yjslide/examples/profiling/new/profiling
 /tools/slide/yjslide/examples/profiling/new/prog
 /tools/slide/yjslide/examples/profiling/new/fib2
+/tools/slide/yjslide/examples/profiling/new/sum
+/tools/slide/yjslide/examples/profiling/new/sum_strict
 *.aux
 *.hp
 *.pdf

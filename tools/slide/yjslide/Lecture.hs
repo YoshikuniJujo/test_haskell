@@ -121,16 +121,18 @@ mkSVGFileName (Just bfn) n = Just $ bfn ++ addZero (show n) ++ ".svg"
 mkSVGFileName _ _ = Nothing
 
 writeImageRight :: Turtle -> (Double, Double, FilePath) -> IO ()
-writeImageRight t picture = writeImage t (width * 2 / 3) False picture
+writeImageRight t picture = writeImage t (width * 2 / 3) 68.5 False picture
 
-writeImageCenter :: Turtle -> (Double, Double, FilePath) -> IO ()
-writeImageCenter t picture = writeImage t (width / 3) True picture
+writeImageCenter :: Turtle -> Double -> (Double, Double, FilePath) -> IO ()
+writeImageCenter t y picture@(w, _, _) =
+	writeImage t ((width - w * rt) / 2) y True picture
 
-writeImage :: Turtle -> Double -> Bool -> (Double, Double, FilePath) -> IO ()
-writeImage t x bot (w, h, fp) = do
+writeImage ::
+	Turtle -> Double -> Double -> Bool -> (Double, Double, FilePath) -> IO ()
+writeImage t x y bot (w, h, fp) = do
 	hideturtle t
 	speed t "fastest"
-	goto t x (68.5 * rt)
+	goto t x (y * rt)
 	image t fp (w * rt) (h * rt)
 	speed t "slow"
 	showturtle t
