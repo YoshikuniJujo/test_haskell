@@ -8,7 +8,9 @@ main = runLecture [
 	[flip writeTitle subtitle], prelude,
 	refutable, irrefutable,
 	refutablePatterns, irrefutablePatterns,
-	powers, powers2, powers3, powers4, lazyPatternSummary
+	powers, powers2, powers3, powers4, lazyPatternSummary,
+	bangPattern, bangPattern2, bangPattern3, bangPatternSummary,
+	summary
  ]
 
 prelude :: Page
@@ -92,8 +94,8 @@ powers2 :: Page
 powers2 = [\t -> do
 	writeTopTitle t "2の累乗を求める"
 	text t "", \t -> do
-	text t "* 頭のなかで考えてみると問題なく動きそうだ", \t -> do
-	itext t 1 "rediff x0 (d : ds) = x0 : rediff (x0 + d) ds", \t -> do
+	text t "power2 = rediff 1 power2"
+	text t "rediff x0 (d : ds) = x0 : rediff (x0 + d) ds", \t -> do
 	text t "* powers2の1番目の要素は1であることは明らか", \t -> do
 	itext t 1 "- よってrediff 1 powers2はrediff 1 [1, ...]となる", \t -> do
 	itext t 1 "- 変形すると1 : rediff (1 + 1) [(2番目), ...]", \t -> do
@@ -143,4 +145,73 @@ lazyPatternSummary = [\t -> do
 	text t "* 不可反駁パターンの名の通りこの照合は必ず成功する", \t -> do
 	text t "* 値の評価はパターン内の変数の使用時まで遅らされる", \t -> do
 	text t "* パターン束縛はデフォルトで遅延パターン"
+ ]
+
+bangPattern :: Page
+bangPattern = [\t -> do
+	writeTopTitle t "バンパターン"
+	text t "", \t -> do
+	text t "* 遅延パターンとは逆", \t -> do
+	text t "* パターンマッチ時の評価を強制する", \t -> do
+	text t "* 念のため言うと、評価は弱頭部正規形(WHNF)まで", \t -> do
+	itext t 1 "- Haskellでは値の評価とはWHNFまでの簡約を言う", \t -> do
+	itext t 1 "- 今は、リストの中身は評価されない、という理解で", \t -> do
+	text t "* !patという形", \t -> do
+	text t "* この書きかたを使うと明示的なseqを使わずにすむ場面も"
+ ]
+
+bangPattern2 :: Page
+bangPattern2 = [\t -> do
+	writeTopTitle t "バンパターン"
+	text t "", \t -> do
+	text t "* 単純な変数のパターン、以下の2つは同じ", \t -> do
+	itext t 1 "let !x = some in f x y", \t -> do
+	itext t 1 "let x = some in x `seq` f x y", \t -> do
+	text t "* 照合で得た値を使わない場合の例", \t -> do
+	itext t 1 "some = let (x : xs) = [] in 123"
+	itext t 1 "> some"
+	itext t 1 "123", \t -> do
+	itext t 1 "some' = let (x : xs) = [] in 123"
+	itext t 1 "> some'"
+	itext t 1 "*** Exception: foo.hs:XX:XX-XX:"
+	itext t 2 "Non-exhaustive patterns in pattern binding"
+ ]
+
+bangPattern3 :: Page
+bangPattern3 = [\t -> do
+	writeTopTitle t "バンパターン"
+	text t "", \t -> do
+	text t "* アサーション的な使いかた", \t -> do
+	itext t 1 "let !(_ : _) = notEmpty in something", \t -> do
+	text t "* 空間効率の改善", \t -> do
+	itext t 1 "sum s (x : xs) = let !r = s + x in sum r xs", \t -> do
+	itext t 1 "- seqを明示的に使うよりもきれいに書ける"
+ ]
+
+bangPatternSummary :: Page
+bangPatternSummary = [\t -> do
+	writeTopTitle t "バンパターン(まとめ)"
+	text t "", \t -> do
+	text t "* バンパターンは!patという形", \t -> do
+	text t "* 関数の仮引数部やcaseのなかでの複雑なパターン", \t -> do
+	arrowIText t 1 "もともと可反駁パターンなので関係ない", \t -> do
+	text t "* 単純なパターン(xや_)、またはパターン束縛で使う", \t -> do
+	text t "* エラーの生じる場面や場所、空間効率に変化が生じる", \t -> do
+	itext t 1 "- アサーション的な使いかた", \t -> do
+	itext t 1 "- 明示的なseqよりもきれいに空間効率の改善"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* 遅延パターンとバンパターンについて学んだ", \t -> do
+	text t "* パターン照合は場面によって以下の2つがある", \t -> do
+	itext t 1 "- デフォルトで可反駁パターン", \t -> do
+	itext t 1 "- デフォルトで不可反駁パターン", \t -> do
+	text t "* 遅延パターンはすべてを不可反駁パターンに変える", \t -> do
+	text t "* バンパターンはすべてを可反駁パターンに変える", \t -> do
+	itext t 1 "- 照合時の評価を強制するということ", \t -> do
+	text t "* 遅延パターンは表現できる計算の範囲を広げる", \t -> do
+	text t "* バンパターンは空間効率を改善する"
  ]
