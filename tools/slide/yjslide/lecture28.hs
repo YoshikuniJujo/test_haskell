@@ -151,6 +151,7 @@ bangPattern :: Page
 bangPattern = [\t -> do
 	writeTopTitle t "バンパターン"
 	text t "", \t -> do
+	text t "* BangPatterns拡張が必要", \t -> do
 	text t "* 遅延パターンとは逆", \t -> do
 	text t "* パターンマッチ時の評価を強制する", \t -> do
 	text t "* 念のため言うと、評価は弱頭部正規形(WHNF)まで", \t -> do
