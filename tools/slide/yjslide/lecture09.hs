@@ -12,7 +12,8 @@ memo :: Page
 memo = [\t -> do
 	writeTopTitle t "TODO"
 	text t "", \t -> do
-	semititle t "infix, infixl, infixrについて追加すること!"
+	semititle t "infix, infixl, infixrについて追加すること!", \t -> do
+	semititle t "データ構築演算子、型構築演算子について追加!"
  ]
 
 pages :: [Page]
