@@ -21,6 +21,7 @@ tmp/
 /tools/slide/yjslide/examples/profiling/new/sum_strict
 /tools/slide/yjslide/examples/profiling/new/notStrictData
 /tools/slide/yjslide/examples/profiling/new/strictData
+/tools/slide/yjslide/examples/profiling/new/concat
 *.aux
 *.hp
 *.pdf
