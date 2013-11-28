@@ -8,9 +8,16 @@ subtitle = "第9回 落ち穂拾い"
 main :: IO ()
 main = runLecture pages
 
+memo :: Page
+memo = [\t -> do
+	writeTopTitle t "TODO"
+	text t "", \t -> do
+	semititle t "infix, infixl, infixrについて追加すること!"
+ ]
+
 pages :: [Page]
 pages = [
-	titlePage, prelude, index,
+	titlePage, memo, prelude, index,
 	index' 1, comment,
 	index' 2, literate,
 	index' 3, offside1, offside2,
