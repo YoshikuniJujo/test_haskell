@@ -16,15 +16,11 @@ toList (xs, bs) = reverse bs ++ xs
 (-:) :: a -> (a -> b) -> b
 x -: f = f x
 
-test = toList $ fromList [1, 2, 3, 4, 5, 6, 7, 8, 9]
-	-: goForward
-	-: goForward
+test = toList $ fromList [1, 2, 3, 4, 5, 6]
 	-: goForward
 	-: replaceBy 99
 	-: goForward
 	-: goForward
-	-: goForward
 	-: replaceBy 222
-	-: goBack
 	-: goBack
 	-: replaceBy 123
