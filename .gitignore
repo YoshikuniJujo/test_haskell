@@ -22,6 +22,9 @@ tmp/
 /tools/slide/yjslide/examples/profiling/new/notStrictData
 /tools/slide/yjslide/examples/profiling/new/strictData
 /tools/slide/yjslide/examples/profiling/new/concat
+/tools/slide/yjslide/examples/profiling/new/listDict
+/tools/slide/yjslide/examples/profiling/new/mapDict
+/tools/slide/yjslide/examples/profiling/new/hashDict
 /tools/slide/yjslide/examples/profiling/new/ratio.txt
 /tools/slide/yjslide/examples/profiling/new/show_page.txt
 /tools/slide/yjslide/examples/profiling/new/show_turtle.txt
