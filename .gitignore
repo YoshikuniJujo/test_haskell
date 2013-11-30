@@ -22,6 +22,9 @@ tmp/
 /tools/slide/yjslide/examples/profiling/new/notStrictData
 /tools/slide/yjslide/examples/profiling/new/strictData
 /tools/slide/yjslide/examples/profiling/new/concat
+/tools/slide/yjslide/examples/profiling/new/ratio.txt
+/tools/slide/yjslide/examples/profiling/new/show_page.txt
+/tools/slide/yjslide/examples/profiling/new/show_turtle.txt
 *.aux
 *.hp
 *.pdf
@@ -30,3 +33,7 @@ tmp/
 /tools/slide/yjslide/examples/haddock/hello/html/
 /tools/slide/yjslide/examples/haddock/hello2/html/
 /tools/slide/yjslide/examples/haddock/queue/html/
+/tools/slide/yjslide/test.txt
+/tools/slide/yjslide/tmp.txt
+/tools/slide/yjslide/bad.txt
+/tools/slide/yjslide/empty.txt
