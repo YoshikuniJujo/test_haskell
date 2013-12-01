@@ -9,7 +9,8 @@ main = runLecture [
 	listDict, listDict2, listDict3, listDict4, listDict5, listDict6,
 	listDictSummary,
 	hashTable, hashTable2, hashTable3, hashTable4, hashTable5, hashTable6,
-	hashTable7, hashTable8, hashTableSummary
+	hashTable7, hashTable8, hashTableSummary,
+	treeDict
  ]
 
 prelude :: Page
@@ -103,7 +104,7 @@ listDict6 :: Page
 listDict6 = [\t -> do
 	writeTopTitle t "リストを辞書として使う"
 	text t "", \t -> do
-	text t "* timesDoの定義"
+	text t "* timesDoの定義", \t -> do
 	itext t 1 "timesDo :: Int -> IO () -> IO ()"
 	itext t 1 "0 `timesDo` _ = return ()"
 	itext t 1 "n `timesDo` io = io >> ((n - 1) `timesDo` io)", \t -> do
@@ -119,7 +120,7 @@ listDictSummary = [\t -> do
 	text t "", \t -> do
 	text t "* 非常に単純な構造", \t -> do
 	text t "* 何をしているのか一目瞭然", \t -> do
-	text t "* 使いすてのプログラムに使う", \t -> do
+	text t "* 使い捨てのプログラムに使う", \t -> do
 	text t "* 項目の追加はO(1)で行える", \t -> do
 	text t "* 項目の検索がO(n)かかる", \t -> do
 	text t "* 作られた辞書を使う回数が少なければ効率的", \t -> do
@@ -203,7 +204,7 @@ hashTable6 = [\t -> do
 	text t "", \t -> do
 	text t "* 値の取得にはData.HashTable.lookupを使う", \t -> do
 	itext t 1 "lookup age \"Hanako\"", \t -> do
-	text t "* 値の追加にはupdateを使う", \t -> do
+	text t "* 値の追加にはinsertを使う", \t -> do
 	itext t 1 "insert age \"Jirou\" 29", \t -> do
 	text t "* 値の削除にはdeleteを使う", \t -> do
 	itext t 1 "delete age \"Hanako\"", \t -> do
@@ -260,4 +261,13 @@ hashTableSummary = [\t -> do
 	itext t 1 "- 使うときにはその危険性が目に見える", \t -> do
 	text t "* というのがHaskellの良さ", \t -> do
 	text t "* 幸い「辞書」にはより関数型的な代替手段がある"
+ ]
+
+treeDict :: Page
+treeDict = [\t -> do
+	writeTopTitle t "辞書に木を使う"
+	text t "", \t -> do
+	text t "* 十分に実用的な効率で", \t -> do
+	text t "* 状態変化を伴わずに辞書を実現するには", \t -> do
+	text t "* 木構造を使う"
  ]
