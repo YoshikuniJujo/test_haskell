@@ -10,7 +10,7 @@ size :: Int
 size = 10 ^ 6
 
 times :: Int
-times = 10 ^ 3
+times = 10 ^ 6
 
 dict :: Map String Int
 dict = mkDict [0 .. size]
