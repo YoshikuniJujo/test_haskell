@@ -1,6 +1,5 @@
--- data WBT a = Empty | Bin Int a (WBT a) (WBT a) -- deriving Show
 data WBT a = Empty | Bin {
-	weight :: Int,
+	_weight :: Int,
 	value :: a,
 	left :: WBT a,
 	right :: WBT a }
@@ -8,34 +7,19 @@ data WBT a = Empty | Bin {
 instance Show a => Show (WBT a) where
 	show = showTree [] []
 
+bin :: a -> WBT a -> WBT a -> WBT a
+bin x t1 t2 = Bin (weight t1 + weight t2 + 1) x t1 t2
+
+weight :: WBT a -> Int
+weight (Bin s _ _ _) = s
+weight _ = 0
+
 delta, ratio :: Int
 delta = 3
 ratio = 2
 
-bin :: a -> WBT a -> WBT a -> WBT a
-bin x t1@(Bin s1 _ _ _) t2@(Bin s2 _ _ _) = Bin (s1 + s2 + 1) x t1 t2
-bin x t1@(Bin s1 _ _ _) Empty = Bin (s1 + 1) x t1 Empty
-bin x Empty t2@(Bin s2 _ _ _) = Bin (s2 + 1) x Empty t2
-bin x Empty Empty = Bin 1 x Empty Empty
-
 singleton :: a -> WBT a
 singleton x = bin x Empty Empty
-
-size :: WBT a -> Int
-size (Bin s _ _ _) = s
-size _ = 0
-
-{-
-value :: WBT a -> a
-value (Bin _ x _ _) = x
-value _ = error "value: can't get value"
-
-left, right :: WBT a -> WBT a
-left (Bin _ _ l _) = l
-left _ = error "left: can't get left tree"
-right (Bin _ _ _ r) = r
-right _ = error "right: can't get right tree"
--}
 
 rotateL, rotateR :: WBT a -> WBT a
 rotateL (Bin _ x lx (Bin _ y ly ry)) = bin y (bin x lx ly) ry
@@ -46,11 +30,11 @@ rotateR _ = error "rotateR: can't do right rotation"
 balance :: WBT a -> WBT a
 balance Empty = Empty
 balance t@(Bin _ x l r)
-	| size l + size r <= 1 = t
-	| size r > delta * size l = if size (left r) >= ratio * size (right r)
+	| weight l + weight r <= 1 = t
+	| weight r > delta * weight l = if weight (left r) >= ratio * weight (right r)
 		then rotateL $ bin x l (rotateR r)
 		else rotateL t
-	| size l > delta * size r = if size (right l) >= ratio * size (left l)
+	| weight l > delta * weight r = if weight (right l) >= ratio * weight (left l)
 		then rotateR $ bin x (rotateL l) r
 		else rotateR t
 	| otherwise = t
@@ -73,7 +57,7 @@ glue :: WBT a -> WBT a -> WBT a
 glue Empty r = r
 glue l Empty = l
 glue l r
-	| size l > size r =
+	| weight l > weight r =
 		let (m, l') = deleteFindMax l in balance $ bin m l' r
 	| otherwise =
 		let (m, r') = deleteFindMin r in balance $ bin m l r'
