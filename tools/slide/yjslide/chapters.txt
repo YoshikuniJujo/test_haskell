@@ -35,8 +35,8 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第29回 型構築子と正格性
 第30回 zipper
 第31回 重み平衡木
+第32回 Map (Hashにも触れる)
 (ここまで作った、以下予定)
-第32回 Map (Hashにもちょっと触れる)
 第33回 bytestring, text
 第34回 array
 第35回 IOArray, IOUArray
