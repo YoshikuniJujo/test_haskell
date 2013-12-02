@@ -9,6 +9,7 @@ module Lecture (
 	haskellBCurry, oneshot,
 	itext', hLine,
 	Turtle,
+	writeTree, BinTree(..), rtGoto, rotateL, rotateR, width, mapR
 ) where
 
 import Graphics.X11.Turtle
@@ -20,6 +21,9 @@ import Data.Char
 import Data.List
 import System.Environment
 import System.IO.Unsafe
+
+import qualified WriteTree as WT
+import WriteTree(BinTree(..), rotateL, rotateR, mapR)
 
 type Page = [Turtle -> IO ()]
 
@@ -38,6 +42,9 @@ rt, width, height :: Double
 rt = unsafePerformIO $ read <$> readFile "ratio.txt"
 width = 512 * rt
 height = 375 * rt
+
+rtGoto :: Turtle -> Double -> Double -> IO ()
+rtGoto t x y = goto t (x * rt) (y * rt)
 
 fontName :: String
 fontName = "KochiGothic"
@@ -400,3 +407,6 @@ hLine t b l = do
 	pendown t
 	forward t $ l * width / 100
 	penup t
+
+writeTree :: Turtle -> (a -> String) -> Double -> Double -> Double -> Double -> BinTree a -> IO ()
+writeTree t sw sz dx x y = WT.writeTree t sw (sz * rt) dx (x * rt) (y * rt)
