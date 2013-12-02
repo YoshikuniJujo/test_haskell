@@ -1,7 +1,7 @@
 import Lecture
 
 subtitle :: String
-subtitle = "第32回 Map型"
+subtitle = "第32回 辞書"
 
 main :: IO ()
 main = runLecture [
