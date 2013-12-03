@@ -31,6 +31,10 @@ tmp/
 /tools/slide/yjslide/examples/profiling/new/useString2
 /tools/slide/yjslide/examples/profiling/new/useByteString
 /tools/slide/yjslide/examples/profiling/new/useByteStringLazy
+/tools/slide/yjslide/examples/profiling/new/lookOnce
+/tools/slide/yjslide/examples/profiling/new/lookTwice
+/tools/slide/yjslide/examples/profiling/new/randomAccess
+/tools/slide/yjslide/examples/profiling/new/sequentialAccess
 /tools/slide/yjslide/examples/profiling/new/big.txt
 /tools/slide/yjslide/examples/profiling/new/ratio.txt
 /tools/slide/yjslide/examples/profiling/new/show_page.txt
