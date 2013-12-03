@@ -9,8 +9,10 @@ main = runLecture [
 	disadvantageProfile, profileUseString,
 	disadvantageProfile2, profileUseByteString,
 	disadvantageProfileSummary,
-	usage, usage2
-	
+	usage, usage2, usage3, usage4, usage5, usage6,
+	randomAccess, randomAccess2, randomAccess3, randomAccess4,
+	randomAccess5,
+	summary
 -- prelude, useLazyList, useLazyList2,
 --	tempAndSubst, tempAndSubst2, tempAndSubst3
 --	misunderstand, makeBigFile
@@ -123,6 +125,138 @@ usage = [\t -> do
 usage2 :: Page
 usage2 = [\t -> do
 	writeTopTitle t "ByteStringの使いかた"
+	text t "", \t -> do
+	text t "* Data.ByteStringにはPreludeと同じ名前の関数が多数", \t -> do
+	text t "* 以下のように修飾名を使うようにする", \t -> do
+	itext t 1 "import qualified Data.ByteString as BS", \t -> do
+	text t "* リスト関数と同じ名前の関数が多数存在", \t -> do
+	itext t 1 "- リストにおけるaをWord8に", \t -> do
+	itext t 1 "- リストにおける[a]をByteStringに", \t -> do
+	itext t 1 "- そうするとほぼ同じような動作をする", \t -> do
+	text t "* Stringに対するIOと同じ名前の関数もある", \t -> do
+	itext t 1 "- ByteStringに対してほぼ同じことをする"
+ ]
+
+usage3 :: Page
+usage3 = [\t -> do
+	writeTopTitle t "ByteStringの使いかた"
+	text t "", \t -> do
+	text t "* Word8のリストとの相互変換", \t -> do
+	itext t 1 "pack :: [Word8] -> ByteString -- O(n)"
+	itext t 1 "unpack :: ByteString -> [Word8] -- O(n)", \t -> do
+	text t "* リストのコンストラクタとパターンマッチ相当の関数", \t -> do
+	itext t 1 "cons :: Word8 -> ByteString -> ByteString -- O(n)"
+	itext t 1 "uncons :: ByteString -> Maybe (Word8, ByteString)"
+	itext t 5 "-- O(1)", \t -> do
+	text t "* consがO(n)であることに注意", \t -> do
+	itext t 1 "- リストの(:)はO(1)", \t -> do
+	itext t 1 "- consでByteStringを構成するのは避けたほうが良い"
+ ]
+
+usage4 :: Page
+usage4 = [\t -> do
+	writeTopTitle t "ByteStringの使いかた"
+	text t "", \t -> do
+	text t "* ランダムアクセス関数", \t -> do
+	itext t 1 "index :: ByteString -> Int -> Word8 -- O(1)", \t -> do
+	text t "* indexがO(1)であることに注意", \t -> do
+	itext t 1 "- リストの(!!)はO(n)", \t -> do
+	text t "* 入出力関数", \t -> do
+	itext t 1 "readFile :: FilePath -> IO ByteString"
+	itext t 1 "writeFile :: FilePath -> ByteString -> IO ()"
+	itext t 1 "appendFile :: FilePath -> ByteString -> IO ()"
+	itext t 1 "- 他にもStringの同名の入出力関数と同様のものが"
+ ]
+
+usage5 :: Page
+usage5 = [\t -> do
+	writeTopTitle t "ByteStringの使いかた"
+	text t "", \t -> do
+	text t "* Data.ByteString.Char8モジュールも同様", \t -> do
+	text t "* Word8ではなくCharを扱う関数が定義されている", \t -> do
+	text t "* CharはByteStringに保存の際に8bitに切りつめられる"
+ ]
+
+usage6 :: Page
+usage6 = [\t -> do
+	writeTopTitle t "ByteStringの使いどころ"
+	text t "", \t -> do
+	text t "* メモリにおさまる程度の大きめのファイルを読み込む", \t -> do
+	text t "* 読み込んだデータは主に読み込みに使う", \t -> do
+	text t "* 読み込んだデータは何度でも、ランダムアクセスできる", \t -> do
+	text t "* データを変更しようとすると効率が低下する", \t -> do
+	itext t 1 "- 文字列全体をコピーする必要がある", \t -> do
+	text t "* 前回のランダムアクセスなどは得意分野"
+ ]
+
+randomAccess :: Page
+randomAccess = [\t -> do
+	writeTopTitle t "ランダムアクセスの効率"
+	text t "", \t -> do
+	text t "* ランダムアクセスについてStringとByteStringを比較する", \t -> do
+	text t "* 共通に使うくりかえし関数を定義しておく", \t -> do
+	itext t 1 "timesDo :: Int -> IO () -> IO ()"
+	itext t 1 "0 `timesDo` _ = return ()"
+	itext t 1 "n `timesDo` io = io >> (n - 1) `timesDo` io"
+ ]
+
+randomAccess2 :: Page
+randomAccess2 = [\t -> do
+	writeTopTitle t "ランダムアクセスの効率"
+	text t "", \t -> do
+	text t "* Stringを使う場合", \t -> do
+	itext t 1 "randomAccess :: String -> Int -> IO Char"
+	itext t 1 "randomAccess str len = do"
+	itext t 2 "i <- randomRIO (0, len - 1)"
+	itext t 2 "return $ str !! i"
+	itext t 1 "main :: IO ()"
+	itext t 1 "main = do"
+	itext t 2 "cnt <- readFile \"big.txt\""
+	itext t 2 "1000 `timesDo`"
+	itext t 2.5 "(randomAccess cnt (10 ^ 7) >>= putChar)"
+	itext t 2 "putChar '\\n'"
+ ]
+
+randomAccess3 :: Page
+randomAccess3 = [\t -> do
+	writeTopTitle t "ランダムアクセスの効率"
+	text t "", \t -> do
+	text t "* このときの時間は", \t -> do
+	itext t 1 "- 25.32秒のうちrandomAccessが98.5%", \t -> do
+	itext t 1 "- よってランダム値の生成も含めた時間が24.94秒"
+ ]
+
+randomAccess4 :: Page
+randomAccess4 = [\t -> do
+	writeTopTitle t "ランダムアクセスの効率"
+	text t "", \t -> do
+	text t "* ByteStringを使った場合", \t -> do
+	itext t 1 "randomAccess :: BSC.ByteString -> Int -> IO Char"
+	itext t 1 "randomAccess str len = do"
+	itext t 2 "i <- randomRIO (0, len - 1)"
+	itext t 2 "return $ BSC.index str i"
+	itext t 1 "main :: IO ()"
+	itext t 1 "main = do"
+	itext t 2 "cnt <- BSC.readFile \"big.txt\""
+	itext t 2 "1000 `timesDo`"
+	itext t 2.5 "(randomAccess cnt (10 ^ 7) >>= putChar)"
+	itext t 2 "putChar '\\n'"
+ ]
+
+randomAccess5 :: Page
+randomAccess5 = [\t -> do
+	writeTopTitle t "ランダムアクセスの効率"
+	text t "", \t -> do
+	text t "* かかった時間は", \t -> do
+	itext t 1 "- 0.01秒でrandomAccessが20.0%", \t -> do
+	itext t 1 "- よって0.002秒", \t -> do
+	text t "* Stringを使ったとき(24.94秒)とくらべると", \t -> do
+	itext t 1 "- 1万倍以上の時間効率の向上"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
 	text t ""
  ]
 
