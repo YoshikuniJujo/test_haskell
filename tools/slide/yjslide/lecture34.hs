@@ -5,8 +5,14 @@ subtitle = "第34回 配列としての文字列"
 
 main :: IO ()
 main = runLecture [
-	[flip writeTitle subtitle], prelude, useLazyList, useLazyList2,
-	tempAndSubst, tempAndSubst2, tempAndSubst3
+	[flip writeTitle subtitle], prelude, advantage,
+	disadvantageProfile, profileUseString,
+	disadvantageProfile2, profileUseByteString,
+	disadvantageProfileSummary,
+	usage, usage2
+	
+-- prelude, useLazyList, useLazyList2,
+--	tempAndSubst, tempAndSubst2, tempAndSubst3
 --	misunderstand, makeBigFile
 --	profileUseString, profileUseByteString, profileUseByteStringLazy,
 --	profileUseString2
@@ -14,6 +20,114 @@ main = runLecture [
 
 prelude :: Page
 prelude = [\t -> do
+	writeTopTitle t "はじめに"
+	text t "", \t -> do
+	text t "* 前回は「リストとしての文字列」を見た", \t -> do
+	itext t 1 "- 1度だけのシーケンシャルなアクセスが得意", \t -> do
+	text t "* 今回は「配列としての文字列」を見ていこう", \t -> do
+	text t "* 配列としての文字列にはByteStringとTextがある", \t -> do
+	text t "* Textは「Charの配列」と考えられる", \t -> do
+	itext t 1 "- つまりユニコード文字を保存している", \t -> do
+	text t "* ByteStringは「Word8の配列」と考えられる", \t -> do
+	itext t 1 "- つまり表現できるのは8ビット文字のみ"
+ ]
+
+advantage :: Page
+advantage = [\t -> do
+	writeTopTitle t "ByteStringを使う利点と欠点"
+	text t "", \t -> do
+	text t "* 配列なので要素へのランダムアクセスがO(1)でできる", \t -> do
+	text t "* 内部表現として32bitのCharではなく8bitの値を使う", \t -> do
+	text t "* リストと違い次のリストへのポインタを保持しなくてよい", \t -> do
+	text t "* その一方、ユニコード文字を扱うのは難しい", \t -> do
+	text t "* Haskellの豊富なリスト関数が使えない", \t -> do
+	text t "* リストとは違い遅延しないので", \t -> do
+	itext t 1 "- すべての文字が一度にメモリ上に確保される", \t -> do
+	text t "* Stringでは文字の追加がO(1)だがByteStringではO(n)", \t -> do
+	itext t 1 "- 文字を追加するような処理には向かない"
+ ]
+
+disadvantageProfile :: Page
+disadvantageProfile = [\t -> do
+	writeTopTitle t "メモリの使用量の比較"
+	text t "", \t -> do
+	text t "* StringとByteStringで以下の比較をする", \t -> do
+	itext t 1 "- ファイル内容の表示時のメモリの使用量", \t -> do
+	text t "* Stringを使った場合", \t -> do
+	itext t 1 "main :: IO ()"
+	itext t 1 "main = do"
+	itext t 2 "cnt <- readFile \"big.txt\""
+	itext t 2 "putStrLn cnt", \t -> do
+	text t "* メモリ使用状況は次のようになる"
+ ]
+
+profileUseString :: Page
+profileUseString = [\t -> do
+	writeTopTitle t "メモリの使用量の比較"
+	text t "", \t -> do
+	writeImageCenter t 82 (300, 180, "examples/profiling/new/useString.png"), \t -> do
+	text t "* 9.6MBのファイルを表示するのに", \t -> do
+	text t "* 60kBから80kBのあいだで一定のメモリの使用量"
+ ]
+
+disadvantageProfile2 :: Page
+disadvantageProfile2 = [\t -> do
+	writeTopTitle t "メモリの使用量の比較"
+	text t "", \t -> do
+	text t "* ByteStringを使った場合", \t -> do
+	itext t 1 "import qualified Data.ByteString.Char8 as BS"
+	itext t 1 ""
+	itext t 1 "main :: IO ()"
+	itext t 1 "main = do"
+	itext t 2 "cnt <- BS.readFile \"big.txt\""
+	itext t 2 "BS.putStrLn cnt"
+	text t "* メモリの使用状況は次のようになる"
+ ]
+
+profileUseByteString :: Page
+profileUseByteString = [\t -> do
+	writeTopTitle t "メモリの使用量の比較"
+	text t "", \t -> do
+	writeImageCenter t 82 (300, 180, "examples/profiling/new/useByteString.png"), \t -> do
+	text t "* 10MBほどで一定したメモリ使用量", \t -> do
+	text t "* 9.6MBのファイルを読んだので予想通りの動作"
+ ]
+
+disadvantageProfileSummary :: Page
+disadvantageProfileSummary = [\t -> do
+	writeTopTitle t "メモリの使用量の比較(まとめ)"
+	text t "", \t -> do
+	text t "* Stringを使用したほうは80kBのメモリ使用量", \t -> do
+	text t "* ByteStringを使用したほうは10MBのメモリ使用量", \t -> do
+	text t "* StringをByteStringに置き換えても", \t -> do
+	itext t 1 "- 必ずしも効率が向上するとはかぎらない", \t -> do
+	text t "* 「何をしたいのか」を明確にする", \t -> do
+	itext t 1 "- 複数回のアクセスやランダムアクセスをしなければ", \t -> do
+	itext t 1 "- Stringを使ったほうが良い"
+ ]
+
+usage :: Page
+usage = [\t -> do
+	writeTopTitle t "ByteStringの使いかた"
+	text t "", \t -> do
+	text t "* 同じByteStringに対して2つの見かたがある", \t -> do
+	itext t 1 "- Word8の配列と見る", \t -> do
+	itext t 1 "- Charの配列と見る", \t -> do
+	text t "* ByteStringの本質からするとひとつめの見かたが正しい", \t -> do
+	text t "* 後者は使用の際の利便性を考慮した見かた", \t -> do
+	text t "* 2つの見かたに対してそれぞれ別のモジュールがある", \t -> do
+	itext t 1 "- Data.ByteString", \t -> do
+	itext t 1 "- Data.ByteString.Char8"
+ ]
+
+usage2 :: Page
+usage2 = [\t -> do
+	writeTopTitle t "ByteStringの使いかた"
+	text t ""
+ ]
+
+prelude_ :: Page
+prelude_ = [\t -> do
 	writeTopTitle t "はじめに"
 	text t "", \t -> do
 	text t "* Haskellでは文字列は文字のリストである", \t -> do
@@ -109,20 +223,6 @@ misunderstand = [\t -> do
 makeBigFile :: Page
 makeBigFile = [\t -> do
 	writeTopTitle t "ByteStringで空間効率の低下"
- ]
-
-profileUseString :: Page
-profileUseString = [\t -> do
-	writeTopTitle t "String"
-	text t "", \t -> do
-	writeImageCenter t 82 (300, 180, "examples/profiling/new/useString.png")
- ]
-
-profileUseByteString :: Page
-profileUseByteString = [\t -> do
-	writeTopTitle t "ByteString"
-	text t "", \t -> do
-	writeImageCenter t 82 (300, 180, "examples/profiling/new/useByteString.png")
  ]
 
 profileUseByteStringLazy :: Page
