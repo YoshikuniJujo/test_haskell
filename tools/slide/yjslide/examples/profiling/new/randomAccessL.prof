@@ -1,0 +1,33 @@
+	Wed Dec  4 17:53 2013 Time and Allocation Profiling Report  (Final)
+
+	   randomAccessL +RTS -p -RTS
+
+	total time  =       18.58 secs   (18581 ticks @ 1000 us, 1 processor)
+	total alloc = 913,432,248 bytes  (excludes profiling overheads)
+
+COST CENTRE  MODULE  %time %alloc
+
+randomAccess Main     93.4   55.2
+timesDo      Main      6.1   33.7
+main         Main      0.5   11.1
+
+
+                                                                      individual     inherited
+COST CENTRE      MODULE                             no.     entries  %time %alloc   %time %alloc
+
+MAIN             MAIN                                55           0    0.0    0.0   100.0  100.0
+ CAF             Main                               109           0    0.0    0.0   100.0  100.0
+  main           Main                               110           1    0.5   11.1   100.0  100.0
+   randomAccess  Main                               112           1    0.0    0.0     0.0    0.0
+   timesDo       Main                               111     1000001    6.1   33.7    99.5   88.9
+    randomAccess Main                               113           0   93.4   55.2    93.4   55.2
+ CAF             System.Random                      108           0    0.0    0.0     0.0    0.0
+ CAF             Data.Time.Clock.POSIX              107           0    0.0    0.0     0.0    0.0
+ CAF             System.CPUTime                      99           0    0.0    0.0     0.0    0.0
+ CAF             GHC.IO.FD                           94           0    0.0    0.0     0.0    0.0
+ CAF             GHC.IO.Handle.FD                    92           0    0.0    0.0     0.0    0.0
+ CAF             Data.Fixed                          87           0    0.0    0.0     0.0    0.0
+ CAF             GHC.Conc.Signal                     82           0    0.0    0.0     0.0    0.0
+ CAF             GHC.IO.Encoding                     79           0    0.0    0.0     0.0    0.0
+ CAF             GHC.IO.Encoding.Iconv               73           0    0.0    0.0     0.0    0.0
+ CAF             GHC.Integer.Logarithms.Internals    63           0    0.0    0.0     0.0    0.0
