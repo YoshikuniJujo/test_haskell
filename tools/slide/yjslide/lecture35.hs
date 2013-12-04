@@ -8,7 +8,9 @@ main = runLecture [
 	[flip writeTitle subtitle], prelude, prelude2,
 	readFileProfile, readFileProfileUseString, readFileProfileUseByteString,
 	readFileProfileLazy, -- readFileProfile2,
-	usage, usage2, randomAccess
+	usage, usage2,
+	randomAccess, randomAccess2, randomAccess3, randomAccess4, randomAccess5,
+	randomAccess6
  ]
 
 prelude :: Page
@@ -108,5 +110,82 @@ randomAccess :: Page
 randomAccess = [\t -> do
 	writeTopTitle t "ランダムアクセスの効率"
 	text t "", \t -> do
-	text t "* ランダムアクセスの効率を比較してみよう"
+	text t "* ランダムアクセスの効率を比較してみよう", \t -> do
+	text t "* 前回のテストプログラムだと差が出ない", \t -> do
+	itext t 1 "- 9.6MBの文字列に1000回アクセス", \t -> do
+	itext t 1 "- 正格版、遅延版ともに0.01秒", \t -> do
+	text t "* ファイルを大きくしアクセス回数も増やす", \t -> do
+	itext t 1 "- 96MBの文字列に100万回アクセス", \t -> do
+	text t "* timesDoの定義は前回と同じ"
+ ]
+
+randomAccess2 :: Page
+randomAccess2 = [\t -> do
+	writeTopTitle t "ランダムアクセスの効率"
+	text t "", \t -> do
+	text t "* 正格ByteStringだと", \t -> do
+	itext t 1 "randomAccess :: BSC.ByteString -> Int -> IO Char"
+	itext t 1 "randomAccess str len = do"
+	itext t 2 "i <- randomRIO (0, len - 1)"
+	itext t 2 "return $ BSC.index str i"
+	itext t 1 "main :: IO ()"
+	itext t 1 "main = do"
+	itext t 2 "cnt <- BSC.readFile \"moreBig.txt\""
+	itext t 2 "(10 ^ 6) `timesDo`"
+	itext t 2.5 "(randomAccess cnt (10 ^ 8) >>= putChar)"
+	itext t 2 "putChar '\\n'"
+ ]
+
+randomAccess3 :: Page
+randomAccess3 = [\t -> do
+	writeTopTitle t "ランダムアクセスの効率"
+	text t "", \t -> do
+	text t "* かかった時間は", \t -> do
+	itext t 1 "- 2.06秒のうち54.8%がrandomAccess", \t -> do
+	itext t 1 "- ランダム値の生成を含めた時間は1.13秒"
+ ]
+
+randomAccess4 :: Page
+randomAccess4 = [\t -> do
+	writeTopTitle t "ランダムアクセスの効率"
+	text t "", \t -> do
+	text t "* 遅延ByteStringだと", \t -> do
+	itext t 1 "randomAccess :: BSLC.ByteString -> Int -> IO Char"
+	itext t 1 "randomAccess str len = do"
+	itext t 2 "i <- randomRIO (0, len - 1)"
+	itext t 2 "return $ BSLC.index str i"
+	itext t 1 "main :: IO ()"
+	itext t 1 "main = do"
+	itext t 2 "cnt <- BSLC.readFile \"moreBig.txt\""
+	itext t 2 "(10 ^ 6) `timesDo`"
+	itext t 2.5 "(randomAccess cnt (10 ^ 8) >>= putChar)"
+	itext t 2 "putChar '\\n'"
+ ]
+
+randomAccess5 :: Page
+randomAccess5 = [\t -> do
+	writeTopTitle t "ランダムアクセスの効率", \t -> do
+	text t "* かかった時間は", \t -> do
+	itext t 1 "- 18.58秒のうち93.4%がrandomAccess", \t -> do
+	itext t 1 "- ランダム値の生成を含む時間は17.35秒", \t -> do
+	itext t 1 "- 正格版の1.13秒と比較すると15倍の時間", \t -> do
+	text t "* ファイルのサイズを2倍にすると", \t -> do
+	itext t 1 "- 37.27秒のうち96.5%がrandomAccess", \t -> do
+	itext t 1 "- よって35.97秒", \t -> do
+	itext t 1 "- 2倍になっている", \t -> do
+	text t "* 正格版でも同様にファイルサイズを2倍にする", \t -> do
+	itext t 1 "- 2.32秒のうち58.1%がrandomAccess", \t -> do
+	itext t 1 "- よって1.35秒", \t -> do
+	itext t 1 "- 本来は変化しないはずだが1.2倍ほどになっている", \t -> do
+	itext t 1 "- 多少の影響はあるということか"
+ ]
+
+randomAccess6 :: Page
+randomAccess6 = [\t -> do
+	writeTopTitle t "ランダムアクセスの効率", \t -> do
+	text t "", \t -> do
+	text t "* ランダムアクセスでは", \t -> do
+	itext t 1 "- Stringよりは効率がずっと良い", \t -> do
+	itext t 1 "- 32000倍ほど良いはず", \t -> do
+	itext t 1 "- それでもO(n)になっている"
  ]
