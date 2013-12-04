@@ -12,6 +12,7 @@ main = runLecture [
 	usage, usage2, usage3, usage4, usage5, usage6,
 	randomAccess, randomAccess2, randomAccess3, randomAccess4,
 	randomAccess5,
+	aboutText,
 	summary
 -- prelude, useLazyList, useLazyList2,
 --	tempAndSubst, tempAndSubst2, tempAndSubst3
@@ -254,10 +255,32 @@ randomAccess5 = [\t -> do
 	itext t 1 "- 1万倍以上の時間効率の向上"
  ]
 
+aboutText :: Page
+aboutText = [\t -> do
+	writeTopTitle t "Text"
+	text t "", \t -> do
+	text t "* ByteStringはword8の配列なので", \t -> do
+	itext t 1 "> BSC.pack \"あいうえお\""
+	itext t 1 "\"BDFHJ\"", \t -> do
+	text t "* マルチバイト文字はうまく扱えない", \t -> do
+	text t "* Textなら", \t -> do
+	itext t 1 "> T.pack \"あいうえお\""
+	itext t 1 "\"\12354\12356\12358\12360\12362\"", \t -> do
+	itext t 1 "> T.putStr it"
+	itext t 1 "あいうえお"
+ ]
+
 summary :: Page
 summary = [\t -> do
 	writeTopTitle t "まとめ"
-	text t ""
+	text t "", \t -> do
+	text t "* Stringには苦手な分野がある", \t -> do
+	itext t 1 "- 2回以上読み込む必要があるとき", \t -> do
+	itext t 1 "- ランダムアクセスが必要なとき", \t -> do
+	text t "* そのような時にByteStringやTextが使える", \t -> do
+	itext t 1 "- ただし、データの変更を伴わない場合に限る", \t -> do
+	text t "* ByteStringはバイナリファイルやASCIIファイルに使う", \t -> do
+	text t "* マルチバイト文字が必要な場合はTextを使う"
  ]
 
 prelude_ :: Page
