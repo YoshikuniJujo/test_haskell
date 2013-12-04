@@ -43,7 +43,6 @@ prelude :: Page
 prelude = [\t -> do
 	writeTopTitle t "はじめに"
 	text t "", \t -> do
-	text t "* 初級編最終回", \t -> do
 	text t "* 今までの講義で触れられなかった機能について", \t -> do
 	text t "* 主な機能については今回で網羅することを目指す", \t -> do
 	itext t 1 "- ffiについては中級編で", \t -> do

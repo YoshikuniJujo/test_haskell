@@ -10,7 +10,7 @@ subtitle = "第5回 再帰関数"
 
 pages :: [Page]
 pages = [
-	titlePage, prelude, simple, simpleDevelop, summary1,
+	titlePage, todo, prelude, simple, simpleDevelop, summary1,
 	iterative2, iterative3, iterative4,
 	recursiveList, recursiveList2,
 	fibonacci1, fibonacci2, fibonacci3, fibonacci4, fibonacci5,
@@ -27,6 +27,15 @@ pages = [
 
 titlePage :: Page
 titlePage = [flip writeTitle subtitle]
+
+todo :: Page
+todo = [\t -> do
+	writeTopTitle t "TODO"
+	text t "", \t -> do
+	text t "* 再帰的プロセスと反復的プロセスでfibの例を出したが", \t -> do
+	itext t 1 "- ちょっと不適切な例だ", \t -> do
+	itext t 1 "- 別の例を考える必要がある"
+ ]
 
 prelude :: Page
 prelude = [\t -> do
@@ -52,7 +61,7 @@ simple = [\t -> do
 	text t "sumTo n = n + sumTo (n - 1)"
 	text t "", \t -> do
 	text t "0から0までの和: 0"
-	text t "0からnまでの和: n + (0からn - 1までの和)"
+	text t "0からnまでの和: n + (0からn - 1までの和)", \t -> do
 	text t "動作の定義", \t -> do
 	xmark t "動作の定義"
 	arrowIText t 0 "性質を定義している"

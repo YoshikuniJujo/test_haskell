@@ -534,14 +534,12 @@ doNotationSummary = [\t -> do
 summary :: Page
 summary = [\t -> do
 	writeTopTitle t "まとめ"
-	text t "* かなり疲れた"
-	text t "* よくわからなくなっている"
-	text t "* 前段はすぐに理解できなくても良い"
-	text t "* do記法でプログラムが書ければ良い"
-	text t "* ただしその背後にある論理をときどき意識してみると良い"
-	text t "* このパートは2つに分けるべきかもしれない"
-	text t "* そして、do記法を利用したより実践的なほうを先にすべきかも"
-	text t "* いずれにしても疲れた"
+	text t "", \t -> do
+	text t "* 前段はすぐに理解できなくても良い", \t -> do
+	text t "* do記法でプログラムが書ければ良い", \t -> do
+	text t "* ただしその背後にある論理をときどき意識してみると良い", \t -> do
+	text t "* このパートは2つに分けるべきかもしれない", \t -> do
+	text t "* do記法を利用したより実践的なほうを先にすべきかも"
  ]
 
 recLoop1 :: Page

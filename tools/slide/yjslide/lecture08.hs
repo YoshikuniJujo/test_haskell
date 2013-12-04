@@ -38,9 +38,7 @@ hello = [\t -> do
 	text t ""
 	text t "module名を省略しないで書くと", \t -> do
 	dvArrowShort t
-	text t ""
 	text t "module Main where"
-	text t ""
 	text t "main :: IO ()"
 	text t "main = putStrLn \"Hello, world!\""
  ]

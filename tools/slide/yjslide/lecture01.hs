@@ -12,8 +12,8 @@ pages :: [Page]
 pages = [
 	titlePage, whats1, whats2, whats3, whats4,
 	attention, definition, policy,
-	typeDef, baseFunDef, addSubDef, numSummary,
-	posTypeDef, difDef, distDef,
+	typeDef, baseFunDef, addSubDef, difDef, numSummary,
+	posTypeDef, distDef,
 	summary
  ]
 
@@ -22,13 +22,13 @@ titlePage = [flip writeTitle subtitle]
 
 attention :: Page
 attention = [\t -> do
-	writeTopTitle t "これから見ていく例題について", \t -> do
-	text t ""
-	semititle t "例題を通してHaskellの本質を見ていきたい", \t -> do
-	text t ""
+	writeTopTitle t "これから見ていく例題について"
+	text t "", \t -> do
+	semititle t "例題を通してHaskellの本質を見ていきたい"
+	text t "", \t -> do
 	semititle t "* わずかな構文でどれだけのことができるか", \t -> do
 	semititle t "* Haskellによる抽象化の本質を示す", \t -> do
-	semititle t "* 実際のプログラミングのやりかたではない"
+	semititle t "* 実際のプログラムの組みかたではない"
  ]
 
 definition :: Page
@@ -36,7 +36,7 @@ definition = [\t -> do
 	writeTopTitle t "問題定義"
 	text t "", \t -> do
 	text t "以下のような「街」における"
-	text t "地点(x, y) から地点(x', y') への道のりを求める"
+	text t "地点(x, y) から地点(x', y') への道のりを求める", \t -> do
 	forM_ [0 .. 2 :: Int] $ \y -> do
 		forM_ [0 .. 2 :: Int] $ \x -> do
 			when (y == 0) $
@@ -79,7 +79,7 @@ typeDef = [\t -> do
 	itext t 1 "| Four | Five | Six | Error"
 	text t "", \t -> do
 	text t "Zero, One, ..., Six, Errorを値とする型Numberを定義", \t -> do
-	itext t 1 "* Zero, ...はリテラルとして使える"
+	itext t 1 "* Zero, ...はリテラルとして使える", \t -> do
 	itext t 1 "* Zero, ...はパターンマッチで使える"
  ]
 
@@ -145,7 +145,7 @@ posTypeDef = [\t -> do
 	text t "data Position = Position Number Number"
 	text t "", \t -> do
 	text t "* 前に定義したNumberを使って型Positionを定義した", \t -> do
-	text t "* ふたつのPositionはそれぞれ型名と型構築子", \t -> do
+	text t "* ふたつのPositionはそれぞれ型名とデータ構築子", \t -> do
 	text t "* data宣言は"
 	itext t 1 "data [型名] = [構築子1] [型1] [型2] ..."
 	itext t 3 "| [構築子2] [型3] [型4] ..."

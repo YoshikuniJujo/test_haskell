@@ -365,12 +365,12 @@ queue4 = [\t -> do
 	itext t 2 "then return ms"
 	itext t 2 "else getMessages $ enqueue m ms", \t -> do
 	text t "readMessage :: Queue q => q String -> IO ()"
-	text t "readMessage ms = if isEmpty q"
+	text t "readMessage ms = if isEmpty ms"
 	itext t 1 "then return ()"
 	itext t 1 "else do"
-	itext t 2 "let (m, ms') = dequeue q"
+	itext t 2 "let (m, ms') = dequeue ms"
 	itext t 2 "putStrLn m"
-	itext t 2 "readMessages ms"
+	itext t 2 "readMessages ms'"
  ]
 
 queue5 :: Page
@@ -414,7 +414,7 @@ defaultMethod = [\t -> do
 	text t "class Eq a => Growable a of"
 	itext t 1 "grow :: a -> a"
 	itext t 1 "isGoal :: a -> Bool"
-	itext t 1 "isGoal x = grow x == grow x"
+	itext t 1 "isGoal x = x == grow x"
 	text t "", \t -> do
 	text t "* isGoalはinstance宣言で定義しなければデフォルトの定義", \t -> do
 	text t "* Eq a =>は文脈(==)を使うために必要", \t -> do

@@ -27,12 +27,12 @@ titlePage = [flip writeTitle subtitle]
 feature :: Page
 feature = [\t -> do
 	writeTopTitle t "Haskellの特徴"
-	writeImageRight t haskellBCurry
-	text t "純粋関数型言語であり"
-	itext t 1 "* 第一級関数"
-	itext t 1 "* 参照透過性"
-	itext t 1 "* 静的型付け"
-	itext t 1 "* 遅延性"
+	writeImageRight t haskellBCurry, \t -> do
+	text t "純粋関数型言語であり", \t -> do
+	itext t 1 "* 第一級関数", \t -> do
+	itext t 1 "* 参照透過性", \t -> do
+	itext t 1 "* 静的型付け", \t -> do
+	itext t 1 "* 遅延性", \t -> do
 	text t "という特徴を持つ", \t -> do
 	dvArrowShort t
 	text t "概念の本質的な部分をそのまま表現できる"
@@ -55,7 +55,7 @@ pure n = [\t -> do
 functions :: Page
 functions = [\t -> do
 	writeTopTitle t "関数とは?", \t -> do
-	text t "0個以上の入力値をひとつの出力値へ変えるルール"
+	text t "0個以上の入力値をひとつの出力値へ変えるルール", \t -> do
 	graphArrowString t 10 50 (Just "入力1") Nothing
 	graphArrowString t 10 70 (Just "入力2") Nothing
 	drawRect t (13500 / 364) (200 / 5) 25 35
@@ -63,7 +63,7 @@ functions = [\t -> do
 
 functionChecks :: Page
 functionChecks = [\t -> do
-	writeTopTitle t "関数とは?(練習問題)"
+	writeTopTitle t "関数とは?(練習問題)", \t -> do
 	semititle t "以下の「関数」の入力と出力を述べよ", \t -> do
 	text t "足し算", \t -> do
 	text t "翻訳", \t -> do
@@ -78,10 +78,10 @@ firstclasses1 = [\t -> do
 	writeTopTitle t "第一級関数とは?", \t -> do
 	text t "関数が第一級オブジェクトであるということ", \t -> do
 	writeNextTitle t "第一級オブジェクトとは?", \t -> do
-	text t "* リテラルとして表現できる"
-	text t "* 変数に格納できる"
-	text t "* データ構造に格納できる"
-	text t "* 関数の引数になれる"
+	text t "* リテラルとして表現できる", \t -> do
+	text t "* 変数に格納できる", \t -> do
+	text t "* データ構造に格納できる", \t -> do
+	text t "* 関数の引数になれる", \t -> do
 	text t "* 関数の返り値になれる"]
 
 firstclassExams1 :: Page
@@ -118,12 +118,12 @@ higherOrders1 :: Page
 higherOrders1 = [\t -> do
 	writeTopTitle t "高階関数"
 	text t "高階関数とは引数または返り値が関数であるような関数", \t -> do
-	text t "つまり"
+	text t "つまり", \t -> do
 	text t ""
 	text t "関数が第一級オブジェクトである"
 	dvArrow t
 	text t "高階関数が書ける"
-	text t ""
+	text t "", \t -> do
 	text t "ということ"]
 
 higherOrders2 :: Page
@@ -131,28 +131,28 @@ higherOrders2 = [\t -> do
 	writeTopTitle t "高階関数"
 	oneshot t $
 		text t "高階関数とは引数または返り値が関数であるような関数"
-	text t ""
+	text t "", \t -> do
 	text t "何がうれしいの?"
 	text t "", \t -> do
-	text t "* より高レベルな抽象化"
-	itext t 1 "枠組だけを定義することが可能"
+	text t "* より高レベルな抽象化", \t -> do
+	itext t 1 "枠組だけを定義することが可能", \t -> do
 	itext t 1 "例: リストの要素のすべてに何かする", \t -> do
 	dvArrow t
 	text t "他の言語の「構文」が普通の関数となる"]
 
 higherOrderChecks1 :: Page
 higherOrderChecks1 = [\t -> do
-	writeTopTitle t "高階関数(練習問題)"
+	writeTopTitle t "高階関数(練習問題)", \t -> do
 	semititle t "以下の関数を定義せよ", \t -> do
 	text t "与えられた関数を3回適用する関数", \t -> do
-	text t "10を底とした対数を求める関数を返す関数"
+	text t "引数xを底とした対数を求める関数を返す関数"
 	itext t 1 "(ちなみに、logBase 10 1000 => 3)"
 	text t "", \t -> do
 	text t "答え:", \t -> do
-	text t "与えられた関数を3回適用する関数"
+	text t "与えられた関数を3回適用する関数", \t -> do
 	itext t 1 "threeTimes fun x = fun (fun (fun x))", \t -> do
-	text t "10を底とした対数を求める関数を返す関数"
-	itext t 1 "log10 = \\x -> logBase 10 x"]
+	text t "10を底とした対数を求める関数を返す関数", \t -> do
+	itext t 1 "log10 x = \\y -> logBase x y"]
 
 transparencies1 :: Page
 transparencies1 = [\t -> do
@@ -164,8 +164,7 @@ transparencies1 = [\t -> do
 	itext t 1 "C 言語"
 	itext t 1 "counter() => 0"
 	itext t 1 "counter() => 1"
-	itext t 1 "counter() => 2"
-	itext t 1 "", \t -> do
+	itext t 1 "counter() => 2", \t -> do
 	itext t 1 "Ruby"
 	itext t 1 "counter.count => 0"
 	itext t 1 "counter.count => 1"
@@ -173,12 +172,12 @@ transparencies1 = [\t -> do
 
 transparencies2 :: Page
 transparencies2 = [\t -> do
-	writeTopTitle t "参照透過性とは?"
-	text t "Haskellでは同じ入力からは常に同じ出力"
+	writeTopTitle t "参照透過性とは?", \t -> do
+	text t "Haskellでは同じ入力からは常に同じ出力", \t -> do
 	dvArrow t
-	text t "関数適用はその出力である値に置き換えることができる"
+	text t "関数適用はその出力である値に置き換えることができる", \t -> do
 	itext t 1 $ "f x => 3"
-	itext t 1 $ "g (f x) == g 3"
+	itext t 1 $ "g (f x) == g 3", \t -> do
 	text t "この場合、f x と 3 は全く同じ物と考えてよい"
 	text t "", \t -> do
 	semititle t "Haskellでの「関数」とは"
@@ -234,7 +233,7 @@ staticTypings1 = [\t -> do
 	text t "* 関数はあらゆる型の値を出力する可能性がある", \t -> do
 	dvArrowShort t
 	text t "あらゆる値に対して動作を保証する必要がある", \t -> do
-	semititle t "静的型付けの場合"
+	semititle t "静的型付けの場合", \t -> do
 	text t "* 決められた範囲の値についてだけ定義すれば良い", \t -> do
 	dvArrowShort t
 	itext t 2 "楽ちん"]
@@ -274,21 +273,21 @@ lazyEvaluations1 = [\t -> do
 
 lazyEvaluations2 :: Page
 lazyEvaluations2 = [\t -> do
-	writeTopTitle t "遅延性とは?"
-	text t "遅延性という言葉は使われていない"
+	writeTopTitle t "遅延性とは?", \t -> do
+	text t "遅延性という言葉は使われていない", \t -> do
 	arrowIText t 1 "このスライド用に造語"
 	text t "", \t -> do
 	text t "どうしてそんなことを?", \t -> do
 	text t "* 遅延評価と遅延型をまとめて表現したかった", \t -> do
-	text t "* 遅延型も造語"
-	itext t 1 "遅延リストは普遍的な遅延するデータ構造のひとつ"
+	text t "* 遅延型も造語", \t -> do
+	itext t 1 "遅延リストは普遍的な遅延するデータ構造のひとつ", \t -> do
 	itext t 1 "Haskellではデータ構造の評価は遅延する", \t -> do
 	text t "* 正確に言うと"
 	itext t 1 "「遅延評価と弱頭部正規形までの簡約」となるだろう"]
 
 lazyEvaluationChecks1 :: Page
 lazyEvaluationChecks1 = [\t -> do
-	writeTopTitle t "遅延性とは?(練習問題)"
+	writeTopTitle t "遅延性とは?(練習問題)", \t -> do
 	text t "以下について先行性と遅延性でどうなるか答えよ"
 	text t "", \t -> do
 	text t "x = x; const y z = yのときのconst 8 x", \t -> do
