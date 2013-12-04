@@ -37,8 +37,8 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第31回 重み平衡木
 第32回 辞書
 第33回 遅延リストとしての文字列(String)
-(ここまで作った、以下予定)
 第34回 配列としての文字列(ByteString, Text)
+(ここまで作った、以下予定)
 第35回 配列の遅延リストとしての文字列(ByteString.Lazy, Text.Lazy)
 第36回 OverloadedStrings拡張
 第37回 array
