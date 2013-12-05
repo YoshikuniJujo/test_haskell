@@ -49,6 +49,9 @@ tmp/
 /tools/slide/yjslide/examples/profiling/new/ratio.txt
 /tools/slide/yjslide/examples/profiling/new/show_page.txt
 /tools/slide/yjslide/examples/profiling/new/show_turtle.txt
+/tools/slide/yjslide/examples/profiling/primes/eratosthenes
+/tools/slide/yjslide/examples/profiling/primes/eratosthenesU
+/tools/slide/yjslide/examples/profiling/primes/pseudoEratosthenes
 *.aux
 *.hp
 *.pdf
