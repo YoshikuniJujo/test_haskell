@@ -46,7 +46,7 @@ readFileProfile :: Page
 readFileProfile = [\t -> do
 	writeTopTitle t "メモリの使用量の比較"
 	text t "", \t -> do
-	text t "* 前回のStringとByteStringの比較を再掲する"
+	text t "* 前回のStringとByteStringの比較を再掲する", \t -> do
 	itext t 1 "- ファイル内容の表示時のメモリの使用量"
  ]
 
