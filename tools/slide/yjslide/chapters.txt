@@ -38,9 +38,9 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第32回 辞書
 第33回 遅延リストとしての文字列(String)
 第34回 配列としての文字列(ByteString, Text)
-(ここまで作った、以下予定)
 第35回 配列の遅延リストとしての文字列(ByteString.Lazy, Text.Lazy)
 第36回 OverloadedStrings拡張
+(ここまで作った、以下予定)
 第37回 array
 第38回 IOArray, IOUArray
 第39回 unbox型
