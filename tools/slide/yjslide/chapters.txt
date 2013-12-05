@@ -41,8 +41,8 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第35回 配列の遅延リストとしての文字列(ByteString.Lazy, Text.Lazy)
 第36回 OverloadedStrings拡張
 (ここまで作った、以下予定)
-第37回 array
-第38回 IOArray, IOUArray
+第37回 配列
+第38回 可変配列(IOArray, IOUArray)
 第39回 unbox型
 第40回 ffi
 第41回 cabalの使いかた(テストの自動化も含めて)
@@ -52,7 +52,7 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第44回 operational monad
 第45回 forall(ランクN多相)
 第46回 ST monad
-第47回 STArray, STUArray
+第47回 ST monadを使った可変配列(STArray, STUArray)
 第48回 並行実行
 第49回 ref, mvar, chan, tvar
 第50回 stm
