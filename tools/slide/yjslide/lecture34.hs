@@ -267,7 +267,9 @@ aboutText = [\t -> do
 	itext t 1 "> T.pack \"あいうえお\""
 	itext t 1 "\"\12354\12356\12358\12360\12362\"", \t -> do
 	itext t 1 "> T.putStr it"
-	itext t 1 "あいうえお"
+	itext t 1 "あいうえお", \t -> do
+	text t "* その他使いかたはByteStringと同様", \t -> do
+	itext t 1 "- IO関係がData.Text.IOにあるなど小さな違いはある"
  ]
 
 summary :: Page

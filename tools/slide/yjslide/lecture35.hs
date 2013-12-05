@@ -10,7 +10,8 @@ main = runLecture [
 	readFileProfileLazy, -- readFileProfile2,
 	usage, usage2,
 	randomAccess, randomAccess2, randomAccess3, randomAccess4, randomAccess5,
-	randomAccess6
+	randomAccess6,
+	summary
  ]
 
 prelude :: Page
@@ -182,10 +183,33 @@ randomAccess5 = [\t -> do
 
 randomAccess6 :: Page
 randomAccess6 = [\t -> do
-	writeTopTitle t "ランダムアクセスの効率", \t -> do
+	writeTopTitle t "ランダムアクセスの効率"
 	text t "", \t -> do
 	text t "* ランダムアクセスでは", \t -> do
 	itext t 1 "- Stringよりは効率がずっと良い", \t -> do
 	itext t 1 "- 32000倍ほど良いはず", \t -> do
 	itext t 1 "- それでもO(n)になっている"
+ ]
+
+aboutText :: Page
+aboutText = [\t -> do
+	writeTopTitle t "遅延Text"
+	text t "", \t -> do
+	text t "* 正格版と同様に遅延版にもTextがある", \t -> do
+	itext t 1 "- 正格版と同様の関係", \t -> do
+	itext t 1 "- マルチバイト文字を使うときはこちら"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* 配列のリストとしての文字列について学んだ", \t -> do
+	text t "* リストとしての文字列と配列としての文字列のあいだ", \t -> do
+	text t "* あまり深く考えずにStringから置き換えかとしても", \t -> do
+	itext t 1 "- 効率が向上することが多い", \t -> do
+	text t "* ASCIIやバイナリファイルであればまずは4倍の空間効率", \t -> do
+	text t "* また、文字のまとまりを扱うことでほぼ2倍程度の空間効率", \t -> do
+	text t "* ランダムアクセスについてもリストの長さが32k分の1", \t -> do
+	itext t 1 "- 32000倍の効率が予想される"
  ]
