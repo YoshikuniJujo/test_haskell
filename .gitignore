@@ -60,6 +60,8 @@ tmp/
 /tools/slide/yjslide/examples/pair/lookupTuple
 /tools/slide/yjslide/examples/pair/lookupWPair
 /tools/slide/yjslide/examples/pair/lookupWord64
+/tools/slide/yjslide/examples/pair2/lookupTuple
+/tools/slide/yjslide/examples/pair2/lookupWord
 *.aux
 *.hp
 *.pdf

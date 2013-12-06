@@ -10,6 +10,8 @@ main = runLecture [
 	rev, rev2, rev3, revSummary,
 	pair, pair2, pair3, pair4, pair5, pair6, pair7, pair8, pair9,
 	pair10, pair11, pairSummary,
+	newPair, newPair2, newPair3, newPair4, newPair5, newPair6, newPair7,
+	newPair8, newPair9, newPairSummary,
 	summary
  ]
 
@@ -306,13 +308,140 @@ pairSummary = [\t -> do
 	itext t 1 "- FlexibleInstances拡張が必要"
  ]
 
+newPair :: Page
+newPair = [\t -> do
+	writeTopTitle t "ペアの別の例"
+	text t "", \t -> do
+	text t "* MultiParamTypeClasses拡張と一緒に使う場合", \t -> do
+	text t "* instance宣言の型を型変数にすることにも意味が出てくる", \t -> do
+	itext t 1 "instance Class Type a", \t -> do
+	text t "* この例について見ていこう", \t -> do
+	itext t 1 "class Pairable p e where"
+	itext t 2 "pair :: e -> e -> p e"
+	itext t 2 "unpair :: p e -> (e, e)", \t -> do
+	itext t 1 "newtype TPair a = TPair (a, a)", \t -> do
+	itext t 1 "newtype WPair a = WPair Word64"
+ ]
+
+newPair2 :: Page
+newPair2 = [\t -> do
+	writeTopTitle t "ペアの別の例"
+	text t "", \t -> do
+	text t "* TPairのinstance宣言", \t -> do
+	itext t 0 "instance Pairable TPair e where"
+	itext t 1 "pair x y = TPair (x, y)"
+	itext t 1 "unpair (TPair p) = p", \t -> do
+	text t "* WPairについては要素ごとにinstance宣言する", \t -> do
+	itext t 0 "instance Pairable WPair Word8 where"
+	itext t 1 "pair w1 w2 = WPair $ (fromIntegral w1 `shiftL` 8)"
+	itext t 5 ".|. fromIntegral w2"
+	itext t 1 "unpair (WPair w) = (fromIntegral $ w `shiftR` 8,"
+	itext t 5 "fromIntegral $ w .&. 0xff)"
+ ]
+
+newPair3 :: Page
+newPair3 = [\t -> do
+	writeTopTitle t "ペアの別の例"
+	text t "", \t -> do
+	text t "* WPairについてWord16, Word32についても同様", \t -> do
+	itext t 0 "instance Pairable WPair Word16 where"
+	itext t 1 "pair w1 w2 = WPair $ (fromIntegral w1 `shiftL` 16)"
+	itext t 5 ".|. fromIntegral w2"
+	itext t 1 "unpair (WPair w) = (fromIntegral $ w `shiftR` 16,"
+	itext t 4 "fromIntegral $ w .&. 0xffff)", \t -> do
+	itext t 0 "instance Pairable WPair Word32 where"
+	itext t 1 "pair w1 w2 = WPair $ (fromIntegral w1 `shiftL` 32)"
+	itext t 5 ".|. fromIntegral w2"
+	itext t 1 "unpair (WPair w) = (fromIntegral $ w `shiftR` 32,"
+	itext t 4 "fromIntegral $ w .&. 0xffffffff)"
+ ]
+
+newPair4 :: Page
+newPair4 = [\t -> do
+	writeTopTitle t "ペアの別の例", \t -> do
+	text t "* テスト用の関数(FlexibleContextsが必要)", \t -> do
+	itext t 0 "getRandomPairs :: Pairable p Word32 => IO [p Word32]"
+	itext t 0 "getRandomPairs = replicateM (10 ^ 4) $ do"
+	itext t 1 "w1 <- randomIO"
+	itext t 1 "w2 <- randomIO"
+	itext t 1 "return $ pair w1 w2", \t -> do
+	itext t 0 "lookupPair :: Pairable p Word32 =>"
+	itext t 1 "Word32 -> [p Word32] -> Maybe Word32"
+	itext t 0 "lookupPair w0 (wp : wps)"
+	itext t 1 "| (w1, w2) <- unpair wp,"
+	itext t 2 "abs (w1 - w0) < 1000 = Just w2"
+	itext t 1 "| otherwise = lookupPair w0 wps"
+ ]
+
+newPair5 :: Page
+newPair5 = [\t -> do
+	writeTopTitle t "ペアの別の例"
+	text t "", \t -> do
+	text t "* テスト用のmain", \t -> do
+	itext t 1 "main :: Pairable p Word32 => p Word32 -> IO ()"
+	itext t 1 "main (_ :: p Word32) = do"
+	itext t 2 "ps <- getRandomPairs :: IO [p Word32]"
+	itext t 2 "(10 ^ 3) `timesDo` (do"
+	itext t 3 "k <- randomIO"
+	itext t 3 "case lookupPair k ps of"
+	itext t 4 "Just v -> print v"
+	itext t 4 "_ -> return ())"
+ ]
+
+newPair6 :: Page
+newPair6 = [\t -> do
+	writeTopTitle t "ペアの別の例"
+	text t "", \t -> do
+	text t "* タプルを使う場合", \t -> do
+	itext t 1 "main = T.main (undefined :: TPair Word32)", \t -> do
+	text t "* このときのメモリの使用状況は"
+ ]
+
+newPair7 :: Page
+newPair7 = [\t -> do
+	writeTopTitle t "ペアの別の例"
+	text t "", \t -> do
+	writeImageCenter t 82 (300, 180, "examples/pair2/lookupTuple.png"), \t -> do
+	text t "* 2.2MB程度のメモリを使用している"
+ ]
+
+newPair8 :: Page
+newPair8 = [\t -> do
+	writeTopTitle t "ペアの別の例"
+	text t "", \t -> do
+	text t "* Word64をペアに使う場合", \t -> do
+	itext t 1 "main :: IO ()"
+	itext t 1 "main = T.main (undefined :: WPair Word64)", \t -> do
+	text t "* メモリ使用状況は"
+ ]
+
+newPair9 :: Page
+newPair9 = [\t -> do
+	writeTopTitle t "ペアの別の例"
+	text t "", \t -> do
+	writeImageCenter t 82 (300, 180, "examples/pair2/lookupWord.png"), \t -> do
+	text t "* 260kB程度のメモリを使用している", \t -> do
+	itext t 1 "- タプルを使った場合は2.2MBほど", \t -> do
+	itext t 1 "- 8倍程度の空間効率の向上"
+ ]
+
+newPairSummary :: Page
+newPairSummary = [\t -> do
+	writeTopTitle t "ペアの別の例(まとめ)"
+	text t "", \t -> do
+	text t "* 以下を同じクラスのインスタンスにすることができる", \t -> do
+	itext t 1 "- すべての型に使えるコンテナ", \t -> do
+	itext t 1 "- 特定の型にしか使えないコンテナ"
+ ]
+
 summary :: Page
 summary = [\t -> do
 	writeTopTitle t "まとめ"
 	text t "", \t -> do
 	text t "* FlexibleInstances拡張について学んだ", \t -> do
-	text t "* 型変数の代わりに型構築子が使える", \t -> do
+	text t "* 型変数の代わりに型が使える", \t -> do
 	text t "* 同じ型変数の2回以上の出現を許す", \t -> do
+	text t "* 型の代わりに型変数が使える", \t -> do
 	text t "* 後者はMultiParamTypeClasses拡張と組み合わせることで", \t -> do
 	itext t 1 "- 以下を同じクラスのインスタンスとして表現可能", \t -> do
 	itext t 2 "全ての型で使える構造", \t -> do
