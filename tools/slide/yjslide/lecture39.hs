@@ -8,7 +8,7 @@ main = runLecture [
 	[flip writeTitle subtitle], prelude,
 	eratosthenes, pseudoEratosthenes, eratosthenes2,
 	eratosthenes3, eratosthenes4, eratosthenes5, eratosthenes6,
-	eratosthenes7, eratosthenes8
+	eratosthenes7, eratosthenes8, eratosthenes9, marray
  ]
 
 prelude :: Page
@@ -57,23 +57,33 @@ pseudoEratosthenes = [\t -> do
 
 eratosthenes2 :: Page
 eratosthenes2 = [\t -> do
-	writeTopTitle t "エラトステネスの篩", \t -> do
+	writeTopTitle t "エラトステネスの篩"
+	text t "", \t -> do
 	text t "* 本物のエラトステネスの篩を実装するには可変配列が必要", \t -> do
-	text t "* これを実装していくなかで可変配列の使いかたを学ぼう", \t -> do
+	text t "* これを実装していくなかで可変配列の使いかたを学ぼう"
+	text t "", \t -> do
 	text t "* IOArrayについて", \t -> do
 	itext t 1 "IOArray i e", \t -> do
 	text t "* 初期値を設定して配列を作成", \t -> do
 	itext t 1 "newArray :: Ix i =>"
-	itext t 2 "(i, i) -> e -> IO (IOArray i e)", \t -> do
-	text t "* 配列への要素の書き込み", \t -> do
-	itext t 1 "writeArray :: Ix i =>"
-	itext t 2 "IOArray i e -> i -> e -> IO ()", \t -> do
-	text t "* 配列からの要素の読み出し", \t -> do
-	itext t 1 "readArray :: Ix i => IOArray i e -> i -> IO e"
+	itext t 2 "(i, i) -> e -> IO (IOArray i e)"
  ]
 
 eratosthenes3 :: Page
 eratosthenes3 = [\t -> do
+	writeTopTitle t "エラトステネスの篩"
+	text t "", \t -> do
+	text t "* 配列への要素の書き込み", \t -> do
+	itext t 1 "writeArray :: Ix i =>"
+	itext t 2 "IOArray i e -> i -> e -> IO ()", \t -> do
+	text t "* 配列からの要素の読み出し", \t -> do
+	itext t 1 "readArray :: Ix i => IOArray i e -> i -> IO e", \t -> do
+	text t "* [(インデックス, 値)]形式への変換", \t -> do
+	itext t 1 "getAssocs :: Ix i => IOArray i e -> IO [(i, e)]"
+ ]
+
+eratosthenes4 :: Page
+eratosthenes4 = [\t -> do
 	writeTopTitle t "エラトステネスの篩"
 	text t "", \t -> do
 	text t "* 実装は以下のようになる", \t -> do
@@ -88,8 +98,8 @@ eratosthenes3 = [\t -> do
 	itext t 1 "return arr"
  ]
 
-eratosthenes4 :: Page
-eratosthenes4 = [\t -> do
+eratosthenes5 :: Page
+eratosthenes5 = [\t -> do
 	writeTopTitle t "エラトステネスの篩"
 	text t "", \t -> do
 	text t "* 素数のリストを取り出す", \t -> do
@@ -104,20 +114,20 @@ eratosthenes4 = [\t -> do
 	itext t 1 "- 「的なもの」で4.77秒だったので40倍の速度が出た"
  ]
 
-eratosthenes5 :: Page
-eratosthenes5 = [\t -> do
-	writeTopTitle t "エラトステネスの篩"
-	text t "", \t -> do
-	writeImageCenter t 82 (300, 180, "examples/profiling/primes/eratosthenes.png")
-	text t "* メモリの使用状況", \t -> do
-	itext t 1 "- 1.5MBほど使っている"
- ]
-
 eratosthenes6 :: Page
 eratosthenes6 = [\t -> do
 	writeTopTitle t "エラトステネスの篩"
 	text t "", \t -> do
-	text t "* IOArrayに対してIOUArrayというものがある", \t -> do
+	writeImageCenter t 82 (300, 180, "examples/profiling/primes/eratosthenes.png"), \t -> do
+	text t "* メモリの使用状況", \t -> do
+	itext t 1 "- 1.5MBほど使っている"
+ ]
+
+eratosthenes7 :: Page
+eratosthenes7 = [\t -> do
+	writeTopTitle t "エラトステネスの篩"
+	text t "", \t -> do
+--	text t "* IOArrayに対してIOUArrayというものがある", \t -> do
 	text t "* Haskellでは遅延評価のためにbox化された型を使っている", \t -> do
 	text t "* box化された型とは?", \t -> do
 	itext t 1 "- 値そのものまたは評価前の式をその値として持つ型", \t -> do
@@ -129,8 +139,8 @@ eratosthenes6 = [\t -> do
 	itext t 1 "- 真偽値もそのうちのひとつ"
  ]
 
-eratosthenes7 :: Page
-eratosthenes7 = [\t -> do
+eratosthenes8 :: Page
+eratosthenes8 = [\t -> do
 	writeTopTitle t "エラトステネスの篩"
 	text t "", \t -> do
 	text t "* IOUArrayを使って再定義してみる", \t -> do
@@ -139,11 +149,23 @@ eratosthenes7 = [\t -> do
 	text t "* メモリの使用量を見てみよう"
  ]
 
-eratosthenes8 :: Page
-eratosthenes8 = [\t -> do
+eratosthenes9 :: Page
+eratosthenes9 = [\t -> do
 	writeTopTitle t "エラトステネスの篩"
 	text t "", \t -> do
 	writeImageCenter t 82 (300, 180, "examples/profiling/primes/eratosthenesU.png"), \t -> do
 	text t "* 1MBほどのメモリの使用量", \t -> do
 	itext t 1 "- IOArray版の1.5MBと比べて2/3ほどとなっている"
+ ]
+
+marray :: Page
+marray = [\t -> do
+	writeTopTitle t "MArrayクラス"
+	text t "", \t -> do
+	text t "* IOUArray型に換えるときに型宣言だけ変えれば良かった", \t -> do
+	itext t 1 "- IOArray型を扱う関数をいくつか紹介した", \t -> do
+	itext t 1 "- 実際はMArrayクラスに対して定義されている", \t -> do
+	text t "* MArrayクラスの定義", \t -> do
+	itext t 1 "class Monad m => MArray a e m where"
+	itext t 2 "..."
  ]
