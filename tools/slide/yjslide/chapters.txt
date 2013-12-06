@@ -41,8 +41,8 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第35回 配列の遅延リストとしての文字列(ByteString.Lazy, Text.Lazy)
 第36回 OverloadedStrings拡張
 第37回 不変配列
-(ここまで作った、以下予定)
 第38回 MultiParamTypeClasses拡張
+(ここまで作った、以下予定)
 第39回 可変配列(IOArray, IOUArray, MArray)
 第40回 unbox型
 第41回 ffi

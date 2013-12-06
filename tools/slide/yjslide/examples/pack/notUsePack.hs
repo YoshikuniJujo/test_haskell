@@ -9,5 +9,7 @@ randomAccess len bs = do
 main :: IO ()
 main = do
 	bs <- getTestBools
-	(10 ^ 5) `timesDo` (randomAccess (8 * 10 ^ 4) bs >>= putStr . show)
+	(10 ^ 5) `timesDo` (do
+		b <- randomAccess (8 * 10 ^ 4) bs
+		putStr $ show b)
 	putChar '\n'
