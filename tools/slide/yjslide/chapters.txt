@@ -42,8 +42,8 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第36回 OverloadedStrings拡張
 第37回 不変配列
 第38回 MultiParamTypeClasses拡張
-(ここまで作った、以下予定)
 第39回 FlexibleInstances拡張
+(ここまで作った、以下予定)
 第40回 可変配列(IOArray, IOUArray, MArray)
 第41回 unbox型
 第42回 ffi

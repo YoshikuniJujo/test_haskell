@@ -57,6 +57,9 @@ tmp/
 /tools/slide/yjslide/examples/pack/10kFile.txt
 /tools/slide/yjslide/examples/pack/100kFile.txt
 /tools/slide/yjslide/examples/pack/1MFile.txt
+/tools/slide/yjslide/examples/pair/lookupTuple
+/tools/slide/yjslide/examples/pair/lookupWPair
+/tools/slide/yjslide/examples/pair/lookupWord64
 *.aux
 *.hp
 *.pdf
