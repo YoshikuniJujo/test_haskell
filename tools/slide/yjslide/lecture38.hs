@@ -6,7 +6,9 @@ subtitle = "第38回 可変配列"
 main :: IO ()
 main = runLecture [
 	[flip writeTitle subtitle], prelude,
-	eratosthenes, pseudoEratosthenes, eratosthenes2
+	eratosthenes, pseudoEratosthenes, eratosthenes2,
+	eratosthenes3, eratosthenes4, eratosthenes5, eratosthenes6,
+	eratosthenes7, eratosthenes8
  ]
 
 prelude :: Page
@@ -46,14 +48,17 @@ pseudoEratosthenes = [\t -> do
 	itext t 1 "primes = sieve [2 ..]"
 	itext t 1 "sieve (p : xs) ="
 	itext t 2 "p : sieve [x | x <- xs, x `mod` p > 0]", \t -> do
-	text t "メモ: 6, 7, 8, 9を全部5でわって確認している"
-	itext t 1 "本当の篩であれば5でわれるものだけを相手にする"
+	text t "* これは実のところ篩と呼べる実装ではない", \t -> do
+	text t "* 本当の篩は「倍数」だけを相手にしているが", \t -> do
+	itext t 1 "- これは割り切れないものもチェックしている", \t -> do
+	text t "* たとえば、7を5でわって確認している", \t -> do
+	text t "* この実装で1万番目の素数を求めるのに4.77秒かかる"
  ]
 
 eratosthenes2 :: Page
 eratosthenes2 = [\t -> do
-	writeTopTitle t "エラトステネスの篩"
-	text t "", \t -> do
+	writeTopTitle t "エラトステネスの篩", \t -> do
+	text t "* 本物のエラトステネスの篩を実装するには可変配列が必要", \t -> do
 	text t "* これを実装していくなかで可変配列の使いかたを学ぼう", \t -> do
 	text t "* IOArrayについて", \t -> do
 	itext t 1 "IOArray i e", \t -> do
@@ -65,4 +70,80 @@ eratosthenes2 = [\t -> do
 	itext t 2 "IOArray i e -> i -> e -> IO ()", \t -> do
 	text t "* 配列からの要素の読み出し", \t -> do
 	itext t 1 "readArray :: Ix i => IOArray i e -> i -> IO e"
+ ]
+
+eratosthenes3 :: Page
+eratosthenes3 = [\t -> do
+	writeTopTitle t "エラトステネスの篩"
+	text t "", \t -> do
+	text t "* 実装は以下のようになる", \t -> do
+	itext t 0 "sieve :: Int -> IO (IOArray Int Bool)"
+	itext t 0 "sieve n = do"
+	itext t 1 "arr <- newArray (2, n ^ 2) True"
+	itext t 1 "forM_ [2 .. n] $ \\p -> do"
+	itext t 2 "isPrime <- readArray arr p"
+	itext t 2 "when isPrime $"
+	itext t 3 "forM_ [2 * p, 3 * p .. n ^ 2] $ \\k ->"
+	itext t 4 "writeArray arr k False"
+	itext t 1 "return arr"
+ ]
+
+eratosthenes4 :: Page
+eratosthenes4 = [\t -> do
+	writeTopTitle t "エラトステネスの篩"
+	text t "", \t -> do
+	text t "* 素数のリストを取り出す", \t -> do
+	itext t 1 "primesTo :: Int -> IO [Int]"
+	itext t 1 "primesTo n = do"
+	itext t 2 "arr <- sieve n >>= getAssocs"
+	itext t 2 "return [fst p | p <- arr, snd p]", \t -> do
+	text t "* テスト用のmain関数", \t -> do
+	itext t 1 "main :: IO ()"
+	itext t 1 "main = print =<< (!! 10000) <$> primesTo 324", \t -> do
+	text t "* これにかかる時間が0.12秒", \t -> do
+	itext t 1 "- 「的なもの」で4.77秒だったので40倍の速度が出た"
+ ]
+
+eratosthenes5 :: Page
+eratosthenes5 = [\t -> do
+	writeTopTitle t "エラトステネスの篩"
+	text t "", \t -> do
+	writeImageCenter t 82 (300, 180, "examples/profiling/primes/eratosthenes.png")
+	text t "* メモリの使用状況", \t -> do
+	itext t 1 "- 1.5MBほど使っている"
+ ]
+
+eratosthenes6 :: Page
+eratosthenes6 = [\t -> do
+	writeTopTitle t "エラトステネスの篩"
+	text t "", \t -> do
+	text t "* IOArrayに対してIOUArrayというものがある", \t -> do
+	text t "* Haskellでは遅延評価のためにbox化された型を使っている", \t -> do
+	text t "* box化された型とは?", \t -> do
+	itext t 1 "- 値そのものまたは評価前の式をその値として持つ型", \t -> do
+	text t "* box化された型の値はそのぶんメモリを食う", \t -> do
+	text t "* 今回のBool値は遅延評価する必要はないので", \t -> do
+	itext t 1 "- unbox型の配列を使ったほうが空間効率が上がる", \t -> do
+	text t "* そのための型としてIOUArrayがある", \t -> do
+	itext t 1 "- 値として整数や実数などの限られた型のみ", \t -> do
+	itext t 1 "- 真偽値もそのうちのひとつ"
+ ]
+
+eratosthenes7 :: Page
+eratosthenes7 = [\t -> do
+	writeTopTitle t "エラトステネスの篩"
+	text t "", \t -> do
+	text t "* IOUArrayを使って再定義してみる", \t -> do
+	text t "* sieveの型宣言のみ変えれば良い", \t -> do
+	itext t 1 "sieve :: Int -> IO (IOUArray Int Bool)", \t -> do
+	text t "* メモリの使用量を見てみよう"
+ ]
+
+eratosthenes8 :: Page
+eratosthenes8 = [\t -> do
+	writeTopTitle t "エラトステネスの篩"
+	text t "", \t -> do
+	writeImageCenter t 82 (300, 180, "examples/profiling/primes/eratosthenesU.png"), \t -> do
+	text t "* 1MBほどのメモリの使用量", \t -> do
+	itext t 1 "- IOArray版の1.5MBと比べて2/3ほどとなっている"
  ]
