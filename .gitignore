@@ -52,6 +52,11 @@ tmp/
 /tools/slide/yjslide/examples/profiling/primes/eratosthenes
 /tools/slide/yjslide/examples/profiling/primes/eratosthenesU
 /tools/slide/yjslide/examples/profiling/primes/pseudoEratosthenes
+/tools/slide/yjslide/examples/pack/notUsePack
+/tools/slide/yjslide/examples/pack/usePack
+/tools/slide/yjslide/examples/pack/10kFile.txt
+/tools/slide/yjslide/examples/pack/100kFile.txt
+/tools/slide/yjslide/examples/pack/1MFile.txt
 *.aux
 *.hp
 *.pdf
