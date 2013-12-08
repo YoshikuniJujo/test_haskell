@@ -3,6 +3,7 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 
 遅延IOの話はiterateeを紹介するときでいいだろう。
 
+--- 初級編
 第1回 ミニマルな本質
 第2回 特徴
 第3回 最小限の意味論と構文糖
@@ -13,7 +14,7 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第8回 モジュールシステム
 第9回 落ち穂拾い
 第10回 ghcの使いかた (runghc, ghciやその他のオプションについて)
----
+--- 中級編
 第11回 ファイル入出力
 第12回 ドキュメンテーション(haddock)
 第13回 ランダム
@@ -48,7 +49,7 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第41回 unbox型
 第42回 ffi
 第43回 cabalの使いかた(テストの自動化も含めて)
----
+--- 上級編
 第44回 functor, applicative, monad (MonadPlusの話題にも触れたい)
 第45回 free monad
 第46回 operational monad
@@ -75,7 +76,7 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第67回 Foldable
 第68回 Traversable
 第69回 Sequence (finger tree, queue)
----
+--- 番外編
 第70回 readsPrecについて
 第71回 モナド内包表記 monad comprehension
 第72回 LANGUAGEプラグマ
@@ -83,6 +84,9 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 	(OPTIONS_GHC, WARNING, DEPRECATED, INLINE, RULES,
 		SPECIALIZE, UNPACK, SOURCE)
 	-> 場合によってはいくつかに分けよう
+第74回 ghcのcore言語
+--- アルゴリズム編
+第75回 wheel sieve
 
 どこかで queue にも触れたいな
 finger tree面白いな
