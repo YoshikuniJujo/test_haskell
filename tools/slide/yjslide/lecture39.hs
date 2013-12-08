@@ -1,7 +1,7 @@
 import Lecture
 
 subtitle :: String
-subtitle = "第40回 FlexibleInstances拡張"
+subtitle = "第39回 FlexibleInstances拡張"
 
 main :: IO ()
 main = runLecture [

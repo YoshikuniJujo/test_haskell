@@ -1,7 +1,7 @@
 import Lecture
 
 subtitle :: String
-subtitle = "第41回 可変配列"
+subtitle = "第40回 可変配列"
 
 main :: IO ()
 main = runLecture [
