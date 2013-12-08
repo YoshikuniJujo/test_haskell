@@ -8,7 +8,9 @@ main = runLecture [
 	[flip writeTitle subtitle], prelude,
 	eratosthenes, pseudoEratosthenes, eratosthenes2,
 	eratosthenes3, eratosthenes4, eratosthenes5, eratosthenes6,
-	eratosthenes7, eratosthenes8, eratosthenes9, marray
+	eratosthenes7, eratosthenes8, eratosthenes9,
+	marray, marray2, iarray, freeze, thaw,
+	summary
  ]
 
 prelude :: Page
@@ -166,6 +168,81 @@ marray = [\t -> do
 	itext t 1 "- IOArray型を扱う関数をいくつか紹介した", \t -> do
 	itext t 1 "- 実際はMArrayクラスに対して定義されている", \t -> do
 	text t "* MArrayクラスの定義", \t -> do
-	itext t 1 "class Monad m => MArray a e m where"
-	itext t 2 "..."
+	itext t 1 "class Monad m => MArray a e m where", \t -> do
+	text t "* IOArrayのインスタンス宣言は以下のようになっている", \t -> do
+	itext t 1 "instance MArray IOArray e IO where", \t -> do
+	itext t 1 "- 値となる型は型変数eで何でも良いことがわかる", \t -> do
+	itext t 1 "- そのなかで使用されるモナドはIOとなる", \t -> do
+	itext t 1 "- 後で紹介するSTArrayもMArrayのインスタンス"
+ ]
+
+marray2 :: Page
+marray2 = [\t -> do
+	writeTopTitle t "MArrayクラス"
+	text t "", \t -> do
+	text t "* IOUArrayのインスタンスは以下のようになる", \t -> do
+	itext t 1 "instance MArray IOUArray Bool IO where", \t -> do
+	itext t 1 "instance MArray IOUArray Char IO where", \t -> do
+	itext t 1 "instance MArray IOUArray Int IO where", \t -> do
+	itext t 1 "...", \t -> do
+	text t "* 値として取れる型が決められている"
+ ]
+
+iarray :: Page
+iarray = [\t -> do
+	writeTopTitle t "IArrayクラス"
+	text t "", \t -> do
+	text t "* MArrayと同様に不変配列クラスのIArrayがある", \t -> do
+	itext t 1 "class IArray a e where", \t -> do
+	text t "* Array, UArrayに対して同様のインスタンス定義"
+ ]
+
+freeze :: Page
+freeze = [\t -> do
+	writeTopTitle t "freeze"
+	text t "", \t -> do
+	text t "* 対応するMArrayからIArrayを作るfreezeという関数がある", \t -> do
+	itext t 1 "freeze :: (IX i, MArray a e m, IArray b e) =>"
+	itext t 5 "a i e -> m (b i e)", \t -> do
+	itext t 1 "- コピーを作る", \t -> do
+	text t "* 効率は良いが危険なバージョンもある", \t -> do
+	itext t 1 "unsafeFreeze :: ...", \t -> do
+	itext t 1 "- (-O)を使ってコンパイルする", \t -> do
+	itext t 1 "- コピーを作らずに型キャストするだけ", \t -> do
+	itext t 1 "- 場合によってはコピーを作る場合もある", \t -> do
+	itext t 1 "- もとの配列を変化させると不変配列が変化する", \t -> do
+	itext t 1 "- もとの配列を2度と使わない保証があるときだけ使う"
+ ]
+
+thaw :: Page
+thaw = [\t -> do
+	writeTopTitle t "thaw"
+	text t "", \t -> do
+	text t "* 対応するIArrayからMArrayを作るthawという関数がある", \t -> do
+	itext t 1 "thaw :: (Ix i, IArray a e, MArray a e m) =>"
+	itext t 5 "a i e -> m (b i e)", \t -> do
+	text t "* 効率は良いが危険なバージョン", \t -> do
+	itext t 1 "unsafeThaw :: ...", \t -> do
+	itext t 1 "- unsafeFreezeと同様", \t -> do
+	text t "* unsafe*においてコピーが生じない組み合わせは以下のもの", \t -> do
+	itext t 1 "- 内部表現が同じである必要があるため", \t -> do
+	itext t 1 "IOUArray - UArray", \t -> do
+	itext t 1 "STUArray - UArray", \t -> do
+	itext t 1 "IOArray - Array", \t -> do
+	itext t 1 "STArray - Array"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* 可変配列について見た", \t -> do
+	text t "* 基本的な関数は以下の通り", \t -> do
+	itext t 1 "newArray :: Ix i => (i, i) -> e -> m (a i e)", \t -> do
+	itext t 1 "writeArray :: (MArray a e m, Ix i) =>"
+	itext t 4 "a i e -> i -> e -> m ()", \t -> do
+	itext t 1 "readArray :: (MArray a e m, Ix i) =>"
+	itext t 4 "a i e -> i -> m e", \t -> do
+	text t "* 状態変化をより狭い範囲に閉じ込めるにはSTモナドを使う", \t -> do
+	itext t 1 "- STモナドを利用した配列については後の講義で"
  ]
