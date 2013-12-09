@@ -7,8 +7,8 @@ dist/
 tmp/
 *.prof
 *.png
-/tools/slide/yjslide/examples/unboxed/unboxed
-/tools/slide/yjslide/examples/unboxed/small
+/tools/slide/yjslide/examples/unboxed/old/unboxed
+/tools/slide/yjslide/examples/unboxed/old/small
 *.hi
 *.s
 *.o
