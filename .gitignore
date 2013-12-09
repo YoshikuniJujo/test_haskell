@@ -68,6 +68,11 @@ tmp/
 /tools/slide/yjslide/examples/pair2/lookupWord
 /tools/slide/yjslide/examples/ffi/HaskellInC/usePi
 /tools/slide/yjslide/examples/ffi/HaskellInC/manual/useFoo
+/tools/slide/yjslide/examples/ffi/CInHaskell/hsc/some.hs
+/tools/slide/yjslide/examples/ffi/CInHaskell/hsc/cabal/some
+/tools/slide/yjslide/examples/ffi/CInHaskell/hsc/cabal/some.hs
+*_hsc.c
+*_hsc.h
 *_stub.h
 *.aux
 *.hp

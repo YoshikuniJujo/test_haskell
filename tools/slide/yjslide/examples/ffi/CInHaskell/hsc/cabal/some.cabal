@@ -1,0 +1,9 @@
+cabal-version: >= 1.2
+build-type: Simple
+name: some
+version: 0.1
+
+executable some
+  main-is: some.hs
+  build-depends: base
+  c-sources: some_hsc.c

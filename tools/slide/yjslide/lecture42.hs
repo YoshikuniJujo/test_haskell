@@ -7,7 +7,8 @@ main :: IO ()
 main = runLecture [
 	[flip writeTitle subtitle], prelude, prelude2,
 	haskellInC, haskellInC2, haskellInC3, haskellInC4, haskellInC5,
-	haskellInC6, haskellInCSummary
+	haskellInC6, haskellInCSummary,
+	cInHaskell
  ]
 
 prelude :: Page
@@ -136,4 +137,12 @@ haskellInCSummary = [\t -> do
 	itext t 1 "- その間でHaskellの関数が使える", \t -> do
 	text t "* コンパイルするときは-no-hs-mainが必要"
 
+ ]
+
+cInHaskell :: Page
+cInHaskell = [\t -> do
+	writeTopTitle t "HaskellからCの関数を"
+	text t "", \t -> do
+	text t "* CのライブラリをHaskellから使える", \t -> do
+	itext t 1 "- つまりCにできることは何でもできるということ"
  ]
