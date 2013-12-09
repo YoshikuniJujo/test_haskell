@@ -66,6 +66,9 @@ tmp/
 /tools/slide/yjslide/examples/pair/lookupWord64
 /tools/slide/yjslide/examples/pair2/lookupTuple
 /tools/slide/yjslide/examples/pair2/lookupWord
+/tools/slide/yjslide/examples/ffi/HaskellInC/usePi
+/tools/slide/yjslide/examples/ffi/HaskellInC/manual/useFoo
+*_stub.h
 *.aux
 *.hp
 *.pdf
