@@ -9,6 +9,10 @@ tmp/
 *.png
 /tools/slide/yjslide/examples/unboxed/old/unboxed
 /tools/slide/yjslide/examples/unboxed/old/small
+/tools/slide/yjslide/examples/unboxed/new/boxedPi
+/tools/slide/yjslide/examples/unboxed/new/unboxedPi
+/tools/slide/yjslide/examples/unboxed/new/boxedPi_O
+*.simpl
 *.hi
 *.s
 *.o
