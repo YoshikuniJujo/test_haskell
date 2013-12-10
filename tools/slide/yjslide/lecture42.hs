@@ -9,7 +9,8 @@ main = runLecture [
 	haskellInC, haskellInC2, haskellInC3, haskellInC4, haskellInC5,
 	haskellInC6, haskellInCSummary,
 	cInHaskell, cInHaskell2, cInHaskell3, cInHaskell4,
-	cstring, cstring2, cstring3, ctypes, ptr
+	cstring, cstring2, cstring3, ctypes,
+	ptr, ptr2, ptr3, ptr4, ptr5, ptr6, ptr7, ptr8, ptr9
  ]
 
 prelude :: Page
@@ -260,7 +261,7 @@ ctypes = [\t -> do
 
 ptr :: Page
 ptr = [\t -> do
-	writeTopTitle t "HaskellからCの関数を"
+	writeTopTitle t "Ptr型を使う"
 	text t "", \t -> do
 	text t "* Ptr型の使いかたは以下の2通りある", \t -> do
 	itext t 1 "- C言語の関数内でのみなかをのぞく", \t -> do
@@ -269,4 +270,122 @@ ptr = [\t -> do
 	itext t 1 "- そのままの値を扱う", \t -> do
 	itext t 1 "- 配列として扱う", \t -> do
 	itext t 1 "- 構造体として扱う"
+ ]
+
+ptr2 :: Page
+ptr2 = [\t -> do
+	writeTopTitle t "Ptr型を使う"
+	text t "", \t -> do
+	text t "* Haskellから値をいじらない場合", \t -> do
+	text t "* Cの関数で作った構造をCの関数にわたすようなとき", \t -> do
+	text t "* 名前を表示する例を見てみよう", \t -> do
+	itext t 1 "% cat name.h"
+	itext t 1 "typedef struct name {"
+	itext t 2 "char first_name[20];"
+	itext t 2 "char last_name[20]; } name;"
+	itext t 1 "name *mkName(char *, char *);"
+	itext t 1 "void printName(name *);"
+	itext t 1 "void freeName(name *);"
+ ]
+
+ptr3 :: Page
+ptr3 = [\t -> do
+	writeTopTitle t "Ptr型を使う", \t -> do
+	itext t 0 "% cat name.c"
+	itext t 0 "#include <string.h>"
+	itext t 0 "#include <stdio.h>"
+	itext t 0 "#include \"name.h\""
+	itext t 0 "name *mkName(char *first, char *last) {"
+	itext t 1 "name *n = calloc(1, sizeof(name));"
+	itext t 1 "strncpy(n->first_name, first, 19);"
+	itext t 1 "strncpy(n->last_name, last, 19);"
+	itext t 1 "return n; }"
+	itext t 0 "void printName(name *n) {"
+	itext t 1 "printf(\"%s %s\\n\", n->first_name, n->last_name); }"
+	itext t 0 "void freeName(name *n) { free(n); }"
+ ]
+
+ptr4 :: Page
+ptr4 = [\t -> do
+	writeTopTitle t "Ptr型を使う"
+	text t "", \t -> do
+	text t "* 比較のためCから使う例を見てみる", \t -> do
+	itext t 1 "#include <stdio.h>"
+	itext t 1 "#include \"name.h\""
+	itext t 1 "int main(int argc, char *argv) {"
+	itext t 2 "name *n = mkName(\"Yoshikuni\", \"Jujo\");"
+	itext t 2 "printName(n);"
+	itext t 2 "freeName(n); }"
+ ]
+
+ptr5 :: Page
+ptr5 = [\t -> do
+	writeTopTitle t "Ptr型を使う", \t -> do
+	text t "* HaskellのuseName.hsがどうなるか見てみよう", \t -> do
+	itext t 1 "import Foreign.C.String"
+	itext t 1 "import Foreign.Ptr"
+	itext t 1 "import Control.Applicative"
+	itext t 1 "newtype Name = Name (Ptr Name)"
+	itext t 1 "foreign import ccall \"mkName\" c_mkName ::"
+	itext t 2 "CString -> CString -> IO (Ptr Name)"
+	itext t 1 "foreign import ccall \"printName\" c_printName ::"
+	itext t 2 "Ptr Name -> IO ()"
+	itext t 1 "foreign import ccall \"freeName\" c_freeName ::"
+	itext t 2 "Ptr Name -> IO ()"
+	itext t 2 "(続く)"
+ ]
+
+ptr6 :: Page
+ptr6 = [\t -> do
+	writeTopTitle t "Ptr型を使う", \t -> do
+	itext t 0 "mkName :: String -> String -> IO Name"
+	itext t 0 "mkName fn ln = withCString fn $ \\cfn ->"
+	itext t 1 "withCString ln $ \\cln ->"
+	itext t 2 "Name <$> c_mkName cfn cln"
+	itext t 0 "printName, freeName :: Name -> IO ()"
+	itext t 0 "printName (Name pn) = c_printName pn"
+	itext t 0 "freeName (Name pn) = c_freeName pn"
+	itext t 0 "main :: IO ()"
+	itext t 0 "main = do"
+	itext t 1 "n <- mkName \"Yoshikuni\" \"Jujo\""
+	itext t 1 "printName n"
+	itext t 1 "freeName n"
+ ]
+
+ptr7 :: Page
+ptr7 = [\t -> do
+	writeTopTitle t "Ptr型を使う"
+	text t "", \t -> do
+	text t "* Name型を作成した", \t -> do
+	itext t 1 "newtype Name = Name (Ptr Name)", \t -> do
+	text t "* これはイディオムになっているが以下と同じ", \t -> do
+	itext t 1 "data NameType"
+	itext t 1 "newtype Name = Name (Ptr NameType)", \t -> do
+	text t "* Haskellの型を使うラッパー関数を作成した", \t -> do
+	itext t 1 "c_mkName :: CString -> CString -> IO (Ptr Name)", \t -> do
+	arrowIText t 1 "mkName :: String -> String -> IO Name"
+ ]
+
+ptr8 :: Page
+ptr8 = [\t -> do
+	writeTopTitle t "Ptr型を使う"
+	text t "", \t -> do
+	text t "* main関数のは以下のようになっている", \t -> do
+	itext t 1 "n <- mkName \"Yoshikuni\" \"Jujo\""
+	itext t 1 "printName n"
+	itext t 1 "freeName n", \t -> do
+	text t "* わかりやすさのためにこうしたが本当は問題がある", \t -> do
+	itext t 1 "- printNameで例外が発生するとfreeNameが行われない", \t -> do
+	text t "* より良い定義はこうなる", \t -> do
+	itext t 0 "bracket (mkName \"Yoshikuni\" \"Jujo\") freeName printName"
+ ]
+
+ptr9 :: Page
+ptr9 = [\t -> do
+	writeTopTitle t "Ptr型を使う"
+	text t "", \t -> do
+	text t "* 今の実装では明示的にメモリをfreeしている", \t -> do
+	text t "* ForeignPtrの使いどころは確保したのがメモリのみのとき", \t -> do
+	text t "* それ以外に確保したリソースがあったりするときは問題に", \t -> do
+	text t "* 必ずしなければならない後処理にも使えない"
  ]

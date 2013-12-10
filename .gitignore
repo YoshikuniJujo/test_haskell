@@ -75,6 +75,9 @@ tmp/
 /tools/slide/yjslide/examples/ffi/CInHaskell/useSayHello
 /tools/slide/yjslide/examples/ffi/CInHaskell/useSayHelloTo
 /tools/slide/yjslide/examples/ffi/CInHaskell/hsc/structure.hs
+/tools/slide/yjslide/examples/ffi/CInHaskell/useInC/cUseName
+/tools/slide/yjslide/examples/ffi/CInHaskell/useInC/useForeignPtr
+/tools/slide/yjslide/examples/ffi/CInHaskell/useInC/useName
 /tools/slide/yjslide/examples/ffi/stablePtr/test
 *_hsc.c
 *_hsc.h
