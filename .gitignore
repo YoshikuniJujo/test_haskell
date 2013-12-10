@@ -71,6 +71,11 @@ tmp/
 /tools/slide/yjslide/examples/ffi/CInHaskell/hsc/some.hs
 /tools/slide/yjslide/examples/ffi/CInHaskell/hsc/cabal/some
 /tools/slide/yjslide/examples/ffi/CInHaskell/hsc/cabal/some.hs
+/tools/slide/yjslide/examples/ffi/CInHaskell/useAdd3
+/tools/slide/yjslide/examples/ffi/CInHaskell/useSayHello
+/tools/slide/yjslide/examples/ffi/CInHaskell/useSayHelloTo
+/tools/slide/yjslide/examples/ffi/CInHaskell/hsc/structure.hs
+/tools/slide/yjslide/examples/ffi/stablePtr/test
 *_hsc.c
 *_hsc.h
 *_stub.h

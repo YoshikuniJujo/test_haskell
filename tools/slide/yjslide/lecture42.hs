@@ -8,7 +8,8 @@ main = runLecture [
 	[flip writeTitle subtitle], prelude, prelude2,
 	haskellInC, haskellInC2, haskellInC3, haskellInC4, haskellInC5,
 	haskellInC6, haskellInCSummary,
-	cInHaskell
+	cInHaskell, cInHaskell2, cInHaskell3, cInHaskell4,
+	cstring, cstring2, cstring3, ctypes, ptr
  ]
 
 prelude :: Page
@@ -143,6 +144,129 @@ cInHaskell :: Page
 cInHaskell = [\t -> do
 	writeTopTitle t "HaskellからCの関数を"
 	text t "", \t -> do
-	text t "* CのライブラリをHaskellから使える", \t -> do
-	itext t 1 "- つまりCにできることは何でもできるということ"
+	text t "* Cの関数をHaskellから使える", \t -> do
+	itext t 1 "- つまりCにできることは何でもできるということ", \t -> do
+	text t "* 最初の例", \t -> do
+	itext t 0 "% cat add3.c"
+	itext t 0 "int add3(int n) { return (n + 3); }", \t -> do
+	itext t 0 "% cat useAdd3.hs"
+	itext t 0 "import Foreign.C.Types"
+	itext t 0 "foreign import ccall \"add3\" c_add3 :: CInt -> CInt"
+	itext t 0 "main :: IO ()"
+	itext t 0 "main = print $ c_add3 7"
+ ]
+
+cInHaskell2 :: Page
+cInHaskell2 = [\t -> do
+	writeTopTitle t "HaskellからCの関数を"
+	text t "", \t -> do
+	text t "* コンパイル、実行", \t -> do
+	itext t 1 "% ghc useAdd3.hs add3.c", \t -> do
+	itext t 1 "% ./useAdd3"
+	itext t 1 "10", \t -> do
+	text t "* cコードだけコンパイルしておくこともできる", \t -> do
+	itext t 1 "% ghc -c add3.c", \t -> do
+	itext t 1 "% ghci useAdd3.hs add3.o"
+ ]
+
+cInHaskell3 :: Page
+cInHaskell3 = [\t -> do
+	writeTopTitle t "HaskellからCの関数を"
+	text t "", \t -> do
+	text t "* 以下の行に注目", \t -> do
+	itext t 0 "foreign import ccall \"add3\" c_add3 :: CInt -> CInt", \t -> do
+	itext t 1 "- foreign import ccallに続けて", \t -> do
+	itext t 1 "- Cの関数の名前、Haskellで使うときの名前、型", \t -> do
+	text t "* ヘッダファイルについて", \t -> do
+	itext t 1 "% cat add3.h"
+	itext t 1 "int add3(int);", \t -> do
+	itext t 1 "- \"add3\"の代わりに\"add3.h add3\"とするのは良い習慣", \t -> do
+	itext t 1 "- ghcでは無視されるが他の処理系では必要になるかも"
+ ]
+
+cInHaskell4 :: Page
+cInHaskell4 = [\t -> do
+	writeTopTitle t "HaskellからCの関数を"
+	text t "", \t -> do
+	text t "* IOを使う例", \t -> do
+	itext t 0 "% cat sayHello.c"
+	itext t 0 "#include <stdio.h>"
+	itext t 0 "void sayHello(void) { printf(\"Hello, world!\\n\"); }", \t -> do
+	itext t 0 "% cat useSayHello.hs"
+	itext t 0 "import Foreign.C.Types"
+	itext t 0 "foreign import ccall \"sayHello\" c_sayHello :: IO ()"
+	itext t 0 "main :: IO ()"
+	itext t 0 "main = c_sayHello"
+ ]
+
+cstring :: Page
+cstring = [\t -> do
+	writeTopTitle t "HaskellからCの関数を", \t -> do
+	text t "* Cの文字列を使う", \t -> do
+	itext t 0 "% cat sayHelloTo.c"
+	itext t 0 "#include <stdio.h>"
+	itext t 0 "void sayHelloTo(char *name) {"
+	itext t 1 "printf(\"Hello, %s!\\n\", name); }", \t -> do
+	itext t 0 "% cat useSayHelloTo.hs"
+	itext t 0 "import Foreign.C.String"
+	itext t 0 "foreign import ccall \"sayHelloTo\" c_sayHelloTo ::"
+	itext t 5 "CString -> IO ()"
+	itext t 0 "main :: IO ()"
+	itext t 0 "main = do"
+	itext t 1 "cstr <- newCString \"Yoshikuni\""
+	itext t 1 "c_sayHelloTo cstr"
+ ]
+
+cstring2 :: Page
+cstring2 = [\t -> do
+	writeTopTitle t "HaskellからCの関数を", \t -> do
+	text t "* HaskellのStringはCharのリスト", \t -> do
+	text t "* Cの文字列はバイト配列", \t -> do
+	text t "* 相互の変換は以下の関数でできる", \t -> do
+	itext t 1 "newCString :: String -> IO CString", \t -> do
+	itext t 1 "peekCString :: CString -> IO String", \t -> do
+	text t "* newCStringはメモリの確保を行う", \t -> do
+	arrowIText t 1 "freeで解放してやる必要がある", \t -> do
+	arrowIText t 1 "例外が起きても解放する必要がある", \t -> do
+	arrowIText t 1 "例外を捕捉して...", \t -> do
+	text t "* そこらへんをきちんとやってくれる関数", \t -> do
+	itext t 0 "withCString :: String -> (CString -> IO a) -> IO a", \t -> do
+	text t "* newCStringの代わりにwithCStringを使ったほうが良い"
+ ]
+
+cstring3 :: Page
+cstring3 = [\t -> do
+	writeTopTitle t "HaskellからCの関数を"
+	text t "", \t -> do
+	text t "* withCStringを使って書き直す", \t -> do
+	itext t 1 "main :: IO ()"
+	itext t 1 "main = withCString \"Yoshikuni\" $ \\cstr -> do"
+	itext t 2 "c_sayHelloTo cstr", \t -> do
+	text t "* CStringの定義", \t -> do
+	itext t 1 "type CString = Ptr CChar"
+ ]
+
+ctypes :: Page
+ctypes = [\t -> do
+	writeTopTitle t "HaskellからCの関数を"
+	text t "", \t -> do
+	text t "* 引数や返り値として以下の型が使える", \t -> do
+	itext t 1 "CChar, CUChar, CInt, CUInt, CLong, CULong,"
+	itext t 1 "CFloat, CDouble", \t -> do
+	text t "* 上に加えてPtr型が使える", \t -> do
+	itext t 1 "Ptr a", \t -> do
+	text t "* Ptr型はCの配列や構造体を表現することができる"
+ ]
+
+ptr :: Page
+ptr = [\t -> do
+	writeTopTitle t "HaskellからCの関数を"
+	text t "", \t -> do
+	text t "* Ptr型の使いかたは以下の2通りある", \t -> do
+	itext t 1 "- C言語の関数内でのみなかをのぞく", \t -> do
+	itext t 1 "- Haskell側からも中身を見る", \t -> do
+	text t "* 後者はさらに3通りに分けられる", \t -> do
+	itext t 1 "- そのままの値を扱う", \t -> do
+	itext t 1 "- 配列として扱う", \t -> do
+	itext t 1 "- 構造体として扱う"
  ]

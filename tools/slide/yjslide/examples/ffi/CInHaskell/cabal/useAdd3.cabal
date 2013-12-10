@@ -1,0 +1,11 @@
+cabal-version: >= 1.2
+build-type: Simple
+
+name: useAdd3
+version: 0.1
+
+executable useAdd3
+  main-is: useAdd3.hs
+  build-depends: base
+  extensions: ForeignFunctionInterface
+  c-sources: add3.c
