@@ -1,7 +1,7 @@
 import Lecture
 
 subtitle :: String
-subtitle = "第42回 C言語とのやりとり"
+subtitle = "第42回 C言語とのインターフェース1"
 
 main :: IO ()
 main = runLecture [
@@ -29,7 +29,7 @@ prelude = [\t -> do
 	itext t 1 "- CからHaskellの関数を使う", \t -> do
 	itext t 1 "- Haskell関数のポインタをCの関数にわたす", \t -> do
 	text t "* 今回の講義では前2者を扱う", \t -> do
-	text t "* 関数ポインタによるCとのやりとりは次回の講義で"
+	text t "* 関数ポインタによるCとのやりとりは次々回の講義で"
  ]
 
 prelude2 :: Page
@@ -379,7 +379,8 @@ ptr8 = [\t -> do
 	text t "* わかりやすさのためにこうしたが本当は問題がある", \t -> do
 	itext t 1 "- printNameで例外が発生するとfreeNameが行われない", \t -> do
 	text t "* より良い定義はこうなる", \t -> do
-	itext t 0 "bracket (mkName \"Yoshikuni\" \"Jujo\") freeName printName"
+	itext t 1 "bracket (mkName \"Yoshikuni\" \"Jujo\") freeName"
+	itext t 2 "printName"
  ]
 
 ptr9 :: Page
