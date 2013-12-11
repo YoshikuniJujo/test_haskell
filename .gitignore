@@ -78,7 +78,8 @@ tmp/
 /tools/slide/yjslide/examples/ffi/CInHaskell/useInC/cUseName
 /tools/slide/yjslide/examples/ffi/CInHaskell/useInC/useForeignPtr
 /tools/slide/yjslide/examples/ffi/CInHaskell/useInC/useName
-/tools/slide/yjslide/examples/ffi/CInHaskell/simpleValue/useCounter
+/tools/slide/yjslide/examples/ffi/CInHaskell/simpleValue/counter/useCounter
+/tools/slide/yjslide/examples/ffi/CInHaskell/simpleValue/message/useMessage
 /tools/slide/yjslide/examples/ffi/stablePtr/test
 *_hsc.c
 *_hsc.h
