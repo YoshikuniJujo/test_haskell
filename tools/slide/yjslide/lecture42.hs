@@ -10,7 +10,9 @@ main = runLecture [
 	haskellInC6, haskellInCSummary,
 	cInHaskell, cInHaskell2, cInHaskell3, cInHaskell4,
 	cstring, cstring2, cstring3, ctypes,
-	ptr, ptr2, ptr3, ptr4, ptr5, ptr6, ptr7, ptr8, ptr9
+	ptr, ptr2, ptr3, ptr4, ptr5, ptr6, ptr7, ptr8, ptr9, ptr10,
+	ptr11, ptr12, cInHaskellSummary,
+	summary
  ]
 
 prelude :: Page
@@ -326,12 +328,12 @@ ptr5 = [\t -> do
 	itext t 1 "import Foreign.Ptr"
 	itext t 1 "import Control.Applicative"
 	itext t 1 "newtype Name = Name (Ptr Name)"
-	itext t 1 "foreign import ccall \"mkName\" c_mkName ::"
-	itext t 2 "CString -> CString -> IO (Ptr Name)"
-	itext t 1 "foreign import ccall \"printName\" c_printName ::"
-	itext t 2 "Ptr Name -> IO ()"
-	itext t 1 "foreign import ccall \"freeName\" c_freeName ::"
-	itext t 2 "Ptr Name -> IO ()"
+	itext t 1 "foreign import ccall \"name.h mkName\""
+	itext t 2 "c_mkName :: CString -> CString -> IO (Ptr Name)"
+	itext t 1 "foreign import ccall \"name.h printName\""
+	itext t 2 "c_printName :: Ptr Name -> IO ()"
+	itext t 1 "foreign import ccall \"name.h freeName\""
+	itext t 2 "c_freeName :: Ptr Name -> IO ()"
 	itext t 2 "(続く)"
  ]
 
@@ -385,7 +387,96 @@ ptr9 = [\t -> do
 	writeTopTitle t "Ptr型を使う"
 	text t "", \t -> do
 	text t "* 今の実装では明示的にメモリをfreeしている", \t -> do
+	text t "* GC実行時にメモリを解放させることもできる", \t -> do
+	text t "* importするモジュールはもとのコードに加えて", \t -> do
+	itext t 1 "import Foreign.ForeignPtr", \t -> do
+	text t "* コードの変更部分は", \t -> do
+	itext t 1 "foreign import ccall \"name.h &freeName\""
+	itext t 2 "c_freeName :: FinalizerPtr Name"
+	itext t 2 "(続く)"
+ ]
+
+ptr10 :: Page
+ptr10 = [\t -> do
+	writeTopTitle t "Ptr型を使う"
+	text t "", \t -> do
+	itext t 0 "mkName fn ln = withCString fn $ \\cfn ->"
+	itext t 1 "withCString ln $ \\cln ->"
+	itext t 2 "Name <$> (c_mkName cfn cln >>="
+	itext t 3 "newForeignPtr c_freeName)"
+	itext t 0 ""
+	itext t 0 "printName (Name pn) = withForeignPtr pn c_printName"
+	itext t 0 ""
+	itext t 0 "main = do"
+	itext t 1 "n <- mkName \"Yoshikuni\" \"Jujo\""
+	itext t 1 "printName n"
+ ]
+
+ptr11 :: Page
+ptr11 = [\t -> do
+	writeTopTitle t "Ptr型を使う"
+	text t "", \t -> do
+	text t "* freeNameの関数ポインタをimportしている", \t -> do
+	itext t 1 "foreign import ccall \"name.h &freeName\""
+	itext t 2 "c_freeName :: FinalizerPtr Name", \t -> do
+	text t "* ポインタにfinalizerを関係づける", \t -> do
+	itext t 1 "c_mkName cfn cln >>= newForeignPtr c_freeName", \t -> do
+	text t "* withForeignPtr内のIOではそのPtrのGCは行われない", \t -> do
+	itext t 1 "withForeignPtr pn c_printName"
+ ]
+
+ptr12 :: Page
+ptr12 = [\t -> do
+	writeTopTitle t "Ptr型を使う"
+	text t "", \t -> do
+	text t "* ForeignPtrをいつ使うか?", \t -> do
+	text t "* ファイナライザが動くのはGCのときなので", \t -> do
+	itext t 1 "- メモリが少なくなるまでは動く保証はない", \t -> do
+	itext t 1 "- メモリ以外の資源が枯渇しても解放されない", \t -> do
+	text t "* メモリ以外の資源を確保するようなPtrには使えない", \t -> do
+	itext t 1 "- オープンしたファイルをクローズする必要がある等", \t -> do
+	text t "* メモリのみを確保・解放するようなPtrには有用"
+ ]
+
+ptr13 :: Page
+ptr13 = [\t -> do
+	writeTopTitle t "Ptr型を使う"
+	text t "", \t -> do
+	text t "* "
+ ]
+
+ptrX :: Page
+ptrX = [\t -> do
 	text t "* ForeignPtrの使いどころは確保したのがメモリのみのとき", \t -> do
 	text t "* それ以外に確保したリソースがあったりするときは問題に", \t -> do
 	text t "* 必ずしなければならない後処理にも使えない"
+ ]
+
+cInHaskellSummary :: Page
+cInHaskellSummary = [\t -> do
+	writeTopTitle t "HaskellからCの関数を(まとめ)"
+	text t "", \t -> do
+	text t "* Cの関数をimportする", \t -> do
+	itext t 1 "foreign import ccall \"cname\" hsname :: Type", \t -> do
+	text t "* Cの関数は普通の関数としてもIOとしても使える", \t -> do
+	text t "* 引数や返り値の型はForeign.C.Types内のものを使うと安全", \t -> do
+	text t "* Ptr型を使うとC言語のいろいろな構造を使うことができる", \t -> do
+	itext t 1 "- 今回はCのなかでのみ値を扱う場合のみを学んだ", \t -> do
+	text t "* C言語側で確保した資源は明示的に解放する必要がある", \t -> do
+	itext t 1 "- bracket等を使うと例外時にも対応できる", \t -> do
+	itext t 1 "- 資源がメモリのみの場合はForeignPtrが使える"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* CからHaskellの関数を使う方法を学んだ", \t -> do
+	itext t 1 "- hs_initとhs_exitが必要となる", \t -> do
+	text t "* HaskellからCの関数を使う方法を学んだ", \t -> do
+	text t "* 整数等の普通の値を扱う場合には特に問題はない", \t -> do
+	text t "* Ptr型によるCとポインタを介したやりとりができる", \t -> do
+	text t "* 確保した資源の解放がひとつの問題となる", \t -> do
+	itext t 1 "- bracketを使う方法とForeignPtrを使う方法とがある", \t -> do
+	text t "* 次回はPtr型をHaskell側から扱う方法を学ぶ"
  ]

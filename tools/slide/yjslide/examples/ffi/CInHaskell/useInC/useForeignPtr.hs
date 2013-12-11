@@ -6,9 +6,9 @@ import Control.Exception
 
 data Name = Name (ForeignPtr Name)
 
-foreign import ccall "mkName" c_mkName :: CString -> CString -> IO (Ptr Name)
-foreign import ccall "printName" c_printName :: Ptr Name -> IO ()
-foreign import ccall "&freeName" c_freeName :: FinalizerPtr Name
+foreign import ccall "name.h mkName" c_mkName :: CString -> CString -> IO (Ptr Name)
+foreign import ccall "name.h printName" c_printName :: Ptr Name -> IO ()
+foreign import ccall "name.h &freeName" c_freeName :: FinalizerPtr Name
 
 mkName :: String -> String -> IO Name
 mkName fn ln = withCString fn $ \cfn -> withCString ln $ \cln ->
