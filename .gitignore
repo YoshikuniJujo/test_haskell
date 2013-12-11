@@ -80,6 +80,8 @@ tmp/
 /tools/slide/yjslide/examples/ffi/CInHaskell/useInC/useName
 /tools/slide/yjslide/examples/ffi/CInHaskell/simpleValue/counter/useCounter
 /tools/slide/yjslide/examples/ffi/CInHaskell/simpleValue/message/useMessage
+/tools/slide/yjslide/examples/ffi/CInHaskell/array/names1/useNames
+/tools/slide/yjslide/examples/ffi/CInHaskell/array/names1/useNames2
 /tools/slide/yjslide/examples/ffi/stablePtr/test
 *_hsc.c
 *_hsc.h

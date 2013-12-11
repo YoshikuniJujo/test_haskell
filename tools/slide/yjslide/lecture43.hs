@@ -10,7 +10,8 @@ main = runLecture [
 	getSimpleValue, getSimpleValue2, getSimpleValue3, getSimpleValue4,
 	sendSimpleValue, sendSimpleValue2, sendSimpleValue3, sendSimpleValue4,
 	sendSimpleValue5, sendSimpleValue6, sendSimpleValue7,
-	simpleValueSummary
+	simpleValueSummary,
+	array
  ]
 
 prelude :: Page
@@ -164,7 +165,7 @@ sendSimpleValue3 = [\t -> do
 	text t "", \t -> do
 	itext t 0 "static Message *message_type;"
 	itext t 0 "void sellect_message(Message *n) {"
-	itext t 1 "message_type = n; }"
+	itext t 1 "*message_type = n; }"
 	itext t 0 "void message(void) {"
 	itext t 1 "printf(\"%s\\n\", message_list[*message_type]); }"
  ]
@@ -242,4 +243,11 @@ simpleValueSummary = [\t -> do
 	itext t 1 "poke :: Storable a => Ptr a -> a -> IO ()", \t -> do
 	text t "* メモリのアロケーションにはallocaを使う", \t -> do
 	itext t 1 "alloca :: (Ptr a -> IO b) -> IO b"
+ ]
+
+array :: Page
+array = [\t -> do
+	writeTopTitle t "配列へのポインタ"
+	text t "", \t -> do
+	text t "* Ptr aをaの配列へのポインタと考えることができる"
  ]
