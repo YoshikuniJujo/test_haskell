@@ -11,7 +11,8 @@ main = runLecture [
 	sendSimpleValue, sendSimpleValue2, sendSimpleValue3, sendSimpleValue4,
 	sendSimpleValue5, sendSimpleValue6, sendSimpleValue7,
 	simpleValueSummary,
-	array, array2, array3, array4, array5
+	array, array2, array3, array4, array5, array6, array7, array8, array9,
+	array10, array11, arraySummary
  ]
 
 prelude :: Page
@@ -308,5 +309,100 @@ array5 = [\t -> do
 	text t "", \t -> do
 	text t "* オフセットを指定して値を取り出す", \t -> do
 	itext t 1 "peekElemOff :: Storable a => Ptr a -> Int -> IO a", \t -> do
-	text t "* この関数を使えばPtr aを配列として扱うことができる"
+	text t "* この関数を使えばPtr aを配列として", \t -> do
+	itext t 1 "- そのひとつひとつの要素を取り出すことができる"
+ ]
+
+array6 :: Page
+array6 = [\t -> do
+	writeTopTitle t "配列へのポインタ"
+	text t "", \t -> do
+	text t "* 次はHaskell側で作った配列をCの関数に渡す例", \t -> do
+	text t "* ターミナルにグラフを書く例", \t -> do
+	text t "* ヘッダファイル", \t -> do
+	itext t 1 "% cat graph.h"
+	itext t 1 "void mk_graph(int *, int);"
+ ]
+
+array7 :: Page
+array7 = [\t -> do
+	writeTopTitle t "配列へのポインタ"
+	text t "", \t -> do
+	text t "* Cのコード", \t -> do
+	itext t 1 "% cat graph.c"
+	itext t 1 "# include <stdio.h>"
+	itext t 1 "# include \"graph.h\""
+	itext t 1 "void mk_graph(int *dat, int n) {"
+	itext t 2 "int i, j;"
+	itext t 2 "for (i = 0; i < n; i++) {"
+	itext t 3 "for (j = 0; j < dat[i]; j ++)"
+	itext t 4 "printf(\"*\");"
+	itext t 3 "printf(\"\\n\"); }"
+	itext t 1 "}"
+ ]
+
+array8 :: Page
+array8 = [\t -> do
+	writeTopTitle t "配列へのポインタ"
+	text t "", \t -> do
+	text t "* 比較のためのCのmain関数", \t -> do
+	itext t 1 "#include \"graph.h\""
+	itext t 1 "int main(int argc, char *argv[]) {"
+	itext t 2 "int sample[] = {"
+	itext t 3 "2, 3, 4, 13, 18, 21,"
+	itext t 3 "26, 29, 25, 17, 10, 5 };"
+	itext t 2 "mk_graph(sample, 12);"
+	itext t 2 "return 0;"
+	itext t 1 "}"
+ ]
+
+array9 :: Page
+array9 = [\t -> do
+	writeTopTitle t "配列へのポインタ"
+	text t "", \t -> do
+	text t "* Haskellから使うには", \t -> do
+	itext t 1 "import Foreign.C.Types"
+	itext t 1 "import Foreign.Ptr"
+	itext t 1 "import Foreign.Storable"
+	itext t 1 "import Foreign.Marshal.Array"
+	itext t 1 "import Control.Monad"
+	itext t 1 "foreign import ccall \"mk_graph\""
+	itext t 2 "c_mkGraph :: Ptr CInt -> CInt -> IO ()"
+	itext t 2 "(続く)"
+ ]
+
+array10 :: Page
+array10 = [\t -> do
+	writeTopTitle t "配列へのポインタ"
+	text t "", \t -> do
+	itext t 0 "main :: IO ()"
+	itext t 0 "main = allocaArray 9 $ \\ptr -> do"
+	itext t 1 "forM_ (zip [0 ..] ["
+	itext t 3 "2, 3, 7, 13, 18, 21,"
+	itext t 3 "26, 29, 25, 17, 10, 5]) $ \\(i, d) ->"
+	itext t 2 "pokeElemOff ptr i d"
+	itext t 1 "c_mkGraph ptr 12"
+ ]
+
+array11 :: Page
+array11 = [\t -> do
+	writeTopTitle t "配列へのポインタ"
+	text t "", \t -> do
+	text t "* 配列の要素数分のメモリを確保して", \t -> do
+	text t "* それぞれの要素を書き込んだうえで", \t -> do
+	text t "* ポインタの値をCの関数に送っている"
+ ]
+
+arraySummary :: Page
+arraySummary = [\t -> do
+	writeTopTitle t "配列へのポインタ(まとめ)"
+	text t "", \t -> do
+	text t "* 配列の特定の場所の値を読み込む", \t -> do
+	itext t 1 "peekElemOff :: Storable a => Ptr a -> Int -> IO a", \t -> do
+	text t "* 配列の特定の場所への書き込み", \t -> do
+	itext t 1 "pokeElemOff :: Storable a =>"
+	itext t 2 "Ptr a -> Int -> a -> IO ()", \t -> do
+	text t "* 要素の数分だけのメモリを確保する", \t -> do
+	itext t 1 "allocaArray :: Storable a =>"
+	itext t 2 "Int -> (Ptr a -> IO b) -> IO b"
  ]
