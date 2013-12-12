@@ -12,9 +12,12 @@ main = runLecture [
 	sendSimpleValue5, sendSimpleValue6, sendSimpleValue7,
 	simpleValueSummary,
 	array, array2, array3, array4, array5, array6, array7, array8, array9,
-	array10, array11, arraySummary,
+	array10, array11,
+	arraySummary,
 	structure, structure2, structure3, structure4, structure5, structure6,
-	structure7, structure8
+	structure7, structure8, structure9, structure10, structure11, structure12,
+	structure13, structure14,
+	structureSummary
  ]
 
 prelude :: Page
@@ -513,5 +516,120 @@ structure8 :: Page
 structure8 = [\t -> do
 	writeTopTitle t "構造体へのポインタ"
 	text t "", \t -> do
-	text t "* 構造体の値をHaskell側で作成してわたす場合"
+	text t "* 構造体の値をHaskell側で作成してわたす場合", \t -> do
+	text t "* トランプのスートとランクを表示する例"
+ ]
+
+structure9 :: Page
+structure9 = [\t -> do
+	writeTopTitle t "構造体へのポインタ", \t -> do
+	text t "* ヘッダファイル", \t -> do
+	itext t 1 "% cat trump.h"
+	itext t 1 "typedef enum SUIT {"
+	itext t 2 "Spade, Heart, Diamond, Club } SUIT;"
+	itext t 1 "typedef struct card {"
+	itext t 2 "SUIT suit;"
+	itext t 2 "int rank;"
+	itext t 1 "} card;"
+	itext t 1 "void print_card(card *);", \t -> do
+	text t "* Cのコード", \t -> do
+	itext t 1 "% cat trump.c"
+ ]
+
+structure10 :: Page
+structure10 = [\t -> do
+	writeTopTitle t "構造体へのポインタ", \t -> do
+	itext t 1 "#include <stdio.h>"
+	itext t 1 "#include <string.h>"
+	itext t 1 "#include \"trump.h\""
+	itext t 1 "void print_card(card *c) {"
+	itext t 2 "char suit_name[10], rank_name[10];"
+	itext t 2 "switch (c-> suit) {"
+	itext t 2 "case Spade:"
+	preLine t
+	itext t 4 "strcpy(suit_name, \"Spade\");"
+	itext t 4 "break;"
+	itext t 2 "case Heart:"
+	itext t 2 "..."
+	itext t 2 "default:"
+	preLine t
+	itext t 4 "strcpy(suit_name, \"\");"
+	itext t 2 "}"
+ ]
+
+structure11 :: Page
+structure11 = [\t -> do
+	writeTopTitle t "構造体へのポインタ"
+	text t "", \t -> do
+	itext t 1 "switch (c->rank) {"
+	itext t 1 "case 1:"
+	preLine t
+	itext t 3 "strcpy(rank_name, \"Ace\");"
+	itext t 3 "break;"
+	itext t 1 "case 11:"
+	itext t 1 "..."
+	itext t 1 "default:"
+	preLine t
+	itext t 3 "sprintf(rank_name, \"%d\", c->rank);"
+	itext t 1 "}"
+	itext t 1 "printf(\"%s %s\\n\", suit_name, rank_name);"
+	itext t 0 "}"
+ ]
+
+structure12 :: Page
+structure12 = [\t -> do
+	writeTopTitle t "構造体へのポインタ"
+	text t "", \t -> do
+	text t "* 比較のためのCのmain関数", \t -> do
+	itext t 1 "#include \"trump.h\""
+	itext t 1 "int main(int argc, char *argv[]) {"
+	itext t 2 "card c = { Diamond, 11 };"
+	itext t 2 "print_card(&c):"
+	itext t 2 "return 0;"
+	itext t 1 "}"
+ ]
+
+structure13 :: Page
+structure13 = [\t -> do
+	writeTopTitle t "構造体へのポインタ"
+	text t "", \t -> do
+	text t "* Haskellから使う"
+	itext t 1 "import Foreign.C.Types"
+	itext t 1 "import Foreign.Ptr"
+	itext t 1 "import Foreign.Marshal"
+	itext t 1 "import Foreign.Storable"
+	itext t 1 "data Card"
+	itext t 1 "foreign import ccall \"trump.h print_card\""
+	itext t 2 "c_printCard :: Ptr Card -> IO ()"
+ ]
+
+structure14 :: Page
+structure14 = [\t -> do
+	writeTopTitle t "構造体へのポインタ"
+	text t "", \t -> do
+	itext t 1 "main :: IO ()"
+	itext t 1 "main = allocaBytes 4 $ \\pc -> do"
+	itext t 2 "pokeByteOff pc 0 (2 :: CInt)"
+	itext t 2 "pokeByteOff pc 4 (11 :: CInt)"
+	itext t 2 "c_printCard pc", \t -> do
+	text t "* allocaBytesで構造体の大きさ分のメモリを確保", \t -> do
+	text t "* pokeByteOffでそれぞれのスロットに値を代入", \t -> do
+	text t "* マジックナンバーだらけ", \t -> do
+	itext t 1 "- 列挙体の値、構造体の大きさ、スロットのオフセット", \t -> do
+	itext t 1 "- hsc2hsを学ぶまではしかたない"
+ ]
+
+structureSummary :: Page
+structureSummary = [\t -> do
+	writeTopTitle t "構造体へのポインタ(まとめ)"
+	text t "", \t -> do
+	text t "* 構造体は今のところ低レベルの詳細が必要", \t -> do
+	itext t 1 "- 構造体の大きさ、スロットのオフセット", \t -> do
+	text t "* スロットを指定して値を取得", \t -> do
+	itext t 1 "peekByteOff :: Storable a => Ptr b -> Int -> IO a", \t -> do
+	text t "* スロットを指定して値を代入", \t -> do
+	itext t 1 "pokeByteOff :: Storable a =>"
+	itext t 2 "Ptr b -> Int -> a -> IO ()", \t -> do
+	text t "* 大きさを指定してメモリを確保", \t -> do
+	itext t 1 "allocaBytes :: Int -> (Ptr a -> IO b) -> IO b"
  ]
