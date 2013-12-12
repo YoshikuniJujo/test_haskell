@@ -11,7 +11,7 @@ main = runLecture [
 	sendSimpleValue, sendSimpleValue2, sendSimpleValue3, sendSimpleValue4,
 	sendSimpleValue5, sendSimpleValue6, sendSimpleValue7,
 	simpleValueSummary,
-	array
+	array, array2, array3, array4, array5
  ]
 
 prelude :: Page
@@ -55,7 +55,7 @@ convertIntegral2 = [\t -> do
 	text t "* 型は以下のようになる", \t -> do
 	itext t 1 "safeConvertIntegral ::"
 	itext t 2 "(Integral a, Integral b, Bounded b) =>"
-	itext t 3 "a -> Maybe b"
+	itext t 2 "a -> Maybe b"
  ]
 
 convertIntegral3 :: Page
@@ -249,5 +249,64 @@ array :: Page
 array = [\t -> do
 	writeTopTitle t "配列へのポインタ"
 	text t "", \t -> do
-	text t "* Ptr aをaの配列へのポインタと考えることができる"
+	text t "* Ptr aをaの配列へのポインタと考えることができる", \t -> do
+	text t "* 気温の例", \t -> do
+	itext t 1 "- 1月から12月までの月毎の平均気温のリスト", \t -> do
+	itext t 1 "- 気温は10倍した整数で表現"
+ ]
+
+array2 :: Page
+array2 = [\t -> do
+	writeTopTitle t "配列へのポインタ"
+	text t "", \t -> do
+	text t "* ヘッダファイル", \t -> do
+	itext t 1 "% cat temp.h"
+	itext t 1 "int *get_temp(void);", \t -> do
+	text t "* Cのコード", \t -> do
+	itext t 1 "% cat temp.c"
+	itext t 1 "#include \"temp.h\""
+	itext t 1 "int temps[] = {"
+	itext t 2 "24, 32, 67, 127, 182, 210,"
+	itext t 2 "261, 286, 248, 173, 101, 47 };"
+	itext t 1 "int *get_temps(void) { return temps; }"
+ ]
+
+array3 :: Page
+array3 = [\t -> do
+	writeTopTitle t "配列へのポインタ"
+	text t "", \t -> do
+	text t "* 比較のためのCのmain関数", \t -> do
+	itext t 1 "#include <stdio.h>"
+	itext t 1 "#include \"temp.h\""
+	itext t 1 "int main (int argc, char *argv[]) {"
+	itext t 2 "int i, *ts = get_temps();"
+	itext t 2 "for (i = 0; i < 12; i++) {"
+	itext t 3 "printf(\"%2d: %d\\n\", i + 1, ts[i]); }"
+	itext t 2 "return 0; }"
+ ]
+
+array4 :: Page
+array4 = [\t -> do
+	writeTopTitle t "配列へのポインタ", \t -> do
+	text t "* Haskellから使う例", \t -> do
+	itext t 0 "import Foreign.C.Types"
+	itext t 0 "import Foreign.Ptr"
+	itext t 0 "import Foreign.Storable"
+	itext t 0 "import Control.Monad"
+	itext t 0 "foreign import ccall \"temp.h get_temps\""
+	itext t 1 "c_getTemps :: Ptr CInt"
+	itext t 0 "main :: IO ()"
+	itext t 0 "main = do"
+	itext t 1 "forM_ [0 .. 11] $ \\i -> do"
+	itext t 2 "tmp <- peekElemOff c_getTemps i"
+	itext t 2 "putStrLn $ show (i + 1) ++ \": \" ++ show tmp"
+ ]
+
+array5 :: Page
+array5 = [\t -> do
+	writeTopTitle t "配列へのポインタ"
+	text t "", \t -> do
+	text t "* オフセットを指定して値を取り出す", \t -> do
+	itext t 1 "peekElemOff :: Storable a => Ptr a -> Int -> IO a", \t -> do
+	text t "* この関数を使えばPtr aを配列として扱うことができる"
  ]

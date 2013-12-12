@@ -82,6 +82,7 @@ tmp/
 /tools/slide/yjslide/examples/ffi/CInHaskell/simpleValue/message/useMessage
 /tools/slide/yjslide/examples/ffi/CInHaskell/array/names1/useNames
 /tools/slide/yjslide/examples/ffi/CInHaskell/array/names1/useNames2
+/tools/slide/yjslide/examples/ffi/CInHaskell/array/temp1/useTemp
 /tools/slide/yjslide/examples/ffi/stablePtr/test
 *_hsc.c
 *_hsc.h
