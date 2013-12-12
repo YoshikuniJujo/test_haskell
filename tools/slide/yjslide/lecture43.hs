@@ -17,7 +17,8 @@ main = runLecture [
 	structure, structure2, structure3, structure4, structure5, structure6,
 	structure7, structure8, structure9, structure10, structure11, structure12,
 	structure13, structure14,
-	structureSummary
+	structureSummary,
+	storable, storable2, storable3, storable4, storable5
  ]
 
 prelude :: Page
@@ -632,4 +633,76 @@ structureSummary = [\t -> do
 	itext t 2 "Ptr b -> Int -> a -> IO ()", \t -> do
 	text t "* 大きさを指定してメモリを確保", \t -> do
 	itext t 1 "allocaBytes :: Int -> (Ptr a -> IO b) -> IO b"
+ ]
+
+storable :: Page
+storable = [\t -> do
+	writeTopTitle t "Storable", \t -> do
+	text t "* peekやpokeで読み出し、書き込みができるのは", \t -> do
+	itext t 1 "- Storableクラスのインスタンス", \t -> do
+	text t "* Storableクラスの定義は以下のようになっている", \t -> do
+	itext t 1 "class Storable a where"
+	itext t 2 "sizeOf :: a -> Int"
+	itext t 2 "alignment :: a -> Int"
+	itext t 2 "peekElemOff :: Ptr a -> Int -> IO a"
+	itext t 2 "pokeElemOff :: Ptr a -> Int -> a -> IO ()"
+	itext t 2 "peekByteOff :: Ptr a -> Int -> IO a"
+	itext t 2 "pokeByteOff :: Ptr a -> Int -> a -> IO ()"
+	itext t 2 "peek :: Ptr a -> IO a"
+	itext t 2 "poke :: Ptr a -> a -> IO ()"
+ ]
+
+storable2 :: Page
+storable2 = [\t -> do
+	writeTopTitle t "Storable"
+	text t "", \t -> do
+	text t "* クラスメソッドをすべて定義する必要はない", \t -> do
+	text t "* 定義する必要があるのは", \t -> do
+	itext t 1 "- sizeOf, alignmentは定義する必要がある", \t -> do
+	itext t 1 "- peek, peekElemOff, peekByteOffのどれかひとつ", \t -> do
+	itext t 1 "- poke, pokeElemOff, pokeByteOffのどれかひとつ", \t -> do
+	text t "* sizeOfは必要なメモリのサイズをbyte単位で返す", \t -> do
+	itext t 1 "- a -> Intという型だが引数のaは型を決めるためだけ", \t -> do
+	itext t 1 "- 値は実際には使わない", \t -> do
+	text t "* alignmentはアドレスがその倍数であること示す値", \t -> do
+	itext t 1 "- 引数の扱いに関してはsizeOfと同様"
+ ]
+
+storable3 :: Page
+storable3 = [\t -> do
+	writeTopTitle t "アラインメントについて"
+	text t "", \t -> do
+	text t "* ここでアラインメントについてすこし学ぶ必要がある", \t -> do
+	text t "* メモリは必ずしも1byteずつアクセスされるとはかぎらない", \t -> do
+	text t "* 32ビットCPUではたいてい4byteずつのブロックでアクセス", \t -> do
+	text t "* よって1byteのデータならどこに置いてもかまわないが", \t -> do
+	text t "* 2byte以上のデータには制約がかかる", \t -> do
+	itext t 1 "- 2byteのデータであれば2の倍数の番地に", \t -> do
+	itext t 1 "- 4byteのデータであれば4の倍数の番地に", \t -> do
+	text t "* そうしないとCPUによって", \t -> do
+	itext t 1 "- アクセスが遅くなる", \t -> do
+	itext t 1 "- エラーとなる"
+ ]
+
+storable4 :: Page
+storable4 = [\t -> do
+	writeTopTitle t "アラインメントについて", \t -> do
+	text t "* アラインメントはデータ型とCPUによって定まる", \t -> do
+	text t "* 基本型のアラインメントは以下のようになる", \t -> do
+	text t "* 一度にアクセスするデータの大きさをn byteとし", \t -> do
+	text t "* その型のサイズをx byteとすると、アラインメントは", \t -> do
+	text t "* x <= nのときには", \t -> do
+	itext t 1 "- xより大きいnの約数のうち最小のものとなり", \t -> do
+	text t "* x > nのときにはnとなる", \t -> do
+	text t "* 複合データ型の場合は", \t -> do
+	itext t 1 "- その型に含まれる型のアラインメントの最小公倍数", \t -> do
+	text t "* ほとんどのCPUのデータバスが2の冪乗だと思うので", \t -> do
+	itext t 1 "- 実用的には最小公倍数の代わりに最大値が使える"
+ ]
+
+storable5 :: Page
+storable5 = [\t -> do
+	writeTopTitle t "Storable"
+	text t "", \t -> do
+	text t "* いろいろな型をStorableにしてみる"
  ]
