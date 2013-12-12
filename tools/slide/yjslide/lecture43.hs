@@ -12,7 +12,9 @@ main = runLecture [
 	sendSimpleValue5, sendSimpleValue6, sendSimpleValue7,
 	simpleValueSummary,
 	array, array2, array3, array4, array5, array6, array7, array8, array9,
-	array10, array11, arraySummary
+	array10, array11, arraySummary,
+	structure, structure2, structure3, structure4, structure5, structure6,
+	structure7, structure8
  ]
 
 prelude :: Page
@@ -405,4 +407,111 @@ arraySummary = [\t -> do
 	text t "* 要素の数分だけのメモリを確保する", \t -> do
 	itext t 1 "allocaArray :: Storable a =>"
 	itext t 2 "Int -> (Ptr a -> IO b) -> IO b"
+ ]
+
+structure :: Page
+structure = [\t -> do
+	writeTopTitle t "構造体へのポインタ"
+	text t "", \t -> do
+	text t "* 構造体へのポインタを扱うことができる", \t -> do
+	text t "* ただし、その構造体の低レベルな構造の知識が必要", \t -> do
+	itext t 1 "- パディング等についても知っている必要がある", \t -> do
+	itext t 1 "- できるコードは処理系依存になってしまう", \t -> do
+	text t "* これを解決するためにはhsc2hsが必要", \t -> do
+	itext t 1 "- hsc2hsについては次々回の講義で扱う", \t -> do
+	text t "* 今回はhsc2hsが作成するコードを理解するために", \t -> do
+	itext t 1 "- 低レベルな詳細をコードに入れてしまおう", \t -> do
+	itext t 1 "- 可搬性の低いコードとなる", \t -> do
+	text t "* より理想的なコードはhsc2hsを学ぶときに"
+ ]
+
+structure2 :: Page
+structure2 = [\t -> do
+	writeTopTitle t "構造体へのポインタ"
+	text t "", \t -> do
+	text t "* 人の年齢、身長、体重を収納する構造体", \t -> do
+	text t "* 太郎さんのデータを取得する例", \t -> do
+	text t "* ヘッダファイル", \t -> do
+	itext t 1 "% cat human.h"
+	itext t 1 "typedef struct human {"
+	itext t 2 "int age;"
+	itext t 2 "double height;"
+	itext t 2 "double weight;"
+	itext t 1 "} human;"
+	itext t 1 "human *get_tarou(void);"
+ ]
+
+structure3 :: Page
+structure3 = [\t -> do
+	writeTopTitle t "構造体へのポインタ"
+	text t "", \t -> do
+	text t "* Cのコード", \t -> do
+	itext t 1 "% cat human.c"
+	itext t 1 "#include \"human.h\""
+	itext t 1 "static human tarou = { 35, 182.5, 75 };"
+	itext t 1 "human *get_tarou(void) {"
+	itext t 2 "return &tarou;"
+	itext t 1 "}"
+ ]
+
+structure4 :: Page
+structure4 = [\t -> do
+	writeTopTitle t "構造体へのポインタ"
+	text t "", \t -> do
+	text t "* 比較のためのCのmain関数", \t -> do
+	itext t 1 "#include <stdio.h>"
+	itext t 1 "#include \"human.h\""
+	itext t 1 "int main(int argc, char *argv[]) {"
+	itext t 2 "human *t = get_tarou();"
+	itext t 2 "printf(\"太郎: %d歳 %3.1fcm %2.1fkg\\n\","
+	itext t 3 "t->age, t->height, t->weight);"
+	itext t 2 "return 0;"
+	itext t 1 "}"
+ ]
+
+structure5 :: Page
+structure5 = [\t -> do
+	writeTopTitle t "構造体へのポインタ"
+	text t "", \t -> do
+	text t "* Haskellから使う", \t -> do
+	itext t 1 "import Foreign.C.Types"
+	itext t 1 "import Foreign.Ptr"
+	itext t 1 "import Foreign.Storable"
+	itext t 1 "data Human"
+	itext t 1 "foreign import ccall \"human.h get_tarou\""
+	itext t 2 "c_getTarou :: Ptr Human"
+	itext t 2 "(続く)"
+ ]
+
+structure6 :: Page
+structure6 = [\t -> do
+	writeTopTitle t "構造体へのポインタ"
+	text t "", \t -> do
+	itext t 0 "main :: IO ()"
+	itext t 0 "main = do"
+	itext t 1 "let t = c_getTarou"
+	itext t 1 "age <- peekByteOff t 0 :: IO CInt"
+	itext t 1 "height <- peekByteOff t 4 :: IO CDouble"
+	itext t 1 "weight <- peekByteOff t 12 :: IO CDouble"
+	itext t 1 "putStrLn $ \"太郎 \" ++ show age ++ \"歳 \" ++"
+	itext t 2 "show height ++ \"cm \" ++ show weight ++ \"kg\""
+ ]
+
+structure7 :: Page
+structure7 = [\t -> do
+	writeTopTitle t "構造体へのポインタ"
+	text t "", \t -> do
+	text t "* 与えられたポインタから指定のバイト数進み値を取得する", \t -> do
+	itext t 1 "peekByteOff :: Storable a => Ptr b -> Int -> IO a", \t -> do
+	text t "* 構造体におけるそれぞれの要素の位置を", \t -> do
+	itext t 1 "- ハードコーディングしてしまっている", \t -> do
+	itext t 1 "- C言語からの情報を得られないのでしかたない", \t -> do
+	itext t 1 "- 後述のhsc2hsを使えばこれを避けることができる"
+ ]
+
+structure8 :: Page
+structure8 = [\t -> do
+	writeTopTitle t "構造体へのポインタ"
+	text t "", \t -> do
+	text t "* 構造体の値をHaskell側で作成してわたす場合"
  ]
