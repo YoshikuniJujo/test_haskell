@@ -18,7 +18,10 @@ main = runLecture [
 	structure7, structure8, structure9, structure10, structure11, structure12,
 	structure13, structure14,
 	structureSummary,
-	storable, storable2, storable3, storable4, storable5
+	storable, storable2, storable3, storable4, storable5, storable6,
+	storable7, storable8, storable9, storable10, storable11, storable12,
+	storable13, storable14, storable15, storable16,
+	storableSummary, summary
  ]
 
 prelude :: Page
@@ -172,7 +175,7 @@ sendSimpleValue3 = [\t -> do
 	text t "", \t -> do
 	itext t 0 "static Message *message_type;"
 	itext t 0 "void sellect_message(Message *n) {"
-	itext t 1 "*message_type = n; }"
+	itext t 1 "message_type = n; }"
 	itext t 0 "void message(void) {"
 	itext t 1 "printf(\"%s\\n\", message_list[*message_type]); }"
  ]
@@ -382,7 +385,7 @@ array10 = [\t -> do
 	writeTopTitle t "配列へのポインタ"
 	text t "", \t -> do
 	itext t 0 "main :: IO ()"
-	itext t 0 "main = allocaArray 9 $ \\ptr -> do"
+	itext t 0 "main = allocaArray 12 $ \\ptr -> do"
 	itext t 1 "forM_ (zip [0 ..] ["
 	itext t 3 "2, 3, 7, 13, 18, 21,"
 	itext t 3 "26, 29, 25, 17, 10, 5]) $ \\(i, d) ->"
@@ -704,5 +707,195 @@ storable5 :: Page
 storable5 = [\t -> do
 	writeTopTitle t "Storable"
 	text t "", \t -> do
-	text t "* いろいろな型をStorableにしてみる"
+	text t "* 自作の型をStorableにしてみる", \t -> do
+	itext t 1 "data Shape"
+	itext t 2 "= Circle CDouble"
+	itext t 2 "| Rectangle CDouble CDouble", \t -> do
+	text t "* Storableクラスのインスタンスにする", \t -> do
+	text t "* sizeOf, alignment, peek, pokeを定義しよう", \t -> do
+	text t "* 2つの数x, aを取りxより大きい最小のaの倍数を返す関数", \t -> do
+	itext t 1 "align :: Int -> Int -> Int"
+	itext t 1 "x `align` a = (d + if m > 0 then 1 else 0) * a"
+	itext t 2 "where (d, m) = x `divMod` a"
+ ]
+
+storable6 :: Page
+storable6 = [\t -> do
+	writeTopTitle t "Storable"
+	text t "", \t -> do
+	text t "* 形の種類をCIntで表すことにする", \t -> do
+	text t "* するとサイズは", \t -> do
+	itext t 1 "- CIntのサイズをCDoubleのアラインメントに合わせる", \t -> do
+	itext t 1 "- それにCDoubleのサイズを2倍した値を足す", \t -> do
+	itext t 1 "sizeOf _ = sizeOf (undefined :: CInt) `align`"
+	itext t 2 "alignment (undefined :: CDouble) +"
+	itext t 2 "2 * sizeOf (undefined :: CDouble)", \t -> do
+	text t "* アラインメントは各要素のアラインメントの最大値", \t -> do
+	itext t 1 "alignment _ = max"
+	itext t 2 "(alignment (undefined :: CInt))"
+	itext t 2 "(alignment (undefined :: CDouble))"
+ ]
+
+storable7 :: Page
+storable7 = [\t -> do
+	writeTopTitle t "Storable"
+	text t "", \t -> do
+	text t "* 値の取り出しは", \t -> do
+	itext t 1 "- まずは形のタイプを取り出し", \t -> do
+	itext t 1 "- そのタイプに応じて必要な値を取り出す"
+ ]
+
+storable8 :: Page
+storable8 = [\t -> do
+	writeTopTitle t "Storable", \t -> do
+	itext t (-1) "peek ptr = do"
+	itext t 0 "typ :: CInt <- peekByteOff ptr tOffset"
+	itext t 0 "case typ of"
+	itext t 1 "0 -> do"
+	preLine t
+	itext t 2.5 "r <- peekByteOff ptr rOffset"
+	itext t 2.5 "return $ Circle r"
+	itext t 1 "1 -> do"
+	preLine t
+	itext t 2.5 "w <- peekByteOff ptr wOffset"
+	itext t 2.5 "h <- peekByteOff ptr hOffset"
+	itext t 2.5 "return $ Rectangle w h"
+	itext t 0 "where"
+	preLine t
+	itext t 1 "tOffset = 0"
+	itext t 1 "rOffset = sizeOf (undefined :: CInt)"
+	itext t 1 "wOffset = sizeOf (undefined :: CInt)"
+	itext t 1 "hOffset = wOffset + sizeOf (undefined :: CDouble)"
+ ]
+
+storable9 :: Page
+storable9 = [\t -> do
+	writeTopTitle t "Storable"
+	text t "", \t -> do
+	text t "* 値の書き込みは形のタイプと値を書き込めば良い", \t -> do
+	itext t 1 "poke ptr (Circle r) = do"
+	itext t 2 "pokeByteOff ptr tOffset (0 :: CInt)"
+	itext t 2 "pokeByteOff ptr rOffset r"
+	itext t 2 "where"
+	preLine t
+	itext t 3 "tOffset = 0"
+	itext t 3 "rOffset = sizeOf (undefined :: CInt)"
+ ]
+
+storable10 :: Page
+storable10 = [\t -> do
+	writeTopTitle t "Storable"
+	text t "", \t -> do
+	itext t 0 "poke ptr (Rectangle w h) = do"
+	itext t 1 "pokeByteOff ptr tOffset (1 :: CInt)"
+	itext t 1 "pokeByteOff ptr wOffset w"
+	itext t 1 "pokeByteOff ptr hOffset h"
+	itext t 1 "where"
+	itext t 1 "tOffset = 0"
+	itext t 1 "wOffset = sizeOf (undefined :: CInt)"
+	itext t 1 "hOffset = wOffset + sizeOf (undefined :: CDouble)"
+ ]
+
+storable11 :: Page
+storable11 = [\t -> do
+	writeTopTitle t "Storable"
+	text t "", \t -> do
+	text t "* これでShapeはpeekやpokeで値の出し入れができる", \t -> do
+	text t "* Haskell側で作ったShapeをCの関数にわたす例を見ていこう", \t -> do
+	text t "* ヘッダファイルを作る", \t -> do
+	itext t 1 "% cat shape.h"
+ ]
+
+storable12 :: Page
+storable12 = [\t -> do
+	writeTopTitle t "Storable"
+	text t "", \t -> do
+	itext t 1 "typedef struct Shape {"
+	itext t 2 "int shape_type;"
+	itext t 2 "union _shape_value {"
+	itext t 3 "double radius;"
+	itext t 3 "struct _width_height {"
+	itext t 4 "double width;"
+	itext t 4 "double height;"
+	itext t 3 "} width_height;"
+	itext t 2 "} shape_value;"
+	itext t 1 "} Shape;"
+	itext t 1 "void printShape(Shape *);"
+ ]
+
+storable13 :: Page
+storable13 = [\t -> do
+	writeTopTitle t "Storable"
+	text t "", \t -> do
+	text t "* 形を表示する関数", \t -> do
+	itext t 1 "% cat shape.c"
+ ]
+
+storable14 :: Page
+storable14 = [\t -> do
+	writeTopTitle t "Storable", \t -> do
+	itext t 0 "void printShape(Shape *ptr) {"
+	itext t 1 "switch (ptr->shape_type) {"
+	itext t 1 "case 0:"
+	itext t 2 "printf(\"Circle %f\\n\","
+	itext t 3 "ptr->shape_value.radius);"
+	itext t 2 "break;"
+	itext t 1 "case 1:"
+	itext t 2 "printf(\"Rectangle %f\\n\","
+	itext t 3 "ptr->shape_value.width_height.width,"
+	itext t 3 "ptr->shape_value.width_height.height);"
+	itext t 2 "break;"
+	itext t 1 "default:"
+	itext t 0 "}"
+ ]
+
+storable15 :: Page
+storable15 = [\t -> do
+	writeTopTitle t "Storable"
+	text t "", \t -> do
+	text t "* Haskellから使う", \t -> do
+	itext t 1 "import Foreign.C.Types"
+	itext t 1 "import Foreign.Ptr"
+	itext t 1 "import Foreign.Storable"
+	itext t 1 "import Foreign.Marshal"
+	itext t 1 ""
+	itext t 1 "foreign import ccall \"print_shape\""
+	itext t 2 "c_printShape :: Ptr Shape -> IO ()"
+ ]
+
+storable16 :: Page
+storable16 = [\t -> do
+	writeTopTitle t "Storable"
+	text t "", \t -> do
+	itext t 0 "main :: IO ()"
+	itext t 0 "main = alloca $ \\ptr -> do"
+	itext t 1 "poke ptr $ Circle 82.5"
+	itext t 1 "c_printShape ptr"
+	itext t 1 "poke ptr $ Rectangle 33 89"
+	itext t 1 "c_printShape ptr"
+ ]
+
+storableSummary :: Page
+storableSummary = [\t -> do
+	writeTopTitle t "Storable(まとめ)"
+	text t "", \t -> do
+	text t "* Haskell側の値をCからも使うことができる", \t -> do
+	text t "* そのためにはStorableクラスのインスタンスにする", \t -> do
+	text t "* sizeOf, alignment, peek, pokeメソッドを定義すれば良い", \t -> do
+	text t "* sizeOfやalignmentについて", \t -> do
+	itext t 1 "- 適切なアラインメントを考慮する必要がある", \t -> do
+	text t "* peekやpokeは", \t -> do
+	itext t 1 "- 構成要素のそれぞれのpeek, pokeを使えば良い"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* 配列ヘのポインタを扱う方法を見た", \t -> do
+	text t "* 構造体へのポインタを扱う方法を見た", \t -> do
+	itext t 1 "- 各要素の位置をバイトで指定した", \t -> do
+	text t "* ポインタで示された位置にあるデータの取り出しを見た", \t -> do
+	text t "* ポインタで示された位置へのデータの書き込みを見た", \t -> do
+	text t "* Haskell側でメモリを確保して使う方法を見た"
  ]
