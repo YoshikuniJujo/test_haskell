@@ -87,6 +87,9 @@ tmp/
 /tools/slide/yjslide/examples/ffi/CInHaskell/structure/human/useHuman
 /tools/slide/yjslide/examples/ffi/CInHaskell/structure/trump/useTrump
 /tools/slide/yjslide/examples/ffi/CInHaskell/storable/useStorable
+/tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/apply_123/useApply123
+/tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/three_times/useThreeTimes
+/tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/gtk/useGtk
 /tools/slide/yjslide/examples/ffi/stablePtr/test
 *_hsc.c
 *_hsc.h

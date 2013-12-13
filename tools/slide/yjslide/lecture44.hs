@@ -5,7 +5,7 @@ subtitle = "第44回 C言語とのインターフェース3"
 
 main :: IO ()
 main = runLecture [
-	[flip writeTitle subtitle], prelude
+	[flip writeTitle subtitle], prelude, wrapperPrelude
  ]
 
 prelude :: Page
@@ -19,4 +19,13 @@ prelude = [\t -> do
 	itext t 1 "- なかの値はHaskell内でしか扱えない", \t -> do
 	itext t 1 "- C言語内でHaskell関数を呼び出し、返ってきた値を", \t -> do
 	itext t 1 "- そのままの形でHaskell関数にわたす"
+ ]
+
+wrapperPrelude :: Page
+wrapperPrelude = [\t -> do
+	writeTopTitle t "wrapper(はじめに)"
+	text t "", \t -> do
+	text t "* Haskellの関数やIOはStorableのインスタンスではない", \t -> do
+	text t "* peekやpokeでPtrを作ってCの関数にわたす", \t -> do
+	itext t 1 "- ということはできない"
  ]
