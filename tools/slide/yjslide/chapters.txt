@@ -92,6 +92,8 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第78回 ghcのSTG言語
 --- アルゴリズム編
 第79回 wheel sieve
+--- パッケージ編
+第80回 yesod
 
 どこかで queue にも触れたいな
 finger tree面白いな
