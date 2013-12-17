@@ -90,6 +90,7 @@ tmp/
 /tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/apply_123/useApply123
 /tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/three_times/useThreeTimes
 /tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/gtk/useGtk
+/tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/gtk/hierarchy/hierarchy
 /tools/slide/yjslide/examples/ffi/stablePtr/test
 *_hsc.c
 *_hsc.h
