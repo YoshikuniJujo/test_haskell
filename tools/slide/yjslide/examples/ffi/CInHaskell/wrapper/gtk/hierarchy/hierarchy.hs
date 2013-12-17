@@ -20,6 +20,7 @@ class (Typeable g, Pointer g) => GObject g where
 
 class Pointer p where
 	pointer :: p -> Ptr p
+	fromPointer :: Ptr p -> p
 
 data GtkObject = forall g . GObject g => GtkObject g deriving Typeable
 
@@ -37,9 +38,11 @@ gtkObjectFromGObject g = do
 	cast gtk
 
 data GtkWidget = forall g . GObject g => GtkWidget g deriving Typeable
+data SomeGtkWidget = SomeGtkWidget (Ptr SomeGtkWidget) deriving Typeable
 
 instance Pointer GtkWidget where
 	pointer (GtkWidget g) = castPtr $ pointer g
+	fromPointer p = GtkWidget $ fromPointer $ (castPtr p :: Ptr SomeGtkWidget)
 
 instance GObject GtkWidget where
 	toGObject = gtkObjectToGObject
@@ -52,6 +55,14 @@ gtkWidgetFromGObject :: GObject g => SomeGObject -> Maybe g
 gtkWidgetFromGObject g = do
 	GtkWidget w <- fromGObject g
 	cast w
+
+instance Pointer SomeGtkWidget where
+	pointer (SomeGtkWidget p) = p
+	fromPointer = SomeGtkWidget
+
+instance GObject SomeGtkWidget where
+	toGObject = gtkWidgetToGObject
+	fromGObject = gtkWidgetFromGObject
 
 data GtkContainer = forall g . GObject g => GtkContainer g deriving Typeable
 
@@ -173,12 +184,24 @@ foreign import ccall "gtk/gtk.h g_signal_connect_data" c_gSignalConnectData ::
 		Ptr () -> Ptr () -> CInt -> IO ()
 
 gSignalConnectData ::
-	GtkWidget -> CString -> FunPtr (Ptr GtkWidget -> Ptr () -> IO ()) ->
+	GtkWidget -> CString -> (GtkWidget -> Ptr () -> IO ()) ->
 		Ptr () -> Ptr () -> CInt -> IO ()
-gSignalConnectData = c_gSignalConnectData . pointer
+gSignalConnectData w s f p1 p2 i = do
+	cb <- wrapCallback (f . fromPointer)
+	c_gSignalConnectData (pointer w) s cb p1 p2 i
 
-foreign import ccall "gtk/gtk.h &gtk_main_quit" c_gtkMainQuit ::
+foreign import ccall "gtk/gtk.h &gtk_main_quit" c_gtkMainQuitPtr ::
 	FunPtr (Ptr GtkWidget -> Ptr () -> IO ())
+
+foreign import ccall "gtk/gtk.h gtk_main_quit" c_gtkMainQuit ::
+	Ptr GtkWidget -> Ptr () -> IO ()
+
+gtkMainQuit :: GtkWidget -> Ptr () -> IO ()
+gtkMainQuit = c_gtkMainQuit . pointer
+
+foreign import ccall "wrapper" wrapCallback ::
+	(Ptr GtkWidget -> Ptr () -> IO ()) ->
+		IO (FunPtr (Ptr GtkWidget -> Ptr () -> IO ()))
 
 castGObject :: (GObject g, GObject h) => g -> Maybe h
 castGObject = fromGObject . toGObject
@@ -197,9 +220,9 @@ main = do
 		case (castGObject win, castGObject win, castGObject button) of
 			(Just w, Just wc, Just b) -> do
 				gtkContainerAdd wc b
-				gSignalConnectData b clicked c_gtkMainQuit
+				gSignalConnectData b clicked gtkMainQuit
 					nullPtr nullPtr 0
-				gSignalConnectData w destroy c_gtkMainQuit
+				gSignalConnectData w destroy gtkMainQuit
 					nullPtr nullPtr 0
 				gtkWidgetShow w
 				c_gtkMain
