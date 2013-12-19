@@ -8,10 +8,15 @@ import Template
 mkTop "Show" "Life"
 mkTopShow "Life"
 
-topType "Life" "Animal"
-topTypeShow "Animal"
-addType "Life" "Animal" "Human"
-addTypeShow "Human"
+newType mkSomeDStr "Life" "Life" "Animal"
+sequence [
+	instanceShow "Animal",
+	instanceShow "SomeAnimal" ]
+
+newType mkSomeDStr "Life" "Animal" "Human"
+sequence [
+	instanceShow "Human",
+	instanceShow "SomeHuman" ]
 
 castLife :: (Life l, Life m) => l -> Maybe m
 castLife = fromLife . toLife

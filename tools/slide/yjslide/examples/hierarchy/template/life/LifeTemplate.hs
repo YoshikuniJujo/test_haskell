@@ -29,7 +29,7 @@ mkClass c n = classD
 		sigD from $ conT sm `arrT` (conT ''Maybe `appT` varT ln),
 		valD (varP to) (normalB $ conE sm) [],
 		funD from [clause [conP sm [varP ln]]
-			(normalB $ varE (mkName "cast") `appE` varE ln) []
+			(normalB $ varE 'cast `appE` varE ln) []
 		 ]
 	 ]
 	where

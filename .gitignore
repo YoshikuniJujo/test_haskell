@@ -92,6 +92,7 @@ tmp/
 /tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/gtk/useGtk
 /tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/gtk/hierarchy/hierarchy
 /tools/slide/yjslide/examples/ffi/stablePtr/test
+/tools/slide/yjslide/examples/hierarchy/template/life/gtk/testGtk
 *_hsc.c
 *_hsc.h
 *_stub.h

@@ -1,48 +1,43 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Template (
-	topType, topTypeShow,
-	addType, addTypeShow) where
+	newType,
+	mkSomeDStr, instanceShow,
+	mkSomePointer, instancePointer, instancePointerSome) where
 
 import Language.Haskell.TH
 import Control.Applicative
 import Data.Char
 import Data.Typeable
+import Foreign.Ptr
 
 -- import Life
 
-topType :: String -> String -> DecsQ
-topType l n = sequence [
+newType :: (String -> TypeQ) -> String -> String -> String -> DecsQ
+newType typ l s n
+	| l == s = topType typ l n
+	| otherwise = addType typ l s n
+
+topType :: (String -> TypeQ) -> String -> String -> DecsQ
+topType typ l n = sequence [
 	mkData l n,
 	instanceTop l n,
 	mkToLifeTyp l n,
 	mkToLife l n,
 	mkFromLife l n,
-	mkSomeData n,
+	mkSomeData typ n,
 	instanceSub l n ("Some" ++ n)
  ]
 
-topTypeShow :: String -> DecsQ
-topTypeShow n = sequence [
-	instanceShow n,
-	instanceShowSome n
- ]
-
-addType :: String -> String -> String -> DecsQ
-addType l s n = sequence [
+addType :: (String -> TypeQ) -> String -> String -> String -> DecsQ
+addType typ l s n = sequence [
 	mkData l n,
 	instanceSub l s n,
 	mkToLifeTyp l n,
 	mkToLife l n,
 	mkFromLife l n,
-	mkSomeData n,
+	mkSomeData typ n,
 	instanceSub l n ("Some" ++ n)
- ]
-
-addTypeShow :: String -> DecsQ
-addTypeShow n = sequence [
-	instanceShow n,
-	instanceShowSome n
  ]
 
 mkData :: String -> String -> DecQ
@@ -54,21 +49,24 @@ mkData l h = dataD
 		(cxt [classP life [varT $ mkName "h"]]) $
 			normalC (mkName h)
 				[strictType notStrict $ varT $ mkName "h"]]
-	[mkName "Typeable"]
+	[''Typeable]
 	where
 	life = mkName l
 
-mkSomeData :: String -> DecQ
-mkSomeData h = dataD
+mkSomeDStr :: String -> TypeQ
+mkSomeDStr _ = conT $ mkName "String"
+
+mkSomePointer :: String -> TypeQ
+mkSomePointer n = conT ''Ptr `appT` conT (mkName n)
+
+mkSomeData :: (String -> TypeQ) -> String -> DecQ
+mkSomeData typ h = dataD
 	(cxt [])
 	(mkName $ "Some" ++ h)
 	[]
 	[normalC (mkName $ "Some" ++ h)
-		[strictType notStrict $ conT $ mkName "String"]]
-	[mkName "Typeable"]
-
-instanceShowSome :: String -> DecQ
-instanceShowSome = instanceShow . ("Some" ++)
+		[strictType notStrict $ typ $ "Some" ++ h]]
+	[''Typeable]
 
 instanceShow :: String -> DecQ
 instanceShow h = instanceD
@@ -135,3 +133,34 @@ mkFromLife l nt@(h : t) =
 	n = toLower h : t
 	from = mkName $ n ++ "From" ++ l
 	froml = mkName $ "from" ++ l
+
+instancePointer :: String -> DecQ
+instancePointer n =
+	instanceD (cxt []) (conT (mkName "Pointer") `appT` conT (mkName n)) [
+		funD pointer $ (: []) $ flip
+			(clause [conP (mkName n) [varP g]]) [] $
+				normalB $ varE 'castPtr `appE`
+					(varE pointer `appE` varE g),
+		funD fromPointer $ (: []) $ flip (clause [varP p]) [] $
+			normalB $ conE (mkName n) `appE`
+				(varE fromPointer `appE` casted)
+	 ]
+	where
+	[g, p] = map mkName ["g", "p"]
+	pointer = mkName "pointer"
+	fromPointer = mkName "fromPointer"
+	casted = varE 'castPtr `appE` varE p `sigE`
+		(conT ''Ptr `appT` conT (mkName $ "Some" ++ n))
+
+instancePointerSome :: String -> DecQ
+instancePointerSome n =
+	instanceD (cxt []) (conT (mkName "Pointer") `appT` conT (mkName n)) [
+		funD pointer $ (: []) $ flip (clause [conP nn [varP p]]) [] $
+			normalB $ varE p,
+		flip (valD $ varP fromPointer) [] $ normalB $ conE nn
+	 ]
+	where
+	p = mkName "p"
+	nn = mkName n
+	pointer = mkName "pointer"
+	fromPointer = mkName "fromPointer"
