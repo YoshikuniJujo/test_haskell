@@ -6,7 +6,9 @@ subtitle = "第44回 C言語とのインターフェース3"
 main :: IO ()
 main = runLecture [
 	[flip writeTitle subtitle], prelude,
-	wrapperPrelude, wrapper1, wrapper2, wrapper3, wrapperSummary
+	wrapperPrelude, wrapper1, wrapper2, wrapper3, wrapperSummary,
+	stablePtrPrelude, stablePtr1, stablePtr2, stablePtr3, stablePtrSummary,
+	summary
  ]
 
 prelude :: Page
@@ -86,4 +88,86 @@ wrapperSummary = [\t -> do
 	text t "* Haskellの関数を関数ポインタとしてCにわたせる", \t -> do
 	text t "* 仮想的な関数wrapperをいろいろなタイプとしてimport", \t -> do
 	text t "* gtkなどとのインターフェースを作成するときに必要となる"
+ ]
+
+stablePtrPrelude :: Page
+stablePtrPrelude = [\t -> do
+	writeTopTitle t "StablePtr(はじめに)"
+	text t "", \t -> do
+	text t "* Haskellの値を固定し、それに対する参照を可能にする", \t -> do
+	itext t 1 "- つまりGCの影響を受けない値にするということ", \t -> do
+	itext t 1 "- その値はC言語にわたすことができる", \t -> do
+	itext t 1 "- その値の中身をC言語側から見ることはできない", \t -> do
+	itext t 1 "- 値の中身を見るには再度Haskell側にわたす", \t -> do
+	text t "* Haskellの関数をC言語の枠組みのなかで組み合わせるとき", \t -> do
+	text t "* Haskellの関数同士が値の受けわたしができる"
+ ]
+
+stablePtr1 :: Page
+stablePtr1 = [\t -> do
+	writeTopTitle t "StablePtr"
+	text t "", \t -> do
+	text t "* Haskellのコード", \t -> do
+	itext t 0.5 "module Tarou where"
+	itext t 0.5 "import Foreign.StablePtr"
+	itext t 0.5 "foreign export ccall \"tarou\""
+	itext t 1.5 "tarou :: IO (StablePtr (String, Int))"
+	itext t 0.5 "foreign export ccall \"print_tarou\""
+	itext t 1.5 "printTarou :: StablePtr (String, Int) -> IO ()"
+	itext t 0.5 "foreign export ccall \"free_StablePtr\""
+	itext t 1.5 "freeStablePtr :: Stableptr a -> IO ()"
+	itext t 2 "(続く)"
+ ]
+
+stablePtr2 :: Page
+stablePtr2 = [\t -> do
+	writeTopTitle t "StablePtr"
+	text t "", \t -> do
+	itext t 0 "tarou :: IO (StablePtr (String, Int))"
+	itext t 0 "tarou = newStablePtr (\"Tarou\", 33)"
+	itext t 0 ""
+	itext t 0 "printTarou :: StablePtr (String, Int) -> IO ()"
+	itext t 0 "printTarou p = deRefStablePtr p >>= print"
+ ]
+
+stablePtr3 :: Page
+stablePtr3 = [\t -> do
+	writeTopTitle t "StablePtr", \t -> do
+	text t "* Cのコード", \t -> do
+	itext t 1 "#include \"HsFFI.h\""
+	itext t 1 "#ifdef __GLASGOW_HASKELL__"
+	itext t 1 "#indluce \"Tarou_stub.h\""
+	itext t 1 "#endif"
+	itext t 1 "int main (int argc, char *argv[]) {"
+	itext t 2 "int i;"
+	itext t 2 "hs_init(&argc, &argv);"
+	itext t 2 "HsStablePtr t = tarou();"
+	itext t 2 "for (i = 0; i < 10; i++) print_tarou(t);"
+	itext t 2 "free_StablePtr(t);"
+	itext t 2 "hs_exit();"
+	itext t 2 "return 0; }"
+ ]
+
+stablePtrSummary :: Page
+stablePtrSummary = [\t -> do
+	writeTopTitle t "StablePtr(まとめ)"
+	text t "", \t -> do
+	text t "* StablePtrを使うことで", \t -> do
+	itext t 1 "- C言語内でHaskell関数同士で値の受け渡しが可能", \t -> do
+	text t "* 値はGCの影響を受けない", \t -> do
+	text t "* newStablePtrによって作られたStablePtrは", \t -> do
+	itext t 1 "- deRefStablePtrによって値を復元可能", \t -> do
+	itext t 1 "- ポインタとしては何の保証もない", \t -> do
+	itext t 1 "- 正当なメモリを指しているという保証もない"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* wrapperとStablePtrについて学んだ", \t -> do
+	text t "* 両者には何の関係もない", \t -> do
+	text t "* とりあえず説明をし残した2つをまとめただけ", \t -> do
+	text t "* wrapperはgtk等とのインターフェースに使える", \t -> do
+	text t "* StablePtrはたとえばOS側のスレッドの利用に使われている"
  ]

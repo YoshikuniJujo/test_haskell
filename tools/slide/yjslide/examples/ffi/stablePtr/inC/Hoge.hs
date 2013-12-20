@@ -5,6 +5,7 @@ import Foreign.StablePtr
 foreign export ccall "hoge" hoge :: Int -> Int
 foreign export ccall "tarou" tarou :: IO (StablePtr (String, Int))
 foreign export ccall "print_tarou" printTarou :: StablePtr (String, Int) -> IO ()
+foreign export ccall "free_StablePtr" freeStablePtr :: StablePtr a -> IO ()
 
 hoge = (+ 3)
 

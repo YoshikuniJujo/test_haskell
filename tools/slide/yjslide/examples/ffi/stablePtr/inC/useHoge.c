@@ -16,6 +16,7 @@ main(int argc, char *argv[])
 	t = tarou();
 	for (i = 0; i < 10; i++)
 		print_tarou(t);
+	free_StablePtr(t);
 
 	hs_exit();
 
