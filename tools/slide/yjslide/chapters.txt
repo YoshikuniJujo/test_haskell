@@ -46,7 +46,8 @@
 第44回 C言語とのインターフェース3 (wrapper, StablePtr)
 第45回 hsc2hs (第43回のmessageの例も使える, 構造体の例も, 小さな関数の同梱)
 (ここまで作った、以下予定)
-第46回 cabalの使いかた(テストの自動化も含めて, hsc2hsの自動起動も)
+第46回 パッケージ化(cabalの使いかた(テストの自動化も含めて, hsc2hsの自動起動も))
+	cabal-installによるhackageからのダウンロードやインストールも
 --- 上級編
 第47回 functor, applicative, monad (MonadPlusの話題にも触れたい)
 第48回 free monad
@@ -74,20 +75,21 @@
 第70回 Foldable
 第71回 Traversable
 第72回 Sequence (finger tree, queue)
+第73回 hackageへのアップロードのしかた
 --- 番外編
-第73回 readsPrecについて
-第74回 モナド内包表記 monad comprehension
-第75回 LANGUAGEプラグマ
-第76回 その他のプラグマ
+第74回 readsPrecについて
+第75回 モナド内包表記 monad comprehension
+第76回 LANGUAGEプラグマ
+第77回 その他のプラグマ
 	(OPTIONS_GHC, WARNING, DEPRECATED, INLINE, RULES,
 		SPECIALIZE, UNPACK, SOURCE)
 	-> 場合によってはいくつかに分けよう
-第77回 ghcのcore言語
-第78回 ghcのSTG言語
+第78回 ghcのcore言語
+第79回 ghcのSTG言語
 --- アルゴリズム編
-第79回 wheel sieve
+第80回 wheel sieve
 --- パッケージ編
-第80回 yesod
+第81回 yesod
 
 どこかで queue にも触れたいな
 finger tree面白いな
