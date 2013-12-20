@@ -1,8 +1,3 @@
-IO monadの話のなかで、do記法に触れる必要があるな。
-そしたら例題->演習といった感じか。
-
-遅延IOの話はiterateeを紹介するときでいいだろう。
-
 --- 初級編
 第1回 ミニマルな本質
 第2回 特徴
@@ -51,7 +46,7 @@ IO monadの話のなかで、do記法に触れる必要があるな。
 第44回 C言語とのインターフェース3 (wrapper, StablePtr)
 第45回 hsc2hs (第43回のmessageの例も使える, 構造体の例も, 小さな関数の同梱)
 (ここまで作った、以下予定)
-第46回 cabalの使いかた(テストの自動化も含めて)
+第46回 cabalの使いかた(テストの自動化も含めて, hsc2hsの自動起動も)
 --- 上級編
 第47回 functor, applicative, monad (MonadPlusの話題にも触れたい)
 第48回 free monad
@@ -105,23 +100,15 @@ field label についても、か。
 pattern guardはHaskell 2010に入ってるので初級編で触れておこうかな。
 view patternもついでに
 ffiも2010に入ってるな。
--- や {- ... -}コメントについて。
-.lhs についてはどうしようかな。
-落ち穂拾いのところで簡単に触れておこう。
 型注釈についても触れとこう。
 それとas patternもだな。
 irrefutable patternも。
 
 bang patternについてはどこか別の場所で触れる必要がある。
 
-正格評価についてもどこかで触れる必要があるな。
-それとunbox型も、かな。
-
 ST monad や stm についても触れたい。
 ST monad について触れるなら forall についても触れる必要があるだろう。
 stm について触れる際に ref, mvar, chan, tvar あたりにも触れることにする。
-
-profiling の話もいれる必要があるな。
 
 第7回のキューの例をよりスムーズにするために、
 第6回のIOのところでIOに関する再帰的プロセスと反復的プロセスについて
@@ -130,10 +117,8 @@ profiling の話もいれる必要があるな。
 並列実行について触れるかどうか。
 並行実行については触れておきたいな。<- stmより前がいいだろう。
 
-zipperについてどこかで触れたいな。
 Foldableについても触れたいな。
 Traversableについても触れる必要があるかも。
-haddockにも触れる必要があるな。
 
 RULESも面白い機能ではある。
 INLINEについても見ておく必要がある。
@@ -141,19 +126,14 @@ INLINEについても見ておく必要がある。
 ViewPatternsは効率に関する問題がある気がする。
 初級編からは消そうかな。
 
-またOverloadedStringsは「いけてる」気がする。
-これもどこかで触れたいな。
-
 GeneralizedNewtypeDerivingも「いけてる」気がする。
 
 どこかに時間の扱いも入れときたいな。
 
 どこかでMonadPlusについても触れたいな。
 
-型クラスにおける関数のデフォルト定義について触れているか確かめること。
-
 以下の型レベルの機能については理解したうえで入れるかどうか検討すること
-	DataKinds, TypeOperators, ScopedTypeVariables, ConstraintKinds
+	DataKinds, TypeOperators, ConstraintKinds
 
 どこかで「代数的データ型(algebraic data type)」という用語の説明が必要だ。
 
@@ -168,7 +148,5 @@ guardについてどこかで触れる必要がある。
 
 演算子の優先順位について触れているかどうかチェックすること
 	-> 落ち穂拾いあたりにいれとこうかな?
-
-StablePtrについて触れるかどうか考えること。
 
 第22回でasTypeOfについて触れること!
