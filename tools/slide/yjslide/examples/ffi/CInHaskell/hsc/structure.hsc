@@ -17,3 +17,6 @@ typedef struct seiheki {
 #peek seiseki, no
 #peek seiseki, name
 #peek seiseki, average
+
+#ptr seiseki, average
+#offset seiseki, average

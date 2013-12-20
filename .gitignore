@@ -91,6 +91,11 @@ tmp/
 /tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/three_times/useThreeTimes
 /tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/gtk/useGtk
 /tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/gtk/hierarchy/hierarchy
+/tools/slide/yjslide/examples/ffi/CInHaskell/hsc/other.hs
+/tools/slide/yjslide/examples/ffi/CInHaskell/hsc/struct/structure
+/tools/slide/yjslide/examples/ffi/CInHaskell/hsc/struct/structure.hs
+/tools/slide/yjslide/examples/ffi/CInHaskell/hsc/struct/weightHeight
+/tools/slide/yjslide/examples/ffi/CInHaskell/hsc/struct/weightHeight.hs
 /tools/slide/yjslide/examples/ffi/stablePtr/eight/test
 /tools/slide/yjslide/examples/ffi/stablePtr/inC/useHoge
 /tools/slide/yjslide/examples/hierarchy/template/life/gtk/testGtk
