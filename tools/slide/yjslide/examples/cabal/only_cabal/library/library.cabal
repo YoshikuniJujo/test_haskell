@@ -1,0 +1,14 @@
+cabal-version: >= 1.2
+build-type: Simple
+
+name: library
+version: 0.1.0.0
+
+data-files: hoge.txt
+
+library
+  exposed-modules: Library
+  build-depends: base > 3 && < 5
+
+executable library
+  main-is: library.hs
