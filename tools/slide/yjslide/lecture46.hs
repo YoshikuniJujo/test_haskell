@@ -8,7 +8,8 @@ main = runLecture [
 	[flip writeTitle subtitle], prelude,
 	simplest, simplest2, simplest3, simplest4, simplest5, simplest6,
 	simplest7, simplest8, simplest9, simplest10, simplest11, simplest12,
-	simplest13, simplest14
+	simplest13, simplest14,
+	simpleLibrary
  ]
 
 prelude :: Page
@@ -222,9 +223,9 @@ simplest14 = [\t -> do
 	itext t 1 "- $pkgid, $pkg, $version, $compiler, $os, $arch"
  ]
 
-someXX :: Page
-someXX = [\t -> do
-	writeTopTitle t "使える変数"
+simpleLibrary :: Page
+simpleLibrary = [\t -> do
+	writeTopTitle t "単純なライブラリの例"
 	text t "", \t -> do
-	text t "$prefix, $pkgid, $pkg, $version, $compiler, $os, $arch"
+	text t ""
  ]
