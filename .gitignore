@@ -99,10 +99,10 @@ tmp/
 /tools/slide/yjslide/examples/ffi/stablePtr/eight/test
 /tools/slide/yjslide/examples/ffi/stablePtr/inC/useHoge
 /tools/slide/yjslide/examples/hierarchy/template/life/gtk/testGtk
-/tools/slide/yjslide/examples/cabal/only_cabal/setup
-/tools/slide/yjslide/examples/cabal/only_cabal/simple
+/tools/slide/yjslide/examples/cabal/only_cabal/simple/setup
 /tools/slide/yjslide/examples/cabal/only_cabal/library/setup
 /tools/slide/yjslide/examples/cabal/cabal_init/
+/tools/slide/yjslide/examples/cabal/sample/setup
 *_hsc.c
 *_hsc.h
 *_stub.h

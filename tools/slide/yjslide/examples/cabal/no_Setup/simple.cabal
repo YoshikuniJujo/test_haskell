@@ -6,4 +6,4 @@ version: 0.1.0.0
 
 executable simple
   main-is: simple.hs
-  build-depends: base == 4.*
+  build-depends: base > 3 && < 5
