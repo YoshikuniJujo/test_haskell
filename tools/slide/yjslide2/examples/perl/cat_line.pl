@@ -1,0 +1,1 @@
+$line = <>; print $line
