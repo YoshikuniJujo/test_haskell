@@ -55,7 +55,7 @@ pure n = [\t -> do
 functions :: Page
 functions = [\t -> do
 	writeTopTitle t "関数とは?", \t -> do
-	text t "0個以上の入力値をひとつの出力値へ変えるルール", \t -> do
+	text t "入力値を出力値へ変えるルール", \t -> do
 	graphArrowString t 10 50 (Just "入力1") Nothing
 	graphArrowString t 10 70 (Just "入力2") Nothing
 	drawRect t (13500 / 364) (200 / 5) 25 35
@@ -145,14 +145,14 @@ higherOrderChecks1 = [\t -> do
 	writeTopTitle t "高階関数(練習問題)", \t -> do
 	semititle t "以下の関数を定義せよ", \t -> do
 	text t "与えられた関数を3回適用する関数", \t -> do
-	text t "引数xを底とした対数を求める関数を返す関数"
+	text t "10を底とした対数を求める関数を返す関数"
 	itext t 1 "(ちなみに、logBase 10 1000 => 3)"
 	text t "", \t -> do
 	text t "答え:", \t -> do
 	text t "与えられた関数を3回適用する関数", \t -> do
 	itext t 1 "threeTimes fun x = fun (fun (fun x))", \t -> do
 	text t "10を底とした対数を求める関数を返す関数", \t -> do
-	itext t 1 "log10 x = \\y -> logBase x y"]
+	itext t 1 "log10 = \\y -> logBase 10 y"]
 
 transparencies1 :: Page
 transparencies1 = [\t -> do

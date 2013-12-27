@@ -161,7 +161,7 @@ difDef = [\t -> do
 	itext t 1 "Error -> sub y x"
 	itext t 1 "s -> s"
 	text t "", \t -> do
-	text t "* 関数の引数以外でパターンマッチする場合case 文を使う"
+	text t "* 関数の引数以外でパターンマッチする場合case 文を使う", \t -> do
 	itext t 1 "関数定義でのパターンマッチは構文糖と考えられる", \t -> do
 	text t "* sub x yの値がErrorならばsub y xを返す", \t -> do
 	text t "* 上以外ではsub x yの値はsにマッチしそれが返される"
