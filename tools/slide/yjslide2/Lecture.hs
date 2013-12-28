@@ -2,7 +2,7 @@ module Lecture (
 	Page,
 	runLecture,
 	text, itext, semititle, isemititle,
-	writeTopTitle, writeNextTitle, writeTitle,
+	writeTopTitle, writeNextTitle, writeTitle, writeTitleTT,
 	dvArrow, dvArrowShort, writeImageCenter, writeImageRight,
 	arrow, rightArrow, withRed, drawRect, graphWrite,
 	graphArrowString, xmark, arrowIText, preLine,
@@ -281,13 +281,19 @@ writeNextTitle t ttl = do
 	forward t $ sz * myLength ttl
 
 writeTitle :: Turtle -> String -> IO ()
-writeTitle t subTtl = do
+writeTitle = writeTitleGen title
+
+writeTitleTT :: Turtle -> String -> IO ()
+writeTitleTT = writeTitleGen "座談会"
+
+writeTitleGen :: String -> Turtle -> String -> IO ()
+writeTitleGen tt t subTtl = do
 	let	sz = biggerF
 		szn = normalF
 	hideturtle t
 	speed t "fastest"
-	goto t ((width - sz * myLength title) / 2) ((height - sz) / 2)
-	write t fontName sz title
+	goto t ((width - sz * myLength tt) / 2) ((height - sz) / 2)
+	write t fontName sz tt
 	forward t $ sz * myLength title
 	goto t ((width - szn * myLength subTtl) / 2) ((height - sz) / 2 + szn * 2)
 	write t fontName szn subTtl
