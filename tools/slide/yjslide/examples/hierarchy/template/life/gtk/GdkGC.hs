@@ -1,7 +1,8 @@
 {-# LANGUAGE TemplateHaskell, ExistentialQuantification, DeriveDataTypeable #-}
 
 module GdkGC (
-	GdkGC(..)
+	GdkGC(..),
+	SomeGdkGC(..)
 ) where
 
 import GObject

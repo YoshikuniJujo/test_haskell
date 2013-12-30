@@ -10,12 +10,20 @@ module Gtk (
 	gtkInit,
 	gtkMain,
 	gtkMainQuit,
-	gtkContainerAdd,
+
 	gSignalConnect,
 	gtkWidgetShow,
 	gtkWidgetShowAll,
+	gdkWindow,
+	gtkStyle,
+	gtkWidgetState,
+
+	gtkContainerAdd,
 	gtkWindowNew,
 	gtkButtonNewWithLabel,
+
+	fgGC,
+	gdkDrawPoint,
 
 	castGObject,
 ) where
@@ -33,6 +41,7 @@ import GtkWidget
 import GtkContainer
 import GtkDrawingArea
 import GtkStyle
+import GdkDrawable
 
 foreign import ccall "gtk/gtk.h gtk_init" c_gtkInit ::
 	Ptr CInt -> Ptr (Ptr CString) -> IO ()

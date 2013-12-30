@@ -10,12 +10,18 @@ module GtkWidget (
 	gSignalConnect,
 	gtkWidgetShow,
 	gtkWidgetShowAll,
+
+	gdkWindow,
+	gtkStyle,
+	gtkWidgetState,
+	GtkStateType,
 ) where
 
 import Foreign.Ptr
 import Foreign.C.Types
 import Foreign.C.String
 import Foreign.Storable
+import Control.Applicative
 
 import GObject
 import GdkDrawable
@@ -57,3 +63,15 @@ c_gdkWindow = #peek GtkWidget, window
 
 c_gtkStyle :: Ptr GtkWidget -> IO (Ptr SomeGtkStyle)
 c_gtkStyle = #peek GtkWidget, style
+
+c_gtkWidgetState :: Ptr GtkWidget -> IO CInt
+c_gtkWidgetState = #peek GtkWidget, state
+
+gdkWindow :: GtkWidget -> IO SomeGdkWindow
+gdkWindow gw = SomeGdkWindow <$> c_gdkWindow (pointer gw)
+
+gtkStyle :: GtkWidget -> IO SomeGtkStyle
+gtkStyle gw = SomeGtkStyle <$> c_gtkStyle (pointer gw)
+
+gtkWidgetState :: GtkWidget -> IO GtkStateType
+gtkWidgetState gw = toEnum . fromIntegral <$> c_gtkWidgetState (pointer gw)
