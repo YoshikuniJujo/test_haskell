@@ -7,15 +7,14 @@ module GtkFunHs (
 	gtkButtonNewWithLabel,
 	gtkContainerAdd,
 	gtkWidgetShow,
+	gSignalConnect,
 	gSignalConnectData,
 	gtkMainQuit,
 ) where
 
-import Data.Typeable
 import Foreign.Ptr
 import Foreign.C.Types
 import Foreign.C.String
-import System.Environment
 import Foreign.Marshal
 import Foreign.Storable
 import Control.Applicative
@@ -41,10 +40,21 @@ gtkContainerAdd c w = c_gtkContainerAdd (pointer c) (pointer w)
 
 gSignalConnectData ::
 	GtkWidget -> String -> (GtkWidget -> Ptr () -> IO ()) ->
-		Ptr () -> Ptr () -> CInt -> IO ()
-gSignalConnectData w s f p1 p2 i = withCString s $ \sc -> do
+		Ptr () -> (Ptr () -> Ptr () -> IO ()) -> CInt -> IO ()
+gSignalConnectData w s f p1 de i = withCString s $ \sc -> do
 	cb <- wrapCallback (f . fromPointer)
+	p2 <- wrapDestructor de
 	c_gSignalConnectData (pointer w) sc cb p1 p2 i
+
+gSignalConnect :: GtkWidget -> String -> (GtkWidget -> IO ()) -> IO ()
+gSignalConnect w s f = gSignalConnectData w s (const . f) nullPtr nullDest 0
+
+nullDest :: Ptr () -> Ptr () -> IO ()
+nullDest p c = do
+	putStrLn "null destructor"
+	print p
+	print c
+	return ()
 
 gtkMainQuit :: GtkWidget -> Ptr () -> IO ()
 gtkMainQuit = c_gtkMainQuit . pointer
