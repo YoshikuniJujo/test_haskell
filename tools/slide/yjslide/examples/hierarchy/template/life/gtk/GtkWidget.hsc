@@ -26,6 +26,7 @@ import Control.Applicative
 import GObject
 import GdkDrawable
 import GtkStyle
+import GdkEvent
 
 gClass "GObject" "GtkObject"
 gClass "GtkObject" "GtkWidget"
@@ -75,3 +76,28 @@ gtkStyle gw = SomeGtkStyle <$> c_gtkStyle (pointer gw)
 
 gtkWidgetState :: GtkWidget -> IO GtkStateType
 gtkWidgetState gw = toEnum . fromIntegral <$> c_gtkWidgetState (pointer gw)
+
+foreign import ccall "gtk_widget_set_events" c_gtkWidgetSetEvents ::
+	Ptr GtkWidget -> CInt -> IO ()
+
+data EventMask = EventMask CInt deriving Show
+
+#enum EventMask, EventMask, \
+	GDK_EXPOSURE_MASK, \
+	GDK_POINTER_MOTION_MASK, \
+	GDK_POINTER_MOTION_HINT_MASK, \
+	GDK_BUTTON_MOTION_MASK, \
+	GDK_BUTTON1_MOTION_MASK, \
+	GDK_BUTTON2_MOTION_MASK, \
+	GDK_BUTTON3_MOTION_MASK, \
+	GDK_BUTTON_PRESS_MASK, \
+	GDK_BUTTON_RELEASE_MASK, \
+	GDK_KEY_PRESS_MASK, \
+	GDK_KEY_RELEASE_MASK, \
+	GDK_ENTER_NOTIFY_MASK, \
+	GDK_LEAVE_NOTIFY_MASK, \
+	GDK_FOCUS_CHANGE_MASK, \
+	GDK_STRUCTURE_MASK, \
+	GDK_PROPERTY_CHANGE_MASK, \
+	GDK_PROXIMITY_IN_MASK, \
+	GDK_PROXIMITY_OUT_MASK

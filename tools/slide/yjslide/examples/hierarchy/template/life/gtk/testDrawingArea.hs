@@ -9,12 +9,11 @@ main :: IO ()
 main = do
 	gtkInit
 	w <- gtkWindowNew
-	b <- gtkButtonNewWithLabel "button"
+	b <- gtkDrawingAreaNew
 	gtkContainerAdd (cast w) (cast b)
 	gtkWidgetShowAll (cast w)
 	gSignalConnect (cast w) "destroy" gtkMainQuit
---	gSignalConnect (cast b) "clicked" gtkMainQuit
-	gSignalConnect (cast b) "button_press_event" gtkMainQuit
+	gSignalConnect (cast b) "button-press-event" gtkMainQuit
 	gSignalConnect (cast b) "expose_event" buttonClicked
 	print =<< gtkWidgetState (cast w)
 	gtkMain

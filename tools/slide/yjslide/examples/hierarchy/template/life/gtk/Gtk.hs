@@ -24,6 +24,9 @@ module Gtk (
 
 	fgGC,
 	gdkDrawPoint,
+	gdkDrawRectangle,
+
+	gtkDrawingAreaNew,
 
 	castGObject,
 ) where
