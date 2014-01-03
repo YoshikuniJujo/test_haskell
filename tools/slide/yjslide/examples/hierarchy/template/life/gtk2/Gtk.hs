@@ -1,12 +1,24 @@
 module Gtk (
 	GObject,
+	pointer,
 	castGObject,
+
+	GClosure,
+
+	GtkWidget,
 
 	gtkInit, gtkMain, gtkMainQuit,
 
 	gSignalConnect,
+	gSignalConnectData,
+	zero,
+
 	gtkWidgetShow,
+	gtkWidgetShowAll,
+
+	gtkContainerAdd,
 	gtkWindowNew,
+	gtkButtonNewWithLabel,
 ) where
 
 import System.Environment

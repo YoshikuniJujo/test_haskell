@@ -108,6 +108,8 @@ tmp/
 /tools/slide/yjslide/examples/hierarchy/template/life/gtk/GtkStyle.hs
 /tools/slide/yjslide/examples/hierarchy/template/life/gtk/GtkWidget.hs
 /tools/slide/yjslide/examples/hierarchy/template/life/gtk/cflags.txt
+/tools/slide/yjslide/examples/hierarchy/template/life/gtk2/hello
+/tools/slide/yjslide/examples/hierarchy/template/life/gtk2/free
 /tools/slide/yjslide/examples/cabal/only_cabal/simple/setup
 /tools/slide/yjslide/examples/cabal/only_cabal/library/setup
 /tools/slide/yjslide/examples/cabal/cabal_init/
