@@ -5,6 +5,7 @@ main :: IO ()
 main = do
 	gtkInit
 	w <- gtkWindowNew
+	gSignalConnect (cast w) "destroy" gtkMainQuit
 	gtkWidgetShow (cast w)
 	gtkMain
 

@@ -1,35 +1,33 @@
-{-# LANGUAGE TemplateHaskell, ExistentialQuantification, DeriveDataTypeable #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module GObject (
-	Pointer(..), GObject(..), SomeGObject, gClass, castGObject
+	gSignalConnect,
+	module GHierarchy
 ) where
 
+import Control.Applicative
+
 import Foreign.Ptr
-import LifeTemplate
-import Template
-import Language.Haskell.TH
+import Foreign.C.Types
+import Foreign.C.String
 
-class Pointer p where
-	pointer :: p -> Ptr p
-	fromPointer :: Ptr p -> p
+import GHierarchy
 
-gClass :: String -> String -> DecsQ
-gClass s c = do
-	d1 <- newType mkSomePointer "GObject" s c
-	d2 <- sequence [
-		instancePointer c,
-		instancePointerSome $ "Some" ++ c
-	 ]
-	return $ d1 ++ d2
+data GCallbackPtr
+class GCallback c where
+	gCallbackPtr :: c -> IO (FunPtr GCallbackPtr)
 
-mkTop "Pointer" "GObject"
-sequence [
---	instancePointer "SomeGObject"
- ]
+foreign import ccall "wrapper" wrapIO :: IO () -> IO (FunPtr (IO ()))
+instance GCallback (IO ()) where
+	gCallbackPtr io = castFunPtr <$> wrapIO io
 
-instance Pointer SomeGObject where
-	pointer (SomeGObject g) = castPtr $ pointer g
-	fromPointer p = undefined
+data GClosure
 
-castGObject :: (GObject g, GObject h) => g -> Maybe h
-castGObject = fromGObject . toGObject
+foreign import ccall "gtk/gtk.h g_signal_connect_data" c_gSignalConnectData ::
+	Ptr SomeGObject -> CString -> FunPtr GCallbackPtr -> Ptr () ->
+	FunPtr (Ptr () -> Ptr GClosure -> IO ()) -> CInt -> IO ()
+
+gSignalConnect :: GCallback c => SomeGObject -> String -> c -> IO ()
+gSignalConnect o s c = withCString s $ \cs -> do
+	cb <- gCallbackPtr c
+	c_gSignalConnectData (pointer o) cs cb nullPtr nullFunPtr 0
