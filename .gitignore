@@ -92,6 +92,9 @@ tmp/
 /tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/gtk/useGtk
 /tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/gtk/hierarchy/hierarchy
 /tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/gtk/hierarchy/moreSimple
+/tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/gtk/class/GtkWindow.hs
+/tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/gtk/class/hello
+/tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/gtk/normal/useGtk
 /tools/slide/yjslide/examples/ffi/CInHaskell/hsc/other.hs
 /tools/slide/yjslide/examples/ffi/CInHaskell/hsc/struct/structure
 /tools/slide/yjslide/examples/ffi/CInHaskell/hsc/struct/structure.hs
