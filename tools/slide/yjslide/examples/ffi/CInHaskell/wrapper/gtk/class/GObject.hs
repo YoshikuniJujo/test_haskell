@@ -25,10 +25,10 @@ class GObject o where
 	gObjectPtr :: o -> Ptr GObjectPtr
 
 foreign import ccall "gtk/gtk.h g_signal_connect_data" c_gSignalConnect ::
-	Ptr GObjectPtr -> CString -> FunPtr GCallbackPtr -> Ptr () ->
-	Ptr () -> Ptr () -> IO ()
+	Ptr GObjectPtr -> CString -> FunPtr GCallbackPtr -> Ptr a ->
+	FunPtr (Ptr a -> Ptr () -> IO ()) -> CInt -> IO ()
 
 gSignalConnect :: (GObject o, GCallback c) => o -> String -> c -> IO ()
 gSignalConnect o s c = withCString s $ \cs -> do
 	cb <- gCallbackPtr c
-	c_gSignalConnect (gObjectPtr o) cs cb nullPtr nullPtr nullPtr
+	c_gSignalConnect (gObjectPtr o) cs cb nullPtr nullFunPtr 0

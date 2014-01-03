@@ -2,7 +2,7 @@
 
 {-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
 
-module GtkBin (
+module GtkWindow (
 	gtkWindowNew, gtkWindowToplevel, gtkWindowPopup,
 ) where
 
@@ -11,13 +11,7 @@ import Control.Applicative
 import Foreign.Ptr
 import Foreign.C.Types
 
-import GtkContainer
-
-data GtkBinPtr
-class GtkBin b where
-	gtkBinPtr :: b -> Ptr GtkBinPtr
-instance GtkBin b => GtkContainer b where
-	gtkContainerPtr = castPtr . gtkBinPtr
+import GtkBin
 
 data GtkWindowPtr
 class GtkWindow w where
@@ -31,10 +25,7 @@ foreign import ccall "gtk/gtk.h gtk_window_new" c_gtkWindowNew ::
 data SomeGtkWindow = SomeGtkWindow (Ptr SomeGtkWindow) deriving Show
 
 data GtkWindowType = GtkWindowType CInt deriving Show
-
-#enum GtkWindowType, GtkWindowType, \
-	GTK_WINDOW_TOPLEVEL, \
-	GTK_WINDOW_POPUP
+#enum GtkWindowType, GtkWindowType, GTK_WINDOW_TOPLEVEL, GTK_WINDOW_POPUP
 
 gtkWindowNew :: GtkWindowType -> IO SomeGtkWindow
 gtkWindowNew (GtkWindowType t) = SomeGtkWindow <$> c_gtkWindowNew t

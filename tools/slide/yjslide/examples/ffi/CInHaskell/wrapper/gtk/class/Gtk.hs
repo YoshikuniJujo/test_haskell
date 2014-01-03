@@ -18,7 +18,8 @@ import Foreign.C.String
 
 import GObject
 import GtkWidget
-import GtkBin
+import GtkWindow
+-- import GtkButton
 
 foreign import ccall "gtk/gtk.h gtk_init" c_gtkInit ::
 	Ptr CInt -> Ptr (Ptr CString) -> IO ()
