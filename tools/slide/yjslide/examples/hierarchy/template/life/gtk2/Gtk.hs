@@ -1,5 +1,8 @@
+{-# LANGUAGE FlexibleInstances #-}
+
 module Gtk (
 	gtkInit, gtkMain, gtkMainQuit,
+	gTimeoutAdd, gTimeoutAddSimple,
 
 	GObject,
 	GClosure,
@@ -12,6 +15,7 @@ module Gtk (
 	GtkWidget,
 	gtkWidgetShow,
 	gtkWidgetShowAll,
+	gtkWidgetQueueDraw,
 	gtkWidgetGetWindow,
 
 	gtkContainerAdd,
@@ -21,12 +25,15 @@ module Gtk (
 	gtkDrawingAreaNew,
 
 	gdkCairoCreate,
+	cairoDestroy,
+	cairoTranslate,
 	cairoRectangle,
 	cairoFill
 ) where
 
-import System.Environment
+import Control.Applicative
 import Control.Exception
+import System.Environment
 
 import Foreign.Ptr
 import Foreign.Marshal
@@ -57,3 +64,28 @@ gtkInit = do
 			alloca $ \pargv -> do
 				poke pargv ptr
 				c_gtkInit argc pargv
+
+data GSourceFuncPtr
+class GSourceFunc f where
+	toGSourceFuncPtr :: f -> IO (FunPtr GSourceFuncPtr)
+foreign import ccall "gtk/gtk.h g_timeout_add" c_gTimeoutAdd ::
+	CInt -> FunPtr GSourceFuncPtr -> Ptr () -> IO ()
+gTimeoutAdd :: (GSourceFunc f, Pointable p) => Int -> f -> p -> IO ()
+gTimeoutAdd int fun dat = do
+	pfun <- toGSourceFuncPtr fun
+	pdat <- toNullPointer dat
+	c_gTimeoutAdd (fromIntegral int) pfun pdat
+gTimeoutAddSimple :: GSourceFunc f => Int -> f -> IO ()
+gTimeoutAddSimple int fun = do
+	pfun <- toGSourceFuncPtr fun
+	c_gTimeoutAdd (fromIntegral int) pfun nullPtr
+
+foreign import ccall "wrapper" wrapPIOB ::
+	(Ptr () -> IO Bool) -> IO (FunPtr (Ptr () -> IO Bool))
+instance Pointable p => GSourceFunc (p -> IO Bool) where
+	toGSourceFuncPtr f = castFunPtr <$> wrapPIOB (\p -> do
+		v <- fromNullPointer p
+		f v)
+foreign import ccall "wrapper" wrapIOB :: (IO Bool) -> IO (FunPtr (IO Bool))
+instance GSourceFunc (IO Bool) where
+	toGSourceFuncPtr f = castFunPtr <$> wrapIOB f

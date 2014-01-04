@@ -8,6 +8,8 @@ module GtkWidget (
 
 	gtkWidgetShow,
 	gtkWidgetShowAll,
+	gtkWidgetQueueDraw,
+
 	gtkWidgetGetWindow,
 	gtkWidgetGetState,
 	gtkWidgetGetStyle,
@@ -35,6 +37,11 @@ gtkWidgetShow, gtkWidgetShowAll :: GtkWidget -> IO ()
 gtkWidgetShow = c_gtkWidgetShow . pointer
 gtkWidgetShowAll = c_gtkWidgetShowAll . pointer
 
+foreign import ccall "gtk/gtk.h gtk_widget_queue_draw" c_gtkWidgetQueueDraw ::
+	Ptr GtkWidget -> IO ()
+gtkWidgetQueueDraw :: GtkWidget -> IO ()
+gtkWidgetQueueDraw = c_gtkWidgetQueueDraw . pointer
+
 foreign import ccall "gtk/gtk.h gtk_widget_get_window" c_gtkWidgetGetWindow ::
 	Ptr GtkWidget -> IO (Ptr SomeGdkWindow)
 gtkWidgetGetWindow :: GtkWidget -> IO SomeGdkWindow
@@ -49,6 +56,11 @@ foreign import ccall "gtk/gtk.h gtk_widget_get_style" c_gtkWidgetGetStyle ::
 	Ptr GtkWidget -> IO (Ptr SomeGtkStyle)
 gtkWidgetGetStyle :: GtkWidget -> IO SomeGtkStyle
 gtkWidgetGetStyle gw = SomeGtkStyle <$> c_gtkWidgetGetStyle (pointer gw)
+
+foreign import ccall "wrapper" wrapWIO ::
+	(Ptr GtkWidget -> IO ()) -> IO (FunPtr (Ptr GtkWidget -> IO ()))
+instance GCallback (GtkWidget -> IO ()) where
+	gCallbackPtr f = castFunPtr <$> wrapWIO (f . fromPointer)
 
 foreign import ccall "wrapper" wrapWDIO ::
 	(Ptr GtkWidget -> Ptr () -> IO ()) ->

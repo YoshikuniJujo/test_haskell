@@ -1,5 +1,7 @@
 module Cairo (
 	CairoT(..),
+	cairoDestroy,
+	cairoTranslate,
 	cairoRectangle,
 	cairoFill,
 ) where
@@ -8,6 +10,17 @@ import Foreign.Ptr
 import Foreign.C.Types
 
 data CairoT = CairoT (Ptr CairoT)
+
+foreign import ccall "gdk/gdk.h cairo_destroy" c_cairoDestroy ::
+	Ptr CairoT -> IO ()
+cairoDestroy :: CairoT -> IO ()
+cairoDestroy (CairoT c) = c_cairoDestroy c
+
+foreign import ccall "gdk/gdk.h cairo_translate" c_cairoTranslate ::
+	Ptr CairoT -> CDouble -> CDouble -> IO ()
+cairoTranslate :: CairoT -> Double -> Double -> IO ()
+cairoTranslate (CairoT c) x y = c_cairoTranslate c x' y'
+	where [x', y'] = map realToFrac [x, y]
 
 foreign import ccall "gdk/gdk.h cairo_rectangle" c_cairoRectangle ::
 	Ptr CairoT -> CDouble -> CDouble -> CDouble -> CDouble -> IO ()

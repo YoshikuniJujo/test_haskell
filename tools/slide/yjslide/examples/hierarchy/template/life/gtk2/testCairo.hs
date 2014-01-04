@@ -29,9 +29,10 @@ destroyData m c = do
 	putStrLn $ "closure: " ++ show c
 	free m
 
-drawRect :: GtkWidget -> String -> IO ()
-drawRect w _ = do
+drawRect :: GtkWidget -> IO ()
+drawRect w = do
 	win <- gtkWidgetGetWindow w
 	cr <- gdkCairoCreate (cast win)
 	cairoRectangle cr 50 50 50 50
 	cairoFill cr
+	cairoDestroy cr
