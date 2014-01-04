@@ -6,9 +6,14 @@ module GObject (
 	GCallback(..),
 	Pointable(..),
 	GClosure,
+
 	gSignalConnect,
 	gSignalConnectData,
+
+	gConnectAfter,
+	gConnectSwapped,
 	zero,
+
 	module GHierarchy
 ) where
 
@@ -57,6 +62,7 @@ data GClosure = GClosure (Ptr GClosure) deriving Show
 
 data GConnectFlags = GConnectFlags CInt deriving Show
 #enum GConnectFlags, GConnectFlags, G_CONNECT_AFTER, G_CONNECT_SWAPPED
+zero :: GConnectFlags
 zero = GConnectFlags 0
 
 foreign import ccall "gtk/gtk.h g_signal_connect_data" c_gSignalConnectData ::

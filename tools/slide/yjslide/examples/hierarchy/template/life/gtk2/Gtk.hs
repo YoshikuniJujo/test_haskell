@@ -1,24 +1,28 @@
 module Gtk (
-	GObject,
-	pointer,
-	castGObject,
-
-	GClosure,
-
-	GtkWidget,
-
 	gtkInit, gtkMain, gtkMainQuit,
 
+	GObject,
+	GClosure,
+	pointer,
+	castGObject,
 	gSignalConnect,
 	gSignalConnectData,
 	zero,
 
+	GtkWidget,
 	gtkWidgetShow,
 	gtkWidgetShowAll,
+	gtkWidgetGetWindow,
 
 	gtkContainerAdd,
 	gtkWindowNew,
 	gtkButtonNewWithLabel,
+
+	gtkDrawingAreaNew,
+
+	gdkCairoCreate,
+	cairoRectangle,
+	cairoFill
 ) where
 
 import System.Environment
@@ -31,6 +35,7 @@ import Foreign.C.Types
 import Foreign.C.String
 
 import GtkContainer
+import GtkDrawingArea
 
 foreign import ccall "gtk/gtk.h gtk_init" c_gtkInit ::
 	Ptr CInt -> Ptr (Ptr CString) -> IO ()
