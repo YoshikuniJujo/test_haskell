@@ -23,6 +23,8 @@ module Gtk (
 	gtkButtonNewWithLabel,
 
 	gtkDrawingAreaNew,
+	GdkEventKey,
+	gdkEventKeyGetKeyval,
 
 	gdkCairoCreate,
 	cairoDestroy,

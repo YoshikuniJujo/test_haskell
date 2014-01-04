@@ -10,6 +10,7 @@ main = do
 	w <- gtkWindowNew
 	a <- gtkDrawingAreaNew
 	gSignalConnect (cast w) "destroy" gtkMainQuit
+	gSignalConnect (cast w) "key-press-event" keyPressed
 	gSignalConnect (cast a) "draw" (drawRect x)
 	gtkContainerAdd (cast w) (cast a)
 	gtkWidgetShowAll (cast w)
@@ -31,3 +32,8 @@ drawRect xr w = do
 	cairoRectangle cr 50 50 50 50
 	cairoFill cr
 	cairoDestroy cr
+
+keyPressed :: GtkWidget -> GdkEventKey -> IO ()
+keyPressed _w e = do
+	print e
+	print =<< gdkEventKeyGetKeyval e

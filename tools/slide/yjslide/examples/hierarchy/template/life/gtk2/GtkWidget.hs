@@ -16,6 +16,7 @@ module GtkWidget (
 
 	module GtkObject,
 	module GdkDrawable,
+	module GdkEvent,
 ) where
 
 import Control.Applicative
@@ -25,6 +26,7 @@ import Foreign.C.Types
 
 import GtkObject
 import GdkDrawable
+import GdkEvent
 import GtkStyle
 
 gClass "GtkObject" "GtkWidget"
@@ -70,3 +72,12 @@ instance Pointable p => GCallback (GtkWidget -> p -> IO ()) where
 		(\pc pp -> do
 			p <- fromNullPointer pp
 			f (fromPointer pc) p)
+
+{-
+foreign import ccall "wrapper" wrapWEIO ::
+	(Ptr GtkWidget -> Ptr GdkEventPtr -> IO ()) ->
+	IO (FunPtr (Ptr GtkWidget -> Ptr GdkEventPtr -> IO ()))
+instance GCallback (GtkWidget -> GdkEventKey -> IO ()) where
+	gCallbackPtr f = castFunPtr <$> wrapWEIO (\pw pe ->
+		f (fromPointer pw) (fromGdkEventPtr pe))
+		-}
