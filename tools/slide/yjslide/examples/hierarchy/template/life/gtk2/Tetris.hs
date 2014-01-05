@@ -11,9 +11,21 @@ module Tetris (
 ) where
 
 import Control.Arrow
+import System.Random
 
 import Data.List
 import Gtk
+
+fBlocks :: [[(Int, Int)]]
+fBlocks = [
+	[(3, 3), (4, 3), (5, 3), (6, 3)],
+	[(3, 3), (4, 3), (3, 4), (4, 4)],
+	[(4, 3), (5, 3), (3, 4), (4, 4)],
+	[(3, 3), (4, 3), (4, 4), (5, 4)],
+	[(3, 3), (4, 3), (5, 3), (3, 2)],
+	[(3, 3), (4, 3), (5, 3), (3, 4)],
+	[(4, 3), (3, 4), (4, 4), (5, 4)]
+ ]
 
 type LandBlocks = [(Int, [Int])]
 
@@ -45,15 +57,17 @@ data Tick = Tick deriving Show
 
 data State = State {
 	fallingBlocks :: [(Int, Int)],
-	landBlocks :: LandBlocks
+	landBlocks :: LandBlocks,
+	randGen :: StdGen
  } deriving Show
 
 initialState :: IO State
 initialState = do
-
+	sg <- getStdGen
 	return State {
 		fallingBlocks = [(3, 3), (4, 3), (5, 3), (3, 4)],
-		landBlocks = []
+		landBlocks = [],
+		randGen = sg
 	 }
 
 nextState :: Either LR Tick -> State -> State
@@ -93,18 +107,21 @@ downToLand st@State{
 moveDown :: State -> State
 moveDown st@State{
 	fallingBlocks = fbs,
-	landBlocks = lbs
+	landBlocks = lbs,
+	randGen = rg
  } = let nfbs = map move1 fbs in
  	if isSink nfbs lbs
 		then st{
-			fallingBlocks = [(3, 3), (4, 3), (5, 3), (3, 4)],
-			landBlocks = deleteLines $ land fbs lbs
+			fallingBlocks = nfb,
+			landBlocks = deleteLines $ land fbs lbs,
+			randGen = nrg
 		 }
 		else st{
 			fallingBlocks = nfbs,
 			landBlocks = lbs
 		 }
  	where
+	(nfb, nrg) = first (fBlocks !!) $ randomR (0, length fBlocks - 1) rg
 	move1 (x, y) = (x, y + 1)
 
 isSink :: [(Int, Int)] -> LandBlocks -> Bool
