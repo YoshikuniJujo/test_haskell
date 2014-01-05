@@ -43,7 +43,7 @@ drawBlocks bs w = do
 	cairoDestroy cr
 
 drawBlock :: CairoT -> Int -> Int -> IO ()
-drawBlock cr x y = cairoRectangle cr (30 + x' * 15) (30 + y' * 15) 14 14
+drawBlock cr x y = cairoRectangle cr (30 + x' * 15) (15 + y' * 15) 14 14
 	where
 	[x', y'] = map fromIntegral [x, y]
 

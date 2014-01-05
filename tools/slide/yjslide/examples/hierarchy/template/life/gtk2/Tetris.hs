@@ -1,3 +1,5 @@
+{-# LANGUAGE TupleSections #-}
+
 module Tetris (
 	LR(..),
 	Tick(..),
@@ -13,13 +15,37 @@ import Control.Arrow
 import Data.List
 import Gtk
 
+type LandBlocks = [(Int, [Int])]
+
+getLandBlocks :: LandBlocks -> [(Int, Int)]
+getLandBlocks = concatMap (\(y, xs) -> map (, y) xs)
+
+land :: [(Int, Int)] -> LandBlocks -> LandBlocks
+land = flip $ foldr land1
+
+deleteLines :: LandBlocks -> LandBlocks
+deleteLines = head . dropWhile (or . map isLineFull) . iterate deleteLine1
+
+deleteLine1 :: LandBlocks -> LandBlocks
+deleteLine1 lbs = map (first (+ 1)) upper ++ lower
+	where (upper, _ : lower) = span (not . isLineFull) lbs
+
+isLineFull :: (Int, [Int]) -> Bool
+isLineFull (_, xs) = sort xs == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+land1 :: (Int, Int) -> LandBlocks -> LandBlocks
+land1 (x, y) [] = [(y, [x])]
+land1 (x, y) l@((ly, lxs) : rest)
+	| ly == y = (ly, x : lxs) : rest
+	| ly > y = (y, [x]) : l
+	| otherwise = (ly, lxs) : land1 (x, y) rest
+
 data LR = L | R | RotateL | RotateR | Landing deriving Show
 data Tick = Tick deriving Show
 
 data State = State {
 	fallingBlocks :: [(Int, Int)],
-	landed :: Bool,
-	landBlocks :: [(Int, Int)]
+	landBlocks :: LandBlocks
  } deriving Show
 
 initialState :: IO State
@@ -27,7 +53,6 @@ initialState = do
 
 	return State {
 		fallingBlocks = [(3, 3), (4, 3), (5, 3), (3, 4)],
-		landed = False,
 		landBlocks = []
 	 }
 
@@ -52,9 +77,9 @@ toRight = map (first (+ 1))
 
 rotateLeft, rotateRight :: [(Int, Int)] -> [(Int, Int)]
 rotateLeft bs = map (rl $ bs !! 1) bs
-	where rl (cx, cy) (x, y) = (cx - y + cy, cy + x - cx)
+	where rl (cx, cy) (x, y) = (cx + y - cy, cy - x + cx)
 rotateRight bs = map (rr $ bs !! 1) bs
-	where rr (cx, cy) (x, y) = (cx + y - cy, cy - x + cx)
+	where rr (cx, cy) (x, y) = (cx - y + cy, cy + x - cx)
 
 downToLand :: State -> State
 downToLand st@State{
@@ -73,29 +98,28 @@ moveDown st@State{
  	if isSink nfbs lbs
 		then st{
 			fallingBlocks = [(3, 3), (4, 3), (5, 3), (3, 4)],
-			landBlocks = fbs ++ lbs
+			landBlocks = deleteLines $ land fbs lbs
 		 }
 		else st{
 			fallingBlocks = nfbs,
-			landed = False,
 			landBlocks = lbs
 		 }
  	where
 	move1 (x, y) = (x, y + 1)
 
-isSink :: [(Int, Int)] -> [(Int, Int)] -> Bool
+isSink :: [(Int, Int)] -> LandBlocks -> Bool
 isSink fbs lbs =
 	maximum (map snd fbs) > 21 ||
 	minimum (map fst fbs) < 0 ||
 	maximum (map fst fbs) > 9 ||
-	not (null $ fbs `intersect` lbs)
+	not (null $ fbs `intersect` getLandBlocks lbs)
 
 waku :: [(Int, Int)]
 waku =	zip [-1 .. 10] [22, 22 .. ] ++ zip [-1 .. 10] [0, 0 .. ] ++
 	zip [-1, -1 .. ] [1 .. 21] ++ zip [10, 10 .. ] [1 .. 21]
 
 blocks :: State -> [(Int, Int)]
-blocks s = fallingBlocks s ++ landBlocks s ++ waku
+blocks s = fallingBlocks s ++ getLandBlocks (landBlocks s) ++ waku
 
 processKey :: Keyval -> Maybe (Either LR Tick)
 processKey kv
