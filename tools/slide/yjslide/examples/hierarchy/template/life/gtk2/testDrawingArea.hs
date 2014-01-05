@@ -1,3 +1,5 @@
+import Control.Monad
+
 import Data.Maybe
 import Data.IORef
 
@@ -10,12 +12,13 @@ main = do
 	w <- gtkWindowNew
 	a <- gtkDrawingAreaNew
 	gSignalConnect (cast w) "destroy" gtkMainQuit
-	gSignalConnect (cast w) "key-press-event" keyPressed
+	gSignalConnect (cast w) "key-press-event" (keyPressed x)
 	gSignalConnect (cast a) "draw" (drawRect x)
 	gtkContainerAdd (cast w) (cast a)
 	gtkWidgetShowAll (cast w)
 	gTimeoutAddSimple 100 $ do
-		modifyIORef x (+ 1)
+		xx <- readIORef x
+		when (xx < 200) $ modifyIORef x (+ 1)
 		gtkWidgetQueueDraw (cast a)
 		return True
 	gtkMain
@@ -33,7 +36,10 @@ drawRect xr w = do
 	cairoFill cr
 	cairoDestroy cr
 
-keyPressed :: GtkWidget -> GdkEventKey -> IO ()
-keyPressed _w e = do
+keyPressed :: IORef Double -> GtkWidget -> GdkEventKey -> IO ()
+keyPressed x _w e = do
+	modifyIORef x (subtract 1)
 	print e
+	kv <- gdkEventKeyGetKeyval e
 	print =<< gdkEventKeyGetKeyval e
+	when (kv == char2keyval 'q') gtkMainQuit

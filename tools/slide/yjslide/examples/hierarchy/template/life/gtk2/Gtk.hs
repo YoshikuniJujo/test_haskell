@@ -25,6 +25,7 @@ module Gtk (
 	gtkDrawingAreaNew,
 	GdkEventKey,
 	gdkEventKeyGetKeyval,
+	char2keyval,
 
 	gdkCairoCreate,
 	cairoDestroy,

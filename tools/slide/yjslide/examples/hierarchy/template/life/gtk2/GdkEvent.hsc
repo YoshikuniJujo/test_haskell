@@ -5,9 +5,11 @@ module GdkEvent (
 	GdkEvent(..),
 	GdkEventKey,
 	gdkEventKeyGetKeyval,
+	char2keyval,
 ) where
 
 import Control.Applicative
+import Data.Char
 
 import Foreign.Ptr
 import Foreign.Storable
@@ -31,5 +33,11 @@ instance Pointable GdkEventKey where
 c_gdkEventKeyGetKeyval :: Ptr GdkEventKey -> IO CInt
 c_gdkEventKeyGetKeyval = #peek GdkEventKey, keyval
 
-gdkEventKeyGetKeyval :: GdkEventKey -> IO Int
-gdkEventKeyGetKeyval (GdkEventKey p) = fromIntegral <$> c_gdkEventKeyGetKeyval p
+data Keyval = Keyval Int deriving (Show, Eq)
+char2keyval :: Char -> Keyval
+char2keyval c
+	| isLower c = Keyval $ ord c
+	| otherwise = error "bad key"
+
+gdkEventKeyGetKeyval :: GdkEventKey -> IO Keyval
+gdkEventKeyGetKeyval (GdkEventKey p) = Keyval . fromIntegral <$> c_gdkEventKeyGetKeyval p
