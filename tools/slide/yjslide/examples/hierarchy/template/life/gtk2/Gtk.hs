@@ -24,12 +24,16 @@ module Gtk (
 
 	gtkDrawingAreaNew,
 	GdkEventKey,
-	gdkEventKeyGetKeyval,
+	Keyval,
 	char2keyval,
+	gdkEventKeyGetKeyval,
+	gdkEventKeyGetString,
 
+	CairoT,
 	gdkCairoCreate,
 	cairoDestroy,
 	cairoTranslate,
+	cairoSetSourceRGB,
 	cairoRectangle,
 	cairoFill
 ) where

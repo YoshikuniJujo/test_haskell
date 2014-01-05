@@ -2,6 +2,7 @@ module Cairo (
 	CairoT(..),
 	cairoDestroy,
 	cairoTranslate,
+	cairoSetSourceRGB,
 	cairoRectangle,
 	cairoFill,
 ) where
@@ -21,6 +22,12 @@ foreign import ccall "gdk/gdk.h cairo_translate" c_cairoTranslate ::
 cairoTranslate :: CairoT -> Double -> Double -> IO ()
 cairoTranslate (CairoT c) x y = c_cairoTranslate c x' y'
 	where [x', y'] = map realToFrac [x, y]
+
+foreign import ccall "gdk/gdk.h cairo_set_source_rgb" c_cairoSetSourceRGB ::
+	Ptr CairoT -> CDouble -> CDouble -> CDouble -> IO ()
+cairoSetSourceRGB :: CairoT -> Double -> Double -> Double -> IO ()
+cairoSetSourceRGB (CairoT c) r g b = c_cairoSetSourceRGB c r' g' b'
+	where [r', g', b'] = map realToFrac [r, g, b]
 
 foreign import ccall "gdk/gdk.h cairo_rectangle" c_cairoRectangle ::
 	Ptr CairoT -> CDouble -> CDouble -> CDouble -> CDouble -> IO ()
