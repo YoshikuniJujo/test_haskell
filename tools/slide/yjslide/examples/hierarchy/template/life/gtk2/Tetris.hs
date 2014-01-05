@@ -8,7 +8,6 @@ module Tetris (
 	processKey,
 ) where
 
-import Control.Arrow
 import Data.List
 import Gtk
 
@@ -17,6 +16,7 @@ data Tick = Tick deriving Show
 
 data State = State {
 	fallingBlocks :: [(Int, Int)],
+	landed :: Bool,
 	landBlocks :: [(Int, Int)]
  } deriving Show
 
@@ -25,32 +25,56 @@ initialState = do
 
 	return State {
 		fallingBlocks = [(3, 3), (4, 3), (5, 3), (3, 4)],
+		landed = False,
 		landBlocks = []
 	 }
 
 nextState :: Either LR Tick -> State -> State
-nextState input st@State{
+nextState (Left lr) = moveLR lr
+nextState (Right Tick) = moveDown
+
+moveLR :: LR -> State -> State
+moveLR lr st@State{
 	fallingBlocks = fbs,
 	landBlocks = lbs
- } = st {
-	fallingBlocks = if isLand fbs lbs then [(3, 3), (4, 3), (5, 3), (3, 4)] else
-		map (move input) fbs,
-	landBlocks = if isLand fbs lbs then fbs ++ lbs else lbs
- }
-	where
-	move (Left L) (x, y) = (x - 1, y)
-	move (Left R) (x, y) = (x + 1, y)
-	move (Right Tick) (x, y) = (x, y + 1)
+ } = let nfbs = map (move1 lr) fbs in
+ 	if isSink nfbs lbs then st
+		else st{ fallingBlocks = nfbs }
+ 	where
+	move1 L (x, y) = (x - 1, y)
+	move1 R (x, y) = (x + 1, y)
 
-isLand :: [(Int, Int)] -> [(Int, Int)] -> Bool
-isLand fbs lbs = maximum (map snd fbs) > 20 ||
-	not (null $ downBlocks fbs `intersect` lbs)
+moveDown :: State -> State
+moveDown st@State{
+	fallingBlocks = fbs,
+	landBlocks = lbs
+ } = let nfbs = map move1 fbs in
+ 	if isSink nfbs lbs
+		then st{
+			fallingBlocks = [(3, 3), (4, 3), (5, 3), (3, 4)],
+			landBlocks = fbs ++ lbs
+		 }
+		else st{
+			fallingBlocks = nfbs,
+			landed = False,
+			landBlocks = lbs
+		 }
+ 	where
+	move1 (x, y) = (x, y + 1)
 
-downBlocks :: [(Int, Int)] -> [(Int, Int)]
-downBlocks = map (second (+ 1))
+isSink :: [(Int, Int)] -> [(Int, Int)] -> Bool
+isSink fbs lbs =
+	maximum (map snd fbs) > 21 ||
+	minimum (map fst fbs) < 0 ||
+	maximum (map fst fbs) > 9 ||
+	not (null $ fbs `intersect` lbs)
+
+waku :: [(Int, Int)]
+waku =	zip [-1 .. 10] [22, 22 .. ] ++ zip [-1 .. 10] [0, 0 .. ] ++
+	zip [-1, -1 .. ] [1 .. 21] ++ zip [10, 10 .. ] [1 .. 21]
 
 blocks :: State -> [(Int, Int)]
-blocks s = fallingBlocks s ++ landBlocks s
+blocks s = fallingBlocks s ++ landBlocks s ++ waku
 
 processKey :: Keyval -> Maybe (Either LR Tick)
 processKey kv
