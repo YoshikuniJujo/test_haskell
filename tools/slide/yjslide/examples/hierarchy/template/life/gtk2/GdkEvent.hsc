@@ -35,6 +35,7 @@ instance Pointable GdkEventKey where
 
 data Keyval = Keyval Int deriving (Show, Eq)
 char2keyval :: Char -> Keyval
+char2keyval ' ' = Keyval 32
 char2keyval c
 	| isLower c = Keyval $ ord c
 	| otherwise = error "bad key"

@@ -8,10 +8,12 @@ module Tetris (
 	processKey,
 ) where
 
+import Control.Arrow
+
 import Data.List
 import Gtk
 
-data LR = L | R deriving Show
+data LR = L | R | RotateL | RotateR | Landing deriving Show
 data Tick = Tick deriving Show
 
 data State = State {
@@ -30,19 +32,38 @@ initialState = do
 	 }
 
 nextState :: Either LR Tick -> State -> State
-nextState (Left lr) = moveLR lr
+nextState (Left L) = move toLeft
+nextState (Left R) = move toRight
+nextState (Left RotateL) = move rotateLeft
+nextState (Left RotateR) = move rotateRight
+nextState (Left Landing) = downToLand
 nextState (Right Tick) = moveDown
 
-moveLR :: LR -> State -> State
-moveLR lr st@State{
+move :: ([(Int, Int)] -> [(Int, Int)]) -> State -> State
+move f st@State{
 	fallingBlocks = fbs,
 	landBlocks = lbs
- } = let nfbs = map (move1 lr) fbs in
- 	if isSink nfbs lbs then st
-		else st{ fallingBlocks = nfbs }
- 	where
-	move1 L (x, y) = (x - 1, y)
-	move1 R (x, y) = (x + 1, y)
+ } = let nfbs = f fbs in
+ 	if isSink nfbs lbs then st else st{ fallingBlocks = nfbs }
+
+toLeft, toRight :: [(Int, Int)] -> [(Int, Int)]
+toLeft = map (first (subtract 1))
+toRight = map (first (+ 1))
+
+rotateLeft, rotateRight :: [(Int, Int)] -> [(Int, Int)]
+rotateLeft bs = map (rl $ bs !! 1) bs
+	where rl (cx, cy) (x, y) = (cx - y + cy, cy + x - cx)
+rotateRight bs = map (rr $ bs !! 1) bs
+	where rr (cx, cy) (x, y) = (cx + y - cy, cy - x + cx)
+
+downToLand :: State -> State
+downToLand st@State{
+	fallingBlocks = fbs,
+	landBlocks = lbs
+ } = st{
+	fallingBlocks = last $ takeWhile (not . flip isSink lbs) $ iterate (map move1) fbs
+ }	where
+	move1 (x, y) = (x, y + 1)
 
 moveDown :: State -> State
 moveDown st@State{
@@ -80,4 +101,7 @@ processKey :: Keyval -> Maybe (Either LR Tick)
 processKey kv
 	| kv == char2keyval 'h' = Just $ Left L
 	| kv == char2keyval 'l' = Just $ Left R
+	| kv == char2keyval 'j' = Just $ Left RotateL
+	| kv == char2keyval 'k' = Just $ Left RotateR
+	| kv == char2keyval ' ' = Just $ Left Landing
 	| otherwise = Nothing
