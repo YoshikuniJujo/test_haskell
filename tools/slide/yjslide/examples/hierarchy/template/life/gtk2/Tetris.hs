@@ -9,6 +9,7 @@ module Tetris (
 	blocks,
 	processKey,
 	point,
+	gameOver,
 ) where
 
 import Control.Arrow
@@ -67,7 +68,8 @@ data State = State {
 	fallingBlocks :: [(Int, Int)],
 	landBlocks :: LandBlocks,
 	randGen :: StdGen,
-	point :: Int
+	point :: Int,
+	gameOver :: Bool
  } deriving Show
 
 initialState :: IO State
@@ -77,7 +79,8 @@ initialState = do
 		fallingBlocks = [(3, 3), (4, 3), (5, 3), (3, 4)],
 		landBlocks = [],
 		randGen = sg,
-		point = 0
+		point = 0,
+		gameOver = False
 	 }
 
 nextState :: Either LR Tick -> State -> State
@@ -110,9 +113,10 @@ downToLand st@State{
 	fallingBlocks = fbs,
 	landBlocks = lbs
  } = st{
-	fallingBlocks = last $ takeWhile (not . flip isSink lbs) $ iterate (map move1) fbs
+	fallingBlocks = if null landingList then fbs else last landingList
  }	where
 	move1 (x, y) = (x, y + 1)
+	landingList = takeWhile (not . flip isSink lbs) $ iterate (map move1) fbs
 
 moveDown :: State -> State
 moveDown st@State{
@@ -126,7 +130,8 @@ moveDown st@State{
 			fallingBlocks = nfb,
 			landBlocks = nlbs,
 			randGen = nrg,
-			point = p + if dn == 0 then 10 else 100 * dn ^ (2 :: Int)
+			point = p + if dn == 0 then 10 else 100 * dn ^ (2 :: Int),
+			gameOver = isSink nfb nlbs
 		 }
 		else st{
 			fallingBlocks = nfbs,

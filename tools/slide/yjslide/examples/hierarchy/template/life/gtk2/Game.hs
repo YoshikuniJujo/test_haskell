@@ -5,6 +5,7 @@ module Game (
 	runGame,
 	drawBlocks,
 	showPoint,
+	showGameOver,
 ) where
 
 import Control.Monad
@@ -15,8 +16,8 @@ import Data.IORef
 import Gtk
 
 runGame :: Int -> i -> (Keyval -> Maybe i) -> IO s -> (i -> s -> s) ->
-	(s -> GtkWidget -> IO ()) -> IO ()
-runGame int tick k2i s0 next draw = do
+	(s -> GtkWidget -> IO ()) -> (s -> Bool) -> IO ()
+runGame int tick k2i s0 next draw gameOver = do
 	sr <- newIORef =<< s0
 	gtkInit
 	w <- gtkWindowNew
@@ -31,7 +32,10 @@ runGame int tick k2i s0 next draw = do
 	gTimeoutAddSimple int $ do
 		modifyIORef sr (next tick)
 		gtkWidgetQueueDraw (cast w)
-		return True
+		s <- readIORef sr
+		if not $ gameOver s then return True else do
+			gtkWidgetQueueDraw (cast w)
+			return False
 	gtkContainerAdd (cast w) (cast a)
 	gtkWidgetShowAll (cast w)
 	gtkMain
@@ -59,6 +63,16 @@ showPoint w p = do
 	cairoSetFontSize cr 20
 	cairoMoveTo cr 300 50
 	cairoShowText cr $ show p
+	cairoDestroy cr
+
+showGameOver :: GtkWidget -> IO ()
+showGameOver w = do
+	win <- gtkWidgetGetWindow w
+	cr <- gdkCairoCreate (cast win)
+	cairoSetFontSize cr 30
+	cairoMoveTo cr 90 200
+	cairoSetSourceRGB cr 1 0 0
+	cairoShowText cr "G A M E O V E R"
 	cairoDestroy cr
 
 cast :: (GObject g1, GObject g2) => g1 -> g2
