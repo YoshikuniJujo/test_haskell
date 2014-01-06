@@ -18,6 +18,7 @@ import Gtk
 runGame :: Int -> i -> (Keyval -> Maybe i) -> IO s -> (i -> s -> s) ->
 	(s -> GtkWidget -> IO ()) -> (s -> Bool) -> IO ()
 runGame int tick k2i s0 next draw gameOver = do
+	pause <- newIORef False
 	sr <- newIORef =<< s0
 	gtkInit
 	w <- gtkWindowNew
@@ -27,11 +28,17 @@ runGame int tick k2i s0 next draw gameOver = do
 		kv <- gdkEventKeyGetKeyval e
 		maybe (return ()) (modifyIORef sr . next) $ k2i kv
 		when (kv == char2keyval 'q') gtkMainQuit
+		when (kv == char2keyval 'p') $ modifyIORef pause not
 		gtkWidgetQueueDraw (cast w)
-	gSignalConnect (cast a) "draw" (\w -> readIORef sr >>= flip draw w)
+	gSignalConnect (cast a) "draw" $ \w -> do
+		s <- readIORef sr
+		draw s w
+		showPause w pause
 	gTimeoutAddSimple int $ do
-		modifyIORef sr (next tick)
-		gtkWidgetQueueDraw (cast w)
+		p <- readIORef pause
+		when (not p) $ do
+			modifyIORef sr (next tick)
+			gtkWidgetQueueDraw (cast w)
 		s <- readIORef sr
 		if not $ gameOver s then return True else do
 			gtkWidgetQueueDraw (cast w)
@@ -77,6 +84,19 @@ showGameOver w = do
 	cairoSetSourceRGB cr 1 0 0
 	cairoShowText cr "G A M E O V E R"
 	cairoDestroy cr
+
+showPause :: GtkWidget -> IORef Bool -> IO ()
+showPause w pr = do
+	p <- readIORef pr
+	when p $ do
+	win <- gtkWidgetGetWindow w
+	cr <- gdkCairoCreate (cast win)
+	cairoSetFontSize cr 35
+	cairoMoveTo cr 120 200
+	cairoSetSourceRGB cr 1 0 0
+	cairoShowText cr "P A U S E"
+	cairoDestroy cr
+		
 
 cast :: (GObject g1, GObject g2) => g1 -> g2
 cast = fromJust . castGObject
