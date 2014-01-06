@@ -72,8 +72,8 @@ showGameOver :: GtkWidget -> IO ()
 showGameOver w = do
 	win <- gtkWidgetGetWindow w
 	cr <- gdkCairoCreate (cast win)
-	cairoSetFontSize cr 30
-	cairoMoveTo cr 90 200
+	cairoSetFontSize cr 35
+	cairoMoveTo cr 80 200
 	cairoSetSourceRGB cr 1 0 0
 	cairoShowText cr "G A M E O V E R"
 	cairoDestroy cr
