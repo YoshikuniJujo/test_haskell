@@ -61,7 +61,7 @@ land1 c (x, y) l@((ly, lxs) : rest)
 	| ly > y = (y, [(x, c)]) : l
 	| otherwise = (ly, lxs) : land1 c (x, y) rest
 
-data LR = L | R | RotateL | RotateR | Landing deriving Show
+data LR = L | R | RotateL | RotateR | Landing | Hold deriving Show
 data Tick = Tick deriving Show
 
 data State = State {
@@ -69,6 +69,9 @@ data State = State {
 	fallingBlocks :: ([(Int, Int)], Color),
 	landBlocks :: LandBlocks,
 	randGen :: StdGen,
+	fallingBlocksShape :: ([(Int, Int)], Color),
+	holdingBlocks :: Maybe ([(Int, Int)], Color),
+	canHold :: Bool,
 	point :: Int,
 	gameOver :: Bool
  } deriving Show
@@ -85,6 +88,9 @@ initialState = do
 		fallingBlocks = fbs1,
 		landBlocks = [],
 		randGen = nsg''',
+		fallingBlocksShape = fbs1,
+		holdingBlocks = Nothing,
+		canHold = True,
 		point = 0,
 		gameOver = False
 	 }
@@ -95,6 +101,7 @@ nextState (Left R) = move toRight
 nextState (Left RotateL) = move rotateLeft
 nextState (Left RotateR) = move rotateRight
 nextState (Left Landing) = downToLand
+nextState (Left Hold) = hold
 nextState (Right Tick) = moveDown
 
 move :: ([(Int, Int)] -> [(Int, Int)]) -> State -> State
@@ -125,6 +132,31 @@ downToLand st@State{
 	landingList = takeWhile (not . flip isSink lbs . fst) $
 		iterate (first $ map move1) fbs
 
+hold :: State -> State
+hold st@State{
+	nextBlocks = nb : nbs,
+	fallingBlocksShape = fbs,
+	holdingBlocks = mhbs,
+	canHold = ch,
+	randGen = rg
+ } = if not ch then st else case mhbs of
+ 	Just hbs -> st{
+		fallingBlocksShape = hbs,
+		fallingBlocks = hbs,
+		holdingBlocks = Just fbs,
+		canHold = False
+	 }
+	_ -> st {
+		nextBlocks = nbs ++ [nfb],
+		fallingBlocksShape = nb,
+		fallingBlocks = nb,
+		holdingBlocks = Just fbs,
+		canHold = False,
+		randGen = nrg
+	 }
+	where
+	(nfb, nrg) = newBlock rg
+
 moveDown :: State -> State
 moveDown st@State{
 	nextBlocks = nb : nbs,
@@ -139,6 +171,8 @@ moveDown st@State{
 			fallingBlocks = nb,
 			landBlocks = nlbs,
 			randGen = nrg,
+			fallingBlocksShape = nb,
+			canHold = True,
 			point = p + if dn == 0 then 10 else 100 * dn ^ (2 :: Int),
 			gameOver = isSink (fst nfb) nlbs
 		 }
@@ -171,7 +205,9 @@ blocks s =
 	uncurry separateColors (fallingBlocks s) ++ getLandBlocks (landBlocks s) ++
 	map ((, black)) waku ++ concat (zipWith (\y b ->
 		map (first $ movePoint 9 y) (uncurry separateColors b))
-			[1, 4 .. ] (nextBlocks s))
+			[1, 4 .. ] (nextBlocks s)) ++
+	maybe [] (uncurry separateColors . first (map $ movePoint (- 9) 0))
+		(holdingBlocks s)
 
 movePoint :: Int -> Int -> (Int, Int) -> (Int, Int)
 movePoint dx dy (x, y) = (x + dx, y + dy)
@@ -185,5 +221,6 @@ processKey kv
 	| kv == char2keyval 'l' = Just $ Left R
 	| kv == char2keyval 'j' = Just $ Left RotateL
 	| kv == char2keyval 'k' = Just $ Left RotateR
+	| kv == char2keyval ';' = Just $ Left Hold
 	| kv == char2keyval ' ' = Just $ Left Landing
 	| otherwise = Nothing
