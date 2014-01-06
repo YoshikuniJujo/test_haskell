@@ -28,7 +28,9 @@ runGame int tick k2i s0 next draw gameOver = do
 		kv <- gdkEventKeyGetKeyval e
 		maybe (return ()) (modifyIORef sr . next) $ k2i kv
 		when (kv == char2keyval 'q') gtkMainQuit
-		when (kv == char2keyval 'p') $ modifyIORef pause not
+		when (kv == char2keyval 'p') $ do
+			s <- readIORef sr
+			when (not $ gameOver s) $ modifyIORef pause not
 		gtkWidgetQueueDraw (cast w)
 	gSignalConnect (cast a) "draw" $ \w -> do
 		s <- readIORef sr
