@@ -44,6 +44,9 @@ drawBlocks :: [((Int, Int), (Double, Double, Double))] -> GtkWidget -> IO ()
 drawBlocks bs w = do
 	win <- gtkWidgetGetWindow w
 	cr <- gdkCairoCreate (cast win)
+	cairoSetSourceRGB cr 1 1 1
+	cairoRectangle cr 105 15 (15 * 12 - 1) (15 * 23)
+	cairoFill cr
 	mapM_ (drawBlock cr) bs
 --	cairoFill cr
 	cairoDestroy cr

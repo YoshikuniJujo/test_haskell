@@ -18,15 +18,15 @@ import System.Random
 import Data.List
 import Gtk
 
-fBlocks :: [[(Int, Int)]]
+fBlocks :: [([(Int, Int)], Color)]
 fBlocks = [
-	[(3, 3), (4, 3), (5, 3), (6, 3)],
-	[(3, 3), (4, 3), (3, 4), (4, 4)],
-	[(4, 3), (5, 3), (3, 4), (4, 4)],
-	[(3, 3), (4, 3), (4, 4), (5, 4)],
-	[(3, 3), (4, 3), (5, 3), (3, 2)],
-	[(3, 3), (4, 3), (5, 3), (3, 4)],
-	[(4, 3), (3, 4), (4, 4), (5, 4)]
+	([(3, 3), (4, 3), (5, 3), (6, 3)], (0.25, 0.25, 1)),
+	([(3, 3), (4, 3), (3, 4), (4, 4)], (0.75, 0.75, 0)),
+	([(4, 3), (5, 3), (3, 4), (4, 4)], (0, 0.75, 0)),
+	([(3, 3), (4, 3), (4, 4), (5, 4)], (0.75, 0, 0)),
+	([(3, 3), (4, 3), (5, 3), (3, 2)], (0, 0, 0.45)),
+	([(3, 3), (4, 3), (5, 3), (3, 4)], (0.50, 0.25, 0)),
+	([(3, 4), (4, 4), (4, 3), (5, 4)], (0.75, 0, 0.75))
  ]
 
 type Color = (Double, Double, Double)
@@ -34,13 +34,13 @@ black, grey :: Color
 black = (0, 0, 0)
 grey = (0.7, 0.7, 0.7)
 
-type LandBlocks = [(Int, [Int])]
+type LandBlocks = [(Int, [(Int, Color)])]
 
-getLandBlocks :: LandBlocks -> [(Int, Int)]
-getLandBlocks = concatMap (\(y, xs) -> map (, y) xs)
+getLandBlocks :: LandBlocks -> [((Int, Int), Color)]
+getLandBlocks = concatMap (\(y, xs) -> map (\(x, c) -> ((x, y), c)) xs)
 
-land :: [(Int, Int)] -> LandBlocks -> LandBlocks
-land = flip $ foldr land1
+land :: ([(Int, Int)], Color) -> LandBlocks -> LandBlocks
+land (fbs, c) lbs = foldr (land1 c) lbs fbs
 
 deleteLines :: LandBlocks -> (Int, LandBlocks)
 deleteLines lbs = let
@@ -51,21 +51,21 @@ deleteLine1 :: LandBlocks -> LandBlocks
 deleteLine1 lbs = map (first (+ 1)) upper ++ lower
 	where (upper, _ : lower) = span (not . isLineFull) lbs
 
-isLineFull :: (Int, [Int]) -> Bool
-isLineFull (_, xs) = sort xs == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+isLineFull :: (Int, [(Int, Color)]) -> Bool
+isLineFull (_, xs) = map fst (sort xs) == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
-land1 :: (Int, Int) -> LandBlocks -> LandBlocks
-land1 (x, y) [] = [(y, [x])]
-land1 (x, y) l@((ly, lxs) : rest)
-	| ly == y = (ly, x : lxs) : rest
-	| ly > y = (y, [x]) : l
-	| otherwise = (ly, lxs) : land1 (x, y) rest
+land1 :: Color -> (Int, Int) -> LandBlocks -> LandBlocks
+land1 c (x, y) [] = [(y, [(x, c)])]
+land1 c (x, y) l@((ly, lxs) : rest)
+	| ly == y = (ly, (x, c) : lxs) : rest
+	| ly > y = (y, [(x, c)]) : l
+	| otherwise = (ly, lxs) : land1 c (x, y) rest
 
 data LR = L | R | RotateL | RotateR | Landing deriving Show
 data Tick = Tick deriving Show
 
 data State = State {
-	fallingBlocks :: [(Int, Int)],
+	fallingBlocks :: ([(Int, Int)], (Double, Double, Double)),
 	landBlocks :: LandBlocks,
 	randGen :: StdGen,
 	point :: Int,
@@ -75,10 +75,11 @@ data State = State {
 initialState :: IO State
 initialState = do
 	sg <- getStdGen
+	let (fbs, nsg) = newBlock sg
 	return State {
-		fallingBlocks = [(3, 3), (4, 3), (5, 3), (3, 4)],
+		fallingBlocks = fbs,
 		landBlocks = [],
-		randGen = sg,
+		randGen = nsg,
 		point = 0,
 		gameOver = False
 	 }
@@ -95,8 +96,8 @@ move :: ([(Int, Int)] -> [(Int, Int)]) -> State -> State
 move f st@State{
 	fallingBlocks = fbs,
 	landBlocks = lbs
- } = let nfbs = f fbs in
- 	if isSink nfbs lbs then st else st{ fallingBlocks = nfbs }
+ } = let nfbs = first f fbs in
+ 	if isSink (fst nfbs) lbs then st else st{ fallingBlocks = nfbs }
 
 toLeft, toRight :: [(Int, Int)] -> [(Int, Int)]
 toLeft = map (first (subtract 1))
@@ -116,7 +117,8 @@ downToLand st@State{
 	fallingBlocks = if null landingList then fbs else last landingList
  }	where
 	move1 (x, y) = (x, y + 1)
-	landingList = takeWhile (not . flip isSink lbs) $ iterate (map move1) fbs
+	landingList = takeWhile (not . flip isSink lbs . fst) $
+		iterate (first $ map move1) fbs
 
 moveDown :: State -> State
 moveDown st@State{
@@ -124,30 +126,33 @@ moveDown st@State{
 	landBlocks = lbs,
 	randGen = rg,
 	point = p
- } = let nfbs = map move1 fbs in
- 	if isSink nfbs lbs
+ } = let nfbs = first (map move1) fbs in
+ 	if isSink (fst nfbs) lbs
 		then st{
 			fallingBlocks = nfb,
 			landBlocks = nlbs,
 			randGen = nrg,
 			point = p + if dn == 0 then 10 else 100 * dn ^ (2 :: Int),
-			gameOver = isSink nfb nlbs
+			gameOver = isSink (fst nfb) nlbs
 		 }
 		else st{
 			fallingBlocks = nfbs,
 			landBlocks = lbs
 		 }
  	where
-	(nfb, nrg) = first (fBlocks !!) $ randomR (0, length fBlocks - 1) rg
+	(nfb, nrg) = newBlock rg
 	move1 (x, y) = (x, y + 1)
 	(dn, nlbs) = deleteLines $ land fbs lbs
+
+newBlock :: StdGen -> (([(Int, Int)], Color), StdGen)
+newBlock = first (fBlocks !!) . randomR (0, length fBlocks - 1)
 
 isSink :: [(Int, Int)] -> LandBlocks -> Bool
 isSink fbs lbs =
 	maximum (map snd fbs) > 21 ||
 	minimum (map fst fbs) < 0 ||
 	maximum (map fst fbs) > 9 ||
-	not (null $ fbs `intersect` getLandBlocks lbs)
+	not (null $ fbs `intersect` map fst (getLandBlocks lbs))
 
 waku :: [(Int, Int)]
 waku =	zip [-1 .. 10] [22, 22 .. ] ++ zip [-1 .. 10] [0, 0 .. ] ++
@@ -155,8 +160,12 @@ waku =	zip [-1 .. 10] [22, 22 .. ] ++ zip [-1 .. 10] [0, 0 .. ] ++
 
 blocks :: State -> [((Int, Int), Color)]
 blocks s =
-	map (, grey) (fallingBlocks (downToLand s)) ++
-	map (, black) (fallingBlocks s ++ getLandBlocks (landBlocks s) ++ waku)
+	map (, grey) (fst $ fallingBlocks (downToLand s)) ++
+	uncurry separateColors (fallingBlocks s) ++ getLandBlocks (landBlocks s) ++
+	map ((, black)) waku
+
+separateColors :: [(Int, Int)] -> Color -> [((Int, Int), Color)]
+separateColors bs c = map (, c) bs
 
 processKey :: Keyval -> Maybe (Either LR Tick)
 processKey kv
