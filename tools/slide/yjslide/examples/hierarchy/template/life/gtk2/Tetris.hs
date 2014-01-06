@@ -32,7 +32,7 @@ fBlocks = [
 type Color = (Double, Double, Double)
 black, grey :: Color
 black = (0, 0, 0)
-grey = (0.7, 0.7, 0.7)
+grey = (0.9, 0.9, 0.9)
 
 type LandBlocks = [(Int, [(Int, Color)])]
 
@@ -65,7 +65,8 @@ data LR = L | R | RotateL | RotateR | Landing deriving Show
 data Tick = Tick deriving Show
 
 data State = State {
-	fallingBlocks :: ([(Int, Int)], (Double, Double, Double)),
+	nextBlocks :: [([(Int, Int)], Color)],
+	fallingBlocks :: ([(Int, Int)], Color),
 	landBlocks :: LandBlocks,
 	randGen :: StdGen,
 	point :: Int,
@@ -75,11 +76,15 @@ data State = State {
 initialState :: IO State
 initialState = do
 	sg <- getStdGen
-	let (fbs, nsg) = newBlock sg
+	let	(fbs1, nsg) = newBlock sg
+		(fbs2, nsg') = newBlock nsg
+		(fbs3, nsg'') = newBlock nsg'
+		(fbs4, nsg''') = newBlock nsg''
 	return State {
-		fallingBlocks = fbs,
+		nextBlocks = [fbs2, fbs3, fbs4],
+		fallingBlocks = fbs1,
 		landBlocks = [],
-		randGen = nsg,
+		randGen = nsg''',
 		point = 0,
 		gameOver = False
 	 }
@@ -122,6 +127,7 @@ downToLand st@State{
 
 moveDown :: State -> State
 moveDown st@State{
+	nextBlocks = nb : nbs,
 	fallingBlocks = fbs,
 	landBlocks = lbs,
 	randGen = rg,
@@ -129,7 +135,8 @@ moveDown st@State{
  } = let nfbs = first (map move1) fbs in
  	if isSink (fst nfbs) lbs
 		then st{
-			fallingBlocks = nfb,
+			nextBlocks = nbs ++ [nfb],
+			fallingBlocks = nb,
 			landBlocks = nlbs,
 			randGen = nrg,
 			point = p + if dn == 0 then 10 else 100 * dn ^ (2 :: Int),
@@ -162,7 +169,12 @@ blocks :: State -> [((Int, Int), Color)]
 blocks s =
 	map (, grey) (fst $ fallingBlocks (downToLand s)) ++
 	uncurry separateColors (fallingBlocks s) ++ getLandBlocks (landBlocks s) ++
-	map ((, black)) waku
+	map ((, black)) waku ++ concat (zipWith (\y b ->
+		map (first $ movePoint 9 y) (uncurry separateColors b))
+			[1, 4 .. ] (nextBlocks s))
+
+movePoint :: Int -> Int -> (Int, Int) -> (Int, Int)
+movePoint dx dy (x, y) = (x + dx, y + dy)
 
 separateColors :: [(Int, Int)] -> Color -> [((Int, Int), Color)]
 separateColors bs c = map (, c) bs
