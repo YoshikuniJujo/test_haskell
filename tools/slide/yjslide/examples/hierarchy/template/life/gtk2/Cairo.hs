@@ -5,10 +5,14 @@ module Cairo (
 	cairoSetSourceRGB,
 	cairoRectangle,
 	cairoFill,
+	cairoSetFontSize,
+	cairoShowText,
+	cairoMoveTo,
 ) where
 
 import Foreign.Ptr
 import Foreign.C.Types
+import Foreign.C.String
 
 data CairoT = CairoT (Ptr CairoT)
 
@@ -38,3 +42,19 @@ cairoRectangle (CairoT c) x y w h = c_cairoRectangle c x' y' w' h'
 foreign import ccall "gdk/gdk.h cairo_fill" c_cairoFill :: Ptr CairoT -> IO ()
 cairoFill :: CairoT -> IO ()
 cairoFill (CairoT c) = c_cairoFill c
+
+foreign import ccall "gdk/gdk.h cairo_show_text" c_cairoShowText ::
+	Ptr CairoT -> CString -> IO ()
+cairoShowText :: CairoT -> String -> IO ()
+cairoShowText (CairoT c) str = withCString str $ \cstr -> c_cairoShowText c cstr
+
+foreign import ccall "gdk/gdk.h cairo_move_to" c_cairoMoveTo ::
+	Ptr CairoT -> CDouble -> CDouble -> IO ()
+cairoMoveTo :: CairoT -> Double -> Double -> IO ()
+cairoMoveTo (CairoT c) x y = c_cairoMoveTo c x' y'
+	where [x', y'] = map realToFrac [x, y]
+
+foreign import ccall "gdk/gdk.h cairo_set_font_size" c_cairoSetFontSize ::
+	Ptr CairoT -> CDouble -> IO ()
+cairoSetFontSize :: CairoT -> Double -> IO ()
+cairoSetFontSize (CairoT c) s = c_cairoSetFontSize c $ realToFrac s

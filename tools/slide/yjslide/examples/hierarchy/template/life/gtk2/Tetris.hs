@@ -8,6 +8,7 @@ module Tetris (
 	nextState,
 	blocks,
 	processKey,
+	point,
 ) where
 
 import Control.Arrow
@@ -27,6 +28,11 @@ fBlocks = [
 	[(4, 3), (3, 4), (4, 4), (5, 4)]
  ]
 
+type Color = (Double, Double, Double)
+black, grey :: Color
+black = (0, 0, 0)
+grey = (0.7, 0.7, 0.7)
+
 type LandBlocks = [(Int, [Int])]
 
 getLandBlocks :: LandBlocks -> [(Int, Int)]
@@ -35,8 +41,10 @@ getLandBlocks = concatMap (\(y, xs) -> map (, y) xs)
 land :: [(Int, Int)] -> LandBlocks -> LandBlocks
 land = flip $ foldr land1
 
-deleteLines :: LandBlocks -> LandBlocks
-deleteLines = head . dropWhile (or . map isLineFull) . iterate deleteLine1
+deleteLines :: LandBlocks -> (Int, LandBlocks)
+deleteLines lbs = let
+	(yet, deleted) = span (or . map isLineFull) $ iterate deleteLine1 lbs in
+	(length yet, head deleted)
 
 deleteLine1 :: LandBlocks -> LandBlocks
 deleteLine1 lbs = map (first (+ 1)) upper ++ lower
@@ -58,7 +66,8 @@ data Tick = Tick deriving Show
 data State = State {
 	fallingBlocks :: [(Int, Int)],
 	landBlocks :: LandBlocks,
-	randGen :: StdGen
+	randGen :: StdGen,
+	point :: Int
  } deriving Show
 
 initialState :: IO State
@@ -67,7 +76,8 @@ initialState = do
 	return State {
 		fallingBlocks = [(3, 3), (4, 3), (5, 3), (3, 4)],
 		landBlocks = [],
-		randGen = sg
+		randGen = sg,
+		point = 0
 	 }
 
 nextState :: Either LR Tick -> State -> State
@@ -108,13 +118,15 @@ moveDown :: State -> State
 moveDown st@State{
 	fallingBlocks = fbs,
 	landBlocks = lbs,
-	randGen = rg
+	randGen = rg,
+	point = p
  } = let nfbs = map move1 fbs in
  	if isSink nfbs lbs
 		then st{
 			fallingBlocks = nfb,
-			landBlocks = deleteLines $ land fbs lbs,
-			randGen = nrg
+			landBlocks = nlbs,
+			randGen = nrg,
+			point = p + if dn == 0 then 10 else 100 * dn ^ (2 :: Int)
 		 }
 		else st{
 			fallingBlocks = nfbs,
@@ -123,6 +135,7 @@ moveDown st@State{
  	where
 	(nfb, nrg) = first (fBlocks !!) $ randomR (0, length fBlocks - 1) rg
 	move1 (x, y) = (x, y + 1)
+	(dn, nlbs) = deleteLines $ land fbs lbs
 
 isSink :: [(Int, Int)] -> LandBlocks -> Bool
 isSink fbs lbs =
@@ -135,8 +148,10 @@ waku :: [(Int, Int)]
 waku =	zip [-1 .. 10] [22, 22 .. ] ++ zip [-1 .. 10] [0, 0 .. ] ++
 	zip [-1, -1 .. ] [1 .. 21] ++ zip [10, 10 .. ] [1 .. 21]
 
-blocks :: State -> [(Int, Int)]
-blocks s = fallingBlocks s ++ getLandBlocks (landBlocks s) ++ waku
+blocks :: State -> [((Int, Int), Color)]
+blocks s =
+	map (, grey) (fallingBlocks (downToLand s)) ++
+	map (, black) (fallingBlocks s ++ getLandBlocks (landBlocks s) ++ waku)
 
 processKey :: Keyval -> Maybe (Either LR Tick)
 processKey kv

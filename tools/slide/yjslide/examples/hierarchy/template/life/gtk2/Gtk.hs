@@ -35,6 +35,9 @@ module Gtk (
 	cairoTranslate,
 	cairoSetSourceRGB,
 	cairoRectangle,
+	cairoSetFontSize,
+	cairoShowText,
+	cairoMoveTo,
 	cairoFill
 ) where
 
