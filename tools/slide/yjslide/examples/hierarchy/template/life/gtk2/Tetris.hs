@@ -219,12 +219,12 @@ processKey :: Keyval -> Maybe (Either LR Tick)
 processKey kv
 	| kv == char2keyval 'h' = Just $ Left L
 	| kv == char2keyval 'l' = Just $ Left R
-	| kv == char2keyval 'j' = Just $ Left RotateL
-	| kv == char2keyval 'k' = Just $ Left RotateR
+	| kv == char2keyval 'j' = Just $ Left RotateR
+	| kv == char2keyval 'k' = Just $ Left RotateL
 	| kv == char2keyval ';' = Just $ Left Hold
 	| kv == char2keyval ' ' = Just $ Left Landing
 	| kv == char2keyval '.' = Just $ Left L
 	| kv == char2keyval '/' = Just $ Left R
-	| kv == char2keyval 'z' = Just $ Left RotateL
-	| kv == char2keyval 'x' = Just $ Left RotateR
+	| kv == char2keyval 'z' = Just $ Left RotateR
+	| kv == char2keyval 'x' = Just $ Left RotateL
 	| otherwise = Nothing
