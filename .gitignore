@@ -94,6 +94,8 @@ tmp/
 /tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/gtk/hierarchy/moreSimple
 /tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/gtk/class/GtkWindow.hs
 /tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/gtk/class/hello
+/tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/gtk/class/cflags.txt
+/tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/gtk/class/gtk-flags.txt
 /tools/slide/yjslide/examples/ffi/CInHaskell/wrapper/gtk/normal/useGtk
 /tools/slide/yjslide/examples/ffi/CInHaskell/hsc/other.hs
 /tools/slide/yjslide/examples/ffi/CInHaskell/hsc/struct/structure
@@ -108,6 +110,13 @@ tmp/
 /tools/slide/yjslide/examples/hierarchy/template/life/gtk/GtkStyle.hs
 /tools/slide/yjslide/examples/hierarchy/template/life/gtk/GtkWidget.hs
 /tools/slide/yjslide/examples/hierarchy/template/life/gtk/cflags.txt
+/tools/slide/yjslide/examples/hierarchy/template/life/gtk2/GObject.hs
+/tools/slide/yjslide/examples/hierarchy/template/life/gtk2/GdkEvent.hs
+/tools/slide/yjslide/examples/hierarchy/template/life/gtk2/GtkStyle.hs
+/tools/slide/yjslide/examples/hierarchy/template/life/gtk2/moveBlock
+/tools/slide/yjslide/examples/hierarchy/template/life/gtk2/testCairo
+/tools/slide/yjslide/examples/hierarchy/template/life/gtk2/testDrawingArea
+/tools/slide/yjslide/examples/hierarchy/template/life/gtk2/tetris
 /tools/slide/yjslide/examples/hierarchy/template/life/gtk2/hello
 /tools/slide/yjslide/examples/hierarchy/template/life/gtk2/free
 /tools/slide/yjslide/examples/cabal/only_cabal/simple/setup
