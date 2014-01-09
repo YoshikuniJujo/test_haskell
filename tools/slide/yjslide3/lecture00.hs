@@ -1,4 +1,7 @@
 import Lecture
+import System.Random
+import System.IO.Unsafe
+import Control.Monad
 
 subtitle :: String
 subtitle = "第0回 この講義の意義と目的"
@@ -7,7 +10,9 @@ main :: IO ()
 main = runLecture [
 	[flip writeTitle subtitle], prelude, meaning, meaning2, meaning3,
 	meaning4, meaning5,
-	haskell
+	haskell, haskell2, haskell3, haskell4,
+	lecture, lecture2, lecture3, lecture4, lecture5, lecture6,
+	summary
  ]
 
 prelude :: Page
@@ -101,4 +106,162 @@ haskell = [\t -> do
 	itext t 1 "数学者・論理学者", \t -> do
 	text t "* コンビネータ論理は関数型言語の"
 	itext t 1 "基盤となっている"
+ ]
+
+haskell2 :: Page
+haskell2 = [\t -> do
+	writeTopTitle t "歴史"
+	text t "", \t -> do
+	text t "* 1987年 遅延関数型言語の統合の必要性が議決された", \t -> do
+	itext t 1 "- 遅延評価する純粋関数型言語の乱立", \t -> do
+	itext t 1 "- 当時12以上存在していた", \t -> do
+	itext t 1 "- オープンな標準を作成するための委員会の発足", \t -> do
+	text t "* 1990年 Haskell 1.0", \t -> do
+	itext t 1 "- 言語仕様が策定された", \t -> do
+	text t "* 1998年 Haskell 98", \t -> do
+	itext t 1 "- 言語仕様と基本ライブラリの定義", \t -> do
+	itext t 1 "- The Haskell 98 Reportとして発表"
+ ]
+
+haskell3 :: Page
+haskell3 = [\t -> do
+	writeTopTitle t "歴史"
+	text t "", \t -> do
+	text t "* 2003年 Haskell 98 の改定", \t -> do
+	itext t 1 "- Haskell 98 Language and Libraries:"
+	itext t 2 "The Revised Report", \t -> do
+	text t "* 2006年 Haskell' (Haskell Prime)", \t -> do
+	itext t 1 "- Haskell 98のマイナーバージョンアップ", \t -> do
+	text t "* 2010年 Haskell 2010", \t -> do
+	itext t 1 "- 他の言語とのバインディング(FFI)", \t -> do
+	itext t 1 "- モジュールの階層構造", \t -> do
+	itext t 1 "- 等々が取り入れられた"
+ ]
+
+haskell4 :: Page
+haskell4 = [\t -> do
+	writeTopTitle t "処理系"
+	text t "", \t -> do
+	text t "* Haskellとは仕様の名前", \t -> do
+	itext t 1 "- 多くの言語とは異なり処理系の前に仕様がある", \t -> do
+	text t "* 処理系には以下のものがある", \t -> do
+	itext t 1 "GHC, Hugs, Gofer, iHBC, Helium, jhc, nhc98", \t -> do
+	text t "* GHCとはGlasgow Haskell Compilerの略", \t -> do
+	text t "* 現在最もよく使われているのはGHC", \t -> do
+	text t "* この講義もGHCを使って進めていく"
+ ]
+
+lecture :: Page
+lecture = [\t -> do
+	writeTopTitle t "講義の進めかた"
+	text t "", \t -> do
+	text t "* はじめのうちは対話的環境を使う", \t -> do
+	text t "* 式を打ち込んでその結果を得る", \t -> do
+	text t "* 講義が進むにつれて以下についても見ていく", \t -> do
+	itext t 1 "- インタプリタ実行", \t -> do
+	itext t 1 "- コンパイル実行"
+ ]
+
+lecture2 :: Page
+lecture2 = [\t -> do
+	writeTopTitle t "手を動かしてみる"
+	text t "", \t -> do
+	text t "* ghcに触れてみよう", \t -> do
+	text t "* まずはバージョンの確認をしてみよう", \t -> do
+	itext t 1 "% ghc --version", \t -> do
+	itext t 1 "The Glorious Glasgow Haskell Compilation System,"
+	itext t 2 "version 7.6.3", \t -> do
+	text t "* 次に対話環境を立ち上げてみよう(ghciの'i'を忘れずに!)", \t -> do
+	itext t 1 "% ghci", \t -> do
+	itext t 1 "(数行のメッセージ)"
+	itext t 1 "Prelude>", \t -> do
+	text t "* プロンプトが出た", \t -> do
+	itext t 1 "- \"Prelude\"の意味はそのうち明らかになる"
+ ]
+
+lecture3 :: Page
+lecture3 = [\t -> do
+	writeTopTitle t "手を動かしてみる"
+	text t "", \t -> do
+	text t "Prelude>", \t -> do
+	itext t 1 "- 入力を促(prompt)されている", \t -> do
+	itext t 1 "- しかし、何を入力すればいいのだろうか?", \t -> do
+	itext t 1 "- 困ったのでとりあえず対話を終了させたい", \t -> do
+	text t "Prelude> :quit", \t -> do
+	text t "% ", \t -> do
+	itext t 1 "- 出られた", \t -> do
+	itext t 1 "- 出られることがわかったので安心してもう一回", \t -> do
+	text t "% ghci", \t -> do
+	text t "Prelude>", \t -> do
+	itext t 1 "- いつでも出られるのでゆっくり考えよう"
+ ]
+
+l4Number :: Int
+l4Number = unsafePerformIO $ randomRIO (0, 100)
+l4Char :: Char
+l4Char = unsafePerformIO $ randomRIO ('a', 'z')
+
+lecture4 :: Page
+lecture4 = [\t -> do
+	writeTopTitle t "手を動かしてみる"
+	text t "", \t -> do
+	text t "Prelude>", \t -> do
+	itext t 1 "- とりあえず数字を入れてみよう", \t -> do
+	number <- randomIO :: IO Int
+	text t $ "Prelude> " ++ show l4Number, \t -> do
+	text t $ show l4Number
+	text t $ "Prelude> ", \t -> do
+	itext t 1 "- 数字を入れるとそのまま表示される", \t -> do
+	itext t 1 "- 終了するまで次々に入力を促(prompt)される", \t -> do
+	itext t 1 "- 文字を入れてみよう", \t -> do
+	text t $ "Prelude> " ++ show l4Char, \t -> do
+	text t $ show l4Char
+ ]
+
+l5Number1, l5Number2 :: Int
+[l5Number1, l5Number2] =
+	unsafePerformIO $ replicateM 2 $ randomRIO (0, 100)
+
+lecture5 :: Page
+lecture5 = [\t -> do
+	writeTopTitle t "手を動かしてみる"
+	text t "", \t -> do
+	text t "Prelude>", \t -> do
+	itext t 1 "- 文字列を入れてみよう", \t -> do
+	text t "Prelude> \"Hello, world!\"", \t -> do
+	text t "\"Hello, world!\"", \t -> do
+	itext t 1 "- 対話環境で伝統的な挨拶ができた", \t -> do
+	itext t 1 "- 計算をしてみよう", \t -> do
+	text t $ "Prelude> " ++ show l5Number1 ++ " + " ++ show l5Number2, \t -> do
+	text t $ show $ l5Number1 + l5Number2
+ ]
+
+l6Number1, l6Number2, l6Number3, l6Number4 :: Int
+[l6Number1, l6Number2, l6Number3, l6Number4] =
+	unsafePerformIO $ replicateM 4 $ randomRIO (0, 100)
+
+lecture6 :: Page
+lecture6 = [\t -> do
+	writeTopTitle t "手を動かしてみる"
+	text t "", \t -> do
+	itext t 1 "- 引き算とかけ算もしてみよう", \t -> do
+	text t $ "Prelude> " ++ show l6Number1 ++ " - " ++ show l6Number2, \t -> do
+	text t $ show $ l6Number1 - l6Number2, \t -> do
+	text t $ "Prelude> " ++ show l6Number3 ++ " * " ++ show l6Number4, \t -> do
+	text t $ show $ l6Number3 * l6Number4, \t -> do
+	text t ""
+	text t "* Haskellは電卓として使えることがわかった", \t -> do
+	text t "* 今回はghciにとりあえず触れてみた", \t -> do
+	text t "* 次の講義で実質的な内容に触れていこう"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* Haskellを学ぶ意義について考えてみた", \t -> do
+	text t "* 「楽しさ」はもちろん最大の理由だ", \t -> do
+	text t "* モチベーションを高めるためにいろいろと言葉を費した", \t -> do
+	text t "* Haskellの歴史について簡単に触れた", \t -> do
+	text t "* ghcの対話環境をさわってみた"
  ]

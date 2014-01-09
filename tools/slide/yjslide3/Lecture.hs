@@ -137,12 +137,12 @@ writeImageCenter t y picture@(w, _, _) =
 writeImage ::
 	Turtle -> Double -> Double -> Bool -> (Double, Double, FilePath) -> IO ()
 writeImage t x y bot (w, h, fp) = do
-	hideturtle t
-	speed t "fastest"
+--	hideturtle t
+--	speed t "fastest"
 	goto t x (y * rt)
 	image t fp (w * rt) (h * rt)
-	speed t "slow"
-	showturtle t
+--	speed t "slow"
+--	showturtle t
 	when bot $ setheading t (- 90) >> forward t (h * rt)
 
 dvArrowL :: Turtle -> Double -> IO ()
