@@ -11,7 +11,8 @@ main = runLecture [
 	[flip writeTitle subtitle], prelude, meaning, meaning2, meaning3,
 	meaning4, meaning5,
 	haskell, haskell2, haskell3, haskell4,
-	lecture, lecture2, lecture3, lecture4, lecture5, lecture6,
+	lecture, attention, lecture2,
+	lecture3, lecture4, lecture5, lecture6,
 	summary
  ]
 
@@ -160,6 +161,21 @@ lecture = [\t -> do
 	text t "* 講義が進むにつれて以下についても見ていく", \t -> do
 	itext t 1 "- インタプリタ実行", \t -> do
 	itext t 1 "- コンパイル実行"
+ ]
+
+attention :: Page
+attention = [\t -> do
+	writeTopTitle t "コマンドプロンプト"
+	text t "", \t -> do
+	text t "* この講義のなかではコマンドプロンプトを主に利用する", \t -> do
+	text t "* HaskellのIDEもあるようだが", \t -> do
+	itext t 1 "- 演者が使ったことがない", \t -> do
+	itext t 1 "- コマンドプロンプトを使う方法のほうが応用が利く", \t -> do
+	itext t 1 "- つまり、後からIDEを使う方法を学ぶこともできる", \t -> do
+	text t "* 講義のなかでは", \t -> do
+	itext t 1 "- 演者の環境に合わせシェルのプロンプトを'%'で表記", \t -> do
+	itext t 1 "- ghciのプロンプトは'>'で表記する", \t -> do
+	text t "* コマンドプロンプトを立ち上げてみましょう"
  ]
 
 lecture2 :: Page
