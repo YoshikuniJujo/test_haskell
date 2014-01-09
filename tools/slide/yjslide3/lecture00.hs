@@ -175,7 +175,9 @@ attention = [\t -> do
 	text t "* 講義のなかでは", \t -> do
 	itext t 1 "- 演者の環境に合わせシェルのプロンプトを'%'で表記", \t -> do
 	itext t 1 "- ghciのプロンプトは'>'で表記する", \t -> do
-	text t "* コマンドプロンプトを立ち上げてみましょう"
+	text t "* コマンドプロンプトを立ち上げてみましょう", \t -> do
+	itext t 1 "- Windows key + Rでダイアログ表示", \t -> do
+	itext t 1 "- cmdと入力してOK"
  ]
 
 lecture2 :: Page
