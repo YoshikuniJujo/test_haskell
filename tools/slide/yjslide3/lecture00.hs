@@ -87,6 +87,9 @@ meaning5 = [\t -> do
 	text t "", \t -> do
 	text t "* 明日の仕事に役立つ", \t -> do
 	text t "* 未来の自分の武器になる", \t -> do
+	text t "* Haskellを学ぶということは", \t -> do
+	itext t 1 "- 「考え方」を学ぶということ", \t -> do
+	itext t 1 "- アルゴリズムやロジックは陳腐化しない", \t -> do
 	text t "* それだけじゃない!", \t -> do
 	text t "* 何よりも、「楽しい」", \t -> do
 	text t "* Haskellの魅力", \t -> do
