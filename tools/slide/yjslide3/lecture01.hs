@@ -237,6 +237,7 @@ aboutType9 = [\t -> do
 	text t "* 型を宣言しない場合、型推論によって自動的に決まる", \t -> do
 	text t "* しかし、型は宣言したほうが良い", \t -> do
 	itext t 1 "- 自分がどういう関数を作っているのかを明確にする", \t -> do
+	itext t 1 "- バグの多くは型チェックによって検出可能", \t -> do
 	itext t 1 "- 型宣言は優れたドキュメントとなる", \t -> do
 	itext t 1 "- こみいった型だと型推論が利かない場合がある", \t -> do
 	text t "* 型宣言は以下のような記法となる", \t -> do
@@ -297,7 +298,7 @@ aboutType13 = [\t -> do
 	writeTopTitle t "型駆動開発"
 	text t "", \t -> do
 	text t "* bmi関数が定義されているという仮定のもとで", \t -> do
-	itext t 1 "- isObese関数が定義された", \t -> do
+	itext t 1 "isObese関数が定義された", \t -> do
 	text t "* よってここでbmi関数を定義すれば仕事は終わる", \t -> do
 	itext t 1 "bmi h w = w / (h / 100) ^ 2", \t -> do
 	text t "* 動かしてみよう", \t -> do
@@ -312,5 +313,13 @@ aboutType13 = [\t -> do
 typeSummary :: Page
 typeSummary = [\t -> do
 	writeTopTitle t "型(まとめ)"
-	text t ""
+	text t "", \t -> do
+	text t "* 型とは値の種類", \t -> do
+	text t "* 型が同じなら値によらずできることは同じ", \t -> do
+	text t "* 関数を作るときにはまず型を考える", \t -> do
+	itext t 1 "- 型が決まれば仕事は半分終わったようなもの", \t -> do
+	itext t 1 "- 型チェックによってバグの多くは検出可", \t -> do
+	itext t 1 "- 型はドキュメントとしても優れる", \t -> do
+	text t "* 型の宣言は[関数内] :: [型]という形", \t -> do
+	text t "* 型駆動開発をしてみた"
  ]
