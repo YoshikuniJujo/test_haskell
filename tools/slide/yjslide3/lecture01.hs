@@ -1,7 +1,7 @@
 import Lecture
 
 subtitle :: String
-subtitle = "第1回 Haskellの記法"
+subtitle = "第1回 関数・型・リスト"
 
 main :: IO ()
 main = runLecture [
@@ -13,10 +13,14 @@ prelude :: Page
 prelude = [\t -> do
 	writeTopTitle t "はじめに"
 	text t "", \t -> do
-	text t "* 他の言語とは異なる記法がある", \t -> do
-	text t "* 学んでいくうちに合理的な記法であることがわかる", \t -> do
-	text t "* 概念を説明するうえで記法を知っている必要がある", \t -> do
-	text t "* 中身を説明するまえに基本的な記法に慣れておこう"
+	text t "* Haskellでプログラミングをするということは", \t -> do
+	itext t 1 "関数を様々なやりかたで組み合わせるということ", \t -> do
+	text t "* 型は関数を組み合わせる際に重要な役割を持つ", \t -> do
+	text t "* プログラミングの機能として「くりかえし」は重要", \t -> do
+	text t "* 「くりかえし」を実現するために", \t -> do
+	itext t 1 "- 手続き型言語では状態変化を使う", \t -> do
+	itext t 1 "- Haskellでは主にリストを使う", \t -> do
+	text t "* 今回は関数・型・リストについて学ぼう"
  ]
 
 function :: Page
