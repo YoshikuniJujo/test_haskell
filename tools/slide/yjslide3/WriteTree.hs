@@ -6,17 +6,6 @@ import Graphics.X11.Turtle
 
 data BinTree a = Empty | Bin a (BinTree a) (BinTree a) deriving Show
 
-testMain :: IO ()
-testMain = do
-	f <- openField
-	topleft f
-	t <- newTurtle f
-	penup t
-	writeTree t show 10 10 230 100 testTree
-	hideturtle t
-	onkeypress f $ return . (/= 'q')
-	waitField f
-
 writeTree :: Turtle -> (a -> String) -> Double -> Double -> Double -> Double -> BinTree a -> IO ()
 writeTree _ _ _ _ _ _ Empty = return ()
 writeTree t sw sz dx x y (Bin v l r) = do
@@ -32,19 +21,6 @@ writeTree t sw sz dx x y (Bin v l r) = do
 	pendown t
 	writeTree t sw sz (dx / 2) (x + dx * sz) (y + 4 * sz) r
 	penup t
-
-testTree :: BinTree Int
-testTree = Bin 8
-	(Bin 15
-		(Bin 99
-			(Bin 3
-				(Bin 888 Empty Empty)
-				Empty)
-			(Bin 1 Empty Empty))
-		(Bin 250 Empty Empty))
-	(Bin 18
-		(Bin 851 Empty Empty)
-		(Bin 223 Empty Empty))
 
 rotateL :: BinTree a -> BinTree a
 rotateL (Bin x lx (Bin y ly ry)) = Bin y (Bin x lx ly) ry

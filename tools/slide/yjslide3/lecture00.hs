@@ -72,8 +72,9 @@ meaning4 :: Page
 meaning4 = [\t -> do
 	writeTopTitle t "僕はコモディティじゃない!"
 	text t "", \t -> do
-	text t "* あなたが今持っている技術は会社や社会にとって", \t -> do
-	itext t 1 "「かけがえのないもの」だろうか?", \t -> do
+	text t "* あなたが今持っている技術は", \t -> do
+	itext t 1 "- 会社や社会にとって「かけがえのないもの」か?", \t -> do
+	itext t 1 "- それは10年後、20年後にも通用するだろうか?", \t -> do
 	text t "* 今持っている技術にHaskellをプラスすることで", \t -> do
 	itext t 1 "「取り換え不可能な人材」になれる", \t -> do
 	text t "* 会社や社会にとって「取り換え不可能」な人材になれば", \t -> do
@@ -152,7 +153,10 @@ haskell4 = [\t -> do
 	itext t 1 "GHC, Hugs, Gofer, iHBC, Helium, jhc, nhc98", \t -> do
 	text t "* GHCとはGlasgow Haskell Compilerの略", \t -> do
 	text t "* 現在最もよく使われているのはGHC", \t -> do
-	text t "* この講義もGHCを使って進めていく"
+	text t "* GHCにはHaskell 2010にない拡張機能が含まれる", \t -> do
+	itext t 1 "- 明示的に宣言することで使えるようになる", \t -> do
+	itext t 1 "- 十職に吟味されたものは次の標準に取り込まれるかも", \t -> do
+	text t "* この講義はGHCを使って進めていく"
  ]
 
 lecture :: Page
@@ -175,9 +179,7 @@ attention = [\t -> do
 	itext t 1 "- 演者が使ったことがない", \t -> do
 	itext t 1 "- コマンドプロンプトを使う方法のほうが応用が利く", \t -> do
 	itext t 1 "- つまり、後からIDEを使う方法を学ぶこともできる", \t -> do
-	text t "* 講義のなかでは", \t -> do
-	itext t 1 "- 演者の環境に合わせシェルのプロンプトを'%'で表記", \t -> do
-	itext t 1 "- ghciのプロンプトは'>'で表記する", \t -> do
+	text t "* 演者の環境に合わせシェルのプロンプトを'%'で表記", \t -> do
 	text t "* コマンドプロンプトを立ち上げてみましょう", \t -> do
 	itext t 1 "- Windows key + Rでダイアログ表示", \t -> do
 	itext t 1 "- cmdと入力してOK"
