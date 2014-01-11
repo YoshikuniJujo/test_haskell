@@ -1,5 +1,5 @@
 import System.Random
--- import System.IO.Unsafe
+import System.IO.Unsafe
 
 import Lecture
 
@@ -11,6 +11,9 @@ main = runLecture [
 	[flip writeTitle subtitle], prelude, function, apply,
 	defineFun, defineFun2, defineFun3, funSummary,
 	partial, partial2, partial3, partial4, partialSummary,
+	literal, literal2, literal3, literal4, literalSummary,
+	higherOrder, higherOrder2, higherOrderSummary,
+	dot,
 	operator, operator2
  ]
 
@@ -19,7 +22,13 @@ prelude = [\t -> do
 	writeTopTitle t "はじめに"
 	text t "", \t -> do
 	text t "* Haskellでプログラミングをするということは", \t -> do
-	itext t 1 "関数を様々なやりかたで組み合わせるということ"
+	itext t 1 "関数を様々なやりかたで組み合わせるということ", \t -> do
+	text t "* 関数の定義のしかたを学ぶ", \t -> do
+	text t "* 関数への引数の与えかたを学ぶ", \t -> do
+	text t "* 関数の部分適用について見る", \t -> do
+	text t "* リテラルとして関数を書く記法を学ぶ", \t -> do
+	text t "* 高階関数について学ぶ", \t -> do
+	text t "* Haskellでは演算子と関数が同じものであることを見る"
  ]
 
 function :: Page
@@ -185,6 +194,127 @@ partialSummary = [\t -> do
 	text t "* 関数適用は左結合", \t -> do
 	itext t 1 "bmi 218 164は(bmi 218) 164と解釈される", \t -> do
 	text t "* 次回扱う「型」について学ぶとより明らかになる"
+ ]
+
+fun :: Int -> Int
+fun x = x ^ x
+
+l1Number1 :: Int
+l1Number1 = unsafePerformIO $ randomRIO (3, 8)
+
+literal :: Page
+literal = [\t -> do
+	writeTopTitle t "関数リテラル"
+	text t "", \t -> do
+	text t "* たとえば数を利用するときにはいちいち名前をつけない", \t -> do
+	text t "* 2とか3とかそのまま書けばいい", \t -> do
+	text t "* これをリテラルと呼ぶ", \t -> do
+	text t "* 今までのやりかただと名前のない関数は作れない", \t -> do
+	text t "* 「引数xに対してxのx乗を返す関数」を作りたいとする", \t -> do
+	text t "* そしてその関数は一度しか使わないとする", \t -> do
+	text t "* 今までのやりかただと以下のようになる", \t -> do
+	itext t 1 "fun x = x ^ x", \t -> do
+	itext t 1 $ "*Main> fun " ++ show l1Number1, \t -> do
+	itext t 1 $ show $ fun l1Number1
+ ]
+
+literal2 :: Page
+literal2 = [\t -> do
+	writeTopTitle t "関数リテラル"
+	text t "", \t -> do
+	text t "* 一回しか使わないのに名前をつける必要はない", \t -> do
+	text t "* 関数リテラルの記法を使うと無名関数を作ることができる", \t -> do
+	text t "* やってみよう", \t -> do
+	itext t 1 $ "*Main> (\\x -> x ^ x) " ++ show l1Number1, \t -> do
+	itext t 1 $ show $ (\x -> x ^ x) l1Number1, \t -> do
+	text t "* \\[仮引数] -> [表現]という形"
+ ]
+
+literal3 :: Page
+literal3 = [\t -> do
+	writeTopTitle t "関数リテラル"
+	text t "", \t -> do
+	text t "* 2引数関数が「関数を返す関数」であることを"
+	itext t 1 "より直接的に表現すると以下のようになる", \t -> do
+	itext t 1 "bmi h = \\w -> w / (h / 100) ^ 2", \t -> do
+	itext t 1 "- 「wをとってw / (h / 100) ^ 2を返す関数」を返す", \t -> do
+	text t "* さらに同様に以下のように書き換えることが可能", \t -> do
+	itext t 1 "bmi = \\h -> \\w -> w / (h / 100) ^ 2", \t -> do
+	text t "* 右辺のリテラル表記で作られた関数をbmiに束縛している", \t -> do
+	text t "* リテラルを使わない関数定義は2つのことを同時にしていた", \t -> do
+	itext t 1 "1. 関数の作成", \t -> do
+	itext t 1 "2. 作成した関数の変数への束縛"
+ ]
+
+literal4 :: Page
+literal4 = [\t -> do
+	writeTopTitle t "関数リテラル"
+	text t "", \t -> do
+	text t "* 複数の引数をとる関数リテラルは省略記法がある", \t -> do
+	itext t 1 "\\h -> \\w -> w / (h / 100) ^ 2", \t -> do
+	arrowIText t 1 "\\h w -> w / (h / 100) ^ 2", \t -> do
+	text t "* \\[引数1] -> \\[引数2] -> ... -> [表現]を省略して", \t -> do
+	itext t 1 "\\[引数1] [引数2] ... -> [表現]"
+ ]
+
+literalSummary :: Page
+literalSummary = [\t -> do
+	writeTopTitle t "関数リテラル(まとめ)"
+	text t "", \t -> do
+	text t "* 関数リテラルの記法を使うと無名関数を書くことができる", \t -> do
+	text t "* 記法は以下の通り", \t -> do
+	itext t 1 "\\[引数1] [引数2] -> [表現]", \t -> do
+	text t "* 普通の関数定義は構文糖と考えることができる", \t -> do
+	itext t 1 "[関数名] [引数1] [引数2] ... = [表現]", \t -> do
+	arrowIText t 1 "[関数名] = \\[引数1] [引数2] ... -> [表現]"
+ ]
+
+higherOrder :: Page
+higherOrder = [\t -> do
+	writeTopTitle t "高階関数"
+	text t "", \t -> do
+	text t "* 以下のどちらかを満たす関数を高階関数と呼ぶ", \t -> do
+	itext t 1 "- 引数として関数をとる", \t -> do
+	itext t 1 "- 返り値として関数を返す", \t -> do
+	text t "* Haskellでの2引数関数は本当は関数を返す関数なので", \t -> do
+	itext t 1 "高階関数と呼ぶことができる", \t -> do
+	text t "* 高階関数を使うと", \t -> do
+	itext t 1 "- くりかえしや分岐等の「構造」を関数で表現できる", \t -> do
+	itext t 1 "- 他の言語での「構文」を普通の関数として定義できる"
+--	text t "* 引数として関数をとる関数について見ていこう"
+ ]
+
+twice :: (a -> a) -> a -> a
+twice f = f . f
+
+higherOrder2 :: Page
+higherOrder2 = [\t -> do
+	writeTopTitle t "高階関数"
+	text t "", \t -> do
+	text t "* 与えられた関数を与えられた値に2回適用する関数", \t -> do
+	itext t 1 "% [エディタ] higher.hs", \t -> do
+	itext t 1 "twice f x = f (f x)", \t -> do
+	itext t 1 "% ghci higher.hs", \t -> do
+	itext t 1 "*Main> twice (\\x -> x * (x + 1)) 3", \t -> do
+	itext t 1 $ show $ twice (\x -> x * (x + 1)) (3 :: Int), \t -> do
+	text t "* twiceは第一引数として関数を取るので高階関数である"
+ ]
+
+higherOrderSummary :: Page
+higherOrderSummary = [\t -> do
+	writeTopTitle t "高階関数(まとめ)"
+	text t "", \t -> do
+	text t "* 引数または返り値が関数である関数を高階関数と呼ぶ", \t -> do
+	text t "* 返り値が関数である関数は", \t -> do
+	itext t 1 "Haskellでは普通の複数の引数をとる関数と同じこと", \t -> do
+	text t "* 引数が関数である関数を使うと", \t -> do
+	itext t 1 "プログラムの「構造」を関数で表現することができる"
+ ]
+
+dot :: Page
+dot  = [\t -> do
+	writeTopTitle t "ドット演算子"
+	text t ""
  ]
 
 operator :: Page
