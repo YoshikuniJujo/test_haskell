@@ -13,8 +13,7 @@ main = runLecture [
 	partial, partial2, partial3, partial4, partialSummary,
 	literal, literal2, literal3, literal4, literalSummary,
 	higherOrder, higherOrder2, higherOrderSummary,
-	dot,
-	operator, operator2
+	operator, operator2, dot
  ]
 
 prelude :: Page
@@ -64,7 +63,7 @@ defineFun = [\t -> do
 	text t "", \t -> do
 	text t "* ghciの対話環境内でも関数を定義できる", \t -> do
 	text t "* しかし、関数が長くなるとわずらわしいので", \t -> do
-	text t "* 別ファイルで関数を定義し、", \t -> do
+	text t "* 別ファイルで関数を定義し", \t -> do
 	itext t 1 "対話環境でそれを使うことにしよう", \t -> do
 	text t "* お好きなエディタを選んで、と言いたいところだが", \t -> do
 	itext t 1 "- メモ帳、Vim、Emacsしか用意していない", \t -> do
@@ -211,7 +210,7 @@ literal = [\t -> do
 	text t "* これをリテラルと呼ぶ", \t -> do
 	text t "* 今までのやりかただと名前のない関数は作れない", \t -> do
 	text t "* 「引数xに対してxのx乗を返す関数」を作りたいとする", \t -> do
-	text t "* そしてその関数は一度しか使わないとする", \t -> do
+	text t "* その関数は一度しか使わないとする", \t -> do
 	text t "* 今までのやりかただと以下のようになる", \t -> do
 	itext t 1 "fun x = x ^ x", \t -> do
 	itext t 1 $ "*Main> fun " ++ show l1Number1, \t -> do
@@ -276,27 +275,37 @@ higherOrder = [\t -> do
 	text t "* 以下のどちらかを満たす関数を高階関数と呼ぶ", \t -> do
 	itext t 1 "- 引数として関数をとる", \t -> do
 	itext t 1 "- 返り値として関数を返す", \t -> do
-	text t "* Haskellでの2引数関数は本当は関数を返す関数なので", \t -> do
-	itext t 1 "高階関数と呼ぶことができる", \t -> do
 	text t "* 高階関数を使うと", \t -> do
 	itext t 1 "- くりかえしや分岐等の「構造」を関数で表現できる", \t -> do
-	itext t 1 "- 他の言語での「構文」を普通の関数として定義できる"
+	itext t 1 "- 他の言語での「構文」を普通の関数として定義できる", \t -> do
+	text t "* 返り値として関数を返す関数は", \t -> do
+	itext t 1 "- 高階関数として考える場合もあるが", \t -> do
+	itext t 1 "- 単に複数の引数をとる関数として見る場合もある"
+	{-
+	text t "* Haskellでの2引数関数は本当は関数を返す関数なので", \t -> do
+	itext t 1 "- 高階関数と呼ぶことができる", \t -> do
+	itext t 1 "- 同じ関数でも2引数関数としてとらえる"
+	-}
 --	text t "* 引数として関数をとる関数について見ていこう"
  ]
 
 twice :: (a -> a) -> a -> a
 twice f = f . f
 
+ho2number1 :: Int
+ho2number1 = unsafePerformIO $ randomRIO (2, 9)
+
 higherOrder2 :: Page
 higherOrder2 = [\t -> do
 	writeTopTitle t "高階関数"
 	text t "", \t -> do
 	text t "* 与えられた関数を与えられた値に2回適用する関数", \t -> do
+	text t "* やってみよう", \t -> do
 	itext t 1 "% [エディタ] higher.hs", \t -> do
 	itext t 1 "twice f x = f (f x)", \t -> do
 	itext t 1 "% ghci higher.hs", \t -> do
-	itext t 1 "*Main> twice (\\x -> x * (x + 1)) 3", \t -> do
-	itext t 1 $ show $ twice (\x -> x * (x + 1)) (3 :: Int), \t -> do
+	itext t 1 $ "*Main> twice (\\x -> x * (x + 1)) " ++ show ho2number1, \t -> do
+	itext t 1 $ show $ twice (\x -> x * (x + 1)) ho2number1, \t -> do
 	text t "* twiceは第一引数として関数を取るので高階関数である"
  ]
 
@@ -309,12 +318,6 @@ higherOrderSummary = [\t -> do
 	itext t 1 "Haskellでは普通の複数の引数をとる関数と同じこと", \t -> do
 	text t "* 引数が関数である関数を使うと", \t -> do
 	itext t 1 "プログラムの「構造」を関数で表現することができる"
- ]
-
-dot :: Page
-dot  = [\t -> do
-	writeTopTitle t "ドット演算子"
-	text t ""
  ]
 
 operator :: Page
@@ -348,6 +351,21 @@ operator2 = [\t -> do
 	itext t 1 $ show $ (218 `bmi`) 164, \t -> do
 	itext t 1 "*Main> (`bmi` 164) 218", \t -> do
 	itext t 1 $ show $ (`bmi` 164) 218
+ ]
+
+dot :: Page
+dot  = [\t -> do
+	writeTopTitle t "ドット演算子"
+	text t "", \t -> do
+	text t "* fun x = f (g x)という形はしばしば使われる", \t -> do
+	text t "* xにgを適用してその結果にfを適用するということ", \t -> do
+	text t "* もっと長くなってこんなふうになることも", \t -> do
+	itext t 1 "fun2 x = f1 (f2 (f3 (f4 (f5 (f6 (f7 x))))))", \t -> do
+	text t "* ドット演算子を使えばそれぞれ以下のように書ける", \t -> do
+	itext t 1 "fun = f . g", \t -> do
+	itext t 2 "- funは関数fと関数gを合成したもの", \t -> do
+	itext t 1 "fun2 = f1 . f2 . f3 . f4 . f5 . f6 . f7", \t -> do
+	itext t 2 "- fun2は関数f1から関数f7を順に合成したもの"
  ]
 
 aboutIterate3 :: Page
