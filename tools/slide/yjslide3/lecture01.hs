@@ -13,7 +13,9 @@ main = runLecture [
 	partial, partial2, partial3, partial4, partialSummary,
 	literal, literal2, literal3, literal4, literalSummary,
 	higherOrder, higherOrder2, higherOrderSummary,
-	operator, operator2, dot
+	operator, operator2, operator3,
+	dot, dollar,
+	summary
  ]
 
 prelude :: Page
@@ -27,7 +29,8 @@ prelude = [\t -> do
 	text t "* 関数の部分適用について見る", \t -> do
 	text t "* リテラルとして関数を書く記法を学ぶ", \t -> do
 	text t "* 高階関数について学ぶ", \t -> do
-	text t "* Haskellでは演算子と関数が同じものであることを見る"
+	text t "* Haskellでは演算子と関数が同じものであることを見る", \t -> do
+	text t "* 便利な演算子(.)と($)を紹介する"
  ]
 
 function :: Page
@@ -39,7 +42,7 @@ function = [\t -> do
 	text t "* 同じことをHaskellでは以下のようにする", \t -> do
 	itext t 1 "add x y = x + y", \t -> do
 	text t "* [関数名] [仮引数1] [仮引数2] ... = [表現]という形", \t -> do
-	text t "* '='を使っているのは何故か?", \t -> do
+	text t "* '='を使っているのはなぜか?", \t -> do
 	itext t 1 "add x yはx + yに置き換えられるということ", \t -> do
 	itext t 1 "プログラム中のadd 3 8は3 + 8に置き換え可能"
  ]
@@ -48,13 +51,12 @@ apply :: Page
 apply = [\t -> do
 	writeTopTitle t "関数の適用"
 	text t "", \t -> do
-	text t "* 「関数の定義」でもすこし触れたが", \t -> do
 	text t "* addの仮引数x, yに実引数3, 8を入れるには以下のように", \t -> do
 	itext t 1 "add 3 8", \t -> do
 	text t "* [関数名] [実引数1] [実引数2] ...という形", \t -> do
-	text t "* 関数適用の際に関数名のあとに(..., ...)のようにしない", \t -> do
-	text t "* 単に引数を並べれば良い", \t -> do
-	text t "* この記法の合理性については後々明らかになる"
+	text t "* [関数名]([実引数1], [実引数2], ...)のようにしない", \t -> do
+	text t "* 空白でくぎった引数をならべるだけ", \t -> do
+	text t "* この記法の合理性についてはそのうち明らかになる"
  ]
 
 defineFun :: Page
@@ -66,8 +68,8 @@ defineFun = [\t -> do
 	text t "* 別ファイルで関数を定義し", \t -> do
 	itext t 1 "対話環境でそれを使うことにしよう", \t -> do
 	text t "* お好きなエディタを選んで、と言いたいところだが", \t -> do
-	itext t 1 "- メモ帳、Vim、Emacsしか用意していない", \t -> do
-	itext t 2 "(著者メモ) Emacsは用意できるかどうか"
+	itext t 1 "メモ帳、Vim、Emacsしか用意していない", \t -> do
+	itext t 1 "(著者メモ) Emacsは用意できるかどうか"
  ]
 
 defineFun2 :: Page
@@ -83,7 +85,7 @@ defineFun2 = [\t -> do
 	itext t 1 "BMI = [体重(kg)] / [身長(m)]の2乗", \t -> do
 	text t "* bmi.hsファイルを作ろう", \t -> do
 	itext t 1 "% [エディタ] bmi.hs", \t -> do
-	itext t 2 "[エディタ]はnotepad, vim, emacsのどれか"
+	itext t 2 "- [エディタ]はnotepad, vim, emacsのどれか"
  ]
 
 bmi :: Double -> Double -> Double
@@ -175,7 +177,7 @@ partial4 = [\t -> do
 	text t "* 関数の一部の引数だけを指定した形", \t -> do
 	text t "* bmi 218自体も関数なので", \t -> do
 	itext t 1 "(bmi 218) 164のような形で引数を与えることが可能", \t -> do
-	text t "* 実は今まで2つの引数を与えていたと思っていたが", \t -> do
+	text t "* 今まで2つの引数を与えていたと思っていたが", \t -> do
 	itext t 1 "本当はbmi 218 164は(bmi 218) 164の括弧を省略した形だった", \t -> do
 	text t "* Haskellに2引数関数はない!", \t -> do
 	text t "* bmiは引数を与えると「引数をひとつ取る関数」を返す関数", \t -> do
@@ -280,7 +282,7 @@ higherOrder = [\t -> do
 	itext t 1 "- 他の言語での「構文」を普通の関数として定義できる", \t -> do
 	text t "* 返り値として関数を返す関数は", \t -> do
 	itext t 1 "- 高階関数として考える場合もあるが", \t -> do
-	itext t 1 "- 単に複数の引数をとる関数として見る場合もある"
+	itext t 1 "- 複数の引数をとる関数として見る場合もある"
 	{-
 	text t "* Haskellでの2引数関数は本当は関数を返す関数なので", \t -> do
 	itext t 1 "- 高階関数と呼ぶことができる", \t -> do
@@ -315,7 +317,7 @@ higherOrderSummary = [\t -> do
 	text t "", \t -> do
 	text t "* 引数または返り値が関数である関数を高階関数と呼ぶ", \t -> do
 	text t "* 返り値が関数である関数は", \t -> do
-	itext t 1 "Haskellでは普通の複数の引数をとる関数と同じこと", \t -> do
+	itext t 1 "Haskellでは複数の引数をとる関数と同じこと", \t -> do
 	text t "* 引数が関数である関数を使うと", \t -> do
 	itext t 1 "プログラムの「構造」を関数で表現することができる"
  ]
@@ -353,8 +355,38 @@ operator2 = [\t -> do
 	itext t 1 $ show $ (`bmi` 164) 218
  ]
 
+operator3 :: Page
+operator3 = [\t -> do
+	writeTopTitle t "演算子"
+	text t "", \t -> do
+	text t "* 演算子は関数と同様に自分で定義できる", \t -> do
+	text t "* 演算子に使える記号はアスキーの範囲では以下のものがある", \t -> do
+	itext t 1 "!#$%&*+./<=>?@\\^|-~", \t -> do
+	text t "* 以下のように定義する", \t -> do
+	itext t 1 "x @ y = x ^ 2 + y ^ 2", \t -> do
+	text t "* 関数と同じような形での定義も可能", \t -> do
+	itext t 1 "(@) x y = x ^ 2 + y ^ 2", \t -> do
+	text t "* 逆に関数を演算子と同じ形で定義することも", \t -> do
+	itext t 1 "h `bmi` w = w / (h / 100) ^ 2"
+ ]
+
 dot :: Page
-dot  = [\t -> do
+dot = [\t -> do
+	writeTopTitle t "ドット演算子"
+	text t "", \t -> do
+	text t "* 以下のように定義されるドット演算子が用意されている", \t -> do
+	itext t 1 "f . g = \\x -> f (g x)", \t -> do
+	text t "* (f . g) xで、まずはxにgを適用しその結果をfに適用する", \t -> do
+	text t "* ベルトコンベアのように関数を次々と適用していくイメージ", \t -> do
+	text t "* ドット演算子で関数を組み合わせることを関数合成と呼ぶ", \t -> do
+	text t "* 以下のような書き換えが可能", \t -> do
+	itext t 1 "fun x = x * 3 + 4", \t -> do
+	arrowIText t 1 "fun = (+ 4) . (* 3)", \t -> do
+	text t "* 「3倍して4を足す」を直接的に表現できる"
+ ]
+
+dot2 :: Page
+dot2  = [\t -> do
 	writeTopTitle t "ドット演算子"
 	text t "", \t -> do
 	text t "* fun x = f (g x)という形はしばしば使われる", \t -> do
@@ -366,6 +398,22 @@ dot  = [\t -> do
 	itext t 2 "- funは関数fと関数gを合成したもの", \t -> do
 	itext t 1 "fun2 = f1 . f2 . f3 . f4 . f5 . f6 . f7", \t -> do
 	itext t 2 "- fun2は関数f1から関数f7を順に合成したもの"
+ ]
+
+dollar :: Page
+dollar = [\t -> do
+	writeTopTitle t "$演算子"
+	text t "", \t -> do
+	text t "* 以下のような演算子も用意されている", \t -> do
+	itext t 1 "f $ x = f x", \t -> do
+	text t "* f $ xで値xに関数fを適用する", \t -> do
+	text t "* つまり、f $ xはf xと同じこと", \t -> do
+	text t "* 意味のない演算子のように見えるが", \t -> do
+	itext t 1 "- 優先順位が低く右結合するように作られているので", \t -> do
+	itext t 1 "- ()を省略したいときに使える", \t -> do
+	text t "* 以下のような書き換えが可能になる", \t -> do
+	itext t 1 "f (g (h (i (j (k x)))))", \t -> do
+	arrowIText t 1 "f $ g $ h $ i $ j $ k x"
  ]
 
 aboutIterate3 :: Page
@@ -381,4 +429,18 @@ aboutIterate3 = [\t -> do
 	text t "* 引数として関数を取る関数は高階関数と呼ばれる", \t -> do
 	text t "* 「リストの値のすべてに何かする」関数は用意されている", \t -> do
 	itext t 1 "- map f lstでlstのすべての要素にfを適用する"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* 関数定義: [関数名] [仮引数1] [仮引数2] ... = [表現]", \t -> do
+	text t "* 関数適用: [関数名] [実引数1] [実引数2] ...", \t -> do
+	text t "* 複数の引数をとる関数は「関数を返す関数」である", \t -> do
+	text t "* 関数リテラル: \\[仮引数1] [仮引数2] ... -> [表現]", \t -> do
+	text t "* 引数か返り値が関数であるような関数を高階関数と呼ぶ", \t -> do
+	text t "* 演算子と関数は()と``で相互に変換可能", \t -> do
+	text t "* 演算子も関数も部分適用が可能", \t -> do
+	text t "* 便利な演算子(.)と($)が用意されている"
  ]
