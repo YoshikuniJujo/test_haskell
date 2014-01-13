@@ -11,7 +11,7 @@ main :: IO ()
 main = runLecture [
 	[flip writeTitle subtitle], prelude,
 	{- aboutType, aboutType2, aboutType3, -} aboutType4, aboutType5,
-	aboutType6, aboutType7, aboutType8, aboutType9, aboutType10,
+	aboutType6, aboutType7, aboutType9, aboutType8, aboutType10,
 	aboutType11, aboutType12, aboutType13, aboutType14, operator,
 	polymorphism, polymorphism2, polymorphism3, polymorphism4,
 	polymorphism5, polymorphism6,
@@ -82,6 +82,9 @@ aboutType3 = [\t -> do
 	itext t 1 "- リストは数じゃないということ"
  ]
 
+at4char1 :: Char
+at4char1 = unsafePerformIO $ randomRIO ('A', 'Z')
+
 aboutType4 :: Page
 aboutType4 = [\t -> do
 	writeTopTitle t "「何ができるか」"
@@ -91,9 +94,12 @@ aboutType4 = [\t -> do
 	text t "* 文字はtoLowerで小文字にすることができる", \t -> do
 	itext t 1 "Prelude> :m Data.Char", \t -> do
 	itext t 2 "- toLowerを含むData.Charモジュールの読み込み", \t -> do
-	itext t 1 "Prelude Data.Char> toLower 'A'", \t -> do
-	itext t 1 "'a'"
+	itext t 1 $ "Prelude Data.Char> toLower " ++ show at4char1, \t -> do
+	itext t 1 $ show $ toLower at4char1
  ]
+
+at5bool1 :: Bool
+at5bool1 = unsafePerformIO randomIO
 
 aboutType5 :: Page
 aboutType5 = [\t -> do
@@ -101,14 +107,14 @@ aboutType5 = [\t -> do
 	text t "", \t -> do
 	text t "* Haskellには真偽を表現するBool型がある", \t -> do
 	itext t 1 "- False, Trueの2つの値のみを持つ", \t -> do
-	text t "* Trueを小文字にすることはできない", \t -> do
-	itext t 1 "Prelude Data.Char> toLower True", \t -> do
+	text t $ "* " ++ show at5bool1 ++ "を小文字にすることはできない", \t -> do
+	itext t 1 $ "Prelude Data.Char> toLower " ++ show at5bool1, \t -> do
 	itext t 1 "..."
 	itext t 1 "Couldn't match expected type `Char' with"
 	itext t 1 "actual type `Bool'"
-	itext t 1 "In the first argument of `toLower', namely `True'"
+	itext t 1 $ "In the first argument of `toLower', namely `" ++ show at5bool1 ++ "'"
 	itext t 1 "...", \t -> do
-	text t "* 「TrueはBoolであってCharじゃないよ」と言われた"
+	text t $ "* 「" ++ show at5bool1 ++ "はBoolであってCharじゃないよ」と言われた"
  ]
 
 aboutType6 :: Page
