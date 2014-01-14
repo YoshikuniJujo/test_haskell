@@ -83,7 +83,7 @@ aboutIterate4 = [\t -> do
 	writeTopTitle t "squareを定義する"
 	text t "", \t -> do
 	text t "* 実際にmapを使ってみよう", \t -> do
-	text t "* lecture/lecture03ディレクトリを作成しそこに移動", \t -> do
+	text t "* lecture/lecture04ディレクトリを作成しそこに移動", \t -> do
 	text t "* squareSum.hsファイルを作ろう", \t -> do
 	text t "* まずはsquare関数を書く", \t -> do
 	itext t 1 "square :: Int -> Int"
