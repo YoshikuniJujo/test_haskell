@@ -10,7 +10,8 @@ module Lecture (
 	itext', hLine,
 	Turtle,
 	writeTree, BinTree(..), rtGoto, rotateL, rotateR, width, mapR,
-	randomDot, drawRect2, forwardRt, circleRt, dotRt
+	randomDot, drawRect2, forwardRt, circleRt, dotRt,
+	newTurtle, field, hideturtle, penup, writeRt, undo,
 ) where
 
 import Graphics.X11.Turtle
@@ -219,6 +220,9 @@ isemititle t i txt = do
 	setx t $ width / 12 + i * semiBigF * 4
 	write t fontName semiBigF txt
 	forward t $ semiBigF * myLength txt
+
+writeRt :: Turtle -> String -> IO ()
+writeRt t txt = write t fontName normalF txt
 
 text :: Turtle -> String -> IO ()
 text t txt = do

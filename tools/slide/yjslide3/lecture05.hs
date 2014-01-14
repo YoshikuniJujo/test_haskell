@@ -56,7 +56,14 @@ getPiAlgorithm = [\t -> do
 	drawRect2 t 150 220 120 120
 	forwardRt t 60
 	circleRt t 60
+	t' <- newTurtle (field t)
+	hideturtle t'
+	penup t'
+	rtGoto t' 300 300
+	writeRt t' $ show ((0, 0) :: (Int, Int))
 --	replicateM_ 300 $ randomDot t 150 220 120 120
 	forM_ randomXY $ \(x, y) -> do
 		dotRt t (210 + 60 * x) (280 + 60 * y)
+		undo t'
+		writeRt t' $ show (x, y)
  ]
