@@ -13,7 +13,8 @@ main = runLecture [
 	aboutIterate, aboutIterate2, aboutIterate3, aboutIterate4,
 	aboutIterate5, enumerate, squareSumFile, squareSumOneL,
 	iterateSpace, structure,
-	genKatsugi
+	genKatsugi, genKatsugi2, genKatsugi3, genKatsugi4, genKatsugi5,
+	addFilter, addFilter2
  ]
 
 prelude :: Page
@@ -207,4 +208,106 @@ genKatsugi = [\t -> do
 	itext t 1 "lucky 4 = False", \t -> do
 	itext t 1 "lucky 9 = False", \t -> do
 	itext t 1 "lucky _ = True"
+ ]
+
+gk2int1 :: Int
+gk2int1 = unsafePerformIO $ randomRIO (3, 11)
+
+lucky :: Int -> Bool
+lucky 4 = False
+lucky 9 = False
+lucky _ = True
+
+squareSum' :: Int -> Int
+squareSum' n = sum $ map (^ (2 :: Int)) $ filter lucky [0 .. n]
+
+squareSum'' :: Int -> Int
+squareSum'' n = sum $ filter lucky $ map (^ (2 :: Int)) $ filter lucky [0 .. n]
+
+genKatsugi2 :: Page
+genKatsugi2 = [\t -> do
+	writeTopTitle t "験を坦ぐ"
+	text t "", \t -> do
+	text t "* squareSum'を書いてみよう", \t -> do
+	itext t 1 "squareSum' :: Int -> Int", \t -> do
+	itext t 1 "squareSum' n ="
+	itext t 2 "sum $ map (^ 2) $ filter lucky [0 .. n]", \t -> do
+	text t "* filterという新しい関数がでてきた", \t -> do
+	itext t 1 "filter :: (a -> Bool) -> [a] -> [a]", \t -> do
+	text t "* 第一引数で指定した関数でリストの要素をチェックして", \t -> do
+	itext t 1 "結果が真のものだけを集めたリストを返す"
+ ]
+
+genKatsugi3 :: Page
+genKatsugi3 = [\t -> do
+	writeTopTitle t "験を坦ぐ"
+	text t "", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 $ "*Main> squareSum " ++ show gk2int1, \t -> do
+	itext t 2 "- まずはもともとの関数", \t -> do
+	itext t 1 $ show $ squareSum gk2int1, \t -> do
+	itext t 1 $ "*Main> squareSum' " ++ show gk2int1, \t -> do
+	itext t 1 $ show $ squareSum' gk2int1, \t -> do
+	itext t 1 $ "*Main> (squareSum " ++ show gk2int1 ++ ") - (squareSum' " ++
+		show gk2int1 ++ ")", \t -> do
+	itext t 1 $ show $ squareSum gk2int1 - squareSum' gk2int1, \t -> do
+	text t "* ちゃんと4と9の2乗は除かれている"
+ ]
+
+genKatsugi4 :: Page
+genKatsugi4 = [\t -> do
+	writeTopTitle t "験を坦ぐ"
+	text t "", \t -> do
+	text t "* 上司のところに持っていくと", \t -> do
+	itext t 1 "「ふーん、いいね」", \t -> do
+	itext t 1 "「あ、二乗して4と9になる数も縁起悪いよね」", \t -> do
+	itext t 1 "「直しといて」", \t -> do
+	text t "* そんな会社やめちまえ", \t -> do
+	text t "* と言いたいが、今はまだやめられない理由があるならば", \t -> do
+	itext t 1 "squareSum'' :: Int -> Int", \t -> do
+	itext t 1 "squareSum'' n = sum $ filter lucky $"
+	itext t 2 "map (^ 2) $ filter lucky [0 .. n]"
+ ]
+
+gk5int1 :: Int
+gk5int1 = unsafePerformIO $ randomRIO (3, 11)
+
+genKatsugi5 :: Page
+genKatsugi5 = [\t -> do
+	writeTopTitle t "試してみる"
+	text t "", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 $ "*Main> squareSum' " ++ show gk5int1, \t -> do
+	itext t 1 $ show $ squareSum' gk5int1, \t -> do
+	itext t 1 $ "*Main> squareSum'' " ++ show gk5int1, \t -> do
+	itext t 1 $ show $ squareSum'' gk5int1, \t -> do
+	itext t 1 $ "*Main> (squareSum' " ++ show gk5int1 ++
+		") - (squareSum'' " ++ show gk5int1 ++ ")", \t -> do
+	itext t 1 $ show $ (squareSum' gk5int1) - (squareSum'' gk5int1), \t -> do
+	text t "* 4と9が除かれているのがわかる"
+ ]
+
+addFilter :: Page
+addFilter = [\t -> do
+	writeTopTitle t "「くりかえし」の構造"
+	text t "", \t -> do
+	text t "* 「くりかえし」という動作を3つの部分に分けた", \t -> do
+	itext t 1 "- リストを作り出し", \t -> do
+	itext t 1 "- 要素すべてに関数を適用し", \t -> do
+	itext t 1 "- それらの要素をまとめ上げた", \t -> do
+	text t "* それぞれの段階をenumerate, map, accumulateと呼ぶ", \t -> do
+	text t "* さらに以下を追加した", \t -> do
+	itext t 1 "- 要素のうち条件を満たすものだけを取り出す", \t -> do
+	itext t 1 "- これをfilterと呼ぶ"
+ ]
+
+addFilter2 :: Page
+addFilter2 = [\t -> do
+	writeTopTitle t "「くりかえし」の構造"
+	text t "", \t -> do
+	text t "* 「くりかえし」は以下のように組み立てることができる", \t -> do
+	itext t 1 "enumerate", \t -> do
+	itext t 1 "複数のmapまたはfilter", \t -> do
+	itext t 1 "accumulate"
  ]
