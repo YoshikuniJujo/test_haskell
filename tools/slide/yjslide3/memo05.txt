@@ -1,0 +1,16 @@
+circleのために必要な説明事項
+
+* import
+	- 良い習慣のために import System.Random (mkStdGen, randomRs) とする
+* where
+* 使う関数
+	- mkStdGen
+	- randomRs
+	- fromIntegral
+	- take
+	- (^) : これはもっと前で説明する必要があるな
+	- (<=)
+	- zip
+	- fst, snd
+	- cycle
+* モンテカルロ法

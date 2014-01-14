@@ -9,7 +9,8 @@ module Lecture (
 	haskellBCurry, oneshot,
 	itext', hLine,
 	Turtle,
-	writeTree, BinTree(..), rtGoto, rotateL, rotateR, width, mapR
+	writeTree, BinTree(..), rtGoto, rotateL, rotateR, width, mapR,
+	randomDot, drawRect2, forwardRt, circleRt, dotRt
 ) where
 
 import Graphics.X11.Turtle
@@ -21,6 +22,7 @@ import Data.Char
 import Data.List
 import System.Environment
 import System.IO.Unsafe
+import System.Random
 
 import qualified WriteTree as WT
 import WriteTree(BinTree(..), rotateL, rotateR, mapR)
@@ -351,6 +353,28 @@ drawRect t x y w h = do
 	penup t
 	pensize t $ 1 * rt
 
+drawRect2 :: Turtle -> Double -> Double -> Double -> Double -> IO ()
+drawRect2 t x y w h = do
+	setheading t 0
+	goto t (x * rt) (y * rt)
+	pensize t $ 2 * rt
+	pendown t
+	replicateM_ 2 $
+		forward t (rt * w) >> right t 90 >>
+		forward t (rt * h) >> right t 90
+	penup t
+	pensize t $ 1 * rt
+
+forwardRt :: Turtle -> Double -> IO ()
+forwardRt t = forward t . (* rt)
+
+circleRt :: Turtle -> Double -> IO ()
+circleRt t r = do
+	pendown t
+	setheading t 180
+	circle t (r * rt)
+	penup t
+
 graphWrite :: Turtle -> Double -> Double -> String -> IO ()
 graphWrite t x y str = do
 	goto t (width * x / 100) (height * y / 100)
@@ -416,3 +440,15 @@ hLine t b l = do
 
 writeTree :: Turtle -> (a -> String) -> Double -> Double -> Double -> Double -> BinTree a -> IO ()
 writeTree t sw sz dx x y = WT.writeTree t sw (sz * rt) dx (x * rt) (y * rt)
+
+randomDot :: Turtle -> Double -> Double -> Double -> Double -> IO ()
+randomDot t lft tp w h = do
+	x <- randomRIO (lft * rt, lft * rt + w * rt)
+	y <- randomRIO (tp * rt, tp * rt + h * rt)
+	goto t x y
+	dot t (1 * rt)
+
+dotRt :: Turtle -> Double -> Double -> IO ()
+dotRt t x y = do
+	goto t x y
+	dot t (1 * rt)
