@@ -14,7 +14,10 @@ main = runLecture [
 	aboutIterate5, enumerate, squareSumFile, squareSumOneL,
 	iterateSpace, structure,
 	genKatsugi, genKatsugi2, genKatsugi3, genKatsugi4, genKatsugi5,
-	addFilter, addFilter2
+	addFilter, addFilter2,
+	iterateSummary,
+	listData, listData2, listData3,
+	summary
  ]
 
 prelude :: Page
@@ -226,7 +229,7 @@ squareSum'' n = sum $ filter lucky $ map (^ (2 :: Int)) $ filter lucky [0 .. n]
 
 genKatsugi2 :: Page
 genKatsugi2 = [\t -> do
-	writeTopTitle t "験を坦ぐ"
+	writeTopTitle t "験を担ぐ"
 	text t "", \t -> do
 	text t "* squareSum'を書いてみよう", \t -> do
 	itext t 1 "squareSum' :: Int -> Int", \t -> do
@@ -240,7 +243,7 @@ genKatsugi2 = [\t -> do
 
 genKatsugi3 :: Page
 genKatsugi3 = [\t -> do
-	writeTopTitle t "験を坦ぐ"
+	writeTopTitle t "験を担ぐ"
 	text t "", \t -> do
 	text t "* 試してみる", \t -> do
 	itext t 1 "*Main> :reload", \t -> do
@@ -257,7 +260,7 @@ genKatsugi3 = [\t -> do
 
 genKatsugi4 :: Page
 genKatsugi4 = [\t -> do
-	writeTopTitle t "験を坦ぐ"
+	writeTopTitle t "験を担ぐ"
 	text t "", \t -> do
 	text t "* 上司のところに持っていくと", \t -> do
 	itext t 1 "「ふーん、いいね」", \t -> do
@@ -310,4 +313,72 @@ addFilter2 = [\t -> do
 	itext t 1 "enumerate", \t -> do
 	itext t 1 "複数のmapまたはfilter", \t -> do
 	itext t 1 "accumulate"
+ ]
+
+iterateSummary :: Page
+iterateSummary = [\t -> do
+	writeTopTitle t "くりかえし(まとめ)"
+	text t "", \t -> do
+	text t "* リストを使えば状態変化なしで「くりかえし」が可能", \t -> do
+	text t "* リストを作り(enumerate)", \t -> do
+	text t "* 要素を選び(filter)", \t -> do
+	text t "* それぞれの要素を変換し(map)", \t -> do
+	text t "* それをまとめる(accumulate)", \t -> do
+	text t "* ほとんどの「くりかえし」はこの構造にすることができる", \t -> do
+	text t "* リストという実体を渡していくというモデルはわかりやすい", \t -> do
+	text t "* 遅延リストとGCによって空間効率は問題なく保たれる"
+ ]
+
+listData :: Page
+listData = [\t -> do
+	writeTopTitle t "データ構造としてのリスト"
+	text t "", \t -> do
+	text t "* 「くりかえし」の実体化としてのリストを見てきた", \t -> do
+	text t "* もちろんリストはデータ構造として使える", \t -> do
+	text t "* リストを扱う関数は数多く用意されている", \t -> do
+	text t "* また、Haskellの文字列は文字のリストなので", \t -> do
+	itext t 1 "それらの関数は文字列に適用することができる", \t -> do
+	text t "* 文字列リテラルは構文糖であり以下のようになる", \t -> do
+	itext t 1 "\"hello\"", \t -> do
+	arrowIText t 1 "['h', 'e', 'l', 'l', o']"
+ ]
+
+listData2 :: Page
+listData2 = [\t -> do
+	writeTopTitle t "データ構造としてのリスト"
+	text t "", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 1 "*Main> \"hello\"", \t -> do
+	itext t 1 $ show "hello", \t -> do
+	itext t 1 "*Main> ['h', 'e', 'l', 'l', 'o']", \t -> do
+	itext t 1 $ show ['h', 'e', 'l', 'l', 'o'], \t -> do
+	text t "* Haskellは文字のリストを文字列として表示してくれる"
+ ]
+
+listData3 :: Page
+listData3 = [\t -> do
+	writeTopTitle t "データ構造としてのリスト"
+	text t "", \t -> do
+	text t "* リストは本質的には「くりかえし」の実体化である", \t -> do
+	text t "* よってデータ構造として使う場合には不得意な分野がある", \t -> do
+	text t "* 後ろの要素から順にアクセスするのは不得意", \t -> do
+	itext t 1 "- リストは前から作って前から消費するのに向いている", \t -> do
+	text t "* 大きなリストを保存しておくのには向かない", \t -> do
+	itext t 1 "- 順にGCされていかないような場合には空間効率が悪い", \t -> do
+	text t "* よってリストを使うのは以下のいずれか", \t -> do
+	itext t 1 "- 本質的に1度だけの「くりかえし」である", \t -> do
+	itext t 1 "- 小さなリスト", \t -> do
+	itext t 1 "- 効率を考慮しないプロトタイプの作成"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* 「くりかえし」の実体化としてのリストについて見た", \t -> do
+	text t "* 簡単に使えるデータ構造としてのリストについて見た", \t -> do
+	text t "* Haskellでは標準的な文字列は文字のリストである", \t -> do
+	text t "* データ構造としてのリストには使いどころがある", \t -> do
+	text t "* 大量の要素を保存しランダムアクセスするのには向かない", \t -> do
+	text t "* その場合でもプロトタイプであればリストを使うことも"
  ]
