@@ -34,7 +34,7 @@ montecarlo = [\t -> do
 	itext t 1 "- 乱数を使うことで「決まった時間内」に", \t -> do
 	itext t 1 "- 「正しい可能性の高い結果」が得られる", \t -> do
 	text t "* 本当に正しいかどうかはわからない", \t -> do
-	itext t 1 "- 一様の賭けである", \t -> do
+	itext t 1 "- 一種の賭けである", \t -> do
 	itext t 1 "- だから「モンテカルロ」法"
  ]
 
@@ -43,6 +43,10 @@ randomXY = unsafePerformIO $ replicateM 300 $ do
 	x <- randomRIO (-1, 1)
 	y <- randomRIO (-1, 1)
 	return (x, y)
+
+inPoints :: [(Int, Int)]
+inPoints = flip zip [1 ..] $ tail $
+	scanl (\ps (x, y) -> if inCircle x y then ps + 1 else ps) 0 randomXY
 
 getPiAlgorithm :: Page
 getPiAlgorithm = [\t -> do
@@ -56,14 +60,46 @@ getPiAlgorithm = [\t -> do
 	drawRect2 t 150 220 120 120
 	forwardRt t 60
 	circleRt t 60
-	t' <- newTurtle (field t)
-	hideturtle t'
-	penup t'
-	rtGoto t' 300 300
-	writeRt t' $ show ((0, 0) :: (Int, Int))
+	t' <- mkHideTurtle (field t) 300 300
+	writeRt t' "in    ="
+	forwardRt t' 60
+	t'' <- mkHideTurtle (field t) 300 320
+	writeRt t'' "total ="
+	forwardRt t'' 60
+	t''' <- mkHideTurtle (field t) 300 340
+	writeRt t''' "pi    ="
+	forwardRt t''' 60
+	writeRt t' $ show (0 :: Int)
+	writeRt t'' $ show (0 :: Int)
+	writeRt t''' $ show (0 :: Double)
 --	replicateM_ 300 $ randomDot t 150 220 120 120
-	forM_ randomXY $ \(x, y) -> do
+	forM_ (zip randomXY inPoints) $ \((x, y), (i, a)) -> do
+		if inCircle x y then pencolor t "blue" else pencolor t "red"
 		dotRt t (210 + 60 * x) (280 + 60 * y)
+--		print i
+--		print a
+		waitTurtle t
 		undo t'
-		writeRt t' $ show (x, y)
+		writeRt t' $ show i
+		undo t''
+		writeRt t'' $ show a
+		undo t'''
+		writeRt t''' $ take 5 $
+			show (fromIntegral i / fromIntegral a * 4 :: Double)
  ]
+
+mkHideTurtle :: Field -> Double -> Double -> IO Turtle
+mkHideTurtle f x y = do
+	t <- newTurtle f
+	hideturtle t
+	penup t
+	rtGoto t x y
+	return t
+
+showDouble :: Int -> Double -> String
+showDouble n d
+	| d < 0 = take n $ show d
+	| otherwise = ' ' : take (n - 1) (show d)
+
+inCircle :: Double -> Double -> Bool
+inCircle x y = x ^ (2 :: Int) + y ^ (2 :: Int) <= 1

@@ -11,7 +11,8 @@ module Lecture (
 	Turtle,
 	writeTree, BinTree(..), rtGoto, rotateL, rotateR, width, mapR,
 	randomDot, drawRect2, forwardRt, circleRt, dotRt,
-	newTurtle, field, hideturtle, penup, writeRt, undo,
+	newTurtle, field, hideturtle, penup, writeRt, undo, waitTurtle,
+	pencolor, setheading, Field,
 ) where
 
 import Graphics.X11.Turtle
@@ -454,5 +455,5 @@ randomDot t lft tp w h = do
 
 dotRt :: Turtle -> Double -> Double -> IO ()
 dotRt t x y = do
-	goto t x y
+	goto t (x * rt) (y * rt)
 	dot t (1 * rt)
