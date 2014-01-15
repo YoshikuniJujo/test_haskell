@@ -17,7 +17,9 @@ main = runLecture [
 	aboutFstSnd, aboutFstSnd2, aboutTail, aboutTake, aboutCycle, aboutZip,
 	aboutRandom, aboutRandom2, aboutRandom3,
 	aboutInCircle, aboutInCircle2, aboutInCircle3, aboutInCircle4,
-	aboutInCircle5, aboutInCircle6
+	aboutInCircle5, aboutInCircle6,
+	randomPoints, randomPoints2, randomPoints3, randomPoints4, randomPoints5,
+	randomPoints6, randomPoints7, randomPoints8, randomPoints9, randomPoints10
  ]
 
 prelude :: Page
@@ -141,7 +143,7 @@ functions = [\t -> do
 	writeTopTitle t "追加の関数"
 	text t "", \t -> do
 	text t "* 以下のまだ説明していない関数を使う", \t -> do
-	itext t 1 "(^), (<), fromIntegral, fst, snd,"
+	itext t 1 "(^), (<=), fromIntegral, fst, snd,"
 	itext t 1 "tail, take, cycle, zip, randomRs, mkStdGen", \t -> do
 	text t "* ひとつずつ説明していこう"
  ]
@@ -175,17 +177,17 @@ se1int1, se1int2, se1int3, se1int4 :: Int
 
 smallerEqual :: Page
 smallerEqual = [\t -> do
-	writeTopTitle t "小なり"
+	writeTopTitle t "小なりイコール"
 	text t "", \t -> do
-	text t "* (<)は「小なりイコール」を表す関数(演算子)", \t -> do
+	text t "* (<=)は「小なりイコール」を表す関数(演算子)", \t -> do
 	text t "* x < yは", \t -> do
-	itext t 1 "- xがyより小さいときTrueを返し", \t -> do
-	itext t 1 "- xがyと等しいかまたは大きいときにFalseを返す", \t -> do
+	itext t 1 "- xがyと等しいかまたは小さいときTrueを返し", \t -> do
+	itext t 1 "- xがyより大きいときにFalseを返す", \t -> do
 	text t "* やってみよう", \t -> do
-	itext t 1 $ "Prelude> " ++ show se1int1 ++ " < " ++ show se1int2
-	itext t 1 $ show $ se1int1 < se1int2, \t -> do
-	itext t 1 $ "Prelude> " ++ show se1int3 ++ " < " ++ show se1int4
-	itext t 1 $ show $ se1int3 < se1int4
+	itext t 1 $ "Prelude> " ++ show se1int1 ++ " <= " ++ show se1int2
+	itext t 1 $ show $ se1int1 <= se1int2, \t -> do
+	itext t 1 $ "Prelude> " ++ show se1int3 ++ " <= " ++ show se1int4
+	itext t 1 $ show $ se1int3 <= se1int4
  ]
 
 fi1int1, fi1int2 :: Int
@@ -438,14 +440,14 @@ aboutInCircle4 = [\t -> do
 	text t "", \t -> do
 	text t "* inCircleの中身について考えてみよう", \t -> do
 	text t "* 中心(0, 0)で半径1の円の内側にある", \t -> do
-	arrowIText t 1 "(0, 0)からの距離が1未満", \t -> do
-	arrowIText t 1 "(0, 0)からの距離の二乗が1未満", \t -> do
+	arrowIText t 1 "(0, 0)からの距離が1以下", \t -> do
+	arrowIText t 1 "(0, 0)からの距離の二乗が1以下", \t -> do
 	text t "* (0, 0)から(x, y)までの距離の二乗は", \t -> do
 	itext t 1 "x ^ 2 + y ^ 2", \t -> do
-	text t "* これが1未満なら良いので", \t -> do
-	itext t 1 "x ^ 2 + y ^ 2 < 1", \t -> do
+	text t "* これが1以下なら良いので", \t -> do
+	itext t 1 "x ^ 2 + y ^ 2 <= 1", \t -> do
 	text t "* よってこうなる", \t -> do
-	itext t 1 "inCircle x y = x ^ 2 + y ^ 2 < 1"
+	itext t 1 "inCircle x y = x ^ 2 + y ^ 2 <= 1"
  ]
 
 aboutInCircle5 :: Page
@@ -467,7 +469,7 @@ aboutInCircle6 = [\t -> do
 	writeTopTitle t "試してみる"
 	text t "", \t -> do
 	text t "* 以下を書き込もう", \t -> do
-	itext t 1 "inCircle x y = x ^ 2 + y ^ 2 < 1", \t -> do
+	itext t 1 "inCircle x y = x ^ 2 + y ^ 2 <= 1", \t -> do
 	text t "* やってみよう", \t -> do
 	itext t 1 "*Main> :reload", \t -> do
 	itext t 1 "*Main> inCircle 0 0", \t -> do
@@ -476,4 +478,151 @@ aboutInCircle6 = [\t -> do
 	itext t 1 $ show $ inCircle 0.5 0.5, \t -> do
 	itext t 1 "*Main> inCircle 1 0", \t -> do
 	itext t 1 $ show $ inCircle 1 0
+ ]
+
+randomPoints :: Page
+randomPoints = [\t -> do
+	writeTopTitle t "数列をペアに区切る"
+	text t "", \t -> do
+	text t "* (0, 0)を中心にする1辺2の正方形内のランダムな点を得たい", \t -> do
+	text t "* ランダムな点を(x, y)とするとこの場合", \t -> do
+	itext t 1 "xとyの値の範囲は両方とも-1から1となる", \t -> do
+	text t "* xとyの値の範囲が同じなので", \t -> do
+	itext t 1 "フラットなランダム列を2つずつに区切れば良い", \t -> do
+	text t "* 再帰関数を使えば簡単だが", \t -> do
+	itext t 1 "今の知識だけでも、多少技巧的だが、できる", \t -> do
+	text t "* 数列を数のペアの列にする関数pairsを考えよう"
+ ]
+
+randomPoints2 :: Page
+randomPoints2 = [\t -> do
+	writeTopTitle t "数列をペアに区切る"
+	text t "", \t -> do
+	text t "* 以下のようなやりかたにしよう", \t -> do
+	text t "* 数列dsとdsをひとつずらしたds'の要素同士をペアにする", \t -> do
+	itext t 1 "ds = [a, b, c, d, e, f ...]", \t -> do
+	itext t 1 "ds' = [b, c, d, e, f ...]", \t -> do
+	itext t 1 "ps = [(a, b), (b, c), (c, d), (d, e), (e, f) ...]", \t -> do
+	text t "* これをひとつ置きに取っていく", \t -> do
+	itext t 1 "ps' = [(a, b), (c, d), (d, e) ...]", \t -> do
+	text t "* ひとつ置きに取っていくやりかたを考えよう"
+ ]
+
+randomPoints3 :: Page
+randomPoints3 = [\t -> do
+	writeTopTitle t "列からひとつ置きに取る"
+	text t "", \t -> do
+	text t "* 列からひとつ置きに取るには以下のようにすれば良い", \t -> do
+	text t "* True, Falseをくりかえす列とのzipをとる", \t -> do
+	itext t 1 "tfs = [True, False, True, False, True, False ...]", \t -> do
+	itext t 1 "lst = [a, b, c, d, e ...]", \t -> do
+	itext t 1 "ps = [(True, a), (False, b), (True, c) ...]", \t -> do
+	text t "* ペアのひとつめがTrueであるものだけを集める", \t -> do
+	itext t 1 "ps' = [(True, a), (True, c), (True, e) ...]", \t -> do
+	text t "* ペアのふたつめをとる", \t -> do
+	itext t 1 "lst' = [a, c, e ...]", \t -> do
+	text t "* 演習3. True, Falseをくりかえすtfsを定義せよ", \t -> do
+	itext t 1 "(1分)"
+ ]
+
+tfs :: [Bool]
+tfs = cycle [True, False]
+
+randomPoints4 :: Page
+randomPoints4 = [\t -> do
+	writeTopTitle t "[True, False, True, False ...]"
+	text t "", \t -> do
+	text t "* できただろうか", \t -> do
+	text t "* これはさっき説明したcycleを思い出せたかどうか、だ", \t -> do
+	itext t 1 "tfs :: [Bool]", \t -> do
+	itext t 1 "tfs = cycle [True, False]", \t -> do
+	text t "* montePi.hsに追加しよう", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> take 6 tfs", \t -> do
+	itext t 1 $ show $ take 6 tfs
+ ]
+
+randomPoints5 :: Page
+randomPoints5 = [\t -> do
+	writeTopTitle t "ひとつ置きに取る"
+	text t "", \t -> do
+	text t "* ひとつ置きに取る戦略をもう一度くりかえす", \t -> do
+	itext t 1 "1. tfsとのzipをとる(zipとは各要素同士のペア)", \t -> do
+	itext t 1 "2. ペアの1番目の値でfilterする", \t -> do
+	itext t 1 "3. ペアの2番目の値だけをとる", \t -> do
+	text t "* これを行う関数をhopとしよう", \t -> do
+	text t "* 演習4. hopの型を決める", \t -> do
+	text t "* 演習5. hopの中身を作る", \t -> do
+	itext t 1 "(3分)"
+ ]
+
+randomPoints6 :: Page
+randomPoints6 = [\t -> do
+	writeTopTitle t "ひとつ置きに取る"
+	text t "", \t -> do
+	text t "* hopは「何かのリスト」をとって「同じもののリスト」を返す", \t -> do
+	itext t 1 "hop :: [a] -> [a]", \t -> do
+	text t "* できただろうか?", \t -> do
+	text t "* これは多相関数である", \t -> do
+	text t "* 中身は以下のようになる", \t -> do
+	itext t 1 "hop lst = map snd $ filter fst $ zip tfs lst"
+ ]
+
+randomPoints7 :: Page
+randomPoints7 = [\t -> do
+	writeTopTitle t "ひとつ置きに取る"
+	text t "", \t -> do
+	text t "* filter fstのところが難しかったかもしれない", \t -> do
+	itext t 1 "filter :: (a -> Bool) -> [a] -> [a]", \t -> do
+	itext t 1 "fst :: (a, b) -> a", \t -> do
+	text t "* filter fstとした場合、それぞれの型は", \t -> do
+	itext t 1 "filter :: ((Bool, b) -> Bool) ->"
+	itext t 3 "[(Bool, b)] -> [(Bool, b)]", \t -> do
+	itext t 1 "fst :: (Bool, b) -> Bool", \t -> do
+	text t "* (a -> Bool)と((a, b) -> a)とですりあわせが行われている"
+ ]
+
+randomPoints8 :: Page
+randomPoints8 = [\t -> do
+	writeTopTitle t "ひとつ置きに取る"
+	text t "", \t -> do
+	text t "* 解答例をもう一度見てみる", \t -> do
+	itext t 1 "hop lst = map snd $ filter fst $ zip tfs lst", \t -> do
+	text t "* これはlstから始まり次々に値を渡していく構造", \t -> do
+	text t "* こう書き直せる", \t -> do
+	itext t 1 "hop = map snd . filter fst . zip tfs", \t -> do
+	text t "* hop関数は", \t -> do
+	itext t 1 "- tfsとのzipをとり", \t -> do
+	itext t 1 "- タプルの一番目の要素でfilterし", \t -> do
+	itext t 1 "- すべてのタプルの二番目の要素をとる"
+ ]
+
+hop :: [a] -> [a]
+hop = map snd . filter fst . zip tfs
+
+randomPoints9 :: Page
+randomPoints9 = [\t -> do
+	writeTopTitle t "ひとつ置きに取る"
+	text t "", \t -> do
+	text t "* montePi.hsに書き込む", \t -> do
+	itext t 1 "hop :: [a] -> [a]", \t -> do
+	itext t 1 "hop = map snd . filter fst . zip tfs", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> hop [1 .. 10]", \t -> do
+	itext t 1 $ show $ hop [1 :: Int .. 10]
+ ]
+
+randomPoints10 :: Page
+randomPoints10 = [\t -> do
+	writeTopTitle t "ペアに区切る"
+	text t "", \t -> do
+	text t "* ペアに区切るアルゴリズムを再掲する", \t -> do
+	itext t 1 "1. リストとそれ自体をひとつずらしたリストとをzip", \t -> do
+	itext t 1 "2. 結果として出来たリストの要素をひとつ置きに取る", \t -> do
+	text t "* この関数をpairsとしよう", \t -> do
+	text t "* 演習6. pairsの型を決めよ", \t -> do
+	text t "* 演習7. pairsの中身を作れ", \t -> do
+	itext t 1 "(3分)"
  ]
