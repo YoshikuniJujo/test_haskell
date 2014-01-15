@@ -14,8 +14,10 @@ main = runLecture [
 	[flip writeTitle subtitle], prelude,
 	montecarlo, getPiAlgorithm,
 	syntax, functions, exponentiation, smallerEqual, aboutFromIntegral,
-	aboutFstSnd, aboutFstSnd2, aboutTake, aboutCycle, aboutZip,
-	aboutRandom, aboutRandom2, aboutRandom3
+	aboutFstSnd, aboutFstSnd2, aboutTail, aboutTake, aboutCycle, aboutZip,
+	aboutRandom, aboutRandom2, aboutRandom3,
+	aboutInCircle, aboutInCircle2, aboutInCircle3, aboutInCircle4,
+	aboutInCircle5, aboutInCircle6
  ]
 
 prelude :: Page
@@ -113,7 +115,7 @@ showDouble n d
 	| otherwise = ' ' : take (n - 1) (show d)
 
 inCircle :: Double -> Double -> Bool
-inCircle x y = x ^ (2 :: Int) + y ^ (2 :: Int) <= 1
+inCircle x y = x ^ (2 :: Int) + y ^ (2 :: Int) < 1
 
 syntax :: Page
 syntax = [\t -> do
@@ -139,8 +141,8 @@ functions = [\t -> do
 	writeTopTitle t "追加の関数"
 	text t "", \t -> do
 	text t "* 以下のまだ説明していない関数を使う", \t -> do
-	itext t 1 "(^), (<=), fromIntegral, fst, snd,"
-	itext t 1 "take, cycle, zip, randomRs, mkStdGen", \t -> do
+	itext t 1 "(^), (<), fromIntegral, fst, snd,"
+	itext t 1 "tail, take, cycle, zip, randomRs, mkStdGen", \t -> do
 	text t "* ひとつずつ説明していこう"
  ]
 
@@ -173,17 +175,17 @@ se1int1, se1int2, se1int3, se1int4 :: Int
 
 smallerEqual :: Page
 smallerEqual = [\t -> do
-	writeTopTitle t "小なりイコール"
+	writeTopTitle t "小なり"
 	text t "", \t -> do
-	text t "* (<=)は「小なりイコール」を表す関数(演算子)", \t -> do
-	text t "* x <= yは", \t -> do
-	itext t 1 "- xがyより大きいときFalseを返し", \t -> do
-	itext t 1 "- xがyと等しいかまたは小さいときにTrueを返す", \t -> do
+	text t "* (<)は「小なりイコール」を表す関数(演算子)", \t -> do
+	text t "* x < yは", \t -> do
+	itext t 1 "- xがyより小さいときTrueを返し", \t -> do
+	itext t 1 "- xがyと等しいかまたは大きいときにFalseを返す", \t -> do
 	text t "* やってみよう", \t -> do
-	itext t 1 $ "Prelude> " ++ show se1int1 ++ " <= " ++ show se1int2
-	itext t 1 $ show $ se1int1 <= se1int2, \t -> do
-	itext t 1 $ "Prelude> " ++ show se1int3 ++ " <= " ++ show se1int4
-	itext t 1 $ show $ se1int3 <= se1int4
+	itext t 1 $ "Prelude> " ++ show se1int1 ++ " < " ++ show se1int2
+	itext t 1 $ show $ se1int1 < se1int2, \t -> do
+	itext t 1 $ "Prelude> " ++ show se1int3 ++ " < " ++ show se1int4
+	itext t 1 $ show $ se1int3 < se1int4
  ]
 
 fi1int1, fi1int2 :: Int
@@ -236,6 +238,29 @@ aboutFstSnd2 = [\t -> do
 	itext t 1 $ show $ fst fs2tuple1, \t -> do
 	itext t 1 $ "Prelude> snd " ++ show fs2tuple1, \t -> do
 	itext t 1 $ show $ snd fs2tuple1
+ ]
+
+tl1lst1 :: [Int]
+tl1lst1 = unsafePerformIO $ do
+	sg <- newStdGen
+	return $ take 10 $ randomRs (0, 20) sg
+
+tl1lst2 :: String
+tl1lst2 = unsafePerformIO $ do
+	sg <- newStdGen
+	return $ take 10 $ randomRs ('a', 'z') sg
+
+aboutTail :: Page
+aboutTail = [\t -> do
+	writeTopTitle t "tail"
+	text t "", \t -> do
+	text t "* tailはリストの先頭以外の要素を返す関数", \t -> do
+	itext t 1 "tail :: [a] -> [a]", \t -> do
+	text t "* やってみよう", \t -> do
+	itext t 1 $ "Prelude> tail " ++ show tl1lst1, \t -> do
+	itext t 1 $ show $ tail tl1lst1, \t -> do
+	itext t 1 $ "Prelude> tail " ++ show tl1lst2, \t -> do
+	itext t 1 $ show $ tail tl1lst2
  ]
 
 tk1lst1, tk1lst2 :: [Int]
@@ -363,4 +388,92 @@ aboutRandom3 = [\t -> do
 
 -- (^), (<=), fromIntegral, fst, snd, take, cycle, zip, randomRs, mkStdGen
 
+aboutInCircle :: Page
+aboutInCircle = [\t -> do
+	writeTopTitle t "円のなか"
+	text t "", \t -> do
+	text t "* montePi.hsを作ってエディタで開こう", \t -> do
+	text t "* ghci montePi.hsで読み込んでおこう", \t -> do
+	text t "* 点(x, y)が円のなかにあることを検査する関数inCircle", \t -> do
+	text t "* ここでは中心(0, 0)の半径1の円とする", \t -> do
+	text t "* 演習1. inCircleの型を決めよう", \t -> do
+	text t "* 演習2. inCircleの中身を作ろう", \t -> do
+	itext t 1 "(3分)"
+ ]
 
+aboutInCircle2 :: Page
+aboutInCircle2 = [\t -> do
+	writeTopTitle t "円のなか"
+	text t "", \t -> do
+	text t "* 型を決めるときの考えかた", \t -> do
+	itext t 1 "- 何が欲しいのか", \t -> do
+	itext t 1 "- 何が必要か", \t -> do
+	text t "* 欲しいものは円のなかに「あるかどうか」", \t -> do
+	arrowIText t 1 "True or False", \t -> do
+	arrowIText t 1 "Bool型", \t -> do
+	text t "* 必要なのは点のx座標とy座標", \t -> do
+	arrowIText t 1 "Double型の値をふたつ", \t -> do
+	text t "* よってこうなる", \t -> do
+	itext t 1 "inCircle :: Double -> Double -> Bool"
+ ]
+
+aboutInCircle3 :: Page
+aboutInCircle3 = [\t -> do
+	writeTopTitle t "円のなか"
+	text t "", \t -> do
+	text t "* 別解: 以下の型でも正解とする", \t -> do
+	itext t 1 "inCircle :: (Double, Double) -> Bool", \t -> do
+	text t "* できただろうか?", \t -> do
+	text t "* 違う答えになったという方は是非教えてもらいたい", \t -> do
+	text t "* 何が違うのか検討してみよう", \t -> do
+	text t "* 「まちがえ」は進歩の原動力である"
+	text t "", \t -> do
+	text t "* ここではひとつめの解を使うので以下を書き込んでおこう", \t -> do
+	itext t 1 "inCircle :: Double -> Double -> Bool"
+ ]
+
+aboutInCircle4 :: Page
+aboutInCircle4 = [\t -> do
+	writeTopTitle t "円のなか"
+	text t "", \t -> do
+	text t "* inCircleの中身について考えてみよう", \t -> do
+	text t "* 中心(0, 0)で半径1の円の内側にある", \t -> do
+	arrowIText t 1 "(0, 0)からの距離が1未満", \t -> do
+	arrowIText t 1 "(0, 0)からの距離の二乗が1未満", \t -> do
+	text t "* (0, 0)から(x, y)までの距離の二乗は", \t -> do
+	itext t 1 "x ^ 2 + y ^ 2", \t -> do
+	text t "* これが1未満なら良いので", \t -> do
+	itext t 1 "x ^ 2 + y ^ 2 < 1", \t -> do
+	text t "* よってこうなる", \t -> do
+	itext t 1 "inCircle x y = x ^ 2 + y ^ 2 < 1"
+ ]
+
+aboutInCircle5 :: Page
+aboutInCircle5 = [\t -> do
+	writeTopTitle t "円のなか"
+	text t "", \t -> do
+	text t "* できただろうか?", \t -> do
+	text t "* こんなふうにまちがえた、という例があると非常に良い", \t -> do
+	text t "* もしあればぜひ教えてもらいたい"
+	text t "", \t -> do
+	text t "* ひとつ迷ったところは(<)とするか(<=)とするか、だった", \t -> do
+	text t "* 前者を「開いた単位円盤」と呼び", \t -> do
+	text t "* 後者を「閉じた単位円盤」と呼ぶらしい", \t -> do
+	text t "* 「単位円盤」というと通常は「開いた単位円盤」を指す"
+ ]
+
+aboutInCircle6 :: Page
+aboutInCircle6 = [\t -> do
+	writeTopTitle t "試してみる"
+	text t "", \t -> do
+	text t "* 以下を書き込もう", \t -> do
+	itext t 1 "inCircle x y = x ^ 2 + y ^ 2 < 1", \t -> do
+	text t "* やってみよう", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> inCircle 0 0", \t -> do
+	itext t 1 $ show $ inCircle 0 0, \t -> do
+	itext t 1 "*Main> inCircle 0.5 0.5", \t -> do
+	itext t 1 $ show $ inCircle 0.5 0.5, \t -> do
+	itext t 1 "*Main> inCircle 1 0", \t -> do
+	itext t 1 $ show $ inCircle 1 0
+ ]
