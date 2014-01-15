@@ -12,7 +12,7 @@ module Lecture (
 	writeTree, BinTree(..), rtGoto, rotateL, rotateR, width, mapR,
 	randomDot, drawRect2, forwardRt, circleRt, dotRt,
 	newTurtle, field, hideturtle, penup, writeRt, undo, waitTurtle,
-	pencolor, setheading, Field,
+	pencolor, setheading, Field, killTurtle,
 ) where
 
 import Graphics.X11.Turtle
