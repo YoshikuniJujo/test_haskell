@@ -14,12 +14,16 @@ main = runLecture [
 	[flip writeTitle subtitle], prelude,
 	montecarlo, getPiAlgorithm,
 	syntax, functions, exponentiation, smallerEqual, aboutFromIntegral,
-	aboutFstSnd, aboutFstSnd2, aboutTail, aboutTake, aboutCycle, aboutZip,
+	aboutFstSnd, aboutFstSnd2, aboutTail, aboutTake, aboutLength,
+	aboutCycle, aboutZip,
 	aboutRandom, aboutRandom2, aboutRandom3,
 	aboutInCircle, aboutInCircle2, aboutInCircle3, aboutInCircle4,
 	aboutInCircle5, aboutInCircle6,
 	randomPoints, randomPoints2, randomPoints3, randomPoints4, randomPoints5,
-	randomPoints6, randomPoints7, randomPoints8, randomPoints9, randomPoints10
+	randomPoints6, randomPoints7, randomPoints8, randomPoints9, randomPoints10,
+	randomPoints11, randomPoints12, randomPoints13, randomPoints14,
+	randomPoints15, randomPoints16,
+	aboutGetPi, aboutGetPi2
  ]
 
 prelude :: Page
@@ -117,7 +121,7 @@ showDouble n d
 	| otherwise = ' ' : take (n - 1) (show d)
 
 inCircle :: Double -> Double -> Bool
-inCircle x y = x ^ (2 :: Int) + y ^ (2 :: Int) < 1
+inCircle x y = x ^ (2 :: Int) + y ^ (2 :: Int) <= 1
 
 syntax :: Page
 syntax = [\t -> do
@@ -143,8 +147,8 @@ functions = [\t -> do
 	writeTopTitle t "追加の関数"
 	text t "", \t -> do
 	text t "* 以下のまだ説明していない関数を使う", \t -> do
-	itext t 1 "(^), (<=), fromIntegral, fst, snd,"
-	itext t 1 "tail, take, cycle, zip, randomRs, mkStdGen", \t -> do
+	itext t 1 "(^), (<=), fromIntegral, fst, snd, tail,"
+	itext t 1 "take, length, cycle, zip, randomRs, mkStdGen", \t -> do
 	text t "* ひとつずつ説明していこう"
  ]
 
@@ -180,7 +184,7 @@ smallerEqual = [\t -> do
 	writeTopTitle t "小なりイコール"
 	text t "", \t -> do
 	text t "* (<=)は「小なりイコール」を表す関数(演算子)", \t -> do
-	text t "* x < yは", \t -> do
+	text t "* x <= yは", \t -> do
 	itext t 1 "- xがyと等しいかまたは小さいときTrueを返し", \t -> do
 	itext t 1 "- xがyより大きいときにFalseを返す", \t -> do
 	text t "* やってみよう", \t -> do
@@ -284,6 +288,18 @@ aboutTake = [\t -> do
 	itext t 1 $ show $ take tk1int1 tk1lst1, \t -> do
 	itext t 1 $ "Prelude> take " ++ show tk1int2 ++ " " ++ show tk1lst2, \t -> do
 	itext t 1 $ show $ take tk1int2 tk1lst2
+ ]
+
+aboutLength :: Page
+aboutLength = [\t -> do
+	writeTopTitle t "length"
+	text t "", \t -> do
+	text t "* lengthはリストの長さを返す関数", \t -> do
+	text t "* やってみよう", \t -> do
+	itext t 1 "Prelude> length [3, 2, 4, 9, 1]", \t -> do
+	itext t 1 $ show $ length [3 :: Int, 2, 4, 9, 1], \t -> do
+	itext t 1 "Prelude> length \"Hello, world\"", \t -> do
+	itext t 1 $ show $ length "Hello, world"
  ]
 
 ccl1str1 :: [Int]
@@ -472,10 +488,10 @@ aboutInCircle6 = [\t -> do
 	itext t 1 "inCircle x y = x ^ 2 + y ^ 2 <= 1", \t -> do
 	text t "* やってみよう", \t -> do
 	itext t 1 "*Main> :reload", \t -> do
-	itext t 1 "*Main> inCircle 0 0", \t -> do
-	itext t 1 $ show $ inCircle 0 0, \t -> do
 	itext t 1 "*Main> inCircle 0.5 0.5", \t -> do
 	itext t 1 $ show $ inCircle 0.5 0.5, \t -> do
+	itext t 1 "*Main> inCircle 0.8 (- 0.8)", \t -> do
+	itext t 1 $ show $ inCircle 0.8 (- 0.8), \t -> do
 	itext t 1 "*Main> inCircle 1 0", \t -> do
 	itext t 1 $ show $ inCircle 1 0
  ]
@@ -539,8 +555,8 @@ randomPoints4 = [\t -> do
 	text t "* montePi.hsに追加しよう", \t -> do
 	text t "* 試してみる", \t -> do
 	itext t 1 "*Main> :reload", \t -> do
-	itext t 1 "*Main> take 6 tfs", \t -> do
-	itext t 1 $ show $ take 6 tfs
+	itext t 1 "*Main> take 7 tfs", \t -> do
+	itext t 1 $ show $ take 7 tfs
  ]
 
 randomPoints5 :: Page
@@ -625,4 +641,130 @@ randomPoints10 = [\t -> do
 	text t "* 演習6. pairsの型を決めよ", \t -> do
 	text t "* 演習7. pairsの中身を作れ", \t -> do
 	itext t 1 "(3分)"
+ ]
+
+pairs :: [a] -> [(a, a)]
+pairs lst = hop $ zip lst $ tail lst
+
+randomPoints11 :: Page
+randomPoints11 = [\t -> do
+	writeTopTitle t "ペアに区切る"
+	text t "", \t -> do
+	text t "* できただろうか?", \t -> do
+	text t "* pairsの入力は「何かのリスト」なので[a]", \t -> do
+	text t "* pairsの出力は「同じ何かのペアのリスト」なので[(a, a)]", \t -> do
+	arrowIText t 1 "pairs :: [a] -> [(a, a)]", \t -> do
+	text t "* 中身は以下のようになる", \t -> do
+	itext t 1 "pairs lst = hop $ zip lst $ tail lst", \t -> do
+	text t "* tail lstはひとつずれたリスト", \t -> do
+	text t "* それともとのリストとのzipを取り", \t -> do
+	text t "* そのリストから要素をひとつ置きに取っている"
+ ]
+
+randomPoints12 :: Page
+randomPoints12 = [\t -> do
+	writeTopTitle t "ペアに区切る"
+	text t "", \t -> do
+	text t "* 以下をmontePi.hs追加しよう", \t -> do
+	itext t 1 "pairs :: [a] -> [(a, a)]", \t -> do
+	itext t 1 "pairs lst = hop $ zip lst $ tail lst", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> pairs [1 .. 10]", \t -> do
+	itext t 1 $ show $ pairs [1 :: Int .. 10], \t -> do
+	itext t 1 "*Main> pairs \"Haskell\"", \t -> do
+	itext t 1 $ show $ pairs "Haskell"
+ ]
+
+randomPoints13 :: Page
+randomPoints13 = [\t -> do
+	writeTopTitle t "ランダムな点"
+	text t "", \t -> do
+	text t "* 種を与えるとランダムな点のリストを返す関数を作ろう", \t -> do
+	itext t 1 "- 点の範囲はx, yともに-1から1のあいだとする", \t -> do
+	itext t 1 "- 中心が(0, 0)の一辺が2の正方形内ということ", \t -> do
+	text t "* この関数をpointsという名前にしよう", \t -> do
+	text t "* ランダムの種の型はStdGenとする", \t -> do
+	text t "* 与えられた範囲の乱数列を返す関数は", \t -> do
+	itext t 1 "randomRs :: (Double, Double) -> StdGen -> [Double]", \t -> do
+	text t "* 演習8. pointsの型を決めよ", \t -> do
+	text t "* 演習9. pointsの中身を作れ", \t -> do
+	itext t 1 "(3分)"
+ ]
+
+randomPoints14 :: Page
+randomPoints14 = [\t -> do
+	writeTopTitle t "ランダムな点"
+	text t "", \t -> do
+	text t "* できただろうか?", \t -> do
+	text t "* pointsの入力はランダムの種なのでStdGen", \t -> do
+	text t "* pointsの出力は点のリストなので[(Double, Double)]", \t -> do
+	arrowIText t 1 "points :: StdGen -> [(Double, Double)]", \t -> do
+	text t "* pointsはランダム列を2つずつのペアに区切ったものなので", \t -> do
+	itext t 1 "points sg = pairs $ randomRs (- 1, 1) sg", \t -> do
+	text t "* sgから始めて次々に関数を適用していく構造なので", \t -> do
+	itext t 1 "points = pairs . randomRs (- 1, 1)"
+ ]
+
+points :: StdGen -> [(Double, Double)]
+points = pairs . randomRs (- 1, 1)
+
+randomPoints15 :: Page
+randomPoints15 = [\t -> do
+	writeTopTitle t "ランダムな点"
+	text t "", \t -> do
+	text t "* montePi.hsに書き込もう", \t -> do
+	itext t 1 "points :: StgGen -> [(Double, Double)]", \t -> do
+	itext t 1 "points = pairs . randomRs (- 1, 1)", \t -> do
+	text t "* System.RandomモジュールのrandomRsを使っているので", \t -> do
+	text t "* ファイルの先頭に以下を追加しよう", \t -> do
+	itext t 1 "import System.Random (randomRs, mkStdGen)", \t -> do
+	itext t 2 "- 対話環境から使うのでmkStdGenもついでに"
+ ]
+
+randomPoints16 :: Page
+randomPoints16 = [\t -> do
+	writeTopTitle t "ランダムな点"
+	text t "", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> take 3 $ points $ mkStdGen 8", \t -> do
+	let ps = points $ mkStdGen 8
+	itext t 1 $ "[" ++ show (ps !! 0) ++ ","
+	itext t 1.5 $ show (ps !! 1) ++ ","
+	itext t 1.5 $ show (ps !! 2) ++ "]", \t -> do
+	itext t 1 "*Main> take 3 $ points $ mkStdGen 100", \t -> do
+	let ps = points $ mkStdGen 100
+	itext t 1 $ "[" ++ show (ps !! 0) ++ ","
+	itext t 1.5 $ show (ps !! 1) ++ ","
+	itext t 1.5 $ show (ps !! 2) ++ "]"
+ ]
+
+aboutGetPi :: Page
+aboutGetPi = [\t -> do
+	writeTopTitle t "πの値を求める"
+	text t "", \t -> do
+	text t "* モンテカルロ法でπの値を求めよう", \t -> do
+	text t "* 半径1の円の面積を求めるということ", \t -> do
+	text t "* getPi関数を作ろう", \t -> do
+	text t "* getPiは点を打つ数とランダムの種を入力とし", \t -> do
+	text t "* πの近似値を出力とする", \t -> do
+	text t "* n個のランダムな点から円内の点を選び", \t -> do
+	text t "* その要素数をnでわったものを求める", \t -> do
+	text t "* それに正方形の面積である4をかける", \t -> do
+	text t "* 演習10. getPiの型を決めよ"
+ ]
+
+aboutGetPi2 :: Page
+aboutGetPi2 = [\t -> do
+	writeTopTitle t "πの値を求める"
+	text t "", \t -> do
+	text t "* できただろうか?", \t -> do
+	itext t 1 "getPi :: Int -> StdGen -> Double", \t -> do
+	text t "* 演習11. 以下の[ (a) ]に入る式を求めよ", \t -> do
+	itext t 0 "montePi n sg ="
+	itext t 1 "4 * fromIntegral (length inps) / fromIntegral n"
+	itext t 1 "where inps = [ (a) ]", \t -> do
+	text t "* lengthの返り値やnはIntなので", \t -> do
+	itext t 1 "fromIntegralによってDoubleに変換している"
  ]
