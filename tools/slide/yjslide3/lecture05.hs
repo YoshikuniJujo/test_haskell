@@ -23,7 +23,9 @@ main = runLecture [
 	randomPoints6, randomPoints7, randomPoints8, randomPoints9, randomPoints10,
 	randomPoints11, randomPoints12, randomPoints13, randomPoints14,
 	randomPoints15, randomPoints16,
-	aboutGetPi, aboutGetPi2
+	aboutGetPi, aboutGetPi2, aboutGetPi3, aboutGetPi4, aboutGetPi5,
+	aboutResult,
+	summary
  ]
 
 prelude :: Page
@@ -99,9 +101,7 @@ getPiAlgorithm = [\t -> do
 		undo t'''
 		writeRt t''' $ take 5 $
 			show (fromIntegral i / fromIntegral a * 4 :: Double)
-	writeIORef killTurtles [t', t'', t'''], \t -> do
-	readIORef killTurtles >>= mapM_ killTurtle
-	pencolor t "black"
+	writeIORef killTurtles [t', t'', t''']
  ]
 
 killTurtles :: IORef [Turtle]
@@ -125,6 +125,8 @@ inCircle x y = x ^ (2 :: Int) + y ^ (2 :: Int) <= 1
 
 syntax :: Page
 syntax = [\t -> do
+	readIORef killTurtles >>= mapM_ killTurtle
+	pencolor t "black"
 	writeTopTitle t "追加の構文"
 	text t "", \t -> do
 	text t "* 演習で使う追加の構文を見てみよう", \t -> do
@@ -295,6 +297,7 @@ aboutLength = [\t -> do
 	writeTopTitle t "length"
 	text t "", \t -> do
 	text t "* lengthはリストの長さを返す関数", \t -> do
+	itext t 1 "length :: [a] -> Int", \t -> do
 	text t "* やってみよう", \t -> do
 	itext t 1 "Prelude> length [3, 2, 4, 9, 1]", \t -> do
 	itext t 1 $ show $ length [3 :: Int, 2, 4, 9, 1], \t -> do
@@ -390,18 +393,20 @@ aboutRandom3 :: Page
 aboutRandom3 = [\t -> do
 	writeTopTitle t "ランダム"
 	text t "", \t -> do
-	itext t (-1) $ "Prelude System.Random> take 3 $ randomRs (1, 3) $"
+	itext t (-1.2) $ "Prelude System.Random> take 3 $ randomRs (1, 3) $ "
 		++ "mkStdGen " ++ show rd3int1, \t -> do
 --	itext t 7 $ "mkStdGen " ++ show rd3int1, \t -> do
-	itext t (-1) $ show $ take 3 $ randomRs (1 :: Double, 3) $ mkStdGen rd3int1, \t -> do
-	itext t (-1) $ "Prelude System.Random> take 3 $ randomRs (1, 3) $"
+	itext t (-1.2) $ show $ take 3 $ randomRs (1 :: Double, 3) $ mkStdGen rd3int1, \t -> do
+	itext t (-1.2) $ "Prelude System.Random> take 3 $ randomRs (1, 3) $ "
 		++ "mkStdGen " ++ show rd3int2, \t -> do
-	itext t (-1) $ show $ take 3 $ randomRs (1 :: Double, 3) $ mkStdGen rd3int2, \t -> do
-	itext t (-1) $ "Prelude System.Random> take 3 $ randomRs (1, 3) $"
+	itext t (-1.2) $ show $ take 3 $ randomRs (1 :: Double, 3) $ mkStdGen rd3int2, \t -> do
+	itext t (-1.2) $ "Prelude System.Random> take 3 $ randomRs (1, 3) $ "
 		++ "mkStdGen " ++ show rd3int2, \t -> do
-	itext t (-1) $ show $ take 3 $ randomRs (1 :: Double, 3) $ mkStdGen rd3int2, \t -> do
+	itext t (-1.2) $ show $ take 3 $ randomRs (1 :: Double, 3) $ mkStdGen rd3int2, \t -> do
 	text t "* 別の種には別の乱数列", \t -> do
-	text t "* 同じ種には同じ乱数列"
+	text t "* 同じ種には同じ乱数列", \t -> do
+	text t "* Haskellの関数は同じ引数には同じ値を返す", \t -> do
+	itext t 1 "- これを参照透過性と呼ぶ"
  ]
 
 -- (^), (<=), fromIntegral, fst, snd, take, cycle, zip, randomRs, mkStdGen
@@ -591,12 +596,14 @@ randomPoints7 = [\t -> do
 	text t "", \t -> do
 	text t "* filter fstのところが難しかったかもしれない", \t -> do
 	itext t 1 "filter :: (a -> Bool) -> [a] -> [a]", \t -> do
-	itext t 1 "fst :: (a, b) -> a", \t -> do
-	text t "* filter fstとした場合、それぞれの型は", \t -> do
-	itext t 1 "filter :: ((Bool, b) -> Bool) ->"
-	itext t 3 "[(Bool, b)] -> [(Bool, b)]", \t -> do
-	itext t 1 "fst :: (Bool, b) -> Bool", \t -> do
-	text t "* (a -> Bool)と((a, b) -> a)とですりあわせが行われている"
+	itext t 1 "fst :: (b, c) -> b", \t -> do
+	text t "* (a -> Bool)と((b, c) -> b)とですりあわせが行われる", \t -> do
+	itext t 1 "Bool == b", \t -> do
+	itext t 1 "a == (b, c) == (Bool, c)", \t -> do
+	text t "* その結果以下のような型になる", \t -> do
+	itext t 1 "filter :: ((Bool, c) -> Bool) ->"
+	itext t 3 "[(Bool, c)] -> [(Bool, c)]", \t -> do
+	itext t 1 "fst :: (Bool, c) -> Bool"
  ]
 
 randomPoints8 :: Page
@@ -752,7 +759,8 @@ aboutGetPi = [\t -> do
 	text t "* n個のランダムな点から円内の点を選び", \t -> do
 	text t "* その要素数をnでわったものを求める", \t -> do
 	text t "* それに正方形の面積である4をかける", \t -> do
-	text t "* 演習10. getPiの型を決めよ"
+	text t "* 演習10. getPiの型を決めよ", \t -> do
+	itext t 1 "(1分)"
  ]
 
 aboutGetPi2 :: Page
@@ -765,6 +773,89 @@ aboutGetPi2 = [\t -> do
 	itext t 0 "montePi n sg ="
 	itext t 1 "4 * fromIntegral (length inps) / fromIntegral n"
 	itext t 1 "where inps = [ (a) ]", \t -> do
-	text t "* lengthの返り値やnはIntなので", \t -> do
-	itext t 1 "fromIntegralによってDoubleに変換している"
+	itext t 2 "-- lengthの返り値やnはIntなので", \t -> do
+	itext t 2 "-- fromIntegralによってDoubleに変換している", \t -> do
+	itext t 1 "(1分)"
+ ]
+
+aboutGetPi3 :: Page
+aboutGetPi3 = [\t -> do
+	writeTopTitle t "πの値を求める"
+	text t "", \t -> do
+	text t "* できただろうか?", \t -> do
+	text t "* ヒント1: inpsはn個の点のうち円のなかにある点", \t -> do
+	text t "* ヒント2: 円のなかかどうかを表す関数は", \t -> do
+	itext t 1 "inCircle :: Double -> Double -> Bool", \t -> do
+	text t "* ヒント3: 非カリー化を使う", \t -> do
+	itext t 1 "uncurry :: (a -> b -> c) -> (a, b) -> c", \t -> do
+	text t "* ヒント4: n個のランダムな点は以下で表せる", \t -> do
+	itext t 1 "take n $ points sg", \t -> do
+	text t "* 演習11'. 種sg、ランダムな点の個数nが与えられている"
+	itext t 1 "その点のうち単位円内にある点のリストを求めよ", \t -> do
+	itext t 1 "(1分)"
+ ]
+
+aboutGetPi4 :: Page
+aboutGetPi4 = [\t -> do
+	writeTopTitle t "πの値を求める"
+	text t "", \t -> do
+	text t "* できただろうか?", \t -> do
+	itext t 1 "filter (uncurry inCircle) $ take n $ points sg", \t -> do
+	text t "* getPi関数をmontePi.hsに書き込もう", \t -> do
+	itext t 0 "getPi :: Int -> StdGen -> Double", \t -> do
+	itext t 0 "getPi n sg ="
+	itext t 0.5 "4 * fromIntegral (length inps) / fromIntegral n"
+	itext t 0.5 "where"
+	itext t 0.5 "inps = filter (uncurry inCircle) $ take n $ points sg", \t -> do
+	text t "* できた!", \t -> do
+	text t "* モンテカルロ法で円周率を求める関数が作れた"
+ ]
+
+getPi :: Int -> StdGen -> Double
+getPi n sg = 4 * fromIntegral (length inps) / fromIntegral n
+	where inps = filter (uncurry inCircle) $ take n $ points sg
+
+gp5int1, gp5int2, gp5int3, gp5int4 :: Int
+[gp5int1, gp5int2, gp5int3, gp5int4] = unsafePerformIO $ replicateM 4 randomIO
+
+aboutGetPi5 :: Page
+aboutGetPi5 = [\t -> do
+	writeTopTitle t "πの値を求める"
+	text t "", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 $ "*Main> getPi 100 $ mkStdGen " ++ showsPrec 7 gp5int1 "", \t -> do
+	itext t 1 $ show $ getPi 100 $ mkStdGen gp5int1, \t -> do
+	itext t 1 $ "*Main> getPi 1000 $ mkStdGen " ++ showsPrec 7 gp5int2 "", \t -> do
+	itext t 1 $ show $ getPi 1000 $ mkStdGen gp5int2, \t -> do
+	itext t 1 $ "*Main> getPi 10000 $ mkStdGen " ++ showsPrec 7 gp5int3 "", \t -> do
+	itext t 1 $ show $ getPi 10000 $ mkStdGen gp5int3, \t -> do
+	itext t 1 $ "*Main> getPi 100000 $ mkStdGen " ++ showsPrec 7 gp5int4 "", \t -> do
+	itext t 1 $ show $ getPi 100000 $ mkStdGen gp5int4
+ ]
+
+aboutResult :: Page
+aboutResult = [\t -> do
+	writeTopTitle t "結果について"
+	text t "", \t -> do
+	text t "* ランダムの種の違いによって値は大きく変化する", \t -> do
+	text t "* 結果は「正しい可能性が高い」", \t -> do
+	text t "* 試行を増やせば「正しい可能性」は高まる、が", \t -> do
+	text t "* 必ずしも値に近づいていくとは限らない", \t -> do
+	text t "* 円周率には近似値を求める効率的なアルゴリズムがあるので", \t -> do
+	itext t 1 "モンテカルロ法は使う必要がない", \t -> do
+	text t "* 正しい値を求めるアルゴリズムの計算量が膨大であるときに", \t -> do
+	itext t 1 "モンテカルロ法は役に立つ"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* モンテカルロ法で円周率を求める関数を作った", \t -> do
+	text t "* そこで使われる関数を定義していくことで", \t -> do
+	itext t 1 "関数を作る/使う練習をした", \t -> do
+	text t "* リストを扱う関数の使いかたも学んだ", \t -> do
+	text t "* 直接、再帰的定義を使わなくても", \t -> do
+	itext t 1 "リストを扱う関数でかなりのことができることを学んだ"
  ]
