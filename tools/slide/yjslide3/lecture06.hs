@@ -12,7 +12,10 @@ main = runLecture [
 	aboutSquareSum, aboutSquareSum2, aboutSquareSum3, aboutSquareSum4,
 	aboutSquareSum5, aboutSquareSum6, aboutSquareSum7, aboutSquareSum8,
 	aboutSquareSum9, aboutSquareSum10, aboutSquareSum11, aboutSquareSumSummary,
-	treeRec, treeRec2, treeRec3, treeRec4, treeRec5
+	treeRec, treeRec2, treeRec3, treeRec4, treeRec5, treeRec6, treeRec7,
+	treeRec8, treeRec9, treeRec10, treeRec11, treeRec12, treeRec13,
+	treeRec14, treeRec15, treeRec16,
+	summary
  ]
 
 prelude :: Page
@@ -261,6 +264,22 @@ treeRec3 = [\t -> do
 
 treeRec4 :: Page
 treeRec4 = [\t -> do
+	writeTopTitle t "新たに必要になる構文"
+	text t "", \t -> do
+	text t "* タイプシノニム", \t -> do
+	itext t 1 "type [型名] = [型の表現]", \t -> do
+	itext t 1 "- 型の別名をつくることができる", \t -> do
+	itext t 1 "- [型名]のところに[型の表現]が書かれているのと同じ", \t -> do
+	itext t 1 "- プログラムの意味を読む人にわかりやすくする", \t -> do
+	itext t 1 "- 長い型を記述する手間を減らす", \t -> do
+	itext t 1 "- 例:"
+	itext t 2 "type Name = String", \t -> do
+	itext t 2 "type Age = Int", \t -> do
+	itext t 2 "type HumanList = [(Name, Age)]"
+ ]
+
+treeRec5 :: Page
+treeRec5 = [\t -> do
 	writeTopTitle t "新たに必要になる型"
 	text t "", \t -> do
 	text t "* Maybe型", \t -> do
@@ -273,8 +292,8 @@ treeRec4 = [\t -> do
 	itext t 2 "Nothing"
  ]
 
-treeRec5 :: Page
-treeRec5 = [\t -> do
+treeRec6 :: Page
+treeRec6 = [\t -> do
 	writeTopTitle t "新たに必要になる関数"
 	text t "", \t -> do
 	text t "* lookup :: a -> [(a, b)] -> Maybe b", \t -> do
@@ -285,5 +304,183 @@ treeRec5 = [\t -> do
 	itext t 2 "なければNothingを返す", \t -> do
 	text t "* (||) :: Bool -> Bool -> Bool", \t -> do
 	itext t 1 "- 2つのBool値の論理和(または)を返す関数", \t -> do
-	itext t 1 "- b1 || b2はb1かb2のどちらかがTrueのならTrue"
+	itext t 1 "- b1 || b2はb1かb2のどちらかがTrueならTrue"
+ ]
+
+treeRec7 :: Page
+treeRec7 = [\t -> do
+	writeTopTitle t "細かい条件等"
+	text t "", \t -> do
+	writeTree t (: "") 15 4 200 70 pathTree
+	rtGoto t 200 280, \t -> do
+	text t "* 木は下向きにしかたどれない", \t -> do
+	text t "* 子要素は0または2個"
+ ]
+
+treeRec8 :: Page
+treeRec8 = [\t -> do
+	writeTopTitle t "木の表現"
+	text t "", \t -> do
+	writeTree t (: "") 15 2 400 90 pathTree
+	rtGoto t 400 70, \t -> do
+	text t "* 親から子への経路の集合として表現", \t -> do
+	text t "* 節点は一文字で表現する", \t -> do
+	text t "type Paths = [(Char, (Char, Char))]", \t -> do
+	text t "* 例題の木は以下のようになる", \t -> do
+	text t "paths :: Paths", \t -> do
+	text t "paths = [", \t -> do
+	itext t 1 "('a', ('b', 'c')),"
+	itext t 1 "('b', ('d', 'e')),"
+	itext t 1 "('e', ('f', 'g'))]", \t -> do
+	text t "* これらをtreeRec.hsに書き込もう"
+ ]
+
+type Paths = [(Char, (Char, Char))]
+
+paths :: Paths
+paths = [
+	('a', ('b', 'c')),
+	('b', ('d', 'e')),
+	('e', ('f', 'g'))]
+
+treeRec9 :: Page
+treeRec9 = [\t -> do
+	writeTopTitle t "見てみよう"
+	text t "", \t -> do
+	text t "* ghci treeRec.hsで読み込んで", \t -> do
+	itext t 1 "*Main> paths", \t -> do
+	itext t 1 $ show paths, \t -> do
+	text t "* ちゃんと定義されているのがわかる", \t -> do
+	text t "* このpathsの意味は以下のようになる", \t -> do
+	itext t 1 "- 'a'からは'a' -> 'b', 'a' -> 'c'という経路があり", \t -> do
+	itext t 1 "- 'b'からは'b' -> 'd', 'b' -> 'e'という経路があり", \t -> do
+	itext t 1 "- 'e'からは'e' -> 'f', 'e' -> 'g'という経路がある"
+ ]
+
+treeRec10 :: Page
+treeRec10 = [\t -> do
+	writeTopTitle t "経路の存在関数"
+	text t "", \t -> do
+	text t "* 経路が存在するかどうかを調べる関数existPathを作ろう", \t -> do
+	text t "* できあがったときには以下のような動作をするはずだ", \t -> do
+	writeTree t (: "") 15 2 400 130 pathTree
+	rtGoto t 400 130, \t -> do
+	text t "existPath paths 'b' 'f' => True", \t -> do
+	text t "existPath paths 'c' 'g' => False", \t -> do
+	text t "existPath paths 'f' 'b' => False"
+ ]
+
+treeRec11 :: Page
+treeRec11 = [\t -> do
+	writeTopTitle t "経路の存在関数"
+	text t "", \t -> do
+	text t "* まずは型を使めよう", \t -> do
+	text t "* 使用例から明らかなように入力、出力は以下のようになる", \t -> do
+	itext t 1 "入力1: Paths", \t -> do
+	itext t 1 "入力2: Char", \t -> do
+	itext t 1 "入力3: Char", \t -> do
+	itext t 1 "出力: Bool", \t -> do
+	arrowIText t 1 "existPath :: Paths -> Char -> Char -> Bool"
+ ]
+
+treeRec12 :: Page
+treeRec12 = [\t -> do
+ 	writeTopTitle t "経路の存在関数"
+	text t "", \t -> do
+	text t "* 中身を考えていこう", \t -> do
+	text t "* 再帰的に定義することを考える", \t -> do
+	text t "* 基底ケースは何だろうか?", \t -> do
+	text t "* 最も簡単なケースとして始点と終点が同じ場合が考えられる", \t -> do
+	text t "* この場合は経路は存在すると考えてよいので", \t -> do
+	itext t 1 "existPath ps b e", \t -> do
+	itext t 2 "| b == e = True"
+ ]
+
+treeRec13 :: Page
+treeRec13 = [\t -> do
+ 	writeTopTitle t "経路の存在関数"
+	text t "", \t -> do
+	text t "* もうひとつの基底ケースがある", \t -> do
+	text t "* bとeが同一でなく、しかもbからの経路がない場合", \t -> do
+	text t "* この場合は経路は存在しないと考えられるので", \t -> do
+	itext t 1 "existPath ps b e", \t -> do
+	itext t 2 "| b == e = True", \t -> do
+	itext t 2 "| otherwise = case lookup b ps of", \t -> do
+	itext t 3 "Nothing -> False", \t -> do
+	text t "* bからの経路がないということは以下と同じこと", \t -> do
+	text t "* psのなかにbを一番目の要素とするタプルが存在しない", \t -> do
+	text t "* よってlookup b psはNothingを返す"
+ ]
+
+treeRec14 :: Page
+treeRec14 = [\t -> do
+	writeTopTitle t "経路の存在関数"
+	text t "", \t -> do
+	text t "* 残る可能性は以下の通り", \t -> do
+	itext t 1 "- bとeが同一ではなくbからの経路が存在する", \t -> do
+	text t "* bのふたつの直接の子のどちらかから", \t -> do
+	itext t 1 "- eへの経路が存在すればbからeへの経路は存在し", \t -> do
+	itext t 1 "- そうでなければbからeへの経路は存在しない", \t -> do
+	text t "* つまりbからeへの経路が存在するというBool値は", \t -> do
+	itext t 1 "- bの子1からeへの経路が存在するというBool値と", \t -> do
+	itext t 1 "- bの子2からeへの経路が存在するというBool値", \t -> do
+	itext t 0.5 "との論理和となる"
+ ]
+
+treeRec15 :: Page
+treeRec15 = [\t -> do
+	writeTopTitle t "経路の存在関数"
+	text t "", \t -> do
+	text t "* よって以下のようになる", \t -> do
+	itext t 0 "existPath :: Paths -> Char -> Char -> Bool", \t -> do
+	itext t 0 "existPath ps b e", \t -> do
+	itext t 1 "| b == e = True", \t -> do
+	itext t 1 "| otherwise = case lookup b ps of", \t -> do
+	itext t 2 "Nothing -> False", \t -> do
+	itext t 2 "Just (c1, c2) -> existPath ps c1 e ||"
+	itext t 5 "existPath ps c2 e", \t -> do
+	text t "* これをtreeRec.hsに書き込もう", \t -> do
+	itext t 1 "(1分)"
+ ]
+
+existPath :: Paths -> Char -> Char -> Bool
+existPath ps b e
+	| b == e = True
+	| otherwise = case lookup b ps of
+		Nothing -> False
+		Just (c1, c2) -> existPath ps c1 e || existPath ps c2 e
+
+treeRec16 :: Page
+treeRec16 = [\t -> do
+	writeTopTitle t "経路の存在関数"
+	text t "", \t -> do
+	text t "* 試してみよう", \t -> do
+	writeTree t (: "") 15 2 420 80 pathTree
+	rtGoto t 400 110, \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> existPath paths 'b' 'f'", \t -> do
+	itext t 1 $ show $ existPath paths 'b' 'f', \t -> do
+	itext t 1 "*Main> existPath paths 'c' 'g'", \t -> do
+	itext t 1 $ show $ existPath paths 'c' 'g', \t -> do
+	itext t 1 "*Main> existPath paths 'f' 'b'", \t -> do
+	itext t 1 $ show $ existPath paths 'f' 'b', \t -> do
+	text t "* 木を下にしかたどれないという条件を思い出そう", \t -> do
+	text t "* 関数は正しい結果を返していることがわかる"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* 再帰関数の定義のしかた/理解のしかたについて学んだ", \t -> do
+	text t "* 定義する際には", \t -> do
+	itext t 1 "- 基底ケースを見つける", \t -> do
+	itext t 1 "- 基底に近い場合の値からより離れた場合の値を導く", \t -> do
+	text t "* 理解する際には", \t -> do
+	itext t 1 "- それが「何であるか」をよく見る", \t -> do
+	itext t 1 "- 逐次的に評価してみる", \t -> do
+	itext t 1 "- 仮説を立てて検証する", \t -> do
+	text t "* 例題として二乗の総和のケースを見た", \t -> do
+	text t "* 処理が木構造となる例として", \t -> do
+	itext t 1 "- 木のなかで経路の存在の有無を返す関数を見た"
  ]
