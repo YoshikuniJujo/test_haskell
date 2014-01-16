@@ -12,7 +12,7 @@ main = runLecture [
 	aboutSquareSum, aboutSquareSum2, aboutSquareSum3, aboutSquareSum4,
 	aboutSquareSum5, aboutSquareSum6, aboutSquareSum7, aboutSquareSum8,
 	aboutSquareSum9, aboutSquareSum10, aboutSquareSum11, aboutSquareSumSummary,
-	treeRec
+	treeRec, treeRec2, treeRec3, treeRec4, treeRec5
  ]
 
 prelude :: Page
@@ -222,4 +222,68 @@ treeRec = [\t -> do
 	text t "", \t -> do
 	text t "* 再帰的定義で「くりかえし」より複雑な制御の流れを定義可", \t -> do
 	text t "* 制御の流れが「木構造」となる関数を見ていこう"
+ ]
+
+treeRec2 :: Page
+treeRec2  = [\t -> do
+	writeTopTitle t "問題定義"
+	text t "", \t -> do
+	text t "* 以下のような木を考える", \t -> do
+	writeTree t (: "") 15 4 200 110 pathTree
+	rtGoto t 200 300, \t -> do
+	text t "* ある節から別の節への経路があるかどうかを返す関数", \t -> do
+	text t "* そのような関数existPathを考えていこう"
+ ]
+
+pathTree :: BinTree Char
+pathTree = Bin 'a'
+	(Bin 'b'
+		(Bin 'd' Empty Empty)
+		(Bin 'e' (Bin 'f' Empty Empty) (Bin 'g' Empty Empty)))
+	(Bin 'c' Empty Empty)
+
+treeRec3 :: Page
+treeRec3 = [\t -> do
+	writeTopTitle t "新たに必要になる構文"
+	text t "", \t -> do
+	text t "* 関数のガード節", \t -> do
+	itext t 1 "- 引数の条件によって式を選ぶことができる", \t -> do
+	itext t 1 "fun x"
+	preLine t
+	itext t 2 "| even x = \"even\"", \t -> do
+	itext t 2 "| otherwise = \"odd\"", \t -> do
+	text t "* case式", \t -> do
+	itext t 1 "- 引数部分以外でパターンマッチが使える", \t -> do
+	itext t 1 "fun n = case n `mod` 3 of", \t -> do
+	itext t 2 "0 -> \"3でわりきれる\"", \t -> do
+	itext t 2 "_ -> \"3でわりきれない"
+ ]
+
+treeRec4 :: Page
+treeRec4 = [\t -> do
+	writeTopTitle t "新たに必要になる型"
+	text t "", \t -> do
+	text t "* Maybe型", \t -> do
+	itext t 1 "- Maybe Intという型は以下の値を持つ", \t -> do
+	itext t 2 "Just [整数], Nothing", \t -> do
+	itext t 1 "- 失敗する可能性のある計算に使われる", \t -> do
+	itext t 1 "- 計算が成功した場合", \t -> do
+	itext t 2 "Just [結果]", \t -> do
+	itext t 1 "- 計算が失敗した場合", \t -> do
+	itext t 2 "Nothing"
+ ]
+
+treeRec5 :: Page
+treeRec5 = [\t -> do
+	writeTopTitle t "新たに必要になる関数"
+	text t "", \t -> do
+	text t "* lookup :: a -> [(a, b)] -> Maybe b", \t -> do
+	itext t 1 "- lookup x lstとすると", \t -> do
+	itext t 2 "lstの要素である対のなかに", \t -> do
+	itext t 2 "対の一番目がxであるようなものがあれば", \t -> do
+	itext t 2 "その対の二番目の値を返し", \t -> do
+	itext t 2 "なければNothingを返す", \t -> do
+	text t "* (||) :: Bool -> Bool -> Bool", \t -> do
+	itext t 1 "- 2つのBool値の論理和(または)を返す関数", \t -> do
+	itext t 1 "- b1 || b2はb1かb2のどちらかがTrueのならTrue"
  ]
