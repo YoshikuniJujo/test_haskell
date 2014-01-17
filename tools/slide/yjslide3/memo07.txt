@@ -1,0 +1,21 @@
+map, filter, take, dropの定義は演習に回す。
+それぞれ素の再帰を使う方法とfold系を使う方法とで。
+
+until
+foldr, foldl (foldr1, foldl1, foldl')
+scanr, scanl (scanr1, scanl1)
+mapAccumL, mapAccumR
+
+concat
+reverse
+and
+or
+sum
+product
+maximum
+minimum
+unzip
+sequence
+
+map
+filter
