@@ -20,7 +20,11 @@ main = runLecture [
 	listFunctions5, listFunctions6, listFunctions7, listFunctions8,
 	listFunctions9, listFunctions10, listFunctions11, listFunctions12,
 	listFunctions13, listFunctions14, listFunctions15, listFunctions16,
-	listFunctions17, listFunctions18, listFunctions19
+	listFunctions17, listFunctions18, listFunctions19, listFunctions20,
+	listFunctions21, listFunctions22,
+	listFunctionsSummary,
+	otherFunctions,
+	summary
  ]
 
 prelude :: Page
@@ -539,10 +543,77 @@ listFunctions19 :: Page
 listFunctions19 = [\t -> do
 	writeTopTitle t "反復的処理の抽象化"
 	text t "", \t -> do
-	text t "* 反復的処理も抽象化できる", \t -> do
 	text t "* 反復的処理の枠組み", \t -> do
 	itext t 1 "fun s [] = s", \t -> do
-	itext t 1 "fun s (x : xs) = fun (s `op` x) xs"
+	itext t 1 "fun s (x : xs) = fun (s `op` x) xs", \t -> do
+	text t "* この枠組みを関数にする", \t -> do
+	itext t 1 "foldl op s [] = s", \t -> do
+	itext t 1 "foldl op s (x : xs) = foldl op (s `op` x) xs"
+ ]
+
+listFunctions20 :: Page
+listFunctions20 = [\t -> do
+	writeTopTitle t "反復的処理の抽象化"
+	text t "", \t -> do
+	text t "* 逐次的に評価してみる", \t -> do
+	itext t 1 "foldl op v [x, y, z]", \t -> do
+	arrowIText t 1 "foldl op v (x : y : z : [])", \t -> do
+	arrowIText t 1 "foldl op (v `op` x) (y : z : [])", \t -> do
+	arrowIText t 1 "foldl op ((v `op` x) `op` y) (z : [])", \t -> do
+	arrowIText t 1 "foldl op (((v `op` x) `op` y) `op` z) []", \t -> do
+	arrowIText t 1 "((v `op` x) `op` y) `op` z"
+ ]
+
+listFunctions21 :: Page
+listFunctions21 = [\t -> do
+	writeTopTitle t "foldlの型"
+	text t "", \t -> do
+	text t "foldl op s [] = s"
+	text t "foldl op s (x : xs) = foldl op (s `op` x) xs", \t -> do
+	text t "* foldl :: X -> Y -> Z -> Rとする", \t -> do
+	text t "* 第三引数は何らかのリストなのでZ == [b]とできる", \t -> do
+	text t "* 第二引数はそのまま返り値になるのでY == Rでaと置く", \t -> do
+	text t "* (s `op` x)が第二引数になるので", \t -> do
+	itext t 1 "- opの第一引数はsなので型Yつまりa", \t -> do
+	itext t 1 "- opの第二引数はxなので型b", \t -> do
+	itext t 1 "- opの返り値はfoldlの第二引数なので型Yつまりa", \t -> do
+	itext t 1 "- よって op :: a -> b -> a", \t -> do
+	arrowIText t 0 "foldl :: (a -> b -> a) -> a -> [b] -> a"
+ ]
+
+myFoldl :: (a -> b -> a) -> a -> [b] -> a
+myFoldl op s [] = s
+myFoldl op s (x : xs) = myFoldl op (s `op` x) xs
+
+listFunctions22 :: Page
+listFunctions22 = [\t -> do
+	writeTopTitle t "試してみる"
+	text t "", \t -> do
+	text t "* myList.hsに以下を書き込もう", \t -> do
+	itext t 1 "myFoldl :: (a -> b -> a) -> a -> [b] -> a", \t -> do
+	itext t 1 "myFoldl op s [] = s", \t -> do
+	itext t 1 "myFoldl op s (x : xs) = myFoldl op (s `op` x) xs", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> myFoldl (-) 10 [1, 2, 3]", \t -> do
+	itext t 1 $ show $ myFoldl (-) 10 [1 :: Int, 2, 3], \t -> do
+	text t "* myFoldl (-) 10 [1, 2, 3]は以下のようになる", \t -> do
+	itext t 1 "((10 - 1) - 2) - 3", \t -> do
+	text t "* 左結合なので()は省略できて", \t -> do
+	itext t 1 "10 - 1 - 2 - 3"
+ ]
+
+listFunctionsSummary :: Page
+listFunctionsSummary = [\t -> do
+	writeTopTitle t "ここまでのまとめ"
+	text t "", \t -> do
+	text t "* sum, product, lengthなどは再帰的な定義が可能", \t -> do
+	text t "* リストを扱う再帰的関数の多くは", \t -> do
+	itext t 1 "- 要素間に同一の演算子を挿入した形となる", \t -> do
+	text t "* 演算子の適用のしかたには右結合と左結合とがある", \t -> do
+	text t "* そのような構造は関数によって抽象化できる", \t -> do
+	itext t 1 "- foldr: 右結合演算子の挿入", \t -> do
+	itext t 1 "- foldl: 左結合演算子の挿入"
  ]
 
 listFunctionsX :: Page
@@ -557,4 +628,31 @@ listFunctionsX = [\t -> do
 	text t "* 引き算では以下の2つの値は異なる", \t -> do
 	itext t 1 "1 - (2 - 3)", \t -> do
 	itext t 1 "(1 - 2) - 3"
+ ]
+
+otherFunctions :: Page
+otherFunctions = [\t -> do
+	writeTopTitle t "その他の関数"
+	text t "", \t -> do
+	text t "* Haskellにはリストを扱う関数が豊富に用意されている", \t -> do
+	text t "* 再帰的な定義によってどの関数も作ることができる", \t -> do
+	text t "* 以下の関数については演習で扱う予定", \t -> do
+	itext t 1 "take, drop, concat, reverse, map, filter", \t -> do
+	text t "* それぞれの関数の再帰的定義を見る", \t -> do
+	text t "* 可能なものについてはfoldによる定義も見る"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* リストの内部構造を学んだ", \t -> do
+	text t "* リストに対するパターンマッチを見た", \t -> do
+	text t "* リストを扱う再帰関数の定義のしかたを学んだ", \t -> do
+	text t "* リストを扱う関数の多くがあてはまる枠組を見た", \t -> do
+	itext t 1 "- 要素間に演算子を入れるという枠組", \t -> do
+	itext t 1 "- 右結合と左結合とがある", \t -> do
+	text t "* その枠組自体が関数で表せることを学んだ", \t -> do
+	itext t 1 "- foldr: 右結合", \t -> do
+	itext t 1 "- foldl: 左結合"
  ]
