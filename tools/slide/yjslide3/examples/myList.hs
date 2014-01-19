@@ -39,3 +39,34 @@ collatz :: Int -> [Int]
 collatz = iterate $ \n -> if even n
 	then n `div` 2
 	else 3 * n + 1
+
+fun1 :: [Int] -> [Int] -> [Int]
+fun1 = foldr $ \_ na@(n : ns) -> case n of
+	0 -> na
+	_ -> n - 1 : na
+
+myTake :: Int -> [a] -> [a]
+myTake = curry $ unfoldr $ \s -> case s of
+	(0, _) -> Nothing
+	(_, []) -> Nothing
+	(n, x : xs) -> Just (x, (n - 1, xs))
+
+myTake' :: Int -> [a] -> [a]
+myTake' 0 _ = []
+myTake' _ [] = []
+myTake' n (x : xs) = x : myTake' (n - 1) xs
+
+myDrop :: Int -> [a] -> [a]
+myDrop 0 xs = xs
+myDrop _ [] = []
+myDrop n (x : xs) = myDrop (n - 1) xs
+
+takeUntil, takeUntil' :: (a -> Bool) -> [a] -> [a]
+takeUntil _ [] = []
+takeUntil p (x : xs)
+	| p x = [x]
+	| otherwise = x : takeUntil p xs
+
+takeUntil' p = foldr (\x -> if p x then const [x] else (x:)) []
+
+takeTo p = flip foldr [] $ \x lst -> x : (if p x then [] else lst)

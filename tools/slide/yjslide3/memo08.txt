@@ -1,0 +1,7 @@
+iterateの例題としてコラッツ予想(collatz)をやる
+	用意としてtakeToOneを作るかな
+	takeToを作ろう
+unfoldrの例題としては素因数分解(factorization)をやる
+	前段階としてリストの回の復習をかねて、
+	enumerate / map / filter / accumulate の構造でpopFactorを作ろう。
+	popFactor :: Int -> Maybe (Int, Int)
