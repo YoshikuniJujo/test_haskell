@@ -1,5 +1,8 @@
-import Lecture
 import Control.Applicative
+import System.Random
+import System.IO.Unsafe
+
+import Lecture
 
 subtitle :: String
 subtitle = "第8回 リストを作成する再帰関数"
@@ -9,8 +12,11 @@ main = runLecture [
 	[flip writeTitle subtitle], prelude,
 	enumerate, aboutEnumFromTo, aboutEnumFromTo2, aboutEnumFromTo3,
 	aboutEnumFromToSummary,
-	collatz, collatz2, collatz3, collatz4, collatz5, collatz6, collatz7,
-	collatz8, collatz9, collatz10, collatz11
+	collatz1, collatz2, collatz3, collatz4, collatz5, collatz6, collatz7,
+	collatz8, collatz9, collatz10, collatz11, collatz12, collatz13,
+	collatz14, collatz15, collatz16, collatz17, collatz18, collatz19,
+	collatz20, collatzSummary,
+	factorization
  ]
 
 prelude :: Page
@@ -90,17 +96,16 @@ aboutEnumFromToSummary = [\t -> do
 	writeTopTitle t "enumFromTo(まとめ)"
 	text t "", \t -> do
 	text t "* [m .. n]という構文は構文糖であり", \t -> do
-	itext t 1 "[m .. n]", \t -> do
-	arrowIText t 2 "enumFromTo m n", \t -> do
+	arrowIText t 1 "enumFromTo m n", \t -> do
 	text t "* enumFromTo m nは以下のように定義される", \t -> do
 	itext t 1 "1. m > nならば空リスト", \t -> do
-	itext t 1 "2. m + 1からnまでのリストにmを追加したもの", \t -> do
+	itext t 1 "2. それ以外でm + 1からnのリストにmを追加したもの", \t -> do
 	text t "* リストを作成する関数の多くが同様の枠組みで作られる", \t -> do
 	itext t 1 "- その関数自体の返り値に値を追加するという枠組み"
  ]
 
-collatz :: Page
-collatz = [\t -> do
+collatz1 :: Page
+collatz1 = [\t -> do
 	writeTopTitle t "コラッツの予想"
 	text t "", \t -> do
 	text t "* 正の整数nについて", \t -> do
@@ -167,7 +172,13 @@ takeTo p (x : xs)
 	| otherwise = x : takeTo p xs
 
 cl5lst1 :: [Int]
-cl5lst1 = [3, 7, 9, 4, 5, 2, 8]
+cl5lst1 = unsafePerformIO $ do
+	sg <- newStdGen
+	let	rs = randomRs (0, 10) sg
+		(xs, y : ys) = splitAt 3 rs
+	return $ map ((+ 1) . (* 2)) xs ++ [2 * y] ++ take 3 ys
+
+-- [3, 7, 9, 4, 5, 2, 8]
 
 collatz5 :: Page
 collatz5 = [\t -> do
@@ -247,6 +258,19 @@ collatz9 = [\t -> do
 	text t "* ポイントフリースタイルを適度に使うとコードが引きしまる"
  ]
 
+collatz10 :: Page
+collatz10 = [\t -> do
+	writeTopTitle t "重複をなくす"
+	text t "", \t -> do
+	text t "* さっきの定義をもう一度見てみよう", \t -> do
+	itext t 1 "\\x -> if p x then const [x] else (x :)", \t -> do
+	text t "* [x]は(x : [])なので(x :)が重複している", \t -> do
+	text t "* 以下のようにすると重複をなくすことができる", \t -> do
+	itext t 1 "\\x -> (x :) . if p x then const [] else id", \t -> do
+	text t "* idは入力をそのまま出力とする関数", \t -> do
+	itext t 1 "id x = x"
+ ]
+
 takeTo' :: (a -> Bool) -> [a] -> [a]
 -- takeTo' p = flip foldr [] $ \x -> if p x then const [x] else (x :)
 -- takeTo' p = flip foldr [] $ \x -> (x :) . if p x then const [] else id
@@ -262,14 +286,14 @@ takeTo' = flip foldr [] . ((.) <$> (:) <*>) . ((([id, const []] !!) . fromEnum) 
 ifThenElse :: a -> a -> Bool -> a
 ifThenElse t e b = if b then t else e
 
-collatz10 :: Page
-collatz10 = [\t -> do
+collatz11 :: Page
+collatz11 = [\t -> do
 	writeTopTitle t "試してみよう"
 	text t "", \t -> do
 	text t "* myList.hsに書き込もう", \t -> do
 	itext t 1 "takeTo' :: (a -> Bool) -> [a] -> [a]", \t -> do
 	itext t 1 "takeTo' p = flip foldr [] $", \t -> do
-	itext t 2 "\\x -> if p x then const [x] else (x :)", \t -> do
+	itext t 2 "\\x -> (x :) . if p x then const [] else id", \t -> do
 	itext t 2 "-- flipは引数の順番を入れ換える関数", \t -> do
 	itext t 2 "-- それと($)を使うことで()を減らしてみた", \t -> do
 	text t "* 試してみる", \t -> do
@@ -278,8 +302,8 @@ collatz10 = [\t -> do
 	itext t 1 $ show $ takeTo' even cl5lst1
  ]
 
-collatz11 :: Page
-collatz11 = [\t -> do
+collatz12 :: Page
+collatz12 = [\t -> do
 	writeTopTitle t "ポイントフリー狂"
 	text t "", \t -> do
 	text t "* takeToを完全にポイントフリースタイルで書くとこうなる", \t -> do
@@ -289,4 +313,150 @@ collatz11 = [\t -> do
 	text t "* ポイントフリースタイルを「適度に」使うとわかりやすく", \t -> do
 	text t "* 「適度に」使うとわかりやすく", \t -> do
 	text t "* 「適度に」使おう"
+ ]
+
+collatz13 :: Page
+collatz13 = [\t -> do
+	writeTopTitle t "最初の1までをとる(まとめ)"
+	text t "", \t -> do
+	text t "* 条件を満たす最初の要素までをとる関数takeToを作った", \t -> do
+	text t "* まずは再帰的な定義で書いてみた", \t -> do
+	text t "* (:)を置き換える関数を考えることで", \t -> do
+	itext t 1 "- foldrを使った定義に書き換えてみた", \t -> do
+	text t "* ポイントフリースタイルについて触れた", \t -> do
+	itext t 1 "- ポイントフリースタイルはコードから贅肉をおとす", \t -> do
+	itext t 1 "- やりすぎるとパズルになる", \t -> do
+	text t "* takeToを使うとリストから最初の1までをとる処理は", \t -> do
+	itext t 1 "takeTo (== 1) [...]"
+ ]
+
+collatz14 :: Page
+collatz14 = [\t -> do
+	writeTopTitle t "前の値から次の値を作る"
+	text t "", \t -> do
+	text t "* ここからが本題", \t -> do
+	text t "* コラッツ数列の作りかたを再掲する", \t -> do
+	itext t 1 "- nが偶数ならば2で割り", \t -> do
+	itext t 1 "- nが奇数ならば3をかけて1を足す", \t -> do
+	text t "* 前の値から次の値を求める関数", \t -> do
+	itext t 1 "collatzNext :: Int -> Int", \t -> do
+	itext t 1 "collatzNext n", \t -> do
+	itext t 2 "| even n = n `div` 2", \t -> do
+	itext t 2 "| otherwise = n * 3 + 1"
+ ]
+
+collatz15 :: Page
+collatz15 = [\t -> do
+	writeTopTitle t "無限数列を作る"
+	text t "", \t -> do
+	text t "* 以下のようにして無限数列を作る", \t -> do
+	itext t 1 "collatzInf :: Int -> [Int]", \t -> do
+	itext t 1 "collatzInf n = n : collatzInf (collatzNext n)", \t -> do
+	text t "* nから始まる数列はnの次から始まる数列にnを追加したもの", \t -> do
+	text t "* 結果は以下のような数列になる", \t -> do
+	itext t 0.5 "[n, collatzNext n, collatzNext (collatzNext n) ...]", \t -> do
+	text t "* これを一般化すると", \t -> do
+	itext t 0.5 "[x, f x, f (f x), f (f (f x)), f (f (f (f x))) ...]", \t -> do
+	text t "* このような列はしばしば使われるので関数が用意されている", \t -> do
+	text t "* 上の[x, f x, ...]はiterate f xで表すことができる"
+ ]
+
+collatz16 :: Page
+collatz16 = [\t -> do
+	writeTopTitle t "無限数列を作る"
+	text t "", \t -> do
+	text t "* iterateを使うと以下のようにできる", \t -> do
+	itext t 1 "collatzInf = iterate collatzNext", \t -> do
+	text t "* collatzNextを展開すると", \t -> do
+	itext t 1 "collatzInf = iterate $ \\n -> if even n"
+	itext t 2 "then n `div` 2"
+	itext t 2 "else n * 3 + 1"
+ ]
+
+collatzInf :: Int -> [Int]
+collatzInf = iterate $ \n -> if even n
+	then n `div` 2
+	else n * 3 + 1
+
+cl17int1 :: Int
+cl17int1 = unsafePerformIO $ randomRIO (5, 30)
+
+collatz17 :: Page
+collatz17 = [\t -> do
+	writeTopTitle t "試してみる"
+	text t "", \t -> do
+	text t "* myList.hsに書き込もう", \t -> do
+	itext t 1 "collatzInf :: Int -> [Int]"
+	itext t 1 "collatzInf = iterate $ \\n -> if even n"
+	itext t 2 "then n `div` 2"
+	itext t 2 "else n * 3 + 1", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 $ "*Main> take 10 $ collatzInf " ++ show cl17int1, \t -> do
+	itext t 1 $ show $ take 10 $ collatzInf cl17int1
+ ]
+
+collatz18 :: Page
+collatz18 = [\t -> do
+	writeTopTitle t "iterate"
+	text t "", \t -> do
+	text t "* ここでiterateの定義を見てみよう", \t -> do
+	text t "* 型は以下のようになる", \t -> do
+	itext t 1 "iterate :: (a -> a) -> a -> [a]", \t -> do
+	text t "* 定義は以下のようになる", \t -> do
+	itext t 1 "iterate f x = x : iterate f (f x)", \t -> do
+	text t "* xに次々とfを適用していってできるリストは", \t -> do
+	itext t 1 "- (f x)に次々とfを適用していってできるリストに", \t -> do
+	itext t 1 "- xを追加したもの"
+ ]
+
+collatz19 :: Page
+collatz19 = [\t -> do
+	writeTopTitle t "無限数列(まとめ)"
+	text t "", \t -> do
+	text t "* 次の値が前の値に関数fを適用したものであるようなリスト", \t -> do
+	text t "* そのようなリストは以下のようにして作ることができる", \t -> do
+	itext t 1 "mkSomeList x = x : mkSomeList (f x)", \t -> do
+	text t "* この枠組みを関数として取り出したものがiterate関数", \t -> do
+	itext t 1 "iterate f x", \t -> do
+	arrowIText t 1 "[x, f x, f (f x), f (f (f x)), ...]"
+ ]
+
+collatz :: Int -> [Int]
+collatz = takeTo (== 1) . collatzInf
+
+collatz20 :: Page
+collatz20 = [\t -> do
+	writeTopTitle t "コラッツ数列"
+	text t "", \t -> do
+	text t "* 1で終了するようにしよう", \t -> do
+	itext t 1 "collatz :: Int -> [Int]", \t -> do
+	itext t 1 "collatz = takeTo (== 1) . collatzInf", \t -> do
+	text t "* これをmyList.hsに書き込もう", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> collatz 11", \t -> do
+	itext t 1 $ show $ collatz 11
+ ]
+
+collatzSummary :: Page
+collatzSummary = [\t -> do
+	writeTopTitle t "コラッツ数列(まとめ)"
+	text t "", \t -> do
+	text t "* コラッツ数列を返す関数を作った", \t -> do
+	text t "* 無限数列を作ってから必要な部分を取り出した", \t -> do
+	itext t 1 "- 「次々に値を生成する」部分と", \t -> do
+	itext t 1 "- 「終了条件」とを分けることができた", \t -> do
+	text t "* 条件を満たすまでを取り出す関数を作った", \t -> do
+	itext t 1 "- 復習のためにfoldrで書き直した", \t -> do
+	itext t 1 "- ポイントフリースタイルの深渕をのぞいた", \t -> do
+	text t "* 「値に次々と関数を適用する」という枠組みについて学んだ", \t -> do
+	itext t 1 "- その枠組みは関数iterateによって抽象化されている"
+ ]
+
+factorization :: Page
+factorization = [\t -> do
+	writeTopTitle t "素因数分解"
+	text t "", \t -> do
+	text t "* 素因数分解の例について見ていこう"
  ]

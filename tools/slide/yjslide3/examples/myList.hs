@@ -70,3 +70,7 @@ takeUntil p (x : xs)
 takeUntil' p = foldr (\x -> if p x then const [x] else (x:)) []
 
 takeTo p = flip foldr [] $ \x lst -> x : (if p x then [] else lst)
+
+collatzInf n = n : collatzInf (if even n
+	then n `div` 2
+	else n * 3 + 1)
