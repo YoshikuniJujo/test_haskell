@@ -86,3 +86,16 @@ factorization = unfoldr popFactor
 
 fibs :: [Integer]
 fibs@(_ : tfibs) = 0 : 1 : zipWith (+) fibs tfibs
+
+exp2 :: Int -> Int
+exp2 0 = 1
+exp2 n = 2 * exp2 (n - 1)
+
+exp2s, exp2s' :: [Int]
+exp2s = 1 : map (* 2) exp2s
+exp2s' = 1 : zipWith (+) exp2s' exp2s'
+
+myMap :: (a -> b) -> [a] -> [b]
+myMap f = unfoldr $ \lst -> case lst of
+	[] -> Nothing
+	(x : xs) -> Just (f x, xs)
