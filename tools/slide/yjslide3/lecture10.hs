@@ -7,7 +7,8 @@ main :: IO ()
 main = runLecture [
 	[flip writeTitle subtitle], prelude,
 	basic, basic2, basic3, basic4, basic5, basic6, basic7,
-	defineMap, defineMap2, defineMap3, defineMap4, defineMap5
+	defineMap, defineMap2, defineMap3, defineMap4, defineMap5,
+	defineFilter, defineFilter2, defineFilter3, defineFilter4
  ]
 
 prelude :: Page
@@ -196,4 +197,54 @@ defineMap5 = [\t -> do
 	itext t 1 "map f = unfoldr $ \\lst -> case lst of", \t -> do
 	itext t 2 "[] -> Nothing", \t -> do
 	itext t 2 "(x : xs) -> Just (f x, xs)"
+ ]
+
+defineFilter :: Page
+defineFilter = [\t -> do
+	writeTopTitle t "filter"
+	text t "", \t -> do
+	text t "演習10-9. filterを再帰を直接使って定義せよ", \t -> do
+	itext t 1 "(1分)", \t -> do
+	text t "* できただろうか?", \t -> do
+	text t "* こう考える", \t -> do
+	itext t 1 "- 空リストからは何も選べないので空リスト", \t -> do
+	itext t 1 "- 先頭の要素が条件を満たす場合", \t -> do
+	itext t 2 "残りの要素をfilterしたものに先頭の要素を追加", \t -> do
+	itext t 1 "- 満たさないときは残りの要素をfilterしたもの"
+ ]
+
+defineFilter2 :: Page
+defineFilter2 = [\t -> do
+	writeTopTitle t "filter"
+	text t "", \t -> do
+	text t "* よって以下のようになる", \t -> do
+	itext t 1 "filter :: (a -> Bool) -> [a] -> [a]", \t -> do
+	itext t 1 "filter _ [] = []", \t -> do
+	itext t 1 "filter p (x : xs)", \t -> do
+	itext t 2 "| p x = x : filter p xs", \t -> do
+	itext t 2 "| otherwise = filter p xs"
+ ]
+
+defineFilter3 :: Page
+defineFilter3 = [\t -> do
+	writeTopTitle t "filter"
+	text t "", \t -> do
+	text t "* 演習10-10. filterをfoldrを使って定義せよ", \t -> do
+	itext t 1 "(2分)", \t -> do
+	text t "* できただろうか?", \t -> do
+	text t "* まずは空リストは空リストに変換される", \t -> do
+	itext t 1 "filter _ [] = []"
+ ]
+
+defineFilter4 :: Page
+defineFilter4 = [\t -> do
+	writeTopTitle t "filter"
+	text t "", \t -> do
+	text t "* リストが空じゃない場合", \t -> do
+	itext t 1 "filter p (x : xs)"
+	itext t 2 "| p x = x : filter p xs"
+	itext t 2 "| otherwise = filter p xs", \t -> do
+	text t "* 以下の定義を満たすようなopを考える", \t -> do
+	itext t 1 "filter p (x : xs) = x `op` xs", \t -> do
+	text t "* opは以下のようになる"
  ]
