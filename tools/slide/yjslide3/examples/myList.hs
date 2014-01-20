@@ -83,3 +83,6 @@ popFactor n = Just (f, n `div` f)
 
 factorization :: Integer -> [Integer]
 factorization = unfoldr popFactor
+
+fibs :: [Integer]
+fibs@(_ : tfibs) = 0 : 1 : zipWith (+) fibs tfibs

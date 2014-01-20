@@ -19,3 +19,5 @@ sequence
 
 map
 filter
+
+zipWith
