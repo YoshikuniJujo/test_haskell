@@ -1,4 +1,5 @@
 import Control.Applicative
+import Data.List
 import System.Random
 import System.IO.Unsafe
 
@@ -16,7 +17,11 @@ main = runLecture [
 	collatz8, collatz9, collatz10, collatz11, collatz12, collatz13,
 	collatz14, collatz15, collatz16, collatz17, collatz18, collatz19,
 	collatz20, collatzSummary,
-	factorization
+	factorization1, factorization2, factorization3, factorization4,
+	factorization5, factorization6, factorization7, factorization8,
+	factorization9, factorization10, factorization11, factorization12,
+	factorization13, factorization14, factorizationSummary,
+	summary
  ]
 
 prelude :: Page
@@ -454,9 +459,252 @@ collatzSummary = [\t -> do
 	itext t 1 "- その枠組みは関数iterateによって抽象化されている"
  ]
 
-factorization :: Page
-factorization = [\t -> do
+factorization1 :: Page
+factorization1 = [\t -> do
 	writeTopTitle t "素因数分解"
 	text t "", \t -> do
-	text t "* 素因数分解の例について見ていこう"
+	text t "* 素因数分解の例について見ていこう", \t -> do
+	text t "* 素因数分解とは数を素数の積で表現すること", \t -> do
+	itext t 1 "420 = 2 * 2 * 3 * 5 * 7", \t -> do
+	text t "* 素因数分解は桁が大きくなると計算量が増加する", \t -> do
+	text t "* 大きな値を素因数分解する効率的なアルゴリズムはない", \t -> do
+	arrowIText t 1 "むしろ、それを利用したのがRSA暗号"
+ ]
+
+factorization2 :: Page
+factorization2 = [\t -> do
+	writeTopTitle t "Int型"
+	text t "", \t -> do
+	text t "* あまり大きな素数は扱わない", \t -> do
+	text t "* ある程度の大きさの合成数は扱う", \t -> do
+	text t "* 今までは整数としてInt型の値を使ってきたが", \t -> do
+	itext t 1 "- Intは処理系依存のサイズの整数型", \t -> do
+	itext t 1 "- 仕様ではすくなくとも以下の範囲が表現可能とされる", \t -> do
+	itext t 2 "2 ^ 29から2 ^ 29 - 1", \t -> do
+	text t "* 自分の処理系のInt型の値の範囲は以下のように確かめられる", \t -> do
+	itext t 1 "*Main> (minBound, maxBound) :: (Int, Int)", \t -> do
+	itext t 1 $ show $ ((minBound, maxBound) :: (Int, Int))
+ ]
+
+maxInt :: Int
+maxInt = maxBound
+
+factorization3 :: Page
+factorization3 = [\t -> do
+	writeTopTitle t "Int型"
+	text t "", \t -> do
+	text t "* 実はInt型は大きな値に対しては安全ではない", \t -> do
+	itext t 1 "*Main> maxBound :: Int", \t -> do
+	itext t 1 $ show $ (maxBound :: Int), \t -> do
+	itext t 1 "*Main> maxBound + 1 :: Int", \t -> do
+	itext t 1 $ show $ (maxBound + 1 :: Int), \t -> do
+	text t $ "* " ++ show maxInt ++ " + " ++ show (1 :: Int) ++ " = " ++ show (maxInt + 1) ++ " ???", \t -> do
+	text t "* Int型はmaxBoundとminBoundとがつながった円環構造", \t -> do
+	text t "* そういうものとして考える必要がある"
+ ]
+
+factorization4 :: Page
+factorization4 = [\t -> do
+	writeTopTitle t "Integer型"
+	text t "", \t -> do
+	text t "* Haskellにはより安全なInteger型がある", \t -> do
+	text t "* メモリが許すかぎりの大きさの整数を扱うことができる", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 1 "*Main> 2 ^ 128", \t -> do
+	itext t 1 $ show $ (2 :: Integer) ^ (128 :: Int), \t -> do
+	itext t 1 "*Main> product [1 .. 100]", \t -> do
+	mapM_ (itext t 1) $ unfoldr (\str -> case str of
+			[] -> Nothing
+			_ -> Just $ splitAt 40 str) $
+		show $ product [1 :: Integer .. 100], \t -> do
+	text t "* 今回の例にはInteger型の値を使うことにする"
+ ]
+
+factorization5 :: Page
+factorization5 = [\t -> do
+	writeTopTitle t "戦略"
+	text t "", \t -> do
+	text t "* 問題を以下のように分割する", \t -> do
+	itext t 1 "1. 整数を2以上の最小の約数と残りの数に分ける", \t -> do
+	itext t 1 "2. 1を残りの数についてくりかえす", \t -> do
+	text t "* まずは1.の整数を分割する関数について見ていこう"
+ ]
+
+factorization6 :: Page
+factorization6 = [\t -> do
+	writeTopTitle t "整数を分割する"
+	text t "", \t -> do
+	text t "* 効率のことは考えずに単純な実装とする", \t -> do
+	text t "* nを引数として以下を求める関数を作る", \t -> do
+	itext t 1 "1. 2から数nまでのリストを作る", \t -> do
+	itext t 1 "2. それらでnを割り0になるものだけを集める", \t -> do
+	itext t 1 "3. その先頭の要素をとる", \t -> do
+	text t "* 以下のようになる", \t -> do
+	itext t 0 "popFactor :: Integer -> Maybe (Integer, Integer)", \t -> do
+	itext t 0 "popFactor 1 = Nothing", \t -> do
+	itext t 0 "popFactor n = Just (f, n `div` f)", \t -> do
+	itext t 1 "where"
+	itext t 1 "f = head $ filter ((== 0) . (n `mod`)) [2 .. n]"
+ ]
+
+factorization7 :: Page
+factorization7 = [\t -> do
+	writeTopTitle t "整数を分割する"
+	text t "", \t -> do
+	text t "* 返り値をMaybeとしたことについて", \t -> do
+	itext t 1 "- popFactor 1 = (1, 1)とすることもできたが", \t -> do
+	itext t 1 "- 「残り」が変化しなくなると無限ループになる", \t -> do
+	itext t 1 "- よってNothingとして終了条件を明確にした", \t -> do
+	text t "* filterの部分を説明しよう", \t -> do
+	itext t 1 "filter ((== 0) . (n `mod`))", \t -> do
+	text t "* これはポイントフリーでないスタイルで書くとこうなる", \t -> do
+	itext t 1 "filter (\\x -> n `mod` x == 0)", \t -> do
+	text t "* つまりnを割った余りが0になるxを取り出すということ"
+ ]
+
+popFactor :: Integer -> Maybe (Integer, Integer)
+popFactor 1 = Nothing
+popFactor n = Just (f, n `div` f)
+	where
+	f = head $ filter ((== 0) . (n `mod`)) [2 .. n]
+
+fct8integer1, fct8integer2 :: Integer
+fct8integer1 = unsafePerformIO $ randomRIO (20, 100)
+fct8integer2 = unsafePerformIO $ (+ 1) . (* 6) <$> randomRIO (5, 20)
+
+factorization8 :: Page
+factorization8 = [\t -> do
+	writeTopTitle t "試してみる"
+	text t "", \t -> do
+	text t "* myList.hsに以下を書き込もう", \t -> do
+	itext t 0 "popFactor :: Integer -> Maybe (Integer, Integer)", \t -> do
+	itext t 0 "popFactor n = (f, n `div` f)", \t -> do
+	itext t 1 "where", \t -> do
+	itext t 1 "f = head $ filter ((== 0) . (n `mod`)) [2 .. n]", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 1 $ "*Main> popFactor " ++ show fct8integer1, \t -> do
+	itext t 1 $ show $ popFactor fct8integer1, \t -> do
+	itext t 1 $ "*Main> popFactor " ++ show fct8integer2, \t -> do
+	itext t 1 $ show $ popFactor fct8integer2
+ ]
+
+factorization9 :: Page
+factorization9 = [\t -> do
+	writeTopTitle t "素因数分解"
+	text t "", \t -> do
+	text t "* 最小の因数と残りに分ける関数ができた", \t -> do
+	text t "* これを使って素因数分解するためには", \t -> do
+	itext t 1 "- 結果がNothingだったら空リスト", \t -> do
+	itext t 1 "- そうでなければJust (f, n')として", \t -> do
+	itext t 2 "n'の素因数分解の結果にfを追加すれば良い", \t -> do
+	text t "* よって以下のようになる", \t -> do
+	itext t 1 "factorization :: Integer -> [Integer]", \t -> do
+	itext t 1 "factorization n = case popFactor n of", \t -> do
+	itext t 2 "Nothing -> []", \t -> do
+	itext t 2 "Just (f, n') -> f : factorization n'"
+ ]
+
+factorization10 :: Page
+factorization10 = [\t -> do
+	writeTopTitle t "iterateの枠組みとの比較"
+	text t "", \t -> do
+	text t "* iterateの場合", \t -> do
+	itext t 1 "- 次々にわたしていく値と", \t -> do
+	itext t 1 "- 結果としてリストに入る値とは同じ", \t -> do
+	text t "* collatz数列の例で考えると", \t -> do
+	itext t 1 "- 5の次の値は16だが、この16は", \t -> do
+	itext t 1 "- 結果のリストに入り、かつ", \t -> do
+	itext t 1 "- 残りの値を求めるのに使われる"
+ ]
+
+factorization11 :: Page
+factorization11 = [\t -> do
+	writeTopTitle t "iterateの枠組みとの比較"
+	text t "", \t -> do
+	text t "* 素因数分解の例では", \t -> do
+	itext t 1 "- リストに入るのは最小の約数", \t -> do
+	itext t 1 "- 次の値に必要なのは、残りの数", \t -> do
+	itext t 1 "- リストの終了はNothingで示される", \t -> do
+	text t "* この枠組みを表す関数unfoldrがある"
+ ]
+
+factorization12 :: Page
+factorization12 = [\t -> do
+	writeTopTitle t "unfoldr"
+	text t "", \t -> do
+	text t "* factorizationの定義を再掲する", \t -> do
+	itext t 1 "factorization n = case popFactor n of"
+	itext t 2 "Nothing -> []"
+	itext t 2 "Just (f, n') -> f : factorization n'", \t -> do
+	text t "* より一般的に書くと", \t -> do
+	itext t 1 "fun x = case next x of"
+	itext t 2 "Nothing -> []"
+	itext t 2 "Just (r, x') -> r : fun x'", \t -> do
+	text t "* nextの部分を変えていろいろな関数が作れる", \t -> do
+	text t "* unfoldr nextでこれを表現できる"
+ ]
+
+factorization13 :: Page
+factorization13 = [\t -> do
+	writeTopTitle t "unfoldr"
+	text t "", \t -> do
+	text t "* unfoldrの定義は以下のようになる", \t -> do
+	itext t 1 "unfoldr :: (b -> Maybe (a, b)) -> b -> [a]", \t -> do
+	itext t 1 "unfoldr next x = case next x of", \t -> do
+	itext t 2 "Nothing -> []", \t -> do
+	itext t 2 "Just (r, x') -> r : unfoldr next x'", \t -> do
+	text t "* unfoldrを使うとfactorizationは以下のようになる", \t -> do
+	itext t 1 "factorization = unfoldr popFactor"
+ ]
+
+factorization :: Integer -> [Integer]
+factorization = unfoldr popFactor
+
+fct14integer1, fct14integer2 :: Integer
+fct14integer1 = 3511932343773
+fct14integer2 = 781923541387
+
+factorization14 :: Page
+factorization14 = [\t -> do
+	writeTopTitle t "試してみる"
+	text t "", \t -> do
+	text t "* myList.hsに書き込もう", \t -> do
+	itext t 1 "factorization :: Integer -> [Integer]"
+	itext t 1 "factorization = unfoldr popFactor", \t -> do
+	text t "* myList.hsの先頭にimport Data.List (unfoldr)が必要", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 $ "*Main> factorization " ++ show fct14integer1, \t -> do
+	itext t 1 $ show $ factorization fct14integer1, \t -> do
+	itext t 1 $ "*Main> factorization " ++ show fct14integer2, \t -> do
+	itext t 1 $ show $ factorization fct14integer2, \t -> do
+	text t "* 適当な値を入れると評価に時間がかかりすぎる場合がある"
+ ]
+
+factorizationSummary :: Page
+factorizationSummary = [\t -> do
+	writeTopTitle t "素因数分解(まとめ)"
+	text t "", \t -> do
+	text t "* 素因数分解する関数を定義した", \t -> do
+	text t "* unfoldrを利用した", \t -> do
+	text t "* unfoldrは以下のような関数を引数としてとる", \t -> do
+	itext t 1 "- 次が存在しないことをNothingで表す", \t -> do
+	itext t 1 "- 値に対して(結果の値, 次の値)のペアを返す", \t -> do
+	text t "* unfoldrは「結果の値」を要素とするリストを返す"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* リストを構成する再帰関数について見た", \t -> do
+	text t "* その関数の返り値自体に値を追加するという定義", \t -> do
+	text t "* そのような関数の多くは以下のような構造を持つ", \t -> do
+	itext t 1 "[x, f x, f (f x), f (f (f x)) ... ]", \t -> do
+	text t "* このような構造はiterate fで表現できる", \t -> do
+	text t "* 「結果の値」と「次の値」が違う場合iterateは使えない", \t -> do
+	text t "* このような場合にはunfoldrが使える", \t -> do
+	text t "* unfoldrは以下の関数を引数としてとる", \t -> do
+	itext t 1 "- 次の値が存在しない場合はNothing", \t -> do
+	itext t 1 "- 存在するなら(結果の値, 次の値)ペアを返す"
  ]

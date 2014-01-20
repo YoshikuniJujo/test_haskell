@@ -74,3 +74,12 @@ takeTo p = flip foldr [] $ \x lst -> x : (if p x then [] else lst)
 collatzInf n = n : collatzInf (if even n
 	then n `div` 2
 	else n * 3 + 1)
+
+popFactor :: Integer -> Maybe (Integer, Integer)
+popFactor 1 = Nothing
+popFactor n = Just (f, n `div` f)
+	where
+	f = head $ filter ((== 0) . (n `mod`)) [2 .. n]
+
+factorization :: Integer -> [Integer]
+factorization = unfoldr popFactor
