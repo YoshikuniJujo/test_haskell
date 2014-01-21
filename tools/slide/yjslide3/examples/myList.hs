@@ -99,3 +99,11 @@ myMap :: (a -> b) -> [a] -> [b]
 myMap f = unfoldr $ \lst -> case lst of
 	[] -> Nothing
 	(x : xs) -> Just (f x, xs)
+
+myReverse :: [a] -> [a]
+myReverse = foldl (flip (:)) []
+
+myZip :: [a] -> [b] -> [(a, b)]
+myZip = curry $ unfoldr $ \(lstX, lstY) -> case (lstX, lstY) of
+	(x : xs, y : ys) -> Just ((x, y), (xs, ys))
+	_ -> Nothing

@@ -5,10 +5,13 @@ subtitle = "第10回 演習(2日目)"
 
 main :: IO ()
 main = runLecture [
-	[flip writeTitle subtitle], prelude,
+	[flip writeTitle subtitle], prelude, prelude2, prelude3,
 	basic, basic2, basic3, basic4, basic5, basic6, basic7,
 	defineMap, defineMap2, defineMap3, defineMap4, defineMap5,
-	defineFilter, defineFilter2, defineFilter3, defineFilter4
+	defineFilter, defineFilter2, defineFilter3, defineFilter4,
+	defineReverse, defineReverse2, defineReverse3, defineReverse4,
+	defineReverse5,
+	defineZip, defineZip2, defineZip3, defineZip4
  ]
 
 prelude :: Page
@@ -22,6 +25,31 @@ prelude = [\t -> do
 	text t "* リストを扱う関数の使いかたや作られかたを見た", \t -> do
 	text t "* 演習ではいろいろな再帰関数を定義していく", \t -> do
 	text t "* とくにリストを扱う関数をいろいろなやりかたで定義する"
+ ]
+
+prelude2 :: Page
+prelude2 = [\t -> do
+	writeTopTitle t "そのまえに"
+	text t "", \t -> do
+	text t "* importしなくても初めから使える関数等がある", \t -> do
+	text t "* それらはPreludeというモジュールからexportされている", \t -> do
+	text t "* ghciを引数無しで立ち上げたときはPreludeのなかにいる", \t -> do
+	text t "* どのモジュールにも暗黙にimportされるので", \t -> do
+	itext t 1 "同じ名前の別の関数を使いたいときに困る", \t -> do
+	text t "* そのようなときは以下のように明示的にimportすれば良い", \t -> do
+	itext t 1 "import Prelude hiding ([再定義したい関数名])"
+ ]
+
+prelude3 :: Page
+prelude3 = [\t -> do
+	writeTopTitle t "そのまえに"
+	text t "", \t -> do
+	text t "* 今回はPreludeの関数を再定義していくので", \t -> do
+	itext t 1 "import Prelude hiding (map, filter ...)とする", \t -> do
+	text t "* また、同じ関数にいろいろな定義を与えるので", \t -> do
+	itext t 1 "* '--'を行頭につけてコメントアウトする", \t -> do
+	itext t 1 "* '{-'と'-}'を使ったコメントも使える", \t -> do
+	itext t 1 "* または、(')をつけてmap', map''のようにする"
  ]
 
 basic :: Page
@@ -245,6 +273,141 @@ defineFilter4 = [\t -> do
 	itext t 2 "| p x = x : filter p xs"
 	itext t 2 "| otherwise = filter p xs", \t -> do
 	text t "* 以下の定義を満たすようなopを考える", \t -> do
-	itext t 1 "filter p (x : xs) = x `op` xs", \t -> do
-	text t "* opは以下のようになる"
+	itext t 1 "filter p (x : xs) = x `op` filter p xs", \t -> do
+	text t "* opは以下のようになる", \t -> do
+	itext t 1 "op = \\x xs -> if p x then x : xs else xs", \t -> do
+	arrowIText t 1 "op = \\x -> if p x then (x :) else id", \t -> do
+	text t "* よってfoldrを使ったfilterの定義は", \t -> do
+	text t "filter p = foldr (\\x -> if p x then (x :) else id) []"
+ ]
+
+defineReverse :: Page
+defineReverse = [\t -> do
+	writeTopTitle t "reverse"
+	text t "", \t -> do
+	text t "* リストを逆順にする関数reverseがある", \t -> do
+	text t "* 再帰を直接使ってreverseを定義してみよう", \t -> do
+	text t "* これは反復的処理を使うとスマートに定義できる", \t -> do
+	text t "* リストの頭から要素を取っていき", \t -> do
+	itext t 1 "次々とリストの頭に足していく", \t -> do
+	text t "* トランプの山を一枚ずつ別の山に移動していくイメージ", \t -> do
+	itext t 1 "- 結果としてできる山は逆順になっているはずだ"
+ ]
+
+defineReverse2 :: Page
+defineReverse2 = [\t -> do
+	writeTopTitle t "reverse"
+	text t "", \t -> do
+	text t "* 反復的処理には蓄積変数が必要となる", \t -> do
+	text t "* これはreverseの引数とは別に用意してやる必要がある", \t -> do
+	text t "* 別の関数を作り、その関数に蓄積変数の初期値を与える", \t -> do
+	text t "* つまりreverseを以下のように定義する", \t -> do
+	itext t 1 "reverse = reverseIter []"
+ ]
+
+defineReverse3 :: Page
+defineReverse3 = [\t -> do
+	writeTopTitle t "reverse"
+	text t "", \t -> do
+	text t "* 演習10-11. reverseIterの型を求めよ", \t -> do
+	itext t 1 "(1分)", \t -> do
+	text t "* できただろうか", \t -> do
+	itext t 1 "第1引数(蓄積変数): 何かのリスト", \t -> do
+	itext t 1 "第2引数(もとのリスト): 同じ型のリスト", \t -> do
+	itext t 1 "返り値: 同じ型のリスト", \t -> do
+	arrowIText t 1 "[a] -> [a] -> [a]"
+ ]
+
+defineReverse4 :: Page
+defineReverse4 = [\t -> do
+	writeTopTitle t "reverse"
+	text t "", \t -> do
+	text t "* 演習10-12. reverseIterを再帰を直接使って定義せよ", \t -> do
+	itext t 1 "(1分)", \t -> do
+	text t "* reverseIter ys xsとしたとき", \t -> do
+	itext t 1 "- xsが空ならばysをそのまま返せば良い", \t -> do
+	itext t 1 "- そうでなければxsの先頭要素をysに移す", \t -> do
+	itext t 1 "- これをくりかえす", \t -> do
+	text t "* よって、こうなる", \t -> do
+	itext t 1 "reverseIter ys [] = ys", \t -> do
+	itext t 1 "reverseIter ys (x : xs) = reverseIter (x : ys) xs"
+ ]
+
+defineReverse5 :: Page
+defineReverse5 = [\t -> do
+	writeTopTitle t "reverse"
+	text t "", \t -> do
+	text t "* 演習10-13. reverseをfoldlを使って定義せよ", \t -> do
+	itext t 1 "(1分)", \t -> do
+	text t "* foldlはこう考える", \t -> do
+	itext t 1 "- 初期値は何か?", \t -> do
+	itext t 1 "- リストの次の値によって蓄積変数はどう変わるか", \t -> do
+	text t "* reverseだとこうなる", \t -> do
+	itext t 1 "- 初期値: []", \t -> do
+	itext t 1 "- 次の値xによって蓄積変数ysは(x : ys)となる", \t -> do
+	arrowIText t 1 "reverse = foldl (\\ys x -> (x : ys)) []", \t -> do
+	text t "* \\ys x -> (x : ys)は(:)の引数を入れ換えただけなので", \t -> do
+	arrowIText t 1 "reverse = foldl (reverse (:)) []"
+ ]
+
+defineZip :: Page
+defineZip = [\t -> do
+	writeTopTitle t "zip"
+	text t "", \t -> do
+	text t "* ふたつのリストをタプルのリストにまとめる関数zipがある", \t -> do
+	itext t 1 "*Prelude> zip \"hello\" [1 ..]", \t -> do
+	itext t 1 $ show $ zip "hello" [1 :: Int ..], \t -> do
+	text t "* 演習10-14. zipの型を決めよ", \t -> do
+	itext t 1 "(1分)", \t -> do
+	text t "* aの値のリストとbの値のリストをとって"
+	itext t 1 "タプル(a, b)のリストを作るので", \t -> do
+	arrowIText t 1 "[a] -> [b] -> [(a, b)]"
+ ]
+
+defineZip2 :: Page
+defineZip2 = [\t -> do
+	writeTopTitle t "zip"
+	text t "", \t -> do
+	text t "* 演習10-15. zipを再帰を直接使って定義せよ", \t -> do
+	itext t 1 "(1分)", \t -> do
+	text t "* こう考える", \t -> do
+	itext t 1 "- どちらかが空リストなら空リスト", \t -> do
+	itext t 1 "- 両方のリストの残りのリストをzipしたものがあれば", \t -> do
+	itext t 2 "それに両方のリストの頭のタプルを足す", \t -> do
+	text t "* こうなる", \t -> do
+	itext t 1 "zip [] _ = []"
+	itext t 1 "zip _ [] = []"
+	itext t 1 "zip (x : xs) (y : ys) = (x, y) : zip xs ys"
+ ]
+
+defineZip3 :: Page
+defineZip3 = [\t -> do
+	writeTopTitle t "zip"
+	text t "", \t -> do
+	text t "* 演習10-16. zipをunfoldrを使って定義せよ", \t -> do
+	itext t 1 "(1分)", \t -> do
+	text t "* こう考える", \t -> do
+	itext t 1 "- どちらかが空ならば空リスト", \t -> do
+	itext t 1 "- 蓄積変数の値は2つのリストをタプルにしたもの", \t -> do
+	itext t 1 "- それぞれのリストの頭をタプルにしたものが結果", \t -> do
+	itext t 1 "- 2つのリストの頭をとったものを次の値にする", \t -> do
+	text t "* よってunfoldrに与える関数は以下のようになる", \t -> do
+	itext t 1 "f (x : xs, y : ys) = Just ((x, y), (xs, ys))", \t -> do
+	itext t 1 "f _ = Nothing"
+ ]
+
+defineZip4 :: Page
+defineZip4 = [\t -> do
+	writeTopTitle t "zip"
+	text t "", \t -> do
+	text t "* fを変形する", \t -> do
+	itext t 1 "f = \\lsts -> case lsts of"
+	itext t 2 "(x : xs, y : ys) -> Just ((x, y), (xs, ys))"
+	itext t 2 "_ -> Nothing", \t -> do
+	text t "* これをunfoldrに与えると以下の型の関数ができる", \t -> do
+	itext t 1 "([a], [b]) -> [(a, b)]", \t -> do
+	text t "* これをカリー化すれば求める関数となる", \t -> do
+	itext t 1 "zip = curry $ unfoldr $ \\lsts -> case lsts of"
+	itext t 2 "(x : xs, y : ys) -> Just ((x, y), (xs, ys))"
+	itext t 2 "_ -> Nothing"
  ]

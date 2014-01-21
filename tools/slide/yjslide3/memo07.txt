@@ -7,17 +7,19 @@ scanr, scanl (scanr1, scanl1)
 mapAccumL, mapAccumR
 
 concat
-reverse
 and
 or
 sum
 product
 maximum
 minimum
-unzip
 sequence
 
 map
 filter
 
+reverse
+
+zip
+unzip
 zipWith
