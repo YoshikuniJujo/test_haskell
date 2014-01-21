@@ -13,7 +13,8 @@ main = runLecture [
 	defineReverse5,
 	defineZip, defineZip2, defineZip3, defineZip4,
 	defineUnzip, defineUnzip2, defineUnzip3,
-	defineZipWith, defineZipWith2, defineZipWith3, defineZipWith4
+	defineZipWith, defineZipWith2, defineZipWith3, defineZipWith4,
+	summary
  ]
 
 prelude :: Page
@@ -510,5 +511,25 @@ defineZipWith4 = [\t -> do
 	writeTopTitle t "zipWith"
 	text t "", \t -> do
 	text t "* 演習10-23. zipWithをunfoldrを使って定義せよ", \t -> do
-	itext t 1 "(1分)"
+	itext t 1 "(1分)", \t -> do
+	text t "* (x : xs, y : ys)に対して", \t -> do
+	itext t 1 "- 結果のリストにはf x yが含まれ", \t -> do
+	itext t 1 "- 次の計算には(xs, ys)がわたされる", \t -> do
+	text t "* こうなる", \t -> do
+	itext t 0 "zipWith f = curry $ unfoldr $ \\lsts -> case lsts of"
+	itext t 1 "(x : xs, y : ys) -> Just (f x y, (xs, ys))"
+	itext t 1 "_ -> Nothing"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* いろいろな再帰関数を定義してみた", \t -> do
+	text t "* とくにリストを扱う再帰関数について", \t -> do
+	itext t 1 "- 直接的な定義を作成した", \t -> do
+	itext t 1 "- 抽象的な枠組みを抽出した関数を使って定義した", \t -> do
+	text t "* 再帰的関数の定義のしかたを身につけた", \t -> do
+	text t "* 直接的な再帰より狭い枠組みを抽出した関数を使うことで", \t -> do
+	itext t 1 "定義しようとしている関数のパターンを見出した"
  ]
