@@ -11,7 +11,9 @@ main = runLecture [
 	defineFilter, defineFilter2, defineFilter3, defineFilter4,
 	defineReverse, defineReverse2, defineReverse3, defineReverse4,
 	defineReverse5,
-	defineZip, defineZip2, defineZip3, defineZip4
+	defineZip, defineZip2, defineZip3, defineZip4,
+	defineUnzip, defineUnzip2, defineUnzip3,
+	defineZipWith, defineZipWith2, defineZipWith3, defineZipWith4
  ]
 
 prelude :: Page
@@ -355,7 +357,7 @@ defineZip = [\t -> do
 	writeTopTitle t "zip"
 	text t "", \t -> do
 	text t "* ふたつのリストをタプルのリストにまとめる関数zipがある", \t -> do
-	itext t 1 "*Prelude> zip \"hello\" [1 ..]", \t -> do
+	itext t 1 "Prelude> zip \"hello\" [1 ..]", \t -> do
 	itext t 1 $ show $ zip "hello" [1 :: Int ..], \t -> do
 	text t "* 演習10-14. zipの型を決めよ", \t -> do
 	itext t 1 "(1分)", \t -> do
@@ -410,4 +412,103 @@ defineZip4 = [\t -> do
 	itext t 1 "zip = curry $ unfoldr $ \\lsts -> case lsts of"
 	itext t 2 "(x : xs, y : ys) -> Just ((x, y), (xs, ys))"
 	itext t 2 "_ -> Nothing"
+ ]
+
+defineUnzip :: Page
+defineUnzip = [\t -> do
+	writeTopTitle t "unzip"
+	text t "", \t -> do
+	text t "* zipの逆関数が存在する", \t -> do
+	text t "* 2要素タプルを2つのリストに分ける関数", \t -> do
+	text t "* 2つのリストはタプルにまとめて返される", \t -> do
+	itext t 1 $ "Prelude> unzip " ++ show (zip "yes" [1 :: Int ..]), \t -> do
+	itext t 1 $ show $ unzip $ zip "yes" [1 :: Int ..], \t -> do
+	text t "* 演習10-17. unzipの型を求めよ", \t -> do
+	itext t 1 "(1分)", \t -> do
+	text t "* 入力がタプルのリストで出力が"
+	itext t 1 "タプルのそれぞれの要素のリストのタプルなので", \t -> do
+	arrowIText t 1 "[(a, b)] -> ([a], [b])"
+ ]
+
+defineUnzip2 :: Page
+defineUnzip2 = [\t -> do
+	writeTopTitle t "unzip"
+	text t "", \t -> do
+	text t "* 演習10-18. unzipを再帰を直接使って定義せよ", \t -> do
+	itext t 1 "(1分)", \t -> do
+	text t "* こう考える", \t -> do
+	itext t 1 "- 空リストなら空リストのペアになる", \t -> do
+	itext t 1 "- リストのはじめの要素以外をunzipしたものがあれば", \t -> do
+	itext t 2 "それぞれのリストにペアのそれぞれの値を追加", \t -> do
+	text t "* こうなる", \t -> do
+	itext t 1 "unzip [] = ([], [])", \t -> do
+	itext t 1 "unzip ((x, y) : xys) = (x : xs, y : ys)", \t -> do
+	itext t 2 "where (xs, ys) = unzip xys"
+ ]
+
+defineUnzip3 :: Page
+defineUnzip3 = [\t -> do
+	writeTopTitle t "unzip"
+	text t "", \t -> do
+	text t "* 演習10-19. unzipをfoldrを使って定義せよ", \t -> do
+	itext t 1 "(1分)", \t -> do
+	text t "* 要素がひとつつけ加わったときにどう変化するかを考える", \t -> do
+	text t "* (xs, ys)に対して(x, y)が加わると(x : xs, y: ys)になる", \t -> do
+	text t "* よって以下のような定義となる", \t -> do
+	itext t 1 "unzip = foldr $"
+	itext t 2 "\\(x, y) (xs, ys) -> (x : xs, y : ys)) []"
+ ]
+
+defineZipWith :: Page
+defineZipWith = [\t -> do
+	writeTopTitle t "zipWith"
+	text t "", \t -> do
+	text t "* 2つのリストの要素同士を", \t -> do
+	itext t 1 "- タプルにまとめるのではなく", \t -> do
+	itext t 1 "- 任意の関数でまとめる関数がzipWith", \t -> do
+	itext t 1 "Prelude> zipWith (+) [1, 2, 3] [4, 5, 6]", \t -> do
+	itext t 1 $ show $ zipWith (+) [1 :: Int, 2, 3] [4, 5, 6], \t -> do
+	text t "* 演習10-20. zipWithの型を求めよ", \t -> do
+	itext t 1 "(1分)", \t -> do
+	text t "* 第1引数は2引数関数で", \t -> do
+	itext t 1 "- その関数の引数と返り値の型をリストにしたものが", \t -> do
+	itext t 1 "- zipWith全体の残りの引数と返り値の型となる", \t -> do
+	arrowIText t 1 "zipWith :: (a -> b -> c) -> [a] -> [b] -> [c]"
+ ]
+
+defineZipWith2 :: Page
+defineZipWith2 = [\t -> do
+	writeTopTitle t "zipWith"
+	text t "", \t -> do
+	text t "* タプルは(x, y)で表記されるが本当は以下の形をしている", \t -> do
+	itext t 1 "(,) x y", \t -> do
+	text t "* つまり二引数関数(,)をx, yに適用すると(x, y)となる", \t -> do
+	text t "* 演習10-21. zipWithを使ってzipを定義せよ", \t -> do
+	itext t 1 "(30秒)", \t -> do
+	text t "* zip = zipWith (,)"
+ ]
+
+defineZipWith3 :: Page
+defineZipWith3 = [\t -> do
+	writeTopTitle t "zipWith"
+	text t "", \t -> do
+	text t "* 演習10-22. zipWithを再帰を直接使って定義せよ", \t -> do
+	itext t 1 "(1分)", \t -> do
+	text t "* こう考える", \t -> do
+	itext t 1 "- どちらかが空リストなら空リスト", \t -> do
+	itext t 1 "- xsとysについての結果zsがあるなら", \t -> do
+	itext t 2 "(x : xs)と(y : ys)に対してはf x y : zs", \t -> do
+	text t "* こうなる", \t -> do
+	itext t 1 "zipWith _ [] _ = []"
+	itext t 1 "zipWith _ _ [] = []"
+	itext t 1 "zipWith f (x : xs) (y : ys) ="
+	itext t 2 "f x y : zipWith f xs ys"
+ ]
+
+defineZipWith4 :: Page
+defineZipWith4 = [\t -> do
+	writeTopTitle t "zipWith"
+	text t "", \t -> do
+	text t "* 演習10-23. zipWithをunfoldrを使って定義せよ", \t -> do
+	itext t 1 "(1分)"
  ]
