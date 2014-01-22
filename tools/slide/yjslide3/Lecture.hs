@@ -10,9 +10,9 @@ module Lecture (
 	itext', hLine,
 	Turtle,
 	writeTree, BinTree(..), rtGoto, rotateL, rotateR, width, mapR,
-	randomDot, drawRect2, forwardRt, circleRt, dotRt,
-	newTurtle, field, hideturtle, penup, writeRt, undo, waitTurtle,
-	pencolor, setheading, Field, killTurtle,
+	randomDot, drawRect2, forwardRt, backwardRt, circleRt, dotRt,
+	newTurtle, field, hideturtle, pendown, penup, writeRt, undo, waitTurtle,
+	pencolor, setheading, Field, killTurtle, left, right,
 ) where
 
 import Graphics.X11.Turtle
@@ -372,6 +372,9 @@ drawRect2 t x y w h = do
 
 forwardRt :: Turtle -> Double -> IO ()
 forwardRt t = forward t . (* rt)
+
+backwardRt :: Turtle -> Double -> IO ()
+backwardRt t = backward t . (* rt)
 
 circleRt :: Turtle -> Double -> IO ()
 circleRt t r = do
