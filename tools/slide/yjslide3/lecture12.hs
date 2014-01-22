@@ -8,7 +8,7 @@ main = runLecture [
 	[flip writeTitle subtitle], prelude,
 	typeVariable, typeVariable2, twice, twice2,
 	tuple, tuple2, tuple3, tuple4,
-	list, list2
+	list, list2, list3
  ]
 
 prelude :: Page
@@ -190,4 +190,17 @@ list2 = [\t -> do
 	text t "* リストは以下のように定義されていると考えられる", \t -> do
 	itext t 1 "data [] a = (:) a ([] a) | []", \t -> do
 	text t "* Listは[]に、Consは(:)に、Nilは[]に対応している"
+ ]
+
+list3 :: Page
+list3 = [\t -> do
+	writeTopTitle t "再帰的な型"
+	text t "", \t -> do
+	text t "* リストの定義を再掲する", \t -> do
+	itext t 1 "data [] a = (:) a ([] a) | []", \t -> do
+	text t "* ([] a)の定義のなかに([] a)が出てくる", \t -> do
+	text t "* つまり、再帰的な定義となっている", \t -> do
+	text t "* 構文糖を適用するとわかりやすくなる", \t -> do
+	itext t 1 "data [a] = a : [a] | []", \t -> do
+	text t "* aのリストは空リストまたはaのリストにaの値を足したもの"
  ]
