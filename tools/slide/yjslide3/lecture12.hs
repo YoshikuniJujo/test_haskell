@@ -6,7 +6,9 @@ subtitle = "第12回 多相型"
 main :: IO ()
 main = runLecture [
 	[flip writeTitle subtitle], prelude,
-	typeVariable, typeVariable2, twice, twice2
+	typeVariable, typeVariable2, twice, twice2,
+	tuple, tuple2, tuple3, tuple4,
+	list, list2
  ]
 
 prelude :: Page
@@ -54,7 +56,7 @@ twice :: Page
 twice = [\t -> do
 	writeTopTitle t "多相型"
 	text t "", \t -> do
-	text t "* たとえば同じ型を2個集めた型を作るとする", \t -> do
+	text t "* たとえば同じ型の値を2個集めた値の型を作るとする", \t -> do
 	text t "* このときも型変数が使える", \t -> do
 	itext t 1 "data Twice a = Twice a a", \t -> do
 	text t "* 以下のすべてを定義したことになる", \t -> do
@@ -87,7 +89,105 @@ twice2 = [\t -> do
 	itext t 1 $ show $ mapTwice even $ Twice (3 :: Int) 8
  ]
 
-twice3 :: Page
-twice3 = [\t -> do
-	writeTopTitle t "型変数"
+data Tuple a b = Tuple a b deriving Show
+
+tuple :: Page
+tuple = [\t -> do
+	writeTopTitle t "タプル"
+	text t "", \t -> do
+	text t "* タプルと同等のものを自分で定義することができる", \t -> do
+	itext t 1 "data Tuple a b = Tuple a b deriving Show", \t -> do
+	text t "* これをdata.hsに書き込もう", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> Tuple 8 'c'", \t -> do
+	itext t 1 $ show $ Tuple (8 :: Int) 'c'
+ ]
+
+myFst :: Tuple a b -> a
+myFst (Tuple x _) = x
+
+mySnd :: Tuple a b -> b
+mySnd (Tuple _ y) = y
+
+tuple2 :: Page
+tuple2 = [\t -> do
+	writeTopTitle t "タプル"
+	text t "", \t -> do
+	text t "* 自作のタプルの要素を取り出す関数を書いてみる", \t -> do
+	itext t 1 "myFst :: Tuple a b -> a", \t -> do
+	itext t 1 "myFst (Tuple x _) = x", \t -> do
+	itext t 1 "mySnd :: Tuple a b -> b", \t -> do
+	itext t 1 "mySnd (Tuple _ y) = y", \t -> do
+	text t "* data.hsに書き込み、試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> myFst $ Tuple 3 'c'", \t -> do
+	itext t 1 $ show $ myFst $ Tuple (3 :: Int) 'c', \t -> do
+	itext t 1 "*Main> mySnd $ Tuple 3 'c'", \t -> do
+	itext t 1 $ show $ mySnd $ Tuple (3 :: Int) 'c'
+ ]
+
+tuple3 :: Page
+tuple3 = [\t -> do
+	writeTopTitle t "タプル"
+	text t "", \t -> do
+	text t "* 型についても値についても類似した構文糖がある", \t -> do
+	itext t 1 "- 型については(a, b)は脱糖すると(,) a bとなり", \t -> do
+	itext t 1 "- 値についても(x, y)は脱糖すると(,) x yとなる", \t -> do
+	text t "* つまり脱糖すると以下のような定義となる", \t -> do
+	itext t 1 "someTuple :: (,) Int Char", \t -> do
+	itext t 1 "someTuple = (,) 3 'c'", \t -> do
+	text t "* タプルは以下のように定義されていることになる", \t -> do
+	itext t 1 "data (,) a b = (,) a b", \t -> do
+	text t "* これは特殊な識別子(,)が使われていること以外は", \t -> do
+	itext t 1 "Tuple型の定義と等しい"
+ ]
+
+tuple4 :: Page
+tuple4 = [\t -> do
+	writeTopTitle t "タプル"
+	text t "", \t -> do
+	text t "* タプルは特別な名前と構文糖以外については", \t -> do
+	itext t 1 "代数的データ型の定義の範囲内で定義することができる"
+ ]
+
+-- infixr 6 `Cons`
+
+data List a = Cons a (List a) | Nil deriving Show
+
+list :: Page
+list = [\t -> do
+	writeTopTitle t "リスト"
+	text t "", \t -> do
+	text t "* リストに関しても同様に自分で定義することができる", \t -> do
+	itext t 1 "data List a = Cons a (List a) | Nil deriving Show", \t -> do
+	text t "* data.hsに書き込んで試してみよう", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> 3 `Cons` (4 `Cons` (7 `Cons` Nil))", \t -> do
+	itext t 1 $ show $ (3 :: Int) `Cons` (4 `Cons` (7 `Cons` Nil)), \t -> do
+	text t "* Listに対するmap関数を書いてみよう", \t -> do
+	itext t 1 "mapList :: (a -> b) -> List a -> List b", \t -> do
+	itext t 1 "mapList _ Nil = Nil", \t -> do
+	itext t 1 "mapList f (x `Cons` xs) = f x `Cons` mapList f xs", \t -> do
+	text t "* これもdata.hsに書き込んでおこう"
+ ]
+
+mapList :: (a -> b) -> List a -> List b
+mapList _ Nil = Nil
+mapList f (x `Cons` xs) = f x `Cons` mapList f xs
+
+list2 :: Page
+list2 = [\t -> do
+	writeTopTitle t "試してみる"
+	text t "", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 0 "*Main> :reload", \t -> do
+	itext t 0 "*Main> mapList even $ 3 `Cons` (4 `Cons` (7 `Cons` Nil))", \t -> do
+	itext t 0 $ show $ mapList even $ (3 :: Int) `Cons` (4 `Cons` (7 `Cons` Nil)), \t -> do
+	text t "* リストについても構文糖があり", \t -> do
+	itext t 1 "- 型については[a]が[] aとなり", \t -> do
+	itext t 1 "- 値については[x, y, z]がx : y : z : []となる", \t -> do
+	text t "* リストは以下のように定義されていると考えられる", \t -> do
+	itext t 1 "data [] a = (:) a ([] a) | []", \t -> do
+	text t "* Listは[]に、Consは(:)に、Nilは[]に対応している"
  ]
