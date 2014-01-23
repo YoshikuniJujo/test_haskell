@@ -13,7 +13,7 @@ module Lecture (
 	randomDot, drawRect2, forwardRt, backwardRt, circleRt, dotRt,
 	newTurtle, field, hideturtle, pendown, penup, writeRt, undo, waitTurtle,
 	pencolor, setheading, Field, killTurtle, left, right, heading,
-	writeSmallRt, pensizeRt, showturtle,
+	writeSmallRt, pensizeRt, showturtle, flushoff, flushon, flush,
 ) where
 
 import Graphics.X11.Turtle

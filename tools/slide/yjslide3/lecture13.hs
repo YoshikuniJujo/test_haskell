@@ -12,7 +12,9 @@ main = runLecture [
 	toInstanceSummary,
 	aboutDeriving,
 	automaton, automaton2, automaton3, automaton4, automaton5,
-	automaton6, automaton7, automaton8, automaton9, automaton10
+	automaton6, automaton7, automaton8, automaton9, automaton10,
+	automaton11, automaton12, automaton13, automaton14,
+	automaton15, automaton16
  ]
 
 prelude :: Page
@@ -257,15 +259,39 @@ m1 t x y = do
 	backQ t "0, 1"
 	rtGoto t x (y + 40)
 
+m2 :: Turtle -> Double -> Double -> IO ()
+m2 t x y = do
+	initialQ t x y "qe"
+	selfQ t "0"
+	nextQ t "1" "qo"
+	selfQ t "0"
+	backQ t "1"
+	acceptQ t
+	rtGoto t x (y + 40)
+
+oneshot' :: Turtle -> IO () -> IO ()
+oneshot' t action = do
+	flushoff t
+	hideturtle t
+	action
+	flush t
+	showturtle t
+	flushon t
+
 automaton3 :: Page
 automaton3 = [\t -> do
 	writeTopTitle t "オートマトン"
 	text t "", \t -> do
 	text t "* 今のオートマトンを再掲する", \t -> do
-	m1 t 100 140, \t -> do
+	flushoff t
+	hideturtle t
+	m1 t 100 140
+	flush t
+	showturtle t
+	flushon t, \t -> do
 	text t "* このオートマトンが受理するのは以下の入力列となる", \t -> do
 	itext t 1 "- すくなくともひとつの1を含み", \t -> do
-	itext t 1 "- 最後の1のあとには偶数個(0も可)の0が来る", \t -> do
+	itext t 1 "- 最後の1のあとには偶数個(0個も可)の0が来る", \t -> do
 	text t "* いろいろな例で確認してみよう", \t -> do
 	itext t 1 "(1分)"
  ]
@@ -369,23 +395,135 @@ automaton9 = [\t -> do
 	writeTopTitle t "オートマトン"
 	text t "", \t -> do
 	text t "* それでは最初の例を表すオートマトンを作ってみよう", \t -> do
-	m1 t 100 140, \t -> do
-	text t "* 型をQ1としてその型の値をQ11, Q12, Q13とする", \t -> do
-	itext t 1 "data Q1 = Q11 | Q12 | Q13 deriving Show"
+	flushoff t
+	hideturtle t
+	m1 t 100 140
+	flush t
+	showturtle t
+	flushon t, \t -> do
+	text t "* 型をAM1としてその型の値をQ1, Q2, Q3とする", \t -> do
+	itext t 1 "data AM1 = Q1 | Q2 | Q3 deriving Show"
  ]
 
 automaton10 :: Page
 automaton10 = [\t -> do
 	writeTopTitle t "オートマトン"
 	text t "", \t -> do
-	text t "* AMStateのインスタンスにしてみよう", \t -> do
+	flushoff t
 	hideturtle t
-	m1 t 100 140
-	showturtle t, \t -> do
-	text t "* まずはstepQ1を定義しよう", \t -> do
-	itext t 1 "stepQ1 Q11 O = Q11", \t -> do
-	itext t 1 "stepQ1 Q11 I = Q12", \t -> do
-	itext t 1 "stepQ1 Q12 O = Q13", \t -> do
-	itext t 1 "stepQ1 Q12 I = Q12", \t -> do
-	itext t 1 "stepQ1 Q13 _ = Q12"
+	m1 t 100 120
+	flush t
+	showturtle t
+	flushon t, \t -> do
+	text t "* まずはstepAM1を定義しよう", \t -> do
+	itext t 1 "stepAM1 :: AM1 -> OI -> AM1", \t -> do
+	itext t 1 "stepAM1 Q1 O = Q1", \t -> do
+	itext t 1 "stepAM1 Q1 I = Q2", \t -> do
+	itext t 1 "stepAM1 Q2 O = Q3", \t -> do
+	itext t 1 "stepAM1 Q2 I = Q2", \t -> do
+	itext t 1 "stepAM1 Q3 _ = Q2", \t -> do
+	text t "* automaton.hsに書き込もう"
+ ]
+
+automaton11 :: Page
+automaton11 = [\t -> do
+	writeTopTitle t "オートマトン"
+	text t "", \t -> do
+	text t "* AMStateのインスタンスにする", \t -> do
+	itext t 1 "- stepはstepAM1", \t -> do
+	itext t 1 "- 初期状態はQ1", \t -> do
+	itext t 1 "- 受理状態は「Q2であること」なので", \t -> do
+	text t "* インスタンス宣言は以下のようになる", \t -> do
+	itext t 1 "instance AMState AM1 where", \t -> do
+	itext t 2 "step = stepAM1", \t -> do
+	itext t 2 "start = Q1", \t -> do
+	itext t 2 "accept Q2 = True", \t -> do
+	itext t 2 "accept _ = False", \t -> do
+	text t "* これをautomaton.hsに書き込もう"
+ ]
+
+data AM1 = Q1 | Q2 | Q3 deriving Show
+
+stepAM1 :: AM1 -> OI -> AM1
+stepAM1 Q1 O = Q1
+stepAM1 Q1 I = Q2
+stepAM1 Q2 O = Q3
+stepAM1 Q2 I = Q2
+stepAM1 Q3 _ = Q2
+
+instance AMState AM1 where
+	step = stepAM1
+	start = Q1
+	accept Q2 = True
+	accept _ = False
+
+automaton12 :: Page
+automaton12 = [\t -> do
+	writeTopTitle t "オートマトン"
+	text t "", \t -> do
+	text t "* 試してみる前に", \t -> do
+	text t "* isAcceptの使いかたを見てみよう", \t -> do
+	itext t 1 "isAccept :: AMState q => q -> [OI] -> Bool", \t -> do
+	text t "* isAcceptの第一引数はダミーの引数で", \t -> do
+	itext t 1 "- 評価されることはない", \t -> do
+	itext t 1 "- 型だけわかればいい", \t -> do
+	text t "* 評価されるとエラーを発生させるだけの値が用意されている", \t -> do
+	itext t 1 "undefined :: a", \t -> do
+	text t "* undefinedはあらゆる型になれるので", \t -> do
+	text t "* isAcceptの第一引数は(undefined :: AM1)とすれば良い"
+ ]
+
+automaton13 :: Page
+automaton13 = [\t -> do
+	writeTopTitle t "オートマトン"
+	text t "", \t -> do
+	text t "* 今考えているオートマトンが受理する入力列は", \t -> do
+	itext t 1 "- すくなくともひとつの1を含み", \t -> do
+	itext t 1 "- 最後の1のあとには偶数個の0が並ぶ"
+ ]
+
+automaton14 :: Page
+automaton14 = [\t -> do
+	writeTopTitle t "オートマトン"
+	text t "", \t -> do
+	text t "*Main> :load automaton.hs", \t -> do
+	text t "*Main> isAccept (undefined :: AM1) []", \t -> do
+	text t $ show $ isAccept (undefined :: AM1) [], \t -> do
+	text t "*Main> isAccept (undefined :: AM1) [O]", \t -> do
+	text t $ show $ isAccept (undefined :: AM1) [O], \t -> do
+	text t "*Main> isAccept (undefined :: AM1) [I]", \t -> do
+	text t $ show $ isAccept (undefined :: AM1) [I], \t -> do
+	text t "*Main> isAccept (undefined :: AM1) [I, I, O, I, O, O]", \t -> do
+	text t $ show $ isAccept (undefined :: AM1) [I, I, O, I, O, O], \t -> do
+	text t "*Main> isAccept (undefined :: AM1) [I, I, O, I, O, O, O]", \t -> do
+	text t $ show $ isAccept (undefined :: AM1) [I, I, O, I, O, O, O]
+ ]
+
+automaton15 :: Page
+automaton15 = [\t -> do
+	writeTopTitle t "オートマトン"
+	text t "", \t -> do
+	text t "* もうひとつ例を見てみよう", \t -> do
+	text t "* 以下のようなオートマトンを考える", \t -> do
+	itext t 1 "- 1の個数が奇数個である入力列を受理する", \t -> do
+	text t "* これは以下のようにして実現できる", \t -> do
+	m2 t 100 220, \t -> do
+	text t "* 1が来るたびに状態qeと状態qo間を遷移し", \t -> do
+	text t "* 0の場合には同じ状態にとどまる", \t -> do
+	text t "* 初期状態はqeであり、受理状態はqo"
+ ]
+
+automaton16 :: Page
+automaton16 = [\t -> do
+	writeTopTitle t "オートマトン"
+	text t "", \t -> do
+	oneshot' t $ m2 t 100 100, \t -> do
+	text t "* AM2を定義しよう", \t -> do
+	itext t 1 "data AM2 = Qe | Qo deriving Show", \t -> do
+	text t "* stepAM2を定義する", \t -> do
+	itext t 1 "stepAM2 :: AM2 -> OI -> AM2", \t -> do
+	itext t 1 "stepAM2 q O = q", \t -> do
+	itext t 1 "stepAM2 Qe I = Qo", \t -> do
+	itext t 1 "stepAM2 Qo I = Qe", \t -> do
+	text t "* automaton.hsに書き込もう"
  ]
