@@ -12,7 +12,8 @@ module Lecture (
 	writeTree, BinTree(..), rtGoto, rotateL, rotateR, width, mapR,
 	randomDot, drawRect2, forwardRt, backwardRt, circleRt, dotRt,
 	newTurtle, field, hideturtle, pendown, penup, writeRt, undo, waitTurtle,
-	pencolor, setheading, Field, killTurtle, left, right,
+	pencolor, setheading, Field, killTurtle, left, right, heading,
+	writeSmallRt, pensizeRt,
 ) where
 
 import Graphics.X11.Turtle
@@ -53,11 +54,12 @@ rtGoto t x y = goto t (x * rt) (y * rt)
 fontName :: String
 fontName = "KochiGothic"
 
-biggerF, bigF, semiBigF, normalF :: Double
+biggerF, bigF, semiBigF, normalF, smallF :: Double
 biggerF = 36 * rt
 bigF = 24 * rt
 semiBigF = 15 * rt
 normalF = 12 * rt
+smallF = 9 * rt
 
 runLecture :: [[Turtle -> IO ()]] -> IO ()
 runLecture pgs = do
@@ -221,6 +223,9 @@ isemititle t i txt = do
 	setx t $ width / 12 + i * semiBigF * 4
 	write t fontName semiBigF txt
 	forward t $ semiBigF * myLength txt
+
+writeSmallRt :: Turtle -> String -> IO ()
+writeSmallRt t txt = write t fontName smallF txt
 
 writeRt :: Turtle -> String -> IO ()
 writeRt t txt = write t fontName normalF txt
@@ -460,3 +465,6 @@ dotRt :: Turtle -> Double -> Double -> IO ()
 dotRt t x y = do
 	goto t (x * rt) (y * rt)
 	dot t (1 * rt)
+
+pensizeRt :: Turtle -> Double -> IO ()
+pensizeRt t s = pensize t (s * rt)

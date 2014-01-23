@@ -1,4 +1,5 @@
 import Lecture
+import Automaton
 
 subtitle :: String
 subtitle = "第13回 型クラス"
@@ -9,7 +10,8 @@ main = runLecture [
 	checkClass, checkClass2,
 	toOrd, toEq, toEq2, toOrd2, toOrd3, toOrd4,
 	toInstanceSummary,
-	aboutDeriving
+	aboutDeriving,
+	automaton, automaton2, automaton3
  ]
 
 prelude :: Page
@@ -211,6 +213,50 @@ aboutDeriving = [\t -> do
 	itext t 1 "Eq, Ord, Enum, Ix, Bounded, Show, Read", \t -> do
 	text t "* derivingを使う場合は値構築子を"
 	itext t 1 "「小さいものから大きいものへ」の順に並べる"
+ ]
+
+automaton :: Page
+automaton = [\t -> do
+	writeTopTitle t "オートマトン"
+	text t "", \t -> do
+	text t "* オートマトンというものがある", \t -> do
+	text t "* 入力によって次々に状態を変化させていくもの", \t -> do
+	text t "* 初期状態と受理状態とがある", \t -> do
+	text t "* 初期状態に対して入力を次々と与えていき", \t -> do
+	itext t 1 "- 入力が終わったときに状態が受理状態であれば", \t -> do
+	itext t 1 "- その入力列を受理するという", \t -> do
+	text t "* 単純な機械をモデル化したものと考えられる", \t -> do
+	text t "* これを型クラスという仕組みを活用して作ってみよう"
+ ]
+
+automaton2 :: Page
+automaton2 = [\t -> do
+	writeTopTitle t "オートマトン"
+	text t "", \t -> do
+	text t "* 状態を丸で表し", \t -> do
+	text t "* 状態間の遷移を矢印で表す", \t -> do
+	itext t 1 "- 矢印のそばにその遷移を引き起こす入力を書く", \t -> do
+	text t "* 初期状態には矢印を追加する", \t -> do
+	text t "* 受理状態は二重丸とする", \t -> do
+	text t "* 例:"
+	initialQ t 100 250 "q1"
+	selfQ t "0"
+	nextQ t "1" "q2"
+	selfQ t "1"
+	acceptQ t
+	nextQ t "0" "q3"
+	backQ t "0, 1"
+	rtGoto t 100 280, \t -> do
+	text t "* 入力列が0, 1, 1, 0, 0の場合", \t -> do
+	itext t 1 "q1 -> q1 -> q2 -> q2 -> q3 -> q2", \t -> do
+	text t "* q2は受理状態なのでこの入力列は受理される"
+ ]
+
+automaton3 :: Page
+automaton3 = [\t -> do
+	writeTopTitle t "オートマトン"
+	text t "", \t -> do
+	text t "* 別の例として"
  ]
 
 -- Eq, Ord, Enum, Ix, Bounded, Show, Read
