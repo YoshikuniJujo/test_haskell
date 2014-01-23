@@ -1,3 +1,5 @@
+import Data.List
+
 import Lecture
 
 subtitle :: String
@@ -8,7 +10,9 @@ main = runLecture [
 	[flip writeTitle subtitle], prelude,
 	typeVariable, typeVariable2, twice, twice2,
 	tuple, tuple2, tuple3, tuple4,
-	list, list2, list3
+	list, list2, list3,
+	tree, tree2, tree3, tree4, tree5, tree6,
+	summary
  ]
 
 prelude :: Page
@@ -203,4 +207,114 @@ list3 = [\t -> do
 	text t "* 構文糖を適用するとわかりやすくなる", \t -> do
 	itext t 1 "data [a] = a : [a] | []", \t -> do
 	text t "* aのリストは空リストまたはaのリストにaの値を足したもの"
+ ]
+
+tree :: Page
+tree = [\t -> do
+	writeTopTitle t "木"
+	text t "", \t -> do
+	text t "* 再帰的な型の別の例として「木」を考える", \t -> do
+	text t "* ここでは簡単にするために二分木を考える", \t -> do
+	writeTree t (: "") 15 4 200 140 binTree
+ ]
+
+tree2 :: Page
+tree2 = [\t -> do
+	writeTopTitle t "木"
+	text t "", \t -> do
+	text t "* 二分木の定義は以下のようになる", \t -> do
+	itext t 1 "data BinTree a"
+	itext t 2 "= Node (BinTree a) (BinTree a)"
+	itext t 2 "| Leaf a", \t -> do
+	itext t 2 "deriving Show", \t -> do
+	text t "* 二分木は左右に二分木をとる節(ノード)または値を持つ葉", \t -> do
+	text t "* これをdata.hsに書き込もう"
+ ]
+
+data BinTree' a = Node (BinTree' a) (BinTree' a) | Leaf a deriving Show
+
+tree1 :: BinTree' Char
+tree1 = Node
+	(Node (Leaf 'a') (Node (Leaf 'b') (Leaf 'c')))
+	(Leaf 'd')
+
+binTree :: BinTree Char
+binTree = Bin '*'
+	(Bin '*'
+		(Bin 'a' Empty Empty)
+		(Bin '*' (Bin 'b' Empty Empty) (Bin 'c' Empty Empty)))
+	(Bin 'd' Empty Empty)
+
+tree3 :: Page
+tree3 = [\t -> do
+	writeTopTitle t "木", \t -> do
+	text t "* 以下の木を作ってみよう", \t -> do
+	writeTree t (: "") 10 4 200 90 binTree, \t -> do
+	rtGoto t 200 220
+	text t "* 下のような定義となる", \t -> do
+	itext t 0 "tree1 :: BinTree Char", \t -> do
+	itext t 0 "tree1 = Node", \t -> do
+	itext t 1 "(Node (Leaf 'a') (Node (Leaf 'b') (Leaf 'c')))", \t -> do
+	itext t 1 "(Leaf 'd')", \t -> do
+	text t "* data.hsに書き込もう"
+ ]
+
+tree4 :: Page
+tree4 = [\t -> do
+	writeTopTitle t "試してみる"
+	text t "", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> tree1", \t -> do
+	mapM_ (itext t 1) $ flip unfoldr (show tree1) $ \str -> case str of
+		[] -> Nothing
+		_ -> Just $ splitAt 45 str
+ ]
+
+enumLeafD, enumLeafB :: BinTree' a -> [a]
+enumLeafD (Node t1 t2) = enumLeafD t1 ++ enumLeafD t2
+enumLeafD (Leaf x) = [x]
+
+enumLeafB (Node t1 (Leaf x)) = x : enumLeafB t1
+enumLeafB (Node t1 t2) = enumLeafB t1 ++ enumLeafD t2
+enumLeafB (Leaf x) = [x]
+
+tree5 :: Page
+tree5 = [\t -> do
+	writeTopTitle t "葉の列挙"
+	text t "", \t -> do
+	text t "* 葉の値をリストとして列挙する関数を書いてみよう", \t -> do
+	text t "* 以下のような定義となる", \t -> do
+	itext t 1 "enumLeaf :: BinTree a -> [a]", \t -> do
+	itext t 1 "enumLeaf (Node t1 t2) = enumLeaf t1 ++ enumLeaf t2", \t -> do
+	itext t 1 "enumLeaf (Leaf x) = [x]", \t -> do
+	text t "* こう読む", \t -> do
+	itext t 1 "- 節の葉の列挙は左右の木の葉の列挙を連結したもの", \t -> do
+	itext t 1 "- 葉の葉の列挙はその値ひとつをリストにしたもの", \t -> do
+	text t "* enumLeafの定義をdata.hsに書き込もう"
+ ]
+
+tree6 :: Page
+tree6 = [\t -> do
+	writeTopTitle t "試してみる"
+	text t "", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> enumLeaf tree1", \t -> do
+	itext t 1 $ show $ enumLeafD tree1
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* 代数的データ型の構文には型変数が使えることを見た", \t -> do
+	text t "* 型変数を使うことでより柔軟な型の定義ができた", \t -> do
+	text t "* 型変数を使った定義では様々な型を一度に定義している", \t -> do
+	text t "* 別の見方では「構造」を定義していると考えられる", \t -> do
+	text t "* 例としてタプルを見た", \t -> do
+	text t "* 代数的データ型で再帰的な型を定義できることを見た", \t -> do
+	text t "* その例としてリストと木を見た", \t -> do
+	text t "* 木の葉を列挙する関数を定義することで", \t -> do
+	itext t 1 "- 再帰的なデータを扱う方法を学んだ"
  ]
