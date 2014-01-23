@@ -11,7 +11,8 @@ main = runLecture [
 	toOrd, toEq, toEq2, toOrd2, toOrd3, toOrd4,
 	toInstanceSummary,
 	aboutDeriving,
-	automaton, automaton2, automaton3
+	automaton, automaton2, automaton3, automaton4, automaton5,
+	automaton6, automaton7, automaton8, automaton9, automaton10
  ]
 
 prelude :: Page
@@ -239,24 +240,152 @@ automaton2 = [\t -> do
 	text t "* 初期状態には矢印を追加する", \t -> do
 	text t "* 受理状態は二重丸とする", \t -> do
 	text t "* 例:"
-	initialQ t 100 250 "q1"
+	m1 t 100 240, \t -> do
+	text t "* 入力列が0, 1, 1, 0, 0の場合", \t -> do
+	itext t 1 "q1 -> q1 -> q2 -> q2 -> q3 -> q2", \t -> do
+	text t "* q2は受理状態なのでこの入力列は受理される"
+ ]
+
+m1 :: Turtle -> Double -> Double -> IO ()
+m1 t x y = do
+	initialQ t x y "q1"
 	selfQ t "0"
 	nextQ t "1" "q2"
 	selfQ t "1"
 	acceptQ t
 	nextQ t "0" "q3"
 	backQ t "0, 1"
-	rtGoto t 100 280, \t -> do
-	text t "* 入力列が0, 1, 1, 0, 0の場合", \t -> do
-	itext t 1 "q1 -> q1 -> q2 -> q2 -> q3 -> q2", \t -> do
-	text t "* q2は受理状態なのでこの入力列は受理される"
- ]
+	rtGoto t x (y + 40)
 
 automaton3 :: Page
 automaton3 = [\t -> do
 	writeTopTitle t "オートマトン"
 	text t "", \t -> do
-	text t "* 別の例として"
+	text t "* 今のオートマトンを再掲する", \t -> do
+	m1 t 100 140, \t -> do
+	text t "* このオートマトンが受理するのは以下の入力列となる", \t -> do
+	itext t 1 "- すくなくともひとつの1を含み", \t -> do
+	itext t 1 "- 最後の1のあとには偶数個(0も可)の0が来る", \t -> do
+	text t "* いろいろな例で確認してみよう", \t -> do
+	itext t 1 "(1分)"
  ]
 
+automaton4 :: Page
+automaton4 = [\t -> do
+	writeTopTitle t "オートマトン"
+	text t "", \t -> do
+	text t "* ある型がオートマトンの状態であることを表す"
+	itext t 1 "AMStateクラスを作っていく", \t -> do
+	text t "* 入力値は0, 1値とし、それを以下で表現する", \t -> do
+	itext t 1 "data OI = O | I deriving Show", \t -> do
+	text t "* これをautomaton.hsに書き込もう", \t -> do
+	text t "* オートマトンの状態であるために必要なのは何かを考える", \t -> do
+	itext t 1 "1. ある状態で入力によって次にどの状態に移るか", \t -> do
+	itext t 1 "2. 初期状態", \t -> do
+	itext t 1 "3. 状態が受理状態であるかどうかのチェック"
+ ]
+
+automaton5 :: Page
+automaton5 = [\t -> do
+	writeTopTitle t "オートマトン"
+	text t "", \t -> do
+	text t "* 状態を表す型を型変数qで表すことにする", \t -> do
+	text t "* 「1. 状態の遷移」を表す関数stepが必要", \t -> do
+	itext t 1 "- これは現在の状態と入力値を引数とし", \t -> do
+	itext t 1 "- 遷移先の状態を返す関数なので", \t -> do
+	arrowIText t 1 "step :: q -> OI -> q", \t -> do
+	text t "* 「2. 初期状態」は「状態」なので", \t -> do
+	arrowIText t 1 "start :: q", \t -> do
+	text t "* 「3. 状態が受理状態であるかどうかのチェック」は", \t -> do
+	itext t 1 "- 状態をとりBool値を返せば良いので", \t -> do
+	arrowIText t 1 "accept :: q -> Bool"
+ ]
+
+automaton6 :: Page
+automaton6 = [\t -> do
+	writeTopTitle t "オートマトン"
+	text t "", \t -> do
+	text t "* よってオートマトンの状態であることを示すクラスは", \t -> do
+	itext t 1 "class AMState q where", \t -> do
+	itext t 2 "step :: q -> OI -> q", \t -> do
+	itext t 2 "start :: q", \t -> do
+	itext t 2 "accept :: q -> Bool", \t -> do
+	text t "* これはどんな型であっても", \t -> do
+	itext t 1 "- step, start, acceptを定義しさえすれば", \t -> do
+	itext t 1 "- オートマトンの状態となるということ"
+ ]
+
+automaton7 :: Page
+automaton7 = [\t -> do
+	writeTopTitle t "オートマトン"
+	text t "", \t -> do
+	text t "* AMStateのインスタンスに対する関数を作ることができる", \t -> do
+	text t "* 入力列に対する状態遷移の結果を返す関数", \t -> do
+	itext t 1 "run :: AMState q => q -> [OI] -> q", \t -> do
+	itext t 1 "run q [] = q", \t -> do
+	itext t 1 "run q (oi : ois) = run (step q oi) ois", \t -> do
+	text t "* 入力がなければ状態はそのまま", \t -> do
+	text t "* 入力があれば"
+	itext t 1 "その入力に対して状態を遷移させたうえで入力を続ける", \t -> do
+	text t "* automaton.hsに書き込もう"
+ ]
+
+automaton8 :: Page
+automaton8 = [\t -> do
+	writeTopTitle t "オートマトン"
+	text t "", \t -> do
+	text t "* ある入力列が受理されるかどうかを判定する関数は", \t -> do
+	itext t 1 "isAccept :: AMState q => [OI] -> Bool", \t -> do
+	itext t 1 "isAccept = accept . run start", \t -> do
+	text t "* で良さそうだが、これは動かない", \t -> do
+	text t "* isAcceptの引数は[OI]で返り値はBoolである", \t -> do
+	arrowIText t 1 "どこにもqが出てこない", \t -> do
+	arrowIText t 1 "startの型が決められない", \t -> do
+	text t "* ダミーの引数を使うことになる", \t -> do
+	itext t 1 "isAccept :: AMState q => q -> [OI] -> Bool", \t -> do
+	itext t 1 "isAccept q = accept . run (start `asTypeOf` q)", \t -> do
+	text t "* automaton.hsに書き込もう"
+ ]
+
+data OI = O | I deriving Show
+
+class AMState q where
+	step :: q -> OI -> q
+	start :: q
+	accept :: q -> Bool
+
+run :: AMState q => q -> [OI] -> q
+run = foldl step
+
+isAccept :: AMState q => q -> [OI] -> Bool
+isAccept q = accept . run (start `asTypeOf` q)
+
+data Q1 = Q11 | Q12 | Q13 deriving Show
+
 -- Eq, Ord, Enum, Ix, Bounded, Show, Read
+
+automaton9 :: Page
+automaton9 = [\t -> do
+	writeTopTitle t "オートマトン"
+	text t "", \t -> do
+	text t "* それでは最初の例を表すオートマトンを作ってみよう", \t -> do
+	m1 t 100 140, \t -> do
+	text t "* 型をQ1としてその型の値をQ11, Q12, Q13とする", \t -> do
+	itext t 1 "data Q1 = Q11 | Q12 | Q13 deriving Show"
+ ]
+
+automaton10 :: Page
+automaton10 = [\t -> do
+	writeTopTitle t "オートマトン"
+	text t "", \t -> do
+	text t "* AMStateのインスタンスにしてみよう", \t -> do
+	hideturtle t
+	m1 t 100 140
+	showturtle t, \t -> do
+	text t "* まずはstepQ1を定義しよう", \t -> do
+	itext t 1 "stepQ1 Q11 O = Q11", \t -> do
+	itext t 1 "stepQ1 Q11 I = Q12", \t -> do
+	itext t 1 "stepQ1 Q12 O = Q13", \t -> do
+	itext t 1 "stepQ1 Q12 I = Q12", \t -> do
+	itext t 1 "stepQ1 Q13 _ = Q12"
+ ]
