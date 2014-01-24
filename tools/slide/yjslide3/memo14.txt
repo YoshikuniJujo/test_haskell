@@ -1,0 +1,20 @@
+Functorの例として
+BinTreeを挙げることにする。
+
+monadについて考える。
+
+Maybe monadから考えていこう。
+
+まずはfunctorとしてのMaybeは、
+	fmap :: (a -> b) -> Maybe a -> Maybe b
+monadとしてのMaybeは
+	(=<<) :: (a -> Maybe b) -> Maybe a -> Maybe b
+
+functorからmonadへ
+	fmap :: (a -> b) -> f a -> f b
+		|
+		V
+	fmap :: (a -> f b) -> f a -> f (f b)
+		|
+		V
+	(join .) . fmap :: (a -> f b) -> f a -> f b
