@@ -14,7 +14,8 @@ main = runLecture [
 	automaton, automaton2, automaton3, automaton4, automaton5,
 	automaton6, automaton7, automaton8, automaton9, automaton10,
 	automaton11, automaton12, automaton13, automaton14,
-	automaton15, automaton16
+	automaton15, automaton16, automaton17, automaton18,
+	automatonSummary
  ]
 
 prelude :: Page
@@ -526,4 +527,62 @@ automaton16 = [\t -> do
 	itext t 1 "stepAM2 Qe I = Qo", \t -> do
 	itext t 1 "stepAM2 Qo I = Qe", \t -> do
 	text t "* automaton.hsに書き込もう"
+ ]
+
+automaton17 :: Page
+automaton17 = [\t -> do
+	writeTopTitle t "オートマトン"
+	text t "", \t -> do
+	text t "* AM2をAMStateのインスタンスにする", \t -> do
+	itext t 1 "instance AMState AM2 where", \t -> do
+	itext t 2 "step = stepAM2", \t -> do
+	itext t 2 "start = Qe", \t -> do
+	itext t 2 "accept Qo = True", \t -> do
+	itext t 2 "accept _ = False", \t -> do
+	text t "* automaton.hsに書き込もう"
+ ]
+
+data AM2 = Qe | Qo deriving Show
+
+stepAM2 :: AM2 -> OI -> AM2
+stepAM2 q O = q
+stepAM2 Qe I = Qo
+stepAM2 Qo I = Qe
+
+instance AMState AM2 where
+	step = stepAM2
+	start = Qe
+	accept Qo = True
+	accept _ = False
+
+automaton18 :: Page
+automaton18 = [\t -> do
+	writeTopTitle t "オートマトン"
+	text t "", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> isAccept (undefined :: AM2) []", \t -> do
+	itext t 1 $ show $ isAccept (undefined :: AM2) [], \t -> do
+	itext t 1 "*Main> isAccept (undefined :: AM2) [O]", \t -> do
+	itext t 1 $ show $ isAccept (undefined :: AM2) [O], \t -> do
+	itext t 1 "*Main> isAccept (undefined :: AM2) [I]", \t -> do
+	itext t 1 $ show $ isAccept (undefined :: AM2) [I], \t -> do
+	itext t 1 "*Main> isAccept (undefined :: AM2) [I, I, O]", \t -> do
+	itext t 1 $ show $ isAccept (undefined :: AM2) [I, I, O], \t -> do
+	itext t 1 "*Main> isAccept (undefined :: AM2) [I, I, O, I]", \t -> do
+	itext t 1 $ show $ isAccept (undefined :: AM2) [I, I, O, I]
+ ]
+
+automatonSummary :: Page
+automatonSummary = [\t -> do
+	writeTopTitle t "オートマトン(まとめ)"
+	text t "", \t -> do
+	text t "* AMStateは以下の性質をクラスにしたもの", \t -> do
+	itext t 1 "- ある型がオートマトンの状態である", \t -> do
+	text t "* この例で見たように型クラスは", \t -> do
+	itext t 1 "- 「性質」であると考えられる、だけでなく", \t -> do
+	itext t 1 "- 仕様と実装を分離するシステムとも考えられる", \t -> do
+	text t "* step, start, acceptという関数を持つという「仕様」", \t -> do
+	text t "* それらの「実装」はインスタンス宣言のなかで作られる", \t -> do
+	text t "* 「AMState q =>」は", \t -> do
+	itext t 1 "- qがAMStateクラスの仕様を満たすことを保証する"
  ]
