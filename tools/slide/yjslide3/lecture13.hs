@@ -11,11 +11,14 @@ main = runLecture [
 	toOrd, toEq, toEq2, toOrd2, toOrd3, toOrd4,
 	toInstanceSummary,
 	aboutDeriving,
-	automaton, automaton2, automaton3, automaton4, automaton5,
-	automaton6, automaton7, automaton8, automaton9, automaton10,
+	automaton, automaton2, automaton3,
+	automaton3_1, automaton3_2, automaton3_3, automaton3_4,
+	automaton4, automaton5, automaton5_1, automaton6,
+	automaton7, automaton8, automaton9, automaton10,
 	automaton11, automaton12, automaton13, automaton14,
 	automaton15, automaton16, automaton17, automaton18,
-	automatonSummary
+	automatonSummary,
+	summary
  ]
 
 prelude :: Page
@@ -39,9 +42,10 @@ classPrelude = [\t -> do
 	text t "* Haskellでは、そのような性質を型クラスで表現する", \t -> do
 	text t "* 型TがクラスCの性質を持つということを", \t -> do
 	itext t 1 "- 「型TはクラスCのインスタンスである」と表現する", \t -> do
-	text t "* いくつかの例を挙げる", \t -> do
-	text t "* Ordは「大小比較可」という性質を表すクラスであり", \t -> do
-	text t "* Showは「表示可」という性質を表すクラスである", \t -> do
+	text t "* 型クラスの例", \t -> do
+	itext t 1 "- Ordは「大小比較可」という性質を表すクラスであり", \t -> do
+	itext t 1 "- Showは「表示可」という性質を表すクラスである", \t -> do
+	text t "* インスタンスの例", \t -> do
 	itext t 1 "- Int型はOrdクラスのインスタンスである", \t -> do
 	itext t 1 "- Char型はShowクラスのインスタンスである", \t -> do
 	itext t 1 "- 等々"
@@ -55,9 +59,9 @@ checkClass = [\t -> do
 	text t "* lectures/lecture13を作りそこに移動しよう", \t -> do
 	itext t 1 "% ghci", \t -> do
 	itext t 1 "Prelude> :info Char", \t -> do
-	itext t 1 "...", \t -> do
-	itext t 1 "instance Ord Char ...", \t -> do
-	itext t 1 "...", \t -> do
+	itext t 1 "..."
+	itext t 1 "instance Ord Char ..."
+	itext t 1 "..."
 	itext t 1 "instance Show Char ...", \t -> do
 	text t "* その型がどのクラスのインスタンスであるかを調べるには", \t -> do
 	itext t 1 "- ghciで:info [型名]とする", \t -> do
@@ -293,8 +297,60 @@ automaton3 = [\t -> do
 	text t "* このオートマトンが受理するのは以下の入力列となる", \t -> do
 	itext t 1 "- すくなくともひとつの1を含み", \t -> do
 	itext t 1 "- 最後の1のあとには偶数個(0個も可)の0が来る", \t -> do
-	text t "* いろいろな例で確認してみよう", \t -> do
-	itext t 1 "(1分)"
+	text t "* いろいろな例で確認してみよう"
+ ]
+
+automaton3_1 :: Page
+automaton3_1 = [\t -> do
+	writeTopTitle t "オートマトン"
+	text t ""
+	oneshot' t $ m1 t 100 100
+	text t "* 入力が1で終わる場合は受理", \t -> do
+	itext t 1 "1: q1 -(1)-> q2", \t -> do
+	itext t 1 "01: q1 -(0)-> q1 -(1)-> q2", \t -> do
+	itext t 1 "11: q1 -(1)-> q2 -(1)-> q2", \t -> do
+	itext t 1 "0101: q1 -(0)-> q1 -(1)-> q2 -(0)-> q3 -(1) -> q2", \t -> do
+	text t "* どの状態でも1が来れば受理状態であるq2に遷移するので"
+ ]
+
+automaton3_2 :: Page
+automaton3_2 = [\t -> do
+	writeTopTitle t "オートマトン"
+	text t ""
+	oneshot' t $ m1 t 100 100, \t -> do
+	text t "* 入力に1が含まれなければ受理されない", \t -> do
+	itext t 1 "(入力無し): q1", \t -> do
+	itext t 1 "0: q1 -(0)-> q1", \t -> do
+	itext t 1 "000: q1 -(0) -> q1 -(0)-> q1 -(0) -> q1", \t -> do
+	text t "* q1から出るにはすくなくともひとつの1が必要"
+ ]
+
+automaton3_3 :: Page
+automaton3_3 = [\t -> do
+	writeTopTitle t "オートマトン"
+	text t ""
+	oneshot' t $ m1 t 100 100, \t -> do
+	text t "* 最後の1の後に奇数個の0が続く場合受理されない", \t -> do
+	itext t 1 "10 : q1 -(1)-> q2 -(0)-> q3", \t -> do
+	itext t 1 "1000 : q1 -(1)-> q2 -(0) -> q3 -(0)-> q2 -(0)-> q3", \t -> do
+	text t "* 最後の1の後に偶数個の0が続く場合は受理", \t -> do
+	itext t 1 "100 : q1 -(1)-> q2 -(0) -> q3 -(0)-> q2", \t -> do
+	text t "* 0が来るたびにq2とq3のあいだを行き来するので"
+ ]
+
+automaton3_4 :: Page
+automaton3_4 = [\t -> do
+	writeTopTitle t "オートマトン"
+	text t ""
+	oneshot' t $ m1 t 100 100, \t -> do
+	text t "* 1が入力されなければq1にとどまる", \t -> do
+	text t "* 1が来た時点で必ず状態q2にいる", \t -> do
+	text t "* よって、最後の1以前の入力は無視できる", \t -> do
+	text t "* 最後の1以降だけを考えれば良い", \t -> do
+	text t "* 最後の1以降には0しか来ない", \t -> do
+	text t "* 0が来るたびにq2とq3のあいだを行き来するので", \t -> do
+	text t "* 偶数個の0ならば受理され", \t -> do
+	text t "* 奇数個では受理されない"
  ]
 
 automaton4 :: Page
@@ -305,9 +361,10 @@ automaton4 = [\t -> do
 	itext t 1 "AMStateクラスを作っていく", \t -> do
 	text t "* 入力値は0, 1値とし、それを以下で表現する", \t -> do
 	itext t 1 "data OI = O | I deriving Show", \t -> do
+	itext t 1 "- アルファベットのOとIを0と1にみたてる", \t -> do
 	text t "* これをautomaton.hsに書き込もう", \t -> do
 	text t "* オートマトンの状態であるために必要なのは何かを考える", \t -> do
-	itext t 1 "1. ある状態で入力によって次にどの状態に移るか", \t -> do
+	itext t 1 "1. ある状態が入力によってどの状態に移るか", \t -> do
 	itext t 1 "2. 初期状態", \t -> do
 	itext t 1 "3. 状態が受理状態であるかどうかのチェック"
  ]
@@ -326,6 +383,17 @@ automaton5 = [\t -> do
 	text t "* 「3. 状態が受理状態であるかどうかのチェック」は", \t -> do
 	itext t 1 "- 状態をとりBool値を返せば良いので", \t -> do
 	arrowIText t 1 "accept :: q -> Bool"
+ ]
+
+automaton5_1 :: Page
+automaton5_1 = [\t -> do
+	writeTopTitle t "オートマトン"
+	text t "", \t -> do
+	text t "* クラス宣言は以下のような構文となる", \t -> do
+	itext t 1 "class [クラス名] [型変数] where", \t -> do
+	itext t 2 "[クラス関数名1] :: [型1]", \t -> do
+	itext t 2 "[クラス関数名2] :: [型2]", \t -> do
+	itext t 2 "..."
  ]
 
 automaton6 :: Page
@@ -585,4 +653,30 @@ automatonSummary = [\t -> do
 	text t "* それらの「実装」はインスタンス宣言のなかで作られる", \t -> do
 	text t "* 「AMState q =>」は", \t -> do
 	itext t 1 "- qがAMStateクラスの仕様を満たすことを保証する"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* 型クラスとは型の持つ「性質」を表現したもの", \t -> do
+	text t "* 「性質」はその型を扱う関数で表現される", \t -> do
+	text t "* 「性質」を「仕様」と呼ぶこともできる", \t -> do
+	text t "* クラス宣言ではクラス関数の型を定義する", \t -> do
+	text t "* インスタンス宣言ではクラス関数の実装を作成する", \t -> do
+	text t "* 「[型クラス名] => a」とすることで", \t -> do
+	itext t 1 "- aを与えられた型クラスのインスタンスに制限できる", \t -> do
+	itext t 1 "- その型クラスのクラス関数の存在が保証される"
+ ]
+
+functor :: Page
+functor = [\t -> do
+	writeTopTitle t "Functor"
+	text t "", \t -> do
+	text t "* mapについて考えてみよう", \t -> do
+	itext t 1 "map :: (a -> b) -> [a] -> [b]", \t -> do
+	text t "* リストの内容の全てに関数を適用する関数", \t -> do
+	text t "* リストに関する構文糖を脱糖すると", \t -> do
+	itext t 1 "map :: (a -> b) -> [] a -> [] b", \t -> do
+	text t ""
  ]
