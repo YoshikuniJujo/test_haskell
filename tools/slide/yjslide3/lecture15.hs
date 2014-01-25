@@ -8,7 +8,9 @@ subtitle = "第15回 高階関数の操作"
 main :: IO ()
 main = runLecture [
 	[flip writeTitle subtitle], prelude, prelude2, prelude3,
-	valToFun1, valToFun2, valToFun3, valToFun4, valToFunSummary
+	valToFun1, valToFun2, valToFun3, valToFun4, valToFunSummary,
+	aboutAddArg1, aboutAddArg2, aboutAddArg3, aboutAddArg4, aboutAddArg5,
+	aboutAddArgSummary
  ]
 
 prelude :: Page
@@ -64,7 +66,7 @@ valToFun1 = [\t -> do
 	itext t 1 "eight f = f 8", \t -> do
 	text t "* lectures/lecture15ディレクトリを作成し", \t -> do
 	text t "* transFuns.hsに書き込もう", \t -> do
-	text t "* eightは引数の関数に8を適用する関数", \t -> do
+	text t "* eightは第一引数の関数に8を適用する関数", \t -> do
 	text t "* しかし、これは単なる8とほとんど同じものである"
  ]
 
@@ -140,9 +142,106 @@ valToFunSummary = [\t -> do
 	itext t 1 "valToFun :: a -> (a -> b) -> b", \t -> do
 	itext t 1 "valToFun x f = f x", \t -> do
 	text t "* もしも以下のような形の関数の定義を見たら"
-	itext t 1 "単純な値に置き換えられるということ", \t -> do
+	itext t 1 "より単純な値に置き換えられるということ", \t -> do
 	itext t 1 "(Int -> b) -> b", \t -> do
 	itext t 1 "(Char -> b) -> b", \t -> do
 	itext t 1 "([Int] -> b) -> b", \t -> do
 	itext t 1 "((Int -> Char) -> b) -> b"
+ ]
+
+myChr :: (a -> Int) -> (a -> Char)
+myChr f = \x -> chr $ f x
+
+aboutAddArg1 :: Page
+aboutAddArg1 = [\t -> do
+	writeTopTitle t "一引数関数"
+	text t "", \t -> do
+	text t "* 以下の関数を見てみよう", \t -> do
+	itext t 1 "myChr :: (a -> Int) -> (a -> Char)", \t -> do
+	itext t 1 "myChr f = \\x -> chr $ f x", \t -> do
+	text t "* 上記と以下をtransFuns.hsに書き込もう", \t -> do
+	itext t 1 "import Data.Char (chr, ord)", \t -> do
+	text t "* 以下のように読める", \t -> do
+	itext t 1 "- 関数fを引数にとり", \t -> do
+	itext t 1 "- 「引数にfを適用しchrを適用する関数」を返す"
+ ]
+
+aboutAddArg2 :: Page
+aboutAddArg2 = [\t -> do
+	writeTopTitle t "一引数関数"
+	text t "", \t -> do
+	text t "* 使ってみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> myChr (* 2) 55", \t -> do
+	itext t 1 $ show $ myChr (* 2) 55, \t -> do
+	itext t 1 "*Main> myChr ord 'j'", \t -> do
+	itext t 1 $ show $ myChr ord 'j', \t -> do
+	itext t 1 "*Main> (chr . (* 2)) 55", \t -> do
+	itext t 1 $ show $ (chr . (* 2)) 55, \t -> do
+	itext t 1 "*Main> (chr . ord) 'j'", \t -> do
+	itext t 1 $ show $ (chr . ord) 'j'
+ ]
+
+aboutAddArg3 :: Page
+aboutAddArg3 = [\t -> do
+	writeTopTitle t "一引数関数"
+	text t "", \t -> do
+	text t "* myChrの定義は以下のように書き換えられる", \t -> do
+	itext t 1 "myChar :: (a -> Int) -> (a -> Char)"
+	itext t 1 "myChar f = \\x -> chr $ f x", \t -> do
+	arrowIText t 1 "myChar f = chr . f", \t -> do
+	arrowIText t 1 "myChar = (chr .)", \t -> do
+	text t "* myCharは関数chrと何かを合成する関数", \t -> do
+	text t "* より一般的にすると", \t -> do
+	itext t 1 "fun :: b -> c", \t -> do
+	itext t 1 "fun' :: (a -> b) -> (a -> c)", \t -> do
+	itext t 1 "fun' = (fun .)"
+ ]
+
+addArg :: (b -> c) -> ((a -> b) -> (a -> c))
+addArg f = \g -> (\x -> f $ g x)
+
+aboutAddArg4 :: Page
+aboutAddArg4 = [\t -> do
+	writeTopTitle t "一引数関数"
+	text t "", \t -> do
+	text t "* (b -> c)の形から(a -> b) -> (a -> c)の形にする", \t -> do
+	text t "* 以下のように考えることもできる", \t -> do
+	itext t 1 "- 引数と返り値の両方に引数をひとつ追加する", \t -> do
+	text t "* これを行う関数を作ろう", \t -> do
+	itext t 1 "addArg :: (b -> c) -> ((a -> b) -> (a -> c))", \t -> do
+	itext t 1 "addArg f = \\g -> (\\x -> f $ g x)", \t -> do
+	text t "* これを変換していくと最終的には以下のようになる", \t -> do
+	itext t 1 "addArg :: (b -> c) -> (a -> b) -> (a -> c)", \t -> do
+	itext t 1 "addArg = (.)", \t -> do
+	text t "* 単なる関数合成になる"
+ ]
+
+aboutAddArg5 :: Page
+aboutAddArg5 = [\t -> do
+	writeTopTitle t "一引数関数"
+	text t "", \t -> do
+	text t "* fとgの合成関数f . gは「gを適用した結果にfを適用する」", \t -> do
+	text t "* 二引数関数としてみると(.)は関数合成する関数", \t -> do
+	itext t 1 "(.) :: (b -> c) -> (a -> b) -> (a -> c)", \t -> do
+	text t "* (.)を一引数関数としてみると", \t -> do
+	itext t 1 "(.) :: (b -> c) -> ((a -> b) -> (a -> c))", \t -> do
+	text t "* 「引数と返り値の両方に引数を1つ追加する関数」と読める"
+ ]
+
+aboutAddArgSummary :: Page
+aboutAddArgSummary = [\t -> do
+	writeTopTitle t "一引数関数(まとめ)"
+	text t "", \t -> do
+	text t "* 以下の2つの関数はほとんど同じものと考えることができる", \t -> do
+	itext t 1 "fun :: b -> c", \t -> do
+	itext t 1 "fun' (a -> b) -> (a -> c)", \t -> do
+	itext t 1 "fun' = (fun .)", \t -> do
+	text t "* 「引数と返り値の両方に1つ引数を追加する」変換", \t -> do
+	text t "* その変換を行う関数addArgを定義した", \t -> do
+	text t "* addArgは関数合成(.)と同じものだった", \t -> do
+	text t "* 以下のような形の型を見たらより単純な関数に置き換え可", \t -> do
+	itext t 1 "(a -> Int) -> (a -> Char)", \t -> do
+	itext t 1 "(a -> [Int]) -> (a -> [Bool])", \t -> do
+	itext t 1 "(a -> Int -> Char) -> (a -> Bool)"
  ]
