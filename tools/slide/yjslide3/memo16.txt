@@ -1,0 +1,21 @@
+モナドの説明をどうにするか
+
+a -> Maybe b
+b -> Maybe c
+
+を組み合わせて a -> Maybe c にしたいとする。
+以下の型の関数が必要になる。
+	(>=>) :: (a -> Maybe b) -> (b -> Maybe c) -> (a -> Maybe c)
+そのとき以下の型の関数があれば良いことを説明する。
+	(>>=) :: Maybe b -> (b -> Maybe c) -> Maybe c
+
+f >=> g = \x -> f x >>= g
+
+その前に以下の例を挙げておきたい
+	some :: (a -> b) -> (a -> c)
+	other :: b -> c
+someがotherを使って書けることを示す。
+	some f = \x -> other (f x)
+
+chr' :: (a -> Int) -> (a -> Char)
+chr' f = \x -> chr (f x)

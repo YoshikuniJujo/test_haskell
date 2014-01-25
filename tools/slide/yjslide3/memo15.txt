@@ -1,17 +1,31 @@
-モナドの説明をどうにするか
+まずは(->)が右結合であることを再確認する。
+a -> (b -> c)はa -> b -> cと同じ。
+つまり、
+f x y = z
+f x = \y -> z
+の2者は同じということ。
+curry :: ((a, b) -> c) -> (a -> b -> c)
+の例を挙げておこう。
+これはタプルを取る関数を2引数関数に変換する関数とも見ることができるし、
+あるいはタプル(a, b)を取る関数と型aの値と型bの値とを取ってcを返す関数とも言える。
+つまり、関数の型の一番右の括弧は取ることができるということ。
 
-a -> Maybe b
-b -> Maybe c
+まずは単純な例として
+	(a -> b) -> bがaから導出できるということを示す。
+	eight :: (Int -> b) -> b
+	eight f = f 8
+valueToFun :: a -> ((a -> b) -> b)
+	|
+	V
+valueToFun :: a -> (a -> b) -> b
+valueToFun x f = f x
 
-を組み合わせて a -> Maybe c にしたいとする。
-以下の型の関数が必要になる。
-	(>=>) :: (a -> Maybe b) -> (b -> Maybe c) -> (a -> Maybe c)
-そのとき以下の型の関数があれば良いことを説明する。
-	(>>=) :: Maybe b -> (b -> Maybe c) -> Maybe c
+	eight = valueToFun 8
 
-f >=> g = \x -> f x >>= g
+	eight (+ 3)
+	eight even
 
-その前に以下の例を挙げておきたい
+以下の例を挙げておきたい
 	some :: (a -> b) -> (a -> c)
 	other :: b -> c
 someがotherを使って書けることを示す。
@@ -19,3 +33,15 @@ someがotherを使って書けることを示す。
 
 chr' :: (a -> Int) -> (a -> Char)
 chr' f = \x -> chr (f x)
+
+この変換を行う関数は以下のようになる。
+addA :: (b -> c) -> ((a -> b) -> (a -> c))
+addA f g x = f $ g x
+
+次に以下の例を挙げる
+	some :: (a -> b) -> c -> (a -> d)
+	other :: b -> c -> d
+
+この変換を行う関数は以下のようになる。
+addA2 :: (b -> c -> d) -> (a -> b) -> c -> a -> d
+addA2 f g x y = f (g y) x
