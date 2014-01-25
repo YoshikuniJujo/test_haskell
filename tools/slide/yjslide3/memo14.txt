@@ -18,3 +18,23 @@ functorからmonadへ
 		|
 		V
 	(join .) . fmap :: (a -> f b) -> f a -> f b
+
+monadのところの戦略をすこし考える
+MaybeモナドとStateモナドを説明する
+
+a -> Maybe b
+b -> Maybe c
+これを(.)のようにつなぐことを考える。
+(>=>) :: (a -> Maybe b) -> (b -> Maybe c) -> (a -> Maybe c)
+	|
+	V
+(>=>) :: (a -> Maybe b) -> (b -> Maybe c) -> a -> Maybe c
+
+(f >=> g) x = f x >>= g
+
+(>>=) :: Maybe b -> (b -> Maybe c) -> Maybe c
+
+m >>= f = (const m >=> f) undefined
+
+num :: (Int -> a) -> a
+は
