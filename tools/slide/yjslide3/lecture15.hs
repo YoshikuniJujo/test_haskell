@@ -10,7 +10,9 @@ main = runLecture [
 	[flip writeTitle subtitle], prelude, prelude2, prelude3,
 	valToFun1, valToFun2, valToFun3, valToFun4, valToFunSummary,
 	aboutAddArg1, aboutAddArg2, aboutAddArg3, aboutAddArg4, aboutAddArg5,
-	aboutAddArgSummary
+	aboutAddArgSummary,
+	aboutAddArg21, aboutAddArg22, aboutAddArg2Summary,
+	summary
  ]
 
 prelude :: Page
@@ -244,4 +246,69 @@ aboutAddArgSummary = [\t -> do
 	itext t 1 "(a -> Int) -> (a -> Char)", \t -> do
 	itext t 1 "(a -> [Int]) -> (a -> [Bool])", \t -> do
 	itext t 1 "(a -> Int -> Char) -> (a -> Bool)"
+ ]
+
+myAdd :: (a -> Int) -> Int -> (a -> Int)
+myAdd f y = \x -> f x + y
+
+aboutAddArg21 :: Page
+aboutAddArg21 = [\t -> do
+	writeTopTitle t "二引数関数"
+	text t "", \t -> do
+	text t "* 以下の関数を考える", \t -> do
+	itext t 1 "myAdd :: (a -> Int) -> Int -> (a -> Int)", \t -> do
+	itext t 1 "myAdd f y = \\x -> f x + y", \t -> do
+	text t "* 関数と整数を取り"
+	itext t 1 "「引数に関数を適用した結果に整数を足す」関数を返す", \t -> do
+	text t "* transFuns.hsに書き込み、:reloadする", \t -> do
+	itext t 1 "*Main> (myAdd (* 2) 3) 8", \t -> do
+	itext t 1 $ show $ (myAdd (* 2) 3) 8
+ ]
+
+aboutAddArg22 :: Page
+aboutAddArg22 = [\t -> do
+	writeTopTitle t "二引数関数"
+	text t "", \t -> do
+	text t "* より一般的には以下のようになる", \t -> do
+	itext t 1 "fun :: b -> c -> d", \t -> do
+	itext t 1 "fun' :: (a -> b) -> c -> (a -> d)", \t -> do
+	itext t 1 "fun' f y = \\x -> fun (f x) y", \t -> do
+	text t "* 「第一引数と返り値に引数を1つ追加する」変換", \t -> do
+	itext t 0 "addArg2 :: (b -> c -> d) -> (a -> b) -> c -> (a -> d)"
+	itext t 0 "addArg2 fun f y = \\x -> fun (f x) y", \t -> do
+	text t "* 蛇足だがこれをポイントフリースタイルにすると", \t -> do
+	itext t 1 "addArg2 = (. flip (.)) . flip (.) . flip"
+ ]
+
+aboutAddArg2Summary :: Page
+aboutAddArg2Summary = [\t -> do
+	writeTopTitle t "二引数関数(まとめ)"
+	text t "", \t -> do
+	text t "* 以下の2つの関数はほぼ同じ", \t -> do
+	itext t 1 "fun :: b -> c -> d", \t -> do
+	itext t 1 "fun' :: (a -> b) -> c -> (a -> d)", \t -> do
+	itext t 1 "fun' f y = \\x -> fun (f x) y", \t -> do
+	text t "* 第一引数と返り値に引数を1つ追加する関数", \t -> do
+	itext t 1 "addArg2 fun f y = \\x -> fun (f x) y", \t -> do
+	text t "* 以下の型を見たらより簡単な型に変換可", \t -> do
+	itext t 1 "(a -> Char) -> Int -> (a -> Bool) ", \t -> do
+	itext t 1 "(a -> [Bool]) -> [Char] -> (a -> [Int])", \t -> do
+	itext t 1 "(a -> Char) -> (Char -> Bool) -> (a -> Bool)"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ", \t -> do
+	text t "* 意味がほとんど変化しない変換を見てきた", \t -> do
+	text t "* これらは片方が存在すればもう一方を導ける", \t -> do
+	text t "* 複雑なほうの型の関数を作る場合", \t -> do
+	itext t 1 "- より簡単なほうの型の関数から変換するほうが", \t -> do
+	itext t 1 "- コードがすっきるするだろう", \t -> do
+	text t "* 以下の変換を次回の「モナド」の回で使う", \t -> do
+	itext t 1 "b -> c -> d", \t -> do
+	arrowIText t 1 "(a -> b) -> c -> (a -> d)", \t -> do
+	text t "* これは後者の形の関数が必要になった場合", \t -> do
+	itext t 1 "前者の形の関数から導出できるということを意味する", \t -> do
+	text t "* 引数と結果の関数に引数として同じ型変数がある場合", \t -> do
+	itext t 1 "- それを削除できる、と考えても良い(厳密には違うが)"
  ]

@@ -57,8 +57,10 @@ chr' = addA chr
 addA :: (b -> c) -> ((a -> b) -> (a -> c))
 addA f = \g x -> f (g x)
 
-addA2 :: (b -> c -> d) -> ((a -> b) -> c -> (a -> d))
+addA2, addA2' :: (b -> c -> d) -> ((a -> b) -> c -> (a -> d))
 addA2 f = \g x y -> f (g y) x
+
+addA2' = (. flip (.)) . flip (.) . flip
 
 -- (a -> m b) -> (b -> m c) -> (a -> m c)
 -- m b -> (b -> m c) -> m c
