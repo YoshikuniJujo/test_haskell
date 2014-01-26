@@ -1,0 +1,54 @@
+IO monadを説明するさいに、
+arrowの方向から説明しようと考えてはいるが、
+しかし、arrowにはできなくてmonadにはできることがあり、
+そこをきちんと理解したうえでなければ嘘を教えてしまうことになる。
+
+app :: a (a b c, b) c
+
+arr :: (b -> c) -> a b c
+
+mcon :: a () b -> (b -> a () c) -> a () c
+mcon m f = m >>> arr (\x -> (f x, ())) >>> app
+
+	f :: b -> a () c
+	\x -> (f x, ()) :: \b -> (a () c, ())
+	arr ... :: a b (a () c, ())
+	... >>> app :: a b c
+
+mcon2 :: (b -> a () c) -> (c -> a () d) -> (b -> a () d)
+mcon2 f g =
+
+	f :: b -> a () c
+
+	g :: c -> a () d
+	\x -> (g x, ()) :: \c -> (a () d, ())
+	arr ... :: a c (a () d, ())
+	... >>> app :: a c d			... (Y)
+
+	\x -> f x >>> (Y) :: b -> a () d
+	
+
+app :: a (a b c, b) c
+
+b -> a () c
+   |
+   V
+a b c
+
+(b -> a () c) -> a b c
+
+b -> m c
+a b c
+
+
+some = do
+	c <- getChar
+	if c /= '\n' then some >>= return . (c :) else return ""
+	|
+	V
+some = getChar >>= \c -> if c /= '\n' then some >>= return . (c :) else return ""
+	|
+	V
+some = getChar >>= \c -> ite (c /= '\n') (some >>= return . (c :)) (return "")
+
+some = getCharA >>> 
