@@ -45,3 +45,7 @@ addA f g x = f $ g x
 この変換を行う関数は以下のようになる。
 addA2 :: (b -> c -> d) -> (a -> b) -> c -> a -> d
 addA2 f g x y = f (g y) x
+
+--
+
+両方向を示すことにする。

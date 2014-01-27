@@ -1,17 +1,21 @@
+{-# LANGUAGE RankNTypes #-}
+
 import Data.Char
 
 import Lecture
 
 subtitle :: String
-subtitle = "第15回 高階関数の操作"
+subtitle = "第15回 関数の操作"
 
 main :: IO ()
 main = runLecture [
 	[flip writeTitle subtitle], prelude, prelude2, prelude3,
-	valToFun1, valToFun2, valToFun3, valToFun4, valToFunSummary,
+	unit, unit2, unit3, unitSummary,
+	valToFun1, valToFun2, valToFun3, valToFun4, valToFun5,
+	valToFunSummary,
 	aboutAddArg1, aboutAddArg2, aboutAddArg3, aboutAddArg4, aboutAddArg5,
-	aboutAddArgSummary,
-	aboutAddArg21, aboutAddArg22, aboutAddArg2Summary,
+	aboutAddArg6, aboutAddArgSummary,
+	aboutAddArg21, aboutAddArg22, aboutAddArg23, aboutAddArg2Summary,
 	summary
  ]
 
@@ -57,6 +61,67 @@ prelude3 = [\t -> do
 	text t "* 同じことだが、この表記だと以下のように読める", \t -> do
 	itext t 1 "- タプルをとる関数の他に引数を2つとり", \t -> do
 	itext t 1 "- それらをタプルにし第一引数の関数を適用する関数"
+ ]
+
+unit :: Page
+unit = [\t -> do
+	writeTopTitle t "()"
+	text t "", \t -> do
+	text t "* ()という値をひとつだけ持つ()という型がある", \t -> do
+	text t "* ()以外の値は持たない", \t -> do
+	text t "* Bool型はFalseとTrueの2つの値を取るので", \t -> do
+	itext t 1 "- ()型はBool型以上に単純な型と言える", \t -> do
+	text t "* この値はあってもなくても変わらない", \t -> do
+	text t "* よって以下はどれも同じものと考えられる", \t -> do
+	itext t 1 "a", \t -> do
+	itext t 1 "() -> a", \t -> do
+	itext t 1 "(a, ())"
+ ]
+
+unit2 :: Page
+unit2 = [\t -> do
+	writeTopTitle t "()"
+	text t "", \t -> do
+	text t "* 以下の2つが同じであることを確認してみる", \t -> do
+	itext t 1 "val :: a", \t -> do
+	itext t 1 "fun :: () -> a", \t -> do
+	text t "* 追加の情報なしに互いに定義できれば", \t -> do
+	itext t 1 "- それらは「同じ」であると言うことができる", \t -> do
+	text t "* funをvalを使って定義してみる", \t -> do
+	itext t 1 "fun () = val", \t -> do
+	text t "* valをfunを使って定義してみる", \t -> do
+	itext t 1 "val = fun ()", \t -> do
+	text t "* 互いに定義できたのでfunとvalは同じものと考えられる"
+ ]
+
+unit3 :: Page
+unit3 = [\t -> do
+	writeTopTitle t "()"
+	text t "", \t -> do
+	text t "* 以下の2つについても確認しておこう", \t -> do
+	itext t 1 "val :: a", \t -> do
+	itext t 1 "tup :: (a, ())", \t -> do
+	text t "* tupをvalを使って定義してみる", \t -> do
+	itext t 1 "tup = (val, ())", \t -> do
+	text t "* valをtupを使って定義してみる", \t -> do
+	itext t 1 "val = fst tup", \t -> do
+	text t "* よってaと(a, ())は同じである"
+ ]
+
+unitSummary :: Page
+unitSummary = [\t -> do
+	writeTopTitle t "()(まとめ)"
+	text t "", \t -> do
+	text t "* Bool型はTrueかFalseのどちらかなので", \t -> do
+	itext t 1 "- どちらかがわかれば情報が増えることになる", \t -> do
+	text t "* ()型には()しかないので", \t -> do
+	itext t 1 "- 「()だ!」と言っても情報は増えない", \t -> do
+	text t "* よって()型は", \t -> do
+	itext t 1 "- 引数の位置に出てきても", \t -> do
+	itext t 1 "- タプルのなかに出てきても取り除くことができる", \t -> do
+	text t "* 型同士が「同じ」ものであることを", \t -> do
+	itext t 1 "- 追加の情報なしに", \t -> do
+	itext t 1 "- 互いに相手を定義することで確かめられる"
  ]
 
 valToFun1 :: Page
@@ -133,18 +198,33 @@ valToFun4 = [\t -> do
 	itext t 1 $ show $ c isLower
  ]
 
+funToVal :: (forall b . (a -> b) -> b) -> a
+funToVal f = f id
+
+valToFun5 :: Page
+valToFun5 = [\t -> do
+	writeTopTitle t "単純な値"
+	text t "", \t -> do
+	text t "* 単純な値から高階関数の形に変換する関数を作った", \t -> do
+	text t "* 逆の方向の変換も可能である", \t -> do
+	text t "* eight idで見たようにidをつけてやれば良い", \t -> do
+	itext t 1 "fun :: (a -> b) -> b", \t -> do
+	itext t 1 "val :: a", \t -> do
+	itext t 1 "val = fun id"
+ ]
+
 valToFunSummary :: Page
 valToFunSummary = [\t -> do
 	writeTopTitle t "単純な値(まとめ)"
 	text t "", \t -> do
-	text t "* 以下の2つの型はほぼ同じものと考えられる", \t -> do
+	text t "* 以下の2つの型は同じものと考えられる", \t -> do
 	itext t 1 "a", \t -> do
 	itext t 1 "(a -> b) -> b", \t -> do
 	text t "* 前者を後者の形式に変換する関数valToFunを定義した", \t -> do
 	itext t 1 "valToFun :: a -> (a -> b) -> b", \t -> do
 	itext t 1 "valToFun x f = f x", \t -> do
-	text t "* もしも以下のような形の関数の定義を見たら"
-	itext t 1 "より単純な値に置き換えられるということ", \t -> do
+	text t "* 逆方向の変換は関数形式のほうに引数としてidを与える", \t -> do
+	text t "* 以下のような形の関数はより単純な値に置き換え可", \t -> do
 	itext t 1 "(Int -> b) -> b", \t -> do
 	itext t 1 "(Char -> b) -> b", \t -> do
 	itext t 1 "([Int] -> b) -> b", \t -> do
@@ -203,6 +283,9 @@ aboutAddArg3 = [\t -> do
 addArg :: (b -> c) -> ((a -> b) -> (a -> c))
 addArg f = \g -> (\x -> f $ g x)
 
+rmArg :: ((a -> b) -> (a -> c)) -> (b -> c)
+rmArg f x = f (const x) undefined
+
 aboutAddArg4 :: Page
 aboutAddArg4 = [\t -> do
 	writeTopTitle t "一引数関数"
@@ -231,16 +314,29 @@ aboutAddArg5 = [\t -> do
 	text t "* 「引数と返り値の両方に引数を1つ追加する関数」と読める"
  ]
 
+aboutAddArg6 :: Page
+aboutAddArg6 = [\t -> do
+	writeTopTitle t "一引数関数"
+	text t "", \t -> do
+	text t "* 逆方向の変換をする関数を作成する", \t -> do
+	itext t 1 "rmArg :: ((a -> b) -> (a -> c)) -> (b -> c)", \t -> do
+	itext t 1 "rmArg f = \\x -> f (const x) undefined", \t -> do
+	text t "* xはb型の値であり", \t -> do
+	itext t 1 "- const x :: a -> b", \t -> do
+	itext t 1 "- f (const x) :: a -> c", \t -> do
+	itext t 1 "- f (const x) undefined :: c"
+ ]
+
 aboutAddArgSummary :: Page
 aboutAddArgSummary = [\t -> do
 	writeTopTitle t "一引数関数(まとめ)"
 	text t "", \t -> do
 	text t "* 以下の2つの関数はほとんど同じものと考えることができる", \t -> do
 	itext t 1 "fun :: b -> c", \t -> do
-	itext t 1 "fun' (a -> b) -> (a -> c)", \t -> do
+	itext t 1 "fun' :: (a -> b) -> (a -> c)", \t -> do
 	itext t 1 "fun' = (fun .)", \t -> do
 	text t "* 「引数と返り値の両方に1つ引数を追加する」変換", \t -> do
-	text t "* その変換を行う関数addArgを定義した", \t -> do
+	text t "* それぞれの変換を行う関数addArg, rmArgを定義した", \t -> do
 	text t "* addArgは関数合成(.)と同じものだった", \t -> do
 	text t "* 以下のような形の型を見たらより単純な関数に置き換え可", \t -> do
 	itext t 1 "(a -> Int) -> (a -> Char)", \t -> do
@@ -276,8 +372,26 @@ aboutAddArg22 = [\t -> do
 	text t "* 「第一引数と返り値に引数を1つ追加する」変換", \t -> do
 	itext t 0 "addArg2 :: (b -> c -> d) -> (a -> b) -> c -> (a -> d)"
 	itext t 0 "addArg2 fun f y = \\x -> fun (f x) y", \t -> do
-	text t "* 蛇足だがこれをポイントフリースタイルにすると", \t -> do
-	itext t 1 "addArg2 = (. flip (.)) . flip (.) . flip"
+	text t "* これをポイントフリースタイルにすると", \t -> do
+	itext t 1 "addArg2 = (. flip (.)) . flip (.) . flip", \t -> do
+	text t "* この変換には追加の情報は必要ないことがわかる"
+ ]
+
+rmArg2 :: ((a -> b) -> c -> (a -> d)) -> (b -> c -> d)
+rmArg2 f x y = f (const x) y undefined
+
+aboutAddArg23 :: Page
+aboutAddArg23 = [\t -> do
+	writeTopTitle t "二引数関数"
+	text t "", \t -> do
+	text t "* 逆方向の変換", \t -> do
+	itext t 0 "rmArg2 :: ((a -> b) -> c -> (a -> d)) -> (b -> c -> d)"
+	itext t 0 "rmArg2 f = \\x y -> f (const x) y undefined", \t -> do
+	text t "* x, yの型はそれぞれb, c", \t -> do
+	itext t 1 "- const x :: a -> b", \t -> do
+	itext t 1 "- f (const x) :: c -> (a -> d)", \t -> do
+	itext t 1 "- f (const x) y :: a -> d", \t -> do
+	itext t 1 "- f (const x) y undefined :: d"
  ]
 
 aboutAddArg2Summary :: Page
@@ -293,7 +407,7 @@ aboutAddArg2Summary = [\t -> do
 	text t "* 以下の型を見たらより簡単な型に変換可", \t -> do
 	itext t 1 "(a -> Char) -> Int -> (a -> Bool) ", \t -> do
 	itext t 1 "(a -> [Bool]) -> [Char] -> (a -> [Int])", \t -> do
-	itext t 1 "(a -> Char) -> (Char -> Bool) -> (a -> Bool)"
+	itext t 1 "(a -> Char) -> (Double -> Bool) -> (a -> Int)"
  ]
 
 summary :: Page
@@ -310,5 +424,5 @@ summary = [\t -> do
 	text t "* これは後者の形の関数が必要になった場合", \t -> do
 	itext t 1 "前者の形の関数から導出できるということを意味する", \t -> do
 	text t "* 引数と結果の関数に引数として同じ型変数がある場合", \t -> do
-	itext t 1 "- それを削除できる、と考えても良い(厳密には違うが)"
+	itext t 1 "- それを削除できる、と考えておこう"
  ]
