@@ -5,7 +5,7 @@ import Data.Char
 import Lecture
 
 subtitle :: String
-subtitle = "第15回 関数の操作"
+subtitle = "第15回 関数の変換"
 
 main :: IO ()
 main = runLecture [
