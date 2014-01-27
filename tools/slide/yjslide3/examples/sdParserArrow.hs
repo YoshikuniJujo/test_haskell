@@ -1,16 +1,22 @@
 import Prelude hiding (id, (.))
 
 import Control.Category
+import Control.Arrow
 
 data StaticParser s = SP Bool [s]
 newtype DynamicParser s a b = DP ((a, [s]) -> (b, [s]))
 data Parser s a b = P (StaticParser s) (DynamicParser s a b)
 
-instance (Bounded s, Enum s, Eq s) => Category (Parser s) where
+instance (Bounded s, Enum s) => Category (Parser s) where
 	id = P (SP True [minBound .. maxBound]) (DP id)
 	P (SP e1 a1) (DP f1) . P (SP e2 a2) (DP f2) = P
 		(SP (e1 && e2) (a2 ++ if e2 then a1 else []))
 		(DP $ f1 . f2)
+
+instance (Bounded s, Enum s) => Arrow (Parser s) where
+	arr f = P (SP True [minBound .. maxBound]) (DP $ first f)
+	first (P (SP e s) (DP f)) = P (SP e s) $ DP $ \((x, y), rest) ->
+		let (x', rest) = f (x, rest) in ((x', y), rest)
 
 -- (>=>) :: (a -> Parser s () b) -> (b -> Parser s () c) -> (a -> Parser s () c)
 --	Parser s () b = P (StaticParser s) (DynamicParser s () b)
@@ -38,6 +44,6 @@ instance (Bounded s, Enum s, Eq s) => Category (Parser s) where
 --
 -- (bから(c + 何か)への写像)と(cから(d + 何か)への写像) -> (bから(d + 何か)への写像)
 
-arr :: (b -> c) -> IOMcn b c
-app :: IOMcn (IOMcn b c, b) c
-	IOMcn b c -> b -> IOMcn () c
+-- arr :: (b -> c) -> IOMcn b c
+-- app :: IOMcn (IOMcn b c, b) c
+--	IOMcn b c -> b -> IOMcn () c

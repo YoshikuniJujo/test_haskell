@@ -25,3 +25,8 @@ data StaticParser s = SP Bool [s]
 newtype DynamicParser s a = DP ([s] -> (s, [s]))
 data Parser s a = P (StaticParser s) (DynamicParser s a)
 -}
+
+f <***> x = arr (uncurry ($)) . second x . first f . arr dup
+
+dup x = (x, x)
+swap (x, y) = (y, x)

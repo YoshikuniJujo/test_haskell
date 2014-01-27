@@ -1,2 +1,55 @@
 (>=>) :: (b -> m c) -> (c -> m d) -> (b -> m d)
 (>>>) :: a b c -> a c d -> a b d
+
+arr :: (b -> c) -> a b c
+
+-- arrowならばfunctor
+
+fmap :: (b -> c) -> a () b -> a () c
+fmap = (<<<) . arr
+
+-- arrowならばcategory + applicative
+
+(<*>) :: a () (b -> c) -> a () b -> a () c
+
+a () (b -> c)
+
+(b -> c) -> a b c
+=> a (b -> c) (a b c)
+
+f <*> x = arr (uncurry (flip ($)) . first x . arr swap . first f . arr dup
+
+dup x = (x, x)
+swap (x, y) = (y, x)
+
+(<*>) :: a () (b -> c) -> a () b -> a () c
+f <*> x = arr (uncurry ($)) . second x . first f . arr dup
+
+uncurry ($) :: (b -> c, b) -> c
+arr ... :: a (b -> c, b) c
+
+f &&& x :: a () (b -> c, b)
+
+f <*> x = arr (uncurry ($)) . f &&& x
+
+--- category + applicativeならばarrow?
+
+pureと(<*>)と(>>>)から、arrとfirstが作れれば良い。
+
+pure :: b -> f b
+fmap :: (b -> c) -> f b -> f c
+(<*>) :: f (b -> c) -> f b -> f c
+(>>>) :: a b c -> a c d -> a b d
+
+arr :: (b -> c) -> a b c
+first :: a b c -> a (b, d) (c, d)
+(&&&) :: a b c -> a b c' -> a b (c, c')
+
+pure :: b -> a d b
+fmap :: (b -> c) -> a d b -> a d c
+(<*>) :: a d (b -> c) -> a d b -> a d c
+
+arr f = fmap f id
+(&&&) = liftA2 (,)
+
+Category arr, Applicative (arr a) =>
