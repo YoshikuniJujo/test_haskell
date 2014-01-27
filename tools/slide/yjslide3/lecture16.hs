@@ -11,7 +11,9 @@ main = runLecture [
 	aboutMaybe, aboutMaybe2, aboutMaybe3, aboutMaybe4, aboutMaybe5,
 	aboutMaybe6, aboutMaybe7, aboutMaybe8, aboutMaybe9, aboutMaybe10,
 	aboutMaybe11, aboutMaybe12, aboutMaybe13, aboutMaybe14,
-	aboutMaybeSummary
+	aboutMaybeSummary,
+	aboutState, aboutState2, aboutState3, aboutState4, aboutState5,
+	aboutState6, aboutState7, aboutState8, aboutState9
  ]
 
 prelude :: Page
@@ -297,4 +299,148 @@ aboutMaybeSummary = [\t -> do
 	text t "* これらの関数はより単純な形に直すことができる", \t -> do
 	itext t 1 "bindM :: Maybe a -> (a -> Maybe b) -> Maybe b", \t -> do
 	itext t 1 "retM :: a -> Maybe a"
+ ]
+
+aboutState :: Page
+aboutState = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	text t "* メモリ機能付きの電卓について考えてみよう", \t -> do
+	text t "* (3 * 4 + 2 * 5) * 7の計算をしてみる", \t -> do
+	text t "* 以下の順にボタンを押す", \t -> do
+	itext t 1 "3 * 4 M+ C 2 * 5 C M+ MR * 7", \t -> do
+	itext t 1 "- 3 * 4を計算しメモリに足す", \t -> do
+	itext t 1 "- 表示を0にもどし", \t -> do
+	itext t 1 "- 2 * 5を計算しメモリに足す", \t -> do
+	itext t 1 "- 表示を0にもどし", \t -> do
+	itext t 1 "- メモリを呼び出す", \t -> do
+	itext t 1 "- 7をかける", \t -> do
+	text t "* メモリ内の記憶を状態として持っていると考えられる"
+ ]
+
+aboutState2 :: Page
+aboutState2 = [\t -> do
+	writeTopTitle t "State", \t -> do
+	text t "* それぞれの操作は", \t -> do
+	itext t 1 "- 画面の表示とメモリの状態を引数として取り", \t -> do
+	itext t 1 "- 画面の表示とメモリの状態を返値として返す", \t -> do
+	text t "* 実際の電卓とは異なるが", \t -> do
+	itext t 1 "- M+は画面をクリアするものとする(つまりCも行う)", \t -> do
+	itext t 1 "- MRを押す前に画面がクリアされている必要がある", \t -> do
+	itext t 1 "- つまり、MRは画面の状態を受け取らない", \t -> do
+	text t "* よって、それぞれの型は以下のようになる", \t -> do
+	itext t 1 "mplus :: Int -> Int -> ((), Int)", \t -> do
+	itext t 1 "mrecall :: () -> Int -> (Int, Int)", \t -> do
+	text t "* それぞれ返値と引数の画面の表示の部分が()としてある", \t -> do
+	text t "* 表示がないということを()で表現している"
+ ]
+
+aboutState3 :: Page
+aboutState3 = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	text t "* 次に画面を変化させる関数を作る", \t -> do
+	text t "* (Int -> Int)関数を変換することによって作ることにする", \t -> do
+	text t "* メモリは変化させない、つまり", \t -> do
+	itext t 1 "- メモリの値を引数として取り、そのまま返り値とする", \t -> do
+	itext t 1 "arrC :: (Int -> Int) -> Int -> Int -> (Int, Int)", \t -> do
+	text t "* arrCは単なる数字キーにも対応させたい", \t -> do
+	text t "* 数字キーは引数を取らないでIntを返す関数なので", \t -> do
+	itext t 1 "() -> Int", \t -> do
+	itext t 1 "arrC :: (() -> Int) -> () -> Int -> (Int, Int)", \t -> do
+	text t "* よってarrCはより一般的に以下のようにする", \t -> do
+	itext t 1 "arrC :: (a -> Int) -> a -> Int -> (Int, Int)"
+ ]
+
+aboutState4 :: Page
+aboutState4 = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	text t "* arrCを画面のクリアにも使えるようにしたい", \t -> do
+	text t "* 画面をクリアする関数は(Int -> ())", \t -> do
+	itext t 1 "arrC :: (Int -> ()) -> Int -> Int -> ((), Int)", \t -> do
+	text t "* さっきまでのarrCの型が以下のようになっていたので", \t -> do
+	itext t 1 "arrC :: (a -> Int) -> a -> Int -> (Int, Int)", \t -> do
+	text t "* 十分に一般的なarrCの型は以下のようになる", \t -> do
+	itext t 1 "arrC :: (a -> b) -> a -> Int -> (b, Int)"
+ ]
+
+aboutState5 :: Page
+aboutState5 = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	text t "* 必要な関数は以下のようになる", \t -> do
+	itext t 1 "mplus :: Int -> Int -> ((), Int)", \t -> do
+	itext t 1 "mrecall :: () -> Int -> (Int, Int)", \t -> do
+	itext t 1 "arrC :: (a -> b) -> a -> Int -> (b, Int)", \t -> do
+	text t "* mplusを定義してみよう", \t -> do
+	itext t 1 "- 画面の表示とメモリの内容を足してメモリに保存する", \t -> do
+	itext t 1 "- 画面の表示はクリアする", \t -> do
+	itext t 1 "mplus x m = ((), x + m)"
+ ]
+
+mplus :: Int -> Int -> ((), Int)
+mplus x m = ((), x + m)
+
+mrecall :: () -> Int -> (Int, Int)
+mrecall _ m = (m, m)
+
+aboutState6 :: Page
+aboutState6 = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	text t "* calc.hsを作成し以下を書き込もう", \t -> do
+	itext t 1 "mplus :: Int -> Int -> ((), Int)", \t -> do
+	itext t 1 "mplus x m = ((), x + m)", \t -> do
+	text t "* mrecallを定義する", \t -> do
+	itext t 1 "- メモリの内容を画面に呼び出す", \t -> do
+	itext t 1 "- 呼び出した直後はメモリと画面は同じ値になる", \t -> do
+	itext t 1 "mrecall :: () -> Int -> (Int, Int)", \t -> do
+	itext t 1 "mrecall _ m = (m, m)", \t -> do
+	text t "* これもcalc.hsに書き込もう"
+ ]
+
+aboutState7 :: Page
+aboutState7 = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 1 "*Main> :load calc.hs", \t -> do
+	itext t 1 "*Main> mplus 3 0", \t -> do
+	itext t 1 $ show $ mplus 3 0, \t -> do
+	itext t 1 "*Main> mplus 4 8", \t -> do
+	itext t 1 $ show $ mplus 4 8, \t -> do
+	text t "* 画面の表示が3でメモリが0のときmplusをすると", \t -> do
+	itext t 1 "- 画面はクリア(ユニット値, 0ではなく())され", \t -> do
+	itext t 1 "- メモリは3となる", \t -> do
+	text t "* 画面の表示が4でメモリが8のときmplusをすると", \t -> do
+	itext t 1 "- 画面はクリアされ、メモリは12となる"
+ ]
+
+aboutState8 :: Page
+aboutState8 = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 1 "*Main> mrecall () 4", \t -> do
+	itext t 1 $ show $ mrecall () 4, \t -> do
+	itext t 1 "*Main> mrecall () 19", \t -> do
+	itext t 1 $ show $ mrecall () 19, \t -> do
+	text t "* mrecallをする前には画面がクリアされている必要がある", \t -> do
+	itext t 1 "- つまり画面はユニット値になっていなければならない", \t -> do
+	text t "* mrecallをするとメモリの内容が画面に呼び出される", \t -> do
+	itext t 1 "- mrecallの直後はメモリの内容と画面は同じ値になる"
+ ]
+
+aboutState9 :: Page
+aboutState9 = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	text t "* 次に必要なのは関数によって電卓の表示を変化させる関数", \t -> do
+	itext t 1 "arrC :: (a -> b) -> a -> Int -> (b, Int)", \t -> do
+	text t "* メモリの値は変化させない、つまり", \t -> do
+	itext t 1 "- 引数として取りそのまま返す", \t -> do
+	text t "* 画面の値は与えられた関数で変化させる", \t -> do
+	itext t 1 "arrC f x m = (f x, m)", \t -> do
+	text t "* これらをcalc.hsに書き込もう"
  ]
