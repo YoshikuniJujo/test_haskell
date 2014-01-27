@@ -19,3 +19,6 @@ someがotherを使って書けることを示す。
 
 chr' :: (a -> Int) -> (a -> Char)
 chr' f = \x -> chr (f x)
+
+--
+まずはMaybeの例、次はStateの例、もうひとつ何か良さげなのがあれば...
