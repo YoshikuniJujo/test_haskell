@@ -20,7 +20,8 @@ main = runLecture [
 	aboutStateSummary,
 	maybeState,
 	aboutMonad, aboutMonad2, aboutMonad3, aboutMonad4,
-	monadClass, maybeMonad
+	monadClass, maybeMonad, maybeMonad2, maybeMonad3, maybeMonad4,
+	stateMonad, stateMonad2, stateMonad3, stateMonad4, stateMonad5
  ]
 
 prelude :: Page
@@ -215,7 +216,7 @@ aboutMaybe10 = [\t -> do
 	itext t (-1) "* (a -> Maybe b)型の関数をつなぐために用意した関数", \t -> do
 	itext t (-1) "pipeM :: (a -> Maybe b) -> (b -> Maybe c) -> (a -> Maybe c)", \t -> do
 	itext t (-1) "arrM :: (a -> b) -> (a -> Maybe b)", \t -> do
-	itext t (-1) "* 全回の講義を思い出してみよう", \t -> do
+	itext t (-1) "* 前回の講義を思い出してみよう", \t -> do
 	itext t (-1) "* 引数の型と結果の型の両方に(a ->)があるので", \t -> do
 	itext t 0 "- それらを消すことができる", \t -> do
 	itext t 0 "bindM :: Maybe b -> (b -> Maybe c) -> Maybe c", \t -> do
@@ -315,7 +316,7 @@ aboutState = [\t -> do
 	text t "* メモリ機能付きの電卓について考えてみよう", \t -> do
 	text t "* (3 * 4 + 2 * 5) * 7の計算をしてみる", \t -> do
 	text t "* 以下の順にボタンを押す", \t -> do
-	itext t 1 "3 * 4 M+ C 2 * 5 C M+ MR * 7", \t -> do
+	itext t 1 "3 * 4 M+ C 2 * 5 M+ C MR * 7", \t -> do
 	itext t 1 "- 3 * 4を計算しメモリに足す", \t -> do
 	itext t 1 "- 表示を0にもどし", \t -> do
 	itext t 1 "- 2 * 5を計算しメモリに足す", \t -> do
@@ -531,7 +532,7 @@ aboutState14 = [\t -> do
 	text t "* 中身は以下のようになる", \t -> do
 	itext t 0 "f `pipeC` g = \\x m -> let (x', m') = f x m in g x' m'", \t -> do
 	text t "* let X in Yの形でXのなかで束縛した値をYのなかで使える", \t -> do
-	text t "* はじめの画面とメモリの値x, mをfに与え", \t -> do
+	text t "* はじめの画面の値xとメモリの値mをfに与え", \t -> do
 	itext t 1 "- その結果をx', m'に束縛し", \t -> do
 	itext t 1 "- x', m'をgに与えている"
  ]
@@ -893,10 +894,130 @@ maybeMonad :: Page
 maybeMonad = [\t -> do
 	writeTopTitle t "Maybeモナド"
 	text t "", \t -> do
-	text t "* Maybe型はモナドクラスのインスタンスである", \t -> do
+	text t "* Maybe型はデフォルトでモナドクラスのインスタンスである", \t -> do
 	text t "* instance宣言は以下のようになっている", \t -> do
 	itext t 1 "instance Monad Maybe where", \t -> do
 	itext t 2 "Nothing >>= _ = Nothing", \t -> do
 	itext t 2 "Just x >>= f = f x", \t -> do
 	itext t 2 "return = Just"
+ ]
+
+lowerToCodeDiv4' :: Char -> Maybe Int
+lowerToCodeDiv4' c = lowerToCode c >>= evenDiv2 >>= evenDiv2
+
+maybeMonad2 :: Page
+maybeMonad2 = [\t -> do
+	writeTopTitle t "Maybeモナド"
+	text t "", \t -> 
+	text t "* maybe.hsに以下を書き込んでみよう", \t -> do
+	itext t 1 "lowerToCodeDiv4' :: Char -> Maybe Int", \t -> do
+	itext t 1 "lowerToCodeDiv4' ="
+	itext t 2 "lowerToCode c >>= evenDiv2 >>= evenDiv2", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 1 "*Main> :load maybe.hs", \t -> do
+	itext t 1 "*Main> lowerToCodeDiv4' 'n'", \t -> do
+	itext t 1 $ show $ lowerToCodeDiv4' 'n', \t -> do
+	itext t 1 "*Main> lowerToCodeDiv4' 'p'", \t -> do
+	itext t 1 $ show $ lowerToCodeDiv4' 'p'
+ ]
+
+maybeMonad3 :: Page
+maybeMonad3 = [\t -> do
+	writeTopTitle t "Maybeモナド"
+	text t "", \t -> do
+	text t "* 同じことだが以下のように書くこともできる", \t -> do
+	itext t 1 "lowerToCodeDiv4'' c =", \t -> do
+	itext t 2 "lowerToCode c >>= \\n ->"
+	itext t 2 "evenDiv2 n >>= \\n' ->"
+	itext t 2 "evenDiv2 n'", \t -> do
+	text t "* これは以下のように読める", \t -> do
+	itext t 1 "- lowerToCode cが返す値をnに束縛して", \t -> do
+	itext t 1 "- evenDiv2 nが返す値をn'に束縛して", \t -> do
+	itext t 1 "- evenDiv2 n'の値を返す"
+ ]
+
+maybeMonad4 :: Page
+maybeMonad4 = [\t -> do
+	writeTopTitle t "Maybeモナド"
+	text t "", \t -> do
+	text t "* do記法という構文糖がある", \t -> do
+	text t "* それを使うと同じことが以下のように書ける", \t -> do
+	itext t 1 "lowerToCodeDiv4''' c = do"
+	itext t 2 "n <- lowerToCode c"
+	itext t 2 "n' <- evenDiv2 n"
+	itext t 2 "evenDiv2 n'", \t -> do
+	text t "* doという識別子で始める", \t -> do
+	text t "* それぞれの行で以下の変換が行われる", \t -> do
+	itext t 1 "[変数] <- [表現]", \t -> do
+	arrowIText t 1 "[表現] >>= \\[変数]"
+ ]
+
+stateMonad :: Page
+stateMonad = [\t -> do
+	writeTopTitle t "Stateモナド"
+	text t "", \t -> do
+	text t "* calc.hsで定義したStateは単なる別名", \t -> do
+	itext t 1 "type State a = Int -> (a, Int)", \t -> do
+	text t "* 別名に対してはinstance宣言はできない", \t -> do
+	text t "* 別名をつける代わりにnewtypeを使うことができる", \t -> do
+	text t "* newtypeは内部的にはtypeと同じだが", \t -> do
+	itext t 1 "- 使いかたとしてはdataと同様に使える", \t -> do
+	text t "* dataを使っても使いかたはほとんど同じだが", \t -> do
+	itext t 1 "- newtypeを使ったほうが実行効率は良くなる", \t -> do
+	text t "* newtypeを使いMonadクラスのインスタンスとする", \t -> do
+	text t "* state.hsに書き込んでいこう"
+ ]
+
+stateMonad2 :: Page
+stateMonad2 = [\t -> do
+	writeTopTitle t "Stateモナド"
+	text t "", \t -> do
+	text t "* ここでひとつ省略記法を紹介する", \t -> do
+	text t "* dataやnewtype宣言のなかでフィールド名を指定できる", \t -> do
+	itext t 1 "data Human = Human String Int", \t -> do
+	itext t 1 "name (Human n _) = n", \t -> do
+	itext t 1 "age (Human _ a) = a", \t -> do
+	text t "* 上のように書く代わりに以下のように書ける", \t -> do
+	itext t 1 "data Human = Human { name :: String, age :: Int }", \t -> do
+	text t "* フィールドを取り出す関数を用意してくれる"
+ ]
+
+stateMonad3 :: Page
+stateMonad3 = [\t -> do
+	writeTopTitle t "Stateモナド"
+	text t "", \t -> do
+	text t "* State型を定義しよう。state.hsに以下を書き込む", \t -> do
+	itext t 0 "newtype State a = State { runState :: Int -> (a, Int) }", \t -> do
+	text t "* この定義は以下の2つの定義とだいたい同じ", \t -> do
+	itext t 1 "newtype State a = State (Int -> (a, Int))", \t -> do
+	itext t 1 "runState (State st) = st", \t -> do
+	text t "* 簡単に言えばStateで服を着せて", \t -> do
+	itext t 1 "- runStateで服を脱がせるということ"
+ ]
+
+newtype State' a = State { runState :: Int -> (a, Int) }
+
+instance Monad State' where
+	State m >>= f = State $ \s -> let (x, s') = m s in runState (f x) s'
+	return x = State $ \s -> (x, s)
+
+stateMonad4 :: Page
+stateMonad4 = [\t -> do
+	writeTopTitle t "Stateモナド"
+	text t "", \t -> do
+	text t "* Monadクラスのインスタンスにする", \t -> do
+	itext t 0 "instance Monad State where", \t -> do
+	itext t 1 "State m >>= f = State $ \\s ->"
+	itext t 2 "let (x, s') = m s in runState (f x) s'", \t -> do
+	itext t 1 "return x = State $ \\s -> (x, s)", \t -> do
+	text t "* 複雑に見えるがStateやrunStateを消して考えれば良い", \t -> do
+	itext t 1 "- それらは服を着せたり脱がせたりしているだけ"
+ ]
+
+stateMonad5 :: Page
+stateMonad5 = [\t -> do
+	writeTopTitle t "Stateモナド"
+	text t "", \t -> do
+	text t "* mplusはより一般的な形に直せる", \t -> do
+	text t "* put, get関数を定義してみよう"
  ]
