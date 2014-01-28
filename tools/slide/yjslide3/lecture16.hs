@@ -15,7 +15,12 @@ main = runLecture [
 	aboutState, aboutState2, aboutState3, aboutState4, aboutState5,
 	aboutState6, aboutState7, aboutState8, aboutState9, aboutState10,
 	aboutState11, aboutState12, aboutState13, aboutState14, aboutState15,
-	aboutState16
+	aboutState16, aboutState17, aboutState18, aboutState19, aboutState20,
+	aboutState21, aboutState22, aboutState23, aboutState24, aboutState25,
+	aboutStateSummary,
+	maybeState,
+	aboutMonad, aboutMonad2, aboutMonad3, aboutMonad4,
+	monadClass, maybeMonad
  ]
 
 prelude :: Page
@@ -535,7 +540,7 @@ aboutState15 :: Page
 aboutState15 = [\t -> do
 	writeTopTitle t "State"
 	text t "", \t -> do
-	text t "* これらをcalc.hsに書き込もう"
+	text t "* これらをcalc.hsに書き込もう", \t -> do
 	itext t 0 "type Calc a b = a -> Int -> (b, Int)"
 	itext t 0 "pipeC :: Calc a b -> Calc b c -> Calc a c"
 	itext t 0 "f `pipeC` g = \\x m -> let (x', m') = f x m in g x' m'", \t -> do
@@ -556,7 +561,7 @@ aboutState16 :: Page
 aboutState16 = [\t -> do
 	writeTopTitle t "State", \t -> do
 	text t "* 最初の例の(3 * 4 + 2 * 5) * 7を作ってみる", \t -> do
-	itext t 1 "example :: () -> Int -> (Int, Int)", \t -> do
+	itext t 1 "example :: Calc () Int", \t -> do
 	itext t 1 "example =", \t -> do
 	itext t 2 "arrC (const 3) `pipeC`", \t -> do
 	itext t 2 "arrC (* 4) `pipeC`", \t -> do
@@ -567,4 +572,331 @@ aboutState16 = [\t -> do
 	itext t 2 "mrecall `pipeC`", \t -> do
 	itext t 2 "arrC (* 7)", \t -> do
 	text t "* これをcalc.hsに書き込もう"
+ ]
+
+example :: Calc () Int
+example =
+	arrC (const 3) `pipeC`
+	arrC (* 4) `pipeC`
+	mplus `pipeC`
+	arrC (const 2) `pipeC`
+	arrC (* 5) `pipeC`
+	mplus `pipeC`
+	mrecall `pipeC`
+	arrC (* 7)
+
+aboutState17 :: Page
+aboutState17 = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> example () 0", \t -> do
+	itext t 1 $ show $ example () 0, \t -> do
+	text t "* 初期状態は", \t -> do
+	itext t 1 "- 画面はクリア(ユニット値, ())されていてメモリは0", \t -> do
+	text t "* それを引数として与えている"
+ ]
+
+aboutState18 :: Page
+aboutState18 = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	text t "* Calc型を見てみる", \t -> do
+	itext t 1 "type Calc a b = a -> Int -> (b, Int)", \t -> do
+	text t "* State型を作ると", \t -> do
+	itext t 1 "type State b = Int -> (b, Int)", \t -> do
+	itext t 1 "type Calc a b = a -> State b", \t -> do
+	text t "* a -> bとa -> State bを比較してみる", \t -> do
+	itext t 1 "- a -> bは画面の値の変化", \t -> do
+	itext t 1 "- a -> State bは画面とメモリの変化", \t -> do
+	itext t 1 "- 画面の値の変化にメモリの値の変化が追加されている"
+ ]
+
+aboutState19 :: Page
+aboutState19 = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	text t "* pipeCの型をState型を使って書き換えてみる", \t -> do
+	itext t 0 "type State a = Int -> (a, Int)", \t -> do
+	itext t 0 "pipeC ::"
+	itext t 1 "(a -> State b) -> (b -> State c) -> (a -> State c)", \t -> do
+	text t "* 画面とメモリを変化させる関数をつないでいる", \t -> do
+	text t "* 画面の変化については明示的に示されているが", \t -> do
+	itext t 1 "- メモリの変化についてはState型に隠されている", \t -> do
+	text t "* pipeCを見ると1つめと2つめのa型は同じ値なので消せる", \t -> do
+	itext t 1 "bindC :: State b -> (b -> State c) -> State c"
+ ]
+
+aboutStateXX :: Page
+aboutStateXX = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	text t "* pipeCの型をもう一度見てみる", \t -> do
+	itext t 1 "pipeC :: Calc a b -> Calc b c -> Calc a c", \t -> do
+	text t "* Calc a bは以下のように定義されている", \t -> do
+	itext t 1 "type Calc a b = a -> Int -> (b, Int)", \t -> do
+	text t "* 見方を変えて、Int -> (b, Int)をひとかたまりとすると", \t -> do
+	itext t 1 "type State b = Int -> (b, Int)", \t -> do
+	text t "* メモリの値を与えると画面とメモリの新しい値が返る関数", \t -> do
+	text t "* メモリを「状態」と考えると", \t -> do
+	itext t 1 "- 状態を変化させながら", \t -> do
+	itext t 1 "- 状態によって変化する型bの値を返す「もの」", \t -> do
+	text t "* 初期状態を取り一連の計算をし値と新しい状態を返す"
+ ]
+
+aboutStateYY :: Page
+aboutStateYY = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	text t "* pipeCの型は以下のようになる", \t -> do
+	itext t 0 "type State a = Int -> (a, Int)", \t -> do
+	itext t 0 "pipeC ::"
+	itext t 1 "(a -> State b) -> (b -> State c) -> (a -> State c)", \t -> do
+	text t "* 「aから『bを返す計算』」と「bから『cを返す計算』」から", \t -> do
+	itext t 1 "- 「aから『cを返す計算』」を作る関数", \t -> do
+	text t "* すこしイメージしにくい", \t -> do
+	text t "* 中身を意識しておくとわかりやすい", \t -> do
+	itext t 1 "a -> State b == a -> Int -> (b, Int)"
+ ]
+
+aboutStateZZ :: Page
+aboutStateZZ = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	itext t 0 "arrC :: (a -> b) -> (a -> State b)"
+	text t "* aを消した場合は以下のようになる"
+ ]
+
+aboutState20 :: Page
+aboutState20 = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	text t "* bindCを定義する", \t -> do
+	itext t 1 "bindC :: State a -> (a -> State b) -> State b", \t -> do
+	itext t 1 "bindC m f = \\s -> let (x, s') = m s in f x s'", \t -> do
+	itext t 1 "- mに状態sを与え結果の値と状態をfに与えている", \t -> do
+	text t "* 同様にarrCも以下のようにできる", \t -> do
+	itext t 1 "arrC :: (a -> b) -> (a -> State b)", \t -> do
+	arrowIText t 1 "retC :: a -> State a", \t -> do
+	itext t 1 "retC x = \\s -> (x, s)", \t -> do
+	itext t 1 "- 状態は変化させずに値xを返す"
+ ]
+
+aboutState21 :: Page
+aboutState21 = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	text t "* これらをcalc.hsに書き込もう", \t -> do
+	itext t 1 "type State a = Int -> (a, Int)", \t -> do
+	itext t 1 "bindC :: State a -> (a -> State b) -> State b", \t -> do
+	itext t 1 "bindC m f = \\s -> let (x, s') = m s in f x s'", \t -> do
+	itext t 1 "retC :: a -> State a", \t -> do
+	itext t 1 "retC x = \\s -> (x, s)"
+ ]
+
+type State a = Int -> (a, Int)
+
+bindC :: State a -> (a -> State b) -> State b
+bindC m f = \s -> let (x, s') = m s in f x s'
+
+retC :: a -> State a
+retC x = \s -> (x, s)
+
+example' :: State Int
+example' =
+	retC 3 `bindC`
+	(retC . (* 4)) `bindC`
+	mplus `bindC` \_ ->
+	retC 2 `bindC`
+	(retC . (* 5)) `bindC`
+	mplus `bindC`
+	mrecall `bindC`
+	(retC . (* 7))
+
+aboutState22 :: Page
+aboutState22 = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	text t "* 最初の例(3 * 4 + 2 * 5) * 7をbindC, retCで書いてみる", \t -> do
+	itext t 1 "example' :: State Int", \t -> do
+	itext t 1 "example' =", \t -> do
+	itext t 2 "retC 3 `bindC`", \t -> do
+	itext t 2 "(retC . (* 4)) `bindC`", \t -> do
+	itext t 2 "mplus `bindC`", \t -> do
+	itext t 2 "const (retC 2) `bindC`", \t -> do
+	itext t 2 "(retC . (* 5)) `bindC`", \t -> do
+	itext t 2 "mplus `bindC`", \t -> do
+	itext t 2 "mrecall `bindC`", \t -> do
+	itext t 2 "(retC . (* 7))", \t -> do
+	text t "* これをcalc.hsに書き込もう"
+ ]
+
+aboutState23 :: Page
+aboutState23 = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> example' 0", \t -> do
+	itext t 1 $ show $ example' 0
+ ]
+
+example'' :: State Int
+example'' =
+	retC 3 `bindC` \x ->
+	retC (x * 4) `bindC` \y ->
+	mplus y `bindC` \_ ->
+	retC 2 `bindC` \z ->
+	retC (z * 5) `bindC` \w ->
+	mplus w `bindC` \_ ->
+	mrecall () `bindC` \v ->
+	retC (v * 7)
+
+aboutState24 :: Page
+aboutState24 = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	text t "* 同じことを以下のように書くこともできる", \t -> do
+	text t "* calc.hsに書き込もう", \t -> do
+	itext t 1 "example'' =", \t -> do
+	itext t 2 "retC 3 `bindC` \\x ->", \t -> do
+	itext t 2 "retC (x * 4) `bindC` \\y ->", \t -> do
+	itext t 2 "mplus y `bindC` \\_ ->", \t -> do
+	itext t 2 "retC 2 `bindC` \\z ->", \t -> do
+	itext t 2 "retC (z * 5) `bindC` \\w ->", \t -> do
+	itext t 2 "mplus w `bindC` \\_ ->", \t -> do
+	itext t 2 "mrecall () `bindC` \\v ->", \t -> do
+	itext t 2 "retC (v * 7)"
+ ]
+
+aboutState25 :: Page
+aboutState25 = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	text t "* これは以下のように読むことができる", \t -> do
+	itext t 1 "- retC 3で返る値をxに束縛し", \t -> do
+	itext t 1 "- retC (x * 4)で返る値をyに束縛し", \t -> do
+	itext t 1 "- mplus yでyの値を状態に足し返り値は捨て", \t -> do
+	itext t 1 "- retC 2で返る値をzに束縛し", \t -> do
+	itext t 1 "- retC (z * 5)で返る値をwに束縛し", \t -> do
+	itext t 1 "- mplus wでwの値を状態に足し返り値は捨て", \t -> do
+	itext t 1 "- mrecall ()で状態の値を呼び出し、vに束縛し", \t -> do
+	itext t 1 "- retC (v * 7)の値を返す"
+ ]
+
+aboutStateSummary :: Page
+aboutStateSummary = [\t -> do
+	writeTopTitle t "State(まとめ)"
+	text t "", \t -> do
+	text t "* メモリ付き電卓の例を見た", \t -> do
+	text t "* 画面の値とメモリの値のペアを次々と変換していく", \t -> do
+	text t "* 画面の値にだけ注目し、メモリの値を隠すことができた", \t -> do
+	text t "* 以下の関数で変換を部品としてつないでいくことができる", \t -> do
+	itext t 0 "pipeC ::"
+	itext t 1 "(a -> State b) -> (b -> State c) -> (a -> State c)", \t -> do
+	itext t 0 "arrC :: (a -> b) -> (a -> State b)", \t -> do
+	text t "* これは以下のように簡略化できる", \t -> do
+	itext t 1 "bindC :: State a -> (a -> State b) -> State c", \t -> do
+	itext t 1 "retC :: a -> State a"
+ ]
+
+maybeState :: Page
+maybeState = [\t -> do
+	writeTopTitle t "MaybeとState"
+	text t "", \t -> do
+	text t "* Maybeをつなぐときに使った関数", \t -> do
+	itext t 1 "retM :: a -> Maybe a"
+	itext t 1 "bindM :: Maybe a -> (a -> Maybe b) -> Maybe b", \t -> do
+	text t "* Stateをつなぐときに使った関数", \t -> do
+	itext t 1 "retC :: a -> State a"
+	itext t 1 "bindC :: State a -> (a -> State b) -> State b", \t -> do
+	text t "* これらの型はMaybeとStateを置き換えただけになっている", \t -> do
+	text t "* 共通する構造を抽出すると以下のようになる", \t -> do
+	itext t 1 "ret :: a -> m a", \t -> do
+	itext t 1 "bind :: m a -> (a -> m b) -> m b"
+ ]
+
+aboutMonad :: Page
+aboutMonad = [\t -> do
+	writeTopTitle t "モナド"
+	text t "", \t -> do
+	text t "* この2つの関数を持つ型mをモナドと呼ぶ", \t -> do
+	itext t 1 "ret :: a -> m a", \t -> do
+	itext t 1 "bind :: m a -> (a -> m b) -> m b", \t -> do
+	text t "* これらは以下の関数の簡略化したものと考えて良い", \t -> do
+	itext t 1 "arr :: (a -> b) -> (a -> m b)", \t -> do
+	itext t 1 "pipe :: (a -> m b) -> (b -> m c) -> (a -> m c)", \t -> do
+	text t "* ただし以下の法則を満たす必要がある", \t -> do
+	itext t 0.5 "1. ret `pipe` fはfと同じ", \t -> do
+	itext t 0.5 "2. f `pipe` retはfと同じ", \t -> do
+	itext t 0.5 "3. (f `pipe` g) `pipe` hとf `pipe` (g `pipe` h)は同じ", \t -> do
+	text t "* これをモナド則と呼ぶ"
+ ]
+
+aboutMonad2 :: Page
+aboutMonad2 = [\t -> do
+	writeTopTitle t "モナド"
+	text t "", \t -> do
+	text t "* モナド則は簡単に言うと以下のことを言っている", \t -> do
+	itext t 1 "- retは値を包み込むだけでそれ以外のことをしない", \t -> do
+	itext t 1 "- 変換関数を左結合にしても右結合にしても同じ", \t -> do
+	text t "* retを空文字列とし関数を文字列として見るとわかりやすい", \t -> do
+	itext t 1 "\"\" ++ \"hello\" == \"hello\"", \t -> do
+	itext t 1 "\"hello\" ++ \"\" == \"hello\"", \t -> do
+	itext t 1 "(\"hello\" ++ \"my\") ++ \"friend\" ==", \t -> do
+	itext t 2 "\"hello\" ++ (\"my\" ++ \"frind\")"
+ ]
+
+aboutMonad3 :: Page
+aboutMonad3 = [\t -> do
+	writeTopTitle t "モナド"
+	text t "", \t -> do
+	text t "* 何であれ以下の型の関数が存在し", \t -> do
+	itext t 1 "a -> m a"
+	itext t 1 "m a -> (a -> m b) -> m b", \t -> do
+	text t "* それがモナド則を満たしさえすれば、型mはモナドである", \t -> do
+	text t "* MaybeやStateはモナドである", \t -> do
+	text t "* 中身が何であれ関係なくすべてモナドである", \t -> do
+	text t "* 「モナド」とは内容ではなく形式である", \t -> do
+	text t "* MaybeとStateのあいだにはほとんど共通点はない", \t -> do
+	itext t 1 "- ただモナドという形式を満たすというだけ"
+ ]
+
+aboutMonad4 :: Page
+aboutMonad4 = [\t -> do
+	writeTopTitle t "モナド"
+	text t "", \t -> do
+	text t "* 同じことだが、よりイメージしやすいモナド関数の型", \t -> do
+	itext t 1 "(a -> b) -> (a -> m b)", \t -> do
+	itext t 1 "(a -> m b) -> (b -> m c) -> (a -> m c)", \t -> do
+	text t "* 言葉で言うとこうなる", \t -> do
+	itext t 1 "- 普通の関数を「値をモナドにする関数」に変換できる", \t -> do
+	itext t 1 "- 「値をモナドにする関数」同士をつなぐことができる"
+ ]
+
+monadClass :: Page
+monadClass = [\t -> do
+	writeTopTitle t "Monadクラス"
+	text t "", \t -> do
+	text t "* 値を比較できるもののためにEqクラスが用意されている", \t -> do
+	text t "* 同様にモナドに対してはMonadクラスが用意されている", \t -> do
+	text t "* クラス定義は以下のようになっている", \t -> do
+	itext t 1 "class Monad m where", \t -> do
+	itext t 2 "(>>=) :: m a -> (a -> m b) -> m b", \t -> do
+	itext t 2 "return :: a -> m a", \t -> do
+	text t "* つまり(>>=)とreturnを定義してやれば", \t -> do
+	itext t 1 "- Monadのインスタンスにすることができる"
+ ]
+
+maybeMonad :: Page
+maybeMonad = [\t -> do
+	writeTopTitle t "Maybeモナド"
+	text t "", \t -> do
+	text t "* Maybe型はモナドクラスのインスタンスである", \t -> do
+	text t "* instance宣言は以下のようになっている", \t -> do
+	itext t 1 "instance Monad Maybe where", \t -> do
+	itext t 2 "Nothing >>= _ = Nothing", \t -> do
+	itext t 2 "Just x >>= f = f x", \t -> do
+	itext t 2 "return = Just"
  ]

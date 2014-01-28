@@ -22,3 +22,19 @@ chr' f = \x -> chr (f x)
 
 --
 まずはMaybeの例、次はStateの例、もうひとつ何か良さげなのがあれば...
+
+--
+
+モナド則
+
+return x >>= f == f x
+f x >>= return == f x
+
+arr f >=> g == g . f
+f >=> arr g == g . f
+
+arr :: (a -> b) -> (a -> m b)
+arr f = return . f
+
+return >=> f == f
+f >=> return == f
