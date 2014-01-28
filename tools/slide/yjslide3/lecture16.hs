@@ -21,7 +21,10 @@ main = runLecture [
 	maybeState,
 	aboutMonad, aboutMonad2, aboutMonad3, aboutMonad4,
 	monadClass, maybeMonad, maybeMonad2, maybeMonad3, maybeMonad4,
-	stateMonad, stateMonad2, stateMonad3, stateMonad4, stateMonad5
+	stateMonad, stateMonad2, stateMonad3, stateMonad4, stateMonad5,
+	stateMonad6, stateMonad7, stateMonad8, stateMonad9, stateMonad10,
+	stateMonad11, stateMonad12, stateMonad13,
+	summary
  ]
 
 prelude :: Page
@@ -1011,7 +1014,8 @@ stateMonad4 = [\t -> do
 	itext t 2 "let (x, s') = m s in runState (f x) s'", \t -> do
 	itext t 1 "return x = State $ \\s -> (x, s)", \t -> do
 	text t "* 複雑に見えるがStateやrunStateを消して考えれば良い", \t -> do
-	itext t 1 "- それらは服を着せたり脱がせたりしているだけ"
+	itext t 1 "- それらは服を着せたり脱がせたりしているだけ", \t -> do
+	text t "* state.hsに書き込もう"
  ]
 
 stateMonad5 :: Page
@@ -1019,5 +1023,179 @@ stateMonad5 = [\t -> do
 	writeTopTitle t "Stateモナド"
 	text t "", \t -> do
 	text t "* mplusはより一般的な形に直せる", \t -> do
-	text t "* put, get関数を定義してみよう"
+	text t "* put, get関数を定義してみよう", \t -> do
+	itext t 1 "put :: Int -> State ()", \t -> do
+	itext t 1 "put s = State $ \\_ -> ((), s)", \t -> do
+	itext t 1 "get :: State Int", \t -> do
+	itext t 1 "get = State $ \\s -> (s, s)", \t -> do
+	text t "* putは引数の値で「状態」を置き換える", \t -> do
+	text t "* getは「状態」を「画面」にコピーする", \t -> do
+	itext t 1 "- mrecallと同じ", \t -> do
+	text t "putとgetの定義をstate.hsに書き込もう"
+ ]
+
+stateMonad6 :: Page
+stateMonad6 = [\t -> do
+	writeTopTitle t "Stateモナド"
+	text t "", \t -> do
+	text t "* putとgetを作ってmodifyが定義できる", \t -> do
+	itext t 1 "modify :: (Int -> Int) -> State ()", \t -> do
+	itext t 1 "modify f = get >>= put . f", \t -> do
+	text t "* mplusはmodifyを使って定義できる", \t -> do
+	itext t 1 "mplus :: Int -> State ()", \t -> do
+	itext t 1 "mplus x = modify (+ x)", \t -> do
+	text t "* state.hsに書き込もう"
+ ]
+
+put :: Int -> State' ()
+put s = State $ \_ -> ((), s)
+
+get :: State' Int
+get = State $ \s -> (s, s)
+
+modify :: (Int -> Int) -> State' ()
+modify f = get >>= put . f
+
+mplus' :: Int -> State' ()
+mplus' x = modify (+ x)
+
+stateMonad7 :: Page
+stateMonad7 = [\t -> do
+	writeTopTitle t "Stateモナド", \t -> do
+	text t "* 最初の例(3 * 4 + 2 * 5) * 7を作ってみよう", \t -> do
+	text t "* state.hsに書き込もう", \t -> do
+	itext t 1 "example :: State Int", \t -> do
+	itext t 1 "example =", \t -> do
+	itext t 2 "return 3 >>=", \t -> do
+	itext t 2 "return . (* 4) >>=", \t -> do
+	itext t 2 "mplus >>=", \t -> do
+	itext t 2 "const (return 2) >>=", \t -> do
+	itext t 2 "return . (* 5) >>=", \t -> do
+	itext t 2 "mplus >>=", \t -> do
+	itext t 2 "const get >>=", \t -> do
+	itext t 2 "return . (* 7)"
+ ]
+
+example''' :: State' Int
+example''' =
+	return 3 >>=
+	return . (* 4) >>=
+	mplus' >>=
+	const (return 2) >>=
+	return . (* 5) >>=
+	mplus' >>=
+	const get >>=
+	return . (* 7)
+
+stateMonad8 :: Page
+stateMonad8 = [\t -> do
+	writeTopTitle t "Stateモナド"
+	text t "", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 1 "*Main> :load state.hs", \t -> do
+	itext t 1 "*Main> runState example 0", \t -> do
+	itext t 1 $ show $ runState example''' 0, \t -> do
+	text t "* runStateで服を脱がせたうえで", \t -> do
+	itext t 1 "- 初期値の0を与えている"
+ ]
+
+stateMonad9 :: Page
+stateMonad9 = [\t -> do
+	writeTopTitle t "Stateモナド"
+	text t "", \t -> do
+	text t "* exampleの定義のなかで2ヶ所にconstが出てきた", \t -> do
+	text t "* これは直前の計算の返り値を使わないということ", \t -> do
+	text t "* 次の計算に返り値を渡さない場合", \t -> do
+	itext t 1 "- (>>=)の代わりに(>>)を使うと良い", \t -> do
+	itext t 1 "(>>=) :: m a -> (a -> m b) -> m b", \t -> do
+	itext t 1 "(>>) :: m a -> m b -> m b", \t -> do
+	text t "* (>>)の定義は以下のようになる", \t -> do
+	itext t 1 "m1 >> m2 = m1 >>= const m2", \t -> do
+	text t "* 以下のように書いても同じこと", \t -> do
+	itext t 1 "m1 >> m2 = m1 >>= \\_ -> m2"
+ ]
+
+stateMonad10 :: Page
+stateMonad10 = [\t -> do
+	writeTopTitle t "Stateモナド"
+	text t "", \t -> do
+	text t "* (>>)を使ってexampleを書き換えると以下のようになる", \t -> do
+	itext t 1 "example' =", \t -> do
+	itext t 2 "return 3 >>=", \t -> do
+	itext t 2 "return . (* 4) >>=", \t -> do
+	itext t 2 "mplus >>", \t -> do
+	itext t 2 "return 2 >>=", \t -> do
+	itext t 2 "return . (* 5) >>=", \t -> do
+	itext t 2 "mplus >>", \t -> do
+	itext t 2 "get >>=", \t -> do
+	itext t 2 "return . (* 7)"
+ ]
+
+stateMonad11 :: Page
+stateMonad11 = [\t -> do
+	writeTopTitle t "Stateモナド"
+	text t "", \t -> do
+	text t "* 明示的な局所変数を使った書き換え", \t -> do
+	itext t 1 "example'' =", \t -> do
+	itext t 2 "return 3 >>= \\x ->", \t -> do
+	itext t 2 "return (x * 4) >>= \\y ->", \t -> do
+	itext t 2 "mplus y >>", \t -> do
+	itext t 2 "return 2 >>= \\z ->", \t -> do
+	itext t 2 "return (z * 5) >>= \\w ->", \t -> do
+	itext t 2 "mplus w >>", \t -> do
+	itext t 2 "get >>= \\v ->", \t -> do
+	itext t 2 "return (v * 7)"
+ ]
+
+stateMonad12 :: Page
+stateMonad12 = [\t -> do
+	writeTopTitle t "Stateモナド"
+	text t "", \t -> do
+	text t "* do記法を使った書き換え", \t -> do
+	itext t 1 "example''' = do", \t -> do
+	itext t 2 "x <- return 3", \t -> do
+	itext t 2 "y <- return $ x * 4", \t -> do
+	itext t 2 "mplus y", \t -> do
+	itext t 2 "z <- return 2", \t -> do
+	itext t 2 "w <- return $ z * 5", \t -> do
+	itext t 2 "mplus w", \t -> do
+	itext t 2 "v <- get", \t -> do
+	itext t 2 "return $ v * 7"
+ ]
+
+stateMonad13 :: Page
+stateMonad13 = [\t -> do
+	writeTopTitle t "Stateモナド", \t -> do
+	text t "* [変数] <- return [値]という形が出てきたが", \t -> do
+	itext t 1 "- この形にはlet [変数] = [値]という構文糖が使える", \t -> do
+	itext t 1 "- また、連続するletはひとつにまとめられる", \t -> do
+	itext t 1 "example''' = do", \t -> do
+	itext t 2 "let"
+	preLine t
+	itext t 3 "x = 3", \t -> do
+	itext t 3 "y = x * 4", \t -> do
+	itext t 2 "mplus y", \t -> do
+	itext t 2 "let"
+	preLine t
+	itext t 3 "z = 2", \t -> do
+	itext t 3 "w = z * 5", \t -> do
+	itext t 2 "mplus w", \t -> do
+	itext t 2 "v <- get", \t -> do
+	itext t 2 "return $ v * 7"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* (a -> m b)の形の関数を結合する規則が存在し", \t -> do
+	itext t 1 "- それがモナド則を満たせばmはモナドである", \t -> do
+	text t "* 以下の型の関数が必要である", \t -> do
+	itext t 1 "m a -> (a -> m b) -> m b", \t -> do
+	itext t 1 "a -> m a", \t -> do
+	text t "* 条件を満たせば何でもモナド", \t -> do
+	text t "* 今回はMaybeモナドとStateモナドを見た", \t -> do
+	text t "* その2つは中身は大きく異なるがともにモナドである", \t -> do
+	text t "* Monadクラスが用意されている", \t -> do
+	text t "* Monadクラスのインスタンスにするとdo記法が使える"
  ]
