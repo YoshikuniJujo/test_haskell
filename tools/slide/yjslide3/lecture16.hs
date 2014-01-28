@@ -13,7 +13,9 @@ main = runLecture [
 	aboutMaybe11, aboutMaybe12, aboutMaybe13, aboutMaybe14,
 	aboutMaybeSummary,
 	aboutState, aboutState2, aboutState3, aboutState4, aboutState5,
-	aboutState6, aboutState7, aboutState8, aboutState9
+	aboutState6, aboutState7, aboutState8, aboutState9, aboutState10,
+	aboutState11, aboutState12, aboutState13, aboutState14, aboutState15,
+	aboutState16
  ]
 
 prelude :: Page
@@ -443,4 +445,126 @@ aboutState9 = [\t -> do
 	text t "* 画面の値は与えられた関数で変化させる", \t -> do
 	itext t 1 "arrC f x m = (f x, m)", \t -> do
 	text t "* これらをcalc.hsに書き込もう"
+ ]
+
+arrC :: (a -> b) -> a -> Int -> (b, Int)
+arrC f x m = (f x, m)
+
+aboutState10 :: Page
+aboutState10 = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	text t "* 試してみよう", \t -> do
+	text t "* まずは単なる数字を入れてみる", \t -> do
+	text t "* 単なる数字を入れるには", \t -> do
+	itext t 1 "- 画面の値を無視して数を返す関数を使えば良いので", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> arrC (const 8) () 4", \t -> do
+	itext t 1 $ show $ arrC (const (8 :: Int)) () 4, \t -> do
+	itext t 1 "*Main> arrC (const 11) () 32", \t -> do
+	itext t 1 $ show $ arrC (const (11 :: Int)) () 32, \t -> do
+	text t "* メモリの値は変化せずに表示が与えられた数となる", \t -> do
+	text t "* 数字を入れる前に表示はクリアされている"
+ ]
+
+aboutState11 :: Page
+aboutState11 = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	text t "* 次は画面に数字が表示されている状態で", \t -> do
+	itext t 1 "- それに対する演算を行ってみる", \t -> do
+	itext t 1 "*Main> arrC (* 3) 2 5", \t -> do
+	itext t 1 $ show $ arrC (* (3 :: Int)) 2 5, \t -> do
+	itext t 1 "*Main> arrC (+ 8) 7 23", \t -> do
+	itext t 1 $ show $ arrC (+ (8 :: Int)) 7 23, \t -> do
+	text t "* メモリの値は変化しない", \t -> do
+	text t "* 画面の値に与えられた演算が行われている"
+ ]
+
+aboutState12 :: Page
+aboutState12 = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	text t "* arrCは十分に一般的に作ったので四則演算以外もできる", \t -> do
+	itext t 1 "*Main> arrC even 4 7", \t -> do
+	itext t 1 $ show $ arrC even (4 :: Int) 7, \t -> do
+	itext t 1 "*Main> :m + Data.Char", \t -> do
+	itext t 1 "*Main Data.Char> arrC chr 99 37", \t -> do
+	itext t 1 $ show $ arrC chr 99 37, \t -> do
+	text t "* 電卓のクリアキーは画面の値を無視して", \t -> do
+	itext t 1 "- 画面の値をクリア(ユニット値, ())するので", \t -> do
+	itext t 1 "*Main Data.Char> arrC (const ()) 37 8", \t -> do
+	itext t 1 $ show $ arrC (const ()) (37 :: Int) 8
+ ]
+
+aboutState13 :: Page
+aboutState13 = [\t -> do
+	writeTopTitle t "State", \t -> do
+	text t "* 今まで扱ってきた関数は共通の形を持っている", \t -> do
+	text t "* その共通部分を取り出すと以下のようになる", \t -> do
+	itext t 1 "a -> Int -> (b, Int)", \t -> do
+	itext t 1 "- aは直前の画面の値、1つめのIntは直前のメモリの値", \t -> do
+	itext t 1 "- bは直後の画面の値、2つめのIntは直後のメモリの値", \t -> do
+	text t "* 今後この型を頻繁に用いるので別名をつけておこう", \t -> do
+	itext t 1 "type Calc a b = a -> Int -> (b, Int)", \t -> do
+	text t "* たとえば以下のようになる", \t -> do
+	itext t 1 "mplus :: Calc Int ()", \t -> do
+	itext t 1 "mrecall :: Calc () Int", \t -> do
+	itext t 1 "arrC even :: Calc Int Bool", \t -> do
+	itext t 1 "arrC chr :: Calc Int Char"
+ ]
+
+aboutState14 :: Page
+aboutState14 = [\t -> do
+	writeTopTitle t "State", \t -> do
+	text t "* 計算の部品はそろったので次はそれを組み合わせよう", \t -> do
+	text t "* 組み合わせるための関数の型は以下の形となるはずだ", \t -> do
+	itext t 1 "pipeC :: Calc a b -> Calc b c -> Calc a c", \t -> do
+	itext t 1 "- 画面の値をaからbにする計算と", \t -> do
+	itext t 1 "- 画面の値をbからcにする計算とをつないで", \t -> do
+	itext t 1 "- 画面の値をaからcにする計算をつくる", \t -> do
+	text t "* 中身は以下のようになる", \t -> do
+	itext t 0 "f `pipeC` g = \\x m -> let (x', m') = f x m in g x' m'", \t -> do
+	text t "* let X in Yの形でXのなかで束縛した値をYのなかで使える", \t -> do
+	text t "* はじめの画面とメモリの値x, mをfに与え", \t -> do
+	itext t 1 "- その結果をx', m'に束縛し", \t -> do
+	itext t 1 "- x', m'をgに与えている"
+ ]
+
+aboutState15 :: Page
+aboutState15 = [\t -> do
+	writeTopTitle t "State"
+	text t "", \t -> do
+	text t "* これらをcalc.hsに書き込もう"
+	itext t 0 "type Calc a b = a -> Int -> (b, Int)"
+	itext t 0 "pipeC :: Calc a b -> Calc b c -> Calc a c"
+	itext t 0 "f `pipeC` g = \\x m -> let (x', m') = f x m in g x' m'", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> (arrC (const 3) `pipeC` arrC (* 2)) () 23", \t -> do
+	itext t 1 $ show $ (arrC (const (3 :: Int)) `pipeC` arrC (* 2)) () 23, \t -> do
+	itext t 1 "*Main> (arrC (const 4) `pipeC` mplus) () 3", \t -> do
+	itext t 1 $ show $ (arrC (const 4) `pipeC` mplus) () 3
+ ]
+
+type Calc a b = a -> Int -> (b, Int)
+
+pipeC :: Calc a b -> Calc b c -> Calc a c
+pipeC f g = \x m -> let (x', m') = f x m in g x' m'
+
+aboutState16 :: Page
+aboutState16 = [\t -> do
+	writeTopTitle t "State", \t -> do
+	text t "* 最初の例の(3 * 4 + 2 * 5) * 7を作ってみる", \t -> do
+	itext t 1 "example :: () -> Int -> (Int, Int)", \t -> do
+	itext t 1 "example =", \t -> do
+	itext t 2 "arrC (const 3) `pipeC`", \t -> do
+	itext t 2 "arrC (* 4) `pipeC`", \t -> do
+	itext t 2 "mplus `pipeC`", \t -> do
+	itext t 2 "arrC (const 2) `pipeC`", \t -> do
+	itext t 2 "arrC (* 5) `pipeC`", \t -> do
+	itext t 2 "mplus `pipeC`", \t -> do
+	itext t 2 "mrecall `pipeC`", \t -> do
+	itext t 2 "arrC (* 7)", \t -> do
+	text t "* これをcalc.hsに書き込もう"
  ]

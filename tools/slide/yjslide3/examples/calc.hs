@@ -15,10 +15,12 @@ f `pipeC` g = \x m -> let (x', m') = f x m in g x' m'
 example :: () -> Int -> (Int, Int)
 example =
 	arrC (const 3) `pipeC`
-	arrC (* 4) `pipeC`
+	arrC (*) `pipeC`
+	arrC ($ 4) `pipeC`
 	mplus `pipeC`
 	arrC (const 2) `pipeC`
-	arrC (* 5) `pipeC`
+	arrC (*) `pipeC`
+	arrC ($ 5) `pipeC`
 	mplus `pipeC`
 	mrecall `pipeC`
 	arrC (* 7)
