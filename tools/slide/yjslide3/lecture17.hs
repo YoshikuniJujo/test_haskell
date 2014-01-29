@@ -1,3 +1,5 @@
+import Data.Char
+
 import Lecture
 
 subtitle :: String
@@ -8,7 +10,10 @@ main = runLecture [
 	[flip writeTitle subtitle], prelude,
 	aboutModule,
 	cagedLion, cagedLion2, cagedLion3, cagedLion4, cagedLion5,
-	cagedLion6, cagedLion7, cagedLion8, cagedLion9, cagedLion10
+	cagedLion6, cagedLion7, cagedLion8, cagedLion9, cagedLionSummary,
+	aboutLogger, aboutLogger2, aboutLogger3, aboutLogger4, aboutLogger5,
+	aboutLogger6, aboutLogger7, aboutLogger8, aboutLogger9, aboutLogger10,
+	aboutLogger11, aboutLogger12, aboutLogger13
  ]
 
 prelude :: Page
@@ -196,8 +201,8 @@ cagedLion9 = [\t -> do
 	text t "* 餌を与えた後はちゃんと檻にもどしてあげる必要がある"
  ]
 
-cagedLion10 :: Page
-cagedLion10 = [\t -> do
+cagedLionSummary :: Page
+cagedLionSummary = [\t -> do
 	writeTopTitle t "ライオンの檻(まとめ)"
 	text t "", \t -> do
 	text t "* 檻に入れたライオンを輸出するモジュールを作った", \t -> do
@@ -208,4 +213,209 @@ cagedLion10 = [\t -> do
 	text t "* モジュールを使って内部構造を隠蔽することができる", \t -> do
 	text t "* CagedやLionの値構築子を輸出していないので", \t -> do
 	text t "* 内部構造の変更は安全"
+ ]
+
+aboutLogger :: Page
+aboutLogger = [\t -> do
+	writeTopTitle t "計算のログ"
+	text t "", \t -> do
+	text t "* モナドとは単なる形式である", \t -> do
+	text t "* 以下の型の関数が存在しモナド則を満たせばすべてモナド", \t -> do
+	itext t 1 "m a -> (a -> m b) -> m b", \t -> do
+	itext t 1 "a -> m a", \t -> do
+	text t "* 以下のように書いても同じこと", \t -> do
+	itext t 1 "(a -> m b) -> (b -> m c) -> (a -> m c)", \t -> do
+	itext t 1 "(a -> b) -> (a -> m b)", \t -> do
+	text t "* モナドという性質を共有していてもその中身は様々", \t -> do
+	text t "* 今回の演習では計算のログを取るモナドを取み立ててみよう"
+ ]
+
+aboutLogger2 :: Page
+aboutLogger2 = [\t -> do
+	writeTopTitle t "計算のログ"
+	text t "", \t -> do
+	text t "* 計算をしながら計算のログ(記録)を取っていくモナドを作る", \t -> do
+	text t "* ログは文字列のリストとしよう", \t -> do
+	text t "* 例えば以下の関数があり", \t -> do
+	itext t 1 "toCode :: Char -> Logger Int", \t -> do
+	text t "* toCode 'c'は", \t -> do
+	itext t 1 "- ログとして[\"toCode 'c'\"]を持ち", \t -> do
+	itext t 1 "- 計算の結果として99を持つ", \t -> do
+	text t "* つまり、Logger型は文字列のリストと結果の値を持つ", \t -> do
+	text t "* 演習17-1. Logger型を定義してみよう", \t -> do
+	itext t 1 "(1分)"
+ ]
+
+aboutLogger3 :: Page
+aboutLogger3 = [\t -> do
+	writeTopTitle t "計算のログ"
+	text t "", \t -> do
+	text t "* できただろうか?", \t -> do
+	text t "* できなくても大丈夫", \t -> do
+	text t "* 大切なのは「頭を悩ませた」ということ", \t -> do
+	text t "* 自分で考えたあとの解説は記憶に残りやすいし", \t -> do
+	text t "* 以下の項目について理解する助けになる", \t -> do
+	itext t 1 "- 「どうしてそうなのか」", \t -> do
+	itext t 1 "- 「どうしてそうじゃないのか」", \t -> do
+	text t "* 「理解」とは段階的なもの", \t -> do
+	itext t 1 "- 何度も塗ることですこしずつ濃くしていけば良い", \t -> do
+	itext t 1 "- 演者自身もHaskellの理解を日々濃くしている"
+ ]
+
+aboutLogger4 :: Page
+aboutLogger4 = [\t -> do
+	writeTopTitle t "計算のログ"
+	text t "", \t -> do
+	text t "* Logger型の定義は", \t -> do
+	itext t 1 "data Logger a = Logger [String] a", \t -> do
+	text t "* 解答は同じだっただろうか", \t -> do
+	text t "* 答えはひとつではない", \t -> do
+	text t "* 以下の解も正解とする", \t -> do
+	itext t 1 "newtype Logger a = Logger ([String], a)", \t -> do
+	itext t 1 "data Logger a = Logger ([String], a)", \t -> do
+	itext t 1 "type Logger a = ([String], a)", \t -> do
+	text t "* もちろん[String]とaの順番が逆でも正解"
+ ]
+
+aboutLogger5 :: Page
+aboutLogger5 = [\t -> do
+	writeTopTitle t "計算のログ"
+	text t "", \t -> do
+	text t "* 今後の流れのために他の答えを出した人も以下を使おう", \t -> do
+	itext t 1 "data Logger a = Logger [String] a deriving Show", \t -> do
+	text t "* これをlogger.hsに書き込もう", \t -> do
+	text t "* ログを残しつつ文字コードを求める関数", \t -> do
+	itext t 1 "toCode :: Char -> Logger Int", \t -> do
+	text t "* 以下のような値を返すものをするとする", \t -> do
+	itext t 1 "toCode 'c'", \t -> do
+	arrowIText t 1 "Logger [\"toCode 'c'\"] 99", \t -> do
+	text t "* 演習17-2. toCodeを定義しよう", \t -> do
+	itext t 1 "(import Data.Char (ord)が必要)", \t -> do
+	itext t 1 "(1分)"
+ ]
+
+aboutLogger6 :: Page
+aboutLogger6 = [\t -> do
+	writeTopTitle t "計算のログ"
+	text t "", \t -> do
+	text t "* 解答は以下のようになる", \t -> do
+	itext t 1 "toCode :: Char -> Logger Int", \t -> do
+	itext t 1 "toCode c = Logger (\"toCode \" ++ show c) (ord c)", \t -> do
+	text t "* 以下とあわせてlogger.hsに書き込もう", \t -> do
+	itext t 1 "import Data.Char (ord)", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 1 "Prelude Lion> :load logger.hs", \t -> do
+	itext t 1 "*Main> toCode 'c'", \t -> do
+	itext t 1 $ show $ toCode 'c'
+ ]
+
+data Logger a = Logger [String] a deriving Show
+
+toCode :: Char -> Logger Int
+toCode c = Logger ["toCode " ++ show c] (ord c)
+
+aboutLogger7 :: Page
+aboutLogger7 = [\t -> do
+	writeTopTitle t "計算のログ"
+	text t "", \t -> do
+	text t "* 次に以下の関数を作ろうと思うのだが", \t -> do
+	itext t 1 "double :: Int -> Logger Int", \t -> do
+	itext t 1 "double 3", \t -> do
+	arrowIText t 1 "Logger \"double 3\" 6", \t -> do
+	text t "* その前に文字列をログにする関数を書こう", \t -> do
+	text t "* 以下のような型になる", \t -> do
+	itext t 1 "tell :: String -> Logger ()", \t -> do
+	text t "* ログのほうだけを扱う関数なので", \t -> do
+	itext t 1 "Logger aのaの部分を()で埋めている", \t -> do
+	text t "* 演習17-3. tellを定義せよ", \t -> do
+	itext t 1 "(1分)"
+ ]
+
+tell :: String -> Logger ()
+tell l = Logger [l] ()
+
+aboutLogger8 :: Page
+aboutLogger8 = [\t -> do
+	writeTopTitle t "計算のログ"
+	text t "", \t -> do
+	text t "* 以下のようになる", \t -> do
+	itext t 1 "tell :: String -> Logger ()", \t -> do
+	itext t 1 "tell l = Logger [l] ()", \t -> do
+	text t "* これをlogger.hsに書き込もう", \t -> do
+	text t "* これを使ってtoCodeを再定義したい", \t -> do
+	text t "* さっきのtoCodeの定義を以下のように書き換えよう", \t -> do
+	itext t 1 "toCode c ="
+	itext t 2 "tell (\"toCode \" ++ show c) >> return (ord c)", \t -> do
+	text t "* toCodeを以下の2つの部分に分けて構築している", \t -> do
+	itext t 1 "- ログを追加", \t -> do
+	itext t 1 "- 文字コードを返す"
+ ]
+
+aboutLogger9 :: Page
+aboutLogger9 = [\t -> do
+	writeTopTitle t "計算のログ"
+	text t "", \t -> do
+	text t "* 新しいtoCodeの定義はまだ使えない", \t -> do
+	text t "* LoggerをMonadクラスのインスタンスにする必要がある", \t -> do
+	text t "* 以下の関数を定義する必要がある", \t -> do
+	itext t 1 "return :: a -> Logger a", \t -> do
+	itext t 1 "(>>=) :: Logger a -> (a -> Logger b) -> Logger b", \t -> do
+	text t "* まずは簡単なほうから", \t -> do
+	text t "* returnは「何もせずに」値を包み込む関数", \t -> do
+	text t "* Loggerについて言えば「ログを変化させずに」ということ", \t -> do
+	itext t 1 "- ログを空にしておけば良い", \t -> do
+	text t "* 演習17-4. Loggerのreturnを定義せよ", \t -> do
+	itext t 1 "(1分)"
+ ]
+
+instance Monad Logger where
+	return = Logger []
+
+aboutLogger10 :: Page
+aboutLogger10 = [\t -> do
+	writeTopTitle t "計算のログ"
+	text t "", \t -> do
+	text t "* 以下のようになる", \t -> do
+	itext t 1 "return x = Logger [] x", \t -> do
+	text t "* これは以下のようにできる", \t -> do
+	itext t 1 "return = Logger []", \t -> do
+	text t "* これはMonadクラスのクラス関数なので", \t -> do
+	itext t 1 "instance Monad Logger where", \t -> do
+	itext t 2 "return = Logger []", \t -> do
+	text t "* これをlogger.hsに書き込もう"
+ ]
+
+aboutLogger11 :: Page
+aboutLogger11 = [\t -> do
+	writeTopTitle t "計算のログ"
+	text t "", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "((>>=)が定義されていないというWarningが出る)", \t -> do
+	itext t 1 "*Main> return 8 :: Logger Int", \t -> do
+	itext t 1 $ show $ (return 8 :: Logger Int), \t -> do
+	text t "* 問題なく定義できているようだ"
+ ]
+
+aboutLogger12 :: Page
+aboutLogger12 = [\t -> do
+	writeTopTitle t "計算のログ"
+	text t "", \t -> do
+	text t "* それでは(>>=)の定義に移ろう", \t -> do
+	itext t 1 "(>>=) :: Logger a -> (a -> Logger b) -> Logger b", \t -> do
+	text t "* この関数に何をして欲しいか考える", \t -> do
+	itext t 1 "- 第一引数のa型の値を第二引数である関数にわたして", \t -> do
+	itext t 1 "- 出てきた結果について", \t -> do
+	itext t 2 "ログのほうは第一引数のログに追加し", \t -> do
+	itext t 2 "b型の値のほうは結果の値とする", \t -> do
+	text t "* 演習17-5. Loggerの(>>=)を定義せよ", \t -> do
+	itext t 1 "(2分)"
+ ]
+
+aboutLogger13 :: Page
+aboutLogger13 = [\t -> do
+	writeTopTitle t "計算のログ"
+	text t "", \t -> do
+	text t "* 難しかったかもしれない", \t -> do
+	text t "* 順を追って見ていこう"
  ]
