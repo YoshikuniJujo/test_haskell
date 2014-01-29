@@ -13,7 +13,8 @@ main = runLecture [
 	cagedLion6, cagedLion7, cagedLion8, cagedLion9, cagedLionSummary,
 	aboutLogger, aboutLogger2, aboutLogger3, aboutLogger4, aboutLogger5,
 	aboutLogger6, aboutLogger7, aboutLogger8, aboutLogger9, aboutLogger10,
-	aboutLogger11, aboutLogger12, aboutLogger13
+	aboutLogger11, aboutLogger12, aboutLogger13, aboutLogger14,
+	aboutLogger15, aboutLogger16, aboutLogger17, aboutLogger18
  ]
 
 prelude :: Page
@@ -311,8 +312,10 @@ aboutLogger6 = [\t -> do
 
 data Logger a = Logger [String] a deriving Show
 
-toCode :: Char -> Logger Int
+toCode, toCode' :: Char -> Logger Int
 toCode c = Logger ["toCode " ++ show c] (ord c)
+
+toCode' c = tell ("toCode " ++ show c) >> return (ord c)
 
 aboutLogger7 :: Page
 aboutLogger7 = [\t -> do
@@ -370,6 +373,7 @@ aboutLogger9 = [\t -> do
 
 instance Monad Logger where
 	return = Logger []
+	Logger l x >>= f = let Logger l' x' = f x in Logger (l ++ l') x'
 
 aboutLogger10 :: Page
 aboutLogger10 = [\t -> do
@@ -412,10 +416,96 @@ aboutLogger12 = [\t -> do
 	itext t 1 "(2分)"
  ]
 
+
 aboutLogger13 :: Page
 aboutLogger13 = [\t -> do
 	writeTopTitle t "計算のログ"
 	text t "", \t -> do
 	text t "* 難しかったかもしれない", \t -> do
-	text t "* 順を追って見ていこう"
+	text t "* 順を追って見ていこう", \t -> do
+	text t "* まずは引数のパターンマッチの部分を作ろう", \t -> do
+	itext t 1 "(>>=) :: Logger a -> (a -> Logger b) -> Logger b", \t -> do
+	text t "* 第一引数のLogger aは中身のログと値を使う", \t -> do
+	text t "* 第二引数は関数なのでパターンマッチはできない", \t -> do
+	itext t 1 "Logger l x >>= f = ...", \t -> do
+	text t "* 第一引数の値にfを適用した結果が必要なので", \t -> do
+	itext t 1 "Logger l x >>= f = ... f x ..."
+ ]
+
+aboutLogger14 :: Page
+aboutLogger14 = [\t -> do
+	writeTopTitle t "計算のログ"
+	text t "", \t -> do
+	text t "* 型とできた部分までを再掲する", \t -> do
+	itext t 1 "(>>=) :: Logger a -> (a -> Logger b) -> Logger b", \t -> do
+	itext t 1 "Logger l x >>= f = ... f x ...", \t -> do
+	text t "* f xの結果のログと値を別々に使うのでパターンマッチする", \t -> do
+	itext t 1 "Logger l x >>= f = let Logger l' x' = f x in ...", \t -> do
+	text t "* 新しいログは古いログに追加し新しい値はそのまま返すので", \t -> do
+	itext t 1 "Logger l x >>= f ="
+	itext t 1.8 "let Logger l' x' = f x in Logger (l ++ l') x'"
+ ]
+
+aboutLogger15 :: Page
+aboutLogger15 = [\t -> do
+	writeTopTitle t "計算のログ", \t -> do
+	text t "* logger.hsのインスタンス宣言に追加しよう", \t -> do
+	itext t 0 "instance Monad Logger where", \t -> do
+	itext t 1 "return = Logger []", \t -> do
+	itext t 1 "Logger l x >>= f ="
+	itext t 1.8 "let Logger l' x' = f x in Logger (l ++ l') x'", \t -> do
+	text t "* これで前に再定義したtoCodeが動くようになる", \t -> do
+	itext t 1 "toCode c ="
+	itext t 2 "tell (\"toCode \" ++ show c) >> return (ord c)", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> toCode 'c'", \t -> do
+	itext t 1 $ show $ toCode' 'c'
+ ]
+
+double :: Int -> Logger Int
+double n = tell ("double " ++ show n) >> return (n * 2)
+
+aboutLogger16 :: Page
+aboutLogger16 = [\t -> do
+	writeTopTitle t "計算のログ"
+	text t "", \t -> do
+	text t "* 次に以下のように整数を2倍するdoubleを考える", \t -> do
+	itext t 1 "double :: Int -> Logger Int", \t -> do
+	itext t 1 "double 8", \t -> do
+	arrowIText t 1 $ show $ double 8, \t -> do
+	text t "* これもtoCodeと同じように定義できる", \t -> do
+	text t "* 演習17-6. doubleを定義せよ", \t -> do
+	itext t 1 "(1分)"
+ ]
+
+aboutLogger17 :: Page
+aboutLogger17 = [\t -> do
+	writeTopTitle t "計算のログ"
+	text t "", \t -> do
+	text t "* 以下のようになる。logger.hsに書き込もう", \t -> do
+	itext t 1 "double :: Int -> Logger Int"
+	itext t 1 "double n ="
+	itext t 2 "tell (\"double \" ++ show n) >> return (n * 2)", \t -> do
+	text t "* toCodeとdoubleを使えば", \t -> do
+	itext t 1 "- ログを記録しながら", \t -> do
+	itext t 1 "- 文字コードを2倍する関数toCodeDoubleが作れる", \t -> do
+	text t "* 演習17-7. toCodeDoubleを定義せよ", \t -> do
+	itext t 1 "(1分)"
+ ]
+
+toCodeDouble :: Char -> Logger Int
+toCodeDouble c = toCode c >>= double
+
+aboutLogger18 :: Page
+aboutLogger18 = [\t -> do
+	writeTopTitle t "計算のログ"
+	text t "", \t -> do
+	text t "* 以下のようになる", \t -> do
+	itext t 1 "toCodeDouble c :: Char -> Logger Int", \t -> do
+	itext t 1 "toCodeDouble c = toCode c >>= double", \t -> do
+	text t "* logger.hsに書き込み、試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> toCodeDouble 'c'", \t -> do
+	itext t 1 $ show $ toCodeDouble 'c'
  ]
