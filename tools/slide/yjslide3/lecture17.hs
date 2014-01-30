@@ -14,7 +14,9 @@ main = runLecture [
 	aboutLogger, aboutLogger2, aboutLogger3, aboutLogger4, aboutLogger5,
 	aboutLogger6, aboutLogger7, aboutLogger8, aboutLogger9, aboutLogger10,
 	aboutLogger11, aboutLogger12, aboutLogger13, aboutLogger14,
-	aboutLogger15, aboutLogger16, aboutLogger17, aboutLogger18
+	aboutLogger15, aboutLogger16, aboutLogger17, aboutLogger18,
+	aboutLogger19,
+	summary
  ]
 
 prelude :: Page
@@ -174,7 +176,7 @@ cagedLion8 :: Page
 cagedLion8 = [\t -> do
 	writeTopTitle t "ライオンの檻"
 	text t "", \t -> do
-	text t "* 文明社会のなかでライオンと戯むれたい", \t -> do
+	text t "* 文明社会のなかでライオンと戯れたい", \t -> do
 	text t "* Lionモジュールの外にいてLionモジュールをimportしたい", \t -> do
 	text t "* ghciでは以下のようにする", \t -> do
 	itext t 1 "*Lion> :m Lion", \t -> do
@@ -508,4 +510,35 @@ aboutLogger18 = [\t -> do
 	itext t 1 "*Main> :reload", \t -> do
 	itext t 1 "*Main> toCodeDouble 'c'", \t -> do
 	itext t 1 $ show $ toCodeDouble 'c'
+ ]
+
+aboutLogger19 :: Page
+aboutLogger19 = [\t -> do
+	writeTopTitle t "計算のログ(まとめ)"
+	text t "", \t -> do
+	text t "* モナドとは型mについて", \t -> do
+	itext t 1 "- (a -> m b)型の関数を次々につなげられるという性質", \t -> do
+	text t "* 中身は何であれその性質を満たせばモナドである", \t -> do
+	text t "* 結果とその過程を保存するモナドLoggerを作った", \t -> do
+	itext t 1 "data Logger a = Logger [String] a", \t -> do
+	text t "* Monadクラスへのインスタンス宣言は以下のようになる", \t -> do
+	itext t 1 "instance Monad Logger where", \t -> do
+	itext t 2 "return = Logger []", \t -> do
+	itext t 2 "Logger l x >>= f = let (l', x') = f x in"
+	itext t 3 "Logger (l ++ l') x'", \t -> do
+	text t "* 関数適用の裏でログを結合している"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* ライオンをいれておく檻であるCaged型を作った", \t -> do
+	text t "* Lion型やCaged型の値構築子を隠蔽することで", \t -> do
+	itext t 1 "- 檻の外でライオンが作れないようにし", \t -> do
+	itext t 1 "- 檻からライオンを出しっぱなしにできないようにした", \t -> do
+	text t "* モナド関数のみを使うことで", \t -> do
+	itext t 1 "- 檻から出したライオンを檻にもどすことを強制できる", \t -> do
+	text t "* 演習では計算のログを保存するモナドを作ってみた", \t -> do
+	text t "* このモナドでは表の計算と裏でのログの結合とが行われる"
  ]
