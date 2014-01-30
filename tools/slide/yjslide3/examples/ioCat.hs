@@ -4,6 +4,7 @@ import Prelude hiding (id, (.))
 
 import Control.Category
 import Control.Applicative
+import System.Random
 
 newtype IOMcn a b = IOMcn { runIOMcn :: a -> IO b }
 
@@ -83,3 +84,30 @@ test5 a b str = arr (const str) >>> addReversible a b
 -- (a, b) -> (IOMcn b c, b)
 -- IOMcn (a, b) (IOMcn b c, b)
 -- IOMcn (a, b) c
+
+isEven :: IOMcn () Bool
+isEven = IOMcn $ const $ randomIO
+
+message :: Bool -> IOMcn String ()
+message True = arr reverse >>> putStrLnM
+message False = putStrLnM
+
+strEven :: IOMcn String (Bool, String)
+strEven = arr (() ,) >>> first isEven
+
+evenReverse :: IOMcn String ()
+evenReverse = arr (() ,) >>> first (isEven >>> arr message) >>> app
+
+first :: IOMcn a b -> IOMcn (a, c) (b, c)
+first m = arr (\(p@(_, y)) -> (arr fst >>> m >>> arr (, y), p)) >>> app
+
+second :: IOMcn a b -> IOMcn (c, a) (c, b)
+second m = arr (\(x, y) -> (y, x)) >>> first m >>> arr (\(x, y) -> (y, x))
+
+-- IOMcn (IOMcn (a, c) b, (a, c))
+--
+-- some :: IOMcn (a, c) b
+-- some = arr fst >>> m
+--
+-- other :: IOMcn b (b, c)
+-- other = arr (, y)
