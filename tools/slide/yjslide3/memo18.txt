@@ -183,3 +183,14 @@ app :: (a -> IO b, a) -> IO b
 	app' :: (a -> IO b) -> a -> IO b
 	app' = id
 	app = uncurry id
+
+---
+
+なかなか良い例がないが、
+app :: IOMcn (IOMcn a b, a) b
+を直接使えるようなものを考えると以下のようになる。
+
+some :: Bool -> (IOMcn String (), String)
+some :: String -> Bool -> (IOMcn String (), String)
+
+some :: :q

@@ -104,6 +104,17 @@ first m = arr (\(p@(_, y)) -> (arr fst >>> m >>> arr (, y), p)) >>> app
 second :: IOMcn a b -> IOMcn (c, a) (c, b)
 second m = arr (\(x, y) -> (y, x)) >>> first m >>> arr (\(x, y) -> (y, x))
 
+message' :: Bool -> (IOMcn String (), String)
+message' b = (message b, "hello")
+
+evenOlleh, evenOlleh' :: IOMcn () ()
+evenOlleh = isEven >>> arr message' >>> app
+
+evenOlleh' = isEven >>> arr (\b -> (message b, "hello")) >>> app
+
+-- evenReverse' :: IOMcn String ()
+-- evenReverse' = arr (\s -> isEven >>> arr (message' s) >>> app) >>> app
+
 -- IOMcn (IOMcn (a, c) b, (a, c))
 --
 -- some :: IOMcn (a, c) b
@@ -111,3 +122,9 @@ second m = arr (\(x, y) -> (y, x)) >>> first m >>> arr (\(x, y) -> (y, x))
 --
 -- other :: IOMcn b (b, c)
 -- other = arr (, y)
+
+outArg :: IOMcn a b -> a -> IOMcn () b
+outArg iom x = arr (const x) >>> iom
+
+inArg :: (a -> IOMcn () b) -> IOMcn a b
+inArg f = arr (\x -> (f x, ())) >>> app

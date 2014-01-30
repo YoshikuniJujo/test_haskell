@@ -7,7 +7,9 @@ main :: IO ()
 main = runLecture [
 	[flip writeTitle subtitle], prelude, prelude2,
 	machine, machine2, machine3, machine4, machine5, machine6,
-	machine7, machine8, machine9, machine10, machine11, machine12
+	machine7, machine8, machine9, machine10, machine11, machine12,
+	machine13, machine14, machine15, machine16, machine17, machineSummary,
+	aboutIO, aboutIO2, aboutIO3, aboutIO4, aboutIO5
  ]
 
 prelude :: Page
@@ -67,7 +69,7 @@ machine2 = [\t -> do
 	text t "* 入力値を次の機械にわたす必要が出てくるからだ", \t -> do
 	text t "* つまり機械のあいだで値をわたす仕組みが必要だ", \t -> do
 	text t "* ひとつめの機械からふたつめの機械に値をさたす関数", \t -> do
-	itext t 1 "pipe :: Machine -> Machine -> Machine"
+	itext t 1 "(>>>) :: Machine -> Machine -> Machine"
  ]
 
 machine3 :: Page
@@ -78,7 +80,7 @@ machine3 = [\t -> do
 	itext t 1 "- getLine: 入力を一行読み、次の機械に渡す機械", \t -> do
 	itext t 1 "- putLine: 渡された値を表示する機械", \t -> do
 	text t "* 読み込んだ行を表示する機械は以下のように作れる", \t -> do
-	itext t 1 "getLine `pipe` putLine"
+	itext t 1 "getLine >>> putLine"
  ]
 
 machine4 :: Page
@@ -89,7 +91,7 @@ machine4 = [\t -> do
 	text t "* 以下の機械があるとする", \t -> do
 	itext t 1 "- getInt: 入力を読み、数に変換し次の機械に渡す機械", \t -> do
 	text t "* そして次のようにすると", \t -> do
-	itext t 1 "getInt `pipe` putLine", \t -> do
+	itext t 1 "getInt >>> putLine", \t -> do
 	text t "* putLineは文字列が来ることを期待しているので", \t -> do
 	itext t 1 "- 数を渡されると予測出来ない動作をするだろう"
  ]
@@ -116,7 +118,7 @@ machine6 = [\t -> do
 	itext t 1 "getInt :: IOMcn () Int", \t -> do
 	itext t 1 "putLine :: IOMcn String ()", \t -> do
 	text t "* これらをつなぐ関数は以下のような型となる", \t -> do
-	itext t 1 "pipe :: IOMcn a b -> IOMcn b c -> IOMcn a c"
+	itext t 1 "(>>>) :: IOMcn a b -> IOMcn b c -> IOMcn a c"
  ]
 
 machine7 :: Page
@@ -124,14 +126,14 @@ machine7 = [\t -> do
 	writeTopTitle t "IOMcn"
 	text t "", \t -> do
 	text t "* 例えば以下のようなつなぎかたは正当", \t -> do
-	itext t 1 "getLine `pipe` putLine", \t -> do
+	itext t 1 "getLine >>> putLine", \t -> do
 	text t "* この場合それぞれの型は以下のようになる", \t -> do
 	itext t 1 "getLine :: IOMcn () String", \t -> do
 	itext t 1 "putLine :: IOMcn String ()", \t -> do
-	itext t 1 "pipe :: IOMcn () String ->"
+	itext t 1 "(>>>) :: IOMcn () String ->"
 	itext t 2 "IOMcn String () -> IOMcn () ()", \t -> do
 	text t "* つないだ結果の型は", \t -> do
-	itext t 1 "getLIne `pipe` putLine :: IOMcn () ()"
+	itext t 1 "getLIne >>> putLine :: IOMcn () ()"
  ]
 
 machine8 :: Page
@@ -139,10 +141,10 @@ machine8 = [\t -> do
 	writeTopTitle t "IOMcn"
 	text t "", \t -> do
 	text t "* しかし、以下のつなぎかたは型の不適合となる", \t -> do
-	itext t 1 "getInt `pipe` putLine", \t -> do
-	text t "* pipeの型を再掲する", \t -> do
-	itext t 1 "pipe :: IOMcn a b -> IOMcn b c -> IOMcn a c", \t -> do
-	text t "* pipeのbの型が", \t -> do
+	itext t 1 "getInt >>> putLine", \t -> do
+	text t "* (>>>)の型を再掲する", \t -> do
+	itext t 1 "(>>>) :: IOMcn a b -> IOMcn b c -> IOMcn a c", \t -> do
+	text t "* (>>>)のbの型が", \t -> do
 	itext t 1 "- getIntからはIntであることを要求され", \t -> do
 	itext t 1 "- putLineからはStringであることを要求される", \t -> do
 	text t "* 結果として型エラーとなる"
@@ -154,14 +156,14 @@ machine9 :: Page
 machine9 = [\t -> do
 	writeTopTitle t "IOMcn"
 	text t "", \t -> do
-	text t "* pipeを使えば次々と機械をつないでいくことができる", \t -> do
-	itext t 1 "m1 `pipe` m2 `pipe` m3 `pipe` m4 `pipe` ...", \t -> do
+	text t "* (>>>)を使えば次々と機械をつないでいくことができる", \t -> do
+	itext t 1 "m1 >>> m2 >>> m3 >>> m4 >>> ...", \t -> do
 	text t "* 途中に普通の関数をはさみたいこともある", \t -> do
 	itext t 1 "- 入力された文字列を逆にして表示したい等々", \t -> do
 	text t "* 関数を機械に変換する関数が必要になる", \t -> do
-	itext t 1 "arrM :: (a -> b) -> IOMcn a b", \t -> do
+	itext t 1 "arr :: (a -> b) -> IOMcn a b", \t -> do
 	text t "* これを使うと入力を逆順にして表示は", \t -> do
-	itext t 1 "getLine `pipe` arrM reverse `pipe` putLine"
+	itext t 1 "getLine >>> arr reverse >>> putLine"
  ]
 
 machine10 :: Page
@@ -171,19 +173,20 @@ machine10 = [\t -> do
 	text t "* 関数がIOMcnに変換できるということは", \t -> do
 	itext t 1 "- 普通の値を機械に流し込むことができるということ", \t -> do
 	text t "* たとえば\"Hello\"を機械に流し込むには以下のようにする", \t -> do
-	itext t 1 "arrM (const \"Hello\") `pipe` putLine", \t -> do
+	itext t 1 "arr (const \"Hello\") >>> putLine", \t -> do
 	text t "* 引き数を無視し\"Hello\"を返す関数を機械に変換し", \t -> do
 	itext t 1 "- その機械と機械putLineとをつないだ", \t -> do
 	text t "* つまりputHello, putWorldは以下のように定義できる", \t -> do
-	itext t 1 "putHello = arrM (const \"Hello\") `pipe` putLine", \t -> do
-	itext t 1 "putWorld = arrM (const \"World\") `pipe` putLine"
+	itext t 1 "putHello = arr (const \"Hello\") >>> putLine", \t -> do
+	itext t 1 "putWorld = arr (const \"World\") >>> putLine"
  ]
 
 machine11 :: Page
 machine11 = [\t -> do
-	writeTopTitle t "IOMcn"
-	text t "", \t -> do
-	text t "* 偶数の日には文字を逆から読みたい人がいたとする", \t -> do
+	writeTopTitle t "IOMcn", \t -> do
+	text t "* 以下のようなあいさつをする機械が作りたい", \t -> do
+	itext t 1 "- 奇数の日には\"hello\"", \t -> do
+	itext t 1 "- 偶数の日には\"olleh\"", \t -> do
 	text t "* 今日が偶数の日かどうかを返す機械はあると考えよう", \t -> do
 	itext t 0.8 "isEven :: IOMcn () Bool", \t -> do
 	text t "* Bool値によって以下のどちらかを返す関数", \t -> do
@@ -191,7 +194,7 @@ machine11 = [\t -> do
 	itext t 1 "- メッセージを逆順で表示する機械", \t -> do
 	text t "* その関数をmessageという名前で定義する", \t -> do
 	itext t 1 "message :: Bool -> IOMcn String ()", \t -> do
-	itext t 1 "message True = arrM reverse `pipe` putLine", \t -> do
+	itext t 1 "message True = arr reverse >>> putLine", \t -> do
 	itext t 1 "message False = putLine"
 
  ]
@@ -203,11 +206,172 @@ machine12 = [\t -> do
 	text t "* 以下の機械と関数がある", \t -> do
 	itext t 1 "isEven :: IOMcn () Bool", \t -> do
 	itext t 1 "message :: Bool -> IOMcn String ()", \t -> do
-	text t "* arrMとpipeを使って組み合わせて以下の動作の機械を作る", \t -> do
-	itext t 1 "- 偶数の日には渡された文字列を逆順で表示する", \t -> do
+	text t "* arrと>>>を使って組み合わせて以下の動作の機械を作る", \t -> do
+	itext t 1 "- 奇数の日には\"hello\"を表示し", \t -> do
+	itext t 1 "- 偶数の日には\"hello\"を逆順で表示する", \t -> do
 	text t "* 渡されたBool値を受け取るにはmessage関数を機械にする", \t -> do
-	itext t 1 "arrM message :: IOMcn Bool (IOMcn String ())", \t -> do
+	itext t 1 "arr message :: IOMcn Bool (IOMcn String ())", \t -> do
 	text t "* これとisEvenをつなげると", \t -> do
-	itext t 1 "isEven `pipe` arrM message ::"
+	itext t 1 "isEven >>> arr message ::"
 	itext t 2 "IOMcn () (IOMcn String ())"
+ ]
+
+machine13 :: Page
+machine13 = [\t -> do
+	writeTopTitle t "IOMcn"
+	text t "", \t -> do
+	text t "* isEven >>> arr messageの型を見ると", \t -> do
+	itext t 1 "IOMcn () (IOMcn String ())", \t -> do
+	text t "* 機械を渡す機械ができてしまっている", \t -> do
+	text t "* IOMcn String ()を動かすにはStringを渡す必要がある", \t -> do
+	text t "* IOMcn String ()にStringを渡す機械が必要", \t -> do
+	text t "* より一般的にはIOMcn a bにaを渡す機械が必要になる", \t -> do
+	itext t 1 "app :: IOMcn (IOMcn a b, a) b", \t -> do
+	text t "* 「aを受け取りbを渡す機械」を受け取りbを渡す機械", \t -> do
+	text t "* appを使うには以下の型の機械が必要になる", \t -> do
+	itext t 1 "IOMcn () (IOMcn String (), String)"
+ ]
+
+machine14 :: Page
+machine14 = [\t -> do
+	writeTopTitle t "IOMcn"
+	text t "", \t -> do
+	text t "* 以下の型の機械と関数がある", \t -> do
+	itext t 1 "isEven :: IOMcn () Bool", \t -> do
+	itext t 1 "message :: Bool -> IOMcn String ()", \t -> do
+	text t "* 組み合わせるための道具には以下のものがある", \t -> do
+	itext t 1 "arr :: (a -> b) -> IOMcn a b", \t -> do
+	itext t 1 "(>>>) :: IOMcn a b -> IOMcn b c -> IOMcn a c", \t -> do
+	itext t 1 "app :: IOMcn (IOMcn a b, a) b", \t -> do
+	text t "* 今、作りたい機械の型は", \t -> do
+	itext t 1 "IOMcn () (IOMcn String (), String)", \t -> do
+	text t "* この型の関数は以下の型の関数とisEvenをつなげばできる", \t -> do
+	itext t 1 "IOMcn Bool (IOMcn String (), String)"
+ ]
+
+machine15 :: Page
+machine15 = [\t -> do
+	writeTopTitle t "IOMcn"
+	text t "", \t -> do
+	text t "* 以下の型の関数を作るには", \t -> do
+	itext t 1 "IOMcn Bool (IOMcn String (), String)", \t -> do
+	text t "* 以下の型の関数にarrを適用すれば良い", \t -> do
+	itext t 1 "Bool -> (IOMcn String (), String)", \t -> do
+	text t "* messageを使えばこの型の関数はすぐに作れる", \t -> do
+	itext t 1 "sayHello :: Bool -> (IOMcn String (), String)", \t -> do
+	itext t 1 "sayHello b = (message b, \"hello\")"
+ ]
+
+machine16 :: Page
+machine16 = [\t -> do
+	writeTopTitle t "IOMcn"
+	text t "", \t -> do
+	text t "* あとは今まで見てきた通りにコーディングすれば良い", \t -> do
+	itext t 0 "sayHello :: Bool -> (IOMcn String (), String)", \t -> do
+	itext t 0 "arr sayHello :: IOMcn Bool (IOMcn String (), String)", \t -> do
+	itext t 0 "isEven >>> arr sayHello ::"
+	itext t 1 "IOMcn () (IOMcn String (), String)", \t -> do
+	itext t 0 "isEven >>> arr sayHello >>> app :: IOMcn () ()"
+ ]
+
+machine17 :: Page
+machine17 = [\t -> do
+	writeTopTitle t "IOMcn"
+	text t "", \t -> do
+	text t "* よって以下のようになる", \t -> do
+	itext t 1 "sayHello :: Bool -> (IOMcn String, (), String)", \t -> do
+	itext t 1 "sayHello b = (message b, \"hello\")", \t -> do
+	itext t 1 "greeting :: IOMcn () ()", \t -> do
+	itext t 1 "greeting = isEven >>> arr sayHello >>> app", \t -> do
+	text t "* それぞれの機械を説明すると", \t -> do
+	itext t 1 "- Boolを渡す機械", \t -> do
+	itext t 1 "- Boolを受け取り"
+	itext t 2 "「文字列を受け取る機械」と文字列を渡す機械", \t -> do
+	itext t 1 "- 「文字列を受け取る機械M」と文字列Sを受け取り"
+	itext t 2 "機械Mに文字列Sを渡す機械"
+ ]
+
+machineSummary :: Page
+machineSummary = [\t -> do
+	writeTopTitle t "IOMcn(まとめ)"
+	text t "", \t -> do
+	text t "* 多くの言語ではIOは以下のように行われる", \t -> do
+	itext t 1 "- 関数の評価のタイミングで入出力動作を行い", \t -> do
+	itext t 1 "- 入力値は関数の返り値として受け取れる", \t -> do
+	text t "* 参照透過性と遅延評価の面から上記の方法は望ましくない", \t -> do
+	text t "* むしろIOを行う機械を組み立てていくことを考える", \t -> do
+	text t "* 機械の受け取りの型と受け渡しの型を指定すると良い", \t -> do
+	text t "* 以下の型とそれに対する関数や機械を用意しておくと良い", \t -> do
+	itext t 1 "IOMcn a b", \t -> do
+	itext t 1 "(>>>) :: IOMcn a b -> IOMcn b c -> IOMcn a c", \t -> do
+	itext t 1 "arr :: (a -> b) -> IOMcn a b", \t -> do
+	itext t 1 "app :: IOMcn (IOMcn a b, a) b"
+ ]
+
+aboutIO :: Page
+aboutIO = [\t -> do
+	writeTopTitle t "IO"
+	text t "", \t -> do
+	text t "* IOMcnはもっとスマートにすることができる", \t -> do
+	text t "* 以下の型を比較してみる", \t -> do
+	itext t 1 "IOMcn a b", \t -> do
+	itext t 1 "a -> IOMcn () b", \t -> do
+	text t "* これらの型が相互に変換可能であることを示そう"
+ ]
+
+aboutIO2 :: Page
+aboutIO2 = [\t -> do
+	writeTopTitle t "IO"
+	text t "", \t -> do
+	text t "* まずは(IOMcn a b)から(a -> IOMcn () b)を作る関数", \t -> do
+	itext t 1 "outArg :: IOMcn a b -> a -> IOMcn () b", \t -> do
+	itext t 1 "outArg iom = \\x -> arr (const x) >>> iom", \t -> do
+	text t "* 型aの値xがあれば以下の機械が作れる", \t -> do
+	itext t 1 "arr (const x) :: IOMcn () a", \t -> do
+	text t "* これと(iom :: IOMcn a b)をつなげればIOMcn () bは作れる", \t -> do
+	text t "* 「(IOMcn a b)とaからIOMcn () bを作れる」は以下と同値", \t -> do
+	itext t 1 "- 「(IOMcn a b)から(a -> IOMcn () b)を作れる」"
+ ]
+
+aboutIO3 :: Page
+aboutIO3 = [\t -> do
+	writeTopTitle t "IO"
+	text t "", \t -> do
+	text t "* 逆に(a -> IOMcn () b)から(IOMcn a b)が作れる", \t -> do
+	itext t 1 "inArg :: (a -> IOMcn () b) -> IOMcn a b", \t -> do
+	itext t 1 "inArg f = arr (\\x -> (f x, ())) >>> app", \t -> do
+	text t "* (a -> IOMcn () b)があれば以下の関数が作れる", \t -> do
+	itext t 1 "\\x -> (f x, ()) :: a -> (IOMcn () b, ())", \t -> do
+	text t "* ここから以下の機械が作れる", \t -> do
+	itext t 1 "arr (\\x -> (f x, ())) :: IOMcn a (IOMcn () b, ())", \t -> do
+	text t "* さらに機械appをつなげば良い", \t -> do
+	itext t 1 "arr (\\x -> (f x, ())) >>> app :: IOMcn a b"
+ ]
+
+aboutIO4 :: Page
+aboutIO4 = [\t -> do
+	writeTopTitle t "IO"
+	text t "", \t -> do
+	text t "* つまり以下の2つの型は同じものであると考えられる", \t -> do
+	itext t 1 "IOMcn a b", \t -> do
+	itext t 1 "a -> IOMcn () b", \t -> do
+	text t "* aを受け取ってbを渡す機械を", \t -> do
+	itext t 1 "- aの値によって「bを渡す機械」を選ぶ関数に変換可能", \t -> do
+	text t "* IOMcn a bの形の関数をa -> IOMcn () bの試に統一し", \t -> do
+	itext t 1 "type IO = IOMcn ()としてみよう"
+ ]
+
+aboutIO5 :: Page
+aboutIO5 = [\t -> do
+	writeTopTitle t "IO"
+	text t "", \t -> do
+	text t "* すると以下の関数のペアを", \t -> do
+	itext t 1 "(>>>) :: IOMcn a b -> IOMcn b c -> IOMcn a c", \t -> do
+	itext t 1 "arr :: (a -> b) -> IOMcn a b", \t -> do
+	text t "* 以下の形に変えることができる", \t -> do
+	itext t 1 "(>=>) :: (a -> IO b) -> (b -> IO c) -> (a -> IO c)", \t -> do
+	itext t 1 "arr' :: (a -> b) -> (a -> IO b)", \t -> do
+	text t "* これはモナド関数だ", \t -> do
+	itext t 1 "(>>=) :: IO a -> (a -> IO b) -> IO b", \t -> do
+	itext t 1 "return :: a -> IO a"
  ]
