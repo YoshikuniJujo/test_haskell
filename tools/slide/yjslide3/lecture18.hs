@@ -14,7 +14,8 @@ main = runLecture [
 	machine12, machine12_1,
 	machine13, machine14, machine15, machine15_1,
 	machine16, machine17, machine17_1, machineSummary,
-	aboutIO, aboutIO2, aboutIO3, aboutIO4, aboutIO5, aboutIO6
+	aboutIO, aboutIO2, aboutIO3, aboutIO4, aboutIO5, aboutIO6, aboutIO7,
+	aboutIO8
  ]
 
 memo :: Page
@@ -588,10 +589,45 @@ aboutIO6 = [\t -> do
 	text t "* aを受け取りbを渡す機械を以下の関数に変換する", \t -> do
 	itext t 1 "- aを引数として取り「bを渡す機械」を返す関数", \t -> do
 	text t "* そうすることによりIOを行う機械をモナドとして扱える", \t -> do
+	text t "* 以下の関数を", \t -> do
+	itext t 1 "(>>>) :: IOMcn a b -> IOMcn b c -> IOMcn a c", \t -> do
+	itext t 1 "arr :: (a -> b) -> IOMcn a b", \t -> do
+	text t "* 以下の関数で置き換えられる", \t -> do
+	itext t 1 "(>>=) :: IO a -> (a -> IO b) -> IO b", \t -> do
+	itext t 1 "return :: a -> IO a"
+ ]
+
+aboutIO7 :: Page
+aboutIO7 = [\t -> do
+	writeTopTitle t "IO"
+	text t "", \t -> do
+	text t "* 機械に値を渡す機械については", \t -> do
+	itext t 1 "app :: IOMcn (IOMcn a b, a) b", \t -> do
+	arrowIText t 1 "(a -> IO b, a) -> IO b", \t -> do
+	text t "* これは単に関数適用に置き換えられるので不要になる"
+ ]
+
+aboutIOXX :: Page
+aboutIOXX = [\t -> do
+	writeTopTitle t "IO"
+	text t "", \t -> do
 	text t "* 文字列を表示する関数", \t -> do
 	itext t 1 "putStrLn :: String -> IO ()", \t -> do
 	text t "* 試してみよう", \t -> do
 	itext t 1 "% ghci", \t -> do
 	itext t 1 "Prelude> putStrLn \"Hello\"", \t -> do
 	itext t 1 "Hello"
+ ]
+
+aboutIO8 :: Page
+aboutIO8 = [\t -> do
+	writeTopTitle t "IO"
+	text t "", \t -> do
+	text t "* いくつか試してみよう", \t -> do
+	text t "* 文字列を改行をつけて表示する関数", \t -> do
+	itext t 1 "putStrLn :: String -> IO ()", \t -> do
+	text t "* 対話環境で試してみる", \t -> do
+	itext t 1 "*Main> putStrLn \"Hello\"", \t -> do
+	itext t 1 "Hello", \t -> do
+	text t ""
  ]
