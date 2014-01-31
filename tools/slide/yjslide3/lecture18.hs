@@ -5,21 +5,70 @@ subtitle = "第18回 IOモナド"
 
 main :: IO ()
 main = runLecture [
-	[flip writeTitle subtitle], prelude, prelude2,
+	[flip writeTitle subtitle], memo, memo2, memo3,
+	prelude, prelude2,
 	machine, machine2, machine3, machine4, machine5, machine6,
-	machine7, machine8, machine9, machine10, machine11, machine12,
+	machine7, machine7_1, machine8, machine8_1, machine9, machine9_1,
+	machine10, machine10_1, machine10_2,
+	machine11, machine11_2, machine11_3,
+	machine12,
 	machine13, machine14, machine15, machine16, machine17, machineSummary,
-	aboutIO, aboutIO2, aboutIO3, aboutIO4, aboutIO5
+	aboutIO, aboutIO2, aboutIO3, aboutIO4, aboutIO5, aboutIO6
+ ]
+
+memo :: Page
+memo = [\t -> do
+	writeTopTitle t "業務連絡"
+	text t "", \t -> do
+	text t "* lectures/lecture18/IOMcn.hsを事前に作っておく", \t -> do
+	text t "* 内容は以下のようになる", \t -> do
+	itext t 0 "module IOMcn ("
+	itext t 1 "IOMcn, runIOMcn, (>>>), arr, app,"
+	itext t 1 "putLine, getLine, getInt, isEven) where"
+	itext t 0 ""
+	itext t 0 "import Prelude hiding (getLine)"
+	itext t 0 "import qualified Prelude"
+	itext t 0 "import Control.Arrow"
+	itext t 0 "import Control.Applicative"
+	itext t 0 "import Data.Time"
+ ]
+
+memo2 :: Page
+memo2 = [\t -> do
+	writeTopTitle t "業務連絡"
+	text t "", \t -> do
+	itext t 0 "type IOMcn = Kleisli IO"
+	itext t 0 ""
+	itext t 0 "runIOMcn :: IOMcn () a -> IO a"
+	itext t 0 "runIOMcn = (`runKleisli` ())"
+	itext t 0 ""
+	itext t 0 "putLine :: IOMcn String ()"
+	itext t 0 "putLine = Kleisli putStrLn"
+	itext t 0 ""
+	itext t 0 "getLine :: IOMcn () String"
+	itext t 0 "getLine = Kleisli $ const Prelude.getLine"
+ ]
+
+memo3 :: Page
+memo3 = [\t -> do
+	writeTopTitle t "業務連絡"
+	text t "", \t -> do
+	itext t 0 "getInt :: IOMcn () Int"
+	itext t 0 "getInt = Kleisli $ const $ Prelude.getLine >>= readIO"
+	itext t 0 ""
+	itext t 0 "isEven :: IOMcn () Bool"
+	itext t 0 "isEven = Kleisli $ const $"
+	itext t 1 "even . floor . utcDayTime <$> getCurrentTime"
  ]
 
 prelude :: Page
 prelude = [\t -> do
 	writeTopTitle t "はじめに"
 	text t "", \t -> do
-	text t "* Haskellは参照透過性を持つ言語である", \t -> do
-	text t "* つまり、関数の返す値は引数が同じなら常に同じ", \t -> do
-	text t "* また遅延評価する言語である", \t -> do
-	text t "* つまり、関数が評価されるタイミングが予測しづらい", \t -> do
+--	text t "* Haskellは参照透過性を持つ言語である", \t -> do
+--	text t "* つまり、関数の返す値は引数が同じなら常に同じ", \t -> do
+--	text t "* また遅延評価する言語である", \t -> do
+--	text t "* つまり、関数が評価されるタイミングが予測しづらい", \t -> do
 	text t "* 多くの言語では以下のような形で入出力を扱う", \t -> do
 	itext t 1 "- 関数が「評価」されるタイミングで入出力を行い", \t -> do
 	itext t 1 "- 関数の返り値として入力を返す", \t -> do
@@ -68,7 +117,7 @@ machine2 = [\t -> do
 	text t "* 入力がからむとこれはうまくいかなくなる", \t -> do
 	text t "* 入力値を次の機械にわたす必要が出てくるからだ", \t -> do
 	text t "* つまり機械のあいだで値をわたす仕組みが必要だ", \t -> do
-	text t "* ひとつめの機械からふたつめの機械に値をさたす関数", \t -> do
+	text t "* ひとつめの機械からふたつめの機械に値を渡す関数", \t -> do
 	itext t 1 "(>>>) :: Machine -> Machine -> Machine"
  ]
 
@@ -133,7 +182,22 @@ machine7 = [\t -> do
 	itext t 1 "(>>>) :: IOMcn () String ->"
 	itext t 2 "IOMcn String () -> IOMcn () ()", \t -> do
 	text t "* つないだ結果の型は", \t -> do
-	itext t 1 "getLIne >>> putLine :: IOMcn () ()"
+	itext t 1 "getLine >>> putLine :: IOMcn () ()"
+ ]
+
+machine7_1 :: Page
+machine7_1 = [\t -> do
+	writeTopTitle t "IOMcn"
+	text t "", \t -> do
+	text t "* 試してみよう", \t -> do
+	text t "* lectures/lecture18/IOMcn.hsが用意してあるので", \t -> do
+	itext t 1 "% ghci IOMcn.hs", \t -> do
+	itext t 1 "*IOMcn> runIOMcn $ getLine >>> putLine", \t -> do
+	itext t 2 "-- 何か適当に入力し改行する、ここでは\"hello\"", \t -> do
+	itext t 1 "hello", \t -> do
+	itext t 1 "hello", \t -> do
+	text t "* 入力した文字列を表示している", \t -> do
+	text t "* ここでは、runIOMcnで機械を動かしていると考える"
  ]
 
 machine8 :: Page
@@ -152,6 +216,18 @@ machine8 = [\t -> do
 	arrowIText t 1 "おかしな型の値が機械に渡されることはない"
  ]
 
+machine8_1 :: Page
+machine8_1 = [\t -> do
+	writeTopTitle t "IOMcn"
+	text t "", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 1 "*IOMcn> runIOMcn $ getInt >>> putLine", \t -> do
+	itext t 1 "..."
+	itext t 1 "Couldn't match type `[Char]' with `Int'"
+	itext t 1 "...", \t -> do
+	text t "* 確かに、型エラーとなる"
+ ]
+
 machine9 :: Page
 machine9 = [\t -> do
 	writeTopTitle t "IOMcn"
@@ -163,7 +239,22 @@ machine9 = [\t -> do
 	text t "* 関数を機械に変換する関数が必要になる", \t -> do
 	itext t 1 "arr :: (a -> b) -> IOMcn a b", \t -> do
 	text t "* これを使うと入力を逆順にして表示は", \t -> do
-	itext t 1 "getLine >>> arr reverse >>> putLine"
+	itext t 1 "getLine >>> arr reverse >>> putLine", \t -> do
+	text t "* arr reverseは", \t -> do
+	itext t 1 "- 文字列を受け取り", \t -> do
+	itext t 1 "- それを逆順にして次の機械に渡す機械"
+ ]
+
+machine9_1 :: Page
+machine9_1 = [\t -> do
+	writeTopTitle t "IOMcn"
+	text t "", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 0 "*IOMcn> runIOMcn $ getLine >>> arr reverse >>> putLine", \t -> do
+	itext t 1 "-- \"hello\"を入力してみよう", \t -> do
+	itext t 0 "hello", \t -> do
+	itext t 0 "olleh", \t -> do
+	text t "* 入力された文字列が逆順で表示された"
  ]
 
 machine10 :: Page
@@ -181,22 +272,79 @@ machine10 = [\t -> do
 	itext t 1 "putWorld = arr (const \"World\") >>> putLine"
  ]
 
+machine10_1 :: Page
+machine10_1 = [\t -> do
+	writeTopTitle t "IOMcn"
+	text t "", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 1 "*IOMcn> runIOMcn $ arr (const \"Hello\") >>> putLine", \t -> do
+	itext t 1 "Hello", \t -> do
+	itext t 1 "*IOMcn> runIOMcn $ arr (const \"World\") >>> putLine", \t -> do
+	itext t 1 "World", \t -> do
+	text t "* 引数を無視して\"Hello\"を返す関数(const \"Hello\")", \t -> do
+	text t "* これを機械に変換", \t -> do
+	itext t 1 "arr (const \"Hello\") :: IOMcn () String", \t -> do
+	text t "* これをputLineにつないでいる"
+ ]
+
+machine10_2 :: Page
+machine10_2 = [\t -> do
+	writeTopTitle t "IOMcn"
+	text t "", \t -> do
+	text t "* hello.hsを作って以下を書き込もう", \t -> do
+	itext t 1 "import IOMcn", \t -> do
+	itext t 1 "putHello, putWorld :: IOMcn () ()", \t -> do
+	itext t 1 "putHello = arr (const \"Hello\") >>> putLine", \t -> do
+	itext t 1 "putWorld = arr (const \"World\") >>> putLine", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 1 "*IOMcn> :load hello.hs", \t -> do
+	itext t 1 "*Main> runIOMcn $ putHello >>> putWorld", \t -> do
+	itext t 1 "Hello"
+	itext t 1 "World"
+ ]
+
 machine11 :: Page
 machine11 = [\t -> do
-	writeTopTitle t "IOMcn", \t -> do
+	writeTopTitle t "IOMcn"
+	text t "", \t -> do
 	text t "* 以下のようなあいさつをする機械が作りたい", \t -> do
-	itext t 1 "- 奇数の日には\"hello\"", \t -> do
-	itext t 1 "- 偶数の日には\"olleh\"", \t -> do
-	text t "* 今日が偶数の日かどうかを返す機械はあると考えよう", \t -> do
+	itext t 1 "- 偶数の秒には\"olleh\"", \t -> do
+	itext t 1 "- 奇数の秒には\"hello\"", \t -> do
+	text t "* 今が偶数の秒かどうかを返す機械はあると考えよう", \t -> do
 	itext t 0.8 "isEven :: IOMcn () Bool", \t -> do
-	text t "* Bool値によって以下のどちらかを返す関数", \t -> do
-	itext t 1 "- メッセージをそのまま表示する機械", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 1 "*Main> runIOMcn isEven", \t -> do
+	itext t 2 "-- その時によってTrueかFalseが表示される", \t -> do
+	itext t 1 "True", \t -> do
+	itext t 1 "*Main> runIOMcn isEven", \t -> do
+	itext t 1 "False"
+ ]
+
+machine11_2 :: Page
+machine11_2 = [\t -> do
+	writeTopTitle t "IOMcn"
+	text t "", \t -> do
+	text t "* Bool値によって以下のどちらかを返す関数を作ろう", \t -> do
 	itext t 1 "- メッセージを逆順で表示する機械", \t -> do
+	itext t 1 "- メッセージをそのまま表示する機械", \t -> do
 	text t "* その関数をmessageという名前で定義する", \t -> do
 	itext t 1 "message :: Bool -> IOMcn String ()", \t -> do
 	itext t 1 "message True = arr reverse >>> putLine", \t -> do
-	itext t 1 "message False = putLine"
+	itext t 1 "message False = putLine", \t -> do
+	text t "* これを以下と併わせてgreeting.hsに書き込もう", \t -> do
+	itext t 1 "import IOMcn"
+ ]
 
+machine11_3 :: Page
+machine11_3 = [\t -> do
+	writeTopTitle t "IOMcn"
+	text t "", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 0 "*Main> :load greeting.hs", \t -> do
+	itext t 0 "*Main> runIOMcn $ arr (const \"hello\") >>> message False", \t -> do
+	itext t 0 "hello", \t -> do
+	itext t 0 "*Main> runIOMcn $ arr (const \"hello\") >>> message True", \t -> do
+	itext t 0 "olleh"
  ]
 
 machine12 :: Page
@@ -207,8 +355,8 @@ machine12 = [\t -> do
 	itext t 1 "isEven :: IOMcn () Bool", \t -> do
 	itext t 1 "message :: Bool -> IOMcn String ()", \t -> do
 	text t "* arrと>>>を使って組み合わせて以下の動作の機械を作る", \t -> do
-	itext t 1 "- 奇数の日には\"hello\"を表示し", \t -> do
-	itext t 1 "- 偶数の日には\"hello\"を逆順で表示する", \t -> do
+	itext t 1 "- 偶数の秒には\"hello\"を逆順で表示し", \t -> do
+	itext t 1 "- 奇数の秒には\"hello\"を表示する", \t -> do
 	text t "* 渡されたBool値を受け取るにはmessage関数を機械にする", \t -> do
 	itext t 1 "arr message :: IOMcn Bool (IOMcn String ())", \t -> do
 	text t "* これとisEvenをつなげると", \t -> do
@@ -253,7 +401,7 @@ machine15 :: Page
 machine15 = [\t -> do
 	writeTopTitle t "IOMcn"
 	text t "", \t -> do
-	text t "* 以下の型の関数を作るには", \t -> do
+	text t "* この型の関数を作るには"
 	itext t 1 "IOMcn Bool (IOMcn String (), String)", \t -> do
 	text t "* 以下の型の関数にarrを適用すれば良い", \t -> do
 	itext t 1 "Bool -> (IOMcn String (), String)", \t -> do
@@ -374,4 +522,19 @@ aboutIO5 = [\t -> do
 	text t "* これはモナド関数だ", \t -> do
 	itext t 1 "(>>=) :: IO a -> (a -> IO b) -> IO b", \t -> do
 	itext t 1 "return :: a -> IO a"
+ ]
+
+aboutIO6 :: Page
+aboutIO6 = [\t -> do
+	writeTopTitle t "IO"
+	text t "", \t -> do
+	text t "* aを受け取りbを渡す機械を以下の関数に変換する", \t -> do
+	itext t 1 "- aを引数として取り「bを渡す機械」を返す関数", \t -> do
+	text t "* そうすることによりIOを行う機械をモナドとして扱える", \t -> do
+	text t "* 文字列を表示する関数", \t -> do
+	itext t 1 "putStrLn :: String -> IO ()", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 1 "% ghci", \t -> do
+	itext t 1 "Prelude> putStrLn \"Hello\"", \t -> do
+	itext t 1 "Hello"
  ]
