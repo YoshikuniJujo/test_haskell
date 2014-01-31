@@ -5,14 +5,15 @@ subtitle = "第18回 IOモナド"
 
 main :: IO ()
 main = runLecture [
-	[flip writeTitle subtitle], memo, memo2, memo3,
+	[flip writeTitle subtitle], memo, memo2, memo3, memo4,
 	prelude, prelude2,
 	machine, machine2, machine3, machine4, machine5, machine6,
 	machine7, machine7_1, machine8, machine8_1, machine9, machine9_1,
 	machine10, machine10_1, machine10_2,
 	machine11, machine11_2, machine11_3,
-	machine12,
-	machine13, machine14, machine15, machine16, machine17, machineSummary,
+	machine12, machine12_1,
+	machine13, machine14, machine15, machine15_1,
+	machine16, machine17, machine17_1, machineSummary,
 	aboutIO, aboutIO2, aboutIO3, aboutIO4, aboutIO5, aboutIO6
  ]
 
@@ -21,14 +22,14 @@ memo = [\t -> do
 	writeTopTitle t "業務連絡"
 	text t "", \t -> do
 	text t "* lectures/lecture18/IOMcn.hsを事前に作っておく", \t -> do
-	text t "* 内容は以下のようになる", \t -> do
 	itext t 0 "module IOMcn ("
 	itext t 1 "IOMcn, runIOMcn, (>>>), arr, app,"
 	itext t 1 "putLine, getLine, getInt, isEven) where"
 	itext t 0 ""
 	itext t 0 "import Prelude hiding (getLine)"
 	itext t 0 "import qualified Prelude"
-	itext t 0 "import Control.Arrow"
+	itext t 0 "import Control.Arrow hiding ((>>>), arr)"
+	itext t 0 "import qualified Control.Arrow"
 	itext t 0 "import Control.Applicative"
 	itext t 0 "import Data.Time"
  ]
@@ -42,6 +43,17 @@ memo2 = [\t -> do
 	itext t 0 "runIOMcn :: IOMcn () a -> IO a"
 	itext t 0 "runIOMcn = (`runKleisli` ())"
 	itext t 0 ""
+	itext t 0 "(>>>) :: IOMcn a b -> IOMcn b c -> IOMcn a c"
+	itext t 0 "(>>>) = (Control.Arrow.>>>)"
+	itext t 0 ""
+	itext t 0 "arr :: (a -> b) -> IOMcn a b"
+	itext t 0 "arr = Control.Arrow.arr"
+ ]
+
+memo3 :: Page
+memo3 = [\t -> do
+	writeTopTitle t "業務連絡"
+	text t "", \t -> do
 	itext t 0 "putLine :: IOMcn String ()"
 	itext t 0 "putLine = Kleisli putStrLn"
 	itext t 0 ""
@@ -49,8 +61,8 @@ memo2 = [\t -> do
 	itext t 0 "getLine = Kleisli $ const Prelude.getLine"
  ]
 
-memo3 :: Page
-memo3 = [\t -> do
+memo4 :: Page
+memo4 = [\t -> do
 	writeTopTitle t "業務連絡"
 	text t "", \t -> do
 	itext t 0 "getInt :: IOMcn () Int"
@@ -364,6 +376,19 @@ machine12 = [\t -> do
 	itext t 2 "IOMcn () (IOMcn String ())"
  ]
 
+machine12_1 :: Page
+machine12_1 = [\t -> do
+	writeTopTitle t "IOMcn"
+	text t "", \t -> do
+	text t "* 実際に型を見てみよう", \t -> do
+	itext t 0 "*Main> :t message", \t -> do
+	itext t 0 "message :: Bool -> IOMcn String ()", \t -> do
+	itext t 0 "*Main> :t arr message", \t -> do
+	itext t 0 "arr message :: IOMcn Bool (IOMcn String ())", \t -> do
+	itext t 0 "*Main> :t isEven >>> arr message", \t -> do
+	itext t 0 "isEven >>> arr message :: IOMcn () (IOMcn String ())"
+ ]
+
 machine13 :: Page
 machine13 = [\t -> do
 	writeTopTitle t "IOMcn"
@@ -375,8 +400,8 @@ machine13 = [\t -> do
 	text t "* IOMcn String ()にStringを渡す機械が必要", \t -> do
 	text t "* より一般的にはIOMcn a bにaを渡す機械が必要になる", \t -> do
 	itext t 1 "app :: IOMcn (IOMcn a b, a) b", \t -> do
-	text t "* 「aを受け取りbを渡す機械」を受け取りbを渡す機械", \t -> do
-	text t "* appを使うには以下の型の機械が必要になる", \t -> do
+	text t "* (「aを受け取りbを渡す機械」とa)を受け取りbを渡す機械", \t -> do
+	text t "* appを使うには以下の型の機械を作る必要がある", \t -> do
 	itext t 1 "IOMcn () (IOMcn String (), String)"
  ]
 
@@ -407,14 +432,33 @@ machine15 = [\t -> do
 	itext t 1 "Bool -> (IOMcn String (), String)", \t -> do
 	text t "* messageを使えばこの型の関数はすぐに作れる", \t -> do
 	itext t 1 "sayHello :: Bool -> (IOMcn String (), String)", \t -> do
-	itext t 1 "sayHello b = (message b, \"hello\")"
+	itext t 1 "sayHello b = (message b, \"hello\")", \t -> do
+	text t "* 関数sayHelloをgreeting.hsに書き込もう"
+ ]
+
+machine15_1 :: Page
+machine15_1 = [\t -> do
+	writeTopTitle t "IOMcn"
+	text t "", \t -> do
+	text t "* 対話環境で求める機械を組み立ててみる", \t -> do
+	itext t 0 "*Main> :reload", \t -> do
+	itext t 0 "*Main> :t arr sayHello", \t -> do
+	itext t 0 "arr sayHello :: IOMcn Bool (IOMcn String (), String)", \t -> do
+	itext t 0 "*Main> :t isEven >>> arr sayHello", \t -> do
+	itext t 0 "isEven >>> arr sayHello ::"
+	itext t 1 "IOMcn () (IOMcn String (), String)", \t -> do
+	itext t 0 "*Main> :t isEven >>> arr sayHello >>> app", \t -> do
+	itext t 0 "isEven >>> arr sayHello >>> app :: IOMcn () ()", \t -> do
+	itext t 0 "*Main> runIOMcn $ isEven >>> arr sayHello >>> app", \t -> do
+	itext t 0 "olleh"
+	itext t 1 "-- 時間によってhelloまたはolleh"
  ]
 
 machine16 :: Page
 machine16 = [\t -> do
 	writeTopTitle t "IOMcn"
 	text t "", \t -> do
-	text t "* あとは今まで見てきた通りにコーディングすれば良い", \t -> do
+	text t "* まとめると以下のようになる", \t -> do
 	itext t 0 "sayHello :: Bool -> (IOMcn String (), String)", \t -> do
 	itext t 0 "arr sayHello :: IOMcn Bool (IOMcn String (), String)", \t -> do
 	itext t 0 "isEven >>> arr sayHello ::"
@@ -426,17 +470,30 @@ machine17 :: Page
 machine17 = [\t -> do
 	writeTopTitle t "IOMcn"
 	text t "", \t -> do
-	text t "* よって以下のようになる", \t -> do
-	itext t 1 "sayHello :: Bool -> (IOMcn String, (), String)", \t -> do
-	itext t 1 "sayHello b = (message b, \"hello\")", \t -> do
+	text t "* 求める関数greetingは", \t -> do
 	itext t 1 "greeting :: IOMcn () ()", \t -> do
 	itext t 1 "greeting = isEven >>> arr sayHello >>> app", \t -> do
 	text t "* それぞれの機械を説明すると", \t -> do
 	itext t 1 "- Boolを渡す機械", \t -> do
 	itext t 1 "- Boolを受け取り"
-	itext t 2 "「文字列を受け取る機械」と文字列を渡す機械", \t -> do
-	itext t 1 "- 「文字列を受け取る機械M」と文字列Sを受け取り"
-	itext t 2 "機械Mに文字列Sを渡す機械"
+	itext t 2 "(「文字列を受け取る機械」と文字列)を渡す機械", \t -> do
+	itext t 1 "- (「文字列を受け取る機械M」と文字列S)を受け取り"
+	itext t 2 "機械Mに文字列Sを渡す機械", \t -> do
+	text t "* 関数greetingの定義をgreeting.hsに書き込もう"
+ ]
+
+machine17_1 :: Page
+machine17_1 = [\t -> do
+	writeTopTitle t "IOMcn"
+	text t "", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> runIOMcn greeting", \t -> do
+	itext t 1 "hello", \t -> do
+	itext t 1 "*Main> runIOMcn greeting", \t -> do
+	itext t 1 "hello", \t -> do
+	itext t 1 "*Main> runIOMcn greeting", \t -> do
+	itext t 1 "olleh"
  ]
 
 machineSummary :: Page
@@ -505,7 +562,7 @@ aboutIO4 = [\t -> do
 	itext t 1 "a -> IOMcn () b", \t -> do
 	text t "* aを受け取ってbを渡す機械を", \t -> do
 	itext t 1 "- aの値によって「bを渡す機械」を選ぶ関数に変換可能", \t -> do
-	text t "* IOMcn a bの形の関数をa -> IOMcn () bの試に統一し", \t -> do
+	text t "* IOMcn a bの形の関数をa -> IOMcn () bの形に統一し", \t -> do
 	itext t 1 "type IO = IOMcn ()としてみよう"
  ]
 

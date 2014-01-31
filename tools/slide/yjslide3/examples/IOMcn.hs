@@ -4,15 +4,21 @@ module IOMcn (
 
 import Prelude hiding (getLine)
 import qualified Prelude
-import Control.Arrow
+import Control.Arrow hiding (arr, (>>>))
+import qualified Control.Arrow
 import Control.Applicative
-
 import Data.Time
 
 type IOMcn = Kleisli IO
 
 runIOMcn :: IOMcn () a -> IO a
 runIOMcn = (`runKleisli` ())
+
+(>>>) :: IOMcn a b -> IOMcn b c -> IOMcn a c
+(>>>) = (Control.Arrow.>>>)
+
+arr :: (a -> b) -> IOMcn a b
+arr = Control.Arrow.arr
 
 putLine :: IOMcn String ()
 putLine = Kleisli putStrLn
