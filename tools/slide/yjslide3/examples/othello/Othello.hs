@@ -1,8 +1,10 @@
 module Othello (
 	Game,
 	Stone(..),
+	initGame,
 	nextGame,
 	aiGame,
+	ai,
 	board,
 ) where
 
