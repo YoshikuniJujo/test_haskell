@@ -5,12 +5,15 @@ module Othello (
 	nextGame,
 	aiGame,
 	ai,
+	ai2,
 	board,
 ) where
 
 import Control.Applicative
 import Control.Concurrent
 import Control.Exception
+import Data.List
+import Data.Maybe
 
 game :: Game -> IO ()
 game g = do
@@ -38,13 +41,85 @@ aiGame g pos = do
 	nextGame g' $ ai g'
 
 ai :: Game -> (Int, Int)
-ai (Game s b)
-	| not $ null notBad = head notBad
-	| otherwise = head can
+ai g	| not $ null notBad = head notBad
+	| not $ null notVeryBad = head notVeryBad
+	| otherwise = head $ checkAll g
 	where
-	good = filter goodStone can
-	notBad = filter notBadStone can
-	can = filter (check b s) [(x, y) | x <- [0 .. 7], y <- [0 .. 7]]
+	good = filter goodStone $ checkAll g
+	notBad = filter notBadStone $ checkAll g
+	notVeryBad = filter (not . veryBad g) $ checkAll g
+
+ai2 :: Game -> (Int, Int)
+ai2 g = maxPoint (minBound, undefined) poss
+	where
+	poss = map (\pos -> (calcGame $ fromJust $ nextGame g pos, pos)) $ checkAll g
+
+maxPoint :: Ord a => (a, b) -> [(a, b)] -> b
+maxPoint (x, v) [] = v
+maxPoint (x, v) ((x', v') : rest)
+	| x < x' = maxPoint (x', v') rest
+	| otherwise = maxPoint (x, v) rest
+
+calcGame :: Game -> Int
+calcGame (Game s b)
+	| sumStone b < 32 =
+		sum (map getPoint $ allStone b $ rev s) -
+		sum (map getPoint $ allStone b s)
+	| otherwise =
+		sum (map getPoint' $ allStone b $ rev s) -
+		sum (map getPoint' $ allStone b s)
+
+allStone :: Board -> Stone -> [(Int, Int)]
+allStone (Board b) s = map fst $ filter ((== s) . snd) $ addIndex b
+
+sumStone :: Board -> Int
+sumStone b = length $ allStone b Black ++ allStone b White
+
+addIndex :: [[a]] -> [((Int, Int), a)]
+addIndex xss =
+	concatMap (\(y, xs) -> zip (zip [0 ..] [y, y ..]) xs) $ zip [0 ..] xss
+
+getPoint' :: (Int, Int) -> Int
+getPoint' (x, y)
+	| x > 3 = getPoint (7 - x, y)
+	| y > 3 = getPoint (x, 7 - y)
+	| x < y = getPoint (y, x)
+getPoint' (0, 0) = 120
+getPoint' (1, 0) = - 20
+getPoint' (1, 1) = - 40
+getPoint' (2, 0) = 20
+getPoint' (2, 1) = - 5
+getPoint' (2, 2) = 15
+getPoint' (3, 0) = 5
+getPoint' (3, 1) = - 5
+getPoint' (3, 2) = 3
+getPoint' (3, 3) = 3
+getPoint' pos = error $ "bad: " ++ show pos
+
+getPoint :: (Int, Int) -> Int
+getPoint (x, y)
+	| x > 3 = getPoint (7 - x, y)
+	| y > 3 = getPoint (x, 7 - y)
+	| x < y = getPoint (y, x)
+getPoint (0, 0) = 30
+getPoint (1, 0) = - 12
+getPoint (1, 1) = - 15
+getPoint (2, 0) = 0
+getPoint (2, 1) = - 3
+getPoint (2, 2) = 0
+getPoint (3, 0) = - 1
+getPoint (3, 1) = - 3
+getPoint (3, 2) = - 1
+getPoint (3, 3) = - 1
+getPoint pos = error $ "bad: " ++ show pos
+
+checkAll :: Game -> [(Int, Int)]
+checkAll (Game s b) = filter (check b s) [(x, y) | x <- [0 .. 7], y <- [0 .. 7]]
+
+veryBad :: Game -> (Int, Int) -> Bool
+veryBad g pos = not $ null $ intersect can [(0, 0), (0, 7), (7, 0), (7, 7)]
+	where
+	can = checkAll $ fromJust $ nextGame g pos
 
 goodStone :: (Int, Int) -> Bool
 goodStone (x, y)
