@@ -66,6 +66,7 @@ clickStone game p t (Point x y) = do
 	varUpdate game (nextGameIf ((x - 10) `div` 25, (y - 10) `div` 25))
 	case nextGame g ((x - 10) `div` 25, (y - 10) `div` 25) of
 		Nothing -> return ()
+		Just g' | turn g' == Black -> return ()
 		_ -> set t [enabled := True]
 	repaint p
 --	repaint p

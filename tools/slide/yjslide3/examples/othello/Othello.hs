@@ -1,6 +1,7 @@
 module Othello (
 	Game,
 	Stone(..),
+	turn,
 	initGame,
 	nextGame,
 	aiGame,
@@ -16,6 +17,9 @@ import Control.Exception
 import Control.Arrow
 import Data.List
 import Data.Maybe
+
+turn :: Game -> Stone
+turn (Game s _) = s
 
 game :: Game -> IO ()
 game g = do
