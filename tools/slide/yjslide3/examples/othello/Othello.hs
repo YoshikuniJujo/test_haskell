@@ -6,12 +6,14 @@ module Othello (
 	aiGame,
 	ai,
 	ai2,
+	aiN,
 	board,
 ) where
 
 import Control.Applicative
 import Control.Concurrent
 import Control.Exception
+import Control.Arrow
 import Data.List
 import Data.Maybe
 
@@ -54,11 +56,34 @@ ai2 g = maxPoint (minBound, undefined) poss
 	where
 	poss = map (\pos -> (calcGame $ fromJust $ nextGame g pos, pos)) $ checkAll g
 
+ai2' :: Game -> (Int, (Int, Int))
+ai2' g = maxPoint' (minBound, undefined) poss
+	where
+	poss = map (\pos -> (calcGame $ fromJust $ nextGame g pos, pos)) $ checkAll g
+
+ai3 :: Int -> Game -> (Int, (Int, Int))
+ai3 0 g = ai2' g
+ai3 n g = maxPoint' (minBound, undefined) ret__
+	where
+	ret__ = map (\pos -> second (const pos) $ first negate $ ai3 (n -1) $ fromJust $ nextGame g pos) $
+		checkAll g
+	ret_ = map (first negate . ai3 (n - 1)) allNext
+	allNext = map (fromJust . nextGame g) $ checkAll g
+
+aiN :: Int -> Game -> (Int, Int)
+aiN n = snd . ai3 n
+
 maxPoint :: Ord a => (a, b) -> [(a, b)] -> b
 maxPoint (x, v) [] = v
 maxPoint (x, v) ((x', v') : rest)
 	| x < x' = maxPoint (x', v') rest
 	| otherwise = maxPoint (x, v) rest
+
+maxPoint' :: Ord a => (a, b) -> [(a, b)] -> (a, b)
+maxPoint' (x, v) [] = (x, v)
+maxPoint' (x, v) ((x', v') : rest)
+	| x < x' = maxPoint' (x', v') rest
+	| otherwise = maxPoint' (x, v) rest
 
 calcGame :: Game -> Int
 calcGame (Game s b)
