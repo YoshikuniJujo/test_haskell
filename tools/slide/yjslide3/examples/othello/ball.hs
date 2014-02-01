@@ -20,9 +20,14 @@ ballsFrame = do
 	vballs <- varCreate []
 	f <- frameFixed [text := "Bouncing balls"]
 	p <- panel f [on paint := paintGame game]
-	t <- timer f [interval := 1, on command := repaint f] -- nextBalls vballs p]
+	t <- timer f []
+	set t [
+		interval := 1000,
+		on command := aiStone game p >> set t [enabled :~ not],
+		enabled := False] -- nextBalls vballs p]
+
 	set p [
-		on click := clickStone game p,
+		on click := clickStone game p t,
 		on (charKey 'q') := close f
 	 ]
 	set f [layout := minsize (sz maxX maxY) $ widget p]
@@ -55,14 +60,22 @@ drawStone s (x, y) dc = do
 	stoneColor Black = black
 	stoneColor White = white
 
-clickStone :: Var Game -> Panel () -> Point -> IO ()
-clickStone game p (Point x y) = do
+clickStone :: Var Game -> Panel () -> Timer -> Point -> IO ()
+clickStone game p t (Point x y) = do
+	g <- varGet game
 	varUpdate game (nextGameIf ((x - 10) `div` 25, (y - 10) `div` 25))
+	case nextGame g ((x - 10) `div` 25, (y - 10) `div` 25) of
+		Nothing -> return ()
+		_ -> set t [enabled := True]
+	repaint p
 --	repaint p
-	threadDelay 1000000
-	varUpdate game (\g -> nextGameIf (ai g) g)
+--	threadDelay 1000000
+--	varUpdate game (\g -> nextGameIf (ai g) g)
 --	repaint p
 	return ()
+
+aiStone :: Var Game -> Panel () -> IO ()
+aiStone game p = varUpdate game (\g -> nextGameIf (ai g) g) >> repaint p
 
 nextGameIf :: (Int, Int) -> Game -> Game
 nextGameIf pos g = case nextGame g pos of

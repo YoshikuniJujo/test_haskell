@@ -38,8 +38,24 @@ aiGame g pos = do
 	nextGame g' $ ai g'
 
 ai :: Game -> (Int, Int)
-ai (Game s b) =
-	head $ filter (check b s) [(x, y) | x <- [0 .. 7], y <- [0 .. 7]]
+ai (Game s b)
+	| not $ null notBad = head notBad
+	| otherwise = head can
+	where
+	good = filter goodStone can
+	notBad = filter notBadStone can
+	can = filter (check b s) [(x, y) | x <- [0 .. 7], y <- [0 .. 7]]
+
+goodStone :: (Int, Int) -> Bool
+goodStone (x, y)
+	| x == 0 || y == 0 || x == 7 || y == 7 = True
+	| otherwise = False
+
+notBadStone :: (Int, Int) -> Bool
+notBadStone (x, y)
+	| x == 0 || y == 0 || x == 7 || y == 7 = True
+	| x == 1 || y == 1 || x == 6 || y == 6 = False
+	| otherwise = True
 
 data Game = Game Stone Board
 
