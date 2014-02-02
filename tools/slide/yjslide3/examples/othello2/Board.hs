@@ -69,7 +69,9 @@ initBoard = read $ unlines [
  ]
 
 put :: Board -> Stone -> (X, Y) -> Maybe Board
-put b s pos = reverseLines (set b s pos) s pos
+put b s pos = do
+	b' <- set b s pos
+	reverseLines b' s pos
 
 putable :: Board -> Stone -> [(X, Y)]
 putable b s = filter (isJust . reverseLines b s)
@@ -124,14 +126,16 @@ reverseLineBool r b s0 (x, y) (dx, dy)
 
 ----------------------------------------------------------------------
 -- get :: Board -> (X, Y) -> Stone
--- set :: Board -> Stone -> (X, Y) -> Board
+-- set :: Board -> Stone -> (X, Y) -> Maybe Board
 -- reverse :: Board -> (X, Y) -> Board
 
 get :: Board -> (X, Y) -> Stone
 get (Board b) (x, y) = b !! fromEnum y !! fromEnum x
 
-set :: Board -> Stone -> (X, Y) -> Board
-set b = modify b . const
+set :: Board -> Stone -> (X, Y) -> Maybe Board
+set b s pos
+	| get b pos == Empty = Just $ modify b (const s) pos
+	| otherwise = Nothing
 
 reverse :: Board -> (X, Y) -> Board
 reverse b = modify b rev
