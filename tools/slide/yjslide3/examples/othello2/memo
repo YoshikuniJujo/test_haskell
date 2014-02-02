@@ -1,0 +1,36 @@
+オセロを作る
+
+モジュールは以下のように分ける
+Game
+Board
+AI
+Window
+Main
+
+Gameモジュールでゲームの進めかたはすべて定義する
+インターフェースは、initGame, nextGame, turn, 
+	initGame :: Game
+	nextGame :: Game -> (X, Y) -> Maybe Game
+	turn :: Game -> Turn
+	stones :: Game -> [((X, Y), Stone)]
+
+	data Turn = BlackTurn | WhiteTuen | GameOver
+
+BoardモジュールではBoardの表現やその操作を抽象化する
+インターフェースは、initBoard, put
+	initBoard :: Board
+	put :: Board -> Stone -> (X, Y) -> Maybe Board
+	putable :: Board -> Stone -> [(X, Y)]
+	stones :: Board -> [((X, Y), Stone)]
+
+	data Stone = Black | White | Empty
+	data X = A | B | C | D | E | F | G | H deriving (Enum, Show)
+	data Y = Y1 | Y2 | Y3 | Y4 | Y5 | Y6 | Y7 | Y8 deriving (Enum, Show)
+
+AIモジュールでAIの置く位置を決める
+インターフェースは、aiX
+	aiX :: Game -> (X, Y)
+
+Windowモジュールで入出力を定義する
+	turnがBlackならばユーザーの入力を受ける
+	turnがWhiteならばAIを作動させるタイマーをenableにする
