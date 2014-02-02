@@ -1,5 +1,5 @@
 module Board (
-	Board, X, Y, Stone(..),
+	Board, X, Y, Stone(..), rev,
 	initBoard, put, putable, stones,
 	putBoard,
 ) where
