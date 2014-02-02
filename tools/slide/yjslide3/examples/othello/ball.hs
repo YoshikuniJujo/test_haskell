@@ -76,7 +76,13 @@ clickStone game p t (Point x y) = do
 	return ()
 
 aiStone :: Var Game -> Panel () -> IO ()
-aiStone game p = varUpdate game (\g -> nextGameIf (aiN 3 g) g) >> repaint p
+aiStone game p = do
+	varUpdate game (\g -> nextGameIf (aiN 3 g) g) >> repaint p
+	g <- varGet game
+	if noSpace g
+		then do	varUpdate game (\g -> nextGameIf (aiN 3 g) g) >> repaint p
+			aiStone game p
+		else return ()
 
 nextGameIf :: (Int, Int) -> Game -> Game
 nextGameIf pos g = case nextGame g pos of

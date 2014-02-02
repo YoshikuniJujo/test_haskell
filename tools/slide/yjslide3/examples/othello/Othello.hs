@@ -9,6 +9,7 @@ module Othello (
 	ai2,
 	aiN,
 	board,
+	noSpace,
 ) where
 
 import Control.Applicative
@@ -20,6 +21,9 @@ import Data.Maybe
 
 turn :: Game -> Stone
 turn (Game s _) = s
+
+noSpace :: Game -> Bool
+noSpace = null . checkAll
 
 game :: Game -> IO ()
 game g = do
@@ -42,9 +46,11 @@ inputLoop :: IO (Int, Int)
 inputLoop = (readIO =<< getLine) `catch` (const inputLoop :: IOError -> IO (Int, Int))
 
 aiGame :: Game -> (Int, Int) -> Maybe Game
-aiGame g pos = do
-	g' <- nextGame g pos
-	nextGame g' $ ai g'
+aiGame g@(Game _ b) pos = do
+	let n = sumStone b
+	if n < 64 then Nothing else do
+		g' <- nextGame g pos
+		nextGame g' $ ai g'
 
 ai :: Game -> (Int, Int)
 ai g	| not $ null notBad = head notBad
@@ -61,13 +67,16 @@ ai2 g = maxPoint (minBound, undefined) poss
 	poss = map (\pos -> (calcGame $ fromJust $ nextGame g pos, pos)) $ checkAll g
 
 ai2' :: Game -> (Int, (Int, Int))
-ai2' g = maxPoint' (minBound, undefined) poss
+ai2' g	| null poss = (0, head $ checkAll g)
+	| otherwise = maxPoint' (minBound, undefined) poss
 	where
 	poss = map (\pos -> (calcGame $ fromJust $ nextGame g pos, pos)) $ checkAll g
 
 ai3 :: Int -> Game -> (Int, (Int, Int))
 ai3 0 g = ai2' g
-ai3 n g = maxPoint' (minBound, undefined) ret__
+ai3 n g
+	| null ret__ = (0, head $ checkAll g)
+	| otherwise = maxPoint' (minBound, undefined) ret__
 	where
 	ret__ = map (\pos -> second (const pos) $ first negate $ ai3 (n -1) $ fromJust $ nextGame g pos) $
 		checkAll g
@@ -173,7 +182,9 @@ initGame :: Game
 initGame = Game Black initBoard
 
 nextGame :: Game -> (Int, Int) -> Maybe Game
-nextGame (Game s b) pos = Game (rev s) <$> put b s pos
+nextGame g@(Game s b) pos
+	| null $ checkAll g = Just $ Game (rev s) b
+	| otherwise = Game (rev s) <$> put b s pos
 
 data Stone = Empty | Black | White deriving (Eq, Show)
 
