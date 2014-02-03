@@ -21,20 +21,20 @@ ai0 g	| null $ putable g = Nothing
 aiN :: Int -> Game -> Maybe ((X, Y), Int)
 aiN 0 g = ai0 g
 aiN n g = do
-	allPair <- mapM (\pos -> (pos ,) <$> nextGame g pos) $ putable g
-	rets <- flip mapM allPair $ \(pos, ng) -> case turn ng of
-		GameOver -> return (pos, calcR g (stone $ turn g))
-		_ -> (const pos *** negate) <$> aiN (n - 1) ng
+	ngs <- forM (putable g) $ \pos -> (pos ,) <$> nextGame g pos
+	rets <- forM ngs $ \(pos, ng) -> case turn ng of
+		Turn ns	-> (const pos *** f ns) <$> aiN (n - 1) ng
+		GameOver -> return (pos, calcR g $ stone $ turn g)
 	return $ maximumBy (on compare snd) rets
+	where
+	s = stone $ turn g
+	f ns = if s == ns then id else negate
 
 ----------------------------------------------------------------------
 -- calc :: Game -> Stone -> Int
 
 calc, calcR :: Game -> Stone -> Int
-calc = sumPoint gp
-	where
-	gp t	| t < 32 = getPoint map1
-		| otherwise = getPoint map2
+calc = sumPoint $ \t -> getPoint $ if t < 32 then map1 else map2
 calcR = sumPoint (const2 1)
 
 sumPoint :: (Int -> (X, Y) -> Int) -> Game -> Stone -> Int
