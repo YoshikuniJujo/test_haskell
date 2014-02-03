@@ -42,8 +42,10 @@ calc :: Game -> Stone -> Int
 calc g s
 	| t < 32 =  sum (map (getPoint map1 . fst) m) -
 			sum (map (getPoint map1 . fst) y)
-	| otherwise = sum (map (getPoint map2 . fst) m) -
+	| t < 60 = sum (map (getPoint map2 . fst) m) -
 			sum (map (getPoint map2 . fst) y)
+	| otherwise = sum (map (getPoint map3 . fst) m) -
+			sum (map (getPoint map3 . fst) y)
 	where
 	t = length $ stones g
 	(m, y) = partition ((== s) . snd) $ stones g
@@ -63,6 +65,20 @@ getPoint m pos@(x, y)
 getPoint m pos = case lookup pos m of
 	Just p -> p
 	_ -> error "bad map"
+
+map3 :: Map
+map3 = [
+	((A, Y1), 1),
+	((B, Y1), 1),
+	((B, Y2), 1),
+	((C, Y1), 1),
+	((C, Y2), 1),
+	((C, Y3), 1),
+	((D, Y1), 1),
+	((D, Y2), 1),
+	((D, Y3), 1),
+	((D, Y4), 1)
+ ]
 
 map2 :: Map
 map2 = [

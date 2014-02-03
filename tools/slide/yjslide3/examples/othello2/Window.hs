@@ -58,10 +58,17 @@ drawStone s (x, y) dc = do
 drawBall :: DC a -> Point -> IO ()
 drawBall dc pt = circle dc pt 10 []
 
+maybeToXY :: Enum a => Int -> Maybe a
+maybeToXY n
+	| n < 0 || n > 7 = Nothing
+	| otherwise = Just $ toEnum n
+
 clickStone :: Panel () -> Var Game -> Timer -> Point -> IO ()
 clickStone p vgame t (Point x y) = do
-	varUpdate vgame $ \g -> fromMaybe g $ nextGame g
-		(toEnum $ (x - 10) `div` 25, toEnum $ (y - 10) `div` 25)
+	varUpdate vgame $ \g -> fromMaybe g $ do
+		x' <- maybeToXY $ (x - 10) `div` 25
+		y' <- maybeToXY $ (y - 10) `div` 25
+		nextGame g (x', y')
 	repaint p
 	nextTurn vgame p t
 
