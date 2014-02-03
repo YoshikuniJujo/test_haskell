@@ -1,20 +1,31 @@
 module Board (
-	Board, X, Y, Stone(..), rev,
-	initBoard, put, putable, stones,
-	putBoard,
+	Board, initBoard, putBoard, showBoard,
+	put, putableB, stonesB,
+	Stone(..), rev,
+	X(..), Y(..),
 ) where
 
 import Prelude hiding (reverse)
+import Control.Arrow (second)
 import Data.Maybe (isJust)
 
-data Board = Board [[Stone]]
+data Board = Board [[State]]
 
-data Stone = Black | White | Empty deriving (Eq, Show)
+data State = Stone { stone :: Stone } | Empty deriving (Eq, Show)
+
+revS :: State -> State
+revS (Stone s) = Stone $ rev s
+revS _ = Empty
+
+isStone :: State -> Bool
+isStone (Stone _) = True
+isStone _ = False
+
+data Stone = Black | White deriving (Eq, Show)
 
 rev :: Stone -> Stone
 rev Black = White
 rev White = Black
-rev _ = Empty
 
 data X = A | B | C | D | E | F | G | H
 	deriving (Eq, Ord, Enum, Bounded, Show)
@@ -31,8 +42,8 @@ instance Show Board where
 	show (Board b) = unlines $ map (concatMap ss) b
 		where
 		ss Empty = "_|"
-		ss Black = "*|"
-		ss White = "O|"
+		ss (Stone Black) = "*|"
+		ss (Stone White) = "O|"
 
 showBoard :: Board -> String
 showBoard b = unlines $ "  A B C D E F G H" :
@@ -49,8 +60,8 @@ readBoard = Board . rb
 	rb (c : '|' : cs) = let t : ls = rb cs in (c2s c : t) : ls
 	rb _ = error "bad board string"
 	c2s '_' = Empty
-	c2s '*' = Black
-	c2s 'O' = White
+	c2s '*' = Stone Black
+	c2s 'O' = Stone White
 	c2s _ = error "bad stone char"
 
 instance Read Board where
@@ -73,12 +84,14 @@ put b s pos = do
 	b' <- set b s pos
 	reverseLines b' s pos
 
-putable :: Board -> Stone -> [(X, Y)]
-putable b s = filter (isJust . reverseLines b s)
+putableB :: Board -> Stone -> [(X, Y)]
+putableB b s = filter (isJust . reverseLines b s) $
+	filter (not . isStone . get b) $
 	[(x, y) | x <- [A .. H], y <- [Y1 .. Y8]]
 
-stones :: Board -> [((X, Y), Stone)]
-stones b = map (\pos -> (pos, get b pos)) [(x, y) | x <- [A .. H], y <- [Y1 .. Y8]]
+stonesB :: Board -> [((X, Y), Stone)]
+stonesB b = map (second stone) $ filter (isStone . snd) $
+	map (\pos -> (pos, get b pos)) [(x, y) | x <- [A .. H], y <- [Y1 .. Y8]]
 
 ----------------------------------------------------------------------
 -- reverseLines :: Board -> Stone -> (X, Y) -> Maybe Board
@@ -115,8 +128,8 @@ reverseLine = reverseLineBool False
 
 reverseLineBool :: Bool -> Board -> Stone -> (X, Y) -> Direction -> Maybe Board
 reverseLineBool r b s0 (x, y) (dx, dy)
-	| s == s0 = if r then Just b else Nothing
-	| s == rev s0 = do
+	| s == Stone s0 = if r then Just b else Nothing
+	| s == Stone (rev s0) = do
 		x' <- dx x
 		y' <- dy y
 		reverseLineBool True (reverse b (x, y)) s0 (x', y') (dx, dy)
@@ -129,18 +142,18 @@ reverseLineBool r b s0 (x, y) (dx, dy)
 -- set :: Board -> Stone -> (X, Y) -> Maybe Board
 -- reverse :: Board -> (X, Y) -> Board
 
-get :: Board -> (X, Y) -> Stone
+get :: Board -> (X, Y) -> State
 get (Board b) (x, y) = b !! fromEnum y !! fromEnum x
 
 set :: Board -> Stone -> (X, Y) -> Maybe Board
 set b s pos
-	| get b pos == Empty = Just $ modify b (const s) pos
+	| get b pos == Empty = Just $ modify b (const $ Stone s) pos
 	| otherwise = Nothing
 
 reverse :: Board -> (X, Y) -> Board
-reverse b = modify b rev
+reverse b = modify b revS
 
-modify :: Board -> (Stone -> Stone) -> (X, Y) -> Board
+modify :: Board -> (State -> State) -> (X, Y) -> Board
 modify (Board b) s (x, y) =
 	Board $ modifyList b (fromEnum y) (\l -> modifyList l (fromEnum x) s)
 
