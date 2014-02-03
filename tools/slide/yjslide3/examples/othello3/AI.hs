@@ -3,7 +3,8 @@
 module AI (aiN) where
 
 import Control.Applicative ((<$>))
-import Control.Arrow (first, second)
+import Control.Arrow (first, second, (***))
+import Control.Monad (forM)
 import Data.List (partition, maximumBy)
 import Data.Function (on)
 
@@ -12,30 +13,34 @@ import Tools
 
 ai0 :: Game -> Maybe ((X, Y), Int)
 ai0 g	| null $ putable g = Nothing
-	| otherwise = Just $ maximumBy (on compare snd) $
-		map (\pos -> (pos, calc g $ stone $ turn g)) $ putable g
+	| otherwise = fmap (maximumBy (on compare snd)) $ forM (putable g) $
+		\pos -> do
+			ng <- nextGame g pos
+			return (pos, calc ng $ stone $ turn g)
 
 aiN :: Int -> Game -> Maybe ((X, Y), Int)
 aiN 0 g = ai0 g
 aiN n g = do
-	rets <- do
-		allPair <- mapM (\pos -> (pos ,) <$> nextGame g pos) $ putable g
-		p <- flip mapM allPair $ \(pos, ng) -> case turn ng of
-			GameOver -> return (pos, (undefined, calc g (rev $ stone $ turn g)))
-			_ -> (pos ,) <$> aiN (n - 1) ng
-		return $ map (\(pos, (_, pnt)) -> (pos, negate pnt)) p
+	allPair <- mapM (\pos -> (pos ,) <$> nextGame g pos) $ putable g
+	rets <- flip mapM allPair $ \(pos, ng) -> case turn ng of
+		GameOver -> return (pos, calcR g (stone $ turn g))
+		_ -> (const pos *** negate) <$> aiN (n - 1) ng
 	return $ maximumBy (on compare snd) rets
 
 ----------------------------------------------------------------------
 -- calc :: Game -> Stone -> Int
 
-calc :: Game -> Stone -> Int
-calc g s
-	| t < 32 = sumPoint map1 me - sumPoint map1 you
-	| t < 63 = sumPoint map2 me - sumPoint map2 you
-	| otherwise = sumPoint map3 me - sumPoint map3 you
+calc, calcR :: Game -> Stone -> Int
+calc = sumPoint gp
 	where
-	sumPoint m = sum . map (getPoint m . fst)
+	gp t	| t < 32 = getPoint map1
+		| otherwise = getPoint map2
+calcR = sumPoint (const2 1)
+
+sumPoint :: (Int -> (X, Y) -> Int) -> Game -> Stone -> Int
+sumPoint gp g s = sp me - sp you
+	where
+	sp = sum . map (gp t . fst)
 	t = length $ stones g
 	(me, you) = partition ((== s) . snd) $ stones g
 
@@ -54,20 +59,6 @@ getPoint m pos@(x, y)
 getPoint m pos = case lookup pos m of
 	Just p -> p
 	_ -> error "bad map"
-
-map3 :: Map
-map3 = [
-	((A, Y1), 1),
-	((B, Y1), 1),
-	((B, Y2), 1),
-	((C, Y1), 1),
-	((C, Y2), 1),
-	((C, Y3), 1),
-	((D, Y1), 1),
-	((D, Y2), 1),
-	((D, Y3), 1),
-	((D, Y4), 1)
- ]
 
 map2 :: Map
 map2 = [

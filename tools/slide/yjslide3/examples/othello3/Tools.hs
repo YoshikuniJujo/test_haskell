@@ -1,4 +1,4 @@
-module Tools (scc, prd, foldMaybe, modifyList, flipE) where
+module Tools (scc, prd, foldMaybe, modifyList, flipE, const2) where
 
 scc, prd :: (Ord a, Enum a, Bounded a) => a -> Maybe a
 scc x	| x < maxBound = Just $ succ x
@@ -21,3 +21,6 @@ modifyList xs n f = take n xs ++ [f $ xs !! n] ++ drop (n + 1) xs
 
 flipE :: (Enum a, Bounded a) => a -> a
 flipE x = toEnum $ fromEnum (maxBound `asTypeOf` x) - fromEnum x
+
+const2 :: a -> b -> c -> a
+const2 x _ = const x
