@@ -1,6 +1,6 @@
 module Tools (
 	scc, prd, maybeToEnum,
-	foldMaybe, modifyList, flipE, const2, maximumBySnd, forMaybe,
+	foldlMaybe, modifyList, flipE, const2, maximumBySnd, forMaybe,
 ) where
 
 import Data.Maybe (mapMaybe)
@@ -20,15 +20,15 @@ maybeToEnum n
 	| otherwise = Just ret
 	where ret = toEnum n
 
-foldMaybe :: (a -> b -> Maybe a) -> a -> [b] -> Maybe a
-foldMaybe = foldMaybeBool False
+foldlMaybe :: (a -> b -> Maybe a) -> a -> [b] -> Maybe a
+foldlMaybe = foldlMaybeBool False
 
-foldMaybeBool :: Bool -> (a -> b -> Maybe a) -> a -> [b] -> Maybe a
-foldMaybeBool True _ x [] = Just x
-foldMaybeBool False _ _ [] = Nothing
-foldMaybeBool j op x (y : ys) = case x `op` y of
-	Just x' -> foldMaybeBool True op x' ys
-	_ -> foldMaybeBool j op x ys
+foldlMaybeBool :: Bool -> (a -> b -> Maybe a) -> a -> [b] -> Maybe a
+foldlMaybeBool True _ x [] = Just x
+foldlMaybeBool False _ _ [] = Nothing
+foldlMaybeBool j op x (y : ys) = case x `op` y of
+	Just x' -> foldlMaybeBool True op x' ys
+	_ -> foldlMaybeBool j op x ys
 
 modifyList :: [a] -> Int -> (a -> a) -> [a]
 modifyList xs n f = take n xs ++ [f $ xs !! n] ++ drop (n + 1) xs
