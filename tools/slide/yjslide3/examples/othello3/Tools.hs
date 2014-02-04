@@ -1,5 +1,6 @@
 module Tools (
-	scc, prd, foldMaybe, modifyList, flipE, const2, maximumBySnd, forMaybe
+	scc, prd, maybeToEnum,
+	foldMaybe, modifyList, flipE, const2, maximumBySnd, forMaybe
 ) where
 
 import Data.Maybe (mapMaybe)
@@ -11,6 +12,13 @@ scc x	| x < maxBound = Just $ succ x
 	| otherwise = Nothing
 prd x	| x > minBound = Just $ pred x
 	| otherwise = Nothing
+
+maybeToEnum :: (Ord a, Enum a, Bounded a) => Int -> Maybe a
+maybeToEnum n
+	| n > fromEnum (maxBound `asTypeOf` ret) ||
+		n < fromEnum (minBound `asTypeOf` ret) = Nothing
+	| otherwise = Just ret
+	where ret = toEnum n
 
 foldMaybe :: (a -> b -> Maybe a) -> a -> [b] -> Maybe a
 foldMaybe = foldMaybeBool False

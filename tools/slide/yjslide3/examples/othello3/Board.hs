@@ -61,7 +61,7 @@ put b s pos = do
 	reverseLines b' s pos
 
 putable :: Board -> Stone -> [(X, Y)]
-putable b s = filter (isJust . reverseLines b s) $
+putable b s = filter (isJust . reverseLines b s)
 	[(x, y) | x <- [A .. H], y <- [Y1 .. Y8], not $ isStone $ get b (x, y)]
 
 stones :: Board -> [((X, Y), Stone)]

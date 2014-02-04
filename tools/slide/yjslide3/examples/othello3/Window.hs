@@ -3,71 +3,90 @@ module Window (
 	othello
 ) where
 
-import Data.Maybe
+import Control.Arrow ((***))
+import Control.Monad (forM_)
+import Data.Maybe (fromMaybe)
+import Data.List (partition)
 
 import AI
 import Game
+import Tools
 import Graphics.UI.WX
+
+aiWait :: Int
+aiWait = 1000
+
+aiRead :: Int
+aiRead = 3
+
+leftMargin, rightMargin, topMargin, bottomMargin, squareSize, msgLeft, charSize,
+	discRadius :: Int
+leftMargin = 10
+rightMargin = 50
+topMargin = 10
+bottomMargin = 20
+squareSize = 30
+charSize = 20
+msgLeft = 80
+discRadius = 12
+
+boundRight, boundBottom, windowWidth, windowHeight, msgTop, msgTop2, msgLeft2 :: Int
+boundRight = leftMargin + squareSize * 8
+boundBottom = topMargin + squareSize * 8
+windowWidth = boundRight + rightMargin
+windowHeight = boundBottom + bottomMargin + charSize * 3
+msgTop = boundBottom + bottomMargin
+msgTop2 = msgTop + charSize
+msgLeft2 = msgLeft + charSize
 
 othello :: IO ()
 othello = do
 	vgame <- varCreate initGame
 	f <- frameFixed [text := "othello"]
-	t <- timer f []
-	p <- panel f []
-	set p [
-		on click := clickStone p vgame t,
-		on paint := paintBoard vgame,
-		on (charKey 'q') := close f ]
-	set t [
-		interval := 1000,
-		on command := aiStone vgame p t,
-		enabled := False ]
-	set f [layout := minsize (sz 300 300) $ widget p]
+	t <- timer f [interval := aiWait, enabled := False]
+	p <- panel f [on (charKey 'q') := close f, on paint := paintBoard vgame]
+	set t [on command := aiStone vgame p t]
+	set p [on click := clickStone vgame p t]
+	set f [layout := minsize (sz windowWidth windowHeight) $ widget p ]
 
 paintBoard :: Var Game -> DC a -> Rect -> IO ()
 paintBoard vgame dc _ = do
 	game <- varGet vgame
-	mapM_ (\(p, s) -> drawStone s p dc) $ stones game
+	let	sts = stones game
+		(b, w) = length *** length $ partition ((== Black) . snd) sts
 	paintLines dc
-	let	b = length $ filter ((== Black) . snd) $ stones game
-		w = length $ filter ((== White) . snd) $ stones game
+	forM_ sts $ uncurry $ drawStone dc
 	case turn game of
-		Turn Black -> drawText dc "*" (Point 80 230) []
-		Turn White -> drawText dc "*" (Point 80 250) []
+		Turn Black -> drawText dc "*" (Point msgLeft msgTop) []
+		Turn White -> drawText dc "*" (Point msgLeft msgTop2) []
 		_ -> return ()
-	drawText dc ("Black: " ++ show b) (Point 100 230) []
-	drawText dc ("White: " ++ show w) (Point 100 250) []
+	drawText dc ("Black: " ++ show b) (Point msgLeft2 msgTop) []
+	drawText dc ("White: " ++ show w) (Point msgLeft2 msgTop2) []
 
 paintLines :: DC a -> IO ()
-paintLines dc = do
-	mapM_ lineV [0 .. 8]
-	mapM_ lineH [0 .. 8]
+paintLines dc = mapM_ lineV [0 .. 8] >> mapM_ lineH [0 .. 8]
 	where
-	lineV x = line dc (Point (x * 25 + 7) 7) (Point (x * 25 + 7) (8 * 25 + 7)) []
-	lineH y = line dc (Point 7 (y * 25 + 7)) (Point (8 * 25 + 7) (y * 25 + 7)) []
+	cx x = x * squareSize + leftMargin
+	cy y = y * squareSize + topMargin
+	lineV x = line dc (Point (cx x) topMargin) (Point (cx x) boundBottom) []
+	lineH y = line dc (Point leftMargin (cy y)) (Point boundRight (cy y)) []
 
-drawStone :: Stone -> (X, Y) -> DC a -> IO ()
-drawStone s (x, y) dc = do
+drawStone :: DC a -> (X, Y) -> Stone -> IO ()
+drawStone dc (x, y) s = do
 	set dc [brushColor := stoneColor s, brushKind := BrushSolid]
-	drawBall dc (Point (fromEnum x * 25 + 20) (fromEnum y * 25 + 20))
+	drawBall $ Point
+		(fromEnum x * squareSize + squareSize `div` 2 + leftMargin)
+		(fromEnum y * squareSize + squareSize `div` 2 + topMargin)
 	where
 	stoneColor Black = black
 	stoneColor White = white
+	drawBall p = circle dc p discRadius []
 
-drawBall :: DC a -> Point -> IO ()
-drawBall dc p = circle dc p 10 []
-
-maybeToXY :: Enum a => Int -> Maybe a
-maybeToXY n
-	| n < 0 || n > 7 = Nothing
-	| otherwise = Just $ toEnum n
-
-clickStone :: Panel () -> Var Game -> Timer -> Point -> IO ()
-clickStone p vgame t (Point x y) = do
+clickStone :: Var Game -> Panel () -> Timer -> Point -> IO ()
+clickStone vgame p t (Point x y) = do
 	_ <- varUpdate vgame $ \g -> fromMaybe g $ do
-		x' <- maybeToXY $ (x - 10) `div` 25
-		y' <- maybeToXY $ (y - 10) `div` 25
+		x' <- maybeToEnum $ (x - leftMargin) `div` squareSize
+		y' <- maybeToEnum $ (y - topMargin) `div` squareSize
 		nextGame g (x', y')
 	repaint p
 	nextTurn vgame p t
@@ -75,7 +94,7 @@ clickStone p vgame t (Point x y) = do
 aiStone :: Var Game -> Panel () -> Timer -> IO ()
 aiStone vgame p t = do
 	_ <- varUpdate vgame $ \g -> fromMaybe g $ do
-		(pos, _) <- aiN 3 g
+		(pos, _) <- aiN aiRead g
 		nextGame g pos
 	repaint p
 	nextTurn vgame p t
@@ -85,7 +104,7 @@ nextTurn vgame p t = do
 	g <- varGet vgame
 	case turn g of
 		Turn Black -> do
-			set p [on click := clickStone p vgame t]
+			set p [on click := clickStone vgame p t]
 			set t [enabled := False]
 		Turn White -> do
 			set p [on click := const $ return ()]
