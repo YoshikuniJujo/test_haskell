@@ -32,7 +32,7 @@ nextGames g = forMaybe (placeable g) $ \pos -> (pos ,) <$> nextGame g pos
 
 calc, calcR :: Disk -> Game -> Int
 calc = sumPoint $ \t -> getPoint $ if t < 32 then map1 else map2
-calcR = sumPoint (const2 1)
+calcR = sumPoint (\_ _ -> 1)
 
 sumPoint :: (Int -> (X, Y) -> Int) -> Disk -> Game -> Int
 sumPoint gp s g = sp me - sp you
@@ -45,8 +45,8 @@ type Map = [((X, Y), Int)]
 
 flipXY, flipX, flipY :: (X, Y) -> (X, Y)
 flipXY (x, y) = (toEnum $ fromEnum y, toEnum $ fromEnum x)
-flipX = first flipE
-flipY = second flipE
+flipX = first flipEnum
+flipY = second flipEnum
 
 getPoint :: Map -> (X, Y) -> Int
 getPoint m pos@(x, y)

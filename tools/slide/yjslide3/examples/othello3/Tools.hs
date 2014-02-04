@@ -1,6 +1,7 @@
 module Tools (
-	scc, prd, maybeToEnum,
-	foldlMaybe, modifyList, flipE, const2, maximumBySnd, forMaybe,
+	scc, prd, toEnumMaybe, flipEnum,
+	modifyList, maximumBySnd,
+	forMaybe, foldlMaybe,
 ) where
 
 import Data.Maybe (mapMaybe)
@@ -13,12 +14,26 @@ scc x	| x < maxBound = Just $ succ x
 prd x	| x > minBound = Just $ pred x
 	| otherwise = Nothing
 
-maybeToEnum :: (Ord a, Enum a, Bounded a) => Int -> Maybe a
-maybeToEnum n
-	| n > fromEnum (maxBound `asTypeOf` ret) ||
-		n < fromEnum (minBound `asTypeOf` ret) = Nothing
+toEnumMaybe :: (Ord a, Enum a, Bounded a) => Int -> Maybe a
+toEnumMaybe n
+	| n > fromEnum mx || n < fromEnum mn = Nothing
 	| otherwise = Just ret
-	where ret = toEnum n
+	where
+	ret = toEnum n
+	mx = maxBound `asTypeOf` ret
+	mn = minBound `asTypeOf` ret
+
+flipEnum :: (Enum a, Bounded a) => a -> a
+flipEnum x = toEnum $ fromEnum (maxBound `asTypeOf` x) - fromEnum x
+
+modifyList :: [a] -> Int -> (a -> a) -> [a]
+modifyList xs n f = take n xs ++ [f $ xs !! n] ++ drop (n + 1) xs
+
+maximumBySnd :: Ord b => [(a, b)] -> (a, b)
+maximumBySnd = maximumBy $ on compare snd
+
+forMaybe :: [a] -> (a -> Maybe b) -> [b]
+forMaybe = flip mapMaybe
 
 foldlMaybe :: (a -> b -> Maybe a) -> a -> [b] -> Maybe a
 foldlMaybe = foldlMaybeBool False
@@ -29,18 +44,3 @@ foldlMaybeBool False _ _ [] = Nothing
 foldlMaybeBool j op x (y : ys) = case x `op` y of
 	Just x' -> foldlMaybeBool True op x' ys
 	_ -> foldlMaybeBool j op x ys
-
-modifyList :: [a] -> Int -> (a -> a) -> [a]
-modifyList xs n f = take n xs ++ [f $ xs !! n] ++ drop (n + 1) xs
-
-flipE :: (Enum a, Bounded a) => a -> a
-flipE x = toEnum $ fromEnum (maxBound `asTypeOf` x) - fromEnum x
-
-const2 :: a -> b -> c -> a
-const2 x _ = const x
-
-maximumBySnd :: Ord b => [(a, b)] -> (a, b)
-maximumBySnd = maximumBy $ on compare snd
-
-forMaybe :: [a] -> (a -> Maybe b) -> [b]
-forMaybe = flip mapMaybe

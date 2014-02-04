@@ -85,8 +85,8 @@ drawDisk dc (x, y) s = do
 clickDisk :: Var Game -> Panel () -> Timer -> Point -> IO ()
 clickDisk vgame p t (Point x y) = do
 	_ <- varUpdate vgame $ \g -> fromMaybe g $ do
-		x' <- maybeToEnum $ (x - leftMargin) `div` squareSize
-		y' <- maybeToEnum $ (y - topMargin) `div` squareSize
+		x' <- toEnumMaybe $ (x - leftMargin) `div` squareSize
+		y' <- toEnumMaybe $ (y - topMargin) `div` squareSize
 		nextGame g (x', y')
 	repaint p
 	nextTurn vgame p t
