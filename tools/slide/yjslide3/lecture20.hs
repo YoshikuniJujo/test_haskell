@@ -5,7 +5,8 @@ subtitle = "第20回 総合演習:オセロ(盤とゲームの定義)"
 
 main :: IO ()
 main = runLecture [
-	[flip writeTitle subtitle], prelude, aboutModules, aboutBoard
+	[flip writeTitle subtitle], prelude, aboutModules, aboutBoard,
+	aboutTools
  ]
 
 prelude :: Page
@@ -40,5 +41,30 @@ aboutBoard = [\t -> do
 	writeTopTitle t "Board"
 	text t "", \t -> do
 	text t "* lectures/othelloディレクトリを作成しよう", \t -> do
-	text t "* Board.hsを作っていこう"
+	text t "* Board.hsを作っていこう", \t -> do
+	text t "* まずはモジュール宣言を書き込む", \t -> do
+	itext t 1 "module Board ("
+	itext t 1 ") where", \t -> do
+	text t "* エクスポートリストは今は空", \t -> do
+	text t "* ()のなかにエクスポートする関数等を追加していく", \t -> do
+	text t "* 対話環境でテストしながら作っていこう", \t -> do
+	itext t 1 "% ghci Board.hs", \t -> do
+	itext t 1 "*Board> "
+ ]
+
+aboutTools :: Page
+aboutTools = [\t -> do
+	writeTopTitle t "Tools"
+	text t "", \t -> do
+	text t "* その前にBoardモジュールで使うより一般的な道具を作成", \t -> do
+	text t "* Tools.hsに以下を書き込もう", \t -> do
+	itext t 1 "module Tools (", \t -> do
+	itext t 1 ") where", \t -> do
+	text t "* 対話環境でテストしながら作っていくので", \t -> do
+	itext t 1 "*Board> :load Test.hs", \t -> do
+	text t "* Boardモジュールで使う道具は以下の4つ", \t -> do
+	itext t 1 "scc: 次の値を返す、最大値ではNothingを", \t -> do
+	itext t 1 "prd: 前の値を返す、最小値ではNothingを", \t -> do
+	itext t 1 "foldlMaybe: foldlと同様だがJustがなければNothing", \t -> do
+	itext t 1 "modifyList: リストの要素のひとつに関数を適用する"
  ]
