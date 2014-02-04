@@ -17,50 +17,53 @@ import Graphics.UI.WX (
 	Point, Point2(..), line, circle, drawText,
 	Var, varCreate, varGet, varUpdate)
 
-aiWait :: Int
-aiWait = 1000
+aiForesee :: Int
+aiForesee = 3
 
-aiRead :: Int
-aiRead = 3
+aiWaitMs :: Int
+aiWaitMs = 1000
 
-leftMargin, rightMargin, topMargin, bottomMargin, squareSize, msgLeft, charSize,
-	discRadius :: Int
+leftMargin, rightMargin, topMargin, bottomMargin, squareSize, discRadius :: Int
 leftMargin = 10
 rightMargin = 50
 topMargin = 10
 bottomMargin = 20
 squareSize = 30
-charSize = 20
-msgLeft = 80
 discRadius = 12
 
-boundRight, boundBottom, windowWidth, windowHeight, msgTop, msgTop2, msgLeft2 :: Int
+msgLeft, charSpace :: Int
+msgLeft = 80
+charSpace = 20
+
+boundRight, boundBottom, windowWidth, windowHeight :: Int
 boundRight = leftMargin + squareSize * 8
 boundBottom = topMargin + squareSize * 8
 windowWidth = boundRight + rightMargin
-windowHeight = boundBottom + bottomMargin + charSize * 3
+windowHeight = boundBottom + bottomMargin + charSpace * 3
+
+msgTop, msgTop2, msgLeft2 :: Int
 msgTop = boundBottom + bottomMargin
-msgTop2 = msgTop + charSize
-msgLeft2 = msgLeft + charSize
+msgTop2 = msgTop + charSpace
+msgLeft2 = msgLeft + charSpace
 
 othello :: IO ()
 othello = do
-	vgame <- varCreate initGame
+	vg <- varCreate initGame
 	f <- frameFixed [text := "othello"]
-	t <- timer f [interval := aiWait, enabled := False]
-	p <- panel f [on (charKey 'q') := close f, on paint := paintBoard vgame]
-	set t [on command := aiDisk vgame p t]
-	set p [on click := clickDisk vgame p t]
+	t <- timer f [interval := aiWaitMs, enabled := False]
+	p <- panel f [on (charKey 'q') := close f, on paint := paintGame vg]
+	set t [on command := aiPlace vg p t]
+	set p [on click := userPlace vg p t]
 	set f [layout := minsize (sz windowWidth windowHeight) $ widget p ]
 
-paintBoard :: Var Game -> DC a -> Rect -> IO ()
-paintBoard vgame dc _ = do
-	game <- varGet vgame
-	let	sts = disks game
-		(b, w) = length *** length $ partition ((== Black) . snd) sts
+paintGame :: Var Game -> DC a -> Rect -> IO ()
+paintGame vg dc _ = do
+	g <- varGet vg
+	let	ds = disks g
+		(b, w) = length *** length $ partition ((== Black) . snd) ds
 	paintLines dc
-	forM_ sts $ uncurry $ drawDisk dc
-	case turn game of
+	forM_ ds $ uncurry $ drawDisk dc
+	case turn g of
 		Turn Black -> drawText dc "*" (Point msgLeft msgTop) []
 		Turn White -> drawText dc "*" (Point msgLeft msgTop2) []
 		_ -> return ()
@@ -76,42 +79,41 @@ paintLines dc = mapM_ lineV [0 .. 8] >> mapM_ lineH [0 .. 8]
 	lineH y = line dc (Point leftMargin (cy y)) (Point boundRight (cy y)) []
 
 drawDisk :: DC a -> (X, Y) -> Disk -> IO ()
-drawDisk dc (x, y) s = do
-	set dc [brushColor := diskColor s, brushKind := BrushSolid]
-	drawBall $ Point
+drawDisk dc (x, y) d = do
+	set dc [brushColor := diskColor d, brushKind := BrushSolid]
+	(\p -> circle dc p discRadius []) $ Point
 		(fromEnum x * squareSize + squareSize `div` 2 + leftMargin)
 		(fromEnum y * squareSize + squareSize `div` 2 + topMargin)
 	where
 	diskColor Black = black
 	diskColor White = white
-	drawBall p = circle dc p discRadius []
 
-clickDisk :: Var Game -> Panel () -> Timer -> Point -> IO ()
-clickDisk vgame p t (Point x y) = do
-	_ <- varUpdate vgame $ \g -> fromMaybe g $ do
+userPlace :: Var Game -> Panel () -> Timer -> Point -> IO ()
+userPlace vg p t (Point x y) = do
+	_ <- varUpdate vg $ \g -> fromMaybe g $ do
 		x' <- toEnumMaybe $ (x - leftMargin) `div` squareSize
 		y' <- toEnumMaybe $ (y - topMargin) `div` squareSize
 		nextGame g (x', y')
 	repaint p
-	nextTurn vgame p t
+	nextTurn vg p t
 
-aiDisk :: Var Game -> Panel () -> Timer -> IO ()
-aiDisk vgame p t = do
-	_ <- varUpdate vgame $ \g -> fromMaybe g $ do
-		(pos, _) <- aiN aiRead g
+aiPlace :: Var Game -> Panel () -> Timer -> IO ()
+aiPlace vg p t = do
+	_ <- varUpdate vg $ \g -> fromMaybe g $ do
+		(pos, _) <- aiN aiForesee g
 		nextGame g pos
 	repaint p
-	nextTurn vgame p t
+	nextTurn vg p t
 
 nextTurn :: Var Game -> Panel () -> Timer -> IO ()
-nextTurn vgame p t = do
-	g <- varGet vgame
+nextTurn vg p t = do
+	g <- varGet vg
 	case turn g of
 		Turn Black -> do
-			set p [on click := clickDisk vgame p t]
 			set t [enabled := False]
+			set p [on click := userPlace vg p t]
 		Turn White -> do
-			set p [on click := const $ return ()]
 			set t [enabled := True]
-		_ -> do set p [on click := const $ return ()]
-			set t [enabled := False]
+			set p [on click := const $ return ()]
+		_ -> do	set t [enabled := False]
+			set p [on click := const $ return ()]
