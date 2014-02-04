@@ -1,17 +1,21 @@
-module Window (
-	start,
-	othello
-) where
+module Window (start, othello) where
 
 import Control.Arrow ((***))
 import Control.Monad (forM_)
 import Data.Maybe (fromMaybe)
 import Data.List (partition)
-
-import AI
-import Game
-import Tools
-import Graphics.UI.WX
+import AI (aiN)
+import Game (
+	Disk(..), Game, Turn(..), X(..), Y(..), initGame, nextGame, turn, disks)
+import Tools (toEnumMaybe)
+import Graphics.UI.WX (
+	start, Prop(..), set, on,
+	frameFixed, text, layout, minsize, sz, widget, close,
+	Timer, timer, interval, command, enabled,
+	Panel, panel, paint, click, charKey, repaint,
+	DC, Rect, BrushKind(..), brushKind, brushColor, black, white,
+	Point, Point2(..), line, circle, drawText,
+	Var, varCreate, varGet, varUpdate)
 
 aiWait :: Int
 aiWait = 1000

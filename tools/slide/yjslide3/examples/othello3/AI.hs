@@ -5,60 +5,61 @@ module AI (aiN) where
 import Control.Applicative ((<$>))
 import Control.Arrow (first, second)
 import Data.List (partition)
-
-import Game
-import Tools
+import Game (
+	Disk(..), Game, Turn(..), X(..), Y(..),
+	nextGame, turn, disks, placeable)
+import Tools (maximumBySnd, flipEnum, forMaybe)
 
 ai0 :: Game -> Maybe ((X, Y), Int)
 ai0 g = case turn g of
-	Turn s -> Just $ maximumBySnd $ map (second $ calc s) $ nextGames g
+	Turn d -> Just $ maximumBySnd $ map (second $ calc d) $ nextGames g
 	_ -> Nothing
 
 aiN :: Int -> Game -> Maybe ((X, Y), Int)
 aiN 0 g = ai0 g
 aiN n g = case turn g of
-	Turn s -> Just $ maximumBySnd $ forMaybe (nextGames g) $ \(pos, ng) ->
-		fmap (pos ,) $ case turn ng of
-			Turn ns -> (if s == ns then id else negate) .
+	Turn d -> Just $ maximumBySnd $ forMaybe (nextGames g) $ \(p, ng) ->
+		fmap (p ,) $ case turn ng of
+			Turn nd -> (if d == nd then id else negate) .
 				snd <$> aiN (n - 1) ng
-			_ -> Just $ calcR s ng
+			_ -> Just $ calcResult d ng
 	_ -> Nothing
 
 nextGames :: Game -> [((X, Y), Game)]
 nextGames g = forMaybe (placeable g) $ \pos -> (pos ,) <$> nextGame g pos
 
 ----------------------------------------------------------------------
--- calc, calcR :: Disk -> Game -> Int
+-- calc, calcResult :: Disk -> Game -> Int
 
-calc, calcR :: Disk -> Game -> Int
-calc = sumPoint $ \t -> getPoint $ if t < 32 then map1 else map2
-calcR = sumPoint (\_ _ -> 1)
+calc, calcResult :: Disk -> Game -> Int
+calc = calcWith $ \t -> point $ if t < 32 then table1 else table2
+calcResult = calcWith (\_ _ -> 1000)
 
-sumPoint :: (Int -> (X, Y) -> Int) -> Disk -> Game -> Int
-sumPoint gp s g = sp me - sp you
+calcWith :: (Int -> (X, Y) -> Int) -> Disk -> Game -> Int
+calcWith pnt d g = sp me - sp you
 	where
-	sp = sum . map (gp t . fst)
-	t = length $ disks g
-	(me, you) = partition ((== s) . snd) $ disks g
+	sp = sum . map (pnt (length ds) . fst)
+	(me, you) = partition ((== d) . snd) ds
+	ds = disks g
 
-type Map = [((X, Y), Int)]
+type Table = [((X, Y), Int)]
 
 flipXY, flipX, flipY :: (X, Y) -> (X, Y)
 flipXY (x, y) = (toEnum $ fromEnum y, toEnum $ fromEnum x)
 flipX = first flipEnum
 flipY = second flipEnum
 
-getPoint :: Map -> (X, Y) -> Int
-getPoint m pos@(x, y)
-	| x > D = getPoint m $ flipX pos
-	| y > Y4 = getPoint m $ flipY pos
-	| fromEnum x < fromEnum y = getPoint m $ flipXY pos
-getPoint m pos = case lookup pos m of
+point :: Table -> (X, Y) -> Int
+point t pos@(x, y)
+	| x > D = point t $ flipX pos
+	| y > Y4 = point t $ flipY pos
+	| fromEnum x < fromEnum y = point t $ flipXY pos
+point t pos = case lookup pos t of
 	Just p -> p
-	_ -> error "bad map"
+	_ -> error "bad table"
 
-map2 :: Map
-map2 = [
+table2 :: Table
+table2 = [
 	((A, Y1), 120),
 	((B, Y1), -20),
 	((B, Y2), -40),
@@ -68,11 +69,10 @@ map2 = [
 	((D, Y1), 5),
 	((D, Y2), -5),
 	((D, Y3), 3),
-	((D, Y4), 3)
- ]
+	((D, Y4), 3) ]
 
-map1 :: Map
-map1 = [
+table1 :: Table
+table1 = [
 	((A, Y1), 30),
 	((B, Y1), -12),
 	((B, Y2), -15),
@@ -82,5 +82,4 @@ map1 = [
 	((D, Y1), -1),
 	((D, Y2), -3),
 	((D, Y3), -1),
-	((D, Y4), -1)
- ]
+	((D, Y4), -1) ]

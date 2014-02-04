@@ -4,7 +4,6 @@ module Board (
 ) where
 
 import Data.Maybe (isJust)
-
 import Tools (scc, prd, foldlMaybe, modifyList)
 
 data Board = Board [[Square]]
@@ -110,12 +109,12 @@ get (Board b) (x, y) = b !! fromEnum y !! fromEnum x
 
 put :: Board -> Disk -> (X, Y) -> Maybe Board
 put b s pos = case get b pos of
-	Empty -> Just $ modify b (const $ Disk s) pos
+	Empty -> Just $ modifySquare b (const $ Disk s) pos
 	_ -> Nothing
 
 capture :: Board -> (X, Y) -> Board
-capture b = modify b $ modifyDisk rev
+capture b = modifySquare b $ modifyDisk rev
 
-modify :: Board -> (Square -> Square) -> (X, Y) -> Board
-modify (Board b) s (x, y) =
+modifySquare :: Board -> (Square -> Square) -> (X, Y) -> Board
+modifySquare (Board b) s (x, y) =
 	Board $ modifyList b (fromEnum y) (\l -> modifyList l (fromEnum x) s)
