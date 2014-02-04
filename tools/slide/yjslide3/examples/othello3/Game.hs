@@ -1,11 +1,11 @@
 module Game (
-	Game, Turn(..), Stone(..), rev, X(..), Y(..),
-	initGame, nextGame, turn, putable, stones,
+	Game, Turn(..), Disk(..), rev, X(..), Y(..),
+	initGame, nextGame, turn, putable, disks,
  ) where
 
 import Control.Applicative ((<$>))
 
-import Board hiding (putable, stones)
+import Board hiding (putable, disks)
 import qualified Board
 
 data Game = Game { turn :: Turn, board :: Board } deriving Show
@@ -15,16 +15,16 @@ nextTurn (Game (Turn s) b) = Game (Turn $ rev s) b
 nextTurn g = g
 gameOver (Game _ b) = Game GameOver b
 
-stones :: Game -> [((X, Y), Stone)]
-stones = Board.stones . board
+disks :: Game -> [((X, Y), Disk)]
+disks = Board.disks . board
 
 putable :: Game -> [(X, Y)]
-putable g = Board.putable (board g) (stone $ turn g)
+putable g = Board.putable (board g) (disk $ turn g)
 
 pass :: Game -> Bool
 pass = null . putable
 
-data Turn = Turn { stone :: Stone } | GameOver deriving Show
+data Turn = Turn { disk :: Disk } | GameOver deriving Show
 
 initGame :: Game
 initGame = Game (Turn Black) initBoard

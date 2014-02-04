@@ -45,17 +45,17 @@ othello = do
 	f <- frameFixed [text := "othello"]
 	t <- timer f [interval := aiWait, enabled := False]
 	p <- panel f [on (charKey 'q') := close f, on paint := paintBoard vgame]
-	set t [on command := aiStone vgame p t]
-	set p [on click := clickStone vgame p t]
+	set t [on command := aiDisk vgame p t]
+	set p [on click := clickDisk vgame p t]
 	set f [layout := minsize (sz windowWidth windowHeight) $ widget p ]
 
 paintBoard :: Var Game -> DC a -> Rect -> IO ()
 paintBoard vgame dc _ = do
 	game <- varGet vgame
-	let	sts = stones game
+	let	sts = disks game
 		(b, w) = length *** length $ partition ((== Black) . snd) sts
 	paintLines dc
-	forM_ sts $ uncurry $ drawStone dc
+	forM_ sts $ uncurry $ drawDisk dc
 	case turn game of
 		Turn Black -> drawText dc "*" (Point msgLeft msgTop) []
 		Turn White -> drawText dc "*" (Point msgLeft msgTop2) []
@@ -71,19 +71,19 @@ paintLines dc = mapM_ lineV [0 .. 8] >> mapM_ lineH [0 .. 8]
 	lineV x = line dc (Point (cx x) topMargin) (Point (cx x) boundBottom) []
 	lineH y = line dc (Point leftMargin (cy y)) (Point boundRight (cy y)) []
 
-drawStone :: DC a -> (X, Y) -> Stone -> IO ()
-drawStone dc (x, y) s = do
-	set dc [brushColor := stoneColor s, brushKind := BrushSolid]
+drawDisk :: DC a -> (X, Y) -> Disk -> IO ()
+drawDisk dc (x, y) s = do
+	set dc [brushColor := diskColor s, brushKind := BrushSolid]
 	drawBall $ Point
 		(fromEnum x * squareSize + squareSize `div` 2 + leftMargin)
 		(fromEnum y * squareSize + squareSize `div` 2 + topMargin)
 	where
-	stoneColor Black = black
-	stoneColor White = white
+	diskColor Black = black
+	diskColor White = white
 	drawBall p = circle dc p discRadius []
 
-clickStone :: Var Game -> Panel () -> Timer -> Point -> IO ()
-clickStone vgame p t (Point x y) = do
+clickDisk :: Var Game -> Panel () -> Timer -> Point -> IO ()
+clickDisk vgame p t (Point x y) = do
 	_ <- varUpdate vgame $ \g -> fromMaybe g $ do
 		x' <- maybeToEnum $ (x - leftMargin) `div` squareSize
 		y' <- maybeToEnum $ (y - topMargin) `div` squareSize
@@ -91,8 +91,8 @@ clickStone vgame p t (Point x y) = do
 	repaint p
 	nextTurn vgame p t
 
-aiStone :: Var Game -> Panel () -> Timer -> IO ()
-aiStone vgame p t = do
+aiDisk :: Var Game -> Panel () -> Timer -> IO ()
+aiDisk vgame p t = do
 	_ <- varUpdate vgame $ \g -> fromMaybe g $ do
 		(pos, _) <- aiN aiRead g
 		nextGame g pos
@@ -104,7 +104,7 @@ nextTurn vgame p t = do
 	g <- varGet vgame
 	case turn g of
 		Turn Black -> do
-			set p [on click := clickStone vgame p t]
+			set p [on click := clickDisk vgame p t]
 			set t [enabled := False]
 		Turn White -> do
 			set p [on click := const $ return ()]

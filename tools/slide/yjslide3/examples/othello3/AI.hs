@@ -28,18 +28,18 @@ nextGames :: Game -> [((X, Y), Game)]
 nextGames g = forMaybe (putable g) $ \pos -> (pos ,) <$> nextGame g pos
 
 ----------------------------------------------------------------------
--- calc, calcR :: Stone -> Game -> Int
+-- calc, calcR :: Disk -> Game -> Int
 
-calc, calcR :: Stone -> Game -> Int
+calc, calcR :: Disk -> Game -> Int
 calc = sumPoint $ \t -> getPoint $ if t < 32 then map1 else map2
 calcR = sumPoint (const2 1)
 
-sumPoint :: (Int -> (X, Y) -> Int) -> Stone -> Game -> Int
+sumPoint :: (Int -> (X, Y) -> Int) -> Disk -> Game -> Int
 sumPoint gp s g = sp me - sp you
 	where
 	sp = sum . map (gp t . fst)
-	t = length $ stones g
-	(me, you) = partition ((== s) . snd) $ stones g
+	t = length $ disks g
+	(me, you) = partition ((== s) . snd) $ disks g
 
 type Map = [((X, Y), Int)]
 

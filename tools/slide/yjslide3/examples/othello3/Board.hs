@@ -1,6 +1,6 @@
 module Board (
-	Board, Stone(..), rev, X(..), Y(..),
-	initBoard, put, putable, stones,
+	Board, Disk(..), rev, X(..), Y(..),
+	initBoard, put, putable, disks,
 ) where
 
 import Prelude hiding (reverse)
@@ -14,23 +14,23 @@ data Board = Board [[State]]
 instance Show Board where
 	show (Board b) = unlines $ map (concatMap ss) b
 		where
-		ss (Stone Black) = "*|"
-		ss (Stone White) = "O|"
+		ss (Disk Black) = "*|"
+		ss (Disk White) = "O|"
 		ss Empty = "_|"
 
-data State = Stone { stone :: Stone } | Empty deriving (Eq, Show)
+data State = Disk { disk :: Disk } | Empty deriving (Eq, Show)
 
-isStone :: State -> Bool
-isStone (Stone _) = True
-isStone _ = False
+isDisk :: State -> Bool
+isDisk (Disk _) = True
+isDisk _ = False
 
-modifyStone :: (Stone -> Stone) -> State -> State
-modifyStone f (Stone s) = Stone $ f s
-modifyStone _ _ = Empty
+modifyDisk :: (Disk -> Disk) -> State -> State
+modifyDisk f (Disk s) = Disk $ f s
+modifyDisk _ _ = Empty
 
-data Stone = Black | White deriving (Eq, Show)
+data Disk = Black | White deriving (Eq, Show)
 
-rev :: Stone -> Stone
+rev :: Disk -> Disk
 rev Black = White
 rev White = Black
 
@@ -51,27 +51,27 @@ initBoard = Board $ map (map c2s) [
 	"________" ]
 	where
 	c2s '_' = Empty
-	c2s '*' = Stone Black
-	c2s 'O' = Stone White
-	c2s _ = error "bad stone char"
+	c2s '*' = Disk Black
+	c2s 'O' = Disk White
+	c2s _ = error "bad disk char"
 
-put :: Board -> Stone -> (X, Y) -> Maybe Board
+put :: Board -> Disk -> (X, Y) -> Maybe Board
 put b s pos = do
 	b' <- set b s pos
 	reverseLines b' s pos
 
-putable :: Board -> Stone -> [(X, Y)]
+putable :: Board -> Disk -> [(X, Y)]
 putable b s = filter (isJust . reverseLines b s)
-	[(x, y) | x <- [A .. H], y <- [Y1 .. Y8], not $ isStone $ get b (x, y)]
+	[(x, y) | x <- [A .. H], y <- [Y1 .. Y8], not $ isDisk $ get b (x, y)]
 
-stones :: Board -> [((X, Y), Stone)]
-stones b = map (second stone) $ filter (isStone . snd) $
+disks :: Board -> [((X, Y), Disk)]
+disks b = map (second disk) $ filter (isDisk . snd) $
 	map (\pos -> (pos, get b pos)) [(x, y) | x <- [A .. H], y <- [Y1 .. Y8]]
 
 ----------------------------------------------------------------------
--- reverseLines :: Board -> Stone -> (X, Y) -> Maybe Board
+-- reverseLines :: Board -> Disk -> (X, Y) -> Maybe Board
 
-reverseLines :: Board -> Stone -> (X, Y) -> Maybe Board
+reverseLines :: Board -> Disk -> (X, Y) -> Maybe Board
 reverseLines brd stn (x, y) = foldMaybe op brd allDirections
 	where
 	op b (dx, dy) = do
@@ -88,32 +88,32 @@ allDirections = [
 	( prd,  scc), (Just,  scc), ( scc,  scc)
  ]
 
-reverseLine :: Board -> Stone -> (X, Y) -> Direction -> Maybe Board
+reverseLine :: Board -> Disk -> (X, Y) -> Direction -> Maybe Board
 reverseLine = reverseLineBool False
 
-reverseLineBool :: Bool -> Board -> Stone -> (X, Y) -> Direction -> Maybe Board
+reverseLineBool :: Bool -> Board -> Disk -> (X, Y) -> Direction -> Maybe Board
 reverseLineBool r b s0 (x, y) (dx, dy) = case get b (x, y) of
-	Stone s -> if s == s0 then if r then Just b else Nothing else do
+	Disk s -> if s == s0 then if r then Just b else Nothing else do
 		x' <- dx x
 		y' <- dy y
 		reverseLineBool True (reverse b (x, y)) s0 (x', y') (dx, dy)
 	_ -> Nothing
 
 ----------------------------------------------------------------------
--- get :: Board -> (X, Y) -> Stone
--- set :: Board -> Stone -> (X, Y) -> Maybe Board
+-- get :: Board -> (X, Y) -> Disk
+-- set :: Board -> Disk -> (X, Y) -> Maybe Board
 -- reverse :: Board -> (X, Y) -> Board
 
 get :: Board -> (X, Y) -> State
 get (Board b) (x, y) = b !! fromEnum y !! fromEnum x
 
-set :: Board -> Stone -> (X, Y) -> Maybe Board
+set :: Board -> Disk -> (X, Y) -> Maybe Board
 set b s pos = case get b pos of
-	Empty -> Just $ modify b (const $ Stone s) pos
+	Empty -> Just $ modify b (const $ Disk s) pos
 	_ -> Nothing
 
 reverse :: Board -> (X, Y) -> Board
-reverse b = modify b $ modifyStone rev
+reverse b = modify b $ modifyDisk rev
 
 modify :: Board -> (State -> State) -> (X, Y) -> Board
 modify (Board b) s (x, y) =
