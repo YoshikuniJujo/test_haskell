@@ -138,3 +138,10 @@ tmp/
 /tools/slide/yjslide/tmp.txt
 /tools/slide/yjslide/bad.txt
 /tools/slide/yjslide/empty.txt
+
+/tools/slide/yjslide3/examples/montecarlo/getPi
+/tools/slide/yjslide3/examples/othello/ball
+/tools/slide/yjslide3/examples/othello2/othello
+/tools/slide/yjslide3/examples/othello3/othello
+/tools/slide/yjslide3/examples/wxhaskell/ball
+/tools/slide/yjslide3/examples/wxhaskell/hello
