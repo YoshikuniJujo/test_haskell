@@ -3,42 +3,39 @@
 module AI (aiN) where
 
 import Control.Applicative ((<$>))
-import Control.Arrow (first, second, (***))
-import Control.Monad (forM)
-import Data.List (partition, maximumBy)
-import Data.Function (on)
+import Control.Arrow (first, second)
+import Data.List (partition)
 
 import Game
 import Tools
 
 ai0 :: Game -> Maybe ((X, Y), Int)
-ai0 g	| null $ putable g = Nothing
-	| otherwise = fmap (maximumBy (on compare snd)) $ forM (putable g) $
-		\pos -> do
-			ng <- nextGame g pos
-			return (pos, calc ng $ stone $ turn g)
+ai0 g = case turn g of
+	Turn s -> Just $ maximumBySnd $ map (second $ calc s) $ nextGames g
+	_ -> Nothing
 
 aiN :: Int -> Game -> Maybe ((X, Y), Int)
 aiN 0 g = ai0 g
-aiN n g = do
-	ngs <- forM (putable g) $ \pos -> (pos ,) <$> nextGame g pos
-	rets <- forM ngs $ \(pos, ng) -> case turn ng of
-		Turn ns	-> (const pos *** f ns) <$> aiN (n - 1) ng
-		GameOver -> return (pos, calcR g $ stone $ turn g)
-	return $ maximumBy (on compare snd) rets
-	where
-	s = stone $ turn g
-	f ns = if s == ns then id else negate
+aiN n g = case turn g of
+	Turn s -> Just $ maximumBySnd $ forMaybe (nextGames g) $ \(pos, ng) ->
+		fmap (pos ,) $ case turn ng of
+			Turn ns -> (if s == ns then id else negate) .
+				snd <$> aiN (n - 1) ng
+			_ -> Just $ calcR s ng
+	_ -> Nothing
+
+nextGames :: Game -> [((X, Y), Game)]
+nextGames g = forMaybe (putable g) $ \pos -> (pos ,) <$> nextGame g pos
 
 ----------------------------------------------------------------------
--- calc :: Game -> Stone -> Int
+-- calc, calcR :: Stone -> Game -> Int
 
-calc, calcR :: Game -> Stone -> Int
+calc, calcR :: Stone -> Game -> Int
 calc = sumPoint $ \t -> getPoint $ if t < 32 then map1 else map2
 calcR = sumPoint (const2 1)
 
-sumPoint :: (Int -> (X, Y) -> Int) -> Game -> Stone -> Int
-sumPoint gp g s = sp me - sp you
+sumPoint :: (Int -> (X, Y) -> Int) -> Stone -> Game -> Int
+sumPoint gp s g = sp me - sp you
 	where
 	sp = sum . map (gp t . fst)
 	t = length $ stones g

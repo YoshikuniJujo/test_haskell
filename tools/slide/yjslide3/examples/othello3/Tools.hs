@@ -1,4 +1,10 @@
-module Tools (scc, prd, foldMaybe, modifyList, flipE, const2) where
+module Tools (
+	scc, prd, foldMaybe, modifyList, flipE, const2, maximumBySnd, forMaybe
+) where
+
+import Data.Maybe (mapMaybe)
+import Data.List (maximumBy)
+import Data.Function (on)
 
 scc, prd :: (Ord a, Enum a, Bounded a) => a -> Maybe a
 scc x	| x < maxBound = Just $ succ x
@@ -24,3 +30,9 @@ flipE x = toEnum $ fromEnum (maxBound `asTypeOf` x) - fromEnum x
 
 const2 :: a -> b -> c -> a
 const2 x _ = const x
+
+maximumBySnd :: Ord b => [(a, b)] -> (a, b)
+maximumBySnd = maximumBy $ on compare snd
+
+forMaybe :: [a] -> (a -> Maybe b) -> [b]
+forMaybe = flip mapMaybe
