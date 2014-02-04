@@ -15,7 +15,8 @@ main = runLecture [
 	machine13, machine14, machine15, machine15_1,
 	machine16, machine17, machine17_1, machineSummary,
 	aboutIO, aboutIO2, aboutIO3, aboutIO4, aboutIO5, aboutIO6, aboutIO7,
-	aboutIO8
+	aboutIO8, aboutIO9, aboutIO10, aboutIO11, aboutIO12, aboutIOSummary,
+	summary
  ]
 
 memo :: Page
@@ -546,7 +547,7 @@ aboutIO3 = [\t -> do
 	text t "* 逆に(a -> IOMcn () b)から(IOMcn a b)が作れる", \t -> do
 	itext t 1 "inArg :: (a -> IOMcn () b) -> IOMcn a b", \t -> do
 	itext t 1 "inArg f = arr (\\x -> (f x, ())) >>> app", \t -> do
-	text t "* (a -> IOMcn () b)があれば以下の関数が作れる", \t -> do
+	text t "* (f :: a -> IOMcn () b)があれば以下の関数が作れる", \t -> do
 	itext t 1 "\\x -> (f x, ()) :: a -> (IOMcn () b, ())", \t -> do
 	text t "* ここから以下の機械が作れる", \t -> do
 	itext t 1 "arr (\\x -> (f x, ())) :: IOMcn a (IOMcn () b, ())", \t -> do
@@ -623,11 +624,100 @@ aboutIO8 :: Page
 aboutIO8 = [\t -> do
 	writeTopTitle t "IO"
 	text t "", \t -> do
-	text t "* いくつか試してみよう", \t -> do
+	text t "* 試してみよう", \t -> do
 	text t "* 文字列を改行をつけて表示する関数", \t -> do
 	itext t 1 "putStrLn :: String -> IO ()", \t -> do
 	text t "* 対話環境で試してみる", \t -> do
-	itext t 1 "*Main> putStrLn \"Hello\"", \t -> do
+	itext t 1 "*Main> :load", \t -> do
+	itext t 1 "OK, modules loaded: none.", \t -> do
+	itext t 1 "Prelude> putStrLn \"Hello\"", \t -> do
 	itext t 1 "Hello", \t -> do
-	text t ""
+	text t "* putStrLnは形としては文字列によって機械を選ぶ関数", \t -> do
+	text t "* しかし、その中身は文字列を受け取る機械"
+ ]
+
+aboutIO9 :: Page
+aboutIO9 = [\t -> do
+	writeTopTitle t "IO"
+	text t "", \t -> do
+	text t "* runIOMcnに当たるものがない", \t -> do
+	itext t 1 "- 対話環境で評価された機械は暗黙のうちに「実行」", \t -> do
+	text t "* これは以下と対照的", \t -> do
+	itext t 1 "- 対話環境で評価された数値は暗黙のうちに「表示」", \t -> do
+	text t "* 見方を変えると", \t -> do
+	itext t 1 "- 数値を表示するprintという機械がある", \t -> do
+	itext t 1 "- 対話環境で数値が評価された場合", \t -> do
+	itext t 1 "- 暗黙のうちにprintという機械に渡されて", \t -> do
+	itext t 1 "- その機械が「実行」される"
+ ]
+
+aboutIO10 :: Page
+aboutIO10 = [\t -> do
+	writeTopTitle t "IO"
+	text t "", \t -> do
+	text t "* 入力についても試してみよう", \t -> do
+	text t "* キーボードからの入力を一行読み込む関数", \t -> do
+	itext t 1 "getLine :: IO String", \t -> do
+	text t "* 対話環境で試してみる", \t -> do
+	itext t 1 "Prelude> getLine", \t -> do
+	itext t 2 "-- 適当な文字列を入力しよう", \t -> do
+	itext t 1 "hello", \t -> do
+	itext t 1 "\"hello\""
+ ]
+
+aboutIO11 :: Page
+aboutIO11 = [\t -> do
+	writeTopTitle t "IO"
+	text t "", \t -> do
+	text t "* 前にライオンの檻について見た", \t -> do
+	itext t 1 "- モナド関数はモナドから外に値が出ることを許さない", \t -> do
+	text t "* Haskellでは「状態変化」はIOの外では起こらない", \t -> do
+	text t "* IOを実行する以外の場所では参照透過性が保たれている", \t -> do
+	text t "* IOの中の値を取り出すことはできる", \t -> do
+	itext t 1 "- しかし、その後に「しまう」必要がある"
+ ]
+
+aboutIO12 :: Page
+aboutIO12 = [\t -> do
+	writeTopTitle t "IO"
+	text t "", \t -> do
+	text t "* IOはモナドなのでMonadクラスのインスタンスになっている", \t -> do
+	itext t 1 "(>>=) :: IO a -> (a -> IO b) -> IO b", \t -> do
+	itext t 1 "return :: a -> IO a", \t -> do
+	text t "* もちろんIOモナドでもdo記法が使える", \t -> do
+	itext t 1 "some :: IO ()", \t -> do
+	itext t 1 "some = do", \t -> do
+	itext t 2 "str <- getLine", \t -> do
+	itext t 2 "putStrLn str", \t -> do
+	text t "* 手続き型言語のような外見になる"
+ ]
+
+aboutIOSummary :: Page
+aboutIOSummary = [\t -> do
+	writeTopTitle t "IO(まとめ)"
+	text t "", \t -> do
+	text t "* IOMcn a bをa -> IOMcn () bにすることができた", \t -> do
+	text t "* type IO = IOMcn ()とすると", \t -> do
+	itext t 1 "IOをモナドとして扱うことができる", \t -> do
+	text t "* IOの中に入った値はIOの外に取り出せない", \t -> do
+	arrowIText t 1 "参照透過性が保たれる", \t -> do
+	text t "* IOをつないでいくのには", \t -> do
+	itext t 1 "- (>>)や(>>=)が使える", \t -> do
+	itext t 1 "- do記法を使えば手続き型言語のような外見になる"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* IOモナドを説明するためにその前段階として", \t -> do
+	itext t 1 "IOMcnという型を導入した", \t -> do
+	text t "* IOMcnに必要な関数は以下のようになる", \t -> do
+	itext t 1 "(>>>) :: IOMcn a b -> IOMcn b c -> IOMcn a c", \t -> do
+	itext t 1 "arr :: (a -> b) -> IOMcn a b", \t -> do
+	itext t 1 "app :: IOMcn (IOMcn a b, a) b", \t -> do
+	text t "* IOMcnを変換することでIOが導き出せる", \t -> do
+	itext t 1 "(>>=) :: IO a -> (a -> IO b) -> IO b", \t -> do
+	itext t 1 "return :: a -> IO a", \t -> do
+	text t "* Haskellでは入出力にIOモナドを使っている"
  ]
