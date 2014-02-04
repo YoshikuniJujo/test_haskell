@@ -25,7 +25,7 @@ aiN n g = case turn g of
 	_ -> Nothing
 
 nextGames :: Game -> [((X, Y), Game)]
-nextGames g = forMaybe (putable g) $ \pos -> (pos ,) <$> nextGame g pos
+nextGames g = forMaybe (placeable g) $ \pos -> (pos ,) <$> nextGame g pos
 
 ----------------------------------------------------------------------
 -- calc, calcR :: Disk -> Game -> Int

@@ -1,6 +1,6 @@
 module Tools (
 	scc, prd, maybeToEnum,
-	foldMaybe, modifyList, flipE, const2, maximumBySnd, forMaybe
+	foldMaybe, modifyList, flipE, const2, maximumBySnd, forMaybe,
 ) where
 
 import Data.Maybe (mapMaybe)
