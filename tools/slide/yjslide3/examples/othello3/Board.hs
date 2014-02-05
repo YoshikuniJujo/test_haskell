@@ -3,10 +3,11 @@ module Board (
 	Board, X(..), Y(..), initBoard, disks, placeable, place,
 ) where
 
+import Control.Applicative ((<$>), (<*>))
 import Data.Maybe (isJust)
 import Tools (scc, prd, foldlMaybe, modifyList)
 
-data Board = Board [[Square]]
+newtype Board = Board [[Square]]
 
 instance Show Board where
 	show (Board b) = unlines $ map (concatMap sd) b
@@ -22,7 +23,7 @@ isDisk (Disk _) = True
 isDisk _ = False
 
 modifyDisk :: (Disk -> Disk) -> Square -> Square
-modifyDisk f (Disk s) = Disk $ f s
+modifyDisk f (Disk d) = Disk $ f d
 modifyDisk _ _ = Empty
 
 data Disk = Black | White deriving (Eq, Show)
@@ -58,7 +59,7 @@ initBoard = Board $ map (map c2d) [
 place :: Board -> Disk -> (X, Y) -> Maybe Board
 place b s pos = do
 	b' <- put b s pos
-	captureLines b' s pos
+	capture b' s pos
 
 placeable :: Board -> Disk -> [(X, Y)]
 placeable b s = [ p | p <- allSquares, isJust $ place b s p ]
@@ -67,9 +68,19 @@ disks :: Board -> [((X, Y), Disk)]
 disks b = [ (p, disk s) | p <- allSquares, let s = get b p, isDisk s ]
 
 ----------------------------------------------------------------------
--- captureLines :: Board -> Disk -> (X, Y) -> Maybe Board
+-- capture :: Board -> Disk -> (X, Y) -> Maybe Board
+-- put :: Board -> Disk -> (X, Y) -> Maybe Board
 
 type Direction = (X -> Maybe X, Y -> Maybe Y)
+
+move :: Direction -> (X, Y) -> Maybe (X, Y)
+move (dx, dy) (x, y) = (,) <$> dx x <*> dy y
+{-
+move (dx, dy) (x, y) = do
+	x' <- dx x
+	y' <- dy y
+	return (x', y')
+	-}
 
 allDirections :: [Direction]
 allDirections = [
@@ -77,24 +88,22 @@ allDirections = [
 	( prd, Just),               ( scc, Just),
 	( prd,  scc), (Just,  scc), ( scc,  scc) ]
 
-captureLines :: Board -> Disk -> (X, Y) -> Maybe Board
-captureLines brd dsk (x, y) = foldlMaybe oneLine brd allDirections
+capture :: Board -> Disk -> (X, Y) -> Maybe Board
+capture brd dsk p = foldlMaybe cap1 brd allDirections
 	where
-	oneLine b (dx, dy) = do
-		x' <- dx x
-		y' <- dy y
-		captureLine b dsk (x', y') (dx, dy)
+	cap1 b dir = do
+		p' <- move dir p
+		capture1 b dsk p' dir
 
-captureLine :: Board -> Disk -> (X, Y) -> Direction -> Maybe Board
-captureLine = captureLineBool False
+capture1 :: Board -> Disk -> (X, Y) -> Direction -> Maybe Board
+capture1 = capture1Bool False
 
-captureLineBool :: Bool -> Board -> Disk -> (X, Y) -> Direction -> Maybe Board
-captureLineBool c b d0 p@(x, y) dir@(dx, dy) = case get b p of
+capture1Bool :: Bool -> Board -> Disk -> (X, Y) -> Direction -> Maybe Board
+capture1Bool c b d0 p dir = case get b p of
 	Disk d -> case (d == d0, c) of
 		(False, _) -> do
-			x' <- dx x
-			y' <- dy y
-			captureLineBool True (capture b p) d0 (x', y') dir
+			p' <- move dir p
+			capture1Bool True (cap b p) d0 p' dir
 		(_, True) -> Just b
 		_ -> Nothing
 	_ -> Nothing
@@ -102,7 +111,7 @@ captureLineBool c b d0 p@(x, y) dir@(dx, dy) = case get b p of
 ----------------------------------------------------------------------
 -- get :: Board -> (X, Y) -> Disk
 -- put :: Board -> Disk -> (X, Y) -> Maybe Board
--- capture :: Board -> (X, Y) -> Board
+-- cap :: Board -> (X, Y) -> Board
 
 get :: Board -> (X, Y) -> Square
 get (Board b) (x, y) = b !! fromEnum y !! fromEnum x
@@ -112,9 +121,9 @@ put b s pos = case get b pos of
 	Empty -> Just $ modifySquare b (const $ Disk s) pos
 	_ -> Nothing
 
-capture :: Board -> (X, Y) -> Board
-capture b = modifySquare b $ modifyDisk rev
+cap :: Board -> (X, Y) -> Board
+cap b = modifySquare b (modifyDisk rev)
 
 modifySquare :: Board -> (Square -> Square) -> (X, Y) -> Board
-modifySquare (Board b) s (x, y) =
-	Board $ modifyList b (fromEnum y) (\l -> modifyList l (fromEnum x) s)
+modifySquare (Board b) f (x, y) =
+	Board $ modifyList b (fromEnum y) (\l -> modifyList l (fromEnum x) f)
