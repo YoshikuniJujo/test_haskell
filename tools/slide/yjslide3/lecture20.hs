@@ -15,7 +15,8 @@ main = runLecture [
 	aboutLowest, aboutLowest2, aboutLowest3, aboutLowest4, aboutLowest5,
 	aboutMiddle, aboutMiddle2, aboutMiddle3, aboutMiddle4, aboutMiddle5,
 	aboutUpper, aboutUpper2, aboutUpper3,
-	aboutBoardExport, tryBoard
+	aboutBoardExport, tryBoard,
+	summary
  ]
 
 prelude :: Page
@@ -638,4 +639,26 @@ tryBoard = [\t -> do
 	itext t 1 "_|_|_|*|*|_|_|_|"
 	itext t 1 "_|_|_|*|O|_|_|_|"
 	itext t 1 "..."
+ ]
+
+beginGameModule :: Page
+beginGameModule = [\t -> do
+	writeTopTitle t "Gameモジュール"
+	text t "", \t -> do
+	text t "* Boardモジュールに足りなかったものがある", \t -> do
+	text t "* それは今が黒と白のどちらのターンなのかということだ"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* 盤と石そして盤上の位置を表す型を定義した", \t -> do
+	text t "* 盤の操作を定義した", \t -> do
+	text t "* 盤に対してできるのは以下の3つ", \t -> do
+	itext t 1 "- 盤上の石の位置を調べる", \t -> do
+	itext t 1 "- 盤上の置ける位置を調べる", \t -> do
+	itext t 1 "- 盤上に石を置く", \t -> do
+	text t "* initBoardと石と位置を表す型も公開した", \t -> do
+	text t "* initBoardに石を指定の位置に置いていくことができる"
  ]
