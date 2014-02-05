@@ -14,6 +14,7 @@ module Lecture (
 	newTurtle, field, hideturtle, pendown, penup, writeRt, undo, waitTurtle,
 	pencolor, setheading, Field, killTurtle, left, right, heading,
 	writeSmallRt, pensizeRt, showturtle, flushoff, flushon, flush,
+	beginfill, endfill,
 ) where
 
 import Graphics.X11.Turtle
