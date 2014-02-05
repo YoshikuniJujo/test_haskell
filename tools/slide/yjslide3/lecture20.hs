@@ -1,7 +1,7 @@
 import Lecture
 
 subtitle :: String
-subtitle = "第20回 総合例題:オセロ(盤とゲームの定義)"
+subtitle = "第20回 まとめ:オセロ(盤の定義)"
 
 main :: IO ()
 main = runLecture [
@@ -27,8 +27,8 @@ prelude = [\t -> do
 	text t "* 最後にオセロを作って終わりにしよう", \t -> do
 	text t "* 難しい部分があるかもしれないが", \t -> do
 	itext t 1 "- 全体の雰囲気がつかめれば良いとする", \t -> do
-	text t "* 3回に分けて作っていこう", \t -> do
-	text t "* 今回は盤とゲームを定義していこう"
+	text t "* 4回に分けて作っていこう", \t -> do
+	text t "* 今回は盤を定義していこう"
  ]
 
 aboutModules :: Page
@@ -43,7 +43,7 @@ aboutModules = [\t -> do
 	text t "* Gameはゲームの状態を表現する型と操作する関数を定義", \t -> do
 	text t "* Boardは盤の状態を表現する型と操作する関数を定義", \t -> do
 	text t "* Toolsではより一般的に使えそうな関数を定義する", \t -> do
-	text t "* 今回はBoard, GameとToolsの一部を作ろう"
+	text t "* 今回はBoardとToolsの一部を作ろう"
  ]
 
 aboutBoard :: Page
