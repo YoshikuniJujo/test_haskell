@@ -1,7 +1,11 @@
 module Board (
+	Disk(..), rev,
+	Board, X(..), Y(..), initBoard,
+	disks, placeable, place
 ) where
 
-import Tools (scc, prd, modifyList)
+import Data.Maybe (isJust)
+import Tools (scc, prd, modifyList, foldlMaybe)
 
 data Disk = Black | White deriving (Eq, Show)
 
@@ -60,8 +64,8 @@ move (dx, dy) (x, y) = do
 	y' <- dy y
 	return (x', y')
 
-allDirections :: [Direction]
-allDirections = [
+allDirs :: [Direction]
+allDirs = [
 	( prd,  prd), (Just,  prd), ( scc,  prd),
 	( prd, Just),               ( scc, Just),
 	( prd,  scc), (Just,  scc), ( scc,  scc) ]
@@ -91,10 +95,12 @@ cap b = modifySquare b $ modifyDisk rev
 -- capture :: Board -> Disk -> (X, Y) -> Maybe Board
 
 capture :: Board -> Disk -> (X, Y) -> Maybe Board
-capture = undefined
+capture brd dsk pos = foldlMaybe (\b -> capture1 b dsk pos) brd allDirs
 
 capture1 :: Board -> Disk -> (X, Y) -> Direction -> Maybe Board
-capture1 = undefined
+capture1 b d p dir = do
+	p' <- move dir p
+	capture1Bool False b d p' dir
 
 capture1Bool :: Bool -> Board -> Disk -> (X, Y) -> Direction ->  Maybe Board
 capture1Bool c b d0 p dir = case get b p of
@@ -105,3 +111,19 @@ capture1Bool c b d0 p dir = case get b p of
 		(_, True) -> Just b
 		_ -> Nothing
 	_ -> Nothing
+
+----------------------------------------------------------------------
+-- disks :: Board -> [((X, Y), Disk)]
+-- placeable :: Board -> Disk -> [(X, Y)]
+-- place :: Board -> Disk -> (X, Y) -> Maybe Board
+
+disks :: Board -> [((X, Y), Disk)]
+disks b = [ (p, disk s) | p <- allSquares, let s = get b p, isDisk s ]
+
+place :: Board -> Disk -> (X, Y) -> Maybe Board
+place b s pos = do
+	b' <- put b s pos
+	capture b' s pos
+
+placeable :: Board -> Disk -> [(X, Y)]
+placeable b d = [ p | p <- allSquares, isJust $ place b d p ]

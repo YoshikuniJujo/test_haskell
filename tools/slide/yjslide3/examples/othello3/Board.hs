@@ -89,14 +89,12 @@ allDirections = [
 	( prd,  scc), (Just,  scc), ( scc,  scc) ]
 
 capture :: Board -> Disk -> (X, Y) -> Maybe Board
-capture brd dsk p = foldlMaybe cap1 brd allDirections
-	where
-	cap1 b dir = do
-		p' <- move dir p
-		capture1 b dsk p' dir
+capture brd dsk p = foldlMaybe (\b -> capture1 b dsk p) brd allDirections
 
 capture1 :: Board -> Disk -> (X, Y) -> Direction -> Maybe Board
-capture1 = capture1Bool False
+capture1 b d p dir = do
+	p' <- move dir p
+	capture1Bool False b d p' dir
 
 capture1Bool :: Bool -> Board -> Disk -> (X, Y) -> Direction -> Maybe Board
 capture1Bool c b d0 p dir = case get b p of

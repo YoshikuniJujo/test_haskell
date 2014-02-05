@@ -12,7 +12,10 @@ main = runLecture [
 	aboutTypeBoard3, aboutXY, aboutComprehension,
 	aboutDirection, aboutDirection2, aboutDirection3,
 	aboutModuleBoard, aboutAbstraction,
-	aboutLowest, aboutLowest2, aboutLowest3, aboutLowest4, aboutLowest5
+	aboutLowest, aboutLowest2, aboutLowest3, aboutLowest4, aboutLowest5,
+	aboutMiddle, aboutMiddle2, aboutMiddle3, aboutMiddle4, aboutMiddle5,
+	aboutUpper, aboutUpper2, aboutUpper3,
+	aboutBoardExport, tryBoard
  ]
 
 prelude :: Page
@@ -369,8 +372,8 @@ aboutDirection3 = [\t -> do
 	text t "", \t -> do
 	text t "* 8方向すべてを表す値を定義する", \t -> do
 	text t "* 以下をBoard.hsに書き込もう", \t -> do
-	itext t 1 "allDirections :: [Direction]", \t -> do
-	itext t 1 "allDirections = [", \t -> do
+	itext t 1 "allDirs :: [Direction]", \t -> do
+	itext t 1 "allDirs = [", \t -> do
 	itext t 2 "( prd,  prd), (Just,  prd), ( scc,  prd),", \t -> do
 	itext t 2 "( prd, Just),               ( scc, Just),", \t -> do
 	itext t 2 "( prd,  scc), (Just,  scc), ( scc,  scc) ]"
@@ -479,4 +482,160 @@ aboutLowest5 = [\t -> do
 	itext t 1 "cap :: Board -> (X, Y) -> Board", \t -> do
 	itext t 1 "cap b = modifySquare b $ modifyDisk rev", \t -> do
 	text t "* マスの石を裏にする関数をmodifySquareに渡している"
+ ]
+
+aboutMiddle :: Page
+aboutMiddle = [\t -> do
+	writeTopTitle t "中間層", \t -> do
+	text t "* 中間層がするのは", \t -> do
+	itext t 1 "1. 最下層で定義したputはそのまま上部層へ公開", \t -> do
+	itext t 1 "2. 8方向の石を取るcaptureを定義する", \t -> do
+	text t "* 1に関してはとくに何もする必要もない", \t -> do
+	text t "* captureを定義していこう", \t -> do
+	text t "* まずは一方向について石を取る関数capture1を作る", \t -> do
+	text t "* 例として自分が黒である場合について考えてみよう", \t -> do
+	itext t 1 "- そのマスが白ならば黒にして次に進む", \t -> do
+	itext t 1 "- そのマスが黒ならば今までの変化を確定する", \t -> do
+	itext t 1 "- 空のマスまたは盤の端に来たら今までの変化を破棄", \t -> do
+	text t "* ただし一番はじめのマスが黒だったら", \t -> do
+	itext t 1 "- ひとつも取れなかったことになるので破棄される"
+ ]
+
+aboutMiddle2 :: Page
+aboutMiddle2 = [\t -> do
+	writeTopTitle t "中間層"
+	text t "", \t -> do
+	text t "* すくなくともひとつ石を取る必要があるので", \t -> do
+	itext t 1 "取ったかどうかを保存するBool値が必要になる", \t -> do
+	text t "* Boolを取るその関数をcapture1Boolとするとその型は", \t -> do
+	itext t 0 "capture1Bool :: Bool -> Board ->"
+	itext t 1 "Disk -> (X, Y) -> Direction -> Maybe Board", \t -> do
+	text t "* 以下のようなアルゴリズムになるだろう(黒で取る場合)", \t -> do
+	itext t 1 "- そこの石が白ならば黒にしBool値をTrueにして次へ", \t -> do
+	itext t 1 "- そこの石が黒ならば", \t -> do
+	itext t 2 "Bool値がTrueならば確定", \t -> do
+	itext t 2 "Bool値がFalseならば破棄", \t -> do
+	itext t 1 "- そこが空ならば破棄"
+ ]
+
+aboutMiddle3 :: Page
+aboutMiddle3 = [\t -> do
+	writeTopTitle t "中間層"
+	text t "", \t -> do
+	text t "* 以下をBoard.hsに書き込もう", \t -> do
+	itext t 0 "capture1Bool :: Bool -> Board ->"
+	itext t 1 "Disk -> (X, Y) -> Direction -> Maybe Board", \t -> do
+	itext t 0 "capture1Bool c b d0 p dir = case get b p of", \t -> do
+	itext t 1 "Disk d -> case (d == d0, c) of", \t -> do
+	itext t 2 "(False, _) -> do", \t -> do
+	itext t 3 "p' <- move dir p", \t -> do
+	itext t 3 "capture1Bool True (cap b p) d0 p' dir", \t -> do
+	itext t 2 "(_, True) -> Just b", \t -> do
+	itext t 2 "_ -> Nothing", \t -> do
+	itext t 1 "_ -> Nothing"
+ ]
+
+aboutMiddle4 :: Page
+aboutMiddle4 = [\t -> do
+	writeTopTitle t "中間層"
+	text t "", \t -> do
+	text t "* capture1は初期値Falseを与える", \t -> do
+	text t "* また、capture1Boolは置いた場所の隣りから始めるので", \t -> do
+	itext t 1 "- あらかじめ位置をひとつ進める必要がある", \t -> do
+	text t "* 以下をBoard.hsに書き込もう", \t -> do
+	itext t 0 "capture1 :: Board ->"
+	itext t 1 "Disk -> (X, Y) -> Direction -> Maybe Board", \t -> do
+	itext t 0 "capture1 b d p dir = do", \t -> do
+	itext t 1 "p' <- move dir p", \t -> do
+	itext t 1 "capture1Bool False b d p' dir"
+ ]
+
+aboutMiddle5 :: Page
+aboutMiddle5 = [\t -> do
+	writeTopTitle t "中間層"
+	text t "", \t -> do
+	text t "* captureはfoldlMaybeを使えば定義できる", \t -> do
+	text t "* モジュール宣言の下に以下を書き込み", \t -> do
+	itext t 0 "import Tools (prd, scc, modifyList, foldlMaybe)", \t -> do
+	text t "* 以下をBoard.hsに書き込もう", \t -> do
+	itext t 0 "capture :: Board -> Disk -> (X, Y) -> Maybe Board", \t -> do
+	itext t 0 "capture brd dsk pos ="
+	itext t 1 "foldlMaybe (\\b -> capture1 b dsk pos) brd allDirs"
+ ]
+
+aboutUpper :: Page
+aboutUpper = [\t -> do
+	writeTopTitle t "上部層"
+	text t "", \t -> do
+	text t "* 上部層で必要なのは", \t -> do
+	itext t 1 "disks: 盤から石の位置を入手する", \t -> do
+	itext t 1 "placeable: 盤の石を置ける位置を調べる", \t -> do
+	itext t 1 "place: 盤に実際に石を置く", \t -> do
+	text t "* disksは全てのマスから石のあるマスを選べば良い", \t -> do
+	text t "* 以下をBoard.hsに書き込もう", \t -> do
+	itext t 1 "disks :: Board -> [((X, Y), Disk)]", \t -> do
+	itext t 1 "disks b = [ (p, disk s) |"
+	itext t 2 "p <- allSquares, let s = get b p, isDisk s ]"
+ ]
+
+aboutUpper2 :: Page
+aboutUpper2 = [\t -> do
+	writeTopTitle t "上層部"
+	text t "", \t -> do
+	text t "* placeableはplaceを使って定義することにする", \t -> do
+	text t "* まずはplaceを定義しよう", \t -> do
+	text t "* その位置に与えられた色の石を置き", \t -> do
+	itext t 1 "- 取れる石をすべて取れば良いので", \t -> do
+	text t "* 以下をBoard.hsに書き込もう", \t -> do
+	itext t 1 "place :: Board -> Disk -> (X, Y) -> Maybe Board", \t -> do
+	itext t 1 "place b d pos = do", \t -> do
+	itext t 2 "b' <- put b d pos", \t -> do
+	itext t 2 "capture b' s pos"
+ ]
+
+aboutUpper3 :: Page
+aboutUpper3 = [\t -> do
+	writeTopTitle t "上層部"
+	text t "", \t -> do
+	text t "* placeableをplaceを使って定義する", \t -> do
+	text t "* Data.MaybeモジュールのisJust関数を使うので", \t -> do
+	text t "* モジュール宣言の下に以下を書き込もう", \t -> do
+	itext t 1 "import Data.Maybe (isJust)", \t -> do
+	text t "* placeが置けない場合にNothingを返すことを利用する", \t -> do
+	text t "* Board.hsに以下を書き込もう", \t -> do
+	itext t 0 "placeable :: Board -> Disk -> [(X, Y)]", \t -> do
+	itext t 0 "placeable b d ="
+	itext t 1 "[ p | p <- allSquares, isJust $ place b d p ]"
+ ]
+
+aboutBoardExport :: Page
+aboutBoardExport = [\t -> do
+	writeTopTitle t "エクスポートリスト"
+	text t "", \t -> do
+	text t "* 必要な関数はそろったので公開する関数を宣言しよう", \t -> do
+	text t "* モジュール宣言を以下のようにしよう", \t -> do
+	itext t 1 "module Board (", \t -> do
+	itext t 2 "Disk(..), rev,", \t -> do
+	itext t 2 "Board, initBoard, X(..), Y(..),", \t -> do
+	itext t 2 "disks, placeable, place"
+	itext t 1 ") where"
+
+ ]
+
+tryBoard :: Page
+tryBoard = [\t -> do
+	writeTopTitle t "試してみる", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 1 "*Board> :reload", \t -> do
+	itext t 1 "*Board> initBoard", \t -> do
+	itext t 1 "...(盤の初期状態)", \t -> do
+	itext t 1 "*Board> placeable initBoard Black", \t -> do
+	itext t 1 "[(C, Y5), (D, Y4), (E, Y7), (F, Y6)]", \t -> do
+	itext t 1 "*Board> place initBoard Black (D, Y4)", \t -> do
+	itext t 1 "Just _|_|_|_|_|_|_|_|"
+	itext t 1 "_|_|_|_|_|_|_|_|"
+	itext t 1 "_|_|_|*|_|_|_|_|"
+	itext t 1 "_|_|_|*|*|_|_|_|"
+	itext t 1 "_|_|_|*|O|_|_|_|"
+	itext t 1 "..."
  ]
