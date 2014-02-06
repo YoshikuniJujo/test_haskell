@@ -12,33 +12,33 @@ import Tools (maximumBySnd, flipEnum, forMaybe)
 
 ai0 :: Game -> Maybe ((X, Y), Int)
 ai0 g = case turn g of
-	Turn d -> Just $ maximumBySnd $ map (second $ calc d) $ nextGames g
+	Turn d -> Just $ maximumBySnd $ map (second $ evaluate d) $ nextGames g
 	_ -> Nothing
 
 aiN :: Int -> Game -> Maybe ((X, Y), Int)
 aiN 0 g = ai0 g
 aiN n g = case turn g of
-	Turn d -> Just $ maximumBySnd $ forMaybe (nextGames g) $ \(p, ng) ->
-		fmap (p ,) $ case turn ng of
+	Turn d -> Just $ maximumBySnd $ forMaybe (nextGames g) $ \(pos, ng) ->
+		(<$>) (pos ,) $ case turn ng of
 			Turn nd -> (if d == nd then id else negate) .
 				snd <$> aiN (n - 1) ng
-			_ -> Just $ calcResult d ng
+			_ -> Just $ evaluateResult d ng
 	_ -> Nothing
 
 nextGames :: Game -> [((X, Y), Game)]
 nextGames g = forMaybe (placeable g) $ \pos -> (pos ,) <$> nextGame g pos
 
 ----------------------------------------------------------------------
--- calc, calcResult :: Disk -> Game -> Int
+-- evaluate, evaluateResult :: Disk -> Game -> Int
 
-calc, calcResult :: Disk -> Game -> Int
-calc = calcWith $ \t -> point $ if t < 32 then table1 else table2
-calcResult = calcWith (\_ _ -> 1000)
+evaluate, evaluateResult :: Disk -> Game -> Int
+evaluate = evaluateWith $ \t -> score $ if t < 32 then table1 else table2
+evaluateResult = evaluateWith (\_ _ -> 1000)
 
-calcWith :: (Int -> (X, Y) -> Int) -> Disk -> Game -> Int
-calcWith pnt d g = sp me - sp you
+evaluateWith :: (Int -> (X, Y) -> Int) -> Disk -> Game -> Int
+evaluateWith scr d g = ss me - ss you
 	where
-	sp = sum . map (pnt (length ds) . fst)
+	ss = sum . map (scr (length ds) . fst)
 	(me, you) = partition ((== d) . snd) ds
 	ds = disks g
 
@@ -49,12 +49,12 @@ flipXY (x, y) = (toEnum $ fromEnum y, toEnum $ fromEnum x)
 flipX = first flipEnum
 flipY = second flipEnum
 
-point :: Table -> (X, Y) -> Int
-point t pos@(x, y)
-	| x > D = point t $ flipX pos
-	| y > Y4 = point t $ flipY pos
-	| fromEnum x < fromEnum y = point t $ flipXY pos
-point t pos = case lookup pos t of
+score :: Table -> (X, Y) -> Int
+score t pos@(x, y)
+	| x > D = score t $ flipX pos
+	| y > Y4 = score t $ flipY pos
+	| fromEnum x < fromEnum y = score t $ flipXY pos
+score t pos = case lookup pos t of
 	Just p -> p
 	_ -> error "bad table"
 
