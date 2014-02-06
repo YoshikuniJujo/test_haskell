@@ -13,7 +13,11 @@ main = runLecture [
 	aboutScore5, scoreTable2, aboutTable, aboutTable2, aboutTable3,
 	scoreTable1, aboutTable4,
 	aboutEvaluate, aboutEvaluate2, aboutEvaluate3, aboutEvaluate4,
-	aboutEvaluate5, aboutEvaluate6, aboutEvaluate7
+	aboutEvaluate5, aboutEvaluate6, aboutEvaluate7,
+	aboutAI, aboutAI2, aboutAI3, aboutAI4, aboutAI5, aboutAI6, aboutAI7,
+	aboutAI8,
+	aboutModule,
+	summary
 	-- scoreTable2, scoreTable1
  ]
 
@@ -505,4 +509,142 @@ aboutEvaluate7 = [\t -> do
 	itext t 1 "*AI> let Just g = nextGame initGame (C, Y5)", \t -> do
 	itext t 1 "*AI> evaluate Black g", \t -> do
 	itext t 1 "-3"
+ ]
+
+aboutAI :: Page
+aboutAI = [\t -> do
+	writeTopTitle t "次の状態"
+	text t "", \t -> do
+	text t "* まずは全ての次の状態を返す関数を作ろう", \t -> do
+	text t "* 以下をAI.hsに書き込もう", \t -> do
+	itext t 1 "nextGames :: Game -> [((X, Y), Game)]", \t -> do
+	itext t 1 "nextGames g = forMaybe (placeable g) $ \\pos ->", \t -> do
+	itext t 2 "(pos ,) <$> nextGame g pos", \t -> do
+	text t "* forMaybeはリストと関数を取って", \t -> do
+	itext t 1 "- リストの要素すべてに関数を適用し", \t -> do
+	itext t 1 "- Justのものだけを集めたリストを返す", \t -> do
+	text t "* (pos ,)はposと引数とで2要素タプルを作る関数", \t -> do
+	text t "* (<$>)はJustの中身に関数を適用している", \t -> do
+	text t "* すべての(置ける位置, その結果)を返している"
+ ]
+
+aboutAI2 :: Page
+aboutAI2 = [\t -> do
+	writeTopTitle t "次の状態"
+	text t "", \t -> do
+	text t "* (pos ,)を使うにはTupleSections拡張が必要", \t -> do
+	text t "* AI.hsの一番上に以下を書き込もう", \t -> do
+	itext t 1 "{-# LANGUAGE TupleSections #-}", \t -> do
+	text t "* (<$>)はControl.Applicativeの関数なので", \t -> do
+	text t "* AI.hsのモジュール宣言の下に以下を書き込もう", \t -> do
+	itext t 1 "import Control.Applicative ((<$>))"
+ ]
+
+aboutAI3 :: Page
+aboutAI3 = [\t -> do
+	writeTopTitle t "人工知能"
+	text t "", \t -> do
+	text t "* まずは、石を置いた直後の状態だけから判断するAIを作ろう", \t -> do
+	text t "* AI.hsに以下を書き込もう", \t -> do
+	itext t 0 "ai0 :: Game -> Maybe ((X, Y), Int)", \t -> do
+	itext t 0 "ai0 g = case turn g of", \t -> do
+	itext t 1 "Turn d -> Just $ maximumBySnd $", \t -> do
+	itext t 2 "map (second $ evaluate d) $ nextGames g", \t -> do
+	itext t 1 "_ -> Nothing", \t -> do
+	text t "* (置く位置, その結果)を", \t -> do
+	itext t 1 "- (second $ evaluate d)で(置く位置, 評価)に変換し", \t -> do
+	itext t 1 "- 評価の最大のものを返している", \t -> do
+	text t "* ターンがゲームオーバーだったらNothingを返す"
+ ]
+
+aboutAI4 :: Page
+aboutAI4 = [\t -> do
+	writeTopTitle t "人工知能"
+	text t "", \t -> do
+	text t "* 置いた直後だけから判断することを先読み0と考えよう", \t -> do
+	text t "* 先読みnの人工知能をaiN nとして定義すると", \t -> do
+	text t "* aiN 0はai0と同じことになる", \t -> do
+	text t "* aiN 1は置いたときにゲームオーバーになるなら", \t -> do
+	itext t 1 "そのときの勝敗をスコアとすれば良い、そうでないなら", \t -> do
+	text t "* 置いたあとの状態からai0が置く位置のスコアの", \t -> do
+	itext t 1 "正負反転した値の最大値を選べば良い", \t -> do
+	text t "* ただし、次の状態がパスだった場合、つまり、", \t -> do
+	itext t 1 "次のターンが自分だった場合には正負反転しない"
+ ]
+
+aboutAI5 :: Page
+aboutAI5 = [\t -> do
+	writeTopTitle t "人工知能"
+	text t "", \t -> do
+	text t "* aiN 1とai0のあいだの関係はより一般的に", \t -> do
+	itext t 1 "- aiN n とaiN (n - 1)の関係に拡張できる", \t -> do
+	text t "* パスがない場合を考えると", \t -> do
+	text t "* aiN nはaiN (n - 1)が返すスコアが最小となる位置を返す", \t -> do
+	text t "* パスがある場合を考えると", \t -> do
+	text t "* aiN nはaiN (n - 1)が返すスコアが最大となる位置を返す"
+ ]
+
+aboutAI6 :: Page
+aboutAI6 = [\t -> do
+	writeTopTitle t "人工知能"
+	text t "", \t -> do
+	text t "* 以下をAI.hsに書き込もう", \t -> do
+	itext t (-1) "aiN :: Int -> Game -> Maybe ((X, Y), Int)", \t -> do
+	itext t (-1) "aiN 0 g = ai0", \t -> do
+	itext t (-1) "aiN n g = case turn g of", \t -> do
+	itext t 0 "Turn d -> Just $ maximumBySnd $ forMaybe (nextGames g) $", \t -> do
+	itext t 1 "\\(pos, ng) -> (pos ,) <$> case turn ng of", \t -> do
+	itext t 2 "Turn nd -> (if d == nd then id else negate) .", \t -> do
+	itext t 3 "snd <$> aiN (n - 1) ng", \t -> do
+	itext t 2 "_ -> Just $ evaluateResult d ng", \t -> do
+	itext t 0 "_ -> Nothing"
+ ]
+
+aboutAI7 :: Page
+aboutAI7 = [\t -> do
+	writeTopTitle t "人工知能"
+	text t "", \t -> do
+	text t "* aiNのコードを説明していこう", \t -> do
+	text t "* まずはcase turn g ofによって場合分けする", \t -> do
+	text t "* \"Turn d ->\"で自分の石をdに束縛する", \t -> do
+	text t "* Just $ maximumBySnd $ (A)で", \t -> do
+	itext t 1 "リスト(A)のなかでタプルの第2要素が最大のものを選ぶ", \t -> do
+	text t "* forMaybe (nextGames g) (B)で", \t -> do
+	itext t 1 "(置く位置, その結果)リストに関数(B)を適用する", \t -> do
+	text t "* 関数(B)は(pos, ng)と分解したあと(pos, (C))のようにする", \t -> do
+	text t "* つまりposには影響を与えずにngを(C)に変換している"
+ ]
+
+aboutAI8 :: Page
+aboutAI8 = [\t -> do
+	writeTopTitle t "人工知能"
+	text t "", \t -> do
+	text t "* (C)で何をしているのかというと", \t -> do
+	text t "* 新しいターンの石をndに束縛し", \t -> do
+	text t "* aiN (n - 1)を新しいゲームngに適用してそのスコアを得て", \t -> do
+	text t "* dとndが異なればそのスコアを正負反転する", \t -> do
+	text t "* 新しいターンがゲームオーバーならば", \t -> do
+	text t "* evaluateResultで評価した値を返す"
+ ]
+
+aboutModule :: Page
+aboutModule = [\t -> do
+	writeTopTitle t "エクスポートリスト"
+	text t "", \t -> do
+	text t "* AIモジュールがエクスポートするのはaiNだけで良いので", \t -> do
+	text t "* モジュール宣言を以下のようにする", \t -> do
+	itext t 1 "module AI (aiN) where"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* オセロのAI部分を作成した", \t -> do
+	text t "* マスごとにスコアづけをした", \t -> do
+	text t "* aiN nはaiN (n - 1)の返すスコアを参照し", \t -> do
+	itext t 1 "- パスがなければそのスコアを最小にするようにし", \t -> do
+	itext t 1 "- パスがあればそのスコアを最大にするようにする", \t -> do
+	text t "* aiNのところはすこしごみごみしている", \t -> do
+	text t "* なんとなくわかれば良い"
  ]

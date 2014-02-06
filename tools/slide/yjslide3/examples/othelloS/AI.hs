@@ -1,6 +1,9 @@
+{-# LANGUAGE TupleSections #-}
+
 module AI (
 ) where
 
+import Control.Applicative ((<$>))
 import Control.Arrow (first, second, (***))
 import Data.List (partition)
 
@@ -68,3 +71,21 @@ evaluate = evaluateWith $ \p -> score $ if p < 32 then table1 else table2
 
 evaluateResult :: Disk -> Game -> Int
 evaluateResult = evaluateWith $ \_ _ -> 1000
+
+nextGames :: Game -> [((X, Y), Game)]
+nextGames g = forMaybe (placeable g) $ \pos -> (pos ,) <$> nextGame g pos
+
+ai0 :: Game -> Maybe ((X, Y), Int)
+ai0 g = case turn g of
+	Turn d -> Just $ maximumBySnd $ map (second $ evaluate d) $ nextGames g
+	_ -> Nothing
+
+aiN :: Int -> Game -> Maybe ((X, Y), Int)
+aiN 0 g = ai0 g
+aiN n g = case turn g of
+	Turn d -> Just $ maximumBySnd $ forMaybe (nextGames g) $
+		\(pos, ng) -> (pos ,) <$> case turn ng of
+			Turn nd -> (if d == nd then id else negate) .
+				snd <$> aiN (n - 1) ng
+			_ -> Just $ evaluateResult d ng
+	_ -> Nothing
