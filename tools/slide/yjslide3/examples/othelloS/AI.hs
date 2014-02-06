@@ -1,7 +1,6 @@
 {-# LANGUAGE TupleSections #-}
 
-module AI (
-) where
+module AI (aiN) where
 
 import Control.Applicative ((<$>))
 import Control.Arrow (first, second, (***))
