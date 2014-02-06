@@ -1,12 +1,12 @@
 module AI (
 ) where
 
-import Control.Arrow (first, second)
+import Control.Arrow (first, second, (***))
 import Data.List (partition)
 
 import Game (
 	Game, Turn(..), X(..), Y(..), Disk(..),
-	turn, disks, placeable, nextGame)
+	turn, disks, placeable, initGame, nextGame)
 import Tools (flipEnum, forMaybe, maximumBySnd)
 
 type Table = [((X, Y), Int)]
@@ -51,9 +51,20 @@ table1 = [
 	((D, Y3),  -1),
 	((D, Y4),  -1) ]
 
+divide :: Disk -> Game -> ([(X, Y)], [(X, Y)])
+divide d g = map fst *** map fst $ partition ((== d) . snd) $ disks g
+
+phase :: Game -> Int
+phase = length . disks
+
 evaluateWith :: (Int -> (X, Y) -> Int) -> Disk -> Game -> Int
 evaluateWith scr d g = ss me - ss you
 	where
-	ss = sum . map (scr (length ds) . fst)
-	(me, you) = partition ((== d) . snd) ds
-	ds = disks g
+	ss = sum . map (scr $ phase g)
+	(me, you) = divide d g
+
+evaluate :: Disk -> Game -> Int
+evaluate = evaluateWith $ \p -> score $ if p < 32 then table1 else table2
+
+evaluateResult :: Disk -> Game -> Int
+evaluateResult = evaluateWith $ \_ _ -> 1000

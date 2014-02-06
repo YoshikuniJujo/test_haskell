@@ -3,7 +3,7 @@
 module AI (aiN) where
 
 import Control.Applicative ((<$>))
-import Control.Arrow (first, second)
+import Control.Arrow (first, second, (***))
 import Data.List (partition)
 import Game (
 	Disk(..), Game, Turn(..), X(..), Y(..),
@@ -38,9 +38,14 @@ evaluateResult = evaluateWith (\_ _ -> 1000)
 evaluateWith :: (Int -> (X, Y) -> Int) -> Disk -> Game -> Int
 evaluateWith scr d g = ss me - ss you
 	where
-	ss = sum . map (scr (length ds) . fst)
-	(me, you) = partition ((== d) . snd) ds
-	ds = disks g
+	ss = sum . map (scr $ phase g)
+	(me, you) = divide d g
+
+phase :: Game -> Int
+phase = length . disks
+
+divide :: Disk -> Game -> ([(X, Y)], [(X, Y)])
+divide d = (map fst *** map fst) . partition ((== d) . snd) . disks
 
 type Table = [((X, Y), Int)]
 

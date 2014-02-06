@@ -11,7 +11,9 @@ main = runLecture [
 	aboutTools, aboutTools2, aboutTools3, aboutTools4, aboutTools5,
 	beginModule, aboutScore, aboutScore2, aboutScore3, aboutScore4,
 	aboutScore5, scoreTable2, aboutTable, aboutTable2, aboutTable3,
-	scoreTable1, aboutTable4, aboutEvaluate
+	scoreTable1, aboutTable4,
+	aboutEvaluate, aboutEvaluate2, aboutEvaluate3, aboutEvaluate4,
+	aboutEvaluate5, aboutEvaluate6, aboutEvaluate7
 	-- scoreTable2, scoreTable1
  ]
 
@@ -119,7 +121,7 @@ beginModule = [\t -> do
 	itext t 1 ""
 	itext t 1 "import Game (", \t -> do
 	itext t 2 "Game, Turn(..), X(..), Y(..), Disk(..),"
-	itext t 2 "turn, disks, placeable, nextGame)", \t -> do
+	itext t 2 "turn, disks, placeable, initGame, nextGame)", \t -> do
 	itext t 1 "import Tools (flipEnum, forMaybe, maximumBySnd)", \t -> do
 	text t "* 読み込んでおこう", \t -> do
 	itext t 1 "*Tools> :load AI.hs", \t -> do
@@ -413,5 +415,94 @@ aboutEvaluate = [\t -> do
 	writeTopTitle t "ゲームを評価する関数"
 	text t "", \t -> do
 	text t "* マスごとのスコアを返す関数が作れた", \t -> do
-	text t "* ゲームのその時点でのスコアを計算する関数を作ろう"
+	text t "* ゲームのその時点でのスコアを計算する関数を作ろう", \t -> do
+	text t "* 第一引数をマスからスコアを返す関数にする", \t -> do
+	itext t 1 "((X, Y) -> Int) -> Disk -> Game -> Int", \t -> do
+	text t "* ゲームの前半と後半で計算法を変えたい", \t -> do
+	text t "* ゲームの進行度を置いてある石の数で評価するとすると", \t -> do
+	text t "* Intによって計算法を変えることになるので", \t -> do
+	itext t 1 "(Int -> (X, Y) -> Int) -> Disk -> Game -> Int"
+ ]
+
+aboutEvaluate2 :: Page
+aboutEvaluate2 = [\t -> do
+	writeTopTitle t "ゲームを評価する関数"
+	text t "", \t -> do
+	text t "* 自分の石と相手の石を分ける関数が必要だ", \t -> do
+	text t "* 以下をAI.hsに書き込もう", \t -> do
+	itext t 1 "divide :: Disk -> Game -> ([(X, Y)], [(X, Y)])", \t -> do
+	itext t 1 "divide d = map fst *** map fst .", \t -> do
+	itext t 2 "partition ((== d) . snd) . disks", \t -> do
+	text t "* partitionは以下の2つのリストのタプルを返す", \t -> do
+	itext t 1 "- 条件を満たすものを集めたリスト", \t -> do
+	itext t 1 "- 条件を満たさないものを集めたリスト", \t -> do
+	text t "* (***)はタプルの第1, 第2要素にそれぞれの関数を適用する", \t -> do
+	text t "* map fstで[((X, Y), Disk)]を[(X, Y)]にしている"
+ ]
+
+aboutEvaluate3 :: Page
+aboutEvaluate3 = [\t -> do
+	writeTopTitle t "ゲームの段階を返す関数"
+	text t "", \t -> do
+	text t "* 今がゲームの序盤か終盤か等を判断する", \t -> do
+	text t "* 簡易な方法を採り、盤面の石の数で判断するようにする", \t -> do
+	text t "* 以下をAI.hsに書き込もう", \t -> do
+	itext t 1 "phase :: Game -> Int", \t -> do
+	itext t 1 "phase = length . disks"
+ ]
+
+aboutEvaluate4 :: Page
+aboutEvaluate4 = [\t -> do
+	writeTopTitle t "ゲームを評価する関数"
+	text t "", \t -> do
+	text t "* スコアを返す関数を使ってゲームを評価する関数を作る関数", \t -> do
+	text t "* 以下をAI.hsに書き込もう", \t -> do
+	itext t 0 "evaluateWith ::"
+	itext t 1 "(Int -> (X, Y) -> Int) -> Disk -> Game -> Int", \t -> do
+	itext t 0 "evaluateWith scr d g = ss me - ss you", \t -> do
+	itext t 1 "where", \t -> do
+	itext t 1 "ss = sum . map (scr $ phase g)", \t -> do
+	itext t 1 "(me, you) = divide d g", \t -> do
+	text t "* (scr $ phase g)でその段階でのスコア関数を得る", \t -> do
+	text t "* sum . map (...)はすべての石にスコア関数を適用し", \t -> do
+	itext t 1 "- その総和を求めている"
+ ]
+
+aboutEvaluate5 :: Page
+aboutEvaluate5 = [\t -> do
+	writeTopTitle t "ゲームを評価する関数"
+	text t "", \t -> do
+	text t "* これでゲームを評価する関数が作れる", \t -> do
+	text t "* 以下をAI.hsに書き込もう", \t -> do
+	itext t 1 "evaluate :: Disk -> Game -> Int", \t -> do
+	itext t 1 "evaluate = evaluateWith $ \\p ->", \t -> do
+	itext t 2 "score $ if p < 32 then table1 else table2", \t -> do
+	text t "* 石が盤面上に32未満のときはtable1を使い", \t -> do
+	itext t 1 "32以上のときはtable2を使うようにした"
+ ]
+
+aboutEvaluate6 :: Page
+aboutEvaluate6 = [\t -> do
+	writeTopTitle t "ゲームの終了時に評価する関数"
+	text t "", \t -> do
+	text t "* ゲーム終了時にはどのマスも同じスコアと考えられる", \t -> do
+	text t "* またゲーム終了時の評価が途中よりも重要なので", \t -> do
+	text t "* 以下をAI.hsに書き込もう", \t -> do
+	itext t 1 "evaluateResult :: Disk -> Game -> Int", \t -> do
+	itext t 1 "evaluateResult = evaluateWith $ \\_ _ -> 1000", \t -> do
+	text t "* どの位置も同じスコアなので引数を無視し", \t -> do
+	text t "* 絶対値を上げるためにマスのスコアを1000とした"
+ ]
+
+aboutEvaluate7 :: Page
+aboutEvaluate7 = [\t -> do
+	writeTopTitle t "試してみる"
+	text t "", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 1 "*AI> :reload", \t -> do
+	itext t 1 "*AI> evaluate Black initGame", \t -> do
+	itext t 1 "0", \t -> do
+	itext t 1 "*AI> let Just g = nextGame initGame (C, Y5)", \t -> do
+	itext t 1 "*AI> evaluate Black g", \t -> do
+	itext t 1 "-3"
  ]
