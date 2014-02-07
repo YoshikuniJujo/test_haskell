@@ -43,7 +43,7 @@ hyphens :: ()
 	/ '-'
 
 line :: String
-	= l:<(/= '\n')>+			{ l }
+	= l:<(`notElem` "#\n")>+		{ l }
 
 code :: String
 	= l:fourSpacesLine c:code		{ l ++ c }
@@ -77,6 +77,6 @@ paras :: [String]
 	= ps:para+				{ ps }
 
 para :: String
-	= ls:(l:line '\n' { l })+ _:('\n' / !_)	{ concat ls }
+	= ls:(l:line '\n' { l })+ _:('\n' / !_ / !_:para)	{ concat ls }
 
 |]
