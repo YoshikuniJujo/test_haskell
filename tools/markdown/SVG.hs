@@ -33,18 +33,18 @@ bottomBorder :: Double -> Double
 bottomBorder = (-) <$> height <*> bottomMargin
 
 header :: Int -> Double -> Double
-header i = ((1 / fromIntegral (i + 2)) * 1000 *)
+header i = ((1 / fromIntegral (i + 2)) * 800 *)
 
 normal, normalSep :: Double -> Double
-normal = (100 *)
+normal = (80 *)
 normalSep = (* (4 / 3)) <$> normal
 
 code, codeSep :: Double -> Double
-code = (80 *)
+code = (70 *)
 codeSep = (* (4 / 3)) <$> code
 
 lineChars :: Int
-lineChars = 75
+lineChars = 87
 
 textToSVGData :: Double -> Double -> [Text] -> [[SVG]]
 textToSVGData r h [] = [[]]
@@ -85,24 +85,30 @@ splitAtString :: Int -> String -> (String, String)
 splitAtString len = sepStr 0
 	where
 	sepStr _ "" = ("", "")
+	sepStr n (c : c'@('ー') : cs)
+		|  n > len = ([c, c'], cs)
+		| otherwise = let (s, t) = sepStr (n + 6) cs in (c : c' : s, t)
 	sepStr n (c : c'@('。') : cs)
 		|  n > len = ([c, c'], cs)
 		| otherwise = let (s, t) = sepStr (n + 6) cs in (c : c' : s, t)
 	sepStr n (c : cs)
 		| n > len = ([c], cs)
-		| isAscii c = let (s, t) = sepStr (n + 2) cs in (c : s, t)
+		| isAscii c = let (s, t) = sepStr (n + 1) cs in (c : s, t)
 		| otherwise = let (s, t) = sepStr (n + 3) cs in (c : s, t)
 
 separateString :: Int -> String -> [String]
 separateString len = sepStr 0
 	where
 	sepStr _ "" = [[]]
+	sepStr n (c : c'@('ー') : cs)
+		|  n > len = [c, c'] : sepStr 0 cs
+		| otherwise = let s : ss = sepStr (n + 6) cs in (c : c' : s) : ss
 	sepStr n (c : c'@('。') : cs)
 		|  n > len = [c, c'] : sepStr 0 cs
 		| otherwise = let s : ss = sepStr (n + 6) cs in (c : c' : s) : ss
 	sepStr n (c : cs)
 		| n > len = [c] : sepStr 0 cs
-		| isAscii c = let s : ss = sepStr (n + 2) cs in (c : s) : ss
+		| isAscii c = let s : ss = sepStr (n + 1) cs in (c : s) : ss
 		| otherwise = let s : ss = sepStr (n + 3) cs in (c : s) : ss
 
 paraToSVGData :: Double -> Double -> String -> (Double, [SVG])
