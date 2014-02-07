@@ -8,6 +8,11 @@ import Text.XML.YJSVG
 
 import Text
 
+normalFont, codeFont :: String
+normalFont = "Kochi Mincho"
+-- normalFont = "Kochi Gothic"
+codeFont = "Kochi Gothic"
+
 textToSVG :: Double -> [Text] -> [String]
 textToSVG r = map (showSVG (width r) (height r)) . textToSVGData r (topMargin r)
 
@@ -47,7 +52,7 @@ textToSVGData r h (Header n s : ts)
 	| h > bottomBorder r - header n r = [l] : all
 	| otherwise = (l : one) : rest
 	where
-	l = Text (TopLeft (leftMargin r) (h + header n r)) (header n r) (ColorName "black") "Kochi-Gothic" s
+	l = Text (TopLeft (leftMargin r) (h + header n r)) (header n r) (ColorName "black") normalFont s
 	one : rest = textToSVGData r (h + header n r * 3 / 2) ts
 	all = textToSVGData r (topMargin r) ts
 textToSVGData r h (Paras [] : ts) = textToSVGData r h ts
@@ -104,7 +109,7 @@ paraToSVGData :: Double -> Double -> String -> (Double, [SVG])
 paraToSVGData r h str = (h', l : svgs)
 	where
 	(s, t) = splitAtString (lineChars - 3) str
-	l = Text (TopLeft (paraLeftMargin r + normal r) (h + normal r)) (normal r) (ColorName "black") "Kochi-Gothic" s
+	l = Text (TopLeft (paraLeftMargin r + normal r) (h + normal r)) (normal r) (ColorName "black") normalFont s
 	ls = separateString lineChars t
 	(h', svgs) = strsToSVGData r (h + normalSep r) ls
 
@@ -113,7 +118,7 @@ strsToSVGData r h [] = (h, [])
 strsToSVGData r h ([] : ss) = strsToSVGData r h ss
 strsToSVGData r h (s : ss) = (h', l : svgs)
 	where
-	l = Text (TopLeft (paraLeftMargin r) (h + normal r)) (normal r) (ColorName "black") "Kochi-Gothic" s
+	l = Text (TopLeft (paraLeftMargin r) (h + normal r)) (normal r) (ColorName "black") normalFont s
 	(h', svgs) = strsToSVGData r (h + normalSep r) ss
 
 listToSVGData :: Int -> String -> Double -> Double -> Double -> List -> (Int, Double, [SVG])
@@ -126,16 +131,16 @@ listToSVGData n sym r y x (lst : lsts) = (n'', y'', svgs ++ svgs')
 list1ToSVGData :: Int -> String -> Double -> Double -> Double -> List1 -> (Int, Double, [SVG])
 list1ToSVGData n sym r y x (BulItem s lst) = (n, h', l : svgs)
 	where
-	l = Text (TopLeft x (y + normal r)) (normal r) (ColorName "black") "Kochi-Gothic" $ head sym : ' ' : s
+	l = Text (TopLeft x (y + normal r)) (normal r) (ColorName "black") normalFont $ head sym : ' ' : s
 	(_, h', svgs) = listToSVGData n (tail sym) r (y + normalSep r) (x + normal r * 2) lst
 list1ToSVGData n sym r y x (OrdItem s lst) = (n + 1, h', l : svgs)
 	where
-	l = Text (TopLeft x (y + normal r)) (normal r) (ColorName "black") "Kochi-Gothic" $ show n ++ '.' : ' ' : s
+	l = Text (TopLeft x (y + normal r)) (normal r) (ColorName "black") normalFont $ show n ++ '.' : ' ' : s
 	(_, h', svgs) = listToSVGData n (tail sym) r (y + normalSep r) (x + normal r * 2) lst
 
 codeToSVGData :: Double -> Double -> [String] -> (Double, [SVG])
 codeToSVGData _ h [] = (h, [])
 codeToSVGData r h (s : ss) = (h', l : svgs)
 	where
-	l = Text (TopLeft (codeLeftMargin r) (h + code r)) (code r) (ColorName "black") "Kochi-Gothic" s
+	l = Text (TopLeft (codeLeftMargin r) (h + code r)) (code r) (ColorName "black") codeFont s
 	(h', svgs) = codeToSVGData r (h + codeSep r) ss
