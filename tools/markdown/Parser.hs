@@ -62,10 +62,11 @@ list :: List
 						{ ls }
 
 subList :: List
-	= ls:(_:fourSpaces _:listHead ' ' l:line '\n' { BulItem l [] })*
-						{ ls }
-	/ ls:(_:fourSpaces _:nListHead ' ' l:line '\n' { OrdItem l [] })*
-						{ ls }
+	= ls:subList1*				{ ls }
+
+subList1 :: List1
+	= _:fourSpaces _:listHead ' ' l:line '\n'	{ BulItem l [] }
+	/ _:fourSpaces _:nListHead ' ' l:line '\n'	{ OrdItem l [] }
 
 listHead :: ()
 	= '*' / '-' / '+'
@@ -77,6 +78,6 @@ paras :: [String]
 	= ps:para+				{ ps }
 
 para :: String
-	= ls:(l:line '\n' { l })+ _:('\n' / !_ / !_:para)	{ concat ls }
+	= ls:(!_:fourSpaces l:line '\n' { l })+ _:('\n' / !_ / !_:para)	{ concat ls }
 
 |]

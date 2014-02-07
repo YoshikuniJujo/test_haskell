@@ -19,6 +19,7 @@ topMargin, leftMargin, paraLeftMargin :: Double -> Double
 topMargin = (400 *)
 leftMargin = (400 *)
 paraLeftMargin = (+) <$> leftMargin <*> (200 *)
+codeLeftMargin = (+) <$> paraLeftMargin <*> (200 *)
 
 bottomMargin :: Double -> Double
 bottomMargin = (400 *)
@@ -29,11 +30,13 @@ bottomBorder = (-) <$> height <*> bottomMargin
 header :: Int -> Double -> Double
 header i = ((1 / fromIntegral (i + 2)) * 1000 *)
 
-normal :: Double -> Double
+normal, normalSep :: Double -> Double
 normal = (100 *)
-
-normalSep :: Double -> Double
 normalSep = (* (4 / 3)) <$> normal
+
+code, codeSep :: Double -> Double
+code = (80 *)
+codeSep = (* (4 / 3)) <$> code
 
 lineChars :: Int
 lineChars = 75
@@ -56,8 +59,22 @@ textToSVGData r h (Paras (p : ps) : ts)
 	(h'', svgs') = paraToSVGData r (topMargin r) p
 	one : rest = textToSVGData r h' (Paras ps : ts)
 	one' : rest' = textToSVGData r h'' (Paras ps : ts)
--- textToSVGData r h (List l)
---	| h' > bottomBor
+textToSVGData r h (List l : ts)
+	| h' > bottomBorder r = [] : (svgs' ++ one') : rest'
+	| otherwise = (svgs ++ one) : rest
+	where
+	(_, h', svgs) = listToSVGData 1 "*-" r h (paraLeftMargin r) l
+	(_, h'', svgs') = listToSVGData 1 "*-" r (topMargin r) (paraLeftMargin r) l
+	one : rest = textToSVGData r h' ts
+	one' : rest' = textToSVGData r h'' ts
+textToSVGData r h (Code s : ts)
+	| h' > bottomBorder r = [] : (svgs' ++ one') : rest'
+	| otherwise = (svgs ++ one) : rest
+	where
+	(h', svgs) = codeToSVGData r (h + codeSep r) (lines s)
+	(h'', svgs') = codeToSVGData r (topMargin r) (lines s)
+	one : rest = textToSVGData r h' ts
+	one' : rest' = textToSVGData r h'' ts
 
 splitAtString :: Int -> String -> (String, String)
 splitAtString len = sepStr 0
@@ -98,3 +115,27 @@ strsToSVGData r h (s : ss) = (h', l : svgs)
 	where
 	l = Text (TopLeft (paraLeftMargin r) (h + normal r)) (normal r) (ColorName "black") "Kochi-Gothic" s
 	(h', svgs) = strsToSVGData r (h + normalSep r) ss
+
+listToSVGData :: Int -> String -> Double -> Double -> Double -> List -> (Int, Double, [SVG])
+listToSVGData n sym r y x [] = (n, y, [])
+listToSVGData n sym r y x (lst : lsts) = (n'', y'', svgs ++ svgs')
+	where
+	(n', y', svgs) = list1ToSVGData n sym r y x lst
+	(n'', y'', svgs') = listToSVGData n' sym r y' x lsts
+
+list1ToSVGData :: Int -> String -> Double -> Double -> Double -> List1 -> (Int, Double, [SVG])
+list1ToSVGData n sym r y x (BulItem s lst) = (n, h', l : svgs)
+	where
+	l = Text (TopLeft x (y + normal r)) (normal r) (ColorName "black") "Kochi-Gothic" $ head sym : ' ' : s
+	(_, h', svgs) = listToSVGData n (tail sym) r (y + normalSep r) (x + normal r * 2) lst
+list1ToSVGData n sym r y x (OrdItem s lst) = (n + 1, h', l : svgs)
+	where
+	l = Text (TopLeft x (y + normal r)) (normal r) (ColorName "black") "Kochi-Gothic" $ show n ++ '.' : ' ' : s
+	(_, h', svgs) = listToSVGData n (tail sym) r (y + normalSep r) (x + normal r * 2) lst
+
+codeToSVGData :: Double -> Double -> [String] -> (Double, [SVG])
+codeToSVGData _ h [] = (h, [])
+codeToSVGData r h (s : ss) = (h', l : svgs)
+	where
+	l = Text (TopLeft (codeLeftMargin r) (h + code r)) (code r) (ColorName "black") "Kochi-Gothic" s
+	(h', svgs) = codeToSVGData r (h + codeSep r) ss
