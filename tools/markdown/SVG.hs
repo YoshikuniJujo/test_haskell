@@ -33,7 +33,8 @@ bottomBorder :: Double -> Double
 bottomBorder = (-) <$> height <*> bottomMargin
 
 header :: Int -> Double -> Double
-header i = ((1 / fromIntegral (i + 2)) * 800 *)
+header i = ((1 / fromIntegral (i + 1)) * 560 *)
+headerSep i = (* (4 / 3)) <$> header i
 
 normal, normalSep :: Double -> Double
 normal = (80 *)
@@ -49,11 +50,11 @@ lineChars = 87
 textToSVGData :: Double -> Double -> [Text] -> [[SVG]]
 textToSVGData r h [] = [[]]
 textToSVGData r h (Header n s : ts)
-	| h > bottomBorder r - header n r = [l] : all
+	| h > bottomBorder r - headerSep n r = [l] : all
 	| otherwise = (l : one) : rest
 	where
-	l = Text (TopLeft (leftMargin r) (h + header n r)) (header n r) (ColorName "black") normalFont s
-	one : rest = textToSVGData r (h + header n r * 3 / 2) ts
+	l = Text (TopLeft (leftMargin r) (h + headerSep n r)) (header n r) (ColorName "black") normalFont s
+	one : rest = textToSVGData r (h + headerSep n r * 5 / 4) ts
 	all = textToSVGData r (topMargin r) ts
 textToSVGData r h (Paras [] : ts) = textToSVGData r h ts
 textToSVGData r h (Paras (p : ps) : ts)
@@ -78,8 +79,8 @@ textToSVGData r h (Code s : ts)
 	where
 	(h', svgs) = codeToSVGData r (h + codeSep r) (lines s)
 	(h'', svgs') = codeToSVGData r (topMargin r) (lines s)
-	one : rest = textToSVGData r h' ts
-	one' : rest' = textToSVGData r h'' ts
+	one : rest = textToSVGData r (h' + codeSep r) ts
+	one' : rest' = textToSVGData r (h'' + codeSep r) ts
 
 splitAtString :: Int -> String -> (String, String)
 splitAtString len = sepStr 0

@@ -26,9 +26,9 @@ markdown1 :: Text
 	/ p:paras				{ Paras p }
 
 header :: Text
-	= n:sharps _:<isSpace>* l:line '\n'	{ Header n l }
-	/ l:line '\n' _:equals '\n'		{ Header 1 l }
-	/ l:line '\n' _:hyphens '\n'		{ Header 2 l }
+	= n:sharps _:<isSpace>* l:line '\n'+	{ Header n l }
+	/ l:line '\n' _:equals '\n'+		{ Header 1 l }
+	/ l:line '\n' _:hyphens '\n'+		{ Header 2 l }
 
 sharps :: Int
 	= '#' n:sharps				{ n + 1 }
@@ -50,7 +50,7 @@ code :: String
 	/ l:fourSpacesLine			{ l }
 
 fourSpacesLine :: String
-	= _:fourSpaces l:line '\n'		{ l ++ "\n" }
+	= _:fourSpaces l:line '\n'+		{ l ++ "\n" }
 
 fourSpaces :: ()
 	= ' ' ' ' ' ' ' '
@@ -78,6 +78,6 @@ paras :: [String]
 	= ps:para+				{ ps }
 
 para :: String
-	= ls:(!_:fourSpaces l:line '\n' { l })+ _:('\n' / !_ / !_:para)	{ concat ls }
+	= ls:(!_:header !_:fourSpaces l:line '\n' { l })+ _:('\n' / !_ / !_:para)	{ concat ls }
 
 |]
