@@ -198,9 +198,11 @@ partialFunction = [\t -> do
 
 myHead :: [a] -> a
 myHead (h : _) = h
+myHead _ = error "bad"
 
 myTail :: [a] -> [a]
 myTail (_ : t) = t
+myTail _ = error "bad"
 
 partialFunction2 :: Page
 partialFunction2 = [\t -> do
@@ -582,7 +584,7 @@ listFunctions21 = [\t -> do
  ]
 
 myFoldl :: (a -> b -> a) -> a -> [b] -> a
-myFoldl op s [] = s
+myFoldl _ s [] = s
 myFoldl op s (x : xs) = myFoldl op (s `op` x) xs
 
 listFunctions22 :: Page

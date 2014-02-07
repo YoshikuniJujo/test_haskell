@@ -28,6 +28,7 @@ import Data.List
 import System.Environment
 import System.IO.Unsafe
 import System.Random
+import System.Exit
 
 import qualified WriteTree as WT
 import WriteTree(BinTree(..), rotateL, rotateR, mapR)
@@ -65,6 +66,10 @@ smallF = 9 * rt
 
 runLecture :: [[Turtle -> IO ()]] -> IO ()
 runLecture pgs = do
+	as <- getArgs
+	case as of
+		["count-pages"] -> print (length pgs) >> exitSuccess
+		_ -> return ()
 	(bfn, pages', bn) <- (flip fmap getArgs) $ \args -> case args of
 		"-" : m : n : _ -> (Nothing,
 			take (read n - read m + 1) $

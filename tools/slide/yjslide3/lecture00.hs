@@ -230,7 +230,6 @@ lecture4 = [\t -> do
 	text t "", \t -> do
 	text t "Prelude>", \t -> do
 	itext t 1 "- とりあえず数字を入れてみよう", \t -> do
-	number <- randomIO :: IO Int
 	text t $ "Prelude> " ++ show l4Number, \t -> do
 	text t $ show l4Number
 	text t $ "Prelude> ", \t -> do
