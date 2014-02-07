@@ -9,7 +9,9 @@ main = runLecture [
 	importWX, importWX2, importModules,
 	setConstants, setConstants2, setConstants3, setConstants4,
 	setConstants5,
-	makeWindow, makeWindow2, makeWindow3, makeWindow4, makeWindow5
+	makeWindow, makeWindow2, makeWindow3, makeWindow4, makeWindow5,
+	makeWindow6,
+	makeWindowX, makeWindowY, makeWindowZ
 --	aboutPaintLines
  ]
 
@@ -187,12 +189,68 @@ makeWindow2 :: Page
 makeWindow2 = [\t -> do
 	writeTopTitle t "othello関数の説明"
 	text t "", \t -> do
-	text t "* ここにothello関数の説明を書く", \t -> do
-	text t "* とくに[name := value]の形について"
+	text t "* 一行ずつ見ていこう", \t -> do
+	itext t 1 "vg <- varCreate initGame", \t -> do
+	text t "* initGameを初期値にして「変数」を作っている", \t -> do
+	text t "* この変数はIOモナド内で値を変化させることができる"
  ]
 
 makeWindow3 :: Page
 makeWindow3 = [\t -> do
+	writeTopTitle t "othello関数の説明"
+	text t "", \t -> do
+	text t "* まずはトップレベルのウィンドウを作る", \t -> do
+	itext t 1 "f <- frameFixed [text := \"othello\"]", \t -> do
+	text t "* サイズの変更できないウィンドウを作っている", \t -> do
+	text t "* ウィンドウのタイトルを\"othello\"とした", \t -> do
+	text t "* (:=)は値構築演算子", \t -> do
+	itext t 1 "- ':'で始まる演算子は値構築子となる", \t -> do
+	itext t 1 "- (text := \"othello\")はtextと\"othello\"を含む値", \t -> do
+	itext t 1 "- textはウィンドウにタイトルを設定する関数を保持", \t -> do
+	text t "* frameFixed関数のなかで", \t -> do
+	itext t 1 "- \"othello\"を引数にしてtext内の関数が実行される"
+ ]
+
+makeWindow4 :: Page
+makeWindow4 = [\t -> do
+	writeTopTitle t "othello関数の説明"
+	text t "", \t -> do
+	text t "* タイマーと描画領域(パネル)を作る", \t -> do
+	itext t 1 "t <- timer f ["
+	itext t 2 "interval := aiWaitMs,"
+	itext t 2 "enabled := False ]", \t -> do
+	itext t 1 "p <- panel f ["
+	itext t 2 "on (charKey 'q') := close f,"
+	itext t 2 "on paint := paintGame vg ]", \t -> do
+	text t "* タイマーを作りその間隔を設定し無効化", \t -> do
+	text t "* パネルを作り'q'キーに終了を設定し描画関数を設定", \t -> do
+	text t "* interval, enabled, on ...は値の設定のための関数を保持"
+ ]
+
+makeWindow5 :: Page
+makeWindow5 = [\t -> do
+	writeTopTitle t "othello関数の説明"
+	text t "", \t -> do
+	text t "* タイマーと描画領域の動作を設定", \t -> do
+	itext t 1 "set t [on command := aiPlace vg p t]", \t -> do
+	itext t 1 "set p [on click := userPlace vg p t]", \t -> do
+	text t "* タイマー作動時の動作とパネルクリック時の動作を設定", \t -> do
+	text t "* ターンが変化する際に自他を", \t -> do
+	itext t 1 "無効化、有効化するために引数としてp, tを持つ"
+ ]
+
+makeWindow6 :: Page
+makeWindow6 = [\t -> do
+	writeTopTitle t "othello関数の説明"
+	text t "", \t -> do
+	text t "* パネルをウィンドウ上に配置する", \t -> do
+	itext t 0 "set f [layout :="
+	itext t 1 "minsize (sz windowWidth windowHeight) $ widget p ]", \t -> do
+	text t "* 最小のサイズを指定してパネルをウィンドウ上に配置"
+ ]
+
+makeWindowX :: Page
+makeWindowX = [\t -> do
 	writeTopTitle t "スタブ"
 	text t "", \t -> do
 	text t "* 以下をWindow.hsに書き込もう", \t -> do
@@ -207,11 +265,11 @@ makeWindow3 = [\t -> do
 	itext t 0 "userPlace _ _ _ _ = return ()"
  ]
 
-makeWindow4 :: Page
-makeWindow4 = [\t -> do
+makeWindowY :: Page
+makeWindowY = [\t -> do
 	writeTopTitle t "エクスポートリスト"
 	text t "", \t -> do
-	text t "* Windowモジュールが公開する必要のある関数はstart, othelloなので", \t -> do
+	text t "* Windowモジュールが公開する関数はstart, othello", \t -> do
 	text t "* Window.hsのモジュール宣言を以下のように書き換える", \t -> do
 	itext t 1 "module Window (start, othello) where", \t -> do
 	text t "* Mainモジュールを作る", \t -> do
@@ -224,9 +282,9 @@ makeWindow4 = [\t -> do
 	itext t 1 "main = start othello"
  ]
 
-makeWindow5 :: Page
-makeWindow5 = [\t -> do
-	writeTopTitle t ""
+makeWindowZ :: Page
+makeWindowZ = [\t -> do
+	writeTopTitle t "コンパイル、実行"
 	text t "", \t -> do
 	text t "* コンパイルして実行してみよう", \t -> do
 	itext t 1 "% ghc othello.hs", \t -> do
