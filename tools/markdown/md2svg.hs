@@ -13,7 +13,7 @@ main = do
 		_ -> 0.15
 	cnt <- readFile fp
 	case parseMrd cnt of
-		Just t -> forM_ (zip [1 ..] $ textToSVG size t) $ \(i, s) ->
+		Just t -> forM_ (zip [1 ..] $ textToSVG True size t) $ \(i, s) ->
 			writeFile (mkSVGFileName fp i) s
 		_ -> return ()
 

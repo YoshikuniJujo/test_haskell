@@ -8,13 +8,15 @@ import Text.XML.YJSVG
 
 import Text
 
-normalFont, codeFont :: String
+headerFont, normalFont, codeFont :: String
+headerFont = "Kochi Gothic"
 normalFont = "Kochi Mincho"
 -- normalFont = "Kochi Gothic"
 codeFont = "Kochi Gothic"
 
-textToSVG :: Double -> [Text] -> [String]
-textToSVG r = map (showSVG (width r) (height r)) . textToSVGData r (topMargin r)
+textToSVG :: Bool -> Double -> [Text] -> [String]
+textToSVG n r = map (showSVG (width r) (height r)) . textToSVGData r (topMargin r) .
+	if n then addChapters [Nothing, Just 0, Just 0, Just 0, Nothing, Nothing] else id
 
 width, height :: Double -> Double
 width = (3535 *)
@@ -45,7 +47,7 @@ code = (70 *)
 codeSep = (* (4 / 3)) <$> code
 
 lineChars :: Int
-lineChars = 87
+lineChars = 66
 
 textToSVGData :: Double -> Double -> [Text] -> [[SVG]]
 textToSVGData r h [] = [[]]
@@ -53,7 +55,7 @@ textToSVGData r h (Header n s : ts)
 	| h > bottomBorder r - headerSep n r = [l] : all
 	| otherwise = (l : one) : rest
 	where
-	l = Text (TopLeft (leftMargin r) (h + headerSep n r)) (header n r) (ColorName "black") normalFont s
+	l = Text (TopLeft (leftMargin r) (h + headerSep n r)) (header n r) (ColorName "black") headerFont s
 	one : rest = textToSVGData r (h + headerSep n r * 5 / 4) ts
 	all = textToSVGData r (topMargin r) ts
 textToSVGData r h (Paras [] : ts) = textToSVGData r h ts
@@ -88,14 +90,14 @@ splitAtString len = sepStr 0
 	sepStr _ "" = ("", "")
 	sepStr n (c : c'@('ー') : cs)
 		|  n > len = ([c, c'], cs)
-		| otherwise = let (s, t) = sepStr (n + 6) cs in (c : c' : s, t)
+		| otherwise = let (s, t) = sepStr (n + 4) cs in (c : c' : s, t)
 	sepStr n (c : c'@('。') : cs)
 		|  n > len = ([c, c'], cs)
-		| otherwise = let (s, t) = sepStr (n + 6) cs in (c : c' : s, t)
+		| otherwise = let (s, t) = sepStr (n + 4) cs in (c : c' : s, t)
 	sepStr n (c : cs)
 		| n > len = ([c], cs)
 		| isAscii c = let (s, t) = sepStr (n + 1) cs in (c : s, t)
-		| otherwise = let (s, t) = sepStr (n + 3) cs in (c : s, t)
+		| otherwise = let (s, t) = sepStr (n + 2) cs in (c : s, t)
 
 separateString :: Int -> String -> [String]
 separateString len = sepStr 0
@@ -103,14 +105,14 @@ separateString len = sepStr 0
 	sepStr _ "" = [[]]
 	sepStr n (c : c'@('ー') : cs)
 		|  n > len = [c, c'] : sepStr 0 cs
-		| otherwise = let s : ss = sepStr (n + 6) cs in (c : c' : s) : ss
+		| otherwise = let s : ss = sepStr (n + 4) cs in (c : c' : s) : ss
 	sepStr n (c : c'@('。') : cs)
 		|  n > len = [c, c'] : sepStr 0 cs
-		| otherwise = let s : ss = sepStr (n + 6) cs in (c : c' : s) : ss
+		| otherwise = let s : ss = sepStr (n + 4) cs in (c : c' : s) : ss
 	sepStr n (c : cs)
 		| n > len = [c] : sepStr 0 cs
 		| isAscii c = let s : ss = sepStr (n + 1) cs in (c : s) : ss
-		| otherwise = let s : ss = sepStr (n + 3) cs in (c : s) : ss
+		| otherwise = let s : ss = sepStr (n + 2) cs in (c : s) : ss
 
 paraToSVGData :: Double -> Double -> String -> (Double, [SVG])
 paraToSVGData r h str = (h', l : svgs)
