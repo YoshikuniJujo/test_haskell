@@ -1,5 +1,6 @@
 module Window (start, othello) where
 
+import Tools (toEnumMaybe)
 import Game (
 	Game, Turn(..), X(..), Y(..), Disk(..),
 	turn, disks, initGame, nextGame)
@@ -93,7 +94,31 @@ drawDisk dc (x, y) d = do
 	diskColor White = white
 
 aiPlace :: Var Game -> Panel () -> Timer -> IO ()
-aiPlace _ _ _ = return ()
+aiPlace vg p t = do
+	_ <- varUpdate vg $ \g -> fromMaybe g $ do
+		(pos, _) <- aiN aiForesee g
+		nextGame g pos
+	repaint p
+	nextTurn vg p t
 
 userPlace :: Var Game -> Panel () -> Timer -> Point -> IO ()
-userPlace _ _ _ _ = return ()
+userPlace vg p t (Point x y) = do
+	_ <- varUpdate vg $ \g -> fromMaybe g $ do
+		x' <- toEnumMaybe $ (x - leftMargin) `div` squareSize
+		y' <- toEnumMaybe $ (y - topMargin) `div` squareSize
+		nextGame g (x', y')
+	repaint p
+	nextTurn vg p t
+
+nextTurn :: Var Game -> Panel () -> Timer -> IO ()
+nextTurn vg p t = do
+	g <- varGet vg
+	case turn g of
+		Turn Black -> do
+			set t [enabled := False]
+			set p [on click := userPlace vg p t]
+		Turn White -> do
+			set t [enabled := True]
+			set p [on click := const $ return ()]
+		_ -> do	set t [enabled := False]
+			set p [on click := const $ return ()]

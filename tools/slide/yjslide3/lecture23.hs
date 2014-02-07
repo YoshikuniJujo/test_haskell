@@ -5,8 +5,8 @@ subtitle = "第23回 まとめ:オセロ(ウィンドウの処理)"
 
 main :: IO ()
 main = runLecture [
-	[flip writeTitle subtitle], prelude, beginModule,
-	importWX, importWX2, importModules,
+	[flip writeTitle subtitle], prelude, aboutTools, aboutTools2,
+	beginModule, importWX, importWX2, importModules,
 	setConstants, setConstants2, setConstants3, setConstants4,
 	setConstants5,
 	makeWindow, makeWindow2, makeWindow3, makeWindow4, makeWindow5,
@@ -14,7 +14,11 @@ main = runLecture [
 	aboutStub,
 	aboutPaintGame, aboutPaintGame2, aboutPaintGame3, aboutPaintGame4,
 	aboutPaintGame5,
-	aboutPaintLines, aboutPaintLines2, aboutDrawDisk
+	aboutPaintLines, aboutPaintLines2, aboutDrawDisk, aboutDrawDisk2,
+	stubNextTurn, aboutUserPlace, aboutUserPlace2, aboutUserPlace3,
+	aboutNextTurn, aboutNextTurn2, aboutNextTurn3,
+	aboutAIPlace, aboutAIPlace2, finish,
+	summary
  ]
 
 prelude :: Page
@@ -31,6 +35,38 @@ prelude = [\t -> do
 	itext t 1 "- AIなら入力を無効にしタイマーを有効にする"
  ]
 
+aboutTools :: Page
+aboutTools = [\t -> do
+	writeTopTitle t "Tools"
+	text t "", \t -> do
+	text t "* まずはWindowモジュールで使うより一般的な道具を作ろう", \t -> do
+	text t "* Tools.hsに以下を書き込もう", \t -> do
+	itext t (- 1) "toEnumMaybe :: (Ord a, Enum a, Bounded a) => Int -> Maybe a", \t -> do
+	itext t (- 1) "toEnumMaybe n", \t -> do
+	itext t 0 "| n > fromEnum mx || n < fromEnum mn = Nothing", \t -> do
+	itext t 0 "| otherwise = Just ret", \t -> do
+	itext t 0 "where", \t -> do
+	itext t 0 "ret = toEnum n", \t -> do
+	itext t 0 "mx = maxBound `asTypeOf` ret", \t -> do
+	itext t 0 "mn = minBound `asTypeOf` ret"
+ ]
+
+aboutTools2 :: Page
+aboutTools2 = [\t -> do
+	writeTopTitle t "Tools"
+	text t "", \t -> do
+	text t "* 範囲外の値のEnumクラスのインスタンスへの変換", \t -> do
+	itext t 1 "- toEnumではエラーが生じる", \t -> do
+	itext t 1 "- toEnumMaybeではNothingを返す", \t -> do
+	text t "* Toolsのエクスポートリストに追加しよう", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 1 "% ghci Tools.hs", \t -> do
+	itext t 1 "*Tools> toEnumMaybe 1 :: Maybe Bool", \t -> do
+	itext t 1 "Just True", \t -> do
+	itext t 1 "*Tools> toEnumMaybe 2 :: Maybe Bool", \t -> do
+	itext t 1 "Nothing"
+ ]
+
 beginModule :: Page
 beginModule = [\t -> do
 	writeTopTitle t "Windowモジュール"
@@ -39,6 +75,7 @@ beginModule = [\t -> do
 	itext t 1 "module Window(", \t -> do
 	itext t 1 ") where"
 	itext t 1 "", \t -> do
+	itext t 1 "import Tools (toEnumMaybe)", \t -> do
 	itext t 1 "import Game (",  \t -> do
 	itext t 2 "Game, Turn(..), X(..), Y(..), Disk(..),", \t -> do
 	itext t 2 "turn, disks, initGame, nextGame)", \t -> do
@@ -438,10 +475,190 @@ aboutDrawDisk = [\t -> do
 	itext t 2 "brushKind := BrushSolid ]", \t -> do
 	itext t 1 "circle dc (Point x' y') discRadius []", \t -> do
 	itext t 1 "where", \t -> do
-	itext t 1 "x' = leftMargin +", \t -> do
-	itext t 2 "fromEnum x * squareSize + squareSize `div` 2 + leftMargin", \t -> do
-	itext t 1 "y' = topMargin +", \t -> do
-	itext t 2 "fromEnum y * squareSize + squareSize `div` 2", \t -> do
+	itext t 1 "x' = leftMargin + fromEnum x * squareSize +", \t -> do
+	itext t 2 "squareSize `div` 2", \t -> do
+	itext t 1 "y' = topMargin + fromEnum y * squareSize +", \t -> do
+	itext t 2 "squareSize `div` 2", \t -> do
 	itext t 1 "diskColor Black = black", \t -> do
 	itext t 1 "diskColor White = white"
+ ]
+
+aboutDrawDisk2 :: Page
+aboutDrawDisk2 = [\t -> do
+	writeTopTitle t "drawDisk"
+	text t "", \t -> do
+	text t "* set dc [...]で図形の書きかたを指定する", \t -> do
+	text t "* brushColor := diskColor dで塗りつぶしの色を指定", \t -> do
+	text t "* brushKind := BrushSolidでべったりと塗るようにする", \t -> do
+	text t "* circle dc (Point x' y') discRadius []で"
+	itext t 1 "計算した位置に石を描画する", \t -> do
+	text t "* 位置の計算は", \t -> do
+	itext t 1 "- 「余白 + 置く位置の番号 * マスの大きさ」で左上", \t -> do
+	itext t 1 "- 中心を指定するので「マスの大きさ / 2」を足す", \t -> do
+	text t "* コンパイル、実行", \t -> do
+	itext t 1 "% ghc othello.hs", \t -> do
+	itext t 1 "% ./othello", \t -> do
+	text t "* オセロの初期配置が描画されるはずだ"
+ ]
+
+stubNextTurn :: Page
+stubNextTurn = [\t -> do
+	writeTopTitle t "nextTurnスタブ"
+	text t "", \t -> do
+	text t "* 残りは以下の2つだ", \t -> do
+	itext t 1 "userPlace, aiPlace", \t -> do
+	text t "* これらは処理の最後に次のターンを調べて", \t -> do
+	itext t 1 "AIかユーザー入力の片方を有効にし片方を無効にする", \t -> do
+	text t "* この処理をスタブとして作っておこう", \t -> do
+	text t "* 以下をWindow.hsに書き込もう", \t -> do
+	itext t 1 "nextTurn :: Var Game -> Panel () -> Timer -> IO ()", \t -> do
+	itext t 1 "nextTurn _ _ _ = return ()"
+ ]
+
+aboutUserPlace :: Page
+aboutUserPlace = [\t -> do
+	writeTopTitle t "userPlace"
+	text t "", \t -> do
+	text t "* ユーザーのターンに入力を処理する関数を作る", \t -> do
+	text t "* Window.hsのuserPlaceスタブを以下で置き換えよう", \t -> do
+	itext t (- 1) "userPlace vg p t (Point x y) = do", \t -> do
+	itext t 0 "_ <- varUpdate vg $ \\g -> fromMaybe g $ do", \t -> do
+	itext t 1 "x' <- toEnumMaybe $", \t -> do
+	itext t 2 "(x - leftMargin) `div` squareSize", \t -> do
+	itext t 1 "y' <- toEnumMaybe $", \t -> do
+	itext t 2 "(y - topMargin) `div` squareSize", \t -> do
+	itext t 1 "nextGame g (x', y')", \t -> do
+	itext t 0 "repaint p", \t -> do
+	itext t 0 "nextTurn vg p t"
+ ]
+
+aboutUserPlace2 :: Page
+aboutUserPlace2 = [\t -> do
+	writeTopTitle t "userPlace"
+	text t "", \t -> do
+	text t "* 外側のdoがIOモナドのdoであり", \t -> do
+	itext t 1 "- 内側のdoがMaybeモナドのdoであることに注意", \t -> do
+	text t "* varUpdate vg ...でvgを...の関数で更新する", \t -> do
+	text t "* fromMaybe g $ ...で...内がNothingならばもとの値のまま", \t -> do
+	text t "* マスの位置(x', y')を計算している", \t -> do
+	itext t 1 "- これらがX, Yの範囲より外ならば全体がNothing", \t -> do
+	text t "* nextGame g (x', y')で新しいGame値を計算している", \t -> do
+	text t "* repaintで画面の再描画", \t -> do
+	text t "* nextTurnでは、未実装だが、次のターンを調べて", \t -> do
+	itext t 1 "- それによってAIかユーザー入力を有効化する"
+ ]
+
+aboutUserPlace3 :: Page
+aboutUserPlace3 = [\t -> do
+	writeTopTitle t "userPlace"
+	text t "", \t -> do
+	text t "* コンパイル、実行", \t -> do
+	itext t 1 "% ghc othello.hs", \t -> do
+	itext t 1 "./othello", \t -> do
+	text t "* この段階ではひとりオセロができる", \t -> do
+	text t "* 次はターンの変更処理を実装しよう", \t -> do
+	text t "* Window.hsのnextTurnスタブを以下に置き換えよう"
+ ]
+
+aboutNextTurn :: Page
+aboutNextTurn = [\t -> do
+	writeTopTitle t "nextTurn", \t -> do
+	itext t 0 "nextTurn vg p t = do", \t -> do
+	itext t 1 "g <- varGet vg", \t -> do
+	itext t 1 "case turn g of", \t -> do
+	itext t 2 "Turn Black -> do", \t -> do
+	itext t 3 "set t [enabled := False]", \t -> do
+	itext t 3 "set p [on click := userPlace vg p t]", \t -> do
+	itext t 2 "Turn White -> do", \t -> do
+	itext t 3 "set t [enabled := True]", \t -> do
+	itext t 3 "set p [on click := const $ return ()]", \t -> do
+	itext t 2 "_ -> do", \t -> do
+	itext t 3 "set t [enabled := False]", \t -> do
+	itext t 3 "set p [on click := const $ return ()]"
+ ]
+
+aboutNextTurn2 :: Page
+aboutNextTurn2 = [\t -> do
+	writeTopTitle t "nextTurn"
+	text t "", \t -> do
+	text t "* 現在のターンを調べて", \t -> do
+	itext t 1 "- 黒ならばユーザーのターン", \t -> do
+	itext t 1 "- 白ならばAIのターン", \t -> do
+	itext t 1 "- どちらでもなければゲームオーバー", \t -> do
+	text t "* それぞれに応じてタイマーとマウスクリック処理の", \t -> do
+	itext t 1 "有効、無効を切り換えている", \t -> do
+	text t "* タイマーを有効化、無効化する処理", \t -> do
+	itext t 1 "- set t [enabled := True]", \t -> do
+	itext t 1 "- set t [enabled := False]", \t -> do
+	text t "* ユーザー入力を有効化、無効化する処理", \t -> do
+	itext t 1 "- set p [on click := userPlace vg p t]", \t -> do
+	itext t 1 "- set p [on click := const $ return ()]"
+ ]
+
+aboutNextTurn3 :: Page
+aboutNextTurn3 = [\t -> do
+	writeTopTitle t "nextTurn"
+	text t "", \t -> do
+	text t "* コンパイル、実行", \t -> do
+	itext t 1 "% ghc othello.hs", \t -> do
+	itext t 1 "% ./othello", \t -> do
+	text t "* ターンの変更処理が行われるのでひとりオセロはできない"
+ ]
+
+aboutAIPlace :: Page
+aboutAIPlace = [\t -> do
+	writeTopTitle t "aiPlace"
+	text t "", \t -> do
+	text t "* AIが石を置く処理でオセロは完成する", \t -> do
+	text t "* Window.hsのaiPlaceスタブを以下で置き換えよう", \t -> do
+	itext t 1 "aiPlace vg p t = do", \t -> do
+	itext t 2 "_ <- varUpdate vg $ \\g -> fromMaybe g $ do", \t -> do
+	itext t 3 "(pos, _) <- aiN aiForesee g", \t -> do
+	itext t 3 "nextGame g pos", \t -> do
+	itext t 2 "repaint p", \t -> do
+	itext t 2 "nextTurn vg p t"
+ ]
+
+aboutAIPlace2 :: Page
+aboutAIPlace2 = [\t -> do
+	writeTopTitle t "aiPlace"
+	text t "", \t -> do
+	text t "* さっきは説明を省略したが", \t -> do
+	itext t 1 "_ <- ...でワイルドカードに返り値を読み捨てている", \t -> do
+	text t "* varUpdateが値を返すIOなので「その値を使いませんよ」と", \t -> do
+	itext t 1 "明言している", \t -> do
+	text t "* 特に必要ないがバグを減らすのに良い習慣", \t -> do
+	text t "* 他もだいたいuserPlaceと同様だ", \t -> do
+	text t "* 置くマスを決めるのにaiN aiForesee gで", \t -> do
+	itext t 1 "- 決められた手数だけ先読みしている"
+ ]
+
+finish :: Page
+finish = [\t -> do
+	writeTopTitle t "できた!"
+	text t "", \t -> do
+	text t "* お疲れさまでした", \t -> do
+	text t "* これでオセロは完成です", \t -> do
+	text t "* コンパイル、実行", \t -> do
+	itext t 1 "% ghc othello.hs", \t -> do
+	itext t 1 "% ./othello", \t -> do
+	text t "* 演者よりは強いAIを試してみてください", \t -> do
+	itext t 1 "(5分)"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* 4回にわたってオセロを作ってきた", \t -> do
+	text t "* だいたい300行程度のプログラム", \t -> do
+	text t "* ロジックの部分にはIOを使っていない", \t -> do
+	text t "* このようにIOを使わないで複雑な部分を作っておき", \t -> do
+	text t "* 外部とのインターフェースの部分をできるだけ薄くする", \t -> do
+	itext t 1 "- テストしやすい", \t -> do
+	itext t 1 "- デバッグしやすい", \t -> do
+	itext t 1 "- リファクタリングしやすい", \t -> do
+	text t "* ロジック部を関数型的に作る", \t -> do
+	itext t 1 "- つまり状態変化を入れ込まないようにする", \t -> do
+	text t "* これは他の言語でも有用なテクニックとなるだろう"
  ]

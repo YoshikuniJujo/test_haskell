@@ -1,6 +1,7 @@
 module Tools (
 	scc, prd, foldlMaybe, modifyList,
-	flipEnum, forMaybe, maximumBySnd
+	flipEnum, forMaybe, maximumBySnd,
+	toEnumMaybe
 ) where
 
 import Data.Maybe (mapMaybe)
@@ -34,3 +35,12 @@ forMaybe = flip mapMaybe
 
 maximumBySnd :: Ord b => [(a, b)] -> (a, b)
 maximumBySnd = maximumBy $ on compare snd
+
+toEnumMaybe :: (Ord a, Enum a, Bounded a) => Int -> Maybe a
+toEnumMaybe n
+	| n > fromEnum mx || n < fromEnum mn = Nothing
+	| otherwise = Just ret
+	where
+	ret = toEnum n
+	mx = maxBound `asTypeOf` ret
+	mn = minBound `asTypeOf` ret
