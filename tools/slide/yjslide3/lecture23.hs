@@ -14,7 +14,7 @@ main = runLecture [
 	aboutStub,
 	aboutPaintGame, aboutPaintGame2, aboutPaintGame3, aboutPaintGame4,
 	aboutPaintGame5,
-	aboutPaintLines
+	aboutPaintLines, aboutPaintLines2, aboutDrawDisk
  ]
 
 prelude :: Page
@@ -408,4 +408,40 @@ aboutPaintLines = [\t -> do
 	itext t 1 "lineH y = line dc", \t -> do
 	itext t 2 "(Point leftMargin (cy y))", \t -> do
 	itext t 2 "(Point boundRight (cy y)) []"
+ ]
+
+aboutPaintLines2 :: Page
+aboutPaintLines2 = [\t -> do
+	writeTopTitle t "paintLines"
+	text t "", \t -> do
+	text t "* cx xはx番目の縦線のx座標を計算する", \t -> do
+	text t "* lineV xはx番目の縦線を書く", \t -> do
+	text t "* line関数は以下のような型であり", \t -> do
+	itext t 1 "DC a -> Point -> Point -> [Prop (DC a)] -> IO ()", \t -> do
+	text t "* 第4引数は描画の条件を変えない場合には空リストで良い", \t -> do
+	text t "* mapM_ lineV [0 .. 8]は0番目から8番目までの縦線を引く", \t -> do
+	text t "* 横線についても同様", \t -> do
+	text t "* コンパイル、実行", \t -> do
+	itext t 1 "% ghc othello.hs", \t -> do
+	itext t 1 "% ./othello", \t -> do
+	text t "* 盤の網が描画されたはずだ", \t -> do
+	text t "* 'q'キーで終了しよう"
+ ]
+
+aboutDrawDisk :: Page
+aboutDrawDisk = [\t -> do
+	writeTopTitle t "drawDisk", \t -> do
+	text t "* Window.hsのdrawDiskスタブを以下で置き換えよう", \t -> do
+	itext t 0 "drawDisk dc (x, y) d = do", \t -> do
+	itext t 1 "set dc [", \t -> do
+	itext t 2 "brushColor := diskColor d,", \t -> do
+	itext t 2 "brushKind := BrushSolid ]", \t -> do
+	itext t 1 "circle dc (Point x' y') discRadius []", \t -> do
+	itext t 1 "where", \t -> do
+	itext t 1 "x' = leftMargin +", \t -> do
+	itext t 2 "fromEnum x * squareSize + squareSize `div` 2 + leftMargin", \t -> do
+	itext t 1 "y' = topMargin +", \t -> do
+	itext t 2 "fromEnum y * squareSize + squareSize `div` 2", \t -> do
+	itext t 1 "diskColor Black = black", \t -> do
+	itext t 1 "diskColor White = white"
  ]

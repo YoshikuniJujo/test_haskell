@@ -83,7 +83,14 @@ paintLines dc = mapM_ lineV [0 .. 8] >> mapM_ lineH [0 .. 8]
 	lineH y = line dc (Point leftMargin (cy y)) (Point boundRight (cy y)) []
 
 drawDisk :: DC a -> (X, Y) -> Disk -> IO ()
-drawDisk _ _ _ = return ()
+drawDisk dc (x, y) d = do
+	set dc [brushColor := diskColor d, brushKind := BrushSolid]
+	circle dc (Point x' y') discRadius []
+	where
+	x' = fromEnum x * squareSize + squareSize `div` 2 + leftMargin
+	y' = fromEnum y * squareSize + squareSize `div` 2 + topMargin
+	diskColor Black = black
+	diskColor White = white
 
 aiPlace :: Var Game -> Panel () -> Timer -> IO ()
 aiPlace _ _ _ = return ()
