@@ -71,8 +71,8 @@ textToSVGData r h (List l : ts)
 	| h' > bottomBorder r = [] : (svgs' ++ one') : rest'
 	| otherwise = (svgs ++ one) : rest
 	where
-	(_, h', svgs) = listToSVGData 1 "*-" r h (paraLeftMargin r) l
-	(_, h'', svgs') = listToSVGData 1 "*-" r (topMargin r) (paraLeftMargin r) l
+	(_, h', svgs) = listToSVGData 1 "*+-------" r h (paraLeftMargin r) l
+	(_, h'', svgs') = listToSVGData 1 "*+-------" r (topMargin r) (paraLeftMargin r) l
 	one : rest = textToSVGData r h' ts
 	one' : rest' = textToSVGData r h'' ts
 textToSVGData r h (Code s : ts)
