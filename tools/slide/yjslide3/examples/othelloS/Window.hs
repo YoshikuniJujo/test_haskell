@@ -61,18 +61,32 @@ othello = do
 	set f [layout := minsize (sz windowWidth windowHeight) $ widget p]
 
 paintGame :: Var Game -> DC a -> Rect -> IO ()
-paintGame _ _ _ = return ()
+paintGame vg dc _ = do
+	g <- varGet vg
+	let (b, w) = length *** length $
+		partition ((== Black) . snd) $ disks g
+	paintLines dc
+	forM_ (disks g) $ uncurry $ drawDisk dc
+	case turn g of
+		Turn Black -> drawText dc "*" (Point msgLeft msgTop) []
+		Turn White -> drawText dc "*" (Point msgLeft msgTop2) []
+		_ -> return ()
+	drawText dc ("Black: " ++ show b) (Point msgLeft2 msgTop) []
+	drawText dc ("White: " ++ show w) (Point msgLeft2 msgTop2) []
+
+paintLines :: DC a -> IO ()
+paintLines dc = mapM_ lineV [0 .. 8] >> mapM_ lineH [0 .. 8]
+	where
+	cx x = leftMargin + x * squareSize
+	cy y = topMargin + y * squareSize
+	lineV x = line dc (Point (cx x) topMargin) (Point (cx x) boundBottom) []
+	lineH y = line dc (Point leftMargin (cy y)) (Point boundRight (cy y)) []
+
+drawDisk :: DC a -> (X, Y) -> Disk -> IO ()
+drawDisk _ _ _ = return ()
 
 aiPlace :: Var Game -> Panel () -> Timer -> IO ()
 aiPlace _ _ _ = return ()
 
 userPlace :: Var Game -> Panel () -> Timer -> Point -> IO ()
 userPlace _ _ _ _ = return ()
-
-paintLines :: DC a -> IO ()
-paintLines dc = mapM_ lineV [0 .. 8] >> mapM_ lineH [0 .. 8]
-	where
-	cx x = x * squareSize + leftMargin
-	cy y = y * squareSize + topMargin
-	lineV x = line dc (Point (cx x) topMargin) (Point (cx x) boundBottom) []
-	lineH y = line dc (Point leftMargin (cy y)) (Point boundRight (cy y)) []

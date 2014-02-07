@@ -10,9 +10,11 @@ main = runLecture [
 	setConstants, setConstants2, setConstants3, setConstants4,
 	setConstants5,
 	makeWindow, makeWindow2, makeWindow3, makeWindow4, makeWindow5,
-	makeWindow6,
-	makeWindowX, makeWindowY, makeWindowZ
---	aboutPaintLines
+	makeWindow6, makeWindow7, makeWindow8, makeWindow9, makeWindow10,
+	aboutStub,
+	aboutPaintGame, aboutPaintGame2, aboutPaintGame3, aboutPaintGame4,
+	aboutPaintGame5,
+	aboutPaintLines
  ]
 
 prelude :: Page
@@ -249,8 +251,8 @@ makeWindow6 = [\t -> do
 	text t "* 最小のサイズを指定してパネルをウィンドウ上に配置"
  ]
 
-makeWindowX :: Page
-makeWindowX = [\t -> do
+makeWindow7 :: Page
+makeWindow7 = [\t -> do
 	writeTopTitle t "スタブ"
 	text t "", \t -> do
 	text t "* 以下をWindow.hsに書き込もう", \t -> do
@@ -265,9 +267,9 @@ makeWindowX = [\t -> do
 	itext t 0 "userPlace _ _ _ _ = return ()"
  ]
 
-makeWindowY :: Page
-makeWindowY = [\t -> do
-	writeTopTitle t "エクスポートリスト"
+makeWindow8 :: Page
+makeWindow8 = [\t -> do
+	writeTopTitle t "Mainモジュール"
 	text t "", \t -> do
 	text t "* Windowモジュールが公開する関数はstart, othello", \t -> do
 	text t "* Window.hsのモジュール宣言を以下のように書き換える", \t -> do
@@ -282,8 +284,19 @@ makeWindowY = [\t -> do
 	itext t 1 "main = start othello"
  ]
 
-makeWindowZ :: Page
-makeWindowZ = [\t -> do
+makeWindow9 :: Page
+makeWindow9 = [\t -> do
+	writeTopTitle t "start"
+	text t "", \t -> do
+	text t "* main関数を再掲する", \t -> do
+	itext t 1 "main = start othello", \t -> do
+	text t "* start関数はothello関数に", \t -> do
+	itext t 1 "- 初期化を追加し", \t -> do
+	itext t 1 "- メインループを追加している"
+ ]
+
+makeWindow10 :: Page
+makeWindow10 = [\t -> do
 	writeTopTitle t "コンパイル、実行"
 	text t "", \t -> do
 	text t "* コンパイルして実行してみよう", \t -> do
@@ -293,13 +306,106 @@ makeWindowZ = [\t -> do
 	text t "* 'q'キーで終了しよう"
  ]
 
+aboutStub :: Page
+aboutStub = [\t -> do
+	writeTopTitle t "スタブを埋める"
+	text t "", \t -> do
+	text t "* あとはスタブを埋めていけばオセロが完成する", \t -> do
+	text t "* 現在あるスタブは以下の通り", \t -> do
+	itext t 1 "- paintGame: 盤とメッセージを描画する", \t -> do
+	itext t 1 "- aiPlace: AIが石を置く処理", \t -> do
+	itext t 1 "- userPlace: ユーザーが石を置く処理"
+ ]
+
+aboutPaintGame :: Page
+aboutPaintGame = [\t -> do
+	writeTopTitle t "paintGame"
+	text t "", \t -> do
+	text t "* まずはpaintGameで使う以下の関数のスタブを作ろう", \t -> do
+	itext t 1 "- paintLines: 盤の網を描画する", \t -> do
+	itext t 1 "- drawDisk: 位置と色を指定して石を描画する", \t -> do
+	text t "* 以下をWindow.hsに書き込もう", \t -> do
+	itext t 1 "paintLines :: DC a -> IO ()", \t -> do
+	itext t 1 "paintLines _ = return ()"
+	itext t 1 "", \t -> do
+	itext t 1 "drawDisk :: DC a -> (X, Y) -> Disk -> IO ()", \t -> do
+	itext t 1 "drawDisk _ _ _ = return ()", \t -> do
+	text t "* DCはdevice contextの略で描画に必要な情報を渡している"
+ ]
+
+aboutPaintGame2 :: Page
+aboutPaintGame2 = [\t -> do
+	writeTopTitle t "paintGame"
+	text t "", \t -> do
+	text t "* paintGameは盤と石以外に以下のメッセージを表示する", \t -> do
+	itext t 1 "- 白と黒の石の数", \t -> do
+	itext t 1 "- どちらのターンか", \t -> do
+	text t "* これらは直接paintGame関数内に書き込んでしまおう", \t -> do
+	text t "* 以下をWindow.hsに書き込もう", \t -> do
+	itext t 0 "paintGame :: Var Game -> DC a -> Rect -> IO ()", \t -> do
+	itext t 1 "(続く)"
+ ]
+
+aboutPaintGame3 :: Page
+aboutPaintGame3 = [\t -> do
+	writeTopTitle t "paintGame", \t -> do
+	itext t (- 1.3) "paintGame vg dc _ = do", \t -> do
+	itext t (- 0.8) "g <- varGet vg", \t -> do
+	itext t (- 0.8) "let (b, w) = length *** length $", \t -> do
+	itext t (- 0.3) "partition ((== Black) . snd) $ disks g", \t -> do
+	itext t (- 0.8) "paintLines dc", \t -> do
+	itext t (- 0.8) "forM_ (disks g) $ uncurry $ drawDisk dc", \t -> do
+	itext t (- 0.8) "case turn g of", \t -> do
+	itext t (- 0.3) "Turn Black -> drawText dc \"*\" (Point msgLeft msgTop) []", \t -> do
+	itext t (- 0.3) "Turn White -> drawText dc \"*\" (Point msgLeft msgTop2) []", \t -> do
+	itext t (- 0.3) "_ -> return ()", \t -> do
+	itext t (- 0.8) "drawText dc (\"Black: \" ++ show b) (Point msgLeft2 msgTop) []", \t -> do
+	itext t (- 0.8) "drawText dc (\"White: \" ++ show w) (Point msgLeft2 msgTop2) []"
+ ]
+
+aboutPaintGame4 :: Page
+aboutPaintGame4 = [\t -> do
+	writeTopTitle t "paintGame"
+	text t "", \t -> do
+	text t "* varGetで現位のゲームの状態を入手する", \t -> do
+	text t "* let (b, w) = ...では黒白それぞれの石の数を入手する", \t -> do
+	itext t 1 "- (***)はそれぞれの関数をタプルの要素に適用", \t -> do
+	itext t 1 "- partitionは条件を満たすものとそれ以外とを分ける", \t -> do
+	text t "* paintLinesで盤の網を描画し", \t -> do
+	text t "* forM_ (disks g) $ ...で盤上のすべての石について", \t -> do
+	text t "* uncurry $ drawDisk dcは(石の位置, 色)から石を描画する", \t -> do
+	text t "* case turn g ofで今のターンによって場合分けし", \t -> do
+	itext t 1 "適切な場所に\"*\"を表示する", \t -> do
+	text t "* そのあとの2つのdrawTextは黒白それぞれの石の数を表示"
+ ]
+
+aboutPaintGame5 :: Page
+aboutPaintGame5 = [\t -> do
+	writeTopTitle t "paintGame"
+	text t "", \t -> do
+	text t "* コンパイル、実行", \t -> do
+	itext t 1 "% ghc othello.hs", \t -> do
+	itext t 1 "./othello", \t -> do
+	text t "* 画面の下のほうに以下のように表示される", \t -> do
+	itext t 1 "* Black: 2"
+	itext t 1 "  White: 2", \t -> do
+	text t "* 'q'キーを終して終了しよう"
+ ]
+
 aboutPaintLines :: Page
 aboutPaintLines = [\t -> do
-	writeTopTitle t "paintLines"
-	text t "", \t -> do
-	text t "* まずは盤のマスを区切る網を書く関数を作ろう", \t -> do
-	text t "* wxHaskell上では表示関数は(DC a)という値を受け取る", \t -> do
-	text t "* これは描画の際に必要となる", \t -> do
-	itext t 1 "- DCはdevice contextの略", \t -> do
-	text t ""
+	writeTopTitle t "paintLines", \t -> do
+	text t "* 盤のマスを区切る網を書く関数を作ろう", \t -> do
+	text t "* Window.hsのスタブを以下で置き換えよう", \t -> do
+	itext t 0 "paintLines dc =", \t -> do
+	itext t 1 "mapM_ lineV [0 .. 8] >> mapM_ lineH [0 .. 8]", \t -> do
+	itext t 1 "where", \t -> do
+	itext t 1 "cx x = leftMargin + x * squareSize", \t -> do
+	itext t 1 "cy y = topMargin + y * squareSize", \t -> do
+	itext t 1 "lineV x = line dc", \t -> do
+	itext t 2 "(Point (cx x) topMargin)", \t -> do
+	itext t 2 "(Point (cx x) boundBottom) []", \t -> do
+	itext t 1 "lineH y = line dc", \t -> do
+	itext t 2 "(Point leftMargin (cy y))", \t -> do
+	itext t 2 "(Point boundRight (cy y)) []"
  ]

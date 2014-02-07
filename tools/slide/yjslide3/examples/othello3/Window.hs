@@ -59,10 +59,9 @@ othello = do
 paintGame :: Var Game -> DC a -> Rect -> IO ()
 paintGame vg dc _ = do
 	g <- varGet vg
-	let	ds = disks g
-		(b, w) = length *** length $ partition ((== Black) . snd) ds
+	let (b, w) = length *** length $ partition ((== Black) . snd) $ disks g
 	paintLines dc
-	forM_ ds $ uncurry $ drawDisk dc
+	forM_ (disks g) $ uncurry $ drawDisk dc
 	case turn g of
 		Turn Black -> drawText dc "*" (Point msgLeft msgTop) []
 		Turn White -> drawText dc "*" (Point msgLeft msgTop2) []
