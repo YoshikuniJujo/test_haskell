@@ -49,7 +49,7 @@ meaning2 = [\t -> do
 	text t "* Haskellを使わなくても", \t -> do
 	itext t 1 "- プログラミングにおける良い習慣が身につく", \t -> do
 	text t "* 普及している言語を使える人は数多くいる", \t -> do
-	text t "* よって、それだけに精通したとしても", \t -> do
+	text t "* よって、それ「だけ」に精通したとしても", \t -> do
 	arrowIText t 1 "コモディティ化してしまう恐れがある", \t -> do
 	itext t 1 "「君の代わりなどいくらでもいるのだよ」"
  ]
@@ -92,7 +92,7 @@ meaning5 = [\t -> do
 	itext t 1 "- 「考え方」を学ぶということ", \t -> do
 	itext t 1 "- アルゴリズムやロジックは陳腐化しない", \t -> do
 	text t "* それだけじゃない!", \t -> do
-	text t "* 何よりも、「楽しい」", \t -> do
+	text t "* 何よりも「楽しい」", \t -> do
 	text t "* Haskellの魅力", \t -> do
 	itext t 1 "- 純粋で美しい", \t -> do
 	itext t 1 "- 他の言語との距離", \t -> do
@@ -147,7 +147,7 @@ haskell4 :: Page
 haskell4 = [\t -> do
 	writeTopTitle t "処理系"
 	text t "", \t -> do
-	text t "* Haskellとは仕様の名前", \t -> do
+	text t "* 「Haskell」とは仕様の名前", \t -> do
 	itext t 1 "- 多くの言語とは異なり処理系の前に仕様がある", \t -> do
 	text t "* 処理系には以下のものがある", \t -> do
 	itext t 1 "GHC, Hugs, Gofer, iHBC, Helium, jhc, nhc98", \t -> do
@@ -163,11 +163,10 @@ lecture :: Page
 lecture = [\t -> do
 	writeTopTitle t "講義の進めかた"
 	text t "", \t -> do
-	text t "* はじめのうちは対話的環境を使う", \t -> do
+	text t "* 主に対話的環境を使う", \t -> do
 	text t "* 式を打ち込んでその結果を得る", \t -> do
-	text t "* 講義が進むにつれて以下についても見ていく", \t -> do
-	itext t 1 "- インタプリタ実行", \t -> do
-	itext t 1 "- コンパイル実行"
+	text t "* 入出力を学んだらコンパイル実行について見る", \t -> do
+	text t "* GHCはコンパイルせずにインタプリタとして使うこともできる"
  ]
 
 attention :: Page
