@@ -140,7 +140,7 @@ partial2 = [\t -> do
 	text t "", \t -> do
 	text t "* コマンドプロンプトをもうひとつ立ち上げてみる", \t -> do
 	itext t 1 "ウィンドウズキー + R -> cmd", \t -> do
-	itext t 1 "% cd lecture/lecture01/", \t -> do
+	itext t 1 "% cd lectures/lecture01/", \t -> do
 	itext t 1 "% [エディタ] bmi.hs", \t -> do
 	text t "* bmi.hsに以下を追加", \t -> do
 	itext t 1 "bmiCHM w = bmi 218 w", \t -> do
