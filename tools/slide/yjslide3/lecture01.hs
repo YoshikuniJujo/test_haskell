@@ -305,7 +305,7 @@ higherOrder2 = [\t -> do
 	text t "* やってみよう", \t -> do
 	itext t 1 "% [エディタ] higher.hs", \t -> do
 	itext t 1 "twice f x = f (f x)", \t -> do
-	itext t 1 "% ghci higher.hs", \t -> do
+	itext t 1 "*Main> :load higher.hs", \t -> do
 	itext t 1 $ "*Main> twice (\\x -> x * (x + 1)) " ++ show ho2number1, \t -> do
 	itext t 1 $ show $ twice (\x -> x * (x + 1)) ho2number1, \t -> do
 	text t "* twiceは第一引数として関数を取るので高階関数である"
@@ -327,13 +327,13 @@ operator = [\t -> do
 	writeTopTitle t "演算子"
 	text t "", \t -> do
 	text t "* Haskellの演算子は本質的には関数と同じもの", \t -> do
-	text t "* 3 + 8は+という関数に入力として3と8を与えたということ", \t -> do
+	text t "* 3 + 8は(+)という関数に引数として3と8を与えたということ", \t -> do
 	text t "* 演算子は()でかこってやることで普通の関数として扱える", \t -> do
 	itext t 1 "*Main> 3 + 8", \t -> do
 	itext t 1 $ show (3 + 8 :: Int), \t -> do
 	itext t 1 "*Main> (+) 3 8", \t -> do
 	itext t 1 $ show ((+) 3 8 :: Int), \t -> do
-	text t "* 逆に関数は``(バッククォート)でかこむと演算子となる", \t -> do
+	text t "* 逆に関数は`(バッククォート)でかこむと演算子となる", \t -> do
 	itext t 1 "*Main> 218 `bmi` 164", \t -> do
 	itext t 1 $ show $ 218 `bmi` 164
  ]
@@ -343,7 +343,7 @@ operator2 = [\t -> do
 	writeTopTitle t "演算子"
 	text t "", \t -> do
 	text t "* 演算子についても部分適用が可能", \t -> do
-	text t "* 第一引数と第二引数の両者について部分適用ができる", \t -> do
+	text t "* 第1引数と第2引数の両者について部分適用ができる", \t -> do
 	itext t 1 "*Main> (3 +) 8", \t -> do
 	itext t 1 $ show ((3 +) 8 :: Int), \t -> do
 	itext t 1 "*Main> (+ 8) 3", \t -> do

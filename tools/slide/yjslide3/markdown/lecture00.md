@@ -43,7 +43,7 @@ Haskellを使えるということは、「優秀な人材である可能性が�
 「プログラミングが好きで自発的に学んでいる」
 「保守可能なプログラムを書ける」と思われる、かもしれない。
 
-[Tsuru Capital](www.tsurucapital.com)という実例がある。
+[Tsuru Capital](http://www.tsurucapital.com)という実例がある。
 「Haskellを社内の標準言語にすれば、優秀な人材を集められる」と
 いうアドバイスを受けて、それを実践した。
 
