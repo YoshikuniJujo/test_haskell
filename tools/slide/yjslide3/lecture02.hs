@@ -34,6 +34,7 @@ prelude = [\t -> do
 --	text t "* 型は関数を組み合わせる際に重要な役割を持つ"
  ]
 
+{-
 aboutType :: Page
 aboutType = [\t -> do
 	writeTopTitle t "型"
@@ -82,6 +83,8 @@ aboutType3 = [\t -> do
 	itext t 1 "- リストは数じゃないということ"
  ]
 
+-}
+
 at4char1 :: Char
 at4char1 = unsafePerformIO $ randomRIO ('A', 'Z')
 
@@ -105,7 +108,7 @@ aboutType5 :: Page
 aboutType5 = [\t -> do
 	writeTopTitle t "型の不適合"
 	text t "", \t -> do
-	text t "* Haskellには真偽を表現するBool型がある", \t -> do
+	text t "* 真偽を表現するBool型がある", \t -> do
 	itext t 1 "- False, Trueの2つの値のみを持つ", \t -> do
 	text t $ "* " ++ show at5bool1 ++ "を小文字にすることはできない", \t -> do
 	itext t 1 $ "Prelude Data.Char> toLower " ++ show at5bool1, \t -> do
@@ -122,7 +125,7 @@ aboutType6 = [\t -> do
 	writeTopTitle t "関数の型"
 	text t "", \t -> do
 	text t "* 関数の型は入力の型と出力の型によって決まる", \t -> do
-	text t "* たとえばtoLowerの型は文字を取って文字を返す関数で", \t -> do
+	text t "* たとえばtoLowerは文字を取って文字を返す関数で", \t -> do
 	itext t 1 "型はChar -> Charとなる", \t -> do
 	text t "* 例の関数bmiの型はどうなるだろうか", \t -> do
 	text t "* 入力と出力を倍精度浮動小数点数とする", \t -> do
@@ -179,15 +182,15 @@ aboutType10 = [\t -> do
 	text t "", \t -> do
 	text t "* 「型駆動開発」とは今思いついた言葉", \t -> do
 	text t "* まずは型を決めてそれから中身をうめていくやりかた", \t -> do
-	text t "* ディレクトリlecture/lecture02/を作ろう", \t -> do
-	text t "* lecture/lecture02/bmi.hsを作ってみよう", \t -> do
+	text t "* ディレクトリlectures/lecture02/を作り", \t -> do
+	text t "* lectures/lecture02/bmi.hsを作ろう", \t -> do
 	itext t 1 "bmi :: Double -> Double -> Double"
 	itext t 1 "bmi = undefined"
 	itext t 1 ""
 	itext t 1 "isObese :: Double -> Double -> Bool"
 	itext t 1 "isObese = undefined", \t -> do
 	text t "* undefinedは評価されるとエラーとなる値", \t -> do
-	text t "* 今回はスタブとして使用した"
+	text t "* スタブとして使用した"
  ]
 
 aboutType11 :: Page
@@ -215,7 +218,7 @@ aboutType12 = [\t -> do
 	text t "* 今回の場合", \t -> do
 	itext t 1 "- bmi関数を先に定義すればボトムアップとなり", \t -> do
 	itext t 1 "- isObese関数を先に定義すればトップダウンとなる", \t -> do
-	text t "* トップダウンで開発してみよう", \t -> do
+	text t "* トップダウンで開発する", \t -> do
 	text t "* BMIが30以上で肥満とされるので", \t -> do
 	itext t 1 "isObese h w = bmi h w >= 30", \t -> do
 	text t "* ここでの思考は以下のようになる", \t -> do
@@ -229,7 +232,7 @@ aboutType13 = [\t -> do
 	text t "", \t -> do
 	text t "* bmi関数が定義されているという仮定のもとで", \t -> do
 	itext t 1 "isObese関数が定義された", \t -> do
-	text t "* よってここでbmi関数を定義すれば仕事は終わる", \t -> do
+	text t "* よってbmi関数を定義すれば仕事は終わる", \t -> do
 	itext t 1 "bmi h w = w / (h / 100) ^ 2"
  ]
 
