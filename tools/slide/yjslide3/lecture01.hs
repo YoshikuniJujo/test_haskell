@@ -65,8 +65,7 @@ defineFun = [\t -> do
 	text t "", \t -> do
 	text t "* ghciの対話環境内でも関数を定義できる", \t -> do
 	text t "* しかし、関数が長くなるとわずらわしいので", \t -> do
-	text t "* 別ファイルで関数を定義し", \t -> do
-	itext t 1 "対話環境でそれを使うことにしよう", \t -> do
+	text t "* 別ファイルで関数を定義し対話環境で使うことにする", \t -> do
 	text t "* お好きなエディタを選んで、と言いたいところだが", \t -> do
 	itext t 1 "メモ帳、Vim、Emacsしか用意していない", \t -> do
 	itext t 1 "(著者メモ) Emacsは用意できるかどうか"

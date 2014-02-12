@@ -35,7 +35,7 @@ meaning = [\t -> do
 	text t "* 「明日からのXXプログラミングが変わる」", \t -> do
 	itext t 1 "XXはなじみの言語に置き換えてください", \t -> do
 	text t "* Haskellという武器を手に入れる", \t -> do
-	itext t 1 "使えるところにはHaskellを使おう"
+	itext t 1 "使えるところにはHaskellを使う"
  ]
 
 meaning2 :: Page
@@ -50,8 +50,7 @@ meaning2 = [\t -> do
 	itext t 1 "- プログラミングにおける良い習慣が身につく", \t -> do
 	text t "* 普及している言語を使える人は数多くいる", \t -> do
 	text t "* よって、それ「だけ」に精通したとしても", \t -> do
-	arrowIText t 1 "コモディティ化してしまう恐れがある", \t -> do
-	itext t 1 "「君の代わりなどいくらでもいるのだよ」"
+	arrowIText t 1 "コモディティ化してしまう恐れがある"
  ]
 
 meaning3 :: Page
@@ -72,9 +71,7 @@ meaning4 :: Page
 meaning4 = [\t -> do
 	writeTopTitle t "僕はコモディティじゃない!"
 	text t "", \t -> do
-	text t "* あなたが今持っている技術は", \t -> do
-	itext t 1 "- 会社や社会にとって「かけがえのないもの」か?", \t -> do
-	itext t 1 "- それは10年後、20年後にも通用するだろうか?", \t -> do
+	text t "* 今持っている技術は10年後、20年後にも通用するだろうか?", \t -> do
 	text t "* 今持っている技術にHaskellをプラスすることで", \t -> do
 	itext t 1 "「取り換え不可能な人材」になれる", \t -> do
 	text t "* 会社や社会にとって「取り換え不可能」な人材になれば", \t -> do
@@ -152,10 +149,10 @@ haskell4 = [\t -> do
 	text t "* 処理系には以下のものがある", \t -> do
 	itext t 1 "GHC, Hugs, Gofer, iHBC, Helium, jhc, nhc98", \t -> do
 	text t "* GHCとはGlasgow Haskell Compilerの略", \t -> do
-	text t "* 現在最もよく使われているのはGHC", \t -> do
+	text t "* 現在よく使われているのはGHC", \t -> do
 	text t "* GHCにはHaskell 2010にない拡張機能が含まれる", \t -> do
 	itext t 1 "- 明示的に宣言することで使えるようになる", \t -> do
-	itext t 1 "- 十職に吟味されたものは次の標準に取り込まれるかも", \t -> do
+	itext t 1 "- 十分に吟味されたものは次の標準に取り込まれるかも", \t -> do
 	text t "* この講義はGHCを使って進めていく"
  ]
 
@@ -280,9 +277,11 @@ summary :: Page
 summary = [\t -> do
 	writeTopTitle t "まとめ"
 	text t "", \t -> do
-	text t "* Haskellを学ぶ意義について考えてみた", \t -> do
-	text t "* 「楽しさ」はもちろん最大の理由だ", \t -> do
-	text t "* モチベーションを高めるためにいろいろと言葉を費した", \t -> do
+	text t "* Haskellの持つ様々な特徴によって", \t -> do
+	itext t 1 "- 開発や保守作業の効率化が期待できる", \t -> do
+	itext t 1 "- 他の言語を使う場合でも役に立つ", \t -> do
+	text t "* Haskellを使えれば脱「コモディティ」が望める", \t -> do
+	text t "* Haskellを学ぶのは楽しい", \t -> do
 	text t "* Haskellの歴史について簡単に触れた", \t -> do
-	text t "* ghcの対話環境をさわってみた"
+	text t "* ghcの対話環境を紹介した"
  ]
