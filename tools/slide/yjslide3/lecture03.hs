@@ -26,7 +26,7 @@ prelude = [\t -> do
 	text t "* その構造をタプルと呼ぶ", \t -> do
 	text t "* タプルを引数としてとるときにはパターンマッチが使える", \t -> do
 	text t "* タプルとして引数をまとめることができる", \t -> do
-	text t "* その逆もでき、それをカリー化と呼ぶ"
+	text t "* その逆もでき、それを「カリー化」と呼ぶ"
  ]
 
 dist0 :: Double -> Double -> Double
