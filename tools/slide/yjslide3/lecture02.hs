@@ -332,7 +332,7 @@ polymorphism4 = [\t -> do
 	itext t 1 $ show $ (isLower . chr) pm3int1, \t -> do
 	itext t 1 $ "Prelude Data.Char> (isLower . chr) " ++ show pm3int2, \t -> do
 	itext t 1 $ show $ (isLower . chr) pm3int2, \t -> do
-	text t "* それぞれの型をみると", \t -> do
+	text t "* それぞれの型を見ると", \t -> do
 	itext t 1 "isLower :: Char -> Bool", \t -> do
 	itext t 1 "chr :: Int -> Char", \t -> do
 	itext t 1 "isLower . chr :: Int -> Bool"
@@ -384,7 +384,7 @@ summary = [\t -> do
 	itext t 1 "- 型が決まれば仕事は半分終わったようなもの", \t -> do
 	itext t 1 "- 型チェックによってバグの多くは検出可", \t -> do
 	itext t 1 "- 型はドキュメントとしても優れる", \t -> do
-	text t "* 型の宣言は[関数内] :: [型]という形", \t -> do
+	text t "* 型の宣言は[関数名] :: [型]という形", \t -> do
 	text t "* 多相関数の型宣言には型変数を使う", \t -> do
 	text t "* 型の導出は勉強になる"
  ]
