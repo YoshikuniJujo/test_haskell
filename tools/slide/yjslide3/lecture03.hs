@@ -172,7 +172,7 @@ patternMatch4 = [\t -> do
 	writeTopTitle t "パターンマッチ"
 	text t "", \t -> do
 	text t "* 関数定義が複数ある場合", \t -> do
-	itext t 1 "- 上から順にパターンマッチしていき", \t -> do
+	itext t 1 "- うえから順にパターンマッチしていき", \t -> do
 	itext t 1 "- パターンマッチが成功した定義を評価する", \t -> do
 	text t $ "* slope (0, " ++ show cd7double ++ ")の場合", \t -> do
 	itext t 1 $ "- (0, " ++ show cd7double ++ ")は(0, y)にマッチし", \t -> do
@@ -193,7 +193,7 @@ patternMatch5 = [\t -> do
 	itext t 1 "1. 使わない変数のための変数名を考えなくてすむ", \t -> do
 	itext t 1 "2. その場所の値が使われていないことを明示できる", \t -> do
 	text t "* ワイルドカードを使う欠点", \t -> do
-	itext t 1 "1. その場所の値が何なのかを示すことができない", \t -> do
+	itext t 1 "1. その場所の値が何なのかを示せない", \t -> do
 	text t "* 欠点1を解消し、利点2を生かすために", \t -> do
 	itext t 1 "- 変数名の前に'_'(アンダースコア)をつけて", \t -> do
 	itext t 1 "- _yのようにする習慣もある"
@@ -211,7 +211,7 @@ patternMatch6 = [\t -> do
 	itext t 1 "...", \t -> do
 	text t "* 変数は「パターン」のひとつであり以下の特徴を持つ", \t -> do
 	itext t 1 "- すべての値にマッチし", \t -> do
-	itext t 1 "- マッチした結果として、その変数に値が束縛される"
+	itext t 1 "- マッチした結果として、その変数が値に束縛される"
  ]
 
 patternMatch7 :: Page
@@ -234,7 +234,7 @@ patternMatch8 = [\t -> do
 	text t "* coordinate.hsを編集していたエディタを閉じて", \t -> do
 	text t "* 編集用のコマンドプロンプトでnumber.hsを作成しよう", \t -> do
 	itext t 1 "% [エディタ] number.hs", \t -> do
-	text t "* 以下を書き込んでみよう('--'で始まる行はコメントなので)", \t -> do
+	text t "* 以下を書き込んでみよう('--'で始まる行はコメント)", \t -> do
 	itext t 1 "intName :: Int -> String", \t -> do
 	itext t 2 "-- Stringは文字列を表す型", \t -> do
 	itext t 2 "-- 詳細はリストを学んだあとで", \t -> do
