@@ -1,3 +1,5 @@
+module Main (main) where
+
 import Control.Monad
 import System.Random
 import System.IO.Unsafe
@@ -70,7 +72,7 @@ aboutIterate3 = [\t -> do
 	itext t 1 "- C言語のfor文等", \t -> do
 	text t "* 引数として関数をとる関数を作れる言語では", \t -> do
 	itext t 1 "「構造」を関数として定義することが可能", \t -> do
-	text t "* 引数として関数を取る関数は高階関数と呼ばれる", \t -> do
+	text t "* 引数として関数をとる関数は高階関数と呼ばれる", \t -> do
 	text t "* 「リストの値のすべてに何かする」関数は用意されている", \t -> do
 	itext t 1 "- map f lstでlstのすべての要素にfを適用する"
  ]
@@ -86,7 +88,7 @@ aboutIterate4 = [\t -> do
 	writeTopTitle t "squareを定義する"
 	text t "", \t -> do
 	text t "* 実際にmapを使ってみよう", \t -> do
-	text t "* lecture/lecture04ディレクトリを作成しそこに移動", \t -> do
+	text t "* lectures/lecture04ディレクトリを作成しそこに移動", \t -> do
 	text t "* squareSum.hsファイルを作ろう", \t -> do
 	text t "* まずはsquare関数を書く", \t -> do
 	itext t 1 "square :: Int -> Int"
@@ -101,8 +103,8 @@ aboutIterate4 = [\t -> do
 squareAll :: [Int] -> [Int]
 squareAll = map (^ (2 :: Int))
 
-rsa1intList1, rsa1intList2 :: [Int]
-[rsa1intList1, rsa1intList2] =
+rsa1intList1, _rsa1intList2 :: [Int]
+[rsa1intList1, _rsa1intList2] =
 	unsafePerformIO $ replicateM 2 $ replicateM 7 $ randomRIO (0, 20)
 
 aboutIterate5 :: Page
