@@ -278,8 +278,8 @@ currying = [\t -> do
 	text t "* この逆の変換は非カリー化と呼ばれる", \t -> do
 	text t "* 2要素のタプルでそれぞれの変換関数が用意されている", \t -> do
 	text t "* 以下の関係が成り立つ", \t -> do
-	itext t 1 "dist0 = curry dist0'", \t -> do
-	itext t 1 "dist0' = uncurry dist0"
+	itext t 1 "dist0 == curry dist0'", \t -> do
+	itext t 1 "dist0' == uncurry dist0"
  ]
 
 currying2 :: Page
