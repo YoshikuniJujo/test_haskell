@@ -195,9 +195,9 @@ structure = [\t -> do
 	writeTopTitle t "「くりかえし」の構造"
 	text t "", \t -> do
 	text t "* 「くりかえし」という動作を3つの部分に分けた", \t -> do
-	itext t 1 "- リストを作り出し", \t -> do
-	itext t 1 "- 要素すべてに関数を適用し", \t -> do
-	itext t 1 "- それらの要素をまとめ上げた", \t -> do
+	itext t 1 "- リストを作り出し ([0 .. n])", \t -> do
+	itext t 1 "- 要素すべてに関数を適用し (map square)", \t -> do
+	itext t 1 "- それらの要素をまとめあげた (sum)", \t -> do
 	text t "* それぞれの段階をenumerate, map, accumulateと呼ぶ"
  ]
 
@@ -206,7 +206,7 @@ genKatsugi = [\t -> do
 	writeTopTitle t "験を担ぐ"
 	text t "", \t -> do
 	text t "* squareSumを上司のところへ持っていったらこう言われた", \t -> do
-	itext t 1 "「バカモノ!4と9は縁起が悪い。和に含めるな」", \t -> do
+	itext t 1 "「バカモノ!4と9は縁起が悪い。二乗の和に含めるな」", \t -> do
 	text t "* 0からnまでの4と9以外の数の二乗の和を求めよう", \t -> do
 	text t "* squareSum.hsに以下を追加する", \t -> do
 	itext t 1 "lucky :: Int -> Bool", \t -> do
@@ -257,7 +257,7 @@ genKatsugi3 = [\t -> do
 	itext t 1 $ "*Main> (squareSum " ++ show gk2int1 ++ ") - (squareSum' " ++
 		show gk2int1 ++ ")", \t -> do
 	itext t 1 $ show $ squareSum gk2int1 - squareSum' gk2int1, \t -> do
-	text t "* ちゃんと4と9の2乗は除かれている"
+	text t "* ちゃんと4と9の二乗は除かれている"
  ]
 
 genKatsugi4 :: Page
@@ -300,7 +300,7 @@ addFilter = [\t -> do
 	text t "* 「くりかえし」という動作を3つの部分に分けた", \t -> do
 	itext t 1 "- リストを作り出し", \t -> do
 	itext t 1 "- 要素すべてに関数を適用し", \t -> do
-	itext t 1 "- それらの要素をまとめ上げた", \t -> do
+	itext t 1 "- それらの要素をまとめあげた", \t -> do
 	text t "* それぞれの段階をenumerate, map, accumulateと呼ぶ", \t -> do
 	text t "* さらに以下を追加した", \t -> do
 	itext t 1 "- 要素のうち条件を満たすものだけを取り出す", \t -> do
@@ -322,11 +322,11 @@ iterateSummary = [\t -> do
 	writeTopTitle t "くりかえし(まとめ)"
 	text t "", \t -> do
 	text t "* リストを使えば状態変化なしで「くりかえし」が可能", \t -> do
-	text t "* リストを作り(enumerate)", \t -> do
-	text t "* 要素を選び(filter)", \t -> do
-	text t "* それぞれの要素を変換し(map)", \t -> do
-	text t "* それをまとめる(accumulate)", \t -> do
-	text t "* ほとんどの「くりかえし」はこの構造にすることができる", \t -> do
+	text t "* 多くの「くりかえし」は以下の構造を持つ", \t -> do
+	itext t 1 "- リストを作り(enumerate)", \t -> do
+	itext t 1 "- 要素を選び(filter)", \t -> do
+	itext t 1 "- それぞれの要素を変換し(map)", \t -> do
+	itext t 1 "- それをまとめる(accumulate)", \t -> do
 	text t "* リストという実体を渡していくというモデルはわかりやすい", \t -> do
 	text t "* 遅延リストとGCによって空間効率は問題なく保たれる"
  ]
