@@ -133,7 +133,7 @@ syntax = [\t -> do
 	text t "* import [モジュール名] ([識別子1], [識別子2] ...)", \t -> do
 	itext t 1 "- 指定したモジュールから指定した関数を取り込む", \t -> do
 	text t "* 関数定義中のwhere", \t -> do
-	itext t 1 "- where以下にその関数ローカルな環境を作る", \t -> do
+	itext t 1 "- where以下に関数ローカルな環境を作る", \t -> do
 	itext t 1 "fun x = y + z", \t -> do
 	itext t 2 "where"
 	preLine t
@@ -203,7 +203,7 @@ aboutFromIntegral :: Page
 aboutFromIntegral = [\t -> do
 	writeTopTitle t "fromIntegral"
 	text t "", \t -> do
-	text t "* fromIntegralは整数から他の型の数に変換する関数", \t -> do
+	text t "* fromIntegralは整数を他の型の数に変換する関数", \t -> do
 	text t "* fromIntegral xで整数xを他の数値型に変換できる", \t -> do
 	text t "* やってみよう", \t -> do
 	itext t 1 $ "Prelude> fromIntegral (" ++ show fi1int1 ++ " :: Int) :: Double", \t -> do
@@ -289,7 +289,9 @@ aboutTake = [\t -> do
 	itext t 1 $ "Prelude> take " ++ show tk1int1 ++ " " ++ show tk1lst1, \t -> do
 	itext t 1 $ show $ take tk1int1 tk1lst1, \t -> do
 	itext t 1 $ "Prelude> take " ++ show tk1int2 ++ " " ++ show tk1lst2, \t -> do
-	itext t 1 $ show $ take tk1int2 tk1lst2
+	itext t 1 $ show $ take tk1int2 tk1lst2, \t -> do
+	itext t 1 "Prelude> take 4 \"monkey\"", \t -> do
+	itext t 1 $ show $ take 4 "monkey"
  ]
 
 aboutLength :: Page
@@ -301,8 +303,8 @@ aboutLength = [\t -> do
 	text t "* やってみよう", \t -> do
 	itext t 1 "Prelude> length [3, 2, 4, 9, 1]", \t -> do
 	itext t 1 $ show $ length [3 :: Int, 2, 4, 9, 1], \t -> do
-	itext t 1 "Prelude> length \"Hello, world\"", \t -> do
-	itext t 1 $ show $ length "Hello, world"
+	itext t 1 "Prelude> length \"Hello, world!\"", \t -> do
+	itext t 1 $ show $ length "Hello, world!"
  ]
 
 ccl1str1 :: [Int]
@@ -360,8 +362,8 @@ aboutRandom = [\t -> do
 	text t "* System.RandomモジュールのrandomRsを使おう", \t -> do
 	text t "* randomRsの型を以下のように考える", \t -> do
 	itext t 1 "randomRs :: (Double, Double) -> StdGen -> [Double]", \t -> do
-	text t "* 第一引数はタプルで、ランダム値の(下限, 上限)となる", \t -> do
-	text t "* 第二引数のStdGenは見たことのない型だ", \t -> do
+	text t "* 第1引数はタプルで、ランダム値の(下限, 上限)となる", \t -> do
+	text t "* 第2引数のStdGenは見たことのない型だ", \t -> do
 	text t "* ランダム関数には初期値が必要となり", \t -> do
 	itext t 1 "これをランダムの種と呼んだりする", \t -> do
 	text t "* 整数(Int)からStdGenへの変換関数が用意されている", \t -> do
@@ -387,26 +389,26 @@ aboutRandom2 = [\t -> do
  ]
 
 rd3int1, rd3int2 :: Int
-[rd3int1, rd3int2] = unsafePerformIO $ replicateM 2 $ randomRIO (0, 9999)
+[rd3int1, rd3int2] = unsafePerformIO $ replicateM 2 $ randomRIO (0, 99)
 
 aboutRandom3 :: Page
 aboutRandom3 = [\t -> do
 	writeTopTitle t "ランダム"
 	text t "", \t -> do
-	itext t (-1.2) $ "Prelude System.Random> take 3 $ randomRs (1, 3) $ "
+	itext t (-1.2) $ "Prelude System.Random> take 3 $ randomRs (1.0, 3) $ "
 		++ "mkStdGen " ++ show rd3int1, \t -> do
 --	itext t 7 $ "mkStdGen " ++ show rd3int1, \t -> do
 	itext t (-1.2) $ show $ take 3 $ randomRs (1 :: Double, 3) $ mkStdGen rd3int1, \t -> do
-	itext t (-1.2) $ "Prelude System.Random> take 3 $ randomRs (1, 3) $ "
+	itext t (-1.2) $ "Prelude System.Random> take 3 $ randomRs (1.0, 3) $ "
 		++ "mkStdGen " ++ show rd3int2, \t -> do
 	itext t (-1.2) $ show $ take 3 $ randomRs (1 :: Double, 3) $ mkStdGen rd3int2, \t -> do
-	itext t (-1.2) $ "Prelude System.Random> take 3 $ randomRs (1, 3) $ "
+	itext t (-1.2) $ "Prelude System.Random> take 3 $ randomRs (1.0, 3) $ "
 		++ "mkStdGen " ++ show rd3int2, \t -> do
 	itext t (-1.2) $ show $ take 3 $ randomRs (1 :: Double, 3) $ mkStdGen rd3int2, \t -> do
 	text t "* 別の種には別の乱数列", \t -> do
 	text t "* 同じ種には同じ乱数列", \t -> do
 	text t "* Haskellの関数は同じ引数には同じ値を返す", \t -> do
-	itext t 1 "- これを参照透過性と呼ぶ"
+	arrowIText t 1 "これを参照透過性と呼ぶ"
  ]
 
 -- (^), (<=), fromIntegral, fst, snd, take, cycle, zip, randomRs, mkStdGen

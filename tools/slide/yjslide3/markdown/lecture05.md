@@ -40,3 +40,256 @@
     円の中にある点の数 / 全体の点の数 * 4
 
 ![image1] (monteImage.png "medium")
+
+追加の構文
+----------
+
+演習で使う追加の構文を見てみよう。
+
+### import
+
+指定したモジュールから指定した関数を取り込む。
+
+    import [モジュール名] ([識別子1], [識別子2] ...)
+
+### where
+
+where以下に関数ローカルな環境を作る。
+
+    fun x = y + z
+    where
+    y = x * 2
+    z = 1 / x
+
+### 型指定
+
+値にオプショナルな型指定をつけることができる。
+
+    (3 :: Int) + 8
+
+追加の関数
+----------
+
+以下のまだ説明していない関数を使う。
+
+    (^), (<=), fromIntegral, fst, snd, tail,
+    take, length, cycle, zip, randomRs, mkStdGen
+
+ひとつずつ説明していく。
+
+### べき乗
+
+(^)はべき乗を表す関数(演算子)である。
+xのn乗を以下のように表す。
+
+    x ^ n
+
+試してみる
+(ついでにlecture05ディレクトリを作っておく)。
+
+    % cd lectures
+    % mkdir lecture05
+    % cd lecture05
+    % ghci
+    Prelude> 3 ^ 3
+    27
+    Prelude> 5 ^ 4
+    625
+
+### 小なりイコール
+
+(<=)は「小なりイコール」を表す関数(演算子)である。
+
+    x <= y
+
+これは、xがyと等しいかまたは小さいときTrueを返し、
+xがyより大きいときにFalseを返す。
+
+試してみる。
+
+    Prelude> 7 <= 11
+    True
+    Prelude> 9 <= 9
+    True
+    Prelude> 15 <= 6
+    False
+
+### fromIntegral
+
+fromIntegralは整数を他の型の数に変換する関数である。
+
+    fromIntegral x
+
+これはxを他の型の数に変換した値を返す。
+
+試してみる。
+
+    Prelude> fromIntegral (21 :: Int) :: Double
+    21.0
+    Prelude> fromIntegral (103 :: Int) :: Double
+    103.0
+
+### 2要素タプルからの取り出し
+
+タプルからの要素の取り出しにはパターンマッチが使える。
+
+    fun (x, y) = ...
+
+2要素タプルには要素を取り出す関数が用意されている。
+
+* fst: タプルの一番目の要素を取り出す
+* snd: タプルの二番目の要素を取り出す
+
+以下のように定義できる。
+
+    fst :: (a, b) -> a
+    fst (x, _) = x
+
+    snd :: (a, b) -> b
+    snd (_, y) = y
+
+試してみる。
+
+    Prelude> fst (8, 'f')
+    8
+    Prelude> snd (8, 'f')
+    'f'
+
+### tail
+
+tailはリストの先頭以外の要素を返す関数である。
+
+型は以下のようになる。
+
+    tail :: [a] -> [a]
+
+試してみる。
+
+    Prelude> tail [3, 8, 4, 2, 5]
+    [8, 4, 2, 5]
+    Prelude> tail "swords"
+    "words"
+
+### take
+
+takeはリストのはじめのn要素を取り出す関数である。
+
+    take :: Int -> [a] -> [a]
+
+試してみる。
+
+    Prelude> take 3 [2, 5, 8, 9, 4]
+    [2, 5, 8]
+    Prelude> take 4 [9, 8, 2, 1, 11, 5, 3]
+    [9, 8, 2, 1]
+    Prelude> take 4 "monkey"
+    "monk"
+
+### length
+
+lengthはリストの長さを返す関数である。
+
+    length :: [a] -> Int
+
+試してみる。
+
+    Prelude> length [3, 2, 4, 9, 1]
+    5
+    Prelude> length "Hello, world!"
+    13
+
+### cycle
+
+cycleはリストを無限にくりかえす関数である。
+
+    cycle :: [a] -> [a]
+
+そのまま対話環境に打ち込むとプロンプトが返ってこなくなる。
+ためすときはtakeと組み合わせると良い。
+
+試してみる。
+
+    Prelude> take 20 $ cycle [8, 2, 1, 5, 9]
+    [8,2,1,5,9,8,2,1,5,9,8,2,1,5,9,8,2,1,5,9]
+    Prelude> take 35 $ cycle "rose"
+    "roseroseroseroseroseroseroseroseros"
+
+### zip
+
+zipは2つのリストをタプルのリストに合成する関数である。
+
+    zip :: [a] -> [b] -> [(a, b)]
+
+試してみる。
+
+    Prelude> zip [3, 8, 5, 2, 1, 9] "hello"
+    [(3,'h'),(8,'e'),(5,'l'),(2,'l'),(1,'o')]
+    Prelude> zip "laugh" [1 ..]
+    [('l',1),('a',2),('u',3),('g',4),('h',5)]
+
+### ランダム
+
+モンテカルロ法を使うためにはランダムな数列が必要となる。
+
+#### randomRs
+
+System.RandomモジュールのrandomRsを使う。
+
+randomRsの型は以下のように考えられる。
+
+    randomRs :: (Double, Double) -> StdGen -> [Double]
+
+第1引数はタプルで、ランダム値の(下限、上限)を指定する。
+
+#### StdGen
+
+第2引数のStdGenは見たことのない型だ。
+ランダム関数には初期値が必要であり、
+これをランダムの種と呼ぶ。
+StdGenはランダムの種であり、
+整数(Int)からStdGenへの変換関数が用意されている。
+
+    mkStdGen :: Int -> StdGen
+
+試してみる(itは直前に評価された値に束縛される)。
+
+    Prelude> :m System.Random 4492
+    4493 1
+    Prelude System.Random> :type it
+    it :: StdGen
+
+mkStdGenでStdGenの値が得られることがわかる。
+
+#### ランダムな値
+
+実際にランダムな値を取り出してみる。
+
+    Prelude System.Random> take 3 $ randomRs (1.0, 3) $ mkStdGen 4492
+    [1.3340016134650776,2.6353743186525085,1.203265205046218]
+    Prelude System.Random> take 3 $ randomRs (1.0, 3) $ mkStdGen 129
+    [2.8007050950763306,1.1983942696826542,2.0151573577576363]
+    Prelude System.Random> take 3 $ randomRs (1.0, 3) $ mkStdGen 129
+    [2.8007050950763306,1.1983942696826542,2.0151573577576363]
+
+別の種には別の乱数列が生成され、
+同じ種には同じ乱数列が生成されているのがわかる。
+
+Haskellの関数は同じ引数には同じ値を返す。
+これを参照透過性と呼ぶ。
+
+円のなか
+--------
+
+montePi.hsを作ってエディタで開いておく。
+ghciで読み込んでおこう。
+
+    % ghci montePi.hs
+    *Main>
+
+点(x, y)が「中心(0, 0)の半径1の円」のなかに
+あることを検査する関数inCircleを作る。
+
+* 演習1. inCircleの型を決めよう
+* 演習2. inCircleの中身を作ろう(上と合わせて3分)
+
+    (次は演習2の解答から続けること!)
