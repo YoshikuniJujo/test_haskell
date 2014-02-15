@@ -39,4 +39,4 @@
 
     円の中にある点の数 / 全体の点の数 * 4
 
-![image1] (monteImage.svg "large")
+![image1] (monteImage.png "medium")

@@ -4,7 +4,7 @@ import Text.XML.YJSVG
 import Graphics.X11.Turtle
 
 ratio :: Double
-ratio = 0.5
+ratio = 1
 
 trial :: Int
 trial = 1000
@@ -26,31 +26,31 @@ main = do
 	t <- newTurtle f
 	flushoff t
 	penup t
-	goto t (- 150 * ratio) (- 100 * ratio)
+	goto t (- 160 * ratio) (- 100 * ratio)
 	pendown t
 	replicateM_ 4 $ forward t (200 * ratio) >> left t 90
 	penup t
-	goto t (- 50 * ratio) (- 100 * ratio)
+	goto t (- 60 * ratio) (- 100 * ratio)
 	pendown t
 	circle t (100 * ratio)
 	penup t
 	speed t "fastest"
 	forM_ (take trial $ randomPoints 8) $ \(x, y) -> do
-		goto t ((x - 50)  * ratio) (y * ratio)
+		goto t ((x - 60)  * ratio) (y * ratio)
 		if inCircle x y then pencolor t "blue" else pencolor t "red"
 		dot t 1
 	pencolor t "black"
-	goto t (80 * ratio) (- 50 * ratio)
+	goto t (45 * ratio) (- 50 * ratio)
 	write t "Monospace" (18 * ratio) $ "in :" ++ show (inCPoints 8 trial)
-	goto t (80 * ratio) (- 70 * ratio)
+	goto t (45 * ratio) (- 70 * ratio)
 	write t "Monospace" (18 * ratio) $ "out: " ++ show trial
-	goto t (80 * ratio) (- 90 * ratio)
+	goto t (45 * ratio) (- 90 * ratio)
 	write t "Monospace" (18 * ratio) $ "pi : " ++
 		show (fromIntegral (inCPoints 8 trial) / fromIntegral trial * 4)
 --	waitField f
 
 	svg <- getSVG t
-	putStr $ showSVG (1500 * ratio) (300 * ratio) svg
+	putStr $ showSVG (340 * ratio) (230 * ratio) svg
 
 inCPoints :: Int -> Int -> Int
 inCPoints g n = length $ filter (uncurry inCircle) $ take n $ randomPoints g
