@@ -464,8 +464,8 @@ aboutInCircle4 = [\t -> do
 	text t "* inCircleの中身について考えてみよう", \t -> do
 	text t "* 中心(0, 0)で半径1の円の内側にある", \t -> do
 	arrowIText t 1 "(0, 0)からの距離が1以下", \t -> do
-	arrowIText t 1 "(0, 0)からの距離の二乗が1以下", \t -> do
-	text t "* (0, 0)から(x, y)までの距離の二乗は", \t -> do
+	arrowIText t 1 "(0, 0)からの距離の2乗が1以下", \t -> do
+	text t "* (0, 0)から(x, y)までの距離の2乗は", \t -> do
 	itext t 1 "x ^ 2 + y ^ 2", \t -> do
 	text t "* これが1以下なら良いので", \t -> do
 	itext t 1 "x ^ 2 + y ^ 2 <= 1", \t -> do
