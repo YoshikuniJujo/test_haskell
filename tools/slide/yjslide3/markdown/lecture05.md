@@ -289,8 +289,10 @@ ghciで読み込んでおこう。
 点(x, y)が「中心(0, 0)の半径1の円」のなかに
 あることを検査する関数inCircleを作る。
 
-* 演習1. inCircleの型を決めよう
-* 演習2. inCircleの中身を作ろう(上と合わせて3分)
+* 演習1. inCircleの型を決めよう(1分)
+* 演習2. inCircleの中身を作ろう(2分)
+
+解答をmontePi.hsに書き込もう。
 
 試してみる。
 
@@ -351,3 +353,22 @@ True, Falseをくりかえす列とのzipをとる。
     lst' = [a, c, e ...]
 
 * 演習3. True, Falseをくりかえすtfsを定義せよ(1分)
+
+解答をmontePi.hsに書き込み、試してみる。
+
+    *Main> :reload
+    *Main> take 7 tfs
+    [True, False, True, False, True, False, True]
+
+### どのように作るか(復習)
+
+ひとつ置きに取る戦略をおさらいする。
+
+1. tfsとのzipをとる(zipは各要素同士のペア)
+2. ペアの1番目の値でfilterする
+3. ペアの2番目の値だけをとる
+
+これを行う関数をhopとする。
+
+* 演習4. hopの型を決めよ(1分)
+* 演習5. hopの中身を作れ(2分)

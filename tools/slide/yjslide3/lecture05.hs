@@ -575,8 +575,8 @@ randomPoints5 = [\t -> do
 	itext t 1 "2. ペアの1番目の値でfilterする", \t -> do
 	itext t 1 "3. ペアの2番目の値だけをとる", \t -> do
 	text t "* これを行う関数をhopとしよう", \t -> do
-	text t "* 演習4. hopの型を決める", \t -> do
-	text t "* 演習5. hopの中身を作る", \t -> do
+	text t "* 演習4. hopの型を決めよ", \t -> do
+	text t "* 演習5. hopの中身を作れ", \t -> do
 	itext t 1 "(3分)"
  ]
 
@@ -584,7 +584,7 @@ randomPoints6 :: Page
 randomPoints6 = [\t -> do
 	writeTopTitle t "ひとつ置きに取る"
 	text t "", \t -> do
-	text t "* hopは「何かのリスト」をとって「同じもののリスト」を返す", \t -> do
+	text t "* hopは「何かのリスト」をとって「同じ型のリスト」を返す", \t -> do
 	itext t 1 "hop :: [a] -> [a]", \t -> do
 	text t "* できただろうか?", \t -> do
 	text t "* これは多相関数である", \t -> do
