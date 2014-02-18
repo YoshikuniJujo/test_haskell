@@ -390,3 +390,11 @@ montePi.hsに書き込み、試してみる。
 
 * 演習6. pairsの型を決めよ(1分)
 * 演習7. pairsの中身を作れ(2分)
+
+montePi.hsに書き込み、試してみる。
+
+    *Main> :reload
+    *Main> pairs [1 .. 10]
+    [(1,2),(3,4),(5,6),(7,8),(9,10)]
+    *Main> paris "Haskell"
+    [('H','a'),('s','k'),('e','l')]

@@ -22,7 +22,8 @@ main = runLecture [
 	randomPoints, randomPoints2, randomPoints3, randomPoints4, randomPoints5,
 	randomPoints6, randomPoints6_5, randomPoints6_6, randomPoints7,
 	randomPoints8, randomPoints9, randomPoints10,
-	randomPoints11, randomPoints12, randomPoints13, randomPoints14,
+	randomPoints11, randomPoints11_5, randomPoints11_6, randomPoints12,
+	randomPoints13, randomPoints14,
 	randomPoints15, randomPoints16,
 	aboutGetPi, aboutGetPi2, aboutGetPi3, aboutGetPi4, aboutGetPi5,
 	aboutResult,
@@ -674,9 +675,8 @@ randomPoints10 = [\t -> do
 	itext t 1 "1. リストとそれ自体をひとつずらしたリストとをzip", \t -> do
 	itext t 1 "2. 結果として出来たリストの要素をひとつ置きに取る", \t -> do
 	text t "* この関数をpairsとしよう", \t -> do
-	text t "* 演習6. pairsの型を決めよ", \t -> do
-	text t "* 演習7. pairsの中身を作れ", \t -> do
-	itext t 1 "(3分)"
+	text t "* 演習6. pairsの型を決めよ(1分)", \t -> do
+	text t "* 演習7. pairsの中身を作れ(2分)"
  ]
 
 pairs :: [a] -> [(a, a)]
@@ -689,8 +689,31 @@ randomPoints11 = [\t -> do
 	text t "* できただろうか?", \t -> do
 	text t "* pairsの入力は「何かのリスト」なので[a]", \t -> do
 	text t "* pairsの出力は「同じ何かのペアのリスト」なので[(a, a)]", \t -> do
-	arrowIText t 1 "pairs :: [a] -> [(a, a)]", \t -> do
-	text t "* 中身は以下のようになる", \t -> do
+	arrowIText t 1 "pairs :: [a] -> [(a, a)]"
+ ]
+
+randomPoints11_5 :: Page
+randomPoints11_5 = [\t -> do
+	writeTopTitle t "ペアに区切る"
+	text t "", \t -> do
+	text t "* 以下のようなリストがあったとして", \t -> do
+	itext t 1 "lst = [x, y, z, w, v, u]", \t -> do
+	text t "* ひとつずらしたリストは", \t -> do
+	itext t 1 "tail lst", \t -> do
+	itext t 1 "[y, z, w, v, u]", \t -> do
+	text t "* それともとのリストとのzipは", \t -> do
+	itext t 1 "zip lst $ tail lst", \t -> do
+	itext t 1 "[(x, y), (y, z), (z, w), (w, v), (v, u) ...]", \t -> do
+	text t "* これをひとつ置きにとると", \t -> do
+	itext t 1 "hop $ zip $ tail lst", \t -> do
+	itext t 1 "[(x, y), (z, w), (v, u) ...]"
+ ]
+
+randomPoints11_6 :: Page
+randomPoints11_6 = [\t -> do
+	writeTopTitle t "ペアに区切る"
+	text t "", \t -> do
+	text t "* よって、以下のようになる", \t -> do
 	itext t 1 "pairs lst = hop $ zip lst $ tail lst", \t -> do
 	text t "* tail lstはひとつずれたリスト", \t -> do
 	text t "* それともとのリストとのzipを取り", \t -> do
