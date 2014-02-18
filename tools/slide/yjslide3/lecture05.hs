@@ -20,7 +20,8 @@ main = runLecture [
 	aboutInCircle, aboutInCircle2, aboutInCircle3, aboutInCircle4,
 	aboutInCircle5, aboutInCircle6,
 	randomPoints, randomPoints2, randomPoints3, randomPoints4, randomPoints5,
-	randomPoints6, randomPoints7, randomPoints8, randomPoints9, randomPoints10,
+	randomPoints6, randomPoints6_5, randomPoints6_6, randomPoints7,
+	randomPoints8, randomPoints9, randomPoints10,
 	randomPoints11, randomPoints12, randomPoints13, randomPoints14,
 	randomPoints15, randomPoints16,
 	aboutGetPi, aboutGetPi2, aboutGetPi3, aboutGetPi4, aboutGetPi5,
@@ -421,9 +422,8 @@ aboutInCircle = [\t -> do
 	text t "* ghci montePi.hsで読み込んでおこう", \t -> do
 	text t "* 点(x, y)が円のなかにあることを検査する関数inCircle", \t -> do
 	text t "* ここでは中心(0, 0)の半径1の円とする", \t -> do
-	text t "* 演習1. inCircleの型を決めよう", \t -> do
-	text t "* 演習2. inCircleの中身を作ろう", \t -> do
-	itext t 1 "(3分)"
+	text t "* 演習1. inCircleの型を決めよう(1分)", \t -> do
+	text t "* 演習2. inCircleの中身を作ろう(2分)"
  ]
 
 aboutInCircle2 :: Page
@@ -575,9 +575,8 @@ randomPoints5 = [\t -> do
 	itext t 1 "2. ペアの1番目の値でfilterする", \t -> do
 	itext t 1 "3. ペアの2番目の値だけをとる", \t -> do
 	text t "* これを行う関数をhopとしよう", \t -> do
-	text t "* 演習4. hopの型を決めよ", \t -> do
-	text t "* 演習5. hopの中身を作れ", \t -> do
-	itext t 1 "(3分)"
+	text t "* 演習4. hopの型を決めよ(1分)", \t -> do
+	text t "* 演習5. hopの中身を作れ(2分)"
  ]
 
 randomPoints6 :: Page
@@ -587,8 +586,36 @@ randomPoints6 = [\t -> do
 	text t "* hopは「何かのリスト」をとって「同じ型のリスト」を返す", \t -> do
 	itext t 1 "hop :: [a] -> [a]", \t -> do
 	text t "* できただろうか?", \t -> do
-	text t "* これは多相関数である", \t -> do
-	text t "* 中身は以下のようになる", \t -> do
+	text t "* これは多相関数である"
+ ]
+
+randomPoints6_5 :: Page
+randomPoints6_5 = [\t -> do
+	writeTopTitle t "ひとつ置きに取る"
+	text t "", \t -> do
+	text t "* まずはtfsとのzipをとる", \t -> do
+	itext t 1 "zip tfs lst", \t -> do
+	itext t 1 "[(True, x), (False, y), (True, z), (False, w) ...]", \t -> do
+	text t "* これをタプルの第1要素が真か偽かでfilterする", \t -> do
+	itext t 1 "filter (\\(b, _) -> b == True) $ zip tfs lst", \t -> do
+	text t "* bとb == Trueとは同値", \t -> do
+	itext t 1 "- bがTrueのときb == TrueはTrue", \t -> do
+	itext t 1 "- bがFalseのときb == TrueはFalse", \t -> do
+	text t "* よって\\(b, _) -> b == Trueは\\(b, _) -> bとなる", \t -> do
+	text t "* タプルの第一要素を取っているだけなのでfst関数と同値", \t -> do
+	itext t 1 "filter fst $ zip tfs lst"
+ ]
+
+randomPoints6_6 :: Page
+randomPoints6_6 = [\t -> do
+	writeTopTitle t "ひとつ置きに取る"
+	text t "", \t -> do
+	text t "* 今の段階で手に入るもの", \t -> do
+	itext t 1 "filter fst $ zip tfs lst", \t -> do
+	itext t 1 "[(True, x), (True, z), (True, v) ...]", \t -> do
+	text t "* このリストのすべての要素であるタプルの2番目を取る", \t -> do
+	itext t 1 "map snd $ filter fst $ zip tfs lst", \t -> do
+	text t "* よって関数hopは", \t -> do
 	itext t 1 "hop lst = map snd $ filter fst $ zip tfs lst"
  ]
 
@@ -596,7 +623,7 @@ randomPoints7 :: Page
 randomPoints7 = [\t -> do
 	writeTopTitle t "ひとつ置きに取る"
 	text t "", \t -> do
-	text t "* filter fstのところが難しかったかもしれない", \t -> do
+	text t "* filter fstにおける型について見てみよう", \t -> do
 	itext t 1 "filter :: (a -> Bool) -> [a] -> [a]", \t -> do
 	itext t 1 "fst :: (b, c) -> b", \t -> do
 	text t "* (a -> Bool)と((b, c) -> b)とですりあわせが行われる", \t -> do
@@ -619,8 +646,8 @@ randomPoints8 = [\t -> do
 	itext t 1 "hop = map snd . filter fst . zip tfs", \t -> do
 	text t "* hop関数は", \t -> do
 	itext t 1 "- tfsとのzipをとり", \t -> do
-	itext t 1 "- タプルの一番目の要素でfilterし", \t -> do
-	itext t 1 "- すべてのタプルの二番目の要素をとる"
+	itext t 1 "- タプルの1番目の要素でfilterし", \t -> do
+	itext t 1 "- すべてのタプルの2番目の要素をとる"
  ]
 
 hop :: [a] -> [a]
