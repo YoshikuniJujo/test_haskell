@@ -746,9 +746,8 @@ randomPoints13 = [\t -> do
 	text t "* ランダムの種の型はStdGenとする", \t -> do
 	text t "* 与えられた範囲の乱数列を返す関数は", \t -> do
 	itext t 1 "randomRs :: (Double, Double) -> StdGen -> [Double]", \t -> do
-	text t "* 演習8. pointsの型を決めよ", \t -> do
-	text t "* 演習9. pointsの中身を作れ", \t -> do
-	itext t 1 "(3分)"
+	text t "* 演習8. pointsの型を決めよ(1分)", \t -> do
+	text t "* 演習9. pointsの中身を作れ(2分)"
  ]
 
 randomPoints14 :: Page
