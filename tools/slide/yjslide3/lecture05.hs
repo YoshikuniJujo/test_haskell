@@ -821,11 +821,12 @@ aboutGetPi2 = [\t -> do
 	text t "* できただろうか?", \t -> do
 	itext t 1 "getPi :: Int -> StdGen -> Double", \t -> do
 	text t "* 演習11. 以下の[ (a) ]に入る式を求めよ", \t -> do
-	itext t 0 "montePi n sg ="
+	itext t 0 "getPi n sg ="
 	itext t 1 "4 * fromIntegral (length inps) / fromIntegral n"
 	itext t 1 "where inps = [ (a) ]", \t -> do
 	itext t 2 "-- lengthの返り値やnはIntなので", \t -> do
 	itext t 2 "-- fromIntegralによってDoubleに変換している", \t -> do
+	text t "* ヒント1: inpsはn個の点のうち円のなかにある点", \t -> do
 	itext t 1 "(1分)"
  ]
 
@@ -834,7 +835,6 @@ aboutGetPi3 = [\t -> do
 	writeTopTitle t "πの値を求める"
 	text t "", \t -> do
 	text t "* できただろうか?", \t -> do
-	text t "* ヒント1: inpsはn個の点のうち円のなかにある点", \t -> do
 	text t "* ヒント2: 円のなかかどうかを表す関数は", \t -> do
 	itext t 1 "inCircle :: Double -> Double -> Bool", \t -> do
 	text t "* ヒント3: 非カリー化を使う", \t -> do
