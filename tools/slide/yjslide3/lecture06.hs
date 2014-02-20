@@ -156,7 +156,7 @@ aboutSquareSum8 = [\t -> do
 	text t "* squareSumの場合で考えてみる", \t -> do
 	itext t 1 "- 引数0が基底となる", \t -> do
 	itext t 1 "- squareSumがすでに定義ずみと考えて", \t -> do
-	itext t 2 "squareSum (n -1)を使ってsquareSum nを定義する", \t -> do
+	itext t 2 "squareSum (n - 1)を使ってsquareSum nを定義", \t -> do
 	text t "* 重要なのはnより(n - 1)のほうが0に近いこと", \t -> do
 	itext t 1 "1を引くという操作をくりかえすと0に到達する"
  ]
@@ -374,7 +374,7 @@ treeRec11 :: Page
 treeRec11 = [\t -> do
 	writeTopTitle t "経路の存在関数"
 	text t "", \t -> do
-	text t "* まずは型を使めよう", \t -> do
+	text t "* まずは型を決めよう", \t -> do
 	text t "* 使用例から明らかなように入力、出力は以下のようになる", \t -> do
 	itext t 1 "入力1: Paths", \t -> do
 	itext t 1 "入力2: Char", \t -> do
