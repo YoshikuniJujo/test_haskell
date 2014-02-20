@@ -250,7 +250,7 @@ treeRec3 = [\t -> do
 	writeTopTitle t "新たに必要になる構文"
 	text t "", \t -> do
 	text t "* 関数のガード節", \t -> do
-	itext t 1 "- 引数の条件によって式を選ぶことができる", \t -> do
+	itext t 1 "- 条件によって式を選ぶことができる", \t -> do
 	itext t 1 "fun x"
 	preLine t
 	itext t 2 "| even x = \"even\"", \t -> do
