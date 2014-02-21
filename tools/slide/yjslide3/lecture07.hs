@@ -1,3 +1,5 @@
+module Main (main) where
+
 import Control.Monad
 import System.Random
 import System.IO.Unsafe
@@ -618,6 +620,7 @@ listFunctionsSummary = [\t -> do
 	itext t 1 "- foldl: 左結合演算子の挿入"
  ]
 
+{-
 listFunctionsX :: Page
 listFunctionsX = [\t -> do
 	writeTopTitle t "右結合と左結合"
@@ -631,6 +634,7 @@ listFunctionsX = [\t -> do
 	itext t 1 "1 - (2 - 3)", \t -> do
 	itext t 1 "(1 - 2) - 3"
  ]
+-}
 
 otherFunctions :: Page
 otherFunctions = [\t -> do
