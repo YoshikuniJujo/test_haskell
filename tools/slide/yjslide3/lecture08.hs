@@ -189,14 +189,14 @@ collatz5 :: Page
 collatz5 = [\t -> do
 	writeTopTitle t "takeTo"
 	text t "", \t -> do
-	text t "* myList.hsに書き込もう", \t -> do
+	text t "* collatz.hsに書き込もう", \t -> do
 	itext t 1 "takeTo :: (a -> Bool) -> [a] -> [a]"
 	itext t 1 "takeTo _ [] = []"
 	itext t 1 "takeTo p (x : xs)"
 	itext t 2 "| p x = [x]"
 	itext t 2 "| otherwise = x : takeTo p xs", \t -> do
 	text t "* 試してみよう", \t -> do
-	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> :load collatz.hs", \t -> do
 	itext t 1 $ "*Main> takeTo even " ++ show cl5lst1, \t -> do
 	itext t 1 $ show $ takeTo even cl5lst1
  ]
@@ -295,7 +295,7 @@ collatz11 :: Page
 collatz11 = [\t -> do
 	writeTopTitle t "試してみよう"
 	text t "", \t -> do
-	text t "* myList.hsに書き込もう", \t -> do
+	text t "* collatz.hsに書き込もう", \t -> do
 	itext t 1 "takeTo' :: (a -> Bool) -> [a] -> [a]", \t -> do
 	itext t 1 "takeTo' p = flip foldr [] $", \t -> do
 	itext t 2 "\\x -> (x :) . if p x then const [] else id", \t -> do
@@ -390,7 +390,7 @@ collatz17 :: Page
 collatz17 = [\t -> do
 	writeTopTitle t "試してみる"
 	text t "", \t -> do
-	text t "* myList.hsに書き込もう", \t -> do
+	text t "* collatz.hsに書き込もう", \t -> do
 	itext t 1 "collatzInf :: Int -> [Int]"
 	itext t 1 "collatzInf = iterate $ \\n -> if even n"
 	itext t 2 "then n `div` 2"
@@ -437,7 +437,7 @@ collatz20 = [\t -> do
 	text t "* 1で終了するようにしよう", \t -> do
 	itext t 1 "collatz :: Int -> [Int]", \t -> do
 	itext t 1 "collatz = takeTo (== 1) . collatzInf", \t -> do
-	text t "* これをmyList.hsに書き込もう", \t -> do
+	text t "* これをcollatz.hsに書き込もう", \t -> do
 	text t "* 試してみる", \t -> do
 	itext t 1 "*Main> :reload", \t -> do
 	itext t 1 "*Main> collatz 11", \t -> do
@@ -576,7 +576,7 @@ factorization8 :: Page
 factorization8 = [\t -> do
 	writeTopTitle t "試してみる"
 	text t "", \t -> do
-	text t "* myList.hsに以下を書き込もう", \t -> do
+	text t "* factorization.hsに以下を書き込もう", \t -> do
 	itext t 0 "popFactor :: Integer -> Maybe (Integer, Integer)", \t -> do
 	itext t 0 "popFactor n = (f, n `div` f)", \t -> do
 	itext t 1 "where", \t -> do
@@ -668,10 +668,10 @@ factorization14 :: Page
 factorization14 = [\t -> do
 	writeTopTitle t "試してみる"
 	text t "", \t -> do
-	text t "* myList.hsに書き込もう", \t -> do
+	text t "* factorization.hsに書き込もう", \t -> do
 	itext t 1 "factorization :: Integer -> [Integer]"
 	itext t 1 "factorization = unfoldr popFactor", \t -> do
-	text t "* myList.hsの先頭にimport Data.List (unfoldr)が必要", \t -> do
+	text t "* factorization.hsの先頭にimport Data.List (unfoldr)が必要", \t -> do
 	text t "* 試してみよう", \t -> do
 	itext t 1 "*Main> :reload", \t -> do
 	itext t 1 $ "*Main> factorization " ++ show fct14integer1, \t -> do
