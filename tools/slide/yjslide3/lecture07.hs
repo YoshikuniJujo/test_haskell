@@ -612,7 +612,7 @@ listFunctionsSummary :: Page
 listFunctionsSummary = [\t -> do
 	writeTopTitle t "ここまでのまとめ"
 	text t "", \t -> do
-	text t "* sum, product, lengthなどは再帰的な定義が可能", \t -> do
+	text t "* sum, product, lengthなどは再帰的に定義される", \t -> do
 	text t "* リストを扱う再帰的関数の多くは", \t -> do
 	itext t 1 "- 要素間に同一の演算子を挿入した形となる", \t -> do
 	text t "* 演算子の適用のしかたには右結合と左結合とがある", \t -> do
