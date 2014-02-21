@@ -538,7 +538,7 @@ listFunctions18 = [\t -> do
 	text t "* 第3引数は「何かのリスト」なのでZ = [a]と置ける", \t -> do
 	text t "* 第2引数vがそのまま返り値となるのでY = Rでこれをbと置く", \t -> do
 	text t "* x `op` foldr op v xsが全体の返り値となるのでopは", \t -> do
-	itext t 1 "- (x :: a)と(foldr op v :: R)を引数としてとり", \t -> do
+	itext t 1 "- (x :: a)と(foldr op v xs :: R)を引数としてとり", \t -> do
 	itext t 1 "- Rを返り値として返すので", \t -> do
 	itext t 1 "X = (a -> b -> b)", \t -> do
 	arrowIText t 0 "foldr :: (a -> b -> b) -> b -> [a] -> b"

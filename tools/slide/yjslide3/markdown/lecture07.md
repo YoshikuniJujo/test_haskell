@@ -403,7 +403,87 @@ mySumの定義にもどってみよう。
 
 ### 再帰的処理の抽象化
 
+#### foldr
+
+リストに対する再帰的処理の多くは以下の形をとる。
+
+    fun [] = v
+    fun (x : xs) = x `op` fun xs
+
+この枠組みでvとopだけ変えればいろいろな関数が作れる。
+このような枠組みをHaskellでは関数として抽象化できる。
+
+    foldr op v [] = v
+    foldr op v (x : xs) = x `op` foldr op v xs
+
+理解のためにopに(+)をvに0をいれてみよう。
+
+    foldr (+) 0 [] = 0
+    foldr (+) 0 (x : xs) = x + foldr (+) 0 xs
+
+これとmySumの定義をくらべてみる。
+
+    mySum [] = 0
+    mySum (x : xs) = x + mySum xs
+
+以下の関係が成り立つことがわかるだろう。
+
+    mySum == foldr (+) 0
+
+#### myFoldr
+
+foldrは標準ライブラリに用意されている。
+myFoldrとして再定義してみよう。
+myList.hsに以下を追加する。
+
+    myFoldr op v [] = v
+    myFoldr op v (x : xs) = x `op` myFoldr op v xs
+
+試してみる。
+
+    *Main> :reload
+    *Main> myFoldr (+) 0 [1, 2, 3, 4]
+    10
+    *Main> myFoldr (*) 1 [1, 2, 3, 4]
+    24
+
+#### foldrの型
+
+foldrの型を導き出してみよう。
+
+    foldr op v [] = v
+    foldr op v (x : xs) = x `op` foldr op v xs
+
+foldrは引数を3つ取る関数なので仮に以下のような型であるとする。
+
+    foldr :: X -> Y -> Z -> R
+
+* 第3引数は「何かのリスト」なのでZ = [a]とする
+* 第2引数vがそのまま返り値となっているのでY = Rとなる
+* これをbと置く、つまりY = R = b
+* x `op` foldr op v xsが全体の返り値(型b)となるのでopは
+    + (x :: a)と(foldr op v xs :: b)を引数としてとり
+    + bを返り値として返す
+* つまりop :: a -> b -> b
+
+よって最終的には以下のようになる
+
+    X = a -> b -> b
+    Y = b
+    Z = [a]
+    R = b
+
+よって
+
+    foldr :: (a -> b -> b) -> b -> [a] -> b
+
 ### 反復的処理の抽象化
+
+#### foldl
+
+#### foldlの型
+
+#### myFoldl
 
 ここまでのまとめ
 ----------------
