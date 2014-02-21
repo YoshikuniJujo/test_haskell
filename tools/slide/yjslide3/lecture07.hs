@@ -119,7 +119,7 @@ patternMatch2 :: Page
 patternMatch2 = [\t -> do
 	writeTopTitle t "パターンマッチ"
 	text t "", \t -> do
-	text t "* リストには(foo : bar)という形のほかに", \t -> do
+	text t "* リストには(x : xs)という形のほかに", \t -> do
 	itext t 1 "空リストを表す[]という形がある", \t -> do
 	text t "* []は(x : xs)にマッチしないので", \t -> do
 	itext t 1 "- fun (x : xs) = ...として", \t -> do
