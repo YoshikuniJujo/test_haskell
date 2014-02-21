@@ -423,8 +423,8 @@ listFunctions11 = [\t -> do
 	text t "* 結果の形を再掲する", \t -> do
 	itext t 1 "((0 + x0) + x1) + x2) ...", \t -> do
 	text t "* 以下のことがわかる", \t -> do
-	itext t 1 "- x1の計算をするとき(0 + x0)が必要", \t -> do
-	itext t 1 "- x2の計算をするとき((0 + x0) + x1)が必要", \t -> do
+	itext t 1 "- x1までの計算をするとき(0 + x0)が必要", \t -> do
+	itext t 1 "- x2までの計算をするとき((0 + x0) + x1)が必要", \t -> do
 	itext t 2 "...", \t -> do
 	text t "* これらの値を保存しておく変数が必要になる", \t -> do
 	itext t 1 "- これを蓄積変数と呼ぶ"
@@ -454,9 +454,10 @@ listFunctions13 = [\t -> do
 	itext t 1 "mySumIter s (x : xs) = mySumIter (s + x) xs", \t -> do
 	text t "* 引数だけ変化した同じ関数に完全に置き換えられている", \t -> do
 	itext t 1 "mySumIter 0 [1, 2, 3]", \t -> do
-	arrowIText t 1 "mySumIter 1 [2, 3]", \t -> do
-	arrowIText t 1 "mySumIter 3 [3]", \t -> do
-	arrowIText t 1 "mySumIter 6 []", \t -> do
+	arrowIText t 1 "mySumIter (0 + 1) [2, 3]", \t -> do
+	arrowIText t 1 "mySumIter ((0 + 1) + 2) [3]", \t -> do
+	arrowIText t 1 "mySumIter (((0 + 1) + 2) + 3) []", \t -> do
+	arrowIText t 1 "((0 + 1) + 2) + 3", \t -> do
 	arrowIText t 1 "6", \t -> do
 	text t "* これは内部的には単純な「くりかえし」として実行できる", \t -> do
 	text t "* この関数は再帰的に定義されてはいるが", \t -> do
