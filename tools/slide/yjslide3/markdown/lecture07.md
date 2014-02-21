@@ -481,9 +481,65 @@ foldrは引数を3つ取る関数なので仮に以下のような型である�
 
 #### foldl
 
+反復的処理の枠組みは以下のようになる。
+
+    fun s [] = s
+    fun s (x : xs) = fun (s `op` x) xs
+
+この枠組みを関数にする。
+
+    foldl op s [] = s
+    foldl op s (x : xs) = foldl op (s `op` x) xs
+
+#### 逐次的評価
+
+理解のために逐次的に評価してみよう。
+
+       foldl op v [x, y, z]
+    -> foldl op v (x : y : z : [])
+    -> foldl op (v `op` x) (y : z : [])
+    -> foldl op ((v `op` x) `op` y) (z : [])
+    -> foldl op (((v `op` x) `op` y) `op` z) []
+    -> ((v `op` x) `op` y) `op` z
+
 #### foldlの型
 
+foldlの型を導き出す。
+
+    foldl op s [] = s
+    foldl op s (x : xs) = foldl op (s `op` x) xs
+
+    foldl :: X -> Y -> Z -> R
+
+* 第三引数は何らかのリスト。Z == [b]とする
+* 第二引数はそのまま返り値になるのでY == Rでaと置く
+* (s `op` x)が第二引数となる
+    + opの第一引数はsなので型Yつまりa
+    + opの第二引数はxなので型b
+    + opの返り値はfoldlの第二引数なので型Yつまりa
+* よってop :: a -> b -> a
+
+よって以下のようになる。
+
+    foldl :: (a -> b -> a) -> a -> [b] -> a
+
 #### myFoldl
+
+myList.hsに以下を書き込む。
+
+    myFoldl :: (a -> b -> a) -> a -> [b] -> a
+    myFoldl _ s [] = s
+    myFoldl op s (x : xs) = myFoldl op (s `op` x) xs
+
+試してみる。
+
+    *Main> :reload
+    *Main> myFoldl (-) 10 [1, 2, 3]
+    4
+
+myFoldl (-) 10 [1, 2, 3]は以下のようになる。
+
+    10 - 1 - 2 - 3
 
 ここまでのまとめ
 ----------------
