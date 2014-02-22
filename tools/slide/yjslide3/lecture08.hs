@@ -43,7 +43,7 @@ enumerate = [\t -> do
 	text t "", \t -> do
 	text t "* まずは「リスト」の回で見た[m .. n]という構文を見よう", \t -> do
 	text t "* これは構文糖であり以下の関数に変換される", \t -> do
-	itext t 1 "enumFromTo x y", \t -> do
+	itext t 1 "enumFromTo m n", \t -> do
 	text t "* この関数を正しく理解するには型クラスの知識が必要なので", \t -> do
 	text t "* ここではこの関数の型を以下のように考える", \t -> do
 	itext t 1 "enumFromTo :: Int -> Int -> [Int]"
@@ -53,7 +53,7 @@ aboutEnumFromTo :: Page
 aboutEnumFromTo = [\t -> do
 	writeTopTitle t "enumFromTo"
 	text t "", \t -> do
-	text t "* enumFromTo m nはmから1ずつ増加させnまでの整数を返す関数", \t -> do
+	text t "* enumFromTo m nはmから1刻みでnまでのリストを返す関数", \t -> do
 	text t "* 以下のように定義することができる", \t -> do
 	itext t 1 "enumFromTo m n", \t -> do
 	itext t 2 "| m > n = []", \t -> do
