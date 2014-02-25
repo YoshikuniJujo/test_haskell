@@ -160,8 +160,9 @@ collatz4 = [\t -> do
 	text t "", \t -> do
 	text t "* 空リストの場合は結果も空リストとなるので", \t -> do
 	itext t 1 "takeTo _ [] = []", \t -> do
-	text t "* 残りのケースはxsの先頭がpを満たす場合と満たさない場合", \t -> do
-	text t "* pを満たした場合、その要素以降は捨てるので", \t -> do
+	text t "* 残りのケースは", \t -> do
+	itext t 1 "リストの先頭が条件を満たす場合と満たさない場合", \t -> do
+	text t "* 条件を満たした場合、その要素の後ろは捨てるので", \t -> do
 	itext t 1 "takeTo p (x : xs)"
 	itext t 2 "| p x = [x]", \t -> do
 	text t "* pを満たさない場合は", \t -> do
