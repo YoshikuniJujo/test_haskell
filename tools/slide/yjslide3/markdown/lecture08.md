@@ -172,6 +172,36 @@ pを満たさない場合はxsからpを満たす要素までを取り、
 
 #### foldrを使った定義
 
+以下のような関数を考える。
+
+    fun x lst = if p x then [x] else x : lst
+
+すると、takeToの定義は以下のように書き換えられる。
+
+    takeTo p (x : xs) = fun x (takeTo p xs)
+
+これを中置記法にすると
+
+    takeTo p (x : xs) = x `fun` takeTo p xs
+
+以下のように書くことができる。
+
+    (takeTo p) [] = []
+    (takeTo p) (x : xs) = x `fun` (takeTo p) xs
+
+(takeTo p)は以下の変換を行う関数と見ることができる。
+
+* []は[]にする
+* (:)をfunに置き換える
+
+このパターンはfoldrの枠組みにあてはめられるので
+
+    takeTo p = foldr fun []
+
+funの中身を展開すると
+
+    takeTo p = foldr (\x lst -> if p x then [x] else x : lst) []
+
 #### ポイントフリースタイル
 
 #### 重複をなくす
