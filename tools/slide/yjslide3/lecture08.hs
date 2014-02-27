@@ -244,7 +244,7 @@ collatz8 = [\t -> do
 	arrowIText t 1 "\\x -> if p x then \\_ -> [x] else (x :)", \t -> do
 	text t "* (\\_ -> c)は引数に関わらず一定の値を返す関数", \t -> do
 	text t "* そのような関数を作る関数constがある", \t -> do
-	itext t 1 "const x = \\_ -> x", \t -> do
+	itext t 1 "const c = \\_ -> c", \t -> do
 	text t "* それを使って書き換えると", \t -> do
 	arrowIText t 1 "\\x -> if p x then const [x] else (x :)"
  ]
