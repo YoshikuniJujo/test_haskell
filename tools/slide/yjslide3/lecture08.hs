@@ -425,7 +425,7 @@ collatz19 = [\t -> do
 	itext t 1 "mkSomeList x = x : mkSomeList (f x)", \t -> do
 	text t "* この枠組みを関数として取り出したものがiterate関数", \t -> do
 	itext t 1 "iterate f x", \t -> do
-	arrowIText t 1 "[x, f x, f (f x), f (f (f x)), ...]"
+	arrowIText t 1 "[x, f x, f (f x), f (f (f x)) ...]"
  ]
 
 collatz :: Int -> [Int]

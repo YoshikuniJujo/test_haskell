@@ -303,3 +303,119 @@ takeToを完全にポイントフリースタイルで書くと以下のよう�
 このtakeToを使えばリストから最初の1までをとる処理は以下のように書ける。
 
     takeTo (== 1) [...]
+
+### 無限数列を作る
+
+#### 前の値から次の値を作る
+
+コラッツ数列の作りかたを再掲する。
+
+* nが偶数ならば2で割る
+* nが奇数ならば3をかけて1を足す
+
+よって前の値から次の値を求める関数は以下のようになる。
+
+    collatzNext :: Int -> Int
+    collatzNext n
+        | even n = n `div` 2
+        | otherwise = n * 3 + 1
+
+#### 無限数列を作る
+
+以下のようにして無限数列を作る。
+
+    collatzInf :: Int -> [Int]
+    collatzInf n = n : collatzInf (collatzNext n)
+
+nから始まる数列はnの次から始まる数列にnを追加したもの、ということ。
+
+結果は次のような数列になる。
+
+    [n, collatzNext n, collatzNext (collatzNext n) ...]
+
+これを一般化すると
+
+    [x, f x, f (f x), f (f (f x)), f (f (f (f x))) ...]
+
+#### iterateを使う
+
+上のような形の列はしばしば使われるので、専用の関数が用意されている。
+
+    iterate f x == [x, f x, f (f x), f (f (f x)) ...]
+
+iterateを使うと
+
+    collatzInf = iterate collatzNext
+
+collatzNextを展開すると
+
+    collatzInf = iterate $ \n -> if even n
+        then n `div` 2
+        else n * 3 + 1
+
+#### 試してみる
+
+collatz.hsに以下を書き込む。
+
+    collatzInf :: Int -> [Int]
+    collatzInf = iterate $ \n -> if even n
+        then n `div` 2
+        else n * 3 + 1
+
+試してみる。
+
+    *Main> :reload
+    *Main> take 10 $ collatzInf 24
+    [24,12,6,3,10,5,16,8,4,2]
+
+#### iterateについて
+
+iterateの定義を見てみよう。
+型は以下のようになる。
+
+    iterate :: (a -> a) -> a -> [a]
+
+定義は以下のようになる。
+
+    iterate f x = x : iterate f (f x)
+
+xに次々とfを適用していってできるリストは、
+f xに次々とfを適用していってできるリストの先頭に
+xを追加したもの、ということ。
+
+#### まとめ
+
+次の値が前の値に関数fを適用したものであるようなリストは、
+以下のようにして作ることができる。
+
+    mkSomeList x = x : mkSomeList (f x)
+
+この枠組みを関数として取り出したものがiterate関数である。
+
+    iterate f x == [x, f x, f (f x), f (f (f x)) ...]
+
+### 組み合わせる
+
+無限数列から1までを取ることによってコラッツ数列を作ろう。
+
+    collatz :: Int -> [Int]
+    collatz = takeTo (== 1) . collatzInf
+
+これをcollatz.hsに書き込み、試してみる。
+
+    *Main> :reload
+    *Main> collatz 11
+    [11,34,17,52,26,13,40,20,10,5,16,8,4,2,1]
+
+### まとめ
+
+コラッツ数列を返す関数を作った。
+無限数列を作ってから必要な部分だけを取り出すというやりかたをした。
+つまり、「次々に値を生成する」部分と「終了条件」とを分けたということ。
+
+後者を実現するために、条件を満たすまでを取り出す関数を作った。
+その関数を再帰を直接使う方法とfoldrを使う方法とで書いてみた。
+また、ポイントフリースタイルは適度に使用するのが良いということを学んだ。
+
+「値に次々と関数を適用する」リストという枠組みについて学んだ。
+この枠組みは関数iterateによって抽象化されている。
