@@ -481,7 +481,7 @@ factorization2 = [\t -> do
 	text t "* 今までは整数としてInt型の値を使ってきたが", \t -> do
 	itext t 1 "- Intは処理系依存のサイズの整数型", \t -> do
 	itext t 1 "- 仕様ではすくなくとも以下の範囲が表現可能とされる", \t -> do
-	itext t 2 "2 ^ 29から2 ^ 29 - 1", \t -> do
+	itext t 2 "- 2 ^ 29から2 ^ 29 - 1", \t -> do
 	text t "* 自分の処理系のInt型の値の範囲は以下のように確かめられる", \t -> do
 	itext t 1 "*Main> (minBound, maxBound) :: (Int, Int)", \t -> do
 	itext t 1 $ show $ ((minBound, maxBound) :: (Int, Int))
@@ -528,12 +528,12 @@ factorization5 = [\t -> do
 	text t "* 問題を以下のように分割する", \t -> do
 	itext t 1 "1. 整数を2以上の最小の約数と残りの数に分ける", \t -> do
 	itext t 1 "2. 1を残りの数についてくりかえす", \t -> do
-	text t "* まずは1.の整数を分割する関数について見ていこう"
+	text t "* まずは1.の整数を分ける関数について見ていこう"
  ]
 
 factorization6 :: Page
 factorization6 = [\t -> do
-	writeTopTitle t "整数を分割する"
+	writeTopTitle t "整数を分ける"
 	text t "", \t -> do
 	text t "* 効率のことは考えずに単純な実装とする", \t -> do
 	text t "* nを引数として以下を求める関数を作る", \t -> do
