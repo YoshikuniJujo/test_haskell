@@ -486,3 +486,179 @@ Haskellにはより安全なInteger型があり、
 つまり、最小の約数をつぎつぎと取り出していくということ。
 
 ### 整数を分ける
+
+#### アルゴリズム
+
+ここでは効率のことは考えずに単純することを優先する。
+2以上の最小の約数を探す部分は、以下のようなアルゴリズムにする。
+
+引数nについて
+
+1. 2から数nまでのリストを作る
+2. それらでnを割り0になるものだけを集める
+3. その先頭の要素を取り出す
+
+#### 関数の定義
+
+整数nを最小の約数と残りに分ける関数は以下のようになる。
+
+    popFactor :: Integer -> Maybe (Integer, Integer)
+    popFactor 1 = Nothing
+    popFactor n = Just (f, n `div` f)
+        where
+        f = head $ filter ((== 0) . (n `mod`)) [2 .. n]
+
+#### 関数の説明
+
+##### 返り値をMaybe型にした点
+
+返り値をMaybe ...とし、1のときにNothingを返すようにした。
+以下のようにすることもできた。
+
+    popFactor 1 = (1, 1)
+
+しかし、このようにすると「残り」が変化しなくなり、
+最終的に目的とする関数が無限ループになってしまう。
+
+よってpopFactor 1の返り値をNothingとして
+「1になったら終了」という条件を明確にした。
+
+##### filter部
+
+filterの部分がすこし難しいかもしれない。
+
+    filter ((== 0) . (n `mod`))
+
+これをポイントフリーでないスタイルで書くと
+
+    filter (\x -> n `mod` x == 0)
+
+つまり、nを割った余りが0になるxを取り出すということになる。
+
+#### 試してみる
+
+factorization.hsに以下を書き込む。
+
+    popFactor :: Integer -> Maybe (Integer, Integer)
+    popFactor n = (f, n `div` f)
+        where
+        f = head $ filter ((== 0) . (n `mod`)) [2 .. n]
+
+試してみる。
+
+    *Main> :load factorization.hs
+    *Main> popFactor 55
+    (5, 11)
+    *Main> popFactor 61
+    (61, 1)
+
+### 素因数分解
+
+#### アルゴリズム
+
+最小の因数と残りの数に分ける関数ができたので、
+これを使って素因数分解する関数を作る。
+結果がJustかNothingかによって場合分けし、以下のような動作とする。
+
+1. popFactorの結果がNothingだったら空リストとする
+2. そうでなければ返り値をJust (f, n')でマッチして
+    + n'の素因数分解の結果にfを追加すれば良い
+
+#### 関数の定義
+
+よって以下のようになる。
+
+    factorization :: Integer -> [Integer]
+    factorization n = case popFactor n of
+        Nothing -> []
+        Just (f, n') -> f : factorization n
+
+#### iterateの枠組みとの比較
+
+##### iterateの枠組み
+
+iterateの場合、次々にわたしていく値と結果としてリストに入る値とは同じである。
+collatz数列の例で考えると、5の次の値は16だが、この16は結果のリストに入り、
+かつ残りの値を求めるのに使われる。
+
+##### 素因数分解では
+
+リストに入るのは最小の約数であり、次の値に必要なのは、残りの数である。
+また、リストの終了がNothingで示されている。
+
+この枠組みを表現する関数unfoldrが用意されている。
+
+#### unfoldr
+
+##### unfoldrの枠組み
+
+factorizationの定義から一般的な枠組みを取り出すと
+
+    fun x = case next x of
+        Nothing -> []
+        Just (r, x') -> r : fun x
+
+このnextの部分を変えればいろいろな関数を作ることができる。
+これをunfoldr nextとすることができる。
+
+##### unfoldrの定義
+
+unfoldrの定義は以下のようになる。
+
+    unfoldr :: (b -> Maybe (a, b)) -> b -> [a]
+    unfoldr next x = case next x of
+        Nothing -> []
+        Just (r, x') -> r : unfoldr next x'
+
+##### factorizationの再定義
+
+unfoldrを使うとfactorizationは以下のように書ける。
+
+    factorization = unfoldr popFactor
+
+#### 試してみる
+
+factorization.hsに書き込もう。
+
+    factorization :: Integer -> [Integer]
+    factorization = unfoldr popFactor
+
+factorization.hsの先頭に以下を追加する。
+
+    import Data.List (unfoldr)
+
+試してみる。
+
+    *Main> :reload
+    *Main> factorization 3511932343773
+    [3,7,29209,5725457]
+    *Main> factorization 
+    [123833,6314339]
+
+### まとめ
+
+unfoldrを利用して、素因数分解する関数を定義した。
+
+unfoldrは「次が存在しないことをNothingで表し、
+次が存在する場合には、値に対して(結果, 次の値)のペアを返す関数」を
+引数としてとる。
+そして、「結果」を要素とするリストを返す。
+
+まとめ
+------
+
+リストを構成する再帰関数について見た。
+形本的な形としては、その関数の返り値自体に値を追加するという枠組みとなる。
+
+そのような関数の多くは以下のような構造を持つ。
+
+    [x, f x, f (f x), f (f (f x)) ...]
+
+このような構造はiterate f xで表現できる。
+
+これで表現できるリストは多くあるが、
+「結果」と「次の値」が違う場合にはiterateは使えない。
+このような場合にはunfoldrが使える。
+unfoldrは「次の値が存在しない場合はNothingを返し、
+そうでなければ、値に対して(結果, 次の値)ペアを返す関数」を
+引数としてとる。

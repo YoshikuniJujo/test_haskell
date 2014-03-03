@@ -583,6 +583,7 @@ factorization8 = [\t -> do
 	itext t 1 "where", \t -> do
 	itext t 1 "f = head $ filter ((== 0) . (n `mod`)) [2 .. n]", \t -> do
 	text t "* 試してみよう", \t -> do
+	itext t 1 $ "*Main> :load factorization.hs", \t -> do
 	itext t 1 $ "*Main> popFactor " ++ show fct8integer1, \t -> do
 	itext t 1 $ show $ popFactor fct8integer1, \t -> do
 	itext t 1 $ "*Main> popFactor " ++ show fct8integer2, \t -> do
@@ -690,7 +691,7 @@ factorizationSummary = [\t -> do
 	text t "* unfoldrを利用した", \t -> do
 	text t "* unfoldrは以下のような関数を引数としてとる", \t -> do
 	itext t 1 "- 次が存在しないことをNothingで表す", \t -> do
-	itext t 1 "- 値に対して(結果の値, 次の値)のペアを返す", \t -> do
+	itext t 1 "- 値に対して(結果, 次の値)のペアを返す", \t -> do
 	text t "* unfoldrは「結果の値」を要素とするリストを返す"
  ]
 
@@ -702,10 +703,10 @@ summary = [\t -> do
 	text t "* その関数の返り値自体に値を追加するという定義", \t -> do
 	text t "* そのような関数の多くは以下のような構造を持つ", \t -> do
 	itext t 1 "[x, f x, f (f x), f (f (f x)) ... ]", \t -> do
-	text t "* このような構造はiterate fで表現できる", \t -> do
-	text t "* 「結果の値」と「次の値」が違う場合iterateは使えない", \t -> do
+	text t "* このような構造はiterate f xで表現できる", \t -> do
+	text t "* 「結果」と「次の値」が違う場合iterateは使えない", \t -> do
 	text t "* このような場合にはunfoldrが使える", \t -> do
 	text t "* unfoldrは以下の関数を引数としてとる", \t -> do
 	itext t 1 "- 次の値が存在しない場合はNothing", \t -> do
-	itext t 1 "- 存在するなら(結果の値, 次の値)ペアを返す"
+	itext t 1 "- 存在するなら(結果, 次の値)ペアを返す"
  ]
