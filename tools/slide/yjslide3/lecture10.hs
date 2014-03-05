@@ -151,8 +151,8 @@ basic7 = [\t -> do
 	itext t 1 "(1分)", \t -> do
 	text t "* できただろうか?", \t -> do
 	itext t 1 "oddSum = sum . filter odd", \t -> do
-	text t "* 演習10-5. 再帰的定義を直接使ってoddSumを定義せよ", \t -> do
-	itext t 1 "(30秒)", \t -> do
+	text t "* 演習10-5. 再帰を直接使ってoddSumを定義せよ", \t -> do
+	itext t 1 "(1分)", \t -> do
 	text t "* できただろうか?", \t -> do
 	itext t 1 "oddSum [] = 0", \t -> do
 	itext t 1 "oddSum (n : ns)", \t -> do
@@ -164,7 +164,7 @@ defineMap :: Page
 defineMap = [\t -> do
 	writeTopTitle t "map"
 	text t "", \t -> do
-	text t "* 演習10-6. 再帰的定義を直接使ってmapを定義せよ", \t -> do
+	text t "* 演習10-6. 再帰を直接使ってmapを定義せよ", \t -> do
 	itext t 1 "(2分)", \t -> do
 	text t "* できただろうか?", \t -> do
 	itext t 1 "map :: (a -> b) -> [a] -> [b]", \t -> do
@@ -183,11 +183,11 @@ defineMap2 = [\t -> do
 	text t "", \t -> do
 	text t "* 演習10-7. foldrを使ってmapを定義せよ(2分)", \t -> do
 	text t "* すこし難しかったかもしれない", \t -> do
-	text t "* (:)を置き換える「演算子」を考えれば良い", \t -> do
+	text t "* (:)を置き換える「演算子op」を考えれば良い", \t -> do
 	text t "* map f (x : xs) = f x : map f xsをこう書いてみる", \t -> do
 	itext t 1 "map f (x : xs) = x `op` map f xs", \t -> do
 	text t "* すると以下のようになる", \t -> do
-	itext t 1 "x `op` lst = f x : lst", \t -> do
+	itext t 1 "x `op` lst == f x : lst", \t -> do
 	arrowIText t 1 "op = \\x lst -> f x : lst", \t -> do
 	arrowIText t 1 "op = \\x -> (f x :)", \t -> do
 	arrowIText t 1 "op = \\x -> (:) f x", \t -> do
@@ -227,7 +227,7 @@ defineMap5 = [\t -> do
 	text t "* 頭の値にfを適用したものを集める関数", \t -> do
 	itext t 1 "map f = unfoldr $ \\lst -> case lst of", \t -> do
 	itext t 2 "[] -> Nothing", \t -> do
-	itext t 2 "(x : xs) -> Just (f x, xs)"
+	itext t 2 "x : xs -> Just (f x, xs)"
  ]
 
 defineFilter :: Page
