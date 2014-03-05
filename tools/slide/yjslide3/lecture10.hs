@@ -391,7 +391,6 @@ defineZip3 = [\t -> do
 	itext t 1 "(1分)", \t -> do
 	text t "* こう考える", \t -> do
 	itext t 1 "- どちらかが空ならば空リスト", \t -> do
-	itext t 1 "- 蓄積変数の値は2つのリストをタプルにしたもの", \t -> do
 	itext t 1 "- それぞれのリストの頭をタプルにしたものが結果", \t -> do
 	itext t 1 "- 2つのリストの頭をとったものを次の値にする", \t -> do
 	text t "* よってunfoldrに与える関数は以下のようになる", \t -> do
