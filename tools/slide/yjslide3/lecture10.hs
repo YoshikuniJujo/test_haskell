@@ -348,9 +348,9 @@ defineReverse5 = [\t -> do
 	text t "* reverseだとこうなる", \t -> do
 	itext t 1 "- 初期値: []", \t -> do
 	itext t 1 "- 次の値xによって蓄積変数ysは(x : ys)となる", \t -> do
-	arrowIText t 1 "reverse = foldl (\\ys x -> (x : ys)) []", \t -> do
-	text t "* \\ys x -> (x : ys)は(:)の引数を入れ換えただけなので", \t -> do
-	arrowIText t 1 "reverse = foldl (reverse (:)) []"
+	arrowIText t 1 "reverse = foldl (\\ys x -> x : ys) []", \t -> do
+	text t "* \\ys x -> x : ysは(:)の引数を入れ換えただけなので", \t -> do
+	arrowIText t 1 "reverse = foldl (flip (:)) []"
  ]
 
 defineZip :: Page
