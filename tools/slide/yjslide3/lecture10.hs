@@ -419,7 +419,7 @@ defineUnzip = [\t -> do
 	writeTopTitle t "unzip"
 	text t "", \t -> do
 	text t "* zipの逆関数が存在する", \t -> do
-	text t "* 2要素タプルを2つのリストに分ける関数", \t -> do
+	text t "* 2要素タプルのリストを2つのリストに分ける関数", \t -> do
 	text t "* 2つのリストはタプルにまとめて返される", \t -> do
 	itext t 1 $ "Prelude> unzip " ++ show (zip "yes" [1 :: Int ..]), \t -> do
 	itext t 1 $ show $ unzip $ zip "yes" [1 :: Int ..], \t -> do
@@ -455,8 +455,8 @@ defineUnzip3 = [\t -> do
 	text t "* 要素がひとつつけ加わったときにどう変化するかを考える", \t -> do
 	text t "* (xs, ys)に対して(x, y)が加わると(x : xs, y: ys)になる", \t -> do
 	text t "* よって以下のような定義となる", \t -> do
-	itext t 1 "unzip = foldr $"
-	itext t 2 "\\(x, y) (xs, ys) -> (x : xs, y : ys)) []"
+	itext t 1 "unzip = foldr"
+	itext t 2 "(\\(x, y) (xs, ys) -> (x : xs, y : ys)) []"
  ]
 
 defineZipWith :: Page
