@@ -13,6 +13,7 @@ main = runLecture [
 	[flip writeTitle subtitle], prelude,
 	enumerate, enumerate2, enumerate3,
 	boolAsEnumerate, intAsEnumerate,
+	abstract,
 	coordinate, coordinate2, coordinate3, coordinate4, coordinate5,
 	coordinate6, coordinate7, coordinate8, coordinate9, coordinate10,
 	coordinate11, coordinate12, coordinate13, coordinate14, coordinate15,
@@ -40,40 +41,40 @@ enumerate = [\t -> do
 	text t "* 値を列挙することで型を作ることができる", \t -> do
 	text t "* 「値」は大文字ではじまる識別子", \t -> do
 	itext t 1 "data Friend = Takashi | Kazuya | Keiko", \t -> do
-	itext t 1 "data Sex = Man | Woman", \t -> do
+	itext t 1 "data Gender = Man | Woman", \t -> do
 	text t "* 3人の友達を表現する型Friendと", \t -> do
-	text t "* 性別を表現する型Sexとを作った", \t -> do
-	text t "* これらの型を扱う関数sexを作ってみる", \t -> do
-	itext t 1 "sex :: Friend -> Sex", \t -> do
-	itext t 1 "sex Takashi = Man", \t -> do
-	itext t 1 "sex Kazuya = Man", \t -> do
-	itext t 1 "sex Keiko = Woman"
+	text t "* 性別を表現する型Genderとを作った", \t -> do
+	text t "* これらの型を扱う関数genderを作ってみる", \t -> do
+	itext t 1 "gender :: Friend -> Gender", \t -> do
+	itext t 1 "gender Takashi = Man", \t -> do
+	itext t 1 "gender Kazuya = Man", \t -> do
+	itext t 1 "gender Keiko = Woman"
  ]
 
 enumerate2 :: Page
 enumerate2 = [\t -> do
 	writeTopTitle t "列挙する"
 	text t "", \t -> do
-	text t "* ここまでの定義をlectures/lecture11/data.hsに書きこもう", \t -> do
+	text t "* ここまでの定義をlectures/lecture11/friend.hsに書きこむ", \t -> do
 	itext t 1 "data Friend = Takashi | Kazuya | Keiko"
-	itext t 1 "data Sex = Man | Woman"
+	itext t 1 "data Gender = Man | Woman"
 	itext t 1 ""
-	itext t 1 "sex :: Friend -> Sex"
-	itext t 1 "sex Takashi = Man"
-	itext t 1 "sex Kazuya = Man"
-	itext t 1 "sex Keiko = Woman"
+	itext t 1 "gender :: Friend -> Gender"
+	itext t 1 "gender Takashi = Man"
+	itext t 1 "gender Kazuya = Man"
+	itext t 1 "gender Keiko = Woman"
  ]
 
 data Friend = Takashi | Kazuya | Keiko
-data Sex = Man | Woman
+data Gender = Man | Woman
 
-sex :: Friend -> Sex
-sex Takashi = Man
-sex Kazuya = Man
-sex Keiko = Woman
+gender :: Friend -> Gender
+gender Takashi = Man
+gender Kazuya = Man
+gender Keiko = Woman
 
-sexCheck :: Friend -> String
-sexCheck f = case sex f of
+genderCheck :: Friend -> String
+genderCheck f = case gender f of
 	Man -> "He is a man."
 	Woman -> "She is a woman."
 
@@ -82,16 +83,16 @@ enumerate3 = [\t -> do
 	writeTopTitle t "列挙する"
 	text t "", \t -> do
 	text t "* 男女を判定しメッセージを作成する", \t -> do
-	itext t 1 "sexCheck :: Friend -> String"
-	itext t 1 "sexCheck f = case sex f of"
+	itext t 1 "genderCheck :: Friend -> String"
+	itext t 1 "genderCheck f = case gender f of"
 	itext t 2 "Man -> \"He is a man.\""
 	itext t 2 "Woman -> \"She is a woman.\"", \t -> do
-	text t "* 上記の定義もdata.hsに書き込み", \t -> do
-	itext t 1 "% ghci data.hs", \t -> do
-	itext t 1 "*Main> sexCheck Takashi", \t -> do
-	itext t 1 $ show $ sexCheck Takashi, \t -> do
-	itext t 1 "*Main> sexCheck Keiko", \t -> do
-	itext t 1 $ show $ sexCheck Keiko
+	text t "* 上記の定義もfriend.hsに書き込み", \t -> do
+	itext t 1 "% ghci friend.hs", \t -> do
+	itext t 1 "*Main> genderCheck Takashi", \t -> do
+	itext t 1 $ show $ genderCheck Takashi, \t -> do
+	itext t 1 "*Main> genderCheck Keiko", \t -> do
+	itext t 1 $ show $ genderCheck Keiko
  ]
 
 boolAsEnumerate :: Page
@@ -117,6 +118,17 @@ intAsEnumerate = [\t -> do
 	itext t 1 "data Char ="
 	itext t 2 "'\\0' | '\\1' | ... | 'A' | 'B' | ... |"
 	itext t 2 "'a' | 'b' | ..."
+ ]
+
+abstract :: Page
+abstract = [\t -> do
+	writeTopTitle t "既存の型を組み合わせる"
+	text t "", \t -> do
+	text t "* 既存の型を組み合わせて新しい型を作る例を見ていく", \t -> do
+	text t "* 座標上の点についての例を見る", \t -> do
+	text t "* まずはタプルによる実装を試す", \t -> do
+	text t "* その実装の問題点を示し、新しい型を作る方法と比較する", \t -> do
+	text t "* それでは見ていこう"
  ]
 
 coordinate :: Page
