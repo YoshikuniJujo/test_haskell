@@ -233,8 +233,9 @@ coordinate3 = [\t -> do
 	text t "", \t -> do
 	text t "* 極座標による位置の表現は以下のようになる", \t -> do
 	itext t 1 "(原点からの距離, x軸からの角度)", \t -> do
-	itext t 1 "data Pol = (Double, Double)", \t -> do
+	itext t 1 "type Pol = (Double, Double)", \t -> do
 	text t "* (dist, rad)の場合を以下に示す", \t -> do
+
 	rtGoto t 100 330
 	setheading t 0
 	pendown t
@@ -245,22 +246,26 @@ coordinate3 = [\t -> do
 	pendown t
 	forwardRt t 150
 	penup t
+
 	rtGoto t 150 330
 	setheading t 30
 	pendown t
 	forwardRt t 200
 	penup t
+
 	backwardRt t 120
 	left t 90
 	forwardRt t 20
 	writeRt t "dist"
 	backwardRt t 20
 	right t 90
+
 	backwardRt t 60
 	pendown t
 	right t 90
 	replicateM_ 30 $ right t 1 >> forwardRt t 0.35
 	penup t
+
 	setheading t 30
 	forwardRt t 15
 	writeRt t "rad"

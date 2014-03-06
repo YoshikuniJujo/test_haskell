@@ -113,6 +113,30 @@ x, yをともにn倍すれば良いので以下のようになる。
 
 #### 極座標
 
+極座標による位置の表現は以下のようになる。
+
+    (原点からの距離, x軸からの角度)
+
+これをタプルで表現すると
+
+    type Pol = (Double, Double)
+
+(dist, rad)の場合の例を以下に示す。
+
+![image2](polImage.png "large")
+
+前の例と同様にn倍する関数を書く。
+原点からの距離をn倍すれば良いので
+
+    mulPol :: Pol -> Double -> Pol
+    mulPol (dist, rad) n = (dist * n, rad)
+
+これらをcoordinate.hsに書きこみ、試してみる。
+
+    *Main> :reload
+    *Main> mulPol (8, pi / 6) 5
+    (40.0,0.5235987755982988)
+
 #### 試してみる
 
 #### おかしな変換
