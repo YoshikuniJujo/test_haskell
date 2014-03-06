@@ -14,3 +14,67 @@ Haskellでは自分で型を作ることができる。
 Haskellでは両者が無理なく1つの枠組みにまとまっている。
 すくなくとも、意味論的には整数や文字型は、
 値を列挙することによって作られた型と考えられる。
+
+列挙する
+--------
+
+### はじめに
+
+値を列挙することで型を作ることができる。
+「値」は大文字ではじまる識別子である。
+
+### 友達と性別の例
+
+    data Friend = Takashi | Kazuya | Keiko
+    data Gender = Man | Woman
+
+3人の友達を表現する型Friendと性別を表現する型Genderとを作った。
+次は、これらの型を扱う関数genderを作る。
+
+    gender :: Friend -> Gender
+    gender Takashi = Man
+    gender Kazuya = Man
+    gender Keiko = Woman
+
+これらをlectures/lecture11/friend.hsに書きこむ。
+
+男女を判定しメッセージを作成する関数を作る。
+
+    genderCheck :: Friend -> String
+    genderCheck f = case gender f of
+        Man -> "He is a man."
+        Woman -> "She is a woman."
+
+これもlectures/lecture11/friend.hsに書きこみ、試してみる。
+
+    % ghci friend.hs
+    *Main> genderCheck Takashi
+    "He is a man."
+    *Main> genderCheck Keiko
+    "She is a woman."
+
+### 用意されている型
+
+#### はじめに
+
+Haskellでははじめから用意されている型としてBool型、Int型、Char型、等々がある。
+これらの型は意味論的には列挙によって作られた型と考えられる。
+ただし、実装としてはより効率的に作られている。
+
+#### Bool型
+
+    data Bool = False | True
+
+Bool型は構文ではなく単なるライブラリとして作ることができる。
+
+#### Int型
+
+    data Int = -2147483648 | -2147483647 | ... | - 2 | - 1
+             | 0 | 1 | 2 | ... | 2147483646 | 2147483647
+
+#### Char型
+
+    data Char = '\0' | '\1' | ... | 'A' | 'B' | ... | 'a' | 'b' | ...
+
+既存の型を組み合わせる
+----------------------
