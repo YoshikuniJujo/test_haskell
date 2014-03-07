@@ -89,8 +89,114 @@ Eqクラスのインスタンスである必要がある」
 Size型をOrdクラスのインスタンスにする
 -------------------------------------
 
+### はじめに
+
+型クラスは、もちろん、自分で作れるが、
+まずは自作の型を既存の型クラスのインスタンスにしてみる。
+
+### Size型の定義
+
+スターバックスのカップのサイズを表す型を作る。
+
+    data Size = Short | Tall | Grande | Venti
+
+これをclass.hsに保存する。
+
+これは大小比較可能なのでOrdクラスのインスタンスにする。
+Ordクラスのインスタンスにするには、
+まずはEqクラスのインスタンスにする必要がある。
+
+### Eqクラス
+
+Eqクラスは同値かどうかを判定可能という性質を表すクラスである。
+
+Eqクラスのクラス関数には(==), (/=)がある。
+このクラスのインスタンスにするには(==)だけを定義すれば良い。
+(==)を定義しておけば(/=)にはデフォルトの定義が使われる。
+
+実行効率あるいはその他の理由で(/=)を別に定義することもある。
+
+実際にSizeをEqクラスのインスタンスにしてみよう。
+
+    instance Eq Size where
+        Short == Short = True
+        Tall == Tall = True
+        Grande == Grande = True
+        Venti == Venti = True
+        _ == _ = False
+
+これをclass.hsに書きこみ、試してみる。
+
+    Prelude> :load class.hs
+    *Main> Short == Short
+    True
+    *Main> Tall == Venti
+    False
+    *Main> Grande /= Grande
+    False
+    *Main> Venti /= Short
+    True
+
+### Ordクラス
+
+Ordクラスには7つのクラス関数がある。
+
+    compare, (<), (>=), (>), (<=), max, min
+
+すべて定義しても良いが、compareまたは(<=)のどちらかを定義すれば、
+他の関数はデフォルトの値が使われる。
+
+SizeをOrdのインスタンスにする。
+
+    instance Ord Size where
+        Short <= _ = True
+        _ <= Short = False
+        Tall <= _ = True
+        _ <= Tall = False
+        Grande <= _ = True
+        _ <= Grande = False
+        Venti <= _ = True
+
+これをclass.hsに書き込み、試してみる。
+
+    *Main> :reload
+    *Main> Short < Short
+    False
+    *Main> Grande <= Grande
+    True
+    *Main> Tall >= Venti
+    False
+    *Main> Venti > Short
+    True
+
+ここまでのまとめ
+----------------
+
+複数の型に共通した性質がある。
+「性質」はその型を扱う関数によって表現される。
+そのような性質、つまり関数をまとめたものが型クラスである。
+
+型クラスのインスタンスにするには関数の中身を定義すれば良い。
+構文は以下のようになる。
+
+    instance [型クラス] [型名] where
+        [関数定義1]
+        [関数定義2]
+        ...
+
 deriving
 --------
+
+型SizeをOrdクラスのインスタンスにするのはもっと簡単にできる。
+
+    data Size = Short | Tall | Grande | Venti deriving (Eq, Ord)
+
+使用頻度の高い以下のクラスについてはderivingで簡単にインスタンスを導出できる。
+
+    Eq, Ord, Enum, Ix, Bounded, Show, Read
+
+derivingを使う場合は値構築子を「小さいものから大きいものへ」の順に
+並べておくと良い。
 
 型クラスを作る: オートマトンの例
 --------------------------------
