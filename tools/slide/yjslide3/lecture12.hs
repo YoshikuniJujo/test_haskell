@@ -3,7 +3,7 @@ import Data.List
 import Lecture
 
 subtitle :: String
-subtitle = "第12回 多相型"
+subtitle = "第12回 多相型と再帰的な型"
 
 main :: IO ()
 main = runLecture [
