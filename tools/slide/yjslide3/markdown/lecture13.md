@@ -480,7 +480,88 @@ undefinedはあらゆる型になれるのでisAcceptの第1引数は(undefined 
 
 ### 例2の実装
 
+#### 例2のオートマトン
+
+もうひとつの例を見てみよう。
+以下のようなオートマトンを考える。
+
+* 1の個数が奇数個である入力列を受理する
+
+これは以下のようなオートマトンとなる。
+
+![automatonImage2](automatonImage2.png "large")
+
+1が来るたびに状態qeと状態qoのあいだを遷移し、
+0の場合には同じ状態にとどまる。
+
+初期状態はqeであり、受理状態はqoである。
+
+#### 型の定義
+
+型AM2を定義する。
+
+    data AM2 = Qe | Qo deriving Show
+
+automaton.hsに書きこむ。
+
+#### 関数stepAM2の定義
+
+関数stepAM2を定義する。
+
+    stepAM2 :: AM2 -> OI -> AM2
+    stepAM2 q O = q
+    stepAM2 Qe I = Qo
+    stepAM2 Qo I = Oe
+
+automaton.hsに書きこむ。
+
+#### AMStateのインスタンスにする
+
+    instance AMState AM2 where
+        step = stepAM2
+        start = Qe
+        accept Qo = True
+        accept _ = False
+
+automaton.hsに書きこむ。
+
+#### 試してみる
+
+    *Main> :reload
+    *Main> isAccept (undefined :: AM2) []
+    False
+    *Main> isAccept (undefined :: AM2) [O]
+    False
+    *Main> isAccept (undefined :: AM2) [I]
+    True
+    *Main> isAccept (undefined :: AM2) [I, I, O]
+    False
+    *Main> isAccept (undefined :: AM2) [I, I, O, I]
+    True
+
 ### まとめ
+
+AMStateは「オートマトンの状態である」という性質をクラスにしたもの。
+
+この例で見たように型クラスは、「性質」であると考えられるだけでなく、
+「仕様と実装を分離するシステム」とも考えられる。
+
+AMStateクラスはstep, start, acceptという関数を持つという「仕様」である。
+
+クラスによって定められた「仕様」はインスタンス宣言のなかで「実装」を与えられる。
+
+そして、型宣言内における「AMState q =>」は、型qがAMStateクラスの仕様を満たすことを保証してくれる。
 
 まとめ
 ------
+
+型クラスとは型の持つ「性質」を表現したものであり、
+「性質」はその型を扱う関数で表現される。
+「性質」は「仕様」と呼ぶこともできる。
+
+クラス宣言ではクラス関数の型を定義する。
+インスタンス宣言ではクラス関数の実装を作成する。
+
+「[型クラス名] => a」とすることで、
+aを与えられた型クラスのインスタンスに制限できる。
+つまり、その型クラスのクラス関数の存在が保証される。
