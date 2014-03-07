@@ -204,5 +204,68 @@ Listは[]に、Consは(:)に、Nilは[]に対応しているのがわかる。
 
 ### 木
 
+#### 型の定義
+
+再帰的な型の別の例として「木」を考える。
+簡単のために二分木としよう。
+
+![binTreeImage](binTreeImage.png "large")
+
+二分木の定義は以下のようになる。
+
+    data BinTree a
+        | Node (BinTree a) (BinTree a)
+        | Leaf a
+        deriving Show
+
+二分木は左右に二分木をとる節(ノード)または値を持つ葉である。
+
+これをdata.hsに書きこむ。
+
+#### 木の例
+
+上図の木を作ってみる。
+
+    tree1 :: BinTree Char
+    tree1 = Node
+        (Node (Leaf 'a') (Node (Leaf 'b') (Leaf 'c')))
+        (Leaf 'd')
+
+data.hsに書きこみ、試してみる。
+
+    *Main> :reload
+    *Main> tree1
+    Node (Node (Leaf 'a') (Node (Leaf 'b') (Leaf 'c'))) (Leaf 'd')
+
+#### 関数の定義
+
+葉の値をリストとして列挙する関数を書く。
+
+    enumLeaf :: BinTree a -> [a]
+    enumLeaf (Node l r) = enumLeaf l ++ enumLeaf r
+    enumLeaf (Leaf x) = [x]
+
+以下のように読める。
+
+* 節の「葉の列挙」は左右の木の葉の列挙を連結したものである
+* 葉の「葉の列挙」はその値ひとつをリストにしたものである
+
+enumLeafの定義をdata.hsに書きこみ、試してみる。
+
+    *Main> :reload
+    *Main> enumLeaf tree1
+    "abcd"
+
 まとめ
 ------
+
+代数的データ型の構文には型変数が使える。
+型変数を使うことでより柔軟な型の定義ができるようになる。
+型変数を使った定義は様々な型を一度に定義していると考えることができる。
+これは見方を変えると「構造」を定義しているとも考えられる。
+
+例としてまずはタプルを見た。
+
+次に代数的データ型で再帰的な型を定義できることを見た。
+その例としてリストと木を定義した。
+木の葉を列挙する関数を定義することで、再帰的なデータを扱う方法を学んだ。
