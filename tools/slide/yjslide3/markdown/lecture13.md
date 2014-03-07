@@ -404,6 +404,80 @@ asTypeOfは第1引数の型を第2引数の型に合わせるための関数で�
 
 ### 例1の実装
 
+#### 例1のオートマトン
+
+![automatonImage1](automatonImage1.png "large")
+
+#### 型の定義
+
+型名をAM1として、型の値をQ1, Q2, Q3とする。
+
+    data AM1 = Q1 | Q2 | Q3 deriving Show
+
+#### 関数stepAM1の定義
+
+関数stepAM1を定義しよう。これは遷移のルールを決める。
+
+    stepAM1 :: AM1 -> OI -> AM1
+    stepAM1 Q1 O = Q1
+    stepAM1 Q1 I = Q2
+    stepAM1 Q2 O = Q3
+    stepAM1 Q2 I = Q2
+    stepAM1 Q3 _ = Q2
+
+これをautomaton.hsに書きこむ。
+
+#### AMStateのインスタンスにする
+
+* stepはstepAM1
+* 初期状態はQ1
+* 受理状態は「Q2であること」
+
+インスタンス宣言は以下のようになる。
+
+    instance AMState AM1 where
+        step = stepAM1
+        start = Q1
+        accept Q2 = True
+        accept _ = False
+
+automaton.hsに書きこむ。
+
+#### isAcceptの使いかた
+
+ここでisAcceptの使いかたを見てみよう。型は以下のようになる。
+
+    isAccept :: AMState q => q -> [OI] -> Bool
+
+isAcceptの第1引数はダミーの引数で、評価されることはなく、
+型だけわかれば良い。
+
+Haskellには評価されるとエラーを発生させるだけの値がはじめから用意されている。
+
+    undefined :: a
+
+undefinedはあらゆる型になれるのでisAcceptの第1引数は(undefined :: AM1)とする。
+
+#### 試してみる
+
+今考えているオートマトンが受理する入力列は、以下のようなものである。
+
+    すくなくともひとつの1を含み、最後の1のあとには偶数個の0が並ぶ
+
+これを念頭に置いて実際に試してみよう。
+
+    *Main> :load automaton.hs
+    *Main> isAccept (undefined :: AM1) []
+    False
+    *Main> isAccept (undefined :: AM1) [O]
+    False
+    *Main> isAccept (undefined :: AM1) [I]
+    True
+    *Main> isAccept (undefined :: AM1) [I, I, O, I, O, O]
+    True
+    *Main> isAccept (undefined :: AM1) [I, I, O, I, O, O, O]
+    False
+
 ### 例2の実装
 
 ### まとめ
