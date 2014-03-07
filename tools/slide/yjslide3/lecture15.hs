@@ -187,7 +187,7 @@ valToFun4 = [\t -> do
 	text t "", \t -> do
 	text t "* 試してみよう", \t -> do
 	itext t 1 "*Main> :reload", \t -> do
-	itext t 1 "*Main> let three =valToFun 3", \t -> do
+	itext t 1 "*Main> let three = valToFun 3", \t -> do
 	itext t 1 "*Main> three (+ 7)", \t -> do
 	itext t 1 $ show $ three (+ 7), \t -> do
 	itext t 1 "*Main> three even", \t -> do
@@ -417,7 +417,7 @@ summary = [\t -> do
 	text t "* これらは片方が存在すればもう一方を導ける", \t -> do
 	text t "* 複雑なほうの型の関数を作る場合", \t -> do
 	itext t 1 "- より簡単なほうの型の関数から変換するほうが", \t -> do
-	itext t 1 "- コードがすっきるするだろう", \t -> do
+	itext t 1 "- コードがすっきリするだろう", \t -> do
 	text t "* 以下の変換を次回の「モナド」の回で使う", \t -> do
 	itext t 1 "b -> c -> d", \t -> do
 	arrowIText t 1 "(a -> b) -> c -> (a -> d)", \t -> do
