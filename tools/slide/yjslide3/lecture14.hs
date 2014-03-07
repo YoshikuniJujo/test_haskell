@@ -158,7 +158,7 @@ whatsGood :: Page
 whatsGood = [\t -> do
 	writeTopTitle t "何がうれしいの?"
 	text t "", \t -> do
-	text t "* 値が特定の構造のなかに存在する場合に", \t -> do
+	text t "* 値が何らかの構造のなかに存在する場合に", \t -> do
 	text t "* その構造とは関係なく値に何かをしたい場合がある", \t -> do
 	text t "* 例えば文字が入っている「何か」に対して", \t -> do
 	text t "* その文字を「文字コード」に変えたいとする", \t -> do
