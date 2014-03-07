@@ -210,9 +210,41 @@ mulPolはPolにだけ使えてRectには使えない、というようにした�
 
 ##### 直交座標
 
+直交座標用の関数は以下のようになる。
+
+    mulRect :: Rect -> Double -> Rect
+    mulRect (Rect x y) n = Rect (x * n) (y * n)
+
+一行目の型定義では型構築子Rectが使われている。
+二行目の左辺では値構築子Rectがパターンマッチに使われている。
+右辺では値構築子Rectが値の構築に使われている。
+
+これを型Rectの定義とともにcoordinate2.hsに書きこむ。
+
+    data Rect = Rect Double Double deriving Show
+
+'deriving Show'はghciで表示するために必要。
+詳細は「型クラス」の回で見るので、
+今は「'deriving Show'をつけるとghciで表示できる」と考えておけば良い。
+
 ##### 極座標
 
+極座標用の関数を作る。
+
+    mulPol :: Pol -> Double -> Pol
+    mulPol (Pol dist rad) n = Pol (dist * n) rad
+
+型Polの定義とともにcoordinate2.hsに書きこむ。
+
+    data Pol = Pol Double Double deriving Show
+
 #### 試してみる
+
+    *Main> :load coordinate2.hs
+    *Main> mulRect (Rect 5 8) 4
+    Rect 20 32
+    *Main> mulPol (Pol 4 (pi / 3)) 3
+    Pol 12.0 1.0471975511965976
 
 #### 型のミスマッチ
 
