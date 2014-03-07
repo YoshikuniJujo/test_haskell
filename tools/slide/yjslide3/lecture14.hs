@@ -1,3 +1,5 @@
+module Main (main) where
+
 import Data.Char
 
 import Lecture
@@ -27,6 +29,7 @@ prelude = [\t -> do
 	text t "* 「中身に関数を適用できる」という性質を型クラスにした"
  ]
 
+{-
 prelude'' :: Page
 prelude'' = [\t -> do
 	writeTopTitle t "はじめに"
@@ -62,6 +65,7 @@ definition = [\t -> do
 	itext t 1 "class Functor f where", \t -> do
 	itext t 2 "fmap :: (a -> b) -> f a -> f b"
  ]
+ -}
 
 list :: Page
 list = [\t -> do
