@@ -248,7 +248,39 @@ mulPolはPolにだけ使えてRectには使えない、というようにした�
 
 #### 型のミスマッチ
 
+型の合わない値を使うと
+
+    *Main> mulRect (Pol 4 (pi / 3)) 3
+
+    <interactive>:X:YY:
+        Couldn't match type Rect with actual type Pol
+        In the return type of a call of `Pol'
+        In the first argument of mulRect, namely `(Pol 4 (pi / 3))'
+        In the expression: mulRect (Pol 4 (pi / 3)) 3
+
+    *Main> mulPol (Rect 5 8) 4
+
+    <interactive>:X:YY:
+        Couldn't match type Pol with actual type Rect
+        In the return type of a call of `Rect'
+        In the first argument of mulPol, namely `(Rect 5 8)'
+        In the expression: mulPol (Rect 5 8) 4
+
 #### まとめ
+
+同じ「実数のペア」でも直交座標と極座標では意味が異なる。
+data構文による代数的データ型を利用することで、
+それぞれ区別される新しい型が作れる。
+
+他の例として「文字列と整数のペア」を考えると、
+その解釈には以下のようなものがある。
+
+* 「名前」と「年齢」で「人」を表現する
+* 「商品名」と「値段」で「商品」を表現する
+* 等々
+
+これについても代数的データ型を使うことで、
+そのペアで構成されるものが「人」か「商品」かを区別することができる。
 
 ### 代数的データ型で型をまとめる
 
