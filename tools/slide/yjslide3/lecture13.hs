@@ -349,8 +349,8 @@ automaton3_4 = [\t -> do
 	text t "* 最後の1以降だけを考えれば良い", \t -> do
 	text t "* 最後の1以降には0しか来ない", \t -> do
 	text t "* 0が来るたびにq2とq3のあいだを行き来するので", \t -> do
-	text t "* 偶数個の0ならば受理され", \t -> do
-	text t "* 奇数個では受理されない"
+	itext t 1 "- 偶数個の0ならば受理され", \t -> do
+	itext t 1 "- 奇数個では受理されない"
  ]
 
 automaton4 :: Page
