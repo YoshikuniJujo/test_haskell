@@ -152,6 +152,56 @@ data.hsに書きこみ、試してみる。
 
 ### リスト
 
+#### 型の定義
+
+リストに関してもタプルと同様に自分で定義することができる。
+
+    data List a = Cons a (List a) | Nil deriving Show
+
+data.hsに書きこんで試してみる。
+
+    *Main> :reload
+    *Main> 3 `Cons` (4 `Cons` (7 `Cons` Nil))
+    Cons 3 (Cons 4 (Cons 7 Nil))
+
+Listに対するmap関数を書いてみる。
+
+    mapList :: (a -> b) -> List a -> List b
+    mapList _ Nil = Nil
+    mapList f (x `Cons` xs) = f x `Cons` mapList f xs
+
+data.hsに書きこんで、試してみる。
+
+    *Main> :reload
+    *Main> mapList even $ 3 `Cons` (4 `Cons` (7 `Cons` Nil))
+    Cons False (Cons True (Cons False Nil))
+
+#### 構文糖
+
+リストについても構文糖がある。
+構文糖を使った表現を脱糖すると以下のようになる。
+
+* 型: [a] -> [] a
+* 値: [x, y, z] -> x : y : z : []
+
+つまりリストは以下のように定義されていると考えられる。
+
+    data [] a = (:) a ([] a) | []
+
+自分で定義したList型と比較すると、
+Listは[]に、Consは(:)に、Nilは[]に対応しているのがわかる。
+
+#### 再帰的な型
+
+リストの定義をよく見ると、([] a)の定義のなかに([] a)自身が出てくる。
+つまり、再帰的な定義となっている。
+
+型の定義自体に構文糖を適用してみるとわかりやすくなる。
+
+    data [a] = a : [a] | []
+
+「aのリストはaのリストの先頭にaの値を足したもの、または空リスト」となる。
+
 ### 木
 
 まとめ
