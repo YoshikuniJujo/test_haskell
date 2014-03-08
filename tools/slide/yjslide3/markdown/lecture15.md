@@ -116,6 +116,94 @@ Bool型はTrueかFalseのどちらかなので、
 単純な値と高階関数
 ------------------
 
+### 導入
+
+たとえば以下の関数について考えてみよう。
+
+    eight :: (Int -> b) -> b
+    eight f = f 8
+
+lectures/lecture15ディレクトリを作成し、transFuns.hsに書きこむ。
+
+eightは第1引数の関数に8を適用する関数である。
+しかし、これは単なる8とほとんど同じものである。
+
+試してみる。
+
+    % ghci transFuns.hs
+    *Main> eight (+ 5)
+    8
+    *Main> eight even
+    True
+    *Main> eight id
+    8
+
+### 一般化
+
+すべての値がeightと同じような形に変換できる。
+もとの値をxとし、型をaとすると
+
+    x :: a
+    funX :: (a -> b) -> b
+    funX f = f x
+
+### 単純な値から関数への変換
+
+この変換を行う関数を作ってみる。
+
+    valToFun :: a -> ((a -> b) -> b)
+    valToFun x = \f -> f x
+
+同じことを以下のようにも書ける。
+
+    valToFun :: a -> (a -> b) -> b
+    valToFun x f = f x
+
+好きなほうの定義をtransFuns.hsに書きこむ。
+
+試してみる。
+
+    *Main> :reload
+    *Main> let three = valToFun 3
+    *Main> three (+ 7)
+    10
+    *Main> three even
+    False
+    *Main> :load + Data.Char
+    *Main Data.Char> let c = valToFun 'c'
+    *Main Data.Char> c isLower
+    True
+
+### 関数から単純な値への変換
+
+逆の方向の変換も可能である。
+eight idで見たように引数としてid与えてやれば良い。
+
+    fun :: (a -> b) -> b
+    val :: a
+    val = fun id
+
+### まとめ
+
+以下の2つの型は同じものと考えられる。
+
+    a
+    (a -> b) -> b
+
+前者を後者の形式に変換する関数valToFunを定義した。
+
+    valToFun :: a -> (a -> b) -> b
+    valToFun x f = f x
+
+逆方向の変換は関数形式のほうに引数としてidを与えれば良い。
+つまり、以下のような形の関数は、より単純な値に置き換えられる。
+
+    (Int -> b) -> b
+    (Char -> b) -> b
+    ([Int] -> b) -> b
+    ((Int -> Char) -> b) -> b
+    ...
+
 1引数関数と高階関数
 -------------------
 
