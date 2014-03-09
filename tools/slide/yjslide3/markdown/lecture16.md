@@ -19,3 +19,27 @@
 
     lowerToCodeDiv2 :: Char -> Maybe Int
     lowerToCodeDiv2 = [lowerToCodeとevenDiv2をつないだもの]
+
+Maybeをつなげる
+---------------
+
+Stateをつなげる
+---------------
+
+MaybeとStateの比較
+------------------
+
+モナド
+------
+
+Monadクラス
+-----------
+
+Maybeモナド
+-----------
+
+Stateモナド
+-----------
+
+まとめ
+------

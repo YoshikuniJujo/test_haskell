@@ -952,7 +952,7 @@ maybeMonad4 = [\t -> do
 	text t "* doという識別子で始める", \t -> do
 	text t "* それぞれの行で以下の変換が行われる", \t -> do
 	itext t 1 "[変数] <- [表現]", \t -> do
-	arrowIText t 1 "[表現] >>= \\[変数]"
+	arrowIText t 1 "[表現] >>= \\[変数] ->"
  ]
 
 stateMonad :: Page
