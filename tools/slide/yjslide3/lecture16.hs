@@ -321,9 +321,9 @@ aboutState = [\t -> do
 	text t "* 以下の順にボタンを押す", \t -> do
 	itext t 1 "3 * 4 M+ C 2 * 5 M+ C MR * 7", \t -> do
 	itext t 1 "- 3 * 4を計算しメモリに足す", \t -> do
-	itext t 1 "- 表示を0にもどし", \t -> do
+	itext t 1 "- 表示をクリアする", \t -> do
 	itext t 1 "- 2 * 5を計算しメモリに足す", \t -> do
-	itext t 1 "- 表示を0にもどし", \t -> do
+	itext t 1 "- 表示をクリアする", \t -> do
 	itext t 1 "- メモリを呼び出す", \t -> do
 	itext t 1 "- 7をかける", \t -> do
 	text t "* メモリ内の記憶を状態として持っていると考えられる"
