@@ -8,6 +8,7 @@ subtitle = "第16回 モナド"
 main :: IO ()
 main = runLecture [
 	[flip writeTitle subtitle], prelude, letin, aboutNewtype,
+	aboutField,
 	aboutMaybe, aboutMaybe2, aboutMaybe3, aboutMaybe4, aboutMaybe5,
 	aboutMaybe6, aboutMaybe7, aboutMaybe8, aboutMaybe9, aboutMaybe10,
 	aboutMaybe11, aboutMaybe12, aboutMaybe13, aboutMaybe14,
@@ -21,7 +22,7 @@ main = runLecture [
 	maybeState,
 	aboutMonad, aboutMonad2, aboutMonad3, aboutMonad4,
 	monadClass, maybeMonad, maybeMonad2, maybeMonad3, maybeMonad4,
-	stateMonad, stateMonad2, stateMonad3, stateMonad4, stateMonad5,
+	stateMonad, stateMonad3, stateMonad4, stateMonad5,
 	stateMonad6, stateMonad7, stateMonad8, stateMonad9, stateMonad10,
 	stateMonad11, stateMonad12, stateMonad13,
 	summary
@@ -74,6 +75,20 @@ aboutNewtype = [\t -> do
 	text t "* つまりnewtypeで作られる型は、他の型のラッパーとなる", \t -> do
 	text t "* 内部的にはもとの型と同じ型が使われる", \t -> do
 	arrowIText t 1 "効率の低下がない"
+ ]
+
+aboutField :: Page
+aboutField = [\t -> do
+	writeTopTitle t "新たに必要になる構文"
+	text t "", \t -> do
+	text t "* dataやnewtypeのフィールドに名前をつける構文がある", \t -> do
+	text t "* 以下のような定義を見てみよう", \t -> do
+	itext t 1 "data Human = Human String Int"
+	itext t 1 "name (Human n _) = n"
+	itext t 1 "age (Human _ a) = a", \t -> do
+	text t "* このように書く代わりに以下のように書くことができる", \t -> do
+	itext t 1 "data Human = Human { name :: String, age :: Int }", \t -> do
+	text t "* フィールドを取り出す関数を用意してくれるということ"
  ]
 
 aboutMaybe :: Page
@@ -963,6 +978,7 @@ stateMonad = [\t -> do
 	text t "* state.hsに書き込んでいこう"
  ]
 
+{-
 stateMonad2 :: Page
 stateMonad2 = [\t -> do
 	writeTopTitle t "Stateモナド"
@@ -976,6 +992,7 @@ stateMonad2 = [\t -> do
 	itext t 1 "data Human = Human { name :: String, age :: Int }", \t -> do
 	text t "* フィールドを取り出す関数を用意してくれる"
  ]
+ -}
 
 stateMonad3 :: Page
 stateMonad3 = [\t -> do

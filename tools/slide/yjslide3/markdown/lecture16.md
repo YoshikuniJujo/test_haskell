@@ -57,6 +57,24 @@ dataとの違いは、値構築子がひとつしか存在できず、
 data構文の代わりにnewtype構文を使うと、
 値を扱う際に生じる効率の低下がなくなる。
 
+### フィールド名の指定
+
+dataやnewtypeのフィールドに名前をつける構文がある。
+以下のような定義を見てみよう。
+
+    data Human = Human String Int
+    name (Human n _) = n
+    age (Human _ a) = a
+
+これはStringの入るフィールドにnameという名前をつけ、
+Intの入るフィールドにageという名前をつけたということになる。
+
+このように書く代わりに以下のように書くことができる。
+
+    data Human = Human { name :: String, age :: Int }
+
+こうすることで、フィールドを取り出す関数name, ageを用意してくれる。
+
 Maybeをつなげる
 ---------------
 
