@@ -808,8 +808,76 @@ MaybeとStateのあいだにはほとんど共通点はない。
 Monadクラス
 -----------
 
+値を比較できるもののためにEqクラスが用意されている。
+同様にモナドに対してはMonadクラスが用意されている。
+モナドクラスの定義は以下のようになる。
+
+    class Monad m where
+        (>>=) :: m a -> (a -> m b) -> m b
+        return :: a -> m a
+
+つまり(>>=)とreturnを定義してやれば、Monadのインスタンスになる。
+
 Maybeモナド
 -----------
+
+### インスタンス宣言
+
+Maybe型はデフォルトでモナドクラスのインスタンスになっている。
+インスタンス宣言は以下のようになる。
+
+    instance Monad Maybe where
+        Nothing >>= _ = Nothing
+        Just x >>= f = f x
+        return = Just
+
+### 文字コードを4分の1にする例
+
+#### 変数を使わない定義
+
+maybe.hsに以下を書きこむ。
+
+    lowerToCodeDiv4' :: Char -> Maybe Int
+    lowerToCodeDiv4' = lowerToCode c >>= evenDiv2 >>= evenDiv2
+
+試してみる。
+
+    *Main> :load maybe.hs
+    *Main> lowerToCodeDiv4' 'n'
+    Nothing
+    *Main> lowerToCodeDiv4' 'p'
+    Just 28
+
+#### 変数を使う定義
+
+同じことだが以下のように書くこともできる。
+
+    lowerToCodeDiv4'' c =
+        lowerToCode c >>= \n ->
+        evenDiv2 n >>= \n' ->
+        evenDiv2 n'
+
+これは以下のように読める。
+
+* lowerToCode cが返す値でnを束縛して
+* evenDiv2 nが返す値でn'を束縛して
+* evenDiv2 n'の値を返す
+
+#### do記法による定義
+
+do記法という構文糖がある。
+それを使うと同じことが以下のように書ける。
+
+    lowerToCodeDiv4''' c = do
+        n <- lowerToCode c
+        n' <- evenDiv2 n
+        evenDiv2 n'
+
+doという識別子で始める。
+それぞれの行で以下の変換が行われる。
+
+       [変数] <- [表現]
+    -> [表現] >>= \[変数]
 
 Stateモナド
 -----------

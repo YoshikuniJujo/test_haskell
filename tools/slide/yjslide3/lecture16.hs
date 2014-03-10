@@ -910,8 +910,8 @@ maybeMonad3 = [\t -> do
 	itext t 2 "evenDiv2 n >>= \\n' ->"
 	itext t 2 "evenDiv2 n'", \t -> do
 	text t "* これは以下のように読める", \t -> do
-	itext t 1 "- lowerToCode cが返す値をnに束縛して", \t -> do
-	itext t 1 "- evenDiv2 nが返す値をn'に束縛して", \t -> do
+	itext t 1 "- lowerToCode cが返す値でnを束縛して", \t -> do
+	itext t 1 "- evenDiv2 nが返す値でn'を束縛して", \t -> do
 	itext t 1 "- evenDiv2 n'の値を返す"
  ]
 
