@@ -20,6 +20,27 @@
     lowerToCodeDiv2 :: Char -> Maybe Int
     lowerToCodeDiv2 = [lowerToCodeとevenDiv2をつないだもの]
 
+新たに必要な構文
+----------------
+
+### let ... in ...
+
+let [定義] in [表現]という形の構文がある。
+[定義]中で定義された変数は[表現]のなかで使うことができる。
+全体としては[表現]によって表される値となる。
+
+試してみる。
+
+    % ghci
+    Prelude> let x = 8 in x * x
+    64
+    Prelude> x
+
+    <interactive>:3:1: Not in scope: `x'
+
+let内で定義された変数xはin内で使えることがわかる。
+また、その変数はこの構文外の環境では使えない。
+
 Maybeをつなげる
 ---------------
 
@@ -514,7 +535,64 @@ arrCは十分に一般的に作ったので四則演算以外も可能である�
 
     f `pipeC` g = \x m -> let (x', m') = f x m in g x' m
 
+let X in Yの形でXのなかで束縛した変数をYのなかで使える。
+
+pipeCの定義は以下のようになっている。
+
+はじめの画面の値xとメモリの値mをfに与え、
+その結果をx', m'に束縛する。
+そのx', m'をgに与え、その結果を返す。
+
+Calc型の定義と合わせてcalc.hsに書きこむ。
+
+    type Calc a b = a -> Int -> (b, Int)
+
+    pipeC :: Calc a b -> Calc b c -> Calc a c
+    f `pipeC` g = \x m -> let (x', m') = f x m in g x' m'
+
+試してみる。
+
+    *Main> :reload
+    *Main> (arrC (const 3) `pipeC` arrC (* 2)) () 23
+    (6, 23)
+    *Main> (arrC (const 4) `pipeC` mplus) () 3
+    ((), 7)
+
+1つ目の例は、
+数字キー3と、(* 2)という演算とをつなぎ、
+画面はクリアでメモリは23の状態に適用している。
+
+2つ目の例は、
+数字キー4と、M+という演算をつなぎ、
+画面はクリアでメモリは3の状態に適用している。
+
 ### 計算例
+
+最初に挙げた例は以下の通り。
+
+    (3 * 4 + 2 * 5) * 7
+
+これをここまで見てきた枠組みで作ってみよう。
+
+    example :: Calc () Int
+    example =
+        arrC (const 3) `pipeC`
+        arrC (* 4) `pipeC`
+        mplus `pipeC`
+        arrC (const 2) `pipeC`
+        arrC (* 5) `pipeC`
+        mplus `pipeC`
+        mrecall `pipeC`
+        arrC (* 7)
+
+これをcalc.hsに書きこみ、試してみる。
+
+    *Main> :reload
+    *Main> example () 0
+    (154,22)
+
+初期状態は、画面はクリアされていて、メモリは0であるので、
+それを引数として与えている。
 
 ### State型
 

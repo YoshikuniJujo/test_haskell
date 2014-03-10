@@ -7,7 +7,7 @@ subtitle = "第16回 モナド"
 
 main :: IO ()
 main = runLecture [
-	[flip writeTitle subtitle], prelude,
+	[flip writeTitle subtitle], prelude, letin,
 	aboutMaybe, aboutMaybe2, aboutMaybe3, aboutMaybe4, aboutMaybe5,
 	aboutMaybe6, aboutMaybe7, aboutMaybe8, aboutMaybe9, aboutMaybe10,
 	aboutMaybe11, aboutMaybe12, aboutMaybe13, aboutMaybe14,
@@ -42,6 +42,22 @@ prelude = [\t -> do
 	itext t 1 "- 小文字の文字コードで偶数のものの半分の値", \t -> do
 	itext t 1 "lowerToCodeDiv2 :: Char -> Maybe Int", \t -> do
 	text t "* のような感じ"
+ ]
+
+letin :: Page
+letin = [\t -> do
+	writeTopTitle t "新たに必要になる構文"
+	text t "", \t -> do
+	text t "* let [定義] in [表現]という形の構文がある", \t -> do
+	text t "* [定義]中で定義された変数は[表現]のなかで使える", \t -> do
+	text t "* 全体の値は[表現]によって表される", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 1 "% ghci", \t -> do
+	itext t 1 "Prelude> let x = 8 in x * x", \t -> do
+	itext t 1 "64", \t -> do
+	itext t 1 "Prelude> x", \t -> do
+	itext t 1 ""
+	itext t 1 "<interactive>:3:1: Not in scope: `x'"
  ]
 
 aboutMaybe :: Page
@@ -534,7 +550,7 @@ aboutState14 = [\t -> do
 	itext t 1 "- 画面の値をaからcにする計算をつくる", \t -> do
 	text t "* 中身は以下のようになる", \t -> do
 	itext t 0 "f `pipeC` g = \\x m -> let (x', m') = f x m in g x' m'", \t -> do
-	text t "* let X in Yの形でXのなかで束縛した値をYのなかで使える", \t -> do
+	text t "* let X in Yの形でXのなかで束縛した変数をYのなかで使える", \t -> do
 	text t "* はじめの画面の値xとメモリの値mをfに与え", \t -> do
 	itext t 1 "- その結果をx', m'に束縛し", \t -> do
 	itext t 1 "- x', m'をgに与えている"
