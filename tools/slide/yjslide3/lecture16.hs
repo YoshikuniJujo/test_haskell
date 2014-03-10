@@ -184,7 +184,7 @@ aboutMaybe8 = [\t -> do
 	itext t 1 "mul3 = (* 3)", \t -> do
 	text t "* しかし、pipeMでつなぐには以下の形のほうが良い", \t -> do
 	itext t 1 "Int -> Maybe Int", \t -> do
-	text t "* 以下の変換を行う関数を作ろう", \t -> do
+	text t "* この変換を行う関数を作ろう", \t -> do
 	itext t 1 "arrM :: (a -> b) -> (a -> Maybe b)", \t -> do
 	itext t 1 "arrM f = \\x -> Just $ f x", \t -> do
 	text t "* mul3とarrMをmaybe.hsに書き込もう"
@@ -220,7 +220,7 @@ aboutMaybe10 = [\t -> do
 	itext t (-1) "pipeM :: (a -> Maybe b) -> (b -> Maybe c) -> (a -> Maybe c)", \t -> do
 	itext t (-1) "arrM :: (a -> b) -> (a -> Maybe b)", \t -> do
 	itext t (-1) "* 前回の講義を思い出してみよう", \t -> do
-	itext t (-1) "* 引数の型と結果の型の両方に(a ->)があるので", \t -> do
+	itext t (-1) "* 引数の型と結果の型の両方に'a ->'があるので", \t -> do
 	itext t 0 "- それらを消すことができる", \t -> do
 	itext t 0 "bindM :: Maybe b -> (b -> Maybe c) -> Maybe c", \t -> do
 	itext t 0 "retM :: b -> Maybe b", \t -> do
@@ -259,9 +259,9 @@ aboutMaybe12 = [\t -> do
 	itext t 1 "lowerToCode c `bindM` \\n ->", \t -> do
 	itext t 1 "evenDiv2 n `bindM` \\n' ->", \t -> do
 	itext t 1 "retM $ mul3 n'", \t -> do
-	text t "* この形だと、lowerToCode cの結果をnに束縛し", \t -> do
-	itext t 1 "- evenDiv2 nの結果をn'に束縛し", \t -> do
-	itext t 1 "- mul3 nの値を返す、と読める", \t -> do
+	text t "* この形だと、lowerToCode cの結果にnを束縛し", \t -> do
+	itext t 1 "- evenDiv2 nの結果にn'を束縛し", \t -> do
+	itext t 1 "- mul3 n'の値を返す、と読める", \t -> do
 	text t "* どちらかをmaybe.hsに書き込もう"
  ]
 
