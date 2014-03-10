@@ -596,15 +596,141 @@ Calc型の定義と合わせてcalc.hsに書きこむ。
 
 ### State型
 
+Calc型を見てみる。
+
+    type Calc a b = a -> Int -> (b, Int)
+
+State型を作ってみる。以下のようになる。
+
+    type State b = Int -> (b, Int)
+    type Calc a b = a -> State b
+
+a -> bとa -> State bとを比較することで以下のことがわかる。
+
+* a -> bは画面の値の変化である
+* a -> State bは画面とメモリの値の変化である
+* Stateは画面の値の変化にメモリの値の変化を追加する
+
 ### bindCとretC
+
+#### bindC
+
+pipeCの型をState型を使って書き換えてみる。
+
+    pipeC :: (a -> State b) -> (b -> State c) -> (a -> State c)
+
+画面とメモリを変化させる関数をつないでいる。
+画面の変化については明示的に示されているが、
+メモリの変化についてはState型の内部に隠されている。
+
+pipeCを見ると1つめと2つめのa型は
+「引数と結果に同じ型変数が存在する」ので消すことができる。
+
+    bindC :: State b -> (b -> State c) -> State c
+
+bindCの定義は以下のようになる。
+
+    bindC f g = \m -> let (x, m') = f m in g x m'
+
+fに状態mを与え結果の値と状態をgに与えている。
+
+#### retC
+
+同様にarrCも以下のようにできる。
+
+    arrC :: (a -> b) -> (a -> State b)
+
+引数と返り値の両方にある型変数aを消して
+
+    retC :: b -> State b
+    retC x = \m -> (x, m)
+
+#### まとめ
+
+これらをcalc.hsに書きこむ。
+
+    type State a = Int -> (a, Int)
+
+    bindC :: State a -> (a -> State b) -> State b
+    bindC f g = \m -> let (x, m') = f m in f x m
+
+    retC :: a -> State a
+    retC x = \m -> (x, m)
 
 ### 計算例
 
 #### 変数を使わない定義
 
+最初の例は以下の通りである。
+
+    (3 * 4 + 2 * 5) * 7
+
+これをbindC, retCで書いてみる。
+
+    example' :: State Int
+    example' =
+        retC 3 `bindC`
+	(retC . (* 4)) `bindC`
+	mplus `bindC`
+	const (retC 2) `bindC`
+	(retC . (* 5)) `bindC`
+	mplus `bindC`
+	mrecall `bindC`
+	(retC . (* 7())
+
+これをcalc.hsに書きこみ、試してみる。
+
+    *Main> :reload
+    *Main> example' 0
+    (154,22)
+
 #### 変数を使う定義
 
+同じことを以下のように書くこともできる。
+
+    example'' =
+        retC 3 `bindC` \x ->
+        retC (x * 4) `bindC` \y ->
+        mplus y `bindC` \_ ->
+        retC 2 `bindC` \z ->
+        retC (z * 5) `bindC` \w ->
+        mplus w `bindC` \_ ->
+        mrecall () `bindC` \v ->
+        retC (v * 7)
+
+これは以下のように読むことができる。
+
+* retC 3で返る値でxを束縛し
+* retC (x * 4)で返る値でyを束縛し
+* mplus yでyの値を状態に足し、返り値は捨て
+* retC 2で返る値でzを束縛し
+* retC (z * 5)で返る値でwを束縛し
+* mplus wでwの値を状態に足し、返り値は捨て
+* mrecall ()で状態の値を呼び出し、vを束縛し
+* retC (v * 7)の値を返す
+
+ちなみに、「[値]が[変数]を束縛する」や「[値]で[変数]を束縛する」は
+「[変数]に[値]を代入する」とほぼ同じ意味と考えて良い。
+
+「束縛する」は「代入する」をより関数的に表現していると考えよう。
+
 ### まとめ
+
+メモリ付き電卓の例を見た。
+
+関面の値とメモリの値のペアを次々と変換していく。
+State型を作ることで、画面の値にだけ注目し、
+メモリの値の変化を隠すことができた。
+
+以下の関数でそれぞれの変換を部品としてつないでいくことができる。
+
+    pipeC :: (a -> State b) -> (b -> State c) -> (a -> State c)
+    arrC :: (a -> b) -> (a -> State b)
+
+これは以下のように簡略化できる。
+
+    bindC :: State a -> (a -> State b) -> State b
+    retC :: a -> State a
 
 MaybeとStateの比較
 ------------------

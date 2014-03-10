@@ -648,58 +648,18 @@ aboutState19 = [\t -> do
 	itext t 1 "bindC :: State b -> (b -> State c) -> State c"
  ]
 
-aboutStateXX :: Page
-aboutStateXX = [\t -> do
-	writeTopTitle t "State"
-	text t "", \t -> do
-	text t "* pipeCの型をもう一度見てみる", \t -> do
-	itext t 1 "pipeC :: Calc a b -> Calc b c -> Calc a c", \t -> do
-	text t "* Calc a bは以下のように定義されている", \t -> do
-	itext t 1 "type Calc a b = a -> Int -> (b, Int)", \t -> do
-	text t "* 見方を変えて、Int -> (b, Int)をひとかたまりとすると", \t -> do
-	itext t 1 "type State b = Int -> (b, Int)", \t -> do
-	text t "* メモリの値を与えると画面とメモリの新しい値が返る関数", \t -> do
-	text t "* メモリを「状態」と考えると", \t -> do
-	itext t 1 "- 状態を変化させながら", \t -> do
-	itext t 1 "- 状態によって変化する型bの値を返す「もの」", \t -> do
-	text t "* 初期状態を取り一連の計算をし値と新しい状態を返す"
- ]
-
-aboutStateYY :: Page
-aboutStateYY = [\t -> do
-	writeTopTitle t "State"
-	text t "", \t -> do
-	text t "* pipeCの型は以下のようになる", \t -> do
-	itext t 0 "type State a = Int -> (a, Int)", \t -> do
-	itext t 0 "pipeC ::"
-	itext t 1 "(a -> State b) -> (b -> State c) -> (a -> State c)", \t -> do
-	text t "* 「aから『bを返す計算』」と「bから『cを返す計算』」から", \t -> do
-	itext t 1 "- 「aから『cを返す計算』」を作る関数", \t -> do
-	text t "* すこしイメージしにくい", \t -> do
-	text t "* 中身を意識しておくとわかりやすい", \t -> do
-	itext t 1 "a -> State b == a -> Int -> (b, Int)"
- ]
-
-aboutStateZZ :: Page
-aboutStateZZ = [\t -> do
-	writeTopTitle t "State"
-	text t "", \t -> do
-	itext t 0 "arrC :: (a -> b) -> (a -> State b)"
-	text t "* aを消した場合は以下のようになる"
- ]
-
 aboutState20 :: Page
 aboutState20 = [\t -> do
 	writeTopTitle t "State"
 	text t "", \t -> do
 	text t "* bindCを定義する", \t -> do
 	itext t 1 "bindC :: State a -> (a -> State b) -> State b", \t -> do
-	itext t 1 "bindC m f = \\s -> let (x, s') = m s in f x s'", \t -> do
-	itext t 1 "- mに状態sを与え結果の値と状態をfに与えている", \t -> do
+	itext t 1 "bindC f g = \\m -> let (x, m') = f m in g x m'", \t -> do
+	itext t 1 "- fに状態mを与え結果の値と状態をgに与えている", \t -> do
 	text t "* 同様にarrCも以下のようにできる", \t -> do
 	itext t 1 "arrC :: (a -> b) -> (a -> State b)", \t -> do
-	arrowIText t 1 "retC :: a -> State a", \t -> do
-	itext t 1 "retC x = \\s -> (x, s)", \t -> do
+	arrowIText t 1 "retC :: b -> State b", \t -> do
+	itext t 1 "retC x = \\m -> (x, m)", \t -> do
 	itext t 1 "- 状態は変化させずに値xを返す"
  ]
 
@@ -710,9 +670,9 @@ aboutState21 = [\t -> do
 	text t "* これらをcalc.hsに書き込もう", \t -> do
 	itext t 1 "type State a = Int -> (a, Int)", \t -> do
 	itext t 1 "bindC :: State a -> (a -> State b) -> State b", \t -> do
-	itext t 1 "bindC m f = \\s -> let (x, s') = m s in f x s'", \t -> do
+	itext t 1 "bindC f g = \\m -> let (x, m') = f m in f x m'", \t -> do
 	itext t 1 "retC :: a -> State a", \t -> do
-	itext t 1 "retC x = \\s -> (x, s)"
+	itext t 1 "retC x = \\m -> (x, m)"
  ]
 
 type State a = Int -> (a, Int)
@@ -795,13 +755,13 @@ aboutState25 = [\t -> do
 	writeTopTitle t "State"
 	text t "", \t -> do
 	text t "* これは以下のように読むことができる", \t -> do
-	itext t 1 "- retC 3で返る値をxに束縛し", \t -> do
-	itext t 1 "- retC (x * 4)で返る値をyに束縛し", \t -> do
+	itext t 1 "- retC 3で返る値でxを束縛し", \t -> do
+	itext t 1 "- retC (x * 4)で返る値でyを束縛し", \t -> do
 	itext t 1 "- mplus yでyの値を状態に足し返り値は捨て", \t -> do
-	itext t 1 "- retC 2で返る値をzに束縛し", \t -> do
-	itext t 1 "- retC (z * 5)で返る値をwに束縛し", \t -> do
+	itext t 1 "- retC 2で返る値でzを束縛し", \t -> do
+	itext t 1 "- retC (z * 5)で返る値でwを束縛し", \t -> do
 	itext t 1 "- mplus wでwの値を状態に足し返り値は捨て", \t -> do
-	itext t 1 "- mrecall ()で状態の値を呼び出し、vに束縛し", \t -> do
+	itext t 1 "- mrecall ()で状態の値を呼び出し、vを束縛し", \t -> do
 	itext t 1 "- retC (v * 7)の値を返す"
  ]
 
