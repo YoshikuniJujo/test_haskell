@@ -7,7 +7,7 @@ subtitle = "第16回 モナド"
 
 main :: IO ()
 main = runLecture [
-	[flip writeTitle subtitle], prelude, letin,
+	[flip writeTitle subtitle], prelude, letin, aboutNewtype,
 	aboutMaybe, aboutMaybe2, aboutMaybe3, aboutMaybe4, aboutMaybe5,
 	aboutMaybe6, aboutMaybe7, aboutMaybe8, aboutMaybe9, aboutMaybe10,
 	aboutMaybe11, aboutMaybe12, aboutMaybe13, aboutMaybe14,
@@ -58,6 +58,22 @@ letin = [\t -> do
 	itext t 1 "Prelude> x", \t -> do
 	itext t 1 ""
 	itext t 1 "<interactive>:3:1: Not in scope: `x'"
+ ]
+
+aboutNewtype :: Page
+aboutNewtype = [\t -> do
+	writeTopTitle t "新たに必要になる構文"
+	text t "", \t -> do
+	text t "* newtypeという構文がある", \t -> do
+	text t "* 使いかたとしてはdata構文とほとんど同じである", \t -> do
+	itext t 1 "newtype [型構築子] [型変数1] [型変数2] ... = ", \t -> do
+	itext t 2 "[値構築子] [型]", \t -> do
+	text t "* dataとの違い",\t -> do
+	itext t 1 "- 値構築子がひとつしか存在できず", \t -> do
+	itext t 1 "- 値構築子が型をひとつしか取れない", \t -> do
+	text t "* つまりnewtypeで作られる型は、他の型のラッパーとなる", \t -> do
+	text t "* 内部的にはもとの型と同じ型が使われる", \t -> do
+	arrowIText t 1 "効率の低下がない"
  ]
 
 aboutMaybe :: Page
