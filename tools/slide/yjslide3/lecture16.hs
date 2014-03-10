@@ -807,7 +807,7 @@ aboutMonad = [\t -> do
 	text t "* これらは以下の関数の簡略化したものと考えて良い", \t -> do
 	itext t 1 "arr :: (a -> b) -> (a -> m b)", \t -> do
 	itext t 1 "pipe :: (a -> m b) -> (b -> m c) -> (a -> m c)", \t -> do
-	text t "* ただし以下の法則を満たす必要がある", \t -> do
+	text t "* モナドとするには以下の法則を満たす必要がある", \t -> do
 	itext t 0.5 "1. ret `pipe` fはfと同じ", \t -> do
 	itext t 0.5 "2. f `pipe` retはfと同じ", \t -> do
 	itext t 0.5 "3. (f `pipe` g) `pipe` hとf `pipe` (g `pipe` h)は同じ", \t -> do
