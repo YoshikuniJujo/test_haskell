@@ -910,11 +910,207 @@ do記法という構文糖がある。
 doという識別子で始める。
 それぞれの行で以下の変換が行われる。
 
-       [変数] <- [表現]
-    -> [表現] >>= \[変数]
+    [変数] <- [表現]
+       |
+       V
+    [表現] >>= \[変数] ->
 
 Stateモナド
 -----------
 
+### State型
+
+calc.hsで定義したStateは単なる別名である。
+
+    type State a = Int -> (a, Int)
+
+別名に対してはinstance宣言はできない。
+別名をつける代わりにnewtypeを使うことができる。
+newtypeは内部的にはtypeと同じだが、
+使いかたとしてはdataと同様に使える。
+
+dataを使ぅても使いかたはほとんど同じだが、
+newtypeを使ったほうが実行効率が向上する。
+
+よって、newtypeを使いMonadクラスのインスタンスとする。
+
+実際にState型を定義しよう。
+state.hsに以下を書きこむ。
+
+    newtype State a = State { runState :: Int (a, Int) }
+
+この定義は以下の2つの定義とだいたい同じである。
+
+    newtype State a = State (Int -> (a, Int))
+    runState (State st) = st
+
+一言で言うならば
+「Stateで服を着せてrunStateで服を脱がせる」ということ。
+
+### インスタンス宣言
+
+Monadクラスのインスタンスにする。
+
+    instance Monad State where
+        State m >>= f = State $ \s ->
+            let (x, s') = m s in runState (f x) s
+        return x = State $ \s -> (x, s)
+
+複雑に見えるがStateやrunStateを消して考えれば良い。
+StateやrunStateは服を着せたり脱がせたりしているだけだ。
+
+これをstate.hsに書きこむ。
+
+### その他の関数
+
+#### 関数putと関数get
+
+calc.hsで見たmplusはより一般的な関数から導ける。
+put, get関数を定義する。
+
+    put :: Int -> State ()
+    put s = State $ \_ -> ((), s)
+
+    get :: State Int
+    get = State $ \s -> (s, s)
+
+putは引数の値で「状態」を置き換える。
+getは「状態」を「画面」にコピーする。
+getはmrecallと同じである。
+
+これらをstate.hsに書きこむ。
+
+#### 関数modify
+
+putとgetを使ってmodifyが定義できる。
+
+    modify :: (Int -> Int) -> State ()
+    modify f = get >>= put . f
+
+mplusはmodifyを使って定義できる。
+
+    mplus :: Int -> State ()
+    mplus x = modify (+ x)
+
+state.hsに書きこむ。
+
+### 計算例
+
+#### (>>=)のみを使った定義
+
+calc.hsで使った例をもう一度見てみよう。
+
+    (3 * 4 + 2 * 5) * 7
+
+以下をstate.hsに書きこむ。
+
+    example :: State Int
+    example =
+        return 3 >>=
+        return . (* 4) >>=
+        mplus >>=
+        const (return 2) >>=
+        return . (* 5) >>=
+        mplus >>=
+        const get >>=
+        return . (* 7)
+
+試してみる。
+
+    *Main> :load state.hs
+    *Main> runState example 0
+    (154,22)
+
+runStateで服を脱がせたうえで、初期値の0を与えている。
+
+#### (>>)を使った定義
+
+exampleの定義のなかで2ヶ所にconstが出てきた。
+これは直前の計算の返り値を使わないということだ。
+次の計算に返り値を渡さない場合、
+(>>=)の代わりに(>>)を使うと良い。
+
+    (>>=) :: m a -> (a -> m b) -> m b
+    (>>) :: m a -> m b -> m b
+
+(>>)の定義は以下のようになる。
+
+    m1 >> m2 = m1 >>= const m2
+
+以下のように書いても同じことだ。
+
+    m1 >> m2 = m1 >>= \_ -> m2
+
+(>>)を使ってexampleを書き換えると以下のようになる。
+
+    example' =
+        return 3 >>=
+        return . (* 4) >>=
+        mplus >>
+        return 2 >>=
+        return . (* 5) >>=
+        mplus >>
+        get >>=
+        return . (* 7)
+
+#### 局所変数を使った定義
+
+明示的に局所変数を使って書き換えると
+
+    example'' =
+        return 3 >>= \x ->
+        return (x * 4) >>= \y ->
+        mplus y >>
+        return 2 >>= \z ->
+        return (z * 5) >>= \w ->
+        mplus w >>
+        get >>= \v ->
+        return (v * 7)
+
+#### do記法を使った定義
+
+do記法を使って書き換えると
+
+    example''' = do
+        x <- return 3
+        y <- return $ x * 4
+        mplus y
+        z <- return 2
+        w <- return $ z * 5
+        mplus w
+        v <- get
+        return $ v * 7
+
+#### letを使った定義
+
+[変数] <- return [値]という形だ出てきたが、
+この形にはlet [変数] = [値]という構文糖が使える。
+
+また、連続するletはひとつにまとめられるので
+
+    example''' = do
+        let x = 3
+            y = x * 4
+        mplus y
+        let z = 2
+            w = z * 5
+        mplus w
+        v <- get
+        return $ v * 7
+
 まとめ
 ------
+
+(a -> m b)の形の関数を結合する規則が存在し、
+それがモナド則を満たせばmはモナドである。
+必要な関数の型は以下の通りである。
+
+    m a -> (a -> m b) -> m b
+    a -> m a
+
+この条件を満たせば何でもモナドである。
+今回はMaybeモナドとStateモナドを見た。
+この2つは中身は大きく異なるがともにモナドである。
+
+Monadクラスが用意されていて、
+そのインスタンスにするとdo記法を使うこともできる。

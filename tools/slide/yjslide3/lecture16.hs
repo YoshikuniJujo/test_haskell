@@ -1047,7 +1047,7 @@ stateMonad6 :: Page
 stateMonad6 = [\t -> do
 	writeTopTitle t "Stateモナド"
 	text t "", \t -> do
-	text t "* putとgetを作ってmodifyが定義できる", \t -> do
+	text t "* putとgetを使ってmodifyが定義できる", \t -> do
 	itext t 1 "modify :: (Int -> Int) -> State ()", \t -> do
 	itext t 1 "modify f = get >>= put . f", \t -> do
 	text t "* mplusはmodifyを使って定義できる", \t -> do
