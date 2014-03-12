@@ -109,7 +109,6 @@ cagedLion4 = [\t -> do
 	text t "* ライオンに餌を与える関数", \t -> do
 	itext t 1 "feed :: Lion -> Lion", \t -> do
 	itext t 1 "feed (Lion n Hungry) = Lion n Normal", \t -> do
-	itext t 1 "feed (Lion n Normal) = Lion n Full", \t -> do
 	itext t 1 "feed (Lion n _) = Lion n Full", \t -> do
 	text t "* これらをLion.hsに書き込もう"
  ]
@@ -129,7 +128,6 @@ cagedLion5 = [\t -> do
 	text t "* ライオンと遊ぶ関数", \t -> do
 	itext t 1 "play :: Lion -> Lion", \t -> do
 	itext t 1 "play (Lion n Full) = Lion n Normal", \t -> do
-	itext t 1 "play (Lion n Normal) = Lion n Hungry", \t -> do
 	itext t 1 "play (Lion n _) = Lion n Hungry", \t -> do
 	text t "* これをLion.hsに書き込もう"
  ]
