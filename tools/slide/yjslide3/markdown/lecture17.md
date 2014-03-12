@@ -311,6 +311,31 @@ Loggerについて言えば「ログを変化させずに」ということ。
 
 #### (>>=)
 
+それでは(>>=)の定義に移ろう。
+
+    (>>=) :: Logger a -> (a -> Logger b) -> Logger b
+
+この関数に何をして欲しいのか考える。
+
+* 第1引数のa型の値を第2引数である関数にわたして
+* 出てきた結果について
+    + ログのほうは第1引数のログに追加し
+    + b型の値のほうは結果の値とする
+
+* 演習17-5. Loggerの(>>=)を定義せよ(2分)
+
+解答をlogger.hsのインスタンス宣言に追加する。
+
+これで前に再定義したtoCodeが動くようになる。
+
+    toCode c = tell ("toCode " ++ show c) >> return (ord c)
+
+試してみる。
+
+    *Main> :reload
+    *Main> toCode 'c'
+    Logger ["toCode 'c'"] 99
+
 ### double関数
 
 ### toCodeDouble関数

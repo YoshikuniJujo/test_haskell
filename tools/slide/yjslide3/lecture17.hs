@@ -426,9 +426,9 @@ aboutLogger13 = [\t -> do
 	text t "* まずは引数のパターンマッチの部分を作ろう", \t -> do
 	itext t 1 "(>>=) :: Logger a -> (a -> Logger b) -> Logger b", \t -> do
 	text t "* 第一引数のLogger aは中身のログと値を使う", \t -> do
-	text t "* 第二引数は関数なのでパターンマッチはできない", \t -> do
+	text t "* 第二引数は関数なので分解できない", \t -> do
 	itext t 1 "Logger l x >>= f = ...", \t -> do
-	text t "* 第一引数の値にfを適用した結果が必要なので", \t -> do
+	text t "* 第一引数の「値」にfを適用した結果が必要なので", \t -> do
 	itext t 1 "Logger l x >>= f = ... f x ..."
  ]
 
