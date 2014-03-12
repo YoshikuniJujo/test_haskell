@@ -502,7 +502,7 @@ aboutLogger18 = [\t -> do
 	writeTopTitle t "計算のログ"
 	text t "", \t -> do
 	text t "* 以下のようになる", \t -> do
-	itext t 1 "toCodeDouble c :: Char -> Logger Int", \t -> do
+	itext t 1 "toCodeDouble :: Char -> Logger Int", \t -> do
 	itext t 1 "toCodeDouble c = toCode c >>= double", \t -> do
 	text t "* logger.hsに書き込み、試してみる", \t -> do
 	itext t 1 "*Main> :reload", \t -> do
