@@ -110,7 +110,7 @@ machine5 = [\t -> do
 	text t "* つまり型の不一致が生じる可能性がある", \t -> do
 	text t "* 静的型付け言語であるHaskellでは", \t -> do
 	itext t 1 "- 型の不一致は型チェックの段階で検出したい", \t -> do
-	text t "* Machine型に渡される値と渡す型の値の型を含めれば良い", \t -> do
+	text t "* Machine型に渡される値と渡す値の型を含めれば良い", \t -> do
 	text t "* これをIOMcn型としよう", \t -> do
 	itext t 1 "IOMcn a b"
  ]
