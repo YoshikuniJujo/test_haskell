@@ -5,7 +5,7 @@ subtitle = "第18回 IOモナド"
 
 main :: IO ()
 main = runLecture [
-	[flip writeTitle subtitle], memo, memo2, memo3, memo4,
+	[flip writeTitle subtitle],
 	prelude, prelude2,
 	machine, machine2, machine3, machine4, machine5, machine6,
 	machine7, machine7_1, machine8, machine8_1, machine9, machine9_1,
@@ -17,62 +17,6 @@ main = runLecture [
 	aboutIO, aboutIO2, aboutIO3, aboutIO4, aboutIO5, aboutIO6, aboutIO7,
 	aboutIO8, aboutIO9, aboutIO10, aboutIO11, aboutIO12, aboutIOSummary,
 	summary
- ]
-
-memo :: Page
-memo = [\t -> do
-	writeTopTitle t "業務連絡"
-	text t "", \t -> do
-	text t "* lectures/lecture18/IOMcn.hsを事前に作っておく", \t -> do
-	itext t 0 "module IOMcn ("
-	itext t 1 "IOMcn, runIOMcn, (>>>), arr, app,"
-	itext t 1 "putLine, getLine, getInt, isEven) where"
-	itext t 0 ""
-	itext t 0 "import Prelude hiding (getLine)"
-	itext t 0 "import qualified Prelude"
-	itext t 0 "import Control.Arrow hiding ((>>>), arr)"
-	itext t 0 "import qualified Control.Arrow"
-	itext t 0 "import Control.Applicative"
-	itext t 0 "import Data.Time"
- ]
-
-memo2 :: Page
-memo2 = [\t -> do
-	writeTopTitle t "業務連絡"
-	text t "", \t -> do
-	itext t 0 "type IOMcn = Kleisli IO"
-	itext t 0 ""
-	itext t 0 "runIOMcn :: IOMcn () a -> IO a"
-	itext t 0 "runIOMcn = (`runKleisli` ())"
-	itext t 0 ""
-	itext t 0 "(>>>) :: IOMcn a b -> IOMcn b c -> IOMcn a c"
-	itext t 0 "(>>>) = (Control.Arrow.>>>)"
-	itext t 0 ""
-	itext t 0 "arr :: (a -> b) -> IOMcn a b"
-	itext t 0 "arr = Control.Arrow.arr"
- ]
-
-memo3 :: Page
-memo3 = [\t -> do
-	writeTopTitle t "業務連絡"
-	text t "", \t -> do
-	itext t 0 "putLine :: IOMcn String ()"
-	itext t 0 "putLine = Kleisli putStrLn"
-	itext t 0 ""
-	itext t 0 "getLine :: IOMcn () String"
-	itext t 0 "getLine = Kleisli $ const Prelude.getLine"
- ]
-
-memo4 :: Page
-memo4 = [\t -> do
-	writeTopTitle t "業務連絡"
-	text t "", \t -> do
-	itext t 0 "getInt :: IOMcn () Int"
-	itext t 0 "getInt = Kleisli $ const $ Prelude.getLine >>= readIO"
-	itext t 0 ""
-	itext t 0 "isEven :: IOMcn () Bool"
-	itext t 0 "isEven = Kleisli $ const $"
-	itext t 1 "even . floor . utcDayTime <$> getCurrentTime"
  ]
 
 prelude :: Page
