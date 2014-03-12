@@ -191,13 +191,125 @@ CagedやLionの値構築子を輸出していないので、
 
 ### はじめに
 
+モナドとは単なる形式である。
+以下の型の関数が存在しモナド則を満たせばすべてモナドである。
+
+    m a -> (a -> m b) -> m b
+    a -> m a
+
+以下のように書いても型じことである。
+
+    (a -> m b) -> (b -> m c) -> (a -> m c)
+    (a -> b) -> (a -> m b)
+
+モナドという性質を共有していてもその中身は様々である。
+今回の演習では計算のログを取るモナドを組み立ててみる。
+
 ### Logger型
+
+計算をしながら計算のログ(記録)を取っていくモナドを作る。
+ログは文字列のリストとする。
+
+例えば以下の関数があり
+
+    toCode :: Char -> Logger Int
+
+toCode 'c'はログとして["tocode 'c'"]を持ち、
+計算の結果として99を持つ。
+
+つまり、Logger型は文字列のリストと結果の値を持つ。
+
+* 演習17-1. Logger型を定義せよ(1分)
+
+今後の流れのために模範解答以外の解を出した人も
+模範解答の定義を使うことにする。
+
+また、deriving Showをつけたうえでlogger.hsに書きこむ。
 
 ### toCode関数
 
+ログを残しつつ文字コードを求める関数
+
+    toCode :: Char -> Logger Int
+
+以下のような動作となる。
+
+    toCode 'c' => Logger ["toCode 'c'"] 99
+
+* 演習17-2. toCodeを定義せよ(1分)
+    + (import Data.Char (ord)が必要)
+
+解をlogger.hsに書きこみ、logger.hsの先頭に以下を追加する。
+
+    import Data.Char (ord)
+
+試してみる。
+
+    Prelude Lion> :load logger.hs
+    *Main> toCode 'c'
+    Logger ["toCode 'c'"] 99
+
 ### tell関数
 
+次に以下の関数を作ろうと思うのだが
+
+    double :: Int -> Logger Int
+    double 3 => Logger ["double 3"] 6
+
+その前に文字列をログにする関数を書く。
+これは以下のような型になるだろう。
+
+    tell :: String -> Logger ()
+
+ログのほうだけを扱う関数なのでLogger aのaの部分を()で埋めている。
+
+* 演習17-3. tellを定義せよ(1分)
+
+tellを使ってtoCodeを再定義してみる。
+
+さっきのtoCodeの定義を以下のように書き換えよう。
+
+    toCode c = tell ("toCode " ++ show c) >> return (ord c)
+
+toCodeを「ログの追加」と「文字コードを返す」に分けて構築している。
+
 ### Loggerをモナドにする
+
+#### 必要な関数
+
+新しいtoCodeの定義はまだ使えない。
+LoggerをMonadクラスのインスタンスにする必要がある。
+
+以下の関数を定義する。
+
+    return :: a -> Logger a
+    (>>=) :: Logger a (a -> Logger b) -> Logger b
+
+#### return
+
+まずは簡単なほうから。
+
+returnは「何もせずに」値を包み込む関数である。
+Loggerについて言えば「ログを変化させずに」ということ。
+
+ログを空にしておけば良い。
+
+* 演習17-4. Loggerのreturnを定義せよ(1分)
+
+解答のインスタンス宣言をlogger.hsに書きこみ、試してみる。
+
+    *Main> :reload
+
+    logger.hs:X:YY: Warning:
+        No explicit method or default declaration for `>>='
+        In the instance declaration for `Monad Logger'
+    OK, modules loaded: Main.
+    *Main> return 8 :: Logger Int
+    Logger [] 8
+
+問題なく定義できているようだ。
+
+#### (>>=)
 
 ### double関数
 

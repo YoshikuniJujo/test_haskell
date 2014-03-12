@@ -228,7 +228,7 @@ aboutLogger = [\t -> do
 	itext t 1 "(a -> m b) -> (b -> m c) -> (a -> m c)", \t -> do
 	itext t 1 "(a -> b) -> (a -> m b)", \t -> do
 	text t "* モナドという性質を共有していてもその中身は様々", \t -> do
-	text t "* 今回の演習では計算のログを取るモナドを取み立ててみよう"
+	text t "* 今回の演習では計算のログを取るモナドを組み立ててみよう"
  ]
 
 aboutLogger2 :: Page
@@ -324,7 +324,7 @@ aboutLogger7 = [\t -> do
 	text t "* 次に以下の関数を作ろうと思うのだが", \t -> do
 	itext t 1 "double :: Int -> Logger Int", \t -> do
 	itext t 1 "double 3", \t -> do
-	arrowIText t 1 "Logger \"double 3\" 6", \t -> do
+	arrowIText t 1 "Logger [\"double 3\"] 6", \t -> do
 	text t "* その前に文字列をログにする関数を書こう", \t -> do
 	text t "* 以下のような型になる", \t -> do
 	itext t 1 "tell :: String -> Logger ()", \t -> do
