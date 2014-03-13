@@ -202,6 +202,48 @@ arr reverseは文字列を受け取り、
 
 ### 値を機械に渡す
 
+関数がIOMcnに変換できるということは、
+値を機械に流し込むことができるということだ。
+たとえば"Hello"を機械に流し込むには以下のようにする。
+
+    arr (const "Hello") >>> putLine
+
+引数を無視し"Hello"を返す関数を機械に変換し、
+その機械と機械putLineとをつないだ。
+
+よってputHello, putWorldは以下のように定義できる。
+
+    putHello = arr (const "Hello") >>> putLine
+    putWorld = arr (const "World") >>> putLine
+
+試してみる。
+
+    *IOMcn> runIOMcn $ arr (const "Hello") >>> putLine
+    Hello
+    *IOMcn> runIOMcn $ arr (const "World") >>> putLine
+    World
+
+引数を無視して"Hello"を返す関数(const "Hello")を機械に変換し
+
+    arr (const "Hello") :: IOMcn () String
+
+これをputLineにつないでいる。
+
+hello.hsを作って以下を書きこむ。
+
+    import IOMcn
+
+    putHello, putWorld :: IOMcn () ()
+    putHello = arr (const "Hello") >>> putLine
+    putWorld = arr (const "World") >>> putLine
+
+試してみる。
+
+    *IOMcn> :load hello.hs
+    *Main> runIOMcn $ putHello >>> putWorld
+    Hello
+    World
+
 ### 機械が返す値を使用する関数
 
 #### 導入
