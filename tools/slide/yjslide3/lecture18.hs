@@ -364,7 +364,7 @@ machine14 = [\t -> do
 	itext t 1 "app :: IOMcn (IOMcn a b, a) b", \t -> do
 	text t "* 今、作りたい機械の型は", \t -> do
 	itext t 1 "IOMcn () (IOMcn String (), String)", \t -> do
-	text t "* この型の関数は以下の型の関数とisEvenをつなげばできる", \t -> do
+	text t "* この型の機械は以下の型の関数とisEvenをつなげばできる", \t -> do
 	itext t 1 "IOMcn Bool (IOMcn String (), String)"
  ]
 
@@ -451,7 +451,7 @@ machineSummary = [\t -> do
 	itext t 1 "- 入力値は関数の返り値として受け取れる", \t -> do
 	text t "* 参照透過性と遅延評価の面から上記の方法は望ましくない", \t -> do
 	text t "* むしろIOを行う機械を組み立てていくことを考える", \t -> do
-	text t "* 機械の受け取りの型と受け渡しの型を指定すると良い", \t -> do
+	text t "* 機械が受け取る値の型と渡す値の型を指定すると良い", \t -> do
 	text t "* 以下の型とそれに対する関数や機械を用意しておくと良い", \t -> do
 	itext t 1 "IOMcn a b", \t -> do
 	itext t 1 "(>>>) :: IOMcn a b -> IOMcn b c -> IOMcn a c", \t -> do
