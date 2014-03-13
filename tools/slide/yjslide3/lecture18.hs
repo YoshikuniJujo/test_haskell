@@ -552,6 +552,7 @@ aboutIO7 = [\t -> do
 	text t "* これは単に関数適用に置き換えられるので不要になる"
  ]
 
+{-
 aboutIOXX :: Page
 aboutIOXX = [\t -> do
 	writeTopTitle t "IO"
@@ -563,6 +564,7 @@ aboutIOXX = [\t -> do
 	itext t 1 "Prelude> putStrLn \"Hello\"", \t -> do
 	itext t 1 "Hello"
  ]
+ -}
 
 aboutIO8 :: Page
 aboutIO8 = [\t -> do

@@ -449,21 +449,211 @@ IOモナド
 
 ### IO型
 
+IOMcnはもっとスマートにすることができる。
+以下の型を比較する。
+
+    IOMcn a b
+    a -> IOMcn () b
+
+これらの型が相互に変換可能であることを示そう。
+
 ### 相互変換
+
+#### IOMcn a bからa -> IOMcn () b
+
+まずはIOMcn a bからa -> IOMcn () bを作る関数を定義する。
+
+    outArg :: IOMcn a b -> a -> IOMcn () b
+    outArg iom = \x -> arr (const x) >>> iom
+
+この関数を言葉で言い表しすと以下のようになる。
+
+型aの値xがあれば以下の機械が作れる。
+
+    arr (const x) :: IOMcn () a
+
+これとiom :: IOMcn a bをつなげばIOMcn () bは作れる。
+
+「IOMcn a bとaからIOMcn () bを作れる」は
+「IOMcn a bからa -> IOMcn () bを作れる」と同じことだ。
+
+#### a -> IOMcn () bからIOMcn a b
+
+逆にa -> IOMcn () bからIOMcn a bが作れることを示す。
+
+    inArg :: (a -> IOMcn () b) -> IOMcn a b
+    inArg f = arr (\x -> (f x, ())) >>> app
+
+これを説明すると以下のようになる。
+
+f :: a -> IOMcn () bがあれば以下の関数が作れる。
+
+    \x -> (f x, ()) :: a -> (IOMcn () b, ())
+
+ここから以下の機械が作れる。
+
+    arr (\x -> (f x, ())) :: IOMcn a (IOMcn () b, ())
+
+さらに機械appをつなげば良い。
+
+    arr (\x -> (f x, ())) >>> app :: IOMcn a b
+
+#### まとめ
+
+つまり、以下の2つの型は同じものであると考えられる。
+
+    IOMcn a b
+    a -> IOMcn () b
+
+aを受け取ってbを渡す機械を、
+aの値によって「bを渡す機械」を選ぶ関数に変換できる。
+
+IOMcn a bの形の関数をa -> IOMcn () bの形に統一し
+
+    type IO = IO Mcn ()
+
+としておこう。
 
 ### モナド関数
 
-### 機械に値を渡す機械
+上記のようにすると、以下の関数のペアを
+
+    arr :: (a -> b) -> IOMcn a b
+    (>>>) :: IOMcn a b -> IOMcn b c -> IOMcn a c
+
+以下の形に変えることができる。
+
+    arr' :: (a -> b) -> (a -> IO b)
+    (>=>) :: (a -> IO b) -> (b -> IO c) -> (a -> IO c)
+
+これはモナド関数である。
+
+    return :: a -> IO a
+    (>>=) :: IO a -> (a -> IO b) -> IO b
+
+### IOMcnからIOへの変換の説明
+
+「aを受け取りbを渡す機械」を
+「aを引数として取り『bを渡す機械』を返す関数」に変換した。
+これにより、IOを行う機械をモナドとして扱うことができるようになる。
+
+以下の関数を
+
+    arr :: (a -> b) -> IOMcn a b
+    (>>>) :: IOMcn a b -> IOMcn b c -> IOMcn a c
+
+以下の関数で置き換えることができる。
+
+    return :: a -> IO a
+    (>>=) :: IO a -> (a -> IO b) -> IO b
+
+### 機械に値を渡す機械について
+
+機械に値を渡す機械appについては以下のようになり、
+
+    app :: IOMcn (IOMcn a b, a) b
+        |
+        V
+    (a -> IO b, a) -> IO b
+
+これは単なる関数適用に置き換えられるので不要となる。
 
 ### 出力の例
 
+文字列を改行をつけて表示する関数がある。
+
+    putStrLn :: String -> IO ()
+
+試してみよう。
+
+    *Main> :load
+    OK, modules loaded: none.
+    Prelude> putStrLn "Hello"
+    Hello
+
+putStrLnは形としては「文字列によって機械を選ぶ関数」である。
+しかし、その中身は「文字列を受け取る機械」である。
+
+runIOMcnに当たるものがない。
+対話環境で評価されたIO型の機械は暗黙のうちに「実行」される。
+これは、数値が対話環境で評価されると暗黙のうちに「表示」されるのと
+対照的である。
+
+見方を変えると、数値を表示するprintという機械があり、
+対話環境で数値が評価された場合には、
+暗黙のうちにprintという機械に渡されて、その機械が「実行」される、
+と言える。
+
 ### 入力の例
+
+入力についても試してみる。
+キーボードからの入力を1行読みこむ関数がある。
+
+    getLine :: IO String
+
+試してみる。
+
+    Prelude> getLine
+    hello
+    "hello"
+
+1行目はキーボード入力で2行目がgetLineから渡された値である。
 
 ### モナドは一方通行
 
+前にライオンの檻について見た。
+モナド関数はモナドから外に値が出ることを許さない。
+Haskellでは「状態変化」はIOの外では起こらない。
+IOを実行する以外の場所では参照透過性が保たれている。
+
+これは以下のように保たれている。
+IOの中の値を取り出すことはできる。
+しかし、その後にちゃんとIOのなかに「しまう」ことが強制される。
+
 ### Monadクラス
+
+IOはモナドなのでMonadクラスのインスタンスである。
+
+    return :: a -> IO a
+    (>>=) :: IO a -> (a -> IO b) -> IO b
+
+よって、IOモナドでもdo記法が使える。
+
+    some :: IO ()
+    some = do
+        str <- getLine
+        putStrLn str
+
+do記法を使うと手続き型言語のような外見にすることができる。
 
 ### まとめ
 
+IOMcn a bをa -> IOMcn () bにすることができる。
+以下のようにすることで、
+
+    type IO = IOMcn ()
+
+IOをモナドとして扱うことができる。
+
+IOのなかに入った値はIOの外に取り出せない。
+これにより、参照透過性が保たれる。
+
+IOをつないでいくのに(>>)や(>>=)を使うことができる。
+また、do記法を使うことで手続き型言語のような外見にすることも可能である。
+
 まとめ
 ------
+
+IOモナドを説明するために、その前段階として、IOMcnという型を導入した。
+IOMcnに必要な関数は以下のようになる。
+
+    arr :: (a -> b) -> IOMcn a b
+    (>>>) :: IOMcn a b -> IOMcn b c -> IOMcn a c
+    app :: IOMcn (IOMcn a b, a) b
+
+IOMcnを変換することでIOが導き出せる。
+
+    return :: a -> IO a
+    (>>=) :: IO a -> (a -> IO b) -> IO b
+
+Haskellでは入出力にIOモナドを使う。
