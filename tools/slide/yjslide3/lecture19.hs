@@ -31,7 +31,7 @@ aboutMain = [\t -> do
 	itext t 1 "- 入出力を行う機械と考えることができる", \t -> do
 	text t "* その機械を定義するのがmainという値である", \t -> do
 	text t "* Haskellで書かれたプログラムを動かすということは", \t -> do
-	itext t 1 "- mainという名前に束縛された機械を「実行」すること", \t -> do
+	itext t 1 "- mainという名前を束縛する機械を「実行」すること", \t -> do
 	text t "* プログラムはすでに完全に組み立てられている必要がある", \t -> do
 	text t "* つまり、何も受け取らず何も渡さない機械なので", \t -> do
 	itext t 1 "main :: IO ()"
