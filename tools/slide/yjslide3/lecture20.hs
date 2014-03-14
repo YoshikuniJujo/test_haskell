@@ -5,10 +5,10 @@ subtitle = "第20回 まとめ:オセロ(盤の定義)"
 
 main :: IO ()
 main = runLecture [
-	[flip writeTitle subtitle], prelude, aboutModules, aboutBoard,
+	[flip writeTitle subtitle], prelude, aboutModules,
 	aboutTools, aboutTools2, aboutTools3, aboutTools4, aboutTools5,
-	aboutTools6, aboutTools7, aboutTools8, aboutTools9,
-	aboutDisk, aboutSquare, aboutSquare, aboutTypeBoard, aboutTypeBoard2,
+	aboutTools6, aboutTools7, aboutTools8, aboutTools9, aboutBoard,
+	aboutDisk, aboutSquare, aboutSquare2, aboutTypeBoard, aboutTypeBoard2,
 	aboutTypeBoard3, aboutXY, aboutComprehension,
 	aboutDirection, aboutDirection2, aboutDirection3,
 	aboutModuleBoard, aboutAbstraction,
@@ -46,27 +46,11 @@ aboutModules = [\t -> do
 	text t "* 今回はBoardとToolsの一部を作ろう"
  ]
 
-aboutBoard :: Page
-aboutBoard = [\t -> do
-	writeTopTitle t "Board"
-	text t "", \t -> do
-	text t "* lectures/othelloディレクトリを作成しよう", \t -> do
-	text t "* Board.hsを作っていこう", \t -> do
-	text t "* まずはモジュール宣言を書き込む", \t -> do
-	itext t 1 "module Board ("
-	itext t 1 ") where", \t -> do
-	text t "* エクスポートリストは今は空", \t -> do
-	text t "* ()のなかにエクスポートする関数等を追加していく", \t -> do
-	text t "* 対話環境でテストしながら作っていこう", \t -> do
-	itext t 1 "% ghci Board.hs", \t -> do
-	itext t 1 "*Board> "
- ]
-
 aboutTools :: Page
 aboutTools = [\t -> do
-	writeTopTitle t "Tools"
-	text t "", \t -> do
-	text t "* その前にBoardモジュールで使うより一般的な道具を作成", \t -> do
+	writeTopTitle t "Tools", \t -> do
+	text t "* lectures/othelloディレクトリを作成しよう", \t -> do
+	text t "* Boardモジュールで使うより一般的な道具を作成", \t -> do
 	text t "* Tools.hsに以下を書き込もう", \t -> do
 	itext t 1 "module Tools (", \t -> do
 	itext t 1 ") where", \t -> do
@@ -212,12 +196,26 @@ aboutTools9 = [\t -> do
 	itext t 1 "\"HeLlo\""
  ]
 
+aboutBoard :: Page
+aboutBoard = [\t -> do
+	writeTopTitle t "Board"
+	text t "", \t -> do
+	text t "* 一般的な道具ができたので次はBoardモジュール", \t -> do
+	text t "* まずはモジュール宣言を書き込む", \t -> do
+	itext t 1 "module Board ("
+	itext t 1 ") where", \t -> do
+	text t "* エクスポートリストは今は空", \t -> do
+	text t "* ()のなかにエクスポートする関数等を追加していく", \t -> do
+	text t "* 対話環境でテストしながら作っていこう", \t -> do
+	itext t 1 "% ghci Board.hs", \t -> do
+	itext t 1 "*Board> "
+ ]
+
 aboutDisk :: Page
 aboutDisk = [\t -> do
 	writeTopTitle t "Disk"
 	text t "", \t -> do
-	text t "* 一般的な道具ができたので次はBoardモジュール", \t -> do
-	text t "* まずは石を表すデータ構造を作る", \t -> do
+	text t "* 石を表すデータ構造を作る", \t -> do
 	text t "* 以下をBoard.hsに書き込もう", \t -> do
 	itext t 1 "data Disk = Black | White deriving (Eq, Show)", \t -> do
 	itext t 1 "rev :: Disk -> Disk", \t -> do
@@ -581,7 +579,7 @@ aboutUpper = [\t -> do
 
 aboutUpper2 :: Page
 aboutUpper2 = [\t -> do
-	writeTopTitle t "上層部"
+	writeTopTitle t "上部層"
 	text t "", \t -> do
 	text t "* placeableはplaceを使って定義することにする", \t -> do
 	text t "* まずはplaceを定義しよう", \t -> do
@@ -596,7 +594,7 @@ aboutUpper2 = [\t -> do
 
 aboutUpper3 :: Page
 aboutUpper3 = [\t -> do
-	writeTopTitle t "上層部"
+	writeTopTitle t "上部層"
 	text t "", \t -> do
 	text t "* placeableをplaceを使って定義する", \t -> do
 	text t "* Data.MaybeモジュールのisJust関数を使うので", \t -> do
