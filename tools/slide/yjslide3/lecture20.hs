@@ -55,7 +55,7 @@ aboutTools = [\t -> do
 	itext t 1 "module Tools (", \t -> do
 	itext t 1 ") where", \t -> do
 	text t "* 対話環境でテストしながら作っていくので", \t -> do
-	itext t 1 "*Board> :load Test.hs", \t -> do
+	itext t 1 "% ghci Tools.hs", \t -> do
 	text t "* Boardモジュールで使う道具は以下の4つ", \t -> do
 	itext t 1 "scc: 次の値を返す、最大値ではNothingを", \t -> do
 	itext t 1 "prd: 前の値を返す、最小値ではNothingを", \t -> do
