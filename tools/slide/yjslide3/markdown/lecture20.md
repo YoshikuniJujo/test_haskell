@@ -210,7 +210,33 @@ Boardモジュール
 
 ### はじめに
 
+ToolsモジュールにBoardモジュールで使う一般的な道具を作ったので、
+次はBoardモジュールの作成に移る。
+
+まずはモジュール宣言を書きこむ。
+
+    module Board (
+    ) where
+
+エクスポートリストは今は空である。
+これから()のなかにエクスポートする関数等を追加していく。
+
+対話環境でテストしながら作っていこう。
+
+    % ghci Board.hs
+    *Board>
+
 ### Disk型
+
+石を表すデータ構造を作る。以下をBoard.hsに書きこむ。
+
+    data Disk = Black | White deriving (Eq, Show)
+
+    rev :: Disk -> Disk
+    rev Black = White
+    rev White = Black
+
+石には黒と白とがありそれぞれ互いの裏となっているということ。
 
 ### Square型
 
