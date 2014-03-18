@@ -267,6 +267,59 @@ Disk { disk :: Disk }という定義は以下の同じことである。
 
 ### Board型
 
+#### 型の定義
+
+マスの横の並びを行とすると、盤は行を集めたものである。
+これを定義する。
+また、対話環境用にshow関数を定義しておこう。
+
+以下をBoard.hsに書きこむ。
+
+    newtype Board = Board [[Square]]
+
+    instance Show Board where
+        show (Board b) = unlines $ map (concatMap sd) b
+            where
+            sd (Disk Black) = "*|"
+            sd (Disk White) = "O|"
+            sd Empty = "_"
+
+#### initBoard
+
+盤の初期状態を定義する。
+
+    initBoard :: Board
+    initBoard = Board $ map (map c2d) ["
+        "________",
+        "________",
+        "________",
+        "___O*___",
+        "___*O___",
+        "________",
+        "________",
+        "________" ]
+        where
+        c2d '_' = Empty
+        c2d '*' = Disk Black
+        c2d 'O' = Disk White
+
+#### 試してみる
+
+試してみる。
+
+    *Tools> :load Board.hs
+    *Board> initBoard
+    _|_|_|_|_|_|_|_|
+    _|_|_|_|_|_|_|_|
+    _|_|_|_|_|_|_|_|
+    _|_|_|O|*|_|_|_|
+    _|_|_|*|O|_|_|_|
+    _|_|_|_|_|_|_|_|
+    _|_|_|_|_|_|_|_|
+    _|_|_|_|_|_|_|_|
+
+盤の初期状態が表示される。
+
 ### X, Y型
 
 ### Direction型
