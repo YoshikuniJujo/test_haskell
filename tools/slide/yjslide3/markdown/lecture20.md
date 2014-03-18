@@ -164,7 +164,46 @@ foldlMaybeはfoldlMaybeBoolに初期値としてFalseを与えれば良い。
         Just x' -> foldlMaybeBool True op x' ys
         _ -> foldlMaybeBool j op x ys
 
-### modifyList
+### 関数modifyList
+
+modifyListはリストの指定された位置にある要素を変化させる関数である。
+前の部分、その要素、後の部分に分けて、
+前の部分、要素を変化させたもの、後の部分をつなげる。
+
+Tools.hsに以下を書きこむ。
+
+    modifyList :: [a] -> Int -> (a -> a) -> [a]
+    modifyList xs n f = take n xs ++ [f $ xs !! n] ++ drop (n + 1) xs
+
+takeは与えられた数だけ要素を取り出す。
+dropは与えられた数だけ要素を捨てる。
+(!!)は与えられたアンデックスで要素を取り出す。
+
+### エクスポートリスト
+
+作った関数をエクスポートリストに追加する。
+
+    module Tools (
+        scc, prd, foldlMaybe, modifyList
+    ) where
+
+ケアレスミスをチェックするためにreloadする。
+
+    *Tools> :reload
+
+### 試してみる
+
+いくつか試してみる。
+
+    *Tools> scc 'c'
+    Just 'd'
+    *Tools> scc '\0'
+    Just '\SOH'
+    *Tools> prd '\0'
+    Nothing
+    *Tools> :m + Data.Char
+    *Tools Data.Char> modifyList "Hello" 2 toUpper
+    "HeLlo"
 
 Boardモジュール
 ---------------
