@@ -322,6 +322,41 @@ Disk { disk :: Disk }という定義は以下の同じことである。
 
 ### X, Y型
 
+#### 型の定義
+
+盤上のマスの位置を示す型X, Yを定義する。
+
+以下をBoard.hsに書きこむ。
+
+    data X = A | B | C | D | E | F | G | H
+        deriving (Eq, Ord, Enum, Bounded, Show)
+    data Y = Y1 | Y2 | Y3 | Y4 | Y5 | Y6 | Y7 | Y8
+        deriving (Eq, Ord, Enum, Bounded, Show)
+
+#### すべてのマス
+
+「すべてのマス」を定義する
+以下をBoard.hsに書きこむ。
+
+    allSquares :: [(X, Y)]
+    allSquares = [ (x, y) | x <- [A .. H], y <- [Y1 .. Y8] ]
+
+#### リストの内包表現
+
+Haskellには「リストの内包表現」という構文糖がある。
+
+以下で、すべてのx, yの組み合わせのリストとなる。
+
+    [ (x, y) | x <- [リスト1], y <- [リスト2] ]
+
+また途中にBool値を入れることで値をしぼりこむことができる。
+
+    [ x | x <- [リスト1], test x ]
+
+リスト内包表現内で変数束縛も可能である。
+
+    [ v | x <- [リスト1], let v = f x, test v ]
+
 ### Direction型
 
 ### 関数定義の見通し

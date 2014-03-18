@@ -331,7 +331,7 @@ aboutComprehension = [\t -> do
 	itext t 1 "[ (x, y) | x <- [リスト1], y <- [リスト2] ]", \t -> do
 	text t "* また途中にBool値を入れることで値をしぼりこめる", \t -> do
 	itext t 1 "[ x | x <- [リスト1], test x ]", \t -> do
-	text t "* 値を束縛することもできる", \t -> do
+	text t "* 変数束縛も可能", \t -> do
 	itext t 1 "[ v | x <- [リスト1], let v = f x, test v ]"
  ]
 
