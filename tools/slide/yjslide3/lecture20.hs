@@ -131,8 +131,8 @@ aboutTools5 = [\t -> do
 	itext t 1 "- Just x'ならばBool値をTrueにしてxをx'にする", \t -> do
 	itext t 1 "- Nothingならyは無視しBool値もxもそのままにする", \t -> do
 	itext t 1 "foldlMaybeBool j op x (y : ys) = case x `op` y of", \t -> do
-	itext t 2 "Just x' -> foldMaybeBool True op x' ys", \t -> do
-	itext t 2 "_ -> foldMaybeBool j op x ys"
+	itext t 2 "Just x' -> foldlMaybeBool True op x' ys", \t -> do
+	itext t 2 "_ -> foldlMaybeBool j op x ys"
  ]
 
 aboutTools6 :: Page

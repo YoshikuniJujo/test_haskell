@@ -57,7 +57,7 @@ Tools.hsに以下を書きこむ。
 * foldlMaybe: foldlと同様だがJustが1つもなければNothingとなる
 * modifyList: リストの要素の指定された1つに関数を適用する
 
-### scc, prd
+### 関数scc, prd
 
 次の値や前の値を返す関数succ, predははじめから定義されている。
 しかし、これらの関数は結果が最大値や最小値を越える場合にはエラーとなる。
@@ -87,7 +87,82 @@ Ordクラスは大小比較可能ということである。
 つまり、sccやprdは順番に並べられ、上限と下限があり、
 大小比較可能な型に対して定義されているということ。
 
-### foldlMaybe
+### 関数foldlMaybe
+
+#### 導入
+
+オセロでは8方向のうちのどこかで相手の石を取れる場所以外には、
+自分の石を置くことができない。
+また、石を置いた結果の状態は8方向の取れる石すべてを取った状態となる。
+
+ある1方向について、取れるときは取った状態を返し、
+取れないときはNothingを返す関数があるとする。
+
+するとこの関数を8方向すべてについて試みて、ひとつでもJustがあれば、
+Justを返すすべての方向について、その関数を適用した結果を返したい。
+
+より一般的にすると、与えられた値のリストについて、
+関数を次々に適用していき、ひとつでもJustがあれば、
+関数適用の最終的な結果を返し、
+すべての結果がNothingであったら全体の結果もNothingとする関数となる。
+
+以下の型の関数を作っていく。
+
+    foldlMaybe :: (a -> b -> Maybe a) -> a -> [b] -> Maybe a
+
+オセロの場合を例にするならば、aは盤の状態であり、bはそれぞれの方向となる。
+状態をそれぞれの方向について変化させていく。
+変化がない(つまりJustがない)ときは全体の値もNothingとなる。
+
+#### 関数foldlMaybeBool
+
+##### Justの有無を表すBool値
+
+foldlMaybe op x (y : ys)として、x `op` yがNothingならば、
+そのyの値は無視し、Just x'ならばx'を新しい値として続ける、とする。
+
+これでほとんどの場合はうまくいくが、すべての結果がNothingだった場合に、
+全体の値がNothingとなるのではなく、もともとの値xを返すということになる。
+
+すべてNothingの場合に結果もNothingとするためには、
+関数適用の途中でJustが出てきたかどうかを保存するBool値が必要になる。
+そのBool値を引数に追加した関数を作ろう。
+
+    foldlMaybeBool :: Bool -> (a -> b -> Maybe a) -> a [b] -> Maybe a
+
+Bool値はJustがあった場合にTrue, 無かった場合にはFalseとなる。
+
+##### 関数定義
+
+まずはすべての値を使い終わったときについて考える。
+このとき、それまでの関数適用について、Justがあったなら現在の値を返し、
+JustがなかったらNothingを返せば良い。
+
+    foldlMaybeBool True _ x [] = Just x
+    foldlMaybeBool False _ _ [] = Nothing
+
+値が残っている場合には、
+x `op` yがJust x'ならばBool値をTrueにしてxをx'にする。
+x `op` yがNothingならyは無視しBool値もxもそのままとなる。
+
+    foldlMaybeBool j op x (y : ys) = case x `op` y of
+        Just x' -> foldlMaybeBool True op x' ys
+        _ -> foldlMaybeBool j op x ys
+
+#### 関数foldlMaybeの定義
+
+foldlMaybeはfoldlMaybeBoolに初期値としてFalseを与えれば良い。
+以下をTools.hsに書きこむ。
+
+    foldlMaybe :: (a -> b -> Maybe a) -> a -> [b] -> Maybe a
+    foldlMaybe = foldlMaybeBool False
+
+    foldlMaybeBool :: Bool -> (a -> b -> Maybe a) -> a -> [b] -> Maybe a
+    foldlMaybeBool True _ x [] = Just x
+    foldlMaybeBool False _ _ [] = Nothing
+    foldlMaybeBool j op x (y : ys) = case x `op` y of
+        Just x' -> foldlMaybeBool True op x' ys
+        _ -> foldlMaybeBool j op x ys
 
 ### modifyList
 
