@@ -168,17 +168,15 @@ lecture = [\t -> do
 
 attention :: Page
 attention = [\t -> do
-	writeTopTitle t "コマンドプロンプト"
+	writeTopTitle t "ターミナル"
 	text t "", \t -> do
-	text t "* この講義のなかではコマンドプロンプトを主に利用する", \t -> do
+	text t "* この講義のなかではターミナルを主に利用する", \t -> do
 	text t "* HaskellのIDEもあるようだが", \t -> do
 	itext t 1 "- 演者が使ったことがない", \t -> do
-	itext t 1 "- コマンドプロンプトを使う方法のほうが応用が利く", \t -> do
+	itext t 1 "- ターミナルを使う方法のほうが応用が利く", \t -> do
 	itext t 1 "- つまり、後からIDEを使う方法を学ぶこともできる", \t -> do
 	text t "* 演者の環境に合わせシェルのプロンプトを'%'で表記", \t -> do
-	text t "* コマンドプロンプトを立ち上げてみましょう", \t -> do
-	itext t 1 "- Windows key + Rでダイアログ表示", \t -> do
-	itext t 1 "- cmdと入力してOK"
+	text t "* ターミナルを立ち上げてみよう"
  ]
 
 lecture2 :: Page
