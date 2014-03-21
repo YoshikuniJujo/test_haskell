@@ -130,8 +130,10 @@ bmi関数を定義したときには型を宣言しなかった。
 
 #### 型宣言
 
-ディレクトリlectures/lecture02/を作り、
 lectures/lecture02/bmi.hsを作ろう。
+
+    % cd ~/lectures/lecture02/
+    % nano -w bmi.hs
 
     bmi :: Double -> Double -> Double
     bmi = undefined

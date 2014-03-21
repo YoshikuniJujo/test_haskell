@@ -182,8 +182,9 @@ aboutType10 = [\t -> do
 	text t "", \t -> do
 	text t "* 「型駆動開発」とは今思いついた言葉", \t -> do
 	text t "* まずは型を決めてそれから中身をうめていくやりかた", \t -> do
-	text t "* ディレクトリlectures/lecture02/を作り", \t -> do
 	text t "* lectures/lecture02/bmi.hsを作ろう", \t -> do
+	itext t 1 "% cd ~/lectures/lecture02", \t -> do
+	itext t 1 "% nano -w bmi.hs", \t -> do
 	itext t 1 "bmi :: Double -> Double -> Double"
 	itext t 1 "bmi = undefined"
 	itext t 1 ""
