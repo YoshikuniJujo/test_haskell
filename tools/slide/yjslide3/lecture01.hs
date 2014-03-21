@@ -67,24 +67,20 @@ defineFun = [\t -> do
 	text t "* しかし、関数が長くなるとわずらわしいので", \t -> do
 	text t "* 別ファイルで関数を定義し対話環境で使うことにする", \t -> do
 	text t "* お好きなエディタを選んで、と言いたいところだが", \t -> do
-	itext t 1 "メモ帳、Vim、Emacsしか用意していない", \t -> do
-	itext t 1 "(著者メモ) Emacsは用意できるかどうか"
+	itext t 1 "nano、vim、Emacsしか用意していない"
  ]
 
 defineFun2 :: Page
 defineFun2 = [\t -> do
 	writeTopTitle t "やってみよう"
 	text t "", \t -> do
-	text t "* 適当なフォルダを作る", \t -> do
-	itext t 1 "% cd ~ (Linuxの場合)"
-	itext t 1 "% cd %userprofile% (Windowsの場合)", \t -> do
-	itext t 1 "% mkdir lectures/lecture01", \t -> do
-	itext t 1 "% cd lectures/lecture01", \t -> do
 	text t "* 例題: 身長と体重を入力するとBMIを返す関数bmiを作る", \t -> do
 	itext t 1 "BMI = [体重(kg)] / [身長(m)]の2乗", \t -> do
 	text t "* bmi.hsファイルを作ろう", \t -> do
+	itext t 1 "% cd ~/lectures/lecture01", \t -> do
 	itext t 1 "% [エディタ] bmi.hs", \t -> do
-	itext t 2 "- [エディタ]はnotepad, vim, emacsのどれか"
+	itext t 2 "- [エディタ]はnano -w, vim, emacsのどれか", \t -> do
+	itext t 2 "- nanoを使う場合は-wオプションを忘れないように"
  ]
 
 bmi :: Double -> Double -> Double
@@ -137,9 +133,8 @@ partial2 :: Page
 partial2 = [\t -> do
 	writeTopTitle t "関数の部分適用"
 	text t "", \t -> do
-	text t "* コマンドプロンプトをもうひとつ立ち上げてみる", \t -> do
-	itext t 1 "ウィンドウズキー + R -> cmd", \t -> do
-	itext t 1 "% cd lectures/lecture01/", \t -> do
+	text t "* コマンドプロンプトをもうひとつ立ち上げる", \t -> do
+	itext t 1 "% cd ~/lectures/lecture01/", \t -> do
 	itext t 1 "% [エディタ] bmi.hs", \t -> do
 	text t "* bmi.hsに以下を追加", \t -> do
 	itext t 1 "bmiCHM w = bmi 218 w", \t -> do
@@ -263,7 +258,7 @@ literalSummary = [\t -> do
 	text t "", \t -> do
 	text t "* 関数リテラルの記法を使うと無名関数を書くことができる", \t -> do
 	text t "* 記法は以下の通り", \t -> do
-	itext t 1 "\\[引数1] [引数2] -> [表現]", \t -> do
+	itext t 1 "\\[引数1] [引数2] ... -> [表現]", \t -> do
 	text t "* 普通の関数定義は構文糖と考えることができる", \t -> do
 	itext t 1 "[関数名] [引数1] [引数2] ... = [表現]", \t -> do
 	arrowIText t 1 "[関数名] = \\[引数1] [引数2] ... -> [表現]"
@@ -333,6 +328,7 @@ operator = [\t -> do
 	itext t 1 "*Main> (+) 3 8", \t -> do
 	itext t 1 $ show ((+) 3 8 :: Int), \t -> do
 	text t "* 逆に関数は`(バッククォート)でかこむと演算子となる", \t -> do
+	itext t 1 "*Main> :load bmi.hs", \t -> do
 	itext t 1 "*Main> 218 `bmi` 164", \t -> do
 	itext t 1 $ show $ 218 `bmi` 164
  ]
