@@ -80,7 +80,9 @@ defineFun2 = [\t -> do
 	itext t 1 "% cd ~/lectures/lecture01", \t -> do
 	itext t 1 "% [エディタ] bmi.hs", \t -> do
 	itext t 2 "- [エディタ]はnano -w, vim, emacsのどれか", \t -> do
-	itext t 2 "- nanoを使う場合は-wオプションを忘れないように"
+	itext t 2 "- nanoを使う場合は-wオプションを忘れないように", \t -> do
+	text t "* 今後は[エディタ]と書く代わりにnano -wとする", \t -> do
+	text t "* それぞれviやemacsに読み換えてほしい"
  ]
 
 bmi :: Double -> Double -> Double
@@ -135,7 +137,7 @@ partial2 = [\t -> do
 	text t "", \t -> do
 	text t "* コマンドプロンプトをもうひとつ立ち上げる", \t -> do
 	itext t 1 "% cd ~/lectures/lecture01/", \t -> do
-	itext t 1 "% [エディタ] bmi.hs", \t -> do
+	itext t 1 "% nano -w bmi.hs", \t -> do
 	text t "* bmi.hsに以下を追加", \t -> do
 	itext t 1 "bmiCHM w = bmi 218 w", \t -> do
 	text t "* もとのプロンプトにもどり以下を入力", \t -> do
@@ -297,7 +299,7 @@ higherOrder2 = [\t -> do
 	text t "", \t -> do
 	text t "* 与えられた関数を与えられた値に2回適用する関数", \t -> do
 	text t "* やってみよう", \t -> do
-	itext t 1 "% [エディタ] higher.hs", \t -> do
+	itext t 1 "% nano -w higher.hs", \t -> do
 	itext t 1 "twice f x = f (f x)", \t -> do
 	itext t 1 "*Main> :load higher.hs", \t -> do
 	itext t 1 $ "*Main> twice (\\x -> x * (x + 1)) " ++ show ho2number1, \t -> do

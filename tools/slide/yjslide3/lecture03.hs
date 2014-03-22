@@ -41,8 +41,9 @@ coordinate = [\t -> do
 	writeTopTitle t "原点からの距離"
 	text t "", \t -> do
 	text t "* 直交座標上の点の原点からの距離を求める関数を考える", \t -> do
-	text t "* lectures/lecture03を作成しそこに移動", \t -> do
-	text t "* coordinate.hsを作成し以下を書き込もう", \t -> do
+	text t "* coordinate.hsを作成する", \t -> do
+	itext t 1 "% cd ~/lectures/lecture03/", \t -> do
+	itext t 1 "% nano -w coordinate.hs"
 	itext t 1 "dist0 :: Double -> Double -> Double", \t -> do
 	itext t 1 "dist0 x y = sqrt $ x ^ 2 + y ^ 2", \t -> do
 	text t "* 試してみる", \t -> do
@@ -140,8 +141,8 @@ patternMatch2 = [\t -> do
 	itext t 1 "1. 特殊な値を用意する", \t -> do
 	itext t 1 "2. エラーとする", \t -> do
 	itext t 1 "3. 適当な値を返す", \t -> do
-	text t "* 1が最も良いやりかたで、3が最も悪いやりかた", \t -> do
-	text t "* 説明の都合上、今回は3の最も悪いやりかたをする"
+	text t "* 1が最も安全なやりかたで、3が最も危険なやりかた", \t -> do
+	text t "* 説明の都合上、今回は3の最も危険なやりかたをする"
  ]
 
 slope :: (Double, Double) -> Double
@@ -233,7 +234,7 @@ patternMatch8 = [\t -> do
 	text t "", \t -> do
 	text t "* coordinate.hsを編集していたエディタを閉じて", \t -> do
 	text t "* 編集用のコマンドプロンプトでnumber.hsを作成しよう", \t -> do
-	itext t 1 "% [エディタ] number.hs", \t -> do
+	itext t 1 "% nano -w number.hs", \t -> do
 	text t "* 以下を書き込んでみよう('--'で始まる行はコメント)", \t -> do
 	itext t 1 "intName :: Int -> String", \t -> do
 	itext t 2 "-- Stringは文字列を表す型", \t -> do
