@@ -9,7 +9,7 @@ subtitle = "第1回 関数"
 main :: IO ()
 main = runLecture [
 	[flip writeTitle subtitle], prelude, function, apply,
-	defineFun, defineFun2, defineFun3, funSummary,
+	defineFun, aboutNano, defineFun2, defineFun3, funSummary,
 	partial, partial2, partial3, partial4, partialSummary,
 	literal, literal2, literal3, literal4, literalSummary,
 	higherOrder, higherOrder2, higherOrderSummary,
@@ -67,7 +67,29 @@ defineFun = [\t -> do
 	text t "* しかし、関数が長くなるとわずらわしいので", \t -> do
 	text t "* 別ファイルで関数を定義し対話環境で使うことにする", \t -> do
 	text t "* お好きなエディタを選んで、と言いたいところだが", \t -> do
-	itext t 1 "nano、vim、Emacsしか用意していない"
+	itext t 1 "nano、vim、Emacsしか用意していない", \t -> do
+	text t "* vimやEmacsを使う人は「いつも通りに」編集してほしい", \t -> do
+	text t "* 演者はvim使いなのでvimについては教えられるが", \t -> do
+	itext t 1 "- Emacsについてはわからない", \t -> do
+	text t "* これらのどのエディタも使ったことがないという人は", \t -> do
+	itext t 1 "- とりあえずnanoを使っておこう"
+ ]
+
+aboutNano :: Page
+aboutNano = [\t -> do
+	writeTopTitle t "nano"
+	text t "", \t -> do
+	text t "* vimやEmacsを使う人は以下は気にしないで良い", \t -> do
+	text t "* nanoは非常にシンプルなエディタである", \t -> do
+	text t "* foo.txtを編集して練習してみよう", \t -> do
+	itext t 1 "% cd ~/lectures/lecture01", \t -> do
+	itext t 1 "% nano -w foo.txt", \t -> do
+	text t "* 適当に入力しよう。例えば", \t -> do
+	itext t 1 "foo bar baz", \t -> do
+	text t "* 保存するにはCtrl-Oとする", \t -> do
+	itext t 1 "- 保存するファイル名の確認のプロンプトが出るので", \t -> do
+	itext t 1 "- そのままリターンを入力する", \t -> do
+	text t "* 終了するにはCtrl-Xとすれば良い"
  ]
 
 defineFun2 :: Page
@@ -94,7 +116,8 @@ defineFun3 = [\t -> do
 	text t "", \t -> do
 	text t "* 以下の内容を書き込む", \t -> do
 	itext t 1 "bmi h w = w / (h / 100) ^ 2", \t -> do
-	text t "* ghciにこのファイルを読み込ませる", \t -> do
+	text t "* 別のターミナルでghciにこのファイルを読み込ませる", \t -> do
+	itext t 1 "% cd ~/lectures/lecture01/", \t -> do
 	itext t 1 "% ghci bmi.hs", \t -> do
 	itext t 1 "*Main> ", \t -> do
 	itext t 2 "- \"Prelude>\"ではなく\"*Main>\"になった", \t -> do
@@ -135,9 +158,6 @@ partial2 :: Page
 partial2 = [\t -> do
 	writeTopTitle t "関数の部分適用"
 	text t "", \t -> do
-	text t "* コマンドプロンプトをもうひとつ立ち上げる", \t -> do
-	itext t 1 "% cd ~/lectures/lecture01/", \t -> do
-	itext t 1 "% nano -w bmi.hs", \t -> do
 	text t "* bmi.hsに以下を追加", \t -> do
 	itext t 1 "bmiCHM w = bmi 218 w", \t -> do
 	text t "* もとのプロンプトにもどり以下を入力", \t -> do
