@@ -57,9 +57,9 @@
 where以下に関数ローカルな環境を作る。
 
     fun x = y + z
-    where
-    y = x * 2
-    z = 1 / x
+        where
+        y = x * 2
+        z = 1 / x
 
 ### 型指定
 
@@ -84,12 +84,9 @@ xのn乗を以下のように表す。
 
     x ^ n
 
-試してみる
-(ついでにlecture05ディレクトリを作っておく)。
+試してみる。
 
-    % cd lectures
-    % mkdir lecture05
-    % cd lecture05
+    % cd ~/lectures/lecture05
     % ghci
     Prelude> 3 ^ 3
     27
@@ -109,10 +106,10 @@ xがyより大きいときにFalseを返す。
 
     Prelude> 7 <= 11
     True
-    Prelude> 9 <= 9
-    True
     Prelude> 15 <= 6
     False
+    Prelude> 9 <= 9
+    True
 
 ### fromIntegral
 
@@ -135,6 +132,7 @@ fromIntegralは整数を他の型の数に変換する関数である。
 
     fun (x, y) = ...
 
+パターンマッチを直接使わなくても、
 2要素タプルには要素を取り出す関数が用意されている。
 
 * fst: タプルの一番目の要素を取り出す
@@ -207,8 +205,6 @@ cycleはリストを無限にくりかえす関数である。
 そのまま対話環境に打ち込むとプロンプトが返ってこなくなる。
 ためすときはtakeと組み合わせると良い。
 
-試してみる。
-
     Prelude> take 20 $ cycle [8, 2, 1, 5, 9]
     [8,2,1,5,9,8,2,1,5,9,8,2,1,5,9,8,2,1,5,9]
     Prelude> take 35 $ cycle "rose"
@@ -280,9 +276,14 @@ Haskellの関数は同じ引数には同じ値を返す。
 円のなか
 --------
 
-montePi.hsを作ってエディタで開いておく。
-ghciで読み込んでおこう。
+編集用のターミナルで
 
+    % cd ~/lectures/lecture05
+    % nano -w montePi.hs
+
+対話環境用のターミナルで
+
+    % cd ~/lectures/lecture05
     % ghci montePi.hs
     *Main>
 
@@ -405,7 +406,7 @@ montePi.hsに書き込み、試してみる。
 ランダムの種を与えるとランダムな点のリストを返す関数を作る。
 
 点の範囲はx, yともに-1から1のあいだとする。
-つまり、中心が(0, 0)の1辺が2の正方形ということだ。
+つまり、中心が(0, 0)の1辺が2の正方形内ということだ。
 
 この関数をpointsという名前にする。
 ランダムの種の型はStdGenとする。

@@ -169,9 +169,7 @@ exponentiation = [\t -> do
 	text t "* (^)はべき乗を表す関数(演算子)", \t -> do
 	text t "* x ^ nでxのn乗を表す", \t -> do
 	text t "* やってみよう", \t -> do
-	itext t 1 "% cd lectures", \t -> do
-	itext t 1 "% mkdir lecture05", \t -> do
-	itext t 1 "% cd lecture05", \t -> do
+	itext t 1 "% cd ~/lectures/lecture05", \t -> do
 	itext t 1 "% ghci", \t -> do
 	itext t 1 $ "Prelude> " ++ show ex1int1 ++ " ^ " ++ show ex1int2, \t -> do
 	itext t 1 $ show $ ex1int1 ^ ex1int2, \t -> do
@@ -179,9 +177,9 @@ exponentiation = [\t -> do
 	itext t 1 $ show $ ex1double1 ^ ex1int3
  ]
 
-se1int1, se1int2, se1int3, se1int4 :: Int
-[se1int1, se1int2, se1int3, se1int4] =
-	unsafePerformIO $ replicateM 4 $ randomRIO (2, 20)
+se1int1, se1int2, se1int3, se1int4, se1int5 :: Int
+[se1int1, se1int2, se1int3, se1int4, se1int5] = unsafePerformIO $ mapM randomRIO
+	[(2, 12), (13, 20), (13, 20), (2, 12), (2, 20)]
 
 smallerEqual :: Page
 smallerEqual = [\t -> do
@@ -192,10 +190,12 @@ smallerEqual = [\t -> do
 	itext t 1 "- xがyと等しいかまたは小さいときTrueを返し", \t -> do
 	itext t 1 "- xがyより大きいときにFalseを返す", \t -> do
 	text t "* やってみよう", \t -> do
-	itext t 1 $ "Prelude> " ++ show se1int1 ++ " <= " ++ show se1int2
+	itext t 1 $ "Prelude> " ++ show se1int1 ++ " <= " ++ show se1int2, \t -> do
 	itext t 1 $ show $ se1int1 <= se1int2, \t -> do
-	itext t 1 $ "Prelude> " ++ show se1int3 ++ " <= " ++ show se1int4
-	itext t 1 $ show $ se1int3 <= se1int4
+	itext t 1 $ "Prelude> " ++ show se1int3 ++ " <= " ++ show se1int4, \t -> do
+	itext t 1 $ show $ se1int3 <= se1int4, \t -> do
+	itext t 1 $ "Prelude> " ++ show se1int5 ++ " <= " ++ show se1int5, \t -> do
+	itext t 1 $ show $ se1int5 <= se1int5
  ]
 
 fi1int1, fi1int2 :: Int
@@ -419,8 +419,12 @@ aboutInCircle :: Page
 aboutInCircle = [\t -> do
 	writeTopTitle t "円のなか"
 	text t "", \t -> do
-	text t "* montePi.hsを作ってエディタで開こう", \t -> do
-	text t "* ghci montePi.hsで読み込んでおこう", \t -> do
+	text t "* 編集用ターミナルで", \t -> do
+	itext t 1 "% cd ~/lectures/lecture05", \t -> do
+	itext t 1 "% nano -w montePi.hs", \t -> do
+	text t "* 対話環境用ターミナルで", \t -> do
+	itext t 1 "% ghci montePi.hs", \t -> do
+	itext t 1 "*Main>", \t -> do
 	text t "* 点(x, y)が円のなかにあることを検査する関数inCircle", \t -> do
 	text t "* ここでは中心(0, 0)の半径1の円とする", \t -> do
 	text t "* 演習1. inCircleの型を決めよう(1分)", \t -> do
@@ -697,10 +701,10 @@ randomPoints11_5 = [\t -> do
 	writeTopTitle t "ペアに区切る"
 	text t "", \t -> do
 	text t "* 以下のようなリストがあったとして", \t -> do
-	itext t 1 "lst = [x, y, z, w, v, u]", \t -> do
+	itext t 1 "lst = [x, y, z, w, v, u ...]", \t -> do
 	text t "* ひとつずらしたリストは", \t -> do
 	itext t 1 "tail lst", \t -> do
-	itext t 1 "[y, z, w, v, u]", \t -> do
+	itext t 1 "[y, z, w, v, u ...]", \t -> do
 	text t "* それともとのリストとのzipは", \t -> do
 	itext t 1 "zip lst $ tail lst", \t -> do
 	itext t 1 "[(x, y), (y, z), (z, w), (w, v), (v, u) ...]", \t -> do
