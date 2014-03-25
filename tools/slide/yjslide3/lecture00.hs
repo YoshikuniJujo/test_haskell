@@ -12,7 +12,7 @@ main = runLecture [
 	meaning4, meaning5,
 	haskell, haskell2, haskell3, haskell4,
 	lecture, attention, lecture2,
-	lecture3, lecture4, lecture5, lecture6,
+	lecture3, lecture4, lecture4_5, lecture5, lecture6,
 	summary
  ]
 
@@ -232,6 +232,22 @@ lecture4 = [\t -> do
 	itext t 1 "- 文字を入れてみよう", \t -> do
 	text t $ "Prelude> " ++ show l4Char, \t -> do
 	text t $ show l4Char
+ ]
+
+lecture4_5 :: Page
+lecture4_5 = [\t -> do
+	writeTopTitle t "手を動かしてみる"
+	text t "", \t -> do
+	text t "* 今回用意したキーボードは", \t -> do
+	itext t 1 "英語配列のHappy Hacking Keyboard", \t -> do
+	text t "* 熟練すると使いやすくなるキーボードだ", \t -> do
+	text t "* すこしクセがある", \t -> do
+	text t "* バックスペースを入力したいときには", \t -> do
+	itext t 1 "Fn + Delete", \t -> do
+	text t "* 試してみよう", \t -> do
+	text t "Prelude> miss", \t -> do
+	itext t 1 "Fn + Deleteを4回入力する", \t -> do
+	text t "Prelude>"
  ]
 
 l5Number1, l5Number2 :: Int
