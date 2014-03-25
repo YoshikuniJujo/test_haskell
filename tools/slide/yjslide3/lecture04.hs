@@ -88,10 +88,10 @@ aboutIterate4 = [\t -> do
 	writeTopTitle t "squareを定義する"
 	text t "", \t -> do
 	text t "* 実際にmapを使ってみよう", \t -> do
-	text t "* lectures/lecture04ディレクトリを作成しそこに移動", \t -> do
-	text t "* squareSum.hsファイルを作ろう", \t -> do
-	text t "* まずはsquare関数を書く", \t -> do
-	itext t 1 "square :: Int -> Int"
+	text t "* squareSum.hsファイルを作り、square関数を書く", \t -> do
+	itext t 1 "% cd ~/lectures/lecture04", \t -> do
+	itext t 1 "% nano -w squareSum.hs", \t -> do
+	itext t 1 "square :: Int -> Int", \t -> do
 	itext t 2 "- Intは処理系依存の大きさの整数型", \t -> do
 	itext t 1 "square x = x ^ 2", \t -> do
 	text t "* 試してみる", \t -> do
