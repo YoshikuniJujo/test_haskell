@@ -251,16 +251,18 @@ literal3 :: Page
 literal3 = [\t -> do
 	writeTopTitle t "関数リテラル"
 	text t "", \t -> do
-	text t "* 2引数関数が「関数を返す関数」であることを"
+	text t "* 2引数関数が「関数を返す関数」であることを", \t -> do
 	itext t 1 "より直接的に表現すると以下のようになる", \t -> do
 	itext t 1 "bmi h = \\w -> w / (h / 100) ^ 2", \t -> do
 	itext t 1 "- 「wをとってw / (h / 100) ^ 2を返す関数」を返す", \t -> do
 	text t "* さらに同様に以下のように書き換えることが可能", \t -> do
 	itext t 1 "bmi = \\h -> \\w -> w / (h / 100) ^ 2", \t -> do
-	text t "* 右辺のリテラル表記で作られた関数をbmiに束縛している", \t -> do
+	text t "* 右辺のリテラル表記で作られた関数でbmiを束縛している", \t -> do
+	itext t 1 "- 「[値]が[変数]を束縛する」は", \t -> do
+	itext t 1 "- 「[値]を[変数]に代入する」とほぼ同じと考えてよい", \t -> do
 	text t "* リテラルを使わない関数定義は2つのことを同時にしていた", \t -> do
 	itext t 1 "1. 関数の作成", \t -> do
-	itext t 1 "2. 作成した関数の変数への束縛"
+	itext t 1 "2. 作成した関数での変数の束縛"
  ]
 
 literal4 :: Page

@@ -199,7 +199,7 @@ smallerEqual = [\t -> do
  ]
 
 fi1int1, fi1int2 :: Int
-[fi1int1, fi1int2] = unsafePerformIO $ replicateM 2 $ randomRIO (2, 20)
+[fi1int1, fi1int2] = unsafePerformIO $ mapM randomRIO [(2, 10), (11, 20)]
 
 aboutFromIntegral :: Page
 aboutFromIntegral = [\t -> do
@@ -220,10 +220,10 @@ aboutFstSnd = [\t -> do
 	text t "", \t -> do
 	text t "* タプルからの要素の取り出しにはパターンマッチが使える", \t -> do
 	itext t 1 "fun (x, y) = ...", \t -> do
-	text t "* 2要素タプルには要素を取り出す関数が用意されている", \t -> do
+	text t "* それ以外に、2要素タプルには要素を取り出す関数がある", \t -> do
 	itext t 1 "- fst: タプルの一番目の要素を取り出す", \t -> do
 	itext t 1 "- snd: タプルの二番目の要素を取り出す", \t -> do
-	text t "* 以下のように定義できる", \t -> do
+	text t "* 以下のように定義される", \t -> do
 	itext t 1 "fst :: (a, b) -> a", \t -> do
 	itext t 1 "fst (x, _) = x", \t -> do
 	itext t 1 "snd :: (a, b) -> b", \t -> do

@@ -174,9 +174,7 @@ attention = [\t -> do
 	text t "* HaskellのIDEもあるようだが", \t -> do
 	itext t 1 "- 演者が使ったことがない", \t -> do
 	itext t 1 "- ターミナルを使う方法のほうが応用が利く", \t -> do
-	itext t 1 "- つまり、後からIDEを使う方法を学ぶこともできる", \t -> do
-	text t "* 演者の環境に合わせシェルのプロンプトを'%'で表記", \t -> do
-	text t "* ターミナルを立ち上げてみよう"
+	itext t 1 "- つまり、後からIDEを使う方法を学ぶこともできる"
  ]
 
 lecture2 :: Page

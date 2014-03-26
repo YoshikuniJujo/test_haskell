@@ -25,8 +25,10 @@ prelude = [\t -> do
 	text t "* 複数の値をまとめた構造をひとつの値として扱える", \t -> do
 	text t "* その構造をタプルと呼ぶ", \t -> do
 	text t "* タプルを引数としてとるときにはパターンマッチが使える", \t -> do
+	text t "* タプルとしてまとめられた引数をばらすことができる", \t -> do
+	itext t 1 "- これを「カリー化」と呼ぶ", \t -> do
 	text t "* タプルとして引数をまとめることができる", \t -> do
-	text t "* その逆もでき、それを「カリー化」と呼ぶ"
+	itext t 1 "- これを「非カリー化」と呼ぶ"
  ]
 
 dist0 :: Double -> Double -> Double
@@ -46,7 +48,8 @@ coordinate = [\t -> do
 	itext t 1 "% nano -w coordinate.hs"
 	itext t 1 "dist0 :: Double -> Double -> Double", \t -> do
 	itext t 1 "dist0 x y = sqrt $ x ^ 2 + y ^ 2", \t -> do
-	text t "* 試してみる", \t -> do
+	text t "* 別ターミナルで試してみる", \t -> do
+	itext t 1 "% cd ~/lectures/lecture03/", \t -> do
 	itext t 1 "% ghc coordinate.hs", \t -> do
 	itext t 1 $ "*Main> dist0 " ++ show cd1double1 ++ " " ++ show cd1double2
 	itext t 1 $ show $ dist0 cd1double1 cd1double2
@@ -252,7 +255,7 @@ intName 2 = "The name is two."
 intName _ = "I don't know."
 
 pm9int1, pm9int2 :: Int
-[pm9int1, pm9int2] = unsafePerformIO $ mapM randomRIO [(0, 2), (2, 10)]
+[pm9int1, pm9int2] = unsafePerformIO $ mapM randomRIO [(0, 2), (3, 10)]
 
 patternMatch9 :: Page
 patternMatch9 = [\t -> do

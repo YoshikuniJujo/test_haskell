@@ -94,7 +94,7 @@ aboutIterate4 = [\t -> do
 	itext t 1 "square :: Int -> Int", \t -> do
 	itext t 2 "- Intは処理系依存の大きさの整数型", \t -> do
 	itext t 1 "square x = x ^ 2", \t -> do
-	text t "* 試してみる", \t -> do
+	text t "* エディタとは別のターミナルで試してみる", \t -> do
 	itext t 1 "% ghci squareSum.hs", \t -> do
 	itext t 1 $ "*Main> square " ++ show ai4number1, \t -> do
 	itext t 1 $ show $ square ai4number1

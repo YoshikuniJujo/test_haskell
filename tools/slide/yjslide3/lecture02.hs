@@ -31,59 +31,8 @@ prelude = [\t -> do
 	text t "* 複数の型に適用できる関数があり多相関数と呼ばれる", \t -> do
 	text t "* 多相関数の型は型変数を使って表現する", \t -> do
 	text t "* 型の導出はHaskellを学ぶ際のよい練習になる"
---	text t "* 型は関数を組み合わせる際に重要な役割を持つ"
  ]
 
-{-
-aboutType :: Page
-aboutType = [\t -> do
-	writeTopTitle t "型"
-	text t "", \t -> do
-	text t "* 型とは「値の種類」である", \t -> do
-	text t "* 3と8は同じ種類の値だが\"hello\"は違う種類の値となる", \t -> do
-	text t "* 3と8は同じように扱えるが\"hello\"は同じようには扱えない", \t -> do
-	text t "* 3や8には1を足すことができる", \t -> do
-	text t "* \"hello\"や\"hi\"はさかさにすることができる", \t -> do
-	text t "* やってみよう", \t -> do
-	itext t 1 "% ghci", \t -> do
-	itext t 1 "Prelude> 3 + 1", \t -> do
-	itext t 1 $ show $ (3 + 1 :: Int), \t -> do
-	itext t 1 "Prelude> reverse \"hello\"", \t -> do
-	itext t 1 $ show $ reverse "hello"
- ]
-
-aboutType2 :: Page
-aboutType2 = [\t -> do
-	writeTopTitle t "型"
-	text t "", \t -> do
-	text t "* \"hello\"や\"hi\"に1を足すことはできない", \t -> do
-	text t "* やってみよう", \t -> do
-	itext t 1 "Prelude> \"hello\" + 1", \t -> do
-	itext t 1 "..."
-	itext t 1 "No instance for (Num [Char]) arising from ..."
-	itext t 1 "...", \t -> do
-	text t "* エラーの内容については今は理解できなくて良い", \t -> do
-	itext t 1 "- Stringは[Char]の別名", \t -> do
-	itext t 1 "- StringはNumじゃないということを言っている", \t -> do
-	itext t 1 "- つまり文字列は数じゃないということ"
- ]
-
-aboutType3 :: Page
-aboutType3 = [\t -> do
-	writeTopTitle t "型"
-	text t "", \t -> do
-	text t "* 3や8をさかさにすることはできない", \t -> do
-	text t "* やってみよう", \t -> do
-	itext t 1 "Prelude> reverse 3", \t -> do
-	itext t 1 "..."
-	itext t 1 "No instance for (Num [a0]) arising from ..."
-	itext t 1 "...", \t -> do
-	text t "* エラーの内容については今は理解できなくて良い", \t -> do
-	itext t 1 "- [a0]はNumじゃないと言っている", \t -> do
-	itext t 1 "- リストは数じゃないということ"
- ]
-
--}
 
 at4char1 :: Char
 at4char1 = unsafePerformIO $ randomRIO ('A', 'Z')
@@ -196,8 +145,9 @@ aboutType10 = [\t -> do
 
 aboutType11 :: Page
 aboutType11 = [\t -> do
-	writeTopTitle t "型駆動開発"
-	text t "", \t -> do
+	writeTopTitle t "型駆動開発", \t -> do
+	text t "* エディタとは別のターミナルで", \t -> do
+	itext t 0 "% cd ~/lectures/lecture02", \t -> do
 	itext t 0 "% ghci bmi", \t -> do
 	itext t 0 "*Main> bmi 218 164", \t -> do
 	itext t 0 "*** Exception: Prelude.undefined", \t -> do
