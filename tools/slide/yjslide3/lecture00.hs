@@ -12,7 +12,7 @@ main = runLecture [
 	meaning4, meaning5,
 	haskell, haskell2, haskell3, haskell4,
 	lecture, attention, lecture2,
-	lecture3, lecture4, lecture4_5, lecture5, lecture6,
+	lecture3, lecture4, lecture4_5, lecture4_7, lecture5, lecture6,
 	summary
  ]
 
@@ -245,6 +245,19 @@ lecture4_5 = [\t -> do
 	text t "* 試してみよう", \t -> do
 	text t "Prelude> miss", \t -> do
 	itext t 1 "Fn + Deleteを4回入力する", \t -> do
+	text t "Prelude>"
+ ]
+
+lecture4_7 :: Page
+lecture4_7 = [\t -> do
+	writeTopTitle t "手を動かしてみる"
+	text t "", \t -> do
+	text t "* バックスペースの代わりに以下のキーも使える", \t -> do
+	itext t 1 "Ctrl + h", \t -> do
+	text t "* こちらのほうが打ちやすいかもしれない", \t -> do
+	text t "* 試してみよう", \t -> do
+	text t "Prelude> machigaeta", \t -> do
+	itext t 1 "Ctrl + hを10回入力する", \t -> do
 	text t "Prelude>"
  ]
 
