@@ -216,7 +216,7 @@ genKatsugi = [\t -> do
  ]
 
 gk2int1 :: Int
-gk2int1 = unsafePerformIO $ randomRIO (3, 11)
+gk2int1 = unsafePerformIO $ randomRIO (9, 13)
 
 lucky :: Int -> Bool
 lucky 4 = False
