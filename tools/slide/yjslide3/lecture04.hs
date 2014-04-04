@@ -268,8 +268,7 @@ genKatsugi4 = [\t -> do
 	itext t 1 "「ふーん、いいね」", \t -> do
 	itext t 1 "「あ、二乗して4と9になる数も縁起悪いよね」", \t -> do
 	itext t 1 "「直しといて」", \t -> do
-	text t "* そんな会社やめちまえ", \t -> do
-	text t "* と言いたいが、今はまだやめられない理由があるならば", \t -> do
+	text t "* 以下の関数を作ろう", \t -> do
 	itext t 1 "squareSum'' :: Int -> Int", \t -> do
 	itext t 1 "squareSum'' n = sum $ filter lucky $"
 	itext t 2 "map (^ 2) $ filter lucky [0 .. n]"
