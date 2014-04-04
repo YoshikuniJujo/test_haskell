@@ -169,7 +169,7 @@ aboutType12 = [\t -> do
 	text t "* 今回の場合", \t -> do
 	itext t 1 "- bmi関数を先に定義すればボトムアップとなり", \t -> do
 	itext t 1 "- isObese関数を先に定義すればトップダウンとなる", \t -> do
-	text t "* トップダウンで開発する", \t -> do
+	text t "* 今回はトップダウンで開発する", \t -> do
 	text t "* BMIが30以上で肥満とされるので", \t -> do
 	itext t 1 "isObese h w = bmi h w >= 30", \t -> do
 	text t "* ここでの思考は以下のようになる", \t -> do
