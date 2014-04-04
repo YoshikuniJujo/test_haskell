@@ -380,11 +380,12 @@ operator3 = [\t -> do
 	text t "", \t -> do
 	text t "* 演算子は関数と同様に自分で定義できる", \t -> do
 	text t "* 演算子に使える記号はアスキーの範囲では以下のものがある", \t -> do
-	itext t 1 "!#$%&*+./<=>?@\\^|-~", \t -> do
+	itext t 1 "!#$%&*+./<=>?@\\^|-~:", \t -> do
+	itext t 1 "(ただし、':'は普通の演算子の先頭にはこない)", \t -> do
 	text t "* 以下のように定義する", \t -> do
-	itext t 1 "x @ y = x ^ 2 + y ^ 2", \t -> do
+	itext t 1 "y ./^ x = sqrt (x ^ 2 + y ^ 2)", \t -> do
 	text t "* 関数と同じような形での定義も可能", \t -> do
-	itext t 1 "(@) x y = x ^ 2 + y ^ 2", \t -> do
+	itext t 1 "(./^) y x = sqrt (x ^ 2 + y ^ 2)", \t -> do
 	text t "* 逆に関数を演算子と同じ形で定義することも", \t -> do
 	itext t 1 "h `bmi` w = w / (h / 100) ^ 2"
  ]
