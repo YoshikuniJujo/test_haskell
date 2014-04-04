@@ -45,7 +45,7 @@ coordinate = [\t -> do
 	text t "* 直交座標上の点の原点からの距離を求める関数を考える", \t -> do
 	text t "* coordinate.hsを作成する", \t -> do
 	itext t 1 "% cd ~/lectures/lecture03/", \t -> do
-	itext t 1 "% nano -w coordinate.hs"
+	itext t 1 "% nano -w coordinate.hs", \t -> do
 	itext t 1 "dist0 :: Double -> Double -> Double", \t -> do
 	itext t 1 "dist0 x y = sqrt $ x ^ 2 + y ^ 2", \t -> do
 	text t "* 別ターミナルで試してみる", \t -> do
@@ -283,7 +283,7 @@ currying = [\t -> do
 	text t "* 2要素のタプルでそれぞれの変換関数が用意されている", \t -> do
 	text t "* 以下の関係が成り立つ", \t -> do
 	itext t 1 "dist0 == curry dist0'", \t -> do
-	itext t 1 "dist0' == uncurry dist0"
+	itext t 1 "uncurry dist0 == dist0'"
  ]
 
 currying2 :: Page

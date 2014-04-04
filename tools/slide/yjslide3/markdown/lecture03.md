@@ -231,7 +231,7 @@ Haskellにおける「タプルをとる関数」に近い。
 以下の関係が成り立つ。
 
     dist0 == curry dist0'
-    dist0' == uncurry dist0
+    uncurry dist0 == dist0'
 
 ### やってみよう
 
