@@ -1,0 +1,168 @@
+fun = (+ 3) . (* 4)
+
+f . g = \x -> f (g x)
+
+g >>> f = \x -> f (g x)
+
+(>>>) = flip (.)
+
+fun
+-> (+ 3) . (* 4)
+-> \x -> (+ 3) ((* 4) x)
+-> \x -> (+ 3) (x * 4)
+-> \x -> (x * 4) + 3
+
+fun = \x -> (x * 4) + 3
+  |
+  V
+fun x = x * 4 + 3
+
+(f . g . h) x
+
+(.) f ((.) g h)
+
+3 + 4 + 5
+(+ (+ 3 4) 5)
+
+
+f `dot` g = \x -> f (g x)
+dot f g = ...
+f . g = ...
+(.) f g = ...
+
+x `mod` y = ...
+
+mod x y = ..
+
+mod 8 3
+
+8 `mod` 3
+
+(@@)
+atat
+
+@@
+`atat`
+
+(f . g) x = f (g x)
+
+(.) f g x = f (g x)
+
+($) f x = f x
+
+f $ x = f x
+
+twice f = \x -> f (f x)
+twice f x = f (f x)
+
+twice (+ 3) 4
+-> (+ 3) ((+ 3) 4)
+-> (+ 3) (4 + 3)
+-> (4 + 3) + 3
+
+f (g (h x))
+
+birth name = ...
+uru date = ...
+
+uru (birth "mikako")
+f (g x)
+
+"mikako" . birth . uru
+ 
+ uru (birth "mikako")
+
+
+curry f = \x y -> f (x, y)
+
+f :: (a, b) -> c
+
+\x y -> f (x, y) :: a -> b -> c
+
+---------------------------------
+
+uncurry :: (a -> b -> c) -> ((a, b) -> c)
+	||
+	||
+uncurry :: (a -> b -> c) -> (a, b) -> c
+
+-> uncurry f = \(x, y) -> f x y
+-> uncurry f (x, y) = f x y
+
+f :: a -> b -> c
+
+\(x, y) -> f x y :: (a, b) -> c
+
+--------------------------------
+
+add x y = x + y
+
+uncrry add (3, 4)
+=> add 3 4
+=> 7
+
+(uncurry add) (3, 4) == add 3 4
+
+=====================================
+
+curry :: ((a, b) -> c) -> a -> b -> c
+curry f = \x y -> f (x, y)
+curry f x y = f (x, y)
+
+eq (x, y) = x == y
+
+curry eq 3 8
+=> eq (3, 8)
+=> False
+
+(curry eq) 3 8 == eq (3, 8)
+
+======================================
+
+fIntToDouble :: (Int -> Char) -> (Double -> Char)
+
+wantInt :: Int -> Char
+
+(fIntToDouble wantInt) 8.0
+
+wantInt (toInt 8.0)
+
+wantDouble = fIntToDouble wantInt
+
+wantDouble 7.0
+
+==================================
+
+p = (x, y)
+
+f x y = ...
+
+uncurry f p
+
+=============================
+
+map (+ 3) [4, 5, 6] =====> [7, 8, 9]
+
+add x y = x + y
+
+(uncurry add) (3, 4) = 7
+
+ps = [(2, 8), (3, 5), (4, 9)]
+
+map (uncurry add) ps
+
+-> menseki w h = w * h  => uncurry menseki (8, 9)
+
+menseki (w, h) = w * h
+
+====================
+
+flip f x y = f y x
+
+flip f = \x y -> f y x
+
+sub x y = x - y
+
+flip sub x y
+-> sub y x
+-> y - x
