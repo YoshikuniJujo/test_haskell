@@ -1,0 +1,89 @@
+dot :: Page
+dot = [\t -> do
+	writeTopTitle t "ドット演算子"
+	text t "", \t -> do
+	text t "* 以下のように定義されるドット演算子が用意されている", \t -> do
+	itext t 1 "f . g = \\x -> f (g x)", \t -> do
+	text t "* (f . g) xで、まずはxにgを適用しその結果をfに適用する", \t -> do
+	text t "* ベルトコンベアのように関数を次々と適用していくイメージ", \t -> do
+	text t "* ドット演算子で関数を組み合わせることを関数合成と呼ぶ", \t -> do
+	text t "* 以下のような書き換えが可能", \t -> do
+	itext t 1 "fun x = x * 3 + 4", \t -> do
+	arrowIText t 1 "fun = (+ 4) . (* 3)", \t -> do
+	text t "* 「3倍して4を足す」を直接的に表現できる"
+ ]
+
+dot2 :: Page
+dot2  = [\t -> do
+	writeTopTitle t "ドット演算子"
+	text t "", \t -> do
+	text t "* fun x = f (g x)という形はしばしば使われる", \t -> do
+	text t "* xにgを適用してその結果にfを適用するということ", \t -> do
+	text t "* もっと長くなってこんなふうになることも", \t -> do
+	itext t 1 "fun2 x = f1 (f2 (f3 (f4 (f5 (f6 (f7 x))))))", \t -> do
+	text t "* ドット演算子を使えばそれぞれ以下のように書ける", \t -> do
+	itext t 1 "fun = f . g", \t -> do
+	itext t 2 "- funは関数fと関数gを合成したもの", \t -> do
+	itext t 1 "fun2 = f1 . f2 . f3 . f4 . f5 . f6 . f7", \t -> do
+	itext t 2 "- fun2は関数f1から関数f7を順に合成したもの"
+ ]
+
+polymorphism3 :: Page
+polymorphism3 = [\t -> do
+	writeTopTitle t "多相関数"
+	text t "", \t -> do
+	text t "* (.)の型について見ていこう", \t -> do
+	text t "* 例として以下の関数を使う", \t -> do
+	itext t 1 "chr :: Int -> Char", \t -> do
+	itext t 1 "isLower :: Char -> Bool", \t -> do
+	text t "* やってみよう", \t -> do
+	itext t 1 $ "*Main> :m Data.Char", \t -> do
+	itext t 1 $ "Prelude Data.Char> chr " ++ show pm3int1, \t -> do
+	itext t 1 $ show $ chr pm3int1, \t -> do
+	itext t 1 $ "Prelude Data.Char> chr " ++ show pm3int2, \t -> do
+	itext t 1 $ show $ chr pm3int2
+ ]
+
+polymorphism4 :: Page
+polymorphism4 = [\t -> do
+	writeTopTitle t "多相関数"
+	text t "", \t -> do
+	itext t 1 $ "Prelude Data.Char> (isLower . chr) " ++ show pm3int1, \t -> do
+	itext t 1 $ show $ (isLower . chr) pm3int1, \t -> do
+	itext t 1 $ "Prelude Data.Char> (isLower . chr) " ++ show pm3int2, \t -> do
+	itext t 1 $ show $ (isLower . chr) pm3int2, \t -> do
+	text t "* それぞれの型を見ると", \t -> do
+	itext t 1 "isLower :: Char -> Bool", \t -> do
+	itext t 1 "chr :: Int -> Char", \t -> do
+	itext t 1 "isLower . chr :: Int -> Bool"
+ ]
+
+polymorphism5 :: Page
+polymorphism5 = [\t -> do
+	writeTopTitle t "多相関数"
+	text t "", \t -> do
+	text t "* (.)への入力と出力として考えると", \t -> do
+	itext t 1 "入力1: Char -> Bool", \t -> do
+	itext t 1 "入力2: Int -> Char", \t -> do
+	itext t 1 "出力 : Int -> Bool", \t -> do
+	text t "* よって(isLower . chr)のときの(.)の型は", \t -> do
+	itext t 1 "(Char -> Bool) -> (Int -> Char) -> (Int -> Bool)", \t -> do
+	text t "* 次は、より一般的な場合について見てみよう"
+ ]
+
+polymorphism6 :: Page
+polymorphism6 = [\t -> do
+	writeTopTitle t "多相関数"
+	text t "", \t -> do
+	text t "* (.)の定義を見てみよう", \t -> do
+	itext t 1 "(.) f g = \\x -> f (g x)", \t -> do
+	text t "* xの型をaとするとgの型は(a -> b)となる", \t -> do
+	text t "* (g x)の型がbとなるのでfの型は(b -> c)となる", \t -> do
+	text t "* f (g x)の型はcとなるので", \t -> do
+	itext t 1 "\\x -> f (g x)の型はa -> cとなる", \t -> do
+	text t "* まとめると", \t -> do
+	itext t 1 "f :: b -> c", \t -> do
+	itext t 1 "g :: a -> b", \t -> do
+	itext t 1 "\\x -> f (g x) :: a -> c", \t -> do
+	text t "* よって(.) :: (b -> c) -> (a -> b) -> (a -> c)"
+ ]

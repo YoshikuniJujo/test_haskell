@@ -1,0 +1,21 @@
+import Lecture
+
+subtitle :: String
+subtitle = "トライアル 第3.3回 関数の基本"
+
+main :: IO ()
+main = runLecture [
+	[flip writeTitle subtitle], prelude
+ ]
+
+prelude :: Page
+prelude = [\t -> do
+	writeTopTitle t "はじめに"
+	text t "", \t -> do
+	text t "* 関数の基本について学んでいこう", \t -> do
+	text t "* 定義のしかたを学び", \t -> do
+	text t "* 使いかたを学ぶ", \t -> do
+	text t "* 2引数関数の正体を学び", \t -> do
+	text t "* 高階関数について学ぶ", \t -> do
+	text t "* 演算子について学ぶ"
+ ]
