@@ -7,7 +7,9 @@ main :: IO ()
 main = runLecture [
 	[flip writeTitle subtitle], prelude,
 	nano, nano2, nano3, nano4, nano5, nano6, nano7,
-	shell, shell2, shell3, shell4, shell5, shell6, shell7, shellSummary
+	shell, shell2, shell3, shell4, shell5, shell6, shell7, shellSummary,
+	ghci, ghci2, ghci3, ghci4, ghci5, ghciSummary,
+	summary
  ]
 
 prelude :: Page
@@ -236,4 +238,106 @@ shellSummary = [\t -> do
 	text t "* i, aキーで挿入モードに移行できる", \t -> do
 	text t "* 移動モードでk, jキーを使って履歴内の移動が可能", \t -> do
 	text t "* 履歴も、その場で打ち込んだコマンド同様に編集できる"
+ ]
+
+ghci :: Page
+ghci = [\t -> do
+	writeTopTitle t "ghci"
+	text t "", \t -> do
+	text t "* ghciコマンドでghcの対話環境を利用できる", \t -> do
+	itext t 1 "% ghci", \t -> do
+	itext t 1 "Prelude> ", \t -> do
+	text t "* まちがえた場合はCtrl + hで消していけば良い", \t -> do
+	itext t 1 "Prelude> miss"
+	itext t 1 "(まだreturnは入力しない)", \t -> do
+	itext t 1 "Ctrl + hを4回入力する", \t -> do
+	itext t 1 "Prelude>"
+ ]
+
+ghci2 :: Page
+ghci2 = [\t -> do
+	writeTopTitle t "ghci: ファイルの読み込み"
+	text t "", \t -> do
+	text t "* 前準備としてtest.hsを作っておく", \t -> do
+	itext t 1 "% cd ~/lectures/lecture00/", \t -> do
+	itext t 1 "% nano -w test.hs", \t -> do
+	itext t 1 "add x y = x + y", \t -> do
+	text t "* Ctrl + oで保存", \t -> do
+	text t "* エディタは開いたままにしておく", \t -> do
+	text t "* シェルのコマンドライン引数でファイルを指定できる", \t -> do
+	itext t 1 "別のターミナルで", \t -> do
+	itext t 1 "% cd ~/lectures/lecture00/", \t -> do
+	itext t 1 "% ghci test.hs", \t -> do
+	itext t 1 "*Main> "
+ ]
+
+ghci3 :: Page
+ghci3 = [\t -> do
+	writeTopTitle t "ghci: ファイルの読み込み"
+	text t "", \t -> do
+	text t "* ちゃんと読み込めているか確認する", \t -> do
+	itext t 1 "*Main> add 3 4", \t -> do
+	itext t 1 "7", \t -> do
+	text t "* test.hsを開いているエディタに以下を追加する", \t -> do
+	itext t 1 "sub x y = x - y", \t -> do
+	text t "* ghci側でのファイルの再読み込みが必要", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> sub 8 2", \t -> do
+	itext t 1 "6"
+ ]
+
+ghci4 :: Page
+ghci4 = [\t -> do
+	writeTopTitle t "ghci: ファイルの読み込み"
+	text t "", \t -> do
+	text t "* エディタを抜ける", \t -> do
+	itext t 1 "Ctrl + x", \t -> do
+	text t "* 別のファイルを作る", \t -> do
+	itext t 1 "% nano -w other.txt", \t -> do
+	text t "* 以下を書き込む", \t -> do
+	itext t 1 "mul x y = x * y", \t -> do
+	text t "* 保存する", \t -> do
+	itext t 1 "Ctrl + o", \t -> do
+	text t "* ghciからこのファイルを読み込む", \t -> do
+	itext t 1 "*Main> :load other.txt", \t -> do
+	itext t 1 "*Main> mul 3 4", \t -> do
+	itext t 1 "12"
+ ]
+
+ghci5 :: Page
+ghci5 = [\t -> do
+	writeTopTitle t "ghci: ディレクトリを移動"
+	text t "", \t -> do
+	text t "* Ctrl + xでエディタを抜ける", \t -> do
+	text t "* 新しいディレクトリtestを作成する", \t -> do
+	itext t 1 "% mkdir test", \t -> do
+	text t "* test.hsを新しいディレクトリに移動させる", \t -> do
+	itext t 1 "% mv test.hs test/", \t -> do
+	text t "* ghciのなかでディレクトリを移動することができる", \t -> do
+	itext t 1 "*Main> :cd test/", \t -> do
+	itext t 1 "*Main> :load test.hs", \t -> do
+	itext t 1 "*Main> add 3 5", \t -> do
+	itext t 1 "8"
+ ]
+
+ghciSummary :: Page
+ghciSummary = [\t -> do
+	writeTopTitle t "ghci: まとめ"
+	text t "", \t -> do
+	text t "* ターミナルを2つ用意してあるので", \t -> do
+	text t "* その片方をエディタ用とし、片方を対話環境用にする", \t -> do
+	text t "* するとエディタで編集し、ghciで:reloadをすれば", \t -> do
+	itext t 1 "コードを見ながら実行することが可能となる", \t -> do
+	text t "* 読み込むファイルはコマンドライン引数で指定するか", \t -> do
+	itext t 1 "ghci内で:loadの引数として指定できる", \t -> do
+	text t "* ディレクトリの移動はghciを抜けなくても:cdで可能"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* エディタ、シェル、対話環境の最低限の操作方法を学んだ", \t -> do
+	text t "* とりあえずの編集作業はこれで可能かと思われるが", \t -> do
+	text t "* 不明な点が出てきたらその都度質問していただきたい"
  ]
