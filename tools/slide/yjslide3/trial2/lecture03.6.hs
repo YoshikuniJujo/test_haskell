@@ -1,5 +1,7 @@
 import Lecture
 
+import Data.Char
+
 subtitle :: String
 subtitle = "トライアル 第3.6回 いろいろな関数"
 
@@ -7,7 +9,8 @@ main :: IO ()
 main = runLecture [
 	[flip writeTitle subtitle], prelude,
 	funId, funId2, funId3, funConst, funConst2, funConst3,
-	funConstId, funConstId2, funFlip, dollar, dot, dot2, dot3
+	funConstId, funConstId2, funConstId3,
+	dollar, funFlip, funFlipConst, dot, dot2, dot3, dot4, dot5, dot6
  ]
 
 prelude :: Page
@@ -141,6 +144,15 @@ funConstId = [\t -> do
 	itext t 1 "sndArg _x y = y"
  ]
 
+sndArg :: a -> b -> b
+sndArg = const id
+
+fc2Int0 :: Int
+fc2Int0 = 8
+
+fc2Char0 :: Char
+fc2Char0 = 'c'
+
 funConstId2 :: Page
 funConstId2 = [\t -> do
 	writeTopTitle t "const id"
@@ -150,6 +162,19 @@ funConstId2 = [\t -> do
 	itext t 1 "sndArg _x = \\y -> y", \t -> do
 	text t "* よってconstとidを使って以下のように定義できる", \t -> do
 	itext t 1 "sndArg = const id"
+ ]
+
+funConstId3 :: Page
+funConstId3 = [\t -> do
+	writeTopTitle t "const id"
+	text t "", \t -> do
+	text t "* 以下をfunctions.hsに書き込もう", \t -> do
+	itext t 1 "sndArg :: a -> b -> b", \t -> do
+	itext t 1 "sndArg = const id", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 $ "*Main> sndArg " ++ show fc2Int0 ++ " " ++ show fc2Char0, \t -> do
+	itext t 1 $ show $ sndArg fc2Int0 fc2Char0
  ]
 
 funFlip :: Page
@@ -168,6 +193,31 @@ funFlip = [\t -> do
 	itext t 1 $ show $ flip (/) (2 :: Double) 3
  ]
 
+sndArg' :: a -> b -> b
+sndArg' = flip const
+
+ffcInt0 :: Int
+ffcInt0 = 7
+
+ffcChar0 :: Char
+ffcChar0 = 'd'
+
+funFlipConst :: Page
+funFlipConst = [\t -> do
+	writeTopTitle t "flip const"
+	text t "", \t -> do
+	text t "* constは第2引数を無視して第1引数を返す", \t -> do
+	text t "* constの引数を入れ換えれば", \t -> do
+	itext t 1 "第1引数を無視して第2引数を返す関数が作れる", \t -> do
+	text t "* sndArg'を定義してみよう", \t -> do
+	itext t 1 "sndArg' :: a -> b -> b", \t -> do
+	itext t 1 "sndArg' = flip const", \t -> do
+	text t "* functions.hsに書き込み、試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 $ "*Main> sndArg' " ++ show ffcInt0 ++ " " ++ show ffcChar0, \t -> do
+	itext t 1 $ show $ sndArg' ffcInt0 ffcChar0
+ ]
+
 dollar :: Page
 dollar = [\t -> do
 	writeTopTitle t "($)"
@@ -176,7 +226,10 @@ dollar = [\t -> do
 	itext t 1 "($) :: (a -> b) -> a -> b", \t -> do
 	itext t 1 "($) f x = f x", \t -> do
 	text t "* 第1引数の関数に第2引数の値を与えている", \t -> do
-	text t "* あるいは第2引数の値に第1引数の関数を適用" -- , \t -> do
+	text t "* あるいは第2引数の値に第1引数の関数を適用", \t -> do
+	text t "* 「関数と値を取って値に関数を適用」というパターンは", \t -> do
+	itext t 1 "様々な関数のなかに認められる", \t -> do
+	text t "* ($)をその原型としてイメージを作っておくと良い"
 --	text t "* 「関数適用を行う関数」とも呼べるが", \t -> do
 --	itext t 1 "関数自体に「関数適用」の機能はあるので", \t -> do
 --	itext t 1 "($) f == f"
@@ -201,12 +254,77 @@ dot2 = [\t -> do
 	itext t 1 "「文字を小文字にしてその文字コードを調べる」", \t -> do
 	text t "* (.)を使わずに書くと以下のようになるだろう", \t -> do
 	itext t 1 "lowerOrd :: Char -> Int", \t -> do
-	itext t 1 "loserOrd c = ord (toLower c)", \t -> do
+	itext t 1 "lowerOrd c = ord (toLower c)", \t -> do
 	text t "* (.)の定義を再掲する", \t -> do
 	itext t 1 "(.) f g x = f (g x)", \t -> do
 	text t "* lowerOrdの右辺を(.)を使って書き直してみる", \t -> do
-	itext t 1 "(.) ord toLower c <= ord (tolower c)", \t -> do
+	itext t 1 "(.) ord toLower c <-- ord (tolower c)", \t -> do
 	text t "* (.)は、cにtoLowerを適用し、その結果にordを適用する"
+ ]
+
+dot3 :: Page
+dot3 = [\t -> do
+	writeTopTitle t "(.)"
+	text t "", \t -> do
+	text t "* lowerOrdを(.)を使って定義すると以下のようになる", \t -> do
+	itext t 1 "lowerOrd c = (.) ord toLower c", \t -> do
+	text t "* (.) ord toLower cは((.) ord toLower) cということ", \t -> do
+	text t "* よってcを消して、以下のようにできる", \t -> do
+	itext t 1 "lowerOrd = (.) ord toLower", \t -> do
+	text t "* 中置記法に直すと", \t -> do
+	itext t 1 "lowerOrd = ord . toLower", \t -> do
+	text t "* 「ある関数の結果を別の関数にわたす関数の作成」を", \t -> do
+	itext t 1 "関数合成と呼ぶ", \t -> do
+	text t "* (.)は関数を合成する演算子と考えることができる"
+ ]
+
+lowerOrd :: Char -> Int
+lowerOrd = ord . toLower
+
+dot4 :: Page
+dot4 = [\t -> do
+	writeTopTitle t "(.)"
+	text t "", \t -> do
+	text t "* lowerOrdはData.Charモジュールの関数を使っている", \t -> do
+	text t "* functions.hsの先頭に以下を書き込もう", \t -> do
+	itext t 1 "import Data.Char (toLower, ord)", \t -> do
+	text t "* 以下を追加する", \t -> do
+	itext t 1 "lowerOrd :: Char -> Int", \t -> do
+	itext t 1 "lowerOrd = ord . toLower", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> lowerOrd 'K'", \t -> do
+	itext t 1 $ show $ lowerOrd 'K'
+ ]
+
+dot5 :: Page
+dot5 = [\t -> do
+	writeTopTitle t "(.)"
+	text t "", \t -> do
+	text t "* (.)を中置演算子として使うことで", \t -> do
+	itext t 1 "「fをしてgをしてhをして...」という形が簡潔になる", \t -> do
+	text t "* 「小文字にして文字コードを求めて"
+	itext t 1 "それに2足した結果を文字にする」関数を書く", \t -> do
+	itext t 1 "lowerPlus2 :: Char -> Char", \t -> do
+	itext t 1 "lowerPlus2 = chr . (+ 2) . ord . toLower", \t -> do
+	text t "* 上記をfunctions.hsに書き込み"
+	itext t 1 "インポートリストにchrを追加する", \t -> do
+	itext t 1 "import Data.Char (toLower, ord, chr)"
+ ]
+
+lowerPlus2 :: Char -> Char
+lowerPlus2 = chr . (+ 2) . ord . toLower
+
+dot6 :: Page
+dot6 = [\t -> do
+	writeTopTitle t "(.)"
+	text t "", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> lowerPlus2 'J'", \t -> do
+	itext t 1 $ show $ lowerPlus2 'J', \t -> do
+	itext t 1 "*Main> lowerPlus2 'Y'", \t -> do
+	itext t 1 $ show $ lowerPlus2 'Y'
  ]
 
 -- TODO
@@ -216,8 +334,8 @@ dot2 = [\t -> do
 --   |
 --   V
 
-dot3 :: Page
-dot3 = [\t -> do
+dotX :: Page
+dotX = [\t -> do
 	writeTopTitle t "(.)"
 	text t "", \t -> do
 	text t "* この関数に引数を2つだけしか指定しない場合", \t -> do
