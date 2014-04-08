@@ -7,7 +7,7 @@ main :: IO ()
 main = runLecture [
 	[flip writeTitle subtitle], prelude,
 	funId, funId2, funId3, funConst, funConst2, funConst3,
-	funConstId, funConstId2
+	funConstId, funConstId2, funFlip, dollar, dot, dot2, dot3
  ]
 
 prelude :: Page
@@ -152,11 +152,77 @@ funConstId2 = [\t -> do
 	itext t 1 "sndArg = const id"
  ]
 
-{-
-	text t "* この関数も使い道がなさそうだが、そうでもない", \t -> do
-	text t "* 前に見たdevideは第1引数が0のときは", \t -> do
-	itext t 1 "第2引数をそのまま返していた", \t -> do
-	text t "* 「第1引数が0のときは0を返す」としたい場合は", \t -> do
-	itext t 1 "devide' :: Double -> Double -> Double"
+funFlip :: Page
+funFlip = [\t -> do
+	writeTopTitle t "flip"
+	text t "", \t -> do
+	text t "* 2引数関数の引数の位置を入れ換える関数flipがある", \t -> do
+	text t "* 定義は以下のようになる", \t -> do
+	itext t 1 "flip :: (a -> b -> c) -> b -> a -> c", \t -> do
+	itext t 1 "flip f x y = f y x", \t -> do
+	text t "* 第1引数の関数に第3引数、第2引数をこの順で与えている", \t -> do
+	text t "* 試してみよう", \t -> do
+	itext t 1 "*Main> (/) 3 2", \t -> do
+	itext t 1 $ show $ (/) (3 :: Double) 2, \t -> do
+	itext t 1 "*Main> flip (/) 2 3", \t -> do
+	itext t 1 $ show $ flip (/) (2 :: Double) 3
  ]
- -}
+
+dollar :: Page
+dollar = [\t -> do
+	writeTopTitle t "($)"
+	text t "", \t -> do
+	text t "* $演算子について見てみよう", \t -> do
+	itext t 1 "($) :: (a -> b) -> a -> b", \t -> do
+	itext t 1 "($) f x = f x", \t -> do
+	text t "* 第1引数の関数に第2引数の値を与えている", \t -> do
+	text t "* あるいは第2引数の値に第1引数の関数を適用" -- , \t -> do
+--	text t "* 「関数適用を行う関数」とも呼べるが", \t -> do
+--	itext t 1 "関数自体に「関数適用」の機能はあるので", \t -> do
+--	itext t 1 "($) f == f"
+ ]
+
+dot :: Page
+dot = [\t -> do
+	writeTopTitle t "(.)"
+	text t "", \t -> do
+	text t "* ドット演算子と呼ばれる演算子(関数)がある", \t -> do
+	itext t 1 "(.) :: (b -> c) -> (a -> b) -> a -> c", \t -> do
+	itext t 1 "(.) f g x = f (g x)", \t -> do
+	text t "* 3つの引数f, g, xを取り", \t -> do
+	itext t 1 "値xに関数gを適用し、その結果に関数fを適用する関数"
+ ]
+
+dot2 :: Page
+dot2 = [\t -> do
+	writeTopTitle t "(.)"
+	text t "", \t -> do
+	text t "* 使用例として以下の関数を考える", \t -> do
+	itext t 1 "「文字を小文字にしてその文字コードを調べる」", \t -> do
+	text t "* (.)を使わずに書くと以下のようになるだろう", \t -> do
+	itext t 1 "lowerOrd :: Char -> Int", \t -> do
+	itext t 1 "loserOrd c = ord (toLower c)", \t -> do
+	text t "* (.)の定義を再掲する", \t -> do
+	itext t 1 "(.) f g x = f (g x)", \t -> do
+	text t "* lowerOrdの右辺を(.)を使って書き直してみる", \t -> do
+	itext t 1 "(.) ord toLower c <= ord (tolower c)", \t -> do
+	text t "* (.)は、cにtoLowerを適用し、その結果にordを適用する"
+ ]
+
+-- TODO
+--
+-- lowerOrdを引数2個の形で定義する
+-- lowerOrdを試してみる
+--   |
+--   V
+
+dot3 :: Page
+dot3 = [\t -> do
+	writeTopTitle t "(.)"
+	text t "", \t -> do
+	text t "* この関数に引数を2つだけしか指定しない場合", \t -> do
+	itext t 1 "(.) f g", \t -> do
+	text t "* ひとつ引数を取り", \t -> do
+	itext t 1 "その引数にgとfをこの順に適用する関数となる", \t -> do
+	text t "* これを関数合成と呼ぶ"
+ ]
