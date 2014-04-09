@@ -11,7 +11,10 @@ main = runLecture [
 	funId, funId2, funId3, funConst, funConst2, funConst3,
 	funConstId, funConstId2, funConstId3,
 	dollar, funFlip, funFlipConst, dot, dot2, dot3, dot4, dot5, dot6,
-	funConvert, funConvert2, funConvert3, funConvert4, adaptor
+	funConvert, funConvert2, funConvert3, funConvert4, adaptor,
+	funCurry, funCurry2, funCurry3, funCurry4,
+	funUncurry5,
+	summary
  ]
 
 prelude :: Page
@@ -415,5 +418,127 @@ adaptor = [\t -> do
 	text t "* その変換アダプタを値の側に接続しても良いが", \t -> do
 	itext t 1 "関数側に接続しても良い", \t -> do
 	text t "* 関数側に接続するためには", \t -> do
-	itext t 1 "その関数と変換関数とを「関数合成」してやれば良い"
+	itext t 1 "その関数と変換関数とを「関数合成」してやれば良い", \t -> do
+	text t "* さっきの例を示す", \t -> do
+	itext t 1 "half (fromIntegral eight)", \t -> do
+	itext t 1 "(half . fromIntegral) eight", \t -> do
+	text t "* 引数の型をDoubleからIntに変換するために", \t -> do
+	itext t 1 "IntからDoubleへの変換関数を使っている"
+ ]
+
+absTup :: (Double, Double) -> Double
+absTup (x, y) = sqrt $ x ^ (2 :: Int) + y ^ (2 :: Int)
+
+absCrr :: Double -> Double -> Double
+absCrr x y = sqrt $ x ^ (2 :: Int) + y ^ (2 :: Int)
+
+funCurry :: Page
+funCurry = [\t -> do
+	writeTopTitle t "curry"
+	text t "", \t -> do
+	text t "* 以下のようなabsTupをfunctions.hsに書き込もう", \t -> do
+	itext t 1 "absTup :: (Double, Double) -> Double", \t -> do
+	itext t 1 "absTup (x, y) = sqrt $ x ^ 2 + y ^ 2", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> absTup (3, 4)", \t -> do
+	itext t 1 $ show $ absTup (3, 4), \t -> do
+	text t "* x = 3と固定したうえでyの値をいろいろと変化させる", \t -> do
+	text t "* そのための関数を作りたい", \t -> do
+	text t "* xの値だけを部分適用したいということ", \t -> do
+	text t "* しかしxはタプルの一部なので部分適用はできない"
+ ]
+
+funCurry2 :: Page
+funCurry2 = [\t -> do
+	writeTopTitle t "curry"
+	text t "", \t -> do
+	text t "* 部分適用するために関数の型を以下のように変換する", \t -> do
+	itext t 1 "(Double, Double) -> Double", \t -> do
+	arrowIText t 1 "Double -> Double -> Double", \t -> do
+	text t "* それを行う関数curryが定義されている", \t -> do
+	itext t 1 "curry :: ((a, b) -> c) -> a -> b -> c", \t -> do
+	itext t 1 "curry f x y = f (x, y)", \t -> do
+	text t "* 引数の型をタプルからばらばらの値に変換するために", \t -> do
+	itext t 1 "ばらばらの値をタプルにまとめている", \t -> do
+	text t "* 「変換アダプタ」のスライドを思い出してみよう", \t -> do
+	text t "* 関数の引数についての変換は逆向きの変換を使う"
+ ]
+
+funCurry3 :: Page
+funCurry3 = [\t -> do
+	writeTopTitle t "curry"
+	text t "", \t -> do
+	text t "* curry関数の説明をさらに続けよう", \t -> do
+	itext t 1 "curry f x y = f (x, y)", \t -> do
+	text t "* curryは3引数f, x, yを取り", \t -> do
+	itext t 1 "値xと値yからタプルを作成し、それにfを適用する", \t -> do
+	text t "* ここでcurry fという部分を見てみると", \t -> do
+	itext t 1 "「関数fと同じことをばらばらの値に対して行う関数」", \t -> do
+	text t "* 関数の引数をDoubleからIntに変換するためには", \t -> do
+	itext t 1 "値をIntからDoubleに変換してやる必要がある", \t -> do
+	text t "* 関数の引数をタプルからばらばらの値にするためには", \t -> do
+	itext t 1 "ばらばらの値をタプルにまとめてやる必要がある", \t -> do
+	text t "* 引数部分に対する処理は「逆」の処理になる"
+ ]
+
+abs3 :: Double -> Double
+abs3 = curry absTup 3
+
+funCurry4 :: Page
+funCurry4 = [\t -> do
+	writeTopTitle t "curry"
+	text t "", \t -> do
+	text t "* x = 3と固定したうえでベクトルの絶対値を求める関数", \t -> do
+	itext t 1 "abs3 :: Double -> Double", \t -> do
+	itext t 1 "abs3 = curry absTup 3", \t -> do
+	text t "* functions.hsに書き込み、試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> abs3 4", \t -> do
+	itext t 1 $ show $ abs3 4
+ ]
+
+funUncurry :: Page
+funUncurry = [\t -> do
+	writeTopTitle t "uncurry"
+	text t "", \t -> do
+	text t "* curryと逆の変換を行う関数uncurryがある", \t -> do
+	text t "* 例えば以下のような2組の数があるとする", \t -> do
+	itext t 1 "pair :: (Int, Int)", \t -> do
+	itext t 1 "pair = (2, 8)", \t -> do
+	text t "* この2数を足し合わせたい", \t -> do
+	text t "* このようなときにuncurryが使える", \t -> do
+	text t "* uncurryはばらばらの引数をひとつのタプルにまとめる", \t -> do
+	itext t 1 "uncurry :: (a -> b -> c) -> (a, b) -> c", \t -> do
+	itext t 1 "uncurry f (x, y) = f x y", \t -> do
+	text t "* uncurryは引数として関数fとタプルを取り", \t -> do
+	itext t 1 "タプルの要素をばらばらにして、それに関数fを適用"
+ ]
+
+pair :: (Int, Int)
+pair = (2, 8)
+
+funUncurry5 :: Page
+funUncurry5 = [\t -> do
+	writeTopTitle t "uncurry"
+	text t "", \t -> do
+	text t "* さっきのpairをfunctions.hsに書き込もう", \t -> do
+	itext t 1 "pair :: (Int, Int)", \t -> do
+	itext t 1 "pair = (2, 8)", \t -> do
+	text t "試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> uncurry (+) pair", \t -> do
+	itext t 1 $ show $ uncurry (+) pair
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* Haskellにおける基本的な関数を見てきた", \t -> do
+	text t "* 今回見てきた関数はどれも「構造」を扱う関数と言える", \t -> do
+	text t "* 一般性のある関数によって「構造」を変化させていく手法", \t -> do
+	text t "* Haskellでは関数の変換は非常に安価である", \t -> do
+	text t "* 関数の引数の位置を変えたり、タプルにまとめたりできる", \t -> do
+	text t "* 既存の関数の構造を変えていくことで様々なことができる"
  ]
