@@ -3,7 +3,7 @@ import Lecture
 import Data.Char
 
 subtitle :: String
-subtitle = "トライアル 第3.6回 いろいろな関数"
+subtitle = "トライアル 第3.6回 いろいろな多相関数"
 
 main :: IO ()
 main = runLecture [
@@ -13,7 +13,7 @@ main = runLecture [
 	dollar, funFlip, funFlipConst, dot, dot2, dot3, dot4, dot5, dot6,
 	funConvert, funConvert2, funConvert3, funConvert4, adaptor,
 	funCurry, funCurry2, funCurry3, funCurry4,
-	funUncurry5,
+	funUncurry, funUncurry2,
 	summary
  ]
 
@@ -23,6 +23,7 @@ prelude = [\t -> do
 	text t "", \t -> do
 	text t "* 関数を理解することがHaskellを理解する鍵である", \t -> do
 	text t "* Haskellでは高階関数を多用する", \t -> do
+	text t "* 高階関数のほとんどは多相関数である", \t -> do
 	text t "* 高階関数について理解するには", \t -> do
 	itext t 1 "何よりも「慣れ」が必要である", \t -> do
 	text t "* 今までの思考の習慣を打破しなければならない", \t -> do
@@ -518,8 +519,8 @@ funUncurry = [\t -> do
 pair :: (Int, Int)
 pair = (2, 8)
 
-funUncurry5 :: Page
-funUncurry5 = [\t -> do
+funUncurry2 :: Page
+funUncurry2 = [\t -> do
 	writeTopTitle t "uncurry"
 	text t "", \t -> do
 	text t "* さっきのpairをfunctions.hsに書き込もう", \t -> do

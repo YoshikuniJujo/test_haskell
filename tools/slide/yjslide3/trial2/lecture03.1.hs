@@ -284,7 +284,7 @@ semicolon = [\t -> do
 	text t "* 以下のように打ってみよう", \t -> do
 	itext t 1 "asdfghjkl;", \t -> do
 	text t "* ;を入力するには", \t -> do
-	itext t 1 "ホームポジションで左手小指", \t -> do
+	itext t 1 "ホームポジションで右手小指", \t -> do
 	text t "* 以下の練習をしてみよう", \t -> do
 	itext t 1 "print a; print b; print c;"
  ]
