@@ -5,7 +5,9 @@ subtitle = "トライアル 第3.7回 演習"
 
 main :: IO ()
 main = runLecture [
-	[flip writeTitle subtitle], prelude, flipDot, flipDot2, flipDot3
+	[flip writeTitle subtitle], prelude, flipDot, flipDot2, flipDot3,
+	funCurry3, funCurry3_2, funCurry3_3, funCurry3_4,
+	funUncurry3
  ]
 
 prelude :: Page
@@ -61,4 +63,90 @@ flipDot3 = [\t -> do
 	itext t 1 "% ghci practice.hs", \t -> do
 	itext t 1 "*Main> (+ 3) >>> (* 2) $ 4", \t -> do
 	itext t 1 $ show $ (+ 3) >>> (* 2) $ (4 :: Int)
+ ]
+
+showName :: (String, Int, Bool) -> String
+showName (name, age, True) = name ++ "(" ++ show age ++ ")"
+showName (name, _, False) = name
+
+bob, alice :: (String, Int, Bool)
+bob = ("Bob", 25, True)
+alice = ("Alice", 33, False)
+
+funCurry3 :: Page
+funCurry3 = [\t -> do
+	writeTopTitle t "curry3"
+	text t "", \t -> do
+	text t "* 2要素タプルを2つの引数にばらす関数について見た", \t -> do
+	text t "* 今度は3要素タプルを3つの引数にばらす関数を作る", \t -> do
+	text t "* 次のような関数を考えよう", \t -> do
+	itext t 1 "showName :: (String, Int, Bool) -> String", \t -> do
+	itext t 1 "showName (name, age, True) ="
+	itext t 2 "name ++ \"(\" ++ show age ++ \")\"", \t -> do
+	itext t 1 "showName (name, _, False) = name", \t -> do
+	text t "* これをpractice.hsに書き込む"
+ ]
+
+funCurry3_2 :: Page
+funCurry3_2 = [\t -> do
+	writeTopTitle t "curry3"
+	text t "", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 $ "*Main> showName " ++ show bob, \t -> do
+	itext t 1 $ show $ showName bob, \t -> do
+	itext t 1 $ "*Main> showName " ++ show alice, \t -> do
+	itext t 1 $ show $ showName alice
+ ]
+
+funCurry3_3 :: Page
+funCurry3_3 = [\t -> do
+	writeTopTitle t "curry3"
+	text t "", \t -> do
+	text t "* curry3は以下のように使えるものとする", \t -> do
+	itext t 1 "(curry3 showName) \"Bob\" 25 True", \t -> do
+	text t "* 演習2. curry3を定義せよ"
+	itext t 1 "(1分)"
+ ]
+
+curry3 :: ((a, b, c) -> d) -> a -> b -> c -> d
+curry3 f x y z = f (x, y, z)
+
+funCurry3_4 :: Page
+funCurry3_4 = [\t -> do
+	writeTopTitle t "curry3"
+	text t "", \t -> do
+	text t "* 答えは以下のようになる", \t -> do
+	itext t 1 "curry3 :: ((a, b, c) -> d) -> a -> b -> c -> d", \t -> do
+	itext t 1 "curry3 f x y z = f (x, y, z)", \t -> do
+	text t "* より「関数の変換」を強調したければ", \t -> do
+	itext t 1 "curry3 :: ((a, b, c) -> d) -> (a -> b -> c -> d)", \t -> do
+	itext t 1 "curry3 f = \\x y z -> f (x, y, z)", \t -> do
+	text t "* practice.hsに書き込み、試してみる", \t -> do
+	itext t 1 "*Main> curry3 showName \"Bob\" 25 True", \t -> do
+	itext t 1 $ show $ curry3 showName "Bob" 25 True, \t -> do
+	itext t 1 "*Main> curry3 showName \"Alice\" 33 False", \t -> do
+	itext t 1 $ show $ curry3 showName "Alice" 33 False
+ ]
+
+myIf :: Bool -> a -> a -> a
+myIf True t _ = t
+myIf False _ e = e
+
+funUncurry3 :: Page
+funUncurry3 = [\t -> do
+	writeTopTitle t "uncurry3"
+	text t "", \t -> do
+	text t "* 同様にばらばらの3つの引数を3要素タプルにまとめる", \t -> do
+	text t "* そのような関数uncurry3を考えてみる", \t -> do
+	text t "* 以下のような関数を考えてみる", \t -> do
+	itext t 1 "myIf :: Bool -> a -> a -> a", \t -> do
+	itext t 1 "myIf True t _ = t", \t -> do
+	itext t 1 "myIf False _ e = e", \t -> do
+	text t "* これをpractice.hsに保存し、試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> myIf True 3 8", \t -> do
+	itext t 1 $ show $ myIf True 3 (8 :: Int), \t -> do
+	itext t 1 "Main> myIf False 3 8", \t -> do
+	itext t 1 $ show $ myIf False 3 (8 :: Int)
  ]
