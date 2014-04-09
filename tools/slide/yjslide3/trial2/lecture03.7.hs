@@ -7,7 +7,7 @@ main :: IO ()
 main = runLecture [
 	[flip writeTitle subtitle], prelude, flipDot, flipDot2, flipDot3,
 	funCurry3, funCurry3_2, funCurry3_3, funCurry3_4,
-	funUncurry3
+	funUncurry3, funUncurry3_2, funUncurry3_3, funUncurry3_4
  ]
 
 prelude :: Page
@@ -133,6 +133,9 @@ myIf :: Bool -> a -> a -> a
 myIf True t _ = t
 myIf False _ e = e
 
+uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
+uncurry3 f (x, y, z) = f x y z
+
 funUncurry3 :: Page
 funUncurry3 = [\t -> do
 	writeTopTitle t "uncurry3"
@@ -149,4 +152,39 @@ funUncurry3 = [\t -> do
 	itext t 1 $ show $ myIf True 3 (8 :: Int), \t -> do
 	itext t 1 "Main> myIf False 3 8", \t -> do
 	itext t 1 $ show $ myIf False 3 (8 :: Int)
+ ]
+
+funUncurry3_2 :: Page
+funUncurry3_2 = [\t -> do
+	writeTopTitle t "uncurry3"
+	text t "", \t -> do
+	text t "* 以下のように使えるuncurry3を考える", \t -> do
+	itext t 1 "uncurry3 myIf (True, 3, 8)", \t -> do
+	text t "* 演習3. uncurry3を定義せよ", \t -> do
+	itext t 1 "(1分)"
+ ]
+
+funUncurry3_3 :: Page
+funUncurry3_3 = [\t -> do
+	writeTopTitle t "uncurry3"
+	text t "", \t -> do
+	text t "* 以下のようになる", \t -> do
+	itext t 1 "uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d", \t -> do
+	itext t 1 "uncurry3 f (x, y, z) = f x y z", \t -> do
+	text t "* 関数を変換するということを強調するには", \t -> do
+	itext t 1 "uncurry3 :: (a -> b -> c -> d) -> ((a, b, c) -> d)", \t -> do
+	itext t 1 "uncurry3 f = \\(x, y, z) -> f x y z", \t -> do
+	text t "* practice.hsに書き込む"
+ ]
+
+funUncurry3_4 :: Page
+funUncurry3_4 = [\t -> do
+	writeTopTitle t "uncurry3"
+	text t "", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> uncurry3 myIf (True, 3, 8)", \t -> do
+	itext t 1 $ show $ uncurry3 myIf (True, 3, 8 :: Int), \t -> do
+	itext t 1 "*Main> uncurry3 myIf (False, 3, 8)", \t -> do
+	itext t 1 $ show $ uncurry3 myIf (False, 3, 8 :: Int)
  ]
