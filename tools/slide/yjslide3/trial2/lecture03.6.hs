@@ -10,7 +10,8 @@ main = runLecture [
 	[flip writeTitle subtitle], prelude,
 	funId, funId2, funId3, funConst, funConst2, funConst3,
 	funConstId, funConstId2, funConstId3,
-	dollar, funFlip, funFlipConst, dot, dot2, dot3, dot4, dot5, dot6
+	dollar, funFlip, funFlipConst, dot, dot2, dot3, dot4, dot5, dot6,
+	funConvert, funConvert2, funConvert3, funConvert4, adaptor
  ]
 
 prelude :: Page
@@ -327,20 +328,92 @@ dot6 = [\t -> do
 	itext t 1 $ show $ lowerPlus2 'Y'
  ]
 
--- TODO
---
--- lowerOrdを引数2個の形で定義する
--- lowerOrdを試してみる
---   |
---   V
+half :: Double -> Double
+half = (/ 2)
 
-dotX :: Page
-dotX = [\t -> do
-	writeTopTitle t "(.)"
+eight :: Int
+eight = 8
+
+funConvert :: Page
+funConvert = [\t -> do
+	writeTopTitle t "convert"
 	text t "", \t -> do
-	text t "* この関数に引数を2つだけしか指定しない場合", \t -> do
-	itext t 1 "(.) f g", \t -> do
-	text t "* ひとつ引数を取り", \t -> do
-	itext t 1 "その引数にgとfをこの順に適用する関数となる", \t -> do
-	text t "* これを関数合成と呼ぶ"
+	text t "* 引数としてDoubleを取る関数にIntを与えることを考える", \t -> do
+	text t "* IntからDoubleへの変換にはfromIntegralが使える", \t -> do
+	itext t 1 "*Main> fromIntegral 3 :: Double", \t -> do
+	itext t 1 $ show (fromIntegral (3 :: Int) :: Double), \t -> do
+	text t "* 以下の関数を考えよう", \t -> do
+	itext t 1 "half :: Double -> Double", \t -> do
+	itext t 1 "half = (/ 2)", \t -> do
+	text t "* functions.hsに書き込み、試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> half 3.4", \t -> do
+	itext t 1 $ show $ half 3.4
+ ]
+
+funConvert2 :: Page
+funConvert2 = [\t -> do
+	writeTopTitle t "convert"
+	text t "", \t -> do
+	text t "* これにInt型の整数を与えてみる", \t -> do
+	text t "* Int型の整数eightを定義しておく", \t -> do
+	itext t 1 "eight :: Int", \t -> do
+	itext t 1 "eight = 8", \t -> do
+	text t "* functions.hsに書き込み、試してみよう", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> half eight", \t -> do
+	itext t 1 "...Couldn't match expected type `Double' with"
+	itext t 1 "actual type `Int'...", \t -> do
+	text t "* 型エラーとなる"
+ ]
+
+funConvert3 :: Page
+funConvert3 = [\t -> do
+	writeTopTitle t "convert"
+	text t "", \t -> do
+	text t "* eightの型を変換してやることで適用可能となる", \t -> do
+	itext t 1 "*Main> half (fromIntegral eight)", \t -> do
+	itext t 1 $ show $ half (fromIntegral eight), \t -> do
+	text t "* 関数と値の型を合致させるために値の型を変換した", \t -> do
+	text t "* 逆に関数の型のほうを変換してやってもいい", \t -> do
+	text t "* 関数の引数の型をDoubleからIntに変換する関数を考える", \t -> do
+	itext t 1 "convert :: (Double -> Double) -> (Int -> Double)", \t -> do
+	text t "* (->)は右結合なので型宣言から()を省略できる", \t -> do
+	itext t 1 "convert :: (Double -> Double) -> Int -> Double", \t -> do
+	itext t 1 "convert f n = f (fromIntegral n)", \t -> do
+	text t "* これをfunctions.hsに書き込もう"
+ ]
+
+convert :: (Double -> Double) -> Int -> Double
+convert f n = f (fromIntegral n)
+
+funConvert4 :: Page
+funConvert4 = [\t -> do
+	writeTopTitle t "convert"
+	text t "", \t -> do
+	text t "* convertを使えば以下のようにすることができる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> (convert half) eight", \t -> do
+	itext t 1 $ show $ (convert half) eight, \t -> do
+	text t "* convert halfはeight以外のInt型の値にも適用可能である", \t -> do
+	text t "* 値を変換する代わりに関数側を変換するという手法", \t -> do
+	text t "* アダプタを値の側につけるか関数側につけるかということ", \t -> do
+	text t "* アダプタのメタファーを直接的に表現してみると", \t -> do
+	itext t 1 "*Main> half (fromIntegral eight)", \t -> do
+	itext t 1 $ show $ half (fromIntegral eight), \t -> do
+	itext t 1 "*Main> (half . fromIntegral) eight", \t -> do
+	itext t 1 $ show $ (half . fromIntegral) eight
+ ]
+
+adaptor :: Page
+adaptor = [\t -> do
+	writeTopTitle t "変換アダプタ"
+	text t "", \t -> do
+	text t "* 変換アダプタをイメージする", \t -> do
+	text t "* 関数の引数の型と値の型とが異なる場合", \t -> do
+	itext t 1 "変換アダプタとして型を変換する関数が必要になる", \t -> do
+	text t "* その変換アダプタを値の側に接続しても良いが", \t -> do
+	itext t 1 "関数側に接続しても良い", \t -> do
+	text t "* 関数側に接続するためには", \t -> do
+	itext t 1 "その関数と変換関数とを「関数合成」してやれば良い"
  ]
