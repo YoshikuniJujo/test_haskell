@@ -5,7 +5,9 @@ subtitle = "トライアル 第3.7回 演習"
 
 main :: IO ()
 main = runLecture [
-	[flip writeTitle subtitle], prelude, flipDot, flipDot2, flipDot3,
+	[flip writeTitle subtitle], prelude,
+	dollar2, dollar2_2,
+	flipDot, flipDot2, flipDot3,
 	funCurry3, funCurry3_2, funCurry3_3, funCurry3_4,
 	funUncurry3, funUncurry3_2, funUncurry3_3, funUncurry3_4,
 	funOn, funOn2, funOn3
@@ -22,6 +24,36 @@ prelude = [\t -> do
 	text t "* 「演習」では実際にいくつかの関数を定義してみよう"
  ]
 
+dollar2 :: Page
+dollar2 = [\t -> do
+	writeTopTitle t "($$)"
+	text t "", \t -> do
+	text t "* 与えられた引数を2回関数に与える演算子($$)を定義する", \t -> do
+	text t "* 以下のようになる", \t -> do
+	itext t 1 "(+) $$ 8 => 16", \t -> do
+	itext t 1 "(*) $$ 3 => 9", \t -> do
+	text t "* 演習1. ($$)を定義せよ", \t -> do
+	itext t 1 "(1分)"
+ ]
+
+($$) :: (a -> a -> b) -> a -> b
+f $$ x = f x x
+
+dollar2_2 :: Page
+dollar2_2 = [\t -> do
+	writeTopTitle t "($$)"
+	text t "", \t -> do
+	text t "* 以下のようになる", \t -> do
+	itext t 1 "($$) :: (a -> a -> b) -> a -> b"
+	itext t 1 "($$) f x = f x x", \t -> do
+	text t "* practice.hsに書き込み、試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> (+) $$ 8", \t -> do
+	itext t 1 $ show $ (+) $$ (8 :: Int), \t -> do
+	itext t 1 "*Main> (*) $$ 3", \t -> do
+	itext t 1 $ show $ (*) $$ (3 :: Int)
+ ]
+
 flipDot :: Page
 flipDot = [\t -> do
 	writeTopTitle t "(>>>)"
@@ -33,7 +65,7 @@ flipDot = [\t -> do
 	text t "* 例えば「3足して2かける」を以下のように書けるようにする", \t -> do
 	itext t 1 "(+ 3) >>> (* 2)", \t -> do
 	text t "* ~/lectures/lecture01/に移動しpractice.hsを作成しよう", \t -> do
-	text t "* 演習1. 順に関数適用する関数合成演算子(>>>)を定義せよ"
+	text t "* 演習2. 順に関数適用する関数合成演算子(>>>)を定義せよ"
 	itext t 1 "(1分)"
  ]
 
@@ -106,7 +138,7 @@ funCurry3_3 = [\t -> do
 	text t "", \t -> do
 	text t "* curry3は以下のように使えるものとする", \t -> do
 	itext t 1 "(curry3 showName) \"Bob\" 25 True", \t -> do
-	text t "* 演習2. curry3を定義せよ"
+	text t "* 演習3. curry3を定義せよ"
 	itext t 1 "(1分)"
  ]
 
@@ -161,7 +193,7 @@ funUncurry3_2 = [\t -> do
 	text t "", \t -> do
 	text t "* 以下のように使えるuncurry3を考える", \t -> do
 	itext t 1 "uncurry3 myIf (True, 3, 8)", \t -> do
-	text t "* 演習3. uncurry3を定義せよ", \t -> do
+	text t "* 演習4. uncurry3を定義せよ", \t -> do
 	itext t 1 "(1分)"
  ]
 
@@ -218,7 +250,7 @@ funOn2 = [\t -> do
 	itext t 1 "longerThan s1 s2 = on (>) length s1 s2", \t -> do
 	text t "* on op f x yとするとxとyのそれぞれにfを適用し", \t -> do
 	itext t 1 "その結果をopに与える", \t -> do
-	text t "* 演習4. 関数onを定義せよ", \t -> do
+	text t "* 演習5. 関数onを定義せよ", \t -> do
 	itext t 1 "(1分)"
  ]
 
