@@ -7,7 +7,8 @@ main :: IO ()
 main = runLecture [
 	[flip writeTitle subtitle], prelude, flipDot, flipDot2, flipDot3,
 	funCurry3, funCurry3_2, funCurry3_3, funCurry3_4,
-	funUncurry3, funUncurry3_2, funUncurry3_3, funUncurry3_4
+	funUncurry3, funUncurry3_2, funUncurry3_3, funUncurry3_4,
+	funOn, funOn2, funOn3
  ]
 
 prelude :: Page
@@ -187,4 +188,56 @@ funUncurry3_4 = [\t -> do
 	itext t 1 $ show $ uncurry3 myIf (True, 3, 8 :: Int), \t -> do
 	itext t 1 "*Main> uncurry3 myIf (False, 3, 8)", \t -> do
 	itext t 1 $ show $ uncurry3 myIf (False, 3, 8 :: Int)
+ ]
+
+funOn :: Page
+funOn = [\t -> do
+	writeTopTitle t "on"
+	text t "", \t -> do
+	text t "* 「12を法にして合同」かどうかを求める関数", \t -> do
+	text t "* 「12を法にして合同」は「12で割った余りが等しい」こと", \t -> do
+	text t "* これを関数とすると以下のようになる", \t -> do
+	itext t 1 "congruent12 :: Int -> Int -> Bool", \t -> do
+	itext t 1 "congruent12 n m = (n `mod` 12) == (m `mod` 12)", \t -> do
+	text t "* 文字列の長さを比較する関数", \t -> do
+	itext t 1 "longerThan :: String -> String -> Bool", \t -> do
+	itext t 1 "longerThan s1 s2 = length s1 > length s2", \t -> do
+	text t "* これらには共通の構造がある", \t -> do
+	text t "* 2つの値に同じ変換を行い、それらを2引数関数に与えている"
+ ]
+
+funOn2 :: Page
+funOn2 = [\t -> do
+	writeTopTitle t "on"
+	text t "", \t -> do
+	text t "* 共通の構造があればくくり出すことができる", \t -> do
+	text t "* 2つの値に同じ変換を行い、"
+	itext t 1 "それらを2引数関数に与える関数onを考える", \t -> do
+	text t "* onを使った定義は以下のようになる", \t -> do
+	itext t 1 "congruent12 n m = on (==) (`mod` 12) n m", \t -> do
+	itext t 1 "longerThan s1 s2 = on (>) length s1 s2", \t -> do
+	text t "* on op f x yとするとxとyのそれぞれにfを適用し", \t -> do
+	itext t 1 "その結果をopに与える", \t -> do
+	text t "* 演習4. 関数onを定義せよ", \t -> do
+	itext t 1 "(1分)"
+ ]
+
+on :: (b -> b -> c) -> (a -> b) -> a -> a -> c
+on op f x y = f x `op` f y
+
+funOn3 :: Page
+funOn3 = [\t -> do
+	writeTopTitle t "on"
+	text t "", \t -> do
+	text t "* 以下のようになる", \t -> do
+	itext t 1 "on :: (b -> b -> c) -> (a -> b) -> a -> a -> c", \t -> do
+	itext t 1 "on op f x y = f x `op` f y", \t -> do
+	text t "* practice.hsに書き込み、試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> on (==) (`mod` 12) 3 15", \t -> do
+	itext t 1 $ show $ on (==) (`mod` 12) 3 (15 :: Int), \t -> do
+	itext t 1 "*Main> on (>) length \"hello\" \"world\"", \t -> do
+	itext t 1 $ show $ on (>) length "hello" "world", \t -> do
+	itext t 1 "*Main> on (>) length \"sloth\" \"dog\"", \t -> do
+	itext t 1 $ show $ on (>) length "sloth" "dog"
  ]
