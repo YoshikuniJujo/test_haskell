@@ -10,7 +10,8 @@ main = runLecture [
 	flipDot, flipDot2, flipDot3,
 	funCurry3, funCurry3_2, funCurry3_3, funCurry3_4,
 	funUncurry3, funUncurry3_2, funUncurry3_3, funUncurry3_4,
-	funOn, funOn2, funOn3
+	funOn, funOn2, funOn3,
+	summary
  ]
 
 prelude :: Page
@@ -32,6 +33,7 @@ dollar2 = [\t -> do
 	text t "* 以下のようになる", \t -> do
 	itext t 1 "(+) $$ 8 => 16", \t -> do
 	itext t 1 "(*) $$ 3 => 9", \t -> do
+	text t "* ~/lectures/lecture01/に移動しpractice.hsを作成しよう", \t -> do
 	text t "* 演習1. ($$)を定義せよ", \t -> do
 	itext t 1 "(1分)"
  ]
@@ -47,7 +49,8 @@ dollar2_2 = [\t -> do
 	itext t 1 "($$) :: (a -> a -> b) -> a -> b"
 	itext t 1 "($$) f x = f x x", \t -> do
 	text t "* practice.hsに書き込み、試してみる", \t -> do
-	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "% cd ~/lectures/lecture01/", \t -> do
+	itext t 1 "% ghci practice.hs", \t -> do
 	itext t 1 "*Main> (+) $$ 8", \t -> do
 	itext t 1 $ show $ (+) $$ (8 :: Int), \t -> do
 	itext t 1 "*Main> (*) $$ 3", \t -> do
@@ -64,7 +67,6 @@ flipDot = [\t -> do
 	text t "* 人間の感覚に近い第1引数->第2引数の順となる関数を考える", \t -> do
 	text t "* 例えば「3足して2かける」を以下のように書けるようにする", \t -> do
 	itext t 1 "(+ 3) >>> (* 2)", \t -> do
-	text t "* ~/lectures/lecture01/に移動しpractice.hsを作成しよう", \t -> do
 	text t "* 演習2. 順に関数適用する関数合成演算子(>>>)を定義せよ"
 	itext t 1 "(1分)"
  ]
@@ -92,8 +94,7 @@ flipDot3 = [\t -> do
 	writeTopTitle t "(>>>)"
 	text t "", \t -> do
 	text t "* 試してみよう", \t -> do
-	itext t 1 "% cd ~/lectures/lecture01/", \t -> do
-	itext t 1 "% ghci practice.hs", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
 	itext t 1 "*Main> (+ 3) >>> (* 2) $ 4", \t -> do
 	itext t 1 $ show $ (+ 3) >>> (* 2) $ (4 :: Int)
  ]
@@ -272,4 +273,18 @@ funOn3 = [\t -> do
 	itext t 1 $ show $ on (>) length "hello" "world", \t -> do
 	itext t 1 "*Main> on (>) length \"sloth\" \"dog\"", \t -> do
 	itext t 1 $ show $ on (>) length "sloth" "dog"
+ ]
+
+summary :: Page
+summary = [\t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* さまざまな多相関数を見てきた", \t -> do
+	text t "* 多相関数はプログラムの構造を抽象化する", \t -> do
+	text t "* 演習で作成した関数は以下のようになる", \t -> do
+	itext t 1 "($$), (>>>), curry3, uncurry3, on", \t -> do
+	text t "* どれも具体的な演算をする関数というよりは", \t -> do
+	itext t 1 "プログラムの構造を抽出した関数である", \t -> do
+	text t "* プログラムのなかに共通の構造を見つけたら", \t -> do
+	itext t 1 "それを関数としてくくりだすことができる"
  ]
