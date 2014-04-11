@@ -8,7 +8,7 @@ main = runLecture [
 	[flip writeTitle subtitle], prelude,
 	nano, nano2, nano3, nano4, nano5, nano6, nano7,
 	shell, shell2, shell3, shell4, shell5, shell6, shell7, shellSummary,
-	ghci, ghci2, ghci3, ghci4, ghci5, ghciSummary,
+	ghci, ghci2, ghci3, ghci4, ghci5, ghci6, ghciSummary,
 	summary
  ]
 
@@ -18,8 +18,8 @@ prelude = [\t -> do
 	text t "", \t -> do
 	text t "* この回ではエディタ、シェル、対話環境の操作を学ぶ", \t -> do
 	text t "* エディタの操作についてはnanoエディタのみを扱う", \t -> do
-	itext t 1 "- vimやEmacsユーザーは「いつも通りに」", \t -> do
-	text t "* シェルの操作はvim的なキーストロークを使用する", \t -> do
+	itext t 1 "- vimやEmacsユーザーは「いつも通り」に", \t -> do
+	text t "* シェルの操作はvi的なキーストロークを使用する", \t -> do
 	text t "* ghcの対話環境についても学ぶ"
  ]
 
@@ -55,7 +55,7 @@ nano3 = [\t -> do
 	writeTopTitle t "nano: 保存と終了"
 	text t "", \t -> do
 	text t "* 適当な文字を入力してみよう", \t -> do
-	itext t 1 "foo bar buz", \t -> do
+	itext t 1 "foo bar baz", \t -> do
 	text t "* 保存する", \t -> do
 	itext t 1 "Ctrl + o", \t -> do
 	text t "* 保存するファイル名が正しければreturnを押す", \t -> do
@@ -145,7 +145,7 @@ shell2 = [\t -> do
 	itext t 1 "test.txt", \t -> do
 	itext t 1 "% cat test.txtt"
 	itext t 1 "(まだreturnは押さない)", \t -> do
-	text t "* ひとつtを余分に入力してしまった", \t -> do
+	text t "* tをひとつ余分に入力してしまった", \t -> do
 	text t "* バックスペースを入力する", \t -> do
 	itext t 1 "Ctrl + h", \t -> do
 	text t "* 正しいコマンドになったのでreturnを入力"
@@ -162,7 +162,7 @@ shell3 = [\t -> do
 	itext t 1 "(Escキーは1の左にある)", \t -> do
 	text t "* Escキーを押すとカーソルの移動モードになる", \t -> do
 	text t "* hキーで左にlキーで右にカーソルが移動する", \t -> do
-	itext t 1 "hとlを利用して重複したtの上にカーソルを動かす", \t -> do
+	itext t 1 "hとlを利用して重複したtのうえにカーソルを動かす", \t -> do
 	text t "* xキーを押すと1文字削除される", \t -> do
 	text t "* 正しいコマンドになったのでreturnを入力"
  ]
@@ -251,7 +251,9 @@ ghci = [\t -> do
 	itext t 1 "Prelude> miss"
 	itext t 1 "(まだreturnは入力しない)", \t -> do
 	itext t 1 "Ctrl + hを4回入力する", \t -> do
-	itext t 1 "Prelude>"
+	itext t 1 "Prelude>", \t -> do
+	text t "* 終了するには", \t -> do
+	itext t 1 "Prelude> :quit"
  ]
 
 ghci2 :: Page
@@ -293,13 +295,13 @@ ghci4 = [\t -> do
 	text t "* エディタを抜ける", \t -> do
 	itext t 1 "Ctrl + x", \t -> do
 	text t "* 別のファイルを作る", \t -> do
-	itext t 1 "% nano -w other.txt", \t -> do
+	itext t 1 "% nano -w other.hs", \t -> do
 	text t "* 以下を書き込む", \t -> do
 	itext t 1 "mul x y = x * y", \t -> do
 	text t "* 保存する", \t -> do
 	itext t 1 "Ctrl + o", \t -> do
 	text t "* ghciからこのファイルを読み込む", \t -> do
-	itext t 1 "*Main> :load other.txt", \t -> do
+	itext t 1 "*Main> :load other.hs", \t -> do
 	itext t 1 "*Main> mul 3 4", \t -> do
 	itext t 1 "12"
  ]
@@ -312,9 +314,19 @@ ghci5 = [\t -> do
 	text t "* 新しいディレクトリtestを作成する", \t -> do
 	itext t 1 "% mkdir test", \t -> do
 	text t "* test.hsを新しいディレクトリに移動させる", \t -> do
-	itext t 1 "% mv test.hs test/", \t -> do
+	itext t 1 "% mv test.hs test/"
+ ]
+
+ghci6 :: Page
+ghci6 = [\t -> do
+	writeTopTitle t "ghci: ディレクトリを移動"
+	text t "", \t -> do
 	text t "* ghciのなかでディレクトリを移動することができる", \t -> do
 	itext t 1 "*Main> :cd test/", \t -> do
+	itext t 1 "*Main> :!pwd", \t -> do
+	itext t 1 "/home/guest/lectures/lecture00/test", \t -> do
+	itext t 1 "*Main> :!ls", \t -> do
+	itext t 1 "test.hs", \t -> do
 	itext t 1 "*Main> :load test.hs", \t -> do
 	itext t 1 "*Main> add 3 5", \t -> do
 	itext t 1 "8"
@@ -330,7 +342,8 @@ ghciSummary = [\t -> do
 	itext t 1 "コードを見ながら実行することが可能となる", \t -> do
 	text t "* 読み込むファイルはコマンドライン引数で指定するか", \t -> do
 	itext t 1 "ghci内で:loadの引数として指定できる", \t -> do
-	text t "* ディレクトリの移動はghciを抜けなくても:cdで可能"
+	text t "* ディレクトリの移動はghciを抜けなくても:cdで可能", \t -> do
+	text t "* cd以外のコマンドは:![コマンド]で実行できる"
  ]
 
 summary :: Page
