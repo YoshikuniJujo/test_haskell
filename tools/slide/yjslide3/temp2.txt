@@ -1,0 +1,64 @@
+lecture 3.3 - 20
+
+簡単にする
+ |
+ V
+add1 x = x + 1
+
+twice add1 4
+6
+
+(+) :: Int -> Int -> Int
+
+(+) :: Num a => a -> a -> a
+
+sndArg x y = (const id) x y
+
+(const id) 3 4
+=> (const id 3) 4
+=> id 4
+=> 4
+
+const :: a -> b -> a
+
+const :: (c -> c) -> b -> (c -> c)
+const :: (c -> c) -> b -> c -> c
+const id :: b -> c -> c
+
+add x y
+
+add(x)(y)
+
+const id 4 3
+const(id, 4, 3)
+const(id)(4)(3)
+
+const'(id, 4)(3)
+id(3)
+3
+
+f(g(x))
+(f(x))(y)
+
+f (g x)
+  -----
+   値
+f $ g x
+
+f x y
+(f x) y
+-----
+関数
+
+f -- return 関数
+
+(/ 3)
+flip (/) 3
+
+(2 /)
+(/) 2
+
+(ord . toLower) c
+
+(f x) + y
+f (x + y)

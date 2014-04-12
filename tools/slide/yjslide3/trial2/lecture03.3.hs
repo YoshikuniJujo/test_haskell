@@ -296,6 +296,9 @@ twice f = f . f
 ho2number1 :: Int
 ho2number1 = unsafePerformIO $ randomRIO (2, 5)
 
+add1 :: Int -> Int
+add1 x = x + 1
+
 higherOrder2 :: Page
 higherOrder2 = [\t -> do
 	writeTopTitle t "高階関数"
@@ -304,9 +307,12 @@ higherOrder2 = [\t -> do
 	text t "* やってみよう", \t -> do
 	itext t 1 "% nano -w higher.hs", \t -> do
 	itext t 1 "twice f x = f (f x)", \t -> do
+	itext t 1 "add1 y = y + 1", \t -> do
 	itext t 1 "*Main> :load higher.hs", \t -> do
-	itext t 1 $ "*Main> twice (\\x -> x * (x + 1)) " ++ show ho2number1, \t -> do
-	itext t 1 $ show $ twice (\x -> x * (x + 1)) ho2number1, \t -> do
+	itext t 1 $ "*Main> twice add1 " ++ show ho2number1, \t -> do
+	itext t 1 $ show $ twice add1 ho2number1, \t -> do
+	text t "* 以下のようになる", \t -> do
+	itext t 1 $ "add1 (add1 " ++ show ho2number1 ++ ")", \t -> do
 	text t "* twiceは第一引数として関数を取るので高階関数である"
  ]
 
@@ -376,9 +382,9 @@ dollar = [\t -> do
 	writeTopTitle t "$演算子"
 	text t "", \t -> do
 	text t "* 以下のような演算子が用意されている", \t -> do
-	itext t 1 "f $ x = f x", \t -> do
-	text t "* f $ xで値xに関数fを適用する", \t -> do
-	text t "* つまり、f $ xはf xと同じこと", \t -> do
+	itext t 1 "($) f x = f x", \t -> do
+	text t "* ($) f xで値xに関数fを適用する", \t -> do
+	text t "* つまり、($) f xはf xと同じこと", \t -> do
 	text t "* 意味のない演算子のように見えるが", \t -> do
 	itext t 1 "- 優先順位が低く右結合するように作られているので", \t -> do
 	itext t 1 "- ()を省略したいときに使える", \t -> do

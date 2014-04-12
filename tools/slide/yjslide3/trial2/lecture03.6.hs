@@ -23,7 +23,7 @@ prelude = [\t -> do
 	text t "", \t -> do
 	text t "* 関数を理解することがHaskellを理解する鍵である", \t -> do
 	text t "* Haskellでは高階関数を多用する", \t -> do
-	text t "* 高階関数のほとんどは多相関数である", \t -> do
+	text t "* 高階関数の多くは多相関数である", \t -> do
 	text t "* 高階関数について理解するには", \t -> do
 	itext t 1 "何よりも「慣れ」が必要である", \t -> do
 	text t "* 今までの思考の習慣を打破しなければならない", \t -> do
@@ -263,7 +263,7 @@ dot2 = [\t -> do
 	text t "* (.)の定義を再掲する", \t -> do
 	itext t 1 "(.) f g x = f (g x)", \t -> do
 	text t "* lowerOrdの右辺を(.)を使って書き直してみる", \t -> do
-	itext t 1 "(.) ord toLower c <-- ord (tolower c)", \t -> do
+	itext t 1 "(.) ord toLower c", \t -> do
 	text t "* (.)は、cにtoLowerを適用し、その結果にordを適用する"
  ]
 
