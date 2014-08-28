@@ -75,7 +75,7 @@ aboutEnumFromTo2 = [\t -> do
 	itext t 1 "myEnumFromTo :: Int -> Int -> [Int]", \t -> do
 	itext t 1 "myEnumFromTo m n", \t -> do
 	itext t 2 "| m > n = []", \t -> do
-	itext t 2 "| otherwise = m : enumFromTo (m + 1) n", \t -> do
+	itext t 2 "| otherwise = m : myEnumFromTo (m + 1) n", \t -> do
 	text t "* 試してみよう", \t -> do
 	itext t 1 "% ghci myList.hs", \t -> do
 	itext t 1 "*Main> myEnumFromTo 3 8", \t -> do

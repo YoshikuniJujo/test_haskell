@@ -13,7 +13,7 @@ module Lecture (
 ) where
 
 import Graphics.X11.Turtle
-import Text.XML.YJSVG hiding (topleft)
+import Text.XML.YJSVG hiding (topleft, fontName)
 import Control.Monad
 import Control.Applicative
 import Data.IORef

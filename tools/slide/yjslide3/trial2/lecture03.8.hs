@@ -60,7 +60,7 @@ funAscending12 = [\t -> do
 	text t "* 「3つの引数すべてに同じ変換をする」という構造がある", \t -> do
 	text t "* この構造を抽出した関数on3について考えよう", \t -> do
 	text t "* on3を使ってascending12を定義すると以下のようになる", \t -> do
-	itext t 1 "ascending12 x y z = on3 (`mod` 12) x y z", \t -> do
+	itext t 1 "ascending12 x y z = on3 ascending (`mod` 12) x y z", \t -> do
 	text t "* 自習課題. on3を定義せよ"
  ]
 
