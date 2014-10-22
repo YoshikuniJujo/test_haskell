@@ -1,0 +1,5 @@
+今のところ方位ごとに別々の絵を描いている。
+
+data Hangen = Hangen Structure Direction
+
+のようにすればコードが4分の1ですみそうだ。
