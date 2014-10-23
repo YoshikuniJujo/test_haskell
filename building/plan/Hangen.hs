@@ -142,6 +142,47 @@ moduleTest = do
 			Hanjou [],
 			Hanjou [],
 			Hanjou [(Wall, East)]
+			],
+		[
+			Hanjou [(Wall, West)],
+			Hanjou [(Wall, West)],
+			Hanjou [],
+			Hanjou [],
+			Hanjou [],
+			Hanjou [],
+			Hanjou [],
+			Hanjou [(Through, East)]
+			],
+		[
+			Hanjou [(Wall, West), (Wall, North),
+				(ThroughBE 0.1 0.8, South)],
+			Hanjou [(Wall, West), (Wall, South)],
+			Hanjou [(ThroughBE 0.1 0.8, South)],
+			Hanjou [(Wall, South), (Wall, East)],
+			Hanjou [],
+			Hanjou [],
+			Hanjou [],
+			Hanjou [(Through, East)]
+			],
+		[
+			Hanjou [(ThroughBE 0.1 0.3, West)],
+			Hanjou [],
+			Hanjou [],
+			Hanjou [(ThroughBE 0.1 0.7, East)],
+			Hanjou [],
+			Hanjou [],
+			Hanjou [],
+			Hanjou [(Through, East)]
+			],
+		[
+			Hanjou [(Wall, West), (ThroughBE 0 0.5, South)],
+			Hanjou [(ThroughBE 0.5 1, South)],
+			Hanjou [(Wall, South)],
+			Hanjou [(Wall, South), (Wall, East)],
+			Hanjou [(Wall, South)],
+			Hanjou [(Wall, South)],
+			Hanjou [(Wall, South)],
+			Hanjou [(Wall, South), (Wall, East)]
 			]
 		]
 	onkeypress f (return . (/= 'q'))
