@@ -1,6 +1,7 @@
 module Hangen () where
 
 import Control.Monad
+import Text.XML.YJSVG (showSVG)
 import Graphics.X11.Turtle
 
 shaku :: Double
@@ -16,7 +17,10 @@ data Direction = East | West | South | North deriving (Show, Eq)
 data Structure
 	= Wall
 	| Through
+	| ThroughBig
 	| ThroughBE Double Double
+	| ThroughBEBig Double Double
+	| Entrance
 	deriving (Show, Eq)
 
 left0, top0 :: Double
@@ -53,9 +57,25 @@ makeWall t ln = do
 	forward t wallWidth
 	left t 90
 
+makeThrough :: Turtle -> Double -> IO ()
+makeThrough t ln = do
+	forward t (ln * unitSize)
+	left t 90
+	penup t
+	forward t wallWidth
+	pendown t
+	left t 90
+	forward t (ln * unitSize)
+	left t 90
+	penup t
+	forward t wallWidth
+	pendown t
+	left t 90
+
 drawStructure :: Turtle -> Structure -> IO ()
 drawStructure t Wall = beginfill t >> makeWall t 1 >> endfill t
 drawStructure t Through = makeWall t 1
+drawStructure t ThroughBig = makeThrough t 1
 drawStructure t (ThroughBE b e) = do
 	beginfill t
 	makeWall t (1 - e)
@@ -66,6 +86,41 @@ drawStructure t (ThroughBE b e) = do
 	beginfill t
 	makeWall t b
 	endfill t
+drawStructure t (ThroughBEBig b e) = do
+	unless (e == 1) $ do
+		beginfill t
+		makeWall t (1 - e)
+		endfill t
+	forward t $ (1 - e) * unitSize
+	makeThrough t (e - b)
+	forward t $ (e - b) * unitSize
+	unless (b == 0) $ do
+		beginfill t
+		makeWall t b
+		endfill t
+drawStructure t Entrance = do
+	beginfill t
+	makeWall t 0.5
+	endfill t
+	forward t $ 0.5 * unitSize
+	forward t wallWidth
+	right t 90
+	forward t (unitSize * 0.8)
+	right t 90
+	forward t (wallWidth * 0.6)
+	right t 90
+	forward t (unitSize * 0.8)
+	right t 90
+	backward t wallWidth
+	makeWall t 1
+	beginfill t
+	forward t unitSize
+	makeWall t 0.7
+	endfill t
+	right t 90
+	replicateM_ 360 $ do
+		right t (90 / 360)
+		forward t (unitSize * pi / 2 / 360 * 0.85)
 
 drawStructureWithDir :: Turtle -> (Structure, Direction) -> IO ()
 drawStructureWithDir t (s, East) = do
@@ -162,7 +217,7 @@ moduleTest = do
 			Hanjou [],
 			Hanjou [],
 			Hanjou [],
-			Hanjou [(Through, East)]
+			Hanjou [(ThroughBig, East)]
 			],
 		[
 			Hanjou [(ThroughBE 0.1 0.3, West)],
@@ -172,11 +227,13 @@ moduleTest = do
 			Hanjou [],
 			Hanjou [],
 			Hanjou [],
-			Hanjou [(Through, East)]
+			Hanjou [(ThroughBig, East)]
 			],
 		[
-			Hanjou [(Wall, West), (ThroughBE 0 0.5, South)],
-			Hanjou [(ThroughBE 0.5 1, South)],
+--			Hanjou [(Wall, West), (ThroughBEBig 0 0.5, South)],
+--			Hanjou [(ThroughBEBig 0.5 1, South)],
+			Hanjou [(Wall, West), (Entrance, South)],
+			Hanjou [],
 			Hanjou [(Wall, South)],
 			Hanjou [(Wall, South), (Wall, East)],
 			Hanjou [(Wall, South)],
@@ -185,5 +242,7 @@ moduleTest = do
 			Hanjou [(Wall, South), (Wall, East)]
 			]
 		]
+	svg <- getSVG t
+	writeFile "moduleTest.svg" $ showSVG 500 500 svg
 	onkeypress f (return . (/= 'q'))
 	waitField f
