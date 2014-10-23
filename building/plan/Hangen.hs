@@ -21,6 +21,8 @@ data Structure
 	| ThroughBE Double Double
 	| ThroughBEBig Double Double
 	| Entrance
+	| Door
+	| Door2
 	deriving (Show, Eq)
 
 left0, top0 :: Double
@@ -121,6 +123,61 @@ drawStructure t Entrance = do
 	replicateM_ 360 $ do
 		right t (90 / 360)
 		forward t (unitSize * pi / 2 / 360 * 0.85)
+drawStructure t Door = do
+	beginfill t
+	makeWall t 0.2
+	endfill t
+	forward t $ unitSize * 0.2
+	forward t wallWidth
+	right t 90
+	forward t $ unitSize * 0.6
+	right t 90
+	forward t $ wallWidth * 0.6
+	right t 90
+	forward t $ unitSize * 0.6
+	right t 90
+	backward t $ wallWidth * 0.2
+	makeWall t 0.6
+	forward t $ unitSize * 0.6
+	(x, y) <- position t
+	h <- heading t
+	right t 90
+	replicateM_ 36 $ do
+		right t (90 / 36)
+		forward t (unitSize * pi / 2 / 36 * 0.60)
+	setx t x
+	sety t y
+	setheading t h
+	beginfill t
+	makeWall t 0.2
+	endfill t
+drawStructure t Door2 = do
+
+	(x, y) <- position t
+	h <- heading t
+	right t 90
+	replicateM_ 36 $ do
+		left t (90 / 36)
+		forward t (unitSize * pi / 2 / 36 * 0.60)
+	setx t x
+	sety t y
+	setheading t h
+
+	makeWall t 0.6
+	forward t $ unitSize * 0.6
+
+	right t 90
+	forward t $ unitSize * 0.6
+	right t 90
+	forward t $ wallWidth * 0.6
+	right t 90
+	forward t $ unitSize * 0.6
+	right t 90
+	forward t $ wallWidth * 0.8
+
+	beginfill t
+	makeWall t 0.4
+	endfill t
 
 drawStructureWithDir :: Turtle -> (Structure, Direction) -> IO ()
 drawStructureWithDir t (s, East) = do
@@ -178,7 +235,8 @@ moduleTest = do
 			Hanjou [(ThroughBE 0.2 0.5, East)]
 			],
 		[
-			Hanjou [(ThroughBE 0.1 0.9, West)],
+			Hanjou [(Door, West)],
+--			Hanjou [(ThroughBE 0.1 0.9, West)],
 			Hanjou [],
 			Hanjou [],
 			Hanjou [],
@@ -206,7 +264,8 @@ moduleTest = do
 			Hanjou [],
 			Hanjou [],
 			Hanjou [],
-			Hanjou [(Through, East)]
+--			Hanjou [(Through, East)]
+			Hanjou [(Door2, East)]
 			],
 		[
 			Hanjou [(Wall, West), (Wall, North),
@@ -223,7 +282,8 @@ moduleTest = do
 			Hanjou [(ThroughBE 0.1 0.3, West)],
 			Hanjou [],
 			Hanjou [],
-			Hanjou [(ThroughBE 0.1 0.7, East)],
+--			Hanjou [(ThroughBE 0.1 0.7, East)],
+			Hanjou [(Door, East)],
 			Hanjou [],
 			Hanjou [],
 			Hanjou [],
