@@ -23,6 +23,8 @@ data Structure
 	| Entrance
 	| Door
 	| Door2
+	| UpStairs
+	| DownStairs
 	deriving (Show, Eq)
 
 left0, top0 :: Double
@@ -178,6 +180,68 @@ drawStructure t Door2 = do
 	beginfill t
 	makeWall t 0.4
 	endfill t
+drawStructure t UpStairs = do
+	(x, y) <- position t
+	h <- heading t
+
+	penup t
+	left t 90
+	forward t $ wallWidth
+	setheading t h
+	forward t $ 150 / 100 * unitSize
+	pendown t
+	backward t $ 145 / 100 * unitSize
+	left t 90
+	forward t $ unitSize / 11
+	setheading t h
+	forward t $ 150 / 100 * unitSize
+	penup t
+	
+	setx t x
+	sety t y
+	setheading t h
+	left t 90
+	forward t unitSize
+	right t 90
+	forward t $ 51 / 30 * unitSize
+	pendown t
+	backward t $ 495 / 300 * unitSize
+	right t 90
+	forward t $ unitSize / 11
+	setheading t h
+	forward t $ 485 / 300 * unitSize
+	penup t
+
+	setx t x
+	sety t y
+	setheading t h
+	left t 90
+	forward t $ unitSize / 10 + wallWidth
+	right t 90
+	replicateM_ 7 $ do
+		forward t $ unitSize / 5
+		left t 90
+		pendown t
+		forward t $ unitSize * 8 / 10 - wallWidth
+		penup t
+		backward t $ unitSize * 8 / 10 - wallWidth
+		right t 90
+	forward t $ unitSize / 5
+	left t 90
+	backward t $ unitSize / 10 + wallWidth
+	penup t
+	forward t $ unitSize / 3
+	pendown t
+	forward t $ unitSize * 17 / 30
+	penup t
+	backward t $ unitSize
+	left t 90
+	forward t $ unitSize / 10
+	pendown t
+	right t 100
+	forward t $ unitSize * 3 / 2
+drawStructure t DownStairs = do
+	return ()
 
 drawStructureWithDir :: Turtle -> (Structure, Direction) -> IO ()
 drawStructureWithDir t (s, East) = do
@@ -220,7 +284,7 @@ moduleTest = do
 			Hanjou [(Wall, West), (Wall, North),
 				(ThroughBE 0.1 0.8, South)],
 			Hanjou [(Wall, West), (Wall, North)],
-			Hanjou [(Wall, North)],
+			Hanjou [(Wall, North), (UpStairs, North)],
 			Hanjou [(Wall, North), (ThroughBE 0.7 1, East)]
 			],
 		[
