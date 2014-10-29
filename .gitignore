@@ -151,3 +151,7 @@ tmp/
 /tools/slide/yjslide3/images/*.svg
 
 /tools/markdown/svgs/
+
+/books/land_of_lisp/city
+/books/land_of_lisp/known-city
+/books/land_of_lisp/*.png
