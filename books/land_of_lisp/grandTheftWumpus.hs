@@ -1,8 +1,10 @@
 import Control.Applicative
+import Control.Arrow
 import Control.Monad
 import Data.Maybe
 import Data.List
 import Data.Function
+import Data.IORef
 import System.Random
 import System.Cmd
 
@@ -90,7 +92,9 @@ edgesToAlist =
 	map (\e -> (fst $ head e, map snd e)) . groupBy (on (==) fst) . nub . sort
 
 addCops :: [(Node, [Node])] -> [(Node, Node)] -> [(Node, [(Node, Bool)])]
-addCops ea ewc = map (flip addCops1 ewc) ea
+addCops ea ewc = map (flip addCops1 ewc') ea
+	where
+	ewc' = ewc ++ map (\(a, b) -> (b, a)) ewc
 
 addCops1 :: (Node, [Node]) -> [(Node, Node)] -> (Node, [(Node, Bool)])
 addCops1 (n0, ns) ewc = (n0, map (\n -> (n, n `elem` nc)) ns)
@@ -130,14 +134,16 @@ getNodeState n w gws ea = wst ++ gwst ++ srst
 		_ -> []
 	srst = if or . map snd . fromJust $ lookup n ea then [Siren] else []
 
-newGame :: IO (EdgeAlist, [(Node, [NodeState])], Node, [Node])
+newGame :: IO (EdgeAlist, [(Node, [NodeState])], IORef Node, IORef [Node])
 newGame = do
 	ea <- makeCityEdges
 	ns <- makeCityNodes ea
 	pp <- findEmptyNode ns
+	ppr <- newIORef pp
+	vnds <- newIORef [pp]
 	drawCity ns ea
 	drawKnownCity pp [pp] ns ea
-	return (ea, ns, pp, [pp])
+	return (ea, ns, ppr, vnds)
 
 findEmptyNode :: [(Node, [NodeState])] -> IO Node
 findEmptyNode ndst = do
@@ -205,21 +211,78 @@ removeUnknownCops1 vnds (nd0, nds) = (nd0, map ruc nds)
 	where
 	ruc (nd, c) = (nd, c && nd `elem` vnds)
 
+removeAllCops1 :: [Node] -> (Node, [(Node, Bool)]) -> (Node, [(Node, Bool)])
+removeAllCops1 vnds e@(nd0, nds)
+	| nd0 `notElem` vnds = (nd0, map (second $ const False) nds)
+	| otherwise = e
+
 removeUnknownCops :: [Node] -> EdgeAlist -> EdgeAlist
-removeUnknownCops vnds = map $ removeUnknownCops1 vnds
+removeUnknownCops vnds = map $ removeAllCops1 vnds . removeUnknownCops1 vnds
 
 removeUnknownEdges :: [Node] -> (Node, [(Node, Bool)]) -> (Node, [(Node, Bool)])
 removeUnknownEdges vnds (nd0, nds) = (nd0, filter ((`elem` vnds) . fst) nds)
 
 onlyKnownEdges :: [Node] -> EdgeAlist -> EdgeAlist
 onlyKnownEdges vnds ea = filter ((`elem` vnds) . fst) ea ++
-	filter (not . null . snd) (map (removeUnknownEdges vnds) ea)
+	filter ((`notElem` vnds) . fst)
+		(filter (not . null . snd) (map (removeUnknownEdges vnds) ea))
 
 knownCityEdges :: [Node] -> EdgeAlist -> EdgeAlist
-knownCityEdges vnds = removeUnknownCops vnds . onlyKnownEdges vnds
+knownCityEdges vnds = nub . sort . removeUnknownCops vnds . onlyKnownEdges vnds
 
 drawKnownCity :: Node -> [Node] -> [(Node, [NodeState])] -> EdgeAlist -> IO ()
 drawKnownCity pp vnds nds ea = ugraphPng
 	"known-city"
 	(knownCityNodes pp vnds nds ea) 
 	(knownCityEdges vnds ea)
+
+walk, charge ::
+	[(Node, [NodeState])] -> EdgeAlist -> IORef [Node] -> IORef Node -> Node ->
+	IO ()
+walk = handleDirection False
+charge = handleDirection True
+
+handleDirection ::
+	Bool ->
+	[(Node, [NodeState])] -> EdgeAlist -> IORef [Node] -> IORef Node -> Node ->
+	IO ()
+handleDirection ch nds ea vndsr ppr pos = do
+	pp <- readIORef ppr
+	let cg = fromJust $ lookup pp ea
+	case lookup pos cg of
+		Just cp -> handleNewPlace nds ea vndsr ppr cp pos ch
+		_ -> putStrLn "That location does not exist!"
+	return ()
+
+handleNewPlace ::
+	[(Node, [NodeState])] -> EdgeAlist -> IORef [Node] -> IORef Node ->
+	Bool -> Node -> Bool -> IO ()
+handleNewPlace nds ea vndsr ppr edge pos charging = do
+	vnds <- readIORef vndsr
+	let	node = fromJust $ lookup pos nds
+		hasWorm = GlowWorm `elem` node && pos `notElem` vnds
+	pushNewPos vndsr pos
+	writeIORef ppr pos
+	vnds' <- readIORef vndsr
+	drawKnownCity pos vnds' nds ea
+	case (edge, node, charging, hasWorm) of
+		(True, _, _, _) -> putStrLn "You ran into the cops. Game Over."
+		(_, n, True, _)
+			| Wumpus `elem` n -> putStrLn "You found the Wumpus!"
+			| otherwise ->
+				putStrLn "You wasted your last bullet. Game Over."
+		(_, n, _, _)
+			| Wumpus `elem` n -> putStrLn "You ran into the Wumpus"
+		(_, _, _, True) -> do
+			newPos <- randomNode
+			putStrLn $
+				"You ran into a Glow Worm Gang! You're now at " ++
+				show newPos
+			handleNewPlace nds ea vndsr ppr False newPos False
+		_ -> return ()
+	return ()
+
+pushNewPos :: IORef [Node] -> Node -> IO ()
+pushNewPos ndsr pos = do
+	nds <- readIORef ndsr
+	writeIORef ndsr . nub . sort $ pos : nds
