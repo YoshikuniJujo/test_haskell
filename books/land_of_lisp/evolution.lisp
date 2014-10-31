@@ -119,13 +119,3 @@
 		       do (princ #\.))
 		 (update-world))
 	       (evolution))))))
-
-(defun evo ()
-  (draw-world)
-  (fresh-line)
-  (let ((str (read-line)))
-    (cond ((equal str "quit") ())
-	  (t (let ((x (parse-integer str :junk-allowed t)))
-	       (if x
-		 (update-world)
-		 (update-world)))))))
