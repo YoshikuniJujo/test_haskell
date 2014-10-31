@@ -9,11 +9,11 @@ import Data.Char
 import System.Random
 
 width, height :: Int
-width = 80
-height = 20
+width = 100
+height = 30
 
 jungle :: (Int, Int, Int, Int)
-jungle = (35, 5, 10, 10)
+jungle = (45, 10, 10, 10)
 
 plantEnergy, reproductionEnergy :: Int
 plantEnergy = 80
@@ -78,7 +78,7 @@ turnDistribution :: Direction -> Gene -> [(Int, Direction)]
 turnDistribution dr g = map (\n -> (turnDegree g n, turnDirection dr n)) [0 .. 7]
 
 turnWithDistribution :: [(Int, Direction)] -> Int -> Direction
-turnWithDistribution [] _ = error "bad random value"
+turnWithDistribution [] n = error $ "bad random value " ++ show n
 turnWithDistribution ((n, d) : nds) r
 	| r < n = d
 	| otherwise = turnWithDistribution nds (r - n)
@@ -134,7 +134,7 @@ move (Animal (x, y) en dr gn) = let
 		(True, _) -> - 1
 		(_, True) -> 1
 		_ -> 0 in
-	Animal (x + dx, y + dy) (pred en) dr gn
+	Animal ((x + dx) `mod` width, (y + dy) `mod` height) (pred en) dr gn
 
 turn :: Animal -> StdGen -> (Animal, StdGen)
 turn (Animal pos en dr gn) sg = let (dr', sg') = randomTurn dr gn sg in
@@ -175,14 +175,14 @@ randomMutate gn sg = let
 	(mutate gn mp md, sg'')
 
 mutate :: Gene -> Int -> Int -> Gene
-mutate g 0 d = g { turnForward = turnForward g + d }
-mutate g 1 d = g { turnForwardRight = turnForwardRight g + d }
-mutate g 2 d = g { turnRight = turnRight g + d }
-mutate g 3 d = g { turnBackRight = turnBackRight g + d }
-mutate g 4 d = g { turnBack = turnBack g + d }
-mutate g 5 d = g { turnBackLeft = turnBackLeft g + d }
-mutate g 6 d = g { turnLeft = turnLeft g + d }
-mutate g 7 d = g { turnForwardLeft = turnForwardLeft g + d }
+mutate g 0 d = g { turnForward = max 1 $ turnForward g + d }
+mutate g 1 d = g { turnForwardRight = max 1 $ turnForwardRight g + d }
+mutate g 2 d = g { turnRight = max 1 $ turnRight g + d }
+mutate g 3 d = g { turnBackRight = max 1 $ turnBackRight g + d }
+mutate g 4 d = g { turnBack = max 1 $ turnBack g + d }
+mutate g 5 d = g { turnBackLeft = max 1 $ turnBackLeft g + d }
+mutate g 6 d = g { turnLeft = max 1 $ turnLeft g + d }
+mutate g 7 d = g { turnForwardLeft = max 1 $ turnForwardLeft g + d }
 mutate _ _ _ = error "bad"
 
 updateWorld :: Monad m => EvolutionM m ()
@@ -201,12 +201,22 @@ drawWorld = do
 	(_, (ps, as)) <- get
 	lift . putStr . unlines $ showWorld ps as
 
+animalChar :: Animal -> Char
+animalChar (Animal _ _ _ g)
+	| sum (map (turnDegree g) [7, 0, 1]) * 4 > turnDenom g * 3 = 'L'
+	| sum (map (turnDegree g) [3, 4, 5]) * 4 > turnDenom g * 3 = 'M'
+	| sum (map (turnDegree g) [7, 0, 1]) * 2 > turnDenom g * 1 = 'T'
+	| sum (map (turnDegree g) [3, 4, 5]) * 2 > turnDenom g * 1 = 'N'
+	| sum (map (turnDegree g) [7, 0, 1]) * 7 > turnDenom g * 3 = 'C'
+	| sum (map (turnDegree g) [3, 4, 5]) * 7 > turnDenom g * 3 = 'Q'
+	| otherwise = 'O'
+
 showWorld :: Plants -> Animals -> [String]
 showWorld ps as = flip map [0 .. height - 1] $ \y ->
 	('|' :) . (++ "|") .
 	flip map [0 .. width - 1] $ \x ->
 		case (filter (((x, y) ==) . animalPos) as, Set.member (x, y) ps) of
-			(_ : _, _) -> 'M'
+			(a : _, _) -> animalChar a
 			(_, True) -> '*'
 			_ -> ' '
 
