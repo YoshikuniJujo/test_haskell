@@ -19,14 +19,29 @@ monsterNum = 12
 class MonsterClass m where
 	monsterShow :: m -> IO ()
 	monsterAttack :: m -> Player -> IO ()
+	monsterHealthRef :: m -> IORef Int
+	monsterHit :: m -> Maybe (Int -> IO ())
 
 instance MonsterClass Monster where
 	monsterShow Monster{ monsterKind = mk } = monsterShow mk
 	monsterAttack Monster{ monsterKind = mk } p = monsterAttack mk p
+	monsterHealthRef Monster{ monsterKind = mk } = monsterHealthRef mk
+	monsterHit m@Monster{ monsterKind = mk } = case monsterHit mk of
+		Just mh -> Just mh
+		_ -> Just $ \x -> do
+			modifyIORef (monsterHealthRef mk) (subtract x)
+			md <- monsterDead m
+			if md
+			then putStrLn $ "You killed the " ++
+				show (typeOfMonster m) ++ "!"
+			else putStrLn $ "You hit the " ++
+				show (typeOfMonster m) ++ ", " ++
+				"knocking off " ++ show x ++
+				" health points!"
 
 data Monster = forall m . (Typeable m, MonsterClass m) => Monster {
-	monsterKind :: m,
-	monsterHealthRef :: IORef Int
+	monsterKind :: m
+--	monsterHealthRef :: IORef Int
 	}
 data Player = Player {
 	playerHealth :: IORef Int,
@@ -108,24 +123,28 @@ playerAttack p ms = do
 		's' -> do
 			mid <- pickMonster ms
 			r <- randomRIO (1, max 1 $ st `shiftR` 1)
-			monsterHit ms mid $ r + 2
+			monsterHitById ms mid $ r + 2
 		'd' -> do
 			r <- randomRIO (1, max 1 $ st `div` 6)
 			putStrLn $ "Your double swing has a strength of " ++
 				show r
 			mid1 <- pickMonster ms
-			monsterHit ms mid1 r
+			monsterHitById ms mid1 r
 			msd <- monstersDead ms
 			unless msd $ do
 				mid2 <- pickMonster ms
-				monsterHit ms mid2 r
+				monsterHitById ms mid2 r
 		_ -> do	t <- succ <$> randomRIO (1, max 1 $ st `div` 3)
 			replicateM_ t $ do
 				msd <- monstersDead ms
 				unless msd $ do
 					mid <- randomMonster ms
-					monsterHit ms mid 1
-	putStrLn "player atack monsters"
+					monsterHitById ms mid 1
+
+monsterHitById :: [Monster] -> Int -> Int -> IO ()
+monsterHitById ms mid = case monsterHit $ ms !! (mid - 1) of
+	Just mh -> mh
+	_ -> error "bad"
 
 pickMonster :: [Monster] -> IO Int
 pickMonster ms = do
@@ -150,19 +169,6 @@ monsterDead = ((<= 0) <$>) . monsterHealth
 monsterHealth :: Monster -> IO Int
 monsterHealth = readIORef . monsterHealthRef
 
-monsterHit :: [Monster] -> Int -> Int -> IO ()
-monsterHit ms mid x = do
-	modifyIORef (monsterHealthRef m) (subtract x)
-	md <- monsterDead m
-	if md
-	then putStrLn $ "You killed the " ++
-		show (typeOfMonster m) ++ "!"
-	else putStrLn $ "You hit the " ++
-		show (typeOfMonster m) ++ ", " ++
-		"knocking off " ++ show x ++ " health points!"
-	where
-	m = ms !! (mid - 1)
-
 typeOfMonster :: Monster -> TypeRep
 typeOfMonster Monster{ monsterKind = mk } = typeOf mk
 
@@ -177,38 +183,116 @@ initMonsters = replicateM monsterNum $ do
 	mk <- randomRIO (0, length monsterBuilders - 1)
 	monsterBuilders !! mk
 
-makeMonster :: IO Monster
-makeMonster = do
-	r <- randomRIO (1, 10)
-	cl <- randomRIO (1, 8)
-	mh <- newIORef r
-	return Monster {
-		monsterKind = Orc cl,
-		monsterHealthRef = mh
-		}
-
 makeOrc :: IO Monster
 makeOrc = do
 	r <- randomRIO (1, 10)
 	cl <- randomRIO (1, 8)
 	mh <- newIORef r
-	return Monster {
-		monsterKind = Orc cl,
-		monsterHealthRef = mh
-		}
+	return Monster { monsterKind = Orc mh cl }
+
+makeHydra :: IO Monster
+makeHydra = do
+	r <- randomRIO (1, 10)
+	mh <- newIORef r
+	return Monster { monsterKind = Hydra mh }
+
+makeSlime :: IO Monster
+makeSlime = do
+	r <- randomRIO (1, 10)
+	s <- randomRIO (1, 5)
+	mh <- newIORef r
+	return Monster { monsterKind = SlimeMold mh s }
+
+makeBrigand :: IO Monster
+makeBrigand = do
+	r <- randomRIO (1, 10)
+	mh <- newIORef r
+	return Monster { monsterKind = Brigand mh }
 
 monsterBuilders :: [IO Monster]
-monsterBuilders = [makeOrc]
+monsterBuilders = [makeOrc, makeHydra, makeSlime, makeBrigand]
 
 data Orc = Orc {
+	orcHealth :: IORef Int,
 	clubLevel :: Int
-	} deriving (Show, Typeable)
+	} deriving Typeable
 
 instance MonsterClass Orc where
-	monsterShow (Orc cl) = putStrLn $
+	monsterShow (Orc _ cl) = putStrLn $
 		"A wicked orc with a level " ++ show cl ++ " club"
-	monsterAttack (Orc cl) p = do
+	monsterAttack (Orc _ cl) p = do
 		x <- randomRIO (1, cl)
 		putStrLn $ "An orc swings his club at you and knocks off " ++
 			show x ++ " of your health points."
 		modifyIORef (playerHealth p) $ subtract x
+	monsterHealthRef = orcHealth
+	monsterHit _ = Nothing
+
+data Hydra = Hydra { hidraHealth :: IORef Int } deriving Typeable
+
+instance MonsterClass Hydra where
+	monsterShow h = do
+		hh <- readIORef $ hidraHealth h
+		putStrLn $ "A malicious hydra with " ++ show hh ++ " heads."
+	monsterAttack h p = do
+		hh <- readIORef $ hidraHealth h
+		x <- randomRIO (1, max 1 $ hh `shiftR` 1)
+		putStrLn $ "A hydra attacks you with " ++ show x ++
+			" of its heads! It also grows back one more head!"
+		modifyIORef (hidraHealth h) succ
+		modifyIORef (playerHealth p) (subtract x)
+	monsterHealthRef = hidraHealth
+	monsterHit h = Just $ \x -> do
+		modifyIORef (hidraHealth h) (subtract x)
+		hh <- readIORef $ hidraHealth h
+		if hh <= 0
+		then putStrLn $ "The corpse of the fully decapitated " ++ 
+				"and decapacitated hydra falls to the floor!"
+		else putStrLn $ "You lop off " ++ show x ++ " of the hydra's heads!"
+
+data SlimeMold = SlimeMold {
+	slimeHealth :: IORef Int,
+	slimeSliminess :: Int
+	} deriving Typeable
+
+instance MonsterClass SlimeMold where
+	monsterShow s = putStrLn $
+		"A slime mold with a sliminess of " ++ show (slimeSliminess s)
+	monsterAttack s p = do
+		x <- randomRIO (1, slimeSliminess s)
+		putStrLn $ "A slime mold wraps around your legs " ++
+			"and decreases your agility by " ++ show x ++ "!"
+		modifyIORef (playerAgility p) (subtract x)
+		a <- randomIO
+		when a $ do
+			putStrLn $ "It also squirts in your face, " ++
+				"taking away a health point!"
+			modifyIORef (playerHealth p) pred
+	monsterHealthRef = slimeHealth
+	monsterHit _ = Nothing
+
+data Brigand = Brigand { brigandHealth :: IORef Int } deriving Typeable
+
+instance MonsterClass Brigand where
+	monsterShow _ = putStrLn "A fierce BRIGAND"
+	monsterAttack _ p = do
+		ph <- readIORef $ playerHealth p
+		pa <- readIORef $ playerAgility p
+		ps <- readIORef $ playerStrength p
+		let x = maximum [ph, pa, ps]
+		case (x == ph, x == pa, x == ps) of
+			(True, _, _) -> do
+				putStrLn $ "A brigand hits you with his " ++
+					"slingshot, taking off 2 health points!"
+				modifyIORef (playerHealth p) (subtract 2)
+			(_, True, _) -> do
+				putStrLn $ "A brigand catches your leg with his " ++
+					"whip, taking off 2 agility points!"
+				modifyIORef (playerAgility p) (subtract 2)
+			(_, _, True) -> do
+				putStrLn $ "A brigand cuts your arm with his " ++
+					"whip, taking off 2 strength points!"
+				modifyIORef (playerStrength p) (subtract 2)
+			_ -> error "Can't occur!"
+	monsterHealthRef = brigandHealth
+	monsterHit _ = Nothing
