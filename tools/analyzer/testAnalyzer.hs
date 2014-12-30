@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE OverloadedStrings, TypeFamilies #-}
 
 import Control.Applicative
 import Data.Bits
@@ -10,6 +10,7 @@ import qualified Data.ByteString as BS
 
 import Analyzer
 
+data Asn1 = Asn1 Asn1Tag BS.ByteString deriving Show
 data Asn1Tag = Asn1Tag TagClass DataClass Integer deriving Show
 data TagClass = Universal | Application | ContextSpecific | Private deriving Show
 data DataClass = Primitive | Constructed deriving Show
@@ -19,6 +20,14 @@ cert = unsafePerformIO $ BS.readFile "test_ASN_1_cert.der"
 
 cert1 :: BS.ByteString
 Just ((_, cert1), _) = runAnalyzer ((,) <$> decodeTag <*> decodeContents) cert
+
+decode :: BS.ByteString -> Maybe [Asn1]
+decode bs = case runAnalyzer (listAll $ Asn1 <$> decodeTag <*> decodeContents) bs of
+	Just (a, "") -> Just a
+	_ -> Nothing
+
+decodeAsn1 :: Asn1 -> Maybe [Asn1]
+decodeAsn1 (Asn1 _ bs) = decode bs
 
 decodeTag :: (LL.ListLike a, LL.Element a ~ Word8) => Analyzer a Asn1Tag
 decodeTag = do
