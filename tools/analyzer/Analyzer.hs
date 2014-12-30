@@ -41,6 +41,10 @@ tokensWhile :: LL.ListLike a =>
 tokensWhile = Analyzer . (Just .) . LL.span
 
 listAll :: LL.ListLike a => Analyzer a b -> Analyzer a [b]
-listAll a = do
-	e <- eof
-	if e then return [] else (:) <$> a <*> listAll a
+listAll = loopWhile eof
+
+loopWhile :: Monad m => m Bool -> m a -> m [a]
+loopWhile p m = do
+	e <- p
+	if e then return [] else
+		(:) `liftM` m `ap` loopWhile p m
