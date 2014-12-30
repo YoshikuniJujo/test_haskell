@@ -1,6 +1,6 @@
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE OverloadedStrings, TupleSections #-}
 
-module Analyzer (Analyzer, spot, build, next) where
+module Analyzer (Analyzer, spot, ret, bind, build, next, failure, listAll) where
 
 import Data.Word8
 
@@ -17,6 +17,10 @@ spot p bs
 	| Just (h, t) <- BS.uncons bs = if p h then Just (h, t) else Nothing
 	| otherwise = Nothing
 
+eof :: Analyzer Bool
+eof "" = Just (True, "")
+eof bs = Just (False, bs)
+
 build :: (a -> b) -> Analyzer a -> Analyzer b
 f `build` a = a `bind` ret . f
 
@@ -30,3 +34,10 @@ bind :: Analyzer a -> (a -> Analyzer b) -> Analyzer b
 
 ret :: a -> Analyzer a
 ret = (Just .) . (,)
+
+failure :: Analyzer a
+failure = const Nothing
+
+listAll :: Analyzer a -> Analyzer [a]
+listAll a = eof `bind` \e -> if e then ret [] else
+	a `bind` \x -> (x :) `build` listAll a

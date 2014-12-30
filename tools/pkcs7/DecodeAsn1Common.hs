@@ -1,4 +1,7 @@
-module DecodeAsn1Common (decodeTag1) where
+{-# LANGUAGE OverloadedStrings #-}
+
+module DecodeAsn1Common
+	(Asn1(..), decode1, decodeTag, decodeLength, next, listAll) where
 
 import Analyzer
 import Data.Bits
@@ -18,7 +21,10 @@ decode1 :: Analyzer Asn1
 decode1 = uncurry Asn1 `build` (decodeTag `next` decodeContents)
 
 decodeTag :: Analyzer Asn1Tag
-decodeTag = undefined
+decodeTag = decodeTag1 `bind` \(tc, dc, mtn) ->
+	case mtn of
+		Just tn -> ret . Asn1Tag tc dc $ fromIntegral tn
+		_ -> Asn1Tag tc dc `build` decodeTagR 0
 
 decodeTag1 :: Analyzer (TagClass, DataClass, Maybe Word8)
 decodeTag1 = anl `build` spot (const True)
@@ -29,7 +35,7 @@ decodeTag1 = anl `build` spot (const True)
 			0 -> Universal; 1 -> Application
 			2 -> ContextSpecific; 3 -> Private
 			_ -> error "never occur"
-		dc = case w .&. 0x3f `shiftR` 5 of
+		dc = case (w .&. 0x3f) `shiftR` 5 of
 			0 -> Primitive; 1 -> Constructed
 			_ -> error "never occur"
 		ln = case w .&. 0x1f of
@@ -37,5 +43,30 @@ decodeTag1 = anl `build` spot (const True)
 			n	| n < 0x1f -> Just n
 				| otherwise -> error "never occur"
 
+decodeTagR :: Integer -> Analyzer Integer
+decodeTagR n = spot (const True) `bind` \b ->
+	if b `shiftR` 7 == 0
+		then ret $ n `shiftL` 7 .|. fromIntegral b
+		else decodeTagR (n `shiftL` 7 .|. fromIntegral (b .&. 0x7f))
+
 decodeContents :: Analyzer BS.ByteString
-decodeContents = undefined
+decodeContents = decodeLength `bind` takeByteString
+
+decodeLength :: Analyzer Integer
+decodeLength = spot (const True) `bind` \b ->
+	if b `shiftR` 7 == 0
+		then ret $ fromIntegral b
+		else decodeLengthN (b .&. 0x7f) 0
+
+decodeLengthN :: Word8 -> Integer -> Analyzer Integer
+decodeLengthN n ln
+	| n >= 0x7f = failure
+	| n <= 0 = ret ln
+	| otherwise = spot (const True) `bind` \b ->
+		decodeLengthN (n - 1) (ln `shiftL` 8 .|. fromIntegral b)
+
+takeByteString :: Integer -> Analyzer BS.ByteString
+takeByteString n
+	| n <= 0 = ret ""
+	| otherwise = spot (const True) `bind` \b ->
+		(b `BS.cons`) `build` takeByteString (n - 1)
