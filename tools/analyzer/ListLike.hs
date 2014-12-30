@@ -43,6 +43,7 @@ null = isNothing . uncons
 
 span :: ListLike a => (Element a -> Bool) -> a -> (a, a)
 span p s = case uncons s of
-	Just (h, t) | p h -> let (t1, t2) =
-		span p t in (cons h t1, t2)
+	Just (h, t) | p h -> let
+		(t1, t2) = span p t in
+		(cons h t1, t2)
 	_ -> (empty, s)
