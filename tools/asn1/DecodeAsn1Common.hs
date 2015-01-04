@@ -49,7 +49,7 @@ decodeTag1 = do
 decodeTagR0 :: (LL.ListLike a, LL.Element a ~ Word8) => Analyzer a Integer
 decodeTagR0 = do
 	n <- decodeTagR 0
-	when (n <= 30) $ fail "use single byte for tag number 0 - 30"
+	when (n <= 30) $ fail "Use single byte for tag number 0 - 30"
 	return n
 
 decodeTagR :: (LL.ListLike a, LL.Element a ~ Word8) =>
