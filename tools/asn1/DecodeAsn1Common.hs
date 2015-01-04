@@ -3,6 +3,7 @@
 module DecodeAsn1Common (runAnalyzer, decode1, decodeTag1, decodeTag) where
 
 import Control.Applicative
+import Control.Monad
 import Data.Bits
 import Data.Word8
 
@@ -22,7 +23,7 @@ decode1 = Asn1 <$> decodeTag <*> decodeContents
 decodeTag :: (LL.ListLike a, LL.Element a ~ Word8) => Analyzer a Asn1Tag
 decodeTag = do
 	(tc, dc, mtn) <- decodeTag1
-	maybe (Asn1Tag tc dc <$> decodeTagR 0)
+	maybe (Asn1Tag tc dc <$> decodeTagR0)
 		(return . Asn1Tag tc dc . fromIntegral) mtn
 
 decodeTag1 :: (LL.ListLike a, LL.Element a ~ Word8) =>
@@ -45,7 +46,20 @@ decodeTag1 = do
 				| otherwise -> error "never_occur"
 	return (tc, dc, tn)
 
-decodeTagR :: (LL.ListLike a, LL.Element a ~ Word8) => Integer -> Analyzer a Integer
+decodeTagR0 :: (LL.ListLike a, LL.Element a ~ Word8) => Analyzer a Integer
+decodeTagR0 = do
+	n <- decodeTagR 0
+	when (n <= 30) $ fail "use single byte for tag number 0 - 30"
+	return n
+
+decodeTagR :: (LL.ListLike a, LL.Element a ~ Word8) =>
+	Integer -> Analyzer a Integer
+decodeTagR 0 = do
+	w <- token
+	when (w == 0x80) $ fail "Redundant byte for tag number"
+	if testBit w 7
+		then decodeTagR $ fromIntegral (w .&. 0x7f)
+		else return $ fromIntegral w
 decodeTagR n = do
 	w <- token
 	if testBit w 7

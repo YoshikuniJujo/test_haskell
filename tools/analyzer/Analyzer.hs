@@ -9,36 +9,36 @@ import Control.Monad (liftM, ap)
 import qualified ListLike as LL
 
 data Analyzer a b =
-	Analyzer { runAnalyzer :: a -> Maybe (b, a) }
+	Analyzer { runAnalyzer :: a -> Either String (b, a) }
 
 instance Monad (Analyzer a) where
-	return = Analyzer . (Just .) . (,)
+	return = Analyzer . (Right .) . (,)
 	a1 >>= a2 = Analyzer $ \s ->
 		case runAnalyzer a1 s of
-			Just (x, s') -> runAnalyzer (a2 x) s'
-			_ -> Nothing
-	fail _ = Analyzer $ const Nothing
+			Right (x, s') -> runAnalyzer (a2 x) s'
+			Left err -> Left err
+	fail = Analyzer . const . Left
 instance Functor (Analyzer a) where fmap = liftM
 instance Applicative (Analyzer a) where pure = return; (<*>) = ap
 
 eof :: LL.ListLike a => Analyzer a Bool
-eof = Analyzer $ Just . ((,) <$> LL.null <*> id)
+eof = Analyzer $ Right . ((,) <$> LL.null <*> id)
 
 spot :: LL.ListLike a =>
 	(LL.Element a -> Bool) -> Analyzer a (LL.Element a)
 spot p = Analyzer $ \s -> case LL.uncons s of
-	Just (h, t) | p h -> Just (h, t)
-	_ -> Nothing
+	Just (h, t) | p h -> Right (h, t)
+	_ -> Left "spot error"
 
 token :: LL.ListLike a => Analyzer a (LL.Element a)
 token = spot $ const True
 
 tokens :: LL.ListLike a => Integer -> Analyzer a a
-tokens = Analyzer . (Just .) . LL.splitAt
+tokens = Analyzer . (Right .) . LL.splitAt
 
 tokensWhile :: LL.ListLike a =>
 	(LL.Element a -> Bool) -> Analyzer a a
-tokensWhile = Analyzer . (Just .) . LL.span
+tokensWhile = Analyzer . (Right .) . LL.span
 
 listAll :: LL.ListLike a => Analyzer a b -> Analyzer a [b]
 listAll = loopWhile eof

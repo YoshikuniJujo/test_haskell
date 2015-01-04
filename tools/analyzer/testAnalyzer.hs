@@ -19,11 +19,11 @@ cert :: BS.ByteString
 cert = unsafePerformIO $ BS.readFile "test_ASN_1_cert.der"
 
 cert1 :: BS.ByteString
-Just ((_, cert1), _) = runAnalyzer ((,) <$> decodeTag <*> decodeContents) cert
+Right ((_, cert1), _) = runAnalyzer ((,) <$> decodeTag <*> decodeContents) cert
 
 decode :: BS.ByteString -> Maybe [Asn1]
 decode bs = case runAnalyzer (listAll $ Asn1 <$> decodeTag <*> decodeContents) bs of
-	Just (a, "") -> Just a
+	Right (a, "") -> Just a
 	_ -> Nothing
 
 decodeAsn1 :: Asn1 -> Maybe [Asn1]
