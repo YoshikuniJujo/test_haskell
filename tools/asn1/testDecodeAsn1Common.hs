@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+import Control.Applicative
 import System.IO.Unsafe
 
 import qualified Data.ByteString as BS

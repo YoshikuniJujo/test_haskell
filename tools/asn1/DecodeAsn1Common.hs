@@ -1,6 +1,10 @@
 {-# LANGUAGE TypeFamilies #-}
 
-module DecodeAsn1Common (runAnalyzer, decode1, decodeTag1, decodeTag) where
+module DecodeAsn1Common (
+	runAnalyzer, decode1,
+	decodeTag1, decodeTag,
+	decodeLength1,
+	) where
 
 import Control.Applicative
 import Control.Monad
@@ -69,3 +73,7 @@ decodeTagR n = do
 decodeContents :: (LL.ListLike a, LL.Element a ~ Word8) =>
 	Analyzer a BS.ByteString
 decodeContents = undefined
+
+decodeLength1 :: (LL.ListLike a, LL.Element a ~ Word8) =>
+	Analyzer a (Maybe (Either Int Int))
+decodeLength1 = token >> return Nothing
