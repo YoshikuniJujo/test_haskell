@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings, TypeFamilies #-}
 
 module DecodeAsn1Common (
+	Asn1(..),
+	Asn1Data(..),
 	RecFlag(..),
 	runAnalyzer, decode1,
 	decodeTag1, decodeTag,
