@@ -36,7 +36,7 @@ data RecFlag = NoRec | Rec1 [RecFlag] | RecAll deriving Show
 decode1 :: RecFlag -> Analyzer BS.ByteString Asn1
 decode1 rf = do
 	t@(Asn1Tag _ dc _) <- decodeTag
-	Asn1 t <$> (decodeLength dc >>= decodeContents dc rf)
+	Asn1 t <$> (decodeLength >>= decodeContents dc rf)
 
 decodeTag :: Analyzer BS.ByteString Asn1Tag
 decodeTag = do
@@ -106,18 +106,19 @@ decodeContents dc rf (Just ln) = do
 				Left e -> fail e
 				_ -> error "never occur"
 		_ -> return $ Asn1DataRaw dt
-decodeContents _ (Rec1 rfs) _ = do
+decodeContents Constructed (Rec1 rfs) _ = do
 	as <- mapWhileM
 		(/= Asn1 (Asn1Tag Universal Primitive 0)
 			(Asn1DataRaw ""))
 		decode1 rfs
 	return $ Asn1DataAsn1 as
-decodeContents _ rf _ = do
+decodeContents Constructed rf _ = do
 	as <- loopWhileM
 		(/= Asn1 (Asn1Tag Universal Primitive 0)
 			(Asn1DataRaw ""))
 		(decode1 rf)
 	return $ Asn1DataAsn1 as
+decodeContents _ _ _ = fail "Primitive needs length"
 
 loopWhileM :: Monad m => (a -> Bool) -> m a -> m [a]
 loopWhileM p m = do
@@ -133,17 +134,14 @@ mapWhileM p m (x : xs) = do
 		else return [y]
 
 decodeLength :: (LL.ListLike a, LL.Element a ~ Word8) =>
-	DataClass -> Analyzer a (Maybe Integer)
-decodeLength dc = do
+	Analyzer a (Maybe Integer)
+decodeLength = do
 	ln1 <- decodeLength1
 	case ln1 of
 		Just (Right ln) ->
 			return . Just $ fromIntegral ln
 		Just (Left n) -> Just <$> decodeLengthR 0 n
-		_ -> case dc of
-			Primitive -> fail
-				"Primitive needs length."
-			_ -> return Nothing
+		_ -> return Nothing
 
 decodeLength1 :: (LL.ListLike a, LL.Element a ~ Word8) =>
 	Analyzer a (Maybe (Either Int Int))
