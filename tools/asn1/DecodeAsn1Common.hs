@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings, TypeFamilies #-}
 
 module DecodeAsn1Common (
+	RecFlag(..),
 	runAnalyzer, decode1,
 	decodeTag1, decodeTag,
 	decodeLength, decodeLength1, decodeLengthR,
@@ -28,10 +29,12 @@ data Asn1Data
 	| Asn1DataRaw BS.ByteString
 	deriving (Show, Eq)
 
-decode1 :: Analyzer BS.ByteString Asn1
-decode1 = do
+data RecFlag = NoRec | Rec1 [RecFlag] | RecAll deriving Show
+
+decode1 :: RecFlag -> Analyzer BS.ByteString Asn1
+decode1 rf = do
 	t@(Asn1Tag _ dc _) <- decodeTag
-	Asn1 t <$> (decodeLength dc >>= decodeContents)
+	Asn1 t <$> (decodeLength dc >>= decodeContents dc rf)
 
 decodeTag :: Analyzer BS.ByteString Asn1Tag
 decodeTag = do
@@ -85,16 +88,33 @@ decodeTagR n = do
 		else return $ n `shiftL` 7
 			.|. fromIntegral w
 
-decodeContents :: Maybe Integer ->
+decodeContents :: DataClass -> RecFlag -> Maybe Integer ->
 	Analyzer BS.ByteString Asn1Data
-decodeContents (Just ln) = do
+decodeContents dc rf (Just ln) = do
 	dt <- tokens ln
-	return $ Asn1DataRaw dt
-decodeContents _ = do
+	case (dc, rf) of
+		(Constructed, RecAll) ->
+			case runAnalyzer (listAll $ decode1 RecAll) dt of
+				Right (r, "") -> return $ Asn1DataAsn1 r
+				Left e -> fail e
+				_ -> error "never occur"
+		(Constructed, Rec1 rfs) ->
+			case runAnalyzer (listMap decode1 rfs) dt of
+				Right (r, "") -> return $ Asn1DataAsn1 r
+				Left e -> fail e
+				_ -> error "never occur"
+		_ -> return $ Asn1DataRaw dt
+decodeContents _ (Rec1 rfs) _ = do
+	as <- mapWhileM
+		(/= Asn1 (Asn1Tag Universal Primitive 0)
+			(Asn1DataRaw ""))
+		decode1 rfs
+	return $ Asn1DataAsn1 as
+decodeContents _ rf _ = do
 	as <- loopWhileM
 		(/= Asn1 (Asn1Tag Universal Primitive 0)
 			(Asn1DataRaw ""))
-		decode1
+		(decode1 rf)
 	return $ Asn1DataAsn1 as
 
 loopWhileM :: Monad m => (a -> Bool) -> m a -> m [a]
@@ -102,6 +122,13 @@ loopWhileM p m = do
 	x <- m
 	if p x	then (x :) `liftM` loopWhileM p m
 		else return [x]
+
+mapWhileM :: Monad m => (b -> Bool) -> (a -> m b) -> [a] -> m [b]
+mapWhileM _ _ [] = return []
+mapWhileM p m (x : xs) = do
+	y <- m x
+	if p y	then (y :) `liftM` mapWhileM p m xs
+		else return [y]
 
 decodeLength :: (LL.ListLike a, LL.Element a ~ Word8) =>
 	DataClass -> Analyzer a (Maybe Integer)

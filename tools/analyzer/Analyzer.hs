@@ -1,6 +1,6 @@
 module Analyzer (
 	Analyzer, runAnalyzer,
-	eof, spot, token, tokens, tokensWhile, listAll
+	eof, spot, token, tokens, tokensWhile, listAll, listMap,
 	) where
 
 import Control.Applicative (Applicative(..), (<$>))
@@ -48,3 +48,14 @@ loopWhile p m = do
 	e <- p
 	if e then return [] else
 		(:) `liftM` m `ap` loopWhile p m
+
+listMap :: LL.ListLike b =>
+	(a -> Analyzer b c) -> [a] -> Analyzer b [c]
+listMap = mapWhile eof
+
+mapWhile :: Monad m => m Bool -> (a -> m b) -> [a] -> m [b]
+mapWhile _ _ [] = return []
+mapWhile p m (x : xs) = do
+	e <- p
+	if e then return [] else
+		(:) `liftM` m x `ap` mapWhile p m xs
