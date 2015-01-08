@@ -12,7 +12,7 @@ data Rawest = RC Asn1Tag [Rawest] | RP Asn1Tag BS.ByteString
 	deriving Show
 
 toRawest :: AsnableBox -> Rawest
-toRawest ab = case getTag ab of
+toRawest ab = case getAsn1Tag ab of
 	t@(Asn1Tag _ Constructed _) -> let
 		Just (RawConstructed _ as) = getAsnable ab in
 		RC t $ map toRawest as

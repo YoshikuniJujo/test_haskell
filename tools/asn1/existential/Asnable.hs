@@ -1,4 +1,4 @@
-{-# LANGUAGE ExistentialQuantification, DeriveDataTypeable #-}
+{-# LANGUAGE OverloadedStrings, ExistentialQuantification, DeriveDataTypeable #-}
 
 module Asnable (
 	runAnalyzer,
@@ -23,16 +23,17 @@ import qualified Data.ByteString as BS
 import Analyzer
 
 class Asnable a where
-	getTag :: a -> Asn1Tag
+	getAsn1Tag :: a -> Asn1Tag
 
 instance Asnable [a] where
-	getTag _ = Asn1Tag Universal Constructed 16
+	getAsn1Tag _ = Asn1Tag Universal Constructed 16
 
-data AsnableBox = forall a . (Typeable a, Asnable a) =>
-	AsnableBox a deriving Typeable
+data AsnableBox =
+	forall a . (Typeable a, Asnable a) => AsnableBox a
+	deriving Typeable
 
 instance Asnable AsnableBox where
-	getTag (AsnableBox a) = getTag a
+	getAsn1Tag (AsnableBox a) = getAsn1Tag a
 
 getAsnable :: Typeable a => AsnableBox -> Maybe a
 getAsnable (AsnableBox a) = cast a
@@ -41,13 +42,13 @@ data Raw = Raw Asn1Tag BS.ByteString
 	deriving (Show, Typeable)
 
 instance Asnable Raw where
-	getTag (Raw t _) = t
+	getAsn1Tag (Raw t _) = t
 
 data RawConstructed = RawConstructed Asn1Tag [AsnableBox]
 	deriving Typeable
 
 instance Asnable RawConstructed where
-	getTag (RawConstructed t _) = t
+	getAsn1Tag (RawConstructed t _) = t
 
 instance Show RawConstructed where
 	show (RawConstructed t _) = "RawConstructed " ++ show t ++ " [...]"
