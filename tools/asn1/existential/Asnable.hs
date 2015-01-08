@@ -2,12 +2,9 @@
 
 module Asnable (
 	runAnalyzer,
-	AsnableBox(..), Raw(..), RawConstructed(..), Rule(..),
-	decodeRec, getAsnable,
-	decodeSel, rawSel, recSel,
-	sequenceSel,
-	Asn1Tag(..), DataClass(..),
-	Asnable(..),
+	Asnable(..), Asn1Tag(..), TagClass(..), DataClass(..),
+	AsnableBox(..), getAsnable, Raw(..), RawConstructed(..),
+	Rule(..), decodeSel, rawSel, recSel, sequenceSel,
 ) where
 
 import Control.Applicative
@@ -25,9 +22,6 @@ import Analyzer
 class Asnable a where
 	getAsn1Tag :: a -> Asn1Tag
 
-instance Asnable [a] where
-	getAsn1Tag _ = Asn1Tag Universal Constructed 16
-
 data AsnableBox =
 	forall a . (Typeable a, Asnable a) => AsnableBox a
 	deriving Typeable
@@ -41,33 +35,20 @@ getAsnable (AsnableBox a) = cast a
 data Raw = Raw Asn1Tag BS.ByteString
 	deriving (Show, Typeable)
 
-instance Asnable Raw where
-	getAsn1Tag (Raw t _) = t
-
 data RawConstructed = RawConstructed Asn1Tag [AsnableBox]
 	deriving Typeable
+
+instance Show RawConstructed where
+	show (RawConstructed t _) =
+		"RawConstructed " ++ show t ++ " [...]"
+
+instance Asnable Raw where
+	getAsn1Tag (Raw t _) = t
 
 instance Asnable RawConstructed where
 	getAsn1Tag (RawConstructed t _) = t
 
-instance Show RawConstructed where
-	show (RawConstructed t _) = "RawConstructed " ++ show t ++ " [...]"
-
-decodeRaw :: Analyzer BS.ByteString Raw
-decodeRaw = decodeTag >>= \t ->
-	Raw t <$> (decodeLength >>= maybe (fail "Raw needs length") tokens)
-
-decodeRec :: Analyzer BS.ByteString AsnableBox
-decodeRec = do
-	r@(Raw t@(Asn1Tag _ dc _) s) <- decodeRaw
-	case dc of
-		Primitive -> return $ AsnableBox r
-		_ -> do	let eas = runAnalyzer (listAll decodeRec) s
-			case eas of
-				Left em -> fail em
-				Right (as, "") -> return $
-					AsnableBox $ RawConstructed t as
-				_ -> error "never occur"
+------------------------------------------------------------
 
 runRule :: Rule -> RuleType
 runRule (Rule r) = r
@@ -99,14 +80,7 @@ recSel r t (Just l) = Just $ do
 		_ -> error "never occur"
 recSel _ _ _ = fail "No length is not yet implemented"
 
-sequenceSel :: RuleType
-sequenceSel r t@(Asn1Tag Universal Constructed 16) ln@(Just _) = Just $ do
-	rc <- fromJust $ recSel r t ln
-	let Just (RawConstructed _ as) = getAsnable rc
-	return $ AsnableBox as
-sequenceSel _ _ _ = Nothing
-
----------------------------------------------------------------------------
+------------------------------------------------------------
 
 data Asn1Tag
 	= Asn1Tag TagClass DataClass Integer
@@ -184,3 +158,15 @@ decodeLengthR ln 0 = return ln
 decodeLengthR ln n = token >>= \w -> decodeLengthR
 	(ln `shiftL` 8 .|. fromIntegral w)
 	(n - 1)
+
+------------------------------------------------------------
+
+instance Asnable [a] where
+	getAsn1Tag _ = Asn1Tag Universal Constructed 16
+
+sequenceSel :: RuleType
+sequenceSel r t@(Asn1Tag Universal Constructed 16) ln@(Just _) = Just $ do
+	rc <- fromJust $ recSel r t ln
+	let Just (RawConstructed _ as) = getAsnable rc
+	return $ AsnableBox as
+sequenceSel _ _ _ = Nothing
