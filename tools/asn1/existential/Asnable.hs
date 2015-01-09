@@ -76,9 +76,20 @@ recSel r t (Just l) = Just $ do
 	let eas = runAnalyzer (listAll $ decodeSel r) s
 	case eas of
 		Left em -> fail em
-		Right (as, "") -> return $ AsnableBox $ RawConstructed t as
+		Right (as, "") -> return . AsnableBox $ RawConstructed t as
 		_ -> error "never occur"
-recSel _ _ _ = fail "No length is not yet implemented"
+recSel r t@(Asn1Tag _ Constructed _) _ = Just $ do
+	as <- loopWhileM notEndOfContents $ decodeSel r
+	return . AsnableBox $ RawConstructed t as
+recSel _ _ _ = fail "Primitive needs length"
+
+loopWhileM :: Monad m => (a -> Bool) -> m a -> m [a]
+loopWhileM p m = m >>= \x -> if p x
+	then (x :) `liftM` loopWhileM p m
+	else return []
+
+notEndOfContents :: AsnableBox -> Bool
+notEndOfContents = (/= Asn1Tag Universal Primitive 0) . getAsn1Tag
 
 ------------------------------------------------------------
 
