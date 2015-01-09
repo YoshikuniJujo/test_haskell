@@ -156,3 +156,11 @@ tmp/
 /books/land_of_lisp/known-city
 /books/land_of_lisp/*.png
 /books/land_of_lisp/evolution
+
+/packages/JuicyPixels/*.jpg
+/packages/JuicyPixels/*.ico
+
+/building/plan/*.svg
+
+/tools/fabicon/balls
+/tools/fabicon/testWx

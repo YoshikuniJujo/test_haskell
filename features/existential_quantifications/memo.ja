@@ -1,0 +1,24 @@
+今考えていること。
+
+ある値をチェックすることによって、返す型を変えるということ。
+以下のようなコードを考える。
+
+data Object = forall x . (Tyupeable x, Read x) => Object x
+
+type TypeId = Int
+
+readObject :: (Typeable x, Read x) => TypeId -> String -> Object
+readObject tid src = Object $ read src `asTypeOf` tv
+	let tv = some_function tid
+
+このsome_functionが追加可能な形で実装できないだろうか。
+
+TypeRecからそのタイプのundefied値が導き出せれば良いのだが。
+
+[(TypeRec, fun_or_undefined)]のような形の引数を追加で与えれば良いのかもしれない。
+
+[(TypeRec, String -> Object)]のような形の引数を追加すると、
+
+readObject :: Typeable x =>
+	[(TypeRec, String -> Object)] -> TypeRec -> String -> Object
+readObject fs tr = fromJust $ lookup tr fs
