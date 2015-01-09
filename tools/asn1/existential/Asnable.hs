@@ -70,6 +70,10 @@ rawSel _ t (Just l) = Just $ AsnableBox . Raw t <$> tokens l
 rawSel _ _ _ = Just $ fail "Raw needs length"
 
 recSel :: RuleType
+recSel _ (Asn1Tag Universal Primitive 0) (Just l)
+	| l /= 0 = fail "Bad end-of-contents"
+recSel _ (Asn1Tag Universal Primitive 0) Nothing =
+	fail "Bad end-of-contents"
 recSel _ t@(Asn1Tag _ Primitive _) (Just l) = Just $ AsnableBox . Raw t <$> tokens l
 recSel r t (Just l) = Just $ do
 	s <- tokens l

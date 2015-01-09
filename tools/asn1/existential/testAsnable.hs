@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 import Control.Applicative
 import System.IO.Unsafe
 
@@ -7,6 +9,9 @@ import Asnable
 
 cert :: BS.ByteString
 cert = unsafePerformIO $ BS.readFile "test_ASN_1_cert.der"
+
+test :: BS.ByteString
+test = "\x30\x80\x01\x01\x88\x00\x00"
 
 data Rawest = RC Asn1Tag [Rawest] | RP Asn1Tag BS.ByteString
 	deriving Show
