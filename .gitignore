@@ -152,15 +152,15 @@ tmp/
 
 /tools/markdown/svgs/
 
-/books/land_of_lisp/city
-/books/land_of_lisp/known-city
-/books/land_of_lisp/*.png
-/books/land_of_lisp/evolution
+/themes/books/land_of_lisp/city
+/themes/books/land_of_lisp/known-city
+/themes/books/land_of_lisp/*.png
+/themes/books/land_of_lisp/evolution
 
 /packages/JuicyPixels/*.jpg
 /packages/JuicyPixels/*.ico
 
-/building/plan/*.svg
+/tools/building/plan/*.svg
 
 /tools/fabicon/balls
 /tools/fabicon/testWx
