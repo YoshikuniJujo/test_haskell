@@ -8,7 +8,8 @@ module Asnable (
 	Asnable(..), AsnableBox(..), getAsnable,
 	Asn1Tag(..), TagClass(..), DataClass(..),
 	Raw(..), RawConstructed(..),
-	Rule(..), decodeWith, rawRule, recRule, sequenceRule,
+	Rule(..), RuleType, decodeWith, rawRule, recRule,
+	sequenceRule, boolRule, integerRule,
 	) where
 
 import Control.Applicative
@@ -187,8 +188,45 @@ instance Asnable [a] where
 	getAsn1Tag _ = Asn1Tag Universal Constructed 16
 
 sequenceRule :: RuleType
-sequenceRule r t@(Asn1Tag Universal Constructed 16) ln@(Just _) = Just $ do
-	rc <- fromJust $ recRule r t ln
-	let Just (RawConstructed _ as) = getAsnable rc
-	return $ AsnableBox as
+sequenceRule rl t@(Asn1Tag Universal Constructed 16) ln =
+	Just $ do
+		Just (RawConstructed _ s) <- getAsnable <$>
+			fromJust (recRule rl t ln)
+		return $ AsnableBox s
 sequenceRule _ _ _ = Nothing
+
+instance Asnable Bool where
+	getAsn1Tag _ = Asn1Tag Universal Primitive 1
+
+boolRule :: RuleType
+boolRule rl t@(Asn1Tag Universal Primitive 1) ln@(Just 1) =
+	Just $ do
+		Just (Raw _ bs) <- getAsnable <$>
+			fromJust (rawRule rl t ln)
+		return . AsnableBox $ bs /= "\x00"
+boolRule _ _ _ = Nothing
+
+instance Asnable Integer where
+	getAsn1Tag _ = Asn1Tag Universal Primitive 2
+
+integerRule :: RuleType
+integerRule r t@(Asn1Tag Universal Primitive 2)
+	ln@(Just _) = Just $ do
+		Just (Raw _ bs) <- getAsnable <$>
+			fromJust (rawRule r t ln)
+		return . AsnableBox $ readInteger bs
+integerRule _ _ _ = Nothing
+
+readInteger :: BS.ByteString -> Integer
+readInteger bs = case BS.uncons bs of
+	Just (h, t) -> if testBit h 7
+		then readIntegerR
+			(fromIntegral h - 0x100) t
+		else readIntegerR (fromIntegral h) t
+	_ -> 0
+
+readIntegerR :: Integer -> BS.ByteString -> Integer
+readIntegerR n bs = case BS.uncons bs of
+	Just (h, t) -> readIntegerR
+		(n `shiftL` 8 .|. fromIntegral h) t
+	_ -> n
