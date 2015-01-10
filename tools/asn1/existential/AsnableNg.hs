@@ -7,8 +7,8 @@ module AsnableNg (
 	runAnalyzer,
 	Asnable(..), AsnableBox(..), getAsnable,
 	Asn1Tag(..), TagClass(..), DataClass(..),
-	Raw(..), RawConstructed(..),
-	Rule(..), RuleType, decodeWith, rawRule, recRule,
+	RawBytes(..), Raw(..), RawConstructed(..),
+	Rule(..), RuleType, decodeWith, rawBytesRule, rawRule, recRule,
 	sequenceRule, boolRule, integerRule,
 	) where
 
@@ -53,6 +53,11 @@ instance Show RawConstructed where
 		showParen (d > 10) $
 			showString "RawConstructed " .
 			showsPrec 11 t . showString " [...]"
+
+instance Asnable RawBytes where
+	getAsn1Tag (RawBytes bs) = let
+		Right (t, _) = runAnalyzer decodeTag bs in t
+	encodeDer (RawBytes bs) = bs
 
 instance Asnable Raw where
 	getAsn1Tag (Raw t _) = t
@@ -101,6 +106,16 @@ recRule r t@(Asn1Tag _ Constructed _) _ = Just $ do
 	as <- loopWhileM notEndOfContents $ decodeWith r
 	return . AsnableBox $ RawConstructed t as
 recRule _ _ _ = fail "Primitive needs length"
+
+rawBytesRule :: RuleType
+rawBytesRule _ t (Just l) =
+	Just $ AsnableBox . RawBytes <$> do
+		bs <- tokens l
+		return $ encodeTag t
+			`BS.append` encodeLength
+				(Just . fromIntegral $ BS.length bs)
+			`BS.append` bs
+rawBytesRule _ _ _ = Just $ fail "RawBytes needs length"
 
 loopWhileM :: Monad m => (a -> Bool) -> m a -> m [a]
 loopWhileM p m = m >>= \x -> if p x
