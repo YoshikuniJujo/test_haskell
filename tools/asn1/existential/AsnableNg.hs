@@ -67,6 +67,11 @@ instance Asnable Raw where
 
 instance Asnable RawConstructed where
 	getAsn1Tag (RawConstructed t _) = t
+	encodeDer (RawConstructed t as) = encodeTag t
+		`BS.append` encodeLength (Just . fromIntegral $ BS.length bs)
+		`BS.append` bs
+		where
+		bs = BS.concat $ map encodeDer as
 
 ------------------------------------------------------------
 
@@ -236,8 +241,13 @@ integerToWord8s n = fromIntegral (n .&. 0xff) :
 
 ------------------------------------------------------------
 
-instance Asnable [a] where
+instance Asnable a => Asnable [a] where
 	getAsn1Tag _ = Asn1Tag Universal Constructed 16
+	encodeDer as = encodeTag (getAsn1Tag as)
+		`BS.append` encodeLength (Just . fromIntegral $ BS.length bs)
+		`BS.append` bs
+		where
+		bs = BS.concat $ map encodeDer as
 
 sequenceRule :: RuleType
 sequenceRule rl t@(Asn1Tag Universal Constructed 16) ln =
@@ -249,6 +259,9 @@ sequenceRule _ _ _ = Nothing
 
 instance Asnable Bool where
 	getAsn1Tag _ = Asn1Tag Universal Primitive 1
+	encodeDer b = encodeTag (getAsn1Tag b)
+		`BS.append` encodeLength (Just 1)
+		`BS.append` (if b then "\xff" else "\x00")
 
 boolRule :: RuleType
 boolRule rl t@(Asn1Tag Universal Primitive 1) ln@(Just 1) =
@@ -260,6 +273,14 @@ boolRule _ _ _ = Nothing
 
 instance Asnable Integer where
 	getAsn1Tag _ = Asn1Tag Universal Primitive 2
+	encodeDer n = encodeTag (getAsn1Tag n)
+		`BS.append` encodeLength
+			(Just . fromIntegral $ BS.length bs')
+		`BS.append` bs'
+		where
+		bs' = BS.pack $ if testBit b 7 then 0 : bs else bs
+		bs@(b : _)	| 0 <- n = [0]
+				| otherwise = reverse $ integerToWord8s n
 
 integerRule :: RuleType
 integerRule r t@(Asn1Tag Universal Primitive 2)
