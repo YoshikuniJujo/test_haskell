@@ -62,13 +62,15 @@ instance Asnable RawBytes where
 instance Asnable Raw where
 	getAsn1Tag (Raw t _) = t
 	encodeDer (Raw t bs) = encodeTag t
-		`BS.append` encodeLength (Just . fromIntegral $ BS.length bs)
+		`BS.append` encodeLength
+			(Just . fromIntegral $ BS.length bs)
 		`BS.append` bs
 
 instance Asnable RawConstructed where
 	getAsn1Tag (RawConstructed t _) = t
 	encodeDer (RawConstructed t as) = encodeTag t
-		`BS.append` encodeLength (Just . fromIntegral $ BS.length bs)
+		`BS.append` encodeLength
+			(Just . fromIntegral $ BS.length bs)
 		`BS.append` bs
 		where
 		bs = BS.concat $ map encodeDer as
@@ -245,7 +247,8 @@ integerToWord8s n = fromIntegral (n .&. 0xff) :
 instance Asnable a => Asnable [a] where
 	getAsn1Tag _ = Asn1Tag Universal Constructed 16
 	encodeDer as = encodeTag (getAsn1Tag as)
-		`BS.append` encodeLength (Just . fromIntegral $ BS.length bs)
+		`BS.append` encodeLength
+			(Just . fromIntegral $ BS.length bs)
 		`BS.append` bs
 		where
 		bs = BS.concat $ map encodeDer as
