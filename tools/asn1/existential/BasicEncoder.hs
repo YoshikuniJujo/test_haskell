@@ -2,9 +2,9 @@
 	OverloadedStrings,
 	ExistentialQuantification #-}
 
-module BasicDecoder (
+module BasicEncoder (
 	Asn1Tag(..), TagClass(..), DataClass(..),
-	encodeTag, encodeLength ) where
+	encodeTag, encodeLength, integerToWord8s ) where
 
 import Data.Bits
 import Data.Word8

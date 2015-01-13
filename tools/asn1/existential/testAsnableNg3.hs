@@ -13,6 +13,13 @@ cert = unsafePerformIO $ BS.readFile "test_ASN_1_cert.der"
 ind_test :: BS.ByteString
 ind_test = "\x30\x80\x01\x01\x88\x00\x00"
 
+seqBoolTest :: BS.ByteString
+seqBoolTest = "0\t\SOH\SOH\NUL\SOH\SOH\255\SOH\SOH\255"
+
+heteroTest1, heteroTest2 :: BS.ByteString
+heteroTest1 = "0\SO\STX\STX\SOH\NUL\SOH\SOH\NUL\STX\STX\NUL\255\SOH\SOH\255"
+heteroTest2 = "0\128\STX\STX\SOH\NUL\SOH\SOH\NUL\STX\STX\NUL\255\SOH\SOH\255\NUL\NUL"
+
 data Rw = RC Asn1Tag [Rw] | RP Asn1Tag BS.ByteString
 	deriving Show
 
