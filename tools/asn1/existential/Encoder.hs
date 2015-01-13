@@ -1,4 +1,6 @@
-{-# LANGUAGE OverloadedStrings, ExistentialQuantification #-}
+{-# LANGUAGE
+	OverloadedStrings,
+	ExistentialQuantification #-}
 
 module Encoder () where
 
@@ -26,15 +28,20 @@ instance BerEncode BerBox where
 	encode s (BerBox b) = encode s b
 
 instance BerEncode Bool where
-	encode _ b = encodeTag (Asn1Tag Universal Primitive 1)
-		`BS.append` encodeLength 0 (Just 1)
-		`BS.append` (if b then "\xff" else "\x00")
+	encode _ b = encodeTag
+		(Asn1Tag Universal Primitive 1)
+			`BS.append` encodeLength 0 (Just 1)
+			`BS.append` (if b
+				then "\xff"
+				else "\x00")
 
 instance BerEncode Integer where
-	encode _ n = encodeTag (Asn1Tag Universal Primitive 2)
-		`BS.append` encodeLength 0
-			(Just . fromIntegral $ BS.length bs)
-		`BS.append` bs
+	encode _ n = encodeTag
+		(Asn1Tag Universal Primitive 2)
+			`BS.append` encodeLength 0
+				(Just . fromIntegral $
+					BS.length bs)
+			`BS.append` bs
 		where
 		bs = integerToBS n
 
@@ -47,13 +54,15 @@ instance BerEncode b => BerEncode [b] where
 				encodeSequenceU sels cs
 			_ -> "Bad selector"
 
-encodeSequenceD :: BerEncode b => Int -> [Selector] -> [b] -> BS.ByteString
-encodeSequenceD n sels cs = encodeLength n (Just . fromIntegral $ BS.length bs)
-	`BS.append` bs
+encodeSequenceD :: BerEncode b =>
+	Int -> [Selector] -> [b] -> BS.ByteString
+encodeSequenceD n sels cs = encodeLength n
+	(Just . fromIntegral $ BS.length bs) `BS.append` bs
 	where
 	bs = BS.concat $ zipWith encode sels cs
 
-encodeSequenceU :: BerEncode b => [Selector] -> [b] -> BS.ByteString
+encodeSequenceU :: BerEncode b =>
+	[Selector] -> [b] -> BS.ByteString
 encodeSequenceU sels cs = encodeLength 0 Nothing
 	`BS.append` bs `BS.append` "\x00\x00"
 	where
