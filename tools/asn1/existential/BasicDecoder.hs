@@ -1,7 +1,4 @@
-{-# LANGUAGE
-	OverloadedStrings,
-	ExistentialQuantification,
-	DeriveDataTypeable #-}
+{-# LANGUAGE OverloadedStrings, ExistentialQuantification #-}
 
 module BasicDecoder (
 	Asn1Tag(..), TagClass(..), DataClass(..),
