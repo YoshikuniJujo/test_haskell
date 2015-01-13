@@ -8,7 +8,7 @@ module AsnableNg3 (
 	Asnable(..), AsnableBox(..), getAsnable,
 	Asn1Tag(..), TagClass(..), DataClass(..),
 	RawBytes(..), Raw(..), RawConstructed(..),
-	Rule(..), RuleType, decodeWith ) where
+	Rule(..), RuleType, decodeWith, encodeDer) where
 
 import Control.Applicative
 import Control.Monad
@@ -25,7 +25,28 @@ import BasicDecoder
 class Asnable a where
 	getAsn1Tag :: a -> Asn1Tag
 	decodeRule :: a -> Rule
-	encodeDer :: a -> BS.ByteString
+
+-- class Asnable d => Der d where
+	encodeRule :: a -> BS.ByteString
+
+data Rule = Rule { runRule :: RuleType }
+
+type RuleType = [Rule] -> Asn1Tag -> Maybe Integer ->
+	Maybe (Analyzer BS.ByteString AsnableBox)
+
+decodeWith :: [Rule] -> Analyzer BS.ByteString AsnableBox
+decodeWith rl = do
+	t <- decodeTag
+	l <- decodeLength
+	fromJust . fromJust . find isJust $
+		map (($ l) . ($ t) . ($ rl) . runRule) rl
+
+encodeDer :: Asnable a => a -> BS.ByteString
+encodeDer a = encodeTag (getAsn1Tag a)
+	`BS.append` encodeLength (Just . fromIntegral $ BS.length bs)
+	`BS.append` bs
+	where
+	bs = encodeRule a
 
 data AsnableBox =
 	forall a . (Typeable a, Asnable a) => AsnableBox a
@@ -34,10 +55,12 @@ data AsnableBox =
 instance Asnable AsnableBox where
 	getAsn1Tag (AsnableBox a) = getAsn1Tag a
 	decodeRule (AsnableBox a) = decodeRule a
-	encodeDer (AsnableBox a) = encodeDer a
+	encodeRule (AsnableBox a) = encodeRule a
 
 getAsnable :: Typeable a => AsnableBox -> Maybe a
 getAsnable (AsnableBox a) = cast a
+
+------------------------------------------------------------
 
 data RawBytes = RawBytes BS.ByteString
 	deriving (Show, Typeable)
@@ -58,44 +81,34 @@ instance Asnable RawBytes where
 	getAsn1Tag (RawBytes bs) = let
 		Right (t, _) = runAnalyzer decodeTag bs in t
 	decodeRule _ = Rule rawBytesRule
-	encodeDer (RawBytes bs) = bs
+	encodeRule (RawBytes rb) = let
+		Right (_, bs) = runAnalyzer (decodeTag >> decodeLength) rb in
+		bs
+
+rawBytesRule :: RuleType
+rawBytesRule _ t (Just l) =
+	Just $ AsnableBox . RawBytes <$> do
+		bs <- tokens l
+		return $ encodeTag t
+			`BS.append` encodeLength
+				(Just . fromIntegral $ BS.length bs)
+			`BS.append` bs
+rawBytesRule _ _ _ = Just $ fail "RawBytes needs length"
 
 instance Asnable Raw where
 	getAsn1Tag (Raw t _) = t
 	decodeRule _ = Rule rawRule
-	encodeDer (Raw t bs) = encodeTag t
-		`BS.append` encodeLength
-			(Just . fromIntegral $ BS.length bs)
-		`BS.append` bs
-
-instance Asnable RawConstructed where
-	getAsn1Tag (RawConstructed t _) = t
-	decodeRule _ = Rule recRule
-	encodeDer (RawConstructed t as) = encodeTag t
-		`BS.append` encodeLength
-			(Just . fromIntegral $ BS.length bs)
-		`BS.append` bs
-		where
-		bs = BS.concat $ map encodeDer as
-
-------------------------------------------------------------
-
-data Rule = Rule { runRule :: RuleType }
-
-type RuleType = [Rule] -> Asn1Tag -> Maybe Integer ->
-	Maybe (Analyzer BS.ByteString AsnableBox)
-
-decodeWith :: [Rule] -> Analyzer BS.ByteString AsnableBox
-decodeWith rl = do
-	t <- decodeTag
-	l <- decodeLength
-	fromJust . fromJust . find isJust $
-		map (($ l) . ($ t) . ($ rl) . runRule) rl
+	encodeRule (Raw _ bs) = bs
 
 rawRule :: RuleType
 rawRule _ t (Just l) =
 	Just $ AsnableBox . Raw t <$> tokens l
 rawRule _ _ _ = Just $ fail "Raw needs length"
+
+instance Asnable RawConstructed where
+	getAsn1Tag (RawConstructed t _) = t
+	decodeRule _ = Rule recRule
+	encodeRule (RawConstructed _ as) = BS.concat $ map encodeDer as
 
 recRule :: RuleType
 recRule _ (Asn1Tag Universal Primitive 0) (Just l)
@@ -115,16 +128,6 @@ recRule r t@(Asn1Tag _ Constructed _) _ = Just $ do
 	return . AsnableBox $ RawConstructed t as
 recRule _ _ _ = fail "Primitive needs length"
 
-rawBytesRule :: RuleType
-rawBytesRule _ t (Just l) =
-	Just $ AsnableBox . RawBytes <$> do
-		bs <- tokens l
-		return $ encodeTag t
-			`BS.append` encodeLength
-				(Just . fromIntegral $ BS.length bs)
-			`BS.append` bs
-rawBytesRule _ _ _ = Just $ fail "RawBytes needs length"
-
 loopWhileM :: Monad m => (a -> Bool) -> m a -> m [a]
 loopWhileM p m = m >>= \x -> if p x
 	then (x :) `liftM` loopWhileM p m
@@ -139,12 +142,7 @@ notEndOfContents =
 instance Asnable a => Asnable [a] where
 	getAsn1Tag _ = Asn1Tag Universal Constructed 16
 	decodeRule _ = Rule sequenceRule
-	encodeDer as = encodeTag (getAsn1Tag as)
-		`BS.append` encodeLength
-			(Just . fromIntegral $ BS.length bs)
-		`BS.append` bs
-		where
-		bs = BS.concat $ map encodeDer as
+	encodeRule as = BS.concat $ map encodeDer as
 
 sequenceRule :: RuleType
 sequenceRule rl t@(Asn1Tag Universal Constructed 16) ln =
@@ -157,9 +155,7 @@ sequenceRule _ _ _ = Nothing
 instance Asnable Bool where
 	getAsn1Tag _ = Asn1Tag Universal Primitive 1
 	decodeRule _ = Rule boolRule
-	encodeDer b = encodeTag (getAsn1Tag b)
-		`BS.append` encodeLength (Just 1)
-		`BS.append` (if b then "\xff" else "\x00")
+	encodeRule b = if b then "\xff" else "\x00"
 
 boolRule :: RuleType
 boolRule rl t@(Asn1Tag Universal Primitive 1) ln@(Just 1) =
@@ -172,13 +168,8 @@ boolRule _ _ _ = Nothing
 instance Asnable Integer where
 	getAsn1Tag _ = Asn1Tag Universal Primitive 2
 	decodeRule _ = Rule integerRule
-	encodeDer n = encodeTag (getAsn1Tag n)
-		`BS.append` encodeLength
-			(Just . fromIntegral $ BS.length s')
-		`BS.append` s'
+	encodeRule n = BS.pack $ if testBit b 7 then 0 : s else s
 		where
-		s' = BS.pack $
-			if testBit b 7 then 0 : s else s
 		s@(b : _)	| 0 <- n = [0]
 				| otherwise = reverse $ integerToWord8s n
 
