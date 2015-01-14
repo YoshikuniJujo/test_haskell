@@ -22,11 +22,11 @@ data Selector = Selector (TypeNumber -> Integer -> Sel)
 class BerEncode b where
 	encode :: Selector -> b -> BS.ByteString
 
-data BerBox =
-	forall b . (Typeable b, BerEncode b) => BerBox b
+data BerEncodeBox =
+	forall b . (Typeable b, BerEncode b) => BerEncodeBox b
 
-instance BerEncode BerBox where
-	encode s (BerBox b) = encode s b
+instance BerEncode BerEncodeBox where
+	encode s (BerEncodeBox b) = encode s b
 
 instance BerEncode Bool where
 	encode _ b = encodeTag
