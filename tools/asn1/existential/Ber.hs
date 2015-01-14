@@ -20,7 +20,7 @@ import Data.Bits
 import qualified Data.ByteString as BS
 
 import Analyzer
-import BasicDecoder
+import BasicEnDecoder
 
 class Ber a where
 	getAsn1Tag :: a -> Asn1Tag

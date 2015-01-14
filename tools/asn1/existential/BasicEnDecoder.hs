@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings, ExistentialQuantification #-}
 
-module BasicDecoder (
+module BasicEnDecoder (
 	Asn1Tag(..), TagClass(..), DataClass(..),
 	decodeTag, encodeTag, decodeLength, encodeLength,
 	integerToWord8s, readInteger) where
