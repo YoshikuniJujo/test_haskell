@@ -22,37 +22,42 @@ data Selector = Selector (TypeNumber -> Integer -> Sel)
 class BerEncode b where
 	encode :: Selector -> b -> BS.ByteString
 
-data BerBox = forall b . (Typeable b, BerEncode b) => BerBox b
+data BerBox =
+	forall b . (Typeable b, BerEncode b) => BerBox b
 
 instance BerEncode BerBox where
 	encode s (BerBox b) = encode s b
 
 instance BerEncode Bool where
 	encode _ b = encodeTag
-		(Asn1Tag Universal Primitive 1)
-			`BS.append` encodeLength 0 (Just 1)
-			`BS.append` (if b
-				then "\xff"
-				else "\x00")
+			(Asn1Tag Universal Primitive 1)
+		`BS.append` encodeLength 0 (Just 1)
+		`BS.append` (if b then "\xff" else "\x00")
 
 instance BerEncode Integer where
 	encode _ n = encodeTag
-		(Asn1Tag Universal Primitive 2)
-			`BS.append` encodeLength 0
-				(Just . fromIntegral $
-					BS.length bs)
-			`BS.append` bs
+			(Asn1Tag Universal Primitive 2)
+		`BS.append` encodeLength 0
+			(Just . fromIntegral $ BS.length bs)
+		`BS.append` bs
 		where
 		bs = integerToBS n
 
+integerToBS :: Integer -> BS.ByteString
+integerToBS n = BS.pack $ if testBit b 7 then 0 : s else s
+	where
+	s@(b : _) | 0 <- n = [0] | otherwise =
+		reverse $ integerToWord8s n
+
 instance BerEncode b => BerEncode [b] where
-	encode (Selector sel) cs = encodeTag (Asn1Tag Universal Constructed 16)
+	encode (Selector sel) cs = encodeTag
+			(Asn1Tag Universal Constructed 16)
 		`BS.append` case sel 16 undefined of
 			SelConstructed (Just n) sels ->
 				encodeSequenceD n sels cs
 			SelConstructed _ sels ->
 				encodeSequenceU sels cs
-			_ -> "Bad selector"
+			_ -> error "Bad selector"
 
 encodeSequenceD :: BerEncode b =>
 	Int -> [Selector] -> [b] -> BS.ByteString
@@ -79,9 +84,3 @@ testSel2 = Selector $ \t _ -> case t of
 	2 -> SelPrimitive
 	16 -> SelConstructed Nothing $ repeat testSel2
 	_ -> error "not yet defined"
-
-integerToBS :: Integer -> BS.ByteString
-integerToBS n = BS.pack $ if testBit b 7 then 0 : s else s
-	where
-	s@(b : _)	| 0 <- n = [0]
-			| otherwise = reverse $ integerToWord8s n

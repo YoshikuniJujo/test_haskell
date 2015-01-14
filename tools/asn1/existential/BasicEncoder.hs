@@ -45,8 +45,8 @@ encodeLength 0 (Just l)
 encodeLength n (Just l)
 	| ln >= n = BS.pack $
 		(0x80 .|. fromIntegral ln) : ws
-	| otherwise = BS.pack $
-		(0x80 .|. fromIntegral n) : replicate (n - ln) 0x00 ++ ws
+	| otherwise = BS.pack $ (0x80 .|. fromIntegral n) :
+		replicate (n - ln) 0x00 ++ ws
 	where
 	ws = reverse $ integerToWord8s l
 	ln = length ws
