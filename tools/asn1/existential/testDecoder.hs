@@ -16,13 +16,13 @@ ind_test = "\x30\x80\x01\x01\x88\x00\x00"
 data Rw = RC Asn1Tag [Rw] | RP Asn1Tag BS.ByteString
 	deriving Show
 
-toRw :: DerBox -> Rw
+toRw :: BerDecodeBox -> Rw
 toRw ab = case getAsn1Tag ab of
 	t@(Asn1Tag _ Constructed _) -> let
-		Just (RawConstructed _ as) = getDer ab in
+		Just (RawConstructed _ as) = getBerDecode ab in
 		RC t $ map toRw as
 	t -> let
-		Just (Raw _ bs) = getDer ab in
+		Just (Raw _ bs) = getBerDecode ab in
 		RP t bs
 
 main :: IO ()

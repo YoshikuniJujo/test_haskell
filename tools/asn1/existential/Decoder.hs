@@ -5,7 +5,7 @@
 
 module Decoder (
 	runAnalyzer,
-	Ber(..), DerBox(..), getDer,
+	BerDecode(..), BerDecodeBox(..), getBerDecode,
 	Asn1Tag(..), TagClass(..), DataClass(..),
 	RawBytes(..), Raw(..), RawConstructed(..),
 	Rule(..), RuleType, decodeWith) where
@@ -23,41 +23,68 @@ import Analyzer
 import BasicDecoder
 import BasicEncoder
 
-class Ber a where
+class BerDecode a where
 	getAsn1Tag :: a -> Asn1Tag
 	decodeRule :: a -> Rule
 
 data Rule = Rule { runRule :: RuleType }
 
 type RuleType = [Rule] -> Asn1Tag -> Maybe Integer ->
-	Maybe (Analyzer BS.ByteString DerBox)
+	Maybe (Analyzer BS.ByteString BerDecodeBox)
 
-decodeWith :: [Rule] -> Analyzer BS.ByteString DerBox
+decodeWith :: [Rule] -> Analyzer BS.ByteString BerDecodeBox
 decodeWith rl = do
 	t <- decodeTag
 	l <- decodeLength
 	fromJust . fromJust . find isJust $
 		map (($ l) . ($ t) . ($ rl) . runRule) rl
 
-data DerBox = forall a . (Typeable a, Ber a) => DerBox a
+data BerDecodeBox = forall a .
+	(Typeable a, BerDecode a) => BerDecodeBox a
 	deriving Typeable
 
-instance Ber DerBox where
-	getAsn1Tag (DerBox a) = getAsn1Tag a
-	decodeRule (DerBox a) = decodeRule a
+instance BerDecode BerDecodeBox where
+	getAsn1Tag (BerDecodeBox a) = getAsn1Tag a
+	decodeRule (BerDecodeBox a) = decodeRule a
 
-getDer :: Typeable a => DerBox -> Maybe a
-getDer (DerBox a) = cast a
+getBerDecode :: Typeable a => BerDecodeBox -> Maybe a
+getBerDecode (BerDecodeBox a) = cast a
 
 ------------------------------------------------------------
-
-data RawBytes = RawBytes BS.ByteString
-	deriving (Show, Typeable)
 
 data Raw = Raw Asn1Tag BS.ByteString
 	deriving (Show, Typeable)
 
-data RawConstructed = RawConstructed Asn1Tag [DerBox]
+instance BerDecode Raw where
+	getAsn1Tag (Raw t _) = t
+	decodeRule _ = Rule rawRule
+
+rawRule :: RuleType
+rawRule _ t (Just l) =
+	Just $ BerDecodeBox . Raw t <$> tokens l
+rawRule _ _ _ = Just $ fail "Raw needs length"
+
+data RawBytes = RawBytes BS.ByteString
+	deriving (Show, Typeable)
+
+instance BerDecode RawBytes where
+	getAsn1Tag (RawBytes bs)
+		| Right (t, _) <-
+			runAnalyzer decodeTag bs = t
+		| otherwise = error "Bad RawBytes"
+	decodeRule _ = Rule rawBytesRule
+
+rawBytesRule :: RuleType
+rawBytesRule _ t (Just l) =
+	Just $ BerDecodeBox . RawBytes <$> do
+		bs <- tokens l
+		return $ encodeTag t
+			`BS.append` encodeLength 0 (Just .
+				fromIntegral $ BS.length bs)
+			`BS.append` bs
+rawBytesRule _ _ _ = Just $ fail "RawBytes needs length"
+
+data RawConstructed = RawConstructed Asn1Tag [BerDecodeBox]
 	deriving Typeable
 
 instance Show RawConstructed where
@@ -66,97 +93,73 @@ instance Show RawConstructed where
 			showString "RawConstructed " .
 			showsPrec 11 t . showString " [...]"
 
-instance Ber RawBytes where
-	getAsn1Tag (RawBytes bs) = let
-		Right (t, _) = runAnalyzer decodeTag bs in t
-	decodeRule _ = Rule rawBytesRule
-
-rawBytesRule :: RuleType
-rawBytesRule _ t (Just l) =
-	Just $ DerBox . RawBytes <$> do
-		bs <- tokens l
-		return $ encodeTag t
-			`BS.append` encodeLength 0
-				(Just . fromIntegral $ BS.length bs)
-			`BS.append` bs
-rawBytesRule _ _ _ = Just $ fail "RawBytes needs length"
-
-instance Ber Raw where
-	getAsn1Tag (Raw t _) = t
-	decodeRule _ = Rule rawRule
-
-rawRule :: RuleType
-rawRule _ t (Just l) =
-	Just $ DerBox . Raw t <$> tokens l
-rawRule _ _ _ = Just $ fail "Raw needs length"
-
-instance Ber RawConstructed where
+instance BerDecode RawConstructed where
 	getAsn1Tag (RawConstructed t _) = t
-	decodeRule _ = Rule recRule
+	decodeRule _ = Rule rcRule
 
-recRule :: RuleType
-recRule _ (Asn1Tag Universal Primitive 0) (Just l)
-	| l /= 0 = fail "Bad end-of-contents"
-recRule _ (Asn1Tag Universal Primitive 0) Nothing =
-	fail "Bad end-of-contents"
-recRule r t@(Asn1Tag _ Constructed _) (Just l) = Just $ do
+rcRule :: RuleType
+rcRule _ (Asn1Tag Universal Primitive 0) (Just l)
+	| l /= 0 = Just $ fail "Bad end-of-contents"
+rcRule _ (Asn1Tag Universal Primitive 0) Nothing =
+	Just $ fail "Bad end-of-contents"
+rcRule r t@(Asn1Tag _ Constructed _) (Just l) = Just $ do
 	s <- tokens l
 	let eas = runAnalyzer (listAll $ decodeWith r) s
 	case eas of
 		Left em -> fail em
 		Right (as, "") -> return .
-			DerBox $ RawConstructed t as
+			BerDecodeBox $ RawConstructed t as
 		_ -> error "never occur"
-recRule r t@(Asn1Tag _ Constructed _) _ = Just $ do
+rcRule r t@(Asn1Tag _ Constructed _) _ = Just $ do
 	as <- loopWhileM notEndOfContents $ decodeWith r
-	return . DerBox $ RawConstructed t as
-recRule _ _ _ = fail "Primitive needs length"
+	return . BerDecodeBox $ RawConstructed t as
+rcRule _ _ _ = Nothing
 
 loopWhileM :: Monad m => (a -> Bool) -> m a -> m [a]
 loopWhileM p m = m >>= \x -> if p x
 	then (x :) `liftM` loopWhileM p m
 	else return []
 
-notEndOfContents :: DerBox -> Bool
+notEndOfContents :: BerDecodeBox -> Bool
 notEndOfContents =
 	(/= Asn1Tag Universal Primitive 0) . getAsn1Tag
 
 ------------------------------------------------------------
 
-instance Ber a => Ber [a] where
+instance BerDecode a => BerDecode [a] where
 	getAsn1Tag _ = Asn1Tag Universal Constructed 16
 	decodeRule _ = Rule sequenceRule
 
 sequenceRule :: RuleType
 sequenceRule rl t@(Asn1Tag Universal Constructed 16) ln =
 	Just $ do
-		Just (RawConstructed _ s) <- getDer <$>
-			fromJust (recRule rl t ln)
-		return $ DerBox s
+		Just (RawConstructed _ s) <- getBerDecode <$>
+			fromJust (rcRule rl t ln)
+		return $ BerDecodeBox s
 sequenceRule _ _ _ = Nothing
 
-instance Ber Bool where
+instance BerDecode Bool where
 	getAsn1Tag _ = Asn1Tag Universal Primitive 1
 	decodeRule _ = Rule boolRule
 
 boolRule :: RuleType
 boolRule rl t@(Asn1Tag Universal Primitive 1) ln@(Just 1) =
 	Just $ do
-		Just (Raw _ bs) <- getDer <$>
+		Just (Raw _ bs) <- getBerDecode <$>
 			fromJust (rawRule rl t ln)
-		return . DerBox $ bs /= "\x00"
+		return . BerDecodeBox $ bs /= "\x00"
 boolRule _ _ _ = Nothing
 
-instance Ber Integer where
+instance BerDecode Integer where
 	getAsn1Tag _ = Asn1Tag Universal Primitive 2
 	decodeRule _ = Rule integerRule
 
 integerRule :: RuleType
 integerRule r t@(Asn1Tag Universal Primitive 2)
 	ln@(Just _) = Just $ do
-		Just (Raw _ bs) <- getDer <$>
+		Just (Raw _ bs) <- getBerDecode <$>
 			fromJust (rawRule r t ln)
-		return . DerBox $ readInteger bs
+		return . BerDecodeBox $ readInteger bs
 integerRule _ _ _ = Nothing
 
 ------------------------------------------------------------
