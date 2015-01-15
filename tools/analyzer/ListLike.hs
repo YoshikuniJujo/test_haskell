@@ -3,7 +3,6 @@
 module ListLike (ListLike(..), null, span) where
 
 import Prelude hiding (splitAt, null, span)
-import qualified Prelude as P
 
 import Data.Maybe (isNothing)
 import Data.Word8 (Word8)
@@ -16,12 +15,11 @@ class ListLike a where
 	cons :: Element a -> a -> a
 	uncons :: a -> Maybe (Element a, a)
 	splitAt :: Integer -> a -> (a, a)
-	splitAt n xs
-		| n <= 0 = (empty, xs)
-		| otherwise = case uncons xs of
+	splitAt n xs | n <= 0 = (empty, xs) | otherwise =
+		case uncons xs of
 			Just (h, t) -> let
-				(t1, t2) = splitAt (n - 1) t in
-				(cons h t1, t2)
+				(u, v) = splitAt (n - 1) t
+				in (cons h u, v)
 			_ -> (empty, empty)
 
 instance ListLike [a] where
@@ -43,7 +41,6 @@ null = isNothing . uncons
 
 span :: ListLike a => (Element a -> Bool) -> a -> (a, a)
 span p s = case uncons s of
-	Just (h, t) | p h -> let
-		(t1, t2) = span p t in
-		(cons h t1, t2)
+	Just (h, t) | p h ->
+		let (u, v) = span p t in (cons h u, v)
 	_ -> (empty, s)
