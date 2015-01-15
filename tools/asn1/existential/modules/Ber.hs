@@ -4,8 +4,8 @@ module Ber (
 	BerDecode(..), BerDecodeBox(..), getBerDecode,
 	Rule(..), RuleType, decodeWith,
 	Raw(..), RawBytes(..), RawConstructed(..),
-	BerEncode(..), BerEncodeBox(..), Selector(..), Sel(..),
-	testSel, testSel2,
+	BerEncode(..), BerEncodeBox(..),
+	Selector(..), Sel(..), testSel, testSel2,
 	) where
 
 import Decoder
