@@ -7,3 +7,6 @@ import Analyzer
 
 cert :: BS.ByteString
 cert = unsafePerformIO $ BS.readFile "test_ASN_1_cert.der"
+
+main :: IO ()
+main = print $ runAnalyzer decode cert
