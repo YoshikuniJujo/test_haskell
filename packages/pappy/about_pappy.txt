@@ -47,45 +47,73 @@ of a practical programming language in a single TDPL grammar.
 Packrat parsing is an adaptation of a 30-year-old tabular parsing algorithm
 that was never put into practice until now.
 
-現在まで実用化されてこなかった30年前の表式構文解析アルゴリズムの翻案である。
+パックラット構文解析は現在まで実用化されてこなかった30年前の表式構文解析アル
+ゴリズムの翻案である。
 
 A packrat parser can recognize any string defined by a TDPL grammar in
 linear time,
 
+パックラット構文解析器はTDPL文法で定義されたすべての文字列を線形時間で
+評価することができ、
+
 providing the power and flexibility of a backtracking recursive descent
 parser without the attendant risk of exponential parse time.
 
-A packrat parser can recognize any LL(<i>k</i>) or LR(<i>k</i>) language,
+指数的解析時間という危険を伴わずにバックトラックを行う再帰下降構文解析器の
+持つ力と柔軟性を提供する。
+
+A packrat parser can recognize any LL(k) or LR(k) language,
+
+パックラット構文解析器はLL(k)やLR(k)言語ならすべて評価することができ、
+
 as well as many languages requiring unlimited lookahead that cannot be
 parsed by shift/reduce parsers.
 
-Packrat parsing also provides better composition properties than LL/LR
-parsing, making it more suitable for dynamic or extensible languages.
+そのうえ、無限先読みが必要で移動還元構文解析器では評価できない多くの言語を
+評価することができる。
 
-The primary disadvantage of packrat parsing is its storage cost, which is
-a constant multiple of the total input size rather than being proportional
-to the nesting depth of the syntactic constructs appearing in the input.
+Packrat parsing also provides better composition properties than LL/LR
+parsing,
+
+パックラット構文解析はLL/LR構文解析よりも構成的な性質を持っているので、
+
+making it more suitable for dynamic or extensible languages.
+
+動的で拡張可能な言語により向いている。
+
+The primary disadvantage of packrat parsing is its storage cost,
+
+パックラット構文解析の主な欠点は空間効率にある。
+
+which is a constant multiple of the total input size
+
+rather than being proportional to the nesting depth of the syntactic
+constructs appearing in the input.
+
+必要とする記憶容量は、入力のなかの文法的構造の入れ子の深さにではなく、
+入力全体の長さに比例する。
 
 (3)
-Monadic combinators and lazy evaluation
-enable elegant and direct implementations of packrat parsers
-in recent functional programming languages such as Haskell.
-Three different packrat parsers for the Java language
-are presented here,
-demonstrating the construction of packrat parsers in Haskell
-using primitive pattern matching, using monadic combinators,
-and by automatic generation from a declarative parser specification.
-The prototype packrat parser generator developed for the third case
-itself uses a packrat parser to read its parser specifications,
-and supports full TDPL notation
-extended with "semantic predicates,"
-allowing parsing decisions to depend on the semantic values
-of other syntactic entities.
-Experimental results show that all of these packrat parsers
-run reliably in linear time,
-efficiently support "scannerless" parsing
-with integrated lexical analysis,
-and provide the user-friendly error-handling facilities
+Monadic combinators and lazy evaluation enable elegant and direct
+implementations of packrat parsers in recent functional programming
+languages such as Haskell.
+
+Haskellのような最近の関数型言語では、モナド結合子や遅延評価がパックラット構
+文解析器の簡潔で直接的な実装を可能にする。
+
+Three different packrat parsers for the Java language are presented here,
+demonstrating the construction of packrat parsers in Haskell using
+primitive pattern matching, using monadic combinators, and by automatic
+generation from a declarative parser specification.
+
+The prototype packrat parser generator developed for the third case itself
+uses a packrat parser to read its parser specifications, and supports full
+TDPL notation extended with "semantic predicates," allowing parsing
+decisions to depend on the semantic values of other syntactic entities.
+
+Experimental results show that all of these packrat parsers run reliably in
+linear time, efficiently support "scannerless" parsing with integrated
+lexical analysis, and provide the user-friendly error-handling facilities
 necessary in practical applications.
 
 Pappy: a Parser Generator for Haskell
