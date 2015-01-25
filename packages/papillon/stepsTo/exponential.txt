@@ -1,0 +1,26 @@
+A = a A b / a A c / ()
+
+"aaaccc"
+
+a A b
+a a A b b
+a a a A b b b
+a a a b b b	(1)
+a a a A c b b
+a a a c b b	(2)
+a a A c b
+a a a A b c b
+a a a b c b	(3)
+a a a A c c b
+a a a c c b	(4)
+a A c
+a a A b c
+a a a A b b c
+a a a b b c	(5)
+a a a A c b c
+a a a c b c	(6)
+a a A c c
+a a a A b c c
+a a a b c c	(7)
+a a a A c c c
+a a a c c c	(8)
