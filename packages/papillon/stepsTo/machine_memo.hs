@@ -14,25 +14,25 @@ run _ = Nothing
 parse :: String -> Derivs
 parse src = d
 	where
-	d = Derivs r c
+	d = Derivs r ch
 	r = pRule d
-	c = case src of
+	ch = case src of
 		(c : cs) -> Just (c, parse cs)
 		_ -> Nothing
 
 pRule :: Derivs -> Result Int
-pRule d = msum [ do
-	(c, d') <- char d
-	guard (isDigit c)
-	(n, d'') <- rule d'
-	('+', d''') <- char d''
-	return (n + fromDigit c, d'''), do
-	(c, d') <- char d
-	guard (isDigit c)
-	(n, d'') <- rule d'
-	('-', d''') <- char d''
-	return (n - fromDigit c, d'''), do
-	return (0, d) ]
+pRule d0 = msum [ do
+	(c, d) <- char d0
+	guard $ isDigit c
+	(n, d') <- rule d
+	('+', d'') <- char d'
+	return (n + fromDigit c, d''), do
+	(c, d) <- char d0
+	guard $ isDigit c
+	(n, d') <- rule d
+	('-', d'') <- char d'
+	return (n - fromDigit c, d''), do
+	return (0, d0) ]
 
 fromDigit :: Char -> Int
 fromDigit '0' = 0
@@ -48,7 +48,5 @@ fromDigit '9' = 9
 fromDigit c = error $ show c ++ " is not digit."
 
 sample :: Int -> String
-sample n = take n digits ++ replicate n '-'
-
-digits :: String
-digits = "0123456789" ++ digits
+sample n = take n (concat $ repeat "0123456789") ++
+	replicate n '-'
