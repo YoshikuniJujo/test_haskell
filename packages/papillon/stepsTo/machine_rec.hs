@@ -1,9 +1,9 @@
 import Control.Monad
 import Data.Char
 
-type Parse v = String -> Maybe (v, String)
+type Result v = Maybe (v, String)
 
-run :: Parse Int
+run :: String -> Result Int
 run s@(c : cs) | isDigit c = msum [ do
 	(n, '+' : cs') <- run cs
 	return (n + fromDigit c, cs'), do

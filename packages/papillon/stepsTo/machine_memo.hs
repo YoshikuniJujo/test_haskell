@@ -7,12 +7,6 @@ data Derivs = Derivs {
 	rule :: Result Int,
 	char :: Result Char }
 
-sample :: Int -> String
-sample n = take n digits ++ replicate n '-'
-
-digits :: String
-digits = "0123456789" ++ digits
-
 run :: String -> Maybe Int
 run src	| Just (n, _) <- rule $ parse src = Just n
 run _ = Nothing
@@ -52,3 +46,9 @@ fromDigit '7' = 7
 fromDigit '8' = 8
 fromDigit '9' = 9
 fromDigit c = error $ show c ++ " is not digit."
+
+sample :: Int -> String
+sample n = take n digits ++ replicate n '-'
+
+digits :: String
+digits = "0123456789" ++ digits
