@@ -30,7 +30,7 @@ pGreeting d = do
 	case t of
 		Hello -> return (t, d')
 		GoodBye -> return (t, d')
-		_ -> fail "bad"
+		_ -> fail "not parsed"
 
 pName :: Derivs -> Maybe (Token, Derivs)
 pName d = do
@@ -38,4 +38,4 @@ pName d = do
 	case t of
 		World -> return (t, d')
 		Yoshikuni -> return (t, d')
-		_ -> fail "bad"
+		_ -> fail "not parsed"
