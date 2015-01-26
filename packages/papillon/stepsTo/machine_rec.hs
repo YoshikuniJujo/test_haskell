@@ -3,16 +3,14 @@ import Data.Char
 
 type Parse v = String -> Maybe (v, String)
 
-a :: Parse Int
-
-a (d : cs) | isDigit d = msum [
-	case a cs of
-		Just (n, '+' : cs') -> Just (n + fromDigit d, cs')
-		_ -> Nothing,
-	case a cs of
-		Just (n, '-' : cs') -> Just (n - fromDigit d, cs')
-		_ -> Nothing ]
-a s = Just (0, s)
+run :: Parse Int
+run s@(c : cs) | isDigit c = msum [ do
+	(n, '+' : cs') <- run cs
+	return (n + fromDigit c, cs'), do
+	(n, '-' : cs') <- run cs
+	return (n - fromDigit c, cs'),
+	return (0, s) ]
+run s = return (0, s)
 
 fromDigit :: Char -> Int
 fromDigit '0' = 0
