@@ -8,16 +8,16 @@ data Derivs = Derivs {
 	char :: Result Char }
 
 run :: String -> Maybe Int
-run src	| Just (n, _) <- rule $ parse src = Just n
+run src	| Just (n, _) <- rule $ derivs src = Just n
 run _ = Nothing
 
-parse :: String -> Derivs
-parse src = d
+derivs :: String -> Derivs
+derivs src = d
 	where
-	d = Derivs r ch
-	r = pRule d
+	d = Derivs rl ch
+	rl = pRule d
 	ch = case src of
-		(c : cs) -> Just (c, parse cs)
+		c : cs -> Just (c, derivs cs)
 		_ -> Nothing
 
 pRule :: Derivs -> Result Int
@@ -31,7 +31,7 @@ pRule d0 = msum [ do
 	guard $ isDigit c
 	(n, d') <- rule d
 	('-', d'') <- char d'
-	return (n - fromDigit c, d''), do
+	return (n - fromDigit c, d''),
 	return (0, d0) ]
 
 fromDigit :: Char -> Int
