@@ -36,7 +36,10 @@ parseDec (OP : Define : Var v : ts) = let
 parseDec (OP : Define : OP : Var v : ts) = let
 	(ps, ts') = parsePatList ts
 	(es, ts'') = parseList ts' in
-	(:)	<$> valD (varP $ mkName v) (normalB . lamE ps $ last es) []
+	(:)	<$> valD
+			(varP $ mkName v)
+			(normalB . lamE ps $ last es)
+			[]
 		<*> parseDec ts''
 parseDec [] = return []
 parseDec ts = error $ show ts
