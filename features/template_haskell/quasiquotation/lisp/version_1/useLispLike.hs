@@ -4,6 +4,6 @@ import LispLike
 
 [lisp|
 
-(setq main (putStrLn (++ "Hello, " "world!")))
+(define main (putStrLn (++ "Hello, " "world!")))
 
 |]

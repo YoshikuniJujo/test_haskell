@@ -29,7 +29,7 @@ parseList ts = let
 	(e : es, ts'')
 
 parseDec :: [Token] -> DecsQ
-parseDec (OP : Setq : Var v : ts) = let
+parseDec (OP : Define : Var v : ts) = let
 	(e, CP : ts') = parseExp ts in
 	(:)	<$> valD (varP $ mkName v) (normalB e) []
 		<*> parseDec ts'

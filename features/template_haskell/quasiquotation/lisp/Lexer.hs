@@ -4,7 +4,7 @@ import Data.Char
 
 data Token
 	= OP | CP
-	| Setq | Lambda
+	| Define | Lambda
 	| Var String | Nat Integer | Str String
 	deriving Show
 
@@ -13,8 +13,8 @@ lexer ('(' : cs) = OP : lexer cs
 lexer (')' : cs) = CP : lexer cs
 lexer ('"' : cs) = let (s, '"' : r) = span (/= '"') cs in
 	Str s : lexer r
-lexer ('s' : 'e' : 't' : 'q' : cs@(c : _))
-	| not $ isAlphaNum c = Setq : lexer cs
+lexer ('d' : 'e' : 'f' : 'i' : 'n' : 'e' : cs@(c : _))
+	| not $ isAlphaNum c = Define : lexer cs
 lexer ('l' : 'a' : 'm' : 'b' : 'd' : 'a' : cs@(c : _))
 	| not $ isAlphaNum c = Lambda : lexer cs
 lexer s@(c : cs)
