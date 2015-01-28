@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Parser (lexer, parseExp, parseDec) where
+module Parser (lexer, parseExp, parseDec, parsePat) where
 
 import Control.Applicative
 import Language.Haskell.TH
@@ -31,3 +31,18 @@ parseDec (OP : Setq : Var v : ts) = let
 		<*> parseDec ts'
 parseDec [] = return []
 parseDec ts = error $ show ts
+
+parsePat :: [Token] -> (PatQ, [Token])
+parsePat (Var v : ts) = (varP $ mkName v, ts)
+parsePat (OP : Var v : ts) = let
+	(ps, ts') = parsePatList ts in
+	(conP (mkName v) ps, ts')
+parsePat ts =
+	error $ "parsePattern: parse error: " ++ show ts
+
+parsePatList :: [Token] -> ([PatQ], [Token])
+parsePatList (CP : ts) = ([], ts)
+parsePatList ts = let
+	(p, ts') = parsePat ts
+	(ps, ts'') = parsePatList ts' in
+	(p : ps, ts'')

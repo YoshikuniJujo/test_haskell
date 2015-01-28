@@ -7,6 +7,6 @@ import Parser
 lisp :: QuasiQuoter
 lisp = QuasiQuoter {
 	quoteExp = fst . parseExp . lexer,
-	quotePat = undefined,
+	quotePat = fst . parsePat . lexer,
 	quoteType = undefined,
 	quoteDec = parseDec . lexer }
