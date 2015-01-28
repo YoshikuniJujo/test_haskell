@@ -5,7 +5,8 @@ import Data.Char
 data Token
 	= OP | CP
 	| Define | Lambda
-	| Var String | Nat Integer | Str String
+	| Con String | Var String
+	| Nat Integer | Str String
 	deriving Show
 
 lexer :: String -> [Token]
@@ -19,8 +20,12 @@ lexer ('l' : 'a' : 'm' : 'b' : 'd' : 'a' : cs@(c : _))
 	| not $ isAlphaNum c = Lambda : lexer cs
 lexer s@(c : cs)
 	| isSpace c = lexer $ dropWhile isSpace cs
+	| isUpper c = let (v, r) = span isAlphaNum s in
+		Con v : lexer r
 	| isAlpha c = let (v, r) = span isAlphaNum s in
 		Var v : lexer r
+	| ':' <- c = let (v, r) = span isOperator s in
+		Con v : lexer r
 	| isOperator c = let (v, r) = span isOperator s in
 		Var v : lexer r
 	| isDigit c = let (n, r) = span isDigit s in

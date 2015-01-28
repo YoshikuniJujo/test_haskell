@@ -8,6 +8,7 @@ import Language.Haskell.TH
 import Lexer
 
 parseExp :: [Token] -> (ExpQ, [Token])
+parseExp (Con v : ts) = (conE $ mkName v, ts)
 parseExp (Var v : ts) = (varE $ mkName v, ts)
 parseExp (Nat n : ts) = (litE $ integerL n, ts)
 parseExp (Str s : ts) = (litE $ stringL s, ts)
@@ -46,7 +47,7 @@ parseDec ts = error $ show ts
 
 parsePat :: [Token] -> (PatQ, [Token])
 parsePat (Var v : ts) = (varP $ mkName v, ts)
-parsePat (OP : Var v : ts) = let
+parsePat (OP : Con v : ts) = let
 	(ps, ts') = parsePatList ts in
 	(conP (mkName v) ps, ts')
 parsePat ts =
