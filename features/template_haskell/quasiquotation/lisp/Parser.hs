@@ -12,6 +12,10 @@ parseExp (Var v : ts) = (varE $ mkName v, ts)
 parseExp (Nat n : ts) = (litE $ integerL n, ts)
 parseExp (Str s : ts) = (litE $ stringL s, ts)
 parseExp (OP : CP : ts) = (conE '(), ts)
+parseExp (OP : Lambda : OP : ts) = let
+	(ps, ts') = parsePatList ts
+	(es, ts'') = parseList ts' in
+	(lamE ps $ last es, ts'')
 parseExp (OP : ts) = let
 	(es, ts') = parseList ts in
 	(foldl1 appE es, ts')

@@ -3,17 +3,20 @@ module Lexer (lexer, Token(..)) where
 import Data.Char
 
 data Token
-	= Setq | OP | CP
+	= OP | CP
+	| Setq | Lambda
 	| Var String | Nat Integer | Str String
 	deriving Show
 
 lexer :: String -> [Token]
 lexer ('(' : cs) = OP : lexer cs
 lexer (')' : cs) = CP : lexer cs
-lexer ('"' : cs) =
-	let (s, '"' : r) = span (/= '"') cs in Str s : lexer r
+lexer ('"' : cs) = let (s, '"' : r) = span (/= '"') cs in
+	Str s : lexer r
 lexer ('s' : 'e' : 't' : 'q' : cs@(c : _))
 	| not $ isAlphaNum c = Setq : lexer cs
+lexer ('l' : 'a' : 'm' : 'b' : 'd' : 'a' : cs@(c : _))
+	| not $ isAlphaNum c = Lambda : lexer cs
 lexer s@(c : cs)
 	| isSpace c = lexer $ dropWhile isSpace cs
 	| isAlpha c = let (v, r) = span isAlphaNum s in
