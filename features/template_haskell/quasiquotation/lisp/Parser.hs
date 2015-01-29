@@ -65,6 +65,7 @@ parseType (Con v : ts) = (conT $ mkName v, ts)
 parseType (OP : ts) = let
 	(tps, ts') = parseTypeList ts in
 	(foldl1 appT tps, ts')
+parseType ts = error $ "parseType: parse error: " ++ show ts
 
 parseTypeList :: [Token] -> ([TypeQ], [Token])
 parseTypeList (CP : ts) = ([], ts)
