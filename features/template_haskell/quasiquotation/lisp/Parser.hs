@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Parser (lexer, parseExp, parseDec, parsePat) where
+module Parser (lexer, parseExp, parseDec, parsePat, parseType) where
 
 import Control.Applicative
 import Language.Haskell.TH
@@ -59,3 +59,16 @@ parsePatList ts = let
 	(p, ts') = parsePat ts
 	(ps, ts'') = parsePatList ts' in
 	(p : ps, ts'')
+
+parseType :: [Token] -> (TypeQ, [Token])
+parseType (Con v : ts) = (conT $ mkName v, ts)
+parseType (OP : ts) = let
+	(tps, ts') = parseTypeList ts in
+	(foldl1 appT tps, ts')
+
+parseTypeList :: [Token] -> ([TypeQ], [Token])
+parseTypeList (CP : ts) = ([], ts)
+parseTypeList ts = let
+	(tp, ts') = parseType ts
+	(tps, ts'') = parseTypeList ts' in
+	(tp : tps, ts'')

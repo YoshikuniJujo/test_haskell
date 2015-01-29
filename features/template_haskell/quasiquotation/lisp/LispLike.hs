@@ -8,5 +8,5 @@ lisp :: QuasiQuoter
 lisp = QuasiQuoter {
 	quoteExp = fst . parseExp . lexer,
 	quotePat = fst . parsePat . lexer,
-	quoteType = undefined,
+	quoteType = fst . parseType . lexer,
 	quoteDec = parseDec . lexer }
