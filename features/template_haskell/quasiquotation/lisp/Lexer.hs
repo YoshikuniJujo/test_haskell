@@ -4,7 +4,7 @@ import Data.Char
 
 data Token
 	= OP | CP | OB | CB
-	| Comma | Arrow
+	| Comma | Arrow | Type
 	| Define | Lambda
 	| Con String | Var String
 	| Nat Integer | Str String
@@ -19,6 +19,8 @@ lexer (',' : cs) = Comma : lexer cs
 lexer ('-' : '>' : cs) = Arrow : lexer cs
 lexer ('"' : cs) = let (s, '"' : r) = span (/= '"') cs in
 	Str s : lexer r
+lexer ('t' : 'y' : 'p' : 'e' : cs@(c : _))
+	| not $ isAlphaNum c = Type : lexer cs
 lexer ('d' : 'e' : 'f' : 'i' : 'n' : 'e' : cs@(c : _))
 	| not $ isAlphaNum c = Define : lexer cs
 lexer ('l' : 'a' : 'm' : 'b' : 'd' : 'a' : cs@(c : _))

@@ -73,6 +73,10 @@ parseTupleExp ts = case parseExp ts of
 		"parseTupleExp: parse error: " ++ show ts
 
 parseDec :: [Token] -> DecsQ
+parseDec (OP : Type : Var v : ts) = case parseType ts of
+	(tp, CP : ts') ->
+		(:) <$> sigD (mkName v) tp <*> parseDec ts'
+	_ -> error $ "parseDec: parse error " ++ show ts
 parseDec (OP : Define : Var v : ts) = let
 	(e, CP : ts') = parseExp ts in
 	(:)	<$> valD (varP $ mkName v) (normalB e) []
