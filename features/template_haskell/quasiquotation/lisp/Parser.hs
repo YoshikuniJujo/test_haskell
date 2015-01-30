@@ -12,25 +12,34 @@ parseExp (Con v : ts) = (conE $ mkName v, ts)
 parseExp (Var v : ts) = (varE $ mkName v, ts)
 parseExp (Nat n : ts) = (litE $ integerL n, ts)
 parseExp (Str s : ts) = (litE $ stringL s, ts)
+parseExp (OP : Comma : ts) = let
+	(tpl, ts') = parseTupleCon ts in
+	(conE . mkName $ "(," ++ tpl, ts')
 parseExp (OP : CP : ts) = (conE '(), ts)
 parseExp (OP : Lambda : OP : ts) = let
 	(ps, ts') = parsePatList ts
-	(es, ts'') = parseList ts' in
+	Just (es, ts'') = parseList ts' in
 	(lamE ps $ last es, ts'')
 parseExp (OP : ts) = let
-	(es, ts') = parseList ts in
-	(foldl1 appE es, ts')
+	(es, ts') = parseListOrTuple ts in
+	(either (foldl1 appE) tupE es, ts')
 parseExp (OB : ts) = let
 	(es, ts') = parseHsList ts in
 	(listE es, ts')
 parseExp ts = error $ "parseExp: parse error: " ++ show ts
 
-parseList :: [Token] -> ([ExpQ], [Token])
-parseList (CP : ts) = ([], ts)
-parseList ts = let
-	(e, ts') = parseExp ts
-	(es, ts'') = parseList ts' in
-	(e : es, ts'')
+parseListOrTuple :: [Token] -> (Either [ExpQ] [ExpQ], [Token])
+parseListOrTuple ts = case parseList ts of
+	Just (l, ts') -> (Left l, ts')
+	_ -> let (tpl, ts') = parseTupleExp ts in (Right tpl, ts')
+
+parseList :: [Token] -> Maybe ([ExpQ], [Token])
+parseList (Comma : _) = Nothing
+parseList (CP : ts) = Just ([], ts)
+parseList ts = let (e, ts') = parseExp ts in
+	case parseList ts' of
+		Just (es, ts'') -> Just (e : es, ts'')
+		_ -> Nothing
 
 parseHsList :: [Token] -> ([ExpQ], [Token])
 parseHsList (CB : ts) = ([], ts)
@@ -41,6 +50,22 @@ parseHsList ts = case parseExp ts of
 		(e : es, ts'')
 	_ -> error $ "parseHsList: parse error: " ++ show ts
 
+parseTupleCon :: [Token] -> (String, [Token])
+parseTupleCon (CP : ts) = (")", ts)
+parseTupleCon (Comma : ts) = let
+	(tpl, ts') = parseTupleCon ts in
+	(',' : tpl, ts')
+parseTupleCon ts =
+	error $ "parseTupleCon: parse error: " ++ show ts
+
+parseTupleExp :: [Token] -> ([ExpQ], [Token])
+parseTupleExp ts = case parseExp ts of
+	(e, CP : ts') -> ([e], ts')
+	(e, Comma : ts') -> let
+		(es, ts'') = parseTupleExp ts' in
+		(e : es, ts'')
+	_ -> error $ "parseTupleExp: parse error: " ++ show ts
+
 parseDec :: [Token] -> DecsQ
 parseDec (OP : Define : Var v : ts) = let
 	(e, CP : ts') = parseExp ts in
@@ -48,7 +73,7 @@ parseDec (OP : Define : Var v : ts) = let
 		<*> parseDec ts'
 parseDec (OP : Define : OP : Var v : ts) = let
 	(ps, ts') = parsePatList ts
-	(es, ts'') = parseList ts' in
+	Just (es, ts'') = parseList ts' in
 	(:)	<$> valD
 			(varP $ mkName v)
 			(normalB . lamE ps $ last es)
