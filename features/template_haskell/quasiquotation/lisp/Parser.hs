@@ -87,6 +87,10 @@ parseDec ts = error $ show ts
 
 parsePat :: [Token] -> (PatQ, [Token])
 parsePat (Var v : ts) = (varP $ mkName v, ts)
+parsePat (OP : OP : Comma : ts) = let
+	(tpl, ts') = parseTupleCon ts
+	(ps, ts'') = parsePatList ts' in
+	(conP (mkName $ "(," ++ tpl) ps, ts'')
 parsePat (OP : Con v : ts) = let
 	(ps, ts') = parsePatList ts in
 	(conP (mkName v) ps, ts')
