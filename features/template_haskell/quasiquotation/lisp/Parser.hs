@@ -3,6 +3,7 @@
 module Parser (lexer, parseExp, parseDec, parsePat, parseType) where
 
 import Control.Applicative
+import Control.Arrow
 import Language.Haskell.TH
 
 import Lexer
@@ -28,10 +29,11 @@ parseExp (OB : ts) = let
 	(listE es, ts')
 parseExp ts = error $ "parseExp: parse error: " ++ show ts
 
-parseListOrTuple :: [Token] -> (Either [ExpQ] [ExpQ], [Token])
-parseListOrTuple ts = case parseList ts of
-	Just (l, ts') -> (Left l, ts')
-	_ -> let (tpl, ts') = parseTupleExp ts in (Right tpl, ts')
+parseListOrTuple ::
+	[Token] -> (Either [ExpQ] [ExpQ], [Token])
+parseListOrTuple ts = maybe
+	(first Right $ parseTupleExp ts)
+	(first Left) $ parseList ts
 
 parseList :: [Token] -> Maybe ([ExpQ], [Token])
 parseList (Comma : _) = Nothing
@@ -64,7 +66,8 @@ parseTupleExp ts = case parseExp ts of
 	(e, Comma : ts') -> let
 		(es, ts'') = parseTupleExp ts' in
 		(e : es, ts'')
-	_ -> error $ "parseTupleExp: parse error: " ++ show ts
+	_ -> error $
+		"parseTupleExp: parse error: " ++ show ts
 
 parseDec :: [Token] -> DecsQ
 parseDec (OP : Define : Var v : ts) = let
