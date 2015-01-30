@@ -135,7 +135,9 @@ parseTuplePat ts = case parsePat ts of
 		"parseTuplePat: parse error: " ++ show ts
 
 parseType :: [Token] -> (TypeQ, [Token])
+parseType (Arrow : ts) = (arrowT, ts)
 parseType (Con v : ts) = (conT $ mkName v, ts)
+parseType (Var v : ts) = (varT $ mkName v, ts)
 parseType (OP : CP : ts) = (tupleT 0, ts)
 parseType (OP : Comma : ts) = let
 	(n, ts') = parseTupleType ts in

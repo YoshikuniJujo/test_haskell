@@ -4,7 +4,7 @@ import Data.Char
 
 data Token
 	= OP | CP | OB | CB
-	| Comma
+	| Comma | Arrow
 	| Define | Lambda
 	| Con String | Var String
 	| Nat Integer | Str String
@@ -16,6 +16,7 @@ lexer (')' : cs) = CP : lexer cs
 lexer ('[' : cs) = OB : lexer cs
 lexer (']' : cs) = CB : lexer cs
 lexer (',' : cs) = Comma : lexer cs
+lexer ('-' : '>' : cs) = Arrow : lexer cs
 lexer ('"' : cs) = let (s, '"' : r) = span (/= '"') cs in
 	Str s : lexer r
 lexer ('d' : 'e' : 'f' : 'i' : 'n' : 'e' : cs@(c : _))
