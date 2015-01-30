@@ -96,13 +96,21 @@ parseDec (OP : Define : OP : Var v : ts) = let
 			(normalB . lamE ps $ last es)
 			[]
 		<*> parseDec ts''
-parseDec (OP : Data : ts) = let
-	((n, tvbs), ts') = parseDataHead ts
+parseDec (OP : Deriving : OP : Data : ts) = let
+	(dd, ts') = parseDataDec ts
 	(cs, ts'') = parseCons ts' in
-	(:)	<$> dataD (cxt []) n tvbs cs []
-		<*> parseDec ts''
+	(:) <$> dd cs <*> parseDec ts''
+parseDec (OP : Data : ts) = let
+	(dd, ts') = parseDataDec ts in
+	(:) <$> dd [] <*> parseDec ts'
 parseDec [] = return []
-parseDec ts = error $ show ts
+parseDec ts = error $ "parseDec: " ++ show ts
+
+parseDataDec :: [Token] -> ([Name] -> DecQ, [Token])
+parseDataDec ts = let
+	((n, tvbs), ts') = parseDataHead ts
+	(cs, ts'') = parseConstructors ts' in
+	(dataD (cxt []) n tvbs cs, ts'')
 
 parseDataHead :: [Token] -> ((Name, [TyVarBndr]), [Token])
 parseDataHead (Con v : ts) = ((mkName v, []), ts)
@@ -116,10 +124,15 @@ parseVars (CP : ts) = ([], ts)
 parseVars (Var v : ts) = first (mkName v :) $ parseVars ts
 parseVars ts = error $ "parseVars: parse error: " ++ show ts
 
-parseCons :: [Token] -> ([ConQ], [Token])
+parseCons :: [Token] -> ([Name], [Token])
 parseCons (CP : ts) = ([], ts)
-parseCons ts = let (c, ts') = parseCon ts in
-	first (c :) $ parseCons ts'
+parseCons (Con v : ts) = first (mkName v :) $ parseCons ts
+parseCons ts = error $ "parseCons: parse error: " ++ show ts
+
+parseConstructors :: [Token] -> ([ConQ], [Token])
+parseConstructors (CP : ts) = ([], ts)
+parseConstructors ts = let (c, ts') = parseCon ts in
+	first (c :) $ parseConstructors ts'
 
 
 parseCon :: [Token] -> (ConQ, [Token])
