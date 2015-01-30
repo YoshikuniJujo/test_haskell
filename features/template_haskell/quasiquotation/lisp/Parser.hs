@@ -96,8 +96,38 @@ parseDec (OP : Define : OP : Var v : ts) = let
 			(normalB . lamE ps $ last es)
 			[]
 		<*> parseDec ts''
+parseDec (OP : Data : ts) = let
+	((n, tvbs), ts') = parseDataHead ts
+	(cs, ts'') = parseCons ts' in
+	(:)	<$> dataD (cxt []) n tvbs cs []
+		<*> parseDec ts''
 parseDec [] = return []
 parseDec ts = error $ show ts
+
+parseDataHead :: [Token] -> ((Name, [TyVarBndr]), [Token])
+parseDataHead (Con v : ts) = ((mkName v, []), ts)
+parseDataHead (OP : Con v : ts) = let
+	(vs, ts') = parseVars ts in
+	((mkName v, map PlainTV vs), ts')
+parseDataHead ts = error $ "parseDataHead: parse error: " ++ show ts
+
+parseVars :: [Token] -> ([Name], [Token])
+parseVars (CP : ts) = ([], ts)
+parseVars (Var v : ts) = first (mkName v :) $ parseVars ts
+parseVars ts = error $ "parseVars: parse error: " ++ show ts
+
+parseCons :: [Token] -> ([ConQ], [Token])
+parseCons (CP : ts) = ([], ts)
+parseCons ts = let (c, ts') = parseCon ts in
+	first (c :) $ parseCons ts'
+
+
+parseCon :: [Token] -> (ConQ, [Token])
+parseCon (Con v : ts) = (normalC (mkName v) [], ts)
+parseCon (OP : Con v : ts) = let
+	Just (tps, ts') = parseTypeList ts in
+	(normalC (mkName v) $ map (strictType notStrict) tps, ts')
+parseCon ts = error $ "parseCon: parse error: " ++ show ts
 
 parsePat :: [Token] -> (PatQ, [Token])
 parsePat (Var v : ts) = (varP $ mkName v, ts)

@@ -4,6 +4,8 @@ import LispLike
 
 [lisp|
 
+(data (Foo a) Bar (Baz a) FooBar)
+
 (type main (IO ()))
 (define main (putStrLn (++ "Hello, " "world!")))
 
