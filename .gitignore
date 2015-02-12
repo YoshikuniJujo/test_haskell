@@ -166,3 +166,5 @@ tmp/
 /tools/fabicon/testWx
 
 /packages/papillon/examples/src
+
+/themes/lecture/images/*.svg
