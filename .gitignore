@@ -168,3 +168,4 @@ tmp/
 /packages/papillon/examples/src
 
 /themes/lecture/images/*.svg
+/themes/lecture/13_montecarlo/*.svg
