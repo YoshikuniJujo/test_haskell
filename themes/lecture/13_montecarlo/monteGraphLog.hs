@@ -94,7 +94,8 @@ memori t = do
 	pendown t
 	goto t (80 + 20 * 18) $ 130 - 100 * (1 - 3)
 	penup t
-	mapM_ (putMemori t) [0 .. 20]
+	mapM_ (putMemori t) [1 .. 9]
+	mapM_ (putMemori t) [11 .. 19]
 	mapM_ (putMainMemori t) [0, 10 .. 20]
 
 putMainMemori :: Turtle -> Int -> IO ()
@@ -105,7 +106,7 @@ putMainMemori t n = do
 	goto t (80 + fromIntegral n * 18) $ 120 - 100 * (1 - 3)
 	penup t
 	goto t (80 + fromIntegral n * 18 - fromIntegral (length l) * 4)
-		$ 155 - 100 * (1 - 3)
+		$ 150 - 100 * (1 - 3)
 	write t "KochiGothic" 15 l
 	where
 	l = show $ 2 ^ n
