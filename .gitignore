@@ -169,3 +169,5 @@ tmp/
 
 /themes/lecture/images/*.svg
 /themes/lecture/13_montecarlo/*.svg
+/themes/lecture/14_leibniz/*.svg
+/themes/lecture/15_binary_tree/*.svg
