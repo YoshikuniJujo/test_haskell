@@ -9,40 +9,40 @@ main = do
 	onkeypress f $ return . (/= 'q')
 	t <- newTurtle f
 	penup t
-	goto t 60 20
+	goto t 60 14
 	king t 4
-	goto t 160 90
+	goto t 160 80
 	minister t 4
-	goto t 260 20
+	goto t 260 10
 	citizen t 4
 	setheading t 180
-	goto t 235 50
+	goto t 235 40
 	pendown t
 	pensize t 4
 	pencolor t "black"
 	forward t 100
 	arrow t 4
 	penup t
-	goto t 170 70
+	goto t 170 60
 	closed t 4
-	goto t 10 70
+	goto t 10 60
 	opened t 4
-	goto t 310 35
+	goto t 310 25
 	ckey t 4
-	goto t 210 110
+	goto t 210 100
 	ckey t 4
 	goto t 40 35
 	okey t 4
 	hideturtle t
 	svg <- getSVG t
-	writeFile "public_key_metaphor.svg" $ showSVG 330 145 svg
+	writeFile "public_key_metaphor.svg" $ showSVG 330 135 svg
 	waitField f
 
 king :: Turtle -> Double -> IO ()
 king t s = do
 	(x, y) <- position t
 	crown t s
-	goto t (x + s / 2) (y + 10 * s)
+	goto t (x + 0.3 * s) (y + 9.2 * s)
 	hige t $ s / 2
 
 minister :: Turtle -> Double -> IO ()
