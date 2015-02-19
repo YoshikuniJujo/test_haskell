@@ -45,14 +45,14 @@ main = do
 	pencolor t (0x3f, 0x3f, 0xff)
 	goto t 250 110
 	write t "KochiGothic" 18 "b"
-	goto t 150 157
+	goto t 150 159
 	pencolor t "red"
 	write t "KochiGothic" 25 "a"
 	pencolor t "black"
-	goto t 164 160
+	goto t 164 159
 	write t "KochiGothic" 25 "/"
 	pencolor t (0x3f, 0x3f, 0xff)
-	goto t 178 157
+	goto t 178 159
 	write t "KochiGothic" 25 "b"
 	hideturtle t
 	svg <- getSVG t
