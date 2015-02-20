@@ -1,4 +1,3 @@
-import Control.Monad
 import Text.XML.YJSVG hiding (topleft)
 import Graphics.X11.Turtle
 
