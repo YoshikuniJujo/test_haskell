@@ -1,11 +1,65 @@
-module Machines (Value(..), putMachine, putValue) where
+module Machines (
+	Value(..),
+	putMachine, putOperator, putValue, bigArrow) where
 
 import Control.Monad
 import Text.XML.YJSVG hiding (topleft)
 import Graphics.X11.Turtle
 
+putOperator :: Turtle -> Bool -> Value -> Value -> Value -> Double -> IO ()
+putOperator t ar v1 v2 vo s = do
+	(x, y) <- position t
+	goto t (x + 22 * s) (y + 5 * s)
+	setheading t 0
+	beginfill t
+	replicateM_ 36 $ forward t (pi * s / 2) >> right t 10
+	endfill t
+	goto t (x + 10 * s) (y + 5 * s)
+	beginfill t
+	setheading t (- 30)
+	replicateM_ 2 $
+		forward t (8 * s) >> right t 90 >> forward t (4 * s) >> right t 90
+	endfill t
+	goto t (x + 10 * s) (y + 25 * s)
+	setheading t 30
+	beginfill t
+	replicateM_ 2 $
+		forward t (8 * s) >> left t 90 >> forward t (4 * s) >> left t 90
+	endfill t
+	return ()
+	goto t (x + 30 * s) (y + 12 * s)
+	setheading t 15
+	beginfill t
+	forward t (8 * s)
+	right t 105
+	forward t (10 * s)
+	right t 105
+	forward t (8 * s)
+	endfill t
+
+	when ar $ do
+		goto t (x + s) (y + 2.4 * s)
+		setheading t (- 30)
+		arrow t 7 s
+		goto t (x + s) (y + 27.6 * s)
+		setheading t 30
+		arrow t 7 s
+		goto t (x + 40 * s) (y + 15 * s)
+		setheading t 0
+		arrow t 7 s
+		return ()
+
+	pencolor t "red"
+	goto t (x + 16 * s) (y + 10.5 * s)
+	putValue t v1 1
+	goto t (x + 16 * s) (y + 17 * s)
+	putValue t v2 1
+	goto t (x + 28 * s) ( y + 14 * s)
+	putValue t vo 1
+
 putMachine :: Turtle -> Bool -> [Value] -> Maybe Value -> Double -> IO ()
 putMachine t ar vs v s = do
+	penup t
 	(x, y) <- position t
 	goto t x (y + 8 * s)
 	setheading t 0
@@ -117,3 +171,17 @@ putValueD t s = do
 	beginfill t
 	replicateM_ 36 $ forward t (pi * s * 4 / 27) >> right t 10
 	endfill t
+
+bigArrow :: Turtle -> Double -> Double -> IO ()
+bigArrow t l s = do
+	pensize t (8 * s)
+	pendown t
+	forward t (l * s)
+	penup t
+	left t 30
+	backward t (8 * s)
+	pendown t
+	forward t (8 * s)
+	right t 60
+	backward t (8 * s)
+	penup t
