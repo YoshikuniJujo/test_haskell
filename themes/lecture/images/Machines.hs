@@ -1,6 +1,6 @@
 module Machines (
 	Value(..),
-	putMachine, putOperator, putValue, bigArrow) where
+	putMachine, putOperator, putValue, arrow, bigArrow) where
 
 import Control.Monad
 import Text.XML.YJSVG hiding (topleft)
