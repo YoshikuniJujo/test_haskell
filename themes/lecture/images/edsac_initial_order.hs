@@ -21,7 +21,7 @@ main = do
 	showBitsLines t bs -- initialOrder
 	hideturtle t
 	svg <- getSVG t
-	writeFile "edsac_initial_order.svg" $ showSVG 380 260 svg
+	writeFile "edsac_initial_order.svg" $ showSVG 375 255 svg
 	waitField f
 
 data Bit = O | I deriving Show

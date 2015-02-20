@@ -14,30 +14,30 @@ main = do
 	goto t 13 10
 	putValue t ValueA 4
 	goto t 10 80
-	putMachine t [ValueA, ValueB, ValueC] (Just Machine) 4
+	putMachine t True [ValueA] (Just Machine) 4
 
 	pencolor t "black"
-	goto t 163 10
+	goto t 160 12
 	putValue t ValueB 4
-	goto t 160 80
-	putMachine t [ValueB, ValueC] (Just Machine) 4
+	goto t 155 80
+	putMachine t True [ValueB] (Just Machine) 4
 
 	pencolor t "black"
-	goto t 313 10
+	goto t 304 11
 	putValue t ValueC 4
-	goto t 310 80
-	putMachine t [ValueC] (Just ValueD) 4
+	goto t 300 80
+	putMachine t True [ValueC] (Just ValueD) 4
 
 	pencolor t "black"
-	goto t 450 150
+	goto t 430 150
 	putValue t ValueD 4
 	hideturtle t
 	svg <- getSVG t
-	writeFile "three_arg_fun.svg" $ showSVG 500 190 svg
+	writeFile "three_arg_fun.svg" $ showSVG 480 190 svg
 	waitField f
 
-putMachine :: Turtle -> [Value] -> Maybe Value -> Double -> IO ()
-putMachine t vs v s = do
+putMachine :: Turtle -> Bool -> [Value] -> Maybe Value -> Double -> IO ()
+putMachine t ar vs v s = do
 	(x, y) <- position t
 	goto t x (y + 8 * s)
 	setheading t 0
@@ -69,13 +69,15 @@ putMachine t vs v s = do
 	left t 90
 	forward t (5 * s)
 	endfill t
-	goto t (x + 27 * s) (y + 10 * s)
-	setheading t (- 45)
-	arrow t 8 s
-	goto t (x + 5 * s) (y - 8 * s)
-	setheading t (- 90)
-	arrow t 7 s
-	penup t
+
+	when ar $ do
+		goto t (x + 27 * s) (y + 10 * s)
+		setheading t (- 45)
+		arrow t 7 s
+		goto t (x + 5 * s) (y - 8 * s)
+		setheading t (- 90)
+		arrow t 7 s
+		penup t
 
 	pencolor t "red"
 	goto t (x + 4 * s) (y + 10 * s)
@@ -111,7 +113,7 @@ putValue t ValueD s = putValueD t s
 putValue t Machine s = do
 	(x, y) <- position t
 	goto t x (y - 2 * s)
-	putMachine t [] Nothing (s / 2)
+	putMachine t False [] Nothing (s / 2)
 
 putValueA, putValueB, putValueC, putValueD :: Turtle -> Double -> IO ()
 putValueA t s = do
