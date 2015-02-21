@@ -10,28 +10,28 @@ main = do
 	t <- newTurtle f
 	penup t
 
-	goto t 75 15
+	goto t 70 15
 	whole t "black" 4
 
-	goto t 75 60
+	goto t 70 60
 	setheading t (- 135)
 	arrow t "black" 8 4
 	setheading t 0
-	goto t 20 90
+	goto t 15 90
 	partsA t "black" 4
 
-	goto t 120 60
+	goto t 115 60
 	setheading t (- 90)
 	arrow t "black" 6 4
 	setheading t 0
-	goto t 95 90
+	goto t 90 90
 	partsB t "black" 4
 
-	goto t 165 60
+	goto t 160 60
 	setheading t (- 45)
 	arrow t "black" 8 4
 	setheading t 0
-	goto t 195 90
+	goto t 190 90
 	partsC t "black" 4
 
 	hideturtle t

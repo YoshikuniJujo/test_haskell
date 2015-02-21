@@ -31,7 +31,7 @@ main = do
 	setheading t 135
 	arrow t "black" 8 4
 	setheading t 0
-	goto t 180 90
+	goto t 187 92
 	partsC t "black" 4
 
 	hideturtle t
