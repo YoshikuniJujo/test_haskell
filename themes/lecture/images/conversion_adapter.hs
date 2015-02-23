@@ -2,6 +2,8 @@ import Control.Monad
 import Text.XML.YJSVG hiding (topleft)
 import Graphics.X11.Turtle
 
+import Machine2
+
 main, main1, main2 :: IO ()
 main = main1 >> main2
 main1 = do
@@ -44,58 +46,8 @@ main2 = do
 	writeFile "conversion_adapter2.svg" $ showSVG 220 85 svg
 	waitField f
 
-half, arm, body :: ColorClass c => Turtle -> c -> Double -> IO ()
-half t c s = do
-	(x, y) <- position t
-	goto t (x + 2 * s) y
-	arm t c s
-	goto t x (y + 10 * s)
-	body t c s
-arm t c s = do
-	(x, y) <- position t
-	penup t
-	pencolor t c
-	setheading t 0
-
-	goto t x (y + 6 * s)
-	beginfill t
-	replicateM_ 2 $
-		forward t (4 * s) >> right t 90 >> forward t (4 * s) >> right t 90
-	endfill t
-
-	goto t x (y + 2 * s)
-	beginfill t
-	replicateM_ 2 $
-		forward t (6 * s) >> right t 90 >> forward t (4 * s) >> right t 90
-	endfill t
-
-	goto t (x + 6 * s) y
-	setheading t 0
-	beginfill t
-	forward t $ 6 * s
-	right t 90
-	forward t $ 2 * s
-
-	right t 90
-	forward t $ 2 * s
-	left t 90
-	forward t $ 4 * s
-	left t 90
-	forward t $ 2 * s
-	right t 90
-
-	forward t $ 2 * s
-	right t 90
-	forward t $ 6 * s
-	endfill t
-body t c s = do
-	penup t
-	pencolor t c
-	setheading t 0
-	beginfill t
-	replicateM_ 2 $
-		forward t (16 * s) >> right t 90 >> forward t (8 * s) >> right t 90
-	endfill t
+half :: ColorClass c => Turtle -> c -> Double -> IO ()
+half t c s = machine t c armA s
 
 convertor :: ColorClass c => Turtle -> c -> Double -> IO ()
 convertor t c s = do
@@ -119,10 +71,6 @@ convertor t c s = do
 	forward t $ 2 * s
 	left t 90
 	forward t s
-	{-
-	right t 90
-	forward t $ 8 * s
-	-}
 	endfill t
 
 seven :: ColorClass c => Turtle -> c -> Double -> IO ()
