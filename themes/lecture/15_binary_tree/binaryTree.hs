@@ -12,5 +12,5 @@ reachable t s e = case lookup s t of
 reachable' :: Tree -> Char -> Char -> Bool
 reachable' t s e
 	| s == e = True
-	| Just (l, r) <- lookup s t = reachable t l e || reachable t r e
+	| Just (l, r) <- lookup s t = reachable' t l e || reachable' t r e
 	| otherwise = False
