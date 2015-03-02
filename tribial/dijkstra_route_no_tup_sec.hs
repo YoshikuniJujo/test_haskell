@@ -1,5 +1,3 @@
-{-# LANGUAGE TupleSections #-}
-
 import Control.Applicative
 import Control.Arrow
 import Data.Maybe
@@ -31,7 +29,7 @@ next :: Table -> Queue -> Maybe (Result, Queue)
 next t q = nearest q >>= \(n, q') -> return (n, map (update t n) q')
 
 update :: Table -> Result -> QueueElem -> QueueElem
-update t (s0, (p, d0)) (s, d) = (s ,) . mn d $ (s0 : p ,) . (d0 +) <$> t s0 s
+update t (s0, (p, d0)) (s, d) = (,) s . mn d $ (,) (s0 : p) . (d0 +) <$> t s0 s
 	where
 	Just x@(_, dx) `mn` Just (_, dy) | dx <= dy = Just x
 	_ `mn` Just y = Just y
@@ -75,4 +73,4 @@ dist' t (s0, g0) s g
 	| otherwise = dist t s g
 
 initQueue :: Data -> Queue
-initQueue d = (1, Just ([], 0)) : map (, Nothing) [2 .. length d]
+initQueue d = (1, Just ([], 0)) : map (flip (,) Nothing) [2 .. length d]
