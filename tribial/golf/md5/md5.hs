@@ -1,100 +1,68 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+
 import Data.List
 import Data.Word
 import Data.Bits
 import Data.Char
 import Numeric
 
-padding :: String -> String
-padding s =
-	s ++ "\x80" ++ replicate ((55 - l `mod` 64) `mod` 64) '\x00' ++ len64 8 (8 * l)
+abcd0 :: (Word32, Word32, Word32, Word32)
+abcd0 = (0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476)
+
+type Function = Word32 -> Word32 -> Word32 -> Word32
+
+fs :: [Function]
+fs = concatMap (replicate 16) [f, g, h, i]
 	where
-	l = length s
-
-len64 :: Int -> Int -> String
-len64 0 _ = ""
-len64 i n = chr (n `mod` 0x100) : len64 (i - 1) (n `div` 0x100)
-
-a0, b0, c0, d0 :: Word32
-a0 = 0x67452301
-b0 = 0xefcdab89
-c0 = 0x98badcfe
-d0 = 0x10325476
-
-funF, funG, funH, funI :: Word32 -> Word32 -> Word32 -> Word32
-funF x y z = x .&. y .|. complement x .&. z
-funG x y z = x .&. z .|. y .&. complement z
-funH x y z = x `xor` y `xor` z
-funI x y z = y `xor` (x .|. complement z)
-
-t :: Double -> Word32
-t i = floor $ 4294967296 * abs (sin i)
+	f x y z = x .&. y .|. complement x .&. z
+	g x y z = x .&. z .|. y .&. complement z
+	h x y z = x `xor` y `xor` z
+	i x y z = y `xor` (x .|. complement z)
 
 ts :: [Word32]
-ts = map t [0 .. 64]
+ts = map (floor . ((4294967296 :: Double) *) . abs . sin) [1 .. 64]
 
-toWord :: [Char] -> Word32
-toWord [] = 0
-toWord (c : cs) = fromIntegral (ord c) + 0x100 * toWord cs
-
-uncons :: Int -> [a] -> Maybe ([a], [a])
-uncons _ [] = Nothing
-uncons n xs = Just (take n xs, drop n xs)
-
-fs :: [Word32 -> Word32 -> Word32 -> Word32]
-fs = concatMap (replicate 16) [funF, funG, funH, funI]
-
-ks, is, ss :: [Int]
+ks, ss :: [Int]
 ks = [0..15] ++
-	[1, 6 .. 15] ++ [0, 5 .. 15] ++ [4, 9 .. 15] ++
-	[3, 8 .. 15] ++ [2, 7 .. 15] ++
-	[5, 8 .. 15] ++ [1, 4 .. 15] ++ [0, 3 .. 15] ++ [2] ++
-	[0, 7 .. 15] ++ [5, 12 .. 15] ++ [3, 10 .. 15] ++
-	[1, 8 .. 15] ++ [6, 13 .. 15] ++ [4, 11 .. 15] ++ [2, 9 .. 15]
+	take 16 (iterate ((`mod` 16) . (+ 5)) 1) ++
+	take 16 (iterate ((`mod` 16) . (+ 3)) 5) ++
+	take 16 (iterate ((`mod` 16) . (+ 7)) 0)
 ss = concatMap (concat . replicate 4) [
 	[7, 12, 17, 22],
-	[5, 9, 14, 20],
+	[5, 9,  14, 20],
 	[4, 11, 16, 23],
 	[6, 10, 15, 21] ]
-is = [1 .. 64]
 
-step :: [Word32] -> (Word32, Word32, Word32, Word32)
-	-> (Word32 -> Word32 -> Word32 -> Word32, Int, Int, Int)
-	-> (Word32, Word32, Word32, Word32)
-step xs (a, b, c, d) (j, k, i, s) = (d, a', b, c)
-	where
-	a' = b + (a + j b c d + xs !! k + ts !! i) `rotateL` s
-
-littleE :: Int -> Word32 -> String
-littleE 0 _ = ""
-littleE i n = showHex2 (n `mod` 0x100) ++ littleE (i - 1) (n `div` 0x100)
-
-showHex2 :: Word32 -> String
-showHex2 n = let s = showHex n "" in replicate (2 - length s) '0' ++ s
-
-sampleMd5 :: String
-sampleMd5 = concatMap (littleE 4) [(a + a0), (b + b0), (c + c0), (d + d0)]
-	where
-	(a, b, c, d) = foldl (step sampleXs) (a0, b0, c0, d0) $ zip4 fs ks is ss
+step :: [Word32] -> (Word32, Word32, Word32, Word32) ->
+	(Function, Int, Int, Word32) -> (Word32, Word32, Word32, Word32)
+step xs (a, b, c, d) (f, k, s, t) = (d, a', b, c)
+	where a' = b + (a + f b c d + xs !! k + t) `rotateL` s
 
 steps :: (Word32, Word32, Word32, Word32) ->
 	[Word32] -> (Word32, Word32, Word32, Word32)
 steps (a, b, c, d) xs = (a + a', b + b', c + c', d + d')
-	where
-	(a', b', c', d') = foldl (step xs) (a, b, c, d) $ zip4 fs ks is ss
-
-test :: (Int, Int, Int, Int) -> (Int, Int, Int, Int)
-test (a, b, c, d) = (d, a, b, c)
-
-sampleXs :: [Word32]
-sampleXs = map toWord . unfoldr (uncons 4) $ padding ""
-
-process :: String -> [[Word32]]
-process = unfoldr (uncons 16) . map toWord . unfoldr (uncons 4) . padding
-
-some :: String
-some = "a\128\NUL\NUL\NUL" ++ replicate 49 '\NUL' ++ "\b" ++ replicate 7 '\NUL'
+	where (a', b', c', d') = foldl (step xs) (a, b, c, d) $ zip4 fs ks ss ts
 
 md5sum :: String -> String
-md5sum s = concatMap (littleE 4) [a, b, c, d]
+md5sum dat = concatMap (tos 4) [a, b, c, d]
 	where
-	(a, b, c, d) = foldl steps (a0, b0, c0, d0) $ process s
+	(a, b, c, d) = foldl steps abcd0 $ ppr dat
+	tos (0 :: Int) _ = ""
+	tos i n = h2 (n .&. 0xff) ++ tos (i - 1) (n `shiftR` 8)
+	h2 n = let s = showHex n "" in replicate (2 - length s) '0' ++ s
+
+ppr :: String -> [[Word32]]
+ppr = unfoldr (uc 16) . map tw . unfoldr (uc 4) . padd
+	where
+	tw [] = 0
+	tw (c : cs) = fromIntegral (ord c) .|. tw cs `shiftL` 8
+	uc _ [] = Nothing
+	uc n xs = Just (take n xs, drop n xs)
+
+padd :: String -> String
+padd s = s ++ "\x80" ++
+	((55 - l `mod` 64) `mod` 64) `replicate` '\x00' ++ lte 8 (8 * l)
+	where
+	l = length s
+	lte (0 :: Int) _ = ""
+	lte i n = chr (n .&. 0xff) : lte (i - 1) (n `shiftR` 8)
