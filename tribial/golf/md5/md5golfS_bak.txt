@@ -1,0 +1,23 @@
+import Data.List
+import Data.Word
+import Data.Bits
+import Data.Char
+import Numeric
+c=complement
+m=concatMap
+r=replicate
+v=unfoldr
+n=length
+(!)=shiftR
+main=interact$unlines.t.m
+t s=map(nub.sort.(`filter`s))[isDigit,isAlpha]
+f=m(r 16)[\x y z->x.&.y.|.c x.&.z,\x y z->x.&.z.|.y.&.c z,\x y z->x`xor`y`xor`z,\x y z->y`xor`(x.|.c z)]
+q=map(floor.(2^32*).abs.sin)[1..64]
+k=[0..15]++5#1++3#5++7#0
+x#y=take 16$iterate((`mod`16).(+x))y
+s=m(concat.r 4)[[7,12..22],[5,9,14,20],[4,11,16,23],[6,10,15,21]]
+o x(a,b,c,d)(f,k,s,t)=(d,e,b,c)where e=b+(a+f b c d+x!!k+t)`rotateL`s
+p(a,b,c,d)x=(a+e,b+f,c+g,d+h)where(e,f,g,h)=foldl(o x)(a,b,c,d)$zip4 f k s q
+m d=m(j 4)[a,b,c,d]where(a,b,c,d)=foldl p(0x67452301,0xefcdab89,0x98badcfe,0x10325476)$l d;j 0 _="";j i n=w(n.&.255)++j(i-1)(n!8);w n=let s=showHex n""in r(2-n s)'0'++s
+l=v(u 16).map w.v(u 4).z where w[]=0;w(c:j)=fromIntegral(ord c).|.w j`shiftL`8;u _[]=Nothing;u n x=Just(take n x,drop n x)
+z s=s++"\x80"++((55-l`mod`64)`mod`64)`r`'\x00'++j 8(8*l)where l=n s;j 0_="";j i n=chr(n.&.255):j(i-1)(n!8)
