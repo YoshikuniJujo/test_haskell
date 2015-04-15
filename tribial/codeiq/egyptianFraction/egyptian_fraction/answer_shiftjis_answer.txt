@@ -1,0 +1,84 @@
+※これは解答用テキストファイルです。
+
+■解答を記入してください。
+記入がない場合、プログラムの実行結果が正しくても減点の対象となります。
+
+（例）sample.out.txt
+2 10
+2 5 70
+4 12
+
+
+3 10 1140
+6 39
+46 2070
+2 4 30
+4 636
+3 7 56 14280
+2 8 920
+4 14 436 344113
+2 3
+3 10 132 27940
+2 52 14820
+3 20 780
+2 69 14214
+2 18 679 1151924 2653856651628
+3 15 285
+8 69 6808
+2 8 291 253752
+3 9 3582
+4 15 403 1136460
+2 16 624
+
+
+
+
+
+■使用言語・動作環境について
+(1)言語の種類を記入してください。未記入の場合、減点となります。
+
+Haskell
+
+(2)コンパイラ／インタプリタの名称・バージョン情報を記入してください。未記入の場合、減点となります。
+
+The Glorious Glasgow Haskell Compilation System, version 7.6.3
+
+■プログラムの特長・工夫した点等、アピールポイントについて。
+あなたが書いたコードの内容や工夫した点をわかりやすく説明してください。未記入の場合、大幅な減点となります。
+
+標準的なライブラリのみを使い、可読性を犠牲にせずに、80x24の範囲内におさめた。
+
+■もし企業からのスカウトメールがきたらどのくらい積極的にアクションすると思いますか？任意でお答えください。
+「積極的に会ってみたいと思う」「社名や条件次第では会ってみたいと思う」「よほどのことがない限り返信しない」、他ありましたらご記入ください。
+
+楽しく話ができそうなら会いたい。
+
+■あなたが書いたコードを貼り付けてください。未記入の場合は評価できません。
+コードが完全な形（そのままコンパイル・実行）できるものでない場合は程度に応じて減点の対象となります。
+
+
+
+import Control.Applicative
+import Control.Arrow
+import Data.List
+import Data.Ratio
+
+main :: IO ()
+main = interact $ unlines . map (unwords . map show . egyptian)
+	. map (((%) <$> (!! 0) <*> (!! 1)) . map read . words)
+	. (\(ln : lns) -> take (read ln) lns)
+	. lines
+
+egyptian :: Rational -> [Integer]
+egyptian r
+	| numerator r == 1 = let
+		(m, n) = ((+ 1) &&& (*) <$> id <*> (+ 1)) $ denominator r in
+		[m, n]
+	| otherwise = unfoldr uncons r
+
+uncons :: Rational -> Maybe (Integer, Rational)
+uncons r | r <= 0 = Nothing
+uncons r = Just (m, r - 1 % m)
+	where
+	(n, d) = numerator &&& denominator $ r
+	m = d `div` n + if d `mod` n == 0 then 0 else 1
