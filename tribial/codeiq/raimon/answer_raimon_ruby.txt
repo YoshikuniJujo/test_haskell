@@ -1,0 +1,36 @@
+=begin
+※これは解答用テキストファイルです。
+
+【必須】(1) 動作環境について
+Rubyのバージョン情報を記入してください。未記入の場合、減点となります。
+
+ruby 2.0.0p353
+
+【必須】(2) プログラムの特長・工夫した点等、アピールポイントについて。
+あなたが書いたコードの内容や工夫した点をわかりやすく説明してください。未記入の場合、大幅な減点となります。
+
+
+
+【必須】(3) あなたが書いたコードを貼り付けてください。未記入の場合は評価できません。
+コードが完全な形（そのまま実行できるもの）でない場合は程度に応じて減点の対象となります。
+=end
+
+
+def rotate(ss)
+	is = []
+	ss[0].length.times{|i| is.unshift i}
+	is.map{|i| ss.map{|l| l[i]}.join}
+end
+
+def spiral(n)
+	if n == 0 then return [""] end
+	rotate(spiral(n - 1)).map{|l| l + ' '}.unshift('#' * n)
+end
+
+def zipWith(x, y, &b) x.zip(y).map(&b) end
+
+def raimon(n)
+	zipWith(spiral(n), rotate(rotate(spiral(n)))) { |l1, l2| l1 + '#' + l2 }
+end
+
+puts raimon(gets.to_i * 4 + 1)
