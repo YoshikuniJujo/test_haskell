@@ -1,0 +1,20 @@
+import Data.List
+import Data.Bits
+
+main :: IO ()
+main = do
+	putStrLn $ "1. " ++ show (f $ 10 ^ 3)
+	putStrLn $ "2. " ++ show (f $ 10 ^ 10)
+
+f :: Integer -> Integer
+f 0 = 0
+f n	| odd n = fromIntegral (n + 1) `div` 2 + 2 * f (n `div` 2)
+	| otherwise = countBits n + f (n - 1)
+
+toBinary :: Integer -> [Bool]
+toBinary = unfoldr $ \n -> case n of
+	0 -> Nothing
+	_ -> Just (odd n, shiftR n 1)
+
+countBits :: Integer -> Integer
+countBits = genericLength . filter id . toBinary
