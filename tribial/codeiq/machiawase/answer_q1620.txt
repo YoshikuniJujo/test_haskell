@@ -1,0 +1,117 @@
+※これは解答用テキストファイルです。
+
+【必須】「small.in.txt」と「large.in.txt」に対する解を、ここに記入してください。
+
+(1)small.in.txtの解
+
+64
+
+
+(2)large.in.txtの解
+
+248348
+
+
+
+【必須】使用言語・動作環境について
+(1)言語の種類を記入してください。未記入の場合、減点となります。
+
+Haskell
+
+(2)コンパイラ／インタプリタの名称・バージョン情報を記入してください。未記入の場合、減点となります。
+
+The Glorious Glasgow Haskell Compilation System, version 7.6.3
+
+【必須】プログラムの特長・工夫した点等、アピールポイントについて。
+あなたが書いたコードの内容や工夫した点をわかりやすく説明してください。未記入の場合、減点となります。
+
+(考察)
+
+横と縦に対してx軸とy軸を対応させる。
+格子上しか動けないことを考えるとx軸とy軸とを独立して扱うことができる。
+
+待ち合わせ場所のx座標をx0とする。
+
+家が奇数個の場合を考える。
+x0がそれぞれの家のx座標の中央値だった場合、x0を増減どちらに動かしたとしても、
+x0からの距離が増加する家のほうが減少する家よりも多くなる。
+よってx0が中央値である場合にx座標において距離は最小となる。
+
+家が偶数個の場合を考える。
+ソートして真ん中に来るx座標の2つの値が同じ場合は奇数個の場合と同じ。
+それらが異なる場合どちらのxをx0としても、距離が増減する家の数が同じなので、
+距離は変わらない。
+それらの2値の範囲外にx0を動かすと距離は増加する。
+よってソートして真ん中に来るx座標のうちより小さい方をx0とすれば
+x座標において距離は最小となる。
+
+y軸方向に関しても同じことが言える。
+
+(方針)
+
+家の番号を家の位置(x, y)に変換する。
+xの値とyの値のそれぞれについて中央値
+(家が偶数個のときはソートして半分に分けたときの小さい方の最後の値とする)
+との差の和を求めて足し合わせる。
+
+(中央値を求めるアルゴリズム)
+
+クイックソートのアルゴリズムを応用した。
+
+各家のx値、y値がほぼまんべんなく分布していると考えピボット値を選んだ。
+n個のなかでi番目の位置を求める場合、
+最小値と最大値のあいだをn個に分けi番目の値以下で最大の値をピボット値とした。
+ただし最小値が変化しないと処理が停止しなくなるのでその場合は1を加算した。
+
+ピボット値より小(sms)、ピボット値よりも大(bgs)のそれぞれのリストを作成し、
+i番目の値がsmsに属するかbgsに属するかどちらにも属さないかで処理を分けた。
+
+どちらかに属する場合はi, n, 最小値、最大値を適切に変更して再帰的に処理した。
+
+iが0以下、またはn - 1以上の場合はそれぞれリスト内の最小値、最大値を求めた。
+
+【必須】あなたが書いたコードを貼り付けてください。未記入の場合は評価できません。
+コードが完全な形（そのままコンパイル・実行）できるものでない場合は程度に応じて減点の対象となります。
+
+
+import Control.Arrow
+
+main :: IO ()
+main = interact $ (++ "\n")
+	. show . (\((w, h), n, as) -> machiawase n w h as) . parse . lines
+
+parse :: [String] -> ((Int, Int), Int, [Int])
+parse (wh : n : as : _) = ((w, h), read n, map read $ words as)
+	where [w, h] = map read $ words wh
+
+machiawase :: Int -> Int -> Int -> [Int] -> Int
+machiawase n w h hs = dists n (1, w) (1, h) (map (position w h) hs)
+
+position :: Int -> Int -> Int -> (Int, Int)
+position w h = (ps !!) . (subtract 1)
+	where ps = [ (x, y) | y <- [1 .. h], x <- [1 .. w] ]
+
+dists :: Int -> (Int, Int) -> (Int, Int) -> [(Int, Int)] -> Int
+dists n (mnx, mxx) (mny, mxy) = (\(dx, dy) -> dx + dy) .
+	(diffs n mnx mxx *** diffs n mny mxy) . unzip
+
+diffs :: Int -> Int -> Int -> [Int] -> Int
+diffs n mn mx xs = sum $ map (abs . subtract (median n mn mx xs)) xs
+
+median :: Int -> Int -> Int -> [Int] -> Int
+median n mn mx xs = sellect (n `div` 2, n) (mn, mx) xs
+
+sellect :: (Int, Int) -> (Int, Int) -> [Int] -> Int
+sellect (i, n) (mn, mx) xs
+	| i <= 0 = minimum xs
+	| n - 1 <= i = maximum xs
+	| i < ls = sellect (i, ls) (mn, pvt) sms
+	| i < n - lb = pvt
+	| otherwise = sellect (i - (n - lb), lb) (pvt, mx) bgs
+		where
+		pvt = let p = mn + (mx - mn) * i `div` n in
+			if p == mn then p + 1 else p
+		sms = filter (< pvt) xs
+		bgs = filter (pvt <) xs
+		ls = length sms
+		lb = length bgs
