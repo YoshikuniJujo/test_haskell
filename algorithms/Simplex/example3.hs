@@ -13,7 +13,8 @@ main = getArgs >>= readFile . head >>= putStr . unlines . map (
 			. iterate step
 			. toMatrix
 			. uncurry calcAll
-			. (map cust . split ',' *** map prod . split ',' . tail)
+			. (map cust . split ',' ***
+				map prod . filter (not . null) . split ',' . tail)
 			. span (/= ';')
 	) . lines
 
