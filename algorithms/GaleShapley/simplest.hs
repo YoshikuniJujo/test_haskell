@@ -1,67 +1,49 @@
+{-# LANGUAGE TupleSections #-}
+
 import Control.Applicative
 import Control.Arrow
 import Data.Maybe
 import Data.List
 
-data Man = A | B | C | D deriving (Show, Eq)
-data Woman = X | Y | Z | W deriving (Show, Eq)
+data Man = A | B | C | D deriving (Show, Eq, Ord)
+data Woman = X | Y | Z | W deriving (Show, Eq, Ord)
 
-type ManT = [(Man, [Woman])]
-type WomanT = [(Woman, [Man])]
-type WomanR = [((Woman, Man), Int)]
-
-manT :: ManT
+manT :: Table Man Woman
 manT = [
-	(A, [Y, X, Z, W]),
-	(B, [X, W, Y, Z]),
-	(C, [Y, X, Z, W]),
-	(D, [W, Z, Y, X]) ]
+	(A, [Y, X, Z, W]), (B, [X, W, Y, Z]),
+	(C, [Y, X, Z, W]), (D, [W, Z, Y, X]) ]
 
-womanT :: WomanT
+womanT :: Table Woman Man
 womanT = [
-	(X, [C, D, B, A]),
-	(Y, [D, B, A, C]),
-	(Z, [A, C, B, D]),
-	(W, [C, B, A, D]) ]
+	(X, [C, D, B, A]), (Y, [D, B, A, C]),
+	(Z, [A, C, B, D]), (W, [C, B, A, D]) ]
 
-womanR :: WomanR
-womanR = rtable womanT
+main :: IO ()
+main = print . sort $ pairs manT womanT
 
-rtable :: WomanT -> WomanR
-rtable = concatMap rtable1
+type Table m w = [(m, [w])]
+type TableR w m = [((w, m), Int)]
+type Pair w m = (w, (m, Int))
+type State m w = (Table m w, [Pair w m])
 
-rtable1 :: (Woman, [Man]) -> WomanR
-rtable1 (w, ms) = zipWith (\m p -> ((w, m), p)) ms [4, 3, 2, 1]
+pairs :: (Eq m, Eq w) => Table m w -> Table w m -> [(m, w)]
+pairs mt wt = map ((\(w, m) -> (m, w)) . second fst)
+	. snd $ run (uncurry . step $ rtable wt) (mt, [])
+	where run n s = maybe s (run n) $ n s
 
-womanPoint :: WomanR -> Woman -> Man -> Int
-womanPoint wr w m = fromJust $ lookup (w, m) wr
+step :: (Eq m, Eq w) => TableR w m -> Table m w -> [Pair w m] -> Maybe (State m w)
+step wr mt ps = (<$> single mt ps) $ \((m, w : ws), r) -> let
+	p = fromJust $ lookup (w, m) wr in
+	((m, ws) : r ,) $ case first (map snd) $ partition ((== w) . fst) ps of
+		([(_, p')], ps') | p > p' -> (w, (m, p)) : ps' | True -> ps
+		_ -> (w, (m, p)) : ps
 
-type Pair = (Woman, (Man, Int))
-type State = (ManT, [Pair])
+rtable :: Table w m -> TableR w m
+rtable = concatMap rt
+	where rt (w, ms) = zipWith (\m p -> ((w, m), p)) ms [4, 3, 2, 1]
 
-isSingle :: Man -> [Pair] -> Bool
-isSingle m ps = m `notElem` map (fst . snd) ps
-
-single :: ManT -> [Pair] -> Maybe ((Man, [Woman]), ManT)
+single :: Eq m => Table m w -> [Pair w m] -> Maybe ((m, [w]), Table m w)
 single [] _ = Nothing
 single (mp@(m, _) : mps) ps
-	| isSingle m ps = Just (mp, mps)
+	| m `notElem` map (fst . snd) ps = Just (mp, mps)
 	| True = second (mp :) <$> single mps ps
-
-step :: WomanR -> ManT -> [Pair] -> Maybe State
-step wr mt ps = case single mt ps of
-	Just ((m, w : ws), mt') -> case partition ((== w) . fst) ps of
-		([(_, (m', p'))], ps')
-			| p > p' -> Just (mt'', (w, (m, p)) : ps')
-			| True -> Just (mt'', ps)
-		_ -> Just (mt'', (w, (m, p)) : ps)
-		where
-		mt'' = ((m, ws) : mt')
-		p = womanPoint wr w m
-	_ -> Nothing
-
-run :: (s -> Maybe s) -> s -> s
-run n s = maybe s (run n) $ n s
-
-pairs :: ManT -> WomanT -> [Pair]
-pairs mt wt = snd $ run (uncurry $ step (rtable wt)) (mt, [])
