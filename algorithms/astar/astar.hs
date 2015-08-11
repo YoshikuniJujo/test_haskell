@@ -7,14 +7,15 @@ import Data.Maybe
 import System.Environment
 
 main :: IO ()
-main = getArgs >>= readFile . head >>= putStrLn . show
-	. (\((s, g), p) ->
---		calc (map (, 1) . fromMaybe [] . (`lookup` p)) dist s g)
-		astar (map (, 1) . fromMaybe [] . (`lookup` p)) dist s g)
-	. ((fromJust . lookup Start &&& fromJust . lookup Goal) . addPosition
-		&&& catMaybes . map (\(ns, (y, x)) -> checkPath1 ns y x)
-			. addPosition . flip (neighbors Nothing []) Nothing)
-	. map (map toPart)
+main = getArgs >>= readFile . head >>= putStr . unlines
+	. (\(m, Just (_, r)) -> foldl foot m . init $ tail r)
+	. (id &&&
+		(\((s, g), p) ->
+			astar (map (, 1) . fromMaybe [] . (`lookup` p)) dist s g)
+		. ((fromJust . lookup Start &&& fromJust . lookup Goal) . addPosition
+			&&& catMaybes . map (\(ns, (y, x)) -> checkPath1 ns y x)
+				. addPosition . flip (neighbors Nothing []) Nothing)
+		. map (map toPart))
 	. lines
 
 dist :: Position -> Position -> Int
@@ -78,13 +79,18 @@ near (y0, x0) (y1, x1) (y2, x2) =
 	abs (y0 - y1) + abs (x0 - x1) < abs (y0 - y2) + abs (x0 - x2)
 
 astar :: (Eq n, Ord d, Num d) =>
-	(n -> [(n, d)]) -> (n -> n -> d) -> n -> n -> Maybe d
-astar p h s g = lookup g . map (second fst) $
-	calculate p h g [(s, (h g s, Nothing))] []
+	(n -> [(n, d)]) -> (n -> n -> d) -> n -> n -> Maybe (d, [n])
+astar p h s g = (\(md, r) -> (, r) <$> md) $
+	lookup g . map (second fst) &&& (\q -> route q s g) $ calc p h s g
 
 calc :: (Eq n, Ord d, Num d) =>
 	(n -> [(n, d)]) -> (n -> n -> d) -> n -> n -> Q n d
 calc p h s g = calculate p h g [(s, (h g s, Nothing))] []
+
+route :: Eq n => Q n d -> n -> n -> [n]
+route q s g
+	| s == g = [g]
+	| True = g : route q s (fromJust . join . (snd <$>) $ lookup g q)
 
 type Q n d = [(n, (d, Maybe n))]
 
@@ -133,3 +139,8 @@ pop _ [] = Nothing
 pop p (x : xs)
 	| p x = Just (x, xs)
 	| True = second (x :) <$> pop p xs
+
+foot :: [String] -> (Int, Int) -> [String]
+foot m (y, x) = take y m ++ [take x r ++ "+" ++ drop (x + 1) r] ++ drop (y + 1) m
+	where
+	r = m !! y
