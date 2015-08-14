@@ -3,11 +3,11 @@ data C a = C { unC :: C a -> C a } | A (C a) | Z
 toInt :: C a -> Int
 toInt Z = 0
 toInt (A c) = 1 + toInt c
-toInt n = toInt (unC (unC n (C A)) Z)
+toInt n = toInt $ n .$. C A .$. Z
 
 toChurch :: Int -> C a
 toChurch 0 = zero
-toChurch n = unC s (toChurch (n - 1))
+toChurch n = s .$. toChurch (n - 1)
 
 (.$.) :: C a -> C a -> C a
 (.$.) = unC
