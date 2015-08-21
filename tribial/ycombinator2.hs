@@ -1,6 +1,8 @@
 data R a = R { unR :: R a -> a }
 
-y = \f -> (\x -> f (unR x x)) $ R (\x -> f (unR x x))
+(.$.) = unR
+
+y = \f -> (\x -> f $ x .$. x) . R $ \x -> f $ x .$. x
 
 fact _ 0 = 1
 fact f n = n * f (n - 1)
