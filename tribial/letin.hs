@@ -1,3 +1,5 @@
+{-# LANGUAGE RankNTypes #-}
+
 import Control.Monad.Fix
 
 fun = let f n = case n of 0 -> 0; _ -> n + f (n - 1) in f 10
@@ -39,3 +41,17 @@ fgh' = (\fx f g h -> fix fx f g h 10)
 	(\f g h n -> case n of 0 -> 0; _ -> 2 + g (n - 1))
 	(\g h f n -> case n of 0 -> 0; _ -> 3 + h (n - 1))
 	(\h f g n -> case n of 0 -> 0; _ -> 7 + f (n - 1))
+
+fix2 :: forall a b . (a -> b -> a) -> (b -> a -> b) -> a
+fix2 f g = f (fix2 f g) (fix2 g f)
+
+fix3 :: forall a b c .
+	(a -> b -> c -> a) ->
+	(b -> c -> a -> b) ->
+	(c -> a -> b -> c) -> a
+fix3 f g h = f (fix3 f g h) (fix3 g h f) (fix3 h f g)
+
+fgx = (\f g h -> fix3 f g h 10)
+	(\f g h n -> case n of 0 -> 0; _ -> 2 + g (n - 1))
+	(\g h f n -> case n of 0 -> 0; _ -> 3)
+	(\h f g -> 10 :: Int)
