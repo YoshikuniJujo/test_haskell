@@ -1,3 +1,6 @@
+{-# LANGUAGE MonadComprehensions #-}
+
+import Control.Applicative
 import Text.Read
 
 example1, example2, example3, example4 :: [String]
@@ -20,3 +23,14 @@ rpolishIter _ _ = Nothing
 
 rpolish :: [String] -> Maybe [Integer]
 rpolish = rpolishIter $ Just []
+
+rpolishIter' :: Maybe [Integer] -> [String] -> Maybe [Integer]
+rpolishIter' mns [] = mns
+rpolishIter' (Just ns) (s : ss) = maybe
+	(rpolishIter' ((: ns) <$> readMaybe s) ss)
+	(\o -> rpolishIter' [ x `o` y : ns' | y : x : ns' <- Just ns ] ss)
+	(lookup s operators)
+rpolishIter' _ _ = Nothing
+
+rpolish' :: [String] -> Maybe [Integer]
+rpolish' = rpolishIter' $ Just []
