@@ -1,4 +1,4 @@
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RankNTypes, ScopedTypeVariables #-}
 
 import Control.Monad.Fix
 
@@ -42,16 +42,32 @@ fgh' = (\fx f g h -> fix fx f g h 10)
 	(\g h f n -> case n of 0 -> 0; _ -> 3 + h (n - 1))
 	(\h f g n -> case n of 0 -> 0; _ -> 7 + f (n - 1))
 
-fix2 :: forall a b . (a -> b -> a) -> (b -> a -> b) -> a
+fix2 :: (a -> b -> a) -> (b -> a -> b) -> a
 fix2 f g = f (fix2 f g) (fix2 g f)
 
-fix3 :: forall a b c .
-	(a -> b -> c -> a) ->
-	(b -> c -> a -> b) ->
-	(c -> a -> b -> c) -> a
+fix3 :: (a -> b -> c -> a) -> (b -> c -> a -> b) -> (c -> a -> b -> c) -> a
 fix3 f g h = f (fix3 f g h) (fix3 g h f) (fix3 h f g)
+
+fix3' f g h = f (fix3' f g h) (fix3' g h f) (fix3' h f g)
 
 fgx = (\f g h -> fix3 f g h 10)
 	(\f g h n -> case n of 0 -> 0; _ -> 2 + g (n - 1))
 	(\g h f n -> case n of 0 -> 0; _ -> 3)
-	(\h f g -> 10 :: Int)
+	(\h f g -> 10)
+
+type T a b c = (a -> b -> c -> a) -> (b -> c -> a -> b) -> (c -> a -> b -> c) -> a
+
+{-
+fgx' = (\fx f g h -> fix fx f g h 10)
+	((\fx f g h -> f (fx f g h) (fx g h f) (fx h f g)) ::
+--		(forall a b c . T a b c) -> a -> b -> c -> a)
+		((forall a b c . T a b c) ->
+			(a -> b -> c -> a) ->
+			(b -> c -> a -> b) ->
+			(c -> a -> b -> c) -> a)
+		)
+	(\f g h n -> case n of 0 -> 0; _ -> 2 + g (n - 1))
+	(\g h f n -> case n of 0 -> 0; _ -> 3 + h (n - 1))
+	(\h f g n -> case n of 0 -> 0; _ -> 7 + f (n - 1))
+--	(\h f g -> 10 :: Int)
+-}

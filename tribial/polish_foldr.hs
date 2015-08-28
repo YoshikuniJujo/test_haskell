@@ -13,7 +13,7 @@ operators = [("+", (+)), ("-", (-)), ("*", (*)), ("/", div)]
 polish1 :: String -> Maybe [Integer] -> Maybe [Integer]
 polish1 s (Just ns) = case lookup s operators of
 	Just o -> case ns of
-		x : y : ns -> Just $ x `o` y : ns
+		x : y : ns' -> Just $ x `o` y : ns'
 		_ -> Nothing
 	_ -> maybe Nothing (Just . (: ns)) $ readMaybe s
 polish1 _ _ = Nothing
