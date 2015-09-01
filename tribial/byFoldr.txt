@@ -1,0 +1,180 @@
+init (x : xs) = foldr f (const []) xs x where f x g = (: g x)
+	f x1 g x0 = x0 : g x1
+
+init [x]
+	-> foldr f (const []) [] x where f x g = (: g x)
+	-> const [] x
+	-> []
+
+init [x1, x2]
+	-> foldr f (const []) [x2] x1 where f x g = (: g x)
+	-> f x2 (const []) x1
+	-> x1 : const [] x2
+	-> x1 : []
+
+init [x1, x2, x3]
+	-> foldr f (const []) [x2, x3] x1 where x `f` g = (: g x)
+	-> x2 `f` (x3 `f` const []) x1
+	-> x1 : (x3 `f` const[]) x2
+	-> x1 : x2 : const [] x3
+	-> x1 : x2 : []
+
+foldr f (: []) [x1, x2, x3] where x `f` g = (: g x)
+	-> x1 `f` (x2 `f` (x3 `f` (: [])))
+	-> (: (x2 `f` (x3 `f` (: []))) x1)
+	-> (: (: (x3 `f` (: [])) x2) x1)
+	-> (: x1 : (x3 `f` (: [])) x2)
+	-> (: x1 : (: (: []) x3) x2)
+	-> (: x1 : x2 : (: []) x3)
+	-> (: x1 : x2 : x3)
+
+init (x1 : x2 : xs)
+	-> foldr f (const []) (x2 : xs) x1
+		(-> x2 `f` foldr f (const []) xs $ x1)
+	-> x1 : (foldr f (const []) xs x2)
+
+<-1> -> (const [])
+[] -> (: [])
+[x] -> (: [x])
+[x1, x2] -> (: [x1, x2])
+
+f x g = (: g x)
+f xを適用すると関数gはどう変化するか。
+たとえばconst []にf xを適用すると(: [])となる。
+(: [])にf xを適用するとどうなるか。
+(: [x])となる。
+gはa -> [a]なので、(: g x)は
+
+f x1 g x0 = x0 : g x1
+
+gがf x2 g'だったら
+f x1 g x0 = x0 : f x2 g' x1
+
+---
+
+(!!) xs n = foldr f (error "bad") xs n where f x g 0 = x; f x g n = g $ n - 1
+
+(!!) (x : xs) 0
+	-> foldr f (error "bad") (x : xs) 0
+	-> f x (foldr f (error "bad") xs) 0
+	-> x
+
+(!!) (x1 : x2 : xs) 1
+	-> foldr f (error "bad") (x1 : x2 : xs) 1
+	-> f x (foldr f (error "bad") (x2 : xs)) 1
+	-> foldr f (error "bad") (x2 : xs) 0
+
+(!!) (x : xs) n
+	-> foldr f (error "bad") (x : xs) n
+	-> foldr f (error "bad") xs (n - 1)
+
+---
+
+foldl f z xs = foldr s id xs z where s x g a = g $ f a x
+	x `s` g = \a -> g $ a `f` x
+
+foldr s id [x1, x2, x3] z
+	-> x1 `s` (x2 `s` (x3 `s` id)) $ z
+	-> (\a -> (x2 `s` (x3 `s` id)) $ a `f` x1) z
+	-> x2 `s` (x3 `s` id) $ z `f` x1
+	-> (\a -> x3 `s` id $ a `f` x2) $ z `f` x1
+	-> x3 `s` id $ (z `f` x1) `f` x2
+	-> (\a -> id $ a `f` x3) $ (z `f` x1) `f` x2
+	-> ((z `f` x1) `f` x2) `f` x3
+
+関数sはfを左結合にしている。
+差分リストの考えかたに近い。
+
+---
+
+foldr1 f (x : xs) = foldr s id xs x where s x g = (`f` g x)
+	x `s` g = \w -> w `f` (g x)
+
+	(x `s` g) w = w `f` (g x)
+	s x g w = w `f` g x
+
+foldr1 f [x]
+	-> foldr s id [] x
+	-> id x
+	-> x
+
+foldr1 f [x1, x2]
+	-> foldr s id [x2] x1
+	-> x2 `s` id $ x1
+	-> x1 `f` x2
+
+foldr1 f [x1, x2, x3]
+	-> foldr s id [x2, x3] x1
+	-> x2 `s` (x3 `s` id) $ x1
+	-> x1 `f` (x3 `s` id) x2
+	-> x1 `f` (x2 `f` id x3)
+	-> x1 `f` (x2 `f` x3)
+
+foldr s id (x2 : xs) x1
+	-> x2 `s` foldr s id xs $ x1
+	-> x1 `f` foldr s id xs x2
+foldr s id [] xl
+	-> xl
+
+s x1 g x0 = x0 `f` g x1
+
+gがs x2 g'だったら
+s x1 g x0 = x0 `f` s x2 g' x1
+
+---
+
+scanl f x xs = foldr s (: []) xs x where s x g a = a : g (f a x)
+	x `s` g = \a -> a : g (a `f` x)
+
+scanl f x0 []
+	-> foldr s (: []) [] x
+	-> (: []) x
+	-> [x]
+
+scanl f x0 [x1]
+	-> foldr s (: []) [x1] x0
+	-> x1 `s` (: []) $ x0
+	-> x0 : (: []) (x0 `f` x1)
+	-> x0 : [x0 `f` x1]
+	-> [x0, x0 `f` x1]
+
+scanl f x0 [x1, x2]
+	-> foldr s (: []) [x1, x2] x0
+	-> x1 `s` (x2 `s` (: [])) $ x0
+	-> x0 : (x2 `s` (: [])) (x0 `f` x1)
+	-> x0 : x0 `f` x1 : (: []) (x0 `f` x1 `f` x2)
+	-> [x0, x0 `f` x1, (x0 `f` x1) `f` x2]
+
+foldr s (: []) (x : xs) z
+	-> x `s` foldr s (: []) xs $ z
+	-> z : foldr s (: []) xs (z `f` x)
+
+---
+
+take n xs = foldr f (const []) xs n where f _ _ 0 = []; f x g n = x : g (n - 1)
+	x `f` g = \n -> case n of
+		0 -> []
+		_ -> x : g (n - 1)
+
+take 0 (x : xs)
+	-> foldr f (const []) (x : xs) 0
+	-> x `f` foldr f (const []) xs $ 0
+	-> []
+
+take 1 (x : xs)
+	-> foldr f (const []) (x : xs) 1
+	-> x `f` foldr f (const []) xs $ 1
+	-> x : foldr f (const []) xs 0
+
+nをとってxsの先頭n文字を返す関数gがあったとする。
+そうすると求める関数g'は:qu
+
+ftake xs = foldr f (const []) xs where
+	f x g = \n -> case n of 0 -> []; _ -> x : g (n - 1)
+
+---
+
+drop n xs = foldr f (const []) xs n where f x g 0 = x : g 0; f _ g n = g $ n - 1
+	x `f` g = \n -> case n of
+		0 -> x : g 0
+		_ -> g $ n - 1
