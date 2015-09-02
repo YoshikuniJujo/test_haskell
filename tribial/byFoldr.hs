@@ -58,10 +58,15 @@ replicate n = take n . repeat
 cycle = concat . repeat
 
 take = flip $ foldr f (const []) where f _ _ 0 = []; f x g n = x : g (n - 1)
-
 drop = flip $ foldr f (const []) where f x g 0 = x : g 0; f _ g n = g $ n - 1
-
 splitAt n xs = (take n xs, drop n xs)
+
+takeWhile p = foldr f [] where f x xs | p x = x : xs | otherwise = []
+dropWhile p xs = foldr f (const []) xs True where
+	f x g True
+		| p x = g True
+		| otherwise = x : g False
+	f x g False = x : g False
 
 zipWith f = foldr g (const [])
 	where
