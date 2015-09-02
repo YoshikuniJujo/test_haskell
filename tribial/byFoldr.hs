@@ -8,6 +8,7 @@ import Prelude hiding (
 	elem, notElem, lookup,
 	zip, zip3, zipWith, zipWith3, unzip, unzip3,
 	lines, words, unlines, unwords)
+import Data.Char
 
 map f = foldr ((:) . f) []
 (++) = flip (foldr (:))
@@ -68,7 +69,39 @@ dropWhile p xs = foldr f (const []) xs True where
 		| otherwise = x : g False
 	f x g False = x : g False
 
+lookup x = foldr f Nothing
+	where f (a, b) mb
+		| x == a = Just b
+		| otherwise = mb
+
+zip = foldr f (const [])
+	where
+	f x g [] = []
+	f x g (y : ys) = (x, y) : g ys
+
+zip3 = foldr f (const $ const [])
+	where
+	f x g [] _ = []
+	f x g _ [] = []
+	f x g (y : ys) (z : zs) = (x, y, z) : g ys zs
+
 zipWith f = foldr g (const [])
 	where
 	g x h [] = []
 	g x h (y : ys) = f x y : h ys
+
+unzip = foldr f ([], []) where f (x, y) (xs, ys) = (x : xs, y : ys)
+
+lines = separate (== '\n')
+words = separate isSpace
+
+separate :: (a -> Bool) -> [a] -> [[a]]
+{-
+separate p (x : xs)
+	| p x = [] : separate p xs
+	| otherwise = (x :) `heading` separate p xs
+	where heading f (x : xs) = f x : xs
+separate _ _ = [[]]
+-}
+separate p = foldr (\x -> if p x then ([] :) else hd (x :)) [[]]
+	where hd f (x : xs) = f x : xs
