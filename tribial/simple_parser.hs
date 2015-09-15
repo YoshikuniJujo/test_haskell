@@ -4,15 +4,13 @@ type Parse a = String -> [(a, String)]
 
 type Op = Integer -> Integer -> Integer
 
-none :: Parse a
-none _ = []
+-- none :: Parse a
+-- none _ = []
+
+-- basic functions
 
 succeed :: a -> Parse a
 succeed v i = [(v, i)]
-
-eof :: Parse ()
-eof "" = [((), "")]
-eof _ = []
 
 check :: (Char -> Bool) -> Parse Char
 check p (c : cs) | p c = [(c, cs)]
@@ -36,9 +34,17 @@ p1 >* p2 = (p1 >*> p2) `build` fst
 (*>) :: Parse a -> Parse b -> Parse b
 p1 *> p2 = (p1 >*> p2) `build` snd
 
+eof :: Parse ()
+eof "" = [((), "")]
+eof _ = []
+
+-- list
+
 list, list1 :: Parse a -> Parse [a]
 list p = succeed [] `alt` list1 p
 list1 p = (p >*> list p) `build` uncurry (:)
+
+-- numbers
 
 number :: Parse Integer
 number = list1 (check isDigit) `build` read
@@ -48,6 +54,8 @@ spaces1 = list1 (check isSpace) `build` const ()
 
 numbers :: Parse [Integer]
 numbers = (number >*> list (spaces1 *> number)) `build` uncurry (:)
+
+-- calculater
 
 op, ad, sb, ml, dv :: Parse Op
 op = ad `alt` sb `alt` ml `alt` dv
