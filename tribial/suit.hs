@@ -1,5 +1,5 @@
 
-data Suit = Spade | Heart | Diamond | Club
+data Suit = Spade | Heart | Diamond | Club deriving Show
 
 data Color = Black | Red
 

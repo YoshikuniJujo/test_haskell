@@ -1,8 +1,7 @@
 import Data.Char
+import Data.Maybe
 
 type Parse a = String -> [(a, String)]
-
-type Op = Integer -> Integer -> Integer
 
 -- none :: Parse a
 -- none _ = []
@@ -49,13 +48,26 @@ list1 p = (p >*> list p) `build` uncurry (:)
 number :: Parse Integer
 number = list1 (check isDigit) `build` read
 
-spaces1 :: Parse ()
+spaces, spaces1 :: Parse ()
+spaces = list (check isSpace) `build` const ()
 spaces1 = list1 (check isSpace) `build` const ()
 
 numbers :: Parse [Integer]
 numbers = (number >*> list (spaces1 *> number)) `build` uncurry (:)
 
+comma :: Parse ()
+comma = spaces >*> char ',' *> spaces
+
+cnumbers :: Parse [Integer]
+cnumbers = (number >*> list (comma *> number)) `build` uncurry (:)
+
+parse :: Parse a -> String -> Maybe a
+-- parse p = listToMaybe . map fst . (p >* eof)
+parse = ((listToMaybe . map fst) .) . (>* eof)
+
 -- calculater
+
+type Op = Integer -> Integer -> Integer
 
 op, ad, sb, ml, dv :: Parse Op
 op = ad `alt` sb `alt` ml `alt` dv
