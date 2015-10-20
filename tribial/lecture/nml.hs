@@ -41,8 +41,12 @@ token s = Just $ let (t, r) = span (`notElem` "<&") s in (Right t, r)
 data Tag = Open | Close deriving Show
 
 tag :: String -> ((Tag, String), String)
-tag ('/' : n) = let (t, _ : r) = span (/= '>') n in ((Close, t), r)
-tag n = let (t, _ : r) = span (/= '>') n in ((Open, t), r)
+tag ('/' : n) = case span (/= '>') n of
+	(t, _ : r) -> ((Close, t), r)
+	(t, _) -> ((Close, t), "")
+tag n = case span (/= '>') n of
+	(t, _ : r) -> ((Open, t), r)
+	(t, _) -> ((Open, t), "")
 
 entity :: String -> Maybe (Char, String)
 entity ('l' : 't' : ';' : r) = Just ('<', r)
