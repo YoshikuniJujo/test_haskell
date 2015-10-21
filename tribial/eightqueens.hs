@@ -1,4 +1,4 @@
--- % echo 8 | runhaskell eightqueen.hs
+-- % echo 8 | runhaskell eightqueens.hs
 
 import Control.Applicative
 import Data.List
