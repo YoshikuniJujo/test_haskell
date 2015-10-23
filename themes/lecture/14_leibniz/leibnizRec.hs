@@ -1,6 +1,6 @@
 
-estPi :: Double -> Double
-estPi = (4 *) . estPi4
+estPi :: Int -> Double
+estPi = (4 *) . estPi4 . fromIntegral
 
 estPi4 :: Double -> Double
 estPi4 0 = 1
