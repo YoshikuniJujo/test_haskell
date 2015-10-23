@@ -1,6 +1,6 @@
-import Data.List
-import Data.Tree
-import Data.Char
+import Data.List (unfoldr)
+import Data.Tree (Tree(..))
+import Data.Char (isSpace)
 
 type Nml = Tree String
 
