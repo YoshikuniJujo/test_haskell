@@ -173,3 +173,5 @@ tmp/
 /themes/lecture/15_binary_tree/*.svg
 
 /features/existential_quantifications/namedCar.txt
+
+/tools/image/tree_abcde.svg
