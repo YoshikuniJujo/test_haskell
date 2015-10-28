@@ -178,3 +178,7 @@ tmp/
 
 /tribial/sudoku/sudoku
 /tribial/sudoku/books/sudoku1
+
+/algorithms/pearls/minfree/simple
+/algorithms/pearls/minfree/array
+/algorithms/pearls/minfree/dc
