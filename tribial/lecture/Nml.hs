@@ -1,10 +1,12 @@
-module Nml (Nml, nml) where
+module Nml (Nml, nml, fromNml) where
 
 import Data.List (unfoldr)
 import Data.Tree (Tree(..))
 import Data.Char (isSpace)
 
 type Nml = Tree String
+
+-- DECODE
 
 nml :: String -> Maybe Nml
 nml s = case parse $ tokens s of (Just n, []) -> Just n; _ -> Nothing
@@ -70,3 +72,28 @@ tag ('/' : s) = case span (/= '>') s of
 tag s = case span (/= '>') s of
 	(tg, _ : r) -> (Open tg, r)
 	(tg, _) -> (Open tg, "")
+
+-- ENCODE
+
+fromNml :: Nml -> String
+fromNml = toString 0 . addSep . toTokens
+
+toString :: Int -> [Token] -> String
+toString i (Open "" : ts) =
+	replicate i '\t' ++ "<>\n" ++ toString i ts
+toString i (Open tg : ts) =
+	replicate i '\t' ++ "<" ++ tg ++ ">\n" ++ toString (i + 1) ts
+toString i (Close tg : ts) =
+	replicate (i - 1) '\t' ++ "</" ++ tg ++ ">\n" ++ toString (i - 1) ts
+toString i (Text tx : ts) =
+	replicate i '\t' ++ tx ++ "\n" ++ toString i ts
+toString _ _ = ""
+
+addSep :: [Token] -> [Token]
+addSep (t1@(Text _) : ts@(Text _ : _)) = t1 : Open "" : addSep ts
+addSep (t : ts) = t : addSep ts
+addSep _ = []
+
+toTokens :: Nml -> [Token]
+toTokens (Node tx []) = [Text tx]
+toTokens (Node tg ns) = Open tg : concatMap toTokens ns ++ [Close tg]
