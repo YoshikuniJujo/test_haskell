@@ -1,0 +1,8 @@
+(as ++ bs) \\ (vs ++ us)
+=> (as \\ (vs ++ us)) ++ (bs \\ (vs ++ us))
+=> ((as \\ vs) \\ us) ++ ((bs \\ vs) \\ us)
+=> (as \\ us) ++ ((bs \\ us) \\ vs)
+=> (as \\ us) ++ (bs \\ vs)
+
+[0 ..] \\ xs = ([0 .. b - 1] \\ us) ++ ([b ..] \\ vs)
+	where (us, vs) = partition (< b) xs
