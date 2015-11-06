@@ -2,7 +2,7 @@
 
 module Account (
 	Connection, UserName(..), MailAddress(..), Password(..),
-	UUID, NewAccountError(..), DeriveError(..),
+	NewAccountError(..), DeriveError(..),
 	open, close, newTable, newAccount, removeAccount, activate,
 	checkPassword, mailAddress,
 	) where
@@ -22,15 +22,14 @@ data Connection = Connection {
 	stmtCheckName :: DB.Stmt,
 	stmtCheckAddress :: DB.Stmt,
 	stmtRemoveAccount :: DB.Stmt,
-	stmtGetAcctive :: DB.Stmt,
-	stmtSetAcctive :: DB.Stmt,
+	stmtGetActive :: DB.Stmt,
+	stmtSetActive :: DB.Stmt,
 	stmtGetSaltHash :: DB.Stmt,
 	stmtMailAddress :: DB.Stmt
 	}
 
 data UserName = UserName BS.ByteString deriving Show
 data MailAddress = MailAddress BS.ByteString deriving Show
-data UUID
 
 data NewAccountError = UserNameAlreadyExist | MailAddressAlreadyExist deriving Show
 data DeriveError = NoAccount | NotActivated deriving Show
@@ -44,13 +43,15 @@ open = do
 	cn <- DB.checkName conn
 	ca <- DB.checkAddress conn
 	sh <- DB.saltHash conn
+	sa <- DB.setActivate conn
 	return $ Connection {
 		connection = conn,
 		connCprg = cc,
 		stmtNewAccount = sna,
 		stmtCheckName = cn,
 		stmtCheckAddress = ca,
-		stmtGetSaltHash = sh
+		stmtGetSaltHash = sh,
+		stmtSetActive = sa
 		}
 
 close :: Connection -> IO ()
@@ -59,6 +60,7 @@ close conn = do
 	DB.finalizeStmt $ stmtCheckName conn
 	DB.finalizeStmt $ stmtCheckAddress conn
 	DB.finalizeStmt $ stmtGetSaltHash conn
+	DB.finalizeStmt $ stmtSetActive conn
 	DB.close $ connection conn
 
 newTable :: IO ()
@@ -80,15 +82,15 @@ checkAddress conn (MailAddress ma) = do
 	where stmt = stmtCheckAddress conn 
 
 newAccount :: Connection ->
-	UserName -> MailAddress -> Password -> IO (Maybe NewAccountError)
+	UserName -> MailAddress -> Password -> IO (Either NewAccountError UUID4)
 newAccount conn un@(UserName nm) ma@(MailAddress addr) psw = do
 	ne <- checkName conn un
 	ae <- checkAddress conn ma
 	case (ne, ae) of
-		(True, _) -> return $ Just UserNameAlreadyExist
-		(_, True) -> return $ Just MailAddressAlreadyExist
+		(True, _) -> return $ Left UserNameAlreadyExist
+		(_, True) -> return $ Left MailAddressAlreadyExist
 		_ -> do
-			(UUID4 uu) <- uuid4IO $ connCprg conn
+			u@(UUID4 uu) <- uuid4IO $ connCprg conn
 			DB.bindStmt stmt "name" nm
 			DB.bindStmt stmt "mail_address" addr
 			DB.bindStmt stmt "act_key" uu
@@ -96,14 +98,17 @@ newAccount conn un@(UserName nm) ma@(MailAddress addr) psw = do
 			setSalt stmt slt
 			setHash stmt hs
 			DB.runStmt stmt
-			return Nothing
+			return $ Right u
 	where stmt = stmtNewAccount conn 
 
 removeAccount :: Connection -> UserName -> IO ()
 removeAccount = undefined
 
-activate :: Connection -> UUID -> IO ()
-activate = undefined
+activate :: Connection -> UUID4 -> IO ()
+activate conn (UUID4 uu) = do
+	let stmt = stmtSetActive conn
+	DB.bindStmt stmt "act_key" uu
+	DB.runStmt stmt
 
 checkPassword :: Connection -> UserName -> Password -> IO Bool
 checkPassword conn (UserName nm) psw = do

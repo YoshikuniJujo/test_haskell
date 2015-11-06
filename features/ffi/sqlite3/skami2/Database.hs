@@ -6,7 +6,7 @@ module Database (
 	finalizeStmt,
 	saltHash,
 	existStmt,
-	checkName, checkAddress,
+	checkName, checkAddress, setActivate,
 	) where
 
 import Control.Applicative
@@ -125,3 +125,9 @@ stmtCheckAddress =
 
 checkAddress :: SQLite -> IO Stmt
 checkAddress conn = mkStmt conn stmtCheckAddress
+
+stmtSetActivate :: BS.ByteString
+stmtSetActivate = "UPDATE account SET activated = 1 where act_key = :act_key"
+
+setActivate :: SQLite -> IO Stmt
+setActivate conn = mkStmt conn stmtSetActivate
