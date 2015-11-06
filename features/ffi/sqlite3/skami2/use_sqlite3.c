@@ -52,7 +52,13 @@ bind_stmt(sqlite3_stmt *stmt, char *ph, char *val)
 void
 run_stmt(sqlite3_stmt *stmt)
 {
-	while (SQLITE_DONE != sqlite3_step(stmt)) {}
+	int ret;
+
+	while (SQLITE_DONE != (ret = sqlite3_step(stmt))) {
+		if (ret != SQLITE_OK && ret != SQLITE_ROW) break; }
+	if (ret != SQLITE_DONE) {
+		printf("SQLITE3: error run_stmt: error code is %d\n", ret);
+		exit(-1); }
 }
 
 void
