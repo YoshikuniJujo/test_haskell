@@ -33,7 +33,7 @@ mk_stmt(sqlite3 *conn, char *str)
 	int ret = 0;
 	sqlite3_stmt *stmt = NULL;
 
-	ret = sqlite3_prepare_v2(conn, str, 128, &stmt, NULL);
+	ret = sqlite3_prepare_v2(conn, str, 256, &stmt, NULL);
 	if (ret != SQLITE_OK) {
 		printf("SQLITE3: cannot make stmt: %s\n", str);
 		exit(-1);
@@ -89,4 +89,14 @@ get2_stmt(sqlite3_stmt *stmt, int n, char *str1, char *str2)
 	if (ret != SQLITE_DONE) {
 		printf("SQLITE3: error while get");
 		exit(-1); }
+}
+
+int
+exist_stmt(sqlite3_stmt *stmt)
+{
+	int c = 0;
+
+	if (SQLITE_DONE != sqlite3_step(stmt)) { c++; }
+
+	return c;
 }

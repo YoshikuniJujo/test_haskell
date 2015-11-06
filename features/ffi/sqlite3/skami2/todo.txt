@@ -1,0 +1,5 @@
+* to be more secure, do sqlite3_clear_bindings()
+* activate
+	+ check active
+	+ activate
+* get mail address with user name

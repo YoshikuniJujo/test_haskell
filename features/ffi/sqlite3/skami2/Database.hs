@@ -5,6 +5,8 @@ module Database (
 	open, close, newTable, bindStmt, runStmt, getSaltHash, mkAccount,
 	finalizeStmt,
 	saltHash,
+	existStmt,
+	checkName, checkAddress,
 	) where
 
 import Control.Applicative
@@ -34,6 +36,10 @@ foreign import ccall unsafe "use_sqlite3.h get_stmt" c_getStmt ::
 	Ptr Stmt -> CInt -> CString -> IO ()
 foreign import ccall unsafe "use_sqlite3.h get2_stmt" c_get2Stmt ::
 	Ptr Stmt -> CInt -> CString -> CString -> IO ()
+foreign import ccall unsafe "use_sqlite3.h exist_stmt" c_existStmt ::
+	Ptr Stmt -> IO Bool
+foreign import ccall unsafe "sqlite3.h sqlite3_reset" c_sqlite3Reset ::
+	Ptr Stmt -> IO ()
 
 open :: IO SQLite
 open = SQLite <$> c_open
@@ -59,23 +65,31 @@ bindStmt (Stmt stmt) ph val = BS.useAsCString (":" `BS.append` ph) $ \cph ->
 	BS.useAsCString val $ c_bindStmt stmt cph
 
 runStmt :: Stmt -> IO ()
-runStmt (Stmt stmt) = c_runStmt stmt
+runStmt (Stmt stmt) = c_runStmt stmt >> c_sqlite3Reset stmt
 
 getStmt :: Stmt -> IO BS.ByteString
 getStmt (Stmt stmt) = allocaArray0 512 $ \ptr -> do
 	c_getStmt stmt 512 ptr
+	c_sqlite3Reset stmt
 	BS.packCString ptr
 
 get2Stmt :: Stmt -> IO (BS.ByteString, BS.ByteString)
 get2Stmt (Stmt stmt) = allocaArray0 512 $ \ptr1 -> do
 	allocaArray0 512 $ \ptr2 -> do
 		c_get2Stmt stmt 512 ptr1 ptr2
+		c_sqlite3Reset stmt
 		(,) <$> BS.packCString ptr1 <*> BS.packCString ptr2
+
+existStmt :: Stmt -> IO Bool
+existStmt (Stmt stmt) = do
+	b <- c_existStmt stmt
+	c_sqlite3Reset stmt
+	return b
 
 stmtNewTable :: BS.ByteString
 stmtNewTable = "CREATE TABLE account (" `BS.append`
 	"name PRIMARY KEY, " `BS.append`
-	"salt, hash, mail_address, activated)"
+	"salt, hash, mail_address, act_key, activated)"
 
 newTable :: SQLite -> IO ()
 newTable conn = bracket (mkStmt conn stmtNewTable) finalizeStmt runStmt
@@ -93,8 +107,21 @@ getSaltHash stmt nm = (\act -> bracket act (const $ return ()) get2Stmt) $ do
 
 stmtMkAccount :: BS.ByteString
 stmtMkAccount = "INSERT INTO account (" `BS.append`
-	"name, salt, hash, mail_address, activated) VALUES (" `BS.append`
-	":name, :salt, :hash, :mail_address, 0)"
+	"name, salt, hash, mail_address, act_key, activated) VALUES (" `BS.append`
+	":name, :salt, :hash, :mail_address, :act_key, 0)"
 
 mkAccount :: SQLite -> IO Stmt
 mkAccount conn = mkStmt conn stmtMkAccount
+
+stmtCheckName :: BS.ByteString
+stmtCheckName = "SELECT name FROM account WHERE name = :name"
+
+checkName :: SQLite -> IO Stmt
+checkName conn = mkStmt conn stmtCheckName
+
+stmtCheckAddress :: BS.ByteString
+stmtCheckAddress =
+	"SELECT mail_address FROM account WHERE mail_address = :mail_address"
+
+checkAddress :: SQLite -> IO Stmt
+checkAddress conn = mkStmt conn stmtCheckAddress
