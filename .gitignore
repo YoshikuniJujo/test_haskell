@@ -185,3 +185,5 @@ tmp/
 
 /features/ffi/sqlite3/c/sample
 /features/ffi/sqlite3/c/*.sqlite3
+/features/ffi/sqlite3/hello/hello
+/features/ffi/sqlite3/hello/*.sqlite3
