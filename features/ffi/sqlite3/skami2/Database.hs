@@ -2,11 +2,13 @@
 
 module Database (
 	SQLite, Stmt,
-	open, close, newTable, bindStmt, runStmt, getSaltHash, mkAccount,
+	open, close, newTable, bindStmt, runStmt, getSaltHash,
+	mkAccount, rmAccount,
 	finalizeStmt,
 	saltHash,
 	existStmt,
-	checkName, checkAddress, setActivate,
+	checkName, checkAddress, setActivate, getMailAddress,
+	getStmt,
 	) where
 
 import Control.Applicative
@@ -33,7 +35,7 @@ foreign import ccall unsafe "use_sqlite3.h bind_stmt" c_bindStmt ::
 foreign import ccall unsafe "use_sqlite3.h run_stmt" c_runStmt ::
 	Ptr Stmt -> IO ()
 foreign import ccall unsafe "use_sqlite3.h get_stmt" c_getStmt ::
-	Ptr Stmt -> CInt -> CString -> IO ()
+	Ptr Stmt -> CInt -> CString -> IO Int
 foreign import ccall unsafe "use_sqlite3.h get2_stmt" c_get2Stmt ::
 	Ptr Stmt -> CInt -> CString -> CString -> IO ()
 foreign import ccall unsafe "use_sqlite3.h exist_stmt" c_existStmt ::
@@ -50,12 +52,14 @@ close (SQLite conn) = c_close conn
 finalizeStmt :: Stmt -> IO ()
 finalizeStmt (Stmt stmt) = c_sqlite3Finalize stmt
 
+{-
 withStmt :: SQLite -> BS.ByteString -> (Stmt -> IO a) -> IO a
 withStmt (SQLite conn) bs f = BS.useAsCString bs $ \cs -> do
 	stmt <- c_mkStmt conn cs
 	x <- f $ Stmt stmt
 	c_sqlite3Finalize stmt
 	return x
+	-}
 
 mkStmt :: SQLite -> BS.ByteString -> IO Stmt
 mkStmt (SQLite conn) bs = (Stmt <$>) . BS.useAsCString bs $ c_mkStmt conn
@@ -67,11 +71,11 @@ bindStmt (Stmt stmt) ph val = BS.useAsCString (":" `BS.append` ph) $ \cph ->
 runStmt :: Stmt -> IO ()
 runStmt (Stmt stmt) = c_runStmt stmt >> c_sqlite3Reset stmt
 
-getStmt :: Stmt -> IO BS.ByteString
+getStmt :: Stmt -> IO (Maybe BS.ByteString)
 getStmt (Stmt stmt) = allocaArray0 512 $ \ptr -> do
-	c_getStmt stmt 512 ptr
+	c <- c_getStmt stmt 512 ptr
 	c_sqlite3Reset stmt
-	BS.packCString ptr
+	if c == 0 then return Nothing else Just <$> BS.packCString ptr
 
 get2Stmt :: Stmt -> IO (BS.ByteString, BS.ByteString)
 get2Stmt (Stmt stmt) = allocaArray0 512 $ \ptr1 -> do
@@ -114,6 +118,12 @@ stmtMkAccount = "INSERT INTO account (" `BS.append`
 mkAccount :: SQLite -> IO Stmt
 mkAccount conn = mkStmt conn stmtMkAccount
 
+stmtRmAccount :: BS.ByteString
+stmtRmAccount = "DELETE FROM account WHERE name = :name"
+
+rmAccount :: SQLite -> IO Stmt
+rmAccount conn = mkStmt conn stmtRmAccount
+
 stmtCheckName :: BS.ByteString
 stmtCheckName = "SELECT name FROM account WHERE name = :name"
 
@@ -132,3 +142,9 @@ stmtSetActivate = "UPDATE account SET activated = 1 where act_key = :act_key"
 
 setActivate :: SQLite -> IO Stmt
 setActivate conn = mkStmt conn stmtSetActivate
+
+stmtGetMailAddress :: BS.ByteString
+stmtGetMailAddress = "SELECT mail_address FROM account WHERE name = :name"
+
+getMailAddress :: SQLite -> IO Stmt
+getMailAddress conn = mkStmt conn stmtGetMailAddress

@@ -7,6 +7,7 @@ module Account (
 	checkPassword, mailAddress,
 	) where
 
+import Control.Applicative
 import qualified Data.ByteString as BS
 import Data.IORef
 import "crypto-random" Crypto.Random
@@ -22,7 +23,6 @@ data Connection = Connection {
 	stmtCheckName :: DB.Stmt,
 	stmtCheckAddress :: DB.Stmt,
 	stmtRemoveAccount :: DB.Stmt,
-	stmtGetActive :: DB.Stmt,
 	stmtSetActive :: DB.Stmt,
 	stmtGetSaltHash :: DB.Stmt,
 	stmtMailAddress :: DB.Stmt
@@ -40,27 +40,33 @@ open = do
 	ep <- createEntropyPool
 	cc <- newIORef $ cprgCreate ep
 	sna <- DB.mkAccount conn
+	ra <- DB.rmAccount conn
 	cn <- DB.checkName conn
 	ca <- DB.checkAddress conn
 	sh <- DB.saltHash conn
 	sa <- DB.setActivate conn
+	ma <- DB.getMailAddress conn
 	return $ Connection {
 		connection = conn,
 		connCprg = cc,
 		stmtNewAccount = sna,
+		stmtRemoveAccount = ra,
 		stmtCheckName = cn,
 		stmtCheckAddress = ca,
 		stmtGetSaltHash = sh,
-		stmtSetActive = sa
+		stmtSetActive = sa,
+		stmtMailAddress = ma
 		}
 
 close :: Connection -> IO ()
 close conn = do
 	DB.finalizeStmt $ stmtNewAccount conn
+	DB.finalizeStmt $ stmtRemoveAccount conn
 	DB.finalizeStmt $ stmtCheckName conn
 	DB.finalizeStmt $ stmtCheckAddress conn
 	DB.finalizeStmt $ stmtGetSaltHash conn
 	DB.finalizeStmt $ stmtSetActive conn
+	DB.finalizeStmt $ stmtMailAddress conn
 	DB.close $ connection conn
 
 newTable :: IO ()
@@ -102,7 +108,10 @@ newAccount conn un@(UserName nm) ma@(MailAddress addr) psw = do
 	where stmt = stmtNewAccount conn 
 
 removeAccount :: Connection -> UserName -> IO ()
-removeAccount = undefined
+removeAccount conn (UserName nm) = do
+	let stmt = stmtRemoveAccount conn
+	DB.bindStmt stmt "name" nm
+	DB.runStmt stmt
 
 activate :: Connection -> UUID4 -> IO ()
 activate conn (UUID4 uu) = do
@@ -117,5 +126,9 @@ checkPassword conn (UserName nm) psw = do
 	(s, h) <- getSaltHash (stmtGetSaltHash conn) nm
 	return $ checkHash psw s h
 
-mailAddress :: Connection -> UserName -> IO (Either DeriveError MailAddress)
-mailAddress = undefined
+mailAddress :: Connection -> UserName -> IO (Maybe MailAddress)
+	-- (Either DeriveError MailAddress)
+mailAddress conn (UserName nm) = do
+	let stmt = stmtMailAddress conn
+	DB.bindStmt stmt "name" nm
+	(MailAddress <$>) <$> DB.getStmt stmt

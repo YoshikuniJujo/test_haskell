@@ -61,18 +61,21 @@ run_stmt(sqlite3_stmt *stmt)
 		exit(-1); }
 }
 
-void
+int
 get_stmt(sqlite3_stmt *stmt, int n, char *str)
 {
 	int ret = 0;
+	int c = 0;
 	const char *val = NULL;
 
 	while (SQLITE_ROW == (ret = sqlite3_step(stmt))) {
+		c++;
 		val = sqlite3_column_text(stmt, 0);
 		strncpy(str, val, n); }
 	if (ret != SQLITE_DONE) {
 		printf("SQLITE3: error while get");
 		exit(-1); }
+	return c;
 }
 
 void
