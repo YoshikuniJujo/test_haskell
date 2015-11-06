@@ -95,7 +95,8 @@ newTable :: SQLite -> IO ()
 newTable conn = bracket (mkStmt conn stmtNewTable) finalizeStmt runStmt
 
 stmtSaltHash :: BS.ByteString
-stmtSaltHash = "SELECT salt, hash FROM account WHERE name = :name"
+stmtSaltHash =
+	"SELECT salt, hash FROM account WHERE name = :name AND activated = 1"
 
 saltHash :: SQLite -> IO Stmt
 saltHash conn = mkStmt conn stmtSaltHash
