@@ -1,7 +1,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <sqlite3.h>
+
+sqlite3 *
+test_open(void)
+{
+	int ret = 0;
+	sqlite3 *conn = NULL;
+	ret = sqlite3_open("sample.sqlite3", &conn);
+	if (ret != SQLITE_OK) {
+		printf("SQLITE3: cannot open sample.sqlite3");
+		exit(-1); }
+	return conn;
+}
+
+void
+test_close(sqlite3 *conn)
+{
+	int ret = 0;
+	ret = sqlite3_close(conn);
+	if (ret != SQLITE_OK) {
+		printf("SQLITE3: cannot close");
+		exit(-1); }
+}
 
 int
 main(int argc, char *argv[])
@@ -11,8 +34,7 @@ main(int argc, char *argv[])
 	char *err_msg = NULL;
 	sqlite3_stmt *stmt = NULL;
 
-	ret = sqlite3_open("sample.sqlite3", &conn);
-	if (ret != SQLITE_OK) { exit(-1); }
+	conn = test_open();
 
 	ret = sqlite3_exec(conn,
 		"CREATE TABLE IF NOT EXISTS test "
@@ -37,6 +59,8 @@ main(int argc, char *argv[])
 		while(SQLITE_DONE != sqlite3_step(stmt)) {}
 	}
 
+	sqlite3_finalize(stmt);
+
 	ret = sqlite3_prepare_v2(conn,
 		"SELECT * FROM test", 64,
 		&stmt, NULL);
@@ -52,8 +76,7 @@ main(int argc, char *argv[])
 
 	sqlite3_finalize(stmt);
 
-	ret = sqlite3_close(conn);
-	if (ret != SQLITE_OK) { exit(-1); }
+	test_close(conn);
 
 	return 0;
 }
