@@ -78,8 +78,8 @@ getStmt (Stmt stmt) = allocaArray0 512 $ \ptr -> do
 	if c == 0 then return Nothing else Just <$> BS.packCString ptr
 
 get2Stmt :: Stmt -> IO (BS.ByteString, BS.ByteString)
-get2Stmt (Stmt stmt) = allocaArray0 512 $ \ptr1 -> do
-	allocaArray0 512 $ \ptr2 -> do
+get2Stmt (Stmt stmt) =
+	allocaArray0 512 $ \ptr1 -> allocaArray0 512 $ \ptr2 -> do
 		c_get2Stmt stmt 512 ptr1 ptr2
 		c_sqlite3Reset stmt
 		(,) <$> BS.packCString ptr1 <*> BS.packCString ptr2

@@ -1,4 +1,4 @@
-{-# LANGUAGE ForeignFunctionInterface, OverloadedStrings, PackageImports #-}
+{-# LANGUAGE OverloadedStrings, PackageImports #-}
 
 module Account (
 	Connection, UserName(..), MailAddress(..), Password(..),
@@ -46,7 +46,7 @@ open = do
 	sh <- DB.saltHash conn
 	sa <- DB.setActivate conn
 	ma <- DB.getMailAddress conn
-	return $ Connection {
+	return Connection {
 		connection = conn,
 		connCprg = cc,
 		stmtNewAccount = sna,
