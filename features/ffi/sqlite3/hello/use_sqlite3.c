@@ -94,7 +94,7 @@ sql_select(sqlite3 *conn, sqlite3_stmt *stmt, int id, int n, char *str)
 	sqlite3_bind_int(stmt, 1, id);
 	while (SQLITE_ROW == (ret = sqlite3_step(stmt))) {
 		name = sqlite3_column_text(stmt, 1);
-		printf("debug: %s\n", name);
+//		printf("debug: %s\n", name);
 		strncpy(str, name, n);
 	}
 	if (ret != SQLITE_DONE) {
