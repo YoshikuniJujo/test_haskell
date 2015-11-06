@@ -38,5 +38,5 @@ setSalt stmt (Salt slt) = DB.bindStmt stmt "salt" slt
 setHash :: DB.Stmt -> Hash -> IO ()
 setHash stmt (Hash hs) = DB.bindStmt stmt "hash" hs
 
-getSaltHash :: DB.SQLite -> BS.ByteString -> IO (Salt, Hash)
-getSaltHash conn nm = (Salt *** Hash) <$> DB.getSaltHash conn nm
+getSaltHash :: DB.Stmt -> BS.ByteString -> IO (Salt, Hash)
+getSaltHash stmt nm = (Salt *** Hash) <$> DB.getSaltHash stmt nm

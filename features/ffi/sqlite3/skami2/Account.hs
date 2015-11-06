@@ -16,7 +16,7 @@ data Connection = Connection {
 	stmtNewAccount :: DB.Stmt,
 	stmtRemoveAccount :: DB.Stmt,
 	stmtAcctivate :: DB.Stmt,
-	stmtCheckPassword :: DB.Stmt,
+	stmtGetSaltHash :: DB.Stmt,
 	stmtMailAddress :: DB.Stmt
 	} deriving Show
 
@@ -31,14 +31,17 @@ open :: IO Connection
 open = do
 	conn <- DB.open
 	sna <- DB.mkAccount conn
+	sh <- DB.saltHash conn
 	return $ Connection {
 		connection = conn,
-		stmtNewAccount = sna
+		stmtNewAccount = sna,
+		stmtGetSaltHash = sh
 		}
 
 close :: Connection -> IO ()
 close conn = do
 	DB.finalizeStmt $ stmtNewAccount conn
+	DB.finalizeStmt $ stmtGetSaltHash conn
 	DB.close $ connection conn
 
 newTable :: Connection -> IO ()
@@ -64,7 +67,9 @@ activate :: Connection -> UUID -> IO ()
 activate = undefined
 
 checkPassword :: Connection -> UserName -> Password -> IO Bool
-checkPassword = undefined
+checkPassword conn (UserName nm) psw = do
+	(s, h) <- getSaltHash (stmtGetSaltHash conn) nm
+	return $ checkHash psw s h
 
 mailAddress :: Connection -> UserName -> IO (Either DeriveError MailAddress)
 mailAddress = undefined

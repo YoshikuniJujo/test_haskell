@@ -4,6 +4,7 @@ module Database (
 	SQLite, Stmt,
 	open, close, newTable, bindStmt, runStmt, getSaltHash, mkAccount,
 	finalizeStmt,
+	saltHash,
 	) where
 
 import Control.Applicative
@@ -82,9 +83,11 @@ newTable conn = bracket (mkStmt conn stmtNewTable) finalizeStmt runStmt
 stmtSaltHash :: BS.ByteString
 stmtSaltHash = "SELECT salt, hash FROM account WHERE name = :name"
 
-getSaltHash :: SQLite -> BS.ByteString -> IO (BS.ByteString, BS.ByteString)
-getSaltHash conn nm = (\act -> bracket act finalizeStmt get2Stmt) $ do
-	stmt <- mkStmt conn stmtSaltHash
+saltHash :: SQLite -> IO Stmt
+saltHash conn = mkStmt conn stmtSaltHash
+
+getSaltHash :: Stmt -> BS.ByteString -> IO (BS.ByteString, BS.ByteString)
+getSaltHash stmt nm = (\act -> bracket act (const $ return ()) get2Stmt) $ do
 	bindStmt stmt "name" nm
 	return stmt
 
