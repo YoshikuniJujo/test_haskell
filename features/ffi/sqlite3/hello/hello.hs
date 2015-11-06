@@ -27,6 +27,10 @@ foreign import ccall unsafe "use_sqlite3.h select_stmt" c_selectStmt ::
 	Ptr Sqlite3 -> IO (Ptr SelectStmt)
 foreign import ccall unsafe "use_sqlite3.h sql_select" c_select ::
 	Ptr Sqlite3 -> Ptr SelectStmt -> CInt -> CInt -> CString -> IO ()
+foreign import ccall unsafe "use_sqlite3.h count" c_count ::
+	Ptr Sqlite3 -> IO CInt
+foreign import ccall unsafe "use_sqlite3.h exist" c_exist ::
+	Ptr Sqlite3 -> CInt -> IO Bool
 
 open :: IO Sqlite3
 open = Sqlite3 <$> c_open
@@ -59,6 +63,11 @@ select (Sqlite3 p1) (SelectStmt p2) i = allocaArray0 512 $ \ptr -> do
 	c_select p1 p2 (fromIntegral i) 512 ptr
 	peekCString ptr
 
+count :: Sqlite3 -> IO Int
+count (Sqlite3 p) = fromIntegral <$> c_count p
+
+exist :: Sqlite3 -> Int -> IO Bool
+exist (Sqlite3 p) i = c_exist p $ fromIntegral i
 
 main :: IO ()
 main = do
@@ -68,4 +77,8 @@ main = do
 		show <$> getCurrentTime >>= insert conn istmt
 	withSelectStmt conn $ \sstmt ->
 		select conn sstmt 1 >>= print
+	count conn >>= print
+	exist conn 10 >>= print
+	exist conn 15 >>= print
+	exist conn 20 >>= print
 	close conn

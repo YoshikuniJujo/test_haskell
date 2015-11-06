@@ -101,3 +101,32 @@ sql_select(sqlite3 *conn, sqlite3_stmt *stmt, int id, int n, char *str)
 		printf("SQLITE3: error while selection");
 		exit(-1); }
 }
+
+int
+count(sqlite3 *conn)
+{
+	int c = 0;
+	sqlite3_stmt *stmt = NULL;
+
+	sqlite3_prepare_v2(conn, "SELECT * FROM test", 128, &stmt, NULL);
+	while (SQLITE_DONE != sqlite3_step(stmt)) { c++; }
+	sqlite3_finalize(stmt);
+
+	return c;
+}
+
+int
+exist(sqlite3 *conn, int id)
+{
+	int c = 0;
+	sqlite3_stmt *stmt = NULL;
+
+	sqlite3_prepare_v2(conn,
+		"SELECT * FROM test WHERE id = ?",
+		128, &stmt, NULL);
+	sqlite3_bind_int(stmt, 1, id);
+	if (SQLITE_DONE != sqlite3_step(stmt)) { c++; }
+	sqlite3_finalize(stmt);
+
+	return c;
+}
