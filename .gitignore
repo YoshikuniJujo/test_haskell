@@ -187,3 +187,8 @@ tmp/
 /features/ffi/sqlite3/c/*.sqlite3
 /features/ffi/sqlite3/hello/hello
 /features/ffi/sqlite3/hello/*.sqlite3
+
+/features/ffi/sqlite3/skami2/*.sqlite3
+/features/ffi/sqlite3/skami2/mkTable
+/features/ffi/sqlite3/skami2/testAccount
+/features/ffi/sqlite3/skami2/testHash
