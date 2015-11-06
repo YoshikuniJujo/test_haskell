@@ -182,3 +182,6 @@ tmp/
 /algorithms/pearls/minfree/simple
 /algorithms/pearls/minfree/array
 /algorithms/pearls/minfree/dc
+
+/features/ffi/sqlite3/c/sample
+/features/ffi/sqlite3/c/*.sqlite3
