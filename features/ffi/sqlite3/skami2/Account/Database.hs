@@ -1,6 +1,6 @@
 {-# LANGUAGE ForeignFunctionInterface, OverloadedStrings #-}
 
-module Database (
+module Account.Database (
 	SQLite, Stmt,
 	open, close, newTable, bindStmt, runStmt, getSaltHash,
 	mkAccount, rmAccount,

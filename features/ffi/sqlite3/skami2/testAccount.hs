@@ -14,12 +14,12 @@ main = do
 	case ret of
 		Right u -> activate conn u
 		_ -> return ()
-	removeAccount conn (UserName "higa")
-	print =<< checkPassword conn (UserName "jujo") (Password "yoshikuni")
-	print =<< checkPassword conn (UserName "jujo") (Password "oshikuni")
-	print =<< checkPassword conn (UserName "jujo2") (Password "yoshikuni")
-	print =<< checkPassword conn (UserName "jujo2") (Password "oshikuni")
-	print =<< checkPassword conn (UserName "higa") (Password "oshikuni")
+	rmAccount conn (UserName "higa")
+	print =<< checkLogin conn (UserName "jujo") (Password "yoshikuni")
+	print =<< checkLogin conn (UserName "jujo") (Password "oshikuni")
+	print =<< checkLogin conn (UserName "jujo2") (Password "yoshikuni")
+	print =<< checkLogin conn (UserName "jujo2") (Password "oshikuni")
+	print =<< checkLogin conn (UserName "higa") (Password "oshikuni")
 	print =<< mailAddress conn (UserName "jujo")
 	print =<< mailAddress conn (UserName "jujo2")
 	print =<< mailAddress conn (UserName "higa")

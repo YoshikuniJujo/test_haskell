@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Hash (
+module Account.Hash (
 	Password(..), Salt, Hash, createHash, checkHash,
 	setSalt, setHash, getSaltHash,
 	) where
@@ -13,7 +13,7 @@ import qualified Data.ByteString.Char8 as BSC
 import System.Random
 import qualified Crypto.Hash.SHA256 as SHA256
 
-import qualified Database as DB
+import qualified Account.Database as DB
 
 newtype Password = Password BS.ByteString deriving Show
 newtype Salt = Salt BS.ByteString deriving Show
