@@ -192,3 +192,6 @@ tmp/
 /features/ffi/sqlite3/skami2/mkTable
 /features/ffi/sqlite3/skami2/testAccount
 /features/ffi/sqlite3/skami2/testHash
+
+/features/ffi/array/useProcArray
+/features/ffi/array/use_proc_array
