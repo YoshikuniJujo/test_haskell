@@ -9,19 +9,19 @@ type Nml = Tree String
 -- DECODE
 
 nml :: String -> Maybe Nml
-nml s = case parse $ tokens s of (Just n, []) -> Just n; _ -> Nothing
+nml s = case parse $ tokens s of Just (n, []) -> Just n; _ -> Nothing
 
-parse :: [Token] -> (Maybe Nml, [Token])
-parse (Text tx : ts) = (Just $ Node tx [], ts)
+parse :: [Token] -> Maybe (Nml, [Token])
+parse (Text tx : ts) = Just (Node tx [], ts)
 parse (Open tg : ts) = case parses ts of
-	(ns, Close tg' : r) | tg == tg' -> (Just $ Node tg ns, r)
-	(ns, r) -> (Just $ Node tg ns, r)
-parse ts = (Nothing, ts)
+	(ns, Close tg' : r) | tg == tg' -> Just (Node tg ns, r)
+	(ns, r) -> Just (Node tg ns, r)
+parse _ = Nothing
 
 parses :: [Token] -> ([Nml], [Token])
 parses ts = case parse ts of
-	(Just n, r) -> let (ns, r') = parses r in (n : ns, r')
-	(_, r) -> ([], r)
+	Just (n, r) -> let (ns, r') = parses r in (n : ns, r')
+	_ -> ([], ts)
 
 data Token = Open String | Close String | Text String deriving Show
 
