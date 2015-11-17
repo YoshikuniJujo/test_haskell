@@ -1,0 +1,5 @@
+ghc -shared -fPIC Mul8.hs mul8.c -o libmul8.so
+ghc -no-hs-main -L. -lmul8 lib_mul8.c -o so_mul8
+LD_LIBRARY_PATH=. ./so_mul8
+48
+zsh: segmentation fault LD_LIBRARY_PATH=. ./so_mul8
