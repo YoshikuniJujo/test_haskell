@@ -201,3 +201,5 @@ tmp/
 /features/ffi/hello_hc/useAdd3
 
 /tools/image/tree_int.svg
+
+/tools/make_license/result_1.txt
