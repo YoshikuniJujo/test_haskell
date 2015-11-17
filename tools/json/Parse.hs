@@ -5,47 +5,42 @@ module Parse (
 import Control.Applicative ((<$>), (<*>))
 import Control.Arrow
 import Control.Monad
+import Data.Bool
 
 infixr 3 `alt`
 infixl 5 `build`
 infixr 7 >*>, >*, *>
 
-type Parse a = String -> [(a, String)]
+type Parse t a = [t] -> [(a, [t])]
 
-succeed :: a -> Parse a
-succeed v i = return (v, i)
+succeed :: a -> Parse t a
+succeed = (return .) . (,)
 
-spot :: (Char -> Bool) -> Parse Char
+spot :: (t -> Bool) -> Parse t t
 spot p (c : cs) | p c = return (c, cs)
 spot _ _ = fail ""
 
-char :: Char -> Parse Char
+char :: Eq t => t -> Parse t t
 char = spot . (==)
 
-alt :: Parse a -> Parse a -> Parse a
-p1 `alt` p2 = mplus <$> p1 <*> p2
+alt :: Parse t a -> Parse t a -> Parse t a
+alt = (<*>) . (mplus <$>)
 
-build :: Parse a -> (a -> b) -> Parse b
-build p f = ((f `first`) <$>) . p
+build :: Parse t a -> (a -> b) -> Parse t b
+build = (. (<$>) . first) . flip (.)
 
-(>*>) :: Parse a -> Parse b -> Parse (a, b)
-(p1 >*> p2) i = do
-	(x, r) <- p1 i
-	(y, r') <- p2 r
-	return ((x, y), r')
+(>*>) :: Parse t a -> Parse t b -> Parse t (a, b)
+(p1 >*> p2) i = [ ((x, y), r') | (x, r) <- p1 i, (y, r') <- p2 r ]
 
-(>*) :: Parse a -> Parse b -> Parse a
-p1 >* p2 = p1 >*> p2 `build` fst
+(>*) :: Parse t a -> Parse t b -> Parse t a
+(>*) = ((`build` fst) .) . (>*>)
 
-(*>) :: Parse a -> Parse b -> Parse b
-p1 *> p2 = p1 >*> p2 `build` snd
+(*>) :: Parse t a -> Parse t b -> Parse t b
+(*>) = ((`build` snd) .) . (>*>)
 
-eof :: Parse ()
-eof "" = return ((), "")
-eof _ = fail ""
+eof :: Parse t ()
+eof = bool (return ((), [])) (fail "") . null
 
-list, list1 :: Parse a -> Parse [a]
-list p = succeed [] `alt` list1 p
-list1 p = p >*> list p `build` uncurry (:)
-
-
+list, list1 :: Parse t a -> Parse t [a]
+list = (succeed [] `alt`) . list1
+list1 = (`build` uncurry (:)) . ((>*>) <$> id <*> list)
