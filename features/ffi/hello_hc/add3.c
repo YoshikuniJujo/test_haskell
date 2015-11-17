@@ -1,5 +1,5 @@
 int
 add3(int n)
 {
-return n + 3;
+	return n + 3;
 }

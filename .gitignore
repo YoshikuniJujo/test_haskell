@@ -16,6 +16,7 @@ tmp/
 *.hi
 *.s
 *.o
+*.so
 /tools/rirekisho/rirekisho.dat
 /tools/slide/yjslide/examples/profiling/old/some
 /tools/slide/yjslide/examples/profiling/new/profiling
@@ -203,3 +204,6 @@ tmp/
 /tools/image/tree_int.svg
 
 /tools/make_license/result_1.txt
+
+/features/ffi/hello_hc/add3_hs
+/features/ffi/hello_hc/useAdd3_c
