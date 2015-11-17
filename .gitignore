@@ -197,3 +197,5 @@ tmp/
 /features/ffi/array/use_proc_array
 
 /tribial/codeiq/secondequation/simple
+
+/features/ffi/hello_hc/useAdd3
