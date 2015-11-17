@@ -1,0 +1,18 @@
+<books>
+	<book>
+		<title>
+			The Old Man and the Sea
+		</title>
+		<author>
+			Ernest Hemingway
+		</author>
+	</book>
+	<book>
+		<title>
+			The Catcher in the Rye
+		</title>
+		<author>
+			J. D. Salinger
+		</author>
+	</book>
+</books>
