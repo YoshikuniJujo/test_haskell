@@ -209,3 +209,8 @@ a.out
 /features/ffi/hello_hc/add3_hs
 /features/ffi/hello_hc/useAdd3_c
 /features/ffi/hello_ch/so_mul8
+
+/features/ffi/wrapper/c/wikipedia
+/features/ffi/wrapper/c/wikipedia_caller
+/features/ffi/wrapper/c/max
+/features/ffi/wrapper/c/calc
