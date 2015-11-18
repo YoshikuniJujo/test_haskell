@@ -3,9 +3,6 @@
 #include <string.h>
 #include "foldl.h"
 
-int add(int x, int y) { return x + y; }
-int mul(int x, int y) { return x * y; }
-
 int read1(char s[]) { return s[0] - '0'; }
 
 int
