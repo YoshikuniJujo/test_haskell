@@ -214,3 +214,6 @@ a.out
 /features/ffi/wrapper/c/wikipedia_caller
 /features/ffi/wrapper/c/max
 /features/ffi/wrapper/c/calc
+/features/ffi/wrapper/c/calc2
+/features/ffi/wrapper/c/foldl
+/features/ffi/wrapper/c/use_foldl
