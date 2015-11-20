@@ -1,6 +1,6 @@
 #include <sqlite3.h>
 
-module Database.SQLite3.Constants (
+module Database.SmplstSQLite3.Constants (
 	sQLITE_OK, sQLITE_ERROR, sQLITE_BUSY,
 	sQLITE_ROW, sQLITE_DONE
 	) where

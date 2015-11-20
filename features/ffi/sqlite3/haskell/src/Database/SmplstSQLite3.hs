@@ -1,6 +1,7 @@
 {-# LANGUAGE TupleSections #-}
 
-module Database.SQLite3 (SQLite3, withSQLite3, withPrepared, step, column) where
+module Database.SmplstSQLite3 (
+	SQLite3, withSQLite3, withPrepared, step, column) where
 
 import Control.Applicative
 import Control.Monad
