@@ -18,6 +18,7 @@ tmp/
 *.o
 *.so
 a.out
+*.sqlite3
 /tools/rirekisho/rirekisho.dat
 /tools/slide/yjslide/examples/profiling/old/some
 /tools/slide/yjslide/examples/profiling/new/profiling
@@ -217,3 +218,12 @@ a.out
 /features/ffi/wrapper/c/calc2
 /features/ffi/wrapper/c/foldl
 /features/ffi/wrapper/c/use_foldl
+
+/features/ffi/sqlite3/c/tutorial/insert
+/features/ffi/sqlite3/c/tutorial/named
+/features/ffi/sqlite3/c/tutorial/version
+/features/ffi/sqlite3/c/tutorial/version2
+/features/ffi/sqlite3/c/open_close/open_close
+/features/ffi/sqlite3/c/use_exec/hello_c
+/features/ffi/sqlite3/c/use_step/create_table
+/features/ffi/sqlite3/c/use_step/insert
