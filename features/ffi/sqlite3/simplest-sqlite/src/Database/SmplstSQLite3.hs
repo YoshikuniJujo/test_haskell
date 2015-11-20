@@ -103,6 +103,8 @@ foreign import ccall unsafe "sqlite3.h sqlite3_column_int"
 	c_sqlite3_column_int :: Ptr Stmt -> CInt -> IO CInt
 foreign import ccall unsafe "sqlite3.h sqlite3_column_text"
 	c_sqlite3_column_text :: Ptr Stmt -> CInt -> IO CString
+foreign import ccall unsafe "sqlite3.h sqlite3_column_blob"
+	c_sqlite3_column_blob :: Ptr Stmt -> CInt -> IO CString
 
 class SQLiteDataList a where
 	bindNList :: Stmt -> Int -> [a] -> IO ()
@@ -126,12 +128,10 @@ instance SQLiteDataList Char where
 	columnList (Stmt sm) i =
 		peekCString =<< c_sqlite3_column_text sm (fromIntegral i)
 
-{-
 instance SQLiteData BS.ByteString where
-	bindN = sqlite3BindByteString
+	bindN = sqlite3BindBlob
 	column (Stmt sm) i =
-		BS.packCString =<< c_sqlite3_column_text sm (fromIntegral i)
-		-}
+		BS.packCString =<< c_sqlite3_column_blob sm (fromIntegral i)
 
 instance SQLiteData T.Text where
 	bindN sm i = sqlite3BindByteString sm i . T.encodeUtf8
@@ -141,7 +141,9 @@ instance SQLiteData T.Text where
 foreign import ccall unsafe "sqlite3.h sqlite3_bind_int" c_sqlite3_bind_int ::
 	Ptr Stmt -> CInt -> CInt -> IO CInt
 foreign import ccall unsafe "sqlite3.h sqlite3_bind_text" c_sqlite3_bind_text ::
-	Ptr Stmt -> CInt -> CString -> Int -> Ptr a -> IO CInt
+	Ptr Stmt -> CInt -> CString -> CInt -> Ptr a -> IO CInt
+foreign import ccall unsafe "sqlite3.h sqlite3_bind_blob" c_sqlite3_bind_blob ::
+	Ptr Stmt -> CInt -> CString -> CInt -> Ptr a -> IO CInt
 
 bind :: SQLiteData a => Stmt -> String -> a -> IO ()
 bind sm ph x = flip (bindN sm) x =<< sqlite3BindParameterIndex sm ph
@@ -161,6 +163,12 @@ sqlite3BindString (Stmt sm) i s = withCString s $ \cs -> do
 sqlite3BindByteString :: Stmt -> Int -> BS.ByteString -> IO ()
 sqlite3BindByteString (Stmt sm) i s = BS.useAsCString s $ \cs -> do
 	ret <- c_sqlite3_bind_text sm (fromIntegral i) cs (- 1) nullPtr
+	when (ret /= sQLITE_OK) . ioError . userError $
+		"Cannot bind text: error code (" ++ show ret ++ ")"
+
+sqlite3BindBlob :: Stmt -> Int -> BS.ByteString -> IO ()
+sqlite3BindBlob (Stmt sm) i s = BS.useAsCString s $ \cs -> do
+	ret <- c_sqlite3_bind_blob sm (fromIntegral i) cs (- 1) nullPtr
 	when (ret /= sQLITE_OK) . ioError . userError $
 		"Cannot bind text: error code (" ++ show ret ++ ")"
 
