@@ -3,7 +3,7 @@
 module Database.SmplstSQLite3 (
 	-- * Functions
 	withSQLite, withPrepared,
-	step, SQLiteData, bind, bindN, column, SQLiteDataList,
+	step, reset, bind, bindN, column, SQLiteData, SQLiteDataList,
 	-- * Types
 	SQLite, Stmt, Result(..),
 	) where
@@ -174,3 +174,12 @@ sqlite3BindParameterIndex (Stmt sm) ph = withCString ph $ \cph -> do
 	when (i == 0) . ioError . userError $
 		"no such place holder: `" ++ ph ++ "'"
 	return $ fromIntegral i
+
+foreign import ccall unsafe "sqlite3.h sqlite3_reset" c_sqlite3_reset ::
+	Ptr Stmt -> IO CInt
+
+reset :: Stmt -> IO ()
+reset (Stmt sm) = do
+	ret <- c_sqlite3_reset sm
+	when (ret /= sQLITE_OK) . ioError . userError $
+		"Cannot reset stmt: error code (" ++ show ret ++ ")"
