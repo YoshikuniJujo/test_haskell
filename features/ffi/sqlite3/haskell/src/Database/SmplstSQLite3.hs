@@ -1,7 +1,11 @@
 {-# LANGUAGE TupleSections #-}
 
 module Database.SmplstSQLite3 (
-	SQLite3, withSQLite3, withPrepared, step, column) where
+	-- * Functions
+	withSQLite3, withPrepared, step, SQLite3Data, column, SQLite3DataList,
+	-- * Types
+	SQLite3, SQLite3Stmt, ResultCode(..),
+	) where
 
 import Control.Applicative
 import Control.Monad
@@ -13,7 +17,7 @@ import Foreign
 import Foreign.C.Types
 import Foreign.C.String
 
-import Database.SQLite3.Constants
+import Database.SmplstSQLite3.Constants
 
 data SQLite3 = SQLite3 (Ptr SQLite3) deriving Show
 data SQLite3Stmt = SQLite3Stmt (Ptr SQLite3Stmt) deriving Show
@@ -79,7 +83,7 @@ sqlite3Finalize (SQLite3Stmt psm) = do
 		ioError . userError $
 			"Cannot finalize stmt: error code (" ++ show ret ++ ")"
 
-data ResultCode = SQLiteBusy | SQLiteRow | SQLiteDone deriving Show
+data ResultCode = SQLiteBusy | SQLiteRow | SQLiteDone deriving (Show, Eq)
 
 foreign import ccall unsafe "sqlite3.h sqlite3_step" c_sqlite3_step ::
 	Ptr SQLite3Stmt -> IO CInt
