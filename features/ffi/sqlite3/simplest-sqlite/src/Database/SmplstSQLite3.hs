@@ -3,9 +3,9 @@
 module Database.SmplstSQLite3 (
 	-- * Functions
 	withSQLite, withPrepared,
-	step, reset, bind, bindN, column, SQLiteData, SQLiteDataList,
+	step, reset, bind, SQLiteData(..), SQLiteDataList(..), columnType,
 	-- * Types
-	SQLite, Stmt, Result(..),
+	SQLite, Stmt, Result(..), Type(..),
 	) where
 
 import Control.Applicative
@@ -118,6 +118,10 @@ instance SQLiteDataList a => SQLiteData [a] where
 	bindN = bindNList
 	column = columnList
 
+instance SQLiteData () where
+	bindN = sqlite3BindNull
+	column _ _ = return ()
+
 instance SQLiteData Int where
 	bindN = sqlite3BindInt
 	column (Stmt sm) i =
@@ -138,6 +142,8 @@ instance SQLiteData T.Text where
 	column (Stmt sm) i = T.decodeUtf8 <$>
 		(BS.packCString =<< c_sqlite3_column_text sm (fromIntegral i))
 
+foreign import ccall unsafe "sqlite3.h sqlite3_bind_null" c_sqlite3_bind_null ::
+	Ptr Stmt -> CInt -> IO CInt
 foreign import ccall unsafe "sqlite3.h sqlite3_bind_int" c_sqlite3_bind_int ::
 	Ptr Stmt -> CInt -> CInt -> IO CInt
 foreign import ccall unsafe "sqlite3.h sqlite3_bind_text" c_sqlite3_bind_text ::
@@ -147,6 +153,12 @@ foreign import ccall unsafe "sqlite3.h sqlite3_bind_blob" c_sqlite3_bind_blob ::
 
 bind :: SQLiteData a => Stmt -> String -> a -> IO ()
 bind sm ph x = flip (bindN sm) x =<< sqlite3BindParameterIndex sm ph
+
+sqlite3BindNull :: Stmt -> Int -> () -> IO ()
+sqlite3BindNull (Stmt sm) i _ = do
+	ret <- c_sqlite3_bind_null sm (fromIntegral i)
+	when (ret /= sQLITE_OK) . ioError . userError $
+			"Cannot bind null: error code (" ++ show ret ++ ")"
 
 sqlite3BindInt :: Stmt -> Int -> Int -> IO ()
 sqlite3BindInt (Stmt sm) i n = do
@@ -191,3 +203,16 @@ reset (Stmt sm) = do
 	ret <- c_sqlite3_reset sm
 	when (ret /= sQLITE_OK) . ioError . userError $
 		"Cannot reset stmt: error code (" ++ show ret ++ ")"
+
+data Type = Integer | Float | Text | Blob | Null deriving Show
+
+foreign import ccall unsafe "sqlite3.h sqlite3_column_type"
+	c_sqlite3_column_type :: Ptr Stmt -> CInt -> IO CInt
+
+columnType :: Stmt -> Int -> IO Type
+columnType (Stmt ps) i = (<$> c_sqlite3_column_type ps (fromIntegral i)) $ \t ->
+	case () of _	| t == sQLITE_INTEGER -> Integer
+			| t == sQLITE_FLOAT -> Float
+			| t == sQLITE_TEXT -> Text
+			| t == sQLITE_BLOB -> Blob
+			| otherwise -> Null
