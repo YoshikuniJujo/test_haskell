@@ -2,9 +2,10 @@
 
 module Database.SmplstSQLite3 (
 	-- * Functions
-	withSQLite, withPrepared, step, SQLiteData, column, SQLiteDataList,
+	withSQLite, withPrepared,
+	step, SQLiteData, bind, bindN, column, SQLiteDataList,
 	-- * Types
-	SQLite, Stmt, ResultCode(..),
+	SQLite, Stmt, Result(..),
 	) where
 
 import Control.Applicative
@@ -83,18 +84,18 @@ sqlite3Finalize (Stmt psm) = do
 		ioError . userError $
 			"Cannot finalize stmt: error code (" ++ show ret ++ ")"
 
-data ResultCode = SQLiteBusy | SQLiteRow | SQLiteDone deriving (Show, Eq)
+data Result = Busy | Row | Done deriving (Show, Eq)
 
 foreign import ccall unsafe "sqlite3.h sqlite3_step" c_sqlite3_step ::
 	Ptr Stmt -> IO CInt
 
-step :: Stmt -> IO ResultCode
+step :: Stmt -> IO Result
 step (Stmt psm) = do
 	ret <- c_sqlite3_step psm
 	case ret of
-		_	| ret == sQLITE_BUSY -> return SQLiteBusy
-			| ret == sQLITE_ROW -> return SQLiteRow
-			| ret == sQLITE_DONE -> return SQLiteDone
+		_	| ret == sQLITE_BUSY -> return Busy
+			| ret == sQLITE_ROW -> return Row
+			| ret == sQLITE_DONE -> return Done
 		_ -> ioError . userError $
 			"Error while step: error code (" ++ show ret ++ ")"
 
@@ -104,25 +105,72 @@ foreign import ccall unsafe "sqlite3.h sqlite3_column_text"
 	c_sqlite3_column_text :: Ptr Stmt -> CInt -> IO CString
 
 class SQLiteDataList a where
+	bindNList :: Stmt -> Int -> [a] -> IO ()
 	columnList :: Stmt -> Int -> IO [a]
 
 class SQLiteData a where
+	bindN :: Stmt -> Int -> a -> IO ()
 	column :: Stmt -> Int -> IO a
 
 instance SQLiteDataList a => SQLiteData [a] where
+	bindN = bindNList
 	column = columnList
 
 instance SQLiteData Int where
+	bindN = sqlite3BindInt
 	column (Stmt sm) i =
 		fromIntegral <$> c_sqlite3_column_int sm (fromIntegral i)
 
 instance SQLiteDataList Char where
+	bindNList = sqlite3BindString
 	columnList (Stmt sm) i =
 		peekCString =<< c_sqlite3_column_text sm (fromIntegral i)
 
+{-
 instance SQLiteData BS.ByteString where
+	bindN = sqlite3BindByteString
 	column (Stmt sm) i =
 		BS.packCString =<< c_sqlite3_column_text sm (fromIntegral i)
+		-}
 
 instance SQLiteData T.Text where
-	column sm i = T.decodeUtf8 <$> column sm i
+	bindN sm i = sqlite3BindByteString sm i . T.encodeUtf8
+	column (Stmt sm) i = T.decodeUtf8 <$>
+		(BS.packCString =<< c_sqlite3_column_text sm (fromIntegral i))
+
+foreign import ccall unsafe "sqlite3.h sqlite3_bind_int" c_sqlite3_bind_int ::
+	Ptr Stmt -> CInt -> CInt -> IO CInt
+foreign import ccall unsafe "sqlite3.h sqlite3_bind_text" c_sqlite3_bind_text ::
+	Ptr Stmt -> CInt -> CString -> Int -> Ptr a -> IO CInt
+
+bind :: SQLiteData a => Stmt -> String -> a -> IO ()
+bind sm ph x = flip (bindN sm) x =<< sqlite3BindParameterIndex sm ph
+
+sqlite3BindInt :: Stmt -> Int -> Int -> IO ()
+sqlite3BindInt (Stmt sm) i n = do
+	ret <- c_sqlite3_bind_int sm (fromIntegral i) (fromIntegral n)
+	when (ret /= sQLITE_OK) . ioError . userError $
+			"Cannot bind int: error code (" ++ show ret ++ ")"
+
+sqlite3BindString :: Stmt -> Int -> String -> IO ()
+sqlite3BindString (Stmt sm) i s = withCString s $ \cs -> do
+	ret <- c_sqlite3_bind_text sm (fromIntegral i) cs (- 1) nullPtr
+	when (ret /= sQLITE_OK) . ioError . userError $
+			"Cannot bind text: error code (" ++ show ret ++ ")"
+
+sqlite3BindByteString :: Stmt -> Int -> BS.ByteString -> IO ()
+sqlite3BindByteString (Stmt sm) i s = BS.useAsCString s $ \cs -> do
+	ret <- c_sqlite3_bind_text sm (fromIntegral i) cs (- 1) nullPtr
+	when (ret /= sQLITE_OK) . ioError . userError $
+		"Cannot bind text: error code (" ++ show ret ++ ")"
+
+foreign import ccall unsafe "sqlite3.h sqlite3_bind_parameter_index"
+	c_sqlite3_bind_parameter_index ::
+		Ptr Stmt -> CString -> IO CInt
+
+sqlite3BindParameterIndex :: Stmt -> String -> IO Int
+sqlite3BindParameterIndex (Stmt sm) ph = withCString ph $ \cph -> do
+	i <- c_sqlite3_bind_parameter_index sm cph
+	when (i == 0) . ioError . userError $
+		"no such place holder: `" ++ ph ++ "'"
+	return $ fromIntegral i
