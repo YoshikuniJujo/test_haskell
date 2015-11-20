@@ -228,6 +228,7 @@ a.out
 /features/ffi/sqlite3/c/use_step/create_table
 /features/ffi/sqlite3/c/use_step/insert
 /features/ffi/sqlite3/c/use_step/select
+/features/ffi/sqlite3/haskell/SQLite3/Constants.hs
 
 /features/ffi/hsc2hs/basic.hs
 /features/ffi/hsc2hs/conststr.hs
