@@ -1,6 +1,6 @@
 {-# LANGUAGE TupleSections #-}
 
-module SQLite3 (SQLite3, withSQLite3, withPrepared, step, column) where
+module Database.SQLite3 (SQLite3, withSQLite3, withPrepared, step, column) where
 
 import Control.Applicative
 import Control.Monad
@@ -12,7 +12,7 @@ import Foreign
 import Foreign.C.Types
 import Foreign.C.String
 
-import SQLite3.Constants
+import Database.SQLite3.Constants
 
 data SQLite3 = SQLite3 (Ptr SQLite3) deriving Show
 data SQLite3Stmt = SQLite3Stmt (Ptr SQLite3Stmt) deriving Show
