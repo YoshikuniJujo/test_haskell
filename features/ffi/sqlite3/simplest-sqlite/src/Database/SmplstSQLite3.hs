@@ -101,6 +101,8 @@ step (Stmt psm) = do
 
 foreign import ccall unsafe "sqlite3.h sqlite3_column_int"
 	c_sqlite3_column_int :: Ptr Stmt -> CInt -> IO CInt
+foreign import ccall unsafe "sqlite3.h sqlite3_column_double"
+	c_sqlite3_column_double :: Ptr Stmt -> CInt -> IO CDouble
 foreign import ccall unsafe "sqlite3.h sqlite3_column_text"
 	c_sqlite3_column_text :: Ptr Stmt -> CInt -> IO CString
 foreign import ccall unsafe "sqlite3.h sqlite3_column_blob"
@@ -127,6 +129,11 @@ instance SQLiteData Int where
 	column (Stmt sm) i =
 		fromIntegral <$> c_sqlite3_column_int sm (fromIntegral i)
 
+instance SQLiteData Double where
+	bindN = sqlite3BindDouble
+	column (Stmt sm) i =
+		realToFrac <$> c_sqlite3_column_double sm (fromIntegral i)
+
 instance SQLiteDataList Char where
 	bindNList = sqlite3BindString
 	columnList (Stmt sm) i =
@@ -142,10 +149,12 @@ instance SQLiteData T.Text where
 	column (Stmt sm) i = T.decodeUtf8 <$>
 		(BS.packCString =<< c_sqlite3_column_text sm (fromIntegral i))
 
-foreign import ccall unsafe "sqlite3.h sqlite3_bind_null" c_sqlite3_bind_null ::
-	Ptr Stmt -> CInt -> IO CInt
-foreign import ccall unsafe "sqlite3.h sqlite3_bind_int" c_sqlite3_bind_int ::
-	Ptr Stmt -> CInt -> CInt -> IO CInt
+foreign import ccall unsafe "sqlite3.h sqlite3_bind_null"
+	c_sqlite3_bind_null :: Ptr Stmt -> CInt -> IO CInt
+foreign import ccall unsafe "sqlite3.h sqlite3_bind_int"
+	c_sqlite3_bind_int :: Ptr Stmt -> CInt -> CInt -> IO CInt
+foreign import ccall unsafe "sqlite3.h sqlite3_bind_double"
+	c_sqlite3_bind_double :: Ptr Stmt -> CInt -> CDouble -> IO CInt
 foreign import ccall unsafe "sqlite3.h sqlite3_bind_text" c_sqlite3_bind_text ::
 	Ptr Stmt -> CInt -> CString -> CInt -> Ptr a -> IO CInt
 foreign import ccall unsafe "sqlite3.h sqlite3_bind_blob" c_sqlite3_bind_blob ::
@@ -159,6 +168,12 @@ sqlite3BindNull (Stmt sm) i _ = do
 	ret <- c_sqlite3_bind_null sm (fromIntegral i)
 	when (ret /= sQLITE_OK) . ioError . userError $
 			"Cannot bind null: error code (" ++ show ret ++ ")"
+
+sqlite3BindDouble :: Stmt -> Int -> Double -> IO ()
+sqlite3BindDouble (Stmt sm) i d = do
+	ret <- c_sqlite3_bind_double sm (fromIntegral i) (realToFrac d)
+	when (ret /= sQLITE_OK) . ioError . userError $
+			"Cannot bind double: error code (" ++ show ret ++ ")"
 
 sqlite3BindInt :: Stmt -> Int -> Int -> IO ()
 sqlite3BindInt (Stmt sm) i n = do
