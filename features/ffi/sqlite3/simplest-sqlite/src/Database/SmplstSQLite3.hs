@@ -204,7 +204,7 @@ reset (Stmt sm) = do
 	when (ret /= sQLITE_OK) . ioError . userError $
 		"Cannot reset stmt: error code (" ++ show ret ++ ")"
 
-data Type = Integer | Float | Text | Blob | Null deriving Show
+data Type = Integer | Float | Text | Blob | Null deriving (Show, Eq)
 
 foreign import ccall unsafe "sqlite3.h sqlite3_column_type"
 	c_sqlite3_column_type :: Ptr Stmt -> CInt -> IO CInt
