@@ -18,7 +18,7 @@ import Foreign
 import Foreign.C.Types
 import Foreign.C.String
 
-import Database.SmplstSQLite3.Exception
+import Database.SmplstSQLite3.Exception.Internal
 import Database.SmplstSQLite3.Constants
 
 data SQLite = SQLite (Ptr SQLite) deriving Show
