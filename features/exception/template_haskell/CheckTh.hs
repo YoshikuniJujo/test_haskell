@@ -2,7 +2,8 @@
 
 module CheckTh (
 	myException, humanError, manError, nomanError, ghostError,
-	exceptionTree, mkName) where
+	exceptionHierarchy, exceptionHierarchy2,
+	ExceptionHierarchy(..), mkName) where
 
 import Control.Applicative
 import Control.Exception
@@ -102,8 +103,19 @@ exception1 mc e c = (:)
 	<$> maybe (defInstException e) (`instException` e) mc
 	<*> if c then exceptionContainer e else return []
 
-exceptionTree :: Maybe Name -> Tree Name -> DecsQ
-exceptionTree mc (Node e []) = exception1 mc e False
-exceptionTree mc (Node e es) = (concat .) . (:)
+exceptionHierarchy :: Maybe Name -> Tree Name -> DecsQ
+exceptionHierarchy mc (Node e []) = exception1 mc e False
+exceptionHierarchy mc (Node e es) = (concat .) . (:)
 	<$> exception1 mc e True
-	<*> mapM (exceptionTree $ Just e) es
+	<*> mapM (exceptionHierarchy $ Just e) es
+
+data ExceptionHierarchy
+	= ExNode String [ExceptionHierarchy]
+	| ExType Name
+	deriving Show
+
+exceptionHierarchy2 :: Maybe Name -> ExceptionHierarchy -> DecsQ
+exceptionHierarchy2 mc (ExNode e es) = (concat .) . (:)
+	<$> exception1 mc (mkName e) True
+	<*> mapM (exceptionHierarchy2 . Just $ mkName e) es
+exceptionHierarchy2 mc (ExType e) = exception1 mc e False
