@@ -1,0 +1,115 @@
+{-# LANGUAGE TemplateHaskell, ExistentialQuantification, DeriveDataTypeable #-}
+
+module Database.SmplstSQLite3.Exception (
+	SQLiteException(..), sqliteThrow, sqliteThrowBindError) where
+
+import Control.Exception
+import Control.Exception.Hierarchy
+
+import Database.SmplstSQLite3.Constants
+import Database.SmplstSQLite3.Templates
+
+{-
+data SQLITE_IOERR
+	= SQLITE_IOERR_PLAIN
+	| SQLITE_IOERR_READ
+	| SQLITE_IOERR_SHORT_READ
+	| SQLITE_IOERR_WRITE
+	| SQLITE_IOERR_FSYNC
+	| SQLITE_IOERR_OTHER CInt
+	deriving Show
+	-}
+
+{-
+	| SQLITE_CORRUPT String
+	| SQLITE_NOTFOUND String
+	| SQLITE_FULL String
+	| SQLITE_CANTOPEN String
+	| SQLITE_PROTOCOL String
+	| SQLITE_EMPTY String
+	| SQLITE_SCHEMA String
+	| SQLITE_TOOBIG String
+	| SQLITE_CONSTRAINT String
+	| SQLITE_MISMATCH String
+	| SQLITE_MISUSE String
+	| SQLITE_NOLFS String
+	| SQLITE_AUTH String
+	| SQLITE_FORMAT String
+	| SQLITE_RANGE String
+	| SQLITE_NOTADB String
+	| SQLITE_NOTICE String
+	| SQLITE_WARNING String
+	| SQLITE_BIND_ERROR String
+	| SQLITE_OTHER CInt String
+-}
+
+mapM newException [
+	"SQLITE_ERROR",
+	"SQLITE_INTERNAL",
+	"SQLITE_PERM",
+	"SQLITE_ABORT",
+	"SQLITE_BUSY",
+	"SQLITE_LOCKED",
+	"SQLITE_NOMEM",
+	"SQLITE_READONLY",
+	"SQLITE_INTERRUPT",
+	"SQLITE_IOERR_PLAIN",
+	"SQLITE_IOERR_READ",
+	"SQLITE_IOERR_SHORT_READ",
+
+	"SQLITE_IOERR_WRITE",
+	"SQLITE_IOERR_FSYNC",
+	"SQLITE_IOERR_DIR_FSYNC",
+	"SQLITE_IOERR_TRUNCATE",
+	"SQLITE_IOERR_FSTAT",
+
+	"SQLITE_BIND_ERROR",
+	"SQLITE_ERROR_OTHER" ]
+
+exceptionHierarchy Nothing $
+	ExNode "SQLiteException" [
+		ExType ''SQLITE_ERROR,
+		ExType ''SQLITE_INTERNAL,
+		ExType ''SQLITE_PERM,
+		ExType ''SQLITE_ABORT,
+		ExType ''SQLITE_BUSY,
+		ExType ''SQLITE_LOCKED,
+		ExType ''SQLITE_NOMEM,
+		ExType ''SQLITE_READONLY,
+		ExType ''SQLITE_INTERRUPT,
+		ExNode "SQLITE_IOERR" [
+			ExType ''SQLITE_IOERR_PLAIN,
+			ExType ''SQLITE_IOERR_READ,
+			ExType ''SQLITE_IOERR_SHORT_READ,
+			ExType ''SQLITE_IOERR_WRITE,
+			ExType ''SQLITE_IOERR_FSYNC,
+			ExType ''SQLITE_IOERR_DIR_FSYNC,
+			ExType ''SQLITE_IOERR_TRUNCATE,
+			ExType ''SQLITE_IOERR_FSTAT
+			],
+
+		ExType ''SQLITE_BIND_ERROR,
+		ExType ''SQLITE_ERROR_OTHER ]
+
+mkSqliteThrow [
+	'SQLITE_ERROR,
+	'SQLITE_INTERNAL,
+	'SQLITE_PERM,
+	'SQLITE_ABORT,
+	'SQLITE_BUSY,
+	'SQLITE_LOCKED,
+	'SQLITE_NOMEM,
+	'SQLITE_READONLY,
+	'SQLITE_INTERRUPT,
+	'SQLITE_IOERR_PLAIN,
+	'SQLITE_IOERR_READ,
+	'SQLITE_IOERR_SHORT_READ,
+	'SQLITE_IOERR_WRITE,
+	'SQLITE_IOERR_FSYNC,
+	'SQLITE_IOERR_DIR_FSYNC,
+	'SQLITE_IOERR_TRUNCATE,
+	'SQLITE_IOERR_FSTAT
+	]
+
+sqliteThrowBindError :: String -> IO a
+sqliteThrowBindError em = throw $ SQLITE_BIND_ERROR em

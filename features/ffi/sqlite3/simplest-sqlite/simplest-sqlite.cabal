@@ -28,8 +28,11 @@ source-repository this
 library
     hs-source-dirs: src
     exposed-modules: Database.SmplstSQLite3
-    other-modules: Database.SmplstSQLite3.Constants
-    build-depends: base == 4.*, bytestring == 0.10.*, text >= 1.1 && < 1.3
+    other-modules:
+        Database.SmplstSQLite3.Constants, Database.SmplstSQLite3.Templates
+    build-depends:
+        base == 4.*, bytestring == 0.10.*, text >= 1.1 && < 1.3,
+        exception-hierarchy == 0.0.0.1, template-haskell == 2.9.*
     ghc-options: -Wall
     extra-libraries: sqlite3
     extensions: ForeignFunctionInterface

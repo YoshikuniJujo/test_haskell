@@ -5,7 +5,7 @@ module Database.SmplstSQLite3 (
 	withSQLite, withPrepared,
 	step, reset, bind, SQLiteData(..), SQLiteDataList(..), columnType,
 	-- * Types
-	SQLite, Stmt, Result(..), Type(..),
+	SQLite, Stmt, Result(..), Type(..), SQLiteException(..),
 	) where
 
 import Control.Applicative
@@ -18,6 +18,7 @@ import Foreign
 import Foreign.C.Types
 import Foreign.C.String
 
+import Database.SmplstSQLite3.Exception
 import Database.SmplstSQLite3.Constants
 
 data SQLite = SQLite (Ptr SQLite) deriving Show
@@ -41,7 +42,7 @@ sqlite3Open fp = withCString fp $ \cfp -> alloca $ \ppDb -> do
 	when (ret /= sQLITE_OK) $ do
 		em <- sqlite3Errmsg sq
 		sqlite3Close sq
-		ioError . userError $ "Cannot open database: " ++ em
+		sqliteThrow ("Cannot open database: " ++ em) ret
 	return sq
 
 sqlite3Close :: SQLite -> IO ()
@@ -49,7 +50,7 @@ sqlite3Close sq@(SQLite db) = do
 	ret <- c_sqlite3_close db
 	when (ret /= sQLITE_OK) $ do
 		em <- sqlite3Errmsg sq
-		ioError . userError $ "Cannot close database: " ++ em
+		sqliteThrow ("Cannot close database: " ++ em) ret
 
 sqlite3Errmsg :: SQLite -> IO String
 sqlite3Errmsg (SQLite db) = peekCString =<< c_sqlite3_errmsg db
@@ -74,15 +75,13 @@ sqlite3PrepareV2 db@(SQLite pdb) sql =
 		when (ret /= sQLITE_OK) $ do
 			em <- sqlite3Errmsg db
 			sqlite3Finalize sm
-			ioError . userError $ "Cannot prepare: " ++ em
+			sqliteThrow ("Cannot prepare: " ++ em) ret
 		(sm ,) <$> (peekCString =<< peek pt)
 
 sqlite3Finalize :: Stmt -> IO ()
 sqlite3Finalize (Stmt psm) = do
 	ret <- c_sqlite3_finalize psm
-	when (ret /= sQLITE_OK) $
-		ioError . userError $
-			"Cannot finalize stmt: error code (" ++ show ret ++ ")"
+	when (ret /= sQLITE_OK) $ sqliteThrow "Cannot finalize stmt" ret
 
 data Result = Busy | Row | Done deriving (Show, Eq)
 
@@ -96,8 +95,7 @@ step (Stmt psm) = do
 		_	| ret == sQLITE_BUSY -> return Busy
 			| ret == sQLITE_ROW -> return Row
 			| ret == sQLITE_DONE -> return Done
-		_ -> ioError . userError $
-			"Error while step: error code (" ++ show ret ++ ")"
+		_ -> sqliteThrow "Error while step" ret
 
 foreign import ccall unsafe "sqlite3.h sqlite3_column_int"
 	c_sqlite3_column_int :: Ptr Stmt -> CInt -> IO CInt
@@ -166,38 +164,32 @@ bind sm ph x = flip (bindN sm) x =<< sqlite3BindParameterIndex sm ph
 sqlite3BindNull :: Stmt -> Int -> () -> IO ()
 sqlite3BindNull (Stmt sm) i _ = do
 	ret <- c_sqlite3_bind_null sm (fromIntegral i)
-	when (ret /= sQLITE_OK) . ioError . userError $
-			"Cannot bind null: error code (" ++ show ret ++ ")"
+	when (ret /= sQLITE_OK) $ sqliteThrow "Cannot bind null: error code" ret
 
 sqlite3BindDouble :: Stmt -> Int -> Double -> IO ()
 sqlite3BindDouble (Stmt sm) i d = do
 	ret <- c_sqlite3_bind_double sm (fromIntegral i) (realToFrac d)
-	when (ret /= sQLITE_OK) . ioError . userError $
-			"Cannot bind double: error code (" ++ show ret ++ ")"
+	when (ret /= sQLITE_OK) $ sqliteThrow "Cannot bind double" ret
 
 sqlite3BindInt :: Stmt -> Int -> Int -> IO ()
 sqlite3BindInt (Stmt sm) i n = do
 	ret <- c_sqlite3_bind_int sm (fromIntegral i) (fromIntegral n)
-	when (ret /= sQLITE_OK) . ioError . userError $
-			"Cannot bind int: error code (" ++ show ret ++ ")"
+	when (ret /= sQLITE_OK) $ sqliteThrow "Cannot bind int" ret
 
 sqlite3BindString :: Stmt -> Int -> String -> IO ()
 sqlite3BindString (Stmt sm) i s = withCString s $ \cs -> do
 	ret <- c_sqlite3_bind_text sm (fromIntegral i) cs (- 1) nullPtr
-	when (ret /= sQLITE_OK) . ioError . userError $
-			"Cannot bind text: error code (" ++ show ret ++ ")"
+	when (ret /= sQLITE_OK) $ sqliteThrow "Cannot bind text" ret
 
 sqlite3BindByteString :: Stmt -> Int -> BS.ByteString -> IO ()
 sqlite3BindByteString (Stmt sm) i s = BS.useAsCString s $ \cs -> do
 	ret <- c_sqlite3_bind_text sm (fromIntegral i) cs (- 1) nullPtr
-	when (ret /= sQLITE_OK) . ioError . userError $
-		"Cannot bind text: error code (" ++ show ret ++ ")"
+	when (ret /= sQLITE_OK) $ sqliteThrow "Cannot bind text" ret
 
 sqlite3BindBlob :: Stmt -> Int -> BS.ByteString -> IO ()
 sqlite3BindBlob (Stmt sm) i s = BS.useAsCString s $ \cs -> do
 	ret <- c_sqlite3_bind_blob sm (fromIntegral i) cs (- 1) nullPtr
-	when (ret /= sQLITE_OK) . ioError . userError $
-		"Cannot bind text: error code (" ++ show ret ++ ")"
+	when (ret /= sQLITE_OK) $ sqliteThrow "Cannot bind text" ret
 
 foreign import ccall unsafe "sqlite3.h sqlite3_bind_parameter_index"
 	c_sqlite3_bind_parameter_index ::
@@ -206,8 +198,8 @@ foreign import ccall unsafe "sqlite3.h sqlite3_bind_parameter_index"
 sqlite3BindParameterIndex :: Stmt -> String -> IO Int
 sqlite3BindParameterIndex (Stmt sm) ph = withCString ph $ \cph -> do
 	i <- c_sqlite3_bind_parameter_index sm cph
-	when (i == 0) . ioError . userError $
-		"no such place holder: `" ++ ph ++ "'"
+	when (i == 0) .
+		sqliteThrowBindError $ "no such place holder: `" ++ ph ++ "'"
 	return $ fromIntegral i
 
 foreign import ccall unsafe "sqlite3.h sqlite3_reset" c_sqlite3_reset ::
@@ -216,8 +208,7 @@ foreign import ccall unsafe "sqlite3.h sqlite3_reset" c_sqlite3_reset ::
 reset :: Stmt -> IO ()
 reset (Stmt sm) = do
 	ret <- c_sqlite3_reset sm
-	when (ret /= sQLITE_OK) . ioError . userError $
-		"Cannot reset stmt: error code (" ++ show ret ++ ")"
+	when (ret /= sQLITE_OK) $ sqliteThrow "Cannot reset stmt" ret
 
 data Type = Integer | Float | Text | Blob | Null deriving (Show, Eq)
 
