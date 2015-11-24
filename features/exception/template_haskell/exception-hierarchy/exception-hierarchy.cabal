@@ -32,4 +32,4 @@ library
     hs-source-dirs: src
     exposed-modules: Control.Exception.Hierarchy
     build-depends: base == 4.*, template-haskell >= 2.9 && < 2.11
-    ghc-options: -Wall
+    ghc-options: -Wall -fno-warn-tabs
