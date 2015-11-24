@@ -14,10 +14,10 @@ license-file: LICENSE
 category: Language
 synopsis: Exception type hierarchy with TemplateHaskell
 description:
-    see sample code in sample/
+    see sample code in samples/
 
 extra-source-files:
-    sample/humanError.hs
+    samples/humanError.hs
 
 source-repository head
     type: git
