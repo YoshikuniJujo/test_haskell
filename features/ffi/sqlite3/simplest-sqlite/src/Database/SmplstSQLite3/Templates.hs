@@ -22,20 +22,22 @@ sqliteThrowType = sigD (mkName "sqliteThrow") .
 			(conT ''IO `appT` varT (mkName "a"))
 
 mkSqliteThrow :: [Name] -> DecsQ
-mkSqliteThrow ns = (:) <$> sqliteThrowType <*> ((: []) <$>
-	funD (mkName "sqliteThrow") (map mc ns ++ [
-		clause [varP $ mkName "em", wildP]
-			(guardedB [(,) <$> normalG otgd <*> otbd]) [] ]))
+mkSqliteThrow nms = (:)
+	<$> sqliteThrowType
+	<*> ((: []) <$> funD (mkName "sqliteThrow") [mc nms])
 	where
-	mc n = clause [varP $ mkName "em", varP $ mkName "rc"]
-		(guardedB [(,) <$> normalG (gd $ nameBase n) <*> bd n]) []
+	mc ns = clause [varP $ mkName "em", varP $ mkName "rc"]
+		(guardedB $
+			map gd1 ns ++ [(,) <$> normalG otgd <*> otbd])
+		[]
+	gd1 n = (,) <$> normalG (gd $ nameBase n) <*> bd n
 	gd n = infixE (Just . varE $ mkName "rc") (varE '(==))
 		(Just . varE . mkName $ toLowerH n)
 	bd n = infixE (Just $ varE 'throwIO) (varE '($)) . Just $
 		conE n `appE` varE (mkName "em")
 	otgd = varE 'otherwise
 	otbd = infixE (Just $ varE 'throwIO) (varE '($)) . Just $
-		conE (mkName "SQLITE_ERROR_OTHER") `appE` varE (mkName "em")
+		conE (mkName "SQLITE_ERROR_OTHER") `appE` varE (mkName "rc") `appE` varE (mkName "em")
 
 toLowerH :: String -> String
 toLowerH (c : cs) = toLower c : cs

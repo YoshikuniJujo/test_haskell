@@ -92,8 +92,7 @@ step :: Stmt -> IO Result
 step (Stmt psm) = do
 	ret <- c_sqlite3_step psm
 	case ret of
-		_	| ret == sQLITE_BUSY -> return Busy
-			| ret == sQLITE_ROW -> return Row
+		_	| ret == sQLITE_ROW -> return Row
 			| ret == sQLITE_DONE -> return Done
 		_ -> sqliteThrow "Error while step" ret
 
