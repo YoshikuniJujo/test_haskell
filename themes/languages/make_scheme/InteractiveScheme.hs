@@ -1,17 +1,41 @@
+{-# LANGUAGE TupleSections #-}
+
 module InteractiveScheme (scheme, Env, env0, Error(..)) where
 
 import Control.Applicative
 import Control.Arrow
 import qualified Data.Map as M
+import Data.Ratio
 
 import Parser
 
-type Env = M.Map Symbol Value
-
 env0 :: Env
 env0 = M.fromList [
-	("exit", DoExit)
+	("exit", DoExit),
+	("+", Subroutine . reduceL1 $ opi (+)),
+	("-", Subroutine . reduceL1 $ opi (-)),
+	("*", Subroutine . reduceL1 $ opi (*)),
+	("/", Subroutine . reduceL1 $ opi (/))
 	]
+
+output :: String -> Either Error ((String, Value), Env) ->
+	Either Error ((String, Value), Env)
+output o r = (((o ++) `first`) `first`) <$> r
+
+reduceL1 :: (Value -> Value -> Env -> Either Error ((String, Value), Env)) ->
+	Value -> Env -> Either Error ((String, Value), Env)
+reduceL1 op (Cons v0 vs) e = reduceL op v0 vs e
+
+reduceL :: (Value -> Value -> Env -> Either Error ((String, Value), Env)) ->
+	Value -> Value -> Env -> Either Error ((String, Value), Env)
+reduceL op v0 (Cons v vs) e = case op v0 v e of
+	Right ((o, v'), e') -> output o $ reduceL op v' vs e'
+	er -> er
+reduceL op v0 Nil e = Right (("", v0), e)
+
+opi :: (Rational -> Rational -> Rational) ->
+	Value -> Value -> Env -> Either Error ((String, Value), Env)
+opi op (Integer n1) (Integer n2) e = Right . (, e) . ("" ,) . Integer $ n1 `op` n2
 
 scheme :: String -> Env -> Either Error (String, Env)
 scheme s e = first (uncurry (++) . (second toStr)) <$>
@@ -20,9 +44,14 @@ scheme s e = first (uncurry (++) . (second toStr)) <$>
 toStr :: Value -> String
 toStr Undef = "#<undef>"
 toStr (Symbol s) = s
-toStr (Integer i) = show i
+toStr (Integer i) = case (numerator i, denominator i) of
+	(n, 1) -> show n
+	(n, d) -> show n ++ "/" ++ show d
 toStr (Cons v Nil) = '(' : toStr v ++ ")"
+toStr (Cons v _) = '(' : toStr v ++ " ..)"
+toStr Nil = "()"
 toStr DoExit = "#<closure exit>"
+toStr (Subroutine _) = error "toStr: yet subroutine"
 toStr _ = error "toStr: yet"
 
 eval :: Value -> Env -> Either Error ((String, Value), Env)
@@ -46,4 +75,5 @@ mapC _ v _ = Left . Error $ "*** ERROR: Compile Error: proper list required for 
 
 apply :: Value -> Value -> Env -> Either Error ((String, Value), Env)
 apply DoExit Nil _ = Left Exit
+apply (Subroutine sr) v e = sr v e
 apply _ _ _ = Left (Error "apply: yet")
