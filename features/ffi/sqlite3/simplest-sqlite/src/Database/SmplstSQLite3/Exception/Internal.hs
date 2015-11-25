@@ -116,7 +116,11 @@ module Database.SmplstSQLite3.Exception.Internal (
 	SQLITE_WARNING_AUTOINDEX(..),
 
 	SQLITE_BIND_ERROR(..),
-	SQLITE_ERROR_OTHER(..) ) where
+	SQLITE_ERROR_OTHER(..),
+	
+	NullPointerException(..),
+	nullPointerException
+	) where
 
 import Control.Exception
 import Control.Exception.Hierarchy
@@ -443,3 +447,11 @@ mkSqliteThrow [
 
 sqliteThrowBindError :: String -> IO a
 sqliteThrowBindError em = throw $ SQLITE_BIND_ERROR em
+
+newtype NullPointerException = NullPointerException String
+	deriving (Typeable, Show)
+
+exceptionHierarchy Nothing (ExType ''NullPointerException)
+
+nullPointerException :: String -> IO a
+nullPointerException em = throwIO $ NullPointerException em

@@ -53,7 +53,8 @@ sqlite3Close sq@(SQLite db) = do
 		sqliteThrow ("Cannot close database: " ++ em) ret
 
 sqlite3Errmsg :: SQLite -> IO String
-sqlite3Errmsg (SQLite db) = peekCString =<< c_sqlite3_errmsg db
+sqlite3Errmsg (SQLite db) =
+	peekCString' "Error Message" =<< c_sqlite3_errmsg db
 
 foreign import ccall unsafe "sqlite3.h sqlite3_prepare_v2"
 	c_sqlite3_prepare_v2 ::
@@ -76,7 +77,7 @@ sqlite3PrepareV2 db@(SQLite pdb) sql =
 			em <- sqlite3Errmsg db
 			sqlite3Finalize sm
 			sqliteThrow ("Cannot prepare: " ++ em) ret
-		(sm ,) <$> (peekCString =<< peek pt)
+		(sm ,) <$> (peekCString' "Unused SQL" =<< peek pt)
 
 sqlite3Finalize :: Stmt -> IO ()
 sqlite3Finalize (Stmt psm) = do
@@ -133,18 +134,28 @@ instance SQLiteData Double where
 
 instance SQLiteDataList Char where
 	bindNList = sqlite3BindString
-	columnList (Stmt sm) i =
-		peekCString =<< c_sqlite3_column_text sm (fromIntegral i)
+	columnList (Stmt sm) i = peekCString' "String column"
+		=<< c_sqlite3_column_text sm (fromIntegral i)
 
 instance SQLiteData BS.ByteString where
 	bindN = sqlite3BindBlob
-	column (Stmt sm) i =
-		BS.packCString =<< c_sqlite3_column_blob sm (fromIntegral i)
+	column (Stmt sm) i = packCString' "ByteString column"
+		=<< c_sqlite3_column_blob sm (fromIntegral i)
 
 instance SQLiteData T.Text where
 	bindN sm i = sqlite3BindByteString sm i . T.encodeUtf8
-	column (Stmt sm) i = T.decodeUtf8 <$>
-		(BS.packCString =<< c_sqlite3_column_text sm (fromIntegral i))
+	column (Stmt sm) i = (T.decodeUtf8 <$>) .  packCString' "Text column"
+		=<< c_sqlite3_column_text sm (fromIntegral i)
+
+peekCString' :: String -> CString -> IO String
+peekCString' em cstr
+	| cstr == nullPtr = nullPointerException em
+	| otherwise = peekCString cstr
+
+packCString' :: String -> CString -> IO BS.ByteString
+packCString' em cstr
+	| cstr == nullPtr = nullPointerException em
+	| otherwise = BS.packCString cstr
 
 foreign import ccall unsafe "sqlite3.h sqlite3_bind_null"
 	c_sqlite3_bind_null :: Ptr Stmt -> CInt -> IO CInt

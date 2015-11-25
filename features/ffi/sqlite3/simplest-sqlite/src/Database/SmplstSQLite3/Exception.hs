@@ -113,6 +113,9 @@ module Database.SmplstSQLite3.Exception (
 
 	SQLITE_BIND_ERROR(..),
 	SQLITE_ERROR_OTHER(..),
+	
+	NullPointerException(..),
+	nullPointerException
 	) where
 
 import Database.SmplstSQLite3.Exception.Internal
