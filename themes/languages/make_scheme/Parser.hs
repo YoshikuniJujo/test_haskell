@@ -12,7 +12,8 @@ data Value
 	| Integer Rational | Double Double | String String
 	| Cons Value Value
 	| DoExit | Display String
-	| Subroutine (Value -> Env -> Either Error ((String, Value), Env))
+	| Subroutine String (Value -> Env -> Either Error ((String, Value), Env))
+	| Syntax String (Value -> Env -> Either Error ((String, Value), Env))
 	| Closure [Symbol] Value
 	| Define Symbol Value
 

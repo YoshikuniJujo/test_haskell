@@ -12,11 +12,18 @@ import Parser
 env0 :: Env
 env0 = M.fromList [
 	("exit", DoExit),
-	("+", Subroutine . reduceL1 $ opn (+) (+)),
-	("-", Subroutine . reduceL1 $ opn (-) (-)),
-	("*", Subroutine . reduceL1 $ opn (*) (*)),
-	("/", Subroutine . reduceL1 $ opn (/) (/))
+	("+", Subroutine "+" . reduceL1 $ opn (+) (+)),
+	("-", Subroutine "-" . reduceL1 $ opn (-) (-)),
+	("*", Subroutine "*" . reduceL1 $ opn (*) (*)),
+	("/", Subroutine "/" . reduceL1 $ opn (/) (/)),
+	("define", Syntax "define" define)
 	]
+
+define :: Value -> Env -> Either Error ((String, Value), Env)
+define (Cons sm@(Symbol s) (Cons v Nil)) e = do
+	((o, v'), e') <- eval v e
+	Right ((o, sm), M.insert s v' e')
+define _ _ = Left $ Error "define error"
 
 output :: String -> Either Error ((String, Value), Env) ->
 	Either Error ((String, Value), Env)
@@ -57,7 +64,8 @@ toStr (Cons v Nil) = '(' : toStr v ++ ")"
 toStr (Cons v _) = '(' : toStr v ++ " ..)"
 toStr Nil = "()"
 toStr DoExit = "#<closure exit>"
-toStr (Subroutine _) = error "toStr: yet subroutine"
+toStr (Subroutine n _) = "#<subr " ++ n ++ ">"
+toStr (Syntax n _) = "#<syntax " ++ n ++ ">"
 toStr _ = error "toStr: yet"
 
 eval :: Value -> Env -> Either Error ((String, Value), Env)
@@ -66,8 +74,11 @@ eval (Symbol s) e = case M.lookup s e of
 	_ -> Left . Error $ "*** ERROR: unbound variable: " ++ s
 eval (Cons v1 v2) e = do
 	((o1, p), e') <- eval v1 e
-	((o2, as), e'') <- mapC eval v2 e'
-	first (first ((o1 ++ o2) ++)) <$> apply p as e''
+	case p of
+		Syntax n s ->
+			first (first (o1 ++)) <$> apply (Subroutine n s) v2 e'
+		_ -> do	((o2, as), e'') <- mapC eval v2 e'
+			first (first ((o1 ++ o2) ++)) <$> apply p as e''
 eval v e = Right (("", v), e)
 
 mapC :: (Value -> Env -> Either Error ((String, Value), Env)) -> Value -> Env ->
@@ -81,5 +92,5 @@ mapC _ v _ = Left . Error $ "*** ERROR: Compile Error: proper list required for 
 
 apply :: Value -> Value -> Env -> Either Error ((String, Value), Env)
 apply DoExit Nil _ = Left Exit
-apply (Subroutine sr) v e = sr v e
+apply (Subroutine _ sr) v e = sr v e
 apply _ _ _ = Left (Error "apply: yet")
