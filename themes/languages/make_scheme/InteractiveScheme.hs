@@ -6,7 +6,7 @@ import Control.Applicative
 import Control.Arrow
 import Data.Ratio
 
-import Parser (Value(..), Error(..), Env, toDouble, parse)
+import Parser (Env, Symbol, Value(..), Error(..), toDouble, parse)
 import qualified Parser as P
 
 env0 :: Env
@@ -16,14 +16,24 @@ env0 = P.fromList [
 	("-", Subroutine "-" . reduceL1 $ opn (-) (-)),
 	("*", Subroutine "*" . reduceL1 $ opn (*) (*)),
 	("/", Subroutine "/" . reduceL1 $ opn (/) (/)),
-	("define", Syntax "define" define)
+	("define", Syntax "define" define),
+	("lambda", Syntax "lambda" lambda)
 	]
 
 define :: Value -> Env -> Either Error ((String, Value), Env)
 define (Cons sm@(Symbol s) (Cons v Nil)) e = do
 	((o, v'), e') <- eval v e
 	Right ((o, sm), P.insert s v' e')
-define _ _ = Left $ Error "define error"
+define _ _ = Left $ Error "define: error"
+
+lambda :: Value -> Env -> Either Error ((String, Value), Env)
+lambda (Cons a0 as) e = (\ss -> (("", Closure "#f" e ss as), e)) <$> symbols a0
+lambda _ _ = Left $ Error "lambda: error"
+
+symbols :: Value -> Either Error [Symbol]
+symbols (Cons (Symbol s) ss) = (s :) <$> symbols ss
+symbols Nil = Right []
+symbols _ = Left $ Error "symbols: yet"
 
 output :: String -> Either Error ((String, Value), Env) ->
 	Either Error ((String, Value), Env)
@@ -68,6 +78,7 @@ toStr Nil = "()"
 toStr DoExit = "#<closure exit>"
 toStr (Subroutine n _) = "#<subr " ++ n ++ ">"
 toStr (Syntax n _) = "#<syntax " ++ n ++ ">"
+toStr (Closure n _ _ _) = "#<closure " ++ n ++ ">"
 toStr _ = error "toStr: yet"
 
 eval :: Value -> Env -> Either Error ((String, Value), Env)

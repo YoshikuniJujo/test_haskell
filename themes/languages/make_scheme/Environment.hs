@@ -23,9 +23,9 @@ data Value
 	| Integer Rational | Double Double | String String
 	| Cons Value Value
 	| DoExit | Display String
-	| Subroutine String (Value -> Env -> Either Error ((String, Value), Env))
-	| Syntax String (Value -> Env -> Either Error ((String, Value), Env))
-	| Closure [Symbol] Value
+	| Subroutine Symbol (Value -> Env -> Either Error ((String, Value), Env))
+	| Syntax Symbol (Value -> Env -> Either Error ((String, Value), Env))
+	| Closure Symbol Env [Symbol] Value
 	| Define Symbol Value
 
 instance Show Value where
