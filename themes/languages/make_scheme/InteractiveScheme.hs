@@ -12,10 +12,10 @@ import Parser
 env0 :: Env
 env0 = M.fromList [
 	("exit", DoExit),
-	("+", Subroutine . reduceL1 $ opi (+)),
-	("-", Subroutine . reduceL1 $ opi (-)),
-	("*", Subroutine . reduceL1 $ opi (*)),
-	("/", Subroutine . reduceL1 $ opi (/))
+	("+", Subroutine . reduceL1 $ opn (+) (+)),
+	("-", Subroutine . reduceL1 $ opn (-) (-)),
+	("*", Subroutine . reduceL1 $ opn (*) (*)),
+	("/", Subroutine . reduceL1 $ opn (/) (/))
 	]
 
 output :: String -> Either Error ((String, Value), Env) ->
@@ -33,9 +33,14 @@ reduceL op v0 (Cons v vs) e = case op v0 v e of
 	er -> er
 reduceL op v0 Nil e = Right (("", v0), e)
 
-opi :: (Rational -> Rational -> Rational) ->
+opn :: (Rational -> Rational -> Rational) -> (Double -> Double -> Double) ->
 	Value -> Value -> Env -> Either Error ((String, Value), Env)
-opi op (Integer n1) (Integer n2) e = Right . (, e) . ("" ,) . Integer $ n1 `op` n2
+opn opi _ (Integer n1) (Integer n2) e =
+	Right . (, e) . ("" ,) . Integer $ n1 `opi` n2
+opn _ opd v1 v2 e = case (toDouble v1, toDouble v2) of
+	(Just d1, Just d2) -> Right . (, e) . ("" ,) . Double $ d1 `opd` d2
+	_ -> Left . Error $ "operation ... is not defined between " ++
+		toStr v1 ++ " " ++ toStr v2
 
 scheme :: String -> Env -> Either Error (String, Env)
 scheme s e = first (uncurry (++) . (second toStr)) <$>
@@ -47,6 +52,7 @@ toStr (Symbol s) = s
 toStr (Integer i) = case (numerator i, denominator i) of
 	(n, 1) -> show n
 	(n, d) -> show n ++ "/" ++ show d
+toStr (Double d) = show d
 toStr (Cons v Nil) = '(' : toStr v ++ ")"
 toStr (Cons v _) = '(' : toStr v ++ " ..)"
 toStr Nil = "()"
