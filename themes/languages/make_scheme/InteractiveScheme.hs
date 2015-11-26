@@ -4,13 +4,13 @@ module InteractiveScheme (scheme, Env, env0, Error(..)) where
 
 import Control.Applicative
 import Control.Arrow
-import qualified Data.Map as M
 import Data.Ratio
 
-import Parser
+import Parser (Value(..), Error(..), Env, toDouble, parse)
+import qualified Parser as P
 
 env0 :: Env
-env0 = M.fromList [
+env0 = P.fromList [
 	("exit", DoExit),
 	("+", Subroutine "+" . reduceL1 $ opn (+) (+)),
 	("-", Subroutine "-" . reduceL1 $ opn (-) (-)),
@@ -22,7 +22,7 @@ env0 = M.fromList [
 define :: Value -> Env -> Either Error ((String, Value), Env)
 define (Cons sm@(Symbol s) (Cons v Nil)) e = do
 	((o, v'), e') <- eval v e
-	Right ((o, sm), M.insert s v' e')
+	Right ((o, sm), P.insert s v' e')
 define _ _ = Left $ Error "define error"
 
 output :: String -> Either Error ((String, Value), Env) ->
@@ -32,13 +32,15 @@ output o r = (((o ++) `first`) `first`) <$> r
 reduceL1 :: (Value -> Value -> Env -> Either Error ((String, Value), Env)) ->
 	Value -> Env -> Either Error ((String, Value), Env)
 reduceL1 op (Cons v0 vs) e = reduceL op v0 vs e
+reduceL1 _ _ _ = Left $ Error "reduceL1: yet"
 
 reduceL :: (Value -> Value -> Env -> Either Error ((String, Value), Env)) ->
 	Value -> Value -> Env -> Either Error ((String, Value), Env)
 reduceL op v0 (Cons v vs) e = case op v0 v e of
 	Right ((o, v'), e') -> output o $ reduceL op v' vs e'
 	er -> er
-reduceL op v0 Nil e = Right (("", v0), e)
+reduceL _ v0 Nil e = Right (("", v0), e)
+reduceL _ _ _ _ = Left $ Error "reduceL: yet"
 
 opn :: (Rational -> Rational -> Rational) -> (Double -> Double -> Double) ->
 	Value -> Value -> Env -> Either Error ((String, Value), Env)
@@ -50,7 +52,7 @@ opn _ opd v1 v2 e = case (toDouble v1, toDouble v2) of
 		toStr v1 ++ " " ++ toStr v2
 
 scheme :: String -> Env -> Either Error (String, Env)
-scheme s e = first (uncurry (++) . (second toStr)) <$>
+scheme s e = first (uncurry (++) . second toStr) <$>
 	((`eval` e) . fst =<< parse s)
 
 toStr :: Value -> String
@@ -69,7 +71,7 @@ toStr (Syntax n _) = "#<syntax " ++ n ++ ">"
 toStr _ = error "toStr: yet"
 
 eval :: Value -> Env -> Either Error ((String, Value), Env)
-eval (Symbol s) e = case M.lookup s e of
+eval (Symbol s) e = case P.lookup s e of
 	Just v -> Right (("", v), e)
 	_ -> Left . Error $ "*** ERROR: unbound variable: " ++ s
 eval (Cons v1 v2) e = do
