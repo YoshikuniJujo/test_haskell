@@ -24,6 +24,9 @@ define :: Value -> Env -> Either Error ((String, Value), Env)
 define (Cons sm@(Symbol s) (Cons v Nil)) e = do
 	((o, v'), e') <- eval v e
 	Right ((o, sm), P.insert s v' e')
+define (Cons (Cons sm@(Symbol n) as) c) e = do
+	ss <- symbols as
+	Right (("", sm), P.insert n (Closure n e ss c) e)
 define _ _ = Left $ Error "define: error"
 
 lambda :: Value -> Env -> Either Error ((String, Value), Env)
@@ -87,11 +90,7 @@ eval (Symbol s) e = case P.lookup s e of
 	_ -> Left . Error $ "*** ERROR: unbound variable: " ++ s
 eval (Cons v1 v2) e = do
 	((o1, p), e') <- eval v1 e
-	case p of
-		Syntax n s ->
-			first (first (o1 ++)) <$> apply (Subroutine n s) v2 e'
-		_ -> do	((o2, as), e'') <- mapC eval v2 e'
-			first (first ((o1 ++ o2) ++)) <$> apply p as e''
+	first (first (o1 ++)) <$> apply p v2 e'
 eval v e = Right (("", v), e)
 
 mapC :: (Value -> Env -> Either Error ((String, Value), Env)) -> Value -> Env ->
@@ -103,7 +102,29 @@ mapC _ Nil e = Right (("", Nil), e)
 mapC _ v _ = Left . Error $ "*** ERROR: Compile Error: proper list required for " ++
 	"function application or macro use: " ++ toStr v
 
+foreachC :: (Value -> Env -> Either Error ((String, Value), Env)) -> Value -> Env ->
+	Either Error ((String, Value), Env)
+foreachC f (Cons v Nil) e = f v e
+foreachC f (Cons v vs) e = do
+	((o, _), e') <- f v e
+	first ((o ++) `first`) <$> foreachC f vs e'
+foreachC _ Nil e = Right (("", Nil), e)
+foreachC _ v _ = Left . Error $ "*** ERROR: Compile Error: proper list required for " ++
+	"function application or macro use: " ++ toStr v
+
 apply :: Value -> Value -> Env -> Either Error ((String, Value), Env)
 apply DoExit Nil _ = Left Exit
-apply (Subroutine _ sr) v e = sr v e
-apply _ _ _ = Left (Error "apply: yet")
+apply (Syntax _ s) v e = s v e
+apply (Subroutine _ sr) v e = do
+	((o2, as), e'') <- mapC eval v e
+	first (first (o2 ++)) <$> sr as e''
+apply (Closure _ e ss c) v e0 = do
+	((o2, as), e'') <- mapC eval v e0
+	first (first (o2 ++)) . second (const e'')
+		<$> (foreachC eval c =<< defineAll ss as e)
+apply f _ _ = Left . Error $ "apply: yet: " ++ show f
+
+defineAll :: [Symbol] -> Value -> Env -> Either Error Env
+defineAll [] Nil e = Right e
+defineAll (s : ss) (Cons v vs) e = P.insert s v <$> defineAll ss vs e
+defineAll _ _ _ = Left $ Error "defineAll: yet"
