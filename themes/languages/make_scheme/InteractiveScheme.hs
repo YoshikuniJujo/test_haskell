@@ -198,10 +198,10 @@ apply (Syntax _ s) v e = s v e
 apply (Subroutine _ sr) v e = do
 	((o2, as), e'') <- mapC eval v e
 	first (first (o2 ++)) <$> sr as e''
-apply (Closure _ e ss c) v e0 = do
+apply (Closure _ _ ss c) v e0 = do
 	((o2, as), e'') <- mapC eval v e0
-	first (first (o2 ++)) . second (const e'')
-		<$> (foreachC eval c =<< defineAll ss as e)
+	first (first (o2 ++)) . second P.exit
+		<$> (foreachC eval c =<< defineAll ss as (P.local e''))
 apply f _ _ = Left . Error $ "apply: yet: " ++ show f
 
 defineAll :: [Symbol] -> Value -> Env -> Either Error Env

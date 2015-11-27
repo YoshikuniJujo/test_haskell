@@ -1,20 +1,34 @@
 module Environment (
 	Symbol, Value(..), Error(..), toDouble, negateValue,
 	Env, Environment.lookup, Environment.insert, Environment.fromList,
+	local, exit
 	) where
 
 import qualified Data.Map as M
 
-type Env = M.Map Symbol Value
+type Env = [M.Map Symbol Value]
+
+local :: Env -> Env
+local = (M.empty :)
+
+exit :: Env -> Env
+exit [] = []
+exit [e] = [e]
+exit (_ : es) = es
 
 lookup :: Symbol -> Env -> Maybe Value
-lookup = M.lookup
+lookup _ [] = Nothing
+lookup s (e : es) = maybe (Environment.lookup s es) Just $ M.lookup s e
+
+heading :: (a -> a) -> [a] -> [a]
+heading f (x : xs) = f x : xs
+heading _ _ = []
 
 insert :: Symbol -> Value -> Env -> Env
-insert = M.insert
+insert s v = heading $ M.insert s v
 
 fromList :: [(Symbol, Value)] -> Env
-fromList = M.fromList
+fromList = (: []) . M.fromList
 
 type Symbol = String
 
