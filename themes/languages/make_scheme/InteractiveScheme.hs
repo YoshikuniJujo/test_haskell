@@ -19,9 +19,13 @@ env0 = P.fromList [
 	("=", Subroutine "=" $ equal),
 	(">", Subroutine ">" $ isLargerThan),
 	("<", Subroutine "<" $ isSmallerThan),
+	("and", Syntax "and" andS),
+	("or", Syntax "or" orS),
+	("not", Subroutine "not" notS),
 	("define", Syntax "define" define),
 	("lambda", Syntax "lambda" lambda),
-	("cond", Syntax "cond" cond)
+	("cond", Syntax "cond" cond),
+	("if", Syntax "if" ifte)
 	]
 
 define :: Value -> Env -> Either Error ((String, Value), Env)
@@ -51,6 +55,39 @@ cond (Cons (Cons t p) cs) e = do
 		Bool False -> output to $ cond cs e'
 		_ -> output to $ foreachC eval p e'
 cond _ _ = Left $ Error "cond: yet"
+
+ifte :: Value -> Env -> Either Error ((String, Value), Env)
+ifte (Cons b (Cons t (Cons e Nil))) env = do
+	((bo, br), env') <- eval b env
+	case br of
+		Bool False -> output bo $ eval e env'
+		_ -> output bo $ eval t env'
+ifte _ _ = Left $ Error "ifte: yet"
+
+andS, orS, notS :: Value -> Env -> Either Error ((String, Value), Env)
+andS Nil e = Right (("", Bool True), e)
+andS (Cons b Nil) e = eval b e
+andS (Cons b bs) e = do
+	((o, br), e') <- eval b e
+	case br of
+		Bool False -> return ((o, br), e')
+		_ -> andS bs e'
+andS _ _ = Left $ Error "andS: yet"
+
+orS Nil e = Right (("", Bool False), e)
+orS (Cons b bs) e = do
+	((o, br), e') <- eval b e
+	case br of
+		Bool False -> orS bs e'
+		_ -> return ((o, br), e')
+orS _ _ = Left $ Error "orS: yet"
+
+notS (Cons b Nil) e = do
+	((o, br), e') <- eval b e
+	return $ case br of
+		Bool False -> ((o, Bool True), e')
+		_ -> ((o, Bool False), e')
+notS _ _ = Left $ Error "notS: yet"
 
 output :: String -> Either Error ((String, Value), Env) ->
 	Either Error ((String, Value), Env)
