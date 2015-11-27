@@ -1,5 +1,5 @@
 module Environment (
-	Symbol, Value(..), Error(..), toDouble,
+	Symbol, Value(..), Error(..), toDouble, negateValue,
 	Env, Environment.lookup, Environment.insert, Environment.fromList,
 	) where
 
@@ -45,3 +45,8 @@ toDouble :: Value -> Maybe Double
 toDouble (Integer r) = Just $ realToFrac r
 toDouble (Double d) = Just d
 toDouble _ = Nothing
+
+negateValue :: Value -> Value
+negateValue (Integer r) = Integer $ - r
+negateValue (Double d) = Double $ - d
+negateValue v = v

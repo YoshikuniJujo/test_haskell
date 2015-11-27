@@ -13,11 +13,15 @@ env0 :: Env
 env0 = P.fromList [
 	("exit", DoExit),
 	("+", Subroutine "+" . reduceL1 $ opn (+) (+)),
-	("-", Subroutine "-" . reduceL1 $ opn (-) (-)),
+	("-", Subroutine "-" neg),
 	("*", Subroutine "*" . reduceL1 $ opn (*) (*)),
 	("/", Subroutine "/" . reduceL1 $ opn (/) (/)),
+	("=", Subroutine "=" $ equal),
+	(">", Subroutine ">" $ isLargerThan),
+	("<", Subroutine "<" $ isSmallerThan),
 	("define", Syntax "define" define),
-	("lambda", Syntax "lambda" lambda)
+	("lambda", Syntax "lambda" lambda),
+	("cond", Syntax "cond" cond)
 	]
 
 define :: Value -> Env -> Either Error ((String, Value), Env)
@@ -37,6 +41,16 @@ symbols :: Value -> Either Error [Symbol]
 symbols (Cons (Symbol s) ss) = (s :) <$> symbols ss
 symbols Nil = Right []
 symbols _ = Left $ Error "symbols: yet"
+
+cond :: Value -> Env -> Either Error ((String, Value), Env)
+cond Nil e = Right (("", Undef), e)
+cond (Cons (Cons (Symbol "else") p) _) e = foreachC eval p e
+cond (Cons (Cons t p) cs) e = do
+	((to, tr), e') <- eval t e
+	case tr of
+		Bool False -> output to $ cond cs e'
+		_ -> output to $ foreachC eval p e'
+cond _ _ = Left $ Error "cond: yet"
 
 output :: String -> Either Error ((String, Value), Env) ->
 	Either Error ((String, Value), Env)
@@ -64,12 +78,31 @@ opn _ opd v1 v2 e = case (toDouble v1, toDouble v2) of
 	_ -> Left . Error $ "operation ... is not defined between " ++
 		toStr v1 ++ " " ++ toStr v2
 
+neg :: Value -> Env -> Either Error ((String, Value), Env)
+neg (Cons (Integer n) Nil) e = Right (("", Integer $ - n), e)
+neg (Cons (Double n) Nil) e = Right (("", Double $ - n), e)
+neg v e = reduceL1 (opn (-) (-)) v e
+
+equal, isLargerThan, isSmallerThan ::
+	Value -> Env -> Either Error ((String, Value), Env)
+equal (Cons (Integer n1) (Cons (Integer n2) Nil)) e =
+	Right (("", Bool $ n1 == n2), e)
+equal _ _ = Left . Error $ "equal: yet"
+isLargerThan (Cons (Integer n1) (Cons (Integer n2) Nil)) e =
+	Right (("", Bool $ n1 > n2), e)
+isLargerThan _ _ = Left . Error $ "isLargerThan: yet"
+isSmallerThan (Cons (Integer n1) (Cons (Integer n2) Nil)) e =
+	Right (("", Bool $ n1 < n2), e)
+isSmallerThan _ _ = Left . Error $ "isSmallerThan: yet"
+
 scheme :: String -> Env -> Either Error (String, Env)
 scheme s e = first (uncurry (++) . second toStr) <$>
 	((`eval` e) . fst =<< parse s)
 
 toStr :: Value -> String
 toStr Undef = "#<undef>"
+toStr (Bool False) = "#f"
+toStr (Bool True) = "#t"
 toStr (Symbol s) = s
 toStr (Integer i) = case (numerator i, denominator i) of
 	(n, 1) -> show n

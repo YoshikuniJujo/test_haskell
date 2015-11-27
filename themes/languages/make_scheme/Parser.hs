@@ -7,13 +7,21 @@ module Parser (
 import Control.Arrow
 import Data.Char
 
-import Environment (Value(..), toDouble, Error(..), Env, Symbol)
+import Environment (
+	Value(..), toDouble, negateValue, Error(..), Env, Symbol)
 import qualified Environment as E
 
 parse :: String -> Either Error (Value, String)
 parse ('(' : s) = let (c, s') = parseList s in case dropWhile isSpace s' of
 	')' : s'' -> Right (c, s'')
 	_ -> Left $ Error "READ-ERROR"
+parse ('#' : c : s) = case c of
+	'f' -> Right $ (Bool False, s)
+	't' -> Right $ (Bool True, s)
+	_ -> Left . Error $ "parse error: #" ++ [c]
+parse ('-' : c : s) | isDigit c = Right
+	. (negateValue `first`)
+	. uncurry parseNumber . first (c :) $ span isDigit s
 parse (c : s)
 	| isDigit c =
 		Right . uncurry parseNumber . first (c :) $ span isDigit s
@@ -33,4 +41,4 @@ parseList s = case parse s of
 	_ -> (Nil, s)
 
 isSymbolChar :: Char -> Bool
-isSymbolChar c = any ($ c) [isAlpha, (`elem` "+-*/")]
+isSymbolChar c = any ($ c) [isAlpha, (`elem` "+-*/<=>")]
