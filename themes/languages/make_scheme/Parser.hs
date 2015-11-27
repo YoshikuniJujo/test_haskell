@@ -41,4 +41,4 @@ parseList s = case parse s of
 	_ -> (Nil, s)
 
 isSymbolChar :: Char -> Bool
-isSymbolChar c = any ($ c) [isAlpha, (`elem` "+-*/<=>")]
+isSymbolChar c = any ($ c) [isAlpha, (`elem` "+-*/<=>?")]

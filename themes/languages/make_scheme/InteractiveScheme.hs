@@ -125,11 +125,16 @@ equal, isLargerThan, isSmallerThan ::
 equal (Cons (Integer n1) (Cons (Integer n2) Nil)) e =
 	Right (("", Bool $ n1 == n2), e)
 equal _ _ = Left . Error $ "equal: yet"
+
 isLargerThan (Cons (Integer n1) (Cons (Integer n2) Nil)) e =
 	Right (("", Bool $ n1 > n2), e)
 isLargerThan _ _ = Left . Error $ "isLargerThan: yet"
+
 isSmallerThan (Cons (Integer n1) (Cons (Integer n2) Nil)) e =
 	Right (("", Bool $ n1 < n2), e)
+isSmallerThan (Cons v1 (Cons v2 Nil)) e = case (toDouble v1, toDouble v2) of
+	(Just d1, Just d2) -> Right (("", Bool $ d1 < d2), e)
+	_ -> Left . Error $ "isSmallerThan: yet"
 isSmallerThan _ _ = Left . Error $ "isSmallerThan: yet"
 
 load :: String -> Env -> Either Error (String, Env)
@@ -202,7 +207,7 @@ apply (Closure _ _ ss c) v e0 = do
 	((o2, as), e'') <- mapC eval v e0
 	first (first (o2 ++)) . second P.exit
 		<$> (foreachC eval c =<< defineAll ss as (P.local e''))
-apply f _ _ = Left . Error $ "apply: yet: " ++ show f
+apply f as _ = Left . Error $ "apply: yet: " ++ show f ++ " " ++ show as
 
 defineAll :: [Symbol] -> Value -> Env -> Either Error Env
 defineAll [] Nil e = Right e
