@@ -1,12 +1,12 @@
 {-# LANGUAGE TupleSections #-}
 
-module InteractiveScheme (scheme, Env, env0, Error(..)) where
+module InteractiveScheme (scheme, load, Env, env0, Error(..)) where
 
 import Control.Applicative
 import Control.Arrow
 import Data.Ratio
 
-import Parser (Env, Symbol, Value(..), Error(..), toDouble, parse)
+import Parser (Env, Symbol, Value(..), Error(..), toDouble, parse, parseList)
 import qualified Parser as P
 
 env0 :: Env
@@ -131,6 +131,16 @@ isLargerThan _ _ = Left . Error $ "isLargerThan: yet"
 isSmallerThan (Cons (Integer n1) (Cons (Integer n2) Nil)) e =
 	Right (("", Bool $ n1 < n2), e)
 isSmallerThan _ _ = Left . Error $ "isSmallerThan: yet"
+
+load :: String -> Env -> Either Error (String, Env)
+load = loadV . fst . parseList
+
+loadV :: Value -> Env -> Either Error (String, Env)
+loadV Nil e = Right ("", e)
+loadV (Cons v vs) e = do
+	((o, _), e') <- eval v e
+	first (o ++) <$> loadV vs e'
+loadV _ _ = Left $ Error "loadV: yet"
 
 scheme :: String -> Env -> Either Error (String, Env)
 scheme s e = first (uncurry (++) . second toStr) <$>

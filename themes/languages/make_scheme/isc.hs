@@ -1,10 +1,19 @@
 import Control.Monad
 import System.IO
+import System.Environment
 
 import InteractiveScheme
 
 main :: IO ()
-main = run env0
+main = do
+	as <- getArgs
+	case as of
+		[] -> run env0
+		fp : _ -> do
+			src <- readFile fp
+			case load src env0 of
+				Right (o, e') -> putStr o >> run e'
+				Left e -> error $ show e
 
 run :: Env -> IO ()
 run e = do

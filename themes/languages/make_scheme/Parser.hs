@@ -1,5 +1,5 @@
 module Parser (
-	parse,
+	parse, parseList,
 	Value(..), Symbol, Error(..), toDouble,
 	Env, E.lookup, E.insert, E.fromList,
 	) where
