@@ -16,6 +16,7 @@ env0 = P.fromList [
 	("-", Subroutine "-" neg),
 	("*", Subroutine "*" . reduceL1 $ opn (*) (*)),
 	("/", Subroutine "/" . reduceL1 $ opn (/) (/)),
+	("remainder", Subroutine "remainder" remainder),
 	("=", Subroutine "=" $ equal),
 	(">", Subroutine ">" $ isLargerThan),
 	("<", Subroutine "<" $ isSmallerThan),
@@ -115,6 +116,13 @@ opn _ opd v1 v2 e = case (toDouble v1, toDouble v2) of
 	_ -> Left . Error $ "operation ... is not defined between " ++
 		toStr v1 ++ " " ++ toStr v2
 
+remainder :: Value -> Env -> Either Error ((String, Value), Env)
+remainder (Cons (Integer n1) (Cons (Integer n2) Nil)) e
+	| 1 <- denominator n1, 1 <- denominator n2 =
+		Right (("", Integer $ numerator n1 `mod` numerator n2 % 1),
+			e)
+remainder _ _ = Left . Error $ "remainder: yet"
+
 neg :: Value -> Env -> Either Error ((String, Value), Env)
 neg (Cons (Integer n) Nil) e = Right (("", Integer $ - n), e)
 neg (Cons (Double n) Nil) e = Right (("", Double $ - n), e)
@@ -124,10 +132,13 @@ equal, isLargerThan, isSmallerThan ::
 	Value -> Env -> Either Error ((String, Value), Env)
 equal (Cons (Integer n1) (Cons (Integer n2) Nil)) e =
 	Right (("", Bool $ n1 == n2), e)
-equal _ _ = Left . Error $ "equal: yet"
+equal v _ = Left . Error $ "equal: yet: " ++ show v
 
 isLargerThan (Cons (Integer n1) (Cons (Integer n2) Nil)) e =
 	Right (("", Bool $ n1 > n2), e)
+isLargerThan (Cons v1 (Cons v2 Nil)) e = case (toDouble v1, toDouble v2) of
+	(Just d1, Just d2) -> Right (("", Bool $ d1 > d2), e)
+	_ -> Left . Error $ "isLargerThan: yet"
 isLargerThan _ _ = Left . Error $ "isLargerThan: yet"
 
 isSmallerThan (Cons (Integer n1) (Cons (Integer n2) Nil)) e =

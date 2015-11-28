@@ -1,0 +1,19 @@
+T_pq: a <- bq + a(q + p), b <- bp + aq
+
+T_pq^2:	a <- bq + a(q + p), b <- bp + aq
+	a <- bq + a(q + p), b <- bp + aq
+	|
+	V
+	a <- (bp + aq)q + (bq + a(q + p))(q + p),
+	b <- (bp + aq)p + (bq + a(q + p))q
+	|
+	V
+	a <- b(pq + q(q + p)) + a(q^2 + (q + p)^2)
+	b <- b(p^2 + q^2) + a(qp + (q + p)q)
+	|
+	V
+	a <- b(2pq + q^2) + a((2pq + q^2) + (p^2 + q^2))
+	b <- b(p^2 + q^2) + a(2pq + q^2)
+	|
+	V
+	T_(p^2 + q^2)(2pq + q^2)

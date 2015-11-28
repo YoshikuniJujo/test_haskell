@@ -234,3 +234,5 @@ a.out
 /features/ffi/hsc2hs/conststr.hs
 /features/ffi/hsc2hs/empty.hs
 /features/ffi/hsc2hs/sharp.hs
+
+/themes/languages/make_scheme/haskell_codes/fib_fast
