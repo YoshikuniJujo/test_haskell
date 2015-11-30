@@ -248,4 +248,4 @@ apply f as _ = Left . Error $ "apply: yet: " ++ show f ++ " " ++ show as
 defineAll :: [Symbol] -> Value -> Env -> Either Error Env
 defineAll [] Nil e = Right e
 defineAll (s : ss) (Cons v vs) e = P.insert s v <$> defineAll ss vs e
-defineAll _ _ _ = Left $ Error "defineAll: yet"
+defineAll ss vs _ = Left . Error $ "defineAll: yet: " ++ show ss ++ " " ++ show vs
