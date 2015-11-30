@@ -30,7 +30,7 @@ env0 rg = P.fromList [
 	("if", Syntax "if" ifte),
 	("random-seed", RandomSeed rg),
 	("random-with", Syntax "random-with" randomWith),
-	("random", Closure "random" (env0 rg) ["n"] $ Cons
+	("random", Closure "random" undefined ["n"] $ Cons
 		(Cons (Symbol "random-with") $
 			Cons (Symbol "random-seed") $
 				Cons (Symbol "n") Nil)
@@ -57,11 +57,11 @@ define (Cons sm@(Symbol s) (Cons v Nil)) e = do
 	Right ((o, sm), P.insert s v' e')
 define (Cons (Cons sm@(Symbol n) as) c) e = do
 	ss <- symbols as
-	Right (("", sm), P.insert n (Closure n e ss c) e)
+	Right (("", sm), P.insert n (Closure n undefined ss c) e)
 define _ _ = Left $ Error "define: error"
 
 lambda :: Value -> Env -> Either Error ((String, Value), Env)
-lambda (Cons a0 as) e = (\ss -> (("", Closure "#f" e ss as), e)) <$> symbols a0
+lambda (Cons a0 as) e = (\ss -> (("", Closure "#f" undefined ss as), e)) <$> symbols a0
 lambda _ _ = Left $ Error "lambda: error"
 
 symbols :: Value -> Either Error [Symbol]
@@ -237,10 +237,12 @@ apply (Syntax _ s) v e = s v e
 apply (Subroutine _ sr) v e = do
 	((o2, as), e'') <- mapC eval v e
 	first (first (o2 ++)) <$> sr as e''
-apply (Closure _ _ ss c) v e0 = do
+apply (Closure _ sc ss c) v e0 = do
 	((o2, as), e'') <- mapC eval v e0
-	first (first (o2 ++)) . second P.exit
-		<$> (foreachC eval c =<< defineAll ss as (P.local e''))
+	let	os = P.getScope e''
+		e''' = P.setScope sc e''
+	first (first (o2 ++)) . second (P.setScope os . P.exit)
+		<$> (foreachC eval c =<< defineAll ss as (P.local e'''))
 apply f as _ = Left . Error $ "apply: yet: " ++ show f ++ " " ++ show as
 
 defineAll :: [Symbol] -> Value -> Env -> Either Error Env
