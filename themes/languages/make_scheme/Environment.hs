@@ -1,54 +1,110 @@
 module Environment (
 	Env, Scope,
-	Environment.fromList, Environment.lookup, Environment.insert, set,
-	local, exit, getScope, setScope,
+	Environment.fromList,
+	Environment.lookup, Environment.insert,
+	set,
+--	local, exit, getScope, setScope,
 
 	Symbol, Value(..), Error(..), toDouble, negateValue,
 	) where
 
 import Control.Applicative
+import Data.Maybe
 import System.Random
 
 import qualified Data.Map as M
 
-data Env = Env { fromEnv :: [M.Map Symbol Value] } deriving Show
+data Env = Env {
+	scopeNow :: EnvId,
+	fromEnv :: M.Map EnvId LocalEnv
+	} deriving Show
 
-data Scope = Scope deriving Show
+data LocalEnv = LocalEnv {
+	fromLocalEnv :: M.Map Symbol Value,
+	outerScope :: Maybe EnvId
+	} deriving Show
+
+data Scope = Scope EnvId deriving Show
+
+type EnvId = Int
 
 type Symbol = String
 
+envNow :: Env -> LocalEnv
+envNow e = fromJust $ M.lookup (scopeNow e) (fromEnv e)
+
+outer :: Env -> Either Error Env
+outer e = maybe (Left $ Error "outer: yet") Right $ do
+	le <- M.lookup (scopeNow e) (fromEnv e)
+	(`Env` fromEnv e) <$> outerScope le
+
 fromList :: [(Symbol, Value)] -> Env
-fromList = Env . (: []) . M.fromList
+fromList lst = Env {
+	scopeNow = 0,
+	fromEnv = M.singleton 0 LocalEnv {
+		fromLocalEnv = M.fromList lst,
+		outerScope = Nothing } }
+
+lookup :: Symbol -> Env -> Either Error Value
+lookup s e = case M.lookup s (fromLocalEnv $ envNow e) of
+	Just v -> Right v
+	_ -> do	oe <- outer e
+		Environment.lookup s oe
 
 insert :: Symbol -> Value -> Env -> Env
-insert s v = Env . heading (M.insert s v) . fromEnv
+insert s v e = Env (scopeNow e) $ M.insert
+	(scopeNow e)
+	(LocalEnv (M.insert s v $ fromLocalEnv en) (outerScope en))
+	(fromEnv e)
 	where
-	heading :: (a -> a) -> [a] -> [a]
-	heading f (x : xs) = f x : xs
-	heading _ _ = []
+	en = envNow e
+
+varIsIn :: Symbol -> Env -> Either Error (EnvId, LocalEnv)
+varIsIn s e = case M.lookup s $ fromLocalEnv le of
+	Just _ -> Right (scopeNow e, le)
+	_ -> do	oe <- outer e
+		varIsIn s oe
+	where
+	le = envNow e
+
+sampleEnv0 :: Env
+sampleEnv0 = Environment.fromList [
+	("hello", Symbol "world"),
+	("good-bye", Symbol "you") ]
 
 set :: Symbol -> Value -> Env -> Either Error Env
-set s v (Env (e : es)) = maybe
-	(Env . (e :) . fromEnv <$> set s v (Env es))
-	(const . Right . Env $ M.insert s v e : es) $ M.lookup s e
-set _ _ _ = Left $ Error "set: yet"
-
-lookup :: Symbol -> Env -> Maybe Value
-lookup s (Env (e : es)) = maybe (Environment.lookup s $ Env es) Just $ M.lookup s e
-lookup _ _ = Nothing
+set s v e = do
+	(eid, le) <- varIsIn s e
+	return $ e {
+		fromEnv = M.insert eid
+			le { fromLocalEnv = M.insert s v (fromLocalEnv le) } 
+			(fromEnv e) }
 
 local :: Env -> Env
-local = Env . (M.empty :) . fromEnv
+local e = let (mx, _) = M.findMax (fromEnv e) in Env {
+	scopeNow = mx + 1,
+	fromEnv = M.insert
+		(mx + 1)
+		(LocalEnv M.empty . Just $ scopeNow e)
+		(fromEnv e)
+	}
+
+sampleEnv1 :: Env
+sampleEnv1 = Environment.insert "yamada" (Symbol "takao") $ local sampleEnv0
+
+{-
 
 exit :: Env -> Env
 exit (Env (_ : es@(_ : _))) = Env es
 exit e@(Env _) = e
 
 getScope :: Env -> Scope
-getScope _ = Scope
+getScope _ = Scope 0
 
 setScope :: Scope -> Env -> Env
 setScope _ e = e
+
+-}
 
 data Value
 	= Undef | Nil | Bool Bool | Symbol Symbol
