@@ -5,12 +5,13 @@ module InteractiveScheme (scheme, load, Env, env0, Error(..)) where
 import Control.Applicative
 import Control.Arrow
 import Data.Ratio
+import System.Random
 
 import Parser (Env, Symbol, Value(..), Error(..), toDouble, parse, parseList)
 import qualified Parser as P
 
-env0 :: Env
-env0 = P.fromList [
+env0 :: StdGen -> Env
+env0 rg = P.fromList [
 	("exit", DoExit),
 	("+", Subroutine "+" . reduceL1 $ opn (+) (+)),
 	("-", Subroutine "-" neg),
@@ -26,8 +27,29 @@ env0 = P.fromList [
 	("define", Syntax "define" define),
 	("lambda", Syntax "lambda" lambda),
 	("cond", Syntax "cond" cond),
-	("if", Syntax "if" ifte)
+	("if", Syntax "if" ifte),
+	("random-seed", RandomSeed rg),
+	("random-with", Syntax "random-with" randomWith),
+	("random", Closure "random" (env0 rg) ["n"] $ Cons
+		(Cons (Symbol "random-with") $
+			Cons (Symbol "random-seed") $
+				Cons (Symbol "n") Nil)
+		Nil)
 	]
+
+randomWith :: Value -> Env -> Either Error ((String, Value), Env)
+randomWith (Cons r@(Symbol s) (Cons a Nil)) e = do
+	((_, rg), _) <- eval r e
+	((o, v), e') <- eval a e
+	output o $ randomValueTo s (Cons rg (Cons v Nil)) e'
+randomWith _ _ = Left $ Error "randomValueTo: yet"
+
+randomValueTo :: String -> Value -> Env -> Either Error ((String, Value), Env)
+randomValueTo s (Cons (RandomSeed rg) (Cons (Integer n) Nil)) e = let
+	(n', rg') = randomR (0, ceiling n - 1) rg in do
+		e' <- P.set s (RandomSeed rg') e
+		return (("", Integer $ n' % 1), e')
+randomValueTo _ _ _ = Left $ Error "randomValueTo: yet"
 
 define :: Value -> Env -> Either Error ((String, Value), Env)
 define (Cons sm@(Symbol s) (Cons v Nil)) e = do
@@ -178,6 +200,7 @@ toStr DoExit = "#<closure exit>"
 toStr (Subroutine n _) = "#<subr " ++ n ++ ">"
 toStr (Syntax n _) = "#<syntax " ++ n ++ ">"
 toStr (Closure n _ _ _) = "#<closure " ++ n ++ ">"
+toStr (RandomSeed rg) = "#<random-seed " ++ show rg ++ ">"
 toStr _ = error "toStr: yet"
 
 eval :: Value -> Env -> Either Error ((String, Value), Env)

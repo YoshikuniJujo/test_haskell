@@ -1,8 +1,11 @@
 module Environment (
 	Symbol, Value(..), Error(..), toDouble, negateValue,
-	Env, Environment.lookup, Environment.insert, Environment.fromList,
+	Env, Environment.lookup, Environment.insert, set, Environment.fromList,
 	local, exit
 	) where
+
+import Control.Applicative
+import System.Random
 
 import qualified Data.Map as M
 
@@ -27,6 +30,12 @@ heading _ _ = []
 insert :: Symbol -> Value -> Env -> Env
 insert s v = heading $ M.insert s v
 
+set :: Symbol -> Value -> Env -> Either Error Env
+set s v (e : es) = maybe
+	((e :) <$> set s v es)
+	(const . Right $ M.insert s v e : es) $ M.lookup s e
+set _ _ _ = Left $ Error "set: yet"
+
 fromList :: [(Symbol, Value)] -> Env
 fromList = (: []) . M.fromList
 
@@ -41,6 +50,7 @@ data Value
 	| Syntax Symbol (Value -> Env -> Either Error ((String, Value), Env))
 	| Closure Symbol Env [Symbol] Value
 	| Define Symbol Value
+	| RandomSeed StdGen
 
 instance Show Value where
 	show (Symbol s) = s

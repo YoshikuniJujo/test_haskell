@@ -1,7 +1,7 @@
 module Parser (
 	parse, parseList,
 	Value(..), Symbol, Error(..), toDouble,
-	Env, E.lookup, E.insert, E.fromList, E.local, E.exit,
+	Env, E.lookup, E.insert, E.set, E.fromList, E.local, E.exit,
 	) where
 
 import Control.Arrow
