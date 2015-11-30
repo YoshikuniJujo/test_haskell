@@ -30,7 +30,7 @@ env0 rg = P.fromList [
 	("if", Syntax "if" ifte),
 	("random-seed", RandomSeed rg),
 	("random-with", Syntax "random-with" randomWith),
-	("random", Closure "random" undefined ["n"] $ Cons
+	("random", Closure "random" P.global ["n"] $ Cons
 		(Cons (Symbol "random-with") $
 			Cons (Symbol "random-seed") $
 				Cons (Symbol "n") Nil)
@@ -57,11 +57,11 @@ define (Cons sm@(Symbol s) (Cons v Nil)) e = do
 	Right ((o, sm), P.insert s v' e')
 define (Cons (Cons sm@(Symbol n) as) c) e = do
 	ss <- symbols as
-	Right (("", sm), P.insert n (Closure n undefined ss c) e)
+	Right (("", sm), P.insert n (Closure n (P.getScope e) ss c) e)
 define _ _ = Left $ Error "define: error"
 
 lambda :: Value -> Env -> Either Error ((String, Value), Env)
-lambda (Cons a0 as) e = (\ss -> (("", Closure "#f" undefined ss as), e)) <$> symbols a0
+lambda (Cons a0 as) e = (\ss -> (("", Closure "#f" (P.getScope e) ss as), e)) <$> symbols a0
 lambda _ _ = Left $ Error "lambda: error"
 
 symbols :: Value -> Either Error [Symbol]
@@ -205,7 +205,7 @@ toStr _ = error "toStr: yet"
 
 eval :: Value -> Env -> Either Error ((String, Value), Env)
 eval (Symbol s) e = case P.lookup s e of
-	Just v -> Right (("", v), e)
+	Right v -> Right (("", v), e)
 	_ -> Left . Error $ "*** ERROR: unbound variable: " ++ s
 eval (Cons v1 v2) e = do
 	((o1, p), e') <- eval v1 e

@@ -3,7 +3,7 @@ module Environment (
 	Environment.fromList,
 	Environment.lookup, Environment.insert,
 	set,
---	local, exit, getScope, setScope,
+	local, exit, getScope, setScope, global,
 
 	Symbol, Value(..), Error(..), toDouble, negateValue,
 	) where
@@ -25,6 +25,9 @@ data LocalEnv = LocalEnv {
 	} deriving Show
 
 data Scope = Scope EnvId deriving Show
+
+global :: Scope
+global = Scope 0
 
 type EnvId = Int
 
@@ -89,22 +92,21 @@ local e = let (mx, _) = M.findMax (fromEnv e) in Env {
 		(fromEnv e)
 	}
 
+exit :: Env -> Env
+exit e@Env { scopeNow = 0 } = e
+exit e = e {
+	scopeNow = fromJust . outerScope
+		. fromJust $ M.lookup (scopeNow e) (fromEnv e)
+	}
+
 sampleEnv1 :: Env
 sampleEnv1 = Environment.insert "yamada" (Symbol "takao") $ local sampleEnv0
 
-{-
-
-exit :: Env -> Env
-exit (Env (_ : es@(_ : _))) = Env es
-exit e@(Env _) = e
-
 getScope :: Env -> Scope
-getScope _ = Scope 0
+getScope = Scope . scopeNow
 
 setScope :: Scope -> Env -> Env
-setScope _ e = e
-
--}
+setScope (Scope sn) e = e { scopeNow = sn }
 
 data Value
 	= Undef | Nil | Bool Bool | Symbol Symbol
