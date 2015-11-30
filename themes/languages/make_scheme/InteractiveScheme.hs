@@ -67,7 +67,7 @@ lambda _ _ = Left $ Error "lambda: error"
 symbols :: Value -> Either Error [Symbol]
 symbols (Cons (Symbol s) ss) = (s :) <$> symbols ss
 symbols Nil = Right []
-symbols _ = Left $ Error "symbols: yet"
+symbols v = Left . Error $ "symbols: yet: " ++ show v
 
 cond :: Value -> Env -> Either Error ((String, Value), Env)
 cond Nil e = Right (("", Undef), e)
