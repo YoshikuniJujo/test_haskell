@@ -44,3 +44,5 @@ other'' = (\x y z -> fix3 x y z + fix3 y z x + fix3 z x y)
 
 fix3 :: (a -> b -> c -> a) -> (b -> c -> a -> b) -> (c -> a -> b -> c) -> a
 fix3 f g h = f (fix3 f g h) (fix3 g h f) (fix3 h f g)
+
+-- マクロfixNを作成して$(fixN 3)のようにできると良いかもしれない。
