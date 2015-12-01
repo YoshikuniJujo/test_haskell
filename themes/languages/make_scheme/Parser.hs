@@ -27,7 +27,7 @@ parse ('"' : s) = Right . (String *** tail) $ span (/= '"') s
 parse (c : s)
 	| isDigit c =
 		Right . uncurry parseNumber . first (c :) $ span isDigit s
-	| isSymbolChar c = Right .
+	| isSymbolHeadChar c = Right .
 		((Symbol . (c :)) `first`) $ span isSymbolChar s
 	| isSpace c = parse s
 parse _ = Left $ Error "parse error"
@@ -42,5 +42,6 @@ parseList s = case parse s of
 	Right (v, r) -> (v `Cons`) `first` parseList r
 	_ -> (Nil, s)
 
-isSymbolChar :: Char -> Bool
-isSymbolChar c = any ($ c) [isAlpha, (`elem` "+-*/<=>?")]
+isSymbolHeadChar, isSymbolChar :: Char -> Bool
+isSymbolHeadChar c = any ($ c) [isAlpha, (`elem` "+-*/<=>?")]
+isSymbolChar c = any ($ c) [isDigit, isSymbolHeadChar]

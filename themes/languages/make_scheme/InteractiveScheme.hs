@@ -22,6 +22,8 @@ env0 rg = P.fromList [
 	("positive?", Subroutine "positive?" positive),
 	("negative?", Subroutine "negative?" negative),
 	("sin", Subroutine "sin" sinS),
+	("cos", Subroutine "cos" cosS),
+	("log", Subroutine "log" logS),
 	("=", Subroutine "=" $ equal),
 	(">", Subroutine ">" $ isLargerThan),
 	("<", Subroutine "<" $ isSmallerThan),
@@ -39,11 +41,21 @@ env0 rg = P.fromList [
 		(Cons (Symbol "random-with") $
 			Cons (Symbol "random-seed") $
 				Cons (Symbol "n") Nil)
-		Nil)
+		Nil),
+	("display", Subroutine "display" display),
+	("newline", Subroutine "newline" newline)
 	]
 
-absS, positive, negative, sinS ::
-	Value -> Env -> Either Error ((String, Value), Env)
+display :: Value -> Env -> Either Error ((String, Value), Env)
+display (Cons (String s) Nil) e = Right ((s, Undef), e)
+display (Cons (Double d) Nil) e = Right ((show d, Undef), e)
+display _ _ = Left $ Error "display: yet"
+
+newline :: Value -> Env -> Either Error ((String, Value), Env)
+newline Nil e = Right (("\n", Undef), e)
+newline _ _ = Left $ Error "newline: yet"
+
+absS, positive, negative :: Value -> Env -> Either Error ((String, Value), Env)
 absS (Cons (Integer r) Nil) e = Right (("", Integer $ abs r), e)
 absS (Cons (Double d) Nil) e = Right (("", Double $ abs d), e)
 absS _ _ = Left $ Error "absS: yet"
@@ -56,8 +68,17 @@ negative (Cons (Integer r) Nil) e = Right (("", Bool $ r < 0), e)
 negative (Cons (Double d) Nil) e = Right (("", Bool $ d < 0), e)
 negative _ _ = Left $ Error "negative: yet"
 
+sinS, cosS, logS :: Value -> Env -> Either Error ((String, Value), Env)
 sinS (Cons (Double d) Nil) e = Right (("", Double $ sin d), e)
 sinS _ _ = Left $ Error "sinS: yet"
+
+cosS (Cons (Double d) Nil) e = Right (("", Double $ cos d), e)
+cosS _ _ = Left $ Error "cosS: yet"
+
+logS (Cons (Integer r) Nil) e =
+	Right (("", Double . log $ realToFrac r), e)
+logS (Cons (Double d) Nil) e = Right (("", Double $ log d), e)
+logS _ _ = Left $ Error "logS: yet"
 
 letS :: Value -> Env -> Either Error ((String, Value), Env)
 letS v e = (`eval` e) =<< letToLambda v
