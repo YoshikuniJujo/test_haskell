@@ -23,6 +23,7 @@ parse ('#' : c : s) = case c of
 parse ('-' : c : s) | isDigit c = Right
 	. (negateValue `first`)
 	. uncurry parseNumber . first (c :) $ span isDigit s
+parse ('"' : s) = Right . (String *** tail) $ span (/= '"') s
 parse (c : s)
 	| isDigit c =
 		Right . uncurry parseNumber . first (c :) $ span isDigit s

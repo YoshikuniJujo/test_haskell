@@ -18,6 +18,10 @@ env0 rg = P.fromList [
 	("*", Subroutine "*" . reduceL1 $ opn (*) (*)),
 	("/", Subroutine "/" . reduceL1 $ opn (/) (/)),
 	("remainder", Subroutine "remainder" remainder),
+	("abs", Subroutine "abs" absS),
+	("positive?", Subroutine "positive?" positive),
+	("negative?", Subroutine "negative?" negative),
+	("sin", Subroutine "sin" sinS),
 	("=", Subroutine "=" $ equal),
 	(">", Subroutine ">" $ isLargerThan),
 	("<", Subroutine "<" $ isSmallerThan),
@@ -37,6 +41,23 @@ env0 rg = P.fromList [
 				Cons (Symbol "n") Nil)
 		Nil)
 	]
+
+absS, positive, negative, sinS ::
+	Value -> Env -> Either Error ((String, Value), Env)
+absS (Cons (Integer r) Nil) e = Right (("", Integer $ abs r), e)
+absS (Cons (Double d) Nil) e = Right (("", Double $ abs d), e)
+absS _ _ = Left $ Error "absS: yet"
+
+positive (Cons (Integer r) Nil) e = Right (("", Bool $ r > 0), e)
+positive (Cons (Double d) Nil) e = Right (("", Bool $ d > 0), e)
+positive _ _ = Left $ Error "positive: yet"
+
+negative (Cons (Integer r) Nil) e = Right (("", Bool $ r < 0), e)
+negative (Cons (Double d) Nil) e = Right (("", Bool $ d < 0), e)
+negative _ _ = Left $ Error "negative: yet"
+
+sinS (Cons (Double d) Nil) e = Right (("", Double $ sin d), e)
+sinS _ _ = Left $ Error "sinS: yet"
 
 letS :: Value -> Env -> Either Error ((String, Value), Env)
 letS v e = (`eval` e) =<< letToLambda v
