@@ -39,7 +39,7 @@ parse ts = do
 	(v :) <$> parse ts'
 
 parse1, parseList :: [Token] -> Either Error (Value, [Token])
-parse1 (TkSymbol "exit" : ts) = return (DoExit, ts)
+parse1 (TkSymbol s : ts) = return (Symbol s, ts)
 parse1 (TkInteger i : ts) = return (Integer i, ts)
 parse1 (OParen : ts) = parseList ts
 parse1 ts = Left . Error $ syntaxErr ++ parseErr ++ show ts
