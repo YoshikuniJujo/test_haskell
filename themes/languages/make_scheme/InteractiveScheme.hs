@@ -26,6 +26,7 @@ env0 rg = P.fromList [
 	("not", Subroutine "not" notS),
 	("define", Syntax "define" define),
 	("lambda", Syntax "lambda" lambda),
+	("let", Syntax "let" letS),
 	("cond", Syntax "cond" cond),
 	("if", Syntax "if" ifte),
 	("random-seed", RandomSeed rg),
@@ -36,6 +37,22 @@ env0 rg = P.fromList [
 				Cons (Symbol "n") Nil)
 		Nil)
 	]
+
+letS :: Value -> Env -> Either Error ((String, Value), Env)
+letS v e = (`eval` e) =<< letToLambda v
+
+letToLambda :: Value -> Either Error Value
+letToLambda (Cons vvs bd) = do
+	vs <- mapC_ (\(Cons v _) -> v) vvs
+	let	lm = Cons (Symbol "lambda") $ Cons vs bd
+	as <- mapC_ (\(Cons _ (Cons v _)) -> v) vvs
+	Right $ Cons lm as
+letToLambda _ = Left $ Error "letToLambda: yet"
+
+mapC_ :: (Value -> Value) -> Value -> Either Error Value
+mapC_ _ Nil = Right Nil
+mapC_ f (Cons v vs) = Cons (f v) <$> mapC_ f vs
+mapC_ _ _ = Left $ Error "mapC_: yet"
 
 randomWith :: Value -> Env -> Either Error ((String, Value), Env)
 randomWith (Cons r@(Symbol s) (Cons a Nil)) e = do
