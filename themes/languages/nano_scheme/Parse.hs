@@ -1,39 +1,52 @@
 module Parse (Token, tokens, parse) where
 
-import Control.Applicative
-import Data.Char
+import Control.Applicative ((<$>))
+import Data.Char (isDigit, isAlpha, isSpace)
 
-import Value
+import Value (Value(..), Symbol, Error(..), ErrorMessage)
 
 data Token
-	= TSymbol Symbol
-	| TInteger Integer
+	= TkSymbol Symbol
+	| TkInteger Integer
 	| OParen | CParen
 	deriving Show
 
+syntaxErr, tokenErr, parseErr :: ErrorMessage
+syntaxErr = "*** SYNTAX-ERROR: "
+tokenErr = "Can't tokenize: "
+parseErr = "Parse error: "
+
 tokens :: String -> Either Error [Token]
-tokens ('(' : cs) = (OParen :) <$> tokens cs
-tokens (')' : cs) = (CParen :) <$> tokens cs
-tokens s@(c : _)
+tokens ('(' : s) = (OParen :) <$> tokens s
+tokens (')' : s) = (CParen :) <$> tokens s
+tokens str@(c : s)
+	| isAlpha c = do
+		let (sm, s') = span isAlpha s
+		ts <- tokens s'
+		return $ TkSymbol (c : sm) : ts
 	| isDigit c = do
 		let (ds, s') = span isDigit s
 		ts <- tokens s'
-		return $ TInteger (read ds) : ts
-	| otherwise = do
-		let (ss, s') = span isAlpha s
-		ts <- tokens s'
-		return $ TSymbol ss : ts
-tokens _ = Right []
+		return $ TkInteger (read $ c : ds) : ts
+	| isSpace c = tokens s
+	| otherwise = Left . Error $ syntaxErr ++ tokenErr ++ show str
+tokens _ = return []
 
-parse :: [Token] -> Either Error (Value, [Token])
-parse (TSymbol "exit" : ts) = Right (DoExit, ts)
-parse (TInteger i : ts) = Right (Integer i, ts)
-parse (OParen : ts) = parseList ts
-parse _ = Left $ Error "parse: yet"
+parse :: [Token] -> Either Error [Value]
+parse [] = return []
+parse ts = do
+	(v, ts') <- parse1 ts
+	(v :) <$> parse ts'
+
+parse1 :: [Token] -> Either Error (Value, [Token])
+parse1 (TkSymbol "exit" : ts) = return (DoExit, ts)
+parse1 (TkInteger i : ts) = return (Integer i, ts)
+parse1 (OParen : ts) = parseList ts
+parse1 ts = Left . Error $ syntaxErr ++ parseErr ++ show ts
 
 parseList :: [Token] -> Either Error (Value, [Token])
-parseList (CParen : ts) = Right (Nil, ts)
+parseList (CParen : ts) = return (Nil, ts)
 parseList ts = do
-	(v, ts') <- parse ts
+	(v, ts') <- parse1 ts
 	(vs, ts'') <- parseList ts'
 	return $ (v `Cons` vs, ts'')
