@@ -2,7 +2,10 @@ module Environment (Env, env0, refer) where
 
 import qualified Data.Map as M
 
-import Value (Value(..), Symbol, Error(..))
+import Value (Value(..), Symbol, Error(..), ErrorMessage)
+
+unboundErr :: ErrorMessage
+unboundErr = "*** ERROR: unbound variable: "
 
 type Env = M.Map Symbol Value
 
@@ -12,6 +15,4 @@ env0 = M.fromList [
 	]
 
 refer :: Symbol -> Env -> Either Error Value
-refer s e = maybe
-	(Left . Error $ "*** ERROR: unbound variable: " ++ s)
-	Right (M.lookup s e)
+refer s e = maybe (Left . Error $ unboundErr ++ s) Right (M.lookup s e)
