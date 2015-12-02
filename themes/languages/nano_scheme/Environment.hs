@@ -20,6 +20,8 @@ data Value
 	| Integer Integer
 	| Cons Value Value | Nil
 	| Syntax Symbol (Value -> Env -> Either Error (Value, Env))
+	| Subroutine Symbol (Value -> Env -> Either Error (Value, Env))
+	| Lambda Symbol Value Value
 	| DoExit
 
 type Symbol = String
@@ -30,6 +32,8 @@ showValue (Integer i) = show i
 showValue (Cons v vs) = '(' : showCons v vs ++ ")"
 showValue Nil = "()"
 showValue (Syntax n _) = "#<syntax " ++ n ++ ">"
+showValue (Subroutine n _) = "#<subr " ++ n ++ ">"
+showValue (Lambda n _ _) = "#<closure " ++ n ++ ">"
 showValue DoExit = "#<closure exit>"
 
 showCons :: Value -> Value -> String
