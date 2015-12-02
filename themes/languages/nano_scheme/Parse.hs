@@ -3,7 +3,7 @@ module Parse (Token, tokens, parse) where
 import Control.Applicative ((<$>))
 import Data.Char (isDigit, isAlpha, isSpace)
 
-import Value (Value(..), Symbol, Error(..), ErrorMessage)
+import Environment(Value(..), Symbol, Error(..), ErrorMessage)
 
 data Token
 	= TkSymbol Symbol

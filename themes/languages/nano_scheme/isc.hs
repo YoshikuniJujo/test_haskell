@@ -2,10 +2,10 @@ import Control.Applicative ((<$>))
 import Control.Arrow (first, (***))
 import System.IO (stdout, hFlush)
 
-import Value (Value, showValue, Error(..))
+import Primitive (env0)
 import Parse (parse, tokens)
 import Eval (eval)
-import Environment (Env, env0)
+import Environment (Env, Value, showValue, Error(..))
 
 main :: IO ()
 main = doWhile env0 $ \e -> do
