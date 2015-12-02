@@ -3,15 +3,17 @@
 module Primitive (env0) where
 
 import Control.Applicative ((<$>))
+import Data.List (foldl')
 
 import Environment (
 	Env, fromList, set,
 	Value(..), showValue, Error(..), ErrorMessage)
 
-syntaxErr, prpLstErr, notNumErr :: ErrorMessage
+syntaxErr, prpLstErr, notNumErr, lstOneErr :: ErrorMessage
 syntaxErr = "*** ERROR: Compile Error: syntax-error: "
 prpLstErr = "*** ERROR: Compile Error: proper list required: "
 notNumErr = "*** ERROR: Not Number: "
+lstOneErr = "*** ERROR: Compile Error: procedure requires at least one argument"
 
 env0 :: Env
 env0 = fromList [
@@ -19,7 +21,9 @@ env0 = fromList [
 	("define", Syntax "define" define),
 	("lambda", Syntax "lambda" lambda),
 	("list", Subroutine "list" $ (Right .) . (,)),
-	("+", Subroutine "+" add)
+	("+", Subroutine "+" add),
+	("*", Subroutine "*" mul),
+	("-", Subroutine "-" sub)
 	]
 
 define, lambda :: Value -> Env -> Either Error (Value, Env)
@@ -38,5 +42,13 @@ toInt :: Value -> Either Error Integer
 toInt (Integer i) = Right i
 toInt v = Left . Error $ notNumErr ++ showValue v
 
-add :: Value -> Env -> Either Error (Value, Env)
+add, mul, sub :: Value -> Env -> Either Error (Value, Env)
 add v e = (, e) . Integer . sum <$> (mapM toInt =<< consToList v)
+mul v e = (, e) . Integer . product <$> (mapM toInt =<< consToList v)
+sub v e = (, e) . Integer . sb <$> (chk =<< mapM toInt =<< consToList v)
+	where
+	chk [] = Left $ Error lstOneErr
+	chk vs = Right vs
+	sb [x] = negate x
+	sb (x : xs) = foldl' (-) x xs
+	sb _ = error "never occur"
