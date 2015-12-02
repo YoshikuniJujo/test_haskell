@@ -17,9 +17,7 @@ eval v e = Right (v, e)
 
 apply :: Value -> Value -> Env -> Either Error (Value, Env)
 apply (Syntax _ s) vs e = s vs e
-apply (Subroutine _ s) vs e = do
-	(as, e') <- evaluate vs e
-	s as e'
+apply (Subroutine _ s) vs e = uncurry s =<< evaluate vs e
 apply (Lambda _ fas bd) as e = undefined
 apply DoExit Nil _ = Left Exit
 apply f as _ = Left . Error $ appErr ++ showValue (f `Cons` as)

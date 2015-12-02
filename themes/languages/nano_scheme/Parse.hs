@@ -20,8 +20,8 @@ tokens :: String -> Either Error [Token]
 tokens ('(' : s) = (OParen :) <$> tokens s
 tokens (')' : s) = (CParen :) <$> tokens s
 tokens str@(c : s)
-	| isAlpha c = do
-		let (sm, s') = span isAlpha s
+	| isSymbolChar c = do
+		let (sm, s') = span isSymbolChar s
 		ts <- tokens s'
 		return $ TkSymbol (c : sm) : ts
 	| isDigit c = do
@@ -31,6 +31,9 @@ tokens str@(c : s)
 	| isSpace c = tokens s
 	| otherwise = Left . Error $ syntaxErr ++ tokenErr ++ show str
 tokens _ = return []
+
+isSymbolChar :: Char -> Bool
+isSymbolChar c = any ($ c) [isAlpha, (`elem` "+-*/")]
 
 parse :: [Token] -> Either Error [Value]
 parse [] = return []
