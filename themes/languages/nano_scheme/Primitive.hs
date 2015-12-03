@@ -31,6 +31,7 @@ define, lambda :: Value -> Env -> Either Error (Value, Env)
 define (Cons sm@(Symbol s) (Cons v Nil)) e = do
 	(v', e') <- eval v e
 	Right (sm, set s v' e')
+define (Cons (Cons f@(Symbol n) as) bd) e = Right (f, set n (Lambda n as bd) e)
 define v _ = Left . Error $ syntaxErr ++ showValue (Symbol "define" `Cons` v)
 
 lambda (Cons as bd) e = Right (Lambda "#f" as bd, e)
