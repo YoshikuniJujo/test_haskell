@@ -21,13 +21,14 @@ env0 = fromList [
 	("exit", DoExit),
 	("define", Syntax "define" define),
 	("lambda", Syntax "lambda" lambda),
+	("if", Syntax "if" ifs),
 	("list", Subroutine "list" $ (Right .) . (,)),
 	("+", Subroutine "+" add),
 	("*", Subroutine "*" mul),
 	("-", Subroutine "-" sub)
 	]
 
-define, lambda :: Value -> Env -> Either Error (Value, Env)
+define, lambda, ifs :: Value -> Env -> Either Error (Value, Env)
 define (Cons sm@(Symbol s) (Cons v Nil)) e = do
 	(v', e') <- eval v e
 	Right (sm, set s v' e')
@@ -36,6 +37,10 @@ define v _ = Left . Error $ syntaxErr ++ showValue (Symbol "define" `Cons` v)
 
 lambda (Cons as bd) e = Right (Lambda "#f" as bd, e)
 lambda v _ = Left . Error $ syntaxErr ++ showValue (Symbol "lambda" `Cons` v)
+
+ifs (Cons p (Cons th (Cons el Nil))) e = eval p e >>= \(b, e') ->
+	case b of Bool False -> eval el e'; _ -> eval th e'
+ifs v _ = Left . Error $ syntaxErr ++ showValue (Symbol "if" `Cons` v)
 
 consToList :: Value -> Either Error [Value]
 consToList Nil = Right []

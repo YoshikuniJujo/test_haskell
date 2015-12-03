@@ -17,6 +17,7 @@ set = M.insert
 
 data Value
 	= Symbol Symbol
+	| Bool Bool
 	| Integer Integer
 	| Cons Value Value | Nil
 	| Syntax Symbol (Value -> Env -> Either Error (Value, Env))
@@ -28,6 +29,8 @@ type Symbol = String
 
 showValue :: Value -> String
 showValue (Symbol s) = s
+showValue (Bool False) = "#f"
+showValue (Bool True) = "#t"
 showValue (Integer i) = show i
 showValue (Cons v vs) = '(' : showCons v vs ++ ")"
 showValue Nil = "()"
