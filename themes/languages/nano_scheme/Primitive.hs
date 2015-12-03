@@ -2,7 +2,7 @@
 
 module Primitive (env0) where
 
-import Control.Applicative ((<$>))
+import Control.Applicative ((<$>), (<*>))
 import Data.List (foldl')
 
 import Eval (eval)
@@ -25,7 +25,8 @@ env0 = fromList [
 	("list", Subroutine "list" $ (Right .) . (,)),
 	("+", Subroutine "+" add),
 	("*", Subroutine "*" mul),
-	("-", Subroutine "-" sub)
+	("-", Subroutine "-" sub),
+	("<", Subroutine "<" ltt)
 	]
 
 define, lambda, ifs :: Value -> Env -> Either Error (Value, Env)
@@ -61,3 +62,7 @@ sub v e = (, e) . Integer . sb <$> (chk =<< mapM toInt =<< consToList v)
 	sb [x] = negate x
 	sb (x : xs) = foldl' (-) x xs
 	sb _ = error "never occur"
+
+ltt :: Value -> Env -> Either Error (Value, Env)
+ltt v e = (, e) . Bool . and . (zipWith (<) <$> id <*> tail)
+	<$> (mapM toInt =<< consToList v)

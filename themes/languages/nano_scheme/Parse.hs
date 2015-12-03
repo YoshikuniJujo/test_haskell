@@ -36,7 +36,7 @@ tokens str@(c : s)
 tokens _ = return []
 
 isSymbolChar :: Char -> Bool
-isSymbolChar c = any ($ c) [isAlpha, (`elem` "+-*/")]
+isSymbolChar c = any ($ c) [isAlpha, (`elem` "+-*/<=>")]
 
 parse :: [Token] -> Either Error [Value]
 parse [] = return []
