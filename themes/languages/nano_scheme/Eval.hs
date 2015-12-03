@@ -19,10 +19,9 @@ eval v e = Right (v, e)
 apply :: Value -> Value -> Env -> Either Error (Value, Env)
 apply (Syntax _ s) vs e = s vs e
 apply (Subroutine _ s) vs e = uncurry s =<< evaluate vs e
-apply (Lambda _ fas bd) as e = do
+apply (Lambda _ ps bd) as e = do
 	(as', e') <- evaluate as e
-	e'' <- argument fas as' e'
-	(v, _) <- begin bd e''
+	(v, _) <- begin bd =<< argument ps as' e'
 	return (v, e')
 apply DoExit Nil _ = Left Exit
 apply f as _ = Left . Error $ appErr ++ showValue (f `Cons` as)
@@ -34,14 +33,12 @@ evaluate (v `Cons` vs) e =
 evaluate v _ = Left . Error $ prpLstErr ++ showValue v
 
 argument :: Value -> Value -> Env -> Either Error Env
-argument (Symbol s) v e = Right $ set s v e
+argument (Cons (Symbol p) ps) (Cons a as) e = set p a <$> argument ps as e
 argument Nil Nil e = Right e
-argument (Cons (Symbol s) ss) (Cons v vs) e = argument ss vs $ set s v e
+argument (Symbol p) as e = Right $ set p as e
 argument _ _ _ = Left $ Error wrongNumberErr
 
 begin :: Value -> Env -> Either Error (Value, Env)
 begin (v `Cons` Nil) e = eval v e
-begin (v `Cons` vs) e = do
-	(_, e') <- eval v e
-	begin vs e'
+begin (v `Cons` vs) e = begin vs . snd =<< eval v e
 begin _ _ = Left $ Error prpLstErr
