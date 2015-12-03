@@ -5,6 +5,7 @@ module Primitive (env0) where
 import Control.Applicative ((<$>))
 import Data.List (foldl')
 
+import Eval (eval)
 import Environment (
 	Env, fromList, set,
 	Value(..), showValue, Error(..), ErrorMessage)
@@ -27,7 +28,9 @@ env0 = fromList [
 	]
 
 define, lambda :: Value -> Env -> Either Error (Value, Env)
-define (Cons sm@(Symbol s) (Cons v Nil)) e = Right (sm, set s v e)
+define (Cons sm@(Symbol s) (Cons v Nil)) e = do
+	(v', e') <- eval v e
+	Right (sm, set s v' e')
 define v _ = Left . Error $ syntaxErr ++ showValue (Symbol "define" `Cons` v)
 
 lambda (Cons as bd) e = Right (Lambda "#f" as bd, e)
