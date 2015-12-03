@@ -19,6 +19,7 @@ data Value
 	= Symbol Symbol
 	| Bool Bool
 	| Integer Integer
+	| Double Double
 	| Cons Value Value | Nil
 	| Syntax Symbol (Value -> Env -> Either Error (Value, Env))
 	| Subroutine Symbol (Value -> Env -> Either Error (Value, Env))
@@ -32,6 +33,7 @@ showValue (Symbol s) = s
 showValue (Bool False) = "#f"
 showValue (Bool True) = "#t"
 showValue (Integer i) = show i
+showValue (Double d) = show d
 showValue (Cons v vs) = '(' : showCons v vs ++ ")"
 showValue Nil = "()"
 showValue (Syntax n _) = "#<syntax " ++ n ++ ">"

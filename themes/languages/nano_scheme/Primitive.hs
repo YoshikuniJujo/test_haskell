@@ -26,6 +26,7 @@ env0 = fromList [
 	("+", Subroutine "+" add),
 	("*", Subroutine "*" mul),
 	("-", Subroutine "-" sub),
+	("/", Subroutine "/" divs),
 	("<", Subroutine "<" ltt)
 	]
 
@@ -48,21 +49,39 @@ consToList Nil = Right []
 consToList (v `Cons` vs) = (v :) <$> consToList vs
 consToList v = Left . Error $ prpLstErr ++ showValue v
 
-toInt :: Value -> Either Error Integer
-toInt (Integer i) = Right i
-toInt v = Left . Error $ notNumErr ++ showValue v
+toNums :: [Value] -> Either Error (Either [Integer] [Double])
+toNums [] = Right $ Left []
+toNums (Integer i : vs) =
+	either (Left . (i :)) (Right . (fromIntegral i :)) <$> toNums vs
+toNums (Double d : vs) =
+	either (Right . (d :) . map fromIntegral) (Right . (d :)) <$> toNums vs
+toNums (v : _) = Left . Error $ notNumErr ++ showValue v
 
 add, mul, sub :: Value -> Env -> Either Error (Value, Env)
-add v e = (, e) . Integer . sum <$> (mapM toInt =<< consToList v)
-mul v e = (, e) . Integer . product <$> (mapM toInt =<< consToList v)
-sub v e = (, e) . Integer . sb <$> (chk =<< mapM toInt =<< consToList v)
+add v e = (, e) . either (Integer . sum) (Double . sum)
+	<$> (toNums =<< consToList v)
+mul v e = (, e) . either (Integer . product) (Double . product)
+	<$> (toNums =<< consToList v)
+sub v e = (, e) . either (Integer . sb) (Double . sb)
+	<$> (chk =<< toNums =<< consToList v)
 	where
-	chk [] = Left $ Error lstOneErr
-	chk vs = Right vs
+	chk vs	| either null null vs = Left $ Error lstOneErr
+		| otherwise = Right vs
 	sb [x] = negate x
 	sb (x : xs) = foldl' (-) x xs
 	sb _ = error "never occur"
 
+divs :: Value -> Env -> Either Error (Value, Env)
+divs v e = (, e) . Double . dv . either (map fromIntegral) id
+	<$> (chk =<< toNums =<< consToList v)
+	where
+	chk vs	| either null null vs = Left $ Error lstOneErr
+		| otherwise = Right vs
+	dv [x] = recip x
+	dv (x : xs) = foldl' (/) x xs
+	dv _ = error "never occur"
+
 ltt :: Value -> Env -> Either Error (Value, Env)
-ltt v e = (, e) . Bool . and . (zipWith (<) <$> id <*> tail)
-	<$> (mapM toInt =<< consToList v)
+ltt v e = (, e) . Bool . and
+	. either (zipWith (<) <$> id <*> tail) (zipWith (<) <$> id <*> tail)
+	<$> (toNums =<< consToList v)
