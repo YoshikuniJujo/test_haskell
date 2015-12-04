@@ -4,12 +4,9 @@ module Eval (eval) where
 
 import Control.Applicative ((<$>))
 import Control.Arrow (first, (***))
-import Environment (Env, refer, set, Value(..), showValue, Error(..), ErrorMessage)
-
-appErr, prpLstErr, wrongNumberErr :: ErrorMessage
-appErr = "*** ERROR: invalid application: "
-prpLstErr = "*** ERROR: Compile Error: proper list required: "
-wrongNumberErr = "*** ERROR: wrong number of arguments"
+import Environment (
+	Env, refer, set, Value(..), showValue, Error(..),
+	appErr, prpLstErr, wrongNumberErr)
 
 eval :: Value -> Env -> Either Error (Value, Env)
 eval (Symbol s) e = (, e) <$> refer s e
@@ -23,7 +20,6 @@ apply (Lambda _ ps bd) as e = do
 	(as', e') <- evaluate as e
 	(v, _) <- begin bd =<< argument ps as' e'
 	return (v, e')
-apply DoExit Nil _ = Left Exit
 apply f as _ = Left . Error $ appErr ++ showValue (f `Cons` as)
 
 evaluate :: Value -> Env -> Either Error (Value, Env)
