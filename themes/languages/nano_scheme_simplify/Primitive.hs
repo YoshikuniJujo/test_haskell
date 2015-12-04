@@ -6,8 +6,7 @@ import Control.Applicative ((<$>), (<*>))
 import Data.List (foldl')
 
 import Eval (eval)
-import Environment (
-	Env, fromList, set, Value(..), showValue, ErrMsg, stxErr, prpErr)
+import Environment (Env, fromList, set, Value(..))
 
 env0 :: Env
 env0 = fromList [
@@ -16,24 +15,24 @@ env0 = fromList [
 	("+", Subroutine "+" add), ("-", Subroutine "-" sub),
 	("*", Subroutine "*" mul), ("<", Subroutine "<" ltt) ]
 
-define, lambda, ifs :: Value -> Env -> Either ErrMsg (Value, Env)
+define, lambda, ifs :: Value -> Env -> Maybe (Value, Env)
 define (Cons a@(Symbol s) (Cons v Nil)) e = (a ,) . uncurry (set s) <$> eval v e
-define (Cons (Cons f@(Symbol n) as) bd) e = Right (f, set n (Lambda n as bd) e)
-define v _ = Left $ stxErr ++ showValue (Symbol "define" `Cons` v)
+define (Cons (Cons f@(Symbol n) as) bd) e = Just (f, set n (Lambda n as bd) e)
+define _ _ = Nothing
 
-lambda (Cons as bd) e = Right (Lambda "#f" as bd, e)
-lambda v _ = Left $ stxErr ++ showValue (Symbol "lambda" `Cons` v)
+lambda (Cons as bd) e = Just (Lambda "#f" as bd, e)
+lambda _ _ = Nothing
 
 ifs (Cons p (Cons th (Cons el Nil))) e = eval p e >>= \(b, e') ->
 	case b of B False -> eval el e'; _ -> eval th e'
-ifs v _ = Left $ stxErr ++ showValue (Symbol "if" `Cons` v)
+ifs _ _ = Nothing
 
-nums :: Value -> Either ErrMsg [Integer]
-nums Nil = Right []
+nums :: Value -> Maybe [Integer]
+nums Nil = Just []
 nums (Int i `Cons` vs) = (i :) <$> nums vs
-nums v = Left $ prpErr ++ showValue v
+nums _ = Nothing
 
-add, mul, sub, ltt :: Value -> Env -> Either ErrMsg (Value, Env)
+add, mul, sub, ltt :: Value -> Env -> Maybe (Value, Env)
 add v e = (, e) . Int . sum <$> nums v
 mul v e = (, e) . Int . product <$> nums v
 sub v e = (, e) . Int . sb <$> nums v

@@ -1,22 +1,20 @@
 module Environment (
-	Env, M.fromList, refer, set,
-	Value(..), Symbol, showValue, module ErrorMessage) where
+	Env, M.fromList, refer, set, Value(..), Symbol, showValue) where
 
 import qualified Data.Map as M
-import ErrorMessage
 
 type Env = M.Map Symbol Value
 
-refer :: Symbol -> Env -> Either ErrMsg Value
-refer s e = maybe (Left $ unbErr ++ s) Right (M.lookup s e)
+refer :: Symbol -> Env -> Maybe Value
+refer = M.lookup
 
 set :: Symbol -> Value -> Env -> Env
 set = M.insert
 
 data Value
 	= Symbol Symbol | B Bool | Int Integer | Cons Value Value | Nil
-	| Syntax Symbol (Value -> Env -> Either ErrMsg (Value, Env))
-	| Subroutine Symbol (Value -> Env -> Either ErrMsg (Value, Env))
+	| Syntax Symbol (Value -> Env -> Maybe (Value, Env))
+	| Subroutine Symbol (Value -> Env -> Maybe (Value, Env))
 	| Lambda Symbol Value Value
 
 type Symbol = String
