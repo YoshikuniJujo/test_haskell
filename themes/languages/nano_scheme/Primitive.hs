@@ -3,6 +3,7 @@
 module Primitive (env0) where
 
 import Control.Applicative ((<$>), (<*>))
+import Control.Arrow (first)
 import Data.List (foldl')
 import Data.Char (ord, chr, toUpper, toLower)
 
@@ -11,13 +12,18 @@ import Environment (
 	Env, fromList, set,
 	Value(..), showValue, Error(..), ErrorMessage)
 
-syntaxErr, prpLstErr, notNumErr, lstOneErr, chrReqErr, intReqErr :: ErrorMessage
+syntaxErr, prpLstErr, notNumErr, lstOneErr,
+	chrReqErr, strReqErr, intReqErr, lstReqErr, noApplErr
+	:: ErrorMessage
 syntaxErr = "*** ERROR: Compile Error: syntax-error: "
 prpLstErr = "*** ERROR: Compile Error: proper list required: "
 notNumErr = "*** ERROR: Not Number: "
 lstOneErr = "*** ERROR: Compile Error: procedure requires at least one argument"
 chrReqErr = "*** ERROR: character required, but got "
+strReqErr = "*** ERROR: string required, but got "
 intReqErr = "*** ERROR: integer required, but got "
+lstReqErr = "*** ERROR: list required, but got "
+noApplErr = "*** ERROR: no applicable method: "
 
 env0 :: Env
 env0 = fromList [
@@ -31,10 +37,15 @@ env0 = fromList [
 	("-", Subroutine "-" sub),
 	("/", Subroutine "/" divs),
 	("<", Subroutine "<" ltt),
+	("char=?", Subroutine "char=?" charEq),
 	("char->integer", Subroutine "char->integer" char2integer),
 	("integer->char", Subroutine "integer->char" integer2char),
 	("char-upcase", Subroutine "char-upcase" charUpcase),
-	("char-downcase", Subroutine "char-downcase" charDowncase)
+	("char-downcase", Subroutine "char-downcase" charDowncase),
+	("string-append", Subroutine "string-append" stringAppend),
+	("string->list", Subroutine "string->list" string2list),
+	("list->string", Subroutine "list->string" list2string),
+	("x->string", Subroutine "x->string" x2string)
 	]
 
 define, lambda, ifs :: Value -> Env -> Either Error (Value, Env)
@@ -106,3 +117,35 @@ charUpcase v _ = Left . Error $ chrReqErr ++ showValue v
 
 charDowncase (Cons (Char c) Nil) e = Right (Char $ toLower c, e)
 charDowncase v _ = Left . Error $ chrReqErr ++ showValue v
+
+stringAppend :: Value -> Env -> Either Error (Value, Env)
+stringAppend (Cons (String str) strs) e = first (sa str) <$> stringAppend strs e
+	where
+	sa s (String ss) = String $ s ++ ss
+	sa _ _ = error "never occur"
+stringAppend Nil e = Right (String "", e)
+stringAppend v _ = Left . Error $ strReqErr ++ showValue v
+
+string2list, list2string :: Value -> Env -> Either Error (Value, Env)
+string2list (Cons (String str) Nil) e = Right (s2l str, e)
+	where s2l (c : cs) = Char c `Cons` s2l cs; s2l _ = Nil
+string2list v _ = Left . Error $ strReqErr ++ showValue v
+
+list2string (Cons val Nil) e = (, e) . String <$> l2s val
+	where
+	l2s (Cons (Char c) cs) = (c :) <$> l2s cs
+	l2s Nil = Right ""
+	l2s v = Left . Error $ chrReqErr ++ showValue v
+list2string v _ = Left . Error $ lstReqErr ++ showValue v
+
+x2string :: Value -> Env -> Either Error (Value, Env)
+x2string (Cons v Nil) e = Right (String $ showValue v, e)
+x2string v _ = Left . Error $ noApplErr ++ showValue v
+
+charEq :: Value -> Env -> Either Error (Value, Env)
+charEq v e = (, e) . Bool . and . (zipWith (==) <$> id <*> tail)
+	<$> (mapM toChar =<< consToList v)
+
+toChar :: Value -> Either Error Char
+toChar (Char c) = Right c
+toChar v = Left . Error $ chrReqErr ++ showValue v

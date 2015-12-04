@@ -21,6 +21,7 @@ data Value
 	| Integer Integer
 	| Double Double
 	| Char Char
+	| String String
 	| Cons Value Value | Nil
 	| Syntax Symbol (Value -> Env -> Either Error (Value, Env))
 	| Subroutine Symbol (Value -> Env -> Either Error (Value, Env))
@@ -40,6 +41,7 @@ showValue (Char '\t') = "#\\tab"
 showValue (Char '\n') = "#\\newline"
 showValue (Char '\r') = "#\\return"
 showValue (Char c) = "#\\" ++ [c]
+showValue (String s) = s
 showValue (Cons v vs) = '(' : showCons v vs ++ ")"
 showValue Nil = "()"
 showValue (Syntax n _) = "#<syntax " ++ n ++ ">"
