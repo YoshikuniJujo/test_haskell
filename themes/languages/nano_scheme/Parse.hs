@@ -1,6 +1,6 @@
 module Parse (Token, tokens, parse) where
 
-import Control.Applicative ((<$>))
+import Control.Applicative ((<$>), (<*>))
 import Control.Arrow (first)
 import Data.Char (isDigit, isAlpha, isSpace)
 
@@ -11,19 +11,23 @@ data Token
 	| TkTrue | TkFalse
 	| TkInteger Integer
 	| TkDouble Double
+	| TkChar Char
 	| OParen | CParen
 	deriving Show
 
-syntaxErr, tokenErr, parseErr :: ErrorMessage
+syntaxErr, readErr, tokenErr, parseErr, unkChrErr :: ErrorMessage
 syntaxErr = "*** SYNTAX-ERROR: "
+readErr = "*** READ-ERROR: "
 tokenErr = "Can't tokenize: "
 parseErr = "Parse error: "
+unkChrErr = "Unknown character name: #\\"
 
 tokens :: String -> Either Error [Token]
 tokens ('(' : s) = (OParen :) <$> tokens s
 tokens (')' : s) = (CParen :) <$> tokens s
 tokens ('#' : 'f' : s) = (TkFalse :) <$> tokens s
 tokens ('#' : 't' : s) = (TkTrue :) <$> tokens s
+tokens ('#' : '\\' : s) = tkChar s
 tokens str@(c : s)
 	| isSymbolChar c, let (sm, s') = (c :) `first` span isSymbolChar s =
 		(TkSymbol sm :) <$> tokens s'
@@ -34,6 +38,15 @@ tokens str@(c : s)
 	| isSpace c = tokens s
 	| otherwise = Left . Error $ syntaxErr ++ tokenErr ++ show str
 tokens _ = return []
+
+tkChar :: String -> Either Error [Token]
+tkChar s = case span (not . ((||) <$> isSpace <*> (`elem` "()"))) s of
+	("space", s') -> (TkChar ' ' :) <$> tokens s'
+	("tab", s') -> (TkChar '\t' :) <$> tokens s'
+	("newline", s') -> (TkChar '\n' :) <$> tokens s'
+	("return", s') -> (TkChar '\r' :) <$> tokens s'
+	([c], s') -> (TkChar c :) <$> tokens s'
+	(cn, _) -> Left . Error $ readErr ++ unkChrErr ++ cn
 
 isSymbolChar :: Char -> Bool
 isSymbolChar c = any ($ c) [isAlpha, (`elem` "+-*/<=>")]
@@ -53,6 +66,7 @@ parse1 (TkFalse : ts) = return (Bool False, ts)
 parse1 (TkTrue : ts) = return (Bool True, ts)
 parse1 (TkInteger i : ts) = return (Integer i, ts)
 parse1 (TkDouble d : ts) = return (Double d, ts)
+parse1 (TkChar c : ts) = return (Char c, ts)
 parse1 (OParen : ts) = parseList ts
 parse1 ts = Left . Error $ syntaxErr ++ parseErr ++ show ts
 

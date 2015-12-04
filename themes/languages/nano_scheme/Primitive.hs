@@ -4,17 +4,20 @@ module Primitive (env0) where
 
 import Control.Applicative ((<$>), (<*>))
 import Data.List (foldl')
+import Data.Char (ord, chr, toUpper, toLower)
 
 import Eval (eval)
 import Environment (
 	Env, fromList, set,
 	Value(..), showValue, Error(..), ErrorMessage)
 
-syntaxErr, prpLstErr, notNumErr, lstOneErr :: ErrorMessage
+syntaxErr, prpLstErr, notNumErr, lstOneErr, chrReqErr, intReqErr :: ErrorMessage
 syntaxErr = "*** ERROR: Compile Error: syntax-error: "
 prpLstErr = "*** ERROR: Compile Error: proper list required: "
 notNumErr = "*** ERROR: Not Number: "
 lstOneErr = "*** ERROR: Compile Error: procedure requires at least one argument"
+chrReqErr = "*** ERROR: character required, but got "
+intReqErr = "*** ERROR: integer required, but got "
 
 env0 :: Env
 env0 = fromList [
@@ -27,7 +30,11 @@ env0 = fromList [
 	("*", Subroutine "*" mul),
 	("-", Subroutine "-" sub),
 	("/", Subroutine "/" divs),
-	("<", Subroutine "<" ltt)
+	("<", Subroutine "<" ltt),
+	("char->integer", Subroutine "char->integer" char2integer),
+	("integer->char", Subroutine "integer->char" integer2char),
+	("char-upcase", Subroutine "char-upcase" charUpcase),
+	("char-downcase", Subroutine "char-downcase" charDowncase)
 	]
 
 define, lambda, ifs :: Value -> Env -> Either Error (Value, Env)
@@ -85,3 +92,17 @@ ltt :: Value -> Env -> Either Error (Value, Env)
 ltt v e = (, e) . Bool . and
 	. either (zipWith (<) <$> id <*> tail) (zipWith (<) <$> id <*> tail)
 	<$> (toNums =<< consToList v)
+
+char2integer, integer2char :: Value -> Env -> Either Error (Value, Env)
+char2integer (Cons (Char c) Nil) e = Right (Integer . fromIntegral $ ord c, e)
+char2integer v _ = Left . Error $ chrReqErr ++ showValue v
+
+integer2char (Cons (Integer i) Nil) e = Right (Char . chr $ fromIntegral i, e)
+integer2char v _ = Left . Error $ intReqErr ++ showValue v
+
+charUpcase, charDowncase :: Value -> Env -> Either Error (Value, Env)
+charUpcase (Cons (Char c) Nil) e = Right (Char $ toUpper c, e)
+charUpcase v _ = Left . Error $ chrReqErr ++ showValue v
+
+charDowncase (Cons (Char c) Nil) e = Right (Char $ toLower c, e)
+charDowncase v _ = Left . Error $ chrReqErr ++ showValue v
