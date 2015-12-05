@@ -4,10 +4,12 @@ import qualified Data.Map as M
 
 type Env = M.Map Symbol Value
 
-data Value =
-	Int Integer
+data Value
+	= Symbol Symbol
+	| Int Integer
 
 showValue :: Value -> String
+showValue (Symbol s) = s
 showValue (Int i) = show i
 
 type Symbol = String
