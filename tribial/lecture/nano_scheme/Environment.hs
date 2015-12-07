@@ -11,10 +11,12 @@ data Value
 	= Symbol Symbol
 	| Int Integer
 	| List [Value]
+	| Subr Symbol ([Value] -> Env -> Maybe (Value, Env))
 
 showValue :: Value -> String
 showValue (Symbol s) = s
 showValue (Int i) = show i
 showValue (List vs) = "(" ++ unwords (map showValue vs) ++ ")"
+showValue (Subr n _) = "#<subr " ++ n ++ ">"
 
 type Symbol = String
