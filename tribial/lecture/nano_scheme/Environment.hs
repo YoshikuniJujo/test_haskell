@@ -10,9 +10,11 @@ refer = M.lookup
 data Value
 	= Symbol Symbol
 	| Int Integer
+	| List [Value]
 
 showValue :: Value -> String
 showValue (Symbol s) = s
 showValue (Int i) = show i
+showValue (List vs) = "(" ++ unwords (map showValue vs) ++ ")"
 
 type Symbol = String
