@@ -14,6 +14,7 @@ set = M.insert
 
 data Value
 	= Symbol Symbol
+	| Bool Bool
 	| Int Integer
 	| List [Value]
 	| Sntx Symbol ([Value] -> Env -> Maybe (Value, Env))
@@ -22,6 +23,8 @@ data Value
 
 showValue :: Value -> String
 showValue (Symbol s) = s
+showValue (Bool False) = "#f"
+showValue (Bool True) = "#t"
 showValue (Int i) = show i
 showValue (List vs) = "(" ++ unwords (map showValue vs) ++ ")"
 showValue (Sntx n _) = "#<syntax " ++ n ++ ">"

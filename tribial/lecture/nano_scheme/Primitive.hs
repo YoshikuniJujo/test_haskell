@@ -8,6 +8,7 @@ env0 :: Env
 env0 = fromList [
 	("define", Sntx "define" define),
 	("lambda", Sntx "lambda" lambda),
+	("if", Sntx "if" ifs),
 	("hoge", Int 12345),
 	("+", Subr "+" add),
 	("-", Subr "-" sub),
@@ -23,6 +24,15 @@ define _ _ = Nothing
 lambda :: [Value] -> Env -> Maybe (Value, Env)
 lambda [ps, v] e = (\as -> (Lmbd as v, e)) `mapply` symbols ps
 lambda _ _ = Nothing
+
+ifs :: [Value] -> Env -> Maybe (Value, Env)
+ifs [p, th, el] e = (\(b, e') -> if b then eval th e' else eval el e')
+	`mbind` (bool `mapply` eval p e)
+ifs _ _ = Nothing
+
+bool :: (Value, Env) -> (Bool, Env)
+bool (Bool False, e) = (False, e)
+bool (_, e) = (True, e)
 
 symbols :: Value -> Maybe [Symbol]
 symbols (List vs) = ss vs

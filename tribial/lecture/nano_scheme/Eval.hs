@@ -13,6 +13,7 @@ evaluate (v : vs) e = case eval v e of
 
 eval :: Value -> Env -> Maybe (Value, Env)
 eval (Symbol s) e = (, e) `mapply` refer s e
+eval b@(Bool _) e = Just (b, e)
 eval i@(Int _) e = Just (i, e)
 eval (List (v : vs)) e = (\(f, e') -> apply f vs e') `mbind` eval v e
 eval el@(List []) e = Just (el, e)
