@@ -1,6 +1,6 @@
 {-# LANGUAGE TupleSections #-}
 
-module Eval (evaluate) where
+module Eval (evaluate, eval) where
 
 import Environment
 import Maybe
@@ -16,8 +16,10 @@ eval (Symbol s) e = (, e) `mapply` refer s e
 eval i@(Int _) e = Just (i, e)
 eval (List (v : vs)) e = (\(f, e') -> apply f vs e') `mbind` eval v e
 eval el@(List []) e = Just (el, e)
+eval s@(Sntx _ _) e = Just (s, e)
 eval s@(Subr _ _) e = Just (s, e)
 
 apply :: Value -> [Value] -> Env -> Maybe (Value, Env)
+apply (Sntx _ s) vs e = s vs e
 apply (Subr _ s) vs e = (\(as, e') -> s as e') `mbind` evaluate vs e
 apply _ _ _ = Nothing
