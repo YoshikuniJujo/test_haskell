@@ -18,8 +18,11 @@ eval (List (v : vs)) e = (\(f, e') -> apply f vs e') `mbind` eval v e
 eval el@(List []) e = Just (el, e)
 eval s@(Sntx _ _) e = Just (s, e)
 eval s@(Subr _ _) e = Just (s, e)
+eval l@(Lmbd _ _) e = Just (l, e)
 
 apply :: Value -> [Value] -> Env -> Maybe (Value, Env)
 apply (Sntx _ s) vs e = s vs e
 apply (Subr _ s) vs e = (\(as, e') -> s as e') `mbind` evaluate vs e
+apply (Lmbd ps bd) vs e = (\(r, _) -> (r, e)) `mapply`
+	(eval bd . foldr (uncurry set) e $ zip ps vs)
 apply _ _ _ = Nothing

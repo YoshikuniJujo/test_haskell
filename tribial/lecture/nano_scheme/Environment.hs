@@ -18,6 +18,7 @@ data Value
 	| List [Value]
 	| Sntx Symbol ([Value] -> Env -> Maybe (Value, Env))
 	| Subr Symbol ([Value] -> Env -> Maybe (Value, Env))
+	| Lmbd [Symbol] Value
 
 showValue :: Value -> String
 showValue (Symbol s) = s
@@ -25,5 +26,6 @@ showValue (Int i) = show i
 showValue (List vs) = "(" ++ unwords (map showValue vs) ++ ")"
 showValue (Sntx n _) = "#<syntax " ++ n ++ ">"
 showValue (Subr n _) = "#<subr " ++ n ++ ">"
+showValue (Lmbd _ _) = "#<lambda>"
 
 type Symbol = String
