@@ -12,7 +12,8 @@ env0 = fromList [
 	("hoge", Int 12345),
 	("+", Subr "+" add),
 	("-", Subr "-" sub),
-	("*", Subr "*" mul)
+	("*", Subr "*" mul),
+	("<", Subr "<" ltt)
 	]
 
 define :: [Value] -> Env -> Maybe (Value, Env)
@@ -42,7 +43,7 @@ symbols (List vs) = ss vs
 	ss _ = Nothing
 symbols _ = Nothing
 
-add, sub, mul :: [Value] -> Env -> Maybe (Value, Env)
+add, sub, mul, ltt :: [Value] -> Env -> Maybe (Value, Env)
 add [Int m, Int n] e = Just (Int $ m + n, e)
 add _ _ = Nothing
 
@@ -51,3 +52,6 @@ sub _ _ = Nothing
 
 mul [Int m, Int n] e = Just (Int $ m * n, e)
 mul _ _ = Nothing
+
+ltt [Int m, Int n] e = Just (Bool $ m < n, e)
+ltt _ _ = Nothing

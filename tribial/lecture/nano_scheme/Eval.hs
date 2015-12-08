@@ -24,6 +24,6 @@ eval l@(Lmbd _ _) e = Just (l, e)
 apply :: Value -> [Value] -> Env -> Maybe (Value, Env)
 apply (Sntx _ s) vs e = s vs e
 apply (Subr _ s) vs e = (\(as, e') -> s as e') `mbind` evaluate vs e
-apply (Lmbd ps bd) vs e = (\(r, _) -> (r, e)) `mapply`
-	(eval bd . foldr (uncurry set) e $ zip ps vs)
+apply (Lmbd ps bd) vs e = (`mbind` evaluate vs e) $ \(as, e') ->
+	(\(r, _) -> (r, e')) `mapply` (eval bd . foldr (uncurry set) e $ zip ps as)
 apply _ _ _ = Nothing
