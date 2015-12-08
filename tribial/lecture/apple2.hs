@@ -1,13 +1,13 @@
 import Data.Either
 import Data.List
 
-data Apple = Leaf | Flower | Apple | Branch Apple Apple
+data Apple = Leaf | Flower | Fruit | Branch Apple Apple
 	deriving Show
 
 price1 :: Apple -> Int
 price1 Leaf = 50
 price1 Flower = 80
-price1 Apple = 100
+price1 Fruit = 100
 price1 (Branch a1 a2) = 20 + price1 a1 + price1 a2
 
 dfs, bfs :: Apple -> [Apple]
