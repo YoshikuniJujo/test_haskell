@@ -22,7 +22,7 @@ main = withSQLite "hello.sqlite3" $ \db -> do
 		bind sm ":greetee" ("you" :: String)
 		step sm
 		reset sm
-		bind sm ":id" (888 :: Int)
+		bind sm ":id" (888.8 :: Double)
 		bind sm ":words" ()
 		bind sm ":greetee"  ("blob" :: BS.ByteString)
 		step sm
