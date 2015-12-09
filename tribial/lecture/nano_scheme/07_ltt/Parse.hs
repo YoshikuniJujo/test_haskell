@@ -1,4 +1,4 @@
-module Parse (Token, parse, tokens) where
+module Parse (Token, tokens, parse) where
 
 import Data.Char
 
@@ -21,14 +21,14 @@ tokens ('#' : 't' : s) = (TkBool True :) `mapply` tokens s
 tokens (c : s)
 	| isDigit c = let (t, r) = span isDigit s in
 		(TkInt (read $ c : t) :) `mapply` tokens r
-	| isSymCh c = let (t, r) = span isSymCh s in
+	| isSym c = let (t, r) = span isSym s in
 		(TkSym (c : t) :) `mapply` tokens r
 	| isSpace c = tokens s
 tokens "" = Just []
 tokens _ = Nothing
 
-isSymCh :: Char -> Bool
-isSymCh c = any ($ c) [isAlphaNum, (`elem` "+-*/<=>?")]
+isSym :: Char -> Bool
+isSym c = any ($ c) [isAlphaNum, (`elem` "+-*/<=>?")]
 
 parse :: [Token] -> Maybe [Value]
 parse [] = Just []
@@ -37,7 +37,7 @@ parse ts = case parse1 ts of
 	_ -> Nothing
 
 parse1 :: [Token] -> Maybe (Value, [Token])
-parse1 (TkSym s : ts) = Just (Symbol s, ts)
+parse1 (TkSym s : ts) = Just (Sym s, ts)
 parse1 (TkBool b : ts) = Just (Bool b, ts)
 parse1 (TkInt i : ts) = Just (Int i, ts)
 parse1 (TkOPr : ts) = (\(vs, ts') -> (List vs, ts')) `mapply` parseL ts

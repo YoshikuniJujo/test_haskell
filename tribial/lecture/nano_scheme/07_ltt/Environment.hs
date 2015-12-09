@@ -1,6 +1,5 @@
 module Environment (
-	Env, M.fromList, refer, set, Value(..), showValue, Symbol
-) where
+	Env, M.fromList, refer, set, Value(..), showValue, Symbol) where
 
 import qualified Data.Map as M
 
@@ -13,22 +12,22 @@ set :: Symbol -> Value -> Env -> Env
 set = M.insert
 
 data Value
-	= Symbol Symbol
+	= Sym Symbol
 	| Bool Bool
 	| Int Integer
 	| List [Value]
-	| Sntx Symbol ([Value] -> Env -> Maybe (Value, Env))
-	| Subr Symbol ([Value] -> Env -> Maybe (Value, Env))
+	| Sntx ([Value] -> Env -> Maybe (Value, Env))
+	| Subr ([Value] -> Env -> Maybe (Value, Env))
 	| Lmbd [Symbol] Value
 
 showValue :: Value -> String
-showValue (Symbol s) = s
+showValue (Sym s) = s
 showValue (Bool False) = "#f"
 showValue (Bool True) = "#t"
 showValue (Int i) = show i
 showValue (List vs) = "(" ++ unwords (map showValue vs) ++ ")"
-showValue (Sntx n _) = "#<syntax " ++ n ++ ">"
-showValue (Subr n _) = "#<subr " ++ n ++ ">"
+showValue (Sntx _) = "#<syntax>"
+showValue (Subr _) = "#<subr>"
 showValue (Lmbd _ _) = "#<lambda>"
 
 type Symbol = String
