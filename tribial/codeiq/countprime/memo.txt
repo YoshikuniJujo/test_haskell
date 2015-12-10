@@ -1,0 +1,19 @@
+spiral (Wheel 1 [1] [] : ws) ~(4 : qs) 
+=> foldr (turn 0) (roll 1) []
+=> roll 1
+=> foldr (turn 1) (roll 2) [1]
+=> turn 1 1 (roll 2)
+=> 2 : roll 2
+=> 2 : foldr (turn 2) (roll 3) [1]
+=> 2 : turn 2 1 (roll 3)
+=> 2 : 3 : roll 3
+=> 2 : 3 : foldr (turn 3) (roll 4) [1]
+=> 2 : 3 : turn 3 1 (roll 4)
+=> 2 : 3 : tail (spiral (Wheel 2 [1] [] : ws) ~(9 : qs))
+
+spiral (Wheel 2 [1] [] : ws) ~(9 : qs)
+=> foldr (turn 0) (roll 2) []
+=> roll 2
+=> foldr (turn 2) (roll 4) [1]
+=> turn 2 1 (roll 4)
+=> 3 : roll 4

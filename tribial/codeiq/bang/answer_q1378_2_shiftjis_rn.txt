@@ -1,0 +1,139 @@
+※これは解答用テキストファイルです。
+
+【必須】あなたが書いたコードを貼り付けてください。未記入の場合は評価できません。コードが完全な形（そのままコンパイル・実行）できるものでない場合は程度に応じて減点の対象となります。
+
+import Data.Char
+
+---------------------------------------------------------------------------
+-- Input and Output
+
+main :: IO ()
+main = interact $ (++ "\n") . map toLower . show . uncurry relativity
+	. (\(t1 : t2 : _) -> (t1, t2)) . map readTriangle . lines
+
+readTriangle :: String -> Triangle
+readTriangle s = let [a, b, c] = map readPoint $ words s in Triangle a b c
+
+readPoint :: String -> Point
+readPoint s = let (x, ',' : y) = span (/= ',') s in Point (read x) (read y)
+
+---------------------------------------------------------------------------
+-- Vectors and Points
+
+data LR = L | R deriving (Eq, Show)
+
+data Vector = Vector Int Int deriving Show
+data Point = Point Int Int deriving Show
+
+sub :: Point -> Point -> Vector
+Point ax ay `sub` Point bx by = Vector (ax - bx) (ay - by)
+
+mul :: Vector -> Vector -> Int
+Vector ax ay `mul` Vector bx by = ax * by - ay * bx
+
+pointVectorLR :: Point -> (Point, Vector) -> Maybe LR
+pointVectorLR (Point px py) (Point sx sy, Vector vx vy)
+	| vx * (py - sy) > vy * (px - sx) = Just L
+	| vx * (py - sy) < vy * (px - sx) = Just R
+	| otherwise = Nothing
+
+---------------------------------------------------------------------------
+-- Lines
+
+data Line = Line Point Point deriving Show
+
+toVector :: Line -> (Point, Vector)
+toVector (Line p1 p2) = (p1, p2 `sub` p1)
+
+pointLineLR :: Point -> Line -> Maybe LR
+pointLineLR p = pointVectorLR p . toVector
+
+cross :: Line -> Line -> Bool
+cross ab@(Line a b) cd@(Line c d) =
+	pointLineLR c ab /= pointLineLR d ab &&
+	pointLineLR a cd /= pointLineLR b cd
+
+---------------------------------------------------------------------------
+-- Triangles
+
+data Triangle = Triangle Point Point Point deriving Show
+
+triangleLR :: Triangle -> Maybe LR
+triangleLR (Triangle a b c)
+	| (b `sub` a) `mul` (c `sub` a) > 0 = Just L
+	| (b `sub` a) `mul` (c `sub` a) < 0 = Just R
+	| otherwise = Nothing
+
+leftize :: Triangle -> Triangle
+leftize t@(Triangle a b c)
+	| Just R <- triangleLR t = Triangle a c b
+	| otherwise = t
+
+toLines :: Triangle -> [Line]
+toLines (Triangle a b c) = [Line a b, Line b c, Line c a]
+
+---------------------------------------------------------------------------
+-- Relativities
+
+data Relativity = Cross | Inside | Outside deriving (Show, Eq)
+
+pointTriangleRelativity :: Point -> Triangle -> Relativity
+pointTriangleRelativity p t
+	| Nothing `elem` rs = Cross
+	| all (== Just L) rs = Inside
+	| otherwise = Outside
+	where rs = map (pointLineLR p) . toLines $ leftize t
+
+relativity :: Triangle -> Triangle -> Relativity
+relativity t1 t2 = case (rel t1 t2, rel t2 t1) of
+	(Inside, _) -> Inside
+	(_, Inside) -> Inside
+	(Outside, Outside) ->
+		if or [ l1 `cross` l2 | l1 <- toLines t1, l2 <- toLines t2 ]
+			then Cross else Outside
+	_ -> Cross
+	where
+	rel (Triangle a b c) t
+		| all (== Inside) rs = Inside
+		| all (== Outside) rs = Outside
+		| otherwise = Cross
+		where rs = map (`pointTriangleRelativity` t) [a, b, c]
+
+
+
+【必須】使用言語・動作環境について
+(1)言語の種類を記入してください。未記入の場合、減点となります。
+
+Haskell
+
+(2)コンパイラ／インタプリタの名称・バージョン情報を記入してください。未記入の場合、減点となります。
+
+The Glorious Glasgow Haskell Compilation System, version 7.6.3
+
+【必須】プログラムの特長・工夫した点等、アピールポイントについて。
+あなたが書いたコードの内容や工夫した点をわかりやすく説明してください。未記入の場合、大幅な減点となります。
+
+前回の解答にバグがありました。バグフィックス版です。
+
+前回は2つの三角形を1つの三角形と3つの点と考えて
+「3点すべてが内側なら内部、3点すべてが外側なら外部、そうでなければ交わる」と
+考えた。
+これを三角形を入れ換えて2度行った。
+
+しかし、互いの3点を内部に含まない三角形同士でも交わることがあることに気づいた。
+バグフィックス版では互いの3点を内部に含まない場合に互いの三辺が交わるかどうかを
+調べるようにした。
+
+また、このバグに対するテストデータを追加した。
+[テストデータ5: 入力]
+3,3 6,5 2,7
+0,4 6,3 4,8
+[出力]
+cross
+
+【任意】もし企業からのスカウトメールがきたらどのくらい積極的にアクションすると思いますか？下記の3つから選んでお答えください。
+ A.積極的に会ってみたいと思う
+ B.社名や条件次第では会ってみたいと思う
+ C.よほどのことがない限り返信しない
+
+(B)

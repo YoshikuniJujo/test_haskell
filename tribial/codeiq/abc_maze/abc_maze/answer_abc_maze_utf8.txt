@@ -1,0 +1,124 @@
+※これは解答用テキストファイルです。
+
+【必須】解答を記入してください。
+（例）
+samile.in.txt: possible
+
+case1.in.txt: 
+case2.in.txt: 
+case3.in.txt: 
+case4.in.txt: 
+case5.in.txt: 
+case6.in.txt: 
+case7.in.txt: 
+
+
+
+【必須】使用言語・動作環境について
+(1)言語の種類を記入してください。未記入の場合、減点となります。
+
+
+
+(2)コンパイラ／インタプリタの名称・バージョン情報を記入してください。未記入の場合、減点となります。
+
+
+
+【必須】プログラムの特長・工夫した点等、アピールポイントについて。
+あなたが書いたコードの内容や工夫した点をわかりやすく説明してください。未記入の場合、大幅な減点となります。
+
+
+
+【任意】もし企業からのスカウトメールがきたらどのくらい積極的にアクションすると思いますか？下記の3つから選んでお答えください。
+ A.積極的に会ってみたいと思う
+ B.社名や条件次第では会ってみたいと思う
+ C.よほどのことがない限り返信しない
+
+
+
+【必須】あなたが書いたコードを貼り付けてください。未記入の場合は評価できません。
+コードが完全な形（そのままコンパイル・実行）できるものでない場合は程度に応じて減点の対象となります。
+
+
+
+import Control.Applicative
+import Control.Arrow (first, second)
+import Control.Monad
+import Data.Maybe
+
+main :: IO ()
+main = interact $ (++ "possible\n") . ifte "" "im" . check1 [] . start
+	where ifte x _ Nothing = x; ifte _ y _ = y
+
+check :: [(Int, Int)] -> [Maze] -> Maybe [(Int, Int)]
+check h [] = Just h
+check h (m : ms) = check1 h m >>= (`check` ms)
+
+check1 :: [(Int, Int)] -> Maze -> Maybe [(Int, Int)]
+check1 h m | goal m = Nothing
+check1 h m@(Maze p _ _) =
+	check (p : h) $ (\(Maze q _ _) -> q `notElem` h) `filter` step m
+
+data Maze = Maze (Int, Int) ABC Map deriving Show
+
+start :: String -> Maze
+start s = Maze (0, 0) (char m) m where m = readMap s
+
+goal :: Maze -> Bool
+goal (Maze _ _ m) = bottomRight m
+
+step :: Maze -> [Maze]
+step = flip mapMaybe [goUp, goDown, goLeft, goRight] . flip ($)
+
+goUp, goDown, goLeft, goRight :: Maze -> Maybe Maze
+goUp = go up $ first pred
+goDown = go down $ first succ
+goLeft = go left $ second pred
+goRight = go right $ second succ
+
+go :: (Map -> Maybe Map) -> ((Int, Int) -> (Int, Int)) -> Maze -> Maybe Maze
+go d cp (Maze p c m) = do
+	m' <- d m
+	let c' = char m'
+	guard $ c' == next c
+	return $ Maze (cp p) c' m'
+
+data ABC = A | B | C deriving (Show, Eq)
+
+readABC :: Char -> ABC
+readABC 'A' = A
+readABC 'B' = B
+readABC 'C' = C
+readABC _ = error "readABC: error"
+
+next :: ABC -> ABC
+next A = B
+next B = C
+next C = A
+
+data Map = Map [([ABC], [ABC])] [([ABC], [ABC])] deriving Show
+
+readMap :: String -> Map
+readMap = uncurry Map . ((,) []) . map (((,) []) . (map readABC)) . lines
+
+bottomRight :: Map -> Bool
+bottomRight (Map us [d]) = all ((== 1) . length . snd) $ d : us
+bottomRight _ = False
+
+char :: Map -> ABC
+char (Map _ ((_, c : _) : _)) = c
+char _ = error "char: bad Map"
+
+up, down, left, right :: Map -> Maybe Map
+up (Map us ds) = uncurry Map <$> backward us ds
+down (Map us ds) = uncurry Map <$> foreward us ds
+left (Map us ds) =
+	Map <$> mapM (uncurry backward) us <*> mapM (uncurry backward) ds
+right (Map us ds) =
+	Map <$> mapM (uncurry foreward) us <*> mapM (uncurry foreward) ds
+
+foreward, backward :: [a] -> [a] -> Maybe ([a], [a])
+foreward _ [] = Nothing
+foreward _ [_] = Nothing
+foreward bs (f : fs) = Just (f : bs, fs)
+backward [] _ = Nothing
+backward (b : bs) fs = Just (bs, b : fs)

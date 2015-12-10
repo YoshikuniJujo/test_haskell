@@ -1,0 +1,228 @@
+※これは解答用テキストファイルです。
+
+
+【必須】あなたが書いたコードを貼り付けてください。未記入の場合は評価できません。
+コードが完全な形（そのままコンパイル・実行）できるものでない場合は程度に応じて減点の対象となります。
+
+import Control.Arrow
+import Data.Maybe
+import Data.List
+import Data.Function
+import Data.Time
+import GHC.IO.Encoding
+
+enoughTime :: DiffTime
+enoughTime = 3 * 60 * 60
+
+ijou :: Ord a => a -> a -> Bool
+-- ijou = (>=)
+ijou = (>)
+
+morning, night :: TimeOfDay
+morning = TimeOfDay 6 0 0
+night = TimeOfDay 22 0 0
+
+main :: IO ()
+main = do
+	setLocaleEncoding char8
+	interact $ format . head . filter ((`ijou` enoughTime) . period . snd)
+		. map maxPeriod . uncurry sync
+		. (fromMaybe [] . lookup "boy" &&& fromMaybe [] . lookup "girl")
+		. map (second frees) . parse
+
+format :: (Day, Period) -> String
+format (ymd, (b, e)) = dt ++ "," ++ tm b ++ "," ++ tm e ++ "\n"
+	where
+	(y, m, d) = toGregorian ymd
+	dt = show y ++ "/" ++ pad (show m) ++ "/" ++ pad (show d)
+	tm t = pad (show $ todHour t) ++ ":" ++ pad (show $ todMin t)
+	pad s = replicate (2 - length s) '0' ++ s
+
+type Frees = [Free]
+
+frees :: Schedule -> Frees
+frees sc@(Event d0 _ _ : _) = (`Free` [(morning, night)]) `map` [d0 ..] `sb`
+	grouping ((eDate &&& id) `map` sc)
+	where
+	[] `sb` _ = []
+	fa `sb` [] = fa
+	fa@(f@(Free fd _) : fs) `sb` ea@((ed, evs) : es)
+		| fd < ed = fs `sb` ea
+		| fd > ed = fa `sb` es
+		| otherwise = foldl sub f evs : fs `sb` es
+frees _ = []
+
+sync :: Frees -> Frees -> Frees
+[] `sync` _ = []
+_ `sync` [] = []
+fa1@(f1@(Free d1 _) : fs1) `sync` fa2@(f2@(Free d2 _) : fs2)
+	| d1 < d2 = fs1 `sync` fa2
+	| d1 > d2 = fa1 `sync` fs2
+	| otherwise = f1 `inter` f2 : sync fs1 fs2
+
+data Free = Free { fDay :: Day, fPeriods :: [Period] } deriving (Show, Eq, Ord)
+
+maxPeriod :: Free -> (Day, Period)
+maxPeriod (Free d ps) = (d, maximumBy (compare `on` period) ps)
+
+sub :: Free -> Event -> Free
+Free fd ps0 `sub` Event ed (eb, ee) _
+		| fd /= ed = error "sub: different days"
+		| eb >= ee = error "sub: begin time should be before end time"
+		| otherwise = Free fd $ sb ps0
+	where
+	sb pa@((b, e) : ps)
+		| b >= e = error "sub: begin time should be before end time"
+		| ee <= b = pa
+		| eb <= b && ee < e = (ee, e) : ps
+		| eb <= b = sb ps
+		| ee < e = (b, eb) : (ee, e) : ps
+		| eb < e = (b, eb) : sb ps
+		| otherwise = (b, e) : sb ps
+	sb [] = []
+
+inter :: Free -> Free -> Free
+Free d ps0 `inter` Free d' ps0'
+	| d == d' = Free d $ ps0 `it` ps0'
+	| otherwise = error "inter: different days"
+	where
+	[] `it` _ = []
+	_ `it` [] = []
+	pa1@((b1, e1) : ps1) `it` pa2@((b2, e2) : ps2)
+		| b1 >= e1 || b2 >= e2 =
+			error "inter: begin time should be before end time"
+		| e2 <= b1 = pa1 `it` ps2
+		| b2 < b1 && e2 < e1 = (b1, e2) : pa1 `it` ps2
+		| b2 < b1 = (b1, e1) : ps1 `it` pa2
+		| e2 < e1 = (b2, e2) : pa1 `it` ps2
+		| b2 < e1 = (b2, e1) : ps1 `it` pa2
+		| otherwise = ps1 `it` pa2
+
+type Who = String
+type Schedule = [Event]
+data Event = Event { eDate :: Day, ePeriod :: Period, eTitle :: String }
+	deriving (Show, Eq, Ord)
+
+parse :: String -> [(Who, Schedule)]
+parse = grouping . sort . map (r . sp ',') . lines
+	where
+	r [wh, dt, bg, ed, ttl] = (wh, Event (rd dt) (rt bg, rt ed) ttl)
+	r _ = error "parse: bad event format"
+	rd s = case sp '/' s of
+		[y, m, d] -> fromGregorian (read y) (read m) (read d)
+		_ -> error "parse: bad date format"
+	rt s = case sp ':' s of
+		[h, m] -> TimeOfDay (read h) (read m) 0
+		_ -> error "parse: bad time format"
+	sp p s = case span (/= p) s of (_, "") -> [s]; (h, _ : t) -> h : sp p t
+
+type Period = (TimeOfDay, TimeOfDay)
+
+period :: Period -> DiffTime
+period (b, e) = timeOfDayToTime e - timeOfDayToTime b
+
+grouping :: Eq a => [(a, b)] -> [(a, [b])]
+grouping = map (fst . head &&& map snd) . groupBy ((==) `on` fst)
+
+
+【必須】使用言語・動作環境について
+(1)言語の種類を記入してください。未記入の場合、減点となります。
+
+Haskell
+
+(2)コンパイラ／インタプリタの名称・バージョン情報を記入してください。未記入の場合、減点となります。
+
+The Glorious Glasgow Haskell Compilation System, version 7.6.3
+
+【必須】プログラムの特長・工夫した点等、アピールポイントについて。
+あなたが書いたコードの内容や工夫した点をわかりやすく説明してください。未記入の場合、大幅な減点となります。
+
+まず、時刻を点として考えることにする。
+日常的な言葉の使いかたとして、
+たとえば10:00に10:00以上10:01未満の1分間の幅を持たせて考える場合があるが、
+今回はより数学的な点として時刻を扱うことにする。
+
+この場合、「22:00から06:00まではデートできない」ということは、
+デート可能な時間は「06:00から22:00まで」ということになる。
+この条件や「当日のデート時間はできるだけ長く」という条件が存在するので、
+連続した時間を扱うよりも1日ずつに分けて考えたほうが簡単である。
+
+また、問題を素直に解釈した場合の定義とサンプルの「入力-出力」の例に矛盾がある。
+「3時間以上」は数学的には3時間も含む。
+この解釈だと、
+サンプルの入力例では2015/04/04の06:00から09:00に3時間のデート可能な時間がある。
+しかし、出力例は「2015/04/06,17:00,22:00」となっている。
+「3時間以上」を「3時間を越えて」という意図で使っている可能性が考えられる。
+入出力例のほうを優先して「3時間を越えて」デート可能な時間を出力することとした。
+問題文のほうが正しい場合のために関数ijouを定義した。
+関数ijouの定義を(>)とするか(>=)とするかで、どちらの可能性にも対応できる。
+
+Haskellの標準ライブラリの時間型のいくつかを利用した。
+DiffTime型は「時間」を秒単位で保存する型である。
+enoughTimeは3時間を秒で表現した値である。
+morning, nightはそれぞれデート可能な時間の開始時刻と終了時刻とを示す。
+TimeOfDayは1日のなかでの時刻を表現する型だ。
+Day型はカレンダーにおける日を表現する型であり、
+toGregorianやfromGregorianによって年月日との相互変換が可能である。
+
+main関数はまずは文字コードの問題に対応したうえで演算を行っている。
+当環境ではUTF-8を利用している。
+出題者の環境ではShift-JISを使用しているようだ。
+そのままだとうまく動かないので、
+8ビットのバイト列として入出力を行うようにsetLocaleEncodingを使用した。
+日本語部分は今回のコードには関係ないので、
+「単なるバイト列としての読み込み」で問題ないと判断した。
+
+interactは標準入力に引数である関数を適用した結果を
+標準出力に出力する関数である。
+
+interactの引数である関数の説明をする。
+左下から、左から右に、下から上に関数を追って説明する。
+関数parseで入力であるCSVデータを[(Who, Schedule)]型に変換する。
+この型の値は「誰か(Who)の予定(Schedule)」を表現する値のリストである。
+そのリストのSchedule部分を関数freesで空き時間(Frees型)に変換する。
+結果としてできた(Who, Frees)のリストから"boy"と"girl"の空き時間を抽出し、
+タプルにまとめる。
+その2つの空き時間の共通部分をsyncで取り出し、
+それぞれの日のなかでの連続した空き時間の最大値を関数maxPeriodで求める。
+空き時間の最大値がenoughTimeを越える(ijou)日以外を削除する。
+結果としてできたリストの先頭(head)を取り、関数formatで文字列にする。
+
+複雑になりバグを含みやすい処理なので、全体としては、
+「型により抽象化の層構造を作成する」、
+「型とその演算を作成し、それを組み合わせて
+より上位の型やそれに対する演算を作成する」という戦略を採った。
+
+Schedule型とFrees型とは内容としてはほぼ同じ型であるが、
+意味することろが違うので別々の型とした。
+そのようにすることで型がドキュメントとなり、
+型チェックがテストとして働くことになる。
+
+Schedule型はEvent型のリストでありFrees型はFree型のリストである。
+予定(Schedule)から空き時間(Frees)を求める関数freesは
+Free型の値からEvent型の値を引き算する関数subを使って作られている。
+同様にFrees型同士をすり合わせる関数syncは、
+Free型の値同士の共通部分を取り出す関数interを使って作られる。
+
+関数subは引数としてFree型、Event型を取り、
+関数interは引数としてFree型、Free型を取る。
+このように型を分けることで無意味な演算を避けることができる。
+
+安全性と簡潔性のあいだでいくつかのトレードオフがある。
+
+errorを使うかわりにMaybe型やEither型を使い、
+明示的なエラー値を扱ったほうが安全である。
+しかし、今回は簡潔性を考慮して「起こってはならない」場合には
+errorを引き起こすようにした。
+
+また、コード全体を通して、
+Frees型やSchedule型の値はソートずみであることを前提としている。
+関数parseの段階でSchedule型の値がソートされていることを考えると、
+今回のコードのなかでは、Frees型の値が作成され変換されていく過程で
+ソートずみでない値が出現することはないので、問題ない。
+
+しかし、より一般的なライブラリを作成する場合には、
+Frees型やSchedule型に型シノニムを使うのではなく、
+きちんと代数的データ型として型を宣言し、
+モジュールによって値構築子を隠蔽することで、
+「ソートずみ」であることを保証したほうが良い。

@@ -1,0 +1,224 @@
+※これは解答用テキストファイルです。
+
+【必須】解答を記入してください。
+（例）
+samile.in.txt: possible
+
+case1.in.txt: possible
+case2.in.txt: impossible
+case3.in.txt: impssible
+case4.in.txt: possible
+case5.in.txt: possible
+case6.in.txt: possible
+case7.in.txt: impossible
+
+【必須】使用言語・動作環境について
+(1)言語の種類を記入してください。未記入の場合、減点となります。
+
+Haskell
+
+(2)コンパイラ／インタプリタの名称・バージョン情報を記入してください。未記入の場合、減点となります。
+
+The Blorious Glasgow Haskell Compilation System, version 7.6.3
+
+【必須】プログラムの特長・工夫した点等、アピールポイントについて。
+あなたが書いたコードの内容や工夫した点をわかりやすく説明してください。未記入の場合、大幅な減点となります。
+
+(データ型)
+
+まずは地図とその上の位置というアナロジーを示すデータ型Mapを定義した。
+MapにはZipper構造体を使用した。
+(https://en.wikipedia.org/wiki/Zipper_(data_structure)
+Zipperを使用することで非破壊的でありながら効率的に全体と全体のなかでの位置を
+記録、更新することができる。
+Map型において内部の移動は自由であり上下左右いずれの方向にも進むことができる。
+
+Map型の上にMaze型を作成した。
+Maze型においてはABCABCの順に進むという制約を実装した。
+また、その後の処理の便宜上、Map上の座標と現在地における文字を保持する
+フィールドを追加しそれらに対するアクセスを容易にした。
+
+(アルゴリズム)
+
+基本的にはある地点から上下左右への移動のすべての可能性を追っていく。
+ただし一度試した地点について再度試す必要はないのでその枝は刈り取る。
+
+(コードの詳細)
+
+* Map型
+
+Map型は2次元のZipper構造体である。
+「現在地よりも左の場所のリスト」と「現在地を含みそれより右の場所のリスト」とを
+タプルにまとめる。
+それを1行とし複数の行をまとめたものがMap型となる。
+ただし、行についても同様に
+「現在地よりも上の行のリスト」と「現在地を含みそれより下の行のリスト」とが
+タプルにまとまっている。
+
+上下左右の移動関数(up, down, left, right)を定義した。
+移動後の状態をMaybe型でつつみ、移動が不可能な場合にはNothingとしてある。
+
+移動関数の定義には、より原始的な関数foreward, backwardを使用した。
+backwardが前側のリストが空になるまで移動できるのに対し、
+forewardは後側のリストの要素数が1になるまでしか移動できない。
+後側のリストが「現在地を含」むという事実を反映している。
+
+その他、文字列からの読み込み(readMap)、右下であることの判定(bottomRight)、
+現在地の文字の入手(char)を行う関数がそれぞれ定義されている。
+
+* Maze型
+
+Maze型はMap型に対して制約を加えたラッパー型である。
+start, goalはそれぞれreadMap, bottomRightに対する薄いラッパーである。
+
+移動関数においてMaze型はMap型よりも制約が厳しくなっている。
+4つの移動関数(goUp, goDown, goLeft, goRight)が定義されているが、
+これらはそれぞれ対応する関数に同じ制約を加えたものである。
+その制約はgo関数によってまとめて記述されている。
+
+go関数は2つの仕事をしている。
+ひとつは移動がABCABC...の順となることを保証すること、
+もうひとつはMaze型の保持する座標の更新である。
+移動関数(d)や座標の更新関数(cp)を引数として指定する。
+移動関数によって新しいMap型の値(m')を計算し、新しい現在地の文字(c')が
+古い現在地の次(next c)となっていることを確認(guard)し、
+そうであれば座標を更新し(cp p)た新しいMaze型の値(Maze (cp p) c' m')を返す。
+Maybeモナドを使用することで見通しを良くした。
+
+go関数を使用して4つの移動関数を作成する。
+第一引数にMap型に対する更新関数を第二引数に座標の更新関数を指定する。
+座標の形式は(y, x)の順とした。
+今回は関係ないがCUIベースのインターフェースでは
+この順のほうが都合が良いことが多いためだ。
+
+step関数は次に進んだ場合の迷路の状態のすべての可能性をリストにする。
+mapMaybeを使用することで「行けない」場合(Nothing)をリストから除去している。
+
+* チェック関数
+
+コードとしては単純な再帰のほうがわかりやすいが、
+単純な再帰とするとO(2^n)時間がかかってしまう。
+今回の場合、case7において時間がかかりすぎてしまった。
+そのためアルゴリズムに工夫が必要だ。
+
+最終的な構成としては互いに相手を呼びあう再帰的な形とした。
+単一の値を扱う関数とその値のリストを扱う関数とが互いを呼びあうという構成は
+Haskellにおいてしばしば現われるパターンである。
+
+check, check1のふたつの関数は
+単一のMaze型かそのリストを扱うかという以外は同じ目的の関数である。
+チェック済みの座標の履歴とMaze型の値を取りもしもゴールできたならばNothingを、
+そうでなければチェック済みの座標を返す。
+ここでNothingが成功をJust ... が失敗を表現している点に注意する。
+このようになるのは「成功」の場合には追加の情報が不要であるためだ。
+
+check関数はcheck1関数をリストの要素ひとつひとつに適用していく関数である。
+check1 h m >>= (`check` ms)はcheck1関数の返り値がNothingであればそこで終了し、
+全体としてもNothingとなる。
+Nothingでない場合、返された「チェック済みの座標のリスト」を入手して、
+次のMaze型の値を試す((`check` ms))。
+(`check` ms)は\h' -> check h' msのことである。
+
+check1関数はMaze型の値がゴールに到着した状態(goal m)であればNothing値を返す。
+そうでない場合、現在地を履歴に加え(p : h)、次の状態(step m)のリストに対して、
+check関数を適用する。
+このとき、チェック済みの座標を持つMaze型の値をフィルターアウトしている
+((\(Maze q _ _) -> q `notElem` h) `filter`)。
+
+(main関数)
+
+main関数は単純だ。
+とくに意味はないがpossibleとimpossibleのpossible部分をDRYしてみた。
+
+【任意】もし企業からのスカウトメールがきたらどのくらい積極的にアクションすると思いますか？下記の3つから選んでお答えください。
+ A.積極的に会ってみたいと思う
+ B.社名や条件次第では会ってみたいと思う
+ C.よほどのことがない限り返信しない
+
+B
+
+【必須】あなたが書いたコードを貼り付けてください。未記入の場合は評価できません。
+コードが完全な形（そのままコンパイル・実行）できるものでない場合は程度に応じて減点の対象となります。
+
+import Control.Applicative
+import Control.Arrow (first, second)
+import Control.Monad
+import Data.Maybe
+
+main :: IO ()
+main = interact $ (++ "possible\n") . ifte "" "im" . check1 [] . start
+	where ifte x _ Nothing = x; ifte _ y _ = y
+
+check :: [(Int, Int)] -> [Maze] -> Maybe [(Int, Int)]
+check h [] = Just h
+check h (m : ms) = check1 h m >>= (`check` ms)
+
+check1 :: [(Int, Int)] -> Maze -> Maybe [(Int, Int)]
+check1 h m | goal m = Nothing
+check1 h m@(Maze p _ _) =
+	check (p : h) $ (\(Maze q _ _) -> q `notElem` h) `filter` step m
+
+data Maze = Maze (Int, Int) ABC Map deriving Show
+
+start :: String -> Maze
+start s = Maze (0, 0) (char m) m where m = readMap s
+
+goal :: Maze -> Bool
+goal (Maze _ _ m) = bottomRight m
+
+step :: Maze -> [Maze]
+step = flip mapMaybe [goUp, goDown, goLeft, goRight] . flip ($)
+
+goUp, goDown, goLeft, goRight :: Maze -> Maybe Maze
+goUp = go up $ first pred
+goDown = go down $ first succ
+goLeft = go left $ second pred
+goRight = go right $ second succ
+
+go :: (Map -> Maybe Map) -> ((Int, Int) -> (Int, Int)) -> Maze -> Maybe Maze
+go d cp (Maze p c m) = do
+	m' <- d m
+	let c' = char m'
+	guard $ c' == next c
+	return $ Maze (cp p) c' m'
+
+data ABC = A | B | C deriving (Show, Eq)
+
+readABC :: Char -> ABC
+readABC 'A' = A
+readABC 'B' = B
+readABC 'C' = C
+readABC _ = error "readABC: error"
+
+next :: ABC -> ABC
+next A = B
+next B = C
+next C = A
+
+data Map = Map [([ABC], [ABC])] [([ABC], [ABC])] deriving Show
+
+readMap :: String -> Map
+readMap = uncurry Map . ((,) []) . map (((,) []) . (map readABC)) . lines
+
+bottomRight :: Map -> Bool
+bottomRight (Map us [d]) = all ((== 1) . length . snd) $ d : us
+bottomRight _ = False
+
+char :: Map -> ABC
+char (Map _ ((_, c : _) : _)) = c
+char _ = error "char: bad Map"
+
+up, down, left, right :: Map -> Maybe Map
+up (Map us ds) = uncurry Map <$> backward us ds
+down (Map us ds) = uncurry Map <$> foreward us ds
+left (Map us ds) =
+	Map <$> mapM (uncurry backward) us <*> mapM (uncurry backward) ds
+right (Map us ds) =
+	Map <$> mapM (uncurry foreward) us <*> mapM (uncurry foreward) ds
+
+foreward, backward :: [a] -> [a] -> Maybe ([a], [a])
+foreward _ [] = Nothing
+foreward _ [_] = Nothing
+foreward bs (f : fs) = Just (f : bs, fs)
+backward [] _ = Nothing
+backward (b : bs) fs = Just (bs, b : fs)

@@ -1,0 +1,61 @@
+※これは解答用テキストファイルです。
+
+■求めた答えを書いてください
+記入例）
+12345通り
+
+あなたの解答)
+1694通り
+
+
+
+【必須】使用言語・動作環境について
+(1)言語の種類を記入してください。未記入の場合、減点となります。
+
+Haskell
+
+(2)コンパイラ／インタプリタの名称・バージョン情報を記入してください。未記入の場合、減点となります。
+
+The Glorious Glasgow Haskell Compilation System, version 7.6.3
+
+【必須】プログラムの特長・工夫した点等、アピールポイントについて。
+あなたが書いたコードの内容や工夫した点をわかりやすく説明してください。未記入の場合、大幅な減点となります。
+
+
+
+【任意】もし企業からのスカウトメールがきたらどのくらい積極的にアクションすると思いますか？下記の3つから選んでお答えください。
+ A.積極的に会ってみたいと思う
+ B.社名や条件次第では会ってみたいと思う
+ C.よほどのことがない限り返信しない
+
+(B)
+
+【必須】あなたが書いたコードを貼り付けてください。未記入の場合は評価できません。
+コードが完全な形（そのままコンパイル・実行）できるものでない場合は程度に応じて減点の対象となります。
+
+import Data.List
+
+data Card = Card Bool Int deriving (Show, Eq)
+
+cards :: [Int] -> [Card]
+cards = map (Card True)
+
+rev :: Card -> Card
+rev (Card b n) = Card (not b) n
+
+upright :: Card -> Bool
+upright (Card b _) = b
+
+turn1 :: [Card] -> [Card]
+turn1 (c@(Card _ n) : cs) =
+	rev `map` (take (n - 1) cs) ++ drop (n - 1) cs ++ [rev c]
+
+check :: [[Card]] -> [[Card]] -> Bool
+check pcss (cs : css)
+	| all (not . upright) cs = True
+	| cs `elem` pcss = False
+	| otherwise = check (cs : pcss) css
+
+main :: IO ()
+main = print . length
+	. filter (check [] . iterate turn1 . cards) $ permutations [1 .. 7]
