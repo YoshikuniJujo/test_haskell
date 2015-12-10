@@ -1,0 +1,13 @@
+% family.txt
+
+mother_of(sazae, tarao).
+
+mother_of(fune, sazae).
+father_of(namihei, sazae).
+father_of(namihei, katsuo).
+father_of(namihei, wakame).
+
+parent_of(X, Y) :- father_of(X, Y).
+parent_of(X, Y) :- mother_of(X, Y).
+
+grandparent_of(X, Z) :- parent_of(X, Y), parent_of(Y, Z).

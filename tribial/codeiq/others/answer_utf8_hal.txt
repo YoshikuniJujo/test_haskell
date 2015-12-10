@@ -1,0 +1,15 @@
+・使用した言語
+
+Haskell
+
+・ソースコード
+
+import Data.Char
+
+main :: IO ()
+main = putStrLn $ map chr
+	[69, 103, 103, 115, 39, 110, 32, 84, 104, 105, 110, 103, 115]
+
+・答え（ハルとの待ち合わせ場所）
+
+Eggs'n Things

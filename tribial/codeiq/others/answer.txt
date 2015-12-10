@@ -1,0 +1,57 @@
+※これは解答用テキストファイルです。
+
+■2桁の整数を「2進数で表した時」と「2進化10進数で表した時」に、
+ビット列に含まれる「1」の数が等しいものがいくつあるかを求めてください。未記入の場合は大幅な減点となります。
+記入例）
+10個
+
+あなたの解答）
+20個
+
+
+
+■使用言語・動作環境について
+(1)言語の種類を記入してください。未記入の場合、減点となります。
+
+Haskell
+
+(2)コンパイラ／インタプリタの名称・バージョン情報を記入してください。未記入の場合、減点となります。
+
+
+
+■プログラムの特長・工夫した点等、アピールポイントについて。
+あなたが書いたコードの内容や工夫した点をわかりやすく説明してください。
+未記入の場合や「特になし」のような記述は、大幅な減点となります。
+
+
+
+■もし企業からのスカウトメールがきたらどのくらい積極的にアクションすると思いますか？任意でお答えください。
+「積極的に会ってみたいと思う」「社名や条件次第では会ってみたいと思う」「よほどのことがない限り返信しない」、他ありましたら記入してください。
+
+
+
+■あなたが書いたコードを貼り付けてください。未記入の場合は評価できません。
+
+
+
+The Glorious Glasgow Haskell Compilation System, version 7.6.3
+import Data.List
+import Data.Bits
+
+digits :: Int -> [[Int]]
+digits n = [ d : ds | d <- [1 .. 9], ds <- dgt (n - 1) ]
+	where
+	dgt k | k < 1 = [[]]
+	dgt k = [ d : ds | d <- [0 .. 9], ds <- dgt (k - 1) ]
+
+uncons :: Int -> Maybe (Int, Int)
+uncons 0 = Nothing
+uncons n = Just (n .&. 1, n `shiftR` 1)
+
+check :: [Int] -> Bool
+check ds = sum (concatMap (unfoldr uncons) ds)
+	== sum (unfoldr uncons $ foldl' ((+) . (* 10)) 0 ds)
+
+main :: IO ()
+main = print . length . filter check $ digits 2
+-- main = putStr . unlines . map (concatMap show) . filter check $ digits 2
