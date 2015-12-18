@@ -1,6 +1,7 @@
 module Books (Book(..), booklist, fromBooklist) where
 
 import Data.Maybe
+import Data.List
 import Data.Tree
 
 import Nml
@@ -25,27 +26,22 @@ books1 = "<books>" ++
 -- DECODE
 
 booklist :: String -> Maybe [Book]
-booklist s = case nml s of Just bl -> booklistNml bl; _ -> Nothing
+booklist = maybe Nothing booklistNml . nml
 
 booklistNml :: Nml -> Maybe [Book]
 booklistNml (Node "books" bl) = Just $ mapMaybe book bl
 booklistNml _ = Nothing
 
 book :: Nml -> Maybe Book
-book b@(Node "book" _) = case getValue "title" b of
-	Just t -> case getValue "author" b of
-		Just a -> Just $ Book { title = t, author = a }
-		_ -> Nothing
-	_ -> Nothing
+book b@(Node "book" _) = flip (maybe Nothing) (get "title" b) $ \t ->
+	flip (maybe Nothing) (get "author" b) $ \a ->
+		Just Book { title = t, author = a }
 book _ = Nothing
 
-getValue :: String -> Nml -> Maybe String
-getValue t b = case children t b of
-	Node _ [Node v []] : _ -> Just v
+get :: String -> Nml -> Maybe String
+get tg (Node _ cs) = case find ((== tg) . rootLabel) cs of
+	Just (Node _ [Node v []]) -> Just v
 	_ -> Nothing
-
-children :: String -> Nml -> [Nml]
-children tg (Node _ cs) = filter ((== tg) . rootLabel) cs
 
 -- ENCODE
 

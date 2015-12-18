@@ -59,6 +59,5 @@ toTokens (Node tg ns) = Open tg : concatMap toTokens ns ++ [Close tg]
 
 -- SAMPLES
 
-sample1, sample2 :: Nml
+sample1 :: Nml
 sample1 = Node "hello" [Node "world" []]
-sample2 = Node "hello" [Node "world" [], Node "and" [], Node "you" []]
