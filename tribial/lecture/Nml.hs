@@ -42,15 +42,19 @@ tag f s = case span (/= '>') s of
 fromNml :: Nml -> String
 fromNml = toString 0 . toTokens
 
+idt :: Int -> String -> String
+idt i = (replicate i '\t' ++)
+
+opn, cls :: String -> String
+opn = ('<' :) . (++ ">")
+cls = ("</" ++) . (++ ">")
+
 toString :: Int -> [Token] -> String
-toString i (Open tg : Text tx : Close tg' : ts) = replicate i '\t' ++
-	"<" ++ tg ++ ">" ++ tx ++ "</" ++ tg' ++ ">\n" ++ toString i ts
-toString i (Open tg : ts) = replicate i '\t' ++
-	"<" ++ tg ++ ">\n" ++ toString (i + 1) ts
-toString i (Close tg : ts) = replicate (i - 1) '\t' ++
-	"</" ++ tg ++ ">\n" ++ toString (i - 1) ts
-toString i (Text tx : ts) = replicate i '\t' ++
-	tx ++ "\n" ++ toString i ts
+toString i (Open tg : Text tx : Close tg' : ts) =
+	idt i $ opn tg ++ tx ++ cls tg' ++ "\n" ++ toString i ts
+toString i (Open tg : ts) = idt i $ opn tg ++ "\n" ++ toString (i + 1) ts
+toString i (Close tg : ts) = idt (i - 1) $ cls tg ++ "\n" ++ toString (i - 1) ts
+toString i (Text tx : ts) = idt i $ tx ++ "\n" ++ toString i ts
 toString _ _ = ""
 
 toTokens :: Nml -> [Token]
