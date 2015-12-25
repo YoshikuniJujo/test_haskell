@@ -7,7 +7,6 @@ import Data.List (unfoldr)
 import Data.Bits (Bits, (.|.), shiftL)
 import Data.Bool (bool)
 import qualified Data.ByteString as BS
-import qualified Data.ByteString.Lazy as LBS
 import System.IO (openBinaryFile, IOMode(..))
 import System.Environment (getArgs)
 
@@ -30,7 +29,7 @@ type Chunk = (BS.ByteString, BS.ByteString)
 chunk :: BS.ByteString -> Maybe (Maybe Chunk, BS.ByteString)
 chunk "" = Nothing
 chunk bs
-	| check (LBS.fromStrict td) c = Just (Just std, r)
+	| check td c = Just (Just std, r)
 	| otherwise = Just (Nothing, r)
 	where
 	((td, std, c), r) = (`runState` bs) $ do
