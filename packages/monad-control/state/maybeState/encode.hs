@@ -1,19 +1,24 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-import Control.Applicative
+import Control.Applicative ((<$>))
+import Control.Arrow (first)
+import Data.Bits (shiftR)
 import qualified Data.ByteString as BS
 
-import YjChunks
-import CRC2
+import qualified YjChunks as Yc
+import CRC (crc)
 
 main :: IO ()
 main = BS.writeFile "hello.yjcs" sample
 
 sample :: BS.ByteString
-Just sample = encode <$> mapM (uncurry mkYjChunk) [("YSJJ", "hello")]
+Just sample = encode <$> mapM (uncurry Yc.yjChunk) [("YSJJ", "hello")]
 
-encode :: YjChunks -> BS.ByteString
-encode = (magic `BS.append`) . BS.concat . map encode1 . (++ [dend])
+encode :: Yc.YjChunks -> BS.ByteString
+encode = (Yc.magic `BS.append`) . BS.concat . map encode1 . (++ [Yc.dend])
 
-encode1 :: YjChunk -> BS.ByteString
-encode1 yc = let (l, bs) = toByteString (fromNum 4 . crc) yc in fromNum 4 l `BS.append` bs
+encode1 :: Yc.YjChunk -> BS.ByteString
+encode1 = uncurry BS.append . first (le 4) . Yc.encode (le 4 . crc)
+	where
+	le 0 _ = ""
+	le c n = BS.cons (fromIntegral n) $ le (c - 1 :: Int) (n `shiftR` 8)

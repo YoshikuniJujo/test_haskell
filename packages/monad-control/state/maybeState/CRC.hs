@@ -2,21 +2,18 @@
 
 module CRC (check, crc) where
 
-import Control.Arrow (first, second, (&&&))
-import Data.List (unfoldr)
+import Control.Arrow (first, (&&&))
 import Data.Array (Array, (!), listArray)
 import Data.Bits (Bits, complement, xor, shiftR, testBit)
 import Data.Bool (bool)
 import Data.Word (Word8, Word32)
-import qualified Data.ByteString.Lazy as LBS (ByteString, pack, append, foldl')
+import qualified Data.ByteString as BS (ByteString, foldl')
 
-check :: LBS.ByteString -> Word32 -> Bool
-check = curry $ (== 0x2144df1c) . crc . uncurry LBS.append . second w2bs
-	where w2bs = (LBS.pack .) . flip curry (4 :: Int) . unfoldr $ \(i, n) ->
-		bool Nothing (Just . second (i - 1 ,) $ popByte n) (i > 0)
+check :: BS.ByteString -> Bool
+check = (== 0x2144df1c) . crc
 
-crc :: LBS.ByteString -> Word32
-crc = complement . LBS.foldl' st 0xffffffff
+crc :: BS.ByteString -> Word32
+crc = complement . BS.foldl' st 0xffffffff
 	where st n b = uncurry xor . first ((table !) . (`xor` b)) $ popByte n
 
 popByte :: (Integral a, Bits a) => a -> (Word8, a)
