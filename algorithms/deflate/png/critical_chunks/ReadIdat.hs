@@ -8,6 +8,7 @@ import Control.Monad (when)
 import "monads-tf" Control.Monad.State (StateT, evalStateT, put, gets)
 import Data.Bits (Bits, (.|.), shiftL)
 import Data.Bool (bool)
+import Data.Word (Word8)
 import qualified Data.ByteString as BS
 
 import CRC (check)
@@ -26,13 +27,13 @@ idat = ((BS.concat . map snd . filter ((== "IDAT") . fst) <$>) .) . evalStateT $
 
 chunk :: StateT BS.ByteString Maybe Chunk
 chunk = do
-	td <- (`item` Just) . (4 +) =<< item 4 (Just . be)
-	cs <- item 4 $ Just . be
+	td <- (`item` Just) . (4 +) =<< item 4 (Just . BS.foldl' be 0)
+	cs <- item 4 $ Just . BS.foldl' be 0
 	when (not $ check td cs) $ fail "error"
 	return $ BS.splitAt 4 td
 	where
-	be :: (Bits n, Num n) => BS.ByteString -> n
-	be = BS.foldl' (\n w -> n `shiftL` 8 .|. fromIntegral w) 0
+	be :: (Bits n, Num n) => n -> Word8 -> n
+	be = curry $ uncurry (.|.) . ((`shiftL` 8) *** fromIntegral)
 
 untilM :: (Monad m, Functor m) => (a -> Bool) -> m a -> m [a]
 untilM p m = bool (return []) <$> ((<$> untilM p m) . (:)) <*> not . p =<< m
