@@ -1,10 +1,10 @@
 {-# LANGUAGE OverloadedStrings, PackageImports #-}
 
-module ReadIdat (idat) where
+module ReadIdat (idat, item) where
 
 import Control.Applicative ((<$>), (<*>))
 import Control.Arrow ((***))
-import Control.Monad (when)
+import Control.Monad (unless)
 import "monads-tf" Control.Monad.State (StateT, evalStateT, put, gets)
 import Data.Bits (Bits, (.|.), shiftL)
 import Data.Bool (bool)
@@ -29,7 +29,7 @@ chunk :: StateT BS.ByteString Maybe Chunk
 chunk = do
 	td <- (`item` Just) . (4 +) =<< item 4 (Just . BS.foldl' be 0)
 	cs <- item 4 $ Just . BS.foldl' be 0
-	when (not $ check td cs) $ fail "error"
+	unless (check td cs) $ fail "error"
 	return $ BS.splitAt 4 td
 	where
 	be :: (Bits n, Num n) => n -> Word8 -> n

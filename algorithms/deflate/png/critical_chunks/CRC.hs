@@ -17,7 +17,7 @@ check = curry $ (== 0x2144df1c) . crc . uncurry BS.append . second w2bs
 
 crc :: BS.ByteString -> Word32
 crc = complement . BS.foldl' st 0xffffffff
-	where st n b = uncurry xor . (first $ (table !) . (`xor` b)) $ popByte n
+	where st n b = uncurry xor . first ((table !) . (`xor` b)) $ popByte n
 
 popByte :: (Integral a, Bits a) => a -> (Word8, a)
 popByte = fromIntegral &&& (`shiftR` 8)
