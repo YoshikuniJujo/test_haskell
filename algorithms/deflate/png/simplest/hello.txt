@@ -1,0 +1,11 @@
+10,10
+ffffffffffffffffffff
+ffffffff7f7fffffffff
+ffffff00000000ffffff
+ffff000000000000ffff
+ff7f0000000000007fff
+ff7f0000000000007fff
+ffff000000000000ffff
+ffffff00000000ffffff
+ffffffff7f7fffffffff
+ffffffffffffffffffff

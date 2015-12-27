@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings, PackageImports #-}
 
-module Codec where
+module Codec (encode, decode, mkImage) where
 
 import Control.Applicative
 import Control.Arrow
@@ -46,7 +46,7 @@ uncons _ = Nothing
 adler32 :: BS.ByteString -> BS.ByteString
 adler32 = BS.pack
 	. (\((a1, a0), (b1, b0)) -> [b1, b0, a1, a0])
-	. ((fromIntegral *** fromIntegral) . (`divMod` 0x100)
+	. ((fromIntegral *** fromIntegral) . (`divMod` (0x100 :: Int))
 		*** (fromIntegral *** fromIntegral) . (`divMod` 0x100))
 	. BS.foldl' (\(a, b) x ->
 		let a' = (a + fromIntegral x) `mod` 65521 in (a', (b + a') `mod` 65521)) (1, 0)
@@ -65,22 +65,25 @@ litEnd c n = fromIntegral n `BS.cons` litEnd (c - 1) (n `shiftR` 8)
 comp :: BS.ByteString -> BS.ByteString
 comp = BS.map complement
 
-sample :: PNG
-sample = PNG {
-	header = sampleIHDR,
+mkImage :: Int -> Int -> [BS.ByteString] -> PNG
+mkImage w h i = PNG {
+	header = sampleIHDR w h,
 	zlib = (Zlib.Deflate 32768, Zlib.FLvl 0, Nothing),
-	body = noCompress $
-		"\x00\xff\xff\xff\xff\xff" `BS.append`
-		"\x00\xff\xff\x00\xff\xff" `BS.append`
-		"\x00\xff\x00\x00\x00\xff" `BS.append`
-		"\x00\xff\xff\x00\xff\xff" `BS.append`
-		"\x00\xff\xff\xff\xff\xff"
+	body = noCompress . foldl' BS.append "" $ map (0 `BS.cons`) i
 	}
 
-sampleIHDR :: IHDR
-sampleIHDR = IHDR {
-	width = 5,
-	height = 5,
+sample :: [BS.ByteString]
+sample = [
+		"\xff\xff\xff\xff\xff",
+		"\xff\xff\x00\xff\xff",
+		"\xff\x00\x00\x00\xff",
+		"\xff\xff\x00\xff\xff",
+		"\xff\xff\xff\xff\xff" ]
+
+sampleIHDR :: Int -> Int -> IHDR
+sampleIHDR w h = IHDR {
+	width = w,
+	height = h,
 	bitDepth = 8,
 	colorType = NoPalette Grayscale NoAlpha,
 	compressionMethod = 0,

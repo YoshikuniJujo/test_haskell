@@ -16,7 +16,7 @@ import qualified Data.ByteString as BS
 import Chunks
 
 fromChunk :: Chunk -> Maybe IHDR
-fromChunk (Chunk "IHDR" c) = (`evalStateT` c) $ do
+fromChunk (Chunk "IHDR" bs0) = (`evalStateT` bs0) $ do
 	w <- item 4 $ Just . BS.foldl' be 0
 	h <- item 4 $ Just . BS.foldl' be 0
 	d <- item 1 $ \bs -> case BS.uncons bs of
@@ -49,19 +49,19 @@ fromChunk (Chunk "IHDR" c) = (`evalStateT` c) $ do
 fromChunk _ = Nothing
 
 toChunk :: IHDR -> Chunk
-toChunk i = Chunk {
+toChunk ih = Chunk {
 	typ = "IHDR",
-	dat = be 4 (width i)
-		`BS.append` be 4 (height i)
-		`BS.append` be 1 (bitDepth i)
-		`BS.append` be 1 (fromColorType $ colorType i)
-		`BS.append` be 1 (compressionMethod i)
-		`BS.append` be 1 (filterMethod i)
-		`BS.append` be 1 (interlaceMethod i)
+	dat = be 4 (width ih)
+		`BS.append` be 4 (height ih)
+		`BS.append` be 1 (bitDepth ih)
+		`BS.append` be 1 (fromColorType $ colorType ih)
+		`BS.append` be 1 (compressionMethod ih)
+		`BS.append` be 1 (filterMethod ih)
+		`BS.append` be 1 (interlaceMethod ih)
 	}
 	where
 	be :: (Bits a, Integral a) => Int -> a -> BS.ByteString
-	be n = ((BS.pack . reverse) .) . flip curry n . unfoldr $ \(i, n) ->
+	be n0 = ((BS.pack . reverse) .) . flip curry n0 . unfoldr $ \(i, n) ->
 		bool Nothing (Just . second (i - 1 ,) $ popByte n) (i > 0)
 
 popByte :: (Integral a, Bits a) => a -> (Word8, a)
