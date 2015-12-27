@@ -17,6 +17,17 @@ data FDct = FDct Adler32 deriving Show
 
 data Adler32 = Adler32 Word32 deriving Show
 
+header :: StateT BS.ByteString Maybe (Cmf, FLvl, Maybe FDct)
+header = do
+	(c, w) <- item 1 cmf
+	(b, l) <- item 1 . flg $ fromIntegral w
+	md <- if b
+		then (Just <$>) . item 4
+			$ ((Just . FDct . Adler32) .) . flip BS.foldl' 0 . curry
+			$ uncurry (.|.) . ((`shiftL` 8) *** fromIntegral)
+		else return Nothing
+	return (c, l, md)
+
 cmf :: BS.ByteString -> Maybe (Cmf, Word8)
 cmf bs = case BS.uncons bs of
 	Just (w, "")
@@ -30,14 +41,3 @@ flg c bs = case BS.uncons bs of
 		0 -> Just (w `testBit` 5, FLvl $ w `shiftR` 6)
 		_ -> Nothing
 	_ -> Nothing
-
-header :: StateT BS.ByteString Maybe (Cmf, FLvl, Maybe FDct)
-header = do
-	(c, w) <- item 1 cmf
-	(b, l) <- item 1 . flg $ fromIntegral w
-	md <- if b
-		then (Just <$>) . item 4
-			$ ((Just . FDct . Adler32) .) . flip BS.foldl' 0 . curry
-			$ uncurry (.|.) . ((`shiftL` 8) *** fromIntegral)
-		else return Nothing
-	return (c, l, md)
