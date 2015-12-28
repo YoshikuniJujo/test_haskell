@@ -1,9 +1,11 @@
 {-# LANGUAGE OverloadedStrings, PackageImports #-}
 
-module Item (item, byte) where
+module Item (item, byte, untilM) where
 
+import Control.Applicative
 import Control.Arrow
 import "monads-tf" Control.Monad.State
+import Data.Bool
 import Data.Word
 import qualified Data.ByteString as BS
 
@@ -13,3 +15,6 @@ item l f = gets (BS.splitAt l) >>=
 
 byte :: BS.ByteString -> Maybe Word8
 byte bs = case BS.uncons bs of Just (w, "") -> Just w; _ -> Nothing
+
+untilM :: (Monad m, Functor m) => (a -> Bool) -> m a -> m [a]
+untilM p m = bool (return []) <$> ((<$> untilM p m) . (:)) <*> not . p =<< m
