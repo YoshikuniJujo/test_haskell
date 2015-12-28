@@ -29,7 +29,7 @@ image w h i = PNG {
 	header = IHDR {
 		width = w, height = h, bitDepth = 8,
 		colorType = NoPalette Grayscale NoAlpha,
-		compressionMethod = 0, filterMethod = 0, interlaceMethod = 0 },
+		compMethod = 0, filterMethod = 0, ilaceMethod = 0 },
 	zlib = (Deflate 32768, FLvl 0, Nothing),
 	body = noCompress . foldl' BS.append "" $ map (0 `BS.cons`) i }
 

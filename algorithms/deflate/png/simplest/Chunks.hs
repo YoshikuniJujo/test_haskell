@@ -1,6 +1,6 @@
 {-# LANGUAGE PackageImports, TupleSections, OverloadedStrings #-}
 
-module Chunks (Chunks, Chunk(..), frPng, toPng, idat, item) where
+module Chunks (Chunks, Chunk(..), frPng, toPng, idat) where
 
 import Control.Applicative
 import Control.Arrow
