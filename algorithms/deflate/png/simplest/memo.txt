@@ -1,4 +1,3 @@
 refactoring
 
-* Item
 * Bits

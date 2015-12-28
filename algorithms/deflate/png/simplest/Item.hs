@@ -2,12 +2,12 @@
 
 module Item (item, byte, untilM) where
 
-import Control.Applicative
-import Control.Arrow
-import "monads-tf" Control.Monad.State
-import Data.Bool
-import Data.Word
-import qualified Data.ByteString as BS
+import Control.Applicative ((<$>), (<*>))
+import Control.Arrow ((***))
+import "monads-tf" Control.Monad.State (StateT, gets, put)
+import Data.Bool (bool)
+import Data.Word (Word8)
+import qualified Data.ByteString as BS (ByteString, uncons, splitAt)
 
 item :: Int -> (BS.ByteString -> Maybe a) -> StateT BS.ByteString Maybe a
 item l f = gets (BS.splitAt l) >>=
