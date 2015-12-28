@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings, TupleSections, PackageImports #-}
 
 module IHDR (
-	IHDR(..), ColorType(..), fromChunk, toChunk,
+	IHDR(..), ColorType(..), frChunk, toChunk,
 	HasColor(..), HasAlpha(..)
 	) where
 
@@ -15,8 +15,8 @@ import qualified Data.ByteString as BS
 
 import Chunks
 
-fromChunk :: Chunk -> Maybe IHDR
-fromChunk (Chunk "IHDR" bs0) = (`evalStateT` bs0) $ do
+frChunk :: Chunk -> Maybe IHDR
+frChunk (Chunk "IHDR" bs0) = (`evalStateT` bs0) $ do
 	w <- item 4 $ Just . BS.foldl' be 0
 	h <- item 4 $ Just . BS.foldl' be 0
 	d <- item 1 $ \bs -> case BS.uncons bs of
@@ -46,7 +46,7 @@ fromChunk (Chunk "IHDR" bs0) = (`evalStateT` bs0) $ do
 	where
 	be :: (Bits n, Num n) => n -> Word8 -> n
 	be = curry $ uncurry (.|.) . ((`shiftL` 8) *** fromIntegral)
-fromChunk _ = Nothing
+frChunk _ = Nothing
 
 toChunk :: IHDR -> Chunk
 toChunk ih = Chunk {

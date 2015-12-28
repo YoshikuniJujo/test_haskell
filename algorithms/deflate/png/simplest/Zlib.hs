@@ -1,13 +1,16 @@
 {-# LANGUAGE OverloadedStrings, PackageImports #-}
 
-module Zlib (header, encodeHeader, Cmf(..), FLvl(..), FDct(..)) where
+module Zlib (header, encHeader, Header, Cmf(..), FLvl(..), FDct(..)) where
 
 import Control.Applicative
 import Control.Arrow
 import "monads-tf" Control.Monad.State
-import Data.Bits
 import Data.Word
 import qualified Data.ByteString as BS
+
+import Bits
+
+type Header = (Cmf, FLvl, Maybe FDct)
 
 data Cmf = Deflate Int | CmfRaw Word8 deriving Show
 
@@ -17,21 +20,20 @@ data FDct = FDct Adler32 deriving Show
 
 data Adler32 = Adler32 Word32 deriving Show
 
-header :: StateT BS.ByteString Maybe (Cmf, FLvl, Maybe FDct)
-header = do
+header :: BS.ByteString -> Maybe (Header, BS.ByteString)
+header = runStateT $ do
 	(c, w) <- item 1 cmf
 	(b, l) <- item 1 . flg $ fromIntegral w
 	md <- if b
 		then (Just <$>) . item 4
-			$ ((Just . FDct . Adler32) .) . flip BS.foldl' 0 . curry
-			$ uncurry (.|.) . ((`shiftL` 8) *** fromIntegral)
+			$ (Just . FDct . Adler32) . beFromByteString
 		else return Nothing
 	return (c, l, md)
 
-encodeHeader :: (Cmf, FLvl, Maybe FDct) -> BS.ByteString
-encodeHeader (c, l, Nothing) = let (cbs, cw) = encodeCmf c in
+encHeader :: Header -> BS.ByteString
+encHeader (c, l, Nothing) = let (cbs, cw) = encodeCmf c in
 	cbs `BS.append` encodeFlg cw l
-encodeHeader _ = error "Zlib.encodeHeader: not implemented"
+encHeader _ = error "Zlib.encHeader: not implemented"
 
 cmf :: BS.ByteString -> Maybe (Cmf, Word8)
 cmf bs = case BS.uncons bs of
