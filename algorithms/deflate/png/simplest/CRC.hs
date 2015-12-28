@@ -2,6 +2,7 @@
 
 module CRC (check, calc) where
 
+import Control.Applicative ((<$>))
 import Control.Arrow (first, second)
 import Data.Array (Array, (!), listArray)
 import Data.Bool (bool)
@@ -15,11 +16,9 @@ check = curry $
 	(== 0x2144df1c) . calc . uncurry BS.append . second (leToByteString 4)
 
 calc :: BS.ByteString -> Word32
-calc = complement . BS.foldl' st 0xffffffff
-	where st n b = uncurry xor . first ((table !) . (`xor` b)) $ popByte n
+calc = complement . BS.foldl' (flip st) 0xffffffff
+	where st b = uncurry xor . first ((table !) . (`xor` b)) . popByte
 
 table :: Array Word8 Word32
-table = listArray (0, 255) $ map crc8 [0 .. 255]
-	where
-	crc8 = (!! 8) . iterate crc1
-	crc1 = uncurry (bool id (`xor` 0xedb88320)) . popBit
+table = listArray (0, 255) . (<$> [0 .. 255]) $ (!! 8)
+	. iterate (uncurry (bool id (`xor` 0xedb88320)) . popBit)

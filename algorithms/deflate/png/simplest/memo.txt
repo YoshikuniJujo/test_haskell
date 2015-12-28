@@ -1,5 +1,4 @@
 refactoring
 
-* CRC
 * Item
 * Bits
