@@ -8,28 +8,28 @@ import Data.Word (Word32)
 import qualified Data.ByteString as BS
 
 import Zlib (Header, Cmf(..), FLvl(..), decHeader, encHeader)
-import IHDR (
-	IHDR(..), ColorType(..), HasColor(..), HasAlpha(..), toChunk, frChunk)
-import Chunks (Chunk(..), idat, toPng, frPng)
+import qualified IHDR as H (
+	IHDR(..), ColorType(..), HasColor(..), HasAlpha(..), encode, decode)
+import qualified Chunks as C (Chunk(..), idat, encode, decode)
 import Bits (complement, (.|.), shiftL, leToByteString, beToByteString)
 
-data PNG = PNG { header :: IHDR, zlib :: Header, body :: BS.ByteString }
+data PNG = PNG { header :: H.IHDR, zlib :: Header, body :: BS.ByteString }
 	deriving Show
 
 decode :: BS.ByteString -> Maybe PNG
-decode = ((\(h, d) -> uncurry . PNG <$> frChunk h <*> decHeader (idat d)) =<<)
-	. (uncons =<<) . frPng
+decode = ((\(h, d) -> uncurry . PNG <$> H.decode h <*> decHeader (C.idat d)) =<<)
+	. (uncons =<<) . C.decode
 
 encode :: PNG -> BS.ByteString
-encode p = toPng . (toChunk (header p) :) . (: []) . Chunk "IDAT" $
+encode p = C.encode . (H.encode (header p) :) . (: []) . C.Chunk "IDAT" $
 	encHeader (zlib p) `BS.append` body p
 
 image :: Int -> Int -> [BS.ByteString] -> PNG
 image w h i = PNG {
-	header = IHDR {
-		width = w, height = h, bitDepth = 8,
-		colorType = NoPalette Grayscale NoAlpha,
-		compMethod = 0, filterMethod = 0, ilaceMethod = 0 },
+	header = H.IHDR {
+		H.width = w, H.height = h, H.bitDepth = 8,
+		H.colorType = H.NoPalette H.Grayscale H.NoAlpha,
+		H.compMethod = 0, H.filterMethod = 0, H.ilaceMethod = 0 },
 	zlib = (Deflate 32768, FLvl 0, Nothing),
 	body = noCompress . foldl' BS.append "" $ map (0 `BS.cons`) i }
 

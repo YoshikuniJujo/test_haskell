@@ -4,13 +4,12 @@ module Bits (
 	Bits, complement, (.&.), (.|.), xor, shiftL, shiftR, testBit,
 	popBit, popBits, popByte,
 	beToByteString, beFromByteString,
-	leToByteString) where
+	leToByteString ) where
 
 import Control.Applicative ((<$>), (<*>))
 import Control.Arrow ((&&&), (***))
 import Data.Bits (Bits, complement, testBit, (.&.), (.|.), xor, shiftL, shiftR)
 import Data.Word (Word8)
-
 import qualified Data.ByteString as BS (ByteString, cons, foldl')
 
 beToByteString :: (Integral a, Bits a) => Int -> a -> BS.ByteString
