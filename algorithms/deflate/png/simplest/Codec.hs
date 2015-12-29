@@ -7,22 +7,22 @@ import Data.List (foldl')
 import Data.Word (Word32)
 import qualified Data.ByteString as BS
 
-import Zlib (Header, Cmf(..), FLvl(..), decHeader, encHeader)
+import qualified Zlib as Z (Header, Cmf(..), FLvl(..), decode, encode)
 import qualified IHDR as H (
 	IHDR(..), ColorType(..), HasColor(..), HasAlpha(..), encode, decode)
 import qualified Chunks as C (Chunk(..), idat, encode, decode)
 import Bits (complement, (.|.), shiftL, leToByteString, beToByteString)
 
-data PNG = PNG { header :: H.IHDR, zlib :: Header, body :: BS.ByteString }
+data PNG = PNG { header :: H.IHDR, zlib :: Z.Header, body :: BS.ByteString }
 	deriving Show
 
 decode :: BS.ByteString -> Maybe PNG
-decode = ((\(h, d) -> uncurry . PNG <$> H.decode h <*> decHeader (C.idat d)) =<<)
+decode = ((\(h, d) -> uncurry . PNG <$> H.decode h <*> Z.decode (C.idat d)) =<<)
 	. (uncons =<<) . C.decode
 
 encode :: PNG -> BS.ByteString
 encode p = C.encode . (H.encode (header p) :) . (: []) . C.Chunk "IDAT" $
-	encHeader (zlib p) `BS.append` body p
+	Z.encode (zlib p) `BS.append` body p
 
 image :: Int -> Int -> [BS.ByteString] -> PNG
 image w h i = PNG {
@@ -30,7 +30,7 @@ image w h i = PNG {
 		H.width = w, H.height = h, H.bitDepth = 8,
 		H.colorType = H.NoPalette H.Grayscale H.NoAlpha,
 		H.compMethod = 0, H.filterMethod = 0, H.ilaceMethod = 0 },
-	zlib = (Deflate 32768, FLvl 0, Nothing),
+	zlib = (Z.Deflate 32768, Z.FLvl 0, Nothing),
 	body = noCompress . foldl' BS.append "" $ map (0 `BS.cons`) i }
 
 noCompress :: BS.ByteString -> BS.ByteString
