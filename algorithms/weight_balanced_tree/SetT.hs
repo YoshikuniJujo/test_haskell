@@ -1,5 +1,7 @@
 module SetT (Set, empty, member, insert, delete) where
 
+import Control.Arrow (second)
+
 type Set a = WBT a
 
 data WBT a = Empty | Bin {
@@ -17,7 +19,7 @@ weight Empty = 0
 weight t = _weight t
 
 bin :: a -> WBT a -> WBT a -> WBT a
-bin x t1 t2 = Bin (weight t1 + weight t2 + 1) x t1 t2
+bin x l r = Bin (weight l + weight r + 1) x l r
 
 member :: Ord a => a -> WBT a -> Bool
 member x (Bin _ x0 l r)
@@ -30,16 +32,10 @@ delta, ratio :: Int
 delta = 3
 ratio = 2
 
-rotateL, rotateR :: WBT a -> WBT a
-rotateL (Bin _ x lx (Bin _ y ly ry)) = bin y (bin x lx ly) ry
-rotateL _ = error "bad"
-rotateR (Bin _ x (Bin _ y ly ry) rx) = bin y ly (bin x ry rx)
-rotateR _ = error "bad"
-
 balance :: WBT a -> WBT a
 balance Empty = Empty
 balance t@(Bin _ x l r)
-	| weight l + weight r <= 1 = t
+	| weight l + weight r < 2 = t
 	| weight r > delta * weight l =
 		if weight (left r) >= ratio * weight (right r)
 			then rotateL $ bin x l (rotateR r)
@@ -49,6 +45,12 @@ balance t@(Bin _ x l r)
 			then rotateR $ bin x (rotateL l) r
 			else rotateR t
 	| otherwise = t
+
+rotateL, rotateR :: WBT a -> WBT a
+rotateL (Bin _ x lx (Bin _ y ly ry)) = bin y (bin x lx ly) ry
+rotateL _ = error "rotateL: can't rotate"
+rotateR (Bin _ x (Bin _ y ly ry) rx) = bin y ly (bin x ry rx)
+rotateR _ = error "rotateR: can't rotate"
 
 insert :: Ord a => a -> WBT a -> WBT a
 insert x Empty = bin x Empty Empty
@@ -75,11 +77,9 @@ glue l r
 
 deleteFindMin, deleteFindMax :: WBT a -> (a, WBT a)
 deleteFindMin (Bin _ x Empty r) = (x, r)
-deleteFindMin (Bin _ x l r) =
-	let (xm, l') = deleteFindMin l in (xm, balance $ bin x l' r)
-deleteFindMin _ = error "bad"
+deleteFindMin (Bin _ x l r) = (balance . flip (bin x) r) `second` deleteFindMin l
+deleteFindMin _ = error "deleteFineMin: Empty"
 
 deleteFindMax (Bin _ x l Empty) = (x, l)
-deleteFindMax (Bin _ x l r) =
-	let (xm, r') = deleteFindMax r in (xm, balance $ bin x l r')
-deleteFindMax _ = error "bad"
+deleteFindMax (Bin _ x l r) = (balance . bin x l) `second` deleteFindMax r
+deleteFindMax _ = error "deleteFindMax: Empty"
