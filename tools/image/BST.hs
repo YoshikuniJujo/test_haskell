@@ -1,4 +1,4 @@
-module BST (BST, empty, insert, null, value, left, right) where
+module BST (BST, empty, insert, insertBy, null, value, left, right) where
 
 import Prelude hiding (null)
 
@@ -6,6 +6,13 @@ data BST a = Bin a (BST a) (BST a) | Tip deriving Show
 
 empty :: BST a
 empty = Tip
+
+insertBy :: (a -> a -> Ordering) -> a -> BST a -> BST a
+insertBy cmp x t@(Bin x0 l r) = case x `cmp` x0 of
+	LT -> Bin x0 (insertBy cmp x l) r
+	GT -> Bin x0 l (insertBy cmp x r)
+	_ -> t
+insertBy _ x _ = Bin x Tip Tip
 
 insert :: Ord a => a -> BST a -> BST a
 insert x t@(Bin x0 l r)
