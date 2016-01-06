@@ -13,7 +13,7 @@ main = withSQLite "test.sqlite3" $ \db -> do
 		bindN sm 2 "hoge"
 		step sm
 	withPrepared db "SELECT * FROM greeting" $ \sm -> do
---		step sm
+		step sm
 		column sm 0 >>= (print :: Int -> IO ())
 		column sm 1 >>= (print :: String -> IO ())
 		column sm 2 >>= (print :: String -> IO ())
