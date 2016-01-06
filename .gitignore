@@ -213,6 +213,10 @@ a.out
 
 /tools/make_license/result_1.txt
 
+/features/ffi/exception/c/script
+/features/ffi/exception/hello/Constants.hs
+/features/ffi/exception/hello/Constants_out.hs
+
 /features/ffi/hello_hc/add3_hs
 /features/ffi/hello_hc/useAdd3_c
 /features/ffi/hello_ch/so_mul8
