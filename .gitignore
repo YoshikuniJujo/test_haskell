@@ -181,8 +181,12 @@ a.out
 /tools/image/bst_15.svg
 /tools/image/bst_wikipedia.svg
 
+/tribial/koch.svg
+
 /tribial/sudoku/sudoku
 /tribial/sudoku/books/sudoku1
+
+/tribial/codeiq/secondequation/simple
 
 /algorithms/pearls/minfree/simple
 /algorithms/pearls/minfree/array
@@ -202,8 +206,6 @@ a.out
 
 /features/ffi/array/useProcArray
 /features/ffi/array/use_proc_array
-
-/tribial/codeiq/secondequation/simple
 
 /features/ffi/hello_hc/useAdd3
 
