@@ -2,7 +2,6 @@ module SetBM (Set, empty, member, insert) where
 
 import Control.Applicative ((<$>))
 import Control.Arrow
--- import Data.Maybe
 
 type Set = Tree ()
 
@@ -15,12 +14,20 @@ empty = Zero ()
 class IsNode a where
 	memberN :: Int -> a -> Bool
 	insertN :: Int -> a -> Either a (a, Int, a)
+	deleteN :: Int -> Node a -> Either (Node a) a
 	popMinN :: Node a -> (Int, Either (Node a) a)
 	popMaxN :: Node a -> (Int, Either (Node a) a)
 
 instance IsNode () where
 	memberN _ _ = False
 	insertN a _ = Right ((), a, ())
+	deleteN a t@(Node2 _ b _)
+		| a == b = Right ()
+		| otherwise = Left t
+	deleteN a t@(Node3 _ b _ c _)
+		| a == b = Left $ Node2 () c ()
+		| a == c = Left $ Node2 () b ()
+		| otherwise = Left t
 	popMinN (Node2 _ a _) = (a, Right ())
 	popMinN (Node3 _ a _ b _) = (a, Left $ Node2 () b ())
 	popMaxN (Node2 _ a _) = (a, Right ())
@@ -60,6 +67,21 @@ instance IsNode a => IsNode (Node a) where
 			Left r' -> Left $ Node3 l b m c r'
 			Right (m', d, r') ->
 				Right (Node2 l b m, c, Node2 m' d r')
+	deleteN a (Node2 l b r)
+		| a < b = case deleteN a l of
+			Left l' -> Left $ Node2 l' b r
+			Right l' -> case r of
+				Node2 m c r' -> Right $ Node3 l' b m c r'
+				Node3 m c m' d r' -> Left $
+					Node2 (Node2 l' b m) c (Node2 m' d r')
+	deleteN a (Node3 l b m c r)
+		| a < b = case deleteN a l of
+			Left l' -> Left $ Node3 l' b m c r
+			Right l' -> case m of
+				Node2 m' d m'' -> Left $
+					Node2 (Node3 l' b m' d m'') c r
+				Node3 m' d m'' e m''' -> Left $
+					Node3 (Node2 l' b m') d (Node2 m'' e m''') c r
 	popMinN (Node2 l a r) = case popMinN l of
 		(n, Left l') -> (n, Left $ Node2 l' a r)
 		(n, Right l') -> case r of
@@ -96,6 +118,12 @@ insert a (Zero n) = case insertN a n of
 	Left n' -> Zero n'
 	Right (l, b, r) -> Succ . Zero $ Node2 l b r
 insert a (Succ t) = Succ $ insert a t
+
+delete :: IsNode a => Int -> Tree a -> Tree a
+delete a (Succ (Zero n)) = case deleteN a n of
+	Left n' -> Succ $ Zero n'
+	Right n' -> Zero n'
+delete a (Succ t) = Succ $ delete a t
 
 popMin :: IsNode a => Tree a -> Maybe (Int, Tree a)
 popMin (Succ (Zero n)) = Just $ case popMinN n of
