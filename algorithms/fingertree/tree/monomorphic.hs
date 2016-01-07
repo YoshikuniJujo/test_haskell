@@ -1,30 +1,30 @@
 module SetBM (Set, empty, member, insert) where
 
+import Control.Applicative ((<$>))
+import Control.Arrow
 -- import Data.Maybe
 
-data Set a = Zero a | Succ (Set (Node a)) deriving Show
+type Set = Tree ()
+
+data Tree a = Zero a | Succ (Tree (Node a)) deriving Show
 data Node a = Node2 a Int a | Node3 a Int a Int a deriving Show
 
-empty :: Set ()
+empty :: Tree ()
 empty = Zero ()
 
 class IsNode a where
 	memberN :: Int -> a -> Bool
 	insertN :: Int -> a -> Either a (a, Int, a)
---	deleteN :: Int -> a -> Either a 
---	popMinN :: Node a -> Maybe (Int, Either (Node a) a)
---	maxN :: a -> Maybe Int
-	deleteMinN :: Node a -> Either (Node a) a
+	popMinN :: Node a -> (Int, Either (Node a) a)
+	popMaxN :: Node a -> (Int, Either (Node a) a)
 
 instance IsNode () where
 	memberN _ _ = False
 	insertN a _ = Right ((), a, ())
---	popMinN _ = Nothing
-	deleteMinN (Node2 _ _ _) = Right ()
-	deleteMinN (Node3 _ _ _ b _) = Left $ Node2 () b ()
---	deleteN _ _ = ()
---	minN _ = Nothing
---	maxN _ = Nothing
+	popMinN (Node2 _ a _) = (a, Right ())
+	popMinN (Node3 _ a _ b _) = (a, Left $ Node2 () b ())
+	popMaxN (Node2 _ a _) = (a, Right ())
+	popMaxN (Node3 _ a _ b _) = (b, Left $ Node2 () a ())
 
 instance IsNode a => IsNode (Node a) where
 	memberN a (Node2 l b r)
@@ -60,52 +60,53 @@ instance IsNode a => IsNode (Node a) where
 			Left r' -> Left $ Node3 l b m c r'
 			Right (m', d, r') ->
 				Right (Node2 l b m, c, Node2 m' d r')
-	deleteMinN (Node2 l a r) = case deleteMinN l of
-		Left l' -> Left $ Node2 l' a r
-		Right l' -> case r of
-			Node2 m b r' -> Right $ Node3 l' a m b r'
-			Node3 m b m' c r' -> Left $
-				Node2 (Node2 l' a m) b (Node2 m' c r')
-	deleteMinN (Node3 l a m b r) = case deleteMinN l of
-		Left l' -> Left $ Node3 l' a m b r
-		Right l' -> case m of
-			Node2 m' c m'' -> Left $
-				Node2 (Node3 l' a m' c m'') b r
-			Node3 m' c m'' d m''' -> Left $
-				Node3 (Node2 l' a m') c (Node2 m'' d m''') b r
---	popMin (Node2 l a r)
---	deleteN a t@(Node2 l b r)
---		| a < b = 
---	minN (Node2 l a _) = Just . fromMaybe a $ minN l
---	minN (Node3 l a _ _ _) = Just . fromMaybe a $ minN l
---	maxN (Node2 _ a r) = Just . fromMaybe a $ maxN r
---	maxN (Node3 _ _ _ b r) = Just . fromMaybe b $ maxN r
+	popMinN (Node2 l a r) = case popMinN l of
+		(n, Left l') -> (n, Left $ Node2 l' a r)
+		(n, Right l') -> case r of
+			Node2 m b r' -> (n, Right $ Node3 l' a m b r')
+			Node3 m b m' c r' -> (n, Left $
+				Node2 (Node2 l' a m) b (Node2 m' c r'))
+	popMinN (Node3 l a m b r) = case popMinN l of
+		(n, Left l') -> (n, Left $ Node3 l' a m b r)
+		(n, Right l') -> case m of
+			Node2 m' c m'' -> (n, Left $
+				Node2 (Node3 l' a m' c m'') b r)
+			Node3 m' c m'' d m''' -> (n, Left $
+				Node3 (Node2 l' a m') c (Node2 m'' d m''') b r)
+	popMaxN (Node2 l a r) = case popMaxN r of
+		(x, Left r') -> (x, Left $ Node2 l a r')
+		(x, Right r') -> case l of
+			Node2 l' b m -> (x, Right $ Node3 l' b m a r')
+			Node3 l' b m c m' -> (x, Left $
+				Node2 (Node2 l' b m) c (Node2 m' a r'))
+	popMaxN (Node3 l a m b r) = case popMaxN r of
+		(x, Left r') -> (x, Left $ Node3 l a m b r')
+		(x, Right r') -> case m of
+			Node2 m' c m'' -> (x, Left $
+				Node2 l a (Node3 m' c m'' b r'))
+			Node3 m' c m'' d m''' -> (x, Left $
+				Node3 l a (Node2 m' c m'') d (Node2 m''' b r'))
 
-member :: IsNode a => Int -> Set a -> Bool
+member :: IsNode a => Int -> Tree a -> Bool
 member a (Zero n) = memberN a n
 member a (Succ t) = member a t
 
-insert :: IsNode a => Int -> Set a -> Set a
+insert :: IsNode a => Int -> Tree a -> Tree a
 insert a (Zero n) = case insertN a n of
 	Left n' -> Zero n'
 	Right (l, b, r) -> Succ . Zero $ Node2 l b r
 insert a (Succ t) = Succ $ insert a t
 
-deleteMin :: IsNode a => Set a -> Set a
-deleteMin (Succ (Zero n)) = case deleteMinN n of
-	Left n' -> Succ $ Zero n'
-	Right n' -> Zero n'
-deleteMin (Succ t) = Succ $ deleteMin t
-deleteMin t = t
+popMin :: IsNode a => Tree a -> Maybe (Int, Tree a)
+popMin (Succ (Zero n)) = Just $ case popMinN n of
+	(mn, Left n') -> (mn, Succ $ Zero n')
+	(mn, Right n') -> (mn, Zero n')
+popMin (Succ t) = (Succ `second`) <$> popMin t
+popMin _ = Nothing
 
--- minT, maxT :: IsNode a => Set a -> Maybe Int
--- minT (Zero n) = minN n
--- minT (Succ t) = minT t
-
--- maxT (Zero n) = maxN n
--- maxT (Succ t) = maxT t
-
-{-
-checkBalance :: (Node (Node (Node ()))) -> Either (Node (Node (Node ()))) (Node (Node ()))
-checkBalance (Node2 l a r)
--}
+popMax :: IsNode a => Tree a -> Maybe (Int, Tree a)
+popMax (Succ (Zero n)) = Just $ case popMaxN n of
+	(mx, Left n') -> (mx, Succ $ Zero n')
+	(mx, Right n') -> (mx, Zero n')
+popMax (Succ t) = (Succ `second`) <$> popMax t
+popMax _ = Nothing
