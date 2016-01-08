@@ -74,6 +74,18 @@ instance IsNode a => IsNode (Node a) where
 				Node2 m c r' -> Right $ Node3 l' b m c r'
 				Node3 m c m' d r' -> Left $
 					Node2 (Node2 l' b m) c (Node2 m' d r')
+		| a == b = case popMaxN l of
+			(x, Left l') -> Left $ Node2 l' x r
+			(x, Right l') -> case r of
+				Node2 m c r' -> Right $ Node3 l' x m c r'
+				Node3 m c m' d r' -> Left $
+					Node2 (Node2 l' x m) c (Node2 m' d r')
+		| otherwise = case deleteN a r of
+			Left r' -> Left $ Node2 l b r'
+			Right r' -> case l of
+				Node2 l' c m -> Right $ Node3 l' c m b r'
+				Node3 l' c m d m' -> Left $
+					Node2 (Node2 l' c m) d (Node2 m' b r')
 	deleteN a (Node3 l b m c r)
 		| a < b = case deleteN a l of
 			Left l' -> Left $ Node3 l' b m c r
@@ -82,6 +94,26 @@ instance IsNode a => IsNode (Node a) where
 					Node2 (Node3 l' b m' d m'') c r
 				Node3 m' d m'' e m''' -> Left $
 					Node3 (Node2 l' b m') d (Node2 m'' e m''') c r
+		| a == b = case popMaxN l of
+			(x, Left l') -> Left $ Node3 l' b m c r
+			(x, Right l') -> case m of
+				Node2 m' d m'' -> Left $
+					Node2 (Node3 l' x m' d m'') c r
+				Node3 m' d m'' e m''' -> Left $
+					Node3 (Node2 l' x m') d (Node2 m'' e m''') c r
+		| a < c = case deleteN a m of
+			Left m' -> Left $ Node3 l b m' c r
+			Right m' -> Left $ rotateM l b m' c r
+		| a == c = case popMaxN m of
+			(x, Left m') -> Left $ Node3 l b m' x r
+			(x, Right m') -> Left $ rotateM l b m' x r
+		| otherwise = case deleteN a r of
+			Left r' -> Left $ Node3 l b m c r'
+			Right r' -> case m of
+				Node2 m' d m'' -> Left $
+					Node2 l b (Node3 m' d m'' c r')
+				Node3 m' d m'' e m''' -> Left $
+					Node3 l b (Node2 m' d m'') e (Node2 m''' c r')
 	popMinN (Node2 l a r) = case popMinN l of
 		(n, Left l') -> (n, Left $ Node2 l' a r)
 		(n, Right l') -> case r of
@@ -108,6 +140,13 @@ instance IsNode a => IsNode (Node a) where
 				Node2 l a (Node3 m' c m'' b r'))
 			Node3 m' c m'' d m''' -> (x, Left $
 				Node3 l a (Node2 m' c m'') d (Node2 m''' b r'))
+
+rotateM :: (Node a) -> Int -> a -> Int -> (Node a) -> Node (Node a)
+rotateM (Node3 n1 c n2 d n3) a n4 b n5 =
+	Node3 (Node2 n1 c n2) d (Node2 n3 a n4) b n5
+rotateM n1 a n2 b (Node3 n3 c n4 d n5) =
+	Node3 n1 a (Node2 n2 b n3) c (Node2 n4 d n5)
+rotateM (Node2 n1 c n2) a n3 b n4 = Node2 (Node3 n1 c n2 a n3) b n4
 
 member :: IsNode a => Int -> Tree a -> Bool
 member a (Zero n) = memberN a n
