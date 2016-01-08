@@ -1,7 +1,4 @@
-module SetBM (Set, empty, member, insert) where
-
-import Control.Applicative ((<$>))
-import Control.Arrow
+module SetBM (Set, empty, member, insert, delete) where
 
 type Set = Tree ()
 
@@ -10,6 +7,30 @@ data Node a = Node2 a Int a | Node3 a Int a Int a deriving Show
 
 empty :: Tree ()
 empty = Zero ()
+
+{-
+
+  l   d   r
++-+-+   +-+-+
+| a |   | g |
+k   m   q   s
+
+    l     d     r
++---+---+   +---+---+
+| a | b |   | g | h |
+k   l'  m   q   r'  s
+
+  l   c   o   f   r
++-+-+   +-+-+   +-+-+
+| a |   | d |   | g |
+k   m   n   p   q   s
+
+    l     c     o     f     r
++---+---+   +---+---+   +---+---+
+| a | b |   | d | e |   | g | h |
+k   l'  m   n   o'  p   q   r'  s
+
+-}
 
 class IsNode a where
 	memberN :: Int -> a -> Bool
@@ -20,160 +41,139 @@ class IsNode a where
 
 instance IsNode () where
 	memberN _ _ = False
-	insertN a _ = Right ((), a, ())
-	deleteN a t@(Node2 _ b _)
-		| a == b = Right ()
+	insertN v _ = Right ((), v, ())
+	deleteN v t@(Node2 _ d _)
+		| v == d = Right ()
 		| otherwise = Left t
-	deleteN a t@(Node3 _ b _ c _)
-		| a == b = Left $ Node2 () c ()
-		| a == c = Left $ Node2 () b ()
+	deleteN v t@(Node3 _ c _ f _)
+		| v == c = Left $ Node2 () f ()
+		| v == f = Left $ Node2 () c ()
 		| otherwise = Left t
-	popMinN (Node2 _ a _) = (a, Right ())
-	popMinN (Node3 _ a _ b _) = (a, Left $ Node2 () b ())
-	popMaxN (Node2 _ a _) = (a, Right ())
-	popMaxN (Node3 _ a _ b _) = (b, Left $ Node2 () a ())
+	popMinN (Node2 _ d _) = (d, Right ())
+	popMinN (Node3 _ c _ f _) = (c, Left $ Node2 () f ())
+	popMaxN (Node2 _ d _) = (d, Right ())
+	popMaxN (Node3 _ c _ f _) = (f, Left $ Node2 () c ())
 
 instance IsNode a => IsNode (Node a) where
-	memberN a (Node2 l b r)
-		| a < b = memberN a l
-		| a == b = True
-		| otherwise = memberN a r
-	memberN a (Node3 l b m c r)
-		| a < b = memberN a l
-		| a == b = True
-		| a < c = memberN a m
-		| a == c = True
-		| otherwise = memberN a r
-	insertN a t@(Node2 l b r)
-		| a < b = case insertN a l of
-			Left l' -> Left $ Node2 l' b r
-			Right (l', c, m) -> Left $ Node3 l' c m b r
-		| a == b = Left t
-		| otherwise = case insertN a r of
-			Left r' -> Left $ Node2 l b r'
-			Right (m, c, r') -> Left $ Node3 l b m c r'
-	insertN a t@(Node3 l b m c r)
-		| a < b = case insertN a l of
-			Left l' -> Left $ Node3 l' b m c r
-			Right (l', d, m') ->
-				Right (Node2 l' d m', b, Node2 m c r)
-		| a == b = Left t
-		| a < c = case insertN a m of
-			Left m' -> Left $ Node3 l b m' c r
-			Right (m', d, m'') ->
-				Right (Node2 l b m', d, Node2 m'' c r)
-		| a == c = Left t
-		| otherwise = case insertN a r of
-			Left r' -> Left $ Node3 l b m c r'
-			Right (m', d, r') ->
-				Right (Node2 l b m, c, Node2 m' d r')
-	deleteN a (Node2 l b r)
-		| a < b = case deleteN a l of
-			Left l' -> Left $ Node2 l' b r
+	memberN v (Node2 l d r)
+		| v < d = memberN v l
+		| v == d = True
+		| otherwise = memberN v r
+	memberN v (Node3 l c o f r)
+		| v < c = memberN v l
+		| v == c = True
+		| v < f = memberN v o
+		| v == f = True
+		| otherwise = memberN v r
+	insertN v t@(Node2 l d r)
+		| v < d = Left $ case insertN v l of
+			Left l' -> Node2 l' d r
+			Right (k, a, m) -> Node3 k a m d r
+		| v == d = Left t
+		| otherwise = Left $ case insertN v r of
+			Left r' -> Node2 l d r'
+			Right (q, g, s) -> Node3 l d q g s
+	insertN v t@(Node3 l c o f r)
+		| v < c = case insertN v l of
+			Left l' -> Left $ Node3 l' c o f r
+			Right (k, a, m) -> Right (Node2 k a m, c, Node2 o f r)
+		| v == c = Left t
+		| v < f = case insertN v o of
+			Left o' -> Left $ Node3 l c o' f r
+			Right (n, d, p) -> Right (Node2 l c n, d, Node2 p f r)
+		| v == f = Left t
+		| otherwise = case insertN v r of
+			Left r' -> Left $ Node3 l c o f r'
+			Right (q, g, s) -> Right (Node2 l c o, f, Node2 q g s)
+	deleteN v (Node2 l d r)
+		| v < d = case deleteN v l of
+			Left l' -> Left $ Node2 l' d r
 			Right l' -> case r of
-				Node2 m c r' -> Right $ Node3 l' b m c r'
-				Node3 m c m' d r' -> Left $
-					Node2 (Node2 l' b m) c (Node2 m' d r')
-		| a == b = case popMaxN l of
-			(x, Left l') -> Left $ Node2 l' x r
-			(x, Right l') -> case r of
-				Node2 m c r' -> Right $ Node3 l' x m c r'
-				Node3 m c m' d r' -> Left $
-					Node2 (Node2 l' x m) c (Node2 m' d r')
-		| otherwise = case deleteN a r of
-			Left r' -> Left $ Node2 l b r'
+				Node2 q g s -> Right $ Node3 l' d q g s
+				Node3 q g r' h s -> Left $
+					Node2 (Node2 l' d q) g (Node2 r' h s)
+		| v == d = case popMaxN l of
+			(u, Left l') -> Left $ Node2 l' u r
+			(u, Right l') -> case r of
+				Node2 q g s -> Right $ Node3 l' u q g s
+				Node3 q g r' h s -> Left $
+					Node2 (Node2 l' u q) g (Node2 r' h s)
+		| otherwise = case deleteN v r of
+			Left r' -> Left $ Node2 l d r'
 			Right r' -> case l of
-				Node2 l' c m -> Right $ Node3 l' c m b r'
-				Node3 l' c m d m' -> Left $
-					Node2 (Node2 l' c m) d (Node2 m' b r')
-	deleteN a (Node3 l b m c r)
-		| a < b = case deleteN a l of
-			Left l' -> Left $ Node3 l' b m c r
-			Right l' -> case m of
-				Node2 m' d m'' -> Left $
-					Node2 (Node3 l' b m' d m'') c r
-				Node3 m' d m'' e m''' -> Left $
-					Node3 (Node2 l' b m') d (Node2 m'' e m''') c r
-		| a == b = case popMaxN l of
-			(x, Left l') -> Left $ Node3 l' b m c r
-			(x, Right l') -> case m of
-				Node2 m' d m'' -> Left $
-					Node2 (Node3 l' x m' d m'') c r
-				Node3 m' d m'' e m''' -> Left $
-					Node3 (Node2 l' x m') d (Node2 m'' e m''') c r
-		| a < c = case deleteN a m of
-			Left m' -> Left $ Node3 l b m' c r
-			Right m' -> Left $ rotateM l b m' c r
-		| a == c = case popMaxN m of
-			(x, Left m') -> Left $ Node3 l b m' x r
-			(x, Right m') -> Left $ rotateM l b m' x r
-		| otherwise = case deleteN a r of
-			Left r' -> Left $ Node3 l b m c r'
-			Right r' -> case m of
-				Node2 m' d m'' -> Left $
-					Node2 l b (Node3 m' d m'' c r')
-				Node3 m' d m'' e m''' -> Left $
-					Node3 l b (Node2 m' d m'') e (Node2 m''' c r')
-	popMinN (Node2 l a r) = case popMinN l of
-		(n, Left l') -> (n, Left $ Node2 l' a r)
-		(n, Right l') -> case r of
-			Node2 m b r' -> (n, Right $ Node3 l' a m b r')
-			Node3 m b m' c r' -> (n, Left $
-				Node2 (Node2 l' a m) b (Node2 m' c r'))
-	popMinN (Node3 l a m b r) = case popMinN l of
-		(n, Left l') -> (n, Left $ Node3 l' a m b r)
-		(n, Right l') -> case m of
-			Node2 m' c m'' -> (n, Left $
-				Node2 (Node3 l' a m' c m'') b r)
-			Node3 m' c m'' d m''' -> (n, Left $
-				Node3 (Node2 l' a m') c (Node2 m'' d m''') b r)
-	popMaxN (Node2 l a r) = case popMaxN r of
-		(x, Left r') -> (x, Left $ Node2 l a r')
-		(x, Right r') -> case l of
-			Node2 l' b m -> (x, Right $ Node3 l' b m a r')
-			Node3 l' b m c m' -> (x, Left $
-				Node2 (Node2 l' b m) c (Node2 m' a r'))
-	popMaxN (Node3 l a m b r) = case popMaxN r of
-		(x, Left r') -> (x, Left $ Node3 l a m b r')
-		(x, Right r') -> case m of
-			Node2 m' c m'' -> (x, Left $
-				Node2 l a (Node3 m' c m'' b r'))
-			Node3 m' c m'' d m''' -> (x, Left $
-				Node3 l a (Node2 m' c m'') d (Node2 m''' b r'))
+				Node2 k a m -> Right $ Node3 k a m d r'
+				Node3 k a l' b m -> Left $
+					Node2 (Node2 k a l') b (Node2 m d r')
+	deleteN v (Node3 l c o f r)
+		| v < c = case deleteN v l of
+			Left l' -> Left $ Node3 l' c o f r
+			Right l' -> case o of
+				Node2 n d p -> Left $
+					Node2 (Node3 l' c n d p) f r
+				Node3 n d o' e p -> Left $
+					Node3 (Node2 l' c n) d (Node2 o' e p) f r
+		| v == c = case popMaxN l of
+			(u, Left l') -> Left $ Node3 l' u o f r
+			(u, Right l') -> case o of
+				Node2 n d p -> Left $ Node2 (Node3 l' u n d p) f r
+				Node3 n d o' e p -> Left $
+					Node3 (Node2 l' u n) d (Node2 o' e p) f r
+		| v < f = case deleteN v o of
+			Left m' -> Left $ Node3 l c m' f r
+			Right m' -> Left $ rotateM l c m' f r
+		| v == f = case popMaxN o of
+			(u, Left m') -> Left $ Node3 l c m' u r
+			(u, Right m') -> Left $ rotateM l c m' u r
+		| otherwise = case deleteN v r of
+			Left r' -> Left $ Node3 l c o f r'
+			Right r' -> case o of
+				Node2 n d p -> Left $
+					Node2 l c (Node3 n d p f r')
+				Node3 n d o' e p -> Left $
+					Node3 l c (Node2 n d o') e (Node2 p f r')
+	popMinN (Node2 l d r) = case popMinN l of
+		(u, Left l') -> (u, Left $ Node2 l' d r)
+		(u, Right l') -> case r of
+			Node2 q g s -> (u, Right $ Node3 l' d q g s)
+			Node3 q g r' h s -> (u, Left $
+				Node2 (Node2 l' d q) g (Node2 r' h s))
+	popMinN (Node3 l c o f r) = case popMinN l of
+		(u, Left l') -> (u, Left $ Node3 l' c o f r)
+		(u, Right l') -> case o of
+			Node2 n d p -> (u, Left $ Node2 (Node3 l' c n d p) f r)
+			Node3 n d o' e p -> (u, Left $
+				Node3 (Node2 l' c n) d (Node2 o' e p) f r)
+	popMaxN (Node2 l d r) = case popMaxN r of
+		(u, Left r') -> (u, Left $ Node2 l d r')
+		(u, Right r') -> case l of
+			Node2 k a m -> (u, Right $ Node3 k a m d r')
+			Node3 k a l' b m -> (u, Left $
+				Node2 (Node2 k a l') b (Node2 m d r'))
+	popMaxN (Node3 l c o f r) = case popMaxN r of
+		(u, Left r') -> (u, Left $ Node3 l c o f r')
+		(u, Right r') -> case o of
+			Node2 n d p -> (u, Left $ Node2 l c (Node3 n d p f r'))
+			Node3 n d o' e p -> (u, Left $
+				Node3 l c (Node2 n d o') e (Node2 p f r'))
 
 rotateM :: (Node a) -> Int -> a -> Int -> (Node a) -> Node (Node a)
-rotateM (Node3 n1 c n2 d n3) a n4 b n5 =
-	Node3 (Node2 n1 c n2) d (Node2 n3 a n4) b n5
-rotateM n1 a n2 b (Node3 n3 c n4 d n5) =
-	Node3 n1 a (Node2 n2 b n3) c (Node2 n4 d n5)
-rotateM (Node2 n1 c n2) a n3 b n4 = Node2 (Node3 n1 c n2 a n3) b n4
+rotateM (Node3 k a l' b m) c o f r = Node3 (Node2 k a l') b (Node2 m c o) f r
+rotateM l c o f (Node3 q g r' h s) = Node3 l c (Node2 o f q) g (Node2 r' h s)
+rotateM (Node2 k a m) c o f r = Node2 (Node3 k a m c o) f r
 
 member :: IsNode a => Int -> Tree a -> Bool
-member a (Zero n) = memberN a n
-member a (Succ t) = member a t
+member v (Zero n) = memberN v n
+member v (Succ t) = member v t
 
 insert :: IsNode a => Int -> Tree a -> Tree a
-insert a (Zero n) = case insertN a n of
+insert v (Zero n) = case insertN v n of
 	Left n' -> Zero n'
-	Right (l, b, r) -> Succ . Zero $ Node2 l b r
-insert a (Succ t) = Succ $ insert a t
+	Right (l, d, r) -> Succ . Zero $ Node2 l d r
+insert v (Succ t) = Succ $ insert v t
 
 delete :: IsNode a => Int -> Tree a -> Tree a
-delete a (Succ (Zero n)) = case deleteN a n of
+delete v (Succ (Zero n)) = case deleteN v n of
 	Left n' -> Succ $ Zero n'
 	Right n' -> Zero n'
-delete a (Succ t) = Succ $ delete a t
-
-popMin :: IsNode a => Tree a -> Maybe (Int, Tree a)
-popMin (Succ (Zero n)) = Just $ case popMinN n of
-	(mn, Left n') -> (mn, Succ $ Zero n')
-	(mn, Right n') -> (mn, Zero n')
-popMin (Succ t) = (Succ `second`) <$> popMin t
-popMin _ = Nothing
-
-popMax :: IsNode a => Tree a -> Maybe (Int, Tree a)
-popMax (Succ (Zero n)) = Just $ case popMaxN n of
-	(mx, Left n') -> (mx, Succ $ Zero n')
-	(mx, Right n') -> (mx, Zero n')
-popMax (Succ t) = (Succ `second`) <$> popMax t
-popMax _ = Nothing
+delete v (Succ t) = Succ $ delete v t
+delete _ t = t
