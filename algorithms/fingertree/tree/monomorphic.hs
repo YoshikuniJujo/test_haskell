@@ -36,7 +36,6 @@ class IsNode a where
 	memberN :: Int -> a -> Bool
 	insertN :: Int -> a -> Either a (a, Int, a)
 	deleteN :: Int -> Node a -> Either (Node a) a
-	popMinN :: Node a -> (Int, Either (Node a) a)
 	popMaxN :: Node a -> (Int, Either (Node a) a)
 
 instance IsNode () where
@@ -49,8 +48,6 @@ instance IsNode () where
 		| v == c = Left $ Node2 () f ()
 		| v == f = Left $ Node2 () c ()
 		| otherwise = Left t
-	popMinN (Node2 _ d _) = (d, Right ())
-	popMinN (Node3 _ c _ f _) = (c, Left $ Node2 () f ())
 	popMaxN (Node2 _ d _) = (d, Right ())
 	popMaxN (Node3 _ c _ f _) = (f, Left $ Node2 () c ())
 
@@ -131,18 +128,6 @@ instance IsNode a => IsNode (Node a) where
 					Node2 l c (Node3 n d p f r')
 				Node3 n d o' e p -> Left $
 					Node3 l c (Node2 n d o') e (Node2 p f r')
-	popMinN (Node2 l d r) = case popMinN l of
-		(u, Left l') -> (u, Left $ Node2 l' d r)
-		(u, Right l') -> case r of
-			Node2 q g s -> (u, Right $ Node3 l' d q g s)
-			Node3 q g r' h s -> (u, Left $
-				Node2 (Node2 l' d q) g (Node2 r' h s))
-	popMinN (Node3 l c o f r) = case popMinN l of
-		(u, Left l') -> (u, Left $ Node3 l' c o f r)
-		(u, Right l') -> case o of
-			Node2 n d p -> (u, Left $ Node2 (Node3 l' c n d p) f r)
-			Node3 n d o' e p -> (u, Left $
-				Node3 (Node2 l' c n) d (Node2 o' e p) f r)
 	popMaxN (Node2 l d r) = case popMaxN r of
 		(u, Left r') -> (u, Left $ Node2 l d r')
 		(u, Right r') -> case l of
