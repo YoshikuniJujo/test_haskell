@@ -177,10 +177,6 @@ a.out
 
 /features/existential_quantifications/namedCar.txt
 
-/tools/image/tree_abcde.svg
-/tools/image/bst_15.svg
-/tools/image/bst_wikipedia.svg
-
 /tribial/koch.svg
 
 /tribial/sudoku/sudoku
@@ -209,10 +205,13 @@ a.out
 
 /features/ffi/hello_hc/useAdd3
 
-/tools/image/tree_int.svg
-/tools/image/rotateL_1.svg
-/tools/image/rotateL_2.svg
-/tools/image/bbtree.svg
+/tools/image/tree/tree_int.svg
+/tools/image/tree/rotateL_1.svg
+/tools/image/tree/rotateL_2.svg
+/tools/image/tree/bbtree.svg
+/tools/image/tree/tree_abcde.svg
+/tools/image/tree/bst_15.svg
+/tools/image/tree/bst_wikipedia.svg
 
 /tools/make_license/result_1.txt
 
