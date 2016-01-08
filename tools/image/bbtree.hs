@@ -58,7 +58,7 @@ tree3 :: Show a => Turtle ->
 	Double -> Double -> Double -> IO ()
 tree3 t l c o f r w h rt = do
 	(x0, y0) <- position t
-	goto t (x0 - 14) (y0 - 3)
+	goto t (x0 - 15) (y0 - 3)
 	write t "KochiGothic" 15 $ show c
 	goto t (x0 + 3) (y0 - 3)
 	write t "KochiGothic" 15 $ show f

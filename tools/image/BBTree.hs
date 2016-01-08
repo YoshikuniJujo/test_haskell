@@ -35,19 +35,19 @@ sample = Succ . Succ . Succ . Succ . Zero $ Node2
 		(Node3
 			(Node2 Tip 12 Tip)
 			13
-			(Node3 Tip 14 Tip 15 Tip)
-			16
-			(Node2 Tip 17 Tip))
-		18
+			(Node2 Tip 14 Tip)
+			15
+			(Node2 Tip 16 Tip))
+		17
 		(Node2
-			(Node2 Tip 19 Tip)
-			20
-			(Node3 Tip 21 Tip 22 Tip))
-		23
+			(Node2 Tip 18 Tip)
+			19
+			(Node3 Tip 20 Tip 21 Tip))
+		22
 		(Node2
-			(Node2 Tip 24 Tip)
-			25
-			(Node2 Tip 26 Tip)))
+			(Node2 Tip 23 Tip)
+			24
+			(Node2 Tip 25 Tip)))
 
 class IsNode a where
 	type Elem a
