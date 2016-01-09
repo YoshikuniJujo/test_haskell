@@ -1,4 +1,4 @@
-module BBTree (value, box, tree, emptyTree, arrow) where
+module BBTree (value, box, long, tree, emptyTree, arrow, label) where
 
 import Control.Monad
 import Graphics.X11.Turtle
@@ -37,6 +37,16 @@ box t s = do
 	replicateM_ 4 $ forward t (10 * s) >> left t 90
 	penup t
 
+long :: Turtle -> Double -> IO ()
+long t s = do
+	(x0, y0) <- position t
+	setheading t (- 90)
+	pendown t
+	replicateM_ 2 $ do
+		forward t (10 * s) >> left t 90
+		forward t (16 * s) >> left t 90
+	penup t
+
 arrow :: Turtle -> Double -> IO ()
 arrow t s = do
 	beginfill t
@@ -56,3 +66,9 @@ arrow t s = do
 	forward t (2 * s)
 	penup t
 	endfill t
+
+label :: Turtle -> String -> IO ()
+label t s = do
+	pencolor t "black"
+	write t "KochiGothic" 30 s
+	pencolor t "gray"
