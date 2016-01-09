@@ -1,5 +1,6 @@
-module BBTree (value, box, long, tree, emptyTree, arrow, label) where
-
+module BBTree (
+	value, box, long, tree, emptyTree, arrow,
+	label, labeledTree, labeledValue, labeledBox, labeledLong) where 
 import Control.Monad
 import Graphics.X11.Turtle
 
@@ -67,8 +68,36 @@ arrow t s = do
 	penup t
 	endfill t
 
-label :: Turtle -> String -> IO ()
-label t s = do
+label :: Turtle -> String -> Double -> IO ()
+label t l s = do
 	pencolor t "black"
-	write t "KochiGothic" 30 s
+	write t "KochiGothic" (s * 15 / 2) l
 	pencolor t "gray"
+
+labeledTree :: Turtle -> String -> Double -> IO ()
+labeledTree t l s = do
+	(x0, y0) <- position t
+	tree t s
+	goto t (x0 + 13 / 4 * s) (y0 + 7 * s)
+	label t l s
+
+labeledValue :: Turtle -> String -> Double -> IO ()
+labeledValue t l s = do
+	(x0, y0) <- position t
+	value t s
+	goto t (x0 - 2 * s) (y0 - 2 * s)
+	label t l s
+
+labeledBox :: Turtle -> String -> Double -> IO ()
+labeledBox t l s = do
+	(x0, y0) <- position t
+	box t (3 * s)
+	goto t (x0 + s) (y0 + 8 * s)
+	label t l s
+
+labeledLong :: Turtle -> String -> Double -> IO ()
+labeledLong t l s = do
+	(x0, y0) <- position t
+	long t (3 * s)
+	goto t (x0 + s) (y0 + 8 * s)
+	label t l s

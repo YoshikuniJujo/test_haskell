@@ -4,39 +4,33 @@ import Template
 import BBTree
 
 main :: IO ()
-main = run (20, 130) 5 (460, 240) $ \t -> do
+main = run (20, 110) 5 (280, 180) $ \t -> do
 	(x0, y0) <- position t
+
+	goto t (x0 + 20) (y0 - 85)
+	write t "KochiGothic" 28 "2-2"
 
 	pencolor t "gray"
 
 	goto t x0 y0
-	tree t 4
-	goto t (x0 + 13) (y0 + 28)
-	label t "k"
-
+	labeledTree t "k" 4
 	goto t (x0 + 60) y0
-	tree t 4
-	goto t (x0 + 73) (y0 + 28)
-	label t "m"
+	labeledTree t "m" 4
 
 	goto t (x0 + 50) (y0 - 10)
-	value t 4
-	goto t (x0 + 42) (y0 - 18)
-	label t "a"
+	labeledValue t "a" 4
 
 	goto t (x0 - 10) (y0 - 60)
-	box t 12
-	goto t (x0 - 5) (y0 - 30)
-	label t "l"
+	labeledBox t "l" 4
 
-	goto t (x0 + 160) (y0 - 90)
-	value t 5
+	goto t (x0 + 123) (y0 - 70)
+	labeledValue t "d" 4
 
-	goto t (x0 + 190) y0
-	tree t 5
-	goto t (x0 + 255) (y0 - 20)
-	value t 5
-	goto t (x0 + 270) y0
-	tree t 5
-	goto t (x0 + 180) (y0 - 80)
-	box t 15
+	goto t (x0 + 145) y0
+	labeledTree t "q" 4
+	goto t (x0 + 195) (y0 - 10)
+	labeledValue t "g" 4
+	goto t (x0 + 205) y0
+	labeledTree t "s" 4
+	goto t (x0 + 136) (y0 - 60)
+	labeledBox t "r" 4
