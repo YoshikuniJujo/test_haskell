@@ -2,7 +2,7 @@
 
 module SetB (Set, empty, member, insert, delete) where
 
-type Set v = Tree v ()
+type Set v = Tree v (Tip v)
 
 data Tree v a = Zero a | Succ (Tree v (Node v a)) deriving Show
 data Node v a = Nd2 a v a | Nd3 a v a v a deriving Show

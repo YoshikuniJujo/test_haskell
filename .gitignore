@@ -188,7 +188,10 @@ a.out
 /algorithms/pearls/minfree/array
 /algorithms/pearls/minfree/dc
 /algorithms/weight_balanced_tree/nth
+/algorithms/weight_balanced_tree/nth2
 /algorithms/weight_balanced_tree/dups
+/algorithms/fingertree/tree/nth
+/algorithms/fingertree/tree/nth2
 
 /features/ffi/sqlite3/c/sample
 /features/ffi/sqlite3/c/*.sqlite3
