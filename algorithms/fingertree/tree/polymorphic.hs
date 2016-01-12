@@ -1,11 +1,11 @@
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TupleSections, TypeFamilies #-}
 
 module SetB (Set, empty, member, insert, delete) where
 
 type Set v = Tree v ()
 
 data Tree v a = Zero a | Succ (Tree v (Node v a)) deriving Show
-data Node v a = Node2 a v a | Node3 a v a v a deriving Show
+data Node v a = Nd2 a v a | Nd3 a v a v a deriving Show
 data Tip v = Tip deriving Show
 
 empty :: Tree v (Tip v)
@@ -37,133 +37,112 @@ k   l'  m   n   o'  p   q   r'  s
 
 class IsNode a where
 	type Elem a
-	memberN :: Elem a -> a -> Bool
-	insertN :: Elem a -> a -> Either a (a, Elem a, a)
-	deleteN :: Elem a -> Node (Elem a) a -> Either (Node (Elem a) a) a
-	popMaxN :: Node (Elem a) a -> (Elem a, Either (Node (Elem a) a) a)
+	mem :: Elem a -> a -> Bool
+	ins :: Elem a -> a -> Either a (a, Elem a, a)
+	del :: Elem a -> Node (Elem a) a -> Either (Node (Elem a) a) a
+	mx :: Node (Elem a) a -> (Elem a, Either (Node (Elem a) a) a)
 
 instance Eq v => IsNode (Tip v) where
 	type Elem (Tip v) = v
-	memberN _ _ = False
-	insertN v _ = Right (Tip, v, Tip)
-	deleteN v t@(Node2 _ d _)
+	mem _ _ = False
+	ins v _ = Right (Tip, v, Tip)
+	del v t@(Nd2 _ d _)
 		| v == d = Right Tip
 		| otherwise = Left t
-	deleteN v t@(Node3 _ c _ f _)
-		| v == c = Left $ Node2 Tip f Tip
-		| v == f = Left $ Node2 Tip c Tip
+	del v t@(Nd3 _ c _ f _)
+		| v == c = Left $ Nd2 Tip f Tip
+		| v == f = Left $ Nd2 Tip c Tip
 		| otherwise = Left t
-	popMaxN (Node2 _ d _) = (d, Right Tip)
-	popMaxN (Node3 _ c _ f _) = (f, Left $ Node2 Tip c Tip)
+	mx (Nd2 _ d _) = (d, Right Tip)
+	mx (Nd3 _ c _ f _) = (f, Left $ Nd2 Tip c Tip)
 
 instance (Ord v, IsNode a, v ~ Elem a) => IsNode (Node v a) where
 	type Elem (Node v a) = v
-	memberN v (Node2 l d r)
-		| v < d = memberN v l
+	mem v (Nd2 l d r)
+		| v < d = mem v l
 		| v == d = True
-		| otherwise = memberN v r
-	memberN v (Node3 l c o f r)
-		| v < c = memberN v l
+		| otherwise = mem v r
+	mem v (Nd3 l c o f r)
+		| v < c = mem v l
 		| v == c = True
-		| v < f = memberN v o
+		| v < f = mem v o
 		| v == f = True
-		| otherwise = memberN v r
-	insertN v t@(Node2 l d r)
-		| v < d = Left $ case insertN v l of
-			Left l' -> Node2 l' d r
-			Right (k, a, m) -> Node3 k a m d r
+		| otherwise = mem v r
+	ins v t@(Nd2 l d r)
+		| v < d = Left $ case ins v l of
+			Left l' -> Nd2 l' d r
+			Right (k, a, m) -> Nd3 k a m d r
 		| v == d = Left t
-		| otherwise = Left $ case insertN v r of
-			Left r' -> Node2 l d r'
-			Right (q, g, s) -> Node3 l d q g s
-	insertN v t@(Node3 l c o f r)
-		| v < c = case insertN v l of
-			Left l' -> Left $ Node3 l' c o f r
-			Right (k, a, m) -> Right (Node2 k a m, c, Node2 o f r)
+		| otherwise = Left $ case ins v r of
+			Left r' -> Nd2 l d r'
+			Right (q, g, s) -> Nd3 l d q g s
+	ins v t@(Nd3 l c o f r)
+		| v < c = case ins v l of
+			Left l' -> Left $ Nd3 l' c o f r
+			Right (k, a, m) -> Right (Nd2 k a m, c, Nd2 o f r)
 		| v == c = Left t
-		| v < f = case insertN v o of
-			Left o' -> Left $ Node3 l c o' f r
-			Right (n, d, p) -> Right (Node2 l c n, d, Node2 p f r)
+		| v < f = case ins v o of
+			Left o' -> Left $ Nd3 l c o' f r
+			Right (n, d, p) -> Right (Nd2 l c n, d, Nd2 p f r)
 		| v == f = Left t
-		| otherwise = case insertN v r of
-			Left r' -> Left $ Node3 l c o f r'
-			Right (q, g, s) -> Right (Node2 l c o, f, Node2 q g s)
-	deleteN v (Node2 l d r)
-		| v < d = case deleteN v l of
-			Left l' -> Left $ Node2 l' d r
-			Right l' -> case r of
-				Node2 q g s -> Right $ Node3 l' d q g s
-				Node3 q g r' h s -> Left $
-					Node2 (Node2 l' d q) g (Node2 r' h s)
-		| v == d = case popMaxN l of
-			(u, Left l') -> Left $ Node2 l' u r
-			(u, Right l') -> case r of
-				Node2 q g s -> Right $ Node3 l' u q g s
-				Node3 q g r' h s -> Left $
-					Node2 (Node2 l' u q) g (Node2 r' h s)
-		| otherwise = case deleteN v r of
-			Left r' -> Left $ Node2 l d r'
+		| otherwise = case ins v r of
+			Left r' -> Left $ Nd3 l c o f r'
+			Right (q, g, s) -> Right (Nd2 l c o, f, Nd2 q g s)
+	del v (Nd2 l d r)
+		| v <= d = case if v < d then (d, del v l) else mx l of
+			(d', Left l') -> Left $ Nd2 l' d' r
+			(d', Right l') -> case r of
+				Nd2 q g s -> Right $ Nd3 l' d' q g s
+				Nd3 q g r' h s -> Left $
+					Nd2 (Nd2 l' d' q) g (Nd2 r' h s)
+		| otherwise = case del v r of
+			Left r' -> Left $ Nd2 l d r'
 			Right r' -> case l of
-				Node2 k a m -> Right $ Node3 k a m d r'
-				Node3 k a l' b m -> Left $
-					Node2 (Node2 k a l') b (Node2 m d r')
-	deleteN v (Node3 l c o f r)
-		| v < c = case deleteN v l of
-			Left l' -> Left $ Node3 l' c o f r
-			Right l' -> case o of
-				Node2 n d p -> Left $
-					Node2 (Node3 l' c n d p) f r
-				Node3 n d o' e p -> Left $
-					Node3 (Node2 l' c n) d (Node2 o' e p) f r
-		| v == c = case popMaxN l of
-			(u, Left l') -> Left $ Node3 l' u o f r
-			(u, Right l') -> case o of
-				Node2 n d p -> Left $ Node2 (Node3 l' u n d p) f r
-				Node3 n d o' e p -> Left $
-					Node3 (Node2 l' u n) d (Node2 o' e p) f r
-		| v < f = case deleteN v o of
-			Left m' -> Left $ Node3 l c m' f r
-			Right m' -> Left $ rotateM l c m' f r
-		| v == f = case popMaxN o of
-			(u, Left m') -> Left $ Node3 l c m' u r
-			(u, Right m') -> Left $ rotateM l c m' u r
-		| otherwise = case deleteN v r of
-			Left r' -> Left $ Node3 l c o f r'
+				Nd2 k a m -> Right $ Nd3 k a m d r'
+				Nd3 k a l' b m -> Left $
+					Nd2 (Nd2 k a l') b (Nd2 m d r')
+	del v (Nd3 l c o f r)
+		| v <= c = Left $ case if v < c then (c, del v l) else mx l of
+			(c', Left l') -> Nd3 l' c' o f r
+			(c', Right l') -> case o of
+				Nd2 n d p -> Nd2 (Nd3 l' c' n d p) f r
+				Nd3 n d o' e p ->
+					Nd3 (Nd2 l' c' n) d (Nd2 o' e p) f r
+		| v <= f = Left $ case if v < f then (f, del v o) else mx o of
+			(f', Left o') -> Nd3 l c o' f' r
+			(f', Right o') -> case l of
+				Nd2 k a m -> Nd2 (Nd3 k a m c o') f' r
+				Nd3 k a l' b m ->
+					Nd3 (Nd2 k a l') b (Nd2 m c o') f r
+		| otherwise = Left $ case del v r of
+			Left r' -> Nd3 l c o f r'
 			Right r' -> case o of
-				Node2 n d p -> Left $
-					Node2 l c (Node3 n d p f r')
-				Node3 n d o' e p -> Left $
-					Node3 l c (Node2 n d o') e (Node2 p f r')
-	popMaxN (Node2 l d r) = case popMaxN r of
-		(u, Left r') -> (u, Left $ Node2 l d r')
-		(u, Right r') -> case l of
-			Node2 k a m -> (u, Right $ Node3 k a m d r')
-			Node3 k a l' b m -> (u, Left $
-				Node2 (Node2 k a l') b (Node2 m d r'))
-	popMaxN (Node3 l c o f r) = case popMaxN r of
-		(u, Left r') -> (u, Left $ Node3 l c o f r')
-		(u, Right r') -> case o of
-			Node2 n d p -> (u, Left $ Node2 l c (Node3 n d p f r'))
-			Node3 n d o' e p -> (u, Left $
-				Node3 l c (Node2 n d o') e (Node2 p f r'))
-
-rotateM :: (Node v a) -> v -> a -> v -> (Node v a) -> Node v (Node v a)
-rotateM (Node3 k a l' b m) c o f r = Node3 (Node2 k a l') b (Node2 m c o) f r
-rotateM l c o f (Node3 q g r' h s) = Node3 l c (Node2 o f q) g (Node2 r' h s)
-rotateM (Node2 k a m) c o f r = Node2 (Node3 k a m c o) f r
+				Nd2 n d p -> Nd2 l c (Nd3 n d p f r')
+				Nd3 n d o' e p ->
+					Nd3 l c (Nd2 n d o') e (Nd2 p f r')
+	mx (Nd2 l d r) = case mx r of
+		(u, Left r') -> (u, Left $ Nd2 l d r')
+		(u, Right r') -> (u ,) $ case l of
+			Nd2 k a m -> Right $ Nd3 k a m d r'
+			Nd3 k a l' b m -> Left $ Nd2 (Nd2 k a l') b (Nd2 m d r')
+	mx (Nd3 l c o f r) = case mx r of
+		(u, Left r') -> (u, Left $ Nd3 l c o f r')
+		(u, Right r') -> (u ,) . Left $ case o of
+			Nd2 n d p -> Nd2 l c (Nd3 n d p f r')
+			Nd3 n d o' e p -> Nd3 l c (Nd2 n d o') e (Nd2 p f r')
 
 member :: (Ord v, IsNode a, v ~ Elem a) => v -> Tree v a -> Bool
-member v (Zero n) = memberN v n
+member v (Zero n) = mem v n
 member v (Succ t) = member v t
 
 insert :: (Ord v, IsNode a, v ~ Elem a) => v -> Tree v a -> Tree v a
-insert v (Zero n) = case insertN v n of
+insert v (Zero n) = case ins v n of
 	Left n' -> Zero n'
-	Right (l, d, r) -> Succ . Zero $ Node2 l d r
+	Right (l, d, r) -> Succ . Zero $ Nd2 l d r
 insert v (Succ t) = Succ $ insert v t
 
 delete :: (Ord v, IsNode a, v ~ Elem a) => v -> Tree v a -> Tree v a
-delete v (Succ (Zero n)) = case deleteN v n of
+delete v (Succ (Zero n)) = case del v n of
 	Left n' -> Succ $ Zero n'
 	Right n' -> Zero n'
 delete v (Succ t) = Succ $ delete v t
