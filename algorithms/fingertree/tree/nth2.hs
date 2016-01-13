@@ -1,24 +1,23 @@
 import Data.Time
-import System.Random
 
 import qualified SetT as T
 import qualified SetB as B
 
 main :: IO ()
 main = do
-	time (nthT T.empty [0 ..] 10000 :: Maybe Int)
 	time (nthT T.empty [0 ..] 20000 :: Maybe Int)
 	time (nthT T.empty [0 ..] 40000 :: Maybe Int)
 	time (nthT T.empty [0 ..] 80000 :: Maybe Int)
 	time (nthT T.empty [0 ..] 160000 :: Maybe Int)
 	time (nthT T.empty [0 ..] 320000 :: Maybe Int)
+	time (nthT T.empty [0 ..] 640000 :: Maybe Int)
 	putStrLn ""
-	time (nthB B.empty [0 ..] 10000 :: Maybe Int)
 	time (nthB B.empty [0 ..] 20000 :: Maybe Int)
 	time (nthB B.empty [0 ..] 40000 :: Maybe Int)
 	time (nthB B.empty [0 ..] 80000 :: Maybe Int)
 	time (nthB B.empty [0 ..] 160000 :: Maybe Int)
 	time (nthB B.empty [0 ..] 320000 :: Maybe Int)
+	time (nthB B.empty [0 ..] 640000 :: Maybe Int)
 
 time :: Show a => a -> IO ()
 time x = do

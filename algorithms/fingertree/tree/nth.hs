@@ -6,19 +6,19 @@ import qualified SetB as B
 
 main :: IO ()
 main = do
-	time (nthT T.empty (randoms $ mkStdGen 8) 10000 :: Maybe Int)
 	time (nthT T.empty (randoms $ mkStdGen 8) 20000 :: Maybe Int)
 	time (nthT T.empty (randoms $ mkStdGen 8) 40000 :: Maybe Int)
 	time (nthT T.empty (randoms $ mkStdGen 8) 80000 :: Maybe Int)
 	time (nthT T.empty (randoms $ mkStdGen 8) 160000 :: Maybe Int)
 	time (nthT T.empty (randoms $ mkStdGen 8) 320000 :: Maybe Int)
+	time (nthT T.empty (randoms $ mkStdGen 8) 640000 :: Maybe Int)
 	putStrLn ""
-	time (nthB B.empty (randoms $ mkStdGen 8) 10000 :: Maybe Int)
 	time (nthB B.empty (randoms $ mkStdGen 8) 20000 :: Maybe Int)
 	time (nthB B.empty (randoms $ mkStdGen 8) 40000 :: Maybe Int)
 	time (nthB B.empty (randoms $ mkStdGen 8) 80000 :: Maybe Int)
 	time (nthB B.empty (randoms $ mkStdGen 8) 160000 :: Maybe Int)
 	time (nthB B.empty (randoms $ mkStdGen 8) 320000 :: Maybe Int)
+	time (nthB B.empty (randoms $ mkStdGen 8) 640000 :: Maybe Int)
 
 time :: Show a => a -> IO ()
 time x = do
