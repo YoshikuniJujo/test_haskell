@@ -12,4 +12,4 @@ mulP :: Polar -> Double -> Polar
 mulP (d, r) n = (d * n, r)
 
 point2 :: Polar
-point2 = (6, pi / 3)
+point2 = (10, pi / 6)
