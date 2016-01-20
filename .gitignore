@@ -210,6 +210,8 @@ a.out
 
 /features/ffi/hello_hc/useAdd3
 
+/tools/image/cartesian.svg
+/tools/image/polar.svg
 /tools/image/tree/tree_int.svg
 /tools/image/tree/rotateL_1.svg
 /tools/image/tree/rotateL_2.svg
