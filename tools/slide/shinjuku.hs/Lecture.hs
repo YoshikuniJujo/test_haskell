@@ -28,7 +28,7 @@ import WriteTree(BinTree(..), rotateL, rotateR, mapR)
 type Page = [Turtle -> IO ()]
 
 title, author :: String
-title = "Shinjuku.hs #1"
+title = "Shinjuku.hs"
 author = "重城 良国"
 
 haskellBCurry :: (Double, Double, FilePath)
