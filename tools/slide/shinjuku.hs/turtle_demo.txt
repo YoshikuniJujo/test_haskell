@@ -1,0 +1,23 @@
+% ghci
+:m Grphics.X11.Turtle
+:m + Control.Monad
+:m + Text.XML.YJSVG
+f <- openField
+t <- newTurtle f
+shapesize t 3 3
+shape t "turtle"
+pensize t 3
+pencolor t "green"
+replicateM_ 4 $ forward t 100 >> left t 90
+replicateM_ 4 $ backward t 100 >> left t 90
+penup t
+goto t 45 50
+stamp t
+goto t (- 55) (- 50)
+stamp t
+svg <- getSVG t
+writeFile "sample.svg" $ showSVG 300 300 svg
+closeField f
+:q
+% firefox sample.svg
+% runhaskell -Wall shinjuku01.hs - 8

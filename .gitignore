@@ -153,6 +153,8 @@ a.out
 /tools/slide/yjslide3/svgs/
 /tools/slide/yjslide3/images/*.svg
 
+/tools/slide/shinjuku.hs/sample.svg
+
 /tools/markdown/svgs/
 
 /themes/books/land_of_lisp/city
