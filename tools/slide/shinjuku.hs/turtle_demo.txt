@@ -15,9 +15,11 @@ goto t 45 50
 stamp t
 goto t (- 55) (- 50)
 stamp t
+forward t 100
+hideturtle t
 svg <- getSVG t
 writeFile "sample.svg" $ showSVG 300 300 svg
 closeField f
 :q
 % firefox sample.svg
-% runhaskell -Wall shinjuku01.hs - 8
+% runhaskell -Wall shinjuku01_gr.hs - 9

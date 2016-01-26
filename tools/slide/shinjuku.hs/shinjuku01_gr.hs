@@ -1,7 +1,7 @@
 import Lecture
 
 subtitle :: String
-subtitle = "0. 挨拶等"
+subtitle = "挨拶等"
 
 main :: IO ()
 main = runLecture [
