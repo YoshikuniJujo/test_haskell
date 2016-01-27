@@ -19,11 +19,9 @@ prelude = [ \t -> do
 	text t "* Haskell愛を共有(強要?)できる場に感謝しています", \t -> do
 	text t "* @threetreeslightさんと@kuranari_tmさんのおかげです", \t -> do
 	text t "* あらためて「ありがとうございます」", \t -> do
-	text t "* @hase-2015さん、Akira Osadaさん、@igrepさん", \t -> do
-	itext t 1 "ご参加ありがとうございます", \t -> do
-	text t "* @yuyhirakaさんは今日はいらしていませんが", \t -> do
-	itext t 1 "コミュニティへのご参加ありがとうございます", \t -> do
-	arrowIText t 2 "あとでメールしておきます(^_^;"
+	text t "* @hase-2015さん、Akira Osadaさん、", \t -> do
+	itext t 2 "@igrepさん、@yuyhirakaさん", \t -> do
+	itext t 1 "ご参加ありがとうございます"
 	]
 
 history :: Page

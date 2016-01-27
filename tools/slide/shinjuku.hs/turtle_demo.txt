@@ -22,4 +22,4 @@ writeFile "sample.svg" $ showSVG 300 300 svg
 closeField f
 :q
 % firefox sample.svg
-% runhaskell -Wall shinjuku01_gr.hs - 9
+% runhaskell -Wall shinjukuGR.hs - 9

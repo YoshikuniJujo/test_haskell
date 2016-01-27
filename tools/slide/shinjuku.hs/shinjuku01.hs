@@ -8,7 +8,8 @@ main = runLecture [
 	[flip writeTitle subtitle], repl1, repl2, loadFile,
 	function0,
 	function1, function2, function3, function4, function5, function6,
-	operator1, operator2
+	operator1, operator2,
+	summary
  ]
 
 repl1 :: Page
@@ -184,4 +185,24 @@ operator2 = [ \t -> do
 	text t "* </>という名前の演算子を定義した", \t -> do
 	text t "* 関数リテラルで書くと", \t -> do
 	itext t 1 "(</>) = \\w h -> w / (h * h)"
+	]
+
+summary :: Page
+summary = [ \t -> do
+	writeTopTitle t "まとめ"
+	text t "", \t -> do
+	text t "* 関数は値を別の値に関連づけるもの", \t -> do
+	text t "* 関数の定義は以下のような形となる", \t -> do
+	itext t 1 "fun x y z = x + y * z", \t -> do
+	text t "* 関数定義は関数を作って変数を束縛している", \t -> do
+	itext t 1 "fun = \\x y z -> x + y * z", \t -> do
+	text t "* 多引数関数の正体は「関数を返す関数」", \t -> do
+	text t "* 演算子は中置記法の関数", \t -> do
+	text t "* 演算子と通常の関数は()や``で相互に変換できる", \t -> do
+	itext t 1 "12 + 25"
+	preLine t
+	arrowIText t 3 "(+) 12 25", \t -> do
+	itext t 1 "bmi 70 1.70"
+	preLine t
+	arrowIText t 3.5 "70 `bmi` 1.70"
 	]
