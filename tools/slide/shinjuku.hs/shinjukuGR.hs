@@ -107,7 +107,7 @@ aboutThis = [ \t -> do
 	writeTopTitle t "このスライドについて"
 	text t "", \t -> do
 	text t "* ちなみにこのスライドはHaskell製です", \t -> do
-	itext t 1 "(% view shinjuku01.hs)", \t -> do
+--	itext t 1 "(% view shinjuku01.hs)", \t -> do
 	text t "* xturtleというパッケージを使っています", \t -> do
 	text t "* いわゆるタートルグラフィックのHaskell版です", \t -> do
 	text t "* ステップバイステップでお絵描きができるので便利", \t -> do

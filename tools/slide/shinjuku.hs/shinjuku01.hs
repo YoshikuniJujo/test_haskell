@@ -8,6 +8,7 @@ main = runLecture [
 	[flip writeTitle subtitle], repl1, repl2, loadFile,
 	function0,
 	function1, function2, function3, function4, function5, function6,
+	higher1,
 	operator1, operator2,
 	summary
  ]
@@ -160,6 +161,24 @@ function6 = [ \t -> do
 	itext t 1 "24.221453287197235"
 	]
 
+higher1 :: Page
+higher1 = [ \t -> do
+	writeTopTitle t "高階関数"
+	text t "", \t -> do
+	text t "* 関数も「値」なので関数の引数にも返り値にもなる", \t -> do
+	text t "* 関数を返り値とする関数は「多引数関数」と同じだ", \t -> do
+	text t "* 関数を引数とする関数の例として関数twiceを定義しよう", \t -> do
+	text t "* functions.hsに追加しよう", \t -> do
+	itext t 1 "twice f x = f (f x)", \t -> do
+	text t "* 第1引数の関数を第2引数の値に対して2回適用する関数だ", \t -> do
+	text t "* 試してみる", \t -> do
+	itext t 1 "*Main> :reload", \t -> do
+	itext t 1 "*Main> twice double 3", \t -> do
+	itext t 1 "12", \t -> do
+	itext t 1 "*Main> twice not False", \t -> do
+	itext t 1 "False"
+	]
+
 operator1 :: Page
 operator1 = [ \t -> do
 	writeTopTitle t "演算子"
@@ -169,6 +188,7 @@ operator1 = [ \t -> do
 	itext t 1 "*Main> 12 + 25", \t -> do
 	itext t 1 "37", \t -> do
 	itext t 1 "*Main> (+) 12 25", \t -> do
+	itext t 1 "37", \t -> do
 	text t "* 演算子は中置記法ができる特殊な関数だ", \t -> do
 	text t "* ()でかこってやることで通常の前置記法が可能となる", \t -> do
 	text t "* 逆に普通の関数を``でかこむと中置記法ができる", \t -> do
