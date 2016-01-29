@@ -47,13 +47,14 @@ plan = [ \t -> do
 	text t " 1. 関数", \t -> do
 	text t " 2. 型", \t -> do
 	text t " 3. 多相関数", \t -> do
-	text t " 4. 代数的データ型 <- 今日(#1)はココマデ", \t -> do
-	text t " 5. 型クラス", \t -> do
-	text t " 6. モノイド", \t -> do
-	text t " 7. ファンクター", \t -> do
-	text t " 8. アプリカティブファンクター <- 次回(#2)はココマデ", \t -> do
-	text t " 9. モナド", \t -> do
-	text t "10. IOモナド <- #3でHello, world!"
+	text t " 4. 代数的データ型", \t -> do
+	text t " 5. 再帰関数 <- 今日(#1)はココマデ", \t -> do
+	text t " 6. 型クラス", \t -> do
+	text t " 7. モノイド", \t -> do
+	text t " 8. ファンクター", \t -> do
+	text t " 9. アプリカティブファンクター <- 次回(#2)はココマデ", \t -> do
+	text t "10. モナド", \t -> do
+	text t "11. IOモナド <- #3でHello, world!"
 	]
 
 follow :: Page
