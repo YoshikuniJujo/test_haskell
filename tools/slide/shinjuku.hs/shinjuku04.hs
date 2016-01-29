@@ -6,7 +6,8 @@ subtitle = "4. 代数的データ型"
 main :: IO ()
 main = runLecture [
 	[flip writeTitle subtitle], prelude, bool, prod, union, prodUnion,
-	param, pattern, label, newtype1, summary
+	param, rec, list1, list2,
+	pattern, label, newtype1, summary
 	]
 
 prelude :: Page
@@ -83,6 +84,51 @@ param = [ \t -> do
 	itext t 1 "Nothing", \t -> do
 	itext t 1 "Just 'c'", \t -> do
 	text t "* 型変数aに代入する型を変えるといろいろな型ができる"
+	]
+
+rec :: Page
+rec = [ \t -> do
+	writeTopTitle t "再帰的な型"
+	text t "", \t -> do
+	text t "* リストを表現する型は以下のように書ける", \t -> do
+	itext t 1 "data List a = Nil | Cons a (List a)", \t -> do
+	text t "* たとえばList Charならば以下のようになる", \t -> do
+	itext t 1 "Nil", \t -> do
+	itext t 1 "Cons 'c' Nil", \t -> do
+	itext t 1 "Cons 'd' (Cons 'c' Nil)", \t -> do
+	itext t 1 "Cons 'e' (Cons 'd' (Cons 'c' Nil))", \t -> do
+	text t "* 4番目は'e', 'd', 'c'をこの順に格納したリストだ"
+	]
+
+list1 :: Page
+list1 = [ \t -> do
+	writeTopTitle t "リスト"
+	text t "", \t -> do
+	text t "* Haskellで用意されているリストは本質的には型Listと同じ", \t -> do
+	text t "* 違いは", \t -> do
+	itext t 1 "+ 特別な記号を使っていることと", \t -> do
+	itext t 1 "+ いくつかの構文糖が用意されていることだ", \t -> do
+	text t "* 以下のように定義されていると考えられる", \t -> do
+	itext t 1 "data [] a = [] | (:) a ([] a)", \t -> do
+	text t "* 型Listの定義と比較してみよう", \t -> do
+	itext t 1 "data List a = Nil | Cons a (List a)", \t -> do
+	text t "* 特別な記号を使っていること以外は同じであることがわかる"
+	]
+
+list2 :: Page
+list2 = [ \t -> do
+	writeTopTitle t "リスト"
+	text t "", \t -> do
+	text t "* List型の値を以下のように書くことができる", \t -> do
+	itext t 1 "'e' `Cons` 'd' `Cons` 'c' `Cons` Nil", \t -> do
+	text t "* 同じように(:)を演算子として使うことができる", \t -> do
+	itext t 1 "'e' : 'd' : 'c' : []", \t -> do
+	text t "* 構文糖を使うとこれは以下のように書ける", \t -> do
+	itext t 1 "['e', 'd', 'c']", \t -> do
+	text t "* また[] Charと書く代わりに[Char]と書ける", \t -> do
+	text t "* [Char]にはStringという別名がある", \t -> do
+	text t "* また[Char]だけには特別な表記法があり", \t -> do
+	itext t 1 "\"edc\"と書くことができる"
 	]
 
 pattern :: Page
