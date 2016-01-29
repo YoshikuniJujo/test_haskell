@@ -42,8 +42,7 @@ chanto = [ \t -> do
 
 plan :: Page
 plan = [ \t -> do
-	writeTopTitle t "IOモナドへの(近)道"
-	text t "", \t -> do
+	writeTopTitle t "IOモナドへの(近)道", \t -> do
 	text t " 1. 関数", \t -> do
 	text t " 2. 型", \t -> do
 	text t " 3. 多相関数", \t -> do
@@ -53,8 +52,9 @@ plan = [ \t -> do
 	text t " 7. モノイド", \t -> do
 	text t " 8. ファンクター", \t -> do
 	text t " 9. アプリカティブファンクター <- 次回(#2)はココマデ", \t -> do
-	text t "10. モナド", \t -> do
-	text t "11. IOモナド <- #3でHello, world!"
+	text t "10. 関数の変形", \t -> do
+	text t "11. モナド", \t -> do
+	text t "12. IOモナド <- #3でHello, world!"
 	]
 
 follow :: Page
