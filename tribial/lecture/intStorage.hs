@@ -6,8 +6,8 @@ class IntStorage s where
 	store :: Int -> s -> s
 	derive :: s -> Maybe (Int, s)
 
-process1 :: IntStorage s => s
-process1 = let
+stored :: IntStorage s => s
+stored = let
 	s1 = store 8 empty
 	s2 = store 5 s1
 	s3 = store 2 s2
@@ -15,12 +15,14 @@ process1 = let
 	s5 = store 3 s4 in
 	s5
 
-process2 :: IntStorage s => s -> [Int]
-process2 s = let
-	Just (l, s1) = derive s
-	Just (m, s2) = derive s1
-	Just (n, s3) = derive s2 in
-	[l, m, n]
+derive3 :: IntStorage s => s -> Maybe [Int]
+derive3 s = case derive s of
+	Just (l, s1) -> case derive s1 of
+		Just (m, s2) -> case derive s2 of
+			Just (n, s3) -> Just [l, m, n]
+			_ -> Nothing
+		_ -> Nothing
+	_ -> Nothing
 
 newtype ListInt = LI [Int] deriving Show
 
