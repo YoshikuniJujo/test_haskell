@@ -25,3 +25,16 @@ instance Show Size where
 instance Bounded Size where
 	minBound = Short
 	maxBound = Venti
+
+instance Enum Size where
+	toEnum 0 = Short
+	toEnum 1 = Tall
+	toEnum 2 = Grande
+	toEnum 3 = Venti
+	toEnum _ = error "bad argument"
+	fromEnum Short = 0
+	fromEnum Tall = 1
+	fromEnum Grande = 2
+	fromEnum Venti = 3
+	enumFrom x = enumFromTo x maxBound
+	enumFromThen x y = enumFromThenTo x y maxBound
