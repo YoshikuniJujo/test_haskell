@@ -1,0 +1,12 @@
+x :: ((Char -> Bool) -> r) -> r
+y :: (Char -> r) -> r
+z :: Bool -> r
+
+z' :: (Char -> Bool) -> (Char -> r)
+z' = \f c -> z (f c)
+
+z'' :: (Char -> Bool) -> r
+z'' = y . \f c -> z (f c)
+
+r :: r
+r = x $ y . \f c -> z (f c)
