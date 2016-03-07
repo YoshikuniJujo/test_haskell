@@ -1,0 +1,10 @@
+instance Functor ((->) r) where
+	fmap f g = f . g
+
+instance Applicative ((->) r) where
+	pure = const
+	(<*>) f g x = f x (g x)
+
+instance Monad ((->) r) where
+	return = const
+	f >>= k = \r -> k (f r) r
