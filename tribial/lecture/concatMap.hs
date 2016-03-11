@@ -2,6 +2,13 @@ cm :: (a -> [b]) -> (b -> [c]) -> a -> [c]
 -- cm g h = concatMap h . g
 cm g h = concat . map h . g
 
+concatMap' :: (a -> [b]) -> [a] -> [b]
+-- concatMap' f xs = const xs `cm` f $ ()
+concatMap' = (. const) . (($ ()) .) . flip cm
+
+app :: [a -> b] -> [a] -> [b]
+app fs xs = [ f x | f <- fs, x <- xs ]
+
 {-
 
 cm g h = concat . map h . g
