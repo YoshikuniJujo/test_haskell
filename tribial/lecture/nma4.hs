@@ -34,6 +34,9 @@ safeDivTM x y = SuccessM $ x `div` y
 calcTM :: Int -> Int -> Int -> Int -> TryM Int
 calcTM a b c d = tret (+) `tmapp` (a `safeDivTM` b) `tmapp` (c `safeDivTM` d)
 
+calc2 :: Int -> Int -> Int -> TryM Int
+calc2 a b c = a `safeDivTM` b `tbind` \ab -> ab `safeDivTM` c
+
 data TryA a = ErrorA String | SuccessA a deriving Show
 
 tpure :: a -> TryA a
