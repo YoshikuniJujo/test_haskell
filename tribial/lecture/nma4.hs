@@ -12,6 +12,12 @@ safeDivM :: Int -> Int -> Maybe Int
 safeDivM _ 0 = Nothing
 safeDivM x y = Just $ x `div` y
 
+calcM0 :: Int -> Int -> Int -> Int -> Maybe Int
+calcM0 a b c d =
+	a `safeDivM` b `mbind` \x ->
+	c `safeDivM` d `mbind` \y ->
+	mret $ x + y
+
 calcM :: Int -> Int -> Int -> Int -> Maybe Int
 calcM a b c d = mret (+) `mapp` (a `safeDivM` b) `mapp` (c `safeDivM` d)
 
