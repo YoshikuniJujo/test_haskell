@@ -30,5 +30,3 @@ instance Applicative Logger where
 instance Monad Logger where
 	return = Logger []
 	Logger ls x >>= f = let Logger ls' y = f x in Logger (ls ++ ls') y
-
--- double :: Int -> Logger Int
