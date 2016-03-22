@@ -1,5 +1,5 @@
 module IOMcn (
-	IOMcn, runIOMcn, (>>>), arr,
+	IOMcn, runIOMcn, (>>>), arr, app,
 	getLine, getInt, putLine, isEven) where
 
 import Prelude hiding (getLine)
@@ -17,6 +17,9 @@ m1 >>> m2 = IOMcn $ \x -> getIOMcn m1 x >>= getIOMcn m2
 
 arr :: (a -> b) -> IOMcn a b
 arr f = IOMcn $ return . f
+
+app :: IOMcn (IOMcn a b, a) b
+app = IOMcn $ uncurry getIOMcn
 
 getLine :: IOMcn () String
 getLine = IOMcn $ const Prelude.getLine
