@@ -12,3 +12,13 @@ instance Value [] where
 instance Value Id where
 	value (h : _) Head = Id h
 	value _ _ = error "type mismatch"
+
+myHead :: [a] -> Id a
+myHead xs = value xs Head
+
+some = (:) 1 some
+
+-- myHead some
+-- myHead (value some)
+-- (value some) Head
+-- 1
