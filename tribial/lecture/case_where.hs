@@ -1,6 +1,5 @@
-fun :: Double -> Double
-fun x = case recip x of
-	10 -> 0
-	r -> s + s
-		where
-		s = r ^ 2
+nonsense :: String -> [(String, Int)] -> String
+nonsense k d = case lookup k d of
+	Just n -> s ++ reverse s
+		where s = show n
+	_ -> "NO VALUE"
