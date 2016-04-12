@@ -14,13 +14,41 @@ point Armor = 80
 point Sord = 100
 point Star = 200
 
+bagage1, bagage2, bagage3 :: Bagage
+bagage1 = [Banana, Armor, Star, Sord]
+bagage2 = [Club, Armor, Shield, Star, Star]
+bagage3 = [Shield, Sord, Star]
+
+stage1, stage2, stage3 :: Stage
+stage1 = Fork
+	(Fork (Goal Club) (Goal Sord))
+	(Fork (Goal Shield) (Goal Club))
+
+stage2 = Fork
+	(Fork
+		(Goal Banana) 
+		(Fork
+			(Goal Shield)
+			(Goal Banana)))
+	(Fork
+		(Goal Star)
+		(Goal Sord))
+
+stage3 = Fork
+	(Goal Shield)
+	(Fork
+		(Fork
+			(Goal Armor)
+			(Goal Shield))
+		(Goal Shield))
+
 yourItems :: Bagage -> Int
 yourItems (_ : is) = 1 + yourItems is
 yourItems _ = 0
 
-yourPoints :: Bagage -> Int
-yourPoints (i : is) = point i + yourPoints is
-yourPoints _ = 0
+yourPoint :: Bagage -> Int
+yourPoint (i : is) = point i + yourPoint is
+yourPoint _ = 100
 
 yours :: (Item -> b -> b) -> b -> Bagage -> b
 yours op v (i : is) = i `op` yours op v is
@@ -28,11 +56,11 @@ yours op v _ = v
 
 stageItems :: Int -> Stage -> Int
 stageItems n (Fork l r) = stageItems (stageItems n r) l
-stageItems n _ = n + 1
+stageItems n _ = 1 + n
 
-stagePoints :: Int -> Stage -> Int
-stagePoints p (Fork l r) = stagePoints (stagePoints p r) l
-stagePoints p (Goal i) = point i + p
+stagePoint :: Int -> Stage -> Int
+stagePoint p (Fork l r) = stagePoint (stagePoint p r) l
+stagePoint p (Goal i) = point i + p
 
 bestItem :: Item -> Stage -> Item
 bestItem b (Fork l r) = bestItem (bestItem b r) l

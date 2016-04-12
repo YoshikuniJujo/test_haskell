@@ -5,7 +5,7 @@ sample = Node (Node (Leaf 10) (Leaf 25)) (Node (Leaf 100) (Leaf 55))
 
 instance Foldable BinTree where
 	foldr op v (Leaf x) = x `op` v
-	foldr op v (Node t1 t2) = foldr op  (foldr op v t2) t1
+	foldr op v (Node t1 t2) = foldr op (foldr op v t2) t1
 	foldMap f (Leaf x) = f x
 	foldMap f (Node t1 t2) = foldMap f t1 `mappend` foldMap f t2
 
@@ -16,3 +16,7 @@ instance Foldable BinTree where
 -- ffoldr op (Node t1 t2) v = ffoldr op t1 (ffoldr op t2 v)
 -- foldr op v (Leaf x) = x `op` v
 -- foldr op v (Node t1 t2) v = foldr op (foldr op v t2) t1
+
+ffoldr :: (a -> b -> b) -> BinTree a -> b -> b
+ffoldr op (Node t1 t2) = ffoldr op t1 . ffoldr op t2
+ffoldr op (Leaf x) = (x `op`)
