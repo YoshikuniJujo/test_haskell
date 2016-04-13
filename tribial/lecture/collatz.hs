@@ -1,4 +1,4 @@
-import Control.Applicative
+-- import Control.Applicative
 import Data.Bool
 
 takeTo, takeTo', takeTo'', takeTo''' :: (a -> Bool) -> [a] -> [a]
