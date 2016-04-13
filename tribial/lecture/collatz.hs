@@ -1,6 +1,7 @@
 import Control.Applicative
+import Data.Bool
 
-takeTo, takeTo', takeTo'' :: (a -> Bool) -> [a] -> [a]
+takeTo, takeTo', takeTo'', takeTo''' :: (a -> Bool) -> [a] -> [a]
 takeTo _ [] = []
 takeTo p (x  : xs)
 	| p x = [x]
@@ -9,3 +10,5 @@ takeTo p (x  : xs)
 takeTo' p = foldr (\x -> (x :) . if p x then const [] else id) []
 
 takeTo'' = (`foldr` []) . ((.) <$> (:) <*>) . ((([id, const []] !!) . fromEnum) .)
+
+takeTo''' = (`foldr` []) . ((.) <$> (:) <*>) . (bool id (const []) .)
