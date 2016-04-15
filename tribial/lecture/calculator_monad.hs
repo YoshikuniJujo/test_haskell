@@ -1,4 +1,4 @@
-{-# LANGUAGE TupleSections, MonadComprehensions #-}
+{-# LANGUAGE MonadComprehensions #-}
 
 import Control.Monad
 
@@ -7,7 +7,7 @@ import Control.Monad
 -- 3 * 4 M+ C 2 * 5 M+ C MR * 7
 --
 
-data State a = State { runState :: Int -> (a, Int) }
+newtype State a = State { runState :: Int -> (a, Int) }
 
 instance Functor State where
 	fmap = (=<<) . (return .)
@@ -18,7 +18,7 @@ instance Applicative State where
 
 instance Monad State where
 	State m >>= f = State $ \s -> let (x, s') = m s in runState (f x) s'
-	return x = State $ (x ,)
+	return = State . (,)
 
 get :: State Int
 get = State $ \s -> (s, s)
