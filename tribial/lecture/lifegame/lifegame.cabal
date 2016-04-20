@@ -19,7 +19,7 @@ executable lifegame
   main-is:             lifegame.hs
   -- other-modules:       
   -- other-extensions:    
-  build-depends:       base
+  build-depends:       base, strict
   hs-source-dirs:      src
   ghc-options:         -fno-warn-tabs
   default-language:    Haskell2010

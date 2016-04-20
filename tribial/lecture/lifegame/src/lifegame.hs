@@ -2,6 +2,7 @@ import Control.Concurrent
 import Control.Arrow
 import Control.Monad
 import Data.Bool
+import System.Environment
 
 type Raw = [Bool]
 type Board = [Raw]
@@ -149,6 +150,9 @@ main' = forM_ (take 250 $ game sample3) $ \b -> do
 	threadDelay 100000
 
 main :: IO ()
-main = forM_ (take 140 $ game sample4) $ \b -> do
-	putStrLn . unlines $ showBoard b
-	threadDelay 100000
+main = do
+	forM_ (take 140 $ game sample4) $ \b -> do
+		putStrLn . unlines $ showBoard b
+		threadDelay 100000
+	getArgs >>= print
+	readFile "Setup.hs" >>= putStr
