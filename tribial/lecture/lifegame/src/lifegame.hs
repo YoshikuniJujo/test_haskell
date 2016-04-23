@@ -1,3 +1,5 @@
+{-# LANGUAGE TupleSections #-}
+
 import Prelude hiding (readFile)
 import System.IO.Strict (readFile)
 
@@ -17,8 +19,7 @@ main = do
 				threadDelay 100000
 		_ -> putStrLn "Usage: lifegame foo.txt 100"
 
-type Board = [Row]
-type Row = [Bool]
+type Board = [[Bool]]
 
 showBoard :: Board -> [String]
 showBoard = map . map $ bool '-' '*'
@@ -27,32 +28,33 @@ readBoard :: [String] -> Board
 readBoard = map $ map (== '*')
 
 game :: Board -> [Board]
-game = iterate $ next . count . neighbors
+game = iterate $ next . count . neighbors False
 
 type Count = [[(Bool, Int)]]
-type Neighbors = [(Bool, [Bool])]
+type Neighbors = [[(Bool, [Bool])]]
 
 next :: Count -> Board
 next = map . map $ \(h, n) -> bool (n == 3) (n == 2 || n == 3) h
 
-count :: [Neighbors] -> Count
-count = map . map . second $ sum . map fromEnum
+count :: Neighbors -> Count
+-- count = map . map . second $ sum . map fromEnum
+count = map . map . second $ length . filter id
 
-neighbors :: Board -> [Neighbors]
-neighbors = map (uncurry3 nbs) . triples (repeat False) . map (False :)
+neighbors :: a -> [[a]] -> [[(a, [a])]]
+neighbors d = map (uncurry3 nbs) . triples (d, repeat d) . map (d ,)
 
-nbs :: Row -> Row -> Row -> Neighbors
-nbs (tl : ts@(t : tr : _)) (l : hs@(h : r : _)) (bl : bs@(b : br : _)) =
-	(h, [tl, t, tr, l, r, bl, b, br]) : nbs ts hs bs
-nbs (tl : t : _) (l : h : _) (bl : b : _) = [(h, [tl, t, l, bl, b])]
+nbs :: (a, [a]) -> (a, [a]) -> (a, [a]) -> [(a, [a])]
+nbs (tl, t : ts@(tr : _)) (l, h : hs@(r : _)) (bl, b : bs@(br : _)) =
+	(h, [tl, t, tr, l, r, bl, b, br]) : nbs (t, ts) (h, hs) (b, bs)
+nbs (tl, t : _) (l, h : _) (bl, b : _) = [(h, [tl, t, l, bl, b])]
 nbs _ _ _ = []
 
 triples :: a -> [a] -> [(a, a, a)]
-triples d xs = tpl $ d : xs
+triples d = tpl d
 	where
-	tpl (p : ys@(c : f : _)) = (p, c, f) : tpl ys
-	tpl [p, c] = [(p, c, d)]
-	tpl _ = []
+	tpl p (c : fs@(f : _)) = (p, c, f) : tpl c fs
+	tpl p [c] = [(p, c, d)]
+	tpl _ _ = []
 
 second :: (b -> c) -> (a, b) -> (a, c)
 second f (x, y) = (x, f y)
