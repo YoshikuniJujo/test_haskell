@@ -34,9 +34,6 @@ mguard :: Bool -> Maybe ()
 mguard True = Just ()
 mguard _ = Nothing
 
-memp :: Maybe a
-memp = Nothing
-
 malt :: Maybe a -> Maybe a -> Maybe a
 mx@(Just x) `malt` _ = mx
 _ `malt` my = my
@@ -44,14 +41,3 @@ _ `malt` my = my
 malts :: [Maybe a] -> Maybe a
 malts (x : xs) = x `malt` malts xs
 malts _ = memp
-
-lfoldM :: Monad m => (a -> b -> m a) -> a -> [b] -> m a
-lfoldM f v (x : xs) = f v x >>= \v' -> lfoldM f v' xs
-lfoldM _ v _ = return v
-
-{-
-myFoldM :: (Foldable t, Monad m) => (a -> b -> m a) -> a -> t b -> m a
-myFoldM f = flip $ foldr f' return
-	where
-	f' x k = (>>= k) . flip f x
-	-}
