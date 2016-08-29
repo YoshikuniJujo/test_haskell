@@ -1,0 +1,8 @@
+Hello, world!
+This is <bold!
+This is <dotted|
+<--
+<葡萄(ぶどう)
+<<--!
+<<不束(ふつつか)!
+<<不動|(ふどう)
