@@ -1,0 +1,24 @@
+build-type: Simple
+cabal-version: >= 1.10
+
+name: testPersistent
+version: 0.1.0.0
+
+synopsis: hoge
+description: Please see README.md
+homepage: no
+
+license: BSD3
+license-file: LICENSE
+author: YoshikuniJujo
+maintainer: PAF01143@nifty.ne.jp
+copyright: 2017 Yoshikuni Jujo
+category: Test
+
+executable testPersistent
+  hs-source-dirs: app
+  main-is: testPersistent.hs
+  ghc-options: -Wall -fno-warn-tabs
+  build-depends: base, persistent, persistent-template, resourcet,
+    monad-logger, persistent-sqlite, text
+  default-language: Haskell2010
