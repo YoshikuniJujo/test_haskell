@@ -38,3 +38,12 @@ executable postgresTutorial
   build-depends: base, persistent, persistent-template, resourcet,
     monad-logger, persistent-postgresql, bytestring, time
   default-language: Haskell2010
+
+executable testRawSql
+  hs-source-dirs: app
+  main-is: testRawSql.hs
+  ghc-options: -Wall -fno-warn-tabs
+  build-depends: base, persistent, persistent-template, resourcet,
+    monad-logger, persistent-postgresql, bytestring, time,
+    postgresql-simple
+  default-language: Haskell2010
