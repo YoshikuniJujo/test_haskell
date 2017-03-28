@@ -17,7 +17,7 @@ category: Test
 
 library
   hs-source-dirs:	lib
-  exposed-modules:	Template
+  exposed-modules:	Template, Geo
   ghc-options:		-fno-warn-tabs
   build-depends: base, persistent, persistent-template, resourcet,
     monad-logger, persistent-postgresql, bytestring, text, time,
@@ -90,7 +90,7 @@ executable testGeoPoint
   hs-source-dirs: app
   main-is: testGeoPoint.hs
   ghc-options: -Wall -fno-warn-tabs
-  build-depends: base, esqueleto, text, testPersistent
+  build-depends: base, esqueleto, text, testPersistent, bytestring
   default-language: Haskell2010
   extensions:
     TemplateHaskell, QuasiQuotes, TypeFamilies, GADTs,
