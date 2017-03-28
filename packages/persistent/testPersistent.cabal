@@ -56,3 +56,12 @@ executable testEsqueleto
     monad-logger, persistent-postgresql, bytestring, text, time,
     postgresql-simple, esqueleto
   default-language: Haskell2010
+
+executable testEsqueleto2
+  hs-source-dirs: app
+  main-is: testEsqueleto2.hs
+  ghc-options: -Wall -fno-warn-tabs
+  build-depends: base, persistent, persistent-template, resourcet,
+    monad-logger, persistent-postgresql, bytestring, text, time,
+    postgresql-simple, esqueleto
+  default-language: Haskell2010
