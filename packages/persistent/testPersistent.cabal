@@ -15,6 +15,15 @@ maintainer: PAF01143@nifty.ne.jp
 copyright: 2017 Yoshikuni Jujo
 category: Test
 
+library
+  hs-source-dirs:	lib
+  exposed-modules:	Template
+  ghc-options:		-fno-warn-tabs
+  build-depends: base, persistent, persistent-template, resourcet,
+    monad-logger, persistent-postgresql, bytestring, text, time,
+    postgresql-simple, esqueleto, transformers, template-haskell
+  default-language:	Haskell2010
+
 executable testPersistent
   hs-source-dirs: app
   main-is: testPersistent.hs
@@ -65,3 +74,25 @@ executable testEsqueleto2
     monad-logger, persistent-postgresql, bytestring, text, time,
     postgresql-simple, esqueleto
   default-language: Haskell2010
+
+executable testTemplate
+  hs-source-dirs: app
+  main-is: testTemplate.hs
+  ghc-options: -Wall -fno-warn-tabs
+  build-depends: base, esqueleto, text, testPersistent
+  default-language: Haskell2010
+  extensions:
+    TemplateHaskell, QuasiQuotes, TypeFamilies, GADTs,
+    MultiParamTypeClasses, GeneralizedNewtypeDeriving,
+    OverloadedStrings, TypeApplications
+
+executable testGeoPoint
+  hs-source-dirs: app
+  main-is: testGeoPoint.hs
+  ghc-options: -Wall -fno-warn-tabs
+  build-depends: base, esqueleto, text, testPersistent
+  default-language: Haskell2010
+  extensions:
+    TemplateHaskell, QuasiQuotes, TypeFamilies, GADTs,
+    MultiParamTypeClasses, GeneralizedNewtypeDeriving,
+    OverloadedStrings, TypeApplications
