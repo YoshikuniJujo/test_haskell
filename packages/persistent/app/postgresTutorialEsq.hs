@@ -3,7 +3,8 @@ import Template (
 	put, newline)
 import Database.Esqueleto (
 	InnerJoin(..), (^.), (==.),
-	insert, select, from, on, unValue, unSqlBackendKey )
+	insert, select, from, on, unValue, unSqlBackendKey,
+	where_, just, val, (>.) )
 
 import Control.Monad.IO.Class
 import Control.Arrow
@@ -49,18 +50,43 @@ main = runDB migrateAll $ do
 		weatherPrcp = Nothing }
 
 	selectAll >>= liftIO . putStr . showWeather
+	selectAll >>= liftIO . putStr . showTable
+		["city", "temp_avg", "date"]
+		[L, R, L] [
+			Txt.unpack . weatherCity,
+			show . (`div` 2) . uncurry (+)
+				. (weatherTemp_lo &&& weatherTemp_hi),
+			show . weatherDate ]
+
+	w <- select . from $ \weather -> do
+		return weather
+	liftIO . putStr $ showWeather w
+
+	w <- select . from $ \weather -> do
+		where_ $ weather ^. WeatherPrcp >. just (val 0.0)
+		return weather
+	liftIO . putStr $ showWeather w
+
 	selectAll @Cities >>= liftIO . mapM_ print
 	deleteAll @Weather
 	deleteAll @Cities
 
 showWeather :: [Entity Weather] -> String
-showWeather = unlines
+showWeather = showTable
+	["city", "temp_lo", "temp_hi", "prcp", "date"]
+	[L, R, R, R, L] [
+		Txt.unpack . weatherCity,
+		show . weatherTemp_lo,
+		show . weatherTemp_hi,
+		maybe "" show . weatherPrcp,
+		show . weatherDate ]
+
+showTable :: [String] -> [LeftRight] -> [a -> String] -> [Entity a] -> String
+showTable ts lrs fs = (++ "\n") . unlines
 	. (\(hl, l1 : ls) ->
-		l1 : hl : ls ++ ["(" ++ show (length ls) ++ " rows)" ])
+		l1 : hl : ls ++ ["(" ++ show (length ls) ++ " rows)"])
 	. (mkHorizontalLine &&& map (intercalate " | "))
-	. showLines [L, R, R, R, L]
-	. (["city", "temp_lo", "temp_hi", "prcp", "date"] :)
-	. map showWeatherGen
+	. showLines lrs . (ts :) . map (pickup fs)
 
 mkHorizontalLine :: [[String]] -> String
 mkHorizontalLine (ss : _) = intercalate "-+-"
@@ -71,15 +97,10 @@ showLines lrs = map (zipWith (uncurry . toLen) lrs)
 	. uncurry (map . zip $)
 	. (map maximum . map (map length) . transpose &&& id)
 
-showWeatherGen :: Entity Weather -> [String]
-showWeatherGen w_ = [
-	Txt.unpack $ weatherCity w,
-	show $ weatherTemp_lo w,
-	show $ weatherTemp_hi w,
-	maybe "" show $ weatherPrcp w,
-	show $ weatherDate w ]
+pickup :: [a -> String] -> Entity a -> [String]
+pickup fs x_ = map ($ x) fs
 	where
-	w = entityVal w_
+	x = entityVal x_
 
 data LeftRight = L | R deriving Show
 
