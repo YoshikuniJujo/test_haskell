@@ -55,10 +55,16 @@ main = runDB migrateAll $ do
 
 showWeather :: [Entity Weather] -> String
 showWeather = unlines
-	. map (intercalate " | ")
+	. (\(hl, l1 : ls) ->
+		l1 : hl : ls ++ ["(" ++ show (length ls) ++ " rows)" ])
+	. (mkHorizontalLine &&& map (intercalate " | "))
 	. showLines [L, R, R, R, L]
 	. (["city", "temp_lo", "temp_hi", "prcp", "date"] :)
 	. map showWeatherGen
+
+mkHorizontalLine :: [[String]] -> String
+mkHorizontalLine (ss : _) = intercalate "-+-"
+	$ map (\s -> replicate (length s) '-') ss
 
 showLines :: [LeftRight] -> [[String]] -> [[String]]
 showLines lrs = map (zipWith (uncurry . toLen) lrs)
