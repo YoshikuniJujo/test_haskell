@@ -4,7 +4,7 @@ import Template (
 import Database.Esqueleto (
 	InnerJoin(..), (^.), (==.),
 	insert, select, from, on, unValue, unSqlBackendKey,
-	where_, just, val, (>.) )
+	where_, just, val, (>.), orderBy, asc, distinct, Value(..) )
 
 import Control.Monad.IO.Class
 import Control.Arrow
@@ -66,6 +66,32 @@ main = runDB migrateAll $ do
 		where_ $ weather ^. WeatherPrcp >. just (val 0.0)
 		return weather
 	liftIO . putStr $ showWeather w
+
+	w <- select . from $ \weather -> do
+		orderBy [asc $ weather ^. WeatherCity]
+		return weather
+	liftIO . putStr $ showWeather w
+
+	w <- select . from $ \weather -> do
+		orderBy [
+			asc $ weather ^. WeatherCity,
+			asc $ weather ^. WeatherTemp_lo ]
+		return weather
+	liftIO . putStr $ showWeather w
+
+	w <- select . distinct . from $ \weather -> do
+		return $ weather ^. WeatherCity
+	liftIO $ print (w :: [Value Text])
+
+	w <- select . distinct . from $ \weather -> do
+		orderBy [ asc $ weather ^. WeatherCity ]
+		return $ weather ^. WeatherCity
+	liftIO $ print (w :: [Value Text])
+
+	wc <- select . from $ \(weather `InnerJoin` cities) -> do
+		on $ weather ^. WeatherCity ==. cities ^. CitiesName
+		return (weather, cities)
+	liftIO $ print (wc :: [(Entity Weather, Entity Cities)])
 
 	selectAll @Cities >>= liftIO . mapM_ print
 	deleteAll @Weather
