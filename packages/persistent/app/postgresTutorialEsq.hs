@@ -4,8 +4,8 @@ import Template (
 import Database.Esqueleto (
 	InnerJoin(..), (^.), (==.),
 	insert, select, from, on, unValue, unSqlBackendKey,
-	where_, just, val, (>.), orderBy, asc, distinct, Value(..), max_,
-	sub_select, SqlExpr )
+	where_, just, val, (<.), (>.), orderBy, asc, distinct, Value(..), max_,
+	sub_select, SqlExpr, groupBy, having, like, (++.), (%) )
 
 import Control.Monad.IO.Class
 import Control.Arrow
@@ -115,6 +115,30 @@ main = runDB migrateAll $ do
 				return $ max_ (w ^. WeatherTemp_lo)
 		return $ weather ^. WeatherCity
 	liftIO $ print (ct :: [Value Text])
+
+	tl <- select . from $ \weather -> do
+		groupBy $ weather ^. WeatherCity
+		return $ (
+			weather ^. WeatherCity,
+			max_ (weather ^. WeatherTemp_lo) )
+	liftIO $ print (tl :: [(Value Text, Value (Maybe Int))])
+
+	tl <- select . from $ \weather -> do
+		groupBy $ weather ^. WeatherCity
+		having $ max_ (weather ^. WeatherTemp_lo) <. just (val 40)
+		return $ (
+			weather ^. WeatherCity,
+			max_ (weather ^. WeatherTemp_lo) )
+	liftIO $ print (tl :: [(Value Text, Value (Maybe Int))])
+
+	tl <- select . from $ \weather -> do
+		where_ $ ((weather ^. WeatherCity) `like` (val "H" ++. (%)))
+		groupBy $ weather ^. WeatherCity
+		having $ max_ (weather ^. WeatherTemp_lo) <. just (val 40)
+		return $ (
+			weather ^. WeatherCity,
+			max_ (weather ^. WeatherTemp_lo) )
+	liftIO $ print (tl :: [(Value Text, Value (Maybe Int))])
 
 	selectAll @Cities >>= liftIO . mapM_ print
 	deleteAll @Weather
