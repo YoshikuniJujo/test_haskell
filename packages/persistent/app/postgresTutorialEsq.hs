@@ -5,7 +5,8 @@ import Database.Esqueleto (
 	InnerJoin(..), (^.), (==.),
 	insert, select, from, on, unValue, unSqlBackendKey,
 	where_, just, val, (<.), (>.), orderBy, asc, distinct, Value(..), max_,
-	sub_select, SqlExpr, groupBy, having, like, (++.), (%) )
+	sub_select, SqlExpr, groupBy, having, like, (++.), (%),
+	(-.), (=.), set, update )
 
 import Control.Monad.IO.Class
 import Control.Arrow
@@ -139,6 +140,17 @@ main = runDB migrateAll $ do
 			weather ^. WeatherCity,
 			max_ (weather ^. WeatherTemp_lo) )
 	liftIO $ print (tl :: [(Value Text, Value (Maybe Int))])
+
+	selectAll >>= liftIO . putStr . showWeather
+
+	update $ \weather -> do
+		set weather [
+			WeatherTemp_lo =. weather ^. WeatherTemp_lo -. val 2,
+			WeatherTemp_hi =. weather ^. WeatherTemp_hi -. val 2 ]
+		where_ $ weather ^. WeatherDate >.
+			val (fromGregorian 1994 11 28)
+
+	selectAll >>= liftIO . putStr . showWeather
 
 	selectAll @Cities >>= liftIO . mapM_ print
 	deleteAll @Weather
