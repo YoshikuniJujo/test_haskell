@@ -1,10 +1,11 @@
 import Template (
 	Entity(..), tables, persistLowerCase, runDB, selectAll, deleteAll,
-	put, newline)
+	put, newline )
 import Database.Esqueleto (
 	InnerJoin(..), (^.), (==.),
 	insert, select, from, on, unValue, unSqlBackendKey,
-	where_, just, val, (>.), orderBy, asc, distinct, Value(..) )
+	where_, just, val, (>.), orderBy, asc, distinct, Value(..), max_,
+	sub_select, SqlExpr )
 
 import Control.Monad.IO.Class
 import Control.Arrow
@@ -91,11 +92,36 @@ main = runDB migrateAll $ do
 	wc <- select . from $ \(weather `InnerJoin` cities) -> do
 		on $ weather ^. WeatherCity ==. cities ^. CitiesName
 		return (weather, cities)
-	liftIO $ print (wc :: [(Entity Weather, Entity Cities)])
+	liftIO . putStr $ show2Tables
+		["city", "temp_lo", "temp_hi", "prcp", "date",
+			"name", "location"]
+		[L, R, R, R, R, L, R] [
+			Left $ Txt.unpack . weatherCity,
+			Left $ show . weatherTemp_lo,
+			Left $ show . weatherTemp_hi,
+			Left $ maybe "" show . weatherPrcp,
+			Left $ show . weatherDate,
+			Right $ Txt.unpack . citiesName,
+			Right $ show . citiesLocation ]
+		(wc :: [(Entity Weather, Entity Cities)])
+
+	tl <- select . from $ \weather -> do
+		return $ max_ (weather ^. WeatherTemp_lo)
+	liftIO $ print (tl :: [Value (Maybe Int)])
+
+	ct <- select . from $ \weather -> do
+		where_ $ ((just $ weather ^. WeatherTemp_lo) ==.)
+			$ sub_select . from $ \w -> do
+				return $ max_ (w ^. WeatherTemp_lo)
+		return $ weather ^. WeatherCity
+	liftIO $ print (ct :: [Value Text])
 
 	selectAll @Cities >>= liftIO . mapM_ print
 	deleteAll @Weather
 	deleteAll @Cities
+
+myJust :: Value a -> Value (Maybe a)
+myJust (Value x) = Value $ Just x
 
 showWeather :: [Entity Weather] -> String
 showWeather = showTable
@@ -114,6 +140,15 @@ showTable ts lrs fs = (++ "\n") . unlines
 	. (mkHorizontalLine &&& map (intercalate " | "))
 	. showLines lrs . (ts :) . map (pickup fs)
 
+show2Tables :: [String] -> [LeftRight] ->
+	[Either (a -> String) (b -> String)] -> [(Entity a, Entity b)] -> String
+show2Tables ts lrs fs = (++ "\n") . unlines
+	. (\(hl, l1 : ls) ->
+		l1 : hl : ls ++ ["(" ++ show (length ls) ++ " rows)"])
+	. (mkHorizontalLine &&& map (intercalate " | "))
+	. showLines lrs . (ts :)
+	. map (pickup2 fs)
+
 mkHorizontalLine :: [[String]] -> String
 mkHorizontalLine (ss : _) = intercalate "-+-"
 	$ map (\s -> replicate (length s) '-') ss
@@ -127,6 +162,10 @@ pickup :: [a -> String] -> Entity a -> [String]
 pickup fs x_ = map ($ x) fs
 	where
 	x = entityVal x_
+
+pickup2 :: [Either (a -> String) (b -> String)] ->
+	(Entity a, Entity b) -> [String]
+pickup2 fs (x, y) = map (either ($ entityVal x) ($ entityVal y)) fs
 
 data LeftRight = L | R deriving Show
 
