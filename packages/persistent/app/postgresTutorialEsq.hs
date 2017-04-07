@@ -6,7 +6,7 @@ import Database.Esqueleto (
 	insert, select, from, on, unValue, unSqlBackendKey,
 	where_, just, val, (<.), (>.), orderBy, asc, distinct, Value(..), max_,
 	sub_select, SqlExpr, groupBy, having, like, (++.), (%),
-	(-.), (=.), set, update )
+	(-.), (=.), set, update, delete )
 
 import Control.Monad.IO.Class
 import Control.Arrow
@@ -149,6 +149,11 @@ main = runDB migrateAll $ do
 			WeatherTemp_hi =. weather ^. WeatherTemp_hi -. val 2 ]
 		where_ $ weather ^. WeatherDate >.
 			val (fromGregorian 1994 11 28)
+
+	selectAll >>= liftIO . putStr . showWeather
+
+	delete . from $ \weather -> do
+		where_ $ weather ^. WeatherCity ==. val "Hayward"
 
 	selectAll >>= liftIO . putStr . showWeather
 
