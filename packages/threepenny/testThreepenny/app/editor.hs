@@ -1,3 +1,4 @@
+import Control.Monad
 import System.Directory
 import Data.List
 import System.FilePath
@@ -17,26 +18,20 @@ setup window = do
 	_ <- return window # set title "editor"
 	wrap <- UI.div #. "wrap"
 		# set style [
-			("width", "470px"), ("height", "300px"),
+			("width", "920px"), ("height", "580px"),
 			("border", "solid black 1px"), ("overflow", "scroll") ]
 		# set (attr "tabindex") "1"
 	canvas <- UI.canvas #. "canvas"
 		# set UI.textFont "20px sans-serif"
-		# set UI.width 450
+		# set UI.width 900
 		# set UI.height 1800
 		# set style [
-			("width", "450px"), ("height", "1800px"),
+			("width", "900px"), ("height", "1800px"),
 			("overflow", "scroll"),
 			("border", "solid black 1px") ]
 		# set (attr "tabindex") "1"
-	return canvas # set UI.textFont "30px sans-serif"
+	return canvas # set UI.textFont "20px sans-serif"
 	get UI.textFont canvas >>= liftIO . print
-	{-
-	UI.fillText "hello" (10, 40) canvas
-	UI.fillText "あいうえお漢字" (10, 80) canvas
-	UI.strokeText "hello" (10, 120) canvas
-	UI.strokeText "bottom" (10, 400) canvas
-	-}
 	files <- UI.button # set UI.text ".."
 	return wrap #+ [element canvas]
 	_ <- getBody window #+ [element wrap, element files]
@@ -46,18 +41,32 @@ setup window = do
 	_ <- liftIO . register (UI.click files) . const $ do
 		curh . goUp =<< currentValue curb
 		runUI window . showDirectory canvas =<< currentValue curb
---		runUI window . showDirectory canvas =<< currentValue curb
 	b <- liftIO $ stepper (- 1, - 1) (UI.mousemove canvas)
 	_ <- liftIO . register (UI.click canvas) . const $ do
 		fps <- (sort <$>) $ getDirCont =<< currentValue curb
 		print fps
-		i <- (`div` 40) . subtract 5 . snd <$> currentValue b
+		i <- (`div` 30) . subtract 5 . snd <$> currentValue b
 		print i
 		flip (maybe $ return ()) (fps `index` i) $ \fp -> do
-			curh . (</> fp) =<< currentValue curb
+			fpn <- (</> fp) <$> currentValue curb
+			b <- doesDirectoryExist fpn
+			if b
+				then do	curh . (</> fp) =<< currentValue curb
+					runUI window . showDirectory canvas
+						=<< currentValue curb
+				else if takeExtension fp == ".txt"
+					then do	print $ "TEXT: " ++ fpn
+						runUI window . showText canvas
+							=<< readFile fpn
+					else return ()
 			currentValue curb >>= print
-		runUI window . showDirectory canvas =<< currentValue curb
 	return ()
+
+showText :: UI.Canvas -> String -> UI ()
+showText c s = do
+	UI.clearCanvas c
+	showLines c 30 $ lines s
+--	UI.fillText s (10, 30) c
 
 index :: [a] -> Int -> Maybe a
 index (x : _) 0 = Just x
@@ -69,8 +78,8 @@ showDirectory :: UI.Canvas -> FilePath -> UI ()
 showDirectory c fp = do
 	UI.clearCanvas c
 	fps <- liftIO $ getDirCont fp
-	showLines c 40 $ sort fps
---	UI.fillText (unwords $ sort fps) (10, 40) c
+	showLines c 30 $ sort fps
+--	UI.fillText (unwords $ sort fps) (10, 30) c
 
 goUp :: FilePath -> FilePath
 goUp fp = case splitDirectories fp of
@@ -81,5 +90,5 @@ goUp fp = case splitDirectories fp of
 showLines :: UI.Canvas -> Double -> [String] -> UI ()
 showLines c y (s : ss) = do
 	UI.fillText s (10, y) c
-	showLines c (y + 40) ss
+	showLines c (y + 30) ss
 showLines _ _ [] = return ()
