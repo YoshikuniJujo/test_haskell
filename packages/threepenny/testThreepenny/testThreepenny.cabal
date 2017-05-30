@@ -51,7 +51,7 @@ executable editor
   hs-source-dirs:      app
   main-is:             editor.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall -fno-warn-tabs
-  build-depends:       base, testThreepenny, threepenny-gui, directory
+  build-depends:       base, testThreepenny, threepenny-gui, directory, filepath
   default-language:    Haskell2010
 
 test-suite testThreepenny-test
