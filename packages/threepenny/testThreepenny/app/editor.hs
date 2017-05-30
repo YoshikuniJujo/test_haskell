@@ -31,17 +31,22 @@ setup window = do
 		# set (attr "tabindex") "1"
 	return canvas # set UI.textFont "30px sans-serif"
 	get UI.textFont canvas >>= liftIO . print
+	{-
 	UI.fillText "hello" (10, 40) canvas
 	UI.fillText "あいうえお漢字" (10, 80) canvas
 	UI.strokeText "hello" (10, 120) canvas
 	UI.strokeText "bottom" (10, 400) canvas
-	files <- UI.button # set UI.text "Open File"
+	-}
+	files <- UI.button # set UI.text ".."
 	return wrap #+ [element canvas]
 	_ <- getBody window #+ [element wrap, element files]
 	(cure, curh) <- liftIO newEvent
 	curb <- stepper "/" cure
+	showDirectory canvas =<< currentValue curb
 	_ <- liftIO . register (UI.click files) . const $ do
+		curh . goUp =<< currentValue curb
 		runUI window . showDirectory canvas =<< currentValue curb
+--		runUI window . showDirectory canvas =<< currentValue curb
 	b <- liftIO $ stepper (- 1, - 1) (UI.mousemove canvas)
 	_ <- liftIO . register (UI.click canvas) . const $ do
 		fps <- (sort <$>) $ getDirCont =<< currentValue curb
@@ -66,6 +71,12 @@ showDirectory c fp = do
 	fps <- liftIO $ getDirCont fp
 	showLines c 40 $ sort fps
 --	UI.fillText (unwords $ sort fps) (10, 40) c
+
+goUp :: FilePath -> FilePath
+goUp fp = case splitDirectories fp of
+	[] -> fp
+	["/"] -> fp
+	ds -> joinPath $ init ds
 
 showLines :: UI.Canvas -> Double -> [String] -> UI ()
 showLines c y (s : ss) = do
