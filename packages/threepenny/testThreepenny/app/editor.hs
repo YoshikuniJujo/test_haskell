@@ -54,7 +54,7 @@ setup window = do
 				then do	curh . (</> fp) =<< currentValue curb
 					runUI window . showDirectory canvas
 						=<< currentValue curb
-				else if takeExtension fp == ".txt"
+				else if takeExtension fp `elem` [".txt", ".hs"]
 					then do	print $ "TEXT: " ++ fpn
 						runUI window . showText canvas
 							=<< readFile fpn
