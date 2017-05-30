@@ -38,11 +38,8 @@ setup window = do
 	files <- UI.button # set UI.text "Open File"
 	return wrap #+ [element canvas]
 	_ <- getBody window #+ [element wrap, element files]
-	(cde, cdh) <- liftIO newEvent
 	(cure, curh) <- liftIO newEvent
 	curb <- stepper "/" cure
-	_ <- liftIO . register cde $ \fp -> do
-		curh . (</> fp) =<< currentValue curb
 	_ <- liftIO . register (UI.click files) . const $ do
 		runUI window . showDirectory canvas =<< currentValue curb
 	b <- liftIO $ stepper (- 1, - 1) (UI.mousemove canvas)
@@ -52,7 +49,7 @@ setup window = do
 		i <- (`div` 40) . subtract 5 . snd <$> currentValue b
 		print i
 		flip (maybe $ return ()) (fps `index` i) $ \fp -> do
-			cdh fp
+			curh . (</> fp) =<< currentValue curb
 			currentValue curb >>= print
 		runUI window . showDirectory canvas =<< currentValue curb
 	return ()
