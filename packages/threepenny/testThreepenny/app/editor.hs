@@ -1,6 +1,5 @@
 import System.Directory
 import Data.List
-import Data.IORef
 import System.FilePath
 
 import qualified Graphics.UI.Threepenny as UI
@@ -40,12 +39,10 @@ setup window = do
 	return wrap #+ [element canvas]
 	_ <- getBody window #+ [element wrap, element files]
 	(cde, cdh) <- liftIO newEvent
-	cur <- liftIO $ newIORef "/"
 	(cure, curh) <- liftIO newEvent
-	_ <- liftIO . register cde $ \fp -> do
-		modifyIORef cur (</> fp)
-		curh =<< readIORef cur
 	curb <- stepper "/" cure
+	_ <- liftIO . register cde $ \fp -> do
+		curh . (</> fp) =<< currentValue curb
 	_ <- liftIO . register (UI.click files) . const $ do
 		runUI window . showDirectory canvas =<< currentValue curb
 	b <- liftIO $ stepper (- 1, - 1) (UI.mousemove canvas)
