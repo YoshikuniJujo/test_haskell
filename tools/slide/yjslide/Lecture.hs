@@ -1,3 +1,5 @@
+{-# LANGUAGE TupleSections #-}
+
 module Lecture (
 	Page,
 	runLecture,
@@ -107,7 +109,7 @@ runLecture pgs = do
 						case fn of
 							Just f -> writeFile f $
 								showSVG width
-									height svg
+									height $ map (undefined ,) svg
 							_ -> return ()
 						modifyIORef pagesRef tail
 						return True
