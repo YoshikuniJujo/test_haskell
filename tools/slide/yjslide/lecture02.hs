@@ -1,5 +1,6 @@
 module Main where
 
+import Prelude hiding (pure)
 import Lecture
 
 main :: IO ()

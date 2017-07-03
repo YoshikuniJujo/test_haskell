@@ -21,3 +21,75 @@ executable lecture01
     ghc-options: -fno-warn-tabs
     build-depends: base, xturtle, yjsvg, yjslide
     default-language: Haskell2010
+
+executable lecture02
+    hs-source-dirs: .
+    main-is: lecture02.hs
+    other-modules: Lecture, Whats, WriteTree
+    ghc-options: -fno-warn-tabs
+    build-depends: base, xturtle, yjsvg, yjslide
+    default-language: Haskell2010
+
+executable lecture03
+    hs-source-dirs: .
+    main-is: lecture03.hs
+    other-modules: Lecture, Whats, WriteTree
+    ghc-options: -fno-warn-tabs
+    build-depends: base, xturtle, yjsvg, yjslide
+    default-language: Haskell2010
+
+executable lecture04
+    hs-source-dirs: .
+    main-is: lecture04.hs
+    other-modules: Lecture, Whats, WriteTree
+    ghc-options: -fno-warn-tabs
+    build-depends: base, xturtle, yjsvg, yjslide
+    default-language: Haskell2010
+
+executable lecture05
+    hs-source-dirs: .
+    main-is: lecture05.hs
+    other-modules: Lecture, Whats, WriteTree
+    ghc-options: -fno-warn-tabs
+    build-depends: base, xturtle, yjsvg, yjslide
+    default-language: Haskell2010
+
+executable lecture06
+    hs-source-dirs: .
+    main-is: lecture06.hs
+    other-modules: Lecture, Whats, WriteTree
+    ghc-options: -fno-warn-tabs
+    build-depends: base, xturtle, yjsvg, yjslide
+    default-language: Haskell2010
+
+executable lecture07
+    hs-source-dirs: .
+    main-is: lecture07.hs
+    other-modules: Lecture, Whats, WriteTree
+    ghc-options: -fno-warn-tabs
+    build-depends: base, xturtle, yjsvg, yjslide
+    default-language: Haskell2010
+
+executable lecture08
+    hs-source-dirs: .
+    main-is: lecture08.hs
+    other-modules: Lecture, Whats, WriteTree
+    ghc-options: -fno-warn-tabs
+    build-depends: base, xturtle, yjsvg, yjslide
+    default-language: Haskell2010
+
+executable lecture09
+    hs-source-dirs: .
+    main-is: lecture09.hs
+    other-modules: Lecture, Whats, WriteTree
+    ghc-options: -fno-warn-tabs
+    build-depends: base, xturtle, yjsvg, yjslide
+    default-language: Haskell2010
+
+executable lecture10
+    hs-source-dirs: .
+    main-is: lecture10.hs
+    other-modules: Lecture, Whats, WriteTree
+    ghc-options: -fno-warn-tabs
+    build-depends: base, xturtle, yjsvg, yjslide
+    default-language: Haskell2010
