@@ -1,12 +1,15 @@
 import Control.Applicative
-import Data.Maybe
 
 instance Monad ZipList where
 	ZipList xs >>= f = ZipList . zincat $ map (getZipList . f) xs
 
 zincat :: [[a]] -> [a]
-zincat ((x : xs) : xss) = x : zincat (mapMaybe safeTail xss)
+zincat ((x : xs) : xss) = x : zincat (takeJusts $ map safeTail xss)
 zincat _ = []
+
+takeJusts :: [Maybe a] -> [a]
+takeJusts (Just x : mxs) = x : takeJusts mxs
+takeJusts _ = []
 
 safeTail :: [a] -> Maybe [a]
 safeTail [] = Nothing
