@@ -300,3 +300,8 @@ a.out
 /tribial/lecture/lifegame/lifegame
 
 .html/
+
+*.dyn_hi
+*.dyn_o
+bin/
+tmp.txt

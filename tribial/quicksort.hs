@@ -16,12 +16,11 @@ quicksortSTArray a = (getBounds a >>=) . flip devideAndConquer $ \(i0, j0) ->
 	flip (bool $ return Nothing) (i0 < j0) $ do
 		x0 <- ra i0
 		k <- doWhile (i0 + 1, j0) $ \(i, j) -> do
-			eij <- next x0 i0 j0
+			eij <- next x0 i j
 			case eij of
-				Right (i, j) -> Right (i + 1, j - 1) <$ fa i j
-				Left i -> return $ Left i
-		fa i0 k
-		return $ Just ((i0, k - 1), (k + 1, j0))
+				Right (ni, nj) -> Right (ni + 1, nj - 1) <$ fa ni nj
+				Left ni -> return $ Left ni
+		Just ((i0, k - 1), (k + 1, j0)) <$ fa i0 k
 	where
 	next x0 i0 j0 = doWhile (i0, j0) $ \(i, j) -> do
 		[xi, xj] <- mapM ra [i, j]

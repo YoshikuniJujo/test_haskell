@@ -1,11 +1,19 @@
 import Control.Applicative
+import Data.Maybe
 
 instance Monad ZipList where
-	ZipList xs >>= f = ZipList . zincat $ map (getZipList . f) xs
+	ZipList xs >>= f
+		| sameLength yss = ZipList $ zincat yss
+		| otherwise = ZipList []
+		where
+		yss = map (getZipList . f) xs
 
 zincat :: [[a]] -> [a]
-zincat ((x : xs) : xss) = x : zincat (takeJusts $ map safeTail xss)
+zincat ((x : _) : xss) = x : zincat (takeJusts $ map safeTail xss)
 zincat _ = []
+
+sameLength :: [[a]] -> Bool
+sameLength = and . (zipWith (==) <$> id <*> tail) . map length 
 
 zincatMap :: (a -> [b]) -> [a] -> [b]
 zincatMap = (zincat .) . map
