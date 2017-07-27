@@ -1,4 +1,4 @@
-{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE QuasiQuotes, TypeFamilies #-}
 
 import Data.Char
 import System.Environment
