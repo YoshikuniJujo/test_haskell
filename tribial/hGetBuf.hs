@@ -50,6 +50,18 @@ hReadValue' h = do
 			r <- peek p
 			return $ r `asTypeOf` t
 
+hReadValueMaybe :: forall a . Storable a => Handle -> IO (Maybe a)
+hReadValueMaybe h = allocaBytes (sizeOf (undefined :: a)) $ \p -> do
+	n <- hGetBuf h p $ sizeOf (undefined :: a)
+	if n /= sizeOf (undefined :: a) then return Nothing else Just <$> peek p
+
+hReadValues :: Storable a => Handle -> IO [a]
+hReadValues h = do
+	mx <- hReadValueMaybe h
+	case mx of
+		Just x -> (x :) <$> hReadValues h
+		Nothing -> return []
+
 hWriteValue :: forall a . Storable a => Handle -> a -> IO ()
 hWriteValue h x = allocaBytes (sizeOf x) $ \p ->  do
 	poke p x
