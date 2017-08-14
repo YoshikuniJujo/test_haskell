@@ -2,6 +2,7 @@
 
 import Control.Monad.Fix
 import Data.Word
+import Data.Int
 import System.IO
 import Foreign.Ptr
 import Foreign.Storable
@@ -67,3 +68,72 @@ hWriteValue :: forall a . Storable a => Handle -> a -> IO ()
 hWriteValue h x = alloca $ \p ->  do
 	poke p x
 	hPutBuf h p $ sizeOf x
+
+newtype Word64BE = Word64BE Word64 deriving Show
+newtype Word64LE = Word64LE Word64 deriving Show
+
+buildLittleEndian :: Num a => [Word8] -> a
+buildLittleEndian [] = 0
+buildLittleEndian (w : ws) = fromIntegral w + 2 ^ 8 * buildLittleEndian ws
+
+destroyLittleEndian :: Integral a => a -> [Word8]
+destroyLittleEndian n | n <= 0 = []
+destroyLittleEndian n = let (d, m) = n `divMod` (2 ^ 8) in
+	fromIntegral m : destroyLittleEndian d
+
+instance Storable Word64LE where
+	sizeOf _ = 8
+	alignment _ = 8
+	peek p = Word64LE . buildLittleEndian <$> peekArray 8 (castPtr p)
+	poke p (Word64LE w) = pokeArray (castPtr p) $ destroyLittleEndian w
+
+buildBigEndian :: Num a => [Word8] -> a
+buildBigEndian = bbe 0
+	where
+	bbe n [] = n
+	bbe n (w : ws) = bbe (n * 2 ^ 8 + fromIntegral w) ws
+
+destroyBigEndian :: Integral a => a -> [Word8]
+destroyBigEndian = dbe []
+	where
+	dbe ws n | n <= 0 = ws
+	dbe ws n = let (d, m) = n `divMod` (2 ^ 8) in
+		dbe (fromIntegral m : ws) d
+
+instance Storable Word64BE where
+	sizeOf _ = 8
+	alignment _ = 8
+	peek p = Word64BE . buildBigEndian <$> peekArray 8 (castPtr p)
+	poke p (Word64BE n) = pokeArray (castPtr p) $ destroyBigEndian n
+
+data Shape = Rectangle {
+	leftEdge :: Int32,
+	topEdge :: Int32,
+	width :: Int32,
+	height :: Int32
+	} deriving Show
+
+peekRectangle :: Ptr Int32 -> IO Shape
+peekRectangle p = do
+	[l, t, w, h] <- peekArray 4 p
+	return Rectangle {
+		leftEdge = l,
+		topEdge = t,
+		width = w,
+		height = h }
+
+pokeShape :: Ptr Int32 -> Shape -> IO ()
+pokeShape p r@(Rectangle { }) = do
+	poke (castPtr p) (1 :: Word8)
+	pokeArray (p `plusPtr` 1) $
+		map ($ r) [leftEdge, topEdge, width, height]
+
+instance Storable Shape where
+	sizeOf _ = 17
+	alignment _ = 8
+	peek p = do
+		k <- peek (castPtr p) :: IO Word8
+		case k of
+			1 -> peekRectangle (castPtr $ p `plusPtr` 1)
+			_ -> error "no such shape"
+	poke = pokeShape . castPtr
