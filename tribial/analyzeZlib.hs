@@ -15,6 +15,14 @@ import Data.String
 
 import qualified Data.ByteString as BS
 
+-- AD HOC
+
+adhocDropHeaders :: BS.ByteString -> BitArray
+adhocDropHeaders bs = fromJust $ do
+	(_, bs') <- zlibHeader bs
+	(_, ba) <- headerBits $ toBitArray bs'
+	return ba
+
 -- ZLIB HEADER
 
 zlibHeader :: BS.ByteString -> Maybe (ZlibHeader, BS.ByteString)
@@ -69,6 +77,12 @@ secondM f = uncurry (<$>) . ((,) *** f)
 -- DEFLATE
 
 -- deflateHeader :: BitArray -> ((BFinal, BType), BitArray)
+
+checkFixedOr :: BS.ByteString -> Maybe BType
+checkFixedOr bs = do
+	(_, bs') <- zlibHeader bs
+	(HeaderBits _ bt, _) <- headerBits $ toBitArray bs'
+	return bt
 
 headerBits :: BitArray -> Maybe (HeaderBits, BitArray)
 headerBits ba = do
@@ -155,6 +169,12 @@ reverseBits :: Bs -> Bs
 reverseBits = Bs . reverse . unBs
 
 -- FIXED HUFFMAN
+
+uncompressAdhocFixed :: BS.ByteString -> Maybe BS.ByteString
+uncompressAdhocFixed bs = do
+	(_, bs') <- zlibHeader bs
+	(_, ba) <- headerBits $ toBitArray bs'
+	return $ adhocFixed ba
 
 adhocFixed :: BitArray -> BS.ByteString
 adhocFixed = (BS.pack .) . unfoldr $ \a -> do
