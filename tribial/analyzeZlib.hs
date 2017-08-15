@@ -11,6 +11,7 @@ import Data.Maybe
 import Data.List
 import Data.Bits
 import Data.Word
+import Data.String
 
 import qualified Data.ByteString as BS
 
@@ -116,12 +117,56 @@ unconsBits (BitArray i bs) = do
 		then BitArray (i + 1) bs
 		else BitArray 0 bs')
 
-popBits :: Word8 -> BitArray -> Maybe ([Bool], BitArray)
-popBits n ba | n <= 0 = Just ([], ba)
+data Bs = Bs { unBs :: [Bool] } deriving Eq
+
+popBit :: Bs -> (Bool, Bs)
+popBit (Bs []) = error "empty Bits"
+popBit (Bs (b : bs)) = (b, Bs bs)
+
+pushBit :: Bool -> Bs -> Bs
+pushBit b = Bs . (b :) . unBs
+
+bitsToWord :: (Bits a, Num a) => Bs -> a
+bitsToWord (Bs []) = 0
+bitsToWord bs = let (b, bs') = popBit bs in
+	bool 0 1 b + (bitsToWord bs' `shiftL` 1)
+
+instance Show Bs where
+	show = map (bool '0' '1') . unBs
+
+instance Monoid Bs where
+	mempty = Bs []
+	Bs b1 `mappend` Bs b2 = Bs $ b1 ++ b2
+
+instance IsString Bs where
+	fromString = Bs . map (== '1')
+
+popBits :: Word8 -> BitArray -> Maybe (Bs, BitArray)
+popBits n ba | n <= 0 = Just (mempty, ba)
 popBits n ba = do
 	(b, ba') <- unconsBits ba
 	(bs, ba'') <- popBits (n - 1) ba'
-	return (b : bs, ba'')
+	return (b `pushBit` bs, ba'')
+
+initBits :: Bs -> Bs
+initBits = Bs . init . unBs
+
+reverseBits :: Bs -> Bs
+reverseBits = Bs . reverse . unBs
+
+-- FIXED HUFFMAN
+
+adhocFixed :: BitArray -> BS.ByteString
+adhocFixed = (BS.pack .) . unfoldr $ \a -> do
+	(bs, a') <- popBits 8 a
+	w <- adhocFixed1 bs
+	return (w, a')
+
+adhocFixed1 :: Bs -> Maybe Word8
+adhocFixed1 bs_ = do
+	guard $ initBits bs /= "0000000"
+	return $ bitsToWord bs - 48
+	where bs = reverseBits bs_
 
 -- TOOLS
 
