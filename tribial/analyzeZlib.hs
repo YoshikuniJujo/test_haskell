@@ -282,7 +282,15 @@ adhocTable = [
 	(3, "1100"), (4, "1101"), (17, "1110"),
 	(1, "11110"), (18, "11111") ]
 
-data Tree a = Leaf a | Node (Tree a) (Tree a) deriving Show
+tableToTree :: [(a, Bs)] -> Tree a
+tableToTree [(w, "")] = Leaf w
+tableToTree at = let (r, l) = partition ttt at in
+	Node (tableToTree $ map tl l) (tableToTree $ map tl r)
+	where
+	ttt p@(_, b) = fst $ popBit b
+	tl (w, b) = (w, snd $ popBit b)
+
+data Tree a = Leaf a | Node (Tree a) (Tree a) deriving (Show, Eq)
 
 adhocTableTree :: Tree Word8
 adhocTableTree = Node
@@ -353,10 +361,174 @@ adhocLitLenGenTable = map (first charToLitLenGen) [
 	('g', "1111011"), ('v', "1111100"), ('w', "1111101"),
 	('\262', "1111110"), ('\265', "1111111") ]
 
-litLenTree :: Tree Word8
-litLenTree = Leaf 0
+adhocLitLenGenTree :: Tree LitLenGen
+adhocLitLenGenTree = tableToTree adhocLitLenGenTable
 
-data LitLen = Lit Word8 | Len Word16 deriving Show
+data LitLen = Lit Word8 | EndOfBlock | Len Word16
+
+instance Show LitLen where
+	show (Lit c) = '\'' : chr (fromIntegral c) : "'"
+	show EndOfBlock = "EOB"
+	show (Len l) = "#" ++ show l
+
+data LitLenClass
+	= CLiteral
+	| CEndOfBlock
+	| CLen3_10
+	| CLen11_18
+	| CLen19_34
+	| CLen35_66
+	| CLen67_130
+	| CLen131_257
+	| CLen258
+	| LitLenClassError
+	deriving (Show, Eq)
+
+litLenClassifyTable :: [(Word16 -> Bool, LitLenClass)]
+litLenClassifyTable = [
+	((< 256), CLiteral),
+	((== 256), CEndOfBlock),
+	((< 265), CLen3_10),
+	((< 269), CLen11_18),
+	((< 273), CLen19_34),
+	((< 277), CLen35_66),
+	((< 281), CLen67_130),
+	((< 285), CLen131_257),
+	((== 285), CLen258),
+	(const True, LitLenClassError) ]
+
+litLenClass :: LitLenGen -> LitLenClass
+litLenClass (LitLenGen w) = llc litLenClassifyTable
+	where
+	llc [] = error "not occur"
+	llc ((p, c) : pcs) | p w = c | otherwise = llc pcs
+
+litLenClassToProcessTable ::
+	[(LitLenClass, Word16 -> BitArray -> Maybe (LitLen, BitArray))]
+litLenClassToProcessTable = [
+	(CLiteral, \w ba -> Just (Lit $ fromIntegral w, ba)),
+	(CEndOfBlock, \_ ba -> Just (EndOfBlock, ba)),
+	(CLen3_10, \w ba -> Just (Len $ w - 254, ba)),
+	(CLen11_18, \w ba -> do
+		(n, ba') <- getNumber 1 ba
+		return (Len $ 2 * (w - 265) + 11 + n, ba')),
+	(CLen19_34, \w ba -> do
+		(n, ba') <- getNumber 2 ba
+		return (Len $ 4 * (w - 269) + 19 + n, ba')),
+	(CLen35_66, \w ba -> do
+		(n, ba') <- getNumber 3 ba
+		return (Len $ 8 * (w - 273) + 35 + n, ba')),
+	(CLen67_130, \w ba -> do
+		(n, ba') <- getNumber 4 ba
+		return (Len $ 16 * (w - 277) + 67 + n, ba')),
+	(CLen131_257, \w ba -> do
+		(n, ba') <- getNumber 5 ba
+		return (Len $ 32 * (w - 281) + 131 + n, ba')),
+	(CLen258, \_ ba -> Just (Len 285, ba)) ]
+
+litLenClassToProcess ::
+	LitLenClass -> LitLenGen -> BitArray -> Maybe (LitLen, BitArray)
+litLenClassToProcess c (LitLenGen w) ba = do
+	p <- lookup c litLenClassToProcessTable
+	p w ba
+
+litLenGenToLitLen :: LitLenGen -> BitArray -> Maybe (LitLen, BitArray)
+litLenGenToLitLen g ba =
+	let c = litLenClass g in litLenClassToProcess c g ba
+
+expandLitLen1 :: Tree LitLenGen -> BitArray -> Maybe (LitLen, BitArray)
+expandLitLen1 (Leaf g) ba = litLenGenToLitLen g ba
+expandLitLen1 (Node l r) ba = do
+	(b, ba') <- unconsBits ba
+	expandLitLen1 (bool l r b) ba'
+
+data DistGen = DistGen Word16 deriving Show
+
+adhocDistGenTable :: [(DistGen, Bs)]
+adhocDistGenTable = [
+	(DistGen 10, "0"),
+	(DistGen 8, "100"), (DistGen 9, "101"), (DistGen 11, "110"),
+	(DistGen 7, "1110"), (DistGen 12, "1111") ]
+
+adhocDistGenTree :: Tree DistGen
+adhocDistGenTree = tableToTree adhocDistGenTable
+
+data DistClass = CDist Word16
+
+instance Show DistClass where
+	show (CDist 1) = "CDist1_4"
+	show (CDist w) =
+		"CDist" ++ show (2 ^ w + 1) ++ "_" ++ show (2 ^ (w + 1))
+
+distClass :: DistGen -> DistClass
+distClass (DistGen w)
+	| w < 4 = CDist 1
+	| otherwise = CDist $ w `div` 2
+
+distExpandBits :: DistClass -> Word8
+distExpandBits (CDist 1) = 0
+distExpandBits (CDist n) = fromIntegral $ n - 1
+
+data Dist = Dist Word16 deriving Show
+
+distGenToDistWithClass ::
+	DistClass -> DistGen -> BitArray -> Maybe (Dist, BitArray)
+distGenToDistWithClass (CDist 1) (DistGen g) ba = Just (Dist $ g + 1, ba)
+distGenToDistWithClass cl@(CDist c) (DistGen g) ba =
+	let n = distExpandBits cl in do
+		(d, ba') <- getNumber n ba
+		return (Dist $ 2 ^ c + (g - c * 2) * 2 ^ (c - 1) + 1 + d, ba')
+
+distGenToDist :: DistGen -> BitArray -> Maybe (Dist, BitArray)
+distGenToDist = distGenToDistWithClass <$> distClass <*> id
+
+expandDist1 :: Tree DistGen -> BitArray -> Maybe (Dist, BitArray)
+expandDist1 (Leaf g) ba = distGenToDist g ba
+expandDist1 (Node l r) ba = do
+	(b, ba') <- unconsBits ba
+	expandDist1 (bool l r b) ba'
+
+expandLitLenDist ::
+	Tree LitLenGen -> Tree DistGen -> BitArray ->
+	Maybe ([Either LitLen Dist], BitArray)
+expandLitLenDist llt dt ba = do
+	(ll, ba') <- expandLitLen1 llt ba
+	case ll of
+		EndOfBlock -> return ([], ba')
+		Lit _ -> do
+			(elld, ba'') <- expandLitLenDist llt dt ba'
+			return (Left ll : elld, ba'')
+		Len _ -> do
+			(d, ba'') <- expandDist1 dt ba'
+			(elld, ba''') <- expandLitLenDist llt dt ba''
+			return (Left ll : Right d : elld, ba''')
+
+data SugarState = SSRaw | SSString | SSLen deriving Show
+
+sugarElld :: SugarState -> [Either LitLen Dist] -> String
+sugarElld _ [] = ""
+sugarElld SSRaw (Left (Lit c) : ellds) =
+	chr (fromIntegral c) : sugarElld SSString ellds
+sugarElld SSString (Left (Lit c) : ellds) =
+	chr (fromIntegral c) : sugarElld SSString ellds
+sugarElld SSRaw (Left l@(Len _) : ellds) =
+	'{' : show l ++ "," ++ sugarElld SSLen ellds
+sugarElld SSString (Left l@(Len _) : ellds) =
+	'{' : show l ++ "," ++ sugarElld SSLen ellds
+sugarElld SSLen (Right (Dist d) : ellds) =
+	show d ++ "}" ++ sugarElld SSRaw ellds
+sugarElld ss ellds = error $ show ss ++ " " ++ show ellds
+
+-- ADHOC
+
+adhocSugar :: BS.ByteString -> String
+adhocSugar bs = let (_t1, _t2, ba) = adhocGetTables bs in fromJust $ do
+	(ellds, _ba') <-
+		expandLitLenDist adhocLitLenGenTree adhocDistGenTree ba
+	return $ sugarElld SSRaw ellds
+
+adhocPrint :: IO ()
+adhocPrint = putStrLn . adhocSugar =<< BS.readFile "files/dynamic.txt.zlib"
 
 -- TOOLS
 
