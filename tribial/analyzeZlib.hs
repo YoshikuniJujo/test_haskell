@@ -11,6 +11,7 @@ import Data.Maybe
 import Data.List
 import Data.Bits
 import Data.Word
+import Data.Char
 import Data.String
 import Data.Function
 
@@ -326,6 +327,36 @@ adhocGetTables bs = fromJust $ do
 	(t1, ba') <- expandTable 0 adhocTableTree 272 ba
 	(t2, ba'') <- expandTable 0 adhocTableTree 13 ba'
 	return (t1, t2, ba'')
+
+data LitLenGen = LitLenGen Word16 deriving Show
+
+charToLitLenGen :: Char -> LitLenGen
+charToLitLenGen = LitLenGen . fromIntegral . ord
+
+showTable1 :: [Word8] -> [[(Char, Word8)]]
+showTable1 = groupBy ((==) `on` snd) . sortBy (compare `on` snd)
+	. filter ((/= 0) . snd) . zip ['\0' .. '\285']
+
+adhocLitLenGenTable :: [(LitLenGen, Bs)]
+adhocLitLenGenTable = map (first charToLitLenGen) [
+	(' ', "000"),
+	('\n', "0010"), ('e', "0011"), ('l', "0100"),
+	('\t', "01010"), ('\'', "01011"), ('(', "01100"), ('>', "01101"),
+	('f', "01110"), ('i', "01111"), ('n', "10000"), ('r', "10001"),
+	('t', "10010"), ('u', "10011"), ('\257', "10100"), ('\258', "10101"),
+	('\260', "10110"),
+	('$', "101110"), (')', "101111"), ('*', "110000"), ('.', "110001"),
+	('<', "110010"), ('a', "110011"), ('c', "110100"), ('h', "110101"),
+	('p', "110110"), ('s', "110111"), ('\256', "111000"),
+	('\259', "111001"), ('\261', "111010"), ('\271', "111011"),
+	('1', "1111000"), ('2', "1111001"), ('=', "1111010"),
+	('g', "1111011"), ('v', "1111100"), ('w', "1111101"),
+	('\262', "1111110"), ('\265', "1111111") ]
+
+litLenTree :: Tree Word8
+litLenTree = Leaf 0
+
+data LitLen = Lit Word8 | Len Word16 deriving Show
 
 -- TOOLS
 
