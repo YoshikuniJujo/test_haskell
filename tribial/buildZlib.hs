@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase, OverloadedStrings #-}
 
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
@@ -103,6 +103,17 @@ writeFixedSimple fp = BS.writeFile fp . makeFixedSimple
 
 -- DYNAMIC HUFFMAN
 
+sampleDynamicHuffman :: BS.ByteString
+sampleDynamicHuffman = (zlibHeader <>) . (<> adler32 "c") . bitsToByteString $
+	headerBitsToBits sampleHeaderBits <>
+	hLitToBits sampleHLit <>
+	hDistToBits sampleHDist <>
+	hCLenToBits sampleHCLen <>
+	tableOfTableToBits sampleTableOfTable <>
+	adhocCompressTable sampleTable <>
+	adhocCompressTable sampleDistTable <>
+	dataToBits sampleData
+
 zlibHeader :: BS.ByteString
 zlibHeader = "x\156"
 
@@ -128,6 +139,9 @@ hLitToBits (HLit hl)
 	| otherwise = error $
 		"\nExpected: HLIT >= 257\n  Actual: HLIT == " ++ show hl
 
+sampleHLit :: HLit
+sampleHLit = HLit 257
+
 newtype HDist = HDist Word8 deriving Show
 
 hDistToBits :: HDist -> Bs
@@ -136,6 +150,9 @@ hDistToBits (HDist hd)
 	| otherwise = error $
 		"\nExpected: HDIST >= 1\n  Actual: HDIST == " ++ show hd
 
+sampleHDist :: HDist
+sampleHDist = HDist 1
+
 newtype HCLen = HCLen Word8 deriving Show
 
 hCLenToBits :: HCLen -> Bs
@@ -143,6 +160,9 @@ hCLenToBits (HCLen hcl)
 	| hcl >= 4 = wordToBitsN 4 $ hcl - 4
 	| otherwise = error $
 		"\nExpected: HCLEN >= 4\n  Actual: HCLEN == " ++ show hcl
+
+sampleHCLen :: HCLen
+sampleHCLen = HCLen 5
 
 newtype TableOfTable = TableOfTable [Word8]
 
@@ -186,3 +206,30 @@ adhocExpandTable p bs = let
 		"011" -> 0 : adhocExpandTable 0 bs2
 		"100" -> 8 : adhocExpandTable 8 bs2
 		_ -> error "Expected: 16, 17, 18, 0, 8"
+
+data Table = Table { unTable :: [(Word8, Maybe Word8)] } deriving Show
+
+adhocCompressTable :: Table -> Bs
+adhocCompressTable =
+	(mconcat .) . (. unTable) . map $ \case
+		(16, Just e) -> "000" <> wordToBitsN 2 (e - 3)
+		(17, Just e) -> "001" <> wordToBitsN 3 (e - 3)
+		(18, Just e) -> "010" <> wordToBitsN 7 (e - 11)
+		(0, Nothing) -> "011"
+		(8, Nothing) -> "100"
+		_ -> error "bad table contents"
+
+sampleTable :: Table
+sampleTable = Table [
+	(18, Just 99), (8, Nothing), (18, Just 138),
+	(18, Just 18), (8, Nothing) ]
+
+type DistTable = Table
+
+sampleDistTable :: DistTable
+sampleDistTable = Table [(0, Nothing)]
+
+data Data = Data { dataToBits :: Bs }
+
+sampleData :: Data
+sampleData = Data "0000000000000001"

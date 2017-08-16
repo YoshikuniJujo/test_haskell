@@ -12,6 +12,7 @@ import Data.List
 import Data.Bits
 import Data.Word
 import Data.String
+import Data.Function
 
 import qualified Data.ByteString as BS
 
@@ -120,6 +121,9 @@ btype ba = do
 
 data BitArray = BitArray Word8 BS.ByteString deriving Show
 
+nullBitArray :: BitArray -> Bool
+nullBitArray (BitArray _ bs) = BS.null bs
+
 toBitArray :: BS.ByteString -> BitArray
 toBitArray = BitArray 0
 
@@ -130,6 +134,9 @@ unconsBits (BitArray i bs) = do
 	return (b `testBit` fromIntegral i, if i < 7
 		then BitArray (i + 1) bs
 		else BitArray 0 bs')
+
+getNumber :: (Num a, Bits a) => Word8 -> BitArray -> Maybe (a, BitArray)
+getNumber n ba = first bitsToWord <$> popBits n ba
 
 data Bs = Bs { unBs :: [Bool] } deriving Eq
 
@@ -187,6 +194,138 @@ adhocFixed1 bs_ = do
 	guard $ initBits bs /= "0000000"
 	return $ bitsToWord bs - 48
 	where bs = reverseBits bs_
+
+-- DYNAMIC
+
+data DynamicHeaderPartial = DynamicHeaderPartial {
+	dhpHLit :: HLit,
+	dhpHDist :: HDist,
+	dhpHCLen :: HCLen,
+	dhpTableOfTable :: TableOfTable
+	} deriving Show
+
+dynamicHeaderPartial :: BitArray -> Maybe (DynamicHeaderPartial, BitArray)
+dynamicHeaderPartial ba0 = do
+	(hl, ba1) <- hlit ba0
+	(hd, ba2) <- hdist ba1
+	(hc@(HCLen l), ba3) <- hclen ba2
+	(tot, ba4) <- tableOfTable l ba3
+	return (DynamicHeaderPartial hl hd hc tot, ba4)
+
+data HLit = HLit Word16 deriving Show
+
+hlit :: BitArray -> Maybe (HLit, BitArray)
+hlit ba = first (HLit . (+ 257)) <$> getNumber 5 ba
+
+data HDist = HDist Word8 deriving Show
+
+hdist :: BitArray -> Maybe (HDist, BitArray)
+hdist ba = first (HDist . (+ 1)) <$> getNumber 5 ba
+
+data HCLen = HCLen Word8 deriving Show
+
+hclen :: BitArray -> Maybe (HCLen, BitArray)
+hclen ba = first (HCLen . (+ 4)) <$> getNumber 4 ba
+
+data TOTContents = TOTContents Word8 deriving Show
+data TableOfTable = TableOfTable [Word8]
+
+instance Show TableOfTable where
+	show (TableOfTable ws) = intercalate ", " . map
+		(\(s, w) -> show s ++ ": " ++ show w)
+		$ zip [
+			16 :: Word8, 17, 18, 0, 8, 7, 9, 6,
+			10, 5, 11, 4, 12, 3, 13, 2,
+			14, 1, 15 ] ws
+
+pushTOTContents :: TOTContents -> TableOfTable -> TableOfTable
+pushTOTContents (TOTContents tot) (TableOfTable ws) =
+	TableOfTable $ tot : ws
+
+totContents :: BitArray -> Maybe (TOTContents, BitArray)
+totContents ba = first TOTContents <$> getNumber 3 ba
+
+tableOfTable :: Word8 -> BitArray -> Maybe (TableOfTable, BitArray)
+tableOfTable 0 ba = Just (TableOfTable [], ba)
+tableOfTable n ba = do
+	(c, ba') <- totContents ba
+	(cs, ba'') <- tableOfTable (n - 1) ba'
+	return (c `pushTOTContents` cs, ba'')
+
+totPairs :: TableOfTable -> [(Word8, Word8)]
+totPairs (TableOfTable ws) = zip
+	[16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]
+	ws
+
+adhocGetTot :: BS.ByteString -> [(Word8, Word8)]
+adhocGetTot = fromJust
+	. (totPairs . dhpTableOfTable . fst <$>)
+	. dynamicHeaderPartial . adhocDropHeaders
+
+adhocGetHLit :: BS.ByteString -> HLit
+adhocGetHLit = fromJust
+	. (dhpHLit . fst <$>)
+	. dynamicHeaderPartial . adhocDropHeaders
+
+adhocDropDynamicHeaders :: BS.ByteString -> BitArray
+adhocDropDynamicHeaders = fromJust
+	. (snd <$>)
+	. dynamicHeaderPartial . adhocDropHeaders
+
+sortTable :: [(Word8, Word8)] -> [(Word8, Word8)]
+sortTable = dropWhile ((== 0) . snd) . sortBy (compare `on` snd)
+
+adhocTable :: [(Word8, Bs)]
+adhocTable = [
+	(0, "00"), (6, "01"), (5, "100"), (7, "101"),
+	(3, "1100"), (4, "1101"), (17, "1110"),
+	(1, "11110"), (18, "11111") ]
+
+data Tree a = Leaf a | Node (Tree a) (Tree a) deriving Show
+
+adhocTableTree :: Tree Word8
+adhocTableTree = Node
+	(Node (Leaf 0) (Leaf 6))
+	(Node
+		(Node (Leaf 5) (Leaf 7))
+		(Node
+			(Node (Leaf 3) (Leaf 4))
+			(Node
+				(Leaf 17)
+				(Node (Leaf 1) (Leaf 18)))))
+
+expandTable1 ::
+	Word8 -> Tree Word8 -> BitArray -> Maybe ([Word8], BitArray)
+expandTable1 p (Leaf w) ba = case w of
+		16 -> do
+			(n, ba'') <- getNumber 2 ba
+			return (replicate (n + 3) p, ba'')
+		17 -> do
+			(n, ba'') <- getNumber 3 ba
+			return (replicate (n + 3) 0, ba'')
+		18 -> do
+			(n, ba'') <- getNumber 7 ba
+			return (replicate (n + 11) 0, ba'')
+		_ -> return ([w], ba)
+expandTable1 _ _ ba | nullBitArray ba = Nothing
+expandTable1 p (Node t1 t2) ba = do
+	(b, ba') <- unconsBits ba
+	expandTable1 p (bool t1 t2 b) ba'
+
+expandTable ::
+	Word8 -> Tree Word8 -> Word16 -> BitArray -> Maybe ([Word8], BitArray)
+expandTable _ _ 0 ba = Just ([], ba)
+expandTable p tr n ba = do
+	(w, ba') <- expandTable1 p tr ba
+	(ws, ba'') <- expandTable (last w) tr (n - fromIntegral (length w)) ba'
+	return (w ++ ws, ba'')
+
+adhocGetTables :: BS.ByteString -> ([Word8], [Word8], BitArray)
+adhocGetTables bs = fromJust $ do
+	let	ba = adhocDropDynamicHeaders bs
+	(t1, ba') <- expandTable 0 adhocTableTree 272 ba
+	(t2, ba'') <- expandTable 0 adhocTableTree 13 ba'
+	return (t1, t2, ba'')
 
 -- TOOLS
 
