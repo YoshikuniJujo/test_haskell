@@ -488,44 +488,67 @@ expandDist1 (Node l r) ba = do
 	(b, ba') <- unconsBits ba
 	expandDist1 (bool l r b) ba'
 
+data LitLenDist
+	= LldLit Word8
+	| LldLenDist { lldLen :: Word16, lldDist :: Word16 }
+	deriving Show
+
 expandLitLenDist ::
 	Tree LitLenGen -> Tree DistGen -> BitArray ->
-	Maybe ([Either LitLen Dist], BitArray)
+	Maybe ([LitLenDist], BitArray)
 expandLitLenDist llt dt ba = do
 	(ll, ba') <- expandLitLen1 llt ba
 	case ll of
 		EndOfBlock -> return ([], ba')
-		Lit _ -> do
+		Lit l -> do
 			(elld, ba'') <- expandLitLenDist llt dt ba'
-			return (Left ll : elld, ba'')
-		Len _ -> do
-			(d, ba'') <- expandDist1 dt ba'
+			return (LldLit l : elld, ba'')
+		Len l -> do
+			(Dist d, ba'') <- expandDist1 dt ba'
 			(elld, ba''') <- expandLitLenDist llt dt ba''
-			return (Left ll : Right d : elld, ba''')
+			return (LldLenDist l d : elld, ba''')
 
-data SugarState = SSRaw | SSString | SSLen deriving Show
+sugarElld :: [LitLenDist] -> String
+sugarElld [] = ""
+sugarElld (LldLit c : ellds) = chr (fromIntegral c) : sugarElld ellds
+sugarElld (LldLenDist l d : ellds) =
+	'{' : '#' : show l ++ "," ++ show d ++ "}" ++ sugarElld ellds
 
-sugarElld :: SugarState -> [Either LitLen Dist] -> String
-sugarElld _ [] = ""
-sugarElld SSRaw (Left (Lit c) : ellds) =
-	chr (fromIntegral c) : sugarElld SSString ellds
-sugarElld SSString (Left (Lit c) : ellds) =
-	chr (fromIntegral c) : sugarElld SSString ellds
-sugarElld SSRaw (Left l@(Len _) : ellds) =
-	'{' : show l ++ "," ++ sugarElld SSLen ellds
-sugarElld SSString (Left l@(Len _) : ellds) =
-	'{' : show l ++ "," ++ sugarElld SSLen ellds
-sugarElld SSLen (Right (Dist d) : ellds) =
-	show d ++ "}" ++ sugarElld SSRaw ellds
-sugarElld ss ellds = error $ show ss ++ " " ++ show ellds
+lzssString :: String -> [LitLenDist] -> String
+lzssString _ [] = ""
+lzssString pre (LldLit w : llds) = c : lzssString (c : pre) llds
+	where c = chr $ fromIntegral w
+lzssString pre (LldLenDist l_ d_ : llds) =
+	reverse str ++ lzssString (str ++ pre) llds
+	where
+	l = fromIntegral l_
+	d = fromIntegral d_
+	str = take l $ drop (d - l) pre
+
+step :: Integral a => Word16 -> a -> Word16
+step w1 w2 = (w1 + fromIntegral w2) `mod` 65521
+
+adler32String :: String -> [Word8]
+adler32String str = let
+	ns = scanl' (\w -> step w . ord) 1 $ str
+	w1 = last ns
+	w2 = foldl' step 0 ns in map fromIntegral [
+		w2 `shiftR` 8, w2 .&. 0xff,
+		w1 `shiftR` 8, w1 .&. 0xff ]
 
 -- ADHOC
+
+adhocPreLzss :: BS.ByteString -> ([LitLenDist], BitArray)
+adhocPreLzss bs = let (_t1, _t2, ba) = adhocGetTables bs in fromJust $ do
+	(ellds, ba') <-
+		expandLitLenDist adhocLitLenGenTree adhocDistGenTree ba
+	return (ellds, ba')
 
 adhocSugar :: BS.ByteString -> String
 adhocSugar bs = let (_t1, _t2, ba) = adhocGetTables bs in fromJust $ do
 	(ellds, _ba') <-
 		expandLitLenDist adhocLitLenGenTree adhocDistGenTree ba
-	return $ sugarElld SSRaw ellds
+	return $ sugarElld ellds
 
 adhocPrint :: IO ()
 adhocPrint = putStrLn . adhocSugar =<< BS.readFile "files/dynamic.txt.zlib"
