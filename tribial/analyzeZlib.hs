@@ -525,14 +525,14 @@ lzssString pre (LldLenDist l_ d_ : llds) =
 	d = fromIntegral d_
 	str = take l $ drop (d - l) pre
 
-step :: Integral a => Word16 -> a -> Word16
+step :: Integral a => Word32 -> a -> Word32
 step w1 w2 = (w1 + fromIntegral w2) `mod` 65521
 
 adler32String :: String -> [Word8]
 adler32String str = let
 	ns = scanl' (\w -> step w . ord) 1 $ str
 	w1 = last ns
-	w2 = foldl' step 0 ns in map fromIntegral [
+	w2 = foldl' step 0 (tail ns) in map fromIntegral [
 		w2 `shiftR` 8, w2 .&. 0xff,
 		w1 `shiftR` 8, w1 .&. 0xff ]
 
