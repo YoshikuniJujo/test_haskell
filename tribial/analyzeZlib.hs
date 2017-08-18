@@ -19,6 +19,10 @@ import Data.Function
 
 import qualified Data.ByteString as BS
 
+checkZlib :: BS.ByteString -> ((String, BS.ByteString), BitArray)
+checkZlib = first ((id &&& BS.pack . adler32String) . lzssString "")
+	. adhocPreLzss
+
 -- AD HOC
 
 adhocDropHeaders :: BS.ByteString -> BitArray
