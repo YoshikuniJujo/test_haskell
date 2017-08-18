@@ -544,6 +544,12 @@ adhocPreLzss bs = let (_t1, _t2, ba) = adhocGetTables bs in fromJust $ do
 		expandLitLenDist adhocLitLenGenTree adhocDistGenTree ba
 	return (ellds, ba')
 
+adhocString :: BS.ByteString -> (String, BS.ByteString, BitArray)
+adhocString bs = (str, BS.pack $ adler32String str, ad)
+	where
+	(llds, ad) = adhocPreLzss bs
+	str = lzssString "" llds
+
 adhocSugar :: BS.ByteString -> String
 adhocSugar bs = let (_t1, _t2, ba) = adhocGetTables bs in fromJust $ do
 	(ellds, _ba') <-
