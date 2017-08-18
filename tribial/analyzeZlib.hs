@@ -19,7 +19,7 @@ import Data.Function
 
 import qualified Data.ByteString as BS
 
-checkZlib :: BS.ByteString -> ((String, BS.ByteString), BitArray)
+checkZlib :: BS.ByteString -> ((BS.ByteString, BS.ByteString), BitArray)
 checkZlib = first ((id &&& BS.pack . adler32String) . lzssString "")
 	. adhocPreLzss
 
@@ -603,25 +603,30 @@ sugarElld (LldLit c : ellds) = chr (fromIntegral c) : sugarElld ellds
 sugarElld (LldLenDist l d : ellds) =
 	'{' : '#' : show l ++ "," ++ show d ++ "}" ++ sugarElld ellds
 
-lzssString :: String -> [LitLenDist] -> String
+lzssString :: BS.ByteString -> [LitLenDist] -> BS.ByteString
 lzssString _ [] = ""
-lzssString pre (LldLit w : llds) = c : lzssString (c : pre) llds
-	where c = chr $ fromIntegral w
+lzssString pre (LldLit w : llds) = w `BS.cons` lzssString (w `BS.cons` pre) llds
 lzssString pre (LldLenDist l_ d_ : llds)
-	| d >= l = reverse str ++ lzssString (str ++ pre) llds
-	| otherwise = str' ++ lzssString (str' ++ pre) llds
+	| d >= l = BS.reverse str <> lzssString (str <> pre) llds
+	| otherwise = str' <> lzssString (BS.reverse str' <> pre) llds
 	where
 	l = fromIntegral l_
 	d = fromIntegral d_
-	str = take l $ drop (d - l) pre
-	str' = take l . cycle . reverse $ take d pre
+	str = BS.take l $ BS.drop (d - l) pre
+	str' = takeFromBs l . repeat . BS.reverse $ BS.take d pre
+
+takeFromBs :: Int -> [BS.ByteString] -> BS.ByteString
+takeFromBs n _ | n <= 0 = ""
+takeFromBs n (bs : bss)
+	| BS.length bs >= n = BS.take n bs
+	| otherwise = bs <> takeFromBs (n - BS.length bs) bss
 
 step :: Integral a => Word32 -> a -> Word32
 step w1 w2 = (w1 + fromIntegral w2) `mod` 65521
 
-adler32String :: String -> [Word8]
+adler32String :: BS.ByteString -> [Word8]
 adler32String str = let
-	ns = scanl' (\w -> step w . ord) 1 $ str
+	ns = scanl' (\w -> step w) 1 $ BS.unpack str
 	w1 = last ns
 	w2 = foldl' step 0 (tail ns) in map fromIntegral [
 		w2 `shiftR` 8, w2 .&. 0xff,
@@ -634,7 +639,7 @@ adhocPreLzss bs = let (t1, t2, ba) = adhocGetTables bs in fromJust $ do
 	(ellds, ba') <- expandLitLenDist t1 t2 ba
 	return (ellds, ba')
 
-adhocString :: BS.ByteString -> (String, BS.ByteString, BitArray)
+adhocString :: BS.ByteString -> (BS.ByteString, BS.ByteString, BitArray)
 adhocString bs = (str, BS.pack $ adler32String str, ad)
 	where
 	(llds, ad) = adhocPreLzss bs
