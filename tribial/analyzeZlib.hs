@@ -5,11 +5,13 @@
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 import Control.Monad
+import Control.Monad.Trans.State
 import Control.Arrow
-import Data.Bool
+import Data.Monoid
 import Data.Maybe
 import Data.List
 import Data.Bits
+import Data.Bool
 import Data.Word
 import Data.Char
 import Data.String
@@ -24,6 +26,11 @@ adhocDropHeaders bs = fromJust $ do
 	(_, bs') <- zlibHeader bs
 	(_, ba) <- headerBits $ toBitArray bs'
 	return ba
+
+-- TOOLS
+
+next :: Monad m => (b -> c) -> m (a, b) -> m (a, c)
+next f = (second f <$>)
 
 -- ZLIB HEADER
 
@@ -78,6 +85,22 @@ secondM f = uncurry (<$>) . ((,) *** f)
 
 -- DEFLATE
 
+some :: Monad m => (b -> m c) -> m (a, b) -> m (a, c)
+some f xy = uncurry (<$>) . ((,) *** f) =<< xy
+
+useAnalyzeBlock1 :: Maybe (a, BS.ByteString) ->
+	Maybe (a, ((HeaderBits, DynamicHeaderPartial), BitArray))
+useAnalyzeBlock1 = some $ runStateT analyzeBlock1 . toBitArray
+
+type BitArraySt = StateT BitArray Maybe
+
+analyzeBlock1 :: BitArraySt (HeaderBits, DynamicHeaderPartial)
+analyzeBlock1 = do
+	ha <- StateT headerBits
+	guard $ bType ha == DynamicHuffman
+	dhp <- StateT dynamicHeaderPartial
+	return (ha, dhp)
+
 -- deflateHeader :: BitArray -> ((BFinal, BType), BitArray)
 
 checkFixedOr :: BS.ByteString -> Maybe BType
@@ -104,7 +127,7 @@ bfinal ba = first (bool BNotFinal BFinal) <$> unconsBits ba
 
 data BType =
 	NoCompression | FixedHuffman | DynamicHuffman | BTypeError
-	deriving Show
+	deriving (Show, Eq)
 
 btype :: BitArray -> Maybe (BType, BitArray)
 btype ba = do
@@ -140,6 +163,16 @@ getNumber :: (Num a, Bits a) => Word8 -> BitArray -> Maybe (a, BitArray)
 getNumber n ba = first bitsToWord <$> popBits n ba
 
 data Bs = Bs { unBs :: [Bool] } deriving Eq
+
+lengthBits :: Bs -> Word8
+lengthBits = fromIntegral . length . unBs
+
+succBits :: Bs -> Bs
+succBits = Bs . reverse . sb . reverse . unBs
+	where
+	sb [] = [True]
+	sb (False : bs) = True : bs
+	sb (True : bs) = False : sb bs
 
 popBit :: Bs -> (Bool, Bs)
 popBit (Bs []) = error "empty Bits"
@@ -202,7 +235,7 @@ data DynamicHeaderPartial = DynamicHeaderPartial {
 	dhpHLit :: HLit,
 	dhpHDist :: HDist,
 	dhpHCLen :: HCLen,
-	dhpTableOfTable :: TableOfTable
+	dhpTableOfTable :: Tree Word8
 	} deriving Show
 
 dynamicHeaderPartial :: BitArray -> Maybe (DynamicHeaderPartial, BitArray)
@@ -211,14 +244,20 @@ dynamicHeaderPartial ba0 = do
 	(hd, ba2) <- hdist ba1
 	(hc@(HCLen l), ba3) <- hclen ba2
 	(tot, ba4) <- tableOfTable l ba3
-	return (DynamicHeaderPartial hl hd hc tot, ba4)
+	return (DynamicHeaderPartial hl hd hc
+			. tableToTree
+			. tableToDict "" $ totPairs tot,
+		ba4)
 
-data HLit = HLit Word16 deriving Show
+data HLit = HLit { unHLit :: Word16 } deriving Show
 
 hlit :: BitArray -> Maybe (HLit, BitArray)
 hlit ba = first (HLit . (+ 257)) <$> getNumber 5 ba
 
-data HDist = HDist Word8 deriving Show
+data HDist = HDist { unHDist :: Word8 } deriving Show
+
+hDistToI :: Integral a => HDist -> a
+hDistToI = fromIntegral . unHDist
 
 hdist :: BitArray -> Maybe (HDist, BitArray)
 hdist ba = first (HDist . (+ 1)) <$> getNumber 5 ba
@@ -253,14 +292,26 @@ tableOfTable n ba = do
 	(cs, ba'') <- tableOfTable (n - 1) ba'
 	return (c `pushTOTContents` cs, ba'')
 
-totPairs :: TableOfTable -> [(Word8, Word8)]
-totPairs (TableOfTable ws) = zip
-	[16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]
-	ws
+processPairs :: (Eq a, Ord a) => [(a, Word8)] -> [[(a, Word8)]]
+processPairs = map sort . groupBy ((==) `on` snd)
+	. sortBy (compare `on` snd) . filter ((/= 0) . snd)
 
-adhocGetTot :: BS.ByteString -> [(Word8, Word8)]
+totPairs :: TableOfTable -> [[(Word8, Word8)]]
+totPairs (TableOfTable ws) = processPairs
+	$ zip [	16, 17, 18, 0, 8, 7, 9, 6, 10, 5,
+		11, 4, 12, 3, 13, 2, 14, 1, 15] ws
+
+tableToDict :: Bs -> [[(a, Word8)]] -> [(a, Bs)]
+tableToDict _ [] = []
+tableToDict b0 ([] : pss) = tableToDict b0 pss
+tableToDict b0 psa@(((w, l) : ps) : pss)
+	| lengthBits b0 < l = tableToDict (b0 <> "0") psa
+	| lengthBits b0 == l = (w, b0) : tableToDict (succBits b0) (ps : pss)
+	| otherwise = error "bad: b0 > l"
+
+adhocGetTot :: BS.ByteString -> Tree Word8
 adhocGetTot = fromJust
-	. (totPairs . dhpTableOfTable . fst <$>)
+	. (dhpTableOfTable . fst <$>)
 	. dynamicHeaderPartial . adhocDropHeaders
 
 adhocGetHLit :: BS.ByteString -> HLit
@@ -268,19 +319,20 @@ adhocGetHLit = fromJust
 	. (dhpHLit . fst <$>)
 	. dynamicHeaderPartial . adhocDropHeaders
 
-adhocDropDynamicHeaders :: BS.ByteString -> BitArray
+adhocDropDynamicHeaders :: BS.ByteString -> (DynamicHeaderPartial, BitArray)
 adhocDropDynamicHeaders = fromJust
-	. (snd <$>)
 	. dynamicHeaderPartial . adhocDropHeaders
 
 sortTable :: [(Word8, Word8)] -> [(Word8, Word8)]
 sortTable = dropWhile ((== 0) . snd) . sortBy (compare `on` snd)
 
+{-
 adhocTable :: [(Word8, Bs)]
 adhocTable = [
 	(0, "00"), (6, "01"), (5, "100"), (7, "101"),
 	(3, "1100"), (4, "1101"), (17, "1110"),
 	(1, "11110"), (18, "11111") ]
+-}
 
 tableToTree :: [(a, Bs)] -> Tree a
 tableToTree [(w, "")] = Leaf w
@@ -292,6 +344,11 @@ tableToTree at = let (r, l) = partition ttt at in
 
 data Tree a = Leaf a | Node (Tree a) (Tree a) deriving (Show, Eq)
 
+instance Functor Tree where
+	fmap f (Leaf x) = Leaf $ f x
+	fmap f (Node l r) = Node (fmap f l) (fmap f r)
+
+{-
 adhocTableTree :: Tree Word8
 adhocTableTree = Node
 	(Node (Leaf 0) (Leaf 6))
@@ -302,6 +359,7 @@ adhocTableTree = Node
 			(Node
 				(Leaf 17)
 				(Node (Leaf 1) (Leaf 18)))))
+-}
 
 expandTable1 ::
 	Word8 -> Tree Word8 -> BitArray -> Maybe ([Word8], BitArray)
@@ -329,14 +387,37 @@ expandTable p tr n ba = do
 	(ws, ba'') <- expandTable (last w) tr (n - fromIntegral (length w)) ba'
 	return (w ++ ws, ba'')
 
-adhocGetTables :: BS.ByteString -> ([Word8], [Word8], BitArray)
-adhocGetTables bs = fromJust $ do
-	let	ba = adhocDropDynamicHeaders bs
-	(t1, ba') <- expandTable 0 adhocTableTree 272 ba
-	(t2, ba'') <- expandTable 0 adhocTableTree 13 ba'
-	return (t1, t2, ba'')
+adhocCheckTables ::
+	BS.ByteString -> ([Word8], [Word8], BitArray)
+adhocCheckTables bs = fromJust $ do
+	let	(dhp, ba) = adhocDropDynamicHeaders bs
+	(t1, ba') <- expandTable 0 (dhpTableOfTable dhp) (unHLit $ dhpHLit dhp) ba
+	(t2, ba'') <- expandTable 0 (dhpTableOfTable dhp) (hDistToI $ dhpHDist dhp) ba'
+	return (
+		t1,
+		t2,
+		ba'')
 
-data LitLenGen = LitLenGen Word16 deriving Show
+adhocGetTables ::
+	BS.ByteString -> (Tree LitLenGen, Tree DistGen, BitArray)
+adhocGetTables bs = fromJust $ do
+	let	(dhp, ba) = adhocDropDynamicHeaders bs
+	(t1, ba') <- expandTable 0 (dhpTableOfTable dhp) (unHLit $ dhpHLit dhp) ba
+	(t2, ba'') <- expandTable 0 (dhpTableOfTable dhp) (hDistToI $ dhpHDist dhp) ba'
+	return (
+		toLitLenGen <$> makeTree t1,
+		DistGen <$> makeTree t2,
+		ba'')
+
+makeTree :: [Word8] -> Tree Word16
+makeTree = tableToTree . tableToDict "" . processPairs . zip [0 ..]
+-- makeTree :: [Word8] -> [(Word16, Bs)]
+-- makeTree = tableToDict "" . processPairs . zip [0 ..]
+
+data LitLenGen = LitLenGen Word16 deriving (Show, Eq)
+
+toLitLenGen :: Integral a => a -> LitLenGen
+toLitLenGen = LitLenGen . fromIntegral
 
 charToLitLenGen :: Char -> LitLenGen
 charToLitLenGen = LitLenGen . fromIntegral . ord
@@ -345,6 +426,7 @@ showTable1 :: [Word8] -> [[(Char, Word8)]]
 showTable1 = groupBy ((==) `on` snd) . sortBy (compare `on` snd)
 	. filter ((/= 0) . snd) . zip ['\0' .. '\285']
 
+{-
 adhocLitLenGenTable :: [(LitLenGen, Bs)]
 adhocLitLenGenTable = map (first charToLitLenGen) [
 	(' ', "000"),
@@ -363,6 +445,7 @@ adhocLitLenGenTable = map (first charToLitLenGen) [
 
 adhocLitLenGenTree :: Tree LitLenGen
 adhocLitLenGenTree = tableToTree adhocLitLenGenTable
+-}
 
 data LitLen = Lit Word8 | EndOfBlock | Len Word16
 
@@ -442,8 +525,9 @@ expandLitLen1 (Node l r) ba = do
 	(b, ba') <- unconsBits ba
 	expandLitLen1 (bool l r b) ba'
 
-data DistGen = DistGen Word16 deriving Show
+data DistGen = DistGen Word16 deriving (Show, Eq)
 
+{-
 adhocDistGenTable :: [(DistGen, Bs)]
 adhocDistGenTable = [
 	(DistGen 10, "0"),
@@ -452,6 +536,7 @@ adhocDistGenTable = [
 
 adhocDistGenTree :: Tree DistGen
 adhocDistGenTree = tableToTree adhocDistGenTable
+-}
 
 data DistClass = CDist Word16
 
@@ -518,12 +603,14 @@ lzssString :: String -> [LitLenDist] -> String
 lzssString _ [] = ""
 lzssString pre (LldLit w : llds) = c : lzssString (c : pre) llds
 	where c = chr $ fromIntegral w
-lzssString pre (LldLenDist l_ d_ : llds) =
-	reverse str ++ lzssString (str ++ pre) llds
+lzssString pre (LldLenDist l_ d_ : llds)
+	| d >= l = reverse str ++ lzssString (str ++ pre) llds
+	| otherwise = str' ++ lzssString (str' ++ pre) llds
 	where
 	l = fromIntegral l_
 	d = fromIntegral d_
 	str = take l $ drop (d - l) pre
+	str' = take l . cycle . reverse $ take d pre
 
 step :: Integral a => Word32 -> a -> Word32
 step w1 w2 = (w1 + fromIntegral w2) `mod` 65521
@@ -539,9 +626,8 @@ adler32String str = let
 -- ADHOC
 
 adhocPreLzss :: BS.ByteString -> ([LitLenDist], BitArray)
-adhocPreLzss bs = let (_t1, _t2, ba) = adhocGetTables bs in fromJust $ do
-	(ellds, ba') <-
-		expandLitLenDist adhocLitLenGenTree adhocDistGenTree ba
+adhocPreLzss bs = let (t1, t2, ba) = adhocGetTables bs in fromJust $ do
+	(ellds, ba') <- expandLitLenDist t1 t2 ba
 	return (ellds, ba')
 
 adhocString :: BS.ByteString -> (String, BS.ByteString, BitArray)
@@ -551,9 +637,9 @@ adhocString bs = (str, BS.pack $ adler32String str, ad)
 	str = lzssString "" llds
 
 adhocSugar :: BS.ByteString -> String
-adhocSugar bs = let (_t1, _t2, ba) = adhocGetTables bs in fromJust $ do
+adhocSugar bs = let (t1, t2, ba) = adhocGetTables bs in fromJust $ do
 	(ellds, _ba') <-
-		expandLitLenDist adhocLitLenGenTree adhocDistGenTree ba
+		expandLitLenDist t1 t2 ba
 	return $ sugarElld ellds
 
 adhocPrint :: IO ()
