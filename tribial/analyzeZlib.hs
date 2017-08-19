@@ -94,6 +94,12 @@ useAnalyzeBlock1 :: Maybe (a, BS.ByteString) ->
 	Maybe (a, ((HeaderBits, BS.ByteString), BitArray))
 useAnalyzeBlock1 = some $ runStateT analyzeBlock1 . toBitArray
 
+useAnalyzeBlock :: Maybe (a, BS.ByteString) ->
+	Maybe (a, ((BS.ByteString, BS.ByteString), BS.ByteString))
+useAnalyzeBlock = some . ((second fromBitArray <$>) .) . (. toBitArray) . runStateT $ do
+	bs <- analyzeBlocks
+	return (bs, BS.pack $ adler32String bs)
+
 type BitArraySt = StateT BitArray Maybe
 
 analyzeBlock1 :: BitArraySt (HeaderBits, BS.ByteString)
@@ -104,6 +110,15 @@ analyzeBlock1 = do
 		FixedHuffman -> fixedExpand
 		DynamicHuffman -> dynamicExpand
 		_ -> error "bad BTYPE"
+
+analyzeBlocks :: BitArraySt BS.ByteString
+analyzeBlocks = do
+	(hb, bs) <- analyzeBlock1
+	case bFinal hb of
+		BNotFinal -> do
+			bs' <- analyzeBlocks
+			return $ bs <> bs'
+		BFinal -> return bs
 
 noCompressionExpand :: BitArraySt BS.ByteString
 noCompressionExpand = do
