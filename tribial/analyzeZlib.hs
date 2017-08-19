@@ -18,6 +18,8 @@ import Data.String
 import Data.Function
 import System.Directory
 
+import Debug.Trace
+
 import qualified Data.ByteString as BS
 
 checkZlib :: BS.ByteString -> ((BS.ByteString, BS.ByteString), BitArray)
@@ -99,7 +101,9 @@ analyzeBlock1 = do
 	ha <- StateT headerBits
 	(ha ,) <$> case bType ha of
 		NoCompression -> noCompressionExpand
+		FixedHuffman -> fixedExpand
 		DynamicHuffman -> dynamicExpand
+		_ -> error "bad BTYPE"
 
 noCompressionExpand :: BitArraySt BS.ByteString
 noCompressionExpand = do
@@ -115,6 +119,11 @@ bsToNum = btn . BS.unpack
 	where
 	btn [] = 0
 	btn (w : ws) = fromIntegral w + btn ws `shiftL` 8
+
+fixedExpand :: BitArraySt BS.ByteString
+fixedExpand = do
+	llds <- StateT $ fixedExpandLitLenDist
+	return $ lzssString "" llds
 
 dynamicExpand :: BitArraySt BS.ByteString
 dynamicExpand = do
@@ -399,6 +408,16 @@ adhocCheckTables bs = fromJust $ do
 		t2,
 		ba'')
 
+fixedLitLenTable :: [Word8]
+fixedLitLenTable =
+	replicate 0x90 8 ++
+	replicate (0xff - 0x8f) 9 ++
+	replicate (0x117 - 0xff) 7 ++
+	replicate (0x11f - 0x117) 8
+
+fixedLitLenTree :: Tree LitLenGen
+fixedLitLenTree = toLitLenGen <$> makeTree fixedLitLenTable
+
 adhocGetTables ::
 	BS.ByteString -> (Tree LitLenGen, Tree DistGen, BitArray)
 adhocGetTables bs = fromJust $ do
@@ -412,8 +431,6 @@ adhocGetTables bs = fromJust $ do
 
 makeTree :: [Word8] -> Tree Word16
 makeTree = tableToTree . tableToDict "" . processPairs . zip [0 ..]
--- makeTree :: [Word8] -> [(Word16, Bs)]
--- makeTree = tableToDict "" . processPairs . zip [0 ..]
 
 data LitLenGen = LitLenGen Word16 deriving (Show, Eq)
 
@@ -426,27 +443,6 @@ charToLitLenGen = LitLenGen . fromIntegral . ord
 showTable1 :: [Word8] -> [[(Char, Word8)]]
 showTable1 = groupBy ((==) `on` snd) . sortBy (compare `on` snd)
 	. filter ((/= 0) . snd) . zip ['\0' .. '\285']
-
-{-
-adhocLitLenGenTable :: [(LitLenGen, Bs)]
-adhocLitLenGenTable = map (first charToLitLenGen) [
-	(' ', "000"),
-	('\n', "0010"), ('e', "0011"), ('l', "0100"),
-	('\t', "01010"), ('\'', "01011"), ('(', "01100"), ('>', "01101"),
-	('f', "01110"), ('i', "01111"), ('n', "10000"), ('r', "10001"),
-	('t', "10010"), ('u', "10011"), ('\257', "10100"), ('\258', "10101"),
-	('\260', "10110"),
-	('$', "101110"), (')', "101111"), ('*', "110000"), ('.', "110001"),
-	('<', "110010"), ('a', "110011"), ('c', "110100"), ('h', "110101"),
-	('p', "110110"), ('s', "110111"), ('\256', "111000"),
-	('\259', "111001"), ('\261', "111010"), ('\271', "111011"),
-	('1', "1111000"), ('2', "1111001"), ('=', "1111010"),
-	('g', "1111011"), ('v', "1111100"), ('w', "1111101"),
-	('\262', "1111110"), ('\265', "1111111") ]
-
-adhocLitLenGenTree :: Tree LitLenGen
-adhocLitLenGenTree = tableToTree adhocLitLenGenTable
--}
 
 data LitLen = Lit Word8 | EndOfBlock | Len Word16
 
@@ -528,17 +524,6 @@ expandLitLen1 (Node l r) ba = do
 
 data DistGen = DistGen Word16 deriving (Show, Eq)
 
-{-
-adhocDistGenTable :: [(DistGen, Bs)]
-adhocDistGenTable = [
-	(DistGen 10, "0"),
-	(DistGen 8, "100"), (DistGen 9, "101"), (DistGen 11, "110"),
-	(DistGen 7, "1110"), (DistGen 12, "1111") ]
-
-adhocDistGenTree :: Tree DistGen
-adhocDistGenTree = tableToTree adhocDistGenTable
--}
-
 data DistClass = CDist Word16
 
 instance Show DistClass where
@@ -593,6 +578,20 @@ expandLitLenDist llt dt ba = do
 			(Dist d, ba'') <- expandDist1 dt ba'
 			(elld, ba''') <- expandLitLenDist llt dt ba''
 			return (LldLenDist l d : elld, ba''')
+
+fixedExpandLitLenDist :: BitArray -> Maybe ([LitLenDist], BitArray)
+fixedExpandLitLenDist ba = do
+	(ll, ba') <- expandLitLen1 llt ba
+	case ll of
+		EndOfBlock -> return ([], ba')
+		Lit l -> do
+			(elld, ba'') <- fixedExpandLitLenDist ba'
+			return (LldLit l : elld, ba'')
+		Len l -> do
+			(d, ba'') <- getNumber 5 ba'
+			(elld, ba''') <- fixedExpandLitLenDist ba''
+			return (LldLenDist l (d + 1) : elld, ba''')
+	where llt = fixedLitLenTree
 
 sugarElld :: [LitLenDist] -> String
 sugarElld [] = ""
