@@ -16,6 +16,7 @@ import Data.Word
 import Data.Char
 import Data.String
 import Data.Function
+import System.Directory
 
 import qualified Data.ByteString as BS
 
@@ -30,11 +31,6 @@ adhocDropHeaders bs = fromJust $ do
 	(_, bs') <- zlibHeader bs
 	(_, ba) <- headerBits $ toBitArray bs'
 	return ba
-
--- TOOLS
-
-next :: Monad m => (b -> c) -> m (a, b) -> m (a, c)
-next f = (second f <$>)
 
 -- ZLIB HEADER
 
@@ -93,17 +89,44 @@ some :: Monad m => (b -> m c) -> m (a, b) -> m (a, c)
 some f xy = uncurry (<$>) . ((,) *** f) =<< xy
 
 useAnalyzeBlock1 :: Maybe (a, BS.ByteString) ->
-	Maybe (a, ((HeaderBits, DynamicHeaderPartial), BitArray))
+	Maybe (a, ((HeaderBits, BS.ByteString), BitArray))
 useAnalyzeBlock1 = some $ runStateT analyzeBlock1 . toBitArray
 
 type BitArraySt = StateT BitArray Maybe
 
-analyzeBlock1 :: BitArraySt (HeaderBits, DynamicHeaderPartial)
+analyzeBlock1 :: BitArraySt (HeaderBits, BS.ByteString)
 analyzeBlock1 = do
 	ha <- StateT headerBits
-	guard $ bType ha == DynamicHuffman
+	(ha ,) <$> case bType ha of
+		NoCompression -> noCompressionExpand
+		DynamicHuffman -> dynamicExpand
+
+noCompressionExpand :: BitArraySt BS.ByteString
+noCompressionExpand = do
+	len <- (bsToNum <$>) . StateT
+		$ Just . second toBitArray . BS.splitAt 2 . fromBitArray
+	nlen <- (bsToNum <$>) . StateT
+		$ Just . second toBitArray . BS.splitAt 2 . fromBitArray
+	guard $ complement len == (nlen :: Word16)
+	StateT $ Just . second toBitArray . BS.splitAt (fromIntegral len) . fromBitArray
+
+bsToNum :: (Bits a, Num a) => BS.ByteString -> a
+bsToNum = btn . BS.unpack
+	where
+	btn [] = 0
+	btn (w : ws) = fromIntegral w + btn ws `shiftL` 8
+
+dynamicExpand :: BitArraySt BS.ByteString
+dynamicExpand = do
 	dhp <- StateT dynamicHeaderPartial
-	return (ha, dhp)
+	llt <- ((toLitLenGen <$>) . makeTree <$>)
+		. StateT $ expandTable 0 (dhpTableOfTable dhp)
+			. unHLit $ dhpHLit dhp
+	dt <- ((DistGen <$>) . makeTree <$>)
+		. StateT $ expandTable 0 (dhpTableOfTable dhp)
+			. hDistToI $ dhpHDist dhp
+	llds <- StateT $  expandLitLenDist llt dt
+	return $ lzssString "" llds
 
 -- deflateHeader :: BitArray -> ((BFinal, BType), BitArray)
 
@@ -154,6 +177,11 @@ nullBitArray (BitArray _ bs) = BS.null bs
 
 toBitArray :: BS.ByteString -> BitArray
 toBitArray = BitArray 0
+
+fromBitArray :: BitArray -> BS.ByteString
+fromBitArray (BitArray i bs)
+	| i <= 0 = bs
+	| otherwise = BS.tail bs
 
 unconsBits :: BitArray -> Maybe (Bool, BitArray)
 unconsBits (BitArray _ "") = Nothing
@@ -266,7 +294,7 @@ hDistToI = fromIntegral . unHDist
 hdist :: BitArray -> Maybe (HDist, BitArray)
 hdist ba = first (HDist . (+ 1)) <$> getNumber 5 ba
 
-data HCLen = HCLen Word8 deriving Show
+data HCLen = HCLen { unHCLen :: Word8 } deriving Show
 
 hclen :: BitArray -> Maybe (HCLen, BitArray)
 hclen ba = first (HCLen . (+ 4)) <$> getNumber 4 ba
@@ -313,30 +341,12 @@ tableToDict b0 psa@(((w, l) : ps) : pss)
 	| lengthBits b0 == l = (w, b0) : tableToDict (succBits b0) (ps : pss)
 	| otherwise = error "bad: b0 > l"
 
-adhocGetTot :: BS.ByteString -> Tree Word8
-adhocGetTot = fromJust
-	. (dhpTableOfTable . fst <$>)
-	. dynamicHeaderPartial . adhocDropHeaders
-
-adhocGetHLit :: BS.ByteString -> HLit
-adhocGetHLit = fromJust
-	. (dhpHLit . fst <$>)
-	. dynamicHeaderPartial . adhocDropHeaders
-
 adhocDropDynamicHeaders :: BS.ByteString -> (DynamicHeaderPartial, BitArray)
 adhocDropDynamicHeaders = fromJust
 	. dynamicHeaderPartial . adhocDropHeaders
 
 sortTable :: [(Word8, Word8)] -> [(Word8, Word8)]
 sortTable = dropWhile ((== 0) . snd) . sortBy (compare `on` snd)
-
-{-
-adhocTable :: [(Word8, Bs)]
-adhocTable = [
-	(0, "00"), (6, "01"), (5, "100"), (7, "101"),
-	(3, "1100"), (4, "1101"), (17, "1110"),
-	(1, "11110"), (18, "11111") ]
--}
 
 tableToTree :: [(a, Bs)] -> Tree a
 tableToTree [(w, "")] = Leaf w
@@ -351,19 +361,6 @@ data Tree a = Leaf a | Node (Tree a) (Tree a) deriving (Show, Eq)
 instance Functor Tree where
 	fmap f (Leaf x) = Leaf $ f x
 	fmap f (Node l r) = Node (fmap f l) (fmap f r)
-
-{-
-adhocTableTree :: Tree Word8
-adhocTableTree = Node
-	(Node (Leaf 0) (Leaf 6))
-	(Node
-		(Node (Leaf 5) (Leaf 7))
-		(Node
-			(Node (Leaf 3) (Leaf 4))
-			(Node
-				(Leaf 17)
-				(Node (Leaf 1) (Leaf 18)))))
--}
 
 expandTable1 ::
 	Word8 -> Tree Word8 -> BitArray -> Maybe ([Word8], BitArray)
@@ -636,8 +633,7 @@ adler32String str = let
 
 adhocPreLzss :: BS.ByteString -> ([LitLenDist], BitArray)
 adhocPreLzss bs = let (t1, t2, ba) = adhocGetTables bs in fromJust $ do
-	(ellds, ba') <- expandLitLenDist t1 t2 ba
-	return (ellds, ba')
+	expandLitLenDist t1 t2 ba
 
 adhocString :: BS.ByteString -> (BS.ByteString, BS.ByteString, BitArray)
 adhocString bs = (str, BS.pack $ adler32String str, ad)
@@ -667,3 +663,9 @@ word4s w = (w .&. 0b1111, w `shiftR` 4)
 
 getDeflate :: BS.ByteString -> BS.ByteString
 getDeflate = BS.reverse . BS.drop 4 . BS.reverse . BS.drop 2
+
+argToRetM :: Monad m => (a -> m b) -> (a -> m (a, b))
+argToRetM f x = do { y <- f x; return (x, y) }
+
+checkTypes :: FilePath -> IO [(FilePath, Maybe BType)]
+checkTypes fp = mapM (argToRetM $ (checkFixedOr <$>) . BS.readFile) =<< map ("files/" ++) . filter (not . isPrefixOf ".") <$> getDirectoryContents fp
