@@ -21,26 +21,29 @@ import Foreign.Storable
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Internal as BSI
+import qualified Data.ByteString.Lazy as LBS
 
 type PtrIO = StateT (Ptr Word8) IO
 
-data Header = Header {
-	name :: FilePath,
-	mode :: FileMode,
-	uid :: UserID,
-	gid :: GroupID,
-	size :: FileOffset,
-	mtime :: POSIXTime,
-	chksum :: Word32,
-	typeflag :: TypeFlag,
-	linkname :: FilePath,
-	magic :: BS.ByteString,
-	uname :: String,
-	gname :: String,
-	devmajor :: BS.ByteString,
-	devminor :: BS.ByteString,
-	prefix :: FilePath
-	} deriving Show
+data Header
+	= Header {
+		name :: FilePath,
+		mode :: FileMode,
+		uid :: UserID,
+		gid :: GroupID,
+		size :: FileOffset,
+		mtime :: POSIXTime,
+		chksum :: Word32,
+		typeflag :: TypeFlag,
+		linkname :: FilePath,
+		magic :: BS.ByteString,
+		uname :: String,
+		gname :: String,
+		devmajor :: BS.ByteString,
+		devminor :: BS.ByteString,
+		prefix :: FilePath }
+	| ZeroHeader
+	deriving Show
 
 data TypeFlag
 	= RegularFile
@@ -70,7 +73,10 @@ typeFlag = \case
 instance Storable Header where
 	sizeOf _ = 512
 	alignment _ = 8
-	peek = evalStateT peekHeader . castPtr
+	peek p = do
+		iz <- isZeroHeader p
+		if iz	then return ZeroHeader
+			else evalStateT peekHeader $ castPtr p
 
 peekHeader :: PtrIO Header
 peekHeader = do
@@ -96,6 +102,9 @@ peekHeader = do
 		cs <- sumBytes 512 p
 		when (cs /= chksum h) $ error "not match checksum"
 	return h
+
+isZeroHeader :: Ptr Header -> IO Bool
+isZeroHeader p = (all (== 0)) <$> peekArray 512 (castPtr p :: Ptr Word8)
 
 octal :: (Num a, Eq a) => BS.ByteString -> a
 octal = fst . head . readOct . BSC.unpack
@@ -123,23 +132,37 @@ sumBytes n p = sum . map fromIntegral
 -}
 
 testRun :: FilePath -> IO ()
-testRun fp = do
-	hdl <- openFile fp ReadMode
-	h <- allocaBytes 512 $ \p -> do
-		hGetBuf hdl p 512
-		peek p
-	d <- getWorkingDirectory
-	(`finally` changeWorkingDirectory d) $ do
-		changeWorkingDirectory "tmp/"
-		runHeader h
+testRun fp = withDirectory "tmp/" . untar =<< openFile fp ReadMode
 
-runHeader :: Header -> IO ()
-runHeader h = case typeflag h of
-	Directory -> ($ h) $ runDirectory
+untar :: Handle -> IO ()
+untar hdl = allocaBytes 512 ((>>) <$> flip (hGetBuf hdl) 512 <*> peek)
+	>>= \case
+		ZeroHeader -> allocaBytes
+				512
+				((>>) <$> flip (hGetBuf hdl) 512 <*> peek)
+			>>= \case
+				ZeroHeader -> return ()
+				_ -> error "bad structure"
+		hdr -> runHeader hdl hdr >> untar hdl
+
+withDirectory :: FilePath -> IO a -> IO a
+withDirectory nd act = getWorkingDirectory >>= \cd ->
+	(changeWorkingDirectory nd >> act) `finally` changeWorkingDirectory cd
+
+runHeader :: Handle -> Header -> IO ()
+runHeader hdl hdr = case typeflag hdr of
+	Directory -> ($ hdr) $ runDirectory
 		<$> name
 		<*> mode
 		<*> ((,) <$> uname <*> uid)
 		<*> ((,) <$> gname <*> gid)
+		<*> mtime
+	RegularFile -> ($ hdr) $ runRegularFile hdl
+		<$> name
+		<*> mode
+		<*> ((,) <$> uname <*> uid)
+		<*> ((,) <$> gname <*> gid)
+		<*> size
 		<*> mtime
 	_ -> error "not implemented"
 
@@ -148,13 +171,30 @@ runDirectory ::
 	POSIXTime -> IO ()
 runDirectory n m (un, ui_) (gn, gi_) mt = do
 	createDirectory n m
-	ui <- handleJust
-		(\e -> if isDoesNotExistError e then Just ui_ else Nothing)
-		return
-		(userID <$> getUserEntryForName un)
-	gi <- handleJust
-		(\e -> if isDoesNotExistError e then Just gi_ else Nothing)
-		return
-		(groupID <$> getGroupEntryForName gn)
+	ui <- getWithDefault ui_ ((userID <$>) . getUserEntryForName) un
+	gi <- getWithDefault gi_ ((groupID <$>) . getGroupEntryForName) gn
 	setOwnerAndGroup n ui gi
 	setFileTimesHiRes n mt mt
+
+getWithDefault :: b -> (a -> IO b) -> a -> IO b
+getWithDefault d lkp k = handleJust
+	(\e -> if isDoesNotExistError e then Just d else Nothing)
+	return
+	(lkp k)
+
+runRegularFile :: Handle ->
+	String -> FileMode -> (String, UserID) -> (String, GroupID) ->
+	FileOffset -> POSIXTime -> IO ()
+runRegularFile hdl n m (un, ui_) (gn, gi_) sz mt = do
+	cnt <- readBytes hdl sz
+	LBS.writeFile n cnt
+	ui <- getWithDefault ui_ ((userID <$>) . getUserEntryForName) un
+	gi <- getWithDefault gi_ ((groupID <$>) . getGroupEntryForName) gn
+	setOwnerAndGroup n ui gi
+	setFileTimesHiRes n mt mt
+
+readBytes :: Handle -> FileOffset -> IO LBS.ByteString
+readBytes hdl = (LBS.fromChunks <$>) . rb
+	where rb n = BS.hGet hdl 512 >>= \bs -> if n <= 512
+		then return [BS.take (fromIntegral n) bs]
+		else (bs :) <$> rb (n - 512)
