@@ -8,6 +8,7 @@ import Control.Monad (join, when)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.State (StateT, evalStateT, get, put)
 import Control.Exception (handleJust, finally)
+import Data.Bits ((.&.))
 import Data.Bool (bool)
 import Data.Word (Word8, Word16, Word32)
 import Data.Time.Clock.POSIX (POSIXTime)
@@ -49,6 +50,58 @@ mainEx tfp = do
 putToTmp :: FilePath -> IO ()
 putToTmp fp = withDirectory "tmp/" . untar =<< openFile fp ReadMode
 
+-- UNTAR
+
+untar :: Handle -> IO ()
+untar hdl = header hdl >>= \case
+	NullHeader -> header hdl >>= \case
+		NullHeader -> return ()
+		_ -> error "bad structure"
+	hdr -> runHeader hdl hdr >> untar hdl
+
+header :: Handle -> IO Header
+header hdl = allocaBytes 512 $ (>>) <$> flip (hGetBuf hdl) 512 <*> peek
+
+runHeader :: Handle -> Header -> IO ()
+runHeader hdl hdr = case typeflag hdr of
+	Directory -> ($ hdr) $ directory
+		<$> name <*> mode
+		<*> ((,) <$> uname <*> uid)
+		<*> ((,) <$> gname <*> gid)
+		<*> mtime
+	RegularFile -> ($ hdr) $ regularFile hdl
+		<$> size
+		<*> name <*> mode
+		<*> ((,) <$> uname <*> uid)
+		<*> ((,) <$> gname <*> gid)
+		<*> mtime
+	_ -> error "not implemented"
+
+type User = (String, UserID)
+type Group = (String, GroupID)
+
+directory :: FilePath -> FileMode -> User -> Group -> POSIXTime -> IO ()
+directory n m u g mt = createDirectory n m >> setProperties n u g mt
+
+regularFile :: Handle -> FileOffset ->
+	FilePath -> FileMode -> User -> Group -> POSIXTime -> IO ()
+regularFile hdl sz n m u g mt = do
+	LBS.writeFile n =<< readData hdl sz
+	setFileMode n m >> setProperties n u g mt
+
+setProperties :: FilePath -> User -> Group -> POSIXTime -> IO ()
+setProperties n (un, ui_) (gn, gi_) mt = do
+	join $ setOwnerAndGroup n
+		<$> getWithDefault ui_ ((userID <$>) . getUserEntryForName) un
+		<*> getWithDefault gi_ ((groupID <$>) . getGroupEntryForName) gn
+	setFileTimesHiRes n mt mt
+
+readData :: Handle -> FileOffset -> IO LBS.ByteString
+readData hdl = (LBS.fromChunks <$>) . rd
+	where rd n = BS.hGet hdl 512 >>= \bs -> if n <= 512
+		then return [BS.take (fromIntegral n) bs]
+		else (bs :) <$> rd (n - 512)
+
 -- OTHERS
 
 type PtrIO = StateT (Ptr Word8) IO
@@ -83,13 +136,12 @@ data Header
 instance Storable Header where
 	sizeOf _ = 512
 	alignment _ = 8
-	peek p = isNullHeader p
-		>>= bool (peekHeader `evalStateT` castPtr p) (return NullHeader)
+	peek p = bool (peekHeader `evalStateT` castPtr p) (return NullHeader)
+		=<< isNullHeader p
 	poke = error "not implemented"
 
 peekHeader :: PtrIO Header
-peekHeader = do
-	p <- get
+peekHeader = get >>= \p -> do
 	h <- Header
 		<$> readString 100 <*> readOctal 8
 		<*> readOctal 8 <*> readOctal 8
@@ -104,16 +156,18 @@ peekHeader = do
 		<*> readString 155
 	lift $ do
 		pokeArray (p `plusPtr` 148) $ replicate 8 (32 :: Word8)
-		cs <- sumBytes 512 p
-		when (cs /= chksum h) $ error "not match checksum"
+		flip when (error "not match checksum")
+			. (/= 0) . (.&. 0x1ffff)
+			. (subtract $ chksum h) =<< sumBytes 512 p
 	return h
 
 isNullHeader :: Ptr Header -> IO Bool
 isNullHeader p = all (== 0) <$> peekArray 512 (castPtr p :: Ptr Word8)
 
 data TypeFlag
-	= RegularFile | Link | SymLink | CharDevice
-	| BlockDevice | Directory | Fifo | ContiguousFile
+	= RegularFile | HardLink | SymLink
+	| CharDevice | BlockDevice
+	| Directory | Fifo | ContiguousFile
 	| UnknownType Word8
 	deriving Show
 
@@ -124,7 +178,7 @@ typeFlag :: Word8 -> TypeFlag
 typeFlag = \case
 	0x00 -> RegularFile
 	0x30 -> RegularFile
-	0x31 -> Link
+	0x31 -> HardLink
 	0x32 -> SymLink
 	0x33 -> CharDevice
 	0x34 -> BlockDevice
@@ -132,64 +186,6 @@ typeFlag = \case
 	0x36 -> Fifo
 	0x37 -> ContiguousFile
 	w -> UnknownType w
-
-untar :: Handle -> IO ()
-untar hdl = allocaBytes 512 ((>>) <$> flip (hGetBuf hdl) 512 <*> peek)
-	>>= \case
-		NullHeader -> allocaBytes
-				512
-				((>>) <$> flip (hGetBuf hdl) 512 <*> peek)
-			>>= \case
-				NullHeader -> return ()
-				_ -> error "bad structure"
-		hdr -> runHeader hdl hdr >> untar hdl
-
-runHeader :: Handle -> Header -> IO ()
-runHeader hdl hdr = case typeflag hdr of
-	Directory -> ($ hdr) $ directory
-		<$> name
-		<*> mode
-		<*> ((,) <$> uname <*> uid)
-		<*> ((,) <$> gname <*> gid)
-		<*> mtime
-	RegularFile -> ($ hdr) $ regularFile hdl
-		<$> name
-		<*> mode
-		<*> ((,) <$> uname <*> uid)
-		<*> ((,) <$> gname <*> gid)
-		<*> size
-		<*> mtime
-	_ -> error "not implemented"
-
-directory :: FilePath -> FileMode ->
-	(String, UserID) -> (String, GroupID) ->
-	POSIXTime -> IO ()
-directory n m u g mt = do
-	createDirectory n m
-	setProperties n u g mt
-
-regularFile :: Handle -> String -> FileMode ->
-	(String, UserID) -> (String, GroupID) ->
-	FileOffset -> POSIXTime -> IO ()
-regularFile hdl n m u g sz mt = do
-	cnt <- readData hdl sz
-	LBS.writeFile n cnt
-	setFileMode n m
-	setProperties n u g mt
-
-setProperties ::
-	FilePath -> (String, UserID) -> (String, GroupID) -> POSIXTime -> IO ()
-setProperties n (un, ui_) (gn, gi_) mt = do
-	join $ setOwnerAndGroup n
-		<$> getWithDefault ui_ ((userID <$>) . getUserEntryForName) un
-		<*> getWithDefault gi_ ((groupID <$>) . getGroupEntryForName) gn
-	setFileTimesHiRes n mt mt
-
-readData :: Handle -> FileOffset -> IO LBS.ByteString
-readData hdl = (LBS.fromChunks <$>) . rb
-	where rb n = BS.hGet hdl 512 >>= \bs -> if n <= 512
-		then return [BS.take (fromIntegral n) bs]
-		else (bs :) <$> rb (n - 512)
 
 -- TOOLS
 
@@ -212,3 +208,15 @@ getWithDefault d lkp k = handleJust
 	(\e -> if isDoesNotExistError e then Just d else Nothing)
 	return
 	(lkp k)
+
+-- NEXT
+{-
+
+Hard Link
+Symbolic Link
+FIFO File
+
+Charactor Special File
+Block Special File
+
+-}
