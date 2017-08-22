@@ -1,5 +1,7 @@
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
+import Control.Monad.Trans.Class
+import Control.Monad.Trans.State
 import Data.Word
 import Data.Char
 import System.IO
@@ -8,6 +10,10 @@ import Foreign.Marshal
 import Foreign.Storable
 
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BSC
+import qualified Data.ByteString.Internal as BSI
+
+type PtrIO = StateT (Ptr Word8) IO
 
 data Header = Header {
 	name :: FilePath,
@@ -15,40 +21,55 @@ data Header = Header {
 	uid :: BS.ByteString,
 	gid :: BS.ByteString,
 	size :: BS.ByteString,
-	mtime :: BS.ByteString
+	mtime :: BS.ByteString,
+	chksum :: BS.ByteString,
+	typeflag :: BS.ByteString,
+	linkname :: FilePath,
+	magic :: BS.ByteString,
+	uname :: BS.ByteString,
+	gname :: BS.ByteString,
+	devmajor :: BS.ByteString,
+	devminor :: BS.ByteString,
+	prefix :: FilePath
 	} deriving Show
 
 instance Storable Header where
 	sizeOf _ = 512
 	alignment _ = 8
-	peek p = do
-		nm <- nullTermString 0 100 p
-		md <- nullTermByteString 100 8 p
-		ui <- nullTermByteString 108 8 p
-		gi <- nullTermByteString 116 8 p
-		sz <- nullTermByteString 124 12 p
-		mt <- nullTermByteString 136 12 p
-		return Header {
-			name = nm,
-			mode = md,
-			uid = ui,
-			gid = gi,
-			size = sz,
-			mtime = mt
-			}
+	peek = evalStateT peekHeader . castPtr
 
-nullTermBytes :: Word8 -> Word8 -> Ptr a -> IO [Word8]
-nullTermBytes os mx = ntb mx . (`plusPtr` fromIntegral os)
-	where
-	ntb mx _ | mx < 1 = return []
-	ntb mx p = do
-		w <- peek (castPtr p :: Ptr Word8)
-		if (w == 0)
-			then return []
-			else (w :) <$> ntb (mx - 1) (p `plusPtr` 1)
+peekHeader :: PtrIO Header
+peekHeader = do
+	p <- get
+	h <- Header
+		<$> (nullTermString <$> readByteString 100)
+		<*> readByteString 8
+		<*> readByteString 8
+		<*> readByteString 8
+		<*> readByteString 12
+		<*> readByteString 12
+		<*> readByteString 8
+		<*> readByteString 1
+		<*> (nullTermString <$> readByteString 100)
+		<*> readByteString 8
+		<*> (BS.takeWhile (/= 0) <$> readByteString 32)
+		<*> (BS.takeWhile (/= 0) <$> readByteString 32)
+		<*> (BS.takeWhile (/= 0) <$> readByteString 8)
+		<*> (BS.takeWhile (/= 0) <$> readByteString 8)
+		<*> (nullTermString <$> readByteString 155)
+	lift $ do
+		pokeArray (p `plusPtr` 148) $ replicate 8 (32 :: Word8)
+		sumBytes 512 p >>= print
+	return h
 
-nullTermString :: Word8 -> Word8 -> Ptr a -> IO String
-nullTermString os = ((map (chr . fromIntegral) <$>) .) . nullTermBytes os
+nullTermString :: BS.ByteString -> String
+nullTermString = BSC.unpack . BSC.takeWhile (/= '\0')
 
-nullTermByteString :: Word8 -> Word8 -> Ptr a -> IO BS.ByteString
-nullTermByteString os = ((BS.pack <$>) .) . nullTermBytes os
+readByteString :: Word8 -> PtrIO BS.ByteString
+readByteString n_ = get >>= \p -> BS.takeWhile (/= 0)
+	<$> lift (BSI.create n $ \b -> copyBytes b p n) <* put (p `plusPtr` n)
+	where n = fromIntegral n_
+
+sumBytes :: Word16 -> Ptr a -> IO Word32
+sumBytes n p = sum . map fromIntegral
+	<$> peekArray (fromIntegral n) (castPtr p :: Ptr Word8)
