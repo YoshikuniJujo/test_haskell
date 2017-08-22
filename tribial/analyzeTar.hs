@@ -5,12 +5,14 @@ import Numeric
 import Control.Monad
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.State
+import Control.Exception
 import Data.Bits
 import Data.Word
 import Data.Char
 import Data.Time
 import Data.Time.Clock.POSIX
 import System.IO
+import System.IO.Error
 import System.Posix
 import Foreign.Ptr
 import Foreign.Marshal
@@ -28,7 +30,7 @@ data Header = Header {
 	uid :: UserID,
 	gid :: GroupID,
 	size :: FileOffset,
-	mtime :: EpochTime,
+	mtime :: POSIXTime,
 	chksum :: Word32,
 	typeflag :: TypeFlag,
 	linkname :: FilePath,
@@ -119,3 +121,40 @@ sumBytes n p = sum . map fromIntegral
 4. set modification time
 
 -}
+
+testRun :: FilePath -> IO ()
+testRun fp = do
+	hdl <- openFile fp ReadMode
+	h <- allocaBytes 512 $ \p -> do
+		hGetBuf hdl p 512
+		peek p
+	d <- getWorkingDirectory
+	(`finally` changeWorkingDirectory d) $ do
+		changeWorkingDirectory "tmp/"
+		runHeader h
+
+runHeader :: Header -> IO ()
+runHeader h = case typeflag h of
+	Directory -> ($ h) $ runDirectory
+		<$> name
+		<*> mode
+		<*> ((,) <$> uname <*> uid)
+		<*> ((,) <$> gname <*> gid)
+		<*> mtime
+	_ -> error "not implemented"
+
+runDirectory ::
+	String -> FileMode -> (String, UserID) -> (String, GroupID) ->
+	POSIXTime -> IO ()
+runDirectory n m (un, ui_) (gn, gi_) mt = do
+	createDirectory n m
+	ui <- handleJust
+		(\e -> if isDoesNotExistError e then Just ui_ else Nothing)
+		return
+		(userID <$> getUserEntryForName un)
+	gi <- handleJust
+		(\e -> if isDoesNotExistError e then Just gi_ else Nothing)
+		return
+		(groupID <$> getGroupEntryForName gn)
+	setOwnerAndGroup n ui gi
+	setFileTimesHiRes n mt mt
