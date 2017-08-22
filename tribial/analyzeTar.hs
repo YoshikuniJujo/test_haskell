@@ -1,65 +1,128 @@
 {-# LANGUAGE LambdaCase #-}
-{-# OPTIONS_GHC -fno-warn-tabs #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-import Numeric
-import Control.Monad
-import Control.Monad.Trans.Class
-import Control.Monad.Trans.State
-import Control.Exception
-import Data.Bits
-import Data.Word
-import Data.Char
-import Data.Time
-import Data.Time.Clock.POSIX
-import System.IO
-import System.IO.Error
-import System.Posix
-import Foreign.Ptr
-import Foreign.Marshal
-import Foreign.Storable
+module Main (main) where
+
+import Numeric (readOct)
+import Control.Monad (join, when)
+import Control.Monad.Trans.Class (lift)
+import Control.Monad.Trans.State (StateT, evalStateT, get, put)
+import Control.Exception (handleJust, finally)
+import Data.Bool (bool)
+import Data.Word (Word8, Word16, Word32)
+import Data.Time.Clock.POSIX (POSIXTime)
+import System.Environment (getArgs)
+import System.IO (Handle, IOMode(..), openFile, hGetBuf)
+import System.IO.Error (isDoesNotExistError)
+import System.Posix (
+	FileMode, FileOffset,
+	UserEntry(..), GroupEntry(..), UserID, GroupID,
+	createDirectory, removeDirectory,
+	getWorkingDirectory, changeWorkingDirectory,
+	removeLink, setFileMode,
+	setOwnerAndGroup, getUserEntryForName, getGroupEntryForName,
+	setFileTimesHiRes )
+import Foreign.Ptr (Ptr, castPtr, plusPtr)
+import Foreign.Storable (Storable(..))
+import Foreign.Marshal (allocaBytes, peekArray, pokeArray, copyBytes)
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Internal as BSI
 import qualified Data.ByteString.Lazy as LBS
 
+-- MAIN FUNCTIONS
+
+main :: IO ()
+main = mainEx . head =<< getArgs
+
+mainEx :: FilePath -> IO ()
+mainEx tfp = do
+	putToTmp tfp
+	withDirectory "tmp/" $ do
+		BS.readFile "tmp/a.txt" >>= BS.putStr
+		BS.readFile "tmp/b.txt" >>= BS.putStr
+		removeLink "tmp/a.txt"
+		removeLink "tmp/b.txt"
+		removeDirectory "tmp"
+
+putToTmp :: FilePath -> IO ()
+putToTmp fp = withDirectory "tmp/" . untar =<< openFile fp ReadMode
+
+-- OTHERS
+
 type PtrIO = StateT (Ptr Word8) IO
+
+readBytes :: Word8 -> PtrIO BS.ByteString
+readBytes n_ = getModify (`plusPtr` n) >>= \p -> lift
+	. (BS.takeWhile (/= 0) <$>) . BSI.create n $ \b -> copyBytes b p n
+	where n = fromIntegral n_
+
+readString :: Word8 -> PtrIO String
+readString = (BSC.unpack <$>) . readBytes
+
+readOctal :: (Num a, Eq a) => Word8 -> PtrIO a
+readOctal = (octal <$>) . readBytes
 
 data Header
 	= Header {
-		name :: FilePath,
-		mode :: FileMode,
-		uid :: UserID,
-		gid :: GroupID,
+		name :: FilePath, mode :: FileMode,
+		uid :: UserID, gid :: GroupID,
 		size :: FileOffset,
 		mtime :: POSIXTime,
 		chksum :: Word32,
 		typeflag :: TypeFlag,
-		linkname :: FilePath,
-		magic :: BS.ByteString,
-		uname :: String,
-		gname :: String,
-		devmajor :: BS.ByteString,
-		devminor :: BS.ByteString,
-		prefix :: FilePath }
-	| ZeroHeader
+		_linkname :: FilePath,
+		_magic :: BS.ByteString,
+		uname :: String, gname :: String,
+		_devmajor :: BS.ByteString, _devminor :: BS.ByteString,
+		_prefix :: FilePath }
+	| NullHeader
 	deriving Show
 
+instance Storable Header where
+	sizeOf _ = 512
+	alignment _ = 8
+	peek p = isNullHeader p
+		>>= bool (peekHeader `evalStateT` castPtr p) (return NullHeader)
+	poke = error "not implemented"
+
+peekHeader :: PtrIO Header
+peekHeader = do
+	p <- get
+	h <- Header
+		<$> readString 100 <*> readOctal 8
+		<*> readOctal 8 <*> readOctal 8
+		<*> readOctal 12
+		<*> readOctal 12
+		<*> readOctal 8
+		<*> readType
+		<*> readString 100
+		<*> readBytes 8
+		<*> readString 32 <*> readString 32
+		<*> readBytes 8 <*> readBytes 8
+		<*> readString 155
+	lift $ do
+		pokeArray (p `plusPtr` 148) $ replicate 8 (32 :: Word8)
+		cs <- sumBytes 512 p
+		when (cs /= chksum h) $ error "not match checksum"
+	return h
+
+isNullHeader :: Ptr Header -> IO Bool
+isNullHeader p = all (== 0) <$> peekArray 512 (castPtr p :: Ptr Word8)
+
 data TypeFlag
-	= RegularFile
-	| Link
-	| SymLink
-	| CharDevice
-	| BlockDevice
-	| Directory
-	| Fifo
-	| ContiguousFile
+	= RegularFile | Link | SymLink | CharDevice
+	| BlockDevice | Directory | Fifo | ContiguousFile
 	| UnknownType Word8
 	deriving Show
 
+readType :: PtrIO TypeFlag
+readType = typeFlag . head . BS.unpack <$> readBytes 1
+
 typeFlag :: Word8 -> TypeFlag
 typeFlag = \case
-	0 -> RegularFile
+	0x00 -> RegularFile
 	0x30 -> RegularFile
 	0x31 -> Link
 	0x32 -> SymLink
@@ -70,94 +133,26 @@ typeFlag = \case
 	0x37 -> ContiguousFile
 	w -> UnknownType w
 
-instance Storable Header where
-	sizeOf _ = 512
-	alignment _ = 8
-	peek p = do
-		iz <- isZeroHeader p
-		if iz	then return ZeroHeader
-			else evalStateT peekHeader $ castPtr p
-
-peekHeader :: PtrIO Header
-peekHeader = do
-	p <- get
-	h <- Header
-		<$> (nullTermString <$> readByteString 100)
-		<*> (octal <$> readByteString 8)
-		<*> (octal <$> readByteString 8)
-		<*> (octal <$> readByteString 8)
-		<*> (octal <$> readByteString 12)
-		<*> (octal <$> readByteString 12)
-		<*> (octal <$> readByteString 8)
-		<*> (typeFlag . head . BS.unpack <$> readByteString 1)
-		<*> (nullTermString <$> readByteString 100)
-		<*> readByteString 8
-		<*> (nullTermString <$> readByteString 32)
-		<*> (nullTermString <$> readByteString 32)
-		<*> (BS.takeWhile (/= 0) <$> readByteString 8)
-		<*> (BS.takeWhile (/= 0) <$> readByteString 8)
-		<*> (nullTermString <$> readByteString 155)
-	lift $ do
-		pokeArray (p `plusPtr` 148) $ replicate 8 (32 :: Word8)
-		cs <- sumBytes 512 p
-		when (cs /= chksum h) $ error "not match checksum"
-	return h
-
-isZeroHeader :: Ptr Header -> IO Bool
-isZeroHeader p = (all (== 0)) <$> peekArray 512 (castPtr p :: Ptr Word8)
-
-octal :: (Num a, Eq a) => BS.ByteString -> a
-octal = fst . head . readOct . BSC.unpack
-
-nullTermString :: BS.ByteString -> String
-nullTermString = BSC.unpack . BSC.takeWhile (/= '\0')
-
-readByteString :: Word8 -> PtrIO BS.ByteString
-readByteString n_ = get >>= \p -> BS.takeWhile (/= 0)
-	<$> lift (BSI.create n $ \b -> copyBytes b p n) <* put (p `plusPtr` n)
-	where n = fromIntegral n_
-
-sumBytes :: Word16 -> Ptr a -> IO Word32
-sumBytes n p = sum . map fromIntegral
-	<$> peekArray (fromIntegral n) (castPtr p :: Ptr Word8)
-
-{-
-
-1. make directory
-2. set user and group from name
-	-> if no name then set user and group from id
-3. set mode
-4. set modification time
-
--}
-
-testRun :: FilePath -> IO ()
-testRun fp = withDirectory "tmp/" . untar =<< openFile fp ReadMode
-
 untar :: Handle -> IO ()
 untar hdl = allocaBytes 512 ((>>) <$> flip (hGetBuf hdl) 512 <*> peek)
 	>>= \case
-		ZeroHeader -> allocaBytes
+		NullHeader -> allocaBytes
 				512
 				((>>) <$> flip (hGetBuf hdl) 512 <*> peek)
 			>>= \case
-				ZeroHeader -> return ()
+				NullHeader -> return ()
 				_ -> error "bad structure"
 		hdr -> runHeader hdl hdr >> untar hdl
 
-withDirectory :: FilePath -> IO a -> IO a
-withDirectory nd act = getWorkingDirectory >>= \cd ->
-	(changeWorkingDirectory nd >> act) `finally` changeWorkingDirectory cd
-
 runHeader :: Handle -> Header -> IO ()
 runHeader hdl hdr = case typeflag hdr of
-	Directory -> ($ hdr) $ runDirectory
+	Directory -> ($ hdr) $ directory
 		<$> name
 		<*> mode
 		<*> ((,) <$> uname <*> uid)
 		<*> ((,) <$> gname <*> gid)
 		<*> mtime
-	RegularFile -> ($ hdr) $ runRegularFile hdl
+	RegularFile -> ($ hdr) $ regularFile hdl
 		<$> name
 		<*> mode
 		<*> ((,) <$> uname <*> uid)
@@ -166,35 +161,54 @@ runHeader hdl hdr = case typeflag hdr of
 		<*> mtime
 	_ -> error "not implemented"
 
-runDirectory ::
-	String -> FileMode -> (String, UserID) -> (String, GroupID) ->
+directory :: FilePath -> FileMode ->
+	(String, UserID) -> (String, GroupID) ->
 	POSIXTime -> IO ()
-runDirectory n m (un, ui_) (gn, gi_) mt = do
+directory n m u g mt = do
 	createDirectory n m
-	ui <- getWithDefault ui_ ((userID <$>) . getUserEntryForName) un
-	gi <- getWithDefault gi_ ((groupID <$>) . getGroupEntryForName) gn
-	setOwnerAndGroup n ui gi
+	setProperties n u g mt
+
+regularFile :: Handle -> String -> FileMode ->
+	(String, UserID) -> (String, GroupID) ->
+	FileOffset -> POSIXTime -> IO ()
+regularFile hdl n m u g sz mt = do
+	cnt <- readData hdl sz
+	LBS.writeFile n cnt
+	setFileMode n m
+	setProperties n u g mt
+
+setProperties ::
+	FilePath -> (String, UserID) -> (String, GroupID) -> POSIXTime -> IO ()
+setProperties n (un, ui_) (gn, gi_) mt = do
+	join $ setOwnerAndGroup n
+		<$> getWithDefault ui_ ((userID <$>) . getUserEntryForName) un
+		<*> getWithDefault gi_ ((groupID <$>) . getGroupEntryForName) gn
 	setFileTimesHiRes n mt mt
+
+readData :: Handle -> FileOffset -> IO LBS.ByteString
+readData hdl = (LBS.fromChunks <$>) . rb
+	where rb n = BS.hGet hdl 512 >>= \bs -> if n <= 512
+		then return [BS.take (fromIntegral n) bs]
+		else (bs :) <$> rb (n - 512)
+
+-- TOOLS
+
+getModify :: Monad m => (s -> s) -> StateT s m s
+getModify f = get >>= (>>) <$> put . f <*> return
+
+octal :: (Num a, Eq a) => BS.ByteString -> a
+octal = fst . head . readOct . BSC.unpack
+
+sumBytes :: Word16 -> Ptr a -> IO Word32
+sumBytes n p = sum . map fromIntegral
+	<$> peekArray (fromIntegral n) (castPtr p :: Ptr Word8)
+
+withDirectory :: FilePath -> IO a -> IO a
+withDirectory nd act = getWorkingDirectory >>= \cd ->
+	(changeWorkingDirectory nd >> act) `finally` changeWorkingDirectory cd
 
 getWithDefault :: b -> (a -> IO b) -> a -> IO b
 getWithDefault d lkp k = handleJust
 	(\e -> if isDoesNotExistError e then Just d else Nothing)
 	return
 	(lkp k)
-
-runRegularFile :: Handle ->
-	String -> FileMode -> (String, UserID) -> (String, GroupID) ->
-	FileOffset -> POSIXTime -> IO ()
-runRegularFile hdl n m (un, ui_) (gn, gi_) sz mt = do
-	cnt <- readBytes hdl sz
-	LBS.writeFile n cnt
-	ui <- getWithDefault ui_ ((userID <$>) . getUserEntryForName) un
-	gi <- getWithDefault gi_ ((groupID <$>) . getGroupEntryForName) gn
-	setOwnerAndGroup n ui gi
-	setFileTimesHiRes n mt mt
-
-readBytes :: Handle -> FileOffset -> IO LBS.ByteString
-readBytes hdl = (LBS.fromChunks <$>) . rb
-	where rb n = BS.hGet hdl 512 >>= \bs -> if n <= 512
-		then return [BS.take (fromIntegral n) bs]
-		else (bs :) <$> rb (n - 512)
