@@ -20,7 +20,8 @@ import System.Posix (
 	FileStatus, FileMode, FileOffset,
 	UserEntry(..), GroupEntry(..), UserID, GroupID,
 	getFileStatus,
-	isDirectory, isRegularFile, fileMode, fileOwner, fileGroup,
+	isDirectory, isRegularFile,
+	fileSize, fileMode, fileOwner, fileGroup,
 	modificationTimeHiRes,
 	createDirectory, removeDirectory, openDirStream, readDirStream,
 	getWorkingDirectory, changeWorkingDirectory,
@@ -330,27 +331,54 @@ makeSample fp = do
 tar :: FilePath -> [FilePath] -> IO ()
 tar tfp (sfp : sfps) = do
 	hdl <- openFile tfp WriteMode
-	[(hdr, Nothing)] <- tarGen sfp
+	hdrs <- tarGen sfp
+	mapM_ (fromHeader hdl) hdrs
+	{-
 	allocaBytes 512 $ \p -> do
 		poke p hdr
 		hPutBuf hdl p 512
+		-}
 	replicateM_ 2 $ allocaBytes 512 $ \p -> do
 		poke p NullHeader
 		hPutBuf hdl p 512
 
-tarGen :: FilePath -> IO [(Header, Maybe BS.ByteString)]
+fromHeader :: Handle -> Header -> IO ()
+fromHeader hdl hdr = case typeflag hdr of
+	Directory -> allocaBytes 512 $ \p -> do
+		poke p hdr
+		hPutBuf hdl p 512
+	RegularFile -> do
+		allocaBytes 512 $ \p -> do
+			poke p hdr
+			hPutBuf hdl p 512
+		sh <- openFile (name hdr) ReadMode
+		copyFile sh hdl $ size hdr
+	_ -> error "not implemented"
+
+copyFile :: Handle -> Handle -> FileOffset -> IO ()
+copyFile src dst sz
+	| sz <= 512 = allocaBytes 512 $ \p -> do
+		n <- hGetBuf src p 512
+		fillBytes (p `plusPtr` n) 0 (512 - n)
+		hPutBuf dst p 512
+	| otherwise = allocaBytes 512 $ \p -> do
+		512 <- hGetBuf src p 512
+		hPutBuf dst p 512
+		copyFile src dst $ sz - 512
+
+tarGen :: FilePath -> IO [Header]
 tarGen fp = do
 	fs <- getFileStatus fp
+	u <- getUserEntryForID $ fileOwner fs
+	g <- getGroupEntryForID $ fileGroup fs
 	case getFiletype fs of
 		Directory -> do
 			putStrLn "Directory"
-			u <- getUserEntryForID $ fileOwner fs
-			g <- getGroupEntryForID $ fileGroup fs
-			((mkDirHeader fp fs u g, Nothing) :) . concat <$>
+			(mkDirHeader fp fs u g :) . concat <$>
 				(mapDirStream fp tarGen =<< openDirStream fp)
 		RegularFile -> do
 			putStrLn "Regular File"
-			return []
+			return [mkFileHeader fp fs u g]
 		_ -> error "tar: not implemented"
 
 mapDirStream :: FilePath -> (FilePath -> IO a) -> DirStream -> IO [a]
@@ -371,6 +399,24 @@ mkDirHeader fp fs u g = Header {
 	mtime = modificationTimeHiRes fs,
 	chksum = 0,
 	typeflag = Directory,
+	linkname = "",
+	magic = "ustar  ",
+	uname = userName u,
+	gname = groupName g,
+	devmajor = "",
+	devminor = "",
+	prefix = "" }
+
+mkFileHeader :: FilePath -> FileStatus -> UserEntry -> GroupEntry -> Header
+mkFileHeader fp fs u g = Header {
+	name = fp,
+	mode = fileMode fs,
+	uid = fileOwner fs,
+	gid = fileGroup fs,
+	size = fileSize fs,
+	mtime = modificationTimeHiRes fs,
+	chksum = 0,
+	typeflag = RegularFile,
 	linkname = "",
 	magic = "ustar  ",
 	uname = userName u,
