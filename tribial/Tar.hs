@@ -1,18 +1,17 @@
 {-# LANGUAGE LambdaCase, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main (main) where
+module Tar (tar, hTar, untar, hUntar) where
 
 import Numeric (showOct, readOct)
 import Control.Monad (join, when, replicateM_)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.State (StateT, evalStateT, get, put)
-import Control.Exception (handleJust, finally)
+import Control.Exception (handleJust)
 import Data.Bits ((.&.))
 import Data.Bool (bool)
 import Data.Word (Word8, Word16, Word32)
 import Data.Time.Clock.POSIX (POSIXTime)
-import System.Environment (getArgs)
 import System.IO (Handle, IOMode(..), openFile, hGetBuf, hPutBuf)
 import System.IO.Error (isDoesNotExistError)
 import System.Posix (
@@ -23,9 +22,8 @@ import System.Posix (
 	isDirectory, isRegularFile,
 	fileSize, fileMode, fileOwner, fileGroup,
 	modificationTimeHiRes,
-	createDirectory, removeDirectory, openDirStream, readDirStream,
-	getWorkingDirectory, changeWorkingDirectory,
-	removeLink, setFileMode,
+	createDirectory, openDirStream, readDirStream,
+	setFileMode,
 	setOwnerAndGroup,
 	getUserEntryForName, getGroupEntryForName,
 	getUserEntryForID, getGroupEntryForID,
@@ -42,32 +40,17 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Internal as BSI
 import qualified Data.ByteString.Lazy as LBS
 
--- MAIN FUNCTIONS
-
-main :: IO ()
-main = mainEx . head =<< getArgs
-
-mainEx :: FilePath -> IO ()
-mainEx tfp = do
-	putToTmp tfp
-	withDirectory "tmp/" $ do
-		BS.readFile "tmp/a.txt" >>= BS.putStr
-		BS.readFile "tmp/b.txt" >>= BS.putStr
-		removeLink "tmp/a.txt"
-		removeLink "tmp/b.txt"
-		removeDirectory "tmp"
-
-putToTmp :: FilePath -> IO ()
-putToTmp fp = withDirectory "tmp/" . untar =<< openFile fp ReadMode
-
 -- UNTAR
 
-untar :: Handle -> IO ()
-untar hdl = header hdl >>= \case
+untar :: FilePath -> IO ()
+untar fp = hUntar =<< openFile fp ReadMode
+
+hUntar :: Handle -> IO ()
+hUntar hdl = header hdl >>= \case
 	NullHeader -> header hdl >>= \case
 		NullHeader -> return ()
 		_ -> error "bad structure"
-	hdr -> runHeader hdl hdr >> untar hdl
+	hdr -> runHeader hdl hdr >> hUntar hdl
 
 header :: Handle -> IO Header
 header hdl = allocaBytes 512 $ (>>) <$> flip (hGetBuf hdl) 512 <*> peek
@@ -182,7 +165,7 @@ peekHeader = get >>= \p -> do
 		pokeArray (p `plusPtr` 148) $ replicate 8 (32 :: Word8)
 		flip when (error "not match checksum")
 			. (/= 0) . (.&. 0x1ffff)
-			. (subtract $ chksum h) =<< sumBytes 512 p
+			. subtract (chksum h) =<< sumBytes 512 p
 	return h
 
 isNullHeader :: Ptr Header -> IO Bool
@@ -196,7 +179,7 @@ pokeHeader h = get >>= \p -> do
 	writeOctal 8 $ uid h
 	writeOctal 8 $ gid h
 	writeOctal 12 $ size h
-	writeOctal 12 . truncate $ mtime h
+	writeOctal 12 . (truncate :: POSIXTime -> Word32) $ mtime h
 --	writeOctal 8 $ chksum h
 	writeString 8 $ replicate 8 ' '
 	writeType $ typeflag h
@@ -270,10 +253,6 @@ sumBytes :: Word16 -> Ptr a -> IO Word32
 sumBytes n p = sum . map fromIntegral
 	<$> peekArray (fromIntegral n) (castPtr p :: Ptr Word8)
 
-withDirectory :: FilePath -> IO a -> IO a
-withDirectory nd act = getWorkingDirectory >>= \cd ->
-	(changeWorkingDirectory nd >> act) `finally` changeWorkingDirectory cd
-
 getWithDefault :: b -> (a -> IO b) -> a -> IO b
 getWithDefault d lkp k = handleJust
 	(\e -> if isDoesNotExistError e then Just d else Nothing)
@@ -292,52 +271,17 @@ Block Special File
 
 -}
 
-toByteString :: Ptr a -> Int -> IO BS.ByteString
-toByteString p n = BSI.create n $ \b -> copyBytes b (castPtr p) n
-
--- SAMPLE
-
-sampleDirHeader :: Header
-sampleDirHeader = Header {
-	name = "hoge/", mode = 0o755, uid = 1000, gid = 1000, size = 0,
-	mtime = 1503295499, chksum = 0, typeflag = Directory, linkname = "",
-	magic = "ustar  ", uname = "tatsuya", gname = "tatsuya",
-	devmajor = "", devminor = "", prefix = "" }
-
-makeSample :: FilePath -> IO ()
-makeSample fp = do
-	h <- openFile fp WriteMode
-	allocaBytes 1536 $ \p -> do
-		pokeArray p [sampleDirHeader, NullHeader, NullHeader]
-		hPutBuf h p 1536
-
 -- TAR
 
-{-
-	= Header {
-		name :: FilePath, mode :: FileMode,
-		uid :: UserID, gid :: GroupID,
-		size :: FileOffset,
-		mtime :: POSIXTime,
-		chksum :: Word32,
-		typeflag :: TypeFlag,
-		linkname :: FilePath,
-		magic :: BS.ByteString,
-		uname :: String, gname :: String,
-		devmajor :: BS.ByteString, devminor :: BS.ByteString,
-		prefix :: FilePath }
-		-}
-
 tar :: FilePath -> [FilePath] -> IO ()
-tar tfp (sfp : sfps) = do
-	hdl <- openFile tfp WriteMode
-	hdrs <- tarGen sfp
+tar tfp sfps = do
+	h <- openFile tfp WriteMode
+	hTar h sfps
+
+hTar :: Handle -> [FilePath] -> IO ()
+hTar hdl sfps = do
+	hdrs <- concat <$> mapM tarGen sfps
 	mapM_ (fromHeader hdl) hdrs
-	{-
-	allocaBytes 512 $ \p -> do
-		poke p hdr
-		hPutBuf hdl p 512
-		-}
 	replicateM_ 2 $ allocaBytes 512 $ \p -> do
 		poke p NullHeader
 		hPutBuf hdl p 512
