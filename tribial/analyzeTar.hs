@@ -1,9 +1,9 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
 
-import Numeric (readOct)
+import Numeric (showOct, readOct)
 import Control.Monad (join, when)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.State (StateT, evalStateT, get, put)
@@ -13,7 +13,7 @@ import Data.Bool (bool)
 import Data.Word (Word8, Word16, Word32)
 import Data.Time.Clock.POSIX (POSIXTime)
 import System.Environment (getArgs)
-import System.IO (Handle, IOMode(..), openFile, hGetBuf)
+import System.IO (Handle, IOMode(..), openFile, hGetBuf, hPutBuf)
 import System.IO.Error (isDoesNotExistError)
 import System.Posix (
 	FileMode, FileOffset,
@@ -25,7 +25,9 @@ import System.Posix (
 	setFileTimesHiRes )
 import Foreign.Ptr (Ptr, castPtr, plusPtr)
 import Foreign.Storable (Storable(..))
-import Foreign.Marshal (allocaBytes, peekArray, pokeArray, copyBytes)
+import Foreign.Marshal (
+	allocaBytes, peekArray, pokeArray, copyBytes, fillBytes)
+import Foreign.ForeignPtr (withForeignPtr)
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
@@ -117,6 +119,20 @@ readString = (BSC.unpack <$>) . readBytes
 readOctal :: (Num a, Eq a) => Word8 -> PtrIO a
 readOctal = (octal <$>) . readBytes
 
+writeBytes :: Word8 -> BS.ByteString -> PtrIO ()
+writeBytes n_ bs = getModify (`plusPtr` n) >>= \p -> lift $ do
+	let	(fp, os, l) = BSI.toForeignPtr bs
+	withForeignPtr fp $ \b -> do
+		copyBytes p (b `plusPtr` os) l
+		fillBytes (p `plusPtr` l) 0 (n - l)
+	where n = fromIntegral n_
+
+writeString :: Word8 -> String -> PtrIO ()
+writeString n = writeBytes n . BSC.pack
+
+writeOctal :: (Integral a, Show a) => Word8 -> a -> PtrIO ()
+writeOctal n = writeBytes n . toOctal (n - 1)
+
 data Header
 	= Header {
 		name :: FilePath, mode :: FileMode,
@@ -125,11 +141,11 @@ data Header
 		mtime :: POSIXTime,
 		chksum :: Word32,
 		typeflag :: TypeFlag,
-		_linkname :: FilePath,
-		_magic :: BS.ByteString,
+		linkname :: FilePath,
+		magic :: BS.ByteString,
 		uname :: String, gname :: String,
-		_devmajor :: BS.ByteString, _devminor :: BS.ByteString,
-		_prefix :: FilePath }
+		devmajor :: BS.ByteString, devminor :: BS.ByteString,
+		prefix :: FilePath }
 	| NullHeader
 	deriving Show
 
@@ -138,7 +154,7 @@ instance Storable Header where
 	alignment _ = 8
 	peek p = bool (peekHeader `evalStateT` castPtr p) (return NullHeader)
 		=<< isNullHeader p
-	poke = error "not implemented"
+	poke p h = pokeHeader h `evalStateT` castPtr p
 
 peekHeader :: PtrIO Header
 peekHeader = get >>= \p -> do
@@ -164,6 +180,34 @@ peekHeader = get >>= \p -> do
 isNullHeader :: Ptr Header -> IO Bool
 isNullHeader p = all (== 0) <$> peekArray 512 (castPtr p :: Ptr Word8)
 
+pokeHeader :: Header -> PtrIO ()
+pokeHeader NullHeader = zeroClear 512
+pokeHeader h = get >>= \p -> do
+	writeString 100 $ name h
+	writeOctal 8 $ mode h
+	writeOctal 8 $ uid h
+	writeOctal 8 $ gid h
+	writeOctal 12 $ size h
+	writeOctal 12 . truncate $ mtime h
+--	writeOctal 8 $ chksum h
+	writeString 8 $ replicate 8 ' '
+	writeType $ typeflag h
+	writeString 100 $ linkname h
+	writeBytes 8 $ magic h
+	writeString 32 $ uname h
+	writeString 32 $ gname h
+	writeBytes 8 $ devmajor h
+	writeBytes 8 $ devminor h
+	writeString 155 $ prefix h
+	zeroClear 12
+	lift $ do
+		cs <- sumBytes 512 p
+		writeOctal 8 cs `evalStateT` (p `plusPtr` 148)
+
+zeroClear :: Word16 -> PtrIO ()
+zeroClear n_ = getModify (`plusPtr` n) >>= \p -> lift $ fillBytes p 0 n
+	where n = fromIntegral n_
+
 data TypeFlag
 	= RegularFile | HardLink | SymLink
 	| CharDevice | BlockDevice
@@ -187,6 +231,21 @@ typeFlag = \case
 	0x37 -> ContiguousFile
 	w -> UnknownType w
 
+writeType :: TypeFlag -> PtrIO ()
+writeType = writeBytes 1 . BS.pack . (: []) . fromTypeFlag
+
+fromTypeFlag :: TypeFlag -> Word8
+fromTypeFlag = \case
+	RegularFile -> 0x30
+	HardLink -> 0x31
+	SymLink -> 0x32
+	CharDevice -> 0x33
+	BlockDevice -> 0x34
+	Directory -> 0x35
+	Fifo -> 0x36
+	ContiguousFile -> 0x37
+	UnknownType w -> w
+
 -- TOOLS
 
 getModify :: Monad m => (s -> s) -> StateT s m s
@@ -194,6 +253,10 @@ getModify f = get >>= (>>) <$> put . f <*> return
 
 octal :: (Num a, Eq a) => BS.ByteString -> a
 octal = fst . head . readOct . BSC.unpack
+
+toOctal :: (Integral a, Show a) => Word8 -> a -> BS.ByteString
+toOctal n x = BSC.pack $ replicate (fromIntegral n - length s) '0' ++ s
+	where s = showOct x ""
 
 sumBytes :: Word16 -> Ptr a -> IO Word32
 sumBytes n p = sum . map fromIntegral
@@ -220,3 +283,22 @@ Charactor Special File
 Block Special File
 
 -}
+
+toByteString :: Ptr a -> Int -> IO BS.ByteString
+toByteString p n = BSI.create n $ \b -> copyBytes b (castPtr p) n
+
+-- SAMPLE
+
+sampleDirHeader :: Header
+sampleDirHeader = Header {
+	name = "hoge/", mode = 0o755, uid = 1000, gid = 1000, size = 0,
+	mtime = 1503295499, chksum = 0, typeflag = Directory, linkname = "",
+	magic = "ustar  ", uname = "tatsuya", gname = "tatsuya",
+	devmajor = "", devminor = "", prefix = "" }
+
+makeSample :: FilePath -> IO ()
+makeSample fp = do
+	h <- openFile fp WriteMode
+	allocaBytes 1536 $ \p -> do
+		pokeArray p [sampleDirHeader, NullHeader, NullHeader]
+		hPutBuf h p 1536
