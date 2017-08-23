@@ -16,12 +16,13 @@ import System.Environment (getArgs)
 import System.IO (Handle, IOMode(..), openFile, hGetBuf, hPutBuf)
 import System.IO.Error (isDoesNotExistError)
 import System.Posix (
+	DirStream,
 	FileStatus, FileMode, FileOffset,
 	UserEntry(..), GroupEntry(..), UserID, GroupID,
 	getFileStatus,
 	isDirectory, isRegularFile, fileMode, fileOwner, fileGroup,
 	modificationTimeHiRes,
-	createDirectory, removeDirectory,
+	createDirectory, removeDirectory, openDirStream, readDirStream,
 	getWorkingDirectory, changeWorkingDirectory,
 	removeLink, setFileMode,
 	setOwnerAndGroup,
@@ -345,13 +346,20 @@ tarGen fp = do
 			putStrLn "Directory"
 			u <- getUserEntryForID $ fileOwner fs
 			g <- getGroupEntryForID $ fileGroup fs
-			return [
-				(mkDirHeader fp fs u g, Nothing)
-				]
+			((mkDirHeader fp fs u g, Nothing) :) . concat <$>
+				(mapDirStream fp tarGen =<< openDirStream fp)
 		RegularFile -> do
 			putStrLn "Regular File"
 			return []
 		_ -> error "tar: not implemented"
+
+mapDirStream :: FilePath -> (FilePath -> IO a) -> DirStream -> IO [a]
+mapDirStream d f ds = do
+	fp <- readDirStream ds
+	case fp of
+		"" -> return []
+		'.' : _ -> mapDirStream d f ds
+		_ -> (:) <$> f (d </> fp) <*> mapDirStream d f ds
 
 mkDirHeader :: FilePath -> FileStatus -> UserEntry -> GroupEntry -> Header
 mkDirHeader fp fs u g = Header {
