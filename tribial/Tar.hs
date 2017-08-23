@@ -1,18 +1,18 @@
 {-# LANGUAGE LambdaCase, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Tar (tar, hTar, untar, hUntar) where
+module Tar (tar, hTar, untar, hUntar, header) where
 
 import Numeric (showOct, readOct)
 import Control.Monad (join, when, replicateM_)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.State (StateT, evalStateT, get, put)
-import Control.Exception (handleJust)
+import Control.Exception (handleJust, bracket)
 import Data.Bits ((.&.))
 import Data.Bool (bool)
 import Data.Word (Word8, Word16, Word32)
 import Data.Time.Clock.POSIX (POSIXTime)
-import System.IO (Handle, IOMode(..), openFile, hGetBuf, hPutBuf)
+import System.IO (Handle, IOMode(..), openFile, hGetBuf, hPutBuf, hClose)
 import System.IO.Error (isDoesNotExistError)
 import System.Posix (
 	DirStream,
@@ -43,7 +43,7 @@ import qualified Data.ByteString.Lazy as LBS
 -- UNTAR
 
 untar :: FilePath -> IO ()
-untar fp = hUntar =<< openFile fp ReadMode
+untar fp = bracket (openFile fp ReadMode) hClose hUntar
 
 hUntar :: Handle -> IO ()
 hUntar hdl = header hdl >>= \case
@@ -163,6 +163,7 @@ peekHeader = get >>= \p -> do
 		<*> readString 155
 	lift $ do
 		pokeArray (p `plusPtr` 148) $ replicate 8 (32 :: Word8)
+		sumBytes 512 p >>= print
 		flip when (error "not match checksum")
 			. (/= 0) . (.&. 0x1ffff)
 			. subtract (chksum h) =<< sumBytes 512 p
@@ -193,7 +194,7 @@ pokeHeader h = get >>= \p -> do
 	zeroClear 12
 	lift $ do
 		cs <- sumBytes 512 p
-		writeOctal 8 cs `evalStateT` (p `plusPtr` 148)
+		writeOctal 7 cs `evalStateT` (p `plusPtr` 148)
 
 zeroClear :: Word16 -> PtrIO ()
 zeroClear n_ = getModify (`plusPtr` n) >>= \p -> lift $ fillBytes p 0 n
@@ -274,9 +275,7 @@ Block Special File
 -- TAR
 
 tar :: FilePath -> [FilePath] -> IO ()
-tar tfp sfps = do
-	h <- openFile tfp WriteMode
-	hTar h sfps
+tar tfp sfps = bracket (openFile tfp WriteMode) hClose (`hTar` sfps)
 
 hTar :: Handle -> [FilePath] -> IO ()
 hTar hdl sfps = do
@@ -336,7 +335,7 @@ mapDirStream d f ds = do
 mkDirHeader :: FilePath -> FileStatus -> UserEntry -> GroupEntry -> Header
 mkDirHeader fp fs u g = Header {
 	name = addTrailingPathSeparator fp,
-	mode = fileMode fs,
+	mode = 0o7777 .&. fileMode fs,
 	uid = fileOwner fs,
 	gid = fileGroup fs,
 	size = 0,
@@ -354,7 +353,7 @@ mkDirHeader fp fs u g = Header {
 mkFileHeader :: FilePath -> FileStatus -> UserEntry -> GroupEntry -> Header
 mkFileHeader fp fs u g = Header {
 	name = fp,
-	mode = fileMode fs,
+	mode = 0o7777 .&. fileMode fs,
 	uid = fileOwner fs,
 	gid = fileGroup fs,
 	size = fileSize fs,
