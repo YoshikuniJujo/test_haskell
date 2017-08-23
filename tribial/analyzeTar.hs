@@ -4,7 +4,7 @@
 module Main (main) where
 
 import Numeric (showOct, readOct)
-import Control.Monad (join, when)
+import Control.Monad (join, when, replicateM_)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.State (StateT, evalStateT, get, put)
 import Control.Exception (handleJust, finally)
@@ -16,13 +16,19 @@ import System.Environment (getArgs)
 import System.IO (Handle, IOMode(..), openFile, hGetBuf, hPutBuf)
 import System.IO.Error (isDoesNotExistError)
 import System.Posix (
-	FileMode, FileOffset,
+	FileStatus, FileMode, FileOffset,
 	UserEntry(..), GroupEntry(..), UserID, GroupID,
+	getFileStatus,
+	isDirectory, isRegularFile, fileMode, fileOwner, fileGroup,
+	modificationTimeHiRes,
 	createDirectory, removeDirectory,
 	getWorkingDirectory, changeWorkingDirectory,
 	removeLink, setFileMode,
-	setOwnerAndGroup, getUserEntryForName, getGroupEntryForName,
+	setOwnerAndGroup,
+	getUserEntryForName, getGroupEntryForName,
+	getUserEntryForID, getGroupEntryForID,
 	setFileTimesHiRes )
+import System.FilePath
 import Foreign.Ptr (Ptr, castPtr, plusPtr)
 import Foreign.Storable (Storable(..))
 import Foreign.Marshal (
@@ -302,3 +308,71 @@ makeSample fp = do
 	allocaBytes 1536 $ \p -> do
 		pokeArray p [sampleDirHeader, NullHeader, NullHeader]
 		hPutBuf h p 1536
+
+-- TAR
+
+{-
+	= Header {
+		name :: FilePath, mode :: FileMode,
+		uid :: UserID, gid :: GroupID,
+		size :: FileOffset,
+		mtime :: POSIXTime,
+		chksum :: Word32,
+		typeflag :: TypeFlag,
+		linkname :: FilePath,
+		magic :: BS.ByteString,
+		uname :: String, gname :: String,
+		devmajor :: BS.ByteString, devminor :: BS.ByteString,
+		prefix :: FilePath }
+		-}
+
+tar :: FilePath -> [FilePath] -> IO ()
+tar tfp (sfp : sfps) = do
+	hdl <- openFile tfp WriteMode
+	[(hdr, Nothing)] <- tarGen sfp
+	allocaBytes 512 $ \p -> do
+		poke p hdr
+		hPutBuf hdl p 512
+	replicateM_ 2 $ allocaBytes 512 $ \p -> do
+		poke p NullHeader
+		hPutBuf hdl p 512
+
+tarGen :: FilePath -> IO [(Header, Maybe BS.ByteString)]
+tarGen fp = do
+	fs <- getFileStatus fp
+	case getFiletype fs of
+		Directory -> do
+			putStrLn "Directory"
+			u <- getUserEntryForID $ fileOwner fs
+			g <- getGroupEntryForID $ fileGroup fs
+			return [
+				(mkDirHeader fp fs u g, Nothing)
+				]
+		RegularFile -> do
+			putStrLn "Regular File"
+			return []
+		_ -> error "tar: not implemented"
+
+mkDirHeader :: FilePath -> FileStatus -> UserEntry -> GroupEntry -> Header
+mkDirHeader fp fs u g = Header {
+	name = addTrailingPathSeparator fp,
+	mode = fileMode fs,
+	uid = fileOwner fs,
+	gid = fileGroup fs,
+	size = 0,
+	mtime = modificationTimeHiRes fs,
+	chksum = 0,
+	typeflag = Directory,
+	linkname = "",
+	magic = "ustar  ",
+	uname = userName u,
+	gname = groupName g,
+	devmajor = "",
+	devminor = "",
+	prefix = "" }
+
+getFiletype :: FileStatus -> TypeFlag
+getFiletype fs = case (isDirectory fs, isRegularFile fs) of
+		(True, False) -> Directory
+		(False, True) -> RegularFile
+		_ -> error "getFileType: not implemented"
