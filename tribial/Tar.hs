@@ -74,16 +74,25 @@ type User = (String, UserID)
 type Group = (String, GroupID)
 
 directory :: FilePath -> FileMode -> User -> Group -> POSIXTime -> IO ()
-directory n m u g mt = createDirectory n m >> setProperties n u g mt
+directory n m u g mt = do
+	let	d = takeDirectory $ dropTrailingPathSeparator n
+	dmt <- modificationTimeHiRes <$> getFileStatus d
+	createDirectory n m >> setProperties n u g mt
+	setFileTimesHiRes d dmt dmt
 
 regularFile :: Handle -> FileOffset ->
 	FilePath -> FileMode -> User -> Group -> POSIXTime -> IO ()
 regularFile hdl sz n m u g mt = do
+	let	d = takeDirectory n
+	dmt <- modificationTimeHiRes <$> getFileStatus d
+--	putStr "dmt: "; putStr $ d ++ ": "; print dmt
 	LBS.writeFile n =<< readData hdl sz
 	setFileMode n m >> setProperties n u g mt
+	setFileTimesHiRes d dmt dmt
 
 setProperties :: FilePath -> User -> Group -> POSIXTime -> IO ()
 setProperties n (un, ui_) (gn, gi_) mt = do
+--	putStr "mt: "; putStr $ n ++ ": "; print mt
 	join $ setOwnerAndGroup n
 		<$> getWithDefault ui_ ((userID <$>) . getUserEntryForName) un
 		<*> getWithDefault gi_ ((groupID <$>) . getGroupEntryForName) gn
@@ -163,7 +172,7 @@ peekHeader = get >>= \p -> do
 		<*> readString 155
 	lift $ do
 		pokeArray (p `plusPtr` 148) $ replicate 8 (32 :: Word8)
-		sumBytes 512 p >>= print
+--		sumBytes 512 p >>= print
 		flip when (error "not match checksum")
 			. (/= 0) . (.&. 0x1ffff)
 			. subtract (chksum h) =<< sumBytes 512 p
@@ -280,34 +289,40 @@ tar tfp sfps = bracket (openFile tfp WriteMode) hClose (`hTar` sfps)
 hTar :: Handle -> [FilePath] -> IO ()
 hTar hdl sfps = do
 	hdrs <- concat <$> mapM tarGen sfps
-	mapM_ (fromHeader hdl) hdrs
+	ns <- mapM (fromHeader hdl) hdrs
 	replicateM_ 2 $ allocaBytes 512 $ \p -> do
 		poke p NullHeader
 		hPutBuf hdl p 512
+	replicateM_ (19 - (sum ns + 1) `mod` 20) $ allocaBytes 512 $ \p -> do
+		poke p NullHeader
+		hPutBuf hdl p 512
 
-fromHeader :: Handle -> Header -> IO ()
+fromHeader :: Handle -> Header -> IO Int
 fromHeader hdl hdr = case typeflag hdr of
 	Directory -> allocaBytes 512 $ \p -> do
 		poke p hdr
 		hPutBuf hdl p 512
+		return 1
 	RegularFile -> do
 		allocaBytes 512 $ \p -> do
 			poke p hdr
 			hPutBuf hdl p 512
 		sh <- openFile (name hdr) ReadMode
-		copyFile sh hdl $ size hdr
+		(+ 1) <$> copyFile sh hdl (size hdr)
 	_ -> error "not implemented"
 
-copyFile :: Handle -> Handle -> FileOffset -> IO ()
+copyFile :: Handle -> Handle -> FileOffset -> IO Int
 copyFile src dst sz
 	| sz <= 512 = allocaBytes 512 $ \p -> do
 		n <- hGetBuf src p 512
 		fillBytes (p `plusPtr` n) 0 (512 - n)
 		hPutBuf dst p 512
+		return 1
 	| otherwise = allocaBytes 512 $ \p -> do
 		512 <- hGetBuf src p 512
 		hPutBuf dst p 512
-		copyFile src dst $ sz - 512
+		n <- copyFile src dst $ sz - 512
+		return $ n + 1
 
 tarGen :: FilePath -> IO [Header]
 tarGen fp = do
@@ -316,11 +331,9 @@ tarGen fp = do
 	g <- getGroupEntryForID $ fileGroup fs
 	case getFiletype fs of
 		Directory -> do
-			putStrLn "Directory"
 			(mkDirHeader fp fs u g :) . concat <$>
 				(mapDirStream fp tarGen =<< openDirStream fp)
 		RegularFile -> do
-			putStrLn "Regular File"
 			return [mkFileHeader fp fs u g]
 		_ -> error "tar: not implemented"
 

@@ -3,7 +3,6 @@
 
 module Main (main, toByteString) where
 
-import Data.Maybe
 import Data.List
 import Data.Tree
 import System.IO
@@ -32,16 +31,13 @@ mainEx tfp = do
 		directoryTree "." >>= putStr . showTree 0
 		tar "tmp.tar" . filter (not . isPrefixOf ".")
 			=<< getDirectoryContents "."
-		getDirectoryContents "." >>= print
 		cnt2 <- BS.readFile "tmp.tar"
-		print $ BS.take (BS.length cnt2) cnt == cnt2
+		print $ cnt == cnt2
 		print $ diff cnt cnt2
---		print $ BS.take 512 cnt == BS.take 512 cnt2
 		print $ BS.length cnt
 		print $ BS.length cnt2
-		print $ BS.take 512 cnt
-		print $ BS.take 512 cnt2
---		copyFile "tmp.tar" "../tmp.tar"
+--		print $ BS.take 512 cnt
+--		print $ BS.take 512 cnt2
 
 data DF = Directory | File deriving Show
 
