@@ -1,43 +1,85 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main (main, toByteString) where
+module Main (main) where
 
-import Data.List
-import Data.Tree
-import System.IO
-import System.IO.Temp
-import System.Environment (getArgs)
-import System.Directory
-import Foreign.Ptr
-import Foreign.Marshal
+import Data.List (isPrefixOf)
+import Data.Tree (Tree(..))
+import Data.Bool (bool)
+import System.IO (IOMode(..), stderr, openFile)
+import System.IO.Temp (withTempDirectory)
+import System.Directory (
+	doesDirectoryExist, doesFileExist, getDirectoryContents,
+	getCurrentDirectory, setCurrentDirectory )
+import Test.HUnit (
+	Test(..), Assertion, runTestText, putTextToHandle, assertEqual)
 
 import qualified Data.ByteString as BS
-import qualified Data.ByteString.Internal as BSI
 
 import Tar
 
 -- MAIN FUNCTIONS
 
 main :: IO ()
-main = mainEx . head =<< getArgs
+main = () <$ runTestText (putTextToHandle stderr False) tests
 
-mainEx :: FilePath -> IO ()
-mainEx tfp = do
-	h <- openFile tfp ReadMode
-	cnt <- BS.readFile tfp
-	withTmpDir "hoge" $ do
+tests :: Test
+tests = TestList [
+	TestCase $ assertion "files/tar/sample.tar",
+	TestCase $ assertion "tmp/tar_dirs/simple.tar",
+	TestCase $ assertion "tmp/tar_dirs/nested.tar",
+	TestCase $ assertion "tmp/tar_dirs/simpleNested.tar" ]
+
+assertion :: FilePath -> Assertion
+assertion tf = do
+	org <- BS.readFile tf
+	h <- openFile tf ReadMode
+	withinTempDirectory "testTar" $ do
 		hUntar h
 		directoryTree "." >>= putStr . showTree 0
-		tar "tmp.tar" . filter (not . isPrefixOf ".")
-			=<< getDirectoryContents "."
-		cnt2 <- BS.readFile "tmp.tar"
-		print $ cnt == cnt2
-		print $ diff cnt cnt2
-		print $ BS.length cnt
-		print $ BS.length cnt2
---		print $ BS.take 512 cnt
---		print $ BS.take 512 cnt2
+		tar "new.tar" . nfilter dotPath =<< getDirectoryContents "."
+		new <- BS.readFile "new.tar"
+		assertEqual (show $ diff org new) org new
+
+-- UTILS
+
+withinTempDirectory :: String -> IO a -> IO a
+withinTempDirectory dnt act = do
+	cd <- getCurrentDirectory
+	withTempDirectory "." dnt $ \td -> do
+		setCurrentDirectory td
+		act <* setCurrentDirectory cd
+
+directoryTree :: FilePath -> IO (Tree FilePath)
+directoryTree fp0 = do
+	df <- checkDF fp0
+	case df of
+		Directory -> do
+			cd <- getCurrentDirectory
+			setCurrentDirectory fp0
+			Node fp0
+				<$> (mapM directoryTree . nfilter dotPath
+					=<< getDirectoryContents ".")
+				<* setCurrentDirectory cd
+		File -> do
+			cnt <- readFile fp0
+			return $ Node (fp0 ++ ": " ++ take 20 cnt) []
+
+diff :: BS.ByteString -> BS.ByteString -> [(BS.ByteString, BS.ByteString)]
+diff bs = map BS.unzip . sepMaybes
+	. BS.zipWith (\w v -> bool (Just (w, v)) Nothing $ w == v) bs
+
+-- TOOLS
+
+nfilter :: (a -> Bool) -> [a] -> [a]
+nfilter = filter . (not .)
+
+dotPath :: FilePath -> Bool
+dotPath = isPrefixOf "."
+
+showTree :: Show a => Int -> Tree a -> String
+showTree idt (Node x ts) = replicate idt ' ' ++
+	show x ++ "\n" ++ concatMap (showTree $ idt + 4) ts
 
 data DF = Directory | File deriving Show
 
@@ -48,45 +90,12 @@ checkDF fp = do
 	case (f, d) of
 		(True, False) -> return File
 		(False, True) -> return Directory
-		_ -> error "bad filepath"
+		_ -> error $ fp ++ ": no such file or directory"
 
-showTree :: Show a => Int -> Tree a -> String
-showTree idt (Node x ts) =
-	replicate idt ' ' ++ show x ++ "\n" ++ concatMap (showTree $ idt + 4) ts
-
-directoryTree :: FilePath -> IO (Tree FilePath)
-directoryTree fp = do
-	df <- checkDF fp
-	case df of
-		File -> do
-			cnt <- readFile fp
-			return $ Node (fp ++ ": " ++ take 20 cnt) []
-		Directory -> do
-			cd <- getCurrentDirectory
-			setCurrentDirectory fp
-			Node fp
-				<$> (mapM directoryTree . filter (not . isPrefixOf ".")
-					=<< getDirectoryContents ".")
-				<* setCurrentDirectory cd
-
-withTmpDir :: String -> IO a -> IO a
-withTmpDir n act = do
-	cd <- getCurrentDirectory
-	withTempDirectory "." n $ \fp -> do
-		setCurrentDirectory fp
-		act <* setCurrentDirectory cd
-
-toByteString :: Ptr a -> Int -> IO BS.ByteString
-toByteString p n = BSI.create n $ \b -> copyBytes b (castPtr p) n
-
-diff :: BS.ByteString -> BS.ByteString -> [(BS.ByteString, BS.ByteString)]
-diff bs cs = map BS.unzip . myMaybes
-	$ BS.zipWith (\w v -> if w == v then Nothing else Just (w, v)) bs cs
-
-myMaybes :: [Maybe a] -> [[a]]
-myMaybes (Just x : Nothing : ms) = [x] : myMaybes ms
-myMaybes (Just x : ms) = case myMaybes ms of
+sepMaybes :: [Maybe a] -> [[a]]
+sepMaybes (Just x : Nothing : ms) = [x] : sepMaybes ms
+sepMaybes (Just x : ms) = case sepMaybes ms of
 	xs : xss -> (x : xs) : xss
 	[] -> [[x]]
-myMaybes (Nothing : ms) = myMaybes ms
-myMaybes [] = []
+sepMaybes (Nothing : ms) = sepMaybes ms
+sepMaybes [] = []
