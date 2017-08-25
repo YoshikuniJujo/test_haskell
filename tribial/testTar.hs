@@ -11,12 +11,11 @@ import System.IO.Temp (withTempDirectory)
 import System.Directory (
 	doesDirectoryExist, doesFileExist, getDirectoryContents,
 	getCurrentDirectory, setCurrentDirectory )
-import Test.HUnit (
-	Test(..), Assertion, runTestText, putTextToHandle, assertEqual)
+import Test.HUnit (Test(..), runTestText, putTextToHandle, assertEqual)
 
 import qualified Data.ByteString as BS
 
-import Tar
+import Tar (tar, hUntar)
 
 -- MAIN FUNCTIONS
 
@@ -25,13 +24,13 @@ main = () <$ runTestText (putTextToHandle stderr False) tests
 
 tests :: Test
 tests = TestList [
-	TestCase $ assertion "files/tar/sample.tar",
-	TestCase $ assertion "tmp/tar_dirs/simple.tar",
-	TestCase $ assertion "tmp/tar_dirs/nested.tar",
-	TestCase $ assertion "tmp/tar_dirs/simpleNested.tar" ]
+	assertion "files/tar/sample.tar",
+	assertion "tmp/tar_dirs/simple.tar",
+	assertion "tmp/tar_dirs/nested.tar",
+	assertion "tmp/tar_dirs/simpleNested.tar" ]
 
-assertion :: FilePath -> Assertion
-assertion tf = do
+assertion :: FilePath -> Test
+assertion tf = TestCase $ do
 	org <- BS.readFile tf
 	h <- openFile tf ReadMode
 	withinTempDirectory "testTar" $ do
@@ -78,8 +77,8 @@ dotPath :: FilePath -> Bool
 dotPath = isPrefixOf "."
 
 showTree :: Show a => Int -> Tree a -> String
-showTree idt (Node x ts) = replicate idt ' ' ++
-	show x ++ "\n" ++ concatMap (showTree $ idt + 4) ts
+showTree idt (Node x ts) = replicate idt ' ' ++ show x ++ "\n" ++
+	concatMap (showTree $ idt + 4) ts
 
 data DF = Directory | File deriving Show
 
