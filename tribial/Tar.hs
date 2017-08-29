@@ -5,6 +5,7 @@ module Tar (tar, hTar, untar, hUntar) where
 
 import Control.Monad (join, replicateM_, guard)
 import Control.Exception (handleJust)
+import Data.Bool (bool)
 import Data.Time.Clock.POSIX (POSIXTime)
 import System.IO (Handle, IOMode(..), withFile, hGetBuf, hPutBuf)
 import System.IO.Error (isDoesNotExistError)
@@ -37,31 +38,19 @@ tar :: FilePath -> [FilePath] -> IO ()
 tar tfp sfps = withFile tfp WriteMode (`hTar` sfps)
 
 hTar :: Handle -> [FilePath] -> IO ()
-hTar hdl sfps = do
-	ns <- mapM (fromHeader hdl) . concat =<< mapM mkHeaders sfps
+hTar h sfps = do
+	ns <- mapM (fromHeader h) . concat =<< mapM mkHeaders sfps
 	replicateM_ (2 + 19 - (sum ns + 1) `mod` 20)
-		$ hPutStorable hdl NullHeader
+		$ hPutStorable h NullHeader
 
 fromHeader :: Handle -> Header -> IO Int
 fromHeader hdl hdr = case typeflag hdr of
 	Directory -> 1 <$ hPutStorable hdl hdr
-	RegularFile -> do
+	RegularFile -> (+ 1) <$> do
 		hPutStorable hdl hdr
-		withFile (name hdr) ReadMode $ \sh ->
-			(+ 1) <$> copyBlocks 512 sh hdl (size hdr)
+		withFile (name hdr) ReadMode
+			$ \sh -> copyBlocks sh hdl 512 $ size hdr
 	_ -> error "fromHeader: Not Implemented"
-
-copyBlocks :: Int -> Handle -> Handle -> FileOffset -> IO Int
-copyBlocks bs src dst sz
-	| sz <= fromIntegral bs = (1 <$) . allocaBytes bs $ \p -> do
-		rd <- hGetBuf src p bs
-		fillBytes (p `plusPtr` rd) 0 (bs - rd)
-		hPutBuf dst p bs
-	| otherwise = ((+ 1) <$>) . allocaBytes bs $ \p -> do
-		rd <- hGetBuf src p bs
-		guard $ rd == bs
-		hPutBuf dst p bs
-		copyBlocks bs src dst $ sz - fromIntegral bs
 
 mkHeaders :: FilePath -> IO [Header]
 mkHeaders fp = do
@@ -87,7 +76,7 @@ hUntar hdl = header hdl >>= \case
 	hdr -> runHeader hdl hdr >> hUntar hdl
 
 header :: Handle -> IO Header
-header hdl = alloca $ (>>) <$> flip (hGetBuf hdl) 512 <*> peek
+header h = alloca $ (>>) <$> flip (hGetBuf h) 512 <*> peek
 
 runHeader :: Handle -> Header -> IO ()
 runHeader hdl hdr = case typeflag hdr of
@@ -97,8 +86,7 @@ runHeader hdl hdr = case typeflag hdr of
 		<*> ((,) <$> gname <*> gid)
 		<*> mtime
 	RegularFile -> ($ hdr) $ regularFile hdl
-		<$> size
-		<*> name <*> mode
+		<$> size <*> name <*> mode
 		<*> ((,) <$> uname <*> uid)
 		<*> ((,) <$> gname <*> gid)
 		<*> mtime
@@ -113,8 +101,8 @@ directory n m u g mt = resetUpper n
 
 regularFile :: Handle -> FileOffset ->
 	FilePath -> FileMode -> User -> Group -> POSIXTime -> IO ()
-regularFile hdl sz n m u g mt = resetUpper n $ do
-	LBS.writeFile n =<< readBlocks hdl 512 sz
+regularFile h sz n m u g mt = resetUpper n $ do
+	LBS.writeFile n =<< readBlocks h 512 sz
 	setFileMode n m >> setProperties n u g mt
 
 setProperties :: FilePath -> User -> Group -> POSIXTime -> IO ()
@@ -128,12 +116,7 @@ setProperties n (un, ui) (gn, gi) mt = do
 
 withDefault :: b -> (a -> IO b) -> a -> IO b
 withDefault d lkp k = handleJust
-	(\e -> if isDoesNotExistError e then Just d else Nothing)
-	return
-	(lkp k)
-
-hPutStorable :: Storable s => Handle -> s -> IO ()
-hPutStorable h s = alloca $ \p -> poke p s >> hPutBuf h p (sizeOf s)
+	(bool Nothing (Just d) . isDoesNotExistError) return $ lkp k
 
 mapDirectory :: (FilePath -> IO a) -> FilePath -> IO [a]
 mapDirectory f d = md =<< openDirStream d
@@ -142,18 +125,33 @@ mapDirectory f d = md =<< openDirStream d
 		'.' : _ -> md ds
 		fp -> (:) <$> f (d </> fp) <*> md ds
 
+hPutStorable :: Storable s => Handle -> s -> IO ()
+hPutStorable h s = alloca $ \p -> poke p s >> hPutBuf h p (sizeOf s)
+
+readBlocks :: Handle -> Int -> FileOffset -> IO LBS.ByteString
+readBlocks h bs = (LBS.fromChunks <$>) . rb
+	where rb sz = BS.hGet h bs >>= \b -> if sz <= fromIntegral bs
+		then return [BS.take (fromIntegral sz) b]
+		else (b :) <$> rb (sz - fromIntegral bs)
+
+copyBlocks :: Handle -> Handle -> Int -> FileOffset -> IO Int
+copyBlocks src dst bs sz
+	| sz <= fromIntegral bs = (1 <$) . allocaBytes bs $ \p -> do
+		rd <- hGetBuf src p bs
+		fillBytes (p `plusPtr` rd) 0 $ bs - rd
+		hPutBuf dst p bs
+	| otherwise = ((+ 1) <$>) . allocaBytes bs $ \p -> do
+		rd <- hGetBuf src p bs
+		guard $ rd == bs
+		hPutBuf dst p bs
+		copyBlocks src dst bs $ sz - fromIntegral bs
+
 resetUpper :: FilePath -> IO a -> IO a
 resetUpper fp act = do
 	fs <- getFileStatus d
 	act <* setFileTimesHiRes d
 		(accessTimeHiRes fs) (modificationTimeHiRes fs)
 	where d = takeDirectory $ dropTrailingPathSeparator fp
-
-readBlocks :: Handle -> Int -> FileOffset -> IO LBS.ByteString
-readBlocks hdl bs = (LBS.fromChunks <$>) . rd
-	where rd n = BS.hGet hdl bs >>= \b -> if n <= fromIntegral bs
-		then return [BS.take (fromIntegral n) b]
-		else (b :) <$> rd (n - fromIntegral bs)
 
 -- NEXT
 {-
