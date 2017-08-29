@@ -7,12 +7,12 @@ import Numeric (showOct, readOct)
 import Control.Monad (join, when, replicateM_)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.State (StateT, evalStateT, get, put)
-import Control.Exception (handleJust, bracket)
+import Control.Exception (handleJust)
 import Data.Bits ((.&.))
 import Data.Bool (bool)
 import Data.Word (Word8, Word16, Word32)
 import Data.Time.Clock.POSIX (POSIXTime)
-import System.IO (Handle, IOMode(..), openFile, hGetBuf, hPutBuf, hClose)
+import System.IO (Handle, IOMode(..), withFile, hGetBuf, hPutBuf)
 import System.IO.Error (isDoesNotExistError)
 import System.Posix (
 	DirStream,
@@ -43,7 +43,7 @@ import qualified Data.ByteString.Lazy as LBS
 -- UNTAR
 
 untar :: FilePath -> IO ()
-untar fp = bracket (openFile fp ReadMode) hClose hUntar
+untar fp = withFile fp ReadMode hUntar
 
 hUntar :: Handle -> IO ()
 hUntar hdl = header hdl >>= \case
@@ -284,7 +284,7 @@ Block Special File
 -- TAR
 
 tar :: FilePath -> [FilePath] -> IO ()
-tar tfp sfps = bracket (openFile tfp WriteMode) hClose (`hTar` sfps)
+tar tfp sfps = withFile tfp WriteMode (`hTar` sfps)
 
 hTar :: Handle -> [FilePath] -> IO ()
 hTar hdl sfps = do
@@ -307,8 +307,8 @@ fromHeader hdl hdr = case typeflag hdr of
 		allocaBytes 512 $ \p -> do
 			poke p hdr
 			hPutBuf hdl p 512
-		sh <- openFile (name hdr) ReadMode
-		(+ 1) <$> copyFile sh hdl (size hdr)
+		withFile (name hdr) ReadMode $ \sh ->
+			(+ 1) <$> copyFile sh hdl (size hdr)
 	_ -> error "not implemented"
 
 copyFile :: Handle -> Handle -> FileOffset -> IO Int
@@ -330,11 +330,9 @@ tarGen fp = do
 	u <- getUserEntryForID $ fileOwner fs
 	g <- getGroupEntryForID $ fileGroup fs
 	case getFiletype fs of
-		Directory -> do
-			(mkDirHeader fp fs u g :) . concat <$>
-				(mapDirStream fp tarGen =<< openDirStream fp)
-		RegularFile -> do
-			return [mkFileHeader fp fs u g]
+		Directory -> (mkDirHeader fp fs u g :) . concat <$>
+			(mapDirStream fp tarGen =<< openDirStream fp)
+		RegularFile -> return [mkFileHeader fp fs u g]
 		_ -> error "tar: not implemented"
 
 mapDirStream :: FilePath -> (FilePath -> IO a) -> DirStream -> IO [a]
