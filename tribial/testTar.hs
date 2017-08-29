@@ -9,8 +9,8 @@ import Data.Bool (bool)
 import System.IO (IOMode(..), stderr, openFile)
 import System.IO.Temp (withTempDirectory)
 import System.Directory (
-	doesDirectoryExist, doesFileExist, getDirectoryContents,
-	getCurrentDirectory, setCurrentDirectory )
+	doesDirectoryExist, doesFileExist,
+	getDirectoryContents, getCurrentDirectory, setCurrentDirectory )
 import Test.HUnit (Test(..), runTestText, putTextToHandle, assertEqual)
 
 import qualified Data.ByteString as BS
@@ -20,22 +20,19 @@ import Tar (tar, hUntar)
 -- MAIN FUNCTIONS
 
 main :: IO ()
-main = () <$ runTestText (putTextToHandle stderr False) tests
+main = (() <$) . runTestText (putTextToHandle stderr False) $ TestList [
+	mkTest "files/tar/sample.tar",
+	mkTest "tmp/tar_dirs/simple.tar",
+	mkTest "tmp/tar_dirs/nested.tar",
+	mkTest "tmp/tar_dirs/simpleNested.tar" ]
 
-tests :: Test
-tests = TestList [
-	assertion "files/tar/sample.tar",
-	assertion "tmp/tar_dirs/simple.tar",
-	assertion "tmp/tar_dirs/nested.tar",
-	assertion "tmp/tar_dirs/simpleNested.tar" ]
-
-assertion :: FilePath -> Test
-assertion tf = TestCase $ do
+mkTest :: FilePath -> Test
+mkTest tf = TestCase $ do
 	org <- BS.readFile tf
 	h <- openFile tf ReadMode
 	withinTempDirectory "testTar" $ do
 		hUntar h
-		directoryTree "." >>= putStr . showTree 0
+		putStr . showTree 0 =<< directoryTree "."
 		tar "new.tar" . nfilter dotPath =<< getDirectoryContents "."
 		new <- BS.readFile "new.tar"
 		assertEqual (show $ diff org new) org new
@@ -84,11 +81,11 @@ data DF = Directory | File deriving Show
 
 checkDF :: FilePath -> IO DF
 checkDF fp = do
-	f <- doesFileExist fp
 	d <- doesDirectoryExist fp
-	case (f, d) of
-		(True, False) -> return File
-		(False, True) -> return Directory
+	f <- doesFileExist fp
+	case (d, f) of
+		(True, False) -> return Directory
+		(False, True) -> return File
 		_ -> error $ fp ++ ": no such file or directory"
 
 sepMaybes :: [Maybe a] -> [[a]]
