@@ -12,7 +12,7 @@ import System.Posix (
 	FileMode, FileOffset,
 	UserEntry(..), GroupEntry(..), UserID, GroupID,
 	getFileStatus,
-	fileOwner, fileGroup, modificationTimeHiRes,
+	fileOwner, fileGroup, accessTimeHiRes, modificationTimeHiRes,
 	setFileMode, setOwnerAndGroup, setFileTimesHiRes,
 	getUserEntryForName, getGroupEntryForName,
 	getUserEntryForID, getGroupEntryForID,
@@ -83,7 +83,7 @@ hUntar :: Handle -> IO ()
 hUntar hdl = header hdl >>= \case
 	NullHeader -> header hdl >>= \case
 		NullHeader -> return ()
-		_ -> error "bad structure"
+		_ -> error "hUntar: Bad Structure"
 	hdr -> runHeader hdl hdr >> hUntar hdl
 
 header :: Handle -> IO Header
@@ -108,38 +108,26 @@ type User = (String, UserID)
 type Group = (String, GroupID)
 
 directory :: FilePath -> FileMode -> User -> Group -> POSIXTime -> IO ()
-directory n m u g mt = do
-	let	d = takeDirectory $ dropTrailingPathSeparator n
-	dmt <- modificationTimeHiRes <$> getFileStatus d
-	createDirectory n m >> setProperties n u g mt
-	setFileTimesHiRes d dmt dmt
+directory n m u g mt = resetUpper n
+	$ createDirectory n m >> setProperties n u g mt
 
 regularFile :: Handle -> FileOffset ->
 	FilePath -> FileMode -> User -> Group -> POSIXTime -> IO ()
-regularFile hdl sz n m u g mt = do
-	let	d = takeDirectory n
-	dmt <- modificationTimeHiRes <$> getFileStatus d
-	LBS.writeFile n =<< readData hdl sz
+regularFile hdl sz n m u g mt = resetUpper n $ do
+	LBS.writeFile n =<< readBlocks hdl 512 sz
 	setFileMode n m >> setProperties n u g mt
-	setFileTimesHiRes d dmt dmt
 
 setProperties :: FilePath -> User -> Group -> POSIXTime -> IO ()
-setProperties n (un, ui_) (gn, gi_) mt = do
+setProperties n (un, ui) (gn, gi) mt = do
 	join $ setOwnerAndGroup n
-		<$> getWithDefault ui_ ((userID <$>) . getUserEntryForName) un
-		<*> getWithDefault gi_ ((groupID <$>) . getGroupEntryForName) gn
+		<$> withDefault ui ((userID <$>) . getUserEntryForName) un
+		<*> withDefault gi ((groupID <$>) . getGroupEntryForName) gn
 	setFileTimesHiRes n mt mt
-
-readData :: Handle -> FileOffset -> IO LBS.ByteString
-readData hdl = (LBS.fromChunks <$>) . rd
-	where rd n = BS.hGet hdl 512 >>= \bs -> if n <= 512
-		then return [BS.take (fromIntegral n) bs]
-		else (bs :) <$> rd (n - 512)
 
 -- TOOLS
 
-getWithDefault :: b -> (a -> IO b) -> a -> IO b
-getWithDefault d lkp k = handleJust
+withDefault :: b -> (a -> IO b) -> a -> IO b
+withDefault d lkp k = handleJust
 	(\e -> if isDoesNotExistError e then Just d else Nothing)
 	return
 	(lkp k)
@@ -153,6 +141,19 @@ mapDirectory f d = md =<< openDirStream d
 		"" -> return []
 		'.' : _ -> md ds
 		fp -> (:) <$> f (d </> fp) <*> md ds
+
+resetUpper :: FilePath -> IO a -> IO a
+resetUpper fp act = do
+	fs <- getFileStatus d
+	act <* setFileTimesHiRes d
+		(accessTimeHiRes fs) (modificationTimeHiRes fs)
+	where d = takeDirectory $ dropTrailingPathSeparator fp
+
+readBlocks :: Handle -> Int -> FileOffset -> IO LBS.ByteString
+readBlocks hdl bs = (LBS.fromChunks <$>) . rd
+	where rd n = BS.hGet hdl bs >>= \b -> if n <= fromIntegral bs
+		then return [BS.take (fromIntegral n) b]
+		else (b :) <$> rd (n - fromIntegral bs)
 
 -- NEXT
 {-
