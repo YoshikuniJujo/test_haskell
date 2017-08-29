@@ -16,50 +16,23 @@ import Data.Bits ((.&.))
 import Data.Bool (bool)
 import Data.Word (Word8, Word16, Word32)
 import Data.Time.Clock.POSIX (POSIXTime)
-import System.Posix (
-	FileStatus, isDirectory, isRegularFile, FileMode, FileOffset,
-	UserEntry(..), GroupEntry(..), UserID, GroupID,
-	fileSize, fileMode, fileOwner, fileGroup, modificationTimeHiRes )
 import System.FilePath (addTrailingPathSeparator)
-import Numeric (showOct, readOct)
+import System.Posix (
+	FileStatus, FileMode, FileOffset,
+	UserID, GroupID, UserEntry(..), GroupEntry(..),
+	isDirectory, isRegularFile,
+	fileSize, fileMode, fileOwner, fileGroup, modificationTimeHiRes )
+import Numeric (readOct, showOct)
 import Foreign.Ptr (Ptr, castPtr, plusPtr)
 import Foreign.Storable (Storable(..))
-import Foreign.Marshal (
-	peekArray, pokeArray, copyBytes, fillBytes)
+import Foreign.Marshal (peekArray, pokeArray, copyBytes, fillBytes)
 import Foreign.ForeignPtr (withForeignPtr)
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Internal as BSI
 
--- OTHERS
-
-type PtrIO = StateT (Ptr Word8) IO
-
-readBytes :: Word8 -> PtrIO BS.ByteString
-readBytes n_ = getModify (`plusPtr` n) >>= \p -> lift
-	. (BS.takeWhile (/= 0) <$>) . BSI.create n $ \b -> copyBytes b p n
-	where n = fromIntegral n_
-
-readString :: Word8 -> PtrIO String
-readString = (BSC.unpack <$>) . readBytes
-
-readOctal :: (Num a, Eq a) => Word8 -> PtrIO a
-readOctal = (octal <$>) . readBytes
-
-writeBytes :: Word8 -> BS.ByteString -> PtrIO ()
-writeBytes n_ bs = getModify (`plusPtr` n) >>= \p -> lift $ do
-	let	(fp, os, l) = BSI.toForeignPtr bs
-	withForeignPtr fp $ \b -> do
-		copyBytes p (b `plusPtr` os) l
-		fillBytes (p `plusPtr` l) 0 (n - l)
-	where n = fromIntegral n_
-
-writeString :: Word8 -> String -> PtrIO ()
-writeString n = writeBytes n . BSC.pack
-
-writeOctal :: (Integral a, Show a) => Word8 -> a -> PtrIO ()
-writeOctal n = writeBytes n . toOctal (n - 1)
+-- HEADER
 
 data Header
 	= Header {
@@ -133,9 +106,72 @@ pokeHeader h = get >>= \p -> do
 		cs <- sumBytes 512 p
 		writeOctal 7 cs `evalStateT` (p `plusPtr` 148)
 
-zeroClear :: Word16 -> PtrIO ()
-zeroClear n_ = getModify (`plusPtr` n) >>= \p -> lift $ fillBytes p 0 n
+mkDirHeader :: FilePath -> FileStatus -> UserEntry -> GroupEntry -> Header
+mkDirHeader fp fs u g = Header {
+	name = addTrailingPathSeparator fp,
+	mode = 0o7777 .&. fileMode fs,
+	uid = fileOwner fs,
+	gid = fileGroup fs,
+	size = 0,
+	mtime = modificationTimeHiRes fs,
+	chksum = 0,
+	typeflag = Directory,
+	linkname = "",
+	magic = "ustar  ",
+	uname = userName u,
+	gname = groupName g,
+	devmajor = "",
+	devminor = "",
+	prefix = "" }
+
+mkFileHeader :: FilePath -> FileStatus -> UserEntry -> GroupEntry -> Header
+mkFileHeader fp fs u g = Header {
+	name = fp,
+	mode = 0o7777 .&. fileMode fs,
+	uid = fileOwner fs,
+	gid = fileGroup fs,
+	size = fileSize fs,
+	mtime = modificationTimeHiRes fs,
+	chksum = 0,
+	typeflag = RegularFile,
+	linkname = "",
+	magic = "ustar  ",
+	uname = userName u,
+	gname = groupName g,
+	devmajor = "",
+	devminor = "",
+	prefix = "" }
+
+-- MONAD
+
+type PtrIO = StateT (Ptr Word8) IO
+
+readBytes :: Word8 -> PtrIO BS.ByteString
+readBytes n_ = getModify (`plusPtr` n) >>= \p -> lift
+	. (BS.takeWhile (/= 0) <$>) . BSI.create n $ \b -> copyBytes b p n
 	where n = fromIntegral n_
+
+readString :: Word8 -> PtrIO String
+readString = (BSC.unpack <$>) . readBytes
+
+readOctal :: (Num a, Eq a) => Word8 -> PtrIO a
+readOctal = (octal <$>) . readBytes
+
+writeBytes :: Word8 -> BS.ByteString -> PtrIO ()
+writeBytes n_ bs = getModify (`plusPtr` n) >>= \p -> lift $ do
+	let	(fp, os, l) = BSI.toForeignPtr bs
+	withForeignPtr fp $ \b -> do
+		copyBytes p (b `plusPtr` os) l
+		fillBytes (p `plusPtr` l) 0 (n - l)
+	where n = fromIntegral n_
+
+writeString :: Word8 -> String -> PtrIO ()
+writeString n = writeBytes n . BSC.pack
+
+writeOctal :: (Integral a, Show a) => Word8 -> a -> PtrIO ()
+writeOctal n = writeBytes n . toOctal (n - 1)
+
+-- TYPEFLAG
 
 data TypeFlag
 	= RegularFile | HardLink | SymLink
@@ -175,7 +211,17 @@ fromTypeFlag = \case
 	ContiguousFile -> 0x37
 	UnknownType w -> w
 
+toTypeflag :: FileStatus -> TypeFlag
+toTypeflag fs = case (isDirectory fs, isRegularFile fs) of
+	(True, False) -> Directory
+	(False, True) -> RegularFile
+	_ -> error "getFileType: not implemented"
+
 -- TOOLS
+
+zeroClear :: Word16 -> PtrIO ()
+zeroClear n_ = getModify (`plusPtr` n) >>= \p -> lift $ fillBytes p 0 n
+	where n = fromIntegral n_
 
 getModify :: Monad m => (s -> s) -> StateT s m s
 getModify f = get >>= (>>) <$> put . f <*> return
@@ -190,46 +236,3 @@ toOctal n x = BSC.pack $ replicate (fromIntegral n - length s) '0' ++ s
 sumBytes :: Word16 -> Ptr a -> IO Word32
 sumBytes n p = sum . map fromIntegral
 	<$> peekArray (fromIntegral n) (castPtr p :: Ptr Word8)
-
-
-mkDirHeader :: FilePath -> FileStatus -> UserEntry -> GroupEntry -> Header
-mkDirHeader fp fs u g = Header {
-	name = addTrailingPathSeparator fp,
-	mode = 0o7777 .&. fileMode fs,
-	uid = fileOwner fs,
-	gid = fileGroup fs,
-	size = 0,
-	mtime = modificationTimeHiRes fs,
-	chksum = 0,
-	typeflag = Directory,
-	linkname = "",
-	magic = "ustar  ",
-	uname = userName u,
-	gname = groupName g,
-	devmajor = "",
-	devminor = "",
-	prefix = "" }
-
-mkFileHeader :: FilePath -> FileStatus -> UserEntry -> GroupEntry -> Header
-mkFileHeader fp fs u g = Header {
-	name = fp,
-	mode = 0o7777 .&. fileMode fs,
-	uid = fileOwner fs,
-	gid = fileGroup fs,
-	size = fileSize fs,
-	mtime = modificationTimeHiRes fs,
-	chksum = 0,
-	typeflag = RegularFile,
-	linkname = "",
-	magic = "ustar  ",
-	uname = userName u,
-	gname = groupName g,
-	devmajor = "",
-	devminor = "",
-	prefix = "" }
-
-toTypeflag :: FileStatus -> TypeFlag
-toTypeflag fs = case (isDirectory fs, isRegularFile fs) of
-	(True, False) -> Directory
-	(False, True) -> RegularFile
-	_ -> error "getFileType: not implemented"
