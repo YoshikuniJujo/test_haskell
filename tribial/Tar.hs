@@ -1,9 +1,8 @@
 {-# LANGUAGE LambdaCase, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Tar (tar, hTar, untar, hUntar, header) where
+module Tar (tar, hTar, untar, hUntar) where
 
-import Numeric (showOct, readOct)
 import Control.Monad (join, when, replicateM_)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.State (StateT, evalStateT, get, put)
@@ -15,20 +14,20 @@ import Data.Time.Clock.POSIX (POSIXTime)
 import System.IO (Handle, IOMode(..), withFile, hGetBuf, hPutBuf)
 import System.IO.Error (isDoesNotExistError)
 import System.Posix (
-	DirStream,
 	FileStatus, FileMode, FileOffset,
 	UserEntry(..), GroupEntry(..), UserID, GroupID,
+	DirStream,
 	getFileStatus,
 	isDirectory, isRegularFile,
-	fileSize, fileMode, fileOwner, fileGroup,
-	modificationTimeHiRes,
-	createDirectory, openDirStream, readDirStream,
-	setFileMode,
-	setOwnerAndGroup,
+	fileSize, fileMode, fileOwner, fileGroup, modificationTimeHiRes,
+	setFileMode, setFileTimesHiRes, setOwnerAndGroup,
 	getUserEntryForName, getGroupEntryForName,
 	getUserEntryForID, getGroupEntryForID,
-	setFileTimesHiRes )
-import System.FilePath
+	createDirectory, openDirStream, readDirStream )
+import System.FilePath (
+	(</>), takeDirectory,
+	addTrailingPathSeparator, dropTrailingPathSeparator)
+import Numeric (showOct, readOct)
 import Foreign.Ptr (Ptr, castPtr, plusPtr)
 import Foreign.Storable (Storable(..))
 import Foreign.Marshal (
