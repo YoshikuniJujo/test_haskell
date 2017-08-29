@@ -3,17 +3,15 @@
 
 module Tar (tar, hTar, untar, hUntar) where
 
-import Control.Monad (join, replicateM_)
+import Control.Monad (join, replicateM_, guard)
 import Control.Exception (handleJust)
 import Data.Time.Clock.POSIX (POSIXTime)
 import System.IO (Handle, IOMode(..), withFile, hGetBuf, hPutBuf)
 import System.IO.Error (isDoesNotExistError)
 import System.Posix (
-	FileStatus, FileMode, FileOffset,
+	FileMode, FileOffset,
 	UserEntry(..), GroupEntry(..), UserID, GroupID,
-	DirStream,
 	getFileStatus,
-	isDirectory, isRegularFile,
 	fileOwner, fileGroup, modificationTimeHiRes,
 	setFileMode, setOwnerAndGroup, setFileTimesHiRes,
 	getUserEntryForName, getGroupEntryForName,
@@ -22,7 +20,7 @@ import System.Posix (
 import System.FilePath ((</>), takeDirectory, dropTrailingPathSeparator)
 import Foreign.Ptr (plusPtr)
 import Foreign.Storable (Storable(..))
-import Foreign.Marshal (allocaBytes, fillBytes)
+import Foreign.Marshal (alloca, allocaBytes, fillBytes)
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LBS
@@ -30,7 +28,8 @@ import qualified Data.ByteString.Lazy as LBS
 import Header (
 	Header(NullHeader), TypeFlag(..),
 	mkDirHeader, mkFileHeader,
-	name, mode, uid, gid, size, mtime, typeflag, uname, gname )
+	name, mode, uid, gid, size, mtime, typeflag, uname, gname,
+	toTypeflag )
 
 -- TAR
 
@@ -39,66 +38,41 @@ tar tfp sfps = withFile tfp WriteMode (`hTar` sfps)
 
 hTar :: Handle -> [FilePath] -> IO ()
 hTar hdl sfps = do
-	hdrs <- concat <$> mapM tarGen sfps
-	ns <- mapM (fromHeader hdl) hdrs
-	replicateM_ 2 $ allocaBytes 512 $ \p -> do
-		poke p NullHeader
-		hPutBuf hdl p 512
-	replicateM_ (19 - (sum ns + 1) `mod` 20) $ allocaBytes 512 $ \p -> do
-		poke p NullHeader
-		hPutBuf hdl p 512
+	ns <- mapM (fromHeader hdl) . concat =<< mapM mkHeaders sfps
+	replicateM_ (2 + 19 - (sum ns + 1) `mod` 20)
+		$ hPutStorable hdl NullHeader
 
 fromHeader :: Handle -> Header -> IO Int
 fromHeader hdl hdr = case typeflag hdr of
-	Directory -> allocaBytes 512 $ \p -> do
-		poke p hdr
-		hPutBuf hdl p 512
-		return 1
+	Directory -> 1 <$ hPutStorable hdl hdr
 	RegularFile -> do
-		allocaBytes 512 $ \p -> do
-			poke p hdr
-			hPutBuf hdl p 512
+		hPutStorable hdl hdr
 		withFile (name hdr) ReadMode $ \sh ->
-			(+ 1) <$> copyFile sh hdl (size hdr)
-	_ -> error "not implemented"
+			(+ 1) <$> copyBlocks 512 sh hdl (size hdr)
+	_ -> error "fromHeader: Not Implemented"
 
-copyFile :: Handle -> Handle -> FileOffset -> IO Int
-copyFile src dst sz
-	| sz <= 512 = allocaBytes 512 $ \p -> do
-		n <- hGetBuf src p 512
-		fillBytes (p `plusPtr` n) 0 (512 - n)
-		hPutBuf dst p 512
-		return 1
-	| otherwise = allocaBytes 512 $ \p -> do
-		512 <- hGetBuf src p 512
-		hPutBuf dst p 512
-		n <- copyFile src dst $ sz - 512
-		return $ n + 1
+copyBlocks :: Int -> Handle -> Handle -> FileOffset -> IO Int
+copyBlocks bs src dst sz
+	| sz <= fromIntegral bs = (1 <$) . allocaBytes bs $ \p -> do
+		rd <- hGetBuf src p bs
+		fillBytes (p `plusPtr` rd) 0 (bs - rd)
+		hPutBuf dst p bs
+	| otherwise = ((+ 1) <$>) . allocaBytes bs $ \p -> do
+		rd <- hGetBuf src p bs
+		guard $ rd == bs
+		hPutBuf dst p bs
+		copyBlocks bs src dst $ sz - fromIntegral bs
 
-tarGen :: FilePath -> IO [Header]
-tarGen fp = do
+mkHeaders :: FilePath -> IO [Header]
+mkHeaders fp = do
 	fs <- getFileStatus fp
 	u <- getUserEntryForID $ fileOwner fs
 	g <- getGroupEntryForID $ fileGroup fs
-	case getFiletype fs of
-		Directory -> (mkDirHeader fp fs u g :) . concat <$>
-			(mapDirStream fp tarGen =<< openDirStream fp)
+	case toTypeflag fs of
+		Directory -> (mkDirHeader fp fs u g :) . concat
+			<$> mapDirectory mkHeaders fp
 		RegularFile -> return [mkFileHeader fp fs u g]
-		_ -> error "tar: not implemented"
-
-mapDirStream :: FilePath -> (FilePath -> IO a) -> DirStream -> IO [a]
-mapDirStream d f ds = do
-	fp <- readDirStream ds
-	case fp of
-		"" -> return []
-		'.' : _ -> mapDirStream d f ds
-		_ -> (:) <$> f (d </> fp) <*> mapDirStream d f ds
-
-getFiletype :: FileStatus -> TypeFlag
-getFiletype fs = case (isDirectory fs, isRegularFile fs) of
-		(True, False) -> Directory
-		(False, True) -> RegularFile
-		_ -> error "getFileType: not implemented"
+		_ -> error "mkHeaders: Not Implemented"
 
 -- UNTAR
 
@@ -113,7 +87,7 @@ hUntar hdl = header hdl >>= \case
 	hdr -> runHeader hdl hdr >> hUntar hdl
 
 header :: Handle -> IO Header
-header hdl = allocaBytes 512 $ (>>) <$> flip (hGetBuf hdl) 512 <*> peek
+header hdl = alloca $ (>>) <$> flip (hGetBuf hdl) 512 <*> peek
 
 runHeader :: Handle -> Header -> IO ()
 runHeader hdl hdr = case typeflag hdr of
@@ -169,6 +143,16 @@ getWithDefault d lkp k = handleJust
 	(\e -> if isDoesNotExistError e then Just d else Nothing)
 	return
 	(lkp k)
+
+hPutStorable :: Storable s => Handle -> s -> IO ()
+hPutStorable h s = alloca $ \p -> poke p s >> hPutBuf h p (sizeOf s)
+
+mapDirectory :: (FilePath -> IO a) -> FilePath -> IO [a]
+mapDirectory f d = md =<< openDirStream d
+	where md ds = readDirStream ds >>= \case
+		"" -> return []
+		'.' : _ -> md ds
+		fp -> (:) <$> f (d </> fp) <*> md ds
 
 -- NEXT
 {-

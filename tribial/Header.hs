@@ -5,7 +5,8 @@ module Header (
 	Header(NullHeader), TypeFlag(..),
 	mkDirHeader, mkFileHeader,
 	name, mode, uid, gid, size, mtime, typeflag,
-	linkname, uname, gname, devmajor, devminor, prefix
+	linkname, uname, gname, devmajor, devminor, prefix,
+	toTypeflag
 	) where
 
 import Control.Monad (when)
@@ -16,7 +17,7 @@ import Data.Bool (bool)
 import Data.Word (Word8, Word16, Word32)
 import Data.Time.Clock.POSIX (POSIXTime)
 import System.Posix (
-	FileStatus, FileMode, FileOffset,
+	FileStatus, isDirectory, isRegularFile, FileMode, FileOffset,
 	UserEntry(..), GroupEntry(..), UserID, GroupID,
 	fileSize, fileMode, fileOwner, fileGroup, modificationTimeHiRes )
 import System.FilePath (addTrailingPathSeparator)
@@ -226,3 +227,9 @@ mkFileHeader fp fs u g = Header {
 	devmajor = "",
 	devminor = "",
 	prefix = "" }
+
+toTypeflag :: FileStatus -> TypeFlag
+toTypeflag fs = case (isDirectory fs, isRegularFile fs) of
+	(True, False) -> Directory
+	(False, True) -> RegularFile
+	_ -> error "getFileType: not implemented"
