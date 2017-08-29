@@ -8,6 +8,7 @@ import Control.Exception (handleJust)
 import Data.Bool (bool)
 import Data.Time.Clock.POSIX (POSIXTime)
 import System.IO (Handle, IOMode(..), withFile, hGetBuf, hPutBuf)
+import System.IO.Unsafe (unsafeInterleaveIO)
 import System.IO.Error (isDoesNotExistError)
 import System.Posix (
 	FileMode, FileOffset,
@@ -130,9 +131,10 @@ hPutStorable h s = alloca $ \p -> poke p s >> hPutBuf h p (sizeOf s)
 
 readBlocks :: Handle -> Int -> FileOffset -> IO LBS.ByteString
 readBlocks h bs = (LBS.fromChunks <$>) . rb
-	where rb sz = BS.hGet h bs >>= \b -> if sz <= fromIntegral bs
-		then return [BS.take (fromIntegral sz) b]
-		else (b :) <$> rb (sz - fromIntegral bs)
+	where rb sz = unsafeInterleaveIO $ BS.hGet h bs >>= \b ->
+		if sz <= fromIntegral bs
+			then return [BS.take (fromIntegral sz) b]
+			else (b :) <$> rb (sz - fromIntegral bs)
 
 copyBlocks :: Handle -> Handle -> Int -> FileOffset -> IO Int
 copyBlocks src dst bs sz
