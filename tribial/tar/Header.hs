@@ -174,6 +174,9 @@ zeroClear :: Word16 -> PtrIO ()
 zeroClear n_ = getModify (`plusPtr` n) >>= \p -> lift $ fillBytes p 0 n
 	where n = fromIntegral n_
 
+getModify :: Monad m => (s -> s) -> StateT s m s
+getModify f = get >>= (>>) <$> put . f <*> return
+
 -- TYPEFLAG
 
 data TypeFlag
@@ -218,12 +221,9 @@ toTypeflag :: FileStatus -> TypeFlag
 toTypeflag fs = case (isDirectory fs, isRegularFile fs) of
 	(True, False) -> Directory
 	(False, True) -> RegularFile
-	_ -> error "getFileType: not implemented"
+	_ -> error "getFileType: Not Implemented"
 
 -- TOOLS
-
-getModify :: Monad m => (s -> s) -> StateT s m s
-getModify f = get >>= (>>) <$> put . f <*> return
 
 octal :: (Num a, Eq a) => BS.ByteString -> a
 octal = fst . head . readOct . BSC.unpack
