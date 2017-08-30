@@ -22,9 +22,9 @@ import Tar (tar, hUntar)
 main :: IO ()
 main = (() <$) . runTestText (putTextToHandle stderr False) $ TestList [
 	mkTest "files/tar/sample.tar",
-	mkTest "tmp/tar_dirs/simple.tar",
-	mkTest "tmp/tar_dirs/nested.tar",
-	mkTest "tmp/tar_dirs/simpleNested.tar" ]
+	mkTest "files/tar/simple.tar",
+	mkTest "files/tar/nested.tar",
+	mkTest "files/tar/simpleNested.tar" ]
 
 mkTest :: FilePath -> Test
 mkTest tf = TestCase $ do
