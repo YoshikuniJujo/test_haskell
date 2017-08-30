@@ -157,17 +157,22 @@ readOctal = (octal <$>) . readBytes
 
 writeBytes :: Word8 -> BS.ByteString -> PtrIO ()
 writeBytes n_ bs = getModify (`plusPtr` n) >>= \p -> lift $ do
-	let	(fp, os, l) = BSI.toForeignPtr bs
 	withForeignPtr fp $ \b -> do
-		copyBytes p (b `plusPtr` os) l
+		copyBytes p (b `plusPtr` s) l
 		fillBytes (p `plusPtr` l) 0 (n - l)
-	where n = fromIntegral n_
+	where
+	n = fromIntegral n_
+	(fp, s, l) = BSI.toForeignPtr bs
 
 writeString :: Word8 -> String -> PtrIO ()
 writeString n = writeBytes n . BSC.pack
 
 writeOctal :: (Integral a, Show a) => Word8 -> a -> PtrIO ()
 writeOctal n = writeBytes n . toOctal (n - 1)
+
+zeroClear :: Word16 -> PtrIO ()
+zeroClear n_ = getModify (`plusPtr` n) >>= \p -> lift $ fillBytes p 0 n
+	where n = fromIntegral n_
 
 -- TYPEFLAG
 
@@ -216,10 +221,6 @@ toTypeflag fs = case (isDirectory fs, isRegularFile fs) of
 	_ -> error "getFileType: not implemented"
 
 -- TOOLS
-
-zeroClear :: Word16 -> PtrIO ()
-zeroClear n_ = getModify (`plusPtr` n) >>= \p -> lift $ fillBytes p 0 n
-	where n = fromIntegral n_
 
 getModify :: Monad m => (s -> s) -> StateT s m s
 getModify f = get >>= (>>) <$> put . f <*> return
