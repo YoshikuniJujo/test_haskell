@@ -3,10 +3,9 @@
 
 module Header (
 	Header(NullHeader), TypeFlag(..),
-	mkDirHeader, mkFileHeader,
+	mkDirHeader, mkFileHeader, toTypeflag,
 	name, mode, uid, gid, size, mtime, typeflag,
-	linkname, uname, gname, devmajor, devminor, prefix,
-	toTypeflag
+	linkname, uname, gname, devmajor, devminor, prefix
 	) where
 
 import Control.Monad (when)
@@ -14,7 +13,7 @@ import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.State (StateT, evalStateT, get, put)
 import Data.Bits ((.&.))
 import Data.Bool (bool)
-import Data.Word (Word8, Word16, Word32)
+import Data.Word (Word8, Word16, Word32, Word64)
 import Data.Time.Clock.POSIX (POSIXTime)
 import System.FilePath (addTrailingPathSeparator)
 import System.Posix (
@@ -73,11 +72,11 @@ peekHeader = get >>= \p -> do
 		<*> readString 155
 	lift $ do
 		pokeArray (p `plusPtr` 148) $ replicate 8 (32 :: Word8)
-		flip when (error "not match checksum")
+		flip when (error "Tar header does not match checksum")
 			. (/= 0) . (.&. 0x1ffff)
 			. subtract (chksum h) =<< sumBytes 512 p
 		when (magic h /= "ustar  ")
-			$ error "magic shoud be \"ustar  \""
+			$ error "Magic string shoud be \"ustar  \""
 	return h
 
 isNullHeader :: Ptr Header -> IO Bool
@@ -85,13 +84,13 @@ isNullHeader p = all (== 0) <$> peekArray 512 (castPtr p :: Ptr Word8)
 
 pokeHeader :: Header -> PtrIO ()
 pokeHeader NullHeader = zeroClear 512
-pokeHeader h = get >>= \p -> do
+pokeHeader h = get >>= \p0 -> do
 	writeString 100 $ name h
 	writeOctal 8 $ mode h
 	writeOctal 8 $ uid h
 	writeOctal 8 $ gid h
 	writeOctal 12 $ size h
-	writeOctal 12 . (truncate :: POSIXTime -> Word32) $ mtime h
+	writeOctal 12 . (truncate :: POSIXTime -> Word64) $ mtime h
 	writeString 8 $ replicate 8 ' '
 	writeType $ typeflag h
 	writeString 100 $ linkname h
@@ -102,9 +101,8 @@ pokeHeader h = get >>= \p -> do
 	writeBytes 8 $ devminor h
 	writeString 155 $ prefix h
 	zeroClear 12
-	lift $ do
-		cs <- sumBytes 512 p
-		writeOctal 7 cs `evalStateT` (p `plusPtr` 148)
+	put $ p0 `plusPtr` 148
+	writeOctal 7 =<< lift (sumBytes 512 p0)
 
 mkDirHeader :: FilePath -> FileStatus -> UserEntry -> GroupEntry -> Header
 mkDirHeader fp fs u g = Header {
