@@ -36,4 +36,4 @@ hReadStorable' h = alloca $ \p -> do
 hWriteStorable :: Storable a => Handle -> a -> IO ()
 hWriteStorable h x = alloca $ \p -> do
 	poke p x
-	hPutBuf h p (sizeOf x)
+	hPutBuf h p $ sizeOf x
