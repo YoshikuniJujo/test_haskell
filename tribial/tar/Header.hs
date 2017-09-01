@@ -183,6 +183,7 @@ data TypeFlag
 	= RegularFile | HardLink | SymLink
 	| CharDevice | BlockDevice
 	| Directory | Fifo | ContiguousFile
+	| LongLink
 	| UnknownType Word8
 	deriving Show
 
@@ -200,6 +201,7 @@ typeFlag = \case
 	0x35 -> Directory
 	0x36 -> Fifo
 	0x37 -> ContiguousFile
+	0x4c -> LongLink
 	w -> UnknownType w
 
 writeType :: TypeFlag -> PtrIO ()
@@ -215,6 +217,7 @@ fromTypeFlag = \case
 	Directory -> 0x35
 	Fifo -> 0x36
 	ContiguousFile -> 0x37
+	LongLink -> 0x4c
 	UnknownType w -> w
 
 toTypeflag :: FileStatus -> TypeFlag

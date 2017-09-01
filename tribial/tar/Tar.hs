@@ -51,7 +51,7 @@ fromHeader hdl hdr = case typeflag hdr of
 		hPutStorable hdl hdr
 		withFile (name hdr) ReadMode
 			$ \sh -> copyBlocks sh hdl 512 $ size hdr
-	_ -> error "fromHeader: Not Implemented"
+	tf -> error $ "fromHeader: Not Implemented: " ++ show tf
 
 mkHeaders :: FilePath -> IO [Header]
 mkHeaders fp = do
@@ -62,7 +62,7 @@ mkHeaders fp = do
 		Directory -> (mkDirHeader fp fs u g :) . concat
 			<$> mapDirectory mkHeaders fp
 		RegularFile -> return [mkFileHeader fp fs u g]
-		_ -> error "mkHeaders: Not Implemented"
+		tf -> error $ "mkHeaders: Not Implemented: " ++ show tf
 
 -- UNTAR
 
@@ -91,7 +91,7 @@ runHeader hdl hdr = case typeflag hdr of
 		<*> ((,) <$> uname <*> uid)
 		<*> ((,) <$> gname <*> gid)
 		<*> mtime
-	_ -> error "not implemented"
+	tf -> error $ "runHeader: not implemented: " ++ show tf
 
 type User = (String, UserID)
 type Group = (String, GroupID)
