@@ -1,9 +1,8 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
 
-import Data.List (isPrefixOf)
 import Data.Tree (Tree(..))
 import Data.Bool (bool)
 import System.IO (IOMode(..), stderr, openFile)
@@ -38,10 +37,11 @@ mkTest tf = TestCase $ do
 		tar "new.tar" . nfilter dotPath =<< getDirectoryContents "."
 		new <- BS.readFile "new.tar"
 		(\em -> assertEqual em org new) $
-			show (diff org new) ++ " " ++
-			show (BS.length org) ++ " " ++ show (BS.length new)
+			"diff: " ++ show (diff org new) ++ "\n" ++
+			"original length: " ++ show (BS.length org) ++ "\n" ++
+			"new file length: " ++ show (BS.length new)
 
--- UTILS
+-- DIRECTORY
 
 withinTempDirectory :: String -> IO a -> IO a
 withinTempDirectory dnt act = do
@@ -52,50 +52,40 @@ withinTempDirectory dnt act = do
 
 directoryTree :: FilePath -> IO (Tree FilePath)
 directoryTree fp0 = do
-	df <- checkDF fp0
-	case df of
-		Directory -> do
+	d <- doesDirectoryExist fp0
+	f <- doesFileExist fp0
+	case (d, f) of
+		(True, False) -> do
 			cd <- getCurrentDirectory
 			setCurrentDirectory fp0
 			Node fp0
 				<$> (mapM directoryTree . nfilter dotPath
 					=<< getDirectoryContents ".")
 				<* setCurrentDirectory cd
-		File -> do
+		(False, True) -> do
 			cnt <- readFile fp0
 			return $ Node (fp0 ++ ": " ++ take 20 cnt) []
+		_ -> error $ fp0 ++ ": no such file or directory"
 
-diff :: BS.ByteString -> BS.ByteString -> [(BS.ByteString, BS.ByteString)]
-diff bs = map BS.unzip . sepMaybes
-	. BS.zipWith (\w v -> bool (Just (w, v)) Nothing $ w == v) bs
+dotPath :: FilePath -> Bool
+dotPath = \case ('.' : _) -> True; _ -> False
 
 -- TOOLS
 
-nfilter :: (a -> Bool) -> [a] -> [a]
-nfilter = filter . (not .)
-
-dotPath :: FilePath -> Bool
-dotPath = isPrefixOf "."
+diff :: BS.ByteString -> BS.ByteString -> [(BS.ByteString, BS.ByteString)]
+diff bs = map BS.unzip . sm
+	. BS.zipWith (\w v -> bool (Just (w, v)) Nothing $ w == v) bs
+	where
+	sm (Just x : Nothing : ms) = [x] : sm ms
+	sm (Just x : ms) = case sm ms of
+		xs : xss -> (x : xs) : xss
+		[] -> [[x]]
+	sm (Nothing : ms) = sm ms
+	sm [] = []
 
 showTree :: Show a => Int -> Tree a -> String
 showTree idt (Node x ts) = replicate idt ' ' ++ show x ++ "\n" ++
 	concatMap (showTree $ idt + 4) ts
 
-data DF = Directory | File deriving Show
-
-checkDF :: FilePath -> IO DF
-checkDF fp = do
-	d <- doesDirectoryExist fp
-	f <- doesFileExist fp
-	case (d, f) of
-		(True, False) -> return Directory
-		(False, True) -> return File
-		_ -> error $ fp ++ ": no such file or directory"
-
-sepMaybes :: [Maybe a] -> [[a]]
-sepMaybes (Just x : Nothing : ms) = [x] : sepMaybes ms
-sepMaybes (Just x : ms) = case sepMaybes ms of
-	xs : xss -> (x : xs) : xss
-	[] -> [[x]]
-sepMaybes (Nothing : ms) = sepMaybes ms
-sepMaybes [] = []
+nfilter :: (a -> Bool) -> [a] -> [a]
+nfilter = filter . (not .)
