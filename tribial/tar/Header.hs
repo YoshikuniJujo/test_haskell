@@ -183,7 +183,7 @@ data TypeFlag
 	= RegularFile | HardLink | SymLink
 	| CharDevice | BlockDevice
 	| Directory | Fifo | ContiguousFile
-	| LongLink
+	| LongName
 	| UnknownType Word8
 	deriving Show
 
@@ -201,7 +201,7 @@ typeFlag = \case
 	0x35 -> Directory
 	0x36 -> Fifo
 	0x37 -> ContiguousFile
-	0x4c -> LongLink
+	0x4c -> LongName
 	w -> UnknownType w
 
 writeType :: TypeFlag -> PtrIO ()
@@ -217,7 +217,7 @@ fromTypeFlag = \case
 	Directory -> 0x35
 	Fifo -> 0x36
 	ContiguousFile -> 0x37
-	LongLink -> 0x4c
+	LongName -> 0x4c
 	UnknownType w -> w
 
 toTypeflag :: FileStatus -> TypeFlag
@@ -229,7 +229,9 @@ toTypeflag fs = case (isDirectory fs, isRegularFile fs) of
 -- TOOLS
 
 octal :: (Num a, Eq a) => BS.ByteString -> a
-octal = fst . head . readOct . BSC.unpack
+octal bs = case readOct $ BSC.unpack bs of
+	(r, _) : _ -> r
+	_ -> error $ "octal: can't read: " ++ show bs
 
 toOctal :: (Integral a, Show a) => Word8 -> a -> BS.ByteString
 toOctal n x = BSC.pack $ replicate (fromIntegral n - length s) '0' ++ s
