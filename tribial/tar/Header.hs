@@ -106,7 +106,7 @@ pokeHeader h = get >>= \p0 -> do
 
 mkDirHeader :: FilePath -> FileStatus -> UserEntry -> GroupEntry -> Header
 mkDirHeader fp fs u g = Header {
-	name = addTrailingPathSeparator fp,
+	name = bool (error $ "too long name: " ++ show n) n (length n <= 100),
 	mode = 0o7777 .&. fileMode fs,
 	uid = fileOwner fs,
 	gid = fileGroup fs,
@@ -121,10 +121,12 @@ mkDirHeader fp fs u g = Header {
 	devmajor = "",
 	devminor = "",
 	prefix = "" }
+	where
+	n = addTrailingPathSeparator fp
 
 mkFileHeader :: FilePath -> FileStatus -> UserEntry -> GroupEntry -> Header
 mkFileHeader fp fs u g = Header {
-	name = fp,
+	name = bool (error $ "too long name: " ++ show fp) fp (length fp <= 100),
 	mode = 0o7777 .&. fileMode fs,
 	uid = fileOwner fs,
 	gid = fileGroup fs,

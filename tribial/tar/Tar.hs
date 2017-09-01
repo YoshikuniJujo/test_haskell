@@ -1,10 +1,11 @@
-{-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE LambdaCase, OverloadedStrings, BangPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Tar (tar, hTar, untar, hUntar) where
 
 import Control.Monad (join, replicateM_, guard)
 import Control.Exception (handleJust)
+import Data.Maybe (fromMaybe)
 import Data.Bool (bool)
 import Data.Time.Clock.POSIX (POSIXTime)
 import System.IO (Handle, IOMode(..), withFile, hGetBuf, hPutBuf)
@@ -26,6 +27,7 @@ import Foreign.Marshal (alloca, allocaBytes, fillBytes)
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LBS
+import qualified Data.ByteString.Lazy.Char8 as LBSC
 
 import Header (
 	Header(NullHeader), TypeFlag(..),
@@ -70,28 +72,41 @@ untar :: FilePath -> IO ()
 untar fp = withFile fp ReadMode hUntar
 
 hUntar :: Handle -> IO ()
-hUntar hdl = header hdl >>= \case
+hUntar = hUntarGen Nothing
+
+hUntarGen :: Maybe FilePath -> Handle -> IO ()
+hUntarGen mfp hdl = header hdl >>= \case
 	NullHeader -> header hdl >>= \case
 		NullHeader -> return ()
 		_ -> error "hUntar: Bad Structure"
-	hdr -> runHeader hdl hdr >> hUntar hdl
+	hdr -> do
+		mfp' <- runHeader mfp hdl hdr
+		hUntarGen mfp' hdl
 
 header :: Handle -> IO Header
 header h = alloca $ (>>) <$> flip (hGetBuf h) 512 <*> peek
 
-runHeader :: Handle -> Header -> IO ()
-runHeader hdl hdr = case typeflag hdr of
-	Directory -> ($ hdr) $ directory
-		<$> name <*> mode
-		<*> ((,) <$> uname <*> uid)
-		<*> ((,) <$> gname <*> gid)
-		<*> mtime
-	RegularFile -> ($ hdr) $ regularFile hdl
-		<$> size <*> name <*> mode
-		<*> ((,) <$> uname <*> uid)
-		<*> ((,) <$> gname <*> gid)
-		<*> mtime
+runHeader :: Maybe FilePath -> Handle -> Header -> IO (Maybe FilePath)
+runHeader mfp hdl hdr = case typeflag hdr of
+	Directory -> do
+		($ hdr) $ directory n
+			<$> mode
+			<*> ((,) <$> uname <*> uid)
+			<*> ((,) <$> gname <*> gid)
+			<*> mtime
+		return Nothing
+	RegularFile -> do
+		($ hdr) $ regularFile hdl (size hdr) n
+			<$> mode
+			<*> ((,) <$> uname <*> uid)
+			<*> ((,) <$> gname <*> gid)
+			<*> mtime
+		return Nothing
+	LongName -> do
+		!n <- readBlocks hdl 512 (size hdr)
+		return . Just $ LBSC.unpack n
 	tf -> error $ "runHeader: not implemented: " ++ show tf
+	where n = fromMaybe (name hdr) mfp
 
 type User = (String, UserID)
 type Group = (String, GroupID)
