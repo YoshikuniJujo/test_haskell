@@ -36,7 +36,9 @@ mkTest tf = TestCase $ do
 		putStr . showTree 0 =<< directoryTree "."
 		tar "new.tar" . nfilter dotPath =<< getDirectoryContents "."
 		new <- BS.readFile "new.tar"
-		assertEqual (show $ diff org new) org new
+		(\em -> assertEqual em org new) $
+			show (diff org new) ++ " " ++
+			show (BS.length org) ++ " " ++ show (BS.length new)
 
 -- UTILS
 

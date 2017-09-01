@@ -23,15 +23,18 @@ import System.Posix (
 import System.FilePath ((</>), takeDirectory, dropTrailingPathSeparator)
 import Foreign.Ptr (plusPtr)
 import Foreign.Storable (Storable(..))
-import Foreign.Marshal (alloca, allocaBytes, fillBytes)
+import Foreign.Marshal (alloca, allocaBytes, fillBytes, copyBytes)
+import Foreign.ForeignPtr (withForeignPtr)
 
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BSC
+import qualified Data.ByteString.Internal as BSI
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString.Lazy.Char8 as LBSC
 
 import Header (
 	Header(NullHeader), TypeFlag(..),
-	mkDirHeader, mkFileHeader,
+	mkDirHeader, mkFileHeader, mkLongNameHeader,
 	name, mode, uid, gid, size, mtime, typeflag, uname, gname,
 	toTypeflag )
 
@@ -47,13 +50,17 @@ hTar h sfps = do
 		$ hPutStorable h NullHeader
 
 fromHeader :: Handle -> Header -> IO Int
-fromHeader hdl hdr = case typeflag hdr of
-	Directory -> 1 <$ hPutStorable hdl hdr
-	RegularFile -> (+ 1) <$> do
-		hPutStorable hdl hdr
-		withFile (name hdr) ReadMode
-			$ \sh -> copyBlocks sh hdl 512 $ size hdr
-	tf -> error $ "fromHeader: Not Implemented: " ++ show tf
+fromHeader hdl hdr = do
+	bs <- if (length (name hdr) <= 100) then return 0 else (+ 1) <$> do
+		hPutStorable hdl . mkLongNameHeader $ name hdr
+		writeBlocks hdl 512 . BSC.pack $ name hdr
+	case typeflag hdr of
+		Directory -> bs + 1 <$ hPutStorable hdl hdr
+		RegularFile -> (+ (bs + 1)) <$> do
+			hPutStorable hdl hdr
+			withFile (name hdr) ReadMode
+				$ \sh -> copyBlocks sh hdl 512 $ size hdr
+		tf -> error $ "fromHeader: Not Implemented: " ++ show tf
 
 mkHeaders :: FilePath -> IO [Header]
 mkHeaders fp = do
@@ -89,14 +96,14 @@ header h = alloca $ (>>) <$> flip (hGetBuf h) 512 <*> peek
 runHeader :: Maybe FilePath -> Handle -> Header -> IO (Maybe FilePath)
 runHeader mfp hdl hdr = case typeflag hdr of
 	Directory -> do
-		($ hdr) $ directory n
+		($ hdr) $ directory nm
 			<$> mode
 			<*> ((,) <$> uname <*> uid)
 			<*> ((,) <$> gname <*> gid)
 			<*> mtime
 		return Nothing
 	RegularFile -> do
-		($ hdr) $ regularFile hdl (size hdr) n
+		($ hdr) $ regularFile hdl (size hdr) nm
 			<$> mode
 			<*> ((,) <$> uname <*> uid)
 			<*> ((,) <$> gname <*> gid)
@@ -106,7 +113,7 @@ runHeader mfp hdl hdr = case typeflag hdr of
 		!n <- readBlocks hdl 512 (size hdr)
 		return . Just $ LBSC.unpack n
 	tf -> error $ "runHeader: not implemented: " ++ show tf
-	where n = fromMaybe (name hdr) mfp
+	where nm = fromMaybe (name hdr) mfp
 
 type User = (String, UserID)
 type Group = (String, GroupID)
@@ -150,6 +157,23 @@ readBlocks h bs = (LBS.fromChunks <$>) . rb
 		if sz <= fromIntegral bs
 			then return [BS.take (fromIntegral sz) b]
 			else (b :) <$> rb (sz - fromIntegral bs)
+
+writeBlocks :: Handle -> Int -> BS.ByteString -> IO Int
+writeBlocks dst bs str
+	| l <= bs = (1 <$) . allocaBytes bs $ \p ->
+		withForeignPtr fp $ \b -> do
+			copyBytes p (b `plusPtr` s) l
+			fillBytes (p `plusPtr` l) 0 (bs - l)
+			hPutBuf dst p bs
+	| otherwise = ((+ 1) <$>) . allocaBytes bs $ \p ->
+		withForeignPtr fp $ \b -> do
+			copyBytes p (b `plusPtr` s) bs
+			hPutBuf dst p bs
+			str' <- BSI.create (l - bs) $ \nb ->
+				copyBytes nb (b `plusPtr` s `plusPtr` bs) (l - bs)
+			writeBlocks dst bs str'
+	where
+	(fp, s, l) = BSI.toForeignPtr str
 
 copyBlocks :: Handle -> Handle -> Int -> FileOffset -> IO Int
 copyBlocks src dst bs sz

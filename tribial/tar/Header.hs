@@ -3,7 +3,7 @@
 
 module Header (
 	Header(NullHeader), TypeFlag(..),
-	mkDirHeader, mkFileHeader, toTypeflag,
+	mkDirHeader, mkFileHeader, mkLongNameHeader, toTypeflag,
 	name, mode, uid, gid, size, mtime, typeflag,
 	linkname, uname, gname, devmajor, devminor, prefix
 	) where
@@ -106,7 +106,7 @@ pokeHeader h = get >>= \p0 -> do
 
 mkDirHeader :: FilePath -> FileStatus -> UserEntry -> GroupEntry -> Header
 mkDirHeader fp fs u g = Header {
-	name = bool (error $ "too long name: " ++ show n) n (length n <= 100),
+	name = addTrailingPathSeparator fp,
 	mode = 0o7777 .&. fileMode fs,
 	uid = fileOwner fs,
 	gid = fileGroup fs,
@@ -121,12 +121,10 @@ mkDirHeader fp fs u g = Header {
 	devmajor = "",
 	devminor = "",
 	prefix = "" }
-	where
-	n = addTrailingPathSeparator fp
 
 mkFileHeader :: FilePath -> FileStatus -> UserEntry -> GroupEntry -> Header
 mkFileHeader fp fs u g = Header {
-	name = bool (error $ "too long name: " ++ show fp) fp (length fp <= 100),
+	name = fp,
 	mode = 0o7777 .&. fileMode fs,
 	uid = fileOwner fs,
 	gid = fileGroup fs,
@@ -138,6 +136,24 @@ mkFileHeader fp fs u g = Header {
 	magic = "ustar  ",
 	uname = userName u,
 	gname = groupName g,
+	devmajor = "",
+	devminor = "",
+	prefix = "" }
+
+mkLongNameHeader :: FilePath -> Header
+mkLongNameHeader fp = Header {
+	name = "././@LongLink",
+	mode = 0o644,
+	uid = 0,
+	gid = 0,
+	size = fromIntegral $ length fp + 1,
+	mtime = 0,
+	chksum = 0,
+	typeflag = LongName,
+	linkname = "",
+	magic = "ustar  ",
+	uname = "root",
+	gname = "root",
 	devmajor = "",
 	devminor = "",
 	prefix = "" }
@@ -164,7 +180,8 @@ writeBytes n_ bs = getModify (`plusPtr` n) >>= \p -> lift $ do
 		fillBytes (p `plusPtr` l) 0 (n - l)
 	where
 	n = fromIntegral n_
-	(fp, s, l) = BSI.toForeignPtr bs
+	l = min n l_
+	(fp, s, l_) = BSI.toForeignPtr bs
 
 writeString :: Word8 -> String -> PtrIO ()
 writeString n = writeBytes n . BSC.pack
