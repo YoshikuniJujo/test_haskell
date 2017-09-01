@@ -1,4 +1,5 @@
 {-# LANGUAGE GADTs, Rank2Types #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 -- Free
 
@@ -7,6 +8,10 @@ data Free f a = Pure a | Free (f (Free f a))
 instance Functor f => Functor (Free f) where
 	fmap f (Pure a) = Pure (f a)
 	fmap f (Free fa) = Free (fmap (fmap f) fa)
+
+instance Functor f => Applicative (Free f) where
+	pure = Pure
+	mf <*> mx = do f <- mf; x <- mx; return $ f x
 
 instance Functor f => Monad (Free f) where
 	return = Pure
