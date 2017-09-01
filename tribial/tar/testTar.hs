@@ -25,7 +25,8 @@ main = (() <$) . runTestText (putTextToHandle stderr False) $ TestList [
 	mkTest "files/tar/simple.tar",
 	mkTest "files/tar/nested.tar",
 	mkTest "files/tar/simpleNested.tar",
-	mkTest "files/tar/longName.tar" ]
+	mkTest "files/tar/longName.tar",
+	mkTest "files/tar/longDirAndFile.tar" ]
 
 mkTest :: FilePath -> Test
 mkTest tf = TestCase $ do

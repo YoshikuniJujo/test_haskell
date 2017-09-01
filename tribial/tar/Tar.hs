@@ -111,7 +111,7 @@ runHeader mfp hdl hdr = case typeflag hdr of
 		return Nothing
 	LongName -> do
 		!n <- readBlocks hdl 512 (size hdr)
-		return . Just $ LBSC.unpack n
+		return . Just . takeWhile (/= '\0') $ LBSC.unpack n
 	tf -> error $ "runHeader: not implemented: " ++ show tf
 	where nm = fromMaybe (name hdr) mfp
 
