@@ -1,47 +1,15 @@
-{-# LANGUAGE GADTs, DeriveDataTypeable, DeriveFunctor #-}
-{-# LANGUAGE TypeOperators, KindSignatures #-}
--- {-# LANGUAGE FlexibleContexts #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
-
 import Control.Monad.Cont
-import Data.Typeable
 
-newtype Id x = Id x
+data VE e a = Val a | E (Reader e (VE e a))
 
-data Union r v where
-	Union :: (Functor t, Typeable t) => Id (t v) -> Union r v
+newtype Reader e v = Reader (e -> v)
 
-data VE w r = Val w | E (Union r (VE w r))
+ask :: Cont (VE e a) e
+ask = cont $ E . Reader
 
-newtype Reader e v = Reader (e -> v) deriving (Typeable, Functor)
-
-ask :: Typeable e => Cont (VE w (Reader e :> r)) e
-ask = cont $ E . Union . Id . Reader
-
-runReader :: Typeable e =>
-	Cont (VE w (Reader e :> r)) w -> e -> Cont (VE w r) w
-runReader m e = case admin m of
-	Val x -> return x
-	E u -> case decomp u of
-		Right (Reader x) -> case x e of
-			Val x' -> return x'
-			E u' -> undefined
-		Left u -> undefined
-
-data State s w = State (s -> s) (s -> w) deriving (Typeable, Functor)
-
-modify :: Typeable s => (s -> s) -> Cont (VE r w) s
-modify f = cont $ E . Union . Id . State f
-
-decomp :: Typeable t => Union (t :> r) v -> Either (Union r v) (t v)
-decomp (Union v) | Just (Id x) <- gcast1 v = Right x
-decomp (Union v) = Left (Union v)
-
-infixr 1 :>
-data ((a :: * -> *) :> b)
-
-admin :: Cont (VE w r) w -> VE w r
-admin = ($ Val) . runCont
-
-run :: Cont (VE w r) w -> w
-run m = case admin m of Val x -> x
+runReader :: Cont (VE e a) a -> e -> a
+runReader m e = case runCont m Val of
+	Val x -> x
+	E (Reader u) -> case u e of
+		Val y -> y
+		E (Reader v) -> undefined
