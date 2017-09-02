@@ -5,7 +5,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-import Control.Monad.Cont
+import Control.Monad.Cont hiding (lift)
 import Data.Typeable
 
 import TypeElem
@@ -82,3 +82,25 @@ sloop m s = case m of
 	E u -> case fromEffect m of
 		Just (State f k) -> sloop (k s) (f s)
 		Nothing -> E $ fmap (`sloop` s) u
+
+data Lift m v = forall a . Lift (m a) (a -> v)
+	deriving Typeable
+
+instance Functor (Lift m) where
+	fmap f (Lift m k) = Lift m (f . k)
+
+instance Typeable m => Effect (Lift m)
+
+lift :: (MemberU2 Lift (Lift m) r, Typeable m, Typeable a, Typeable b) =>
+	m b -> Cont (VE r a) b
+lift m = cont $ toEffect . Lift m
+
+runLift :: (Monad m, Typeable m) => Cont (VE (Lift m :> ()) a) a -> m a
+runLift m = lloop (runCont m Val)
+
+lloop :: (Monad m, Typeable m) => VE (Lift m :> ()) a -> m a
+lloop m = case m of
+	Val x -> return x
+	E u -> case fromEffect m of
+		Just (Lift m k) -> m >>= lloop . k
+		Nothing -> error "cannot occur"
