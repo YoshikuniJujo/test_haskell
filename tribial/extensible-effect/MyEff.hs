@@ -5,6 +5,13 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
+module MyEff (
+	Cont, Lift, State, VE, (:>),
+	runReader, runReader2, ask,
+	runState, runState2, modify, get,
+	runLift, lift
+	) where
+
 import Control.Monad.Cont hiding (lift)
 import Data.Typeable
 
