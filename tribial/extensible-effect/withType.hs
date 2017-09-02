@@ -29,16 +29,18 @@ newtype Reader e v = Reader (e -> v)
 
 instance Typeable e => Effect (Reader e) where
 
-ask :: (Typeable e, Typeable a) => Cont (VE r a) e
+ask :: (Member (Reader e) r, Typeable e, Typeable a) => Cont (VE r a) e
 ask = cont $ toEffect . Reader
 
-runReader :: (Typeable r, Typeable e) => Cont (VE r a) a -> e -> VE r a
+runReader :: (Typeable r, Typeable e) =>
+	Cont (VE (Reader e :> r) a) a -> e -> VE r a
 runReader m e = rloop (runCont m Val) e
 
-runReader2 :: (Typeable r, Typeable e) => Cont (VE r a) a -> e -> Cont (VE r a) a
+runReader2 :: (Typeable r, Typeable e) =>
+	Cont (VE (Reader e :> r) a) a -> e -> Cont (VE r a) a
 runReader2 m = cont . const . runReader m
 
-rloop :: (Typeable r, Typeable e) => VE r a -> e -> VE r a
+rloop :: (Typeable r, Typeable e) => VE (Reader e :> r) a -> e -> VE r a
 rloop m e = case m of
 	Val x -> Val x
 	E u -> case fromEffect m of
