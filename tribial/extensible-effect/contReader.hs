@@ -13,7 +13,7 @@ ask :: Cont (VE e s a) e
 ask = cont $ E . Reader
 
 runReader :: Cont (VE e s a) a -> e -> a
-runReader m e = rloop (runCont m Val) e
+runReader m = rloop (runCont m Val)
 
 rloop :: VE e s a -> e -> a
 rloop m e = case m of
@@ -30,7 +30,7 @@ get :: Cont (VE e s a) s
 get = cont $ S . State id
 
 runState :: Cont (VE e s a) a -> s -> a
-runState m s = sloop (runCont m Val) s
+runState m = sloop (runCont m Val)
 
 sloop :: VE e s a -> s -> a
 sloop m s = case m of
@@ -45,4 +45,4 @@ rsloop m e s = case m of
 	S (State f k) -> rsloop (k s) e (f s)
 
 runRS :: Cont (VE e s a) a -> e -> s -> a
-runRS m e s = rsloop (runCont m Val) e s
+runRS m = rsloop (runCont m Val)

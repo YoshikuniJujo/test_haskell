@@ -2,7 +2,7 @@
 
 import TypeElem
 
-data MyMonad r a = MyMonad a deriving Show
+newtype MyMonad r a = MyMonad a deriving Show
 
 instance Functor (MyMonad r) where
 

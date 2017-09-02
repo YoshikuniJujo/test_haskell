@@ -34,7 +34,7 @@ ask = cont $ toEffect . Reader
 
 runReader :: (Typeable r, Typeable e) =>
 	Cont (VE (Reader e :> r) a) a -> e -> VE r a
-runReader m e = rloop (runCont m Val) e
+runReader m = rloop (runCont m Val)
 
 runReader2 :: (Typeable r, Typeable e) =>
 	Cont (VE (Reader e :> r) a) a -> e -> Cont (VE r a) a
@@ -70,7 +70,7 @@ get = cont $ toEffect . State id
 
 runState ::
 	(Typeable r, Typeable s) => Cont (VE (State s :> r) a) a -> s -> VE r a
-runState m s = sloop (runCont m Val) s
+runState m = sloop (runCont m Val)
 
 runState2 :: (Typeable r, Typeable s) =>
 	Cont (VE (State s :> r) a) a -> s -> Cont (VE r a) a
@@ -101,6 +101,6 @@ runLift m = lloop (runCont m Val)
 lloop :: (Monad m, Typeable m) => VE (Lift m :> ()) a -> m a
 lloop m = case m of
 	Val x -> return x
-	E u -> case fromEffect m of
-		Just (Lift m k) -> m >>= lloop . k
+	E _ -> case fromEffect m of
+		Just (Lift m' k) -> m' >>= lloop . k
 		Nothing -> error "cannot occur"

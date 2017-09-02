@@ -29,7 +29,7 @@ ask :: (Typeable e, Typeable a) => Cont (VE a) e
 ask = cont $ toEffect . Reader
 
 runReader :: Typeable e => Cont (VE a) a -> e -> VE a
-runReader m e = rloop (runCont m Val) e
+runReader m = rloop (runCont m Val)
 
 runReader2 :: Typeable e => Cont (VE a) a -> e -> Cont (VE a) a
 runReader2 m = cont . const . runReader m
@@ -62,7 +62,7 @@ get :: (Typeable s, Typeable a) => Cont (VE a) s
 get = cont $ toEffect . State id
 
 runState :: Typeable s => Cont (VE a) a -> s -> VE a
-runState m s = sloop (runCont m Val) s
+runState m = sloop (runCont m Val)
 
 runState2 :: Typeable s => Cont (VE a) a -> s -> Cont (VE a) a
 runState2 m = cont . const . runState m

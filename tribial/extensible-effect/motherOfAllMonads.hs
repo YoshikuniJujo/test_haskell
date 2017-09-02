@@ -22,8 +22,8 @@ test10 = run $ do
 
 some :: [Integer]
 some = run $ do
-	x <- i $ [3 :: Integer, 5, 7]
-	y <- i $ [2, 1]
+	x <- i [3 :: Integer, 5, 7]
+	y <- i [2, 1]
 	return $ x * y
 
 hoge = do
