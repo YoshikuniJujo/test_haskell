@@ -2,6 +2,8 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
+module TypeElem ((:>), Member) where
+
 infixr 1 :>
 data ((a :: * -> *) :> b)
 
@@ -13,6 +15,7 @@ type family Elem (t :: * -> *) r :: Bool where
 	Elem t () = 'False
 	Elem t (t' :> r) = Elem t r
 
+{-
 newtype Foo r a = Foo a deriving Show
 
 data You a
@@ -28,3 +31,4 @@ iNeedYou'' = iNeedYou . iNeedYou'
 
 iNeedYou''' :: Elem You r ~ 'True => Foo r a -> Foo r a
 iNeedYou''' = iNeedYou' . iNeedYou
+-}
