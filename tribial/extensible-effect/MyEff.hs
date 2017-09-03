@@ -22,19 +22,18 @@ data VE r a
 	| forall t . (Functor t, Typeable t, Typeable a) => E (t (VE r a))
 	deriving Typeable
 
-class (Functor e, Typeable e) => Effect e where
-	toEffect :: Typeable a => e (VE r a) -> VE r a
-	fromEffect :: Typeable r => VE r a -> Maybe (e (VE r a))
+toEffect :: (Functor t, Typeable t, Typeable a) =>
+	t (VE r a) -> VE r a
+toEffect = E
 
-	toEffect = E
-	fromEffect = \case
-		E e -> cast e
-		Val _ -> Nothing
+fromEffect :: (Functor t, Typeable t, Typeable r, Typeable a) =>
+	VE r a -> Maybe (t (VE r a))
+fromEffect = \case
+	E e -> cast e
+	Val _ -> Nothing
 
 newtype Reader e v = Reader (e -> v)
 	deriving (Typeable, Functor)
-
-instance Typeable e => Effect (Reader e) where
 
 ask :: (Member (Reader e) r, Typeable e, Typeable a) => Cont (VE r a) e
 ask = cont $ toEffect . Reader
@@ -66,8 +65,6 @@ run2 m = case runCont m Val of
 data State s a = State (s -> s) (s -> a)
 	deriving (Typeable, Functor)
 
-instance Typeable s => Effect (State s) where
-
 modify :: (Member (State s) r, Typeable s, Typeable a) =>
 	(s -> s) -> Cont (VE r a) s
 modify f = cont $ toEffect . State f
@@ -95,8 +92,6 @@ data Lift m v = forall a . Lift (m a) (a -> v)
 
 instance Functor (Lift m) where
 	fmap f (Lift m k) = Lift m (f . k)
-
-instance Typeable m => Effect (Lift m)
 
 lift :: (MemberU2 Lift (Lift m) r, Typeable m, Typeable a, Typeable b) =>
 	m b -> Cont (VE r a) b
