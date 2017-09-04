@@ -7,6 +7,8 @@
 
 module TypeElem ((:>), Member, MemberU2) where
 
+import Data.Void
+
 infixr 1 :>
 data ((a :: * -> *) :> b)
 
@@ -15,7 +17,7 @@ instance (Elem t r ~ 'True) => Member t r
 
 type family Elem (t :: * -> *) r :: Bool where
 	Elem t (t :> r) = 'True
-	Elem t () = 'False
+	Elem t Void = 'False
 	Elem t (t' :> r) = Elem t r
 
 class Member t r => MemberU2 (tag :: k -> * -> *) (t :: * -> *) r | tag r -> t
@@ -30,21 +32,3 @@ instance (Elem t (t' :> r) ~ 'True, MemberU2 tag t r) =>
 type family EQU (a :: k) (b :: k) :: Bool where
 	EQU a a = 'True
 	EQU a b = 'False
-
-{-
-newtype Foo r a = Foo a deriving Show
-
-data You a
-
-iNeedYou :: Elem You r ~ 'True => Foo r a -> Foo r a
-iNeedYou = id
-
-iNeedYou' :: Member You r => Foo r a -> Foo r a
-iNeedYou' = id
-
-iNeedYou'' :: Member You r => Foo r a -> Foo r a
-iNeedYou'' = iNeedYou . iNeedYou'
-
-iNeedYou''' :: Elem You r ~ 'True => Foo r a -> Foo r a
-iNeedYou''' = iNeedYou' . iNeedYou
--}

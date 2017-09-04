@@ -1,8 +1,8 @@
 module Cast (cast1) where
 
-import Data.Typeable
+import Data.Typeable (Typeable, gcast1)
 
-newtype Id x = Id x
+newtype Id x = Id { unId :: x }
 
 cast1 :: (Typeable t, Typeable t') => t a -> Maybe (t' a)
-cast1 x = (\(Id x) -> x) <$> gcast1 (Id x)
+cast1 = (unId <$>) . gcast1 . Id
