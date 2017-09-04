@@ -7,6 +7,7 @@
 
 module MyEff (
 	Cont, Lift, State, VE, (:>),
+	run, run2,
 	runReader, runReader2, ask,
 	runState, runState2, modify, get,
 	runLift, lift
@@ -16,26 +17,27 @@ import Control.Monad.Cont hiding (lift)
 import Data.Typeable
 
 import TypeElem
+import Cast
 
 data VE r a
 	= Val a
-	| forall t . (Functor t, Typeable t, Typeable a) => E (t (VE r a))
+	| forall t . (Functor t, Typeable t) => E (t (VE r a))
 	deriving Typeable
 
-toEffect :: (Functor t, Typeable t, Typeable a) =>
+toEffect :: (Functor t, Typeable t) =>
 	t (VE r a) -> VE r a
 toEffect = E
 
-fromEffect :: (Functor t, Typeable t, Typeable r, Typeable a) =>
+fromEffect :: (Functor t, Typeable t, Typeable r) =>
 	VE r a -> Maybe (t (VE r a))
 fromEffect = \case
-	E e -> cast e
+	E e -> cast1 e
 	Val _ -> Nothing
 
 newtype Reader e v = Reader (e -> v)
 	deriving (Typeable, Functor)
 
-ask :: (Member (Reader e) r, Typeable e, Typeable a) => Cont (VE r a) e
+ask :: (Member (Reader e) r, Typeable e) => Cont (VE r a) e
 ask = cont $ toEffect . Reader
 
 runReader :: (Typeable r, Typeable e) =>
@@ -65,11 +67,11 @@ run2 m = case runCont m Val of
 data State s a = State (s -> s) (s -> a)
 	deriving (Typeable, Functor)
 
-modify :: (Member (State s) r, Typeable s, Typeable a) =>
+modify :: (Member (State s) r, Typeable s) =>
 	(s -> s) -> Cont (VE r a) s
 modify f = cont $ toEffect . State f
 
-get :: (Member (State s) r, Typeable s, Typeable a) => Cont (VE r a) s
+get :: (Member (State s) r, Typeable s) => Cont (VE r a) s
 get = cont $ toEffect . State id
 
 runState ::
@@ -93,7 +95,7 @@ data Lift m v = forall a . Lift (m a) (a -> v)
 instance Functor (Lift m) where
 	fmap f (Lift m k) = Lift m (f . k)
 
-lift :: (MemberU2 Lift (Lift m) r, Typeable m, Typeable a, Typeable b) =>
+lift :: (MemberU2 Lift (Lift m) r, Typeable m) =>
 	m b -> Cont (VE r a) b
 lift m = cont $ toEffect . Lift m
 
