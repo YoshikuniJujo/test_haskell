@@ -865,7 +865,8 @@ c5 = runTrace $ runReader (loop =<< runC (th client)) (10::Int)
          cl
          v <- ask
          (if v > (20::Int) then id else local (+(5::Int))) cl
-         if v > (20::Int) then return () else local (+(10::Int)) (th cl)
+	 unless (v > (20 :: Int)) $ local (+ (10 :: Int)) (th cl)
+--         if v > (20::Int) then return () else local (+(10::Int)) (th cl)
 {-
 10
 11
@@ -899,7 +900,8 @@ c7 = runTrace $
          cl
          v <- ask
          (if v > (20::Int) then id else local (+(5::Int))) cl
-         if v > (20::Int) then return () else local (+(10::Int)) (th cl)
+	 unless (v > (20 :: Int)) $ local (+ (10 :: Int)) (th cl)
+--         if v > (20::Int) then return () else local (+(10::Int)) (th cl)
 
 {-
 1010
@@ -939,7 +941,8 @@ c7' = runTrace $
          cl
          v <- ask
          (if v > (20::Int) then id else local (+(5::Double))) cl
-         if v > (20::Int) then return () else local (+(10::Int)) (th cl)
+	 unless (v > (20 :: Int)) $ local (+ (10 :: Int)) (th cl)
+--         if v > (20::Int) then return () else local (+(10::Int)) (th cl)
 {-
 1010
 1021
@@ -1022,7 +1025,7 @@ call m = loop [] (admin m) where
  check jq u | Just (Choose [] _) <- prj u  = next jq  -- (C1)
  check jq u | Just (Choose [x] k) <- prj u = loop jq (k x)  -- (C3), optim
  check jq u | Just (Choose lst k) <- prj u = next $ map k lst ++ jq -- (C3)
- check jq u = send (\k -> fmap k u) >>= loop jq      -- (C4)
+ check jq u = send (`fmap` u) >>= loop jq      -- (C4)
 
  next []    = mzero'
  next (h:t) = loop t h

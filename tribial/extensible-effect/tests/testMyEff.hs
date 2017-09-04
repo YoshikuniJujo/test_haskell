@@ -13,7 +13,7 @@ some = do
 data NotTypeable = NT deriving Show
 
 other :: Cont (VE (State Integer :> ()) NotTypeable) NotTypeable
-other = return $ NT
+other = return NT
 
 hoge :: Cont (VE (State NotTypeable :> ()) Integer) Integer
 hoge = return 8888888

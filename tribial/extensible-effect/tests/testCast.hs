@@ -22,7 +22,7 @@ list = Foo "hello"
 
 fromFoo :: Typeable t => Foo a -> Maybe (t a)
 fromFoo foo = case foo of
-	Foo x -> fmap (\(Id y) -> y) $ gcast1 (Id x)
+	Foo x -> (\(Id y) -> y) <$> gcast1 (Id x)
 
 fromFoo' :: Typeable t => Foo a -> Maybe (t a)
 fromFoo' foo = case foo of Foo x -> cast1 x
