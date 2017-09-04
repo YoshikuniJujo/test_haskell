@@ -1,7 +1,8 @@
-{-# LANGUAGE TypeOperators, DataKinds, KindSignatures, TypeFamilies, GADTs #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE KindSignatures, DataKinds, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Eff ((:>), Emp) where
+module EffList (Effs, (:>), Emp) where
 
 infixr 1 :>
 
