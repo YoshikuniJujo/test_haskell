@@ -55,6 +55,21 @@ runState f s = case f of
 		Just (State m f') -> runState (f' s) (m s)
 		Nothing -> Free $ fmap (`runState` s) u
 
+data Lift m v = forall a . Lift (m a) (a -> v)
+
+instance Functor (Lift m) where
+	fmap f (Lift m k) = Lift m (f . k)
+
+lift :: Typeable m => m a -> Free Union a
+lift m = Free . U $ Lift m Pure
+
+runLift :: (Monad m, Typeable m) => Free Union a -> m a
+runLift f = case f of
+	Pure x -> return x
+	Free u -> case fromUnion u of
+		Just (Lift m' k) -> m' >>= runLift . k
+		Nothing -> error "cannot occur"
+
 testRS :: Free Union (Char, Integer)
 testRS = do
 	r <- ask
@@ -62,3 +77,8 @@ testRS = do
 	s <- get
 	modify (+ (123 :: Integer))
 	return (r, s)
+
+testRL :: Free Union ()
+testRL = do
+	r <- ask
+	lift $ putStrLn r
