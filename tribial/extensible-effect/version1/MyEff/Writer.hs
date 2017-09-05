@@ -1,4 +1,4 @@
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE LambdaCase, TupleSections #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,11 +15,15 @@ import MyEff
 import Free
 import TypeLevel
 
-data Writer wr w = Writer { wlog :: wr, unWriter :: w } deriving Functor
+data Writer wr w = Writer wr w deriving Functor
 
 tell :: (Member (Writer wr) es, Typeable wr) => wr -> Eff es ()
 tell wr = Free . toUnion $ Writer wr (Pure ())
 
 runWriter :: (Monoid wr, Typeable wr) =>
 	Eff (Writer wr :> es) a -> Eff es (a, wr)
-runWriter = mkRun (, mempty) (second . (<>) . wlog) unWriter
+runWriter = \case
+	Pure x -> Pure (x, mempty)
+	Free u -> case fromUnion u of
+		Just (Writer wr f') -> second (wr <>) <$> runWriter f'
+		Nothing -> Free . fmap runWriter $ castUnion u

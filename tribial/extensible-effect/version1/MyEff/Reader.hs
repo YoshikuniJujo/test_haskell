@@ -12,10 +12,14 @@ import Free
 import MyEff
 import TypeLevel
 
-newtype Reader r w = Reader { unReader :: r -> w } deriving Functor
+newtype Reader r w = Reader (r -> w) deriving Functor
 
 ask :: (Member (Reader r) es, Typeable r) => Eff es r
 ask = Free . toUnion $ Reader Pure
 
 runReader :: Typeable r => Eff (Reader r :> es) a -> r -> Eff es a
-runReader f r = mkRun id (const id) (\f' -> unReader f' r) f
+runReader f r = case f of
+	Pure x -> Pure x
+	Free u -> case fromUnion u of
+		Just (Reader f') -> runReader (f' r) r
+		Nothing -> Free . fmap (`runReader` r) $ castUnion u
