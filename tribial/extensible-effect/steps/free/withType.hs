@@ -39,3 +39,33 @@ runReader f r = case f of
 	Free u -> case fromUnion u of
 		Just (Reader f') -> runReader (f' r) r
 		Nothing -> Free . fmap (`runReader` r) $ castUnion u
+
+data State s w = State (s -> s) (s -> w) deriving Functor
+
+getModify :: (Member (State s) es, Typeable s) => (s -> s) -> Free (Union es) s
+getModify f = Free . U $ State f Pure
+
+get :: (Member (State s) es, Typeable s) => Free (Union es) s
+get = getModify id
+
+modify :: (Member (State s) es, Typeable s) => (s -> s) -> Free (Union es) ()
+modify = (>> return ()) . getModify
+
+put :: (Member (State s) es, Typeable s) => s -> Free (Union es) ()
+put = modify . const
+
+runState :: Typeable s =>
+	Free (Union (State s :> es)) a -> s -> Free (Union es) (a, s)
+runState f s = case f of
+	Pure x -> Pure (x, s)
+	Free u -> case fromUnion u of
+		Just (State m f') -> runState (f' s) (m s)
+		Nothing -> Free . fmap (`runState` s) $ castUnion u
+
+testRS :: Free (Union (Reader Char :> State Integer :> Emp)) (Char, Integer)
+testRS = do
+	r <- ask
+	modify (+ (15 :: Integer))
+	s <- get
+	modify (+ (123 :: Integer))
+	return (r, s)
