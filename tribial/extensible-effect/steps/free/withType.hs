@@ -77,6 +77,16 @@ runState f s = case f of
 		Just (State m f') -> runState (f' s) (m s)
 		Nothing -> Free . fmap (`runState` s) $ castUnion u
 
+lift :: (Typeable m, BaseLift (Lift m) es) => m a -> Free (Union es) a
+lift m = Free . U $ Lift m Pure
+
+runLift :: (Monad m, Typeable m) => Free (Union (Lift m :> Emp)) a -> m a
+runLift f = case f of
+	Pure x -> return x
+	Free u -> case fromUnion u of
+		Just (Lift m' k) -> m' >>= runLift . k
+		Nothing -> error "cannot occur"
+
 testRS :: Free (Union (Reader Char :> State Integer :> Emp)) (Char, Integer)
 testRS = do
 	r <- ask

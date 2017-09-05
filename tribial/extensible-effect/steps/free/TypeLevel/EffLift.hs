@@ -1,5 +1,5 @@
 {-# LANGUAGE ExistentialQuantification, TypeFamilies #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
 
