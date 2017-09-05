@@ -1,18 +1,13 @@
 {-# LANGUAGE ExistentialQuantification, TypeFamilies #-}
-{-# LANGUAGE KindSignatures, DataKinds, TypeOperators #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
 
-{-# OPTIONS_GHC -Wall
-	-fno-warn-tabs
-	-fno-warn-simplifiable-class-constraints #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module TypeLevel.EffLift (Lift(..), OnlyLift) where
+module TypeLevel.EffLift (Lift(..), BaseLift) where
 
 import TypeLevel.EffList
-
-class (OneLift m ms ~ 'True) => OnlyLift m ms
-instance (OneLift m ms ~ 'True) => OnlyLift m ms
 
 data Lift m v = forall a . Lift (m a) (a -> v)
 
@@ -23,21 +18,11 @@ type family IsLifted m where
 	IsLifted (Lift m) = 'True
 	IsLifted m = 'False
 
-type family ElemLiftGen (b :: Bool) (ms :: Effs) where
-	ElemLiftGen 'True ms = 'True
-	ElemLiftGen 'False (m :> ms) = ElemLiftGen (IsLifted m) ms
-	ElemLiftGen b Emp = b
+class (BaseLiftGen 'False m ms ~ 'True) => BaseLift m ms
+instance (BaseLiftGen 'False m ms ~ 'True) => BaseLift m ms
 
-type ElemLift ms = ElemLiftGen 'False ms
-
-type family OneLiftGen (b :: Bool) m ms where
-	OneLiftGen 'True m ms = 'False
-	OneLiftGen 'False t (t :> ms) = Not (ElemLift ms)
-	OneLiftGen 'False t (t' :> ms) = OneLiftGen (IsLifted t) t ms
-	OneLiftGen 'False t Emp = 'False
-
-type family Not t where
-	Not 'False = 'True
-	Not 'True = 'False
-
-type OneLift m ms = OneLiftGen 'False m ms
+type family BaseLiftGen (b :: Bool) m ms where
+	BaseLiftGen 'True m ms = 'False
+	BaseLiftGen 'False m (m :> Emp) = 'True
+	BaseLiftGen 'False m (m' :> ms) = BaseLiftGen (IsLifted m') m ms
+	BaseLiftGen 'False m Emp = 'False
