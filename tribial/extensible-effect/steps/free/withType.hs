@@ -1,5 +1,6 @@
 {-# LANGUAGE ExistentialQuantification, DeriveFunctor #-}
 {-# LANGUAGE KindSignatures, DataKinds, TypeOperators, FlexibleContexts #-}
+{-# LANGUAGE RankNTypes, GADTs #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 {-# OPTIONS_GHC -fno-warn-simplifiable-class-constraints #-}
 
@@ -87,6 +88,24 @@ runLift f = case f of
 		Just (Lift m' k) -> m' >>= runLift . k
 		Nothing -> error "cannot occur"
 
+data Program instr v = forall a . Program (instr a) (a -> v)
+
+instance Functor (Program instr) where
+	fmap f (Program instr k) = Program instr (f . k)
+
+singleton :: (Member (Program instr) es, Typeable instr) =>
+	instr a -> Free (Union es) a
+singleton i = Free . U $ Program i Pure
+
+runProgram :: Typeable f => (forall x . f x -> Free (Union es) x) ->
+	Free (Union (Program f :> es)) a -> Free (Union es) a
+runProgram advent f = case f of
+	Pure x -> Pure x
+	Free u -> case fromUnion u of
+		Just (Program instr k) ->
+			advent instr >>= runProgram advent . k
+		Nothing -> Free . fmap (runProgram advent) $ castUnion u
+
 testRS :: Free (Union (Reader Char :> State Integer :> Emp)) (Char, Integer)
 testRS = do
 	r <- ask
@@ -100,3 +119,36 @@ testRW = do
 	r <- ask
 	tell "hige"
 	return r
+
+data Jail a where
+	Print :: String -> Jail ()
+	Scan :: Jail String
+
+prog :: Member (Program Jail) es => Free (Union es) ()
+prog = do
+	singleton $ Print "getting input..."
+	str <- singleton Scan
+	singleton $ Print "ok"
+	singleton $ Print ("the input is " ++ str)
+
+adventIO :: (BaseLift (Lift IO) es) => Jail a -> Free (Union es) a
+adventIO (Print a) = lift $ putStrLn a
+adventIO Scan = lift getLine
+
+adventPure :: (Member (Writer String) es, Member (State [String]) es) =>
+	Jail a -> Free (Union es) a
+adventPure (Print a) = tell (a ++ "\n")
+adventPure Scan = do
+	x <- get
+	case x of
+		[] -> return []
+		y : ys -> put ys >> return y
+
+testIO :: IO ()
+testIO = runLift $ runProgram adventIO
+	(prog :: Free (Union (Program Jail :> Lift IO :> Emp)) ())
+
+testPure :: [String] -> (((), [String]), String)
+testPure is = run . runWriter . (`runState` is) $ runProgram adventPure
+	(prog :: Free (Union (
+		Program Jail :> State [String] :> Writer String :> Emp )) ())
