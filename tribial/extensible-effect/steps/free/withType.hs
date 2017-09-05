@@ -3,7 +3,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 {-# OPTIONS_GHC -fno-warn-simplifiable-class-constraints #-}
 
+import Control.Arrow
 import Data.Typeable
+import Data.Monoid
 
 import TypeLevel
 import Free
@@ -40,6 +42,19 @@ runReader f r = case f of
 		Just (Reader f') -> runReader (f' r) r
 		Nothing -> Free . fmap (`runReader` r) $ castUnion u
 
+data Writer wr w = Writer wr w deriving Functor
+
+tell :: (Member (Writer wr) es, Typeable wr) => wr -> Free (Union es) ()
+tell wr = Free . U $ Writer wr (Pure ())
+
+runWriter :: (Monoid wr, Typeable wr) =>
+	Free (Union (Writer wr :> es)) a -> Free (Union es) (a, wr)
+runWriter f = case f of
+	Pure x -> Pure (x, mempty)
+	Free u -> case fromUnion u of
+		Just (Writer wr f') -> second (wr <>) <$> runWriter f'
+		Nothing -> Free . fmap runWriter $ castUnion u
+
 data State s w = State (s -> s) (s -> w) deriving Functor
 
 getModify :: (Member (State s) es, Typeable s) => (s -> s) -> Free (Union es) s
@@ -69,3 +84,9 @@ testRS = do
 	s <- get
 	modify (+ (123 :: Integer))
 	return (r, s)
+
+testRW :: Free (Union (Reader Char :> Writer String :> Emp)) Char
+testRW = do
+	r <- ask
+	tell "hige"
+	return r
