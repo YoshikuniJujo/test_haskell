@@ -13,6 +13,10 @@ import UnionNoType
 
 type Eff = Freer Union
 
+run :: Eff a -> a
+run (Pure x) = x
+run _ = error "bad"
+
 data Reader e a where
 	Reader :: Reader e e
 
@@ -53,5 +57,31 @@ runWriter = \case
 		Just (Writer w :: Writer w b) -> second (w <>) <$> runWriter (q ())
 		Nothing -> Join u $ runWriter . q
 
-run :: Eff a -> a
-run (Pure x) = x
+data State s a where
+	Get :: State s s
+	Put :: s -> State s ()
+
+get :: Typeable s => Eff s
+get = Join (toUnion Get) Pure
+
+put :: Typeable s => s -> Eff ()
+put s = Join (toUnion $ Put s) Pure
+
+modify :: Typeable s => (s -> s) -> Eff ()
+modify f = fmap f get >>= put
+
+runState0 :: forall s a . Typeable s => Eff a -> s -> (a, s)
+runState0 m s = case m of
+	Pure x -> (x, s)
+	Join u q -> case fromUnion u of
+		Just (Get :: State s b) -> runState0 (q s) s
+		Just (Put s' :: State s b) -> runState0 (q ()) s'
+		Nothing -> error "bad"
+
+runState :: forall s a . Typeable s => Eff a -> s -> Eff (a, s)
+runState m s = case m of
+	Pure x -> Pure (x, s)
+	Join u q -> case fromUnion u of
+		Just (Get :: State s b) -> runState (q s) s
+		Just (Put s' :: State s b) -> runState (q ()) s'
+		Nothing -> Join u $ (`runState` s) . q
