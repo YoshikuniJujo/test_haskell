@@ -3,7 +3,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module FTCQueue (
-	FTCQueue, tsingleton, (|>), (><), ViewL(..), tviewl ) where
+	FTCQueue, ViewL(..), tsingleton, (|>), (><), tviewl ) where
 
 data FTCQueue m a b
 	= Leaf (a -> m b)
@@ -13,19 +13,17 @@ tsingleton :: (a -> m b) -> FTCQueue m a b
 tsingleton = Leaf
 
 (|>) :: FTCQueue m a x -> (x -> m b) -> FTCQueue m a b
-t |> r = Node t (Leaf r)
+(|>) = (. Leaf) . Node
 
 (><) :: FTCQueue m a x -> FTCQueue m x b -> FTCQueue m a b
-t1 >< t2 = Node t1 t2
+(><) = Node
 
-data ViewL m a b
-	= TOne (a -> m b)
-	| forall x . (a -> m x) :| FTCQueue m x b
+data ViewL m a b = TOne (a -> m b) | forall x . (a -> m x) :| FTCQueue m x b
 
 tviewl :: FTCQueue m a b -> ViewL m a b
-tviewl (Leaf r) = TOne r
-tviewl (Node t1 t2) = go t1 t2
+tviewl (Leaf f) = TOne f
+tviewl (Node l0 r0) = go l0 r0
 	where
 	go :: FTCQueue m a x -> FTCQueue m x b -> ViewL m a b
-	go (Leaf r) tr = r :| tr
-	go (Node tl1 tl2) tr = go tl1 (Node tl2 tr)
+	go (Leaf f) r = f :| r
+	go (Node ll lr) r = go ll (Node lr r)
