@@ -17,6 +17,12 @@ run :: Eff a -> a
 run (Pure x) = x
 run _ = error "bad"
 
+runM :: (Typeable m, Monad m) => Eff a -> m a
+runM (Pure x) = return x
+runM (Join u q) = case fromUnion u of
+	Just m -> m >>= runM . q
+	Nothing -> error "bad"
+
 data Reader e a where
 	Reader :: Reader e e
 

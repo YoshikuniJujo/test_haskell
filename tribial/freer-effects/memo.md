@@ -25,8 +25,14 @@ Extensible Effectsを改良したもの。
 memo
 ----
 
+### 関数decomp
+
 Unionをcastするより、
 
 	decomp :: Union (Hoge :> es) a -> Either (Hoge a) (Union es a)
 
 のようにしたほうが、スマートかも。
+
+### 関数send
+
+関数sendを使って、Member eff effsを保証する。
