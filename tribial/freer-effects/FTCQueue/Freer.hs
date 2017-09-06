@@ -7,26 +7,25 @@ module Freer (
 
 import FTCQueue (FTCQueue, ViewL(..), tsingleton, (|>), (><), tviewl)
 
-data Freer f a = Pure a | forall b . Join (f b) (FTCQueue (Freer f) b a)
+data Freer t a = Pure a | forall x . Join (t x) (FTCQueue (Freer t) x a)
 
-instance Functor (Freer f) where
+instance Functor (Freer t) where
 	fmap = (=<<) . (return .)
 
-instance Applicative (Freer f) where
+instance Applicative (Freer t) where
 	pure = Pure
 	mf <*> mx = do f <- mf; x <- mx; return $ f x
 
-instance Monad (Freer f) where
-	return = pure
+instance Monad (Freer t) where
 	Pure x >>= f = f x
-	Join fa k >>= f = Join fa $ k |> f
+	Join m q >>= f = Join m $ q |> f
 
-qApp :: FTCQueue (Freer t) b w -> b -> Freer t w
-qApp q' x = case tviewl q' of
-	TOne k -> k x
-	k :| t -> case k x of
-		Pure y -> qApp t y
-		Join u q -> Join u (q >< t)
+qApp :: FTCQueue (Freer t) a b -> a -> Freer t b
+q `qApp` x = case tviewl q of
+	TOne f -> f x
+	f :| r -> case f x of
+		Pure y -> r `qApp` y
+		Join m q' -> Join m (q' >< r)
 
-qComp :: FTCQueue (Freer t1) b w -> (Freer t1 w -> t2) -> b -> t2
-qComp g h a = h $ g `qApp` a
+qComp :: FTCQueue (Freer t) a b -> (Freer t b -> c) -> a -> c
+qComp = flip (.) . qApp
