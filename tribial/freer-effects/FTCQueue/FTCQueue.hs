@@ -2,7 +2,8 @@
 
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module FTCQueue where
+module FTCQueue (
+	FTCQueue, tsingleton, (|>), (><), ViewL(..), tviewl ) where
 
 data FTCQueue m a b
 	= Leaf (a -> m b)

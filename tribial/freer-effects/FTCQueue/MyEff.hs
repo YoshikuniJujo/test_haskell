@@ -20,16 +20,6 @@ type Eff effs = Freer (Union effs)
 send :: Member eff effs => eff a -> Eff effs a
 send t = Join (inj t) (tsingleton Pure)
 
-qApp :: Arrs effs b w -> b -> Eff effs w
-qApp q' x = case tviewl q' of
-	TOne k -> k x
-	k :| t -> case k x of
-		Pure y -> qApp t y
-		Join u q -> Join u (q >< t)
-
-qComp :: Arrs effs a b -> (Eff effs b -> Eff effs' c) -> Arr effs' a c
-qComp g h a = h $ g `qApp` a
-
 run :: Eff '[] a -> a
 run (Pure x) = x
 run _ = error "bad"
