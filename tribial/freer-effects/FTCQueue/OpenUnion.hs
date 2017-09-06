@@ -37,8 +37,8 @@ instance FindElem t ts => Member t ts where
 	_prj = unsafePrj $ unP (elemNo :: P t ts)
 
 decomp :: Union (t ': ts) a -> Either (Union ts a) (t a)
-decomp (Union 0 a) = Right $ unsafeCoerce a
-decomp (Union i a) = Left $ Union (i - 1) a
+decomp (Union 0 tx) = Right $ unsafeCoerce tx
+decomp (Union i tx) = Left $ Union (i - 1) tx
 
 extract :: Union '[t] a -> t a
-extract (Union _ a) = unsafeCoerce a
+extract (Union _ tx) = unsafeCoerce tx
