@@ -10,11 +10,15 @@ import FTCQueue (FTCQueue, ViewL(..), tsingleton, (|>), (><), tviewl)
 data Freer t a = Pure a | forall x . Join (t x) (FTCQueue (Freer t) x a)
 
 instance Functor (Freer t) where
-	fmap = (=<<) . (return .)
+	fmap f (Pure x) = Pure $ f x
+	fmap f (Join m q) = Join m $ q |> (Pure . f)
 
 instance Applicative (Freer t) where
 	pure = Pure
-	mf <*> mx = do f <- mf; x <- mx; return $ f x
+	Pure f <*> Pure x = Pure $ f x
+	Pure f <*> Join m q = Join m $ q |> (Pure . f)
+	Join m q <*> Pure x = Join m $ q |> (Pure . ($ x))
+	Join m q <*> n = Join m $ q |> (<$> n)
 
 instance Monad (Freer t) where
 	Pure x >>= f = f x
