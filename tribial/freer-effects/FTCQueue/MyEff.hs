@@ -1,4 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,14 +7,10 @@
 
 module MyEff (
 	Eff, Freer(..), Member,
-	run, send, decomp, tsingleton, qApp, qComp) where
+	run, runM, send, decomp, tsingleton, qApp, qComp) where
 
 import Freer
 import OpenUnion
-
-type Arr effs a b = a -> Eff effs b
-
-type Arrs effs a b = FTCQueue (Eff effs) a b
 
 type Eff effs = Freer (Union effs)
 

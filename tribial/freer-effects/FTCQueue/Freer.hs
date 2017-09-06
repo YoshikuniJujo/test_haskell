@@ -5,7 +5,7 @@
 module Freer (
 	Freer(..), FTCQueue, ViewL(..), tsingleton, qApp, qComp ) where
 
-import FTCQueue
+import FTCQueue (FTCQueue, ViewL(..), tsingleton, (|>), (><), tviewl)
 
 data Freer f a = Pure a | forall b . Join (f b) (FTCQueue (Freer f) b a)
 
