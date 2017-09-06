@@ -17,6 +17,11 @@ run :: Eff '[] a -> a
 run (Pure x) = x
 run _ = error "Internal:run This (E) should never happen"
 
+runM :: Monad m => Eff '[m] a -> m a
+runM (Pure x) = return x
+runM (Join u q) = case extract u of
+	mb -> mb >>= runM . q
+
 send :: Member eff effs => eff a -> Eff effs a
 send t = Join (inj t) Pure
 
