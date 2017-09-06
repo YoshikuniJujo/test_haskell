@@ -31,6 +31,11 @@ run :: Eff '[] a -> a
 run (Pure x) = x
 run _ = error "bad"
 
+runM :: Monad m => Eff '[m] a -> m a
+runM (Pure x) = return x
+runM (Join u q) = case extract u of
+	mb -> mb >>= runM . (q `qApp`)
+
 data Reader e a where
 	Reader :: Reader e e
 
