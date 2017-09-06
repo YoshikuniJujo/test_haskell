@@ -21,3 +21,12 @@ Extensible Effectsを改良したもの。
 * Freerモナドの改良
 	- 関数を、そのまま合成するのではなく、
 		一度FTCQueueに格納する
+
+memo
+----
+
+Unionをcastするより、
+
+	decomp :: Union (Hoge :> es) a -> Either (Hoge a) (Union es a)
+
+のようにしたほうが、スマートかも。
