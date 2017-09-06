@@ -12,8 +12,6 @@ import Control.Arrow
 import Data.Monoid
 
 import MyEff
-import Freer
-import OpenUnion
 
 data Writer w a where
 	Writer :: w -> Writer w ()

@@ -6,7 +6,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 {-# OPTIONS_GHC -fno-warn-simplifiable-class-constraints #-}
 
-module MyEff where
+module MyEff (
+	Eff, Freer(..), Member,
+	run, send, decomp, tsingleton, qApp, qComp) where
 
 import Freer
 import OpenUnion

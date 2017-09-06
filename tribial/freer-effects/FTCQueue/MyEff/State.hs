@@ -9,8 +9,6 @@
 module MyEff.State where
 
 import MyEff
-import Freer
-import OpenUnion
 
 data State s a where
 	Get :: State s s

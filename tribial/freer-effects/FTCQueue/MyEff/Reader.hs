@@ -9,8 +9,8 @@
 module MyEff.Reader where
 
 import MyEff
-import Freer
-import OpenUnion
+-- import Freer
+-- import OpenUnion
 
 data Reader e a where
 	Reader :: Reader e e
