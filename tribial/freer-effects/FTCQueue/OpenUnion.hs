@@ -16,8 +16,8 @@ unsafeInj :: Word -> t a -> Union ts a
 unsafeInj = Union
 
 unsafePrj :: Word -> Union ts a -> Maybe (t a)
-unsafePrj n (Union n' x)
-	| n == n' = Just $ unsafeCoerce x
+unsafePrj i (Union i' x)
+	| i == i' = Just $ unsafeCoerce x
 	| otherwise = Nothing
 
 newtype P (t :: * -> *) (ts :: [* -> *]) = P { unP :: Word }
@@ -38,7 +38,7 @@ instance FindElem t ts => Member t ts where
 
 decomp :: Union (t ': ts) a -> Either (Union ts a) (t a)
 decomp (Union 0 a) = Right $ unsafeCoerce a
-decomp (Union n a) = Left $ Union (n - 1) a
+decomp (Union i a) = Left $ Union (i - 1) a
 
 extract :: Union '[t] a -> t a
 extract (Union _ a) = unsafeCoerce a
