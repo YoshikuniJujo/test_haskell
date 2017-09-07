@@ -6,7 +6,7 @@
 
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module OpenUnion (Union, Member, inj, decomp, extract) where
+module OpenUnion (Union, Member, inj, prj, decomp, extract) where
 
 import Unsafe.Coerce (unsafeCoerce)
 
@@ -30,11 +30,11 @@ instance {-# OVERLAPPABLE #-} FindElem t ts => FindElem t (_t' ': ts) where
 
 class FindElem t ts => Member t ts where
 	inj :: t a -> Union ts a
-	_prj :: Union ts a -> Maybe (t a)
+	prj :: Union ts a -> Maybe (t a)
 
 instance FindElem t ts => Member t ts where
 	inj = unsafeInj $ unP (elemNo :: P t ts)
-	_prj = unsafePrj $ unP (elemNo :: P t ts)
+	prj = unsafePrj $ unP (elemNo :: P t ts)
 
 decomp :: Union (t ': ts) a -> Either (Union ts a) (t a)
 decomp (Union 0 tx) = Right $ unsafeCoerce tx

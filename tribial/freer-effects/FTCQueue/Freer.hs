@@ -3,7 +3,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Freer (
-	Freer(..), FTCQueue, ViewL(..), tsingleton, qApp ) where
+	Freer(..), FTCQueue, ViewL(..), tsingleton, qApp, qComp ) where
 
 import FTCQueue (FTCQueue, ViewL(..), tsingleton, (|>), (><), tviewl)
 
@@ -29,3 +29,7 @@ q `qApp` x = case tviewl q of
 	f :| r -> case f x of
 		Pure y -> r `qApp` y
 		Join tx q' -> Join tx (q' >< r)
+
+qComp :: FTCQueue (Freer t) a b ->
+	(Freer t b -> Freer t' c) -> a -> Freer t' c
+qComp g h a = h $ qApp g a

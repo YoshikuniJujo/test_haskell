@@ -6,10 +6,11 @@
 {-# OPTIONS_GHC -fno-warn-simplifiable-class-constraints #-}
 
 module MyEff (
-	Eff, Member, run, runM, send, handleRelay, handleRelayS ) where
+	Eff, Member, run, runM, send, handleRelay, handleRelayS, interpose
+	) where
 
-import Freer (Freer(..), tsingleton, qApp)
-import OpenUnion (Union, Member, inj, decomp, extract)
+import Freer (Freer(..), tsingleton, qApp, qComp)
+import OpenUnion (Union, Member, inj, prj, decomp, extract)
 
 type Eff effs = Freer (Union effs)
 
@@ -42,3 +43,15 @@ handleRelayS s0 ret h = loop s0
 			Right tx -> h s tx f
 			Left u' -> Join u' . tsingleton $ f s
 			where f = (. (q `qApp`)) . loop
+
+interpose :: Member eff effs =>
+	(a -> Eff effs b) ->
+	(forall v . eff v -> (v -> Eff effs b) -> Eff effs b) ->
+	Eff effs a -> Eff effs b
+interpose ret h = loop
+	where loop = \case
+		Pure x -> ret x
+		Join u q -> case prj u of
+			Just x -> h x k
+			Nothing -> Join u $ tsingleton k
+			where k = q `qComp` loop
