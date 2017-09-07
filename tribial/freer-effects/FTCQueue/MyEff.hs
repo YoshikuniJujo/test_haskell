@@ -39,6 +39,6 @@ handleRelayS s0 ret h = loop s0
 	where loop s = \case
 		Pure x -> ret s x
 		Join u q -> case decomp u of
-			Right tx -> h s tx k
-			Left u' -> Join u' . tsingleton $ k s
-			where k s' = loop s' . (q `qApp`)
+			Right tx -> h s tx f
+			Left u' -> Join u' . tsingleton $ f s
+			where f = (. (q `qApp`)) . loop

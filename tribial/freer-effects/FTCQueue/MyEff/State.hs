@@ -1,32 +1,27 @@
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE GADTs #-}
-{-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
-{-# OPTIONS_GHC -fno-warn-simplifiable-class-constraints #-}
 
 module MyEff.State where
 
-import MyEff
+import MyEff (Eff, Member, send, handleRelayS)
 
-data State s a where
-	Get :: State s s
-	Put :: !s -> State s ()
+data State s a where Get :: State s s; Put :: !s -> State s ()
 
 get :: Member (State s) effs => Eff effs s
 get = send Get
 
 put :: Member (State s) effs => s -> Eff effs ()
-put s = send (Put s)
+put = send . Put
 
 modify :: Member (State s) effs => (s -> s) -> Eff effs ()
-modify f = fmap f get >>= put
+modify f = put . f =<< get
 
 runState :: Eff (State s ': effs) a -> s -> Eff effs (a, s)
-runState m0 s0 = handleRelayS s0
-	(\s -> pure . (, s))
-	(\s m k -> case m of
-		Get -> k s s
-		Put s' -> k s' ())
-	m0
+runState m s0 = handleRelayS s0
+	((pure .) . flip (,))
+	(\s tx f -> case tx of Get -> f s s; Put s' -> f s' ())
+	m
