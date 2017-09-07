@@ -18,8 +18,4 @@ ask :: Member (Reader e) effs => Eff effs e
 ask = send Reader
 
 runReader :: Eff (Reader e ': effs) a -> e -> Eff effs a
-runReader m e = case m of
-	Pure x -> Pure x
-	Join u q -> case decomp u of
-		Right Reader -> runReader (q `qApp` e) e
-		Left u' -> Join u' . tsingleton $ q `qComp` (`runReader` e)
+runReader m0 e0 = handleRelayS e0 (const pure) (\e Reader k -> k e e) m0
