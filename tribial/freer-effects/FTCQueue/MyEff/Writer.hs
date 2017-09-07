@@ -1,23 +1,21 @@
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE GADTs #-}
-{-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
-{-# OPTIONS_GHC -fno-warn-simplifiable-class-constraints #-}
 
 module MyEff.Writer where
 
-import Control.Arrow
-import Data.Monoid
+import Control.Arrow (second)
+import Data.Monoid (mempty, (<>))
 
-import MyEff
+import MyEff (Eff, Member, send, handleRelay)
 
-data Writer w a where
-	Writer :: w -> Writer w ()
+data Writer w a where Writer :: w -> Writer w ()
 
 tell :: Member (Writer w) effs => w -> Eff effs ()
-tell w = send $ Writer w
+tell = send . Writer
 
 runWriter :: Monoid w => Eff (Writer w ': effs) a -> Eff effs (a, w)
 runWriter = handleRelay
