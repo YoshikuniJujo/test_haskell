@@ -17,7 +17,9 @@ tsingleton = Leaf
 (><) :: FTCQueue t a x -> FTCQueue t x b -> FTCQueue t a b
 (><) = Node
 
-data ViewL t a b = TOne (a -> t b) | forall x . (a -> t x) :| FTCQueue t x b
+data ViewL t a b
+	= TOne (a -> t b)
+	| forall x . (a -> t x) :| FTCQueue t x b
 
 tviewl :: FTCQueue t a b -> ViewL t a b
 tviewl (Leaf f) = TOne f
