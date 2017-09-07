@@ -5,7 +5,7 @@
 
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module MyEff.State where
+module MyEff.State (State, runState, get, put, modify) where
 
 import MyEff (Eff, Member, send, handleRelayS)
 

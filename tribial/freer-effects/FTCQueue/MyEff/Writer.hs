@@ -5,7 +5,7 @@
 
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module MyEff.Writer where
+module MyEff.Writer (Writer, runWriter, tell) where
 
 import Control.Arrow (second)
 import Data.Monoid (mempty, (<>))
