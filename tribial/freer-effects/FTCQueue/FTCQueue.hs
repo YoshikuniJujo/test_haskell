@@ -1,4 +1,5 @@
 {-# LANGUAGE ExistentialQuantification #-}
+
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module FTCQueue (

@@ -16,8 +16,8 @@ unsafeInj :: Word -> t a -> Union ts a
 unsafeInj = Union
 
 unsafePrj :: Word -> Union ts a -> Maybe (t a)
-unsafePrj i (Union i' x)
-	| i == i' = Just $ unsafeCoerce x
+unsafePrj i (Union j x)
+	| i == j = Just $ unsafeCoerce x
 	| otherwise = Nothing
 
 newtype P (t :: * -> *) (ts :: [* -> *]) = P { unP :: Word }
@@ -25,7 +25,7 @@ newtype P (t :: * -> *) (ts :: [* -> *]) = P { unP :: Word }
 class FindElem (t :: * -> *) (ts :: [* -> *]) where elemNo :: P t ts
 instance FindElem t (t ': ts) where
 	elemNo = P 0
-instance {-# OVERLAPPABLE #-} FindElem t ts => FindElem t (t' ': ts) where
+instance {-# OVERLAPPABLE #-} FindElem t ts => FindElem t (_t' ': ts) where
 	elemNo = P $ 1 + unP (elemNo :: P t ts)
 
 class FindElem t ts => Member t ts where
