@@ -9,4 +9,5 @@ TODO
 * Freer, OpenUnion, MyEffのリファクタリング
 * Coroutine, Exceptionのリファクタリング
 * Cut, Fresh, NonDet, StateRW, Traceの実装
+* NonDetのorphan instanceの解決
 * 全体のリファクタリング
