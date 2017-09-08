@@ -1,13 +1,18 @@
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE GADTs, RankNTypes, ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances, FlexibleContexts #-}
 
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 {-# OPTIONS_GHC -fno-warn-simplifiable-class-constraints #-}
 
 module MyEff.Internal (
 	Eff, Member, run, runM, send, handleRelay, handleRelayS, interpose,
-	Freer(..), tsingleton, qApp, qComp, prj, decomp, extract ) where
+	Freer(..), NonDet(..),
+	tsingleton, qApp, qComp, prj, decomp, extract ) where
+
+import Control.Applicative
+import Control.Monad
 
 import Freer (Freer(..), tsingleton, qApp, qComp)
 import OpenUnion (Union, Member, inj, prj, decomp, extract)
@@ -25,12 +30,14 @@ runM (Join u q) = runM . (q `qApp`) =<< extract u
 send :: Member eff effs => eff a -> Eff effs a
 send = (`Join` tsingleton Pure) . inj
 
-handleRelay ::
+handleRelay :: forall effs eff a b .
 	(a -> Eff effs b) ->
 	(forall x . eff x -> (x -> Eff effs b) -> Eff effs b) ->
 	Eff (eff ': effs) a -> Eff effs b
 handleRelay ret h = handleRelayS () (const ret) h'
-	where h' () m k = h m (k ())
+	where
+	h' :: () -> (eff x) -> (() -> x -> Eff effs b) -> Eff effs b
+	h' () m k = h m (k ())
 
 handleRelayS ::
 	s -> (s -> a -> Eff effs b) ->
@@ -55,3 +62,15 @@ interpose ret h = loop
 			Just tx -> h tx f
 			Nothing -> Join u $ tsingleton f
 			where f = q `qComp` loop
+
+data NonDet a where
+	MZero :: NonDet a
+	MPlus :: NonDet Bool
+
+instance Member NonDet effs => Alternative (Eff effs) where
+	empty = mzero
+	(<|>) = mplus
+
+instance Member NonDet effs => MonadPlus (Eff effs) where
+	mzero = send MZero
+	mplus m1 m2 = send MPlus >>= \x -> if x then m1 else m2

@@ -1,34 +1,26 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
-{-# LANGUAGE TypeSynonymInstances, FlexibleInstances, FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module MyEff.NonDet where
+module MyEff.NonDet (NonDet, fromList, makeChoiceA, msplit) where
 
-import Control.Applicative
-import Control.Monad
+import Control.Applicative (Alternative(..))
+import Control.Monad (msum)
 
-import MyEff.Internal
+import MyEff.Internal (
+	Eff, Member, handleRelay,
+	Freer(..), NonDet(..), tsingleton, qApp, qComp, prj )
 
-data NonDet a where
-	MZero :: NonDet a
-	MPlus :: NonDet Bool
+fromList :: Member NonDet effs => [a] -> Eff effs a
+fromList = msum . map return
 
-instance Member NonDet effs => Alternative (Eff effs) where
-	empty = mzero
-	(<|>) = mplus
-
-instance Member NonDet effs => MonadPlus (Eff effs) where
-	mzero = send MZero
-	mplus m1 m2 = send MPlus >>= \x -> if x then m1 else m2
-
-makeChoiceA :: Alternative f => Eff (NonDet ': effs) a -> Eff effs (f a)
-makeChoiceA = handleRelay (return . pure) $ \m k -> case m of
+makeChoiceA :: Alternative t => Eff (NonDet ': effs) a -> Eff effs (t a)
+makeChoiceA = handleRelay (return . pure) $ flip $ \k -> \case
 	MZero -> return empty
-	MPlus -> liftM2 (<|>) (k True) (k False)
+	MPlus -> (<|>) <$> k True <*> k False
 
 msplit :: Member NonDet effs => Eff effs a -> Eff effs (Maybe (a, Eff effs a))
 msplit = loop []
@@ -38,6 +30,5 @@ msplit = loop []
 			Just MZero -> case jq of
 				[] -> return Nothing
 				(j : jq') -> loop jq' j
-			Just MPlus -> loop (q `qApp` False : jq) (q `qApp` True)
-			Nothing -> Join u $ tsingleton k
-			where k = q `qComp` loop jq
+			Just MPlus -> loop (q `qApp` False : jq) $ q `qApp` True
+			Nothing -> Join u . tsingleton $ q `qComp` loop jq

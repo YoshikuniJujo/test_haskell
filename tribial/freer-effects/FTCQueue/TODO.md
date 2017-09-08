@@ -10,4 +10,5 @@ TODO
 * Coroutine, Exceptionのリファクタリング
 * Cut, Fresh, NonDet, StateRW, Traceの実装
 * NonDetのorphan instanceの解決
+* MyEff.Internalのリファクタリング
 * 全体のリファクタリング
