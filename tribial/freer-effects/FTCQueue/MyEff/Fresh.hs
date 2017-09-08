@@ -15,4 +15,4 @@ fresh = send Fresh
 
 runFresh' :: Eff (Fresh ': effs) a -> Int -> Eff effs a
 runFresh' m s0 =
-	handleRelayS s0 (const pure) (\s Fresh k -> (k $! s + 1) s) m
+	handleRelayS s0 (const pure) (\s Fresh f -> (f $! s + 1) s) m

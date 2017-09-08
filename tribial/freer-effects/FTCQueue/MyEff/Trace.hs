@@ -7,9 +7,7 @@
 
 module MyEff.Trace (Trace, runTrace, ignoreTrace, trace) where
 
-import MyEff.Internal (
-	Eff, Member, send,
-	Freer(..), qApp, extract)
+import MyEff.Internal (Eff, Member, send, Freer(..), qApp, extract)
 
 data Trace a where Trace :: String -> Trace ()
 
