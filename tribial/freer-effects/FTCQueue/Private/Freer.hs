@@ -2,10 +2,10 @@
 
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Freer (
+module Private.Freer (
 	Freer(..), FTCQueue, ViewL(..), tsingleton, qApp, qComp ) where
 
-import FTCQueue (FTCQueue, ViewL(..), tsingleton, (|>), (><), tviewl)
+import Private.FTCQueue (FTCQueue, ViewL(..), tsingleton, (|>), (><), tviewl)
 
 data Freer t a = Pure a | forall x . Join (t x) (FTCQueue (Freer t) x a)
 

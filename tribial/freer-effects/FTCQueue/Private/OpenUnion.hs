@@ -6,7 +6,7 @@
 
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module OpenUnion (Union, Member, inj, prj, decomp, extract) where
+module Private.OpenUnion (Union, Member, inj, prj, decomp, extract) where
 
 import Unsafe.Coerce (unsafeCoerce)
 

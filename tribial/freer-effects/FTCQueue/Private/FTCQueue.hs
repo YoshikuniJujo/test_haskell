@@ -2,7 +2,7 @@
 
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module FTCQueue (
+module Private.FTCQueue (
 	FTCQueue, ViewL(..), tsingleton, (|>), (><), tviewl ) where
 
 data FTCQueue t a b

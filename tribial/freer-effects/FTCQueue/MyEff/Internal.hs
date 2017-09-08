@@ -16,8 +16,8 @@ import Control.Applicative (Alternative(..))
 import Control.Monad (MonadPlus(..))
 import Data.Bool (bool)
 
-import Freer (Freer(..), tsingleton, qApp, qComp)
-import OpenUnion (Union, Member, inj, prj, decomp, extract)
+import Private.Freer (Freer(..), tsingleton, qApp, qComp)
+import Private.OpenUnion (Union, Member, inj, prj, decomp, extract)
 
 type Eff effs = Freer (Union effs)
 
