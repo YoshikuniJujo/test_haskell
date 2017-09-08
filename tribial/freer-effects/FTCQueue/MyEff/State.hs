@@ -1,4 +1,3 @@
-{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,7 +20,6 @@ modify :: Member (State s) effs => (s -> s) -> Eff effs ()
 modify f = put . f =<< get
 
 runState :: Eff (State s ': effs) a -> s -> Eff effs (a, s)
-runState m s0 = handleRelayS s0
-	((pure .) . flip (,))
+runState m s0 = handleRelayS s0 ((pure .) . flip (,))
 	(\s tx f -> case tx of Get -> f s s; Put s' -> f s' ())
 	m

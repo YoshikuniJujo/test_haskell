@@ -22,8 +22,8 @@ runStateR = flip loop
 	loop s = \case
 		Pure x -> return (x, s)
 		Join u q -> case decomp u of
-			Right (Writer o) -> k o ()
+			Right (Writer o) -> f o ()
 			Left u' -> case decomp u' of
-				Right Reader -> k s s
-				Left u'' -> Join u'' . tsingleton $ k s
-			where k = (q `qComp`) . loop
+				Right Reader -> f s s
+				Left u'' -> Join u'' . tsingleton $ f s
+			where f = (q `qComp`) . loop
