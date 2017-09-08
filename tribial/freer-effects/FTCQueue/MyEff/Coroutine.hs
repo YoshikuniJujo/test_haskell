@@ -1,26 +1,22 @@
-{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 {-# OPTIONS_GHC -fno-warn-simplifiable-class-constraints #-}
 
-module MyEff.Coroutine (Yield, Status(..), runC, yield) where
+module MyEff.Coroutine (Yield, Status(..), yield, runC) where
 
-import MyEff
+import MyEff (Eff, Member, send, handleRelay)
 
-data Yield a b c = Yield a (b -> c)
+data Yield o i a = Yield o (i -> a)
 
-yield :: Member (Yield a b) effs => a -> (b -> c) -> Eff effs c
+yield :: Member (Yield o i) effs => o -> (i -> a) -> Eff effs a
 yield = (send .) . Yield
 
-data Status effs a b c
-	= Done c
-	| Continue a (b -> Eff effs (Status effs a b c))
+data Status effs o i a
+	= Done a
+	| Continue o (i -> Eff effs (Status effs o i a))
 
-runC :: Eff (Yield a b ': effs) w -> Eff effs (Status effs a b w)
-runC = handleRelay (return . Done) handler
-	where
-	handler :: Yield a b c ->
-		(c -> Eff effs (Status effs a b d)) ->
-		Eff effs (Status effs a b d)
-	handler (Yield a k) arr = return . Continue a $ arr . k
+runC :: Eff (Yield o i ': effs) a -> Eff effs (Status effs o i a)
+runC = handleRelay (return . Done)
+	$ \(Yield o k) -> return . Continue o . (. k)
