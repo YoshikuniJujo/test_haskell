@@ -32,4 +32,4 @@ q `qApp` x = case tviewl q of
 
 qComp :: FTCQueue (Freer t) a b ->
 	(Freer t b -> Freer t' c) -> a -> Freer t' c
-qComp g h a = h $ qApp g a
+qComp = flip (.) . qApp
