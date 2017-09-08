@@ -4,18 +4,19 @@
 
 module Freer (Freer(..)) where
 
-import Control.Monad
+import Control.Monad ((>=>))
 
-data Freer f a = Pure a | forall x . Join (f x) (x -> Freer f a)
+data Freer t a = Pure a | forall x . Join (t x) (x -> Freer t a)
 
 instance Functor (Freer f) where
-	fmap = (=<<) . (return .)
+	fmap f (Pure x) = Pure $ f x
+	fmap f (Join tx k) = Join tx $ k >=> Pure . f
 
 instance Applicative (Freer f) where
-	pure = return
-	mf <*> mx = do f <- mf; x <- mx; return $ f x
+	pure = Pure
+	Pure f <*> m = f <$> m
+	Join tx q <*> m = Join tx $ q >=> (<$> m)
 
 instance Monad (Freer f) where
-	return = Pure
 	Pure x >>= f = f x
-	Join fa k >>= f = Join fa $ k >=> f
+	Join tx k >>= f = Join tx $ k >=> f
