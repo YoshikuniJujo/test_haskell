@@ -1,19 +1,19 @@
-{-# LANGUAGE GADTs #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module MyEff.StateRW where
+module MyEff.StateRW (Reader, Writer, ask, tell, modify, runStateR) where
 
-import MyEff.Internal
-import MyEff.Reader.Internal
-import MyEff.Writer.Internal
+import MyEff.Internal (Eff, Member, Freer(..), tsingleton, qComp, decomp)
+import MyEff.Reader.Internal (Reader(..), ask)
+import MyEff.Writer.Internal (Writer(..), tell)
 
 modify :: (Member (Reader s) effs, Member (Writer s) effs) =>
 	(s -> s) -> Eff effs ()
-modify f = tell . f =<< ask
+modify = (=<< ask) . (tell .)
 
 runStateR :: Eff (Writer s ': Reader s ': effs) a -> s -> Eff effs (a, s)
 runStateR = flip loop
