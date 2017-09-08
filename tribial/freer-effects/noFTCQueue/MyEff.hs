@@ -5,6 +5,8 @@
 
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
+module MyEff where
+
 import Control.Arrow
 import Data.Monoid
 
