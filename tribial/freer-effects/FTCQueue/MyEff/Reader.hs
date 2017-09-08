@@ -2,4 +2,4 @@
 
 module MyEff.Reader (Reader, runReader, ask) where
 
-import MyEff.Reader.Internal
+import MyEff.Reader.Internal (Reader, runReader, ask)

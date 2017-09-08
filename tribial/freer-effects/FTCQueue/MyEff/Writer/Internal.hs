@@ -18,6 +18,5 @@ tell :: Member (Writer w) effs => w -> Eff effs ()
 tell = send . Writer
 
 runWriter :: Monoid w => Eff (Writer w ': effs) a -> Eff effs (a, w)
-runWriter = handleRelay
-	(pure . (, mempty))
-	(\(Writer w) k -> second (w <>) <$> k ())
+runWriter = handleRelay (pure . (, mempty))
+	$ \(Writer w) f -> second (w <>) <$> f ()

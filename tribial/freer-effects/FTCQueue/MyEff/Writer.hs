@@ -2,4 +2,4 @@
 
 module MyEff.Writer (Writer, runWriter, tell) where
 
-import MyEff.Writer.Internal
+import MyEff.Writer.Internal (Writer, runWriter, tell)

@@ -14,3 +14,8 @@ TODO
 * FreerとOpenUnionをパッケージの外に公開しないので、
 	MyEff.Internal内のorphan instancesは問題ない
 * 全体のリファクタリング
+	+ MyEffより下
+	+ Reader.Internal, Reader, Writer.Internal, Writer
+	+ State, StateRW
+	+ NonDet, Exception
+	+ Coroutine, Fresh, Trace, Cut
