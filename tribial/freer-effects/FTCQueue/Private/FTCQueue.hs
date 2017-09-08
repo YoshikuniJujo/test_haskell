@@ -12,10 +12,10 @@ data FTCQueue t a b
 tsingleton :: (a -> t b) -> FTCQueue t a b
 tsingleton = Leaf
 
-(|>) :: FTCQueue t a x -> (x -> t b) -> FTCQueue t a b
+(|>) :: FTCQueue t a b -> (b -> t c) -> FTCQueue t a c
 (|>) = (. Leaf) . Node
 
-(><) :: FTCQueue t a x -> FTCQueue t x b -> FTCQueue t a b
+(><) :: FTCQueue t a b -> FTCQueue t b c -> FTCQueue t a c
 (><) = Node
 
 data ViewL t a b
