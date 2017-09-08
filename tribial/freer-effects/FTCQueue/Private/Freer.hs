@@ -15,8 +15,7 @@ instance Functor (Freer t) where
 
 instance Applicative (Freer t) where
 	pure = Pure
-	Pure f <*> Pure x = Pure $ f x
-	Pure f <*> Join tx q = Join tx $ q |> (Pure . f)
+	Pure f <*> m = f <$> m
 	Join tx q <*> m = Join tx $ q |> (<$> m)
 
 instance Monad (Freer t) where
