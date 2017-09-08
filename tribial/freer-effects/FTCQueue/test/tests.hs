@@ -5,10 +5,20 @@
 {-# OPTIONS_GHC -fno-warn-simplifiable-class-constraints #-}
 
 import MyEff
-import MyEff.Coroutine
-
+import MyEff.Reader
+import MyEff.Writer
 import MyEff.State
+import MyEff.Coroutine
 import MyEff.Trace
+
+sampleRWS :: Eff '[Reader Char, Writer String, State Integer] Char
+sampleRWS = do
+	tell "begin\n"
+	c <- ask
+	tell $ "c == " ++ [c] ++ "\n"
+	tell "end\n"
+	modify (+ (3 :: Integer))
+	ask
 
 sampleCoroutine :: Eff '[Yield String Int, IO] Integer
 sampleCoroutine = do
