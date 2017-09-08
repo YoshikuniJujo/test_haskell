@@ -9,8 +9,8 @@
 
 module MyEff.Internal (
 	Eff, Member, run, runM, send, handleRelay, handleRelayS, interpose,
-	Freer(..), NonDet(..),
-	tsingleton, qApp, qComp, prj, decomp, extract ) where
+	Freer(..), NonDet(..), tsingleton, qApp, qComp, prj, decomp, extract
+	) where
 
 import Control.Applicative (Alternative(..))
 import Control.Monad (MonadPlus(..))
@@ -32,14 +32,11 @@ runM (Join u q) = runM . (q `qApp`) =<< extract u
 send :: Member eff effs => eff a -> Eff effs a
 send = (`Join` tsingleton Pure) . inj
 
-handleRelay :: forall effs eff a b .
+handleRelay ::
 	(a -> Eff effs b) ->
 	(forall x . eff x -> (x -> Eff effs b) -> Eff effs b) ->
 	Eff (eff ': effs) a -> Eff effs b
-handleRelay ret h = handleRelayS () (const ret) h'
-	where
-	h' :: () -> (eff x) -> (() -> x -> Eff effs b) -> Eff effs b
-	h' () m k = h m (k ())
+handleRelay ret h = handleRelayS () (\() -> ret) (\() m k -> h m $ k ())
 
 handleRelayS ::
 	s -> (s -> a -> Eff effs b) ->
@@ -67,10 +64,8 @@ interpose ret h = loop
 
 data NonDet a where MZero :: NonDet a; MPlus :: NonDet Bool
 
-instance Member NonDet effs => Alternative (Eff effs) where
-	empty = mzero
-	(<|>) = mplus
+instance Member NonDet effs => MonadPlus (Eff effs)
 
-instance Member NonDet effs => MonadPlus (Eff effs) where
-	mzero = send MZero
-	mplus = ((send MPlus >>=) .) . bool
+instance Member NonDet effs => Alternative (Eff effs) where
+	empty = send MZero
+	(<|>) = ((send MPlus >>=) .) . bool
