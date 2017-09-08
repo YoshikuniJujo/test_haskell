@@ -18,9 +18,9 @@ fromList :: Member NonDet effs => [a] -> Eff effs a
 fromList = msum . map return
 
 makeChoiceA :: Alternative t => Eff (NonDet ': effs) a -> Eff effs (t a)
-makeChoiceA = handleRelay (return . pure) $ flip $ \k -> \case
+makeChoiceA = handleRelay (return . pure) $ flip $ \f -> \case
 	MZero -> return empty
-	MPlus -> (<|>) <$> k False <*> k True
+	MPlus -> (<|>) <$> f False <*> f True
 
 msplit :: Member NonDet effs => Eff effs a -> Eff effs (Maybe (a, Eff effs a))
 msplit = loop []
