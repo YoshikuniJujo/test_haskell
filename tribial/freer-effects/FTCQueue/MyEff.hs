@@ -4,4 +4,5 @@ module MyEff (
 	Eff, Member, run, runM, send, handleRelay, handleRelayS, interpose
 	) where
 
-import MyEff.Internal
+import MyEff.Internal (
+	Eff, Member, run, runM, send, handleRelay, handleRelayS, interpose )

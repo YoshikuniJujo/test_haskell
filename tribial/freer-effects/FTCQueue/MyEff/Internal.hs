@@ -7,7 +7,7 @@
 
 module MyEff.Internal (
 	Eff, Member, run, runM, send, handleRelay, handleRelayS, interpose,
-	Freer(..), decomp, qApp, qComp, tsingleton, prj, extract ) where
+	Freer(..), tsingleton, qApp, qComp, prj, decomp, extract ) where
 
 import Freer (Freer(..), tsingleton, qApp, qComp)
 import OpenUnion (Union, Member, inj, prj, decomp, extract)
@@ -42,16 +42,16 @@ handleRelayS s0 ret h = loop s0
 		Join u q -> case decomp u of
 			Right tx -> h s tx f
 			Left u' -> Join u' . tsingleton $ f s
-			where f = (. (q `qApp`)) . loop
+			where f = (q `qComp`) . loop
 
 interpose :: Member eff effs =>
 	(a -> Eff effs b) ->
-	(forall v . eff v -> (v -> Eff effs b) -> Eff effs b) ->
+	(forall x . eff x -> (x -> Eff effs b) -> Eff effs b) ->
 	Eff effs a -> Eff effs b
 interpose ret h = loop
 	where loop = \case
 		Pure x -> ret x
 		Join u q -> case prj u of
-			Just x -> h x k
-			Nothing -> Join u $ tsingleton k
-			where k = q `qComp` loop
+			Just tx -> h tx f
+			Nothing -> Join u $ tsingleton f
+			where f = q `qComp` loop
