@@ -4,7 +4,7 @@
 
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module MyEff.Reader where
+module MyEff.Reader (Reader, ask, runReader) where
 
 import MyEff (Eff, Member, send, Freer(..), decomp)
 
