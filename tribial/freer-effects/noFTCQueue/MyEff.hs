@@ -9,19 +9,18 @@ module MyEff (
 	Freer(..), decomp
 	) where
 
-import Freer
-import OpenUnion
+import Freer (Freer(..))
+import OpenUnion (Union, Member, inj, decomp, extract)
 
 type Eff effs = Freer (Union effs)
 
 run :: Eff '[] a -> a
 run (Pure x) = x
-run _ = error "Internal:run This (E) should never happen"
+run _ = error "MyEff.run: This function can run only Pure"
 
 runM :: Monad m => Eff '[m] a -> m a
 runM (Pure x) = return x
-runM (Join u q) = case extract u of
-	mb -> mb >>= runM . q
+runM (Join u q) = runM . q =<< extract u
 
 send :: Member eff effs => eff a -> Eff effs a
-send t = Join (inj t) Pure
+send = (`Join` Pure) . inj
