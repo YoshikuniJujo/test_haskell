@@ -20,7 +20,7 @@ fromList = msum . map return
 makeChoiceA :: Alternative t => Eff (NonDet ': effs) a -> Eff effs (t a)
 makeChoiceA = handleRelay (return . pure) $ flip $ \k -> \case
 	MZero -> return empty
-	MPlus -> (<|>) <$> k True <*> k False
+	MPlus -> (<|>) <$> k False <*> k True
 
 msplit :: Member NonDet effs => Eff effs a -> Eff effs (Maybe (a, Eff effs a))
 msplit = loop []
@@ -30,5 +30,5 @@ msplit = loop []
 			Just MZero -> case jq of
 				[] -> return Nothing
 				(j : jq') -> loop jq' j
-			Just MPlus -> loop (q `qApp` False : jq) $ q `qApp` True
+			Just MPlus -> loop (q `qApp` True : jq) $ q `qApp` False
 			Nothing -> Join u . tsingleton $ q `qComp` loop jq

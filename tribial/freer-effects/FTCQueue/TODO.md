@@ -11,4 +11,6 @@ TODO
 * Cut, Fresh, NonDet, StateRW, Traceの実装
 * NonDetのorphan instanceの解決
 * MyEff.Internalのリファクタリング
+* FreerとOpenUnionをパッケージの外に公開しないので、
+	MyEff.Internal内のorphan instancesは問題ない
 * 全体のリファクタリング

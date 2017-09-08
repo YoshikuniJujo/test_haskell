@@ -5,14 +5,16 @@
 
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 {-# OPTIONS_GHC -fno-warn-simplifiable-class-constraints #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module MyEff.Internal (
 	Eff, Member, run, runM, send, handleRelay, handleRelayS, interpose,
 	Freer(..), NonDet(..),
 	tsingleton, qApp, qComp, prj, decomp, extract ) where
 
-import Control.Applicative
-import Control.Monad
+import Control.Applicative (Alternative(..))
+import Control.Monad (MonadPlus(..))
+import Data.Bool (bool)
 
 import Freer (Freer(..), tsingleton, qApp, qComp)
 import OpenUnion (Union, Member, inj, prj, decomp, extract)
@@ -63,9 +65,7 @@ interpose ret h = loop
 			Nothing -> Join u $ tsingleton f
 			where f = q `qComp` loop
 
-data NonDet a where
-	MZero :: NonDet a
-	MPlus :: NonDet Bool
+data NonDet a where MZero :: NonDet a; MPlus :: NonDet Bool
 
 instance Member NonDet effs => Alternative (Eff effs) where
 	empty = mzero
@@ -73,4 +73,4 @@ instance Member NonDet effs => Alternative (Eff effs) where
 
 instance Member NonDet effs => MonadPlus (Eff effs) where
 	mzero = send MZero
-	mplus m1 m2 = send MPlus >>= \x -> if x then m1 else m2
+	mplus = ((send MPlus >>=) .) . bool
