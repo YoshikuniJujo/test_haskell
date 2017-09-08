@@ -8,3 +8,4 @@ import MyEff.NonDet
 import MyEff.Coroutine
 import MyEff.Cut
 import MyEff.Fresh
+import MyEff.Trace

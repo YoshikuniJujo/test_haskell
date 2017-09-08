@@ -7,6 +7,9 @@
 import MyEff
 import MyEff.Coroutine
 
+import MyEff.State
+import MyEff.Trace
+
 sampleCoroutine :: Eff '[Yield String Int, IO] Integer
 sampleCoroutine = do
 	s <- yield "hello" $ concat . (`replicate` "world")
@@ -28,3 +31,15 @@ runS (Continue x s) (i : is) = do
 	send . putStrLn $ "OUT: " ++ show x
 	(`runS` is) =<< s i
 runS _ _ = error "tarinai"
+
+sampleTrace :: Eff '[State Integer, Trace] Integer
+sampleTrace = do
+	modify ((* 3) :: Integer -> Integer)
+	get >>= trace . ("state: " ++) . (show :: Integer -> String)
+	modify ((* 100) :: Integer -> Integer)
+	get >>= trace . ("state: " ++) . (show :: Integer -> String)
+	x <- get
+	trace $ "x = " ++ show x
+	modify ((* 10001) :: Integer -> Integer)
+	get >>= trace . ("state: " ++) . (show :: Integer -> String)
+	return x

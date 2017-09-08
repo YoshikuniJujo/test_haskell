@@ -7,7 +7,7 @@
 
 module MyEff.Internal (
 	Eff, Member, run, runM, send, handleRelay, handleRelayS, interpose,
-	Freer(..), decomp, qApp, qComp, tsingleton, prj ) where
+	Freer(..), decomp, qApp, qComp, tsingleton, prj, extract ) where
 
 import Freer (Freer(..), tsingleton, qApp, qComp)
 import OpenUnion (Union, Member, inj, prj, decomp, extract)
