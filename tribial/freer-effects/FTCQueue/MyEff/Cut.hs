@@ -3,10 +3,10 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 {-# OPTIONS_GHC -fno-warn-simplifiable-class-constraints #-}
 
-module MyEff.Cut where
+module MyEff.Cut (CutFalse, cutFalse) where
 
-import MyEff
-import MyEff.Exception
+import MyEff (Eff, Member)
+import MyEff.Exception (Exc, throwError)
 
 data CutFalse = CutFalse
 

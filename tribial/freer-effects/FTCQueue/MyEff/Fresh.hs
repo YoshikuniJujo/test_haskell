@@ -4,9 +4,9 @@
 
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module MyEff.Fresh where
+module MyEff.Fresh (Fresh, runFresh', fresh)  where
 
-import MyEff
+import MyEff (Eff, Member, send, handleRelayS)
 
 data Fresh a where Fresh :: Fresh Int
 
@@ -14,5 +14,5 @@ fresh :: Member Fresh effs => Eff effs Int
 fresh = send Fresh
 
 runFresh' :: Eff (Fresh ': effs) a -> Int -> Eff effs a
-runFresh' m s =
-	handleRelayS s (\_s a -> pure a) (\s' Fresh k -> (k $! s' + 1) s') m
+runFresh' m s0 =
+	handleRelayS s0 (const pure) (\s Fresh k -> (k $! s + 1) s) m
