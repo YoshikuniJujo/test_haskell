@@ -14,8 +14,8 @@ throwError :: Member (Exc e) effs => e -> Eff effs a
 throwError = send . Exc
 
 runError :: Eff (Exc e ': effs) a -> Eff effs (Either e a)
-runError = handleRelay (pure . Right) $ \(Exc e) _ -> pure $ Left e
+runError = handleRelay (pure . Right) $ \(Exc e) _f -> pure $ Left e
 
 catchError :: Member (Exc e) effs =>
 	Eff effs a -> (e -> Eff effs a) -> Eff effs a
-m `catchError` handle = interpose pure (\(Exc e) _ -> handle e) m
+m `catchError` handle = interpose pure (\(Exc e) _f -> handle e) m
