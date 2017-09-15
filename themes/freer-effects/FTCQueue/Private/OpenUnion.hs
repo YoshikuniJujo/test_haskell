@@ -1,8 +1,6 @@
 {-# LANGUAGE ExistentialQuantification, ScopedTypeVariables #-}
 {-# LANGUAGE KindSignatures, DataKinds, TypeOperators #-}
-{-# LANGUAGE
-	MultiParamTypeClasses,
-	FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
 
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
