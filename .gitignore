@@ -305,3 +305,5 @@ a.out
 *.dyn_o
 bin/
 tmp.txt
+
+.txt/
