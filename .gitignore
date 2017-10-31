@@ -1,4 +1,5 @@
 .stack-work/
+.bin/
 
 /lojban/thsrs/Triv.hs
 /lojban/xiragan/Some.hs
