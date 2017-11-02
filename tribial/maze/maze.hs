@@ -7,22 +7,21 @@ import System.IO
 import System.Random
 import System.Environment
 
+point0 = 100
 width = 40
 height = 20
 
-field n = makeStart (
-	[],
-	take height . map ([] ,) . groupsN width $ randoms (mkStdGen n) )
+field = toField . space4 . take height . divide width . randoms . mkStdGen
 	where
-	groupsN n [] = []
-	groupsN n xs = take n xs : groupsN n (drop n xs)
-	makeStart (as, (l, r) : bs) =
-		(as, (l, replicate 4 False ++ drop 4 r) : bs)
+	toField ls = ([], map ([] ,) ls)
+	space4 (l : ls) = (replicate 4 False ++ drop 4 l) : ls
+	divide n xs = take n xs : divide n (drop n xs)
 
-
-showField (as, (l0, _ : r0) : bs) = unlines $
-	map showLine (reverse as) ++ [showL l0 ++ "A" ++ showR r0] ++
-	map showLine bs ++ [replicate (width - 2) ' ' ++ "GOAL"]
+showField (t, (l, _ : r) : b) = unlines $
+	map showLine (reverse t) ++
+	[showL l ++ "A" ++ showR r] ++
+	map showLine b ++
+	[replicate (width - 2) ' ' ++ "GOAL"]
 	where
 	showLine (l, r) = showL l ++ showR r
 	showL = map (bool ' ' '*') . reverse
@@ -45,8 +44,6 @@ up f = upf f
 down f@(_, _ : (_, True : _) : _) = f
 down f = downf f
 
-mapT2 f (x, y) = (f x, f y)
-
 left f@(_, (True : _, _) : _) = f
 left f = leftf f
 
@@ -59,13 +56,15 @@ upf (a : as, bs) = (as, a : bs)
 downf f@(_, [h]) = f
 downf (as, h : bs) = (h : as, bs)
 
-leftf f = ($ f) . mapT2 . map $ \lr -> case lr of
-	([], rs) -> ([], rs)
-	(l : ls, rs) -> (ls, l : rs)
+leftf = mapT2 . map $ \lhr -> case lhr of
+	([], _) -> lhr
+	(l : ls, hrs) -> (ls, l : hrs)
 
-rightf f = ($ f) . mapT2 . map $ \lr -> case lr of
-	(ls, [h]) -> (ls, [h])
+rightf = mapT2 . map $ \lhr -> case lhr of
+	(_, [_]) -> lhr
 	(ls, h : rs) -> (h : ls, rs)
+
+mapT2 f (x, y) = (f x, f y)
 
 goal (_, [(_, [_])]) = True
 goal _ = False
@@ -73,25 +72,25 @@ goal _ = False
 main = do
 	n : _ <- getArgs
 	let f0 = field $ read n
-	print 100
+	print point0
 	putStr $ showField f0
-	noBuffering . loop (f0, 100) $ \(m0, p) -> do
+	noBuffering . loop (f0, point0) $ \(f, p) -> do
 		c <- getChar
 		putStrLn ""
 		case c of
 			'q' -> return Nothing
 			_ -> do	let	p' = if isUpper c then p - 10 else p
-					m = move c m0
+					f' = move c f
 				print p'
-				putStr $ showField m
-				case (goal m, p' <= 0) of
+				putStr $ showField f'
+				case (goal f', p' <= 0) of
 					(_, True) -> do
 						putStrLn "YOU LOSE!"
 						return Nothing
 					(True, False) ->do
 						putStrLn "YOU WIN!"
 						return Nothing
-					(False, False) -> return $ Just (m, p')
+					(False, False) -> return $ Just (f', p')
 
 noBuffering act = do
 	bi <- hGetBuffering stdin
@@ -102,8 +101,8 @@ noBuffering act = do
 	hSetBuffering stdin bi
 	hSetBuffering stdout bo
 
-loop s0 act = do
-	ms1 <- act s0
-	case ms1 of
-		Just s1 -> loop s1 act
+loop s act = do
+	ms' <- act s
+	case ms' of
+		Just s' -> loop s' act
 		Nothing -> return ()
