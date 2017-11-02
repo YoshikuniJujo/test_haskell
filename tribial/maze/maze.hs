@@ -5,6 +5,7 @@ import Data.Bool
 import Data.Char
 import System.IO
 import System.Random
+import System.Environment
 
 width = 40
 height = 20
@@ -12,10 +13,10 @@ height = 20
 groupsN n [] = []
 groupsN n xs = take n xs : groupsN n (drop n xs)
 
-field :: ([([Bool], [Bool])], [([Bool], [Bool])])
-field = makeStart (
+-- field :: ([([Bool], [Bool])], [([Bool], [Bool])])
+field n = makeStart (
 	[],
-	take height . map ([] ,) . groupsN width $ randoms (mkStdGen 8) )
+	take height . map ([] ,) . groupsN width $ randoms (mkStdGen n) )
 
 makeStart :: ([([Bool], [Bool])], [([Bool], [Bool])]) ->
 	([([Bool], [Bool])], [([Bool], [Bool])])
@@ -75,23 +76,28 @@ move c f = case c of
 goal (_, [(_, [_])]) = True
 goal _ = False
 
-main = noBuffering . loop (field, 100) $ \(m0, p) -> do
-	c <- getChar
-	putStrLn ""
-	case c of
-		'q' -> return Nothing
-		_ -> do	let	p' = if isUpper c then p - 10 else p
-				m = move c m0
-			print p'
-			putStr $ showField m
-			case (goal m, p' <= 0) of
-				(_, True) -> do
-					putStrLn "YOU LOSE!"
-					return Nothing
-				(True, False) ->do
-					putStrLn "YOU WIN!"
-					return Nothing
-				(False, False) -> return $ Just (m, p')
+main = do
+	n : _ <- getArgs
+	let f0 = field $ read n
+	print 100
+	putStr $ showField f0
+	noBuffering . loop (f0, 100) $ \(m0, p) -> do
+		c <- getChar
+		putStrLn ""
+		case c of
+			'q' -> return Nothing
+			_ -> do	let	p' = if isUpper c then p - 10 else p
+					m = move c m0
+				print p'
+				putStr $ showField m
+				case (goal m, p' <= 0) of
+					(_, True) -> do
+						putStrLn "YOU LOSE!"
+						return Nothing
+					(True, False) ->do
+						putStrLn "YOU WIN!"
+						return Nothing
+					(False, False) -> return $ Just (m, p')
 
 main' = noBuffering . loop (0, 0) $ \(x0, y0) -> do
 	c <- getChar
