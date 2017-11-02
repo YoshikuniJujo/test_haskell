@@ -10,42 +10,48 @@ import System.Environment
 width = 40
 height = 20
 
-groupsN n [] = []
-groupsN n xs = take n xs : groupsN n (drop n xs)
-
 field n = makeStart (
 	[],
 	take height . map ([] ,) . groupsN width $ randoms (mkStdGen n) )
+	where
+	groupsN n [] = []
+	groupsN n xs = take n xs : groupsN n (drop n xs)
+	makeStart (as, (l, r) : bs) =
+		(as, (l, replicate 4 False ++ drop 4 r) : bs)
 
-makeStart :: ([([Bool], [Bool])], [([Bool], [Bool])]) ->
-	([([Bool], [Bool])], [([Bool], [Bool])])
-makeStart (as, (l, r) : bs) = (as, (l, replicate 4 False ++ drop 4 r) : bs)
 
 showField (as, (l0, _ : r0) : bs) = unlines $
-	map (map (bool ' ' '*') . (\(l, r) -> reverse l ++ r)) (reverse as) ++
-	[map (bool ' ' '*') (reverse l0) ++ "A" ++ map (bool ' ' '*') r0] ++
-	map (map (bool ' ' '*') . (\(l, r) -> reverse l ++ r)) bs ++
-	[replicate (width - 2) ' ' ++ "GOAL"]
+	map showLine (reverse as) ++ [showL l0 ++ "A" ++ showR r0] ++
+	map showLine bs ++ [replicate (width - 2) ' ' ++ "GOAL"]
+	where
+	showLine (l, r) = showL l ++ showR r
+	showL = map (bool ' ' '*') . reverse
+	showR = map (bool ' ' '*')
 
-up f@([], _) = f
+move c f = case c of
+	'h' -> left f
+	'j' -> down f
+	'k' -> up f
+	'l' -> right f
+	'H' -> leftf f
+	'J' -> downf f
+	'K' -> upf f
+	'L' -> rightf f
+	_ -> f
+
 up f@((_, True : _) : _, _) = f
-up (a : as, bs) = (as, a : bs)
+up f = upf f
 
-down f@(_, [h]) = f
 down f@(_, _ : (_, True : _) : _) = f
-down (as, h : bs) = (h : as, bs)
+down f = downf f
 
 mapT2 f (x, y) = (f x, f y)
 
 left f@(_, (True : _, _) : _) = f
-left f = ($ f) . mapT2 . map $ \lr -> case lr of
-	([], rs) -> ([], rs)
-	(l : ls, rs) -> (ls, l : rs)
+left f = leftf f
 
 right f@(_, (_, _ : True : _) : _) = f
-right f = ($ f) . mapT2 . map $ \lr -> case lr of
-	(ls, [h]) -> (ls, [h])
-	(ls, h : rs) -> (h : ls, rs)
+right f = rightf f
 
 upf f@([], _) = f
 upf (a : as, bs) = (as, a : bs)
@@ -60,17 +66,6 @@ leftf f = ($ f) . mapT2 . map $ \lr -> case lr of
 rightf f = ($ f) . mapT2 . map $ \lr -> case lr of
 	(ls, [h]) -> (ls, [h])
 	(ls, h : rs) -> (h : ls, rs)
-
-move c f = case c of
-	'h' -> left f
-	'j' -> down f
-	'k' -> up f
-	'l' -> right f
-	'H' -> leftf f
-	'J' -> downf f
-	'K' -> upf f
-	'L' -> rightf f
-	_ -> f
 
 goal (_, [(_, [_])]) = True
 goal _ = False
