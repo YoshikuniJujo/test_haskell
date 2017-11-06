@@ -1,5 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-tabs -fwarn-unused-binds #-}
 
+import Data.Bool
 import Data.Char
 import System.IO
 import System.Environment
@@ -19,20 +20,22 @@ move c f = case c of
 	'L' -> rightf f
 	_ -> f
 
+display p f = do
+	putStrLn ""
+	print p
+	putStr $ showField f
+
 main = do
 	n : _ <- getArgs
 	let f0 = field $ read n
-	print point0
-	putStr $ showField f0
-	noBuffering . loop (f0, point0) $ \(f, p) -> do
+	display point0 f0
+	noBuffering . loop (point0, f0) $ \(p, f) -> do
 		c <- getChar
-		putStrLn ""
 		case c of
 			'q' -> return Nothing
-			_ -> do	let	p' = if isUpper c then p - 10 else p
+			_ -> do	let	p' = bool p (p - 10) (isUpper c)
 					f' = move c f
-				print p'
-				putStr $ showField f'
+				display p' f'
 				case (goal f', p' <= 0) of
 					(_, True) -> do
 						putStrLn "YOU LOSE!"
@@ -40,7 +43,7 @@ main = do
 					(True, False) ->do
 						putStrLn "YOU WIN!"
 						return Nothing
-					(False, False) -> return $ Just (f', p')
+					(False, False) -> return $ Just (p', f')
 
 noBuffering act = do
 	bi <- hGetBuffering stdin
