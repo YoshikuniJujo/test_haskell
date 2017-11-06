@@ -31,18 +31,6 @@ showField (t, (l, _ : r) : b) = unlines $
 goal (_, [(_, [_])]) = True
 goal _ = False
 
-up f@((_, True : _) : _, _) = f
-up f = upf f
-
-down f@(_, _ : (_, True : _) : _) = f
-down f = downf f
-
-left f@(_, (True : _, _) : _) = f
-left f = leftf f
-
-right f@(_, (_, _ : True : _) : _) = f
-right f = rightf f
-
 upf f@([], _) = f
 upf (a : as, bs) = (as, a : bs)
 
@@ -58,3 +46,8 @@ rightf = mapT2 . map $ \lhr -> case lhr of
 	(ls, h : rs) -> (h : ls, rs)
 
 mapT2 f (x, y) = (f x, f y)
+
+[up, down, left, right] = map check [upf, downf, leftf, rightf]
+	where check m f = case m f of
+		(_, (_, True : _) : _) -> f
+		f' -> f'
