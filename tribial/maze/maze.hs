@@ -33,26 +33,27 @@ main = do
 		c <- getChar
 		case c of
 			'q' -> return Nothing
-			_ -> do	let	p' = bool p (p - 10) (isUpper c)
-					f' = move c f
-				display p' f'
-				case (goal f', p' <= 0) of
-					(_, True) -> do
-						putStrLn "YOU LOSE!"
-						return Nothing
-					(True, False) ->do
-						putStrLn "YOU WIN!"
-						return Nothing
-					(False, False) -> return $ Just (p', f')
+			_ -> next c p f
+
+next c p f = do
+	display p' f'
+	case (goal f', p' <= 0) of
+		(_, True) -> do
+			putStrLn "YOU LOSE!"
+			return Nothing
+		(True, False) -> do
+			putStrLn "YOU WIN!"
+			return Nothing
+		(False, False) -> return $ Just (p', f')
+	where
+	p' = bool p (p - 10) (isUpper c)
+	f' = move c f
 
 noBuffering act = do
 	bi <- hGetBuffering stdin
-	bo <- hGetBuffering stdout
 	hSetBuffering stdin NoBuffering
-	hSetBuffering stdout NoBuffering
 	act
 	hSetBuffering stdin bi
-	hSetBuffering stdout bo
 
 loop s act = do
 	ms' <- act s
