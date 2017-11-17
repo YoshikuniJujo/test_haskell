@@ -12,10 +12,10 @@ import System.Random
 width = 40
 height = 20
 
-field = toField . space4 . take height . divide width . randoms . mkStdGen
+field = toField . take height . divide width
+	. (replicate 4 False ++) . randoms . mkStdGen
 	where
 	toField ls = ([], map ([] ,) ls)
-	space4 (l : ls) = (replicate 4 False ++ drop 4 l) : ls
 	divide n xs = take n xs : divide n (drop n xs)
 
 showField (t, (l, _ : r) : b) = unlines $
