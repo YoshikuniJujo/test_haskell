@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE GADTs, RankNTypes, ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
-{-# LANGUAGE TypeSynonymInstances, FlexibleInstances, FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances, FlexibleContexts #-}
 
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 {-# OPTIONS_GHC -fno-warn-simplifiable-class-constraints #-}
