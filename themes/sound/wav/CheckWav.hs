@@ -3,64 +3,70 @@
 
 module CheckWav (wavData1, wavData2) where
 
-import Control.Arrow
 import Control.Monad.State
-import Data.Maybe
+import Data.Bool
+import Data.Either
 import Data.Bits
 import Data.Word
 import Data.Int
 import qualified Data.ByteString as BS
-import qualified Data.ByteString.Char8 as BSC
 import System.IO.Unsafe
 
 sample1, sample2 :: BS.ByteString
 sample1 = unsafePerformIO $ BS.readFile "Noise.wav"
 sample2 = unsafePerformIO $ BS.readFile "Front_Center.wav"
 
-type WavM = StateT BS.ByteString Maybe
+type WavM = StateT BS.ByteString (Either Err)
+
+data Err = Eof | Err String deriving Show
 
 data Wav = Wav {
-	chunkId :: BS.ByteString,
-	chunkSize :: Word32,
-	format :: BS.ByteString,
-	subchunk1Id :: BS.ByteString,
-	subchunk1Size :: Word32,
-	audioFormat :: AudioFormat,
 	numChannels :: Word16,
 	sampleRate :: Word32,
-	byteRate :: Word32,
-	blockAlign :: Word16,
 	bitsPerSample :: Word16,
-	subchunk2Id :: BS.ByteString,
-	subchunk2Size :: Word32,
-	rest :: BS.ByteString }
+	wavData :: BS.ByteString }
 
 instance Show Wav where
 	show w = "(Wav { " ++
-		"chunkId = " ++ show (chunkId w) ++ ", " ++
-		"chunkSize = " ++ show (chunkSize w) ++ ", " ++
-		"subchunk1Id = " ++ show (subchunk1Id w) ++ ", " ++
-		"subchunk1Size = " ++ show (subchunk1Size w) ++ ", " ++
-		"audioFormat = " ++ show (audioFormat w) ++ ", " ++
 		"numChannels = " ++ show (numChannels w) ++ ", " ++
 		"sampleRate = " ++ show (sampleRate w) ++ ", " ++
-		"byteRate = " ++ show (byteRate w) ++ ", " ++
-		"blockAlign = " ++ show (blockAlign w) ++ ", " ++
 		"bitsPerSample = " ++ show (bitsPerSample w) ++ ", " ++
-		"subchunk2Id = " ++ show (subchunk2Id w) ++ ", " ++
-		"subchunk2Size = " ++ show (subchunk2Size w) ++ ", " ++
-		"... }"
+		"wavData = " ++ init (show . BS.take 256 $ wavData w) ++
+		"...\" }"
 
-data AudioFormat = Pcm | OtherAudioFormat Word16 deriving Show
+check :: Bool -> String -> Either Err ()
+check b e = bool (Left $ Err e) (return ()) b
+
+readWav :: BS.ByteString -> Word32 -> BS.ByteString -> BS.ByteString ->
+	Word32 -> AudioFormat -> Word16 -> Word32 -> Word32 -> Word16 ->
+	Word16 -> BS.ByteString -> BS.ByteString -> Either Err Wav
+readWav cid cs f sc1id sc1s af nc sr br ba bps sc2id r = do
+	check (cid == "RIFF") "readWav: ChunkId should be `RIFF'"
+	check (cs == sc2s + 36) $ "readWav: ChunkSize should be " ++
+		"Subchunk2Size + 36"
+	check (f == "WAVE") "readWav: Format should be `WAVE'"
+	check (sc1id == "fmt ") "readWav: Subchunk1Id should be `fmt '"
+	check (sc1s == 16) "readWav: Subchunk1Size should be 16"
+	check (af == Pcm) "readWav: AudioFormat should be 1 (PCM)"
+	check (br == sr * fromIntegral (nc * bps `div` 8)) $
+		"readWav ByteRate should be " ++
+			"SampleRate * NumChannels * BitsPerSample / 8"
+	check (ba == nc * bps `div` 8)
+		"readWav BlockAlign should be NumChannels * BitsPerSample / 8"
+	check (sc2id == "data") "readWav: Subchunk2Id should be `data'"
+	return $ Wav nc sr bps r
+	where
+	sc2s = fromIntegral $ BS.length r
+
+data AudioFormat = Pcm | OtherAudioFormat Word16 deriving (Show, Eq)
 
 readAudioFormat :: Word16 -> AudioFormat
 readAudioFormat = \case 1 -> Pcm; n -> OtherAudioFormat n
 
-toStateJust :: (s -> (a, s)) -> StateT s Maybe a
-toStateJust = StateT . (Just .)
-
 bytes :: Int -> WavM BS.ByteString
-bytes n = StateT $ \case "" -> Nothing; src -> Just $ BS.splitAt n src
+bytes n = StateT $ \case
+	"" -> Left Eof
+	src -> Right $ BS.splitAt n src
 
 littleNum :: (Bits a, Num a) => BS.ByteString -> a
 littleNum = ln . BS.unpack
@@ -107,8 +113,8 @@ getSubchunk2Id = bytes 4
 getSubchunk2Size :: WavM Word32
 getSubchunk2Size = littleNum <$> bytes 4
 
-analyze :: BS.ByteString -> Maybe Wav
-analyze src = ((uncurry ($)) <$>) . (`runStateT` src) $ Wav
+analyze :: BS.ByteString -> Either Err Wav
+analyze src = join . (`evalStateT` src) $ readWav
 	<$> getChunkId
 	<*> getChunkSize
 	<*> getFormat
@@ -121,12 +127,13 @@ analyze src = ((uncurry ($)) <$>) . (`runStateT` src) $ Wav
 	<*> getBlockAlign
 	<*> getBitsPerSample
 	<*> getSubchunk2Id
-	<*> getSubchunk2Size
+	<*> (getSubchunk2Size >>= bytes . fromIntegral)
 
-catchMaybe :: WavM a -> WavM (Maybe a)
-catchMaybe act = StateT $ \s -> case runStateT act s of
-	Just (x, s) -> Just (Just x, s)
-	Nothing -> Just (Nothing, s)
+catchEof :: WavM a -> WavM (Maybe a)
+catchEof act = StateT $ \s -> case runStateT act s of
+	Right (x, s') -> Right (Just x, s')
+	Left Eof -> Right (Nothing, s)
+	Left e -> Left e
 
 doWhile :: Monad m => m (Maybe a) -> m [a]
 doWhile act = do
@@ -136,12 +143,12 @@ doWhile act = do
 		Nothing -> return []
 
 analyzeData :: WavM [Int16]
-analyzeData = doWhile . catchMaybe $ littleNum <$> bytes 2
+analyzeData = doWhile . catchEof $ littleNum <$> bytes 2
 
 wavData1 :: [Int16]
-wavData1 = fromJust
-	$ fst <$> analyzeData `runStateT` rest (fromJust $ analyze sample1)
+wavData1 = fromRight []
+	$ fst <$> analyzeData `runStateT` wavData (fromRight undefined $ analyze sample1)
 
 wavData2 :: [Int16]
-wavData2 = fromJust
-	$ fst <$> analyzeData `runStateT` rest (fromJust $ analyze sample2)
+wavData2 = fromRight []
+	$ fst <$> analyzeData `runStateT` wavData (fromRight  undefined $ analyze sample2)
