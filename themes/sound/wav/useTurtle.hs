@@ -34,3 +34,35 @@ main2 = do
 points2 :: [(Double, Double)]
 points2 = [-250, -249.6 .. 250] `zip`
 	map ((/ 128) . fromIntegral) (drop 6500 wavData2)
+
+main3 :: IO ()
+main3 = do
+	f <- openField
+	onkeypress f (return . (/= 'q'))
+	t <- newTurtle f
+	penup t
+	uncurry (goto t) $ head points3
+	pendown t
+	mapM_ (uncurry $ goto t) $ tail points3
+	hideturtle t
+	waitField f
+
+points3 :: [(Double, Double)]
+points3 = [-250, -249.9 .. 250] `zip`
+	map ((/ 128) . fromIntegral) (drop 0 wavData3)
+
+main4 :: IO ()
+main4 = do
+	f <- openField
+	onkeypress f (return . (/= 'q'))
+	t <- newTurtle f
+	penup t
+	uncurry (goto t) $ head points4
+	pendown t
+	mapM_ (uncurry $ goto t) $ tail points4
+	hideturtle t
+	waitField f
+
+points4 :: [(Double, Double)]
+points4 = [-250, -249.91 .. 250] `zip`
+	map ((/ 128) . fromIntegral) (drop 0 wavData4)
