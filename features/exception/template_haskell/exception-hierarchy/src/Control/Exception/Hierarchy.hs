@@ -3,7 +3,7 @@
 module Control.Exception.Hierarchy (
 	ExceptionHierarchy(..), exceptionHierarchy ) where
 
-import Control.Applicative
+-- import Control.Applicative
 import Control.Exception
 import Data.Typeable
 import Data.Char
@@ -25,23 +25,31 @@ exception1 mc e c = (:)
 	<$> maybe (defInstException e) (`instException` e) mc
 	<*> if c then exceptionContainer e else return []
 
+myClassP :: Name -> [Q Type] -> Q Pred
+myClassP cla tys = do
+	tysl <- sequence tys
+	return (foldl AppT (ConT cla) tysl)
+
+myNotStrict :: Q Strict
+myNotStrict = bang noSourceUnpackedness noSourceStrictness
+
 exceptionContainer :: Name -> DecsQ
 exceptionContainer ec = sequence [
-	dataD (cxt []) he []
-		[forallC [PlainTV e] (cxt [classP ''Exception [varT e]]) $
-			normalC he [strictType notStrict (varT e)]]
-		[''Typeable],
+	dataD (cxt []) he [] Nothing
+		[forallC [PlainTV e] (cxt [myClassP ''Exception [varT e]]) $
+			normalC he [bangType myNotStrict (varT e)]]
+		[derivClause Nothing [conT ''Typeable]],
 	instanceD (cxt []) (conT ''Show `appT` conT he)
 		[funD 'showsPrec
 			[clause [varP d, conP he [varP e]]
 				(normalB $ varE 'showsPrec `appE` varE d `appE` varE e) []]],
-	sigD toEx . forallT [PlainTV e] (cxt [classP ''Exception [varT e]]) $
+	sigD toEx . forallT [PlainTV e] (cxt [myClassP ''Exception [varT e]]) $
 		varT e `arrT` conT ''SomeException,
 	valD (varP toEx)
 		(normalB $ infixE
 			(Just $ varE 'toException) (varE '(.)) (Just $ conE he))
 		[],
-	sigD fromEx . forallT [PlainTV e] (cxt [classP ''Exception [varT e]]) $
+	sigD fromEx . forallT [PlainTV e] (cxt [myClassP ''Exception [varT e]]) $
 		conT ''SomeException `arrT` (conT ''Maybe `appT` varT e),
 	funD fromEx [clause
 		[varP se]

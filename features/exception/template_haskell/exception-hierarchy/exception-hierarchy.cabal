@@ -31,5 +31,5 @@ source-repository this
 library
     hs-source-dirs: src
     exposed-modules: Control.Exception.Hierarchy
-    build-depends: base == 4.*, template-haskell >= 2.9 && < 2.11
+    build-depends: base == 4.*, template-haskell >= 2.12 && < 2.13
     ghc-options: -Wall -fno-warn-tabs
