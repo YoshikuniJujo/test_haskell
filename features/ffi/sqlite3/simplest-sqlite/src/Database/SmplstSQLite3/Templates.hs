@@ -2,18 +2,20 @@
 
 module Database.SmplstSQLite3.Templates (newException, mkSqliteThrow) where
 
-import Control.Applicative
 import Control.Exception
 import Data.Typeable
 import Data.Char
 import Language.Haskell.TH
 import Foreign.C.Types
 
+myNotStrict :: Q Strict
+myNotStrict = bang noSourceUnpackedness noSourceStrictness
+
 newException :: String -> DecQ
 newException e =
-	newtypeD (cxt []) (mkName e) []
-		(normalC (mkName e) [strictType notStrict (conT ''String)])
-		[''Typeable, ''Show]
+	newtypeD (cxt []) (mkName e) [] Nothing
+		(normalC (mkName e) [bangType myNotStrict (conT ''String)]) [
+			derivClause Nothing [conT ''Typeable, conT ''Show] ]
 
 sqliteThrowType :: DecQ
 sqliteThrowType = sigD (mkName "sqliteThrow") .

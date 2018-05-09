@@ -8,7 +8,6 @@ module Database.SmplstSQLite3 (
 	SQLite, Stmt, Result(..), Type(..), SQLiteException(..),
 	) where
 
-import Control.Applicative
 import Control.Monad
 import Control.Exception
 import qualified Data.ByteString as BS
