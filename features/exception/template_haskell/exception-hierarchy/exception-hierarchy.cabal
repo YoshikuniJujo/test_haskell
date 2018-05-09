@@ -2,7 +2,7 @@ build-type: Simple
 cabal-version: >= 1.8
 
 name: exception-hierarchy
-version: 0.1.0.0
+version: 0.1.0.1
 stability: Experimental
 author: Yoshikuni Jujo <PAF01143@nifty.ne.jp>
 maintainer: Yoshikuni Jujo <PAF01143@nifty.ne.jp>
@@ -31,5 +31,5 @@ source-repository this
 library
     hs-source-dirs: src
     exposed-modules: Control.Exception.Hierarchy
-    build-depends: base == 4.*, template-haskell >= 2.12 && < 2.13
+    build-depends: base == 4.*, template-haskell >= 2.12 && < 2.14
     ghc-options: -Wall -fno-warn-tabs
