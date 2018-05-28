@@ -1,11 +1,9 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-calc, calc' :: [(Bool, Integer)] -> Integer
-calc ((True, n) : bns) = n * calc bns
-calc ((_, n) : bns) = n + calc bns
-calc [] = 0
+import Hms
 
-calc1 :: (Bool, Integer) -> Integer -> Integer
-calc1 (True, n) m = n * m
-calc1 (_, n) m = n + m
-
-calc' = foldr calc1 0
+may :: [HM]
+may = [	"2:30", "0:45", "1:00", "0:45", "1:00", "2:45", "1:00", "1:00", "0:15",
+	"7:00", "2:30", "1:00"
+	]
