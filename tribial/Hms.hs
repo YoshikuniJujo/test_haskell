@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Hms (HM, sconcat) where
+module Hms (HM, sconcat, toHours) where
 
 import Data.Semigroup
 import Data.String
@@ -27,3 +27,6 @@ instance Num HM where
 	abs (HM h m) = HM (abs h) (abs m)
 	signum = undefined
 	fromInteger n = HM (fromInteger $ n `div` 60) (fromInteger $ n `mod` 60)
+
+toHours :: HM -> Double
+toHours (HM h m) = fromIntegral h + fromIntegral m / 60
