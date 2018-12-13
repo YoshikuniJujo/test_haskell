@@ -4,13 +4,16 @@
 module Main (main) where
 
 import Control.Exception
+import Data.List (intersect)
 import Data.Tree (Tree(..))
 import Data.Bool (bool)
 import System.IO (IOMode(..), stderr, openFile)
 import System.IO.Temp (withTempDirectory)
+import System.Environment (getArgs)
 import System.Directory (
 	doesDirectoryExist, doesFileExist,
 	getDirectoryContents, getCurrentDirectory, setCurrentDirectory )
+import System.FilePath ((</>))
 import Test.HUnit (Test(..), runTestText, putTextToHandle, assertEqual)
 
 import qualified Data.ByteString as BS
@@ -20,13 +23,21 @@ import Tar (tar, hUntar)
 -- MAIN FUNCTIONS
 
 main :: IO ()
-main = (() <$) . runTestText (putTextToHandle stderr False) $ TestList [
-	mkTest "files/tar/sample.tar",
-	mkTest "files/tar/simple.tar",
-	mkTest "files/tar/nested.tar",
-	mkTest "files/tar/simpleNested.tar",
-	mkTest "files/tar/longName.tar",
-	mkTest "files/tar/longDirAndFile.tar" ]
+main = do
+	args <- getArgs
+	(() <$) . runTestText (putTextToHandle stderr False)
+		. TestList $ selectTest args
+
+tarFiles :: [String]
+tarFiles = [
+	"sample.tar", "simple.tar", "nested.tar", "simpleNested.tar",
+	"longName.tar", "longDirAndFile.tar" ]
+
+selectTest :: [String] -> [Test]
+selectTest tfs = map (mkTest . ("files/tar" </>))
+	$ case tfs of
+		[] -> tarFiles
+		_ -> tfs `intersect` tarFiles
 
 mkTest :: FilePath -> Test
 mkTest tf = TestCase $ do
