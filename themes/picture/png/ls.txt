@@ -1,0 +1,9 @@
+png-files/mini_cat.png
+png-files/mini_catface.png
+png-files/mini_dog.png
+png-files/mini_goron.png
+png-files/mini_hellowin.png
+png-files/mini_lookup.png
+png-files/mini_panda.png
+png-files/mini_suika.png
+png-files/mini_tux_mono.png
