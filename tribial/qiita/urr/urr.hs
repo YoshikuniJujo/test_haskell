@@ -73,3 +73,56 @@ fromWholeInteger = fromValue Nothing
 	integerSplitter
 	(\n -> maybe (error "Oops!") (n <))
 	Nothing Nothing
+
+data NP = N | P deriving Show
+
+fromNP :: Num a => NP -> a
+fromNP N = - 1
+fromNP P = 1
+
+data UrrRange = NInf | Zero | PInf | Exp NP Int | Raw Rational deriving Show
+
+lessThan :: (Ord a, Fractional a) => a -> UrrRange -> Bool
+lessThan _ NInf = False
+lessThan x Zero = x < 0
+lessThan _ PInf = True
+lessThan x (Exp np n) = x < fromNP np * 2 ^^ n
+lessThan x (Raw r) = x < fromRational r
+
+getRational :: UrrRange -> Rational
+getRational Zero = 0
+getRational (Exp np n) = fromNP np * 2 ^^ n
+getRational (Raw r) = r
+getRational _ = error "Oops!"
+
+urrSplitter :: UrrRange -> UrrRange -> UrrRange
+urrSplitter NInf PInf = Zero
+urrSplitter NInf Zero = Exp N 0
+urrSplitter Zero PInf = Exp P 0
+urrSplitter NInf (Exp N 0) = Exp N 1
+urrSplitter (Exp N 0) Zero = Exp N (- 1)
+urrSplitter Zero (Exp P 0) = Exp P (- 1)
+urrSplitter (Exp P 0) PInf = Exp P 1
+urrSplitter NInf (Exp N mx) = Exp N (2 * mx)
+urrSplitter (Exp N mn) Zero = Exp N (2 * mn)
+urrSplitter Zero (Exp P mx) = Exp P (2 * mx)
+urrSplitter (Exp P mn) PInf = Exp P (2 * mn)
+urrSplitter (Exp np mn) (Exp _np mx)
+	| mn + 1 < mx = Exp np ((mn + mx) `div` 2)
+urrSplitter mn mx = Raw $ (getRational mn + getRational mx) / 2
+
+fromUrr :: Fractional a => [Bit] -> a
+fromUrr = toValue urrSplitter (fromRational . getRational) NInf PInf
+	. heading flipBit
+
+toUrr :: (Ord a, Fractional a) => Word -> a -> [Bit]
+toUrr ln = heading flipBit
+	. fromValue (Just ln) (\_ _ -> False) urrSplitter lessThan NInf PInf
+
+flipBit :: Bit -> Bit
+flipBit O = I
+flipBit I = O
+
+heading :: (a -> a) -> [a] -> [a]
+heading f (x : xs) = f x : xs
+heading _ _ = error "Oops!"
