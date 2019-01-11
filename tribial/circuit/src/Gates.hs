@@ -3,6 +3,10 @@
 {-# LANGUAGE UndecidableInstances, FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
+module Gates (
+	Gates, Id,
+	mkAndGate, mkOrGate, mkNotGate ) where
+
 import Data.Word
 
 import GHC.TypeNats
@@ -46,16 +50,16 @@ type Id = Word8
 data Gate (i :: Nat) (o :: Nat) = Gate (Tuple (i + o) Id) (Fun i o Bit Bit)
 
 data Gates (i :: Nat) (o :: Nat) where
-	Wire :: Gate 1 1 -> Gates 1 1
-	MoreO :: Gate 1 o -> Gates 1 o
-	NoMoreO :: Gates 1 (o - 1) -> Gates 1 o
-	MoreI :: Gate i o -> Gates i o
+	Gates :: Gate i o -> Gates i o
+--	MoreO :: Gates i o -> Gates i o
+	NoMoreO :: Gates i (o - 1) -> Gates i o
+	MoreI :: Gates i o -> Gates i o
 	NoMoreI :: Gates (i - 1) o -> Gates i o
 
 {-
 data family Gates (i :: Nat) (o :: Nat) where
-	Gates 1 1 = Wire (Gate 1 1)
-	Gates 1 o = MoreO (Gate 1 o) | NoMoreO (Gates 1 (o - 1))
+	Gates 1 1 = Gates (Gate 1 1)
+	Gates i o = MoreO (Gate i o) | NoMoreO (Gates i (o - 1))
 	Gates i o = MoreI (Gate i o) | NoMoreI (Gates (i - 1) o)
 -}
 
@@ -63,9 +67,11 @@ type family Fun (i :: Nat) (o :: Nat) a b where
 	Fun 0 o a b = Tuple o b
 	Fun i o a b = a -> Fun (i - 1) o a b
 
-mkAndGate, mkOrGate :: Id -> Id -> Id -> Gates 2 1
-mkAndGate i1 i2 o = MoreI $ Gate (i1 :+ i2 :+ o :+ E) $ ((:+ E) .) . andB
-mkOrGate i1 i2 o = MoreI $ Gate (i1 :+ i2 :+ o :+ E) $ ((:+ E) .) . orB
+mkAndGate, mkOrGate :: Id -> Id -> Id -> Gates 2 2
+mkAndGate i1 i2 o =
+	MoreI . NoMoreO . Gates $ Gate (i1 :+ i2 :+ o :+ E) $ ((:+ E) .) . andB
+mkOrGate i1 i2 o =
+	MoreI . NoMoreO . Gates $ Gate (i1 :+ i2 :+ o :+ E) $ ((:+ E) .) . orB
 
-mkNotGate :: Id -> Id -> Gates 2 1
-mkNotGate i o = NoMoreI . Wire $ Gate (i :+ o :+ E) $ (:+ E) . notB
+mkNotGate :: Id -> Id -> Gates 2 2
+mkNotGate i o = NoMoreI . NoMoreO . Gates $ Gate (i :+ o :+ E) $ (:+ E) . notB
