@@ -39,5 +39,13 @@ createAndGate = do
 	modify . addGate $ mkAndGate in1 in2 out
 	return ws
 
--- setBit :: Id -> Bit -> CircuitMonad ()
--- setBit
+createNotGate :: CircuitMonad (Id, Id)
+createNotGate = do
+	ws@(in1, out) <- (\[i, o] -> (i, o)) <$> replicateM 2 newId
+	modify . addGate $ mkNotGate in1 out
+	return ws
+
+setBit :: Id -> Bit -> CircuitMonad ()
+setBit w b = do
+	tell $ "set " ++ show w ++ " " ++
+		(case b of O -> "off"; I -> "on") ++ ".\n"
