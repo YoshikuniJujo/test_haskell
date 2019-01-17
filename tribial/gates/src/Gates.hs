@@ -46,8 +46,6 @@ calcGateResult cs (OrGate iw1 iw2) =
 	(orBit (fromJust $ lookup iw1 cs) (fromJust $ lookup iw2 cs), Nothing)
 calcGateResult cs (NotGate niw) =
 	(flipBit . fromJust $ lookup niw cs, Nothing)
-calcGateResult cs (XorGate iw1 iw2) =
-	(xorBit (fromJust $ lookup iw1 cs) (fromJust $ lookup iw2 cs), Nothing)
 calcGateResult cs (Delay [] iw) = (fromJust $ lookup iw cs, Nothing)
 calcGateResult cs (Delay (b : bs) iw) =
 	(b, Just $ Delay (bs ++ [fromJust $ lookup iw cs]) iw)
@@ -68,16 +66,12 @@ flipBit :: Bit -> Bit
 flipBit O = I
 flipBit I = O
 
-andBit, orBit, xorBit :: Bit -> Bit -> Bit
+andBit, orBit :: Bit -> Bit -> Bit
 andBit I I = I
 andBit _ _ = O
 
 orBit O O = O
 orBit _ _ = I
-
-xorBit b1 b2
-	| b1 == b2 = O
-	| otherwise = I
 
 data Circuit = Circuit {
 	wireConnection :: [(InWire, OutWire)],
@@ -94,7 +88,6 @@ getOutWire ow Circuit {
 
 data BasicGate
 	= AndGate InWire InWire | OrGate InWire InWire | NotGate InWire
-	| XorGate InWire InWire
 	| Delay [Bit] InWire
 	deriving Show
 
@@ -102,7 +95,6 @@ getGateWires :: BasicGate -> [InWire]
 getGateWires (AndGate iw1 iw2) = [iw1, iw2]
 getGateWires (OrGate iw1 iw2) = [iw1, iw2]
 getGateWires (NotGate iw) = [iw]
-getGateWires (XorGate iw1 iw2) = [iw1, iw2]
 getGateWires (Delay _ iw) = [iw]
 
 data InWire = InWire Word32 deriving (Show, Eq)
@@ -143,8 +135,7 @@ createOutWire = OutWire <$> getModify wireNum succWireNum
 connectWire :: OutWire -> InWire -> CreateCircuit ()
 connectWire ow iw = modify $ addWireConnection ow iw
 
-createAndGate, createOrGate, createXorGate ::
-	CreateCircuit (InWire, InWire, OutWire)
+createAndGate, createOrGate :: CreateCircuit (InWire, InWire, OutWire)
 createAndGate = do
 	iw1 <- createInWire
 	iw2 <- createInWire
@@ -157,13 +148,6 @@ createOrGate = do
 	iw2 <- createInWire
 	ow <- createOutWire
 	modify $ addBasicGate (OrGate iw1 iw2) ow
-	return (iw1, iw2, ow)
-
-createXorGate = do
-	iw1 <- createInWire
-	iw2 <- createInWire
-	ow <- createOutWire
-	modify $ addBasicGate (XorGate iw1 iw2) ow
 	return (iw1, iw2, ow)
 
 createNotGate :: CreateCircuit (InWire, OutWire)
@@ -190,13 +174,6 @@ andGateD = do
 orGateD :: CreateCircuit (InWire, InWire, OutWire)
 orGateD = do
 	(iw1, iw2, oow) <- createOrGate
-	(diw, dow) <- createDelay 10
-	connectWire oow diw
-	return (iw1, iw2, dow)
-
-xorGateD :: CreateCircuit (InWire, InWire, OutWire)
-xorGateD = do
-	(iw1, iw2, oow) <- createXorGate
 	(diw, dow) <- createDelay 10
 	connectWire oow diw
 	return (iw1, iw2, dow)
