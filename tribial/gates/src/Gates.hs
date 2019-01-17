@@ -1,3 +1,4 @@
+{-# LANGUAGE TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gates (
@@ -5,9 +6,10 @@ module Gates (
 	Bit(..),
 	connectWire,
 	andGateD, orGateD, notGateD,
-	setBit, nextWire, nextCircuit,
-	example ) where
+	setBit, nextWire, nextCircuit, getOutWire,
+	example, mux2, getMux2Wires, setMux2Wires ) where
 
+import Control.Arrow
 import Control.Monad.State
 import Data.Maybe
 import Data.List
@@ -37,31 +39,26 @@ nextCircuit cc@Circuit {
 		basicGates = catMaybes ds ++ bg }
 --	cc { circuitState = zip (map fst cs) $ map (flip nextWire cc . fst) cs }
 
+calcGateResult :: [(InWire, Bit)] -> BasicGate -> (Bit, Maybe BasicGate)
+calcGateResult cs (AndGate iw1 iw2) =
+	(andBit (fromJust $ lookup iw1 cs) (fromJust $ lookup iw2 cs), Nothing)
+calcGateResult cs (OrGate iw1 iw2) =
+	(orBit (fromJust $ lookup iw1 cs) (fromJust $ lookup iw2 cs), Nothing)
+calcGateResult cs (NotGate niw) =
+	(flipBit . fromJust $ lookup niw cs, Nothing)
+calcGateResult cs (XorGate iw1 iw2) =
+	(xorBit (fromJust $ lookup iw1 cs) (fromJust $ lookup iw2 cs), Nothing)
+calcGateResult cs (Delay [] iw) = (fromJust $ lookup iw cs, Nothing)
+calcGateResult cs (Delay (b : bs) iw) =
+	(b, Just $ Delay (bs ++ [fromJust $ lookup iw cs]) iw)
+
 nextWire :: InWire -> Circuit -> (Bit, Maybe (OutWire, BasicGate))
 nextWire iw (Circuit {
 	wireConnection = wc,
 	basicGates = bg,
 	circuitState = cs }) = case lookup iw wc of
 		Just ow -> case lookup ow bg of
-			Just (AndGate iw1 iw2) -> let
-				b1 = fromJust $ lookup iw1 cs
-				b2 = fromJust $ lookup iw2 cs in
-				(andBit b1 b2, Nothing)
-			Just (OrGate iw1 iw2) -> let
-				b1 = fromJust $ lookup iw1 cs
-				b2 = fromJust $ lookup iw2 cs in
-				(orBit b1 b2, Nothing)
-			Just (NotGate niw) ->
-				(flipBit . fromJust $ lookup niw cs, Nothing)
-			Just (XorGate iw1 iw2) -> let
-				b1 = fromJust $ lookup iw1 cs
-				b2 = fromJust $ lookup iw2 cs in
-				(xorBit b1 b2, Nothing)
-			Just (Delay (b : bs) niw) -> let
-				nb = fromJust $ lookup niw cs in
-				(b, Just (ow, Delay (bs ++ [nb]) niw))
-			Just (Delay [] niw) ->
-				(fromJust $ lookup niw cs, Nothing)
+			Just g -> second ((ow ,) <$>) $ calcGateResult cs g
 			Nothing -> error "Oops!"
 		Nothing -> (fromJust $ lookup iw cs, Nothing)
 
@@ -88,6 +85,13 @@ data Circuit = Circuit {
 	circuitState :: [(InWire, Bit)]
 	} deriving Show
 
+getOutWire :: OutWire -> Circuit -> Bit
+getOutWire ow Circuit {
+	basicGates = bgs,
+	circuitState = cs } = case lookup ow bgs of
+	Just g -> fst $ calcGateResult cs g
+	Nothing -> error "Oops!"
+
 data BasicGate
 	= AndGate InWire InWire | OrGate InWire InWire | NotGate InWire
 	| XorGate InWire InWire
@@ -98,6 +102,7 @@ getGateWires :: BasicGate -> [InWire]
 getGateWires (AndGate iw1 iw2) = [iw1, iw2]
 getGateWires (OrGate iw1 iw2) = [iw1, iw2]
 getGateWires (NotGate iw) = [iw]
+getGateWires (XorGate iw1 iw2) = [iw1, iw2]
 getGateWires (Delay _ iw) = [iw]
 
 data InWire = InWire Word32 deriving (Show, Eq)
@@ -203,6 +208,9 @@ notGateD = do
 	connectWire ow diw
 	return (iw, dow)
 
+createIdGate :: CreateCircuit (InWire, OutWire)
+createIdGate = createDelay 0
+
 example :: CreateCircuit InWire
 example = do
 	(niw, now) <- createNotGate
@@ -211,14 +219,32 @@ example = do
 	connectWire dow niw
 	return niw
 
-{-
+--------------------------------------------------------------------------------
+
 mux2 :: CreateCircuit (InWire, InWire, InWire, OutWire)
 mux2 = do
-	(a1iw1, a1iw2, a1ow) <- createAndGate
-	(a2iw1, a2iw2, a2ow) <- createAndGate
-	(xiw1, xiw2, xow) <- createXorGate
-	connectWire 
-	-}
+	(a, s1, a1o) <- createAndGate
+	(b, s2, a2o) <- createAndGate
+	(xi1, xi2, c) <- createOrGate
+	(ni, no) <- createNotGate
+	(si, so) <- createIdGate
+	connectWire so ni
+	connectWire no s1
+	connectWire so s2
+	connectWire a1o xi1
+	connectWire a2o xi2
+	return (a, b, si, c)
+
+getMux2Wires :: (InWire, InWire, InWire, OutWire) ->
+	Circuit -> ([(String, Bit)], (String, Bit))
+getMux2Wires (a, b, s, c) =
+	zip ["a", "b", "s"] . map snd
+		. filter ((`elem` [a, b, s]) . fst) . circuitState &&&
+	(("c" ,) . getOutWire c)
+
+setMux2Wires ::
+	(InWire, InWire, InWire, a) -> (Bit, Bit, Bit) -> Circuit -> Circuit
+setMux2Wires (a, b, s, _) (ba, bb, bs) = setBit a ba . setBit b bb . setBit s bs
 
 --------------------------------------------------------------------------------
 
