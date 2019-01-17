@@ -5,9 +5,9 @@ module Gates (
 	CreateCircuit, createCircuit, circuitState,
 	Bit(..),
 	connectWire,
-	andGateD, orGateD, notGateD,
+	andGate, orGate, notGate,
 	setBit, nextWire, nextCircuit, getOutWire,
-	example, mux2, getMux2Wires, setMux2Wires ) where
+	mux2, getMux2Wires, setMux2Wires ) where
 
 import Control.Arrow
 import Control.Monad.State
@@ -39,6 +39,14 @@ nextCircuit cc@Circuit {
 		basicGates = catMaybes ds ++ bg }
 --	cc { circuitState = zip (map fst cs) $ map (flip nextWire cc . fst) cs }
 
+nextCircuit2 :: Circuit -> Circuit
+nextCircuit2 cct@Circuit {
+	circuitState = cs, basicGates = bg } = let
+	(ows, ds) = nextOutWires (map fst bg) cct
+	ncs = map (flip (nextInWire ows) cct . fst) cs in
+	cct {	circuitState = zip (map fst cs) ncs,
+		basicGates = ds ++ bg }
+
 calcGateResult :: [(InWire, Bit)] -> BasicGate -> (Bit, Maybe BasicGate)
 calcGateResult cs (AndGate iw1 iw2) =
 	(andBit (fromJust $ lookup iw1 cs) (fromJust $ lookup iw2 cs), Nothing)
@@ -50,11 +58,31 @@ calcGateResult cs (Delay [] iw) = (fromJust $ lookup iw cs, Nothing)
 calcGateResult cs (Delay (b : bs) iw) =
 	(b, Just $ Delay (bs ++ [fromJust $ lookup iw cs]) iw)
 
+-- nextWire :: OutWire -> Circuit -> ...
+
+nextOutWires ::
+	[OutWire] -> Circuit -> ([(OutWire, Bit)], [(OutWire, BasicGate)])
+nextOutWires ows cs = second catMaybes $ unzip
+	$ map (\(a, (b, c)) -> ((a, b), (a ,) <$> c))
+		$ zip ows $ map (`nextOutWire` cs) ows
+
+nextOutWire :: OutWire -> Circuit -> (Bit, Maybe BasicGate)
+nextOutWire ow Circuit { basicGates = bg, circuitState = cs } =
+	case lookup ow bg of
+		Just g -> calcGateResult cs g
+		Nothing -> error "Oops!"
+
+nextInWire :: [(OutWire, Bit)] -> InWire -> Circuit -> Bit
+nextInWire ows iw Circuit {
+	wireConnection = wc, circuitState = cs } = case lookup iw wc of
+	Just ow -> fromJust $ lookup ow ows
+	Nothing -> fromJust $ lookup iw cs
+
 nextWire :: InWire -> Circuit -> (Bit, Maybe (OutWire, BasicGate))
-nextWire iw (Circuit {
+nextWire iw Circuit {
 	wireConnection = wc,
 	basicGates = bg,
-	circuitState = cs }) = case lookup iw wc of
+	circuitState = cs } = case lookup iw wc of
 		Just ow -> case lookup ow bg of
 			Just g -> second ((ow ,) <$>) $ calcGateResult cs g
 			Nothing -> error "Oops!"
@@ -164,47 +192,44 @@ createDelay w = do
 	modify $ addBasicGate (Delay (genericReplicate w O) iw) ow
 	return (iw, ow)
 
-andGateD :: CreateCircuit (InWire, InWire, OutWire)
-andGateD = do
+andGate :: CreateCircuit (InWire, InWire, OutWire)
+andGate = do
 	(iw1, iw2, aow) <- createAndGate
 	(diw, dow) <- createDelay 10
 	connectWire aow diw
 	return (iw1, iw2, dow)
 
-orGateD :: CreateCircuit (InWire, InWire, OutWire)
-orGateD = do
+orGate :: CreateCircuit (InWire, InWire, OutWire)
+orGate = do
 	(iw1, iw2, oow) <- createOrGate
 	(diw, dow) <- createDelay 10
 	connectWire oow diw
 	return (iw1, iw2, dow)
 
-notGateD :: CreateCircuit (InWire, OutWire)
-notGateD = do
+notGate :: CreateCircuit (InWire, OutWire)
+notGate = do
 	(iw, ow) <- createNotGate
 	(diw, dow) <- createDelay 5
 	connectWire ow diw
 	return (iw, dow)
 
-createIdGate :: CreateCircuit (InWire, OutWire)
-createIdGate = createDelay 0
-
-example :: CreateCircuit InWire
-example = do
-	(niw, now) <- createNotGate
-	(diw, dow) <- createDelay 10
-	connectWire now diw
-	connectWire dow niw
-	return niw
+idGate :: CreateCircuit (InWire, OutWire)
+idGate = createDelay 0
 
 --------------------------------------------------------------------------------
 
+some :: CreateCircuit InWire
+some = do
+	(iw, ow) <- notGate
+	return iw
+
 mux2 :: CreateCircuit (InWire, InWire, InWire, OutWire)
 mux2 = do
-	(a, s1, a1o) <- createAndGate
-	(b, s2, a2o) <- createAndGate
-	(xi1, xi2, c) <- createOrGate
-	(ni, no) <- createNotGate
-	(si, so) <- createIdGate
+	(a, s1, a1o) <- andGate
+	(b, s2, a2o) <- andGate
+	(xi1, xi2, c) <- orGate
+	(ni, no) <- notGate
+	(si, so) <- idGate
 	connectWire so ni
 	connectWire no s1
 	connectWire so s2
