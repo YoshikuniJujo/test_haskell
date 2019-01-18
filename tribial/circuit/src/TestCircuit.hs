@@ -1,18 +1,15 @@
 {-# LANGUAGE TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module TestGates where
+module TestCircuit where
 
 import Control.Arrow
 
-import qualified Data.Set as S
-import qualified Data.Map as M
-
-import Gates
+import Circuit
 
 --------------------------------------------------------------------------------
 
-mux2 :: CreateCircuit (InWire, InWire, InWire, OutWire)
+mux2 :: CircuitBuilder (InWire, InWire, InWire, OutWire)
 mux2 = do
 	(a, s1, a1o) <- andGate
 	(b, s2, a2o) <- andGate
@@ -26,13 +23,14 @@ mux2 = do
 	connectWire a2o xi2
 	return (a, b, si, c)
 
+type SBit = (String, Bit)
+
 getMux2Wires :: (InWire, InWire, InWire, OutWire) ->
-	Circuit -> ([(String, Bit)], (String, Bit))
+	Circuit -> ((SBit, SBit, SBit), SBit)
 getMux2Wires (a, b, s, c) =
-	zip ["a", "b", "s"] . M.elems
---		. filter ((`elem` [a, b, s]) . fst) . circuitState &&&
-		. (`M.restrictKeys` S.fromList [a, b, s]) . circuitState &&&
-	(("c" ,) . getOutWire c)
+	(\[x, y, z] -> (x, y, z)) . zip ["a", "b", "s"]
+		. (\ctt -> map (`peekIWire` ctt) [a, b, s]) &&&
+	(("c" ,) . peekOWire c)
 
 setMux2Wires ::
 	(InWire, InWire, InWire, a) -> (Bit, Bit, Bit) -> Circuit -> Circuit

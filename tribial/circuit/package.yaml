@@ -1,12 +1,14 @@
 name:                circuit
 version:             0.1.0.0
-github:              "githubuser/circuit"
+github:              "githubuser/gates"
 license:             BSD3
 author:              "Author name here"
 maintainer:          "example@example.com"
 copyright:           "2019 Author name here"
 
-extra-source-files: []
+extra-source-files:
+- README.md
+- ChangeLog.md
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
@@ -15,20 +17,31 @@ extra-source-files: []
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/circuit#readme>
+description:         Please see the README on GitHub at <https://github.com/githubuser/gates#readme>
 
 dependencies:
 - base >= 4.7 && < 5
 - monads-tf
+- containers
 
 library:
   source-dirs: src
-  exposed-modules: Gates
 
 executables:
-  circuit-exe:
-    main:                circuit.hs
+  gates-exe:
+    main:                Main.hs
     source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - circuit
+
+tests:
+  gates-test:
+    main:                Spec.hs
+    source-dirs:         test
     ghc-options:
     - -threaded
     - -rtsopts

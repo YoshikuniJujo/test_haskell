@@ -1,1 +1,3 @@
-/*.cabal
+.stack-work/
+circuit.cabal
+*~
