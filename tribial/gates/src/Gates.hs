@@ -118,8 +118,8 @@ getGateWires (OrGate iw1 iw2) = [iw1, iw2]
 getGateWires (NotGate iw) = [iw]
 getGateWires (Delay _ iw) = [iw]
 
-data InWire = InWire Word32 deriving (Show, Eq, Ord)
-data OutWire = OutWire Word32 deriving (Show, Eq, Ord)
+newtype InWire = InWire Word32 deriving (Show, Eq, Ord)
+newtype OutWire = OutWire Word32 deriving (Show, Eq, Ord)
 
 type CreateCircuit = State CreateCircuitStt
 
@@ -159,16 +159,14 @@ connectWire ow iw = modify $ addWireConnection ow iw
 
 createAndGate, createOrGate :: CreateCircuit (InWire, InWire, OutWire)
 createAndGate = do
-	iw1 <- createInWire
-	iw2 <- createInWire
-	ow <- createOutWire
+	(iw1, iw2, ow) <-
+		(,,) <$> createInWire <*> createInWire <*> createOutWire
 	modify $ addBasicGate (AndGate iw1 iw2) ow
 	return (iw1, iw2, ow)
 
 createOrGate = do
-	iw1 <- createInWire
-	iw2 <- createInWire
-	ow <- createOutWire
+	(iw1, iw2, ow) <-
+		(,,) <$> createInWire <*> createInWire <*> createOutWire
 	modify $ addBasicGate (OrGate iw1 iw2) ow
 	return (iw1, iw2, ow)
 
