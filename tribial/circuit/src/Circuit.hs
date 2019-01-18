@@ -9,11 +9,11 @@ module Circuit (
 import Control.Arrow ((***))
 import Control.Monad.State (
 	MonadState, State, StateType, runState, gets, modify)
-import Data.Maybe (fromMaybe, fromJust, catMaybes)
+import Data.Maybe (fromMaybe, fromJust, catMaybes, mapMaybe)
 import Data.List (genericReplicate)
 import Data.Word (Word8, Word32)
 
-import Data.Map (Map)
+import Data.Map (Map, (!?), (!))
 import qualified Data.Map as M
 
 data Circuit = Circuit {
@@ -31,45 +31,41 @@ makeCircuit cct = (x, Circuit {
 
 step :: Circuit -> Circuit
 step cct@Circuit { cctGate = gs, cctWireStt = wst } = let
-	(ows, ds) = nextOWires cct $ M.keys gs in
+	(ows, ds) = checkOWires cct $ M.keys gs in
 	cct {	cctWireStt = M.mapWithKey (nextIWire cct ows) wst,
 		cctGate = foldr (uncurry M.insert) gs ds }
 
 nextIWire :: Circuit -> Map OutWire Bit -> InWire -> Bit -> Bit
-nextIWire Circuit { cctWireConn = wc, cctWireStt = wst } ows iw ob =
-	fromMaybe ob $ maybe (M.lookup iw wst) (`M.lookup` ows) $ M.lookup iw wc
+nextIWire Circuit { cctWireConn = wc } ows iw ob =
+	fromMaybe ob $ (ows !?) =<< wc !? iw
 
-nextOWires :: Circuit -> [OutWire] -> (Map OutWire Bit, [(OutWire, BasicGate)])
-nextOWires cs ows = (foldr (uncurry M.insert) M.empty *** catMaybes) $ unzip
+checkOWires :: Circuit -> [OutWire] -> (Map OutWire Bit, [(OutWire, BasicGate)])
+checkOWires cs ows = (foldr (uncurry M.insert) M.empty *** catMaybes) $ unzip
 	$ map (\(a, (b, c)) -> ((a, b), (a ,) <$> c))
-		$ zip ows $ map (`nextOWire` cs) ows
+		$ zip ows $ mapMaybe (checkOWire cs) ows
+
+checkOWire :: Circuit -> OutWire -> Maybe (Bit, Maybe BasicGate)
+checkOWire Circuit { cctGate = gs, cctWireStt = wst } ow =
+	calcGate wst =<< gs !? ow
+
+calcGate :: Map InWire Bit -> BasicGate -> Maybe (Bit, Maybe BasicGate)
+calcGate wst (AndGate iw1 iw2) =
+	((, Nothing) .) . andBit <$> wst !? iw1 <*> wst !? iw2
+calcGate wst (OrGate iw1 iw2) =
+	((, Nothing) .) . orBit <$> wst !? iw1 <*> wst !? iw2
+calcGate wst (NotGate niw) = (, Nothing) . notBit <$> wst !? niw
+calcGate wst (Delay [] iw) = (, Nothing) <$> wst !? iw
+calcGate wst (Delay (b : bs) iw) =
+	(b ,) . Just . (`Delay` iw) . (bs ++) . (: []) <$> wst !? iw
 
 setBit :: InWire -> Bit -> Circuit -> Circuit
 setBit w b c = c { cctWireStt = M.insert w b $ cctWireStt c }
 
 peekIWire :: InWire -> Circuit -> Bit
-peekIWire iw Circuit { cctWireStt = cs } = fromJust $ M.lookup iw cs
+peekIWire iw Circuit { cctWireStt = cs } = cs ! iw
 
 peekOWire :: OutWire -> Circuit -> Bit
-peekOWire = (fst .) . nextOWire
-
-nextOWire :: OutWire -> Circuit -> (Bit, Maybe BasicGate)
-nextOWire ow Circuit { cctGate = gs, cctWireStt = cs } =
-	case M.lookup ow gs of
-		Just g -> calcGate cs g
-		Nothing -> error "Oops!"
-
-calcGate :: Map InWire Bit -> BasicGate -> (Bit, Maybe BasicGate)
-calcGate cs (AndGate iw1 iw2) = (
-	andBit (fromJust $ M.lookup iw1 cs) (fromJust $ M.lookup iw2 cs),
-	Nothing )
-calcGate cs (OrGate iw1 iw2) = (
-	orBit (fromJust $ M.lookup iw1 cs) (fromJust $ M.lookup iw2 cs),
-	Nothing)
-calcGate cs (NotGate niw) = (notBit . fromJust $ M.lookup niw cs, Nothing)
-calcGate cs (Delay [] iw) = (fromJust $ M.lookup iw cs, Nothing)
-calcGate cs (Delay (b : bs) iw) =
-	(b, Just $ Delay (bs ++ [fromJust $ M.lookup iw cs]) iw)
+peekOWire = ((fst . fromJust) .) . flip checkOWire
 
 type CircuitBuilder = State CBState
 
