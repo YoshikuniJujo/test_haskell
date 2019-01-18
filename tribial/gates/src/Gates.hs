@@ -7,13 +7,19 @@ module Gates (
 	connectWire,
 	andGate, orGate, notGate,
 	setBit, nextWire, nextCircuit, getOutWire,
-	mux2, getMux2Wires, setMux2Wires ) where
+	mux2 ) where
+--	mux2, getMux2Wires, setMux2Wires ) where
 
 import Control.Arrow
 import Control.Monad.State
+import Data.Bool
 import Data.Maybe
 import Data.List
 import Data.Word
+import qualified Data.Set as S
+
+-- import DictList
+import DictMap
 
 createCircuit :: CreateCircuit a -> (a, Circuit)
 createCircuit cc = let
@@ -24,69 +30,68 @@ createCircuit cc = let
 	(x, Circuit {
 		wireConnection = wc,
 		basicGates = bg,
-		circuitState = zip
-			(concatMap (getGateWires . snd) bg)
+		circuitState = fromListDict $ zip
+			(concatMap getGateWires $ elemsDict bg)
 			(repeat O) })
 
 setBit :: InWire -> Bit -> Circuit -> Circuit
-setBit w b c = c { circuitState = (w, b) : circuitState c }
+setBit w b c = c { circuitState = insertDict w b $ circuitState c }
 
 nextCircuit :: Circuit -> Circuit
 nextCircuit cc@Circuit {
 	circuitState = cs, basicGates = bg } = let
-	(ncs, ds) = unzip $ map (flip nextWire cc . fst) cs in
-	cc {	circuitState = zip (map fst cs) ncs,
-		basicGates = catMaybes ds ++ bg }
---	cc { circuitState = zip (map fst cs) $ map (flip nextWire cc . fst) cs }
+	(ds, ncs) = updateAndAccum (`nextWire` cc) [] cs in
+	cc {	circuitState = ncs,
+		basicGates = foldr (uncurry insertDict) bg ds }
 
 nextCircuit2 :: Circuit -> Circuit
 nextCircuit2 cct@Circuit {
 	circuitState = cs, basicGates = bg } = let
-	(ows, ds) = nextOutWires (map fst bg) cct
-	ncs = map (flip (nextInWire ows) cct . fst) cs in
-	cct {	circuitState = zip (map fst cs) ncs,
-		basicGates = ds ++ bg }
+	(ows, ds) = nextOutWires (keysDict bg) cct
+	ncs = map (flip (nextInWire ows) cct) $ keysDict cs in
+	cct {	circuitState = fromListDict $ zip (keysDict cs) ncs,
+		basicGates = foldr (uncurry insertDict) bg ds }
 
-calcGateResult :: [(InWire, Bit)] -> BasicGate -> (Bit, Maybe BasicGate)
+calcGateResult :: Dict InWire Bit -> BasicGate -> (Bit, Maybe BasicGate)
 calcGateResult cs (AndGate iw1 iw2) =
-	(andBit (fromJust $ lookup iw1 cs) (fromJust $ lookup iw2 cs), Nothing)
+	(andBit (fromJust $ lookupDict iw1 cs) (fromJust $ lookupDict iw2 cs), Nothing)
 calcGateResult cs (OrGate iw1 iw2) =
-	(orBit (fromJust $ lookup iw1 cs) (fromJust $ lookup iw2 cs), Nothing)
+	(orBit (fromJust $ lookupDict iw1 cs) (fromJust $ lookupDict iw2 cs), Nothing)
 calcGateResult cs (NotGate niw) =
-	(flipBit . fromJust $ lookup niw cs, Nothing)
-calcGateResult cs (Delay [] iw) = (fromJust $ lookup iw cs, Nothing)
+	(flipBit . fromJust $ lookupDict niw cs, Nothing)
+calcGateResult cs (Delay [] iw) = (fromJust $ lookupDict iw cs, Nothing)
 calcGateResult cs (Delay (b : bs) iw) =
-	(b, Just $ Delay (bs ++ [fromJust $ lookup iw cs]) iw)
+	(b, Just $ Delay (bs ++ [fromJust $ lookupDict iw cs]) iw)
 
 -- nextWire :: OutWire -> Circuit -> ...
 
 nextOutWires ::
-	[OutWire] -> Circuit -> ([(OutWire, Bit)], [(OutWire, BasicGate)])
-nextOutWires ows cs = second catMaybes $ unzip
+	[OutWire] -> Circuit -> (Dict OutWire Bit, [(OutWire, BasicGate)])
+nextOutWires ows cs = (foldr (uncurry insertDict) emptyDict *** catMaybes) $ unzip
 	$ map (\(a, (b, c)) -> ((a, b), (a ,) <$> c))
 		$ zip ows $ map (`nextOutWire` cs) ows
 
 nextOutWire :: OutWire -> Circuit -> (Bit, Maybe BasicGate)
 nextOutWire ow Circuit { basicGates = bg, circuitState = cs } =
-	case lookup ow bg of
+	case lookupDict ow bg of
 		Just g -> calcGateResult cs g
 		Nothing -> error "Oops!"
 
-nextInWire :: [(OutWire, Bit)] -> InWire -> Circuit -> Bit
+nextInWire :: Dict OutWire Bit -> InWire -> Circuit -> Bit
 nextInWire ows iw Circuit {
-	wireConnection = wc, circuitState = cs } = case lookup iw wc of
-	Just ow -> fromJust $ lookup ow ows
-	Nothing -> fromJust $ lookup iw cs
+	wireConnection = wc, circuitState = cs } = case lookupDict iw wc of
+	Just ow -> fromJust $ lookupDict ow ows
+	Nothing -> fromJust $ lookupDict iw cs
 
 nextWire :: InWire -> Circuit -> (Bit, Maybe (OutWire, BasicGate))
 nextWire iw Circuit {
 	wireConnection = wc,
 	basicGates = bg,
-	circuitState = cs } = case lookup iw wc of
-		Just ow -> case lookup ow bg of
+	circuitState = cs } = case lookupDict iw wc of
+		Just ow -> case lookupDict ow bg of
 			Just g -> second ((ow ,) <$>) $ calcGateResult cs g
 			Nothing -> error "Oops!"
-		Nothing -> (fromJust $ lookup iw cs, Nothing)
+		Nothing -> (fromJust $ lookupDict iw cs, Nothing)
 
 data Bit = O | I deriving (Show, Eq)
 
@@ -102,15 +107,15 @@ orBit O O = O
 orBit _ _ = I
 
 data Circuit = Circuit {
-	wireConnection :: [(InWire, OutWire)],
-	basicGates :: [(OutWire, BasicGate)],
-	circuitState :: [(InWire, Bit)]
+	wireConnection :: Dict InWire OutWire,
+	basicGates :: Dict OutWire BasicGate,
+	circuitState :: Dict InWire Bit
 	} deriving Show
 
 getOutWire :: OutWire -> Circuit -> Bit
 getOutWire ow Circuit {
 	basicGates = bgs,
-	circuitState = cs } = case lookup ow bgs of
+	circuitState = cs } = case lookupDict ow bgs of
 	Just g -> fst $ calcGateResult cs g
 	Nothing -> error "Oops!"
 
@@ -125,22 +130,22 @@ getGateWires (OrGate iw1 iw2) = [iw1, iw2]
 getGateWires (NotGate iw) = [iw]
 getGateWires (Delay _ iw) = [iw]
 
-data InWire = InWire Word32 deriving (Show, Eq)
-data OutWire = OutWire Word32 deriving (Show, Eq)
+data InWire = InWire Word32 deriving (Show, Eq, Ord)
+data OutWire = OutWire Word32 deriving (Show, Eq, Ord)
 
 type CreateCircuit = State CreateCircuitStt
 
 data CreateCircuitStt = CreateCircuitStt {
 	wireNum :: Word32,
-	wireConnectionStt :: [(InWire, OutWire)],
-	basicGatesStt :: [(OutWire, BasicGate)]
+	wireConnectionStt :: Dict InWire OutWire,
+	basicGatesStt :: Dict OutWire BasicGate
 	} deriving Show
 
 initialCreateCircuitStt :: CreateCircuitStt
 initialCreateCircuitStt = CreateCircuitStt {
 	wireNum = 0,
-	wireConnectionStt = [],
-	basicGatesStt = [] }
+	wireConnectionStt = emptyDict,
+	basicGatesStt = emptyDict }
 
 type CreateCircuitSttMod = CreateCircuitStt -> CreateCircuitStt
 
@@ -149,10 +154,11 @@ succWireNum ccs = ccs { wireNum = wireNum ccs + 1 }
 
 addWireConnection :: OutWire -> InWire -> CreateCircuitSttMod
 addWireConnection ow iw css =
-	css { wireConnectionStt = (iw, ow) : wireConnectionStt css }
+	css { wireConnectionStt = insertDict iw ow $ wireConnectionStt css }
 
 addBasicGate :: BasicGate -> OutWire -> CreateCircuitSttMod
-addBasicGate bg ow css = css { basicGatesStt = (ow, bg) : basicGatesStt css }
+addBasicGate bg ow css =
+	css { basicGatesStt = insertDict ow bg $ basicGatesStt css }
 
 createInWire :: CreateCircuit InWire
 createInWire = InWire <$> getModify wireNum succWireNum
@@ -240,8 +246,9 @@ mux2 = do
 getMux2Wires :: (InWire, InWire, InWire, OutWire) ->
 	Circuit -> ([(String, Bit)], (String, Bit))
 getMux2Wires (a, b, s, c) =
-	zip ["a", "b", "s"] . map snd
-		. filter ((`elem` [a, b, s]) . fst) . circuitState &&&
+	zip ["a", "b", "s"] . elemsDict
+--		. filter ((`elem` [a, b, s]) . fst) . circuitState &&&
+		. (`restrictKeysDict` S.fromList [a, b, s]) . circuitState &&&
 	(("c" ,) . getOutWire c)
 
 setMux2Wires ::
@@ -253,3 +260,5 @@ setMux2Wires (a, b, s, _) (ba, bb, bs) = setBit a ba . setBit b bb . setBit s bs
 getModify :: MonadState m =>
 	(StateType m -> a) -> (StateType m -> StateType m) -> m a
 getModify g m = gets g <* modify m
+
+--------------------------------------------------------------------------------
