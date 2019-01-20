@@ -6,10 +6,10 @@ module Circuit (
 	CircuitBuilder, andGate, orGate, notGate, idGate, connectWire,
 	InWire, OutWire, Bit(..) ) where
 
-import Control.Arrow ((***))
+import Control.Arrow (first)
 import Control.Monad.State (
 	MonadState, State, StateType, runState, gets, modify)
-import Data.Maybe (fromMaybe, fromJust, catMaybes, mapMaybe)
+import Data.Maybe (fromMaybe, fromJust)
 import Data.List (genericReplicate)
 import Data.Word (Word8, Word32)
 
@@ -31,7 +31,7 @@ makeCircuit cct = (x, Circuit {
 
 step :: Circuit -> Circuit
 step cct@Circuit { cctGate = gs, cctWireStt = wst } = let
-	(ows, ds) = checkOWires cct $ M.keys gs in
+	(ds, ows) = mapAndCollect (checkOWire cct) gs in
 	cct {	cctWireStt = M.mapWithKey (nextIWire cct ows) wst,
 		cctGate = foldr (uncurry M.insert) gs ds }
 
@@ -39,41 +39,38 @@ nextIWire :: Circuit -> Map OutWire Bit -> InWire -> Bit -> Bit
 nextIWire Circuit { cctWireConn = wc } ows iw ob =
 	fromMaybe ob $ (ows !?) =<< wc !? iw
 
-checkOWires :: Circuit -> [OutWire] -> (Map OutWire Bit, [(OutWire, BasicGate)])
-checkOWires cs ows = (foldr (uncurry M.insert) M.empty *** catMaybes) $ unzip
-	$ map (\(a, (b, c)) -> ((a, b), (a ,) <$> c))
-		$ zip ows $ mapMaybe (checkOWire cs) ows
+checkOWire ::
+	Circuit -> OutWire -> BasicGate -> (Maybe (OutWire, BasicGate), Bit)
+checkOWire Circuit { cctWireStt = wst } ow =
+	fromMaybe (Nothing, O) . (first ((ow ,) <$>) <$>) . calcGate wst
 
-checkOWire :: Circuit -> OutWire -> Maybe (Bit, Maybe BasicGate)
-checkOWire Circuit { cctGate = gs, cctWireStt = wst } ow =
-	calcGate wst =<< gs !? ow
-
-calcGate :: Map InWire Bit -> BasicGate -> Maybe (Bit, Maybe BasicGate)
+calcGate :: Map InWire Bit -> BasicGate -> Maybe (Maybe BasicGate, Bit)
 calcGate wst (AndGate iw1 iw2) =
-	((, Nothing) .) . andBit <$> wst !? iw1 <*> wst !? iw2
+	((Nothing ,) .) . andBit <$> wst !? iw1 <*> wst !? iw2
 calcGate wst (OrGate iw1 iw2) =
-	((, Nothing) .) . orBit <$> wst !? iw1 <*> wst !? iw2
-calcGate wst (NotGate niw) = (, Nothing) . notBit <$> wst !? niw
-calcGate wst (Delay [] iw) = (, Nothing) <$> wst !? iw
+	((Nothing ,) .) . orBit <$> wst !? iw1 <*> wst !? iw2
+calcGate wst (NotGate iw) = (Nothing ,) . notBit <$> wst !? iw
+calcGate wst (Delay [] iw) = (Nothing ,) <$> wst !? iw
 calcGate wst (Delay (b : bs) iw) =
-	(b ,) . Just . (`Delay` iw) . (bs ++) . (: []) <$> wst !? iw
+	(, b) . Just . (`Delay` iw) . (bs ++) . (: []) <$> wst !? iw
 
 setBit :: InWire -> Bit -> Circuit -> Circuit
-setBit w b c = c { cctWireStt = M.insert w b $ cctWireStt c }
+setBit iw b c = c { cctWireStt = M.insert iw b $ cctWireStt c }
 
 peekIWire :: InWire -> Circuit -> Bit
 peekIWire iw Circuit { cctWireStt = cs } = cs ! iw
 
 peekOWire :: OutWire -> Circuit -> Bit
-peekOWire = ((fst . fromJust) .) . flip checkOWire
+peekOWire ow Circuit { cctGate = gs, cctWireStt = wst } =
+	fromJust $ snd <$> (calcGate wst =<< gs !? ow)
 
 type CircuitBuilder = State CBState
 
-makeInWire :: CircuitBuilder InWire
-makeInWire = InWire <$> getModify cbsWireNum sccWireNum
+makeIWire :: CircuitBuilder InWire
+makeIWire = InWire <$> getModify cbsWireNum sccWireNum
 
-makeOutWire :: CircuitBuilder OutWire
-makeOutWire = OutWire <$> getModify cbsWireNum sccWireNum
+makeOWire :: CircuitBuilder OutWire
+makeOWire = OutWire <$> getModify cbsWireNum sccWireNum
 
 connectWire :: OutWire -> InWire -> CircuitBuilder ()
 connectWire ow iw = modify $ insConn ow iw
@@ -128,30 +125,31 @@ notGate = do
 	return (iw, dow)
 
 idGate :: CircuitBuilder (InWire, OutWire)
-idGate = makeDelay 5
+idGate = makeDelay 1
 
 makeAndGate, makeOrGate :: CircuitBuilder (InWire, InWire, OutWire)
 makeAndGate = do
-	(iw1, iw2, ow) <- (,,) <$> makeInWire <*> makeInWire <*> makeOutWire
+	(iw1, iw2, ow) <- (,,) <$> makeIWire <*> makeIWire <*> makeOWire
 	modify $ insGate (AndGate iw1 iw2) ow
 	return (iw1, iw2, ow)
 
 makeOrGate = do
-	(iw1, iw2, ow) <- (,,) <$> makeInWire <*> makeInWire <*> makeOutWire
+	(iw1, iw2, ow) <- (,,) <$> makeIWire <*> makeIWire <*> makeOWire
 	modify $ insGate (OrGate iw1 iw2) ow
 	return (iw1, iw2, ow)
 
 makeNotGate :: CircuitBuilder (InWire, OutWire)
 makeNotGate = do
-	(iw, ow) <- (,) <$> makeInWire <*> makeOutWire
+	(iw, ow) <- (,) <$> makeIWire <*> makeOWire
 	modify $ insGate (NotGate iw) ow
 	return (iw, ow)
 
 makeDelay :: Word8 -> CircuitBuilder (InWire, OutWire)
-makeDelay w = do
-	(iw, ow) <- (,) <$> makeInWire <*> makeOutWire
-	modify $ insGate (Delay (genericReplicate (w - 1) O) iw) ow
+makeDelay w | w > 0 = do
+	(iw, ow) <- (,) <$> makeIWire <*> makeOWire
+	modify $ insGate (Delay ((w - 1) `genericReplicate` O) iw) ow
 	return (iw, ow)
+makeDelay _ = error "0 delay is not permitted"
 
 newtype InWire = InWire Word32 deriving (Show, Eq, Ord)
 newtype OutWire = OutWire Word32 deriving (Show, Eq, Ord)
@@ -159,18 +157,18 @@ newtype OutWire = OutWire Word32 deriving (Show, Eq, Ord)
 data Bit = O | I deriving (Show, Eq)
 
 andBit, orBit :: Bit -> Bit -> Bit
-andBit I I = I
-andBit _ _ = O
-
-orBit O O = O
-orBit _ _ = I
+andBit I I = I; andBit _ _ = O
+orBit O O = O; orBit _ _ = I
 
 notBit :: Bit -> Bit
-notBit O = I
-notBit I = O
+notBit O = I; notBit I = O
 
 --------------------------------------------------------------------------------
 
 getModify :: MonadState m =>
 	(StateType m -> a) -> (StateType m -> StateType m) -> m a
 getModify g m = gets g <* modify m
+
+mapAndCollect :: (k -> v1 -> (Maybe a, v2)) -> Map k v1 -> ([a], Map k v2)
+mapAndCollect f dct = M.mapAccumWithKey
+	(\xs -> (first (maybe xs (: xs)) .) . f) [] dct
