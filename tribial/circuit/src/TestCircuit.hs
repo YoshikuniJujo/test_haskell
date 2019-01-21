@@ -5,6 +5,9 @@ module TestCircuit where
 
 import Control.Arrow
 import Control.Monad
+import Data.Bool
+import Data.Bits ((.|.), testBit, shiftL, shiftR)
+import Data.Word
 
 import Circuit
 
@@ -154,3 +157,41 @@ setPla :: (IWire, IWire, IWire, OWire, OWire, OWire) ->
 	(Bit, Bit, Bit) -> Circuit -> Circuit
 setPla (a, b, c, _, _, _) (ba, bb, bc) cct =
 	setBit a ba . setBit b bb $ setBit c bc cct
+
+--------------------------------------------------------------------------------
+
+multiplexer :: Int -> CircuitBuilder (IWire, [IWire], [IWire], [OWire])
+multiplexer n = do
+	(si, so) <- idGate
+	(as, bs, cs) <- unzip3 <$> replicateM n (mux so)
+	return (si, as, bs, cs)
+
+mux :: OWire -> CircuitBuilder (IWire, IWire, OWire)
+mux so = do
+	(a, s1, a1o) <- andGate
+	(b, s2, a2o) <- andGate
+	(oi1, oi2, c) <- orGate
+	(ni, no) <- notGate
+	connectWire so ni
+	connectWire no s1
+	connectWire so s2
+	connectWire a1o oi1
+	connectWire a2o oi2
+	return (a, b, c)
+
+inputMultiplexer :: (IWire, [IWire], [IWire], [OWire]) ->
+	(Bit, Word64, Word64) -> Circuit -> Circuit
+inputMultiplexer (ws, was, wbs, _) (bs, bas, bbs) cct = setBit ws bs
+	. (flip . foldr) (uncurry setBit) (zip was $ wordToBits 64 bas)
+	$ (flip . foldr) (uncurry setBit) (zip wbs $ wordToBits 64 bbs) cct
+
+peekMultiplexer :: (IWire, [IWire], [IWire], [OWire]) -> Circuit -> [Bit]
+peekMultiplexer (_, _, _, os) cct = map (`peekOWire` cct) os
+
+wordToBits :: Int -> Word64 -> [Bit]
+wordToBits n _ | n < 1 = []
+wordToBits n w = bool O I (w `testBit` 0) : wordToBits (n - 1) (w `shiftR` 1)
+
+bitsToWord :: [Bit] -> Word64
+bitsToWord [] = 0
+bitsToWord (b : bs) = (case b of O -> 0; I -> 1) .|. bitsToWord bs `shiftL` 1
