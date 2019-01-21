@@ -9,7 +9,7 @@ import Circuit
 
 --------------------------------------------------------------------------------
 
-mux2 :: CircuitBuilder (InWire, InWire, InWire, OutWire)
+mux2 :: CircuitBuilder (IWire, IWire, IWire, OWire)
 mux2 = do
 	(a, s1, a1o) <- andGate
 	(b, s2, a2o) <- andGate
@@ -25,7 +25,7 @@ mux2 = do
 
 type SBit = (String, Bit)
 
-getMux2Wires :: (InWire, InWire, InWire, OutWire) ->
+getMux2Wires :: (IWire, IWire, IWire, OWire) ->
 	Circuit -> ((SBit, SBit, SBit), SBit)
 getMux2Wires (a, b, s, c) =
 	(\[x, y, z] -> (x, y, z)) . zip ["a", "b", "s"]
@@ -33,5 +33,5 @@ getMux2Wires (a, b, s, c) =
 	(("c" ,) . peekOWire c)
 
 setMux2Wires ::
-	(InWire, InWire, InWire, a) -> (Bit, Bit, Bit) -> Circuit -> Circuit
+	(IWire, IWire, IWire, a) -> (Bit, Bit, Bit) -> Circuit -> Circuit
 setMux2Wires (a, b, s, _) (ba, bb, bs) = setBit a ba . setBit b bb . setBit s bs

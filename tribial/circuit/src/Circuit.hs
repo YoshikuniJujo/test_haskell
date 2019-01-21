@@ -4,7 +4,7 @@
 module Circuit (
 	Circuit, makeCircuit, step, setBit, peekIWire, peekOWire,
 	CircuitBuilder, andGate, orGate, notGate, idGate, connectWire,
-	InWire, OutWire, Bit(..) ) where
+	IWire, OWire, Bit(..) ) where
 
 import Control.Arrow (first)
 import Control.Monad.State (
@@ -17,9 +17,9 @@ import Data.Map (Map, (!?), (!))
 import qualified Data.Map as M
 
 data Circuit = Circuit {
-	cctGate :: Map OutWire BasicGate,
-	cctWireConn :: Map InWire OutWire,
-	cctWireStt :: Map InWire Bit } deriving Show
+	cctGate :: Map OWire BasicGate,
+	cctWireConn :: Map IWire OWire,
+	cctWireStt :: Map IWire Bit } deriving Show
 
 makeCircuit :: CircuitBuilder a -> (a, Circuit)
 makeCircuit cct = (x, Circuit {
@@ -32,19 +32,18 @@ makeCircuit cct = (x, Circuit {
 step :: Circuit -> Circuit
 step cct@Circuit { cctGate = gs, cctWireStt = wst } = let
 	(ds, ows) = mapAndCollect (checkOWire cct) gs in
-	cct {	cctWireStt = M.mapWithKey (nextIWire cct ows) wst,
-		cctGate = foldr (uncurry M.insert) gs ds }
+	cct {	cctGate = foldr (uncurry M.insert) gs ds,
+		cctWireStt = M.mapWithKey (nextIWire cct ows) wst }
 
-nextIWire :: Circuit -> Map OutWire Bit -> InWire -> Bit -> Bit
+checkOWire :: Circuit -> OWire -> BasicGate -> (Maybe (OWire, BasicGate), Bit)
+checkOWire Circuit { cctWireStt = wst } ow =
+	maybe (Nothing, O) (first ((ow ,) <$>)) . calcGate wst
+
+nextIWire :: Circuit -> Map OWire Bit -> IWire -> Bit -> Bit
 nextIWire Circuit { cctWireConn = wc } ows iw ob =
 	fromMaybe ob $ (ows !?) =<< wc !? iw
 
-checkOWire ::
-	Circuit -> OutWire -> BasicGate -> (Maybe (OutWire, BasicGate), Bit)
-checkOWire Circuit { cctWireStt = wst } ow =
-	fromMaybe (Nothing, O) . (first ((ow ,) <$>) <$>) . calcGate wst
-
-calcGate :: Map InWire Bit -> BasicGate -> Maybe (Maybe BasicGate, Bit)
+calcGate :: Map IWire Bit -> BasicGate -> Maybe (Maybe BasicGate, Bit)
 calcGate wst (AndGate iw1 iw2) =
 	((Nothing ,) .) . andBit <$> wst !? iw1 <*> wst !? iw2
 calcGate wst (OrGate iw1 iw2) =
@@ -54,31 +53,31 @@ calcGate wst (Delay [] iw) = (Nothing ,) <$> wst !? iw
 calcGate wst (Delay (b : bs) iw) =
 	(, b) . Just . (`Delay` iw) . (bs ++) . (: []) <$> wst !? iw
 
-setBit :: InWire -> Bit -> Circuit -> Circuit
+setBit :: IWire -> Bit -> Circuit -> Circuit
 setBit iw b c = c { cctWireStt = M.insert iw b $ cctWireStt c }
 
-peekIWire :: InWire -> Circuit -> Bit
+peekIWire :: IWire -> Circuit -> Bit
 peekIWire iw Circuit { cctWireStt = cs } = cs ! iw
 
-peekOWire :: OutWire -> Circuit -> Bit
+peekOWire :: OWire -> Circuit -> Bit
 peekOWire ow Circuit { cctGate = gs, cctWireStt = wst } =
 	fromJust $ snd <$> (calcGate wst =<< gs !? ow)
 
 type CircuitBuilder = State CBState
 
-makeIWire :: CircuitBuilder InWire
-makeIWire = InWire <$> getModify cbsWireNum sccWireNum
+makeIWire :: CircuitBuilder IWire
+makeIWire = IWire <$> getModify cbsWireNum sccWireNum
 
-makeOWire :: CircuitBuilder OutWire
-makeOWire = OutWire <$> getModify cbsWireNum sccWireNum
+makeOWire :: CircuitBuilder OWire
+makeOWire = OWire <$> getModify cbsWireNum sccWireNum
 
-connectWire :: OutWire -> InWire -> CircuitBuilder ()
+connectWire :: OWire -> IWire -> CircuitBuilder ()
 connectWire ow iw = modify $ insConn ow iw
 
 data CBState = CBState {
 	cbsWireNum :: Word32,
-	cbsGate :: Map OutWire BasicGate,
-	cbsWireConn :: Map InWire OutWire
+	cbsGate :: Map OWire BasicGate,
+	cbsWireConn :: Map IWire OWire
 	} deriving Show
 
 initCBState :: CBState
@@ -88,23 +87,23 @@ initCBState = CBState {
 sccWireNum :: CBState -> CBState
 sccWireNum ccs = ccs { cbsWireNum = cbsWireNum ccs + 1 }
 
-insGate :: BasicGate -> OutWire -> CBState -> CBState
+insGate :: BasicGate -> OWire -> CBState -> CBState
 insGate g ow css = css { cbsGate = M.insert ow g $ cbsGate css }
 
-insConn :: OutWire -> InWire -> CBState -> CBState
+insConn :: OWire -> IWire -> CBState -> CBState
 insConn ow iw css = css { cbsWireConn = M.insert iw ow $ cbsWireConn css }
 
 data BasicGate
-	= AndGate InWire InWire | OrGate InWire InWire | NotGate InWire
-	| Delay [Bit] InWire deriving Show
+	= AndGate IWire IWire | OrGate IWire IWire | NotGate IWire
+	| Delay [Bit] IWire deriving Show
 
-gateWires :: BasicGate -> [InWire]
+gateWires :: BasicGate -> [IWire]
 gateWires (AndGate iw1 iw2) = [iw1, iw2]
 gateWires (OrGate iw1 iw2) = [iw1, iw2]
 gateWires (NotGate iw) = [iw]
 gateWires (Delay _ iw) = [iw]
 
-andGate, orGate :: CircuitBuilder (InWire, InWire, OutWire)
+andGate, orGate :: CircuitBuilder (IWire, IWire, OWire)
 andGate = do
 	(iw1, iw2, ow) <- makeAndGate
 	(diw, dow) <- makeDelay 9
@@ -117,17 +116,17 @@ orGate = do
 	connectWire ow diw
 	return (iw1, iw2, dow)
 
-notGate :: CircuitBuilder (InWire, OutWire)
+notGate :: CircuitBuilder (IWire, OWire)
 notGate = do
 	(iw, ow) <- makeNotGate
 	(diw, dow) <- makeDelay 4
 	connectWire ow diw
 	return (iw, dow)
 
-idGate :: CircuitBuilder (InWire, OutWire)
+idGate :: CircuitBuilder (IWire, OWire)
 idGate = makeDelay 1
 
-makeAndGate, makeOrGate :: CircuitBuilder (InWire, InWire, OutWire)
+makeAndGate, makeOrGate :: CircuitBuilder (IWire, IWire, OWire)
 makeAndGate = do
 	(iw1, iw2, ow) <- (,,) <$> makeIWire <*> makeIWire <*> makeOWire
 	modify $ insGate (AndGate iw1 iw2) ow
@@ -138,21 +137,21 @@ makeOrGate = do
 	modify $ insGate (OrGate iw1 iw2) ow
 	return (iw1, iw2, ow)
 
-makeNotGate :: CircuitBuilder (InWire, OutWire)
+makeNotGate :: CircuitBuilder (IWire, OWire)
 makeNotGate = do
 	(iw, ow) <- (,) <$> makeIWire <*> makeOWire
 	modify $ insGate (NotGate iw) ow
 	return (iw, ow)
 
-makeDelay :: Word8 -> CircuitBuilder (InWire, OutWire)
+makeDelay :: Word8 -> CircuitBuilder (IWire, OWire)
 makeDelay w | w > 0 = do
 	(iw, ow) <- (,) <$> makeIWire <*> makeOWire
 	modify $ insGate (Delay ((w - 1) `genericReplicate` O) iw) ow
 	return (iw, ow)
 makeDelay _ = error "0 delay is not permitted"
 
-newtype InWire = InWire Word32 deriving (Show, Eq, Ord)
-newtype OutWire = OutWire Word32 deriving (Show, Eq, Ord)
+newtype IWire = IWire Word32 deriving (Show, Eq, Ord)
+newtype OWire = OWire Word32 deriving (Show, Eq, Ord)
 
 data Bit = O | I deriving (Show, Eq)
 
@@ -170,5 +169,4 @@ getModify :: MonadState m =>
 getModify g m = gets g <* modify m
 
 mapAndCollect :: (k -> v1 -> (Maybe a, v2)) -> Map k v1 -> ([a], Map k v2)
-mapAndCollect f dct = M.mapAccumWithKey
-	(\xs -> (first (maybe xs (: xs)) .) . f) [] dct
+mapAndCollect f = M.mapAccumWithKey (\xs -> (first (maybe xs (: xs)) .) . f) []
