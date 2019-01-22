@@ -310,3 +310,25 @@ setMult4to1 (a, b, c, d, s0, s1, _) (wa, wb, wc, wd, ws) =
 peekMult4to1 :: ([IWire], [IWire], [IWire], [IWire], IWire, IWire, [OWire]) ->
 	Circuit -> [Bit]
 peekMult4to1 (_, _, _, _, _, _, o) = (<$> o) . flip peekOWire
+
+andOr1 :: CircuitBuilder (IWire, IWire, IWire, OWire)
+andOr1 = do
+	(ia, oa) <- idGate
+	(ib, ob) <- idGate
+	(ia1, ia2, oad) <- andGate
+	(io1, io2, oo) <- orGate
+	(m1, m2, s, om) <- mux2
+	connectWire oa ia1
+	connectWire ob ia2
+	connectWire oa io1
+	connectWire ob io2
+	connectWire oad m1
+	connectWire oo m2
+	return (ia, ib, s, om)
+
+setAndOr1 ::
+	(IWire, IWire, IWire, OWire) -> (Bit, Bit, Bit) -> Circuit -> Circuit
+setAndOr1 (a, b, s, _) (ba, bb, bs) = setBit a ba . setBit b bb . setBit s bs
+
+peekAndOr1 :: (IWire, IWire, IWire, OWire) -> Circuit -> Bit
+peekAndOr1 (_, _, _, o) = peekOWire o
