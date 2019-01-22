@@ -195,3 +195,118 @@ wordToBits n w = bool O I (w `testBit` 0) : wordToBits (n - 1) (w `shiftR` 1)
 bitsToWord :: [Bit] -> Word64
 bitsToWord [] = 0
 bitsToWord (b : bs) = (case b of O -> 0; I -> 1) .|. bitsToWord bs `shiftL` 1
+
+xorGate :: CircuitBuilder (IWire, IWire, OWire)
+xorGate = do
+	(ai, ao) <- idGate
+	(bi, bo) <- idGate
+	(ai1, ai2, ado) <- andGate
+	(oi1, oi2, oro) <- orGate
+	(ni, no) <- notGate
+	(aai1, aai2, aado) <- andGate
+	connectWire ao ai1
+	connectWire bo ai2
+	connectWire ado ni
+	connectWire ao oi1
+	connectWire bo oi2
+	connectWire no aai1
+	connectWire oro aai2
+	return (ai, bi, aado)
+
+halfAdder :: CircuitBuilder (IWire, IWire, OWire, OWire)
+halfAdder = do
+	(ai, ao) <- idGate
+	(bi, bo) <- idGate
+	(si1, si2, s) <- xorGate
+	(ci1, ci2, c) <- andGate
+	connectWire ao si1
+	connectWire bo si2
+	connectWire ao ci1
+	connectWire bo ci2
+	return (ai, bi, s, c)
+
+inputHalfAdder ::
+	(IWire, IWire, OWire, OWire) -> (Bit, Bit) -> Circuit -> Circuit
+inputHalfAdder (a, b, _, _) (ab, bb) = setBit a ab . setBit b bb
+
+peekHalfAdder ::
+	(IWire, IWire, OWire, OWire) -> Circuit -> (Bit, Bit)
+peekHalfAdder (_, _, s, c) = (,) <$> peekOWire s <*> peekOWire c
+
+all4AndGate :: OWire -> OWire -> CircuitBuilder [OWire]
+all4AndGate o1 o2 = do
+	(is, os) <- unzip . map (\(a, b, c) -> ([a, b], c))
+		<$> replicateM 4 andGate
+	sequence_ . concat $ zipWith
+		(flip (zipWith3 id) [o1, o2]) (patterns invert obvert 2) is
+	return os
+
+testAll4AndGate :: CircuitBuilder (IWire, IWire, [OWire])
+testAll4AndGate = do
+	(i1, o1) <- idGate
+	(i2, o2) <- idGate
+	os <- all4AndGate o1 o2
+	return (i1, i2, os)
+
+setTestAll4AndGate ::
+	(IWire, IWire, [OWire]) -> (Bit, Bit) -> Circuit -> Circuit
+setTestAll4AndGate (i1, i2, _) (b1, b2) = setBit i1 b1 . setBit i2 b2
+
+peekTestAll4AndGate :: (IWire, IWire, [OWire]) -> Circuit -> [Bit]
+peekTestAll4AndGate (_, _, os) cct = map (`peekOWire` cct) os
+
+m4to1 :: OWire -> OWire -> CircuitBuilder (IWire, IWire, IWire, IWire, OWire)
+m4to1 s0 s1 = do
+	ss <- all4AndGate s0 s1
+	(as, bs, os) <- unzip3 <$> replicateM 4 andGate
+	zipWithM_ connectWire ss as
+	(ois, oo) <- multiOrGate 4
+	zipWithM_ connectWire os ois
+	return $ (\[a, b, c, d] -> (a, b, c, d, oo)) bs
+
+testM4to1 :: CircuitBuilder (IWire, IWire, IWire, IWire, IWire, IWire, OWire)
+testM4to1 = do
+	(si1, so1) <- idGate
+	(si2, so2) <- idGate
+	(a, b, c, d, o) <- m4to1 so1 so2
+	return (a, b, c, d, si1, si2, o)
+
+setTestM4to1 :: (IWire, IWire, IWire, IWire, IWire, IWire, OWire) ->
+	(Bit, Bit, Bit, Bit, Bit, Bit) -> Circuit -> Circuit
+setTestM4to1 (a, b, c, d, s1, s2, _) (ba, bb, bc, bd, bs1, bs2) =
+	flip (foldr $ uncurry setBit)
+		[(a, ba), (b, bb), (c, bc), (d, bd), (s1, bs1), (s2, bs2)]
+
+peekTestM4to1 ::
+	(IWire, IWire, IWire, IWire, IWire, IWire, OWire) -> Circuit -> Bit
+peekTestM4to1 (_, _, _, _, _, _, o) = peekOWire o
+
+unzip5 :: [(a, b, c, d, e)] -> ([a], [b], [c], [d], [e])
+unzip5 [] = ([], [], [], [], [])
+unzip5 ((a, b, c, d, e) : fs) =
+	(a : as, b : bs, c : cs, d : ds, e : es)
+	where (as, bs, cs, ds, es) = unzip5 fs
+
+mult4to1 :: CircuitBuilder ([IWire], [IWire], [IWire], [IWire], IWire, IWire, [OWire])
+mult4to1 = do
+	(s1, so1) <- idGate
+	(s2, so2) <- idGate
+	(as, bs, cs, ds, os) <- unzip5 <$> replicateM 64 (m4to1 so1 so2)
+	return (as, bs, cs, ds, s1, s2, os)
+
+wordTo2Bit :: Word8 -> (Bit, Bit)
+wordTo2Bit w = (bool O I $ w `testBit` 1, bool O I $ w `testBit` 0)
+
+setMult4to1 :: ([IWire], [IWire], [IWire], [IWire], IWire, IWire, [OWire]) ->
+	(Word64, Word64, Word64, Word64, Word8) -> Circuit -> Circuit
+setMult4to1 (a, b, c, d, s0, s1, _) (wa, wb, wc, wd, ws) =
+	(flip . foldr $ uncurry setBit)
+			(zip (concat [a, b, c, d]) (concat [ba, bb, bc, bd]))
+		. setBit s0 bs0 . setBit s1 bs1
+	where
+	[ba, bb, bc, bd] = map (wordToBits 64) [wa, wb, wc, wd]
+	(bs0, bs1) = wordTo2Bit ws
+
+peekMult4to1 :: ([IWire], [IWire], [IWire], [IWire], IWire, IWire, [OWire]) ->
+	Circuit -> [Bit]
+peekMult4to1 (_, _, _, _, _, _, o) = (<$> o) . flip peekOWire
