@@ -1,0 +1,5 @@
+.stack-work/
+self-ext.cabal
+*~
+/cat-exe
+/some.jpg
