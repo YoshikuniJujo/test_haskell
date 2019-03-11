@@ -35,5 +35,15 @@ showPersons = relation $ do
 	p <- query persons
 	return $ (,) |$| p ! Psn.id' |*| p ! Psn.canBuy'
 
+showMonies :: Relation () (Int32, Int32, Int32)
+showMonies = relation $ do
+	m <- query monies
+	return $ (,,) |$| m ! Mny.id' |*| m ! Mny.pid' |*| m ! Mny.money'
+
+showMonies2 :: Relation () (Int32, Int32)
+showMonies2 = relation $ do
+	m <- query monies2
+	return $ (,) |$| m ! Mny2.pid' |*| m ! Mny2.money'
+
 resetPersons :: Update ()
 resetPersons = updateNoPH $ \_ -> canBuy' <-# value 0

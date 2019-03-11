@@ -30,10 +30,23 @@ import Correlated
 
 main :: IO ()
 main = do
+	putStrLn "table: persons (id int, can_buy int)"
+	putStrLn "table: monies2 (pid int, money int)"
+	putStrLn "table: monies (id int, pid int, money int)"
+	putStrLn ""
 	withConnection $ \conn -> do
+		putStrLn "monies2"
+		print =<< runQuery conn (relationalQuery showPersons) ()
+		print =<< runQuery conn (relationalQuery showMonies2) ()
+		print updatePersonByMoney2
 		print =<< runUpdate conn updatePersonByMoney2 ()
 		print =<< runQuery conn (relationalQuery showPersons) ()
 		_ <- runUpdate conn resetPersons ()
+		putStrLn ""
+		putStrLn "monies"
+		print =<< runQuery conn (relationalQuery showPersons) ()
+		print =<< runQuery conn (relationalQuery showMonies) ()
+		print updatePersonByMoney
 		print =<< runUpdate conn updatePersonByMoney ()
 		print =<< runQuery conn (relationalQuery showPersons) ()
 		_ <- runUpdate conn resetPersons ()
