@@ -1,0 +1,4 @@
+.stack-work/
+test-correlated-subquery-mysql.cabal
+*~
+/db_connect.info
