@@ -10,8 +10,5 @@ import Control.Monad.IO.Class
 
 import Lib
 
-do	(hst, usr, pwd, db) <- liftIO $ do
-		[h, u, d] <- lines <$> readFile "db_connect.info"
-		p <- getPassword "Enter password: "
-		return (h, u, p, d)
+do	[hst, usr, pwd, db] <- liftIO $ lines <$> readFile "db_connect.info"
 	defineTable hst usr pwd db "monies2"
