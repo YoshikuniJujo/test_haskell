@@ -2,8 +2,8 @@
 
 module Correlated where
 
+import Data.Functor.ProductIsomorphic
 import Data.Int
-
 import Database.Relational
 
 import Person as Psn
@@ -29,3 +29,11 @@ updatePersonByMoney2 = update $ \proj -> do
 		wheres $ m ! Mny2.money' .>=. value 100
 		return (value (1 :: Int32))
 	return unitPlaceHolder
+
+showPersons :: Relation () (Int32, Int32)
+showPersons = relation $ do
+	p <- query persons
+	return $ (,) |$| p ! Psn.id' |*| p ! Psn.canBuy'
+
+resetPersons :: Update ()
+resetPersons = updateNoPH $ \_ -> canBuy' <-# value 0

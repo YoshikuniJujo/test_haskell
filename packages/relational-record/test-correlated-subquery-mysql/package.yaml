@@ -24,6 +24,7 @@ dependencies:
 - bytestring
 - template-haskell
 
+- product-isomorphic
 - relational-record
 - relational-query
 - relational-query-HDBC
