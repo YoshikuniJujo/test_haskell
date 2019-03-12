@@ -1,0 +1,4 @@
+.stack-work/
+test-hrr-mysql.cabal
+*~
+/db_connect.info
