@@ -44,6 +44,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - test-correlated-subquery-mysql
+  maxAge:
+    main:                maxAge.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - test-correlated-subquery-mysql
 
 tests:
   test-correlated-subquery-mysql-test:
