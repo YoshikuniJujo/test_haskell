@@ -9,15 +9,16 @@ import Numeric
 
 main :: IO ()
 main = do
-	n_ : _ <- getArgs
+	n_ : i_ : _ <- getArgs
 	let	n = read n_
-	mapM_ (putStrLn . unwords) . sepWords n $ take 30 tableLines
+		i = read i_
+	mapM_ (putStrLn . unwords) . sepWords n . take 60 $ tableLines i
 
-tableLines :: [String]
-tableLines = map (\(i, c) -> ($ "") $ showHex i . ((" " ++ [c]) ++)) table
+tableLines :: Int -> [String]
+tableLines = map (\(i, c) -> ($ "") $ showHex i . ((" " ++ [c]) ++)) . table
 
-table :: [(Int, Char)]
-table = map (id &&& chr) [0x3041 ..]
+table :: Int -> [(Int, Char)]
+table n = map (id &&& chr) [0x3041 + n ..]
 
 sepWords :: Int -> [String] -> [[String]]
 sepWords n = sepBy (\c s -> if c + length s > n then Nothing else Just $ c + length s + 1) 0 0
