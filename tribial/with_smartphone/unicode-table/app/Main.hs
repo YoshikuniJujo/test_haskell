@@ -9,10 +9,9 @@ import Numeric
 
 main :: IO ()
 main = do
-	n_ : i_ : _ <- getArgs
-	let	n = read n_
-		i = read i_
-	mapM_ (putStrLn . unwords) . sepWords n . take 60 $ tableLines i
+	i_ : _ <- getArgs
+	let	i = read i_
+	mapM_ (putStrLn . unwords) . sepWords 42 . take 60 $ tableLines i
 
 tableLines :: Int -> [String]
 tableLines = map (\(i, c) -> ($ "") $ showHex i . ((" " ++ [c]) ++)) . table
