@@ -24,6 +24,8 @@ dependencies:
 - filepath
 - data-default-class
 - tls
+- x509-store
+- x509-validation
 - warp
 - warp-tls
 - servant-server
@@ -54,3 +56,8 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - helloworld-client-auth
+
+data-dir: files
+
+data-files:
+  - cacert.pem
