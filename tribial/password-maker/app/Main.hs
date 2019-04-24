@@ -76,9 +76,9 @@ makePassword :: BS.ByteString -> IO String
 makePassword url = do
 	ws <- inputWords
 	b <- checkWords ws
-	if b	then return . take 12 . B58.encode . (<> url)
+	if b	then return . take 12 . B58.encode
 			. BA.convert . hash @BS.ByteString @SHA256
-			. E.encodeUtf8 $ T.concat ws
+			. (<> url) . E.encodeUtf8 $ T.concat ws
 		else error "wrong words"
 
 inputWord :: [T.Text] -> IO T.Text
