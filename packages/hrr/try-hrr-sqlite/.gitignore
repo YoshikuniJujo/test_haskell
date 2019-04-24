@@ -1,0 +1,4 @@
+.stack-work/
+try-hrr-sqlite.cabal
+*~
+/db/
