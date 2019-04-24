@@ -27,6 +27,10 @@ dependencies:
 - relational-query
 - relational-record-examples
 
+- template-haskell
+- HDBC-sqlite3
+- relational-query-HDBC
+
 library:
   source-dirs: src
 

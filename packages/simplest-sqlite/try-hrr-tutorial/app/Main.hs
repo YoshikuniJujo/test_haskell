@@ -7,8 +7,10 @@ import Database.SmplstSQLite3
 
 main :: IO ()
 main = withSQLite "test.sqlite3" $ \db -> do
-	_ <- withPrepared db "CREATE TABLE greeting(id, words, greetee)" step
-		>>= print
+	_ <- withPrepared db
+		("CREATE TABLE greeting(" ++
+			"id int, words varchar(10), greetee varchar(10))")
+		step >>= print
 	_ <- withPrepared db "INSERT INTO greeting VALUES(?, ?, 'world')" $ \sm -> do
 		bindN sm 1 (155 :: Int)
 		bindN sm 2 "good-bye"
