@@ -21,9 +21,11 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- containers
 - product-isomorphic
 - persistable-record
 - HDBC
+- HDBC-session
 - relational-query
 - relational-record-examples
 
