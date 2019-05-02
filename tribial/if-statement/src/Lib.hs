@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Lib (ifs) where
+module Lib (ifs, ifs') where
 
 class Default a where
 	def :: a
@@ -21,3 +21,7 @@ instance Default (Maybe a) where
 ifs :: Default a => Bool -> a -> a
 ifs True x = x
 ifs False _ = def
+
+ifs' :: Monoid a => Bool -> a -> a
+ifs' True x = x
+ifs' False _ = mempty
