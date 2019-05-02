@@ -1,3 +1,6 @@
 .stack-work/
 daily.cabal
 *~
+/some.txt
+/towa.txt
+/towa.svg
