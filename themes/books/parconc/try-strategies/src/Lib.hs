@@ -4,6 +4,7 @@ module Lib where
 
 import Control.Concurrent
 import Control.Parallel.Strategies
+import Data.Time
 import System.IO.Unsafe
 
 some :: Int -> Int -> (Int, Int)
@@ -39,3 +40,15 @@ f x = unsafePerformIO $ do
 	threadDelay 1000000
 	putStrLn $ "f " ++ show x ++ " end"
 	return $ 2 * x
+
+fib :: Int -> Integer
+fib 0 = 0
+fib 1 = 1
+fib n = fib (n - 2) + fib (n - 1)
+
+time :: IO a -> IO a
+time act = do
+	t0 <- getCurrentTime
+	act <* do
+		t1 <- getCurrentTime
+		print $ t1 `diffUTCTime` t0
