@@ -4,7 +4,7 @@ module SleepSort (sleepSort) where
 
 import Data.Foldable (for_)
 import Control.Concurrent (
-	forkIO, threadDelay, Chan, newChan, readChan, writeChan)
+	forkIO, threadDelay, Chan, newChan, readChan, writeChan )
 
 sleepSort :: Int -> [Int] -> IO [Int]
 sleepSort mx ns = do
