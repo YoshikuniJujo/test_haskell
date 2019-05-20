@@ -332,3 +332,90 @@ setAndOr1 (a, b, s, _) (ba, bb, bs) = setBit a ba . setBit b bb . setBit s bs
 
 peekAndOr1 :: (IWire, IWire, IWire, OWire) -> Circuit -> Bit
 peekAndOr1 (_, _, _, o) = peekOWire o
+
+adder1Carry :: CircuitBuilder (IWire, IWire, IWire, OWire)
+adder1Carry = do
+	(ici, oci) <- idGate
+	(ia, oa) <- idGate
+	(ib, ob) <- idGate
+	(ici1, ia1, o1) <- andGate
+	(ici2, ib2, o2) <- andGate
+	(ia3, ib3, o3) <- andGate
+	(is, oco) <- multiOrGate 3
+	case is of
+		[i1, i2, i3] -> do
+			connectWire oci ici1
+			connectWire oci ici2
+			connectWire oa ia1
+			connectWire oa ia3
+			connectWire ob ib2
+			connectWire ob ib3
+			connectWire o1 i1
+			connectWire o2 i2
+			connectWire o3 i3
+			return (ici, ia, ib, oco)
+		_ -> error "bad"
+
+setAdder1Carry :: (IWire, IWire, IWire, OWire) -> (Bit, Bit, Bit) -> Circuit -> Circuit
+setAdder1Carry (c, a, b, _) (bc, ba, bb) = setBit c bc . setBit a ba . setBit b bb
+
+peekAdder1Carry :: (IWire, IWire, IWire, OWire) -> Circuit -> Bit
+peekAdder1Carry (_, _, _, co) = peekOWire co
+
+adder1Sum :: CircuitBuilder (IWire, IWire, IWire, OWire)
+adder1Sum = do
+	(ici, oci) <- idGate
+	(ia, oa) <- idGate
+	(ib, ob) <- idGate
+	(nici, noci) <- notGate
+	(nia, noa) <- notGate
+	(nib, nob) <- notGate
+	(ici1, ia1, ib1, o1) <- and3Gate
+	(ici2, ia2, ib2, o2) <- and3Gate
+	(ici3, ia3, ib3, o3) <- and3Gate
+	(ici4, ia4, ib4, o4) <- and3Gate
+	(is, os) <- multiOrGate 4
+	case is of
+		[i1, i2, i3, i4] -> do
+			connectWire oci nici
+			connectWire oa nia
+			connectWire ob nib
+			connectWire oci ici1
+			connectWire noa ia1
+			connectWire nob ib1
+			connectWire noci ici2
+			connectWire oa ia2
+			connectWire nob ib2
+			connectWire noci ici3
+			connectWire noa ia3
+			connectWire ob ib3
+			connectWire oci ici4
+			connectWire oa ia4
+			connectWire ob ib4
+			connectWire o1 i1
+			connectWire o2 i2
+			connectWire o3 i3
+			connectWire o4 i4
+		_ -> error "bad"
+	return (ici, ia, ib, os)
+
+adder1 :: CircuitBuilder (IWire, IWire, IWire, OWire, OWire)
+adder1 = do
+	(ici, oci) <- idGate
+	(ia, oa) <- idGate
+	(ib, ob) <- idGate
+	(sici, sia, sib, s) <- adder1Sum
+	(cici, cia, cib, c) <- adder1Carry
+	connectWire oci sici
+	connectWire oa sia
+	connectWire ob sib
+	connectWire oci cici
+	connectWire oa cia
+	connectWire ob cib
+	return (ici, ia, ib, s, c)
+
+setAdder1 :: (IWire, IWire, IWire, OWire, OWire) -> (Bit, Bit, Bit) -> Circuit -> Circuit
+setAdder1 (c, a, b, _, _) (bc, ba, bb) = setBit c bc . setBit a ba . setBit b bb
+
+peekAdder1 :: (IWire, IWire, IWire, OWire, OWire) -> Circuit -> (Bit, Bit)
+peekAdder1 (_, _, _, s, co) cct = (peekOWire s cct, peekOWire co cct)
