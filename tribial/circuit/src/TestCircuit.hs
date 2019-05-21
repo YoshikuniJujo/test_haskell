@@ -754,3 +754,30 @@ peekAlu_ms (_, _, _, _, _, _, r, ovfl) cct = (bitsToWord $ (`peekOWire` cct) <$>
 
 peekAlu_ms' :: (IWire, IWire, (IWire, IWire), IWire, [IWire], [IWire], [OWire], OWire) -> Circuit -> ([Bit], Bit)
 peekAlu_ms' (_, _, _, _, _, _, r, ovfl) cct = ((`peekOWire` cct) <$> r, peekOWire ovfl cct)
+
+alu_bneg :: Int -> CircuitBuilder (IWire, IWire, (IWire, IWire), [IWire], [IWire], [OWire], OWire)
+alu_bneg n = do
+	(bnin, bnout) <- idGate
+	(aiv, biv, op, ci, a, b, r, ovfl) <- alu_ms n
+	connectWire bnout biv
+	connectWire bnout ci
+	return (aiv, bnin, op, a, b, r, ovfl)
+
+alu_riscv :: Int -> CircuitBuilder (IWire, IWire, (IWire, IWire), [IWire], [IWire], [OWire], OWire, OWire)
+alu_riscv n = do
+	(aiv, bng, op, a, b, r, ovfl) <- alu_bneg n
+	(ais, ao) <- multiOrGate n
+	(ni, no) <- notGate
+	zipWithM_ connectWire r ais
+	connectWire ao ni
+	return (aiv, bng, op, a, b, r, no, ovfl)
+
+setAlu_riscv :: (IWire, IWire, (IWire, IWire), [IWire], [IWire], [OWire], OWire, OWire) ->
+	Bit -> Bit -> Word64 -> Word64 -> Word64 -> Circuit -> Circuit
+setAlu_riscv (aiv, biv, (op0, op1), a, b, _, _, _) baiv bbiv op wa wb = setBit aiv baiv . setBit biv bbiv
+	. foldr (.) id (zipWith setBit [op0, op1] $ wordToBits 64 op)
+	. foldr (.) id (zipWith setBit a $ wordToBits 64 wa)
+	. foldr (.) id (zipWith setBit b $ wordToBits 64 wb)
+
+peekAlu_riscv :: (IWire, IWire, (IWire, IWire), [IWire], [IWire], [OWire], OWire, OWire) -> Circuit -> (Word64, Bit, Bit)
+peekAlu_riscv (_, _, _, _, _, r, z, ovfl) cct = (bitsToWord $ (`peekOWire` cct) <$> r, peekOWire z cct, peekOWire ovfl cct)
