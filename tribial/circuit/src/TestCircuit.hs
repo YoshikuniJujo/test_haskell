@@ -569,3 +569,49 @@ setAlu_s (biv, (op0, op1), ci, a, b, _, _) bbiv op bci wa wb = setBit biv bbiv
 
 peekAlu_s :: (IWire, (IWire, IWire), IWire, [IWire], [IWire], [OWire], OWire) -> Circuit -> (Word64, Bit)
 peekAlu_s (_, _, _, _, _, r, co) cct = (bitsToWord $ (`peekOWire` cct) <$> r, peekOWire co cct)
+
+alu1_nor :: CircuitBuilder (IWire, IWire, (IWire, IWire), IWire, IWire, IWire, OWire, OWire)
+alu1_nor = do
+	(ain, aout) <- idGate
+	(ni, no) <- notGate
+	(m0, m1, si, mo) <- mux21
+	(biv, op, ci, a, b, r, co) <- alu1_s
+	connectWire aout ni
+	connectWire aout m0
+	connectWire no m1
+	connectWire mo a
+	return (si, biv, op, ci, ain, b, r, co)
+
+alu_nor :: Int -> CircuitBuilder (IWire, IWire, (IWire, IWire), IWire, [IWire], [IWire], [OWire], OWire)
+alu_nor n | n < 1 = error "Oops!"
+alu_nor 1 = do
+	(aiv, biv, op, ci, a, b, r, co) <- alu1_nor
+	return (aiv, biv, op, ci, [a], [b], [r], co)
+alu_nor n = do
+	(aivin, aivout) <- idGate
+	(bivin, bivout) <- idGate
+	(op0in, op0out) <- idGate
+	(op1in, op1out) <- idGate
+	(aiv1, biv1, (op10, op11), ci1, a1, b1, r1, co1) <- alu1_nor
+	(aivn, bivn, (opn0, opn1), cin, an, bn, rn, con) <- alu_nor $ n - 1
+	connectWire aivout aiv1
+	connectWire aivout aivn
+	connectWire bivout biv1
+	connectWire bivout bivn
+	connectWire op0out op10
+	connectWire op1out op11
+	connectWire op0out opn0
+	connectWire op1out opn1
+	connectWire co1 cin
+	return (aivin, bivin, (op0in, op1in), ci1, a1 : an, b1 : bn, r1 : rn, con)
+
+setAlu_nor :: (IWire, IWire, (IWire, IWire), IWire, [IWire], [IWire], [OWire], OWire) ->
+	Bit -> Bit -> Word64 -> Bit -> Word64 -> Word64 -> Circuit -> Circuit
+setAlu_nor (aiv, biv, (op0, op1), ci, a, b, _, _) baiv bbiv op bci wa wb = setBit aiv baiv . setBit biv bbiv
+	. foldr (.) id (zipWith setBit [op0, op1] $ wordToBits 64 op)
+	. setBit ci bci
+	. foldr (.) id (zipWith setBit a $ wordToBits 64 wa)
+	. foldr (.) id (zipWith setBit b $ wordToBits 64 wb)
+
+peekAlu_nor :: (IWire, IWire, (IWire, IWire), IWire, [IWire], [IWire], [OWire], OWire) -> Circuit -> (Word64, Bit)
+peekAlu_nor (_, _, _, _, _, _, r, co) cct = (bitsToWord $ (`peekOWire` cct) <$> r, peekOWire co cct)
