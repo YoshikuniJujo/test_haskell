@@ -54,10 +54,10 @@ invert o i = do
 	connectWire no i
 obvert = connectWire
 
-decoder :: CircuitBuilder (
+decoder8 :: CircuitBuilder (
 	IWire, IWire, IWire,
 	OWire, OWire, OWire, OWire, OWire, OWire, OWire, OWire )
-decoder = do
+decoder8 = do
 	(i1, oi1) <- idGate
 	(i2, oi2) <- idGate
 	(i3, oi3) <- idGate
@@ -87,6 +87,31 @@ decoder = do
 		[obvert, obvert, obvert] [oi1, oi2, oi3] [i71, i72, i73]
 	return (i1, i2, i3, o0, o1, o2, o3, o4, o5, o6, o7)
 
+decoder :: Int -> CircuitBuilder ([IWire], [OWire])
+decoder n = do
+	(is, ois) <- unzip <$> m `replicateM` idGate
+	(ias, oas) <- unzip <$> n `replicateM` multiAndGate m
+	zipWithM_ ((sequence_ .) . flip (zipWith3 id) ois) (binary (invert, obvert) m) ias
+	return (is, oas)
+	where m = log2 n
+
+binary :: (a, a) -> Int -> [[a]]
+binary _ n | n < 1 = [[]]
+binary (o, i) n = binary (o, i) (n - 1) >>= (<$> [(o :), (i :)]) . flip ($)
+
+log2 :: Integral n => n -> n
+log2 i = l2 0
+	where l2 j
+		| j < 0 = error "bad"
+		| 2 ^ j >= i = j
+		| otherwise = l2 $ j + 1
+
+setDecoder :: ([IWire], [OWire]) -> [Bit] -> Circuit -> Circuit
+setDecoder (is, _) = foldr (.) id . zipWith setBit is
+
+peekDecoder :: ([IWire], [OWire]) -> Circuit -> [Bit]
+peekDecoder (_, os) cct = (`peekOWire` cct) <$> os
+
 inputDecoder :: (
 		IWire, IWire, IWire,
 		OWire, OWire, OWire, OWire, OWire, OWire, OWire, OWire) ->
@@ -94,17 +119,29 @@ inputDecoder :: (
 inputDecoder (i1, i2, i3, _, _, _, _, _, _, _, _) (b1, b2, b3) cct =
 	setBit i1 b1 $ setBit i2 b2 $ setBit i3 b3 cct
 
-peekDecoder :: (
+peekDecoder8 :: (
 		IWire, IWire, IWire,
 		OWire, OWire, OWire, OWire, OWire, OWire, OWire, OWire) ->
 	Circuit -> (
 		Bit, Bit, Bit,
 		Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit)
-peekDecoder (i1, i2, i3, o0, o1, o2, o3, o4, o5, o6, o7) cct = (
+peekDecoder8 (i1, i2, i3, o0, o1, o2, o3, o4, o5, o6, o7) cct = (
 	peekIWire i1 cct, peekIWire i2 cct, peekIWire i3 cct,
 	peekOWire o0 cct, peekOWire o1 cct, peekOWire o2 cct,
 	peekOWire o3 cct, peekOWire o4 cct, peekOWire o5 cct,
 	peekOWire o6 cct, peekOWire o7 cct )
+
+multiAndGate :: Int -> CircuitBuilder ([IWire], OWire)
+multiAndGate n | n < 1 = error "Oops!"
+multiAndGate 1 = first (: []) <$> idGate
+multiAndGate 2 = (\(i1, i2, o) -> ([i1, i2], o)) <$> andGate
+multiAndGate n = do
+	(is1, o1) <- multiAndGate (n `div` 2)
+	(is2, o2) <- multiAndGate (n - n `div` 2)
+	(i1, i2, o) <- andGate
+	connectWire o1 i1
+	connectWire o2 i2
+	return (is1 ++ is2, o)
 
 multiOrGate :: Int -> CircuitBuilder ([IWire], OWire)
 multiOrGate n | n < 1 = error "Oops!"
@@ -280,6 +317,12 @@ setTestM4to1 (a, b, c, d, s1, s2, _) (ba, bb, bc, bd, bs1, bs2) =
 peekTestM4to1 ::
 	(IWire, IWire, IWire, IWire, IWire, IWire, OWire) -> Circuit -> Bit
 peekTestM4to1 (_, _, _, _, _, _, o) = peekOWire o
+
+{-
+unzip4 :: [(a, b, c, d)] -> ([a], [b], [c], [d])
+unzip4 ((a, b, c, d) : es) = (a : as, b : bs, c : cs, d : ds)
+	where (as, bs, cs, ds) = unzip4 es
+	-}
 
 unzip5 :: [(a, b, c, d, e)] -> ([a], [b], [c], [d], [e])
 unzip5 [] = ([], [], [], [], [])
