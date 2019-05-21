@@ -526,3 +526,46 @@ setAlu ((op0, op1), ci, a, b, _, _) op bci wa wb =
 
 peekAlu :: ((IWire, IWire), IWire, [IWire], [IWire], [OWire], OWire) -> Circuit -> (Word64, Bit)
 peekAlu (_, _, _, _, r, co) cct = (bitsToWord $ (`peekOWire` cct) <$> r, peekOWire co cct)
+
+alu1_s :: CircuitBuilder (IWire, (IWire, IWire), IWire, IWire, IWire, OWire, OWire)
+alu1_s = do
+	(bin, bout) <- idGate
+	(ni, no) <- notGate
+	(m0, m1, si, mo) <- mux21
+	(op, ci, a, b, r, co) <- alu1
+	connectWire bout ni
+	connectWire bout m0
+	connectWire no m1
+	connectWire mo b
+	return (si, op, ci, a, bin, r, co)
+
+alu_s :: Int -> CircuitBuilder (IWire, (IWire, IWire), IWire, [IWire], [IWire], [OWire], OWire)
+alu_s n | n < 1 = error "Oops!"
+alu_s 1 = do
+	(biv, op, ci, a, b, r, co) <- alu1_s
+	return (biv, op, ci, [a], [b], [r], co)
+alu_s n = do
+	(bivin, bivout) <- idGate
+	(op0in, op0out) <- idGate
+	(op1in, op1out) <- idGate
+	(biv1, (op10, op11), ci1, a1, b1, r1, co1) <- alu1_s
+	(bivn, (opn0, opn1), cin, an, bn, rn, con) <- alu_s $ n - 1
+	connectWire bivout biv1
+	connectWire bivout bivn
+	connectWire op0out op10
+	connectWire op1out op11
+	connectWire op0out opn0
+	connectWire op1out opn1
+	connectWire co1 cin
+	return (bivin, (op0in, op1in), ci1, a1 : an, b1 : bn, r1 : rn, con)
+
+setAlu_s :: (IWire, (IWire, IWire), IWire, [IWire], [IWire], [OWire], OWire) ->
+	Bit -> Word64 -> Bit -> Word64 -> Word64 -> Circuit -> Circuit
+setAlu_s (biv, (op0, op1), ci, a, b, _, _) bbiv op bci wa wb = setBit biv bbiv
+	. foldr (.) id (zipWith setBit [op0, op1] $ wordToBits 64 op)
+	. setBit ci bci
+	. foldr (.) id (zipWith setBit a $ wordToBits 64 wa)
+	. foldr (.) id (zipWith setBit b $ wordToBits 64 wb)
+
+peekAlu_s :: (IWire, (IWire, IWire), IWire, [IWire], [IWire], [OWire], OWire) -> Circuit -> (Word64, Bit)
+peekAlu_s (_, _, _, _, _, r, co) cct = (bitsToWord $ (`peekOWire` cct) <$> r, peekOWire co cct)
