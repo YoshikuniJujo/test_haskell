@@ -106,20 +106,20 @@ gateWires (Delay _ iw) = [iw]
 andGate, orGate :: CircuitBuilder (IWire, IWire, OWire)
 andGate = do
 	(iw1, iw2, ow) <- makeAndGate
-	(diw, dow) <- makeDelay 9
+	(diw, dow) <- makeDelay 2
 	connectWire ow diw
 	return (iw1, iw2, dow)
 
 orGate = do
 	(iw1, iw2, ow) <- makeOrGate
-	(diw, dow) <- makeDelay 9
+	(diw, dow) <- makeDelay 2
 	connectWire ow diw
 	return (iw1, iw2, dow)
 
 notGate :: CircuitBuilder (IWire, OWire)
 notGate = do
 	(iw, ow) <- makeNotGate
-	(diw, dow) <- makeDelay 4
+	(diw, dow) <- makeDelay 1
 	connectWire ow diw
 	return (iw, dow)
 
