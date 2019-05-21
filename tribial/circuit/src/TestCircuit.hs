@@ -469,3 +469,32 @@ setAdder1 (c, a, b, _, _) (bc, ba, bb) = setBit c bc . setBit a ba . setBit b bb
 
 peekAdder1 :: (IWire, IWire, IWire, OWire, OWire) -> Circuit -> (Bit, Bit)
 peekAdder1 (_, _, _, s, co) cct = (peekOWire s cct, peekOWire co cct)
+
+alu1 :: CircuitBuilder ((IWire, IWire), IWire, IWire, IWire, OWire, OWire)
+alu1 = do
+	(ain, a) <- idGate
+	(bin, b) <- idGate
+	(ai1, ai2, ao) <- andGate
+	(oi1, oi2, oo) <- orGate
+	(ci, adi1, adi2, s, co) <- adder1
+	(op, mis, mo) <- mux_1 3
+	case (op, mis) of
+		([o0, o1], [mi0, mi1, mi2]) -> do
+			connectWire a ai1
+			connectWire b ai2
+			connectWire a oi1
+			connectWire b oi2
+			connectWire a adi1
+			connectWire b adi2
+			connectWire ao mi0
+			connectWire oo mi1
+			connectWire s mi2
+			return ((o0, o1), ci, ain, bin, mo, co)
+		_ -> error "Oops!"
+
+setAlu1 :: ((IWire, IWire), IWire, IWire, IWire, OWire, OWire) -> Word64 -> Bit -> Bit -> Bit -> Circuit -> Circuit
+setAlu1 ((o0, o1), ci, a, b, _, _) op bci ba bb = foldr (.) id (zipWith setBit [o0, o1] $ wordToBits 64 op)
+	. foldr (.) id (zipWith setBit [ci, a, b] [bci, ba, bb])
+
+peekAlu1 :: ((IWire, IWire), IWire, IWire, IWire, OWire, OWire) -> Circuit -> (Bit, Bit)
+peekAlu1 (_, _, _, _, r, co) cct = (peekOWire r cct, peekOWire co cct)
