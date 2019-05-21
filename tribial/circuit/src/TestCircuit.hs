@@ -6,7 +6,7 @@ module TestCircuit where
 import Control.Arrow
 import Control.Monad
 import Data.Bool
-import Data.Bits ((.|.), testBit, shiftL, shiftR)
+import Data.Bits ((.&.), (.|.), testBit, shiftL, shiftR)
 import Data.Word
 
 import Circuit
@@ -781,3 +781,24 @@ setAlu_riscv (aiv, biv, (op0, op1), a, b, _, _, _) baiv bbiv op wa wb = setBit a
 
 peekAlu_riscv :: (IWire, IWire, (IWire, IWire), [IWire], [IWire], [OWire], OWire, OWire) -> Circuit -> (Word64, Bit, Bit)
 peekAlu_riscv (_, _, _, _, _, r, z, ovfl) cct = (bitsToWord $ (`peekOWire` cct) <$> r, peekOWire z cct, peekOWire ovfl cct)
+
+riscv_alu :: Int -> CircuitBuilder ((IWire, IWire, IWire, IWire), [IWire], [IWire], [OWire], OWire, OWire)
+riscv_alu n = do
+	(aiv, bng, (op0, op1), a, b, r, z, ovfl) <- alu_riscv n
+	return ((aiv, bng, op0, op1), a, b, r, z, ovfl)
+
+alu_ctrl :: Word8 -> (Bit, Bit, Bit, Bit)
+alu_ctrl w = (s $ w .&. 8, s $ w .&. 4, s $ w .&. 2, s $ w .&. 1)
+	where
+	s = bool O I . (/= 0)
+
+setRiscvAlu :: ((IWire, IWire, IWire, IWire), [IWire], [IWire], [OWire], OWire, OWire) ->
+	Word8 -> Word64 -> Word64 -> Circuit -> Circuit
+setRiscvAlu ((aiv, biv, op0, op1), a, b, _, _, _) ac wa wb = setBit aiv baiv . setBit biv bbiv
+	. foldr (.) id (zipWith setBit [op0, op1] [bop0, bop1])
+	. foldr (.) id (zipWith setBit a $ wordToBits 64 wa)
+	. foldr (.) id (zipWith setBit b $ wordToBits 64 wb)
+	where (baiv, bbiv, bop1, bop0) = alu_ctrl ac
+
+peekRiscvAlu :: ((IWire, IWire, IWire, IWire), [IWire], [IWire], [OWire], OWire, OWire) -> Circuit -> (Word64, Bit, Bit)
+peekRiscvAlu (_, _, _, r, z, ovfl) cct = (bitsToWord $ (`peekOWire` cct) <$> r, peekOWire z cct, peekOWire ovfl cct)
