@@ -144,6 +144,49 @@ peekBitsFastCarry4 :: FastCarry4Wires -> Circuit -> (Bit, Bit, Bit)
 peekBitsFastCarry4 (_, _, o, p, g) =
 	(,,) <$> peekOWire o <*> peekOWire p <*> peekOWire g
 
+type FastCarry1to4Wires = (
+	IWire, (IWirePair, IWirePair, IWirePair, IWirePair),
+	(OWire, OWire, OWire, OWire), OWire, OWire )
+
+fastCarry1to4 :: CircuitBuilder FastCarry1to4Wires
+fastCarry1to4 = do
+	(c0in, c0out) <- idGate
+	((a0in, a0out), (a1in, a1out), (a2in, a2out), (a3in, a3out)) <-
+		listToTuple4 <$> replicateM 4 idGate
+	((b0in, b0out), (b1in, b1out), (b2in, b2out), (b3in, b3out)) <-
+		listToTuple4 <$> replicateM 4 idGate
+	(a10, b10, c10, co1) <- fastCarry1
+	(c20, ((a20, b20), (a21, b21)), co2) <- fastCarry2
+	(c30, ((a30, b30), (a31, b31), (a32, b32)), co3) <- fastCarry3
+	(c40, ((a40, b40), (a41, b41), (a42, b42), (a43, b43)), co4, lp, lg) <-
+		fastCarry4
+	mapM_ (connectWire c0out) [c10, c20, c30, c40]
+	zipWithM_ connectWire
+		[a0out, a0out, a0out, a0out,
+			a1out, a1out, a1out, a2out, a2out, a3out]
+		[a10, a20, a30, a40, a21, a31, a41, a32, a42, a43]
+	zipWithM_ connectWire
+		[b0out, b0out, b0out, b0out,
+			b1out, b1out, b1out, b2out, b2out, b3out]
+		[b10, b20, b30, b40, b21, b31, b41, b32, b42, b43]
+	return (c0in, ((a0in, b0in), (a1in, b1in), (a2in, b2in), (a3in, b3in)),
+		(co1, co2, co3, co4), lp, lg)
+
+setBitsFastCarry1to4 :: FastCarry1to4Wires -> Bit ->
+	BitPair -> BitPair -> BitPair -> BitPair -> Circuit -> Circuit
+setBitsFastCarry1to4 (ci0, ((a0, b0), (a1, b1), (a2, b2), (a3, b3)), _, _, _)
+	bci0 (ba0, bb0) (ba1, bb1) (ba2, bb2) (ba3, bb3) = setBit ci0 bci0
+		. foldr (.) id (zipWith setBit
+			[a0, b0, a1, b1, a2, b2, a3, b3]
+			[ba0, bb0, ba1, bb1, ba2, bb2, ba3, bb3])
+
+peekBitsFastCarry1to4 ::
+	FastCarry1to4Wires -> Circuit -> ((Bit, Bit, Bit, Bit), Bit, Bit)
+peekBitsFastCarry1to4 (_, _, (ci1, ci2, ci3, ci4), lp, lg) cct =
+	((,,,) <$> peekOWire ci1 <*> peekOWire ci2
+			<*> peekOWire ci3 <*> peekOWire ci4 $ cct,
+		peekOWire lp cct, peekOWire lg cct)
+
 --------------------------------------------------------------------------------
 
 largePg :: CircuitBuilder
