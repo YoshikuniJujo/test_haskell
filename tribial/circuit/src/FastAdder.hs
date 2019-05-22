@@ -303,6 +303,40 @@ peekBitsFastCarry16 (_, _, co, lp, lg) cct =
 
 --------------------------------------------------------------------------------
 
+fastCarry64 :: CircuitBuilder (IWire, [IWirePair], [OWire])
+fastCarry64 = do
+	(c0in, c0out) <- idGate
+	(ci0, abi0_15, co1_16, p0_15, g0_15) <- fastCarry16
+	(ci16, abi16_31, co17_32, p16_31, g16_31) <- fastCarry16
+	(ci32, abi32_47, co33_48, p32_47, g32_47) <- fastCarry16
+	(ci48, abi48_63, co49_64, p48_63, g48_63) <- fastCarry16
+	(ci10, p10, g10, co16) <- largePgToCarry1
+	(ci20, ((p20, g20), (p21, g21)), co32) <- largePgToCarry2
+	(ci30, ((p30, g30), (p31, g31), (p32, g32)), co48) <- largePgToCarry3
+	(ci40, ((p40, g40), (p41, g41), (p42, g42), (p43, g43)), _co64, _lp, _lg) <-
+		largePgToCarry4
+	mapM_ (connectWire c0out) [ci0, ci10, ci20, ci30, ci40]
+	zipWithM_ connectWire
+		[p0_15, g0_15, p0_15, g0_15, p16_31, g16_31,
+			p0_15, g0_15, p16_31, g16_31, p32_47, g32_47,
+			p0_15, g0_15, p16_31, g16_31, p32_47, g32_47,
+			p48_63, g48_63]
+		[p10, g10, p20, g20, p21, g21, p30, g30, p31, g31, p32, g32,
+			p40, g40, p41, g41, p42, g42, p43, g43]
+	zipWithM_ connectWire [co16, co32, co48] [ci16, ci32, ci48]
+	return (c0in, abi0_15 ++ abi16_31 ++ abi32_47 ++ abi48_63,
+		co1_16 ++ co17_32 ++ co33_48 ++ co49_64)
+
+setBitsFastCarry64 ::
+	(IWire, [IWirePair], [OWire]) -> Bit -> [BitPair] -> Circuit -> Circuit
+setBitsFastCarry64 (ci0, ab, _) bci0 bab = setBit ci0 bci0 . foldr (.) id (
+	zipWith (\(a, b) (ba, bb) -> setBit a ba . setBit b bb) ab bab )
+
+peekBitsFastCarry64 :: (IWire, [IWirePair], [OWire]) -> Circuit -> [Bit]
+peekBitsFastCarry64 (_, _, co) cct = (`peekOWire` cct) <$> co
+
+--------------------------------------------------------------------------------
+
 run :: Int -> Circuit -> Circuit
 run n = (!! n) . iterate step
 
