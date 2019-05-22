@@ -237,23 +237,29 @@ largePgToCarry3 = do
 
 largePgToCarry4 :: CircuitBuilder (
 	IWire, ((IWire, IWire), (IWire, IWire), (IWire, IWire), (IWire, IWire)),
-	OWire )
+	OWire, OWire, OWire )
 largePgToCarry4 = do
-	((p3in, p3out), (p2in, p2out), (p1in, p1out)) <-
-		listToTuple3 <$> replicateM 3 idGate
-	(a21, g2, a2o) <- andGate
-	((a31, a32, g1), a3o) <- andGate3
-	((a41, a42, a43, g0), a4o) <- andGate4
-	((a51, a52, a53, p0, c0), a5o) <- andGate5
-	((g3, o52, o53, o54, o55), c4) <- orGate5
+	((p3in, p3out), (p2in, p2out), (p1in, p1out), (p0in, p0out)) <-
+		listToTuple4 <$> replicateM 4 idGate
+	((g3in, g3out), (g2in, g2out), (g1in, g1out), (g0in, g0out)) <-
+		listToTuple4 <$> replicateM 4 idGate
+	(a21, a22, a2o) <- andGate
+	((a31, a32, a33), a3o) <- andGate3
+	((a41, a42, a43, a44), a4o) <- andGate4
+	((a51, a52, a53, a54, c0), a5o) <- andGate5
+	((o51, o52, o53, o54, o55), c4) <- orGate5
 	zipWithM_ connectWire
-		[p3out, a2o, p3out, p2out, a3o,
-			p3out, p2out, p1out, a4o, p3out, p2out, p1out, a5o]
-		[a21, o52, a31, a32, o53,
-			a41, a42, a43, o54, a51, a52, a53, o55]
-	return (c0, ((p0, g0), (p1in, g1), (p2in, g2), (p3in, g3)), c4)
+		[p3out, g2out, a2o, p3out, p2out, g1out, a3o,
+			p3out, p2out, p1out, g0out, a4o, p3out, p2out, p1out, p0out, a5o, g3out]
+		[a21, a22, o52, a31, a32, a33, o53,
+			a41, a42, a43, a44, o54, a51, a52, a53, a54, o55, o51]
+	((lp0, lg0), (lp1, lg1), (lp2, lg2), (lp3, lg3), lp, lg) <- largePg
+	zipWithM_ connectWire
+		[p0out, g0out, p1out, g1out, p2out, g2out, p3out, g3out]
+		[lp0, lg0, lp1, lg1, lp2, lg2, lp3, lg3]
+	return (c0, ((p0in, g0in), (p1in, g1in), (p2in, g2in), (p3in, g3in)), c4, lp, lg)
 
-fastCarry16 :: CircuitBuilder (IWire, [IWirePair], [OWire])
+fastCarry16 :: CircuitBuilder (IWire, [IWirePair], [OWire], OWire, OWire)
 fastCarry16 = do
 	(c0in, c0out) <- idGate
 	(ci0, ((a0, b0), (a1, b1), (a2, b2), (a3, b3)),
@@ -267,7 +273,7 @@ fastCarry16 = do
 	(ci10, p10, g10, co4) <- largePgToCarry1
 	(ci20, ((p20, g20), (p21, g21)), co8) <- largePgToCarry2
 	(ci30, ((p30, g30), (p31, g31), (p32, g32)), co12) <- largePgToCarry3
-	(ci40, ((p40, g40), (p41, g41), (p42, g42), (p43, g43)), co16) <-
+	(ci40, ((p40, g40), (p41, g41), (p42, g42), (p43, g43)), co16, lp, lg) <-
 		largePgToCarry4
 	mapM_ (connectWire c0out) [ci0, ci10, ci20, ci30, ci40]
 	zipWithM_ connectWire
@@ -282,16 +288,18 @@ fastCarry16 = do
 			(a8, b8), (a9, b9), (a10, b10), (a11, b11),
 			(a12, b12), (a13, b13), (a14, b14), (a15, b15) ],
 		[	co1, co2, co3, co4, co5, co6, co7, co8,
-			co9, co10, co11, co12, co13, co14, co15, co16 ])
+			co9, co10, co11, co12, co13, co14, co15, co16 ], lp, lg)
 
-setBitsFastCarry16 ::
-	(IWire, [IWirePair], [OWire]) -> Bit -> [BitPair] -> Circuit -> Circuit
-setBitsFastCarry16 (c0, ps, _) bc0 bps = setBit c0 bc0
+setBitsFastCarry16 :: (IWire, [IWirePair], [OWire], OWire, OWire) ->
+	Bit -> [BitPair] -> Circuit -> Circuit
+setBitsFastCarry16 (c0, ps, _, _, _) bc0 bps = setBit c0 bc0
 	. foldr (.) id (
 		zipWith (\(a, b) (ba, bb) -> setBit a ba . setBit b bb) ps bps )
 
-peekBitsFastCarry16 :: (IWire, [IWirePair], [OWire]) -> Circuit -> [Bit]
-peekBitsFastCarry16 (_, _, co) cct = (`peekOWire` cct) <$> co
+peekBitsFastCarry16 :: (IWire, [IWirePair], [OWire], OWire, OWire) ->
+	Circuit -> ([Bit], Bit, Bit)
+peekBitsFastCarry16 (_, _, co, lp, lg) cct =
+	((`peekOWire` cct) <$> co,  peekOWire lp cct, peekOWire lg cct)
 
 --------------------------------------------------------------------------------
 
