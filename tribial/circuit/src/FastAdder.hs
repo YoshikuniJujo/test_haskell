@@ -6,6 +6,7 @@ import Control.Arrow
 import Control.Monad
 
 import Circuit
+import Element
 import Tools
 
 rippleCarry1 :: CircuitBuilder (IWire, IWire, IWire, OWire)
@@ -335,56 +336,3 @@ setBitsFastCarry64 (ci0, ab, _) bci0 bab = setBit ci0 bci0 . foldr (.) id (
 
 peekBitsFastCarry64 :: (IWire, [IWirePair], [OWire]) -> Circuit -> [Bit]
 peekBitsFastCarry64 (_, _, co) cct = (`peekOWire` cct) <$> co
-
---------------------------------------------------------------------------------
-
-setBits31 :: (IWire, IWire, IWire, OWire) ->
-	Bit -> Bit -> Bit -> Circuit -> Circuit
-setBits31 (i1, i2, i3, _) b1 b2 b3 =
-	foldr (.) id $ zipWith setBit [i1, i2, i3] [b1, b2, b3]
-
-peekBits31 :: (IWire, IWire, IWire, OWire) -> Circuit -> Bit
-peekBits31 (_, _, _, o) = peekOWire o
-
-orGate5, andGate5 :: CircuitBuilder ((IWire, IWire, IWire, IWire, IWire), OWire)
-orGate5 = first listToTuple5 <$> multiOrGate 5
-andGate5 = first listToTuple5 <$> multiAndGate 5
-
-orGate4, andGate4 :: CircuitBuilder ((IWire, IWire, IWire, IWire), OWire)
-orGate4 = first listToTuple4 <$> multiOrGate 4
-andGate4 = first listToTuple4 <$> multiAndGate 4
-
-orGate3, andGate3 :: CircuitBuilder ((IWire, IWire, IWire), OWire)
-orGate3 = first listToTuple3 <$> multiOrGate 3
-andGate3 = first listToTuple3 <$> multiAndGate 3
-
-multiOrGate, multiAndGate :: Int -> CircuitBuilder ([IWire], OWire)
-multiOrGate = multiple orGate
-multiAndGate = multiple andGate
-
-multiple :: CircuitBuilder (IWire, IWire, OWire) ->
-	Int -> CircuitBuilder ([IWire], OWire)
-multiple _ n | n < 1 = error "Oops!"
-multiple _ 1 = first (: []) <$> idGate
-multiple g 2 = (\(i1, i2, o) -> ([i1, i2], o)) <$> g
-multiple g n = do
-	(is1, o1) <- multiple g (n `div` 2)
-	(is2, o2) <- multiple g (n - n `div` 2)
-	(i1, i2, o) <- g
-	connectWire o1 i1
-	connectWire o2 i2
-	return (is1 ++ is2, o)
-
---------------------------------------------------------------------------------
-
-listToTuple3 :: [a] -> (a, a, a)
-listToTuple3 [x, y, z] = (x, y, z)
-listToTuple3 _ = error "Oops!"
-
-listToTuple4 :: [a] -> (a, a, a, a)
-listToTuple4 [x, y, z, w] = (x, y, z, w)
-listToTuple4 _ = error "Oops!"
-
-listToTuple5 :: [a] -> (a, a, a, a, a)
-listToTuple5 [x, y, z, w, v] = (x, y, z, w, v)
-listToTuple5 _ = error "Oops!"
