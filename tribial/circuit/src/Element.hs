@@ -82,7 +82,7 @@ flipIf :: IWire -> CircuitBuilder (IWire, IWire)
 flipIf x = do
 	(i, o) <- idGate
 	(ni, no) <- notGate
-	(a, b, si, mo) <- mux2
+	(si, a, b, mo) <- mux2
 	connectWire o ni
 	connectWire o a
 	connectWire no b
