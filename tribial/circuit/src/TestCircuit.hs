@@ -10,6 +10,7 @@ import Data.Bits ((.&.), testBit)
 import Data.Word
 
 import Circuit
+import Element
 import Tools
 
 --------------------------------------------------------------------------------
@@ -117,30 +118,6 @@ peekDecoder8 (i1, i2, i3, o0, o1, o2, o3, o4, o5, o6, o7) cct = (
 	peekOWire o0 cct, peekOWire o1 cct, peekOWire o2 cct,
 	peekOWire o3 cct, peekOWire o4 cct, peekOWire o5 cct,
 	peekOWire o6 cct, peekOWire o7 cct )
-
-multiAndGate :: Int -> CircuitBuilder ([IWire], OWire)
-multiAndGate n | n < 1 = error "Oops!"
-multiAndGate 1 = first (: []) <$> idGate
-multiAndGate 2 = (\(i1, i2, o) -> ([i1, i2], o)) <$> andGate
-multiAndGate n = do
-	(is1, o1) <- multiAndGate (n `div` 2)
-	(is2, o2) <- multiAndGate (n - n `div` 2)
-	(i1, i2, o) <- andGate
-	connectWire o1 i1
-	connectWire o2 i2
-	return (is1 ++ is2, o)
-
-multiOrGate :: Int -> CircuitBuilder ([IWire], OWire)
-multiOrGate n | n < 1 = error "Oops!"
-multiOrGate 1 = first (: []) <$> idGate
-multiOrGate 2 = (\(i1, i2, o) -> ([i1, i2], o)) <$> orGate
-multiOrGate n = do
-	(is1, o1) <- multiOrGate (n `div` 2)
-	(is2, o2) <- multiOrGate (n - n `div` 2)
-	(i1, i2, o) <- orGate
-	connectWire o1 i1
-	connectWire o2 i2
-	return (is1 ++ is2, o)
 
 patterns :: a -> a -> Int -> [[a]]
 patterns _ _ n | n < 1 = [[]]
@@ -664,17 +641,6 @@ alu1_ms = do
 			detectOverflow a b s ovflin
 			return (aiv, biv, (o0, o1), ci, ain', bin', lin, mo, st, ovfl)
 		_ -> error "Oops!"
-
-flipIf :: IWire -> CircuitBuilder (IWire, IWire)
-flipIf x = do
-	(i, o) <- idGate
-	(ni, no) <- notGate
-	(a, b, si, mo) <- mux21
-	connectWire o ni
-	connectWire o a
-	connectWire no b
-	connectWire mo x
-	return (si, i)
 
 detectOverflow :: OWire -> OWire -> OWire -> IWire -> CircuitBuilder ()
 detectOverflow a b s ovfl = do

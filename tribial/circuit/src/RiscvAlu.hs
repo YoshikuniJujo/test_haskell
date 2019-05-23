@@ -55,20 +55,17 @@ type Alu_1Wires = (IWire, IWire, IWire, [IWire], [IWire], [OWire], OWire)
 
 alu_1 :: Word8 -> CircuitBuilder Alu_1Wires
 alu_1 n = do
-	(o0in, o0out) <- idGate
-	(o1in, o1out) <- idGate
-	(c0in, c0out) <- idGate
-	(ains, aouts) <- unzip <$> replicateM (2 ^ n) idGate
-	(bins, bouts) <- unzip <$> replicateM (2 ^ n) idGate
 	(c0', as', bs', co1_2n, _g, _p) <- carry1_2n n
 	(o0s, o1s, ci0_2n_1, as'', bs'', rs) <- unzip6 <$> replicateM (2 ^ n) alu1_1
+	((o0in, o0out), (o1in, o1out), (c0in, c0out)) <-
+		listToTuple3 <$> replicateM 3 idGate
+	(ains, aouts) <- unzip <$> replicateM (2 ^ n) idGate
+	(bins, bouts) <- unzip <$> replicateM (2 ^ n) idGate
 	connectWire c0out c0'
-	zipWithM_ connectWire aouts as'
-	zipWithM_ connectWire bouts bs'
+	zipWithM_ connectWire aouts as'; zipWithM_ connectWire bouts bs'
 	zipWithM_ (\o0 o1 -> connectWire o0out o0 >> connectWire o1out o1) o0s o1s
 	zipWithM_ connectWire (c0out : co1_2n) ci0_2n_1
-	zipWithM_ connectWire aouts as''
-	zipWithM_ connectWire bouts bs''
+	zipWithM_ connectWire aouts as''; zipWithM_ connectWire bouts bs''
 	return (o0in, o1in, c0in, ains, bins, rs, last co1_2n)
 
 setBitsAlu_1 :: Alu_1Wires ->

@@ -77,3 +77,14 @@ obrev = do
 	(ob', rev) <- notGate
 	connectWire ob ob'
 	return (i, ob, rev)
+
+flipIf :: IWire -> CircuitBuilder (IWire, IWire)
+flipIf x = do
+	(i, o) <- idGate
+	(ni, no) <- notGate
+	(a, b, si, mo) <- mux2
+	connectWire o ni
+	connectWire o a
+	connectWire no b
+	connectWire mo x
+	return (si, i)
