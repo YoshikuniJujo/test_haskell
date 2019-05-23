@@ -6,6 +6,7 @@ import Control.Arrow
 import Control.Monad
 
 import Circuit
+import Tools
 
 rippleCarry1 :: CircuitBuilder (IWire, IWire, IWire, OWire)
 rippleCarry1 = do
@@ -337,9 +338,6 @@ peekBitsFastCarry64 (_, _, co) cct = (`peekOWire` cct) <$> co
 
 --------------------------------------------------------------------------------
 
-run :: Int -> Circuit -> Circuit
-run n = (!! n) . iterate step
-
 setBits31 :: (IWire, IWire, IWire, OWire) ->
 	Bit -> Bit -> Bit -> Circuit -> Circuit
 setBits31 (i1, i2, i3, _) b1 b2 b3 =
@@ -378,10 +376,6 @@ multiple g n = do
 	return (is1 ++ is2, o)
 
 --------------------------------------------------------------------------------
-
-listToTuple2 :: [a] -> (a, a)
-listToTuple2 [x, y] = (x, y)
-listToTuple2 _ = error "Oops!"
 
 listToTuple3 :: [a] -> (a, a, a)
 listToTuple3 [x, y, z] = (x, y, z)
