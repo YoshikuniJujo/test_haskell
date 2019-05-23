@@ -29,6 +29,8 @@ setBits51 (i1, i2, i3, i4, i5, _) b1 b2 b3 b4 b5 =
 peekBits51 :: Wires51 -> Circuit -> Bit
 peekBits51 (_, _, _, _, _, o) = peekOWire o
 
+type Wires61 = (IWire, IWire, IWire, IWire, IWire, IWire, OWire)
+
 wordToBits :: Int -> Word64 -> [Bit]
 wordToBits n _ | n < 1 = []
 wordToBits n w = bool O I (w `testBit` 0) : wordToBits (n - 1) (w `shiftR` 1)

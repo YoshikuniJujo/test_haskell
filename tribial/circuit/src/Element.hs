@@ -42,6 +42,28 @@ dec23 = do
 		[r01, r02, r11, r12, r21, r22]
 	return (b0in, b1in, r0, r1, r2)
 
+mux4 :: CircuitBuilder Wires61
+mux4 = do
+	(o0, o1, s0, s1, s2, s3) <- dec24
+	((a, s0', ao), (b, s1', bo), (c, s2', co), (e, s3', eo)) <-
+		listToTuple4 <$> replicateM 4 andGate
+	((ao', bo', co', eo'), r) <- orGate4
+	zipWithM_ connectWire
+		[s0, ao, s1, bo, s2, co, s3, eo]
+		[s0', ao', s1', bo', s2', co', s3', eo']
+	return (o0, o1, a, b, c, e, r)
+
+dec24 :: CircuitBuilder (IWire, IWire, OWire, OWire, OWire, OWire)
+dec24 = do
+	((b0in, b0out, rb0out), (b1in, b1out, rb1out)) <-
+		listToTuple2 <$> replicateM 2 obrev
+	((r01, r02, r0), (r11, r12, r1), (r21, r22, r2), (r31, r32, r3)) <-
+		listToTuple4 <$> replicateM 4 andGate
+	zipWithM_ connectWire
+		[rb0out, rb1out, b0out, rb1out, rb0out, b1out, rb0out, rb1out]
+		[r01, r02, r11, r12, r21, r22, r31, r32]
+	return (b0in, b1in, r0, r1, r2, r3)
+
 orGate5, andGate5 :: CircuitBuilder ((IWire, IWire, IWire, IWire, IWire), OWire)
 orGate5 = first listToTuple5 <$> multiOrGate 5
 andGate5 = first listToTuple5 <$> multiAndGate 5

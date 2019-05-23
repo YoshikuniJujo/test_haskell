@@ -51,6 +51,21 @@ alu1_1 = do
 		[aad, bad, adm, aor, bor, om, as, bs, sm]
 	return (o0, o1, ci, ain, bin, r)
 
+alu1_less :: CircuitBuilder Wires61
+alu1_less = do
+	((ain, aout), (bin, bout)) <- listToTuple2 <$> replicateM 2 idGate
+	(aad, bad, ad) <- andGate
+	(aor, bor, o) <- orGate
+	(ci, as, bs, s) <- sum1
+	(o0, o1, adm, om, sm, lss, r) <- mux4
+	zipWithM_ connectWire
+		[aout, bout, ad, aout, bout, o, aout, bout, s]
+		[aad, bad, adm, aor, bor, om, as, bs, sm]
+	return (o0, o1, ci, ain, bin, lss, r)
+
+alu1_ms :: CircuitBuilder (IWire, IWire, IWire, IWire, IWire, IWire, OWire, OWire, OWire)
+alu1_ms = undefined
+
 type Alu_1Wires = (IWire, IWire, IWire, [IWire], [IWire], [OWire], OWire)
 
 alu_1 :: Word8 -> CircuitBuilder Alu_1Wires
