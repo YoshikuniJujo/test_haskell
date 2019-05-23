@@ -57,16 +57,31 @@ alu_1 :: Word8 -> CircuitBuilder Alu_1Wires
 alu_1 n = do
 	(c0', as', bs', co1_2n, _g, _p) <- carry1_2n n
 	(o0s, o1s, ci0_2n_1, as'', bs'', rs) <- unzip6 <$> replicateM (2 ^ n) alu1_1
-	((o0in, o0out), (o1in, o1out), (c0in, c0out)) <-
-		listToTuple3 <$> replicateM 3 idGate
-	(ains, aouts) <- unzip <$> replicateM (2 ^ n) idGate
-	(bins, bouts) <- unzip <$> replicateM (2 ^ n) idGate
-	connectWire c0out c0'
-	zipWithM_ connectWire aouts as'; zipWithM_ connectWire bouts bs'
-	zipWithM_ (\o0 o1 -> connectWire o0out o0 >> connectWire o1out o1) o0s o1s
-	zipWithM_ connectWire (c0out : co1_2n) ci0_2n_1
-	zipWithM_ connectWire aouts as''; zipWithM_ connectWire bouts bs''
+	(o0in, o1in) <- opToAll o0s o1s
+	c0in <- setCarries c0' co1_2n ci0_2n_1
+	(ains, bins) <- setAbs n (as', bs') (as'', bs'')
 	return (o0in, o1in, c0in, ains, bins, rs, last co1_2n)
+
+opToAll :: [IWire] -> [IWire] -> CircuitBuilder (IWire, IWire)
+opToAll o0s o1s = do
+	((o0in, o0out), (o1in, o1out)) <- listToTuple2 <$> replicateM 2 idGate
+	zipWithM_ (\o0 o1 -> connectWire o0out o0 >> connectWire o1out o1) o0s o1s
+	return (o0in, o1in)
+
+setCarries :: IWire -> [OWire] -> [IWire] -> CircuitBuilder IWire
+setCarries c0' co1_2n ci0_2n_1 = do
+	(c0in, c0out) <- idGate
+	connectWire c0out c0'
+	zipWithM_ connectWire (c0out : co1_2n) ci0_2n_1
+	return c0in
+
+setAbs :: Word8 -> ([IWire], [IWire]) -> ([IWire], [IWire]) -> CircuitBuilder ([IWire], [IWire])
+setAbs n (as', bs') (as'', bs'') = do
+	(ains, aouts) <- unzip <$> replicateM (2 ^ n) idGate;
+	(bins, bouts) <- unzip <$> replicateM (2 ^ n) idGate
+	zipWithM_ connectWire aouts as'; zipWithM_ connectWire bouts bs'
+	zipWithM_ connectWire aouts as''; zipWithM_ connectWire bouts bs''
+	return (ains, bins)
 
 setBitsAlu_1 :: Alu_1Wires ->
 	Bit -> Bit -> Bit -> Word64 -> Word64 -> Circuit -> Circuit
