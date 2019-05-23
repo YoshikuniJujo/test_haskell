@@ -6,10 +6,11 @@ module TestCircuit where
 import Control.Arrow
 import Control.Monad
 import Data.Bool
-import Data.Bits ((.&.), (.|.), testBit, shiftL, shiftR)
+import Data.Bits ((.&.), testBit)
 import Data.Word
 
 import Circuit
+import Tools
 
 --------------------------------------------------------------------------------
 
@@ -215,14 +216,6 @@ inputMultiplexer2 (ws, was, wbs, _) (bs, bas, bbs) cct = setBit ws bs
 
 peekMultiplexer2 :: (IWire, [IWire], [IWire], [OWire]) -> Circuit -> [Bit]
 peekMultiplexer2 (_, _, _, os) cct = map (`peekOWire` cct) os
-
-wordToBits :: Int -> Word64 -> [Bit]
-wordToBits n _ | n < 1 = []
-wordToBits n w = bool O I (w `testBit` 0) : wordToBits (n - 1) (w `shiftR` 1)
-
-bitsToWord :: [Bit] -> Word64
-bitsToWord [] = 0
-bitsToWord (b : bs) = (case b of O -> 0; I -> 1) .|. bitsToWord bs `shiftL` 1
 
 mux_1 :: Int -> CircuitBuilder ([IWire], [IWire], OWire)
 mux_1 n = do
