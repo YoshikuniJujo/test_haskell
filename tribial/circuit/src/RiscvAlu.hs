@@ -112,20 +112,24 @@ type Alu_2Wires =
 alu_2 :: Word8 -> CircuitBuilder Alu_2Wires
 alu_2 n = do
 	(c0', as', bs', co1_2n, _g, _p) <- carry1_2n n
-	(o0s, o1s, ci0_2n_1, as'', bs'', rs) <- unzip6 <$> replicateM (2 ^ n) alu1_1
+	(o0s, o1s, ci0_2n_1, as'', bs'', rs) <-
+		unzip6 <$> replicateM (2 ^ n) alu1_1
 	(o0in, o1in) <- opToAll o0s o1s
 	c0in <- setCarries c0' co1_2n ci0_2n_1
 	(ains, bins) <- setAbs n (as', bs') (as'', bs'')
+	(ainvin, ains') <- invertAll ains
+	(binvin, bins') <- invertAll bins
+	return (ainvin, binvin, o0in, o1in, c0in, ains', bins', rs, last co1_2n)
+
+invertAll :: [IWire] -> CircuitBuilder (IWire, [IWire])
+invertAll ains = do
 	(ainvin, ainvout) <- idGate
 	(ainvs, ains') <- unzip <$> mapM flipIf ains
 	mapM_ (connectWire ainvout) ainvs
-	(binvin, binvout) <- idGate
-	(binvs, bins') <- unzip <$> mapM flipIf bins
-	mapM_ (connectWire binvout) binvs
-	return (ainvin, binvin, o0in, o1in, c0in, ains', bins', rs, last co1_2n)
+	return (ainvin, ains')
 
-setBitsAlu_2 :: Alu_2Wires ->
-	Bit -> Bit -> Bit -> Bit -> Bit -> Word64 -> Word64 -> Circuit -> Circuit
+setBitsAlu_2 :: Alu_2Wires -> Bit -> Bit -> Bit -> Bit -> Bit ->
+	Word64 -> Word64 -> Circuit -> Circuit
 setBitsAlu_2 (ainv, binv, o0, o1, c0, as, bs, _, _)
 		bainv bbinv bo0 bo1 bc0 a b =
 	foldr (.) id (zipWith setBit
@@ -136,6 +140,37 @@ setBitsAlu_2 (ainv, binv, o0, o1, c0, as, bs, _, _)
 peekBitsAlu_2 :: Alu_2Wires -> Circuit -> (Word64, Bit)
 peekBitsAlu_2 (_, _, _, _, _, _, _, rs, co) cct =
 	(bitsToWord $ (`peekOWire` cct) <$> rs, peekOWire co cct)
+
+type AluWires =
+	(IWire, IWire, IWire, IWire, IWire, [IWire] , [IWire], [OWire], OWire)
+
+alu :: Word8 -> CircuitBuilder AluWires
+alu n = do
+	(c0', as', bs', co1_2n, _g, _p) <- carry1_2n n
+	(o0s, o1s, ci0_2n_2, as'', bs'', lss'', rs) <-
+		unzip7 <$> replicateM (2 ^ n - 1) alu1_less
+	(o0l, o1l, ci2n_1, al, bl, _lssl, rl, set, ovfl) <- alu1_ms
+	(o0in, o1in) <- opToAll (o0s ++ [o0l]) (o1s ++ [o1l])
+	c0in <- setCarries c0' co1_2n $ ci0_2n_2 ++ [ci2n_1]
+	(ains, bins) <- setAbs n (as', bs') (as'' ++ [al], bs'' ++ [bl])
+	(ainvin, ains') <- invertAll ains
+	(binvin, bins') <- invertAll bins
+	connectWire set $ head lss''
+	return (ainvin, binvin, o0in, o1in, c0in,
+		ains', bins', rs ++ [rl], ovfl)
+
+setBitsAlu :: AluWires -> Bit -> Bit -> Bit -> Bit -> Bit ->
+	Word64 -> Word64 -> Circuit -> Circuit
+setBitsAlu (ainv, binv, o0, o1, c0, as, bs, _, _)
+		bainv bbinv bo0 bo1 bc0 a b =
+	foldr (.) id (zipWith setBit
+			[ainv, binv, o0, o1, c0] [bainv, bbinv, bo0, bo1, bc0])
+		. foldr (.) id (zipWith setBit as $ wordToBits 64 a)
+		. foldr (.) id (zipWith setBit bs $ wordToBits 64 b)
+
+peekBitsAlu :: AluWires -> Circuit -> (Word64, Bit)
+peekBitsAlu (_, _, _, _, _, _, _, rs, ovfl) cct =
+	(bitsToWord $ (`peekOWire` cct) <$> rs, peekOWire ovfl cct)
 
 opToAll :: [IWire] -> [IWire] -> CircuitBuilder (IWire, IWire)
 opToAll o0s o1s = do
