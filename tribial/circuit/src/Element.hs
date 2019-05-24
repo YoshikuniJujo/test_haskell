@@ -96,7 +96,7 @@ dec24 = do
 	((r01, r02, r0), (r11, r12, r1), (r21, r22, r2), (r31, r32, r3)) <-
 		listToTuple4 <$> replicateM 4 andGate
 	zipWithM_ connectWire
-		[rb0out, rb1out, b0out, rb1out, rb0out, b1out, rb0out, rb1out]
+		[rb0out, rb1out, b0out, rb1out, rb0out, b1out, b0out, b1out]
 		[r01, r02, r11, r12, r21, r22, r31, r32]
 	return (b0in, b1in, r0, r1, r2, r3)
 
