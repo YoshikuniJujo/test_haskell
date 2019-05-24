@@ -175,7 +175,8 @@ peekBitsAlu (_, _, _, _, _, _, _, rs, ovfl) cct =
 opToAll :: [IWire] -> [IWire] -> CircuitBuilder (IWire, IWire)
 opToAll o0s o1s = do
 	((o0in, o0out), (o1in, o1out)) <- listToTuple2 <$> replicateM 2 idGate
-	zipWithM_ (\o0 o1 -> connectWire o0out o0 >> connectWire o1out o1) o0s o1s
+	zipWithM_
+		(\o0 o1 -> connectWire o0out o0 >> connectWire o1out o1) o0s o1s
 	return (o0in, o1in)
 
 setCarries :: IWire -> [OWire] -> [IWire] -> CircuitBuilder IWire
@@ -185,10 +186,38 @@ setCarries c0' co1_2n ci0_2n_1 = do
 	zipWithM_ connectWire (c0out : co1_2n) ci0_2n_1
 	return c0in
 
-setAbs :: Word8 -> ([IWire], [IWire]) -> ([IWire], [IWire]) -> CircuitBuilder ([IWire], [IWire])
+setAbs :: Word8 -> ([IWire], [IWire]) -> ([IWire], [IWire]) ->
+	CircuitBuilder ([IWire], [IWire])
 setAbs n (as', bs') (as'', bs'') = do
 	(ains, aouts) <- unzip <$> replicateM (2 ^ n) idGate
 	(bins, bouts) <- unzip <$> replicateM (2 ^ n) idGate
 	zipWithM_ connectWire aouts as'; zipWithM_ connectWire bouts bs'
 	zipWithM_ connectWire aouts as''; zipWithM_ connectWire bouts bs''
 	return (ains, bins)
+
+type RiscvAluWires =
+	((IWire, IWire, IWire, IWire), [IWire], [IWire], [OWire], OWire, OWire)
+
+riscvAlu :: Word8 -> CircuitBuilder RiscvAluWires
+riscvAlu n = do
+	(bnegin, bnegout) <- idGate
+	(ainv, binv, o0, o1, ci, a, b, r, ovfl) <- alu n
+	mapM_ (connectWire bnegout) [binv, ci]
+	(ois, oo) <- multiOrGate (2 ^ n)
+	(ni, z) <- notGate
+	zipWithM_ connectWire r ois
+	connectWire oo ni
+	return ((ainv, bnegin, o1, o0), a, b, r, z, ovfl)
+
+setBitsRiscvAlu ::
+	RiscvAluWires -> Word64 -> Word64 -> Word64 -> Circuit -> Circuit
+setBitsRiscvAlu ((ainv, bneg, o1, o0), as, bs, _, _, _) op_ a b = let
+	op = wordToBits 4 op_ in
+	foldr (.) id (zipWith setBit [o0, o1, bneg, ainv] op)
+		. foldr (.) id (zipWith setBit as $ wordToBits 64 a)
+		. foldr (.) id (zipWith setBit bs $ wordToBits 64 b)
+
+peekBitsRiscvAlu :: RiscvAluWires -> Circuit -> (Word64, Bit, Bit)
+peekBitsRiscvAlu (_, _, _, rs, z, ovfl) cct = (
+	bitsToWord $ (`peekOWire` cct) <$> rs,
+	peekOWire z cct, peekOWire ovfl cct )
