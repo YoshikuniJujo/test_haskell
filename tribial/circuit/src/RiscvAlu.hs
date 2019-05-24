@@ -64,7 +64,25 @@ alu1_less = do
 	return (o0, o1, ci, ain, bin, lss, r)
 
 alu1_ms :: CircuitBuilder (IWire, IWire, IWire, IWire, IWire, IWire, OWire, OWire, OWire)
-alu1_ms = undefined
+alu1_ms = do
+	((ain, aout), (bin, bout)) <- listToTuple2 <$> replicateM 2 idGate
+	(aad, bad, ad) <- andGate
+	(aor, bor, o) <- orGate
+	(ci, as, bs, s) <- sum1
+	(o0, o1, adm, om, sm, lss, r) <- mux4
+	zipWithM_ connectWire
+		[aout, bout, ad, aout, bout, o, aout, bout, s]
+		[aad, bad, adm, aor, bor, om, as, bs, sm]
+	(axn, bxn, xn) <- xnor
+	(bx, sx, x) <- xor
+	(ovfl1, ovfl2, ovfl) <- andGate
+	zipWithM_ connectWire
+		[aout, bout, xn, bout, s, x]
+		[axn, bxn, ovfl1, bx, sx, ovfl2]
+	(s1in, subp, s2out) <- andGate
+	(s2in, addn, set) <- orGate
+	zipWithM_ connectWire [s, o, s2out, ad] [s1in, subp, s2in, addn]
+	return (o0, o1, ci, ain, bin, lss, r, set, ovfl)
 
 type Alu_1Wires = (IWire, IWire, IWire, [IWire], [IWire], [OWire], OWire)
 

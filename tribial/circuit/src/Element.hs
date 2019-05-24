@@ -8,6 +8,42 @@ import Control.Monad
 import Circuit
 import Tools
 
+nand, nor :: CircuitBuilder (IWire, IWire, OWire)
+nand = do
+	(a, b, ao) <- andGate
+	(ni, no) <- notGate
+	connectWire ao ni
+	return (a, b, no)
+
+nor = do
+	(a, b, oo) <- orGate
+	(ni, no) <- notGate
+	connectWire oo ni
+	return (a, b, no)
+
+xor, xnor :: CircuitBuilder (IWire, IWire, OWire)
+xor = do
+	((ain, aout), (bin, bout)) <- listToTuple2 <$> replicateM 2 idGate
+	(a1, a2, ao) <- andGate
+	(o1, o2, oo) <- orGate
+	(ni, no) <- notGate
+	(r1, r2, r) <- andGate
+	zipWithM_ connectWire
+		[aout, bout, ao, no, aout, bout, oo]
+		[a1, a2, ni, r1, o1, o2, r2]
+	return (ain, bin, r)
+
+xnor = do
+	((ain, aout), (bin, bout)) <- listToTuple2 <$> replicateM 2 idGate
+	(a1, a2, ao) <- andGate
+	(o1, o2, oo) <- orGate
+	(ni, no) <- notGate
+	(r1, r2, r) <- orGate
+	zipWithM_ connectWire
+		[aout, bout, ao, aout, bout, oo, no]
+		[a1, a2, r1, o1, o2, ni, r2]
+	return (ain, bin, r)
+
 mux2 :: CircuitBuilder Wires31
 mux2 = do
 	(si, sout) <- idGate
