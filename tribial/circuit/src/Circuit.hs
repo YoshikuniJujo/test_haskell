@@ -4,6 +4,7 @@
 module Circuit (
 	Circuit, makeCircuit, step, setBit, peekIWire, peekOWire,
 	CircuitBuilder, andGate, orGate, notGate, idGate, connectWire,
+	delay,
 	IWire, OWire, Bit(..) ) where
 
 import Control.Arrow (first)
@@ -143,12 +144,14 @@ makeNotGate = do
 	modify $ insGate (NotGate iw) ow
 	return (iw, ow)
 
-makeDelay :: Word8 -> CircuitBuilder (IWire, OWire)
+makeDelay, delay :: Word8 -> CircuitBuilder (IWire, OWire)
 makeDelay w | w > 0 = do
 	(iw, ow) <- (,) <$> makeIWire <*> makeOWire
 	modify $ insGate (Delay ((w - 1) `genericReplicate` O) iw) ow
 	return (iw, ow)
 makeDelay _ = error "0 delay is not permitted"
+
+delay = makeDelay
 
 newtype IWire = IWire Word32 deriving (Show, Eq, Ord)
 newtype OWire = OWire Word32 deriving (Show, Eq, Ord)
