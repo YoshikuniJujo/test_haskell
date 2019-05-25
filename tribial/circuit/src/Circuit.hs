@@ -118,11 +118,7 @@ orGate = do
 	return (iw1, iw2, dow)
 
 notGate :: CircuitBuilder (IWire, OWire)
-notGate = do
-	(iw, ow) <- makeNotGate
-	(diw, dow) <- makeDelay 1
-	connectWire ow diw
-	return (iw, dow)
+notGate = makeNotGate
 
 idGate :: CircuitBuilder (IWire, OWire)
 idGate = makeDelay 1
