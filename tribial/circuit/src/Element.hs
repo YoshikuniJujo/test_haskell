@@ -4,6 +4,7 @@ module Element where
 
 import Control.Arrow
 import Control.Monad
+import Data.Word
 
 import Circuit
 import Tools
@@ -112,12 +113,12 @@ orGate3, andGate3 :: CircuitBuilder ((IWire, IWire, IWire), OWire)
 orGate3 = first listToTuple3 <$> multiOrGate 3
 andGate3 = first listToTuple3 <$> multiAndGate 3
 
-multiOrGate, multiAndGate :: Int -> CircuitBuilder ([IWire], OWire)
+multiOrGate, multiAndGate :: Word8 -> CircuitBuilder ([IWire], OWire)
 multiOrGate = multiple orGate
 multiAndGate = multiple andGate
 
 multiple :: CircuitBuilder (IWire, IWire, OWire) ->
-	Int -> CircuitBuilder ([IWire], OWire)
+	Word8 -> CircuitBuilder ([IWire], OWire)
 multiple _ n | n < 1 = error "Oops!"
 multiple _ 1 = first (: []) <$> idGate
 multiple g 2 = (\(i1, i2, o) -> ([i1, i2], o)) <$> g
@@ -146,3 +147,29 @@ flipIf x = do
 	connectWire no b
 	connectWire mo x
 	return (si, i)
+
+decoder :: Word8 -> CircuitBuilder ([IWire], [OWire])
+decoder n = do
+	(is, ois) <- unzip <$> fromIntegral m `replicateM` idGate
+	(ias, oas) <- unzip <$> fromIntegral n `replicateM` multiAndGate m
+	zipWithM_ ((sequence_ .) . flip (zipWith3 id) ois) (binary (invert, obvert) m) ias
+	return (is, oas)
+	where m = log2 n
+
+binary :: (a, a) -> Word8 -> [[a]]
+binary _ n | n < 1 = [[]]
+binary (o, i) n = binary (o, i) (n - 1) >>= (<$> [(o :), (i :)]) . flip ($)
+
+invert, obvert :: OWire -> IWire -> CircuitBuilder ()
+invert o i = do
+	(ni, no) <- notGate
+	connectWire o ni
+	connectWire no i
+obvert = connectWire
+
+log2 :: Integral n => n -> n
+log2 i = l2 0
+	where l2 j
+		| j < 0 = error "bad"
+		| 2 ^ j >= i = j
+		| otherwise = l2 $ j + 1

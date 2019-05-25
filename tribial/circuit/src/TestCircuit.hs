@@ -35,13 +35,6 @@ and3Gate = do
 	connectWire o0 i0
 	return (i1, i2, i3, o)
 
-invert, obvert :: OWire -> IWire -> CircuitBuilder ()
-invert o i = do
-	(ni, no) <- notGate
-	connectWire o ni
-	connectWire no i
-obvert = connectWire
-
 decoder8 :: CircuitBuilder (
 	IWire, IWire, IWire,
 	OWire, OWire, OWire, OWire, OWire, OWire, OWire, OWire )
@@ -74,18 +67,6 @@ decoder8 = do
 	sequence_ $ zipWith3 id
 		[obvert, obvert, obvert] [oi1, oi2, oi3] [i71, i72, i73]
 	return (i1, i2, i3, o0, o1, o2, o3, o4, o5, o6, o7)
-
-decoder :: Int -> CircuitBuilder ([IWire], [OWire])
-decoder n = do
-	(is, ois) <- unzip <$> m `replicateM` idGate
-	(ias, oas) <- unzip <$> n `replicateM` multiAndGate m
-	zipWithM_ ((sequence_ .) . flip (zipWith3 id) ois) (binary (invert, obvert) m) ias
-	return (is, oas)
-	where m = log2 n
-
-binary :: (a, a) -> Int -> [[a]]
-binary _ n | n < 1 = [[]]
-binary (o, i) n = binary (o, i) (n - 1) >>= (<$> [(o :), (i :)]) . flip ($)
 
 log2 :: Integral n => n -> n
 log2 i = l2 0
@@ -194,10 +175,10 @@ inputMultiplexer2 (ws, was, wbs, _) (bs, bas, bbs) cct = setBit ws bs
 peekMultiplexer2 :: (IWire, [IWire], [IWire], [OWire]) -> Circuit -> [Bit]
 peekMultiplexer2 (_, _, _, os) cct = map (`peekOWire` cct) os
 
-mux_1 :: Int -> CircuitBuilder ([IWire], [IWire], OWire)
+mux_1 :: Word8 -> CircuitBuilder ([IWire], [IWire], OWire)
 mux_1 n = do
 	(dis, dos) <- decoder n
-	(ai1s, ai2s, aos) <- unzip3 <$> n `replicateM` andGate
+	(ai1s, ai2s, aos) <- unzip3 <$> fromIntegral n `replicateM` andGate
 	(ois, o) <- multiOrGate n
 	zipWithM_ connectWire dos ai1s
 	zipWithM_ connectWire aos ois
@@ -640,7 +621,7 @@ detectOverflow a b s ovfl = do
 	connectWire yo ai2
 	connectWire ao ovfl
 
-alu_slt :: Int -> CircuitBuilder (IWire, IWire, (IWire, IWire), IWire, [IWire], [IWire], [OWire], OWire, IWire)
+alu_slt :: Word8 -> CircuitBuilder (IWire, IWire, (IWire, IWire), IWire, [IWire], [IWire], [OWire], OWire, IWire)
 alu_slt n | n < 1 = error "Oops!"
 alu_slt 1 = do
 	(aiv, biv, op, ci, a, b, l, r, co) <- alu1_slt
@@ -663,7 +644,7 @@ alu_slt n = do
 	connectWire co1 cin
 	return (aivin, bivin, (op0in, op1in), ci1, a1 : an, b1 : bn, r1 : rn, con, l1)
 
-alu_ms :: Int -> CircuitBuilder (IWire, IWire, (IWire, IWire), IWire, [IWire], [IWire], [OWire], OWire)
+alu_ms :: Word8 -> CircuitBuilder (IWire, IWire, (IWire, IWire), IWire, [IWire], [IWire], [OWire], OWire)
 alu_ms n = do
 	(aivin, aivout) <- idGate
 	(bivin, bivout) <- idGate
@@ -697,7 +678,7 @@ peekAlu_ms (_, _, _, _, _, _, r, ovfl) cct = (bitsToWord $ (`peekOWire` cct) <$>
 peekAlu_ms' :: (IWire, IWire, (IWire, IWire), IWire, [IWire], [IWire], [OWire], OWire) -> Circuit -> ([Bit], Bit)
 peekAlu_ms' (_, _, _, _, _, _, r, ovfl) cct = ((`peekOWire` cct) <$> r, peekOWire ovfl cct)
 
-alu_bneg :: Int -> CircuitBuilder (IWire, IWire, (IWire, IWire), [IWire], [IWire], [OWire], OWire)
+alu_bneg :: Word8 -> CircuitBuilder (IWire, IWire, (IWire, IWire), [IWire], [IWire], [OWire], OWire)
 alu_bneg n = do
 	(bnin, bnout) <- idGate
 	(aiv, biv, op, ci, a, b, r, ovfl) <- alu_ms n
@@ -705,7 +686,7 @@ alu_bneg n = do
 	connectWire bnout ci
 	return (aiv, bnin, op, a, b, r, ovfl)
 
-alu_riscv :: Int -> CircuitBuilder (IWire, IWire, (IWire, IWire), [IWire], [IWire], [OWire], OWire, OWire)
+alu_riscv :: Word8 -> CircuitBuilder (IWire, IWire, (IWire, IWire), [IWire], [IWire], [OWire], OWire, OWire)
 alu_riscv n = do
 	(aiv, bng, op, a, b, r, ovfl) <- alu_bneg n
 	(ais, ao) <- multiOrGate n
@@ -724,7 +705,7 @@ setAlu_riscv (aiv, biv, (op0, op1), a, b, _, _, _) baiv bbiv op wa wb = setBit a
 peekAlu_riscv :: (IWire, IWire, (IWire, IWire), [IWire], [IWire], [OWire], OWire, OWire) -> Circuit -> (Word64, Bit, Bit)
 peekAlu_riscv (_, _, _, _, _, r, z, ovfl) cct = (bitsToWord $ (`peekOWire` cct) <$> r, peekOWire z cct, peekOWire ovfl cct)
 
-riscv_alu :: Int -> CircuitBuilder ((IWire, IWire, IWire, IWire), [IWire], [IWire], [OWire], OWire, OWire)
+riscv_alu :: Word8 -> CircuitBuilder ((IWire, IWire, IWire, IWire), [IWire], [IWire], [OWire], OWire, OWire)
 riscv_alu n = do
 	(aiv, bng, (op0, op1), a, b, r, z, ovfl) <- alu_riscv n
 	return ((aiv, bng, op0, op1), a, b, r, z, ovfl)
