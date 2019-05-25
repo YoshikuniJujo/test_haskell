@@ -210,23 +210,6 @@ inputMux_1 (si, is, _) s bs = foldr (.) id (zipWith setBit si $ wordToBits 64 s)
 peekMux_1 :: ([IWire], [IWire], OWire) -> Circuit -> Bit
 peekMux_1 (_, _, o) = peekOWire o
 
-xorGate :: CircuitBuilder (IWire, IWire, OWire)
-xorGate = do
-	(ai, ao) <- idGate
-	(bi, bo) <- idGate
-	(ai1, ai2, ado) <- andGate
-	(oi1, oi2, oro) <- orGate
-	(ni, no) <- notGate
-	(aai1, aai2, aado) <- andGate
-	connectWire ao ai1
-	connectWire bo ai2
-	connectWire ado ni
-	connectWire ao oi1
-	connectWire bo oi2
-	connectWire no aai1
-	connectWire oro aai2
-	return (ai, bi, aado)
-
 halfAdder :: CircuitBuilder (IWire, IWire, OWire, OWire)
 halfAdder = do
 	(ai, ao) <- idGate

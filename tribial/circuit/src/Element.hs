@@ -21,8 +21,8 @@ norGate = do
 	connectWire oo ni
 	return (a, b, no)
 
-xor, xnor :: CircuitBuilder (IWire, IWire, OWire)
-xor = do
+xorGate, xnor :: CircuitBuilder (IWire, IWire, OWire)
+xorGate = do
 	((ain, aout), (bin, bout)) <- listToTuple2 <$> replicateM 2 idGate
 	(a1, a2, ao) <- andGate
 	(o1, o2, oo) <- orGate

@@ -74,7 +74,7 @@ alu1_ms = do
 		[aout, bout, ad, aout, bout, o, aout, bout, s]
 		[aad, bad, adm, aor, bor, om, as, bs, sm]
 	(axn, bxn, xn) <- xnor
-	(bx, sx, x) <- xor
+	(bx, sx, x) <- xorGate
 	(ovfl1, ovfl2, ovfl) <- andGate
 	zipWithM_ connectWire
 		[aout, bout, xn, bout, s, x]
