@@ -4,6 +4,7 @@ module Element where
 
 import Control.Arrow
 import Control.Monad
+import Data.List
 import Data.Word
 
 import Circuit
@@ -147,6 +148,40 @@ flipIf x = do
 	connectWire no b
 	connectWire mo x
 	return (si, i)
+
+type MultiplexerWires = ([IWire], [[IWire]], [OWire])
+
+multiplexer :: Word8 -> Word8 -> CircuitBuilder MultiplexerWires
+multiplexer n r = do
+	(num, s) <- decoder r
+	(s', ds, rslt) <- selector n r
+	zipWithM_ connectWire s s'
+	return (num, ds, rslt)
+
+setBits :: [IWire] -> [Bit] -> Circuit -> Circuit
+setBits ws = flip (foldr $ uncurry setBit) . zip ws
+
+setBitsMultiplexer ::
+	MultiplexerWires -> Word64 -> [Word64] -> Circuit -> Circuit
+setBitsMultiplexer (wn, wds, _) n ds = setBits wn (wordToBits 64 n)
+	. foldr (.) id (zipWith setBits wds $ wordToBits 64 <$> ds)
+
+peekBitsMultiplexer :: MultiplexerWires -> Circuit -> Word64
+peekBitsMultiplexer (_, _, wr) cct = bitsToWord $ (`peekOWire` cct) <$> wr
+
+selector :: Word8 -> Word8 -> CircuitBuilder ([IWire], [[IWire]], [OWire])
+selector n r = do
+	(sins, souts) <- unzip <$> fromIntegral r `replicateM` idGate
+	(sss, iss, os) <- unzip3 <$> fromIntegral n `replicateM` selector1 r
+	mapM_ (zipWithM_ connectWire souts) sss
+	return (sins, transpose iss, os)
+
+selector1 :: Word8 -> CircuitBuilder ([IWire], [IWire], OWire)
+selector1 r = do
+	(ss, is, os) <- unzip3 <$> fromIntegral r `replicateM` andGate
+	(os', rslt) <- multiOrGate r
+	zipWithM_ connectWire os os'
+	return (ss, is, rslt)
 
 decoder :: Word8 -> CircuitBuilder ([IWire], [OWire])
 decoder n = do
