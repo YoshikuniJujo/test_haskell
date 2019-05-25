@@ -8,14 +8,14 @@ import Control.Monad
 import Circuit
 import Tools
 
-nand, nor :: CircuitBuilder (IWire, IWire, OWire)
+nand, norGate :: CircuitBuilder (IWire, IWire, OWire)
 nand = do
 	(a, b, ao) <- andGate
 	(ni, no) <- notGate
 	connectWire ao ni
 	return (a, b, no)
 
-nor = do
+norGate = do
 	(a, b, oo) <- orGate
 	(ni, no) <- notGate
 	connectWire oo ni

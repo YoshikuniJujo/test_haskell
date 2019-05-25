@@ -20,6 +20,14 @@ setBits31 (i1, i2, i3, _) b1 b2 b3 =
 peekBits31 :: Wires31 -> Circuit -> Bit
 peekBits31 (_, _, _, o) = peekOWire o
 
+type Wires22 = (IWire, IWire, OWire, OWire)
+
+setBits22 :: Wires22 -> Bit -> Bit -> Circuit -> Circuit
+setBits22 (i1, i2, _, _) b1 b2 = setBit i1 b1 . setBit i2 b2
+
+peekBits22 :: Wires22 -> Circuit -> (Bit, Bit)
+peekBits22 (_, _, o1, o2) = (,) <$> peekOWire o1 <*> peekOWire o2
+
 type Wires51 = (IWire, IWire, IWire, IWire, IWire, OWire)
 
 setBits51 :: Wires51 -> Bit -> Bit -> Bit -> Bit -> Bit -> Circuit -> Circuit
