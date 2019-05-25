@@ -10,8 +10,8 @@ import Element
 import Clock
 import Tools
 
-crossCoupled :: CircuitBuilder (IWire, IWire, OWire, OWire)
-crossCoupled = do
+srLatch :: CircuitBuilder (IWire, IWire, OWire, OWire)
+srLatch = do
 	(r, q_', q) <- norGate
 	(s, q', q_) <- norGate
 	connectWire q q'
@@ -48,5 +48,23 @@ testDlatch = do
 	(c', d', q, q_) <- dlatch
 	connectWire c dli
 	connectWire dlo c'
+	connectWire d d'
+	return (q, q_)
+
+dflipflop :: CircuitBuilder (IWire, IWire, OWire, OWire)
+dflipflop = do
+	(cin, cout) <- idGate
+	(mc, md, mq, _mq_) <- dlatch
+	(ni, no) <- notGate
+	(sc, sd, sq, sq_) <- dlatch
+	zipWithM_ connectWire [cout, cout, no, mq] [mc, ni, sc, sd]
+	return (cin, md, sq, sq_)
+
+testDflipflop :: CircuitBuilder (OWire, OWire)
+testDflipflop = do
+	c <- clock 100
+	d <- temporary 80 40
+	(c', d', q, q_) <- dflipflop
+	connectWire c c'
 	connectWire d d'
 	return (q, q_)
