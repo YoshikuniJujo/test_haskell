@@ -102,3 +102,36 @@ setBitsTestDflipflop (ds, _, _) d =
 peekBitsTestDflipflop :: TestDflipflopWires -> Circuit -> (Word64, Word64)
 peekBitsTestDflipflop (_, qs, q_s) cct =
 	(bitsToWord $ (`peekOWire` cct) <$> qs, bitsToWord $ (`peekOWire` cct) <$> q_s)
+
+registerWrite :: Word8 -> Word8 -> CircuitBuilder (IWire, [IWire], [IWire], [[OWire]])
+registerWrite nbit rnum = do
+	(wrin, wrout) <- idGate
+	(dins, douts) <- unzip <$> fromIntegral nbit `replicateM` idGate
+	(rid, slct) <- decoder rnum
+	(wrs, slct', cs) <- unzip3 <$> fromIntegral rnum `replicateM` andGate
+	(cs', ds, qs, _q_s) <- unzip4 <$> fromIntegral rnum `replicateM` dflipflop nbit
+	mapM_ (connectWire wrout) wrs
+	zipWithM_ connectWire slct slct'
+	zipWithM_ connectWire cs cs'
+	mapM_ (zipWithM_ connectWire douts) ds
+	return (wrin, rid, dins, qs)
+
+type TestRegisterWriteWires = (IWire, [IWire], [IWire], OWire, [[OWire]])
+
+testRegisterWrite :: Word8 -> Word8 -> CircuitBuilder TestRegisterWriteWires
+testRegisterWrite nbit rnum = do
+	c <- clock 100
+	(a1, a2, ao) <- andGate
+	(wr, rid, d, qs) <- registerWrite nbit rnum
+	connectWire c a1
+	connectWire ao wr
+	return (a2, rid, d, c, qs)
+
+setBitsTestRegisterWrite ::
+	TestRegisterWriteWires -> Bit -> Word64 -> Word64 -> Circuit -> Circuit
+setBitsTestRegisterWrite (wwr, wrid, wd, _, _) bwr rid d = setBit wwr bwr
+	. setBits wrid (wordToBits 64 rid) . setBits wd (wordToBits 64 d)
+
+peekBitsTestRegisterWrite :: TestRegisterWriteWires -> Circuit -> (Bit, [Word64])
+peekBitsTestRegisterWrite (_, _, _, c, wrs) cct =
+	(peekOWire c cct, (bitsToWord . ((`peekOWire` cct) <$>)) <$> wrs)
