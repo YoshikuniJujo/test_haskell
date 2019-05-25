@@ -135,3 +135,44 @@ setBitsTestRegisterWrite (wwr, wrid, wd, _, _) bwr rid d = setBit wwr bwr
 peekBitsTestRegisterWrite :: TestRegisterWriteWires -> Circuit -> (Bit, [Word64])
 peekBitsTestRegisterWrite (_, _, _, c, wrs) cct =
 	(peekOWire c cct, (bitsToWord . ((`peekOWire` cct) <$>)) <$> wrs)
+
+registerReadUnit :: Word8 -> Word8 -> [[OWire]] -> CircuitBuilder ([IWire], [OWire])
+registerReadUnit nbit rnum qs = do
+	(rid, rs, rtn) <- multiplexer nbit rnum
+	zipWithM_ (zipWithM_ connectWire) qs rs
+	return (rid, rtn)
+
+registerFile :: Word8 -> Word8 -> CircuitBuilder (
+	[IWire], [IWire], [IWire], [IWire],  IWire, [OWire], [OWire] )
+registerFile nbit rnum = do
+	(wr, rid, d, qs) <- registerWrite nbit rnum
+	(rid1, rtn1) <- registerReadUnit nbit rnum qs
+	(rid2, rtn2) <- registerReadUnit nbit rnum qs
+	return (rid1, rid2, rid, d, wr, rtn1, rtn2)
+
+type TestRegisterFileWires =
+	([IWire], [IWire], [IWire], [IWire], IWire, OWire, [OWire], [OWire])
+
+testRegisterFile :: Word8 -> Word8 -> CircuitBuilder TestRegisterFileWires
+testRegisterFile nbit rnum = do
+	c <- clock 50
+	(a1, a2, ao) <- andGate
+	(rid1, rid2, ridw, d, wr, rtn1, rtn2) <- registerFile nbit rnum
+	connectWire c a1
+	connectWire ao wr
+	return (rid1, rid2, ridw, d, a2, c, rtn1, rtn2)
+
+setBitsTestRegisterFile :: TestRegisterFileWires ->
+	Word64 -> Word64 -> Word64 -> Word64 -> Bit -> Circuit -> Circuit
+setBitsTestRegisterFile
+		(wrid1, wrid2, wridw, wd, wwr, _, _, _) rid1 rid2 ridw d wr = do
+	foldr (.) id (zipWith setBits
+			[wrid1, wrid2, wridw, wd]
+			(wordToBits 64 <$> [rid1, rid2, ridw, d]))
+		. setBit wwr wr
+
+peekBitsTestRegisterFile :: TestRegisterFileWires -> Circuit -> (Bit, Word64, Word64)
+peekBitsTestRegisterFile (_, _, _, _, _, c, rtn1, rtn2) cct = (
+	peekOWire c cct,
+	bitsToWord $ (`peekOWire` cct) <$> rtn1,
+	bitsToWord $ (`peekOWire` cct) <$> rtn2 )
