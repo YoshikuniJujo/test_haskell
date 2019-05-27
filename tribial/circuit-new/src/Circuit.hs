@@ -25,12 +25,12 @@ data Bit = X | Z | O | I deriving (Show, Eq)
 andBit, orBit :: Bit -> Bit -> Bit
 andBit i1 i2
 	| i1 == I && i2 == I = I
-	| i1 `elem` [O, I] && i2 `elem` [O, I] = O
+	| i1 == O || i2 == O = O
 	| otherwise = X
 
 orBit i1 i2
 	| i1 == O && i2 == O = O
-	| i1 `elem` [O, I] && i2 `elem` [O, I] = I
+	| i1 == I || i2 == I = I
 	| otherwise = X
 
 notBit :: Bit -> Bit
