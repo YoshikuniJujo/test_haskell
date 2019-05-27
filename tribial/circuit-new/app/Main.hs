@@ -166,3 +166,20 @@ testInner = do
 	let	(cct, ii, io) = innerNot
 	(i, o) <- makeInnerCircuit cct ii io
 	return (i, o)
+
+innerAnd :: (Circuit, IWire, IWire, OWire)
+innerAnd = let ((i1, i2, o), cct) = makeCircuit andGate in (cct, i1, i2, o)
+	
+testInner2 :: CircuitBuilder (IWire, IWire, OWire)
+testInner2 = do
+	let	(cct, ii1, ii2, io) = innerAnd
+	(i1, i2, o) <- makeInnerCircuit2 cct ii1 ii2 io
+	return (i1, i2, o)
+
+innerId :: (Circuit, IWire, OWire)
+innerId = let ((i, o), cct) = makeCircuit idGate in (cct, i, o)
+
+testInnerList :: CircuitBuilder (IWire, IWire, OWire)
+testInnerList = do
+	(is, i2, o) <- makeInnerCircuitList 1 [innerNot, innerId]
+	return (head is, i2, o)
