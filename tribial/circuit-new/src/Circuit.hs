@@ -3,7 +3,8 @@
 
 module Circuit (
 	Circuit, CircuitBuilder, makeCircuit, step, setBit, peekOWire,
-	IWire, OWire, Bit(..), andGate, orGate, notGate, idGate, triGate, connectWire
+	IWire, OWire, Bit(..), andGate, orGate, notGate, idGate, triGate, delay, connectWire,
+	makeInnerCircuit
 	) where
 
 import Control.Arrow
@@ -84,6 +85,10 @@ calcGate wst (TriGate i1 i2) =
 calcGate wst (Delay [] i) = (Nothing ,) <$> wst !? i
 calcGate wst (Delay (b : bs) i) =
 	(, b) . Just . (`Delay` i) . (bs ++) . (: []) <$> wst !? i
+calcGate wst (InnerCircuit i cct ii io) = do
+	b <- wst !? i
+	let	cct' = step $ setBit ii b cct
+	return (Just $ InnerCircuit i cct' ii io, peekOWire io cct')
 
 nextIWire :: Circuit -> Map OWire Bit -> IWire -> Bit -> Bit
 nextIWire Circuit { cctWireConn = wc } ows iw ob = fromMaybe ob
@@ -106,9 +111,23 @@ initCBState :: CBState
 initCBState = CBState {
 	cbsWireNum = 0, cbsWireConn = M.empty, cbsGate = M.empty }
 
+-- newtype LazyGateId = LazyGateId Word32
+
 data BasicGate
 	= AndGate IWire IWire | OrGate IWire IWire | NotGate IWire
-	| TriGate IWire IWire | Delay [Bit] IWire deriving Show
+	| TriGate IWire IWire | Delay [Bit] IWire
+	| InnerCircuit IWire Circuit IWire OWire
+	{-
+	| LazyGate [IWire]
+		(Map Word32 Circuit)
+		(LazyGateId -> Word32 -> ([IWire], Circuit, OWire))
+		-}
+	deriving Show
+
+{-
+instance Show BasicGate where
+	show _ = "<BasicGate>"
+	-}
 
 gateWires :: BasicGate -> [IWire]
 gateWires (AndGate i1 i2) = [i1, i2]
@@ -116,6 +135,7 @@ gateWires (OrGate i1 i2) = [i1, i2]
 gateWires (NotGate i) = [i]
 gateWires (TriGate i1 i2) = [i1, i2]
 gateWires (Delay _ i) = [i]
+gateWires (InnerCircuit i _ _ _) = [i]
 
 connectWire :: OWire -> IWire -> CircuitBuilder ()
 connectWire o i = modify $ insConn o i
@@ -169,6 +189,13 @@ delay dr | dr < 1 = error "0 delay is not permitted"
 delay dr = do
 	(i, o) <- (,) <$> makeIWire <*> makeOWire
 	modify $ insGate (Delay ((dr - 1) `genericReplicate` X) i) o
+	return (i, o)
+
+makeInnerCircuit :: Circuit -> IWire -> OWire -> CircuitBuilder (IWire, OWire)
+makeInnerCircuit cct ii io = do
+	i <- makeIWire
+	o <- makeOWire
+	modify $ insGate (InnerCircuit i cct ii io) o
 	return (i, o)
 
 makeIWire :: CircuitBuilder IWire

@@ -150,3 +150,19 @@ inverse o i = do
 	connectWire o ni
 	connectWire no i
 obverse = connectWire
+
+delayedNot :: CircuitBuilder (IWire, OWire)
+delayedNot = do
+	(ni, no) <- notGate
+	(dli, dlo) <- delay 5
+	connectWire no dli
+	return (ni, dlo)
+
+innerNot :: (Circuit, IWire, OWire)
+innerNot = let ((i, o), cct) = makeCircuit delayedNot in (cct, i, o)
+
+testInner :: CircuitBuilder (IWire, OWire)
+testInner = do
+	let	(cct, ii, io) = innerNot
+	(i, o) <- makeInnerCircuit cct ii io
+	return (i, o)
