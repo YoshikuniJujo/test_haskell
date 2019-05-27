@@ -63,23 +63,23 @@ type Memory8Wires = (IWire, IWire, IWire, IWire, IWire, OWire)
 
 memory8 :: CircuitBuilder Memory8Wires
 memory8 = do
-	(cin, cout) <- idGate
 	(a0in, a0out) <- idGate
 	(a1in, a1out) <- idGate
 	(a2in, a2out) <- idGate
 	(din, dout) <- idGate
-	((a0, a1, a2), dec) <- (\([a, b, c], d) -> ((a, b, c), d)) <$> dec38
-	(ci1s, ci2s, cots) <- unzip3 <$> replicateM 8 andGate
-	((a0', a1', a2'), is, o) <- (\([a, b, c], d, e) -> ((a, b, c), d, e)) <$> mux8
+
+	(cl, (a0, a1, a2), dec) <- (\(x, [a, b, c], d) -> (x, (a, b, c), d)) <$> dec38'
+
 	(cs, ds, qs, _q_s) <- unzip4 <$> replicateM 8 dlatch
+	zipWithM_ connectWire dec cs
+	mapM_ (connectWire dout) ds
+
+	((a0', a1', a2'), is, o) <- (\([a, b, c], d, e) -> ((a, b, c), d, e)) <$> mux8
+	zipWithM_ connectWire qs is
+
 	zipWithM_ connectWire [a0out, a1out, a2out] [a0, a1, a2]
 	zipWithM_ connectWire [a0out, a1out, a2out] [a0', a1', a2']
-	mapM_ (connectWire cout) ci1s
-	zipWithM_ connectWire dec ci2s
-	zipWithM_ connectWire cots cs
-	zipWithM_ connectWire qs is
-	mapM_ (connectWire dout) ds
-	return (a0in, a1in, a2in, cin, din, o)
+	return (a0in, a1in, a2in, cl, din, o)
 
 setBitsMemory8 :: Memory8Wires -> Word64 -> Bit -> Bit -> Circuit -> Circuit
 setBitsMemory8 (a0, a1, a2, c, d, _) a bc bd =
@@ -88,6 +88,12 @@ setBitsMemory8 (a0, a1, a2, c, d, _) a bc bd =
 
 getBitsMemory8 :: Memory8Wires -> Circuit -> Bit
 getBitsMemory8 (_, _, _, _, _, o) = peekOWire o
+
+setAndRunMemory8 ::
+	Memory8Wires -> Word64 -> Bit -> Bit -> Int -> Circuit -> (Bit, Circuit)
+setAndRunMemory8 ws a bc bd i cct = let
+	cct' = (!! i) . iterate step $ setBitsMemory8 ws a bc bd cct in
+	(getBitsMemory8 ws cct', cct')
 
 type Mux8Wires = ([IWire], [IWire], OWire)
 	
@@ -110,6 +116,15 @@ setBitsMux8 (ms, is, _) m bs = foldr (.) id (zipWith setBit ms $ wordToBits 64 m
 
 getBitsMux8 :: Mux8Wires -> Circuit -> Bit
 getBitsMux8 (_, _, o) = peekOWire o
+
+dec38' :: CircuitBuilder (IWire, [IWire], [OWire])
+dec38' = do
+	(cin, cout) <- idGate
+	(ins, outs) <- dec38
+	(ai1s, ai2s, aos) <- unzip3 <$> replicateM 8 andGate
+	mapM_ (connectWire cout) ai1s
+	zipWithM_ connectWire outs ai2s
+	return (cin, ins, aos)
 
 dec38 :: CircuitBuilder ([IWire], [OWire])
 dec38 = do
