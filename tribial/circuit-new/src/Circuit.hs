@@ -3,7 +3,7 @@
 
 module Circuit (
 	Circuit, CircuitBuilder, makeCircuit, step, setBit, peekOWire,
-	IWire, OWire, Bit(..), andGate, orGate, notGate, idGate, connectWire
+	IWire, OWire, Bit(..), andGate, orGate, notGate, idGate, triGate, connectWire
 	) where
 
 import Control.Arrow
@@ -38,9 +38,14 @@ notBit O = I
 notBit I = O
 notBit _ = X
 
+triBit :: Bit -> Bit -> Bit
+triBit I b = b
+triBit O _ = Z
+triBit _ _ = X
+
 data Circuit = Circuit {
 	cctGate :: Map OWire BasicGate,
-	cctWireConn :: Map IWire OWire,
+	cctWireConn :: Map IWire [OWire],
 	cctWireStt :: Map IWire Bit } deriving Show
 
 makeCircuit :: CircuitBuilder a -> (a, Circuit)
@@ -74,20 +79,28 @@ calcGate wst (AndGate i1 i2) =
 calcGate wst (OrGate i1 i2) =
 	((Nothing ,) .) . orBit <$> wst !? i1 <*> wst !? i2
 calcGate wst (NotGate i) = (Nothing ,) . notBit <$> wst !? i
+calcGate wst (TriGate i1 i2) =
+	((Nothing ,) .) . triBit <$> wst !? i1 <*> wst !? i2
 calcGate wst (Delay [] i) = (Nothing ,) <$> wst !? i
 calcGate wst (Delay (b : bs) i) =
 	(, b) . Just . (`Delay` i) . (bs ++) . (: []) <$> wst !? i
 
 nextIWire :: Circuit -> Map OWire Bit -> IWire -> Bit -> Bit
-nextIWire Circuit { cctWireConn = wc } ows iw ob =
-	fromMaybe ob $ (ows !?) =<< wc !? iw
+nextIWire Circuit { cctWireConn = wc } ows iw ob = fromMaybe ob
+	$ procOWire <$> (mapM (ows !?) =<< wc !? iw)
+
+procOWire :: [Bit] -> Bit
+procOWire [] = X
+procOWire os = case dropWhile (== Z) os of
+	[] -> Z
+	b : _ -> b
 
 type CircuitBuilder = State CBState
 
 data CBState = CBState {
 	cbsWireNum :: Word32,
 	cbsGate :: Map OWire BasicGate,
-	cbsWireConn :: Map IWire OWire } deriving Show
+	cbsWireConn :: Map IWire [OWire] } deriving Show
 
 initCBState :: CBState
 initCBState = CBState {
@@ -95,12 +108,13 @@ initCBState = CBState {
 
 data BasicGate
 	= AndGate IWire IWire | OrGate IWire IWire | NotGate IWire
-	| Delay [Bit] IWire deriving Show
+	| TriGate IWire IWire | Delay [Bit] IWire deriving Show
 
 gateWires :: BasicGate -> [IWire]
 gateWires (AndGate i1 i2) = [i1, i2]
 gateWires (OrGate i1 i2) = [i1, i2]
 gateWires (NotGate i) = [i]
+gateWires (TriGate i1 i2) = [i1, i2]
 gateWires (Delay _ i) = [i]
 
 connectWire :: OWire -> IWire -> CircuitBuilder ()
@@ -127,7 +141,14 @@ notGate = do
 
 idGate = delay 1
 
-makeAndGate, makeOrGate :: CircuitBuilder (IWire, IWire, OWire)
+triGate :: CircuitBuilder (IWire, IWire, OWire)
+triGate = do
+	(i1, i2, o) <- makeTriGate
+	(dli, dlo) <- delay 2
+	connectWire o dli
+	return (i1, i2, dlo)
+
+makeAndGate, makeOrGate, makeTriGate :: CircuitBuilder (IWire, IWire, OWire)
 makeAndGate = do
 	(i1, i2, o) <- (,,) <$> makeIWire <*> makeIWire <*> makeOWire
 	modify $ insGate (AndGate i1 i2) o
@@ -136,6 +157,11 @@ makeAndGate = do
 makeOrGate = do
 	(i1, i2, o) <- (,,) <$> makeIWire <*> makeIWire <*> makeOWire
 	modify $ insGate (OrGate i1 i2) o
+	return (i1, i2, o)
+
+makeTriGate = do
+	(i1, i2, o) <- (,,) <$> makeIWire <*> makeIWire <*> makeOWire
+	modify $ insGate (TriGate i1 i2) o
 	return (i1, i2, o)
 
 delay :: Word8 -> CircuitBuilder (IWire, OWire)
@@ -158,4 +184,7 @@ insGate :: BasicGate -> OWire -> CBState -> CBState
 insGate g o cbs = cbs { cbsGate = M.insert o g $ cbsGate cbs }
 
 insConn :: OWire -> IWire -> CBState -> CBState
-insConn o i cbs = cbs { cbsWireConn = M.insert i o $ cbsWireConn cbs }
+insConn o i cbs = cbs { cbsWireConn = M.insert i (o : indexOrEmpty (cbsWireConn cbs) i) $ cbsWireConn cbs }
+
+indexOrEmpty :: Ord k => Map k [v] -> k -> [v]
+indexOrEmpty = (fromMaybe [] .) . (!?)
