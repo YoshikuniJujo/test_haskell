@@ -15,7 +15,7 @@ norGate = do
 	connectWire o ni
 	return (i1, i2, no)
 
-decoder :: Word8 -> CircuitBuilder ([IWire], [OWire])
+decoder :: Word16 -> CircuitBuilder ([IWire], [OWire])
 decoder n = do
 	(is, ois) <- unzip <$> fromIntegral m `replicateM` idGate
 	(ias, oas) <- unzip <$> fromIntegral n `replicateM` multiAndGate m
@@ -23,7 +23,7 @@ decoder n = do
 	return (is, oas)
 	where m = log2 n
 
-binary :: (a, a) -> Word8 -> [[a]]
+binary :: (a, a) -> Word16 -> [[a]]
 binary _ n | n < 1 = [[]]
 binary (o, i) n = binary (o, i) (n - 1) >>= (<$> [(o :), (i :)]) . flip ($)
 
@@ -40,11 +40,11 @@ log2 i = i2 0
 		| 2 ^ j >= i = j
 		| otherwise = i2 $ j + 1
 
-multiAndGate :: Word8 -> CircuitBuilder ([IWire], OWire)
+multiAndGate :: Word16 -> CircuitBuilder ([IWire], OWire)
 multiAndGate = multiple andGate
 
 multiple :: CircuitBuilder (IWire, IWire, OWire) ->
-	Word8 -> CircuitBuilder ([IWire], OWire)
+	Word16 -> CircuitBuilder ([IWire], OWire)
 multiple _ n | n < 1 = error "Oops!"
 multiple _ 1 = first (: []) <$> idGate
 multiple g 2 = (\(i1, i2, o) -> ([i1, i2], o)) <$> g
