@@ -6,7 +6,7 @@ module Circuit (
 	IWire, OWire, Bit(..), andGate, orGate, notGate, idGate, triGate,
 	delay, connectWire,
 	makeInnerCircuit, makeInnerCircuit2, makeInnerCircuitList,
-	makeInnerCircuitMap, makeInnerCircuitMapIs, makeLazyGate
+	makeInnerCircuitMap, makeInnerCircuitMapIs, makeLazyGate, lazyGate
 	) where
 
 import Control.Arrow
@@ -14,7 +14,7 @@ import Control.Monad.State
 import Data.Maybe
 import Data.List
 import Data.Map (Map, (!?))
-import Data.Bool
+-- import Data.Bool
 import Data.Word
 
 import qualified Data.Map as M
@@ -127,17 +127,29 @@ calcGate wst (InnerCircuitMapIs ix is ccts) = do
 calcGate wst (LazyGate ix is ccts cct0) = do
 	bixs <- mapM (wst !?) ix
 	bs <- mapM (wst !?) is
-	let	ccts' = maybe ccts ((\k -> insertIfNot k cct0 ccts)
+	let	mcct1 = flip (M.findWithDefault cct0) ccts . fromIntegral <$> bitsToInt bixs
+		mcct1' = (`setBitsIsOWire` bs) <$> mcct1
+		ccts' = fromMaybe ccts $ do
+			k <- fromIntegral <$> bitsToInt bixs
+			v <- (\(x, y, z) -> (step x, y, z)) <$> mcct1'
+			return $ M.insert k v ccts
+		{-
+		ccts' = maybe ccts ((\k -> insertIfNot k cct0 ccts)
 			. fromIntegral) $ bitsToInt bixs
 		ccts'' = M.map (flip setBitsIsOWire bs) ccts'
 		mo = do	n <- bitsToInt bixs
 			let	(cct, _ii, io) = ccts'' M.! fromIntegral n
 			return $ peekOWire io cct
+		-}
+		mo = do	(cct, _ii, io) <- mcct1'
+			return $ peekOWire io cct
 		o = fromMaybe X mo
-	return (Just $ LazyGate ix is ccts'' cct0, o)
+	return (Just $ LazyGate ix is ccts' cct0, o)
 
+{-
 insertIfNot :: Ord k => k -> v -> Map k v -> Map k v
 insertIfNot k v m = bool (M.insert k v m) m $ k `M.member` m
+-}
 
 setBitsIoWire :: (Circuit, IWire, OWire) -> Bit -> (Circuit, IWire, OWire)
 setBitsIoWire (cct, i, o) b = (step $ setBit i b cct, i, o)
@@ -301,6 +313,16 @@ makeInnerCircuitMapIs n m ccts = do
 	is <- fromIntegral m `replicateM` makeIWire
 	o <- makeOWire
 	modify $ insGate (InnerCircuitMapIs ixs is ccts) o
+	return (ixs, is, o)
+
+lazyGate :: Word8 -> CircuitBuilder ([IWire], OWire) ->
+	CircuitBuilder ([IWire], [IWire], OWire)
+lazyGate n cctb = do
+	let	((iis, io), cct0) = makeCircuit cctb
+	ixs <- fromIntegral n `replicateM` makeIWire
+	is <- length iis `replicateM` makeIWire
+	o <- makeOWire
+	modify $ insGate (LazyGate ixs is M.empty (cct0, iis, io)) o
 	return (ixs, is, o)
 
 makeLazyGate :: Word8 -> Word8 -> (Circuit, [IWire], OWire) ->

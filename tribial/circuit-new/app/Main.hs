@@ -11,6 +11,7 @@ import Data.Word
 import qualified Data.Map as M
 
 import Circuit
+import CircuitTools
 
 main :: IO ()
 main = putStrLn "Slozsoft"
@@ -205,3 +206,52 @@ testLazyGate :: CircuitBuilder (IWire, IWire, OWire)
 testLazyGate = do
 	(ixs, is, o) <- makeLazyGate 1 1 $ app2of3 (: []) innerNot
 	return (head ixs, head is, o)
+
+innerRs :: CircuitBuilder ([IWire], OWire)
+innerRs = do
+	(r, s, q, _q_) <- rs
+	return ([r, s], q)
+
+type TestLazyGate2Wires = ([IWire], IWire, IWire, OWire)
+
+testLazyGate2 :: CircuitBuilder TestLazyGate2Wires
+testLazyGate2 = do
+	(ix, is, o) <- lazyGate 3 innerRs
+	return (ix, is !! 0, is !! 1, o)
+
+setBitsTestLazyGate2 ::
+	TestLazyGate2Wires -> Word64 -> Bit -> Bit -> Circuit -> Circuit
+setBitsTestLazyGate2 (wix, wr, ws, _) ix br bs =
+	foldr (.) id (zipWith setBit wix $ wordToBits 64 ix)
+		. setBit wr br . setBit ws bs
+
+setAndRunTestLazyGate2 ::
+	TestLazyGate2Wires -> Word64 -> Bit -> Bit -> Int -> Circuit -> Circuit
+setAndRunTestLazyGate2 ws ix br bs n = run n . setBitsTestLazyGate2 ws ix br bs 
+
+getBitsTestLazyGate2 :: TestLazyGate2Wires -> Circuit -> Bit
+getBitsTestLazyGate2 (_, _, _, o) = peekOWire o
+
+dlatchInner :: CircuitBuilder ([IWire], OWire)
+dlatchInner = do
+	(cin, cout) <- idGate
+	(din, dout) <- idGate
+	(ni, no) <- notGate
+	(ar1, ar2, aro) <- andGate
+	(as1, as2, aso) <- andGate
+	(rs', q) <- innerRs
+	let	r = rs' !! 0
+		s = rs' !! 1
+	connectWire dout ni
+	connectWire cout ar1
+	connectWire no ar2
+	connectWire cout as1
+	connectWire dout as2
+	connectWire aro r
+	connectWire aso s
+	return ([cin, din], q)
+
+testLazyDlatch :: CircuitBuilder ([IWire], IWire, IWire, OWire)
+testLazyDlatch = do
+	(ix, is, o) <- lazyGate 3 dlatchInner
+	return (ix, is !! 0, is !! 1, o)
