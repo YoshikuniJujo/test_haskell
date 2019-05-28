@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Circuit (
-	Circuit, CircuitBuilder, makeCircuit, step, setBit, peekOWire,
+	Circuit, CircuitBuilder, makeCircuit, step, setBit, setBits, peekOWire,
 	IWire, OWire, Bit(..), andGate, orGate, notGate, idGate, triGate,
 	delay, connectWire,
 	makeInnerCircuit, makeInnerCircuit2, makeInnerCircuitList,

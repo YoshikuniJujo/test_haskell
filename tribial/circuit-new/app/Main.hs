@@ -4,13 +4,12 @@ module Main where
 
 import Control.Monad
 import Data.List
-import Data.Bits ((.&.), shiftR)
-import Data.Bool
 import Data.Word
 
 import qualified Data.Map as M
 
 import Circuit
+import Element
 import CircuitTools
 
 main :: IO ()
@@ -109,10 +108,6 @@ mux8 = do
 	mapM_ (`connectWire` oin) os
 	return (ms, is, oout)
 
-wordToBits :: Word8 -> Word64 -> [Bit]
-wordToBits 0 _ = []
-wordToBits n w = bool O I (w .&. 1 /= 0) : wordToBits (n - 1) (w `shiftR` 1)
-
 setBitsMux8 :: Mux8Wires -> Word64 -> [Bit] -> Circuit -> Circuit
 setBitsMux8 (ms, is, _) m bs = foldr (.) id (zipWith setBit ms $ wordToBits 64 m)
 	. foldr (.) id (zipWith setBit is bs)
@@ -142,17 +137,6 @@ andGate3 = do
 	(a1', i3, o) <- andGate
 	connectWire a1 a1'
 	return ([i1, i2, i3], o)
-
-binary :: (a, a) -> Word8 -> [[a]]
-binary _ n | n < 1 = [[]]
-binary (o, i) n = binary (o, i) (n - 1) >>= (<$> [(o :), (i :)]) . flip ($)
-
-inverse, obverse :: OWire -> IWire -> CircuitBuilder ()
-inverse o i = do
-	(ni, no) <- notGate
-	connectWire o ni
-	connectWire no i
-obverse = connectWire
 
 delayedNot :: CircuitBuilder (IWire, OWire)
 delayedNot = do

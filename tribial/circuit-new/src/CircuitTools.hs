@@ -2,6 +2,10 @@
 
 module CircuitTools where
 
+import Data.Bits ((.&.), shiftR)
+import Data.Bool
+import Data.Word
+
 import Circuit
 
 run :: Int -> Circuit -> Circuit
@@ -36,3 +40,7 @@ setBits41 (i1, i2, i3, i4, _) b1 b2 b3 b4 cct =
 
 getBits41 :: Wires41 -> Circuit -> Bit
 getBits41 (_, _, _, _, o) = peekOWire o
+
+wordToBits :: Word8 -> Word64 -> [Bit]
+wordToBits 0 _ = []
+wordToBits n w = bool O I (w .&. 1 /= 0) : wordToBits (n - 1) (w `shiftR` 1)
