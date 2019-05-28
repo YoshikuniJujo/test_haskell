@@ -151,3 +151,81 @@ setAndRunSram ws bwe ad d n = run n . setBitsSram ws bwe ad d
 setSram :: SramWires -> Word64 -> Word64 -> Int -> Circuit -> Circuit
 setSram ws ad d n = run n . setBitsSram ws O ad d
 	. run n . setBitsSram ws I ad d . run n . setBitsSram ws O ad d
+
+type SramXyWrite1Wires = (IWire, [IWire], [IWire], IWire, OWire)
+
+sramXyWrite1 :: Word8 -> Word8 -> CircuitBuilder SramXyWrite1Wires
+sramXyWrite1 m n = do
+	(ady, wedadx, o) <- lazyGate m $ do
+		(iwe, adx, idt, io) <- sramXWrite1 n
+		return (iwe : idt : adx, io)
+	case wedadx of
+		we : d : adx -> return (we, ady, adx, d, o)
+		_ -> error "Oops!"
+
+sramXWrite1 :: Word8 -> CircuitBuilder (IWire, [IWire], IWire, OWire)
+sramXWrite1 n = do
+	(ad, is, o) <- lazyGate n $ do
+		(c, d, q, _q_) <- dlatch
+		return ([c, d], q)
+	return (is !! 0, ad, is !! 1, o)
+
+setBitsSramXyWrite1 :: SramXyWrite1Wires ->
+	Bit -> Word64 -> Word64 -> Bit -> Circuit -> Circuit
+setBitsSramXyWrite1 (wwe, wady, wadx, wd, _) bwe ady adx bd = setBit wwe bwe
+	. setBits wady (wordToBits 64 ady) . setBits wadx (wordToBits 64 adx)
+	. setBit wd bd
+
+getBitsSramXyWrite1 :: SramXyWrite1Wires -> Circuit -> Bit
+getBitsSramXyWrite1 (_, _, _, _, o) = peekOWire o
+
+setAndRunSramXyWrite1 :: SramXyWrite1Wires ->
+	Bit -> Word64 -> Word64 -> Bit -> Int -> Circuit -> Circuit
+setAndRunSramXyWrite1 ws bwe ady adx bd n = run n . setBitsSramXyWrite1 ws bwe ady adx bd
+
+setSramXyWrite1 :: SramXyWrite1Wires ->
+	Word64 -> Word64 -> Bit -> Int -> Circuit -> Circuit
+setSramXyWrite1 ws ady adx d n = setAndRunSramXyWrite1 ws O ady adx d n
+	. setAndRunSramXyWrite1 ws I ady adx d n
+	. setAndRunSramXyWrite1 ws O ady adx d n
+
+type SramXy1Wires = (IWire, [IWire], [IWire], IWire, OWire)
+
+sramXy1 :: Word8 -> Word8 -> CircuitBuilder SramXy1Wires
+sramXy1 = sramXyWrite1
+
+type SramXyWires = (IWire, [IWire], [IWire], [IWire], [OWire])
+
+sramXy8 :: Word8 -> Word8 -> CircuitBuilder SramXyWires
+sramXy8 m n = do
+	(wein, weout) <- idGate
+	(adyin, adyout) <- unzip <$> fromIntegral m `replicateM` idGate
+	(adxin, adxout) <- unzip <$> fromIntegral n `replicateM` idGate
+	(wes, adys, adxs, ds, os) <- unzip5 <$> 8 `replicateM` sramXy1 m n
+	mapM_ (connectWire weout) wes
+	mapM_ (\ady -> zipWithM_ connectWire adyout ady) adys
+	mapM_ (\adx -> zipWithM_ connectWire adxout adx) adxs
+	return (wein, adyin, adxin, ds, os)
+
+setBitsSramXy ::
+	SramXyWires -> Bit -> Word64 -> Word64 -> Word64 -> Circuit -> Circuit
+setBitsSramXy (wwe, wady, wadx, wd, _) bwe ady adx d = setBit wwe bwe
+	. setBits wady (wordToBits 64 ady) . setBits wadx (wordToBits 64 adx)
+	. setBits wd (wordToBits 64 d)
+
+getBitsSramXy :: SramXyWires -> Circuit -> Word64
+getBitsSramXy (_, _, _, _, os) cct = bitsToWord $ (`peekOWire` cct) <$> os
+
+setAndRunSramXy :: SramXyWires ->
+	Bit -> Word64 -> Word64 -> Word64 -> Int -> Circuit -> Circuit
+setAndRunSramXy ws bwe ady adx d n = run n . setBitsSramXy ws bwe ady adx d
+
+setSramXy ::
+	SramXyWires -> Word64 -> Word64 -> Word64 -> Int -> Circuit -> Circuit
+setSramXy ws ady adx d n = setAndRunSramXy ws O ady adx d n
+	. setAndRunSramXy ws I ady adx d n
+	. setAndRunSramXy ws O ady adx d n
+
+getSramXy ::
+	SramXyWires -> Word64 -> Word64 -> Word64 -> Int -> Circuit -> Circuit
+getSramXy ws ady adx d n = setAndRunSramXy ws O ady adx d n
