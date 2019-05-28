@@ -2,7 +2,7 @@
 
 module CircuitTools where
 
-import Data.Bits ((.&.), shiftR)
+import Data.Bits ((.&.), (.|.), shiftL, shiftR)
 import Data.Bool
 import Data.Word
 
@@ -44,3 +44,9 @@ getBits41 (_, _, _, _, o) = peekOWire o
 wordToBits :: Word8 -> Word64 -> [Bit]
 wordToBits 0 _ = []
 wordToBits n w = bool O I (w .&. 1 /= 0) : wordToBits (n - 1) (w `shiftR` 1)
+
+bitsToWord :: [Bit] -> Word64
+bitsToWord [] = 0
+bitsToWord (O : bs) = bitsToWord bs `shiftL` 1
+bitsToWord (I : bs) = bitsToWord bs `shiftL` 1 .|. 1
+bitsToWord _ = error "bitsToWord: not number"

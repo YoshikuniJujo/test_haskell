@@ -114,3 +114,40 @@ setSram1 ws ad bd n = run n . setBitsSram1 ws O ad bd
 
 sram1' :: Word8 -> CircuitBuilder Sram1Wires
 sram1' = sramWrite1'
+
+type SramWires = (IWire, [IWire], [IWire], [OWire])
+
+sram8, sram8' :: Word8 -> CircuitBuilder SramWires
+sram8 n = do
+	(wein, weout) <- idGate
+	(adin, adout) <- unzip <$> fromIntegral n `replicateM` idGate
+	(wes, ads, ds, os) <- unzip4 <$> 8 `replicateM` sram1 n
+	mapM_ (connectWire weout) wes
+	mapM_ (\ad -> zipWithM_ connectWire adout ad) ads
+	return (wein, adin, ds, os)
+
+sram8' n = do
+	(wein, weout) <- idGate
+	(adin, adout) <- unzip <$> fromIntegral n `replicateM` idGate
+	(wes, ads, ds, os) <- unzip4 <$> 8 `replicateM` sram1' n
+	mapM_ (connectWire weout) wes
+	mapM_ (\ad -> zipWithM_ connectWire adout ad) ads
+	return (wein, adin, ds, os)
+
+setBitsSram :: SramWires -> Bit -> Word64 -> Word64 -> Circuit -> Circuit
+setBitsSram (wwe, wad, wd, _) bwe ad d = setBit wwe bwe
+	. setBits wad (wordToBits 64 ad) . setBits wd (wordToBits 64 d)
+
+getBitsSram :: SramWires -> Circuit -> Word64
+getBitsSram (_, _, _, os) cct = bitsToWord $ (`peekOWire` cct) <$> os
+
+getBitsSram' :: SramWires -> Circuit -> [Bit]
+getBitsSram' (_, _, _, os) cct = (`peekOWire` cct) <$> os
+
+setAndRunSram ::
+	SramWires -> Bit -> Word64 -> Word64 -> Int -> Circuit -> Circuit
+setAndRunSram ws bwe ad d n = run n . setBitsSram ws bwe ad d
+
+setSram :: SramWires -> Word64 -> Word64 -> Int -> Circuit -> Circuit
+setSram ws ad d n = run n . setBitsSram ws O ad d
+	. run n . setBitsSram ws I ad d . run n . setBitsSram ws O ad d
