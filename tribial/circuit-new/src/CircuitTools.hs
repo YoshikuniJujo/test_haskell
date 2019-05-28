@@ -25,6 +25,9 @@ setBits22 (i1, i2, _, _) b1 b2 cct =
 getBits22 :: Wires22 -> Circuit -> (Bit, Bit)
 getBits22 (_, _, o1, o2) = (,) <$> peekOWire o1 <*> peekOWire o2
 
+setAndRun22 :: Wires22 -> Bit -> Bit -> Int -> Circuit -> Circuit
+setAndRun22 ws b1 b2 n = run n . setBits22 ws b1 b2
+
 type Wires41 = (IWire, IWire, IWire, IWire, OWire)
 
 setBits41 :: Wires41 -> Bit -> Bit -> Bit -> Bit -> Circuit -> Circuit
