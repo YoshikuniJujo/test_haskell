@@ -3,8 +3,10 @@
 
 module Circuit (
 	Circuit, CircuitBuilder, makeCircuit, step, setBit, peekOWire,
-	IWire, OWire, Bit(..), andGate, orGate, notGate, idGate, triGate, delay, connectWire,
-	makeInnerCircuit, makeInnerCircuit2, makeInnerCircuitList
+	IWire, OWire, Bit(..), andGate, orGate, notGate, idGate, triGate,
+	delay, connectWire,
+	makeInnerCircuit, makeInnerCircuit2, makeInnerCircuitList,
+	makeInnerCircuitMap, makeInnerCircuitMapIs, makeLazyGate
 	) where
 
 import Control.Arrow
@@ -12,6 +14,7 @@ import Control.Monad.State
 import Data.Maybe
 import Data.List
 import Data.Map (Map, (!?))
+import Data.Bool
 import Data.Word
 
 import qualified Data.Map as M
@@ -103,9 +106,47 @@ calcGate wst (InnerCircuitList is i ccts) = do
 			return $ peekOWire io cct
 		o = fromMaybe X mo
 	return (Just $ InnerCircuitList is i ccts', o)
+calcGate wst (InnerCircuitMap is i ccts) = do
+	bs <- mapM (wst !?) is
+	b <- wst !? i
+	let	ccts' = M.map (flip setBitsIoWire b) ccts
+		mo = do	n <- bitsToInt bs
+			let	(cct, _ii, io) = ccts' M.! fromIntegral n
+			return $ peekOWire io cct
+		o = fromMaybe X mo
+	return (Just $ InnerCircuitMap is i ccts', o)
+calcGate wst (InnerCircuitMapIs ix is ccts) = do
+	bixs <- mapM (wst !?) ix
+	bs <- mapM (wst !?) is
+	let	ccts' = M.map (flip setBitsIsOWire bs) ccts
+		mo = do	n <- bitsToInt bixs
+			let	(cct, _ii, io) = ccts' M.! fromIntegral n
+			return $ peekOWire io cct
+		o = fromMaybe X mo
+	return (Just $ InnerCircuitMapIs ix is ccts', o)
+calcGate wst (LazyGate ix is ccts cct0) = do
+	bixs <- mapM (wst !?) ix
+	bs <- mapM (wst !?) is
+	let	ccts' = maybe ccts ((\k -> insertIfNot k cct0 ccts)
+			. fromIntegral) $ bitsToInt bixs
+		ccts'' = M.map (flip setBitsIsOWire bs) ccts'
+		mo = do	n <- bitsToInt bixs
+			let	(cct, _ii, io) = ccts'' M.! fromIntegral n
+			return $ peekOWire io cct
+		o = fromMaybe X mo
+	return (Just $ LazyGate ix is ccts'' cct0, o)
+
+insertIfNot :: Ord k => k -> v -> Map k v -> Map k v
+insertIfNot k v m = bool (M.insert k v m) m $ k `M.member` m
 
 setBitsIoWire :: (Circuit, IWire, OWire) -> Bit -> (Circuit, IWire, OWire)
 setBitsIoWire (cct, i, o) b = (step $ setBit i b cct, i, o)
+
+setBitsIsOWire :: (Circuit, [IWire], OWire) -> [Bit] -> (Circuit, [IWire], OWire)
+setBitsIsOWire (cct, is, o) bs = (step $ setBits is bs cct, is, o)
+
+setBits :: [IWire] -> [Bit] -> Circuit -> Circuit
+setBits is bs = foldr (.) id $ zipWith setBit is bs
 
 bitsToInt :: [Bit] -> Maybe Int
 bitsToInt [] = Just 0
@@ -142,17 +183,15 @@ data BasicGate
 	| InnerCircuit IWire Circuit IWire OWire
 	| InnerCircuit2 IWire IWire Circuit IWire IWire OWire
 	| InnerCircuitList [IWire] IWire [(Circuit, IWire, OWire)]
+	| InnerCircuitMap [IWire] IWire (Map Word32 (Circuit, IWire, OWire))
+	| InnerCircuitMapIs [IWire] [IWire] (Map Word32 (Circuit, [IWire], OWire))
+	| LazyGate [IWire] [IWire]
+		(Map Word32 (Circuit, [IWire], OWire)) (Circuit, [IWire], OWire)
 	{-
-	| LazyGate [IWire]
-		(Map Word32 Circuit)
-		(LazyGateId -> Word32 -> ([IWire], Circuit, OWire))
+	| LazyGate1 [IWire] IWire
+		(Map Word32 (Circuit, IWire, OWire)) (Circuit, IWire, OWire)
 		-}
 	deriving Show
-
-{-
-instance Show BasicGate where
-	show _ = "<BasicGate>"
-	-}
 
 gateWires :: BasicGate -> [IWire]
 gateWires (AndGate i1 i2) = [i1, i2]
@@ -163,6 +202,9 @@ gateWires (Delay _ i) = [i]
 gateWires (InnerCircuit i _ _ _) = [i]
 gateWires (InnerCircuit2 i1 i2 _ _ _ _) = [i1, i2]
 gateWires (InnerCircuitList is i _) = is ++ [i]
+gateWires (InnerCircuitMap is i _) = is ++ [i]
+gateWires (InnerCircuitMapIs ix is _) = ix ++ is
+gateWires (LazyGate ix is _ _) = ix ++ is
 
 connectWire :: OWire -> IWire -> CircuitBuilder ()
 connectWire o i = modify $ insConn o i
@@ -225,7 +267,8 @@ makeInnerCircuit cct ii io = do
 	modify $ insGate (InnerCircuit i cct ii io) o
 	return (i, o)
 
-makeInnerCircuit2 :: Circuit -> IWire -> IWire -> OWire -> CircuitBuilder (IWire, IWire, OWire)
+makeInnerCircuit2 :: Circuit ->
+	IWire -> IWire -> OWire -> CircuitBuilder (IWire, IWire, OWire)
 makeInnerCircuit2 cct ii1 ii2 io = do
 	i1 <- makeIWire
 	i2 <- makeIWire
@@ -233,13 +276,41 @@ makeInnerCircuit2 cct ii1 ii2 io = do
 	modify $ insGate (InnerCircuit2 i1 i2 cct ii1 ii2 io) o
 	return (i1, i2, o)
 
-makeInnerCircuitList :: Word8 -> [(Circuit, IWire, OWire)] -> CircuitBuilder ([IWire], IWire, OWire)
+makeInnerCircuitList :: Word8 ->
+	[(Circuit, IWire, OWire)] -> CircuitBuilder ([IWire], IWire, OWire)
 makeInnerCircuitList n ccts = do
 	is <- fromIntegral n `replicateM` makeIWire
 	i <- makeIWire
 	o <- makeOWire
 	modify $ insGate (InnerCircuitList is i ccts) o
 	return (is, i, o)
+
+makeInnerCircuitMap :: Word8 -> Map Word32 (Circuit, IWire, OWire) ->
+	CircuitBuilder ([IWire], IWire, OWire)
+makeInnerCircuitMap n ccts = do
+	is <- fromIntegral n `replicateM` makeIWire
+	i <- makeIWire
+	o <- makeOWire
+	modify $ insGate (InnerCircuitMap is i ccts) o
+	return (is, i, o)
+
+makeInnerCircuitMapIs :: Word8 -> Word8 -> Map Word32 (Circuit, [IWire], OWire) ->
+	CircuitBuilder ([IWire], [IWire], OWire)
+makeInnerCircuitMapIs n m ccts = do
+	ixs <- fromIntegral n `replicateM` makeIWire
+	is <- fromIntegral m `replicateM` makeIWire
+	o <- makeOWire
+	modify $ insGate (InnerCircuitMapIs ixs is ccts) o
+	return (ixs, is, o)
+
+makeLazyGate :: Word8 -> Word8 -> (Circuit, [IWire], OWire) ->
+	CircuitBuilder ([IWire], [IWire], OWire)
+makeLazyGate n m cct0 = do
+	ixs <- fromIntegral n `replicateM` makeIWire
+	is <- fromIntegral m `replicateM` makeIWire
+	o <- makeOWire
+	modify $ insGate (LazyGate ixs is M.empty cct0) o
+	return (ixs, is, o)
 
 makeIWire :: CircuitBuilder IWire
 makeIWire = IWire <$> getModify cbsWireNum sccWireNum

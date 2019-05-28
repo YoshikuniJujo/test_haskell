@@ -8,6 +8,8 @@ import Data.Bits ((.&.), shiftR)
 import Data.Bool
 import Data.Word
 
+import qualified Data.Map as M
+
 import Circuit
 
 main :: IO ()
@@ -183,3 +185,23 @@ testInnerList :: CircuitBuilder (IWire, IWire, OWire)
 testInnerList = do
 	(is, i2, o) <- makeInnerCircuitList 1 [innerNot, innerId]
 	return (head is, i2, o)
+
+testInnerMap :: CircuitBuilder (IWire, IWire, OWire)
+testInnerMap = do
+	(is, i2, o) <- makeInnerCircuitMap 1 . M.insert 0 innerNot $ M.insert 1 innerId M.empty
+	return (head is, i2, o)
+
+testInnerMapIs :: CircuitBuilder (IWire, IWire, OWire)
+testInnerMapIs = do
+	(ixs, is, o) <- makeInnerCircuitMapIs 1 1
+		. M.insert 0 (app2of3 (: []) innerNot)
+		$ M.insert 1 (app2of3 (: []) innerId) M.empty
+	return (head ixs, head is, o)
+
+app2of3 :: (b -> d) -> (a, b, c) -> (a, d, c)
+app2of3 f (x, y, z) = (x, f y, z)
+
+testLazyGate :: CircuitBuilder (IWire, IWire, OWire)
+testLazyGate = do
+	(ixs, is, o) <- makeLazyGate 1 1 $ app2of3 (: []) innerNot
+	return (head ixs, head is, o)
