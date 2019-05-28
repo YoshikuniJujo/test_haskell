@@ -57,4 +57,25 @@ setAndRunSramWrite1 ::
 	SramWrite1Wires -> Bit -> Word64 -> Bit -> Int -> Circuit -> Circuit
 setAndRunSramWrite1 ws bwe ad bd n = run n . setBitsSramWrite1 ws bwe ad bd
 
+type SramWrite1'Wires = (IWire, [IWire], IWire, OWire)
+
+sramWrite1' :: Word8 -> CircuitBuilder SramWrite1'Wires
+sramWrite1' n = do
+	(ad, is, o) <- lazyGate n $ do
+		(c, d, q, _q_) <- dlatch
+		return ([c, d], q)
+	return (is !! 0, ad, is !! 1, o)
+
+setBitsSramWrite1' ::
+	SramWrite1'Wires -> Bit -> Word64 -> Bit -> Circuit -> Circuit
+setBitsSramWrite1' (wwe, wad, wd, _) bwe ad bd =
+	setBit wwe bwe . setBits wad (wordToBits 64 ad) . setBit wd bd
+
+getBitsSramWrite1' :: SramWrite1'Wires -> Circuit -> Bit
+getBitsSramWrite1' (_, _, _, o) = peekOWire o
+
+setAndRunSramWrite1' ::
+	SramWrite1'Wires -> Bit -> Word64 -> Bit -> Int -> Circuit -> Circuit
+setAndRunSramWrite1' ws bwe ad bd n = run n . setBitsSramWrite1' ws bwe ad bd
+
 -- sramWrite :: Word8 -> Word8 -> CircuitBuilder (IWire, [IWire], [IWire], [OWire])
