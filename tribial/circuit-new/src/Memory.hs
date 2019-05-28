@@ -30,7 +30,7 @@ dlatch = do
 		[ni, ra1, ra2, sa1, sa2, r', s']
 	return (cin, din, q, q_)
 
-type SramWrite1Wires = (IWire, [IWire], IWire, [OWire])
+type SramWrite1Wires = (IWire, [IWire], IWire, [OWire], [OWire])
 
 sramWrite1 :: Word8 -> CircuitBuilder SramWrite1Wires
 sramWrite1 n = do
@@ -43,15 +43,15 @@ sramWrite1 n = do
 	zipWithM_ connectWire dcouts ain2s
 	zipWithM_ connectWire aouts cs
 	mapM_ (connectWire dout) ds
-	return (wein, dcins, din, qs)
+	return (wein, dcins, din, dcouts, qs)
 
 setBitsSramWrite1 ::
 	SramWrite1Wires -> Bit -> Word64 -> Bit -> Circuit -> Circuit
-setBitsSramWrite1 (wwe, wad, wd, _) bwe ad bd =
+setBitsSramWrite1 (wwe, wad, wd, _, _) bwe ad bd =
 	setBit wwe bwe . setBits wad (wordToBits 64 ad) . setBit wd bd
 
 getBitsSramWrite1 :: SramWrite1Wires -> Circuit -> [Bit]
-getBitsSramWrite1 (_, _, _, os) cct = (`peekOWire` cct) <$> os
+getBitsSramWrite1 (_, _, _, _, os) cct = (`peekOWire` cct) <$> os
 
 setAndRunSramWrite1 ::
 	SramWrite1Wires -> Bit -> Word64 -> Bit -> Int -> Circuit -> Circuit
@@ -78,4 +78,39 @@ setAndRunSramWrite1' ::
 	SramWrite1'Wires -> Bit -> Word64 -> Bit -> Int -> Circuit -> Circuit
 setAndRunSramWrite1' ws bwe ad bd n = run n . setBitsSramWrite1' ws bwe ad bd
 
+sramReadPart1 :: Word8 -> [OWire] -> [OWire] -> CircuitBuilder OWire
+sramReadPart1 n dc os = do
+	(i1s, i2s, tos) <- unzip3 <$> (2 ^ n) `replicateM` triGate
+	(rin, rout) <- idGate
+	zipWithM_ connectWire dc i1s
+	zipWithM_ connectWire os i2s
+	mapM_ (`connectWire` rin) tos
+	return rout
+
 -- sramWrite :: Word8 -> Word8 -> CircuitBuilder (IWire, [IWire], [IWire], [OWire])
+
+type Sram1Wires = (IWire, [IWire], IWire, OWire)
+
+sram1 :: Word8 -> CircuitBuilder Sram1Wires
+sram1 n = do
+	(we, ad, d, dc, os) <- sramWrite1 n
+	o <- sramReadPart1 n dc os
+	return (we, ad, d, o)
+
+setBitsSram1 :: Sram1Wires -> Bit -> Word64 -> Bit -> Circuit -> Circuit
+setBitsSram1 (wwe, wad, wd, _) bwe ad bd =
+	setBit wwe bwe . setBits wad (wordToBits 64 ad) . setBit wd bd
+
+getBitsSram1 :: Sram1Wires -> Circuit -> Bit
+getBitsSram1 (_, _, _, o) = peekOWire o
+
+setAndRunSram1 ::
+	Sram1Wires -> Bit -> Word64 -> Bit -> Int -> Circuit -> Circuit
+setAndRunSram1 ws bwe ad bd n = run n . setBitsSram1 ws bwe ad bd
+
+setSram1 :: Sram1Wires -> Word64 -> Bit -> Int -> Circuit -> Circuit
+setSram1 ws ad bd n = run n . setBitsSram1 ws O ad bd
+	. run n . setBitsSram1 ws I ad bd . run n . setBitsSram1 ws O ad bd
+
+sram1' :: Word8 -> CircuitBuilder Sram1Wires
+sram1' = sramWrite1'
