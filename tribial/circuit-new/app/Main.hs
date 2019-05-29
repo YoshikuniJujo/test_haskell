@@ -6,8 +6,6 @@ import Control.Monad
 import Data.List
 import Data.Word
 
-import qualified Data.Map as M
-
 import Circuit
 import Element
 import CircuitTools
@@ -148,48 +146,8 @@ delayedNot = do
 innerNot :: (Circuit, IWire, OWire)
 innerNot = let ((i, o), cct) = makeCircuit delayedNot in (cct, i, o)
 
-testInner :: CircuitBuilder (IWire, OWire)
-testInner = do
-	let	(cct, ii, io) = innerNot
-	(i, o) <- makeInnerCircuit cct ii io
-	return (i, o)
-
-innerAnd :: (Circuit, IWire, IWire, OWire)
-innerAnd = let ((i1, i2, o), cct) = makeCircuit andGate in (cct, i1, i2, o)
-	
-testInner2 :: CircuitBuilder (IWire, IWire, OWire)
-testInner2 = do
-	let	(cct, ii1, ii2, io) = innerAnd
-	(i1, i2, o) <- makeInnerCircuit2 cct ii1 ii2 io
-	return (i1, i2, o)
-
-innerId :: (Circuit, IWire, OWire)
-innerId = let ((i, o), cct) = makeCircuit idGate in (cct, i, o)
-
-testInnerList :: CircuitBuilder (IWire, IWire, OWire)
-testInnerList = do
-	(is, i2, o) <- makeInnerCircuitList 1 [innerNot, innerId]
-	return (head is, i2, o)
-
-testInnerMap :: CircuitBuilder (IWire, IWire, OWire)
-testInnerMap = do
-	(is, i2, o) <- makeInnerCircuitMap 1 . M.insert 0 innerNot $ M.insert 1 innerId M.empty
-	return (head is, i2, o)
-
-testInnerMapIs :: CircuitBuilder (IWire, IWire, OWire)
-testInnerMapIs = do
-	(ixs, is, o) <- makeInnerCircuitMapIs 1 1
-		. M.insert 0 (app2of3 (: []) innerNot)
-		$ M.insert 1 (app2of3 (: []) innerId) M.empty
-	return (head ixs, head is, o)
-
 app2of3 :: (b -> d) -> (a, b, c) -> (a, d, c)
 app2of3 f (x, y, z) = (x, f y, z)
-
-testLazyGate :: CircuitBuilder (IWire, IWire, OWire)
-testLazyGate = do
-	(ixs, is, o) <- makeLazyGate 1 1 $ app2of3 (: []) innerNot
-	return (head ixs, head is, o)
 
 innerRs :: CircuitBuilder ([IWire], OWire)
 innerRs = do
@@ -200,7 +158,7 @@ type TestLazyGate2Wires = ([IWire], IWire, IWire, OWire)
 
 testLazyGate2 :: CircuitBuilder TestLazyGate2Wires
 testLazyGate2 = do
-	(ix, is, o) <- lazyGate 3 innerRs
+	(ix, is, o) <- lazyGates 3 innerRs
 	return (ix, is !! 0, is !! 1, o)
 
 setBitsTestLazyGate2 ::
@@ -237,5 +195,5 @@ dlatchInner = do
 
 testLazyDlatch :: CircuitBuilder ([IWire], IWire, IWire, OWire)
 testLazyDlatch = do
-	(ix, is, o) <- lazyGate 3 dlatchInner
+	(ix, is, o) <- lazyGates 3 dlatchInner
 	return (ix, is !! 0, is !! 1, o)

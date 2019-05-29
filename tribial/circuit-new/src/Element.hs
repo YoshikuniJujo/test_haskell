@@ -55,3 +55,76 @@ multiple g n = do
 	connectWire o1 i1
 	connectWire o2 i2
 	return (is1 ++ is2, o)
+
+{-
+asisUnless :: IWire -> CircuitBuilder (IWire, IWire)
+asisUnless i = do
+	(cin, cout) <- idGate
+	(c, dt, dto) <- triGate
+	(ni, no) <- notGate
+	(mi, mo) <- idGate
+	(nc, m, ai) <- triGate
+	mapM_ (connectWire cout) [c, ni]
+	connectWire dto mi
+	connectWire no nc
+	connectWire mo m
+	connectWire ai mi
+	connectWire mo i
+	return (cin, dt)
+	-}
+
+asisUnless :: IWire -> CircuitBuilder (IWire, IWire)
+asisUnless i = do
+	(cin, cout) <- idGate
+	(ni, no) <- notGate
+	(idi, ido) <- idGate
+	(mi, mo) <- idGate
+	(nc, m, ai) <- triGate
+	(dtin, dtout) <- delay 10
+	(c, dti, dto) <- triGate
+	connectWire cout ni
+	connectWire no nc
+	connectWire mo m
+	connectWire ai mi
+	connectWire mo i
+	connectWire dto mi
+	connectWire cout idi
+	connectWire ido c
+	connectWire dtout dti
+	return (cin, dtin)
+
+testAsisUnless :: CircuitBuilder (IWire, IWire, OWire)
+testAsisUnless = do
+	(win, wout) <- idGate
+	(c, d) <- asisUnless win
+	return (c, d, wout)
+
+strictGates1 :: Word8 -> CircuitBuilder (IWire, OWire) -> CircuitBuilder ([IWire], IWire, OWire)
+strictGates1 n g0 = do
+	(iin, iout) <- idGate
+	(ad, dc) <- decoder (2 ^ n)
+	(gis, gos) <- unzip <$> (2 ^ n) `replicateM` g0
+	(auc, aud) <- unzip <$> asisUnless `mapM` gis
+	zipWithM_ connectWire dc auc
+	mapM_ (connectWire iout) aud
+	(tcs, tds, tos) <- unzip3 <$> (2 ^ n) `replicateM` triGate
+	zipWithM_ connectWire dc tcs
+	zipWithM_ connectWire gos tds
+	(rin, rout) <- idGate
+	mapM_ (`connectWire` rin) tos
+	return (ad, iin, rout)
+
+strictGates :: Word8 -> CircuitBuilder ([IWire], OWire) -> CircuitBuilder ([IWire], [IWire], OWire)
+strictGates n g0 = do
+	(iins, iouts) <- unzip <$> (2 ^ n) `replicateM` idGate
+	(ad, dc) <- decoder (2 ^ n)
+	(giss, gos) <- unzip <$> (2 ^ n) `replicateM` g0
+	(aucs, auds) <- unzip <$> ((unzip <$>) . (asisUnless `mapM`)) `mapM` giss
+	zipWithM_ (\dc1 -> mapM_ (connectWire dc1)) dc aucs
+	mapM_ (zipWithM_ connectWire iouts) auds
+	(tcs, tds, tos) <- unzip3 <$> (2 ^ n) `replicateM` triGate
+	zipWithM_ connectWire dc tcs
+	zipWithM_ connectWire gos tds
+	(rin, rout) <- idGate
+	mapM_ (`connectWire` rin) tos
+	return (ad, iins, rout)

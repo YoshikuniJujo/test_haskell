@@ -61,7 +61,7 @@ type SramWrite1'Wires = (IWire, [IWire], IWire, OWire)
 
 sramWrite1' :: Word8 -> CircuitBuilder SramWrite1'Wires
 sramWrite1' n = do
-	(ad, is, o) <- lazyGate n $ do
+	(ad, is, o) <- lazyGates n $ do
 		(c, d, q, _q_) <- dlatch
 		return ([c, d], q)
 	return (is !! 0, ad, is !! 1, o)
@@ -156,7 +156,7 @@ type SramXyWrite1Wires = (IWire, [IWire], [IWire], IWire, OWire)
 
 sramXyWrite1 :: Word8 -> Word8 -> CircuitBuilder SramXyWrite1Wires
 sramXyWrite1 m n = do
-	(ady, wedadx, o) <- lazyGate m $ do
+	(ady, wedadx, o) <- lazyGates m $ do
 		(iwe, adx, idt, io) <- sramXWrite1 n
 		return (iwe : idt : adx, io)
 	case wedadx of
@@ -165,7 +165,7 @@ sramXyWrite1 m n = do
 
 sramXWrite1 :: Word8 -> CircuitBuilder (IWire, [IWire], IWire, OWire)
 sramXWrite1 n = do
-	(ad, is, o) <- lazyGate n $ do
+	(ad, is, o) <- lazyGates n $ do
 		(c, d, q, _q_) <- dlatch
 		return ([c, d], q)
 	return (is !! 0, ad, is !! 1, o)
@@ -229,3 +229,14 @@ setSramXy ws ady adx d n = setAndRunSramXy ws O ady adx d n
 getSramXy ::
 	SramXyWires -> Word64 -> Word64 -> Word64 -> Int -> Circuit -> Circuit
 getSramXy ws ady adx d n = setAndRunSramXy ws O ady adx d n
+
+---------------------------------------------------------------------------
+
+-- type SramWrite1'Wires = (IWire, [IWire], IWire, OWire)
+
+sram1'' :: Word8 -> CircuitBuilder SramWrite1'Wires
+sram1'' n = do
+	(ad, is, o) <- strictGates n $ do
+		(c, d, q, _q_) <- dlatch
+		return ([c, d], q)
+	return (is !! 0, ad, is !! 1, o)
