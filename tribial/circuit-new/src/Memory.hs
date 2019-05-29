@@ -263,3 +263,22 @@ setDataDflipflop (_, d, _, _) b = run 20 . setBit d b
 
 readDflipflop :: DflipflopWires -> Circuit -> (Bit, Bit)
 readDflipflop (_, _, q, q_) = (,) <$> peekOWire q <*> peekOWire q_
+
+type RegisterWires = (IWire, [IWire], [OWire])
+
+registerN :: Word8 -> CircuitBuilder RegisterWires
+registerN n = do
+	(cin, cout) <- idGate
+	(cs, ds, qs, _) <- unzip4 <$> fromIntegral n `replicateM` dflipflop
+	mapM_ (connectWire cout) cs
+	return (cin, ds, qs)
+
+setRegister :: RegisterWires -> Word64 -> DoCircuit
+setRegister (c, ds, _) d = run 20 . setBit c O
+	. run 20 . setBit c I . run 20 . setBits ds (wordToBits 64 d) . run 20
+
+setDataRegister :: RegisterWires -> Word64 -> DoCircuit
+setDataRegister (_, ds, _) d = run 20 . setBits ds (wordToBits 64 d)
+
+readRegister :: RegisterWires -> Circuit -> Word64
+readRegister (_, _, qs) cct = bitsToWord $ (`peekOWire` cct) <$> qs
