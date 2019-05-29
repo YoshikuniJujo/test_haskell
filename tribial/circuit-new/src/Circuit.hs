@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Circuit (
-	Circuit, CircuitBuilder, makeCircuit, step, setBit, setBits, peekOWire,
+	DoCircuit, Circuit, CircuitBuilder, makeCircuit, step, setBit, setBits, peekOWire,
 	IWire, OWire, Bit(..), andGate, orGate, notGate, idGate, triGate,
 	delay, connectWire, lazyGates
 	) where
@@ -18,6 +18,8 @@ import Data.Word
 import qualified Data.Map as M
 
 import Tools
+
+type DoCircuit = Circuit -> Circuit
 
 newtype IWire = IWire Word32 deriving (Show, Eq, Ord)
 newtype OWire = OWire Word32 deriving (Show, Eq, Ord)
@@ -139,7 +141,7 @@ data BasicGate
 	= AndGate IWire IWire | OrGate IWire IWire | NotGate IWire
 	| TriGate IWire IWire | Delay [Bit] IWire
 	| LazyGate [IWire] [IWire]
-		(Map Word32 (Circuit, [IWire], OWire)) (Circuit, [IWire], OWire)
+		(Map Word64 (Circuit, [IWire], OWire)) (Circuit, [IWire], OWire)
 	deriving Show
 
 gateWires :: BasicGate -> [IWire]
