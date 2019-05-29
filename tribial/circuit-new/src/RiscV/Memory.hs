@@ -70,3 +70,19 @@ loadSram (Sram wwe wad _ _) ad = run 20
 
 readSram :: Sram -> Circuit -> Word8
 readSram (Sram _ _ _ os) cct = bitsToNum $ (`peekOWire` cct) <$> os
+
+dflipflop :: CircuitBuilder (IWire, IWire, OWire, OWire)
+dflipflop = do
+	(c0, d0, q0, _) <- dlatch
+	(c1, d1, q1, q_1) <- dlatch
+	(cin, cout) <- idGate
+	(ni, no) <- notGate
+	zipWithM_ connectWire [cout, cout, no, q0] [c0, ni, c1, d1]
+	return (cin, d0, q1, q_1)
+
+register :: CircuitBuilder (IWire, [IWire], [OWire])
+register = do
+	(cin, cout) <- idGate
+	(cs, ds, qs, _) <- unzip4 <$> 64 `replicateM` dflipflop
+	connectWire cout `mapM_` cs
+	return (cin, ds, qs)
