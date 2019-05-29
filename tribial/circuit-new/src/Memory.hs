@@ -240,3 +240,26 @@ sram1'' n = do
 		(c, d, q, _q_) <- dlatch
 		return ([c, d], q)
 	return (is !! 0, ad, is !! 1, o)
+
+---------------------------------------------------------------------------
+
+type DflipflopWires = (IWire, IWire, OWire, OWire)
+
+dflipflop :: CircuitBuilder DflipflopWires
+dflipflop = do
+	(c0, d0, q0, _) <- dlatch
+	(c1, d1, q1, q_1) <- dlatch
+	(cin, cout) <- idGate
+	(ni, no) <- notGate
+	zipWithM_ connectWire [cout, cout, no, q0] [c0, ni, c1, d1]
+	return (cin, d0, q1, q_1)
+
+setDflipflop :: DflipflopWires -> Bit -> DoCircuit
+setDflipflop (c, d, _, _) b =
+	run 20 . setBit c O . run 20 . setBit c I . run 20 . setBit d b
+
+setDataDflipflop :: DflipflopWires -> Bit -> DoCircuit
+setDataDflipflop (_, d, _, _) b = run 20 . setBit d b
+
+readDflipflop :: DflipflopWires -> Circuit -> (Bit, Bit)
+readDflipflop (_, _, q, q_) = (,) <$> peekOWire q <*> peekOWire q_
