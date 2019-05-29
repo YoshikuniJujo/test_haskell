@@ -2,7 +2,10 @@
 
 module Alu where
 
+import Control.Arrow
 import Control.Monad
+-- import Data.List
+import Data.Word
 
 import Circuit
 import Element
@@ -63,3 +66,49 @@ adder1 = do
 	zipWithM_ connectWire
 		[ciout, aout, bout, ciout, aout, bout] [c1, a1, b1, c2, a2, b2]
 	return (ciin, ain, bin, s, co)
+
+alu1_aos :: CircuitBuilder ((IWire, IWire), IWire, IWire, IWire, OWire, OWire)
+alu1_aos = do
+	(ain, aout) <- idGate
+	(bin, bout) <- idGate
+	(aa, ab, ao) <- andGate
+	(oa, ob, oo) <- orGate
+	(ci, sa, sb, sm, co) <- adder1
+	(op, mx0, mx1, mx2, mo) <- mux3_1
+	zipWithM_ connectWire
+		[aout, bout, aout, bout, aout, bout, ao, oo, sm]
+		[aa, ab, oa, ob, sa, sb, mx0, mx1, mx2]
+	return (op, ci, ain, bin, mo, co)
+
+type AluAosWires = ((IWire, IWire), IWire, [IWire], [IWire], [OWire], OWire)
+
+alu_aos :: Word8 -> CircuitBuilder AluAosWires
+alu_aos n | n < 1 || n > 64 = error "Oops!"
+alu_aos 1 = do
+	(op, ci, a, b, r, co) <- alu1_aos
+	return (op, ci, [a], [b], [r], co)
+alu_aos n = do
+	(op0in, op0out) <- idGate
+	(op1in, op1out) <- idGate
+	((op01, op11), ci0, a1, b1, r1, co1) <- alu1_aos
+	((op02, op12), ci1, as, bs, rs, con) <- alu_aos (n - 1)
+	(connectWire op0out) `mapM_` [op01, op02]
+	(connectWire op1out) `mapM_` [op11, op12]
+	connectWire co1 ci1
+	return ((op0in, op1in), ci0, a1 : as, b1 : bs, r1 : rs, con)
+
+setBitsAluAos :: AluAosWires -> Word64 -> Bit -> Word64 -> Word64 -> DoCircuit
+setBitsAluAos ((wop0, wop1), wci, was, wbs, _, _) op bci a b =
+	setBits [wop0, wop1] (wordToBits 64 op) . setBit wci bci
+		. setBits was (wordToBits 64 a) . setBits wbs (wordToBits 64 b)
+
+getBitsAluAosBits :: AluAosWires -> Circuit -> ([Bit], Bit)
+getBitsAluAosBits (_, _, _, _, wrs, wco) cct =
+	((`peekOWire` cct) <$> wrs, peekOWire wco cct)
+
+setAndRunAluAos ::
+	AluAosWires -> Word64 -> Bit -> Word64 -> Word64 -> Int -> DoCircuit
+setAndRunAluAos ws op bci a b n = run n . setBitsAluAos ws op bci a b
+
+getBitsAluAos :: AluAosWires -> Circuit -> (Word64, Bit)
+getBitsAluAos ws = first bitsToWord . getBitsAluAosBits ws
