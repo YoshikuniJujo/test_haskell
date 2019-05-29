@@ -128,3 +128,29 @@ strictGates n g0 = do
 	(rin, rout) <- idGate
 	mapM_ (`connectWire` rin) tos
 	return (ad, iins, rout)
+
+orGate3 :: CircuitBuilder ((IWire, IWire, IWire), OWire)
+orGate3 = do
+	(a, b, ab) <- orGate
+	(ab', c, r) <- orGate
+	connectWire ab ab'
+	return ((a, b, c), r)
+
+nandGate :: CircuitBuilder (IWire, IWire, OWire)
+nandGate = do
+	(a1, a2, ao) <- andGate
+	(ni, no) <- notGate
+	connectWire ao ni
+	return (a1, a2, no)
+
+xorGate :: CircuitBuilder (IWire, IWire, OWire)
+xorGate = do
+	(ain, aout) <- idGate
+	(bin, bout) <- idGate
+	(o1, o2, oo) <- orGate
+	(na1, na2, nao) <- nandGate
+	(a1, a2, ao) <- andGate
+	zipWithM_ connectWire
+		[aout, bout, aout, bout, oo, nao]
+		[o1, o2, na1, na2, a1, a2]
+	return (ain, bin, ao)
