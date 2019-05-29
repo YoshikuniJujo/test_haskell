@@ -23,6 +23,20 @@ decoder n = do
 	return (is, oas)
 	where m = log2 n
 
+mux3_1 :: CircuitBuilder ((IWire, IWire), IWire, IWire, IWire, OWire)
+mux3_1 = do
+	(sl, ds, r) <- multiplexer1 3
+	return ((sl !! 0, sl !! 1), ds !! 0, ds !! 1, ds !! 2, r)
+
+multiplexer1 :: Word16 -> CircuitBuilder ([IWire], [IWire], OWire)
+multiplexer1 n = do
+	(sl, dc) <- decoder n
+	(adi1s, adi2s, ados) <- unzip3 <$> fromIntegral n `replicateM` andGate
+	(ois, oo) <- multiOrGate n
+	zipWithM_ connectWire dc adi1s
+	zipWithM_ connectWire ados ois
+	return (sl, adi2s, oo)
+
 binary :: (a, a) -> Word16 -> [[a]]
 binary _ n | n < 1 = [[]]
 binary (o, i) n = binary (o, i) (n - 1) >>= (<$> [(o :), (i :)]) . flip ($)
@@ -40,8 +54,9 @@ log2 i = i2 0
 		| 2 ^ j >= i = j
 		| otherwise = i2 $ j + 1
 
-multiAndGate :: Word16 -> CircuitBuilder ([IWire], OWire)
+multiAndGate, multiOrGate :: Word16 -> CircuitBuilder ([IWire], OWire)
 multiAndGate = multiple andGate
+multiOrGate = multiple orGate
 
 multiple :: CircuitBuilder (IWire, IWire, OWire) ->
 	Word16 -> CircuitBuilder ([IWire], OWire)
