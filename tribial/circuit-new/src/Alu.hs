@@ -4,12 +4,13 @@ module Alu where
 
 import Control.Arrow
 import Control.Monad
--- import Data.List
+import Data.List
 import Data.Word
 
 import Circuit
 import Element
 import CircuitTools
+import CarryLookahead
 
 mux2 :: CircuitBuilder Wires31
 mux2 = do
@@ -112,3 +113,36 @@ setAndRunAluAos ws op bci a b n = run n . setBitsAluAos ws op bci a b
 
 getBitsAluAos :: AluAosWires -> Circuit -> (Word64, Bit)
 getBitsAluAos ws = first bitsToWord . getBitsAluAosBits ws
+
+alu1_aos' :: CircuitBuilder ((IWire, IWire), IWire, IWire, IWire, OWire)
+alu1_aos' = do
+	(ain, aout) <- idGate
+	(bin, bout) <- idGate
+	(aa, ab, ao) <- andGate
+	(oa, ob, oo) <- orGate
+	(ci, sa, sb, sm) <- sum1
+	(op, mx0, mx1, mx2, mo) <- mux3_1
+	zipWithM_ connectWire
+		[aout, bout, aout, bout, aout, bout, ao, oo, sm]
+		[aa, ab, oa, ob, sa, sb, mx0, mx1, mx2]
+	return (op, ci, ain, bin, mo)
+
+alu_aos' :: Word8 -> CircuitBuilder AluAosWires
+alu_aos' n = do
+	(op0in, op0out) <- idGate
+	(op1in, op1out) <- idGate
+	(ci0in, ci0out) <- idGate
+	(ains, aouts) <- unzip <$> fromIntegral n `replicateM` idGate
+	(bins, bouts) <- unzip <$> fromIntegral n `replicateM` idGate
+	(ci0, as, bs, cots, _, _) <- carries n
+	(ops, cins, as', bs', rs) <- unzip5 <$> fromIntegral n `replicateM` alu1_aos'
+	let	(op0s, op1s) = unzip ops
+	connectWire op0out `mapM_` op0s
+	connectWire op1out `mapM_` op1s
+	connectWire ci0out ci0
+	zipWithM_ connectWire aouts as
+	zipWithM_ connectWire bouts bs
+	zipWithM_ connectWire (ci0out : cots) cins
+	zipWithM_ connectWire aouts as'
+	zipWithM_ connectWire bouts bs'
+	return ((op0in, op1in), ci0in, ains, bins, rs, last cots)
