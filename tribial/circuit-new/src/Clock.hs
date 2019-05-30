@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Clock (Clock, clock, reset, sigClock) where
+module Clock (Clock, clock, reset, clockOutput) where
 
 import Control.Monad
 import Data.Word
@@ -14,8 +14,8 @@ clock n = do
 	(ci, co) <- makeClock n
 	return $ Clock n ci co
 
-sigClock :: Clock -> OWire
-sigClock (Clock _ _ sg) = sg
+clockOutput :: Clock -> OWire
+clockOutput (Clock _ _ sg) = sg
 
 reset :: Clock -> DoCircuit
 reset (Clock n ci co) = resetClock n (ci, co)

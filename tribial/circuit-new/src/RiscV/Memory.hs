@@ -1,8 +1,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module RiscV.Memory (
-	Sram, riscvSram, storeSram, loadSram, readSram,
-	Register, riscvRegister, syncRegister, storeRegister, loadRegister,
+	Sram, riscvSram, storeSram, loadSram, readSram, readSramBits,
+		sramClock, sramAddress, sramInput, sramOutput,
+	Register, riscvRegister, registerClock, registerInput, registerOutput,
 		resetRegister, readRegisterBits, readRegisterInt
 	) where
 
@@ -59,12 +60,24 @@ riscvSram = do
 	(we, ad, ds, os) <- sram8 64
 	return $ Sram we ad ds os
 
+sramClock :: Sram -> IWire
+sramClock (Sram c _ _ _) = c
+
+sramAddress :: Sram -> [IWire]
+sramAddress (Sram _ a _ _) = a
+
+sramInput :: Sram -> [IWire]
+sramInput (Sram _ _ i _) = i
+
+sramOutput :: Sram -> [OWire]
+sramOutput (Sram _ _ _ o) = o
+
 storeSram :: Sram -> Int64 -> Word8 -> DoCircuit
-storeSram (Sram wwe wad wb _) ad b = run 20
+storeSram (Sram wwe wad wb _) ad b = run 2
 	. setBit wwe O . setBits wad (numToBits 64 ad)
-	. setBits wb (numToBits 8 b) . run 20
+	. setBits wb (numToBits 8 b) . run 4
 	. setBit wwe I . setBits wad (numToBits 64 ad)
-	. setBits wb (numToBits 8 b) . run 20
+	. setBits wb (numToBits 8 b) . run 3
 	. setBit wwe O . setBits wad (numToBits 64 ad)
 	. setBits wb (numToBits 8 b)
 
@@ -74,6 +87,9 @@ loadSram (Sram wwe wad _ _) ad = run 20
 
 readSram :: Sram -> Circuit -> Word8
 readSram (Sram _ _ _ os) cct = bitsToNum $ (`peekOWire` cct) <$> os
+
+readSramBits :: Sram -> Circuit -> [Bit]
+readSramBits (Sram _ _ _ os) cct = (`peekOWire` cct) <$> os
 
 dflipflop :: CircuitBuilder (IWire, IWire, OWire, OWire)
 dflipflop = do
@@ -98,14 +114,14 @@ riscvRegister = do
 	(c, ds, qs) <- register
 	return $ Register c ds qs
 
-syncRegister :: Register -> IWire
-syncRegister (Register c _ _) = c
+registerClock :: Register -> IWire
+registerClock (Register c _ _) = c
 
-storeRegister :: Register -> [IWire]
-storeRegister (Register _ ds _) = ds
+registerInput :: Register -> [IWire]
+registerInput (Register _ ds _) = ds
 
-loadRegister :: Register -> [OWire]
-loadRegister (Register _ _ qs) = qs
+registerOutput :: Register -> [OWire]
+registerOutput (Register _ _ qs) = qs
 
 readRegisterBits :: Register -> Circuit -> [Bit]
 readRegisterBits (Register _ _ qs) cct = (`peekOWire` cct) <$> qs
@@ -114,9 +130,9 @@ readRegisterInt :: Register -> Circuit -> Int64
 readRegisterInt rg = bitsToNum . readRegisterBits rg
 
 resetRegister :: Register -> Circuit -> Circuit
-resetRegister rg = longPressWires (repeat O) 20 (storeRegister rg)
-	. longPressWires (I : repeat O) 20 (syncRegister rg : storeRegister rg)
-	. longPressWires (repeat O) 20 (storeRegister rg)
+resetRegister rg = longPressWires (repeat O) 20 (registerInput rg)
+	. longPressWires (I : repeat O) 20 (registerClock rg : registerInput rg)
+	. longPressWires (repeat O) 20 (registerInput rg)
 
 {-
 longPress :: Bit -> Word8 -> IWire -> DoCircuit
