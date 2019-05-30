@@ -56,6 +56,27 @@ getBits32 (_, _, _, o1, o2) = (,) <$> peekOWire o1 <*> peekOWire o2
 setAndRun32 :: Wires32 -> Bit -> Bit -> Bit -> Int -> DoCircuit
 setAndRun32 ws b1 b2 b3 n = run n . setBits32 ws b1 b2 b3
 
+type WireList21 = ([IWire], [IWire], [OWire])
+
+setBitsL21 :: WireList21 -> Word64 -> Word64 -> DoCircuit
+setBitsL21 (i1s, i2s, _) w1 w2 =
+	setBits i1s (wordToBits 64 w1) . setBits i2s (wordToBits 64 w2)
+
+getBitsL21 :: WireList21 -> Circuit -> [Bit]
+getBitsL21 (_, _, os) cct = (`peekOWire` cct) <$> os
+
+getWordL21 :: WireList21 -> Circuit -> Word64
+getWordL21 ws = bitsToWord . getBitsL21 ws
+
+setAndRunL21 :: WireList21 -> Word64 -> Word64 -> Int -> DoCircuit
+setAndRunL21 ws w1 w2 n = run n . setBitsL21 ws w1 w2
+
+setAndBitsL21 :: WireList21 -> Word64 -> Word64 -> Int -> Circuit -> [Bit]
+setAndBitsL21 ws w1 w2 n = getBitsL21 ws . setAndRunL21 ws w1 w2 n
+
+setAndWordL21 :: WireList21 -> Word64 -> Word64 -> Int -> Circuit -> Word64
+setAndWordL21 ws w1 w2 n = getWordL21 ws . setAndRunL21 ws w1 w2 n
+
 wordToBits :: Word8 -> Word64 -> [Bit]
 wordToBits 0 _ = []
 wordToBits n w = bool O I (w .&. 1 /= 0) : wordToBits (n - 1) (w `shiftR` 1)

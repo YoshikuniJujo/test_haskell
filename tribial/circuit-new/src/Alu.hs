@@ -368,3 +368,12 @@ setAndResultRiscvAlu :: RiscvAluWires ->
 	Word64 -> Word64 -> Word64 -> Int -> Circuit -> (Word64, Bit, Bit)
 setAndResultRiscvAlu ws op a b n =
 	getBitsRiscvAlu ws . setAndRunRiscvAlu ws op a b n
+
+riscvAdder :: CircuitBuilder ([IWire], [IWire], [OWire])
+riscvAdder = do
+	zero <- constGate O
+	one <- constGate I
+	((op0, op1, bneg, ainv), as, bs, rs, _zero, _ovfl) <- riscvAlu
+	connectWire zero `mapM_` [op0, bneg, ainv]
+	connectWire one op1
+	return (as, bs, rs)
