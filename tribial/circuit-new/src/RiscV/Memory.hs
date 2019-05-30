@@ -1,7 +1,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module RiscV.Memory (
-	Sram, riscvSram, storeSram, loadSram, readSram, register ) where
+	Sram, riscvSram, storeSram, loadSram, readSram,
+	Register, riscvRegister, syncRegister, storeRegister, loadRegister
+	) where
 
 import Control.Monad
 import Data.List
@@ -87,3 +89,19 @@ register = do
 	(cs, ds, qs, _) <- unzip4 <$> 64 `replicateM` dflipflop
 	connectWire cout `mapM_` cs
 	return (cin, ds, qs)
+
+data Register = Register IWire [IWire] [OWire] deriving Show
+
+riscvRegister :: CircuitBuilder Register
+riscvRegister = do
+	(c, ds, qs) <- register
+	return $ Register c ds qs
+
+syncRegister :: Register -> IWire
+syncRegister (Register c _ _) = c
+
+storeRegister :: Register -> [IWire]
+storeRegister (Register _ ds _) = ds
+
+loadRegister :: Register -> [OWire]
+loadRegister (Register _ _ qs) = qs
