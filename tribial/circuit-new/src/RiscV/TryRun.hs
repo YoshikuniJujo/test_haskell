@@ -103,12 +103,18 @@ fetchInstruction = do
 --	zipWithM_ connectWire zero (sramAddress sr)
 	return (cl, rg, (slin, sramClock sr, was, sramInput sr, sramOutput sr))
 
-storeSram2 :: (IWire, IWire, [IWire], [IWire], [OWire]) -> Int64 -> Word8 -> DoCircuit
+type TempSram = (IWire, IWire, [IWire], [IWire], [OWire])
+
+storeSram2 :: TempSram -> Int64 -> Word8 -> DoCircuit
 storeSram2 (wr, cl, wad, wb, _) ad b = setBit wr O . run 2
 	. setBit cl O . setBits wad (numToBits 64 ad) . setBits wb (numToBits 8 b) . run 5
 	. setBit cl I . setBits wad (numToBits 64 ad) . setBits wb (numToBits 8 b) . run 8
 	. setBit cl O . setBits wad (numToBits 64 ad) . setBits wb (numToBits 8 b) 
 	. setBit wr I
+
+sampleInstMemory' :: TempSram -> DoCircuit
+sampleInstMemory' sr =
+	foldr (.) id $ zipWith (storeSram2 sr) [0 ..] sampleInstructions
 
 loadSram2 :: (IWire, IWire, [IWire], [IWire], [OWire]) -> Int64 -> DoCircuit
 loadSram2 (wr, cl, wad, _, _) ad = setBit wr I . run 4 . setBit cl O . setBits wad (numToBits 64 ad)
@@ -122,3 +128,11 @@ testSram = do
 	sr <- riscvSram
 	zipWithM_ connectWire zero (sramAddress sr)
 	return sr
+
+checkFetchInstruction :: [Word8]
+checkFetchInstruction = let
+	((cl, rg, sr@(_, _, _, _, os)), cct) = makeCircuit fetchInstruction
+	cct01 = reset cl cct
+	cct02 = resetRegister rg cct01
+	cct03 = sampleInstMemory' sr cct02 in
+	map bitsToNum $ peekOWires os <$> iterate step cct03
