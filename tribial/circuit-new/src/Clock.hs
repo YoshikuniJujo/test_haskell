@@ -1,28 +1,30 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Clock where
+module Clock (clock, reset) where
 
 import Control.Monad
 import Data.Word
 
 import Circuit
 
-clock :: Word8 -> CircuitBuilder OWire
-clock n | n < 3 = error "clock: span should be more than 2"
+data Clock = Clock Word8 IWire OWire deriving Show
+
+clock :: Word8 -> CircuitBuilder Clock
 clock n = do
+	(ci, co) <- makeClock n
+	return $ Clock n ci co
+
+reset :: Clock -> DoCircuit
+reset (Clock n ci co) = resetClock n (ci, co)
+
+makeClock :: Word8 -> CircuitBuilder (IWire, OWire)
+makeClock n | n < 3 = error "clock: span should be more than 2"
+makeClock n = do
 	(ni, no) <- notGate
 	(dli, dlo) <- delay $ n - 2
 	zipWithM_ connectWire [no, dlo] [dli, ni]
-	return no
+	return (ni, no)
 
-edge :: Word8 -> Word8 -> CircuitBuilder OWire
-edge _ n | n < 3 = error "clock: span should be more than 2"
-edge m _ | m < 3 = error "edge: edge width should be more than 2"
-edge m n = do
-	c1 <- clock n
-	c2 <- clock n
-	(dli, dlo) <- delay (m - 2)
-	(ni, no) <- notGate
-	(a1, a2, ao) <- andGate
-	zipWithM_ connectWire [c2, dlo, no, c1] [dli, ni, a2, a1]
-	return ao
+resetClock :: Word8 -> (IWire, OWire) -> Circuit -> Circuit
+resetClock 0 _ = id
+resetClock n ws@(cr, _) = step . setBit cr O . resetClock (n - 1) ws
