@@ -163,7 +163,7 @@ alu1_aosd = do
 		[aa, ab, oa, ob, sa, sb, mx0, mx1, mx2]
 	return (binv, op, ci, ain, bin, mo)
 
-type AluAosdWires = (IWire, IWirePair, IWire, [IWire], [IWire], [OWire], OWire)
+type AluAosdnWires = (IWire, IWire, IWirePair, IWire, [IWire], [IWire], [OWire], OWire)
 
 complementAll :: [IWire] -> CircuitBuilder (IWire, [IWire])
 complementAll is = do
@@ -179,15 +179,16 @@ complementAll is = do
 	return (invin, dins)
 	where n = length is
 
-alu_aosd :: Word8 -> CircuitBuilder AluAosdWires
-alu_aosd n = do
+alu_aosdn :: Word8 -> CircuitBuilder AluAosdnWires
+alu_aosdn n = do
 	(op0in, op0out) <- idGate
 	(op1in, op1out) <- idGate
 	(ci0in, ci0out) <- idGate
 	(ains, aouts) <- unzip <$> fromIntegral n `replicateM` idGate
 	(bins, bouts) <- unzip <$> fromIntegral n `replicateM` idGate
 	(ci0, as, bs, cots, _, _) <- carries n
-	(ops, cins, as', bs', rs) <- unzip5 <$> fromIntegral n `replicateM` alu1_aos'
+	(ops, cins, as', bs', rs) <-
+		unzip5 <$> fromIntegral n `replicateM` alu1_aos'
 	let	(op0s, op1s) = unzip ops
 	connectWire op0out `mapM_` op0s
 	connectWire op1out `mapM_` op1s
@@ -197,24 +198,27 @@ alu_aosd n = do
 	zipWithM_ connectWire (ci0out : cots) cins
 	zipWithM_ connectWire aouts as'
 	zipWithM_ connectWire bouts bs'
+	(ainv, ains') <- complementAll ains
 	(binv, bins') <- complementAll bins
-	return (binv, (op0in, op1in), ci0in, ains, bins', rs, last cots)
+	return (ainv, binv, (op0in, op1in), ci0in, ains', bins', rs, last cots)
 
-setBitsAluAosd ::
-	AluAosdWires -> Bit -> Word64 -> Bit -> Word64 -> Word64 -> DoCircuit
-setBitsAluAosd (wbinv, (wop0, wop1), wci0, was, wbs, _, _) bbinv op bci0 a b =
-	setBit wbinv bbinv . setBits [wop0, wop1] (wordToBits 64 op)
+setBitsAluAosdn :: AluAosdnWires ->
+	Bit -> Bit -> Word64 -> Bit -> Word64 -> Word64 -> DoCircuit
+setBitsAluAosdn (wainv, wbinv, (wop0, wop1), wci0, was, wbs, _, _)
+		bainv bbinv op bci0 a b =
+	setBit wainv bainv . setBit wbinv bbinv
+		. setBits [wop0, wop1] (wordToBits 64 op)
 		. setBit wci0 bci0
 		. setBits was (wordToBits 64 a) . setBits wbs (wordToBits 64 b)
 
-getBitsAluAosdBits :: AluAosdWires -> Circuit -> ([Bit], Bit)
-getBitsAluAosdBits (_, _, _, _, _, rs, co) cct =
+getBitsAluAosdnBits :: AluAosdnWires -> Circuit -> ([Bit], Bit)
+getBitsAluAosdnBits (_, _, _, _, _, _, rs, co) cct =
 	((`peekOWire` cct) <$> rs, peekOWire co cct)
 
-getBitsAluAosd :: AluAosdWires -> Circuit -> (Word64, Bit)
-getBitsAluAosd ws = first bitsToWord . getBitsAluAosdBits ws
+getBitsAluAosdn :: AluAosdnWires -> Circuit -> (Word64, Bit)
+getBitsAluAosdn ws = first bitsToWord . getBitsAluAosdnBits ws
 
-setAndRunAluAosd :: AluAosdWires ->
-	Bit -> Word64 -> Bit -> Word64 -> Word64 -> Int -> DoCircuit
-setAndRunAluAosd ws bbinv op bci0 a b n =
-	run n . setBitsAluAosd ws bbinv op bci0 a b
+setAndRunAluAosdn :: AluAosdnWires ->
+	Bit -> Bit -> Word64 -> Bit -> Word64 -> Word64 -> Int -> DoCircuit
+setAndRunAluAosdn ws bainv bbinv op bci0 a b n =
+	run n . setBitsAluAosdn ws bainv bbinv op bci0 a b
