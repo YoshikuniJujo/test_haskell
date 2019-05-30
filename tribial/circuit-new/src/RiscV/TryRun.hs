@@ -3,6 +3,7 @@
 
 module RiscV.TryRun where
 
+import Control.Monad
 import Data.Bits
 import Data.Word
 
@@ -10,6 +11,8 @@ import qualified Data.Bits as B
 
 import Circuit
 import RiscV.Memory
+import Clock
+import RiscV.Alu
 
 sampleInstructions :: [Word8]
 sampleInstructions = [
@@ -44,3 +47,22 @@ packRtype w = f7 <-< 25 .|.
 sampleInstMemory :: Sram -> DoCircuit
 sampleInstMemory sr =
 	foldr (.) id $ zipWith (storeSram sr) [0 ..] sampleInstructions
+
+countUp :: CircuitBuilder (Clock, Register)
+countUp = do
+	cl <- clock 50
+	rg <- riscvRegister
+	four <- const4
+	(bpc, four', apc) <- riscvAdder
+	connectWire (sigClock cl) (syncRegister rg)
+	zipWithM_ connectWire (loadRegister rg) bpc
+	zipWithM_ connectWire four four'
+	zipWithM_ connectWire apc (storeRegister rg)
+	return (cl, rg)
+
+const4 :: CircuitBuilder [OWire]
+const4 = do
+	bs1 <- 2 `replicateM` constGate O
+	b <- constGate I
+	bs2 <- 61 `replicateM` constGate O
+	return $ bs1 ++ [b] ++ bs2

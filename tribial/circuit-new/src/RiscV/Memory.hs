@@ -2,7 +2,8 @@
 
 module RiscV.Memory (
 	Sram, riscvSram, storeSram, loadSram, readSram,
-	Register, riscvRegister, syncRegister, storeRegister, loadRegister
+	Register, riscvRegister, syncRegister, storeRegister, loadRegister,
+		resetRegister, readRegisterBits, readRegisterInt
 	) where
 
 import Control.Monad
@@ -105,3 +106,24 @@ storeRegister (Register _ ds _) = ds
 
 loadRegister :: Register -> [OWire]
 loadRegister (Register _ _ qs) = qs
+
+readRegisterBits :: Register -> Circuit -> [Bit]
+readRegisterBits (Register _ _ qs) cct = (`peekOWire` cct) <$> qs
+
+readRegisterInt :: Register -> Circuit -> Int64
+readRegisterInt rg = bitsToNum . readRegisterBits rg
+
+resetRegister :: Register -> Circuit -> Circuit
+resetRegister rg = longPressWires (repeat O) 20 (storeRegister rg)
+	. longPressWires (I : repeat O) 20 (syncRegister rg : storeRegister rg)
+	. longPressWires (repeat O) 20 (storeRegister rg)
+
+{-
+longPress :: Bit -> Word8 -> IWire -> DoCircuit
+longPress _ 0 _ = id
+longPress b n iw = step . setBit iw b . longPress b (n - 1) iw
+-}
+
+longPressWires :: [Bit] -> Word8 -> [IWire] -> DoCircuit
+longPressWires _ 0 _ = id
+longPressWires bs n iws = step . setBits iws bs . longPressWires bs (n - 1) iws
