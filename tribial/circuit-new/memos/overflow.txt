@@ -1,0 +1,35 @@
+OVERFLOW
+
+a sign	b sign	ci	co	s sign	oflow
+0	0	0	0	0	0
+0	0	1	0	1	1
+0	1	0	0	1	0
+0	1	1	1	0	0
+1	0	0	0	1	0
+1	0	1	1	0	0
+1	1	0	1	0	1
+1	1	1	1	1	0
+
+overflow = carry in `xor` carry out
+
+LESS THAN
+
+a sign	b_ sign	ci	co	s sign	less than
+0	0	0	0	0	0
+0	0	1	0	1	0
+0	1	0	0	1	1
+0	1	1	1	0	0
+1	0	0	0	1	1
+1	0	1	1	0	0
+1	1	0	1	0	1
+1	1	1	1	1	1
+
+less than = s sign `xor` overflow
+
+XOR
+
+a	b	o
+0	0	0
+0	1	1
+1	0	1
+1	1	0

@@ -3,7 +3,7 @@
 
 module Circuit (
 	DoCircuit, Circuit, CircuitBuilder, makeCircuit, step, setBit, setBits, peekOWire,
-	IWire, OWire, Bit(..), andGate, orGate, notGate, idGate, triGate,
+	IWire, OWire, Bit(..), constGate, andGate, orGate, notGate, idGate, triGate,
 	delay, connectWire, lazyGates
 	) where
 
@@ -78,6 +78,7 @@ checkOWire Circuit { cctWireStt = wst } ow =
 	maybe (Nothing, X) (first ((ow, ) <$>)) . calcGate wst
 
 calcGate :: Map IWire Bit -> BasicGate -> Maybe (Maybe BasicGate, Bit)
+calcGate _ (ConstGate b) = Just (Nothing, b)
 calcGate wst (AndGate i1 i2) =
 	((Nothing ,) .) . andBit <$> wst !? i1 <*> wst !? i2
 calcGate wst (OrGate i1 i2) =
@@ -138,13 +139,15 @@ initCBState = CBState {
 -- newtype LazyGateId = LazyGateId Word32
 
 data BasicGate
-	= AndGate IWire IWire | OrGate IWire IWire | NotGate IWire
+	= ConstGate Bit
+	| AndGate IWire IWire | OrGate IWire IWire | NotGate IWire
 	| TriGate IWire IWire | Delay [Bit] IWire
 	| LazyGate [IWire] [IWire]
 		(Map Word64 (Circuit, [IWire], OWire)) (Circuit, [IWire], OWire)
 	deriving Show
 
 gateWires :: BasicGate -> [IWire]
+gateWires (ConstGate _) = []
 gateWires (AndGate i1 i2) = [i1, i2]
 gateWires (OrGate i1 i2) = [i1, i2]
 gateWires (NotGate i) = [i]
@@ -154,6 +157,12 @@ gateWires (LazyGate ix is _ _) = ix ++ is
 
 connectWire :: OWire -> IWire -> CircuitBuilder ()
 connectWire o i = modify $ insConn o i
+
+constGate :: Bit -> CircuitBuilder OWire
+constGate b = do
+	o <- makeOWire
+	modify $ insGate (ConstGate b) o
+	return o
 
 andGate, orGate :: CircuitBuilder (IWire, IWire, OWire)
 andGate = do

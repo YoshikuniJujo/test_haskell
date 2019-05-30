@@ -222,3 +222,149 @@ setAndRunAluAosdn :: AluAosdnWires ->
 	Bit -> Bit -> Word64 -> Bit -> Word64 -> Word64 -> Int -> DoCircuit
 setAndRunAluAosdn ws bainv bbinv op bci0 a b n =
 	run n . setBitsAluAosdn ws bainv bbinv op bci0 a b
+
+alu1_aosl :: CircuitBuilder ((IWire, IWire), IWire, IWire, IWire, IWire, OWire)
+alu1_aosl = do
+	(ain, aout) <- idGate
+	(bin, bout) <- idGate
+	(aa, ab, ao) <- andGate
+	(oa, ob, oo) <- orGate
+	(ci, sa, sb, sm) <- sum1
+	(op, mx0, mx1, mx2, less, mo) <- mux4_1
+	zipWithM_ connectWire
+		[aout, bout, aout, bout, aout, bout, ao, oo, sm]
+		[aa, ab, oa, ob, sa, sb, mx0, mx1, mx2]
+	return (op, ci, ain, bin, less, mo)
+
+alu1_msb :: CircuitBuilder ((IWire, IWire), IWire, IWire, IWire, IWire, IWire, OWire, OWire, OWire)
+alu1_msb = do
+	(ciin, ciout) <- idGate
+	(ain, aout) <- idGate
+	(bin, bout) <- idGate
+	(aa, ab, ao) <- andGate
+	(oa, ob, oo) <- orGate
+	(ci, sa, sb, sm) <- sum1
+	(op, mx0, mx1, mx2, less, mo) <- mux4_1
+	zipWithM_ connectWire
+		[ciout, aout, bout, aout, bout, aout, bout, ao, oo, sm]
+		[ci, aa, ab, oa, ob, sa, sb, mx0, mx1, mx2]
+	(ofci, co, ovfl) <- overflow
+	(sltsn, sltof, slt) <- lessthan
+	zipWithM_ connectWire [ciout, sm, ovfl] [ofci, sltsn, sltof]
+	return (op, ciin, ain, bin, less, co, mo, slt, ovfl)
+
+type AluWires =
+	(IWire, IWire, (IWire, IWire), IWire, [IWire], [IWire], [OWire], OWire)
+
+alu :: Word8 -> CircuitBuilder AluWires
+alu n = do
+	(op0in, op0out) <- idGate
+	(op1in, op1out) <- idGate
+	(ci0in, ci0out) <- idGate
+	(ains, aouts) <- unzip <$> fromIntegral n `replicateM` idGate
+	(bins, bouts) <- unzip <$> fromIntegral n `replicateM` idGate
+	(ci0, as, bs, cots, _, _) <- carries n
+	(ops, cins, as', bs', less, rs) <-
+		unzip6 <$> fromIntegral (n - 1) `replicateM` alu1_aosl
+	((op0msb, op1msb), cimsb, amsb, bmsb, lessmsb, comsb, rmsb, slt, ovfl)
+		<- alu1_msb
+	let	(op0s, op1s) = unzip ops
+	connectWire op0out `mapM_` (op0s ++ [op0msb])
+	connectWire op1out `mapM_` (op1s ++ [op1msb])
+	connectWire ci0out ci0
+	zipWithM_ connectWire aouts as
+	zipWithM_ connectWire bouts bs
+	zipWithM_ connectWire (ci0out : cots) $ cins ++ [cimsb]
+	zipWithM_ connectWire aouts $ as' ++ [amsb]
+	zipWithM_ connectWire bouts $ bs' ++ [bmsb]
+	(ainv, ains') <- complementAll ains
+	(binv, bins') <- complementAll bins
+
+	zero <- constGate O
+	connectWire zero `mapM_` (tail less ++ [lessmsb])
+	connectWire slt $ head less
+	connectWire (last cots) comsb
+	return (ainv, binv,
+		(op0in, op1in), ci0in, ains', bins', rs ++ [rmsb], ovfl)
+
+setBitsAlu ::
+	AluWires -> Bit -> Bit -> Word64 -> Bit -> Word64 -> Word64 -> DoCircuit
+setBitsAlu (wainv, wbinv, (wop0, wop1), wci0, was, wbs, _, _)
+		bainv bbinv op bci0 a b =
+	setBit wainv bainv . setBit wbinv bbinv
+		. setBits [wop0, wop1] (wordToBits 64 op) . setBit wci0 bci0
+		. setBits was (wordToBits 64 a) . setBits wbs (wordToBits 64 b)
+
+getBitsAluBits :: AluWires -> Circuit -> ([Bit], Bit)
+getBitsAluBits (_, _, _, _, _, _, rs, ovfl) cct =
+	((`peekOWire` cct) <$> rs, peekOWire ovfl cct)
+
+getBitsAlu :: AluWires -> Circuit -> (Word64, Bit)
+getBitsAlu ws = first bitsToWord . getBitsAluBits ws
+
+setAndRunAlu :: AluWires ->
+	Bit -> Bit -> Word64 -> Bit -> Word64 -> Word64 -> Int -> DoCircuit
+setAndRunAlu ws bainv bbinv op bci0 a b n =
+	run n . setBitsAlu ws bainv bbinv op bci0 a b
+
+setAndResultAluBits :: AluWires -> Bit -> Bit ->
+	Word64 -> Bit -> Word64 -> Word64 -> Int -> Circuit -> ([Bit], Bit)
+setAndResultAluBits ws bainv bbinv op bci0 a b n =
+	getBitsAluBits ws . setAndRunAlu ws bainv bbinv op bci0 a b n
+
+setAndResultAlu :: AluWires -> Bit -> Bit ->
+	Word64 -> Bit -> Word64 -> Word64 -> Int -> Circuit -> (Word64, Bit)
+setAndResultAlu ws bainv bbinv op bci0 a b n =
+	getBitsAlu ws . setAndRunAlu ws bainv bbinv op bci0 a b n
+
+-- overflow = carry in `xor` carry out
+-- less than = sum (sign) `xor` overflow
+
+overflow :: CircuitBuilder (IWire, IWire, OWire)
+overflow = xorGate
+
+lessthan :: CircuitBuilder (IWire, IWire, OWire)
+lessthan = xorGate
+
+type RiscvAluWires = ((IWire, IWire, IWire, IWire), [IWire], [IWire], [OWire], OWire, OWire)
+-- ((op0, op1, bneg, ainv), as, bs, rs, zero, ovfl)
+
+riscvAlu :: CircuitBuilder RiscvAluWires
+riscvAlu = do
+	(bnegin, bnegout) <- idGate
+	(ainv, binv, (op0, op1), ci0, as, bs, rs, ovfl) <- alu 64
+	(zins, zout) <- multiOrGate 64
+	(ni, zero) <- notGate
+	connectWire bnegout `mapM_` [binv, ci0]
+	zipWithM_ connectWire rs zins
+	connectWire zout ni
+	return ((op0, op1, bnegin, ainv), as, bs, rs, zero, ovfl)
+
+setBitsRiscvAlu :: RiscvAluWires -> Word64 -> Word64 -> Word64 -> DoCircuit
+setBitsRiscvAlu ((op0, op1, bneg, ainv), as, bs, _, _, _) op a b =
+	setBits [op0, op1, bneg, ainv] (wordToBits 4 op)
+		. setBits as (wordToBits 64 a) . setBits bs (wordToBits 64 b)
+
+getBitsRiscvAluBits :: RiscvAluWires -> Circuit -> ([Bit], Bit, Bit)
+getBitsRiscvAluBits (_, _, _, rs, zero, ovfl) cct =
+	((`peekOWire` cct) <$> rs, peekOWire zero cct, peekOWire ovfl cct)
+
+getBitsRiscvAlu :: RiscvAluWires -> Circuit -> (Word64, Bit, Bit)
+getBitsRiscvAlu ws = firstOfThree bitsToWord . getBitsRiscvAluBits ws
+
+firstOfThree :: (a -> d) -> (a, b, c) -> (d, b, c)
+firstOfThree f (x, y, z) = (f x, y, z)
+
+setAndRunRiscvAlu ::
+	RiscvAluWires -> Word64 -> Word64 -> Word64 -> Int -> DoCircuit
+setAndRunRiscvAlu ws op a b n = run n . setBitsRiscvAlu ws op a b
+
+setAndResultRiscvAluBits :: RiscvAluWires ->
+	Word64 -> Word64 -> Word64 -> Int -> Circuit -> ([Bit], Bit, Bit)
+setAndResultRiscvAluBits ws op a b n =
+	getBitsRiscvAluBits ws . setAndRunRiscvAlu ws op a b n
+
+setAndResultRiscvAlu :: RiscvAluWires ->
+	Word64 -> Word64 -> Word64 -> Int -> Circuit -> (Word64, Bit, Bit)
+setAndResultRiscvAlu ws op a b n =
+	getBitsRiscvAlu ws . setAndRunRiscvAlu ws op a b n

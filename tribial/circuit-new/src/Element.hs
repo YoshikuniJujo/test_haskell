@@ -28,6 +28,11 @@ mux3_1 = do
 	(sl, ds, r) <- multiplexer1 3
 	return ((sl !! 0, sl !! 1), ds !! 0, ds !! 1, ds !! 2, r)
 
+mux4_1 :: CircuitBuilder ((IWire, IWire), IWire, IWire, IWire, IWire, OWire)
+mux4_1 = do
+	(sl, ds, r) <- multiplexer1 4
+	return ((sl !! 0, sl !! 1), ds !! 0, ds !! 1, ds !! 2, ds !! 3, r)
+
 multiplexer1 :: Word16 -> CircuitBuilder ([IWire], [IWire], OWire)
 multiplexer1 n = do
 	(sl, dc) <- decoder n
