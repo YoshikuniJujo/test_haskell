@@ -114,12 +114,19 @@ testAsisUnless = do
 	(c, d) <- asisUnless win
 	return (c, d, wout)
 
+connectAndGate :: IWire -> CircuitBuilder (IWire, IWire)
+connectAndGate i = do
+	(ai1, ai2, ao) <- andGate
+	connectWire ao i
+	return (ai1, ai2)
+
 strictGates1 :: Word8 -> CircuitBuilder (IWire, OWire) -> CircuitBuilder ([IWire], IWire, OWire)
 strictGates1 n g0 = do
 	(iin, iout) <- idGate
 	(ad, dc) <- decoder (2 ^ n)
 	(gis, gos) <- unzip <$> (2 ^ n) `replicateM` g0
-	(auc, aud) <- unzip <$> asisUnless `mapM` gis
+--	(auc, aud) <- unzip <$> asisUnless `mapM` gis
+	(auc, aud) <- unzip <$> connectAndGate `mapM` gis
 	zipWithM_ connectWire dc auc
 	mapM_ (connectWire iout) aud
 	(tcs, tds, tos) <- unzip3 <$> (2 ^ n) `replicateM` triGate

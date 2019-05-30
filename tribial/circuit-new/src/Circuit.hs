@@ -96,7 +96,7 @@ calcGate wst (LazyGate ix is ccts cct0) = do
 		ccts' = fromMaybe ccts $ do
 			k <- fromIntegral <$> bitsToInt bixs
 			v <- (\(x, y, z) -> (step x, y, z)) <$> mcct1'
-			return $ M.insert k v ccts
+			return . M.insert k v $ (`setBitsIsOWire` repeat O) <$> ccts
 		mo = do	(cct, _ii, io) <- mcct1'
 			return $ peekOWire io cct
 		o = fromMaybe X mo
