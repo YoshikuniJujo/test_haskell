@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module RiscV.Memory where
+module RiscV.Memory (
+	Sram, riscvSram, storeSram, loadSram, readSram, register ) where
 
 import Control.Monad
 import Data.List
