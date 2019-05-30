@@ -146,3 +146,19 @@ alu_aos' n = do
 	zipWithM_ connectWire aouts as'
 	zipWithM_ connectWire bouts bs'
 	return ((op0in, op1in), ci0in, ains, bins, rs, last cots)
+
+alu1_aosd :: CircuitBuilder (IWire, (IWire, IWire), IWire, IWire, IWire, OWire)
+alu1_aosd = do
+	(ain, aout) <- idGate
+	(bin, bout) <- idGate
+	(nbi, nbo) <- notGate
+	(binv, b, nb, b') <- mux2
+	(aa, ab, ao) <- andGate
+	(oa, ob, oo) <- orGate
+	(ci, sa, sb, sm) <- sum1
+	(op, mx0, mx1, mx2, mo) <- mux3_1
+	zipWithM_ connectWire [bout, bout, nbo] [nbi, b, nb]
+	zipWithM_ connectWire
+		[aout, b', aout, b', aout, b', ao, oo, sm]
+		[aa, ab, oa, ob, sa, sb, mx0, mx1, mx2]
+	return (binv, op, ci, ain, bin, mo)
