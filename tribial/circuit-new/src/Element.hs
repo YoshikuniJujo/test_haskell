@@ -4,6 +4,7 @@ module Element where
 
 import Control.Arrow
 import Control.Monad
+import Data.List
 import Data.Word
 
 import Circuit
@@ -42,6 +43,14 @@ multiplexer1 n = do
 	zipWithM_ connectWire ados ois
 	return (sl, adi2s, oo)
 
+multiplexer :: Word8 -> Word16 -> CircuitBuilder ([IWire], [[IWire]], [OWire])
+multiplexer m n = do
+	(slin, slout) <- unzip <$> a `replicateM` idGate
+	(sls, is, o) <- unzip3 <$> fromIntegral m `replicateM` multiplexer1 n
+	zipWithM_ connectWire slout `mapM_` sls
+	return (slin, transpose is, o)
+	where a = log2 n
+
 binary :: (a, a) -> Word16 -> [[a]]
 binary _ n | n < 1 = [[]]
 binary (o, i) n = binary (o, i) (n - 1) >>= (<$> [(o :), (i :)]) . flip ($)
@@ -52,7 +61,7 @@ inverse o i = do
 	zipWithM_ connectWire [o, no] [ni, i]
 obverse = connectWire
 
-log2 :: Integral n => n -> n
+log2 :: (Integral n, Integral m) => n -> m
 log2 i = i2 0
 	where i2 j
 		| j < 0 = error "Oops!"

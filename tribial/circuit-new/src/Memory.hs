@@ -2,6 +2,7 @@
 
 module Memory where
 
+import Control.Arrow
 import Control.Monad
 import Data.List
 import Data.Word
@@ -306,3 +307,46 @@ setRegisterFileWrite (c, wadr, wds, _) adr d = run 20 . setBit c O
 readRegisterFileWrite :: RegisterFileWriteWires -> Circuit -> [Maybe Word64]
 readRegisterFileWrite (_, _, _, woss) cct =
 	bitsToWordMaybe . (`peekOWires` cct) <$> woss
+
+registerFileReadUnit ::
+	Word8 -> Word8 -> [[OWire]] -> CircuitBuilder ([IWire], [OWire])
+registerFileReadUnit n m oss = do
+	(adr, ds, r) <- multiplexer n (fromIntegral m)
+	zipWithM_ (zipWithM_ connectWire) oss ds
+	return (adr, r)
+
+type RegisterFileWires = ([IWire], [IWire], IWire, [IWire], [IWire], [OWire], [OWire])
+
+registerFile :: Word8 -> Word8 -> CircuitBuilder RegisterFileWires
+registerFile n m = do
+	(wrin, wrout) <- idGate
+	(wadr, dc) <- decoder $ fromIntegral m
+	(dsin, dsout) <- unzip <$> fromIntegral n `replicateM` idGate
+	(wrs, dc', cls) <- unzip3 <$> fromIntegral m `replicateM` andGate
+	(cls', inps, outs) <- unzip3 <$> fromIntegral m `replicateM` registerN n
+	connectWire wrout `mapM_` wrs
+	zipWithM_ connectWire dc dc'
+	zipWithM_ connectWire cls cls'
+	zipWithM_ connectWire dsout `mapM_` inps
+	(radr1, out1) <- registerFileReadUnit n m outs
+	(radr2, out2) <- registerFileReadUnit n m outs
+	return (radr1, radr2, wrin, wadr, dsin, out1, out2)
+
+setRegisterFile :: RegisterFileWires -> Word64 -> Word64 -> DoCircuit
+setRegisterFile (_, _, c, wadr, wds, _, _) adr d = run 20 . setBit c O
+	. run 20 . setBit c I . run 20
+	. setBits wadr (wordToBits 64 adr) . setBits wds (wordToBits 64 d)
+
+loadRegisterFile :: RegisterFileWires -> Word64 -> Word64 -> DoCircuit
+loadRegisterFile (wradr1, wradr2, _, _, _, _, _) radr1 radr2 = run 20
+	. setBits wradr1 (wordToBits 64 radr1)
+	. setBits wradr2 (wordToBits 64 radr2)
+
+readRegisterFile :: RegisterFileWires -> Circuit -> (Maybe Word64, Maybe Word64)
+readRegisterFile (_, _, _, _, _, wo1, wo2) cct =
+	bitsToWordMaybe . (`peekOWires` cct) ***
+		bitsToWordMaybe . (`peekOWires` cct) $ (wo1, wo2)
+
+readRegisterFileBits :: RegisterFileWires -> Circuit -> ([Bit], [Bit])
+readRegisterFileBits (_, _, _, _, _, wo1, wo2) cct =
+	(`peekOWires` cct) *** (`peekOWires` cct) $ (wo1, wo2)
