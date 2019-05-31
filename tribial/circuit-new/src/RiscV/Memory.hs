@@ -5,7 +5,9 @@ module RiscV.Memory (
 		sramClock, sramAddress, sramInput, sramOutput,
 	Register, riscvRegister, registerClock, registerInput, registerOutput,
 		resetRegister, readRegisterBits, readRegisterInt,
-	RegisterFile, riscvRegisterFile
+	RegisterFile, riscvRegisterFile, registerFileReadAddrs,
+		registerFileOutput1, registerFileOutput2,
+	separateRtypeOWires
 	) where
 
 import Control.Monad
@@ -189,3 +191,27 @@ riscvRegisterFile :: CircuitBuilder RegisterFile
 riscvRegisterFile = do
 	(radr1, radr2, wr, wadr, wdt, out1, out2) <- registerFile 32
 	return $ RegisterFile radr1 radr2 wr wadr wdt out1 out2
+
+registerFileReadAddrs :: RegisterFile -> ([IWire], [IWire])
+registerFileReadAddrs (RegisterFile radr1 radr2 _ _ _ _ _) = (radr1, radr2)
+
+registerFileOutput1 :: RegisterFile -> [OWire]
+registerFileOutput1 (RegisterFile _ _ _ _ _ o1 _) = o1
+
+registerFileOutput2 :: RegisterFile -> [OWire]
+registerFileOutput2 (RegisterFile _ _ _ _ _ _ o2) = o2
+
+type SeparatedRtype a = ([a], ([a], [a]), [a], [a], [a])
+
+separateRtypeXs :: [a] -> SeparatedRtype a
+separateRtypeXs xs = let
+	(f7, xs2) = splitAt 7 xs
+	(r1, xs3) = splitAt 5 xs2
+	(r2, xs4) = splitAt 5 xs3
+	(f3, xs5) = splitAt 3 xs4
+	(rd, xs6) = splitAt 5 xs5
+	(oc, []) = splitAt 7 xs6 in
+	(f7, (r1, r2), f3, rd, oc)
+
+separateRtypeOWires :: [OWire] -> SeparatedRtype OWire
+separateRtypeOWires = separateRtypeXs
