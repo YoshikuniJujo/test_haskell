@@ -37,6 +37,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - circuit-new
+  tryReadRegisters:
+    main:                tryReadRegisters.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - circuit-new
 
 tests:
   circuit-new-test:
