@@ -3,6 +3,8 @@
 module RiscV.Memory (
 	Sram, riscvSram, riscvSram32, storeSram, loadSram, readSram, readSramBits,
 		sramClock, sramAddress, sramInput, sramOutput,
+	SramWithSwitch, sramWithSwitch, sramWithSwitchReadAddr,
+		storeSramWithSwitch, readSramWithSwitchBits, readSramWithSwitch,
 	Register, riscvRegister, registerClock, registerInput, registerOutput,
 		resetRegister, readRegisterBits, readRegisterInt,
 	RegisterFile, riscvRegisterFile, registerFileReadAddrs,
@@ -108,6 +110,34 @@ readSram (Sram _ _ _ os) cct = bitsToNum $ (`peekOWire` cct) <$> os
 readSramBits :: Sram -> Circuit -> [Bit]
 readSramBits (Sram _ _ _ os) cct = (`peekOWire` cct) <$> os
 
+data SramWithSwitch = SramWithSwitch IWire IWire [IWire] [IWire] [IWire] [OWire]
+
+sramWithSwitch :: CircuitBuilder SramWithSwitch
+sramWithSwitch = do
+	(slin, slout) <- idGate
+	(rasin, rasout) <- unzip <$> 64 `replicateM` idGate
+	(ss, ras, was, as) <- unzip4 <$> 64 `replicateM` mux2
+	(we, ad, ds, os) <- sram32 62
+	connectWire slout `mapM_` ss
+	zipWithM_ connectWire (tail $ tail rasout) ras
+	zipWithM_ connectWire as ad
+	return $ SramWithSwitch we slin rasin was ds os
+
+sramWithSwitchReadAddr :: SramWithSwitch -> [IWire]
+sramWithSwitchReadAddr (SramWithSwitch _ _ ra _ _ _) = ra
+
+storeSramWithSwitch :: SramWithSwitch -> Int64 -> Word32 -> DoCircuit
+storeSramWithSwitch (SramWithSwitch we sw _ was wds _) ad d = run 3 . setBit sw O . run 5
+	. setBit we O . setBits was (numToBits 64 ad) . setBits wds (numToBits 32 d) . run 8
+	. setBit we I . setBits was (numToBits 64 ad) . setBits wds (numToBits 32 d) . run 8
+	. setBit we O . setBits was (numToBits 64 ad) . setBits wds (numToBits 32 d) . setBit sw I
+
+readSramWithSwitchBits :: SramWithSwitch -> Circuit -> [Bit]
+readSramWithSwitchBits (SramWithSwitch _ _ _ _ _ os) cct = (`peekOWire` cct) <$> os
+
+readSramWithSwitch :: SramWithSwitch -> Circuit -> Word32
+readSramWithSwitch sr = bitsToNum . readSramWithSwitchBits sr
+
 dflipflop :: CircuitBuilder (IWire, IWire, OWire, OWire)
 dflipflop = do
 	(c0, d0, q0, _) <- dlatch
@@ -150,12 +180,6 @@ resetRegister :: Register -> Circuit -> Circuit
 resetRegister rg = longPressWires (repeat O) 20 (registerInput rg)
 	. longPressWires (I : repeat O) 20 (registerClock rg : registerInput rg)
 	. longPressWires (repeat O) 20 (registerInput rg)
-
-{-
-longPress :: Bit -> Word8 -> IWire -> DoCircuit
-longPress _ 0 _ = id
-longPress b n iw = step . setBit iw b . longPress b (n - 1) iw
--}
 
 longPressWires :: [Bit] -> Word8 -> [IWire] -> DoCircuit
 longPressWires _ 0 _ = id

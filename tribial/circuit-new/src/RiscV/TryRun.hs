@@ -138,18 +138,12 @@ checkFetchInstruction = let
 	cct03 = sampleInstMemory' sr cct02 in
 	map bitsToNum $ peekOWires os <$> iterate step cct03
 
-fetchInstruction32 :: CircuitBuilder (Clock, Register, (IWire, IWire, [IWire], [IWire], [OWire]))
+fetchInstruction32 :: CircuitBuilder (Clock, Register, SramWithSwitch)
 fetchInstruction32 = do
 	(cl, rg) <- countUp4
-	sr <- riscvSram32
-	(slin, sout) <- idGate
-	(ss, ras, was, as) <- unzip4 <$> 64 `replicateM` mux2
-	connectWire sout `mapM_` ss
-	zipWithM_ connectWire (tail . tail $ registerOutput rg) ras
-	zipWithM_ connectWire as (sramAddress sr)
---	zero <- 64 `replicateM` constGate O
---	zipWithM_ connectWire zero (sramAddress sr)
-	return (cl, rg, (slin, sramClock sr, was, sramInput sr, sramOutput sr))
+	sr <- sramWithSwitch
+	zipWithM_ connectWire (registerOutput rg) (sramWithSwitchReadAddr sr)
+	return (cl, rg, sr)
 
 countUp4 :: CircuitBuilder (Clock, Register)
 countUp4 = do
@@ -176,8 +170,10 @@ sampleInstMemory32 sr =
 
 checkFetchInstruction32 :: [Word32]
 checkFetchInstruction32 = let
-	((cl, rg, sr@(_, _, _, _, os)), cct) = makeCircuit fetchInstruction32
-	cct01 = reset cl cct
-	cct02 = resetRegister rg cct01
-	cct03 = sampleInstMemory32 sr cct02 in
-	map bitsToNum $ peekOWires os <$> iterate step cct03
+	((cl, rg, sr), cct) = makeCircuit fetchInstruction32
+	cct01 = storeSramWithSwitch sr 0 12345 cct
+	cct02 = storeSramWithSwitch sr 1 54321 cct01
+	cct03 = storeSramWithSwitch sr 2 55555 cct02
+	cct04 = reset cl cct03
+	cct05 = resetRegister rg cct04 in
+	readSramWithSwitch sr <$> iterate step cct05
