@@ -4,7 +4,8 @@ module RiscV.Memory (
 	Sram, riscvSram, riscvSram32, storeSram, loadSram, readSram, readSramBits,
 		sramClock, sramAddress, sramInput, sramOutput,
 	Register, riscvRegister, registerClock, registerInput, registerOutput,
-		resetRegister, readRegisterBits, readRegisterInt
+		resetRegister, readRegisterBits, readRegisterInt,
+	RegisterFile, riscvRegisterFile
 	) where
 
 import Control.Monad
@@ -157,3 +158,34 @@ longPress b n iw = step . setBit iw b . longPress b (n - 1) iw
 longPressWires :: [Bit] -> Word8 -> [IWire] -> DoCircuit
 longPressWires _ 0 _ = id
 longPressWires bs n iws = step . setBits iws bs . longPressWires bs (n - 1) iws
+
+registerFileReadUnit ::
+	Word8 -> Word8 -> [[OWire]] -> CircuitBuilder ([IWire], [OWire])
+registerFileReadUnit n m oss = do
+	(adr, ds, r) <- multiplexer n (fromIntegral m)
+	zipWithM_ (zipWithM_ connectWire) oss ds
+	return (adr, r)
+
+type RegisterFileWires = ([IWire], [IWire], IWire, [IWire], [IWire], [OWire], [OWire])
+
+registerFile :: Word8 -> CircuitBuilder RegisterFileWires
+registerFile m = do
+	(wrin, wrout) <- idGate
+	(wadr, dc) <- decoder $ fromIntegral m
+	(dsin, dsout) <- unzip <$> 64 `replicateM` idGate
+	(wrs, dc', cls) <- unzip3 <$> fromIntegral m `replicateM` andGate
+	(cls', inps, outs) <- unzip3 <$> fromIntegral m `replicateM` register
+	connectWire wrout `mapM_` wrs
+	zipWithM_ connectWire dc dc'
+	zipWithM_ connectWire cls cls'
+	zipWithM_ connectWire dsout `mapM_` inps
+	(radr1, out1) <- registerFileReadUnit 64 m outs
+	(radr2, out2) <- registerFileReadUnit 64 m outs
+	return (radr1, radr2, wrin, wadr, dsin, out1, out2)
+
+data RegisterFile = RegisterFile [IWire] [IWire] IWire [IWire] [IWire] [OWire] [OWire]
+
+riscvRegisterFile :: CircuitBuilder RegisterFile
+riscvRegisterFile = do
+	(radr1, radr2, wr, wadr, wdt, out1, out2) <- registerFile 32
+	return $ RegisterFile radr1 radr2 wr wadr wdt out1 out2

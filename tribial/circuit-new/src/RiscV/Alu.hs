@@ -7,7 +7,6 @@ import Data.List
 import Data.Word
 
 import Circuit
-import Element
 import CarryLookahead
 
 import RiscV.Element
