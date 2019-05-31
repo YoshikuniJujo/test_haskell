@@ -27,6 +27,10 @@ sampleInstructions = [
 	0xb3, 0x05, 0x95, 0x40
 	]
 
+sampleInstructions32 :: [Word32]
+sampleInstructions32 = [
+	0xfd878513, 0x015a04b3, 0x009a84b3, 0x409505b3 ]
+
 cutBits :: Int -> Int -> Word32 -> Word8
 cutBits bg bs w = fromIntegral $ (w .&. msk) `shiftR` (bg - bs + 1)
 	where
@@ -135,4 +139,48 @@ checkFetchInstruction = let
 	cct01 = reset cl cct
 	cct02 = resetRegister rg cct01
 	cct03 = sampleInstMemory' sr cct02 in
+	map bitsToNum $ peekOWires os <$> iterate step cct03
+
+fetchInstruction32 :: CircuitBuilder (Clock, Register, (IWire, IWire, [IWire], [IWire], [OWire]))
+fetchInstruction32 = do
+	(cl, rg) <- countUp4
+	sr <- riscvSram32
+	(slin, sout) <- idGate
+	(ss, ras, was, as) <- unzip4 <$> 64 `replicateM` mux2
+	connectWire sout `mapM_` ss
+	zipWithM_ connectWire (tail . tail $ registerOutput rg) ras
+	zipWithM_ connectWire as (sramAddress sr)
+--	zero <- 64 `replicateM` constGate O
+--	zipWithM_ connectWire zero (sramAddress sr)
+	return (cl, rg, (slin, sramClock sr, was, sramInput sr, sramOutput sr))
+
+countUp4 :: CircuitBuilder (Clock, Register)
+countUp4 = do
+	cl <- clock 100
+	rg <- riscvRegister
+	four <- const4
+	(bpc, four', apc) <- riscvAdder
+	connectWire (clockOutput cl) (registerClock rg)
+	zipWithM_ connectWire (registerOutput rg) bpc
+	zipWithM_ connectWire four four'
+	zipWithM_ connectWire apc (registerInput rg)
+	return (cl, rg)
+
+storeSram32 :: TempSram -> Int64 -> Word32 -> DoCircuit
+storeSram32 (wr, cl, wad, wb, _) ad b = setBit wr O . run 2
+	. setBit cl O . setBits wad (numToBits 64 ad) . setBits wb (numToBits 32 b) . run 5
+	. setBit cl I . setBits wad (numToBits 64 ad) . setBits wb (numToBits 32 b) . run 8
+	. setBit cl O . setBits wad (numToBits 64 ad) . setBits wb (numToBits 32 b) 
+	. setBit wr I
+
+sampleInstMemory32 :: TempSram -> DoCircuit
+sampleInstMemory32 sr =
+	foldr (.) id $ zipWith (storeSram32 sr) [0 ..] sampleInstructions32
+
+checkFetchInstruction32 :: [Word32]
+checkFetchInstruction32 = let
+	((cl, rg, sr@(_, _, _, _, os)), cct) = makeCircuit fetchInstruction32
+	cct01 = reset cl cct
+	cct02 = resetRegister rg cct01
+	cct03 = sampleInstMemory32 sr cct02 in
 	map bitsToNum $ peekOWires os <$> iterate step cct03

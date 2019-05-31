@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module RiscV.Memory (
-	Sram, riscvSram, storeSram, loadSram, readSram, readSramBits,
+	Sram, riscvSram, riscvSram32, storeSram, loadSram, readSram, readSramBits,
 		sramClock, sramAddress, sramInput, sramOutput,
 	Register, riscvRegister, registerClock, registerInput, registerOutput,
 		resetRegister, readRegisterBits, readRegisterInt
@@ -53,11 +53,25 @@ sram8 n = do
 	mapM_ (\ad -> zipWithM_ connectWire adout ad) ads
 	return (wein, adin, ds, os)
 
+sram32 :: Word8 -> CircuitBuilder (IWire, [IWire], [IWire], [OWire])
+sram32 n = do
+	(wein, weout) <- idGate
+	(adin, adout) <- unzip <$> fromIntegral n `replicateM` idGate
+	(wes, ads, ds, os) <- unzip4 <$> 32 `replicateM` sram1 n
+	mapM_ (connectWire weout) wes
+	mapM_ (\ad -> zipWithM_ connectWire adout ad) ads
+	return (wein, adin, ds, os)
+
 data Sram = Sram IWire [IWire] [IWire] [OWire]
 
 riscvSram :: CircuitBuilder Sram
 riscvSram = do
 	(we, ad, ds, os) <- sram8 64
+	return $ Sram we ad ds os
+
+riscvSram32 :: CircuitBuilder Sram
+riscvSram32 = do
+	(we, ad, ds, os) <- sram32 62
 	return $ Sram we ad ds os
 
 sramClock :: Sram -> IWire
