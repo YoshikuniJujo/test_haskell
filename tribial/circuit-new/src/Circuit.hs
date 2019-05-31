@@ -11,11 +11,11 @@ import Control.Arrow
 import Control.Monad.State
 import Data.Maybe
 import Data.List
-import Data.Map (Map, (!?))
+import Data.Map.Strict (Map, (!?))
 -- import Data.Bool
 import Data.Word
 
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
 
 import Tools
 

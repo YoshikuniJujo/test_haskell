@@ -177,3 +177,13 @@ checkFetchInstruction32 = let
 	cct04 = reset cl cct03
 	cct05 = resetRegister rg cct04 in
 	readSramWithSwitch sr <$> iterate step cct05
+
+readRegisters :: Word8 -> Word8 -> CircuitBuilder (Clock, Register, SramWithSwitch, RegisterFile, [OWire])
+readRegisters n m = do
+	(cl, pc, im) <- fetchInstruction32
+	rf <- riscvRegisterFile n m
+	let	(radr1, radr2) = registerFileReadAddrs rf
+		(_, (ordadr1, ordadr2), _, _, _) = separateRtypeOWires $ sramWithSwitchOutput im
+	zipWithM_ connectWire ordadr1 radr1
+	zipWithM_ connectWire ordadr2 radr2
+	return (cl, pc, im, rf, ordadr1)

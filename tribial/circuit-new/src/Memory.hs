@@ -333,12 +333,12 @@ registerFile n m = do
 	return (radr1, radr2, wrin, wadr, dsin, out1, out2)
 
 setRegisterFile :: RegisterFileWires -> Word64 -> Word64 -> DoCircuit
-setRegisterFile (_, _, c, wadr, wds, _, _) adr d = run 20 . setBit c O
-	. run 20 . setBit c I . run 20
+setRegisterFile (_, _, c, wadr, wds, _, _) adr d = run 5 . setBit c O
+	. run 10 . setBit c I . run 20
 	. setBits wadr (wordToBits 64 adr) . setBits wds (wordToBits 64 d)
 
 loadRegisterFile :: RegisterFileWires -> Word64 -> Word64 -> DoCircuit
-loadRegisterFile (wradr1, wradr2, _, _, _, _, _) radr1 radr2 = run 20
+loadRegisterFile (wradr1, wradr2, _, _, _, _, _) radr1 radr2 = run 40
 	. setBits wradr1 (wordToBits 64 radr1)
 	. setBits wradr2 (wordToBits 64 radr2)
 

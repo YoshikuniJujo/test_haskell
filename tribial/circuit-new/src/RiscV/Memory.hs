@@ -3,15 +3,17 @@
 module RiscV.Memory (
 	Sram, riscvSram, riscvSram32, storeSram, loadSram, readSram, readSramBits,
 		sramClock, sramAddress, sramInput, sramOutput,
-	SramWithSwitch, sramWithSwitch, sramWithSwitchReadAddr,
+	SramWithSwitch, sramWithSwitch, sramWithSwitchReadAddr, sramWithSwitchOutput,
 		storeSramWithSwitch, readSramWithSwitchBits, readSramWithSwitch,
 	Register, riscvRegister, registerClock, registerInput, registerOutput,
 		resetRegister, readRegisterBits, readRegisterInt,
 	RegisterFile, riscvRegisterFile, registerFileReadAddrs,
 		registerFileOutput1, registerFileOutput2,
+		storeRegisterFile, loadRegisterFile, readRegisterFileBits, readRegisterFile,
 	separateRtypeOWires
 	) where
 
+import Control.Arrow
 import Control.Monad
 import Data.List
 import Data.Word
@@ -126,6 +128,9 @@ sramWithSwitch = do
 sramWithSwitchReadAddr :: SramWithSwitch -> [IWire]
 sramWithSwitchReadAddr (SramWithSwitch _ _ ra _ _ _) = ra
 
+sramWithSwitchOutput :: SramWithSwitch -> [OWire]
+sramWithSwitchOutput (SramWithSwitch _ _ _ _ _ o) = o
+
 storeSramWithSwitch :: SramWithSwitch -> Int64 -> Word32 -> DoCircuit
 storeSramWithSwitch (SramWithSwitch we sw _ was wds _) ad d = run 3 . setBit sw O . run 5
 	. setBit we O . setBits was (numToBits 64 ad) . setBits wds (numToBits 32 d) . run 8
@@ -194,26 +199,26 @@ registerFileReadUnit n m oss = do
 
 type RegisterFileWires = ([IWire], [IWire], IWire, [IWire], [IWire], [OWire], [OWire])
 
-registerFile :: Word8 -> CircuitBuilder RegisterFileWires
-registerFile m = do
+registerFile :: Word8 -> Word8 -> CircuitBuilder RegisterFileWires
+registerFile n m = do
 	(wrin, wrout) <- idGate
 	(wadr, dc) <- decoder $ fromIntegral m
-	(dsin, dsout) <- unzip <$> 64 `replicateM` idGate
+	(dsin, dsout) <- unzip <$> fromIntegral n `replicateM` idGate
 	(wrs, dc', cls) <- unzip3 <$> fromIntegral m `replicateM` andGate
 	(cls', inps, outs) <- unzip3 <$> fromIntegral m `replicateM` register
 	connectWire wrout `mapM_` wrs
 	zipWithM_ connectWire dc dc'
 	zipWithM_ connectWire cls cls'
 	zipWithM_ connectWire dsout `mapM_` inps
-	(radr1, out1) <- registerFileReadUnit 64 m outs
-	(radr2, out2) <- registerFileReadUnit 64 m outs
+	(radr1, out1) <- registerFileReadUnit n m outs
+	(radr2, out2) <- registerFileReadUnit n m outs
 	return (radr1, radr2, wrin, wadr, dsin, out1, out2)
 
 data RegisterFile = RegisterFile [IWire] [IWire] IWire [IWire] [IWire] [OWire] [OWire]
 
-riscvRegisterFile :: CircuitBuilder RegisterFile
-riscvRegisterFile = do
-	(radr1, radr2, wr, wadr, wdt, out1, out2) <- registerFile 32
+riscvRegisterFile :: Word8 -> Word8 -> CircuitBuilder RegisterFile
+riscvRegisterFile n m = do
+	(radr1, radr2, wr, wadr, wdt, out1, out2) <- registerFile n m
 	return $ RegisterFile radr1 radr2 wr wadr wdt out1 out2
 
 registerFileReadAddrs :: RegisterFile -> ([IWire], [IWire])
@@ -225,16 +230,32 @@ registerFileOutput1 (RegisterFile _ _ _ _ _ o1 _) = o1
 registerFileOutput2 :: RegisterFile -> [OWire]
 registerFileOutput2 (RegisterFile _ _ _ _ _ _ o2) = o2
 
+storeRegisterFile :: RegisterFile -> Word8 -> Int64 -> DoCircuit
+storeRegisterFile (RegisterFile _ _ c wadr wdt _ _) adr dt = run 20 . setBit c O
+	. run 20 . setBit c I . run 20
+	. setBits wadr (numToBits 8 adr) . setBits wdt (numToBits 64 dt)
+
+loadRegisterFile :: RegisterFile -> Word8 -> Word8 -> DoCircuit
+loadRegisterFile (RegisterFile wr1 wr2 _ _ _ _ _) r1 r2 =
+	run 30 . setBits wr1 (numToBits 8 r1) . setBits wr2 (numToBits 8 r2)
+
+readRegisterFileBits :: RegisterFile -> Circuit -> ([Bit], [Bit])
+readRegisterFileBits (RegisterFile _ _ _ _ _ o1 o2) =
+	(,) <$> peekOWires o1 <*> peekOWires o2
+
+readRegisterFile :: RegisterFile -> Circuit -> (Word64, Word64)
+readRegisterFile rf = (bitsToNum *** bitsToNum) . readRegisterFileBits rf
+
 type SeparatedRtype a = ([a], ([a], [a]), [a], [a], [a])
 
 separateRtypeXs :: [a] -> SeparatedRtype a
 separateRtypeXs xs = let
-	(f7, xs2) = splitAt 7 xs
-	(r1, xs3) = splitAt 5 xs2
-	(r2, xs4) = splitAt 5 xs3
-	(f3, xs5) = splitAt 3 xs4
-	(rd, xs6) = splitAt 5 xs5
-	(oc, []) = splitAt 7 xs6 in
+	(oc, xs2) = splitAt 7 xs
+	(rd, xs3) = splitAt 5 xs2
+	(f3, xs4) = splitAt 3 xs3
+	(r2, xs5) = splitAt 5 xs4
+	(r1, xs6) = splitAt 5 xs5
+	(f7, []) = splitAt 7 xs6 in
 	(f7, (r1, r2), f3, rd, oc)
 
 separateRtypeOWires :: [OWire] -> SeparatedRtype OWire
