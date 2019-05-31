@@ -11,6 +11,9 @@ import Circuit
 run :: Int -> Circuit -> Circuit
 run i = (!! i) . iterate step
 
+peekOWires :: [OWire] -> Circuit -> [Bit]
+peekOWires os cct = (`peekOWire` cct) <$> os
+
 type Wires31 = (IWire, IWire, IWire, OWire)
 
 setBits31 :: Wires31 -> Bit -> Bit -> Bit -> Circuit -> Circuit
@@ -86,3 +89,9 @@ bitsToWord [] = 0
 bitsToWord (O : bs) = bitsToWord bs `shiftL` 1
 bitsToWord (I : bs) = bitsToWord bs `shiftL` 1 .|. 1
 bitsToWord _ = error "bitsToWord: not number"
+
+bitsToWordMaybe :: [Bit] -> Maybe Word64
+bitsToWordMaybe [] = Just 0
+bitsToWordMaybe (O : bs) = (`shiftL` 1) <$> bitsToWordMaybe bs
+bitsToWordMaybe (I : bs) = (.|. 1) . (`shiftL` 1) <$> bitsToWordMaybe bs
+bitsToWordMaybe _ = Nothing

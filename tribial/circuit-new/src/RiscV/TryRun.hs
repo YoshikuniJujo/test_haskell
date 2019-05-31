@@ -29,7 +29,7 @@ sampleInstructions = [
 
 sampleInstructions32 :: [Word32]
 sampleInstructions32 = [
-	0xfd878513, 0x015a04b3, 0x009a84b3, 0x409505b3 ]
+	0x015a04b3, 0x009a84b3, 0x409505b3, 0xfd878513 ]
 
 cutBits :: Int -> Int -> Word32 -> Word8
 cutBits bg bs w = fromIntegral $ (w .&. msk) `shiftR` (bg - bs + 1)
@@ -122,9 +122,6 @@ sampleInstMemory' sr =
 
 loadSram2 :: (IWire, IWire, [IWire], [IWire], [OWire]) -> Int64 -> DoCircuit
 loadSram2 (wr, cl, wad, _, _) ad = setBit wr I . run 4 . setBit cl O . setBits wad (numToBits 64 ad)
-
-peekOWires :: [OWire] -> Circuit -> [Bit]
-peekOWires os cct = (`peekOWire` cct) <$> os
 
 testSram :: CircuitBuilder Sram
 testSram = do

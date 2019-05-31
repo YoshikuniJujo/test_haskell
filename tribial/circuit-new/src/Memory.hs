@@ -282,3 +282,27 @@ setDataRegister (_, ds, _) d = run 20 . setBits ds (wordToBits 64 d)
 
 readRegister :: RegisterWires -> Circuit -> Word64
 readRegister (_, _, qs) cct = bitsToWord $ (`peekOWire` cct) <$> qs
+
+type RegisterFileWriteWires = (IWire, [IWire], [IWire], [[OWire]])
+
+registerFileWrite :: Word8 -> Word8 -> CircuitBuilder RegisterFileWriteWires
+registerFileWrite n m = do
+	(wrin, wrout) <- idGate
+	(adr, dc) <- decoder $ fromIntegral m
+	(dsin, dsout) <- unzip <$> fromIntegral n `replicateM` idGate
+	(wrs, dc', cls) <- unzip3 <$> fromIntegral m `replicateM` andGate
+	(cls', inps, outs) <- unzip3 <$> fromIntegral m `replicateM` registerN n
+	connectWire wrout `mapM_` wrs
+	zipWithM_ connectWire dc dc'
+	zipWithM_ connectWire cls cls'
+	mapM_ (zipWithM_ connectWire dsout) inps
+	return (wrin, adr, dsin, outs)
+
+setRegisterFileWrite :: RegisterFileWriteWires -> Word64 -> Word64 -> DoCircuit
+setRegisterFileWrite (c, wadr, wds, _) adr d = run 20 . setBit c O
+	. run 20 . setBit c I . run 20
+	. setBits wadr (wordToBits 64 adr) . setBits wds (wordToBits 64 d)
+
+readRegisterFileWrite :: RegisterFileWriteWires -> Circuit -> [Maybe Word64]
+readRegisterFileWrite (_, _, _, woss) cct =
+	bitsToWordMaybe . (`peekOWires` cct) <$> woss

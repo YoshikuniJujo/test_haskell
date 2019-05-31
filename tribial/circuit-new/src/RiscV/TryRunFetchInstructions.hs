@@ -4,6 +4,7 @@ import Data.List
 import Data.Word
 
 import Circuit
+import CircuitTools
 import RiscV.Tools
 import RiscV.TryRun
 import Clock
