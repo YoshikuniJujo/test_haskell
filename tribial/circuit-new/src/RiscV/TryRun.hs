@@ -156,7 +156,7 @@ fetchInstruction32 = do
 
 countUp4 :: CircuitBuilder (Clock, Register)
 countUp4 = do
-	cl <- clock 100
+	cl <- clock 48
 	rg <- riscvRegister
 	four <- const4
 	(bpc, four', apc) <- riscvAdder
