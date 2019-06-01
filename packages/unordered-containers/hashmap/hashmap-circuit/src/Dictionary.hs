@@ -6,6 +6,10 @@ module Dictionary where
 
 import Control.Arrow
 import Data.Maybe
+import Data.Hashable
+
+import qualified Data.Map.Strict as M
+import qualified Data.HashMap.Strict as HM
 
 class IsDictionary d where
 	type Key d
@@ -37,3 +41,30 @@ class IsDictionary d where
 mapAndCollect :: IsDictionary d =>
 	(Key d -> v -> (Maybe a, v')) -> d v -> ([a], d v')
 mapAndCollect f = mapAccumWithKey (\ks -> (first (maybe ks (: ks)) .) . f) []
+
+instance Ord k => IsDictionary (M.Map k) where
+	type Key (M.Map k) = k
+	empty = M.empty
+	(!?) = (M.!?)
+	insert = M.insert
+	keys = M.keys
+
+	(!) = (M.!)
+	elems = M.elems
+	mapWithKey = M.mapWithKey
+	mapAccumWithKey = M.mapAccumWithKey
+	fromList = M.fromList
+	toList = M.toList
+
+instance (Eq k, Hashable k) => IsDictionary (HM.HashMap k) where
+	type Key (HM.HashMap k) = k
+	empty = HM.empty
+	(!?) = flip HM.lookup
+	insert = HM.insert
+	keys = HM.keys
+
+	(!) = (HM.!)
+	elems = HM.elems
+	mapWithKey = HM.mapWithKey
+	fromList = HM.fromList
+	toList = HM.toList
