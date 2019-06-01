@@ -1,8 +1,10 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module CircuitTypes where
 
 import Data.Word
+import Data.Hashable
 
 data Bit = X | O | I deriving Show
 
@@ -22,8 +24,8 @@ notBit O = I
 notBit I = O
 notBit _ = X
 
-newtype IWire = IWire Word32 deriving (Show, Eq, Ord)
-newtype OWire = OWire Word32 deriving (Show, Eq, Ord)
+newtype IWire = IWire Word32 deriving (Show, Eq, Ord, Hashable)
+newtype OWire = OWire Word32 deriving (Show, Eq, Ord, Hashable)
 
 data BasicGate
 	= AndGate IWire IWire | OrGate IWire IWire | NotGate IWire

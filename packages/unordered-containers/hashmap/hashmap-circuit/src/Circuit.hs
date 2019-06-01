@@ -20,7 +20,7 @@ data Circuit g c s = Circuit {
 
 instance (Show (g BasicGate), Show (c OWire), Show (s Bit)) => Show (Circuit g c s) where
 	show (Circuit g c s) =
-		"(Circuit " ++ show g ++ " " ++ show c ++ " " ++ show s ++ ")"
+		"(Circuit (" ++ show g ++ ") (" ++ show c ++ ") (" ++ show s ++ "))"
 
 makeCircuit :: (
 	IsDictionary g, IsDictionary c,
@@ -74,7 +74,7 @@ data CBState g c = CBState {
 
 instance (Show (g BasicGate), Show (c OWire)) => Show (CBState g c) where
 	show (CBState n g c) =
-		"(CBState " ++ show n ++ " " ++ show g ++ " " ++ show c ++ ")"
+		"(CBState (" ++ show n ++ ") (" ++ show g ++ ") (" ++ show c ++ "))"
 
 initCBState :: (IsDictionary g, IsDictionary c) => CBState g c
 initCBState = CBState { cbsWireNum = 0, cbsGate = empty, cbsWireConn = empty }
