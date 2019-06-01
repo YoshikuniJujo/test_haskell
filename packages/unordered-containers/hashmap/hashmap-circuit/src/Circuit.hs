@@ -1,12 +1,19 @@
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE RankNTypes, ConstraintKinds #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Circuit where
+module Circuit (
+	Circuit, CircuitConstraint, makeCircuit, step, setBit, peekIWire, peekOWire,
+	CircuitBuilder, CircuitBuilderConstraint,
+		constGate, andGate, orGate, notGate, idGate, delay, connectWire,
+	IWire, OWire, Bit(..)
+	) where
 
 import Control.Arrow
 import Control.Monad.State
 import Data.Maybe
+import Data.List (genericReplicate)
 import Data.Word
 
 import CircuitTypes
@@ -17,6 +24,9 @@ data Circuit g c s = Circuit {
 	cctGate :: g BasicGate,
 	cctWireConn :: c OWire,
 	cctWireStt :: s Bit }
+
+type CircuitConstraint g c s =
+	(IsDictionary g, Key g ~ OWire, IsDictionary c, Key c ~ IWire, IsDictionary s, Key s ~ IWire)
 
 instance (Show (g BasicGate), Show (c OWire), Show (s Bit)) => Show (Circuit g c s) where
 	show (Circuit g c s) =
@@ -49,6 +59,7 @@ checkOWire Circuit { cctWireStt = wst } ow =
 
 calcGate :: (IsDictionary s, Key s ~ IWire ) =>
 	s Bit -> BasicGate -> Maybe (Maybe BasicGate, Bit)
+calcGate _ (ConstGate b) = Just (Nothing, b)
 calcGate wst (AndGate iw1 iw2) =
 	((Nothing ,) .) . andBit <$> wst !? iw1 <*> wst !? iw2
 calcGate wst (OrGate iw1 iw2) =
@@ -64,6 +75,23 @@ nextIWire :: (
 	Circuit g c s -> ows Bit -> IWire -> Bit -> Bit
 nextIWire Circuit { cctWireConn = wc } ows iw ob =
 	fromMaybe ob $ (ows !?) =<< wc !? iw
+
+setBit :: (IsDictionary s, Key s ~ IWire) =>
+	IWire -> Bit -> Circuit g c s -> Circuit g c s
+setBit i b c = c { cctWireStt = insert i b $ cctWireStt c }
+
+peekIWire :: (IsDictionary s, Key s ~ IWire) => IWire -> Circuit g c s -> Bit
+peekIWire i Circuit { cctWireStt = cs } = cs ! i
+
+peekOWire :: (
+	IsDictionary g, Key g ~ OWire,
+	IsDictionary s, Key s ~ IWire ) =>
+	OWire -> Circuit g c s -> Bit
+peekOWire o Circuit { cctGate = gs, cctWireStt = wst } =
+	fromJust $ snd <$> (calcGate wst =<< gs !? o)
+
+type CircuitBuilderConstraint g c =
+	(IsDictionary g, Key g ~ OWire, IsDictionary c, Key c ~ IWire)
 	
 type CircuitBuilder g c = State (CBState g c)
 
@@ -87,12 +115,43 @@ insConn :: (IsDictionary c, Key c ~ IWire) =>
 	OWire -> IWire -> CBState g c -> CBState g c
 insConn o i cbs = cbs { cbsWireConn = insert i o $ cbsWireConn cbs }
 
+constGate :: CircuitBuilderConstraint g c => Bit -> CircuitBuilder g c OWire
+constGate b = do
+	o <- makeOWire
+	modify $ insGate (ConstGate b) o
+	return o
+
+andGate, orGate :: (
+	IsDictionary g, Key g ~ OWire, IsDictionary c, Key c ~ IWire) =>
+	CircuitBuilder g c (IWire, IWire, OWire)
+andGate = do
+	(i1, i2, o) <- makeAndGate
+	(dli, dlo) <- delay 2
+	connectWire o dli
+	return (i1, i2, dlo)
+
+orGate = do
+	(i1, i2, o) <- makeOrGate
+	(dli, dlo) <- delay 2
+	connectWire o dli
+	return (i1, i2, dlo)
+
 notGate :: (IsDictionary g, Key g ~ OWire) =>
 	CircuitBuilder g c (IWire, OWire)
 notGate = do
 	(i, o) <- (,) <$> makeIWire <*> makeOWire
 	modify $ insGate (NotGate i) o
 	return (i, o)
+
+idGate :: (IsDictionary g, Key g ~ OWire) => CircuitBuilder g c (IWire, OWire)
+idGate = delay 1
+
+delay :: (IsDictionary g, Key g ~ OWire) => Word8 -> CircuitBuilder g c (IWire, OWire)
+delay w | w > 0 = do
+	(i, o) <- (,) <$> makeIWire <*> makeOWire
+	modify $ insGate (Delay ((w - 1) `genericReplicate` X) i) o
+	return (i, o)
+delay _ = error "0 delay is not permitted"
 
 makeAndGate, makeOrGate :: (IsDictionary g, Key g ~ OWire) =>
 	CircuitBuilder g c (IWire, IWire, OWire)

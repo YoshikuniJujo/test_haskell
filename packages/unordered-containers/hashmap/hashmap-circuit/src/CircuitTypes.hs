@@ -28,11 +28,13 @@ newtype IWire = IWire Word32 deriving (Show, Eq, Ord, Hashable)
 newtype OWire = OWire Word32 deriving (Show, Eq, Ord, Hashable)
 
 data BasicGate
-	= AndGate IWire IWire | OrGate IWire IWire | NotGate IWire
+	= ConstGate Bit
+	| AndGate IWire IWire | OrGate IWire IWire | NotGate IWire
 	| Delay [Bit] IWire
 	deriving Show
 
 gateIWires :: BasicGate -> [IWire]
+gateIWires (ConstGate _) = []
 gateIWires (AndGate i1 i2) = [i1, i2]
 gateIWires (OrGate i1 i2) = [i1, i2]
 gateIWires (NotGate i) = [i]
