@@ -39,6 +39,13 @@ data BasicGate
 	| ConstGate Bit
 	deriving Show
 
+gateIWires :: BasicGate -> [IWire]
+gateIWires (Delay _ i) = [i]
+gateIWires (AndGate i1 i2) = [i1, i2]
+gateIWires (OrGate i1 i2) = [i1, i2]
+gateIWires (NotGate i) = [i]
+gateIWires (ConstGate _) = []
+
 type BasicGateWord = Word64
 
 {-
