@@ -6,6 +6,7 @@ module Circuit where
 import Prelude
 import qualified Prelude as P
 
+import Control.Arrow
 import Control.Monad.State
 -- import Data.Word
 import Data.IntMap.Strict
@@ -38,6 +39,22 @@ makeCircuit cb = (x ,) $ Circuit {
 			cbsWireConn = wc } ) =
 		cb `runState` initCBState
 
+{-
+step :: Circuit -> Circuit
+step cct@Circuit { cctGate = gs, cctWireStt = wst } = let
+	(ds, ows) = mapAndCollect (checkOWire cct) gs in
+	cct {	cctGate = V.foldr (uncurry insert) gs ds,
+		cctWireStt = mapWithKey (nextIWire cct ows) wst }
+		-}
+
+checkOWire :: Circuit -> OWireInt -> BasicGateWord ->
+	(Maybe (OWireInt, BasicGateWord), BitInt8)
+checkOWire Circuit { cctWireStt = wst } ow =
+	maybe (Nothing, encodeBit X) (first ((ow ,) <$>)) . calcGate wst
+
+calcGate :: Vector BitInt8 -> BasicGateWord -> Maybe (Maybe BasicGateWord, BitInt8)
+calcGate = undefined
+
 type CircuitBuilder = State CBState
 
 data CBState = CBState {
@@ -55,11 +72,22 @@ sccOWireNum :: CBState -> CBState
 sccOWireNum cbs = cbs { cbsOWireNum = cbsOWireNum cbs + 1 }
 
 
-makeAndGate :: CircuitBuilder (IWire, IWire, OWire)
+makeAndGate, makeOrGate :: CircuitBuilder (IWire, IWire, OWire)
 makeAndGate = do
 	(a, b, o) <- (,,) <$> makeIWire <*> makeIWire <*> makeOWire
 	State.modify $ insGate (AndGate a b) o
 	return (a, b, o)
+
+makeOrGate = do
+	(a, b, o) <- (,,) <$> makeIWire <*> makeIWire <*> makeOWire
+	State.modify $ insGate (OrGate a b) o
+	return (a, b, o)
+
+notGate :: CircuitBuilder (IWire, OWire)
+notGate = do
+	(i, o) <- (,) <$> makeIWire <*> makeOWire
+	State.modify $ insGate (NotGate i) o
+	return (i, o)
 
 makeIWire :: CircuitBuilder IWire
 makeIWire = IWire <$> getModify cbsIWireNum sccIWireNum

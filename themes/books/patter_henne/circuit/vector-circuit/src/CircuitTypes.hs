@@ -140,6 +140,36 @@ decodeDelay w = (
 	takeBits (w `shiftR` 56) (w `shiftR` 24 .&. 0xffffffff),
 	decodeIWire . fromIntegral $ w .&. 0xffffff )
 
+{-
+
+Delay    : 0xe0 - 0xff bits(2 * 16) i(24)
+
+-}
+
+nextDelay :: BasicGateWord -> BitInt8 -> (BitInt8, BasicGateWord)
+nextDelay w b_ = (wordToBitInt8 b1, ot .|. bs')
+	where
+	ot = w .&. 0xff00000000ffffff
+	ln = fromIntegral $ w `shiftR` 56 .&. 0x1f
+	bs = w .&. 0x003fffffff000000
+	b1 = w `shiftR` 54 .&. 0x03
+	bs' = bs `shiftL` 2 .&.
+		complement (0x03 `shiftL` (56 - ln * 2)) .|. 
+		b `shiftL` (56 - ln * 2)
+	b = bitInt8ToWord b_
+
+bitInt8ToWord :: BitInt8 -> Word64
+bitInt8ToWord (- 1) = 0x01
+bitInt8ToWord 0 = 0x02
+bitInt8ToWord 1 = 0x03
+bitInt8ToWord _ = error "bitInt8ToWord: conversion error"
+
+wordToBitInt8 :: Word64 -> BitInt8
+wordToBitInt8 0x01 = - 1
+wordToBitInt8 0x02 = 0
+wordToBitInt8 0x03 = 1
+wordToBitInt8 _ = error "wordToBitInt8: conversion error"
+
 takeBits :: Word64 -> Word64 -> [Bit]
 takeBits 0 _ = []
 takeBits n w = unpackBit (w `shiftR` 30) : takeBits (n - 1) (w `shiftL` 2 .&. 0xffffffff)
