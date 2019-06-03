@@ -21,6 +21,22 @@ decodeBit 0 = O
 decodeBit 1 = I
 decodeBit _ = error "decodeBit: decode error"
 
+andBit, orBit :: BitInt8 -> BitInt8 -> BitInt8
+andBit 0 _ = 0
+andBit _ 0 = 0
+andBit 1 1 = 1
+andBit _ _ = - 1
+
+orBit 1 _ = 1
+orBit _ 1 = 1
+orBit 0 0 = 0
+orBit _ _ = - 1
+
+notBit :: BitInt8 -> BitInt8
+notBit 0 = 1
+notBit 1 = 0
+notBit _ = - 1
+
 newtype IWire = IWire { encodeIWire :: Int } deriving Show
 type IWireInt = Int
 
@@ -135,10 +151,25 @@ decodeBasicGate w = case op0 of
 	a2 = w .&. 0xffffff
 	a3 = w .&. 0x0f
 
+branchBasicGate1 :: BasicGateWord -> (Word64, Word64)
+branchBasicGate1 w = (w `shiftR` 61, w .&. 0x1fffffffffffffff)
+
+branchBasicGate2 :: Word64 -> (Word64, Word64)
+branchBasicGate2 w = (w `shiftR` 48, w .&. 0xffffffffffff)
+
+branchBasicGate3 :: Word64 -> (Word64, Word64)
+branchBasicGate3 w = (w `shiftR` 24, w .&. 0xffffff)
+
+twoIWiresBasicGate :: Word64 -> (Word64, Word64)
+twoIWiresBasicGate w = (w `shiftR` 24, w .&. 0xffffff)
+
 decodeDelay :: Word64 -> ([Bit], IWire)
 decodeDelay w = (
 	takeBits (w `shiftR` 56) (w `shiftR` 24 .&. 0xffffffff),
 	decodeIWire . fromIntegral $ w .&. 0xffffff )
+
+iWire2FromBasicGate :: Word64 -> IWireInt
+iWire2FromBasicGate w = fromIntegral $ w .&. 0xffffff
 
 {-
 
@@ -147,7 +178,9 @@ Delay    : 0xe0 - 0xff bits(2 * 16) i(24)
 -}
 
 nextDelay :: BasicGateWord -> BitInt8 -> (BitInt8, BasicGateWord)
-nextDelay w b_ = (wordToBitInt8 b1, ot .|. bs')
+nextDelay w b_ = case ln of
+	0 -> (b_, w)
+	_ -> (wordToBitInt8 b1, ot .|. bs')
 	where
 	ot = w .&. 0xff00000000ffffff
 	ln = fromIntegral $ w `shiftR` 56 .&. 0x1f

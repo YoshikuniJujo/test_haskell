@@ -8,7 +8,6 @@ import qualified Prelude as P
 
 import Control.Arrow
 import Control.Monad.State
--- import Data.Word
 import Data.IntMap.Strict
 import Data.Vector.Unboxed
 
@@ -53,7 +52,33 @@ checkOWire Circuit { cctWireStt = wst } ow =
 	maybe (Nothing, encodeBit X) (first ((ow ,) <$>)) . calcGate wst
 
 calcGate :: Vector BitInt8 -> BasicGateWord -> Maybe (Maybe BasicGateWord, BitInt8)
-calcGate = undefined
+calcGate wst bgw = case branchBasicGate1 bgw of
+	(0x07, _) -> case mnb of
+		Just nb -> Just (Just bgw', b)
+			where
+			(b, bgw') = nextDelay bgw nb
+		Nothing -> Nothing
+		where
+		mnb = wst V.!? iw2
+		iw2 = iWire2FromBasicGate bgw
+	(0x00, a1) -> case branchBasicGate2 a1 of
+		(0x01, iws) -> case (,) <$> wst V.!? fromIntegral iw1 <*> wst V.!? fromIntegral iw2 of
+			Just (a, b) -> Just (Nothing, a `andBit` b)
+			Nothing -> Nothing
+			where
+			(iw1, iw2) = twoIWiresBasicGate iws
+		(0x02, iws) -> case (,) <$> wst V.!? fromIntegral iw1 <*> wst V.!? fromIntegral iw2 of
+			Just (a, b) -> Just (Nothing, a `orBit` b)
+			Nothing -> Nothing
+			where
+			(iw1, iw2) = twoIWiresBasicGate iws
+		(0x03, a2) -> case branchBasicGate3 a2 of
+			(0x01, iw) -> case wst V.!? fromIntegral iw of
+				Just i -> Just (Nothing, notBit i)
+				Nothing -> Nothing
+			_ -> error "not yet implemented"
+		_ -> error "not yet implemented"
+	_ -> error "not yet implemented"
 
 type CircuitBuilder = State CBState
 
