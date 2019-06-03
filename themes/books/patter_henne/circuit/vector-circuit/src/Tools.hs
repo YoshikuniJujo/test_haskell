@@ -29,3 +29,7 @@ mapAndUpdate f upd vec = runST $ do
 		write vec' i v'
 		writeSTRef iref $ i + 1
 	(,) <$> freeze upd' <*> freeze vec'
+
+listToTuple3 :: [a] -> (a, a, a)
+listToTuple3 [x, y, z] = (x, y, z)
+listToTuple3 _ = error "listToTuple3: error"

@@ -3,7 +3,7 @@
 
 module Circuit (
 	Circuit, makeCircuit, step, setBit, peekOWire,
-	CircuitBuilder, andGate, orGate, notGate, idGate, delay, connectWire,
+	CircuitBuilder, constGate, andGate, orGate, notGate, idGate, delay, connectWire,
 	IWire, OWire, Bit(..) ) where
 
 import Prelude
@@ -82,6 +82,9 @@ calcGate wst bgw = case branchBasicGate1 bgw of
 			(0x01, iw) -> case wst V.!? fromIntegral iw of
 				Just i -> Just (Nothing, notBit i)
 				Nothing -> Nothing
+			(0x02, a3) -> case branchBasicGate4 a3 of
+				(0x01, b) -> Just (Nothing, encodeBit $ unpackBit b)
+				_ -> error "not yet implemented"
 			_ -> error "not yet implemented"
 		_ -> error "not yet implemented"
 	_ -> error "not yet implemented"
@@ -122,6 +125,12 @@ connectWire o i = State.modify $ insConn o (encodeIWire i)
 
 insConn :: OWire -> IWireInt -> CBState -> CBState
 insConn o i cbs = cbs { cbsWireConn = IM.insert i o $ cbsWireConn cbs }
+
+constGate :: Bit -> CircuitBuilder OWire
+constGate b = do
+	o <- makeOWire
+	State.modify $ insGate (ConstGate b) o
+	return o
 
 sccIWireNum :: CBState -> CBState
 sccIWireNum cbs = cbs { cbsIWireNum = cbsIWireNum cbs + 1 }

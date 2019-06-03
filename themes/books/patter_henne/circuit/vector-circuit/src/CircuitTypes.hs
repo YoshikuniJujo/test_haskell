@@ -163,6 +163,9 @@ branchBasicGate3 w = (w `shiftR` 24, w .&. 0xffffff)
 twoIWiresBasicGate :: Word64 -> (Word64, Word64)
 twoIWiresBasicGate w = (w `shiftR` 24, w .&. 0xffffff)
 
+branchBasicGate4 :: Word64 -> (Word64, Word64)
+branchBasicGate4 w = (w `shiftR` 4, w .&. 0x0f)
+
 decodeDelay :: Word64 -> ([Bit], IWire)
 decodeDelay w = (
 	takeBits (w `shiftR` 56) (w `shiftR` 24 .&. 0xffffffff),
