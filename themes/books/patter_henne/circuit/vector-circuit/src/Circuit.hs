@@ -8,6 +8,7 @@ import qualified Prelude as P
 
 import Control.Arrow
 import Control.Monad.State
+import Data.Maybe
 import Data.IntMap.Strict
 import Data.Vector.Unboxed
 
@@ -38,13 +39,11 @@ makeCircuit cb = (x ,) $ Circuit {
 			cbsWireConn = wc } ) =
 		cb `runState` initCBState
 
-{-
 step :: Circuit -> Circuit
 step cct@Circuit { cctGate = gs, cctWireStt = wst } = let
-	(ds, ows) = mapAndCollect (checkOWire cct) gs in
-	cct {	cctGate = V.foldr (uncurry insert) gs ds,
-		cctWireStt = mapWithKey (nextIWire cct ows) wst }
-		-}
+	(ds, ows) = mapAndUpdate (checkOWire cct) gs gs in
+	cct {	cctGate = ds,
+		cctWireStt = V.zipWith (nextIWire cct ows) (V.fromList $ P.take (V.length wst) [0 ..]) wst }
 
 checkOWire :: Circuit -> OWireInt -> BasicGateWord ->
 	(Maybe (OWireInt, BasicGateWord), BitInt8)
@@ -79,6 +78,10 @@ calcGate wst bgw = case branchBasicGate1 bgw of
 			_ -> error "not yet implemented"
 		_ -> error "not yet implemented"
 	_ -> error "not yet implemented"
+
+nextIWire :: Circuit -> Vector BitInt8 -> IWireInt -> BitInt8 -> BitInt8
+nextIWire Circuit { cctWireConn = wc } ows iw ob =
+	fromMaybe ob $ (ows V.!?) =<< wc V.!? iw
 
 type CircuitBuilder = State CBState
 
