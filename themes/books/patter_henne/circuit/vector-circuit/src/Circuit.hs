@@ -8,9 +8,11 @@ import qualified Prelude as P
 
 import Control.Arrow
 import Control.Monad.State
+import Control.Monad.ST
 import Data.Maybe
 import Data.IntMap.Strict
 import Data.Vector.Unboxed
+import Data.Vector.Unboxed.Mutable
 
 import qualified Control.Monad.State as State
 import qualified Data.IntMap.Strict as IM
@@ -82,6 +84,17 @@ calcGate wst bgw = case branchBasicGate1 bgw of
 nextIWire :: Circuit -> Vector BitInt8 -> IWireInt -> BitInt8 -> BitInt8
 nextIWire Circuit { cctWireConn = wc } ows iw ob =
 	fromMaybe ob $ (ows V.!?) =<< wc V.!? iw
+
+setBit :: IWireInt -> BitInt8 -> Circuit -> Circuit
+setBit i b c = c {
+	cctWireStt = runST $ do
+		s <- thaw $ cctWireStt c
+		write s i b
+		freeze s }
+
+peekOWire :: OWireInt -> Circuit -> BitInt8
+peekOWire o Circuit { cctGate = gs, cctWireStt = wst } =
+	fromJust $ snd <$> (calcGate wst =<< gs V.!? o)
 
 type CircuitBuilder = State CBState
 
