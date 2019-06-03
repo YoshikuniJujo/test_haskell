@@ -27,4 +27,5 @@ mapAndUpdate f upd vec = runST $ do
 		let	(ma, v') = f i v
 		maybe (return ()) (uncurry $ write upd') ma
 		write vec' i v'
+		writeSTRef iref $ i + 1
 	(,) <$> freeze upd' <*> freeze vec'

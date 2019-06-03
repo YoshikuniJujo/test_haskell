@@ -1,7 +1,10 @@
 {-# LANGUAGE TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Circuit where
+module Circuit (
+	Circuit, makeCircuit, step, setBit, peekOWire,
+	CircuitBuilder, andGate, orGate, notGate, idGate, delay, connectWire,
+	IWire, OWire, Bit(..) ) where
 
 import Prelude
 import qualified Prelude as P
@@ -10,6 +13,8 @@ import Control.Arrow
 import Control.Monad.State
 import Control.Monad.ST
 import Data.Maybe
+import Data.List
+import Data.Word
 import Data.IntMap.Strict
 import Data.Vector.Unboxed
 import Data.Vector.Unboxed.Mutable
@@ -30,8 +35,8 @@ data Circuit = Circuit {
 
 makeCircuit :: CircuitBuilder a -> (a, Circuit)
 makeCircuit cb = (x ,) $ Circuit {
-	cctGate = intMapToVector encodeBasicGate own gs,
-	cctWireConn = intMapToVector encodeOWire iwn wc,
+	cctGate = intMapToVector 0 encodeBasicGate own gs,
+	cctWireConn = intMapToVector (- 1) encodeOWire iwn wc,
 	cctWireStt = V.fromList . P.replicate iwn $ encodeBit X }
 	where (	x,
 		CBState {
@@ -112,12 +117,30 @@ data CBState = CBState {
 initCBState :: CBState
 initCBState = CBState 0 0 IM.empty IM.empty
 
+connectWire :: OWire -> IWire -> CircuitBuilder ()
+connectWire o i = State.modify $ insConn o (encodeIWire i)
+
+insConn :: OWire -> IWireInt -> CBState -> CBState
+insConn o i cbs = cbs { cbsWireConn = IM.insert i o $ cbsWireConn cbs }
+
 sccIWireNum :: CBState -> CBState
 sccIWireNum cbs = cbs { cbsIWireNum = cbsIWireNum cbs + 1 }
 
 sccOWireNum :: CBState -> CBState
 sccOWireNum cbs = cbs { cbsOWireNum = cbsOWireNum cbs + 1 }
 
+andGate, orGate :: CircuitBuilder (IWire, IWire, OWire)
+andGate = do
+	(a, b, o) <- makeAndGate
+	(dli, dlo) <- delay 2
+	connectWire o dli
+	return (a, b, dlo)
+
+orGate = do
+	(a, b, o) <- makeOrGate
+	(dli, dlo) <- delay 2
+	connectWire o dli
+	return (a, b, dlo)
 
 makeAndGate, makeOrGate :: CircuitBuilder (IWire, IWire, OWire)
 makeAndGate = do
@@ -143,4 +166,14 @@ makeOWire :: CircuitBuilder OWire
 makeOWire = OWire <$> getModify cbsOWireNum sccOWireNum
 
 insGate :: BasicGate -> OWire -> CBState -> CBState
-insGate g (OWire o) cbs = cbs { cbsGate = insert o g $ cbsGate cbs }
+insGate g (OWire o) cbs = cbs { cbsGate = IM.insert o g $ cbsGate cbs }
+
+idGate :: CircuitBuilder (IWire, OWire)
+idGate = delay 1
+
+delay :: Word8 -> CircuitBuilder (IWire, OWire)
+delay w | w > 0 = do
+	(i, o) <- (,) <$> makeIWire <*> makeOWire
+	State.modify $ insGate (Delay ((w - 1) `genericReplicate` X) i) o
+	return (i, o)
+delay _ = error "0 delay is not permitted"
