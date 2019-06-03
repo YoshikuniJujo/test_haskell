@@ -28,6 +28,8 @@ dependencies:
 
 library:
   source-dirs: src
+  ghc-options:
+  - -O2
 
 executables:
   hashmap-circuit-exe:
@@ -43,6 +45,7 @@ executables:
     main:                subtractMap.hs
     source-dirs:         app
     ghc-options:
+    - -O2
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
@@ -52,6 +55,7 @@ executables:
     main:                subtractMap.hs
     source-dirs:         app
     ghc-options:
+    - -O2
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
