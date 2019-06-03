@@ -85,15 +85,21 @@ nextIWire :: Circuit -> Vector BitInt8 -> IWireInt -> BitInt8 -> BitInt8
 nextIWire Circuit { cctWireConn = wc } ows iw ob =
 	fromMaybe ob $ (ows V.!?) =<< wc V.!? iw
 
-setBit :: IWireInt -> BitInt8 -> Circuit -> Circuit
-setBit i b c = c {
+setBit :: IWire -> Bit -> Circuit -> Circuit
+setBit i b = setBitGen (encodeIWire i) (encodeBit b)
+
+setBitGen :: IWireInt -> BitInt8 -> Circuit -> Circuit
+setBitGen i b c = c {
 	cctWireStt = runST $ do
 		s <- thaw $ cctWireStt c
 		write s i b
 		freeze s }
 
-peekOWire :: OWireInt -> Circuit -> BitInt8
-peekOWire o Circuit { cctGate = gs, cctWireStt = wst } =
+peekOWire :: OWire -> Circuit -> Bit
+peekOWire o = decodeBit . peekOWireGen (encodeOWire o)
+
+peekOWireGen :: OWireInt -> Circuit -> BitInt8
+peekOWireGen o Circuit { cctGate = gs, cctWireStt = wst } =
 	fromJust $ snd <$> (calcGate wst =<< gs V.!? o)
 
 type CircuitBuilder = State CBState
