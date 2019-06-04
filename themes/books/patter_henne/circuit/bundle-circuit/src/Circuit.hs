@@ -3,6 +3,9 @@
 
 module Circuit where
 
+import Prelude
+import qualified Prelude as P
+
 import Control.Monad.State
 import Data.Map.Strict
 
@@ -17,6 +20,20 @@ makeCircuit cb = (x ,) $ Circuit {
 	where
 	(x, CBState { cbsGate = gs, cbsWireConn = wc }) =
 		cb `runState` initCBState
+
+{-
+step :: Circuit -> Circuit
+step cct@Circuit { cctGate = gs, cctWireStt = wst } = let
+	ows = mapWithKey (checkOWire cct) gs in
+	cct { cctWireStt = mapWithKey (nextIWire cct ows) wst }
+	-}
+
+checkOWire :: Circuit -> [BasicGate] -> Bits
+checkOWire Circuit { cctWireStt = wst } = P.foldr (calcGate wst) (Bits 0)
+
+calcGate :: Map IWire Bits -> BasicGate -> Bits -> Bits
+calcGate = undefined
+-- calcGate wst (AndGate ln po (i1, pi1) (i2, pi2)) = undefined
 
 makeAndGate :: BitLen -> BitPosOut -> BitPosIn -> BitPosIn ->
 	CircuitBuilder (IWire, IWire, OWire)

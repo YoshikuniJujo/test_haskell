@@ -3,8 +3,12 @@
 module CircuitTypes where
 
 import Control.Monad.State
+import Data.Bits ((.&.), (.|.))
 import Data.Map.Strict
 import Data.Word
+
+import qualified Data.Bits as B
+import qualified Data.List as L
 
 import Tools
 
@@ -12,6 +16,19 @@ newtype IWire = IWire Word32 deriving (Show, Eq, Ord)
 newtype OWire = OWire Word32 deriving (Show, Eq, Ord)
 
 newtype Bits = Bits Word64 deriving (Show, Eq)
+
+andBits :: BitLen -> BitPosOut ->
+	(Bits, BitPosIn) -> (Bits, BitPosIn) -> Bits -> Bits
+andBits ln po (Bits i1, pi1) (Bits i2, pi2) (Bits w) = Bits $ clr .|. i1' .&. i2'
+	where
+	clr = w .&. windowBits ln po
+	i1' = (i1 `B.shift` (fromIntegral po - fromIntegral pi1)) .&. maskBits ln po
+	i2' = (i2 `B.shift` (fromIntegral po - fromIntegral pi2)) .&. maskBits ln po
+
+maskBits, windowBits :: B.Bits w => BitLen -> BitPosOut -> w
+windowBits ln ps = B.complement $ maskBits ln ps
+maskBits ln ps =
+	L.foldl' B.setBit B.zeroBits $ fromIntegral <$> [ps .. ps + ln - 1]
 
 data Circuit = Circuit {
 	cctGate :: Map OWire [BasicGate],
