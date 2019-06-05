@@ -30,9 +30,15 @@ windowBits ln ps = B.complement $ maskBits ln ps
 maskBits ln ps =
 	L.foldl' B.setBit B.zeroBits $ fromIntegral <$> [ps .. ps + ln - 1]
 
+type FromOWire = ((BitLen, BitPosOut), (BitLen, BitPosIn))
+
+fromOWire :: FromOWire -> Bits -> Bits -> Bits
+fromOWire ((blo, bpo), (bli, bpi)) bo bi = undefined
+-- cycle zipWith ...
+
 data Circuit = Circuit {
 	cctGate :: Map OWire [BasicGate],
-	cctWireConn :: Map IWire [(OWire, BitLen, BitPosIn, BitPosOut)],
+	cctWireConn :: Map IWire [(OWire, FromOWire)],
 	cctWireStt :: Map IWire Bits } deriving Show
 
 type CircuitBuilder = State CBState
@@ -44,7 +50,7 @@ type BitPosOut = Word8
 data CBState = CBState {
 	cbsWireNum :: Word32,
 	cbsGate :: Map OWire [BasicGate],
-	cbsWireConn :: Map IWire [(OWire, BitLen, BitPosIn, BitPosOut)]
+	cbsWireConn :: Map IWire [(OWire, FromOWire)]
 	} deriving Show
 
 initCBState :: CBState
