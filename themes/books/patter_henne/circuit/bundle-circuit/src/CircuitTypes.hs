@@ -26,6 +26,12 @@ andBits ln po (Bits i1, pi1) (Bits i2, pi2) (Bits w) = Bits $ clr .|. i1' .&. i2
 	i1' = (i1 `B.shift` (fromIntegral po - fromIntegral pi1)) .&. maskBits ln po
 	i2' = (i2 `B.shift` (fromIntegral po - fromIntegral pi2)) .&. maskBits ln po
 
+notBits :: BitLen -> BitPosOut -> (Bits, BitPosIn) -> Bits -> Bits
+notBits ln po (Bits i, pin) (Bits w) = Bits $ clr .|. (B.complement i' .&. maskBits ln po)
+	where
+	clr = w .&. windowBits ln po
+	i' = (i `B.shift` (fromIntegral po - fromIntegral pin))
+
 maskBits, windowBits :: B.Bits w => BitLen -> BitPosOut -> w
 windowBits ln ps = B.complement $ maskBits ln ps
 maskBits ln ps =
@@ -42,6 +48,7 @@ fromOWire ((blo, bpo_), (bli, bpi_)) (Bits bo) (Bits bi) = Bits $ bo' .|. bi'
 	[bpo, bpi] = fromIntegral <$> [bpo_, bpi_]
 
 cycleBits :: forall n . B.Bits n => n -> Word8 -> n
+cycleBits _ 0 = error "cycleBits n c: c should not be 0"
 cycleBits n c = cb $ 64 `div` c + signum (64 `mod` c)
 	where
 	cb :: Word8 -> n
