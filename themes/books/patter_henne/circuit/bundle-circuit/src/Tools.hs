@@ -12,3 +12,7 @@ getModify g m = gets g <* modify m
 
 push :: Ord k => k -> v -> Map k [v] -> Map k [v]
 push k v m = let vs = v : fromMaybe [] (m !? k) in insert k vs m
+
+listToTuple3 :: [a] -> (a, a, a)
+listToTuple3 [x, y, z] = (x, y, z)
+listToTuple3 _ = error "Oops!"

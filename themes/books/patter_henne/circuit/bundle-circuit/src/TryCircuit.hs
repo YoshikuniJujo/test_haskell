@@ -2,7 +2,10 @@
 
 module TryCircuit where
 
+import Control.Monad
+
 import Circuit
+import Element
 
 decode4 :: CircuitBuilder (IWire, OWire)
 decode4 = do
@@ -57,3 +60,23 @@ mux2_64 = do
 	connectWire64 ao1 oa
 	connectWire64 ao2 ob
 	return (si, ab1, ab2, oo)
+
+sum1 :: CircuitBuilder (IWire, IWire, IWire, OWire)
+sum1 = do
+	((si, a, b), o) <- xorGate3 1 0
+	return (si, a, b, o)
+
+carry1 :: CircuitBuilder (IWire, IWire, IWire, OWire)
+carry1 = do
+	(ciin, ciout) <- idGate0
+	(ain, aout) <- idGate0
+	(bin, bout) <- idGate0
+	(a1, b1, i1) <- andGate0
+	(c2, b2, i2) <- andGate0
+	(c3, a3, i3) <- andGate0
+	((o1, o2, o3), co) <- orGate3 1 0
+	zipWithM_ connectWire0
+		[aout, bout, ciout, bout, ciout, aout]
+		[a1, b1, c2, b2, c3, a3]
+	zipWithM_ connectWire0 [i1, i2, i3] [o1, o2, o3]
+	return (ciin, ain, bin, co)
