@@ -5,7 +5,7 @@ module CircuitCore (
 	Circuit, makeCircuit, step,
 	CircuitBuilder,
 	IWire, OWire, Bits(..), BitLen, BitPosIn, BitPosOut,
-	andGate, orGate, notGate, connectWire,
+	andGate, orGate, notGate, idGate, connectWire,
 	setBits, peekOWire
 	) where
 
@@ -52,6 +52,8 @@ calcGate wst (OrGate ln po (i1, pi1) (i2, pi2)) = fromJust
 	$ orBits ln po <$> ((, pi1) <$> wst !? i1) <*> ((, pi2) <$> wst !? i2)
 calcGate wst (NotGate ln po (i, pin)) =
 	fromJust $ notBits ln po <$> ((, pin) <$> wst !? i)
+calcGate wst (IdGate ln po (i, pin)) =
+	fromJust $ idBits ln po <$> ((, pin) <$> wst !? i)
 calcGate _ (ConstGate ln po (bs, pin)) = constBits ln po (bs, pin)
 
 nextIWire :: Circuit -> Map OWire Bits -> IWire -> Bits -> Bits
@@ -80,6 +82,12 @@ notGate :: BitLen -> BitPosIn -> BitPosOut -> CircuitBuilder (IWire, OWire)
 notGate ln pin po = do
 	(i, o) <- (,) <$> makeIWire <*> makeOWire
 	modify $ insGate (NotGate ln po (i, pin)) o
+	return (i, o)
+
+idGate :: BitLen -> BitPosIn -> BitPosOut -> CircuitBuilder (IWire, OWire)
+idGate ln pin po = do
+	(i, o) <- (,) <$> makeIWire <*> makeOWire
+	modify $ insGate (IdGate ln po (i, pin)) o
 	return (i, o)
 
 insGate :: BasicGate -> OWire -> CBState -> CBState

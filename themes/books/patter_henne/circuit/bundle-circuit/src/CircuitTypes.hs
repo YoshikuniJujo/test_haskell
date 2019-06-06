@@ -40,6 +40,12 @@ notBits ln po (Bits i, pin) (Bits w) = Bits $ clr .|. (B.complement i' .&. maskB
 	clr = w .&. windowBits ln po
 	i' = (i `B.shift` (fromIntegral po - fromIntegral pin))
 
+idBits :: BitLen -> BitPosOut -> (Bits, BitPosIn) -> Bits -> Bits
+idBits ln po (Bits i, pin) (Bits w) = Bits $ clr .|. (i' .&. maskBits ln po)
+	where
+	clr = w .&. windowBits ln po
+	i' = (i `B.shift` (fromIntegral po - fromIntegral pin))
+
 constBits :: BitLen -> BitPosOut-> (Bits, BitPosIn) -> Bits -> Bits
 constBits ln po (Bits i, pin) (Bits w) = Bits $ clr .|. i'
 	where
@@ -95,6 +101,7 @@ data BasicGate
 	| AndGate BitLen BitPosOut (IWire, BitPosIn) (IWire, BitPosIn)
 	| OrGate BitLen BitPosOut (IWire, BitPosIn) (IWire, BitPosIn)
 	| NotGate BitLen BitPosOut (IWire, BitPosIn)
+	| IdGate BitLen BitPosOut (IWire, BitPosIn)
 	deriving Show
 
 gateWires :: BasicGate -> [IWire]
@@ -102,6 +109,7 @@ gateWires (ConstGate _ _ _) = []
 gateWires (AndGate _ _ (a, _) (b, _)) = [a, b]
 gateWires (OrGate _ _ (a, _) (b, _)) = [a, b]
 gateWires (NotGate _ _ (i, _)) = [i]
+gateWires (IdGate _ _ (i, _)) = [i]
 
 makeIWire :: CircuitBuilder IWire
 makeIWire = IWire <$> getModify cbsWireNum sccWireNum
