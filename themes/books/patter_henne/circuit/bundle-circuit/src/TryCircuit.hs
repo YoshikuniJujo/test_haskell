@@ -67,6 +67,11 @@ sum1 = do
 	((ci, a, b), s) <- xorGate3 1 0
 	return (ci, a, b, s)
 
+sum64 :: CircuitBuilder (IWire, IWire, IWire, OWire)
+sum64 = do
+	((ci, a, b), s) <- xorGate3 64 0
+	return (ci, a, b, s)
+
 carry1 :: CircuitBuilder (IWire, IWire, IWire, OWire)
 carry1 = do
 	(ciin, ciout) <- idGate0
@@ -80,6 +85,21 @@ carry1 = do
 		[aout, bout, ciout, bout, ciout, aout]
 		[a1, b1, c2, b2, c3, a3]
 	zipWithM_ connectWire0 [i1, i2, i3] [o1, o2, o3]
+	return (ciin, ain, bin, co)
+
+carry64 :: CircuitBuilder (IWire, IWire, IWire, OWire)
+carry64 = do
+	(ciin, ciout) <- idGate64
+	(ain, aout) <- idGate64
+	(bin, bout) <- idGate64
+	(a1, b1, i1) <- andGate64
+	(c2, b2, i2) <- andGate64
+	(c3, a3, i3) <- andGate64
+	((o1, o2, o3), co) <- orGate3 64 0
+	zipWithM_ connectWire64
+		[aout, bout, ciout, bout, ciout, aout]
+		[a1, b1, c2, b2, c3, a3]
+	zipWithM_ connectWire64 [i1, i2, i3] [o1, o2, o3]
 	return (ciin, ain, bin, co)
 
 alu_ao1 :: CircuitBuilder (IWire, IWire, IWire, OWire)
@@ -106,3 +126,46 @@ adder1 = do
 		[ciout, aout, bout, ciout, aout, bout]
 		[ci, a, b, ci', a', b']
 	return (ciin, ain, bin, s, co)
+
+adder64 :: CircuitBuilder (IWire, IWire, IWire, OWire, OWire)
+adder64 = do
+	(ciin, ciout) <- idGate0
+	(ain, aout) <- idGate64
+	(bin, bout) <- idGate64
+	(coin, coout) <- idGate0
+	(ci, a, b, s) <- sum64
+	(ci', a', b', co) <- carry64
+	zipWithM_ connectWire64 [aout, bout, aout, bout] [a, b, a', b']
+	connectWire0 ciout `mapM_` [ci, ci']
+	connectWire (co, 63, 0) (ci, 63, 1)
+	connectWire (co, 63, 0) (ci', 63, 1)
+	connectWire (co, 1, 63) (coin, 1, 0)
+	return (ciin, ain, bin, s, coout)
+
+alu_aos1 :: CircuitBuilder (IWire, IWire, IWire, IWire, OWire, OWire)
+alu_aos1 = do
+	(ain, aout) <- idGate0
+	(bin, bout) <- idGate0
+	(aa, ab, ao) <- andGate0
+	(oa, ob, oo) <- orGate0
+	(ci, sa, sb, ss, co) <- adder1
+	(op, ms, r) <- multiplexer 3
+	let	(m0, m1, m2) = listToTuple3 ms
+	zipWithM_ connectWire0
+		[aout, bout, aout, bout, aout, bout, ao, oo, ss]
+		[aa, ab, oa, ob, sa, sb, m0, m1, m2]
+	return (op, ci, ain, bin, r, co)
+
+alu_aos64 :: CircuitBuilder (IWire, IWire, IWire, IWire, OWire, OWire)
+alu_aos64 = do
+	(ain, aout) <- idGate64
+	(bin, bout) <- idGate64
+	(aa, ab, ao) <- andGate64
+	(oa, ob, oo) <- orGate64
+	(ci, sa, sb, ss, co) <- adder64
+	(op, ms, r) <- multiplexer 3
+	let	(m0, m1, m2) = listToTuple3 ms
+	zipWithM_ connectWire64
+		[aout, bout, aout, bout, aout, bout, ao, oo, ss]
+		[aa, ab, oa, ob, sa, sb, m0, m1, m2]
+	return (op, ci, ain, bin, r, co)
