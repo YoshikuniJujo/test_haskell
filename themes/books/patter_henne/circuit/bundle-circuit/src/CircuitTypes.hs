@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module CircuitTypes where
@@ -33,8 +34,19 @@ maskBits ln ps =
 type FromOWire = ((BitLen, BitPosOut), (BitLen, BitPosIn))
 
 fromOWire :: FromOWire -> Bits -> Bits -> Bits
-fromOWire ((blo, bpo), (bli, bpi)) bo bi = undefined
--- cycle zipWith ...
+fromOWire ((blo, bpo_), (bli, bpi_)) (Bits bo) (Bits bi) = Bits $ bo' .|. bi'
+	where
+	bo' = (bo `B.shiftR` bpo) `cycleBits`
+		blo `B.shiftL` bpi .&. maskBits bli bpi_
+	bi' = bi .&. windowBits bli bpi_
+	[bpo, bpi] = fromIntegral <$> [bpo_, bpi_]
+
+cycleBits :: forall n . B.Bits n => n -> Word8 -> n
+cycleBits n c = cb $ 64 `div` c + signum (64 `mod` c)
+	where
+	cb :: Word8 -> n
+	cb i | i < 1 = B.zeroBits
+	cb i = cb (i - 1) `B.shiftL` fromIntegral c .|. n .&. maskBits c 0
 
 data Circuit = Circuit {
 	cctGate :: Map OWire [BasicGate],
