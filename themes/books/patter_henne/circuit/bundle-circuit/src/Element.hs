@@ -3,6 +3,8 @@
 module Element where
 
 import Control.Arrow
+import Control.Monad
+import Data.Foldable
 import Data.Word
 
 import Circuit
@@ -41,7 +43,7 @@ xorGate3 l p = first listToTuple3 <$> multiple xorGate 3 l p
 multiple ::
 	(BitLen -> BitPosIn -> BitPosIn -> BitPosOut ->
 			CircuitBuilder (IWire, IWire, OWire)) ->
-		Word8 -> BitLen -> BitPosIn -> CircuitBuilder ([IWire], OWire)
+		Word16 -> BitLen -> BitPosIn -> CircuitBuilder ([IWire], OWire)
 multiple _ n _ _ | n < 1 = error "Oops!"
 multiple _ 1 l p = first (: []) <$> idGate l p p
 multiple g 2 l p = (\(i1, i2, o) -> ([i1, i2], o)) <$> g l p p p
@@ -52,3 +54,32 @@ multiple g n l p = do
 	connectWire (o1, l, p) (i1, l, p)
 	connectWire (o2, l, p) (i2, l, p)
 	return (is1 ++ is2, o)
+
+decoder :: Word16 -> CircuitBuilder ([IWire], [OWire])
+decoder n = do
+	(is, ois) <- unzip <$> fromIntegral m `replicateM` idGate0
+	(ias, oas) <- unzip <$> fromIntegral n `replicateM` multiAndGate m 1 0
+	zipWithM_ ((sequence_ .) . flip (zipWith3 id) ois) (binary (inverse, obverse) m) ias
+	return (is, oas)
+	where m = log2 n
+
+decoder' :: Word8 -> CircuitBuilder (IWire, OWire)
+decoder' n = do
+	(iin, iout) <- idGate 64 0 0
+	(oin, oout) <- idGate 64 0 0
+	(is, os) <- decoder $ fromIntegral n
+	for_ (zip [0 .. m - 1] is)
+		$ \(i, ip) -> connectWire (iout, 1, i) (ip, 1, 0)
+	for_ (zip [0 .. n - 1] os)
+		$ \(i, op) -> connectWire (op, 1, 0) (oin, 1, i)
+	return (iin, oout)
+	where m = log2 n
+
+multiAndGate :: Word16 -> BitLen -> BitPosIn -> CircuitBuilder ([IWire], OWire)
+multiAndGate = multiple andGate
+
+inverse, obverse :: OWire -> IWire -> CircuitBuilder ()
+inverse o i = do
+	(ni, no) <- notGate0
+	zipWithM_ connectWire0 [o, no] [ni, i]
+obverse = connectWire0
