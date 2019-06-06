@@ -30,4 +30,18 @@ decode4 = do
 	connectWire (o3, 1, 0) (rin, 1, 3)
 	return (iin, rout)
 
--- decode3_8 :: CircuitBuilder (IWire, IWire, IWire, OWire, OWire, OWire, OWire, OWire, OWire, OWire, OWire)
+mux2_1 :: CircuitBuilder (IWire, IWire, IWire, OWire)
+mux2_1 = do
+	(si, sout) <- idGate0
+	(ni, no) <- notGate0
+	(aa1, ab1, ao1) <- andGate0
+	(aa2, ab2, ao2) <- andGate0
+	(oa, ob, oo) <- orGate0
+	connectWire0 sout ni
+	connectWire0 no aa1
+	connectWire0 sout aa2
+	connectWire0 ao1 oa
+	connectWire0 ao2 ob
+	return (si, ab1, ab2, oo)
+
+-- mux2_64
