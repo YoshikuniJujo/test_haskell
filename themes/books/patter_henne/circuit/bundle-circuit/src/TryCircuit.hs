@@ -44,4 +44,16 @@ mux2_1 = do
 	connectWire0 ao2 ob
 	return (si, ab1, ab2, oo)
 
--- mux2_64
+mux2_64 :: CircuitBuilder (IWire, IWire, IWire, OWire)
+mux2_64 = do
+	(si, sout) <- idGate0
+	(ni, no) <- notGate0
+	connectWire0 sout ni
+	(aa1, ab1, ao1) <- andGate64
+	(aa2, ab2, ao2) <- andGate64
+	(oa, ob, oo) <- orGate64
+	connectWire0_64 no aa1
+	connectWire0_64 sout aa2
+	connectWire64 ao1 oa
+	connectWire64 ao2 ob
+	return (si, ab1, ab2, oo)
