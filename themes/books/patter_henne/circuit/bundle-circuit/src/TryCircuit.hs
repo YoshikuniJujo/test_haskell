@@ -6,6 +6,7 @@ import Control.Monad
 
 import Circuit
 import Element
+import Tools
 
 decode4 :: CircuitBuilder (IWire, OWire)
 decode4 = do
@@ -80,3 +81,16 @@ carry1 = do
 		[a1, b1, c2, b2, c3, a3]
 	zipWithM_ connectWire0 [i1, i2, i3] [o1, o2, o3]
 	return (ciin, ain, bin, co)
+
+alu_ao1 :: CircuitBuilder (IWire, IWire, IWire, OWire)
+alu_ao1 = do
+	(ain, aout) <- idGate0
+	(bin, bout) <- idGate0
+	(aa, ab, ao) <- andGate0
+	(oa, ob, oo) <- orGate0
+	(op, ms, r) <- multiplexer 2
+	let	(m0, m1) = listToTuple2 ms
+	zipWithM_ connectWire0
+		[aout, bout, aout, bout, ao, oo]
+		[aa, ab, oa, ob, m0, m1]
+	return (op, ain, bin, r)
