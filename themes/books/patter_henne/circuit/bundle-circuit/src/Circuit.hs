@@ -48,8 +48,11 @@ checkOWire Circuit { cctWireStt = wst } = P.foldr (calcGate wst) (Bits 0)
 calcGate :: Map IWire Bits -> BasicGate -> Bits -> Bits
 calcGate wst (AndGate ln po (i1, pi1) (i2, pi2)) = fromJust
 	$ andBits ln po <$> ((, pi1) <$> wst !? i1) <*> ((, pi2) <$> wst !? i2)
+calcGate wst (OrGate ln po (i1, pi1) (i2, pi2)) = fromJust
+	$ orBits ln po <$> ((, pi1) <$> wst !? i1) <*> ((, pi2) <$> wst !? i2)
 calcGate wst (NotGate ln po (i, pin)) =
 	fromJust $ notBits ln po <$> ((, pin) <$> wst !? i)
+calcGate _ (ConstGate ln po (bs, pin)) = constBits ln po (bs, pin)
 
 nextIWire :: Circuit -> Map OWire Bits -> IWire -> Bits -> Bits
 nextIWire Circuit { cctWireConn = wc } ows iw ob = fromMaybe ob $ do
