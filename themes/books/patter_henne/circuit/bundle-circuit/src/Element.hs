@@ -55,11 +55,24 @@ multiple g n l p = do
 	connectWire (o2, l, p) (i2, l, p)
 	return (is1 ++ is2, o)
 
+multiplexer :: Word16 -> CircuitBuilder (IWire, [IWire], OWire)
+multiplexer n = do
+	(slin, sout) <- idGate 64 0 0
+	(dins, douts) <- decoder n
+	for_ (zip [0 ..] dins)
+		$ \(i, din) -> connectWire (sout, 1, i) (din, 1, 0)
+	(as, bs, os) <- unzip3 <$> fromIntegral n `replicateM` andGate64
+	(ois, oo) <- multiOrGate n 64 0
+	zipWithM_ connectWire0_64 douts as
+	zipWithM_ connectWire64 os ois
+	return (slin, bs, oo)
+
 decoder :: Word16 -> CircuitBuilder ([IWire], [OWire])
 decoder n = do
 	(is, ois) <- unzip <$> fromIntegral m `replicateM` idGate0
 	(ias, oas) <- unzip <$> fromIntegral n `replicateM` multiAndGate m 1 0
-	zipWithM_ ((sequence_ .) . flip (zipWith3 id) ois) (binary (inverse, obverse) m) ias
+	zipWithM_ ((sequence_ .)
+		. flip (zipWith3 id) ois) (binary (inverse, obverse) m) ias
 	return (is, oas)
 	where m = log2 n
 
@@ -68,15 +81,14 @@ decoder' n = do
 	(iin, iout) <- idGate 64 0 0
 	(oin, oout) <- idGate 64 0 0
 	(is, os) <- decoder $ fromIntegral n
-	for_ (zip [0 .. m - 1] is)
-		$ \(i, ip) -> connectWire (iout, 1, i) (ip, 1, 0)
-	for_ (zip [0 .. n - 1] os)
-		$ \(i, op) -> connectWire (op, 1, 0) (oin, 1, i)
+	for_ (zip [0 .. ] is) $ \(i, ip) -> connectWire (iout, 1, i) (ip, 1, 0)
+	for_ (zip [0 .. ] os) $ \(i, op) -> connectWire (op, 1, 0) (oin, 1, i)
 	return (iin, oout)
-	where m = log2 n
 
-multiAndGate :: Word16 -> BitLen -> BitPosIn -> CircuitBuilder ([IWire], OWire)
+multiAndGate, multiOrGate ::
+	Word16 -> BitLen -> BitPosIn -> CircuitBuilder ([IWire], OWire)
 multiAndGate = multiple andGate
+multiOrGate = multiple orGate
 
 inverse, obverse :: OWire -> IWire -> CircuitBuilder ()
 inverse o i = do
