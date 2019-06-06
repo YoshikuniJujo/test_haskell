@@ -156,16 +156,20 @@ alu_aos1 = do
 		[aa, ab, oa, ob, sa, sb, m0, m1, m2]
 	return (op, ci, ain, bin, r, co)
 
-alu_aos64 :: CircuitBuilder (IWire, IWire, IWire, IWire, OWire, OWire)
+alu_aos64 :: CircuitBuilder (IWire, IWire, IWire, IWire, IWire, OWire, OWire)
 alu_aos64 = do
 	(ain, aout) <- idGate64
 	(bin, bout) <- idGate64
+	(nbin, nbout) <- notGate64
+	(binv, bnb, bout') <- multiplexer 2
+	let	(b, nb) = listToTuple2 bnb
+	zipWithM_ connectWire64 [bout, bout, nbout] [nbin, b, nb]
 	(aa, ab, ao) <- andGate64
 	(oa, ob, oo) <- orGate64
 	(ci, sa, sb, ss, co) <- adder64
 	(op, ms, r) <- multiplexer 3
 	let	(m0, m1, m2) = listToTuple3 ms
 	zipWithM_ connectWire64
-		[aout, bout, aout, bout, aout, bout, ao, oo, ss]
+		[aout, bout', aout, bout', aout, bout', ao, oo, ss]
 		[aa, ab, oa, ob, sa, sb, m0, m1, m2]
-	return (op, ci, ain, bin, r, co)
+	return (binv, op, ci, ain, bin, r, co)
