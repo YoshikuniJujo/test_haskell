@@ -64,8 +64,8 @@ mux2_64 = do
 
 sum1 :: CircuitBuilder (IWire, IWire, IWire, OWire)
 sum1 = do
-	((si, a, b), o) <- xorGate3 1 0
-	return (si, a, b, o)
+	((ci, a, b), s) <- xorGate3 1 0
+	return (ci, a, b, s)
 
 carry1 :: CircuitBuilder (IWire, IWire, IWire, OWire)
 carry1 = do
@@ -94,3 +94,15 @@ alu_ao1 = do
 		[aout, bout, aout, bout, ao, oo]
 		[aa, ab, oa, ob, m0, m1]
 	return (op, ain, bin, r)
+
+adder1 :: CircuitBuilder (IWire, IWire, IWire, OWire, OWire)
+adder1 = do
+	(ciin, ciout) <- idGate0
+	(ain, aout) <- idGate0
+	(bin, bout) <- idGate0
+	(ci, a, b, s) <- sum1
+	(ci', a', b', co) <- carry1
+	zipWithM_ connectWire0
+		[ciout, aout, bout, ciout, aout, bout]
+		[ci, a, b, ci', a', b']
+	return (ciin, ain, bin, s, co)
