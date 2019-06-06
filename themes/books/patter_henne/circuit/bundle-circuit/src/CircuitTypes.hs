@@ -18,6 +18,9 @@ newtype OWire = OWire Word32 deriving (Show, Eq, Ord)
 
 newtype Bits = Bits Word64 deriving (Show, Eq)
 
+bitsToWord :: Bits -> Word64
+bitsToWord (Bits w) = w
+
 andBits :: BitLen -> BitPosOut ->
 	(Bits, BitPosIn) -> (Bits, BitPosIn) -> Bits -> Bits
 andBits ln po (Bits i1, pi1) (Bits i2, pi2) (Bits w) = Bits $ clr .|. i1' .&. i2'

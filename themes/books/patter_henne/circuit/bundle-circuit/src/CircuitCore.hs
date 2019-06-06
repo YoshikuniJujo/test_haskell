@@ -6,7 +6,7 @@ module CircuitCore (
 	CircuitBuilder,
 	IWire, OWire, Bits(..), BitLen, BitPosIn, BitPosOut,
 	andGate, orGate, notGate, idGate, connectWire,
-	setBits, peekOWire
+	setBits, peekOWire, bitsToWord
 	) where
 
 import Prelude
