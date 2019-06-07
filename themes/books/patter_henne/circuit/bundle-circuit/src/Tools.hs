@@ -22,6 +22,10 @@ listToTuple3 :: [a] -> (a, a, a)
 listToTuple3 [x, y, z] = (x, y, z)
 listToTuple3 _ = error "Oops!"
 
+listToTuple4 :: [a] -> (a, a, a, a)
+listToTuple4 [x, y, z, w] = (x, y, z, w)
+listToTuple4 _ = error "Oops!"
+
 log2 :: (Integral n, Integral m) => n -> m
 log2 i = i2 0
 	where i2 j

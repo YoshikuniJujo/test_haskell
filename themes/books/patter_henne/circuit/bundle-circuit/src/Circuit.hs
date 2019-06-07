@@ -1,8 +1,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Circuit (
-	Circuit, makeCircuit, step, setBits, peekOWire, bitsToWord,
-	CircuitBuilder, connectWire, andGate, orGate, idGate, notGate,
+	Circuit, makeCircuit, step, setBits, peekOWire, bitsToWord, wordToBits,
+	CircuitBuilder, connectWire,
+		andGate, orGate, idGate, notGate, constGate,
 	IWire, OWire, Bits(..), BitLen, BitPosIn, BitPosOut,
 	andGate0, orGate0, notGate0, idGate0, connectWire0,
 	andGate64, orGate64, notGate64, idGate64, connectWire64,

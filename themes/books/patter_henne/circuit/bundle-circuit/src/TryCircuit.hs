@@ -4,6 +4,7 @@ module TryCircuit where
 
 import Control.Monad
 import Data.Word
+import Data.Int
 
 import Circuit
 import Element
@@ -144,7 +145,7 @@ adder64 = do
 	connectWire (co, 1, 63) (coin, 1, 0)
 	return (ciin, ain, bin, s, coout)
 
-adder64' :: CircuitBuilder (IWire, IWire, IWire, OWire, OWire)
+adder64' :: CircuitBuilder (IWire, IWire, IWire, OWire, OWire, OWire)
 adder64' = do
 	(ciin, ciout) <- idGate0
 	(ain, aout) <- idGate64
@@ -152,7 +153,15 @@ adder64' = do
 	(cs, co64) <- carries ciout aout bout
 	(ci, a, b, s) <- sum64
 	zipWithM_ connectWire64 [cs, aout, bout] [ci, a, b]
-	return (ciin, ain, bin, s, co64)
+
+	(ofci, ofco, ovfl) <- overflow
+	(ltsm, ltof, slt) <- lessthan
+	connectWire (cs, 1, 63) (ofci, 1, 63)
+	connectWire (co64, 1, 0) (ofco, 1, 0)
+	connectWire (s, 1, 63) (ltsm, 1, 0)
+	connectWire (ovfl, 1, 0) (ltof, 1, 0)
+
+	return (ciin, ain, bin, s, slt, ovfl)
 
 alu_aos1 :: CircuitBuilder (IWire, IWire, IWire, IWire, OWire, OWire)
 alu_aos1 = do
@@ -196,13 +205,13 @@ alu_aos64' = do
 	zipWithM_ connectWire64 [bout, bout, nbout] [nbin, b, nb]
 	(aa, ab, ao) <- andGate64
 	(oa, ob, oo) <- orGate64
-	(ci, sa, sb, ss, co) <- adder64'
+	(ci, sa, sb, ss, _slt, ovfl) <- adder64'
 	(op, ms, r) <- multiplexer 3
 	let	(m0, m1, m2) = listToTuple3 ms
 	zipWithM_ connectWire64
 		[aout, bout', aout, bout', aout, bout', ao, oo, ss]
 		[aa, ab, oa, ob, sa, sb, m0, m1, m2]
-	return (binv, op, ci, ain, bin, r, co)
+	return (binv, op, ci, ain, bin, r, ovfl)
 
 mkSampleAluAos64 :: CircuitBuilder
 	(IWire, IWire, IWire, IWire, IWire, OWire, OWire) -> [Word64]
@@ -211,3 +220,82 @@ mkSampleAluAos64 u = let
 	cct0 = setBits binv (Bits 1) . setBits op (Bits 2) . setBits ci (Bits 1)
 		. setBits a (Bits 987654321) $ setBits b (Bits 123456789) cct in
 	bitsToWord . peekOWire r <$> iterate step cct0
+
+alu_ :: CircuitBuilder (IWire, IWire, IWire, IWire, IWire, IWire, OWire, OWire)
+alu_ = do
+	(ainv, ain, aout) <- invert
+	(binv, bin, bout) <- invert
+	(aa, ab, ao) <- andGate64
+	(oa, ob, oo) <- orGate64
+	(ci, sa, sb, ss, _slt, ovfl) <- adder64'
+	(op, ms, r) <- multiplexer 3
+	let	(m0, m1, m2) = listToTuple3 ms
+	zipWithM_ connectWire64
+		[aout, bout, aout, bout, aout, bout, ao, oo, ss]
+		[aa, ab, oa, ob, sa, sb, m0, m1, m2]
+	return (ainv, binv, op, ci, ain, bin, r, ovfl)
+
+invert :: CircuitBuilder (IWire, IWire, OWire)
+invert = do
+	(xin, xout) <- idGate64
+	(nxin, nxout) <- notGate64
+	(xinv, xnx, xout') <- multiplexer 2
+	let	(x, nx) = listToTuple2 xnx
+	zipWithM_ connectWire64 [xout, xout, nxout] [nxin, x, nx]
+	return (xinv, xin, xout')
+
+alu :: CircuitBuilder (IWire, IWire, IWire, IWire, IWire, IWire, OWire, OWire, OWire)
+alu = do
+	(ainv, ain, aout) <- invert
+	(binv, bin, bout) <- invert
+	(aa, ab, ao) <- andGate64
+	(oa, ob, oo) <- orGate64
+	(ci, sa, sb, ss, slt, ovfl) <- adder64'
+
+	(lessin, lessout) <- idGate64
+	zbs <- constGate (Bits 0) 63 1 1
+	connectWire (zbs, 63, 1) (lessin, 63, 1)
+	connectWire (slt, 1, 0) (lessin, 1, 0)
+
+	(op, ms, r) <- multiplexer 4
+	let	(m0, m1, m2, m3) = listToTuple4 ms
+	zipWithM_ connectWire64
+		[aout, bout, aout, bout, aout, bout, ao, oo, ss, lessout]
+		[aa, ab, oa, ob, sa, sb, m0, m1, m2, m3]
+
+	(r', nzero) <- orGateAllBits64
+	(nzero', zero) <- notGate 1 0 0
+	connectWire64 r r'
+	connectWire0 nzero nzero'
+
+	return (ainv, binv, op, ci, ain, bin, r, zero, ovfl)
+
+type RiscvAluWires = (IWire, IWire, IWire, OWire, OWire, OWire)
+
+riscvAlu :: CircuitBuilder RiscvAluWires
+riscvAlu = do
+	(opin, opout) <- idGate 4 0 0
+	(ainv, binv, op, ci, a, b, r, z, ovfl) <- alu
+	connectWire (opout, 2, 0) (op, 2, 0)
+	connectWire (opout, 1, 2) (binv, 1, 0)
+	connectWire (opout, 1, 2) (ci, 1, 0)
+	connectWire (opout, 1, 3) (ainv, 1, 0)
+	return (opin, a, b, r, z, ovfl)
+
+setRiscvAlu :: RiscvAluWires -> Word64 -> Word64 -> Word64 -> Circuit -> Circuit
+setRiscvAlu (wop, wa, wb, _, _, _) op a b = setBits wop (wordToBits op)
+	. setBits wa (wordToBits a) . setBits wb (wordToBits b)
+
+peekRiscvAlu :: RiscvAluWires -> Circuit -> (Int64, Word64, Word64)
+peekRiscvAlu (_, _, _, r, z, ovfl) = (,,)
+	<$> fromIntegral . bitsToWord . peekOWire r
+	<*>  bitsToWord . peekOWire z <*> bitsToWord . peekOWire ovfl
+
+-- overflow = carry in `xor` carry out
+-- less than = sum (sign) `xor` overflow
+
+overflow :: CircuitBuilder (IWire, IWire, OWire)
+overflow = xorGate 1 63 0 0
+
+lessthan :: CircuitBuilder (IWire, IWire, OWire)
+lessthan = xorGate 1 63 0 0

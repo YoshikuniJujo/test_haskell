@@ -5,8 +5,8 @@ module CircuitCore (
 	Circuit, makeCircuit, step,
 	CircuitBuilder,
 	IWire, OWire, Bits(..), BitLen, BitPosIn, BitPosOut,
-	andGate, orGate, notGate, idGate, connectWire,
-	setBits, peekOWire, bitsToWord
+	andGate, orGate, notGate, idGate, constGate, connectWire,
+	setBits, peekOWire, bitsToWord, wordToBits
 	) where
 
 import Prelude
@@ -89,6 +89,12 @@ idGate ln pin po = do
 	(i, o) <- (,) <$> makeIWire <*> makeOWire
 	modify $ insGate (IdGate ln po (i, pin)) o
 	return (i, o)
+
+constGate :: Bits -> BitLen -> BitPosIn -> BitPosOut -> CircuitBuilder OWire
+constGate bs ln pin po = do
+	o <- makeOWire
+	modify $ insGate (ConstGate ln po (bs, pin)) o
+	return o
 
 insGate :: BasicGate -> OWire -> CBState -> CBState
 insGate g o cbs = cbs { cbsGate = push o g $ cbsGate cbs }

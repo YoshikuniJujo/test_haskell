@@ -37,6 +37,28 @@ xorGate ln pi1 pi2 po = do
 orGate3 :: BitLen -> BitPosIn -> CircuitBuilder ((IWire, IWire, IWire), OWire)
 orGate3 l p = first listToTuple3 <$> multiple orGate 3 l p
 
+orGateAllBits64 :: CircuitBuilder (IWire, OWire)
+orGateAllBits64 = do
+	(rin, rout) <- idGate0
+	(abi, abo) <- orGateAllBits 32
+	connectWire0 abo rin
+	return (abi, rout)
+
+orGateAllBits :: Word8 -> CircuitBuilder (IWire, OWire)
+orGateAllBits 0 = idGate64
+orGateAllBits n = do
+	(abi, abo) <- orGateAllBits (n `div` 2)
+	(sli, slo) <- orGateSlide n
+	connectWire64 abo sli
+	return (abi, slo)
+
+orGateSlide :: Word8 -> CircuitBuilder (IWire, OWire)
+orGateSlide n = do
+	(bsin, bsout) <- idGate64
+	(oa, ob, oo) <- orGate (64 - n) 0 n 0
+	connectWire64 bsout `mapM_` [oa, ob]
+	return (bsin, oo)
+
 xorGate3 :: BitLen -> BitPosIn -> CircuitBuilder ((IWire, IWire, IWire), OWire)
 xorGate3 l p = first listToTuple3 <$> multiple xorGate 3 l p
 
