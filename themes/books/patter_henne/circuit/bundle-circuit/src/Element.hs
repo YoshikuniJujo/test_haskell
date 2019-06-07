@@ -18,6 +18,17 @@ nandGate ln pi1 pi2 po = do
 	connectWire (o, ln, po) (ni, ln, po)
 	return (a, b, no)
 
+norGate :: BitLen -> BitPosIn -> BitPosIn -> BitPosOut ->
+	CircuitBuilder (IWire, IWire, OWire)
+norGate ln pi1 pi2 po = do
+	(a, b, o) <- orGate ln pi1 pi2 po
+	(ni, no) <- notGate ln po po
+	connectWire (o, ln, po) (ni, ln, po)
+	return (a, b, no)
+
+norGate0 :: CircuitBuilder (IWire, IWire, OWire)
+norGate0 = norGate 1 0 0 0
+
 xorGate :: BitLen -> BitPosIn -> BitPosIn -> BitPosOut ->
 	CircuitBuilder (IWire, IWire, OWire)
 xorGate ln pi1 pi2 po = do

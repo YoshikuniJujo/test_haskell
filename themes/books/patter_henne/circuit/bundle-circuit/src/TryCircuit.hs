@@ -312,3 +312,17 @@ simpleClock = do
 	connectWire0 o i
 	delay i 15
 	return (i, o)
+
+rsSwitch :: CircuitBuilder (IWire, IWire, OWire, OWire)
+rsSwitch = do
+	(r, q_', q) <- norGate0
+	(s, q', q_) <- norGate0
+	zipWithM_ connectWire0 [q, q_] [q', q_']
+	return (r, s, q, q_)
+
+peekOWire2 :: OWire -> OWire -> Circuit -> (Word64, Word64)
+peekOWire2 o1 o2 = (,) <$> bitsToWord . peekOWire o1 <*> bitsToWord . peekOWire o2
+
+longpush :: Word8 -> IWire -> Bits -> Circuit -> Circuit
+longpush 0 _ _ cct = cct
+longpush n iw bs cct = step . setBits iw bs $ longpush (n - 1) iw bs cct
