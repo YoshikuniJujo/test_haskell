@@ -3,9 +3,11 @@
 module TryCircuit where
 
 import Control.Monad
+import Data.Word
 
 import Circuit
 import Element
+import CarryLookahead
 import Tools
 
 decode4 :: CircuitBuilder (IWire, OWire)
@@ -142,6 +144,16 @@ adder64 = do
 	connectWire (co, 1, 63) (coin, 1, 0)
 	return (ciin, ain, bin, s, coout)
 
+adder64' :: CircuitBuilder (IWire, IWire, IWire, OWire, OWire)
+adder64' = do
+	(ciin, ciout) <- idGate0
+	(ain, aout) <- idGate64
+	(bin, bout) <- idGate64
+	(cs, co64) <- carries ciout aout bout
+	(ci, a, b, s) <- sum64
+	zipWithM_ connectWire64 [cs, aout, bout] [ci, a, b]
+	return (ciin, ain, bin, s, co64)
+
 alu_aos1 :: CircuitBuilder (IWire, IWire, IWire, IWire, OWire, OWire)
 alu_aos1 = do
 	(ain, aout) <- idGate0
@@ -173,3 +185,29 @@ alu_aos64 = do
 		[aout, bout', aout, bout', aout, bout', ao, oo, ss]
 		[aa, ab, oa, ob, sa, sb, m0, m1, m2]
 	return (binv, op, ci, ain, bin, r, co)
+
+alu_aos64' :: CircuitBuilder (IWire, IWire, IWire, IWire, IWire, OWire, OWire)
+alu_aos64' = do
+	(ain, aout) <- idGate64
+	(bin, bout) <- idGate64
+	(nbin, nbout) <- notGate64
+	(binv, bnb, bout') <- multiplexer 2
+	let	(b, nb) = listToTuple2 bnb
+	zipWithM_ connectWire64 [bout, bout, nbout] [nbin, b, nb]
+	(aa, ab, ao) <- andGate64
+	(oa, ob, oo) <- orGate64
+	(ci, sa, sb, ss, co) <- adder64'
+	(op, ms, r) <- multiplexer 3
+	let	(m0, m1, m2) = listToTuple3 ms
+	zipWithM_ connectWire64
+		[aout, bout', aout, bout', aout, bout', ao, oo, ss]
+		[aa, ab, oa, ob, sa, sb, m0, m1, m2]
+	return (binv, op, ci, ain, bin, r, co)
+
+mkSampleAluAos64 :: CircuitBuilder
+	(IWire, IWire, IWire, IWire, IWire, OWire, OWire) -> [Word64]
+mkSampleAluAos64 u = let
+	((binv, op, ci, a, b, r, _co), cct) = makeCircuit u
+	cct0 = setBits binv (Bits 1) . setBits op (Bits 2) . setBits ci (Bits 1)
+		. setBits a (Bits 987654321) $ setBits b (Bits 123456789) cct in
+	bitsToWord . peekOWire r <$> iterate step cct0

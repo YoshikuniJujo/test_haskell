@@ -3,7 +3,7 @@
 module Circuit (
 	Circuit, makeCircuit, step, setBits, peekOWire, bitsToWord,
 	CircuitBuilder, connectWire, andGate, orGate, idGate, notGate,
-	IWire, OWire, Bits, BitLen, BitPosIn, BitPosOut,
+	IWire, OWire, Bits(..), BitLen, BitPosIn, BitPosOut,
 	andGate0, orGate0, notGate0, idGate0, connectWire0,
 	andGate64, orGate64, notGate64, idGate64, connectWire64,
 	connectWire0_64
