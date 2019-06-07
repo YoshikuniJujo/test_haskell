@@ -29,6 +29,9 @@ norGate ln pi1 pi2 po = do
 norGate0 :: CircuitBuilder (IWire, IWire, OWire)
 norGate0 = norGate 1 0 0 0
 
+norGate64 :: CircuitBuilder (IWire, IWire, OWire)
+norGate64 = norGate 64 0 0 0
+
 xorGate :: BitLen -> BitPosIn -> BitPosIn -> BitPosOut ->
 	CircuitBuilder (IWire, IWire, OWire)
 xorGate ln pi1 pi2 po = do
