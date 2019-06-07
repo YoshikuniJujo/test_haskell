@@ -313,8 +313,8 @@ simpleClock = do
 	delay i 15
 	return (i, o)
 
-rsSwitch :: CircuitBuilder (IWire, IWire, OWire, OWire)
-rsSwitch = do
+rslatch1 :: CircuitBuilder (IWire, IWire, OWire, OWire)
+rslatch1 = do
 	(r, q_', q) <- norGate0
 	(s, q', q_) <- norGate0
 	zipWithM_ connectWire0 [q, q_] [q', q_']
@@ -326,3 +326,49 @@ peekOWire2 o1 o2 = (,) <$> bitsToWord . peekOWire o1 <*> bitsToWord . peekOWire 
 longpush :: Word8 -> IWire -> Bits -> Circuit -> Circuit
 longpush 0 _ _ cct = cct
 longpush n iw bs cct = step . setBits iw bs $ longpush (n - 1) iw bs cct
+
+dlatch :: CircuitBuilder (IWire, IWire, OWire, OWire)
+dlatch = do
+	(cin, cout) <- idGate0
+	(din, dout) <- idGate0
+	(d, nd) <- notGate0
+	(c1, nd', r) <- andGate0
+	(c2, d', s) <- andGate0
+	(r', s', q, q_) <- rslatch1
+	connectWire0 cout `mapM_` [c1, c2]
+	connectWire0 dout `mapM_` [d, d']
+	connectWire0 nd nd'
+	zipWithM_ connectWire0 [r, s] [r', s']
+	return (cin, din, q, q_)
+
+dflipflop :: CircuitBuilder (IWire, IWire, OWire, OWire)
+dflipflop = do
+	(cin, cout) <- idGate0
+	(c, nc) <- notGate0
+	(mc, md, mq, _mq_) <- dlatch
+	(sc, sd, sq, sq_) <- dlatch
+	connectWire0 cout `mapM_` [c, mc]
+	zipWithM_ connectWire0 [nc, mq] [sc, sd]
+	return (cin, md, sq, sq_)
+
+clock :: Word8 -> CircuitBuilder (IWire, OWire)
+clock n = do
+	(i, o) <- notGate0
+	connectWire0 o i
+	delay i n
+	return (i, o)
+
+testDflipflop :: CircuitBuilder (OWire, OWire, OWire)
+testDflipflop = do
+	(c, d, q, _q_) <- dflipflop
+	(_, ccl) <- clock 15
+	(_, dcl) <- clock 25
+	connectWire0 ccl c
+	connectWire0 dcl d
+	return (ccl, dcl, q)
+
+peekOWire3 :: OWire -> OWire -> OWire -> Circuit -> (Word64, Word64, Word64)
+peekOWire3 o1 o2 o3 = (,,)
+	<$> bitsToWord . peekOWire o1
+	<*> bitsToWord . peekOWire o2
+	<*> bitsToWord . peekOWire o3
