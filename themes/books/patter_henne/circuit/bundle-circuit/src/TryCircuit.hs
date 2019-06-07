@@ -299,3 +299,16 @@ overflow = xorGate 1 63 0 0
 
 lessthan :: CircuitBuilder (IWire, IWire, OWire)
 lessthan = xorGate 1 63 0 0
+
+testDelay :: CircuitBuilder (IWire, IWire, OWire)
+testDelay = do
+	(a, b, o) <- xorGate 64 0 0 0
+	delay b 15
+	return (a, b, o)
+
+simpleClock :: CircuitBuilder (IWire, OWire)
+simpleClock = do
+	(i, o) <- notGate0
+	connectWire0 o i
+	delay i 15
+	return (i, o)

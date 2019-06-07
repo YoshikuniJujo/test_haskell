@@ -2,7 +2,7 @@
 
 module Circuit (
 	Circuit, makeCircuit, step, setBits, peekOWire, bitsToWord, wordToBits,
-	CircuitBuilder, connectWire,
+	CircuitBuilder, connectWire, delay,
 		andGate, orGate, idGate, notGate, constGate,
 	IWire, OWire, Bits(..), BitLen, BitPosIn, BitPosOut,
 	andGate0, orGate0, notGate0, idGate0, connectWire0,

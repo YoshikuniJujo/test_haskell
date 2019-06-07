@@ -85,7 +85,7 @@ cycleBits n c = cb $ 64 `div` c + signum (64 `mod` c)
 data Circuit = Circuit {
 	cctGate :: Map OWire [BasicGate],
 	cctWireConn :: Map IWire [(OWire, FromOWire)],
-	cctWireStt :: Map IWire Bits } deriving Show
+	cctWireStt :: Map IWire [Bits] } deriving Show
 
 type CircuitBuilder = State CBState
 
@@ -96,11 +96,13 @@ type BitPosOut = Word8
 data CBState = CBState {
 	cbsWireNum :: Word32,
 	cbsGate :: Map OWire [BasicGate],
-	cbsWireConn :: Map IWire [(OWire, FromOWire)]
+	cbsWireConn :: Map IWire [(OWire, FromOWire)],
+	cbsDelay :: Map IWire Word8
 	} deriving Show
 
 initCBState :: CBState
-initCBState = CBState { cbsWireNum = 0, cbsGate = empty, cbsWireConn = empty }
+initCBState = CBState {
+	cbsWireNum = 0, cbsGate = empty, cbsWireConn = empty, cbsDelay = empty }
 
 data BasicGate
 	= ConstGate BitLen BitPosOut (Bits, BitPosIn)

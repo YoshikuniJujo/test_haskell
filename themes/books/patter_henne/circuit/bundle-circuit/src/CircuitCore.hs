@@ -5,7 +5,7 @@ module CircuitCore (
 	Circuit, makeCircuit, step,
 	CircuitBuilder,
 	IWire, OWire, Bits(..), BitLen, BitPosIn, BitPosOut,
-	andGate, orGate, notGate, idGate, constGate, connectWire,
+	andGate, orGate, notGate, idGate, constGate, connectWire, delay,
 	setBits, peekOWire, bitsToWord, wordToBits
 	) where
 
@@ -15,6 +15,7 @@ import qualified Prelude as P
 import Control.Monad.State
 import Data.Maybe
 import Data.Map.Strict
+import Data.Word
 
 import CircuitTypes
 import Tools
@@ -24,11 +25,15 @@ import qualified Data.Map.Strict as M
 makeCircuit :: CircuitBuilder a -> (a, Circuit)
 makeCircuit cb = (x ,) $ Circuit {
 	cctGate = gs, cctWireConn = wc,
-	cctWireStt = fromList
-		$ zip (gateWires =<< concat (elems gs)) (repeat $ Bits 0) }
+	cctWireStt = fromList $ makeWireState dm <$> (gateWires =<< concat (elems gs)) }
+--		$ zip (gateWires =<< concat (elems gs)) (repeat $ replicate 1 (Bits 0)) }
 	where
-	(x, CBState { cbsGate = gs, cbsWireConn = wc }) =
+	(x, CBState { cbsGate = gs, cbsWireConn = wc, cbsDelay = dm }) =
 		cb `runState` initCBState
+
+makeWireState :: Map IWire Word8 -> IWire -> (IWire, [Bits])
+makeWireState dm iw = (iw, replicate d $ Bits 0)
+	where d = fromMaybe 1 $ fromIntegral <$> dm !? iw
 
 step :: Circuit -> Circuit
 step cct@Circuit { cctGate = gs, cctWireStt = wst } = let
@@ -36,7 +41,11 @@ step cct@Circuit { cctGate = gs, cctWireStt = wst } = let
 	cct { cctWireStt = mapWithKey (nextIWire cct ows) wst }
 
 setBits :: IWire -> Bits -> Circuit -> Circuit
-setBits w bs c = c { cctWireStt = insert w bs $ cctWireStt c }
+setBits w bs c = c { cctWireStt = insertPush w bs $ cctWireStt c }
+
+insertPush :: Ord k => k -> v -> Map k [v] -> Map k [v]
+insertPush k v m = insert k (vs ++ [v]) m
+	where vs = fromMaybe [] $ m !? k
 
 peekOWire :: OWire -> Circuit -> Bits
 peekOWire w Circuit { cctGate = gs, cctWireStt = wst } =
@@ -45,21 +54,30 @@ peekOWire w Circuit { cctGate = gs, cctWireStt = wst } =
 checkOWire :: Circuit -> [BasicGate] -> Bits
 checkOWire Circuit { cctWireStt = wst } = P.foldr (calcGate wst) (Bits 0)
 
-calcGate :: Map IWire Bits -> BasicGate -> Bits -> Bits
+calcGate :: Map IWire [Bits] -> BasicGate -> Bits -> Bits
 calcGate wst (AndGate ln po (i1, pi1) (i2, pi2)) = fromJust
-	$ andBits ln po <$> ((, pi1) <$> wst !? i1) <*> ((, pi2) <$> wst !? i2)
+	$ andBits ln po
+		<$> ((, pi1) <$> wst !!? i1) <*> ((, pi2) <$> wst !!? i2)
 calcGate wst (OrGate ln po (i1, pi1) (i2, pi2)) = fromJust
-	$ orBits ln po <$> ((, pi1) <$> wst !? i1) <*> ((, pi2) <$> wst !? i2)
+	$ orBits ln po <$> ((, pi1) <$> wst !!? i1) <*> ((, pi2) <$> wst !!? i2)
 calcGate wst (NotGate ln po (i, pin)) =
-	fromJust $ notBits ln po <$> ((, pin) <$> wst !? i)
+	fromJust $ notBits ln po <$> ((, pin) <$> wst !!? i)
 calcGate wst (IdGate ln po (i, pin)) =
-	fromJust $ idBits ln po <$> ((, pin) <$> wst !? i)
+	fromJust $ idBits ln po <$> ((, pin) <$> wst !!? i)
 calcGate _ (ConstGate ln po (bs, pin)) = constBits ln po (bs, pin)
 
-nextIWire :: Circuit -> Map OWire Bits -> IWire -> Bits -> Bits
-nextIWire Circuit { cctWireConn = wc } ows iw ob = fromMaybe ob $ do
-	fows <- wc !? iw
-	return $ P.foldr (uncurry . flip $ nextIWireFromOWire ows) ob fows
+(!!?) :: Ord k => Map k [v] -> k -> Maybe v 
+m !!? k = join $ listToMaybe <$> m !? k
+
+nextIWire :: Circuit -> Map OWire Bits -> IWire -> [Bits] -> [Bits]
+nextIWire Circuit { cctWireConn = wc } ows iw oba@(_ : obs) =
+	(obs ++) . (: []) . fromMaybe ob $ do
+		fows <- wc !? iw
+		return $ P.foldr
+			(uncurry . flip $ nextIWireFromOWire ows) ob fows
+	where
+	ob = last oba
+nextIWire _ _ _ [] = error "Oops!"
 
 nextIWireFromOWire :: Map OWire Bits -> FromOWire -> OWire -> Bits -> Bits
 nextIWireFromOWire ows fow ow b = fromMaybe b $ do
@@ -104,6 +122,10 @@ connectWire :: (OWire, BitLen, BitPosOut) ->
 connectWire (o, obl, obp) (i, ibl, ibp) =
 	modify $ insConn ((obl, obp), (ibl, ibp)) o i
 
+delay :: IWire -> Word8 -> CircuitBuilder ()
+delay _ 0 = error "0 delay is not permitted"
+delay iw n = modify $ insDelay iw n
+
 insConn :: FromOWire -> OWire -> IWire -> CBState -> CBState
 insConn f o i cbs = cbs {
 	cbsWireConn =
@@ -112,3 +134,6 @@ insConn f o i cbs = cbs {
 
 indexOrEmpty :: Ord k => Map k [v] -> k -> [v]
 indexOrEmpty = (fromMaybe [] .) . (!?)
+
+insDelay :: IWire -> Word8 -> CBState -> CBState
+insDelay iw d cbs = cbs { cbsDelay = M.insert iw d $ cbsDelay cbs }
