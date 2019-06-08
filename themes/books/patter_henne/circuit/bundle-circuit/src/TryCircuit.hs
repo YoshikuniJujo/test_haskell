@@ -471,3 +471,32 @@ storeTryRegisterFileWrite (wwr, wadr, wd, _) adr d cct = let
 	cct2 = (!! 20) . iterate step $ setMultBits [wwr, wadr, wd] [1, adr, d] cct1
 	cct3 = (!! 10) . iterate step $ setMultBits [wwr, wadr, wd] [0, adr, d] cct2 in
 	cct3
+
+registerFileReadUnit :: Word8 -> [OWire] -> CircuitBuilder (IWire, OWire)
+registerFileReadUnit n os = do
+	(adr, ds, r) <- multiplexer $ fromIntegral n
+	zipWithM_ connectWire64 os ds
+	return (adr, r)
+
+type RegisterFileWires = (IWire, IWire, IWire, IWire, IWire, IWire, OWire, OWire)
+
+registerFile :: Word8 -> CircuitBuilder RegisterFileWires
+registerFile n = do
+	(c, w, wadr, d, os) <- registerFileWrite n
+	(radr1, r1) <- registerFileReadUnit n os
+	(radr2, r2) <- registerFileReadUnit n os
+	return (c, radr1, radr2, w, wadr, d, r1, r2)
+
+tryRegisterFile :: CircuitBuilder (IWire, IWire, IWire, IWire, IWire, OWire, OWire)
+tryRegisterFile = do
+	(cl, radr1, radr2, wr, adr, d, r1, r2) <- registerFile 32
+	(_, ccl) <- clock 5
+	connectWire0 ccl cl
+	return (radr1, radr2, wr, adr, d, r1, r2)
+
+storeTryRegisterFile :: (IWire, IWire, IWire, IWire, IWire, OWire, OWire) -> Word64 -> Word64 -> Circuit -> Circuit
+storeTryRegisterFile (_, _, wwr, wadr, wd, _, _) adr d cct = let
+	cct1 = (!! 10) . iterate step $ setMultBits [wwr, wadr, wd] [0, adr, d] cct
+	cct2 = (!! 20) . iterate step $ setMultBits [wwr, wadr, wd] [1, adr, d] cct1
+	cct3 = (!! 10) . iterate step $ setMultBits [wwr, wadr, wd] [0, adr, d] cct2 in
+	cct3
