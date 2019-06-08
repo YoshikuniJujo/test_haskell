@@ -559,3 +559,30 @@ storeTrySramWrite (ww, wadr, wd, _) adr d cct = let
 	cct2 = (!! 25) . iterate step $ setMultBits [ww, wadr, wd] [1, adr, d] cct1
 	cct3 = (!! 5) . iterate step $ setMultBits [ww, wadr, wd] [0, adr, d] cct2 in
 	cct3
+
+sram :: Word8 -> CircuitBuilder (IWire, IWire, IWire, OWire)
+sram n = do
+	(adrin, adrout) <- idGate64
+	(wr, adr, d, qs) <- sramWrite n
+	(adr', qs', q) <- triStateSelect n
+	connectWire64 adrout `mapM_` [adr, adr']
+	zipWithM_ connectWire64 qs qs'
+	return (wr, adrin, d, q)
+
+trySram :: CircuitBuilder (IWire, IWire, IWire, OWire)
+trySram = do
+	(_, cl) <- clock 5
+	(ei, eo) <- fallingEdge
+	(c, w, wr) <- andGate0
+	(wr', adr, d, o) <- sram 8
+	connectWire0 cl ei
+	connectWire0 eo c
+	connectWire0 wr wr'
+	return (w, adr, d, o)
+
+storeTrySram :: (IWire, IWire, IWire, OWire) -> Word64 -> Word64 -> Circuit -> Circuit
+storeTrySram (ww, wadr, wd, _) adr d cct = let
+	cct1 = (!! 7) . iterate step $ setMultBits [ww, wadr, wd] [0, adr, d] cct
+	cct2 = (!! 25) . iterate step $ setMultBits [ww, wadr, wd] [1, adr, d] cct1
+	cct3 = (!! 5) . iterate step $ setMultBits [ww, wadr, wd] [0, adr, d] cct2 in
+	cct3
