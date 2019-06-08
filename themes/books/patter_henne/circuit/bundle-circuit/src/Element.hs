@@ -121,6 +121,13 @@ decoder' n = do
 	for_ (zip [0 .. ] os) $ \(i, op) -> connectWire (op, 1, 0) (oin, 1, i)
 	return (iin, oout)
 
+decoder'' :: Word8 -> CircuitBuilder (IWire, [OWire])
+decoder'' n = do
+	(iin, iout) <- idGate64
+	(is, os) <- decoder $ fromIntegral n
+	for_ (zip [0 ..] is) $ \(i, ip) -> connectWire (iout, 1, i) (ip, 1, 0)
+	return (iin, os)
+
 multiAndGate, multiOrGate ::
 	Word16 -> BitLen -> BitPosIn -> CircuitBuilder ([IWire], OWire)
 multiAndGate = multiple andGate

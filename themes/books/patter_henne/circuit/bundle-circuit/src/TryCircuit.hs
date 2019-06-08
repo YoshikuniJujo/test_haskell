@@ -431,3 +431,43 @@ peekOWire3 o1 o2 o3 = (,,)
 	<$> bitsToWord . peekOWire o1
 	<*> bitsToWord . peekOWire o2
 	<*> bitsToWord . peekOWire o3
+
+register :: CircuitBuilder (IWire, IWire, OWire)
+register = do
+	(c, d, q, _q_) <- dflipflop
+	return (c, d, q)
+
+registerFileWrite :: Word8 -> CircuitBuilder (IWire, IWire, IWire, IWire, [OWire])
+registerFileWrite n = do
+	(cl, ww, cw) <- andGate0
+	(wrin, wrout) <- idGate0
+	connectWire0 cw wrin
+	(adr, dc) <- decoder'' $ fromIntegral n
+	(dsin, dsout) <- idGate64
+	(wrs, dc', cls) <- unzip3 <$> fromIntegral n `replicateM` andGate0
+	(cls', inps, outs) <- unzip3 <$> fromIntegral n `replicateM` register
+	connectWire64 wrout `mapM_` wrs
+	zipWithM_ connectWire0 dc dc'
+	zipWithM_ connectWire0 cls cls'
+	connectWire64 dsout `mapM_` inps
+	return (cl, ww, adr, dsin, outs)
+
+setMultBits :: [IWire] -> [Word64] -> Circuit -> Circuit
+setMultBits is vs = foldr (.) id $ zipWith setBits is (wordToBits <$> vs)
+
+peekMultOWires :: [OWire] -> Circuit -> [Word64]
+peekMultOWires os cct = bitsToWord . (`peekOWire` cct) <$> os
+
+tryRegisterFileWrite :: CircuitBuilder (IWire, IWire, IWire, [OWire])
+tryRegisterFileWrite = do
+	(cl, wr, adr, d, os) <- registerFileWrite 32
+	(_, ccl) <- clock 5
+	connectWire0 ccl cl
+	return (wr, adr, d, os)
+
+storeTryRegisterFileWrite :: (IWire, IWire, IWire, [OWire]) -> Word64 -> Word64 -> Circuit -> Circuit
+storeTryRegisterFileWrite (wwr, wadr, wd, _) adr d cct = let
+	cct1 = (!! 10) . iterate step $ setMultBits [wwr, wadr, wd] [0, adr, d] cct
+	cct2 = (!! 20) . iterate step $ setMultBits [wwr, wadr, wd] [1, adr, d] cct1
+	cct3 = (!! 10) . iterate step $ setMultBits [wwr, wadr, wd] [0, adr, d] cct2 in
+	cct3
