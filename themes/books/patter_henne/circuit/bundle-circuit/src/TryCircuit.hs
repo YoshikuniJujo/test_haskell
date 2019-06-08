@@ -569,12 +569,12 @@ sram n = do
 	zipWithM_ connectWire64 qs qs'
 	return (wr, adrin, d, q)
 
-trySram :: CircuitBuilder (IWire, IWire, IWire, OWire)
-trySram = do
+trySram :: Word8 -> CircuitBuilder (IWire, IWire, IWire, OWire)
+trySram n = do
 	(_, cl) <- clock 5
 	(ei, eo) <- fallingEdge
 	(c, w, wr) <- andGate0
-	(wr', adr, d, o) <- sram 8
+	(wr', adr, d, o) <- sram n
 	connectWire0 cl ei
 	connectWire0 eo c
 	connectWire0 wr wr'
