@@ -5,7 +5,8 @@ module CircuitCore (
 	Circuit, makeCircuit, step,
 	CircuitBuilder,
 	IWire, OWire, Bits(..), BitLen, BitPosIn, BitPosOut,
-	andGate, orGate, notGate, idGate, constGate, connectWire, delay,
+	andGate, orGate, notGate, idGate, constGate, triStateSelect,
+	connectWire, delay,
 	setBits, peekOWire, bitsToWord, wordToBits
 	) where
 
@@ -21,6 +22,7 @@ import CircuitTypes
 import Tools
 
 import qualified Data.Map.Strict as M
+import qualified Data.IntMap.Strict as IM
 
 makeCircuit :: CircuitBuilder a -> (a, Circuit)
 makeCircuit cb = (x ,) $ Circuit {
@@ -65,6 +67,10 @@ calcGate wst (NotGate ln po (i, pin)) =
 calcGate wst (IdGate ln po (i, pin)) =
 	fromJust $ idBits ln po <$> ((, pin) <$> wst !!? i)
 calcGate _ (ConstGate ln po (bs, pin)) = constBits ln po (bs, pin)
+calcGate wst (TriStateSelect sel is) = const . fromJust $ do
+	s <- wst !!? sel
+	i <- is IM.!? fromIntegral (bitsToWord s)
+	wst !!? i
 
 (!!?) :: Ord k => Map k [v] -> k -> Maybe v 
 m !!? k = join $ listToMaybe <$> m !? k
@@ -113,6 +119,14 @@ constGate bs ln pin po = do
 	o <- makeOWire
 	modify $ insGate (ConstGate ln po (bs, pin)) o
 	return o
+
+triStateSelect :: Word8 -> CircuitBuilder (IWire, [IWire], OWire)
+triStateSelect n = do
+	sel <- makeIWire
+	is <- fromIntegral n `replicateM` makeIWire
+	o <- makeOWire
+	modify $ insGate (TriStateSelect sel (IM.fromList $ zip [0 ..] is)) o
+	return (sel, is, o)
 
 insGate :: BasicGate -> OWire -> CBState -> CBState
 insGate g o cbs = cbs { cbsGate = push o g $ cbsGate cbs }

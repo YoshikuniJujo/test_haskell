@@ -10,6 +10,7 @@ import Data.Word
 
 import qualified Data.Bits as B
 import qualified Data.List as L
+import qualified Data.IntMap.Strict as IM
 
 import Tools
 
@@ -110,6 +111,7 @@ data BasicGate
 	| OrGate BitLen BitPosOut (IWire, BitPosIn) (IWire, BitPosIn)
 	| NotGate BitLen BitPosOut (IWire, BitPosIn)
 	| IdGate BitLen BitPosOut (IWire, BitPosIn)
+	| TriStateSelect IWire (IM.IntMap IWire)
 	deriving Show
 
 gateWires :: BasicGate -> [IWire]
@@ -118,6 +120,7 @@ gateWires (AndGate _ _ (a, _) (b, _)) = [a, b]
 gateWires (OrGate _ _ (a, _) (b, _)) = [a, b]
 gateWires (NotGate _ _ (i, _)) = [i]
 gateWires (IdGate _ _ (i, _)) = [i]
+gateWires (TriStateSelect i is) = i : (snd <$> IM.toList is)
 
 makeIWire :: CircuitBuilder IWire
 makeIWire = IWire <$> getModify cbsWireNum sccWireNum

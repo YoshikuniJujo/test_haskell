@@ -500,3 +500,10 @@ storeTryRegisterFile (_, _, wwr, wadr, wd, _, _) adr d cct = let
 	cct2 = (!! 20) . iterate step $ setMultBits [wwr, wadr, wd] [1, adr, d] cct1
 	cct3 = (!! 10) . iterate step $ setMultBits [wwr, wadr, wd] [0, adr, d] cct2 in
 	cct3
+
+triStateSample :: CircuitBuilder (IWire, OWire)
+triStateSample = do
+	(sel, is, o) <- triStateSelect 8
+	cs <- (constGate64 . Bits) `mapM` take 8 [0, 12 ..]
+	zipWithM_ connectWire64 cs is
+	return (sel, o)
