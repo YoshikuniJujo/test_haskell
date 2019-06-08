@@ -3,6 +3,7 @@
 module TryCircuit where
 
 import Control.Monad
+import Data.List
 import Data.Word
 import Data.Int
 
@@ -518,7 +519,7 @@ fallingEdge = do
 	connectWire0 iout ni
 	connectWire0 io a
 	connectWire0 no b
-	delay ii 5
+	delay ii 3
 	return (iin, o)
 
 tryFallingEdge :: CircuitBuilder OWire
@@ -527,3 +528,34 @@ tryFallingEdge = do
 	(fi, fo) <- fallingEdge
 	connectWire0 clo fi
 	return fo
+
+sramWrite :: Word8 -> CircuitBuilder (IWire, IWire, IWire, [OWire])
+sramWrite n = do
+	(wrin, wrout) <- idGate0
+	(din, dout) <- idGate64
+	(adr, dec) <- decoder'' n
+	(dec', wr', c) <- unzip3 <$> fromIntegral n `replicateM` andGate0
+	(c', d, q, _q_) <- unzip4 <$> fromIntegral n `replicateM` dlatch
+	connectWire0 wrout `mapM_` wr'
+	zipWithM_ connectWire0 dec dec'
+	zipWithM_ connectWire0 c c'
+	connectWire64 dout `mapM_` d
+	return (wrin, adr, din, q)
+
+trySramWrite :: CircuitBuilder (IWire, IWire, IWire, [OWire])
+trySramWrite = do
+	(_, cl) <- clock 5
+	(ei, eo) <- fallingEdge
+	(c, w, wr) <- andGate0
+	(wr', adr, d, os) <- sramWrite 8
+	connectWire0 cl ei
+	connectWire0 eo c
+	connectWire0 wr wr'
+	return (w, adr, d, os)
+
+storeTrySramWrite :: (IWire, IWire, IWire, [OWire]) -> Word64 -> Word64 -> Circuit -> Circuit
+storeTrySramWrite (ww, wadr, wd, _) adr d cct = let
+	cct1 = (!! 5) . iterate step $ setMultBits [ww, wadr, wd] [0, adr, d] cct
+	cct2 = (!! 25) . iterate step $ setMultBits [ww, wadr, wd] [1, adr, d] cct1
+	cct3 = (!! 5) . iterate step $ setMultBits [ww, wadr, wd] [0, adr, d] cct2 in
+	cct3
