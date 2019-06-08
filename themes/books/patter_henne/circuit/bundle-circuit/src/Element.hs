@@ -91,6 +91,12 @@ multiple g n l p = do
 	connectWire (o2, l, p) (i2, l, p)
 	return (is1 ++ is2, o)
 
+mux2 :: CircuitBuilder (IWire, IWire, IWire, OWire)
+mux2 = do
+	(sl, is, o) <- multiplexer 2
+	let	(i0, i1) = listToTuple2 is
+	return (sl, i0, i1, o)
+
 multiplexer :: Word16 -> CircuitBuilder (IWire, [IWire], OWire)
 multiplexer n = do
 	(slin, sout) <- idGate 64 0 0
@@ -138,3 +144,24 @@ inverse o i = do
 	(ni, no) <- notGate0
 	zipWithM_ connectWire0 [o, no] [ni, i]
 obverse = connectWire0
+
+rslatch :: CircuitBuilder (IWire, IWire, OWire, OWire)
+rslatch = do
+	(r, q_', q) <- norGate64
+	(s, q', q_) <- norGate64
+	zipWithM_ connectWire64 [q, q_] [q', q_']
+	return (r, s, q, q_)
+
+dlatch :: CircuitBuilder (IWire, IWire, OWire, OWire)
+dlatch = do
+	(cin, cout) <- idGate0
+	(din, dout) <- idGate64
+	(d, nd) <- notGate64
+	(c1, nd', r) <- andGate64
+	(c2, d', s) <- andGate64
+	(r', s', q, q_) <- rslatch
+	connectWire (cout, 1, 0) `mapM_` [(c1, 64, 0), (c2, 64, 0)]
+	connectWire64 dout `mapM_` [d, d']
+	connectWire64 nd nd'
+	zipWithM_ connectWire64 [r, s] [r', s']
+	return (cin, din, q, q_)

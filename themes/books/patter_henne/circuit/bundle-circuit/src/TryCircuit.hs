@@ -3,11 +3,11 @@
 module TryCircuit where
 
 import Control.Monad
-import Data.List
 import Data.Word
 import Data.Int
 
 import Circuit
+import Memory
 import Element
 import CarryLookahead
 import Tools
@@ -321,13 +321,6 @@ rslatch1 = do
 	zipWithM_ connectWire0 [q, q_] [q', q_']
 	return (r, s, q, q_)
 
-rslatch :: CircuitBuilder (IWire, IWire, OWire, OWire)
-rslatch = do
-	(r, q_', q) <- norGate64
-	(s, q', q_) <- norGate64
-	zipWithM_ connectWire64 [q, q_] [q', q_']
-	return (r, s, q, q_)
-
 peekOWire2 :: OWire -> OWire -> Circuit -> (Word64, Word64)
 peekOWire2 o1 o2 = (,) <$> bitsToWord . peekOWire o1 <*> bitsToWord . peekOWire o2
 
@@ -347,20 +340,6 @@ dlatch1 = do
 	connectWire0 dout `mapM_` [d, d']
 	connectWire0 nd nd'
 	zipWithM_ connectWire0 [r, s] [r', s']
-	return (cin, din, q, q_)
-
-dlatch :: CircuitBuilder (IWire, IWire, OWire, OWire)
-dlatch = do
-	(cin, cout) <- idGate0
-	(din, dout) <- idGate64
-	(d, nd) <- notGate64
-	(c1, nd', r) <- andGate64
-	(c2, d', s) <- andGate64
-	(r', s', q, q_) <- rslatch
-	connectWire (cout, 1, 0) `mapM_` [(c1, 64, 0), (c2, 64, 0)]
-	connectWire64 dout `mapM_` [d, d']
-	connectWire64 nd nd'
-	zipWithM_ connectWire64 [r, s] [r', s']
 	return (cin, din, q, q_)
 
 dflipflop1 :: CircuitBuilder (IWire, IWire, OWire, OWire)
@@ -453,12 +432,6 @@ registerFileWrite n = do
 	connectWire64 dsout `mapM_` inps
 	return (cl, ww, adr, dsin, outs)
 
-setMultBits :: [IWire] -> [Word64] -> Circuit -> Circuit
-setMultBits is vs = foldr (.) id $ zipWith setBits is (wordToBits <$> vs)
-
-peekMultOWires :: [OWire] -> Circuit -> [Word64]
-peekMultOWires os cct = bitsToWord . (`peekOWire` cct) <$> os
-
 tryRegisterFileWrite :: CircuitBuilder (IWire, IWire, IWire, [OWire])
 tryRegisterFileWrite = do
 	(cl, wr, adr, d, os) <- registerFileWrite 32
@@ -529,19 +502,6 @@ tryFallingEdge = do
 	connectWire0 clo fi
 	return fo
 
-sramWrite :: Word8 -> CircuitBuilder (IWire, IWire, IWire, [OWire])
-sramWrite n = do
-	(wrin, wrout) <- idGate0
-	(din, dout) <- idGate64
-	(adr, dec) <- decoder'' n
-	(dec', wr', c) <- unzip3 <$> fromIntegral n `replicateM` andGate0
-	(c', d, q, _q_) <- unzip4 <$> fromIntegral n `replicateM` dlatch
-	connectWire0 wrout `mapM_` wr'
-	zipWithM_ connectWire0 dec dec'
-	zipWithM_ connectWire0 c c'
-	connectWire64 dout `mapM_` d
-	return (wrin, adr, din, q)
-
 trySramWrite :: CircuitBuilder (IWire, IWire, IWire, [OWire])
 trySramWrite = do
 	(_, cl) <- clock 5
@@ -559,15 +519,6 @@ storeTrySramWrite (ww, wadr, wd, _) adr d cct = let
 	cct2 = (!! 25) . iterate step $ setMultBits [ww, wadr, wd] [1, adr, d] cct1
 	cct3 = (!! 5) . iterate step $ setMultBits [ww, wadr, wd] [0, adr, d] cct2 in
 	cct3
-
-sram :: Word8 -> CircuitBuilder (IWire, IWire, IWire, OWire)
-sram n = do
-	(adrin, adrout) <- idGate64
-	(wr, adr, d, qs) <- sramWrite n
-	(adr', qs', q) <- triStateSelect n
-	connectWire64 adrout `mapM_` [adr, adr']
-	zipWithM_ connectWire64 qs qs'
-	return (wr, adrin, d, q)
 
 trySram :: Word8 -> CircuitBuilder (IWire, IWire, IWire, OWire)
 trySram n = do
