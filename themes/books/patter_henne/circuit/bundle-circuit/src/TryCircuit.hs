@@ -507,3 +507,23 @@ triStateSample = do
 	cs <- (constGate64 . Bits) `mapM` take 8 [0, 12 ..]
 	zipWithM_ connectWire64 cs is
 	return (sel, o)
+
+fallingEdge :: CircuitBuilder (IWire, OWire)
+fallingEdge = do
+	(iin, iout) <- idGate0
+	(ii, io) <- idGate0
+	(ni, no) <- notGate0
+	(a, b, o) <- andGate0
+	connectWire0 iout ii
+	connectWire0 iout ni
+	connectWire0 io a
+	connectWire0 no b
+	delay ii 5
+	return (iin, o)
+
+tryFallingEdge :: CircuitBuilder OWire
+tryFallingEdge = do
+	(_, clo) <- clock 15
+	(fi, fo) <- fallingEdge
+	connectWire0 clo fi
+	return fo
