@@ -8,12 +8,14 @@ import qualified Prelude as P
 
 import Control.Monad.State
 import Data.Bits ((.&.), (.|.))
+import Data.Array
 import Data.Map.Strict
 import Data.Word
 
 import qualified Data.Bits as B
 import qualified Data.List as L
 import qualified Data.IntMap.Strict as IM
+import qualified Data.Array as A
 
 import Tools
 
@@ -69,10 +71,12 @@ windowBits ln ps = B.complement $ maskBits ln ps
 maskBits' ln ps =
 	L.foldl' B.setBit B.zeroBits $ fromIntegral <$> [ps .. ps + ln - 1]
 
-maskBits ln ps = (maskBitsList !! fromIntegral ln) !! fromIntegral ps -- maskBits'
+-- maskBits ln ps = (maskBitsList !! fromIntegral ln) !! fromIntegral ps -- maskBits'
+maskBits ln ps = maskBitsList A.! (fromIntegral ln * 64 + fromIntegral ps)
 
-maskBitsList :: [[Word64]]
-maskBitsList = P.map (\ln -> P.map (maskBits' ln) [0 .. 63]) [0 .. 64]
+maskBitsList :: Array Int Word64
+-- maskBitsList = P.map (\ln -> P.map (maskBits' ln) [0 .. 63]) [0 .. 64]
+maskBitsList = listArray (0, 4159) $  P.concatMap (\ln -> P.map (maskBits' ln) [0 .. 63]) [0 .. 64]
 
 type FromOWire = ((BitLen, BitPosOut), (BitLen, BitPosIn))
 
