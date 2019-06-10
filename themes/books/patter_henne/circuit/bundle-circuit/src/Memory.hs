@@ -8,6 +8,7 @@ import Data.Word
 
 import Circuit
 import Element
+import Clock
 
 sram :: Word8 -> CircuitBuilder (IWire, IWire, IWire, OWire)
 sram n = do
@@ -63,3 +64,22 @@ storeRiscvInstMem rim adr d cct = let
 
 readRiscvInstMem :: RiscvInstMem -> Circuit -> Word64
 readRiscvInstMem rim = bitsToWord . peekOWire (rimOutput rim)
+
+register :: CircuitBuilder (IWire, IWire, OWire)
+register = do
+	(c, d, q, _q_) <- dflipflop
+	return (c, d, q)
+
+data ProgramCounter = ProgramCounter {
+	pcClock :: IWire, pcInput :: IWire, pcOutput :: OWire } deriving Show
+
+programCounter :: CircuitBuilder ProgramCounter
+programCounter = do
+	(c, d, q) <- register
+	return $ ProgramCounter c d q
+
+pcClocked :: Clock -> ProgramCounter -> CircuitBuilder ()
+pcClocked cl pc = connectWire0 (clockSignal cl) (pcClock pc)
+
+setProgramCounter :: ProgramCounter -> Word64 -> Circuit -> Circuit
+setProgramCounter pc w = setBits (pcInput pc) (wordToBits w)

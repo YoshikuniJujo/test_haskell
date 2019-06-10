@@ -8,6 +8,7 @@ import Data.Int
 
 import Circuit
 import Memory
+import Clock
 import Element
 import CarryLookahead
 import Tools
@@ -352,27 +353,9 @@ dflipflop1 = do
 	zipWithM_ connectWire0 [nc, mq] [sc, sd]
 	return (cin, md, sq, sq_)
 
-dflipflop :: CircuitBuilder (IWire, IWire, OWire, OWire)
-dflipflop = do
-	(cin, cout) <- idGate0
-	(c, nc) <- notGate0
-	(mc, md, mq, _mq_) <- dlatch
-	(sc, sd, sq, sq_) <- dlatch
-	connectWire0 cout `mapM_` [c, mc]
-	connectWire0 nc sc
-	connectWire64 mq sd
-	return (cin, md, sq, sq_)
-
-clock :: Word8 -> CircuitBuilder (IWire, OWire)
-clock n = do
-	(i, o) <- notGate0
-	connectWire0 o i
-	delay i n
-	return (i, o)
-
 clocked :: Word8 -> Bits -> CircuitBuilder OWire
 clocked n bs = do
-	(_ci, co) <- clock n
+	(_ci, co) <- clockGen n
 	d <- constGate bs 64 0 0
 	(a, b, r) <- andGate64
 	connectWire (co, 1, 0) (a, 64, 0)
@@ -382,8 +365,8 @@ clocked n bs = do
 testDflipflop1 :: CircuitBuilder (OWire, OWire, OWire)
 testDflipflop1 = do
 	(c, d, q, _q_) <- dflipflop1
-	(_, ccl) <- clock 15
-	(_, dcl) <- clock 25
+	(_, ccl) <- clockGen 15
+	(_, dcl) <- clockGen 25
 	connectWire0 ccl c
 	connectWire0 dcl d
 	return (ccl, dcl, q)
@@ -391,7 +374,7 @@ testDflipflop1 = do
 testDflipflop :: CircuitBuilder (OWire, OWire, OWire)
 testDflipflop = do
 	(c, d, q, _q_) <- dflipflop
-	(_, ccl) <- clock 15
+	(_, ccl) <- clockGen 15
 	dcl <- clocked 25 $ Bits 1234567891
 	connectWire0 ccl c
 	connectWire64 dcl d
@@ -400,7 +383,7 @@ testDflipflop = do
 testDlatch :: CircuitBuilder (OWire, OWire, OWire)
 testDlatch = do
 	(c, d, q, _q_) <- dlatch
-	(_, ccl) <- clock 15
+	(_, ccl) <- clockGen 15
 	dcl <- clocked 25 $ Bits 1234567891
 	connectWire0 ccl c
 	connectWire64 dcl d
@@ -411,11 +394,6 @@ peekOWire3 o1 o2 o3 = (,,)
 	<$> bitsToWord . peekOWire o1
 	<*> bitsToWord . peekOWire o2
 	<*> bitsToWord . peekOWire o3
-
-register :: CircuitBuilder (IWire, IWire, OWire)
-register = do
-	(c, d, q, _q_) <- dflipflop
-	return (c, d, q)
 
 registerFileWrite :: Word8 -> CircuitBuilder (IWire, IWire, IWire, IWire, [OWire])
 registerFileWrite n = do
@@ -435,7 +413,7 @@ registerFileWrite n = do
 tryRegisterFileWrite :: CircuitBuilder (IWire, IWire, IWire, [OWire])
 tryRegisterFileWrite = do
 	(cl, wr, adr, d, os) <- registerFileWrite 32
-	(_, ccl) <- clock 5
+	(_, ccl) <- clockGen 5
 	connectWire0 ccl cl
 	return (wr, adr, d, os)
 
@@ -464,7 +442,7 @@ registerFile n = do
 tryRegisterFile :: CircuitBuilder (IWire, IWire, IWire, IWire, IWire, OWire, OWire)
 tryRegisterFile = do
 	(cl, radr1, radr2, wr, adr, d, r1, r2) <- registerFile 32
-	(_, ccl) <- clock 5
+	(_, ccl) <- clockGen 5
 	connectWire0 ccl cl
 	return (radr1, radr2, wr, adr, d, r1, r2)
 
@@ -497,14 +475,14 @@ fallingEdge = do
 
 tryFallingEdge :: CircuitBuilder OWire
 tryFallingEdge = do
-	(_, clo) <- clock 15
+	(_, clo) <- clockGen 15
 	(fi, fo) <- fallingEdge
 	connectWire0 clo fi
 	return fo
 
 trySramWrite :: CircuitBuilder (IWire, IWire, IWire, [OWire])
 trySramWrite = do
-	(_, cl) <- clock 5
+	(_, cl) <- clockGen 5
 	(ei, eo) <- fallingEdge
 	(c, w, wr) <- andGate0
 	(wr', adr, d, os) <- sramWrite 8
@@ -522,7 +500,7 @@ storeTrySramWrite (ww, wadr, wd, _) adr d cct = let
 
 trySram :: Word8 -> CircuitBuilder (IWire, IWire, IWire, OWire)
 trySram n = do
-	(_, cl) <- clock 5
+	(_, cl) <- clockGen 5
 	(ei, eo) <- fallingEdge
 	(c, w, wr) <- andGate0
 	(wr', adr, d, o) <- sram n

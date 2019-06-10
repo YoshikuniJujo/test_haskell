@@ -165,3 +165,14 @@ dlatch = do
 	connectWire64 nd nd'
 	zipWithM_ connectWire64 [r, s] [r', s']
 	return (cin, din, q, q_)
+
+dflipflop :: CircuitBuilder (IWire, IWire, OWire, OWire)
+dflipflop = do
+	(cin, cout) <- idGate0
+	(c, nc) <- notGate0
+	(mc, md, mq, _mq_) <- dlatch
+	(sc, sd, sq, sq_) <- dlatch
+	connectWire0 cout `mapM_` [c, mc]
+	connectWire0 nc sc
+	connectWire64 mq sd
+	return (cin, md, sq, sq_)
