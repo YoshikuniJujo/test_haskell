@@ -7,11 +7,11 @@ import TrySingleCycle
 
 ((cl, pc, rim), cct) = makeCircuit tryInstMem
 
-cct1 = storeRiscvInstMem rim 0 1234567890 cct
-cct2 = storeRiscvInstMem rim 4 9876543210 cct1
-cct3 = storeRiscvInstMem rim 8 9999999999 cct2
-cct4 = storeRiscvInstMem rim 12 1111111111 cct3
-cct5 = storeRiscvInstMem rim 16 7777777777 cct4
+cct1 = storeRiscvInstMem rim 0 0x00f507b3 cct
+cct2 = storeRiscvInstMem rim 4 0x40208f33 cct1
+cct3 = storeRiscvInstMem rim 8 0x004787b3 cct2
+cct4 = storeRiscvInstMem rim 12 0x015a04b3 cct3
+cct5 = storeRiscvInstMem rim 16 0x009a84b3 cct4
 cct6 = resetProgramCounter pc cct5
 cct7 = clockOn cl cct6
 
