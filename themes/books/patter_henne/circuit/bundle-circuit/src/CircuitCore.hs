@@ -67,10 +67,15 @@ calcGate wst (NotGate ln po (i, pin)) =
 calcGate wst (IdGate ln po (i, pin)) =
 	fromJust $ idBits ln po <$> ((, pin) <$> wst !!? i)
 calcGate _ (ConstGate ln po (bs, pin)) = constBits ln po (bs, pin)
-calcGate wst (TriStateSelect sel is) = const . fromJust $ do
-	s <- wst !!? sel
-	i <- is IM.!? fromIntegral (bitsToWord s)
-	wst !!? i
+calcGate wst (TriStateSelect sel is) = maybe id const $ do
+--	const . fromJustMsg "calcGate: TriStateSelect: " $ do
+		s <- wst !!? sel
+		i <- is IM.!? fromIntegral (bitsToWord s)
+		wst !!? i
+
+fromJustMsg :: String -> Maybe a -> a
+fromJustMsg msg Nothing = error $ "fromJustMsg: " ++ msg
+fromJustMsg _ (Just x) = x
 
 (!!?) :: Ord k => Map k [v] -> k -> Maybe v 
 m !!? k = join $ listToMaybe <$> m !? k

@@ -54,11 +54,13 @@ storeRiscvInstMem :: RiscvInstMem -> Word64 -> Word64 -> Circuit -> Circuit
 storeRiscvInstMem rim adr d cct = let
 	cct1 = (!! 10) . iterate step
 		$ setMultBits [wsw, wwr, wwadr, wd] [1, 0, adr, d] cct
-	cct2 = (!! 20) . iterate step
+	cct2 = (!! 15) . iterate step
 		$ setMultBits [wsw, wwr, wwadr, wd] [1, 1, adr, d] cct1
-	cct3 = (!! 10) . iterate step
-		$ setMultBits [wsw, wwr, wwadr, wd] [1, 0, adr, d] cct2 in
-	cct3
+	cct3 = (!! 5) . iterate step
+		$ setMultBits [wsw, wwr, wwadr, wd] [1, 0, adr, d] cct2
+	cct4 = (!! 5) . iterate step
+		$ setMultBits [wsw, wwr, wwadr, wd] [0, 0, adr, d] cct3 in
+	cct4
 	where
 	wsw = rimSwitch rim
 	wwr = rimWrite rim
@@ -74,19 +76,33 @@ register = do
 	return (c, d, q)
 
 data ProgramCounter = ProgramCounter {
+	pcSwitch :: IWire, pcManualClock :: IWire, pcManualInput :: IWire,
 	pcClock :: IWire, pcInput :: IWire, pcOutput :: OWire } deriving Show
 
 programCounter :: CircuitBuilder ProgramCounter
 programCounter = do
+	(swin, swout) <- idGate0
+	(sw, cc, mc, oc) <- mux2
+	(sw', ci, mi, oi) <- mux2
 	(c, d, q) <- register
-	return $ ProgramCounter c d q
+	connectWire0 swout sw
+	connectWire0 swout sw'
+	connectWire64 oc c
+	connectWire64 oi d
+	return $ ProgramCounter swin mc mi cc ci q
 
 pcClocked :: Clock -> ProgramCounter -> CircuitBuilder ()
 pcClocked cl pc = connectWire0 (clockSignal cl) (pcClock pc)
 
 resetProgramCounter :: ProgramCounter -> Circuit -> Circuit
-resetProgramCounter pc =
-	foldr (.) id . replicate 80 $ setBits (pcInput pc) (wordToBits 0)
+resetProgramCounter pc = setBits (pcSwitch pc) (Bits 0)
+	. foldr (.) id (replicate 10 $ step
+		. setBits (pcManualClock pc) (wordToBits 0)
+		. setBits (pcManualInput pc) (wordToBits 0))
+	. foldr (.) id (replicate 20 $ step
+		. setBits (pcManualClock pc) (wordToBits 1)
+		. setBits (pcManualInput pc) (wordToBits 0))
+	. setBits (pcSwitch pc) (Bits 1)
 
 setProgramCounter :: ProgramCounter -> Word64 -> Circuit -> Circuit
 setProgramCounter pc w = setBits (pcInput pc) (wordToBits w)

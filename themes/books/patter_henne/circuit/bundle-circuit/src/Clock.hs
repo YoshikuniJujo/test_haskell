@@ -5,14 +5,15 @@ module Clock where
 import Data.Word
 
 import Circuit
+import Element
 
-data Clock = Clock { clkReseter :: IWire,  clkSignal :: OWire } deriving Show
+data Clock = Clock { clkSwitch :: IWire,  clkSignal :: OWire } deriving Show
 
 clock :: Word8 -> CircuitBuilder Clock
 clock n = uncurry Clock <$> clockGen n
 
-resetClock :: Clock -> Circuit -> Circuit
-resetClock cl = setBits (clkReseter cl) (Bits 0)
+clockOn :: Clock -> Circuit -> Circuit
+clockOn cl = setBits (clkSwitch cl) (Bits 1)
 
 clockSignal :: Clock -> OWire
 clockSignal = clkSignal
@@ -20,6 +21,10 @@ clockSignal = clkSignal
 clockGen :: Word8 -> CircuitBuilder (IWire, OWire)
 clockGen n = do
 	(i, o) <- notGate0
-	connectWire0 o i
+	(clsw, cloff, clon, swo) <- mux2
+	z <- constGate0 (Bits 1)
+	connectWire0 z cloff
+	connectWire0 o clon
+	connectWire0 swo i
 	delay i n
-	return (i, o)
+	return (clsw, o)
