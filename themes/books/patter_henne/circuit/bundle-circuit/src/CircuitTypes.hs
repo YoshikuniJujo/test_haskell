@@ -3,6 +3,9 @@
 
 module CircuitTypes where
 
+import Prelude
+import qualified Prelude as P
+
 import Control.Monad.State
 import Data.Bits ((.&.), (.|.))
 import Data.Map.Strict
@@ -60,26 +63,36 @@ constBits ln po (Bits i, pin) (Bits w) = Bits $ clr .|. i'
 	i' = (i `B.shift` (fromIntegral po - fromIntegral pin)) .&.
 		maskBits ln po
 
-maskBits, windowBits :: B.Bits w => BitLen -> BitPosOut -> w
+-- maskBits, windowBits :: B.Bits w => BitLen -> BitPosOut -> w
+maskBits, maskBits', windowBits :: BitLen -> BitPosOut -> Word64
 windowBits ln ps = B.complement $ maskBits ln ps
-maskBits ln ps =
+maskBits' ln ps =
 	L.foldl' B.setBit B.zeroBits $ fromIntegral <$> [ps .. ps + ln - 1]
+
+maskBits ln ps = (maskBitsList !! fromIntegral ln) !! fromIntegral ps -- maskBits'
+
+maskBitsList :: [[Word64]]
+maskBitsList = P.map (\ln -> P.map (maskBits' ln) [0 .. 63]) [0 .. 64]
 
 type FromOWire = ((BitLen, BitPosOut), (BitLen, BitPosIn))
 
 fromOWire :: FromOWire -> Bits -> Bits -> Bits
-fromOWire ((blo, bpo_), (bli, bpi_)) (Bits bo) (Bits bi) = Bits $ bo' .|. bi'
+fromOWire ((blo, bpo_), (bli, bpi_)) (Bits bo) (Bits bi)
+	| blo == bli = Bits $ bo'' .|. bi'
+	| otherwise = Bits $ bo' .|. bi'
 	where
+	bo'' = (bo `B.shiftR` bpo) `B.shiftL` bpi .&. maskBits bli bpi_
 	bo' = (bo `B.shiftR` bpo) `cycleBits`
 		blo `B.shiftL` bpi .&. maskBits bli bpi_
 	bi' = bi .&. windowBits bli bpi_
 	[bpo, bpi] = fromIntegral <$> [bpo_, bpi_]
 
-cycleBits :: forall n . B.Bits n => n -> Word8 -> n
+-- cycleBits :: forall n . B.Bits n => n -> Word8 -> n
+cycleBits :: Word64 -> Word8 -> Word64
 cycleBits _ 0 = error "cycleBits n c: c should not be 0"
 cycleBits n c = cb $ 64 `div` c + signum (64 `mod` c)
 	where
-	cb :: Word8 -> n
+--	cb :: Word8 -> n
 	cb i | i < 1 = B.zeroBits
 	cb i = cb (i - 1) `B.shiftL` fromIntegral c .|. n .&. maskBits c 0
 
