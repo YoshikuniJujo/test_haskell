@@ -8,7 +8,7 @@ module Circuit (
 	andGate0, orGate0, notGate0, idGate0, constGate0, connectWire0,
 	andGate64, orGate64, notGate64, idGate64, constGate64, connectWire64,
 	connectWire0_64,
-	setMultBits, peekMultOWires
+	setMultBits, peekMultOWires, peekOWire2
 	) where
 
 import Data.Word
@@ -51,3 +51,6 @@ setMultBits is vs = foldr (.) id $ zipWith setBits is (wordToBits <$> vs)
 
 peekMultOWires :: [OWire] -> Circuit -> [Word64]
 peekMultOWires os cct = bitsToWord . (`peekOWire` cct) <$> os
+
+peekOWire2 :: OWire -> OWire -> Circuit -> (Word64, Word64)
+peekOWire2 o1 o2 = (,) <$> bitsToWord . peekOWire o1 <*> bitsToWord . peekOWire o2

@@ -176,3 +176,12 @@ dflipflop = do
 	connectWire0 nc sc
 	connectWire64 mq sd
 	return (cin, md, sq, sq_)
+
+invert :: CircuitBuilder (IWire, IWire, OWire)
+invert = do
+	(xin, xout) <- idGate64
+	(nxin, nxout) <- notGate64
+	(xinv, xnx, xout') <- multiplexer 2
+	let	(x, nx) = listToTuple2 xnx
+	zipWithM_ connectWire64 [xout, xout, nxout] [nxin, x, nx]
+	return (xinv, xin, xout')
