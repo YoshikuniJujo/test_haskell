@@ -35,7 +35,7 @@ sramSwitch :: Word8 -> CircuitBuilder (IWire, IWire, IWire, IWire, IWire, OWire)
 sramSwitch n = do
 	(sw, radr, wadr, adr) <- mux2
 	(wr, adr', d, q) <- sram n
-	connectWire64 adr adr'
+	connectWire (adr, 62, 2) (adr', 62, 0)
 	return (sw, wr, radr, wadr, d, q)
 
 data RiscvInstMem = RiscvInstMem {
