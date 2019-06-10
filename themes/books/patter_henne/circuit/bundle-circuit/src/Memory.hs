@@ -52,9 +52,12 @@ riscvInstMem n = do
 
 storeRiscvInstMem :: RiscvInstMem -> Word64 -> Word64 -> Circuit -> Circuit
 storeRiscvInstMem rim adr d cct = let
-	cct1 = (!! 10) . iterate step $ setMultBits [wsw, wwr, wwadr, wd] [1, 0, adr, d] cct
-	cct2 = (!! 20) . iterate step $ setMultBits [wsw, wwr, wwadr, wd] [1, 1, adr, d] cct1
-	cct3 = (!! 10) . iterate step $ setMultBits [wsw, wwr, wwadr, wd] [1, 0, adr, d] cct2 in
+	cct1 = (!! 10) . iterate step
+		$ setMultBits [wsw, wwr, wwadr, wd] [1, 0, adr, d] cct
+	cct2 = (!! 20) . iterate step
+		$ setMultBits [wsw, wwr, wwadr, wd] [1, 1, adr, d] cct1
+	cct3 = (!! 10) . iterate step
+		$ setMultBits [wsw, wwr, wwadr, wd] [1, 0, adr, d] cct2 in
 	cct3
 	where
 	wsw = rimSwitch rim
@@ -81,5 +84,12 @@ programCounter = do
 pcClocked :: Clock -> ProgramCounter -> CircuitBuilder ()
 pcClocked cl pc = connectWire0 (clockSignal cl) (pcClock pc)
 
+resetProgramCounter :: ProgramCounter -> Circuit -> Circuit
+resetProgramCounter pc =
+	foldr (.) id . replicate 80 $ setBits (pcInput pc) (wordToBits 0)
+
 setProgramCounter :: ProgramCounter -> Word64 -> Circuit -> Circuit
 setProgramCounter pc w = setBits (pcInput pc) (wordToBits w)
+
+peekProgramCounter :: ProgramCounter -> Circuit -> Word64
+peekProgramCounter pc = bitsToWord . peekOWire (pcOutput pc)
