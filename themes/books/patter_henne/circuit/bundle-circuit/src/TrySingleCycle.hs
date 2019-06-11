@@ -45,11 +45,11 @@ tryInstMem = do
 
 sampleInstructions :: [Word64]
 sampleInstructions = fromIntegral <$> [
-	0x00f507b3,		-- add a5, a0, a5
-	0x40208f33,		-- sub r30, r01, r02
-	0x004787b3,		-- add a5, a5, tp
-	0x015a04b3,		-- add x9, x20, x21
-	0x009a84b3 :: Word32	-- add x9, x21, x9
+	0x00f507b3,		-- add a5, a0, a5	x15, x10, x15
+	0x40208f33,		-- sub r30, r01, r02	x30, x1 , x2
+	0x004787b3,		-- add a5, a5, tp	x15, x15, x4
+	0x015a04b3,		-- add x9, x20, x21	x9 , x20, x21
+	0x009a84b3 :: Word32	-- add x9, x21, x9	x9 , x21, x9
 	]
 
 -- R type: 7 5 5 3 5 7
@@ -82,3 +82,24 @@ decodeRTypeFromWords ::
 decodeRTypeFromWords [f7, r2, r1, f3, rd, op] =
 	(f7, ReadReg r2, ReadReg r1, f3, WriteReg rd, op)
 decodeRTypeFromWords _ = error "Oops!"
+
+tryRegisterFile :: CircuitBuilder (Clock, ProgramCounter, RiscvInstMem, RiscvRegisterFile)
+tryRegisterFile = do
+	cl <- clock 25
+	pc <- programCounter
+	pcClocked cl pc
+	ad <- riscvAdder
+	connectWire64 (pcOutput pc) (addrArgA ad)
+	four <- constGate64 (Bits 4)
+	connectWire64 four (addrArgB ad)
+	connectWire64 (addrResult ad) (pcInput pc)
+	rim <- riscvInstMem 64
+	connectWire64 (pcOutput pc) (rimReadAddress rim)
+	rrf <- riscvRegisterFile
+	connectWire
+		(instructionMemoryOutput rim, 5, 15)
+		(registerFileReadAddress1 rrf, 5, 0)
+	connectWire
+		(instructionMemoryOutput rim, 5, 20)
+		(registerFileReadAddress2 rrf, 5, 0)
+	return (cl, pc, rim, rrf)

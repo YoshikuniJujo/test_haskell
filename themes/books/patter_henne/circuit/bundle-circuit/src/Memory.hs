@@ -67,6 +67,9 @@ storeRiscvInstMem rim adr d cct = let
 	wwadr = rimWriteAddress rim
 	wd = rimInput rim
 
+instructionMemoryOutput :: RiscvInstMem -> OWire
+instructionMemoryOutput = rimOutput
+
 readRiscvInstMem :: RiscvInstMem -> Circuit -> Word64
 readRiscvInstMem rim = bitsToWord . peekOWire (rimOutput rim)
 
@@ -166,5 +169,12 @@ storeRiscvRegisterFile rrf wadr d cct = let
 	cct5 = setBits (rrfWrite rrf) (Bits 0) cct4 in
 	cct5
 
+readRiscvRegisterFile :: RiscvRegisterFile -> Circuit -> (Word64, Word64)
+readRiscvRegisterFile rrf = peekOWire2 (rrfOutput1 rrf) (rrfOutput2 rrf)
+
 debugReadRiscvRegisterFile :: RiscvRegisterFile -> Circuit -> [Word64]
 debugReadRiscvRegisterFile = peekMultOWires . rrfAllOutputs
+
+registerFileReadAddress1, registerFileReadAddress2 :: RiscvRegisterFile -> IWire
+registerFileReadAddress1 = rrfReadAddress1
+registerFileReadAddress2 = rrfReadAddress2
