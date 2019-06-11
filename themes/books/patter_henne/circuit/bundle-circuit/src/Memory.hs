@@ -109,3 +109,62 @@ setProgramCounter pc w = setBits (pcInput pc) (wordToBits w)
 
 peekProgramCounter :: ProgramCounter -> Circuit -> Word64
 peekProgramCounter pc = bitsToWord . peekOWire (pcOutput pc)
+
+type RegisterFileWires = (IWire, IWire, IWire, IWire, IWire, IWire, OWire, OWire, [OWire])
+
+registerFile :: Word8 -> CircuitBuilder RegisterFileWires
+registerFile n = do
+	(c, w, wadr, d, os) <- registerFileWrite n
+	(radr1, r1) <- registerFileReadUnit n os
+	(radr2, r2) <- registerFileReadUnit n os
+	return (c, radr1, radr2, w, wadr, d, r1, r2, os)
+
+registerFileWrite :: Word8 -> CircuitBuilder (IWire, IWire, IWire, IWire, [OWire])
+registerFileWrite n = do
+	(cl, ww, cw) <- andGate0
+	(wrin, wrout) <- idGate0
+	connectWire0 cw wrin
+	(adr, dc) <- decoder'' $ fromIntegral n
+	(dsin, dsout) <- idGate64
+	(wrs, dc', cls) <- unzip3 <$> fromIntegral n `replicateM` andGate0
+	(cls', inps, outs) <- unzip3 <$> fromIntegral n `replicateM` register
+	connectWire64 wrout `mapM_` wrs
+	zipWithM_ connectWire0 dc dc'
+	zipWithM_ connectWire0 cls cls'
+	connectWire64 dsout `mapM_` inps
+	return (cl, ww, adr, dsin, outs)
+
+registerFileReadUnit :: Word8 -> [OWire] -> CircuitBuilder (IWire, OWire)
+registerFileReadUnit n os = do
+	(adr, ds, r) <- multiplexer $ fromIntegral n
+	zipWithM_ connectWire64 os ds
+	return (adr, r)
+
+data RiscvRegisterFile = RiscvRegisterFile {
+	rrfClock :: IWire,
+	rrfReadAddress1 :: IWire, rrfReadAddress2 :: IWire,
+	rrfWrite :: IWire, rrfWriteAddress :: IWire, rrfInput :: IWire,
+	rrfOutput1 :: OWire, rrfOutput2 :: OWire,
+	rrfAllOutputs :: [OWire]
+	} deriving Show
+
+riscvRegisterFile :: CircuitBuilder RiscvRegisterFile
+riscvRegisterFile = do
+	(c, radr1, radr2, w, wadr, d, r1, r2, os) <- registerFile 32
+	return $ RiscvRegisterFile c radr1 radr2 w wadr d r1 r2 os
+
+storeRiscvRegisterFile ::
+	RiscvRegisterFile -> Word64 -> Word64 -> Circuit -> Circuit
+storeRiscvRegisterFile rrf wadr d cct = let
+	cct1 = (!! 5) . iterate step
+		$ setBits (rrfWriteAddress rrf) (wordToBits wadr) cct
+	cct2 = setBits (rrfWrite rrf) (Bits 1)
+		. setBits (rrfClock rrf) (Bits 1)
+		$ setBits (rrfInput rrf) (wordToBits d) cct1
+	cct3 = (!! 10) $ iterate step cct2
+	cct4 = (!! 15) . iterate step $ setBits (rrfClock rrf) (Bits 0) cct3
+	cct5 = setBits (rrfWrite rrf) (Bits 0) cct4 in
+	cct5
+
+debugReadRiscvRegisterFile :: RiscvRegisterFile -> Circuit -> [Word64]
+debugReadRiscvRegisterFile = peekMultOWires . rrfAllOutputs

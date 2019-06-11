@@ -316,21 +316,6 @@ peekOWire3 o1 o2 o3 = (,,)
 	<*> bitsToWord . peekOWire o2
 	<*> bitsToWord . peekOWire o3
 
-registerFileWrite :: Word8 -> CircuitBuilder (IWire, IWire, IWire, IWire, [OWire])
-registerFileWrite n = do
-	(cl, ww, cw) <- andGate0
-	(wrin, wrout) <- idGate0
-	connectWire0 cw wrin
-	(adr, dc) <- decoder'' $ fromIntegral n
-	(dsin, dsout) <- idGate64
-	(wrs, dc', cls) <- unzip3 <$> fromIntegral n `replicateM` andGate0
-	(cls', inps, outs) <- unzip3 <$> fromIntegral n `replicateM` register
-	connectWire64 wrout `mapM_` wrs
-	zipWithM_ connectWire0 dc dc'
-	zipWithM_ connectWire0 cls cls'
-	connectWire64 dsout `mapM_` inps
-	return (cl, ww, adr, dsin, outs)
-
 tryRegisterFileWrite :: CircuitBuilder (IWire, IWire, IWire, [OWire])
 tryRegisterFileWrite = do
 	(cl, wr, adr, d, os) <- registerFileWrite 32
@@ -345,24 +330,9 @@ storeTryRegisterFileWrite (wwr, wadr, wd, _) adr d cct = let
 	cct3 = (!! 10) . iterate step $ setMultBits [wwr, wadr, wd] [0, adr, d] cct2 in
 	cct3
 
-registerFileReadUnit :: Word8 -> [OWire] -> CircuitBuilder (IWire, OWire)
-registerFileReadUnit n os = do
-	(adr, ds, r) <- multiplexer $ fromIntegral n
-	zipWithM_ connectWire64 os ds
-	return (adr, r)
-
-type RegisterFileWires = (IWire, IWire, IWire, IWire, IWire, IWire, OWire, OWire)
-
-registerFile :: Word8 -> CircuitBuilder RegisterFileWires
-registerFile n = do
-	(c, w, wadr, d, os) <- registerFileWrite n
-	(radr1, r1) <- registerFileReadUnit n os
-	(radr2, r2) <- registerFileReadUnit n os
-	return (c, radr1, radr2, w, wadr, d, r1, r2)
-
 tryRegisterFile :: CircuitBuilder (IWire, IWire, IWire, IWire, IWire, OWire, OWire)
 tryRegisterFile = do
-	(cl, radr1, radr2, wr, adr, d, r1, r2) <- registerFile 32
+	(cl, radr1, radr2, wr, adr, d, r1, r2, _) <- registerFile 32
 	(_, ccl) <- clockGen 5
 	connectWire0 ccl cl
 	return (radr1, radr2, wr, adr, d, r1, r2)
