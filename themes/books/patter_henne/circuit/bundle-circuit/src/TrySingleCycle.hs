@@ -85,16 +85,7 @@ decodeRTypeFromWords _ = error "Oops!"
 
 tryRegisterFile :: CircuitBuilder (Clock, ProgramCounter, RiscvInstMem, RiscvRegisterFile)
 tryRegisterFile = do
-	cl <- clock 25
-	pc <- programCounter
-	pcClocked cl pc
-	ad <- riscvAdder
-	connectWire64 (pcOutput pc) (addrArgA ad)
-	four <- constGate64 (Bits 4)
-	connectWire64 four (addrArgB ad)
-	connectWire64 (addrResult ad) (pcInput pc)
-	rim <- riscvInstMem 64
-	connectWire64 (pcOutput pc) (rimReadAddress rim)
+	(cl, pc, rim) <- tryInstMem
 	rrf <- riscvRegisterFile
 	connectWire
 		(instructionMemoryOutput rim, 5, 15)
@@ -103,3 +94,12 @@ tryRegisterFile = do
 		(instructionMemoryOutput rim, 5, 20)
 		(registerFileReadAddress2 rrf, 5, 0)
 	return (cl, pc, rim, rrf)
+
+tryRtypeAdder :: CircuitBuilder
+	(Clock, ProgramCounter, RiscvInstMem, RiscvRegisterFile, OWire)
+tryRtypeAdder = do
+	(cl, pc, rim, rrf) <- tryRegisterFile
+	ad <- riscvAdder
+	connectWire64 (rrfOutput1 rrf) (addrArgA ad)
+	connectWire64 (rrfOutput2 rrf) (addrArgB ad)
+	return (cl, pc, rim, rrf, addrResult ad)

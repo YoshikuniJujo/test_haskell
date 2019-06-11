@@ -1,13 +1,13 @@
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module TryRegisterFile () where
+module TryAluAdder () where
 
 import Circuit
 import Clock
 import Memory
 import TrySingleCycle
 
-((cl, pc, rim, rrf), cct) = makeCircuit tryRegisterFile
+((cl, pc, rim, rrf, o), cct) = makeCircuit tryRtypeAdder
 
 cct1 = foldr (uncurry $ storeRiscvInstMem rim) cct
 	$ zip [0, 4 ..] sampleInstructions
