@@ -193,3 +193,6 @@ debugReadRiscvRegisterFile = peekMultOWires . rrfAllOutputs
 registerFileReadAddress1, registerFileReadAddress2 :: RiscvRegisterFile -> IWire
 registerFileReadAddress1 = rrfReadAddress1
 registerFileReadAddress2 = rrfReadAddress2
+
+registerFileWriteAddress :: RiscvRegisterFile -> IWire
+registerFileWriteAddress = rrfWriteAddress

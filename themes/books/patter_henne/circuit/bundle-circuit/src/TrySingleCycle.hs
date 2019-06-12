@@ -31,7 +31,7 @@ tryCountup = do
 
 tryInstMem :: CircuitBuilder (Clock, ProgramCounter, RiscvInstMem)
 tryInstMem = do
-	cl <- clock 25
+	cl <- clock 30
 	pc <- programCounter
 	pcClocked cl pc
 	ad <- riscvAdder
@@ -102,4 +102,11 @@ tryRtypeAdder = do
 	ad <- riscvAdder
 	connectWire64 (rrfOutput1 rrf) (addrArgA ad)
 	connectWire64 (rrfOutput2 rrf) (addrArgB ad)
+	connectWire0 (clockSignal cl) (rrfClock rrf)
+	one <- constGate0 (Bits 1)
+	connectWire0 one (rrfWrite rrf)
+	connectWire
+		(instructionMemoryOutput rim, 5, 7)
+		(registerFileWriteAddress rrf, 5, 0)
+	connectWire64 (addrResult ad) (rrfInput rrf)
 	return (cl, pc, rim, rrf, addrResult ad)
