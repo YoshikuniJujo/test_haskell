@@ -148,26 +148,41 @@ data RiscvRegisterFile = RiscvRegisterFile {
 	rrfReadAddress1 :: IWire, rrfReadAddress2 :: IWire,
 	rrfWrite :: IWire, rrfWriteAddress :: IWire, rrfInput :: IWire,
 	rrfOutput1 :: OWire, rrfOutput2 :: OWire,
+
+	rrfSwitch :: IWire,
+	rrfOuterClock :: IWire,
+	rrfOuterWrite :: IWire,
+	rrfOuterWriteAddress :: IWire,
+	rrfOuterInput :: IWire,
 	rrfAllOutputs :: [OWire]
 	} deriving Show
 
 riscvRegisterFile :: CircuitBuilder RiscvRegisterFile
 riscvRegisterFile = do
-	(c, radr1, radr2, w, wadr, d, r1, r2, os) <- registerFile 32
-	return $ RiscvRegisterFile c radr1 radr2 w wadr d r1 r2 os
+	(cl, radr1, radr2, wr, wadr, dt, r1, r2, os) <- registerFile 32
+	(swin, swout) <- idGate0
+	(sw0, c, c', co) <- mux2
+	(sw1, w, w', wo) <- mux2
+	(sw2, wa, wa', wao) <- mux2
+	(sw3, d, d', dto) <- mux2
+	connectWire0 swout `mapM_` [sw0, sw1, sw2, sw3]
+	zipWithM_ connectWire64 [co, wo, wao, dto] [cl, wr, wadr, dt]
+	return $ RiscvRegisterFile c radr1 radr2 w wa d r1 r2 swin c' w' wa' d' os
 
 storeRiscvRegisterFile ::
 	RiscvRegisterFile -> Word64 -> Word64 -> Circuit -> Circuit
 storeRiscvRegisterFile rrf wadr d cct = let
+	cct0 = (!! 5) . iterate step $ setBits (rrfSwitch rrf) (Bits 1) cct
 	cct1 = (!! 5) . iterate step
-		$ setBits (rrfWriteAddress rrf) (wordToBits wadr) cct
-	cct2 = setBits (rrfWrite rrf) (Bits 1)
-		. setBits (rrfClock rrf) (Bits 1)
-		$ setBits (rrfInput rrf) (wordToBits d) cct1
+		$ setBits (rrfOuterWriteAddress rrf) (wordToBits wadr) cct0
+	cct2 = setBits (rrfOuterWrite rrf) (Bits 1)
+		. setBits (rrfOuterClock rrf) (Bits 1)
+		$ setBits (rrfOuterInput rrf) (wordToBits d) cct1
 	cct3 = (!! 10) $ iterate step cct2
-	cct4 = (!! 15) . iterate step $ setBits (rrfClock rrf) (Bits 0) cct3
-	cct5 = setBits (rrfWrite rrf) (Bits 0) cct4 in
-	cct5
+	cct4 = (!! 15) . iterate step $ setBits (rrfOuterClock rrf) (Bits 0) cct3
+	cct5 = setBits (rrfOuterWrite rrf) (Bits 0) cct4
+	cct6 = (!! 5) . iterate step $ setBits (rrfSwitch rrf) (Bits 0) cct5 in
+	cct6
 
 readRiscvRegisterFile :: RiscvRegisterFile -> Circuit -> (Word64, Word64)
 readRiscvRegisterFile rrf = peekOWire2 (rrfOutput1 rrf) (rrfOutput2 rrf)
