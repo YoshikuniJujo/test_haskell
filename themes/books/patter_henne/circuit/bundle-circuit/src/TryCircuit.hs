@@ -351,30 +351,17 @@ triStateSample = do
 	zipWithM_ connectWire64 cs is
 	return (sel, o)
 
-fallingEdge :: CircuitBuilder (IWire, OWire)
-fallingEdge = do
-	(iin, iout) <- idGate0
-	(ii, io) <- idGate0
-	(ni, no) <- notGate0
-	(a, b, o) <- andGate0
-	connectWire0 iout ii
-	connectWire0 iout ni
-	connectWire0 io a
-	connectWire0 no b
-	delay ii 3
-	return (iin, o)
-
-tryFallingEdge :: CircuitBuilder OWire
+tryFallingEdge :: CircuitBuilder (Clock, OWire)
 tryFallingEdge = do
-	(_, clo) <- clockGen 15
-	(fi, fo) <- fallingEdge
-	connectWire0 clo fi
-	return fo
+	cl <- clock 15
+	(fi, fo) <- fallingEdge 5
+	connectWire0 (clockSignal cl) fi
+	return (cl, fo)
 
 trySramWrite :: CircuitBuilder (IWire, IWire, IWire, [OWire])
 trySramWrite = do
 	(_, cl) <- clockGen 5
-	(ei, eo) <- fallingEdge
+	(ei, eo) <- fallingEdge 3
 	(c, w, wr) <- andGate0
 	(wr', adr, d, os) <- sramWrite 8
 	connectWire0 cl ei
@@ -392,7 +379,7 @@ storeTrySramWrite (ww, wadr, wd, _) adr d cct = let
 trySram :: Word8 -> CircuitBuilder (IWire, IWire, IWire, OWire)
 trySram n = do
 	(_, cl) <- clockGen 5
-	(ei, eo) <- fallingEdge
+	(ei, eo) <- fallingEdge 3
 	(c, w, wr) <- andGate0
 	(wr', adr, d, o) <- sram n
 	connectWire0 cl ei

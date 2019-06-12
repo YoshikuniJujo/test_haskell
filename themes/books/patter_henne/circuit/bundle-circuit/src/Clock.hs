@@ -28,3 +28,16 @@ clockGen n = do
 	connectWire0 swo i
 	delay i n
 	return (clsw, o)
+
+fallingEdge :: Word8 -> CircuitBuilder (IWire, OWire)
+fallingEdge n = do
+	(cin, cout) <- idGate0
+	(ii, io) <- idGate0
+	(ni, no) <- notGate0
+	(a, b, o) <- andGate0
+	connectWire0 cout ii
+	connectWire0 cout ni
+	connectWire0 io a
+	connectWire0 no b
+	delay ii n
+	return (cin, o)
