@@ -44,7 +44,7 @@ unpackItype w = fromIntegral <$> [
 		0x00000f80,
 		0x0000007f ]
 
-((cl, pc, rim), cct) = makeCircuit tryInstMem
+((cl, pc, rim, igi), cct) = makeCircuit tryLoadMemory
 
 cct1 = foldr (uncurry $ storeRiscvInstMem rim) cct
 	$ zip [0, 4 ..] sampleLoadInstructions

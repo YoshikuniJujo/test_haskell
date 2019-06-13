@@ -9,6 +9,7 @@ import Circuit
 import Clock
 import Memory
 import Alu
+import ImmGen
 
 tryProgramCounter :: CircuitBuilder (Clock, ProgramCounter)
 tryProgramCounter = do
@@ -110,3 +111,11 @@ tryRtypeAdder = do
 		(registerFileWriteAddress rrf, 5, 0)
 	connectWire64 (addrResult ad) (rrfInput rrf)
 	return (cl, pc, rim, rrf, addrResult ad)
+
+tryLoadMemory ::
+	CircuitBuilder (Clock, ProgramCounter, RiscvInstMem, ImmGenItype)
+tryLoadMemory = do
+	(cl, pc, rim) <- tryInstMem
+	ig@(ImmGenItype igin _igout) <- immGenItype
+	connectWire64 (instructionMemoryOutput rim) igin
+	return (cl, pc, rim, ig)
