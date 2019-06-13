@@ -44,10 +44,13 @@ unpackItype w = fromIntegral <$> [
 		0x00000f80,
 		0x0000007f ]
 
-((cl, pc, rim, igi), cct) = makeCircuit tryLoadMemory
+((cl, pc, rim, rrf, igi), cct) = makeCircuit tryLoadMemory
 
 cct1 = foldr (uncurry $ storeRiscvInstMem rim) cct
 	$ zip [0, 4 ..] sampleLoadInstructions
 
-cct2 = resetProgramCounter pc cct1
-cct3 = clockOn cl cct2
+cct2 = foldr (uncurry $ storeRiscvRegisterFile rrf) cct1 $ zip
+	[15, 7, 4, 21] [8, 32, 16, 24]
+cct3 = resetProgramCounter pc cct2
+
+cct4 = clockOn cl cct3
