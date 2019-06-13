@@ -46,12 +46,12 @@ setBits :: IWire -> Bits -> Circuit -> Circuit
 setBits w bs c = c { cctWireStt = insertPush w bs $ cctWireStt c }
 
 insertPush :: Ord k => k -> v -> Map k [v] -> Map k [v]
-insertPush k v m = insert k (vs ++ [v]) m
+insertPush k v m = insert k (init vs ++ [v]) m
 	where vs = fromMaybe [] $ m !? k
 
 peekOWire :: OWire -> Circuit -> Bits
 peekOWire w Circuit { cctGate = gs, cctWireStt = wst } =
-	fromJust $ P.foldr (calcGate wst) (Bits 0) <$> gs !? w
+	fromJustMsg "peekOWire" $ P.foldr (calcGate wst) (Bits 0) <$> gs !? w
 
 checkOWire :: Circuit -> [BasicGate] -> Bits
 checkOWire Circuit { cctWireStt = wst } = P.foldr (calcGate wst) (Bits 0)

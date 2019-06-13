@@ -10,14 +10,14 @@ import Circuit
 import Element
 import Clock
 
-sram :: Word8 -> CircuitBuilder (IWire, IWire, IWire, OWire)
+sram :: Word8 -> CircuitBuilder (IWire, IWire, IWire, OWire, [OWire])
 sram n = do
 	(adrin, adrout) <- idGate64
 	(wr, adr, d, qs) <- sramWrite n
 	(adr', qs', q) <- triStateSelect n
 	connectWire64 adrout `mapM_` [adr, adr']
 	zipWithM_ connectWire64 qs qs'
-	return (wr, adrin, d, q)
+	return (wr, adrin, d, q, qs)
 
 sramWrite :: Word8 -> CircuitBuilder (IWire, IWire, IWire, [OWire])
 sramWrite n = do
@@ -35,7 +35,7 @@ sramWrite n = do
 sramSwitch :: Word8 -> CircuitBuilder (IWire, IWire, IWire, IWire, IWire, OWire)
 sramSwitch n = do
 	(sw, radr, wadr, adr) <- mux2
-	(wr, adr', d, q) <- sram n
+	(wr, adr', d, q, _) <- sram n
 	connectWire (adr, 62, 2) (adr', 62, 0)
 	return (sw, wr, radr, wadr, d, q)
 
@@ -52,7 +52,7 @@ riscvInstMem n = do
 
 storeRiscvInstMem :: RiscvInstMem -> Word64 -> Word64 -> Circuit -> Circuit
 storeRiscvInstMem rim adr d cct = let
-	cct1 = (!! 10) . iterate step
+	cct1 = (!! 15) . iterate step
 		$ setMultBits [wsw, wwr, wwadr, wd] [1, 0, adr, d] cct
 	cct2 = (!! 15) . iterate step
 		$ setMultBits [wsw, wwr, wwadr, wd] [1, 1, adr, d] cct1
@@ -72,6 +72,56 @@ instructionMemoryOutput = rimOutput
 
 readRiscvInstMem :: RiscvInstMem -> Circuit -> Word64
 readRiscvInstMem rim = bitsToWord . peekOWire (rimOutput rim)
+
+data RiscvDataMem = RiscvDataMem {
+	rdmClock :: IWire,
+	rdmWrite :: IWire,
+	rdmRead :: IWire,
+	rdmAddress :: IWire,
+	rdmInput :: IWire,
+	rdmOutput :: OWire,
+
+--	rdmSwitch :: IWire,
+--	rdmOuterAddress :: IWire,
+--	rdmOuterInput :: IWire,
+	rdmDebugOutput :: [OWire]
+	} deriving Show
+
+riscvDataMem :: Word8 -> CircuitBuilder RiscvDataMem
+riscvDataMem n = do
+	(wrin, wrout) <- idGate0
+	(rd, ob, oo) <- orGate0
+	(s, _zero, adrin, adrout) <- mux2
+	(c, fe) <- fallingEdge 7
+	(aa, ab, ao) <- andGate0
+	(wr, adr, d, q, aq) <- sram n
+	connectWire0 wrout ob
+	connectWire0 oo s
+	connectWire64 adrout adr
+	connectWire0 fe aa
+	connectWire0 wrout ab
+	connectWire0 ao wr
+	return $ RiscvDataMem c wrin rd adrin d q aq
+
+dataMemClock :: RiscvDataMem -> IWire
+dataMemClock = rdmClock
+
+storeRiscvDataMem :: RiscvDataMem -> Word64 -> Word64 -> Circuit -> Circuit
+storeRiscvDataMem rdm adr d cct = let
+	cct1 = (!! 15) . iterate step
+		$ setMultBits [wcl, wwr, wwadr, wd] [0, 1, adr, d] cct
+	cct2 = (!! 15) . iterate step
+		$ setMultBits [wcl, wwr, wwadr, wd] [1, 1, adr, d] cct1
+	cct3 = (!! 5) . iterate step
+		$ setMultBits [wcl, wwr, wwadr, wd] [0, 1, adr, d] cct2
+	cct4 = (!! 5) . iterate step
+		$ setMultBits [wcl, wwr, wwadr, wd] [0, 0, adr, d] cct3 in
+	cct4
+	where
+	wcl = rdmClock rdm
+	wwr = rdmWrite rdm
+	wwadr = rdmAddress rdm
+	wd = rdmInput rdm
 
 register :: CircuitBuilder (IWire, IWire, OWire)
 register = do

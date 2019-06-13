@@ -381,7 +381,7 @@ trySram n = do
 	(_, cl) <- clockGen 5
 	(ei, eo) <- fallingEdge 3
 	(c, w, wr) <- andGate0
-	(wr', adr, d, o) <- sram n
+	(wr', adr, d, o, _) <- sram n
 	connectWire0 cl ei
 	connectWire0 eo c
 	connectWire0 wr wr'
@@ -393,3 +393,10 @@ storeTrySram (ww, wadr, wd, _) adr d cct = let
 	cct2 = (!! 25) . iterate step $ setMultBits [ww, wadr, wd] [1, adr, d] cct1
 	cct3 = (!! 5) . iterate step $ setMultBits [ww, wadr, wd] [0, adr, d] cct2 in
 	cct3
+
+tryRiscvDataMem :: CircuitBuilder (Clock, RiscvDataMem)
+tryRiscvDataMem = do
+	cl <- clock 10
+	rdm <- riscvDataMem 16
+	connectWire0 (clockSignal cl) (dataMemClock rdm)
+	return (cl, rdm)
