@@ -6,6 +6,8 @@ import Data.Bits
 import Data.Word
 
 import Circuit
+import Clock
+import Memory
 import TrySingleCycle
 
 sampleStoreInstructions :: [Word64]
@@ -44,3 +46,12 @@ unpackStype w = fromIntegral <$> [
 		0x00007000,
 		0x00000f80,
 		0x0000007f ]
+
+((cl, pc, rim, ig), cct) = makeCircuit tryStoreMemory
+
+cct1 = foldr (uncurry $ storeRiscvInstMem rim) cct
+	$ zip [0, 4 ..] sampleStoreInstructions
+
+cct2 = resetProgramCounter pc cct1
+
+cct3 = clockOn cl cct2
