@@ -130,4 +130,12 @@ tryLoadMemory = do
 	one <- constGate0 $ Bits 1
 	connectWire0 one (rdmRead rdm)
 	connectWire64 (addrResult ad) (rdmAddress rdm)
+
+	connectWire0 (clockSignal cl) (rrfClock rrf)
+	connectWire0 one (rrfWrite rrf)
+	connectWire
+		(instructionMemoryOutput rim, 5, 7)
+		(registerFileWriteAddress rrf, 5, 0)
+	connectWire64 (rdmOutput rdm) (rrfInput rrf)
+
 	return (cl, pc, rim, rrf, ig, ad, rdm)
