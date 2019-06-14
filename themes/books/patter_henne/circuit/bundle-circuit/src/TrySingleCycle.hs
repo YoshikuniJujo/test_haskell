@@ -114,7 +114,7 @@ tryRtypeAdder = do
 
 tryLoadMemory :: CircuitBuilder (
 	Clock, ProgramCounter, RiscvInstMem,
-	RiscvRegisterFile, ImmGenItype, RiscvAdder )
+	RiscvRegisterFile, ImmGenItype, RiscvAdder, RiscvDataMem )
 tryLoadMemory = do
 	(cl, pc, rim) <- tryInstMem
 	ig@(ImmGenItype igin igout) <- immGenItype
@@ -126,4 +126,8 @@ tryLoadMemory = do
 	ad <- riscvAdder
 	connectWire64 (rrfOutput1 rrf) (addrArgA ad)
 	connectWire64 igout (addrArgB ad)
-	return (cl, pc, rim, rrf, ig, ad)
+	rdm <- riscvDataMem 64
+	one <- constGate0 $ Bits 1
+	connectWire0 one (rdmRead rdm)
+	connectWire64 (addrResult ad) (rdmAddress rdm)
+	return (cl, pc, rim, rrf, ig, ad, rdm)

@@ -100,7 +100,7 @@ riscvDataMem n = do
 	(sw1, d, od, dto) <- mux2
 	(wr, adr', d', q, aq) <- sram n
 	connectWire0 swout `mapM_` [sw0, sw1]
-	connectWire64 adro adr'
+	connectWire (adro, 61, 3) (adr', 61, 0)
 	connectWire64 dto d'
 
 	connectWire0 wrout ob
@@ -124,7 +124,7 @@ storeRiscvDataMem rdm adr d cct = let
 		$ setMultBits [sw, wcl, wwr, wwadr, wd] [1, 1, 1, adr, d] cct2
 	cct4 = (!! 5) . iterate step
 		$ setMultBits [sw, wcl, wwr, wwadr, wd] [1, 0, 1, adr, d] cct3
-	cct5 = (!! 5) . iterate step
+	cct5 = (!! 15) . iterate step
 		$ setMultBits [sw, wcl, wwr, wwadr, wd] [1, 0, 0, adr, d] cct4
 	cct6 = (!! 5) . iterate step
 		$ setMultBits [sw, wcl, wwr, wwadr, wd] [0, 0, 0, adr, d] cct5 in
