@@ -141,7 +141,8 @@ tryLoadMemory = do
 	return (cl, pc, rim, rrf, ig, ad, rdm)
 
 tryStoreMemory :: CircuitBuilder (
-	Clock, ProgramCounter, RiscvInstMem, RiscvRegisterFile, ImmGenStype )
+	Clock, ProgramCounter, RiscvInstMem, RiscvRegisterFile, ImmGenStype,
+	RiscvAdder )
 tryStoreMemory = do
 	(cl, pc, rim) <- tryInstMem
 	ig <- immGenStype
@@ -153,4 +154,7 @@ tryStoreMemory = do
 	connectWire
 		(instructionMemoryOutput rim, 5, 20)
 		(registerFileReadAddress2 rrf, 5, 0)
-	return (cl, pc, rim, rrf, ig)
+	ad <- riscvAdder
+	connectWire64 (rrfOutput1 rrf) (addrArgA ad)
+	connectWire64 (igsOutput ig) (addrArgB ad)
+	return (cl, pc, rim, rrf, ig, ad)

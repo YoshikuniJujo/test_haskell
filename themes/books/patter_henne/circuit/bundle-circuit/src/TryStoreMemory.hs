@@ -47,7 +47,7 @@ unpackStype w = fromIntegral <$> [
 		0x00000f80,
 		0x0000007f ]
 
-((cl, pc, rim, rrf, ig), cct) = makeCircuit tryStoreMemory
+((cl, pc, rim, rrf, ig, ad), cct) = makeCircuit tryStoreMemory
 
 cct1 = foldr (uncurry $ storeRiscvInstMem rim) cct
 	$ zip [0, 4 ..] sampleStoreInstructions
