@@ -165,9 +165,21 @@ tryStoreMemory = do
 	connectWire64 (rrfOutput2 rrf) (rdmInput rdm)
 	return (cl, pc, rim, rrf, ig, ad, rdm)
 
-tryBeq :: CircuitBuilder (Clock, ProgramCounter, RiscvInstMem, ImmGenSbtype)
+tryBeq :: CircuitBuilder (
+	Clock, ProgramCounter, RiscvInstMem, RiscvRegisterFile,
+	RiscvSubtractor, ImmGenSbtype )
 tryBeq = do
 	(cl, pc, rim) <- tryInstMem
 	ig <- immGenSbtype
 	connectWire64 (instructionMemoryOutput rim) (igsbInput ig)
-	return (cl, pc, rim, ig)
+	rrf <- riscvRegisterFile
+	connectWire
+		(instructionMemoryOutput rim, 5, 15)
+		(registerFileReadAddress1 rrf, 5, 0)
+	connectWire
+		(instructionMemoryOutput rim, 5, 20)
+		(registerFileReadAddress2 rrf, 5, 0)
+	sb <- riscvSubtractor
+	connectWire64 (rrfOutput1 rrf) (sbrArgA sb)
+	connectWire64 (rrfOutput2 rrf) (sbrArgB sb)
+	return (cl, pc, rim, rrf, sb, ig)

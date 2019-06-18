@@ -38,8 +38,8 @@ peekRiscvAlu rva cct = listToTuple3
 
 data RiscvAdder = RiscvAdder {
 	addrArgA :: IWire, addrArgB :: IWire,
-	addrResult :: OWire, addrOverflow :: OWire
-	} deriving Show
+	addrResult :: OWire, addrOverflow :: OWire }
+	deriving Show
 
 riscvAdder :: CircuitBuilder RiscvAdder
 riscvAdder = do
@@ -56,6 +56,21 @@ setRiscvAdder rvad a b = setBits (addrArgA rvad) (wordToBits a)
 
 peekRiscvAdder :: RiscvAdder -> Circuit -> (Word64, Word64)
 peekRiscvAdder rvad = peekOWire2 (addrResult rvad) (addrOverflow rvad)
+
+data RiscvSubtractor = RiscvSubtractor {
+	sbrArgA :: IWire, sbrArgB :: IWire,
+	sbrResult :: OWire, sbrZero :: OWire, sbrOverflow :: OWire }
+	deriving Show
+
+riscvSubtractor :: CircuitBuilder RiscvSubtractor
+riscvSubtractor = do
+	rva <- riscvAlu
+	opsb <- constGate (Bits 0b0110) 4 0 0
+	connectWire (opsb, 4, 0) (aluOpcode rva, 4, 0)
+	return RiscvSubtractor {
+		sbrArgA = aluArgA rva, sbrArgB = aluArgB rva,
+		sbrResult = aluResult rva, sbrZero = aluZero rva,
+		sbrOverflow = aluOverflow rva }
 
 type RiscvAluWires = (IWire, IWire, IWire, OWire, OWire, OWire)
 
