@@ -164,3 +164,8 @@ tryStoreMemory = do
 	connectWire64 (addrResult ad) (rdmAddress rdm)
 	connectWire64 (rrfOutput2 rrf) (rdmInput rdm)
 	return (cl, pc, rim, rrf, ig, ad, rdm)
+
+tryBeq :: CircuitBuilder (Clock, ProgramCounter, RiscvInstMem)
+tryBeq = do
+	(cl, pc, rim) <- tryInstMem
+	return (cl, pc, rim)
