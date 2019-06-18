@@ -51,7 +51,7 @@ packSbtype ws@[_op, _imm1, _f_, _rs1, _rs2, _imm2] =
 	[op, imm1, f3, rs1, rs2, imm2] = fromIntegral <$> ws
 packSbtype _ = error "Oops!"
 
-((cl, pc, rim, rrf, sb, ig), cct) = makeCircuit tryBeq
+((cl, pc, rim, rrf, sb, ig, ad), cct) = makeCircuit tryBeq
 
 cct1 = foldr (uncurry $ storeRiscvInstMem rim) cct
 	$ zip [0, 4 ..] sampleBeqInstructions

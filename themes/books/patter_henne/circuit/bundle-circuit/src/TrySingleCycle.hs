@@ -6,6 +6,7 @@ import Data.Bits
 import Data.Word
 
 import Circuit
+import Element
 import Clock
 import Memory
 import Alu
@@ -43,6 +44,20 @@ tryInstMem = do
 	rim <- riscvInstMem 64
 	connectWire64 (pcOutput pc) (rimReadAddress rim)
 	return (cl, pc, rim)
+
+tryInstMemBranch :: CircuitBuilder (Clock, ProgramCounter, RiscvInstMem, OWire, IWire)
+tryInstMemBranch = do
+	cl <- clock 45
+	pc <- programCounter
+	pcClocked cl pc
+	ad <- riscvAdder
+	connectWire64 (pcOutput pc) (addrArgA ad)
+	four <- constGate64 (Bits 4)
+	connectWire64 four (addrArgB ad)
+--	connectWire64 (addrResult ad) (pcInput pc)
+	rim <- riscvInstMem 64
+	connectWire64 (pcOutput pc) (rimReadAddress rim)
+	return (cl, pc, rim, addrResult ad, pcInput pc)
 
 sampleInstructions :: [Word64]
 sampleInstructions = fromIntegral <$> [
@@ -167,9 +182,9 @@ tryStoreMemory = do
 
 tryBeq :: CircuitBuilder (
 	Clock, ProgramCounter, RiscvInstMem, RiscvRegisterFile,
-	RiscvSubtractor, ImmGenSbtype )
+	RiscvSubtractor, ImmGenSbtype, RiscvAdder )
 tryBeq = do
-	(cl, pc, rim) <- tryInstMem
+	(cl, pc, rim, npc, pcin) <- tryInstMemBranch
 	ig <- immGenSbtype
 	connectWire64 (instructionMemoryOutput rim) (igsbInput ig)
 	rrf <- riscvRegisterFile
@@ -182,4 +197,12 @@ tryBeq = do
 	sb <- riscvSubtractor
 	connectWire64 (rrfOutput1 rrf) (sbrArgA sb)
 	connectWire64 (rrfOutput2 rrf) (sbrArgB sb)
-	return (cl, pc, rim, rrf, sb, ig)
+	ad <- riscvAdder
+	connectWire64 (pcOutput pc) (addrArgA ad)
+	connectWire64 (igsbOutput ig) (addrArgB ad)
+	(sl, pc0, pc1, pcout) <- mux2
+	connectWire0 (sbrZero sb) sl
+	connectWire64 npc pc0
+	connectWire64 (addrResult ad) pc1
+	connectWire64 pcout pcin
+	return (cl, pc, rim, rrf, sb, ig, ad)
