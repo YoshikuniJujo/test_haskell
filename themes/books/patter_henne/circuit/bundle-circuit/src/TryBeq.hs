@@ -9,6 +9,7 @@ import Data.Int
 import Circuit
 import Clock
 import Memory
+import ImmGen
 import TrySingleCycle
 
 sampleBeqInstructions :: [Word64]
@@ -34,10 +35,9 @@ data Reg = Reg Word8 deriving Show
 data Beq = Beq Reg Reg Offset | Nop deriving Show
 
 beqToWords :: Beq -> [Word8]
-beqToWords (Beq (Reg rs1) (Reg rs2) imm_) =
+beqToWords (Beq (Reg rs1) (Reg rs2) imm) =
 	[0x67, fromIntegral imm1, 0, rs1, rs2, fromIntegral imm2]
 	where
-	imm = imm_ `shiftR` 1
 	imm1 = imm .&. 0x1e .|. imm `shiftR` 11 .&. 0x01
 	imm2 = imm `shiftR` 5 .&. 0x3f .|. imm `shiftR` 6 .&. 0x40
 beqToWords Nop = [0x13, 0, 0, 0, 0, 0]
@@ -50,7 +50,7 @@ packSbtype ws@[_op, _imm1, _f_, _rs1, _rs2, _imm2] =
 	[op, imm1, f3, rs1, rs2, imm2] = fromIntegral <$> ws
 packSbtype _ = error "Oops!"
 
-((cl, pc, rim), cct) = makeCircuit tryBeq
+((cl, pc, rim, ig), cct) = makeCircuit tryBeq
 
 cct1 = foldr (uncurry $ storeRiscvInstMem rim) cct
 	$ zip [0, 4 ..] sampleBeqInstructions

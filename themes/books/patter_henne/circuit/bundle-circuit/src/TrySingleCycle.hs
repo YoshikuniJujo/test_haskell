@@ -165,7 +165,9 @@ tryStoreMemory = do
 	connectWire64 (rrfOutput2 rrf) (rdmInput rdm)
 	return (cl, pc, rim, rrf, ig, ad, rdm)
 
-tryBeq :: CircuitBuilder (Clock, ProgramCounter, RiscvInstMem)
+tryBeq :: CircuitBuilder (Clock, ProgramCounter, RiscvInstMem, ImmGenSbtype)
 tryBeq = do
 	(cl, pc, rim) <- tryInstMem
-	return (cl, pc, rim)
+	ig <- immGenSbtype
+	connectWire64 (instructionMemoryOutput rim) (igsbInput ig)
+	return (cl, pc, rim, ig)
