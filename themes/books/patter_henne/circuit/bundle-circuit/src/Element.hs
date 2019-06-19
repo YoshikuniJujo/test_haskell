@@ -103,6 +103,12 @@ mux2 = do
 	let	(i0, i1) = listToTuple2 is
 	return (sl, i0, i1, o)
 
+mux4 :: CircuitBuilder (IWire, IWire, IWire, IWire, IWire, OWire)
+mux4 = do
+	(sl, is, o) <- multiplexer 4
+	let	(i0, i1, i2, i3) = listToTuple4 is
+	return (sl, i0, i1, i2, i3, o)
+
 multiplexer :: Word16 -> CircuitBuilder (IWire, [IWire], OWire)
 multiplexer n = do
 	(slin, sout) <- idGate 64 0 0
