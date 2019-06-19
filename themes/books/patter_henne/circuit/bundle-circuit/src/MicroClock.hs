@@ -1,4 +1,5 @@
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+-- {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module MicroClock () where
 
@@ -53,17 +54,54 @@ cycle4 = do
 	connectWire (o, 1, 0) (oin, 1, 1)
 	return (iin, oout)
 
-cycling :: CircuitBuilder Register
+cycling :: CircuitBuilder (Register, OWire)
 cycling = do
 	rg <- register
 	(ci, co) <- cycle4
 	connectWire64 (rgOutput rg) ci
 	connectWire64 co (rgInput rg)
-	return rg
+	return (rg, co)
 
 tryCycling :: CircuitBuilder (Clock, Register)
 tryCycling = do
 	cl <- clock 10
-	rg <- cycling
+	(rg, _) <- cycling
 	connectWire0 (clockSignal cl) (rgClock rg)
 	return (cl, rg)
+
+unit1 :: CircuitBuilder (Register, IWire, IWire, IWire, OWire)
+unit1 = do
+	(mcin, mcout) <- idGate0
+	(sl1, ec, mc, co) <- mux2
+	connectWire0 mcout mc
+	(sl2, one', end', cd) <- mux2
+	one <- constGate0 $ Bits 1
+	(ein, eout) <- nand01
+	connectWire0 one one'
+	connectWire0 eout end'
+	rg <- register
+	connectWire0 co (rgClock rg)
+	connectWire0 cd (rgInput rg)
+	connectWire0 (rgOutput rg) sl1
+	connectWire0 (rgOutput rg) sl2
+	(a, b, o) <- andGate0
+	connectWire0 (rgOutput rg) a
+	connectWire0 mcout b
+	return (rg, ec, mcin, ein, o)
+
+useMicroClock :: CircuitBuilder (Register, Register, IWire, IWire)
+useMicroClock = do
+	(st, o) <- cycling
+	(r, ec, mc, e, cs) <- unit1
+	connectWire0 cs (rgClock st)
+	connectWire64 o e
+	return (r, st, ec, mc)
+
+tryMicroClock :: CircuitBuilder (Clock, Clock, Register, Register)
+tryMicroClock = do
+	ec <- clock 255
+	mc <- clock 20
+	(r, st, ecin, mcin) <- useMicroClock
+	connectWire0 (clockSignal ec) ecin
+	connectWire0 (clockSignal mc) mcin
+	return (ec, mc, r, st)
