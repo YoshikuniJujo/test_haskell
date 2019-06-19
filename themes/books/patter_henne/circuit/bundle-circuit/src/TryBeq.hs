@@ -12,6 +12,7 @@ import Memory
 import ImmGen
 import Alu
 import TrySingleCycle
+import MakeInstruction
 
 sampleBeqInstructions :: [Word64]
 sampleBeqInstructions = fromIntegral . packSbtype . beqToWords <$> [
@@ -29,27 +30,6 @@ beq rs1,rs2,offset
 beq t5, t6, write_tohost
 beq x30, x31, write_tohost
 -}
-
-type Offset = Int16
-data Reg = Reg Word8 deriving Show
-
-data Beq = Beq Reg Reg Offset | Nop deriving Show
-
-beqToWords :: Beq -> [Word8]
-beqToWords (Beq (Reg rs1) (Reg rs2) imm) =
-	[0x67, fromIntegral imm1, 0, rs1, rs2, fromIntegral imm2]
-	where
-	imm1 = imm .&. 0x1e .|. imm `shiftR` 11 .&. 0x01
-	imm2 = imm `shiftR` 5 .&. 0x3f .|. imm `shiftR` 6 .&. 0x40
-beqToWords Nop = [0x13, 0, 0, 0, 0, 0]
-
-packSbtype :: [Word8] -> Word32
-packSbtype ws@[_op, _imm1, _f_, _rs1, _rs2, _imm2] = 
-	op .|. imm1 `shiftL` 7 .|. f3 `shiftL` 12 .|. rs1 `shiftL` 15 .|.
-	rs2 `shiftL` 20 .|. imm2 `shiftL` 25
-	where
-	[op, imm1, f3, rs1, rs2, imm2] = fromIntegral <$> ws
-packSbtype _ = error "Oops!"
 
 ((cl, pc, rim, rrf, sb, ig, ad), cct) = makeCircuit tryBeq
 
