@@ -18,6 +18,9 @@ nandGate ln pi1 pi2 po = do
 	connectWire (o, ln, po) (ni, ln, po)
 	return (a, b, no)
 
+nandGate0 :: CircuitBuilder (IWire, IWire, OWire)
+nandGate0 = nandGate 1 0 0 0
+
 norGate :: BitLen -> BitPosIn -> BitPosIn -> BitPosOut ->
 	CircuitBuilder (IWire, IWire, OWire)
 norGate ln pi1 pi2 po = do
@@ -47,6 +50,9 @@ xorGate ln pi1 pi2 po = do
 	connectWire (oo, ln, po) (aa, ln, po)
 	connectWire (nao, ln, po) (ab, ln, po)
 	return (ain, bin, ao)
+
+xorGate0 :: CircuitBuilder (IWire, IWire, OWire)
+xorGate0 = xorGate 1 0 0 0
 
 orGate3 :: BitLen -> BitPosIn -> CircuitBuilder ((IWire, IWire, IWire), OWire)
 orGate3 l p = first listToTuple3 <$> multiple orGate 3 l p
