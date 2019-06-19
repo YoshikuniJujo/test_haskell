@@ -9,15 +9,7 @@ import Circuit
 import Clock
 import Memory
 import TrySingleCycle
-import MakeInstruction
-
-sampleStoreInstructions :: [Word64]
-sampleStoreInstructions = encodeInst <$> [
-	Store (Reg 1) 8 (Reg 2),	-- sd ra,8(sp)		x1 -> x2 + 8
-	Store (Reg 3) 24 (Reg 2),	-- sd gp,24(sp)		x3 -> x2 + 24
-	Store (Reg 4) 32 (Reg 2),	-- sd tp,32(sp)		x4 -> x2 + 32
-	Store (Reg 17) 72 (Reg 8),	-- sd x17,64(x8)	x17 -> x8 + 64
-	Store (Reg 28) 16 (Reg 11) ]	-- sd x28,16(x11)	x28 -> x11 + 16
+import SampleInstructions
 
 ((cl, pc, rim, rrf, ig, ad, rdm), cct) = makeCircuit tryStoreMemory
 

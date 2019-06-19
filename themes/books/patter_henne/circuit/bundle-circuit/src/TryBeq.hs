@@ -12,18 +12,7 @@ import Memory
 import ImmGen
 import Alu
 import TrySingleCycle
-import MakeInstruction
-
-sampleBeqInstructions :: [Word64]
-sampleBeqInstructions = encodeInst <$> [
-	Beq (Reg 30) (Reg 31) 20,		-- x30 == x31
-	Nop,
-	Nop,
-	Beq (Reg 10) (Reg 11) 16,		-- x10 == x11
-	Nop,
-	Beq (Reg 5) (Reg 6) 28,			-- x5 /= x6
-	Beq (Reg 28) (Reg 29) (- 12),		-- x28 == x29
-	Beq (Reg 12) (Reg 13) (- 12) ]		-- x12 == x13
+import SampleInstructions
 
 {-
 beq rs1,rs2,offset
