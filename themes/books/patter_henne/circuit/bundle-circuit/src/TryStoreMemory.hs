@@ -12,7 +12,7 @@ import TrySingleCycle
 import MakeInstruction
 
 sampleStoreInstructions :: [Word64]
-sampleStoreInstructions = fromIntegral . packStore <$> [
+sampleStoreInstructions = encodeInst <$> [
 	Store (Reg 1) 8 (Reg 2),	-- sd ra,8(sp)		x1 -> x2 + 8
 	Store (Reg 3) 24 (Reg 2),	-- sd gp,24(sp)		x3 -> x2 + 24
 	Store (Reg 4) 32 (Reg 2),	-- sd tp,32(sp)		x4 -> x2 + 32

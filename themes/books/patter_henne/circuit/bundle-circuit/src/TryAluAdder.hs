@@ -12,7 +12,7 @@ import TrySingleCycle
 import MakeInstruction
 
 sampleRtypeInstructions :: [Word64]
-sampleRtypeInstructions = fromIntegral . packRtypeInst <$> [
+sampleRtypeInstructions = encodeInst <$> [
 	Add (Reg 15) (Reg 10) (Reg 15), -- add a5, a0, a5	x15, x10, x15
 	Sub (Reg 30) (Reg 1) (Reg 2),	-- sub r30, r01, r02	x30, x1, x2
 	Add (Reg 15) (Reg 15) (Reg 4),	-- add a5, a5, tp	x15, x15, x4

@@ -15,7 +15,7 @@ import TrySingleCycle
 import MakeInstruction
 
 sampleBeqInstructions :: [Word64]
-sampleBeqInstructions = fromIntegral . packSbtype . beqToWords <$> [
+sampleBeqInstructions = encodeInst <$> [
 	Beq (Reg 30) (Reg 31) 20,		-- x30 == x31
 	Nop,
 	Nop,

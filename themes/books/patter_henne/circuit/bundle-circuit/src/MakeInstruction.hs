@@ -1,7 +1,7 @@
 {-# LANGUAGE BinaryLiterals #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module MakeInstruction where
+module MakeInstruction (Reg(..), Inst(..), encodeInst) where
 
 import Data.Bits
 import Data.Word
@@ -10,12 +10,26 @@ import Data.Int
 data Reg = Reg Word8 deriving Show
 type Imm = Word8
 
-data Rtype = Add Reg Reg Reg | Sub Reg Reg Reg deriving Show
+data Inst
+	= Load Reg Imm Reg | Store Reg Imm Reg
+	| Add Reg Reg Reg | Sub Reg Reg Reg
+	| Beq Reg Reg Offset | Nop
+	deriving Show
+
+encodeInst :: Inst -> Word64
+encodeInst (Load rd imm rs1) = fromIntegral . packLoad $ LLoad rd imm rs1
+encodeInst (Store rs2 imm rs1) = fromIntegral . packStore $ SStore rs2 imm rs1
+encodeInst (Add rd rs1 rs2) = fromIntegral . packRtypeInst $ AAdd rd rs1 rs2
+encodeInst (Sub rd rs1 rs2) = fromIntegral . packRtypeInst $ SSub rd rs1 rs2
+encodeInst (Beq rs1 rs2 os) = fromIntegral . packSbtype . beqToWords $ BBeq rs1 rs2 os
+encodeInst Nop = fromIntegral . packSbtype $ beqToWords NNop
+
+data Rtype = AAdd Reg Reg Reg | SSub Reg Reg Reg deriving Show
 
 packRtypeInst :: Rtype -> Word32
-packRtypeInst (Add (Reg rd) (Reg rs1) (Reg rs2)) =
+packRtypeInst (AAdd (Reg rd) (Reg rs1) (Reg rs2)) =
 	packRType [0, rs2, rs1, 0, rd, 0b0110011]
-packRtypeInst (Sub (Reg rd) (Reg rs1) (Reg rs2)) =
+packRtypeInst (SSub (Reg rd) (Reg rs1) (Reg rs2)) =
 	packRType [0b0100000, rs2, rs1, 0, rd, 0b0110011]
 
 -- R type: 7 5 5 3 5 7
@@ -40,10 +54,10 @@ unpackRType w = fromIntegral <$> [
 		0x00000f80,
 		0x0000007f ]
 
-data Load = Load Reg Imm Reg deriving Show
+data Load = LLoad Reg Imm Reg deriving Show
 
 packLoad :: Load -> Word32
-packLoad (Load (Reg rd) imm (Reg r1)) = packIType [imm, r1, 3, rd, 3]
+packLoad (LLoad (Reg rd) imm (Reg r1)) = packIType [imm, r1, 3, rd, 3]
 
 packIType :: [Word8] -> Word32
 packIType ws = imm .|. r1 .|. f3 .|. rd .|. op
@@ -64,10 +78,10 @@ unpackItype w = fromIntegral <$> [
 		0x00000f80,
 		0x0000007f ]
 
-data Store = Store Reg Imm Reg deriving Show
+data Store = SStore Reg Imm Reg deriving Show
 
 packStore :: Store -> Word32
-packStore (Store (Reg rs2) imm (Reg rs1)) =
+packStore (SStore (Reg rs2) imm (Reg rs1)) =
 	packStype [imm `shiftR` 5, rs2, rs1, 3, imm .&. 0x1f, 35]
 
 packStype :: [Word8] -> Word32
@@ -93,15 +107,15 @@ unpackStype w = fromIntegral <$> [
 
 type Offset = Int16
 
-data Beq = Beq Reg Reg Offset | Nop deriving Show
+data Beq = BBeq Reg Reg Offset | NNop deriving Show
 
 beqToWords :: Beq -> [Word8]
-beqToWords (Beq (Reg rs1) (Reg rs2) imm) =
+beqToWords (BBeq (Reg rs1) (Reg rs2) imm) =
 	[0x67, fromIntegral imm1, 0, rs1, rs2, fromIntegral imm2]
 	where
 	imm1 = imm .&. 0x1e .|. imm `shiftR` 11 .&. 0x01
 	imm2 = imm `shiftR` 5 .&. 0x3f .|. imm `shiftR` 6 .&. 0x40
-beqToWords Nop = [0x13, 0, 0, 0, 0, 0]
+beqToWords NNop = [0x13, 0, 0, 0, 0, 0]
 
 packSbtype :: [Word8] -> Word32
 packSbtype ws@[_op, _imm1, _f_, _rs1, _rs2, _imm2] = 

@@ -13,7 +13,7 @@ import Alu
 import MakeInstruction
 
 sampleLoadInstructions :: [Word64]
-sampleLoadInstructions = fromIntegral . packLoad <$> [
+sampleLoadInstructions = encodeInst <$> [
 	Load (Reg 10) 0 (Reg 15),			-- x15: 8	8	1234567890
 	Load (Reg 10) 56 (Reg 15),			-- x15: 8	64	9876543210
 	Load (Reg 3) 16 (Reg 7),			-- x7 : 32	48	9999999999
