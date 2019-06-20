@@ -263,6 +263,7 @@ registerFileWriteAddress = rrfWriteAddress
 data Register = Register {
 	rgSwitch :: IWire, rgManualClock :: IWire, rgManualInput :: IWire,
 	rgClock :: IWire, rgInput :: IWire, rgOutput :: OWire }
+	deriving Show
 
 registerClock, registerInput :: Register -> IWire
 registerClock = rgClock
