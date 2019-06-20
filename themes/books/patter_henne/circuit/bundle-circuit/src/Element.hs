@@ -1,3 +1,4 @@
+{-# LANGUAGE TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Element where
@@ -90,7 +91,8 @@ multiple ::
 	(BitLen -> BitPosIn -> BitPosIn -> BitPosOut ->
 			CircuitBuilder (IWire, IWire, OWire)) ->
 		Word16 -> BitLen -> BitPosIn -> CircuitBuilder ([IWire], OWire)
-multiple _ n _ _ | n < 1 = error "Oops!"
+multiple _ n _ _ | n < 0 = error "Oops!"
+multiple _ 0 l p = ([] ,) <$> constGate (Bits 0) l p p
 multiple _ 1 l p = first (: []) <$> idGate l p p
 multiple g 2 l p = (\(i1, i2, o) -> ([i1, i2], o)) <$> g l p p p
 multiple g n l p = do
@@ -276,8 +278,8 @@ sepSnd (x, ys) = zip (repeat x) ys
 trSep :: [(a, [b])] -> [[(a, b)]]
 trSep = transpose . map sepSnd
 
-pla :: Word8 -> [([Bit], [Bit])] -> CircuitBuilder ([IWire], [OWire])
-pla n_ tbl = do
+plaGen :: Word8 -> [([Bit], [Bit])] -> CircuitBuilder ([IWire], [OWire])
+plaGen n_ tbl = do
 	(iins, iouts) <- unzip <$> n `replicateM` idGate0
 	rs <- pla1 iouts `mapM` trSep tbl
 	return (iins, rs)
@@ -293,7 +295,7 @@ connectWireOutsToIn os i = zipWithM_ (\n o -> connectWire (o, 1, 0) (i, 1, n)) [
 pla8 :: [(Word8, Word8)] -> CircuitBuilder (IWire, OWire)
 pla8 tbl_ = do
 	(iin, iout) <- idGate64
-	(iss, outs) <- pla 8 tbl
+	(iss, outs) <- plaGen 8 tbl
 	(oin, oout) <- idGate64
 	connectWireOutToIns iout iss
 	connectWireOutsToIn outs oin
