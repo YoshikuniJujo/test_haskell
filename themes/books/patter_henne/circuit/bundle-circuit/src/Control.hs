@@ -1,3 +1,4 @@
+{-# LANGUAGE BinaryLiterals #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control where
@@ -38,16 +39,25 @@ dispatch2 = do
 	connectWire (b3, 1, 0) (nstin, 1, 3)
 	return (instin, nstout)
 
-addrCtrl :: CircuitBuilder (IWire, OWire)
-addrCtrl = pla8 $ zip [0 ..] [3, 1, 2, 3, 0, 0, 3, 0, 0]
+microMemory :: CircuitBuilder (IWire, OWire)
+microMemory = pla8_16 $ zip [0 ..] [
+	0b0000000011,
+	0b0000000001,
+	0b1000000010,
+	0b1101000011,
+	0b1111000000,
+	0b1000100000,
+	0b0000001011,
+	0b0010001000,
+	0b0000010100 ]
 
 checkStop :: CircuitBuilder (IWire, OWire)
 checkStop = pla8 $ zip [0 ..] [1, 1, 1, 1, 0, 0, 1, 0, 0]
 
-control :: CircuitBuilder (Register, IWire, OWire)
+control :: CircuitBuilder (Register, IWire, OWire, OWire)
 control = do
 	(instin, instout) <- idGate64
-	(acin, acout) <- addrCtrl
+	(acin, acout) <- microMemory
 	zero <- constGate64 $ Bits 0
 	(d1in, d1out) <- dispatch1
 	connectWire64 instout d1in
@@ -55,7 +65,7 @@ control = do
 	connectWire64 instout d2in
 	(incin, incout) <- inc8
 	(sl, i0, i1, i2, i3, mo) <- mux4
-	connectWire64 acout sl
+	connectWire (acout, 2, 0) (sl, 2, 0)
 	connectWire64 zero i0
 	connectWire64 d1out i1
 	connectWire64 d2out i2
@@ -66,12 +76,14 @@ control = do
 	connectWire64 (registerOutput st) acin
 	(csi, cso) <- checkStop
 	connectWire64 mo csi
-	return (st, instin, cso)
+	(oin, oout) <- idGate64
+	connectWire (acout, 8, 2) (oin, 8, 0)
+	return (st, instin, cso, oout)
 
 tryControl :: CircuitBuilder (Clock, Register, IWire)
 tryControl = do
 	cl <- clock 15
-	(r, inst, _) <- control
+	(r, inst, _, _) <- control
 	connectWire0 (clockSignal cl) (registerClock r)
 	return (cl, r, inst)
 
@@ -89,25 +101,25 @@ cctTryControl si = let
 	cct2 = clockOn cl cct1 in
 	(registerOutput rg, cct2)
 
-microControl :: CircuitBuilder (Clock, Register, IWire, Register, IWire)
+microControl :: CircuitBuilder (Clock, Register, IWire, Register, IWire, OWire)
 microControl = do
-	(st, inst, ne) <- control
+	(st, inst, ne, out) <- control
 	(mc, mcf, ec) <- microClocked 18 (registerClock st) ne
-	return (mc, mcf, ec, st, inst)
+	return (mc, mcf, ec, st, inst, out)
 
-tryMicroControl :: CircuitBuilder (Clock, Clock, Register, Register, IWire)
+tryMicroControl :: CircuitBuilder (Clock, Clock, Register, Register, IWire, OWire)
 tryMicroControl = do
 	ecl <- clock 240
-	(mc, mcf, ecin, st, inst) <- microControl
+	(mc, mcf, ecin, st, inst, out) <- microControl
 	connectWire0 (clockSignal ecl) ecin
-	return (ecl, mc, mcf, st, inst)
+	return (ecl, mc, mcf, st, inst, out)
 
 cctMicroControl :: Word64 -> (OWire, Circuit)
 cctMicroControl si = let
-	((ecl, mcl, mcf, st, inst), cct) = makeCircuit tryMicroControl
+	((ecl, mcl, mcf, st, inst, out), cct) = makeCircuit tryMicroControl
 	cct0 = setBits inst (Bits si) cct
 	cct1 = resetRegister mcf cct0
 	cct2 = resetRegister st cct1
 	cct3 = clockOn mcl cct2
 	cct4 = clockOn ecl cct3 in
-	(registerOutput st, cct4)
+	(out, cct4)

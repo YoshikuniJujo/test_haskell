@@ -301,3 +301,13 @@ pla8 tbl_ = do
 	connectWireOutsToIn outs oin
 	return (iin, oout)
 	where tbl = (numToBits 8 *** numToBits 8) <$> tbl_
+
+pla8_16 :: [(Word8, Word16)] -> CircuitBuilder (IWire, OWire)
+pla8_16 tbl_ = do
+	(iin, iout) <- idGate64
+	(iss, outs) <- plaGen 8 tbl
+	(oin, oout) <- idGate64
+	connectWireOutToIns iout iss
+	connectWireOutsToIn outs oin
+	return (iin, oout)
+	where tbl = (numToBits 8 *** numToBits 16) <$> tbl_
