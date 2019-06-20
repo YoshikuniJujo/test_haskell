@@ -8,6 +8,7 @@ import Circuit
 import Element
 import Clock
 import Memory
+import MicroClock
 import MakeInstruction
 
 dispatch1 :: CircuitBuilder (IWire, OWire)
@@ -40,7 +41,10 @@ dispatch2 = do
 addrCtrl :: CircuitBuilder (IWire, OWire)
 addrCtrl = pla8 $ zip [0 ..] [3, 1, 2, 3, 0, 0, 3, 0, 0]
 
-control :: CircuitBuilder (Register, IWire)
+checkStop :: CircuitBuilder (IWire, OWire)
+checkStop = pla8 $ zip [0 ..] [1, 1, 1, 1, 0, 0, 1, 0, 0]
+
+control :: CircuitBuilder (Register, IWire, OWire)
 control = do
 	(instin, instout) <- idGate64
 	(acin, acout) <- addrCtrl
@@ -60,12 +64,14 @@ control = do
 	connectWire64 mo (registerInput st)
 	connectWire64 (registerOutput st) incin
 	connectWire64 (registerOutput st) acin
-	return (st, instin)
+	(csi, cso) <- checkStop
+	connectWire64 mo csi
+	return (st, instin, cso)
 
 tryControl :: CircuitBuilder (Clock, Register, IWire)
 tryControl = do
 	cl <- clock 15
-	(r, inst) <- control
+	(r, inst, _) <- control
 	connectWire0 (clockSignal cl) (registerClock r)
 	return (cl, r, inst)
 
@@ -82,3 +88,26 @@ cctTryControl si = let
 	cct1 = resetRegister rg cct0
 	cct2 = clockOn cl cct1 in
 	(registerOutput rg, cct2)
+
+microControl :: CircuitBuilder (Clock, Register, IWire, Register, IWire)
+microControl = do
+	(st, inst, ne) <- control
+	(mc, mcf, ec) <- microClocked 18 (registerClock st) ne
+	return (mc, mcf, ec, st, inst)
+
+tryMicroControl :: CircuitBuilder (Clock, Clock, Register, Register, IWire)
+tryMicroControl = do
+	ecl <- clock 240
+	(mc, mcf, ecin, st, inst) <- microControl
+	connectWire0 (clockSignal ecl) ecin
+	return (ecl, mc, mcf, st, inst)
+
+cctMicroControl :: Word64 -> (OWire, Circuit)
+cctMicroControl si = let
+	((ecl, mcl, mcf, st, inst), cct) = makeCircuit tryMicroControl
+	cct0 = setBits inst (Bits si) cct
+	cct1 = resetRegister mcf cct0
+	cct2 = resetRegister st cct1
+	cct3 = clockOn mcl cct2
+	cct4 = clockOn ecl cct3 in
+	(registerOutput st, cct4)
