@@ -5,10 +5,14 @@ module Element where
 import Control.Arrow
 import Control.Monad
 import Data.Foldable
+import Data.List
+import Data.Bool
 import Data.Word
 
 import Circuit
 import Tools
+
+import qualified Data.Bits as B
 
 nandGate :: BitLen -> BitPosIn -> BitPosIn -> BitPosOut ->
 	CircuitBuilder (IWire, IWire, OWire)
@@ -197,3 +201,101 @@ invert = do
 	let	(x, nx) = listToTuple2 xnx
 	zipWithM_ connectWire64 [xout, xout, nxout] [nxin, x, nx]
 	return (xinv, xin, xout')
+
+inc :: Word8 -> OWire -> IWire -> CircuitBuilder OWire
+inc 0 o i = do
+	(ni, no) <- notGate0
+	connectWire0 o ni
+	connectWire0 no i
+	(ci, co) <- idGate0
+	connectWire0 o ci
+	return co
+inc n o i = do
+	c <- inc (n - 1) o i
+	(xa, xb, xo) <- xorGate0
+	(aa, ab, ao) <- andGate0
+	connectWire0 c xa
+	connectWire0 c aa
+	connectWire (o, 1, n) (xb, 1, 0)
+	connectWire (o, 1, n) (ab, 1, 0)
+	connectWire (xo, 1, 0) (i, 1, n)
+	return ao
+
+inc8 :: CircuitBuilder (IWire, OWire)
+inc8 = do
+	(iin, iout) <- idGate64
+	(oin, oout) <- idGate64
+	_ <- inc 7 iout oin
+	return (iin, oout)
+
+data Bit = O | I deriving (Show, Eq)
+
+numToBits :: B.Bits n => Word8 -> n -> [Bit]
+numToBits c n = map (bool O I . B.testBit n) [0 .. fromIntegral c - 1]
+
+bitIndex :: (a, a) -> Bit -> a
+bitIndex (x, _) O = x
+bitIndex (_, y) I = y
+
+frbk0 :: OWire -> CircuitBuilder (OWire, OWire)
+frbk0 o = do
+	(ni, no) <- notGate0
+	connectWire0 o ni
+	return (no, o)
+
+allAnd0 :: [OWire] -> CircuitBuilder OWire
+allAnd0 = allAnd 1 0
+
+allAnd :: BitLen -> BitPosIn -> [OWire] -> CircuitBuilder OWire
+allAnd ln ps os = do
+	(as, o) <- multiAndGate (fromIntegral $ length os) ln ps
+	zipWithM_ connectWire64 os as
+	return o
+
+allOr0 :: [OWire] -> CircuitBuilder OWire
+allOr0 = allOr 1 0
+
+allOr :: BitLen -> BitPosIn -> [OWire] -> CircuitBuilder OWire
+allOr ln ps os = do
+	(xs, o) <- multiOrGate (fromIntegral $ length os) ln ps
+	zipWithM_ connectWire64 os xs
+	return o
+
+pla1 :: [OWire] -> [([Bit], Bit)] -> CircuitBuilder OWire
+pla1 iouts tbl1 = do
+	fbs <- frbk0 `mapM` iouts
+	let	ws = map (zipWith bitIndex fbs) ons
+	r <- allOr0 =<< mapM allAnd0 ws
+	return r
+	where
+	ons = fst <$> filter ((== I) . snd) tbl1
+
+sepSnd :: (a, [b]) -> [(a, b)]
+sepSnd (x, ys) = zip (repeat x) ys
+
+trSep :: [(a, [b])] -> [[(a, b)]]
+trSep = transpose . map sepSnd
+
+pla :: Word8 -> [([Bit], [Bit])] -> CircuitBuilder ([IWire], [OWire])
+pla n_ tbl = do
+	(iins, iouts) <- unzip <$> n `replicateM` idGate0
+	rs <- pla1 iouts `mapM` trSep tbl
+	return (iins, rs)
+	where
+	n = fromIntegral n_
+
+connectWireOutToIns :: OWire -> [IWire] -> CircuitBuilder ()
+connectWireOutToIns o is = zipWithM_ (\n i -> connectWire (o, 1, n) (i, 1, 0)) [0 ..] is
+
+connectWireOutsToIn :: [OWire] -> IWire -> CircuitBuilder ()
+connectWireOutsToIn os i = zipWithM_ (\n o -> connectWire (o, 1, 0) (i, 1, n)) [0 ..] os
+
+pla8 :: [(Word8, Word8)] -> CircuitBuilder (IWire, OWire)
+pla8 tbl_ = do
+	(iin, iout) <- idGate64
+	(iss, outs) <- pla 8 tbl
+	(oin, oout) <- idGate64
+	connectWireOutToIns iout iss
+	connectWireOutsToIn outs oin
+	return (iin, oout)
+	where tbl = (numToBits 8 *** numToBits 8) <$> tbl_

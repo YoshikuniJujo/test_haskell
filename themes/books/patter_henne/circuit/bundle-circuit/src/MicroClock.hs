@@ -9,40 +9,8 @@ import Data.Word
 
 import Circuit
 import Element
+import Memory
 import Clock
-
-data Register = Register {
-	rgSwitch :: IWire, rgManualClock :: IWire, rgManualInput :: IWire,
-	rgClock :: IWire, rgInput :: IWire, rgOutput :: OWire }
-
-registerClock, registerInput :: Register -> IWire
-registerClock = rgClock
-registerInput = rgInput
-
-registerOutput :: Register -> OWire
-registerOutput = rgOutput
-
-register :: CircuitBuilder Register
-register = do
-	(swin, swout) <- idGate0
-	(sw, cc, mc, oc) <- mux2
-	(sw', ci, mi, oi) <- mux2
-	(c, d, q, _q_) <- dflipflop
-	connectWire0 swout sw
-	connectWire0 swout sw'
-	connectWire0 oc c
-	connectWire64 oi d
-	return $ Register swin mc mi cc ci q
-
-resetRegister :: Register -> Circuit -> Circuit
-resetRegister rg cct = let
-	cct1 = (!! 10) . iterate step $ setBits (rgSwitch rg) (Bits 1) cct
-	cct2 = (!! 20) . iterate step
-		. setBits (rgManualInput rg) (Bits 0)
-		$ setBits (rgManualClock rg) (Bits 1) cct1
-	cct3 = (!! 20) . iterate step $ setBits (rgManualClock rg) (Bits 0) cct2
-	cct4 = (!! 10) . iterate step $ setBits (rgSwitch rg) (Bits 0) cct3 in
-	cct4
 
 unit1 :: CircuitBuilder (Register, IWire, IWire, IWire, OWire)
 unit1 = do
