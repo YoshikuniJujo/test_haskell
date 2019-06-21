@@ -177,10 +177,13 @@ tryBeq = do
 	return (cl, pc, rim, rrf, sb, ig, ad)
 
 tryControl :: CircuitBuilder
-	(Clock, ProgramCounter, RiscvInstMem, MainController)
+	(Clock, ProgramCounter, RiscvInstMem, MainController, OWire)
 tryControl = do
 	(mcl, pc, rim) <- tryInstMem 100
 	mctrl <- mainController
 	connectWire0 (clockSignal mcl) (mainControllerExternalClockIn mctrl)
 	connectWire64 (rimOutput rim) (mainControllerInstructionIn mctrl)
-	return (mcl, pc, rim, mctrl)
+	(acinst, acctrl, acout) <- aluControl
+	connectWire64 (rimOutput rim) acinst
+	connectWire64 (mainControllerFlagsOut mctrl) acctrl
+	return (mcl, pc, rim, mctrl, acout)

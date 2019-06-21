@@ -45,8 +45,10 @@ sampleLoadInst, sampleStoreInst, sampleAddInst, sampleBeqInst :: Word64
 sampleLoadInst = encodeInst $ Load (Reg 10) 56 (Reg 15)
 sampleStoreInst = encodeInst $ Store (Reg 1) 8 (Reg 2)
 sampleAddInst = encodeInst $ Add (Reg 15) (Reg 10) (Reg 15)
+sampleSubInst = encodeInst $ Sub (Reg 30) (Reg 1) (Reg 2)
 sampleBeqInst = encodeInst $ Beq (Reg 30) (Reg 31) 20
 
 sampleInstControlInstructions :: [Word64]
 sampleInstControlInstructions = [
-	sampleLoadInst, sampleStoreInst, sampleAddInst, sampleBeqInst ]
+	sampleLoadInst, sampleStoreInst,
+	sampleSubInst, sampleAddInst, sampleBeqInst ]

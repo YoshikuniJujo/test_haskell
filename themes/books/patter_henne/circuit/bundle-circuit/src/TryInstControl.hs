@@ -9,7 +9,7 @@ import Control
 import TrySingleCycle
 import SampleInstructions
 
-((cl, pc, rim, mctrl), cct) = makeCircuit tryControl
+((cl, pc, rim, mctrl, aluctrl), cct) = makeCircuit tryControl
 
 cct1 = foldr (uncurry $ storeRiscvInstMem rim) cct
 	$ zip [0, 4 ..] sampleInstControlInstructions
