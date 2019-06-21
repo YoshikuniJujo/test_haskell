@@ -170,6 +170,12 @@ resetProgramCounter pc = setBits (pcSwitch pc) (Bits 0)
 		. setBits (pcManualInput pc) (wordToBits 0))
 	. setBits (pcSwitch pc) (Bits 1)
 
+stopProgramCounter :: ProgramCounter -> Word16 -> Circuit -> Circuit
+stopProgramCounter pc n_ = setBits (pcSwitch pc) (Bits 0)
+	. (!! n) . iterate step . setBits (pcSwitch pc) (Bits 1) . setBits (pcManualClock pc) (Bits 1)
+	where
+	n = fromIntegral n_
+
 setProgramCounter :: ProgramCounter -> Word64 -> Circuit -> Circuit
 setProgramCounter pc w = setBits (pcInput pc) (wordToBits w)
 

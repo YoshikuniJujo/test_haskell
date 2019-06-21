@@ -8,7 +8,7 @@ import Data.Word
 import Circuit
 import Clock
 import Memory
-import MakeInstruction
+import SampleInstructions
 
 import Control
 
@@ -18,12 +18,6 @@ tryControl = do
 	(r, inst, _, _) <- control
 	connectWire0 (clockSignal cl) (registerClock r)
 	return (cl, r, inst)
-
-sampleLoadInst, sampleStoreInst, sampleAddInst, sampleBeqInst :: Word64
-sampleLoadInst = encodeInst $ Load (Reg 10) 56 (Reg 15)
-sampleStoreInst = encodeInst $ Store (Reg 1) 8 (Reg 2)
-sampleAddInst = encodeInst $ Add (Reg 15) (Reg 10) (Reg 15)
-sampleBeqInst = encodeInst $ Beq (Reg 30) (Reg 31) 20
 
 cctTryControl :: Word64 -> (OWire, Circuit)
 cctTryControl si = let

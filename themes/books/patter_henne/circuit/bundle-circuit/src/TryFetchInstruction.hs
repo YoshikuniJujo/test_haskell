@@ -5,7 +5,7 @@ import Clock
 import Memory
 import TrySingleCycle
 
-((cl, pc, rim), cct) = makeCircuit tryInstMem
+((cl, pc, rim), cct) = makeCircuit $ tryInstMem 30
 
 cct1 = storeRiscvInstMem rim 0 0x00f507b3 cct
 cct2 = storeRiscvInstMem rim 4 0x40208f33 cct1

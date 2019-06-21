@@ -10,6 +10,7 @@ import Clock
 import Memory
 import Alu
 import ImmGen
+import Control
 
 tryProgramCounter :: CircuitBuilder (Clock, ProgramCounter)
 tryProgramCounter = do
@@ -30,9 +31,9 @@ tryCountup = do
 	connectWire64 (addrResult ad) (pcInput pc)
 	return (cl, pc)
 
-tryInstMem :: CircuitBuilder (Clock, ProgramCounter, RiscvInstMem)
-tryInstMem = do
-	cl <- clock 30
+tryInstMem :: Word8 -> CircuitBuilder (Clock, ProgramCounter, RiscvInstMem)
+tryInstMem n = do
+	cl <- clock n
 	pc <- programCounter
 	pcClocked cl pc
 	ad <- riscvAdder
@@ -69,7 +70,7 @@ decodeRTypeFromWords _ = error "Oops!"
 
 tryRegisterFile :: CircuitBuilder (Clock, ProgramCounter, RiscvInstMem, RiscvRegisterFile)
 tryRegisterFile = do
-	(cl, pc, rim) <- tryInstMem
+	(cl, pc, rim) <- tryInstMem 30
 	rrf <- riscvRegisterFile
 	connectWire
 		(instructionMemoryOutput rim, 5, 15)
@@ -99,7 +100,7 @@ tryLoadMemory :: CircuitBuilder (
 	Clock, ProgramCounter, RiscvInstMem,
 	RiscvRegisterFile, ImmGenItype, RiscvAdder, RiscvDataMem )
 tryLoadMemory = do
-	(cl, pc, rim) <- tryInstMem
+	(cl, pc, rim) <- tryInstMem 30
 	ig@(ImmGenItype igin igout) <- immGenItype
 	connectWire64 (instructionMemoryOutput rim) igin
 	rrf <- riscvRegisterFile
@@ -127,7 +128,7 @@ tryStoreMemory :: CircuitBuilder (
 	Clock, ProgramCounter, RiscvInstMem, RiscvRegisterFile, ImmGenStype,
 	RiscvAdder, RiscvDataMem )
 tryStoreMemory = do
-	(cl, pc, rim) <- tryInstMem
+	(cl, pc, rim) <- tryInstMem 30
 	ig <- immGenStype
 	connectWire64 (instructionMemoryOutput rim) (igsInput ig)
 	rrf <- riscvRegisterFile
@@ -174,3 +175,12 @@ tryBeq = do
 	connectWire64 (addrResult ad) pc1
 	connectWire64 pcout pcin
 	return (cl, pc, rim, rrf, sb, ig, ad)
+
+tryControl :: CircuitBuilder
+	(Clock, ProgramCounter, RiscvInstMem, MainController)
+tryControl = do
+	(mcl, pc, rim) <- tryInstMem 100
+	mctrl <- mainController
+	connectWire0 (clockSignal mcl) (mainControllerExternalClockIn mctrl)
+	connectWire64 (rimOutput rim) (mainControllerInstructionIn mctrl)
+	return (mcl, pc, rim, mctrl)

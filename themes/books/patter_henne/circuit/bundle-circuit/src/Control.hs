@@ -3,6 +3,8 @@
 
 module Control (
 	MainController, mainController, resetMainController,
+	mainControllerExternalClockIn, mainControllerInstructionIn,
+	mainControllerFlagsOut,
 	control, microControl, aluControl ) where
 
 import Circuit
@@ -16,6 +18,15 @@ data MainController = MainController {
 	mcExternalClockIn :: IWire,
 	mcState :: Register, mcInstIn :: IWire, mcFlagsOut :: OWire }
 	deriving Show
+
+mainControllerExternalClockIn :: MainController -> IWire
+mainControllerExternalClockIn = mcExternalClockIn
+
+mainControllerInstructionIn :: MainController -> IWire
+mainControllerInstructionIn = mcInstIn
+
+mainControllerFlagsOut :: MainController -> OWire
+mainControllerFlagsOut = mcFlagsOut
 
 mainController :: CircuitBuilder MainController
 mainController = do
