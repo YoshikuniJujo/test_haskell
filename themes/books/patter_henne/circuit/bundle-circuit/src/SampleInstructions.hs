@@ -41,11 +41,11 @@ sampleBeqInstructions = encodeInst <$> [
 	Beq (Reg 28) (Reg 29) (- 12),		-- x28 == x29
 	Beq (Reg 12) (Reg 13) (- 12) ]		-- x12 == x13
 
-sampleLoadInst, sampleStoreInst, sampleAddInst, sampleBeqInst :: Word64
+sampleLoadInst, sampleStoreInst, sampleSubInst, sampleAddInst, sampleBeqInst :: Word64
 sampleLoadInst = encodeInst $ Load (Reg 10) 56 (Reg 15)
 sampleStoreInst = encodeInst $ Store (Reg 1) 8 (Reg 2)
-sampleAddInst = encodeInst $ Add (Reg 15) (Reg 10) (Reg 15)
 sampleSubInst = encodeInst $ Sub (Reg 30) (Reg 1) (Reg 2)
+sampleAddInst = encodeInst $ Add (Reg 15) (Reg 10) (Reg 15)
 sampleBeqInst = encodeInst $ Beq (Reg 30) (Reg 31) 20
 
 sampleInstControlInstructions :: [Word64]

@@ -176,8 +176,9 @@ tryBeq = do
 	connectWire64 pcout pcin
 	return (cl, pc, rim, rrf, sb, ig, ad)
 
-tryControl :: CircuitBuilder
-	(Clock, ProgramCounter, RiscvInstMem, MainController, OWire)
+tryControl :: CircuitBuilder (
+	Clock, ProgramCounter, RiscvInstMem, MainController, RiscvRegisterFile,
+	OWire )
 tryControl = do
 	(mcl, pc, rim) <- tryInstMem 100
 	mctrl <- mainController
@@ -186,4 +187,11 @@ tryControl = do
 	(acinst, acctrl, acout) <- aluControl
 	connectWire64 (rimOutput rim) acinst
 	connectWire64 (mainControllerFlagsOut mctrl) acctrl
-	return (mcl, pc, rim, mctrl, acout)
+	rrf <- riscvRegisterFile
+	connectWire
+		(instructionMemoryOutput rim, 5, 15)
+		(registerFileReadAddress1 rrf, 5, 0)
+	connectWire
+		(instructionMemoryOutput rim, 5, 20)
+		(registerFileReadAddress2 rrf, 5, 0)
+	return (mcl, pc, rim, mctrl, rrf, acout)
