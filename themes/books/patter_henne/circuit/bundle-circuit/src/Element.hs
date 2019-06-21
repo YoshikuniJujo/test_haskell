@@ -62,6 +62,15 @@ xorGate0 = xorGate 1 0 0 0
 orGate3 :: BitLen -> BitPosIn -> CircuitBuilder ((IWire, IWire, IWire), OWire)
 orGate3 l p = first listToTuple3 <$> multiple orGate 3 l p
 
+orGate0_3 :: CircuitBuilder ((IWire, IWire, IWire), OWire)
+orGate0_3 = orGate3 1 0
+
+andGate3 :: BitLen -> BitPosIn -> CircuitBuilder ((IWire, IWire, IWire), OWire)
+andGate3 l p = first listToTuple3 <$> multiple andGate 3 l p
+
+andGate0_3 :: CircuitBuilder ((IWire, IWire, IWire), OWire)
+andGate0_3 = andGate3 1 0
+
 orGateAllBits64 :: CircuitBuilder (IWire, OWire)
 orGateAllBits64 = do
 	(rin, rout) <- idGate0

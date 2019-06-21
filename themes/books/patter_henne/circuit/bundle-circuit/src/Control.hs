@@ -3,7 +3,7 @@
 
 module Control (
 	MainController, mainController, resetMainController,
-	control, microControl ) where
+	control, microControl, aluControl ) where
 
 import Circuit
 import Element
@@ -102,3 +102,50 @@ microControl = do
 	(st, inst, ne, out) <- control
 	(mc, mcf, ec) <- microClocked 18 (registerClock st) ne
 	return (mc, mcf, ec, st, inst, out)
+
+aluControlGen :: CircuitBuilder (IWire, IWire, IWire, IWire, IWire, OWire, OWire, OWire)
+aluControlGen = do
+	(op1in, op1out) <- idGate0
+	(op0, op1, mem) <- orGate0
+	connectWire0 op1out op1
+	(mem', nmem) <- notGate0
+	connectWire0 mem mem'
+	(op1', nop1) <- notGate0
+	connectWire0 op1out op1'
+	(inst13in, inst13out) <- idGate0
+	(inst12, inst13, instXor) <- xorGate0
+	connectWire0 inst13out inst13
+	(inst13', ninst13) <- notGate0
+	connectWire0 inst13out inst13'
+	(op1'', inst30, instSub) <- orGate0
+	connectWire0 op1out op1''
+	((r0a1, r0a2, r0a3), r0) <- andGate0_3
+	connectWire0 mem r0a1
+	connectWire0 nop1 r0a2
+	connectWire0 instXor r0a3
+	((r1o1, r1o2, r1o3), r1) <- orGate0_3
+	connectWire0 nmem r1o1
+	connectWire0 op1out r1o2
+	connectWire0 ninst13 r1o3
+	(r2a1, r2a2, r2) <- andGate0
+	connectWire0 mem r2a1
+	connectWire0 instSub r2a2
+	return (op0, op1in, inst12, inst13in, inst30, r0, r1, r2)
+
+aluControl :: CircuitBuilder (IWire, IWire, OWire)
+aluControl = do
+	(instin, instout) <- idGate64
+	(mctrlin, mctrlout) <- idGate64
+	(op0, op1, inst12, inst13, inst30, r0, r1, r2) <- aluControlGen
+	connectWire (mctrlout, 1, 0) (op1, 1, 0)
+	connectWire (mctrlout, 1, 1) (op0, 1, 0)
+	connectWire (instout, 1, 12) (inst12, 1, 0)
+	connectWire (instout, 1, 13) (inst13, 1, 0)
+	connectWire (instout, 1, 30) (inst30, 1, 0)
+	zero <- constGate0 $ Bits 0
+	(rsltin, rsltout) <- idGate64
+	connectWire (r0, 1, 0) (rsltin, 1, 0)
+	connectWire (r1, 1, 0) (rsltin, 1, 1)
+	connectWire (r2, 1, 0) (rsltin, 1, 2)
+	connectWire (zero, 1, 0) (rsltin, 1, 3)
+	return (instin, mctrlin, rsltout)
