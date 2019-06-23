@@ -118,6 +118,12 @@ mux2 = do
 	let	(i0, i1) = listToTuple2 is
 	return (sl, i0, i1, o)
 
+mux3 :: CircuitBuilder (IWire, IWire, IWire, IWire, OWire)
+mux3 = do
+	(sl, is, o) <- multiplexer 3
+	let	(i0, i1, i2) = listToTuple3 is
+	return (sl, i0, i1, i2, o)
+
 mux4 :: CircuitBuilder (IWire, IWire, IWire, IWire, IWire, OWire)
 mux4 = do
 	(sl, is, o) <- multiplexer 4

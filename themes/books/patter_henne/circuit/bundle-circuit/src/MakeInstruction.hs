@@ -8,7 +8,7 @@ import Data.Word
 import Data.Int
 
 data Reg = Reg Word8 deriving Show
-type Imm = Word8
+type Imm = Word16
 
 data Inst
 	= Load Reg Imm Reg | Store Reg Imm Reg
@@ -57,14 +57,20 @@ unpackRType w = fromIntegral <$> [
 data Load = LLoad Reg Imm Reg deriving Show
 
 packLoad :: Load -> Word32
-packLoad (LLoad (Reg rd) imm (Reg r1)) = packIType [imm, r1, 3, rd, 3]
+packLoad (LLoad (Reg rd) imm_ (Reg r1)) = packIType [imm1, imm0, r1, 3, rd, 3]
+	where
+	imm1 = fromIntegral $ imm_ `shiftR` 8
+	imm0 = fromIntegral imm_
 
 packIType :: [Word8] -> Word32
-packIType ws = imm .|. r1 .|. f3 .|. rd .|. op
+packIType ws = imm1 .|. imm0 .|. r1 .|. f3 .|. rd .|. op
 	where
-	[imm_, r1_, f3_, rd_, op] = fromIntegral <$> ws
-	imm = imm_ `shiftL` 20; r1 = r1_ `shiftL` 15
-	f3 = f3_ `shiftL` 12; rd = rd_ `shiftL` 7
+	[imm1_, imm0_, r1_, f3_, rd_, op] = fromIntegral <$> ws
+	imm1 = imm1_ `shiftL` 28
+	imm0 = imm0_ `shiftL` 20
+	r1 = r1_ `shiftL` 15
+	f3 = f3_ `shiftL` 12
+	rd = rd_ `shiftL` 7
 
 unpackItype :: Word32 -> [Word8]
 unpackItype w = fromIntegral <$> [
@@ -82,7 +88,9 @@ data Store = SStore Reg Imm Reg deriving Show
 
 packStore :: Store -> Word32
 packStore (SStore (Reg rs2) imm (Reg rs1)) =
-	packStype [imm `shiftR` 5, rs2, rs1, 3, imm .&. 0x1f, 35]
+	packStype [
+		fromIntegral $ imm `shiftR` 5, rs2, rs1, 3,
+		fromIntegral $ imm .&. 0x1f, 35 ]
 
 packStype :: [Word8] -> Word32
 packStype ws = imm11_5 .|. r2 .|. r1 .|. f3 .|. imm4_0 .|. op
