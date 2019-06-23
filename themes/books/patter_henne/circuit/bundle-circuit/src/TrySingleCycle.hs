@@ -178,7 +178,7 @@ tryBeq = do
 
 tryControl :: CircuitBuilder (
 	Clock, ProgramCounter, RiscvInstMem, MainController, RiscvRegisterFile,
-	RiscvAlu )
+	RiscvAlu, OWire )
 tryControl = do
 	(mcl, pc, rim) <- tryInstMem 100
 	mctrl <- mainController
@@ -198,4 +198,6 @@ tryControl = do
 	connectWire64 acout (aluOpcode alu)
 	connectWire64 (rrfOutput1 rrf) (aluArgA alu)
 	connectWire64 (rrfOutput2 rrf) (aluArgB alu)
-	return (mcl, pc, rim, mctrl, rrf, alu)
+	(immin, immout) <- immGen
+	connectWire64 (rimOutput rim) immin
+	return (mcl, pc, rim, mctrl, rrf, alu, immout)
