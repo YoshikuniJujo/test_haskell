@@ -1,7 +1,12 @@
 {-# LANGUAGE BinaryLiterals #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Alu where
+module Alu (
+	RiscvAlu(..), riscvAlu, peekRiscvAlu, setRiscvAlu,
+	RiscvAdder(..), riscvAdder, peekRiscvAdder, setRiscvAdder,
+	RiscvSubtractor(..), riscvSubtractor,
+	RiscvAluWires, adder64', sum64
+	) where
 
 import Control.Monad
 import Data.Word
@@ -23,9 +28,11 @@ riscvAlu = do
 	(op, a, b, r, z, ovfl) <- riscvAluGen
 	return $ RiscvAlu op a b r z ovfl
 
+{-
 opAnd, opOr, opAdd, opSub, opSlt, opNor :: Opcode
 [opAnd, opOr, opAdd, opSub, opSlt, opNor] =
 	Opcode <$> [0b0000, 0b0001, 0b0010, 0b0110, 0b0111, 0b1100]
+	-}
 
 setRiscvAlu :: RiscvAlu -> Opcode -> Word64 -> Word64 -> Circuit -> Circuit
 setRiscvAlu rva op a b = setBits (aluOpcode rva) (wordToBits $ opcode op)
