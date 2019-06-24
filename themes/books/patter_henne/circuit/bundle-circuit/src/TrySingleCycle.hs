@@ -178,9 +178,9 @@ tryBeq = do
 
 tryControl :: CircuitBuilder (
 	Clock, ProgramCounter, RiscvInstMem, MainController, RiscvRegisterFile,
-	RiscvAlu )
+	RiscvAlu, RiscvDataMem )
 tryControl = do
-	(mcl, pc, rim) <- tryInstMem 108
+	(mcl, pc, rim) <- tryInstMem 126
 	mctrl <- mainController
 	connectWire0 (clockSignal mcl) (mainControllerExternalClockIn mctrl)
 	connectWire64 (rimOutput rim) (mainControllerInstructionIn mctrl)
@@ -210,4 +210,9 @@ tryControl = do
 	connectWire
 		(instructionMemoryOutput rim, 5, 7)
 		(registerFileWriteAddress rrf, 5, 0)
-	return (mcl, pc, rim, mctrl, rrf, alu)
+	rdm <- riscvDataMem 64
+	connectWire0 (clockSignal mcl) (rdmClock rdm)
+	connectWire64 (aluResult alu) (rdmAddress rdm)
+	connectWire64 (rrfOutput2 rrf) (rdmInput rdm)
+	connectWire (mainControllerFlagsOut mctrl, 1, 3) (rdmWrite rdm, 1, 0)
+	return (mcl, pc, rim, mctrl, rrf, alu, rdm)
