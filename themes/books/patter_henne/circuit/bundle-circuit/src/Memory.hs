@@ -170,9 +170,11 @@ resetProgramCounter pc = setBits (pcSwitch pc) (Bits 0)
 		. setBits (pcManualInput pc) (wordToBits 0))
 	. setBits (pcSwitch pc) (Bits 1)
 
-stopProgramCounter :: ProgramCounter -> Word16 -> Circuit -> Circuit
-stopProgramCounter pc n_ = setBits (pcSwitch pc) (Bits 0)
-	. (!! n) . iterate step . setBits (pcSwitch pc) (Bits 1) . setBits (pcManualClock pc) (Bits 1)
+stopProgramCounter :: ProgramCounter -> RiscvRegisterFile -> Word16 -> Circuit -> Circuit
+stopProgramCounter pc rf n_ = setBits (pcSwitch pc) (Bits 0) . setBits (rrfSwitch rf) (Bits 0)
+	. (!! n) . iterate step . setBits (pcSwitch pc) (Bits 1) . setBits (rrfSwitch rf) (Bits 1)
+	. setBits (rrfOuterClock rf) (Bits 1)
+	. setBits (pcManualClock pc) (Bits 1)
 	where
 	n = fromIntegral n_
 

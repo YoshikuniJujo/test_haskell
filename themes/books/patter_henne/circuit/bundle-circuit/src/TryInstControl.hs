@@ -36,4 +36,4 @@ cct4 = clockOn cl cct3
 
 cct5 = resetProgramCounter pc cct4
 
-cct6 = stopProgramCounter pc 255 cct5
+cct6 = stopProgramCounter pc rrf 255 cct5
