@@ -180,7 +180,7 @@ tryControl :: CircuitBuilder (
 	Clock, ProgramCounter, RiscvInstMem, MainController, RiscvRegisterFile,
 	RiscvAlu, RiscvDataMem )
 tryControl = do
-	(mcl, pc, rim) <- tryInstMem 126
+	(mcl, pc, rim) <- tryInstMem 162
 	mctrl <- mainController
 	connectWire0 (clockSignal mcl) (mainControllerExternalClockIn mctrl)
 	connectWire64 (rimOutput rim) (mainControllerInstructionIn mctrl)
@@ -206,7 +206,6 @@ tryControl = do
 	connectWire64 srcConn (aluArgB alu)
 	connectWire0 (clockSignal mcl) (rrfClock rrf)
 	connectWire (mainControllerFlagsOut mctrl, 1, 5) (rrfWrite rrf, 1, 0)
-	connectWire64 (aluResult alu) (rrfInput rrf)
 	connectWire
 		(instructionMemoryOutput rim, 5, 7)
 		(registerFileWriteAddress rrf, 5, 0)
@@ -215,4 +214,10 @@ tryControl = do
 	connectWire64 (aluResult alu) (rdmAddress rdm)
 	connectWire64 (rrfOutput2 rrf) (rdmInput rdm)
 	connectWire (mainControllerFlagsOut mctrl, 1, 3) (rdmWrite rdm, 1, 0)
+	connectWire (mainControllerFlagsOut mctrl, 1, 4) (rdmRead rdm, 1, 0)
+	(rwSel, rwAlu, rwMem, rwOut) <- mux2
+	connectWire (mainControllerFlagsOut mctrl, 1, 6) (rwSel, 1, 0)
+	connectWire64 (aluResult alu) rwAlu
+	connectWire64 (rdmOutput rdm) rwMem
+	connectWire64 rwOut (rrfInput rrf)
 	return (mcl, pc, rim, mctrl, rrf, alu, rdm)

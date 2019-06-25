@@ -82,6 +82,8 @@ data RiscvDataMem = RiscvDataMem {
 	rdmOutput :: OWire,
 
 	rdmSwitch :: IWire,
+	rdmOuterClock :: IWire,
+	rdmOuterWrite :: IWire,
 	rdmOuterAddress :: IWire,
 	rdmOuterInput :: IWire,
 	rdmDebugOutput :: [OWire]
@@ -89,13 +91,19 @@ data RiscvDataMem = RiscvDataMem {
 
 riscvDataMem :: Word8 -> CircuitBuilder RiscvDataMem
 riscvDataMem n = do
-	(wrin, wrout) <- idGate0
 	(rd, ob, oo) <- orGate0
 	(s, _zero, adrin, adrout) <- mux2
-	(c, fe) <- fallingEdge 7
 	(aa, ab, ao) <- andGate0
 
 	(swin, swout) <- idGate0
+	(c, fe) <- fallingEdge 7
+	(swc, inrc, outc, cout) <- mux2
+	connectWire0 swout swc
+	connectWire0 cout c
+--	(wrin, wrout) <- idGate0
+	(sww, inwr, outwr, wrout) <- mux2
+	connectWire0 swout sww
+--	connectWire0 wrout wrin
 	(sw0, adr, oadr, adro) <- mux2
 	(sw1, d, od, dto) <- mux2
 	(wr, adr', d', q, aq) <- sram n
@@ -109,14 +117,14 @@ riscvDataMem n = do
 	connectWire0 fe aa
 	connectWire0 wrout ab
 	connectWire0 ao wr
-	return $ RiscvDataMem c wrin rd adrin d q swin oadr od aq
+	return $ RiscvDataMem inrc inwr rd adrin d q swin outc outwr oadr od aq
 
 dataMemClock :: RiscvDataMem -> IWire
 dataMemClock = rdmClock
 
 storeRiscvDataMem :: RiscvDataMem -> Word64 -> Word64 -> Circuit -> Circuit
 storeRiscvDataMem rdm adr d cct = let
-	cct1 = (!! 5) . iterate step
+	cct1 = (!! 15) . iterate step
 		$ setMultBits [sw, wcl, wwr, wwadr, wd] [1, 0, 1, adr, d] cct
 	cct2 = (!! 15) . iterate step
 		$ setMultBits [sw, wcl, wwr, wwadr, wd] [1, 0, 1, adr, d] cct1
@@ -126,13 +134,13 @@ storeRiscvDataMem rdm adr d cct = let
 		$ setMultBits [sw, wcl, wwr, wwadr, wd] [1, 0, 1, adr, d] cct3
 	cct5 = (!! 15) . iterate step
 		$ setMultBits [sw, wcl, wwr, wwadr, wd] [1, 0, 0, adr, d] cct4
-	cct6 = (!! 5) . iterate step
+	cct6 = (!! 10) . iterate step
 		$ setMultBits [sw, wcl, wwr, wwadr, wd] [0, 0, 0, adr, d] cct5 in
 	cct6
 	where
 	sw = rdmSwitch rdm
-	wcl = rdmClock rdm
-	wwr = rdmWrite rdm
+	wcl = rdmOuterClock rdm
+	wwr = rdmOuterWrite rdm
 	wwadr = rdmOuterAddress rdm
 	wd = rdmOuterInput rdm
 
