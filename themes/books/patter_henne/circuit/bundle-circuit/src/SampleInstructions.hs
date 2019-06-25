@@ -51,4 +51,5 @@ sampleBeqInst = encodeInst $ Beq (Reg 30) (Reg 31) 20
 sampleInstControlInstructions :: [Word64]
 sampleInstControlInstructions = [
 	sampleLoadInst, sampleStoreInst,
-	sampleSubInst, sampleAddInst, sampleBeqInst ]
+	sampleSubInst, sampleAddInst, sampleBeqInst ] ++ (encodeInst <$> [
+	Nop, Nop, Nop, Nop, Add (Reg 3) (Reg 1) (Reg 10) ])
