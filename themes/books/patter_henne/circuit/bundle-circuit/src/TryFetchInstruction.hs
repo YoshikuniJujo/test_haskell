@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-tabs #-}
+
 module TryFetchInstruction (tryFetchInstructionTryRun) where
 
 import Circuit
@@ -5,7 +7,10 @@ import Clock
 import Memory
 import TrySingleCycle
 
-((cl, pc, rim), cct) = makeCircuit $ tryInstMem 30
+((cl, pc, rim), cct) = makeCircuit $ do
+	(cl', pc', rim', npc, pcin) <- tryInstMem 30
+	connectWire64 npc pcin
+	return (cl', pc', rim')
 
 cct1 = storeRiscvInstMem rim 0 0x00f507b3 cct
 cct2 = storeRiscvInstMem rim 4 0x40208f33 cct1
