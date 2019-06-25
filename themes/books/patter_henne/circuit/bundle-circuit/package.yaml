@@ -65,6 +65,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - bundle-circuit
+  trySingleCycle:
+    main:                trySingleCycle.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - bundle-circuit
 
 tests:
   bundle-circuit-test:

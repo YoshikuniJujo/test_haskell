@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module TryInstControl () where
+module TryInstControl (trySingleCycleCct, trySingleCycleRrf) where
 
 import Circuit
 import Clock
@@ -45,3 +45,7 @@ cct5 = clockOn cl cct4
 cct6 = resetProgramCounter pc cct5
 
 cct7 = stopProgramCounter pc rrf 384 cct6
+
+trySingleCycleCct = cct7
+
+trySingleCycleRrf = rrf
