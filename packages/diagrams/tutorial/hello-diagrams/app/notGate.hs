@@ -8,7 +8,13 @@ import Diagrams.Prelude
 import Diagrams.Backend.SVG.CmdLine
 
 example :: Diagram B
-example = (triangle1_4 1 `withEnvelope'` triangle1_4 1.03 ||| circleB (1 / 8) `withEnvelope'` circleB (1 / 8 + 0.03)) # lwL 0.08
+example = line ||| notGate ||| line
+
+line :: Diagram B
+line = strokeT (fromOffsets [unitX]) # lwL 0.08
+
+notGate :: Diagram B
+notGate = (triangle1_4 1 `withEnvelope'` triangle1_4 1.03 ||| circleB (1 / 8) `withEnvelope'` circleB (1 / 8 + 0.03)) # lwL 0.08
 
 withEnvelope' :: (InSpace v n a, Monoid' m, Enveloped a) =>
 	QDiagram b v n m -> a -> QDiagram b v n m
