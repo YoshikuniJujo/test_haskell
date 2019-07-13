@@ -56,6 +56,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - hello-diagrams
+  orGate:
+    main:                orGate.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - hello-diagrams
 
 tests:
   hello-diagrams-test:
