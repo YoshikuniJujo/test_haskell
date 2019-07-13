@@ -24,7 +24,7 @@ orGate, orGate0, orGate1, orGate2, orGate3 :: Diagram B
 orGate = (orGate0 <> orGate1 <> orGate2) ||| orGate3
 orGate0 = alignY 0 (vcat' (with & sep .~ 1) [line2, line2])
 orGate1 = arcBetween (p2 (0, -1)) (p2 (0, 1)) (- 0.3) # lwL 0.08
-orGate2 = alignY 0 $ vcat' (with & sep .~ 2) [line' 2, line' 2]
+orGate2 = alignY 0 $ vcat' (with & sep .~ 2) [line' 1.7, line' 1.7]
 orGate3 = (arcBetween (p2 (0, 1)) (p2 (1, 0)) 0.2 === arcBetween (p2 (0, -1)) (p2 (1, 0)) (- 0.2)) #
 	lwL 0.08 -- arc (dir unit_Y) (1 / 2 @@ turn) # lwL 0.08
 
