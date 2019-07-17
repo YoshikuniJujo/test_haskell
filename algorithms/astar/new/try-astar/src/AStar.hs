@@ -3,7 +3,7 @@
 
 module AStar where
 
-type Dist = Word
+import AStarMonad
 
 class AStar a where
 	type AStarNode a
