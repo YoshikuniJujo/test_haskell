@@ -14,6 +14,8 @@ import qualified Data.Map as M
 import qualified Data.Heap as H
 import qualified Data.Foldable as F
 
+import Tools
+
 type Dist = Word
 
 class GlaphNode n where
@@ -28,22 +30,12 @@ type Moment n = (Heap (Tag, Dist, n), Map n n)
 
 type AStarMonad n = StateT (Moment n) Maybe
 
-doUntil :: Monad m => m (Maybe a) -> m a
-doUntil act = do
-	mx <- act
-	maybe (doUntil act) return mx
-
 astar :: forall n . (GlaphNode n, Ord n) => Maybe [n]
 astar = do
 	(g, (_, m)) <-
 		(putNode Open (distToEnd (startNode :: n)) startNode >> doUntil step)
 			`runStateT` (H.empty, M.empty)
 	return $ toRoute [] g m
-
-toRoute :: Ord n => [n] -> n -> Map n n -> [n]
-toRoute ns n m = case m !? n of
-	Just n' -> toRoute (n : ns) n' m
-	Nothing -> n : ns
 
 step :: (GlaphNode n, Ord n) => AStarMonad n (Maybe n)
 step = do
@@ -54,6 +46,16 @@ step = do
 			let	f' = dst - distToEnd nd + d + distToEnd n
 			putOpen f' n nd
 		return Nothing
+
+putOpen :: Ord n => Dist -> n -> n -> AStarMonad n ()
+putOpen d n nd = do
+	h <- gets fst
+	case (\(_, d'', _) -> d'') <$> F.toList (H.filter ((== n) . (\(_, _, n') -> n')) h) of
+		[] -> do
+			putNode Open d n
+			setParent n nd
+		ds -> let d' = P.minimum ds in
+			if d < d' then putNode Open d n >> setParent n nd else return ()
 
 headNode :: AStarMonad n (Dist, n)
 headNode = do
@@ -73,13 +75,3 @@ setParent :: Ord n => n -> n -> AStarMonad n ()
 setParent c p = do
 	(h, m) <- get
 	put (h, M.insert c p m)
-
-putOpen :: Ord n => Dist -> n -> n -> AStarMonad n ()
-putOpen d n nd = do
-	h <- gets fst
-	case (\(_, d'', _) -> d'') <$> F.toList (H.filter ((== n) . (\(_, _, n') -> n')) h) of
-		[] -> do
-			putNode Open d n
-			setParent n nd
-		ds -> let d' = P.minimum ds in
-			if d < d' then putNode Open d n >> setParent n nd else return ()
