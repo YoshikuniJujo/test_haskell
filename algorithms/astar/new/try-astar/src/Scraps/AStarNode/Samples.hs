@@ -1,11 +1,11 @@
 {-# LANGUAGE TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module AStarNode.Samples where
+module Scraps.AStarNode.Samples where
 
 import Data.Word
 
-import AStarNode
+import Scraps.AStarNode
 
 data Pos = Pos Word8 Word8 deriving (Show, Eq, Ord)
 

@@ -1,7 +1,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module AStarNode where
+module Scraps.AStarNode where
 
 import Data.Foldable
 
