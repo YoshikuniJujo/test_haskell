@@ -24,6 +24,7 @@ dependencies:
 - monads-tf
 - containers
 - heaps
+- nowdoc
 
 library:
   source-dirs: src

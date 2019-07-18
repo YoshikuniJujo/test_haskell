@@ -1,7 +1,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module AStarMonad where
+module AStarMonad (
+	AStarM, runAStarM, headNode, putNode, putOpen, Dist, Switch(..) ) where
 
 import Prelude as P
 
@@ -15,13 +16,13 @@ import qualified Data.Heap as H
 
 import Tools
 
-type Dist = Word
-
 data Switch = Open | Close deriving (Show, Eq, Ord)
 
 switch :: a -> a -> Switch -> a
 switch x _ Open = x
 switch _ y Close = y
+
+type Dist = Word
 
 type Node n = (Switch, (Dist, n))
 
@@ -34,15 +35,11 @@ dist = fst . snd
 node :: Node n -> n
 node = snd . snd
 
+type AStarM n = StateT (Moment n) Maybe
 type Moment n = (Heap (Node n), Map n n)
 
-initMoment :: Moment n
-initMoment = (H.empty, M.empty)
-
-type AStarM n = StateT (Moment n) Maybe
-
 runAStarM :: AStarM n a -> Maybe (a, Moment n)
-runAStarM = (`runStateT` initMoment)
+runAStarM = (`runStateT` (H.empty, M.empty))
 
 putOpen :: Ord n => Dist -> n -> n -> AStarM n ()
 putOpen d n pr = do
