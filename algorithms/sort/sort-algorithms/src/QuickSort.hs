@@ -17,13 +17,16 @@ quickSortList g xs = runST $ do
 
 quickSort :: (MArray a e m, Ix i, Num i, Random i, Ord e) => StdGen -> i -> i -> a i e -> m StdGen
 quickSort g mn mx a
-	| mn >= mx = return g
+--	| mn >= mx = return g
 	| otherwise = do
 		let	(pvi, g') = randomR (mn, mx) g
 		pv <- readArray a pvi
-		md <- separate mn mx pv a
-		g'' <- quickSort g' mn md a
-		quickSort g'' (md + 1) mx a
+		mmd <- separate mn mx pv a
+		case mmd of
+			Just md -> do
+				g'' <- quickSort g' mn md a
+				quickSort g'' (md + 1) mx a
+			Nothing -> return g
 
 swapArray :: (MArray a e m, Ix i) => a i e -> i -> i -> m ()
 swapArray a i j = do
@@ -45,15 +48,15 @@ rightIndex p a i j
 		y <- readArray a j
 		bool (rightIndex p a i (j - 1)) (return j) $ p y
 
-separate, separate' :: (MArray a e m, Ix i, Num i, Ord e) => i -> i -> e -> a i e -> m i
+separate, separate' :: (MArray a e m, Ix i, Num i, Ord e) => i -> i -> e -> a i e -> m (Maybe i)
 separate mn mx p a = step mn mx
 	where
 	step i j = do
 		i' <- leftIndex (>= p) a i j
 		j' <- rightIndex (< p) a i j
-		case (mn <= j, i' < j') of
+		case (mn <= j', i' < j') of
 			(False, _) -> separate' mn mx p a
-			(_, False) -> return j'
+			(_, False) -> return $ Just j'
 			_ -> do	swapArray a i' j'
 				step (i' + 1) (j' - 1)
 
@@ -62,8 +65,8 @@ separate' mn mx p a = step mn mx
 	step i j = do
 		i' <- leftIndex (> p) a i j
 		j' <- rightIndex (<= p) a i j
-		case (i <= mx, i' < j') of
-			(False, _) -> separate' mn mx p a
-			(_, False) -> return j'
+		case (i' <= mx, i' < j') of
+			(False, _) -> return Nothing
+			(_, False) -> return $ Just j'
 			_ -> do	swapArray a i' j'
 				step (i' + 1) (j' - 1)
