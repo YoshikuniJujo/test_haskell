@@ -2,7 +2,6 @@
 
 module OneOneTwoTwo where
 
-import Control.Monad
 import Control.Concurrent
 import System.IO.Unsafe
 import System.Random
@@ -18,11 +17,14 @@ repeatIO n = unsafeInterleaveIO $ do
 mergeList :: [a] -> [a] -> IO [a]
 mergeList xs ys = do
 	c <- newChan
-	forkIO $ mapM_ (writeChan c) xs
-	forkIO $ mapM_ (writeChan c) ys
+	_ <- forkIO $ mapM_ (writeChan c) xs
+	_ <- forkIO $ mapM_ (writeChan c) ys
 	readChans c
 
 readChans :: Chan a -> IO [a]
 readChans c = unsafeInterleaveIO $ do
 	x <- readChan c
 	(x :) <$> readChans c
+
+try :: IO [Int]
+try = mergeList (f 1) (f 2)
