@@ -6,6 +6,8 @@ import Control.Concurrent
 import System.IO.Unsafe
 import System.Random
 
+import NoOrderList
+
 f :: Int -> [Int]
 f = unsafePerformIO . repeatIO
 
@@ -20,6 +22,9 @@ mergeList xs ys = do
 	_ <- forkIO $ mapM_ (writeChan c) xs
 	_ <- forkIO $ mapM_ (writeChan c) ys
 	readChans c
+
+mergeListNoOrder :: [a] -> [a] -> NoOrderList a
+mergeListNoOrder xs ys = fromList . unsafePerformIO $ mergeList xs ys
 
 readChans :: Chan a -> IO [a]
 readChans c = unsafeInterleaveIO $ do
