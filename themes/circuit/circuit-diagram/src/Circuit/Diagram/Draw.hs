@@ -1,11 +1,13 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Circuit.Diagram.Draw where
+module Circuit.Diagram.Draw (andGateD, orGateD, notGateD) where
 
 import Diagrams.Prelude
 import Diagrams.Direction
 import Diagrams.Backend.SVG
+
+import Circuit.Diagram.DrawOrGate
 
 notGateD :: Diagram B
 notGateD = moveTo ((- 1) ^& 0)
