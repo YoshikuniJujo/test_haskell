@@ -1,0 +1,61 @@
+name:                circuit-diagram
+version:             0.1.0.0
+github:              "githubuser/circuit-diagram"
+license:             BSD3
+author:              "Author name here"
+maintainer:          "example@example.com"
+copyright:           "2019 Author name here"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/githubuser/circuit-diagram#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- containers
+- monads-tf
+- diagrams-lib
+- diagrams-svg
+
+library:
+  source-dirs: src
+
+executables:
+  circuit-diagram-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - circuit-diagram
+  tryDiagramDraw:
+    main:                tryDiagramDraw.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - circuit-diagram
+
+tests:
+  circuit-diagram-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - circuit-diagram
