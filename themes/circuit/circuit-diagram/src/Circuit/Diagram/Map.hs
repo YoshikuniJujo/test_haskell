@@ -10,11 +10,11 @@ import Data.Map.Strict
 
 data DiagramMap = DiagramMap {
 	width :: Word,
-	height :: Int,
-	layout :: Map (Word, Int) Element }
+	height :: Word,
+	layout :: Map (Word, Word) Element }
 	deriving Show
 
-mkDiagramMap :: Word -> Int -> DiagramMap
+mkDiagramMap :: Word -> Word -> DiagramMap
 mkDiagramMap w h = DiagramMap { width = w, height = h, layout = empty }
 
 data Element
@@ -26,20 +26,22 @@ data Element
 	deriving Show
 
 data DiagramMapState = DiagramMapState {
+	space :: Word,
 	placeX :: Word,
-	space :: Map Word Int,
+	place :: Map Word Word,
 	diagramMap :: DiagramMap }
 	deriving Show
 
-initDiagramMapState :: Word -> Int -> DiagramMapState
+initDiagramMapState :: Word -> Word -> DiagramMapState
 initDiagramMapState w h = DiagramMapState {
+	space = 1,
 	placeX = 0,
-	space = empty,
+	place = empty,
 	diagramMap = mkDiagramMap w h }
 
 type DiagramMapM = StateT DiagramMapState Maybe
 
-generateDiagramMap :: Word -> Int -> DiagramMapM a -> Maybe DiagramMap
+generateDiagramMap :: Word -> Word -> DiagramMapM a -> Maybe DiagramMap
 generateDiagramMap w h dmm =
 	diagramMap <$> dmm `execStateT` initDiagramMapState w h
 
@@ -48,31 +50,31 @@ nextLevel = do
 	stt <- get
 	put stt { placeX = placeX stt + 3 }
 
-putElement :: Word -> Element -> DiagramMapM ()
-putElement sp e = do
+putElement :: Element -> DiagramMapM ()
+putElement e = do
 	stt <- get
-	let	x = placeX stt
-		y = fromMaybe 0 $ space stt !? x
+	let	sp = space stt
+		x = placeX stt
+		y = fromMaybe 0 $ place stt !? x
 		dm = diagramMap stt
 		l = layout dm
 		l' = stump e x y $ insert (x, y) e l
 		(_w, h) = elementSpace e
 	put stt {
-		space = insert x (y + h + fromIntegral sp) $ space stt,
+		place = insert x (y + h + fromIntegral sp) $ place stt,
 		diagramMap = dm { layout = l' } }
 
-stump :: Element -> Word -> Int ->
-	Map (Word, Int) Element -> Map (Word, Int) Element
+stump :: Element -> Word -> Word ->
+	Map (Word, Word) Element -> Map (Word, Word) Element
 stump e x0 y0 m = P.foldr (flip insert Stump) m
 	[ (x, y) |
 		x <- [x0 .. x0 + w],
-		y <- [y0 - h' .. y0 + h'],
+		y <- [y0 .. y0 + h],
 		(x, y) /= (x0, y0) ]
 	where
 	(w, h) = elementSpace e
-	h' = (h - 1) `div` 2
 
-elementSpace :: Element -> (Word, Int)
+elementSpace :: Element -> (Word, Word)
 elementSpace AndGateE = (3, 3)
 elementSpace OrGateE = (3, 3)
 elementSpace NotGateE = (2, 3)

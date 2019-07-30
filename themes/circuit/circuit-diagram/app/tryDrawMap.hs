@@ -27,7 +27,7 @@ sample1 = DiagramMap {
 
 sample2 :: Maybe DiagramMap
 sample2 = generateDiagramMap 7 4 $ do
-	putElement 1 NotGateE
+	putElement NotGateE
 	nextLevel
-	putElement 1 AndGateE
-	putElement 1 OrGateE
+	putElement AndGateE
+	putElement OrGateE
