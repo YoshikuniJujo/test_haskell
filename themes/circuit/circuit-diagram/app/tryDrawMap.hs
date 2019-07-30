@@ -20,14 +20,14 @@ sample1 = DiagramMap {
 	width = 5,
 	height = 2,
 	layout = P.foldr (uncurry insert) empty  [
-		((0, 0), HLine),
-		((1, 0), NotGateE),
-		((3, 0), HLine),
-		((4, 0), AndGateE) ] }
+		((Pos 0 0), HLine),
+		((Pos 1 0), NotGateE),
+		((Pos 3 0), HLine),
+		((Pos 4 0), AndGateE) ] }
 
 sample2 :: Maybe DiagramMap
 sample2 = generateDiagramMap 7 4 $ do
-	putElement NotGateE
+	_ <- putElement NotGateE
 	nextLevel
-	putElement AndGateE
+	_ <- putElement AndGateE
 	putElement OrGateE
