@@ -3,7 +3,7 @@
 import Diagrams.Prelude
 import Diagrams.Backend.SVG
 
-import Circuit.Diagram.Draw
+import Circuit.Diagram.Pictures
 
 main :: IO ()
 main = do

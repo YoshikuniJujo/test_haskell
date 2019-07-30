@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Circuit.Diagram.DrawOrGate (orGateD) where
+module Circuit.Diagram.PictureOrGate (orGateD) where
 
 import Diagrams.Prelude
 import Diagrams.Backend.SVG.CmdLine
