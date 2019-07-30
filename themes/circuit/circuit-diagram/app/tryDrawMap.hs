@@ -10,7 +10,10 @@ import Circuit.Diagram.Map
 import Circuit.Diagram.Draw
 
 main :: IO ()
-main = renderSVG "sample4.svg" (mkWidth 600) $ drawDiagram sample1
+main = do
+	renderSVG "sample4.svg" (mkWidth 600) $ drawDiagram sample1
+	maybe (return ())
+		(renderSVG "sample5.svg" (mkWidth 600) . drawDiagram) sample2
 
 sample1 :: DiagramMap
 sample1 = DiagramMap {
@@ -21,3 +24,10 @@ sample1 = DiagramMap {
 		((1, 0), NotGateE),
 		((3, 0), HLine),
 		((4, 0), AndGateE) ] }
+
+sample2 :: Maybe DiagramMap
+sample2 = generateDiagramMap 7 4 $ do
+	putElement 1 NotGateE
+	nextLevel
+	putElement 1 AndGateE
+	putElement 1 OrGateE
