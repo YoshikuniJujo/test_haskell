@@ -34,7 +34,7 @@ data DiagramMapState = DiagramMapState {
 
 initDiagramMapState :: Word -> Word -> DiagramMapState
 initDiagramMapState w h = DiagramMapState {
-	space = 1,
+	space = 2,
 	placeX = 0,
 	place = empty,
 	diagramMap = mkDiagramMap w h }
@@ -47,10 +47,10 @@ generateDiagramMap w h dmm =
 
 data Pos = Pos { posX :: Word, posY :: Word } deriving (Show, Eq, Ord)
 
-nextLevel :: DiagramMapM ()
-nextLevel = do
+nextLevel :: Element -> DiagramMapM ()
+nextLevel e = do
 	stt <- get
-	put stt { placeX = placeX stt + 3 }
+	put stt { placeX = placeX stt + space stt + fst (elementSpace e) }
 
 putElement :: Element -> DiagramMapM LinePos
 putElement e = do
@@ -62,6 +62,7 @@ putElement e = do
 		dm = diagramMap stt
 		l = layout dm
 		l' = stump e p $ insert p e l
+--		l'' = insert (Pos (x - 1) y) HLine l'
 		(_w, h) = elementSpace e
 	put stt {
 		place = insert x (y + h + fromIntegral sp) $ place stt,

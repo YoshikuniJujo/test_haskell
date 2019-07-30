@@ -26,8 +26,9 @@ sample1 = DiagramMap {
 		((Pos 4 0), AndGateE) ] }
 
 sample2 :: Maybe DiagramMap
-sample2 = generateDiagramMap 7 4 $ do
+sample2 = generateDiagramMap 9 6 $ do
+	nextLevel NotGateE
 	_ <- putElement NotGateE
-	nextLevel
+	nextLevel NotGateE
 	_ <- putElement AndGateE
 	putElement OrGateE
