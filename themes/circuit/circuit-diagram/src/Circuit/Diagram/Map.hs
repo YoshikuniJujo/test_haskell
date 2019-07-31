@@ -32,9 +32,12 @@ data Element
 	| TShape | TInverted | TLeft | TRight | CrossDot | Cross
 	deriving Show
 
+newtype ElementId = ElementId Word deriving (Show, Eq, Ord)
+
 data DiagramMapState = DiagramMapState {
 	space :: Int,
 	place :: Map Int Int,
+	elementPos :: Map ElementId LinePos,
 	diagramMap :: DiagramMap }
 	deriving Show
 
@@ -42,6 +45,7 @@ initDiagramMapState :: Int -> Int -> DiagramMapState
 initDiagramMapState w h = DiagramMapState {
 	space = 2,
 	place = empty,
+	elementPos = empty,
 	diagramMap = mkDiagramMap w h }
 
 type DiagramMapM = StateT DiagramMapState Maybe
@@ -54,12 +58,12 @@ generateDiagramMap :: Int -> Int -> DiagramMapM a -> Maybe DiagramMap
 generateDiagramMap w h dmm =
 	diagramMap <$> dmm `execStateT` initDiagramMapState w h
 
-putElement0, putElement :: Element -> Int -> DiagramMapM LinePos
+putElement0, putElement :: ElementId -> Element -> Int -> DiagramMapM Bool
 putElement0 = putElementGen True
 putElement = putElementGen False
 
-putElementGen :: Bool -> Element -> Int -> DiagramMapM LinePos
-putElementGen b e x = do
+putElementGen :: Bool -> ElementId -> Element -> Int -> DiagramMapM Bool
+putElementGen b eid e x = do
 	stt <- get
 	let	sp = space stt
 		y = fromMaybe 0 $ place stt !? x
@@ -69,11 +73,16 @@ putElementGen b e x = do
 		l' = stump e p $ insert p e l
 		l'' = bool l' (insert (Pos (x - 1) y) HLine l') b
 		(w, h) = elementSpace e
+	lp <- lift $ linePos e p
 	put stt {
 		place = P.foldr (`insert` (y + h + fromIntegral sp))
 			(place stt) [x, x + w - 1],
+		elementPos = insert eid lp $ elementPos stt,
 		diagramMap = dm { layout = l'' } }
-	lift $ linePos e p
+	return True
+
+getElementPos :: ElementId -> DiagramMapM LinePos
+getElementPos eid = lift =<< gets ((!? eid) . elementPos)
 
 stump :: Element -> Pos -> Map Pos Element -> Map Pos Element
 stump e p m = P.foldr (flip insert Stump) m
@@ -96,12 +105,12 @@ data LinePos = LinePos { outputLinePos :: Pos, inputLinePos :: [Pos] }
 	deriving Show
 
 linePos :: Element -> Pos -> Maybe LinePos
-linePos AndGateE p@(Pos x y) = Just LinePos {
-	outputLinePos = p,
-	inputLinePos = [Pos (x + 2) (y - 1), Pos (x + 2) (y + 1)] }
+linePos AndGateE (Pos x y) = Just LinePos {
+	outputLinePos = Pos (x - 1) y,
+	inputLinePos = [Pos (x + 3) (y - 1), Pos (x + 3) (y + 1)] }
 linePos OrGateE p = linePos AndGateE p
-linePos NotGateE p@(Pos x y) =
-	Just LinePos { outputLinePos = p, inputLinePos = [Pos (x + 1) y] }
+linePos NotGateE (Pos x y) =
+	Just LinePos { outputLinePos = Pos (x - 1) y, inputLinePos = [Pos (x + 2) y] }
 linePos _ _ = Nothing
 
 data DiagramMapAStar = DiagramMapAStar {

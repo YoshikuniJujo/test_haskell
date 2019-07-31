@@ -17,7 +17,7 @@ main = do
 		Just ((p0, p1), s2) -> do
 			renderSVG "sample5.svg" (mkWidth 600) $ drawDiagram s2
 			print $ astar DiagramMapAStar {
-				startLine = p0 { posX = posX p0 + 1 }, endLine = p1 { posX = posX p1 - 1 },
+				startLine = p0 { posX = posX p0 }, endLine = p1 { posX = posX p1 },
 				diagramMapA = s2 }
 		Nothing -> return ()
 
@@ -33,10 +33,12 @@ sample1 = DiagramMap {
 
 sample2 :: Maybe ((Pos, Pos), DiagramMap)
 sample2 = runDiagramMapM 9 6 $ do
-	lp0 <- putElement0 NotGateE 2
-	_ <- putElement AndGateE 7
-	lp2 <- putElement OrGateE 7
+	_ <- putElement0 (ElementId 0) NotGateE 2
+	_ <- putElement (ElementId 1) AndGateE 7
+	_ <- putElement (ElementId 2) OrGateE 7
+	lp0 <- getElementPos $ ElementId 0
+	lp2 <- getElementPos $ ElementId 2
 	let	p0 = head $ inputLinePos lp0
 		p1 = outputLinePos lp2
-	connectLine p0 { posX = posX p0 + 1 } p1 { posX = posX p1 - 1 }
+	connectLine p0 p1
 	return (head $ inputLinePos lp0, outputLinePos lp2)
