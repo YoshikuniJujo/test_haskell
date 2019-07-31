@@ -28,7 +28,7 @@ sample1 = DiagramMap {
 sample2 :: Maybe DiagramMap
 sample2 = generateDiagramMap 9 6 $ do
 	nextLevel NotGateE
-	_ <- putElement NotGateE
+	_ <- putElement0 NotGateE
 	nextLevel NotGateE
 	_ <- putElement AndGateE
 	putElement OrGateE

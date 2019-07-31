@@ -7,6 +7,7 @@ import Prelude as P
 import Control.Monad.State
 import Data.Maybe
 import Data.Map.Strict
+import Data.Bool
 
 data DiagramMap = DiagramMap {
 	width :: Word,
@@ -52,8 +53,12 @@ nextLevel e = do
 	stt <- get
 	put stt { placeX = placeX stt + space stt + fst (elementSpace e) }
 
-putElement :: Element -> DiagramMapM LinePos
-putElement e = do
+putElement0, putElement :: Element -> DiagramMapM LinePos
+putElement0 = putElementGen True
+putElement = putElementGen False
+
+putElementGen :: Bool -> Element -> DiagramMapM LinePos
+putElementGen b e = do
 	stt <- get
 	let	sp = space stt
 		x = placeX stt
@@ -62,11 +67,12 @@ putElement e = do
 		dm = diagramMap stt
 		l = layout dm
 		l' = stump e p $ insert p e l
---		l'' = insert (Pos (x - 1) y) HLine l'
-		(_w, h) = elementSpace e
+		l'' = bool l' (insert (Pos (x - 1) y) HLine l') b
+		(w, h) = elementSpace e
 	put stt {
-		place = insert x (y + h + fromIntegral sp) $ place stt,
-		diagramMap = dm { layout = l' } }
+		place = P.foldr (`insert` (y + h + fromIntegral sp))
+			(place stt) [x, x + w - 1],
+		diagramMap = dm { layout = l'' } }
 	lift $ linePos e p
 
 stump :: Element -> Pos -> Map Pos Element -> Map Pos Element
