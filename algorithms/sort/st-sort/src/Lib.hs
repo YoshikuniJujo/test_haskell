@@ -11,3 +11,10 @@ stSortList [x] = [x]
 stSortList (x : xs@(y : ys))
 	| x > y = stSortList $ x : ys
 	| otherwise = x : stSortList xs
+
+bwsort :: Ord a => [a] -> [a]
+bwsort [] = []
+bwsort [x] = [x]
+bwsort (x : xs@(y : ys))
+	| x > y = x : bwsort (x : ys)
+	| otherwise = x : bwsort xs
