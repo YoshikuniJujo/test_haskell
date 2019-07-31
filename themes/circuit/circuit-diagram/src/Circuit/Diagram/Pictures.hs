@@ -2,7 +2,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Circuit.Diagram.Pictures (
-	andGateD, orGateD, notGateD, hlineD, vlineD ) where
+	andGateD, orGateD, notGateD,
+	hlineD, vlineD, topLeftD, bottomLeftD, topRightD, bottomRightD ) where
 
 import Diagrams.Prelude
 import Diagrams.Direction
@@ -47,3 +48,11 @@ hlineD = moveTo ((- 1) ^& 0) $ (strokeT (fromOffsets [unitX]) # lwL 0.08)
 	`withEnvelope'` (rect 1 1 :: Diagram B)
 
 vlineD = moveTo ((- 0.5) ^& (- 0.5)) $ strokeT (fromOffsets [unitY]) # lwL 0.08
+
+topLeftD, bottomLeftD, topRightD, bottomRightD :: Diagram B
+topLeftD = reflectY bottomLeftD
+topRightD =
+	(strokeT (fromOffsets [zero &_x .~ (- 0.5), zero &_y .~ 0.5]) # lwL 0.08)
+		`withEnvelope'` (rect 2 1 :: Diagram B)
+bottomLeftD = moveTo ((- 1) ^& 0) $ rotateBy (1 / 2) topRightD
+bottomRightD = reflectY topRightD

@@ -147,3 +147,47 @@ checkVertical l p = case  l !? p of
 	Just HLine -> True
 	Just _ -> False
 	Nothing -> True
+
+data Dir = T | B | L | R deriving Show
+
+dir :: Pos -> Pos -> Maybe Dir
+dir (Pos x y) (Pos x' y')
+	| x == x', y - 1 == y' = Just T
+	| x == x', y + 1 == y' = Just B
+	| x - 1 == x', y == y' = Just R
+	| x + 1 == x', y == y' = Just L
+	| otherwise = Nothing
+
+dirToLine :: Dir -> Dir -> Maybe Element
+dirToLine T T = Just VLine
+dirToLine T L = Just BottomLeft
+dirToLine T R = Just BottomRight
+dirToLine B B = Just VLine
+dirToLine B L = Just TopLeft
+dirToLine B R = Just TopRight
+dirToLine L T = Just TopRight
+dirToLine L B = Just BottomRight
+dirToLine L L = Just HLine
+dirToLine R T = Just TopLeft
+dirToLine R B = Just BottomLeft
+dirToLine R R = Just HLine
+dirToLine _ _ = Nothing
+
+posToLine :: Dir -> [Pos] -> Maybe [Element]
+posToLine _ [] = Just []
+posToLine d [_] = (: []) <$> dirToLine d L
+posToLine d (x : xs@(y : _)) = do
+	d' <- dir x y; (:) <$> dirToLine d d' <*> posToLine d' xs
+
+insertLine :: [Pos] -> Map Pos Element -> Maybe (Map Pos Element)
+insertLine ps m = P.foldr (uncurry insert) m . zip ps <$> posToLine L ps
+
+connectLine :: Pos -> Pos -> DiagramMapM ()
+connectLine p1 p2 = do
+	stt <- get
+	let	dm = diagramMap stt
+		l = layout dm
+	ps <- lift $ astar DiagramMapAStar {
+		startLine = p1, endLine = p2, diagramMapA = dm }
+	l' <- lift $ insertLine ps l
+	put stt { diagramMap = dm { layout = l' } }

@@ -38,4 +38,7 @@ sample2 = runDiagramMapM 9 6 $ do
 	nextLevel NotGateE
 	_ <- putElement AndGateE
 	lp2 <- putElement OrGateE
+	let	p0 = head $ inputLinePos lp0
+		p1 = outputLinePos lp2
+	connectLine p0 { posX = posX p0 + 1 } p1 { posX = posX p1 - 1 }
 	return (head $ inputLinePos lp0, outputLinePos lp2)
