@@ -33,11 +33,9 @@ sample1 = DiagramMap {
 
 sample2 :: Maybe ((Pos, Pos), DiagramMap)
 sample2 = runDiagramMapM 9 6 $ do
-	nextLevel NotGateE
-	lp0 <- putElement0 NotGateE
-	nextLevel NotGateE
-	_ <- putElement AndGateE
-	lp2 <- putElement OrGateE
+	lp0 <- putElement0 NotGateE 2
+	_ <- putElement AndGateE 7
+	lp2 <- putElement OrGateE 7
 	let	p0 = head $ inputLinePos lp0
 		p1 = outputLinePos lp2
 	connectLine p0 { posX = posX p0 + 1 } p1 { posX = posX p1 - 1 }

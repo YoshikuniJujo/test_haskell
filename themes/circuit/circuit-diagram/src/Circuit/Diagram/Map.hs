@@ -34,7 +34,6 @@ data Element
 
 data DiagramMapState = DiagramMapState {
 	space :: Int,
-	placeX :: Int,
 	place :: Map Int Int,
 	diagramMap :: DiagramMap }
 	deriving Show
@@ -42,7 +41,6 @@ data DiagramMapState = DiagramMapState {
 initDiagramMapState :: Int -> Int -> DiagramMapState
 initDiagramMapState w h = DiagramMapState {
 	space = 2,
-	placeX = 0,
 	place = empty,
 	diagramMap = mkDiagramMap w h }
 
@@ -56,20 +54,14 @@ generateDiagramMap :: Int -> Int -> DiagramMapM a -> Maybe DiagramMap
 generateDiagramMap w h dmm =
 	diagramMap <$> dmm `execStateT` initDiagramMapState w h
 
-nextLevel :: Element -> DiagramMapM ()
-nextLevel e = do
-	stt <- get
-	put stt { placeX = placeX stt + space stt + fst (elementSpace e) }
-
-putElement0, putElement :: Element -> DiagramMapM LinePos
+putElement0, putElement :: Element -> Int -> DiagramMapM LinePos
 putElement0 = putElementGen True
 putElement = putElementGen False
 
-putElementGen :: Bool -> Element -> DiagramMapM LinePos
-putElementGen b e = do
+putElementGen :: Bool -> Element -> Int -> DiagramMapM LinePos
+putElementGen b e x = do
 	stt <- get
 	let	sp = space stt
-		x = placeX stt
 		y = fromMaybe 0 $ place stt !? x
 		p = Pos x y
 		dm = diagramMap stt
