@@ -25,6 +25,7 @@ dependencies:
 - monads-tf
 - diagrams-lib
 - diagrams-svg
+- heaps
 
 library:
   source-dirs: src

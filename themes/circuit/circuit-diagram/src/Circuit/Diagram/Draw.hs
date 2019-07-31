@@ -12,7 +12,7 @@ import Circuit.Diagram.Pictures
 
 drawDiagram :: DiagramMap -> Diagram B
 drawDiagram DiagramMap { width = w, height = h, layout = l } = mconcat
-	. (<$> [ Pos x y | x <- [0 .. w], y <- [0 .. h] ]) $ \p@(Pos x y) ->
+	. (<$> [ Pos x y | x <- [0 .. w - 1], y <- [0 .. h - 1] ]) $ \p@(Pos x y) ->
 		case l !? p of
 			Just e -> moveTo (- fromIntegral x ^& fromIntegral y)
 				$ drawElement e
