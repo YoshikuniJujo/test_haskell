@@ -1,13 +1,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Lib
-    ( someFunc, runZundoko
-    ) where
+module Lib (runZundoko) where
 
 import System.Random
-
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"
 
 data ZunDoko = Z | D deriving (Show, Bounded)
 
@@ -25,16 +20,13 @@ instance Random ZunDoko where
 	random = randomR (minBound, maxBound)
 
 runZundoko :: IO ()
-runZundoko = do
-	g <- newStdGen
-	putStrLn $ zundoko g
+runZundoko = putStrLn . zundoko =<< newStdGen
 
 zundoko :: StdGen -> String
 zundoko g = zundokoStr `concatMap` zundokoGen g ++ "キ・ヨ・シ!"
 
 zundokoStr :: ZunDoko -> String
-zundokoStr Z = "ズン"
-zundokoStr D = "ドコ"
+zundokoStr Z = "ズン"; zundokoStr D = "ドコ"
 
 zundokoGen :: StdGen -> [ZunDoko]
 zundokoGen g = zundokoFinish $ randoms g
