@@ -3,7 +3,8 @@
 
 module Circuit.Diagram.Pictures (
 	andGateD, orGateD, notGateD,
-	hlineD, vlineD, topLeftD, bottomLeftD, topRightD, bottomRightD ) where
+	hlineD, vlineD, topLeftD, bottomLeftD, topRightD, bottomRightD,
+	tshapeD ) where
 
 import Diagrams.Prelude
 import Diagrams.Direction
@@ -40,8 +41,9 @@ withEnvelope' :: (InSpace v n a, Monoid' m, Enveloped a) =>
 	QDiagram b v n m -> a -> QDiagram b v n m
 withEnvelope' = flip withEnvelope
 
-lineRight :: Double -> Diagram B
+lineRight, lineBottom :: Double -> Diagram B
 lineRight l = strokeT (fromOffsets [zero &_x .~ l]) # lwL 0.08
+lineBottom l = strokeT (fromOffsets [zero &_y .~ l]) # lwL 0.08
 
 hlineD, vlineD :: Diagram B
 hlineD = moveTo ((- 1) ^& 0) $ (strokeT (fromOffsets [unitX]) # lwL 0.08)
@@ -56,3 +58,12 @@ topRightD =
 		`withEnvelope'` (rect 2 1 :: Diagram B)
 bottomLeftD = moveTo ((- 1) ^& 0) $ rotateBy (1 / 2) topRightD
 bottomRightD = reflectY topRightD
+
+tshapeD :: Diagram B
+tshapeD = hlineD <> vlineH <> dotD
+
+vlineH :: Diagram B
+vlineH = moveTo ((- 0.5) ^& (- 0.5)) $ lineBottom 0.5
+
+dotD :: Diagram B
+dotD = moveTo ((- 0.5) ^& 0) $ circle (1.0 / 8) # fc black

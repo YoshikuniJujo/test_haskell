@@ -29,6 +29,7 @@ data Element
 	| AndGateE | OrGateE | NotGateE
 	| HLine | VLine
 	| TopLeft | TopRight | BottomLeft | BottomRight
+	| EndBottomLeft
 	| TShape | TInverted | TLeft | TRight | CrossDot | Cross
 	deriving Show
 
@@ -159,7 +160,7 @@ dir (Pos x y) (Pos x' y')
 	| x + 1 == x', y == y' = Just L
 	| otherwise = Nothing
 
-dirToLine :: Dir -> Dir -> Maybe Element
+dirToLine, dirToLine' :: Dir -> Dir -> Maybe Element
 dirToLine T T = Just VLine
 dirToLine T L = Just BottomLeft
 dirToLine T R = Just BottomRight
@@ -174,14 +175,31 @@ dirToLine R B = Just BottomLeft
 dirToLine R R = Just HLine
 dirToLine _ _ = Nothing
 
+dirToLine' T L = Just EndBottomLeft
+dirToLine' B L = Just TopLeft
+dirToLine' L L = Just HLine
+dirToLine' _ _ = Nothing
+
 posToLine :: Dir -> [Pos] -> Maybe [Element]
 posToLine _ [] = Just []
-posToLine d [_] = (: []) <$> dirToLine d L
+posToLine d [_] = (: []) <$> dirToLine' d L
 posToLine d (x : xs@(y : _)) = do
 	d' <- dir x y; (:) <$> dirToLine d d' <*> posToLine d' xs
 
 insertLine :: [Pos] -> Map Pos Element -> Maybe (Map Pos Element)
-insertLine ps m = P.foldr (uncurry insert) m . zip ps <$> posToLine L ps
+insertLine ps m =
+	P.foldr (uncurry overlapInsertLine) m . zip ps <$> posToLine L ps
+
+overlapInsertLine :: Pos -> Element -> Map Pos Element -> Map Pos Element
+overlapInsertLine pos ln m = case m !? pos of
+	Just ln' -> insert pos (overlapLine ln' ln) m
+	Nothing -> insert pos ln m
+
+overlapLine :: Element -> Element -> Element
+overlapLine HLine EndBottomLeft = TShape
+overlapLine ln ln' = error
+	$ "Circut.Diagram.Map.overlapLine: not yet implemented" ++
+		show ln ++ " " ++ show ln'
 
 connectLine :: Pos -> Pos -> DiagramMapM ()
 connectLine p1 p2 = do

@@ -29,4 +29,6 @@ drawElement TopLeft = topLeftD
 drawElement BottomLeft = bottomLeftD
 drawElement TopRight = topRightD
 drawElement BottomRight = bottomRightD
-drawElement _ = error "Circuit.Diagram.Draw.drawElement: not yet implemented"
+drawElement EndBottomLeft = bottomLeftD
+drawElement TShape = tshapeD
+drawElement e = error $ "Circuit.Diagram.Draw.drawElement: not yet implemented: " ++ show e

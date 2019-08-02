@@ -32,13 +32,21 @@ sample1 = DiagramMap {
 		((Pos 4 0), AndGateE) ] }
 
 sample2 :: Maybe ((Pos, Pos), DiagramMap)
-sample2 = runDiagramMapM 9 6 $ do
+sample2 = runDiagramMapM 15 8 $ do
 	_ <- putElement0 (ElementId 0) NotGateE 2
 	_ <- putElement (ElementId 1) AndGateE 7
 	_ <- putElement (ElementId 2) OrGateE 7
+	_ <- putElement (ElementId 3) AndGateE 14
 	lp0 <- getElementPos $ ElementId 0
 	lp2 <- getElementPos $ ElementId 2
 	let	p0 = head $ inputLinePos lp0
 		p1 = outputLinePos lp2
 	connectLine p0 p1
-	return (head $ inputLinePos lp0, outputLinePos lp2)
+	lp3 <- getElementPos $ ElementId 3
+	let	p2 = head $ inputLinePos lp2
+		p3 = outputLinePos lp3
+	connectLine p2 p3
+	let	p4 = head . tail $ inputLinePos lp2
+		p5 = outputLinePos lp2
+	connectLine p4 p5
+	return (p4, p5)
