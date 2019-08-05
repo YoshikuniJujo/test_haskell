@@ -17,3 +17,12 @@ bucketSortST = bucketSortM @(STArray s)
 
 bucketSortIO :: Ix i => (i, i) -> [i] -> IO [i]
 bucketSortIO = bucketSortM @IOArray
+
+bsort :: Ix i => (x -> i) -> (i, i) -> [x] -> [x]
+bsort getIx bs xs = runST $ bsortST getIx bs xs
+
+bsortST :: forall s i x . Ix i => (x -> i) -> (i, i) -> [x] -> ST s [x]
+bsortST = bsortM @(STArray s) @(STArray s)
+
+bsortIO :: Ix i => (x -> i) -> (i, i) -> [x] -> IO [x]
+bsortIO = bsortM @IOArray @IOArray
