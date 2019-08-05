@@ -23,9 +23,11 @@ bucketSortResult :: (MArray a Int m, Ix i) => a i Int -> m [i]
 bucketSortResult a = (concat <$>)
 	$ mapM (\i -> (`replicate` i) <$> readArray a i) . range =<< getBounds a
 
-bsortM :: forall a a' m i x . (MArray a Int m, Ix i, MArray a' x m, Ix i) => (x -> i) -> (i, i) -> [x] -> m [x]
+bsortM :: forall a a' m i x . (MArray a Int m, MArray a' x m, Ix i) =>
+	(x -> i) -> (i, i) -> [x] -> m [x]
 bsortM getIx bs xs = getElems
-	=<< bucketSortStep2 @a @a' getIx xs =<< bucketSortMArray bs (getIx <$> xs)
+	=<< bucketSortStep2 @a @a' getIx xs
+	=<< bucketSortMArray bs (getIx <$> xs)
 
 bucketSortStep2 :: forall a a' m i x . (MArray a Int m, Ix i, MArray a' x m) =>
 	(x -> i) -> [x] -> a i Int -> m (a' Int x)
