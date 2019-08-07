@@ -29,6 +29,7 @@ data Element
 	| AndGateE | OrGateE | NotGateE
 	| HLine | VLine
 	| TopLeft | TopRight | BottomLeft | BottomRight
+	| EndHLine
 	| EndBottomLeft
 	| TShape | TInverted | TLeft | TRight | CrossDot | Cross
 	deriving Show
@@ -85,6 +86,16 @@ putElementGen b eid e x = do
 getElementPos :: ElementId -> DiagramMapM LinePos
 getElementPos eid = lift =<< gets ((!? eid) . elementPos)
 
+addElementOutputPos :: ElementId -> [Pos] -> DiagramMapM ()
+addElementOutputPos eid ps = do
+	st <- get
+	let	eps = elementPos st
+	lps <- lift $ eps !? eid
+	let	lps' = lps { outputLinePos = outputLinePos lps ++ ps }
+		eps' = insert eid lps' eps
+	put $ st { elementPos = eps' }
+
+
 stump :: Element -> Pos -> Map Pos Element -> Map Pos Element
 stump e p m = P.foldr (flip insert Stump) m
 	[ Pos x y |
@@ -102,29 +113,32 @@ elementSpace OrGateE = (3, 3)
 elementSpace NotGateE = (2, 3)
 elementSpace _ = (1, 1)
 
-data LinePos = LinePos { outputLinePos :: Pos, inputLinePos :: [Pos] }
+data LinePos = LinePos { outputLinePos :: [Pos], inputLinePos :: [Pos] }
 	deriving Show
 
 linePos :: Element -> Pos -> Maybe LinePos
 linePos AndGateE (Pos x y) = Just LinePos {
-	outputLinePos = Pos (x - 1) y,
+	outputLinePos = [Pos (x - 1) y],
 	inputLinePos = [Pos (x + 3) (y - 1), Pos (x + 3) (y + 1)] }
 linePos OrGateE p = linePos AndGateE p
 linePos NotGateE (Pos x y) =
-	Just LinePos { outputLinePos = Pos (x - 1) y, inputLinePos = [Pos (x + 2) y] }
+	Just LinePos { outputLinePos = [Pos (x - 1) y], inputLinePos = [Pos (x + 2) y] }
 linePos _ _ = Nothing
 
 data DiagramMapAStar = DiagramMapAStar {
-	startLine :: Pos, endLine :: Pos, diagramMapA :: DiagramMap }
+	startLine :: Pos, endLine :: [Pos], diagramMapA :: DiagramMap }
 	deriving Show
 
-distance :: Pos -> Pos -> Dist
-distance (Pos x y) (Pos x' y') = fromIntegral $ abs (x - x') + abs (y - y')
+distance :: [Pos] -> Pos -> Dist
+distance ps p = minimum $ distance1 p <$> ps
+
+distance1 :: Pos -> Pos -> Dist
+distance1 (Pos x y) (Pos x' y') = fromIntegral $ abs (x - x') + abs (y - y')
 
 instance AStar DiagramMapAStar where
 	type AStarNode DiagramMapAStar = Pos
 	startNode = startLine
-	isEndNode = (==) . endLine
+	isEndNode = flip elem . endLine
 	nextNodes = (((, 1) <$>) .) . nextPosDiagramMap
 	distToEnd = distance . endLine
 
@@ -177,7 +191,7 @@ dirToLine _ _ = Nothing
 
 dirToLine' T L = Just EndBottomLeft
 dirToLine' B L = Just TopLeft
-dirToLine' L L = Just HLine
+dirToLine' L L = Just EndHLine
 dirToLine' _ _ = Nothing
 
 posToLine :: Dir -> [Pos] -> Maybe [Element]
@@ -193,16 +207,26 @@ insertLine ps m =
 overlapInsertLine :: Pos -> Element -> Map Pos Element -> Map Pos Element
 overlapInsertLine pos ln m = case m !? pos of
 	Just ln' -> insert pos (overlapLine ln' ln) m
-	Nothing -> insert pos ln m
+	Nothing	-- | EndHLine <- ln -> error $ "here: " ++ show pos
+		| otherwise -> insert pos ln m
 
 overlapLine :: Element -> Element -> Element
 overlapLine HLine EndBottomLeft = TShape
+overlapLine VLine HLine = Cross
+overlapLine VLine EndHLine = TLeft
 overlapLine ln ln' = error
-	$ "Circut.Diagram.Map.overlapLine: not yet implemented" ++
+	$ "Circut.Diagram.Map.overlapLine: not yet implemented: overlapLine " ++
 		show ln ++ " " ++ show ln'
 
-connectLine :: Pos -> Pos -> DiagramMapM ()
-connectLine p1 p2 = do
+connectLine :: Pos -> ElementId -> DiagramMapM ()
+connectLine p1 eid = do
+	p2 <- outputLinePos <$> getElementPos eid
+	ps <- connectLine' p1 p2
+	addElementOutputPos eid ps
+	return ()
+
+connectLine' :: Pos -> [Pos] -> DiagramMapM [Pos]
+connectLine' p1 p2 = do
 	stt <- get
 	let	dm = diagramMap stt
 		l = layout dm
@@ -210,3 +234,4 @@ connectLine p1 p2 = do
 		startLine = p1, endLine = p2, diagramMapA = dm }
 	l' <- lift $ insertLine ps l
 	put stt { diagramMap = dm { layout = l' } }
+	return ps
