@@ -3,7 +3,7 @@
 module Circuit.Diagram.Draw where
 
 import Data.Map.Strict
-import Diagrams.Prelude (Diagram, moveTo, (^&))
+import Diagrams.Prelude (Diagram, moveTo, (^&), (===))
 import Diagrams.Backend.SVG
 
 
@@ -35,5 +35,7 @@ drawElement EndBottomLeft = bottomLeftD
 drawElement TShape = tshapeD
 drawElement TInverted = tishapeD
 drawElement TLeft = tlshapeD
+drawElement TRight = trshapeD
 drawElement Cross = crossD
+drawElement Branch = tshapeD === topLeftD
 drawElement e = error $ "Circuit.Diagram.Draw.drawElement: not yet implemented: " ++ show e

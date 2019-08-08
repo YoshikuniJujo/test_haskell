@@ -27,9 +27,10 @@ mkDiagramMap w h = DiagramMap { width = w, height = h, layout = empty }
 data Element
 	= Stump
 	| AndGateE | OrGateE | NotGateE
+	| Branch
 	| HLine | VLine
 	| TopLeft | TopRight | BottomLeft | BottomRight
-	| EndHLine
+	| EndHLine | EndHLineR
 	| EndBottomLeft
 	| TShape | TInverted | TLeft | TRight | CrossDot | Cross
 	| HLineText String String
@@ -117,17 +118,19 @@ stump :: Element -> Pos -> Map Pos Element -> Map Pos Element
 stump e p m = P.foldr (flip insert Stump) m
 	[ Pos x y |
 		x <- [x0 .. x0 + w - 1],
-		y <- [y0 - h' .. y0 + h'],
+		y <- [y0 - h' .. y0 + h''],
 		(x, y) /= (x0, y0) ]
 	where
 	(w, h) = elementSpace e
 	h' = (h - 1) `div` 2
+	h'' = h `div` 2
 	(x0, y0) = (posX p, posY p)
 
 elementSpace :: Element -> (Int, Int)
 elementSpace AndGateE = (3, 3)
 elementSpace OrGateE = (3, 3)
 elementSpace NotGateE = (2, 3)
+elementSpace Branch = (1, 2)
 elementSpace _ = (1, 1)
 
 elementToPositions :: Element -> Pos -> [Pos]
@@ -156,6 +159,10 @@ linePos NotGateE (Pos x y) =
 	Just LinePos { outputLinePos = [Pos (x - 1) y], inputLinePos = [Pos (x + 2) y] }
 linePos (HLineText _ _) (Pos x y) =
 	Just LinePos { outputLinePos = [Pos (x - 1) y], inputLinePos = [Pos (x + 1) y] }
+linePos Branch (Pos x y) =
+	Just LinePos {
+		outputLinePos = [Pos (x - 1) y],
+		inputLinePos = [Pos (x + 1) y, Pos (x + 1) (y + 1)] }
 linePos _ _ = Nothing
 
 data DiagramMapAStar = DiagramMapAStar {
@@ -179,7 +186,7 @@ nextPosDiagramMap :: DiagramMapAStar -> Pos -> [Pos]
 nextPosDiagramMap dma (Pos x0 y0) = [ p |
 	p@(Pos x y) <- [Pos (x0 - 1) y0, Pos (x0 + 1) y0, Pos x0 (y0 - 1), Pos x0 (y0 + 1)],
 	0 <= x, x < w, 0 <= y, y < h,
-	y == y0 && checkHorizontal l p || x == x0 && checkVertical l p ]
+	isEndNode dma (Pos x y) || y == y0 && checkHorizontal l p || x == x0 && checkVertical l p ]
 	where
 	dm = diagramMapA dma
 	l = layout dm
@@ -221,12 +228,15 @@ dirToLine L L = Just HLine
 dirToLine R T = Just TopLeft
 dirToLine R B = Just BottomLeft
 dirToLine R R = Just HLine
-dirToLine _ _ = Nothing
+dirToLine d d' = error $ "dirToLine " ++ show d ++ " " ++ show d'
+-- dirToLine _ _ = Nothing
 
 dirToLine' T L = Just EndBottomLeft
 dirToLine' B L = Just TopLeft
 dirToLine' L L = Just EndHLine
-dirToLine' _ _ = Nothing
+dirToLine' R L = Just EndHLineR
+dirToLine' d d' = error $ "dirToLine' " ++ show d ++ " " ++ show d'
+-- dirToLine' _ _ = Nothing
 
 posToLine :: Dir -> [Pos] -> Maybe [Element]
 posToLine _ [] = Just []
@@ -249,7 +259,9 @@ overlapLine HLine EndBottomLeft = TShape
 overlapLine EndHLine EndBottomLeft = TShape
 overlapLine VLine HLine = Cross
 overlapLine VLine EndHLine = TLeft
+overlapLine VLine EndHLineR = TRight
 overlapLine HLine TopLeft = TInverted
+overlapLine BottomRight EndHLine = TShape
 overlapLine ln ln' = error
 	$ "Circut.Diagram.Map.overlapLine: not yet implemented: overlapLine " ++
 		show ln ++ " " ++ show ln'
@@ -259,7 +271,6 @@ connectLine p1 eid = do
 	p2 <- outputLinePos <$> getElementPos eid
 	ps <- connectLine' p1 p2
 	addElementOutputPos eid ps
-	return ()
 
 connectLine' :: Pos -> [Pos] -> DiagramMapM [Pos]
 connectLine' p1 p2 = do

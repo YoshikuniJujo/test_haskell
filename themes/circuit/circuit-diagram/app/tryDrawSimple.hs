@@ -8,7 +8,6 @@ import Diagrams.Backend.SVG
 
 import Circuit.Diagram.Map
 import Circuit.Diagram.Draw
-import AStar.AStar
 
 main :: IO ()
 main = do
@@ -46,4 +45,8 @@ sample2 = runDiagramMapM 15 8 $ do
 	lp2 <- getElementPos $ ElementId 2
 	let	p2 = head $ inputLinePos lp2
 	connectLine p2 $ ElementId 2
+
+	_ <- putElementWithPos (ElementId 101) Branch (Pos 7 6)
+	p101 <- head . inputLinePos <$> getElementPos (ElementId 101)
+	connectLine p101 $ ElementId 2
 	return ()
