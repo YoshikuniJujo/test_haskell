@@ -47,7 +47,7 @@ data DiagramMapState = DiagramMapState {
 
 initDiagramMapState :: Int -> Int -> DiagramMapState
 initDiagramMapState w h = DiagramMapState {
-	space = 3,
+	space = 2,
 	place = empty,
 	elementPos = empty,
 	diagramMap = mkDiagramMap w h }
@@ -85,7 +85,7 @@ putElementGen b eid e x my_ = do
 			Nothing -> return my_
 	stt <- get
 	let	sp = space stt
-		y = fromMaybe 0 $ place stt !? x
+		y = fromMaybe 1 $ place stt !? x
 		p = Pos x $ fromMaybe y my
 
 		dm = diagramMap stt
@@ -261,7 +261,7 @@ overlapLine VLine HLine = Cross
 overlapLine VLine EndHLine = TLeft
 overlapLine VLine EndHLineR = TRight
 overlapLine HLine TopLeft = TInverted
-overlapLine BottomRight EndHLine = TShape
+overlapLine BottomRight EndHLineR = TShape
 overlapLine ln ln' = error
 	$ "Circut.Diagram.Map.overlapLine: not yet implemented: overlapLine " ++
 		show ln ++ " " ++ show ln'

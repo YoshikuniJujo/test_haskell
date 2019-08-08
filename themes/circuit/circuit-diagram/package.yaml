@@ -67,6 +67,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - circuit-diagram
+  tryCaption:
+    main:                tryCaption.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - circuit-diagram
 
 tests:
   circuit-diagram-test:
