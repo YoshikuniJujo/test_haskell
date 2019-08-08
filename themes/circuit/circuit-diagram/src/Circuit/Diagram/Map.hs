@@ -280,8 +280,7 @@ insertLine ps m =
 overlapInsertLine :: Pos -> Element -> Map Pos Element -> Map Pos Element
 overlapInsertLine pos ln m = case m !? pos of
 	Just ln' -> insert pos (overlapLine ln' ln) m
-	Nothing	-- | EndHLine <- ln -> error $ "here: " ++ show pos
-		| otherwise -> insert pos ln m
+	Nothing -> insert pos ln m
 
 overlapLine :: Element -> Element -> Element
 overlapLine HLine EndBottomLeft = TShape
@@ -295,14 +294,17 @@ overlapLine ln ln' = error
 	$ "Circut.Diagram.Map.overlapLine: not yet implemented: overlapLine " ++
 		show ln ++ " " ++ show ln'
 
-connectLine :: ElementIdable eid => Pos -> eid -> DiagramMapM ()
-connectLine p1 eidg = do
+connectLine :: ElementIdable eid => eid -> Int -> eid -> DiagramMapM ()
+connectLine ei i eo = (`connectLine'` eo) . (!! i) =<< getInputPos ei
+
+connectLine' :: ElementIdable eid => Pos -> eid -> DiagramMapM ()
+connectLine' p1 eidg = do
 	p2 <- outputLinePos <$> getElementPos eidg
-	ps <- connectLine' p1 p2
+	ps <- connectLineGen p1 p2
 	addElementOutputPos (elementId eidg) ps
 
-connectLine' :: Pos -> [Pos] -> DiagramMapM [Pos]
-connectLine' p1 p2 = do
+connectLineGen :: Pos -> [Pos] -> DiagramMapM [Pos]
+connectLineGen p1 p2 = do
 	stt <- get
 	let	dm = diagramMap stt
 		l = layout dm

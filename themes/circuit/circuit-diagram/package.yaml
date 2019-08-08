@@ -32,6 +32,11 @@ dependencies:
 
 library:
   source-dirs: src
+  exposed-modules:
+    - AStar.AStar
+    - Circuit.Diagram.Map
+    - Circuit.Diagram.Draw
+    - Circuit.Diagram.Pictures
 
 executables:
   circuit-diagram-exe:

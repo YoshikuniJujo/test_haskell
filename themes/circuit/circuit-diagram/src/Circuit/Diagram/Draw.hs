@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Circuit.Diagram.Draw where
+module Circuit.Diagram.Draw (drawDiagram) where
 
 import Data.Map.Strict
 import Diagrams.Prelude (Diagram, moveTo, (^&), (===))
