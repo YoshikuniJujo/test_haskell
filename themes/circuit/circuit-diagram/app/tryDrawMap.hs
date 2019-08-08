@@ -31,7 +31,7 @@ sample1 = DiagramMap {
 		((Pos 4 0), AndGateE) ] }
 
 sample2 :: Maybe ((Pos, [Pos]), DiagramMap)
-sample2 = runDiagramMapM 15 8 $ do
+sample2 = runDiagramMapM 15 15 $ do
 	_ <- putElement0 (ElementId 0) NotGateE 2
 	_ <- putElement (ElementId 1) AndGateE 7
 	_ <- putElement (ElementId 2) OrGateE 7
@@ -50,5 +50,7 @@ sample2 = runDiagramMapM 15 8 $ do
 	lp4 <- getElementPos $ ElementId 1
 	let	p6 = head . tail $ inputLinePos lp4
 	connectLine p6 $ ElementId 3
+
+	_ <- putElementWithPos (ElementId 4) NotGateE (Pos 7 3)
 
 	return (p4, p5)

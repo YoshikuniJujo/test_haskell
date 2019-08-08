@@ -46,7 +46,7 @@ data DiagramMapState = DiagramMapState {
 
 initDiagramMapState :: Int -> Int -> DiagramMapState
 initDiagramMapState w h = DiagramMapState {
-	space = 2,
+	space = 3,
 	place = empty,
 	elementPos = empty,
 	diagramMap = mkDiagramMap w h }
@@ -70,24 +70,32 @@ generateDiagramMap w h dmm =
 	diagramMap <$> dmm `execStateT` initDiagramMapState w h
 
 putElement0, putElement :: ElementId -> Element -> Int -> DiagramMapM Bool
-putElement0 = putElementGen True
-putElement = putElementGen False
+putElement0 eid e x = putElementGen True eid e x Nothing
+putElement eid e x = putElementGen False eid e x Nothing
 
-putElementGen :: Bool -> ElementId -> Element -> Int -> DiagramMapM Bool
-putElementGen b eid e x = do
+putElementWithPos :: ElementId -> Element -> Pos -> DiagramMapM Bool
+putElementWithPos eid e (Pos x y) = putElementGen False eid e x (Just y)
+
+putElementGen :: Bool -> ElementId -> Element -> Int -> Maybe Int -> DiagramMapM Bool
+putElementGen b eid e x my_ = do
+	my <- do
+		case my_ of
+			Just y -> bool Nothing my_ <$> placeable e (Pos x y)
+			Nothing -> return my_
 	stt <- get
 	let	sp = space stt
 		y = fromMaybe 0 $ place stt !? x
-		p = Pos x y
+		p = Pos x $ fromMaybe y my
+
 		dm = diagramMap stt
 		l = layout dm
 		l' = stump e p $ insert p e l
-		l'' = bool l' (insert (Pos (x - 1) y) HLine l') b
+		l'' = bool l' (insert (Pos (x - 1) $ posY p) HLine l') b
 		(w, h) = elementSpace e
 	lp <- lift $ linePos e p
 	put stt {
-		place = P.foldr (`insert` (y + h + fromIntegral sp))
-			(place stt) [x, x + w - 1],
+		place = P.foldr (`insert` (max y (posY p) + h + fromIntegral sp))
+			(place stt) [x .. x + w - 1],
 		elementPos = insert eid lp $ elementPos stt,
 		diagramMap = dm { layout = l'' } }
 	return True
@@ -121,6 +129,20 @@ elementSpace AndGateE = (3, 3)
 elementSpace OrGateE = (3, 3)
 elementSpace NotGateE = (2, 3)
 elementSpace _ = (1, 1)
+
+elementToPositions :: Element -> Pos -> [Pos]
+elementToPositions e (Pos x0 y0) = [ Pos x y |
+	x <- [x0 .. x0 + w - 1],
+	y <- [y0 - h' .. y0 + h'] ]
+	where
+	(w, h) = elementSpace e
+	h' = (h - 1) `div` 2
+
+placeable :: Element -> Pos -> DiagramMapM Bool
+placeable e pos = and <$> placeablePos `mapM` elementToPositions e pos
+
+placeablePos :: Pos -> DiagramMapM Bool
+placeablePos pos = isNothing <$> getElementFromPos pos
 
 data LinePos = LinePos { outputLinePos :: [Pos], inputLinePos :: [Pos] }
 	deriving Show
