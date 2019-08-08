@@ -32,6 +32,7 @@ drawElement TopRight = topRightD
 drawElement BottomRight = bottomRightD
 drawElement EndBottomLeft = bottomLeftD
 drawElement TShape = tshapeD
+drawElement TInverted = tishapeD
 drawElement TLeft = tlshapeD
 drawElement Cross = crossD
 drawElement e = error $ "Circuit.Diagram.Draw.drawElement: not yet implemented: " ++ show e

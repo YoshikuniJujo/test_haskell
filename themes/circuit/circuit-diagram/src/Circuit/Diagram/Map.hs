@@ -52,6 +52,14 @@ initDiagramMapState w h = DiagramMapState {
 
 type DiagramMapM = StateT DiagramMapState Maybe
 
+getDiagramMap :: DiagramMapM DiagramMap
+getDiagramMap = gets diagramMap
+
+getElementFromPos :: Pos -> DiagramMapM (Maybe Element)
+getElementFromPos pos = do
+	dm <- getDiagramMap
+	return $ layout dm !? pos
+
 runDiagramMapM :: Int -> Int -> DiagramMapM a -> Maybe (a, DiagramMap)
 runDiagramMapM w h dmm =
 	second diagramMap <$> dmm `runStateT` initDiagramMapState w h
@@ -161,6 +169,7 @@ checkHorizontal l p = case l !? p of
 
 checkVertical l p = case  l !? p of
 	Just HLine -> True
+	Just EndHLine -> True
 	Just _ -> False
 	Nothing -> True
 
@@ -212,8 +221,10 @@ overlapInsertLine pos ln m = case m !? pos of
 
 overlapLine :: Element -> Element -> Element
 overlapLine HLine EndBottomLeft = TShape
+overlapLine EndHLine EndBottomLeft = TShape
 overlapLine VLine HLine = Cross
 overlapLine VLine EndHLine = TLeft
+overlapLine HLine TopLeft = TInverted
 overlapLine ln ln' = error
 	$ "Circut.Diagram.Map.overlapLine: not yet implemented: overlapLine " ++
 		show ln ++ " " ++ show ln'
