@@ -4,7 +4,8 @@
 module Circuit.Diagram.Pictures (
 	andGateD, orGateD, notGateD,
 	hlineD, vlineD, topLeftD, bottomLeftD, topRightD, bottomRightD,
-	tshapeD, tishapeD, tlshapeD, crossD ) where
+	tshapeD, tishapeD, tlshapeD, crossD,
+	hlineTextD ) where
 
 import Diagrams.Prelude
 import Diagrams.Direction
@@ -46,7 +47,7 @@ lineRight l = strokeT (fromOffsets [zero &_x .~ l]) # lwL 0.08
 lineBottom l = strokeT (fromOffsets [zero &_y .~ l]) # lwL 0.08
 
 hlineD, vlineD :: Diagram B
-hlineD = moveTo ((- 1) ^& 0) $ (strokeT (fromOffsets [unitX]) # lwL 0.08)
+hlineD = moveTo ((- 1) ^& 0) (strokeT (fromOffsets [unitX]) # lwL 0.08)
 	`withEnvelope'` (rect 1 1 :: Diagram B)
 
 vlineD = moveTo ((- 0.5) ^& (- 0.5)) $ strokeT (fromOffsets [unitY]) # lwL 0.08
@@ -82,3 +83,9 @@ dotD = moveTo ((- 0.5) ^& 0) $ circle (1.0 / 8) # fc black
 
 crossD :: Diagram B
 crossD = hlineD <> vlineD
+
+hlineTextD :: String -> String -> Diagram B
+hlineTextD t1 t2 =
+	moveTo ((- 1) ^& 0.2) (text t1 # scale (1 / 3)) <>
+	moveTo ((- 0.2) ^& 0.2) (text t2 # scale (1 / 3)) <>
+	hlineD

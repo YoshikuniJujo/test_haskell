@@ -32,6 +32,7 @@ data Element
 	| EndHLine
 	| EndBottomLeft
 	| TShape | TInverted | TLeft | TRight | CrossDot | Cross
+	| HLineText String String
 	deriving Show
 
 newtype ElementId = ElementId Word deriving (Show, Eq, Ord)

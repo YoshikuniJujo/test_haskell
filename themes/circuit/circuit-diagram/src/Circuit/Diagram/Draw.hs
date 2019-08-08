@@ -24,6 +24,7 @@ drawElement OrGateE = orGateD
 drawElement NotGateE = notGateD
 drawElement HLine = hlineD
 drawElement EndHLine = hlineD
+drawElement (HLineText t1 t2) = hlineTextD t1 t2
 drawElement VLine = vlineD
 drawElement Stump = mempty
 drawElement TopLeft = topLeftD
