@@ -1,4 +1,4 @@
-{-# LANGUAGE TupleSections, TypeFamilies #-}
+{-# LANGUAGE TupleSections, TypeFamilies, TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Circuit.Diagram.Map where
@@ -10,6 +10,12 @@ import Control.Monad.State
 import Data.Maybe
 import Data.Map.Strict
 import Data.Bool
+import Data.String
+import Crypto.Hash
+
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BSC
+import qualified Data.ByteArray as BA
 
 import AStar.AStar
 
@@ -27,7 +33,7 @@ mkDiagramMap w h = DiagramMap { width = w, height = h, layout = empty }
 data Element
 	= Stump
 	| AndGateE | OrGateE | NotGateE
-	| Branch
+	| BranchE
 	| HLine | VLine
 	| TopLeft | TopRight | BottomLeft | BottomRight
 	| EndHLine | EndHLineR
@@ -36,7 +42,19 @@ data Element
 	| HLineText String String
 	deriving Show
 
-newtype ElementId = ElementId Word deriving (Show, Eq, Ord)
+newtype ElementId = ElementId BS.ByteString deriving (Show, Eq, Ord)
+
+instance IsString ElementId where
+	fromString = ElementId . BA.convert . hash @_ @SHA3_256 . BSC.pack
+
+class ElementIdable a where
+	elementIdGen :: a -> BS.ByteString
+
+elementId :: ElementIdable eid => eid -> ElementId
+elementId = ElementId . elementIdGen
+
+instance ElementIdable ElementId where
+	elementIdGen (ElementId bs) = bs
 
 data DiagramMapState = DiagramMapState {
 	space :: Int,
@@ -73,16 +91,16 @@ generateDiagramMap :: Int -> Int -> DiagramMapM a -> Either String DiagramMap
 generateDiagramMap w h dmm =
 	diagramMap <$> dmm `execStateT` initDiagramMapState w h
 
-putElement0, putElement :: ElementId -> Element -> Int -> DiagramMapM Bool
+putElement0, putElement :: ElementIdable eid => eid -> Element -> Int -> DiagramMapM Bool
 putElement0 eid e x = putElementGen True eid e x Nothing
 putElement eid e x = putElementGen False eid e x Nothing
 
-putElementWithPos :: ElementId -> Element -> Pos -> DiagramMapM Bool
+putElementWithPos :: ElementIdable eid => eid -> Element -> Pos -> DiagramMapM Bool
 putElementWithPos eid e (Pos x y) = putElementGen False eid e x (Just y)
 
-putElementGen :: Bool -> ElementId -> Element -> Int -> Maybe Int -> DiagramMapM Bool
-putElementGen b eid e x my_ = do
-	me <- gets ((!? eid) . elementPos)
+putElementGen :: ElementIdable eid => Bool -> eid -> Element -> Int -> Maybe Int -> DiagramMapM Bool
+putElementGen b eidg e x my_ = do
+	me <- gets ((!? elementId eidg) . elementPos)
 	(\pe -> maybe pe (const $ return False) me) $ do
 		my <- do
 			case my_ of
@@ -102,13 +120,18 @@ putElementGen b eid e x my_ = do
 		put stt {
 			place = P.foldr (`insert` (max y (posY p) + h + fromIntegral sp))
 				(place stt) [x .. x + w - 1],
-			elementPos = insert eid lp $ elementPos stt,
+			elementPos = insert (elementId eidg) lp $ elementPos stt,
 			diagramMap = dm { layout = l'' } }
 		return True
 
-getElementPos :: ElementId -> DiagramMapM LinePos
-getElementPos eid = lift
-	=<< gets (maybe (Left $ "getElementPos " ++ show eid) Right . (!? eid) . elementPos)
+getElementPos :: ElementIdable eid => eid -> DiagramMapM LinePos
+getElementPos eidg = lift
+	=<< gets (maybe (Left emsg) Right . (!? elementId eidg) . elementPos)
+	where emsg = "No such element: " ++
+		"Circuit.Diagram.Map.getElementPos " ++ show (elementId eidg)
+
+getInputPos :: ElementIdable eid => eid -> DiagramMapM [Pos]
+getInputPos = (inputLinePos <$>) . getElementPos
 
 addElementOutputPos :: ElementId -> [Pos] -> DiagramMapM ()
 addElementOutputPos eid ps = do
@@ -138,7 +161,7 @@ elementSpace :: Element -> (Int, Int)
 elementSpace AndGateE = (3, 3)
 elementSpace OrGateE = (3, 3)
 elementSpace NotGateE = (2, 3)
-elementSpace Branch = (1, 2)
+elementSpace BranchE = (1, 2)
 elementSpace _ = (1, 1)
 
 elementToPositions :: Element -> Pos -> [Pos]
@@ -167,7 +190,7 @@ linePos NotGateE (Pos x y) =
 	Right LinePos { outputLinePos = [Pos (x - 1) y], inputLinePos = [Pos (x + 2) y] }
 linePos (HLineText _ _) (Pos x y) =
 	Right LinePos { outputLinePos = [Pos (x - 1) y], inputLinePos = [Pos (x + 1) y] }
-linePos Branch (Pos x y) =
+linePos BranchE (Pos x y) =
 	Right LinePos {
 		outputLinePos = [Pos (x - 1) y],
 		inputLinePos = [Pos (x + 1) y, Pos (x + 1) (y + 1)] }
@@ -272,11 +295,11 @@ overlapLine ln ln' = error
 	$ "Circut.Diagram.Map.overlapLine: not yet implemented: overlapLine " ++
 		show ln ++ " " ++ show ln'
 
-connectLine :: Pos -> ElementId -> DiagramMapM ()
-connectLine p1 eid = do
-	p2 <- outputLinePos <$> getElementPos eid
+connectLine :: ElementIdable eid => Pos -> eid -> DiagramMapM ()
+connectLine p1 eidg = do
+	p2 <- outputLinePos <$> getElementPos eidg
 	ps <- connectLine' p1 p2
-	addElementOutputPos eid ps
+	addElementOutputPos (elementId eidg) ps
 
 connectLine' :: Pos -> [Pos] -> DiagramMapM [Pos]
 connectLine' p1 p2 = do

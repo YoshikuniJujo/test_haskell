@@ -37,5 +37,5 @@ drawElement TInverted = tishapeD
 drawElement TLeft = tlshapeD
 drawElement TRight = trshapeD
 drawElement Cross = crossD
-drawElement Branch = tshapeD === topLeftD
+drawElement BranchE = tshapeD === topLeftD
 drawElement e = error $ "Circuit.Diagram.Draw.drawElement: not yet implemented: " ++ show e

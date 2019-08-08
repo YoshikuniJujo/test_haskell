@@ -26,6 +26,9 @@ dependencies:
 - diagrams-lib
 - diagrams-svg
 - heaps
+- cryptonite
+- bytestring
+- memory
 
 library:
   source-dirs: src

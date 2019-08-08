@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 import Prelude as P
@@ -32,25 +33,25 @@ sample1 = DiagramMap {
 
 sample2 :: Either String ((Pos, [Pos]), DiagramMap)
 sample2 = runDiagramMapM 15 15 $ do
-	_ <- putElement0 (ElementId 0) NotGateE 2
-	_ <- putElement (ElementId 1) AndGateE 7
-	_ <- putElement (ElementId 2) OrGateE 7
-	_ <- putElement (ElementId 3) AndGateE 14
-	lp0 <- getElementPos $ ElementId 0
-	lp2 <- getElementPos $ ElementId 2
+	_ <- putElement0 (ElementId "0") NotGateE 2
+	_ <- putElement (ElementId "1") AndGateE 7
+	_ <- putElement (ElementId "2") OrGateE 7
+	_ <- putElement (ElementId "3") AndGateE 14
+	lp0 <- getElementPos $ ElementId "0"
+	lp2 <- getElementPos $ ElementId "2"
 	let	p0 = head $ inputLinePos lp0
-	connectLine p0 $ ElementId 2
+	connectLine p0 $ ElementId "2"
 	let	p2 = head $ inputLinePos lp2
-	connectLine p2 $ ElementId 3
+	connectLine p2 $ ElementId "3"
 	let	p4 = head . tail $ inputLinePos lp2
 		p5 = outputLinePos lp2
-	connectLine p4 $ ElementId 2
+	connectLine p4 $ ElementId "2"
 
 
-	lp4 <- getElementPos $ ElementId 1
+	lp4 <- getElementPos $ ElementId "1"
 	let	p6 = head . tail $ inputLinePos lp4
-	connectLine p6 $ ElementId 3
+	connectLine p6 $ ElementId "3"
 
-	_ <- putElementWithPos (ElementId 4) NotGateE (Pos 7 3)
+	_ <- putElementWithPos (ElementId "4") NotGateE (Pos 7 3)
 
 	return (p4, p5)
