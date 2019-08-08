@@ -13,9 +13,9 @@ main :: IO ()
 main = do
 	renderSVG "sample4.svg" (mkWidth 600) $ drawDiagram sample1
 	case sample2 of
-		Just ((), s2) -> do
+		Right s2 ->
 			renderSVG "caption.svg" (mkWidth 600) $ drawDiagram s2
-		Nothing -> putStrLn "Can't draw diagram"
+		Left emsg -> putStrLn $ "Can't draw diagram: " ++ emsg
 
 sample1 :: DiagramMap
 sample1 = DiagramMap {
@@ -27,8 +27,8 @@ sample1 = DiagramMap {
 		((Pos 3 0), HLine),
 		((Pos 4 0), AndGateE) ] }
 
-sample2 :: Maybe ((), DiagramMap)
-sample2 = runDiagramMapM 16 8 $ do
+sample2 :: Either String DiagramMap
+sample2 = execDiagramMapM 16 8 $ do
 	_ <- putElement0 (ElementId 0) NotGateE 2
 	_ <- putElementWithPos (ElementId 100) (HLineText "63:32" "31:0") (Pos 5 1)
 	_ <- putElement (ElementId 1) AndGateE 7

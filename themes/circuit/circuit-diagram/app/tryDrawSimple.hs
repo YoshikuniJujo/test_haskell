@@ -1,8 +1,5 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-import Prelude as P
-
-import Data.Map
 import Diagrams.Prelude (mkWidth)
 import Diagrams.Backend.SVG
 
@@ -10,25 +7,12 @@ import Circuit.Diagram.Map
 import Circuit.Diagram.Draw
 
 main :: IO ()
-main = do
-	renderSVG "sample4.svg" (mkWidth 600) $ drawDiagram sample1
-	case sample2 of
-		Just ((), s2) -> do
-			renderSVG "simple.svg" (mkWidth 600) $ drawDiagram s2
-		Nothing -> putStrLn "Can't draw diagram"
+main = case sample2 of
+		Right s2 -> renderSVG "simple.svg" (mkWidth 600) $ drawDiagram s2
+		Left emsg -> putStrLn $ "Can't draw diagram " ++ emsg
 
-sample1 :: DiagramMap
-sample1 = DiagramMap {
-	width = 5,
-	height = 2,
-	layout = P.foldr (uncurry insert) empty  [
-		((Pos 0 0), HLine),
-		((Pos 1 0), NotGateE),
-		((Pos 3 0), HLine),
-		((Pos 4 0), AndGateE) ] }
-
-sample2 :: Maybe ((), DiagramMap)
-sample2 = runDiagramMapM 15 8 $ do
+sample2 :: Either String DiagramMap
+sample2 = execDiagramMapM 15 8 $ do
 	_ <- putElement0 (ElementId 0) NotGateE 2
 	_ <- putElementWithPos (ElementId 100) (HLineText "31:16" "63:32") (Pos 7 0)
 	_ <- putElement (ElementId 1) NotGateE 11

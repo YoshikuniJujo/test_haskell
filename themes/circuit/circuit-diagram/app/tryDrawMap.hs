@@ -14,11 +14,11 @@ main :: IO ()
 main = do
 	renderSVG "sample4.svg" (mkWidth 600) $ drawDiagram sample1
 	case sample2 of
-		Just ((p0, p1), s2) -> do
+		Right ((p0, p1), s2) -> do
 			renderSVG "sample5.svg" (mkWidth 600) $ drawDiagram s2
 			print $ astar DiagramMapAStar {
 				startLine = p0, endLine = p1, diagramMapA = s2 }
-		Nothing -> return ()
+		Left emsg -> putStrLn $ "no diagram: " ++ emsg
 
 sample1 :: DiagramMap
 sample1 = DiagramMap {
@@ -30,7 +30,7 @@ sample1 = DiagramMap {
 		((Pos 3 0), HLine),
 		((Pos 4 0), AndGateE) ] }
 
-sample2 :: Maybe ((Pos, [Pos]), DiagramMap)
+sample2 :: Either String ((Pos, [Pos]), DiagramMap)
 sample2 = runDiagramMapM 15 15 $ do
 	_ <- putElement0 (ElementId 0) NotGateE 2
 	_ <- putElement (ElementId 1) AndGateE 7

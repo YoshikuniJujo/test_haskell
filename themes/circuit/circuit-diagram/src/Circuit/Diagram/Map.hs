@@ -52,7 +52,7 @@ initDiagramMapState w h = DiagramMapState {
 	elementPos = empty,
 	diagramMap = mkDiagramMap w h }
 
-type DiagramMapM = StateT DiagramMapState Maybe
+type DiagramMapM = StateT DiagramMapState (Either String)
 
 getDiagramMap :: DiagramMapM DiagramMap
 getDiagramMap = gets diagramMap
@@ -62,11 +62,14 @@ getElementFromPos pos = do
 	dm <- getDiagramMap
 	return $ layout dm !? pos
 
-runDiagramMapM :: Int -> Int -> DiagramMapM a -> Maybe (a, DiagramMap)
+runDiagramMapM :: Int -> Int -> DiagramMapM a -> Either String (a, DiagramMap)
 runDiagramMapM w h dmm =
 	second diagramMap <$> dmm `runStateT` initDiagramMapState w h
 
-generateDiagramMap :: Int -> Int -> DiagramMapM a -> Maybe DiagramMap
+execDiagramMapM :: Int -> Int -> DiagramMapM a -> Either String DiagramMap
+execDiagramMapM w h = (snd <$>) . runDiagramMapM w h
+
+generateDiagramMap :: Int -> Int -> DiagramMapM a -> Either String DiagramMap
 generateDiagramMap w h dmm =
 	diagramMap <$> dmm `execStateT` initDiagramMapState w h
 
@@ -104,13 +107,16 @@ putElementGen b eid e x my_ = do
 		return True
 
 getElementPos :: ElementId -> DiagramMapM LinePos
-getElementPos eid = lift =<< gets ((!? eid) . elementPos)
+getElementPos eid = lift
+	=<< gets (maybe (Left $ "getElementPos " ++ show eid) Right . (!? eid) . elementPos)
 
 addElementOutputPos :: ElementId -> [Pos] -> DiagramMapM ()
 addElementOutputPos eid ps = do
 	st <- get
 	let	eps = elementPos st
-	lps <- lift $ eps !? eid
+	lps <- lift $ maybe
+		(Left $ "addElementOutputPos " ++ show eid ++ " " ++ show ps)
+		Right $ eps !? eid
 	let	lps' = lps { outputLinePos = outputLinePos lps ++ ps }
 		eps' = insert eid lps' eps
 	put $ st { elementPos = eps' }
@@ -152,20 +158,20 @@ placeablePos pos = isNothing <$> getElementFromPos pos
 data LinePos = LinePos { outputLinePos :: [Pos], inputLinePos :: [Pos] }
 	deriving Show
 
-linePos :: Element -> Pos -> Maybe LinePos
-linePos AndGateE (Pos x y) = Just LinePos {
+linePos :: Element -> Pos -> Either String LinePos
+linePos AndGateE (Pos x y) = Right LinePos {
 	outputLinePos = [Pos (x - 1) y],
 	inputLinePos = [Pos (x + 3) (y - 1), Pos (x + 3) (y + 1)] }
 linePos OrGateE p = linePos AndGateE p
 linePos NotGateE (Pos x y) =
-	Just LinePos { outputLinePos = [Pos (x - 1) y], inputLinePos = [Pos (x + 2) y] }
+	Right LinePos { outputLinePos = [Pos (x - 1) y], inputLinePos = [Pos (x + 2) y] }
 linePos (HLineText _ _) (Pos x y) =
-	Just LinePos { outputLinePos = [Pos (x - 1) y], inputLinePos = [Pos (x + 1) y] }
+	Right LinePos { outputLinePos = [Pos (x - 1) y], inputLinePos = [Pos (x + 1) y] }
 linePos Branch (Pos x y) =
-	Just LinePos {
+	Right LinePos {
 		outputLinePos = [Pos (x - 1) y],
 		inputLinePos = [Pos (x + 1) y, Pos (x + 1) (y + 1)] }
-linePos _ _ = Nothing
+linePos e pos = Left $ "linePos " ++ show e ++ " " ++ show pos
 
 data DiagramMapAStar = DiagramMapAStar {
 	startLine :: Pos, endLine :: [Pos], diagramMapA :: DiagramMap }
@@ -209,44 +215,42 @@ checkVertical l p = case  l !? p of
 
 data Dir = T | B | L | R deriving Show
 
-dir :: Pos -> Pos -> Maybe Dir
-dir (Pos x y) (Pos x' y')
-	| x == x', y - 1 == y' = Just T
-	| x == x', y + 1 == y' = Just B
-	| x - 1 == x', y == y' = Just R
-	| x + 1 == x', y == y' = Just L
-	| otherwise = Nothing
+dir :: Pos -> Pos -> Either String Dir
+dir p1@(Pos x y) p2@(Pos x' y')
+	| x == x', y - 1 == y' = Right T
+	| x == x', y + 1 == y' = Right B
+	| x - 1 == x', y == y' = Right R
+	| x + 1 == x', y == y' = Right L
+	| otherwise = Left $ "dir " ++ show p1 ++ " " ++ show p2
 
-dirToLine, dirToLine' :: Dir -> Dir -> Maybe Element
-dirToLine T T = Just VLine
-dirToLine T L = Just BottomLeft
-dirToLine T R = Just BottomRight
-dirToLine B B = Just VLine
-dirToLine B L = Just TopLeft
-dirToLine B R = Just TopRight
-dirToLine L T = Just TopRight
-dirToLine L B = Just BottomRight
-dirToLine L L = Just HLine
-dirToLine R T = Just TopLeft
-dirToLine R B = Just BottomLeft
-dirToLine R R = Just HLine
-dirToLine d d' = error $ "dirToLine " ++ show d ++ " " ++ show d'
--- dirToLine _ _ = Nothing
+dirToLine, dirToLine' :: Dir -> Dir -> Either String Element
+dirToLine T T = Right VLine
+dirToLine T L = Right BottomLeft
+dirToLine T R = Right BottomRight
+dirToLine B B = Right VLine
+dirToLine B L = Right TopLeft
+dirToLine B R = Right TopRight
+dirToLine L T = Right TopRight
+dirToLine L B = Right BottomRight
+dirToLine L L = Right HLine
+dirToLine R T = Right TopLeft
+dirToLine R B = Right BottomLeft
+dirToLine R R = Right HLine
+dirToLine d d' = Left $ "dirToLine " ++ show d ++ " " ++ show d'
 
-dirToLine' T L = Just EndBottomLeft
-dirToLine' B L = Just TopLeft
-dirToLine' L L = Just EndHLine
-dirToLine' R L = Just EndHLineR
-dirToLine' d d' = error $ "dirToLine' " ++ show d ++ " " ++ show d'
--- dirToLine' _ _ = Nothing
+dirToLine' T L = Right EndBottomLeft
+dirToLine' B L = Right TopLeft
+dirToLine' L L = Right EndHLine
+dirToLine' R L = Right EndHLineR
+dirToLine' d d' = Left $ "dirToLine' " ++ show d ++ " " ++ show d'
 
-posToLine :: Dir -> [Pos] -> Maybe [Element]
-posToLine _ [] = Just []
+posToLine :: Dir -> [Pos] -> Either String [Element]
+posToLine _ [] = Right []
 posToLine d [_] = (: []) <$> dirToLine' d L
 posToLine d (x : xs@(y : _)) = do
 	d' <- dir x y; (:) <$> dirToLine d d' <*> posToLine d' xs
 
-insertLine :: [Pos] -> Map Pos Element -> Maybe (Map Pos Element)
+insertLine :: [Pos] -> Map Pos Element -> Either String (Map Pos Element)
 insertLine ps m =
 	P.foldr (uncurry overlapInsertLine) m . zip ps <$> posToLine L ps
 
@@ -279,7 +283,7 @@ connectLine' p1 p2 = do
 	stt <- get
 	let	dm = diagramMap stt
 		l = layout dm
-	ps <- lift $ astar DiagramMapAStar {
+	ps <- lift $ maybe (Left "astar: no route") Right $ astar DiagramMapAStar {
 		startLine = p1, endLine = p2, diagramMapA = dm }
 	l' <- lift $ insertLine ps l
 	put stt { diagramMap = dm { layout = l' } }
