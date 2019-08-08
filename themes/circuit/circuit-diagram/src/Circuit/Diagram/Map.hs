@@ -154,6 +154,8 @@ linePos AndGateE (Pos x y) = Just LinePos {
 linePos OrGateE p = linePos AndGateE p
 linePos NotGateE (Pos x y) =
 	Just LinePos { outputLinePos = [Pos (x - 1) y], inputLinePos = [Pos (x + 2) y] }
+linePos (HLineText _ _) (Pos x y) =
+	Just LinePos { outputLinePos = [Pos (x - 1) y], inputLinePos = [Pos (x + 1) y] }
 linePos _ _ = Nothing
 
 data DiagramMapAStar = DiagramMapAStar {

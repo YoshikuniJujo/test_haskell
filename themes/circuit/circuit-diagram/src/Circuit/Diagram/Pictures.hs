@@ -86,6 +86,7 @@ crossD = hlineD <> vlineD
 
 hlineTextD :: String -> String -> Diagram B
 hlineTextD t1 t2 =
-	moveTo ((- 1) ^& 0.2) (text t1 # scale (1 / 3)) <>
-	moveTo ((- 0.2) ^& 0.2) (text t2 # scale (1 / 3)) <>
+	moveTo ((- 0.9) ^& 0.2) (text t1 # scale (1 / 4)) <>
+	moveTo ((- 0.5) ^& 0.2) (text "-" # scale (1 / 4)) <>
+	moveTo ((- 0.1) ^& 0.2) (text t2 # scale (1 / 4)) <>
 	hlineD

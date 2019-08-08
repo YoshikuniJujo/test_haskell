@@ -31,12 +31,16 @@ sample1 = DiagramMap {
 sample2 :: Maybe ((), DiagramMap)
 sample2 = runDiagramMapM 15 8 $ do
 	_ <- putElement0 (ElementId 0) NotGateE 2
-	_ <- putElement (ElementId 1) NotGateE 9
+	_ <- putElementWithPos (ElementId 100) (HLineText "31:16" "63:32") (Pos 7 0)
+	_ <- putElement (ElementId 1) NotGateE 11
 	lp0 <- getElementPos $ ElementId 0
 	lp1 <- getElementPos $ ElementId 1
+	lp100 <- getElementPos $ ElementId 100
 	let	p0 = head $ inputLinePos lp0
 		p1 = head $ inputLinePos lp1
-	connectLine p0 $ ElementId 1
+		p100 = head $ inputLinePos lp100
+	connectLine p0 $ ElementId 100
+	connectLine p100 $ ElementId 1
 	connectLine p1 $ ElementId 1
 	_ <- putElement0 (ElementId 2) NotGateE 2
 	lp2 <- getElementPos $ ElementId 2
