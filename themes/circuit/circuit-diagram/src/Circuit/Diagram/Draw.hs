@@ -6,8 +6,7 @@ import Data.Map.Strict
 import Diagrams.Prelude (Diagram, moveTo, (^&), (===))
 import Diagrams.Backend.SVG
 
-
-import Circuit.Diagram.Map
+import Circuit.Diagram.DiagramMap
 import Circuit.Diagram.Pictures
 
 drawDiagram :: DiagramMap -> Diagram B

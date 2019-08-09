@@ -1,7 +1,14 @@
 {-# LANGUAGE TupleSections, TypeFamilies, TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Circuit.Diagram.Map where
+module Circuit.Diagram.Map (
+	DiagramMapM, DiagramMapState, runDiagramMapM, execDiagramMapM,
+	DiagramMap, ElementIdable(..), ElementId,
+	Element, andGateE, orGateE, notGateE, branchE, hLineText,
+	Pos, LinePos,
+	putElement0, putElement, newElement0, newElement,
+	inputPosition, inputPosition1, inputPosition2,
+	connectLine ) where
 
 import Prelude as P
 
@@ -18,37 +25,13 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteArray as BA
 
 import AStar.AStar
+import Circuit.Diagram.DiagramMap
 
-data DiagramMap = DiagramMap {
-	width :: Int,
-	height :: Int,
-	layout :: Map Pos Element }
-	deriving Show
+andGateE, orGateE, notGateE, branchE :: Element
+[andGateE, orGateE, notGateE, branchE] = [AndGateE, OrGateE, NotGateE, BranchE]
 
-getWidthDiagramMap, getHeightDiagramMap :: DiagramMap -> Int
-getWidthDiagramMap = width
-getHeightDiagramMap = height
-
-setWidthDiagramMap, setHeightDiagramMap :: DiagramMap -> Int -> DiagramMap
-setWidthDiagramMap d w = d { width = w }
-setHeightDiagramMap d h = d { height = h }
-
-data Pos = Pos { posX :: Int, posY :: Int } deriving (Show, Eq, Ord)
-
-mkDiagramMap :: Int -> Int -> DiagramMap
-mkDiagramMap w h = DiagramMap { width = w, height = h, layout = empty }
-
-data Element
-	= Stump
-	| AndGateE | OrGateE | NotGateE
-	| BranchE
-	| HLine | VLine
-	| TopLeft | TopRight | BottomLeft | BottomRight
-	| EndHLine | EndHLineR | EndTopLeft
-	| EndBottomLeft
-	| TShape | TInverted | TLeft | TRight | CrossDot | Cross
-	| HLineText String String
-	deriving Show
+hLineText :: String -> String -> Element
+hLineText = HLineText
 
 newtype ElementId = ElementId BS.ByteString deriving (Show, Eq, Ord)
 
@@ -141,19 +124,14 @@ execDiagramMapM dmm sp =
 newElement0 :: ElementIdable eid => eid -> Element -> DiagramMapM LinePos
 newElement0 eid e = maybe (lift $ Left "Oops!") return =<< putElement0 eid e
 
-newElementWithPos ::
-	ElementIdable ied => ied -> Element -> Pos -> DiagramMapM LinePos
-newElementWithPos eid e p =
-	maybe (lift $ Left "Oops!") return =<< putElementWithPos eid e p
+newElement :: ElementIdable ied => ied -> Element -> Pos -> DiagramMapM LinePos
+newElement eid e p = maybe (lift $ Left "Oops!") return =<< putElement eid e p
 
 putElement0 :: ElementIdable eid => eid -> Element -> DiagramMapM (Maybe LinePos)
 putElement0 eid e = putElementGen True eid e 2 Nothing
 
-putElement :: ElementIdable eid => eid -> Element -> Int -> DiagramMapM (Maybe LinePos)
-putElement eid e x = putElementGen False eid e x Nothing
-
-putElementWithPos :: ElementIdable eid => eid -> Element -> Pos -> DiagramMapM (Maybe LinePos)
-putElementWithPos eid e (Pos x y) = putElementGen False eid e x (Just y)
+putElement :: ElementIdable eid => eid -> Element -> Pos -> DiagramMapM (Maybe LinePos)
+putElement eid e (Pos x y) = putElementGen False eid e x (Just y)
 
 putElementGen :: ElementIdable eid => Bool -> eid -> Element -> Int -> Maybe Int -> DiagramMapM (Maybe LinePos)
 putElementGen b eidg e x my_ = do
@@ -202,34 +180,6 @@ addElementOutputPos eid ps = do
 	let	lps' = lps { outputLinePos = outputLinePos lps ++ ps }
 		eps' = insert eid lps' eps
 	put $ st { elementPos = eps' }
-
-
-stump :: Element -> Pos -> Map Pos Element -> Map Pos Element
-stump e p m = P.foldr (flip insert Stump) m
-	[ Pos x y |
-		x <- [x0 .. x0 + w - 1],
-		y <- [y0 - h' .. y0 + h''],
-		(x, y) /= (x0, y0) ]
-	where
-	(w, h) = elementSpace e
-	h' = (h - 1) `div` 2
-	h'' = h `div` 2
-	(x0, y0) = (posX p, posY p)
-
-elementSpace :: Element -> (Int, Int)
-elementSpace AndGateE = (3, 3)
-elementSpace OrGateE = (3, 3)
-elementSpace NotGateE = (2, 3)
-elementSpace BranchE = (1, 2)
-elementSpace _ = (1, 1)
-
-elementToPositions :: Element -> Pos -> [Pos]
-elementToPositions e (Pos x0 y0) = [ Pos x y |
-	x <- [x0 .. x0 + w - 1],
-	y <- [y0 - h' .. y0 + h'] ]
-	where
-	(w, h) = elementSpace e
-	h' = (h - 1) `div` 2
 
 placeable :: Element -> Pos -> DiagramMapM Bool
 placeable e pos = and <$> placeablePos `mapM` elementToPositions e pos
@@ -304,74 +254,6 @@ checkVertical l p = case  l !? p of
 	Just EndHLine -> True
 	Just _ -> False
 	Nothing -> True
-
-data Dir = T | B | L | R deriving Show
-
-dir :: Pos -> Pos -> Either String Dir
-dir p1@(Pos x y) p2@(Pos x' y')
-	| x == x', y - 1 == y' = Right T
-	| x == x', y + 1 == y' = Right B
-	| x - 1 == x', y == y' = Right R
-	| x + 1 == x', y == y' = Right L
-	| otherwise = Left $ "dir " ++ show p1 ++ " " ++ show p2
-
-dirToLine, dirToLine' :: Dir -> Dir -> Either String Element
-dirToLine T T = Right VLine
-dirToLine T L = Right BottomLeft
-dirToLine T R = Right BottomRight
-dirToLine B B = Right VLine
-dirToLine B L = Right TopLeft
-dirToLine B R = Right TopRight
-dirToLine L T = Right TopRight
-dirToLine L B = Right BottomRight
-dirToLine L L = Right HLine
-dirToLine R T = Right TopLeft
-dirToLine R B = Right BottomLeft
-dirToLine R R = Right HLine
-dirToLine d d' = Left $ "dirToLine " ++ show d ++ " " ++ show d'
-
-dirToLine' T L = Right EndBottomLeft
-dirToLine' B L = Right EndTopLeft
-dirToLine' L L = Right EndHLine
-dirToLine' R L = Right EndHLineR
-dirToLine' d d' = Left $ "dirToLine' " ++ show d ++ " " ++ show d'
-
-posToLine :: Dir -> [Pos] -> Either String [Element]
-posToLine _ [] = Right []
-posToLine d [_] = (: []) <$> dirToLine' d L
-posToLine d (x : xs@(y : _)) = do
-	d' <- dir x y; (:) <$> dirToLine d d' <*> posToLine d' xs
-
-insertLine :: [Pos] -> Map Pos Element -> Either String (Map Pos Element)
-insertLine ps m =
-	P.foldr (uncurry overlapInsertLine) m . zip ps <$> posToLine L ps
-
-overlapInsertLine :: Pos -> Element -> Map Pos Element -> Map Pos Element
-overlapInsertLine pos ln m = case m !? pos of
-	Just ln' -> insert pos (overlapLine ln' ln) m
-	Nothing -> insert pos ln m
-
-overlapLine :: Element -> Element -> Element
-overlapLine HLine EndBottomLeft = TShape
-overlapLine EndHLine EndBottomLeft = TShape
-overlapLine VLine HLine = Cross
-overlapLine VLine EndHLine = TLeft
-overlapLine VLine EndHLineR = TRight
-overlapLine HLine TopLeft = TInverted
-overlapLine BottomRight EndHLineR = TShape
-overlapLine BottomRight TopLeft = CrossDot
-overlapLine HLine BottomRight = TShape
-overlapLine HLine EndTopLeft = TInverted
-overlapLine BottomRight EndTopLeft = TLeft
-overlapLine EndBottomLeft EndHLine = TShape
-overlapLine BottomLeft EndHLine = TShape
-overlapLine TopRight EndHLine = TInverted
-overlapLine BottomRight EndBottomLeft = TShape
-overlapLine HLine VLine = Cross
-overlapLine EndHLine VLine = CrossDot
-overlapLine ln ln' = error
-	$ "Circut.Diagram.Map.overlapLine: not yet implemented: overlapLine " ++
-		show ln ++ " " ++ show ln'
 
 connectLine :: ElementIdable eid => eid -> Int -> eid -> DiagramMapM ()
 connectLine ei i eo = (`connectLine'` eo) . (!! i) =<< getInputPos ei

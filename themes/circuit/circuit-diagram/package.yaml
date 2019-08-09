@@ -33,23 +33,12 @@ dependencies:
 library:
   source-dirs: src
   exposed-modules:
-    - AStar.AStar
     - Circuit.Diagram.Map
     - Circuit.Diagram.Draw
-    - Circuit.Diagram.Pictures
 
 executables:
   circuit-diagram-exe:
     main:                Main.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - circuit-diagram
-  tryDiagramDraw:
-    main:                tryDiagramDraw.hs
     source-dirs:         app
     ghc-options:
     - -threaded

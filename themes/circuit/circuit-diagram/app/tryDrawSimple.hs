@@ -7,8 +7,9 @@ import Diagrams.Prelude (mkWidth)
 import Diagrams.Backend.SVG (renderSVG)
 
 import Circuit.Diagram.Map (
-	DiagramMapM, execDiagramMapM, ElementIdable(..), Element(..),
-	newElement0, newElementWithPos, connectLine,
+	DiagramMapM, execDiagramMapM, ElementIdable(..),
+	notGateE, branchE, hLineText,
+	newElement0, newElement, connectLine,
 	inputPosition )
 import Circuit.Diagram.Draw (drawDiagram)
 import Crypto.Hash (hash, SHA3_256)
@@ -29,15 +30,15 @@ instance ElementIdable Elem where
 
 circuitDiagram :: DiagramMapM ()
 circuitDiagram = do
-	ip0 <- inputPosition =<< newElement0 (NotGate 0) NotGateE
+	ip0 <- inputPosition =<< newElement0 (NotGate 0) notGateE
 	ip1 <- inputPosition
-		=<< newElementWithPos (Caption 0) (HLineText "31:16" "63:32") ip0
-	_ <- newElementWithPos (NotGate 1) NotGateE ip1
+		=<< newElement (Caption 0) (hLineText "31:16" "63:32") ip0
+	_ <- newElement (NotGate 1) notGateE ip1
 	connectLine (NotGate 0) 0 (Caption 0)
 	connectLine (Caption 0) 0 (NotGate 1)
 	connectLine (NotGate 1) 0 (NotGate 1)
 
-	ip2 <- inputPosition =<< newElement0 (NotGate 2) NotGateE
-	_ <- newElementWithPos (Branch 0) BranchE ip2
+	ip2 <- inputPosition =<< newElement0 (NotGate 2) notGateE
+	_ <- newElement (Branch 0) branchE ip2
 	connectLine (NotGate 2) 0 (NotGate 2)
 	connectLine (Branch 0) 0 (NotGate 2)
