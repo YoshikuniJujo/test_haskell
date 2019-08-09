@@ -21,6 +21,7 @@ drawElement :: Element -> Diagram B
 drawElement AndGateE = andGateD
 drawElement OrGateE = orGateD
 drawElement NotGateE = notGateD
+drawElement TriGateE = triGateD
 drawElement HLine = hlineD
 drawElement EndHLine = hlineD
 drawElement (HLineText t1 t2) = hlineTextD t1 t2

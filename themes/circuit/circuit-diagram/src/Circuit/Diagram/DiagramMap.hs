@@ -24,7 +24,7 @@ mkDiagramMap w h = DiagramMap { width = w, height = h, layout = empty }
 
 data Element
 	= Stump
-	| AndGateE | OrGateE | NotGateE
+	| AndGateE | OrGateE | NotGateE | TriGateE
 	| BranchE
 	| HLine | VLine
 	| TopLeft | TopRight | BottomLeft | BottomRight
@@ -41,25 +41,22 @@ stump e p m = P.foldr (flip insert Stump) m
 		y <- [y0 - h' .. y0 + h''],
 		(x, y) /= (x0, y0) ]
 	where
-	(w, h) = elementSpace e
-	h' = (h - 1) `div` 2
-	h'' = h `div` 2
+	(w, (h', h'')) = elementSpace e
 	(x0, y0) = (posX p, posY p)
 
-elementSpace :: Element -> (Int, Int)
-elementSpace AndGateE = (3, 3)
-elementSpace OrGateE = (3, 3)
-elementSpace NotGateE = (2, 3)
-elementSpace BranchE = (1, 2)
-elementSpace _ = (1, 1)
+elementSpace :: Element -> (Int, (Int, Int))
+elementSpace AndGateE = (3, (1, 1))
+elementSpace OrGateE = (3, (1, 1))
+elementSpace NotGateE = (2, (1, 1))
+elementSpace TriGateE = (2, (2, 1))
+elementSpace BranchE = (1, (0, 1))
+elementSpace _ = (1, (0, 0))
 
 elementToPositions :: Element -> Pos -> [Pos]
 elementToPositions e (Pos x0 y0) = [ Pos x y |
 	x <- [x0 .. x0 + w - 1],
-	y <- [y0 - h' .. y0 + h'] ]
-	where
-	(w, h) = elementSpace e
-	h' = (h - 1) `div` 2
+	y <- [y0 - h .. y0 + h'] ]
+	where (w, (h, h')) = elementSpace e
 
 posToLine :: Dir -> [Pos] -> Either String [Element]
 posToLine _ [] = Right []

@@ -4,7 +4,7 @@
 module Circuit.Diagram.Map (
 	DiagramMapM, DiagramMapState, runDiagramMapM, execDiagramMapM,
 	DiagramMap, ElementIdable(..), ElementId,
-	Element, andGateE, orGateE, notGateE, branchE, hLineText,
+	Element, andGateE, orGateE, notGateE, triGateE, branchE, hLineText,
 	Pos, LinePos,
 	putElement0, putElement, newElement0, newElement,
 	inputPosition, inputPosition1, inputPosition2,
@@ -27,8 +27,9 @@ import qualified Data.ByteArray as BA
 import AStar.AStar
 import Circuit.Diagram.DiagramMap
 
-andGateE, orGateE, notGateE, branchE :: Element
-[andGateE, orGateE, notGateE, branchE] = [AndGateE, OrGateE, NotGateE, BranchE]
+andGateE, orGateE, notGateE, triGateE, branchE :: Element
+[andGateE, orGateE, notGateE, triGateE, branchE] =
+	[AndGateE, OrGateE, NotGateE, TriGateE, BranchE]
 
 hLineText :: String -> String -> Element
 hLineText = HLineText
@@ -137,7 +138,7 @@ putElementGen :: ElementIdable eid => Bool -> eid -> Element -> Int -> Maybe Int
 putElementGen b eidg e x my_ = do
 	me <- gets ((!? elementId eidg) . elementPos)
 	(\pe -> maybe pe (const $ return Nothing) me) $ do
-		let	(w, h) = elementSpace e
+		let	(w, (h, h')) = elementSpace e
 		my <- do
 			case my_ of
 				Just y -> bool Nothing my_ . ((y > (w - 1) `div` 2) &&) <$> placeable e (Pos x y)
@@ -153,12 +154,12 @@ putElementGen b eidg e x my_ = do
 			l'' = bool l' (insert (Pos (x - 1) $ posY p) HLine l') b
 		lp <- lift $ linePos e p
 		put stt {
-			place = P.foldr (`insert` (max y (posY p) + h + fromIntegral sp))
+			place = P.foldr (`insert` (max y (posY p) + h + h' + 1 + fromIntegral sp))
 				(place stt) [x .. x + w - 1],
 			elementPos = insert (elementId eidg) lp $ elementPos stt,
 			diagramMap = dm { layout = l'' } }
 		expandWidth $ posX p + w + sp
-		expandHeight $ posY p + h + sp
+		expandHeight $ posY p + h + h' + 1 + sp
 		return $ Just lp
 
 getElementPos :: ElementIdable eid => eid -> DiagramMapM LinePos
@@ -207,6 +208,10 @@ linePos AndGateE (Pos x y) = Right LinePos {
 linePos OrGateE p = linePos AndGateE p
 linePos NotGateE (Pos x y) =
 	Right LinePos { outputLinePos = [Pos (x - 1) y], inputLinePos = [Pos (x + 2) y] }
+linePos TriGateE (Pos x y) =
+	Right LinePos {
+		outputLinePos = [Pos (x - 1) y],
+		inputLinePos = [Pos (x + 2) (y - 2), Pos (x + 2) y] }
 linePos (HLineText _ _) (Pos x y) =
 	Right LinePos { outputLinePos = [Pos (x - 1) y], inputLinePos = [Pos (x + 1) y] }
 linePos BranchE (Pos x y) =
