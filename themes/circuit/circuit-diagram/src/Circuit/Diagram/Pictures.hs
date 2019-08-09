@@ -4,7 +4,7 @@
 module Circuit.Diagram.Pictures (
 	andGateD, orGateD, notGateD,
 	hlineD, vlineD, topLeftD, bottomLeftD, topRightD, bottomRightD,
-	tshapeD, tishapeD, tlshapeD, trshapeD, crossD,
+	tshapeD, tishapeD, tlshapeD, trshapeD, crossD, crossDotD,
 	hlineTextD ) where
 
 import Diagrams.Prelude
@@ -83,8 +83,9 @@ hlineHR = moveTo ((- 1) ^& 0) $ lineRight 0.5
 dotD :: Diagram B
 dotD = moveTo ((- 0.5) ^& 0) $ circle (1.0 / 8) # fc black
 
-crossD :: Diagram B
+crossD, crossDotD :: Diagram B
 crossD = hlineD <> vlineD
+crossDotD  = crossD <> dotD
 
 hlineTextD :: String -> String -> Diagram B
 hlineTextD t1 t2 =

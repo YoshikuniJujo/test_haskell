@@ -44,7 +44,7 @@ data Element
 	| BranchE
 	| HLine | VLine
 	| TopLeft | TopRight | BottomLeft | BottomRight
-	| EndHLine | EndHLineR
+	| EndHLine | EndHLineR | EndTopLeft
 	| EndBottomLeft
 	| TShape | TInverted | TLeft | TRight | CrossDot | Cross
 	| HLineText String String
@@ -78,6 +78,13 @@ initDiagramMapState w h = DiagramMapState {
 	elementPos = empty,
 	diagramMap = mkDiagramMap w h }
 
+updatePlaceDMState :: DiagramMapState -> Int -> Int -> DiagramMapState
+updatePlaceDMState dms x y = dms { place = insert x y' ep }
+	where
+	ep = place dms
+	my0 = ep !? x
+	y' = maybe (y + 1) (max $ y + 1) $ my0
+
 getWidthDMState, getHeightDMState :: DiagramMapState -> Int
 getWidthDMState = getWidthDiagramMap . diagramMap
 getHeightDMState = getHeightDiagramMap . diagramMap
@@ -89,6 +96,9 @@ setHeightDMState dms h =
 	dms { diagramMap = setHeightDiagramMap (diagramMap dms) h }
 
 type DiagramMapM = StateT DiagramMapState (Either String)
+
+getSpace :: DiagramMapM Int
+getSpace = gets space
 
 getDiagramMap :: DiagramMapM DiagramMap
 getDiagramMap = gets diagramMap
@@ -104,7 +114,12 @@ setHeight = modify . flip setHeightDMState
 expandWidth, expandHeight :: Int -> DiagramMapM ()
 expandWidth w = setWidth . max w =<< getWidth
 expandHeight h = setHeight . max h =<< getHeight
-	
+
+updatePlace :: Int -> Int -> DiagramMapM ()
+updatePlace = (modify .) . curry (flip $ uncurry . updatePlaceDMState)
+
+inputPosition :: LinePos -> DiagramMapM Pos
+inputPosition lp = lift . calcInputPosition lp =<< getSpace
 
 getElementFromPos :: Pos -> DiagramMapM (Maybe Element)
 getElementFromPos pos = do
@@ -122,17 +137,17 @@ generateDiagramMap :: Int -> Int -> DiagramMapM a -> Either String DiagramMap
 generateDiagramMap w h dmm =
 	diagramMap <$> dmm `execStateT` initDiagramMapState w h
 
-putElement0, putElement :: ElementIdable eid => eid -> Element -> Int -> DiagramMapM Bool
+putElement0, putElement :: ElementIdable eid => eid -> Element -> Int -> DiagramMapM (Maybe LinePos)
 putElement0 eid e x = putElementGen True eid e x Nothing
 putElement eid e x = putElementGen False eid e x Nothing
 
-putElementWithPos :: ElementIdable eid => eid -> Element -> Pos -> DiagramMapM Bool
+putElementWithPos :: ElementIdable eid => eid -> Element -> Pos -> DiagramMapM (Maybe LinePos)
 putElementWithPos eid e (Pos x y) = putElementGen False eid e x (Just y)
 
-putElementGen :: ElementIdable eid => Bool -> eid -> Element -> Int -> Maybe Int -> DiagramMapM Bool
+putElementGen :: ElementIdable eid => Bool -> eid -> Element -> Int -> Maybe Int -> DiagramMapM (Maybe LinePos)
 putElementGen b eidg e x my_ = do
 	me <- gets ((!? elementId eidg) . elementPos)
-	(\pe -> maybe pe (const $ return False) me) $ do
+	(\pe -> maybe pe (const $ return Nothing) me) $ do
 		my <- do
 			case my_ of
 				Just y -> bool Nothing my_ <$> placeable e (Pos x y)
@@ -155,7 +170,7 @@ putElementGen b eidg e x my_ = do
 			diagramMap = dm { layout = l'' } }
 		expandWidth $ posX p + w + sp
 		expandHeight $ posY p + h + sp
-		return True
+		return $ Just lp
 
 getElementPos :: ElementIdable eid => eid -> DiagramMapM LinePos
 getElementPos eidg = lift
@@ -213,6 +228,10 @@ placeablePos pos = isNothing <$> getElementFromPos pos
 
 data LinePos = LinePos { outputLinePos :: [Pos], inputLinePos :: [Pos] }
 	deriving Show
+
+calcInputPosition :: LinePos -> Int -> Either String Pos
+calcInputPosition LinePos { inputLinePos = [ip] } dx = Right $ Pos (posX ip + dx) (posY ip)
+calcInputPosition lp dx = Left $ "calcInputPosition " ++ show lp ++ " " ++ show dx
 
 linePos :: Element -> Pos -> Either String LinePos
 linePos AndGateE (Pos x y) = Right LinePos {
@@ -295,7 +314,7 @@ dirToLine R R = Right HLine
 dirToLine d d' = Left $ "dirToLine " ++ show d ++ " " ++ show d'
 
 dirToLine' T L = Right EndBottomLeft
-dirToLine' B L = Right TopLeft
+dirToLine' B L = Right EndTopLeft
 dirToLine' L L = Right EndHLine
 dirToLine' R L = Right EndHLineR
 dirToLine' d d' = Left $ "dirToLine' " ++ show d ++ " " ++ show d'
@@ -323,6 +342,10 @@ overlapLine VLine EndHLine = TLeft
 overlapLine VLine EndHLineR = TRight
 overlapLine HLine TopLeft = TInverted
 overlapLine BottomRight EndHLineR = TShape
+overlapLine BottomRight TopLeft = CrossDot
+overlapLine HLine BottomRight = TShape
+overlapLine HLine EndTopLeft = TInverted
+overlapLine BottomRight EndTopLeft = TLeft
 overlapLine ln ln' = error
 	$ "Circut.Diagram.Map.overlapLine: not yet implemented: overlapLine " ++
 		show ln ++ " " ++ show ln'
@@ -345,5 +368,6 @@ connectLineGen p1 p2 = do
 		startLine = p1, endLine = p2, diagramMapA = dm }
 	l' <- lift $ insertLine ps l
 	put stt { diagramMap = dm { layout = l' } }
+	(\(Pos x y) -> updatePlace x y) `mapM_` ps
 	return ps
 	where emsg = ("astar: no route: " ++) . show
