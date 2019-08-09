@@ -71,12 +71,12 @@ data DiagramMapState = DiagramMapState {
 	diagramMap :: DiagramMap }
 	deriving Show
 
-initDiagramMapState :: Int -> Int -> DiagramMapState
-initDiagramMapState w h = DiagramMapState {
-	space = 2,
+initDiagramMapState :: Int -> DiagramMapState
+initDiagramMapState sp = DiagramMapState {
+	space = sp,
 	place = empty,
 	elementPos = empty,
-	diagramMap = mkDiagramMap w h }
+	diagramMap = mkDiagramMap 0 0 }
 
 updatePlaceDMState :: DiagramMapState -> Int -> Int -> DiagramMapState
 updatePlaceDMState dms x y = dms { place = insert x y' ep }
@@ -121,24 +121,35 @@ updatePlace = (modify .) . curry (flip $ uncurry . updatePlaceDMState)
 inputPosition :: LinePos -> DiagramMapM Pos
 inputPosition lp = lift . calcInputPosition lp =<< getSpace
 
+inputPosition1, inputPosition2 :: LinePos -> DiagramMapM Pos
+inputPosition1 lp = lift . calcInputPosition1 lp =<< getSpace
+inputPosition2 lp = lift . calcInputPosition2 lp =<< getSpace
+
 getElementFromPos :: Pos -> DiagramMapM (Maybe Element)
 getElementFromPos pos = do
 	dm <- getDiagramMap
 	return $ layout dm !? pos
 
-runDiagramMapM :: DiagramMapM a -> Either String (a, DiagramMap)
-runDiagramMapM dmm =
-	second diagramMap <$> dmm `runStateT` initDiagramMapState 0 0
+runDiagramMapM :: DiagramMapM a -> Int -> Either String (a, DiagramMap)
+runDiagramMapM dmm sp =
+	second diagramMap <$> dmm `runStateT` initDiagramMapState sp
 
-execDiagramMapM :: DiagramMapM a -> Either String DiagramMap
-execDiagramMapM = (snd <$>) . runDiagramMapM
+execDiagramMapM :: DiagramMapM a -> Int -> Either String DiagramMap
+execDiagramMapM dmm sp =
+	diagramMap <$> dmm `execStateT` initDiagramMapState sp
 
-generateDiagramMap :: Int -> Int -> DiagramMapM a -> Either String DiagramMap
-generateDiagramMap w h dmm =
-	diagramMap <$> dmm `execStateT` initDiagramMapState w h
+newElement0 :: ElementIdable eid => eid -> Element -> DiagramMapM LinePos
+newElement0 eid e = maybe (lift $ Left "Oops!") return =<< putElement0 eid e
 
-putElement0, putElement :: ElementIdable eid => eid -> Element -> Int -> DiagramMapM (Maybe LinePos)
-putElement0 eid e x = putElementGen True eid e x Nothing
+newElementWithPos ::
+	ElementIdable ied => ied -> Element -> Pos -> DiagramMapM LinePos
+newElementWithPos eid e p =
+	maybe (lift $ Left "Oops!") return =<< putElementWithPos eid e p
+
+putElement0 :: ElementIdable eid => eid -> Element -> DiagramMapM (Maybe LinePos)
+putElement0 eid e = putElementGen True eid e 2 Nothing
+
+putElement :: ElementIdable eid => eid -> Element -> Int -> DiagramMapM (Maybe LinePos)
 putElement eid e x = putElementGen False eid e x Nothing
 
 putElementWithPos :: ElementIdable eid => eid -> Element -> Pos -> DiagramMapM (Maybe LinePos)
@@ -148,9 +159,10 @@ putElementGen :: ElementIdable eid => Bool -> eid -> Element -> Int -> Maybe Int
 putElementGen b eidg e x my_ = do
 	me <- gets ((!? elementId eidg) . elementPos)
 	(\pe -> maybe pe (const $ return Nothing) me) $ do
+		let	(w, h) = elementSpace e
 		my <- do
 			case my_ of
-				Just y -> bool Nothing my_ <$> placeable e (Pos x y)
+				Just y -> bool Nothing my_ . ((y > (w - 1) `div` 2) &&) <$> placeable e (Pos x y)
 				Nothing -> return my_
 		stt <- get
 		let	sp = space stt
@@ -161,7 +173,6 @@ putElementGen b eidg e x my_ = do
 			l = layout dm
 			l' = stump e p $ insert p e l
 			l'' = bool l' (insert (Pos (x - 1) $ posY p) HLine l') b
-			(w, h) = elementSpace e
 		lp <- lift $ linePos e p
 		put stt {
 			place = P.foldr (`insert` (max y (posY p) + h + fromIntegral sp))
@@ -229,9 +240,15 @@ placeablePos pos = isNothing <$> getElementFromPos pos
 data LinePos = LinePos { outputLinePos :: [Pos], inputLinePos :: [Pos] }
 	deriving Show
 
-calcInputPosition :: LinePos -> Int -> Either String Pos
+calcInputPosition, calcInputPosition1, calcInputPosition2 :: LinePos -> Int -> Either String Pos
 calcInputPosition LinePos { inputLinePos = [ip] } dx = Right $ Pos (posX ip + dx) (posY ip)
 calcInputPosition lp dx = Left $ "calcInputPosition " ++ show lp ++ " " ++ show dx
+
+calcInputPosition1 LinePos { inputLinePos = [ip, _] } dx = Right $ Pos (posX ip + dx) (posY ip)
+calcInputPosition1 lp dx = Left $ "calcInputPosition1 " ++ show lp ++ " " ++ show dx
+
+calcInputPosition2 LinePos { inputLinePos = [_, ip] } dx = Right $ Pos (posX ip + dx) (posY ip)
+calcInputPosition2 lp dx = Left $ "calcInputPosition2 " ++ show lp ++ " " ++ show dx
 
 linePos :: Element -> Pos -> Either String LinePos
 linePos AndGateE (Pos x y) = Right LinePos {
@@ -346,6 +363,12 @@ overlapLine BottomRight TopLeft = CrossDot
 overlapLine HLine BottomRight = TShape
 overlapLine HLine EndTopLeft = TInverted
 overlapLine BottomRight EndTopLeft = TLeft
+overlapLine EndBottomLeft EndHLine = TShape
+overlapLine BottomLeft EndHLine = TShape
+overlapLine TopRight EndHLine = TInverted
+overlapLine BottomRight EndBottomLeft = TShape
+overlapLine HLine VLine = Cross
+overlapLine EndHLine VLine = CrossDot
 overlapLine ln ln' = error
 	$ "Circut.Diagram.Map.overlapLine: not yet implemented: overlapLine " ++
 		show ln ++ " " ++ show ln'

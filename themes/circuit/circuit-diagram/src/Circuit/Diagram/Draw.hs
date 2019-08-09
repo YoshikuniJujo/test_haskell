@@ -28,6 +28,7 @@ drawElement (HLineText t1 t2) = hlineTextD t1 t2
 drawElement VLine = vlineD
 drawElement Stump = mempty
 drawElement TopLeft = topLeftD
+drawElement EndTopLeft = topLeftD
 drawElement BottomLeft = bottomLeftD
 drawElement TopRight = topRightD
 drawElement BottomRight = bottomRightD
