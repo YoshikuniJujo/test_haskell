@@ -9,7 +9,7 @@ import Diagrams.Backend.SVG (renderSVG)
 import Circuit.Diagram.Map (
 	DiagramMapM, execDiagramMapM, ElementIdable(..),
 	notGateE, branchE, hLineText,
-	newElement0, newElement, connectLine,
+	newElement0, newElement, connectLine, connectLine1,
 	inputPosition )
 import Circuit.Diagram.Draw (drawDiagram)
 import Crypto.Hash (hash, SHA3_256)
@@ -34,11 +34,11 @@ circuitDiagram = do
 	ip1 <- inputPosition
 		=<< newElement (Caption 0) (hLineText "31:16" "63:32") ip0
 	_ <- newElement (NotGate 1) notGateE ip1
-	connectLine (NotGate 0) 0 (Caption 0)
-	connectLine (Caption 0) 0 (NotGate 1)
-	connectLine (NotGate 1) 0 (NotGate 1)
+	connectLine (NotGate 0) (Caption 0)
+	connectLine (Caption 0) (NotGate 1)
+	connectLine (NotGate 1) (NotGate 1)
 
 	ip2 <- inputPosition =<< newElement0 (NotGate 2) notGateE
 	_ <- newElement (Branch 0) branchE ip2
-	connectLine (NotGate 2) 0 (NotGate 2)
-	connectLine (Branch 0) 0 (NotGate 2)
+	connectLine (NotGate 2) (NotGate 2)
+	connectLine1 (Branch 0) (NotGate 2)

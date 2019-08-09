@@ -8,7 +8,8 @@ import Circuit.Diagram.Map (
 	DiagramMapM, execDiagramMapM, ElementId,
 	andGateE, notGateE, branchE, hLineText,
 	newElement0, newElement,
-	inputPosition, inputPosition1, inputPosition2, connectLine )
+	inputPosition, inputPosition1, inputPosition2,
+	connectLine, connectLine1, connectLine2 )
 import Circuit.Diagram.Draw (drawDiagram)
 
 main :: IO ()
@@ -29,19 +30,19 @@ sample2 = do
 	il3 <- newElement eid102 branchE ip2
 	ip3 <- inputPosition1 il3
 	ip4 <- inputPosition2 il3
-	connectLine eid0 0 eid100
-	connectLine eid100 0 eid1
-	connectLine eid1 1 eid102
+	connectLine eid0 eid100
+	connectLine eid100 eid1
+	connectLine2 eid1 eid102
 	ip5 <- inputPosition =<< newElement eid103 (hLineText "62:0" "63:1") ip3
 	ip6 <- inputPosition =<< newElement eid104 (hLineText "0:0" "0:0") ip4
-	connectLine eid102 0 eid103
-	connectLine eid102 1 eid104
+	connectLine1 eid102 eid103
+	connectLine2 eid102 eid104
 	() <$ newElement eid5 notGateE ip5
 	() <$  newElement eid6 notGateE ip6
-	connectLine eid103 0 eid5
-	connectLine eid104 0 eid6
+	connectLine eid103 eid5
+	connectLine eid104 eid6
 
 	ip7 <- inputPosition =<< newElement0 eid2 notGateE
 	() <$ newElement eid101 branchE ip7
-	connectLine eid2 0 eid2
-	connectLine eid101 0 eid2
+	connectLine eid2 eid2
+	connectLine1 eid101 eid2

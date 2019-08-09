@@ -8,7 +8,7 @@ module Circuit.Diagram.Map (
 	Pos, LinePos,
 	putElement0, putElement, newElement0, newElement,
 	inputPosition, inputPosition1, inputPosition2,
-	connectLine ) where
+	connectLine, connectLine1, connectLine2 ) where
 
 import Prelude as P
 
@@ -255,8 +255,23 @@ checkVertical l p = case  l !? p of
 	Just _ -> False
 	Nothing -> True
 
-connectLine :: ElementIdable eid => eid -> Int -> eid -> DiagramMapM ()
-connectLine ei i eo = (`connectLine'` eo) . (!! i) =<< getInputPos ei
+connectLine, connectLine1, connectLine2 :: ElementIdable eid => eid -> eid -> DiagramMapM ()
+connectLine ei eo = (`connectLine'` eo) =<< lift . single =<< getInputPos ei
+connectLine1 ei eo = (`connectLine'` eo) =<< lift . oneOfTwo =<< getInputPos ei
+connectLine2 ei eo = (`connectLine'` eo) =<< lift . twoOfTwo =<< getInputPos ei
+
+single :: [a] -> Either String a
+single [x] = Right x
+single _ = Left $ "Circuit.Diagram.Map.single: not single element list"
+
+oneOfTwo, twoOfTwo :: [a] -> Either String a
+oneOfTwo [x, _] = Right x
+oneOfTwo _ = Left
+	$ "Circuit.Diagram.Map.oneOfTwo xs: xs should be include just two elems"
+
+twoOfTwo [_, y] = Right y
+twoOfTwo _ = Left
+	$ "Circuit.Diagram.Map.twoOfTwo xs: xs should be include just two elems"
 
 connectLine' :: ElementIdable eid => Pos -> eid -> DiagramMapM ()
 connectLine' p1 eidg = do
