@@ -29,7 +29,7 @@ sample1 = DiagramMap {
 		((Pos 4 0), AndGateE) ] }
 
 sample2 :: Either String DiagramMap
-sample2 = execDiagramMapM 16 8 $ do
+sample2 = execDiagramMapM $ do
 	_ <- putElement0 (ElementId "0") NotGateE 2
 	_ <- putElementWithPos (ElementId "100") (HLineText "63:32" "31:0") (Pos 5 1)
 	_ <- putElement (ElementId "1") AndGateE 7

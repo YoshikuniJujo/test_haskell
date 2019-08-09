@@ -13,7 +13,7 @@ import Circuit.Diagram.Draw (drawDiagram)
 import Crypto.Hash (hash, SHA3_256)
 
 main :: IO ()
-main = case execDiagramMapM 15 8 circuitDiagram of
+main = case execDiagramMapM circuitDiagram of
 	Right cd -> renderSVG "simple.svg" (mkWidth 600) $ drawDiagram cd
 	Left emsg -> putStrLn $ "Can't draw diagram: " ++ emsg
 

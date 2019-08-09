@@ -25,6 +25,14 @@ data DiagramMap = DiagramMap {
 	layout :: Map Pos Element }
 	deriving Show
 
+getWidthDiagramMap, getHeightDiagramMap :: DiagramMap -> Int
+getWidthDiagramMap = width
+getHeightDiagramMap = height
+
+setWidthDiagramMap, setHeightDiagramMap :: DiagramMap -> Int -> DiagramMap
+setWidthDiagramMap d w = d { width = w }
+setHeightDiagramMap d h = d { height = h }
+
 data Pos = Pos { posX :: Int, posY :: Int } deriving (Show, Eq, Ord)
 
 mkDiagramMap :: Int -> Int -> DiagramMap
@@ -70,22 +78,45 @@ initDiagramMapState w h = DiagramMapState {
 	elementPos = empty,
 	diagramMap = mkDiagramMap w h }
 
+getWidthDMState, getHeightDMState :: DiagramMapState -> Int
+getWidthDMState = getWidthDiagramMap . diagramMap
+getHeightDMState = getHeightDiagramMap . diagramMap
+
+setWidthDMState, setHeightDMState :: DiagramMapState -> Int -> DiagramMapState
+setWidthDMState dms w =
+	dms { diagramMap = setWidthDiagramMap (diagramMap dms) w }
+setHeightDMState dms h =
+	dms { diagramMap = setHeightDiagramMap (diagramMap dms) h }
+
 type DiagramMapM = StateT DiagramMapState (Either String)
 
 getDiagramMap :: DiagramMapM DiagramMap
 getDiagramMap = gets diagramMap
+
+getWidth, getHeight :: DiagramMapM Int
+getWidth = gets getWidthDMState
+getHeight = gets getHeightDMState
+
+setWidth, setHeight :: Int -> DiagramMapM ()
+setWidth = modify . flip setWidthDMState
+setHeight = modify . flip setHeightDMState
+
+expandWidth, expandHeight :: Int -> DiagramMapM ()
+expandWidth w = setWidth . max w =<< getWidth
+expandHeight h = setHeight . max h =<< getHeight
+	
 
 getElementFromPos :: Pos -> DiagramMapM (Maybe Element)
 getElementFromPos pos = do
 	dm <- getDiagramMap
 	return $ layout dm !? pos
 
-runDiagramMapM :: Int -> Int -> DiagramMapM a -> Either String (a, DiagramMap)
-runDiagramMapM w h dmm =
-	second diagramMap <$> dmm `runStateT` initDiagramMapState w h
+runDiagramMapM :: DiagramMapM a -> Either String (a, DiagramMap)
+runDiagramMapM dmm =
+	second diagramMap <$> dmm `runStateT` initDiagramMapState 0 0
 
-execDiagramMapM :: Int -> Int -> DiagramMapM a -> Either String DiagramMap
-execDiagramMapM w h = (snd <$>) . runDiagramMapM w h
+execDiagramMapM :: DiagramMapM a -> Either String DiagramMap
+execDiagramMapM = (snd <$>) . runDiagramMapM
 
 generateDiagramMap :: Int -> Int -> DiagramMapM a -> Either String DiagramMap
 generateDiagramMap w h dmm =
@@ -122,6 +153,8 @@ putElementGen b eidg e x my_ = do
 				(place stt) [x .. x + w - 1],
 			elementPos = insert (elementId eidg) lp $ elementPos stt,
 			diagramMap = dm { layout = l'' } }
+		expandWidth $ posX p + w + sp
+		expandHeight $ posY p + h + sp
 		return True
 
 getElementPos :: ElementIdable eid => eid -> DiagramMapM LinePos
@@ -308,8 +341,9 @@ connectLineGen p1 p2 = do
 	stt <- get
 	let	dm = diagramMap stt
 		l = layout dm
-	ps <- lift $ maybe (Left "astar: no route") Right $ astar DiagramMapAStar {
+	ps <- lift $ maybe (Left $ emsg dm) Right $ astar DiagramMapAStar {
 		startLine = p1, endLine = p2, diagramMapA = dm }
 	l' <- lift $ insertLine ps l
 	put stt { diagramMap = dm { layout = l' } }
 	return ps
+	where emsg = ("astar: no route: " ++) . show
