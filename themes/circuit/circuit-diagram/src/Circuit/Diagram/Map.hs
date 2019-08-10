@@ -5,7 +5,8 @@ module Circuit.Diagram.Map (
 	DiagramMapM, DiagramMapState, runDiagramMapM, execDiagramMapM,
 	DiagramMap, ElementIdable(..), ElementId,
 	Element,
-	andGateE, orGateE, notGateE, triGateE, constGateE, branchE, hLineText,
+	andGateE, orGateE, notGateE, triGateE, constGateE, delayE,
+	branchE, hLineText,
 	Pos, LinePos,
 	putElement0, putElement, newElement0, newElement,
 	inputPosition, inputPosition1, inputPosition2,
@@ -38,6 +39,9 @@ hLineText = HLineText
 
 constGateE :: Word64 -> Element
 constGateE = ConstGateE
+
+delayE :: Word8 -> Element
+delayE = DelayE
 
 newtype ElementId = ElementId BS.ByteString deriving (Show, Eq, Ord)
 
@@ -219,6 +223,8 @@ linePos TriGateE (Pos x y) =
 		inputLinePos = [Pos (x + 2) (y - 2), Pos (x + 2) y] }
 linePos (ConstGateE _) (Pos x y) =
 	Right LinePos { outputLinePos = [Pos (x - 1) y], inputLinePos = [] }
+linePos (DelayE _) (Pos x y) =
+	Right LinePos { outputLinePos = [Pos (x - 1) y], inputLinePos = [Pos (x + 2) y] }
 linePos (HLineText _ _) (Pos x y) =
 	Right LinePos { outputLinePos = [Pos (x - 1) y], inputLinePos = [Pos (x + 1) y] }
 linePos BranchE (Pos x y) =

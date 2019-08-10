@@ -8,7 +8,7 @@ import Diagrams.Backend.SVG (renderSVG)
 
 import Circuit.Diagram.Map (
 	DiagramMapM, execDiagramMapM, ElementIdable(..),
-	notGateE, triGateE, constGateE, branchE, hLineText,
+	notGateE, triGateE, constGateE, delayE, branchE, hLineText,
 	newElement0, newElement, connectLine, connectLine1, connectLine2,
 	inputPosition, inputPosition1, inputPosition2 )
 import Circuit.Diagram.Draw (drawDiagram)
@@ -20,7 +20,7 @@ main = case execDiagramMapM circuitDiagram 3 of
 	Left emsg -> putStrLn $ "Can't draw diagram: " ++ emsg
 
 data Elem
-	= NotGate Word | TriGate Word | ConstGate Word
+	= NotGate Word | TriGate Word | ConstGate Word | Delay Word
 	| Caption Word | Branch Word
 	deriving Show
 
@@ -30,6 +30,7 @@ instance ElementIdable Elem where
 			NotGate n' -> ("NotGate", n')
 			TriGate n' -> ("TriGate", n')
 			ConstGate n' -> ("ConstGAte", n')
+			Delay n' -> ("Delay", n')
 			Caption n' -> ("Caption", n')
 			Branch n' -> ("Branch", n')
 
@@ -54,9 +55,15 @@ circuitDiagram = do
 	ip4 <- inputPosition1 lp4
 	ip5 <- inputPosition2 lp4
 	ip6 <- inputPosition =<< newElement (NotGate 3) notGateE ip4
-	() <$ newElement (NotGate 4) notGateE ip5
+	ip7 <- inputPosition =<< newElement (NotGate 4) notGateE ip5
 	connectLine1 (TriGate 0) (NotGate 3)
 	connectLine2 (TriGate 0) (NotGate 4)
 
 	() <$ newElement (ConstGate 0) (constGateE 0x123456789abcdef0) ip6
 	connectLine (NotGate 3) (ConstGate 0)
+
+	ip8 <- inputPosition =<< newElement (Delay 0) (delayE 255) ip7
+	connectLine (NotGate 4) (Delay 0)
+
+	() <$ newElement (NotGate 5) notGateE ip8
+	connectLine (Delay 0) (NotGate 5)
