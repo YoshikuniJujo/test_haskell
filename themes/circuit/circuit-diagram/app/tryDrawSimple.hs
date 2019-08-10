@@ -6,12 +6,11 @@ import Data.ByteString.Char8 (pack)
 import Diagrams.Prelude (mkWidth)
 import Diagrams.Backend.SVG (renderSVG)
 
-import Circuit.Diagram.Map (
-	DiagramMapM, execDiagramMapM, ElementIdable(..),
+import Circuit.Diagram (
+	drawDiagram, DiagramMapM, execDiagramMapM, ElementIdable(..),
 	notGateD, triGateD, constGateD, delayD, hLineD, branchD, hLineTextD,
 	newElement0, newElement, connectLine, connectLine1, connectLine2,
 	inputPosition, inputPosition1, inputPosition2 )
-import Circuit.Diagram.Draw (drawDiagram)
 import Crypto.Hash (hash, SHA3_256)
 
 main :: IO ()

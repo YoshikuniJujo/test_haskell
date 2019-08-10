@@ -4,13 +4,12 @@
 import Diagrams.Prelude (mkWidth)
 import Diagrams.Backend.SVG (renderSVG)
 
-import Circuit.Diagram.Map (
-	DiagramMapM, execDiagramMapM, ElementId,
+import Circuit.Diagram (
+	drawDiagram, DiagramMapM, execDiagramMapM, ElementId,
 	andGateD, notGateD, branchD, hLineTextD,
 	newElement0, newElement,
 	inputPosition, inputPosition1, inputPosition2,
 	connectLine, connectLine1, connectLine2 )
-import Circuit.Diagram.Draw (drawDiagram)
 
 main :: IO ()
 main = case sample2 `execDiagramMapM` 2 of

@@ -33,8 +33,7 @@ dependencies:
 library:
   source-dirs: src
   exposed-modules:
-    - Circuit.Diagram.Map
-    - Circuit.Diagram.Draw
+    - Circuit.Diagram
 
 executables:
   circuit-diagram-exe:
