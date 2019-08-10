@@ -8,7 +8,7 @@ import Diagrams.Backend.SVG (renderSVG)
 
 import Circuit.Diagram.Map (
 	DiagramMapM, execDiagramMapM, ElementIdable(..),
-	notGateE, triGateE, constGateE, delayE, branchE, hLineText,
+	notGateE, triGateE, constGateE, delayE, hLineE, branchE, hLineText,
 	newElement0, newElement, connectLine, connectLine1, connectLine2,
 	inputPosition, inputPosition1, inputPosition2 )
 import Circuit.Diagram.Draw (drawDiagram)
@@ -21,7 +21,7 @@ main = case execDiagramMapM circuitDiagram 3 of
 
 data Elem
 	= NotGate Word | TriGate Word | ConstGate Word | Delay Word
-	| Caption Word | Branch Word
+	| Caption Word | Branch Word | IdGate Word
 	deriving Show
 
 instance ElementIdable Elem where
@@ -33,6 +33,7 @@ instance ElementIdable Elem where
 			Delay n' -> ("Delay", n')
 			Caption n' -> ("Caption", n')
 			Branch n' -> ("Branch", n')
+			IdGate n' -> ("IdGate", n')
 
 circuitDiagram :: DiagramMapM ()
 circuitDiagram = do
@@ -65,5 +66,8 @@ circuitDiagram = do
 	ip8 <- inputPosition =<< newElement (Delay 0) (delayE 255) ip7
 	connectLine (NotGate 4) (Delay 0)
 
-	() <$ newElement (NotGate 5) notGateE ip8
+	ip9 <- inputPosition =<< newElement (NotGate 5) notGateE ip8
 	connectLine (Delay 0) (NotGate 5)
+
+	() <$ newElement (IdGate 0) hLineE ip9
+	connectLine (NotGate 5) (IdGate 0)

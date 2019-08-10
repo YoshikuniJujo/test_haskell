@@ -6,7 +6,7 @@ module Circuit.Diagram.Map (
 	DiagramMap, ElementIdable(..), ElementId,
 	Element,
 	andGateE, orGateE, notGateE, triGateE, constGateE, delayE,
-	branchE, hLineText,
+	hLineE, branchE, hLineText,
 	Pos, LinePos,
 	putElement0, putElement, newElement0, newElement,
 	inputPosition, inputPosition1, inputPosition2,
@@ -30,9 +30,9 @@ import qualified Data.ByteArray as BA
 import AStar.AStar
 import Circuit.Diagram.DiagramMap
 
-andGateE, orGateE, notGateE, triGateE, branchE :: Element
-[andGateE, orGateE, notGateE, triGateE, branchE] =
-	[AndGateE, OrGateE, NotGateE, TriGateE, BranchE]
+andGateE, orGateE, notGateE, triGateE, hLineE, branchE :: Element
+[andGateE, orGateE, notGateE, triGateE, hLineE, branchE] =
+	[AndGateE, OrGateE, NotGateE, TriGateE, HLine, BranchE]
 
 hLineText :: String -> String -> Element
 hLineText = HLineText
@@ -225,6 +225,8 @@ linePos (ConstGateE _) (Pos x y) =
 	Right LinePos { outputLinePos = [Pos (x - 1) y], inputLinePos = [] }
 linePos (DelayE _) (Pos x y) =
 	Right LinePos { outputLinePos = [Pos (x - 1) y], inputLinePos = [Pos (x + 2) y] }
+linePos HLine (Pos x y) =
+	Right LinePos { outputLinePos = [Pos (x - 1) y], inputLinePos = [Pos (x + 1) y] }
 linePos (HLineText _ _) (Pos x y) =
 	Right LinePos { outputLinePos = [Pos (x - 1) y], inputLinePos = [Pos (x + 1) y] }
 linePos BranchE (Pos x y) =
