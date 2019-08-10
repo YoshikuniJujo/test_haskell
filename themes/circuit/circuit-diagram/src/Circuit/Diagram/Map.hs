@@ -6,7 +6,7 @@ module Circuit.Diagram.Map (
 	DiagramMap, ElementIdable(..), ElementId,
 	ElementDiagram,
 	andGateD, orGateD, notGateD, triGateD, constGateD, delayD,
-	hLineD, branchD, hLineTextD,
+	hLineD, hLineTextD, branchD,
 	Pos, LinePos,
 	putElement0, putElement, newElement0, newElement,
 	inputPosition, inputPosition1, inputPosition2,
