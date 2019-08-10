@@ -6,6 +6,7 @@ module Circuit.Diagram.DiagramMap where
 import Prelude as P
 
 import Data.Map.Strict
+import Data.Word
 
 data DiagramMap = DiagramMap { width :: Int, height :: Int, layout :: Map Pos Element } deriving Show
 
@@ -24,7 +25,7 @@ mkDiagramMap w h = DiagramMap { width = w, height = h, layout = empty }
 
 data Element
 	= Stump
-	| AndGateE | OrGateE | NotGateE | TriGateE
+	| AndGateE | OrGateE | NotGateE | TriGateE | ConstGateE Word64
 	| BranchE
 	| HLine | VLine
 	| TopLeft | TopRight | BottomLeft | BottomRight
@@ -48,6 +49,7 @@ elementSpace :: Element -> (Int, (Int, Int))
 elementSpace AndGateE = (3, (1, 1))
 elementSpace OrGateE = (3, (1, 1))
 elementSpace NotGateE = (2, (1, 1))
+elementSpace (ConstGateE _) = (3, (0, 0))
 elementSpace TriGateE = (2, (2, 1))
 elementSpace BranchE = (1, (0, 1))
 elementSpace _ = (1, (0, 0))

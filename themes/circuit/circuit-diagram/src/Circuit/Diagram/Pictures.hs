@@ -2,11 +2,13 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Circuit.Diagram.Pictures (
-	andGateD, orGateD, notGateD, triGateD,
+	andGateD, orGateD, notGateD, triGateD, constGateD,
 	hlineD, vlineD, topLeftD, bottomLeftD, topRightD, bottomRightD,
 	tshapeD, tishapeD, tlshapeD, trshapeD, crossD, crossDotD,
 	hlineTextD ) where
 
+import Data.Word
+import Numeric
 import Diagrams.Prelude
 import Diagrams.Direction
 import Diagrams.Backend.SVG
@@ -33,6 +35,10 @@ triGateDPure = moveTo ((- 0.45) ^& 0) (triangle1_4 1.5) # lwL 0.08
 
 triangle1_4 :: Double -> Diagram B
 triangle1_4 = rotateBy (- 1 / 4) . triangle
+
+constGateD :: Word64 -> Diagram B
+constGateD bs = moveTo ((- 1.5) ^& 0)
+	$ rect 3 1 # lwL 0.08 <> text (showHex bs "") # scale 0.351
 
 andGateD :: Diagram B
 andGateD = moveTo ((- 1.5) ^& 0) $ (andGateIs <> andGatePure <> moveTo (1.5 ^& 0) (lineRight (- 0.2)))
