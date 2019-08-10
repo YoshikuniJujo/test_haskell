@@ -4,9 +4,9 @@
 module Circuit.Diagram.Map (
 	DiagramMapM, DiagramMapState, runDiagramMapM, execDiagramMapM,
 	DiagramMap, ElementIdable(..), ElementId,
-	Element,
-	andGateE, orGateE, notGateE, triGateE, constGateE, delayE,
-	hLineE, branchE, hLineText,
+	ElementDiagram,
+	andGateD, orGateD, notGateD, triGateD, constGateD, delayD,
+	hLineD, branchD, hLineTextD,
 	Pos, LinePos,
 	putElement0, putElement, newElement0, newElement,
 	inputPosition, inputPosition1, inputPosition2,
@@ -30,18 +30,18 @@ import qualified Data.ByteArray as BA
 import AStar.AStar
 import Circuit.Diagram.DiagramMap
 
-andGateE, orGateE, notGateE, triGateE, hLineE, branchE :: Element
-[andGateE, orGateE, notGateE, triGateE, hLineE, branchE] =
+andGateD, orGateD, notGateD, triGateD, hLineD, branchD :: ElementDiagram
+[andGateD, orGateD, notGateD, triGateD, hLineD, branchD] =
 	[AndGateE, OrGateE, NotGateE, TriGateE, HLine, BranchE]
 
-hLineText :: String -> String -> Element
-hLineText = HLineText
+hLineTextD :: String -> String -> ElementDiagram
+hLineTextD = HLineText
 
-constGateE :: Word64 -> Element
-constGateE = ConstGateE
+constGateD :: Word64 -> ElementDiagram
+constGateD = ConstGateE
 
-delayE :: Word8 -> Element
-delayE = DelayE
+delayD :: Word8 -> ElementDiagram
+delayD = DelayE
 
 newtype ElementId = ElementId BS.ByteString deriving (Show, Eq, Ord)
 
@@ -118,7 +118,7 @@ inputPosition1, inputPosition2 :: LinePos -> DiagramMapM Pos
 inputPosition1 lp = lift . calcInputPosition1 lp =<< getSpace
 inputPosition2 lp = lift . calcInputPosition2 lp =<< getSpace
 
-getElementFromPos :: Pos -> DiagramMapM (Maybe Element)
+getElementFromPos :: Pos -> DiagramMapM (Maybe ElementDiagram)
 getElementFromPos pos = do
 	dm <- getDiagramMap
 	return $ layout dm !? pos
@@ -131,19 +131,19 @@ execDiagramMapM :: DiagramMapM a -> Int -> Either String DiagramMap
 execDiagramMapM dmm sp =
 	diagramMap <$> dmm `execStateT` initDiagramMapState sp
 
-newElement0 :: ElementIdable eid => eid -> Element -> DiagramMapM LinePos
+newElement0 :: ElementIdable eid => eid -> ElementDiagram -> DiagramMapM LinePos
 newElement0 eid e = maybe (lift $ Left "Oops!") return =<< putElement0 eid e
 
-newElement :: ElementIdable ied => ied -> Element -> Pos -> DiagramMapM LinePos
+newElement :: ElementIdable ied => ied -> ElementDiagram -> Pos -> DiagramMapM LinePos
 newElement eid e p = maybe (lift $ Left "Oops!") return =<< putElement eid e p
 
-putElement0 :: ElementIdable eid => eid -> Element -> DiagramMapM (Maybe LinePos)
+putElement0 :: ElementIdable eid => eid -> ElementDiagram -> DiagramMapM (Maybe LinePos)
 putElement0 eid e = putElementGen True eid e 2 Nothing
 
-putElement :: ElementIdable eid => eid -> Element -> Pos -> DiagramMapM (Maybe LinePos)
+putElement :: ElementIdable eid => eid -> ElementDiagram -> Pos -> DiagramMapM (Maybe LinePos)
 putElement eid e (Pos x y) = putElementGen False eid e x (Just y)
 
-putElementGen :: ElementIdable eid => Bool -> eid -> Element -> Int -> Maybe Int -> DiagramMapM (Maybe LinePos)
+putElementGen :: ElementIdable eid => Bool -> eid -> ElementDiagram -> Int -> Maybe Int -> DiagramMapM (Maybe LinePos)
 putElementGen b eidg e x my_ = do
 	me <- gets ((!? elementId eidg) . elementPos)
 	(\pe -> maybe pe (const $ return Nothing) me) $ do
@@ -191,7 +191,7 @@ addElementOutputPos eid ps = do
 		eps' = insert eid lps' eps
 	put $ st { elementPos = eps' }
 
-placeable :: Element -> Pos -> DiagramMapM Bool
+placeable :: ElementDiagram -> Pos -> DiagramMapM Bool
 placeable e pos = and <$> placeablePos `mapM` elementToPositions e pos
 
 placeablePos :: Pos -> DiagramMapM Bool
@@ -210,7 +210,7 @@ calcInputPosition1 lp dx = Left $ "calcInputPosition1 " ++ show lp ++ " " ++ sho
 calcInputPosition2 LinePos { inputLinePos = [_, ip] } dx = Right $ Pos (posX ip + dx) (posY ip)
 calcInputPosition2 lp dx = Left $ "calcInputPosition2 " ++ show lp ++ " " ++ show dx
 
-linePos :: Element -> Pos -> Either String LinePos
+linePos :: ElementDiagram -> Pos -> Either String LinePos
 linePos AndGateE (Pos x y) = Right LinePos {
 	outputLinePos = [Pos (x - 1) y],
 	inputLinePos = [Pos (x + 3) (y - 1), Pos (x + 3) (y + 1)] }
@@ -263,7 +263,7 @@ nextPosDiagramMap dma (Pos x0 y0) = [ p |
 	w = width dm
 	h = height dm
 
-checkHorizontal, checkVertical :: Map Pos Element -> Pos -> Bool
+checkHorizontal, checkVertical :: Map Pos ElementDiagram -> Pos -> Bool
 checkHorizontal l p = case l !? p of
 	Just VLine -> True
 	Just _ -> False

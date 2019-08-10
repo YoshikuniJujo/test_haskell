@@ -17,7 +17,7 @@ drawDiagram DiagramMap { width = w, height = h, layout = l } = mconcat
 				$ drawElement e
 			Nothing -> mempty
 
-drawElement :: Element -> Diagram B
+drawElement :: ElementDiagram -> Diagram B
 drawElement AndGateE = andGateD
 drawElement OrGateE = orGateD
 drawElement NotGateE = notGateD
