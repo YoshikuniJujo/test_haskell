@@ -38,7 +38,7 @@ triangle1_4 = rotateBy (- 1 / 4) . triangle
 
 constGateD :: Word64 -> Diagram B
 constGateD bs = moveTo ((- 1.5) ^& 0)
-	$ rect 3 0.8 # lwL 0.08 <> text (showHex bs "") # scale 0.351
+	$ rect 3 0.8 # lwL 0.08 <> text (showHex bs "") # scale 0.340
 
 delayD, delayDPure :: Word8 -> Diagram B
 delayD d =
