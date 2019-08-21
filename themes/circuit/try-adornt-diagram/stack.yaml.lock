@@ -6,18 +6,18 @@
 packages:
 - completed:
     cabal-file:
-      size: 2340
-      sha256: 0ae99909690ceaa7777cdd04f40763d3febc9e80f9a410662b0c0853151f0548
+      size: 1603
+      sha256: 4f8cf8c2236c55e95b687090d5146ac9dcbe2770180914ba15f2c2a292e97226
     name: circuit-adornt-diagram
     version: 0.1.0.0
     git: https://github.com/YoshikuniJujo/circuit-adornt-diagram.git
     pantry-tree:
-      size: 680
-      sha256: 7a263f48d50970f5cc09139573da7b452605251b43175c52c571acc92dd9160b
-    commit: 81163a4f6b9505b3e3fb43b510af690b44a8fca3
+      size: 571
+      sha256: b9cc87b0d095b603deb0cf2cd5147edbcb42239628022a2820c150dc96bb0e92
+    commit: 571a3ffdabd753682da2be904b805eed567a1534
   original:
     git: https://github.com/YoshikuniJujo/circuit-adornt-diagram.git
-    commit: 81163a4f6b9505b3e3fb43b510af690b44a8fca3
+    commit: 571a3ffdabd753682da2be904b805eed567a1534
 - completed:
     cabal-file:
       size: 1874
