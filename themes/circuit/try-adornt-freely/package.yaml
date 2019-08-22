@@ -23,11 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - circuit-adornt
 - circuit-adornt-samples
-- circuit-adornt-simulate
-- circuit-adornt-diagram
-- circuit-diagram-dsl
 - circuit-adornt-parts
-- circuit-adornt-build
 
 library:
   source-dirs: src
