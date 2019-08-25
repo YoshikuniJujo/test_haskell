@@ -29,12 +29,16 @@ alu0 = do
 	connectWire64 oo i1
 	return (op, ain, bin, o)
 
-adder1bit :: CircuitBuilder Wire32
-adder1bit = do
+adder1bit, adder1bit' :: CircuitBuilder Wire32
+adder1bit = adder1bitGen sum1bit
+adder1bit' = adder1bitGen sum1bit'
+
+adder1bitGen :: CircuitBuilder Wire31 -> CircuitBuilder Wire32
+adder1bitGen sm = do
 	(ciin, ciout) <- idGate
 	(ain, aout) <- idGate
 	(bin, bout) <- idGate
-	(sci, sa, sb, so) <- sum1bit
+	(sci, sa, sb, so) <- sm
 	(cci, ca, cb, co) <- carry1bit
 	zipWithM_ connectWire64 [ciout, aout, bout] [sci, sa, sb]
 	zipWithM_ connectWire64 [ciout, aout, bout] [cci, ca, cb]
@@ -42,6 +46,9 @@ adder1bit = do
 
 sum1bit :: CircuitBuilder Wire31
 sum1bit = xorGate3
+
+sum1bit' :: CircuitBuilder Wire31
+sum1bit' = (\([a, b, c], o) -> (a, b, c, o)) <$> multiple xorGate' 3
 
 carry1bit :: CircuitBuilder Wire31
 carry1bit = do
