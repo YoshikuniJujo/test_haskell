@@ -29,11 +29,15 @@ alu0 = do
 	connectWire64 oo i1
 	return (op, ain, bin, o)
 
-adder1bit, adder1bit' :: CircuitBuilder Wire32
+adder1bit, adder1bit', adder1bit'' :: CircuitBuilder Wire32
 adder1bit = adder1bitGen sum1bit carry1bit
 adder1bit' = adder1bitGen sum1bit' carry1bit'
+adder1bit'' = adder1bitGen
+	((\([a, b, c], o) -> (a, b, c, o)) <$> multiple' "xor" xorGate 3)
+	carry1bit'
 
-adder1bitGen :: CircuitBuilder Wire31 -> CircuitBuilder Wire31 -> CircuitBuilder Wire32
+adder1bitGen ::
+	CircuitBuilder Wire31 -> CircuitBuilder Wire31 -> CircuitBuilder Wire32
 adder1bitGen sm cr = do
 	(ciin, ciout) <- idGate
 	(ain, aout) <- idGate
