@@ -17,8 +17,6 @@ import Circuit.Adornt.Diagram
 import Circuit.Adornt.Samples.CarryLookahead2
 import Circuit.Adornt.Parts
 
-type Sample = (([OWire], CBState), (Double, FilePath))
-
 type Sample' = (CircuitBuilder [OWire], (Double, FilePath))
 
 trySample :: Int -> Sample' -> IO ()

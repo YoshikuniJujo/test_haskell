@@ -42,15 +42,17 @@ packages:
 # extra-deps: []
 extra-deps:
     - git: https://github.com/YoshikuniJujo/circuit-adornt-diagram.git
-      commit: 571a3ffdabd753682da2be904b805eed567a1534
+      commit: 264c81984ec7394478c9d346c726d7411bbb8410
     - git: https://github.com/YoshikuniJujo/circuit-adornt-build.git
-      commit: dcc8a190e4620713462631db41ca886b58ba52c5
+      commit: c3131b1f7512b0a4526a21a3dbe673875a9b078e
     - git: https://github.com/YoshikuniJujo/circuit-diagram-dsl.git
-      commit: 392b034eb11eeb750dd00809a726ccb926e39aae
-    - git: https://github.com/YoshikuniJujo/circuit-adornt-samples.git
-      commit: 68e1c694fd5233b8063782a481c4c3ee4cc93f47
+      commit: 438112ce0709238f7c7432919f4ab0715104a517
     - git: https://github.com/YoshikuniJujo/circuit-adornt-parts.git
-      commit: 299e7dadd919c2205eff4258e41256494dddcd3f
+      commit: e9cf1622c68610f442cafe75ccc0a828835eb79b
+    - git: https://github.com/YoshikuniJujo/circuit-adornt-samples.git
+      commit: 11f92b0850dfca58bf116233d56093ea39ef598a
+    - git: https://github.com/YoshikuniJujo/circuit-adornt-simulate.git
+      commit: a68f9aa84dbbb6a1aa60c98a58a174e568193466
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
