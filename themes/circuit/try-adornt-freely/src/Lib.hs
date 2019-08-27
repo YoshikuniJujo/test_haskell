@@ -94,3 +94,15 @@ alu1bitGen mx3 a1b = do
 	connectWire64 bout `mapM_` [ab, ob, adb]
 	zipWithM_ connectWire64 [ao, oo, s] [o1, o2, o3]
 	return (op, ci, ain, bin, r, co)
+
+aluRippleCarry, aluRippleCarry' :: CircuitBuilder (IWire, IWire, IWire, IWire, OWire, OWire)
+aluRippleCarry = aluRippleCarryGen alu1bit
+aluRippleCarry' = aluRippleCarryGen alu1bit'
+
+aluRippleCarryGen ::
+	CircuitBuilder (IWire, IWire, IWire, IWire, OWire, OWire) ->
+	CircuitBuilder (IWire, IWire, IWire, IWire, OWire, OWire)
+aluRippleCarryGen a1 = do
+	(op, ci, ain, bin, r, co) <- a1
+	connectWire (co, 63, 0) (ci, 63, 1)
+	return (op, ci, ain, bin, r, co)
