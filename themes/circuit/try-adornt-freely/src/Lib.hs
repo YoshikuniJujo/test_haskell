@@ -72,3 +72,16 @@ carry1bitGen o3 = do
 	connectWire64 bout `mapM_` [ab2, ab3]
 	zipWithM_ connectWire64 [ao1, ao2, ao3] [oa, ob, oc]
 	return (ciin, ain, bin, co)
+
+alu1bit :: CircuitBuilder (IWire, IWire, IWire, IWire, OWire, OWire)
+alu1bit = do
+	(ain, aout) <- idGate
+	(bin, bout) <- idGate
+	(aa, ab, ao) <- andGate
+	(oa, ob, oo) <- orGate
+	(ci, ada, adb, s, co) <- adder1bit
+	(op, o1, o2, o3, r) <- mux3
+	connectWire64 aout `mapM_` [aa, oa, ada]
+	connectWire64 bout `mapM_` [ab, ob, adb]
+	zipWithM_ connectWire64 [ao, oo, s] [o1, o2, o3]
+	return (op, ci, ain, bin, r, co)
