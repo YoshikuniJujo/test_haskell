@@ -29,13 +29,25 @@ alu0 = do
 	connectWire64 oo i1
 	return (op, ain, bin, o)
 
-adder1bit :: CircuitBuilder Wire32
-adder1bit = do
+adder1bitBlock, adder1bit, adder1bit', adder1bit'' :: CircuitBuilder Wire32
+adder1bitBlock = do
+	(ci, a, b, s, co) <- adder1bit
+	putNamedBlock "adder1bit" [ci, a, b] [s, co]
+	return (ci, a, b, s, co)
+adder1bit = adder1bitGen sum1bit carry1bit
+adder1bit' = adder1bitGen sum1bit' carry1bit'
+adder1bit'' = adder1bitGen
+	((\([a, b, c], o) -> (a, b, c, o)) <$> multiple' "xor" xorGate 3)
+	carry1bit'
+
+adder1bitGen ::
+	CircuitBuilder Wire31 -> CircuitBuilder Wire31 -> CircuitBuilder Wire32
+adder1bitGen sm cr = do
 	(ciin, ciout) <- idGate
 	(ain, aout) <- idGate
 	(bin, bout) <- idGate
-	(sci, sa, sb, so) <- sum1bit
-	(cci, ca, cb, co) <- carry1bit
+	(sci, sa, sb, so) <- sm
+	(cci, ca, cb, co) <- cr
 	zipWithM_ connectWire64 [ciout, aout, bout] [sci, sa, sb]
 	zipWithM_ connectWire64 [ciout, aout, bout] [cci, ca, cb]
 	return (ciin, ain, bin, so, co)
@@ -43,17 +55,54 @@ adder1bit = do
 sum1bit :: CircuitBuilder Wire31
 sum1bit = xorGate3
 
-carry1bit :: CircuitBuilder Wire31
-carry1bit = do
+sum1bit' :: CircuitBuilder Wire31
+sum1bit' = (\([a, b, c], o) -> (a, b, c, o)) <$> multiple xorGate' 3
+
+carry1bit, carry1bit' :: CircuitBuilder Wire31
+carry1bit = carry1bitGen orGate3
+carry1bit' = carry1bitGen $ (\([a, b, c], o) -> (a, b, c, o)) <$> multiple' "or" orGate 3
+
+carry1bitGen :: CircuitBuilder Wire31 -> CircuitBuilder Wire31
+carry1bitGen o3 = do
 	(ciin, ciout) <- idGate
 	(ain, aout) <- idGate
 	(bin, bout) <- idGate
 	(aa1, ab1, ao1) <- andGate
 	(aa2, ab2, ao2) <- andGate
 	(aa3, ab3, ao3) <- andGate
-	(oa, ob, oc, co) <- orGate3
+	(oa, ob, oc, co) <- o3
 	connectWire64 ciout `mapM_` [aa1, aa2]
 	connectWire64 aout `mapM_` [ab1, aa3]
 	connectWire64 bout `mapM_` [ab2, ab3]
 	zipWithM_ connectWire64 [ao1, ao2, ao3] [oa, ob, oc]
 	return (ciin, ain, bin, co)
+
+alu1bit, alu1bit' :: CircuitBuilder (IWire, IWire, IWire, IWire, OWire, OWire)
+alu1bit = alu1bitGen mux3 adder1bit
+alu1bit' = alu1bitGen mux3' adder1bitBlock
+
+alu1bitGen :: CircuitBuilder Wire41 -> CircuitBuilder Wire32 ->
+	CircuitBuilder (IWire, IWire, IWire, IWire, OWire, OWire)
+alu1bitGen mx3 a1b = do
+	(ain, aout) <- idGate
+	(bin, bout) <- idGate
+	(aa, ab, ao) <- andGate
+	(oa, ob, oo) <- orGate
+	(ci, ada, adb, s, co) <- a1b
+	(op, o1, o2, o3, r) <- mx3
+	connectWire64 aout `mapM_` [aa, oa, ada]
+	connectWire64 bout `mapM_` [ab, ob, adb]
+	zipWithM_ connectWire64 [ao, oo, s] [o1, o2, o3]
+	return (op, ci, ain, bin, r, co)
+
+aluRippleCarry, aluRippleCarry' :: CircuitBuilder (IWire, IWire, IWire, IWire, OWire, OWire)
+aluRippleCarry = aluRippleCarryGen alu1bit
+aluRippleCarry' = aluRippleCarryGen alu1bit'
+
+aluRippleCarryGen ::
+	CircuitBuilder (IWire, IWire, IWire, IWire, OWire, OWire) ->
+	CircuitBuilder (IWire, IWire, IWire, IWire, OWire, OWire)
+aluRippleCarryGen a1 = do
+	(op, ci, ain, bin, r, co) <- a1
+	connectWire (co, 63, 0) (ci, 63, 1)
+	return (op, ci, ain, bin, r, co)
