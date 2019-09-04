@@ -25,7 +25,10 @@ dependencies:
 - network
 
 library:
-  source-dirs: src
+  source-dirs:
+    - src
+    - csrc
+  include-dirs: include
 
 executables:
   try-unix-domain-socket-exe:
@@ -48,6 +51,24 @@ executables:
     - try-unix-domain-socket
   try-client:
     main:                try-client.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-unix-domain-socket
+  try-uds-server:
+    main:                try-uds-server.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-unix-domain-socket
+  try-uds-client:
+    main:                try-uds-client.hs
     source-dirs:         app
     ghc-options:
     - -threaded
