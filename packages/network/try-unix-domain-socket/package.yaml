@@ -30,6 +30,11 @@ library:
     - src
     - csrc
   include-dirs: include
+  when:
+    - condition: '!os(linux)'
+      then:
+        buildable: False
+      else: {}
 
 executables:
   try-unix-domain-socket-exe:
