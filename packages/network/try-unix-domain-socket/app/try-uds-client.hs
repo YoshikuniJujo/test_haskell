@@ -3,6 +3,8 @@
 
 module Main where
 
+import System.Posix.Process
+
 import Network.Socket hiding (recv)
 import Network.Socket.ByteString (recv, sendAll)
 
@@ -11,6 +13,7 @@ import qualified Data.ByteString.Char8 as BSC
 
 main :: IO ()
 main = withSocketsDo $ do
+	getProcessID >>= print
 	sock <- socket AF_UNIX Stream 0
 	Ex.bracket (open sock) close talk
 	where

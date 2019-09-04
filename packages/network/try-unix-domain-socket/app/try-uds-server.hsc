@@ -32,11 +32,13 @@ main = withSocketsDo $ do
 		return sock
 	loop sock = forever $ do
 		(conn, peer) <- accept sock
+		getPeerUCredRaw sock >>= print
+		getPeerUCredRaw conn >>= print
 		getPeerUCredPtr sock >>= \uc -> do
 			print uc
-			peekPid uc >>= print
-			peekUid uc >>= print
-			peekGid uc >>= print
+--			peekPid uc >>= print
+--			peekUid uc >>= print
+--			peekGid uc >>= print
 		putStrLn $ "Connection from " ++ show peer
 		void $ forkFinally (talk conn) (\_ -> close conn)
 	talk conn = do
@@ -44,6 +46,9 @@ main = withSocketsDo $ do
 		unless (BS.null msg) $ do
 			sendAll conn msg
 			talk conn
+
+getPeerUCredRaw :: Socket -> IO Int
+getPeerUCredRaw = (`getSocketOption` CustomSockOpt (#{const SOL_SOCKET}, #{const SO_PEERCRED}))
 
 getPeerUCredPtr :: Socket -> IO (Ptr UCred)
 getPeerUCredPtr = (intToPtr <$>) . (`getSocketOption` CustomSockOpt (#{const SOL_SOCKET}, #{const SO_PEERCRED}))
