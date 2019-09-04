@@ -4,7 +4,7 @@ module Main where
 
 import Control.Concurrent (forkFinally)
 import Control.Monad (unless, forever, void)
-import Network.Socket hiding (recv)
+import Network.Socket
 import Network.Socket.ByteString (recv, sendAll)
 
 import qualified Control.Exception as Ex
@@ -24,7 +24,7 @@ main = withSocketsDo $ do
 	open addr = do
 		sock <- socket (addrFamily addr) (addrSocketType addr) (addrProtocol addr)
 		setSocketOption sock ReuseAddr 1
-		setCloseOnExecIfNeeded $ fdSocket sock
+		withFdSocket sock $ setCloseOnExecIfNeeded
 		bind sock (addrAddress addr)
 		listen sock 10
 		return sock
