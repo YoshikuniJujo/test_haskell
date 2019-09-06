@@ -38,6 +38,9 @@ main = withSocketsDo $ do
 		return sock
 	loop sock = forever $ do
 		(conn, peer) <- accept sock
+		getSocketOption conn (CustomSockOpt (#{const SOL_SOCKET}, #{const SO_PASSCRED})) >>= print
+		setSocketOption conn (CustomSockOpt (#{const SOL_SOCKET}, #{const SO_PASSCRED})) 1
+		getSocketOption conn (CustomSockOpt (#{const SOL_SOCKET}, #{const SO_PASSCRED})) >>= print
 		getPeerUCredRaw sock >>= print
 		getPeerUCredPtr sock >>= \uc -> do
 			print uc
