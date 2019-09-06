@@ -55,6 +55,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-scm-crudentials-from-c
+  server:
+    main:                server.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-scm-crudentials-from-c
 
 tests:
   try-scm-crudentials-from-c-test:
