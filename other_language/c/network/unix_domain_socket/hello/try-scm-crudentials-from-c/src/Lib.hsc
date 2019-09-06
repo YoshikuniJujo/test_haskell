@@ -6,7 +6,8 @@ module Lib (
 	socket, FileDescriptor, Domain, Type, Protocol, afUnix, sockStream, protocol0,
 	withSockaddrUn, SockaddrUn, sampleUnixDomainPath,
 	pokeSunFamily, saFamilyTAfUnix, SunFamily, pokeSunPathString,
-	connect, withSimpleMsghdr, sendmsg, msgFlags0, close
+	connect, withSimpleMsghdr, sendmsg, msgFlags0, close,
+	withMsghdrUcred, Ucred(..), Msghdr
 	) where
 
 import Control.Monad
@@ -18,6 +19,8 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
+
+import System.Posix.Types
 
 #define _GNU_SOURCE
 
@@ -209,7 +212,7 @@ sendmsg (FileDescriptor fd) mh (MsgFlags mf) = do
 foreign import ccall "sendmsg" c_sendmsg :: CInt -> Ptr Msghdr -> CInt -> IO #type ssize_t
 
 data CmsghdrUcred
-data Cmsghdr
+data {-# CTYPE "sys/socket.h" "struct cmsghdr" #-} Cmsghdr
 
 withCmsghdrUcred :: (Ptr CmsghdrUcred -> IO a) -> IO a
 withCmsghdrUcred act =
@@ -222,11 +225,66 @@ foreign import capi "sys/socket.h CMSG_FIRSTHDR" c_cmsg_firsthdr :: Ptr Msghdr -
 c_pokeCmsgLen :: Ptr Cmsghdr -> #{type socklen_t} -> IO ()
 c_pokeCmsgLen = #poke struct cmsghdr, cmsg_len
 
+foreign import capi "sys/socket.h CMSG_LEN" c_cmsg_len :: #{type socklen_t} -> #{type socklen_t}
+
 c_pokeCmsgLevel :: Ptr Cmsghdr -> CInt -> IO ()
 c_pokeCmsgLevel = #poke struct cmsghdr, cmsg_level
 
+c_SOL_SOCKET :: CInt
+c_SOL_SOCKET = #const SOL_SOCKET
+
 c_pokeCmsgType :: Ptr Cmsghdr -> CInt -> IO ()
 c_pokeCmsgType = #poke struct cmsghdr, cmsg_type
+
+c_SCM_CREDENTIALS :: CInt
+c_SCM_CREDENTIALS = #const SCM_CREDENTIALS
+
+foreign import capi "sys/socket.h CMSG_DATA" c_cmsg_data :: Ptr Cmsghdr -> Ptr a
+
+data Ucred = Ucred {
+	ucredPid :: ProcessID,
+	ucredUid :: UserID,
+	ucredGid :: GroupID } deriving Show
+
+{-
+pokeUcredPid :: Ptr Ucred -> #{type pid_t} -> IO ()
+pokeUcredPid = #poke struct ucred, pid
+
+pokeUcredUid :: Ptr Ucred -> #{type uid_t} -> IO ()
+pokeUcredUid = #poke struct ucred, uid
+
+pokeUcredGid :: Ptr Ucred -> #{type gid_t} -> IO ()
+pokeUcredGid = #poke struct ucred, gid
+-}
+
+instance Storable Ucred where
+	sizeOf _ = #size struct ucred
+	alignment _ = #alignment struct ucred
+	peek p = Ucred
+		<$> #{peek struct ucred, pid} p
+		<*> #{peek struct ucred, uid} p
+		<*> #{peek struct ucred, gid} p
+	poke p uc = do
+		#{poke struct ucred, pid} p $ ucredPid uc
+		#{poke struct ucred, uid} p $ ucredUid uc
+		#{poke struct ucred, gid} p $ ucredGid uc
+
+withMsghdrUcred :: [String] -> Ucred -> (Ptr Msghdr -> IO a) -> IO a
+withMsghdrUcred ss uc act = withMsghdr $ \msgh -> do
+	c_pokeMsgName msgh (nullPtr, 0)
+	withIovecFromStrings ss $ \iov -> do
+		c_pokeMsgIov msgh iov
+		c_pokeMsgIovlen msgh $ length ss
+		withCmsghdrUcred $ \cmsg -> do
+			c_pokeMsgControl msgh cmsg
+			c_pokeMsgControllen msgh #const CMSG_SPACE(sizeof(struct ucred))
+			let	cmsgp = c_cmsg_firsthdr msgh
+			c_pokeCmsgLen cmsgp $ c_cmsg_len #size struct ucred
+			c_pokeCmsgLevel cmsgp c_SOL_SOCKET
+			c_pokeCmsgType cmsgp c_SCM_CREDENTIALS
+			let	ucredp = c_cmsg_data cmsgp
+			poke ucredp uc
+			act msgh
 
 foreign import ccall "memset" c_memset :: Ptr a -> CInt -> CSize -> IO ()
 foreign import ccall "strcpy" c_strcpy :: CString -> CString -> IO CString
