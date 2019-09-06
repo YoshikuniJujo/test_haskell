@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Lib where
@@ -61,10 +62,14 @@ prefectureTypes = "都道府県"
 randomsFromList :: RandomGen g => [a] -> g -> [a]
 randomsFromList lst g = (lst !!) <$> randomRs (0, length lst - 1) g
 
-fakePrefecture :: RandomGen g => g -> String
+fakePrefecture :: forall g . RandomGen g => g -> String
 fakePrefecture g =
-	take 2 (randomsFromList (concat prefectures) g) ++
-	take 1 (randomsFromList prefectureTypes g)
+	take (head $ randomsFromList (length <$> prefectures) g)
+		(randomsFromList (concat prefectures) g') ++
+	take 1 (randomsFromList prefectureTypes g'')
+	where
+	(g', s) = split g :: (g, g)
+	(g'', _) = split s :: (g, g)
 
 fakePrefectureIO :: IO String
 fakePrefectureIO = fakePrefecture <$> newStdGen
