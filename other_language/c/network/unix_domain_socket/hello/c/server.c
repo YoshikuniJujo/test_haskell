@@ -70,7 +70,8 @@ main(int argc, char *argv[])
 		msgh.msg_iov = &iov;
 		msgh.msg_iovlen = 1;
 		iov.iov_base = &data;
-		iov.iov_len = sizeof(int);
+//		iov.iov_len = sizeof(int);
+		iov.iov_len = 5;
 		msgh.msg_control = controlMsg.buf;
 		msgh.msg_controllen = sizeof(controlMsg.buf);
 		nr = recvmsg(clifd, &msgh, 0);
