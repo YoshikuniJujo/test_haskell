@@ -19,6 +19,8 @@ import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
 
+#define _GNU_SOURCE
+
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -131,7 +133,7 @@ close (FileDescriptor fd) = do
 
 foreign import ccall "close" c_close :: CInt -> IO CInt
 
-data Msghdr
+data {-# CTYPE "sys/socket.h" "struct msghdr" #-} Msghdr
 
 withSimpleMsghdr :: [String] -> (Ptr Msghdr -> IO a) -> IO a
 withSimpleMsghdr ss act = withMsghdr $ \msgh -> do
@@ -205,6 +207,26 @@ sendmsg (FileDescriptor fd) mh (MsgFlags mf) = do
 			"errno: " ++ show c_errno
 
 foreign import ccall "sendmsg" c_sendmsg :: CInt -> Ptr Msghdr -> CInt -> IO #type ssize_t
+
+data CmsghdrUcred
+data Cmsghdr
+
+withCmsghdrUcred :: (Ptr CmsghdrUcred -> IO a) -> IO a
+withCmsghdrUcred act =
+	allocaBytes #{const CMSG_SPACE(sizeof(struct ucred))} $ \ptr -> do
+		c_memset ptr 0 #const CMSG_SPACE(sizeof(struct ucred))
+		act ptr
+
+foreign import capi "sys/socket.h CMSG_FIRSTHDR" c_cmsg_firsthdr :: Ptr Msghdr -> Ptr Cmsghdr
+
+c_pokeCmsgLen :: Ptr Cmsghdr -> #{type socklen_t} -> IO ()
+c_pokeCmsgLen = #poke struct cmsghdr, cmsg_len
+
+c_pokeCmsgLevel :: Ptr Cmsghdr -> CInt -> IO ()
+c_pokeCmsgLevel = #poke struct cmsghdr, cmsg_level
+
+c_pokeCmsgType :: Ptr Cmsghdr -> CInt -> IO ()
+c_pokeCmsgType = #poke struct cmsghdr, cmsg_type
 
 foreign import ccall "memset" c_memset :: Ptr a -> CInt -> CSize -> IO ()
 foreign import ccall "strcpy" c_strcpy :: CString -> CString -> IO CString

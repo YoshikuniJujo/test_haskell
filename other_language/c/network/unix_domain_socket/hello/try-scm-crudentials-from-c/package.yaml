@@ -45,6 +45,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-scm-crudentials-from-c
+  client-set-uid:
+    main:                client-set-uid.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-scm-crudentials-from-c
 
 tests:
   try-scm-crudentials-from-c-test:
