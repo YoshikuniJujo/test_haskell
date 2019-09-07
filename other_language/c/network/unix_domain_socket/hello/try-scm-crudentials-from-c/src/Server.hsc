@@ -6,7 +6,8 @@ module Server (
 	accept,
 	setsockopt,
 	OptLevel, solSocket,
-	OptName, soPasscred, soPasscredTrue
+	OptName, soPasscred, soPasscredTrue,
+	recvmsg
 	) where
 
 import Control.Monad
@@ -129,3 +130,12 @@ soPasscredTrue :: CInt
 soPasscredTrue = 1
 
 foreign import ccall "setsockopt" c_setsockopt :: CInt -> CInt -> CInt -> Ptr a -> #{type socklen_t} -> IO CInt
+
+recvmsg :: FileDescriptor -> Ptr Msghdr -> MsgFlags -> IO #type ssize_t
+recvmsg (FileDescriptor fd) msgh (MsgFlags f) = do
+	r <- c_recvmsg fd msgh f
+	r <$ when (r < 0) (error $
+		"c_recvmsg: return error " ++ show r ++ "\n" ++
+		"errno: " ++ show c_errno ++ "\n")
+
+foreign import ccall "recvmsg" c_recvmsg :: CInt -> Ptr Msghdr -> CInt -> IO #type ssize_t

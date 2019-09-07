@@ -196,8 +196,6 @@ c_pokeIovBase = #poke struct iovec, iov_base
 c_pokeIovLen :: Ptr Iovec -> #{type size_t} -> IO ()
 c_pokeIovLen = #poke struct iovec, iov_len
 
-newtype MsgFlags = MsgFlags CInt deriving Show
-
 msgFlags0 :: MsgFlags
 msgFlags0 = MsgFlags 0
 
@@ -284,6 +282,12 @@ withMsghdrUcred ss uc act = withMsghdr $ \msgh -> do
 			let	ucredp = c_cmsg_data cmsgp
 			poke ucredp uc
 			act msgh
+
+{-
+withMsghdrUcredServer :: [#type size_t] -> (Ptr Msghdr -> IO a) -> IO a
+withMsghdrUcredServer bs act = withMsghdr $ \msgh -> do
+	withIovecFrom
+	-}
 
 foreign import ccall "memset" c_memset :: Ptr a -> CInt -> CSize -> IO ()
 foreign import ccall "strcpy" c_strcpy :: CString -> CString -> IO CString
