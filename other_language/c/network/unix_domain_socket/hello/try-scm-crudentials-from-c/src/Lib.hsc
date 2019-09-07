@@ -7,7 +7,9 @@ module Lib (
 	withSockaddrUn, SockaddrUn, sampleUnixDomainPath,
 	pokeSunFamily, saFamilyTAfUnix, SunFamily, pokeSunPathString,
 	connect, withSimpleMsghdr, sendmsg, msgFlags0, close,
-	withMsghdrUcred, Ucred(..), Msghdr
+	withMsghdrUcred, withMsghdrUcredServer, Ucred(..), Msghdr,
+
+	c_peekMsgIov, c_peekMsgIovlen, c_peekIovBase, c_peekIovLen
 	) where
 
 import Control.Monad
@@ -158,8 +160,14 @@ c_pokeMsgName mh (cs, l) = do
 c_pokeMsgIov :: Ptr Msghdr -> Ptr Iovec -> IO ()
 c_pokeMsgIov = #{poke struct msghdr, msg_iov}
 
+c_peekMsgIov :: Ptr Msghdr -> IO (Ptr Iovec)
+c_peekMsgIov = #{peek struct msghdr, msg_iov}
+
 c_pokeMsgIovlen :: Ptr Msghdr -> Int -> IO ()
 c_pokeMsgIovlen = #{poke struct msghdr, msg_iovlen}
+
+c_peekMsgIovlen :: Ptr Msghdr -> IO Int
+c_peekMsgIovlen = #{peek struct msghdr, msg_iovlen}
 
 c_pokeMsgControl :: Ptr Msghdr -> Ptr a -> IO ()
 c_pokeMsgControl = #{poke struct msghdr, msg_control}
@@ -173,16 +181,25 @@ withIovecFromStrings :: [String] -> (Ptr Iovec -> IO a) -> IO a
 withIovecFromStrings ss act =
 	withMultiCStringLens ss (`withIovecFromCStrings` act)
 
-withMultiCStringLens :: [String] -> ([CStringLen] -> IO a) -> IO a
-withMultiCStringLens [] act = act []
-withMultiCStringLens (s : ss) act =
-	withCStringLen s $ \cs -> withMultiCStringLens ss $ act . (cs :)
+withIovecFromSizes :: [#type size_t] -> (Ptr Iovec -> IO a) -> IO a
+withIovecFromSizes ss act =
+	allocaMultiArrays (fromIntegral <$> ss) (`withIovecFromCStrings` act)
 
 withIovecFromCStrings :: [CStringLen] -> (Ptr Iovec -> IO a) -> IO a
 withIovecFromCStrings cstrs act = withIovec (length cstrs) $ \iov -> do
 	for_ (zip (iterate nextIovecPtr iov) cstrs) $ \(i, (p, l)) ->
 		c_pokeIovBase i p >> c_pokeIovLen i (fromIntegral l)
 	act iov
+
+withMultiCStringLens :: [String] -> ([CStringLen] -> IO a) -> IO a
+withMultiCStringLens [] act = act []
+withMultiCStringLens (s : ss) act =
+	withCStringLen s $ \cs -> withMultiCStringLens ss $ act . (cs :)
+
+allocaMultiArrays :: Storable a => [Int] -> ([(Ptr a, Int)] -> IO b) -> IO b
+allocaMultiArrays [] act = act []
+allocaMultiArrays (l : ls) act =
+	allocaArray l $ \p -> allocaMultiArrays ls $ act . ((p, l) :)
 
 withIovec :: Int -> (Ptr Iovec -> IO a) -> IO a
 withIovec n = allocaBytes $ #{size struct iovec} * n
@@ -193,8 +210,14 @@ nextIovecPtr = (`plusPtr` #{size struct iovec})
 c_pokeIovBase :: Ptr Iovec -> Ptr a -> IO ()
 c_pokeIovBase = #poke struct iovec, iov_base
 
+c_peekIovBase :: Ptr Iovec -> IO (Ptr a)
+c_peekIovBase = #peek struct iovec, iov_base
+
 c_pokeIovLen :: Ptr Iovec -> #{type size_t} -> IO ()
 c_pokeIovLen = #poke struct iovec, iov_len
+
+c_peekIovLen :: Ptr Iovec -> IO #type size_t
+c_peekIovLen = #peek struct iovec, iov_len
 
 msgFlags0 :: MsgFlags
 msgFlags0 = MsgFlags 0
@@ -222,16 +245,25 @@ foreign import capi "sys/socket.h CMSG_FIRSTHDR" c_cmsg_firsthdr :: Ptr Msghdr -
 c_pokeCmsgLen :: Ptr Cmsghdr -> #{type socklen_t} -> IO ()
 c_pokeCmsgLen = #poke struct cmsghdr, cmsg_len
 
+c_peekCmsgLen :: Ptr Cmsghdr -> IO #type socklen_t
+c_peekCmsgLen = #peek struct cmsghdr, cmsg_len
+
 foreign import capi "sys/socket.h CMSG_LEN" c_cmsg_len :: #{type socklen_t} -> #{type socklen_t}
 
 c_pokeCmsgLevel :: Ptr Cmsghdr -> CInt -> IO ()
 c_pokeCmsgLevel = #poke struct cmsghdr, cmsg_level
+
+c_peekCmsgLevel :: Ptr Cmsghdr -> IO CInt
+c_peekCmsgLevel = #peek struct cmsghdr, cmsg_level
 
 c_SOL_SOCKET :: CInt
 c_SOL_SOCKET = #const SOL_SOCKET
 
 c_pokeCmsgType :: Ptr Cmsghdr -> CInt -> IO ()
 c_pokeCmsgType = #poke struct cmsghdr, cmsg_type
+
+c_peekCmsgType :: Ptr Cmsghdr -> IO CInt
+c_peekCmsgType = #peek struct cmsghdr, cmsg_type
 
 c_SCM_CREDENTIALS :: CInt
 c_SCM_CREDENTIALS = #const SCM_CREDENTIALS
@@ -283,11 +315,27 @@ withMsghdrUcred ss uc act = withMsghdr $ \msgh -> do
 			poke ucredp uc
 			act msgh
 
-{-
-withMsghdrUcredServer :: [#type size_t] -> (Ptr Msghdr -> IO a) -> IO a
-withMsghdrUcredServer bs act = withMsghdr $ \msgh -> do
-	withIovecFrom
-	-}
+withMsghdrUcredServer ::
+	[#type size_t] -> (Ptr Msghdr -> IO a) -> (Ptr Msghdr -> Ptr Ucred -> IO b) -> IO b
+withMsghdrUcredServer bs act1 act2 = withMsghdr $ \msgh -> do
+	c_pokeMsgName msgh (nullPtr, 0)
+	withIovecFromSizes bs $ \iov -> do
+		c_pokeMsgIov msgh iov
+		c_pokeMsgIovlen msgh $ length bs
+		withCmsghdrUcred $ \cmsg -> do
+			c_pokeMsgControl msgh cmsg
+			c_pokeMsgControllen msgh #const CMSG_SPACE(sizeof(struct ucred))
+			() <$ act1 msgh
+			let	cmsgp = c_cmsg_firsthdr msgh
+			when (cmsgp == nullPtr) $ error "bad"
+			cml <- c_peekCmsgLen cmsgp
+			when (cml /= c_cmsg_len #size struct ucred) $ error "bad"
+			cmlvl <- c_peekCmsgLevel cmsgp
+			when (cmlvl /= c_SOL_SOCKET) $ error "bad"
+			cmt <- c_peekCmsgType cmsgp
+			when (cmt /= c_SCM_CREDENTIALS) $ error "bad"
+			let	ucredp = c_cmsg_data cmsgp
+			act2 msgh ucredp
 
 foreign import ccall "memset" c_memset :: Ptr a -> CInt -> CSize -> IO ()
 foreign import ccall "strcpy" c_strcpy :: CString -> CString -> IO CString

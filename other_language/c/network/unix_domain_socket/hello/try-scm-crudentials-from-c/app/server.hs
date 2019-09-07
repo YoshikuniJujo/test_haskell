@@ -1,5 +1,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
+import Foreign.C.String
+import Foreign.Storable
 import System.Directory
 
 import Lib
@@ -19,7 +21,20 @@ main = do
 	case pos of
 		[Pollfd _ _ (Just po)]
 			| po == pollin -> withSockaddrUn $ \sau -> do
-				accept lsnfd sau >>= print
-				setsockopt lsnfd solSocket soPasscred soPasscredTrue
+				clifd <- accept lsnfd sau
+				print clifd
+				setsockopt clifd solSocket soPasscred soPasscredTrue
+				withMsghdrUcredServer [126]
+						(\msgh -> recvmsg
+							clifd msgh msgFlags0)
+					$ \msgh ucredp -> do
+						iov0 <- c_peekMsgIov msgh
+						print iov0
+						iovn <- c_peekMsgIovlen msgh
+						print iovn
+						iov0base <- c_peekIovBase iov0
+						c_peekIovLen iov0 >>= print
+						print =<< peekCString iov0base
+						print =<< peek ucredp
 		_ -> putStrLn "bad"
 	close lsnfd
