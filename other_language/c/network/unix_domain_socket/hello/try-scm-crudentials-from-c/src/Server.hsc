@@ -3,7 +3,10 @@
 
 module Server (
 	bind, listen, poll, Pollfd(..), PollEvents, pollin,
-	accept
+	accept,
+	setsockopt,
+	OptLevel, solSocket,
+	OptName, soPasscred, soPasscredTrue
 	) where
 
 import Control.Monad
@@ -104,3 +107,25 @@ accept (FileDescriptor fd) sau = alloca $ \lnp -> do
 	return $ FileDescriptor cfd
 
 foreign import ccall "accept" c_accept :: CInt -> Ptr SockaddrUn -> Ptr #{type socklen_t} ->  IO CInt
+
+newtype OptLevel = OptLevel CInt deriving Show
+newtype OptName = OptName CInt deriving Show
+
+setsockopt :: Storable a => FileDescriptor -> OptLevel -> OptName -> a -> IO ()
+setsockopt (FileDescriptor fd) (OptLevel l) (OptName n) v = alloca $ \pv -> do
+	poke pv v
+	r <- c_setsockopt fd l n pv . fromIntegral $ sizeOf v
+	when (r < 0) . error $
+		"c_setsockopt: return error " ++ show r ++ "\n" ++
+		"errno: " ++ show c_errno ++ "\n"
+
+solSocket :: OptLevel
+solSocket = OptLevel #const SOL_SOCKET
+
+soPasscred :: OptName
+soPasscred = OptName #const SO_PASSCRED
+
+soPasscredTrue :: CInt
+soPasscredTrue = 1
+
+foreign import ccall "setsockopt" c_setsockopt :: CInt -> CInt -> CInt -> Ptr a -> #{type socklen_t} -> IO CInt

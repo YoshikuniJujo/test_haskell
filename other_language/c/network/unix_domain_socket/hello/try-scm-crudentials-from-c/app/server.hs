@@ -20,5 +20,6 @@ main = do
 		[Pollfd _ _ (Just po)]
 			| po == pollin -> withSockaddrUn $ \sau -> do
 				accept lsnfd sau >>= print
+				setsockopt lsnfd solSocket soPasscred soPasscredTrue
 		_ -> putStrLn "bad"
 	close lsnfd
