@@ -22,6 +22,8 @@ import Foreign.C.String
 
 import System.Posix.Types
 
+import Base
+
 #define _GNU_SOURCE
 
 #include <sys/socket.h>
@@ -52,7 +54,6 @@ printf_ s = withCString s $ \cs -> do
 	r <$ when (r < 0) (error $ "c_printf_: return error " ++ show r)
 
 foreign import ccall "socket" c_socket :: CInt -> CInt -> CInt -> IO CInt
-foreign import capi "value errno" c_errno :: CInt
 
 c_AF_UNIX :: CInt
 c_AF_UNIX = #{const AF_UNIX}
@@ -65,8 +66,6 @@ newtype Domain = Domain CInt deriving Show
 newtype Type = Type CInt deriving Show
 
 newtype Protocol = Protocol CInt deriving Show
-
-newtype FileDescriptor = FileDescriptor CInt deriving Show
 
 socket :: Domain -> Type -> Protocol -> IO FileDescriptor
 socket (Domain d) (Type t) (Protocol p) = FileDescriptor <$> do

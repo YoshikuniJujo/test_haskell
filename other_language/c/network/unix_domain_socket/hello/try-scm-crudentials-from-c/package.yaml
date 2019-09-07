@@ -23,6 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - directory
 - unix
+- time
 
 library:
   source-dirs: src
