@@ -14,5 +14,11 @@ main = do
 		pokeSunPathString sau sampleUnixDomainPath
 		bind lsnfd sau
 	listen lsnfd 5
-	poll [Pollfd lsnfd pollin Nothing] Nothing >>= print
+	(_pon, pos) <- poll [Pollfd lsnfd pollin Nothing] Nothing
+	print pos
+	case pos of
+		[Pollfd _ _ (Just po)]
+			| po == pollin -> withSockaddrUn $ \sau -> do
+				accept lsnfd sau >>= print
+		_ -> putStrLn "bad"
 	close lsnfd

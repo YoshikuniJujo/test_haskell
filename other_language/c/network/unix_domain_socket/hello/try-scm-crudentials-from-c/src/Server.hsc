@@ -2,7 +2,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Server (
-	bind, listen, poll, Pollfd(..), PollEvents, pollin
+	bind, listen, poll, Pollfd(..), PollEvents, pollin,
+	accept
 	) where
 
 import Control.Monad
@@ -12,7 +13,7 @@ import Data.Int
 import Data.Time.Clock
 import Foreign.Ptr
 import Foreign.Storable
-import Foreign.Marshal.Array
+import Foreign.Marshal
 import Foreign.C.Types
 
 import Lib
@@ -45,7 +46,7 @@ data Pollfd = Pollfd {
 	pollfdEvents :: PollEvents,
 	pollfdRevents :: Maybe PollEvents } deriving Show
 
-newtype PollEvents = PollEvents #{type short} deriving (Show, Storable)
+newtype PollEvents = PollEvents #{type short} deriving (Show, Storable, Eq)
 
 pollin :: PollEvents
 pollin = PollEvents #const POLLIN
@@ -83,5 +84,23 @@ toMillisecond Nothing = - 1
 toMillisecond (Just ndt) = truncate $ 1000 * ndt
 
 foreign import ccall "poll" c_poll :: Ptr Pollfd -> #{type nfds_t} -> CInt -> IO CInt
+
+accept :: FileDescriptor -> Ptr SockaddrUn -> IO FileDescriptor
+accept (FileDescriptor fd) sau = alloca $ \lnp -> do
+	poke lnp #size struct sockaddr_un
+	cfd <- c_accept fd sau lnp
+	when (fd < 0) . error $
+		"c_accept: return error " ++ show fd ++ "\n" ++
+		"errno: " ++ show c_errno ++ "\n"
+	oln <- peek lnp
+	when (oln /= #size struct sockaddr_un) . putStrLn $
+		"c_accept: addrlen /= sizeof(struct sockaddr_un)\n" ++
+		"sizeof(struct sockaddr_un): " ++ show (#{size struct sockaddr_un} :: CInt) ++ "\n" ++
+		"oln: " ++ show oln ++ "\n"
+	{-
+	when (oln /= #size struct sockaddr_un) . error $
+		"c_accept: addrlen /= sizeof(struct sockaddr_un): " ++ show oln
+		-}
+	return $ FileDescriptor cfd
 
 foreign import ccall "accept" c_accept :: CInt -> Ptr SockaddrUn -> Ptr #{type socklen_t} ->  IO CInt
