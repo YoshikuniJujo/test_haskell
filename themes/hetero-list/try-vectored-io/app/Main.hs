@@ -18,10 +18,13 @@ import Numeric (showHex)
 
 import HeteroList (HeteroPtrList(..))
 import VectoredIo (readv, writev)
-import StorableByteString
+import StorableByteString (StorableByteString)
 
 main :: IO ()
-main = do
+main = main1 >> main2
+
+main1 :: IO ()
+main1 = do
 	bracket (createFile "tmp.txt" fm644) closeFd
 		$ \fd -> alloca @Int $ \pint ->
 			alloca @CChar $ \pc -> alloca @CChar $ \pc2 -> do 
@@ -38,7 +41,6 @@ main = do
 				putStrLn . ("0x" ++) . (`showHex` "") =<< peek pint
 				print . castCCharToChar =<< peek pc
 				print . castCCharToChar =<< peek pc2
-	main2
 
 fm644 :: FileMode
 fm644 = foldr1 unionFileModes

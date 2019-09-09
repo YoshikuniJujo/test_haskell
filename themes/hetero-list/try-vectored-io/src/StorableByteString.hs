@@ -1,16 +1,16 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, DataKinds, KindSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module StorableByteString where
+module StorableByteString (StorableByteString(..)) where
 
-import Foreign.Ptr
-import Foreign.Storable
-import Foreign.Marshal
-import Foreign.C.Types
-import GHC.TypeLits
-import Control.Monad
-import Data.Proxy
-import Data.String
+import Foreign.Ptr (castPtr, plusPtr)
+import Foreign.Storable (Storable(..))
+import Foreign.Marshal (copyBytes, fillBytes)
+import Foreign.C.Types (CChar)
+import GHC.TypeLits (KnownNat, Nat, natVal)
+import Control.Monad (when)
+import Data.Proxy (Proxy(..))
+import Data.String (IsString(..))
 
 import qualified Data.ByteString as BS
 
