@@ -1,3 +1,4 @@
 .stack-work/
 try-vectored-io.cabal
 *~
+/tmp2.txt

@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeApplications, DataKinds, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -18,6 +18,7 @@ import Numeric (showHex)
 
 import HeteroList (HeteroPtrList(..))
 import VectoredIo (readv, writev)
+import StorableByteString
 
 main :: IO ()
 main = do
@@ -37,7 +38,19 @@ main = do
 				putStrLn . ("0x" ++) . (`showHex` "") =<< peek pint
 				print . castCCharToChar =<< peek pc
 				print . castCCharToChar =<< peek pc2
+	main2
 
 fm644 :: FileMode
 fm644 = foldr1 unionFileModes
 	[ownerReadMode, ownerWriteMode, groupReadMode, otherReadMode]
+
+main2 :: IO ()
+main2 = do
+	bracket (createFile "tmp2.txt" fm644) closeFd
+		$ \fd -> alloca @(StorableByteString 10) $ \psb -> do
+			poke psb "Hello, world!"
+			writev fd (psb :-- PtrNil) >>= print
+	bracket (openFd "tmp2.txt" ReadOnly Nothing defaultFileFlags) closeFd
+		$ \fd -> alloca @(StorableByteString 10) $ \psb -> do
+			readv fd (psb :-- PtrNil) >>= print
+			print =<< peek psb
