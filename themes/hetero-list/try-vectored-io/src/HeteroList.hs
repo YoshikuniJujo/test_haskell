@@ -1,24 +1,29 @@
-{-# LANGUAGE GADTs, DataKinds, KindSignatures, TypeOperators, FlexibleInstances, FlexibleContexts #-}
+{-# LANGUAGE GADTs, DataKinds, KindSignatures, TypeOperators #-}
+{-# LANGUAGE FlexibleInstances, FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module HeteroList (
 	HeteroList(..), HeteroPtrList(..),
-	lengthHeteroPtrList, StorableHeteroList(..)) where
+	lengthHeteroList, lengthHeteroPtrList, StorableHeteroList(..)) where
 
-import Foreign.Ptr
-import Foreign.Storable
+import Foreign.Ptr (Ptr)
+import Foreign.Storable (Storable, peek, poke)
 
 data HeteroList :: [*] -> * where
 	Nil :: HeteroList '[]
 	(:-) :: a -> HeteroList as -> HeteroList (a : as)
+
+infixr 5 :-
+
+lengthHeteroList :: HeteroList a -> Int
+lengthHeteroList Nil = 0
+lengthHeteroList (_ :- xs) = 1 + lengthHeteroList xs
 
 instance Show (HeteroList '[]) where
 	show Nil = "Nil"
 
 instance (Show a, Show (HeteroList as)) => Show (HeteroList (a : as)) where
 	show (x :- xs) = show x ++ " :- " ++ show xs
-
-infixr 5 :-
 
 data HeteroPtrList :: [*] -> * where
 	PtrNil :: HeteroPtrList '[]
@@ -38,9 +43,7 @@ instance StorableHeteroList '[] where
 	peekHeteroList _ = return Nil
 	pokeHeteroList _ _ = return ()
 
-instance (Storable a, StorableHeteroList as) => StorableHeteroList (a : as) where
-	peekHeteroList (p :-- ps) =
-		(:-) <$> peek p <*> peekHeteroList ps
-	pokeHeteroList (p :-- ps) (x :- xs) = do
-		poke p x
-		pokeHeteroList ps xs
+instance (Storable a, StorableHeteroList as) =>
+		StorableHeteroList (a : as) where
+	peekHeteroList (p :-- ps) = (:-) <$> peek p <*> peekHeteroList ps
+	pokeHeteroList (p :-- ps) (x :- xs) = poke p x >> pokeHeteroList ps xs
