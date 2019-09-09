@@ -16,7 +16,7 @@ import System.Posix.Files (
 import System.Posix.Types (FileMode)
 import Numeric (showHex)
 
-import HeteroList (HeteroPtrList(..))
+import HeteroList (HeteroList(..))
 import VectoredIo (readv, writev)
 import StorableByteString (StorableByteString)
 
@@ -31,12 +31,12 @@ main1 = do
 				poke pint 0x3132333435363738
 				poke pc $ castCharToCChar 'w'
 				poke pc2 $ castCharToCChar '\n'
-				writev fd (pint :-- pc :-- pc2 :-- PtrNil)
+				writev fd (pint :- pc :- pc2 :- Nil)
 					>>= print
 	bracket (openFd "tmp.txt" ReadOnly Nothing defaultFileFlags) closeFd
 		$ \fd -> alloca @Int $ \pint -> 
 			alloca @CChar $ \pc -> alloca @CChar $ \pc2 -> do 
-				readv fd (pint :-- pc :-- pc2 :-- PtrNil)
+				readv fd (pint :- pc :- pc2 :- Nil)
 					>>= print
 				putStrLn . ("0x" ++) . (`showHex` "") =<< peek pint
 				print . castCCharToChar =<< peek pc
@@ -51,8 +51,8 @@ main2 = do
 	bracket (createFile "tmp2.txt" fm644) closeFd
 		$ \fd -> alloca @(StorableByteString 10) $ \psb -> do
 			poke psb "Hello, world!"
-			writev fd (psb :-- PtrNil) >>= print
+			writev fd (psb :- Nil) >>= print
 	bracket (openFd "tmp2.txt" ReadOnly Nothing defaultFileFlags) closeFd
 		$ \fd -> alloca @(StorableByteString 10) $ \psb -> do
-			readv fd (psb :-- PtrNil) >>= print
+			readv fd (psb :- Nil) >>= print
 			print =<< peek psb
