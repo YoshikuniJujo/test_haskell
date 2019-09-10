@@ -2,3 +2,5 @@
 try-vectored-io.cabal
 *~
 /tmp2.txt
+/tmp_.txt
+/tmp2_.txt
