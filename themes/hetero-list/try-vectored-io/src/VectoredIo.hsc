@@ -7,15 +7,18 @@ import Foreign.Ptr (Ptr)
 import Foreign.C.Types (CInt(..))
 import Control.Monad (when)
 import Data.Int (Int64)
-import System.Posix.Types (Fd(..))
+import System.IO
+import System.Posix (Fd(..), handleToFd)
 
 import Iovec (withIovec, Iovec, PluralPtrLen(..), Elems)
 
 #include <sys/uio.h>
 
-readVector :: PluralPtrLen pl => Fd -> [Int] -> IO (Elems pl)
-readVector fd ns = allocaPluralPtrLen ns $ \pl ->
-	readv fd pl >> peekPluralPtrLen pl
+readVector :: PluralPtrLen pl => Handle -> [Int] -> IO (Elems pl)
+readVector h ns = do
+	fd <- handleToFd h
+	allocaPluralPtrLen ns $ \pl ->
+		readv fd pl >> peekPluralPtrLen pl
 
 readv :: PluralPtrLen pl => Fd -> pl -> IO #type ssize_t
 readv fd pns = do
@@ -25,9 +28,11 @@ readv fd pns = do
 foreign import ccall "readv"
 	c_readv :: Fd -> Ptr Iovec -> CInt -> IO #type ssize_t
 
-writeVector :: PluralPtrLen pl => Fd -> Elems pl -> IO ()
-writeVector fd vs = allocaPluralPtrLen (elemsLength vs) $ \pl ->
-	() <$ (pokePluralPtrLen pl vs >> writev fd pl)
+writeVector :: PluralPtrLen pl => Handle -> Elems pl -> IO ()
+writeVector h vs = do
+	fd <- handleToFd h
+	allocaPluralPtrLen (elemsLength vs) $ \pl ->
+		() <$ (pokePluralPtrLen pl vs >> writev fd pl)
 
 writev :: PluralPtrLen pl => Fd -> pl -> IO #type ssize_t
 writev fd pns = do
