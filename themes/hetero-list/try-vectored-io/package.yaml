@@ -26,19 +26,13 @@ dependencies:
 
 library:
   source-dirs: src
+  exposed-modules:
+    - VectoredIo
+    - Iovec
 
 executables:
   try-vectored-io-exe:
     main:                Main.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-vectored-io
-  try-vectored-io-exe2:
-    main:                newMain.hs
     source-dirs:         app
     ghc-options:
     - -threaded

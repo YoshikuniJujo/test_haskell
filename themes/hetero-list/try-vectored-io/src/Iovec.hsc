@@ -1,40 +1,36 @@
-{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
-{-# LANGUAGE GADTs, DataKinds, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Iovec (Iovec, withIovec, PrepareIovec) where
+module Iovec (
+	withIovec, Iovec, AsCCharPtrLenList,
+	PtrLenList(..), HeteroPtrLenList(..) ) where
 
-import Foreign.Ptr (Ptr, castPtr, plusPtr)
-import Foreign.Storable (Storable, sizeOf, poke)
-import Foreign.Marshal (allocaBytes)
-import Foreign.C.Types (CInt)
+import Foreign.Ptr
+import Foreign.Storable
+import Foreign.Marshal
+import Foreign.C.Types
+import Control.Arrow
+import Data.List
 
-import HeteroList (HeteroList(..), lengthHeteroList, TypeMap)
+import PtrLenList
+
+withIovec :: AsCCharPtrLenList pl => pl -> (Ptr Iovec -> CInt -> IO a) -> IO a
+withIovec pns = c_withIovec $ second fromIntegral <$> toCCharPtrLenList pns
 
 #include <sys/uio.h>
 
 data {-# CTYPE "sys/uio.h" "struct iovec" #-} Iovec
 
-iovecSize :: Int
-iovecSize = #size struct iovec
+c_withIovec :: [(Ptr CChar, CInt)] -> (Ptr Iovec -> CInt -> IO a) -> IO a
+c_withIovec pns act = allocaBytes (ln * #{size struct iovec}) $ \piov -> do
+	c_prepareIovec piov pns
+	act piov ln
+	where
+	ln :: Num n => n
+	ln = genericLength pns
 
-withIovec ::
-	forall a b . PrepareIovec a => HeteroList (Ptr `TypeMap` a) -> (Ptr Iovec -> CInt -> IO b) -> IO b
-withIovec ps act = allocaBytes (ln * iovecSize) $ \iov0 ->
-	prepareIovec iov0 ps >> act iov0 (fromIntegral ln)
-	where ln = lengthHeteroList (ps :: HeteroList (Ptr `TypeMap` a))
-
-class PrepareIovec a where
-	prepareIovec :: Ptr Iovec -> HeteroList (Ptr `TypeMap` a) -> IO ()
-
-instance PrepareIovec '[] where
-	prepareIovec _ _ = return ()
-
-instance (Storable a, PrepareIovec as) => PrepareIovec (a : as) where
-	prepareIovec iovp (p :- ps) = do
-		poke (castPtr iovp) p
-		poke (iovp `plusPtr` sizeOf p) $ sizeOfPtr p
-		prepareIovec (iovp `plusPtr` iovecSize) ps
-
-sizeOfPtr :: forall a . Storable a => Ptr a -> Int
-sizeOfPtr _ = sizeOf @a undefined
+c_prepareIovec :: Ptr Iovec -> [(Ptr CChar, CInt)] -> IO ()
+c_prepareIovec _ [] = return ()
+c_prepareIovec piov ((p, n) : pns) = do
+	#{poke struct iovec, iov_base} piov p
+	#{poke struct iovec, iov_len} piov n
+	c_prepareIovec (piov `plusPtr` #{size struct iovec}) pns
