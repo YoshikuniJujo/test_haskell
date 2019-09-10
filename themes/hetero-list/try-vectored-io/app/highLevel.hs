@@ -1,4 +1,4 @@
-{-# LANGUAGE GADTs, TypeApplications, DataKinds, ScopedTypeVariables #-}
+{-# LANGUAGE GADTs, DataKinds, ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where

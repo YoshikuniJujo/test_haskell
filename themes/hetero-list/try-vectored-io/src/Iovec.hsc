@@ -12,7 +12,7 @@ import Control.Arrow (second)
 import Data.List (genericLength)
 
 import PluralPtrLen (
-	PluralPtrLen(..), Elems, toCCharPtrLenList, PtrLenList(..), PtrLenTuple(..), ListTuple(..) )
+	PluralPtrLen(..), toCCharPtrLenList, PtrLenList(..), PtrLenTuple(..), ListTuple(..) )
 
 withIovec :: PluralPtrLen pl => pl -> (Ptr Iovec -> CInt -> IO a) -> IO a
 withIovec = c_withIovec . (second fromIntegral <$>) . toCCharPtrLenList

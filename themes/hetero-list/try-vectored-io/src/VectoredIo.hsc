@@ -10,11 +10,11 @@ import Data.Int (Int64)
 import System.IO
 import System.Posix (Fd(..), handleToFd)
 
-import Iovec (withIovec, Iovec, PluralPtrLen(..), Elems)
+import Iovec (withIovec, Iovec, PluralPtrLen(..))
 
 #include <sys/uio.h>
 
-readVector :: PluralPtrLen pl => Handle -> [Int] -> IO (Elems pl)
+readVector :: PluralPtrLen pl => Handle -> [Int] -> IO (ValueLists pl)
 readVector h ns = do
 	fd <- handleToFd h
 	allocaPluralPtrLen ns $ \pl ->
@@ -28,10 +28,10 @@ readv fd pns = do
 foreign import ccall "readv"
 	c_readv :: Fd -> Ptr Iovec -> CInt -> IO #type ssize_t
 
-writeVector :: PluralPtrLen pl => Handle -> Elems pl -> IO ()
+writeVector :: PluralPtrLen pl => Handle -> ValueLists pl -> IO ()
 writeVector h vs = do
 	fd <- handleToFd h
-	allocaPluralPtrLen (elemsLength vs) $ \pl ->
+	allocaPluralPtrLen (valueListLengths vs) $ \pl ->
 		() <$ (pokePluralPtrLen pl vs >> writev fd pl)
 
 writev :: PluralPtrLen pl => Fd -> pl -> IO #type ssize_t
