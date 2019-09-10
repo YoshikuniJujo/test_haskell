@@ -9,3 +9,14 @@ struct iovec {
 	size_t iov_len;
 };
 ```
+
+TODO
+----
+
+つぎにやること
+
+* リファクタリング
+	+ module Iovec
+	+ module VectoredIo
+	+ app/Main.hs
+	+ app/highLevel.hs
