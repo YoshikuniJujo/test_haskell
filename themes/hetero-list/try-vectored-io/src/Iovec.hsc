@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Iovec (
-	withIovec, Iovec, AsCCharPtrLenList, PtrLenList(..), PtrLenTuple(..)
+	withIovec, Iovec, PluralPtrLen(..), PtrLenList(..), PtrLenTuple(..), ListTuple(..)
 	) where
 
 import Foreign.Ptr (Ptr, plusPtr)
@@ -11,10 +11,10 @@ import Foreign.C.Types (CInt, CChar)
 import Control.Arrow (second)
 import Data.List (genericLength)
 
-import PtrLenList (
-	AsCCharPtrLenList, toCCharPtrLenList, PtrLenList(..), PtrLenTuple(..) )
+import PluralPtrLen (
+	PluralPtrLen(..), Elems, toCCharPtrLenList, PtrLenList(..), PtrLenTuple(..), ListTuple(..) )
 
-withIovec :: AsCCharPtrLenList pl => pl -> (Ptr Iovec -> CInt -> IO a) -> IO a
+withIovec :: PluralPtrLen pl => pl -> (Ptr Iovec -> CInt -> IO a) -> IO a
 withIovec = c_withIovec . (second fromIntegral <$>) . toCCharPtrLenList
 
 #include <sys/uio.h>
