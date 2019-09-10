@@ -3,13 +3,13 @@
 
 module VectoredIo (readv, writev) where
 
-import Foreign.Ptr
-import Foreign.C.Types
-import Control.Monad
-import Data.Int
-import System.Posix.Types
+import Foreign.Ptr (Ptr)
+import Foreign.C.Types (CInt(..))
+import Control.Monad (when)
+import Data.Int (Int64)
+import System.Posix.Types (Fd(..))
 
-import Iovec
+import Iovec (withIovec, Iovec, AsCCharPtrLenList)
 
 #include <sys/uio.h>
 
@@ -32,7 +32,6 @@ foreign import ccall "writev"
 errno :: String -> #{type ssize_t} -> IO ()
 errno nm r = do
 	en <- c_errno
-	error $	nm ++ " return error: " ++ show r ++ "\n" ++
-		"errno: " ++ show en
+	error $	nm ++ " return error: " ++ show r ++ "\nerrno: " ++ show en
 
 foreign import capi "value errno" c_errno :: IO CInt

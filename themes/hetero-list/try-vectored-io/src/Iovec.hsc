@@ -1,32 +1,30 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Iovec (
-	withIovec, Iovec, AsCCharPtrLenList,
-	PtrLenList(..), HeteroPtrLenList(..) ) where
+	withIovec, Iovec, AsCCharPtrLenList, PtrLenList(..), PtrLenTuple(..)
+	) where
 
-import Foreign.Ptr
-import Foreign.Storable
-import Foreign.Marshal
-import Foreign.C.Types
-import Control.Arrow
-import Data.List
+import Foreign.Ptr (Ptr, plusPtr)
+import Foreign.Storable (pokeByteOff)
+import Foreign.Marshal (allocaBytes)
+import Foreign.C.Types (CInt, CChar)
+import Control.Arrow (second)
+import Data.List (genericLength)
 
-import PtrLenList
+import PtrLenList (
+	AsCCharPtrLenList, toCCharPtrLenList, PtrLenList(..), PtrLenTuple(..) )
 
 withIovec :: AsCCharPtrLenList pl => pl -> (Ptr Iovec -> CInt -> IO a) -> IO a
-withIovec pns = c_withIovec $ second fromIntegral <$> toCCharPtrLenList pns
+withIovec = c_withIovec . (second fromIntegral <$>) . toCCharPtrLenList
 
 #include <sys/uio.h>
 
 data {-# CTYPE "sys/uio.h" "struct iovec" #-} Iovec
 
 c_withIovec :: [(Ptr CChar, CInt)] -> (Ptr Iovec -> CInt -> IO a) -> IO a
-c_withIovec pns act = allocaBytes (ln * #{size struct iovec}) $ \piov -> do
-	c_prepareIovec piov pns
-	act piov ln
-	where
-	ln :: Num n => n
-	ln = genericLength pns
+c_withIovec pns act = allocaBytes (ln * #{size struct iovec}) $ \piov ->
+	c_prepareIovec piov pns >> act piov ln
+	where ln :: Num n => n; ln = genericLength pns
 
 c_prepareIovec :: Ptr Iovec -> [(Ptr CChar, CInt)] -> IO ()
 c_prepareIovec _ [] = return ()

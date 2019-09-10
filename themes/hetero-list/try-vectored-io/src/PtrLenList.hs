@@ -1,36 +1,25 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
-{-# LANGUAGE GADTs, KindSignatures, DataKinds, TypeOperators #-}
+{-# LANGUAGE GADTs, DataKinds, TypeOperators, KindSignatures #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module PtrLenList where
+module PtrLenList (AsCCharPtrLenList(..), PtrLenList(..), PtrLenTuple(..)) where
 
-import Foreign.Ptr
-import Foreign.Storable
-import Foreign.C.Types
+import Foreign.Ptr (Ptr, castPtr)
+import Foreign.Storable (Storable, sizeOf)
+import Foreign.C.Types (CChar)
 
-data PtrLenList a = PtrLenNil | (Ptr a, Int) :- PtrLenList a deriving Show
+infixr 5 :-, :--
 
-lengthPtrLenList :: Num n => PtrLenList a -> n
-lengthPtrLenList PtrLenNil = 0
-lengthPtrLenList (_ :- pns) = 1 + lengthPtrLenList pns
+data PtrLenList a = PtrLenListNil | (Ptr a, Int) :- PtrLenList a deriving Show
 
 mapPtrLenList :: (Ptr a -> Int -> b) -> PtrLenList a -> [b]
-mapPtrLenList _ PtrLenNil = []
+mapPtrLenList _ PtrLenListNil = []
 mapPtrLenList f ((p, n) :- pns) = f p n : mapPtrLenList f pns
 
-infixr 5 :-
-
-data HeteroPtrLenList :: [*] -> * where
-	HtrPtrLenNil :: HeteroPtrLenList '[]
-	(:--) :: (Ptr a, Int) ->
-		HeteroPtrLenList as -> HeteroPtrLenList (a : as)
-
-infixr 5 :--
-
-lengthHeteroPtrLenList :: Num n => HeteroPtrLenList a -> n
-lengthHeteroPtrLenList HtrPtrLenNil = 0
-lengthHeteroPtrLenList (_ :-- pns) = 1 + lengthHeteroPtrLenList pns
+data PtrLenTuple :: [*] -> * where
+	PtrLenTupleNil :: PtrLenTuple '[]
+	(:--) :: (Ptr a, Int) -> PtrLenTuple as -> PtrLenTuple (a : as)
 
 class AsCCharPtrLenList pl where
 	toCCharPtrLenList :: pl -> [(Ptr CChar, Int)]
@@ -38,11 +27,9 @@ class AsCCharPtrLenList pl where
 instance Storable a => AsCCharPtrLenList (PtrLenList a) where
 	toCCharPtrLenList = mapPtrLenList $ \p n -> (castPtr p, n * sizeOfPtr p)
 
-instance AsCCharPtrLenList (HeteroPtrLenList '[]) where
-	toCCharPtrLenList _ = []
-
-instance (Storable a, AsCCharPtrLenList (HeteroPtrLenList as)) =>
-		AsCCharPtrLenList (HeteroPtrLenList (a : as)) where
+instance AsCCharPtrLenList (PtrLenTuple '[]) where toCCharPtrLenList _ = []
+instance (Storable a, AsCCharPtrLenList (PtrLenTuple as)) =>
+		AsCCharPtrLenList (PtrLenTuple (a : as)) where
 	toCCharPtrLenList ((p, n) :-- pns) =
 		(castPtr p, n * sizeOfPtr p) : toCCharPtrLenList pns
 
