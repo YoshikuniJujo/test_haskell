@@ -10,15 +10,22 @@ import Data.Int (Int64)
 import System.IO (Handle)
 import System.Posix (Fd(..), handleToFd)
 
-import Iovec (Iovec, withIovec, PluralPtrLen(..))
+import qualified Data.ByteString as BS
+
+import Iovec (
+	Iovec, withIovec, PluralPtrLen(..),
+	byteLengthPluralPtrLen, peekByteStringPluralPtrLen)
 
 #include <sys/uio.h>
 
-readVector :: PluralPtrLen ppl => Handle -> [Int] -> IO (ValueLists ppl)
+readVector :: PluralPtrLen ppl => Handle -> [Int] -> IO (Either [BS.ByteString] (ValueLists ppl))
 readVector h ns = handleToFd h >>= \fd ->
 	allocaPluralPtrLen ns $ \ppl -> do
-		readv fd ppl
-		peekPluralPtrLen ppl
+		let n0 = byteLengthPluralPtrLen ppl
+		n <- fromIntegral <$> readv fd ppl
+		if n < n0
+		then Left <$> peekByteStringPluralPtrLen ppl n
+		else Right <$> peekPluralPtrLen ppl
 
 readv :: PluralPtrLen ppl => Fd -> ppl -> IO #type ssize_t
 readv fd pns = do

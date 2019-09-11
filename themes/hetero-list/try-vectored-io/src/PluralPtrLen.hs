@@ -5,13 +5,16 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module PluralPtrLen (
-	PluralPtrLen(..), PtrLenList(..), PtrLenTuple(..), ListTuple(..) ) where
+	PluralPtrLen(..), PtrLenList(..), PtrLenTuple(..), ListTuple(..),
+	byteLengthPluralPtrLen, peekByteStringPluralPtrLen ) where
 
 import Foreign.Ptr (Ptr, castPtr)
 import Foreign.Storable (Storable, sizeOf)
 import Foreign.Marshal (allocaArray, peekArray, pokeArray)
 import Foreign.C.Types (CChar)
 import Control.Monad (zipWithM_)
+
+import qualified Data.ByteString as BS
 
 infixr 5 :-, :--, :.
 
@@ -80,3 +83,23 @@ errMsgNotEnoughLength :: String
 errMsgNotEnoughLength = "module PluralPtrLen: " ++
 	"instance PluralPtrLen (PtrLenTuple (a : as)): " ++
 	"PluralPtrLen.allocaPluralPtrLen: need more lengths"
+
+byteLengthPluralPtrLen :: PluralPtrLen ppl => ppl -> Int
+byteLengthPluralPtrLen = sum . (snd <$>) . toCCharPtrLenList
+
+peekByteStringPluralPtrLen :: PluralPtrLen ppl => ppl -> Int -> IO [BS.ByteString]
+peekByteStringPluralPtrLen ppl n = do
+--	print ppl
+	print n
+	print $ toCCharPtrLenList ppl
+	print . takeCCharPtrLenList n $ toCCharPtrLenList ppl
+	print =<< mapM BS.packCStringLen (toCCharPtrLenList ppl)
+	mapM BS.packCStringLen . takeCCharPtrLenList n $ toCCharPtrLenList ppl
+
+takeCCharPtrLenList :: Int -> [(Ptr CChar, Int)] -> [(Ptr CChar, Int)]
+takeCCharPtrLenList _ [] = error "takeCCharPtrLenList: n should be less than sum of length"
+takeCCharPtrLenList n _ | n < 0 = error $ "takeCCharPtrLenList: n should be positive integer: " ++ show n
+takeCCharPtrLenList 0 _ = []
+takeCCharPtrLenList n ((pc, l) : pcls)
+	| n <= l = [(pc, n)]
+	| otherwise = (pc, l) : takeCCharPtrLenList (n - l) pcls
