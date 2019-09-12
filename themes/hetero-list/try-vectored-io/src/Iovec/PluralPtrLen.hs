@@ -1,5 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE TypeFamilies, TypeFamilyDependencies, GADTs #-}
 {-# LANGUAGE DataKinds, KindSignatures, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
@@ -10,9 +8,9 @@ module Iovec.PluralPtrLen (
 	PluralPtrLen(..), byteLengthPluralPtrLen, peekByteStringPluralPtrLen,
 	PtrLenList(..), PtrLenTuple(..), ListTuple(..) ) where
 
-import Language.Haskell.TH
+import GHC.Stack
 import Foreign.Ptr (Ptr, castPtr)
-import Foreign.Storable (Storable, sizeOf)
+import Foreign.Storable (Storable)
 import Foreign.Marshal (allocaArray, peekArray, pokeArray)
 import Foreign.C.Types (CChar)
 import Control.Monad (zipWithM_)
@@ -20,13 +18,14 @@ import Control.Monad (zipWithM_)
 import qualified Data.ByteString as BS
 
 import Iovec.Types (Iovec(..))
+import Tools (sizeOfPtr, errorWithFunName)
 
 infixr 5 :-, :--, :.
 
 class PluralPtrLen ppl where
 	type ValueLists ppl = vls | vls -> ppl
 	toIovecList :: ppl -> [Iovec]
-	allocaPluralPtrLen :: [Int] -> (ppl -> IO a) -> IO a
+	allocaPluralPtrLen :: HasCallStack => [Int] -> (ppl -> IO a) -> IO a
 	peekPluralPtrLen :: ppl -> IO (ValueLists ppl)
 	pokePluralPtrLen :: ppl -> ValueLists ppl -> IO ()
 	valueListLengths :: ValueLists ppl -> [Int]
@@ -70,11 +69,10 @@ instance (Storable a, PluralPtrLen (PtrLenTuple as),
 	toIovecList ((p, n) :-- pns) =
 		Iovec (castPtr p) (fromIntegral $ n * sizeOfPtr p) :
 		toIovecList pns
-	allocaPluralPtrLen [] _ = errorWithLocFun
-		$(litE =<< stringL . pprint <$> location)
+	allocaPluralPtrLen [] _ = errorWithFunName
 		("instance PluralPtrLen (PtrLenTuple (a : as)): " ++ 
 			"allocaPluralPtrLen")
-		"need more lengths"
+		"need more element lengths"
 	allocaPluralPtrLen (n : ns) act =
 		allocaArray n $ \p -> allocaPluralPtrLen ns $ act . ((p, n) :--)
 	peekPluralPtrLen ((p, n) :-- pns) =
@@ -86,15 +84,6 @@ instance (Storable a, PluralPtrLen (PtrLenTuple as),
 data ListTuple :: [*] -> * where
 	ListTupleNil :: ListTuple '[]
 	(:.) :: [a] -> ListTuple as -> ListTuple (a : as)
-
-sizeOfPtr :: forall a . Storable a => Ptr a -> Int
-sizeOfPtr _ = sizeOf @a undefined
-
-errorWithLocFun :: String -> String -> String -> a
-errorWithLocFun loc fun msg = error $
-	"\nlocation: " ++ loc ++ "\n" ++
-	"function: " ++ fun ++ "\n" ++
-	"message:  " ++ msg
 
 byteLengthPluralPtrLen :: PluralPtrLen ppl => ppl -> Int
 byteLengthPluralPtrLen = sum . ((\(Iovec _ l) -> fromIntegral l) <$>) . toIovecList
