@@ -15,14 +15,15 @@ module Iovec (
 import Foreign.Ptr (Ptr, plusPtr)
 import Foreign.Storable (Storable(..), pokeByteOff)
 import Foreign.Marshal (allocaBytes)
-import Foreign.C.Types (CInt, CChar, CSize)
+import Foreign.C.Types (CSize, CChar, CInt)
 import Control.Arrow ((***))
-import Control.Monad
+import Control.Monad (forM_)
 import Data.List (genericLength)
 
 import Iovec.PluralPtrLen (
-	PluralPtrLen(..), PtrLenList(..), PtrLenTuple(..), ListTuple(..),
-	pluralPtrLenByteLength, peekByteStringPluralPtrLen, Iovec(..) )
+	Iovec(..), PluralPtrLen(..),
+	peekByteStringPluralPtrLen, pluralPtrLenByteLength,
+	PtrLenList(..), PtrLenTuple(..), ListTuple(..) )
 
 withIovec :: PluralPtrLen ppl => ppl -> (Ptr Iovec -> CInt -> IO a) -> IO a
 withIovec = c_withIovec . ((\(Iovec p l) -> (p, l)) <$>) . toIovecList
