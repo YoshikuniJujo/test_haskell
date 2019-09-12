@@ -5,7 +5,7 @@ module TryVectoredIo (tryWritev, tryReadv) where
 import Foreign.Ptr (Ptr)
 import Foreign.Storable (Storable(..))
 import Foreign.Marshal (alloca, allocaBytes)
-import Foreign.C.Types (CInt(..), CChar)
+import Foreign.C.Types (CInt(..), CChar, CSize(..))
 import Foreign.C.String (peekCStringLen, withCStringLen)
 import Control.Exception (bracket)
 import Data.Int (Int64)
@@ -40,7 +40,7 @@ tryWritev = withCreateFile "foo.txt" fm644 $ \fd ->
 foreign import ccall "writev"
 	c_writev :: Fd -> Ptr Iovec -> CInt -> IO #type ssize_t
 
-newtype {-# CTYPE "sys/uio.h" "struct iovec" #-} Iovec = Iovec (Ptr CChar, CInt) deriving Show
+newtype {-# CTYPE "sys/uio.h" "struct iovec" #-} Iovec = Iovec (Ptr CChar, CSize) deriving Show
 
 instance Storable Iovec where
 	sizeOf _ = #size struct iovec

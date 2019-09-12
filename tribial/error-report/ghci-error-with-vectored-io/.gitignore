@@ -1,3 +1,4 @@
 .stack-work/
 ghci-error-with-vectored-io.cabal
 *~
+/foo.txt
