@@ -2,7 +2,9 @@
 
 module Iovec (
 	Iovec, withIovec,
-	PluralPtrLen(..), PtrLenList(..), PtrLenTuple(..), ListTuple(..),
+	PluralPtrLen, ValueLists,
+	allocaPluralPtrLen, peekPluralPtrLen, pokePluralPtrLen, valueListLengths,
+	PtrLenList(..), PtrLenTuple(..), ListTuple(..),
 	byteLengthPluralPtrLen, peekByteStringPluralPtrLen ) where
 
 import Foreign.Ptr (Ptr, plusPtr)
@@ -13,12 +15,12 @@ import Control.Arrow ((***))
 import Control.Monad
 import Data.List (genericLength)
 
-import PluralPtrLen (
+import Iovec.PluralPtrLen (
 	PluralPtrLen(..), PtrLenList(..), PtrLenTuple(..), ListTuple(..),
 	byteLengthPluralPtrLen, peekByteStringPluralPtrLen, Iovec(..) )
 
 withIovec :: PluralPtrLen ppl => ppl -> (Ptr Iovec -> CInt -> IO a) -> IO a
-withIovec = c_withIovec . ((\(Iovec p l) -> (p, l)) <$>) . toCCharPtrLenList
+withIovec = c_withIovec . ((\(Iovec p l) -> (p, l)) <$>) . toIovecList
 
 #include <sys/uio.h>
 
