@@ -90,12 +90,7 @@ byteLengthPluralPtrLen :: PluralPtrLen ppl => ppl -> Int
 byteLengthPluralPtrLen = sum . ((\(Iovec _ l) -> fromIntegral l) <$>) . toCCharPtrLenList
 
 peekByteStringPluralPtrLen :: PluralPtrLen ppl => ppl -> Int -> IO [BS.ByteString]
-peekByteStringPluralPtrLen ppl n = do
---	print ppl
---	print n
---	print $ toCCharPtrLenList ppl
---	print . takeCCharPtrLenList n $ toCCharPtrLenList ppl
---	print =<< (mapM BS.packCStringLen $ (\(Iovec p l) -> (p, fromIntegral l)) <$> toCCharPtrLenList ppl)
+peekByteStringPluralPtrLen ppl n =
 	mapM BS.packCStringLen . takeCCharPtrLenList n $ (\(Iovec p l) -> (p, fromIntegral l)) <$> toCCharPtrLenList ppl
 
 takeCCharPtrLenList :: Int -> [(Ptr CChar, Int)] -> [(Ptr CChar, Int)]

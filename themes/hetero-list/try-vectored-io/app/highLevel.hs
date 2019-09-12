@@ -33,8 +33,7 @@ main2 = do
 		print (castCCharToChar <$> s2 :: String)
 
 main3 :: IO ()
-main3 = do
-	withFile "dummy.txt" ReadMode $ \h -> do
-		Right [i1 :: [Int], i2] <- readVector h [1, 1]
-		print $ (`showHex` "") <$> i1
-		print $ (`showHex` "") <$> i2
+main3 = withFile "dummy.txt" ReadMode $ \h -> do
+	Right [i1 :: [Int], i2] <- readVector h [1, 1]
+	print $ (`showHex` "") <$> i1
+	print $ (`showHex` "") <$> i2
