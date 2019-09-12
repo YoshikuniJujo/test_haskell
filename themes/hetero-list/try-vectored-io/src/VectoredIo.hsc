@@ -14,14 +14,14 @@ import qualified Data.ByteString as BS
 
 import Iovec (
 	Iovec, withIovec, PluralPtrLen(..),
-	byteLengthPluralPtrLen, peekByteStringPluralPtrLen)
+	pluralPtrLenByteLength, peekByteStringPluralPtrLen)
 
 #include <sys/uio.h>
 
 readVector :: PluralPtrLen ppl => Handle -> [Int] -> IO (Either [BS.ByteString] (ValueLists ppl))
 readVector h ns = handleToFd h >>= \fd ->
 	allocaPluralPtrLen ns $ \ppl -> do
-		let n0 = byteLengthPluralPtrLen ppl
+		let n0 = pluralPtrLenByteLength ppl
 		n <- fromIntegral <$> readv fd ppl
 		if n < n0
 		then Left <$> peekByteStringPluralPtrLen ppl n
@@ -37,9 +37,9 @@ foreign import ccall "readv"
 
 writeVector :: PluralPtrLen ppl => Handle -> ValueLists ppl -> IO ()
 writeVector h vls = handleToFd h >>= \fd ->
-	allocaPluralPtrLen (valueListLengths vls) $ \ppl -> do
+	allocaPluralPtrLen (valueListLengthList vls) $ \ppl -> do
 		pokePluralPtrLen ppl vls
-		let n0 = byteLengthPluralPtrLen ppl
+		let n0 = pluralPtrLenByteLength ppl
 		n <- fromIntegral <$> writev fd ppl
 		when (n < n0) . error $ "can't write enough length:\n" ++
 			"should write: " ++ show n0 ++

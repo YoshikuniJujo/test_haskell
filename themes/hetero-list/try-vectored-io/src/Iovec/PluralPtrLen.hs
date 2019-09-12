@@ -5,14 +5,14 @@
 
 module Iovec.PluralPtrLen (
 	Iovec(..),
-	PluralPtrLen(..), byteLengthPluralPtrLen, peekByteStringPluralPtrLen,
+	PluralPtrLen(..), peekByteStringPluralPtrLen, pluralPtrLenByteLength,
 	PtrLenList(..), PtrLenTuple(..), ListTuple(..) ) where
 
-import GHC.Stack
+import GHC.Stack (HasCallStack)
 import Foreign.Ptr (Ptr, castPtr)
 import Foreign.Storable (Storable)
 import Foreign.Marshal (allocaArray, peekArray, pokeArray)
-import Foreign.C.Types (CChar)
+import Foreign.C.String (CStringLen)
 import Control.Monad (zipWithM_)
 
 import qualified Data.ByteString as BS
@@ -28,7 +28,27 @@ class PluralPtrLen ppl where
 	allocaPluralPtrLen :: HasCallStack => [Int] -> (ppl -> IO a) -> IO a
 	peekPluralPtrLen :: ppl -> IO (ValueLists ppl)
 	pokePluralPtrLen :: ppl -> ValueLists ppl -> IO ()
-	valueListLengths :: ValueLists ppl -> [Int]
+	valueListLengthList :: ValueLists ppl -> [Int]
+
+pluralPtrLenByteLength :: PluralPtrLen ppl => ppl -> Int
+pluralPtrLenByteLength =
+	sum . ((\(Iovec _ l) -> fromIntegral l) <$>) . toIovecList
+
+peekByteStringPluralPtrLen ::
+	(PluralPtrLen ppl, HasCallStack) => ppl -> Int -> IO [BS.ByteString]
+peekByteStringPluralPtrLen ppl n =
+	(BS.packCStringLen `mapM`) . takeCStringLen n $ toIovecList ppl
+
+takeCStringLen :: HasCallStack => Int -> [Iovec] -> [CStringLen]
+takeCStringLen 0 _ = []
+takeCStringLen _ [] = errorWithFunName
+	"takeCStringLen n _" "n should be less than sum of length"
+takeCStringLen n _ | n < 0 = errorWithFunName
+	"takeCStringLen n _" ("n should be positive integer: " ++ show n)
+takeCStringLen n (Iovec pc l_ : iovs)
+	| n <= l = [(pc, n)]
+	| otherwise = (pc, l) : takeCStringLen (n - l) iovs
+	where l = fromIntegral l_
 
 data PtrLenList a = PtrLenListNil | (Ptr a, Int) :- PtrLenList a deriving Show
 
@@ -48,7 +68,7 @@ instance Storable a => PluralPtrLen (PtrLenList a) where
 	allocaPluralPtrLen = allocaPtrLenList
 	peekPluralPtrLen = sequence . mapPtrLenList (flip peekArray)
 	pokePluralPtrLen = zipWithM_ ($) . mapPtrLenList (const . pokeArray)
-	valueListLengths = (length <$>)
+	valueListLengthList = (length <$>)
 
 data PtrLenTuple :: [*] -> * where
 	PtrLenTupleNil :: PtrLenTuple '[]
@@ -60,7 +80,7 @@ instance PluralPtrLen (PtrLenTuple '[]) where
 	allocaPluralPtrLen _ = ($ PtrLenTupleNil)
 	peekPluralPtrLen _ = return ListTupleNil
 	pokePluralPtrLen _ _ = return ()
-	valueListLengths _ = []
+	valueListLengthList _ = []
 
 instance (Storable a, PluralPtrLen (PtrLenTuple as),
 			ValueLists (PtrLenTuple as) ~ ListTuple as) =>
@@ -79,23 +99,8 @@ instance (Storable a, PluralPtrLen (PtrLenTuple as),
 		(:.) <$> peekArray n p <*> peekPluralPtrLen pns
 	pokePluralPtrLen ((p, _n) :-- pns) (v :. vs) =
 		pokeArray p v >> pokePluralPtrLen pns vs
-	valueListLengths (vl :. vls) = length vl : valueListLengths vls
+	valueListLengthList (vl :. vls) = length vl : valueListLengthList vls
 
 data ListTuple :: [*] -> * where
 	ListTupleNil :: ListTuple '[]
 	(:.) :: [a] -> ListTuple as -> ListTuple (a : as)
-
-byteLengthPluralPtrLen :: PluralPtrLen ppl => ppl -> Int
-byteLengthPluralPtrLen = sum . ((\(Iovec _ l) -> fromIntegral l) <$>) . toIovecList
-
-peekByteStringPluralPtrLen :: PluralPtrLen ppl => ppl -> Int -> IO [BS.ByteString]
-peekByteStringPluralPtrLen ppl n =
-	mapM BS.packCStringLen . takeCCharPtrLenList n $ (\(Iovec p l) -> (p, fromIntegral l)) <$> toIovecList ppl
-
-takeCCharPtrLenList :: Int -> [(Ptr CChar, Int)] -> [(Ptr CChar, Int)]
-takeCCharPtrLenList _ [] = error "takeCCharPtrLenList: n should be less than sum of length"
-takeCCharPtrLenList n _ | n < 0 = error $ "takeCCharPtrLenList: n should be positive integer: " ++ show n
-takeCCharPtrLenList 0 _ = []
-takeCCharPtrLenList n ((pc, l) : pcls)
-	| n <= l = [(pc, n)]
-	| otherwise = (pc, l) : takeCCharPtrLenList (n - l) pcls

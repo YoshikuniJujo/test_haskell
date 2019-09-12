@@ -3,9 +3,10 @@
 module Iovec (
 	Iovec, withIovec,
 	PluralPtrLen, ValueLists,
-	allocaPluralPtrLen, peekPluralPtrLen, pokePluralPtrLen, valueListLengths,
-	PtrLenList(..), PtrLenTuple(..), ListTuple(..),
-	byteLengthPluralPtrLen, peekByteStringPluralPtrLen ) where
+	allocaPluralPtrLen,
+	peekPluralPtrLen, peekByteStringPluralPtrLen, pluralPtrLenByteLength,
+	pokePluralPtrLen, valueListLengthList,
+	PtrLenList(..), PtrLenTuple(..), ListTuple(..) ) where
 
 import Foreign.Ptr (Ptr, plusPtr)
 import Foreign.Storable (Storable(..), pokeByteOff)
@@ -17,7 +18,7 @@ import Data.List (genericLength)
 
 import Iovec.PluralPtrLen (
 	PluralPtrLen(..), PtrLenList(..), PtrLenTuple(..), ListTuple(..),
-	byteLengthPluralPtrLen, peekByteStringPluralPtrLen, Iovec(..) )
+	pluralPtrLenByteLength, peekByteStringPluralPtrLen, Iovec(..) )
 
 withIovec :: PluralPtrLen ppl => ppl -> (Ptr Iovec -> CInt -> IO a) -> IO a
 withIovec = c_withIovec . ((\(Iovec p l) -> (p, l)) <$>) . toIovecList
