@@ -37,8 +37,13 @@ foreign import ccall "readv"
 
 writeVector :: PluralPtrLen ppl => Handle -> ValueLists ppl -> IO ()
 writeVector h vls = handleToFd h >>= \fd ->
-	allocaPluralPtrLen (valueListLengths vls) $
-		(() <$) . (((>>) <$> (`pokePluralPtrLen` vls) <*> writev fd))
+	allocaPluralPtrLen (valueListLengths vls) $ \ppl -> do
+		pokePluralPtrLen ppl vls
+		let n0 = byteLengthPluralPtrLen ppl
+		n <- fromIntegral <$> writev fd ppl
+		when (n < n0) . error $ "can't write enough length:\n" ++
+			"should write: " ++ show n0 ++
+			"actual write: " ++ show n
 
 writev :: PluralPtrLen ppl => Fd -> ppl -> IO #type ssize_t
 writev fd pns = do
