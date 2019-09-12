@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeFamilies, TypeFamilyDependencies, GADTs #-}
 {-# LANGUAGE DataKinds, KindSignatures, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Iovec.PluralPtrLen (
@@ -76,6 +77,9 @@ data PtrLenTuple :: [*] -> * where
 	PtrLenTupleNil :: PtrLenTuple '[]
 	(:--) :: (Ptr a, Int) -> PtrLenTuple as -> PtrLenTuple (a : as)
 
+instance Show (PtrLenTuple '[]) where show PtrLenTupleNil = "PtrLenTupleNil"
+deriving instance (Show a, Show (PtrLenTuple as)) => Show (PtrLenTuple (a : as))
+
 instance PluralPtrLen (PtrLenTuple '[]) where
 	type ValueLists (PtrLenTuple '[]) = ListTuple '[]
 	toIovecList _ = []
@@ -106,3 +110,6 @@ instance (Storable a, PluralPtrLen (PtrLenTuple as),
 data ListTuple :: [*] -> * where
 	ListTupleNil :: ListTuple '[]
 	(:.) :: [a] -> ListTuple as -> ListTuple (a : as)
+
+instance Show (ListTuple '[]) where show ListTupleNil = "ListTupleNil"
+deriving instance (Show a, Show (ListTuple as)) => Show (ListTuple (a : as))

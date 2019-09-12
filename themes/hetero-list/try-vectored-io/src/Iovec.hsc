@@ -1,11 +1,15 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Iovec (
+	-- * Iovec
 	Iovec, withIovec,
-	PluralPtrLen, ValueLists,
-	allocaPluralPtrLen,
+
+	-- * PluralPtrLen
+	PluralPtrLen, ValueLists, allocaPluralPtrLen,
 	peekPluralPtrLen, peekByteStringPluralPtrLen, pluralPtrLenByteLength,
 	pokePluralPtrLen, valueListLengthList,
+
+	-- * Instances of PluralPtrLen
 	PtrLenList(..), PtrLenTuple(..), ListTuple(..) ) where
 
 import Foreign.Ptr (Ptr, plusPtr)
