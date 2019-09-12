@@ -8,6 +8,8 @@ import Foreign.C.Types
 import System.IO
 import Numeric
 
+import qualified Data.ByteString as BS
+
 import VectoredIo
 import Iovec
 
@@ -33,7 +35,10 @@ main2 = do
 		print (castCCharToChar <$> s2 :: String)
 
 main3 :: IO ()
-main3 = withFile "dummy.txt" ReadMode $ \h -> do
-	Right [i1 :: [Int], i2] <- readVector h [1, 1]
-	print $ (`showHex` "") <$> i1
-	print $ (`showHex` "") <$> i2
+main3 = do
+	withFile "dummy.txt" WriteMode $ \h ->
+		writeVector h [castCharToCChar <$> "12345678123456"]
+	withFile "dummy.txt" ReadMode $ \h -> do
+		(Left [s1, s2] :: Either [BS.ByteString] [[Int]]) <- readVector h [1, 1]
+		print s1
+		print s2
