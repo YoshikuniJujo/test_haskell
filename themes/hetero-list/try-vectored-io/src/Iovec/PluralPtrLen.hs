@@ -18,7 +18,7 @@ import Control.Monad (zipWithM_)
 import qualified Data.ByteString as BS
 
 import Iovec.Types (Iovec(..))
-import Tools (sizeOfPtr, errorWithFunName)
+import Tools (sizeOfPtr, errorWithExpression)
 
 infixr 5 :-, :--, :.
 
@@ -41,20 +41,22 @@ peekByteStringPluralPtrLen ppl n =
 
 takeCStringLen :: HasCallStack => Int -> [Iovec] -> [CStringLen]
 takeCStringLen 0 _ = []
-takeCStringLen _ [] = errorWithFunName
-	"takeCStringLen n _" "n should be less than sum of length"
-takeCStringLen n _ | n < 0 = errorWithFunName
-	"takeCStringLen n _" ("n should be positive integer: " ++ show n)
-takeCStringLen n (Iovec pc l_ : iovs)
-	| n <= l = [(pc, n)]
-	| otherwise = (pc, l) : takeCStringLen (n - l) iovs
-	where l = fromIntegral l_
+takeCStringLen _ [] = errorWithExpression
+	"peekByteStringPluralPtrLen ppl n"
+	"n should be less than byte length of ppl"
+takeCStringLen tn _ | tn < 0 = errorWithExpression
+	"peekByteStringPluralPtrLen ppl n"
+	("n should be positive integer: " ++ show tn)
+takeCStringLen tn (Iovec pc n_ : iovs)
+	| tn <= n = [(pc, tn)]
+	| otherwise = (pc, n) : takeCStringLen (tn - n) iovs
+	where n = fromIntegral n_
 
 data PtrLenList a = PtrLenListNil | (Ptr a, Int) :- PtrLenList a deriving Show
 
 mapPtrLenList :: (Ptr a -> Int -> b) -> PtrLenList a -> [b]
-mapPtrLenList _ PtrLenListNil = []
-mapPtrLenList f ((p, n) :- pns) = f p n : mapPtrLenList f pns
+_ `mapPtrLenList` PtrLenListNil = []
+f `mapPtrLenList` ((p, n) :- pns) = f p n : f `mapPtrLenList` pns
 
 allocaPtrLenList :: Storable a => [Int] -> (PtrLenList a -> IO b) -> IO b
 allocaPtrLenList [] act = act PtrLenListNil
@@ -89,10 +91,10 @@ instance (Storable a, PluralPtrLen (PtrLenTuple as),
 	toIovecList ((p, n) :-- pns) =
 		Iovec (castPtr p) (fromIntegral $ n * sizeOfPtr p) :
 		toIovecList pns
-	allocaPluralPtrLen [] _ = errorWithFunName
+	allocaPluralPtrLen [] _ = errorWithExpression
 		("instance PluralPtrLen (PtrLenTuple (a : as)): " ++ 
-			"allocaPluralPtrLen")
-		"need more element lengths"
+			"allocaPluralPtrLen ls act")
+		"insufficient list `ls' element: need more lengths"
 	allocaPluralPtrLen (n : ns) act =
 		allocaArray n $ \p -> allocaPluralPtrLen ns $ act . ((p, n) :--)
 	peekPluralPtrLen ((p, n) :-- pns) =
