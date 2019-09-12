@@ -6,7 +6,7 @@
 
 module PluralPtrLen (
 	PluralPtrLen(..), PtrLenList(..), PtrLenTuple(..), ListTuple(..),
-	byteLengthPluralPtrLen, peekByteStringPluralPtrLen ) where
+	byteLengthPluralPtrLen, peekByteStringPluralPtrLen, Iovec(..) ) where
 
 import Foreign.Ptr (Ptr, castPtr)
 import Foreign.Storable (Storable, sizeOf)
@@ -15,6 +15,8 @@ import Foreign.C.Types (CChar)
 import Control.Monad (zipWithM_)
 
 import qualified Data.ByteString as BS
+
+import IovecType
 
 infixr 5 :-, :--, :.
 
@@ -39,7 +41,7 @@ data ListTuple :: [*] -> * where
 
 class PluralPtrLen ppl where
 	type ValueLists ppl = vls | vls -> ppl
-	toCCharPtrLenList :: ppl -> [(Ptr CChar, Int)]
+	toCCharPtrLenList :: ppl -> [Iovec]
 	allocaPluralPtrLen :: [Int] -> (ppl -> IO a) -> IO a
 	peekPluralPtrLen :: ppl -> IO (ValueLists ppl)
 	pokePluralPtrLen :: ppl -> ValueLists ppl -> IO ()
@@ -47,7 +49,7 @@ class PluralPtrLen ppl where
 
 instance Storable a => PluralPtrLen (PtrLenList a) where
 	type ValueLists (PtrLenList a) = [[a]]
-	toCCharPtrLenList = mapPtrLenList $ \p n -> (castPtr p, n * sizeOfPtr p)
+	toCCharPtrLenList = mapPtrLenList $ \p n -> Iovec (castPtr p) (fromIntegral $ n * sizeOfPtr p)
 	allocaPluralPtrLen = allocaPtrLenList
 	peekPluralPtrLen = sequence . mapPtrLenList (flip peekArray)
 	pokePluralPtrLen = zipWithM_ ($) . mapPtrLenList (const . pokeArray)
@@ -66,7 +68,7 @@ instance (Storable a, PluralPtrLen (PtrLenTuple as),
 		PluralPtrLen (PtrLenTuple (a : as)) where
 	type ValueLists (PtrLenTuple (a : as)) = ListTuple (a : as)
 	toCCharPtrLenList ((p, n) :-- pns) =
-		(castPtr p, n * sizeOfPtr p) : toCCharPtrLenList pns
+		Iovec (castPtr p) (fromIntegral $ n * sizeOfPtr p) : toCCharPtrLenList pns
 	allocaPluralPtrLen [] _ = error errMsgNotEnoughLength
 	allocaPluralPtrLen (n : ns) act =
 		allocaArray n $ \p -> allocaPluralPtrLen ns $ act . ((p, n) :--)
@@ -85,16 +87,16 @@ errMsgNotEnoughLength = "module PluralPtrLen: " ++
 	"PluralPtrLen.allocaPluralPtrLen: need more lengths"
 
 byteLengthPluralPtrLen :: PluralPtrLen ppl => ppl -> Int
-byteLengthPluralPtrLen = sum . (snd <$>) . toCCharPtrLenList
+byteLengthPluralPtrLen = sum . ((\(Iovec _ l) -> fromIntegral l) <$>) . toCCharPtrLenList
 
 peekByteStringPluralPtrLen :: PluralPtrLen ppl => ppl -> Int -> IO [BS.ByteString]
 peekByteStringPluralPtrLen ppl n = do
 --	print ppl
-	print n
-	print $ toCCharPtrLenList ppl
-	print . takeCCharPtrLenList n $ toCCharPtrLenList ppl
-	print =<< mapM BS.packCStringLen (toCCharPtrLenList ppl)
-	mapM BS.packCStringLen . takeCCharPtrLenList n $ toCCharPtrLenList ppl
+--	print n
+--	print $ toCCharPtrLenList ppl
+--	print . takeCCharPtrLenList n $ toCCharPtrLenList ppl
+--	print =<< (mapM BS.packCStringLen $ (\(Iovec p l) -> (p, fromIntegral l)) <$> toCCharPtrLenList ppl)
+	mapM BS.packCStringLen . takeCCharPtrLenList n $ (\(Iovec p l) -> (p, fromIntegral l)) <$> toCCharPtrLenList ppl
 
 takeCCharPtrLenList :: Int -> [(Ptr CChar, Int)] -> [(Ptr CChar, Int)]
 takeCCharPtrLenList _ [] = error "takeCCharPtrLenList: n should be less than sum of length"
