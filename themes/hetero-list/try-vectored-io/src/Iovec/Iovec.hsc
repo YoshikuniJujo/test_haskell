@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Iovec.Types (Iovec(..)) where
+module Iovec.Iovec (Iovec(..)) where
 
 import Foreign.Ptr (Ptr)
 import Foreign.Storable (Storable(..), pokeByteOff)

@@ -17,7 +17,7 @@ import Control.Monad (zipWithM_)
 
 import qualified Data.ByteString as BS
 
-import Iovec.Types (Iovec(..))
+import Iovec.Iovec (Iovec(..))
 import Tools (sizeOfPtr, errorWithExpression)
 
 infixr 5 :-, :--, :.
