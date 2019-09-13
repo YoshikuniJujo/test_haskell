@@ -3,9 +3,9 @@
 
 module VectoredIo (readVector, writeVector, readv, writev) where
 
-import GHC.Stack
 import Foreign.Ptr (Ptr)
 import Foreign.C.Types (CInt(..))
+import GHC.Stack (HasCallStack, callStack, prettyCallStack)
 import Control.Monad (when)
 import Data.Int (Int64)
 import System.IO (Handle)
@@ -15,18 +15,22 @@ import qualified Data.ByteString as BS
 
 import Iovec (
 	Iovec, withIovec, PluralPtrLen(..),
-	pluralPtrLenByteLength, peekByteStringPluralPtrLen)
+	pluralPtrLenByteLength, peekByteStringPluralPtrLen )
 
 #include <sys/uio.h>
 
-readVector :: (HasCallStack, PluralPtrLen ppl) => Handle -> [Int] -> IO (Either [BS.ByteString] (ValueLists ppl))
-readVector h ns = handleToFd h >>= \fd ->
-	allocaPluralPtrLen ns $ \ppl -> do
-		let n0 = pluralPtrLenByteLength ppl
-		n <- fromIntegral <$> readv fd ppl
-		if n < n0
-		then Left <$> peekByteStringPluralPtrLen ppl n
-		else Right <$> peekPluralPtrLen ppl
+readVector :: (HasCallStack, PluralPtrLen ppl) =>
+	Handle -> [Int] -> IO (Either [BS.ByteString] (ValueLists ppl))
+readVector h ns = handleToFd h >>= \fd -> allocaPluralPtrLen ns $ \ppl -> do
+	let	n0 = pluralPtrLenByteLength ppl
+	n <- fromIntegral <$> readv fd ppl
+	case n `compare` n0 of
+		LT -> Left <$> peekByteStringPluralPtrLen ppl n
+		EQ -> Right <$> peekPluralPtrLen ppl
+		GT -> error $
+			"readVector: read more bytes than expected\n" ++
+			"expected: " ++ show n0 ++ "bytes\n" ++
+			"actual  : " ++ show n ++ "bytes"
 
 readv :: (HasCallStack, PluralPtrLen ppl) => Fd -> ppl -> IO #type ssize_t
 readv fd pns = do
@@ -40,11 +44,12 @@ writeVector :: (HasCallStack, PluralPtrLen ppl) => Handle -> ValueLists ppl -> I
 writeVector h vls = handleToFd h >>= \fd ->
 	allocaPluralPtrLen (valueListLengthList vls) $ \ppl -> do
 		pokePluralPtrLen ppl vls
-		let n0 = pluralPtrLenByteLength ppl
+		let	n0 = pluralPtrLenByteLength ppl
 		n <- fromIntegral <$> writev fd ppl
-		when (n < n0) . error $ "can't write enough length:\n" ++
-			"should write: " ++ show n0 ++
-			"actual write: " ++ show n
+		when (n < n0) . error $
+			"writeVector: can't write enough length:\n" ++
+			"expected: " ++ show n0 ++ "\n" ++
+			"actual  : " ++ show n
 
 writev :: (HasCallStack, PluralPtrLen ppl) => Fd -> ppl -> IO #type ssize_t
 writev fd pns = do
