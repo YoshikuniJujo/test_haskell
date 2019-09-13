@@ -17,16 +17,16 @@ import Foreign.Storable (Storable(..), pokeByteOff)
 import Foreign.Marshal (allocaBytes)
 import Foreign.C.Types (CSize, CChar, CInt)
 import Control.Arrow ((***))
-import Control.Monad (forM_)
 import Data.List (genericLength)
 
 import Iovec.PluralPtrLen (
 	Iovec(..), PluralPtrLen(..),
 	peekByteStringPluralPtrLen, pluralPtrLenByteLength,
 	PtrLenList(..), PtrLenTuple(..), ListTuple(..) )
+import Tools (for2M_)
 
 withIovec :: PluralPtrLen ppl => ppl -> (Ptr Iovec -> CInt -> IO a) -> IO a
-withIovec = c_withIovec . ((\(Iovec p l) -> (p, l)) <$>) . toIovecList
+withIovec = c_withIovec . ((\(Iovec p n) -> (p, n)) <$>) . toIovecList
 
 #include <sys/uio.h>
 
@@ -36,11 +36,6 @@ c_withIovec pns act = allocaBytes (ln * #{size struct iovec}) $ \piov ->
 	where ln :: Num n => n; ln = genericLength pns
 
 c_prepareIovec :: Ptr Iovec -> [(Ptr CChar, CSize)] -> IO ()
-c_prepareIovec piov0 pns =
-	for2M_ ((`plusPtr` #{size struct iovec}) `iterate` piov0) pns $ \piov ->
-		uncurry (>>)
-			. (#{poke struct iovec, iov_base} piov ***
-				#{poke struct iovec, iov_len} piov)
-
-for2M_ :: Monad m => [a] -> [b] -> (a -> b -> m c) -> m ()
-for2M_ xs ys act = forM_ (xs `zip` ys) $ uncurry act
+c_prepareIovec piov0 pns = for2M_ is pns $ \i -> uncurry (>>)
+	. (#{poke struct iovec, iov_base} i *** #{poke struct iovec, iov_len} i)
+	where is = (`plusPtr` #{size struct iovec}) `iterate` piov0
