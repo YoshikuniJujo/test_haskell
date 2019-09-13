@@ -3,12 +3,13 @@
 
 module Main where
 
-import Foreign.Storable (peek, poke)
-import Foreign.Marshal (alloca, allocaArray)
+import Foreign.Marshal (allocaArray, peekArray, pokeArray)
 import Foreign.C.Types (CChar)
 import Foreign.C.String (
 	peekCStringLen, withCStringLen, castCCharToChar, castCharToCChar )
 import Control.Exception (bracket)
+import System.Directory (createDirectoryIfMissing)
+import System.FilePath ((</>))
 import System.Posix.IO (
 	openFd, createFile, OpenMode(..), defaultFileFlags, closeFd )
 import System.Posix.Files (
@@ -20,8 +21,41 @@ import Numeric (showHex)
 import Iovec (PtrLenList(..), PtrLenTuple(..))
 import VectoredIo (readv, writev)
 
+tmpDir, tryTupleFile, tryListFile :: FilePath
+tmpDir = "tmp"
+tryTupleFile = tmpDir </> "tryTuple.txt"
+tryListFile = tmpDir </> "tryList.txt"
+
 main :: IO ()
-main = main1 >> main2 >> main3 >> main4
+main = do
+	createDirectoryIfMissing False tmpDir
+	tryTuple >> tryList
+
+tryTuple :: IO ()
+tryTuple = do
+	withCreateFile tryTupleFile fm644 $ \fd ->
+			allocaArray 2 $ \pint -> allocaArray 2 $ \pc -> do
+		pokeArray @Int pint [0x3132333435363738, 0x3938373635343332]
+		pokeArray pc $ castCharToCChar <$> "w\n"
+		print =<< writev fd ((pint, 2) :-- (pc, 2) :-- PtrLenTupleNil)
+	withOpenReadModeFd tryTupleFile $ \fd ->
+			allocaArray 2 $ \pint -> allocaArray 2 $ \pc -> do
+		print =<< readv fd ((pint, 2) :-- (pc, 2) :-- PtrLenTupleNil)
+		mapM_ putStrLn . (("0x" ++) . (`showHex` "") <$>)
+			=<< peekArray @Int 2 pint
+		print . (castCCharToChar <$>) =<< peekArray 2 pc
+
+tryList :: IO ()
+tryList = do
+	withCreateFile tryListFile fm644 $ \fd ->
+		withCStringLen "hello\n" $ \s1 ->
+			withCStringLen "world\n" $ \s2 ->
+				print =<< writev fd (s1 :- s2 :- PtrLenListNil)
+	withOpenReadModeFd tryListFile $ \fd ->
+		allocaArray @CChar 6 $ \s1 -> allocaArray 6 $ \s2 -> do
+			print =<< readv fd ((s1, 6) :- (s2, 6) :- PtrLenListNil)
+			print =<< peekCStringLen (s1, 6)
+			print =<< peekCStringLen (s2, 6)
 
 withCreateFile :: FilePath -> FileMode -> (Fd -> IO a) -> IO a
 withCreateFile fp fm = bracket (createFile fp fm) closeFd
@@ -29,34 +63,6 @@ withCreateFile fp fm = bracket (createFile fp fm) closeFd
 withOpenReadModeFd :: FilePath -> (Fd -> IO a) -> IO a
 withOpenReadModeFd fp =
 	bracket (openFd fp ReadOnly Nothing defaultFileFlags) closeFd
-
-main1 :: IO ()
-main1 = withCreateFile "tmp_.txt" fm644 $ \fd -> alloca @Int $ \pint ->
-		alloca @CChar $ \pc -> alloca @CChar $ \pc2 -> do
-	poke pint 0x3132333435363738
-	poke pc $ castCharToCChar 'w'
-	poke pc2 $ castCharToCChar '\n'
-	print =<< writev fd
-		((pint, 1) :-- (pc, 1) :-- (pc2, 1) :-- PtrLenTupleNil)
-
-main2 :: IO ()
-main2 = withOpenReadModeFd "tmp_.txt" $ \fd -> alloca @Int $ \pint ->
-		alloca @CChar $ \pc -> alloca @CChar $ \pc2 -> do
-	print =<< readv fd
-		((pint, 1) :-- (pc, 1) :-- (pc2, 1) :-- PtrLenTupleNil)
-	putStrLn . ("0x" ++) . (`showHex` "") =<< peek pint
-	print . castCCharToChar =<< peek pc
-	print . castCCharToChar =<< peek pc2
-
-main3 :: IO ()
-main3 = withCreateFile "tmp2_.txt" fm644 $ \fd ->
-	withCStringLen "hello\n" $ \cs ->
-		print =<< writev fd (cs :- PtrLenListNil)
-
-main4 :: IO ()
-main4 = withOpenReadModeFd "tmp2_.txt" $ \fd -> allocaArray @CChar 6 $ \cs -> do
-	print =<< readv fd ((cs, 6) :- PtrLenListNil)
-	print =<< peekCStringLen (cs, 6)
 
 fm644 :: FileMode
 fm644 = foldr1 unionFileModes
