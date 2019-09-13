@@ -10,16 +10,18 @@ module Iovec.PluralPtrLen (
 	PtrLenList(..), PtrLenTuple(..), ListTuple(..) ) where
 
 import GHC.Stack (HasCallStack)
-import Foreign.Ptr (Ptr, castPtr)
+import Foreign.Ptr (Ptr, castPtr, plusPtr)
 import Foreign.Storable (Storable)
-import Foreign.Marshal (allocaArray, peekArray, pokeArray)
+import Foreign.Marshal (allocaArray, peekArray, pokeArray, copyBytes, fillBytes)
+import Foreign.C.Types (CChar)
 import Foreign.C.String (CStringLen)
-import Control.Monad (zipWithM_)
+import Control.Arrow (second)
+import Control.Monad (when, zipWithM_)
 
 import qualified Data.ByteString as BS
 
 import Iovec.Iovec (Iovec(..))
-import Tools (sizeOfPtr, errorWithExpression)
+import Tools (for2M_, sizeOfPtr, errorWithExpression)
 
 infixr 5 :-, :--, :.
 
@@ -113,3 +115,21 @@ data ListTuple :: [*] -> * where
 
 instance Show (ListTuple '[]) where show ListTupleNil = "ListTupleNil"
 deriving instance (Show a, Show (ListTuple as)) => Show (ListTuple (a : as))
+
+newtype BytePtrLenList = BytePtrLenList [(Ptr CChar, Int)] deriving Show
+
+allocaList :: Storable a => [Int] -> ([(Ptr a, Int)] -> IO b) -> IO b
+allocaList [] act = act []
+allocaList (n : ns) act = allocaArray n $ \p -> allocaList ns $ act . ((p, n) :)
+
+instance PluralPtrLen BytePtrLenList where
+	type ValueLists BytePtrLenList = [BS.ByteString]
+	toIovecList (BytePtrLenList bll) =
+		uncurry Iovec . second fromIntegral <$> bll
+	allocaPluralPtrLen ns act = allocaList ns $ act . BytePtrLenList
+	peekPluralPtrLen (BytePtrLenList bll) = BS.packCStringLen `mapM` bll
+	pokePluralPtrLen (BytePtrLenList bll) bss = for2M_ bll bss $ \(dpc, dn) bs ->
+		BS.useAsCStringLen bs $ \(spc, sn) -> do
+			copyBytes dpc spc $ min dn sn
+			when (dn > sn) $ fillBytes (dpc `plusPtr` sn) 0 (dn - sn)
+	valueListLengthList = (BS.length <$>)
