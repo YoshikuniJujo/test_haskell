@@ -25,27 +25,29 @@ main = tryTuple >> tryList >> tryInadequateRead
 
 tryTuple :: IO ()
 tryTuple = do
-	withFile tryHlTupleFile WriteMode $ \h ->
-		writeVector h ([0x3132333435363738 :: Int] :. (castCharToCChar <$> "w\n") :. ListTupleNil)
+	withFile tryHlTupleFile WriteMode $ flip writeVector (
+		[0x3132333435363738 :: Int] :.
+		(castCharToCChar <$> "Hello, world!\n") :. ListTupleNil )
 	withFile tryHlTupleFile ReadMode $ \h -> do
-		Right (n :. str :. ListTupleNil :: ListTuple [Int, CChar]) <- readVector h [1, 2]
-		mapM_ (putStrLn . ("0x" ++)) $ (`showHex` "") <$> n
-		print $ castCCharToChar <$> str
+		Right (n :. str :. ListTupleNil :: ListTuple [Int, CChar]) <-
+			readVector h [1, 14]
+		(putStrLn . ("0x" ++) . (`showHex` "")) `mapM_` n
+		putStr $ castCCharToChar <$> str
 
 tryList :: IO ()
 tryList = do
-	withFile tryHlListFile WriteMode $ \h ->
-		writeVector h [castCharToCChar <$> "Hello, ", castCharToCChar <$> "world!\n"]
+	withFile tryHlListFile WriteMode $ flip writeVector [
+		castCharToCChar <$> "Hello, ", castCharToCChar <$> "world!\n" ]
 	withFile tryHlListFile ReadMode $ \h -> do
-		Right [s1, s2] <- readVector h [7, 7]
-		print (castCCharToChar <$> s1 :: String)
-		print (castCCharToChar <$> s2 :: String)
+		Right [s1 :: [CChar], s2] <- readVector h [7, 7]
+		print $ castCCharToChar <$> s1
+		print $ castCCharToChar <$> s2
 
 tryInadequateRead :: IO ()
 tryInadequateRead = do
 	withFile tryInadequateReadFile WriteMode $ \h ->
 		writeVector h [castCharToCChar <$> "12345678123456"]
 	withFile tryInadequateReadFile ReadMode $ \h -> do
-		(Left [s1, s2] :: Either [BS.ByteString] [[Int]]) <- readVector h [1, 1]
-		print s1
-		print s2
+		(Left [s1, s2] :: Either [BS.ByteString] [[Int]]) <-
+			readVector h [1, 1]
+		print s1; print s2
