@@ -25,6 +25,8 @@ import Tools (for2M_, sizeOfPtr, errorWithExpression)
 
 infixr 5 :-, :--, :.
 
+type Array a = (Ptr a, Int)
+
 class PluralArray ppl where
 	type ValueLists ppl = vls | vls -> ppl
 	toIovecList :: ppl -> [Iovec]
@@ -55,7 +57,7 @@ takeCStringLen tn (Iovec pc n_ : iovs)
 	| otherwise = (pc, n) : takeCStringLen (tn - n) iovs
 	where n = fromIntegral n_
 
-data ArrayList a = ArrayListNil | (Ptr a, Int) :- ArrayList a deriving Show
+data ArrayList a = ArrayListNil | Array a :- ArrayList a deriving Show
 
 mapArrayList :: (Ptr a -> Int -> b) -> ArrayList a -> [b]
 _ `mapArrayList` ArrayListNil = []
@@ -67,7 +69,7 @@ arrayListToList ArrayListNil = []
 arrayListToList (pn :- pns) = pn : arrayListToList pns
 -}
 
-listToArrayList :: [(Ptr a, Int)] -> ArrayList a
+listToArrayList :: [Array a] -> ArrayList a
 listToArrayList [] = ArrayListNil
 listToArrayList (pn : pns) = pn :- listToArrayList pns
 
@@ -82,7 +84,7 @@ instance Storable a => PluralArray (ArrayList a) where
 
 data ArrayTuple :: [*] -> * where
 	ArrayTupleNil :: ArrayTuple '[]
-	(:--) :: (Ptr a, Int) -> ArrayTuple as -> ArrayTuple (a : as)
+	(:--) :: Array a -> ArrayTuple as -> ArrayTuple (a : as)
 
 instance Show (ArrayTuple '[]) where show ArrayTupleNil = "ArrayTupleNil"
 deriving instance (Show a, Show (ArrayTuple as)) => Show (ArrayTuple (a : as))
@@ -122,9 +124,9 @@ instance Show (ListTuple '[]) where show ListTupleNil = "ListTupleNil"
 deriving instance (Show a, Show (ListTuple as)) => Show (ListTuple (a : as))
 
 newtype ByteArrayList =
-	ByteArrayList { getByteArrayList :: [(Ptr CChar, Int)] } deriving Show
+	ByteArrayList { getByteArrayList :: [Array CChar] } deriving Show
 
-allocaArrayList :: Storable a => [Int] -> ([(Ptr a, Int)] -> IO b) -> IO b
+allocaArrayList :: Storable a => [Int] -> ([Array a] -> IO b) -> IO b
 allocaArrayList [] act = act []
 allocaArrayList (n : ns) act =
 	allocaArray n $ \p -> allocaArrayList ns $ act . ((p, n) :)
