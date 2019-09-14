@@ -7,7 +7,7 @@
 module Iovec.PluralArray (
 	Iovec(..),
 	PluralArray(..), peekByteStringPluralArray, pluralArrayByteLength,
-	ArrayList(..), ArrayTuple(..), ListTuple(..) ) where
+	ArrayList(..), ArrayTuple(..), ListTuple(..), ByteArrayList(..) ) where
 
 import GHC.Stack (HasCallStack)
 import Foreign.Ptr (Ptr, castPtr, plusPtr)
