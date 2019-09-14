@@ -41,7 +41,8 @@ tryTuple = do
 tryList :: IO ()
 tryList = do
 	withFile tryHlListFile WriteMode $ flip writeVector [
-		castCharToCChar <$> ("Hello, " :: String), castCharToCChar <$> "world!\n" ]
+		castCharToCChar <$> "Hello, " :: [CChar],
+		castCharToCChar <$> "world!\n" ]
 	withFile tryHlListFile ReadMode $ \h -> do
 		Right [s1 :: [CChar], s2] <- readVector h [7, 7]
 		print $ castCCharToChar <$> s1
@@ -58,7 +59,7 @@ tryByte = do
 tryInadequateRead :: IO ()
 tryInadequateRead = do
 	withFile tryInadequateReadFile WriteMode $ \h ->
-		writeVector h [castCharToCChar <$> ("12345678123456" :: String)]
+		writeVector h [castCharToCChar <$> "12345678123456" :: [CChar]]
 	withFile tryInadequateReadFile ReadMode $ \h -> do
 		(Left [s1, s2] :: Either [BS.ByteString] [[Int]]) <-
 			readVector h [1, 1]

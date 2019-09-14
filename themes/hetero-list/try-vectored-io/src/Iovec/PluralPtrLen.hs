@@ -116,18 +116,20 @@ data ListTuple :: [*] -> * where
 instance Show (ListTuple '[]) where show ListTupleNil = "ListTupleNil"
 deriving instance (Show a, Show (ListTuple as)) => Show (ListTuple (a : as))
 
-newtype BytePtrLenList = BytePtrLenList [(Ptr CChar, Int)] deriving Show
+newtype BytePtrLenList =
+	BytePtrLenList { getBytePtrLenList :: [(Ptr CChar, Int)] } deriving Show
 
-allocaList :: Storable a => [Int] -> ([(Ptr a, Int)] -> IO b) -> IO b
-allocaList [] act = act []
-allocaList (n : ns) act = allocaArray n $ \p -> allocaList ns $ act . ((p, n) :)
+allocaArrayList :: Storable a => [Int] -> ([(Ptr a, Int)] -> IO b) -> IO b
+allocaArrayList [] act = act []
+allocaArrayList (n : ns) act =
+	allocaArray n $ \p -> allocaArrayList ns $ act . ((p, n) :)
 
 instance PluralPtrLen BytePtrLenList where
 	type ValueLists BytePtrLenList = [BS.ByteString]
-	toIovecList (BytePtrLenList bll) =
-		uncurry Iovec . second fromIntegral <$> bll
-	allocaPluralPtrLen ns act = allocaList ns $ act . BytePtrLenList
-	peekPluralPtrLen (BytePtrLenList bll) = BS.packCStringLen `mapM` bll
+	toIovecList =
+		(uncurry Iovec . second fromIntegral <$>) . getBytePtrLenList
+	allocaPluralPtrLen ns act = allocaArrayList ns $ act . BytePtrLenList
+	peekPluralPtrLen = (BS.packCStringLen `mapM`) . getBytePtrLenList
 	pokePluralPtrLen (BytePtrLenList bll) bss = for2M_ bll bss $ \(dpc, dn) bs ->
 		BS.useAsCStringLen bs $ \(spc, sn) -> do
 			copyBytes dpc spc $ min dn sn
