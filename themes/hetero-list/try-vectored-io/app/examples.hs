@@ -1,4 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables, GADTs, DataKinds #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -7,11 +8,13 @@ import Foreign.C.Types
 import Foreign.C.String
 import System.IO
 
+import qualified Data.ByteString as BS
+
 import VectoredIo
 import Iovec
 
 main :: IO ()
-main = main1 >> main2 >> main3
+main = main1 >> main2 >> main3 >> main4
 
 str1, str2 :: [CChar]
 str1 = castCharToCChar <$> "Hello, "
@@ -44,3 +47,12 @@ main3 = do
 			readVector h [7, 2]
 		print $ castCCharToChar <$> s1
 		print ns1
+
+main4 :: IO ()
+main4 = do
+	withFile "foo.txt" WriteMode $ \h ->
+		writeVector h ["Good night, ", "World!\n" :: BS.ByteString]
+	withFile "foo.txt" ReadMode $ \h -> do
+		Right [s1, s2] <- readVector h [12, 7]
+		print (s1 :: BS.ByteString)
+		print s2
