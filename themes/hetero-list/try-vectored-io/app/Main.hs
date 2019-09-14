@@ -18,7 +18,7 @@ import System.Posix.Files (
 import System.Posix.Types (Fd, FileMode)
 import Numeric (showHex)
 
-import Iovec (PtrLenList(..), PtrLenTuple(..))
+import Iovec (ArrayList(..), ArrayTuple(..))
 import VectoredIo (readv, writev)
 
 tmpDir, tryTupleFile, tryListFile :: FilePath
@@ -37,10 +37,10 @@ tryTuple = do
 			allocaArray 2 $ \pint -> allocaArray 2 $ \pc -> do
 		pokeArray @Int pint [0x3132333435363738, 0x3938373635343332]
 		pokeArray pc $ castCharToCChar <$> "w\n"
-		print =<< writev fd ((pint, 2) :-- (pc, 2) :-- PtrLenTupleNil)
+		print =<< writev fd ((pint, 2) :-- (pc, 2) :-- ArrayTupleNil)
 	withOpenReadModeFd tryTupleFile $ \fd ->
 			allocaArray 2 $ \pint -> allocaArray 2 $ \pc -> do
-		print =<< readv fd ((pint, 2) :-- (pc, 2) :-- PtrLenTupleNil)
+		print =<< readv fd ((pint, 2) :-- (pc, 2) :-- ArrayTupleNil)
 		mapM_ putStrLn . (("0x" ++) . (`showHex` "") <$>)
 			=<< peekArray @Int 2 pint
 		print . (castCCharToChar <$>) =<< peekArray 2 pc
@@ -50,10 +50,10 @@ tryList = do
 	withCreateFile tryListFile fm644 $ \fd ->
 		withCStringLen "hello\n" $ \s1 ->
 			withCStringLen "world\n" $ \s2 ->
-				print =<< writev fd (s1 :- s2 :- PtrLenListNil)
+				print =<< writev fd (s1 :- s2 :- ArrayListNil)
 	withOpenReadModeFd tryListFile $ \fd ->
 		allocaArray @CChar 6 $ \s1 -> allocaArray 6 $ \s2 -> do
-			print =<< readv fd ((s1, 6) :- (s2, 6) :- PtrLenListNil)
+			print =<< readv fd ((s1, 6) :- (s2, 6) :- ArrayListNil)
 			print =<< peekCStringLen (s1, 6)
 			print =<< peekCStringLen (s2, 6)
 

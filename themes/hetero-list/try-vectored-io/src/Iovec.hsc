@@ -4,13 +4,13 @@ module Iovec (
 	-- * Iovec
 	Iovec, withIovec,
 
-	-- * PluralPtrLen
-	PluralPtrLen, ValueLists, allocaPluralPtrLen,
-	peekPluralPtrLen, peekByteStringPluralPtrLen, pluralPtrLenByteLength,
-	pokePluralPtrLen, valueListLengthList,
+	-- * PluralArray
+	PluralArray, ValueLists, allocaPluralArray,
+	peekPluralArray, peekByteStringPluralArray, pluralArrayByteLength,
+	pokePluralArray, valueListLengthList,
 
-	-- * Instances of PluralPtrLen
-	PtrLenList(..), PtrLenTuple(..), ListTuple(..) ) where
+	-- * Instances of PluralArray
+	ArrayList(..), ArrayTuple(..), ListTuple(..) ) where
 
 import Foreign.Ptr (Ptr, plusPtr)
 import Foreign.Storable (Storable(..), pokeByteOff)
@@ -19,13 +19,13 @@ import Foreign.C.Types (CSize, CChar, CInt)
 import Control.Arrow ((***))
 import Data.List (genericLength)
 
-import Iovec.PluralPtrLen (
-	Iovec(..), PluralPtrLen(..),
-	peekByteStringPluralPtrLen, pluralPtrLenByteLength,
-	PtrLenList(..), PtrLenTuple(..), ListTuple(..) )
+import Iovec.PluralArray (
+	Iovec(..), PluralArray(..),
+	peekByteStringPluralArray, pluralArrayByteLength,
+	ArrayList(..), ArrayTuple(..), ListTuple(..) )
 import Tools (for2M_)
 
-withIovec :: PluralPtrLen ppl => ppl -> (Ptr Iovec -> CInt -> IO a) -> IO a
+withIovec :: PluralArray ppl => ppl -> (Ptr Iovec -> CInt -> IO a) -> IO a
 withIovec = c_withIovec . ((\(Iovec p n) -> (p, n)) <$>) . toIovecList
 
 #include <sys/uio.h>

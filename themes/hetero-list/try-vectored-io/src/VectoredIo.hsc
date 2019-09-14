@@ -14,25 +14,25 @@ import System.Posix (Fd(..), handleToFd)
 import qualified Data.ByteString as BS
 
 import Iovec (
-	Iovec, withIovec, PluralPtrLen(..),
-	pluralPtrLenByteLength, peekByteStringPluralPtrLen )
+	Iovec, withIovec, PluralArray(..),
+	pluralArrayByteLength, peekByteStringPluralArray )
 
 #include <sys/uio.h>
 
-readVector :: (HasCallStack, PluralPtrLen ppl) =>
+readVector :: (HasCallStack, PluralArray ppl) =>
 	Handle -> [Int] -> IO (Either [BS.ByteString] (ValueLists ppl))
-readVector h ns = handleToFd h >>= \fd -> allocaPluralPtrLen ns $ \ppl -> do
-	let	n0 = pluralPtrLenByteLength ppl
+readVector h ns = handleToFd h >>= \fd -> allocaPluralArray ns $ \ppl -> do
+	let	n0 = pluralArrayByteLength ppl
 	n <- fromIntegral <$> readv fd ppl
 	case n `compare` n0 of
-		LT -> Left <$> peekByteStringPluralPtrLen ppl n
-		EQ -> Right <$> peekPluralPtrLen ppl
+		LT -> Left <$> peekByteStringPluralArray ppl n
+		EQ -> Right <$> peekPluralArray ppl
 		GT -> error $
 			"readVector: read more bytes than expected\n" ++
 			"expected: " ++ show n0 ++ "bytes\n" ++
 			"actual  : " ++ show n ++ "bytes"
 
-readv :: (HasCallStack, PluralPtrLen ppl) => Fd -> ppl -> IO #type ssize_t
+readv :: (HasCallStack, PluralArray ppl) => Fd -> ppl -> IO #type ssize_t
 readv fd pns = do
 	n <- withIovec pns $ c_readv fd
 	(n <$) . when (n < 0) $ errno "c_readv" n
@@ -40,18 +40,18 @@ readv fd pns = do
 foreign import ccall "readv"
 	c_readv :: Fd -> Ptr Iovec -> CInt -> IO #type ssize_t
 
-writeVector :: (HasCallStack, PluralPtrLen ppl) => Handle -> ValueLists ppl -> IO ()
+writeVector :: (HasCallStack, PluralArray ppl) => Handle -> ValueLists ppl -> IO ()
 writeVector h vls = handleToFd h >>= \fd ->
-	allocaPluralPtrLen (valueListLengthList vls) $ \ppl -> do
-		pokePluralPtrLen ppl vls
-		let	n0 = pluralPtrLenByteLength ppl
+	allocaPluralArray (valueListLengthList vls) $ \ppl -> do
+		pokePluralArray ppl vls
+		let	n0 = pluralArrayByteLength ppl
 		n <- fromIntegral <$> writev fd ppl
 		when (n < n0) . error $
 			"writeVector: can't write enough length:\n" ++
 			"expected: " ++ show n0 ++ "\n" ++
 			"actual  : " ++ show n
 
-writev :: (HasCallStack, PluralPtrLen ppl) => Fd -> ppl -> IO #type ssize_t
+writev :: (HasCallStack, PluralArray ppl) => Fd -> ppl -> IO #type ssize_t
 writev fd pns = do
 	n <- withIovec pns $ c_writev fd
 	(n <$) . when (n < 0) $ errno "c_write" n
