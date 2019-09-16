@@ -1,4 +1,4 @@
 メモ
 ====
 
-つぎは、「[存在型(ExistenstialQuantification拡張)の解説](http://qiita.com/YoshikuniJujo/items/e95e4d396f825487ec4b)」
+つぎは、「[型シノニム族(TypeFamilies拡張)の解説](https://qiita.com/YoshikuniJujo/items/17853e423c39409d8dfe)」
