@@ -32,3 +32,11 @@ instance Packable Bool where
 			$ fromList bs
 	toList (l, n) | l <= 0 || n < 0 = []
 	toList (l, n) = n `testBit` 0 : toList (l - 1, n `shiftR` 1)
+
+instance Packable Word8 where
+	fromList = BS.pack
+	toList = BS.unpack
+
+instance Packable Double where
+	fromList = id
+	toList = id
