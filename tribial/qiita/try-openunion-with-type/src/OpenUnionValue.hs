@@ -4,7 +4,7 @@
 
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module OpenUnionWithType (UnionValue, Member, inj, prj, decomp, extract) where
+module OpenUnionValue (UnionValue, Member, inj, prj, decomp, extract) where
 
 import Unsafe.Coerce (unsafeCoerce)
 
