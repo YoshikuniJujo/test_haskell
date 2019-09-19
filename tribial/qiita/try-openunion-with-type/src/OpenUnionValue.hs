@@ -8,7 +8,7 @@ module OpenUnionValue (UnionValue, Member, inj, prj, decomp, extract) where
 
 import Unsafe.Coerce (unsafeCoerce)
 
-data UnionValue (ts :: [*]) = forall a . UnionValue Word a
+data UnionValue (as :: [*]) = forall a . UnionValue Word a
 
 newtype P (a :: *) (as :: [*]) = P { unP :: Word } deriving Show
 
@@ -19,17 +19,11 @@ instance {-# OVERLAPPABLE #-} Member a as => Member a (_a' ': as) where
 	elemNo = P $ 1 + unP (elemNo :: P a as)
 
 inj :: forall a as . Member a as => a -> UnionValue as
-inj = unsafeInj $ unP (elemNo :: P a as)
+inj = UnionValue $ unP (elemNo :: P a as)
 
 prj :: forall a as . Member a as => UnionValue as -> Maybe a
-prj = unsafePrj $ unP (elemNo :: P a as)
-
-unsafeInj :: Word -> a -> UnionValue as
-unsafeInj = UnionValue
-
-unsafePrj :: Word -> UnionValue as -> Maybe a
-unsafePrj i (UnionValue j x)
-	| i == j = Just $ unsafeCoerce x
+prj (UnionValue i x)
+	| i == unP (elemNo :: P a as) = Just $ unsafeCoerce x
 	| otherwise = Nothing
 
 decomp :: UnionValue (a : as) -> Either (UnionValue as) a

@@ -8,13 +8,7 @@ module OpenUnion (Union, Member, inj, prj, decomp, extract) where
 
 import Unsafe.Coerce (unsafeCoerce)
 
-data Union (ts :: [* -> *]) a = forall t . Union !Word (t a)
-
-inj :: forall t ts a . Member t ts => t a -> Union ts a
-inj = unsafeInj $ unP (elemNo :: P t ts)
-
-prj :: forall t ts a . Member t ts => Union ts a -> Maybe (t a)
-prj = unsafePrj $ unP (elemNo :: P t ts)
+data Union (ts :: [* -> *]) a = forall t . Union Word (t a)
 
 newtype P (t :: * -> *) (ts :: [* -> *]) = P { unP :: Word }
 
@@ -24,12 +18,12 @@ instance Member t (t ': ts) where
 instance {-# OVERLAPPABLE #-} Member t ts => Member t (_t' ': ts) where
 	elemNo = P $ 1 + unP (elemNo :: P t ts)
 
-unsafeInj :: Word -> t a -> Union ts a
-unsafeInj = Union
+inj :: forall t ts a . Member t ts => t a -> Union ts a
+inj = Union $ unP (elemNo :: P t ts)
 
-unsafePrj :: Word -> Union ts a -> Maybe (t a)
-unsafePrj i (Union j x)
-	| i == j = Just $ unsafeCoerce x
+prj :: forall t ts a . Member t ts => Union ts a -> Maybe (t a)
+prj (Union i x)
+	| i == unP (elemNo :: P t ts) = Just $ unsafeCoerce x
 	| otherwise = Nothing
 
 decomp :: Union (t ': ts) a -> Either (Union ts a) (t a)
