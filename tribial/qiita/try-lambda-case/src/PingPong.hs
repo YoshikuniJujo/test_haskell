@@ -1,7 +1,6 @@
-{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module TryLambdaCase where
+module PingPong where
 
 import Control.Concurrent
 import Control.Monad.STM
@@ -17,20 +16,23 @@ ping _self n pon | n < 1 = do
 	putStrLn "ping finished"
 ping self n pon = do
 	atomically $ writeTChan pon (Ping self)
-	atomically (readTChan self) >>= \case
+	r <- atomically (readTChan self)
+	case r of
 		Pong -> putStrLn "Ping received pong"
 	ping self (n - 1) pon
 
 pong :: TChan Ping -> IO ()
-pong self = atomically (readTChan self) >>= \case
-	Finished -> putStrLn "Pong finished"
-	Ping pin -> do
-		putStrLn "Pong received ping"
-		atomically $ writeTChan pin Pong
-		pong self
+pong self = do
+	r <- atomically (readTChan self)
+	case r of
+		Finished -> putStrLn "Pong finished"
+		Ping pin -> do
+			putStrLn "Pong received ping"
+			atomically $ writeTChan pin Pong
+			pong self
 
-run :: IO ()
-run = do
+start :: IO ()
+start = do
 	pin <- newTChanIO
 	pon <- newTChanIO
 	_ <- forkIO $ pong pon
