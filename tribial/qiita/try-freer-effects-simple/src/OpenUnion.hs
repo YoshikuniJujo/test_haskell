@@ -2,10 +2,9 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE DataKinds, KindSignatures, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
-
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module OpenUnion (Union, Member, inj, prj, decomp, extract) where
+module OpenUnion (Union, Member, inj, prj, decomp) where
 
 import Unsafe.Coerce (unsafeCoerce)
 
@@ -30,6 +29,3 @@ prj (Union i x)
 decomp :: Union (t ': ts) a -> Either (Union ts a) (t a)
 decomp (Union 0 tx) = Right $ unsafeCoerce tx
 decomp (Union i tx) = Left $ Union (i - 1) tx
-
-extract :: Union '[t] a -> t a
-extract (Union _ tx) = unsafeCoerce tx
