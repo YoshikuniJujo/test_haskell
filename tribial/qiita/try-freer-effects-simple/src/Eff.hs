@@ -1,4 +1,4 @@
-{-# LANGUAGE GADTs, DataKinds, TypeOperators #-}
+{-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Eff (Eff, Freer(..), Member, run, inj, prj, decomp) where
