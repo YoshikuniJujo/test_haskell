@@ -1,8 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE GADTs, DataKinds, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
-
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Writer (Writer, tell, runWriter) where
