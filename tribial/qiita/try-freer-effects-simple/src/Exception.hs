@@ -5,12 +5,12 @@
 
 module Exception (Exc, runError, throwError, catchError) where
 
-import Eff (Eff, Member, send, Freer(..), decomp, prj)
+import Eff (Eff, Freer(..), Member, inj, prj, decomp)
 
 newtype Exc e a = Exc e
 
 throwError :: Member (Exc e) effs => e -> Eff effs a
-throwError = send . Exc
+throwError = (`Bind` Pure) . inj . Exc
 
 runError :: Eff (Exc e ': effs) a -> Eff effs (Either e a)
 runError = \case

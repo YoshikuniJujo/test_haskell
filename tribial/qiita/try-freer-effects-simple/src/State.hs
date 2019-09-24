@@ -4,15 +4,15 @@
 
 module State (State, runState, get, put, modify) where
 
-import Eff (Eff, Member, send, Freer(..), decomp)
+import Eff (Eff, Freer(..), Member, inj, decomp)
 
 data State s a where Get :: State s s; Put :: !s -> State s ()
 
 get :: Member (State s) effs => Eff effs s
-get = send Get
+get = inj Get `Bind` Pure
 
 put :: Member (State s) effs => s -> Eff effs ()
-put = send . Put
+put = (`Bind` Pure) . inj . Put
 
 modify :: Member (State s) effs => (s -> s) -> Eff effs ()
 modify f = put . f =<< get

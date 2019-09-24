@@ -10,12 +10,12 @@ module Writer (Writer, tell, runWriter) where
 import Control.Arrow (second)
 import Data.Monoid (mempty, (<>))
 
-import Eff (Eff, Member, send, Freer(..), decomp)
+import Eff (Eff, Freer(..), Member, inj, decomp)
 
 data Writer w a where Writer :: w -> Writer w ()
 
 tell :: Member (Writer w) effs => w -> Eff effs ()
-tell = send . Writer
+tell = (`Bind` Pure) . inj . Writer
 
 runWriter :: Monoid w => Eff (Writer w ': effs) a -> Eff effs (a, w)
 runWriter = \case

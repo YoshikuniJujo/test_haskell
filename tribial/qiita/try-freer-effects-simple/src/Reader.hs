@@ -1,17 +1,15 @@
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE GADTs, DataKinds, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
-
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Reader (Reader, ask, runReader) where
 
-import Eff (Eff, Member, send, decomp, Freer(..))
+import Eff (Eff, Freer(..), Member, inj, decomp)
 
 data Reader e a where Reader :: Reader e e
 
 ask :: Member (Reader e) effs => Eff effs e
-ask = send Reader
+ask = inj Reader `Bind` Pure
 
 runReader :: Eff (Reader e ': effs) a -> e -> Eff effs a
 runReader m e = case m of
