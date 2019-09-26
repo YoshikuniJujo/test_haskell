@@ -36,3 +36,8 @@ runSafeDivSample1 n = run $ runError (safeDivSample `runState` n)
 
 runSafeDivSample2 :: Integer -> (Either String Integer, Integer)
 runSafeDivSample2 n = run $ runError safeDivSample `runState` n
+
+runMSample :: (Member (State Integer) effs, Member IO effs) => Eff effs ()
+runMSample = do
+	(a :: Integer) <- get
+	inj (print a) `Bind` Pure
