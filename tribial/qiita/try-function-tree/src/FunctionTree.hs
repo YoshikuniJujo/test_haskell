@@ -13,6 +13,9 @@ tsingleton = Leaf
 (|>) :: FunctionTree a b -> (b -> c) -> FunctionTree a c
 (|>) = (. Leaf) . Node
 
+(>|) :: (a -> b) -> FunctionTree b c -> FunctionTree a c
+(>|) = Node . Leaf
+
 (><) :: FunctionTree a b -> FunctionTree b c -> FunctionTree a c
 (><) = Node
 
