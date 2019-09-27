@@ -27,6 +27,5 @@ q `qApp` x = case tviewl q of
 		Pure y -> r `qApp` y
 		Join tx q' -> Join tx (q' >< r)
 
-qComp :: FTCQueue (Freer t) a b ->
-	(Freer t b -> Freer t' c) -> a -> Freer t' c
+qComp :: FTCQueue (Freer t) a b -> (Freer t b -> Freer t' c) -> a -> Freer t' c
 qComp = flip (.) . qApp
