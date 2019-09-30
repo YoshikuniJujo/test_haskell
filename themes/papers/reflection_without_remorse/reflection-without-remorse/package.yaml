@@ -53,6 +53,24 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - reflection-without-remorse
+  treeSubstRaw:
+    main:                treeSubstRaw.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - reflection-without-remorse
+  gTreeSubstRaw:
+    main:                gTreeSubstRaw.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - reflection-without-remorse
 
 tests:
   reflection-without-remorse-test:
