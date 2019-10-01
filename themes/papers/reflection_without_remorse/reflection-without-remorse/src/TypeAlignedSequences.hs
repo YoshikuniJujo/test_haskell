@@ -17,8 +17,8 @@ data TList c x y where
 
 data AsUnitLoop a b c where UL :: a -> AsUnitLoop a () ()
 
-x :: TList (AsUnitLoop Integer) () ()
-x = UL 123 :. UL 345 :. UL 567 :. Nil
+sampleX :: TList (AsUnitLoop Integer) () ()
+sampleX = UL 123 :. UL 345 :. UL 567 :. Nil
 
 newtype AsSequence s a = AsSequence { getAsSequence :: s (AsUnitLoop a) () () }
 
@@ -59,6 +59,13 @@ q ||> b = case q of
 	QN l m (B1 a) -> QN l m (B2 (a :* b))
 	QN l m (B2 r) -> QN l (m ||> r) (B1 b)
 
+(<||) :: c a w -> Queue c w b -> Queue c a b
+a <|| q = case q of
+	Q0 -> Q1 a
+	Q1 b -> QN (B1 a) Q0 (B1 b)
+	QN (B1 b) m r -> QN (B2 (a :* b)) m r
+	QN (B2 l) m r -> QN (B1 a) (l <|| m) r
+
 viewl' :: Queue c a b -> TViewl Queue c a b
 viewl' q = case q of
 	Q0 -> TEmptyL
@@ -72,3 +79,10 @@ viewl' q = case q of
 		l :< m -> QN (B2 l) m r
 	buf2queue (B1 a) = Q1 a
 	buf2queue (B2 (a :* b)) = QN (B1 a) Q0 (B1 b)
+
+instance TSequence Queue where
+	tempty = Q0
+	tsingleton = Q1
+	(|>) = (||>)
+	(<|) = (<||)
+	tviewl = viewl'

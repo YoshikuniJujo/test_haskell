@@ -1,34 +1,29 @@
-{-# LANGUAGE MonadComprehensions #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Iteratee where
 
 import Control.Monad
 
-data It i a = Get (i -> It i a) | Done a
+import TSequence
+import PMonad
 
-instance Functor (It i) where
-	f `fmap` mx = pure f <*> mx
+data It i a = Get (MCExp (It i) i a) | Done a
 
-instance Applicative (It i) where
-	pure = Done
-	mf <*> mx = [ f x | f <- mf, x <- mx ]
-
-instance Monad (It i) where
-	return = Done
-	(Done x) >>= g = g x
-	(Get f) >>= g = Get (f >=> g)
+instance PMonad (It i) where
+	return' = Done
+	Done x >>=. g = val g x
+	Get f >>=. g = Get $ f |><| g
 
 get :: It i i
-get = Get return
+get = Get tempty
 
 feedAll :: It a b -> [a] -> Maybe b
 feedAll (Done a) _ = Just a
 feedAll _ [] = Nothing
-feedAll (Get f) (h : t) = feedAll (f h) t
+feedAll (Get f) (h : t) = feedAll (val f h) t
 
-addNbad :: Int -> It Int Int
-addNbad n = foldl (>>=) get (replicate (n - 1) addGet)
+addNBad :: Int -> It Int Int
+addNBad n = foldl (>>=) get (replicate (n - 1) addGet)
 	where addGet x = liftM (+ x) get
 
-testquadratic n = feedAll (addNbad n) [1 .. n]
+testquadratic n = feedAll (addNBad n) [1 .. n]
