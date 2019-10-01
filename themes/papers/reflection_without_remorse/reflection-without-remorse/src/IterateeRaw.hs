@@ -5,6 +5,8 @@ module IterateeRaw where
 
 import Control.Monad
 
+import ContinuationPassingStyle
+
 data It i a = Get (i -> It i a) | Done a
 
 instance Functor (It i) where
@@ -32,3 +34,21 @@ addNbad n = foldl (>>=) get (replicate (n - 1) addGet)
 	where addGet x = liftM (+ x) get
 
 testquadratic n = feedAll (addNbad n) [1 .. n]
+
+sumInput :: Int -> It Int Int
+sumInput n = Get (foldl (>=>) return (replicate (n - 1) f))
+	where f x = get >>= return . (+ x)
+
+testSumInput n = feedAll (sumInput n) [1 .. n]
+
+type ItCo i a = CodensityT (It i) a
+
+getCo :: ItCo i i
+getCo = repM get
+
+sumInputCo :: Int -> It Int Int
+sumInputCo n = Get $ absM . (foldl (>=>) return (replicate (n - 1) f))
+	where f x = getCo >>= return . (+ x)
+
+testSumInputCo :: Int -> Maybe Int
+testSumInputCo n = feedAll (sumInputCo n) [1 .. n]
