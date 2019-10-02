@@ -71,3 +71,21 @@ viewr ft = case ft of
 	shiftRight l ft' = case viewr ft' of
 		TEmptyR -> digitToFingerTree l
 		it :| la -> Deep l it (nodeToDigit la)
+
+(<||) :: c a w -> FingerTree c w b -> FingerTree c a b
+h <|| t = case t of
+	Empty -> Single h
+	Single a -> Deep (One h) Empty (One a)
+	Deep (One a) m r -> Deep (Two h a) m r
+	Deep (Two a b) m r -> Deep (Three h a b) m r
+	Deep (Three a b c) m r -> Deep (Four h a b c) m r
+	Deep (Four a b c d) m r -> Deep (Two h a) (Node3 b c d <|| m) r
+
+(||>) :: FingerTree c a w -> c w b -> FingerTree c a b
+it ||> la = case it of
+	Empty -> Single la
+	Single a -> Deep (One a) Empty (One la)
+	Deep l m (One a) -> Deep l m (Two a la)
+	Deep l m (Two a b) -> Deep l m (Three a b la)
+	Deep l m (Three a b c) -> Deep l m (Four a b c la)
+	Deep l m (Four a b c d) -> Deep l (m ||> Node3 a b c) (Two d la)
