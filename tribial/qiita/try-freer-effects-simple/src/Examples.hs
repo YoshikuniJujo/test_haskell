@@ -3,9 +3,12 @@
 
 module Examples where
 
+import Control.Monad
+
 import Eff
-import State
+import State as St
 import Exception
+import Iteratee as It
 
 safeDiv :: Member (Exc String) effs => Integer -> Integer -> Eff effs Integer
 n `safeDiv` 0 = throwError $ show n ++ " is devided by 0"
@@ -14,15 +17,15 @@ n `safeDiv` m = return $ n `div` m
 sample1 :: (Member (State Integer) effs, Member (Exc String) effs) =>
 	Eff effs Integer
 sample1 = do
-	(a :: Integer) <- get
+	(a :: Integer) <- St.get
 --	a <- get
 	modify (subtract (5 :: Integer))
 	modify (* (2 :: Integer))
-	b <- get
+	b <- St.get
 	c <- 60 `safeDiv` b
 	put a
 	modify (subtract (3 :: Integer))
-	d <- get
+	d <- St.get
 	e <- 250 `safeDiv` d
 	return $ c + e
 
@@ -31,3 +34,9 @@ runSample1_1 n = run $ runError (sample1 `runState` n)
 
 runSample1_2 :: Integer -> (Either String Integer, Integer)
 runSample1_2 n = run $ runError sample1 `runState` n
+
+sumInput :: Member (Iteratee Int) effs => Int -> Int -> Eff effs Int
+sumInput n = foldl (>=>) return (replicate (n - 1) $ (<$> It.get) . (+))
+
+testSumInput :: Int -> Maybe Int
+testSumInput n = run $ sumInput n 1 `runIteratee` [2 .. n]
