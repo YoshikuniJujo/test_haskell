@@ -41,6 +41,12 @@ par l r
 	| Done _ <- r = Done (l, r)
 	| Get f <- l, Get g <- r = get >>= \x -> par (val f x) (val g x)
 
+identity :: It i a -> It i a
+identity i = par i i >>= fst
+
+testIdentity :: Int -> Int -> Maybe Int
+testIdentity n i = ((!! i) $ iterate identity (sumInput n)) `feedAll` [1 .. n]
+
 par10 :: Int -> It Int Int
 par10 n = par (sumInput n) (sumInput n) >>= snd
 

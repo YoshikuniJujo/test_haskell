@@ -24,6 +24,8 @@ instance Monad (It i) where
 get :: It i i
 get = Get return
 
+infix 8 `feedAll`
+
 feedAll :: It a b -> [a] -> Maybe b
 feedAll (Done a) _ = Just a
 feedAll _ [] = Nothing
@@ -75,6 +77,16 @@ testSumPar10 m n = sumPar10 m n `feedAll` [1 .. m * n]
 
 parCo :: ItCo i a -> ItCo i b -> ItCo i (ItCo i a, ItCo i b)
 parCo l r = repM (par (absM l) (absM r)) >>= \(l', r') -> return (repM l', repM r')
+
+identity, identity' :: ItCo i a -> ItCo i a
+identity i = parCo i i >>= fst
+identity' = repM . absM
+
+testIdentity :: Int -> Int -> Maybe Int
+testIdentity n i = absM ((!! i) $ iterate identity (sumInputCo' n)) `feedAll` [1 .. n]
+
+testIdentity' :: Int -> Int -> Maybe Int
+testIdentity' n i = absM ((!! i) $ iterate identity' (sumInputCo' n)) `feedAll` [1 .. n]
 
 parCo10 :: Int -> ItCo Int Int
 parCo10 n = parCo (sumInputCo' n) (sumInputCo' n) >>= snd
