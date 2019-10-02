@@ -72,6 +72,16 @@ viewr ft = case ft of
 		TEmptyR -> digitToFingerTree l
 		it :| la -> Deep l it (nodeToDigit la)
 
+infixr 5 :., ++.
+
+data TList c x y where
+	Nil :: TList c x x
+	(:.) :: c x y -> TList c y z -> TList c x z
+
+(++.) :: TList c a w -> TList c w b -> TList c a b
+Nil ++. ys = ys
+(x :. xs) ++. ys = x :. (xs ++. ys)
+
 (<||) :: c a w -> FingerTree c w b -> FingerTree c a b
 h <|| t = case t of
 	Empty -> Single h
@@ -81,6 +91,10 @@ h <|| t = case t of
 	Deep (Three a b c) m r -> Deep (Four h a b c) m r
 	Deep (Four a b c d) m r -> Deep (Two h a) (Node3 b c d <|| m) r
 
+pushl :: TList c a w -> FingerTree c w b -> FingerTree c a b
+pushl Nil ft = ft
+pushl (h :. t) ft = h <|| pushl t ft
+
 (||>) :: FingerTree c a w -> c w b -> FingerTree c a b
 it ||> la = case it of
 	Empty -> Single la
@@ -89,3 +103,43 @@ it ||> la = case it of
 	Deep l m (Two a b) -> Deep l m (Three a b la)
 	Deep l m (Three a b c) -> Deep l m (Four a b c la)
 	Deep l m (Four a b c d) -> Deep l (m ||> Node3 a b c) (Two d la)
+
+pushr :: FingerTree c a w -> TList c w b -> FingerTree c a b
+pushr ft Nil = ft
+pushr ft (h :. t) = pushr (ft ||> h) t
+
+(><) :: FingerTree c a w -> FingerTree c w b -> FingerTree c a b
+ft >< ft' = append ft Nil ft'
+
+append :: FingerTree c a w -> TList c w x -> FingerTree c x b -> FingerTree c a b
+append Empty xs r = pushl xs r
+append (Single a) xs r = a <|| pushl xs r
+append l xs Empty = pushr l xs
+append l xs (Single a) = pushr l xs ||> a
+append (Deep l m r) xs (Deep l' m' r') =
+	Deep l (append m (rakeup r xs l') m') r'
+
+rakeup :: Digit c a w -> TList c w x -> Digit c x b -> TList (Node c) a b
+rakeup l m r = raiseList $ digitToList l ++. m ++. digitToList r
+
+digitToList :: Digit c a b -> TList c a b
+digitToList (One a) = a :. Nil
+digitToList (Two a b) = a :. b :. Nil
+digitToList (Three a b c) = a :. b :. c :. Nil
+digitToList (Four a b c d) = a :. b :. c :. d :. Nil
+
+raiseList :: TList c a b -> TList (Node c) a b
+raiseList Nil = Nil
+raiseList (_ :. Nil) = error "raseList: can't raise one element"
+raiseList (a :. b :. Nil) = Node2 a b :. Nil
+raiseList (a :. b :. c :. d :. Nil) = Node2 a b :. Node2 c d :. Nil
+raiseList (a :. b :. c :. as) = Node3 a b c :. raiseList as
+
+instance TSequence FingerTree where
+	tempty = empty
+	tsingleton = singleton
+	tviewl = viewl
+	tviewr = viewr
+	(<|) = (<||)
+	(|>) = (||>)
+	(|><|) = (><)

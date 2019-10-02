@@ -3,10 +3,11 @@
 
 module PMonad where
 
-import TypeAlignedSequences
+-- import TypeAlignedSequences
 import TSequence
+import FingerTree
 
-type TCQueue = Queue
+type TCQueue = FingerTree
 
 newtype MCont m a b = MCont { appMCont :: a -> m b }
 type MCExp m a b = TCQueue (MCont m) a b
