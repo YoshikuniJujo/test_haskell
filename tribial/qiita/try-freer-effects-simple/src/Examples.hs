@@ -35,8 +35,10 @@ runSample1_1 n = run $ runError (sample1 `runState` n)
 runSample1_2 :: Integer -> (Either String Integer, Integer)
 runSample1_2 n = run $ runError sample1 `runState` n
 
-sumInput :: Member (Iteratee Int) effs => Int -> Int -> Eff effs Int
-sumInput n = foldl (>=>) return (replicate (n - 1) $ (<$> It.get) . (+))
+sumInputL, sumInputR :: Member (Iteratee Int) effs => Int -> Int -> Eff effs Int
+sumInputL n = foldl (>=>) return (replicate (n - 1) $ (<$> It.get) . (+))
+sumInputR n = foldr (>=>) return (replicate (n - 1) $ (<$> It.get) . (+))
 
-testSumInput :: Int -> Maybe Int
-testSumInput n = run $ sumInput n 1 `runIteratee` [2 .. n]
+testSumInputL, testSumInputR :: Int -> Maybe Int
+testSumInputL n = run $ sumInputL n 1 `runIteratee` [2 .. n]
+testSumInputR n = run $ sumInputR n 1 `runIteratee` [2 .. n]
