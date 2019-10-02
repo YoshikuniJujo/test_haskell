@@ -27,3 +27,10 @@ addNBad n = foldl (>>=) get (replicate (n - 1) addGet)
 	where addGet x = liftM (+ x) get
 
 testquadratic n = feedAll (addNBad n) [1 .. n]
+
+sumInput :: Int -> It Int Int
+sumInput n = Get . expr $ foldl (>=>) return (replicate (n - 1) f)
+	where f x = get >>= return . (+ x)
+
+testSumInput :: Int -> Maybe Int
+testSumInput n = feedAll (sumInput n) [1 .. n]

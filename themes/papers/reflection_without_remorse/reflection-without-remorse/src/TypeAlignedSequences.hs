@@ -59,12 +59,35 @@ q ||> b = case q of
 	QN l m (B1 a) -> QN l m (B2 (a :* b))
 	QN l m (B2 r) -> QN l (m ||> r) (B1 b)
 
+pushr :: Queue c a w -> TList c w b -> Queue c a b
+pushr q Nil = q
+pushr q (x :. xs) = pushr (q ||> x) xs
+
 (<||) :: c a w -> Queue c w b -> Queue c a b
 a <|| q = case q of
 	Q0 -> Q1 a
 	Q1 b -> QN (B1 a) Q0 (B1 b)
 	QN (B1 b) m r -> QN (B2 (a :* b)) m r
 	QN (B2 l) m r -> QN (B1 a) (l <|| m) r
+
+pushl :: TList c a w -> Queue c w b -> Queue c a b
+pushl Nil q = q
+pushl (x :. xs) q = x <|| pushl xs q
+
+append :: Queue c a w -> TList c w x -> Queue c x b -> Queue c a b
+append q1 l Q0 = pushr q1 l
+append q1 l (Q1 a) = pushr q1 l ||> a
+append Q0 l q2 = pushl l q2
+append (Q1 a) l q2 = a <|| pushl l q2
+
+{-
+(|>|<|) :: Queue c a w -> Queue c w b -> Queue c a b
+q |>|<| r = case (q, r) of
+	(Q0, _) -> r
+	(_, Q0) -> q
+	(Q1 a, _) -> a <|| r
+	(_, Q1 b) -> q ||> b
+	-}
 
 viewl' :: Queue c a b -> TViewl Queue c a b
 viewl' q = case q of
