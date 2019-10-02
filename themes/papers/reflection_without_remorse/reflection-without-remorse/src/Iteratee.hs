@@ -34,3 +34,19 @@ sumInput n = Get . expr $ foldl (>=>) return (replicate (n - 1) f)
 
 testSumInput :: Int -> Maybe Int
 testSumInput n = feedAll (sumInput n) [1 .. n]
+
+par :: It i a -> It i b -> It i (It i a, It i b)
+par l r
+	| Done _ <- l = Done (l, r)
+	| Done _ <- r = Done (l, r)
+	| Get f <- l, Get g <- r = get >>= \x -> par (val f x) (val g x)
+
+par10 :: Int -> It Int Int
+par10 n = par (sumInput n) (sumInput n) >>= snd
+
+sumPar10 :: Int -> Int -> It Int Int
+sumPar10 m n = Get . expr $ (foldl (>=>) return (replicate (n - 1) f))
+	where f x = par10 m >>= return . (+ x)
+
+testSumPar10 :: Int -> Int -> Maybe Int
+testSumPar10 m n = sumPar10 m n `feedAll` [1 .. m * n]

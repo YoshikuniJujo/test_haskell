@@ -47,8 +47,41 @@ getCo :: ItCo i i
 getCo = repM get
 
 sumInputCo :: Int -> It Int Int
-sumInputCo n = Get $ absM . (foldl (>=>) return (replicate (n - 1) f))
+sumInputCo n = Get $ absM . foldl (>=>) return (replicate (n - 1) f)
+	where f x = getCo >>= return . (+ x)
+
+sumInputCo' :: Int -> ItCo Int Int
+sumInputCo' n = repM $ Get $ absM . foldl (>=>) return (replicate (n - 1) f)
 	where f x = getCo >>= return . (+ x)
 
 testSumInputCo :: Int -> Maybe Int
 testSumInputCo n = feedAll (sumInputCo n) [1 .. n]
+
+par :: It i a -> It i b -> It i (It i a, It i b)
+par l r
+	| Done _ <- l = Done (l, r)
+	| Done _ <- r = Done (l, r)
+	| Get f <- l, Get g <- r = get >>= \x -> par (f x) (g x)
+
+par10 :: Int -> It Int Int
+par10 n = par (sumInput n) (sumInput n) >>= snd
+
+sumPar10 :: Int -> Int -> It Int Int
+sumPar10 m n = Get (foldl (>=>) return (replicate (n - 1) f))
+	where f x = par10 m >>= return . (+ x)
+
+testSumPar10 :: Int -> Int -> Maybe Int
+testSumPar10 m n = sumPar10 m n `feedAll` [1 .. m * n]
+
+parCo :: ItCo i a -> ItCo i b -> ItCo i (ItCo i a, ItCo i b)
+parCo l r = repM (par (absM l) (absM r)) >>= \(l', r') -> return (repM l', repM r')
+
+parCo10 :: Int -> ItCo Int Int
+parCo10 n = parCo (sumInputCo' n) (sumInputCo' n) >>= snd
+
+sumParCo10 :: Int -> Int -> It Int Int
+sumParCo10 m n = Get $ absM . foldl (>=>) return (replicate (n - 1) f)
+	where f x = parCo10 m >>= return . (+ x)
+
+testSumParCo10 :: Int -> Int -> Maybe Int
+testSumParCo10 m n = sumParCo10 m n `feedAll` [1 .. m * n]
