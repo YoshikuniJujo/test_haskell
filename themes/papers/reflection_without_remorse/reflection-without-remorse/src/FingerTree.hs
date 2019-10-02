@@ -24,9 +24,19 @@ data Digit c a b
 	| forall w x . Three (c a w) (c w x) (c x b)
 	| forall w x y . Four (c a w) (c w x) (c x y) (c y b)
 
+digitToFingerTree :: Digit c a b -> FingerTree c a b
+digitToFingerTree (One a) = Single a
+digitToFingerTree (Two a b) = Deep (One a) Empty (One b)
+digitToFingerTree (Three a b c) = Deep (Two a b) Empty (One c)
+digitToFingerTree (Four a b c d) = Deep (Two a b) Empty (Two c d)
+
 data Node c a b
 	= forall w . Node2 (c a w) (c w b)
 	| forall w x . Node3 (c a w) (c w x) (c x b)
+
+nodeToDigit :: Node c a b -> Digit c a b
+nodeToDigit (Node2 a b) = Two a b
+nodeToDigit (Node3 a b c) = Three a b c
 
 empty :: FingerTree c x x
 empty = Empty
@@ -47,9 +57,17 @@ viewl ft = case ft of
 	shiftLeft ft' r = case viewl ft' of
 		TEmptyL -> digitToFingerTree r
 		h :< t -> Deep (nodeToDigit h) t r
-	digitToFingerTree (One a) = Single a
-	digitToFingerTree (Two a b) = Deep (One a) Empty (One b)
-	digitToFingerTree (Three a b c) = Deep (Two a b) Empty (One c)
-	digitToFingerTree (Four a b c d) = Deep (Two a b) Empty (Two c d)
-	nodeToDigit (Node2 a b) = Two a b
-	nodeToDigit (Node3 a b c) = Three a b c
+
+viewr :: FingerTree c a b -> TViewr FingerTree c a b
+viewr ft = case ft of
+	Empty -> TEmptyR
+	Single a -> Empty :| a
+	Deep l m (Two a b) -> Deep l m (One a) :| b
+	Deep l m (Three a b c) -> Deep l m (Two a b) :| c
+	Deep l m (Four a b c d) -> Deep l m (Three a b c) :| d
+	Deep l m (One a) -> shiftRight l m :| a
+	where
+	shiftRight :: Digit c a w -> FingerTree (Node c) w b -> FingerTree c a b
+	shiftRight l ft' = case viewr ft' of
+		TEmptyR -> digitToFingerTree l
+		it :| la -> Deep l it (nodeToDigit la)
