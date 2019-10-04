@@ -7,6 +7,7 @@ import Control.Monad
 
 import Eff
 import State as St
+import Reader
 import Exception
 import Iteratee as It
 
@@ -42,3 +43,11 @@ sumInputR n = foldr (>=>) return (replicate (n - 1) $ (<$> It.get) . (+))
 testSumInputL, testSumInputR :: Int -> Maybe Int
 testSumInputL n = run $ sumInputL n 1 `runIteratee` [2 .. n]
 testSumInputR n = run $ sumInputR n 1 `runIteratee` [2 .. n]
+
+sumReaderL, sumReaderR :: Member (Reader Int) effs => Int -> Int -> Eff effs Int
+sumReaderL n = foldl (>=>) return (replicate (n - 1) $ (<$> ask) . (+))
+sumReaderR n = foldr (>=>) return (replicate (n - 1) $ (<$> ask) . (+))
+
+testSumReaderL, testSumReaderR :: Int -> Int
+testSumReaderL n = run $ sumReaderL n 10 `runReader` (10 :: Int)
+testSumReaderR n = run $ sumReaderR n 10 `runReader` (10 :: Int)
