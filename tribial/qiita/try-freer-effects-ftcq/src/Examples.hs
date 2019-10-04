@@ -1,10 +1,15 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Examples where
 
+import Control.Monad
+
 import qualified FreerNoFtcq as Nf
 import qualified Freer as F
+
+import Eff
+import Reader
 
 newtype Exc e a = Exc e
 
@@ -26,3 +31,11 @@ sampleNf n = do
 	y <- 45 `safeDivNf` n
 	undefined
 	return (x + y)
+
+sumReaderL, sumReaderR :: Member (Reader Int) effs => Int -> Int -> Eff effs Int
+sumReaderL n = foldl (>=>) return (replicate (n - 1) $ (<$> ask) . (+))
+sumReaderR n = foldr (>=>) return (replicate (n - 1) $ (<$> ask) . (+))
+
+testSumReaderL, testSumReaderR :: Int -> Int
+testSumReaderL n = run $ sumReaderL n 10 `runReader` (10 :: Int)
+testSumReaderR n = run $ sumReaderR n 10 `runReader` (10 :: Int)
