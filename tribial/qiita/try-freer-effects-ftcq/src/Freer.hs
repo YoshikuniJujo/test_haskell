@@ -5,7 +5,7 @@ module Freer (Freer(..), FTCQueue, ViewL(..), tsingleton, qApp, qComp) where
 
 import FTCQueue (FTCQueue, ViewL(..), tsingleton, (|>), (><), tviewl)
 
-data Freer t a = Pure a | forall x . Bind (t x) (FTCQueue (Freer t) x a)
+data Freer t a = Pure a | forall x . t x `Bind` FTCQueue (Freer t) x a
 
 instance Functor (Freer t) where
 	fmap f (Pure x) = Pure $ f x
