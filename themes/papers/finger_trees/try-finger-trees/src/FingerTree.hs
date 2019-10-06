@@ -3,6 +3,8 @@
 
 module FingerTree where
 
+import Data.Foldable
+
 import FingerTree.TH
 
 data FingerTree a
@@ -89,3 +91,25 @@ toTree :: Foldable t => t a -> FingerTree a
 toTree = (<|. Empty)
 
 data ViewL s a = NilL | ConsL a (s a) deriving Show
+
+viewL :: FingerTree a -> ViewL FingerTree a
+viewL Empty = NilL
+viewL (Single x) = ConsL x Empty
+viewL (Deep pr m sf) = ConsL (head $ toList pr) (deepL (tail $ toList pr) m sf)
+
+nodeToDigit :: Node a -> Digit a
+nodeToDigit (Node2 a b) = Two a b
+nodeToDigit (Node3 a b c) = Three a b c
+
+fromList :: [a] -> Digit a
+fromList [a] = One a
+fromList [a, b] = Two a b
+fromList [a, b, c] = Three a b c
+fromList [a, b, c, d] = Four a b c d
+fromList _ = error "bad"
+
+deepL :: [a] -> FingerTree (Node a) -> Digit a -> FingerTree a
+deepL [] m sf = case viewL m of
+	NilL -> toTree sf
+	ConsL a m' -> Deep (nodeToDigit a) m' sf
+deepL pr m sf = Deep (fromList pr) m sf
