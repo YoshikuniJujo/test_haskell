@@ -10,7 +10,7 @@ import GHC.TypeLits
 infixr 6 :., :..
 
 data Range :: Nat -> Nat -> * -> * where
-	Nil :: 0 <= m => Range 0 m a
+	Nil :: Range 0 m a
 	(:..) :: 1 <= m => a -> Range 0 (m - 1) a -> Range 0 m a
 	(:.) :: a -> Range (n - 1) (m - 1) a -> Range n m a
 
@@ -24,8 +24,10 @@ instance Foldable (Range 0 0) where
 
 instance {-# OVERLAPPABLE #-}
 	Foldable (Range 0 (m - 1)) => Foldable (Range 0 m) where
+	foldr _ z Nil = z
 	foldr (-<) z (x :.. xs) = x -< foldr (-<) z xs
 	foldr _ _ _ = error "never occur"
+	foldl _ z Nil = z
 	foldl (>-) z (x :.. xs) = foldl (>-) (z >- x) xs
 	foldl _ _ _ = error "never occur"
 

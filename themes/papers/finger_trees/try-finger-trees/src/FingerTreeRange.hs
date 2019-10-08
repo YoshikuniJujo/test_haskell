@@ -103,3 +103,9 @@ deepL pr m sf = case notNil pr of
 		NilL -> toTree sf
 		ConsL a m' -> Deep (nodeToDigit a) m' sf
 	Just pr' -> Deep (loosen pr') m sf
+
+sampleList :: [Int]
+sampleList = [1 .. 7]
+
+sampleFTree :: FingerTree Int
+sampleFTree = toTree sampleList
