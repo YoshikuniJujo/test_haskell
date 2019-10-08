@@ -1,8 +1,11 @@
 {-# LANGUAGE ScopedTypeVariables, GADTs, DataKinds #-}
 {-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module FingerTreeRange where
+
+import GHC.TypeLits
 
 import Range
 
@@ -122,3 +125,37 @@ deepR pr m Nil = case viewR m of
 	ConsR m' a -> Deep pr m' (nodeToDigit a)
 deepR pr m (a :.. sf) = Deep pr m (loosen $ a :. sf)
 deepR _ _ _ = error "never occur"
+
+-- app3 :: FingerTree a -> Range 0 4 a -> FingerTree a -> FingerTree a
+app3 :: FingerTree a -> [a] -> FingerTree a -> FingerTree a
+app3 Empty ts xs = ts <|. xs
+app3 xs ts Empty = xs |>. ts
+app3 (Single x) ts xs = x <| (ts <|. xs)
+app3 xs ts (Single x) = (xs |>. ts) |> x
+app3 (Deep pr1 m1 sf1) ts (Deep pr2 m2 sf2) =
+	Deep pr1 (app3 m1 (nodes (digitToList sf1 ++ foldr (:) [] ts ++ digitToList pr2)) m2) sf2
+
+digitToList :: Digit a -> [a]
+digitToList = foldr (:) []
+
+{-
+nodes' :: [a] -> Range 0 4 (Node a)
+nodes' [] = Nil
+nodes' [_] = error "not permitted"
+nodes' [a, b] = (a :. b :. Nil) :.. Nil
+nodes' [a, b, c] = (a :. b :. c :.. Nil) :.. Nil
+nodes' [a, b, c, d] = (a :. b :. Nil) :.. (c :. d :. Nil) :.. Nil
+nodes' (a : b : c : xs) = (a :. b :. c :.. Nil) :.. nodes' xs
+-}
+
+-- nodes :: Range 2 12 a -> Range 1 4 a
+nodes :: [a] -> [Node a]
+nodes [] = []
+nodes [_] = error "not permitted"
+nodes [a, b] = [a :. b :. Nil]
+nodes [a, b, c] = [a :. b :. c :.. Nil]
+nodes [a, b, c, d] = [a :. b :. Nil, c :. d :. Nil]
+nodes (a : b : c : xs) = a :. b :. c :.. Nil : nodes xs
+
+(><) :: FingerTree a -> FingerTree a -> FingerTree a
+xs >< ys = app3 xs [] ys

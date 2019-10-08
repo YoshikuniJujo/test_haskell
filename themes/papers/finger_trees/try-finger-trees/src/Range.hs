@@ -105,3 +105,38 @@ instance {-# OVERLAPPABLE #-} Unsnoc 1 (m - 1) => Unsnoc 1 m where
 instance {-# OVERLAPPABLE #-} Unsnoc (n - 1) (m - 1) => Unsnoc n m where
 	unsnoc (x :. xs) = (x :.) `first` unsnoc xs
 	unsnoc _ = error "never occur"
+
+class FromList n m where
+	fromList :: [a] -> Range n m a
+
+instance FromList 0 0 where
+	fromList [] = Nil
+	fromList _ = error "bad"
+
+instance {-# OVERLAPPABLE #-} (1 <= m, FromList 0 (m - 1)) => FromList 0 m where
+	fromList [] = Nil
+	fromList (x : xs) = x :.. fromList xs
+
+instance {-# OVERLAPPABLE #-} FromList (n - 1) (m - 1) => FromList n m where
+	fromList [] = error "bad"
+	fromList (x : xs) = x :. fromList xs
+
+class Move n m n' m' where
+	move :: Range n m a -> Range (n' - 1) (m' - 1) a ->
+		(Range (n - 1) (m - 1) a, Range n' m' a)
+
+instance {-# OVERLAPPABLE #-} 1 <= m => Move n m n' m' where
+	move (x :. xs) ys = (xs, x :. ys)
+
+{-
+infixr 6 ++.
+
+class Add n m n' m' where
+	(++.) :: Range n m a -> Range n' m' a -> Range (n + n') (m + m') a
+
+instance Add 0 0 0 m' where
+	Nil ++. ys = ys
+
+instance {-#OVERLAPPABLE #-} (1 <= m + m', Add 0 (m - 1) 0 m') => Add 0 m 0 m' where
+	(x :.. xs) ++. ys = x :.. (xs ++. ys)
+	-}
