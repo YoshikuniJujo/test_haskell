@@ -1,9 +1,12 @@
+-- {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE GADTs, DataKinds, TypeOperators, KindSignatures, StandaloneDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Range where
+
+import Control.Arrow
 
 import GHC.TypeLits
 
@@ -64,3 +67,41 @@ instance {-# OVERLAPPABLE #-} Loosen (Range (n - 1) (m - 1)) (Range (n' - 1) (m'
 	Loosen (Range n m) (Range n' m') where
 	loosen (x :. xs) = x :. loosen xs
 	loosen _ = error "never occur"
+
+uncons :: 1 <= n => Range n m a -> (a, Range (n - 1) (m - 1) a)
+uncons (x :. xs) = (x, xs)
+
+cons :: a -> Range (n - 1) (m - 1) a -> Range n m a
+cons x xs = x :. xs
+
+class Init n m where
+	initR :: Range n m a -> Range (n - 1) (m - 1) a
+
+instance Init 1 1 where
+	initR (_ :. Nil) = Nil
+	initR _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-} Init 1 (m - 1) => Init 1 m where
+	initR (_ :. Nil) = Nil
+	initR (x :. y :.. xs) = x :.. initR (y :. xs)
+	initR _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-} Init (n - 1) (m - 1) => Init n m where
+	initR (x :. xs) = x :. initR xs
+	initR _ = error "never occur"
+
+class Unsnoc n m where
+	unsnoc :: Range n m a -> (Range (n - 1) (m - 1) a, a)
+
+instance Unsnoc 1 1 where
+	unsnoc (x :. Nil) = (Nil, x)
+	unsnoc _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-} Unsnoc 1 (m - 1) => Unsnoc 1 m where
+	unsnoc (x :. Nil) = (Nil, x)
+	unsnoc (x :. y :.. xs) = (x :..) `first` unsnoc (y :. xs)
+	unsnoc _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-} Unsnoc (n - 1) (m - 1) => Unsnoc n m where
+	unsnoc (x :. xs) = (x :.) `first` unsnoc xs
+	unsnoc _ = error "never occur"

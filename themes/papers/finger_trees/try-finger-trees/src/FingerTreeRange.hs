@@ -92,20 +92,33 @@ viewL (Deep (a :. pr') m sf) = ConsL a $ deepL pr' m sf
 nodeToDigit :: Node a -> Digit a
 nodeToDigit = loosen
 
-notNil :: Range 0 m a -> Maybe (Range 1 m a)
-notNil Nil = Nothing
-notNil (x :.. xs) = Just $ x :. xs
-notNil _ = error "never occur"
-
 deepL :: Range 0 3 a -> FingerTree (Node a) -> Digit a -> FingerTree a
-deepL pr m sf = case notNil pr of
-	Nothing -> case viewL m of
-		NilL -> toTree sf
-		ConsL a m' -> Deep (nodeToDigit a) m' sf
-	Just pr' -> Deep (loosen pr') m sf
+deepL Nil m sf = case viewL m of
+	NilL -> toTree sf
+	ConsL a m' -> Deep (nodeToDigit a) m' sf
+deepL (a :.. pr) m sf = Deep (loosen $ a :. pr) m sf
+deepL _ _ _ = error "never occur"
 
 sampleList :: [Int]
 sampleList = [1 .. 7]
 
 sampleFTree :: FingerTree Int
 sampleFTree = toTree sampleList
+
+isEmpty :: FingerTree a -> Bool
+isEmpty ft = case viewL ft of NilL -> True; ConsL _ _ -> False
+
+data ViewR s a = NilR | ConsR (s a) a deriving Show
+
+viewR :: FingerTree a -> ViewR FingerTree a
+viewR Empty = NilR
+viewR (Single x) = ConsR Empty x
+viewR (Deep pr m sf) = case unsnoc sf of
+	(sf', a) -> ConsR (deepR pr m sf') a
+
+deepR :: Digit a -> FingerTree (Node a) -> Range 0 3 a -> FingerTree a
+deepR pr m Nil = case viewR m of
+	NilR -> toTree pr
+	ConsR m' a -> Deep pr m' (nodeToDigit a)
+deepR pr m (a :.. sf) = Deep pr m (loosen $ a :. sf)
+deepR _ _ _ = error "never occur"
