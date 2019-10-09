@@ -119,3 +119,19 @@ sampleList = [1 .. 7]
 
 sampleFTree :: FingerTree Size (Elem Int)
 sampleFTree = toTree $ Elem <$> sampleList
+
+data ViewR s a = NilR | ConsR (s a) a deriving Show
+
+viewR :: Measured a v => FingerTree v a -> ViewR (FingerTree v) a
+viewR Empty = NilR
+viewR (Single x) = ConsR Empty x
+viewR (Deep _ pr m sf) = case unsnoc sf of
+	(sf', a) -> ConsR (deepR pr m sf') a
+
+deepR :: Measured a v =>
+	Digit a -> FingerTree v (Node v a) -> Range 0 3 a -> FingerTree v a
+deepR pr m Nil = case viewR m of
+	NilR -> toTree pr
+	ConsR m' a -> deep pr m' (nodeToDigit a)
+deepR pr m (a :.. sf) = deep pr m (loosen $ a :. sf)
+deepR _ _ _ = error "never occur"
