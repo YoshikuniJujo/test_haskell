@@ -129,13 +129,13 @@ deepR pr m Nil = case viewR m of
 deepR pr m (a :.. sf) = Deep pr m (loosen $ a :. sf)
 deepR _ _ _ = error "never occur"
 
-app3' :: forall a . FingerTree a -> Range 0 4 a -> FingerTree a -> FingerTree a
-app3' Empty ts xs = ts <|. xs
-app3' xs ts Empty = xs |>. ts
-app3' (Single x) ts xs = x <| (ts <|. xs)
-app3' xs ts (Single x) = (xs |>. ts) |> x
-app3' (Deep pr1 m1 sf1) ts (Deep pr2 m2 sf2) =
-	Deep pr1 (app3' m1 (loosen (nodes' (sf1 ++. ts ++.. pr2) :: Range 1 4 (Node a))) m2) sf2
+app3 :: forall a . FingerTree a -> Range 0 4 a -> FingerTree a -> FingerTree a
+app3 Empty ts xs = ts <|. xs
+app3 xs ts Empty = xs |>. ts
+app3 (Single x) ts xs = x <| (ts <|. xs)
+app3 xs ts (Single x) = (xs |>. ts) |> x
+app3 (Deep pr1 m1 sf1) ts (Deep pr2 m2 sf2) =
+	Deep pr1 (app3 m1 (loosen (nodes' (sf1 ++. ts ++.. pr2) :: Range 1 4 (Node a))) m2) sf2
 
 nodesTest :: Range 2 6 a -> Range 1 2 (Node a)
 nodesTest (a :. b :. Nil) = (a :. b :. Nil) :. Nil
@@ -160,4 +160,4 @@ instance {-# OVERLAPPABLE #-} Nodes (m - 3) (m' - 1) => Nodes m m' where
 	nodes' _ = error "never occur"
 
 (><) :: FingerTree a -> FingerTree a -> FingerTree a
-xs >< ys = app3' xs Nil ys
+xs >< ys = app3 xs Nil ys
