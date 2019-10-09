@@ -156,7 +156,7 @@ instance {-# OVERLAPPABLE #-} Nodes (m - 3) (m' - 1) => Nodes m m' where
 	nodes (a :. b :. Nil) = (a :. b :. Nil) :. Nil
 	nodes (a :. b :. c :.. Nil) = (a :. b :. c :.. Nil) :. Nil
 	nodes (a :. b :. c :.. d :.. Nil) = (a :. b :. Nil) :. (c :. d :. Nil) :.. Nil
-	nodes (a :. b :. c :.. d :.. e :.. xs :: Range 2 m a) = (a :. b :. c :.. Nil) .:.. (nodes (d :. e :. xs :: Range 2 (m - 3) a) :: Range 1 (m' - 1) (Node a))
+	nodes (a :. b :. c :.. d :.. e :.. xs) = (a :. b :. c :.. Nil) .:.. (nodes (d :. e :. xs :: Range 2 (m - 3) a) :: Range 1 (m' - 1) (Node a))
 	nodes _ = error "never occur"
 
 (><) :: FingerTree a -> FingerTree a -> FingerTree a
