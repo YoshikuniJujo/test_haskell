@@ -135,7 +135,7 @@ app3 xs ts Empty = xs |>. ts
 app3 (Single x) ts xs = x <| (ts <|. xs)
 app3 xs ts (Single x) = (xs |>. ts) |> x
 app3 (Deep pr1 m1 sf1) ts (Deep pr2 m2 sf2) =
-	Deep pr1 (app3 m1 (loosen (nodes' (sf1 ++. ts ++.. pr2) :: Range 1 4 (Node a))) m2) sf2
+	Deep pr1 (app3 m1 (loosen (nodes (sf1 ++. ts ++.. pr2) :: Range 1 4 (Node a))) m2) sf2
 
 nodesTest :: Range 2 6 a -> Range 1 2 (Node a)
 nodesTest (a :. b :. Nil) = (a :. b :. Nil) :. Nil
@@ -146,18 +146,18 @@ nodesTest (a :. b :. c :.. d :.. e :.. f :.. Nil) = (a :. b :. c :.. Nil) :. (d 
 nodesTest _ = error "never occur"
 
 class Nodes m m' where
-	nodes' :: Range 2 m a -> Range 1 m' (Node a)
+	nodes :: Range 2 m a -> Range 1 m' (Node a)
 
 instance Nodes 6 2 where
-	nodes' = loosen . nodesTest
+	nodes = loosen . nodesTest
 
 instance {-# OVERLAPPABLE #-} Nodes (m - 3) (m' - 1) => Nodes m m' where
-	nodes' :: forall a . Range 2 m a -> Range 1 m' (Node a)
-	nodes' (a :. b :. Nil) = (a :. b :. Nil) :. Nil
-	nodes' (a :. b :. c :.. Nil) = (a :. b :. c :.. Nil) :. Nil
-	nodes' (a :. b :. c :.. d :.. Nil) = (a :. b :. Nil) :. (c :. d :. Nil) :.. Nil
-	nodes' (a :. b :. c :.. d :.. e :.. xs :: Range 2 m a) = (a :. b :. c :.. Nil) .:.. (nodes' (d :. e :. xs :: Range 2 (m - 3) a) :: Range 1 (m' - 1) (Node a))
-	nodes' _ = error "never occur"
+	nodes :: forall a . Range 2 m a -> Range 1 m' (Node a)
+	nodes (a :. b :. Nil) = (a :. b :. Nil) :. Nil
+	nodes (a :. b :. c :.. Nil) = (a :. b :. c :.. Nil) :. Nil
+	nodes (a :. b :. c :.. d :.. Nil) = (a :. b :. Nil) :. (c :. d :. Nil) :.. Nil
+	nodes (a :. b :. c :.. d :.. e :.. xs :: Range 2 m a) = (a :. b :. c :.. Nil) .:.. (nodes (d :. e :. xs :: Range 2 (m - 3) a) :: Range 1 (m' - 1) (Node a))
+	nodes _ = error "never occur"
 
 (><) :: FingerTree a -> FingerTree a -> FingerTree a
 xs >< ys = app3 xs Nil ys
