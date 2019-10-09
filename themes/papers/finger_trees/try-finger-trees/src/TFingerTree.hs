@@ -67,11 +67,6 @@ a <| TDeep pr m sf = case a <|| pr of
 (<|.) :: TFoldable t => t c x y -> TFingerTree c y z -> TFingerTree c x z
 (<|.) = treducer (<|)
 
-infix 5 :|
-
-data TPair :: (* -> * -> *) -> (* -> * -> *) -> * -> * -> * where
-	(:|) :: c x y -> d y z -> TPair c d x z
-
 toTree :: TFoldable t => t c x y -> TFingerTree c x y
 toTree = (<|. TEmpty)
 
@@ -131,3 +126,26 @@ testViewL :: Int
 testViewL = case viewL sampleFTree of
 	ConsL f fs -> tfoldr (flip (.)) id fs . f $ 'c'
 --	NilL -> error "never occur"
+
+data TViewR ::
+	((* -> * -> *) -> * -> * -> *) -> (* -> * -> *) -> * -> * -> * where
+	NilR :: TViewR s c x x
+	ConsR :: s c x y -> c y z -> TViewR s c x z
+
+viewR :: TFingerTree c x y -> TViewR TFingerTree c x y
+viewR TEmpty = NilR
+viewR (TSingle x) = ConsR TEmpty x
+viewR (TDeep pr m sf) = case unsnoc sf of
+	sf' :| a -> ConsR (deepR pr m sf') a
+
+deepR :: TDigit c x y ->
+	TFingerTree (TNode c) y z -> TRange 0 3 c z w -> TFingerTree c x w
+deepR pr m Nil = case viewR m of
+	NilR -> toTree pr
+	ConsR m' a -> TDeep pr m' (nodeToDigit a)
+deepR pr m (a :.. sf) = TDeep pr m (tloosen $ a :. sf)
+deepR _ _ _ = error "never occur"
+
+testViewR :: Int
+testViewR = case viewR sampleFTree of
+	ConsR fs f -> f . tfoldr (flip (.)) id fs $ 'c'

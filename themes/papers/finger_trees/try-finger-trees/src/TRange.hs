@@ -66,3 +66,27 @@ instance {-# OVERLAPPABLE #-} TLoosen (TRange (n - 1) (m - 1)) (TRange (n' - 1) 
 	TLoosen (TRange n m) (TRange n' m') where
 	tloosen (x :. xs) = x :. tloosen xs
 	tloosen _ = error "never occur"
+
+infix 5 :|
+
+data TPair :: (* -> * -> *) -> (* -> * -> *) -> * -> * -> * where
+	(:|) :: c x y -> d y z -> TPair c d x z
+
+firstTP :: (forall y . c x y -> c' x' y) -> TPair c d x z -> TPair c' d x' z
+firstTP f (c :| d) = f c :| d
+
+class Unsnoc n m where
+	unsnoc :: TRange n m c x y -> TPair (TRange (n - 1) (m - 1) c) c x y
+
+instance Unsnoc 1 1 where
+	unsnoc (x :. Nil) = Nil :| x
+	unsnoc _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-} Unsnoc 1 (m - 1) => Unsnoc 1 m where
+	unsnoc (x :. Nil) = Nil :| x
+	unsnoc (x :. y :.. xs) = (x :..) `firstTP` unsnoc (y :. xs)
+	unsnoc _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-} Unsnoc (n - 1) (m - 1) => Unsnoc n m where
+	unsnoc (x :. xs) = (x :.) `firstTP` unsnoc xs
+	unsnoc _ = error "never occur"
