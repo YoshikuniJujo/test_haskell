@@ -27,6 +27,10 @@ node2 a b = Node (measure a <> measure b) $ a :. b :. Nil
 node3 :: Measured a v => a -> a -> a -> Node v a
 node3 a b c = Node (measure a <> measure b <> measure c) $ a :. b :. c :.. Nil
 
+instance Foldable (Node v) where
+	foldr (-<) z (Node _ xs) = foldr (-<) z xs
+	foldl (>-) z (Node _ xs) = foldl (>-) z xs
+
 instance Monoid v => Measured (Node v a) v where
 	measure (Node v _) = v
 
@@ -49,6 +53,26 @@ instance Measured a v => Measured (FingerTree v a) v where
 	measure Empty = mempty
 	measure (Single x) = measure x
 	measure (Deep v _ _ _) = v
+
+instance Foldable (FingerTree v) where
+	foldr :: forall a b . (a -> b -> b) -> b -> FingerTree v a -> b
+	foldr _ z Empty = z
+	foldr (-<) z (Single x) = x -< z
+	foldr (-<) z (Deep _ pr m sf) = pr -<. (m -<.. (sf -<. z))
+		where
+		(-<.) :: forall t . Foldable t => t a -> b -> b
+		(-<.) = reducer (-<)
+		(-<..) :: forall t t' . (Foldable t, Foldable t') => t (t' a) -> b -> b
+		(-<..) = reducer (-<.)
+	foldl :: forall a b . (b -> a -> b) -> b -> FingerTree v a -> b
+	foldl _ z Empty = z
+	foldl (>-) z (Single x) = z >- x
+	foldl (>-) z (Deep _ pr m sf) = ((z >-. pr) >-.. m) >-. sf
+		where
+		(>-.) :: forall t . Foldable t => b -> t a -> b
+		(>-.) = reducel (>-)
+		(>-..) :: forall t t' . (Foldable t, Foldable t') => b -> t (t' a) -> b
+		(>-..) = reducel (>-.)
 
 infixr 5 <||, <|, <|.
 
@@ -275,3 +299,48 @@ addToPQueue ts (PQueue ft) = PQueue $ reducer ((<|) . Elem) ts ft
 
 toPQueue :: (Ord a, Foldable t) => t a -> PQueue a
 toPQueue = (`addToPQueue` PQueue Empty)
+
+data Key a = NoKey | Key a deriving (Show, Eq, Ord)
+
+instance Semigroup (Key a) where
+	k <> NoKey = k
+	_ <> k = k
+
+instance Monoid (Key a) where
+	mempty = NoKey
+
+newtype OrdSeq a = OrdSeq (FingerTree (Key a) (Elem a)) deriving Show
+
+instance Measured (Elem a) (Key a) where
+	measure (Elem x) = Key x
+
+partition :: (Ord a) => a -> OrdSeq a -> (OrdSeq a, OrdSeq a)
+partition k (OrdSeq xs) = (OrdSeq l, OrdSeq r)
+	where (l, r) = split (>= Key k) xs
+
+insert :: Ord a => a -> OrdSeq a -> OrdSeq a
+insert x (OrdSeq xs) = OrdSeq (l >< (Elem x <| r))
+	where (l, r) = split (>= Key x) xs
+
+deleteAll :: Ord a => a -> OrdSeq a -> OrdSeq a
+deleteAll x (OrdSeq xs) = OrdSeq (l >< r')
+	where
+	(l, r) = split (>= Key x) xs
+	(_, r') = split (> Key x) r
+
+merge :: Ord a => OrdSeq a -> OrdSeq a -> OrdSeq a
+merge (OrdSeq xs) (OrdSeq ys) = OrdSeq (merge' xs ys)
+	where
+	merge' as bs = case viewL bs of
+		NilL -> as
+		ConsL a bs' -> l >< (a <| merge' bs' r)
+			where (l, r) = split (> measure a) as
+
+addToOrdSeq :: (Ord a, Foldable t) => t a -> OrdSeq a -> OrdSeq a
+addToOrdSeq = reducer insert
+
+toOrdSeq :: (Ord a, Foldable t) => t a -> OrdSeq a
+toOrdSeq = (`addToOrdSeq` OrdSeq Empty)
+
+fromOrdSeq :: OrdSeq a -> [a]
+fromOrdSeq (OrdSeq ft) = foldr ((:) . getElem) [] ft
