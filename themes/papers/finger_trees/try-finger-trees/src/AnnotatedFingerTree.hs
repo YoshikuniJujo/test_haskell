@@ -23,7 +23,7 @@ node2 :: Measured a v => a -> a -> Node v a
 node2 a b = Node (measure a <> measure b) $ a :. b :. Nil
 
 node3 :: Measured a v => a -> a -> a -> Node v a
-node3 a b c = Node (measure a <> measure b) $ a :. b :. c :.. Nil
+node3 a b c = Node (measure a <> measure b <> measure c) $ a :. b :. c :.. Nil
 
 instance Monoid v => Measured (Node v a) v where
 	measure (Node v _) = v
@@ -88,3 +88,34 @@ Deep _ pr m sf |> a = case sf ||> a of
 
 (|>.) :: (Measured a v, Foldable t) => FingerTree v a -> t a -> FingerTree v a
 (|>.) = reducel (|>)
+
+data ViewL s a = NilL | ConsL a (s a) deriving Show
+
+viewL :: Measured a v => FingerTree v a -> ViewL (FingerTree v) a
+viewL Empty = NilL
+viewL (Single x) = ConsL x Empty
+viewL (Deep _ (a :. pr') m sf) = ConsL a $ deepL pr' m sf
+
+nodeToDigit :: Node v a -> Digit a
+nodeToDigit (Node _ xs) = loosen xs
+
+deepL :: Measured a v =>
+	Range 0 3 a -> FingerTree v (Node v a) -> Digit a -> FingerTree v a
+deepL Nil m sf = case viewL m of
+	NilL -> toTree sf
+	ConsL a m' -> deep (nodeToDigit a) m' sf
+deepL (a :.. pr) m sf = deep (loosen $ a :. pr) m sf
+deepL _ _ _ = error "never occur"
+
+newtype Size = Size { getSize :: Int } deriving (Show, Eq, Ord)
+instance Semigroup Size where Size m <> Size n = Size $ m + n
+instance Monoid Size where mempty = Size 0
+
+newtype Elem a = Elem { getElem :: a } deriving Show
+instance Measured (Elem a) Size where measure _ = Size 1
+
+sampleList :: [Int]
+sampleList = [1 .. 7]
+
+sampleFTree :: FingerTree Size (Elem Int)
+sampleFTree = toTree $ Elem <$> sampleList
