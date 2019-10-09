@@ -3,7 +3,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=GHC.TypeLits.Normalise #-}
 
 module TRange where
 
@@ -90,3 +90,25 @@ instance {-# OVERLAPPABLE #-} Unsnoc 1 (m - 1) => Unsnoc 1 m where
 instance {-# OVERLAPPABLE #-} Unsnoc (n - 1) (m - 1) => Unsnoc n m where
 	unsnoc (x :. xs) = (x :.) `firstTP` unsnoc xs
 	unsnoc _ = error "never occur"
+
+infixr 5 ++.., ++.
+
+(++..) :: 1 <= m + m' => TRange 0 m c x y -> TRange n' m' c y z -> TRange n' (m + m') c x z
+Nil ++.. ys = loosenMax ys
+x :.. xs ++.. ys = x .:.. (xs ++.. ys)
+_ ++.. _ = error "never occur"
+
+(++.) :: (1 <= n, 1 <= m, 1 <= m + m') => TRange n m c x y -> TRange n' m' c y z -> TRange (n + n') (m + m') c x z
+Nil ++. ys = loosenMax ys
+x :.. xs ++. ys = x .:.. (xs ++. ys)
+x :. xs ++. ys = x :. (xs ++. ys)
+
+loosenMax :: 1 <= m' => TRange n m c x y -> TRange n m' c x y
+loosenMax Nil = Nil
+loosenMax (x :.. xs) = x :.. loosenMax xs
+loosenMax (x :. xs) = x :. loosenMax xs
+
+(.:..) :: 1 <= m => c x y -> TRange n m c y z -> TRange n (m + 1) c x z
+x .:.. Nil = x :.. Nil
+x .:.. ya@(_ :.. _) = x :.. ya
+x .:.. (y :. ys) = x :. (y .:.. ys)
