@@ -129,15 +129,6 @@ deepR pr m Nil = case viewR m of
 deepR pr m (a :.. sf) = Deep pr m (loosen $ a :. sf)
 deepR _ _ _ = error "never occur"
 
--- app3 :: FingerTree a -> Range 0 4 a -> FingerTree a -> FingerTree a
-app3 :: FingerTree a -> [a] -> FingerTree a -> FingerTree a
-app3 Empty ts xs = ts <|. xs
-app3 xs ts Empty = xs |>. ts
-app3 (Single x) ts xs = x <| (ts <|. xs)
-app3 xs ts (Single x) = (xs |>. ts) |> x
-app3 (Deep pr1 m1 sf1) ts (Deep pr2 m2 sf2) =
-	Deep pr1 (app3 m1 (nodes (digitToList sf1 ++ foldr (:) [] ts ++ digitToList pr2)) m2) sf2
-
 app3' :: forall a . FingerTree a -> Range 0 4 a -> FingerTree a -> FingerTree a
 app3' Empty ts xs = ts <|. xs
 app3' xs ts Empty = xs |>. ts
@@ -146,69 +137,27 @@ app3' xs ts (Single x) = (xs |>. ts) |> x
 app3' (Deep pr1 m1 sf1) ts (Deep pr2 m2 sf2) =
 	Deep pr1 (app3' m1 (loosen (nodes' (sf1 ++. ts ++.. pr2) :: Range 1 4 (Node a))) m2) sf2
 
-digitToList :: Digit a -> [a]
-digitToList = foldr (:) []
-
-{-
-nodes' :: [a] -> Range 0 4 (Node a)
-nodes' [] = Nil
-nodes' [_] = error "not permitted"
-nodes' [a, b] = (a :. b :. Nil) :.. Nil
-nodes' [a, b, c] = (a :. b :. c :.. Nil) :.. Nil
-nodes' [a, b, c, d] = (a :. b :. Nil) :.. (c :. d :. Nil) :.. Nil
-nodes' (a : b : c : xs) = (a :. b :. c :.. Nil) :.. nodes' xs
--}
-
--- nodes :: Range 2 12 a -> Range 1 4 (Node a)
-nodes :: [a] -> [Node a]
-nodes [] = []
-nodes [_] = error "not permitted"
-nodes [a, b] = [a :. b :. Nil]
-nodes [a, b, c] = [a :. b :. c :.. Nil]
-nodes [a, b, c, d] = [a :. b :. Nil, c :. d :. Nil]
-nodes (a : b : c : xs) = a :. b :. c :.. Nil : nodes xs
-
 nodesTest :: Range 2 6 a -> Range 1 2 (Node a)
 nodesTest (a :. b :. Nil) = (a :. b :. Nil) :. Nil
 nodesTest (a :. b :. c :.. Nil) = (a :. b :. c :.. Nil) :. Nil
 nodesTest (a :. b :. c :.. d :.. Nil) = (a :. b :. Nil) :. (c :. d :. Nil) :.. Nil
 nodesTest (a :. b :. c :.. d :.. e :.. Nil) = (a :. b :. c :.. Nil) :. (d :. e :. Nil) :.. Nil
 nodesTest (a :. b :. c :.. d :.. e :.. f :.. Nil) = (a :. b :. c :.. Nil) :. (d :. e :. f :.. Nil) :.. Nil
+nodesTest _ = error "never occur"
 
 class Nodes m m' where
 	nodes' :: Range 2 m a -> Range 1 m' (Node a)
 
--- instance Nodes 2 0 m' where
--- instance Nodes 2 1 m' where
--- instance Nodes 2 2 m' where
--- instance Nodes 2 3 m' where
--- instance Nodes 2 5 m' where
--- instance Nodes 2 6 m' where
-
--- instance Nodes 1 1 where
-
--- instance {-# INCOHERENT #-} Nodes 2 4 2 where
 instance Nodes 6 2 where
 	nodes' = loosen . nodesTest
 
-{-
-instance {-# OVERLAPPABLE #-} Nodes 2 7 3 where
-	nodes' (a :. b :. c :.. Nil) = (a :. b :. c :.. Nil) :. Nil
-	nodes' (a :. b :. c :.. d :.. Nil) = (a :. b :. Nil) :. (c :. d :. Nil) :.. Nil
-	nodes' (a :. b :. c :.. d :.. e :.. xs) = (a :. b :. c :.. Nil) .:.. nodes' (d :. e :. xs)
---	nodes' (a :. b :. c :.. xs) = (a :. b :. c :.. Nil) .:.. nodes' xs
--}
-
--- instance {-# OVERLAPPABLE #-} Nodes n (m - 3) (m' - 1) => Nodes n m m' where
 instance {-# OVERLAPPABLE #-} Nodes (m - 3) (m' - 1) => Nodes m m' where
--- instance {-# OVERLAPPABLE #-} Nodes 2 (3 * m - 2) (m' - 1) => Nodes 2 (3 * m + 1) m' where
 	nodes' :: forall a . Range 2 m a -> Range 1 m' (Node a)
 	nodes' (a :. b :. Nil) = (a :. b :. Nil) :. Nil
 	nodes' (a :. b :. c :.. Nil) = (a :. b :. c :.. Nil) :. Nil
 	nodes' (a :. b :. c :.. d :.. Nil) = (a :. b :. Nil) :. (c :. d :. Nil) :.. Nil
 	nodes' (a :. b :. c :.. d :.. e :.. xs :: Range 2 m a) = (a :. b :. c :.. Nil) .:.. (nodes' (d :. e :. xs :: Range 2 (m - 3) a) :: Range 1 (m' - 1) (Node a))
---	nodes' (a :. b :. c :.. xs) = (a :. b :. c :.. Nil) .:.. nodes' xs
+	nodes' _ = error "never occur"
 
-(><), (><.) :: FingerTree a -> FingerTree a -> FingerTree a
-xs >< ys = app3 xs [] ys
-xs ><. ys = app3' xs Nil ys
+(><) :: FingerTree a -> FingerTree a -> FingerTree a
+xs >< ys = app3' xs Nil ys
