@@ -2,7 +2,7 @@
 {-# LANGUAGE GADTs, DataKinds, TypeOperators, KindSignatures, StandaloneDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=GHC.TypeLits.Normalise #-}
 
 module Range where
 
@@ -127,6 +127,29 @@ class Move n m n' m' where
 
 instance {-# OVERLAPPABLE #-} 1 <= m => Move n m n' m' where
 	move (x :. xs) ys = (xs, x :. ys)
+
+infixr 5 ++.., ++.
+
+(++..) :: 1 <= m + m' => Range 0 m a -> Range n' m' a -> Range n' (m + m') a
+Nil ++.. ys = loosenMax ys
+x :.. xs ++.. ys = x .:.. (xs ++.. ys)
+
+(++.) :: (1 <= n, 1 <= m, 1 <= m + m') => Range n m a -> Range n' m' a -> Range (n + n') (m + m') a
+Nil ++. ys = loosenMax ys
+x :.. xs ++. ys = x .:.. (xs ++. ys)
+x :. xs ++. ys = x :. (xs ++. ys)
+
+infixr 5 .:..
+
+loosenMax :: 1 <= m' => Range n m a -> Range n m' a
+loosenMax Nil = Nil
+loosenMax (x :.. xs) = x :.. loosenMax xs
+loosenMax (x :. xs) = x :. loosenMax xs
+
+(.:..) :: 1 <= m => a -> Range n m a -> Range n (m + 1) a
+x .:.. Nil = x :.. Nil
+x .:.. ya@(_ :.. _) = x :.. ya
+x .:.. (y :. ys) = x :. (y .:.. ys)
 
 {-
 infixr 6 ++.
