@@ -1,4 +1,3 @@
--- {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE GADTs, DataKinds, TypeOperators, KindSignatures, StandaloneDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
@@ -121,22 +120,14 @@ instance {-# OVERLAPPABLE #-} FromList (n - 1) (m - 1) => FromList n m where
 	fromList [] = error "bad"
 	fromList (x : xs) = x :. fromList xs
 
-class Move n m n' m' where
-	move :: Range n m a -> Range (n' - 1) (m' - 1) a ->
-		(Range (n - 1) (m - 1) a, Range n' m' a)
-
-instance {-# OVERLAPPABLE #-} 1 <= m => Move n m n' m' where
-	move (x :. xs) ys = (xs, x :. ys)
-
 infixr 5 ++.., ++.
 
 (++..) :: 1 <= m + m' => Range 0 m a -> Range n' m' a -> Range n' (m + m') a
 Nil ++.. ys = loosenMax ys
 x :.. xs ++.. ys = x .:.. (xs ++.. ys)
+_ ++.. _ = error "never occur"
 
 (++.) :: (1 <= n, 1 <= m, 1 <= m + m') => Range n m a -> Range n' m' a -> Range (n + n') (m + m') a
-Nil ++. ys = loosenMax ys
-x :.. xs ++. ys = x .:.. (xs ++. ys)
 x :. xs ++. ys = x :. (xs ++. ys)
 
 infixr 5 .:..
@@ -150,16 +141,3 @@ loosenMax (x :. xs) = x :. loosenMax xs
 x .:.. Nil = x :.. Nil
 x .:.. ya@(_ :.. _) = x :.. ya
 x .:.. (y :. ys) = x :. (y .:.. ys)
-
-{-
-infixr 6 ++.
-
-class Add n m n' m' where
-	(++.) :: Range n m a -> Range n' m' a -> Range (n + n') (m + m') a
-
-instance Add 0 0 0 m' where
-	Nil ++. ys = ys
-
-instance {-#OVERLAPPABLE #-} (1 <= m + m', Add 0 (m - 1) 0 m') => Add 0 m 0 m' where
-	(x :.. xs) ++. ys = x :.. (xs ++. ys)
-	-}
