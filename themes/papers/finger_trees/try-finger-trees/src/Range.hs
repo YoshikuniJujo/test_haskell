@@ -128,6 +128,8 @@ x :.. xs ++.. ys = x .:.. (xs ++.. ys)
 _ ++.. _ = error "never occur"
 
 (++.) :: (1 <= n, 1 <= m, 1 <= m + m') => Range n m a -> Range n' m' a -> Range (n + n') (m + m') a
+Nil ++. ys = loosenMax ys
+x :.. xs ++. ys = x .:.. (xs ++. ys)
 x :. xs ++. ys = x :. (xs ++. ys)
 
 infixr 5 .:..
