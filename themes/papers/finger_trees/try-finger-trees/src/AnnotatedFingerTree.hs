@@ -344,3 +344,37 @@ toOrdSeq = (`addToOrdSeq` OrdSeq Empty)
 
 fromOrdSeq :: OrdSeq a -> [a]
 fromOrdSeq (OrdSeq ft) = foldr ((:) . getElem) [] ft
+
+data Interval = Interval { low :: Double, high :: Double } deriving Show
+
+newtype IntervalTree = IntervalTree (FingerTree (Key Double, Prio Double) Interval) deriving Show
+
+instance Measured Interval (Key Double, Prio Double) where
+	measure i = (Key (low i), Prio (high i))
+
+insertIntervalTree :: Interval -> IntervalTree -> IntervalTree
+insertIntervalTree i (IntervalTree xs) = IntervalTree (l >< (i <| r))
+	where (l, r) = split ((>= Key (low i)) . fst) xs
+
+addToIntervalTree :: Foldable t => t (Double, Double) -> IntervalTree -> IntervalTree
+addToIntervalTree = reducer (insertIntervalTree . uncurry Interval)
+
+toIntervalTree :: Foldable t => t (Double, Double) -> IntervalTree
+toIntervalTree = (`addToIntervalTree` IntervalTree Empty)
+
+atleast, greater :: Double -> (Key Double, Prio Double) -> Bool
+atleast k (_, n) = Prio k <= n
+greater k (n, _) = n > Key k
+
+intervalSearch :: IntervalTree -> Interval -> Maybe Interval
+intervalSearch (IntervalTree t) i
+	| atleast (low i) (measure t) && low x <= high i = Just x
+	| otherwise = Nothing
+	where Split _ x _ = splitTree (atleast (low i)) mempty t
+
+intervalMatch :: IntervalTree -> Interval -> [Interval]
+intervalMatch (IntervalTree t) i = matches (takeUntil (greater (high i)) t)
+	where
+	matches xs = case viewL (dropUntil (atleast (low i)) xs) of
+		NilL -> []
+		ConsL x xs' -> x : matches xs'
