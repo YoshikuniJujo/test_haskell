@@ -174,3 +174,78 @@ instance {-# OVERLAPPABLE #-} Nodes (m - 3) (m' - 1) => Nodes m m' where
 
 (><) :: Measured a v => FingerTree v a -> FingerTree v a -> FingerTree v a
 xs >< ys = app3 xs Nil ys
+
+data Split f a = Split (f a) a (f a) deriving Show
+
+class SplitDigit m where
+	splitDigit :: Measured a v => (v -> Bool) -> v -> Range 1 m a -> Split (Range 0 (m - 1)) a
+
+instance SplitDigit 1 where
+	splitDigit _ _ (a :. Nil) = Split Nil a Nil
+	splitDigit _ _ _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-} (2 <= m, SplitDigit (m - 1)) => SplitDigit m where
+	splitDigit :: forall a v . Measured a v => (v -> Bool) -> v -> Range 1 m a -> Split (Range 0 (m - 1)) a
+	splitDigit _ _ (a :. Nil) = Split Nil a Nil
+	splitDigit p i (a :. b :.. as :: Range 1 m a)
+		| p i' = Split Nil a (loosenMax (b :.. as :: 2 <= m => Range 0 (m - 1) a) :: Range 0 (m - 1) a)
+		| otherwise = let Split l x r = splitDigit p i' (b :. as) in Split (a :.. l) x (loosenMax (r :: Range 0 (m - 2) a) :: Range 0 (m - 1) a)
+		where i' = i <> measure a
+	splitDigit _ _ _ = error "never occur"
+
+{-
+splitDigit :: Measured a v => (v -> Bool) -> v -> Digit a -> Split (Range 0 3) a
+splitDigit _ _ (a :. Nil) = Split Nil a Nil
+splitDigit p i (a :. as)
+	| p i' = Split Nil a as
+	| otherwise = let Split l x r = splitDigit p i' as in Split (a :.. l) x r
+	where i' = i <> measure a
+	-}
+
+splitTree :: Measured a v =>
+	(v -> Bool) -> v -> FingerTree v a -> Split (FingerTree v) a
+splitTree _ _ Empty = error "can't split"
+splitTree _ _ (Single x) = Split Empty x Empty
+splitTree p i (Deep _ pr m sf)
+	| p vpr = let Split l x r = splitDigit p i pr in
+		Split (toTree l) x (deepL r m sf)
+	| p vm = let
+		Split ml xs mr = splitTree p vpr m
+		Split l x r = splitDigit p (vpr <> measure ml) (nodeToDigit xs) in
+		Split (deepR pr ml l) x (deepL r mr sf)
+	| otherwise = let Split l x r = splitDigit p vm sf in
+		Split (deepR pr m l) x (toTree r)
+	where
+	vpr = i <> measure pr
+	vm = vpr <> measure m
+
+split :: Measured a v =>
+	(v -> Bool) -> FingerTree v a -> (FingerTree v a, FingerTree v a)
+split _ Empty = (Empty, Empty)
+split p xs
+	| p $ measure xs = (l, x <| r)
+	| otherwise = (xs, Empty)
+	where Split l x r = splitTree p mempty xs
+
+takeUntil, dropUntil :: Measured a v => (v -> Bool) -> FingerTree v a -> FingerTree v a
+takeUntil p = fst . split p
+dropUntil p = snd . split p
+
+newtype Seq a = Seq (FingerTree Size (Elem a)) deriving Show
+
+length :: Seq a -> Int
+length (Seq xs) = getSize $ measure xs
+
+splitAt :: Int -> Seq a -> (Seq a, Seq a)
+splitAt i (Seq xs) = (Seq l, Seq r)
+	where (l, r) = split (Size i <) xs
+
+(!) :: Seq a -> Int -> a
+Seq xs ! i = getElem x
+	where Split _ x _ = splitTree (Size i <) (Size 0) xs
+
+addToSeq :: Foldable t => t a -> Seq a -> Seq a
+addToSeq ts (Seq ft) = Seq $ reducer ((<|) . Elem) ts ft
+
+toSeq :: Foldable t => t a -> Seq a
+toSeq = (`addToSeq` Seq Empty)

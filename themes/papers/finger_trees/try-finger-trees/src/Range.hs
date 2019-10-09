@@ -46,7 +46,7 @@ class Loosen s t where
 instance Loosen (Range 0 0) (Range 0 0) where
 	loosen = id
 
-instance {-# OVERLAPPABLE #-} Loosen (Range 0 0) (Range 0 (m' - 1)) =>
+instance {-# OVERLAPPABLE #-} (1 <= m', Loosen (Range 0 0) (Range 0 (m' - 1))) =>
 	Loosen (Range 0 0) (Range 0 m') where
 	loosen Nil = Nil
 	loosen _ = error "never occur"
