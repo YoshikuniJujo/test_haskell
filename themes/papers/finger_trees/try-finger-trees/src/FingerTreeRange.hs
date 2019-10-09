@@ -1,7 +1,10 @@
 {-# LANGUAGE ScopedTypeVariables, GADTs, DataKinds #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE TypeOperators #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE NoStarIsType #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=GHC.TypeLits.Normalise #-}
 
 module FingerTreeRange where
 
@@ -148,7 +151,7 @@ nodes' [a, b, c, d] = (a :. b :. Nil) :.. (c :. d :. Nil) :.. Nil
 nodes' (a : b : c : xs) = (a :. b :. c :.. Nil) :.. nodes' xs
 -}
 
--- nodes :: Range 2 12 a -> Range 1 4 a
+-- nodes :: Range 2 12 a -> Range 1 4 (Node a)
 nodes :: [a] -> [Node a]
 nodes [] = []
 nodes [_] = error "not permitted"
@@ -156,6 +159,45 @@ nodes [a, b] = [a :. b :. Nil]
 nodes [a, b, c] = [a :. b :. c :.. Nil]
 nodes [a, b, c, d] = [a :. b :. Nil, c :. d :. Nil]
 nodes (a : b : c : xs) = a :. b :. c :.. Nil : nodes xs
+
+nodesTest :: Range 2 4 a -> Range 1 2 (Node a)
+nodesTest (a :. b :. Nil) = (a :. b :. Nil) :. Nil
+nodesTest (a :. b :. c :.. Nil) = (a :. b :. c :.. Nil) :. Nil
+nodesTest (a :. b :. c :.. d :.. Nil) = (a :. b :. Nil) :. (c :. d :. Nil) :.. Nil
+
+class Nodes m m' where
+	nodes' :: Range 2 m a -> Range 1 m' (Node a)
+
+-- instance Nodes 2 0 m' where
+-- instance Nodes 2 1 m' where
+-- instance Nodes 2 2 m' where
+-- instance Nodes 2 3 m' where
+-- instance Nodes 2 5 m' where
+-- instance Nodes 2 6 m' where
+
+instance Nodes 1 1 where
+
+-- instance {-# INCOHERENT #-} Nodes 2 4 2 where
+instance Nodes (4 - 3) (2 - 1)  => Nodes 4 2 where
+	nodes' = loosen . nodesTest
+
+{-
+instance {-# OVERLAPPABLE #-} Nodes 2 7 3 where
+	nodes' (a :. b :. c :.. Nil) = (a :. b :. c :.. Nil) :. Nil
+	nodes' (a :. b :. c :.. d :.. Nil) = (a :. b :. Nil) :. (c :. d :. Nil) :.. Nil
+	nodes' (a :. b :. c :.. d :.. e :.. xs) = (a :. b :. c :.. Nil) .:.. nodes' (d :. e :. xs)
+--	nodes' (a :. b :. c :.. xs) = (a :. b :. c :.. Nil) .:.. nodes' xs
+-}
+
+-- instance {-# OVERLAPPABLE #-} Nodes n (m - 3) (m' - 1) => Nodes n m m' where
+instance {-# OVERLAPPABLE #-} Nodes (m - 3) (m' - 1) => Nodes m m' where
+-- instance {-# OVERLAPPABLE #-} Nodes 2 (3 * m - 2) (m' - 1) => Nodes 2 (3 * m + 1) m' where
+	nodes' :: forall a . Range 2 m a -> Range 1 m' (Node a)
+	nodes' (a :. b :. Nil) = (a :. b :. Nil) :. Nil
+	nodes' (a :. b :. c :.. Nil) = (a :. b :. c :.. Nil) :. Nil
+	nodes' (a :. b :. c :.. d :.. Nil) = (a :. b :. Nil) :. (c :. d :. Nil) :.. Nil
+	nodes' (a :. b :. c :.. d :.. e :.. xs :: Range 2 m a) = (a :. b :. c :.. Nil) .:.. (nodes' (d :. e :. xs :: Range 2 (m - 3) a) :: Range 1 (m' - 1) (Node a))
+--	nodes' (a :. b :. c :.. xs) = (a :. b :. c :.. Nil) .:.. nodes' xs
 
 (><) :: FingerTree a -> FingerTree a -> FingerTree a
 xs >< ys = app3 xs [] ys
