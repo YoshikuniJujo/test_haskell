@@ -1,10 +1,12 @@
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE GADTs, DataKinds #-}
+{-# LANGUAGE ScopedTypeVariables, InstanceSigs #-}
+{-# LANGUAGE GADTs, DataKinds, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=GHC.TypeLits.Normalise #-}
 
 module AnnotatedFingerTree where
+
+import GHC.TypeLits
 
 import Range
 
@@ -135,3 +137,40 @@ deepR pr m Nil = case viewR m of
 	ConsR m' a -> deep pr m' (nodeToDigit a)
 deepR pr m (a :.. sf) = deep pr m (loosen $ a :. sf)
 deepR _ _ _ = error "never occur"
+
+app3 :: forall a v . Measured a v =>
+	FingerTree v a -> Range 0 4 a -> FingerTree v a -> FingerTree v a
+app3 Empty ts ys = ts <|. ys
+app3 xs ts Empty = xs |>. ts
+app3 (Single x) ts ys = x <| (ts <|. ys)
+app3 xs ts (Single y) = (xs |>. ts) |> y
+app3 (Deep _ pr1 m1 sf1) ts (Deep _ pr2 m2 sf2) =
+	deep pr1 (app3 m1 (loosen (nodes (sf1 ++. ts ++.. pr2) :: Range 1 4 (Node v a))) m2) sf2
+--	deep pr1 (app3 m1 (loosen (nodes (sf1 ++. ts ++.. pr2))) m2) sf2
+
+nodes0 :: Measured a v => Range 2 6 a -> Range 1 2 (Node v a)
+nodes0 (a :. b :. Nil) = node2 a b :. Nil
+nodes0 (a :. b :. c :.. Nil) = node3 a b c :. Nil
+nodes0 (a :. b :. c :.. d :.. Nil) = node2 a b :. node2 c d :.. Nil
+nodes0 (a :. b :. c :.. d :.. e :.. Nil) = node3 a b c :. node2 d e :.. Nil
+nodes0 (a :. b :. c :.. d :.. e :.. f :.. Nil) = node3 a b c :. node3 d e f :.. Nil
+nodes0 _ = error "never occur"
+
+
+class Nodes m m' where
+	nodes :: Measured a v => Range 2 m a -> Range 1 m' (Node v a)
+
+instance Nodes 6 2 where
+	nodes = nodes0
+
+instance {-# OVERLAPPABLE #-} Nodes (m - 3) (m' - 1) => Nodes m m' where
+	nodes :: forall a v . Measured a v => Range 2 m a -> Range 1 m' (Node v a)
+	nodes (a :. b :. Nil) = node2 a b :. Nil
+	nodes (a :. b :. c :.. Nil) = node3 a b c :. Nil
+	nodes (a :. b :. c :.. d :.. Nil) = node2 a b :. node2 c d :.. Nil
+	nodes (a :. b :. c :.. d :.. e :.. xs) = node3 a b c .:.. (nodes (d :. e :. xs :: Range 2 (m - 3) a) :: Range 1 (m' - 1) (Node v a))
+--	nodes (a :. b :. c :.. d :.. e :.. xs) = node3 a b c .:.. (nodes (d :. e :. xs) :: Range 1 (m' - 1) (Node v a))
+	nodes _ = error "never occur"
+
+(><) :: Measured a v => FingerTree v a -> FingerTree v a -> FingerTree v a
+xs >< ys = app3 xs Nil ys
