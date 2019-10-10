@@ -3,24 +3,30 @@
 module PicoScheme where
 
 import Control.Arrow
-import Data.Map (Map)
+import Data.Map.Strict (Map, (!))
 import Data.Char
 
-import qualified Data.Map as Map
+import qualified Data.Map.Strict as Map
 
 data Token
 	= TString String
 	| TInt Int
+	| OP | CP
+	| TDefine
+	| TSymbol String
 	deriving Show
 
 data Object
 	= String String
 	| Int Int
+	| Define String Object
+	| Symbol String
+	deriving Show
 
 type Env = Map String Object
 
 picoScheme :: String -> String
-picoScheme src = case fst . (`runAll` Map.empty) . parse $ lexer src of
+picoScheme src = case fst . (`runAll` Map.empty) . parseAll $ lexer src of
 	[] -> error "Nihili est qui nihil amat."
 	r -> case last r of
 		String s -> s
@@ -37,12 +43,25 @@ lexer ('"' : cs) = case span (/= '"') cs of
 	_ -> error "never-ending string"
 lexer ca@(c : _) | isDigit c = TInt (read ds) : lexer r
 	where (ds, r) = span isDigit ca
-lexer _ = error "lex error"
+lexer ('(' : cs) = OP : lexer cs
+lexer (')' : cs) = CP : lexer cs
+lexer ('d' : 'e' : 'f' : 'i' : 'n' : 'e' : cs) = TDefine : lexer cs
+lexer (c : cs) | isAlpha c = TSymbol (c : sym) : lexer r
+	where (sym, r) = span isAlpha cs
+lexer (c : _) = error $ "lex error `" ++ [c] ++ "'"
 
-parse :: [Token] -> [Object]
-parse [] = []
-parse (TString s : ts) = String s : parse ts
-parse (TInt n : ts) = Int n : parse ts
+parseAll :: [Token] -> [Object]
+parseAll [] = []
+parseAll ts = let (o, ts') = parse ts in o : parseAll ts'
+
+parse :: [Token] -> (Object, [Token])
+parse [] = error "parse error"
+parse (TString s : ts) = (String s, ts)
+parse (TInt n : ts) = (Int n, ts)
+parse (OP : TDefine : TSymbol sym : ts) = case parse ts of
+	(o, CP : ts') -> (Define sym o, ts')
+	_ -> error $ "parse error: " ++ show ts
+parse (TSymbol sym : ts) = (Symbol sym, ts)
 
 runAll :: [Object] -> Env -> ([Object], Env)
 runAll [] e = ([], e)
@@ -52,3 +71,5 @@ runAll (o : os) e = (o' :) `first` runAll os e'
 run :: Object -> Env -> (Object, Env)
 run (String s) e = (String s, e)
 run (Int i) e = (Int i, e)
+run (Define sym o) e = (Symbol sym, Map.insert sym o e)
+run (Symbol sym) e = (e ! sym, e)
