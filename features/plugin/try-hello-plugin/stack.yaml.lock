@@ -6,18 +6,18 @@
 packages:
 - completed:
     cabal-file:
-      size: 1601
-      sha256: ab813e641752d3c2af0259cf5f6b63e4d0c910fdffeb7ea991aa7ff3f169cc6d
+      size: 1629
+      sha256: ca4b0db9111d24c97a05e525a83a21b902fc74df382854bb993984d934640443
     name: hello-plugin
     version: 0.1.0.0
     git: https://github.com/YoshikuniJujo/hello-plugin
     pantry-tree:
-      size: 616
-      sha256: 150fa46887dabfaed0f91fe1db6352df9053ca2c3e0006837b18cccc4436ec30
-    commit: a3fda3daed8ec6f3ed1c1d644d4cafb0ca4b578b
+      size: 685
+      sha256: 1a488efd6c054d75116f31fe6f41ab70bb423f127db06f2c4162fdf490b7aa61
+    commit: 13ad1ca352c8da3cff10ef4782bd0d3687ee07d6
   original:
     git: https://github.com/YoshikuniJujo/hello-plugin
-    commit: a3fda3daed8ec6f3ed1c1d644d4cafb0ca4b578b
+    commit: 13ad1ca352c8da3cff10ef4782bd0d3687ee07d6
 snapshots:
 - completed:
     size: 523700

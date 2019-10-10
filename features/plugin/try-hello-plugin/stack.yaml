@@ -42,7 +42,7 @@ packages:
 # extra-deps: []
 extra-deps:
     - git: https://github.com/YoshikuniJujo/hello-plugin
-      commit: a3fda3daed8ec6f3ed1c1d644d4cafb0ca4b578b
+      commit: 13ad1ca352c8da3cff10ef4782bd0d3687ee07d6
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
