@@ -1,3 +1,3 @@
-(define foo (lambda (n) n))
+(define foo (lambda (n s) s))
 
-(foo "Hello, world!")
+(foo 123 "Hello, beautiful world!")
