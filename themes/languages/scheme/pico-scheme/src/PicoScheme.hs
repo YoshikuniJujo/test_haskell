@@ -13,6 +13,7 @@ data Token
 	| TInt Int
 	| OP | CP
 	| TDefine
+	| TLambda
 	| TSymbol String
 	deriving Show
 
@@ -21,12 +22,14 @@ data Object
 	| Int Int
 	| Define String Object
 	| Symbol String
+	| Lambda [String] Object
+	| Apply Object [Object]
 	deriving Show
 
 type Env = Map String Object
 
 picoScheme :: String -> String
-picoScheme src = case fst . (`runAll` Map.empty) . parseAll $ lexer src of
+picoScheme src = case fst . (`evalAll` Map.empty) . parseAll $ lexer src of
 	[] -> error "Nihili est qui nihil amat."
 	r -> case last r of
 		String s -> s
@@ -46,6 +49,7 @@ lexer ca@(c : _) | isDigit c = TInt (read ds) : lexer r
 lexer ('(' : cs) = OP : lexer cs
 lexer (')' : cs) = CP : lexer cs
 lexer ('d' : 'e' : 'f' : 'i' : 'n' : 'e' : cs) = TDefine : lexer cs
+lexer ('l' : 'a' : 'm' : 'b' : 'd' : 'a' : cs) = TLambda : lexer cs
 lexer (c : cs) | isAlpha c = TSymbol (c : sym) : lexer r
 	where (sym, r) = span isAlpha cs
 lexer (c : _) = error $ "lex error `" ++ [c] ++ "'"
@@ -62,14 +66,39 @@ parse (OP : TDefine : TSymbol sym : ts) = case parse ts of
 	(o, CP : ts') -> (Define sym o, ts')
 	_ -> error $ "parse error: " ++ show ts
 parse (TSymbol sym : ts) = (Symbol sym, ts)
+parse (OP : TLambda : OP : ts) = case parseSymbols ts of
+	(syms, CP : ts') -> case parse ts' of
+		(o, CP : ts'') -> (Lambda syms o, ts'')
+		_ -> error $ "parse error: " ++ show ts'
+	_ -> error $ "parse error: " ++ show ts
+parse (OP : ts) = (Apply f args, ts'')
+	where
+	(f, ts') = parse ts
+	(args, ts'') = parseP ts'
 
-runAll :: [Object] -> Env -> ([Object], Env)
-runAll [] e = ([], e)
-runAll (o : os) e = (o' :) `first` runAll os e'
-	where (o', e') = run o e
+parseP :: [Token] -> ([Object], [Token])
+parseP (CP : ts) = ([], ts)
+parseP ts = let (o, ts') = parse ts in (o :) `first` parseP ts'
 
-run :: Object -> Env -> (Object, Env)
-run (String s) e = (String s, e)
-run (Int i) e = (Int i, e)
-run (Define sym o) e = (Symbol sym, Map.insert sym o e)
-run (Symbol sym) e = (e ! sym, e)
+parseSymbols :: [Token] -> ([String], [Token])
+parseSymbols [] = ([], [])
+parseSymbols (TSymbol sym : ts) = (sym :) `first` parseSymbols ts
+parseSymbols ts = ([], ts)
+
+evalAll :: [Object] -> Env -> ([Object], Env)
+evalAll [] e = ([], e)
+evalAll (o : os) e = (o' :) `first` evalAll os e'
+	where (o', e') = eval o e
+
+eval :: Object -> Env -> (Object, Env)
+eval (String s) e = (String s, e)
+eval (Int i) e = (Int i, e)
+eval (Define sym o) e = (Symbol sym, Map.insert sym o e)
+eval (Symbol sym) e = (e ! sym, e)
+eval o@(Lambda _ _) e = (o, e)
+eval (Apply f args) e = case eval f e of
+	(Lambda syms o, e') -> let
+		(args', e'') = evalAll args e'
+		e''' = foldr (uncurry Map.insert) e'' (zip syms args')
+		(o', _) = eval o e''' in (o', e)
+	_ -> error "eval error"
