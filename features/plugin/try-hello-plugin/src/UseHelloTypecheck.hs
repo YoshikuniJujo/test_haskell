@@ -40,5 +40,5 @@ deriving instance Show a => Show (List n a)
 head_ :: List (n + 1) a -> a
 head_ (a ::: _) = a
 
-tail_ :: List (n + 1) a -> List n a
-tail_ (_ ::: as) = as
+-- tail_ :: List (n + 1) a -> List n a
+-- tail_ (_ ::: as) = as

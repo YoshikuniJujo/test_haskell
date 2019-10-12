@@ -6,21 +6,21 @@
 packages:
 - completed:
     cabal-file:
-      size: 1629
-      sha256: ca4b0db9111d24c97a05e525a83a21b902fc74df382854bb993984d934640443
+      size: 1981
+      sha256: 6d9dae5293dd9391dfb9a8986abc6578965a57832b2e1c4851ee0a554f4ef5c3
     name: hello-plugin
     version: 0.1.0.0
     git: https://github.com/YoshikuniJujo/hello-plugin
     pantry-tree:
-      size: 685
-      sha256: 1a488efd6c054d75116f31fe6f41ab70bb423f127db06f2c4162fdf490b7aa61
-    commit: 13ad1ca352c8da3cff10ef4782bd0d3687ee07d6
+      size: 1482
+      sha256: 87d5513f2179cb23122803ab1224e2f97ce7b391769b8654b24bec5e328c2cbc
+    commit: 53c6ee4d0d8c6d5fadff663a27bf4ff4838ef6cd
   original:
     git: https://github.com/YoshikuniJujo/hello-plugin
-    commit: 13ad1ca352c8da3cff10ef4782bd0d3687ee07d6
+    commit: 53c6ee4d0d8c6d5fadff663a27bf4ff4838ef6cd
 snapshots:
 - completed:
-    size: 523700
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/14/7.yaml
-    sha256: 8e3f3c894be74d71fa4bf085e0a8baae7e4d7622d07ea31a52736b80f8b9bb1a
-  original: lts-14.7
+    size: 397477
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2019/10/10.yaml
+    sha256: a9ecedf3b5394aad33313da80bd0eba6276498685c5dae28da24e77859b8de73
+  original: nightly-2019-10-10
