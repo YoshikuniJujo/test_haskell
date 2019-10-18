@@ -39,32 +39,25 @@ instance {-# OVERLAPPABLE #-}
 	foldl (>-) z (x :. xs) = foldl (>-) (z >- x) xs
 	foldl _ _ _ = error "never occur"
 
-class Loosen n m n' m' where
-	loosen :: Range n m a -> Range n' m' a
+class LoosenMin n m n' where loosenMin :: Range n m a -> Range n' m a
 
-instance Loosen 0 0 0 0 where
-	loosen = id
+instance 1 <= m => LoosenMin n m 0 where
+	loosenMin Nil = Nil
+	loosenMin (x :. xs) = x :.. loosenMin xs
+	loosenMin (x :.. xs) = x :.. xs
 
-instance {-# OVERLAPPABLE #-} (1 <= m', Loosen 0 0 0 (m' - 1)) =>
-	Loosen 0 0 0 m' where
-	loosen Nil = Nil
-	loosen _ = error "never occur"
+instance {-# OVERLAPPABLE #-} (1 <= m, n' <= n, LoosenMin (n - 1) (m - 1) (n' - 1)) =>
+	LoosenMin n m n' where
+	loosenMin (x :. xs) = x :. loosenMin xs
+	loosenMin _ = error "never occur"
 
-instance {-# OVERLAPPABLE #-} (1 <= m', Loosen 0 (m - 1) 0 (m' - 1)) =>
-	Loosen 0 m 0 m' where
-	loosen Nil = Nil
-	loosen (x :.. xs) = x :.. loosen xs
-	loosen _ = error "never occur"
+loosenMax :: 1 <= m' => Range n m a -> Range n m' a
+loosenMax Nil = Nil
+loosenMax (x :.. xs) = x :.. loosenMax xs
+loosenMax (x :. xs) = x :. loosenMax xs
 
-instance {-# OVERLAPPABLE #-} (1 <= m', Loosen (n - 1) (m - 1) 0 (m' - 1)) =>
-	Loosen n m 0 m' where
-	loosen (x :. xs) = x :.. loosen xs
-	loosen _ = error "never occur"
-
-instance {-# OVERLAPPABLE #-} Loosen (n - 1) (m - 1) (n' - 1) (m' - 1) =>
-	Loosen n m n' m' where
-	loosen (x :. xs) = x :. loosen xs
-	loosen _ = error "never occur"
+loosen :: (1 <= m', LoosenMin n m n') => Range n m a -> Range n' m' a
+loosen = loosenMax . loosenMin
 
 infixr 5 ++.
 
@@ -73,11 +66,6 @@ Nil ++. ys = loosenMax ys
 -- Nil ++. ys = loosen ys
 -- x :.. xs ++. ys = x .:.. (xs ++. ys)
 -- x :. xs ++. ys = x :. (xs ++. ys)
-
-loosenMax :: 1 <= m' => Range n m a -> Range n m' a
-loosenMax Nil = Nil
-loosenMax (x :.. xs) = x :.. loosenMax xs
-loosenMax (x :. xs) = x :. loosenMax xs
 
 infixr 5 .:..
 
