@@ -63,8 +63,7 @@ infixr 5 ++.
 
 (++.) :: 1 <= m => Range n m a -> Range n' m' a -> Range (n + n') (m + m') a
 Nil ++. ys = loosenMax ys
--- Nil ++. ys = loosen ys
--- x :.. xs ++. ys = x .:.. (xs ++. ys)
+x :.. xs ++. ys = x .:.. (xs ++. ys)
 -- x :. xs ++. ys = x :. (xs ++. ys)
 
 infixr 5 .:..
