@@ -147,18 +147,12 @@ NilR .:++ x = NilR :++ x
 ya@(_ :++ _) .:++ x = ya :++ x
 (ys :+ y) .:++ x = (ys .:++ y) :+ x
 
-class RightToLeft n m n' m' where
-	rightToLeftGen :: RangeL n m a -> RangeR n' m' a -> RangeL (n + n') (m + m') a
-
-instance RightToLeft n m 0 0 where
-	rightToLeftGen l NilR = l
-	rightToLeftGen _ _ = error "never occur"
-
--- instance RightToLeft n m
-
-{-
 rightToLeftGen :: forall n m n' m' a . 1 <= m => RangeL n m a -> RangeR n' m' a -> RangeL (n + n') (m + m') a
 rightToLeftGen l NilR = loosenLMax l
 rightToLeftGen l (xs :+ x) = rightToLeftGen (x :. l :: RangeL (n + 1) (m + 1) a) xs
-rightToLeftGen l (xs :++ x) = rightToLeftGen (x :.. l :: RangeL 0 (
--}
+rightToLeftGen l (xs :++ x) = rightToLeftGen (x .:.. l :: RangeL n (m + 1) a) xs
+
+rightToLeft :: forall n m a . RangeR n m a -> RangeL n m a
+rightToLeft NilR = NilL
+rightToLeft (xs :+ x) = rightToLeftGen (x :. NilL :: RangeL 1 1 a) (xs :: RangeR (n - 1) (m - 1) a)
+rightToLeft (xs :++ x) = rightToLeftGen (x :.. NilL :: RangeL 0 1 a) xs

@@ -105,6 +105,9 @@ isEmpty ft = case viewL ft of NL -> True; ConsL _ _ -> False
 
 data ViewR s a = NR | ConsR (s a) a deriving Show
 
+-- nodeToDigitR :: Node a -> DigitR a
+-- nodeToDigitR = loosenR . leftToRight
+
 {-
 viewR :: FingerTree a -> ViewR FingerTree a
 viewR Empty = NR
