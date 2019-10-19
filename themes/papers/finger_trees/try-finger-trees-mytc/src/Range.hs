@@ -8,67 +8,140 @@ module Range where
 
 import GHC.TypeLits
 
+--------------------------------------------------------------------------------
+-- RangeL
+--------------------------------------------------------------------------------
+
 infixr 6 :., :..
 
-data Range :: Nat -> Nat -> * -> * where
-	Nil :: Range 0 m a
-	(:..) :: 1 <= m => a -> Range 0 (m - 1) a -> Range 0 m a
-	(:.) :: a -> Range (n - 1) (m - 1) a -> Range n m a
+data RangeL :: Nat -> Nat -> * -> * where
+	NilL :: RangeL 0 m a
+	(:..) :: 1 <= m => a -> RangeL 0 (m - 1) a -> RangeL 0 m a
+	(:.) :: a -> RangeL (n - 1) (m - 1) a -> RangeL n m a
 
-deriving instance Show a => Show (Range n m a)
+deriving instance Show a => Show (RangeL n m a)
 
-instance Foldable (Range 0 0) where
-	foldr _ z Nil = z
+instance Foldable (RangeL 0 0) where
+	foldr _ z NilL = z
 	foldr _ _ _ = error "never occur"
-	foldl _ z Nil = z
+	foldl _ z NilL = z
 	foldl _ _ _ = error "never occur"
 
 instance {-# OVERLAPPABLE #-}
-	Foldable (Range 0 (m - 1)) => Foldable (Range 0 m) where
-	foldr _ z Nil = z
+	Foldable (RangeL 0 (m - 1)) => Foldable (RangeL 0 m) where
+	foldr _ z NilL = z
 	foldr (-<) z (x :.. xs) = x -< foldr (-<) z xs
 	foldr _ _ _ = error "never occur"
-	foldl _ z Nil = z
+	foldl _ z NilL = z
 	foldl (>-) z (x :.. xs) = foldl (>-) (z >- x) xs
 	foldl _ _ _ = error "never occur"
 
 instance {-# OVERLAPPABLE #-}
-	Foldable (Range (n - 1) (m - 1)) => Foldable (Range n m) where
+	Foldable (RangeL (n - 1) (m - 1)) => Foldable (RangeL n m) where
 	foldr (-<) z (x :. xs) = x -< foldr (-<) z xs
 	foldr _ _ _ = error "never occur"
 	foldl (>-) z (x :. xs) = foldl (>-) (z >- x) xs
 	foldl _ _ _ = error "never occur"
 
-class LoosenMin n m n' where loosenMin :: Range n m a -> Range n' m a
+class LoosenLMin n m n' where loosenLMin :: RangeL n m a -> RangeL n' m a
 
-instance 1 <= m => LoosenMin n m 0 where
-	loosenMin Nil = Nil
-	loosenMin (x :. xs) = x :.. loosenMin xs
-	loosenMin (x :.. xs) = x :.. xs
+instance 1 <= m => LoosenLMin n m 0 where
+	loosenLMin NilL = NilL
+	loosenLMin (x :.. xs) = x :.. xs
+	loosenLMin (x :. xs) = x :.. loosenLMin xs
 
-instance {-# OVERLAPPABLE #-} (1 <= m, n' <= n, LoosenMin (n - 1) (m - 1) (n' - 1)) =>
-	LoosenMin n m n' where
-	loosenMin (x :. xs) = x :. loosenMin xs
-	loosenMin _ = error "never occur"
+instance {-# OVERLAPPABLE #-} (1 <= m, n' <= n, LoosenLMin (n - 1) (m - 1) (n' - 1)) =>
+	LoosenLMin n m n' where
+	loosenLMin (x :. xs) = x :. loosenLMin xs
+	loosenLMin _ = error "never occur"
 
-loosenMax :: 1 <= m' => Range n m a -> Range n m' a
-loosenMax Nil = Nil
-loosenMax (x :.. xs) = x :.. loosenMax xs
-loosenMax (x :. xs) = x :. loosenMax xs
+loosenLMax :: 1 <= m' => RangeL n m a -> RangeL n m' a
+loosenLMax NilL = NilL
+loosenLMax (x :.. xs) = x :.. loosenLMax xs
+loosenLMax (x :. xs) = x :. loosenLMax xs
 
-loosen :: (1 <= m', LoosenMin n m n') => Range n m a -> Range n' m' a
-loosen = loosenMax . loosenMin
+loosenL :: (1 <= m', LoosenLMin n m n') => RangeL n m a -> RangeL n' m' a
+loosenL = loosenLMax . loosenLMin
 
 infixr 5 ++.
 
-(++.) :: 1 <= m => Range n m a -> Range n' m' a -> Range (n + n') (m + m') a
-Nil ++. ys = loosenMax ys
+(++.) :: 1 <= m => RangeL n m a -> RangeL n' m' a -> RangeL (n + n') (m + m') a
+NilL ++. ys = loosenLMax ys
 x :.. xs ++. ys = x .:.. (xs ++. ys)
 x :. xs ++. ys = x :. (xs ++. ys)
 
 infixr 5 .:..
 
-(.:..) :: 1 <= m => a -> Range n (m - 1) a -> Range n m a
-x .:.. Nil = x :.. Nil
+(.:..) :: 1 <= m => a -> RangeL n (m - 1) a -> RangeL n m a
+x .:.. NilL = x :.. NilL
 x .:.. ya@(_ :.. _) = x :.. ya
 x .:.. (y :. ys) = x :. (y .:.. ys)
+
+--------------------------------------------------------------------------------
+-- RangeR
+--------------------------------------------------------------------------------
+
+infixl 6 :+, :++
+
+data RangeR :: Nat -> Nat -> * -> * where
+	NilR :: RangeR 0 m a
+	(:++) :: 1 <= m => RangeR 0 (m - 1) a -> a -> RangeR 0 m a
+	(:+) :: RangeR (n - 1) (m - 1) a -> a -> RangeR n m a
+
+deriving instance Show a => Show (RangeR n m a)
+
+instance Foldable (RangeR 0 0) where
+	foldr _ z NilR = z
+	foldr _ _ _ = error "never occur"
+	foldl _ z NilR = z
+	foldl _ _ _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	Foldable (RangeR 0 (m - 1)) => Foldable (RangeR 0 m) where
+	foldr _ z NilR = z
+	foldr (-<) z (xs :++ x) = foldr (-<) (x -< z) xs
+	foldr _ _ _ = error "never occur"
+	foldl _ z NilR = z
+	foldl (>-) z (xs :++ x) = foldl (>-) z xs >- x
+	foldl _ _ _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	Foldable (RangeR (n - 1) (m - 1)) => Foldable (RangeR n m) where
+	foldr (-<) z (xs :+ x) = foldr (-<) (x -< z) xs
+	foldr _ _ _ = error "never occur"
+	foldl (>-) z (xs :+ x) = foldl (>-) z xs >- x
+	foldl _ _ _ = error "never occur"
+
+class LoosenRMin n m n' where loosenRMin :: RangeR n m a -> RangeR n' m a
+
+instance 1 <= m => LoosenRMin n m 0 where
+	loosenRMin NilR = NilR
+	loosenRMin (xs :++ x) = xs :++ x
+	loosenRMin (xs :+ x) = loosenRMin xs :++ x
+
+instance {-# OVERLAPPABLE #-} (1 <= m, n' <= n, LoosenRMin (n - 1) (m - 1) (n' - 1)) =>
+	LoosenRMin n m n' where
+	loosenRMin (xs :+ x) = loosenRMin xs :+ x
+	loosenRMin _ = error "never occur"
+
+loosenRMax :: 1 <= m' => RangeR n m a -> RangeR n m' a
+loosenRMax NilR = NilR
+loosenRMax (xs :++ x) = loosenRMax xs :++ x
+loosenRMax (xs :+ x) = loosenRMax xs :+ x
+
+loosenR :: (1 <= m', LoosenRMin n m n') => RangeR n m a -> RangeR n' m' a
+loosenR = loosenRMax . loosenRMin
+
+infixl 5 +++
+
+(+++) :: 1 <= mm => RangeR nn mm a -> RangeR nn' mm' a -> RangeR (nn + nn') (mm + mm') a
+ys +++ NilR = loosenRMax ys
+ys +++ (xs :++ x) = (ys +++ xs) .:++ x
+ys +++ (xs :+ x) = (ys +++ xs) :+ x
+
+infixl 5 .:++
+
+(.:++) :: 1 <= m => RangeR n (m - 1) a -> a -> RangeR n m a
+NilR .:++ x = NilR :++ x
+ya@(_ :++ _) .:++ x = ya :++ x
+(ys :+ y) .:++ x = (ys .:++ y) :+ x

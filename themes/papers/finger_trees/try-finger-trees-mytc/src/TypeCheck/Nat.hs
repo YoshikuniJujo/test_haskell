@@ -27,7 +27,7 @@ solveNat _ _ [] = return $ TcPluginOk [] []
 solveNat gs _ ws = do
 	tcPluginTrace "!TypeCheck.Nat:" ""
 	tcPluginTrace "Given: " $ ppr gs
-	tcPluginTrace "Wanted: " $ ppr ws
+	tcPluginTrace "!Wanted: " $ ppr ws
 	tcPluginTrace "!!LOOKTYPE!!" `mapM_` (uncurry showEqualTypes <$> catMaybes (lookTypesFromCt <$> ws))
 	tcPluginTrace "!expression" `mapM_`
 		(ppr <$> catMaybes ((tupleSequence . (expression P *** expression P) =<<) . getTypes <$> ws))
@@ -80,12 +80,16 @@ getTypes ct = case classifyPredType . ctEvPred $ ctEvidence ct of
 	EqPred NomEq t1 t2 -> Just (t1, t2); _ -> Nothing
 
 lookType :: Type -> Maybe SDoc
-lookType (TyConApp tc [a1, TyConApp p [m, o]]) = Just $ ppr tc <+> ppr a1 <+> ppr p <+> ppr m <+> ppr o
+lookType (TyConApp tc [a1, TyConApp p [m, o]]) =
+	Just $ ppr tc <+> ppr a1 <+> ppr p <+> ppr m <+> ppr o
 lookType (TyConApp tc [a, b])
 	| tc == typeNatAddTyCon = Just
 		$ "typeNatAddTyCon" <+> ppr tc <+> lookDetail a <+> lookDetail b
 	| tc == typeNatSubTyCon = Just
 		$ "typeNatSubTyCon" <+> ppr tc <+> lookDetail a <+> lookDetail b
+	| otherwise = Just
+		$ "others" <+> ppr tc <+> lookDetail a <+> lookDetail b
+lookType (TyConApp tc []) = Just $ ppr tc <+> "no arg"
 lookType _ = Nothing
 
 lookDetail :: Type -> SDoc
@@ -131,7 +135,8 @@ mkTypeFromCt :: Ct -> Maybe Type
 mkTypeFromCt ct = mkType . fst =<< getTypes ct
 
 mkType :: Type -> Maybe Type
-mkType (TyConApp tc [a1, TyConApp _p [m, _o]]) = Just $ TyConApp tc [a1, m]
+mkType (TyConApp tc [a1, TyConApp _p [m, _o]])
+	| tc ==typeNatLeqTyCon = Just $ TyConApp tc [a1, m]
 mkType _ = Nothing
 
 makeCt :: Ct -> Type -> Type -> TcPluginM Ct
