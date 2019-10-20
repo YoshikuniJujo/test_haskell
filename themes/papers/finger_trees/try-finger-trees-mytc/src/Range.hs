@@ -154,5 +154,15 @@ rightToLeftGen l (xs :++ x) = rightToLeftGen (x .:.. l :: RangeL n (m + 1) a) xs
 
 rightToLeft :: forall n m a . RangeR n m a -> RangeL n m a
 rightToLeft NilR = NilL
-rightToLeft (xs :+ x) = rightToLeftGen (x :. NilL :: RangeL 1 1 a) (xs :: RangeR (n - 1) (m - 1) a)
+rightToLeft (xs :+ x) = rightToLeftGen (x :. NilL :: RangeL 1 1 a) xs
 rightToLeft (xs :++ x) = rightToLeftGen (x :.. NilL :: RangeL 0 1 a) xs
+
+leftToRightGen :: forall n m n' m' a . 1 <= m => RangeR n m a -> RangeL n' m' a -> RangeR (n + n') (m + m') a
+leftToRightGen r NilL = loosenRMax r
+leftToRightGen r (x :. xs) = leftToRightGen (r :+ x :: RangeR (n + 1) (m + 1) a) xs
+leftToRightGen r (x :.. xs) = leftToRightGen (r .:++ x :: RangeR n (m + 1) a) xs
+
+leftToRight :: forall n m a . RangeL n m a -> RangeR n m a
+leftToRight NilL = NilR
+leftToRight (x :. xs) = leftToRightGen (NilR :+ x :: RangeR 1 1 a) xs
+leftToRight (x :.. xs) = leftToRightGen (NilR :++ x :: RangeR 0 1 a) xs
