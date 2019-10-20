@@ -1,9 +1,12 @@
-{-# LANGUAGE ScopedTypeVariables, GADTs, DataKinds #-}
+{-# LANGUAGE ScopedTypeVariables, GADTs, DataKinds, TypeOperators #-}
 {-# LANGUAGE InstanceSigs #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=TypeCheck.Nat #-}
 
 module FingerTree where
 
+import GHC.TypeLits
 import Range
 
 data FingerTree a
@@ -105,10 +108,9 @@ isEmpty ft = case viewL ft of NL -> True; ConsL _ _ -> False
 
 data ViewR s a = NR | ConsR (s a) a deriving Show
 
--- nodeToDigitR :: Node a -> DigitR a
--- nodeToDigitR = loosenR . leftToRight
+nodeToDigitR :: Node a -> DigitR a
+nodeToDigitR = loosenR . leftToRight
 
-{-
 viewR :: FingerTree a -> ViewR FingerTree a
 viewR Empty = NR
 viewR (Single x) = ConsR Empty x
@@ -120,4 +122,19 @@ deepR pr m NilR = case viewR m of
 	ConsR m' a -> Deep pr m' (nodeToDigitR a)
 deepR pr m (sf :++ a) = Deep pr m (loosenR $ sf :+ a)
 deepR _ _ _ = error "never occur"
--}
+
+{-
+class Nodes m m' where
+	nodes :: RangeL 2 m a -> RangeL 1 m' (Node a)
+
+instance Nodes 3 1 where
+	nodes = (:. NilL)
+
+instance {-# OVERLAPPABLE #-} (1 <= m', 1 <= (m' - 1), Nodes (monkey - 3) (m' - 1)) => Nodes monkey m' where
+	nodes :: forall a . RangeL 2 monkey a -> RangeL 1 m' (Node a)
+	nodes (a :. b :. NilL) = (a :. b :. NilL) :. NilL
+	nodes (a :. b :. c :.. NilL) = (a :. b :. c :.. NilL) :. NilL
+	nodes (a :. b :. c :.. d :.. NilL) = (a :. b :. NilL) :. (c :. d :. NilL) :.. NilL
+	nodes (a :. b :. c :.. d :.. e :.. xs) = (a :. b :. c :.. NilL) .:.. (nodes (d :. e :. xs :: RangeL 2 (monkey - 3) a) :: RangeL 1 (m' - 1) (Node a))
+	nodes _ = error "never occur"
+	-}
