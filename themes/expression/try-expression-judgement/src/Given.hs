@@ -3,10 +3,14 @@
 module Given where
 
 import Data.Maybe
+import Data.List
 
 import Expression
 
 newtype Given i v = Given [Expression i v] deriving Show
+
+allVariables :: Given i v -> [v]
+allVariables (Given es) = variables =<< es
 
 removeVar :: (Integral i, Ord v) => Given i v -> v -> Given i v
 removeVar (Given es) = Given . remVar es
@@ -31,3 +35,18 @@ example = Given [
 	var 'x' .- num 1 .- var 'z',
 	var 'z' .- num 1 .- var 'w',
 	var 'w' .- num 1 .- var 'v' ]
+
+newtype Wanted i v = Wanted (Expression i v) deriving Show
+
+wantedVariables :: Wanted i v -> [v]
+wantedVariables (Wanted e) = variables e
+
+exampleWanted :: Wanted Integer Char
+exampleWanted = Wanted . reduct $ var 'y' .- num 1 .- var 'v'
+
+canDerive :: (Integral i, Ord v) => Given i v -> Wanted i v -> Maybe Bool
+canDerive g w@(Wanted e0) = case g' of
+	Given [e] -> Just $ e == e0
+	_ -> Nothing
+	where
+	g' = foldl removeVar g $ allVariables g \\ wantedVariables w

@@ -2,7 +2,7 @@
 
 module Expression (
 	Expression, num, var, (.+), (.-), reduct,
-	includeVar, annihilation) where
+	includeVar, annihilation, variables) where
 
 newtype Expression i v = Expression [Atom i v] deriving (Show, Eq)
 
@@ -93,3 +93,10 @@ annihilation :: (Integral i, Ord v) => Expression i v -> Expression i v -> v -> 
 annihilation e1 e2 v = case (coefficientOf e1 v, coefficientOf e2 v) of
 	(Just n1, Just n2) -> Just . reduct $ (e1 `multiple` n2) .- (e2 `multiple` n1)
 	_ -> Nothing
+
+variables :: Expression i v -> [v]
+variables (Expression as_) = vars as_
+	where
+	vars [] = []
+	vars (Num _ : as) = vars as
+	vars (Var _ v : as) = v : vars as
