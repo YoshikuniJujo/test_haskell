@@ -36,6 +36,7 @@ x .:.. ya@(_ :.. _) = x :.. ya
 x .:.. (y :. ys) = x :. (y .:.. ys)
 -}
 
+{-
 type Node = RangeL 2 3
 
 class Nodes m m' where
@@ -50,3 +51,4 @@ instance {-# OVERLAPPABLE #-} (1 <= m', 1 <= (m' - 1), Nodes (m - 3) (m' - 1)) =
 	nodes (a :. b :. c :.. NilL) = (a :. b :. c :.. NilL) :. NilL
 	nodes (a :. b :. c :.. d :.. NilL) = (a :. b :. NilL) :. (c :. d :. NilL) :.. NilL
 	nodes (a :. b :. c :.. d :.. e :.. xs) = (a :. b :. c :.. NilL) .:.. (nodes (d :. e :. xs :: RangeL 2 (m - 3) a) :: RangeL 1 (m' - 1) (Node a))
+	-}

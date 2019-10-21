@@ -1,3 +1,4 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Given where
@@ -5,9 +6,11 @@ module Given where
 import Data.Maybe
 import Data.List
 
+import Outputable
+
 import Expression
 
-newtype Given i v = Given [Expression i v] deriving Show
+newtype Given i v = Given [Expression i v] deriving (Show, Outputable)
 
 allVariables :: Given i v -> [v]
 allVariables (Given es) = variables =<< es
@@ -36,7 +39,7 @@ example = Given [
 	var 'z' .- num 1 .- var 'w',
 	var 'w' .- num 1 .- var 'v' ]
 
-newtype Wanted i v = Wanted (Expression i v) deriving Show
+newtype Wanted i v = Wanted (Expression i v) deriving (Show, Outputable)
 
 wantedVariables :: Wanted i v -> [v]
 wantedVariables (Wanted e) = variables e

@@ -1,12 +1,21 @@
+{-# LANGUAGE OverloadedStrings, GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Expression (
 	Expression, num, var, (.+), (.-), reduct,
 	includeVar, annihilation, variables) where
 
-newtype Expression i v = Expression [Atom i v] deriving (Show, Eq)
+import Prelude hiding ((<>))
+
+import Outputable
+
+newtype Expression i v = Expression [Atom i v] deriving (Show, Eq, Outputable)
 
 data Atom i v = Num i | Var i v deriving (Show, Eq, Ord)
+
+instance (Outputable i, Outputable v) => Outputable (Atom i v) where
+	ppr (Num n) = "(Num" <+> ppr n <> ")"
+	ppr (Var n v) = "(Var" <+> ppr n <+> ppr v <> ")"
 
 coeff :: Atom i v -> i
 coeff (Num n) = n
@@ -58,7 +67,9 @@ signumAtom (Var n _) = signum n
 
 reduct :: Integral i => Expression i v -> Expression i v
 reduct (Expression []) = Expression []
-reduct e@(Expression as@(a : _)) = Expression $ (`divide` (n * m)) <$> as
+reduct e@(Expression aa@(a : as))
+	| n * m == 0 = reduct $ Expression as
+	| otherwise = Expression $ (`divide` (n * m)) <$> aa
 	where
 	n = divisor e
 	m = signumAtom a
