@@ -1,7 +1,10 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Given where
+
+import Prelude hiding ((<>))
 
 import Data.Maybe
 import Data.List
@@ -21,7 +24,7 @@ removeVar (Given es) = Given . remVar es
 remVar :: (Integral i, Ord v) => [Expression i v] -> v -> [Expression i v]
 remVar [] _ = []
 remVar (e : es) v 
-	| includeVar e v = remVarOf e v es
+	| includeVar e v = remVar (remVarOf e v es) v
 	| otherwise = e : remVar es v
 
 remVarOf :: (Integral i, Ord v) => Expression i v -> v -> [Expression i v] -> [Expression i v] 
@@ -47,9 +50,9 @@ wantedVariables (Wanted e) = variables e
 exampleWanted :: Wanted Integer Char
 exampleWanted = Wanted . reduct $ var 'y' .- num 1 .- var 'v'
 
-canDerive :: (Integral i, Ord v) => Given i v -> Wanted i v -> Maybe Bool
+canDerive :: (Show v, Show i, Integral i, Ord v) => Given i v -> Wanted i v -> Either String Bool
 canDerive g w@(Wanted e0) = case g' of
-	Given [e] -> Just $ e == e0
-	_ -> Nothing
+	Given [e] -> Right $ e == e0
+	_ -> Left $ "Cannot derive " ++ show g ++ " " ++ show g' ++ " " ++ show w ++ " " ++ show (nub (allVariables g) \\ wantedVariables w)
 	where
-	g' = foldl removeVar g $ allVariables g \\ wantedVariables w
+	g' = foldl removeVar g $ nub (allVariables g) \\ wantedVariables w
