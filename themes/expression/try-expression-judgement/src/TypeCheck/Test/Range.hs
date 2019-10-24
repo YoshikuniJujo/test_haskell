@@ -5,7 +5,7 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=TypeCheck.Nat #-}
 
-module TypeCheck.Test.Range (RangeL(..), PushL(..)) where
+module TypeCheck.Test.Range (RangeL(..), PushL(..), RangeR(..), PushR(..)) where
 
 import GHC.TypeLits
 
