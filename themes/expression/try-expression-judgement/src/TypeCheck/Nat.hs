@@ -3,7 +3,6 @@
 
 module TypeCheck.Nat where
 
-import Data.Maybe
 import Data.Either
 
 import GhcPlugins
@@ -19,6 +18,7 @@ import qualified Data.Text as T
 
 import Given
 import Expression
+import TypeCheck.Nat.Orphans
 
 plugin :: Plugin
 plugin = defaultPlugin { tcPlugin = const . Just $ TcPlugin {
@@ -84,9 +84,3 @@ typeToExpression (TyConApp tc [a, b])
 		eb <- typeToExpression b
 		return $ ea .- eb
 typeToExpression t = Left $ "typeToExpression: fail: " ++ showSDocUnsafe (ppr t)
-
-instance Show Var where
-	show = showSDocUnsafe . ppr
-
-instance Outputable T.Text where
-	ppr = text . show

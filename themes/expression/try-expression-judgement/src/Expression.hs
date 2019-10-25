@@ -81,7 +81,7 @@ coefficients :: Expression i v -> [i]
 coefficients (Expression as) = coeff <$> as
 
 includeVar :: Ord v => Expression i v -> Maybe v -> Bool
-includeVar (Expression as_) v_ = incVar as_ v_
+includeVar (Expression as_) = incVar as_
 	where
 	incVar [] _ = False
 	incVar (Num _ : as) nv@(Just _) = incVar as nv
@@ -101,7 +101,7 @@ coefficientOf (Expression as_) = coeffOf as_
 		| v < v0 = coeffOf as nv
 		| v == v0 = Just i
 		| otherwise = Nothing
-	coeffOf (Num n : as) Nothing = Just n
+	coeffOf (Num n : _) Nothing = Just n
 	coeffOf (Var _ _ : as) Nothing = coeffOf as Nothing
 
 annihilation :: (Integral i, Ord v) => Expression i v -> Expression i v -> Maybe v -> Maybe (Expression i v)

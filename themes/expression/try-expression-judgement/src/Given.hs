@@ -28,7 +28,7 @@ remVar (e : es) v
 	| otherwise = e : remVar es v
 
 remVarOf :: (Integral i, Ord v) => Expression i v -> Maybe v -> [Expression i v] -> [Expression i v] 
-remVarOf e0 v es = replace (\e -> annihilation e e0 v) es
+remVarOf e0 v = replace $ \e -> annihilation e e0 v
 
 replace :: (a -> Maybe a) -> [a] -> [a]
 replace _ [] = []
@@ -51,7 +51,7 @@ exampleWanted :: Wanted Integer Char
 exampleWanted = Wanted . reduct $ var 'y' .- num 1 .- var 'v'
 
 canDerive :: (Show v, Show i, Integral i, Ord v) => Given i v -> Wanted i v -> Either String Bool
-canDerive g (Wanted e0) | nullExpression e0 = Right True
+canDerive _ (Wanted e0) | nullExpression e0 = Right True
 canDerive g w@(Wanted e0) = case g' of
 	Given [e] -> Right $ e == e0
 	_ -> Left $ "Cannot derive " ++ show g ++ " " ++ show g' ++ " " ++ show w ++ " " ++ show (nub (allVariables g) \\ wantedVariables w)
