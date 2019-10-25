@@ -101,6 +101,11 @@ instance {-# OVERLAPPABLE #-}
 loosenL :: (LoosenLMin n m n', LoosenLMax n' m m') => RangeL n m a -> RangeL n' m' a
 loosenL = loosenLMax . loosenLMin
 
+infixr 5 ++.
+
+class AddL n m n' m' where
+	(++.) :: RangeL n m a -> RangeL n' m' a -> RangeL (n + n') (m + m') a
+
 --------------------------------------------------------------------------------
 -- RangeR
 --------------------------------------------------------------------------------
