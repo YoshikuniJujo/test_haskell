@@ -3,7 +3,7 @@
 
 module Expression (
 	Expression, num, var, (.+), (.-), reduct,
-	includeVar, annihilation, variables) where
+	includeVar, annihilation, variables, nullExpression) where
 
 import Prelude hiding ((<>))
 
@@ -80,34 +80,42 @@ divisor = foldr gcd 0 . coefficients
 coefficients :: Expression i v -> [i]
 coefficients (Expression as) = coeff <$> as
 
-includeVar :: Ord v => Expression i v -> v -> Bool
+includeVar :: Ord v => Expression i v -> Maybe v -> Bool
 includeVar (Expression as_) v_ = incVar as_ v_
 	where
 	incVar [] _ = False
-	incVar (Num _ : as) v0 = incVar as v0
-	incVar (Var _ v : as) v0
-		| v < v0 = incVar as v0
+	incVar (Num _ : as) nv@(Just _) = incVar as nv
+	incVar (Num _ : _) Nothing = True
+	incVar (Var _ v : as) nv@(Just v0)
+		| v < v0 = incVar as nv
 		| v == v0 = True
 		| otherwise = False
+	incVar (Var _ _ : as) Nothing = incVar as Nothing
 
-coefficientOf :: Ord v => Expression i v -> v -> Maybe i
+coefficientOf :: Ord v => Expression i v -> Maybe v -> Maybe i
 coefficientOf (Expression as_) = coeffOf as_
 	where
 	coeffOf [] _ = Nothing
-	coeffOf (Num _ : as) v0 = coeffOf as v0
-	coeffOf (Var i v : as) v0
-		| v < v0 = coeffOf as v0
+	coeffOf (Num _ : as) v0@(Just _) = coeffOf as v0
+	coeffOf (Var i v : as) nv@(Just v0)
+		| v < v0 = coeffOf as nv
 		| v == v0 = Just i
 		| otherwise = Nothing
+	coeffOf (Num n : as) Nothing = Just n
+	coeffOf (Var _ _ : as) Nothing = coeffOf as Nothing
 
-annihilation :: (Integral i, Ord v) => Expression i v -> Expression i v -> v -> Maybe (Expression i v)
-annihilation e1 e2 v = case (coefficientOf e1 v, coefficientOf e2 v) of
+annihilation :: (Integral i, Ord v) => Expression i v -> Expression i v -> Maybe v -> Maybe (Expression i v)
+annihilation e1 e2 nv = case (coefficientOf e1 nv, coefficientOf e2 nv) of
 	(Just n1, Just n2) -> Just . reduct $ (e1 `multiple` n2) .- (e2 `multiple` n1)
 	_ -> Nothing
 
-variables :: Expression i v -> [v]
+variables :: Expression i v -> [Maybe v]
 variables (Expression as_) = vars as_
 	where
 	vars [] = []
-	vars (Num _ : as) = vars as
-	vars (Var _ v : as) = v : vars as
+	vars (Num _ : as) = Nothing : vars as
+	vars (Var _ v : as) = Just v : vars as
+
+nullExpression :: Expression i v -> Bool
+nullExpression (Expression []) = True
+nullExpression _ = False

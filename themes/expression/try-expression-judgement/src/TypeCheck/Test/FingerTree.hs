@@ -105,6 +105,23 @@ deepL NilL m sf = case viewL m of
 deepL (a :.. pr) m sf = Deep (loosenL $ a :. pr) m sf
 deepL _ _ _ = error "never occur"
 
+data ViewR s a = NR | ConsR (s a) a deriving Show
+
+viewR :: FingerTree a -> ViewR FingerTree a
+viewR Empty = NR
+viewR (Single x) = ConsR Empty x
+viewR (Deep pr m (sf' :+ a)) = ConsR (deepR pr m sf') a
+
+nodeToDigitR :: Node a -> DigitR a
+nodeToDigitR = loosenR . leftToRight
+
+deepR :: DigitL a -> FingerTree (Node a) -> RangeR 0 3 a -> FingerTree a
+deepR pr m NilR = case viewR m of
+	NR -> toTree pr
+	ConsR m' a -> Deep pr m' (nodeToDigitR a)
+deepR pr m (sf :++ a) = Deep pr m (loosenR $ sf :+ a)
+deepR _ _ _ = error "never occur"
+
 sampleHello :: FingerTree Char
 sampleHello = toTree "Hello, world!"
 

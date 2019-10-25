@@ -32,8 +32,10 @@ solveNat gs _ ws = do
 	tcPluginTrace "!Given:" $ ppr gs
 	tcPluginTrace "!Wanted:" $ ppr ws
 	(tcPluginTrace "!Types" . ppr) `mapM_` rights (getTypes <$> ws)
+	(tcPluginTrace "!Types" . ppr) `mapM_` (wantedExpression <$> ws)
 	(tcPluginTrace "!Expression Given" . ppr) (Given.Given $ rights (expression <$> gs))
 	(tcPluginTrace "!Expression Wanted" . ppr . Given.Wanted) `mapM_` rights (expression <$> ws)
+	(tcPluginTrace "!Expression Wanted" . ppr) `mapM_` (expression <$> ws)
 	(tcPluginTrace "!CanDerive" . ppr) `mapM_` (canDeriveCt gs <$> ws)
 	let	oks = rights $ rights (canDeriveCt gs <$> ws)
 	return $ TcPluginOk oks []
@@ -58,7 +60,9 @@ wantedExpression w = Given.Wanted <$> expression w
 
 getTypes :: Ct -> Either String (Type, Type)
 getTypes ct = case classifyPredType . ctEvPred $ ctEvidence ct of
-	EqPred NomEq t1 t2 -> Right (t1, t2); _ -> Left "Cannot get types"
+	EqPred NomEq t1 t2 -> Right (t1, t2);
+	EqPred foo t1 t2 -> Left $ showSDocUnsafe (ppr foo) ++ " " ++ showSDocUnsafe (ppr t1) ++ " " ++ showSDocUnsafe (ppr t2) ++ "Cannot get types"
+	_ -> Left "Cannot get types"
 
 expression :: Ct -> Either String (Expression Integer Var)
 expression ct = do
@@ -79,7 +83,7 @@ typeToExpression (TyConApp tc [a, b])
 		ea <- typeToExpression a
 		eb <- typeToExpression b
 		return $ ea .- eb
-typeToExpression _ = Left "typeToExpression: fail"
+typeToExpression t = Left $ "typeToExpression: fail: " ++ showSDocUnsafe (ppr t)
 
 instance Show Var where
 	show = showSDocUnsafe . ppr

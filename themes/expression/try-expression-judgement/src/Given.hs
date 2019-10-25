@@ -15,19 +15,19 @@ import Expression
 
 newtype Given i v = Given [Expression i v] deriving (Show, Outputable)
 
-allVariables :: Given i v -> [v]
+allVariables :: Given i v -> [Maybe v]
 allVariables (Given es) = variables =<< es
 
-removeVar :: (Integral i, Ord v) => Given i v -> v -> Given i v
+removeVar :: (Integral i, Ord v) => Given i v -> Maybe v -> Given i v
 removeVar (Given es) = Given . remVar es
 
-remVar :: (Integral i, Ord v) => [Expression i v] -> v -> [Expression i v]
+remVar :: (Integral i, Ord v) => [Expression i v] -> Maybe v -> [Expression i v]
 remVar [] _ = []
 remVar (e : es) v 
 	| includeVar e v = remVar (remVarOf e v es) v
 	| otherwise = e : remVar es v
 
-remVarOf :: (Integral i, Ord v) => Expression i v -> v -> [Expression i v] -> [Expression i v] 
+remVarOf :: (Integral i, Ord v) => Expression i v -> Maybe v -> [Expression i v] -> [Expression i v] 
 remVarOf e0 v es = replace (\e -> annihilation e e0 v) es
 
 replace :: (a -> Maybe a) -> [a] -> [a]
@@ -44,13 +44,14 @@ example = Given [
 
 newtype Wanted i v = Wanted (Expression i v) deriving (Show, Outputable)
 
-wantedVariables :: Wanted i v -> [v]
+wantedVariables :: Wanted i v -> [Maybe v]
 wantedVariables (Wanted e) = variables e
 
 exampleWanted :: Wanted Integer Char
 exampleWanted = Wanted . reduct $ var 'y' .- num 1 .- var 'v'
 
 canDerive :: (Show v, Show i, Integral i, Ord v) => Given i v -> Wanted i v -> Either String Bool
+canDerive g (Wanted e0) | nullExpression e0 = Right True
 canDerive g w@(Wanted e0) = case g' of
 	Given [e] -> Right $ e == e0
 	_ -> Left $ "Cannot derive " ++ show g ++ " " ++ show g' ++ " " ++ show w ++ " " ++ show (nub (allVariables g) \\ wantedVariables w)
