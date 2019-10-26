@@ -18,7 +18,7 @@ import qualified Data.Text as T
 
 import Given
 import Expression
-import TypeCheck.Nat.Orphans
+import TypeCheck.Nat.Orphans ()
 
 plugin :: Plugin
 plugin = defaultPlugin { tcPlugin = const . Just $ TcPlugin {
@@ -69,7 +69,7 @@ expression ct = do
 	(t1, t2) <- getTypes ct
 	e1 <- typeToExpression t1
 	e2 <- typeToExpression t2
-	return . reduct $ e1 .- e2
+	return . reductAndNormalizeSign $ e1 .- e2
 
 typeToExpression :: Type -> Either String (Expression Integer Var)
 typeToExpression (TyVarTy v) = Right $ var v

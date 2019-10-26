@@ -113,13 +113,13 @@ instance AddL 0 0 0 m' where
 	loosenLMax' NilL = NilL
 	loosenLMax' _ = error "never occur"
 
-instance {-# OVERLAPPABLE #-} (1 <= m + m', AddL 0 m 0 (m' - 1)) => AddL 0 m 0 m' where
-	(++.) :: forall a . RangeL 0 m a -> RangeL 0 m' a -> RangeL 0 (m + m') a
-	NilL ++. ys = loosenLMax' (ys :: RangeL 0 m' a) :: RangeL 0 (m + m') a
+instance {-# OVERLAPPABLE #-} (1 <= monkey + m', AddL 0 monkey 0 (m' - 1)) => AddL 0 monkey 0 m' where
+	(++.) :: forall a . RangeL 0 monkey a -> RangeL 0 m' a -> RangeL 0 (monkey + m') a
+	NilL ++. ys = loosenLMax' (ys :: RangeL 0 m' a) :: RangeL 0 (monkey + m') a
 --	(x :.. xs) ++. ys = x .:.. (xs ++. ys)
-	loosenLMax' :: forall a . RangeL 0 m' a -> RangeL 0 (m + m') a
+	loosenLMax' :: forall a . RangeL 0 m' a -> RangeL 0 (monkey + m') a
 	loosenLMax' NilL = NilL
-	loosenLMax' (x :.. xs) = x :.. (loosenLMax' xs :: RangeL 0 (m + (m' - 1)) a)
+	loosenLMax' (x :.. xs) = x :.. (loosenLMax' xs :: RangeL 0 (monkey + (m' - 1)) a)
 
 --------------------------------------------------------------------------------
 -- RangeR

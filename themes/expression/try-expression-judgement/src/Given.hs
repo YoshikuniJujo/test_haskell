@@ -48,7 +48,7 @@ wantedVariables :: Wanted i v -> [Maybe v]
 wantedVariables (Wanted e) = variables e
 
 exampleWanted :: Wanted Integer Char
-exampleWanted = Wanted . reduct $ var 'y' .- num 1 .- var 'v'
+exampleWanted = Wanted . reductAndNormalizeSign $ var 'y' .- num 1 .- var 'v'
 
 canDerive :: (Show v, Show i, Integral i, Ord v) => Given i v -> Wanted i v -> Either String Bool
 canDerive _ (Wanted e0) | nullExpression e0 = Right True

@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Expression (
-	Expression, num, var, (.+), (.-), reduct,
+	Expression, num, var, (.+), (.-), reduct, reductAndNormalizeSign,
 	includeVar, annihilation, variables, nullExpression) where
 
 import Prelude hiding ((<>))
@@ -65,11 +65,19 @@ signumAtom :: Integral i => Atom i v -> i
 signumAtom (Num n) = signum n
 signumAtom (Var n _) = signum n
 
+normalizeSign :: Integral i => Expression i v -> Expression i v
+normalizeSign (Expression []) = Expression []
+normalizeSign (Expression aa@(a : _)) = Expression $ (`divide` m) <$> aa
+	where m = signumAtom a
+
+reductAndNormalizeSign :: Integral i => Expression i v -> Expression i v
+reductAndNormalizeSign = normalizeSign . reduct
+
 reduct :: Integral i => Expression i v -> Expression i v
 reduct (Expression []) = Expression []
 reduct e@(Expression aa@(a : as))
 	| n * m == 0 = reduct $ Expression as
-	| otherwise = Expression $ (`divide` (n * m)) <$> aa
+	| otherwise = Expression $ (`divide` n) <$> aa
 	where
 	n = divisor e
 	m = signumAtom a
@@ -106,7 +114,7 @@ coefficientOf (Expression as_) = coeffOf as_
 
 annihilation :: (Integral i, Ord v) => Expression i v -> Expression i v -> Maybe v -> Maybe (Expression i v)
 annihilation e1 e2 nv = case (coefficientOf e1 nv, coefficientOf e2 nv) of
-	(Just n1, Just n2) -> Just . reduct $ (e1 `multiple` n2) .- (e2 `multiple` n1)
+	(Just n1, Just n2) -> Just . reductAndNormalizeSign $ (e1 `multiple` n2) .- (e2 `multiple` n1)
 	_ -> Nothing
 
 variables :: Expression i v -> [Maybe v]
