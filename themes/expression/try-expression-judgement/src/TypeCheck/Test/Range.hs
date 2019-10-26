@@ -6,7 +6,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=TypeCheck.Nat #-}
 
 module TypeCheck.Test.Range (
-	RangeL(..), PushL(..), loosenL,
+	RangeL(..), PushL(..), loosenL, AddL(..), LoosenLMax(..),
 	RangeR(..), PushR(..), loosenR,
 	leftToRight ) where
 
@@ -105,6 +105,21 @@ infixr 5 ++.
 
 class AddL n m n' m' where
 	(++.) :: RangeL n m a -> RangeL n' m' a -> RangeL (n + n') (m + m') a
+	loosenLMax' :: RangeL n' m' a -> RangeL (n + n') (m + m') a
+
+instance AddL 0 0 0 m' where
+	NilL ++. ys = ys
+	_ ++. _ = error "never occur"
+	loosenLMax' NilL = NilL
+	loosenLMax' _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-} (1 <= m + m', AddL 0 m 0 (m' - 1)) => AddL 0 m 0 m' where
+	(++.) :: forall a . RangeL 0 m a -> RangeL 0 m' a -> RangeL 0 (m + m') a
+	NilL ++. ys = loosenLMax' (ys :: RangeL 0 m' a) :: RangeL 0 (m + m') a
+--	(x :.. xs) ++. ys = x .:.. (xs ++. ys)
+	loosenLMax' :: forall a . RangeL 0 m' a -> RangeL 0 (m + m') a
+	loosenLMax' NilL = NilL
+	loosenLMax' (x :.. xs) = x :.. (loosenLMax' xs :: RangeL 0 (m + (m' - 1)) a)
 
 --------------------------------------------------------------------------------
 -- RangeR
@@ -225,12 +240,4 @@ instance {-# OVERLAPPABLE #-}
 	leftToRightGen _ _ = error "never occur"
 
 leftToRight :: forall n m a . LeftToRight 0 0 n m => RangeL n m a -> RangeR n m a
--- leftToRight :: forall n m a . RangeL n m a -> RangeR n m a
 leftToRight = leftToRightGen (NilR :: RangeR 0 0 a)
-
-{-
-leftToRightGen :: forall noodle monkey n' m' a . RangeR noodle monkey a -> RangeL n' m' a -> RangeR (noodle + n') (monkey + m') a
-leftToRightGen r NilL = loosenRMax r
-leftToRightGen r (x :. xs) = leftToRightGen (r :+ x :: RangeR (noodle + 1) (monkey + 1) a) xs
-leftToRightGen r (x :.. xs) = leftToRightGen (r .:++ x :: RangeR noodle (monkey + 1) a) xs
--}
