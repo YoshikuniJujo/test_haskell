@@ -54,10 +54,21 @@ foobar
 foobar
 
 	monkey + m' == d
-	m' - 1 == f
+	m' - 1 == f'
 	1 <=? d == f
 	1 <=? monkey == v
 	f == True
 	v == True
 
 	1 <=? (((monkey - 1) + m') + 1) == True
+
+foobar
+
+	monkey_a9BC[ssk:1] + m'_a9BD[ssk:1] == fsk_aaeI[fsk:1]
+	m'_a9BD[ssk:1] - 1 == fsk_aaeP[fsk:1]
+	1 <=? fsk_aaeI[fsk:1] == fsk_aaeK[fsk:1]
+	1 <=? monkey_a9BC[ssk:1] == fsk_aaf0[fsk:4]
+	fsk_aaeK[fsk:1] == True
+	fsk_aaf0[fsk:4] == True
+
+	1 <=? (((monkey_a9BC[ssk:1] - 1) + m'_a9BD[ssk:1]) + 1) == True

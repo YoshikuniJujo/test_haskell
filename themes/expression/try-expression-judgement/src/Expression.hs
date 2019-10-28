@@ -3,7 +3,8 @@
 
 module Expression (
 	Expression, num, var, (.+), (.-), reduct, reductAndNormalizeSign,
-	includeVar, annihilation, variables, nullExpression) where
+	includeVar, annihilation, annihilationIeqEq, annihilationIeqIeq,
+	variables, nullExpression ) where
 
 import Prelude hiding ((<>))
 
@@ -117,6 +118,20 @@ coefficientOf (Expression as_) = coeffOf as_
 annihilation :: (Integral i, Ord v) => Expression i v -> Expression i v -> Maybe v -> Maybe (Expression i v)
 annihilation e1 e2 nv = case (coefficientOf e1 nv, coefficientOf e2 nv) of
 	(Just n1, Just n2) -> Just . reductAndNormalizeSign $ (e1 `multiple` n2) .- (e2 `multiple` n1)
+	_ -> Nothing
+
+annihilationIeqEq :: (Integral i, Ord v) => Expression i v -> Expression i v -> Maybe v -> Maybe (Expression i v)
+annihilationIeqEq e1 e2 nv = case (coefficientOf e1 nv, coefficientOf e2 nv) of
+	(Just n1, Just n2)
+		| n2 > 0 -> Just . reduct $ (e1 `multiple` n2) .- (e2 `multiple` n1)
+		| n2 < 0 -> Just . reduct $ (e2 `multiple` n1) .- (e1 `multiple` n2)
+	_ -> Nothing
+
+annihilationIeqIeq :: (Integral i, Ord v) => Expression i v -> Expression i v -> Maybe v -> Maybe (Expression i v)
+annihilationIeqIeq e1 e2 nv = case (coefficientOf e1 nv, coefficientOf e2 nv) of
+	(Just n1, Just n2)
+		| n2 > 0, n1 < 0 -> Just . reduct $ (e1 `multiple` n2) .- (e2 `multiple` n1)
+		| n2 < 0, n1 > 0 -> Just . reduct $ (e2 `multiple` n1) .- (e1 `multiple` n2)
 	_ -> Nothing
 
 variables :: Expression i v -> [Maybe v]
