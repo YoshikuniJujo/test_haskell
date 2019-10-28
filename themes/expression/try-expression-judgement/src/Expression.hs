@@ -38,6 +38,8 @@ num = Expression . (: []) . Num
 var :: (Integral i, Ord v) => v -> Expression i v
 var = Expression . (: []) . Var 1
 
+infixl 6 .+, .-
+
 (.+), (.-) :: (Integral i, Ord v) =>
 	Expression i v -> Expression i v -> Expression i v
 Expression as .+ Expression bs = Expression $ as ..+ bs
