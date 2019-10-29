@@ -6,7 +6,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=TypeCheck.Nat #-}
 
 module TypeCheck.Test.Range (
-	RangeL(..), PushL(..), loosenL, AddL(..), LoosenLMax(..),
+	RangeL(..), PushL(..), loosenL, AddL(..), AddL2(..), LoosenLMax(..),
 	RangeR(..), PushR(..), loosenR,
 	leftToRight ) where
 
@@ -128,10 +128,72 @@ instance {-# OVERLAPPABLE #-} (1 <= monkey + m', AddL 0 (monkey - 1) 0 m', AddL 
 	(++.) :: forall a . RangeL 0 monkey a -> RangeL 0 m' a -> RangeL 0 (monkey + m') a
 	NilL ++. ys = loosenLMax' (ys :: RangeL 0 m' a) :: RangeL 0 (monkey + m') a
 	(x :.. xs) ++. ys = x .:.. (xs ++. ys)
+	_ ++. _ = error "never occur"
 	loosenLMax' :: forall a . RangeL 0 m' a -> RangeL 0 (monkey + m') a
 	loosenLMax' NilL = NilL
 	loosenLMax' (x :.. xs) = x :.. (loosenLMax' xs :: RangeL 0 (monkey + (m' - 1)) a)
+	loosenLMax' _ = error "never occur"
 
+{-
+instance {-# OVERLAPPABLE #-} AddL 0 m noodle' m' where
+--	(++.) :: forall a n . n ~ 0 => RangeL n m a -> RangeL noodle' m' a -> RangeL (n + noodle') (m + m') a
+--	(++.) :: forall a . n ~ 0 => RangeL n m a -> RangeL noodle' m' a -> RangeL (n + noodle') (m + m') a
+--	(++.) :: forall a . RangeL 0 m a -> RangeL noodle' m' a -> RangeL noodle' (m + m') a
+--	NilL ++. ys = loosenLMax' (ys :: RangeL noodle' m' a) :: RangeL (n + noodle') (m + m') a
+	NilL ++. ys = loosenLMax' ys
+	loosenLMax' = undefined
+-}
+
+{-
+instance {-# OVERLAPPABLE #-} AddL 0 m (n' - 1) (m' - 1) => AddL 0 m n' m' where
+-- instance {-# OVERLAPPABLE #-} (1 <= m + m', AddL 0 m (n' - 1) (m' - 1), AddL 0 m n' (m' - 1)) => AddL 0 m n' m' where
+	loosenLMax' :: forall a . RangeL n' m' a -> RangeL (0 + n') (m + m') a
+	loosenLMax' (x :. xs) = x :. (loosenLMax' (xs :: RangeL (n' - 1) (m' - 1) a) :: RangeL (0 + (n' - 1)) (m + (m' - 1)) a) :: RangeL (0 + n') (m + m') a
+--	loosenLMax' (x :.. xs) = x :.. (loosenLMax' xs :: RangeL n' (m + (m' - 1)) a)
+-}
+
+infixr 6 ++..
+
+class AddL2 n m n' m' where
+	(++..) :: RangeL n m a -> RangeL n' m' a -> RangeL (n + n') (m + m') a
+
+instance AddL2 0 0 0 0 where
+	NilL ++.. NilL = NilL
+	_ ++.. _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-} AddL2 0 0 0 (m' - 1) => AddL2 0 0 0 m' where
+	NilL ++.. ys = ys
+	_ ++.. _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-} AddL2 0 m 0 0 where
+	xs ++.. NilL = xs
+	_ ++.. _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-} (1 <= m + m', AddL2 0 (m - 1) 0 m', AddL2 0 m 0 (m' - 1)) => AddL2 0 m 0 m' where
+	(++..) :: forall a . RangeL 0 m a -> RangeL 0 m' a -> RangeL 0 (m + m') a
+	NilL ++.. NilL = NilL
+	NilL ++.. (y :.. ys) = y :.. ((NilL :: RangeL 0 m a) ++.. ys :: RangeL 0 (m + m' - 1) a)
+	(x :.. xs) ++.. ys = x :.. (xs ++.. (ys :: RangeL 0 m' a))
+	_ ++.. _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-} (AddL2 (n - 1) (m - 1) 0 m') => AddL2 n m 0 m' where
+	(x :. xs) ++.. ys = x :. (xs ++.. ys)
+	_ ++.. _ = error "never occur"
+
+pushLastL :: RangeL n m a -> a -> RangeL (n + 1) (m + 1) a
+pushLastL NilL y = y :. NilL
+pushLastL (x :.. xs) y = x :. pushLastL' xs y
+pushLastL (x :. xs) y = x :. pushLastL xs y
+
+pushLastL' :: (1 <= m + 1) => RangeL n m a -> a -> RangeL n (m + 1) a
+pushLastL' NilL y = y :.. NilL
+pushLastL' (x :.. xs) y = x :.. pushLastL' xs y
+pushLastL' _ _ = error "pushLastL': bad"
+
+instance {-# OVERLAPPABLE #-} (AddL2 (n + 1) (m + 1) (n' - 1) (m' - 1)) => AddL2 n m n' m' where
+	xs ++.. (y :. ys) = xs `pushLastL` y ++.. ys
+	_ ++.. _ = error "never occur"
+	
 --------------------------------------------------------------------------------
 -- RangeR
 --------------------------------------------------------------------------------

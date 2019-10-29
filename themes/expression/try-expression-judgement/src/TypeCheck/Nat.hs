@@ -38,9 +38,10 @@ plugin = defaultPlugin { tcPlugin = const . Just $ TcPlugin {
 	tcPluginStop = const $ return () } }
 
 solveNat :: [Ct] -> [Ct] -> [Ct] -> TcPluginM TcPluginResult
-solveNat gs _ ws = do
+solveNat gs ds ws = do
 	tcPluginTrace "!TypeCheck.Nat:" ""
 	tcPluginTrace "!Given:" $ ppr gs
+	tcPluginTrace "!Derives:" $ ppr ds
 	tcPluginTrace "!Wanted:" $ ppr ws
 	(tcPluginTrace "!Types" . ppr) `mapM_` rights (getTypes <$> ws)
 	(tcPluginTrace "!Types 1 detail" . pprTypeDetail . fst) `mapM_` rights (getTypes <$> ws)
