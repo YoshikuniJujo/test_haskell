@@ -107,8 +107,19 @@ class AddL n m n' m' where
 	(++.) :: RangeL n m a -> RangeL n' m' a -> RangeL (n + n') (m + m') a
 	loosenLMax' :: RangeL n' m' a -> RangeL (n + n') (m + m') a
 
-instance AddL 0 0 0 m' where
+instance AddL 0 0 0 0 where
+	NilL ++. NilL = NilL
+	_ ++. _ = error "never occur"
+	loosenLMax' NilL = NilL
+	loosenLMax' _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-} AddL 0 0 0 m' where
 	NilL ++. ys = ys
+	_ ++. _ = error "never occur"
+	loosenLMax' ys = ys
+
+instance {-# OVERLAPPABLE #-} AddL 0 m 0 0 where
+	xs ++. NilL = xs
 	_ ++. _ = error "never occur"
 	loosenLMax' NilL = NilL
 	loosenLMax' _ = error "never occur"
