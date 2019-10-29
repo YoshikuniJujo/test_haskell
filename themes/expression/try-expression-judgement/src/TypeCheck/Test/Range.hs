@@ -8,7 +8,7 @@
 module TypeCheck.Test.Range (
 	RangeL(..), PushL(..), loosenL, AddL(..), LoosenLMax(..),
 	RangeR(..), PushR(..), loosenR,
-	leftToRight ) where
+	leftToRight, rightToLeft ) where
 
 import GHC.TypeLits
 
@@ -263,3 +263,35 @@ instance {-# OVERLAPPABLE #-}
 
 leftToRight :: forall n m a . LeftToRight 0 0 n m => RangeL n m a -> RangeR n m a
 leftToRight = leftToRightGen (NilR :: RangeR 0 0 a)
+
+class RightToLeft n m n' m' where
+	rightToLeftGen :: RangeL n m a -> RangeR n' m' a -> RangeL (n + n') (m + m') a
+
+instance RightToLeft 0 m 0 0 where
+	rightToLeftGen l _ = l
+
+instance {-# OVERLAPPABLE #-} RightToLeft n m 0 0 where
+	rightToLeftGen l _ = l
+
+instance {-# OVERLAPPABLE #-}
+	(1 <= m + 1, 1 <= m + m', LoosenLMax 0 m (m + m'), RightToLeft 0 (m + 1) 0 (m' - 1)) => RightToLeft 0 m 0 m' where
+	rightToLeftGen :: forall a . RangeL 0 m a -> RangeR 0 m' a -> RangeL 0 (m + m') a
+	rightToLeftGen l NilR = loosenLMax l :: RangeL 0 (m + m') a
+	rightToLeftGen l (xs :++ x) = rightToLeftGen (x .:.. l :: RangeL 0 (m + 1) a) xs
+	rightToLeftGen _ _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	(1 <= m + 1, LoosenLMax n m (m + m'), PushL (n - 1) (m - 1), RightToLeft n (m + 1) 0 (m' - 1)) => RightToLeft n m 0 m' where
+	rightToLeftGen :: forall a . RangeL n m a -> RangeR 0 m' a -> RangeL n (m + m') a
+	rightToLeftGen l NilR = loosenLMax l :: RangeL n (m + m') a
+	rightToLeftGen l (xs :++ x) = rightToLeftGen (x .:.. l :: RangeL n (m + 1) a) xs
+	rightToLeftGen _ _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	RightToLeft (n + 1) (m + 1) (n' - 1) (m' - 1) => RightToLeft n m n' m' where
+	rightToLeftGen :: forall a . RangeL n m a -> RangeR n' m' a -> RangeL (n + n') (m + m') a
+	rightToLeftGen l (xs :+ x) = rightToLeftGen (x :. l :: RangeL (n + 1) (m + 1) a) xs
+	rightToLeftGen _ _ = error "never occur"
+
+rightToLeft :: forall n m a . RightToLeft 0 0 n m => RangeR n m a -> RangeL n m a
+rightToLeft = rightToLeftGen (NilL :: RangeL 0 0 a)
