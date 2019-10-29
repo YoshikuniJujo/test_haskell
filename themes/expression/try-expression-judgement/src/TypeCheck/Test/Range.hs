@@ -101,46 +101,21 @@ instance {-# OVERLAPPABLE #-}
 loosenL :: (LoosenLMin n m n', LoosenLMax n' m m') => RangeL n m a -> RangeL n' m' a
 loosenL = loosenLMax . loosenLMin
 
-infixr 5 ++.
-
 class AddL n m n' m' where
 	(++.) :: RangeL n m a -> RangeL n' m' a -> RangeL (n + n') (m + m') a
 
-instance AddL 0 0 0 0 where
-	NilL ++. NilL = NilL
-	_ ++. _ = error "never occur"
-
-instance {-# OVERLAPPABLE #-} AddL 0 0 0 (m' - 1) => AddL 0 0 0 m' where
+instance AddL 0 0 n' m' where
 	NilL ++. ys = ys
 	_ ++. _ = error "never occur"
 
-instance {-# OVERLAPPABLE #-} AddL 0 m 0 0 where
-	xs ++. NilL = xs
+instance  {-# OVERLAPPABLE #-} (1 <= m + m', LoosenLMax n' m' (m + m'), PushL n' (m + m' - 1), AddL 0 (m - 1) n' m') => AddL 0 m n' m' where
+	(++.) :: forall a . RangeL 0 m a -> RangeL n' m' a -> RangeL n' (m + m') a
+	NilL ++. ys = loosenLMax ys
+	(x :.. xs) ++. ys = x .:.. (xs ++. ys :: RangeL n' (m + m' - 1) a)
 	_ ++. _ = error "never occur"
 
-instance {-# OVERLAPPABLE #-} (1 <= m + m', AddL 0 (m - 1) 0 m', AddL 0 m 0 (m' - 1)) => AddL 0 m 0 m' where
-	(++.) :: forall a . RangeL 0 m a -> RangeL 0 m' a -> RangeL 0 (m + m') a
-	NilL ++. NilL = NilL
-	NilL ++. (y :.. ys) = y :.. ((NilL :: RangeL 0 m a) ++. ys :: RangeL 0 (m + m' - 1) a)
-	(x :.. xs) ++. ys = x :.. (xs ++. (ys :: RangeL 0 m' a))
-	_ ++. _ = error "never occur"
-
-instance {-# OVERLAPPABLE #-} (AddL (n - 1) (m - 1) 0 m') => AddL n m 0 m' where
+instance {-# OVERLAPPABLE #-} (AddL (n - 1) (m - 1) n' m') => AddL n m n' m' where
 	(x :. xs) ++. ys = x :. (xs ++. ys)
-	_ ++. _ = error "never occur"
-
-pushLastL :: RangeL n m a -> a -> RangeL (n + 1) (m + 1) a
-pushLastL NilL y = y :. NilL
-pushLastL (x :.. xs) y = x :. pushLastL' xs y
-pushLastL (x :. xs) y = x :. pushLastL xs y
-
-pushLastL' :: (1 <= m + 1) => RangeL n m a -> a -> RangeL n (m + 1) a
-pushLastL' NilL y = y :.. NilL
-pushLastL' (x :.. xs) y = x :.. pushLastL' xs y
-pushLastL' _ _ = error "pushLastL': bad"
-
-instance {-# OVERLAPPABLE #-} (AddL (n + 1) (m + 1) (n' - 1) (m' - 1)) => AddL n m n' m' where
-	xs ++. (y :. ys) = xs `pushLastL` y ++. ys
 	_ ++. _ = error "never occur"
 	
 --------------------------------------------------------------------------------
