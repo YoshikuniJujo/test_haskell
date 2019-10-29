@@ -113,7 +113,7 @@ instance AddL 0 0 0 m' where
 	loosenLMax' NilL = NilL
 	loosenLMax' _ = error "never occur"
 
-instance {-# OVERLAPPABLE #-} (1 <= monkey + m', AddL 0 monkey 0 (m' - 1)) => AddL 0 monkey 0 m' where
+instance {-# OVERLAPPABLE #-} (1 <= monkey + m', AddL 0 (monkey - 1) 0 m', AddL 0 monkey 0 (m' - 1)) => AddL 0 monkey 0 m' where
 	(++.) :: forall a . RangeL 0 monkey a -> RangeL 0 m' a -> RangeL 0 (monkey + m') a
 	NilL ++. ys = loosenLMax' (ys :: RangeL 0 m' a) :: RangeL 0 (monkey + m') a
 	(x :.. xs) ++. ys = x .:.. (xs ++. ys)
