@@ -2,6 +2,7 @@
 {-# LANGUAGE GADTs, KindSignatures, DataKinds, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
+-- {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=TypeCheck.Nat #-}
 
 module TypeCheck.Test.TRange where
@@ -9,6 +10,10 @@ module TypeCheck.Test.TRange where
 import GHC.TypeLits
 
 import TypeCheck.Test.TFoldable
+
+--------------------------------------------------------------------------------
+-- TRangeL
+--------------------------------------------------------------------------------
 
 infixr 6 :.., :.
 
@@ -142,3 +147,16 @@ instance {-# OVERLAPPABLE #-}
 instance {-# OVERLAPPABLE #-} AddL (n - 1) (m - 1) n' m' => AddL n m n' m' where
 	(x :. xs) ++. ys = x :. (xs ++. ys)
 	_ ++. _ = error "never occur"
+
+--------------------------------------------------------------------------------
+-- TRangeR
+--------------------------------------------------------------------------------
+
+infixl 6 :+, :++
+
+data TRangeR :: Nat -> Nat -> (* -> * -> *) -> * -> * -> * where
+	NilR :: TRangeR 0 m c x x
+	(:++) :: 1 <= m => TRangeR 0 (m - 1) c x y -> c y z -> TRangeR 0 m c x z
+	(:+) :: TRangeR (n - 1) (m - 1) c x y -> c y z -> TRangeR n m c x z
+
+-- deriving instance Show (c x y) => Show (TRangeR n m c x y)
