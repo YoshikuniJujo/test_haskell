@@ -7,7 +7,7 @@
 
 module TypeCheck.Test.Range (
 	RangeL(..), PushL(..), loosenL, AddL(..), LoosenLMax(..),
-	RangeR(..), PushR(..), loosenR,
+	RangeR(..), PushR(..), loosenR, LoosenRMax(..),
 	leftToRight, rightToLeft ) where
 
 import GHC.TypeLits

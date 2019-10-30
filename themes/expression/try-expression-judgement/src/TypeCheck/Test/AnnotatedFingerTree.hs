@@ -7,6 +7,8 @@
 
 module TypeCheck.Test.AnnotatedFingerTree where
 
+import Control.Arrow
+
 import GHC.TypeLits
 
 import TypeCheck.Test.Range
@@ -196,3 +198,125 @@ instance {-# OVERLAPPABLE #-}
 
 (><) :: Measured a v => FingerTree v a -> FingerTree v a -> FingerTree v a
 xs >< ys = app3 xs NilL ys
+
+data Split f a = Split (f a) a (f a) deriving Show
+
+class SplitDigitL m where
+	splitDigitL :: Measured a v => (v -> Bool) -> v -> RangeL 1 m a -> Split (RangeL 0 (m - 1)) a
+
+instance SplitDigitL 1 where
+	splitDigitL _ _ (a :. NilL) = Split NilL a NilL
+	splitDigitL _ _ _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-} (LoosenLMax 0 (m - 2) (m - 1), SplitDigitL (m - 1)) => SplitDigitL m where
+	splitDigitL :: forall a v . Measured a v => (v -> Bool) -> v -> RangeL 1 m a -> Split (RangeL 0 (m - 1)) a
+	splitDigitL _ _ (a :. NilL) = Split NilL a NilL
+	splitDigitL p i (a :. b :.. as :: RangeL 1 m a)
+		| p i' = Split NilL a (b :.. as)
+		| otherwise = let
+			Split l x r = splitDigitL p i' (b :. as) in
+			Split (a :.. l) x (loosenLMax (r :: RangeL 0 (m - 2) a) :: RangeL 0 (m - 1) a)
+		where i' = i <> measure a
+	splitDigitL _ _ _ = error "never occur"
+
+class SplitDigitR m where
+	splitDigitRGen :: Measured a v => (v -> Bool) -> v -> RangeR 1 m a -> Either v (Split (RangeR 0 (m - 1)) a)
+
+instance SplitDigitR 1 where
+	splitDigitRGen p i (NilR :+ a)
+		| p i' = Right $ Split NilR a NilR
+		| otherwise = Left i'
+		where i' = i <> measure a
+	splitDigitRGen _ _ _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-} (LoosenRMax 0 (m - 2) (m - 1), SplitDigitR (m - 1)) => SplitDigitR m where
+	splitDigitRGen :: forall a v . Measured a v =>
+		(v -> Bool) -> v -> RangeR 1 m a -> Either v (Split (RangeR 0 (m - 1)) a)
+	splitDigitRGen p i (NilR :+ a)
+		| p i' = Right $ Split NilR a NilR
+		| otherwise = Left i'
+		where i' = i <> measure a
+	splitDigitRGen p i (as :++ a :+ b) = case splitDigitRGen p i $ as :+ a of
+		Left i'	| p i'' -> Right $ Split (as :++ a) b NilR
+			| otherwise -> Left i''
+			where i'' = i' <> measure b
+		Right (Split l x r) -> Right $ Split (loosenRMax (l :: RangeR 0 (m - 2) a) :: RangeR 0 (m - 1) a) x (r :++ b)
+	splitDigitRGen _ _ _ = error "never occur"
+
+splitDigitR :: (Measured a v, SplitDigitR m) => (v -> Bool) -> v -> RangeR 1 m a -> Split (RangeR 0 (m - 1)) a
+splitDigitR _ _ (NilR :+ a) = Split NilR a NilR
+splitDigitR p i aa@(as :+ a) = case splitDigitRGen p i aa of
+	Left _ -> Split as a NilR
+	Right s -> s
+
+splitTree :: Measured a v =>
+	(v -> Bool) -> v -> FingerTree v a -> Split (FingerTree v) a
+splitTree _ _ Empty = error "can't split"
+splitTree _ _ (Single x) = Split Empty x Empty
+splitTree p i (Deep _ pr m sf)
+	| p vpr = let Split l x r = splitDigitL p i pr in
+		Split (toTree l) x (deepL r m sf)
+	| p vm = let
+		Split ml xs mr = splitTree p vpr m
+		Split l x r = splitDigitL p (vpr <> measure ml) (nodeToDigitL xs) in
+		Split (deepR pr ml (leftToRight l)) x (deepL r mr sf)
+	| otherwise = let Split l x r = splitDigitR p vm sf in
+		Split (deepR pr m l) x (toTree r)
+	where
+	vpr = i <> measure pr
+	vm = vpr <> measure m
+
+trySomeL :: Int -> Int -> [Int] -> ([Int], [Int])
+trySomeL _ _ [] = ([], [])
+trySomeL n i (a : as)
+	| i' >= n = ([a], as)
+	| otherwise = (a :) `first` trySomeL n i' as
+	where i' = i + a
+
+trySomeR :: Int -> Int -> [Int] -> (([Int], [Int]), Maybe Int)
+trySomeR _ i [] = (([], []), Just i)
+trySomeR n i (a : as)
+	| Just i' <- mi', i' < n = ((a :) `second` r, Just $ i' + a)
+	| otherwise = ((a :) `first` r, Nothing)
+	where (r, mi') = trySomeR n i as
+
+trySomeR' :: Int -> Int -> [Int] -> Either ([Int], Int) ([Int], [Int])
+trySomeR' _ i [] = Left ([], i)
+trySomeR' n i (a : as) = case trySomeR' n i as of
+	Left (bs, i')
+		| i' >= n -> Right ([], bs)
+		| otherwise -> Left (a : bs, i' + a)
+	Right (l, r) -> Right (a : l, r)
+
+split :: Measured a v =>
+	(v -> Bool) -> FingerTree v a -> (FingerTree v a, FingerTree v a)
+split p xs
+	| p $ measure xs = (l, x <| r)
+	| otherwise = (xs, Empty)
+	where Split l x r = splitTree p mempty xs
+
+takeUntil, dropUntil :: Measured a v => (v -> Bool) -> FingerTree v a -> FingerTree v a
+takeUntil p = fst . split p
+dropUntil p = snd . split p
+
+newtype Seq a = Seq (FingerTree Size (Elem a)) deriving Show
+
+length :: Seq a -> Int
+length (Seq xs) = getSize $ measure xs
+
+splitAt :: Int -> Seq a -> (Seq a, Seq a)
+splitAt i (Seq xs) = (Seq l, Seq r)
+	where (l, r) = split (Size i <) xs
+
+(!) :: Seq a -> Int -> a
+Seq xs ! i = getElem x
+	where Split _ x _ = splitTree (Size i <) (Size 0) xs
+
+addToSeq :: Foldable t => t a -> Seq a -> Seq a
+addToSeq ts (Seq ft) = Seq $ reducer ((<|) . Elem) ts ft
+
+addToSeq' :: Foldable t => Seq a -> t a -> Seq a
+addToSeq' (Seq ft) ts = Seq $ reducel (\f x -> f |> Elem x) ft ts
+
+toSeq :: Foldable t => t a -> Seq a
+toSeq = (`addToSeq` Seq Empty)
