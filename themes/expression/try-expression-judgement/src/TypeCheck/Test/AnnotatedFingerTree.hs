@@ -1,13 +1,13 @@
 {-# LANGUAGE ScopedTypeVariables, InstanceSigs #-}
 {-# LANGUAGE GADTs #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# LANGUAGE FlexibleInstances, FlexibleContexts, UndecidableInstances #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=TypeCheck.Nat #-}
 
 module TypeCheck.Test.AnnotatedFingerTree where
 
--- import GHC.TypeLits
+import GHC.TypeLits
 
 import TypeCheck.Test.Range
 
@@ -119,3 +119,80 @@ Deep _ pr m sf |> a = case sf ||> a of
 
 (|>.) :: (Measured a v, Foldable t) => FingerTree v a -> t a -> FingerTree v a
 (|>.) = reducel (|>)
+
+data ViewL s a = NL | ConsL a (s a) deriving Show
+
+viewL :: Measured a v => FingerTree v a -> ViewL (FingerTree v) a
+viewL Empty = NL
+viewL (Single x) = ConsL x Empty
+viewL (Deep _ (a :. pr') m sf) = ConsL a $ deepL pr' m sf
+
+nodeToDigitL :: Node v a -> DigitL a
+nodeToDigitL (Node _ xs) = loosenL xs
+
+deepL :: Measured a v =>
+	RangeL 0 3 a -> FingerTree v (Node v a) -> DigitR a -> FingerTree v a
+deepL NilL m sf = case viewL m of
+	NL -> toTree sf
+	ConsL a m' -> deep (nodeToDigitL a) m' sf
+deepL (a :.. pr) m sf = deep (loosenL $ a :. pr) m sf
+deepL _ _ _ = error "never occur"
+
+sampleHello :: FingerTree () Char
+sampleHello = toTree "Hello, world!"
+
+newtype Size = Size { getSize :: Int } deriving (Show, Eq, Ord)
+instance Semigroup Size where Size m <> Size n = Size $ m + n
+instance Monoid Size where mempty = Size 0
+
+newtype Elem a = Elem { getElem :: a } deriving Show
+instance Measured (Elem a) Size where measure _ = Size 1
+
+sampleTree ::  FingerTree Size (Elem Int)
+sampleTree = toTree $ Elem <$> [1 .. 7]
+
+data ViewR s a = NR | ConsR (s a) a deriving Show
+
+viewR :: Measured a v => FingerTree v a -> ViewR (FingerTree v) a
+viewR Empty = NR
+viewR (Single x) = ConsR Empty x
+viewR (Deep _ pr m (sf' :+ a)) = ConsR (deepR pr m sf') a
+
+nodeToDigitR :: Node v a -> DigitR a
+nodeToDigitR (Node _ xs) = loosenR $ leftToRight xs
+
+deepR :: Measured a v =>
+	DigitL a -> FingerTree v (Node v a) -> RangeR 0 3 a -> FingerTree v a
+deepR pr m NilR = case viewR m of
+	NR -> toTree pr
+	ConsR m' a -> deep pr m' (nodeToDigitR a)
+deepR pr m (sf :++ a) = deep pr m (loosenR $ sf :+ a)
+deepR _ _ _ = error "never occur"
+
+app3 :: forall v a . Measured a v => FingerTree v a -> RangeL 0 4 a -> FingerTree v a -> FingerTree v a
+app3 Empty ts xs = ts <|. xs
+app3 xs ts Empty = xs |>. ts
+app3 (Single x) ts xs = x <| (ts <|. xs)
+app3 xs ts (Single x) = (xs |>. ts) |> x
+app3 (Deep _ pr1 m1 sf1) ts (Deep _ pr2 m2 sf2) =
+	deep pr1 (app3 m1 (loosenL (nodes (rightToLeft sf1 ++. ts ++. pr2) :: RangeL 1 4 (Node v a))) m2) sf2
+
+class Nodes m m' where
+	nodes :: Measured a v => RangeL 2 m a -> RangeL 1 m' (Node v a)
+
+instance Nodes 3 1 where
+	nodes (a :. b :. NilL) = node2 a b :. NilL
+	nodes (a :. b :. c :.. NilL) = node3 a b c :. NilL
+	nodes _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	(1 <= m' - 1, 1 <= m', Nodes (m - 3) (m' - 1)) => Nodes m m' where
+	nodes :: forall a v . Measured a v => RangeL 2 m a -> RangeL 1 m' (Node v a)
+	nodes (a :. b :. NilL) = node2 a b :. NilL
+	nodes (a :. b :. c :.. NilL) = node3 a b c :. NilL
+	nodes (a :. b :. c :.. d :.. NilL) = node2 a b :. node2 c d :.. NilL
+	nodes (a :. b :. c :.. d :.. e :.. xs) = node3 a b c .:.. (nodes (d :. e :. xs :: RangeL 2 (m - 3) a) :: RangeL 1 (m' - 1) (Node v a))
+	nodes _ = error "never occur"
+
+(><) :: Measured a v => FingerTree v a -> FingerTree v a -> FingerTree v a
+xs >< ys = app3 xs NilL ys
