@@ -320,3 +320,66 @@ addToSeq' (Seq ft) ts = Seq $ reducel (\f x -> f |> Elem x) ft ts
 
 toSeq :: Foldable t => t a -> Seq a
 toSeq = (`addToSeq` Seq Empty)
+
+data Prio a = MInfty | Prio a deriving (Show, Eq, Ord)
+
+instance Ord a => Semigroup (Prio a) where
+	MInfty <> p = p
+	p <> MInfty = p
+	Prio m <> Prio n = Prio $ m `max` n
+
+instance Ord a => Monoid (Prio a) where mempty = MInfty
+
+newtype PQueue a = PQueue (FingerTree (Prio a) (Elem a)) deriving Show
+
+instance Ord a => Measured (Elem a) (Prio a) where
+	measure (Elem x) = Prio x
+
+extractMax :: Ord a => PQueue a -> (a, PQueue a)
+extractMax (PQueue q) = (x, PQueue $ l >< r)
+	where
+	Split l (Elem x) r = splitTree (measure q <=) mempty q
+
+addToPQueue :: (Ord a, Foldable t) => t a -> PQueue a -> PQueue a
+addToPQueue ts (PQueue ft) = PQueue $ reducer ((<|) . Elem) ts ft
+
+toPQueue :: (Ord a, Foldable t) => t a -> PQueue a
+toPQueue = (`addToPQueue` PQueue Empty)
+
+data Key a = NoKey | Key a deriving (Show, Eq, Ord)
+
+instance Semigroup (Key a) where k <> NoKey = k; _ <> k = k
+instance Monoid (Key a) where mempty = NoKey
+
+newtype OrdSeq a = OrdSeq (FingerTree (Key a) (Elem a)) deriving Show
+
+instance Measured (Elem a) (Key a) where
+	measure (Elem x) = Key x
+
+partition :: (Ord a) => a -> OrdSeq a -> (OrdSeq a, OrdSeq a)
+partition k (OrdSeq xs) = (OrdSeq l, OrdSeq r)
+	where (l, r) = split (>= Key k) xs
+
+insert :: Ord a => a -> OrdSeq a -> OrdSeq a
+insert x (OrdSeq xs) = OrdSeq (l >< (Elem x <| r))
+	where (l, r) = split (>= Key x) xs
+
+deleteAll :: Ord a => a -> OrdSeq a -> OrdSeq a
+deleteAll x (OrdSeq xs) = OrdSeq (l >< r')
+	where
+	(l, r) = split (>= Key x) xs
+	(_, r') = split (> Key x) r
+
+merge :: Ord a => OrdSeq a -> OrdSeq a -> OrdSeq a
+merge (OrdSeq xs) (OrdSeq ys) = OrdSeq (merge' xs ys)
+	where
+	merge' as bs = case viewL bs of
+		NL -> as
+		ConsL a bs' -> l >< (a <| merge' bs' r)
+			where (l, r) = split (> measure a) as
+
+addToOrdSeq :: (Ord a, Foldable t) => t a -> OrdSeq a -> OrdSeq a
+addToOrdSeq = reducer insert
+
+toOrdSeq :: (Ord a, Foldable t) => t a -> OrdSeq a
+toOrdSeq = (`addToOrdSeq` OrdSeq Empty)
