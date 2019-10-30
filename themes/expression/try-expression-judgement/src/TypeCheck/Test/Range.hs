@@ -6,7 +6,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=TypeCheck.Nat #-}
 
 module TypeCheck.Test.Range (
-	RangeL(..), PushL(..), loosenL, AddL(..), LoosenLMax(..),
+	RangeL(..), PushL(..), loosenL, AddL(..), LoosenLMax(..), LoosenLMin(..),
 	RangeR(..), PushR(..), loosenR, LoosenRMax(..),
 	leftToRight, rightToLeft ) where
 
@@ -61,12 +61,7 @@ instance {-# OVERLAPPABLE #-} (1 <= m + 1, PushL (n - 1) (m - 1)) => PushL n m w
 
 class LoosenLMin n m n' where loosenLMin :: RangeL n m a -> RangeL n' m a
 
-instance LoosenLMin 0 0 0 where
-	loosenLMin NilL = NilL
-	loosenLMin _ = error "never occur"
-
-instance {-# OVERLAPPABLE #-}
-	LoosenLMin 0 (m - 1) 0 => LoosenLMin 0 m 0 where
+instance LoosenLMin 0 m 0 where
 	loosenLMin NilL = NilL
 	loosenLMin xa@(_ :.. _) = xa
 	loosenLMin _ = error "never occur"

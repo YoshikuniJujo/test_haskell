@@ -51,11 +51,7 @@ instance {-# OVERLAPPABLE #-} PushL (n - 1) (m - 1) => PushL n m where
 class LoosenLMin n m n' where
 	loosenLMin :: TRangeL n m c x y -> TRangeL n' m c x y
 
-instance LoosenLMin 0 0 0 where
-	loosenLMin NilL = NilL
-	loosenLMin _ = error "never occur"
-
-instance {-# OVERLAPPABLE #-} LoosenLMin 0 m 0 where
+instance LoosenLMin 0 m 0 where
 	loosenLMin NilL = NilL
 	loosenLMin xa@(_ :.. _) = xa
 	loosenLMin _ = error "never occur"
