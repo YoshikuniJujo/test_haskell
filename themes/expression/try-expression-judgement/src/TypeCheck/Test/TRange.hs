@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables, InstanceSigs #-}
 {-# LANGUAGE GADTs, KindSignatures, DataKinds, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
@@ -8,6 +9,8 @@ module TypeCheck.Test.TRange where
 import GHC.TypeLits
 
 import TypeCheck.Test.TFoldable
+
+infixr 6 :.., :.
 
 data TRangeL :: Nat -> Nat -> (* -> * -> *) -> * -> * -> * where
 	NilL :: TRangeL 0 m c a a
@@ -65,3 +68,77 @@ instance {-# OVERLAPPABLE #-}
 	LoosenLMin (n - 1) (m - 1) (n' - 1) => LoosenLMin n m n' where
 	loosenLMin (x :. xs) = x :. loosenLMin xs
 	loosenLMin _ = error "never occur"
+
+class LoosenLMax n m m' where
+	loosenLMax :: TRangeL n m c x y -> TRangeL n m' c x y
+
+instance LoosenLMax 0 0 m' where
+	loosenLMax NilL = NilL
+	loosenLMax _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	(1 <= m', LoosenLMax 0 (m - 1) (m' - 1)) => LoosenLMax 0 m m' where
+	loosenLMax NilL = NilL
+	loosenLMax (x :.. xs) = x :.. loosenLMax xs
+	loosenLMax _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	LoosenLMax (n - 1) (m - 1) (m' - 1) => LoosenLMax n m m' where
+	loosenLMax (x :. xs) = x :. loosenLMax xs
+	loosenLMax _ = error "never occur"
+
+loosenL :: (LoosenLMin n m n', LoosenLMax n' m m') =>
+	TRangeL n m c x y -> TRangeL n' m' c x y
+loosenL = loosenLMax . loosenLMin
+
+newtype C a x y = C { getC :: a } deriving Show
+
+cmap :: (a -> b) -> C a x y -> C b x y
+cmap f (C x) = C $ f x
+
+czipWith :: (a -> b -> c) -> C a x y -> C b y z -> C c x z
+czipWith op (C x) (C y) = C $ x `op` y
+
+sampleX :: C Int Bool Char
+sampleX = C 11
+
+sampleY :: C Int Char Double
+sampleY = C 15
+
+sampleZ :: C Int Double ()
+sampleZ = C 3
+
+sampleW :: C Int () Char
+sampleW = C 111
+
+sampleTRangeL :: TRangeL 2 5 (C Int) Bool ()
+sampleTRangeL = sampleX :. sampleY :. sampleZ :.. NilL
+
+sampleTRangeL2 :: TRangeL 1 3 (C Int) () Char
+sampleTRangeL2 = sampleW :. NilL
+
+infixr 5 ++.
+
+class AddL n m n' m' where
+	(++.) :: TRangeL n m c x y ->
+		TRangeL n' m' c y z -> TRangeL (n + n') (m + m') c x z
+
+instance AddL 0 0 n' m' where
+	NilL ++. ys = ys
+	_ ++. _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	(1 <= m + m', LoosenLMax n' m' (m + m'),
+			PushL n' (m + m' - 1), AddL 0 (m - 1) n' m') =>
+		AddL 0 m n' m' where
+	(++.) :: forall c x y z . TRangeL 0 m c x y -> TRangeL n' m' c y z -> TRangeL n' (m + m') c x z
+	NilL ++. ys = loosenLMax ys
+	(x :.. xs) ++. ys = x ..:.. (xs ++. ys)
+		where
+		(..:..) :: forall w . c x w -> TRangeL n' (m + m' - 1) c w z -> TRangeL n' (m + m') c x z
+		(..:..) = (.:..)
+	_ ++. _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-} AddL (n - 1) (m - 1) n' m' => AddL n m n' m' where
+	(x :. xs) ++. ys = x :. (xs ++. ys)
+	_ ++. _ = error "never occur"
