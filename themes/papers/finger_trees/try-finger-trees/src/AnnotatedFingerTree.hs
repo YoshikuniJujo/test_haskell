@@ -180,7 +180,6 @@ nodes0 (a :. b :. c :.. d :.. e :.. Nil) = node3 a b c :. node2 d e :.. Nil
 nodes0 (a :. b :. c :.. d :.. e :.. f :.. Nil) = node3 a b c :. node3 d e f :.. Nil
 nodes0 _ = error "never occur"
 
-
 class Nodes m m' where
 	nodes :: Measured a v => Range 2 m a -> Range 1 m' (Node v a)
 
