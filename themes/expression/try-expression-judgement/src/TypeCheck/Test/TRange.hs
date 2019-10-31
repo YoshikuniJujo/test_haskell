@@ -284,3 +284,46 @@ instance {-# OVERLAPPABLE #-}
 
 leftToRight :: forall n m c x y . LeftToRight 0 0 n m => TRangeL n m c x y -> TRangeR n m c x y
 leftToRight = leftToRightGen (NilR :: TRangeR 0 0 c x x)
+
+class RightToLeft n m n' m' where
+	rightToLeftGen :: TRangeL n m c y z -> TRangeR n' m' c x y -> TRangeL (n + n') (m + m') c x z
+
+instance RightToLeft 0 m 0 0 where
+	rightToLeftGen l NilR = l
+	rightToLeftGen _ _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-} RightToLeft n m 0 0 where
+	rightToLeftGen l NilR = l
+	rightToLeftGen _ _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	(1 <= m + 1, 1 <= m + m', LoosenLMax 0 m (m + m'), RightToLeft 0 (m + 1) 0 (m' - 1)) => RightToLeft 0 m 0 m' where
+	rightToLeftGen :: forall c x y z . TRangeL 0 m c y z -> TRangeR 0 m' c x y -> TRangeL 0 (m + m') c x z
+	rightToLeftGen l NilR = loosenLMax l :: TRangeL 0 (m + m') c y z
+	rightToLeftGen l (xs :++ x) = rightToLeftGen (x ..:.. l) xs
+		where
+		(..:..) :: forall w . c w y -> TRangeL 0 m c y z -> TRangeL 0 (m + 1) c w z
+		(..:..) = (:..)
+	rightToLeftGen _ _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	(1 <= m + 1, LoosenLMax n m (m + m'), PushL (n - 1) (m - 1), RightToLeft n (m + 1) 0 (m' - 1)) => RightToLeft n m 0 m' where
+	rightToLeftGen :: forall c x y z . TRangeL n m c y z -> TRangeR 0 m' c x y -> TRangeL n (m + m') c x z
+	rightToLeftGen l NilR = loosenLMax l :: TRangeL n (m + m') c y z
+	rightToLeftGen l (xs :++ x) = rightToLeftGen (x ..:.. l) xs
+		where
+		(..:..) :: forall w . c w y -> TRangeL n m c y z -> TRangeL n (m + 1) c w z
+		(..:..) = (.:..)
+	rightToLeftGen _ _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	RightToLeft (n + 1) (m + 1) (n' - 1) (m' - 1) => RightToLeft n m n' m' where
+	rightToLeftGen :: forall c x y z . TRangeL n m c y z -> TRangeR n' m' c x y -> TRangeL (n + n') (m + m') c x z
+	rightToLeftGen l (xs :+ x) = rightToLeftGen (x .:. l) xs
+		where
+		(.:.) :: forall w . c w y -> TRangeL n m c y z -> TRangeL (n + 1) (m + 1) c w z
+		(.:.) = (:.)
+	rightToLeftGen _ _ = error "never occur"
+
+rightToLeft :: forall n m c x y . RightToLeft 0 0 n m => TRangeR n m c x y -> TRangeL n m c x y
+rightToLeft = rightToLeftGen (NilL :: TRangeL 0 0 c y y)
