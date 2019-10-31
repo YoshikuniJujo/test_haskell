@@ -4,6 +4,8 @@
 
 module TypeCheck.Test.TFingerTree where
 
+import Data.Char
+
 import TypeCheck.Test.TFoldable
 import TypeCheck.Test.TRange
 
@@ -44,3 +46,36 @@ instance TFoldable TFingerTree where
 		(>-..) :: forall t t' x y z . (TFoldable t, TFoldable t') =>
 			d x y -> t (t' c) y z -> d x z
 		(>-..) = treducel (>-.)
+
+infixr 5 <||, <|, <|.
+
+(<||) :: c x y -> TDigitL c y z -> Either (TDigitL c x z) (TPair (TDigitL c) (TNode c) x z)
+a <|| b :. NilL = Left $ a :. b :.. NilL
+a <|| b :. c :.. NilL = Left $ a :. b :.. c :.. NilL
+a <|| b :. c :.. d :.. NilL = Left $ a :. b :.. c :.. d :.. NilL
+a <|| b :. c :.. d :.. e :.. NilL = Right $ a :. b :.. NilL :| c :. d :. e :.. NilL
+_ <|| _ = error "never occur"
+
+(<|) :: c x y -> TFingerTree c y z -> TFingerTree c x z
+a <| TEmpty = TSingle a
+a <| TSingle b = TDeep (a :. NilL) TEmpty (NilR :+ b)
+a <| TDeep pr m sf = case a <|| pr of
+	Left pr' -> TDeep pr' m sf
+	Right (pr' :| n3) -> TDeep pr' (n3 <| m) sf
+
+(<|.) :: TFoldable t => t c x y -> TFingerTree c y z -> TFingerTree c x z
+(<|.) = treducer (<|)
+
+toTree :: TFoldable t => t c x y -> TFingerTree c x y
+toTree = (<|. TEmpty)
+
+newtype Fun a b = Fun (a -> b)
+
+o :: Fun a b -> (b -> c) -> (a -> c)
+o (Fun f) = (. f)
+
+sampleTFingerTree :: TFingerTree Fun Char Int
+sampleTFingerTree = toTree $ Fun ord ::: Fun (+ 3) ::: Fun (* 2) ::: EmptyList
+
+appTFingerTree :: TFingerTree Fun a b -> a -> b
+appTFingerTree ft = tfoldr o id ft

@@ -327,3 +327,12 @@ instance {-# OVERLAPPABLE #-}
 
 rightToLeft :: forall n m c x y . RightToLeft 0 0 n m => TRangeR n m c x y -> TRangeL n m c x y
 rightToLeft = rightToLeftGen (NilL :: TRangeL 0 0 c y y)
+
+--------------------------------------------------------------------------------
+-- TPair
+--------------------------------------------------------------------------------
+
+infix 5 :|
+
+data TPair :: (* -> * -> *) -> (* -> * -> *) -> * -> * -> * where
+	(:|) :: c x y -> d y z -> TPair c d x z
