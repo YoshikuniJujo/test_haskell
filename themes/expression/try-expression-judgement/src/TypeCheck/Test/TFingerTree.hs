@@ -69,13 +69,27 @@ a <| TDeep pr m sf = case a <|| pr of
 toTree :: TFoldable t => t c x y -> TFingerTree c x y
 toTree = (<|. TEmpty)
 
-newtype Fun a b = Fun (a -> b)
+sampleTFingerTree :: TFingerTree (->) Char Int
+sampleTFingerTree = toTree $ ord ::: (* 2) ::: (+ 3) ::: (+ 3) ::: (+ 3) ::: (+ 3) ::: (+ 3) ::: EmptyList
 
-o :: Fun a b -> (b -> c) -> (a -> c)
-o (Fun f) = (. f)
+appTFingerTree :: TFingerTree (->) a b -> a -> b
+appTFingerTree ft = tfoldr (flip (.)) id ft
 
-sampleTFingerTree :: TFingerTree Fun Char Int
-sampleTFingerTree = toTree $ Fun ord ::: Fun (+ 3) ::: Fun (* 2) ::: EmptyList
+infixl 5 ||>, |>, |>.
 
-appTFingerTree :: TFingerTree Fun a b -> a -> b
-appTFingerTree ft = tfoldr o id ft
+(||>) :: TDigitR c x y -> c y z -> Either (TDigitR c x z) (TPair (TNode	c) (TDigitR c) x z)
+NilR :+ a ||> b = Left $ NilR :++ a :+ b
+NilR :++ a :+ b ||> c = Left $ NilR :++ a :++ b :+ c
+NilR :++ a :++ b :+ c ||> d = Left $ NilR :++ a :++ b :++ c :+ d
+NilR :++ a :++ b :++ c :+ d ||> e = Right $ a :. b :. c :.. NilL :| NilR :++ d :+ e
+_ ||> _ = error "never occur"
+
+(|>) :: TFingerTree c x y -> c y z -> TFingerTree c x z
+TEmpty |> a = TSingle a
+TSingle a |> b = TDeep (a :. NilL) TEmpty (NilR :+ b)
+TDeep pr m sf |> a = case sf ||> a of
+	Left sf' -> TDeep pr m sf'
+	Right (n3 :| sf') -> TDeep pr (m |> n3) sf'
+
+(|>.) :: TFoldable t => TFingerTree c x y -> t c y z -> TFingerTree c x z
+(|>.) = treducel (|>)
