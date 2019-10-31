@@ -7,7 +7,7 @@
 
 module TypeCheck.Test.Range (
 	RangeL(..), PushL(..), loosenL, AddL(..), LoosenLMax(..), LoosenLMin(..),
-	RangeR(..), PushR(..), loosenR, LoosenRMax(..),
+	RangeR(..), PushR(..), loosenR, LoosenRMax(..), LoosenRMin(..),
 	leftToRight, rightToLeft ) where
 
 import GHC.TypeLits
@@ -162,12 +162,7 @@ instance {-# OVERLAPPABLE #-} (1 <= m + 1, PushR (n - 1) (m - 1)) => PushR n m w
 
 class LoosenRMin n m n' where loosenRMin :: RangeR n m a -> RangeR n' m a
 
-instance LoosenRMin 0 0 0 where
-	loosenRMin NilR = NilR
-	loosenRMin _ = error "never occur"
-
-instance {-# OVERLAPPABLE #-}
-	LoosenRMin 0 (m - 1) 0 => LoosenRMin 0 m 0 where
+instance LoosenRMin 0 m 0 where
 	loosenRMin NilR = NilR
 	loosenRMin xa@(_ :++ _) = xa
 	loosenRMin _ = error "never occur"
