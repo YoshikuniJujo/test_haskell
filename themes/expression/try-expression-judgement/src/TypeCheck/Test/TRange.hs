@@ -198,4 +198,49 @@ instance {-# OVERLAPPABLE #-}
 class TLoosenRMin n m n' where
 	tloosenRMin :: TRangeR n m c x y -> TRangeR n' m c x y
 
--- instance TLoosenRMin 0 0 0 where
+instance TLoosenRMin 0 m 0 where
+	tloosenRMin NilR = NilR
+	tloosenRMin xa@(_ :++ _) = xa
+	tloosenRMin _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	(1 <= m, TLoosenRMin (n - 1) (m - 1) 0) => TLoosenRMin n m 0 where
+	tloosenRMin (xs :+ x) = tloosenRMin xs :++ x
+	tloosenRMin _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	TLoosenRMin (n - 1) (m - 1) (n' - 1) => TLoosenRMin n m n' where
+	tloosenRMin (xs :+ x) = tloosenRMin xs :+ x
+	tloosenRMin _ = error "never occur"
+
+class TLoosenRMax n m m' where
+	tloosenRMax :: TRangeR n m c x y -> TRangeR n m' c x y
+
+instance TLoosenRMax 0 0 m where
+	tloosenRMax NilR = NilR
+	tloosenRMax _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	(1 <= m', TLoosenRMax 0 (m - 1) (m' - 1)) => TLoosenRMax 0 m m' where
+	tloosenRMax NilR = NilR
+	tloosenRMax (xs :++ x) = tloosenRMax xs :++ x
+	tloosenRMax _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	TLoosenRMax (n - 1) (m - 1) (m' - 1) => TLoosenRMax n m m' where
+	tloosenRMax (xs :+ x) = tloosenRMax xs :+ x
+	tloosenRMax _ = error "never occur"
+
+tloosenR :: (TLoosenRMin n m n', TLoosenRMax n' m m') =>
+	TRangeR n m c x y -> TRangeR n' m' c x y
+tloosenR = tloosenRMax . tloosenRMin
+
+--------------------------------------------------------------------------------
+-- Left <-> Right
+--------------------------------------------------------------------------------
+
+class LeftToRight n m n' m' where
+	leftToRightGen :: TRangeR n m c x y ->
+		TRangeL n' m' c y z -> TRangeR (n + n') (m + m') c x z
+
+-- instance LeftToRight
