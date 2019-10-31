@@ -210,7 +210,7 @@ instance {-# OVERLAPPABLE #-}
 	(1 <= m + 1, 1 <= m + m', LoosenRMax 0 m (m + m'), LeftToRight 0 (m + 1) 0 (m' - 1)) => LeftToRight 0 m 0 m' where
 	leftToRightGen :: forall a . RangeR 0 m a -> RangeL 0 m' a -> RangeR 0 (m + m') a
 	leftToRightGen r NilL = loosenRMax r :: RangeR 0 (m + m') a
-	leftToRightGen r (x :.. xs) = leftToRightGen (r .:++ x :: RangeR 0 (m + 1) a) xs
+	leftToRightGen r (x :.. xs) = leftToRightGen (r :++ x :: RangeR 0 (m + 1) a) xs
 	leftToRightGen _ _ = error "never occur"
 
 instance {-# OVERLAPPABLE #-}
@@ -242,7 +242,7 @@ instance {-# OVERLAPPABLE #-}
 	(1 <= m + 1, 1 <= m + m', LoosenLMax 0 m (m + m'), RightToLeft 0 (m + 1) 0 (m' - 1)) => RightToLeft 0 m 0 m' where
 	rightToLeftGen :: forall a . RangeL 0 m a -> RangeR 0 m' a -> RangeL 0 (m + m') a
 	rightToLeftGen l NilR = loosenLMax l :: RangeL 0 (m + m') a
-	rightToLeftGen l (xs :++ x) = rightToLeftGen (x .:.. l :: RangeL 0 (m + 1) a) xs
+	rightToLeftGen l (xs :++ x) = rightToLeftGen (x :.. l :: RangeL 0 (m + 1) a) xs
 	rightToLeftGen _ _ = error "never occur"
 
 instance {-# OVERLAPPABLE #-}
