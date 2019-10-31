@@ -93,3 +93,29 @@ TDeep pr m sf |> a = case sf ||> a of
 
 (|>.) :: TFoldable t => TFingerTree c x y -> t c y z -> TFingerTree c x z
 (|>.) = treducel (|>)
+
+data TViewL ::
+	((* -> * -> *) -> * -> * -> *) -> (* -> * -> *) -> * -> * -> * where
+	NL :: TViewL s c x x
+	ConsL :: c x y -> s c y z -> TViewL s c x z
+
+viewL :: TFingerTree c x y -> TViewL TFingerTree c x y
+viewL TEmpty = NL
+viewL (TSingle x) = ConsL x TEmpty
+viewL (TDeep (a :. pr') m sf) = ConsL a $ deepL pr' m sf
+
+nodeToDigitL :: TNode c x y -> TDigitL c x y
+nodeToDigitL = loosenL
+
+deepL :: TRangeL 0 3 c x y ->
+	TFingerTree (TNode c) y z -> TDigitR c z w -> TFingerTree c x w
+deepL NilL m sf = case viewL m of
+	NL -> toTree sf
+	ConsL a m' -> TDeep (nodeToDigitL a) m' sf
+deepL (x :.. xs) m sf = TDeep (loosenL $ x :. xs) m sf
+deepL _ _ _ = error "never occur"
+
+testViewL :: Int
+testViewL = case viewL sampleTFingerTree of
+	ConsL f fs -> tfoldr (flip (.)) id fs . f $ 'c'
+--	NL -> error "never occur"
