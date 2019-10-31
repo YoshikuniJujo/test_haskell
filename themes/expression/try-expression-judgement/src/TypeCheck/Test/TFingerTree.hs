@@ -1,9 +1,13 @@
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, InstanceSigs #-}
 {-# LANGUAGE GADTs, DataKinds, KindSignatures #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleInstances, FlexibleContexts, UndecidableInstances #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=TypeCheck.Nat #-}
 
 module TypeCheck.Test.TFingerTree where
 
+import GHC.TypeLits
 import Data.Char
 
 import TypeCheck.Test.TFoldable
@@ -71,6 +75,9 @@ toTree = (<|. TEmpty)
 
 sampleTFingerTree :: TFingerTree (->) Char Int
 sampleTFingerTree = toTree $ ord ::: (* 2) ::: (+ 3) ::: (+ 3) ::: (+ 3) ::: (+ 3) ::: (+ 3) ::: EmptyList
+
+sampleTFingerTree2 :: TFingerTree (->) Int Int
+sampleTFingerTree2 = toTree $ (* 2) ::: (* 5) ::: (* 2) ::: (* 5) ::: (* 2) ::: (* 5) ::: EmptyList
 
 appTFingerTree :: TFingerTree (->) a b -> a -> b
 appTFingerTree ft = tfoldr (flip (.)) id ft
@@ -144,3 +151,41 @@ deepR _ _ _ = error "never occur"
 testViewR :: Int
 testViewR = case viewR sampleTFingerTree of
 	ConsR fs f -> f . tfoldr (flip (.)) id fs $ 'c'
+
+app3 :: forall c x y z w . TFingerTree c x y -> TRangeL 0 4 c y z -> TFingerTree c z w -> TFingerTree c x w
+app3 TEmpty ts xs = ts <|. xs
+app3 xs ts TEmpty = xs |>. ts
+app3 (TSingle x) ts xs = x <| (ts <|. xs)
+app3 xs ts (TSingle x) = (xs |>. ts) |> x
+app3 (TDeep pr1 m1 sf1) ts (TDeep pr2 m2 sf2) =
+	tDeep pr1 m1 (nodes (rightToLeft sf1 ++. ts ++. pr2)) m2 sf2
+--	TDeep pr1 (app3 m1 (loosenL (nodes (rightToLeft sf1 ++. ts ++. pr2))) m2) sf2
+	where
+	tDeep :: forall d e f g . TDigitL c x d -> TFingerTree (TNode c) d e ->
+		TRangeL 1 4 (TNode c) e f -> TFingerTree (TNode c) f g -> TDigitR c g w ->
+		TFingerTree c x w
+	tDeep p1 m1' nd m2' s2 = TDeep p1 (app3 m1' (loosenL nd) m2') s2
+
+class Nodes m m' where nodes :: TRangeL 2 m c x y -> TRangeL 1 m' (TNode c) x y
+
+instance Nodes 3 1 where nodes = (:. NilL)
+
+instance {-# OVERLAPPABLE #-}
+	(1 <= m' - 1, 1 <= m', Nodes (m - 3) (m' - 1)) => Nodes m m' where
+	nodes :: forall c x y . TRangeL 2 m c x y -> TRangeL 1 m' (TNode c) x y
+	nodes (a :. b :. NilL) = (a :. b :. NilL) :. NilL
+	nodes (a :. b :. c :.. NilL) = (a :. b :. c :.. NilL) :. NilL
+	nodes (a :. b :. c :.. d :.. NilL) =
+		(a :. b :. NilL) :. (c :. d :. NilL) :.. NilL
+	nodes (a :. b :. c :.. d :.. e :.. xs) = f (a :. b :. c :.. NilL) (d :. e :. xs)
+--		(a :. b :. c :.. NilL) ..:.. (nodes (d :. e :. xs))
+		where
+		f :: forall w . TNode c x w -> TRangeL 2 (m - 3) c w y -> TRangeL 1 m' (TNode c) x y
+		f x y = x ..:.. nodes y
+			where
+			(..:..) :: TNode c x w -> TRangeL 1 (m' - 1) (TNode c) w y -> TRangeL 1 m' (TNode c) x y
+			(..:..) = (.:..)
+	nodes _ = error "never occur"
+
+(><) :: TFingerTree c x y -> TFingerTree c y z -> TFingerTree c x z
+xs >< ys = app3 xs NilL ys
