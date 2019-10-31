@@ -160,3 +160,42 @@ data TRangeR :: Nat -> Nat -> (* -> * -> *) -> * -> * -> * where
 	(:+) :: TRangeR (n - 1) (m - 1) c x y -> c y z -> TRangeR n m c x z
 
 -- deriving instance Show (c x y) => Show (TRangeR n m c x y)
+
+instance TFoldable (TRangeR 0 0) where
+	tfoldr _ z NilR = z
+	tfoldr _ _ _ = error "never occur"
+	tfoldl _ z NilR = z
+	tfoldl _ _ _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	TFoldable (TRangeR 0 (m - 1)) => TFoldable (TRangeR 0 m) where
+	tfoldr _ z NilR = z
+	tfoldr (-<) z (xs :++ x) = tfoldr (-<) (x -< z) xs
+	tfoldr _ _ _ = error "never occur"
+	tfoldl _ z NilR = z
+	tfoldl (>-) z (xs :++ x) = tfoldl (>-) z xs >- x
+	tfoldl _ _ _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	TFoldable (TRangeR (n - 1) (m - 1)) => TFoldable (TRangeR n m) where
+	tfoldr (-<) z (xs :+ x) = tfoldr (-<) (x -< z) xs
+	tfoldr _ _ _ = error "never occur"
+	tfoldl (>-) z (xs :+ x) = tfoldl (>-) z xs >- x
+	tfoldl _ _ _ = error "never occur"
+
+infixl 5 .:++
+
+class TPushR n m where
+	(.:++) :: TRangeR n m c x y -> c y z -> TRangeR n (m + 1) c x z
+
+instance 1 <= m + 1 => TPushR 0 m where (.:++) = (:++)
+
+instance {-# OVERLAPPABLE #-}
+	(1 <= m + 1, TPushR (n - 1) (m - 1)) => TPushR n m where
+	(xs :+ x) .:++ y = (xs .:++ x) :+ y
+	_ .:++ _ = error "never occur"
+
+class TLoosenRMin n m n' where
+	tloosenRMin :: TRangeR n m c x y -> TRangeR n' m c x y
+
+-- instance TLoosenRMin 0 0 0 where
