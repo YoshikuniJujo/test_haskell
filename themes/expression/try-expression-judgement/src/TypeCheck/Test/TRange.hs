@@ -243,4 +243,44 @@ class LeftToRight n m n' m' where
 	leftToRightGen :: TRangeR n m c x y ->
 		TRangeL n' m' c y z -> TRangeR (n + n') (m + m') c x z
 
--- instance LeftToRight
+instance LeftToRight 0 m 0 0 where
+	leftToRightGen r NilL = r
+	leftToRightGen _ _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-} LeftToRight n m 0 0 where
+	leftToRightGen r NilL = r
+	leftToRightGen _ _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	(1 <= m + 1, 1 <= m + m', TLoosenRMax 0 m (m + m'),
+		LeftToRight 0 (m + 1) 0 (m' - 1)) => LeftToRight 0 m 0 m' where
+	leftToRightGen :: forall c x y z .  TRangeR 0 m c x y ->
+		TRangeL 0 m' c y z -> TRangeR 0 (m + m') c x z
+	leftToRightGen r NilL = tloosenRMax r :: TRangeR 0 (m + m') c x y
+	leftToRightGen r (x :.. xs) = leftToRightGen (r ..:++ x) xs
+		where
+		(..:++) :: forall w . TRangeR 0 m c x y -> c y w -> TRangeR 0 (m + 1) c x w
+		(..:++) = (:++)
+	leftToRightGen _ _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	(1 <= m + 1, 1 <= m + m', TLoosenRMax n m (m + m'), TPushR (n - 1) (m - 1), LeftToRight n (m + 1) 0 (m' - 1)) => LeftToRight n m 0 m' where
+	leftToRightGen :: forall c x y z . TRangeR n m c x y -> TRangeL 0 m' c y z -> TRangeR n (m + m') c x z
+	leftToRightGen r NilL = tloosenRMax r :: TRangeR n (m + m') c x y
+	leftToRightGen r (x :.. xs) = leftToRightGen (r ..:++ x) xs
+		where
+		(..:++) :: forall w . TRangeR n m c x y -> c y w -> TRangeR n (m + 1) c x w
+		(..:++) = (.:++)
+	leftToRightGen _ _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	LeftToRight (n + 1) (m + 1) (n' - 1) (m' - 1) => LeftToRight n m n' m' where
+	leftToRightGen :: forall c x y z . TRangeR n m c x y -> TRangeL n' m' c y z -> TRangeR (n + n') (m + m') c x z
+	leftToRightGen r (x :. xs) = leftToRightGen (r .:+ x) xs
+		where
+		(.:+) :: forall w . TRangeR n m c x y -> c y w -> TRangeR (n + 1) (m + 1) c x w
+		(.:+) = (:+)
+	leftToRightGen _ _ = error "never occur"
+
+leftToRight :: forall n m c x y . LeftToRight 0 0 n m => TRangeL n m c x y -> TRangeR n m c x y
+leftToRight = leftToRightGen (NilR :: TRangeR 0 0 c x x)
