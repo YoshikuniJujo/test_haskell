@@ -1,4 +1,7 @@
 module Main where
 
 main :: IO ()
-main = putStrLn "Slozsoft"
+main = do
+	putStrLn "Slozsoft"
+	let	x = x + 1
+	print x

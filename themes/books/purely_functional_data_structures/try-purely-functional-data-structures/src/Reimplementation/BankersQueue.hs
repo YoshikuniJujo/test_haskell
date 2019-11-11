@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Reimplementation.BankersQueue (
-	BankersQueue, empty, snoc, uncons, isEmpty, head, tail, showBQ ) where
+	BankersQueue, empty, snoc, uncons, isEmpty, head, tail, showBQ, some ) where
 
 import Prelude hiding (head, tail)
 
@@ -25,3 +25,6 @@ instance Queue BankersQueue where
 
 showBQ :: Show a => BankersQueue a -> String
 showBQ (BankersQueue f r s) = "BankersQueue (" ++ showLazyList f ++ ") (" ++ showLazyList r ++ ") (" ++ showLazyList s ++ ")"
+
+some :: BankersQueue Int
+some = foldl snoc empty [1 .. 10]

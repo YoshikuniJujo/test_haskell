@@ -1,14 +1,17 @@
 {-# LANGUAGE UnboxedTuples, MagicHash, BangPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Tools.ShowThunk (isThunk, other, showLazyList, showTipe, showLazyListIO, showTips) where
+module Tools.ShowThunk (isThunk, other, showLazyList, showTipe, showLazyListIO, showTips, a) where
 
 import GHC.Prim
 import GHC.Exts
+import qualified GHC.Exts.Heap as H
 import Data.Word
 import Foreign.Ptr
 import Foreign.Storable
 import System.IO.Unsafe
+
+import RtClosureInspect	
 
 ptr :: a -> Ptr b
 ptr x = let !(# iptr, _, _ #) = unpackClosure# x in Ptr iptr
@@ -67,15 +70,30 @@ showTips xs = do
 		[] -> putStrLn "end"
 		_ : xs' -> showTips xs'
 
-
 showLazyList :: Show a => [a] -> String
 showLazyList xs = unsafePerformIO $ do
 --	b <- isThunk xs
-	b <- not <$> isCon xs
+--	b <- not <$> isCon xs
+--	b <- not <$> isFullyEvaluated xs
+	b <- not <$> myEvaluated xs
+--	print . H.tipe . H.info =<< H.getClosureData xs
 --	showTips xs
 	if b then return "?" else case xs of
 		[] -> return "[]"
 		x : xs' -> return $ show x ++ " : " ++ showLazyList xs'
+
+myEvaluated :: a -> IO Bool
+myEvaluated x = do
+	t <- H.tipe . H.info <$> H.getClosureData x
+	return $ case t of
+		H.BLACKHOLE -> True
+		H.CONSTR -> True
+		H.CONSTR_1_0 -> True
+		H.CONSTR_0_1 -> True
+		H.CONSTR_2_0 -> True
+		H.CONSTR_1_1 -> True
+		H.CONSTR_0_2 -> True
+		_ -> False
 
 showLazyListIO :: Show a => [a] -> IO String
 showLazyListIO xs = do
@@ -101,3 +119,6 @@ UNDERFLOW_FRAME = 38
 
 isCon :: a -> IO Bool
 isCon x = (`elem` ([1 .. 8] ++ [38])) . tipe <$> (peek $ ptr x)
+-- isCon x = (`elem` [1 .. 8]) . tipe <$> (peek $ ptr x)
+
+a = seq a 1
