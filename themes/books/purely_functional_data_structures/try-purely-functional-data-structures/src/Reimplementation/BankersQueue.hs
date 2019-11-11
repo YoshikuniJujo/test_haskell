@@ -8,7 +8,7 @@ import Prelude hiding (head, tail)
 import Reimplementation.Queue
 import Reimplementation.NeverOccur
 
-import Tools.ShowThunk
+import Tools.ShowLazyList
 
 data BankersQueue a = BankersQueue [a] [a] [a] deriving Show
 

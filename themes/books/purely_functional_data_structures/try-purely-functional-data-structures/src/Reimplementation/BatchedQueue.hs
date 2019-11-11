@@ -7,7 +7,7 @@ import Prelude hiding (head, tail)
 
 import Reimplementation.Queue (Queue(..), isEmpty, head, tail)
 
-import Tools.ShowThunk
+import Tools.ShowLazyList
 
 data BatchedQueue a = BatchedQueue [a] [a] deriving Show
 

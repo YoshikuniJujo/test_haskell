@@ -1,16 +1,16 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Reimplementation.RealTimeQueue (
-	RealTimeQueue, empty, snoc, uncons, isEmpty, head, tail, showRTQ, rotate, foo, ones ) where
+	RealTimeQueue, empty, snoc, uncons, isEmpty, head, tail, showRTQ, rotate, foo, ones, showRTQTipes ) where
 
 import Prelude hiding (head, tail)
 
 import Reimplementation.Queue (Queue(..), isEmpty, head, tail)
 import Reimplementation.NeverOccur (neverOccur)
 
-import Tools.ShowThunk
+import Tools.ShowLazyList
 
-data RealTimeQueue a = RealTimeQueue [a] [a] [a] deriving Show
+data RealTimeQueue a = RealTimeQueue [a] ![a] [a] deriving Show
 
 instance Queue RealTimeQueue where
 	empty = RealTimeQueue [] [] []
@@ -33,7 +33,10 @@ rotate (x : xs) (y : ys) a = x : rotate xs ys (y : a)
 showRTQ :: Show a => RealTimeQueue a -> String
 showRTQ (RealTimeQueue f r s) = "RealTimeQueue (" ++ showLazyList f ++ ") (" ++ showLazyList r ++ ") (" ++ showLazyList s ++ ")"
 
-foo = rotate "hello" "world" ""
+showRTQTipes :: Show a => Int -> RealTimeQueue a -> IO ()
+showRTQTipes n (RealTimeQueue f r s) = do
+	showTipes n f
+	showTipes n r
+	showTipes n s
 
-ones :: [Int]
-ones = 1 : ones
+foo = rotate "hello" "world" ""

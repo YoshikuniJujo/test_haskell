@@ -1,7 +1,7 @@
 {-# LANGUAGE UnboxedTuples, MagicHash, BangPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Tools.ShowThunk (isThunk, other, showLazyList, showTipe, showLazyListIO, showTips, a) where
+module ShowThunk (isThunk, other, showLazyList, showTipe, showLazyListIO, showTips) where
 
 import GHC.Prim
 import GHC.Exts
@@ -11,7 +11,7 @@ import Foreign.Ptr
 import Foreign.Storable
 import System.IO.Unsafe
 
-import RtClosureInspect	
+-- import RtClosureInspect	
 
 ptr :: a -> Ptr b
 ptr x = let !(# iptr, _, _ #) = unpackClosure# x in Ptr iptr
@@ -25,6 +25,9 @@ data StgInfoTable = StgInfoTable {
 	} deriving Show
 
 instance Storable StgInfoTable where
+	sizeOf = undefined
+	alignment = undefined
+	poke = undefined
 	peek a = StgInfoTable
 		<$> peek a0
 		<*> peek a1
@@ -49,9 +52,8 @@ FUN_STATIC = 15
 
 -}
 
-some = 123 * 456
-
-foo = reverse [1, 2, 3]
+-- foo :: [Int]
+-- foo = reverse [1, 2, 3]
 
 showTipe :: a -> IO Word32
 showTipe x = tipe <$> (peek $ ptr x)
@@ -117,8 +119,8 @@ UNDERFLOW_FRAME = 38
 
 -}
 
-isCon :: a -> IO Bool
-isCon x = (`elem` ([1 .. 8] ++ [38])) . tipe <$> (peek $ ptr x)
+-- isCon :: a -> IO Bool
+-- isCon x = (`elem` ([1 .. 8] ++ [38])) . tipe <$> (peek $ ptr x)
 -- isCon x = (`elem` [1 .. 8]) . tipe <$> (peek $ ptr x)
 
-a = seq a 1
+-- a = seq a 1
