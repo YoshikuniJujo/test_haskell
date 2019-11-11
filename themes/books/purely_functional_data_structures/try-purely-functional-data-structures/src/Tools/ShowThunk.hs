@@ -70,7 +70,9 @@ showTips xs = do
 
 showLazyList :: Show a => [a] -> String
 showLazyList xs = unsafePerformIO $ do
-	b <- isThunk xs
+--	b <- isThunk xs
+	b <- not <$> isCon xs
+--	showTips xs
 	if b then return "?" else case xs of
 		[] -> return "[]"
 		x : xs' -> return $ show x ++ " : " ++ showLazyList xs'
@@ -81,3 +83,21 @@ showLazyListIO xs = do
 	if b then return "?" else case xs of
 		[] -> return "[]"
 		x : xs' -> ((show x ++ " : ") ++) <$> showLazyListIO xs'
+
+{-
+
+CONSTR = 1
+CONSTR_1_0 = 2
+CONSTR_0_1 = 3
+CONSTR_2_0 = 4
+CONSTR_1_1 = 5
+CONSTR_0_2 = 6
+CONSTR_STATIC = 7
+CONSTR_NOCAF_STATIC = 8
+
+UNDERFLOW_FRAME = 38
+
+-}
+
+isCon :: a -> IO Bool
+isCon x = (`elem` ([1 .. 8] ++ [38])) . tipe <$> (peek $ ptr x)
