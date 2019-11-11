@@ -21,6 +21,7 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- ghc-prim
 
 library:
   source-dirs: src
@@ -28,6 +29,33 @@ library:
 executables:
   try-purely-functional-data-structures-exe:
     main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-purely-functional-data-structures
+  profile-batched-queue:
+    main:                profileBatchedQueue.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-purely-functional-data-structures
+  profile-bankers-queue:
+    main:                profileBankersQueue.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-purely-functional-data-structures
+  profile-reverse:
+    main:                profileReverse.hs
     source-dirs:         app
     ghc-options:
     - -threaded
