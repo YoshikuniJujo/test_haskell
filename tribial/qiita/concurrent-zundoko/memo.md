@@ -73,3 +73,68 @@ STMとReal-Time Queueで作るマルチスレッドズンドコキヨシ
 ### ソースコード
 
 [try-concurrent-zundoko](https://github.com/YoshikuniJujo/test_haskell/tree/master/tribial/try-concurrent-zundoko)
+
+説明の流れの案
+--------------
+
+説明の流れの案を示す。
+
+* Haskellにおける状態変化をともなう「変数」であるIORef
+	+ IORefはあまり使わない
+		- 状態変化をともなわないコードの書きかたを学ぶべき
+	+ IORefはあまり使わない
+		- ふつうに使うとスレッドセーフではない
+		- atomicModifyIORefもあるけれど、複雑な用途には向かない
+			* ロックの仕組みについてざっとみる
+* 共有メモリへの並列アクセスをかんたんにするSTMという仕組み
+	+ 大雑把な仕組みを説明する
+	+ ロックも下のほうでは一応は使っているけれど、より高級な仕組みであることを示す
+* 短命スタックを紹介する
+* 永続スタックを紹介する
+	+ これは、そのままHaskellのリストである
+* 短命キューを紹介する
+	+ これはTChanとおなじ
+* 永続キューを紹介する
+	+ これに多くの説明をさく
+	+ Haskellの「値」であるクロージャの種類を取得する話も
+	+ BatchedQueue
+	+ BankersQueue
+		- サンクをつぶさないで表示する
+	+ 最終的にはReal-Time Queueを紹介する
+		- サンクをつぶさないで表示する
+* マルチスレッドズンドコキヨシの紹介
+	+ オリジナルズンドコキヨシへのリンクとかんたんな説明
+	+ マルチスレッド版の仕様の紹介
+		- 許容する動作の説明
+	+ 純粋な関数kiyoshiCheckの説明
+	+ 追加で必要な関数の定義と説明
+	+ それぞれのスレッドの定義と説明
+	+ 動作のチェック
+	+ マルチスレッドズンドコキヨシの考察
+		- 今回許容した動作が許容されるシチュエーションについて
+		- みっつの要素のトレードオフについて
+* まとめ
+	+ 紹介した要素技術の列挙
+	+ 感想
+
+### 短命スタックと永続スタックの定義例
+
+```haskell
+type EpStack a = TVarList a
+type TVarList a = TVar (TList a)
+data TList a = TNil | TCons a (TVarList a)
+```
+
+```haskell
+type PrStack a = [a]
+```
+
+### 短命キューと永続キューの定義例
+
+```haskell
+data EpQueue a = EpQueue (TVar (TVarList a)) (TVar (TVarList a))
+```
+
+```haskell
+data RTQueue a = RTQueue [a] ![a] [a]
+```
