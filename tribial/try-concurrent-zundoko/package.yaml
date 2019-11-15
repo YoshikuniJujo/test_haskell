@@ -38,6 +38,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-concurrent-zundoko
+  zundoko2:
+    main:                zundoko2.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-concurrent-zundoko
 
 tests:
   try-concurrent-zundoko-test:
