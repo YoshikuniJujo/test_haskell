@@ -2,7 +2,6 @@
 
 import Control.Monad
 import Control.Concurrent
-import Control.Concurrent.MVar
 import Data.IORef
 
 data Account = Account (MVar ()) (IORef Int)
@@ -20,8 +19,8 @@ withdraw (Account m acc) amnt = do
 
 deposit :: Account -> Int -> IO ()
 deposit (Account m acc) amnt = do
-	takeMVar m
 	threadDelay 50000
+	takeMVar m
 	bl <- readIORef acc
 	threadDelay 100000
 	writeIORef acc $ bl + amnt
