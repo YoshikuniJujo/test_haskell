@@ -17,6 +17,7 @@ data ZunDoko = Zun | Doko | Bye deriving Show
 data Kiyoshi
 	= Timeout | Pending
 	| Kiyoshi [ZunDoko] | NotKiyoshi [ZunDoko] (RTQueue ZunDoko)
+	| ZunOverflow ZunDoko (RTQueue ZunDoko)
 	deriving Show
 
 say :: ZunDoko -> String
@@ -33,6 +34,7 @@ main = do
 			Timeout -> pure Nothing
 			Pending -> retry
 			NotKiyoshi zds q' -> Just (False, zds) <$ writeTVar q q'
+			ZunOverflow zun q' -> Just (False, [zun]) <$ writeTVar q q'
 			Kiyoshi zds -> pure $ Just (True, zds)
 		($ r) . maybe (pure $ Just False) $ \(k, z) ->
 			bool Nothing (Just True) k <$ (putStrLn . say) `mapM_` z
@@ -50,10 +52,13 @@ kiyoshiCheck :: Int -> RTQueue ZunDoko -> Kiyoshi
 kiyoshiCheck n q = case uncons q of
 	Nothing -> Pending
 	Just (Bye, _) -> Timeout
-	Just (Zun, zd) -> case kiyoshiCheck (n + 1) zd of
-		NotKiyoshi zds zd' -> NotKiyoshi (Zun : zds) zd'
-		Kiyoshi zds -> Kiyoshi (Zun : zds)
-		k -> k
+	Just (Zun, zd)
+		| n < 4 -> case kiyoshiCheck (n + 1) zd of
+			NotKiyoshi zds zd' -> NotKiyoshi (Zun : zds) zd'
+			Kiyoshi zds -> Kiyoshi (Zun : zds)
+			ZunOverflow zun zd' -> ZunOverflow Zun (cons zun zd')
+			k -> k
+		| otherwise -> ZunOverflow Zun zd
 	Just (Doko, zd)
 		| n < 4 -> NotKiyoshi [Doko] zd
 		| otherwise -> Kiyoshi [Doko]
