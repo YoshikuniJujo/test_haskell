@@ -5,7 +5,6 @@ import Prelude hiding (head)
 
 import Control.Monad
 import Control.Monad.STM
-import Control.Concurrent
 import Control.Concurrent.STM
 
 type Stack a = TVar (List a)
