@@ -28,3 +28,11 @@ makeList xs = (>>) <$> consAll xs <*> pure =<< newList
 breakList :: List a -> STM [a]
 breakList l =
 	readTVar l >>= \case Nil -> pure []; Cons x t -> (x :) <$> breakList t
+
+snoc :: List a -> a -> STM ()
+snoc l x = readTVar l >>= \case
+	Nil -> writeTVar l . Cons x =<< newTVar Nil
+	Cons _ t -> snoc t x
+
+snocAll :: List a -> [a] -> STM ()
+snocAll l xs = (l `snoc`) `mapM_` xs
