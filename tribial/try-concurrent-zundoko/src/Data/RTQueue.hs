@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.RTQueue (
-	RTQueue, empty, snoc, uncons, cons, isEmpty, head, tail ) where
+	RTQueue, empty, snoc, uncons, cons, isEmpty, head, tail, snocAll ) where
 
 import Prelude hiding (head, tail)
 
@@ -9,7 +9,7 @@ import GHC.ShowLazyList (showLazyList)
 import Control.Exception.NeverOccur (neverOccur)
 import Data.Bool (bool)
 import Data.List (intercalate)
-import Data.Queue (Queue(..), ConsQueue(..), isEmpty, head, tail)
+import Data.Queue (Queue(..), ConsQueue(..), isEmpty, head, tail, snocAll)
 
 data RTQueue a = RTQueue [a] ![a] [a]
 

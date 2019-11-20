@@ -9,14 +9,13 @@ import Control.Concurrent (forkIO, threadDelay)
 import Control.Concurrent.STM (
 	atomically, retry, newTVar, readTVar, writeTVar, modifyTVar )
 import Control.Concurrent.STM.RTQueue (enqueue, dequeue, requeue)
-import Data.List (foldl')
-import Data.RTQueue (RTQueue, empty, snoc, uncons)
+import Data.RTQueue (RTQueue, empty, snoc, uncons, snocAll)
 import System.Random (randomRIO)
 
 data ZunDoko = Zun | Doko deriving Show
 data Result
 	= Pending
-	| UntimelyDoko [Say] (RTQueue ZunDoko)
+	| EarlyDoko [Say] (RTQueue ZunDoko)
 	| ZunOverflow (RTQueue ZunDoko)
 	| Kiyoshi [Say] (RTQueue ZunDoko)
 	deriving Show
@@ -37,12 +36,9 @@ main = do
 	void . forkIO $ delay 200000 >> atomically (requeue qs Timeout)
 	void . forkIO . forever . atomically $ check 0 <$> readTVar qz >>= \case
 		Pending -> retry
-		UntimelyDoko zds q ->
-			writeTVar qz q >> modifyTVar qs (flip (foldl' snoc) zds)
-		ZunOverflow q ->
-			writeTVar qz q >> modifyTVar qs (`snoc` SayZun)
-		Kiyoshi zds q ->
-			writeTVar qz q >> modifyTVar qs (flip (foldl' snoc) zds)
+		EarlyDoko ss q -> writeTVar qz q >> modifyTVar qs (`snocAll` ss)
+		ZunOverflow q -> writeTVar qz q >> modifyTVar qs (`snoc` SayZun)
+		Kiyoshi ss q -> writeTVar qz q >> modifyTVar qs (`snocAll` ss)
 	loopIf $ do
 		s <- atomically $ dequeue qs
 		putStrLn $ say s
@@ -63,10 +59,10 @@ check n q = case uncons q of
 	Just (Zun, q')
 		| n < 4 -> case check (n + 1) q' of
 			Pending -> Pending
-			UntimelyDoko s q'' -> UntimelyDoko (SayZun : s) q''
+			EarlyDoko s q'' -> EarlyDoko (SayZun : s) q''
 			ZunOverflow _q'' -> ZunOverflow q'
 			Kiyoshi s q'' -> Kiyoshi (SayZun : s) q''
 		| otherwise -> ZunOverflow q'
 	Just (Doko, q')
-		| n < 4 -> UntimelyDoko [SayDoko] q'
+		| n < 4 -> EarlyDoko [SayDoko] q'
 		| otherwise -> Kiyoshi [SayDoko, SayKiyoshi] q'
