@@ -20,3 +20,17 @@ evaluateOneTime = 15 `timesDo` print (myHead "Hello")
 
 evaluateManyTimes :: IO ()
 evaluateManyTimes = timesEvaluate 15 (print . myHead) "Hello"
+
+times :: Int -> a -> [a]
+times n _ | n < 1 = []
+times n x = x : times (n - 1) x
+
+timesEvaluate' :: Int -> (a -> b) -> a -> [b]
+timesEvaluate' n _ _ | n < 1 = []
+timesEvaluate' n f x = f x : timesEvaluate' (n - 1) f x
+
+evaluateOneTime' :: [Char]
+evaluateOneTime' = 15 `times` myHead "Hello"
+
+evaluateManyTimes' :: [Char]
+evaluateManyTimes' = timesEvaluate' 15 myHead "Hello"
