@@ -1,6 +1,10 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module BatchedQueue where
+module BatchedQueue (
+	BatchedQueue, empty, snoc, uncons, cons, head, tail, snocAll, consAll
+	) where
+
+import Prelude hiding (head, tail)
 
 import Queue
 
@@ -11,7 +15,7 @@ instance Queue BatchedQueue where
 	snoc (BatchedQueue f r) x = BatchedQueue f (x : r)
 	uncons (BatchedQueue [] []) = Nothing
 	uncons (BatchedQueue (x : f) r) = Just (x, BatchedQueue f r)
-	uncons (BatchedQueue [] r) = uncons (BatchedQueue (reverse r) [])
+	uncons (BatchedQueue [] r) = uncons $ BatchedQueue (reverse r) []
 
 instance ConsQueue BatchedQueue where
 	cons x (BatchedQueue f r) = BatchedQueue (x : f) r

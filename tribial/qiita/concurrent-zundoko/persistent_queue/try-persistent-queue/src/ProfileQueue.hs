@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeApplications, AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module ProfileQueue (profileWhole) where
+module ProfileQueue (profileWhole, queueN) where
 
 import Data.List (unfoldr)
 
