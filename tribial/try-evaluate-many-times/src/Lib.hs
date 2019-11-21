@@ -14,3 +14,9 @@ n `timesDo` act = act >> (n - 1) `timesDo` act
 timesEvaluate :: Monad m => Int -> (a -> m ()) -> a -> m ()
 timesEvaluate n _ _ | n < 1 = return ()
 timesEvaluate n act x = act x >> timesEvaluate (n - 1) act x
+
+evaluateOneTime :: IO ()
+evaluateOneTime = 15 `timesDo` print (myHead "Hello")
+
+evaluateManyTimes :: IO ()
+evaluateManyTimes = timesEvaluate 15 (print . myHead) "Hello"
