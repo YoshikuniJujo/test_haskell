@@ -11,6 +11,11 @@ import ThunkBlackholeClosure (printThunkBlackholeConstrClosure)
 
 import IntClosure (printIntClosure)
 import FloatClosure (printFloatClosure)
+import WordClosure (printWordClosure)
+import Int64Closure (printInt64Closure)
+import AddrClosure (printAddrClosure)
+import MutVarClosure (printMutVarClosure)
+import MVarClosure (printMVarClosure)
 
 main :: IO ()
 main = do
@@ -26,15 +31,30 @@ main = do
 	printThunkBlackholeConstrClosure "number.txt"
 	putStrLn ""
 
-	putStrLn "Unboxed Primitive Closures:"
-	print =<< getClosureData 123#
-	print =<< getClosureData 123.4#
-
-	putStrLn ""
 	putStrLn "IntClosure:"
 	printIntClosure
 	putStrLn ""
 
 	putStrLn "FloatClosure:"
 	printFloatClosure
+	putStrLn ""
+
+	putStrLn "WordClosure:"
+	printWordClosure
+	putStrLn ""
+
+	putStrLn "Int64Closure:"
+	printInt64Closure
+	putStrLn ""
+
+	putStrLn "AddrClosure:"
+	printAddrClosure
+	putStrLn ""
+
+	putStrLn "MutVarClosure:"
+	printMutVarClosure
+	putStrLn ""
+
+	putStrLn "MVarClosure:"
+	printMVarClosure
 	putStrLn ""
