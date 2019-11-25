@@ -1,18 +1,40 @@
+{-# LANGUAGE MagicHash, UnboxedTuples #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
-import GHC.Exts.Heap
-import Control.Concurrent
+import GHC.Exts.Heap (getClosureData)
 
-import Lib
+import ConstrClosure (number)
+import FunClosure (function)
+import ThunkBlackholeClosure (printThunkBlackholeConstrClosure)
+
+import IntClosure (printIntClosure)
+import FloatClosure (printFloatClosure)
 
 main :: IO ()
 main = do
-	test
-	n <- read <$> getLine :: IO Int
-	print =<< getClosureData n
-	print n
-	print =<< getClosureData n
-	threadDelay 1000000
-	print =<< getClosureData n
+	putStrLn "ConstrClosure:"
+	print =<< getClosureData number
+	putStrLn ""
+
+	putStrLn "FunClosure:"
+	print =<< getClosureData function
+	putStrLn ""
+
+	putStrLn "ThunkClosure, BlackholeClosure:"
+	printThunkBlackholeConstrClosure "number.txt"
+	putStrLn ""
+
+	putStrLn "Unboxed Primitive Closures:"
+	print =<< getClosureData 123#
+	print =<< getClosureData 123.4#
+
+	putStrLn ""
+	putStrLn "IntClosure:"
+	printIntClosure
+	putStrLn ""
+
+	putStrLn "FloatClosure:"
+	printFloatClosure
+	putStrLn ""
