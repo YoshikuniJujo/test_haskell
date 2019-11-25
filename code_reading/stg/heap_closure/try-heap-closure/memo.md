@@ -39,7 +39,7 @@ data GenClosure b = ...
 
 #### already
 
-12 / 24
+14 / 24
 
 * ConstrClosure
 * FunClosure
@@ -49,15 +49,15 @@ data GenClosure b = ...
 * APClosure
 * IntClosure
 * FloatClosure
+* DoubleClosure
 * WordClosure
 * AddrClosure
 * MutVarClosure
 * MVarClosure
+* ArrWordsClosure
 
 #### nexts
 
-* ArrWordsClosure
-* MutArrClosure
 
 #### yet
 
@@ -66,8 +66,11 @@ data GenClosure b = ...
 * IndClosure
 * BCOClosure
 * BlockingQueueClosure
+
+#### later
+
 * Int64Closure
 * Word64Closure
-* DoubleClosure
+* MutArrClosure
 * OtherClosure
 * UnsupportedClosure

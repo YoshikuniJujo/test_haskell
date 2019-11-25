@@ -16,6 +16,9 @@ import Int64Closure (printInt64Closure)
 import AddrClosure (printAddrClosure)
 import MutVarClosure (printMutVarClosure)
 import MVarClosure (printMVarClosure)
+import ArrWordsClosure (printArrWordsClosure)
+import MutArrWordsClosure (printMutArrWordsClosure)
+import DoubleClosure (printDoubleClosure)
 
 main :: IO ()
 main = do
@@ -57,4 +60,16 @@ main = do
 
 	putStrLn "MVarClosure:"
 	printMVarClosure
+	putStrLn ""
+
+	putStrLn "ArrWordsClosure:"
+	printArrWordsClosure
+	putStrLn ""
+
+	putStrLn "MutArrWordsClosure:"
+	printMutArrWordsClosure
+	putStrLn ""
+
+	putStrLn "DoubleClosure:"
+	printDoubleClosure
 	putStrLn ""
