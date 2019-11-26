@@ -36,8 +36,7 @@ showBankersQueue (BankersQueue _ f _ r) = do
 	(er, sr) <- showLazyList r
 	when (not er) $ error "rear list should not be thunk"
 	pure $ "BankersQueue [" ++ intercalate "," sf ++
-		bool "|" ".." (not (ef && er)) ++
-		intercalate "," (reverse sr) ++ "]"
+		bool ".." "|" ef ++ intercalate "," (reverse sr) ++ "]"
 
 instance Show a => Show (BankersQueue a) where
 	show = unsafePerformIO . showBankersQueue
