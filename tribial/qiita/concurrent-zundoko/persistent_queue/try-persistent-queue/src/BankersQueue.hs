@@ -4,6 +4,7 @@ module BankersQueue (BankersQueue, empty, snoc, uncons, cons, head, tail) where
 
 import Prelude hiding (head, tail)
 
+import Control.Monad (when)
 import Data.Bool (bool)
 import Data.List (intercalate)
 import System.IO.Unsafe (unsafePerformIO)
@@ -11,7 +12,7 @@ import System.IO.Unsafe (unsafePerformIO)
 import Queue (Queue(..), ConsQueue(..), head, tail)
 import ShowLazyList (showLazyList)
 
-data BankersQueue a = BankersQueue Int [a] Int ![a]
+data BankersQueue a = BankersQueue Int [a] Int [a]
 
 instance Queue BankersQueue where
 	empty = BankersQueue 0 [] 0 []
@@ -33,6 +34,7 @@ showBankersQueue :: Show a => BankersQueue a -> IO String
 showBankersQueue (BankersQueue _ f _ r) = do
 	(ef, sf) <- showLazyList f
 	(er, sr) <- showLazyList r
+	when (not er) $ error "rear list should not be thunk"
 	pure $ "BankersQueue [" ++ intercalate "," sf ++
 		bool "|" ".." (not (ef && er)) ++
 		intercalate "," (reverse sr) ++ "]"
