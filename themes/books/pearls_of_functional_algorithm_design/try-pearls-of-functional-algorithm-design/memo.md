@@ -332,3 +332,145 @@ allcp' xs = tail (allcp xs) ++ [0]
 	zip [llcp sw (drop k sw) | k <- [1 .. m]] [1 .. m] =
 	zip (allcp' sw) [1 .. m]
 ```
+
+Ch. 17 The Knuth-Morris-Pratt algorithm
+---------------------------------------
+
+```haskell
+matches ws = (length <$>) . filter (endswith ws) . inits
+endswith ws xs = ws `elem` tails xs
+```
+
+```haskell
+endswith ws = p . foldl op e
+
+matches :: Eq a => [a] -> [a] -> [Int]
+matches ws = map fst . filter (p . snd) . scanl step (0, e)
+step (n, x) y = (n + 1, op x y)
+```
+
+```haskell
+split ws xs = (us, vs) ==> split ws (xs ++ [x]) = split ws (us ++ [x])
+```
+
+```haskell
+split ws xs = if xs `isPrefixOf` ws then (xs, ws `dropPrefix` xs) else split ws (tail xs)
+```
+
+```haskell
+split ws (xs ++ [x]) =
+	split ws (us ++ [x]) =
+	if (us ++ [x]) `isPrefixOf` ws
+		then (us ++ [x], ws `dropPrefix` (us ++ [x]))
+		else split ws (tail (us ++ [x])) =
+	if [x] `isPrefixOf` vs
+		then (us ++ [x], tail vs)
+		else split ws (tail (us ++ [x])) =
+	if [x] `isPrefixOf` vs
+		then (us ++ [x], tail vs)
+		else if null us
+			then ([], ws)
+			else split ws (tail us ++ [x])
+```
+
+```
+split ws (xs ++ [x])
+	| [x] `isPrefixOf` vs = (us ++ [x], tail vs)
+	| null us = ([], ws)
+	| otherwise = split ws (tail us ++ [x])
+```
+
+```haskell
+split ws (xs ++ [x]) = op (split ws xs) x
+split ws (tail us ++ [x]) = op (split ws (tail us))
+```
+
+```haskell
+op (us, vs) x
+	| [x] `isPrefixOf` vs = (us ++ [x], tail vs)
+	| null us = ([], ws)
+	| otherwise = op (split ws (tail us)) x
+	where ws = us ++ vs
+```
+
+```haskell
+abs :: Rep ([a], [a]) -> ([a], [a])
+rep :: ([a], [a]) -> Rep ([a], [a])
+abs . rep = id
+```
+
+```haskell
+foldl op ([], ws) = abs . foldl op' (rep ([], ws))
+```
+
+```haskell
+matches ws = map fst . filter (null . snd . abs . snd) . scanl step (0, rep ([], ws))
+step (n, r) x = (n + 1, op' r x)
+```
+
+```haskell
+f a = b
+f (g y x) = h (f y) x
+
+==> f . foldl g a = foldl h b
+```
+
+```haskell
+op' r = rep . op (abs r)
+
+abs (op' r x) = abs (rep (op (abs r) x)) = op (abs r) x
+```
+
+```haskell
+op' r x	| [x] `isPrefixOf` vs = rep (us ++ [x], tail vs)
+	| null us = rep ([], ws)
+	| otherwise = op' (rep (split ws (tail us))) x
+	where	(us, vs) = abs r
+		ws = us ++ vs
+```
+
+```haskell
+rep (us, vs) = Node (us, vs) (left us vs) (right us vs)
+
+left [] vs = Null
+left ua@(_ : us) vs = rep (split ws us)
+	where ws = ua ++ vs
+right us [] = Null
+right us (v : vs) = rep (us ++ [v], vs)
+```
+
+```haskell
+op' (Node (us, vs) l r) x
+	| [x] `isPrefixOf` vs = r
+	| null us = root
+	| otherwise = op' l x
+
+root = rep ([], ws)
+```
+
+```haskell
+right us [] = Null
+right us (v : vs) =
+	rep (us ++ [v], vs) =
+	grep (left (us ++ [v]) vs) (us ++ [v], vs)
+```
+
+```haskell
+left (us ++ [v]) vs = if null us then root else op' (left us vs) v
+
+left ([] ++ [v]) vs =
+	rep (split ws []) =
+	rep ([], ws) =
+	root
+
+left (u : us ++ [v]) vs =
+	rep (split ws (us ++ [v])) =
+	rep (op (split ws us) v) =
+	op' (rep (split ws us)) v =
+	op' (left (u : us) vs) v
+```
+
+```haskell
+grep l (us, []) = Node (us, []) l Null
+grep l (us, v : vs) = Node (us, v : vs) l (grep (op' l v) (us ++ [v], vs))
+```
