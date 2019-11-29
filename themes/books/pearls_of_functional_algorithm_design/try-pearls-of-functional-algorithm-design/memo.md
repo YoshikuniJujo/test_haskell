@@ -193,3 +193,142 @@ drop k sw	poj
 sw		ponmpoj
 drop k sw	poj
 ```
+
+save comparison
+---------------
+
+```
+i = llcp sw sx
+k = shift sw i
+m - k <= i
+```
+
+### CASE 1
+
+```
+text	qponmlkjihgfedcbahijklmnopqrstuvwxyz
+```
+
+```
+	.....i.......m...
+sx	abcdefghijklmnopq
+sw	abcdefabcdefab
+
+m = 14
+i = 6
+k = 12
+m - k = 2
+```
+
+```
+		..............
+sw		abcdefabcdefab
+drop k sw	ab
+sx		abcdefghijklmnopqrstuvwxyz
+```
+
+```
+ys ++ sx	srqponmlkjihabcdefghijklmnopq
+sw		abcdefabcdefab
+```
+
+### CASE 2
+
+```
+text	abcabcabcabcabcabcabc
+ws	abcabcabc
+```
+
+```
+	...................
+sx	cbacbacba
+sw	cbacbacba
+
+m = 9
+i = 9
+k = 3
+m - k = 6
+```
+
+```
+ys ++ sx	cbacbacbacba
+ws		cbacbacba
+```
+
+### shifts
+
+```
+f k = llcp sw $ drop k sw
+
+f m = 0
+f k <= m - k
+```
+
+```
+i <= m - k <==> k <= m - i
+i >  m - k <==> k >  m - i
+```
+
+```
+shift sw i =
+	head [ k | k <- [1 .. m], f k == min i (m - k) ] =
+	head (	[ k | k <- [1 .. m - i], f k == i ] ++
+		[ k | k <- [m - i + 1 .. m], f k + k == m ] )
+	head (	[ k | k <- [1 .. m], f k == i ] ++
+		[ k | k <- [m - i + 1 .. m], f k + k == m ] )
+```
+
+```
+(accumArray op e (0, m) vks) ! i = foldl op e [ k | (v, k) <- vks, v == i ]
+```
+
+```
+a = accumArray min m (0, m) vks
+vks = [ (f k, k) | k <- [1 .. m] ]
+
+a ! i =
+	(accumArray min m (0, m) vks) ! i =
+	foldl min m [ j | (v, j) <- vks, v == i ] =
+	foldl min m [ j | (v, j) <- [ (f k, k) | k <- [1 .. m] ], v == i ] =
+	foldl min m [ j | j <- [1 .. m], f j == i ]
+	head ([ k | k <- [1 .. m], f k == i ] ++ [m])
+```
+
+```haskell
+a = accumArray min m (0, m) (vks ++ vks')
+
+reverse vks' =
+	[ (i, head [ k | k <- [m - i + 1 .. m], f k + k == m]) | i <- [1 .. m] ] =
+	reverse [ (i, head [ k | k <- [m - i + 1 .. m], f k + k == m]) | i <- [m, m - 1 .. 1] ]
+
+vks' =
+	[ (i, head [ k | k <- [m - i + 1 .. m], f k + k == m ]) | i <- [m, m - 1 .. 1 ] ] =
+	zip [m, m - 1 .. 1] [ head [ k | k <- [m - i + 1 .. m], f k + k == m ] | i <- [m, m - 1 .. 1 ] ] =
+	zip [m, m - 1 .. 1] [ head [ k | k <- [j .. m], f k + k == m ] | j <- [1 .. m] ]
+
+head [ k | k <- [j .. m], f k + k == m ]
+	= if f j ++ j == m then j else head [ k | k <- [j + 1 .. m], f k + k == m ]
+f m = m
+f j = if f j + j == m then j else f (j + 1)
+	
+
+vks' = zip [m, m - 1, .. 1] (foldr op [] vks)
+op (v, k) ks@(~(k' : _)) = if v + k == m then k : ks else k' : ks
+```
+
+```
+xs = foldr op [] vks
+
+f	1 0 2 5 1 0 2 1 0
+k	1 2 3 4 5 6 7 8 9
+xs	4 4 4 4 7 7 7 8 9
+```
+
+```
+allcp' xs = tail (allcp xs) ++ [0]
+
+[ (f k, k) | k <- [1 .. m] ] =
+	[ (llcp sw (drop k sw), k) | k <- [1 .. m] ] =
+	zip [llcp sw (drop k sw) | k <- [1 .. m]] [1 .. m] =
+	zip (allcp' sw) [1 .. m]
+```

@@ -1,18 +1,20 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Ch16TheBoyerMooreAlgorithm where
+module Ch16TheBoyerMooreAlgorithmV2 where
 
 import Data.Bool (bool)
--- import Data.List (inits)
 
 matches :: Eq a => [a] -> [a] -> [Int]
--- matches ws = map length . filter (endswith ws) . inits
-matches ws = test . scanl step (0, [])
+matches ws = test m . scanl step (0, [])
 	where
-	test [] = []
-	test ((n, sx) : nxs) = bool id (n :) (i == m) $ test (drop (k - 1) nxs)
+	test _ [] = []
+	test j ((n, sx) : nxs)
+		| i == m = n : test k (drop (k - 1) nxs)
+		| m - k <= i = test k (drop (k - 1) nxs)
+		| otherwise = test m (drop (k - 1) nxs)
 		where
-		i = llcp sw sx
+		i' = llcp sw (take j sx)
+		i = if i' == j then m else i'
 		k = shift i
 	(sw, m) = (reverse ws, length ws)
 	step (n, sx) x = (n + 1, x : sx)
