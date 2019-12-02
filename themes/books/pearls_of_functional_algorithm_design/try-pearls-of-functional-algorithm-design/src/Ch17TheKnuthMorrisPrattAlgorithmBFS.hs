@@ -1,11 +1,11 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Ch17TheKnuthMorrisPrattAlgorithmFinal (matches) where
+module Ch17TheKnuthMorrisPrattAlgorithmBFS where
 
 import Control.Arrow
 
--- matches = map length . filter (endswith ws) . inits
+-- matchs = map length . filter (endswith ws) . inits
 -- endswith ws xs = ws `elem` tails xs
 
 data Rep a = Null | Node a (Rep a) (Rep a)
@@ -27,11 +27,7 @@ step rt = op
 		| v == x = r
 		| otherwise = op l x
 
-next :: Eq a => Rep [a] -> a -> Rep [a]
-next t@Null _ = t
-next t@(Node [] _ _) _ = t
-next t@(Node (v : _) l _) x | v == x = next l x | otherwise = t
-
 grep :: Eq a => Rep [a] -> Rep [a] -> [a] -> Rep [a]
 grep _ l [] = Node [] l Null
-grep rt l va@(v : vs) = Node va (next l v) (grep rt (step rt l v) vs)
+grep rt l@Null va@(_ : vs) = Node va l (grep rt rt vs)
+grep rt l@(Node _ _ r) va@(_ : vs) = Node va l (grep rt r vs)

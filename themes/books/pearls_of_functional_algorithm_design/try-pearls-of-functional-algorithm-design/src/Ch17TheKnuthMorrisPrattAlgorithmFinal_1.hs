@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Ch17TheKnuthMorrisPrattAlgorithmFinal (matches) where
+module Ch17TheKnuthMorrisPrattAlgorithmFinal_1 (matches) where
 
 import Control.Arrow
 
@@ -27,11 +27,10 @@ step rt = op
 		| v == x = r
 		| otherwise = op l x
 
-next :: Eq a => Rep [a] -> a -> Rep [a]
-next t@Null _ = t
-next t@(Node [] _ _) _ = t
-next t@(Node (v : _) l _) x | v == x = next l x | otherwise = t
-
 grep :: Eq a => Rep [a] -> Rep [a] -> [a] -> Rep [a]
 grep _ l [] = Node [] l Null
-grep rt l va@(v : vs) = Node va (next l v) (grep rt (step rt l v) vs)
+grep rt l va@(v : vs) = Node va l (grep rt (step rt l v) vs)
+
+-- xs	a b a b x y z a b c d e f g h i j k l m n o p q r s t u
+-- ws	a b a b c a b a b d
+--
