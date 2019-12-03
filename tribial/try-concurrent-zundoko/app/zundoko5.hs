@@ -2,48 +2,48 @@
 
 module Main where
 
--- import Data.List (inits, tails, foldl')
-import Data.List (foldl')
-import Data.Queue
+import Control.Monad
+import Control.Monad.Tips
+import Control.Concurrent
+import Control.Concurrent.STM (atomically, retry, newTVar, readTVar, writeTVar)
+import Control.Concurrent.STM.RTQueue
+import Data.List.KnuthMorrisPratt
 import Data.RTQueue
+import System.Random
+
+data ZunDoko = Zun | Doko | End deriving (Show, Eq)
 
 main :: IO ()
-main = putStrLn "Slozsoft"
+main = do
+	qz <- atomically newqueue
+	qs <- atomically newqueue
+	st <- atomically . newTVar $ initialState [Zun, Zun, Zun, Zun, Doko]
+	void . forkIO . forever $ ruffle 100000 >> atomically (enqueue qz Zun)
+	void . forkIO . forever $ ruffle 100000 >> atomically (enqueue qz Doko)
+	void . forkIO . forever .  atomically $ do
+		s <- readTVar st
+		q <- readTVar qz
+		case check s q of
+			([], _) -> retry
+			(zds, s') -> do
+				enqueue qs `mapM_` zds
+				case s' of
+					Nothing -> enqueue qs End
+					Just ss' -> writeTVar st ss'
+				writeTVar qz empty
+	loopIf $ do
+		s <- atomically $ dequeue qs
+		print s
+		return $ s /= End
+		
 
-data ZunDoko = Zun | Doko deriving Show
-data Result q a = Pending | Next [a] (q a) | Match [a] (q a) deriving Show
+ruffle :: Int -> IO ()
+ruffle n = randomRIO (1, n) >>= threadDelay
 
-{-
-match :: Queue q => [a] -> q a -> Result q a
-match pat q = Pending
--}
-
-{-
-patterns :: Eq a => [a] -> [[Maybe a]]
-patterns xs = filter (`isPrefixOf`
--}
-
-matchOne :: (Eq a, Queue q) => [Maybe a] -> q a -> Result q a
-matchOne [] q = Match [] q
-matchOne (Nothing : xs) q = case uncons q of
-	Nothing -> Pending
-	Just (_, t) -> matchOne xs t
-matchOne (Just x : xs) q = case uncons q of
-	Nothing -> Pending
-	Just (h, t)
-		| h == x -> case matchOne xs t of
-			Pending -> Pending
-			Next ys q' -> Next (h : ys) q'
-			Match ys q' -> Match (h : ys) q'
-		| otherwise -> Next [h] t
-
--- multiMatch :: Queue q => [[Maybe a]] -> q a -> (Bool, ([a], q a))
--- multiMatch 
-
-samplePat :: [Maybe Char]
-samplePat = Nothing : Nothing : (Just <$> "foobar")
-
-sampleQueue, sampleQueue2, sampleQueue3 :: Queue q => q Char
-sampleQueue = foldl' snoc empty "abfoobar"
-sampleQueue2 = foldl' snoc empty "abfoo"
-sampleQueue3 = foldl' snoc empty "abfoovar"
+check :: Eq a => KmpState a -> RTQueue a -> ([a], Maybe (KmpState a))
+check st q = case uncons q of
+	Nothing -> ([], Just st)
+	Just (zd, q') -> let st' = nextState st zd in
+		if found st' then ([zd], Nothing) else let
+			(zds, st'') = check st' q' in
+			(zd : zds, st'')
