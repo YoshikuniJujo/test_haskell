@@ -37,6 +37,24 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-pearls-of-functional-algorithm-design
+  profile-kmp-not-k:
+    main:                profile-kmp-not-k.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-pearls-of-functional-algorithm-design
+  profile-kmp-k:
+    main:                profile-kmp-k.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-pearls-of-functional-algorithm-design
 
 tests:
   try-pearls-of-functional-algorithm-design-test:
