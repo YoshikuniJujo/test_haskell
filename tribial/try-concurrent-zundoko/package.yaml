@@ -83,6 +83,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-concurrent-zundoko
+  scat:
+    main:                scat.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-concurrent-zundoko
 
 tests:
   try-concurrent-zundoko-test:
