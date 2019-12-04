@@ -7,7 +7,7 @@ module Zundoko (ToEndable(..), zundoko) where
 
 import Control.Arrow (first)
 import Control.Concurrent (threadDelay)
-import Control.Concurrent.Tips (forkForever)
+import Control.Concurrent.Tips (forkForever, forkLoopIf)
 import Control.Concurrent.STM (
 	atomically, retry, TVar, newTVar, readTVar, writeTVar )
 import Control.Concurrent.STM.RTQueue (newqueue, enqueue)
@@ -32,14 +32,14 @@ zundoko ts pt = do
 	(forkForever . (ruffle 100000 >>) . atomically . enqueue ql) `mapM_` ts
 	kmpst <- atomically . newTVar $ initialState pt
 	qo <- atomically newqueue
-	forkForever . atomically $ do
+	forkLoopIf . atomically $ do
 		st <- readTVar kmpst
 		q <- readTVar ql; writeTVar ql empty
 		case check st q of
 			([], _) -> retry
-			(zs, st') -> do
-				(enqueue qo . endable) `mapM_` zs
-				maybe (enqueue qo (endValue :: e)) (writeTVar kmpst) st'
+			(zs, st') -> (enqueue qo . endable) `mapM_` zs >> maybe
+				(False <$ enqueue qo (endValue :: e))
+				((True <$) . writeTVar kmpst) st'
 	pure qo
 
 ruffle :: Int -> IO ()
