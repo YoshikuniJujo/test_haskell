@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Zundoko (ToEndable(..), zundoko) where
+module ZunDoko (ToEndable(..), zundoko) where
 
 import Control.Arrow (first)
 import Control.Concurrent (threadDelay)

@@ -7,7 +7,7 @@ import Control.Concurrent.STM (atomically)
 import Control.Concurrent.STM.RTQueue (dequeue)
 import Data.Maybe (isJust)
 
-import Zundoko (zundoko)
+import ZunDoko (zundoko)
 
 data Scat = Be | Bop | A | Bodda deriving (Show, Eq)
 

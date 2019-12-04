@@ -8,7 +8,7 @@ import Control.Concurrent.STM (atomically)
 import Control.Concurrent.STM.RTQueue (dequeue)
 import Data.Maybe (isJust)
 
-import Zundoko (zundoko)
+import ZunDoko (zundoko)
 
 data PPAP = Pen | Pinapple | Apple deriving (Show, Eq)
 

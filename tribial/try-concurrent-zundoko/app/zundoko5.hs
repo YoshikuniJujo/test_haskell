@@ -7,7 +7,7 @@ import Control.Monad.Tips (loopIf)
 import Control.Concurrent.STM (atomically)
 import Control.Concurrent.STM.RTQueue (dequeue)
 
-import Zundoko (ToEndable(..), zundoko)
+import ZunDoko (ToEndable(..), zundoko)
 
 instance ToEndable ZunDoko where
 	type PreEndable ZunDoko = ZunDoko
