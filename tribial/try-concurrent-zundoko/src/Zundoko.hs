@@ -1,5 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE ScopedTypeVariables, TypeFamilies, DefaultSignatures #-}
+{-# LANGUAGE TypeFamilies, DefaultSignatures #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -25,7 +25,7 @@ instance ToEndable (Maybe a) where
 	type PreEndable (Maybe a) = a
 	endable = Just; endValue = Nothing
 
-zundoko :: forall e . (ToEndable e, Eq (PreEndable e)) =>
+zundoko :: (ToEndable e, Eq (PreEndable e)) =>
 	[PreEndable e] -> [PreEndable e] -> IO (TVar (RTQueue e))
 zundoko ts pt = do
 	ql <- atomically newqueue
@@ -38,7 +38,7 @@ zundoko ts pt = do
 		case check st q of
 			([], _) -> retry
 			(zs, st') -> (enqueue qo . endable) `mapM_` zs >> maybe
-				(False <$ enqueue qo (endValue :: e))
+				(False <$ enqueue qo endValue)
 				((True <$) . writeTVar kmpst) st'
 	pure qo
 
