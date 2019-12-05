@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Tips (forkForever, forkLoopIf) where
+module Tips (forkForever, forkLoopIf, loopIf) where
 
 import Control.Monad (void, forever)
 import Control.Concurrent (forkIO)
