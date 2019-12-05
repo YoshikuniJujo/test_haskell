@@ -7,10 +7,11 @@ import Prelude hiding (head, tail)
 import Control.Monad (when)
 import Data.Bool (bool)
 import Data.List (intercalate)
-import System.IO.Unsafe (unsafePerformIO)
 
 import Queue (Queue(..), ConsQueue(..), head, tail)
 import ShowLazyList (showLazyList)
+
+import Printable (Printable(..))
 
 data BankersQueue a = BankersQueue Int [a] Int [a]
 
@@ -38,5 +39,4 @@ showBankersQueue (BankersQueue _ f _ r) = do
 	pure $ "BankersQueue [" ++ intercalate "," sf ++
 		bool ".." "|" ef ++ intercalate "," (reverse sr) ++ "]"
 
-instance Show a => Show (BankersQueue a) where
-	show = unsafePerformIO . showBankersQueue
+instance Show a => Printable (BankersQueue a) where show' = showBankersQueue
