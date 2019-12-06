@@ -13,7 +13,7 @@ step rt = op
 	op Null _ = rt
 	op (Node [] l _) x = op l x
 	op (Node (v : _) l r) x
-	        | v == x = r
+		| v == x = r
 		| otherwise = op l x
 
 sampleTreeAbc :: Rep String
@@ -28,7 +28,7 @@ sampleTreeAabc = let
 
 grep :: Eq a => Rep [a] -> Rep [a] -> [a] -> Rep [a]
 grep _ l [] = Node [] l Null
-grep rt l va@(v : vs) = Node va l (grep rt (step rt l v) vs)
+grep rt l va@(v : vs) = Node va (next l v) (grep rt (step rt l v) vs)
 
 run :: Eq a => [a] -> [a] -> [Rep [a]]
 run ws = scanl (step root) root where root = grep root Null ws
@@ -39,7 +39,15 @@ matches ws = (fst <$>) . filter (ok . snd) . zip [0 ..] . run ws
 ok :: Rep [a] -> Bool
 ok = \case Null -> False; Node vs _ _ -> null vs
 
-data KmpState a = KmpState { rootRep :: Rep [a], currentRep :: Rep [a] }
+next :: Eq a => Rep [a] -> a -> Rep [a]
+next t@Null _ = t
+next t@(Node [] _ _) _ = t
+next t@(Node (v : _) l _) x | v == x = next l x | otherwise = t
+
+data KmpState a = KmpState {
+	rootRep :: Rep [a],
+	currentRep :: Rep [a] }
+
 
 initialState :: Eq a => [a] -> KmpState a
 initialState ws = KmpState root root
