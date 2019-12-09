@@ -2,13 +2,16 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Concurrent.STM.RTQueue (
-	TRTQueue, enqueue, dequeue, requeue ) where
+	TRTQueue, newqueue, enqueue, dequeue, requeue ) where
 
 import Control.Concurrent.STM (
-	STM, retry, TVar, readTVar, writeTVar, modifyTVar )
-import Data.RTQueue (RTQueue, snoc, uncons, cons)
+	STM, retry, TVar, newTVar, readTVar, writeTVar, modifyTVar )
+import Data.RTQueue (RTQueue, empty, snoc, uncons, cons)
 
 type TRTQueue a = TVar (RTQueue a)
+
+newqueue :: STM (TRTQueue a)
+newqueue = newTVar empty
 
 enqueue :: TRTQueue a -> a -> STM ()
 enqueue q = modifyTVar q . flip snoc

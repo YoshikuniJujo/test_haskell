@@ -1,6 +1,6 @@
-name:                try-pearls-of-functional-algorithm-design
+name:                concurrent-zundoko
 version:             0.1.0.0
-github:              "githubuser/try-pearls-of-functional-algorithm-design"
+github:              "githubuser/concurrent-zundoko"
 license:             BSD3
 author:              "Author name here"
 maintainer:          "example@example.com"
@@ -17,18 +17,19 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/try-pearls-of-functional-algorithm-design#readme>
+description:         Please see the README on GitHub at <https://github.com/githubuser/concurrent-zundoko#readme>
 
 dependencies:
 - base >= 4.7 && < 5
-- array
 - ghc-heap
+- stm
+- random
 
 library:
   source-dirs: src
 
 executables:
-  try-pearls-of-functional-algorithm-design-exe:
+  concurrent-zundoko-exe:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -36,28 +37,19 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - try-pearls-of-functional-algorithm-design
-  profile-kmp-not-k:
-    main:                profile-kmp-not-k.hs
+    - concurrent-zundoko
+  ppap:
+    main:                ppap.hs
     source-dirs:         app
     ghc-options:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - try-pearls-of-functional-algorithm-design
-  profile-kmp-k:
-    main:                profile-kmp-k.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-pearls-of-functional-algorithm-design
+    - concurrent-zundoko
 
 tests:
-  try-pearls-of-functional-algorithm-design-test:
+  concurrent-zundoko-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -65,4 +57,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - try-pearls-of-functional-algorithm-design
+    - concurrent-zundoko

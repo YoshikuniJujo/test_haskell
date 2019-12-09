@@ -7,11 +7,10 @@ import Prelude hiding (head, tail)
 import Control.Monad (when)
 import Data.Bool (bool)
 import Data.List (intercalate)
+import System.IO.Unsafe (unsafePerformIO)
 
 import Queue (Queue(..), ConsQueue(..), head, tail)
 import ShowLazyList (showLazyList)
-
-import Printable (Printable(..))
 
 rotate :: [a] -> [a] -> [a] -> [a]
 rotate [] ys a = reverse ys ++ a
@@ -28,7 +27,8 @@ showRTQueue (RTQueue f r _) = do
 	pure $ "RTQueue [" ++ intercalate "," sf ++
 		bool ".." "|" ef ++ intercalate "," (reverse sr) ++ "]"
 
-instance Show a => Printable (RTQueue a) where show' = showRTQueue
+instance Show a => Show (RTQueue a) where
+	show = unsafePerformIO . showRTQueue
 
 instance Queue RTQueue where
 	empty = RTQueue [] [] []

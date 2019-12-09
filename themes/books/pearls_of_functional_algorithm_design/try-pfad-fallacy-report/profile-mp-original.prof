@@ -1,0 +1,48 @@
+	Tue Dec  3 09:29 2019 Time and Allocation Profiling Report  (Final)
+
+	   profile-mp-original +RTS -N -p -RTS
+
+	total time  =        0.00 secs   (0 ticks @ 1000 us, 1 processor)
+	total alloc =     108,032 bytes  (excludes profiling overheads)
+
+COST CENTRE  MODULE                       SRC                                                 %time %alloc
+
+MAIN         MAIN                         <built-in>                                            0.0   20.1
+CAF          GHC.Event.Thread             <entire-module>                                       0.0    1.1
+CAF          GHC.IO.Handle.FD             <entire-module>                                       0.0   32.1
+CAF          GHC.IO.Encoding              <entire-module>                                       0.0    2.6
+matches.step MorrisPrattAlgorithmOriginal src/MorrisPrattAlgorithmOriginal.hs:14:9-39           0.0    1.5
+matches      MorrisPrattAlgorithmOriginal src/MorrisPrattAlgorithmOriginal.hs:(11,1)-(20,60)    0.0   11.0
+main         Main                         app/profile-mp-original.hs:6:1-64                     0.0   30.1
+
+
+                                                                                                                     individual      inherited
+COST CENTRE       MODULE                       SRC                                                no.     entries  %time %alloc   %time %alloc
+
+MAIN              MAIN                         <built-in>                                         149          0    0.0   20.1     0.0  100.0
+ CAF              GHC.Conc.Signal              <entire-module>                                    260          0    0.0    0.6     0.0    0.6
+ CAF              GHC.IO.Encoding              <entire-module>                                    250          0    0.0    2.6     0.0    2.6
+ CAF              GHC.IO.Encoding.Iconv        <entire-module>                                    248          0    0.0    0.2     0.0    0.2
+ CAF              GHC.IO.Handle.FD             <entire-module>                                    240          0    0.0   32.1     0.0   32.1
+ CAF              GHC.IO.Handle.Text           <entire-module>                                    238          0    0.0    0.1     0.0    0.1
+ CAF              GHC.Event.Thread             <entire-module>                                    201          0    0.0    1.1     0.0    1.1
+ CAF              GHC.Event.Poll               <entire-module>                                    165          0    0.0    0.0     0.0    0.0
+ CAF:main         Main                         app/profile-mp-original.hs:6:1-4                   297          0    0.0    0.0     0.0    0.0
+  main            Main                         app/profile-mp-original.hs:6:1-64                  298          1    0.0    0.0     0.0    0.0
+ CAF:main1        Main                         <no location info>                                 296          0    0.0    0.0     0.0   28.6
+  main            Main                         app/profile-mp-original.hs:6:1-64                  300          0    0.0   16.3     0.0   28.6
+   matches        MorrisPrattAlgorithmOriginal src/MorrisPrattAlgorithmOriginal.hs:(11,1)-(20,60) 303          0    0.0   10.9     0.0   12.3
+    matches.op    MorrisPrattAlgorithmOriginal src/MorrisPrattAlgorithmOriginal.hs:(15,9)-(17,63) 310        195    0.0    0.0     0.0    0.0
+    matches.ok    MorrisPrattAlgorithmOriginal src/MorrisPrattAlgorithmOriginal.hs:13:9-34        304        101    0.0    0.0     0.0    0.0
+    matches.step  MorrisPrattAlgorithmOriginal src/MorrisPrattAlgorithmOriginal.hs:14:9-39        309        100    0.0    1.5     0.0    1.5
+ CAF:main2        Main                         <no location info>                                 294          0    0.0    0.0     0.0    4.4
+  main            Main                         app/profile-mp-original.hs:6:1-64                  308          0    0.0    4.4     0.0    4.4
+ CAF:main3        Main                         <no location info>                                 295          0    0.0    0.0     0.0    0.8
+  main            Main                         app/profile-mp-original.hs:6:1-64                  301          0    0.0    0.0     0.0    0.8
+   matches        MorrisPrattAlgorithmOriginal src/MorrisPrattAlgorithmOriginal.hs:(11,1)-(20,60) 302          1    0.0    0.1     0.0    0.8
+    matches.root  MorrisPrattAlgorithmOriginal src/MorrisPrattAlgorithmOriginal.hs:18:9-27        305          1    0.0    0.0     0.0    0.6
+     matches.grep MorrisPrattAlgorithmOriginal src/MorrisPrattAlgorithmOriginal.hs:(19,9)-(20,60) 306          6    0.0    0.6     0.0    0.6
+      matches.op  MorrisPrattAlgorithmOriginal src/MorrisPrattAlgorithmOriginal.hs:(15,9)-(17,63) 311          5    0.0    0.0     0.0    0.0
+ CAF:main4        Main                         <no location info>                                 293          0    0.0    0.0     0.0    0.2
+  main            Main                         app/profile-mp-original.hs:6:1-64                  307          0    0.0    0.2     0.0    0.2
+ main             Main                         app/profile-mp-original.hs:6:1-64                  299          0    0.0    9.2     0.0    9.2
