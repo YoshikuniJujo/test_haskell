@@ -21,6 +21,7 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- stm
 
 library:
   source-dirs: src
@@ -37,6 +38,24 @@ executables:
     - try-persistent-queue
   profileListQueue:
     main:                profileListQueue.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-persistent-queue
+  profileBatchedQueue:
+    main:                profileBatchedQueue.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-persistent-queue
+  profileNotAmortizedConstant:
+    main:                profileNotAmortizedConstant.hs
     source-dirs:         app
     ghc-options:
     - -threaded
