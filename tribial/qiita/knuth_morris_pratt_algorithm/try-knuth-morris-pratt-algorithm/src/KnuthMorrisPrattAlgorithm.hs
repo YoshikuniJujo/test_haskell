@@ -1,5 +1,4 @@
 {-# LANGUAGE LambdaCase #-}
--- {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-unused-top-binds #-}
 
 module KnuthMorrisPrattAlgorithm (
@@ -48,15 +47,11 @@ data KmpState a = KmpState {
 	rootRep :: Rep [a],
 	currentRep :: Rep [a] }
 
-
 initialState :: Eq a => [a] -> KmpState a
-initialState ws = KmpState root root
-	where root = grep root Null ws
+initialState ws = KmpState root root where root = grep root Null ws
 
 nextState :: Eq a => KmpState a -> a -> KmpState a
-nextState st x = KmpState {
-	rootRep = rootRep st,
-	currentRep = step (rootRep st) (currentRep st) x }
+nextState st x = st { currentRep = step (rootRep st) (currentRep st) x }
 
 found :: KmpState a -> Bool
 found = ok . currentRep
