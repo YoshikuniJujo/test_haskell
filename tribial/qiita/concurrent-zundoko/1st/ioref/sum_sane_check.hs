@@ -8,6 +8,10 @@ main = do
 	print $ mySum' [123, 456, 789]
 	putStrLn ""
 	print $ mySum [123, 456, 789]
+	putStrLn ""
+	print $ mySum'' [123, 456, 789]
+	putStrLn ""
+	print $ mySum''' [123, 456, 789]
 
 mySum :: [Int] -> Int
 mySum = sm 0
@@ -20,6 +24,18 @@ mySum' = sm 0
 	where
 	sm s [] = checkTipe s
 	sm s (n : ns) = sm (checkTipe s + n) ns
+
+mySum'' :: [Int] -> Int
+mySum'' = sm 0
+	where
+	sm s [] = checkTipe s
+	sm s (n : ns) = (sm $! checkTipe s + n) ns
+
+mySum''' :: [Int] -> Int
+mySum''' = sm 0
+	where
+	sm s [] = checkTipe s
+	sm s (n : ns) = (sm $ checkTipe s + n) ns
 
 checkTipe :: a -> a
 checkTipe x = unsafePerformIO $ do
