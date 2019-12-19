@@ -108,6 +108,24 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - reflection-without-remorse
+  listConcatenation:
+    main:                listConcatenation.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - reflection-without-remorse
+  treeSubstitution:
+    main:                treeSubstitution.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - reflection-without-remorse
 
 tests:
   reflection-without-remorse-test:
