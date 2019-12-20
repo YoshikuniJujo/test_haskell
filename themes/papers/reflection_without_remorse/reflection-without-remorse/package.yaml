@@ -135,6 +135,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - reflection-without-remorse
+  diffList:
+    main:                diffList.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - reflection-without-remorse
 
 tests:
   reflection-without-remorse-test:

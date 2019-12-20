@@ -8,5 +8,5 @@ import ListConcatenation
 
 main :: IO ()
 main = do
-	putStrLn $ {-# SCC "LEFT" #-} ("hello" ++ "beautiful") ++ "world"
-	putStrLn $ {-# SCC "RIGHT" #-} "hello" ++ ("beautiful" ++ "world")
+	putStrLn $ {-# SCC "LEFT" #-} (("hello" ++ "beautiful") ++ "world") ++ "!"
+	putStrLn $ {-# SCC "RIGHT" #-} "hello" ++ ("beautiful" ++ ("world" ++ "!"))
