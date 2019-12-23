@@ -13,25 +13,36 @@ import qualified Data.Map as M
 
 data State = State {
 	position :: (Int, Int),
+	shape :: [(Int, Int)],
 	land :: M.Map (Int, Int) Color
 	} deriving Show
 
-moveLeft, moveRight, moveDown :: State -> State
-moveLeft s@State { position = (x, y) } = bool s s { position = (x - 1, y) } (x > 0)
-moveRight s@State { position = (x, y) } = bool s s { position = (x + 1, y) } (x < 7)
+moveLeft, moveRight, moveDown, rotateLeft :: State -> State
+moveLeft s@State { position = (x, y) } = bool s s' . not $ overlap s'
+	where s' = s { position = (x - 1, y) }
+moveRight s@State { position = (x, y) } = bool s s' . not $ overlap s'
+	where s' = s { position = (x + 1, y) }
 moveDown s@State { position = (x, y) } = bool (landing s) s' . not $ overlap s'
 	where s' = s { position = (x, y + 1) }
+rotateLeft s@State { shape = sp } = bool s s' . not $ overlap s'
+	where s' = s { shape = rotL <$> sp }
+
+rotL :: (Int, Int) -> (Int, Int)
+rotL (x, y) = (- y, x)
 
 landing :: State -> State
 landing s@State { position = (x, y), land = l } = removeLines (checkLines s') s'
-	where s' = s { position = (4, 1), land = insertAllKey [(x + 1, y), (x, y + 1), (x + 1, y + 1), (x + 2, y + 1)] cyan l }
+	where s' = s { position = (4, 1), land = insertAllKey (blocks s) cyan l }
 
 insertAllKey :: Ord k => [k] -> a -> M.Map k a -> M.Map k a
 insertAllKey ks v m = foldl (flip $ flip M.insert v) m ks
 
 overlap :: State -> Bool
-overlap State { position = (x, y), land = l } =
-	any (isJust . flip M.lookup l) [(x + 1, y), (x, y + 1), (x + 1, y + 1), (x + 2, y + 1)] || y > 21
+overlap s@State { position = (x, y), land = l } =
+	any (isJust . flip M.lookup l) (blocks s) || y > 21
+
+blocks :: State -> [(Int, Int)]
+blocks State { position = (x, y), shape = s } = (\(dx, dy) -> (x + dx, y + dy)) <$> s
 
 checkLines :: State -> [Int]
 checkLines State { land = l } =

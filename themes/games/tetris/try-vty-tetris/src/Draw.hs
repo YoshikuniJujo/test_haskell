@@ -14,8 +14,8 @@ import State
 draw :: Vty -> State -> IO ()
 draw vty st = do
 	update vty $ picForLayers [
-		translate (x * 2 + 6) (y + 1) minoT,
-		drawLand $ land st,
+--		translate (x * 2 + 6) (y + 1) minoT,
+		drawLand $ foldr (\p -> M.insert p cyan) (land st) (blocks st),
 		field
 		]
 	where (x, y) = position st
