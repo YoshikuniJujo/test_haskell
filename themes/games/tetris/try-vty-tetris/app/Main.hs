@@ -20,7 +20,7 @@ main :: IO ()
 main = do
 	vty <- mkVty =<< standardIOConfig
 	changed <- atomically $ newTVar False
-	state <- atomically . newTVar $ State (4, 0) [(1, 0), (0, 1), (1, 1), (2, 1)] M.empty
+	state <- atomically . newTVar $ State (4, 1) [(- 1, 0), (0, - 1), (0, 0), (1, 0)] M.empty
 	forkForever do
 		st <- atomically do
 			bool retry (return ()) =<< readTVar changed
@@ -59,6 +59,16 @@ main = do
 				atomically do
 					writeTVar changed True
 					modifyTVar state \s -> rotateLeft s
+				pure True
+			EvKey (KChar 'k') [] -> do
+				atomically do
+					writeTVar changed True
+					modifyTVar state \s -> rotateRight s
+				pure True
+			EvKey (KChar ' ') [] -> do
+				atomically do
+					writeTVar changed True
+					modifyTVar state \s -> moveBottom s
 				pure True
 			EvKey (KChar 'q') [] -> pure False
 			_ -> pure True

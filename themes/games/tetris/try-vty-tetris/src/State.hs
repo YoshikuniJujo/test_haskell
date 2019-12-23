@@ -18,17 +18,26 @@ data State = State {
 	} deriving Show
 
 moveLeft, moveRight, moveDown, rotateLeft :: State -> State
-moveLeft s@State { position = (x, y) } = bool s s' . not $ overlap s'
+moveLeft s@State { position = (x, y) } = bool s s' $ inside s' && not (overlap s')
 	where s' = s { position = (x - 1, y) }
-moveRight s@State { position = (x, y) } = bool s s' . not $ overlap s'
+moveRight s@State { position = (x, y) } = bool s s' $ inside s' && not (overlap s')
 	where s' = s { position = (x + 1, y) }
-moveDown s@State { position = (x, y) } = bool (landing s) s' . not $ overlap s'
+moveDown s@State { position = (x, y) } = bool (landing s) s' $ inside s' && not (overlap s')
 	where s' = s { position = (x, y + 1) }
 rotateLeft s@State { shape = sp } = bool s s' . not $ overlap s'
 	where s' = s { shape = rotL <$> sp }
+rotateRight s@State { shape = sp } = bool s s' . not $ overlap s'
+	where s' = s { shape = rotR <$> sp }
 
-rotL :: (Int, Int) -> (Int, Int)
+moveBottom :: State -> State
+moveBottom s@State { position = (x, y) }
+	| inside s' && not (overlap s') = moveBottom s'
+	| otherwise = s
+	where s' = s { position = (x, y + 1) }
+
+rotL, rotR :: (Int, Int) -> (Int, Int)
 rotL (x, y) = (- y, x)
+rotR (x, y) = (y, - x)
 
 landing :: State -> State
 landing s@State { position = (x, y), land = l } = removeLines (checkLines s') s'
@@ -39,7 +48,11 @@ insertAllKey ks v m = foldl (flip $ flip M.insert v) m ks
 
 overlap :: State -> Bool
 overlap s@State { position = (x, y), land = l } =
-	any (isJust . flip M.lookup l) (blocks s) || y > 21
+	any (isJust . flip M.lookup l) (blocks s)
+
+inside :: State -> Bool
+inside = all is . blocks
+	where is (x, y) = 0 <= x && x < 10 && 0 <= y && y < 23
 
 blocks :: State -> [(Int, Int)]
 blocks State { position = (x, y), shape = s } = (\(dx, dy) -> (x + dx, y + dy)) <$> s
