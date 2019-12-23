@@ -14,7 +14,9 @@ import qualified Data.Map as M
 data State = State {
 	position :: (Int, Int),
 	shape :: [(Int, Int)],
-	land :: M.Map (Int, Int) Color
+	shapeColor :: Color,
+	land :: M.Map (Int, Int) Color,
+	shapeList :: [([(Int, Int)], Color)]
 	} deriving Show
 
 moveLeft, moveRight, moveDown, rotateLeft :: State -> State
@@ -40,8 +42,8 @@ rotL (x, y) = (- y, x)
 rotR (x, y) = (y, - x)
 
 landing :: State -> State
-landing s@State { position = (x, y), land = l } = removeLines (checkLines s') s'
-	where s' = s { position = (4, 1), land = insertAllKey (blocks s) cyan l }
+landing s@State { position = (x, y), shapeColor = c, land = l, shapeList = (sp, c') : sps } = removeLines (checkLines s') s'
+	where s' = s { position = (4, 1), shape = sp, shapeColor = c', land = insertAllKey (blocks s) c l, shapeList = sps }
 
 insertAllKey :: Ord k => [k] -> a -> M.Map k a -> M.Map k a
 insertAllKey ks v m = foldl (flip $ flip M.insert v) m ks

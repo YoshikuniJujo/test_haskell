@@ -15,7 +15,9 @@ draw :: Vty -> State -> IO ()
 draw vty st = do
 	update vty $ picForLayers [
 --		translate (x * 2 + 6) (y + 1) minoT,
-		drawLand $ foldr (\p -> M.insert p cyan) (land st) (blocks st),
+		drawLand $ -- foldr (\p -> M.insert p $ rgbColor 0x07 0x07 0x07)
+			(foldr (\p -> M.insert p $ shapeColor st) (land st) (blocks st)),
+--			(blocks $ moveBottom st),
 		field
 		]
 	where (x, y) = position st
@@ -41,4 +43,4 @@ field = translate 4 0 $
 
 drawLand :: M.Map (Int, Int) Color -> Image
 drawLand l = translate 6 1 $ foldl1 (<->) $ flip map [0 .. 22] \y -> foldl1 (<|>) $ flip map [0 .. 9] \x ->
-	bool space blockC (M.lookup (x, y) l == Just cyan)
+	maybe space block $ M.lookup (x, y) l
