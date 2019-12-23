@@ -14,6 +14,7 @@ import State
 draw :: Vty -> State -> IO ()
 draw vty st = do
 	update vty $ picForLayers [
+		translate 30 5 $ string defAttr (show $ score st),
 --		translate (x * 2 + 6) (y + 1) minoT,
 		drawLand $ -- foldr (\p -> M.insert p $ rgbColor 0x07 0x07 0x07)
 			(foldr (\p -> M.insert p $ shapeColor st) (land st) (blocks st)),
@@ -37,9 +38,9 @@ space = block black
 
 field :: Image
 field = translate 4 0 $
-	foldl1 (<|>) (replicate 12 blockW) <->
-	foldl1 (<->) (replicate 23 $ blockW <|> foldl1 (<|>) (replicate 10 space) <|> blockW) <->
-	foldl1 (<|>) (replicate 12 blockW)
+	foldl1 (<|>) (replicate 12 blockW) <|> space <->
+	foldl1 (<->) (replicate 23 $ blockW <|> foldl1 (<|>) (replicate 10 space) <|> blockW <|> space) <->
+	foldl1 (<|>) (replicate 12 blockW) <|> space
 
 drawLand :: M.Map (Int, Int) Color -> Image
 drawLand l = translate 6 1 $ foldl1 (<->) $ flip map [0 .. 22] \y -> foldl1 (<|>) $ flip map [0 .. 9] \x ->

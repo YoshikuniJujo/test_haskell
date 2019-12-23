@@ -16,7 +16,8 @@ data State = State {
 	shape :: [(Int, Int)],
 	shapeColor :: Color,
 	land :: M.Map (Int, Int) Color,
-	shapeList :: [([(Int, Int)], Color)]
+	shapeList :: [([(Int, Int)], Color)],
+	score :: Int
 	} deriving Show
 
 moveLeft, moveRight, moveDown, rotateLeft :: State -> State
@@ -42,8 +43,11 @@ rotL (x, y) = (- y, x)
 rotR (x, y) = (y, - x)
 
 landing :: State -> State
-landing s@State { position = (x, y), shapeColor = c, land = l, shapeList = (sp, c') : sps } = removeLines (checkLines s') s'
-	where s' = s { position = (4, 1), shape = sp, shapeColor = c', land = insertAllKey (blocks s) c l, shapeList = sps }
+landing s@State { position = (x, y), shapeColor = c, land = l, shapeList = (sp, c') : sps } =
+	removeLines is s' { score = score s + (length is) ^ 2 * 100 }
+	where
+	is = checkLines s'
+	s' = s { position = (4, 1), shape = sp, shapeColor = c', land = insertAllKey (blocks s) c l, shapeList = sps }
 
 insertAllKey :: Ord k => [k] -> a -> M.Map k a -> M.Map k a
 insertAllKey ks v m = foldl (flip $ flip M.insert v) m ks

@@ -32,7 +32,7 @@ main :: IO ()
 main = do
 	vty <- mkVty =<< standardIOConfig
 	changed <- atomically $ newTVar False
-	state <- atomically . newTVar $ State (4, 1) [(- 1, 0), (0, - 1), (0, 0), (1, 0)] cyan M.empty shapes
+	state <- atomically . newTVar $ State (4, 1) [(- 1, 0), (0, - 1), (0, 0), (1, 0)] cyan M.empty shapes 0
 	forkForever do
 		st <- atomically do
 			bool retry (return ()) =<< readTVar changed
