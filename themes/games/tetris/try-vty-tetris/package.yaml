@@ -24,6 +24,7 @@ dependencies:
 - stm
 - containers
 - vty
+- nowdoc
 
 library:
   source-dirs: src

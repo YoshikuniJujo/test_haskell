@@ -11,12 +11,14 @@ import Graphics.Vty
 
 import qualified Data.Map as M
 
+import Minos
+
 data State = State {
 	position :: (Int, Int),
-	shape :: [(Int, Int)],
+	shape :: Mino,
 	shapeColor :: Color,
 	land :: M.Map (Int, Int) Color,
-	shapeList :: [([(Int, Int)], Color)],
+	shapeList :: [(Mino, Color)],
 	score :: Int
 	} deriving Show
 
@@ -27,10 +29,17 @@ moveRight s@State { position = (x, y) } = bool s s' $ inside s' && not (overlap 
 	where s' = s { position = (x + 1, y) }
 moveDown s@State { position = (x, y) } = bool (landing s) s' $ inside s' && not (overlap s')
 	where s' = s { position = (x, y + 1) }
-rotateLeft s@State { shape = sp } = bool s s' . not $ overlap s'
-	where s' = s { shape = rotL <$> sp }
-rotateRight s@State { shape = sp } = bool s s' . not $ overlap s'
-	where s' = s { shape = rotR <$> sp }
+rotateLeft s@State { shape = sp } = tryStates s (shapeCandidates s $ rotateMinoL sp)
+rotateRight s@State { shape = sp } = tryStates s (shapeCandidates s $ rotateMinoR sp)
+
+shapeCandidates :: State -> [Mino] -> [State]
+shapeCandidates s = ((\sp -> s { shape = sp }) <$>)
+
+okState :: State -> Bool
+okState s = inside s && not (overlap s)
+
+tryStates :: State -> [State] -> State
+tryStates s ss = case dropWhile (not . okState) ss of [] -> s; s' : _ -> s'
 
 moveBottom :: State -> State
 moveBottom s@State { position = (x, y) }
@@ -61,7 +70,7 @@ inside = all is . blocks
 	where is (x, y) = 0 <= x && x < 10 && 0 <= y && y < 23
 
 blocks :: State -> [(Int, Int)]
-blocks State { position = (x, y), shape = s } = (\(dx, dy) -> (x + dx, y + dy)) <$> s
+blocks State { position = (x, y), shape = s } = minoToPos s (x, y) -- (\(dx, dy) -> (x + dx, y + dy)) <$> s
 
 checkLines :: State -> [Int]
 checkLines State { land = l } =

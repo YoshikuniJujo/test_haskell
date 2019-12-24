@@ -6,7 +6,6 @@ module Main where
 import Control.Monad
 import Control.Concurrent
 import Control.Concurrent.STM
-import Data.Foldable
 import Data.Bool
 import Graphics.Vty
 
@@ -16,23 +15,16 @@ import Draw
 import State
 import Tips
 
-i, j, t :: [(Int, Int)]
-i = [(- 1, 0) , (0, 0), (1, 0), (2, 0)]
-j = [(- 1, - 1), (- 1, 0), (0, 0), (1, 0)]
-l = [(- 1, 0), (0, 0), (1, 0), (1, - 1)]
-o = [(0, 0), (1, 0), (0, 1), (1, 1)]
-s = [(- 1, 1), (0, 1), (0, 0), (1, 0)]
-t = [(- 1, 0), (0, - 1), (0, 0), (1, 0)]
-z = [(- 1, 0), (0, 0), (0, 1), (1, 1)]
+import Minos
 
-shapes :: [([(Int, Int)], Color)]
-shapes = cycle [(i, red), (j, green), (l, yellow), (o, blue), (s, magenta), (t, cyan), (z, white)]
+shapes :: [(Mino, Color)]
+shapes = cycle $ zip standardMinos [red, green, yellow, blue, magenta, cyan, white]
 
 main :: IO ()
 main = do
 	vty <- mkVty =<< standardIOConfig
 	changed <- atomically $ newTVar False
-	state <- atomically . newTVar $ State (4, 1) [(- 1, 0), (0, - 1), (0, 0), (1, 0)] cyan M.empty shapes 0
+	state <- atomically . newTVar $ State (4, 1) (last standardMinos) cyan M.empty shapes 0
 	forkForever do
 		st <- atomically do
 			bool retry (return ()) =<< readTVar changed
