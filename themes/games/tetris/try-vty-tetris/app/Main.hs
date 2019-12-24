@@ -36,7 +36,7 @@ main :: IO ()
 main = do
 	vty <- mkVty =<< standardIOConfig
 	changed <- atomically $ newTVar False
-	state <- atomically . newTVar $ State (4, 1) (fst $ head shapes) (snd $ head shapes) M.empty (tail shapes) 0
+	state <- atomically . newTVar $ State (4, 1) (fst $ head shapes) (snd $ head shapes) M.empty (tail shapes) 0 False
 	forkForever do
 		st <- atomically do
 			bool retry (return ()) =<< readTVar changed
@@ -45,10 +45,23 @@ main = do
 		draw vty st
 	void . forkIO $ forever do
 		atomically do
+			st <- readTVar state
+			if pause st then retry else return ()
 			writeTVar changed True
 			modifyTVar state moveDown
 		threadDelay 250000
+	void . forkIO $ forever do
+		atomically do
+			st <- readTVar state
+			if pause st then return () else retry
+		e <- nextEvent vty
+		case e of
+			EvKey (KChar 'p') [] -> atomically $ modifyTVar state pauseGame
+			_ -> return ()
 	loopIf do
+		atomically do
+			st <- readTVar state
+			if pause st then retry else return ()
 		e <- nextEvent vty
 		case e of
 			EvKey KLeft [] -> do
@@ -85,6 +98,9 @@ main = do
 				atomically do
 					writeTVar changed True
 					modifyTVar state \s -> moveBottom s
+				pure True
+			EvKey (KChar 'p') [] -> do
+				atomically $ modifyTVar state pauseGame
 				pure True
 			EvKey (KChar 'q') [] -> pure False
 			_ -> pure True

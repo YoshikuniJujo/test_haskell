@@ -19,7 +19,8 @@ data State = State {
 	shapeColor :: Color,
 	land :: M.Map (Int, Int) Color,
 	shapeList :: [(Mino, Color)],
-	score :: Int
+	score :: Int,
+	pause :: Bool
 	} deriving Show
 
 moveLeft, moveRight, moveDown, rotateLeft :: State -> State
@@ -91,3 +92,6 @@ moveMap ((k, k') : r) m = maybe (moveMap r m) (\v -> M.insert k' v $ moveMap r m
 
 removeRule :: [Int] -> [(Int, Int)]
 removeRule is = uncurry zip $ ((\\ is) &&& id) [23, 22 .. 0]
+
+pauseGame :: State -> State
+pauseGame s = s { pause = not $ pause s }
