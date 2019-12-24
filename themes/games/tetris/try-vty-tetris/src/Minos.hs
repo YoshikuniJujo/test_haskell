@@ -7,8 +7,8 @@ import Control.Arrow
 import Data.List
 import Text.Nowdoc
 
-type Pos = (Int, Int)
-type PosR = (Rational, Rational)
+import Rotate
+
 newtype Mino = Mino { getMino :: [Pos] } deriving Show
 
 minoToPos :: Mino -> Pos -> [Pos]
@@ -74,16 +74,16 @@ average ns = fromIntegral (sum ns) / fromIntegral (length ns)
 dist :: PosR -> Pos -> Rational
 dist (cx, cy) (x, y) = abs (fromIntegral x - cx) + abs (fromIntegral y - cy)
 
-sortCenter :: Mino -> [Pos]
-sortCenter m@(Mino ps) = nub $ (round cx, round cy) : sortOn (dist c) ps
-	where c@(cx, cy) = center m
+sortCenter :: Mino -> [Center]
+sortCenter m@(Mino ps) = nub $ nearestCenter c : (uncurry Grid <$> sortOn (dist c) ps)
+	where c = center m
 
 rotateMinoL, rotateMinoR :: Mino -> [Mino]
-rotateMinoL = rotateLeftRight $ \(cx, cy) (x, y) -> ((y - cy) + cx, - (x - cx) + cy)
-rotateMinoR = rotateLeftRight $ \(cx, cy) (x, y) -> (- (y - cy) + cx, (x - cx) + cy)
+rotateMinoL = rotateLeftRight' rotatePosL
+rotateMinoR = rotateLeftRight' rotatePosR
 
-rotateLeftRight :: ((Int, Int) -> (Int, Int) -> (Int, Int)) -> Mino -> [Mino]
-rotateLeftRight lr m = rotateLR lr m <$> sortCenter m
+rotateLeftRight' :: (Center -> Pos -> Pos) -> Mino -> [Mino]
+rotateLeftRight' lr m = rotateLR lr m <$> sortCenter m
 
-rotateLR :: ((Int, Int) -> (Int, Int) -> (Int, Int)) -> Mino -> Pos -> Mino
+rotateLR :: (Center -> Pos -> Pos) -> Mino -> Center -> Mino
 rotateLR lr (Mino ps) c = Mino $ lr c <$> ps
