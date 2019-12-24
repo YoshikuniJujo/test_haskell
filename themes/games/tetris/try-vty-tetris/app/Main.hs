@@ -7,6 +7,7 @@ import Control.Monad
 import Control.Concurrent
 import Control.Concurrent.STM
 import Data.Bool
+import System.Random
 import Graphics.Vty
 
 import qualified Data.Map as M
@@ -18,13 +19,24 @@ import Tips
 import Minos
 
 shapes :: [(Mino, Color)]
-shapes = cycle $ zip standardMinos [red, green, yellow, blue, magenta, cyan, white]
+shapes = randomCycle (mkStdGen 123) $ zip standardMinos [red, green, yellow, blue, magenta, cyan, white]
+
+randomCycle :: StdGen -> [a] -> [a]
+randomCycle gen lst = rc gen lst lst
+	where
+	rc g xs0 [] = rc g xs0 xs0
+	rc g xs0 xs = let ((x, xs'), g') = randomPop g xs in x : rc g' xs0 xs'
+
+randomPop :: StdGen -> [a] -> ((a, [a]), StdGen)
+randomPop _ [] = error "bad"
+randomPop g xs = ((xs !! i, take i xs ++ drop (i + 1) xs), g')
+	where (i, g') = randomR (0, length xs - 1) g
 
 main :: IO ()
 main = do
 	vty <- mkVty =<< standardIOConfig
 	changed <- atomically $ newTVar False
-	state <- atomically . newTVar $ State (4, 1) (last standardMinos) cyan M.empty shapes 0
+	state <- atomically . newTVar $ State (4, 1) (fst $ head shapes) (snd $ head shapes) M.empty (tail shapes) 0
 	forkForever do
 		st <- atomically do
 			bool retry (return ()) =<< readTVar changed
