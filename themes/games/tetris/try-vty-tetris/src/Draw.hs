@@ -15,10 +15,12 @@ import Minos
 draw :: Vty -> State -> IO ()
 draw vty st = do
 	update vty $ picForLayers [
-		translate 35 6 $ nextBlock st,
+		translate 35 5 $ nextBlock st 0,
+		translate 35 13 $ nextBlock st 1,
+		translate 35 21 $ nextBlock st 2,
 		translate 30 1 $ string defAttr (show $ score st),
 		drawLand' $ mkBody st,
-		field <|> nextBox
+		field <|> translate 0 2 (nextBox <-> nextBox <-> nextBox)
 		]
 	where (x, y) = position st
 
@@ -29,15 +31,15 @@ mkBody st = foldr (\p -> M.insert p (shapeColor st, False))
 		(blocks $ moveBottom st))
 		(blocks st)
 
-nextBlock :: State -> Image
-nextBlock st = boolsToImage c . mapToBools $ foldr (\p -> M.insert p ()) M.empty (minoToPos m (0, 0))
-	where (m, c) = head $ shapeList st
+nextBlock :: State -> Int -> Image
+nextBlock st n = boolsToImage c . mapToBools $ foldr (\p -> M.insert p ()) M.empty (minoToPos m (0, 0))
+	where (m, c) =  shapeList st !! n
 
 boolsToImage :: Color -> [[Bool]] -> Image
 boolsToImage c bs = foldl1 (<->) . (foldl1 (<|>) <$>) $ map (bool space (block c)) <$> bs
 
 mapToBools :: M.Map (Int, Int) () -> [[Bool]]
-mapToBools m = flip map [-1 .. 2] \y -> flip map [-2 .. 2] \x -> maybe False (const True) $ M.lookup (x, y) m
+mapToBools m = flip map [-1 .. 1] \y -> flip map [-2 .. 2] \x -> maybe False (const True) $ M.lookup (x, y) m
 
 blockR, blockG, blockY, blockB, blockM, blockC, blockW :: Image
 [blockR, blockG, blockY, blockB, blockM, blockC, blockW] =
@@ -59,9 +61,9 @@ field = translate 4 0 $
 	foldl1 (<|>) (replicate 12 blockW) <|> space
 
 nextBox :: Image
-nextBox = pad 1 3 0 0 $
+nextBox = pad 1 1 0 0 $
 	foldl1 (<|>) (replicate 8 blockW) <|> space <->
-	foldl1 (<->) (replicate 6 $ blockW <|> foldl1 (<|>) (replicate 6 space) <|> blockW <|> space) <->
+	foldl1 (<->) (replicate 5 $ blockW <|> foldl1 (<|>) (replicate 6 space) <|> blockW <|> space) <->
 	foldl1 (<|>) (replicate 8 blockW) <|> space
 
 
