@@ -20,7 +20,9 @@ data State = State {
 	land :: M.Map (Int, Int) Color,
 	shapeList :: [(Mino, Color)],
 	score :: Int,
-	pause :: Bool
+	pause :: Bool,
+	blockNumber :: Int,
+	moveDownCounter :: Int
 	} deriving Show
 
 moveLeft, moveRight, moveDown, rotateLeft :: State -> State
@@ -28,8 +30,12 @@ moveLeft s@State { position = (x, y) } = bool s s' $ inside s' && not (overlap s
 	where s' = s { position = (x - 1, y) }
 moveRight s@State { position = (x, y) } = bool s s' $ inside s' && not (overlap s')
 	where s' = s { position = (x + 1, y) }
+
+moveDown s@State { moveDownCounter = c, blockNumber = bn } | c < (if n < 4 then 4 else n) = s { moveDownCounter = c + 1 }
+	where n = 10 - bn `div` 10
 moveDown s@State { position = (x, y) } = bool (landing s) s' $ inside s' && not (overlap s')
-	where s' = s { position = (x, y + 1) }
+	where s' = s { position = (x, y + 1), moveDownCounter = 0 }
+
 rotateLeft s@State { shape = sp } = tryStates s (shapeCandidates s $ rotateMinoL sp)
 rotateRight s@State { shape = sp } = tryStates s (shapeCandidates s $ rotateMinoR sp)
 
@@ -57,7 +63,7 @@ landing s@State { position = (x, y), shapeColor = c, land = l, shapeList = (sp, 
 	removeLines is s' { score = score s + (length is) ^ 2 * 100 }
 	where
 	is = checkLines s'
-	s' = s { position = (4, 1), shape = sp, shapeColor = c', land = insertAllKey (blocks s) c l, shapeList = sps }
+	s' = s { position = (4, 1), shape = sp, shapeColor = c', land = insertAllKey (blocks s) c l, shapeList = sps, blockNumber = blockNumber s + 1 }
 
 insertAllKey :: Ord k => [k] -> a -> M.Map k a -> M.Map k a
 insertAllKey ks v m = foldl (flip $ flip M.insert v) m ks

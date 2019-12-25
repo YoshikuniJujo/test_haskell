@@ -36,8 +36,8 @@ main :: IO ()
 main = do
 	vty <- mkVty =<< standardIOConfig
 	changed <- atomically $ newTVar False
-	state <- atomically . newTVar $ State (4, 1) (fst $ head shapes) (snd $ head shapes) M.empty (tail shapes) 0 False
-	forkForever do
+	state <- atomically . newTVar $ State (4, 1) (fst $ head shapes) (snd $ head shapes) M.empty (tail shapes) 0 False 0 0
+	dt <- forkIO $ forever  do
 		st <- atomically do
 			bool retry (return ()) =<< readTVar changed
 			writeTVar changed False
@@ -49,7 +49,7 @@ main = do
 			if pause st then retry else return ()
 			writeTVar changed True
 			modifyTVar state moveDown
-		threadDelay 250000
+		threadDelay 25000
 	void . forkIO $ forever do
 		atomically do
 			st <- readTVar state
@@ -104,4 +104,5 @@ main = do
 				pure True
 			EvKey (KChar 'q') [] -> pure False
 			_ -> pure True
+	killThread dt
 	shutdown vty
