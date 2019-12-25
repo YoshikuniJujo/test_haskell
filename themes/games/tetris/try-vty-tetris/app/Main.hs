@@ -35,19 +35,18 @@ randomPop g xs = ((xs !! i, take i xs ++ drop (i + 1) xs), g')
 main :: IO ()
 main = do
 	vty <- mkVty =<< standardIOConfig
-	changed <- atomically $ newTVar False
-	state <- atomically . newTVar $ State (4, 1) (fst $ head shapes) (snd $ head shapes) M.empty (tail shapes) 0 False 0 0
+	state <- atomically . newTVar $ State (4, 1) (fst $ head shapes) (snd $ head shapes) M.empty (tail shapes) 0 False 0 0 True
 	dt <- forkIO $ forever  do
 		st <- atomically do
-			bool retry (return ()) =<< readTVar changed
-			writeTVar changed False
-			readTVar state
+			s <- readTVar state
+			bool retry (return ()) $ pending s
+			writeTVar state $ s { pending = False }
+			pure s
 		draw vty st
 	void . forkIO $ forever do
 		atomically do
 			st <- readTVar state
 			if pause st then retry else return ()
-			writeTVar changed True
 			modifyTVar state moveDown
 		threadDelay 25000
 	void . forkIO $ forever do
@@ -66,37 +65,30 @@ main = do
 		case e of
 			EvKey KLeft [] -> do
 				atomically do
-					writeTVar changed True
 					modifyTVar state \s -> moveLeft s
 				pure True
 			EvKey (KChar 'h') [] -> do
 				atomically do
-					writeTVar changed True
 					modifyTVar state \s -> moveLeft s
 				pure True
 			EvKey KRight [] -> do
 				atomically do
-					writeTVar changed True
 					modifyTVar state \s -> moveRight s
 				pure True
 			EvKey (KChar 'l') [] -> do
 				atomically do
-					writeTVar changed True
 					modifyTVar state \s -> moveRight s
 				pure True
 			EvKey (KChar 'j') [] -> do
 				atomically do
-					writeTVar changed True
 					modifyTVar state \s -> rotateLeft s
 				pure True
 			EvKey (KChar 'k') [] -> do
 				atomically do
-					writeTVar changed True
 					modifyTVar state \s -> rotateRight s
 				pure True
 			EvKey (KChar ' ') [] -> do
 				atomically do
-					writeTVar changed True
 					modifyTVar state \s -> moveBottom s
 				pure True
 			EvKey (KChar 'p') [] -> do

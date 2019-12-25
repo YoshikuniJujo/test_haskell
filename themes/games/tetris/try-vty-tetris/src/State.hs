@@ -22,19 +22,20 @@ data State = State {
 	score :: Int,
 	pause :: Bool,
 	blockNumber :: Int,
-	moveDownCounter :: Int
+	moveDownCounter :: Int,
+	pending :: Bool
 	} deriving Show
 
 moveLeft, moveRight, moveDown, rotateLeft :: State -> State
 moveLeft s@State { position = (x, y) } = bool s s' $ inside s' && not (overlap s')
-	where s' = s { position = (x - 1, y) }
+	where s' = s { position = (x - 1, y), pending = True }
 moveRight s@State { position = (x, y) } = bool s s' $ inside s' && not (overlap s')
-	where s' = s { position = (x + 1, y) }
+	where s' = s { position = (x + 1, y), pending = True }
 
 moveDown s@State { moveDownCounter = c, blockNumber = bn } | c < (if n < 4 then 4 else n) = s { moveDownCounter = c + 1 }
 	where n = 10 - bn `div` 10
 moveDown s@State { position = (x, y) } = bool (landing s) s' $ inside s' && not (overlap s')
-	where s' = s { position = (x, y + 1), moveDownCounter = 0 }
+	where s' = s { position = (x, y + 1), moveDownCounter = 0, pending = True }
 
 rotateLeft s@State { shape = sp } = tryStates s (shapeCandidates s $ rotateMinoL sp)
 rotateRight s@State { shape = sp } = tryStates s (shapeCandidates s $ rotateMinoR sp)
@@ -46,13 +47,13 @@ okState :: State -> Bool
 okState s = inside s && not (overlap s)
 
 tryStates :: State -> [State] -> State
-tryStates s ss = case dropWhile (not . okState) ss of [] -> s; s' : _ -> s'
+tryStates s ss = case dropWhile (not . okState) ss of [] -> s; s' : _ -> s' { pending = True }
 
 moveBottom :: State -> State
 moveBottom s@State { position = (x, y) }
 	| inside s' && not (overlap s') = moveBottom s'
 	| otherwise = s
-	where s' = s { position = (x, y + 1) }
+	where s' = s { position = (x, y + 1), pending = True }
 
 rotL, rotR :: (Int, Int) -> (Int, Int)
 rotL (x, y) = (- y, x)
@@ -60,7 +61,7 @@ rotR (x, y) = (y, - x)
 
 landing :: State -> State
 landing s@State { position = (x, y), shapeColor = c, land = l, shapeList = (sp, c') : sps } =
-	removeLines is s' { score = score s + (length is) ^ 2 * 100 }
+	removeLines is s' { score = score s + (length is) ^ 2 * 100, pending = True }
 	where
 	is = checkLines s'
 	s' = s { position = (4, 1), shape = sp, shapeColor = c', land = insertAllKey (blocks s) c l, shapeList = sps, blockNumber = blockNumber s + 1 }
@@ -84,7 +85,7 @@ checkLines State { land = l } =
 	(fst <$>) . filter (all isJust . snd) $ (<$> [0 .. 23]) \y -> (y, (<$> [0 .. 9]) \x -> M.lookup (x, y) l)
 
 removeLines :: [Int] -> State -> State
-removeLines is s@State { land = l } = s { land = removeWithRule (removeRule is) l }
+removeLines is s@State { land = l } = s { land = removeWithRule (removeRule is) l, pending = True }
 
 removeWithRule :: [(Int, Int)] -> M.Map (Int, Int) v -> M.Map (Int, Int) v
 removeWithRule r m = moveMap krs m
