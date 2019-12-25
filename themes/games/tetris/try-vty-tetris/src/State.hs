@@ -1,7 +1,10 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module State where
+module State (
+	State, blocks, moveBottom, shapeList, land, shapeColor, position, score, drawed,
+	moveLeft, moveRight, rotateLeft, rotateRight, pauseGame, pause, pending, initialState, moveDown
+	) where
 
 import Control.Arrow
 import Data.Bool
@@ -25,6 +28,13 @@ data State = State {
 	moveDownCounter :: Int,
 	pending :: Bool
 	} deriving Show
+
+initialState :: [(Mino, Color)] -> State
+initialState (sp0 : sps) = State (4, 1) (fst sp0) (snd sp0) M.empty sps 0 False 0 0 True
+initialState [] = error "empty minos not allowed"
+
+drawed :: State -> State
+drawed s = s { pending = False }
 
 moveLeft, moveRight, moveDown, rotateLeft :: State -> State
 moveLeft s@State { position = (x, y) } = bool s s' $ inside s' && not (overlap s')

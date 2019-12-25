@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, PatternSynonyms, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -10,91 +10,48 @@ import Data.Bool
 import System.Random
 import Graphics.Vty
 
-import qualified Data.Map as M
-
 import Draw
 import State
 import Tips
 
 import Minos
 
-shapes :: [(Mino, Color)]
-shapes = randomCycle (mkStdGen 123) $ zip standardMinos [red, green, yellow, blue, magenta, cyan, white]
+pattern KeyChar :: Char -> Event
+pattern KeyChar c = EvKey (KChar c) []
 
-randomCycle :: StdGen -> [a] -> [a]
-randomCycle gen lst = rc gen lst lst
-	where
-	rc g xs0 [] = rc g xs0 xs0
-	rc g xs0 xs = let ((x, xs'), g') = randomPop g xs in x : rc g' xs0 xs'
-
-randomPop :: StdGen -> [a] -> ((a, [a]), StdGen)
-randomPop _ [] = error "bad"
-randomPop g xs = ((xs !! i, take i xs ++ drop (i + 1) xs), g')
-	where (i, g') = randomR (0, length xs - 1) g
+shapes :: StdGen -> [(Mino, Color)]
+shapes g = randomCycle g
+	$ zip standardMinos [red, green, yellow, blue, magenta, cyan, white]
 
 main :: IO ()
 main = do
 	vty <- mkVty =<< standardIOConfig
-	state <- atomically . newTVar $ State (4, 1) (fst $ head shapes) (snd $ head shapes) M.empty (tail shapes) 0 False 0 0 True
-	dt <- forkIO $ forever  do
-		st <- atomically do
-			s <- readTVar state
-			bool retry (return ()) $ pending s
-			writeTVar state $ s { pending = False }
-			pure s
-		draw vty st
-	void . forkIO $ forever do
-		atomically do
-			st <- readTVar state
-			if pause st then retry else return ()
-			modifyTVar state moveDown
-		threadDelay 25000
-	void . forkIO $ forever do
-		atomically do
-			st <- readTVar state
-			if pause st then return () else retry
-		e <- nextEvent vty
-		case e of
-			EvKey (KChar 'p') [] -> atomically $ modifyTVar state pauseGame
+	state <- atomically . newTVar . initialState . shapes =<< getStdGen
+	let	modifyState = atomically . modifyTVar state
+	dt <- forkForever $ (draw vty =<<) . atomically $ readTVar state >>=
+		\st -> st <$ do
+			bool retry (return ()) $ pending st
+			modifyTVar state drawed
+	void $ forkForever do
+		atomically $ bool retry (return ()) . pause =<< readTVar state
+		nextEvent vty >>= \case
+			KeyChar 'p' -> modifyState pauseGame
 			_ -> return ()
+	void . forkForever $ threadDelay 25000 <* atomically do
+		bool (return ()) retry . pause =<< readTVar state
+		modifyTVar state moveDown
 	loopIf do
-		atomically do
-			st <- readTVar state
-			if pause st then retry else return ()
-		e <- nextEvent vty
-		case e of
-			EvKey KLeft [] -> do
-				atomically do
-					modifyTVar state \s -> moveLeft s
-				pure True
-			EvKey (KChar 'h') [] -> do
-				atomically do
-					modifyTVar state \s -> moveLeft s
-				pure True
-			EvKey KRight [] -> do
-				atomically do
-					modifyTVar state \s -> moveRight s
-				pure True
-			EvKey (KChar 'l') [] -> do
-				atomically do
-					modifyTVar state \s -> moveRight s
-				pure True
-			EvKey (KChar 'j') [] -> do
-				atomically do
-					modifyTVar state \s -> rotateLeft s
-				pure True
-			EvKey (KChar 'k') [] -> do
-				atomically do
-					modifyTVar state \s -> rotateRight s
-				pure True
-			EvKey (KChar ' ') [] -> do
-				atomically do
-					modifyTVar state \s -> moveBottom s
-				pure True
-			EvKey (KChar 'p') [] -> do
-				atomically $ modifyTVar state pauseGame
-				pure True
-			EvKey (KChar 'q') [] -> pure False
+		atomically $ bool (return ()) retry . pause =<< readTVar state
+		nextEvent vty >>= \case
+			EvKey KLeft [] -> True <$ modifyState moveLeft
+			EvKey KRight [] -> True <$ modifyState moveRight
+			KeyChar 'h' -> True <$ modifyState moveLeft
+			KeyChar 'l' -> True <$ modifyState moveRight
+			KeyChar 'j' -> True <$ modifyState rotateLeft
+			KeyChar 'k' -> True <$ modifyState rotateRight
+			KeyChar ' ' -> True <$ modifyState moveBottom
+			KeyChar 'p' -> True <$ modifyState pauseGame
+			KeyChar 'q' -> pure False
 			_ -> pure True
 	killThread dt
 	shutdown vty
