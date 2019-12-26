@@ -90,6 +90,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-tokoik-glut
+  try-tokoik-glut-ortho:
+    main:                ortho.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-tokoik-glut
 
 tests:
   try-tokoik-glut-test:
