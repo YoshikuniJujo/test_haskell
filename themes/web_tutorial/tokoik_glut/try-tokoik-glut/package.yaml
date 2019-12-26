@@ -1,0 +1,103 @@
+name:                try-tokoik-glut
+version:             0.1.0.0
+github:              "githubuser/try-tokoik-glut"
+license:             BSD3
+author:              "Author name here"
+maintainer:          "example@example.com"
+copyright:           "2019 Author name here"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/githubuser/try-tokoik-glut#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- GLUT
+
+library:
+  source-dirs: src
+
+executables:
+  try-tokoik-glut-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-tokoik-glut
+  try-tokoik-glut-empty-window:
+    main:                emptyWindow.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-tokoik-glut
+  try-tokoik-glut-clear-color:
+    main:                clearColor.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-tokoik-glut
+  try-tokoik-glut-draw-lines:
+    main:                drawLines.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-tokoik-glut
+  try-tokoik-glut-draw-primitives:
+    main:                drawPrimitives.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-tokoik-glut
+  try-tokoik-glut-line-color:
+    main:                lineColor.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-tokoik-glut
+  try-tokoik-glut-colored-polygon:
+    main:                coloredPolygon.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-tokoik-glut
+
+tests:
+  try-tokoik-glut-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-tokoik-glut
