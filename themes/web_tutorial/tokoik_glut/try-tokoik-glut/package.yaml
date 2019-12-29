@@ -127,6 +127,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-tokoik-glut
+  try-tokoik-glut-mouse-draw-persistent-line:
+    main:                mouseDrawPersistentLine.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-tokoik-glut
 
 tests:
   try-tokoik-glut-test:
