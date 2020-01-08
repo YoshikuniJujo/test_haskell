@@ -53,6 +53,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-left-associated-problems
+  try-left-associated-writer-effect:
+    main:                tryLeftAssociatedWriterEffect.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-left-associated-problems
 
 tests:
   try-left-associated-problems-test:
