@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module State (State, runState, get, put, modify, sampleL, sampleR) where
+module State (State, runState, get, put, modify) where
 
 import Eff (Eff, Freer(..), Member, inj, decomp)
 
@@ -24,9 +24,3 @@ m `runState` s0 = case m of
 		Right Get -> k s0 `runState` s0
 		Right (Put s) -> k () `runState` s
 		Left u' -> u' `Bind` ((`runState` s0) . k)
-
-sampleL, sampleR :: Member (State Integer) effs => Eff effs ()
-sampleL = {-# SCC "LeftAssociatedCounter" #-}
-	foldl (>>) (pure ()) . replicate 8000 $ modify (+ (1 :: Integer))
-sampleR = {-# SCC "RightAssociatedCounter" #-}
-	foldr (>>) (pure ()) . replicate 8000 $ modify (+ (1 :: Integer))
