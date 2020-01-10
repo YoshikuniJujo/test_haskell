@@ -123,6 +123,130 @@ f >=> (f >=> (f >=> f)) $ ()
 ==> Bind tx (Pure >=> (f >=> (f >=> f)))
 ```
 
-```haskell
+State effect
+------------
 
+```haskell
+f = Bind u k
+
+runFoo $ (f >> f) >> f
+==> runFoo $ (f >>= const f) >>= const f
+==> runFoo $ (Bind u k >>= const f) >>= const f
+==> runFoo $ Bind u (k >=> const f) >>= const f
+
+==> runFoo $ Bind u ((k >=> const f) >=> const f)
+==> runFoo $ ((k >=> const f) >=> const f) a
+==> runFoo $ (k >=> const f) a >>= const f
+==> runFoo $ (k a >>= const f) >>= const f
+==> runFoo $ (Pure a >>= const f) >>= const f
+==> runFoo $ const f a >>= const f
+==> runFoo $ f >>= const f
+==> runFoo $ f >> f
+
+runFoo $ f >> (f >> f)
+==> runFoo $ f >>= const (f >> f)
+==> runFoo $ Bind u k >>= const (f >> f)
+
+==> runFoo $ Bind u (k >=> const (f >> f))
+==> runFoo $ (k >=> const (f >> f)) a
+==> runFoo $ k a >>= const (f >> f)
+==> runFoo $ Pure a >>= const (f >> f)
+==> runFoo $ const (f >> f) a
+==> runFoo $ f >> f
+```
+
+```haskell
+runFoo $ ((f >> f) >> f) >> f
+==> runFoo $ ((f >>= const f) >>= const f) >>= const f
+==> runFoo $ ((Bind u k >>= const f) >>= const f) >>= const f
+==> runFoo $ (Bind u (k >=> const f) >>= const f) >>= const f
+==> runFoo $ Bind u ((k >=> const f) >=> const f) >>= const f
+
+==> runFoo $ Bind u (((k >=> const f) >=> const f) >=> const f)
+==> runFoo $ (((k >=> const f) >=> const f) >=> const f) a
+==> runFoo $ ((k >=> const f) >=> const f) a >>= cosnt f
+==> runFoo $ ((k >=> const f) a >>= const f) >>= const f
+==> runFoo $ ((k a >>= const f) >>= const f) >>= const f
+==> runFoo $ ((Pure a >>= const f) >>= const f) >>= const f
+==> runFoo $ (const f a >>= const f) >>= const f
+==> runFoo $ (f >>= const f) >>= const f
+
+runFoo $ f >> (f >> (f >> f))
+==> runFoo $ f >>= const (f >> (f >> f))
+==> runFoo $ Bind u k >>= const (f >> (f >> f))
+
+==> runFoo $ Bind u (k >=> const (f >> (f >> f)))
+==> runFoo $ (k >=> const (f >> (f >> f))) a
+==> runFoo $ k a >>= const (f >> (f >> f))
+==> runFoo $ Pure a >>= const (f >> (f >> f))
+==> runFoo $ const (f >> (f >> f)) a
+==> runFoo $ f >> (f >> f)
+```
+
+```haskell
+f x = Bind u k
+
+runFoo $ Bind u ((f >=> f) >=> f)
+==> runFoo $ ((f >=> f) >=> f) a
+==> runFoo $ (f >=> f) a >>= f
+==> runFoo $ (f a >>= f) >>= f
+==> runFoo $ (Bind u k >>= f) >>= f
+==> runFoo $ Bind u (k >=> f) >>= f
+==> runFoo $ Bind u ((k >=> f) >=> f)
+
+runFoo $ Bind u (f >=> (f >=> f))
+==> runFoo $ (f >=> (f >=> f) a
+==> runFoo $ f a >>= (f >=> f)
+==> runFoo $ Bind u k >>= (f >=> f)
+==> runFoo $ Bind u (k >=> (f >=> f))
+```
+
+```haskell
+f x = Bind u k
+
+((f >=> f) >=> f) x
+==> (f >=> f) x >>= f
+==> (f x >>= f) >>= f
+==> (Bind u k >>= f) >>= f
+==> Bind u (k >=> f) >>= f
+==> Bind u ((k >=> f) >=> f)
+
+(f >=> (f >=> f)) x
+==> f x >>= (f >=> f)
+==> Bind u k >>= (f >=> f)
+==> Bind u (k >=> (f >=> f))
+
+fl(n + 1) x = (fl(n) >=> f) x
+==> fl(n) x >>= f
+==> (fl(n - 1) x >>= f) >>= f
+...
+==> ((...((f x >>= f) >>= f) ...) >>= f) >>= f
+==> ((...((Bind u k >>= f) >>= f) ...) >>= f) >>= f
+==> ((...(Bind u (k >=> f) >>= f) ...) >>= f) >>= f
+==> ((... Bind u ((k >=> f) >=> f) ...) >>= f) >>= f
+...
+==> Bind u (((...(k >=> f) >=> f) ...) >>= f)
+
+fr (n + 1) x = (f >=> fr(n)) x
+==> f x >>= fr(n)
+==> Bind u k >>= fr(n)
+==> Bind u (k >=> fr(n))
+```
+
+```
+f >=> f == \x -> f x >>= f
+
+(\x -> f x >>= f) >=> f == \y -> (\x -> f x >>= f) y >>= f == \y -> (f y >>= f) >>= f
+```
+
+```
+tx `Bind` k >>= f = tx `Bind` (k >=> f)
+==> tx `Bind` (\x -> k x >>= f)
+
+f x = tx `Bind` k
+
+(f x >>= f) >>= f
+==> (tx `Bind` k >>= f) >>= f
+==> tx `Bind` (k >=> f) >>= f
+==> tx `Bind` ((k >=> f) >=> f)
 ```
