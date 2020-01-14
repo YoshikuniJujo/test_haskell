@@ -6,7 +6,7 @@ module DiffMonoid where
 import Prelude hiding (abs)
 import Data.String
 
-newtype DiffMonoid a = DiffMonoid { runDiffMonid :: a -> a }
+newtype DiffMonoid a = DiffMonoid (a -> a)
 
 abs :: Monoid a => DiffMonoid a -> a
 abs (DiffMonoid a) = a mempty
