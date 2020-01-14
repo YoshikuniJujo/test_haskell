@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE RankNTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -22,4 +23,4 @@ instance Monad m => Applicative (CodensityT m) where
 	mf <*> mx = mf >>= \f -> mx >>= \x -> pure (f x)
 
 instance Monad m => Monad (CodensityT m) where
-	CodensityT m >>= f = CodensityT $ \k -> m (\a -> runCodensityT (f a) k)
+	CodensityT m >>= f = CodensityT \k -> m \x -> runCodensityT (f x) k
