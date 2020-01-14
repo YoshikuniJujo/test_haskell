@@ -250,3 +250,56 @@ f x = tx `Bind` k
 ==> tx `Bind` (k >=> f) >>= f
 ==> tx `Bind` ((k >=> f) >=> f)
 ```
+
+Codensity Monad
+---------------
+
+```haskell
+abs $ (rep m >>= rep . f) >>= rep . g
+==> ((m >>=) >>= (>>=) . f) >>= (>>=) . g $ return
+==> (\k -> (m >>=) (\x -> f x >>= k)) >>= (>>=) . g $ return
+==> (\k' -> (\k -> (m >>=) (\x -> f x >>= k)) (\y -> g y >>= k')) return
+==> (\k -> (m >>=) (\x -> f x >>= k)) (\y -> g y >>= return)
+==> (\k -> (m >>=) (\x -> f x >>= k)) (\y -> g y)
+==> (\k -> (m >>=) (\x -> f x >>= k)) g
+==> (m >>=) (\x -> f x >>= g)
+==> m >>= \x -> f x >>= g
+```
+
+```haskell
+rep m >>= rep . f
+==> (m >>=) >>= (>>=) . f
+==> \k -> m >>= (\x -> f x >>= k)
+```
+
+```haskell
+m >>= f = \k -> m (\x -> f x k)
+```
+
+```haskell
+m >>= (\x -> f x >>= k)
+
+k <-- \x -> g x >>= k'
+```
+
+```haskell
+rep m >>= rep . f
+==> (m >>=) >>= (>>=) . f
+==> \k -> m >>= \x -> f x >>= k
+```
+
+```haskell
+(\k -> m >>= \x -> f x >>= k) >>= (>>=) . g
+==> \k' -> m >>= \x -> f x >>= \y -> g y >>= k'
+```
+
+```haskell
+\x -> ((>>=) . f) x k
+\x -> f x >>= k
+```
+
+```haskell
+m >>= rep . f
+==> m >>= (>>=) . f
+==> \k -> m (\x -> f x >>= k)
+```
