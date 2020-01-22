@@ -55,3 +55,14 @@ apply :: It i a -> [i] -> (a, [i])
 apply (Done x) is = (x, is)
 apply (Get f) (i : is) = apply (f i) is
 apply _ [] = error "not enough inputs"
+
+addGet :: Int -> It Int Int
+addGet x = get >>= \i -> pure (i + x)
+
+addN :: Int -> It Int Int
+addN n = foldl (>=>) pure (replicate n addGet) 0
+
+feedAll :: It a b -> [a] -> Maybe b
+feedAll (Done x) _ = Just x
+feedAll _ [] = Nothing
+feedAll (Get f) (h : t) = feedAll (f h) t

@@ -53,3 +53,9 @@ sample3Co = {-# SCC "CodensityTransformed3" #-}
 
 sample4Co :: Int -> (Integer, [Integer])
 sample4Co n = sum `first` ((parCoAll $ (flip sumInputCo 0) <$> [1 .. n]) `applyCo` [1 .. fromIntegral n])
+
+feedAllCo :: ItCo i a -> [i] -> Maybe a
+feedAllCo = feedAll . abs
+
+addNCo :: Int -> ItCo Int Int
+addNCo n = foldl (>=>) pure (replicate n $ rep . addGet) 0
