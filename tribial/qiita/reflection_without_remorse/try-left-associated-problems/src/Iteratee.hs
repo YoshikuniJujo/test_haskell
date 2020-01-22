@@ -31,6 +31,14 @@ par l r	| Done _ <- l = Done (l, r)
 	| Done _ <- r = Done (l, r)
 	| Get f <- l, Get g <- r = get >>= \x -> par (f x) (g x)
 
+parAll :: [It i a] -> It i [a]
+parAll [] = pure []
+-- parAll [i] = (: []) <$> i
+parAll (i : is) = do
+	(i', is') <- par i $ parAll is
+	x <- i'; xs <- is'
+	pure $ x : xs
+
 sample1, sample2 :: It Integer Integer
 sample1 = do
 	x <- get

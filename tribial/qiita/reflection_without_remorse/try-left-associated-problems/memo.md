@@ -303,3 +303,88 @@ m >>= rep . f
 ==> m >>= (>>=) . f
 ==> \k -> m (\x -> f x >>= k)
 ```
+
+```haskell
+get >>= \x -> par (f x) (g x)
+Get return >>= \x -> par (f x) (g x)
+Get (return >=> \x -> par (f x) (g x))
+Get (Done >=> \x -> par (f x) (g x))
+Get (\y -> Done y >>= \x -> par (f x) (g x))
+Get (\y -> par (f y) (g y))
+```
+
+```haskell
+par l r	| Done _ <- l = Done (l, r)
+	| Done _ <- r = Done (l, r)
+	| Get f <- l, Get g <- r = Get $ \x -> par (f x) (g x)
+```
+
+```haskell
+rep (Get (\y -> par (f y) (g y))) >>= (\(l, r) -> return (rep l, rep r))
+(Get (\y -> par (f y) (g y)) >>=) >>= (\(l, r) -> return ((l >>=), (r >>=))
+(Get (\y -> par (f y) (g y)) >>=) >>= (\(l, r) -> rep (return ((l >>=), (r >>=))))
+(Get (\y -> par (f y) (g y)) >>=) >>= (\(l, r) k -> return ((l >>=), (r >>=)) >>= k)
+\k -> Get (\y -> par (f y) (g y)) >>= \(l, r) -> return ((l >>=), (r >>=)) >>= k
+```
+
+```haskell
+Get (\y -> par (f y) (g y)) >>= \(l, r) -> return ((l >>=), (r >>=)) >>= return
+```
+
+```haskell
+(return >=> (f >=> (f >=> (f >=> (f >=> ...))))) >=> f
+```
+
+```haskell
+(as ++ (bs ++ (cs ++ ...))) ++ (ds ++ (es ++ (fs ++ ...)))
+```
+
+```haskell
+(\(l, r) -> (rep l, rep r)) <$> (get >>= \x -> par (f x) (g x))
+```
+
+```haskell
+(get >>= \x -> f x) >>= \i -> rep i
+==> (Get (\x -> f x)) >>= \i -> rep i
+==> 
+```
+
+```haskell
+(as ++ (bs ++ cs)) ++ (as ++ (bs ++ cs))
+
+length as == x; length bs == y; length cs == z
+
+(x + y) + (x + y + z) + (x + y)
+3x + 3y + z
+
+(as ++ (bs ++ (cs ++ ds))) ++ (as ++ (bs ++ (cs ++ ds)))
+
+length ds == w;
+
+(x + y + z) + (x + y + z + w) + (x + y + z)
+3x + 3y + 3z + w
+```
+
+```haskell
+((as ++ (bs ++ cs)) ++) . (ds ++) $ []
+
+(((as ++) . (bs ++) . (cs ++) $ []) ++) . (ds ++) $ []
+
+x + y + z + (x + y + z) + w
+```
+
+```haskell
+((f . f) . f) . f $ x
+==> ((f . f) . f) (f x)
+==> (f . f) (f (f x))
+==> f (f (f (f x)))
+
+(f . g) x = f (g x)
+
+f . (f . (f . f)) $ x
+==> f ((f . (f . f)) x)
+```
+
+```haskell
+parCo l r = (\(l, r) -> (rep l, rep r)) <$> rep (par (abs l) (abs r))
+```
