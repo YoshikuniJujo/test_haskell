@@ -77,5 +77,5 @@ tryFeedPartialCo = do
 feedPartialJoinCo :: Int -> ItCo i a -> ItCo i a
 feedPartialJoinCo n = join . feedPartialCo n
 
-tryFeedPartialJoinCo :: Int -> ItCo Int Int
-tryFeedPartialJoinCo n = iterate (feedPartialJoinCo 2000) (addNCo 4000) !! n
+tryFeedPartialJoinCo :: Int -> Int -> ItCo Int Int
+tryFeedPartialJoinCo m n = iterate (feedPartialJoinCo m) (addNCo $ 2 * m) !! n
