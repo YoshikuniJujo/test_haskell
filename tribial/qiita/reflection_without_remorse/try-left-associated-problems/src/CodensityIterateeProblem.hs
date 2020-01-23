@@ -59,3 +59,9 @@ feedAllCo = feedAll . abs
 
 addNCo :: Int -> ItCo Int Int
 addNCo n = foldl (>=>) pure (replicate n $ rep . addGet) 0
+
+bindIfGetCo :: ItCo i a -> (a -> ItCo i a) -> ItCo i a
+bindIfGetCo m f = rep $ abs m >>= abs . f
+
+connectIfGetCo :: (a -> ItCo i b) -> (b -> ItCo i b) -> (a -> ItCo i b)
+connectIfGetCo f g x = f x `bindIfGetCo` g

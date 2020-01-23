@@ -22,6 +22,16 @@ instance Monad (It i) where
 get :: It i i
 get = Get pure
 
+bindIfGet :: It i a -> (a -> It i a) -> It i a
+bindIfGet m@(Done _) _ = m
+bindIfGet m f = m >>= f
+
+connectIfGet :: (a -> It i b) -> (b -> It i b) -> (a -> It i b)
+connectIfGet f g x = f x `bindIfGet` g
+
+addN' :: Int -> It Int Int
+addN' n = foldl connectIfGet pure (replicate n addGet) 0
+
 done :: It i a -> Maybe a
 done (Done x) = Just x
 done _ = Nothing
