@@ -17,8 +17,12 @@ data FTCQueue t a b
 tsingleton :: (a -> t b) -> FTCQueue t a b
 tsingleton = Leaf
 
+infixl 5 |>
+
 (|>) :: FTCQueue t a b -> (b -> t c) -> FTCQueue t a c
 (|>) = (. Leaf) . Node
+
+infixr 5 ><
 
 (><) :: FTCQueue t a b -> FTCQueue t b c -> FTCQueue t a c
 (><) = Node
