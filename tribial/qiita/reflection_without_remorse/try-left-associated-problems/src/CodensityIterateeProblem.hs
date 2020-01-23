@@ -65,3 +65,17 @@ bindIfGetCo m f = rep $ abs m >>= abs . f
 
 connectIfGetCo :: (a -> ItCo i b) -> (b -> ItCo i b) -> (a -> ItCo i b)
 connectIfGetCo f g x = f x `bindIfGetCo` g
+
+feedPartialCo :: Int -> ItCo i a -> ItCo i (ItCo i a)
+feedPartialCo n m = rep <$> rep (feedPartial n $ abs m)
+
+tryFeedPartialCo :: ItCo Int Int
+tryFeedPartialCo = do
+	m <- feedPartialCo 2000 $ addNCo 4000
+	m
+
+feedPartialJoinCo :: Int -> ItCo i a -> ItCo i a
+feedPartialJoinCo n = join . feedPartialCo n
+
+tryFeedPartialJoinCo :: Int -> ItCo Int Int
+tryFeedPartialJoinCo n = iterate (feedPartialJoinCo 2000) (addNCo 4000) !! n

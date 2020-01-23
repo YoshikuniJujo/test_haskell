@@ -69,10 +69,31 @@ apply _ [] = error "not enough inputs"
 addGet :: Int -> It Int Int
 addGet x = get >>= \i -> pure (i + x)
 
-addN :: Int -> It Int Int
+addN, addNR :: Int -> It Int Int
 addN n = foldl (>=>) pure (replicate n addGet) 0
+addNR n = foldr (>=>) pure (replicate n addGet) 0
 
 feedAll :: It a b -> [a] -> Maybe b
 feedAll (Done x) _ = Just x
 feedAll _ [] = Nothing
 feedAll (Get f) (h : t) = feedAll (f h) t
+
+feedPartial :: Int -> It i a -> It i (It i a)
+feedPartial n m | n < 1 = pure m
+feedPartial _ m@(Done _) = pure m
+feedPartial n (Get f) = get >>= \x -> feedPartial (n - 1) (f x)
+
+feedPartialJoin :: Int -> It i a -> It i a
+feedPartialJoin n = join . feedPartial n
+
+tryFeedPartial, tryFeedPartialR :: It Int Int
+tryFeedPartial = do
+	m <- feedPartial 2000 $ addN 4000
+	m
+
+tryFeedPartialR = do
+	m <- feedPartial 2000 $ addNR 4000
+	m
+
+tryFeedPartialJoinR :: It Int Int
+tryFeedPartialJoinR = iterate (feedPartialJoin 2000) (addN 4000)  !! 100
