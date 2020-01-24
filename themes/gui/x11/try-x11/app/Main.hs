@@ -23,7 +23,7 @@ openWindow = do
 	mapWindow dpy win
 	return (dpy, win, gc, wm, del)
 
-loop :: Display -> window -> GC -> Atom -> Atom -> IO ()
+loop :: Display -> Window -> GC -> Atom -> Atom -> IO ()
 loop dpy win gc wm del = allocaXEvent $ \e -> do
 	nextEvent dpy e
 	ev <- getEvent e
@@ -32,6 +32,9 @@ loop dpy win gc wm del = allocaXEvent $ \e -> do
 			ch <- fmap (chr . fromEnum) $ keycodeToKeysym dpy
 				(ev_keycode ev) 0
 			if ch == 'q' then closeDisplay dpy else loop dpy win gc wm del
+		ExposeEvent {} -> do
+			drawRectangle dpy win gc 150 100 300 200
+			loop dpy win gc wm del
 		ClientMessageEvent {}
 			| ev_message_type ev == wm && ev_data ev !! 0 == fromIntegral del -> do
 				putStrLn "close window"
