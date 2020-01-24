@@ -1,0 +1,47 @@
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module Main where
+
+import Graphics.X11
+import Graphics.X11.Xlib.Extras
+import Data.Bits
+import Data.Char
+
+openWindow :: IO (Display, Window, GC, Atom, Atom)
+openWindow = do
+	_ <- initThreads
+	dpy <- openDisplay ""
+	wm <- internAtom dpy "WM_PROTOCOLS" True
+	del <- internAtom dpy "WM_DELETE_WINDOW" True
+	let	scr = defaultScreen dpy
+	root <- rootWindow dpy scr
+	win <- createSimpleWindow dpy root 0 0 100 100 1
+		(blackPixel dpy scr) (whitePixel dpy scr)
+	gc <- createGC dpy win
+	setWMProtocols dpy win [del]
+	selectInput dpy win $ exposureMask .|. keyPressMask
+	mapWindow dpy win
+	return (dpy, win, gc, wm, del)
+
+loop :: Display -> window -> GC -> Atom -> Atom -> IO ()
+loop dpy win gc wm del = allocaXEvent $ \e -> do
+	nextEvent dpy e
+	ev <- getEvent e
+	case ev of
+		KeyEvent {} -> do
+			ch <- fmap (chr . fromEnum) $ keycodeToKeysym dpy
+				(ev_keycode ev) 0
+			if ch == 'q' then closeDisplay dpy else loop dpy win gc wm del
+		ClientMessageEvent {}
+			| ev_message_type ev == wm && ev_data ev !! 0 == fromIntegral del -> do
+				putStrLn "close window"
+				closeDisplay dpy
+		_ -> print ev >> loop dpy win gc wm del
+
+main :: IO ()
+main = do
+	(dpy, win, gc, wm, del) <- openWindow
+	print wm
+	print del
+	flush dpy
+	loop dpy win gc wm del
