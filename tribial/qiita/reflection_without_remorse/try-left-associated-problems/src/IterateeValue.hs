@@ -44,7 +44,7 @@ addNR n = foldr (>=>) pure (replicate n addGet) 0
 
 feedAll :: Itv i o a -> [i] -> ([o], Maybe a)
 feedAll (Done x) _ = ([], Just x)
-feedAll _ [] = ([], Nothing)
+feedAll (Get o _) [] = ([o], Nothing)
 feedAll (Get o f) (h : t) = (o :) `first` feedAll (f h) t
 
 feedPartial :: Int -> Itv i o a -> Itv i o (Itv i o a)
