@@ -18,9 +18,12 @@ openWindow = do
 	win <- createSimpleWindow dpy root 0 0 100 100 1
 		(blackPixel dpy scr) (whitePixel dpy scr)
 	gc <- createGC dpy win
+	setBackground dpy gc 0x000000
 	setWMProtocols dpy win [del]
 	selectInput dpy win $ exposureMask .|. keyPressMask
 	mapWindow dpy win
+	setWindowBackground dpy win 0x000000
+	clearWindow dpy win
 	return (dpy, win, gc, wm, del)
 
 loop :: Display -> Window -> GC -> Atom -> Atom -> IO ()
@@ -33,7 +36,9 @@ loop dpy win gc wm del = allocaXEvent $ \e -> do
 				(ev_keycode ev) 0
 			if ch == 'q' then closeDisplay dpy else loop dpy win gc wm del
 		ExposeEvent {} -> do
-			drawRectangle dpy win gc 150 100 300 200
+			setForeground dpy gc 0xffffff
+--			drawRectangle dpy win gc 150 100 300 200
+			fillRectangle dpy win gc 150 100 300 200
 			setForeground dpy gc 0xff0000
 			fillRectangle dpy win gc 200 150 300 200
 			setForeground dpy gc 0x00ff00
