@@ -34,6 +34,12 @@ loop dpy win gc wm del = allocaXEvent $ \e -> do
 			if ch == 'q' then closeDisplay dpy else loop dpy win gc wm del
 		ExposeEvent {} -> do
 			drawRectangle dpy win gc 150 100 300 200
+			setForeground dpy gc 0xff0000
+			fillRectangle dpy win gc 200 150 300 200
+			setForeground dpy gc 0x00ff00
+			fillRectangle dpy win gc 250 200 300 200
+			setForeground dpy gc 0x0000ff
+			fillRectangle dpy win gc 300 250 300 200
 			loop dpy win gc wm del
 		ClientMessageEvent {}
 			| ev_message_type ev == wm && ev_data ev !! 0 == fromIntegral del -> do
