@@ -20,7 +20,9 @@ openWindow = do
 	gc <- createGC dpy win
 	setBackground dpy gc 0x000000
 	setWMProtocols dpy win [del]
-	selectInput dpy win $ exposureMask .|. keyPressMask
+	selectInput dpy win $
+		exposureMask .|. keyPressMask .|.
+		buttonPressMask .|. buttonReleaseMask .|. pointerMotionMask
 	mapWindow dpy win
 	setWindowBackground dpy win 0x000000
 	clearWindow dpy win
