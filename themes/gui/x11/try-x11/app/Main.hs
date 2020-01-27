@@ -2,10 +2,12 @@
 
 module Main where
 
-import Graphics.X11
-import Graphics.X11.Xlib.Extras
+import Control.Monad
 import Data.Bits
 import Data.Char
+import Codec.Binary.UTF8.String
+import Graphics.X11
+import Graphics.X11.Xlib.Extras
 
 openWindow :: IO (Display, Window, GC, Atom, Atom)
 openWindow = do
@@ -19,6 +21,13 @@ openWindow = do
 		(blackPixel dpy scr) (whitePixel dpy scr)
 	gc <- createGC dpy win
 	setBackground dpy gc 0x000000
+	storeName dpy win -- $ encodeString
+		"try-x11-exe"
+		-- "X11を試してみる"
+	wmn <- internAtom dpy "_NET_WM_NAME" True
+	u8 <- internAtom dpy "UTF8_STRING" True
+--	changeProperty8 dpy win wmn u8 0 {- PropModeReplace -} (fromIntegral . ord <$> "hello")
+	changeProperty8 dpy win wmn u8 0 {- PropModeReplace -} (fromIntegral . ord <$> encodeString "あいうえお")
 	setWMProtocols dpy win [del]
 	selectInput dpy win $
 		structureNotifyMask .|. exposureMask .|. keyPressMask .|.
@@ -36,7 +45,7 @@ loop dpy win gc wm del = allocaXEvent $ \e -> do
 		KeyEvent {} -> do
 			ch <- fmap (chr . fromEnum) $ keycodeToKeysym dpy
 				(ev_keycode ev) 0
-			if ch == 'q' then destroyWindow dpy win else loop dpy win gc wm del
+			when (ch == 'q') $ destroyWindow dpy win
 			loop dpy win gc wm del
 		ExposeEvent {} -> do
 			setForeground dpy gc 0xffffff
