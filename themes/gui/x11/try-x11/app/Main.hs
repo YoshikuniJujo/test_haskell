@@ -21,7 +21,7 @@ openWindow = do
 	setBackground dpy gc 0x000000
 	setWMProtocols dpy win [del]
 	selectInput dpy win $
-		exposureMask .|. keyPressMask .|.
+		structureNotifyMask .|. exposureMask .|. keyPressMask .|.
 		buttonPressMask .|. buttonReleaseMask .|. pointerMotionMask
 	mapWindow dpy win
 	setWindowBackground dpy win 0x000000
@@ -36,7 +36,8 @@ loop dpy win gc wm del = allocaXEvent $ \e -> do
 		KeyEvent {} -> do
 			ch <- fmap (chr . fromEnum) $ keycodeToKeysym dpy
 				(ev_keycode ev) 0
-			if ch == 'q' then closeDisplay dpy else loop dpy win gc wm del
+			if ch == 'q' then destroyWindow dpy win else loop dpy win gc wm del
+			loop dpy win gc wm del
 		ExposeEvent {} -> do
 			setForeground dpy gc 0xffffff
 --			drawRectangle dpy win gc 150 100 300 200
@@ -51,7 +52,12 @@ loop dpy win gc wm del = allocaXEvent $ \e -> do
 		ClientMessageEvent {}
 			| ev_message_type ev == wm && ev_data ev !! 0 == fromIntegral del -> do
 				putStrLn "close window"
-				closeDisplay dpy
+				destroyWindow dpy win
+				loop dpy win gc wm del
+		DestroyWindowEvent {} -> do
+			print ev
+			setCloseDownMode dpy 0 -- AllTemporary
+			closeDisplay dpy
 		_ -> print ev >> loop dpy win gc wm del
 
 main :: IO ()
