@@ -4,8 +4,16 @@
 
 module Main where
 
-import Graphics.X11
-import Graphics.X11.Xlib.Extras
+import Graphics.X11 (
+	initThreads,
+	Display, openDisplay, closeDisplay, rootWindow, setCloseDownMode,
+	{- ScreenNumber, -} defaultScreen, blackPixel, whitePixel,
+	Window, createSimpleWindow, mapWindow, destroyWindow,
+		selectInput, setWMProtocols, structureNotifyMask,
+	Atom, internAtom,
+	{- XEvent, -} allocaXEvent, nextEvent
+	)
+import Graphics.X11.Xlib.Extras (Event(..), getEvent)
 
 openWindow :: IO (Display, Window, Atom, Atom)
 openWindow = do
@@ -14,8 +22,7 @@ openWindow = do
 	wmp <- internAtom dpy "WM_PROTOCOLS" True
 	del <- internAtom dpy "WM_DELETE_WINDOW" True
 	let	scr = defaultScreen dpy
-		blk = blackPixel dpy scr
-		wht = whitePixel dpy scr
+		(blk, wht) = (blackPixel dpy scr, whitePixel dpy scr)
 	rt <- rootWindow dpy scr
 	win <- createSimpleWindow dpy rt 0 0 100 100 1 blk wht
 	selectInput dpy win structureNotifyMask
@@ -27,19 +34,13 @@ loop :: Display -> Window -> Atom -> Atom -> IO ()
 loop dpy win wmp del = allocaXEvent $ \e -> do
 	ev <- nextEvent dpy e *> getEvent e
 	case ev of
-		ClientMessageEvent {}
-			| ev_message_type ev == wmp && ev_data ev !! 0 == fromIntegral del -> do
-				putStrLn "close window"
-				destroyWindow dpy win
-				loop dpy win wmp del
+		ClientMessageEvent { ev_message_type = t, ev_data = d }
+			| t == wmp && d !! 0 == fromIntegral del ->
+				destroyWindow dpy win >> loop dpy win wmp del
 		DestroyWindowEvent {} -> do
-			print ev
 			setCloseDownMode dpy #const AllTemporary
 			closeDisplay dpy
-		_ -> print ev >> loop dpy win wmp del
+		_ -> loop dpy win wmp del
 
 main :: IO ()
-main = uncurry4 loop =<< openWindow
-
-uncurry4 :: (a -> b -> c -> d -> e) -> (a, b, c, d) -> e
-uncurry4 f (x, y, z, w) = f x y z w
+main = uncurry4 loop =<< openWindow where uncurry4 f (x, y, z, w) = f x y z w
