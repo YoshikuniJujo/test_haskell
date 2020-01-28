@@ -2,7 +2,8 @@
 
 #include <X11/Xlib.h>
 
-module ButtonEvent (ButtonEvent(..), buttonEvent) where
+module ButtonEvent (
+	ButtonEvent(..), PR(..), ButtonNumber(..), buttonEvent ) where
 
 import Foreign.C.Types
 import Graphics.X11.Xlib.Extras
