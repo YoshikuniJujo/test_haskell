@@ -9,7 +9,7 @@ import Field
 
 main :: IO ()
 main = do
-	f <- openField
+	f <- openField "あいうえお" []
 	while $ withNextEvent f \case
 		DestroyWindowEvent {} -> True <$ closeField f
 		ev	| isDeleteEvent f ev -> False <$ destroyField f
