@@ -20,6 +20,8 @@ data Field = Field {
 	display :: Display,
 	window :: Window,
 	pixmap :: Pixmap,
+	screenWidth :: Dimension,
+	screenHeight :: Dimension,
 	graphicsContext :: GC,
 	isDeleteEvent :: Event -> Bool }
 
@@ -33,20 +35,23 @@ openField nm ms = do
 	ut8 <- internAtom dpy "UTF8_STRING" True
 	let	scr = defaultScreen dpy
 		(blk, wht) = (blackPixel dpy scr, whitePixel dpy scr)
+		scrW = fromIntegral $ displayWidth dpy scr
+		scrH = fromIntegral $ displayHeight dpy scr
 	rt <- rootWindow dpy scr
 
 	win <- createSimpleWindow dpy rt 0 0 100 100 1 blk wht
-	pxm <- createPixmap dpy win 1000 1000 $ defaultDepth dpy scr
+	pxm <- createPixmap dpy win scrW scrH $ defaultDepth dpy scr
 	selectInput dpy win $ foldr (.|.) structureNotifyMask ms
 	setWMProtocols dpy win [del]
 	changeProperty8 dpy win wmn ut8 #{const PropModeReplace} $ utf8 nm
 	mapWindow dpy win
 
 	gc <- createGC dpy rt
+	setGraphicsExposures dpy gc False
 
-	fillRectangle dpy pxm gc 0 0 1000 1000
+	fillRectangle dpy pxm gc 0 0 scrW scrH
 
-	pure . Field dpy win pxm gc $ \case
+	pure . Field dpy win pxm scrW scrH gc $ \case
 		ClientMessageEvent { ev_message_type = t, ev_data = d0 : _ } ->
 			t == wmp && d0 == fromIntegral del
 		_ -> False
@@ -69,10 +74,10 @@ fillRect Field { display = dpy, pixmap = win, graphicsContext = gc } c x y w h =
 	setForeground dpy gc c >> fillRectangle dpy win gc x y w h
 
 clearField :: Field -> IO ()
-clearField Field { display = dpy, pixmap = win, graphicsContext = gc } =
-	setForeground dpy gc 0x000000 >> fillRectangle dpy win gc 0 0 1000 1000 -- clearWindow dpy win
+clearField Field { display = dpy, pixmap = win, graphicsContext = gc, screenWidth = w, screenHeight = h } =
+	setForeground dpy gc 0x000000 >> fillRectangle dpy win gc 0 0 w h -- clearWindow dpy win
 
 flushField :: Field -> IO ()
-flushField Field { display = dpy, window = win, pixmap = pxm, graphicsContext = gc } = do
-	copyArea dpy pxm win gc 0 0 1000 1000 0 0
+flushField Field { display = dpy, window = win, pixmap = pxm, graphicsContext = gc, screenWidth = w, screenHeight = h } = do
+	copyArea dpy pxm win gc 0 0 w h 0 0
 	flush dpy
