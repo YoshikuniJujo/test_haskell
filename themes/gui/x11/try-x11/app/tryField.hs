@@ -9,9 +9,12 @@ import Field
 
 main :: IO ()
 main = do
-	f <- openField "あいうえお" []
+	f <- openField "あいうえお" [exposureMask]
 	while $ withNextEvent f \case
 		DestroyWindowEvent {} -> True <$ closeField f
+		ExposeEvent {} -> True <$ do
+			fillRect f 150 100 300 200
+			return ()
 		ev	| isDeleteEvent f ev -> False <$ destroyField f
 			| otherwise -> pure True
 

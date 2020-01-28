@@ -7,7 +7,8 @@ module Field (
 	Field, openField, isDeleteEvent, destroyField, closeField,
 	Mask, exposureMask, keyPressMask,
 		buttonPressMask, buttonReleaseMask, pointerMotionMask,
-	Event(..), withNextEvent ) where
+	Event(..), withNextEvent,
+	fillRect ) where
 
 import Data.Bits
 import Graphics.X11
@@ -18,6 +19,7 @@ import TextLike
 data Field = Field {
 	display :: Display,
 	window :: Window,
+	graphicsContext :: GC,
 	isDeleteEvent :: Event -> Bool }
 
 openField :: TextUtf8 t => t -> [Mask] -> IO Field
@@ -36,9 +38,11 @@ openField nm ms = do
 	selectInput dpy win $ foldr (.|.) structureNotifyMask ms
 	setWMProtocols dpy win [del]
 	changeProperty8 dpy win wmn ut8 #{const PropModeReplace} $ utf8 nm
-
 	mapWindow dpy win
-	pure . Field dpy wmp $ \case
+
+	gc <- createGC dpy win
+
+	pure . Field dpy win gc $ \case
 		ClientMessageEvent { ev_message_type = t, ev_data = d0 : _ } ->
 			t == wmp && d0 == fromIntegral del
 		_ -> False
@@ -54,3 +58,7 @@ closeField Field { display = d } = do
 withNextEvent :: Field -> (Event -> IO a) -> IO a
 withNextEvent Field { display = d } act =
 	allocaXEvent $ \e -> act =<< nextEvent d e *> getEvent e
+
+fillRect :: Field -> Position -> Position -> Dimension -> Dimension -> IO ()
+fillRect Field { display = d, window = w, graphicsContext = gc } =
+	fillRectangle d w gc
