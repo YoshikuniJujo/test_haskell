@@ -59,6 +59,7 @@ withNextEvent :: Field -> (Event -> IO a) -> IO a
 withNextEvent Field { display = d } act =
 	allocaXEvent $ \e -> act =<< nextEvent d e *> getEvent e
 
-fillRect :: Field -> Position -> Position -> Dimension -> Dimension -> IO ()
-fillRect Field { display = d, window = w, graphicsContext = gc } =
-	fillRectangle d w gc
+fillRect :: Field ->
+	Pixel -> Position -> Position -> Dimension -> Dimension -> IO ()
+fillRect Field { display = dpy, window = win, graphicsContext = gc } c x y w h =
+	setForeground dpy gc c >> fillRectangle dpy win gc x y w h
