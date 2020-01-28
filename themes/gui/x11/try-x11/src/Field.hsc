@@ -8,7 +8,7 @@ module Field (
 	Mask, exposureMask, keyPressMask,
 		buttonPressMask, buttonReleaseMask, pointerMotionMask,
 	Event(..), withNextEvent,
-	fillRect ) where
+	fillRect, clearField, flushField ) where
 
 import Data.Bits
 import Graphics.X11
@@ -19,6 +19,7 @@ import TextLike
 data Field = Field {
 	display :: Display,
 	window :: Window,
+	pixmap :: Pixmap,
 	graphicsContext :: GC,
 	isDeleteEvent :: Event -> Bool }
 
@@ -35,14 +36,17 @@ openField nm ms = do
 	rt <- rootWindow dpy scr
 
 	win <- createSimpleWindow dpy rt 0 0 100 100 1 blk wht
+	pxm <- createPixmap dpy win 1000 1000 $ defaultDepth dpy scr
 	selectInput dpy win $ foldr (.|.) structureNotifyMask ms
 	setWMProtocols dpy win [del]
 	changeProperty8 dpy win wmn ut8 #{const PropModeReplace} $ utf8 nm
 	mapWindow dpy win
 
-	gc <- createGC dpy win
+	gc <- createGC dpy rt
 
-	pure . Field dpy win gc $ \case
+	fillRectangle dpy pxm gc 0 0 1000 1000
+
+	pure . Field dpy win pxm gc $ \case
 		ClientMessageEvent { ev_message_type = t, ev_data = d0 : _ } ->
 			t == wmp && d0 == fromIntegral del
 		_ -> False
@@ -61,5 +65,14 @@ withNextEvent Field { display = d } act =
 
 fillRect :: Field ->
 	Pixel -> Position -> Position -> Dimension -> Dimension -> IO ()
-fillRect Field { display = dpy, window = win, graphicsContext = gc } c x y w h =
+fillRect Field { display = dpy, pixmap = win, graphicsContext = gc } c x y w h =
 	setForeground dpy gc c >> fillRectangle dpy win gc x y w h
+
+clearField :: Field -> IO ()
+clearField Field { display = dpy, pixmap = win, graphicsContext = gc } =
+	setForeground dpy gc 0x000000 >> fillRectangle dpy win gc 0 0 1000 1000 -- clearWindow dpy win
+
+flushField :: Field -> IO ()
+flushField Field { display = dpy, window = win, pixmap = pxm, graphicsContext = gc } = do
+	copyArea dpy pxm win gc 0 0 1000 1000 0 0
+	flush dpy
