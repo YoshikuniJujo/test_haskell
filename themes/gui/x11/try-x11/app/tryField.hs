@@ -13,13 +13,11 @@ main = do
 	f <- openField "あいうえお" [
 		exposureMask, buttonPressMask, buttonReleaseMask ]
 	while $ withNextEvent f \case
-		DestroyWindowEvent {} -> True <$ closeField f
-		ExposeEvent {} -> True <$ do
-			fillRect f 0xff0000 150 100 300 200
-			return ()
+		DestroyWindowEvent {} -> False <$ closeField f
+		ExposeEvent {} -> True <$ fillRect f 0xff0000 150 100 300 200
 		ev@ButtonEvent {} -> True <$ do
 			maybe (pure ()) print $ buttonEvent ev
-		ev	| isDeleteEvent f ev -> False <$ destroyField f
+		ev	| isDeleteEvent f ev -> True <$ destroyField f
 			| otherwise -> print ev >> pure True
 
 while :: Monad m => m Bool -> m ()
