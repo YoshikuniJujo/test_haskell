@@ -10,18 +10,23 @@ import Control.Concurrent.STM
 import Field
 import ButtonEvent
 
+colors :: [Pixel]
+colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0x00ffff, 0xff00ff] ++ colors
+
 main :: IO ()
 main = do
-	(ul, br, vb, vbon, fl) <- atomically
-		$ (,,,,) <$> newTVar (0, 0) <*> newTVar (0, 0) <*> newTVar 0 <*> newTVar False <*> newTVar False
+	(ul, br, vb, vbon, clr, fl) <- atomically $ (,,,,,)
+		<$> newTVar (0, 0) <*> newTVar (0, 0)
+		<*> newTVar 0 <*> newTVar False <*> newTVar 0xff0000
+		<*> newTVar False
 	f <- openField "長方形" [
 		exposureMask, buttonPressMask, buttonReleaseMask, button1MotionMask ]
 	void . forkIO $ loop do
-		((ulx_, uly_), (brx_, bry_), v) <- atomically $ do
+		((ulx_, uly_), (brx_, bry_), v, c) <- atomically $ do
 			check =<< readTVar fl <* writeTVar fl False
-			(,,) <$> readTVar ul <*> readTVar br <*> readTVar vb
+			(,,,) <$> readTVar ul <*> readTVar br <*> readTVar vb <*> readTVar clr
 		let	(ulx, uly, w, h) = calcRect ulx_ uly_ brx_ bry_ v
-		clearField f >> fillRect f 0x0000ff ulx uly w h >> flushField f
+		clearField f >> fillRect f (colors !! c) ulx uly w h >> flushField f
 	void . forkIO $ loop do
 		atomically $ do
 			check =<< readTVar vbon
@@ -36,13 +41,24 @@ main = do
 				buttonNumber = Button1,
 				pressOrRelease = Press,
 				position = (x, y) } -> atomically do
-					writeTVar vbon False
-					writeTVar vb 0
-					writeTVar ul
-						(fromIntegral x, fromIntegral y)
+				writeTVar vbon False
+				writeTVar vb 0
+				writeTVar clr 0
+				writeTVar ul (fromIntegral x, fromIntegral y)
 			Just BtnEvent {
 				buttonNumber = Button1,
 				pressOrRelease = Release } -> atomically $ writeTVar vbon True
+			Just BtnEvent {
+				buttonNumber = Button2,
+				pressOrRelease = Press } -> atomically do
+					vo <- readTVar vbon
+					when vo $ modifyTVar clr (+ 1) >> writeTVar fl True
+			Just BtnEvent {
+				buttonNumber = Button3,
+				pressOrRelease = Press } -> atomically do
+				writeTVar vbon False
+				writeTVar vb 0
+				writeTVar fl True
 			Just _ -> print ev
 			Nothing -> error "never occur"
 		ev@MotionEvent {} -> True <$ case buttonEvent ev of
