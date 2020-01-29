@@ -9,6 +9,7 @@ import Control.Concurrent.STM
 
 import Field
 import ButtonEvent
+import Rectangle
 
 colors :: [Pixel]
 colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0x00ffff, 0xff00ff] ++ colors
@@ -20,6 +21,11 @@ main = do
 		<*> newTVar 0 <*> newTVar False <*> newTVar 0xff0000
 		<*> newTVar []
 		<*> newTVar False
+	cl1 <- atomically $ newTVar False
+	void . forkIO $ loop do
+		atomically $ check =<< readTVar cl1
+		threadDelay 500000
+		atomically $ writeTVar cl1 False
 	f <- openField "長方形" [
 		exposureMask, buttonPressMask, buttonReleaseMask, button1MotionMask ]
 	void . forkIO $ loop do
@@ -59,15 +65,26 @@ main = do
 					when vo $ modifyTVar clr (+ 1) >> writeTVar fl True
 			Just BtnEvent {
 				buttonNumber = Button3,
-				pressOrRelease = Press } -> atomically do
-				writeTVar vbon False
-				writeTVar vb 0
+				pressOrRelease = Press,
+				position = (x, y) } -> atomically do
 				(ulx, uly) <- readTVar ul
 				(brx, bry) <- readTVar br
-				c <- readTVar clr
-				let	(x, y, w, h) = calcRect ulx uly brx bry 0
-				modifyTVar rcts (((x, y, w, h), c) :)
-				writeTVar fl True
+				v <- readTVar vbon
+				when v do
+					c <- readTVar clr
+					let	(x, y, w, h) = calcRect ulx uly brx bry 0
+					modifyTVar rcts (((x, y, w, h), c) :)
+					writeTVar ul (0, 0)
+					writeTVar br (0, 0)
+					writeTVar fl True
+				writeTVar vbon False
+				writeTVar vb 0
+				c1 <- readTVar cl1
+				when c1 do
+					modifyTVar rcts $ remove1 (fromIntegral x, fromIntegral y)
+					writeTVar cl1 False
+					writeTVar fl True
+				writeTVar cl1 True
 			Just _ -> print ev
 			Nothing -> error "never occur"
 		ev@MotionEvent {} -> True <$ case buttonEvent ev of
