@@ -15,18 +15,22 @@ colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0x00ffff, 0xff00ff] ++ colors
 
 main :: IO ()
 main = do
-	(ul, br, vb, vbon, clr, fl) <- atomically $ (,,,,,)
+	(ul, br, vb, vbon, clr, rcts, fl) <- atomically $ (,,,,,,)
 		<$> newTVar (0, 0) <*> newTVar (0, 0)
 		<*> newTVar 0 <*> newTVar False <*> newTVar 0xff0000
+		<*> newTVar []
 		<*> newTVar False
 	f <- openField "長方形" [
 		exposureMask, buttonPressMask, buttonReleaseMask, button1MotionMask ]
 	void . forkIO $ loop do
-		((ulx_, uly_), (brx_, bry_), v, c) <- atomically $ do
+		((ulx_, uly_), (brx_, bry_), v, c, rs) <- atomically $ do
 			check =<< readTVar fl <* writeTVar fl False
-			(,,,) <$> readTVar ul <*> readTVar br <*> readTVar vb <*> readTVar clr
+			(,,,,) <$> readTVar ul <*> readTVar br <*> readTVar vb <*> readTVar clr <*> readTVar rcts
 		let	(ulx, uly, w, h) = calcRect ulx_ uly_ brx_ bry_ v
-		clearField f >> fillRect f (colors !! c) ulx uly w h >> flushField f
+		clearField f
+		(\((x, y, w', h'), c') -> fillRect f (colors !! c') x y w' h') `mapM_` reverse rs
+		fillRect f (colors !! c) ulx uly w h
+		flushField f
 	void . forkIO $ loop do
 		atomically $ do
 			check =<< readTVar vbon
@@ -58,6 +62,11 @@ main = do
 				pressOrRelease = Press } -> atomically do
 				writeTVar vbon False
 				writeTVar vb 0
+				(ulx, uly) <- readTVar ul
+				(brx, bry) <- readTVar br
+				c <- readTVar clr
+				let	(x, y, w, h) = calcRect ulx uly brx bry 0
+				modifyTVar rcts (((x, y, w, h), c) :)
 				writeTVar fl True
 			Just _ -> print ev
 			Nothing -> error "never occur"
