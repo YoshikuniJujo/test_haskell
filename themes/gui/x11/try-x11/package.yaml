@@ -21,10 +21,11 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
-- X11
-- utf8-string
+- stm
 - bytestring
 - text
+- utf8-string
+- X11
 
 library:
   source-dirs: src
@@ -77,6 +78,15 @@ executables:
     - try-x11
   motion:
     main:                motion.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-x11
+  rectangle:
+    main:                rectangle.hs
     source-dirs:         app
     ghc-options:
     - -threaded

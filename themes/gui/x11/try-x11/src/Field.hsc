@@ -9,7 +9,7 @@ module Field (
 		buttonPressMask, buttonReleaseMask, pointerMotionMask,
 		button1MotionMask,
 	Event(..), withNextEvent,
-	fillRect, clearField, flushField ) where
+	Position, Dimension, fillRect, clearField, flushField ) where
 
 import Data.Bits
 import Graphics.X11
