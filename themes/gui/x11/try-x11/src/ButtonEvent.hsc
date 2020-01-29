@@ -14,8 +14,8 @@ data ButtonEvent = BtnEvent {
 	position :: (CInt, CInt)
 	} deriving Show
 
-data PR = Press | Release deriving Show
-data ButtonNumber = Button1 | Button2 | Button3 | Button4 | Button5
+data PR = Press | Release | Move deriving Show
+data ButtonNumber = Button1 | Button2 | Button3 | Button4 | Button5 | ButtonX
 	deriving Show
 
 buttonEvent :: Event -> Maybe ButtonEvent
@@ -33,5 +33,10 @@ buttonEvent ButtonEvent {
 			_	| evt == #{const ButtonPress} -> Press
 				| evt == #{const ButtonRelease} -> Release
 				| otherwise -> error "never occur",
+		position = (x, y) }
+buttonEvent MotionEvent {
+		ev_event_type = #{const MotionNotify}, ev_x = x, ev_y = y } =
+	Just $ BtnEvent {
+		buttonNumber = ButtonX, pressOrRelease = Move,
 		position = (x, y) }
 buttonEvent _ = Nothing

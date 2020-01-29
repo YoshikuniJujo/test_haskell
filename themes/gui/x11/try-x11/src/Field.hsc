@@ -7,6 +7,7 @@ module Field (
 	Field, openField, isDeleteEvent, destroyField, closeField,
 	Mask, exposureMask, keyPressMask,
 		buttonPressMask, buttonReleaseMask, pointerMotionMask,
+		button1MotionMask,
 	Event(..), withNextEvent,
 	fillRect, clearField, flushField ) where
 
