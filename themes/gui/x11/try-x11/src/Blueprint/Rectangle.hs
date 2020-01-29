@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Rectangle where
+module Blueprint.Rectangle where
 
 import Graphics.X11 (Position, Dimension)
 
