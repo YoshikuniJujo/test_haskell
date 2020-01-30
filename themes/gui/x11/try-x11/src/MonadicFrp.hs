@@ -5,15 +5,36 @@ module MonadicFrp (
 	mouseDown, mouseUp, mouseMove, deltaTime, sleep,
 	Point, MouseBtn(..), Time,
 	sameClick, clickOn, leftClick, middleClick, rightClick,
-	doubler,
+	before, doubler,
 
-	first, done, before,
+	React, first, done,
+	Sig, waitFor, emit,
 
 	EvReqs, EvOccs, GUIEv(..), Color(..), Event(..),
 	interpretSig, cycleColor ) where
 
 import Data.Bool
 import Data.Set hiding (map, filter, foldl)
+
+type Reactg = React GUIEv
+type Sigg = Sig GUIEv
+
+data GUIEv
+	= MouseDown (Event [MouseBtn])
+	| MouseUp (Event [MouseBtn])
+	| MouseMove (Event Point)
+	| DeltaTime (Event Time)
+	| TryWait Time (Event Time)
+	deriving (Eq, Show, Ord)
+
+data Event a = Request | Occurred a deriving Show
+
+instance Ord a => Ord (Event a) where
+	Occurred a `compare` Occurred b = a `compare` b
+	_ `compare` _ = EQ
+
+instance Ord a => Eq (Event a) where
+	a == b = a `compare` b == EQ
 
 mouseDown, mouseUp :: Reactg [MouseBtn]
 mouseDown = exper (MouseDown Request) >>= \case
@@ -37,9 +58,6 @@ tryWait :: Time -> Reactg Time
 tryWait t = exper (TryWait t Request) >>= \case
 	TryWait _ (Occurred t') -> pure t'; _ -> error "bad"
 
-exper :: e -> React e e
-exper a = Await (singleton a) (Done . head . elems)
-
 type Point = (Double, Double)
 data MouseBtn = MLeft | MMiddle | MRight deriving (Show, Eq, Ord)
 type Time = Double
@@ -52,6 +70,53 @@ clickOn b = mouseDown >>= bool (clickOn b) (pure ()) . (b `elem`)
 
 leftClick, middleClick, rightClick :: Reactg ()
 [leftClick, middleClick, rightClick] = clickOn <$> [MLeft, MMiddle, MRight]
+
+before :: Reactg a -> Reactg b -> Reactg Bool
+before a b = first a b >>= \(a', b') -> case (done a', done b') of
+	(Just _, Nothing) -> pure True
+	_ -> pure False
+
+doubler :: Reactg ()
+doubler = do
+	rightClick
+	bool doubler (pure ()) =<< rightClick `before` sleep 0.2
+
+data Color = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
+
+cycleColor :: Sigg Color Int
+cycleColor = cc colors 1 where
+	cc [] _ = error "never occur"
+	cc (c : cs) i = do
+		emit c
+		bool (return i) (cc cs $ i + 1)
+			=<< waitFor (middleClick `before` rightClick)
+
+colors :: [Color]
+colors = cycle [Red .. Magenta]
+
+data React e a = Done a | Await (EvReqs e) (EvOccs e -> React e a)
+type EvReqs e = Set e
+type EvOccs e = Set e
+
+interpret :: Monad m => (EvReqs e -> m (EvOccs e)) -> React e a -> m a
+interpret _ (Done a) = pure a
+interpret p (Await e c) = p e >>= interpret p . c
+
+instance Functor (React e) where
+	f `fmap` Done v = Done $ f v
+	f `fmap` Await e c = Await e $ (Done . f =<<) . c
+
+instance Applicative (React e) where
+	pure = Done
+	Done f <*> mx = f <$> mx
+	Await e k <*> mx = Await e $ ((<$> mx) =<<) . k
+
+instance Monad (React e) where
+	Done v >>= f = f v
+	Await e c >>= f = Await e (\x -> c x >>= f)
+
+exper :: e -> React e e
+exper a = Await (singleton a) (Done . head . elems)
 
 first :: Ord e => React e a -> React e b -> React e (React e a, React e b)
 first = curry \case
@@ -69,89 +134,14 @@ filterOccs = intersection
 done :: React e a -> Maybe a
 done = \case Done a -> Just a; _ -> Nothing
 
-before :: Reactg a -> Reactg b -> Reactg Bool
-before a b = first a b >>= \(a', b') -> case (done a', done b') of
-	(Just _, Nothing) -> pure True
-	_ -> pure False
-
-doubler :: Reactg ()
-doubler = do
-	rightClick
-	bool doubler (pure ()) =<< rightClick `before` sleep 0.2
-
-type EvReqs e = Set e
-type EvOccs e = Set e
-
-data React e a
-	= Done a
-	| Await (EvReqs e) (EvOccs e -> React e a)
-
-data Event a = Request | Occurred a deriving Show
-
-instance Ord a => Ord (Event a) where
-	Occurred a `compare` Occurred b = a `compare` b
-	_ `compare` _ = EQ
-
-instance Ord a => Eq (Event a) where
-	a == b = a `compare` b == EQ
-
-data GUIEv
-	= MouseDown (Event [MouseBtn])
-	| MouseUp (Event [MouseBtn])
-	| MouseMove (Event Point)
-	| DeltaTime (Event Time)
-	| TryWait Time (Event Time)
-	deriving (Eq, Show, Ord)
-
-type Reactg = React GUIEv
-
-instance Functor (React e) where
-	f `fmap` Done v = Done $ f v
-	f `fmap` Await e c = Await e $ (Done . f =<<) . c
-
-instance Applicative (React e) where
-	pure = Done
-	Done f <*> mx = f <$> mx
-	Await e k <*> mx = Await e $ ((<$> mx) =<<) . k
-
-instance Monad (React e) where
-	Done v >>= f = f v
-	Await e c >>= f = Await e (\x -> c x >>= f)
-
 newtype Sig e a b = Sig (React e (ISig e a b))
 data ISig e a b = a :| Sig e a b | End b
-
-type Sigg = Sig GUIEv
--- type ISigg = ISig GUIEv
-
-interpret :: Monad m => (EvReqs e -> m (EvOccs e)) -> React e a -> m a
-interpret _ (Done a) = pure a
-interpret p (Await e c) = p e >>= interpret p . c
 
 interpretSig :: Monad m =>
 	(EvReqs e -> m (EvOccs e)) -> (a -> m r) -> Sig e a b -> m b
 interpretSig p d (Sig s) = interpret p s >>= \case
 	h :| t -> d h >> interpretSig p d t
 	End a -> pure a
-
-cycleColor :: Sigg Color Int
-cycleColor = cc colors 1 where
-	cc [] _ = error "never occur"
-	cc (h : t) i = do
-		emit h
-		r <- waitFor (middleClick `before` rightClick)
-		if r then cc t (i + 1) else return i
-
-data Color = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
-
-colors :: [Color]
-colors = cycle [Red .. Magenta]
-
-emitAll :: ISig e a b -> Sig e a b
-emitAll = Sig . Done
-
-emit :: a -> Sig e a ()
-emit a = emitAll (a :| pure ())
 
 instance Functor (Sig e a) where
 	f `fmap` m = pure . f =<< m
@@ -167,4 +157,10 @@ instance Monad (Sig e a) where
 		ib (End a) = let Sig x = f a in x
 
 waitFor :: React e a -> Sig e x a
-waitFor a = Sig $ End <$> a
+waitFor = Sig . (End <$>)
+
+emit :: a -> Sig e a ()
+emit a = emitAll (a :| pure ())
+
+emitAll :: ISig e a b -> Sig e a b
+emitAll = Sig . Done
