@@ -3,7 +3,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module MonadicFrp (
-	mouseDown, mouseUp, mouseMove,
+	mouseDown, mouseUp, mouseMove, deltaTime,
 
 	EvReqs, EvOccs, GUIEv(..), Color(..), MouseBtn(..), Event(..),
 	interpretSig, cycleColor ) where
@@ -13,18 +13,24 @@ import Data.Set hiding (map, filter, foldl)
 mouseDown, mouseUp :: Reactg [MouseBtn]
 mouseDown = exper (MouseDown Request) >>= get
 	where
-	get (MouseDown (Occured s)) = pure s
+	get (MouseDown (Occurred s)) = pure s
 	get _ = error "bad"
 
 mouseUp = exper (MouseUp Request) >>= get
 	where
-	get (MouseUp (Occured s)) = pure s
+	get (MouseUp (Occurred s)) = pure s
 	get _ = error "bad"
 
 mouseMove :: Reactg Point
 mouseMove = exper (MouseMove Request) >>= get
 	where
-	get (MouseMove (Occured p)) = pure p
+	get (MouseMove (Occurred p)) = pure p
+	get _ = error "bad"
+
+deltaTime :: Reactg Time
+deltaTime = exper (DeltaTime Request) >>= get
+	where
+	get (DeltaTime (Occurred t)) = pure t
 	get _ = error "bad"
 
 exper :: e -> React e e
@@ -41,10 +47,10 @@ data React e a
 	= Done a
 	| Await (EvReqs e) (EvOccs e -> React e a)
 
-data Event a = Request | Occured a deriving Show
+data Event a = Request | Occurred a deriving Show
 
 instance Ord a => Ord (Event a) where
-	Occured a `compare` Occured b = a `compare` b
+	Occurred a `compare` Occurred b = a `compare` b
 	_ `compare` _ = EQ
 
 instance Ord a => Eq (Event a) where

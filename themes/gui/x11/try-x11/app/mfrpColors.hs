@@ -20,9 +20,9 @@ handle f r = withNextEvent f \case
 	ExposeEvent {} -> flushField f >> handle f r
 	ev@ButtonEvent {} -> case buttonEvent ev of
 		Just BtnEvent {	buttonNumber = Button2,
-				pressOrRelease = Press } -> pure . singleton . MouseDown $ Occured [MMiddle]
+				pressOrRelease = Press } -> pure . singleton . MouseDown $ Occurred [MMiddle]
 		Just BtnEvent {	buttonNumber = Button3,
-				pressOrRelease = Press } -> pure . singleton . MouseDown $ Occured [MRight]
+				pressOrRelease = Press } -> pure . singleton . MouseDown $ Occurred [MRight]
 		_ -> handle f r
 	_ -> handle f r
 
