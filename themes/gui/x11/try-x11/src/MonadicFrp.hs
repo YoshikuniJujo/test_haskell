@@ -1,44 +1,83 @@
--- {-# LANGUAGE LambdaCase, FlexibleContexts #-}
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module MonadicFrp (
-	mouseDown, mouseUp, mouseMove, deltaTime,
+	mouseDown, mouseUp, mouseMove, deltaTime, sleep,
+	Point, MouseBtn(..), Time,
+	sameClick, clickOn, leftClick, middleClick, rightClick,
+	doubler,
 
-	EvReqs, EvOccs, GUIEv(..), Color(..), MouseBtn(..), Event(..),
+	first, done, before,
+
+	EvReqs, EvOccs, GUIEv(..), Color(..), Event(..),
 	interpretSig, cycleColor ) where
 
+import Data.Bool
 import Data.Set hiding (map, filter, foldl)
 
 mouseDown, mouseUp :: Reactg [MouseBtn]
-mouseDown = exper (MouseDown Request) >>= get
-	where
-	get (MouseDown (Occurred s)) = pure s
-	get _ = error "bad"
+mouseDown = exper (MouseDown Request) >>= \case
+	MouseDown (Occurred s) -> pure s; _ -> error "bad"
 
-mouseUp = exper (MouseUp Request) >>= get
-	where
-	get (MouseUp (Occurred s)) = pure s
-	get _ = error "bad"
+mouseUp = exper (MouseUp Request) >>= \case
+	MouseUp (Occurred s) -> pure s; _ -> error "bad"
 
 mouseMove :: Reactg Point
-mouseMove = exper (MouseMove Request) >>= get
-	where
-	get (MouseMove (Occurred p)) = pure p
-	get _ = error "bad"
+mouseMove = exper (MouseMove Request) >>= \case
+	MouseMove (Occurred p) -> pure p; _ -> error "bad"
 
 deltaTime :: Reactg Time
-deltaTime = exper (DeltaTime Request) >>= get
-	where
-	get (DeltaTime (Occurred t)) = pure t
-	get _ = error "bad"
+deltaTime = exper (DeltaTime Request) >>= \case
+	DeltaTime (Occurred t) -> pure t; _ -> error "bad"
+
+sleep :: Time -> Reactg ()
+sleep t = tryWait t >>= \t' -> if t' == t then pure () else sleep (t - t')
+
+tryWait :: Time -> Reactg Time
+tryWait t = exper (TryWait t Request) >>= \case
+	TryWait _ (Occurred t') -> pure t'; _ -> error "bad"
 
 exper :: e -> React e e
 exper a = Await (singleton a) (Done . head . elems)
 
 type Point = (Double, Double)
-data MouseBtn = MLeft | MMiddle | MRight deriving (Eq, Show, Ord)
+data MouseBtn = MLeft | MMiddle | MRight deriving (Show, Eq, Ord)
 type Time = Double
+
+sameClick :: Reactg Bool
+sameClick = (==) <$> mouseDown <*> mouseDown
+
+clickOn :: MouseBtn -> Reactg ()
+clickOn b = mouseDown >>= bool (clickOn b) (pure ()) . (b `elem`)
+
+leftClick, middleClick, rightClick :: Reactg ()
+[leftClick, middleClick, rightClick] = clickOn <$> [MLeft, MMiddle, MRight]
+
+first :: Ord e => React e a -> React e b -> React e (React e a, React e b)
+first = curry \case
+	(l@(Await el _), r@(Await er _)) ->
+		Await (el `union` er) $ first <$> update l <*> update r
+	lr -> Done lr
+
+update :: Ord e => React e a -> EvOccs e -> React e a
+update (Await e c) b | b' /= empty = c b' where b' = b `filterOccs` e
+update r _ = r
+
+filterOccs :: Ord e => EvOccs e -> EvReqs e -> EvOccs e
+filterOccs = intersection
+
+done :: React e a -> Maybe a
+done = \case Done a -> Just a; _ -> Nothing
+
+before :: Reactg a -> Reactg b -> Reactg Bool
+before a b = first a b >>= \(a', b') -> case (done a', done b') of
+	(Just _, Nothing) -> pure True
+	_ -> pure False
+
+doubler :: Reactg ()
+doubler = do
+	rightClick
+	bool doubler (pure ()) =<< rightClick `before` sleep 0.2
 
 type EvReqs e = Set e
 type EvOccs e = Set e
@@ -129,40 +168,3 @@ instance Monad (Sig e a) where
 
 waitFor :: React e a -> Sig e x a
 waitFor a = Sig $ End <$> a
-
-first :: Ord e => React e a -> React e b -> React e (React e a, React e b)
-first l r = case (l, r) of
-	(Await el _, Await er _) -> let
-		e = el `union` er
-		c b = first (update l b) (update r b) in
-		Await e c
-	_ -> Done (l, r)
-
-update :: Ord e => React e a -> EvOccs e -> React e a
-update (Await e c) b
-	| b' /= empty = c b'
-	where b' = b `filterOccs` e
-update r _ = r
-
-filterOccs :: Ord e => EvOccs e -> EvReqs e -> EvOccs e
-filterOccs = intersection
-
-done :: React e a -> Maybe a
-done (Done a) = Just a
-done _ = Nothing
-
-before :: Reactg a -> Reactg b -> Reactg Bool
-before a b = do
-	(a', b') <- first a b
-	case (done a', done b') of
-		(Just _, Nothing) -> pure True
-		_ -> pure False
-
-clickOn :: MouseBtn -> Reactg ()
-clickOn b = do
-	bs <- mouseDown
-	if b `elem` bs then return () else clickOn b
-
-middleClick, rightClick :: Reactg ()
-middleClick = clickOn MMiddle
-rightClick = clickOn MRight
