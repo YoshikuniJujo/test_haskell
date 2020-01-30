@@ -3,10 +3,32 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module MonadicFrp (
+	mouseDown, mouseUp, mouseMove,
+
 	EvReqs, EvOccs, GUIEv(..), Color(..), MouseBtn(..), Event(..),
 	interpretSig, cycleColor ) where
 
 import Data.Set hiding (map, filter, foldl)
+
+mouseDown, mouseUp :: Reactg [MouseBtn]
+mouseDown = exper (MouseDown Request) >>= get
+	where
+	get (MouseDown (Occured s)) = pure s
+	get _ = error "bad"
+
+mouseUp = exper (MouseUp Request) >>= get
+	where
+	get (MouseUp (Occured s)) = pure s
+	get _ = error "bad"
+
+mouseMove :: Reactg Point
+mouseMove = exper (MouseMove Request) >>= get
+	where
+	get (MouseMove (Occured p)) = pure p
+	get _ = error "bad"
+
+exper :: e -> React e e
+exper a = Await (singleton a) (Done . head . elems)
 
 type Point = (Double, Double)
 data MouseBtn = MLeft | MMiddle | MRight deriving (Eq, Show, Ord)
@@ -129,15 +151,6 @@ before a b = do
 	case (done a', done b') of
 		(Just _, Nothing) -> pure True
 		_ -> pure False
-
-exper :: e -> React e e
-exper a = Await (singleton a) (Done . head . elems)
-
-mouseDown :: Reactg [MouseBtn]
-mouseDown = exper (MouseDown Request) >>= get
-	where
-	get (MouseDown (Occured s)) = pure s
-	get _ = error "bad"
 
 clickOn :: MouseBtn -> Reactg ()
 clickOn b = do
