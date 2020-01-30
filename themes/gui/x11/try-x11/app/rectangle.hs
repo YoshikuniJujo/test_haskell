@@ -15,29 +15,82 @@ main :: IO ()
 main = do
 	fl <- atomically $ newTVar False
 	rcts <- atomically $ newTVar []
+	phs <- atomically $ newTVar 0
+	cl1 <- atomically $ newTVar False
+	scl <- atomically $ newTVar False
+	pos <- atomically $ newTVar (0, 0)
 	f <- openField "長方形" [
 		exposureMask,
 		buttonPressMask, buttonReleaseMask, button1MotionMask ]
 	void . forkIO $ loop do
-		atomically $ check =<< readTVar fl <* writeTVar fl False
+		(p, rs) <- atomically $ do
+			check =<< readTVar fl <* writeTVar fl False
+			(,) <$> readTVar phs <*> readTVar rcts
 		clearField f
-		(>>) <$> drawRects f <*> print =<< atomically (readTVar rcts)
+		drawRects f p rs
 		flushField f
+	void . forkIO $ loop do
+		threadDelay 10000
+		atomically $ do
+			modifyTVar phs (+ 1 / 12)
+			writeTVar fl True
+	void . forkIO $ loop do
+		atomically $ check =<< readTVar cl1
+		threadDelay 500000
+		atomically do
+			writeTVar scl =<< readTVar cl1
+			writeTVar cl1 False
+	void . forkIO . loop $ atomically do
+		check =<< readTVar scl
+		p <- readTVar pos
+		modifyTVar rcts $ sink1 p
+		writeTVar scl False
 	while $ withNextEvent f \case
 		DestroyWindowEvent {} -> False <$ closeField f
 		ExposeEvent {} -> True <$ flushField f
 		ev@ButtonEvent {} -> True <$ case buttonEvent ev of
-			Just BtnEvent {
-				buttonNumber = Button1,
-				pressOrRelease = Press,
-				position = (x, y) } -> atomically do
+			Just BtnEvent {	buttonNumber = Button1,
+					pressOrRelease = Press,
+					position = (x, y) } -> atomically do
+				writeTVar scl =<< readTVar cl1
+				writeTVar cl1 False
 				modifyTVar rcts $ pushRectangle (fromIntegral x, fromIntegral y)
+			Just BtnEvent {	buttonNumber = Button1,
+					pressOrRelease = Release,
+					position = (x, y) } -> atomically do
+				writeTVar scl =<< readTVar cl1
+				writeTVar cl1 False
+				modifyTVar rcts $ dragRectangle (fromIntegral x, fromIntegral y)
+				modifyTVar rcts floatHead
+				writeTVar fl True
+			Just BtnEvent {	buttonNumber = Button2,
+					pressOrRelease = Press,
+					position = (x, y) } -> atomically do
+				writeTVar scl =<< readTVar cl1
+				writeTVar cl1 False
+				modifyTVar rcts $ rotColor (fromIntegral x, fromIntegral y)
+				writeTVar fl True
+			Just BtnEvent {	buttonNumber = Button3,
+					pressOrRelease = Press,
+					position = (x, y) } -> atomically do
+				c1 <- readTVar cl1
+				if c1
+				then do	modifyTVar rcts $ remove1 (fromIntegral x, fromIntegral y)
+					writeTVar cl1 False
+				else do	-- modifyTVar rcts $ sink1 (fromIntegral x, fromIntegral y)
+					writeTVar pos (fromIntegral x, fromIntegral y)
+					writeTVar cl1 True
+				writeTVar fl True
+			Just e@BtnEvent { pressOrRelease = Press } -> do
+				atomically do
+					writeTVar scl =<< readTVar cl1
+					writeTVar cl1 False
+				print e
 			e -> print e
 		ev@MotionEvent {} -> True <$ case buttonEvent ev of
-			Just BtnEvent {
-				buttonNumber = ButtonX,
-				pressOrRelease = Move,
-				position = (x, y) } -> atomically do
+			Just BtnEvent {	buttonNumber = ButtonX,
+					pressOrRelease = Move,
+					position = (x, y) } -> atomically do
 				modifyTVar rcts $ dragRectangle (fromIntegral x, fromIntegral y)
 				writeTVar fl True
 			e -> print e
@@ -50,13 +103,13 @@ while act = (`when` while act) =<< act
 loop :: Monad m => m a -> m ()
 loop act = act >> loop act
 
-drawRects :: Field -> [Rectangle] -> IO ()
-drawRects f rs = drawRect f `mapM_` reverse rs
+drawRects :: Field -> Double -> [Rectangle] -> IO ()
+drawRects f p rs = drawRect f p `mapM_` reverse rs
 
-drawRect :: Field -> Rectangle -> IO ()
-drawRect f r = fillRect f (color c) l u w h
+drawRect :: Field -> Double -> Rectangle -> IO ()
+drawRect f p r = fillRect f (color c) l u w h
 	where
-	((l_, u_, w_, h_), c) = calcRectangle 0 0 r
+	((l_, u_, w_, h_), c) = calcRectangle 10 p r
 	(l, u) = (fromIntegral l_, fromIntegral u_)
 	(w, h) = (fromIntegral w_, fromIntegral h_)
 

@@ -2,7 +2,8 @@
 
 module Rectangle (
 	Rectangle, Color(..),
-	calcRectangle, pushRectangle, dragRectangle, rotColor, sink1, remove1
+	calcRectangle, pushRectangle, dragRectangle, floatHead,
+	rotColor, sink1, remove1
 	) where
 
 import Data.Bool
@@ -34,10 +35,15 @@ calcRectangle amp agl Rectangle {
 pushRectangle :: (Integer, Integer) -> [Rectangle] -> [Rectangle]
 pushRectangle (l, u) rs = (: rs) $ Rectangle {
 	left = l, upper = u, right = l, bottom = u,
-	color = Red, floating = True }
+	color = Red, floating = False }
 
 dragRectangle :: (Integer, Integer) -> [Rectangle] -> [Rectangle]
+dragRectangle _ [] = error "no rectangles"
 dragRectangle (x, y) (r : rs) = r { right = x, bottom = y } : rs
+
+floatHead :: [Rectangle] -> [Rectangle]
+floatHead [] = error "no rectangles"
+floatHead (r : rs) = r { floating = True } : rs
 
 rotColor :: (Integer, Integer) -> [Rectangle] -> [Rectangle]
 rotColor _ [] = []
