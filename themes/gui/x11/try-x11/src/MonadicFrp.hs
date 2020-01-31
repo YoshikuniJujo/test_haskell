@@ -6,14 +6,15 @@ module MonadicFrp (
 	Point, MouseBtn(..), Time,
 	sameClick, clickOn, leftClick, middleClick, rightClick,
 	before, doubler, cycleColor, mousePos,
+	Rect, curRect,
 
 	React, first, done,
-	Sig, waitFor, emit, repeat,
+	Sig, waitFor, emit, repeat, map,
 
 	EvReqs, EvOccs, GUIEv(..), Color(..), Event(..),
 	interpretSig ) where
 
-import Prelude hiding (repeat)
+import Prelude hiding (map, repeat)
 
 import Data.Bool
 import Data.Set hiding (map, filter, foldl)
@@ -99,6 +100,11 @@ colors = cycle [Red .. Magenta]
 mousePos :: Sigg Point ()
 mousePos = repeat mouseMove
 
+data Rect = Rect { leftup :: Point, rightdown :: Point }
+
+curRect :: Point -> Sigg Rect ()
+curRect p1 = Rect p1 `map` mousePos
+
 data React e a = Done a | Await (EvReqs e) (EvOccs e -> React e a)
 type EvReqs e = Set e
 type EvOccs e = Set e
@@ -172,3 +178,10 @@ emitAll = Sig . Done
 
 repeat :: React e a -> Sig e a ()
 repeat x = xs where xs = Sig $ (:| xs) <$> x
+
+map :: (a -> b) -> Sig e a c  -> Sig e b c
+f `map` Sig rct = Sig $ (f `imap`) <$> rct
+
+imap :: (a -> b) -> ISig e a c -> ISig e b c
+_ `imap` End x = End x
+f `imap` (h :| t) = f h :| (f `map` t)
