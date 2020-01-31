@@ -6,15 +6,15 @@ module MonadicFrp (
 	Point, MouseBtn(..), Time,
 	sameClick, clickOn, leftClick, middleClick, rightClick,
 	before, doubler, cycleColor, mousePos,
-	Rect, curRect,
+	Rect, curRect, elapsed, wiggleRect,
 
 	React, first, done,
-	Sig, waitFor, emit, repeat, map,
+	Sig, waitFor, emit, repeat, map, scanl,
 
 	EvReqs, EvOccs, GUIEv(..), Color(..), Event(..),
 	interpretSig ) where
 
-import Prelude hiding (map, repeat)
+import Prelude hiding (map, repeat, scanl)
 
 import Data.Bool
 import Data.Set hiding (map, filter, foldl)
@@ -105,6 +105,18 @@ data Rect = Rect { leftup :: Point, rightdown :: Point }
 curRect :: Point -> Sigg Rect ()
 curRect p1 = Rect p1 `map` mousePos
 
+elapsed :: Sigg Time ()
+elapsed = scanl (+) 0 $ repeat deltaTime
+
+wiggleRect :: Rect -> Sigg Rect ()
+wiggleRect (Rect lu rd) = rectAtTime `map` elapsed
+	where
+	rectAtTime t = Rect (lu +. dx) (rd +. dx)
+		where dx = (sin (t * 5) * 15, 0)
+
+(+.) :: Num n => (n, n) -> (n, n) -> (n, n)
+(x1, y1) +. (x2, y2) = (x1 + x2, y1 + y2)
+
 data React e a = Done a | Await (EvReqs e) (EvOccs e -> React e a)
 type EvReqs e = Set e
 type EvOccs e = Set e
@@ -185,3 +197,10 @@ f `map` Sig rct = Sig $ (f `imap`) <$> rct
 imap :: (a -> b) -> ISig e a c -> ISig e b c
 _ `imap` End x = End x
 f `imap` (h :| t) = f h :| (f `map` t)
+
+scanl :: (b -> a -> b) -> b -> Sig e a c -> Sig e b c
+scanl f i (Sig l) = Sig $ iscanl f i <$> l
+
+iscanl :: (b -> a -> b) -> b -> ISig e a c -> ISig e b c
+iscanl _ _ (End x) = End x
+iscanl f i (h :| t) = i :| scanl f (f i h) t
