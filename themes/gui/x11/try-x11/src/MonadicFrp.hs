@@ -6,15 +6,15 @@ module MonadicFrp (
 	Point, MouseBtn(..), Time,
 	sameClick, clickOn, leftClick, middleClick, rightClick,
 	before, doubler, cycleColor, mousePos,
-	Rect(..), curRect, elapsed, wiggleRect,
+	Rect(..), curRect, elapsed, wiggleRect, posInside,
 
 	React, first, done,
-	Sig, waitFor, emit, repeat, map, scanl,
+	Sig, waitFor, emit, repeat, map, scanl, find,
 
 	EvReqs, EvOccs, GUIEv(..), Color(..), Event(..),
 	interpretSig ) where
 
-import Prelude hiding (map, repeat, scanl)
+import Prelude hiding (map, repeat, scanl, break)
 
 import Data.Bool
 import Data.Set hiding (map, filter, foldl)
@@ -117,6 +117,14 @@ wiggleRect (Rect lu rd) = rectAtTime `map` elapsed
 (+.) :: Num n => (n, n) -> (n, n) -> (n, n)
 (x1, y1) +. (x2, y2) = (x1 + x2, y1 + y2)
 
+posInside :: Rect -> Sigg Point y -> Reactg (Maybe Point)
+posInside r = find (`inside` r)
+
+inside :: Point -> Rect -> Bool
+inside (x, y) (Rect (l, u) (r, d)) =
+	(l <= x && x <= r || r <= x && x <= l) &&
+	(u <= y && y <= d || d <= y && y <= u)
+
 data React e a = Done a | Await (EvReqs e) (EvOccs e -> React e a)
 type EvReqs e = Set e
 type EvOccs e = Set e
@@ -179,6 +187,18 @@ instance Monad (Sig e a) where
 		ib (h :| t) = pure (h :| (t >>= f))
 		ib (End a) = let Sig x = f a in x
 
+instance Functor (ISig e a) where
+	f `fmap` End x = End $ f x
+	f `fmap` (h :| t) = h :| (f <$> t)
+
+instance Applicative (ISig e a) where
+	pure = End
+	mf <*> mx = (<$> mx) =<< mf
+
+instance Monad (ISig e a) where
+	End a >>= f = f a
+	(h :| t) >>= f = h :| (emitAll . f =<< t)
+
 waitFor :: React e a -> Sig e x a
 waitFor = Sig . (End <$>)
 
@@ -204,3 +224,32 @@ scanl f i (Sig l) = Sig $ iscanl f i <$> l
 iscanl :: (b -> a -> b) -> b -> ISig e a c -> ISig e b c
 iscanl _ _ (End x) = End x
 iscanl f i (h :| t) = i :| scanl f (f i h) t
+
+break :: (a -> Bool) -> Sig e a b -> Sig e a (ISig e a b)
+break f (Sig l) = Sig (ibreak f <$> l)
+
+ibreak :: (a -> Bool) -> ISig e a b -> ISig e a (ISig e a b)
+ibreak f (h :| t)
+	| f h = pure $ h :| t
+	| otherwise = h :| break f t
+ibreak _ (End a) = pure $ End a
+
+res :: Sig e a b -> React e b
+res (Sig l) = l >>= ires
+
+ires :: ISig e a b -> React e b
+ires (_ :| t) = res t
+ires (End a) = Done a
+
+{-
+cur :: Sig e a b -> Maybe a
+cur (Sig (Done (h :| _))) = Just h
+cur _ = Nothing
+-}
+
+icur :: ISig e a b -> Maybe a
+icur (h :| _) = Just h
+icur (End _) = Nothing
+
+find :: (a -> Bool) -> Sig e a b -> React e (Maybe a)
+find f l = icur <$> res (break f l)
