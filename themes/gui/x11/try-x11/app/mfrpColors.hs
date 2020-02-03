@@ -8,6 +8,7 @@ import Data.Set
 import Field
 import ButtonEvent
 import MonadicFrp
+import ColorToPixel
 
 main :: IO ()
 main = do
@@ -28,11 +29,3 @@ handle f r = withNextEvent f \case
 
 colored :: Field -> Color -> IO ()
 colored f c = fillRect f (color c) 50 50 200 200 >> flushField f
-
-color :: Color -> Pixel
-color Red = 0xff0000
-color Green = 0x00ff00
-color Blue = 0x0000ff
-color Yellow = 0xffff00
-color Cyan = 0x00ffff
-color Magenta = 0xff00ff
