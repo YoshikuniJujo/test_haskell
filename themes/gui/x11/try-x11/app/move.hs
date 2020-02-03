@@ -12,7 +12,7 @@ import Field
 main :: IO ()
 main = do
 	f <- openField "動くよ" [exposureMask]
-	forkIO $ for_ [0 ..] \x -> do
+	_ <- forkIO $ for_ [0 ..] \x -> do
 --		fillRect f 0x00ff00 (100 + 5 * (x `mod` 40)) 100 300 200
 		fillRect f 0x00ff00 (100 + vibration x) 100 300 200
 		flushField f
