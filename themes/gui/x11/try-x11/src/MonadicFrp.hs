@@ -6,7 +6,7 @@ module MonadicFrp (
 	Point, MouseBtn(..), Time,
 	sameClick, clickOn, leftClick, middleClick, rightClick,
 	before, doubler, cycleColor, mousePos,
-	Rect, curRect, elapsed, wiggleRect,
+	Rect(..), curRect, elapsed, wiggleRect,
 
 	React, first, done,
 	Sig, waitFor, emit, repeat, map, scanl,
@@ -100,7 +100,7 @@ colors = cycle [Red .. Magenta]
 mousePos :: Sigg Point ()
 mousePos = repeat mouseMove
 
-data Rect = Rect { leftup :: Point, rightdown :: Point }
+data Rect = Rect { leftup :: Point, rightdown :: Point } deriving Show
 
 curRect :: Point -> Sigg Rect ()
 curRect p1 = Rect p1 `map` mousePos

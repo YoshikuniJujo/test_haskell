@@ -27,6 +27,9 @@ dependencies:
 - text
 - utf8-string
 - X11
+- monads-tf
+- monad-control
+- time
 
 library:
   source-dirs: src
@@ -115,6 +118,15 @@ executables:
     - try-x11
   mfrp-mouse-pos:
     main:                mfrpMousePos.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-x11
+  mfrp-wiggle-rect:
+    main:                mfrpWiggleRect.hs
     source-dirs:         app
     ghc-options:
     - -threaded
