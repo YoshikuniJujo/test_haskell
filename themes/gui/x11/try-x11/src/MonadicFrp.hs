@@ -7,14 +7,15 @@ module MonadicFrp (
 	sameClick, clickOn, leftClick, middleClick, rightClick,
 	before, doubler, cycleColor, mousePos,
 	Rect(..), curRect, elapsed, wiggleRect, posInside,
+	firstPoint, completeRect, defineRect,
 
 	React, first, done,
-	Sig, waitFor, emit, repeat, map, scanl, find,
+	Sig, waitFor, emit, repeat, map, scanl, find, at, until,
 
 	EvReqs, EvOccs, GUIEv(..), Color(..), Event(..),
 	interpretSig ) where
 
-import Prelude hiding (map, repeat, scanl, break)
+import Prelude hiding (map, repeat, scanl, break, until)
 
 import Data.Bool
 import Data.Set hiding (map, filter, foldl)
@@ -74,6 +75,12 @@ clickOn b = mouseDown >>= bool (clickOn b) (pure ()) . (b `elem`)
 leftClick, middleClick, rightClick :: Reactg ()
 [leftClick, middleClick, rightClick] = clickOn <$> [MLeft, MMiddle, MRight]
 
+releaseOf :: MouseBtn -> Reactg ()
+releaseOf b = mouseUp >>= bool (releaseOf b) (pure ()) . (b `elem`)
+
+leftUp :: Reactg ()
+leftUp = releaseOf MLeft
+
 before :: Reactg a -> Reactg b -> Reactg Bool
 before a b = first a b >>= \(a', b') -> case (done a', done b') of
 	(Just _, Nothing) -> pure True
@@ -124,6 +131,18 @@ inside :: Point -> Rect -> Bool
 inside (x, y) (Rect (l, u) (r, d)) =
 	(l <= x && x <= r || r <= x && x <= l) &&
 	(u <= y && y <= d || d <= y && y <= u)
+
+firstPoint :: Reactg Point
+firstPoint = maybe firstPoint pure =<< mousePos `at` leftClick
+
+completeRect :: Point -> Sigg Rect (Maybe Rect)
+completeRect p1 = cur . fst <$> curRect p1 `until` leftUp
+
+defineRect :: Sigg Rect Rect
+defineRect = waitFor firstPoint >>= \p1 ->
+	completeRect p1 >>= \case
+		Just r -> pure r
+		Nothing -> defineRect
 
 data React e a = Done a | Await (EvReqs e) (EvOccs e -> React e a)
 type EvReqs e = Set e
@@ -241,11 +260,9 @@ ires :: ISig e a b -> React e b
 ires (_ :| t) = res t
 ires (End a) = Done a
 
-{-
 cur :: Sig e a b -> Maybe a
 cur (Sig (Done (h :| _))) = Just h
 cur _ = Nothing
--}
 
 icur :: ISig e a b -> Maybe a
 icur (h :| _) = Just h
@@ -253,3 +270,21 @@ icur (End _) = Nothing
 
 find :: (a -> Bool) -> Sig e a b -> React e (Maybe a)
 find f l = icur <$> res (break f l)
+
+at :: Ord e => Sig e a c -> React e b -> React e (Maybe a)
+l `at` a = cur . fst <$> res (l `until` a)
+
+until :: Ord e => Sig e x b -> React e a -> Sig e x (Sig e x b, React e a)
+Sig l `until` a = waitFor (first l a) >>= un where
+	un (Done l', a') = do
+		(l'', a'') <- emitAll (l' `iuntil` a')
+		pure (emitAll l'', a'')
+	un (l', a') = pure (Sig l', a')
+
+iuntil :: Ord e => ISig e a c -> React e b -> ISig e a (ISig e a c, React e b)
+End l `iuntil` a = End (End l, a)
+(h :| Sig t) `iuntil` a = h :| Sig (cont <$> first t a)
+	where
+	cont (Done l', a') = l' `iuntil` a'
+	cont (t', Done a') = End (h :| Sig t', Done a')
+	cont (Await _ _, Await _ _) = error "never occur"

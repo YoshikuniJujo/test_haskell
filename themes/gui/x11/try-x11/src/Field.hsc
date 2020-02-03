@@ -6,8 +6,8 @@
 module Field (
 	Field, openField, isDeleteEvent, destroyField, closeField,
 	Mask, exposureMask, keyPressMask,
-		buttonPressMask, buttonReleaseMask, pointerMotionMask,
-		button1MotionMask,
+		buttonPressMask, buttonReleaseMask,
+		pointerMotionMask, button1MotionMask,
 	Event(..), withNextEvent, withNextEventTimeout,
 	Position, Dimension, Pixel, fillRect, clearField, flushField ) where
 
