@@ -8,16 +8,18 @@ module MonadicFrp (
 	before, doubler, cycleColor, mousePos,
 	Rect(..), curRect, elapsed, wiggleRect, posInside,
 	firstPoint, completeRect, defineRect,
+	Box(..), chooseBoxColor,
 
 	React, first, done,
-	Sig, waitFor, emit, repeat, map, scanl, find, at, until,
+	Sig, waitFor, emit, repeat, map, scanl, find, at, until, always, (<^>),
 
 	EvReqs, EvOccs, GUIEv(..), Color(..), Event(..),
 	interpretSig ) where
 
-import Prelude hiding (map, repeat, scanl, break, until)
+import Prelude hiding (map, repeat, scanl, break, until, tail)
 
 import Data.Bool
+import Data.Maybe
 import Data.Set hiding (map, filter, foldl)
 
 type Reactg = React GUIEv
@@ -144,6 +146,11 @@ defineRect = waitFor firstPoint >>= \p1 ->
 		Just r -> pure r
 		Nothing -> defineRect
 
+chooseBoxColor :: Rect -> Sigg Box ()
+chooseBoxColor r = () <$ always Box <^> wiggleRect r <^> cycleColor
+
+data Box = Box Rect Color deriving Show
+
 data React e a = Done a | Await (EvReqs e) (EvOccs e -> React e a)
 type EvReqs e = Set e
 type EvOccs e = Set e
@@ -221,6 +228,12 @@ instance Monad (ISig e a) where
 waitFor :: React e a -> Sig e x a
 waitFor = Sig . (End <$>)
 
+always :: a -> Sig e a b
+always a = emit a >> hold
+
+hold :: Sig e x a
+hold = waitFor never where never = Await empty undefined
+
 emit :: a -> Sig e a ()
 emit a = emitAll (a :| pure ())
 
@@ -288,3 +301,27 @@ End l `iuntil` a = End (End l, a)
 	cont (Done l', a') = l' `iuntil` a'
 	cont (t', Done a') = End (h :| Sig t', Done a')
 	cont (Await _ _, Await _ _) = error "never occur"
+
+(<^>) :: Ord e => Sig e (t -> x) b1 -> Sig e t b2 -> Sig e x (ISig e (t -> x) b1, ISig e t b2)
+l <^> r = do
+	(l', r') <- waitFor $ bothStart l r
+	emitAll $ imap (\(f, a) -> f a) (pairs l' r')
+
+bothStart :: Ord e => Sig e a1 b1 -> Sig e a2 b2 -> React e (ISig e a1 b1, ISig e a2 b2)
+bothStart l (Sig r) = do
+	(Sig l', r') <- res $ l `until` r
+	(Sig r'', l'') <- res $ Sig r' `until` l'
+	pure (done' l'', done' r'')
+
+done' ::  React e c -> c
+done' = fromJust . done
+
+pairs :: Ord e => ISig e a1 b1 -> ISig e a2 b2 -> ISig e (a1, a2) (ISig e a1 b1, ISig e a2 b2)
+pairs a@(End _) b = End (a, b)
+pairs a b@(End _) = End (a, b)
+pairs (hl :| Sig tl) (hr :| Sig tr) = (hl, hr) :| tail
+	where
+	tail = Sig $ cont <$> first tl tr
+	cont (tl', tr') = pairs (lup hl tl') (lup hr tr')
+	lup _ (Done l) = l
+	lup h t = h :| Sig t
