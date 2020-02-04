@@ -8,10 +8,10 @@ module MonadicFrp (
 	before, doubler, cycleColor, mousePos,
 	Rect(..), curRect, elapsed, wiggleRect, posInside,
 	firstPoint, completeRect, defineRect,
-	Box(..), chooseBoxColor,
+	Box(..), chooseBoxColor, drClickOn,
 
 	React, first, done,
-	Sig, waitFor, emit, repeat, map, scanl, find, at, until, always, (<^>),
+	Sig, waitFor, emit, repeat, map, scanl, find, at, until, always, (<^>), indexBy,
 
 	EvReqs, EvOccs, GUIEv(..), Color(..), Event(..),
 	interpretSig ) where
@@ -148,6 +148,11 @@ defineRect = waitFor firstPoint >>= \p1 ->
 
 chooseBoxColor :: Rect -> Sigg Box ()
 chooseBoxColor r = () <$ always Box <^> wiggleRect r <^> cycleColor
+
+drClickOn :: Rect -> Reactg (Maybe Point)
+-- drClickOn r = posInside r $ mousePos `indexBy` repeat doubler
+drClickOn r = posInside r $ mousePos `indexBy` repeat rightClick
+-- drClickOn r = mousePos `indexBy` repeat doubler
 
 data Box = Box Rect Color deriving Show
 
@@ -312,6 +317,22 @@ bothStart l (Sig r) = do
 	(Sig l', r') <- res $ l `until` r
 	(Sig r'', l'') <- res $ Sig r' `until` l'
 	pure (done' l'', done' r'')
+
+indexBy :: Ord e => Sig e a l -> Sig e b r -> Sig e a ()
+l `indexBy` (Sig r) = do
+	(Sig l', r') <- waitFor . res $ l `until` r
+	case (l', r') of
+		(_, Done (End _)) -> pure ()
+		(Done l'', r'') -> l'' `iindexBy` Sig r''
+		(l'', Done (_ :| r'')) -> Sig l'' `indexBy` r''
+		(Await _ _, Await _ _) -> error "never occur"
+
+iindexBy :: Ord e => ISig e x b1 -> Sig e a b2 -> Sig e x ()
+l `iindexBy` (Sig r) = do
+	(l', r') <- waitFor . ires $ l `iuntil` r
+	case (l', r') of
+		(hl :| tl, Done (_hr :| tr)) -> emit hl >> (hl :| tl) `iindexBy` tr
+		_ -> pure ()
 
 done' ::  React e c -> c
 done' = fromJust . done
