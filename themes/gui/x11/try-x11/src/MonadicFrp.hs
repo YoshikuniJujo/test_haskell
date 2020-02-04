@@ -8,10 +8,10 @@ module MonadicFrp (
 	before, doubler, cycleColor, mousePos,
 	Rect(..), curRect, elapsed, wiggleRect, posInside,
 	firstPoint, completeRect, defineRect,
-	Box(..), chooseBoxColor, drClickOn, box,
+	Box(..), chooseBoxColor, drClickOn, box, newBoxes, boxes,
 
 	React, first, done,
-	Sig, waitFor, emit, repeat, map, scanl, find, at, until, always, (<^>), indexBy,
+	Sig, waitFor, emit, repeat, map, scanl, find, at, until, always, (<^>), indexBy, spawn, parList,
 
 	EvReqs, EvOccs, GUIEv(..), Color(..), Event(..),
 	interpretSig ) where
@@ -24,6 +24,7 @@ import Data.Set hiding (map, filter, foldl)
 
 type Reactg = React GUIEv
 type Sigg = Sig GUIEv
+type ISigg = ISig GUIEv
 
 data GUIEv
 	= MouseDown (Event [MouseBtn])
@@ -160,6 +161,12 @@ box = do
 	where
 	setColor r = Box r (head colors)
 
+newBoxes :: Sigg (ISigg Box ()) ()
+newBoxes = spawn box
+
+boxes :: Sigg [Box] ()
+boxes = parList newBoxes
+
 data Box = Box Rect Color deriving Show
 
 data React e a = Done a | Await (EvReqs e) (EvOccs e -> React e a)
@@ -254,6 +261,9 @@ emitAll = Sig . Done
 repeat :: React e a -> Sig e a ()
 repeat x = xs where xs = Sig $ (:| xs) <$> x
 
+spawn :: Sig e a b -> Sig e (ISig e a b) ()
+spawn (Sig l) = repeat l
+
 map :: (a -> b) -> Sig e a c  -> Sig e b c
 f `map` Sig rct = Sig $ (f `imap`) <$> rct
 
@@ -342,6 +352,23 @@ l `iindexBy` (Sig r) = do
 
 done' ::  React e c -> c
 done' = fromJust . done
+
+cons :: Ord e => ISig e a l -> ISig e [a] r -> ISig e [a] ()
+cons h t = do
+	(h', t') <- imap (uncurry (:)) (pairs h t)
+	_ <- imap (: []) h'
+	() <$ t'
+
+parList :: Ord e => Sig e (ISig e a l) r -> Sig e [a] ()
+parList = emitAll . iparList
+
+iparList :: Ord e => Sig e (ISig e a l) r -> ISig e [a] ()
+iparList l = rl ([] :| hold) l >> pure () where
+	rl t (Sig es) = do
+		(t', es') <- t `iuntil` es
+		case es' of
+			Done (e :| es'') -> rl (cons e t') es''
+			_ -> t'
 
 pairs :: Ord e => ISig e a1 b1 -> ISig e a2 b2 -> ISig e (a1, a2) (ISig e a1 b1, ISig e a2 b2)
 pairs a@(End _) b = End (a, b)
