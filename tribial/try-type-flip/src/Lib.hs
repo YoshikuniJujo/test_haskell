@@ -46,23 +46,23 @@ sample1, sample2 :: RetList Int (Sum Double)
 sample1 = 1 :| 2 :| 3 :| Ret 123
 sample2 = 1 :| 1 :| 2 :| 3 :| 5 :| Ret 321
 
-ffmap, (<$!>) :: Functor (Flip t c) => (a -> b) -> t a c -> t b c
+ffmap, (<$%>) :: Functor (Flip t c) => (a -> b) -> t a c -> t b c
 ffmap f = unflip . fmap f . Flip
-(<$!>) = ffmap
+(<$%>) = ffmap
 
 fpure :: Applicative (Flip t b) => a -> t a b
 fpure = unflip . pure
 
-(<*!>) :: Applicative (Flip t c) => t (a -> b) c -> t a c -> t b c
-mf <*!> mx = unflip $ Flip mf <*> Flip mx
+(<*%>) :: Applicative (Flip t c) => t (a -> b) c -> t a c -> t b c
+mf <*%> mx = unflip $ Flip mf <*> Flip mx
 
-(>>=!) :: Monad (Flip t c) => t a c -> (a -> t b c) -> t b c
-m >>=! f = unflip $ Flip m >>= Flip . f
+(>>=%) :: Monad (Flip t c) => t a c -> (a -> t b c) -> t b c
+m >>=% f = unflip $ Flip m >>= Flip . f
 
-(=<<!) :: Monad (Flip t c) => (a -> t b c) -> t a c -> t b c
-(=<<!) = flip (>>=!)
+(=<<%) :: Monad (Flip t c) => (a -> t b c) -> t a c -> t b c
+(=<<%) = flip (>>=%)
 
 tryIt :: RetList Int (Sum Double)
-tryIt =	sample1 >>=! \m ->
-	sample2 >>=! \n ->
+tryIt =	sample1 >>=% \m ->
+	sample2 >>=% \n ->
 	fpure $ m * n
