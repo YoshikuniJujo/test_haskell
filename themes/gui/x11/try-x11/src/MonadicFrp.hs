@@ -8,7 +8,7 @@ module MonadicFrp (
 	before, doubler, cycleColor, mousePos,
 	Rect(..), curRect, elapsed, wiggleRect, posInside,
 	firstPoint, completeRect, defineRect,
-	Box(..), chooseBoxColor, drClickOn,
+	Box(..), chooseBoxColor, drClickOn, box,
 
 	React, first, done,
 	Sig, waitFor, emit, repeat, map, scanl, find, at, until, always, (<^>), indexBy,
@@ -151,9 +151,14 @@ chooseBoxColor r = () <$ always Box <^> wiggleRect r <^> cycleColor
 
 drClickOn :: Rect -> Reactg (Maybe Point)
 drClickOn r = posInside r $ mousePos `indexBy` repeat doubler
--- drClickOn r = posInside r $ mousePos `indexBy` repeat rightClick
--- drClickOn r = mousePos `indexBy` repeat doubler
--- drClickOn r = mousePos `indexBy` repeat rightClick
+
+box :: Sigg Box ()
+box = do
+	r <- setColor `map` defineRect
+	chooseBoxColor r
+	() <$ waitFor (drClickOn r)
+	where
+	setColor r = Box r (head colors)
 
 data Box = Box Rect Color deriving Show
 
