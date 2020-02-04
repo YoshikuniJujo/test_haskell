@@ -150,9 +150,10 @@ chooseBoxColor :: Rect -> Sigg Box ()
 chooseBoxColor r = () <$ always Box <^> wiggleRect r <^> cycleColor
 
 drClickOn :: Rect -> Reactg (Maybe Point)
--- drClickOn r = posInside r $ mousePos `indexBy` repeat doubler
-drClickOn r = posInside r $ mousePos `indexBy` repeat rightClick
+drClickOn r = posInside r $ mousePos `indexBy` repeat doubler
+-- drClickOn r = posInside r $ mousePos `indexBy` repeat rightClick
 -- drClickOn r = mousePos `indexBy` repeat doubler
+-- drClickOn r = mousePos `indexBy` repeat rightClick
 
 data Box = Box Rect Color deriving Show
 
