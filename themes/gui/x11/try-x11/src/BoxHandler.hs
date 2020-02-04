@@ -48,7 +48,9 @@ handle f r = do
 				Just BtnEvent {	buttonNumber = ButtonX,
 						pressOrRelease = Move,
 						position = (x, y) } -> do
-					pure . singleton . MouseMove $ Occurred (fromIntegral x, fromIntegral y)
+					pure $ fromList [
+						DeltaTime . Occurred . fromRational . toRational $ n `diffUTCTime` t,
+						MouseMove $ Occurred (fromIntegral x, fromIntegral y) ]
 				_ -> liftIO (print ev) >> handle f r
 			Just ev	| isDeleteEvent f ev -> liftIO (destroyField f) >> handle f r
 				| otherwise -> liftIO (print ev) >> handle f r
