@@ -22,10 +22,6 @@ import Data.Bool
 import Data.Maybe
 import Data.Set hiding (map, filter, foldl)
 
-type Reactg = React GUIEv
-type Sigg = Sig GUIEv
-type ISigg = ISig GUIEv
-
 data GUIEv
 	= MouseDown (Event [MouseBtn])
 	| MouseUp (Event [MouseBtn])
@@ -34,14 +30,9 @@ data GUIEv
 	| TryWait Time (Event Time)
 	deriving (Eq, Show, Ord)
 
-data Event a = Request | Occurred a deriving Show
-
-instance Ord a => Ord (Event a) where
-	Occurred a `compare` Occurred b = a `compare` b
-	_ `compare` _ = EQ
-
-instance Ord a => Eq (Event a) where
-	a == b = a `compare` b == EQ
+type Reactg = React GUIEv
+type Sigg = Sig GUIEv
+type ISigg = ISig GUIEv
 
 mouseDown, mouseUp :: Reactg [MouseBtn]
 mouseDown = exper (MouseDown Request) >>= \case
@@ -173,10 +164,6 @@ data React e a = Done a | Await (EvReqs e) (EvOccs e -> React e a)
 type EvReqs e = Set e
 type EvOccs e = Set e
 
-interpret :: Monad m => (EvReqs e -> m (EvOccs e)) -> React e a -> m a
-interpret _ (Done a) = pure a
-interpret p (Await e c) = p e >>= interpret p . c
-
 instance Functor (React e) where
 	f `fmap` Done v = Done $ f v
 	f `fmap` Await e c = Await e $ (Done . f =<<) . c
@@ -189,6 +176,19 @@ instance Applicative (React e) where
 instance Monad (React e) where
 	Done v >>= f = f v
 	Await e c >>= f = Await e (\x -> c x >>= f)
+
+data Event a = Request | Occurred a deriving Show
+
+instance Ord a => Ord (Event a) where
+	Occurred a `compare` Occurred b = a `compare` b
+	_ `compare` _ = EQ
+
+instance Ord a => Eq (Event a) where
+	a == b = a `compare` b == EQ
+
+interpret :: Monad m => (EvReqs e -> m (EvOccs e)) -> React e a -> m a
+interpret _ (Done a) = pure a
+interpret p (Await e c) = p e >>= interpret p . c
 
 exper :: e -> React e e
 exper a = Await (singleton a) (Done . head . elems)
