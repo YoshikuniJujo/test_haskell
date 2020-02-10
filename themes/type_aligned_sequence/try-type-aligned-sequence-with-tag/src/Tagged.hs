@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments, TupleSections, RankNTypes #-}
+{-# LANGUAGE BlockArguments, TupleSections, RankNTypes, ExistentialQuantification #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Tagged (FTCQueue, tsingleton, Count, runCount, Tagged, mkTagged, parpar, apply, apply') where
@@ -56,3 +56,17 @@ parpar (Tagged i f) (Tagged j g)
 par'' :: Monad m => FTCQueue (Tagged s m) a b -> FTCQueue (Tagged s m) a b -> Count s (FTCQueue (Tagged s m) a (b, b))
 par'' fa ga = case (tviewl fa, tviewl ga) of
 -}
+
+data TaggedMonad s m a = forall x . TaggedMonad x (FTCQueue (Tagged s m) x a)
+
+purec :: Monad m => a -> Count s (TaggedMonad s m a)
+purec x = do
+	p <- mkTagged pure
+	pure $ TaggedMonad x $ tsingleton p
+
+-- (>>=!) :: Monad m => TaggedMonad s m a -> (a -> TaggedMonad s m b) -> Count s (TaggedMonad s m b)
+
+{-
+instance Monad m => Functor (TaggedMonad s m) where
+	f `fmap` TaggedMonad x fs = TaggedMonad x (fs |> mkTagged f)
+	-}
