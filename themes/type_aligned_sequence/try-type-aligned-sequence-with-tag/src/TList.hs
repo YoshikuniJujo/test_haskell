@@ -60,3 +60,11 @@ fromList (x : xs) = let AS xs' = fromList xs in AS $ UL x :^ xs'
 instance Sequence s => Semigroup (s a) where (<>) = (><^)
 instance Sequence s => Monoid (s a) where mempty = empty
 instance TSequence s => Category (s c) where id = tempty; (.) = flip (><)
+
+{-
+data AsUnit a b c where U :: a -> AsUnit a () ()
+
+instance Monoid a => Category (AsUnit a) where
+	id = U mempty
+	U x . U y = U $ x <> y
+	-}
