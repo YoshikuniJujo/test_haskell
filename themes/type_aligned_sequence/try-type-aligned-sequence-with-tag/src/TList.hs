@@ -14,6 +14,11 @@ data TList c x y where
 	Nil :: TList c x x
 	(:^) :: c x y -> TList c y z -> TList c x z
 
+data Fun a b = Fun Integer (a -> b)
+
+sampleFunList :: TList Fun Char Int
+sampleFunList = Fun 0 ord :^ Fun 1 (+ 15) :^ Nil
+
 sample :: TList (->) Char Int
 sample = ord :^ (+ 15) :^ Nil
 
