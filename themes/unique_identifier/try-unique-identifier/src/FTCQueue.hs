@@ -3,6 +3,7 @@
 
 module FTCQueue (
 	MExp, MCont(..),
+	TaggedExp, Tagged(..),
 	FTCQueue, tsingleton, (><), (|>), tviewl, ViewL(..) ) where
 
 data FTCQueue c a b
@@ -32,3 +33,6 @@ tviewl (l0 :>< r0) = l0 `go` r0
 
 newtype MCont m a b = MCont (a -> m b)
 type MExp m a b = FTCQueue (MCont m) a b
+
+data Tagged s m a b = Tagged Integer (a -> m b)
+type TaggedExp s m a b = FTCQueue (Tagged s m) a b
