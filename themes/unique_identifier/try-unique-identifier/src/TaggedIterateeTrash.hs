@@ -5,7 +5,7 @@
 {-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module TaggedIteratee where
+module TaggedIterateeTrash where
 
 import FTCQueue
 
