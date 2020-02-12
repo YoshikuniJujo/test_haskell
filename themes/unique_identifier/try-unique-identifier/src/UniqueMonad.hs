@@ -2,7 +2,7 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module UniqueMonad (CountT, runCountT, TaggedMonad, mkMonad, par, apply) where
+module UniqueMonad (CountT, runCountT, TaggedMonad, mkMonad, parMonad, apply) where
 
 import Control.Arrow
 import Control.Monad.Trans
@@ -37,16 +37,16 @@ mkMonad m = (`TaggedMonad` m) <$> countup
 runCountT :: Functor m => (forall s . CountT s m a) -> m a
 runCountT m = fst <$> m `unCountT` 0
 
-class Par b c where
-	par :: Monad m => TaggedMonad s m a b -> TaggedMonad s m a c ->
+class ParMonad b c where
+	parMonad :: Monad m => TaggedMonad s m a b -> TaggedMonad s m a c ->
 		CountT s m (TaggedMonad s m a (b, c))
 
-instance {-# OVERLAPPABLE #-} Par b c where
-	par (TaggedMonad _ f) (TaggedMonad _ g) =
+instance {-# OVERLAPPABLE #-} ParMonad b c where
+	parMonad (TaggedMonad _ f) (TaggedMonad _ g) =
 		mkMonad $ \x -> (,) <$> f x <*> g x
 
-instance Par b b where
-	par (TaggedMonad i f) (TaggedMonad j g)
+instance ParMonad b b where
+	parMonad (TaggedMonad i f) (TaggedMonad j g)
 		| i == j = do
 			c <- countup
 			pure $ TaggedMonad c \x -> let y = f x in (,) <$> y <*> y

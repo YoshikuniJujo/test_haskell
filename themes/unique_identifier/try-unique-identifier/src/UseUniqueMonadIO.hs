@@ -22,12 +22,12 @@ mkAdd123 n = unsafePerformIO do
 sample :: CountT s IO (Int, Int)
 sample = do
 	f <- mkMonad mkAdd123
-	ff <- par f f
+	ff <- parMonad f f
 	apply ff 321
 
 sample2 :: CountT s IO (Int, Int)
 sample2 = do
 	f <- mkMonad mkAdd123
 	g <- mkMonad mkAdd123
-	fg <- par f g
+	fg <- parMonad f g
 	apply fg 321
