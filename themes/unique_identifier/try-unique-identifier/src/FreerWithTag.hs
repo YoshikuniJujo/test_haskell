@@ -3,10 +3,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module FreerWithTag (
-	Freer(..), (>>>=), qApp, Tuple(..), qOpen, qClose,
+	Freer(..), (>>>=), qApp, qAppWith, Tuple(..), qOpen, qClose,
 	Count, runCount, addTag, openTag, closeTag ) where
 
 import Control.Arrow
+import Unsafe.Coerce
+import Debug.Trace
 
 import FTCQueue
 
@@ -93,7 +95,9 @@ qClose :: Integer -> EitherTagExp s (Freer s t) a b -> a -> Either (Tuple s t b)
 qClose t q x = case tviewl q of
 	TOne (Fun f) -> Right $ f x
 	TOne (Open _) -> Right $ pure x
-	TOne (Close _) -> Right $ pure x
+	TOne (Close t')
+		| t == t' -> Left $ Tuple q x
+		| otherwise -> Right $ pure x
 	Fun f :| r -> case f x of
 		Pure y -> qClose t r y
 		tx :>>= q' -> Right $ tx :>>= (q' >< r)
@@ -101,3 +105,26 @@ qClose t q x = case tviewl q of
 	Close t' :| r
 		| t == t' -> Left $ Tuple q x
 		| otherwise -> qClose t r x
+
+qAppWith :: EitherTagExp s (Freer s t) a b -> EitherTagExp s (Freer s t) a b -> a -> (Freer s t b, Freer s t b)
+qAppWith p q x = case (tviewl p, tviewl q) of
+	(Open t :| r, Open t' :| r') | t == t' -> qCloseWith t r r' x
+	_ -> (p `qApp` x, q `qApp` x)
+		
+
+qCloseWith :: Integer -> EitherTagExp s (Freer s t) a b -> EitherTagExp s (Freer s t) a b -> a -> (Freer s t b, Freer s t b)
+qCloseWith t p q x = case (tviewl p, tviewl q) of
+	(TOne (Close t'), TOne (Close t''))
+		| t == t' && t == t'' -> (pure x, pure x)
+	(TOne _, TOne _) -> error "bad"
+	(Fun f :| r, _ :| r') -> case f x of
+		Pure y -> qCloseWith t r (unsafeCoerce r') y
+		tx :>>= p' ->
+			(tx :>>= (tsingleton (Open t) >< p' >< r), tx :>>= (tsingleton (Open t) >< p' >< unsafeCoerce r'))
+	(Open _ :| r, _ :| r') -> qCloseWith t r (unsafeCoerce r') x
+	(Close t' :| r, Close t'' :| r')
+		| t == t' && t == t'' -> (r `qApp` x, r' `qApp` x)
+	(TOne (Close t'), Close t'' :| r') | t == t' && t == t'' -> (pure x, r' `qApp` x)
+	(Close t' :| r, TOne (Close t'')) | t == t' && t == t'' -> (r `qApp` x, pure x)
+
+	_ -> error "bad"
