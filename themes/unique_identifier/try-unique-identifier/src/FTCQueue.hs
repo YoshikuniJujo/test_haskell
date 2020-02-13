@@ -1,9 +1,10 @@
-{-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE ExistentialQuantification, GADTs #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module FTCQueue (
 	MExp, MCont(..),
 	TaggedExp, Tagged(..),
+	EitherTagExp, EitherTag(..),
 	FTCQueue, tsingleton, (><), (|>), tviewl, ViewL(..) ) where
 
 data FTCQueue c a b
@@ -36,3 +37,9 @@ type MExp m a b = FTCQueue (MCont m) a b
 
 data Tagged s m a b = Tagged Integer (a -> m b)
 type TaggedExp s m a b = FTCQueue (Tagged s m) a b
+
+data EitherTag s m a b where
+	Open :: Integer -> EitherTag s m a a
+	Close :: Integer -> EitherTag s m a a
+	Fun :: (a -> m b) -> EitherTag s m a b
+type EitherTagExp s m a b = FTCQueue (EitherTag s m) a b

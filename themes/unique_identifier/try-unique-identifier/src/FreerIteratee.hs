@@ -31,3 +31,7 @@ q `qApp` x = case tviewl q of
 	MCont f :| r -> case f x of
 		Pure y -> r `qApp` y
 		tx `Bind` q' -> tx `Bind` (q' >< r)
+
+par :: Iteratee i a -> Iteratee i b -> Iteratee i (Iteratee i a, Iteratee i b)
+par l r	| Get `Bind` f <- l, Get `Bind` g <- r = get >>= \x -> par (f `qApp` x) (g `qApp` x)
+	| otherwise = pure (l, r)
