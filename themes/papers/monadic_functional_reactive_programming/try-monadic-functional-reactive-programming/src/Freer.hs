@@ -25,3 +25,5 @@ instance (Sequence sq, Fun f) => Monad (Freer s sq f t) where
 
 (>>>=) :: (Sequence sq, Fun f) => t a -> (a -> Freer s sq f t b) -> Freer s sq f t b
 m >>>= f = m :>>= singleton (fun f)
+
+newtype Count s a = Count { unCount :: Integer -> (a, Integer) }
