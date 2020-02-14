@@ -4,7 +4,6 @@
 module Main where
 
 import Data.Set
-import Graphics.X11
 
 import React
 import MouseAndTime

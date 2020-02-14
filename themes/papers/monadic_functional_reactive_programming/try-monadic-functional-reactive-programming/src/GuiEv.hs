@@ -28,4 +28,4 @@ instance Ord a => Ord (Event a) where
 
 type Point = (CInt, CInt)
 data MouseBtn = MLeft | MMiddle | MRight deriving (Show, Eq, Ord)
-type Time = DiffTime
+type Time = NominalDiffTime
