@@ -5,25 +5,22 @@ module FTCQueue (FTCQueue) where
 
 import Sequence
 
-data FTCQueue c a b where
-	Empty :: FTCQueue c a a
-	Tree :: Tree c a b -> FTCQueue c a b
-
-data Tree c a b = Leaf (c a b) | forall x . Tree c a x :>< Tree c x b
+data FTCQueue cat a b where
+	Empty :: FTCQueue cat a a
+	Node :: FTCQueue cat a b ->
+		cat b c -> FTCQueue cat c d -> FTCQueue cat a d
 
 instance Sequence FTCQueue where
 	empty = Empty
-	singleton = Tree . Leaf
-	Empty >< t = t
-	t >< Empty = t
-	Tree t >< Tree t' = Tree $ t :>< t'
+	singleton x = Node Empty x Empty
+	l >< r = case fviewl r of EmptyL -> l; x :<| r' -> Node l x r'
 	viewl = fviewl
 
 fviewl :: FTCQueue c a b -> ViewL FTCQueue c a b
 fviewl Empty = EmptyL
-fviewl (Tree (Leaf x)) = x :<| Empty
-fviewl (Tree (l0 :>< r0)) = l0 `go` r0
+fviewl (Node l0 x0 r0) = vwl l0 x0 r0
 	where
-	go :: Tree c a x -> Tree c x b -> ViewL FTCQueue c a b
-	Leaf x `go` r = x :<| Tree r
-	(ll :>< lr) `go` r = ll `go` (lr :>< r)
+	vwl :: FTCQueue cat a b ->
+		cat b c -> FTCQueue cat c d -> ViewL FTCQueue cat a d
+	vwl Empty x r = x :<| r
+	vwl (Node ll x lr) y r = vwl ll x $ Node lr y r
