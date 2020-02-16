@@ -13,13 +13,11 @@ module Field (
 
 import Control.Monad.Trans.Control
 import Data.Bits
+import Data.Word
 import Graphics.X11
 import Graphics.X11.Xlib.Extras
 
 import TextLike
-import Timeout
-
-foreign import ccall "XPeekEvent" myPeekEvent :: Display -> XEventPtr -> IO ()
 
 data Field = Field {
 	display :: Display,
@@ -73,11 +71,19 @@ withNextEvent :: MonadBaseControl IO m => Field -> (Event -> m a) -> m a
 withNextEvent Field { display = d } act =
 	liftBaseWith (\run -> allocaXEvent $ \e -> run . act =<< nextEvent d e *> getEvent e) >>= restoreM
 
+withNextEventTimeout :: MonadBaseControl IO m => Field -> Word32 -> (Maybe Event -> m a) -> m a
+withNextEventTimeout Field { display = d } n act =
+	liftBaseWith (\run -> allocaXEvent $ \e -> run . act =<< do
+		to <- waitForEvent d n
+		(if to then pure Nothing else Just <$> (nextEvent d e >> getEvent e))) >>= restoreM
+
+{-
 withNextEventTimeout :: MonadBaseControl IO m => Field -> Int -> (Maybe Event -> m a) -> m a
 withNextEventTimeout Field { display = d } n act =
 	liftBaseWith (\run -> allocaXEvent $ \e -> run . act =<< do
 		r <- timeout n (myPeekEvent d e) (nextEvent d e)
 		maybe (pure Nothing) (const $ Just <$> getEvent e) r) >>= restoreM
+		-}
 
 fillRect :: Field ->
 	Pixel -> Position -> Position -> Dimension -> Dimension -> IO ()
