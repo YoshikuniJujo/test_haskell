@@ -3,16 +3,15 @@
 
 module Check.FTCQueue.TypeAlignedOne where
 
-data FTCQueue c a b
-	= Leaf (c a b) | forall x . FTCQueue c a x :>< FTCQueue c x b
+data FTCQueue cat a b
+	= Leaf (cat a b) | forall x . FTCQueue cat a x :>< FTCQueue cat x b
 
-data ViewL sq c a b = OneL (c a b) | forall x . c a x :| sq c x b
+data ViewL sq cat a b = OneL (cat a b) | forall x . cat a x :| sq cat x b
 
-{-
-viewl :: FTCQueue a -> Either a (a, FTCQueue a)
-viewl (Leaf x) = Left x
+viewl :: FTCQueue cat a b -> ViewL FTCQueue cat a b
+viewl (Leaf x) = OneL x
 viewl (l0 :>< r0) = l0 `go` r0
 	where
-	Leaf x `go` r = Right (x, r)
+	go :: FTCQueue cat a x -> FTCQueue cat x b -> ViewL FTCQueue cat a b
+	Leaf x `go` r = x :| r
 	(ll :>< lr) `go` r = ll `go` (lr :>< r)
-	-}
