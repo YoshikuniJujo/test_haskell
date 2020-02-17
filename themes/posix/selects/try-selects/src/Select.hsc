@@ -37,7 +37,7 @@ instance Storable TimeVal where
 			fromIntegral (us :: CLong) / 1000000
 	poke p (TimeVal tv) = do
 		#{poke struct timeval, tv_sec} p (s :: CLong)
-		#{poke struct timeval, tv_sec} p (us :: CLong)
+		#{poke struct timeval, tv_usec} p (us :: CLong)
 		where
 		(s, us) = (round . (* 1000000)) `second` properFraction tv
 
