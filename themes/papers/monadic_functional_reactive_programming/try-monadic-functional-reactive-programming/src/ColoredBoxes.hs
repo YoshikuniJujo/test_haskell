@@ -2,6 +2,7 @@
 
 module ColoredBoxes where
 
+import React
 import GuiEv
 import MouseAndTime
 
@@ -15,3 +16,10 @@ clickOn :: MouseBtn -> ReactG s ()
 clickOn b = do
 	bs <- mouseDown
 	if b `elem` bs then pure () else clickOn b
+
+before :: ReactG s a -> ReactG s b -> ReactG s Bool
+before a b = do
+	(a', b') <- a `first` b
+	case (done a', done b') of
+		(Just _, Nothing) -> pure True
+		_ -> pure False
