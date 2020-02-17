@@ -34,3 +34,15 @@ deltaTime = pick <$> exper (S.singleton $ DeltaTime Request)
 	pick evs = case S.elems $ S.filter (== DeltaTime Request) evs of
 		[DeltaTime (Occurred t)] -> t
 		_ -> error "never occur"
+
+tryWait :: Time -> ReactG s Time
+tryWait t0 = pick <$> exper (S.singleton $ TryWait t0 Request)
+	where
+	pick evs = case S.elems $ S.filter (== TryWait t0 Request) evs of
+		[TryWait _ (Occurred t)] -> t
+		es -> error $ "never occur: " ++ show es
+
+sleep :: Time -> ReactG s ()
+sleep t = do
+	t' <- tryWait t
+	if t' == t then pure () else sleep (t - t')

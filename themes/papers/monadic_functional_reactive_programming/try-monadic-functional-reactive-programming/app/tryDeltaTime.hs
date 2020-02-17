@@ -26,5 +26,5 @@ handle f r = do
 	n <- liftIO getCurrentTime
 	put n
 	withNextEventTimeout f 50000 \case
-		Just _ -> handle f r
-		Nothing -> pure . singleton . DeltaTime . Occurred $ n `diffUTCTime` t
+		[] -> pure . singleton . DeltaTime . Occurred $ n `diffUTCTime` t
+		_ -> handle f r

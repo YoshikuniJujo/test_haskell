@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase, FlexibleContexts #-}
+{-# LANGUAGE BlockArguments, LambdaCase, FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 #include <X11/Xlib.h>
@@ -11,13 +11,17 @@ module Field (
 	Event(..), withNextEvent, withNextEventTimeout,
 	Position, Dimension, Pixel, fillRect, clearField, flushField ) where
 
+import Control.Monad
 import Control.Monad.Trans.Control
 import Data.Bits
 import Data.Word
+import Data.Time
+import System.Posix.Types
 import Graphics.X11
 import Graphics.X11.Xlib.Extras
 
 import TextLike
+import Select
 
 data Field = Field {
 	display :: Display,
@@ -71,19 +75,24 @@ withNextEvent :: MonadBaseControl IO m => Field -> (Event -> m a) -> m a
 withNextEvent Field { display = d } act =
 	liftBaseWith (\run -> allocaXEvent $ \e -> run . act =<< nextEvent d e *> getEvent e) >>= restoreM
 
-withNextEventTimeout :: MonadBaseControl IO m => Field -> Word32 -> (Maybe Event -> m a) -> m a
+withNextEventTimeout :: MonadBaseControl IO m => Field -> Word32 -> ([Event] -> m a) -> m a
 withNextEventTimeout Field { display = d } n act =
-	liftBaseWith (\run -> allocaXEvent $ \e -> run . act =<< do
-		to <- waitForEvent d n
-		(if to then pure Nothing else Just <$> (nextEvent d e >> getEvent e))) >>= restoreM
+	liftBaseWith (\run -> run . act =<< do
+		sync d False
+		to <- myWaitForEvent d $ fromIntegral n / 1000000
+		(if to then pure [] else allEvent d)) >>= restoreM
 
-{-
-withNextEventTimeout :: MonadBaseControl IO m => Field -> Int -> (Maybe Event -> m a) -> m a
-withNextEventTimeout Field { display = d } n act =
-	liftBaseWith (\run -> allocaXEvent $ \e -> run . act =<< do
-		r <- timeout n (myPeekEvent d e) (nextEvent d e)
-		maybe (pure Nothing) (const $ Just <$> getEvent e) r) >>= restoreM
-		-}
+getNextEvent :: Display -> IO Event
+getNextEvent d = allocaXEvent \e -> do
+	nextEvent d e
+	getEvent e
+
+allEvent :: Display -> IO [Event]
+allEvent d = do
+	n <- pending d
+	if n == 0 then pure [] else do
+		print n
+		(++) <$> fromIntegral n `replicateM` getNextEvent d <*> allEvent d
 
 fillRect :: Field ->
 	Pixel -> Position -> Position -> Dimension -> Dimension -> IO ()
@@ -98,3 +107,9 @@ flushField :: Field -> IO ()
 flushField Field { display = dpy, window = win, pixmap = pxm, graphicsContext = gc, screenWidth = w, screenHeight = h } = do
 	copyArea dpy pxm win gc 0 0 w h 0 0
 	flush dpy
+
+myWaitForEvent :: Display -> NominalDiffTime -> IO Bool
+myWaitForEvent d n = do
+	fds <- select [Fd fd] [] [] n
+	pure $ (Fd fd) `notElem` fds
+	where fd = connectionNumber d

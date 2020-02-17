@@ -26,4 +26,4 @@ handle f r = withNextEvent f \e -> case e of
 				position = (_x, _y) } -> do
 			pure . singleton . MouseDown $ Occurred [MLeft]
 		_ -> handle f r
-	_ -> handle f r
+	_ -> print e >> handle f r
