@@ -91,7 +91,6 @@ allEvent :: Display -> IO [Event]
 allEvent d = do
 	n <- pending d
 	if n == 0 then pure [] else do
-		print n
 		(++) <$> fromIntegral n `replicateM` getNextEvent d <*> allEvent d
 
 fillRect :: Field ->
