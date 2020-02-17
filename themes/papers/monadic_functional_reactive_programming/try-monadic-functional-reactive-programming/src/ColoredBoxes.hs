@@ -23,3 +23,14 @@ before a b = do
 	case (done a', done b') of
 		(Just _, Nothing) -> pure True
 		_ -> pure False
+
+leftClick, middleClick, rightClick :: ReactG s ()
+leftClick = clickOn MLeft
+middleClick = clickOn MMiddle
+rightClick = clickOn MRight
+
+doubler :: ReactG s ()
+doubler = do
+	rightClick
+	r <- rightClick `before` sleep 0.2
+	if r then return () else doubler

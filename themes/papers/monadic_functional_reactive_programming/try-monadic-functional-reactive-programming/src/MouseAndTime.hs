@@ -12,7 +12,7 @@ mouseDown = pick <$> exper (S.singleton $ MouseDown Request)
 	where
 	pick evs = case S.elems $ S.filter (== MouseDown Request) evs of
 		[MouseDown (Occurred mbs)] -> mbs
-		_ -> error "never occur"
+		es -> error $ "never occur: " ++ show es
 
 mouseUp :: ReactG s [MouseBtn]
 mouseUp = pick <$> exper (S.singleton $ MouseUp Request)
