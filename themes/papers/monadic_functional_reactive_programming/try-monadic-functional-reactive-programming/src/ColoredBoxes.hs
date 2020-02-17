@@ -10,3 +10,8 @@ sameClick = do
 	pressed <- mouseDown
 	pressed2 <- mouseDown
 	pure $ pressed == pressed2
+
+clickOn :: MouseBtn -> ReactG s ()
+clickOn b = do
+	bs <- mouseDown
+	if b `elem` bs then pure () else clickOn b

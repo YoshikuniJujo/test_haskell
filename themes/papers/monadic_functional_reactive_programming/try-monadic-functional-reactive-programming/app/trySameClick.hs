@@ -15,7 +15,7 @@ import ButtonEvent
 main :: IO ()
 main = do
 	f <- openField "おなじボタン" [exposureMask, buttonPressMask]
-	interpret (handle f) sameClick >>= print
+	interpret (handle f) (sameClick <* clickOn MRight) >>= print
 	closeField f
 
 handle :: Field -> EvReqs GuiEv -> IO (EvOccs GuiEv)
