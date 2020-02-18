@@ -15,5 +15,5 @@ main :: IO ()
 main = do
 	f <- openField "時間の経過" [exposureMask, buttonPressMask]
 	t <- getCurrentTime
-	interpretSig (handle f) (liftIO . print) elapsed `runStateT` t >>= print
+	interpretSig (handleDelta500000 f) (liftIO . print) elapsed `runStateT` t >>= print
 	closeField f

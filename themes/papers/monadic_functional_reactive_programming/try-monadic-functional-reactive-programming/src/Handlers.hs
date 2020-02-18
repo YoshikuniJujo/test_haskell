@@ -40,8 +40,8 @@ handleMotion f r = withNextEvent f \case
 	e	| isDeleteEvent f e -> destroyField f >> handleMotion f r
 		| otherwise -> print e >> handleMotion f r
 
-handle :: Field -> EvReqs GuiEv -> StateT UTCTime IO (EvOccs GuiEv)
-handle f r = do
+handleDelta500000 :: Field -> EvReqs GuiEv -> StateT UTCTime IO (EvOccs GuiEv)
+handleDelta500000 f r = do
 	t <- get
 	n <- liftIO getCurrentTime
 	put n
@@ -54,8 +54,8 @@ handle f r = do
 			pure . makeTimeObs r $ n `diffUTCTime` t
 		es	| Just _ <- find isDestroyWindowEvent es ->
 				liftIO $ putStrLn ("destroy: " ++ show es) >> closeField f >> exitSuccess
-			| Just _ <- find (isDeleteEvent f) es -> liftIO (print es >> destroyField f) >> handle f r
-			| otherwise -> liftIO (putStrLn $ "event occur: " ++ show es) >> handle f r
+			| Just _ <- find (isDeleteEvent f) es -> liftIO (print es >> destroyField f) >> handleDelta500000 f r
+			| otherwise -> liftIO (putStrLn $ "event occur: " ++ show es) >> handleDelta500000 f r
 	where time = getWait r
 
 isDestroyWindowEvent :: Field.Event -> Bool
