@@ -16,5 +16,5 @@ main :: IO ()
 main = do
 	f <- openField "スリープ" [exposureMask, buttonPressMask]
 	t <- getCurrentTime
-	(interpret (handleDelta500000 f) (sleep 3) `runStateT` t) >>= print
+	(interpret (handleDelta 0.5 f) (sleep 3) `runStateT` t) >>= print
 	closeField f

@@ -116,6 +116,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-monadic-functional-reactive-programming
+  try-wiggle-rect:
+    main:                tryWiggleRect.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-monadic-functional-reactive-programming
 
 tests:
   try-monadic-functional-reactive-programming-test:

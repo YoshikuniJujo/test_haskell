@@ -40,27 +40,31 @@ handleMotion f r = withNextEvent f \case
 	e	| isDeleteEvent f e -> destroyField f >> handleMotion f r
 		| otherwise -> print e >> handleMotion f r
 
-handleDelta500000 :: Field -> EvReqs GuiEv -> StateT UTCTime IO (EvOccs GuiEv)
-handleDelta500000 f r = do
+handleDelta :: NominalDiffTime -> Field -> EvReqs GuiEv -> StateT UTCTime IO (EvOccs GuiEv)
+handleDelta dt f r = do
 	t <- get
 	n <- liftIO getCurrentTime
 	put n
 	if n `diffUTCTime` t >= time
 	then do	put $ addUTCTime time t
 		pure $ makeTimeObs r time
-	else withNextEventTimeout f 500000 \case
+	else withNextEventTimeout f (round $ dt * 1000000) \case
 		[] -> do
-			liftIO $ print n
 			pure . makeTimeObs r $ n `diffUTCTime` t
-		es	| Just _ <- find isDestroyWindowEvent es ->
+		es	| Just _ <- find isExposeEvent es -> liftIO (flushField f) >> handleDelta dt f r
+			| Just _ <- find isDestroyWindowEvent es ->
 				liftIO $ putStrLn ("destroy: " ++ show es) >> closeField f >> exitSuccess
-			| Just _ <- find (isDeleteEvent f) es -> liftIO (print es >> destroyField f) >> handleDelta500000 f r
-			| otherwise -> liftIO (putStrLn $ "event occur: " ++ show es) >> handleDelta500000 f r
+			| Just _ <- find (isDeleteEvent f) es -> liftIO (print es >> destroyField f) >> handleDelta dt f r
+			| otherwise -> liftIO (putStrLn $ "event occur: " ++ show es) >> handleDelta dt f r
 	where time = getWait r
 
 isDestroyWindowEvent :: Field.Event -> Bool
 isDestroyWindowEvent DestroyWindowEvent {} = True
 isDestroyWindowEvent _ = False
+
+isExposeEvent :: Field.Event -> Bool
+isExposeEvent ExposeEvent {} = True
+isExposeEvent _ = False
 
 getWait :: Set GuiEv -> Time
 getWait r = if Prelude.null al then big else minimum al where

@@ -67,3 +67,11 @@ leftupAndSize Rect { leftup = (x1, y1), rightdown = (x2, y2) } =
 
 elapsed :: SigG s Time ()
 elapsed = scanl (+) 0 $ repeat deltaTime
+
+wiggleRect :: Rect -> SigG s Rect ()
+wiggleRect (Rect lu rd) = rectAtTime `map` elapsed
+	where rectAtTime t = Rect (lu +. dx) (rd +. dx)
+		where dx = (sin (fromRational $ toRational t * 5) * 15.0) :: Double
+
+(+.) :: RealFrac n => Point -> n -> Point
+(x, y) +. dx = (x + round dx, y)

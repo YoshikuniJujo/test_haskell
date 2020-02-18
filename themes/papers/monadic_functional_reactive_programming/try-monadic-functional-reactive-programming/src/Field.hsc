@@ -94,7 +94,6 @@ getNextEvent d = allocaXEvent \e -> do
 allEvent :: Display -> IO [Event]
 allEvent d = do
 	n <- pending d
-	print n
 	if n == 0 then pure [] else do
 		(++) <$> fromIntegral n `replicateM` getNextEvent d <*> allEvent d
 
