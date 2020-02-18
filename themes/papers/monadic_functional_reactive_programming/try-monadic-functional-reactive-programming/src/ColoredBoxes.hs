@@ -75,3 +75,12 @@ wiggleRect (Rect lu rd) = rectAtTime `map` elapsed
 
 (+.) :: RealFrac n => Point -> n -> Point
 (x, y) +. dx = (x + round dx, y)
+
+posInside :: Rect -> SigG s Point y -> ReactG s (Either Point y)
+posInside r = find (`inside` r)
+
+inside :: Point -> Rect -> Bool
+(x, y) `inside` Rect (l, u) (r, d) = x `isBetween` (l, r) && y `isBetween` (u, d)
+
+isBetween :: Ord a => a -> (a, a) -> Bool
+isBetween x (a, b) = a <= x && x <= b || b <= x && x <= a

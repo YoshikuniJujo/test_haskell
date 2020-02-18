@@ -1,9 +1,9 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Signal (Sig, ISig, interpretSig, waitFor, emit, repeat, map, scanl) where
+module Signal (Sig, ISig, interpretSig, waitFor, emit, repeat, map, scanl, find) where
 
-import Prelude hiding (repeat, map, scanl)
+import Prelude hiding (repeat, map, scanl, break)
 
 import React
 
@@ -36,6 +36,28 @@ iscanl f i (Sig l) = i :| (waitFor l >>= lsl)
 	where
 	lsl (h :| t) = scanl f (f i h) t
 	lsl (End x) = pure x
+
+find :: (a -> Bool) -> Sig s e a r -> React s e (Either a r)
+find p l = icur <$> res (break p l)
+
+break :: (a -> Bool) -> Sig s e a b -> Sig s e a (ISig s e a b)
+break p (Sig l) = Sig $ ibreak p <$> l
+
+ibreak :: (a -> Bool) -> ISig s e a b -> ISig s e a (ISig s e a b)
+ibreak p (h :| t)
+	| p h = pure $ h :| t
+	| otherwise = h :| break p t
+ibreak _ (End x) = pure $ End x
+
+res :: Sig s e a b -> React s e b
+res (Sig l) = l >>= ires
+
+ires :: ISig s e a b -> React s e b
+ires (_ :| t) = res t; ires (End x) = pure x
+
+icur :: ISig s e a b -> Either a b
+icur (h :| _) = Left h
+icur (End x) = Right x
 
 instance Functor (Sig s e a) where
 	f `fmap` Sig l = Sig $ (f <$>) <$> l
