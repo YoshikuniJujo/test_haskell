@@ -2,6 +2,7 @@
 
 module ColoredBoxes where
 
+import Signal
 import React
 import GuiEv
 import MouseAndTime
@@ -33,4 +34,16 @@ doubler :: ReactG s ()
 doubler = do
 	rightClick
 	r <- rightClick `before` sleep 0.2
-	if r then return () else doubler
+	if r then pure () else doubler
+
+cycleColor :: SigG s Color Int
+cycleColor = cc colors 1 where
+	cc (h : t) i = do
+		emit h
+		r <- waitFor (middleClick `before` rightClick)
+		if r then cc t (i + 1) else pure i
+
+data Color = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
+
+colors :: [Color]
+colors = cycle [Red .. Magenta]

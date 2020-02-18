@@ -1,12 +1,15 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module GuiEv (ReactG, GuiEv(..), Event(..), Point, MouseBtn(..), Time) where
+module GuiEv (SigG, ISigG, ReactG, GuiEv(..), Event(..), Point, MouseBtn(..), Time) where
 
 import Foreign.C.Types
 import Data.Time
 
+import Signal
 import React
 
+type SigG s = Sig s GuiEv
+type ISigG s = ISig s GuiEv
 type ReactG s a = React s GuiEv a
 
 data GuiEv
