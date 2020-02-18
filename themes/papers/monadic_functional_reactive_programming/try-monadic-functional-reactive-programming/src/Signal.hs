@@ -3,6 +3,8 @@
 
 module Signal where
 
+import Prelude hiding (map)
+
 import React
 
 newtype Sig s e a b = Sig { unSig :: React s e (ISig s e a b) }
@@ -18,6 +20,13 @@ waitFor x = Sig $ End <$> x
 
 repeat :: React s e a -> Sig s e a ()
 repeat x = xs where xs = Sig $ (:| xs) <$> x
+
+map :: (a -> b) -> Sig s e a r -> Sig s e b r
+f `map` Sig l = Sig $ imap f `fmap` l
+
+imap :: (a -> b) -> ISig s e a r -> ISig s e b r
+_ `imap` End x = End x
+f `imap` (h :| t) = f h :| (f `map` t)
 
 instance Functor (Sig s e a) where
 	f `fmap` Sig l = Sig $ (f <$>) <$> l

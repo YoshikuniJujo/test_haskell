@@ -2,7 +2,9 @@
 
 module ColoredBoxes where
 
-import Prelude hiding (repeat)
+import Prelude hiding (map, repeat)
+
+import Foreign.C.Types
 
 import Signal
 import React
@@ -53,3 +55,12 @@ colors = cycle [Red .. Magenta]
 
 mousePos :: SigG s Point ()
 mousePos = repeat mouseMove
+
+curRect :: Point -> SigG s Rect ()
+curRect p1 = Rect p1 `map` mousePos
+
+data Rect = Rect { leftup :: Point, rightdown :: Point } deriving Show
+
+leftupAndSize :: Rect -> (CInt, CInt, CInt, CInt)
+leftupAndSize Rect { leftup = (x1, y1), rightdown = (x2, y2) } =
+	(min x1 x2, min y1 y2, abs $ x1 - x2, abs $ y1 - y2)
