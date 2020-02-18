@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module ColoredBoxes where
@@ -100,3 +101,10 @@ completeRect :: Point -> SigG s Rect (Maybe Rect)
 completeRect p1 = do
 	(r, _) <- curRect p1 `until` leftUp
 	pure $ cur r
+
+defineRect :: SigG s Rect Rect
+defineRect = waitFor firstPoint >>= \case
+	Just p1 -> completeRect p1 >>= \case
+		Just r -> pure r
+		Nothing -> error "never occur"
+	Nothing -> error "never occur"
