@@ -70,3 +70,9 @@ select rds wts exs tv = alloca \ptv ->
 	rw <- (`fdIsSet` FdSet wfds) `filterM` wts
 	re <- (`fdIsSet` FdSet efds) `filterM` exs
 	pure $ rr ++ rw ++ re
+
+{-
+newtype {-# CTYPE "sys/select.h" "sigset_t" #-} SigSet = SigSet (Ptr SigSet)
+
+foreign import ccall "sys/select.h sigemptyset" c_sigemptyset :: Ptr SigSet -> IO ()
+-}

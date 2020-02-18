@@ -3,7 +3,7 @@
 
 module Signal where
 
-import Prelude hiding (map)
+import Prelude hiding (map, scanl)
 
 import React
 
@@ -27,6 +27,15 @@ f `map` Sig l = Sig $ imap f `fmap` l
 imap :: (a -> b) -> ISig s e a r -> ISig s e b r
 _ `imap` End x = End x
 f `imap` (h :| t) = f h :| (f `map` t)
+
+scanl :: (a -> b -> a) -> a -> Sig s e b r -> Sig s e a r
+scanl f i l = emitAll $ iscanl f i l
+
+iscanl :: (a -> b -> a) -> a -> Sig s e b r -> ISig s e a r
+iscanl f i (Sig l) = i :| (waitFor l >>= lsl)
+	where
+	lsl (h :| t) = scanl f (f i h) t
+	lsl (End x) = pure x
 
 instance Functor (Sig s e a) where
 	f `fmap` Sig l = Sig $ (f <$>) <$> l

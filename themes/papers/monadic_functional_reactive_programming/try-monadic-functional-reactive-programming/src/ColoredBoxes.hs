@@ -2,7 +2,7 @@
 
 module ColoredBoxes where
 
-import Prelude hiding (map, repeat)
+import Prelude hiding (repeat, map, scanl)
 
 import Foreign.C.Types
 
@@ -64,3 +64,6 @@ data Rect = Rect { leftup :: Point, rightdown :: Point } deriving Show
 leftupAndSize :: Rect -> (CInt, CInt, CInt, CInt)
 leftupAndSize Rect { leftup = (x1, y1), rightdown = (x2, y2) } =
 	(min x1 x2, min y1 y2, abs $ x1 - x2, abs $ y1 - y2)
+
+elapsed :: SigG s Time ()
+elapsed = scanl (+) 0 $ repeat deltaTime

@@ -79,8 +79,12 @@ withNextEventTimeout :: MonadBaseControl IO m => Field -> Word32 -> ([Event] -> 
 withNextEventTimeout Field { display = d } n act =
 	liftBaseWith (\run -> run . act =<< do
 		sync d False
-		to <- myWaitForEvent d $ fromIntegral n / 1000000
-		(if to then pure [] else allEvent d)) >>= restoreM
+		es <- allEvent d
+		case es of
+			[] -> do
+				to <- myWaitForEvent d $ fromIntegral n / 1000000
+				(if to then pure [] else allEvent d)
+			_ -> pure es) >>= restoreM
 
 getNextEvent :: Display -> IO Event
 getNextEvent d = allocaXEvent \e -> do
@@ -90,6 +94,7 @@ getNextEvent d = allocaXEvent \e -> do
 allEvent :: Display -> IO [Event]
 allEvent d = do
 	n <- pending d
+	print n
 	if n == 0 then pure [] else do
 		(++) <$> fromIntegral n `replicateM` getNextEvent d <*> allEvent d
 
