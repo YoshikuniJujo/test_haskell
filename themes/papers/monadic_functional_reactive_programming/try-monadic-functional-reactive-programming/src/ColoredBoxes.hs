@@ -2,7 +2,7 @@
 
 module ColoredBoxes where
 
-import Prelude hiding (repeat, map, scanl)
+import Prelude hiding (repeat, map, scanl, until)
 
 import Foreign.C.Types
 
@@ -33,6 +33,14 @@ leftClick, middleClick, rightClick :: ReactG s ()
 leftClick = clickOn MLeft
 middleClick = clickOn MMiddle
 rightClick = clickOn MRight
+
+releaseOf :: MouseBtn -> ReactG s ()
+releaseOf b = do
+	bs <- mouseUp
+	if (b `elem` bs) then pure () else releaseOf b
+
+leftUp :: ReactG s ()
+leftUp = releaseOf MLeft
 
 doubler :: ReactG s ()
 doubler = do
@@ -87,3 +95,8 @@ isBetween x (a, b) = a <= x && x <= b || b <= x && x <= a
 
 firstPoint :: ReactG s (Maybe Point)
 firstPoint = mousePos `at` leftClick
+
+completeRect :: Point -> SigG s Rect (Maybe Rect)
+completeRect p1 = do
+	(r, _) <- curRect p1 `until` leftUp
+	pure $ cur r

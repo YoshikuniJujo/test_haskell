@@ -28,6 +28,13 @@ handleMotion f r = withNextEvent f \case
 			maybe (handleMotion f r)
 				(pure . fromList . (MouseMove (Occurred (x, y)) :) . (: []) . MouseDown
 					. Occurred . (: [])) $ mouseButton bn
+		Just BtnEvent {
+			buttonNumber = bn,
+			pressOrRelease = Release,
+			position = (x, y) } -> do
+			maybe (handleMotion f r)
+				(pure . fromList . (MouseMove (Occurred (x, y)) :) . (: []) . MouseUp
+					. Occurred . (: [])) $ mouseButton bn
 		_ -> handleMotion f r
 	ev@MotionEvent {} -> case buttonEvent ev of
 		Just BtnEvent {
