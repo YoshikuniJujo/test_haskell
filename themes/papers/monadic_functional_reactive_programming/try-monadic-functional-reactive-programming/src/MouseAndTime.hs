@@ -26,7 +26,7 @@ mouseMove = pick <$> exper (S.singleton $ MouseMove Request)
 	where
 	pick evs = case S.elems $ S.filter (== MouseMove Request) evs of
 		[MouseMove (Occurred pt)] -> pt
-		_ -> error "never occur"
+		es -> error $ "never occur: " ++ show es
 
 deltaTime :: ReactG s Time
 deltaTime = pick <$> exper (S.singleton $ DeltaTime Request)

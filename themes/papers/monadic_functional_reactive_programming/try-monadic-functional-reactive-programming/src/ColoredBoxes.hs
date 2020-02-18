@@ -2,6 +2,8 @@
 
 module ColoredBoxes where
 
+import Prelude hiding (repeat)
+
 import Signal
 import React
 import GuiEv
@@ -38,6 +40,7 @@ doubler = do
 
 cycleColor :: SigG s Color Int
 cycleColor = cc colors 1 where
+	cc [] _ = error "never occur"
 	cc (h : t) i = do
 		emit h
 		r <- waitFor (middleClick `before` rightClick)
@@ -47,3 +50,6 @@ data Color = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
 
 colors :: [Color]
 colors = cycle [Red .. Magenta]
+
+mousePos :: SigG s Point ()
+mousePos = repeat mouseMove

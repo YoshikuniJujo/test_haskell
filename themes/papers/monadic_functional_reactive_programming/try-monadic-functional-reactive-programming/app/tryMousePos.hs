@@ -6,9 +6,10 @@ module Main where
 import Data.Set
 
 import ColoredBoxes
-import GuiEv
 import Signal
+import GuiEv
 import React
+
 import Field
 import ButtonEvent
 
@@ -16,9 +17,9 @@ import FieldAndMonadicFrp
 
 main :: IO ()
 main = do
-	f <- openField "中クリックで色が変わるよ"
-		[exposureMask, buttonPressMask]
-	interpretSig (handle f) (drawColoredRect f) cycleColor >>= print
+	f <- openField "マウスの動き" [
+		exposureMask, buttonPressMask, button1MotionMask ]
+	interpretSig (handle f) print mousePos
 	closeField f
 
 handle :: Field -> EvReqs GuiEv -> IO (EvOccs GuiEv)
@@ -27,21 +28,17 @@ handle f r = withNextEvent f \case
 		Just BtnEvent {
 			buttonNumber = bn,
 			pressOrRelease = Press,
-			position = (_x, _y) } -> do
+			position = (x, y) } -> do
 			maybe (handle f r)
-				(pure . singleton . MouseDown
+				(pure . fromList . (MouseMove (Occurred (x, y)) :) . (: []) . MouseDown
 					. Occurred . (: [])) $ mouseButton bn
+		_ -> handle f r
+	ev@MotionEvent {} -> case buttonEvent ev of
+		Just BtnEvent {
+			buttonNumber = ButtonX,
+			pressOrRelease = Move,
+			position = (x, y) } -> do
+			pure . singleton . MouseMove $ Occurred (x, y)
 		_ -> handle f r
 	ExposeEvent {} -> flushField f >> handle f r
 	e -> print e >> handle f r
-
-drawColoredRect :: Field -> Color -> IO ()
-drawColoredRect f c = fillRect f (colorToPixel c) 100 80 450 300 >> flushField f
-
-colorToPixel :: Color -> Pixel
-colorToPixel Red = 0xff0000
-colorToPixel Green = 0x00ff00
-colorToPixel Blue = 0x0000ff
-colorToPixel Yellow = 0xffff00
-colorToPixel Cyan = 0x00ffff
-colorToPixel Magenta = 0xff00ff

@@ -16,6 +16,9 @@ interpretSig p d (Sig s) = interpret p s >>=
 waitFor :: React s e b -> Sig s e a b
 waitFor x = Sig $ End <$> x
 
+repeat :: React s e a -> Sig s e a ()
+repeat x = xs where xs = Sig $ (:| xs) <$> x
+
 instance Functor (Sig s e a) where
 	f `fmap` Sig l = Sig $ (f <$>) <$> l
 
