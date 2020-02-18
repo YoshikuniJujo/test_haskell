@@ -1,7 +1,8 @@
 {-# LANGUAGE GADTs #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module React where
+module React (
+	React, EvReqs, EvOccs, interpret, exper, first, done ) where
 
 import Data.Set
 

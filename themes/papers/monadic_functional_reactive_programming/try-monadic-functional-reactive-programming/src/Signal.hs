@@ -1,9 +1,9 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Signal where
+module Signal (Sig, ISig, interpretSig, waitFor, emit, repeat, map, scanl) where
 
-import Prelude hiding (map, scanl)
+import Prelude hiding (repeat, map, scanl)
 
 import React
 
