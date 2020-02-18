@@ -1,11 +1,12 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Signal (Sig, ISig, interpretSig, waitFor, emit, repeat, map, scanl, find) where
+module Signal (Sig, ISig, interpretSig, waitFor, emit, repeat, map, scanl, find, at) where
 
-import Prelude hiding (repeat, map, scanl, break)
+import Prelude hiding (repeat, map, scanl, break, until)
 
 import React
+import Freer
 
 newtype Sig s e a b = Sig { unSig :: React s e (ISig s e a b) }
 data ISig s e a b = End b | a :| Sig s e a b
@@ -55,9 +56,32 @@ res (Sig l) = l >>= ires
 ires :: ISig s e a b -> React s e b
 ires (_ :| t) = res t; ires (End x) = pure x
 
+cur :: Sig s e a b ->  Maybe a
+cur (Sig (Pure is)) = either Just (const Nothing) $ icur is
+cur _ = Nothing
+
 icur :: ISig s e a b -> Either a b
 icur (h :| _) = Left h
 icur (End x) = Right x
+
+at :: Ord e => Sig s e a y -> React s e b -> React s e (Maybe a)
+l `at` a = cur . fst <$> res (l `until` a)
+
+until :: Ord e => Sig s e a b -> React s e c -> Sig s e a (Sig s e a b, React s e c)
+until (Sig l) a = waitFor (first l a) >>= un where
+	un (Pure l', a') = do
+		(l'', a'') <- emitAll $ l' `iuntil` a'
+		pure (emitAll l'', a'')
+	un (l', a') = pure (Sig l', a')
+
+iuntil :: Ord e => ISig s e a b -> React s e c -> ISig s e a (ISig s e a b, React s e c)
+End l `iuntil` a = End (End l, a)
+(h :| Sig t) `iuntil` a = h :| Sig (cont <$> first t a)
+	where
+	cont (Pure l, a') = l `iuntil` a'
+	cont (t', Pure a') = End (h :| Sig t', Pure a')
+	cont _ = error "never occur"
+
 
 instance Functor (Sig s e a) where
 	f `fmap` Sig l = Sig $ (f <$>) <$> l

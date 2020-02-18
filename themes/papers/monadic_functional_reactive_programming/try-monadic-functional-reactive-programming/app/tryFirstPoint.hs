@@ -6,13 +6,13 @@ module Main where
 import ColoredBoxes
 import Handlers
 
-import Signal
+import React
 import Field
 
 main :: IO ()
 main = do
 	f <- openField "マウスの動き" [
-		exposureMask, buttonPressMask, button1MotionMask ]
---		exposureMask, buttonPressMask, pointerMotionMask ]
-	interpretSig (handleMotion f) print mousePos
+--		exposureMask, buttonPressMask, button1MotionMask ]
+		exposureMask, buttonPressMask, pointerMotionMask ]
+	interpret (handleMotion f) firstPoint >>= print
 	closeField f

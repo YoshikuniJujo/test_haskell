@@ -84,3 +84,6 @@ inside :: Point -> Rect -> Bool
 
 isBetween :: Ord a => a -> (a, a) -> Bool
 isBetween x (a, b) = a <= x && x <= b || b <= x && x <= a
+
+firstPoint :: ReactG s (Maybe Point)
+firstPoint = mousePos `at` leftClick
