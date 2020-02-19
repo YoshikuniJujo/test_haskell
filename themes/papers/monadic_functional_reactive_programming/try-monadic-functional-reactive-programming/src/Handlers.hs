@@ -53,12 +53,13 @@ handleDelta dt f r = do
 	t <- get
 	n <- liftIO getCurrentTime
 	put n
-	if n `diffUTCTime` t >= time
+	if n `diffUTCTime` t >= time && not (Data.Set.null $ makeTimeObs r time)
 	then do	put $ addUTCTime time t
 		pure $ makeTimeObs r time
 	else withNextEventTimeout f (round $ dt * 1000000) \case
-		[] -> do
-			pure . makeTimeObs r $ n `diffUTCTime` t
+		[] -> if not (Data.Set.null $ makeTimeObs r time)
+			then pure . makeTimeObs r $ n `diffUTCTime` t
+			else handleDelta dt f r
 		es	| Just _ <- find isExposeEvent es -> liftIO (flushField f) >> handleDelta dt f r
 			| Just _ <- find isDestroyWindowEvent es ->
 				liftIO $ putStrLn ("destroy: " ++ show es) >> closeField f >> exitSuccess
@@ -81,7 +82,9 @@ handleDelta dt f r = do
 				BtnEvent {
 					buttonNumber = ButtonX,
 					pressOrRelease = Move,
-					position = (x, y) } -> pure . (`insert` makeTimeObs r (n `diffUTCTime` t)) . MouseMove $ Occurred (x, y)
+					position = (x, y) } -> if MouseMove Request `member` r
+						then pure . (`insert` makeTimeObs r (n `diffUTCTime` t)) . MouseMove $ Occurred (x, y)
+						else handleDelta dt f r
 				_ -> handleDelta dt f r
 			| otherwise -> liftIO (putStrLn $ "event occur: " ++ show es) >> handleDelta dt f r
 	where time = getWait r

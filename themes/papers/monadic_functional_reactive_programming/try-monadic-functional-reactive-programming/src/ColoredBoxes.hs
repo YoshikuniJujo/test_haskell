@@ -6,6 +6,7 @@ module ColoredBoxes where
 import Prelude hiding (repeat, map, scanl, until)
 
 import Foreign.C.Types
+import System.IO.Unsafe
 
 import Signal
 import React
@@ -128,3 +129,15 @@ newBoxes = spawn box
 
 boxes :: SigG s [Box] ()
 boxes = parList newBoxes
+
+checkDup :: ReactG s ()
+checkDup = do
+	doubler
+	clickOn' MLeft
+
+clickOn' :: MouseBtn -> ReactG s ()
+clickOn' b = do
+	bs <- mouseDown
+	if b `elem` bs
+		then unsafePerformIO $ pure () <$ putStrLn "clickOn' then"
+		else clickOn b

@@ -197,6 +197,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-monadic-functional-reactive-programming
+  try-check-dup:
+    main:                tryCheckDup.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-monadic-functional-reactive-programming
 
 tests:
   try-monadic-functional-reactive-programming-test:
