@@ -3,6 +3,7 @@
 
 module Handlers where
 
+import Control.Applicative
 import Control.Monad.State
 import Data.Maybe
 import Data.List
@@ -62,8 +63,21 @@ handleDelta dt f r = do
 			| Just _ <- find isDestroyWindowEvent es ->
 				liftIO $ putStrLn ("destroy: " ++ show es) >> closeField f >> exitSuccess
 			| Just _ <- find (isDeleteEvent f) es -> liftIO (print es >> destroyField f) >> handleDelta dt f r
+			| Just ev <- getFirstButtonEvent es -> case ev of
+				BtnEvent {
+					buttonNumber = bn,
+					pressOrRelease = Press,
+					position = (x, y) } -> do
+					maybe (handleDelta dt f r)
+						(pure . fromList . (MouseMove (Occurred (x, y)) :) . (: []) . MouseDown
+							. Occurred . (: [])) $ mouseButton bn
+				_ -> handleDelta dt f r
 			| otherwise -> liftIO (putStrLn $ "event occur: " ++ show es) >> handleDelta dt f r
 	where time = getWait r
+
+getFirstButtonEvent :: [Field.Event] -> Maybe ButtonEvent
+getFirstButtonEvent [] = Nothing
+getFirstButtonEvent (e : es) = buttonEvent e <|> getFirstButtonEvent es
 
 isDestroyWindowEvent :: Field.Event -> Bool
 isDestroyWindowEvent DestroyWindowEvent {} = True

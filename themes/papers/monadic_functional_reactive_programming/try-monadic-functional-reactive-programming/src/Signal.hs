@@ -1,9 +1,12 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Signal (Sig, ISig, interpretSig, waitFor, emit, repeat, map, scanl, find, at, until, cur) where
+module Signal (
+	Sig, ISig, interpretSig,
+	waitFor, emit, repeat, map, scanl, find, at, until, cur, always, (<^>)) where
 
-import Prelude hiding (repeat, map, scanl, break, until)
+import Control.Arrow ((***))
+import Prelude hiding (repeat, map, scanl, break, until, tail)
 
 import React
 import Freer
@@ -82,6 +85,31 @@ End l `iuntil` a = End (End l, a)
 	cont (t', Pure a') = End (h :| Sig t', Pure a')
 	cont _ = error "never occur"
 
+always :: a -> Sig s e a ()
+always x = emit x >> hold
+
+hold :: Sig s e a b
+hold = waitFor never
+
+(<^>) :: Ord e => Sig s e (a -> b) l -> Sig s e a r -> Sig s e b (Sig s e (a -> b) l, Sig s e a r)
+l <^> r = do
+	(l', r') <- waitFor (bothStart l r)
+	emitAll $ (\(f, a) -> f a) `imap` ((emitAll *** emitAll) <$> pairs l' r')
+
+bothStart :: Ord e => Sig s e a r -> Sig s e b l -> React s e (ISig s e a r, ISig s e b l)
+bothStart l (Sig r) = do
+	(Sig l', r') <- res $ l `until` r
+	(Sig r'', l'') <- res $ Sig r' `until` l'
+	pure (done' l'', done' r'')
+
+pairs :: Ord e => ISig s e a l -> ISig s e b r -> ISig s e (a, b) (ISig s e a l, ISig s e b r)
+pairs (End a) b = End (End a, b)
+pairs a (End b) = End (a, End b)
+pairs (hl :| Sig tl) (hr :| Sig tr) = (hl, hr) :| tail
+	where
+	tail = Sig $ cont <$> tl `first` tr
+	cont (tl', tr') = pairs (lup hl tl') (lup hr tr')
+	lup _ (Pure l) = l; lup h t = h :| Sig t
 
 instance Functor (Sig s e a) where
 	f `fmap` Sig l = Sig $ (f <$>) <$> l

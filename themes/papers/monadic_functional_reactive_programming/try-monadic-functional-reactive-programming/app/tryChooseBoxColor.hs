@@ -14,8 +14,9 @@ import FieldAndMonadicFrp
 
 main :: IO ()
 main = do
-	f <- openField "時間の経過" [exposureMask, buttonPressMask]
+	f <- openField "色を決める" [exposureMask, buttonPressMask]
 	t <- getCurrentTime
-	interpretSig (handleDelta 0.05 f) (liftIO . flip (drawRect f) Red) (wiggleRect $ Rect (150, 130) (450, 330))
+	interpretSig (handleDelta 0.05 f) (liftIO . drawBox f)
+			(chooseBoxColor $ Rect (150, 100) (450, 400))
 		`runStateT` t >>= print
 	closeField f

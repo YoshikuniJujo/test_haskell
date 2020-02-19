@@ -2,8 +2,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module React (
-	React, EvReqs, EvOccs, interpret, exper, first, done ) where
+	React, EvReqs, EvOccs, interpret, exper, first, done, done', never) where
 
+import Data.Maybe
 import Data.Set
 
 import Freer
@@ -42,3 +43,9 @@ filterOccs = intersection
 
 done :: React s e a -> Maybe a
 done (Pure x) = Just x; done _ = Nothing
+
+done' :: React s e a -> a
+done' = fromJust . done
+
+never :: React s e a
+never = Await empty :>>= undefined

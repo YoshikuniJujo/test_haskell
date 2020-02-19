@@ -36,12 +36,4 @@ handle f r = withNextEvent f \case
 	e -> print e >> handle f r
 
 drawColoredRect :: Field -> Color -> IO ()
-drawColoredRect f c = fillRect f (colorToPixel c) 100 80 450 300 >> flushField f
-
-colorToPixel :: Color -> Pixel
-colorToPixel Red = 0xff0000
-colorToPixel Green = 0x00ff00
-colorToPixel Blue = 0x0000ff
-colorToPixel Yellow = 0xffff00
-colorToPixel Cyan = 0x00ffff
-colorToPixel Magenta = 0xff00ff
+drawColoredRect f c = drawRect f (Rect (100, 80) (550, 380)) c

@@ -15,5 +15,5 @@ main :: IO ()
 main = do
 	f <- openField "長方形をつくる" [
 		exposureMask, buttonPressMask, buttonReleaseMask, button1MotionMask ]
-	interpretSig (handleMotion f) (drawRect f) (completeRect (100, 80)) >>= print
+	interpretSig (handleMotion f) (flip (drawRect f) Red) (completeRect (100, 80)) >>= print
 	closeField f

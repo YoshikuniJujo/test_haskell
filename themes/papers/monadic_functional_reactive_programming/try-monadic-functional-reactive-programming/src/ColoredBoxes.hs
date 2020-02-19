@@ -108,3 +108,8 @@ defineRect = waitFor firstPoint >>= \case
 		Just r -> pure r
 		Nothing -> error "never occur"
 	Nothing -> error "never occur"
+
+chooseBoxColor :: Rect -> SigG s Box ()
+chooseBoxColor r = () <$ always Box <^> wiggleRect r <^> cycleColor
+
+data Box = Box Rect Color deriving Show
