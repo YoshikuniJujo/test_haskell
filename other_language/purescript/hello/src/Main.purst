@@ -1,0 +1,14 @@
+module Main where
+
+import Prelude
+import Control.Monad.Indexed.Qualified as Ix
+import Effect (Effect)
+import Hyper.Node.Server
+import Hyper.Response
+import Hyper.Status
+
+main :: Effect Unit
+main = runServer defaultOptionsWithLogging {} Ix.do
+	writeStatus statusOK
+	closeHeaders
+	respond "Hello, Hyper!"
