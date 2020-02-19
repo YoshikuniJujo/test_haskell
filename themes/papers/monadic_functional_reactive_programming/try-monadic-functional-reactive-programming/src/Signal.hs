@@ -4,7 +4,7 @@
 module Signal (
 	Sig, ISig, interpretSig,
 	waitFor, emit, repeat, map, scanl, find,
-	at, until, cur, always, (<^>), indexBy) where
+	at, until, cur, always, (<^>), indexBy, spawn, parList ) where
 
 import Control.Arrow ((***))
 import Prelude hiding (repeat, map, scanl, break, until, tail)
@@ -126,6 +126,27 @@ iindexBy :: (Ord e, Update (ISig s e a l) (ISig s e b r)) => ISig s e a l -> Sig
 l `iindexBy` (Sig r) = waitFor ( ires $ l `iuntil` r) >>= \case
 	(hl :| tl, Pure (_ :| tr)) -> emit hl >> (hl :| tl) `iindexBy` tr
 	_ -> pure ()
+
+spawn :: Sig s e a x -> Sig s e (ISig s e a x) ()
+spawn (Sig l) = repeat l
+
+parList :: Ord e => Sig s e (ISig s e a x) () -> Sig s e [a] ()
+parList x = emitAll $ iparList x
+
+iparList :: Ord e => Sig s e (ISig s e a l) r -> ISig s e [a] ()
+iparList l = () <$ rl ([] :| hold) l
+	where
+	rl t (Sig es) = do
+		(t', es') <- t `iuntil` es
+		case es' of
+			Pure (e :| es'') -> rl (e `cons` t') es''
+			_ -> t'
+
+cons :: Ord e => ISig s e a l -> ISig s e [a] r -> ISig s e [a] ()
+h `cons` t = () <$ do
+	(h', t') <- uncurry (:) `imap` pairs h t
+	_ <- (: []) `imap` h'
+	t'
 
 instance Functor (Sig s e a) where
 	f `fmap` Sig l = Sig $ (f <$>) <$> l

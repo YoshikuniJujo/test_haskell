@@ -33,3 +33,17 @@ colorToPixel Magenta = 0xff00ff
 
 drawBox :: Field -> Box -> IO ()
 drawBox f (Box rct clr) = drawRect f rct clr
+
+drawBoxes :: Field -> [Box] -> IO ()
+drawBoxes f = (clearField f >>) . (>> flushField f) . mapM_ (drawBox' f) . reverse
+
+drawRect' :: Field -> Rect -> Color -> IO ()
+drawRect' f rct clr = do
+	fillRect f (colorToPixel clr) l u w h
+	where
+	(l_, u_, w_, h_) = leftupAndSize rct
+	[l, u] = fromIntegral <$> [l_, u_]
+	[w, h] = fromIntegral <$> [w_, h_]
+
+drawBox' :: Field -> Box -> IO ()
+drawBox' f (Box rct clr) = drawRect' f rct clr

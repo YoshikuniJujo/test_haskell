@@ -122,3 +122,9 @@ box = () <$ do
 	r <- (`Box` head colors) `map` defineRect
 	chooseBoxColor r
 	waitFor $ drClickOn r
+
+newBoxes :: SigG s (ISigG s Box ()) ()
+newBoxes = spawn box
+
+boxes :: SigG s [Box] ()
+boxes = parList newBoxes
