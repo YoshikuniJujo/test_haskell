@@ -6,7 +6,7 @@ module Handlers where
 import Control.Applicative
 import Control.Monad.State
 import Data.Maybe
-import Data.List
+import Data.List (find)
 import Data.Set
 import Data.Time
 import System.Exit
@@ -71,6 +71,17 @@ handleDelta dt f r = do
 					maybe (handleDelta dt f r)
 						(pure . fromList . (MouseMove (Occurred (x, y)) :) . (: []) . MouseDown
 							. Occurred . (: [])) $ mouseButton bn
+				BtnEvent {
+					buttonNumber = bn,
+					pressOrRelease = Release,
+					position = (x, y) } -> do
+					maybe (handleDelta dt f r)
+						(pure . fromList . (MouseMove (Occurred (x, y)) :) . (: []) . MouseUp
+							. Occurred . (: [])) $ mouseButton bn
+				BtnEvent {
+					buttonNumber = ButtonX,
+					pressOrRelease = Move,
+					position = (x, y) } -> pure . (`insert` makeTimeObs r (n `diffUTCTime` t)) . MouseMove $ Occurred (x, y)
 				_ -> handleDelta dt f r
 			| otherwise -> liftIO (putStrLn $ "event occur: " ++ show es) >> handleDelta dt f r
 	where time = getWait r
