@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Signal (
@@ -68,17 +68,17 @@ icur :: ISig s e a b -> Either a b
 icur (h :| _) = Left h
 icur (End x) = Right x
 
-at :: Ord e => Sig s e a y -> React s e b -> React s e (Maybe a)
+at :: (Ord e, Update (ISig s e a y) b) => Sig s e a y -> React s e b -> React s e (Maybe a)
 l `at` a = cur . fst <$> res (l `until` a)
 
-until :: Ord e => Sig s e a b -> React s e c -> Sig s e a (Sig s e a b, React s e c)
+until :: (Ord e, Update (ISig s e a b) c) => Sig s e a b -> React s e c -> Sig s e a (Sig s e a b, React s e c)
 until (Sig l) a = waitFor (first l a) >>= un where
 	un (Pure l', a') = do
 		(l'', a'') <- emitAll $ l' `iuntil` a'
 		pure (emitAll l'', a'')
 	un (l', a') = pure (Sig l', a')
 
-iuntil :: Ord e => ISig s e a b -> React s e c -> ISig s e a (ISig s e a b, React s e c)
+iuntil :: (Ord e, Update (ISig s e a b) c) => ISig s e a b -> React s e c -> ISig s e a (ISig s e a b, React s e c)
 End l `iuntil` a = End (End l, a)
 (h :| Sig t) `iuntil` a = h :| Sig (cont <$> first t a)
 	where
@@ -97,13 +97,14 @@ l <^> r = do
 	(l', r') <- waitFor (bothStart l r)
 	emitAll $ (\(f, a) -> f a) `imap` ((emitAll *** emitAll) <$> pairs l' r')
 
-bothStart :: Ord e => Sig s e a r -> Sig s e b l -> React s e (ISig s e a r, ISig s e b l)
+bothStart :: (Ord e, Update (ISig s e a r) (ISig s e b l), Update (ISig s e b l) (ISig s e a r)) =>
+	Sig s e a r -> Sig s e b l -> React s e (ISig s e a r, ISig s e b l)
 bothStart l (Sig r) = do
 	(Sig l', r') <- res $ l `until` r
 	(Sig r'', l'') <- res $ Sig r' `until` l'
 	pure (done' l'', done' r'')
 
-pairs :: Ord e => ISig s e a l -> ISig s e b r -> ISig s e (a, b) (ISig s e a l, ISig s e b r)
+pairs :: (Ord e, Update (ISig s e a l) (ISig s e b r)) => ISig s e a l -> ISig s e b r -> ISig s e (a, b) (ISig s e a l, ISig s e b r)
 pairs (End a) b = End (End a, b)
 pairs a (End b) = End (a, End b)
 pairs (hl :| Sig tl) (hr :| Sig tr) = (hl, hr) :| tail
@@ -112,7 +113,7 @@ pairs (hl :| Sig tl) (hr :| Sig tr) = (hl, hr) :| tail
 	cont (tl', tr') = pairs (lup hl tl') (lup hr tr')
 	lup _ (Pure l) = l; lup h t = h :| Sig t
 
-indexBy :: Ord e => Sig s e a l -> Sig s e b r -> Sig s e a ()
+indexBy :: (Ord e, Update (ISig s e a l) (ISig s e b r)) => Sig s e a l -> Sig s e b r -> Sig s e a ()
 l `indexBy` Sig r = do
 	(Sig l', r') <- waitFor . res $ l `until` r
 	case (l', r') of
@@ -121,7 +122,7 @@ l `indexBy` Sig r = do
 		(l'', Pure (_ :| r'')) -> Sig l'' `indexBy` r''
 		(_, _ :>>= _) -> error "never occur"
 
-iindexBy :: Ord e => ISig s e a l -> Sig s e b r -> Sig s e a ()
+iindexBy :: (Ord e, Update (ISig s e a l) (ISig s e b r)) => ISig s e a l -> Sig s e b r -> Sig s e a ()
 l `iindexBy` (Sig r) = waitFor ( ires $ l `iuntil` r) >>= \case
 	(hl :| tl, Pure (_ :| tr)) -> emit hl >> (hl :| tl) `iindexBy` tr
 	_ -> pure ()
