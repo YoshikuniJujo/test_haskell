@@ -3,7 +3,8 @@
 
 module Signal (
 	Sig, ISig, interpretSig,
-	waitFor, emit, repeat, map, scanl, find, at, until, cur, always, (<^>)) where
+	waitFor, emit, repeat, map, scanl, find,
+	at, until, cur, always, (<^>), indexBy) where
 
 import Control.Arrow ((***))
 import Prelude hiding (repeat, map, scanl, break, until, tail)
@@ -110,6 +111,20 @@ pairs (hl :| Sig tl) (hr :| Sig tr) = (hl, hr) :| tail
 	tail = Sig $ cont <$> tl `first` tr
 	cont (tl', tr') = pairs (lup hl tl') (lup hr tr')
 	lup _ (Pure l) = l; lup h t = h :| Sig t
+
+indexBy :: Ord e => Sig s e a l -> Sig s e b r -> Sig s e a ()
+l `indexBy` Sig r = do
+	(Sig l', r') <- waitFor . res $ l `until` r
+	case (l', r') of
+		(_, Pure (End _)) -> pure ()
+		(Pure l'', r'') -> l'' `iindexBy` Sig r''
+		(l'', Pure (_ :| r'')) -> Sig l'' `indexBy` r''
+		(_, _ :>>= _) -> error "never occur"
+
+iindexBy :: Ord e => ISig s e a l -> Sig s e b r -> Sig s e a ()
+l `iindexBy` (Sig r) = waitFor ( ires $ l `iuntil` r) >>= \case
+	(hl :| tl, Pure (_ :| tr)) -> emit hl >> (hl :| tl) `iindexBy` tr
+	_ -> pure ()
 
 instance Functor (Sig s e a) where
 	f `fmap` Sig l = Sig $ (f <$>) <$> l
