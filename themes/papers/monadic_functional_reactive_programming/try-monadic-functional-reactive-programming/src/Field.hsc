@@ -9,7 +9,8 @@ module Field (
 		buttonPressMask, buttonReleaseMask,
 		pointerMotionMask, button1MotionMask,
 	Event(..), withNextEvent, withNextEventTimeout,
-	Position, Dimension, Pixel, fillRect, clearField, flushField ) where
+	Position, Dimension, Pixel, fillRect, drawStr, clearField, flushField
+	) where
 
 import Control.Monad
 import Control.Monad.Trans.Control
@@ -101,6 +102,10 @@ fillRect :: Field ->
 	Pixel -> Position -> Position -> Dimension -> Dimension -> IO ()
 fillRect Field { display = dpy, pixmap = win, graphicsContext = gc } c x y w h =
 	setForeground dpy gc c >> fillRectangle dpy win gc x y w h
+
+drawStr :: Field -> Pixel -> Position -> Position -> String -> IO ()
+drawStr Field { display = dpy, pixmap = win, graphicsContext = gc } c x y s =
+	setForeground dpy gc c >> drawString dpy win gc x y s
 
 clearField :: Field -> IO ()
 clearField Field { display = dpy, pixmap = win, graphicsContext = gc, screenWidth = w, screenHeight = h } =
