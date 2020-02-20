@@ -1,6 +1,10 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
+
+import Data.String
+import Network.HTTP.Simple
 
 import qualified Data.Set as S
 
@@ -9,7 +13,6 @@ import React
 import Event
 
 import Followbox
-import Check.Followbox.GetUsers
 
 main :: IO ()
 main = interpretSig handle print prodUser >>= print
@@ -30,7 +33,7 @@ handle evs
 handle1 :: FollowboxEvent -> IO (EvOccs FollowboxEvent)
 handle1 (Http uri _) = S.singleton . Http uri . Occurred <$> do
 	putStrLn "handle1: Http"
-	getUsers
+	getResponseBody <$> httpLBS (setRequestHeader "User-Agent" ["Yoshio"] (fromString uri))
 handle1 _ = error "never occur"
 
 isHttp :: FollowboxEvent -> Bool

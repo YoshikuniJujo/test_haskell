@@ -3,6 +3,7 @@
 module Followbox where
 
 import Control.Monad
+import System.Random
 
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as LBS
@@ -30,12 +31,12 @@ data ServeNeed = Serve | Need deriving (Show, Eq, Ord)
 type ReactF s r = React s FollowboxEvent r
 type SigF s a r = Sig s FollowboxEvent a r
 
-apiUsers :: Uri
-apiUsers = "https://api.github.com/users"
+apiUsers :: Int -> Uri
+apiUsers s = "https://api.github.com/users?since=" ++ show s
 
-getUsersByteString :: ReactF s LBS.ByteString
-getUsersByteString = pick <$> exper (S.singleton $ Http apiUsers Request)
-	where pick evs = case S.elems $ S.filter (== Http apiUsers Request) evs of
+getUsersByteString :: Int -> ReactF s LBS.ByteString
+getUsersByteString s = pick <$> exper (S.singleton $ Http (apiUsers s) Request)
+	where pick evs = case S.elems $ S.filter (== Http (apiUsers s) Request) evs of
 		[Http _ (Occurred bs)] -> bs
 		es -> error $ "never occur: " ++ show es ++ " : " ++ show evs
 
@@ -57,21 +58,22 @@ getProd = pick <$> exper (S.singleton Prod)
 		[Prod] -> ()
 		es -> error $ "never occur: " ++ show es ++ " : " ++ show evs
 
-getUsersJsonReact :: ReactF s [A.Object]
-getUsersJsonReact = (\(Right r) -> r) . decodeUsers <$> getUsersByteString
+getUsersJsonReact :: Int -> ReactF s [A.Object]
+getUsersJsonReact s = (\(Right r) -> r) . decodeUsers <$> getUsersByteString s
 
-getUsersJson :: SigF s A.Object ()
-getUsersJson = do
-	us <- waitFor getUsersJsonReact
+getUsersJson :: [Int] -> SigF s A.Object ()
+getUsersJson (s : ss) = do
+	us <- waitFor $ getUsersJsonReact s
 	go $ take 5 us
 	where
-	go [] = getUsersJson
+	go [] = getUsersJson ss
 	go (u : us) = do
 		emit u
 		waitFor getServeUser
 		trace "getUsersJson: after emit" $ pure ()
 		go us
+getUsersJson [] = error "getUsersJson: an argument should not be empty"
 
 prodUser :: SigF s A.Object ()
-prodUser = void $ always const <^> getUsersJson <^> loop
+prodUser = void $ always const <^> getUsersJson (randomRs (0, 499) (mkStdGen 8)) <^> loop
 	where loop = emit () >> waitFor getProd >> waitFor getNeedUser >> loop

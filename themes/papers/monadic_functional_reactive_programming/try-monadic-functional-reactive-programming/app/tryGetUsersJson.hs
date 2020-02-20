@@ -11,7 +11,7 @@ import Followbox
 import Check.Followbox.GetUsers
 
 main :: IO ()
-main = interpret handle getUsersJsonReact >>= print
+main = interpret handle (getUsersJsonReact 123) >>= print
 
 handle :: EvReqs FollowboxEvent -> IO (EvOccs FollowboxEvent)
 handle evs = handle1 $ S.findMin evs

@@ -32,6 +32,7 @@ dependencies:
 - utf8-string
 - http-conduit
 - aeson
+- random
 
 library:
   source-dirs: src
