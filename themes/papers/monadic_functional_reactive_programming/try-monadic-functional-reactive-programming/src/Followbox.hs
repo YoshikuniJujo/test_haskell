@@ -66,7 +66,7 @@ getUsersJson (s : ss) = do
 	us <- waitFor $ getUsersJsonReact s
 	go $ take 5 us
 	where
-	go [] = getUsersJson ss
+	go [] = waitFor getServeUser >> getUsersJson ss
 	go (u : us) = do
 		emit u
 		waitFor getServeUser
