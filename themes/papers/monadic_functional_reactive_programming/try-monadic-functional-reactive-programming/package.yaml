@@ -29,6 +29,7 @@ dependencies:
 - containers
 - time
 - X11
+- X11-xft
 - utf8-string
 - http-conduit
 - aeson

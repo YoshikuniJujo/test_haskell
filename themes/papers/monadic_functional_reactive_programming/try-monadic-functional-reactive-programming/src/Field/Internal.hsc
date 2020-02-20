@@ -3,8 +3,8 @@
 
 #include <X11/Xlib.h>
 
-module Field (
-	Field, openField, isDeleteEvent, destroyField, closeField,
+module Field.Internal (
+	Field(..), openField, isDeleteEvent, destroyField, closeField,
 	Mask, exposureMask, keyPressMask,
 		buttonPressMask, buttonReleaseMask,
 		pointerMotionMask, button1MotionMask,
