@@ -7,6 +7,7 @@ import Data.Time
 
 import Signal
 import React
+import Event
 
 type SigG s = Sig s GuiEv
 type ISigG s = ISig s GuiEv
@@ -19,15 +20,6 @@ data GuiEv
 	| DeltaTime (Event Time)
 	| TryWait Time (Event Time)
 	deriving (Eq, Show, Ord)
-
-data Event a = Request | Occurred a deriving Show
-
-instance Ord a => Eq (Event a) where a == b = a `compare` b == EQ
-
-instance Ord a => Ord (Event a) where
-	Occurred x `compare` Occurred y = x `compare` y
-	Request `compare` _ = EQ
-	_ `compare` Request = EQ
 
 type Point = (CInt, CInt)
 data MouseBtn = MLeft | MMiddle | MRight deriving (Show, Eq, Ord)
