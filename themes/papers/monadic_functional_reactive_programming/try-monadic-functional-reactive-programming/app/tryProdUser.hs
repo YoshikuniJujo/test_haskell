@@ -16,9 +16,11 @@ main = interpretSig handle print prodUser >>= print
 
 handle :: EvReqs FollowboxEvent -> IO (EvOccs FollowboxEvent)
 handle evs
-	| Prod `S.member` evs = S.singleton Prod <$ do
+	| Prod `S.member` evs = do
 		putStrLn $ "handle evs: Prod " ++ show evs
-		getLine
+		if S.filter isHttp evs == S.empty
+			then getLine >> pure (S.singleton Prod)
+			else handle1 . S.findMin $ S.filter isHttp evs
 	| ServeUser `S.member` evs, NeedUser `S.member` evs = do
 		putStrLn $ "handle evs: ServeUser and NeedUser " ++ show evs
 		ht <- if S.filter isHttp evs == S.empty then pure S.empty else handle1 . S.findMin $ S.filter isHttp evs

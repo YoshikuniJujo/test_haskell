@@ -3,7 +3,6 @@
 module Followbox where
 
 import Control.Monad
-import Data.Maybe
 
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as LBS
@@ -68,12 +67,11 @@ getUsersJson = do
 	where
 	go [] = getUsersJson
 	go (u : us) = do
-		waitFor getServeUser
 		emit u
+		waitFor getServeUser
 		trace "getUsersJson: after emit" $ pure ()
 		go us
 
 prodUser :: SigF s A.Object ()
 prodUser = void $ always const <^> getUsersJson <^> loop
-	where
-	loop = emit () >> waitFor getProd >> waitFor getNeedUser >> loop
+	where loop = emit () >> waitFor getProd >> waitFor getNeedUser >> loop
