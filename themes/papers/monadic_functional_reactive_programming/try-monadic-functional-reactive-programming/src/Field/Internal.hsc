@@ -18,8 +18,11 @@ import Data.Bits
 import Data.Word
 import Data.Time
 import System.Posix.Types
+import Numeric
 import Graphics.X11
 import Graphics.X11.Xlib.Extras
+import Graphics.X11.Xft
+import Graphics.X11.Xrender
 
 import TextLike
 import Select
@@ -103,9 +106,19 @@ fillRect :: Field ->
 fillRect Field { display = dpy, pixmap = win, graphicsContext = gc } c x y w h =
 	setForeground dpy gc c >> fillRectangle dpy win gc x y w h
 
-drawStr :: Field -> Pixel -> Position -> Position -> String -> IO ()
-drawStr Field { display = dpy, pixmap = win, graphicsContext = gc } c x y s =
-	setForeground dpy gc c >> drawString dpy win gc x y s
+drawStr :: Field -> String -> Double -> Position -> Position -> String -> IO ()
+drawStr Field { display = dpy, pixmap = win, graphicsContext = gc } fnt sz x y str = do
+	let	vsl = defaultVisual dpy $ defaultScreen dpy
+		cm = defaultColormap dpy $ defaultScreen dpy
+	draw <- xftDrawCreate dpy win vsl cm
+	font <- xftFontOpen dpy (defaultScreenOfDisplay dpy) $
+		fnt ++ "-" ++ showFFloat (Just 0) sz ""
+	withXftColorValue dpy vsl cm XRenderColor {
+		xrendercolor_red = 0xffff,
+		xrendercolor_blue = 0xffff,
+		xrendercolor_green = 0xffff,
+		xrendercolor_alpha = 0xffff } \c ->
+		xftDrawString draw c font x y str
 
 clearField :: Field -> IO ()
 clearField Field { display = dpy, pixmap = win, graphicsContext = gc, screenWidth = w, screenHeight = h } =
