@@ -76,10 +76,12 @@ view f (Just o) = do
 	print $ HM.lookup "login" o
 	print $ HM.lookup "avatar_url" o
 	print $ HM.lookup "html_url" o
-	case HM.lookup "login" o of
-		Just (String li) -> do
+	case (HM.lookup "login" o, HM.lookup "avatar_url" o, HM.lookup "html_url" o) of
+		(Just (String li), Just (String au), Just (String hu)) -> do
 			clearField f
-			drawStr f "sans" 50 100 100 $ T.unpack li
+			drawStr f "sans" 80 100 100 $ T.unpack li
+			drawStr f "sans" 20 100 130 $ T.unpack au
+			drawStr f "sans" 20 100 160 $ T.unpack hu
 			flushField f
-		Nothing -> pure ()
+		(Nothing, Nothing, Nothing) -> pure ()
 view _ Nothing = pure ()
