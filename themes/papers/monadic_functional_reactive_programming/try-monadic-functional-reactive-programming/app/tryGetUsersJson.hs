@@ -7,7 +7,7 @@ import qualified Data.Set as S
 import React
 import Event
 
-import Followbox
+import FollowboxTrash
 import Check.Followbox.GetUsers
 
 main :: IO ()

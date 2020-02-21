@@ -4,12 +4,14 @@
 module Check.Followbox.GetUsers (getUsers, decodeUsers) where
 
 import Network.HTTP.Simple
-import Data.Aeson
 
 import qualified Data.ByteString.Lazy as LBS
+import qualified Data.Aeson as A
+
+import AesonObject
 
 getUsers :: IO LBS.ByteString
 getUsers = getResponseBody <$> httpLBS (setRequestHeader "User-Agent" ["Yoshio"] "https://api.github.com/users")
 
 decodeUsers :: LBS.ByteString -> Either String [Object]
-decodeUsers = eitherDecode
+decodeUsers = ((copyAesonObject <$>) <$>) . A.eitherDecode

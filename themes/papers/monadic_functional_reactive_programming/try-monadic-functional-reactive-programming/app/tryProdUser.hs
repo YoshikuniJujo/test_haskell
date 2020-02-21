@@ -12,7 +12,7 @@ import Signal
 import React
 import Event
 
-import Followbox
+import FollowboxTrash
 
 main :: IO ()
 main = interpretSig handle print prodUser >>= print
