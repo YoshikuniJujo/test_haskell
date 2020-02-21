@@ -10,6 +10,8 @@ import System.Exit
 import Network.HTTP.Simple
 
 import qualified Data.Set as S
+import qualified Data.HashMap.Strict as HM
+import qualified Data.Text as T
 
 import Signal
 import React hiding (first)
@@ -23,7 +25,7 @@ import AesonObject
 main :: IO ()
 main = do
 	f <- openField ("GitHubのユーザを表示するよ" :: String) [exposureMask, buttonPressMask]
-	interpretSig (handle f) (liftIO . print) tryUsers `runStateT` ([], []) >>= print
+	interpretSig (handle f) (liftIO . view f) tryUsers `runStateT` ([], []) >>= print
 	closeField f
 
 type FollowboxIO = StateT ([Int], [Object]) IO
@@ -67,3 +69,17 @@ handleEvent f evs = \case
 		Just _ -> pure $ S.singleton Prod
 		Nothing	| isDeleteEvent f ev -> liftIO (destroyField f) >> handle f evs
 			| otherwise -> liftIO (print ev) >> handle f evs
+
+view :: Field -> Maybe Object -> IO ()
+view f (Just o) = do
+	print o
+	print $ HM.lookup "login" o
+	print $ HM.lookup "avatar_url" o
+	print $ HM.lookup "html_url" o
+	case HM.lookup "login" o of
+		Just (String li) -> do
+			clearField f
+			drawStr f "sans" 50 100 100 $ T.unpack li
+			flushField f
+		Nothing -> pure ()
+view _ Nothing = pure ()

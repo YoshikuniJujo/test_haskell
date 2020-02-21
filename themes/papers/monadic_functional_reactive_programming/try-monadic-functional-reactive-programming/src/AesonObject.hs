@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module AesonObject (Value, Object, copyAesonValue, copyAesonObject) where
+module AesonObject (Value(..), Object, copyAesonValue, copyAesonObject) where
 
 import Data.Vector
 import Data.HashMap.Strict
