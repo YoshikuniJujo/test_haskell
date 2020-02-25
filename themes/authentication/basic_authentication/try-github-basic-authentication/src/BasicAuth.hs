@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Lib where
+module BasicAuth where
 
 import Network.HTTP.Simple
 
