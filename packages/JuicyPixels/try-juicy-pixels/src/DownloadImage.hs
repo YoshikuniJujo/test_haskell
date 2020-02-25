@@ -1,4 +1,4 @@
-module Lib where
+module DownloadImage (downloadImage) where
 
 import Codec.Picture
 import Network.HTTP.Simple
