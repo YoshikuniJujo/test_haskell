@@ -11,6 +11,7 @@ import Network.HTTP.Simple
 
 import qualified Data.Set as S
 import qualified Data.HashMap.Strict as HM
+import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 
 import Signal
@@ -21,6 +22,7 @@ import ButtonEvent
 
 import Followbox
 import AesonObject
+import BasicAuth
 
 main :: IO ()
 main = do
@@ -42,11 +44,18 @@ getObjects = snd <$> get
 putObjects :: [Object] -> FollowboxIO ()
 putObjects os = modify (const os `second`)
 
+http :: String -> IO LBS.ByteString
+http u = do
+	rsp <- httpBasicAuth "YoshikuniJujo" "github_token.txt"
+		. setRequestHeader "User-Agent" ["Yoshio"] $ fromString u
+	print $ getResponseHeader "X-RateLimit-Remaining" rsp
+	pure $ getResponseBody rsp
+
 handle :: Field -> EvReqs FollowboxEvent -> FollowboxIO (EvOccs FollowboxEvent)
 handle f evs
 	| Prod `S.member` evs = withNextEvent f $ handleEvent f evs
-	| Just (Http uri _) <- S.lookupMin $ S.filter isHttp evs = S.singleton . Http uri . Occurred .
-		getResponseBody <$> liftIO (httpLBS (setRequestHeader "User-Agent" ["Yoshio"] (fromString uri)))
+	| Just (Http uri _) <- S.lookupMin $ S.filter isHttp evs =
+		liftIO $ S.singleton . Http uri . Occurred <$> http uri
 	| Just (StoreRandoms (Cause rs)) <- S.lookupMin $ S.filter (== StoreRandoms Response) evs =
 		S.singleton (StoreRandoms Response) <$ putRandoms rs
 	| Just (LoadRandoms Request) <- S.lookupMin $ S.filter (== LoadRandoms Request) evs =
