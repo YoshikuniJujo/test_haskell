@@ -1,0 +1,4 @@
+.stack-work/
+try-github-basic-authentication.cabal
+*~
+github_token.txt
