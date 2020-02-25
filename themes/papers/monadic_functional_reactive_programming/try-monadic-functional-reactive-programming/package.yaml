@@ -37,6 +37,7 @@ dependencies:
 - unordered-containers
 - scientific
 - random
+- JuicyPixels
 
 library:
   source-dirs: src

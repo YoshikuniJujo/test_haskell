@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Check.Field.DrawImage where
+module Check.Field.DrawImage (createImageSimple, putImage, sample) where
 
 import Foreign.Ptr
 import Foreign.C.Types
@@ -16,12 +16,13 @@ createImage Field { display = dpy } depth format offset dat width height bitmap_
 	where
 	vis = X.defaultVisual dpy (X.defaultScreen dpy)
 
-createImageSimple :: Field -> [CChar] -> Dimension -> Dimension -> IO X.Image
+createImageSimple :: Field -> Ptr CChar -> Dimension -> Dimension -> IO X.Image
 createImageSimple f@Field { display = dpy } dat width height =
-	withArray dat \d -> createImage f 24 X.zPixmap 0 d width height (X.bitmapUnit dpy) (4 * fromIntegral width)
+	createImage f (defaultDepth f) X.zPixmap 0 dat width height (X.bitmapUnit dpy) 0
 
-createTwoColorImage :: Field -> [CChar] -> Dimension -> Dimension -> IO X.Image
-createTwoColorImage f dat width height = withArray dat \d  -> createImage f 1 X.xyBitmap 0 d width height 8 0
+createImageSimple' :: Field -> [CChar] -> Dimension -> Dimension -> IO X.Image
+createImageSimple' f@Field { display = dpy } dat width height =
+	withArray dat \d -> createImage f (defaultDepth f) X.zPixmap 0 d width height (X.bitmapUnit dpy) 0
 
 putImage :: Field -> X.Image -> Position -> Position -> Dimension -> Dimension -> IO ()
 putImage Field { display = dpy, pixmap = win, graphicsContext = gc } img x y w h =
@@ -33,7 +34,7 @@ defaultDepth Field { display = dpy } = X.defaultDepth dpy (X.defaultScreen dpy)
 sample :: IO Field
 sample = do
 	f <- openField "foo" []
-	img <- createImageSimple f (replicate 40000 0x7f) 100 100
+	img <- createImageSimple' f (replicate 40000 0x7f) 100 100
 	putImage f img 100 100 100 100
 	flushField f
 	pure f
