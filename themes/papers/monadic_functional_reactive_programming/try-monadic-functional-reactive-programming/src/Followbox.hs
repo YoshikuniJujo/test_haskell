@@ -6,9 +6,11 @@ module Followbox where
 import System.Random
 
 import qualified Data.Set as S
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 import qualified Data.HashMap.Strict as HM
+import qualified Codec.Picture as JP
 
 import Signal
 import React
@@ -30,6 +32,17 @@ type ReactF s r = React s FollowboxEvent r
 type SigF s a r = Sig s FollowboxEvent a r
 
 type Uri = String
+
+type View = [View1]
+
+data View1
+	= Text FontSize Position BS.ByteString
+	| Image Position (JP.Image JP.PixelRGBA8)
+	| Line LineWeight Position Position
+
+type FontSize = Int
+type LineWeight = Int
+type Position = (Int, Int)
 
 httpGet :: Uri -> ReactF s LBS.ByteString
 httpGet u = pick <$> exper (S.singleton $ Http u Request)
@@ -97,6 +110,40 @@ getUser1 = do
 			[] -> error "no random numbers"
 		o : os -> Just o <$ storeJsons os
 
+getUser1' :: ReactF s (Either String (T.Text, JP.Image JP.PixelRGBA8, T.Text))
+getUser1' = loadJsons >>= \case
+	[] -> loadRandoms >>= \case
+		r : rs -> do
+			storeRandoms rs
+			getUsersJson r >>= \case
+				Right (o : os) -> nameAndImageFromObject o <* storeJsons (take 4 os)
+				Right [] -> pure $ Left "no GitHub users"
+				Left s -> pure $ Left s
+		[] -> error "no random numbers"
+	o : os -> nameAndImageFromObject o <* storeJsons os
+
+nameAndImageFromObject :: Object -> ReactF s (Either String (T.Text, JP.Image JP.PixelRGBA8, T.Text))
+nameAndImageFromObject o = do
+	img <- avatorFromObject o
+	pure $ (,,)
+		<$> maybe (Left "no login name") Right (loginNameFromObject o)
+		<*> img
+		<*> maybe (Left "no html url") Right (htmlUrlFromObject o)
+
+loginNameFromObject, htmlUrlFromObject :: Object -> Maybe T.Text
+loginNameFromObject o = case HM.lookup "login" o of
+	Just (String li) -> Just li
+	_ -> Nothing
+
+htmlUrlFromObject o = case HM.lookup "html_url" o of
+	Just (String li) -> Just li
+	_ -> Nothing
+
+avatorFromObject :: Object -> ReactF s (Either String (JP.Image JP.PixelRGBA8))
+avatorFromObject o = case HM.lookup "avatar_url" o of
+	Just (String au) -> ((JP.convertRGBA8 <$>) . JP.decodeImage . LBS.toStrict) <$> httpGet (T.unpack au)
+	_ -> pure $ Left "no avatar_url"
+
 apiUsers :: Int -> Uri
 apiUsers s = "https://api.github.com/users?since=" ++ show s
 
@@ -115,3 +162,18 @@ tryUsers = waitFor (storeRandoms (randomRs (0, 499) (mkStdGen 8))) >> tu
 					Just (String hu) -> browse $ T.unpack hu
 					_ -> pure ()
 				loop u
+
+nameAndImage :: SigF s (Either String (T.Text, JP.Image JP.PixelRGBA8)) ()
+nameAndImage = waitFor (storeRandoms (randomRs (0, 499) (mkStdGen 8))) >> tu
+	where
+	tu = waitFor getUser1' >>= \case
+		Right (li, av, hu) -> do
+			emit $ Right (li, av)
+			waitFor . loop $ T.unpack hu
+			tu
+		Left em -> emit $ Left em
+	loop hu = do
+		(a, b) <- prod `first` rightClick
+		case (done a, done b) of
+			(Just (), _) -> pure ()
+			_ -> browse hu >> loop hu
