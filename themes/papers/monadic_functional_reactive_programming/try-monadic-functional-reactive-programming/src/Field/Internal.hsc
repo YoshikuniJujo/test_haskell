@@ -9,8 +9,10 @@ module Field.Internal (
 		buttonPressMask, buttonReleaseMask,
 		pointerMotionMask, button1MotionMask,
 	Event(..), withNextEvent, withNextEventTimeout,
-	Position, Dimension, Pixel, fillRect, drawStr, clearField, flushField
+	Position, Dimension, Pixel, Field.Internal.drawLine, fillRect, drawStr, clearField, flushField
 	) where
+
+import Foreign.C.Types
 
 import Control.Monad
 import Control.Monad.Trans.Control
@@ -19,7 +21,7 @@ import Data.Word
 import Data.Time
 import System.Posix.Types
 import Numeric
-import Graphics.X11
+import Graphics.X11 as X
 import Graphics.X11.Xlib.Extras
 import Graphics.X11.Xft
 import Graphics.X11.Xrender
@@ -119,6 +121,12 @@ drawStr Field { display = dpy, pixmap = win, graphicsContext = gc } fnt sz x y s
 		xrendercolor_green = 0xffff,
 		xrendercolor_alpha = 0xffff } \c ->
 		xftDrawString draw c font x y str
+
+drawLine :: Field -> CInt -> Position -> Position -> Position -> Position -> IO ()
+drawLine Field { display = dpy, pixmap = win, graphicsContext = gc } lw x1 y1 x2 y2 = do
+	setLineAttributes dpy gc lw lineSolid capRound joinRound
+	X.drawLine dpy win gc x1 y1 x2 y2
+
 
 clearField :: Field -> IO ()
 clearField Field { display = dpy, pixmap = win, graphicsContext = gc, screenWidth = w, screenHeight = h } =

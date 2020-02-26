@@ -7,7 +7,7 @@ module Field (
 		buttonPressMask, buttonReleaseMask,
 		pointerMotionMask, button1MotionMask,
 	Event(..), withNextEvent, withNextEventTimeout,
-	Position, Dimension, Pixel, fillRect, drawStr, clearField, flushField
+	Position, Dimension, Pixel, drawLine, fillRect, drawStr, clearField, flushField
 	) where
 
 import Field.Internal
