@@ -91,6 +91,6 @@ view :: Field -> Either String (T.Text, JP.Image JP.PixelRGBA8) -> IO ()
 view f (Right (nm, avt)) = do
 	clearField f
 	drawStr f "sans" 80 170 135 $ T.unpack nm
-	drawImage f (scaleBilinear 100 100 avt) 50 50
+	drawImage f avt 50 50
 	flushField f
 view _ (Left em) = putStrLn $ "ERROR: " ++ em

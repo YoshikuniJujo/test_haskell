@@ -3,6 +3,7 @@
 
 module Followbox where
 
+import Codec.Picture.Extra
 import System.Random
 
 import qualified Data.Set as S
@@ -140,7 +141,7 @@ htmlUrlFromObject o = case HM.lookup "html_url" o of
 	_ -> Nothing
 
 avatorFromObject :: Object -> ReactF s (Either String (JP.Image JP.PixelRGBA8))
-avatorFromObject o = case HM.lookup "avatar_url" o of
+avatorFromObject o = (scaleBilinear 100 100 <$>) <$> case HM.lookup "avatar_url" o of
 	Just (String au) -> ((JP.convertRGBA8 <$>) . JP.decodeImage . LBS.toStrict) <$> httpGet (T.unpack au)
 	_ -> pure $ Left "no avatar_url"
 
