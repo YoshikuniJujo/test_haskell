@@ -86,8 +86,8 @@ handleEvent f evs = \case
 		Nothing	| isDeleteEvent f ev -> liftIO (destroyField f) >> handle f evs
 			| otherwise -> liftIO (print ev) >> handle f evs
 
-view :: Field -> Either String (T.Text, JP.Image JP.PixelRGBA8) -> IO ()
-view f (Right (nm, avt)) = do
+view :: Field -> Either String ((T.Text, XGlyphInfo), JP.Image JP.PixelRGBA8) -> IO ()
+view f (Right ((nm, _), avt)) = do
 	clearField f
 	drawStr f "sans" 80 170 135 $ T.unpack nm
 	drawImage f avt 50 50

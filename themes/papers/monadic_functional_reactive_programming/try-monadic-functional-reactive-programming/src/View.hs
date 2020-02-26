@@ -31,4 +31,4 @@ view f v = do
 view1 :: F.Field -> View1 -> IO ()
 view1 f (Text fs (x, y) t) = F.drawStr f "sans" fs x y $ T.unpack t
 view1 f (Image (x, y) img) = drawImage f img x y
-view1 f (Line lw (xs, ys) (xe, ye)) = F.drawLine f lw xs ys xe ye
+view1 f (Line lw (xs, ys) (xe, ye)) = F.drawLine f 0xffffff lw xs ys xe ye

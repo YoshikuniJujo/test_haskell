@@ -32,7 +32,20 @@ data FollowboxEvent
 	| RightClick
 	| Move (Event (CInt, CInt))
 	| Browse (Action Uri)
+	| CalcTextExtents (Bidirectional (FontName, FontSize, String) XGlyphInfo)
 	deriving (Show, Eq, Ord)
+
+data XGlyphInfo = XGlyphInfo {
+	xGlyphInfoWidth :: Int,
+	xGlyphInfoHeight :: Int,
+	xGlyphInfoX :: Int,
+	xGlyphInfoY :: Int,
+	xGlyphInfoXOff :: Int,
+	xGlyphInfoYOff :: Int
+	} deriving (Show, Eq, Ord)
+
+type FontName = String
+-- type FontSize = Double
 
 type ReactF s r = React s FollowboxEvent r
 type SigF s a r = Sig s FollowboxEvent a r
@@ -97,6 +110,12 @@ move :: ReactF s (CInt, CInt)
 move = pick <$> exper (S.singleton $ Move Request)
 	where pick evs = case S.elems $ S.filter (== Move Request) evs of
 		[Move (Occurred p)] -> p
+		es -> error $ "never occur: " ++ show es ++ " : " ++ show evs
+
+calcTextExtents :: FontName -> FontSize -> String -> ReactF s XGlyphInfo
+calcTextExtents fn fs str = pick <$> exper (S.singleton $ CalcTextExtents (Action (fn, fs, str)))
+	where pick  evs = case S.elems $ S.filter (== CalcTextExtents Communication) evs of
+		[CalcTextExtents (Event xo)] -> xo
 		es -> error $ "never occur: " ++ show es ++ " : " ++ show evs
 
 getUsersJson :: Int -> ReactF s (Either String [Object])
@@ -170,12 +189,13 @@ tryUsers = waitFor (storeRandoms (randomRs (0, 499) (mkStdGen 8))) >> tu
 					_ -> pure ()
 				loop u
 
-nameAndImage :: CInt -> SigF s (Either String (T.Text, JP.Image JP.PixelRGBA8)) ()
+nameAndImage :: CInt -> SigF s (Either String ((T.Text, XGlyphInfo), JP.Image JP.PixelRGBA8)) ()
 nameAndImage n = waitFor (storeRandoms (randomRs (0, 499) (mkStdGen 8))) >> tu
 	where
 	tu = waitFor getUser1' >>= \case
 		Right (li, av, hu) -> do
-			emit $ Right (li, av)
+			xo <- waitFor $ calcTextExtents "sans" 60 $ T.unpack li
+			emit $ Right ((li, xo), av)
 			waitFor . loop $ T.unpack hu
 			tu
 		Left em -> emit $ Left em
@@ -188,8 +208,18 @@ nameAndImage n = waitFor (storeRandoms (randomRs (0, 499) (mkStdGen 8))) >> tu
 getRect :: CInt -> Rect
 getRect n = Rect (0, 160 * n) (300, 160 * (n + 1))
 
-nameAndImageToView :: (T.Text, JP.Image JP.PixelRGBA8) -> View
-nameAndImageToView (t, i) = [Text 60 (170, 125) t, Image (50, 50) i]
+nameAndImageToView :: ((T.Text, XGlyphInfo), JP.Image JP.PixelRGBA8) -> View
+nameAndImageToView ((t, XGlyphInfo {
+	xGlyphInfoWidth = w,
+	xGlyphInfoHeight = h,
+	xGlyphInfoX = x,
+	xGlyphInfoY = y,
+	xGlyphInfoXOff = xo,
+	xGlyphInfoYOff = yo }), i) = [
+		Text 60 (170, 125) t,
+		Image (50, 50) i,
+		Line 2	(170 - fromIntegral x, 125 + fromIntegral (h - y) + 2)
+			(170 + fromIntegral (w - x), 125 + fromIntegral (h - y) + 2) ]
 
 userView :: SigF s (Either String View) ()
 userView = (nameAndImageToView <$>) `map` nameAndImage 0

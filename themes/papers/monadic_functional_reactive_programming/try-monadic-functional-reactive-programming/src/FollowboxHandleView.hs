@@ -10,6 +10,8 @@ import System.Exit
 import System.Process
 import Network.HTTP.Simple
 
+import qualified Graphics.X11.Xrender as Xr
+
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as LBS
 
@@ -63,7 +65,12 @@ handle f evs
 		S.singleton . LoadJsons . Occurred <$> getObjects
 	| Just (Browse (Cause uri)) <- S.lookupMin $ S.filter (== Browse Response) evs =
 		S.singleton (Browse Response) <$ liftIO (putStrLn uri >> rawSystem "firefox" [uri])
+	| Just (CalcTextExtents (Action (fn, fs, str))) <- S.lookupMin $ S.filter (== CalcTextExtents Communication) evs =
+		S.singleton . CalcTextExtents . Event <$> liftIO (convertXGlyphInfo <$> textExtents f fn fs str)
 	| otherwise = error $ "bad: " ++ show evs
+
+convertXGlyphInfo :: Xr.XGlyphInfo -> Followbox.XGlyphInfo
+convertXGlyphInfo (Xr.XGlyphInfo w h x y xo yo) = Followbox.XGlyphInfo w h x y xo yo
 
 isHttp :: FollowboxEvent -> Bool
 isHttp (Http _ _) = True
