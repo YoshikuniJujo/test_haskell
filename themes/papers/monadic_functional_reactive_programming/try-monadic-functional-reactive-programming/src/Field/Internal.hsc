@@ -14,6 +14,7 @@ module Field.Internal (
 	drawStr, Field.Internal.textExtents, textXOff, clearField, flushField
 	) where
 
+import Data.Bits
 import Foreign.C.Types
 
 import Control.Monad
@@ -110,17 +111,17 @@ fillRect :: Field ->
 fillRect Field { display = dpy, pixmap = win, graphicsContext = gc } c x y w h =
 	setForeground dpy gc c >> fillRectangle dpy win gc x y w h
 
-drawStr :: Field -> String -> Double -> Position -> Position -> String -> IO ()
-drawStr Field { display = dpy, pixmap = win, graphicsContext = gc } fnt sz x y str = do
+drawStr :: Field -> Pixel -> String -> Double -> Position -> Position -> String -> IO ()
+drawStr Field { display = dpy, pixmap = win, graphicsContext = gc } c fnt sz x y str = do
 	let	vsl = defaultVisual dpy $ defaultScreen dpy
 		cm = defaultColormap dpy $ defaultScreen dpy
 	draw <- xftDrawCreate dpy win vsl cm
 	font <- xftFontOpen dpy (defaultScreenOfDisplay dpy) $
 		fnt ++ "-" ++ showFFloat (Just 0) sz ""
 	withXftColorValue dpy vsl cm XRenderColor {
-		xrendercolor_red = 0xffff,
-		xrendercolor_blue = 0xffff,
-		xrendercolor_green = 0xffff,
+		xrendercolor_red = (fromIntegral c `shiftR` 16) `shiftL` 8,
+		xrendercolor_blue = (fromIntegral c `shiftR` 8 .&. 0xff) `shiftL` 8,
+		xrendercolor_green = (fromIntegral c .&. 0xff) `shiftL` 8,
 		xrendercolor_alpha = 0xffff } \c ->
 		xftDrawString draw c font x y str
 

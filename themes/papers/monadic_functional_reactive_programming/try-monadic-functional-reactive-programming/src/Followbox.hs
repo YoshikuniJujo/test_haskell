@@ -218,8 +218,10 @@ nameAndImageToView ((t, XGlyphInfo {
 	xGlyphInfoYOff = yo }), i) = [
 		Text 60 (170, 125) t,
 		Image (50, 50) i,
-		Line 2	(170 - fromIntegral x, 125 + fromIntegral (h - y) + 2)
-			(170 + fromIntegral (w - x), 125 + fromIntegral (h - y) + 2) ]
+		Line 4	(170 - fromIntegral x, 125 + 6)
+			(170 + fromIntegral (w - x), 125 + 6) ]
+--		Line 2	(170 - fromIntegral x, 125 + fromIntegral (h - y) + 2)
+--			(170 + fromIntegral (w - x), 125 + fromIntegral (h - y) + 2) ]
 
 userView :: SigF s (Either String View) ()
 userView = (nameAndImageToView <$>) `map` nameAndImage 0

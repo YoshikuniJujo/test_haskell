@@ -96,7 +96,7 @@ view f (Just o) = do
 	case (HM.lookup "login" o, HM.lookup "avatar_url" o, HM.lookup "html_url" o) of
 		(Just (String li), Just (String au), Just (String hu)) -> do
 			clearField f
-			drawStr f "sans" 80 170 135 $ T.unpack li
+			drawStr f 0xffffff "sans" 80 170 135 $ T.unpack li
 			either error (\i -> drawImage f (scaleBilinear 100 100 i) 50 50)
 				=<< downloadImage (fromString $ T.unpack au)
 			flushField f

@@ -89,7 +89,7 @@ handleEvent f evs = \case
 view :: Field -> Either String ((T.Text, XGlyphInfo), JP.Image JP.PixelRGBA8) -> IO ()
 view f (Right ((nm, _), avt)) = do
 	clearField f
-	drawStr f "sans" 80 170 135 $ T.unpack nm
+	drawStr f 0xffffff "sans" 80 170 135 $ T.unpack nm
 	drawImage f avt 50 50
 	flushField f
 view _ (Left em) = putStrLn $ "ERROR: " ++ em
