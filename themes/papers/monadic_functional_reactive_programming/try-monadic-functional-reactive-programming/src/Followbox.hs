@@ -3,8 +3,9 @@
 
 module Followbox where
 
-import Prelude hiding (map)
+import Prelude hiding (map, repeat)
 
+import Foreign.C.Types
 import Codec.Picture.Extra
 import System.Random
 
@@ -27,7 +28,9 @@ data FollowboxEvent
 	| StoreRandoms (Action [Int]) | LoadRandoms (Event [Int])
 	| StoreJsons (Action [Object]) | LoadJsons (Event [Object])
 	| Prod
+	| LeftClick
 	| RightClick
+	| Move (Event (CInt, CInt))
 	| Browse (Action Uri)
 	deriving (Show, Eq, Ord)
 
@@ -82,6 +85,18 @@ browse :: Uri -> ReactF s ()
 browse u = pick <$> exper (S.singleton . Browse $ Cause u)
 	where pick evs = case S.elems $ S.filter (== Browse (Cause u)) evs of
 		[Browse _] -> ()
+		es -> error $ "never occur: " ++ show es ++ " : " ++ show evs
+
+leftClick :: ReactF s ()
+leftClick = pick <$> exper (S.singleton LeftClick)
+	where pick evs = case S.elems $ S.filter (== LeftClick) evs of
+		[LeftClick] -> ()
+		es -> error $ "never occur: " ++ show es ++ " : " ++ show evs
+
+move :: ReactF s (CInt, CInt)
+move = pick <$> exper (S.singleton $ Move Request)
+	where pick evs = case S.elems $ S.filter (== Move Request) evs of
+		[Move (Occurred p)] -> p
 		es -> error $ "never occur: " ++ show es ++ " : " ++ show evs
 
 getUsersJson :: Int -> ReactF s (Either String [Object])
@@ -155,8 +170,8 @@ tryUsers = waitFor (storeRandoms (randomRs (0, 499) (mkStdGen 8))) >> tu
 					_ -> pure ()
 				loop u
 
-nameAndImage :: SigF s (Either String (T.Text, JP.Image JP.PixelRGBA8)) ()
-nameAndImage = waitFor (storeRandoms (randomRs (0, 499) (mkStdGen 8))) >> tu
+nameAndImage :: CInt -> SigF s (Either String (T.Text, JP.Image JP.PixelRGBA8)) ()
+nameAndImage n = waitFor (storeRandoms (randomRs (0, 499) (mkStdGen 8))) >> tu
 	where
 	tu = waitFor getUser1' >>= \case
 		Right (li, av, hu) -> do
@@ -165,13 +180,32 @@ nameAndImage = waitFor (storeRandoms (randomRs (0, 499) (mkStdGen 8))) >> tu
 			tu
 		Left em -> emit $ Left em
 	loop hu = do
-		(a, b) <- prod `first` rightClick
+		(a, b) <- leftClick `first` rightClickOn (getRect n)
 		case (done a, done b) of
 			(Just (), _) -> pure ()
 			_ -> browse hu >> loop hu
+
+getRect :: CInt -> Rect
+getRect n = Rect (0, 160 * n) (300, 160 * (n + 1))
 
 nameAndImageToView :: (T.Text, JP.Image JP.PixelRGBA8) -> View
 nameAndImageToView (t, i) = [Text 80 (170, 135) t, Image (50, 50) i]
 
 userView :: SigF s (Either String View) ()
-userView = (nameAndImageToView <$>) `map` nameAndImage
+userView = (nameAndImageToView <$>) `map` nameAndImage 0
+
+mousePos :: SigF s (CInt, CInt) ()
+mousePos = repeat move
+
+rightClickOn :: Rect -> ReactF s (Either (CInt, CInt) ())
+rightClickOn r = posInside r (mousePos `indexBy` repeat rightClick)
+
+data Rect = Rect {
+	leftUp :: (CInt, CInt),
+	rightDown :: (CInt, CInt) } deriving Show
+
+posInside :: Rect -> SigF s (CInt, CInt) y -> ReactF s (Either (CInt, CInt) y)
+posInside r = find (`inside` r)
+
+inside :: (CInt, CInt) -> Rect -> Bool
+(x, y) `inside` Rect (l, u) (r, d) = l <= x && x <= r && u <= y && y <= d

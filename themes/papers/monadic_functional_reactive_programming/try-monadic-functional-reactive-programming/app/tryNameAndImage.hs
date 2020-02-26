@@ -30,7 +30,7 @@ import Check.DrawDownloadImage
 main :: IO ()
 main = do
 	f <- openField ("GitHubのユーザを表示するよ" :: String) [exposureMask, buttonPressMask]
-	interpretSig (handle f) (liftIO . view f) nameAndImage `runStateT` ([], []) >>= print
+	interpretSig (handle f) (liftIO . view f) (nameAndImage 0) `runStateT` ([], []) >>= print
 	closeField f
 
 type FollowboxIO = StateT ([Int], [Object]) IO

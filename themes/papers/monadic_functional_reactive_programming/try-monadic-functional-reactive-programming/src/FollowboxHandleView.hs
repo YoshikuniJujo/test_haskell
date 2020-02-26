@@ -50,6 +50,7 @@ http u = do
 handle :: Field -> EvReqs FollowboxEvent -> FollowboxIO (EvOccs FollowboxEvent)
 handle f evs
 	| Prod `S.member` evs = withNextEvent f $ handleEvent f evs
+	| LeftClick `S.member` evs = withNextEvent f $ handleEvent f evs
 	| Just (Http uri _) <- S.lookupMin $ S.filter isHttp evs =
 		liftIO $ S.singleton . Http uri . Occurred <$> http uri
 	| Just (StoreRandoms (Cause rs)) <- S.lookupMin $ S.filter (== StoreRandoms Response) evs =
@@ -62,7 +63,7 @@ handle f evs
 		S.singleton . LoadJsons . Occurred <$> getObjects
 	| Just (Browse (Cause uri)) <- S.lookupMin $ S.filter (== Browse Response) evs =
 		S.singleton (Browse Response) <$ liftIO (putStrLn uri >> rawSystem "firefox" [uri])
-	| otherwise = error "bad"
+	| otherwise = error $ "bad: " ++ show evs
 
 isHttp :: FollowboxEvent -> Bool
 isHttp (Http _ _) = True
@@ -73,8 +74,12 @@ handleEvent f evs = \case
 	DestroyWindowEvent {} -> liftIO $ closeField f >> exitSuccess
 	ExposeEvent {} -> liftIO (flushField f) >> handle f evs
 	ev -> case buttonEvent ev of
-		Just BtnEvent { buttonNumber = Button1 } -> pure $ S.singleton Prod
-		Just BtnEvent { buttonNumber = Button3 } -> pure $ S.singleton RightClick
+		Just BtnEvent {
+			buttonNumber = Button1,
+			position = (x, y) } -> pure $ S.fromList [Followbox.Move (Occurred (x, y)), LeftClick]
+		Just BtnEvent {
+			buttonNumber = Button3,
+			position = (x, y) } -> pure $ S.fromList [Followbox.Move (Occurred (x, y)), RightClick]
 		Just _ -> handle f evs
 		Nothing	| isDeleteEvent f ev -> liftIO (destroyField f) >> handle f evs
 			| otherwise -> liftIO (print ev) >> handle f evs
