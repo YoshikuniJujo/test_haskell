@@ -189,7 +189,7 @@ getRect :: CInt -> Rect
 getRect n = Rect (0, 160 * n) (300, 160 * (n + 1))
 
 nameAndImageToView :: (T.Text, JP.Image JP.PixelRGBA8) -> View
-nameAndImageToView (t, i) = [Text 80 (170, 135) t, Image (50, 50) i]
+nameAndImageToView (t, i) = [Text 60 (170, 125) t, Image (50, 50) i]
 
 userView :: SigF s (Either String View) ()
 userView = (nameAndImageToView <$>) `map` nameAndImage 0
