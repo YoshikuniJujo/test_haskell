@@ -12,8 +12,6 @@ import Network.HTTP.Simple
 
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as LBS
-import qualified Data.Text as T
-import qualified Codec.Picture as JP
 
 import Signal
 import React hiding (first)
@@ -24,13 +22,12 @@ import ButtonEvent
 import Followbox
 import AesonObject
 import BasicAuth
-
-import Check.DrawDownloadImage
+import View
 
 main :: IO ()
 main = do
 	f <- openField ("GitHubのユーザを表示するよ" :: String) [exposureMask, buttonPressMask]
-	interpretSig (handle f) (liftIO . view f) nameAndImage `runStateT` ([], []) >>= print
+	interpretSig (handle f) (liftIO . either error (view f)) userView `runStateT` ([], []) >>= print
 	closeField f
 
 type FollowboxIO = StateT ([Int], [Object]) IO
@@ -85,11 +82,3 @@ handleEvent f evs = \case
 		Just _ -> handle f evs
 		Nothing	| isDeleteEvent f ev -> liftIO (destroyField f) >> handle f evs
 			| otherwise -> liftIO (print ev) >> handle f evs
-
-view :: Field -> Either String (T.Text, JP.Image JP.PixelRGBA8) -> IO ()
-view f (Right (nm, avt)) = do
-	clearField f
-	drawStr f "sans" 80 170 135 $ T.unpack nm
-	drawImage f avt 50 50
-	flushField f
-view _ (Left em) = putStrLn $ "ERROR: " ++ em

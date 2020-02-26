@@ -3,11 +3,12 @@
 
 module Followbox where
 
+import Prelude hiding (map)
+
 import Codec.Picture.Extra
 import System.Random
 
 import qualified Data.Set as S
-import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 import qualified Data.HashMap.Strict as HM
@@ -17,6 +18,7 @@ import Signal
 import React
 import Event
 import AesonObject
+import View
 
 import Check.Followbox.GetUsers
 
@@ -33,17 +35,6 @@ type ReactF s r = React s FollowboxEvent r
 type SigF s a r = Sig s FollowboxEvent a r
 
 type Uri = String
-
-type View = [View1]
-
-data View1
-	= Text FontSize Position BS.ByteString
-	| Image Position (JP.Image JP.PixelRGBA8)
-	| Line LineWeight Position Position
-
-type FontSize = Int
-type LineWeight = Int
-type Position = (Int, Int)
 
 httpGet :: Uri -> ReactF s LBS.ByteString
 httpGet u = pick <$> exper (S.singleton $ Http u Request)
@@ -178,3 +169,9 @@ nameAndImage = waitFor (storeRandoms (randomRs (0, 499) (mkStdGen 8))) >> tu
 		case (done a, done b) of
 			(Just (), _) -> pure ()
 			_ -> browse hu >> loop hu
+
+nameAndImageToView :: (T.Text, JP.Image JP.PixelRGBA8) -> View
+nameAndImageToView (t, i) = [Text 80 (170, 135) t, Image (50, 50) i]
+
+userView :: SigF s (Either String View) ()
+userView = (nameAndImageToView <$>) `map` nameAndImage
