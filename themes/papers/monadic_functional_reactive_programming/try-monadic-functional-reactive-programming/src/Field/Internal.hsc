@@ -9,7 +9,7 @@ module Field.Internal (
 		buttonPressMask, buttonReleaseMask,
 		pointerMotionMask, button1MotionMask,
 	Event(..), withNextEvent, withNextEventTimeout,
-	Position, Dimension, Pixel, Field.Internal.drawLine, fillRect, drawStr, clearField, flushField
+	Position, Dimension, Pixel, Field.Internal.drawLine, fillRect, drawStr, textXOff, clearField, flushField
 	) where
 
 import Foreign.C.Types
@@ -121,6 +121,13 @@ drawStr Field { display = dpy, pixmap = win, graphicsContext = gc } fnt sz x y s
 		xrendercolor_green = 0xffff,
 		xrendercolor_alpha = 0xffff } \c ->
 		xftDrawString draw c font x y str
+
+textXOff :: Field -> String -> Double -> String -> IO Int
+textXOff Field { display = dpy } fnt sz str = do
+	font <- xftFontOpen dpy (defaultScreenOfDisplay dpy)
+		$ fnt ++ "-" ++ showFFloat (Just 0) sz ""
+	xglyphinfo_xOff <$> xftTextExtents dpy font str
+
 
 drawLine :: Field -> CInt -> Position -> Position -> Position -> Position -> IO ()
 drawLine Field { display = dpy, pixmap = win, graphicsContext = gc } lw x1 y1 x2 y2 = do
