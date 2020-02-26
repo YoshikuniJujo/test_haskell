@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Followbox where
@@ -7,6 +7,8 @@ import System.Random
 
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as LBS
+import qualified Data.Text as T
+import qualified Data.HashMap.Strict as HM
 
 import Signal
 import React
@@ -20,6 +22,8 @@ data FollowboxEvent
 	| StoreRandoms (Action [Int]) | LoadRandoms (Event [Int])
 	| StoreJsons (Action [Object]) | LoadJsons (Event [Object])
 	| Prod
+	| RightClick
+	| Browse (Action Uri)
 	deriving (Show, Eq, Ord)
 
 type ReactF s r = React s FollowboxEvent r
@@ -61,7 +65,19 @@ prod :: ReactF s ()
 prod = pick <$> exper (S.singleton Prod)
 	where pick evs = case S.elems $ S.filter (== Prod) evs of
 		[Prod] -> ()
-		es -> error $ "never occur:i " ++ show es ++ " : " ++ show evs
+		es -> error $ "never occur: " ++ show es ++ " : " ++ show evs
+
+rightClick :: ReactF s ()
+rightClick = pick <$> exper (S.singleton RightClick)
+	where pick evs = case S.elems $ S.filter (== RightClick) evs of
+		[RightClick] -> ()
+		es -> error $ "never occur: " ++ show es ++ " : " ++ show evs
+
+browse :: Uri -> ReactF s ()
+browse u = pick <$> exper (S.singleton . Browse $ Cause u)
+	where pick evs = case S.elems $ S.filter (== Browse (Cause u)) evs of
+		[Browse _] -> ()
+		es -> error $ "never occur: " ++ show es ++ " : " ++ show evs
 
 getUsersJson :: Int -> ReactF s (Either String [Object])
 getUsersJson s = decodeUsers <$> httpGet (apiUsers s)
@@ -89,5 +105,13 @@ tryUsers = waitFor (storeRandoms (randomRs (0, 499) (mkStdGen 8))) >> tu
 	where
 	tu = do	u <- waitFor getUser1
 		emit u
-		waitFor prod
+		waitFor $ loop u
 		tu
+	loop u = do
+		(a, b) <- prod `first` rightClick
+		case (done a, done b) of
+			(Just (), _) -> pure ()
+			_ -> do	case HM.lookup "html_url" =<< u of
+					Just (String hu) -> browse $ T.unpack hu
+					_ -> pure ()
+				loop u

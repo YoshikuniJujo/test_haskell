@@ -8,6 +8,7 @@ import Control.Monad.State
 import Data.String
 import Codec.Picture.Extra
 import System.Exit
+import System.Process
 import Network.HTTP.Simple
 
 import qualified Data.Set as S
@@ -67,6 +68,8 @@ handle f evs
 		S.singleton (StoreJsons Response) <$ putObjects os
 	| Just (LoadJsons Request) <- S.lookupMin $ S.filter (== LoadJsons Request) evs =
 		S.singleton . LoadJsons . Occurred <$> getObjects
+	| Just (Browse (Cause uri)) <- S.lookupMin $ S.filter (== Browse Response) evs =
+		S.singleton (Browse Response) <$ liftIO (putStrLn uri >> rawSystem "firefox" [uri])
 	| otherwise = error "bad"
 
 isHttp :: FollowboxEvent -> Bool
@@ -78,7 +81,9 @@ handleEvent f evs = \case
 	DestroyWindowEvent {} -> liftIO $ closeField f >> exitSuccess
 	ExposeEvent {} -> liftIO (flushField f) >> handle f evs
 	ev -> case buttonEvent ev of
-		Just _ -> pure $ S.singleton Prod
+		Just BtnEvent { buttonNumber = Button1 } -> pure $ S.singleton Prod
+		Just BtnEvent { buttonNumber = Button3 } -> pure $ S.singleton RightClick
+		Just _ -> handle f evs
 		Nothing	| isDeleteEvent f ev -> liftIO (destroyField f) >> handle f evs
 			| otherwise -> liftIO (print ev) >> handle f evs
 
@@ -92,7 +97,6 @@ view f (Just o) = do
 		(Just (String li), Just (String au), Just (String hu)) -> do
 			clearField f
 			drawStr f "sans" 80 170 135 $ T.unpack li
-			drawStr f "sans" 20 100 180 $ T.unpack hu
 			either error (\i -> drawImage f (scaleBilinear 100 100 i) 50 50)
 				=<< downloadImage (fromString $ T.unpack au)
 			flushField f
