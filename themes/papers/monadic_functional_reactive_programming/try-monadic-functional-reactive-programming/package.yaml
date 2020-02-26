@@ -38,6 +38,7 @@ dependencies:
 - scientific
 - random
 - JuicyPixels
+- JuicyPixels-extra
 
 library:
   source-dirs: src

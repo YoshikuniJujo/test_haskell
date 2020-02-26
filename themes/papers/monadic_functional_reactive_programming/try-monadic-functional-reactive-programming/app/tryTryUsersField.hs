@@ -6,6 +6,7 @@ module Main where
 import Control.Arrow
 import Control.Monad.State
 import Data.String
+import Codec.Picture.Extra
 import System.Exit
 import Network.HTTP.Simple
 
@@ -23,6 +24,8 @@ import ButtonEvent
 import Followbox
 import AesonObject
 import BasicAuth
+
+import Check.DrawDownloadImage
 
 main :: IO ()
 main = do
@@ -88,9 +91,10 @@ view f (Just o) = do
 	case (HM.lookup "login" o, HM.lookup "avatar_url" o, HM.lookup "html_url" o) of
 		(Just (String li), Just (String au), Just (String hu)) -> do
 			clearField f
-			drawStr f "sans" 80 100 100 $ T.unpack li
-			drawStr f "sans" 20 100 130 $ T.unpack au
-			drawStr f "sans" 20 100 160 $ T.unpack hu
+			drawStr f "sans" 80 170 135 $ T.unpack li
+			drawStr f "sans" 20 100 180 $ T.unpack hu
+			either error (\i -> drawImage f (scaleBilinear 100 100 i) 50 50)
+				=<< downloadImage (fromString $ T.unpack au)
 			flushField f
 		(Nothing, Nothing, Nothing) -> pure ()
 view _ Nothing = pure ()
