@@ -266,6 +266,23 @@ nameAndImageToView n_ ((t, XGlyphInfo {
 		]
 	where n = fromIntegral n_
 
+title :: View1
+title = Text 0xFFFFFF 60 (10, 80) "Who to follow"
+
+refresh :: ReactF s (View, Rect)
+refresh = do
+	gi <- calcTextExtents "sans" 60 "Refresh"
+	let	w = xGlyphInfoWidth gi
+		h = xGlyphInfoHeight gi
+		x = xGlyphInfoX gi
+		y = xGlyphInfoY gi
+	pure (	[	Text 0x3066D6 60 (600, 80) "Refresh",
+			Line 0x3066D6 4
+				(600 - fromIntegral x, 80 + 6)
+				(600 + fromIntegral (w - x), 80 + 6) ],
+		Rect	(600 - fromIntegral x, 80 -  fromIntegral y)
+			(600 - fromIntegral x + fromIntegral w, 80 - fromIntegral y + fromIntegral h) )
+
 userView :: CInt -> SigF s (Either String View) ()
 userView n = (nameAndImageToView n <$>) `map` nameAndImage n
 
@@ -274,14 +291,18 @@ userViewReact n = ((\(a@(_, gi), b, c) -> (nameAndImageToView n (a, b), gi, c)) 
 
 usersView :: SigF s (Either String View) ()
 -- usersView = () <$ always (\a b c -> (\x y z -> x ++ y ++ z) <$> a <*> b <*> c) <^> userView 0 <^> userView 1 <^> userView 2
-usersView = waitFor (storeRandoms (randomRs (0, 499) (mkStdGen 8))) >> tu
+usersView = do
+	waitFor (storeRandoms (randomRs (0, 499) (mkStdGen 8)))
+	(r, rct) <- waitFor refresh
+	tu r rct
 	where
-	tu = do	r0 <- waitFor (userViewReact 0)
+	tu r rct = do
+		r0 <- waitFor (userViewReact 0)
 		r1 <- waitFor (userViewReact 1)
 		r2 <- waitFor (userViewReact 2)
-		threeFields r0 r1 r2 `until` rightClick
-		emit $ Right []
-		tu
+		((title :) . (r ++) <$>) `map` (threeFields r0 r1 r2 `until` leftClickOn rct)
+		emit . Right $ title : r
+		tu r rct
 
 threeFields r0 r1 r2 = () <$ always (\a b c -> (\x y z -> x ++ y ++ z) <$> a <*> b <*> c)
 	<^> applyUserViewN 0 r0 <^> applyUserViewN 1 r1 <^> applyUserViewN 2 r2
