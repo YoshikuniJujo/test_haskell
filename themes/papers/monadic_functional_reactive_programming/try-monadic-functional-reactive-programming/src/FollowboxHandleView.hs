@@ -10,8 +10,6 @@ import System.Exit
 import System.Process
 import Network.HTTP.Simple
 
-import qualified Graphics.X11.Xrender as Xr
-
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as LBS
 
@@ -24,6 +22,8 @@ import Followbox
 import AesonObject
 import BasicAuth
 import qualified View as V
+
+import XGlyphInfo
 
 view :: Field -> V.View -> FollowboxIO ()
 view f = liftIO . V.view f
@@ -65,12 +65,8 @@ handle f evs
 		S.singleton (StoreRandoms Response) <$ putRandoms rs
 	| Just (LoadRandoms Request) <- S.lookupMin $ S.filter (== LoadRandoms Request) evs =
 		S.singleton . LoadRandoms . Occurred <$> getRandoms
-	| Prod `S.member` evs = withNextEvent f $ handleEvent f evs
 	| LeftClick `S.member` evs = withNextEvent f (handleEvent f evs)
 	| otherwise = pure S.empty
-
-convertXGlyphInfo :: Xr.XGlyphInfo -> Followbox.XGlyphInfo
-convertXGlyphInfo (Xr.XGlyphInfo w h x y xo yo) = Followbox.XGlyphInfo w h x y xo yo
 
 isHttp :: FollowboxEvent -> Bool
 isHttp (Http _ _) = True
@@ -86,9 +82,6 @@ handleEvent f evs = \case
 			position = (x, y) } -> do
 				(S.fromList [Followbox.Move (Occurred (x, y)), LeftClick] <>)
 					<$> handle f (S.filter (\r -> Followbox.Move Request /= r && LeftClick /= r) evs)
-		Just BtnEvent {
-			buttonNumber = Button3,
-			position = (x, y) } -> pure $ S.fromList [Followbox.Move (Occurred (x, y)), RightClick]
 		Just _ -> handle f evs
 		Nothing	| isDeleteEvent f ev -> liftIO (destroyField f) >> handle f evs
 			| otherwise -> liftIO (print ev) >> handle f evs
