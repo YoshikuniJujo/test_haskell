@@ -23,6 +23,8 @@ import View
 
 import Check.Followbox.GetUsers
 
+import qualified Field as F
+
 data FollowboxEvent
 	= Http Uri (Event LBS.ByteString)
 	| StoreRandoms (Action [Int]) | LoadRandoms (Event [Int])
@@ -51,6 +53,12 @@ type ReactF s r = React s FollowboxEvent r
 type SigF s a r = Sig s FollowboxEvent a r
 
 type Uri = String
+
+left, top, textLeft, textTop :: F.Position
+left = 50
+top = 100
+textLeft = left + 120
+textTop = top + 75
 
 httpGet :: Uri -> ReactF s LBS.ByteString
 httpGet u = pick <$> exper (S.singleton $ Http u Request)
@@ -206,7 +214,9 @@ nameAndImage n = waitFor (storeRandoms (randomRs (0, 499) (mkStdGen 8))) >> tu
 			_ -> browse hu >> loop hu xo
 
 getRect :: CInt -> XGlyphInfo -> Rect
-getRect n gi = Rect (170 - x, 125 - y) (170 - x + w, 125 - y + h)
+getRect n gi = Rect
+	(fromIntegral textLeft - x, fromIntegral textTop - y + 80 * n)
+	(fromIntegral textLeft - x + w, fromIntegral textTop - y + h + 80 * n)
 	where
 	w = fromIntegral $ xGlyphInfoWidth gi
 	h = fromIntegral $ xGlyphInfoHeight gi
@@ -214,35 +224,41 @@ getRect n gi = Rect (170 - x, 125 - y) (170 - x + w, 125 - y + h)
 	y = fromIntegral $ xGlyphInfoY gi
 
 xRect :: CInt -> XGlyphInfo -> Rect
-xRect n gi = Rect (170 + xo + 60 - 20, 125 + 5 - 40) (170 + xo + 60 + 10, 125 + 5 - 10)
+xRect n gi = Rect
+	(fromIntegral textLeft + xo + 60 - 20, fromIntegral textTop + 5 - 40 + 80 * n)
+	(fromIntegral textLeft + xo + 60 + 10, fromIntegral textTop + 5 - 10 + 80 * n)
 	where
 	xo = fromIntegral $ xGlyphInfoXOff gi
 
-nameAndImageToView :: ((T.Text, XGlyphInfo), JP.Image JP.PixelRGBA8) -> View
-nameAndImageToView ((t, XGlyphInfo {
+nameAndImageToView :: CInt -> ((T.Text, XGlyphInfo), JP.Image JP.PixelRGBA8) -> View
+nameAndImageToView n_ ((t, XGlyphInfo {
 	xGlyphInfoWidth = w,
 	xGlyphInfoHeight = h,
 	xGlyphInfoX = x,
 	xGlyphInfoY = y,
 	xGlyphInfoXOff = xo,
 	xGlyphInfoYOff = yo }), i) = [
-		Text 0x3066D6 60 (170, 125) t,
-		Image (50, 50) i,
+		Text 0x3066D6 60 (textLeft, textTop + 80 * n) t,
+		Image (left, top + 80 * n) i,
 		Line 0x3066D6 4
-			(170 - fromIntegral x, 125 + 6)
-			(170 + fromIntegral (w - x), 125 + 6),
+			(textLeft - fromIntegral x, textTop + 6 + 80 * n)
+			(textLeft + fromIntegral (w - x), textTop + 6 + 80 * n),
 		Line 0xFFFFFF 6
-			(170 + fromIntegral xo + 60 - 20, 125 + 5 - 40)
-			(170 + fromIntegral xo + 60 + 10, 125 + 5 - 10),
+			(textLeft + fromIntegral xo + 60 - 20, textTop + 5 - 40 + 80 * n)
+			(textLeft + fromIntegral xo + 60 + 10, textTop + 5 - 10 + 80 * n),
 		Line 0xFFFFFF 6
-			(170 + fromIntegral xo + 60 - 20, 125 + 5 - 10)
-			(170 + fromIntegral xo + 60 + 10, 125 + 5 - 40)
+			(textLeft + fromIntegral xo + 60 - 20, textTop + 5 - 10 + 80 * n)
+			(textLeft + fromIntegral xo + 60 + 10, textTop + 5 - 40 + 80 * n)
 		]
---		Line 2	(170 - fromIntegral x, 125 + fromIntegral (h - y) + 2)
---			(170 + fromIntegral (w - x), 125 + fromIntegral (h - y) + 2) ]
+	where n = fromIntegral n_
 
-userView :: SigF s (Either String View) ()
-userView = (nameAndImageToView <$>) `map` nameAndImage 0
+userView :: CInt -> SigF s (Either String View) ()
+userView n = (nameAndImageToView n <$>) `map` nameAndImage n
+
+usersView :: SigF s (Either String View) ()
+-- usersView = () <$ always (\a b c -> (\x y z -> x ++ y ++ z) <$> a <*> b <*> c) <^> userView 0 <^> userView 1 <^> userView 2
+-- usersView = () <$ always (\a b c -> a ++ b ++ c) <^> userView 0 <^> userView 1 <^> userView 2
+usersView = userView 0
 
 mousePos :: SigF s (CInt, CInt) ()
 mousePos = repeat move
