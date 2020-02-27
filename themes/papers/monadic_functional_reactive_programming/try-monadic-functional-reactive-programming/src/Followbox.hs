@@ -204,14 +204,25 @@ nameAndImage n = waitFor (storeRandoms (randomRs (0, 499) (mkStdGen 8))) >> tu
 		Right (li, av, hu) -> do
 			xo <- waitFor $ calcTextExtents "sans" 60 $ T.unpack li
 			emit $ Right ((li, xo), av)
-			waitFor $ loop (T.unpack hu) xo
+			waitFor $ userLoop n (T.unpack hu) xo
 			tu
 		Left em -> emit $ Left em
-	loop hu xo = do
-		(a, b) <- leftClickOn (xRect n xo) `first` leftClickOn (getRect n xo)
-		case (done a, done b) of
-			(Just _, _) -> pure ()
-			_ -> browse hu >> loop hu xo
+
+userLoop :: CInt -> Uri -> XGlyphInfo -> ReactF s ()
+userLoop n hu xo = do
+	(a, b) <- leftClickOn (xRect n xo) `first` leftClickOn (getRect n xo)
+	case (done a, done b) of
+		(Just _, _) -> pure ()
+		_ -> browse hu >> userLoop n hu xo
+
+nameAndImageReact :: CInt -> ReactF s (Either String ((T.Text, XGlyphInfo), JP.Image JP.PixelRGBA8, T.Text))
+nameAndImageReact n = storeRandoms (randomRs (0, 499) (mkStdGen 8)) >> tu
+	where
+	tu = getUser1' >>= \case
+		Right (li, av, hu) -> do
+			xo <- calcTextExtents "sans" 60 $ T.unpack li
+			pure $ Right ((li, xo), av, hu)
+		Left em -> pure $ Left em
 
 getRect :: CInt -> XGlyphInfo -> Rect
 getRect n gi = Rect
@@ -255,10 +266,18 @@ nameAndImageToView n_ ((t, XGlyphInfo {
 userView :: CInt -> SigF s (Either String View) ()
 userView n = (nameAndImageToView n <$>) `map` nameAndImage n
 
+userViewReact :: CInt -> ReactF s (Either String (View, XGlyphInfo, T.Text))
+userViewReact n = ((\(a@(_, gi), b, c) -> (nameAndImageToView n (a, b), gi, c)) <$>) <$> nameAndImageReact n
+
 usersView :: SigF s (Either String View) ()
 -- usersView = () <$ always (\a b c -> (\x y z -> x ++ y ++ z) <$> a <*> b <*> c) <^> userView 0 <^> userView 1 <^> userView 2
--- usersView = () <$ always (\a b c -> a ++ b ++ c) <^> userView 0 <^> userView 1 <^> userView 2
-usersView = userView 0
+usersView = do
+	waitFor (userViewReact 0) >>= \case
+		Left em -> emit $ Left em
+		Right (v, gi, hu) -> do
+			emit $ Right v
+			waitFor $ userLoop 0 (T.unpack hu) gi
+	usersView
 
 mousePos :: SigF s (CInt, CInt) ()
 mousePos = repeat move
