@@ -54,11 +54,13 @@ type SigF s a r = Sig s FollowboxEvent a r
 
 type Uri = String
 
-left, top, textLeft, textTop :: F.Position
+left, top, textLeft, textTop, vertOff, avatarSize :: F.Position
 left = 50
 top = 100
 textLeft = left + 120
 textTop = top + 75
+vertOff = 120
+avatarSize = 90
 
 httpGet :: Uri -> ReactF s LBS.ByteString
 httpGet u = pick <$> exper (S.singleton $ Http u Request)
@@ -174,9 +176,10 @@ htmlUrlFromObject o = case HM.lookup "html_url" o of
 	_ -> Nothing
 
 avatorFromObject :: Object -> ReactF s (Either String (JP.Image JP.PixelRGBA8))
-avatorFromObject o = (scaleBilinear 100 100 <$>) <$> case HM.lookup "avatar_url" o of
+avatorFromObject o = (scaleBilinear sz sz <$>) <$> case HM.lookup "avatar_url" o of
 	Just (String au) -> ((JP.convertRGBA8 <$>) . JP.decodeImage . LBS.toStrict) <$> httpGet (T.unpack au)
 	_ -> pure $ Left "no avatar_url"
+	where sz = fromIntegral avatarSize
 
 apiUsers :: Int -> Uri
 apiUsers s = "https://api.github.com/users?since=" ++ show s
@@ -216,7 +219,7 @@ userLoop n hu xo = do
 		_ -> browse hu >> userLoop n hu xo
 
 nameAndImageReact :: CInt -> ReactF s (Either String ((T.Text, XGlyphInfo), JP.Image JP.PixelRGBA8, T.Text))
-nameAndImageReact n = storeRandoms (randomRs (0, 499) (mkStdGen 8)) >> tu
+nameAndImageReact n = tu -- storeRandoms (randomRs (0, 499) (mkStdGen 8)) >> tu
 	where
 	tu = getUser1' >>= \case
 		Right (li, av, hu) -> do
@@ -226,8 +229,8 @@ nameAndImageReact n = storeRandoms (randomRs (0, 499) (mkStdGen 8)) >> tu
 
 getRect :: CInt -> XGlyphInfo -> Rect
 getRect n gi = Rect
-	(fromIntegral textLeft - x, fromIntegral textTop - y + 80 * n)
-	(fromIntegral textLeft - x + w, fromIntegral textTop - y + h + 80 * n)
+	(fromIntegral textLeft - x, fromIntegral textTop - y + fromIntegral vertOff * n)
+	(fromIntegral textLeft - x + w, fromIntegral textTop - y + h + fromIntegral vertOff * n)
 	where
 	w = fromIntegral $ xGlyphInfoWidth gi
 	h = fromIntegral $ xGlyphInfoHeight gi
@@ -236,8 +239,8 @@ getRect n gi = Rect
 
 xRect :: CInt -> XGlyphInfo -> Rect
 xRect n gi = Rect
-	(fromIntegral textLeft + xo + 60 - 20, fromIntegral textTop + 5 - 40 + 80 * n)
-	(fromIntegral textLeft + xo + 60 + 10, fromIntegral textTop + 5 - 10 + 80 * n)
+	(fromIntegral textLeft + xo + 60 - 20, fromIntegral textTop + 5 - 40 + fromIntegral vertOff * n)
+	(fromIntegral textLeft + xo + 60 + 10, fromIntegral textTop + 5 - 10 + fromIntegral vertOff * n)
 	where
 	xo = fromIntegral $ xGlyphInfoXOff gi
 
@@ -249,17 +252,17 @@ nameAndImageToView n_ ((t, XGlyphInfo {
 	xGlyphInfoY = y,
 	xGlyphInfoXOff = xo,
 	xGlyphInfoYOff = yo }), i) = [
-		Text 0x3066D6 60 (textLeft, textTop + 80 * n) t,
-		Image (left, top + 80 * n) i,
+		Text 0x3066D6 60 (textLeft, textTop + vertOff * n) t,
+		Image (left, top + vertOff * n) i,
 		Line 0x3066D6 4
-			(textLeft - fromIntegral x, textTop + 6 + 80 * n)
-			(textLeft + fromIntegral (w - x), textTop + 6 + 80 * n),
+			(textLeft - fromIntegral x, textTop + 6 + vertOff * n)
+			(textLeft + fromIntegral (w - x), textTop + 6 + vertOff * n),
 		Line 0xFFFFFF 6
-			(textLeft + fromIntegral xo + 60 - 20, textTop + 5 - 40 + 80 * n)
-			(textLeft + fromIntegral xo + 60 + 10, textTop + 5 - 10 + 80 * n),
+			(textLeft + fromIntegral xo + 60 - 20, textTop + 5 - 40 + vertOff * n)
+			(textLeft + fromIntegral xo + 60 + 10, textTop + 5 - 10 + vertOff * n),
 		Line 0xFFFFFF 6
-			(textLeft + fromIntegral xo + 60 - 20, textTop + 5 - 10 + 80 * n)
-			(textLeft + fromIntegral xo + 60 + 10, textTop + 5 - 40 + 80 * n)
+			(textLeft + fromIntegral xo + 60 - 20, textTop + 5 - 10 + vertOff * n)
+			(textLeft + fromIntegral xo + 60 + 10, textTop + 5 - 40 + vertOff * n)
 		]
 	where n = fromIntegral n_
 
@@ -271,13 +274,20 @@ userViewReact n = ((\(a@(_, gi), b, c) -> (nameAndImageToView n (a, b), gi, c)) 
 
 usersView :: SigF s (Either String View) ()
 -- usersView = () <$ always (\a b c -> (\x y z -> x ++ y ++ z) <$> a <*> b <*> c) <^> userView 0 <^> userView 1 <^> userView 2
-usersView = do
-	waitFor (userViewReact 0) >>= \case
-		Left em -> emit $ Left em
-		Right (v, gi, hu) -> do
-			emit $ Right v
-			waitFor $ userLoop 0 (T.unpack hu) gi
-	usersView
+usersView = waitFor (storeRandoms (randomRs (0, 499) (mkStdGen 8))) >> tu
+	where
+	tu = do	waitFor (userViewReact 0) >>= \case
+			Left em -> emit $ Left em
+			Right (v, gi, hu) -> do
+				waitFor (userViewReact 1) >>= \case
+					Left em -> emit $ Left em
+					Right (v', gi', hu') -> do
+						waitFor (userViewReact 2) >>= \case
+							Left em -> emit $ Left em
+							Right (v'', gi'', hu'') -> do
+								emit . Right $ v ++ v' ++ v''
+								waitFor $ userLoop 0 (T.unpack hu) gi
+		tu
 
 mousePos :: SigF s (CInt, CInt) ()
 mousePos = repeat move
