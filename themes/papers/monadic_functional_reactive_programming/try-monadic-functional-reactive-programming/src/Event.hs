@@ -29,5 +29,5 @@ instance (Ord a, Ord e) => Ord (Bidirectional a e) where
 	Event x `compare` Event y = x `compare` y
 	Communication `compare` _ = EQ
 	_ `compare` Communication = EQ
-	Action _ `compare` Event _ = LT
-	Event _ `compare` Action _ = GT
+	Action _ `compare` Event _ = EQ
+	Event _ `compare` Action _ = EQ

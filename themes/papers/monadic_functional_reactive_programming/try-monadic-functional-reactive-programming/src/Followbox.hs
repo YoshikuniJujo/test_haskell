@@ -6,6 +6,7 @@ module Followbox where
 import Prelude hiding (map, repeat)
 
 import Foreign.C.Types
+import Control.Arrow ((***))
 import Codec.Picture.Extra
 import System.Random
 
@@ -47,7 +48,6 @@ data XGlyphInfo = XGlyphInfo {
 	} deriving (Show, Eq, Ord)
 
 type FontName = String
--- type FontSize = Double
 
 type ReactF s r = React s FollowboxEvent r
 type SigF s a r = Sig s FollowboxEvent a r
@@ -56,7 +56,7 @@ type Uri = String
 
 left, top, textLeft, textTop, vertOff, avatarSize :: F.Position
 left = 50
-top = 100
+top = 120
 textLeft = left + 120
 textTop = top + 75
 vertOff = 120
@@ -219,7 +219,7 @@ userLoop n hu xo = do
 		_ -> browse hu >> userLoop n hu xo
 
 nameAndImageReact :: CInt -> ReactF s (Either String ((T.Text, XGlyphInfo), JP.Image JP.PixelRGBA8, T.Text))
-nameAndImageReact n = tu -- storeRandoms (randomRs (0, 499) (mkStdGen 8)) >> tu
+nameAndImageReact n = tu
 	where
 	tu = getUser1' >>= \case
 		Right (li, av, hu) -> do
@@ -276,18 +276,24 @@ usersView :: SigF s (Either String View) ()
 -- usersView = () <$ always (\a b c -> (\x y z -> x ++ y ++ z) <$> a <*> b <*> c) <^> userView 0 <^> userView 1 <^> userView 2
 usersView = waitFor (storeRandoms (randomRs (0, 499) (mkStdGen 8))) >> tu
 	where
-	tu = do	waitFor (userViewReact 0) >>= \case
-			Left em -> emit $ Left em
-			Right (v, gi, hu) -> do
-				waitFor (userViewReact 1) >>= \case
-					Left em -> emit $ Left em
-					Right (v', gi', hu') -> do
-						waitFor (userViewReact 2) >>= \case
-							Left em -> emit $ Left em
-							Right (v'', gi'', hu'') -> do
-								emit . Right $ v ++ v' ++ v''
-								waitFor $ userLoop 0 (T.unpack hu) gi
-		tu
+	tu = do	r0 <- waitFor (userViewReact 0)
+		r1 <- waitFor (userViewReact 1)
+		r2 <- waitFor (userViewReact 2)
+		() <$ always (\a b c -> (\x y z -> x ++ y ++ z) <$> a <*> b <*> c)
+			<^> applyUserViewN 0 r0 <^> applyUserViewN 1 r1 <^> applyUserViewN 2 r2
+
+applyUserViewN :: CInt -> Either String (View, XGlyphInfo, T.Text) -> SigF s (Either String View) ()
+applyUserViewN _ (Left _) = error "bad"
+applyUserViewN n (Right (v, gi, hu)) = userViewN n v gi hu
+
+userViewN :: CInt -> View -> XGlyphInfo -> T.Text -> SigF s (Either String View) ()
+userViewN n v gi hu = do
+	emit $ Right v
+	waitFor $ userLoop n (T.unpack hu) gi
+	waitFor (userViewReact n) >>= \case
+		Left em -> emit $ Left em
+		Right (v, gi, hu) -> do
+			userViewN n v gi hu
 
 mousePos :: SigF s (CInt, CInt) ()
 mousePos = repeat move

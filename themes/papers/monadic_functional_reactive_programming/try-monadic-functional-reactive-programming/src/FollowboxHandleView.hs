@@ -51,23 +51,23 @@ http u = do
 
 handle :: Field -> EvReqs FollowboxEvent -> FollowboxIO (EvOccs FollowboxEvent)
 handle f evs
-	| Prod `S.member` evs = withNextEvent f $ handleEvent f evs
-	| LeftClick `S.member` evs = withNextEvent f $ handleEvent f evs
+	| Just (Browse (Cause uri)) <- S.lookupMin $ S.filter (== Browse Response) evs =
+		S.singleton (Browse Response) <$ liftIO (putStrLn uri >> rawSystem "firefox" [uri])
+	| Just (LoadJsons Request) <- S.lookupMin $ S.filter (== LoadJsons Request) evs =
+		S.singleton . LoadJsons . Occurred <$> getObjects
 	| Just (Http uri _) <- S.lookupMin $ S.filter isHttp evs =
 		liftIO $ S.singleton . Http uri . Occurred <$> http uri
+	| Just (StoreJsons (Cause os)) <- S.lookupMin $ S.filter (== StoreJsons Response) evs =
+		S.singleton (StoreJsons Response) <$ putObjects os
+	| Just (CalcTextExtents (Action (fn, fs, str))) <- S.lookupMin $ S.filter (== CalcTextExtents Communication) evs =
+		(S.singleton . CalcTextExtents . Event <$> liftIO (convertXGlyphInfo <$> textExtents f fn fs str))
 	| Just (StoreRandoms (Cause rs)) <- S.lookupMin $ S.filter (== StoreRandoms Response) evs =
 		S.singleton (StoreRandoms Response) <$ putRandoms rs
 	| Just (LoadRandoms Request) <- S.lookupMin $ S.filter (== LoadRandoms Request) evs =
 		S.singleton . LoadRandoms . Occurred <$> getRandoms
-	| Just (StoreJsons (Cause os)) <- S.lookupMin $ S.filter (== StoreJsons Response) evs =
-		S.singleton (StoreJsons Response) <$ putObjects os
-	| Just (LoadJsons Request) <- S.lookupMin $ S.filter (== LoadJsons Request) evs =
-		S.singleton . LoadJsons . Occurred <$> getObjects
-	| Just (Browse (Cause uri)) <- S.lookupMin $ S.filter (== Browse Response) evs =
-		S.singleton (Browse Response) <$ liftIO (putStrLn uri >> rawSystem "firefox" [uri])
-	| Just (CalcTextExtents (Action (fn, fs, str))) <- S.lookupMin $ S.filter (== CalcTextExtents Communication) evs =
-		S.singleton . CalcTextExtents . Event <$> liftIO (convertXGlyphInfo <$> textExtents f fn fs str)
-	| otherwise = error $ "bad: " ++ show evs
+	| Prod `S.member` evs = withNextEvent f $ handleEvent f evs
+	| LeftClick `S.member` evs = withNextEvent f (handleEvent f evs)
+	| otherwise = pure S.empty
 
 convertXGlyphInfo :: Xr.XGlyphInfo -> Followbox.XGlyphInfo
 convertXGlyphInfo (Xr.XGlyphInfo w h x y xo yo) = Followbox.XGlyphInfo w h x y xo yo
@@ -83,7 +83,9 @@ handleEvent f evs = \case
 	ev -> case buttonEvent ev of
 		Just BtnEvent {
 			buttonNumber = Button1,
-			position = (x, y) } -> pure $ S.fromList [Followbox.Move (Occurred (x, y)), LeftClick]
+			position = (x, y) } -> do
+				(S.fromList [Followbox.Move (Occurred (x, y)), LeftClick] <>)
+					<$> handle f (S.filter (\r -> Followbox.Move Request /= r && LeftClick /= r) evs)
 		Just BtnEvent {
 			buttonNumber = Button3,
 			position = (x, y) } -> pure $ S.fromList [Followbox.Move (Occurred (x, y)), RightClick]
