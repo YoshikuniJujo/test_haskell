@@ -196,17 +196,27 @@ nameAndImage n = waitFor (storeRandoms (randomRs (0, 499) (mkStdGen 8))) >> tu
 		Right (li, av, hu) -> do
 			xo <- waitFor $ calcTextExtents "sans" 60 $ T.unpack li
 			emit $ Right ((li, xo), av)
-			waitFor . loop $ T.unpack hu
+			waitFor $ loop (T.unpack hu) xo
 			tu
 		Left em -> emit $ Left em
-	loop hu = do
-		(a, b) <- leftClick `first` rightClickOn (getRect n)
+	loop hu xo = do
+		(a, b) <- leftClickOn (xRect n xo) `first` leftClickOn (getRect n xo)
 		case (done a, done b) of
-			(Just (), _) -> pure ()
-			_ -> browse hu >> loop hu
+			(Just _, _) -> pure ()
+			_ -> browse hu >> loop hu xo
 
-getRect :: CInt -> Rect
-getRect n = Rect (0, 160 * n) (300, 160 * (n + 1))
+getRect :: CInt -> XGlyphInfo -> Rect
+getRect n gi = Rect (170 - x, 125 - y) (170 - x + w, 125 - y + h)
+	where
+	w = fromIntegral $ xGlyphInfoWidth gi
+	h = fromIntegral $ xGlyphInfoHeight gi
+	x = fromIntegral $ xGlyphInfoX gi
+	y = fromIntegral $ xGlyphInfoY gi
+
+xRect :: CInt -> XGlyphInfo -> Rect
+xRect n gi = Rect (170 + xo + 60 - 20, 125 + 5 - 40) (170 + xo + 60 + 10, 125 + 5 - 10)
+	where
+	xo = fromIntegral $ xGlyphInfoXOff gi
 
 nameAndImageToView :: ((T.Text, XGlyphInfo), JP.Image JP.PixelRGBA8) -> View
 nameAndImageToView ((t, XGlyphInfo {
@@ -216,10 +226,18 @@ nameAndImageToView ((t, XGlyphInfo {
 	xGlyphInfoY = y,
 	xGlyphInfoXOff = xo,
 	xGlyphInfoYOff = yo }), i) = [
-		Text 60 (170, 125) t,
+		Text 0x3066D6 60 (170, 125) t,
 		Image (50, 50) i,
-		Line 4	(170 - fromIntegral x, 125 + 6)
-			(170 + fromIntegral (w - x), 125 + 6) ]
+		Line 0x3066D6 4
+			(170 - fromIntegral x, 125 + 6)
+			(170 + fromIntegral (w - x), 125 + 6),
+		Line 0xFFFFFF 6
+			(170 + fromIntegral xo + 60 - 20, 125 + 5 - 40)
+			(170 + fromIntegral xo + 60 + 10, 125 + 5 - 10),
+		Line 0xFFFFFF 6
+			(170 + fromIntegral xo + 60 - 20, 125 + 5 - 10)
+			(170 + fromIntegral xo + 60 + 10, 125 + 5 - 40)
+		]
 --		Line 2	(170 - fromIntegral x, 125 + fromIntegral (h - y) + 2)
 --			(170 + fromIntegral (w - x), 125 + fromIntegral (h - y) + 2) ]
 
@@ -229,8 +247,9 @@ userView = (nameAndImageToView <$>) `map` nameAndImage 0
 mousePos :: SigF s (CInt, CInt) ()
 mousePos = repeat move
 
-rightClickOn :: Rect -> ReactF s (Either (CInt, CInt) ())
+rightClickOn, leftClickOn :: Rect -> ReactF s (Either (CInt, CInt) ())
 rightClickOn r = posInside r (mousePos `indexBy` repeat rightClick)
+leftClickOn r = posInside r (mousePos `indexBy` repeat leftClick)
 
 data Rect = Rect {
 	leftUp :: (CInt, CInt),
