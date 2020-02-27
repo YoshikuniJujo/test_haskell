@@ -3,7 +3,7 @@
 
 module Followbox where
 
-import Prelude hiding (map, repeat)
+import Prelude hiding (map, repeat, until)
 
 import Foreign.C.Types
 import Control.Arrow ((***))
@@ -279,8 +279,12 @@ usersView = waitFor (storeRandoms (randomRs (0, 499) (mkStdGen 8))) >> tu
 	tu = do	r0 <- waitFor (userViewReact 0)
 		r1 <- waitFor (userViewReact 1)
 		r2 <- waitFor (userViewReact 2)
-		() <$ always (\a b c -> (\x y z -> x ++ y ++ z) <$> a <*> b <*> c)
-			<^> applyUserViewN 0 r0 <^> applyUserViewN 1 r1 <^> applyUserViewN 2 r2
+		threeFields r0 r1 r2 `until` rightClick
+		emit $ Right []
+		tu
+
+threeFields r0 r1 r2 = () <$ always (\a b c -> (\x y z -> x ++ y ++ z) <$> a <*> b <*> c)
+	<^> applyUserViewN 0 r0 <^> applyUserViewN 1 r1 <^> applyUserViewN 2 r2
 
 applyUserViewN :: CInt -> Either String (View, XGlyphInfo, T.Text) -> SigF s (Either String View) ()
 applyUserViewN _ (Left _) = error "bad"
@@ -294,6 +298,15 @@ userViewN n v gi hu = do
 		Left em -> emit $ Left em
 		Right (v, gi, hu) -> do
 			userViewN n v gi hu
+
+userViewN' :: CInt -> SigF s (Either String View) ()
+userViewN' n = do
+	waitFor (userViewReact n) >>= \case
+		Left em -> emit $ Left em
+		Right (v, gi, hu) -> do
+			emit $ Right v
+			waitFor $ userLoop n (T.unpack hu) gi
+	userViewN' n
 
 mousePos :: SigF s (CInt, CInt) ()
 mousePos = repeat move
