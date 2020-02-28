@@ -3,6 +3,7 @@
 
 module FollowboxHandleView (handle, view) where
 
+import Foreign.C.Types
 import Control.Arrow
 import Control.Monad.State
 import Control.Concurrent
@@ -26,7 +27,7 @@ import qualified View as V
 
 import XGlyphInfo
 
-view :: Field -> V.View -> FollowboxIO ()
+view :: Integral n => Field -> V.View n -> FollowboxIO ()
 view f = liftIO . V.view f
 
 type FollowboxIO = StateT ([Int], [Object]) IO
@@ -50,7 +51,7 @@ http u = do
 	print $ getResponseHeader "X-RateLimit-Remaining" rsp
 	pure $ getResponseBody rsp
 
-handle :: Field -> EvReqs FollowboxEvent -> FollowboxIO (EvOccs FollowboxEvent)
+handle :: Field -> EvReqs (FollowboxEvent CInt) -> FollowboxIO (EvOccs (FollowboxEvent CInt))
 handle f evs
 	| Just (Error (Cause em)) <- S.lookupMin $ S.filter (== Error Response) evs = do
 		liftIO do
@@ -74,11 +75,11 @@ handle f evs
 	| LeftClick `S.member` evs = withNextEvent f (handleEvent f evs)
 	| otherwise = pure S.empty
 
-isHttp :: FollowboxEvent -> Bool
+isHttp :: FollowboxEvent n -> Bool
 isHttp (Http _ _) = True
 isHttp _ = False
 
-handleEvent :: Field -> EvReqs FollowboxEvent -> Field.Event -> FollowboxIO (EvOccs FollowboxEvent)
+handleEvent :: Field -> EvReqs (FollowboxEvent CInt) -> Field.Event -> FollowboxIO (EvOccs (FollowboxEvent CInt))
 handleEvent f evs = \case
 	DestroyWindowEvent {} -> liftIO $ closeField f >> exitSuccess
 	ExposeEvent {} -> liftIO (flushField f) >> handle f evs
