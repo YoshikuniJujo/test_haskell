@@ -24,9 +24,13 @@ import Followbox
 import AesonObject
 import BasicAuth
 
-import XGlyphInfo
+import qualified Graphics.X11.Xrender as Xr
 
 type FollowboxIO = StateT ([Int], [Object]) IO
+
+convertXGlyphInfo :: Num n => Xr.XGlyphInfo -> XGlyphInfo n
+convertXGlyphInfo (Xr.XGlyphInfo w_ h_ x_ y_ xo_ yo_) = XGlyphInfo w h x y xo yo
+	where [w, h, x, y, xo, yo] = fromIntegral <$> [w_, h_, x_, y_, xo_, yo_]
 
 getRandoms :: FollowboxIO [Int]
 getRandoms = fst <$> get

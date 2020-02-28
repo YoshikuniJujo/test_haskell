@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Followbox (FollowboxEvent(..), usersView) where
+module Followbox (FollowboxEvent(..), XGlyphInfo(..), usersView) where
 
 import Prelude hiding (map, repeat, until)
 

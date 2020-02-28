@@ -2,23 +2,23 @@
 
 module AesonObject (Value(..), Object, copyAesonValue, copyAesonObject, decodeJson) where
 
-import Data.Vector
-import Data.HashMap.Strict
-import Data.Scientific
+import Data.Vector (Vector)
+import Data.HashMap.Strict (HashMap)
+import Data.Scientific (Scientific)
+import Data.ByteString.Lazy (ByteString)
+import Data.Text (Text)
 
-import qualified Data.ByteString.Lazy as LBS
-import qualified Data.Text as T
 import qualified Data.Aeson as A
 
 data Value
 	= Object !Object | Array !Array
-	| String !T.Text | Number !Scientific | Bool !Bool | Null
+	| String !Text | Number !Scientific | Bool !Bool | Null
 	deriving (Show, Eq, Ord)
 
-type Object = HashMap T.Text Value
+type Object = HashMap Text Value
 type Array = Vector Value
 
-decodeJson :: LBS.ByteString -> Either String [Object]
+decodeJson :: ByteString -> Either String [Object]
 decodeJson = ((copyAesonObject <$>) <$>) . A.eitherDecode
 
 copyAesonValue :: A.Value -> Value

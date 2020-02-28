@@ -2,7 +2,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module FollowboxEvent (
-	ReactF, FollowboxEvent(..), Uri, Object, Value(..), XGlyphInfo(..), decodeJson,
+	ReactF, FollowboxEvent(..), Uri, Object, Value(..), XGlyphInfo(..),
+	decodeJson,
 	move, leftClick, httpGet, browse,
 	storeRandoms, loadRandoms, storeJsons, loadJsons,
 	calcTextExtents, raiseError ) where
@@ -12,11 +13,11 @@ import Prelude hiding (map, repeat, until)
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as LBS
 
+import AesonObject
 import React
 import Event
-import AesonObject
 
-import XGlyphInfo
+type ReactF s n r = React s (FollowboxEvent n) r
 
 data FollowboxEvent n
 	= Move (Event (n, n)) | LeftClick
@@ -32,7 +33,14 @@ type Uri = String
 type FontName = String
 type FontSize = Double
 
-type ReactF s n r = React s (FollowboxEvent n) r
+data XGlyphInfo n = XGlyphInfo {
+	xGlyphInfoWidth :: n,
+	xGlyphInfoHeight :: n,
+	xGlyphInfoX :: n,
+	xGlyphInfoY :: n,
+	xGlyphInfoXOff :: n,
+	xGlyphInfoYOff :: n
+	} deriving (Show, Eq, Ord)
 
 move :: (Show n, Ord n) => ReactF s n (n, n)
 move = ex (Move Request) \evs ->

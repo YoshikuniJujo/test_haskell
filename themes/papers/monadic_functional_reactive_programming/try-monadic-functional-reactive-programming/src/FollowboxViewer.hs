@@ -35,7 +35,7 @@ colorToPixel Color { colorRed = r_, colorGreen = g_, colorBlue = b_ } =
 	r `shiftL` 16 .|. g `shiftL` 8 .|. b
 	where [r, g, b] = fromIntegral <$> [r_, g_, b_]
 
-drawImagePixel :: Field -> Image PixelRGBA8 -> Position -> Position -> IO ()
+drawImagePixel :: Field -> Image PixelRGBA8 -> F.Position -> F.Position -> IO ()
 drawImagePixel f img x y = do
 	let	w = fromIntegral $ imageWidth img
 		h = fromIntegral $ imageHeight img
