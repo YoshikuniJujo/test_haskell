@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module AesonObject (Value(..), Object, copyAesonValue, copyAesonObject, decodeJson) where
+module AesonObject (Value(..), Object, Array, decodeJson) where
 
 import Data.Vector (Vector)
 import Data.HashMap.Strict (HashMap)
