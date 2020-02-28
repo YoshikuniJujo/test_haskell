@@ -16,13 +16,13 @@ import qualified Codec.Picture as JP
 import Signal
 import React
 import AesonObject
-import View
 
 import Check.Followbox.GetUsers
 
 import XGlyphInfo
 
 import FollowboxEvent
+import FollowboxView
 
 type SigF s n a r = Sig s (FollowboxEvent n) a r
 

@@ -15,7 +15,6 @@ import qualified Data.ByteString.Lazy as LBS
 import React
 import Event
 import AesonObject
-import View
 
 import XGlyphInfo
 
@@ -31,6 +30,7 @@ data FollowboxEvent n
 
 type Uri = String
 type FontName = String
+type FontSize = Double
 
 type ReactF s n r = React s (FollowboxEvent n) r
 

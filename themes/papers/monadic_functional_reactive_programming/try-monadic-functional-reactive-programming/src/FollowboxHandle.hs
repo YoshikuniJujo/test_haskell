@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module FollowboxHandleView (handle, view) where
+module FollowboxHandle (FollowboxIO, handle) where
 
 import Foreign.C.Types
 import Control.Arrow
@@ -23,12 +23,8 @@ import ButtonEvent
 import Followbox
 import AesonObject
 import BasicAuth
-import qualified View as V
 
 import XGlyphInfo
-
-view :: Integral n => Field -> V.View n -> FollowboxIO ()
-view f = liftIO . V.view f
 
 type FollowboxIO = StateT ([Int], [Object]) IO
 

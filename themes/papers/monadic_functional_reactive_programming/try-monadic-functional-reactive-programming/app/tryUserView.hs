@@ -9,7 +9,12 @@ import Signal
 import Field
 
 import Followbox
-import FollowboxHandleView
+import FollowboxHandle
+
+import qualified FollowboxView as V
+
+view :: Integral n => Field -> V.View n -> FollowboxIO ()
+view f = liftIO . V.view f
 
 main :: IO ()
 main = do

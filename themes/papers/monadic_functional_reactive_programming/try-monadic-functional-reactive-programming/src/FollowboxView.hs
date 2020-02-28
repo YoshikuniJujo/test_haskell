@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module View where
+module FollowboxView where
 
 import qualified Data.Text as T
 import qualified Codec.Picture as JP
