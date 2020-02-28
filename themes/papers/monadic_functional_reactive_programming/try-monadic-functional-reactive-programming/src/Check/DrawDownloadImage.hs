@@ -13,15 +13,15 @@ import Codec.Picture
 import System.Random
 import Network.HTTP.Simple
 
-import Field
+import qualified Field as F
 
 import Check.DownloadImage
 import Check.Field.DrawImage
 
-drawDownloadImage :: Field -> Request -> IO ()
+drawDownloadImage :: F.Field -> Request -> IO ()
 drawDownloadImage f rq = downloadImage rq >>= either error \i -> drawImage f i 100 100
 
-drawImage :: Field -> Image PixelRGBA8 -> Int32 -> Int32 -> IO ()
+drawImage :: F.Field -> Image PixelRGBA8 -> Int32 -> Int32 -> IO ()
 drawImage f img x y = do
 	let	w = fromIntegral $ imageWidth img
 		h = fromIntegral $ imageHeight img
@@ -41,8 +41,8 @@ randomAvatar = githubAvatar <$> randomRIO (1, 500)
 
 sample :: IO ()
 sample = do
-	f <- openField "foobar" []
+	f <- F.openField "foobar" []
 	drawDownloadImage f =<< randomAvatar
-	flushField f
+	F.flushField f
 	void getLine
-	closeField f
+	F.closeField f

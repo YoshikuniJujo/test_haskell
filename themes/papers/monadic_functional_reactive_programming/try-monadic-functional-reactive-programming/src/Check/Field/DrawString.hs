@@ -15,7 +15,7 @@ drawStr Field { display = dpy, pixmap = win, graphicsContext = gc } c x y s =
 	setForeground dpy gc c >> drawString dpy win gc x y s
 
 writeString :: Field -> String -> Double -> Position -> Position -> String -> IO ()
-writeString Field { display = dpy, pixmap = win, graphicsContext = gc } fnt sz x y str = do
+writeString Field { display = dpy, pixmap = win } fnt sz x y str = do
 	let	vsl = defaultVisual dpy $ defaultScreen dpy
 		cm = defaultColormap dpy $ defaultScreen dpy
 	draw <- xftDrawCreate dpy win vsl cm

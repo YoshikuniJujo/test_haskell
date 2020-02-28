@@ -107,21 +107,25 @@ nameAndImageToView n ((t, XGlyphInfo {
 	xGlyphInfoWidth = w,
 	xGlyphInfoX = x,
 	xGlyphInfoXOff = xo }), i) = [
-		Text 0x3066D6 60 (textLeft, textTop + vertOff * n) t,
+		Text blue 60 (textLeft, textTop + vertOff * n) t,
 		Image (left, top + vertOff * n) i,
-		Line 0x3066D6 4
+		Line blue 4
 			(textLeft - x, textTop + 6 + vertOff * n)
 			(textLeft + w - x, textTop + 6 + vertOff * n),
-		Line 0xFFFFFF 6
+		Line white 6
 			(textLeft + xo + 60 - 20, textTop + 5 - 40 + vertOff * n)
 			(textLeft + xo + 60 + 10, textTop + 5 - 10 + vertOff * n),
-		Line 0xFFFFFF 6
+		Line white 6
 			(textLeft + xo + 60 - 20, textTop + 5 - 10 + vertOff * n)
 			(textLeft + xo + 60 + 10, textTop + 5 - 40 + vertOff * n)
 		]
 
 title :: Num n => View1 n
-title = Text 0xFFFFFF 60 (10, 80) "Who to follow"
+title = Text white 60 (10, 80) "Who to follow"
+
+white, blue :: Color
+white = Color { colorRed = 0xff, colorGreen = 0xff, colorBlue = 0xff }
+blue = Color { colorRed = 0x30, colorGreen = 0x66, colorBlue = 0xd6 }
 
 refresh :: (Show n, Ord n, Integral n) => ReactF s n (View n, Rect n)
 refresh = do
@@ -130,8 +134,8 @@ refresh = do
 		h = xGlyphInfoHeight gi
 		x = xGlyphInfoX gi
 		y = xGlyphInfoY gi
-	pure (	[	Text 0x3066D6 60 (600, 80) "Refresh",
-			Line 0x3066D6 4
+	pure (	[	Text blue 60 (600, 80) "Refresh",
+			Line blue 4
 				(600 - x, 80 + 6)
 				(600 + w - x, 80 + 6) ],
 		Rect	(600 - x, 80 -  y)

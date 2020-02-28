@@ -4,17 +4,17 @@
 #include <X11/Xlib.h>
 
 module Field.Internal (
-	Field(..), openField, isDeleteEvent, destroyField, closeField,
+	Field(..), openField, destroyField, closeField,
 	Mask, exposureMask, keyPressMask,
 		buttonPressMask, buttonReleaseMask,
 		pointerMotionMask, button1MotionMask,
 	Event(..), withNextEvent, withNextEventTimeout,
 	Position, Dimension, Pixel,
-	Field.Internal.drawLine, fillRect,
+	Field.Internal.drawLine, fillRect, drawImage,
 	drawStr, Field.Internal.textExtents, textXOff, clearField, flushField
 	) where
 
-import Data.Bits
+import Foreign.Ptr
 import Foreign.C.Types
 
 import Control.Monad
@@ -28,6 +28,8 @@ import Graphics.X11 as X
 import Graphics.X11.Xlib.Extras
 import Graphics.X11.Xft
 import Graphics.X11.Xrender
+
+import qualified Data.Vector.Storable as V
 
 import TextLike
 import Select
@@ -112,7 +114,7 @@ fillRect Field { display = dpy, pixmap = win, graphicsContext = gc } c x y w h =
 	setForeground dpy gc c >> fillRectangle dpy win gc x y w h
 
 drawStr :: Field -> Pixel -> String -> Double -> Position -> Position -> String -> IO ()
-drawStr Field { display = dpy, pixmap = win, graphicsContext = gc } c fnt sz x y str = do
+drawStr Field { display = dpy, pixmap = win } c fnt sz x y str = do
 	let	vsl = defaultVisual dpy $ defaultScreen dpy
 		cm = defaultColormap dpy $ defaultScreen dpy
 	draw <- xftDrawCreate dpy win vsl cm
@@ -122,8 +124,8 @@ drawStr Field { display = dpy, pixmap = win, graphicsContext = gc } c fnt sz x y
 		xrendercolor_red = (fromIntegral c `shiftR` 16) `shiftL` 8,
 		xrendercolor_blue = (fromIntegral c `shiftR` 8 .&. 0xff) `shiftL` 8,
 		xrendercolor_green = (fromIntegral c .&. 0xff) `shiftL` 8,
-		xrendercolor_alpha = 0xffff } \c ->
-		xftDrawString draw c font x y str
+		xrendercolor_alpha = 0xffff } \clr ->
+		xftDrawString draw clr font x y str
 
 textExtents :: Field -> String -> Double -> String -> IO XGlyphInfo
 textExtents Field { display = dpy } fnt sz str = do
@@ -159,3 +161,26 @@ myWaitForEvent d n = do
 	fds <- select [Fd fd] [] [] n
 	pure $ (Fd fd) `notElem` fds
 	where fd = connectionNumber d
+
+drawImage :: Field -> V.Vector Word8 -> Position -> Position -> Dimension -> Dimension -> IO ()
+drawImage f dt x y w h =
+	V.unsafeWith (V.unsafeCast dt) \d -> do
+		i <- createImageSimple f d w h
+		putImage' f i x y w h
+
+createImage' :: Field -> CInt -> X.ImageFormat -> CInt -> Ptr CChar -> Dimension -> Dimension -> CInt -> CInt -> IO X.Image
+createImage' Field { display = dpy } depth format offset dat width height bitmap_pad bytes_per_line =
+	X.createImage dpy vis depth format offset dat width height bitmap_pad bytes_per_line
+	where
+	vis = X.defaultVisual dpy (X.defaultScreen dpy)
+
+createImageSimple :: Field -> Ptr CChar -> Dimension -> Dimension -> IO X.Image
+createImageSimple f@Field { display = dpy } dat width height =
+	createImage' f (defaultDepth' f) X.zPixmap 0 dat width height (X.bitmapUnit dpy) 0
+
+putImage' :: Field -> X.Image -> Position -> Position -> Dimension -> Dimension -> IO ()
+putImage' Field { display = dpy, pixmap = win, graphicsContext = gc } img x y w h =
+	X.putImage dpy win gc img 0 0 x y w h
+
+defaultDepth' :: Field -> CInt
+defaultDepth' Field { display = dpy } = X.defaultDepth dpy (X.defaultScreen dpy)
