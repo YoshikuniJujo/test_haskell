@@ -1,10 +1,11 @@
-{-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module FollowboxHandleView (handle, view) where
 
 import Control.Arrow
 import Control.Monad.State
+import Control.Concurrent
 import Data.String
 import System.Exit
 import System.Process
@@ -51,6 +52,11 @@ http u = do
 
 handle :: Field -> EvReqs FollowboxEvent -> FollowboxIO (EvOccs FollowboxEvent)
 handle f evs
+	| Just (Error (Cause em)) <- S.lookupMin $ S.filter (== Error Response) evs = do
+		liftIO do
+			putStrLn $ "Error: " ++ em
+			threadDelay 30000000
+		pure . S.singleton $ Error Response
 	| Just (Browse (Cause uri)) <- S.lookupMin $ S.filter (== Browse Response) evs =
 		S.singleton (Browse Response) <$ liftIO (putStrLn uri >> rawSystem "firefox" [uri])
 	| Just (LoadJsons Request) <- S.lookupMin $ S.filter (== LoadJsons Request) evs =

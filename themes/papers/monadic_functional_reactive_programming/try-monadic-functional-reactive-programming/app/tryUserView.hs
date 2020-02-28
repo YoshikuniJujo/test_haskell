@@ -14,5 +14,5 @@ import FollowboxHandleView
 main :: IO ()
 main = do
 	f <- openField ("GitHubのユーザを表示するよ" :: String) [exposureMask, buttonPressMask]
-	interpretSig (handle f) (either error (view f)) usersView `runStateT` ([], []) >>= print
+	interpretSig (handle f) (view f) usersView `runStateT` ([], []) >>= print
 	closeField f

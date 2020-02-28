@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Followbox (FollowboxEvent(..), usersView) where
@@ -37,6 +37,7 @@ data FollowboxEvent
 	| StoreJsons (Action [Object]) | LoadJsons (Event [Object])
 	| CalcTextExtents
 		(Bidirectional (FontName, FontSize, String) XGlyphInfo)
+	| Error (Action String)
 	deriving (Show, Eq, Ord)
 
 type Uri = String
@@ -104,41 +105,47 @@ calcTextExtents fn fs str = pick <$> exper (S.singleton $ CalcTextExtents (Actio
 		[CalcTextExtents (Event xo)] -> xo
 		es -> error $ "never occur: " ++ show es ++ " : " ++ show evs
 
-getUsersJson :: Int -> ReactF s (Either String [Object])
-getUsersJson s = decodeUsers <$> httpGet (apiUsers s)
+raiseError :: String -> ReactF s ()
+raiseError em = pick <$> exper (S.singleton $ Error (Cause em))
+	where pick evs = case S.elems $ S.filter (== Error Response) evs of
+		[Error Response] -> ()
+		es -> error $ "never occur: " ++ show es ++ " : " ++ show evs
 
-getUser1 :: ReactF s (Either String (T.Text, JP.Image JP.PixelRGBA8, T.Text))
+getUsersJson :: Int -> ReactF s [Object]
+getUsersJson s = (decodeUsers <$> httpGet (apiUsers s)) >>= \case
+	Left em -> raiseError em >> getUsersJson s
+	Right os -> pure os
+
+getUser1 :: ReactF s (T.Text, JP.Image JP.PixelRGBA8, T.Text)
 getUser1 = loadJsons >>= \case
 	[] -> loadRandoms >>= \case
-		r : rs -> do
-			storeRandoms rs
-			getUsersJson r >>= \case
-				Right (o : os) -> nameAndImageFromObject o <* storeJsons (take 4 os)
-				Right [] -> pure $ Left "no GitHub users"
-				Left s -> pure $ Left s
-		[] -> error "no random numbers"
-	o : os -> nameAndImageFromObject o <* storeJsons os
+		r : rs -> storeRandoms rs >> getUsersJson r >>= \case
+			(o : os) -> nameAndImageFromObject o >>= \case
+				Left em -> raiseError em >> getUser1
+				Right ni -> ni <$ storeJsons (take 4 os)
+			[] -> raiseError "no GitHub users" >> getUser1
+		[] -> raiseError "no random numbers" >> getUser1
+	o : os -> nameAndImageFromObject o >>= \case
+		Left em -> raiseError em >> storeJsons [] >> getUser1
+		Right ni -> ni <$ storeJsons os
 
-nameAndImageFromObject :: Object -> ReactF s (Either String (T.Text, JP.Image JP.PixelRGBA8, T.Text))
-nameAndImageFromObject o = do
-	img <- avatorFromObject o
-	pure $ (,,)
-		<$> maybe (Left "no login name") Right (loginNameFromObject o)
-		<*> img
-		<*> maybe (Left "no html url") Right (htmlUrlFromObject o)
+nameAndImageFromObject :: Object ->
+	ReactF s (Either String (T.Text, JP.Image JP.PixelRGBA8, T.Text))
+nameAndImageFromObject o = (<$> avatorFromObject o) \img ->
+	(,,) <$> loginNameFromObject o <*> img <*> htmlUrlFromObject o
 
-loginNameFromObject, htmlUrlFromObject :: Object -> Maybe T.Text
+loginNameFromObject, htmlUrlFromObject :: Object -> Either String T.Text
 loginNameFromObject o = case HM.lookup "login" o of
-	Just (String li) -> Just li
-	_ -> Nothing
+	Just (String li) -> Right li; _ -> Left "no login name"
 
 htmlUrlFromObject o = case HM.lookup "html_url" o of
-	Just (String li) -> Just li
-	_ -> Nothing
+	Just (String li) -> Right li; _ -> Left "no html url"
 
 avatorFromObject :: Object -> ReactF s (Either String (JP.Image JP.PixelRGBA8))
 avatorFromObject o = (scaleBilinear sz sz <$>) <$> case HM.lookup "avatar_url" o of
-	Just (String au) -> ((JP.convertRGBA8 <$>) . JP.decodeImage . LBS.toStrict) <$> httpGet (T.unpack au)
+	Just (String au) -> (JP.decodeImage . LBS.toStrict <$> httpGet (T.unpack au)) >>= \case
+		Left em -> pure $ Left em
+		Right img -> pure . Right $ JP.convertRGBA8 img
 	_ -> pure $ Left "no avatar_url"
 	where sz = fromIntegral avatarSize
 
@@ -152,14 +159,10 @@ userLoop n hu xo = do
 		(Just _, _) -> pure ()
 		_ -> browse hu >> userLoop n hu xo
 
-nameAndImageReact :: ReactF s (Either String ((T.Text, XGlyphInfo), JP.Image JP.PixelRGBA8, T.Text))
-nameAndImageReact = tu
-	where
-	tu = getUser1 >>= \case
-		Right (li, av, hu) -> do
-			xo <- calcTextExtents "sans" 60 $ T.unpack li
-			pure $ Right ((li, xo), av, hu)
-		Left em -> pure $ Left em
+nameAndImageReact ::
+	ReactF s ((T.Text, XGlyphInfo), JP.Image JP.PixelRGBA8, T.Text)
+nameAndImageReact = getUser1 >>= \(li, av, hu) ->
+	(\xo -> ((li, xo), av, hu)) <$> calcTextExtents "sans" 60 (T.unpack li)
 
 getRect :: CInt -> XGlyphInfo -> Rect
 getRect n gi = Rect
@@ -175,8 +178,7 @@ xRect :: CInt -> XGlyphInfo -> Rect
 xRect n gi = Rect
 	(fromIntegral textLeft + xo + 60 - 20, fromIntegral textTop + 5 - 40 + fromIntegral vertOff * n)
 	(fromIntegral textLeft + xo + 60 + 10, fromIntegral textTop + 5 - 10 + fromIntegral vertOff * n)
-	where
-	xo = fromIntegral $ xGlyphInfoXOff gi
+	where xo = fromIntegral $ xGlyphInfoXOff gi
 
 nameAndImageToView :: CInt -> ((T.Text, XGlyphInfo), JP.Image JP.PixelRGBA8) -> View
 nameAndImageToView n_ ((t, XGlyphInfo {
@@ -214,10 +216,11 @@ refresh = do
 		Rect	(600 - fromIntegral x, 80 -  fromIntegral y)
 			(600 - fromIntegral x + fromIntegral w, 80 - fromIntegral y + fromIntegral h) )
 
-userViewReact :: CInt -> ReactF s (Either String (View, XGlyphInfo, T.Text))
-userViewReact n = ((\(a@(_, gi), b, c) -> (nameAndImageToView n (a, b), gi, c)) <$>) <$> nameAndImageReact
+userViewReact :: CInt -> ReactF s (View, XGlyphInfo, T.Text)
+userViewReact n = (<$> nameAndImageReact)
+	\(a@(_, gi), b, c) -> (nameAndImageToView n (a, b), gi, c)
 
-usersView :: SigF s (Either String View) ()
+usersView :: SigF s View ()
 usersView = do
 	waitFor (storeRandoms (randomRs (0, 499) (mkStdGen 8)))
 	(r, rct) <- waitFor refresh
@@ -227,27 +230,24 @@ usersView = do
 		r0 <- waitFor (userViewReact 0)
 		r1 <- waitFor (userViewReact 1)
 		r2 <- waitFor (userViewReact 2)
-		() <$ ((title :) . (r ++) <$>) `map` (threeFields r0 r1 r2 `until` leftClickOn rct)
-		emit . Right $ title : r
+		() <$ ((title :) . (r ++)) `map` (threeFields r0 r1 r2 `until` leftClickOn rct)
+		emit $ title : r
 		tu r rct
 
-threeFields :: Either String (View, XGlyphInfo, T.Text) ->
-	Either String (View, XGlyphInfo, T.Text) ->
-	Either String (View, XGlyphInfo, T.Text) -> SigF s (Either String View) ()
-threeFields r0 r1 r2 = () <$ always (\a b c -> (\x y z -> x ++ y ++ z) <$> a <*> b <*> c)
+threeFields :: (View, XGlyphInfo, T.Text) ->
+	(View, XGlyphInfo, T.Text) ->
+	(View, XGlyphInfo, T.Text) -> SigF s View ()
+threeFields r0 r1 r2 = () <$ always (\a b c -> a ++ b ++ c)
 	<^> applyUserViewN 0 r0 <^> applyUserViewN 1 r1 <^> applyUserViewN 2 r2
 
-applyUserViewN :: CInt -> Either String (View, XGlyphInfo, T.Text) -> SigF s (Either String View) ()
-applyUserViewN _ (Left _) = error "bad"
-applyUserViewN n (Right (v, gi, hu)) = userViewN n v gi hu
+applyUserViewN :: CInt -> (View, XGlyphInfo, T.Text) -> SigF s View ()
+applyUserViewN n (v, gi, hu) = userViewN n v gi hu
 
-userViewN :: CInt -> View -> XGlyphInfo -> T.Text -> SigF s (Either String View) ()
-userViewN n v gi hu = do
-	emit $ Right v
+userViewN :: CInt -> View -> XGlyphInfo -> T.Text -> SigF s View ()
+userViewN n v gi hu = emit v >> do
 	waitFor $ userLoop n (T.unpack hu) gi
-	waitFor (userViewReact n) >>= \case
-		Left em -> emit $ Left em
-		Right (v', gi', hu') -> userViewN n v' gi' hu'
+	(v', gi', hu') <- waitFor $ userViewReact n
+	userViewN n v' gi' hu'
 
 mousePos :: SigF s (CInt, CInt) ()
 mousePos = repeat move
@@ -255,9 +255,8 @@ mousePos = repeat move
 leftClickOn :: Rect -> ReactF s (Either (CInt, CInt) ())
 leftClickOn r = posInside r (mousePos `indexBy` repeat leftClick)
 
-data Rect = Rect {
-	leftUp :: (CInt, CInt),
-	rightDown :: (CInt, CInt) } deriving Show
+data Rect = Rect { leftUp :: (CInt, CInt), rightDown :: (CInt, CInt) }
+	deriving Show
 
 posInside :: Rect -> SigF s (CInt, CInt) y -> ReactF s (Either (CInt, CInt) y)
 posInside r = find (`inside` r)
