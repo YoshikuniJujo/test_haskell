@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Check.Followbox.GetUsers (getUsers, decodeUsers) where
+module Check.Followbox.GetUsers (getUsers) where
 
 import Network.HTTP.Simple
 
@@ -12,6 +12,3 @@ import AesonObject
 
 getUsers :: IO LBS.ByteString
 getUsers = getResponseBody <$> httpLBS (setRequestHeader "User-Agent" ["Yoshio"] "https://api.github.com/users")
-
-decodeUsers :: LBS.ByteString -> Either String [Object]
-decodeUsers = ((copyAesonObject <$>) <$>) . A.eitherDecode

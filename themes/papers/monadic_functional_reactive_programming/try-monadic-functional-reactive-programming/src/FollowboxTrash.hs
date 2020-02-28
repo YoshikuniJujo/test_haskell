@@ -2,19 +2,15 @@
 
 module FollowboxTrash where
 
-import Control.Monad
 import System.Random
 
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as LBS
-import qualified Data.Aeson as A
 
 import Signal
 import React
 import Event
 import AesonObject
-
-import Check.Followbox.GetUsers
 
 import Debug.Trace
 
@@ -60,7 +56,7 @@ getProd = pick <$> exper (S.singleton Prod)
 		es -> error $ "never occur: " ++ show es ++ " : " ++ show evs
 
 getUsersJsonReact :: Int -> ReactF s [Object]
-getUsersJsonReact s = (\(Right r) -> r) . decodeUsers <$> getUsersByteString s
+getUsersJsonReact s = (\(Right r) -> r) . decodeJson <$> getUsersByteString s
 
 getUsersJson :: [Int] -> SigF s Object ()
 getUsersJson (s : ss) = do

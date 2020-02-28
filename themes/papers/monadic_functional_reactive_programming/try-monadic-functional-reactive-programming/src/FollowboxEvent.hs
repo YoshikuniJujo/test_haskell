@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module FollowboxEvent (
-	ReactF, FollowboxEvent(..), Uri,
+	ReactF, FollowboxEvent(..), Uri, Object, Value(..), XGlyphInfo(..), decodeJson,
 	move, leftClick, httpGet, browse,
 	storeRandoms, loadRandoms, storeJsons, loadJsons,
 	calcTextExtents, raiseError ) where

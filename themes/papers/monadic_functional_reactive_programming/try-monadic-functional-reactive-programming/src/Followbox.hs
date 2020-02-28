@@ -13,16 +13,10 @@ import qualified Data.Text as T
 import qualified Data.HashMap.Strict as HM
 import qualified Codec.Picture as JP
 
-import Signal
-import React
-import AesonObject
-
-import Check.Followbox.GetUsers
-
-import XGlyphInfo
-
 import FollowboxEvent
 import FollowboxView
+import Signal
+import React
 
 type SigF s n a r = Sig s (FollowboxEvent n) a r
 
@@ -35,7 +29,7 @@ vertOff = 120
 avatarSize = 90
 
 getUsersJson :: (Show n, Ord n) => Int -> ReactF s n [Object]
-getUsersJson s = (decodeUsers <$> httpGet (apiUsers s)) >>= \case
+getUsersJson s = (decodeJson <$> httpGet (apiUsers s)) >>= \case
 	Left em -> raiseError em >> getUsersJson s
 	Right os -> pure os
 

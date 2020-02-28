@@ -216,24 +216,6 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-monadic-functional-reactive-programming
-  try-get-users-byte-string:
-    main:                tryGetUsersByteString.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-monadic-functional-reactive-programming
-  try-get-users-json:
-    main:                tryGetUsersJson.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-monadic-functional-reactive-programming
   try-prod-user:
     main:                tryProdUser.hs
     source-dirs:         app

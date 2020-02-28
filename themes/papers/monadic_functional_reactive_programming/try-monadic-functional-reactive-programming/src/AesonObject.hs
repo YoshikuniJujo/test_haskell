@@ -1,11 +1,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module AesonObject (Value(..), Object, copyAesonValue, copyAesonObject) where
+module AesonObject (Value(..), Object, copyAesonValue, copyAesonObject, decodeJson) where
 
 import Data.Vector
 import Data.HashMap.Strict
 import Data.Scientific
 
+import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 import qualified Data.Aeson as A
 
@@ -16,6 +17,9 @@ data Value
 
 type Object = HashMap T.Text Value
 type Array = Vector Value
+
+decodeJson :: LBS.ByteString -> Either String [Object]
+decodeJson = ((copyAesonObject <$>) <$>) . A.eitherDecode
 
 copyAesonValue :: A.Value -> Value
 copyAesonValue (A.Object o) = Object $ copyAesonObject o
