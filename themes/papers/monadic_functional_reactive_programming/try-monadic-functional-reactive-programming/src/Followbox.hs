@@ -51,65 +51,60 @@ textTop = top + 75
 vertOff = 120
 avatarSize = 90
 
+ex :: e -> (EvOccs e -> a) -> React s e a
+ex e p = p <$> exper (S.singleton e)
+
+err :: Show e => [e] -> EvOccs e -> a
+err es evs = error $ "never occur: " ++ show es ++ " : " ++ show evs
+
 move :: ReactF s (CInt, CInt)
-move = pick <$> exper (S.singleton $ Move Request)
-	where pick evs = case S.elems $ S.filter (== Move Request) evs of
-		[Move (Occurred p)] -> p
-		es -> error $ "never occur: " ++ show es ++ " : " ++ show evs
+move = ex (Move Request) \evs ->
+	case S.elems $ S.filter (== Move Request) evs of
+		[Move (Occurred p)] -> p; es -> err es evs
 
 leftClick :: ReactF s ()
-leftClick = pick <$> exper (S.singleton LeftClick)
-	where pick evs = case S.elems $ S.filter (== LeftClick) evs of
-		[LeftClick] -> ()
-		es -> error $ "never occur: " ++ show es ++ " : " ++ show evs
+leftClick = ex LeftClick \evs -> case S.elems $ S.filter (== LeftClick) evs of
+	[LeftClick] -> (); es -> err es evs
 
 httpGet :: Uri -> ReactF s LBS.ByteString
-httpGet u = pick <$> exper (S.singleton $ Http u Request)
-	where pick evs = case S.elems $ S.filter (== Http u Request) evs of
-		[Http _ (Occurred bs)] -> bs
-		es -> error $ "never occur: " ++ show es ++ " : " ++ show evs
+httpGet u = ex (Http u Request) \evs ->
+	case S.elems $ S.filter (== Http u Request) evs of
+		[Http _ (Occurred bs)] -> bs; es -> err es evs
 
 browse :: Uri -> ReactF s ()
-browse u = pick <$> exper (S.singleton . Browse $ Cause u)
-	where pick evs = case S.elems $ S.filter (== Browse (Cause u)) evs of
-		[Browse _] -> ()
-		es -> error $ "never occur: " ++ show es ++ " : " ++ show evs
+browse u = ex (Browse $ Cause u) \evs ->
+	case S.elems $ S.filter (== Browse (Cause u)) evs of
+		[Browse _] -> (); es -> err es evs
 
 storeRandoms :: [Int] -> ReactF s ()
-storeRandoms rs = pick <$> exper (S.singleton $ StoreRandoms (Cause rs))
-	where pick evs = case S.elems $ S.filter (== StoreRandoms (Cause rs)) evs of
-		[StoreRandoms Response] -> ()
-		es -> error $ "never occur: " ++ show es ++ " : " ++ show evs
+storeRandoms rs = ex (StoreRandoms $ Cause rs) \evs ->
+	case S.elems $ S.filter (== StoreRandoms (Cause rs)) evs of
+		[StoreRandoms Response] -> (); es -> err es evs
 
 loadRandoms :: ReactF s [Int]
-loadRandoms = pick <$> exper (S.singleton $ LoadRandoms Request)
-	where pick evs = case S.elems $ S.filter (== LoadRandoms Request) evs of
-		[LoadRandoms (Occurred rs)] -> rs
-		es -> error $ "never occur: " ++ show es ++ " : " ++ show evs
+loadRandoms =  ex (LoadRandoms Request) \evs ->
+	case S.elems $ S.filter (== LoadRandoms Request) evs of
+		[LoadRandoms (Occurred rs)] -> rs; es -> err es evs
 
 storeJsons :: [Object] -> ReactF s ()
-storeJsons os = pick <$> exper (S.singleton $ StoreJsons (Cause os))
-	where pick evs = case S.elems $ S.filter (== StoreJsons (Cause os)) evs of
-		[StoreJsons Response] -> ()
-		es -> error $ "never occur: " ++ show es ++ " : " ++ show evs
+storeJsons os =  ex (StoreJsons $ Cause os) \evs ->
+	case S.elems $ S.filter (== StoreJsons (Cause os)) evs of
+		[StoreJsons Response] -> (); es -> err es evs
 
 loadJsons :: ReactF s [Object]
-loadJsons = pick <$> exper (S.singleton $ LoadJsons Request)
-	where pick evs = case S.elems $ S.filter (== LoadJsons Request) evs of
-		[LoadJsons (Occurred os)] -> os
-		es -> error $ "never occur: " ++ show es ++ " : " ++ show evs
+loadJsons = ex (LoadJsons Request) \evs ->
+	case S.elems $ S.filter (== LoadJsons Request) evs of
+		[LoadJsons (Occurred os)] -> os; es -> err es evs
 
 calcTextExtents :: FontName -> FontSize -> String -> ReactF s XGlyphInfo
-calcTextExtents fn fs str = pick <$> exper (S.singleton $ CalcTextExtents (Action (fn, fs, str)))
-	where pick  evs = case S.elems $ S.filter (== CalcTextExtents Communication) evs of
-		[CalcTextExtents (Event xo)] -> xo
-		es -> error $ "never occur: " ++ show es ++ " : " ++ show evs
+calcTextExtents fn fs str = ex (CalcTextExtents $ Action (fn, fs, str)) \evs ->
+	case S.elems $ S.filter (== CalcTextExtents Communication) evs of 
+		[CalcTextExtents (Event xo)] -> xo; es -> err es evs
 
 raiseError :: String -> ReactF s ()
-raiseError em = pick <$> exper (S.singleton $ Error (Cause em))
-	where pick evs = case S.elems $ S.filter (== Error Response) evs of
-		[Error Response] -> ()
-		es -> error $ "never occur: " ++ show es ++ " : " ++ show evs
+raiseError em = ex (Error $ Cause em) \evs ->
+	case S.elems $ S.filter (== Error Response) evs of
+		[Error Response] -> (); es -> err es evs
 
 getUsersJson :: Int -> ReactF s [Object]
 getUsersJson s = (decodeUsers <$> httpGet (apiUsers s)) >>= \case
