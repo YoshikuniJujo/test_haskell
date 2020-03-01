@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Followbox (FollowboxEvent(..), XGlyphInfo(..), usersView) where
@@ -6,7 +6,7 @@ module Followbox (FollowboxEvent(..), XGlyphInfo(..), usersView) where
 import Prelude hiding (map, repeat, until)
 
 import Codec.Picture.Extra
-import System.Random
+import System.Random hiding (next)
 
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
@@ -39,7 +39,7 @@ getUser1 = loadJsons >>= \case
 		r : rs -> storeRandoms rs >> getUsersJson r >>= \case
 			(o : os) -> nameAndImageFromObject o >>= \case
 				Left em -> raiseError em >> getUser1
-				Right ni -> ni <$ storeJsons (take 4 os)
+				Right ni -> ni <$ storeJsons (take 8 os)
 			[] -> raiseError "no GitHub users" >> getUser1
 		[] -> raiseError "no random numbers" >> getUser1
 	o : os -> nameAndImageFromObject o >>= \case
@@ -121,37 +121,71 @@ white, blue :: Color
 white = Color { colorRed = 0xff, colorGreen = 0xff, colorBlue = 0xff }
 blue = Color { colorRed = 0x30, colorGreen = 0x66, colorBlue = 0xd6 }
 
-refresh :: (Show n, Ord n, Integral n) => ReactF s n (View n, Rect n)
-refresh = do
-	gi <- calcTextExtents "sans" 60 "Refresh"
+next :: (Show n, Ord n, Integral n) => ReactF s n (View n, Rect n)
+next = do
+	gi <- calcTextExtents "sans" 30 "Next"
 	let	w = xGlyphInfoWidth gi
 		h = xGlyphInfoHeight gi
 		x = xGlyphInfoX gi
 		y = xGlyphInfoY gi
-	pure (	[	Text blue 60 (600, 80) "Refresh",
+	pure (	[	Text blue 30 (600, 80) "Next",
 			Line blue 4
 				(600 - x, 80 + 6)
 				(600 + w - x, 80 + 6) ],
 		Rect	(600 - x, 80 -  y)
 			(600 - x + w, 80 - y + h) )
 
+refresh :: (Show n, Ord n, Integral n) => ReactF s n (View n, Rect n)
+refresh = do
+	gi <- calcTextExtents "sans" 30 "Refresh"
+	let	w = xGlyphInfoWidth gi
+		h = xGlyphInfoHeight gi
+		x = xGlyphInfoX gi
+		y = xGlyphInfoY gi
+	pure (	[	Text blue 30 (700, 80) "Refresh",
+			Line blue 4
+				(700 - x, 80 + 6)
+				(700 + w - x, 80 + 6) ],
+		Rect	(700 - x, 80 -  y)
+			(700 - x + w, 80 - y + h) )
+
 userViewReact :: (Show n, Ord n, Integral n) => n -> ReactF s n (View n, XGlyphInfo n, T.Text)
 userViewReact n = (<$> nameAndImageReact)
 	\(a@(_, gi), b, c) -> (nameAndImageToView n (a, b), gi, c)
 
+first' :: (Ord e, Update a b) => React s e a -> React s e b -> React s e (Either a b)
+l `first'` r = do
+	(a, b) <- l `first` r
+	case (done a, done b) of
+		(Just x, _) -> pure $ Left x
+		(_, Just y) -> pure $ Right y
+		_ -> error "never occur"
+
+until' :: (Ord e, Update (ISig s e a b) c) =>
+	Sig s e a b -> React s e c -> Sig s e a (Maybe c)
+l `until'` r = do
+	(_, b) <- l `until` r
+	pure $ done b
+
 usersView :: (Show n, Ord n, Integral n) => SigF s n (View n) ()
 usersView = do
 	waitFor (storeRandoms (randomRs (0, 499) (mkStdGen 8)))
+	(n, nxt) <- waitFor next
 	(r, rct) <- waitFor refresh
-	tu r rct
+	tu n nxt r rct
 	where
-	tu r rct = do
+	tu n nxt r rct = do
 		r0 <- waitFor (userViewReact 0)
 		r1 <- waitFor (userViewReact 1)
 		r2 <- waitFor (userViewReact 2)
-		() <$ ((title :) . (r ++)) `map` (threeFields r0 r1 r2 `until` leftClickOn rct)
-		emit $ title : r
-		tu r rct
+		rslt <- ((title :) . (n ++) . (r ++)) `map` (threeFields r0 r1 r2 `until'` (leftClickOn nxt `Followbox.first'` leftClickOn rct))
+		case rslt of
+			Just (Left _) -> pure ()
+			Just (Right _) -> do
+				emit $ title : n ++ r
+				waitFor $ storeJsons []
+			_ -> error "never occur"
+		tu n nxt r rct
 
 threeFields :: (Show n, Ord n, Integral n) => (View n, XGlyphInfo n, T.Text) ->
 	(View n, XGlyphInfo n, T.Text) ->
