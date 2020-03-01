@@ -4,7 +4,7 @@
 
 #include <sys/select.h>
 
-module Select (select) where
+module Select (select, fdClr) where
 
 import Foreign.Ptr
 import Foreign.Marshal
