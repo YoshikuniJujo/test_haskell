@@ -13,6 +13,7 @@ import System.Process
 import Network.HTTP.Simple
 
 import qualified Data.Set as S
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LBS
 
 import React hiding (first)
@@ -44,15 +45,18 @@ getObjects = snd <$> get
 putObjects :: [Object] -> FollowboxIO ()
 putObjects os = modify (const os `second`)
 
-http :: String -> IO LBS.ByteString
-http u = do
-	rsp <- httpBasicAuth "YoshikuniJujo" "github_token.txt"
-		. setRequestHeader "User-Agent" ["Yoshio"] $ fromString u
+http :: Maybe (BS.ByteString, FilePath) -> String -> IO LBS.ByteString
+http nmtkn u = do
+	rsp <- case nmtkn of
+		Just (nm, tkn) -> httpBasicAuth nm tkn
+			. setRequestHeader "User-Agent" ["Yoshio"] $ fromString u
+		Nothing -> httpLBS
+			. setRequestHeader "User-Agent" ["Yoshio"] $ fromString u
 	print $ getResponseHeader "X-RateLimit-Remaining" rsp
 	pure $ getResponseBody rsp
 
-handle :: Field -> EvReqs (FollowboxEvent CInt) -> FollowboxIO (EvOccs (FollowboxEvent CInt))
-handle f evs
+handle :: Field -> Maybe (BS.ByteString, FilePath) -> EvReqs (FollowboxEvent CInt) -> FollowboxIO (EvOccs (FollowboxEvent CInt))
+handle f nmtkn evs
 	| Just (Error (Cause em)) <- S.lookupMin $ S.filter (== Error Response) evs = do
 		liftIO do
 			putStrLn $ "Error: " ++ em
@@ -63,7 +67,7 @@ handle f evs
 	| Just (LoadJsons Request) <- S.lookupMin $ S.filter (== LoadJsons Request) evs =
 		S.singleton . LoadJsons . Occurred <$> getObjects
 	| Just (Http uri _) <- S.lookupMin $ S.filter isHttp evs =
-		liftIO $ S.singleton . Http uri . Occurred <$> http uri
+		liftIO $ S.singleton . Http uri . Occurred <$> http nmtkn uri -- (Just ("YoshikuniJujo", "github_token.txt")) uri
 	| Just (StoreJsons (Cause os)) <- S.lookupMin $ S.filter (== StoreJsons Response) evs =
 		S.singleton (StoreJsons Response) <$ putObjects os
 	| Just (CalcTextExtents (Action (fn, fs, str))) <- S.lookupMin $ S.filter (== CalcTextExtents Communication) evs =
@@ -72,23 +76,23 @@ handle f evs
 		S.singleton (StoreRandoms Response) <$ putRandoms rs
 	| Just (LoadRandoms Request) <- S.lookupMin $ S.filter (== LoadRandoms Request) evs =
 		S.singleton . LoadRandoms . Occurred <$> getRandoms
-	| LeftClick `S.member` evs = withNextEvent f (handleEvent f evs)
+	| LeftClick `S.member` evs = withNextEvent f (handleEvent f nmtkn evs)
 	| otherwise = pure S.empty
 
 isHttp :: FollowboxEvent n -> Bool
 isHttp (Http _ _) = True
 isHttp _ = False
 
-handleEvent :: Field -> EvReqs (FollowboxEvent CInt) -> Field.Event -> FollowboxIO (EvOccs (FollowboxEvent CInt))
-handleEvent f evs = \case
+handleEvent :: Field -> Maybe (BS.ByteString, FilePath) -> EvReqs (FollowboxEvent CInt) -> Field.Event -> FollowboxIO (EvOccs (FollowboxEvent CInt))
+handleEvent f nmtkn evs = \case
 	DestroyWindowEvent {} -> liftIO $ closeField f >> exitSuccess
-	ExposeEvent {} -> liftIO (flushField f) >> handle f evs
+	ExposeEvent {} -> liftIO (flushField f) >> handle f nmtkn evs
 	ev -> case buttonEvent ev of
 		Just BtnEvent {
 			buttonNumber = Button1,
 			position = (x, y) } -> do
 				(S.fromList [Followbox.Move (Occurred (x, y)), LeftClick] <>)
-					<$> handle f (S.filter (\r -> Followbox.Move Request /= r && LeftClick /= r) evs)
-		Just _ -> handle f evs
-		Nothing	| isDeleteEvent f ev -> liftIO (destroyField f) >> handle f evs
-			| otherwise -> liftIO (print ev) >> handle f evs
+					<$> handle f nmtkn (S.filter (\r -> Followbox.Move Request /= r && LeftClick /= r) evs)
+		Just _ -> handle f nmtkn evs
+		Nothing	| isDeleteEvent f ev -> liftIO (destroyField f) >> handle f nmtkn evs
+			| otherwise -> liftIO (print ev) >> handle f nmtkn evs
