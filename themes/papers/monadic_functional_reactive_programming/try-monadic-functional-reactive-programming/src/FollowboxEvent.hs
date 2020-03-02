@@ -4,11 +4,13 @@
 module FollowboxEvent (
 	ReactF, FollowboxEvent(..), Uri, Object, Value(..), XGlyphInfo(..),
 	decodeJson,
-	move, leftClick, httpGet, browse,
-	storeRandoms, loadRandoms, storeJsons, loadJsons,
+	move, leftClick, httpGet, browse, FollowboxEvent.getCurrentTime,
+	storeRandoms, loadRandoms, storeJsons, loadJsons, storeRateLimitReset, loadRateLimitReset,
 	calcTextExtents, raiseError ) where
 
 import Prelude hiding (map, repeat, until)
+import Data.Time
+import Network.HTTP.Simple
 
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as LBS
@@ -21,9 +23,13 @@ type ReactF s n r = React s (FollowboxEvent n) r
 
 data FollowboxEvent n
 	= Move (Event (n, n)) | LeftClick
-	| Http Uri (Event LBS.ByteString) | Browse (Action Uri)
+	| Http Uri (Event ([Header], LBS.ByteString))
+	| Browse (Action Uri)
+	| GetCurrentTime (Event UTCTime)
 	| StoreRandoms (Action [Int]) | LoadRandoms (Event [Int])
 	| StoreJsons (Action [Object]) | LoadJsons (Event [Object])
+	| StoreRateLimitReset (Action (Maybe UTCTime))
+	| LoadRateLimitReset (Event (Maybe UTCTime))
 	| CalcTextExtents
 		(Bidirectional (FontName, FontSize, String) (XGlyphInfo n))
 	| Error (Action String)
@@ -51,7 +57,7 @@ leftClick :: (Show n, Ord n) => ReactF s n ()
 leftClick = ex LeftClick \evs -> case S.elems $ S.filter (== LeftClick) evs of
 	[LeftClick] -> (); es -> err es evs
 
-httpGet :: (Show n, Ord n) => Uri -> ReactF s n LBS.ByteString
+httpGet :: (Show n, Ord n) => Uri -> ReactF s n ([Header], LBS.ByteString)
 httpGet u = ex (Http u Request) \evs ->
 	case S.elems $ S.filter (== Http u Request) evs of
 		[Http _ (Occurred bs)] -> bs; es -> err es evs
@@ -60,6 +66,11 @@ browse :: (Show n, Ord n) => Uri -> ReactF s n ()
 browse u = ex (Browse $ Cause u) \evs ->
 	case S.elems $ S.filter (== Browse (Cause u)) evs of
 		[Browse _] -> (); es -> err es evs
+
+getCurrentTime :: (Show n, Ord n) => ReactF s n UTCTime
+getCurrentTime = ex (GetCurrentTime Request) \evs ->
+	case S.elems $ S.filter (== GetCurrentTime Request) evs of
+		[GetCurrentTime (Occurred t)] -> t; es -> err es evs
 
 storeRandoms :: (Show n, Ord n) => [Int] -> ReactF s n ()
 storeRandoms rs = ex (StoreRandoms $ Cause rs) \evs ->
@@ -80,6 +91,16 @@ loadJsons :: (Show n, Ord n) => ReactF s n [Object]
 loadJsons = ex (LoadJsons Request) \evs ->
 	case S.elems $ S.filter (== LoadJsons Request) evs of
 		[LoadJsons (Occurred os)] -> os; es -> err es evs
+
+storeRateLimitReset :: (Show n, Ord n) => Maybe UTCTime -> ReactF s n ()
+storeRateLimitReset rs = ex (StoreRateLimitReset $ Cause rs) \evs ->
+	case S.elems $ S.filter (== StoreRateLimitReset (Cause rs)) evs of
+		[StoreRateLimitReset Response] -> (); es -> err es evs
+
+loadRateLimitReset :: (Show n, Ord n) => ReactF s n (Maybe UTCTime)
+loadRateLimitReset =  ex (LoadRateLimitReset Request) \evs ->
+	case S.elems $ S.filter (== LoadRateLimitReset Request) evs of
+		[LoadRateLimitReset (Occurred rs)] -> rs; es -> err es evs
 
 calcTextExtents :: (Show n, Ord n) => FontName -> FontSize -> String -> ReactF s n (XGlyphInfo n)
 calcTextExtents fn fs str = ex (CalcTextExtents $ Action (fn, fs, str)) \evs ->

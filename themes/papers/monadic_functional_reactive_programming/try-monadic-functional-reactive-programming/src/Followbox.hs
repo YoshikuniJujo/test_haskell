@@ -5,9 +5,13 @@ module Followbox (FollowboxEvent(..), XGlyphInfo(..), usersView) where
 
 import Prelude hiding (map, repeat, until)
 
+import Data.String
+import Data.Time hiding (getCurrentTime)
+import Data.Time.Clock.POSIX hiding (getCurrentTime)
 import Codec.Picture.Extra
 import System.Random hiding (next)
 
+import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 import qualified Data.HashMap.Strict as HM
@@ -29,15 +33,24 @@ vertOff = 120
 avatarSize = 90
 
 getUsersJson :: (Show n, Ord n) => Int -> ReactF s n [Object]
-getUsersJson s = (decodeJson <$> httpGet (apiUsers s)) >>= \case
-	Left em -> raiseError em >> getUsersJson s
-	Right os -> pure os
+getUsersJson s = do
+	now <- getCurrentTime
+	rst <- loadRateLimitReset
+	case rst of
+		Just r | r > now -> raiseError "foo" >> getUsersJson s
+		_ -> do	(hds, bd) <- httpGet $ apiUsers s
+			let	rrmn = read . BSC.unpack <$> lookup (fromString "X-RateLimit-Remaining") hds :: Maybe Int
+				rrst = posixSecondsToUTCTime . fromInteger . read . BSC.unpack <$> lookup (fromString "X-RateLimit-Reset") hds
+			case (rrmn, rrst, decodeJson bd) of
+				(_, _, Right os) -> storeRateLimitReset Nothing >> pure os
+				(Just rm, Just rs, _) | rm < 1 -> storeRateLimitReset rrst >> raiseError "hoge" >> getUsersJson s
+				(_, _, Left em) -> raiseError em >> getUsersJson s
 
 getUser1 :: (Show n, Ord n) => ReactF s n (T.Text, JP.Image JP.PixelRGBA8, T.Text)
 getUser1 = loadJsons >>= \case
 	[] -> loadRandoms >>= \case
 		r : rs -> storeRandoms rs >> getUsersJson r >>= \case
-			(o : os) -> nameAndImageFromObject o >>= \case
+			o : os -> nameAndImageFromObject o >>= \case
 				Left em -> raiseError em >> getUser1
 				Right ni -> ni <$ storeJsons (take 8 os)
 			[] -> raiseError "no GitHub users" >> getUser1
@@ -60,7 +73,7 @@ htmlUrlFromObject o = case HM.lookup "html_url" o of
 
 avatorFromObject :: (Show n, Ord n) => Object -> ReactF s n (Either String (JP.Image JP.PixelRGBA8))
 avatorFromObject o = (scaleBilinear avatarSize avatarSize <$>) <$> case HM.lookup "avatar_url" o of
-	Just (String au) -> (JP.decodeImage . LBS.toStrict <$> httpGet (T.unpack au)) >>= \case
+	Just (String au) -> (JP.decodeImage . LBS.toStrict . snd <$> httpGet (T.unpack au)) >>= \case
 		Left em -> pure $ Left em
 		Right img -> pure . Right $ JP.convertRGBA8 img
 	_ -> pure $ Left "no avatar_url"
