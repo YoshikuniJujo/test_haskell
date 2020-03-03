@@ -10,7 +10,7 @@ module Field.Internal (
 		pointerMotionMask, button1MotionMask,
 	Event(..), withNextEvent, withNextEventTimeout,
 	Position, Dimension, Pixel,
-	Field.Internal.drawLine, fillRect, drawImage,
+	Field.Internal.drawLine, fillRect, Field.Internal.fillPolygon, Point(..), drawImage,
 	drawStr, Field.Internal.textExtents, textXOff, clearField, flushField
 	) where
 
@@ -112,6 +112,10 @@ fillRect :: Field ->
 	Pixel -> Position -> Position -> Dimension -> Dimension -> IO ()
 fillRect Field { display = dpy, pixmap = win, graphicsContext = gc } c x y w h =
 	setForeground dpy gc c >> fillRectangle dpy win gc x y w h
+
+fillPolygon :: Field -> Pixel -> [Point] ->  IO ()
+fillPolygon Field { display = dpy, pixmap = win, graphicsContext = gc } c ps =
+	setForeground dpy gc c >> X.fillPolygon dpy win gc ps nonconvex coordModeOrigin
 
 drawStr :: Field -> Pixel -> String -> Double -> Position -> Position -> String -> IO ()
 drawStr Field { display = dpy, pixmap = win } c fnt sz x y str = do
