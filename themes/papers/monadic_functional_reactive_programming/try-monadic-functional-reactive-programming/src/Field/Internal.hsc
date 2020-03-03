@@ -8,7 +8,7 @@ module Field.Internal (
 	Mask, exposureMask, keyPressMask,
 		buttonPressMask, buttonReleaseMask,
 		pointerMotionMask, button1MotionMask,
-	Event(..), withNextEvent, withNextEventTimeout,
+	Event(..), withNextEvent, withNextEventTimeout, withNextEventTimeout',
 	Position, Dimension, Pixel,
 	Field.Internal.drawLine, fillRect, drawImage,
 	drawStr, Field.Internal.textExtents, textXOff, clearField, flushField
@@ -22,6 +22,7 @@ import Control.Monad.Trans.Control
 import Data.Bits
 import Data.Word
 import Data.Time
+import Data.IORef
 import System.Posix.Types
 import Numeric
 import Graphics.X11 as X
@@ -41,6 +42,7 @@ data Field = Field {
 	screenWidth :: Dimension,
 	screenHeight :: Dimension,
 	graphicsContext :: GC,
+	pendingEvents :: IORef [Event],
 	isDeleteEvent :: Event -> Bool }
 
 openField :: TextUtf8 t => t -> [Mask] -> IO Field
@@ -69,7 +71,9 @@ openField nm ms = do
 
 	fillRectangle dpy pxm gc 0 0 scrW scrH
 
-	pure . Field dpy win pxm scrW scrH gc $ \case
+	pes <- newIORef []
+
+	pure . Field dpy win pxm scrW scrH gc pes $ \case
 		ClientMessageEvent { ev_message_type = t, ev_data = d0 : _ } ->
 			t == wmp && d0 == fromIntegral del
 		_ -> False
@@ -96,6 +100,23 @@ withNextEventTimeout Field { display = d } n act =
 				to <- myWaitForEvent d $ fromIntegral n / 1000000
 				(if to then pure [] else allEvent d)
 			_ -> pure es) >>= restoreM
+
+withNextEventTimeout' :: MonadBaseControl IO m => Field -> Word32 -> (Maybe Event -> m a) -> m a
+withNextEventTimeout' Field { display = d, pendingEvents = pes } n act =
+	liftBaseWith (\run -> run . act =<< do
+		readIORef pes >>= \case
+			[] -> do
+				sync d False
+				ea <- allEvent d
+				case ea of
+					[] -> do
+						to <- myWaitForEvent d $ fromIntegral n / 1000000
+						if to then pure Nothing else do
+							e : es <- allEvent d
+							Just e <$ writeIORef pes es
+					e : es -> Just e <$ writeIORef pes es
+			e : es -> Just e <$ writeIORef pes es
+	) >>= restoreM
 
 getNextEvent :: Display -> IO Event
 getNextEvent d = allocaXEvent \e -> do

@@ -6,9 +6,10 @@ module FollowboxEvent (
 	decodeJson,
 	move, leftClick, httpGet, browse, FollowboxEvent.getCurrentTime,
 	storeRandoms, loadRandoms, storeJsons, loadJsons, storeRateLimitReset, loadRateLimitReset,
-	calcTextExtents, raiseError ) where
+	calcTextExtents, sleep, raiseError ) where
 
 import Prelude hiding (map, repeat, until)
+import GHC.Stack
 import Data.Time
 import Network.HTTP.Simple
 
@@ -32,6 +33,7 @@ data FollowboxEvent n
 	| LoadRateLimitReset (Event (Maybe UTCTime))
 	| CalcTextExtents
 		(Bidirectional (FontName, FontSize, String) (XGlyphInfo n))
+	| Sleep (Action UTCTime)
 	| Error (Action String)
 	deriving (Show, Eq, Ord)
 
@@ -107,6 +109,11 @@ calcTextExtents fn fs str = ex (CalcTextExtents $ Action (fn, fs, str)) \evs ->
 	case S.elems $ S.filter (== CalcTextExtents Communication) evs of 
 		[CalcTextExtents (Event xo)] -> xo; es -> err es evs
 
+sleep :: (Show n, Ord n) => UTCTime -> ReactF s n ()
+sleep t = ex (Sleep $ Cause t) \evs ->
+	case S.elems $ S.filter (== Sleep Response) evs of
+		[Sleep Response] -> (); es -> err es evs
+
 raiseError :: (Show n, Ord n) => String -> ReactF s n ()
 raiseError em = ex (Error $ Cause em) \evs ->
 	case S.elems $ S.filter (== Error Response) evs of
@@ -115,5 +122,5 @@ raiseError em = ex (Error $ Cause em) \evs ->
 ex :: e -> (EvOccs e -> a) -> React s e a
 ex e p = p <$> exper (S.singleton e)
 
-err :: Show e => [e] -> EvOccs e -> a
+err :: (HasCallStack, Show e) => [e] -> EvOccs e -> a
 err es evs = error $ "never occur: " ++ show es ++ " : " ++ show evs

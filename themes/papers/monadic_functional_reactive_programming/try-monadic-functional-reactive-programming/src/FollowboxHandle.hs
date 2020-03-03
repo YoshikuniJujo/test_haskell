@@ -1,13 +1,13 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module FollowboxHandle (FollowboxIO, handle) where
+module FollowboxHandle (FollowboxIO, handle') where
 
 import Foreign.C.Types
-import Control.Arrow
 import Control.Monad.State
 import Control.Concurrent
 import Data.String
+import Data.Time
 import Data.Time.Clock.POSIX
 import System.Exit
 import System.Process
@@ -29,23 +29,47 @@ import BasicAuth
 
 import qualified Graphics.X11.Xrender as Xr
 
-type FollowboxIO = StateT ([Int], [Object]) IO
+type FollowboxIO = StateT ([Int], [Object], Maybe UTCTime) IO
 
 convertXGlyphInfo :: Num n => Xr.XGlyphInfo -> XGlyphInfo n
 convertXGlyphInfo (Xr.XGlyphInfo w_ h_ x_ y_ xo_ yo_) = XGlyphInfo w h x y xo yo
 	where [w, h, x, y, xo, yo] = fromIntegral <$> [w_, h_, x_, y_, xo_, yo_]
 
+first3 :: (a -> d) -> (a, b, c) -> (d, b, c)
+first3 f (x, y, z) = (f x, y, z)
+
+second3 :: (b -> d) -> (a, b, c) -> (a, d, c)
+second3 f (x, y, z) = (x, f y, z)
+
+third3 :: (c -> d) -> (a, b, c) -> (a, b, d)
+third3 f (x, y, z) = (x, y, f z)
+
+fst3 :: (a, b, c) -> a
+fst3 (x, _, _) = x
+
+snd3 :: (a, b, c) -> b
+snd3 (_, y, _) = y
+
+trd3 :: (a, b, c) -> c
+trd3 (_, _, z) = z
+
 getRandoms :: FollowboxIO [Int]
-getRandoms = fst <$> get
+getRandoms = fst3 <$> get
 
 putRandoms :: [Int] -> FollowboxIO ()
-putRandoms rs = modify (const rs `first`)
+putRandoms rs = modify (const rs `first3`)
 
 getObjects :: FollowboxIO [Object]
-getObjects = snd <$> get
+getObjects = snd3 <$> get
 
 putObjects :: [Object] -> FollowboxIO ()
-putObjects os = modify (const os `second`)
+putObjects os = modify (const os `second3`)
+
+getRateLimitReset :: FollowboxIO (Maybe UTCTime)
+getRateLimitReset = trd3 <$> get
+
+putRateLimitReset :: Maybe UTCTime -> FollowboxIO ()
+putRateLimitReset rlr = modify (const rlr `third3`)
 
 http :: Maybe (BS.ByteString, FilePath) -> String -> IO ([Header], LBS.ByteString)
 http nmtkn u = do
@@ -57,6 +81,14 @@ http nmtkn u = do
 	print $ getResponseHeader "X-RateLimit-Remaining" rsp
 	print . (posixSecondsToUTCTime . fromInteger . read . BSC.unpack <$>) $ getResponseHeader "X-RateLimit-Reset" rsp
 	pure (getResponseHeaders rsp, getResponseBody rsp)
+
+handle' :: Field -> Maybe (BS.ByteString, FilePath) -> EvReqs (FollowboxEvent CInt) -> FollowboxIO (EvOccs (FollowboxEvent CInt))
+handle' f nmtkn evs
+	| Just (Sleep (Cause t)) <- S.lookupMin $ S.filter (== Sleep Response) evs = do
+		now <- liftIO getCurrentTime
+		((if t > now then S.empty else S.singleton $ Sleep Response) <>)
+			<$> (liftIO (putStrLn $ "here: " ++ show evs) >> handle f nmtkn evs)
+	| otherwise = handle f nmtkn evs
 
 handle :: Field -> Maybe (BS.ByteString, FilePath) -> EvReqs (FollowboxEvent CInt) -> FollowboxIO (EvOccs (FollowboxEvent CInt))
 handle f nmtkn evs
@@ -79,7 +111,20 @@ handle f nmtkn evs
 		S.singleton (StoreRandoms Response) <$ putRandoms rs
 	| Just (LoadRandoms Request) <- S.lookupMin $ S.filter (== LoadRandoms Request) evs =
 		S.singleton . LoadRandoms . Occurred <$> getRandoms
-	| LeftClick `S.member` evs = withNextEvent f (handleEvent f nmtkn evs)
+	| Just (StoreRateLimitReset (Cause t)) <- S.lookupMin $ S.filter (== StoreRateLimitReset Response) evs =
+		S.singleton (StoreRateLimitReset Response) <$ putRateLimitReset t
+	| Just (LoadRateLimitReset Request) <- S.lookupMin $ S.filter (== LoadRateLimitReset Request) evs =
+		S.singleton . LoadRateLimitReset  . Occurred <$> getRateLimitReset
+	| Just (GetCurrentTime Request) <- S.lookupMin $ S.filter (== GetCurrentTime Request) evs =
+		S.singleton . GetCurrentTime . Occurred <$> liftIO getCurrentTime
+	| LeftClick `S.member` evs = withNextEventTimeout' f 10000000
+		$ \case	Just ev -> liftIO (putStrLn "foobar") >> handleEvent f nmtkn evs ev
+			Nothing -> handle' f nmtkn evs
+	| Just (Sleep (Cause t)) <- S.lookupMin $ S.filter (== Sleep Response) evs =
+		S.singleton (Sleep Response) <$ liftIO do
+			putStrLn "hogepiyo"
+			now <- getCurrentTime
+			threadDelay . floor $ 1000000 * (t `diffUTCTime` now)
 	| otherwise = pure S.empty
 
 isHttp :: FollowboxEvent n -> Bool
@@ -89,13 +134,13 @@ isHttp _ = False
 handleEvent :: Field -> Maybe (BS.ByteString, FilePath) -> EvReqs (FollowboxEvent CInt) -> Field.Event -> FollowboxIO (EvOccs (FollowboxEvent CInt))
 handleEvent f nmtkn evs = \case
 	DestroyWindowEvent {} -> liftIO $ closeField f >> exitSuccess
-	ExposeEvent {} -> liftIO (flushField f) >> handle f nmtkn evs
+	ExposeEvent {} -> liftIO (flushField f) >> handle' f nmtkn evs
 	ev -> case buttonEvent ev of
 		Just BtnEvent {
 			buttonNumber = Button1,
 			position = (x, y) } -> do
 				(S.fromList [Followbox.Move (Occurred (x, y)), LeftClick] <>)
-					<$> handle f nmtkn (S.filter (\r -> Followbox.Move Request /= r && LeftClick /= r) evs)
-		Just _ -> handle f nmtkn evs
-		Nothing	| isDeleteEvent f ev -> liftIO (destroyField f) >> handle f nmtkn evs
-			| otherwise -> liftIO (print ev) >> handle f nmtkn evs
+					<$> handle' f nmtkn (S.filter (\r -> Followbox.Move Request /= r && LeftClick /= r) evs)
+		Just _ -> handle' f nmtkn evs
+		Nothing	| isDeleteEvent f ev -> liftIO (destroyField f) >> handle' f nmtkn evs
+			| otherwise -> liftIO (print ev) >> handle' f nmtkn evs

@@ -37,13 +37,13 @@ getUsersJson s = do
 	now <- getCurrentTime
 	rst <- loadRateLimitReset
 	case rst of
-		Just r | r > now -> raiseError "foo" >> getUsersJson s
+		Just r | r > now -> sleep r >> getUsersJson s
 		_ -> do	(hds, bd) <- httpGet $ apiUsers s
 			let	rrmn = read . BSC.unpack <$> lookup (fromString "X-RateLimit-Remaining") hds :: Maybe Int
 				rrst = posixSecondsToUTCTime . fromInteger . read . BSC.unpack <$> lookup (fromString "X-RateLimit-Reset") hds
 			case (rrmn, rrst, decodeJson bd) of
 				(_, _, Right os) -> storeRateLimitReset Nothing >> pure os
-				(Just rm, Just rs, _) | rm < 1 -> storeRateLimitReset rrst >> raiseError "hoge" >> getUsersJson s
+				(Just rm, Just rs, _) | rm < 1 -> storeRateLimitReset rrst >> getUsersJson s
 				(_, _, Left em) -> raiseError em >> getUsersJson s
 
 getUser1 :: (Show n, Ord n) => ReactF s n (T.Text, JP.Image JP.PixelRGBA8, T.Text)

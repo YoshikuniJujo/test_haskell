@@ -22,5 +22,5 @@ main = do
 			[nm, tkn] -> Just (fromString nm, tkn)
 			_ -> error "bad arguments"
 	f <- openField ("GitHubのユーザを表示するよ" :: String) [exposureMask, buttonPressMask]
-	interpretSig (handle f nmtkn) (liftIO . view f) usersView `runStateT` ([], []) >>= print
+	interpretSig (handle' f nmtkn) (liftIO . view f) usersView `runStateT` ([], [], Nothing) >>= print
 	closeField f
