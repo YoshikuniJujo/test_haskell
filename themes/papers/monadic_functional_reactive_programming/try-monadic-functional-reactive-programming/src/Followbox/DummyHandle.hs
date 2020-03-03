@@ -1,7 +1,7 @@
-{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Followbox.Handle (FollowboxIO, handle') where
+module Followbox.DummyHandle (FollowboxIO, handle') where
 
 import Foreign.C.Types
 import Control.Monad.State
@@ -9,10 +9,13 @@ import Control.Concurrent
 import Data.String
 import Data.Time
 import Data.Time.Clock.POSIX
+import Data.IORef
+import System.IO.Unsafe
 import System.Exit
 import System.Process
 import Network.HTTP.Simple
 
+import qualified Data.List as L
 import qualified Data.Set as S
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
@@ -26,8 +29,12 @@ import ButtonEvent
 import Followbox
 import AesonObject
 import BasicAuth
+import Followbox.DummyUsers
 
 import qualified Graphics.X11.Xrender as Xr
+
+remain :: IORef Int
+remain = unsafePerformIO $ newIORef 10
 
 type FollowboxIO = StateT ([Int], [Object], Maybe UTCTime) IO
 
@@ -71,8 +78,18 @@ getRateLimitReset = trd3 <$> get
 putRateLimitReset :: Maybe UTCTime -> FollowboxIO ()
 putRateLimitReset rlr = modify (const rlr `third3`)
 
+isAvatarUrl :: String -> Bool
+isAvatarUrl url
+	| "https://avatars" `L.isPrefixOf` url = True
+	| otherwise = False
+
 http :: Maybe (BS.ByteString, FilePath) -> String -> IO ([Header], LBS.ByteString)
+http _ u | isAvatarUrl u = ([] ,) <$> LBS.readFile "lenna.png"
 http nmtkn u = do
+{-
+	putStrLn u
+	print $ isAvatarUrl u
+	putStrLn $ drop 35 u
 	rsp <- case nmtkn of
 		Just (nm, tkn) -> httpBasicAuth nm tkn
 			. setRequestHeader "User-Agent" ["Yoshio"] $ fromString u
@@ -80,14 +97,26 @@ http nmtkn u = do
 			. setRequestHeader "User-Agent" ["Yoshio"] $ fromString u
 	print $ getResponseHeader "X-RateLimit-Remaining" rsp
 	print . (posixSecondsToUTCTime . fromInteger . read . BSC.unpack <$>) $ getResponseHeader "X-RateLimit-Reset" rsp
-	pure (getResponseHeaders rsp, getResponseBody rsp)
+	-}
+--	pure (getResponseHeaders rsp, dummyUsers . read $ drop 35 u) -- getResponseBody rsp)
+	r <- readIORef remain
+	case r of
+		_ | r > 0 -> do
+			modifyIORef remain (subtract 1)
+			pure (	[("X-RateLimit-Remaining", BSC.pack $ show r), ("X-RateLimit-Reset", "1583200300")],
+				dummyUsers . read $ drop 35 u)
+		_ -> do	writeIORef remain 10
+			now <- getCurrentTime
+			pure (	[	("X-RateLimit-Remaining", "0"),
+					("X-RateLImit-Reset", BSC.pack . show . floor $ utcTimeToPOSIXSeconds now + 60) ], "" )
 
 handle' :: Field -> Maybe (BS.ByteString, FilePath) -> EvReqs (FollowboxEvent CInt) -> FollowboxIO (EvOccs (FollowboxEvent CInt))
 handle' f nmtkn evs
 	| Just (Sleep (Cause t)) <- S.lookupMin $ S.filter (== Sleep Response) evs = do
+		getRateLimitReset >>= liftIO . print
 		now <- liftIO getCurrentTime
 		if t > now
-			then (liftIO . putStrLn $ "here: " ++ show evs) >> handle f nmtkn evs
+			then (liftIO (putStrLn $ "here: " ++ show evs) >> handle f nmtkn evs)
 			else pure . S.singleton $ Sleep Response
 	| otherwise = handle f nmtkn evs
 

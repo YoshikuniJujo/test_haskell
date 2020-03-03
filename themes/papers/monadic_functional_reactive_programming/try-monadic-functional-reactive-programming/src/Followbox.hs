@@ -42,8 +42,8 @@ getUsersJson s = do
 			let	rrmn = read . BSC.unpack <$> lookup (fromString "X-RateLimit-Remaining") hds :: Maybe Int
 				rrst = posixSecondsToUTCTime . fromInteger . read . BSC.unpack <$> lookup (fromString "X-RateLimit-Reset") hds
 			case (rrmn, rrst, decodeJson bd) of
-				(_, _, Right os) -> storeRateLimitReset Nothing >> pure os
 				(Just rm, Just rs, _) | rm < 1 -> storeRateLimitReset rrst >> getUsersJson s
+				(_, _, Right os) -> storeRateLimitReset Nothing >> pure os
 				(_, _, Left em) -> raiseError em >> getUsersJson s
 
 getUser1 :: (Show n, Ord n) => ReactF s n (T.Text, JP.Image JP.PixelRGBA8, T.Text)
