@@ -11,8 +11,8 @@ import Signal
 import Field
 
 import Followbox
-import FollowboxHandle
-import FollowboxViewer
+import Followbox.Handle
+import Followbox.Viewer
 
 main :: IO ()
 main = do

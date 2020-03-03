@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module FollowboxView (
+module Followbox.View (
 	View, View1(..), Color(..), Position, FontSize, LineWeight ) where
 
 import Data.Word (Word8)

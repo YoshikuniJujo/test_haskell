@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module FollowboxViewer (View, view) where
+module Followbox.Viewer (View, view) where
 
 import Control.Monad
 import Control.Monad.ST
@@ -12,7 +12,7 @@ import Codec.Picture (Image(imageWidth, imageHeight, imageData), PixelRGBA8)
 import qualified Data.Vector.Generic.Mutable as MV
 import qualified Data.Vector.Storable as V
 
-import FollowboxView
+import Followbox.View
 import Field as F
 
 view :: Integral n => Field -> View n -> IO ()

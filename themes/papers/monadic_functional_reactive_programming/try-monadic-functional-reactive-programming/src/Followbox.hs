@@ -17,8 +17,8 @@ import qualified Data.Text as T
 import qualified Data.HashMap.Strict as HM
 import qualified Codec.Picture as JP
 
-import FollowboxEvent
-import FollowboxView
+import Followbox.Event
+import Followbox.View
 import Signal
 import React
 

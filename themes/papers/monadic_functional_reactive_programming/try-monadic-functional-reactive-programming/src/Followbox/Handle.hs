@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module FollowboxHandle (FollowboxIO, handle') where
+module Followbox.Handle (FollowboxIO, handle') where
 
 import Foreign.C.Types
 import Control.Monad.State

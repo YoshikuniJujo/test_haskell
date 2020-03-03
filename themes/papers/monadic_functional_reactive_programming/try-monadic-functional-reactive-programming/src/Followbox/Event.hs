@@ -1,10 +1,10 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module FollowboxEvent (
+module Followbox.Event (
 	ReactF, FollowboxEvent(..), Uri, Object, Value(..), XGlyphInfo(..),
 	decodeJson,
-	move, leftClick, httpGet, browse, FollowboxEvent.getCurrentTime,
+	move, leftClick, httpGet, browse, Followbox.Event.getCurrentTime,
 	storeRandoms, loadRandoms, storeJsons, loadJsons, storeRateLimitReset, loadRateLimitReset,
 	calcTextExtents, sleep, raiseError ) where
 
