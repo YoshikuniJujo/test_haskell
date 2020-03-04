@@ -6,7 +6,7 @@ module Followbox.Event (
 	decodeJson,
 	move, leftClick, httpGet, browse, Followbox.Event.getCurrentTime,
 	storeRandoms, loadRandoms, storeJsons, loadJsons, storeRateLimitReset, loadRateLimitReset,
-	calcTextExtents, sleep, raiseError ) where
+	calcTextExtents, waitMessage, Followbox.Event.getCurrentTimeZone, sleep, raiseError ) where
 
 import Prelude hiding (map, repeat, until)
 import GHC.Stack
@@ -33,7 +33,9 @@ data FollowboxEvent n
 	| LoadRateLimitReset (Event (Maybe UTCTime))
 	| CalcTextExtents
 		(Bidirectional (FontName, FontSize, String) (XGlyphInfo n))
-	| Sleep (Action UTCTime)
+	| Sleep UTCTime
+	| WaitMessage (Action Bool)
+	| GetCurrentTimeZone (Event TimeZone)
 	| Error (Action String)
 	deriving (Show, Eq, Ord)
 
@@ -110,9 +112,19 @@ calcTextExtents fn fs str = ex (CalcTextExtents $ Action (fn, fs, str)) \evs ->
 		[CalcTextExtents (Event xo)] -> xo; es -> err es evs
 
 sleep :: (Show n, Ord n) => UTCTime -> ReactF s n ()
-sleep t = ex (Sleep $ Cause t) \evs ->
-	case S.elems $ S.filter (== Sleep Response) evs of
-		[Sleep Response] -> (); es -> err es evs
+sleep t = ex (Sleep t) \evs ->
+	case S.elems $ S.filter (== Sleep t) evs of
+		[Sleep _] -> (); es -> err es evs
+
+getCurrentTimeZone :: (Show n, Ord n) => ReactF s n TimeZone
+getCurrentTimeZone = ex (GetCurrentTimeZone Request) \evs ->
+	case S.elems $ S.filter (== GetCurrentTimeZone Request) evs of
+	[GetCurrentTimeZone (Occurred tz)] -> tz; es -> err es evs
+
+waitMessage :: (Show n, Ord n) => Bool -> ReactF s n ()
+waitMessage b = ex (WaitMessage (Cause b)) \evs ->
+	case S.elems $ S.filter (== WaitMessage Response) evs of
+		[WaitMessage Response] -> (); es -> err es evs
 
 raiseError :: (Show n, Ord n) => String -> ReactF s n ()
 raiseError em = ex (Error $ Cause em) \evs ->

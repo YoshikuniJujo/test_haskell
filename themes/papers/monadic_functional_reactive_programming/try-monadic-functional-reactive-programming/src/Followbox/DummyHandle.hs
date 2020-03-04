@@ -15,6 +15,8 @@ import System.Exit
 import System.Process
 import Network.HTTP.Simple
 
+import System.Environment
+
 import qualified Data.List as L
 import qualified Data.Set as S
 import qualified Data.ByteString as BS
@@ -34,7 +36,8 @@ import Followbox.DummyUsers
 import qualified Graphics.X11.Xrender as Xr
 
 remain :: IORef Int
-remain = unsafePerformIO $ newIORef 10
+remain = unsafePerformIO $ newIORef =<< (<$> getArgs) \case
+	["0"] -> 0; _ -> 10
 
 type FollowboxIO = StateT ([Int], [Object], Maybe UTCTime) IO
 
@@ -110,15 +113,22 @@ http nmtkn u = do
 			pure (	[	("X-RateLimit-Remaining", "0"),
 					("X-RateLImit-Reset", BSC.pack . show . floor $ utcTimeToPOSIXSeconds now + 60) ], "" )
 
+isSleep :: FollowboxEvent n -> Bool
+isSleep (Sleep _) = True
+isSleep _ = False
+
 handle' :: Field -> Maybe (BS.ByteString, FilePath) -> EvReqs (FollowboxEvent CInt) -> FollowboxIO (EvOccs (FollowboxEvent CInt))
 handle' f nmtkn evs
-	| Just (Sleep (Cause t)) <- S.lookupMin $ S.filter (== Sleep Response) evs = do
+	| Just (Sleep t) <- S.lookupMin $ S.filter isSleep evs = do
+		liftIO $ putStrLn $ "handle' (Sleep): " ++ show (S.filter (/= StoreRandoms Response) evs)
 		getRateLimitReset >>= liftIO . print
 		now <- liftIO getCurrentTime
 		if t > now
 			then (liftIO (putStrLn $ "here: " ++ show evs) >> handle f nmtkn evs)
-			else pure . S.singleton $ Sleep Response
-	| otherwise = handle f nmtkn evs
+			else pure . S.singleton $ Sleep t
+	| otherwise = do
+		liftIO $ putStrLn $ "handle' (no Sleep): " ++ show (S.filter (/= StoreRandoms Response) evs)
+		handle f nmtkn evs
 
 handle :: Field -> Maybe (BS.ByteString, FilePath) -> EvReqs (FollowboxEvent CInt) -> FollowboxIO (EvOccs (FollowboxEvent CInt))
 handle f nmtkn evs
@@ -147,11 +157,15 @@ handle f nmtkn evs
 		S.singleton . LoadRateLimitReset  . Occurred <$> getRateLimitReset
 	| Just (GetCurrentTime Request) <- S.lookupMin $ S.filter (== GetCurrentTime Request) evs =
 		S.singleton . GetCurrentTime . Occurred <$> liftIO getCurrentTime
+	| Just (GetCurrentTimeZone Request) <- S.lookupMin $ S.filter (== GetCurrentTimeZone Request) evs = do
+		S.singleton . GetCurrentTimeZone . Occurred <$> liftIO getCurrentTimeZone
+	| Just (WaitMessage (Cause True)) <- S.lookupMin $ S.filter (== WaitMessage (Cause True)) evs =
+		pure . S.singleton $ WaitMessage Response
 	| LeftClick `S.member` evs = withNextEventTimeout' f 10000000
 		$ \case	Just ev -> liftIO (putStrLn "foobar") >> handleEvent f nmtkn evs ev
 			Nothing -> handle' f nmtkn evs
-	| Just (Sleep (Cause t)) <- S.lookupMin $ S.filter (== Sleep Response) evs =
-		S.singleton (Sleep Response) <$ liftIO do
+	| Just (Sleep t) <- S.lookupMin $ S.filter isSleep evs =
+		S.singleton (Sleep t) <$ liftIO do
 			putStrLn "hogepiyo"
 			now <- getCurrentTime
 			threadDelay . floor $ 1000000 * (t `diffUTCTime` now)

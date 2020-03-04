@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Followbox.Viewer (View, view) where
+module Followbox.Viewer (View, view, printText) where
 
 import Control.Monad
 import Control.Monad.ST
@@ -20,6 +20,10 @@ view f v = do
 	clearField f
 	view1 f `mapM_` v
 	flushField f
+
+printText :: Show n => View1 n -> IO ()
+printText (Text c fs p t) = print (c, fs, p, t)
+printText _ = pure ()
 
 view1 :: Integral n => Field -> View1 n -> IO ()
 view1 f (Text c fs (x, y) t) =
