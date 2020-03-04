@@ -100,7 +100,7 @@ handle f nmtkn evs
 	| Just (Error (Cause em)) <- S.lookupMin $ S.filter (== Error Response) evs = do
 		liftIO do
 			putStrLn $ "Error: " ++ em
-			threadDelay 30000000
+--			threadDelay 30000000
 		pure . S.singleton $ Error Response
 	| Just (Browse (Cause uri)) <- S.lookupMin $ S.filter (== Browse Response) evs =
 		S.singleton (Browse Response) <$ liftIO (putStrLn uri >> rawSystem "firefox" [uri])

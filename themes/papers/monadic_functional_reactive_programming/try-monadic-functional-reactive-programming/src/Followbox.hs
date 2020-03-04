@@ -183,7 +183,7 @@ l `until'` r = do
 
 usersView :: (Show n, Ord n, Integral n) => SigF s n (View n) ()
 usersView = do
-	waitFor (storeRandoms (randomRs (0, 499) (mkStdGen 8)))
+	waitFor (storeRandoms (randomRs (0, 2 ^ 27) (mkStdGen 8)))
 	(n, nxt) <- waitFor next
 	(r, rct) <- waitFor refresh
 	emit $ title : n ++ r
