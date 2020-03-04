@@ -24,7 +24,7 @@ import Field
 import ButtonEvent
 
 import Followbox
-import AesonObject
+import Followbox.AesonObject
 import BasicAuth
 
 import qualified Graphics.X11.Xrender as Xr

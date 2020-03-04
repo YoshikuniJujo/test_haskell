@@ -3,11 +3,11 @@ Module Hierarchy
 
 ```
 Followbox
-  + FollowboxEvent	<-
-  |   + AesonObject	v
+  + Followbox.Event		<-
+  |   + Followbox.AesonObject	v
   |   + React
   |   + Event
-  + FollowboxView	v
+  + Followbox.View		v
   + Signal
   + React
 ```

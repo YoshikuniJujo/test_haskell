@@ -16,7 +16,7 @@ import Network.HTTP.Simple
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as LBS
 
-import AesonObject
+import Followbox.AesonObject
 import React
 import Event
 

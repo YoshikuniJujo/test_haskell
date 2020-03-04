@@ -10,7 +10,7 @@ import qualified Data.ByteString.Lazy as LBS
 import Signal
 import React
 import Event
-import AesonObject
+import Followbox.AesonObject
 
 import Debug.Trace
 

@@ -29,7 +29,7 @@ import Field
 import ButtonEvent
 
 import Followbox
-import AesonObject
+import Followbox.AesonObject
 import BasicAuth
 import Followbox.DummyUsers
 
