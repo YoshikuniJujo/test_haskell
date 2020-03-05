@@ -32,6 +32,9 @@ textTop = top + 75
 vertOff = 120
 avatarSize = 90
 
+fontSize :: Num n => n
+fontSize = 30
+
 getUsersJson :: (Show n, Ord n) => Int -> ReactF s n [Object]
 getUsersJson s = do
 	waitMessage True
@@ -43,7 +46,7 @@ getUsersJson s = do
 			let	rrmn = read . BSC.unpack <$> lookup (fromString "X-RateLimit-Remaining") hds :: Maybe Int
 				rrst = posixSecondsToUTCTime . fromInteger . read . BSC.unpack <$> lookup (fromString "X-RateLimit-Reset") hds
 			case (rrmn, rrst, decodeJson bd) of
-				(Just rm, Just rs, _) | rm < 1 -> storeRateLimitReset rrst >> waitMessage True >> getUsersJson s
+				(Just rm, Just _, _) | rm < 1 -> storeRateLimitReset rrst >> waitMessage True >> getUsersJson s
 				(_, _, Right os) -> storeRateLimitReset Nothing >> waitMessage True >> pure os
 				(_, _, Left em) -> raiseError em >> getUsersJson s
 
@@ -92,44 +95,53 @@ userLoop n hu xo = do
 nameAndImageReact ::
 	(Show n, Ord n) => ReactF s n ((T.Text, XGlyphInfo n), JP.Image JP.PixelRGBA8, T.Text)
 nameAndImageReact = getUser1 >>= \(li, av, hu) ->
-	(\xo -> ((li, xo), av, hu)) <$> calcTextExtents "sans" 60 (T.unpack li)
+	(\xo -> ((li, xo), av, hu)) <$> calcTextExtents "sans" fontSize (T.unpack li)
 
 getRect :: Integral n => n -> XGlyphInfo n -> Rect n
 getRect n gi = Rect
-	(textLeft - x, textTop - y + vertOff * n)
-	(textLeft - x + w, textTop - y + h + vertOff * n)
+	(textLeft - x, textTop - y - dy' + dy + vertOff * n)
+	(textLeft - x + w, textTop - y - dy' + dy + h + vertOff * n)
 	where
 	w = xGlyphInfoWidth gi
 	h = xGlyphInfoHeight gi
 	x = xGlyphInfoX gi
 	y = xGlyphInfoY gi
+	dy = fontSize `div` 2
+	dy' = avatarSize `div` 3
 
 xRect :: Integral n => n -> XGlyphInfo n -> Rect n
 xRect n gi = Rect
-	(textLeft + xo + 60 - 20, textTop + 5 - 40 + vertOff * n)
-	(textLeft + xo + 60 + 10, textTop + 5 - 10 + vertOff * n)
-	where xo = xGlyphInfoXOff gi
+	(textLeft + xo + fontSize - 5 - xsz, textTop - fontSize - xsz + vertOff * n)
+	(textLeft + xo + fontSize - 5 + xsz, textTop - fontSize + xsz + vertOff * n)
+	where
+	xo = xGlyphInfoXOff gi
+	xsz = fontSize `div` 4
 
 nameAndImageToView :: Integral n => n -> ((T.Text, XGlyphInfo n), JP.Image JP.PixelRGBA8) -> View n
 nameAndImageToView n ((t, XGlyphInfo {
 	xGlyphInfoWidth = w,
 	xGlyphInfoX = x,
 	xGlyphInfoXOff = xo }), i) = [
-		Text blue 60 (textLeft, textTop + vertOff * n) t,
+		Text blue fontSize (textLeft, textTop - dy' + dy + vertOff * n) t,
 		Image (left, top + vertOff * n) i,
 		Line blue 4
-			(textLeft - x, textTop + 6 + vertOff * n)
-			(textLeft + w - x, textTop + 6 + vertOff * n),
-		Line white 6
-			(textLeft + xo + 60 - 20, textTop + 5 - 40 + vertOff * n)
-			(textLeft + xo + 60 + 10, textTop + 5 - 10 + vertOff * n),
-		Line white 6
-			(textLeft + xo + 60 - 20, textTop + 5 - 10 + vertOff * n)
-			(textLeft + xo + 60 + 10, textTop + 5 - 40 + vertOff * n)
+			(textLeft - x, textTop + 6 - dy' + dy + vertOff * n)
+			(textLeft + w - x, textTop + 6 - dy' + dy + vertOff * n),
+		Line white xlw
+			(textLeft + xo + fontSize - 5 - xsz, textTop - fontSize - xsz + vertOff * n)
+			(textLeft + xo + fontSize - 5 + xsz, textTop - fontSize + xsz + vertOff * n),
+		Line white xlw
+			(textLeft + xo + fontSize - 5 - xsz, textTop - fontSize + xsz + vertOff * n)
+			(textLeft + xo + fontSize - 5 + xsz, textTop - fontSize - xsz + vertOff * n)
 		]
+	where
+	xsz = fontSize `div` 3
+	xlw = fontSize `div` 10
+	dy = fontSize `div` 2
+	dy' = avatarSize `div` 3
 
 title :: Num n => View1 n
-title = Text white 60 (10, 80) "Who to follow"
+title = Text white fontSize (10, 80) "Who to follow"
 
 white, blue :: Color
 white = Color { colorRed = 0xff, colorGreen = 0xff, colorBlue = 0xff }
@@ -183,7 +195,7 @@ l `until'` r = do
 
 usersView :: (Show n, Ord n, Integral n) => SigF s n (View n) ()
 usersView = do
-	waitFor (storeRandoms (randomRs (0, 2 ^ 27) (mkStdGen 8)))
+	waitFor (storeRandoms (randomRs (0, 2 ^ (27 :: Int)) (mkStdGen 8)))
 	(n, nxt) <- waitFor next
 	(r, rct) <- waitFor refresh
 	emit $ title : n ++ r
