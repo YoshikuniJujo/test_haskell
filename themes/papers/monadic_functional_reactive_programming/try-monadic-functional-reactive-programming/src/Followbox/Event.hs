@@ -1,24 +1,29 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Followbox.Event (
-	ReactF, FollowboxEvent(..), Uri, Object, Value(..), XGlyphInfo(..),
-	decodeJson, isHttpGet,
-	move, leftClick, httpGet, browse, Followbox.Event.getCurrentTime,
-	storeRandoms, loadRandoms, storeJsons, loadJsons, storeRateLimitReset, loadRateLimitReset,
-	calcTextExtents, syncWaitMessage, Followbox.Event.getCurrentTimeZone, sleep, raiseError ) where
+	ReactF, FollowboxEvent(..), Object, Value(..),
+	XGlyphInfo(..), FontName, FontSize, Uri,
+	isHttpGet, decodeJson,
+	move, leftClick, syncWaitMessage,
+	storeRandoms, loadRandoms, storeJsons, loadJsons,
+	storeRateLimitReset, loadRateLimitReset,
+	getCurrentTime, getCurrentTimeZone, calcTextExtents, httpGet,
+	browse, sleep, raiseError ) where
 
 import Prelude hiding (map, repeat, until)
-import GHC.Stack
-import Data.Time
-import Network.HTTP.Simple
+import GHC.Stack (HasCallStack)
+import Data.Time (UTCTime, TimeZone)
+import Network.HTTP.Simple (Header)
 
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as LBS
 
-import Followbox.AesonObject
-import React
-import Event
+import React (React, EvOccs, exper)
+import Event (Event(..), Action(..), Bidirectional(..))
+import Followbox.AesonObject (Object, Value(..), decodeJson)
+
+---------------------------------------------------------------------------
 
 type ReactF s n r = React s (FollowboxEvent n) r
 
@@ -32,25 +37,20 @@ data FollowboxEvent n
 	| CalcTextExtents
 		(Bidirectional (FontName, FontSize, String) (XGlyphInfo n))
 	| HttpGet Uri (Event ([Header], LBS.ByteString)) | Browse (Action Uri)
-	| Sleep UTCTime | Error (Action String)
+	| Sleep UTCTime | RaiseError (Action String)
 	deriving (Show, Eq, Ord)
 
-type Uri = String
+data XGlyphInfo n = XGlyphInfo {
+	xGlyphInfoWidth :: n, xGlyphInfoHeight :: n,
+	xGlyphInfoX :: n, xGlyphInfoY :: n,
+	xGlyphInfoXOff :: n, xGlyphInfoYOff :: n } deriving (Show, Eq, Ord)
+
 type FontName = String
 type FontSize = Double
-
-data XGlyphInfo n = XGlyphInfo {
-	xGlyphInfoWidth :: n,
-	xGlyphInfoHeight :: n,
-	xGlyphInfoX :: n,
-	xGlyphInfoY :: n,
-	xGlyphInfoXOff :: n,
-	xGlyphInfoYOff :: n
-	} deriving (Show, Eq, Ord)
+type Uri = String
 
 isHttpGet :: FollowboxEvent n -> Bool
-isHttpGet (HttpGet _ _) = True
-isHttpGet _ = False
+isHttpGet = \case (HttpGet _ _) -> True; _ -> False
 
 move :: (Show n, Ord n) => ReactF s n (n, n)
 move = ex (Move Request) \evs ->
@@ -61,24 +61,14 @@ leftClick :: (Show n, Ord n) => ReactF s n ()
 leftClick = ex LeftClick \evs -> case S.elems $ S.filter (== LeftClick) evs of
 	[LeftClick] -> (); es -> err es evs
 
-httpGet :: (Show n, Ord n) => Uri -> ReactF s n ([Header], LBS.ByteString)
-httpGet u = ex (HttpGet u Request) \evs ->
-	case S.elems $ S.filter (== HttpGet u Request) evs of
-		[HttpGet _ (Occurred bs)] -> bs; es -> err es evs
-
-browse :: (Show n, Ord n) => Uri -> ReactF s n ()
-browse u = ex (Browse $ Cause u) \evs ->
-	case S.elems $ S.filter (== Browse (Cause u)) evs of
-		[Browse _] -> (); es -> err es evs
-
-getCurrentTime :: (Show n, Ord n) => ReactF s n UTCTime
-getCurrentTime = ex (GetCurrentTime Request) \evs ->
-	case S.elems $ S.filter (== GetCurrentTime Request) evs of
-		[GetCurrentTime (Occurred t)] -> t; es -> err es evs
+syncWaitMessage :: (Show n, Ord n) => Bool -> ReactF s n ()
+syncWaitMessage b = ex (SyncWaitMessage $ Cause b) \evs ->
+	case S.elems $ S.filter (== SyncWaitMessage Response) evs of
+		[SyncWaitMessage Response] -> (); es -> err es evs
 
 storeRandoms :: (Show n, Ord n) => [Int] -> ReactF s n ()
 storeRandoms rs = ex (StoreRandoms $ Cause rs) \evs ->
-	case S.elems $ S.filter (== StoreRandoms (Cause rs)) evs of
+	case S.elems $ S.filter (== StoreRandoms Response) evs of
 		[StoreRandoms Response] -> (); es -> err es evs
 
 loadRandoms :: (Show n, Ord n) => ReactF s n [Int]
@@ -88,7 +78,7 @@ loadRandoms =  ex (LoadRandoms Request) \evs ->
 
 storeJsons :: (Show n, Ord n) => [Object] -> ReactF s n ()
 storeJsons os =  ex (StoreJsons $ Cause os) \evs ->
-	case S.elems $ S.filter (== StoreJsons (Cause os)) evs of
+	case S.elems $ S.filter (== StoreJsons Response) evs of
 		[StoreJsons Response] -> (); es -> err es evs
 
 loadJsons :: (Show n, Ord n) => ReactF s n [Object]
@@ -97,39 +87,49 @@ loadJsons = ex (LoadJsons Request) \evs ->
 		[LoadJsons (Occurred os)] -> os; es -> err es evs
 
 storeRateLimitReset :: (Show n, Ord n) => Maybe UTCTime -> ReactF s n ()
-storeRateLimitReset rs = ex (StoreRateLimitReset $ Cause rs) \evs ->
-	case S.elems $ S.filter (== StoreRateLimitReset (Cause rs)) evs of
+storeRateLimitReset t = ex (StoreRateLimitReset $ Cause t) \evs ->
+	case S.elems $ S.filter (== StoreRateLimitReset Response) evs of
 		[StoreRateLimitReset Response] -> (); es -> err es evs
 
 loadRateLimitReset :: (Show n, Ord n) => ReactF s n (Maybe UTCTime)
 loadRateLimitReset =  ex (LoadRateLimitReset Request) \evs ->
 	case S.elems $ S.filter (== LoadRateLimitReset Request) evs of
-		[LoadRateLimitReset (Occurred rs)] -> rs; es -> err es evs
+		[LoadRateLimitReset (Occurred t)] -> t; es -> err es evs
 
-calcTextExtents :: (Show n, Ord n) => FontName -> FontSize -> String -> ReactF s n (XGlyphInfo n)
-calcTextExtents fn fs str = ex (CalcTextExtents $ Action (fn, fs, str)) \evs ->
-	case S.elems $ S.filter (== CalcTextExtents Communication) evs of 
-		[CalcTextExtents (Event xo)] -> xo; es -> err es evs
-
-sleep :: (Show n, Ord n) => UTCTime -> ReactF s n ()
-sleep t = ex (Sleep t) \evs ->
-	case S.elems $ S.filter (== Sleep t) evs of
-		[Sleep _] -> (); es -> err es evs
+getCurrentTime :: (Show n, Ord n) => ReactF s n UTCTime
+getCurrentTime = ex (GetCurrentTime Request) \evs ->
+	case S.elems $ S.filter (== GetCurrentTime Request) evs of
+		[GetCurrentTime (Occurred t)] -> t; es -> err es evs
 
 getCurrentTimeZone :: (Show n, Ord n) => ReactF s n TimeZone
 getCurrentTimeZone = ex (GetCurrentTimeZone Request) \evs ->
 	case S.elems $ S.filter (== GetCurrentTimeZone Request) evs of
-	[GetCurrentTimeZone (Occurred tz)] -> tz; es -> err es evs
+		[GetCurrentTimeZone (Occurred tz)] -> tz; es -> err es evs
 
-syncWaitMessage :: (Show n, Ord n) => Bool -> ReactF s n ()
-syncWaitMessage b = ex (SyncWaitMessage (Cause b)) \evs ->
-	case S.elems $ S.filter (== SyncWaitMessage Response) evs of
-		[SyncWaitMessage Response] -> (); es -> err es evs
+calcTextExtents :: (Show n, Ord n) =>
+	FontName -> FontSize -> String -> ReactF s n (XGlyphInfo n)
+calcTextExtents fn fs str = ex (CalcTextExtents $ Action (fn, fs, str)) \evs ->
+	case S.elems $ S.filter (== CalcTextExtents Communication) evs of 
+		[CalcTextExtents (Event xgi)] -> xgi; es -> err es evs
+
+httpGet :: (Show n, Ord n) => Uri -> ReactF s n ([Header], LBS.ByteString)
+httpGet u = ex (HttpGet u Request) \evs ->
+	case S.elems $ S.filter (== HttpGet u Request) evs of
+		[HttpGet _ (Occurred bs)] -> bs; es -> err es evs
+
+browse :: (Show n, Ord n) => Uri -> ReactF s n ()
+browse u = ex (Browse $ Cause u) \evs ->
+	case S.elems $ S.filter (== Browse Response) evs of
+		[Browse Response] -> (); es -> err es evs
+
+sleep :: (Show n, Ord n) => UTCTime -> ReactF s n ()
+sleep t = ex (Sleep t) \evs -> case S.elems $ S.filter (== Sleep t) evs of
+	[Sleep _] -> (); es -> err es evs
 
 raiseError :: (Show n, Ord n) => String -> ReactF s n ()
-raiseError em = ex (Error $ Cause em) \evs ->
-	case S.elems $ S.filter (== Error Response) evs of
-		[Error Response] -> (); es -> err es evs
+raiseError em = ex (RaiseError $ Cause em) \evs ->
+	case S.elems $ S.filter (== RaiseError Response) evs of
+		[RaiseError Response] -> (); es -> err es evs
 
 ex :: e -> (EvOccs e -> a) -> React s e a
 ex e p = p <$> exper (S.singleton e)

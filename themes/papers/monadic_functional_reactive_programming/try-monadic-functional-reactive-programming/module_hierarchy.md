@@ -2,8 +2,8 @@ Module Hierarchy
 ================
 
 ```
-Followbox
-  + Followbox.Event		<-
+Followbox			<-
+  + Followbox.Event		v
   |   + Followbox.AesonObject	v
   |   + React
   |   + Event			v

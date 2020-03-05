@@ -115,11 +115,11 @@ handle' f evs
 
 handle :: Field -> EvReqs (FollowboxEvent CInt) -> FollowboxIO (EvOccs (FollowboxEvent CInt))
 handle f evs
-	| Just (Error (Cause em)) <- S.lookupMin $ S.filter (== Error Response) evs = do
+	| Just (RaiseError (Cause em)) <- S.lookupMin $ S.filter (== RaiseError Response) evs = do
 		liftIO do
 			putStrLn $ "Error: " ++ em
 			threadDelay 30000000
-		pure . S.singleton $ Error Response
+		pure . S.singleton $ RaiseError Response
 	| Just (Browse (Cause uri)) <- S.lookupMin $ S.filter (== Browse Response) evs =
 		S.singleton (Browse Response) <$ liftIO (putStrLn uri >> rawSystem "firefox" [uri])
 	| Just (LoadJsons Request) <- S.lookupMin $ S.filter (== LoadJsons Request) evs =
