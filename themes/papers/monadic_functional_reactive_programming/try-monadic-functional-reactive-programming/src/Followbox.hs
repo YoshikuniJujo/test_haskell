@@ -37,17 +37,17 @@ fontSize = 30
 
 getUsersJson :: (Show n, Ord n) => Int -> ReactF s n [Object]
 getUsersJson s = do
-	waitMessage True
+	syncWaitMessage True
 	now <- getCurrentTime
 	rst <- loadRateLimitReset
 	case rst of
-		Just r | r > now -> waitMessage True >> sleep r >> getUsersJson s
+		Just r | r > now -> syncWaitMessage True >> sleep r >> getUsersJson s
 		_ -> do	(hds, bd) <- httpGet $ apiUsers s
 			let	rrmn = read . BSC.unpack <$> lookup (fromString "X-RateLimit-Remaining") hds :: Maybe Int
 				rrst = posixSecondsToUTCTime . fromInteger . read . BSC.unpack <$> lookup (fromString "X-RateLimit-Reset") hds
 			case (rrmn, rrst, decodeJson bd) of
-				(Just rm, Just _, _) | rm < 1 -> storeRateLimitReset rrst >> waitMessage True >> getUsersJson s
-				(_, _, Right os) -> storeRateLimitReset Nothing >> waitMessage True >> pure os
+				(Just rm, Just _, _) | rm < 1 -> storeRateLimitReset rrst >> syncWaitMessage True >> getUsersJson s
+				(_, _, Right os) -> storeRateLimitReset Nothing >> syncWaitMessage True >> pure os
 				(_, _, Left em) -> raiseError em >> getUsersJson s
 
 getUser1 :: (Show n, Ord n) => ReactF s n (T.Text, JP.Image JP.PixelRGBA8, T.Text)
@@ -216,10 +216,7 @@ usersView = do
 
 waitMessageView :: (Show n, Ord n, Num n) => SigF s n (View n) ()
 waitMessageView = do
-	waitFor $ waitMessage False
---	emit []
---	now <- waitFor getCurrentTime
---	waitFor . sleep $ addUTCTime 1 now
+	waitFor $ syncWaitMessage False
 	w <- waitFor loadRateLimitReset
 	tz <- waitFor Followbox.Event.getCurrentTimeZone
 	case w of

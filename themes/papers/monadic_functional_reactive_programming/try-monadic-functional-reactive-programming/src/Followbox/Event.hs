@@ -3,10 +3,10 @@
 
 module Followbox.Event (
 	ReactF, FollowboxEvent(..), Uri, Object, Value(..), XGlyphInfo(..),
-	decodeJson,
+	decodeJson, isHttpGet,
 	move, leftClick, httpGet, browse, Followbox.Event.getCurrentTime,
 	storeRandoms, loadRandoms, storeJsons, loadJsons, storeRateLimitReset, loadRateLimitReset,
-	calcTextExtents, waitMessage, Followbox.Event.getCurrentTimeZone, sleep, raiseError ) where
+	calcTextExtents, syncWaitMessage, Followbox.Event.getCurrentTimeZone, sleep, raiseError ) where
 
 import Prelude hiding (map, repeat, until)
 import GHC.Stack
@@ -23,20 +23,16 @@ import Event
 type ReactF s n r = React s (FollowboxEvent n) r
 
 data FollowboxEvent n
-	= Move (Event (n, n)) | LeftClick
-	| Http Uri (Event ([Header], LBS.ByteString))
-	| Browse (Action Uri)
-	| GetCurrentTime (Event UTCTime)
+	= Move (Event (n, n)) | LeftClick | SyncWaitMessage (Action Bool)
 	| StoreRandoms (Action [Int]) | LoadRandoms (Event [Int])
 	| StoreJsons (Action [Object]) | LoadJsons (Event [Object])
 	| StoreRateLimitReset (Action (Maybe UTCTime))
 	| LoadRateLimitReset (Event (Maybe UTCTime))
+	| GetCurrentTime (Event UTCTime) | GetCurrentTimeZone (Event TimeZone)
 	| CalcTextExtents
 		(Bidirectional (FontName, FontSize, String) (XGlyphInfo n))
-	| Sleep UTCTime
-	| WaitMessage (Action Bool)
-	| GetCurrentTimeZone (Event TimeZone)
-	| Error (Action String)
+	| HttpGet Uri (Event ([Header], LBS.ByteString)) | Browse (Action Uri)
+	| Sleep UTCTime | Error (Action String)
 	deriving (Show, Eq, Ord)
 
 type Uri = String
@@ -52,6 +48,10 @@ data XGlyphInfo n = XGlyphInfo {
 	xGlyphInfoYOff :: n
 	} deriving (Show, Eq, Ord)
 
+isHttpGet :: FollowboxEvent n -> Bool
+isHttpGet (HttpGet _ _) = True
+isHttpGet _ = False
+
 move :: (Show n, Ord n) => ReactF s n (n, n)
 move = ex (Move Request) \evs ->
 	case S.elems $ S.filter (== Move Request) evs of
@@ -62,9 +62,9 @@ leftClick = ex LeftClick \evs -> case S.elems $ S.filter (== LeftClick) evs of
 	[LeftClick] -> (); es -> err es evs
 
 httpGet :: (Show n, Ord n) => Uri -> ReactF s n ([Header], LBS.ByteString)
-httpGet u = ex (Http u Request) \evs ->
-	case S.elems $ S.filter (== Http u Request) evs of
-		[Http _ (Occurred bs)] -> bs; es -> err es evs
+httpGet u = ex (HttpGet u Request) \evs ->
+	case S.elems $ S.filter (== HttpGet u Request) evs of
+		[HttpGet _ (Occurred bs)] -> bs; es -> err es evs
 
 browse :: (Show n, Ord n) => Uri -> ReactF s n ()
 browse u = ex (Browse $ Cause u) \evs ->
@@ -121,10 +121,10 @@ getCurrentTimeZone = ex (GetCurrentTimeZone Request) \evs ->
 	case S.elems $ S.filter (== GetCurrentTimeZone Request) evs of
 	[GetCurrentTimeZone (Occurred tz)] -> tz; es -> err es evs
 
-waitMessage :: (Show n, Ord n) => Bool -> ReactF s n ()
-waitMessage b = ex (WaitMessage (Cause b)) \evs ->
-	case S.elems $ S.filter (== WaitMessage Response) evs of
-		[WaitMessage Response] -> (); es -> err es evs
+syncWaitMessage :: (Show n, Ord n) => Bool -> ReactF s n ()
+syncWaitMessage b = ex (SyncWaitMessage (Cause b)) \evs ->
+	case S.elems $ S.filter (== SyncWaitMessage Response) evs of
+		[SyncWaitMessage Response] -> (); es -> err es evs
 
 raiseError :: (Show n, Ord n) => String -> ReactF s n ()
 raiseError em = ex (Error $ Cause em) \evs ->

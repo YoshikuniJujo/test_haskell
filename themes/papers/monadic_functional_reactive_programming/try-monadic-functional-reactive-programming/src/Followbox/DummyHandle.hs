@@ -26,8 +26,7 @@ import Event
 import Field
 import ButtonEvent
 
-import Followbox
-import Followbox.AesonObject
+import Followbox.Event hiding (getCurrentTime, getCurrentTimeZone)
 import Followbox.DummyUsers
 
 import qualified Graphics.X11.Xrender as Xr
@@ -125,8 +124,8 @@ handle f evs
 		S.singleton (Browse Response) <$ liftIO (putStrLn uri >> rawSystem "firefox" [uri])
 	| Just (LoadJsons Request) <- S.lookupMin $ S.filter (== LoadJsons Request) evs =
 		S.singleton . LoadJsons . Occurred <$> getObjects
-	| Just (Http uri _) <- S.lookupMin $ S.filter isHttp evs =
-		liftIO $ S.singleton . Http uri . Occurred <$> http uri
+	| Just (HttpGet uri _) <- S.lookupMin $ S.filter isHttpGet evs =
+		liftIO $ S.singleton . HttpGet uri . Occurred <$> http uri
 	| Just (StoreJsons (Cause os)) <- S.lookupMin $ S.filter (== StoreJsons Response) evs =
 		S.singleton (StoreJsons Response) <$ putObjects os
 	| Just (CalcTextExtents (Action (fn, fs, str))) <- S.lookupMin $ S.filter (== CalcTextExtents Communication) evs =
@@ -143,8 +142,8 @@ handle f evs
 		S.singleton . GetCurrentTime . Occurred <$> liftIO getCurrentTime
 	| Just (GetCurrentTimeZone Request) <- S.lookupMin $ S.filter (== GetCurrentTimeZone Request) evs = do
 		S.singleton . GetCurrentTimeZone . Occurred <$> liftIO getCurrentTimeZone
-	| Just (WaitMessage (Cause True)) <- S.lookupMin $ S.filter (== WaitMessage (Cause True)) evs =
-		pure . S.singleton $ WaitMessage Response
+	| Just (SyncWaitMessage (Cause True)) <- S.lookupMin $ S.filter (== SyncWaitMessage (Cause True)) evs =
+		pure . S.singleton $ SyncWaitMessage Response
 	| LeftClick `S.member` evs = withNextEventTimeout' f 10000000
 		$ \case	Just ev -> liftIO (putStrLn "foobar") >> handleEvent f evs ev
 			Nothing -> handle' f evs
@@ -155,10 +154,6 @@ handle f evs
 			threadDelay . floor $ 1000000 * (t `diffUTCTime` now)
 	| otherwise = pure S.empty
 
-isHttp :: FollowboxEvent n -> Bool
-isHttp (Http _ _) = True
-isHttp _ = False
-
 handleEvent :: Field -> EvReqs (FollowboxEvent CInt) -> Field.Event -> FollowboxIO (EvOccs (FollowboxEvent CInt))
 handleEvent f evs = \case
 	DestroyWindowEvent {} -> liftIO $ closeField f >> exitSuccess
@@ -167,8 +162,8 @@ handleEvent f evs = \case
 		Just BtnEvent {
 			buttonNumber = Button1,
 			position = (x, y) } -> do
-				(S.fromList [Followbox.Move (Occurred (x, y)), LeftClick] <>)
-					<$> handle' f (S.filter (\r -> Followbox.Move Request /= r && LeftClick /= r) evs)
+				(S.fromList [Followbox.Event.Move (Occurred (x, y)), LeftClick] <>)
+					<$> handle' f (S.filter (\r -> Followbox.Event.Move Request /= r && LeftClick /= r) evs)
 		Just _ -> handle' f evs
 		Nothing	| isDeleteEvent f ev -> liftIO (destroyField f) >> handle' f evs
 			| otherwise -> liftIO (print ev) >> handle' f evs
