@@ -4,12 +4,12 @@
 module Followbox.Event (
 	ReactF, FollowboxEvent(..), Object, Value(..),
 	XGlyphInfo(..), FontName, FontSize, Uri,
-	isHttpGet, decodeJson,
+	isHttpGet, isSleepUntil, decodeJson,
 	move, leftClick, syncWaitMessage,
 	storeRandoms, loadRandoms, storeJsons, loadJsons,
 	storeRateLimitReset, loadRateLimitReset,
 	getCurrentTime, getCurrentTimeZone, calcTextExtents, httpGet,
-	browse, sleep, raiseError ) where
+	browse, sleepUntil, raiseError ) where
 
 import Prelude hiding (map, repeat, until)
 import GHC.Stack (HasCallStack)
@@ -37,7 +37,7 @@ data FollowboxEvent n
 	| CalcTextExtents
 		(Bidirectional (FontName, FontSize, String) (XGlyphInfo n))
 	| HttpGet Uri (Event ([Header], LBS.ByteString)) | Browse (Action Uri)
-	| Sleep UTCTime | RaiseError (Action String)
+	| SleepUntil UTCTime | RaiseError (Action String)
 	deriving (Show, Eq, Ord)
 
 data XGlyphInfo n = XGlyphInfo {
@@ -51,6 +51,9 @@ type Uri = String
 
 isHttpGet :: FollowboxEvent n -> Bool
 isHttpGet = \case (HttpGet _ _) -> True; _ -> False
+
+isSleepUntil :: FollowboxEvent n -> Bool
+isSleepUntil = \case (SleepUntil _) -> True; _ -> False
 
 move :: (Show n, Ord n) => ReactF s n (n, n)
 move = ex (Move Request) \evs ->
@@ -122,9 +125,10 @@ browse u = ex (Browse $ Cause u) \evs ->
 	case S.elems $ S.filter (== Browse Response) evs of
 		[Browse Response] -> (); es -> err es evs
 
-sleep :: (Show n, Ord n) => UTCTime -> ReactF s n ()
-sleep t = ex (Sleep t) \evs -> case S.elems $ S.filter (== Sleep t) evs of
-	[Sleep _] -> (); es -> err es evs
+sleepUntil :: (Show n, Ord n) => UTCTime -> ReactF s n ()
+sleepUntil t = ex (SleepUntil t) \evs ->
+	case S.elems $ S.filter (== SleepUntil t) evs of
+		[SleepUntil _] -> (); es -> err es evs
 
 raiseError :: (Show n, Ord n) => String -> ReactF s n ()
 raiseError em = ex (RaiseError $ Cause em) \evs ->

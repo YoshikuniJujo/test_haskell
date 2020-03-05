@@ -1,15 +1,15 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Followbox (FollowboxEvent(..), XGlyphInfo(..), usersView, usersView') where
+module Followbox (SigF, usersView') where
 
 import Prelude hiding (map, repeat, until)
 
-import Data.String
-import Data.Time hiding (getCurrentTime)
-import Data.Time.Clock.POSIX hiding (getCurrentTime)
-import Codec.Picture.Extra
-import System.Random hiding (next)
+import Data.String (fromString)
+import Data.Time (utcToZonedTime)
+import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
+import Codec.Picture.Extra (scaleBilinear)
+import System.Random (randomRs, mkStdGen)
 
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as LBS
@@ -17,10 +17,20 @@ import qualified Data.Text as T
 import qualified Data.HashMap.Strict as HM
 import qualified Codec.Picture as JP
 
-import Followbox.Event
-import Followbox.View
-import Signal
-import React
+import Signal (
+	Sig, ISig,
+	emit, always, waitFor, repeat, map, find, until, (<^>), indexBy )
+import React (React, Update, done, first)
+import Followbox.Event (
+	ReactF, FollowboxEvent(..), Object, Value(..), XGlyphInfo(..), Uri,
+	decodeJson, move, leftClick, syncWaitMessage,
+	storeRandoms, loadRandoms, storeJsons, loadJsons,
+	storeRateLimitReset, loadRateLimitReset,
+	getCurrentTime, getCurrentTimeZone, calcTextExtents,
+	httpGet, browse, sleepUntil, raiseError )
+import Followbox.View (View, View1(..), Color(..))
+
+---------------------------------------------------------------------------
 
 type SigF s n a r = Sig s (FollowboxEvent n) a r
 
@@ -41,7 +51,7 @@ getUsersJson s = do
 	now <- getCurrentTime
 	rst <- loadRateLimitReset
 	case rst of
-		Just r | r > now -> syncWaitMessage True >> sleep r >> getUsersJson s
+		Just r | r > now -> syncWaitMessage True >> sleepUntil r >> getUsersJson s
 		_ -> do	(hds, bd) <- httpGet $ apiUsers s
 			let	rrmn = read . BSC.unpack <$> lookup (fromString "X-RateLimit-Remaining") hds :: Maybe Int
 				rrst = posixSecondsToUTCTime . fromInteger . read . BSC.unpack <$> lookup (fromString "X-RateLimit-Reset") hds

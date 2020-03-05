@@ -81,17 +81,13 @@ http nmtkn u = do
 	print . (posixSecondsToUTCTime . fromInteger . read . BSC.unpack <$>) $ getResponseHeader "X-RateLimit-Reset" rsp
 	pure (getResponseHeaders rsp, getResponseBody rsp)
 
-isSleep :: FollowboxEvent n -> Bool
-isSleep (Sleep _) = True
-isSleep _ = False
-
 handle' :: Field -> Maybe (BS.ByteString, FilePath) -> EvReqs (FollowboxEvent CInt) -> FollowboxIO (EvOccs (FollowboxEvent CInt))
 handle' f nmtkn evs
-	| Just (Sleep t) <- S.lookupMin $ S.filter isSleep evs = do
+	| Just (SleepUntil t) <- S.lookupMin $ S.filter isSleepUntil evs = do
 		now <- liftIO getCurrentTime
 		if t > now
 			then (liftIO . putStrLn $ "here: " ++ show evs) >> handle f nmtkn evs
-			else pure . S.singleton $ Sleep t
+			else pure . S.singleton $ SleepUntil t
 	| otherwise = handle f nmtkn evs
 
 handle :: Field -> Maybe (BS.ByteString, FilePath) -> EvReqs (FollowboxEvent CInt) -> FollowboxIO (EvOccs (FollowboxEvent CInt))
@@ -128,8 +124,8 @@ handle f nmtkn evs
 	| LeftClick `S.member` evs = withNextEventTimeout' f 10000000
 		$ \case	Just ev -> liftIO (putStrLn "foobar") >> handleEvent f nmtkn evs ev
 			Nothing -> handle' f nmtkn evs
-	| Just (Sleep t) <- S.lookupMin $ S.filter isSleep evs =
-		S.singleton (Sleep t) <$ liftIO do
+	| Just (SleepUntil t) <- S.lookupMin $ S.filter isSleepUntil evs =
+		S.singleton (SleepUntil t) <$ liftIO do
 			putStrLn "hogepiyo"
 			now <- getCurrentTime
 			threadDelay . floor $ 1000000 * (t `diffUTCTime` now)

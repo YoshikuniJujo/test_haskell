@@ -96,21 +96,17 @@ http u = do
 			pure (	[	("X-RateLimit-Remaining", "0"),
 					("X-RateLImit-Reset", BSC.pack . show @Int . floor $ utcTimeToPOSIXSeconds now + 30) ], "" )
 
-isSleep :: FollowboxEvent n -> Bool
-isSleep (Sleep _) = True
-isSleep _ = False
-
 handle' :: Field -> EvReqs (FollowboxEvent CInt) -> FollowboxIO (EvOccs (FollowboxEvent CInt))
 handle' f evs
-	| Just (Sleep t) <- S.lookupMin $ S.filter isSleep evs = do
-		liftIO $ putStrLn $ "handle' (Sleep): " ++ show (S.filter (/= StoreRandoms Response) evs)
+	| Just (SleepUntil t) <- S.lookupMin $ S.filter isSleepUntil evs = do
+		liftIO $ putStrLn $ "handle' (SleepUntil): " ++ show (S.filter (/= StoreRandoms Response) evs)
 		getRateLimitReset >>= liftIO . print
 		now <- liftIO getCurrentTime
 		if t > now
 			then (liftIO (putStrLn $ "here: " ++ show evs) >> handle f evs)
-			else pure . S.singleton $ Sleep t
+			else pure . S.singleton $ SleepUntil t
 	| otherwise = do
-		liftIO $ putStrLn $ "handle' (no Sleep): " ++ show (S.filter (/= StoreRandoms Response) evs)
+		liftIO $ putStrLn $ "handle' (no SleepUntil): " ++ show (S.filter (/= StoreRandoms Response) evs)
 		handle f evs
 
 handle :: Field -> EvReqs (FollowboxEvent CInt) -> FollowboxIO (EvOccs (FollowboxEvent CInt))
@@ -147,8 +143,8 @@ handle f evs
 	| LeftClick `S.member` evs = withNextEventTimeout' f 10000000
 		$ \case	Just ev -> liftIO (putStrLn "foobar") >> handleEvent f evs ev
 			Nothing -> handle' f evs
-	| Just (Sleep t) <- S.lookupMin $ S.filter isSleep evs =
-		S.singleton (Sleep t) <$ liftIO do
+	| Just (SleepUntil t) <- S.lookupMin $ S.filter isSleepUntil evs =
+		S.singleton (SleepUntil t) <$ liftIO do
 			putStrLn "hogepiyo"
 			now <- getCurrentTime
 			threadDelay . floor $ 1000000 * (t `diffUTCTime` now)
