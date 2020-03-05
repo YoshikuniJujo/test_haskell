@@ -4,8 +4,6 @@
 module Main where
 
 import Control.Monad.State
-import Data.String
-import System.Environment
 
 import Signal
 import Field
@@ -16,13 +14,8 @@ import Followbox.Viewer
 
 main :: IO ()
 main = do
-	args <- getArgs
-	let	nmtkn = case args of
-			[] -> Nothing
-			[nm, tkn] -> Just (fromString nm, tkn)
-			_ -> error "bad arguments"
 	f <- openField ("GitHubのユーザを表示するよ" :: String) [exposureMask, buttonPressMask]
-	interpretSig (handle' f nmtkn) (liftIO . debugView f) usersView' `runStateT` ([], [], Nothing) >>= print
+	interpretSig (handle' f) (liftIO . debugView f) usersView' `runStateT` ([], [], Nothing) >>= print
 	closeField f
 
 debugView :: (Show n, Integral n) => Field -> View n -> IO ()

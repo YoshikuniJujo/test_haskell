@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections, TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Followbox.DummyHandle (FollowboxIO, handle') where
@@ -6,7 +6,6 @@ module Followbox.DummyHandle (FollowboxIO, handle') where
 import Foreign.C.Types
 import Control.Monad.State
 import Control.Concurrent
-import Data.String
 import Data.Time
 import Data.Time.Clock.POSIX
 import Data.IORef
@@ -19,7 +18,6 @@ import System.Environment
 
 import qualified Data.List as L
 import qualified Data.Set as S
-import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as LBS
 
@@ -30,7 +28,6 @@ import ButtonEvent
 
 import Followbox
 import Followbox.AesonObject
-import BasicAuth
 import Followbox.DummyUsers
 
 import qualified Graphics.X11.Xrender as Xr
@@ -86,22 +83,9 @@ isAvatarUrl url
 	| "https://avatars" `L.isPrefixOf` url = True
 	| otherwise = False
 
-http :: Maybe (BS.ByteString, FilePath) -> String -> IO ([Header], LBS.ByteString)
-http _ u | isAvatarUrl u = ([] ,) <$> LBS.readFile "lenna.png"
-http nmtkn u = do
-{-
-	putStrLn u
-	print $ isAvatarUrl u
-	putStrLn $ drop 35 u
-	rsp <- case nmtkn of
-		Just (nm, tkn) -> httpBasicAuth nm tkn
-			. setRequestHeader "User-Agent" ["Yoshio"] $ fromString u
-		Nothing -> httpLBS
-			. setRequestHeader "User-Agent" ["Yoshio"] $ fromString u
-	print $ getResponseHeader "X-RateLimit-Remaining" rsp
-	print . (posixSecondsToUTCTime . fromInteger . read . BSC.unpack <$>) $ getResponseHeader "X-RateLimit-Reset" rsp
-	-}
---	pure (getResponseHeaders rsp, dummyUsers . read $ drop 35 u) -- getResponseBody rsp)
+http :: String -> IO ([Header], LBS.ByteString)
+http u | isAvatarUrl u = ([] ,) <$> LBS.readFile "lenna.png"
+http u = do
 	r <- readIORef remain
 	case r of
 		_ | r > 0 -> do
@@ -111,27 +95,27 @@ http nmtkn u = do
 		_ -> do	writeIORef remain 10
 			now <- getCurrentTime
 			pure (	[	("X-RateLimit-Remaining", "0"),
-					("X-RateLImit-Reset", BSC.pack . show . floor $ utcTimeToPOSIXSeconds now + 60) ], "" )
+					("X-RateLImit-Reset", BSC.pack . show @Int . floor $ utcTimeToPOSIXSeconds now + 30) ], "" )
 
 isSleep :: FollowboxEvent n -> Bool
 isSleep (Sleep _) = True
 isSleep _ = False
 
-handle' :: Field -> Maybe (BS.ByteString, FilePath) -> EvReqs (FollowboxEvent CInt) -> FollowboxIO (EvOccs (FollowboxEvent CInt))
-handle' f nmtkn evs
+handle' :: Field -> EvReqs (FollowboxEvent CInt) -> FollowboxIO (EvOccs (FollowboxEvent CInt))
+handle' f evs
 	| Just (Sleep t) <- S.lookupMin $ S.filter isSleep evs = do
 		liftIO $ putStrLn $ "handle' (Sleep): " ++ show (S.filter (/= StoreRandoms Response) evs)
 		getRateLimitReset >>= liftIO . print
 		now <- liftIO getCurrentTime
 		if t > now
-			then (liftIO (putStrLn $ "here: " ++ show evs) >> handle f nmtkn evs)
+			then (liftIO (putStrLn $ "here: " ++ show evs) >> handle f evs)
 			else pure . S.singleton $ Sleep t
 	| otherwise = do
 		liftIO $ putStrLn $ "handle' (no Sleep): " ++ show (S.filter (/= StoreRandoms Response) evs)
-		handle f nmtkn evs
+		handle f evs
 
-handle :: Field -> Maybe (BS.ByteString, FilePath) -> EvReqs (FollowboxEvent CInt) -> FollowboxIO (EvOccs (FollowboxEvent CInt))
-handle f nmtkn evs
+handle :: Field -> EvReqs (FollowboxEvent CInt) -> FollowboxIO (EvOccs (FollowboxEvent CInt))
+handle f evs
 	| Just (Error (Cause em)) <- S.lookupMin $ S.filter (== Error Response) evs = do
 		liftIO do
 			putStrLn $ "Error: " ++ em
@@ -142,7 +126,7 @@ handle f nmtkn evs
 	| Just (LoadJsons Request) <- S.lookupMin $ S.filter (== LoadJsons Request) evs =
 		S.singleton . LoadJsons . Occurred <$> getObjects
 	| Just (Http uri _) <- S.lookupMin $ S.filter isHttp evs =
-		liftIO $ S.singleton . Http uri . Occurred <$> http nmtkn uri
+		liftIO $ S.singleton . Http uri . Occurred <$> http uri
 	| Just (StoreJsons (Cause os)) <- S.lookupMin $ S.filter (== StoreJsons Response) evs =
 		S.singleton (StoreJsons Response) <$ putObjects os
 	| Just (CalcTextExtents (Action (fn, fs, str))) <- S.lookupMin $ S.filter (== CalcTextExtents Communication) evs =
@@ -162,8 +146,8 @@ handle f nmtkn evs
 	| Just (WaitMessage (Cause True)) <- S.lookupMin $ S.filter (== WaitMessage (Cause True)) evs =
 		pure . S.singleton $ WaitMessage Response
 	| LeftClick `S.member` evs = withNextEventTimeout' f 10000000
-		$ \case	Just ev -> liftIO (putStrLn "foobar") >> handleEvent f nmtkn evs ev
-			Nothing -> handle' f nmtkn evs
+		$ \case	Just ev -> liftIO (putStrLn "foobar") >> handleEvent f evs ev
+			Nothing -> handle' f evs
 	| Just (Sleep t) <- S.lookupMin $ S.filter isSleep evs =
 		S.singleton (Sleep t) <$ liftIO do
 			putStrLn "hogepiyo"
@@ -175,16 +159,16 @@ isHttp :: FollowboxEvent n -> Bool
 isHttp (Http _ _) = True
 isHttp _ = False
 
-handleEvent :: Field -> Maybe (BS.ByteString, FilePath) -> EvReqs (FollowboxEvent CInt) -> Field.Event -> FollowboxIO (EvOccs (FollowboxEvent CInt))
-handleEvent f nmtkn evs = \case
+handleEvent :: Field -> EvReqs (FollowboxEvent CInt) -> Field.Event -> FollowboxIO (EvOccs (FollowboxEvent CInt))
+handleEvent f evs = \case
 	DestroyWindowEvent {} -> liftIO $ closeField f >> exitSuccess
-	ExposeEvent {} -> liftIO (flushField f) >> handle' f nmtkn evs
+	ExposeEvent {} -> liftIO (flushField f) >> handle' f evs
 	ev -> case buttonEvent ev of
 		Just BtnEvent {
 			buttonNumber = Button1,
 			position = (x, y) } -> do
 				(S.fromList [Followbox.Move (Occurred (x, y)), LeftClick] <>)
-					<$> handle' f nmtkn (S.filter (\r -> Followbox.Move Request /= r && LeftClick /= r) evs)
-		Just _ -> handle' f nmtkn evs
-		Nothing	| isDeleteEvent f ev -> liftIO (destroyField f) >> handle' f nmtkn evs
-			| otherwise -> liftIO (print ev) >> handle' f nmtkn evs
+					<$> handle' f (S.filter (\r -> Followbox.Move Request /= r && LeftClick /= r) evs)
+		Just _ -> handle' f evs
+		Nothing	| isDeleteEvent f ev -> liftIO (destroyField f) >> handle' f evs
+			| otherwise -> liftIO (print ev) >> handle' f evs
