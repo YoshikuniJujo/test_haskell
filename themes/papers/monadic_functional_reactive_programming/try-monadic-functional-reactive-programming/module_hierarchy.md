@@ -6,7 +6,7 @@ Followbox
   + Followbox.Event		<-
   |   + Followbox.AesonObject	v
   |   + React
-  |   + Event
+  |   + Event			v
   + Followbox.View		v
   + Signal
   + React

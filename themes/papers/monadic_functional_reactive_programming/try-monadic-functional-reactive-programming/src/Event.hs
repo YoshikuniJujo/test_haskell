@@ -22,7 +22,8 @@ instance Ord a => Ord (Action a) where
 
 data Bidirectional a e = Communication | Action a | Event e deriving Show
 
-instance (Ord a, Ord e) => Eq (Bidirectional a e) where a == b = a `compare` b == EQ
+instance (Ord a, Ord e) => Eq (Bidirectional a e) where
+	a == b = a `compare` b == EQ
 
 instance (Ord a, Ord e) => Ord (Bidirectional a e) where
 	Action x `compare` Action y = x `compare` y
