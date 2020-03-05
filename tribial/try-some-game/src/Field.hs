@@ -6,7 +6,7 @@ module Field (
 	Mask, exposureMask, keyPressMask,
 		buttonPressMask, buttonReleaseMask,
 		pointerMotionMask, button1MotionMask,
-	Event(..), withNextEvent, withNextEventTimeout,
+	Event(..), withNextEvent, withNextEventTimeout, withNextKeyEvent,
 	Position, Dimension, Pixel, drawLine, fillRect, fillPolygon, Point(..), drawImage,
 	drawStr, textExtents, textXOff, clearField, flushField
 	) where

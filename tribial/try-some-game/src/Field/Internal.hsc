@@ -8,7 +8,7 @@ module Field.Internal (
 	Mask, exposureMask, keyPressMask,
 		buttonPressMask, buttonReleaseMask,
 		pointerMotionMask, button1MotionMask,
-	Event(..), withNextEvent, withNextEventTimeout,
+	Event(..), withNextEvent, withNextEventTimeout, withNextKeyEvent,
 	Position, Dimension, Pixel,
 	Field.Internal.drawLine, fillRect, Field.Internal.fillPolygon, Point(..), drawImage,
 	drawStr, Field.Internal.textExtents, textXOff, clearField, flushField
@@ -85,6 +85,10 @@ closeField Field { display = d } = do
 withNextEvent :: MonadBaseControl IO m => Field -> (Event -> m a) -> m a
 withNextEvent Field { display = d } act =
 	liftBaseWith (\run -> allocaXEvent $ \e -> run . act =<< nextEvent d e *> getEvent e) >>= restoreM
+
+withNextKeyEvent :: MonadBaseControl IO m => Field -> ((Maybe KeySym, String) -> m a) -> m a
+withNextKeyEvent Field { display = d } act =
+	liftBaseWith (\run -> allocaXEvent $ \e -> nextEvent d e >> (run . act =<< lookupString (castPtr e))) >>= restoreM
 
 withNextEventTimeout :: MonadBaseControl IO m => Field -> Word32 -> ([Event] -> m a) -> m a
 withNextEventTimeout Field { display = d } n act =

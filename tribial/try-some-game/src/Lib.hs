@@ -3,7 +3,8 @@
 
 module Lib where
 
-import Control.Arrow
+import Control.Arrow ((***), first, second)
+import Data.IORef
 import Data.Int
 
 import Field
@@ -22,6 +23,25 @@ checkMouseMove = do
 				flushField f
 			Nothing -> pure ()
 		loop f
+
+checkKey :: IO ()
+checkKey = do
+	pos <- newIORef (100, 100)
+	f <- openField "ゲーム" [keyPressMask]
+	loop f pos
+	where
+	loop f pos = do
+		withNextKeyEvent f \case
+			(_, "[") -> modifyIORef pos (second (subtract 5))
+			(_, "/") -> modifyIORef pos (second (+ 5))
+			(_, ";") -> modifyIORef pos (first (subtract 5))
+			(_, "'") -> modifyIORef pos (first (+ 5))
+			str -> print str
+		(x, y) <- readIORef pos
+		clearField f
+		fillPolygon f 0x00ff00 . turtle 3 $ Point x y
+		flushField f
+		loop f pos
 
 turtle :: Int32 -> Point -> [Point]
 turtle sz (Point x y) = uncurry Point . ((x +) *** (y +)) . ((* sz) *** (* sz)) <$> halfTurtle ++ reverseTurtle halfTurtle
