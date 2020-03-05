@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Followbox.AesonObject (Value(..), Object, Array, decodeJson) where
@@ -21,16 +22,17 @@ type Array = Vector Value
 decodeJson :: ByteString -> Either String [Object]
 decodeJson = ((copyAesonObject <$>) <$>) . A.eitherDecode
 
-copyAesonValue :: A.Value -> Value
-copyAesonValue (A.Object o) = Object $ copyAesonObject o
-copyAesonValue (A.Array a) = Array $ copyAesonArray a
-copyAesonValue (A.String s) = String s
-copyAesonValue (A.Number n) = Number n
-copyAesonValue (A.Bool b) = Bool b
-copyAesonValue A.Null = Null
-
 copyAesonObject :: A.Object -> Object
 copyAesonObject = (copyAesonValue <$>)
 
 copyAesonArray :: A.Array -> Array
 copyAesonArray = (copyAesonValue <$>)
+
+copyAesonValue :: A.Value -> Value
+copyAesonValue = \case
+	A.Object o -> Object $ copyAesonObject o
+	A.Array a -> Array $ copyAesonArray a
+	A.String s -> String s
+	A.Number n -> Number n
+	A.Bool b -> Bool b
+	A.Null -> Null
