@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies, TypeFamilyDependencies, KindSignatures, DataKinds, TypeOperators, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Lib where
+module TypeLevelSet where
 
 import GHC.TypeLits
 import Data.Kind
@@ -30,3 +30,15 @@ type family Insert (t :: Type) (tr :: Tree Type) :: Tree Type where
 
 sample0 :: Proxy (Insert Double (Insert Int (Insert Double (Insert () 'Tip))))
 sample0 = Proxy
+
+{-
+
+% stack ghci
+> sample0
+Proxy
+> sample0
+sample0
+  :: Data.Proxy.Proxy
+       ('Node () ('Node Double 'Tip 'Tip) ('Node Int 'Tip 'Tip))
+
+-}
