@@ -21,5 +21,6 @@ instance Monoid m => Category (MonoidCat m) where
 	MonoidCat a . MonoidCat b = MonoidCat $ a <> b
 	MonoidCat a . MonoidCatId = MonoidCat $ a <> mempty
 	MonoidCatId . MonoidCat b = MonoidCat $ mempty <> b
-	MonoidCatId . MonoidCatId = MonoidCat $ mempty <> mempty
+--	MonoidCatId . MonoidCatId = MonoidCat $ mempty <> mempty
+	MonoidCatId . MonoidCatId = MonoidCatId
 	id = MonoidCatId
