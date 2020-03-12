@@ -34,6 +34,6 @@ for (let i = 0; i < 3; i ++) {
 -}
 
 act' :: IO ()
-act' = for_ [0 :: Int .. 2] \i -> forkIO $ do
+act' = for_ [0 :: Int .. 2] \i -> forkIO do
 	threadDelay 1000
 	print i
