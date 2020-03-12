@@ -19,7 +19,7 @@ for (var i = 0; i < 3; i ++) {
 act :: IO ()
 act = loop =<< newIORef (0 :: Int) where
 	loop i = readIORef i >>= \n -> when (n < 3) do
-		void . forkIO $ do
+		void $ forkIO do
 			threadDelay 1000
 			print =<< readIORef i
 		modifyIORef i (+ 1)
