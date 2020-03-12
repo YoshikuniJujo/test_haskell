@@ -1,9 +1,12 @@
 {-# LANGUAGE ScopedTypeVariables, ExistentialQuantification #-}
 {-# LANGUAGE TypeOperators, KindSignatures, DataKinds #-}
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
+{-# LANGUAGE AllowAmbiguousTypes, TypeApplications #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module OpenUnionValue (UnionValue, inj, prj, extract) where
+module OpenUnionValue (UnionValue, Elem(..), inj, prj, extract, Convert, convert) where
 
 import Data.Kind
 import Unsafe.Coerce
@@ -28,5 +31,31 @@ prj (UnionValue i x)
 	| i == unP (elemNo :: P a as) = Just $ unsafeCoerce x
 	| otherwise = Nothing
 
+{-
+decomp :: UnionValue (a ':~ as) -> Either (UnionValue as) a
+decomp (UnionValue 0 x) = Right $ unsafeCoerce x
+decomp (UnionValue i x) = Left $ UnionValue (i - 1) x
+-}
+
 extract :: UnionValue (a ':~ 'Nil) -> a
 extract (UnionValue _ x) = unsafeCoerce x
+
+foo :: UnionValue as -> UnionValue (a ':~ as)
+foo (UnionValue i x) = UnionValue (i + 1) x
+
+class Elem (a :: Type) (as :: Sorted Type) where elemValue :: a -> Maybe a
+instance Elem a 'Nil where elemValue = const Nothing
+instance Elem a (a ':~ as) where elemValue = Just
+instance {-# OVERLAPPABLE #-} Elem a as => Elem a (a' ':~ as) where elemValue x = elemValue @a @as x
+
+class Convert (as :: Sorted Type) (as' :: Sorted Type) where
+	convert :: UnionValue as -> Maybe (UnionValue as')
+instance {-# INCOHERENT #-} Convert 'Nil as' where convert = const Nothing
+instance {-# INCOHERENT #-} Convert as 'Nil where convert = const Nothing
+instance Convert as as' => Convert (a ':~ as) (a ':~ as') where
+	convert (UnionValue 0 x) = Just $ UnionValue 0 x
+	convert (UnionValue i x) = foo <$> convert (UnionValue (i - 1) x :: UnionValue as)
+instance {-# OVERLAPPABLE #-} (Convert as (a' ':~ as'), Convert (a ':~ as) as') =>
+	Convert (a ':~ as) (a' ':~ as') where
+	convert u@(UnionValue 0 _) = foo <$> (convert (u :: UnionValue (a ':~ as)) :: Maybe (UnionValue as'))
+	convert (UnionValue i x) = convert (UnionValue (i - 1) x :: UnionValue as)

@@ -1,10 +1,14 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DataKinds, KindSignatures, TypeFamilies #-}
+{-# LANGUAGE AllowAmbiguousTypes, FlexibleContexts #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module React where
 
 import Data.Kind
+import Data.Maybe
 
 import Sorted
 import OpenUnionValue
@@ -54,6 +58,18 @@ mouseDown :: React (Singleton MouseDown) [MouseBtn]
 mouseDown = Await ([inj MouseDownReq]) \ev ->
 	let OccurredMouseDown mbs = extract ev in pure mbs
 
+data MouseUp = MouseUpReq
+
+instance Numbered MouseUp where
+	type Number MouseUp = 1
+
+instance Request MouseUp where
+	data Occurred MouseUp = OccurredMouseUp [MouseBtn]
+
+mouseUp :: React (Singleton MouseUp) [MouseBtn]
+mouseUp = Await ([inj MouseUpReq]) \ev ->
+	let OccurredMouseUp mbs = extract ev in pure mbs
+
 interpret :: Monad m => (EvReqs es -> m [EvOcc es]) -> React es a -> m a
 interpret _ (Done x) = pure x
 interpret p a@(Await r _) = p r >>= interpret p . foldr step a
@@ -77,3 +93,46 @@ leftClick, middleClick, rightClick :: React (Singleton MouseDown) ()
 leftClick = clickOn MLeft
 middleClick = clickOn MMiddle
 rightClick = clickOn MRight
+
+releaseOn :: MouseBtn -> React (Singleton MouseUp) ()
+releaseOn b = do
+	bs <- mouseUp
+	if b `elem` bs then pure () else releaseOn b
+
+leftRelease :: React (Singleton MouseUp) ()
+leftRelease = releaseOn MLeft
+
+first :: forall es es' a b . (
+	Merge es es' ~ Merge es' es,
+	Convert es (Merge es' es),
+	Convert es' (Merge es' es),
+	Convert (Map Occurred (Merge es' es)) (Map Occurred es),
+	Convert (Map Occurred (Merge es' es)) (Map Occurred es')
+	) => React es a -> React es' b -> React (Merge es es') (React es a, React es' b)
+first l r = case (l, r) of
+	(Await el _, Await er _) ->
+		Await ((fromJust . convert <$> el) ++ (fromJust . convert <$> er))
+			\(c :: EvOcc (Merge es es')) -> first (l `ud1` c) (r `ud2` c)
+	_ -> Done (l, r)
+	where
+	ud1 = update @es @es'
+	ud2 = update @es' @es
+
+update :: Convert (Map Occurred (Merge es es')) (Map Occurred es) => React es a -> EvOcc (Merge es es') -> React es a
+update r@(Await _ c) oc = case convert oc of
+	Just o -> c o
+	Nothing -> r
+
+done :: React es a -> Maybe a
+done (Done x) = Just x
+done _ = Nothing
+
+before :: (Merge es es' ~ Merge es' es, Convert es (Merge es' es), Convert es' (Merge es' es),
+	Convert (Map Occurred (Merge es' es)) (Map Occurred es),
+	Convert (Map Occurred (Merge es' es)) (Map Occurred es')) =>
+	React es a -> React es' b -> React (Merge es es') Bool
+before a b = do
+	(a', b') <- first a b
+	case (done a', done b') of
+		(Just _, Nothing) -> pure True
+		_ -> pure False
