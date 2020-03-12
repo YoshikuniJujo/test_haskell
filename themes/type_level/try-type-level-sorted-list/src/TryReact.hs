@@ -3,10 +3,16 @@
 
 module TryReact where
 
+import Control.Monad.State
+-- import Data.Time.Clock.TAI
+import Data.Time.Clock.System
+
 import Sorted
 import OpenUnionValue
 import React
 import Field
+
+import Handlers
 
 tryMouseDown :: IO ()
 tryMouseDown = do
@@ -42,6 +48,7 @@ trySameClick = do
 	interpret (handleMouseDown f) sameClick >>= print
 	closeField f
 
+{-
 button :: Button -> MouseBtn
 button 1 = MLeft
 button 2 = MMiddle
@@ -49,6 +56,7 @@ button 3 = MRight
 button 4 = MUp
 button 5 = MDown
 button _ = error "Unknown button"
+-}
 
 tryLeftClick :: IO ()
 tryLeftClick = do
@@ -66,4 +74,11 @@ tryBefore2 :: IO ()
 tryBefore2 = do
 	f <- openField "tryBefore" [exposureMask, buttonPressMask, buttonReleaseMask]
 	interpret (handleMouseDownUp f) (leftRelease `before` rightClick) >>= print
+	closeField f
+
+tryDoubler :: IO ()
+tryDoubler = do
+	f <- openField "tryDoubler" [exposureMask, buttonPressMask, buttonReleaseMask]
+	now <- systemToTAITime <$> getSystemTime
+	interpret (handle 100000 f) doubler `runStateT` now >>= print
 	closeField f

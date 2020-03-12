@@ -1,0 +1,62 @@
+{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module Handlers where
+
+import Control.Monad.State
+import Data.Maybe
+import Data.Time.Clock
+import Data.Time.Clock.System
+import Data.Time.Clock.TAI
+
+import OpenUnionValue
+import React
+import Field
+
+handle :: DiffTime -> Field -> EvReqs GuiEv -> StateT AbsoluteTime IO [EvOcc GuiEv]
+handle dt f reqs = do
+	t1 <- get
+	t2 <- liftIO $ systemToTAITime <$> getSystemTime
+	let	tdiff = t2 `diffAbsoluteTime` t1
+	case time of
+		Just t | tdiff >= t -> do
+			put $ t `addAbsoluteTime` t1
+			pure $ makeTimeObs reqs t
+		_ -> do	occs <- withNextEventTimeout' f (round $ dt * 1000000) \case
+				Just ButtonEvent {
+					ev_event_type = 4,
+					ev_button = b } ->
+					pure [inj $ OccurredMouseDown [button b]]
+				Just ButtonEvent {
+					ev_event_type = 5,
+					ev_button = b } ->
+					pure [inj $ OccurredMouseUp [button b]]
+				Just ev -> liftIO (print ev) >> handle dt f reqs
+				Nothing -> liftIO (putStrLn "<TIMEOUT>") >> handle dt f reqs
+			pure $ makeTimeObs reqs tdiff ++ occs `filterEvent` reqs
+	where time = getWait reqs
+
+button :: Button -> MouseBtn
+button = \case
+	1 -> MLeft
+	2 -> MMiddle
+	3 -> MRight
+	4 -> MUp
+	5 -> MDown
+	_ -> error "Unknown button"
+
+getWait :: EvReqs GuiEv -> Maybe DiffTime
+getWait reqs = (\(TryWaitReq t) -> t) <$> findValue reqs
+
+findValue :: Member a as => [UnionValue as] -> Maybe a
+findValue = listToMaybe . mapMaybe prj
+
+filterMap :: (a -> Maybe b) -> [a] -> [b]
+filterMap f = catMaybes . map f
+
+makeTimeObs :: EvReqs GuiEv -> DiffTime -> [EvOcc GuiEv]
+makeTimeObs r t = filterMap makeOcc r
+	where makeOcc u = do
+		TryWaitReq _t' <- prj u
+		pure . inj $ OccurredTryWait t

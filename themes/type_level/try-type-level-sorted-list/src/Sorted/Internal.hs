@@ -32,8 +32,10 @@ type family Merge (ts :: Sorted Type) (ts' :: Sorted Type) :: Sorted Type where
 	Merge 'Nil ts' = ts'
 	Merge (t ':~ ts) (t ':~ ts') = t ':~ Merge ts ts'
 	Merge (t ':~ ts) (t' ':~ ts') = If (Number t <=? Number t')
-		(t ':~ t' ':~ Merge ts ts')
-		(t' ':~ t ':~ Merge ts ts')
+		(t ':~ Merge ts (t' ':~ ts'))
+		(t' ':~ Merge (t ':~ ts) ts')
+--		(t ':~ t' ':~ Merge ts ts')
+--		(t' ':~ t ':~ Merge ts ts')
 
 type family Map (f :: Type -> Type) (ts :: Sorted Type) :: Sorted Type where
 	Map _f 'Nil = 'Nil

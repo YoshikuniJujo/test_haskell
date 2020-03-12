@@ -6,7 +6,9 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module OpenUnionValue (UnionValue, Elem(..), inj, prj, extract, Convert, convert) where
+module OpenUnionValue (
+	UnionValue, Member, Elem(..), inj, prj, extract,
+	Convert, convert, intersection, intersection' ) where
 
 import Data.Kind
 import Unsafe.Coerce
@@ -59,3 +61,18 @@ instance {-# OVERLAPPABLE #-} (Convert as (a' ':~ as'), Convert (a ':~ as) as') 
 	Convert (a ':~ as) (a' ':~ as') where
 	convert u@(UnionValue 0 _) = foo <$> (convert (u :: UnionValue (a ':~ as)) :: Maybe (UnionValue as'))
 	convert (UnionValue i x) = convert (UnionValue (i - 1) x :: UnionValue as)
+
+intersection :: [UnionValue as] -> [UnionValue as] -> [UnionValue as]
+intersection as bs = filter (`elemIndexOf` (index <$> bs)) as
+
+intersection' :: [UnionValue (Map f as)] -> [UnionValue as] -> [UnionValue (Map f as)]
+intersection' as bs = filter (`elemIndexOf` (index <$> bs)) as
+
+index :: UnionValue as -> Word
+index (UnionValue i _) = i
+
+-- hasIndexOf :: UnionValue as -> Word -> Bool
+-- hasIndexOf (UnionValue i _) i0 = i == i0
+
+elemIndexOf :: UnionValue as -> [Word] -> Bool
+elemIndexOf (UnionValue i _) is = i `elem` is

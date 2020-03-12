@@ -1,14 +1,16 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE DataKinds, KindSignatures, TypeFamilies #-}
 {-# LANGUAGE AllowAmbiguousTypes, FlexibleContexts #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module React where
 
 import Data.Kind
 import Data.Maybe
+import Data.Time
 
 import Sorted
 import OpenUnionValue
@@ -46,29 +48,40 @@ data ISig es a b = a :| Sig es a b | End b
 
 data MouseDown = MouseDownReq
 
-instance Numbered MouseDown where
-	type Number MouseDown = 0
-
+instance Numbered MouseDown where type Number MouseDown = 0
 instance Request MouseDown where
 	data Occurred MouseDown = OccurredMouseDown [MouseBtn]
 
 data MouseBtn = MLeft | MMiddle | MRight | MUp | MDown deriving (Show, Eq)
 
 mouseDown :: React (Singleton MouseDown) [MouseBtn]
-mouseDown = Await ([inj MouseDownReq]) \ev ->
+mouseDown = Await [inj MouseDownReq] \ev ->
 	let OccurredMouseDown mbs = extract ev in pure mbs
 
 data MouseUp = MouseUpReq
 
-instance Numbered MouseUp where
-	type Number MouseUp = 1
-
+instance Numbered MouseUp where type Number MouseUp = 1
 instance Request MouseUp where
 	data Occurred MouseUp = OccurredMouseUp [MouseBtn]
 
 mouseUp :: React (Singleton MouseUp) [MouseBtn]
-mouseUp = Await ([inj MouseUpReq]) \ev ->
+mouseUp = Await [inj MouseUpReq] \ev ->
 	let OccurredMouseUp mbs = extract ev in pure mbs
+
+data TryWait = TryWaitReq DiffTime
+
+instance Numbered TryWait where type Number TryWait = 2
+instance Request TryWait where
+	data Occurred TryWait = OccurredTryWait DiffTime
+
+tryWait :: DiffTime -> React (Singleton TryWait) DiffTime
+tryWait t = Await [inj $ TryWaitReq t] \ev ->
+	let OccurredTryWait t' = extract ev in pure t'
+
+sleep :: DiffTime -> React (Singleton TryWait) ()
+sleep t = do
+	t' <- tryWait t
+	if t' == t then pure () else sleep (t - t')
 
 interpret :: Monad m => (EvReqs es -> m [EvOcc es]) -> React es a -> m a
 interpret _ (Done x) = pure x
@@ -119,9 +132,8 @@ first l r = case (l, r) of
 	ud2 = update @es' @es
 
 update :: Convert (Map Occurred (Merge es es')) (Map Occurred es) => React es a -> EvOcc (Merge es es') -> React es a
-update r@(Await _ c) oc = case convert oc of
-	Just o -> c o
-	Nothing -> r
+update r@(Await _ c) oc = case convert oc of Just o -> c o; Nothing -> r
+update _ _ = error "bad: first argument must be Await _ _"
 
 done :: React es a -> Maybe a
 done (Done x) = Just x
@@ -136,3 +148,32 @@ before a b = do
 	case (done a', done b') of
 		(Just _, Nothing) -> pure True
 		_ -> pure False
+
+-- infixr 5 `Insert`
+
+type GuiEv = MouseDown `Insert` (MouseUp `Insert` Singleton TryWait)
+type ReactG a = React GuiEv a
+
+doubler :: ReactG ()
+doubler = do
+	r <- adjust do
+		adjust rightClick
+--		rightClick `before` sleep 0.2
+		rightClick `before` sleep 1
+--	pure ()
+	if r then pure () else doubler
+
+filterEvent :: [EvOcc es] -> EvReqs es -> [EvOcc es]
+filterEvent = intersection' @Occurred
+
+adjust :: forall es es' a . (
+	Merge es es' ~ es', Merge es' es ~ es', Convert es es', Convert es' es',
+	Convert (Map Occurred es') (Map Occurred es),
+	Convert (Map Occurred es) (Map Occurred es'),
+	Convert (Map Occurred es') (Map Occurred es') ) => React es a -> React es' a
+adjust rct = (rct `first` (ignore :: React es' ())) >>= \case
+	(Done x, _) -> pure x
+	(rct', _) -> adjust rct'
+
+ignore :: React es ()
+ignore = Await [] . const $ Done ()
