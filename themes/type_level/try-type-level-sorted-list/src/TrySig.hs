@@ -71,3 +71,12 @@ tryWiggleRect = do
 	now <- systemToTAITime <$> getSystemTime
 	interpretSig (handle 0.05 f) (liftIO . drawRect f) (wiggleRect $ Rect (200, 150) (400, 300)) `runStateT` now >>= print
 	closeField f
+
+tryPosInside :: IO ()
+tryPosInside = do
+	let	r = Rect (300, 200) (600, 400)
+	f <- openField "tryPosInside" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
+	drawRect f r
+	now <- systemToTAITime <$> getSystemTime
+	interpret (handle 0.05 f) (posInside r mousePos) `runStateT` now >>= print
+	closeField f

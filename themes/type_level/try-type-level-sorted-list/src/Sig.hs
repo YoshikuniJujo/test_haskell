@@ -3,7 +3,7 @@
 
 module Sig where
 
-import Prelude hiding (map, repeat, scanl)
+import Prelude hiding (map, repeat, scanl, break)
 
 import Data.Time
 
@@ -109,3 +109,34 @@ wiggleRect (Rect lu rd) = rectAtTime `map` elapsed
 
 (+.) :: Point -> Point -> Point
 (x1, y1) +. (x2, y2) = (x1 + x2, y1 + y2)
+
+find :: (a -> Bool) -> Sig es a r -> React es (Either a r)
+find f l = icur <$> res (break f l)
+
+icur :: ISig es a b -> Either a b
+icur (h :| _) = Left h
+icur (End r) = Right r
+
+res :: Sig es a b -> React es b
+res (Sig l) = ires =<< l
+
+ires :: ISig es a b -> React es b
+ires (_ :| t) = res t
+ires (End a) = Done a
+
+break :: (a -> Bool) -> Sig es a b -> Sig es a (ISig es a b)
+break f (Sig l) = Sig $ ibreak f <$> l
+
+ibreak :: (a -> Bool) -> ISig es a b -> ISig es a (ISig es a b)
+ibreak f is@(h :| t)
+	| f h = pure is
+	| otherwise = h :| break f t
+ibreak _ is@(End _) = pure is
+
+posInside :: Rect -> SigG Point y -> ReactG (Either Point y)
+posInside r = find (`inside` r)
+
+inside :: Point -> Rect -> Bool
+inside (x, y) (Rect (l, u) (r, d)) =
+	(l <= x && x <= r || r <= x && x <= l) &&
+	(u <= y && y <= d || d <= y && y <= u)
