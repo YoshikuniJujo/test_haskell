@@ -188,3 +188,10 @@ completeRect :: Point -> SigG Rect (Maybe Rect)
 completeRect p1 = do
 	(r, _) <- curRect p1 `until` leftUp
 	pure $ cur r
+
+defineRect :: SigG Rect Rect
+defineRect = waitFor firstPoint >>= \case
+	Just p1 -> completeRect p1 >>= \case
+		Just r -> pure r
+		Nothing -> error "bad"
+	Nothing -> error "bad"
