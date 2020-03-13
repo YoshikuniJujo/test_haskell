@@ -43,9 +43,6 @@ instance Monad (React es) where
 	Done x >>= f = f x
 	Await reqs k >>= f = Await reqs $ (>>= f) . k
 
-newtype Sig es a b = Sig (React es (ISig es a b))
-data ISig es a b = a :| Sig es a b | End b
-
 data MouseDown = MouseDownReq
 
 instance Numbered MouseDown where type Number MouseDown = 0
