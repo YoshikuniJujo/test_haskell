@@ -1,12 +1,14 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, TypeFamilies, FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Sig where
 
-import Prelude hiding (map, repeat, scanl, break)
+import Prelude hiding (map, repeat, scanl, break, until)
 
 import Data.Time
 
+import Sorted
+import OpenUnionValue
 import React
 
 newtype Sig es a b = Sig { unSig :: React es (ISig es a b) }
@@ -113,6 +115,10 @@ wiggleRect (Rect lu rd) = rectAtTime `map` elapsed
 find :: (a -> Bool) -> Sig es a r -> React es (Either a r)
 find f l = icur <$> res (break f l)
 
+cur :: Sig es a b -> Maybe a
+cur (Sig (Done (h :| _))) = Just h
+cur _ = Nothing
+
 icur :: ISig es a b -> Either a b
 icur (h :| _) = Left h
 icur (End r) = Right r
@@ -140,3 +146,40 @@ inside :: Point -> Rect -> Bool
 inside (x, y) (Rect (l, u) (r, d)) =
 	(l <= x && x <= r || r <= x && x <= l) &&
 	(u <= y && y <= d || d <= y && y <= u)
+
+at :: (
+	Merge es es' ~ Merge es' es,
+	Convert es' (Merge es' es),
+	Convert es (Merge es' es),
+	Convert (Map Occurred (Merge es' es)) (Map Occurred es'),
+	Convert (Map Occurred (Merge es' es)) (Map Occurred es)
+	) => Sig es a y -> React es' b -> React (Merge es es') (Maybe a)
+l `at` a = cur . fst <$> res (l `until` a)
+
+until :: (
+	Convert es' (Merge es' es), Convert es (Merge es' es),
+	Convert (Map Occurred (Merge es' es)) (Map Occurred es'),
+	Convert (Map Occurred (Merge es' es)) (Map Occurred es),
+	Merge es es' ~ Merge es' es) =>
+	Sig es a r -> React es' b -> Sig (Merge es es') a (Sig es a r, React es' b)
+until (Sig l) a = waitFor (l `first` a) >>= un where
+	un (Done l', a') = do
+		(l'', a'') <- emitAll $ l' `iuntil` a'
+		pure (emitAll l'', a'')
+	un (l', a') = pure (Sig l', a')
+
+iuntil :: (
+	Merge es es' ~ Merge es' es,
+	Convert es (Merge es' es), Convert es' (Merge es' es),
+	Convert (Map Occurred (Merge es' es)) (Map Occurred es),
+	Convert (Map Occurred (Merge es' es)) (Map Occurred es') ) =>
+	ISig es a r -> React es' b -> ISig (Merge es es') a (ISig es a r, React es' b)
+iuntil (End l) a = End (End l, a)
+iuntil (h :| Sig t) a = h :| Sig (cont <$> t `first` a)
+	where
+	cont (Done l', a') = l' `iuntil` a'
+	cont (t', Done a') = End (h :| Sig t', Done a')
+	cont _ = error "never occur"
+
+firstPoint :: ReactG (Maybe Point)
+firstPoint = mousePos `at` leftClick
