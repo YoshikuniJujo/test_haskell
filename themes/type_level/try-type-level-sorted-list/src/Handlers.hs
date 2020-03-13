@@ -33,7 +33,7 @@ handle dt f reqs = do
 					ev_button = b } ->
 					pure [inj $ OccurredMouseUp [button b]]
 				Just ev -> liftIO (print ev) >> handle dt f reqs
-				Nothing -> liftIO (putStrLn "<TIMEOUT>") >> pure [] -- >> handle dt f reqs
+				Nothing -> pure []
 			put t2
 			pure $ makeTimeObs reqs tdiff ++ occs `filterEvent` reqs
 	where time = getWait reqs
