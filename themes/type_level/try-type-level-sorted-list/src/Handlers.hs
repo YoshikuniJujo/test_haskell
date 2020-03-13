@@ -36,6 +36,7 @@ handle dt f reqs = do
 					pure [inj $ OccurredMouseUp [button b]]
 				Just MotionEvent { ev_x = x, ev_y = y } ->
 					pure [inj $ OccurredMouseMove (fromIntegral x, fromIntegral y)]
+				Just ExposeEvent {} -> liftIO (flushField f) >> handle dt f reqs
 				Just DestroyWindowEvent {} -> liftIO $ closeField f >> exitSuccess
 				Just ev	| isDeleteEvent f ev -> liftIO (destroyField f) >> handle dt f reqs
 					| otherwise -> liftIO (print ev) >> handle dt f reqs
