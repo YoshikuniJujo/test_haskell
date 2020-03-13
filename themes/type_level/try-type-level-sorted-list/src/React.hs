@@ -126,8 +126,8 @@ releaseOn b = do
 	bs <- mouseUp
 	if b `elem` bs then pure () else releaseOn b
 
-leftRelease :: React (Singleton MouseUp) ()
-leftRelease = releaseOn MLeft
+leftUp :: React (Singleton MouseUp) ()
+leftUp = releaseOn MLeft
 
 first :: forall es es' a b . (
 	Merge es es' ~ Merge es' es,

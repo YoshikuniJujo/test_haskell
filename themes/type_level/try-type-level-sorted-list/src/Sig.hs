@@ -183,3 +183,8 @@ iuntil (h :| Sig t) a = h :| Sig (cont <$> t `first` a)
 
 firstPoint :: ReactG (Maybe Point)
 firstPoint = mousePos `at` leftClick
+
+completeRect :: Point -> SigG Rect (Maybe Rect)
+completeRect p1 = do
+	(r, _) <- curRect p1 `until` leftUp
+	pure $ cur r

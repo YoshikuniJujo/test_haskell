@@ -73,7 +73,7 @@ tryBefore = do
 tryBefore2 :: IO ()
 tryBefore2 = do
 	f <- openField "tryBefore" [exposureMask, buttonPressMask, buttonReleaseMask]
-	interpret (handleMouseDownUp f) (leftRelease `before` rightClick) >>= print
+	interpret (handleMouseDownUp f) (leftUp `before` rightClick) >>= print
 	closeField f
 
 tryDoubler :: IO ()
