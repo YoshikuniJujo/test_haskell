@@ -18,11 +18,6 @@ import OpenUnionValue
 type EvReqs (es :: Sorted Type) = [UnionValue es]
 type EvOcc (es :: Sorted Type) = UnionValue (Map Occurred es)
 
--- type family Occurred :: Type -> Type
--- type family Occurred (a :: Type) :: Type
-
--- type instance Occurred Int = Bool
-
 class Numbered e => Request e where
 	data Occurred (e :: Type) :: Type
 
@@ -79,6 +74,18 @@ sleep :: DiffTime -> React (Singleton TryWait) ()
 sleep t = do
 	t' <- tryWait t
 	if t' == t then pure () else sleep (t - t')
+
+data MouseMove = MouseMoveReq deriving Show
+
+instance Numbered MouseMove where type Number MouseMove = 3
+instance Request MouseMove where
+	data Occurred MouseMove = OccurredMouseMove Point
+
+type Point = (Integer, Integer)
+
+mouseMove :: React (Singleton MouseMove) Point
+mouseMove = Await [inj MouseMoveReq] \ev ->
+	let OccurredMouseMove p = extract ev in pure p
 
 interpret :: Monad m => (EvReqs es -> m [EvOcc es]) -> React es a -> m a
 interpret _ (Done x) = pure x
@@ -148,7 +155,7 @@ before a b = do
 
 -- infixr 5 `Insert`
 
-type GuiEv = MouseDown `Insert` (MouseUp `Insert` Singleton TryWait)
+type GuiEv = MouseMove `Insert` (MouseDown `Insert` (MouseUp `Insert` Singleton TryWait))
 type ReactG a = React GuiEv a
 
 doubler :: ReactG ()

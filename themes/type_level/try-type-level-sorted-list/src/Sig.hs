@@ -3,6 +3,8 @@
 
 module Sig where
 
+import Prelude hiding (repeat)
+
 import React
 
 newtype Sig es a b = Sig { unSig :: React es (ISig es a b) }
@@ -66,3 +68,9 @@ interpretSig p d = interpretSig' where
 	interpretSig' (Sig s) = interpret p s >>= interpretISig
 	interpretISig (h :| t) = d h >> interpretSig' t
 	interpretISig (End a) = pure a
+
+mousePos :: SigG Point ()
+mousePos = repeat $ adjust mouseMove
+
+repeat :: React es a -> Sig es a ()
+repeat x = xs where xs = Sig $ (:| xs) <$> x

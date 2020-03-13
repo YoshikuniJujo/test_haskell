@@ -10,6 +10,8 @@ import Data.Time.Clock
 import Data.Time.Clock.System
 import Data.Time.Clock.TAI
 
+import System.Exit
+
 import OpenUnionValue
 import React
 import Field
@@ -32,7 +34,11 @@ handle dt f reqs = do
 					ev_event_type = 5,
 					ev_button = b } ->
 					pure [inj $ OccurredMouseUp [button b]]
-				Just ev -> liftIO (print ev) >> handle dt f reqs
+				Just MotionEvent { ev_x = x, ev_y = y } ->
+					pure [inj $ OccurredMouseMove (fromIntegral x, fromIntegral y)]
+				Just DestroyWindowEvent {} -> liftIO $ closeField f >> exitSuccess
+				Just ev	| isDeleteEvent f ev -> liftIO (destroyField f) >> handle dt f reqs
+					| otherwise -> liftIO (print ev) >> handle dt f reqs
 				Nothing -> pure []
 			put t2
 			pure $ makeTimeObs reqs tdiff ++ occs `filterEvent` reqs
