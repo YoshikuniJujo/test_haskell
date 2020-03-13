@@ -68,7 +68,7 @@ mouseUp :: React (Singleton MouseUp) [MouseBtn]
 mouseUp = Await [inj MouseUpReq] \ev ->
 	let OccurredMouseUp mbs = extract ev in pure mbs
 
-data TryWait = TryWaitReq DiffTime
+data TryWait = TryWaitReq DiffTime deriving Show
 
 instance Numbered TryWait where type Number TryWait = 2
 instance Request TryWait where
@@ -158,8 +158,8 @@ doubler :: ReactG ()
 doubler = do
 	r <- adjust do
 		adjust rightClick
---		rightClick `before` sleep 0.2
-		rightClick `before` sleep 1
+		rightClick `before` sleep 0.2
+--		rightClick `before` sleep 2
 --	pure ()
 	if r then pure () else doubler
 
@@ -176,4 +176,4 @@ adjust rct = (rct `first` (ignore :: React es' ())) >>= \case
 	(rct', _) -> adjust rct'
 
 ignore :: React es ()
-ignore = Await [] . const $ Done ()
+ignore = Await [] $ const ignore

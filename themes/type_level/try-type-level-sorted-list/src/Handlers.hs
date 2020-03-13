@@ -33,9 +33,35 @@ handle dt f reqs = do
 					ev_button = b } ->
 					pure [inj $ OccurredMouseUp [button b]]
 				Just ev -> liftIO (print ev) >> handle dt f reqs
-				Nothing -> liftIO (putStrLn "<TIMEOUT>") >> handle dt f reqs
+				Nothing -> liftIO (putStrLn "<TIMEOUT>") >> pure [] -- >> handle dt f reqs
+			put t2
 			pure $ makeTimeObs reqs tdiff ++ occs `filterEvent` reqs
 	where time = getWait reqs
+
+handle' :: DiffTime -> Field -> EvReqs GuiEv -> StateT AbsoluteTime IO [EvOcc GuiEv]
+handle' dt f reqs = do
+	liftIO $ print (map prj reqs :: [Maybe TryWait])
+	t1 <- get
+	t2 <- liftIO $ systemToTAITime <$> getSystemTime
+	let	tdiff = t2 `diffAbsoluteTime` t1
+	case time of
+		Just t | tdiff >= t -> do
+			put $ t `addAbsoluteTime` t1
+			pure $ makeTimeObs reqs t
+		_ -> do	occs <- withNextEventTimeout f (round $ dt * 1000000) $ pure . mapMaybe eventToEvOcc
+			put t2
+			pure $ makeTimeObs reqs tdiff ++ occs `filterEvent` reqs
+	where time = getWait reqs
+
+eventToEvOcc :: Event -> Maybe (EvOcc GuiEv)
+eventToEvOcc = \case
+	ButtonEvent {
+		ev_event_type = 4,
+		ev_button = b } -> Just . inj $ OccurredMouseDown [button b]
+	ButtonEvent {
+		ev_event_type = 5,
+		ev_button = b } -> Just . inj $ OccurredMouseUp [button b]
+	_ -> Nothing
 
 button :: Button -> MouseBtn
 button = \case

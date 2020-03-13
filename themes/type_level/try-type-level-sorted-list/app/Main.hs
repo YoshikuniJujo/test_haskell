@@ -1,4 +1,6 @@
 module Main where
 
+import TryReact
+
 main :: IO ()
-main = putStrLn "Slozsoft"
+main = tryDoubler

@@ -80,5 +80,5 @@ tryDoubler :: IO ()
 tryDoubler = do
 	f <- openField "tryDoubler" [exposureMask, buttonPressMask, buttonReleaseMask]
 	now <- systemToTAITime <$> getSystemTime
-	interpret (handle 100000 f) doubler `runStateT` now >>= print
+	interpret (handle 0.1 f) doubler `runStateT` now >>= print
 	closeField f
