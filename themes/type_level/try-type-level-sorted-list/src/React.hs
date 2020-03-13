@@ -87,6 +87,16 @@ mouseMove :: React (Singleton MouseMove) Point
 mouseMove = Await [inj MouseMoveReq] \ev ->
 	let OccurredMouseMove p = extract ev in pure p
 
+data DeltaTime = DeltaTimeReq deriving Show
+
+instance Numbered DeltaTime where type Number DeltaTime = 4
+instance Request DeltaTime where
+	data Occurred DeltaTime = OccurredDeltaTime DiffTime
+
+deltaTime :: React (Singleton DeltaTime) DiffTime
+deltaTime = Await [inj DeltaTimeReq] \ev ->
+	let OccurredDeltaTime dt = extract ev in pure dt
+
 interpret :: Monad m => (EvReqs es -> m [EvOcc es]) -> React es a -> m a
 interpret _ (Done x) = pure x
 interpret p a@(Await r _) = p r >>= interpret p . foldr step a
@@ -155,7 +165,7 @@ before a b = do
 
 -- infixr 5 `Insert`
 
-type GuiEv = MouseMove `Insert` (MouseDown `Insert` (MouseUp `Insert` Singleton TryWait))
+type GuiEv = DeltaTime `Insert` (MouseMove `Insert` (MouseDown `Insert` (MouseUp `Insert` Singleton TryWait)))
 type ReactG a = React GuiEv a
 
 doubler :: ReactG ()
@@ -163,8 +173,6 @@ doubler = do
 	r <- adjust do
 		adjust rightClick
 		rightClick `before` sleep 0.2
---		rightClick `before` sleep 2
---	pure ()
 	if r then pure () else doubler
 
 filterEvent :: [EvOcc es] -> EvReqs es -> [EvOcc es]
