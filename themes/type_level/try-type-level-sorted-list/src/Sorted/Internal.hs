@@ -12,7 +12,7 @@ import Data.Type.Bool
 -- type family Number a = n | n -> a
 
 class Numbered a where
-	type Number (a :: Type) :: Nat
+	type Number (a :: Type) = (r :: Nat) | r -> a
 
 infixr 5 :~
 data Sorted a = Nil | a :~ Sorted a
@@ -48,7 +48,7 @@ instance Numbered Int where
 	type instance Number Int = 15
 
 instance Numbered Double where
-	type instance Number Double = 4
+	type instance Number Double = 7
 
 instance Numbered Bool where
 	type instance Number Bool = 11
