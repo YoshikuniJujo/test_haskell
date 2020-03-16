@@ -280,3 +280,9 @@ l `iindexBy` Sig r = do
 	case (l', r') of
 		(hl :| tl, Done (_hr :| tr)) -> emit hl >> (hl :| tl) `iindexBy` tr
 		_ -> pure ()
+
+box :: SigG Box ()
+box = () <$ do
+	r <- (`Box` Red) `map` defineRect
+	chooseBoxColor r
+	waitFor $ drClickOn r
