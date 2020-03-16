@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Sorted (
-	Sorted, Singleton, Insert, Merge, Map, Numbered(..),
+	Sorted(Nil), Singleton, Insert, Merge, Map, Numbered(..),
 	sample0, sample1, sample2, Sample0, Sample1 ) where
 
 import Data.Proxy

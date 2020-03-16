@@ -31,13 +31,13 @@ tryCurRect :: IO ()
 tryCurRect = do
 	f <- openField "tryCycleColor" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
 	now <- systemToTAITime <$> getSystemTime
-	interpretSig (handle 0.1 f) (liftIO . drawRect f) (curRect (100, 100)) `runStateT` now >>= print
+	interpretSig (handle 0.1 f) (liftIO . drawRect f 0xff0000) (curRect (100, 100)) `runStateT` now >>= print
 	closeField f
 
-drawRect :: Field -> Rect -> IO ()
-drawRect f (Rect (l_, u_) (r_, d_)) = do
+drawRect :: Field -> Pixel -> Rect -> IO ()
+drawRect f clr (Rect (l_, u_) (r_, d_)) = do
 	clearField f
-	fillRect f 0xff0000 l u w h
+	fillRect f clr l u w h
 	flushField f
 	where
 	l = fromIntegral $ l_ `min` r_
@@ -69,14 +69,14 @@ tryWiggleRect :: IO ()
 tryWiggleRect = do
 	f <- openField "tryCycleColor" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
 	now <- systemToTAITime <$> getSystemTime
-	interpretSig (handle 0.05 f) (liftIO . drawRect f) (wiggleRect $ Rect (200, 150) (400, 300)) `runStateT` now >>= print
+	interpretSig (handle 0.05 f) (liftIO . drawRect f 0xff0000) (wiggleRect $ Rect (200, 150) (400, 300)) `runStateT` now >>= print
 	closeField f
 
 tryPosInside :: IO ()
 tryPosInside = do
 	let	r = Rect (300, 200) (600, 400)
 	f <- openField "tryPosInside" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
-	drawRect f r
+	drawRect f 0xff0000 r
 	now <- systemToTAITime <$> getSystemTime
 	interpret (handle 0.05 f) (posInside r mousePos) `runStateT` now >>= print
 	closeField f
@@ -92,12 +92,30 @@ tryCompleteRect :: IO ()
 tryCompleteRect = do
 	f <- openField "tryFirstPoint" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
 	now <- systemToTAITime <$> getSystemTime
-	interpretSig (handle 0.05 f) (liftIO . drawRect f) (completeRect (200, 150)) `runStateT` now >>= print
+	interpretSig (handle 0.05 f) (liftIO . drawRect f 0xff0000) (completeRect (200, 150)) `runStateT` now >>= print
 	closeField f
 
 tryDefineRect :: IO ()
 tryDefineRect = do
 	f <- openField "tryFirstPoint" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
 	now <- systemToTAITime <$> getSystemTime
-	interpretSig (handle 0.05 f) (liftIO . drawRect f) defineRect `runStateT` now >>= print
+	interpretSig (handle 0.05 f) (liftIO . drawRect f 0xff0000) defineRect `runStateT` now >>= print
 	closeField f
+
+tryChooseBoxColor :: IO ()
+tryChooseBoxColor = do
+	f <- openField "tryChooseBoxColor" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
+	now <- systemToTAITime <$> getSystemTime
+	interpretSig (handle 0.05 f) (liftIO . drawBox f) (chooseBoxColor $ Rect (200, 150) (400, 300)) `runStateT` now >>= print
+	closeField f
+
+drawBox :: Field -> Box -> IO ()
+drawBox f (Box rct clr) = drawRect f (colorToPixel clr) rct
+
+colorToPixel :: Color -> Pixel
+colorToPixel Red = 0xff0000
+colorToPixel Green = 0x00ff00
+colorToPixel Blue = 0x0000ff
+colorToPixel Yellow = 0xffff00
+colorToPixel Cyan = 0xff00ff
+colorToPixel Magenta = 0x00ffff

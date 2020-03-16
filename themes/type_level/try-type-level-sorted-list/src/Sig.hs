@@ -1,10 +1,11 @@
-{-# LANGUAGE LambdaCase, TypeFamilies, FlexibleContexts #-}
+{-# LANGUAGE LambdaCase, TypeFamilies, FlexibleContexts, DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Sig where
 
-import Prelude hiding (map, repeat, scanl, break, until)
+import Prelude hiding (map, repeat, scanl, break, until, tail)
 
+import Data.Maybe
 import Data.Time
 
 import Sorted
@@ -195,3 +196,56 @@ defineRect = waitFor firstPoint >>= \case
 		Just r -> pure r
 		Nothing -> error "bad"
 	Nothing -> error "bad"
+
+always :: (Convert es es, Convert (Map Occurred es) (Map Occurred es)) => a -> Sig es a r
+always a = emit a >> hold
+
+hold :: (Convert es es, Convert (Map Occurred es) (Map Occurred es)) => Sig es a r
+hold = waitFor $ adjust never
+
+(<^>) :: (
+	Convert es1 (Merge es2 es1),
+	Convert es2 (Merge es2 es1),
+	Convert (Map Occurred (Merge es2 es1)) (Map Occurred es1),
+	Convert (Map Occurred (Merge es2 es1)) (Map Occurred es2),
+	Merge es1 es2 ~ Merge es2 es1 ) =>
+	Sig es2 (a1 -> a2) b1 -> Sig es1 a1 b3 -> Sig (Merge es2 es1) a2 (ISig es2 (a1 -> a2) b1, ISig es1 a1 b3)
+l <^> r = do
+	(l', r') <- waitFor $ bothStart l r
+	emitAll $ uncurry ($) `imap` pairs l' r'
+
+bothStart :: (
+	Convert es2 (Merge es1 es2),
+	Convert es1 (Merge es1 es2),
+	Convert (Map Occurred (Merge es1 es2)) (Map Occurred es2),
+	Convert (Map Occurred (Merge es1 es2)) (Map Occurred es1),
+	Merge es2 es1 ~ Merge es1 es2
+	) => Sig es1 a1 r1 -> Sig es2 a2 r2 -> React (Merge es1 es2) (ISig es1 a1 r1, ISig es2 a2 r2)
+bothStart l (Sig r) = do
+	(Sig l', r') <- res $ l `until` r
+	(Sig r'', l'') <- res (Sig r' `until` l')
+	pure (done' l'', done' r'')
+
+done' :: React es a -> a
+done' = fromJust . done
+
+pairs :: (
+	Convert es2 (Merge es1 es2),
+	Convert es1 (Merge es1 es2),
+	Convert (Map Occurred (Merge es1 es2)) (Map Occurred es2),
+	Convert (Map Occurred (Merge es1 es2)) (Map Occurred es1),
+	Merge es2 es1 ~ Merge es1 es2 ) =>
+	ISig es2 a b1 -> ISig es1 b2 b3 -> ISig (Merge es1 es2) (a, b2) (ISig es2 a b1, ISig es1 b2 b3)
+pairs (End a) b = End (End a, b)
+pairs a (End b) = End (a, End b)
+pairs (hl :| Sig tl) (hr :| Sig tr) = (hl, hr) :| tail
+	where
+	tail = Sig $ cont <$> (tl `first` tr)
+	cont (tl', tr') = pairs (lup hl tl') (lup hr tr')
+	lup _ (Done l) = l
+	lup h t = h :| Sig t
+
+chooseBoxColor :: Rect -> SigG Box ()
+chooseBoxColor r = () <$ (always Box :: SigG (Rect -> Color -> Box) ()) <^> wiggleRect r <^> cycleColor
+
+data Box = Box Rect Color deriving Show

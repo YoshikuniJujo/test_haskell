@@ -189,3 +189,6 @@ adjust rct = (rct `first` (ignore :: React es' ())) >>= \case
 
 ignore :: React es ()
 ignore = Await [] $ const ignore
+
+never :: React 'Nil a
+never = Await [] undefined
