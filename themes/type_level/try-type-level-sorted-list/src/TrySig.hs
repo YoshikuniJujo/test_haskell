@@ -119,3 +119,12 @@ colorToPixel Blue = 0x0000ff
 colorToPixel Yellow = 0xffff00
 colorToPixel Cyan = 0xff00ff
 colorToPixel Magenta = 0x00ffff
+
+tryDrClickOn :: IO ()
+tryDrClickOn = do
+	f <- openField "tryDrClickOn" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
+	now <- systemToTAITime <$> getSystemTime
+	let	rct = Rect (200, 150) (400, 300)
+	drawRect f 0xff0000 rct
+	interpret (handle 0.05 f) (drClickOn rct) `runStateT` now >>= print
+	closeField f

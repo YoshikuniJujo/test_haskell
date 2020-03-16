@@ -249,3 +249,34 @@ chooseBoxColor :: Rect -> SigG Box ()
 chooseBoxColor r = () <$ (always Box :: SigG (Rect -> Color -> Box) ()) <^> wiggleRect r <^> cycleColor
 
 data Box = Box Rect Color deriving Show
+
+drClickOn :: Rect -> ReactG (Either Point ())
+drClickOn r = posInside r $ mousePos `indexBy` repeat doubler
+
+indexBy :: (
+	Convert es (Merge es' es),
+	Convert es' (Merge es' es),
+	Convert (Map Occurred (Merge es' es)) (Map Occurred es),
+	Convert (Map Occurred (Merge es' es)) (Map Occurred es'),
+	Merge es es' ~ Merge es' es
+	) => Sig es a b -> Sig es' a2 b2 -> Sig (Merge es' es) a ()
+l `indexBy` Sig r = do
+	(Sig l', r') <- waitFor . res $ l `until` r
+	case (l', r') of
+		(_, Done (End _)) -> pure ()
+		(Done l'', r'') -> l'' `iindexBy` Sig r''
+		(l'', Done (_ :| r'')) -> Sig l'' `indexBy` r''
+		_ -> error "never occur"
+
+iindexBy :: (
+	Convert es (Merge es' es),
+	Convert es' (Merge es' es),
+	Convert (Map Occurred (Merge es' es)) (Map Occurred es),
+	Convert (Map Occurred (Merge es' es)) (Map Occurred es'),
+	Merge es es' ~ Merge es' es) =>
+	ISig es a1 b1 -> Sig es' a2 b2 -> Sig (Merge es' es) a1 ()
+l `iindexBy` Sig r = do
+	(l', r') <- waitFor . ires $ l `iuntil` r
+	case (l', r') of
+		(hl :| tl, Done (_hr :| tr)) -> emit hl >> (hl :| tl) `iindexBy` tr
+		_ -> pure ()
