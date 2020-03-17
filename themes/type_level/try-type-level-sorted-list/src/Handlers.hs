@@ -18,6 +18,12 @@ import Field
 
 handle :: DiffTime -> Field -> EvReqs GuiEv -> StateT AbsoluteTime IO [EvOcc GuiEv]
 handle dt f reqs = do
+{-
+	liftIO do
+		putStrLn "requests:"
+		print (map prj reqs :: [Maybe MouseMove])
+		print (map prj reqs :: [Maybe MouseDown])
+		-}
 	t1 <- get
 	t2 <- liftIO $ systemToTAITime <$> getSystemTime
 	let	tdiff = t2 `diffAbsoluteTime` t1
@@ -28,12 +34,15 @@ handle dt f reqs = do
 		_ -> do	occs <- withNextEventTimeout' f (round $ dt * 1000000) \case
 				Just ButtonEvent {
 					ev_event_type = 4,
+					ev_x = x, ev_y = y,
 					ev_button = b } ->
-					pure [inj $ OccurredMouseDown [button b]]
+					pure [inj $ OccurredMouseMove (fromIntegral x, fromIntegral y), inj $ OccurredMouseDown [button b]]
 				Just ButtonEvent {
 					ev_event_type = 5,
+					ev_x = x, ev_y = y,
 					ev_button = b } ->
-					pure [inj $ OccurredMouseUp [button b]]
+					pure [inj $ OccurredMouseMove (fromIntegral x, fromIntegral y), inj $ OccurredMouseUp [button b]]
+--					pure [inj $ OccurredMouseUp [button b]]
 				Just MotionEvent { ev_x = x, ev_y = y } ->
 					pure [inj $ OccurredMouseMove (fromIntegral x, fromIntegral y)]
 				Just ExposeEvent {} -> liftIO (flushField f) >> handle dt f reqs
@@ -42,7 +51,14 @@ handle dt f reqs = do
 					| otherwise -> liftIO (print ev) >> handle dt f reqs
 				Nothing -> pure []
 			put t2
-			pure $ makeTimeObs reqs tdiff ++ occs `filterEvent` reqs
+--			pure $ makeTimeObs reqs tdiff ++ occs `filterEvent` reqs
+			let	occs' = makeTimeObs reqs tdiff ++ occs `filterEvent` reqs
+			{-
+			liftIO do
+				print (map prj occs' :: [Maybe (Occurred MouseMove)])
+				print (map prj occs' :: [Maybe (Occurred MouseDown)])
+				-}
+			pure occs'
 	where time = getWait reqs
 
 handle' :: DiffTime -> Field -> EvReqs GuiEv -> StateT AbsoluteTime IO [EvOcc GuiEv]

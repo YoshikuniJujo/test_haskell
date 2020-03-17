@@ -38,11 +38,11 @@ instance Monad (React es) where
 	Done x >>= f = f x
 	Await reqs k >>= f = Await reqs $ (>>= f) . k
 
-data MouseDown = MouseDownReq
+data MouseDown = MouseDownReq deriving Show
 
 instance Numbered MouseDown where type Number MouseDown = 0
 instance Request MouseDown where
-	data Occurred MouseDown = OccurredMouseDown [MouseBtn]
+	data Occurred MouseDown = OccurredMouseDown [MouseBtn] deriving Show
 
 data MouseBtn = MLeft | MMiddle | MRight | MUp | MDown deriving (Show, Eq)
 
@@ -79,7 +79,7 @@ data MouseMove = MouseMoveReq deriving Show
 
 instance Numbered MouseMove where type Number MouseMove = 3
 instance Request MouseMove where
-	data Occurred MouseMove = OccurredMouseMove Point
+	data Occurred MouseMove = OccurredMouseMove Point deriving Show
 
 type Point = (Integer, Integer)
 
@@ -97,13 +97,27 @@ deltaTime :: React (Singleton DeltaTime) DiffTime
 deltaTime = Await [inj DeltaTimeReq] \ev ->
 	let OccurredDeltaTime dt = extract ev in pure dt
 
-interpret :: Monad m => (EvReqs es -> m [EvOcc es]) -> React es a -> m a
-interpret _ (Done x) = pure x
-interpret p a@(Await r _) = p r >>= interpret p . foldr step a
+interpret :: Monad m => (EvReqs es -> m [EvOcc es]) -> React es a -> m (a, [EvOcc es])
+interpret _ (Done x) = pure (x, [])
+interpret p a@(Await r _) = do
+	occs <- p r
+	case a `apply` occs of
+		Right (x, occs') -> pure (x, occs')
+		Left a' -> interpret p a'
 
-step :: EvOcc es -> React es a -> React es a
-step _ d@(Done _) = d
-step occ (Await _ c) = c occ
+steps :: React es a -> [EvOcc es] -> (React es a, [EvOcc es])
+steps d@(Done _) occs = (d, occs)
+steps (Await _ c) (occ : occs) = steps (c occ) occs
+steps a@(Await _ _) [] = (a, [])
+
+step :: React es a -> EvOcc es -> React es a
+step d@(Done _) _ = d
+step (Await _ c) occ = c occ
+
+apply :: React es a -> [EvOcc es] -> Either (React es a) (a, [EvOcc es])
+Done x `apply` occs = Right (x, occs)
+a `apply` [] = Left a
+Await _ c `apply` (occ : occs) = c occ `apply` occs
 
 sameClick :: React (Singleton MouseDown) Bool
 sameClick = do

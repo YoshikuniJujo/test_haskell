@@ -5,8 +5,11 @@ module Sig where
 
 import Prelude hiding (map, repeat, scanl, break, until, tail)
 
+import Control.Monad
 import Data.Maybe
 import Data.Time
+
+import qualified Control.Arrow as A
 
 import Sorted
 import OpenUnionValue
@@ -43,6 +46,7 @@ instance Monad (ISig es a) where
 	h :| t >>= f = h :| (emitAll . f =<< t)
 
 type SigG a b = Sig GuiEv a b
+type ISigG a b = ISig GuiEv a b
 
 cycleColor :: SigG Color Int
 cycleColor = cc colors 1 where
@@ -69,10 +73,35 @@ waitFor = Sig . (End <$>)
 
 interpretSig :: Monad m =>
 	(EvReqs es -> m [EvOcc es]) -> (a -> m ()) -> Sig es a b -> m b
-interpretSig p d = interpretSig' where
-	interpretSig' (Sig s) = interpret p s >>= interpretISig
-	interpretISig (h :| t) = d h >> interpretSig' t
-	interpretISig (End a) = pure a
+interpretSig p d = interpretSig' [] where
+	interpretSig' occs (Sig s) = do
+		(a', occs') <- interpret (\x -> (occs ++) <$> p x) s
+		interpretISig occs' a'
+	interpretISig occs' (h :| t) = d h >> interpretSig' occs' t
+	interpretISig _ (End a) = pure a
+	{-
+	runAllSig occs (Sig s) = runAllISig occs s
+	runAllISig occ
+	-}
+
+{-
+interpretSig p d s@(Await reqs _) = p reqs >>= \occs -> do
+	let	(xs, sr) = s `applySig` occs
+	d `mapM_` xs
+	case sr of
+		Left s' -> interpretSig p d s'
+		Right r -> pure r
+		-}
+
+applySig :: Sig es a r -> [EvOcc es] -> ([a], Either (Sig es a r) r)
+Sig s `applySig` occs = case s `apply` occs of
+	Left s' -> ([], Left $ Sig s')
+	Right (is, occs') -> is `applyISig` occs'
+
+applyISig :: ISig es a r -> [EvOcc es] -> ([a], Either (Sig es a r) r)
+End r `applyISig` _ = ([], Right r)
+(h :| t) `applyISig` [] = ([h], Left t)
+(h :| t) `applyISig` occs = (h :) `A.first` (t `applySig` occs)
 
 mousePos :: SigG Point ()
 mousePos = repeat $ adjust mouseMove
@@ -194,8 +223,8 @@ defineRect :: SigG Rect Rect
 defineRect = waitFor firstPoint >>= \case
 	Just p1 -> completeRect p1 >>= \case
 		Just r -> pure r
-		Nothing -> error "bad"
-	Nothing -> error "bad"
+		Nothing -> error "completeRect: bad"
+	Nothing -> error "firstPoint: bad"
 
 always :: (Convert es es, Convert (Map Occurred es) (Map Occurred es)) => a -> Sig es a r
 always a = emit a >> hold
@@ -286,3 +315,49 @@ box = () <$ do
 	r <- (`Box` Red) `map` defineRect
 	chooseBoxColor r
 	waitFor $ drClickOn r
+
+spawn :: Sig es a r -> Sig es (ISig es a r) ()
+spawn (Sig l) = repeat l
+
+parList :: (
+	Convert es es,
+	Convert es' es,
+	Convert (Map Occurred es) (Map Occurred es'),
+	Convert (Map Occurred es) (Map Occurred es),
+	Merge es es' ~ Merge es' es,
+	Merge es es ~ es,
+	Merge es' es ~ es
+	) =>
+	Sig es' (ISig es a1 a2) b -> Sig es [a1] ()
+parList x = emitAll $ iparList x
+
+iparList :: (
+	Convert es' es, Convert es es,
+	Convert (Map Occurred es) (Map Occurred es'),
+	Convert (Map Occurred es) (Map Occurred es),
+	Merge es es ~ es,
+	Merge es' es ~ es,
+	Merge es es' ~ Merge es' es ) =>
+	Sig es' (ISig es a1 a2) b -> ISig es [a1] ()
+iparList l = rl ([] :| hold) l >> pure () where
+	rl t (Sig es) = do
+		(t', es') <- t `iuntil` es
+		case es' of
+			Done (e'' :| es'') -> rl (cons e'' t') es''
+			_ -> t'
+
+cons :: (
+	Convert es es,
+	Convert (Map Occurred es) (Map Occurred es),
+	Merge es es ~ es ) =>
+	ISig es a1 a2 -> ISig es [a1] a3 -> ISig es [a1] ()
+cons h t = () <$ do
+	(h', t') <- uncurry (:) `imap` pairs h t
+	void $ (: []) `imap` h'
+	void t'
+
+newBoxes :: SigG (ISigG Box ()) ()
+newBoxes = spawn box
+
+boxes :: SigG [Box] ()
+boxes = parList newBoxes

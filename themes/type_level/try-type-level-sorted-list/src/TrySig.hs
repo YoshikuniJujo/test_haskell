@@ -78,14 +78,14 @@ tryPosInside = do
 	f <- openField "tryPosInside" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
 	drawRect f 0xff0000 r
 	now <- systemToTAITime <$> getSystemTime
-	interpret (handle 0.05 f) (posInside r mousePos) `runStateT` now >>= print
+	interpret (handle 0.05 f) (posInside r mousePos) `runStateT` now >>= print . fst . fst
 	closeField f
 
 tryFirstPoint :: IO ()
 tryFirstPoint = do
 	f <- openField "tryFirstPoint" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
 	now <- systemToTAITime <$> getSystemTime
-	interpret (handle 0.05 f) firstPoint `runStateT` now >>= print
+	interpret (handle 0.05 f) firstPoint `runStateT` now >>= print . fst . fst
 	closeField f
 
 tryCompleteRect :: IO ()
@@ -126,9 +126,8 @@ tryDrClickOn = do
 	now <- systemToTAITime <$> getSystemTime
 	let	rct = Rect (200, 150) (400, 300)
 	drawRect f 0xff0000 rct
-	interpret (handle 0.05 f) (drClickOn rct) `runStateT` now >>= print
+	interpret (handle 0.05 f) (drClickOn rct) `runStateT` now >>= print . fst . fst
 	closeField f
-
 
 tryBox :: IO ()
 tryBox = do
@@ -136,3 +135,28 @@ tryBox = do
 	now <- systemToTAITime <$> getSystemTime
 	interpretSig (handle 0.05 f) (liftIO . drawBox f) box `runStateT` now >>= print
 	closeField f
+
+tryBoxes :: IO ()
+tryBoxes = do
+	f <- openField "tryBoxes" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
+	now <- systemToTAITime <$> getSystemTime
+	interpretSig (handle 0.05 f) (liftIO . drawBoxes f) boxes `runStateT` now >>= print
+	closeField f
+
+drawRect' :: Field -> Pixel -> Rect -> IO ()
+drawRect' f clr (Rect (l_, u_) (r_, d_)) = do
+	fillRect f clr l u w h
+	where
+	l = fromIntegral $ l_ `min` r_
+	u = fromIntegral $ u_ `min` d_
+	w = fromIntegral . abs $ r_ - l_
+	h = fromIntegral . abs $ d_ - u_
+
+drawBox' :: Field -> Box -> IO ()
+drawBox' f (Box rct clr) = drawRect' f (colorToPixel clr) rct
+
+drawBoxes :: Field -> [Box] -> IO ()
+drawBoxes f bs = do
+	clearField f
+	drawBox' f `mapM_` reverse bs
+	flushField f

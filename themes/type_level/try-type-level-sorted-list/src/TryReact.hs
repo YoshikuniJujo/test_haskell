@@ -17,7 +17,7 @@ import Handlers
 tryMouseDown :: IO ()
 tryMouseDown = do
 	f <- openField "tryMouseDown" [exposureMask, buttonPressMask]
-	interpret (handleMouseDown f) mouseDown >>= print
+	interpret (handleMouseDown f) mouseDown >>= print . fst
 	closeField f
 
 handleMouseDown :: Field -> EvReqs (Singleton MouseDown) -> IO [EvOcc (Singleton MouseDown)]
@@ -45,7 +45,7 @@ handleMouseDownUp f reqs = withNextEvent f \case
 trySameClick :: IO ()
 trySameClick = do
 	f <- openField "trySameClick" [exposureMask, buttonPressMask]
-	interpret (handleMouseDown f) sameClick >>= print
+	interpret (handleMouseDown f) sameClick >>= print . fst
 	closeField f
 
 {-
@@ -61,24 +61,24 @@ button _ = error "Unknown button"
 tryLeftClick :: IO ()
 tryLeftClick = do
 	f <- openField "tryLeftClick" [exposureMask, buttonPressMask]
-	interpret (handleMouseDown f) leftClick
+	void $ interpret (handleMouseDown f) leftClick
 	closeField f
 
 tryBefore :: IO ()
 tryBefore = do
 	f <- openField "tryBefore" [exposureMask, buttonPressMask]
-	interpret (handleMouseDown f) (leftClick `before` rightClick) >>= print
+	interpret (handleMouseDown f) (leftClick `before` rightClick) >>= print . fst
 	closeField f
 
 tryBefore2 :: IO ()
 tryBefore2 = do
 	f <- openField "tryBefore" [exposureMask, buttonPressMask, buttonReleaseMask]
-	interpret (handleMouseDownUp f) (leftUp `before` rightClick) >>= print
+	interpret (handleMouseDownUp f) (leftUp `before` rightClick) >>= print . fst
 	closeField f
 
 tryDoubler :: IO ()
 tryDoubler = do
 	f <- openField "tryDoubler" [exposureMask, buttonPressMask, buttonReleaseMask]
 	now <- systemToTAITime <$> getSystemTime
-	interpret (handle 0.1 f) doubler `runStateT` now >>= print
+	interpret (handle 0.1 f) doubler `runStateT` now >>= print . fst . fst
 	closeField f
