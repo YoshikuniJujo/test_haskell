@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module TrySig where
+module Old.TrySig where
 
 import Prelude hiding (repeat)
 
@@ -9,9 +9,9 @@ import Data.Time
 import Data.Time.Clock.System
 
 import Field
-import Sig
-import React
-import Handlers
+import Old.Sig
+import Old.React
+import Old.Handlers
 
 tryCycleColor :: IO ()
 tryCycleColor = do

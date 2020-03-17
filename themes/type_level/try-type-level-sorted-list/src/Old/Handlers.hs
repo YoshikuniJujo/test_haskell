@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Handlers where
+module Old.Handlers where
 
 import Control.Monad.State
 import Data.Maybe
@@ -13,7 +13,7 @@ import Data.Time.Clock.TAI
 import System.Exit
 
 import OpenUnionValue
-import React
+import Old.React
 import Field
 
 handle :: DiffTime -> Field -> EvReqs GuiEv -> StateT AbsoluteTime IO [EvOcc GuiEv]

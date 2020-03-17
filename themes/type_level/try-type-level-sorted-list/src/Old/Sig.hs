@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase, TypeFamilies, FlexibleContexts, DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Sig where
+module Old.Sig where
 
 import Prelude hiding (map, repeat, scanl, break, until, tail)
 
@@ -13,7 +13,7 @@ import qualified Control.Arrow as A
 
 import Sorted
 import OpenUnionValue
-import React
+import Old.React
 
 newtype Sig es a b = Sig { unSig :: React es (ISig es a b) }
 data ISig es a b = End b | a :| Sig es a b

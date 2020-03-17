@@ -1,6 +1,6 @@
 module Main where
 
-import TryReact
+import Old.TryReact
 
 main :: IO ()
 main = tryDoubler

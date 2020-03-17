@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module TryReact where
+module Old.TryReact where
 
 import Control.Monad.State
 -- import Data.Time.Clock.TAI
@@ -9,10 +9,10 @@ import Data.Time.Clock.System
 
 import Sorted
 import OpenUnionValue
-import React
+import Old.React
 import Field
 
-import Handlers
+import Old.Handlers
 
 tryMouseDown :: IO ()
 tryMouseDown = do

@@ -6,7 +6,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module React where
+module Old.React where
 
 import Data.Kind
 import Data.Maybe
