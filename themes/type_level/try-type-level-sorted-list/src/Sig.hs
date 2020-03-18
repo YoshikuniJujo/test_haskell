@@ -2,7 +2,7 @@
 
 module Sig where
 
-import Prelude hiding (repeat)
+import Prelude hiding (map, repeat)
 
 import React
 
@@ -75,3 +75,15 @@ repeat x = xs where xs = Sig $ (:| xs) <$> x
 
 mousePos :: SigG Point ()
 mousePos = repeat $ adjust mouseMove
+
+map :: (a -> b) -> Sig es a r -> Sig es b r
+map f (Sig l) = Sig $ (f `imap`) <$> l
+
+imap :: (a -> b) -> ISig es a r -> ISig es b r
+imap f (h :| t) = f h :| (f `map` t)
+imap _ (End x) = End x
+
+curRect :: Point -> SigG Rect ()
+curRect p1 = Rect p1 `map` mousePos
+
+data Rect = Rect { leftup :: Point, rightdown :: Point } deriving Show
