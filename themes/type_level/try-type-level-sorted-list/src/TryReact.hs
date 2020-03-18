@@ -9,7 +9,7 @@ import Field
 tryLeftClick :: IO ()
 tryLeftClick = do
 	f <- openField "tryLeftClick" [exposureMask, buttonPressMask]
-	interpret (handleWithoutTime f) leftClick >>= print
+	interpret (handleWithoutTime f) (adjust leftClick) >>= print
 	closeField f
 
 trySameClick :: IO ()
