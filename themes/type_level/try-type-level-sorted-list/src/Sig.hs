@@ -1,12 +1,15 @@
+{-# LANGUAGE TypeFamilies, FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Sig where
 
-import Prelude hiding (map, repeat, scanl, break)
+import Prelude hiding (map, repeat, scanl, break, until)
 
 import Data.Time
 
 import React
+import OpenUnionValue
+import Sorted
 
 infixr 5 :|
 newtype Sig es a r = Sig { unSig :: React es (ISig es a r) }
@@ -143,3 +146,38 @@ inside :: Point -> Rect -> Bool
 inside (x, y) (Rect (l, u) (r, d)) =
 	(l <= x && x <= r || r <= x && x <= l) &&
 	(u <= y && y <= d || d <= y && y <= u)
+
+at :: (	Merge es' es ~ Merge es es',
+	Convert es (Merge es' es), Convert es' (Merge es' es),
+	Convert (Map Occurred (Merge es' es)) (Map Occurred es),
+	Convert (Map Occurred (Merge es' es)) (Map Occurred es') ) =>
+	Sig es a b1 -> React es' b2 -> React (Merge es es') (Maybe a)
+l `at` a = cur . fst <$> res (l `until` a)
+
+until :: (
+	Merge es es' ~ Merge es' es,
+	Convert es (Merge es' es), Convert es' (Merge es' es),
+	Convert (Map Occurred (Merge es' es)) (Map Occurred es),
+	Convert (Map Occurred (Merge es' es)) (Map Occurred es') ) =>
+	Sig es a r -> React es' b -> Sig (Merge es' es) a (Sig es a r, React es' b)
+until (Sig l) a = waitFor (l `first` a) >>= un where
+	un (Done l', a') = do
+		(l'', a'') <- emitAll $ l' `iuntil` a'
+		pure (emitAll l'', a'')
+	un (l', a') = pure (Sig l', a')
+
+iuntil :: (
+	Merge es es' ~ Merge es' es,
+	Convert es (Merge es' es), Convert es' (Merge es' es),
+	Convert (Map Occurred (Merge es' es)) (Map Occurred es),
+	Convert (Map Occurred (Merge es' es)) (Map Occurred es') ) =>
+	ISig es a r -> React es' b -> ISig (Merge es es') a (ISig es a r, React es' b)
+iuntil (End l) a = End (End l, a)
+iuntil (h :| Sig t) a = h :| Sig (cont <$> t `first` a)
+	where
+	cont (Done l', a') = l' `iuntil` a'
+	cont (t', Done a') = End (h :| Sig t', Done a')
+	cont _ = error "never occur"
+
+firstPoint :: ReactG (Maybe Point)
+firstPoint = mousePos `at` leftClick
