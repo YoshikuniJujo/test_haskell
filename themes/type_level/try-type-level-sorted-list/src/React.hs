@@ -109,6 +109,12 @@ clickOn b = mouseDown >>= bool (clickOn b) (pure ()) . (b `elem`)
 leftClick, middleClick, rightClick :: React (Singleton MouseDown) ()
 [leftClick, middleClick, rightClick] = clickOn <$> [MLeft, MMiddle, MRight]
 
+releaseOn :: MouseBtn -> React (Singleton MouseUp) ()
+releaseOn b = mouseUp >>= bool (releaseOn b) (pure ()) . (b `elem`)
+
+leftUp, middleUp, rightUp :: React (Singleton MouseUp) ()
+[leftUp, middleUp, rightUp] = releaseOn <$> [MLeft, MMiddle, MRight]
+
 sameClick :: ReactG Bool
 sameClick = do
 	pressed <- adjust mouseDown

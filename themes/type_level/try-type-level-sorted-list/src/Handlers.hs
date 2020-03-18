@@ -13,6 +13,8 @@ handleWithoutTime :: Field -> EvReqs GuiEv -> IO (EvOccs GuiEv)
 handleWithoutTime f reqs = withNextEvent f \case
 	ButtonEvent { ev_event_type = 4, ev_button = b } ->
 		pure $ inj (OccurredMouseDown [button b]) :| []
+	ButtonEvent { ev_event_type = 5, ev_button = b } ->
+		pure $ inj (OccurredMouseUp [button b]) :| []
 	_ -> handleWithoutTime f reqs
 
 button :: Button -> MouseBtn
