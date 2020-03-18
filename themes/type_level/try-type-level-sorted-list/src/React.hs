@@ -41,10 +41,10 @@ interpret _ (Done x) = pure x
 interpret p (Await r c) = interpret p . c =<< p r
 
 type GuiEv = Singleton MouseDown
+type ReactG = React GuiEv
 
 data MouseDown = MouseDownReq deriving Show
 
--- instance Numbered MouseDown where type Number MouseDown = 0
 numbered [t| MouseDown |]
 instance Request MouseDown where
 	data Occurred MouseDown = OccurredMouseDown [MouseBtn] deriving Show
@@ -60,3 +60,9 @@ clickOn b = mouseDown >>= bool (clickOn b) (pure ()) . (b `elem`)
 
 leftClick, middleClick, rightClick :: React (Singleton MouseDown) ()
 [leftClick, middleClick, rightClick] = clickOn <$> [MLeft, MMiddle, MRight]
+
+sameClick :: ReactG Bool
+sameClick = do
+	pressed <- mouseDown
+	pressed2 <- mouseDown
+	pure $ pressed == pressed2

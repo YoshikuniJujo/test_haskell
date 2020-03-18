@@ -11,3 +11,9 @@ tryLeftClick = do
 	f <- openField "tryLeftClick" [exposureMask, buttonPressMask]
 	interpret (handleWithoutTime f) leftClick >>= print
 	closeField f
+
+trySameClick :: IO ()
+trySameClick = do
+	f <- openField "trySameClick" [exposureMask, buttonPressMask]
+	interpret (handleWithoutTime f) sameClick >>= print
+	closeField f
