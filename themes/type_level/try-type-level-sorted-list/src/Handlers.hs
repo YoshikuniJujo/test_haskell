@@ -40,10 +40,18 @@ handle dt f reqs = do
 			put $ t `addAbsoluteTime` t1
 			pure . fromJust $ makeTimeObs reqs t
 		_ -> do	occs <- withNextEventTimeout' f (round $ dt * 1000000) \case
-				Just ButtonEvent { ev_event_type = 4, ev_button = b } ->
-					pure $ [inj $ OccurredMouseDown [button b]]
-				Just ButtonEvent { ev_event_type = 5, ev_button = b } ->
-					pure $ [inj $ OccurredMouseUp [button b]]
+				Just ButtonEvent {
+					ev_event_type = 4, ev_button = b,
+					ev_x = x, ev_y = y } ->
+					pure $ [
+						inj $ OccurredMouseMove (fromIntegral x, fromIntegral y),
+						inj $ OccurredMouseDown [button b] ]
+				Just ButtonEvent {
+					ev_event_type = 5, ev_button = b,
+					ev_x = x, ev_y = y } ->
+					pure $ [
+						inj $ OccurredMouseMove (fromIntegral x, fromIntegral y),
+						inj $ OccurredMouseUp [button b] ]
 				Just MotionEvent { ev_x = x, ev_y = y } ->
 					pure $ [inj $ OccurredMouseMove (fromIntegral x, fromIntegral y)]
 				Just ExposeEvent {} -> liftIO (flushField f) >> pure []
