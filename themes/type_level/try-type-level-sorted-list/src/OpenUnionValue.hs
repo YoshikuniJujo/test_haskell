@@ -8,10 +8,12 @@
 
 module OpenUnionValue (
 	UnionValue, Member, Elem(..), inj, prj, extract,
-	Convert, convert, intersection, intersection' ) where
+	Convert, convert, intersection, intersection', intersection'' ) where
 
 import Data.Kind
 import Unsafe.Coerce
+
+import qualified Data.List.NonEmpty as NE
 
 import Sorted.Internal
 
@@ -67,6 +69,9 @@ intersection as bs = filter (`elemIndexOf` (index <$> bs)) as
 
 intersection' :: [UnionValue (Map f as)] -> [UnionValue as] -> [UnionValue (Map f as)]
 intersection' as bs = filter (`elemIndexOf` (index <$> bs)) as
+
+intersection'' :: NE.NonEmpty (UnionValue (Map f as)) -> [UnionValue as] -> [UnionValue (Map f as)]
+intersection'' as bs = NE.filter (`elemIndexOf` (index <$> bs)) as
 
 index :: UnionValue as -> Word
 index (UnionValue i _) = i

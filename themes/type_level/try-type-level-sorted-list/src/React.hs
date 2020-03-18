@@ -14,6 +14,7 @@ import Data.Kind
 import Data.Bool
 import Data.Maybe
 import Data.List.NonEmpty
+import Data.Time
 
 import Sorted
 import OpenUnionValue
@@ -92,12 +93,28 @@ mouseDown = Await [inj MouseDownReq] \ev ->
 	let OccurredMouseDown mbs = extract $ head ev in pure mbs
 
 data MouseUp = MouseUpReq deriving Show
-type ReactG = React GuiEv
-type GuiEv = MouseDown `Insert` Singleton MouseUp
 
 numbered [t| MouseUp |]
 instance Request MouseUp where
 	data Occurred MouseUp = OccurredMouseUp [MouseBtn] deriving Show
+
+data TryWait = TryWaitReq DiffTime deriving Show
+
+numbered [t| TryWait |]
+instance Request TryWait where
+	data Occurred TryWait = OccurredTryWait DiffTime deriving Show
+
+tryWait :: DiffTime -> React (Singleton TryWait) DiffTime
+tryWait t = Await [inj $ TryWaitReq t] \ev ->
+	let OccurredTryWait t' = extract $ head ev in pure t'
+
+sleep :: DiffTime -> React (Singleton TryWait) ()
+sleep t = do
+	t' <- tryWait t
+	if t' == t then pure () else sleep (t - t')
+
+type ReactG = React GuiEv
+type GuiEv = MouseDown `Insert` (MouseUp `Insert` Singleton TryWait)
 
 mouseUp :: React (Singleton MouseUp) [MouseBtn]
 mouseUp = Await [inj MouseUpReq] \ev ->
@@ -120,3 +137,31 @@ sameClick = do
 	pressed <- adjust mouseDown
 	pressed2 <- adjust mouseDown
 	pure $ pressed == pressed2
+
+filterEvent' :: EvOccs es -> EvReqs es -> [UnionValue (Map Occurred es)]
+filterEvent' = intersection'' @Occurred
+
+filterEvent :: [UnionValue (Map Occurred es)] -> EvReqs es -> [UnionValue (Map Occurred es)]
+filterEvent = intersection' @Occurred
+
+before :: (
+	Merge es es' ~ Merge es' es, Convert es (Merge es' es), Convert es' (Merge es' es),
+	Convert (Map Occurred (Merge es' es)) (Map Occurred es),
+	Convert (Map Occurred (Merge es' es)) (Map Occurred es') ) =>
+	React es a -> React es' b -> React (Merge es es') Bool
+before a b = do
+	(a', b') <- a `first` b
+	case (done a', done b') of
+		(Just _, Nothing) -> pure True
+		_ -> pure False
+
+done :: React es a -> Maybe a
+done (Done x) = Just x
+done _ = Nothing
+
+doubler :: ReactG ()
+doubler = do
+	r <- adjust do
+		adjust rightClick
+		rightClick `before` sleep 0.2
+	if r then pure () else doubler

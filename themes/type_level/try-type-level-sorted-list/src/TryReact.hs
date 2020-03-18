@@ -2,6 +2,9 @@
 
 module TryReact where
 
+import Control.Monad.State
+import Data.Time.Clock.System
+
 import React
 import Handlers
 import Field
@@ -22,4 +25,11 @@ tryLeftUp :: IO ()
 tryLeftUp = do
 	f <- openField "tryLeftClick" [exposureMask, buttonPressMask, buttonReleaseMask]
 	interpret (handleWithoutTime f) (adjust leftUp) >>= print
+	closeField f
+
+tryDoubler :: IO ()
+tryDoubler = do
+	f <- openField "tryDoubler" [exposureMask, buttonPressMask, buttonReleaseMask]
+	now <- systemToTAITime <$> getSystemTime
+	interpret (handle 0.1 f) doubler `runStateT` now >>= print
 	closeField f
