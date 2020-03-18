@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE DataKinds, KindSignatures, TypeFamilies #-}
@@ -40,7 +41,7 @@ instance Monad (React es) where
 
 data MouseDown = MouseDownReq deriving Show
 
-instance Numbered MouseDown where type Number MouseDown = 0
+numbered [t| MouseDown |]
 instance Request MouseDown where
 	data Occurred MouseDown = OccurredMouseDown [MouseBtn] deriving Show
 
@@ -52,7 +53,7 @@ mouseDown = Await [inj MouseDownReq] \ev ->
 
 data MouseUp = MouseUpReq
 
-instance Numbered MouseUp where type Number MouseUp = 1
+numbered [t| MouseUp |]
 instance Request MouseUp where
 	data Occurred MouseUp = OccurredMouseUp [MouseBtn]
 
@@ -62,7 +63,7 @@ mouseUp = Await [inj MouseUpReq] \ev ->
 
 data TryWait = TryWaitReq DiffTime deriving Show
 
-instance Numbered TryWait where type Number TryWait = 2
+numbered [t| TryWait |]
 instance Request TryWait where
 	data Occurred TryWait = OccurredTryWait DiffTime
 
@@ -77,7 +78,7 @@ sleep t = do
 
 data MouseMove = MouseMoveReq deriving Show
 
-instance Numbered MouseMove where type Number MouseMove = 3
+numbered [t| MouseMove |]
 instance Request MouseMove where
 	data Occurred MouseMove = OccurredMouseMove Point deriving Show
 
@@ -89,7 +90,7 @@ mouseMove = Await [inj MouseMoveReq] \ev ->
 
 data DeltaTime = DeltaTimeReq deriving Show
 
-instance Numbered DeltaTime where type Number DeltaTime = 4
+numbered [t| DeltaTime |]
 instance Request DeltaTime where
 	data Occurred DeltaTime = OccurredDeltaTime DiffTime
 
