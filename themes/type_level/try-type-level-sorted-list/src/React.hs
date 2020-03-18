@@ -119,8 +119,18 @@ sleep t = do
 	t' <- tryWait t
 	if t' == t then pure () else sleep (t - t')
 
+data DeltaTime = DeltaTimeReq deriving Show
+
+numbered [t| DeltaTime |]
+instance Request DeltaTime where
+	data Occurred DeltaTime = OccurredDeltaTime  DiffTime deriving Show
+
+deltaTime :: React (Singleton DeltaTime) DiffTime
+deltaTime = Await [inj DeltaTimeReq] \ev ->
+	let OccurredDeltaTime dt = extract $ head ev in pure dt
+
 type ReactG = React GuiEv
-type GuiEv = MouseDown `Insert` (MouseUp `Insert` (MouseMove `Insert` Singleton TryWait))
+type GuiEv = MouseDown `Insert` (MouseUp `Insert` (MouseMove `Insert` (TryWait `Insert` Singleton DeltaTime)))
 
 mouseUp :: React (Singleton MouseUp) [MouseBtn]
 mouseUp = Await [inj MouseUpReq] \ev ->

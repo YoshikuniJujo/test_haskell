@@ -2,7 +2,9 @@
 
 module Sig where
 
-import Prelude hiding (map, repeat)
+import Prelude hiding (map, repeat, scanl)
+
+import Data.Time
 
 import React
 
@@ -87,3 +89,14 @@ curRect :: Point -> SigG Rect ()
 curRect p1 = Rect p1 `map` mousePos
 
 data Rect = Rect { leftup :: Point, rightdown :: Point } deriving Show
+
+scanl :: (a -> b -> a) -> a -> Sig es b r -> Sig es a r
+scanl f i = emitAll . iscanl f i
+
+iscanl :: (a -> b -> a) -> a -> Sig es b r -> ISig es a r
+iscanl f i (Sig l) = i :| (waitFor l >>= lsl) where
+	lsl (h :| t) = scanl f (f i h) t
+	lsl (End x) = pure x
+
+elapsed :: SigG DiffTime ()
+elapsed = scanl (+) 0 . repeat $ adjust deltaTime

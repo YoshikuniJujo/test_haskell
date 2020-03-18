@@ -71,10 +71,13 @@ filterMap :: (a -> Maybe b) -> [a] -> [b]
 filterMap f = catMaybes . (f <$>)
 
 makeTimeObs :: EvReqs GuiEv -> DiffTime -> Maybe (EvOccs GuiEv)
-makeTimeObs r t = case filterMap makeOcc r of
+makeTimeObs r t = case filterMap makeOcc r ++ filterMap makeOcc2 r of
 	[] -> Nothing
 	o : os -> Just $ o :| os
 	where
 	makeOcc u = do
 		TryWaitReq _t' <- prj u
 		pure . inj $ OccurredTryWait t
+	makeOcc2 u = do
+		DeltaTimeReq <- prj u
+		pure . inj $ OccurredDeltaTime t
