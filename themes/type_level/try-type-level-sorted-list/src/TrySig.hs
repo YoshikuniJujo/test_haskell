@@ -64,3 +64,11 @@ drawElapsed f dt = do
 	clearField f
 	drawStr f 0x00ff00 "sans" 30 100 100 $ show dt
 	flushField f
+
+tryWiggleRect :: IO ()
+tryWiggleRect = do
+	f <- openField "tryElapsed" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
+	now <- systemToTAITime <$> getSystemTime
+	interpretSig (handle 0.1 f) (liftIO . withFlush f . drawRect f 0xff0000)
+		(wiggleRect $ Rect (200, 150) (400, 300)) `runStateT` now >>= print
+	closeField f
