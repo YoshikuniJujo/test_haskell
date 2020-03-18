@@ -15,3 +15,10 @@ tryCycleColor = do
 	now <- systemToTAITime <$> getSystemTime
 	interpretSig (handle 0.1 f) (liftIO . print) cycleColor `runStateT` now >>= print
 	closeField f
+
+tryMousePos :: IO ()
+tryMousePos = do
+	f <- openField "tryMousePos" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
+	now <- systemToTAITime <$> getSystemTime
+	interpretSig (handle 0.1 f) (liftIO . print) mousePos `runStateT` now >>= print
+	closeField f

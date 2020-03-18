@@ -2,6 +2,8 @@
 
 module Sig where
 
+import Prelude hiding (repeat)
+
 import React
 
 infixr 5 :|
@@ -67,3 +69,9 @@ interpretSig p d = interpretSig' where
 	interpretSig' (Sig s) = interpret p s >>= interpretISig
 	interpretISig (End x) = pure x
 	interpretISig (h :| t) = d h >> interpretSig' t
+
+repeat :: React es a -> Sig es a ()
+repeat x = xs where xs = Sig $ (:| xs) <$> x
+
+mousePos :: SigG Point ()
+mousePos = repeat $ adjust mouseMove

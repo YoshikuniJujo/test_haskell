@@ -78,8 +78,6 @@ update r@(Await _ c) oc = case fromJust <$> filter isJust (convert <$> oc) of
 	[] -> r
 update _ _ = error "bad: first argument must be Await _ _"
 
--- type GuiEv = Insert MouseDown (Singleton MouseUp)
-
 data MouseDown = MouseDownReq deriving Show
 
 numbered [t| MouseDown |]
@@ -104,6 +102,14 @@ numbered [t| TryWait |]
 instance Request TryWait where
 	data Occurred TryWait = OccurredTryWait DiffTime deriving Show
 
+data MouseMove = MouseMoveReq deriving Show
+
+numbered [t| MouseMove |]
+instance Request MouseMove where
+	data Occurred MouseMove = OccurredMouseMove Point deriving Show
+
+type Point = (Integer, Integer)
+
 tryWait :: DiffTime -> React (Singleton TryWait) DiffTime
 tryWait t = Await [inj $ TryWaitReq t] \ev ->
 	let OccurredTryWait t' = extract $ head ev in pure t'
@@ -114,11 +120,15 @@ sleep t = do
 	if t' == t then pure () else sleep (t - t')
 
 type ReactG = React GuiEv
-type GuiEv = MouseDown `Insert` (MouseUp `Insert` Singleton TryWait)
+type GuiEv = MouseDown `Insert` (MouseUp `Insert` (MouseMove `Insert` Singleton TryWait))
 
 mouseUp :: React (Singleton MouseUp) [MouseBtn]
 mouseUp = Await [inj MouseUpReq] \ev ->
 	let OccurredMouseUp mbs = extract $ head ev in pure mbs
+
+mouseMove :: React (Singleton MouseMove) Point
+mouseMove = Await [inj MouseMoveReq] \ev ->
+	let OccurredMouseMove p = extract $ head ev in pure p
 
 clickOn :: MouseBtn -> React (Singleton MouseDown) ()
 clickOn b = mouseDown >>= bool (clickOn b) (pure ()) . (b `elem`)
