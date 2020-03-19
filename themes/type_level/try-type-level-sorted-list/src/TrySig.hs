@@ -96,3 +96,11 @@ tryCompleteRect = do
 	interpretSig (handle 0.1 f) (liftIO . withFlush f . drawRect f 0xff0000)
 		(completeRect (200, 150)) `runStateT` now >>= print
 	closeField f
+
+tryDefineRect :: IO ()
+tryDefineRect = do
+	f <- openField "tryDefineRect" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
+	now <- systemToTAITime <$> getSystemTime
+	interpretSig (handle 0.1 f) (liftIO . withFlush f . drawRect f 0xff0000)
+		defineRect `runStateT` now >>= print
+	closeField f
