@@ -63,12 +63,13 @@ Classify Extensions
 5.
 --
 
+### 5-1.
+
 * MultiParamTypeClasses
 * FlexibleContexts
 * FlexibleInstances
 
-6.
---
+### 5-2.
 
 * UndecidableInstances
 * AllowAmbiguousTypes
