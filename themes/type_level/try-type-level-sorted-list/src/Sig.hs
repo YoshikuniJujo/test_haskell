@@ -4,8 +4,9 @@
 
 module Sig where
 
-import Prelude hiding (map, repeat, scanl, break, until)
+import Prelude hiding (tail, map, repeat, scanl, break, until)
 
+import Data.Maybe
 import Data.Time
 
 import React
@@ -192,3 +193,53 @@ defineRect = waitFor firstPoint >>= \case
 		Just r -> pure r
 		Nothing -> error "bad"
 	Nothing -> error "bad"
+
+hold :: (Convert es es, Convert (Map Occurred es) (Map Occurred es)) => Sig es a r
+hold = waitFor $ adjust never
+
+always :: (Convert es es, Convert (Map Occurred es) (Map Occurred es)) => a -> Sig es a r
+always a = emit a >> hold
+
+(<^>) :: (
+	Merge es es' ~ Merge es' es,
+	Convert es (Merge es es'), Convert es' (Merge es es'),
+	Convert (Map Occurred (Merge es es')) (Map Occurred es),
+	Convert (Map Occurred (Merge es es')) (Map Occurred es') ) =>
+	Sig es (a -> b) r -> Sig es' a r' -> Sig (Merge es' es) b (ISig es (a -> b) r, ISig es' a r')
+l <^> r = do
+	(l', r') <- waitFor $ bothStart l r
+	emitAll $ uncurry ($) `imap` pairs l' r'
+
+bothStart :: (
+	Merge es es' ~ Merge es' es,
+	Convert es (Merge es es'), Convert es' (Merge es es'),
+	Convert (Map Occurred (Merge es es')) (Map Occurred es),
+	Convert (Map Occurred (Merge es es')) (Map Occurred es') ) =>
+	Sig es a r -> Sig es' b r' -> React (Merge es es') (ISig es a r, ISig es' b r')
+bothStart l (Sig r) = do
+	(Sig l', r') <- res $ l `until` r
+	(Sig r'', l'') <- res (Sig r' `until` l')
+	pure (done' l'', done' r'')
+
+done' :: React es a -> a
+done' = fromJust . done
+
+pairs :: (
+	Convert es (Merge es es'), Convert es' (Merge es es'),
+	Convert (Map Occurred (Merge es es')) (Map Occurred es),
+	Convert (Map Occurred (Merge es es')) (Map Occurred es'),
+	Merge es es' ~ Merge es' es ) =>
+	ISig es a r -> ISig es' b r' -> ISig (Merge es es') (a, b) (ISig es a r, ISig es' b r')
+End a `pairs` b = pure (pure a, b)
+a `pairs` End b = pure (a, pure b)
+(hl :| Sig tl) `pairs` (hr :| Sig tr) = (hl, hr) :| tail
+	where
+	tail = Sig $ cont <$> tl `first` tr
+	cont (tl', tr') = lup hl tl' `pairs` lup hr tr'
+	lup _ (Done l) = l
+	lup h t = h :| Sig t
+
+chooseBoxColor :: Rect -> SigG Box ()
+chooseBoxColor r = () <$ (always Box :: SigG (Rect -> Color -> Box) ()) <^> wiggleRect r <^> cycleColor
+
+data Box = Box Rect Color deriving Show
