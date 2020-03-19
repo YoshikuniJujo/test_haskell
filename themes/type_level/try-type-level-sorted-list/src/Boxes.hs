@@ -1,6 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE DataKinds, TypeFamilies, TypeApplications, TypeOperators #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Boxes where

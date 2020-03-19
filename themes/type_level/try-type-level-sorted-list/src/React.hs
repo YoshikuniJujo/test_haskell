@@ -26,8 +26,8 @@ import Data.Kind
 import Data.Maybe
 import Data.List.NonEmpty
 
-import Sorted
 import OpenUnionValue
+import Sorted
 
 type EvReqs (es :: Sorted Type) = [UnionValue es]
 type EvOccs (es :: Sorted Type) = NonEmpty (UnionValue (Occurred :$: es))

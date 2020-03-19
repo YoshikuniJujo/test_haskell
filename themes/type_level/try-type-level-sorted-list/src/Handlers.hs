@@ -15,9 +15,9 @@ import System.Exit
 
 import Boxes
 
+import React
 import OpenUnionValue
 import Sorted
-import React
 import Field
 
 handleWithoutTime :: Field -> EvReqs GuiEv -> IO (EvOccs GuiEv)
