@@ -6,15 +6,34 @@ Classify Extensions
 
 * TemplateHaskell
 * QuasiQuotes
+* ForeignFunctionInterfase
+* CApiFFI
+* MagicHash
 
-1.
---
+1
+-
+
+### 1-1
+
+* BinaryLiterals
+* NegativeLiterals
+* PostfixOperators
+
+### 1-2
 
 * BlockArguments
 * LambdaCase
 * TupleSections
 * OverloadedStrings
 * OverloadedLists
+* MonadComprehensions
+* PatternGuards
+* VierPatterns
+* TypeSynonymInstances
+
+### 1-3
+
+* PackageImports
 
 2.
 --
@@ -33,7 +52,10 @@ Classify Extensions
 4.
 --
 
+* RankNTypes
 * GADTs
+* StandaloneDeriving
+* ExistentialQuantification
 * TypeFamilies
 * TypeFamilyDependencies
 * FunctionalDependencies
@@ -51,11 +73,9 @@ Classify Extensions
 * UndecidableInstances
 * AllowAmbiguousTypes
 
-7.
---
-
 Discouraged
 -----------
 
 * OverlappingInstances
 * IncoherentInstances
+* NPlusKPatterns
