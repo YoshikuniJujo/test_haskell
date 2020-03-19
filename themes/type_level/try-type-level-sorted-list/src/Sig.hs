@@ -2,13 +2,25 @@
 {-# LANGUAGE TypeFamilies, FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Sig where
+module Sig (
+	-- * Types
+	Sig, ISig,
+	-- * Run Sig
+	interpretSig,
+	-- * Conversion
+	cur, emit, always, waitFor,
+	-- * Transformation
+	map, scanl, find,
+	-- * Repetition
+	repeat, spawn, parList,
+	-- * Parallel composition
+	at, until, (<^>), indexBy
+	) where
 
 import Prelude hiding (tail, map, repeat, scanl, break, until)
 
 import Control.Monad
 import Data.Maybe
-import Data.Time
 
 import React
 import OpenUnionValue
@@ -17,9 +29,6 @@ import Sorted
 infixr 5 :|
 newtype Sig es a r = Sig { unSig :: React es (ISig es a r) }
 data ISig es a r = End r | a :| Sig es a r
-
-type SigG = Sig GuiEv
-type ISigG = ISig GuiEv
 
 instance Functor (Sig es a) where
 	f `fmap` Sig s = Sig $ (f <$>) <$> s
@@ -57,20 +66,6 @@ emit a = emitAll $ a :| pure ()
 waitFor :: React es r -> Sig es a r
 waitFor = Sig . (pure <$>)
 
-cycleColor :: SigG Color Int
-cycleColor = cc colors 1 where
-	cc :: [Color] -> Int -> SigG Color Int
-	cc (h : t) i = do
-		emit h
-		r <- waitFor . adjust $ middleClick `before` rightClick
-		if r then cc t (i + 1) else pure i
-	cc [] _ = error "never occur"
-
-colors :: [Color]
-colors = cycle [Red .. Magenta]
-
-data Color = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
-
 interpretSig :: Monad m =>
 	(EvReqs es -> m (EvOccs es)) -> (a -> m ()) -> Sig es a r -> m r
 interpretSig p d = interpretSig' where
@@ -81,20 +76,12 @@ interpretSig p d = interpretSig' where
 repeat :: React es a -> Sig es a ()
 repeat x = xs where xs = Sig $ (:| xs) <$> x
 
-mousePos :: SigG Point ()
-mousePos = repeat $ adjust mouseMove
-
 map :: (a -> b) -> Sig es a r -> Sig es b r
 map f (Sig l) = Sig $ (f `imap`) <$> l
 
 imap :: (a -> b) -> ISig es a r -> ISig es b r
 imap f (h :| t) = f h :| (f `map` t)
 imap _ (End x) = End x
-
-curRect :: Point -> SigG Rect ()
-curRect p1 = Rect p1 `map` mousePos
-
-data Rect = Rect { leftup :: Point, rightdown :: Point } deriving Show
 
 scanl :: (a -> b -> a) -> a -> Sig es b r -> Sig es a r
 scanl f i = emitAll . iscanl f i
@@ -103,17 +90,6 @@ iscanl :: (a -> b -> a) -> a -> Sig es b r -> ISig es a r
 iscanl f i (Sig l) = i :| (waitFor l >>= lsl) where
 	lsl (h :| t) = scanl f (f i h) t
 	lsl (End x) = pure x
-
-elapsed :: SigG DiffTime ()
-elapsed = scanl (+) 0 . repeat $ adjust deltaTime
-
-wiggleRect :: Rect -> SigG Rect ()
-wiggleRect (Rect lu rd) = rectAtTime `map` elapsed where
-	rectAtTime t = Rect (lu +. dx) (rd +. dx) where
-		dx = (round (sin (fromRational (toRational t) * 5) * 15 :: Double), 0)
-
-(+.) :: Point -> Point -> Point
-(x1, y1) +. (x2, y2) = (x1 + x2, y1 + y2)
 
 find :: (a -> Bool) -> Sig es a r -> React es (Either a r)
 find p l = icur <$> res (break p l)
@@ -141,14 +117,6 @@ ibreak p is@(h :| t)
 	| p h = pure is
 	| otherwise = h :| break p t
 ibreak _ is@(End _) = pure is
-
-posInside :: Rect -> SigG Point y -> ReactG (Either Point y)
-posInside r = find (`inside` r)
-
-inside :: Point -> Rect -> Bool
-inside (x, y) (Rect (l, u) (r, d)) =
-	(l <= x && x <= r || r <= x && x <= l) &&
-	(u <= y && y <= d || d <= y && y <= u)
 
 at :: (	Merge es' es ~ Merge es es',
 	Convert es (Merge es' es), Convert es' (Merge es' es),
@@ -181,19 +149,6 @@ iuntil (h :| Sig t) a = h :| Sig (cont <$> t `first` a)
 	cont (Done l', a') = l' `iuntil` a'
 	cont (t', Done a') = End (h :| Sig t', Done a')
 	cont _ = error "never occur"
-
-firstPoint :: ReactG (Maybe Point)
-firstPoint = mousePos `at` leftClick
-
-completeRect :: Point -> SigG Rect (Maybe Rect)
-completeRect p1 = cur . fst <$> curRect p1 `until` leftUp
-
-defineRect :: SigG Rect Rect
-defineRect = waitFor firstPoint >>= \case
-	Just p1 -> completeRect p1 >>= \case
-		Just r -> pure r
-		Nothing -> error "bad"
-	Nothing -> error "bad"
 
 hold :: (Convert es es, Convert (Map Occurred es) (Map Occurred es)) => Sig es a r
 hold = waitFor $ adjust never
@@ -240,11 +195,6 @@ a `pairs` End b = pure (a, pure b)
 	lup _ (Done l) = l
 	lup h t = h :| Sig t
 
-chooseBoxColor :: Rect -> SigG Box ()
-chooseBoxColor r = () <$ (always Box :: SigG (Rect -> Color -> Box) ()) <^> wiggleRect r <^> cycleColor
-
-data Box = Box Rect Color deriving Show
-
 indexBy :: (
 	Merge es es' ~ Merge es' es,
 	Convert es (Merge es es'), Convert es' (Merge es es'),
@@ -267,15 +217,6 @@ iindexBy :: (
 l `iindexBy` Sig r = waitFor (ires $ l `iuntil` r) >>= \case
 	(hl :| tl, Done (_ :| tr)) -> emit hl >> (hl :| tl) `iindexBy` tr
 	_ -> pure ()
-
-drClickOn :: Rect -> ReactG (Either Point ())
-drClickOn r = posInside r $ mousePos `indexBy` repeat doubler
-
-box :: SigG Box ()
-box = () <$ do
-	r <- (`Box` head colors) `map` defineRect
-	chooseBoxColor r
-	waitFor $ drClickOn r
 
 spawn :: Sig es a r -> Sig es (ISig es a r) ()
 spawn (Sig l) = repeat l
@@ -310,9 +251,3 @@ cons h t = () <$ do
 	(h', t') <- uncurry (:) `imap` pairs h t
 	void $ (: []) `imap` h'
 	void t'
-
-newBoxes :: SigG (ISigG Box ()) ()
-newBoxes = spawn box
-
-boxes :: SigG [Box] ()
-boxes = parList newBoxes

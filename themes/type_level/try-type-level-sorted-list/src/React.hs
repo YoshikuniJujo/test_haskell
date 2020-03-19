@@ -6,15 +6,25 @@
 {-# LANGUAGE FlexibleContexts, AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module React where
+module React (
+	-- * Types
+	React(..), EvReqs, EvOccs, Request(Occurred),
+	-- * Run React
+	interpret,
+	-- * Type conversion
+	adjust,
+	-- * Conversion
+	done,
+	-- * Parrallel composition
+	first, before,
+	-- * Others
+	never ) where
 
 import Prelude hiding (head, tail, filter)
 
 import Data.Kind
-import Data.Bool
 import Data.Maybe
 import Data.List.NonEmpty
-import Data.Time
 
 import Sorted
 import OpenUnionValue
@@ -78,92 +88,6 @@ update r@(Await _ c) oc = case fromJust <$> filter isJust (convert <$> oc) of
 	[] -> r
 update _ _ = error "bad: first argument must be Await _ _"
 
-data MouseDown = MouseDownReq deriving Show
-
-numbered [t| MouseDown |]
-instance Request MouseDown where
-	data Occurred MouseDown = OccurredMouseDown [MouseBtn] deriving Show
-
-data MouseBtn = MLeft | MMiddle | MRight | MUp | MDown deriving (Show, Eq)
-
-mouseDown :: React (Singleton MouseDown) [MouseBtn]
-mouseDown = Await [inj MouseDownReq] \ev ->
-	let OccurredMouseDown mbs = extract $ head ev in pure mbs
-
-data MouseUp = MouseUpReq deriving Show
-
-numbered [t| MouseUp |]
-instance Request MouseUp where
-	data Occurred MouseUp = OccurredMouseUp [MouseBtn] deriving Show
-
-data TryWait = TryWaitReq DiffTime deriving Show
-
-numbered [t| TryWait |]
-instance Request TryWait where
-	data Occurred TryWait = OccurredTryWait DiffTime deriving Show
-
-data MouseMove = MouseMoveReq deriving Show
-
-numbered [t| MouseMove |]
-instance Request MouseMove where
-	data Occurred MouseMove = OccurredMouseMove Point deriving Show
-
-type Point = (Integer, Integer)
-
-tryWait :: DiffTime -> React (Singleton TryWait) DiffTime
-tryWait t = Await [inj $ TryWaitReq t] \ev ->
-	let OccurredTryWait t' = extract $ head ev in pure t'
-
-sleep :: DiffTime -> React (Singleton TryWait) ()
-sleep t = do
-	t' <- tryWait t
-	if t' == t then pure () else sleep (t - t')
-
-data DeltaTime = DeltaTimeReq deriving Show
-
-numbered [t| DeltaTime |]
-instance Request DeltaTime where
-	data Occurred DeltaTime = OccurredDeltaTime  DiffTime deriving Show
-
-deltaTime :: React (Singleton DeltaTime) DiffTime
-deltaTime = Await [inj DeltaTimeReq] \ev ->
-	let OccurredDeltaTime dt = extract $ head ev in pure dt
-
-type ReactG = React GuiEv
-type GuiEv = MouseDown `Insert` (MouseUp `Insert` (MouseMove `Insert` (TryWait `Insert` Singleton DeltaTime)))
-
-mouseUp :: React (Singleton MouseUp) [MouseBtn]
-mouseUp = Await [inj MouseUpReq] \ev ->
-	let OccurredMouseUp mbs = extract $ head ev in pure mbs
-
-mouseMove :: React (Singleton MouseMove) Point
-mouseMove = Await [inj MouseMoveReq] \ev ->
-	let OccurredMouseMove p = extract $ head ev in pure p
-
-clickOn :: MouseBtn -> React (Singleton MouseDown) ()
-clickOn b = mouseDown >>= bool (clickOn b) (pure ()) . (b `elem`)
-
-leftClick, middleClick, rightClick :: React (Singleton MouseDown) ()
-[leftClick, middleClick, rightClick] = clickOn <$> [MLeft, MMiddle, MRight]
-
-releaseOn :: MouseBtn -> React (Singleton MouseUp) ()
-releaseOn b = mouseUp >>= bool (releaseOn b) (pure ()) . (b `elem`)
-
-leftUp, middleUp, rightUp :: React (Singleton MouseUp) ()
-[leftUp, middleUp, rightUp] = releaseOn <$> [MLeft, MMiddle, MRight]
-
-sameClick :: ReactG Bool
-sameClick = do
-	pressed <- adjust mouseDown
-	pressed2 <- adjust mouseDown
-	pure $ pressed == pressed2
-
-filterEvent' :: EvOccs es -> EvReqs es -> [UnionValue (Map Occurred es)]
-filterEvent' = intersection'' @Occurred
-
-filterEvent :: [UnionValue (Map Occurred es)] -> EvReqs es -> [UnionValue (Map Occurred es)]
-filterEvent = intersection' @Occurred
-
 before :: (
 	Merge es es' ~ Merge es' es, Convert es (Merge es' es), Convert es' (Merge es' es),
 	Convert (Map Occurred (Merge es' es)) (Map Occurred es),
@@ -178,13 +102,6 @@ before a b = do
 done :: React es a -> Maybe a
 done (Done x) = Just x
 done _ = Nothing
-
-doubler :: ReactG ()
-doubler = do
-	r <- adjust do
-		adjust rightClick
-		rightClick `before` sleep 0.2
-	if r then pure () else doubler
 
 never :: React 'Nil a
 never = Await [] undefined

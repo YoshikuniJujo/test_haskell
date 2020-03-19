@@ -5,6 +5,8 @@ module TryReact where
 import Control.Monad.State
 import Data.Time.Clock.System
 
+import Boxes
+
 import React
 import Handlers
 import Field

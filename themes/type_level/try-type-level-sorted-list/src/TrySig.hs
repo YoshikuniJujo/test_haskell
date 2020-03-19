@@ -9,6 +9,8 @@ import Control.Monad.State
 import Data.Time
 import Data.Time.Clock.System
 
+import Boxes
+
 import React
 import Sig
 import Handlers
