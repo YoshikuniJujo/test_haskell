@@ -6,6 +6,7 @@ module Sig where
 
 import Prelude hiding (tail, map, repeat, scanl, break, until)
 
+import Control.Monad
 import Data.Maybe
 import Data.Time
 
@@ -275,3 +276,43 @@ box = () <$ do
 	r <- (`Box` head colors) `map` defineRect
 	chooseBoxColor r
 	waitFor $ drClickOn r
+
+spawn :: Sig es a r -> Sig es (ISig es a r) ()
+spawn (Sig l) = repeat l
+
+parList :: (
+	Merge es es' ~ es', Merge es' es ~ es', Merge es' es' ~ es',
+	Convert es es', Convert es' es',
+	Convert (Map Occurred es') (Map Occurred es),
+	Convert (Map Occurred es') (Map Occurred es')
+	) =>
+	Sig es (ISig es' a ()) r -> Sig es' [a] ()
+parList x = emitAll $ iparList x
+
+iparList :: (
+	Merge es es' ~ es', Merge es' es ~ es', Merge es' es' ~ es',
+	Convert es es', Convert es' es',
+	Convert (Map Occurred es') (Map Occurred es),
+	Convert (Map Occurred es') (Map Occurred es') ) =>
+	Sig es (ISig es' a ()) r -> ISig es' [a] ()
+iparList l = () <$ (rl ([] :| hold) l) where
+	rl t (Sig es) = do
+		(t', es') <- t `iuntil` es
+		case es' of
+			Done (e'' :| es'') -> rl (cons e'' t') es''
+			_ -> t'
+
+cons :: (
+	Merge es es ~ es, Convert es es,
+	Convert (Map Occurred es) (Map Occurred es) ) =>
+	ISig es a r -> ISig es [a] r -> ISig es [a] ()
+cons h t = () <$ do
+	(h', t') <- uncurry (:) `imap` pairs h t
+	void $ (: []) `imap` h'
+	void t'
+
+newBoxes :: SigG (ISigG Box ()) ()
+newBoxes = spawn box
+
+boxes :: SigG [Box] ()
+boxes = parList newBoxes
