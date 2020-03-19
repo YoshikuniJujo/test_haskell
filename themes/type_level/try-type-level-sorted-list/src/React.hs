@@ -11,11 +11,11 @@ module React (
 	React(..), EvReqs, EvOccs, Request(Occurred),
 	-- * Run React
 	interpret,
-	-- * Type conversion
+	-- * Type Conversion
 	adjust,
 	-- * Conversion
 	done,
-	-- * Parrallel composition
+	-- * Parrallel Composition
 	first, before,
 	-- * Others
 	never ) where
@@ -30,7 +30,7 @@ import Sorted
 import OpenUnionValue
 
 type EvReqs (es :: Sorted Type) = [UnionValue es]
-type EvOccs (es :: Sorted Type) = NonEmpty (UnionValue (Map Occurred es))
+type EvOccs (es :: Sorted Type) = NonEmpty (UnionValue (Occurred :$: es))
 
 class Numbered e => Request e where data Occurred (e :: Type) :: Type
 
@@ -55,10 +55,10 @@ interpret _ (Done x) = pure x
 interpret p (Await r c) = interpret p . c =<< p r
 
 adjust :: forall es es' a . (
-	Merge es es' ~ es', Merge es' es ~ es', Convert es es', Convert es' es',
-	Convert (Map Occurred es') (Map Occurred es),
-	Convert (Map Occurred es) (Map Occurred es'),
-	Convert (Map Occurred es') (Map Occurred es') ) => React es a -> React es' a
+	(es :+: es') ~ es', (es' :+: es) ~ es', Convert es es', Convert es' es',
+	Convert (Occurred :$: es') (Occurred :$: es),
+	Convert (Occurred :$: es) (Occurred :$: es'),
+	Convert (Occurred :$: es') (Occurred :$: es') ) => React es a -> React es' a
 adjust rct = (rct `first` (ignore :: React es' ())) >>= \case
 	(Done x, _) -> pure x
 	(rct', _) -> adjust rct'
@@ -67,32 +67,32 @@ ignore :: React es ()
 ignore = Await [] $ const ignore
 
 first :: forall es es' a b . (
-	Merge es es' ~ Merge es' es,
-	Convert es (Merge es' es),
-	Convert es' (Merge es' es),
-	Convert (Map Occurred (Merge es' es)) (Map Occurred es),
-	Convert (Map Occurred (Merge es' es)) (Map Occurred es')
-	) => React es a -> React es' b -> React (Merge es es') (React es a, React es' b)
+	(es :+: es') ~ (es' :+: es),
+	Convert es (es' :+: es),
+	Convert es' (es' :+: es),
+	Convert (Occurred :$: es' :+: es) (Occurred :$: es),
+	Convert (Occurred :$: es' :+: es) (Occurred :$: es')
+	) => React es a -> React es' b -> React (es :+: es') (React es a, React es' b)
 l `first` r = case (l, r) of
 	(Await el _, Await er _) ->
 		Await ((fromJust . convert <$> el) ++ (fromJust . convert <$> er))
-			\(c :: EvOccs (Merge es es')) -> (l `ud1` c) `first` (r `ud2` c)
+			\(c :: EvOccs (es :+: es')) -> (l `ud1` c) `first` (r `ud2` c)
 	_ -> Done (l, r)
 	where
 	ud1 = update @es @es'
 	ud2 = update @es' @es
 
-update :: Convert (Map Occurred (Merge es es')) (Map Occurred es) => React es a -> EvOccs (Merge es es') -> React es a
+update :: Convert (Occurred :$: es :+: es') (Occurred :$: es) => React es a -> EvOccs (es :+: es') -> React es a
 update r@(Await _ c) oc = case fromJust <$> filter isJust (convert <$> oc) of
 	o : os -> c $ o :| os
 	[] -> r
 update _ _ = error "bad: first argument must be Await _ _"
 
 before :: (
-	Merge es es' ~ Merge es' es, Convert es (Merge es' es), Convert es' (Merge es' es),
-	Convert (Map Occurred (Merge es' es)) (Map Occurred es),
-	Convert (Map Occurred (Merge es' es)) (Map Occurred es') ) =>
-	React es a -> React es' b -> React (Merge es es') Bool
+	(es :+: es') ~ (es' :+: es), Convert es (es' :+: es), Convert es' (es' :+: es),
+	Convert (Occurred :$: es' :+: es) (Occurred :$: es),
+	Convert (Occurred :$: es' :+: es) (Occurred :$: es') ) =>
+	React es a -> React es' b -> React (es :+: es') Bool
 before a b = do
 	(a', b') <- a `first` b
 	case (done a', done b') of

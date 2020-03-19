@@ -8,7 +8,7 @@ module Sorted.Internal (
 	-- * Types
 	Sorted(..), Numbered, numbered,
 	-- * Type Level Operators
-	Singleton, Insert, Merge, Map ) where
+	Singleton, Insert, Merge, Map, (:-), (:+:), (:$:) ) where
 
 import GHC.TypeLits
 import Language.Haskell.TH hiding (Type)
@@ -37,6 +37,9 @@ type family Insert (t :: Type) (ts :: Sorted Type) :: Sorted Type where
 		(t ':~ t' ':~ ts)
 		(t' ':~ Insert t ts)
 
+infixr 5 :-
+type t :- ts = t `Insert` ts
+
 type family Merge (ts :: Sorted Type) (ts' :: Sorted Type) :: Sorted Type where
 	Merge ts 'Nil = ts
 	Merge 'Nil ts' = ts'
@@ -45,6 +48,12 @@ type family Merge (ts :: Sorted Type) (ts' :: Sorted Type) :: Sorted Type where
 		(t ':~ Merge ts (t' ':~ ts'))
 		(t' ':~ Merge (t ':~ ts) ts')
 
+infixr 5 :+:
+type ts :+: ts' = ts `Merge` ts'
+
 type family Map (f :: Type -> Type) (ts :: Sorted Type) :: Sorted Type where
 	Map _f 'Nil = 'Nil
 	Map f (t ':~ ts) = f t ':~ Map f ts
+
+infixl 4 :$:
+type f :$: t = f `Map` t

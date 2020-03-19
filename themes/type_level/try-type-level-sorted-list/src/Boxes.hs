@@ -79,7 +79,7 @@ type SigG = Sig GuiEv
 type ISigG = ISig GuiEv
 type ReactG = React GuiEv
 
-type GuiEv = MouseDown `Insert` (MouseUp `Insert` (MouseMove `Insert` (TryWait `Insert` Singleton DeltaTime)))
+type GuiEv = MouseDown :- MouseUp :- MouseMove :- TryWait :- DeltaTime :- 'Nil
 
 clickOn :: MouseBtn -> React (Singleton MouseDown) ()
 clickOn b = mouseDown >>= bool (clickOn b) (pure ()) . (b `elem`)
@@ -92,9 +92,6 @@ releaseOn b = mouseUp >>= bool (releaseOn b) (pure ()) . (b `elem`)
 
 leftUp, middleUp, rightUp :: React (Singleton MouseUp) ()
 [leftUp, middleUp, rightUp] = releaseOn <$> [MLeft, MMiddle, MRight]
-
-filterEvent :: [UnionValue (Map Occurred es)] -> EvReqs es -> [UnionValue (Map Occurred es)]
-filterEvent = intersection' @Occurred
 
 sameClick :: ReactG Bool
 sameClick = do

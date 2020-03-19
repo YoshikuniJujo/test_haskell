@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -15,6 +16,7 @@ import System.Exit
 import Boxes
 
 import OpenUnionValue
+import Sorted
 import React
 import Field
 
@@ -91,3 +93,6 @@ makeTimeObs r t = case filterMap makeOcc r ++ filterMap makeOcc2 r of
 	makeOcc2 u = do
 		DeltaTimeReq <- prj u
 		pure . inj $ OccurredDeltaTime t
+
+filterEvent :: [UnionValue (Map Occurred es)] -> EvReqs es -> [UnionValue (Map Occurred es)]
+filterEvent = intersection' @Occurred

@@ -4,6 +4,6 @@ module Sorted (
 	-- * Types
 	Sorted(Nil), Numbered, numbered,
 	-- * Type Level Operators
-	Singleton, Insert, Merge, Map ) where
+	Singleton, Insert, Merge, Map, (:-), (:+:), (:$:) ) where
 
 import Sorted.Internal

@@ -1,5 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE TypeFamilies, FlexibleContexts #-}
+{-# LANGUAGE TypeOperators, TypeFamilies, FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Sig (
@@ -83,7 +83,7 @@ imap :: (a -> b) -> ISig es a r -> ISig es b r
 imap f (h :| t) = f h :| (f `map` t)
 imap _ (End x) = End x
 
-scanl :: (a -> b -> a) -> a -> Sig es b r -> Sig es a r
+scanl :: (b -> a -> b) -> b -> Sig es a r -> Sig es b r
 scanl f i = emitAll . iscanl f i
 
 iscanl :: (a -> b -> a) -> a -> Sig es b r -> ISig es a r
@@ -118,19 +118,19 @@ ibreak p is@(h :| t)
 	| otherwise = h :| break p t
 ibreak _ is@(End _) = pure is
 
-at :: (	Merge es' es ~ Merge es es',
-	Convert es (Merge es' es), Convert es' (Merge es' es),
-	Convert (Map Occurred (Merge es' es)) (Map Occurred es),
-	Convert (Map Occurred (Merge es' es)) (Map Occurred es') ) =>
-	Sig es a b1 -> React es' b2 -> React (Merge es es') (Maybe a)
+at :: ((es :+: es') ~ (es' :+: es),
+	Convert es (es :+: es'), Convert es' (es :+: es'),
+	Convert (Occurred :$: es :+: es') (Occurred :$: es),
+	Convert (Occurred :$: es :+: es') (Occurred :$: es') ) =>
+	Sig es a r -> React es' r' -> React (es :+: es') (Maybe a)
 l `at` a = cur . fst <$> res (l `until` a)
 
 until :: (
-	Merge es es' ~ Merge es' es,
-	Convert es (Merge es' es), Convert es' (Merge es' es),
-	Convert (Map Occurred (Merge es' es)) (Map Occurred es),
-	Convert (Map Occurred (Merge es' es)) (Map Occurred es') ) =>
-	Sig es a r -> React es' b -> Sig (Merge es' es) a (Sig es a r, React es' b)
+	(es :+: es') ~ (es' :+: es),
+	Convert es (es :+: es'), Convert es' (es :+: es'),
+	Convert (Occurred :$: es :+: es') (Occurred :$: es),
+	Convert (Occurred :$: es :+: es') (Occurred :$: es') ) =>
+	Sig es a r -> React es' b -> Sig (es :+: es') a (Sig es a r, React es' b)
 until (Sig l) a = waitFor (l `first` a) >>= un where
 	un (Done l', a') = do
 		(l'', a'') <- emitAll $ l' `iuntil` a'
@@ -138,11 +138,11 @@ until (Sig l) a = waitFor (l `first` a) >>= un where
 	un (l', a') = pure (Sig l', a')
 
 iuntil :: (
-	Merge es es' ~ Merge es' es,
-	Convert es (Merge es' es), Convert es' (Merge es' es),
-	Convert (Map Occurred (Merge es' es)) (Map Occurred es),
-	Convert (Map Occurred (Merge es' es)) (Map Occurred es') ) =>
-	ISig es a r -> React es' b -> ISig (Merge es es') a (ISig es a r, React es' b)
+	(es :+: es') ~ (es' :+: es),
+	Convert es (es' :+: es), Convert es' (es' :+: es),
+	Convert (Occurred :$: es' :+: es) (Occurred :$: es),
+	Convert (Occurred :$: es' :+: es) (Occurred :$: es') ) =>
+	ISig es a r -> React es' b -> ISig (es :+: es') a (ISig es a r, React es' b)
 iuntil (End l) a = End (End l, a)
 iuntil (h :| Sig t) a = h :| Sig (cont <$> t `first` a)
 	where
@@ -150,28 +150,28 @@ iuntil (h :| Sig t) a = h :| Sig (cont <$> t `first` a)
 	cont (t', Done a') = End (h :| Sig t', Done a')
 	cont _ = error "never occur"
 
-hold :: (Convert es es, Convert (Map Occurred es) (Map Occurred es)) => Sig es a r
+hold :: (Convert es es, Convert (Occurred :$: es) (Occurred :$: es)) => Sig es a r
 hold = waitFor $ adjust never
 
-always :: (Convert es es, Convert (Map Occurred es) (Map Occurred es)) => a -> Sig es a r
+always :: (Convert es es, Convert (Occurred :$: es) (Occurred :$: es)) => a -> Sig es a r
 always a = emit a >> hold
 
 (<^>) :: (
-	Merge es es' ~ Merge es' es,
-	Convert es (Merge es es'), Convert es' (Merge es es'),
-	Convert (Map Occurred (Merge es es')) (Map Occurred es),
-	Convert (Map Occurred (Merge es es')) (Map Occurred es') ) =>
-	Sig es (a -> b) r -> Sig es' a r' -> Sig (Merge es' es) b (ISig es (a -> b) r, ISig es' a r')
+	(es :+: es') ~ (es' :+: es),
+	Convert es (es :+: es'), Convert es' (es :+: es'),
+	Convert (Occurred :$: es :+: es') (Occurred :$: es),
+	Convert (Occurred :$: es :+: es') (Occurred :$: es') ) =>
+	Sig es (a -> b) r -> Sig es' a r' -> Sig (es :+: es') b (ISig es (a -> b) r, ISig es' a r')
 l <^> r = do
 	(l', r') <- waitFor $ bothStart l r
 	emitAll $ uncurry ($) `imap` pairs l' r'
 
 bothStart :: (
-	Merge es es' ~ Merge es' es,
-	Convert es (Merge es es'), Convert es' (Merge es es'),
-	Convert (Map Occurred (Merge es es')) (Map Occurred es),
-	Convert (Map Occurred (Merge es es')) (Map Occurred es') ) =>
-	Sig es a r -> Sig es' b r' -> React (Merge es es') (ISig es a r, ISig es' b r')
+	(es :+: es') ~ (es' :+: es),
+	Convert es (es :+: es'), Convert es' (es :+: es'),
+	Convert (Occurred :$: es :+: es') (Occurred :$: es),
+	Convert (Occurred :$: es :+: es') (Occurred :$: es') ) =>
+	Sig es a r -> Sig es' b r' -> React (es :+: es') (ISig es a r, ISig es' b r')
 bothStart l (Sig r) = do
 	(Sig l', r') <- res $ l `until` r
 	(Sig r'', l'') <- res (Sig r' `until` l')
@@ -181,11 +181,11 @@ done' :: React es a -> a
 done' = fromJust . done
 
 pairs :: (
-	Convert es (Merge es es'), Convert es' (Merge es es'),
-	Convert (Map Occurred (Merge es es')) (Map Occurred es),
-	Convert (Map Occurred (Merge es es')) (Map Occurred es'),
-	Merge es es' ~ Merge es' es ) =>
-	ISig es a r -> ISig es' b r' -> ISig (Merge es es') (a, b) (ISig es a r, ISig es' b r')
+	Convert es (es :+: es'), Convert es' (es :+: es'),
+	Convert (Occurred :$: es :+: es') (Occurred :$: es),
+	Convert (Occurred :$: es :+: es') (Occurred :$: es'),
+	(es :+: es') ~ (es' :+: es) ) =>
+	ISig es a r -> ISig es' b r' -> ISig (es :+: es') (a, b) (ISig es a r, ISig es' b r')
 End a `pairs` b = pure (pure a, b)
 a `pairs` End b = pure (a, pure b)
 (hl :| Sig tl) `pairs` (hr :| Sig tr) = (hl, hr) :| tail
@@ -196,11 +196,11 @@ a `pairs` End b = pure (a, pure b)
 	lup h t = h :| Sig t
 
 indexBy :: (
-	Merge es es' ~ Merge es' es,
-	Convert es (Merge es es'), Convert es' (Merge es es'),
-	Convert (Map Occurred (Merge es es')) (Map Occurred es),
-	Convert (Map Occurred (Merge es es')) (Map Occurred es') ) =>
-	Sig es a r -> Sig es' b r' -> Sig (Merge es es') a ()
+	(es :+: es') ~ (es' :+: es),
+	Convert es (es :+: es'), Convert es' (es :+: es'),
+	Convert (Occurred :$: es :+: es') (Occurred :$: es),
+	Convert (Occurred :$: es :+: es') (Occurred :$: es') ) =>
+	Sig es a r -> Sig es' b r' -> Sig (es :+: es') a ()
 l `indexBy` Sig r = waitFor (res $ l `until` r) >>= \case
 	(_, Done (End _)) -> pure ()
 	(Sig (Done l'), r') -> l' `iindexBy` Sig r'
@@ -209,11 +209,11 @@ l `indexBy` Sig r = waitFor (res $ l `until` r) >>= \case
 
 
 iindexBy :: (
-	Merge es es' ~ Merge es' es,
-	Convert es (Merge es es'), Convert es' (Merge es es'),
-	Convert (Map Occurred (Merge es es')) (Map Occurred es),
-	Convert (Map Occurred (Merge es es')) (Map Occurred es') ) =>
-	ISig es a r -> Sig es' b r' -> Sig (Merge es es') a ()
+	(es :+: es') ~ (es' :+: es),
+	Convert es (es :+: es'), Convert es' (es :+: es'),
+	Convert (Occurred :$: es :+: es') (Occurred :$: es),
+	Convert (Occurred :$: es :+: es') (Occurred :$: es') ) =>
+	ISig es a r -> Sig es' b r' -> Sig (es :+: es') a ()
 l `iindexBy` Sig r = waitFor (ires $ l `iuntil` r) >>= \case
 	(hl :| tl, Done (_ :| tr)) -> emit hl >> (hl :| tl) `iindexBy` tr
 	_ -> pure ()
@@ -222,19 +222,19 @@ spawn :: Sig es a r -> Sig es (ISig es a r) ()
 spawn (Sig l) = repeat l
 
 parList :: (
-	Merge es es' ~ es', Merge es' es ~ es', Merge es' es' ~ es',
+	(es :+: es') ~ es', (es' :+: es) ~ es', (es' :+: es') ~ es',
 	Convert es es', Convert es' es',
-	Convert (Map Occurred es') (Map Occurred es),
-	Convert (Map Occurred es') (Map Occurred es')
+	Convert (Occurred :$: es') (Occurred :$: es),
+	Convert (Occurred :$: es') (Occurred :$: es')
 	) =>
 	Sig es (ISig es' a ()) r -> Sig es' [a] ()
 parList x = emitAll $ iparList x
 
 iparList :: (
-	Merge es es' ~ es', Merge es' es ~ es', Merge es' es' ~ es',
+	(es :+: es') ~ es', (es' :+: es) ~ es', (es' :+: es') ~ es',
 	Convert es es', Convert es' es',
-	Convert (Map Occurred es') (Map Occurred es),
-	Convert (Map Occurred es') (Map Occurred es') ) =>
+	Convert (Occurred :$: es') (Occurred :$: es),
+	Convert (Occurred :$: es') (Occurred :$: es') ) =>
 	Sig es (ISig es' a ()) r -> ISig es' [a] ()
 iparList l = () <$ (rl ([] :| hold) l) where
 	rl t (Sig es) = do
@@ -244,8 +244,8 @@ iparList l = () <$ (rl ([] :| hold) l) where
 			_ -> t'
 
 cons :: (
-	Merge es es ~ es, Convert es es,
-	Convert (Map Occurred es) (Map Occurred es) ) =>
+	(es :+: es) ~ es, Convert es es,
+	Convert (Occurred :$: es) (Occurred :$: es) ) =>
 	ISig es a r -> ISig es [a] r -> ISig es [a] ()
 cons h t = () <$ do
 	(h', t') <- uncurry (:) `imap` pairs h t

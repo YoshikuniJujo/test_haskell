@@ -8,7 +8,7 @@
 
 module OpenUnionValue (
 	-- * Base Operations
-	UnionValue, Member, Elem(..), inj, prj, extract,
+	UnionValue, Member, inj, prj, extract,
 	-- * Conversion
 	Convert, convert,
 	-- * Filtering
@@ -37,22 +37,11 @@ prj (UnionValue i x)
 	| i == unP (elemNo :: P a as) = Just $ unsafeCoerce x
 	| otherwise = Nothing
 
-{-
-decomp :: UnionValue (a ':~ as) -> Either (UnionValue as) a
-decomp (UnionValue 0 x) = Right $ unsafeCoerce x
-decomp (UnionValue i x) = Left $ UnionValue (i - 1) x
--}
-
 extract :: UnionValue (a ':~ 'Nil) -> a
 extract (UnionValue _ x) = unsafeCoerce x
 
 foo :: UnionValue as -> UnionValue (a ':~ as)
 foo (UnionValue i x) = UnionValue (i + 1) x
-
-class Elem (a :: Type) (as :: Sorted Type) where elemValue :: a -> Maybe a
-instance Elem a 'Nil where elemValue = const Nothing
-instance Elem a (a ':~ as) where elemValue = Just
-instance {-# OVERLAPPABLE #-} Elem a as => Elem a (a' ':~ as) where elemValue x = elemValue @a @as x
 
 class Convert (as :: Sorted Type) (as' :: Sorted Type) where
 	convert :: UnionValue as -> Maybe (UnionValue as')
