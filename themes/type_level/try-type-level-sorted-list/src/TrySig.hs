@@ -134,3 +134,11 @@ tryDrClickOn = do
 	now <- systemToTAITime <$> getSystemTime
 	interpret (handle 0.1 f) (drClickOn r) `runStateT` now >>= print
 	closeField f
+
+tryBox :: IO ()
+tryBox = do
+	f <- openField "tryBox" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
+	now <- systemToTAITime <$> getSystemTime
+	interpretSig (handle 0.05 f) (liftIO . withFlush f . drawBox f) box
+		`runStateT` now >>= print
+	closeField f

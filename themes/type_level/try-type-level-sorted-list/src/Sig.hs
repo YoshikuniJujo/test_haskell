@@ -269,3 +269,9 @@ l `iindexBy` Sig r = waitFor (ires $ l `iuntil` r) >>= \case
 
 drClickOn :: Rect -> ReactG (Either Point ())
 drClickOn r = posInside r $ mousePos `indexBy` repeat doubler
+
+box :: SigG Box ()
+box = () <$ do
+	r <- (`Box` head colors) `map` defineRect
+	chooseBoxColor r
+	waitFor $ drClickOn r
