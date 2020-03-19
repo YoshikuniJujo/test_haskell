@@ -13,7 +13,7 @@ import Data.Time.Clock.System
 import Data.Time.Clock.TAI
 import System.Exit
 
-import Boxes
+import BoxesEvents
 
 import React
 import OpenUnionValue

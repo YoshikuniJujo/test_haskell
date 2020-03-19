@@ -11,6 +11,7 @@ Main
 
 ```
 Boxes
+  + BoxesEvents
   + Sig
   |   + React
   |   + OpenUnionValue
@@ -24,8 +25,16 @@ Boxes
 ```
 
 ```
+BoxesEvents
+  + Sig
+  + React
+  + OpenUnionValue
+  + Sorted
+```
+
+```
 Handlers
-  + Boxes
+  + BoxesEvents
   + React
   + OpenUnionValue
   + Sorted

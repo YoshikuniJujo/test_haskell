@@ -10,6 +10,7 @@ import Data.Time
 import Data.Time.Clock.System
 
 import Boxes
+import BoxesEvents
 
 import React
 import Sig
