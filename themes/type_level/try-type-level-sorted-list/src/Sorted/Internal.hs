@@ -1,18 +1,28 @@
 -- {-# LANGUAGE StandaloneKindSignatures #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DataKinds, TypeFamilies, TypeFamilyDependencies, TypeOperators, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Sorted.Internal (Sorted(..), Singleton, Insert, Merge, Map, Numbered(..)) where
+module Sorted.Internal (
+	-- * Types
+	Sorted(..), Numbered, numbered,
+	-- * Type Level Operators
+	Singleton, Insert, Merge, Map, (:-), (:+:), (:$:) ) where
 
 import GHC.TypeLits
+import Language.Haskell.TH hiding (Type)
 import Data.Kind
 import Data.Type.Bool
+import System.Random
 
--- type Number :: Type -> Nat
--- type family Number a = n | n -> a
+numbered :: TypeQ -> DecsQ
+numbered t = ((: []) <$>) . instanceD (cxt []) (conT ''Numbered `appT` t) $ (: []) do
+	n <- runIO $ abs <$> randomIO
+	tySynInstD $ tySynEqn Nothing (conT ''Number `appT` t) (litT $ numTyLit n)
 
 class Numbered a where
-	type Number (a :: Type) :: Nat
+	type Number (a :: Type) = (r :: Nat) | r -> a
 
 infixr 5 :~
 data Sorted a = Nil | a :~ Sorted a
@@ -27,6 +37,9 @@ type family Insert (t :: Type) (ts :: Sorted Type) :: Sorted Type where
 		(t ':~ t' ':~ ts)
 		(t' ':~ Insert t ts)
 
+infixr 5 :-
+type t :- ts = t `Insert` ts
+
 type family Merge (ts :: Sorted Type) (ts' :: Sorted Type) :: Sorted Type where
 	Merge ts 'Nil = ts
 	Merge 'Nil ts' = ts'
@@ -34,24 +47,13 @@ type family Merge (ts :: Sorted Type) (ts' :: Sorted Type) :: Sorted Type where
 	Merge (t ':~ ts) (t' ':~ ts') = If (Number t <=? Number t')
 		(t ':~ Merge ts (t' ':~ ts'))
 		(t' ':~ Merge (t ':~ ts) ts')
---		(t ':~ t' ':~ Merge ts ts')
---		(t' ':~ t ':~ Merge ts ts')
+
+infixr 5 :+:
+type ts :+: ts' = ts `Merge` ts'
 
 type family Map (f :: Type -> Type) (ts :: Sorted Type) :: Sorted Type where
 	Map _f 'Nil = 'Nil
 	Map f (t ':~ ts) = f t ':~ Map f ts
 
-instance Numbered () where
-	type instance Number () = 8
-
-instance Numbered Int where
-	type instance Number Int = 15
-
-instance Numbered Double where
-	type instance Number Double = 4
-
-instance Numbered Bool where
-	type instance Number Bool = 11
-
-instance Numbered Integer where
-	type instance Number Integer = 9
+infixl 4 :$:
+type f :$: t = f `Map` t
