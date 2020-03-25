@@ -84,17 +84,34 @@ instance {-# OVERLAPPABLE #-} Project a as => Project a (a' ':~ as) where
 extract :: UnionList 'True (Singleton a) -> a
 extract u = case prj u of Just x -> x; Nothing -> error "never occur"
 
-class Collapse b' (as :: Sorted Type) (as' :: Sorted Type) where
-	collapse :: UnionList b as -> Maybe (UnionList b' as')
+class Collapse0 (as :: Sorted Type) (as' :: Sorted Type) where
+	collapse0 :: UnionList b as -> UnionList b as'
 
-instance {-# INCOHERENT #-} Nihil as' => Collapse 'False 'Nil as' where collapse = const $ Just nihil
-instance {-# INCOHERENT #-} Collapse 'True 'Nil as' where collapse = const Nothing
-instance {-# INCOHERENT #-} Collapse b' as 'Nil where collapse = const $ Just UnionListNil
+instance {-# INCOHERENT #-} Nihil as' => Collapse0 'Nil as' where collapse0 = const nihil
+instance {-# INCOHERENT #-} Collapse0 as 'Nil where collapse0 = const UnionListNil
 
-instance Collapse b' as as' => Collapse b' (a ':~ as) (a ':~ as') where
-	collapse (x :. xs) = (x :.) <$> collapse xs
+instance Collapse0 as as' => Collapse0 (a ':~ as) (a ':~ as') where
+	collapse0 (x :. xs) = x :. collapse0 xs
 
-instance {-# OVERLAPPABLE #-} Collapse b' as as' => Collapse b' (a ':~ as) as' where
+instance {-# OVERLAPPABLE #-} Collapse0 as as' => Collapse0 (a ':~ as) as' where
+	collapse0 (_ :. xs) = collapse0 xs
+
+class Collapse b (as :: Sorted Type) (as' :: Sorted Type) where
+	collapse :: UnionList b as -> Maybe (UnionList b as')
+
+instance Collapse0 as as' => Collapse 'False as as' where
+	collapse = Just . collapse0
+
+instance Collapse 'True 'Nil 'Nil where
+	collapse = const $ Just UnionListNil
+
+instance {-# OVERLAPPABLE #-} Collapse 'True 'Nil as' where
+	collapse = const Nothing
+
+instance Collapse0 as as' => Collapse 'True (a ':~ as) (a ':~ as') where
+	collapse (x :. xs) = Just $ x :. collapse0 xs
+
+instance {-# OVERLAPPABLE #-} Collapse 'True as as' => Collapse 'True (a ':~ as) as' where
 	collapse (_ :. xs) = collapse xs
 
 class Merge (as :: Sorted Type) (as' :: Sorted Type) (merged :: Sorted Type) where

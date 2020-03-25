@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Boxes where
@@ -15,7 +16,7 @@ leftClick, middleClick, rightClick :: React (Singleton MouseDown) ()
 [leftClick, middleClick, rightClick] = clickOn <$> [MLeft, MMiddle, MRight]
 
 sameClick :: ReactG Bool
-sameClick = do
+sameClick = adjust do
 	pressed <- mouseDown
 	pressed2 <- mouseDown
 	pure $ pressed == pressed2

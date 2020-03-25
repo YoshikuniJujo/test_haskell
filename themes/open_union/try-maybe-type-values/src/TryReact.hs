@@ -11,8 +11,7 @@ import Field
 tryLeftClick :: IO ()
 tryLeftClick = do
 	f <- openField "tryLeftClick" [exposureMask, buttonPressMask]
---	interpret (handleWithoutTime f) (adjust leftClick :: ReactG ()) >>= print
-	interpret (handleWithoutTime f) leftClick >>= print
+	interpret (handleWithoutTime f) (adjust leftClick :: ReactG ()) >>= print
 	closeField f
 
 trySameClick :: IO ()
