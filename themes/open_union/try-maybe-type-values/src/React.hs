@@ -74,3 +74,19 @@ update r@(Await _ c) oc = case collapse oc of
 	Just oc' -> c oc'
 	Nothing -> r
 update (Done _) _ = error "bad: first argument must be Await _ _"
+
+before :: (
+	(es :+: es') ~ (es' :+: es),
+	Merge es es' (es :+: es'),
+	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
+	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es')
+	) => React es a -> React es' b -> React (es :+: es') Bool
+a `before` b = do
+	(a', b') <- a `first` b
+	case (done a', done b') of
+		(Just _, Nothing) -> pure True
+		_ -> pure False
+
+done :: React es a -> Maybe a
+done (Done x) = Just x
+done (Await _ _) = Nothing
