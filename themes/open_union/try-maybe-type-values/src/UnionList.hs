@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds, KindSignatures, TypeOperators #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
@@ -7,8 +8,9 @@
 
 module UnionList (
 	UnionList(UnionListNil), AddValue, MinValue, Nihil, Expand, Collapse, Merge, Project,
-	(>+), (>-), expand, collapse, merge, prj, extract) where
+	(>+), (>+.), (>-), expand, collapse, merge, prj, extract) where
 
+import GHC.Stack
 import Data.Kind
 import Sorted.Internal hiding (Merge)
 
@@ -81,7 +83,7 @@ instance Project a (a ':~ as) where
 instance {-# OVERLAPPABLE #-} Project a as => Project a (a' ':~ as) where
 	prj (_ :. xs) = prj xs
 
-extract :: UnionList 'True (Singleton a) -> a
+extract :: HasCallStack => UnionList 'True (Singleton a) -> a
 extract u = case prj u of Just x -> x; Nothing -> error "never occur"
 
 class Collapse0 (as :: Sorted Type) (as' :: Sorted Type) where
@@ -102,14 +104,13 @@ class Collapse b (as :: Sorted Type) (as' :: Sorted Type) where
 instance Collapse0 as as' => Collapse 'False as as' where
 	collapse = Just . collapse0
 
-instance Collapse 'True 'Nil 'Nil where
-	collapse = const $ Just UnionListNil
-
 instance {-# OVERLAPPABLE #-} Collapse 'True 'Nil as' where
 	collapse = const Nothing
 
-instance Collapse0 as as' => Collapse 'True (a ':~ as) (a ':~ as') where
-	collapse (x :. xs) = Just $ x :. collapse0 xs
+instance (Collapse0 as as', Collapse 'True as as') => Collapse 'True (a ':~ as) (a ':~ as') where
+	collapse = \case
+		(Just x :. xs) -> Just $ Just x :. collapse0 xs
+		(Nothing :. xs) -> (Nothing :.) <$> collapse xs
 
 instance {-# OVERLAPPABLE #-} Collapse 'True as as' => Collapse 'True (a ':~ as) as' where
 	collapse (_ :. xs) = collapse xs
@@ -121,7 +122,9 @@ instance Merge 'Nil 'Nil 'Nil where
 	merge_ UnionListNil UnionListNil = UnionListNil
 
 instance (Ord a, Merge as as' merged) => Merge (a ':~ as) (a ':~ as') (a ':~ merged) where
-	merge_ (x :. xs) (x' :. xs') = (x `min` x') :. merge_ xs xs'
+	merge_ (Just x :. xs) (Just x' :. xs') = Just (x `min` x') :. merge_ xs xs'
+	merge_ (mx :. xs) (Nothing :. xs') = mx :. merge_ xs xs'
+	merge_ (Nothing :. xs) (mx' :. xs') = mx' :. merge_ xs xs'
 
 instance {-# OVERLAPPABLE #-} Merge as as' merged => Merge (a ':~ as) as'  (a ':~ merged) where
 	merge_ (x :. xs) xs' = x :. merge_ xs xs'

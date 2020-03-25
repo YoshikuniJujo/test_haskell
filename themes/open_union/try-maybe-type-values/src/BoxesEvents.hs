@@ -6,6 +6,8 @@
 
 module BoxesEvents where
 
+import Data.Time
+
 import Sorted
 import UnionList
 import React
@@ -22,6 +24,21 @@ mouseDown :: React (Singleton MouseDown) [MouseBtn]
 mouseDown = Await (MouseDownReq >+ UnionListNil) \ev ->
 	let OccurredMouseDown mbs = extract ev in pure mbs
 
+data TryWait = TryWaitReq DiffTime deriving (Show, Eq, Ord)
+
+numbered [t| TryWait |]
+instance Request TryWait where
+	data Occurred TryWait = OccurredTryWait DiffTime deriving Show
+
+tryWait :: DiffTime -> React (Singleton TryWait) DiffTime
+tryWait t = Await (TryWaitReq t >+ UnionListNil) \ev ->
+	let OccurredTryWait t' = extract ev in pure t'
+
+sleep :: DiffTime -> React (Singleton TryWait) ()
+sleep t = do
+	t' <- tryWait t
+	if t' == t then pure () else sleep (t - t')
+
 type ReactG = React GuiEv
 
-type GuiEv = MouseDown :- 'Nil
+type GuiEv = MouseDown :- TryWait :- 'Nil

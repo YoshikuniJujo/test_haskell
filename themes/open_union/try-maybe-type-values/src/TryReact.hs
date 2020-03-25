@@ -2,6 +2,9 @@
 
 module TryReact where
 
+import Control.Monad.State
+import Data.Time.Clock.System
+
 import Boxes
 import BoxesEvents
 import Handlers
@@ -18,4 +21,11 @@ trySameClick :: IO ()
 trySameClick = do
 	f <- openField "trySameClick" [exposureMask, buttonPressMask]
 	interpret (handleWithoutTime f) sameClick >>= print
+	closeField f
+
+trySleep :: IO ()
+trySleep = do
+	f <- openField "trySleep" [exposureMask, buttonPressMask]
+	now <- systemToTAITime <$> getSystemTime
+	interpret (handle 0.5 f) (adjust $ sleep 3) `runStateT` now >>= print
 	closeField f
