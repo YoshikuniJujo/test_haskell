@@ -20,3 +20,10 @@ sameClick = adjust do
 	pressed <- mouseDown
 	pressed2 <- mouseDown
 	pure $ pressed == pressed2
+
+doubler :: ReactG ()
+doubler = adjust do
+	r <- adjust do
+		adjust rightClick
+		rightClick `before` sleep 0.2
+	if r then pure () else doubler

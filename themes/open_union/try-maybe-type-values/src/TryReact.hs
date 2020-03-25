@@ -29,3 +29,10 @@ trySleep = do
 	now <- systemToTAITime <$> getSystemTime
 	interpret (handle 0.5 f) (adjust $ sleep 3) `runStateT` now >>= print
 	closeField f
+
+tryDoubler :: IO ()
+tryDoubler = do
+	f <- openField "trySleep" [exposureMask, buttonPressMask]
+	now <- systemToTAITime <$> getSystemTime
+	interpret (handle 0.05 f) doubler `runStateT` now >>= print
+	closeField f
