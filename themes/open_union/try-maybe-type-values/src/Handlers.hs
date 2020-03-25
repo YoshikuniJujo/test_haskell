@@ -35,7 +35,7 @@ handle dt f reqs = do
 	case getWait reqs of
 		Just t | tdiff >= t -> do
 			put $ t `addAbsoluteTime` t1
-			pure . expand $ fromJust (makeTimeObs reqs t) >+ UnionListNil
+			pure . expand . fromJust $ makeTimeObs reqs t
 		_ -> do
 			put t2
 			moccs <- withNextEventTimeout' f (round $ dt * 1000000) \case
@@ -44,15 +44,15 @@ handle dt f reqs = do
 				_ -> pure Nothing
 			let	mtoccs = makeTimeObs reqs tdiff
 			case (moccs, mtoccs) of
-				(Just occs, Just toccs) -> pure $ toccs >+. occs
+				(Just occs, Just toccs) -> pure $ toccs `merge_` occs
 				(Just occs, Nothing) -> pure $ expand occs
-				(Nothing, Just toccs) -> pure $ expand (toccs >+. UnionListNil :: UnionList 'True (Occurred :$: Singleton TryWait))
+				(Nothing, Just toccs) -> pure $ expand toccs
 				(Nothing, Nothing) -> handle dt f reqs
 
 getWait :: EvReqs GuiEv -> Maybe DiffTime
 getWait reqs = (\(TryWaitReq t) -> t) <$> prj reqs
 
-makeTimeObs :: EvReqs GuiEv -> DiffTime -> Maybe (Occurred TryWait)
+makeTimeObs :: EvReqs GuiEv -> DiffTime -> Maybe (EvOccs (Singleton TryWait))
 makeTimeObs r t = case prj r of
-	Just (TryWaitReq _t') -> Just $ OccurredTryWait t
+	Just (TryWaitReq _t') -> Just $ OccurredTryWait t >+ UnionListNil
 	Nothing -> Nothing

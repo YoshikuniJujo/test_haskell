@@ -8,7 +8,7 @@
 
 module UnionList (
 	UnionList(UnionListNil), AddValue, MinValue, Nihil, Expand, Collapse, Merge, Project,
-	(>+), (>+.), (>-), expand, collapse, merge, prj, extract) where
+	(>+), (>+.), (>-), expand, collapse, merge, merge_, prj, extract) where
 
 import GHC.Stack
 import Data.Kind
