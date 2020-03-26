@@ -64,3 +64,11 @@ wiggleRect (Rect lu rd) = rectAtTime `map` elapsed where
 
 (+.) :: Point -> Point -> Point
 (x1, y1) +. (x2, y2) = (x1 + x2, y1 + y2)
+
+posInside :: Rect -> SigG Point y -> ReactG (Either Point y)
+posInside r = find (`inside` r)
+
+inside :: Point -> Rect -> Bool
+inside (x, y) (Rect (l, u) (r, d)) =
+	(l <= x && x <= r || r <= x && x <= l) &&
+	(u <= y && y <= d || d <= y && y <= u)

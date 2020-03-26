@@ -2,7 +2,7 @@
 
 module Sig where
 
-import Prelude hiding (map, repeat, scanl)
+import Prelude hiding (map, repeat, scanl, break)
 
 import React
 
@@ -70,3 +70,26 @@ iscanl :: (b -> a -> b) -> b -> Sig es a r -> ISig es b r
 iscanl f i (Sig l) = i :| (waitFor l >>= lsl) where
 	lsl (h :| t) = scanl f (f i h) t
 	lsl (End x) = pure x
+
+find :: (a -> Bool) -> Sig es a r -> React es (Either a r)
+find p l = icur <$> res (break p l)
+
+icur :: ISig es a b -> Either a b
+icur (h :| _) = Left h
+icur (End r) = Right r
+
+res :: Sig es a b -> React es b
+res (Sig l) = ires =<< l
+
+ires :: ISig es a b -> React es b
+ires (_ :| t) = res t
+ires (End a) = pure a
+
+break :: (a -> Bool) -> Sig es a r -> Sig es a (ISig es a r)
+break p (Sig l) = Sig $ ibreak p <$> l
+
+ibreak :: (a -> Bool) -> ISig es a r -> ISig es a (ISig es a r)
+ibreak p is@(h :| t)
+	| p h = pure is
+	| otherwise = h :| break p t
+ibreak _ is@(End _) = pure is
