@@ -2,6 +2,8 @@
 
 module Sig where
 
+import Prelude hiding (repeat)
+
 import React
 
 infixr 5 :|
@@ -50,3 +52,6 @@ emit a = emitAll $ a :| pure ()
 
 waitFor :: React es r -> Sig es a r
 waitFor = Sig . (pure <$>)
+
+repeat :: React es a -> Sig es a ()
+repeat x = xs where xs = Sig $ (:| xs) <$> x

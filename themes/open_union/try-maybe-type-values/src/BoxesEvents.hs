@@ -25,11 +25,22 @@ mouseDown :: React (Singleton MouseDown) [MouseBtn]
 mouseDown = Await (MouseDownReq >+ UnionListNil) \ev ->
 	let OccurredMouseDown mbs = extract ev in pure mbs
 
+data MouseMove = MouseMoveReq deriving (Show, Eq, Ord)
+type Point = (Integer, Integer)
+
+numbered [t| MouseMove |]
+instance Request MouseMove where
+	data Occurred MouseMove = OccurredMouseMove Point deriving Show
+
+mouseMove :: React (Singleton MouseMove) Point
+mouseMove = Await (MouseMoveReq >+ UnionListNil) \ev ->
+	let OccurredMouseMove p = extract ev in pure p
+
 data TryWait = TryWaitReq DiffTime deriving (Show, Eq, Ord)
 
 numbered [t| TryWait |]
 instance Request TryWait where
-	data Occurred TryWait = OccurredTryWait DiffTime deriving Show
+	data Occurred TryWait = OccurredTryWait DiffTime deriving (Show, Eq, Ord)
 
 tryWait :: DiffTime -> React (Singleton TryWait) DiffTime
 tryWait t = Await (TryWaitReq t >+ UnionListNil) \ev ->
@@ -43,4 +54,4 @@ sleep t = do
 type SigG = Sig GuiEv
 type ReactG = React GuiEv
 
-type GuiEv = MouseDown :- TryWait :- 'Nil
+type GuiEv = MouseDown :- MouseMove :- TryWait :- 'Nil

@@ -3,10 +3,10 @@
 
 module Boxes where
 
-import Prelude hiding (cycle)
+import Prelude hiding (repeat, cycle)
 
 import Data.Bool
-import Data.List.NonEmpty hiding (cycle)
+import Data.List.NonEmpty hiding (repeat, cycle)
 
 import BoxesEvents
 import Sig
@@ -42,3 +42,6 @@ cycleColor = cc (cycle $ fromList [Red .. Magenta]) 1 where
 		if r then cc t (i + 1) else pure i
 
 data Color = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
+
+mousePos :: SigG Point ()
+mousePos = repeat $ adjust mouseMove
