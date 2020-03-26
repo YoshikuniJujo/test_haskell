@@ -2,12 +2,16 @@
 
 module TrySig where
 
+import Prelude hiding (repeat)
+
 import Control.Monad.State
 import Data.Time.Clock.System
 
 import Boxes
+import BoxesEvents
 import Handlers
 import Sig
+import React
 import Field
 
 tryCycleColor :: IO ()
@@ -41,3 +45,10 @@ drawRect f clr (Rect (l_, u_) (r_, d_)) = fillRect f clr l u w h where
 	u = fromIntegral $ u_ `min` d_
 	w = fromIntegral . abs $ r_ - l_
 	h = fromIntegral . abs $ d_ - u_
+
+tryDeltaTime :: IO ()
+tryDeltaTime = do
+	f <- openField "tryDeltaTime" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
+	now <- systemToTAITime <$> getSystemTime
+	interpretSig (handle 0.5 f) (liftIO . print) (repeat $ adjust deltaTime) `runStateT` now >>= print
+	closeField f

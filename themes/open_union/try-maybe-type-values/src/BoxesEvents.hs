@@ -51,7 +51,18 @@ sleep t = do
 	t' <- tryWait t
 	if t' == t then pure () else sleep (t - t')
 
+data DeltaTime = DeltaTimeReq deriving (Show, Eq, Ord)
+
+numbered [t| DeltaTime |]
+instance Request DeltaTime where
+	data Occurred DeltaTime = OccurredDeltaTime DiffTime deriving (Show, Eq, Ord)
+
+deltaTime :: React (Singleton DeltaTime) DiffTime
+deltaTime = Await (DeltaTimeReq >+ UnionListNil) \ev ->
+	let OccurredDeltaTime t = extract ev in pure t
+
 type SigG = Sig GuiEv
+type ISigG = ISig GuiEv
 type ReactG = React GuiEv
 
-type GuiEv = MouseDown :- MouseMove :- TryWait :- 'Nil
+type GuiEv = MouseDown :- MouseMove :- TryWait :- DeltaTime :- 'Nil
