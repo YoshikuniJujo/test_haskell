@@ -3,10 +3,11 @@
 
 module Boxes where
 
-import Prelude hiding (map, repeat, cycle)
+import Prelude hiding (map, repeat, cycle, scanl)
 
 import Data.Bool
-import Data.List.NonEmpty hiding (map, repeat, cycle)
+import Data.List.NonEmpty hiding (map, repeat, cycle, scanl)
+import Data.Time
 
 import BoxesEvents
 import Sig
@@ -50,3 +51,6 @@ curRect :: Point -> SigG Rect ()
 curRect p1 = Rect p1 `map` mousePos
 
 data Rect = Rect { leftup :: Point, rightdown :: Point } deriving Show
+
+elapsed :: SigG DiffTime ()
+elapsed = scanl (+) 0 . repeat $ adjust deltaTime

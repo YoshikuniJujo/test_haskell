@@ -5,6 +5,7 @@ module TrySig where
 import Prelude hiding (repeat)
 
 import Control.Monad.State
+import Data.Time
 import Data.Time.Clock.System
 
 import Boxes
@@ -52,3 +53,16 @@ tryDeltaTime = do
 	now <- systemToTAITime <$> getSystemTime
 	interpretSig (handle 0.5 f) (liftIO . print) (repeat $ adjust deltaTime) `runStateT` now >>= print
 	closeField f
+
+tryElapsed :: IO ()
+tryElapsed = do
+	f <- openField "tryElapsed" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
+	now <- systemToTAITime <$> getSystemTime
+	interpretSig (handle 0.05 f) (liftIO . drawElapsed f) elapsed `runStateT` now >>= print
+	closeField f
+
+drawElapsed :: Field -> DiffTime -> IO ()
+drawElapsed f dt = do
+	clearField f
+	drawStr f 0x00ff00 "sans" 30 100 100 $ show dt
+	flushField f

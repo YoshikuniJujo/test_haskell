@@ -2,7 +2,7 @@
 
 module Sig where
 
-import Prelude hiding (map, repeat)
+import Prelude hiding (map, repeat, scanl)
 
 import React
 
@@ -62,3 +62,11 @@ f `map` Sig l = Sig $ (f `imap`) <$> l
 imap :: (a -> b) -> ISig es a r -> ISig es b r
 f `imap` (h :| t) = f h :| (f `map` t)
 _ `imap` (End x) = pure x
+
+scanl :: (b -> a -> b) -> b -> Sig es a r -> Sig es b r
+scanl f i = emitAll . iscanl f i
+
+iscanl :: (b -> a -> b) -> b -> Sig es a r -> ISig es b r
+iscanl f i (Sig l) = i :| (waitFor l >>= lsl) where
+	lsl (h :| t) = scanl f (f i h) t
+	lsl (End x) = pure x
