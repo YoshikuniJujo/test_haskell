@@ -3,10 +3,10 @@
 
 module Boxes where
 
-import Prelude hiding (repeat, cycle)
+import Prelude hiding (map, repeat, cycle)
 
 import Data.Bool
-import Data.List.NonEmpty hiding (repeat, cycle)
+import Data.List.NonEmpty hiding (map, repeat, cycle)
 
 import BoxesEvents
 import Sig
@@ -45,3 +45,8 @@ data Color = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
 
 mousePos :: SigG Point ()
 mousePos = repeat $ adjust mouseMove
+
+curRect :: Point -> SigG Rect ()
+curRect p1 = Rect p1 `map` mousePos
+
+data Rect = Rect { leftup :: Point, rightdown :: Point } deriving Show

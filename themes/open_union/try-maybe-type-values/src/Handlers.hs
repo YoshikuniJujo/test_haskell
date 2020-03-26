@@ -51,6 +51,7 @@ handle dt f reqs = do
 				Just MotionEvent { ev_x = x, ev_y = y } ->
 					pure . Just . expand $
 						OccurredMouseMove (fromIntegral x, fromIntegral y) >+ UnionListNil
+				Just ExposeEvent {} -> liftIO (flushField f) >> pure Nothing
 				Just DestroyWindowEvent {} -> liftIO $ closeField f >> exitSuccess
 				Just ev	| isDeleteEvent f ev -> liftIO (destroyField f) >> pure Nothing
 					| otherwise -> pure Nothing

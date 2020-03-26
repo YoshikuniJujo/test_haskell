@@ -2,7 +2,7 @@
 
 module Sig where
 
-import Prelude hiding (repeat)
+import Prelude hiding (map, repeat)
 
 import React
 
@@ -55,3 +55,10 @@ waitFor = Sig . (pure <$>)
 
 repeat :: React es a -> Sig es a ()
 repeat x = xs where xs = Sig $ (:| xs) <$> x
+
+map :: (a -> b) -> Sig es a r -> Sig es b r
+f `map` Sig l = Sig $ (f `imap`) <$> l
+
+imap :: (a -> b) -> ISig es a r -> ISig es b r
+f `imap` (h :| t) = f h :| (f `map` t)
+_ `imap` (End x) = pure x
