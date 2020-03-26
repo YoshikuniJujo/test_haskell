@@ -1,10 +1,15 @@
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE DataKinds, TypeFamilies #-}
+{-# LANGUAGe FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Sig where
 
-import Prelude hiding (map, repeat, scanl, break)
+import Prelude hiding (map, repeat, scanl, break, until)
 
 import React
+import UnionList
+import Sorted hiding (Merge)
 
 infixr 5 :|
 newtype Sig es a r = Sig { unSig :: React es (ISig es a r) }
@@ -74,6 +79,10 @@ iscanl f i (Sig l) = i :| (waitFor l >>= lsl) where
 find :: (a -> Bool) -> Sig es a r -> React es (Either a r)
 find p l = icur <$> res (break p l)
 
+cur :: Sig es a b -> Maybe a
+cur (Sig (Done (h :| _))) = Just h
+cur _ = Nothing
+
 icur :: ISig es a b -> Either a b
 icur (h :| _) = Left h
 icur (End r) = Right r
@@ -93,3 +102,33 @@ ibreak p is@(h :| t)
 	| p h = pure is
 	| otherwise = h :| break p t
 ibreak _ is@(End _) = pure is
+
+at :: (
+	(es :+: es') ~ (es' :+: es), Merge es es' (es :+: es'),
+	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
+	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es')
+	) => Sig es a r -> React es' r' -> React (es :+: es') (Maybe a)
+l `at` a = cur . fst <$> res (l `until` a)
+
+until :: (
+	(es :+: es') ~ (es' :+: es), Merge es es' (es :+: es'),
+	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
+	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es')
+	) => Sig es a r -> React es' b -> Sig (es :+: es') a (Sig es a r, React es' b)
+Sig l `until` a = waitFor (l `first` a) >>= un where
+	un (Done l', a') = do
+		(l'', a'') <- emitAll $ l' `iuntil` a'
+		pure (emitAll l'', a'')
+	un (l', a') = pure (Sig l', a')
+
+iuntil :: (
+	(es :+: es') ~ (es' :+: es),
+	Merge es es' (es :+: es'),
+	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
+	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es')
+	) => ISig es a r -> React es' b -> ISig (es :+: es') a (ISig es a r, React es' b)
+End l `iuntil` a = pure (pure l, a)
+(h :| Sig t) `iuntil` a = h :| Sig (cont <$> t `first` a) where
+	cont (Done l', a') = l' `iuntil` a'
+	cont (t', Done a') = pure (h :| Sig t', pure a')
+	cont _ = error "never occur"

@@ -72,3 +72,6 @@ inside :: Point -> Rect -> Bool
 inside (x, y) (Rect (l, u) (r, d)) =
 	(l <= x && x <= r || r <= x && x <= l) &&
 	(u <= y && y <= d || d <= y && y <= u)
+
+firstPoint :: ReactG (Maybe Point)
+firstPoint = mousePos `at` leftClick

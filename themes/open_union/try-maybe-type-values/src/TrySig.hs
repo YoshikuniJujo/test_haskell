@@ -83,3 +83,10 @@ tryPosInside = do
 	now <- systemToTAITime <$> getSystemTime
 	interpret (handle 0.05 f) (posInside r mousePos) `runStateT` now >>= print
 	closeField f
+
+tryFirstPoint :: IO ()
+tryFirstPoint = do
+	f <- openField "tryPosInside" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
+	now <- systemToTAITime <$> getSystemTime
+	interpret (handle 0.05 f) firstPoint `runStateT` now >>= print
+	closeField f
