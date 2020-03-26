@@ -54,3 +54,13 @@ data Rect = Rect { leftup :: Point, rightdown :: Point } deriving Show
 
 elapsed :: SigG DiffTime ()
 elapsed = scanl (+) 0 . repeat $ adjust deltaTime
+
+wiggleRect :: Rect -> SigG Rect ()
+wiggleRect (Rect lu rd) = rectAtTime `map` elapsed where
+	rectAtTime t = Rect (lu +. dx) (rd +. dx) where
+		dx = (	round (sin (fromRational (toRational t) * 5) * 15
+				:: Double),
+			0 )
+
+(+.) :: Point -> Point -> Point
+(x1, y1) +. (x2, y2) = (x1 + x2, y1 + y2)
