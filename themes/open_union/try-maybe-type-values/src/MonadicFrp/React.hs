@@ -5,7 +5,12 @@
 {-# LANGUAGE FlexibleContexts, AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module MonadicFrp.React where
+module MonadicFrp.React (
+	React(..), EvReqs, EvOccs, Request(..),
+	interpret, adjust,
+	first, before,
+	done, never,
+	) where
 
 import Data.Kind
 
@@ -38,14 +43,11 @@ interpret _ (Done x) = pure x
 interpret p (Await r c) = interpret p . c =<< p r
 
 adjust :: forall es es' a . (
-	Nihil es',
-	(es :+: es') ~ es',
-	(es' :+: es) ~ es',
+	Nihil es', (es :+: es') ~ es', (es' :+: es) ~ es',
 	Merge es es' es',
 	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
 	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es')
-	) =>
-	React es a -> React es' a
+	) => React es a -> React es' a
 adjust rct = (rct `first` (ignore :: React es' ())) >>= \case
 	(Done x, _) -> pure x
 	(rct', _) -> adjust @es @es' rct'
@@ -54,8 +56,7 @@ ignore :: Nihil es => React es ()
 ignore = Await (expand UnionListNil) $ const ignore
 
 first :: forall es es' a b . (
-	(es :+: es') ~ (es' :+: es),
-	Merge es es' (es :+: es'),
+	(es :+: es') ~ (es' :+: es), Merge es es' (es :+: es'),
 	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
 	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es')
 	) =>
@@ -76,8 +77,7 @@ update r@(Await _ c) oc = case collapse oc of
 update (Done _) _ = error "bad: first argument must be Await _ _"
 
 before :: (
-	(es :+: es') ~ (es' :+: es),
-	Merge es es' (es :+: es'),
+	(es :+: es') ~ (es' :+: es), Merge es es' (es :+: es'),
 	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
 	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es')
 	) => React es a -> React es' b -> React (es :+: es') Bool
