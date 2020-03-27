@@ -90,3 +90,6 @@ a `before` b = do
 done :: React es a -> Maybe a
 done (Done x) = Just x
 done (Await _ _) = Nothing
+
+never :: React 'Nil a
+never = Await UnionListNil undefined

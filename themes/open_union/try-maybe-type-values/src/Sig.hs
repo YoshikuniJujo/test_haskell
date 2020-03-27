@@ -5,7 +5,8 @@
 
 module Sig where
 
-import Prelude hiding (map, repeat, scanl, break, until)
+import Prelude hiding (map, repeat, scanl, break, until, tail)
+import Data.Maybe
 
 import React
 import UnionList
@@ -132,3 +133,57 @@ End l `iuntil` a = pure (pure l, a)
 	cont (Done l', a') = l' `iuntil` a'
 	cont (t', Done a') = pure (h :| Sig t', pure a')
 	cont _ = error "never occur"
+
+hold :: (
+	Nihil es, Merge 'Nil es es,
+	Collapse 'True (Occurred :$: es) (Occurred :$: es),
+	Collapse 'True (Occurred :$: es) 'Nil
+	) => Sig es a r
+hold = waitFor $ adjust never
+
+always :: (
+	Nihil es, Merge 'Nil es es,
+	Collapse 'True (Occurred :$: es) (Occurred :$: es),
+	Collapse 'True (Occurred :$: es) 'Nil
+	) => a -> Sig es a r
+always a = emit a >> hold
+
+(<^>) :: (
+	(es :+: es') ~ (es' :+: es),
+	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
+	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es'),
+	Merge es es' (es :+: es'), Merge es' es (es :+: es')
+	) => Sig es (a -> b) r -> Sig es' a r' ->
+		Sig (es :+: es') b (ISig es (a -> b) r, ISig es' a r')
+l <^> r = do
+	(l', r') <- waitFor $ bothStart l r
+	emitAll $ uncurry ($) `imap` pairs l' r'
+
+bothStart :: (
+	(es :+: es') ~ (es' :+: es),
+	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
+	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es'),
+	Merge es es' (es :+: es'), Merge es' es (es :+: es')
+	) => Sig es a r -> Sig es' b r' -> React (es :+: es') (ISig es a r, ISig es' b r')
+l `bothStart` Sig r = do
+	(Sig l', r') <- res $ l `until` r
+	(Sig r'', l'') <- res $ Sig r' `until` l'
+	pure (done' l'', done' r'')
+
+done' :: React es a -> a
+done' = fromJust . done
+
+pairs :: (
+	(es :+: es') ~ (es' :+: es),
+	Merge es es' (es :+: es'),
+	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
+	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es')
+	) => ISig es a r -> ISig es' b r' -> ISig (es :+: es') (a, b) (ISig es a r, ISig es' b r')
+End a `pairs` b = pure (pure a, b)
+a `pairs` End b = pure (a, pure b)
+(hl :| Sig tl) `pairs` (hr :| Sig tr) = (hl, hr) :| tail
+	where
+	tail = Sig $ cont <$> tl `first` tr
+	cont (tl', tr') = lup hl tl' `pairs` lup hr tr'
+	lup _ (Done l) = l
+	lup h t = h :| Sig t

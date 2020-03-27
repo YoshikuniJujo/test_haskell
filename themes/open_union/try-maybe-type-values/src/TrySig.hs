@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module TrySig where
@@ -106,3 +107,24 @@ tryDefineRect = do
 	interpretSig (handle 0.05 f) (liftIO . withFlush f . drawRect f 0xff0000)
 		defineRect `runStateT` now >>= print
 	closeField f
+
+tryChooseBoxColor :: IO ()
+tryChooseBoxColor = do
+	f <- openField "tryChooseBoxColor" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
+	now <- systemToTAITime <$> getSystemTime
+	interpretSig (handle 0.05 f)
+		(liftIO . withFlush f . drawBox f)
+		(chooseBoxColor (Rect (200, 150) (400, 300))) `runStateT` now >>= print
+	closeField f
+
+drawBox :: Field -> Box -> IO ()
+drawBox f (Box rct clr) = drawRect f (colorToPixel clr) rct
+
+colorToPixel :: Color -> Pixel
+colorToPixel = \case
+	Red -> 0xff0000
+	Green -> 0x00ff00
+	Blue -> 0x0000ff
+	Yellow -> 0xffff00
+	Cyan -> 0xff00ff
+	Magenta -> 0x00ffff
