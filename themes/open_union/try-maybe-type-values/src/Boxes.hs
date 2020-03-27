@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Boxes where
@@ -86,3 +86,10 @@ completeRect :: Point -> SigG Rect (Maybe Rect)
 completeRect p1 = do
 	(r, _) <- curRect p1 `until` leftUp
 	pure $ cur r
+
+defineRect :: SigG Rect Rect
+defineRect = waitFor firstPoint >>= \case
+	Just p1 -> completeRect p1 >>= \case
+		Just r -> pure r
+		Nothing -> error "never occur"
+	Nothing -> error "never occur"
