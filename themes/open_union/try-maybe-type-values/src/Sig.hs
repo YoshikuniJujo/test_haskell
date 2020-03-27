@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE DataKinds, TypeFamilies #-}
 {-# LANGUAGe FlexibleContexts #-}
@@ -187,3 +188,24 @@ a `pairs` End b = pure (a, pure b)
 	cont (tl', tr') = lup hl tl' `pairs` lup hr tr'
 	lup _ (Done l) = l
 	lup h t = h :| Sig t
+
+indexBy :: (
+	(es :+: es') ~ (es' :+: es), Merge es es' (es :+: es'),
+	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
+	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es')
+	) => Sig es a r -> Sig es' b r' -> Sig (es :+: es') a ()
+l `indexBy` Sig r = waitFor (res $ l `until` r) >>= \case
+	(_, Done (End _)) -> pure ()
+	(Sig (Done l'), r') -> l' `iindexBy` Sig r'
+	(Sig l', Done (_ :| r')) -> Sig l' `indexBy` r'
+	_ -> error "never occur"
+
+iindexBy ::  (
+	(es :+: es') ~ (es' :+: es),
+	Merge es es' (es :+: es'),
+	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
+	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es')
+	) => ISig es a r -> Sig es' b r' -> Sig (es :+: es') a ()
+l `iindexBy` Sig r = waitFor (ires $ l `iuntil` r) >>= \case
+	(hl :| tl, Done (_ :| tr)) -> emit hl >> (hl :| tl) `iindexBy` tr
+	_ -> pure ()
