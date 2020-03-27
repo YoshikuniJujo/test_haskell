@@ -101,3 +101,9 @@ data Box = Box Rect Color deriving Show
 
 drClickOn :: Rect -> ReactG (Either Point ())
 drClickOn r = posInside r (mousePos `indexBy` repeat doubler)
+
+box :: SigG Box ()
+box = () <$ do
+	r <- (`Box` Red) `map` defineRect
+	chooseBoxColor r
+	waitFor $ drClickOn r
