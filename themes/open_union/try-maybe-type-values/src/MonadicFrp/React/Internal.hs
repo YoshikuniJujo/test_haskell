@@ -1,12 +1,12 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
-{-# LANGUAGE DataKinds, KindSignatures, TypeOperators #-}
+{-# LANGUAGE DataKinds, KindSignatures, TypeOperators, ConstraintKinds #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts, AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module MonadicFrp.React.Internal (
-	React(..), EvReqs, EvOccs, Request(..),
+	React(..), EvReqs, EvOccs, Request(..), Mergeable, CollapseOccurred,
 	interpret, adjust,
 	first, before,
 	done, never,
@@ -43,10 +43,7 @@ interpret _ (Done x) = pure x
 interpret p (Await r c) = interpret p . c =<< p r
 
 adjust :: forall es es' a . (
-	Nihil es', (es :+: es') ~ es', (es' :+: es) ~ es',
-	Merge es es' es',
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es')
+	Nihil es', (es :+: es') ~ es', Mergeable es es'
 	) => React es a -> React es' a
 adjust rct = (rct `first` (ignore :: React es' ())) >>= \case
 	(Done x, _) -> pure x
@@ -55,11 +52,7 @@ adjust rct = (rct `first` (ignore :: React es' ())) >>= \case
 ignore :: Nihil es => React es ()
 ignore = Await (expand UnionListNil) $ const ignore
 
-first :: forall es es' a b . (
-	(es :+: es') ~ (es' :+: es), Merge es es' (es :+: es'),
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es')
-	) =>
+first :: forall es es' a b . Mergeable es es' =>
 	React es a -> React es' b -> React (es :+: es') (React es a, React es' b)
 l `first` r = case (l, r) of
 	(Await el _, Await er _) ->
@@ -76,11 +69,8 @@ update r@(Await _ c) oc = case collapse oc of
 	Nothing -> r
 update (Done _) _ = error "bad: first argument must be Await _ _"
 
-before :: (
-	(es :+: es') ~ (es' :+: es), Merge es es' (es :+: es'),
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es')
-	) => React es a -> React es' b -> React (es :+: es') Bool
+before ::
+	Mergeable es es' => React es a -> React es' b -> React (es :+: es') Bool
 a `before` b = do
 	(a', b') <- a `first` b
 	case (done a', done b') of
@@ -93,3 +83,11 @@ done (Await _ _) = Nothing
 
 never :: React 'Nil a
 never = Await UnionListNil undefined
+
+type Mergeable es es' = (
+	(es :+: es') ~ (es' :+: es), Merge es es' (es :+: es'),
+	CollapseOccurred es es' )
+
+type CollapseOccurred es es' = (
+	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
+	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es') )

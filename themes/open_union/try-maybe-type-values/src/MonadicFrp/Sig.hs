@@ -119,55 +119,36 @@ ibreak p is@(h :| t)
 	| otherwise = h :| break p t
 ibreak _ is@(End _) = pure is
 
-at :: (	(es :+: es') ~ (es' :+: es), Merge es es' (es :+: es'),
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es')
-	) => Sig es a r -> React es' r' -> React (es :+: es') (Maybe a)
+at :: Mergeable es es' =>
+	Sig es a r -> React es' r' -> React (es :+: es') (Maybe a)
 l `at` a = cur . fst <$> res (l `until` a)
 
-until :: (
-	(es :+: es') ~ (es' :+: es), Merge es es' (es :+: es'),
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es')
-	) => Sig es a r -> React es' b -> Sig (es :+: es') a (Sig es a r, React es' b)
+until :: Mergeable es es' => Sig es a r ->
+	React es' b -> Sig (es :+: es') a (Sig es a r, React es' b)
 Sig l `until` a = waitFor (l `first` a) >>= un where
 	un (Done l', a') = do
 		(l'', a'') <- emitAll $ l' `iuntil` a'
 		pure (emitAll l'', a'')
 	un (l', a') = pure (Sig l', a')
 
-iuntil :: (
-	(es :+: es') ~ (es' :+: es),
-	Merge es es' (es :+: es'),
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es')
-	) => ISig es a r -> React es' b -> ISig (es :+: es') a (ISig es a r, React es' b)
+iuntil :: Mergeable es es' => ISig es a r ->
+	React es' b -> ISig (es :+: es') a (ISig es a r, React es' b)
 End l `iuntil` a = pure (pure l, a)
 (h :| Sig t) `iuntil` a = h :| Sig (cont <$> t `first` a) where
 	cont (Done l', a') = l' `iuntil` a'
 	cont (t', Done a') = pure (h :| Sig t', pure a')
 	cont _ = error "never occur"
 
-hold :: (
-	Nihil es, Merge 'Nil es es,
-	Collapse 'True (Occurred :$: es) (Occurred :$: es),
-	Collapse 'True (Occurred :$: es) 'Nil
-	) => Sig es a r
+hold :: (Nihil es, Mergeable 'Nil es) => Sig es a r
 hold = waitFor $ adjust never
 
 always :: (
 	Nihil es, Merge 'Nil es es,
-	Collapse 'True (Occurred :$: es) (Occurred :$: es),
-	Collapse 'True (Occurred :$: es) 'Nil
-	) => a -> Sig es a r
+	CollapseOccurred 'Nil es ) => a -> Sig es a r
 always a = emit a >> hold
 
-(<^>) :: (
-	(es :+: es') ~ (es' :+: es),
-	Merge es es' (es :+: es'), Merge es' es (es :+: es'),
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es')
-	) => Sig es (a -> b) r -> Sig es' a r' ->
+(<^>) :: (Mergeable es es', Mergeable es' es) =>
+	Sig es (a -> b) r -> Sig es' a r' ->
 		Sig (es :+: es') b (ISig es (a -> b) r, ISig es' a r')
 l <^> r = do
 	(l', r') <- waitFor $ bothStart l r
@@ -187,12 +168,8 @@ l `bothStart` Sig r = do
 done' :: React es a -> a
 done' = fromJust . done
 
-pairs :: (
-	(es :+: es') ~ (es' :+: es),
-	Merge es es' (es :+: es'),
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es')
-	) => ISig es a r -> ISig es' b r' -> ISig (es :+: es') (a, b) (ISig es a r, ISig es' b r')
+pairs :: Mergeable es es' => ISig es a r ->
+	ISig es' b r' -> ISig (es :+: es') (a, b) (ISig es a r, ISig es' b r')
 End a `pairs` b = pure (pure a, b)
 a `pairs` End b = pure (a, pure b)
 (hl :| Sig tl) `pairs` (hr :| Sig tr) = (hl, hr) :| tail
@@ -202,23 +179,16 @@ a `pairs` End b = pure (a, pure b)
 	lup _ (Done l) = l
 	lup h t = h :| Sig t
 
-indexBy :: (
-	(es :+: es') ~ (es' :+: es), Merge es es' (es :+: es'),
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es')
-	) => Sig es a r -> Sig es' b r' -> Sig (es :+: es') a ()
+indexBy ::
+	Mergeable es es' => Sig es a r -> Sig es' b r' -> Sig (es :+: es') a ()
 l `indexBy` Sig r = waitFor (res $ l `until` r) >>= \case
 	(_, Done (End _)) -> pure ()
 	(Sig (Done l'), r') -> l' `iindexBy` Sig r'
 	(Sig l', Done (_ :| r')) -> Sig l' `indexBy` r'
 	_ -> error "never occur"
 
-iindexBy ::  (
-	(es :+: es') ~ (es' :+: es),
-	Merge es es' (es :+: es'),
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es')
-	) => ISig es a r -> Sig es' b r' -> Sig (es :+: es') a ()
+iindexBy ::
+	Mergeable es es' => ISig es a r -> Sig es' b r' -> Sig (es :+: es') a ()
 l `iindexBy` Sig r = waitFor (ires $ l `iuntil` r) >>= \case
 	(hl :| tl, Done (_ :| tr)) -> emit hl >> (hl :| tl) `iindexBy` tr
 	_ -> pure ()
@@ -227,23 +197,16 @@ spawn :: Sig es a r -> Sig es (ISig es a r) ()
 spawn (Sig l) = repeat l
 
 parList :: (
-	Nihil es',
-	(es :+: es') ~ es', (es' :+: es) ~ es', (es' :+: es') ~ es',
-	Merge 'Nil es' es', Merge es' es es', Merge es' es' es',
-	Collapse 'True (Map Occurred es') 'Nil,
-	Collapse 'True (Occurred :$: es') (Occurred :$: es),
-	Collapse 'True (Occurred :$: es') (Occurred :$: es')
-	) => Sig es (ISig es' a r) r' -> Sig es' [a] ()
+	Nihil es', (es :+: es') ~ es', (es' :+: es') ~ es', Merge es' es' es',
+	Mergeable 'Nil es', Mergeable es' es ) =>
+	Sig es (ISig es' a r) r' -> Sig es' [a] ()
 parList x = emitAll $ iparList x
 
 iparList :: (
-	es' ~ (es' :+: es'), es' ~ (es :+: es'), es' ~ (es' :+: es),
-	Merge es' es es', Merge es' es' es',
-	Collapse 'True (Occurred :$: es') (Occurred :$: es),
-	Collapse 'True (Occurred :$: es') (Occurred :$: es'),
-	Nihil es', Merge 'Nil es' es',
-	Collapse 'True (Occurred :$: es') 'Nil
-	) => Sig es (ISig es' a r) r' -> ISig es' [a] ()
+	Nihil es', (es' :+: es') ~ es', (es :+: es') ~ es',
+	Merge es' es' es',
+	Mergeable 'Nil es',
+	Mergeable es' es ) => Sig es (ISig es' a r) r' -> ISig es' [a] ()
 iparList l = () <$ (rl ([] :| hold) l) where
 	rl t (Sig es) = do
 		(t', es') <- t `iuntil` es
@@ -251,10 +214,8 @@ iparList l = () <$ (rl ([] :| hold) l) where
 			Done (e'' :| es'') -> rl (cons e'' t') es''
 			_ -> t'
 
-cons :: (
-	es ~ (es :+: es), Merge es es es,
-	Collapse 'True (Occurred :$: es) (Occurred :$: es)
-	) => ISig es a r -> ISig es [a] r' -> ISig es [a] ()
+cons :: ((es :+: es) ~ es, Mergeable es es) =>
+	ISig es a r -> ISig es [a] r' -> ISig es [a] ()
 cons h t = () <$ do
 	(h', t') <- uncurry (:) `imap` pairs h t
 	void $ (: []) `imap` h'
