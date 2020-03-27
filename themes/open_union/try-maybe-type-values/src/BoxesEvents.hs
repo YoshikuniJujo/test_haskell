@@ -25,6 +25,16 @@ mouseDown :: React (Singleton MouseDown) [MouseBtn]
 mouseDown = Await (MouseDownReq >+ UnionListNil) \ev ->
 	let OccurredMouseDown mbs = extract ev in pure mbs
 
+data MouseUp = MouseUpReq deriving (Show, Eq, Ord)
+
+numbered [t| MouseUp |]
+instance Request MouseUp where
+	data Occurred MouseUp = OccurredMouseUp [MouseBtn] deriving Show
+
+mouseUp :: React (Singleton MouseUp) [MouseBtn]
+mouseUp = Await (MouseUpReq >+ UnionListNil) \ev ->
+	let OccurredMouseUp mbs = extract ev in pure mbs
+
 data MouseMove = MouseMoveReq deriving (Show, Eq, Ord)
 type Point = (Integer, Integer)
 
@@ -65,4 +75,4 @@ type SigG = Sig GuiEv
 type ISigG = ISig GuiEv
 type ReactG = React GuiEv
 
-type GuiEv = MouseDown :- MouseMove :- TryWait :- DeltaTime :- 'Nil
+type GuiEv = MouseDown :- MouseUp :- MouseMove :- TryWait :- DeltaTime :- 'Nil

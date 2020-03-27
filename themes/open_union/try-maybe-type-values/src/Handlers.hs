@@ -48,6 +48,13 @@ handle dt f reqs = do
 						OccurredMouseMove (fromIntegral x, fromIntegral y) >+.
 						(OccurredMouseDown [b] >+ UnionListNil)
 							:: UnionList 'True (Occurred :$: (MouseMove :- Singleton MouseDown)))
+				Just ButtonEvent {
+					ev_event_type = 5, ev_button = eb,
+					ev_x = x, ev_y = y } | Just b <- button eb ->
+					pure . Just $ expand (
+						OccurredMouseMove (fromIntegral x, fromIntegral y) >+.
+						(OccurredMouseUp [b] >+ UnionListNil)
+							:: UnionList 'True (Occurred :$: (MouseMove :- Singleton MouseUp)))
 				Just MotionEvent { ev_x = x, ev_y = y } ->
 					pure . Just . expand $
 						OccurredMouseMove (fromIntegral x, fromIntegral y) >+ UnionListNil

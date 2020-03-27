@@ -90,3 +90,11 @@ tryFirstPoint = do
 	now <- systemToTAITime <$> getSystemTime
 	interpret (handle 0.05 f) firstPoint `runStateT` now >>= print
 	closeField f
+
+tryCompleteRect :: IO ()
+tryCompleteRect = do
+	f <- openField "tryCompleteRect" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
+	now <- systemToTAITime <$> getSystemTime
+	interpretSig (handle 0.05 f) (liftIO . withFlush f . drawRect f 0xff0000)
+		(completeRect (200, 150)) `runStateT` now >>= print
+	closeField f

@@ -3,7 +3,7 @@
 
 module Boxes where
 
-import Prelude hiding (map, repeat, cycle, scanl)
+import Prelude hiding (map, repeat, cycle, scanl, until)
 
 import Data.Bool
 import Data.List.NonEmpty hiding (map, repeat, cycle, scanl)
@@ -20,6 +20,12 @@ clickOn b = mouseDown >>= bool (clickOn b) (pure ()) . (b `elem`)
 
 leftClick, middleClick, rightClick :: React (Singleton MouseDown) ()
 [leftClick, middleClick, rightClick] = clickOn <$> [MLeft, MMiddle, MRight]
+
+releaseOn :: MouseBtn -> React (Singleton MouseUp) ()
+releaseOn b = mouseUp >>= bool (releaseOn b) (pure ()) . (b `elem`)
+
+leftUp, middleUp, rightUp :: React (Singleton MouseUp) ()
+[leftUp, middleUp, rightUp] = releaseOn <$> [MLeft, MMiddle, MRight]
 
 sameClick :: ReactG Bool
 sameClick = adjust do
@@ -75,3 +81,8 @@ inside (x, y) (Rect (l, u) (r, d)) =
 
 firstPoint :: ReactG (Maybe Point)
 firstPoint = mousePos `at` leftClick
+
+completeRect :: Point -> SigG Rect (Maybe Rect)
+completeRect p1 = do
+	(r, _) <- curRect p1 `until` leftUp
+	pure $ cur r
