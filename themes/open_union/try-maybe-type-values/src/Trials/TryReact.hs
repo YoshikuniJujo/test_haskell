@@ -1,14 +1,14 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module TryReact where
+module Trials.TryReact where
 
 import Control.Monad.State
 import Data.Time.Clock.System
 
 import Boxes
-import BoxesEvents
-import Handlers
-import React
+import Boxes.Events
+import Boxes.Handlers
+import MonadicFrp.React
 import Field
 
 tryLeftClick :: IO ()

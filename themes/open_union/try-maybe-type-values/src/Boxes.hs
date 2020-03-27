@@ -9,11 +9,11 @@ import Data.Bool
 import Data.List.NonEmpty hiding (map, repeat, cycle, scanl)
 import Data.Time
 
-import BoxesEvents
-import Sig
-import React
-import Sorted
-import Infinite
+import Boxes.Events
+import MonadicFrp.Sig
+import MonadicFrp.React
+import Data.Sorted
+import Data.List.Infinite
 
 clickOn :: MouseBtn -> React (Singleton MouseDown) ()
 clickOn b = mouseDown >>= bool (clickOn b) (pure ()) . (b `elem`)

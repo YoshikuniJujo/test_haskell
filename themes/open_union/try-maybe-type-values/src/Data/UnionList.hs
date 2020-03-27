@@ -6,13 +6,13 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
 
-module UnionList (
+module Data.UnionList (
 	UnionList(UnionListNil), AddValue, MinValue, Nihil, Expand, Collapse, Merge, Project,
 	(>+), (>+.), (>-), expand, collapse, merge, merge_, prj, extract) where
 
 import GHC.Stack
 import Data.Kind
-import Sorted.Internal hiding (Merge)
+import Data.Sorted.Internal hiding (Merge)
 
 data UnionList :: Bool -> Sorted Type -> * where
 	UnionListNil :: UnionList b 'Nil

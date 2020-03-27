@@ -3,7 +3,7 @@
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Handlers where
+module Boxes.Handlers where
 
 import Control.Monad.State
 import Data.Maybe
@@ -12,10 +12,10 @@ import Data.Time.Clock.System
 import Data.Time.Clock.TAI
 import System.Exit
 
-import BoxesEvents
-import React
-import UnionList
-import Sorted
+import Boxes.Events
+import MonadicFrp.React
+import Data.UnionList
+import Data.Sorted
 import Field
 
 handleWithoutTime :: Field -> EvReqs GuiEv -> IO (EvOccs GuiEv)

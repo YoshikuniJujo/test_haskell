@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module TrySig where
+module Trials.TrySig where
 
 import Prelude hiding (repeat)
 
@@ -10,10 +10,10 @@ import Data.Time
 import Data.Time.Clock.System
 
 import Boxes
-import BoxesEvents
-import Handlers
-import Sig
-import React
+import Boxes.Events
+import Boxes.Handlers
+import MonadicFrp.Sig
+import MonadicFrp.React
 import Field
 
 tryCycleColor :: IO ()

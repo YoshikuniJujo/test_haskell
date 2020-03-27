@@ -1,9 +1,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Sorted (
+module Data.Sorted (
 	-- * Types
 	Sorted(Nil), Numbered, numbered,
 	-- * Type Level Operators
 	Singleton, Insert, Merge, Map, (:-), (:+:), (:$:) ) where
 
-import Sorted.Internal
+import Data.Sorted.Internal

@@ -4,15 +4,15 @@
 {-# LANGUAGe FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Sig where
+module MonadicFrp.Sig where
 
 import Prelude hiding (map, repeat, scanl, break, until, tail)
 import Control.Monad
 import Data.Maybe
 
-import React
-import UnionList
-import Sorted hiding (Merge)
+import MonadicFrp.React
+import Data.UnionList
+import Data.Sorted hiding (Merge)
 
 infixr 5 :|
 newtype Sig es a r = Sig { unSig :: React es (ISig es a r) }

@@ -5,12 +5,12 @@
 {-# LANGUAGE FlexibleContexts, AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module React where
+module MonadicFrp.React where
 
 import Data.Kind
 
-import Sorted hiding (Merge)
-import UnionList
+import Data.Sorted hiding (Merge)
+import Data.UnionList
 
 type EvReqs (es :: Sorted Type) = UnionList 'False es
 type EvOccs (es :: Sorted Type) = UnionList 'True (Occurred :$: es)

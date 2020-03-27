@@ -4,14 +4,14 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module BoxesEvents where
+module Boxes.Events where
 
 import Data.Time
 
-import Sig
-import React
-import UnionList
-import Sorted
+import MonadicFrp.Sig
+import MonadicFrp.React
+import Data.UnionList
+import Data.Sorted
 
 data MouseDown = MouseDownReq deriving (Show, Eq, Ord)
 

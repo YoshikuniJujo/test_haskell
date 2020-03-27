@@ -4,7 +4,7 @@
 {-# LANGUAGE DataKinds, TypeFamilies, TypeFamilyDependencies, TypeOperators, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Sorted.Internal (
+module Data.Sorted.Internal (
 	-- * Types
 	Sorted(..), Numbered, numbered,
 	-- * Type Level Operators

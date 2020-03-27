@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Infinite where
+module Data.List.Infinite where
 
 import Prelude hiding (cycle)
 
