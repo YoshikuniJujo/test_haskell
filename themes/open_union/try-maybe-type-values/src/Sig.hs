@@ -7,6 +7,7 @@
 module Sig where
 
 import Prelude hiding (map, repeat, scanl, break, until, tail)
+import Control.Monad
 import Data.Maybe
 
 import React
@@ -209,3 +210,39 @@ iindexBy ::  (
 l `iindexBy` Sig r = waitFor (ires $ l `iuntil` r) >>= \case
 	(hl :| tl, Done (_ :| tr)) -> emit hl >> (hl :| tl) `iindexBy` tr
 	_ -> pure ()
+
+spawn :: Sig es a r -> Sig es (ISig es a r) ()
+spawn (Sig l) = repeat l
+
+parList :: (
+	es' ~ (es :+: es'), es' ~ (es' :+: es'), es' ~ (es' :+: es),
+	Nihil es', Merge es' es' es', Merge es' es es', Merge 'Nil es' es',
+	Collapse 'True (Occurred :$: es') (Occurred :$: es),
+	Collapse 'True (Occurred :$: es') (Occurred :$: es'),
+	Collapse 'True (Map Occurred es') 'Nil
+	) => Sig es (ISig es' a r) r' -> Sig es' [a] ()
+parList x = emitAll $ iparList x
+
+iparList :: (
+	es' ~ (es' :+: es'), es' ~ (es :+: es'), es' ~ (es' :+: es),
+	Merge es' es' es', Merge es' es es',
+	Collapse 'True (Occurred :$: es') (Occurred :$: es),
+	Collapse 'True (Occurred :$: es') (Occurred :$: es'),
+	Nihil es', Merge 'Nil es' es',
+	Collapse 'True (Occurred :$: es') 'Nil
+	) => Sig es (ISig es' a r) r' -> ISig es' [a] ()
+iparList l = () <$ (rl ([] :| hold) l) where
+	rl t (Sig es) = do
+		(t', es') <- t `iuntil` es
+		case es' of
+			Done (e'' :| es'') -> rl (cons e'' t') es''
+			_ -> t'
+
+cons :: (
+	es ~ (es :+: es), Merge es es es,
+	Collapse 'True (Occurred :$: es) (Occurred :$: es)
+	) => ISig es a r -> ISig es [a] r' -> ISig es [a] ()
+cons h t = () <$ do
+	(h', t') <- uncurry (:) `imap` pairs h t
+	void $ (: []) `imap` h'
+	void t'

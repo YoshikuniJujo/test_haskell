@@ -145,3 +145,11 @@ tryBox = do
 	interpretSig (handle 0.05 f)
 		(liftIO . withFlush f . drawBox f) box `runStateT` now >>= print
 	closeField f
+
+tryBoxes :: IO ()
+tryBoxes = do
+	f <- openField "tryBoxes" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
+	now <- systemToTAITime <$> getSystemTime
+	interpretSig (handle 0.05 f)
+		(liftIO . withFlush f . (drawBox f `mapM_`) . reverse) boxes `runStateT` now >>= print
+	closeField f
