@@ -22,7 +22,7 @@ instance Request MouseDown where
 data MouseBtn = MLeft | MMiddle | MRight | MUp | MDown deriving (Show, Eq)
 
 mouseDown :: React (Singleton MouseDown) [MouseBtn]
-mouseDown = Await (MouseDownReq >+ UnionListNil) \ev ->
+mouseDown = await (MouseDownReq >+ UnionListNil) \ev ->
 	let OccurredMouseDown mbs = extract ev in pure mbs
 
 data MouseUp = MouseUpReq deriving (Show, Eq, Ord)
@@ -32,7 +32,7 @@ instance Request MouseUp where
 	data Occurred MouseUp = OccurredMouseUp [MouseBtn] deriving Show
 
 mouseUp :: React (Singleton MouseUp) [MouseBtn]
-mouseUp = Await (MouseUpReq >+ UnionListNil) \ev ->
+mouseUp = await (MouseUpReq >+ UnionListNil) \ev ->
 	let OccurredMouseUp mbs = extract ev in pure mbs
 
 data MouseMove = MouseMoveReq deriving (Show, Eq, Ord)
@@ -43,7 +43,7 @@ instance Request MouseMove where
 	data Occurred MouseMove = OccurredMouseMove Point deriving Show
 
 mouseMove :: React (Singleton MouseMove) Point
-mouseMove = Await (MouseMoveReq >+ UnionListNil) \ev ->
+mouseMove = await (MouseMoveReq >+ UnionListNil) \ev ->
 	let OccurredMouseMove p = extract ev in pure p
 
 data TryWait = TryWaitReq DiffTime deriving (Show, Eq, Ord)
@@ -53,7 +53,7 @@ instance Request TryWait where
 	data Occurred TryWait = OccurredTryWait DiffTime deriving (Show, Eq, Ord)
 
 tryWait :: DiffTime -> React (Singleton TryWait) DiffTime
-tryWait t = Await (TryWaitReq t >+ UnionListNil) \ev ->
+tryWait t = await (TryWaitReq t >+ UnionListNil) \ev ->
 	let OccurredTryWait t' = extract ev in pure t'
 
 sleep :: DiffTime -> React (Singleton TryWait) ()
@@ -68,7 +68,7 @@ instance Request DeltaTime where
 	data Occurred DeltaTime = OccurredDeltaTime DiffTime deriving (Show, Eq, Ord)
 
 deltaTime :: React (Singleton DeltaTime) DiffTime
-deltaTime = Await (DeltaTimeReq >+ UnionListNil) \ev ->
+deltaTime = await (DeltaTimeReq >+ UnionListNil) \ev ->
 	let OccurredDeltaTime t = extract ev in pure t
 
 type SigG = Sig GuiEv

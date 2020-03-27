@@ -4,13 +4,26 @@
 {-# LANGUAGe FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module MonadicFrp.Sig where
+module MonadicFrp.Sig (
+	-- * Types
+	Sig, ISig,
+	-- * Run Sig
+	interpretSig,
+	-- * Conversion
+	cur, emit, always, waitFor,
+	-- * Transformation
+	map, scanl, find,
+	-- * Repetition
+	repeat, spawn, parList,
+	-- * Parallel composition
+	at, until, (<^>), indexBy
+	) where
 
 import Prelude hiding (map, repeat, scanl, break, until, tail)
 import Control.Monad
 import Data.Maybe
 
-import MonadicFrp.React
+import MonadicFrp.React.Internal
 import Data.UnionList
 import Data.Sorted hiding (Merge)
 
@@ -106,8 +119,7 @@ ibreak p is@(h :| t)
 	| otherwise = h :| break p t
 ibreak _ is@(End _) = pure is
 
-at :: (
-	(es :+: es') ~ (es' :+: es), Merge es es' (es :+: es'),
+at :: (	(es :+: es') ~ (es' :+: es), Merge es es' (es :+: es'),
 	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
 	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es')
 	) => Sig es a r -> React es' r' -> React (es :+: es') (Maybe a)
@@ -152,9 +164,9 @@ always a = emit a >> hold
 
 (<^>) :: (
 	(es :+: es') ~ (es' :+: es),
+	Merge es es' (es :+: es'), Merge es' es (es :+: es'),
 	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es'),
-	Merge es es' (es :+: es'), Merge es' es (es :+: es')
+	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es')
 	) => Sig es (a -> b) r -> Sig es' a r' ->
 		Sig (es :+: es') b (ISig es (a -> b) r, ISig es' a r')
 l <^> r = do
@@ -215,17 +227,18 @@ spawn :: Sig es a r -> Sig es (ISig es a r) ()
 spawn (Sig l) = repeat l
 
 parList :: (
-	es' ~ (es :+: es'), es' ~ (es' :+: es'), es' ~ (es' :+: es),
-	Nihil es', Merge es' es' es', Merge es' es es', Merge 'Nil es' es',
+	Nihil es',
+	(es :+: es') ~ es', (es' :+: es) ~ es', (es' :+: es') ~ es',
+	Merge 'Nil es' es', Merge es' es es', Merge es' es' es',
+	Collapse 'True (Map Occurred es') 'Nil,
 	Collapse 'True (Occurred :$: es') (Occurred :$: es),
-	Collapse 'True (Occurred :$: es') (Occurred :$: es'),
-	Collapse 'True (Map Occurred es') 'Nil
+	Collapse 'True (Occurred :$: es') (Occurred :$: es')
 	) => Sig es (ISig es' a r) r' -> Sig es' [a] ()
 parList x = emitAll $ iparList x
 
 iparList :: (
 	es' ~ (es' :+: es'), es' ~ (es :+: es'), es' ~ (es' :+: es),
-	Merge es' es' es', Merge es' es es',
+	Merge es' es es', Merge es' es' es',
 	Collapse 'True (Occurred :$: es') (Occurred :$: es),
 	Collapse 'True (Occurred :$: es') (Occurred :$: es'),
 	Nihil es', Merge 'Nil es' es',
