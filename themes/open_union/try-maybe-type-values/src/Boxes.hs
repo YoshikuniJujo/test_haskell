@@ -1,7 +1,13 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Boxes where
+module Boxes (
+	Box(..), Rect(..), Color(..),
+	leftClick, sameClick, doubler,
+	cycleColor, mousePos, curRect, elapsed, wiggleRect,
+	posInside, firstPoint, completeRect, defineRect,
+	chooseBoxColor, drClickOn, box, boxes
+	) where
 
 import Prelude hiding (map, repeat, cycle, scanl, until)
 
@@ -24,8 +30,8 @@ leftClick, middleClick, rightClick :: React (Singleton MouseDown) ()
 releaseOn :: MouseBtn -> React (Singleton MouseUp) ()
 releaseOn b = mouseUp >>= bool (releaseOn b) (pure ()) . (b `elem`)
 
-leftUp, middleUp, rightUp :: React (Singleton MouseUp) ()
-[leftUp, middleUp, rightUp] = releaseOn <$> [MLeft, MMiddle, MRight]
+leftUp :: React (Singleton MouseUp) ()
+leftUp = releaseOn MLeft
 
 sameClick :: ReactG Bool
 sameClick = adjust do
@@ -71,7 +77,7 @@ wiggleRect (Rect lu rd) = rectAtTime `map` elapsed where
 (+.) :: Point -> Point -> Point
 (x1, y1) +. (x2, y2) = (x1 + x2, y1 + y2)
 
-posInside :: Rect -> SigG Point y -> ReactG (Either Point y)
+posInside :: Rect -> SigG Point r -> ReactG (Either Point r)
 posInside r = find (`inside` r)
 
 inside :: Point -> Rect -> Bool
