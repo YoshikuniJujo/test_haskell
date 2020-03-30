@@ -95,7 +95,7 @@ iscanl f i (Sig l) = i :| (waitFor l >>= lsl) where
 find :: (a -> Bool) -> Sig es a r -> React es (Either a r)
 find p l = icur <$> res (break p l)
 
-cur :: Sig es a b -> Maybe a
+cur :: Sig es a r -> Maybe a
 cur (Sig (Done (h :| _))) = Just h
 cur _ = Nothing
 
@@ -197,16 +197,20 @@ spawn :: Sig es a r -> Sig es (ISig es a r) ()
 spawn (Sig l) = repeat l
 
 parList :: (
-	Nihil es', (es :+: es') ~ es', (es' :+: es') ~ es', Merge es' es' es',
-	Mergeable 'Nil es', Mergeable es' es ) =>
+	Nihil es', Mergeable 'Nil es',
+	(es :+: es') ~ es', Mergeable es' es,
+	(es' :+: es') ~ es', Mergeable es' es'
+	) =>
 	Sig es (ISig es' a r) r' -> Sig es' [a] ()
 parList x = emitAll $ iparList x
 
 iparList :: (
-	Nihil es', (es' :+: es') ~ es', (es :+: es') ~ es',
-	Merge es' es' es',
+	Nihil es', (es' :+: es') ~ es',
+	(es :+: es') ~ es',
+	Merge es' es' es', 
 	Mergeable 'Nil es',
-	Mergeable es' es ) => Sig es (ISig es' a r) r' -> ISig es' [a] ()
+	Mergeable es' es
+	) => Sig es (ISig es' a r) r' -> ISig es' [a] ()
 iparList l = () <$ (rl ([] :| hold) l) where
 	rl t (Sig es) = do
 		(t', es') <- t `iuntil` es
