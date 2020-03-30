@@ -1,4 +1,6 @@
 module Main where
 
+import Trials.TrySig (tryBoxes)
+
 main :: IO ()
-main = putStrLn "Slozsoft"
+main = tryBoxes
