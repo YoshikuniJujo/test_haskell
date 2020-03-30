@@ -197,10 +197,8 @@ spawn :: Sig es a r -> Sig es (ISig es a r) ()
 spawn (Sig l) = repeat l
 
 parList :: (
-	Nihil es', Mergeable 'Nil es',
-	(es :+: es') ~ es', Mergeable es' es,
-	(es' :+: es') ~ es', Mergeable es' es'
-	) =>
+	Nihil es', (es :+: es') ~ es', (es' :+: es') ~ es',
+	Mergeable 'Nil es', Mergeable es' es, Mergeable es' es') =>
 	Sig es (ISig es' a r) r' -> Sig es' [a] ()
 parList x = emitAll $ iparList x
 
