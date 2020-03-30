@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.TryReact where
+module Trials.TryReact (tryLeftClick, trySameClick, trySleep, tryDoubler) where
 
 import Control.Monad.State
 import Data.Time.Clock.System

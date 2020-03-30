@@ -1,7 +1,12 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.TrySig where
+module Trials.TrySig (
+	tryCycleColor, tryMousePos, tryCurRect,
+	tryDeltaTime, tryElapsed, tryWiggleRect,
+	tryPosInside, tryFirstPoint, tryCompleteRect, tryDefineRect,
+	tryChooseBoxColor, tryDrClickOn, tryBox, tryBoxes
+	) where
 
 import Prelude hiding (repeat)
 
