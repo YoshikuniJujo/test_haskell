@@ -11,9 +11,9 @@ module Boxes (
 
 import Prelude hiding (map, repeat, cycle, scanl, until)
 
-import Data.Bool
-import Data.List.NonEmpty hiding (map, repeat, cycle, scanl)
-import Data.Time
+import Data.Bool (bool)
+import Data.List.NonEmpty (fromList)
+import Data.Time (DiffTime)
 
 import Boxes.Events
 import MonadicFrp.Sig
