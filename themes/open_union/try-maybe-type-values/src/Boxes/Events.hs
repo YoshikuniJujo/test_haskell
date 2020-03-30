@@ -4,7 +4,11 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Boxes.Events where
+module Boxes.Events (
+	ReactG, SigG, ISigG, GuiEv,
+	MouseDown(..), MouseUp(..), MouseMove(..), TryWait(..), DeltaTime(..),
+	Occurred(..), MouseBtn(..), Point,
+	mouseDown, mouseUp, mouseMove, sleep, deltaTime ) where
 
 import Data.Time
 
