@@ -38,11 +38,8 @@ instance Functor (Flip (Sig es) r) where
 	fmap f = Flip . map f . unflip
 
 instance (
-	Nihil es, Merge 'Nil es es,
-	Collapse 'True (Occurred :$: es) (Occurred :$: es),
-	Collapse 'True (Occurred :$: es) 'Nil,
-	(es :+: es) ~ es,
-	Merge es es es,
+	Nihil es, Mergeable 'Nil es,
+	(es :+: es) ~ es, Merge es es es,
 	Semigroup r ) => Applicative (Flip (Sig es) r) where
 	pure = Flip . always
 	mf <*> mx = Flip $ unflip mf `app` unflip mx
