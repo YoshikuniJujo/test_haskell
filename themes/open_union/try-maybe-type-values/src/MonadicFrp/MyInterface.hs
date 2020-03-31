@@ -21,7 +21,7 @@ module MonadicFrp.MyInterface (
 	-- * Flip Applicative
 	(<$%>), fpure, (<*%>),
 	-- * UnionList
-	UnionList(UnionListNil), (>+), expand, merge_, prj, extract,
+	UnionList(UnionListNil), (>+.), (>+), expand, merge_, prj, extract,
 	-- * Sorted
 	Sorted(Nil), (:-), Singleton, (:$:), numbered
 	) where

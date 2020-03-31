@@ -10,6 +10,7 @@ import Data.Maybe
 import Data.Time
 import Data.Time.Clock.System
 import Data.Time.Clock.TAI
+import System.Exit
 
 import MonadicFrp.MyInterface
 import TryMyInterface.Boxes.Events
@@ -38,9 +39,20 @@ handle dt f reqs = do
 		_ -> do
 			put t2
 			(moccs :: Maybe (EvOccs GuiEv)) <- withNextEventTimeout' f (round $ dt * 1000000) \case
-				Just ButtonEvent { ev_event_type = 4, ev_button = eb } | Just b <- button eb ->
-					pure . Just $ expand (OccurredMouseDown [b] >+ UnionListNil
-						:: UnionList 'True (Occurred :$: Singleton MouseDown))
+				Just ButtonEvent {
+					ev_event_type = 4, ev_button = eb,
+					ev_x = x, ev_y = y } | Just b <- button eb ->
+					pure . Just $ expand (
+						OccurredMouseMove (fromIntegral x, fromIntegral y) >+.
+						(OccurredMouseDown [b] >+ UnionListNil)
+							:: UnionList 'True (Occurred :$: MouseMove :- Singleton MouseDown))
+				Just MotionEvent { ev_x = x, ev_y = y } ->
+					pure . Just . expand $
+						OccurredMouseMove (fromIntegral x, fromIntegral y) >+ UnionListNil
+				Just ExposeEvent {} -> liftIO (flushField f) >> pure Nothing
+				Just DestroyWindowEvent {} -> liftIO $ closeField f >> exitSuccess
+				Just ev	| isDeleteEvent f ev -> liftIO (destroyField f) >> pure Nothing
+					| otherwise -> pure Nothing
 				_ -> pure Nothing
 			let	mtoccs = makeTimeObs reqs tdiff
 			case (moccs, mtoccs) of

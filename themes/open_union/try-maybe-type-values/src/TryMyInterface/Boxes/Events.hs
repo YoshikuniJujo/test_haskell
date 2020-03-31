@@ -11,16 +11,26 @@ import Data.Time
 import MonadicFrp.MyInterface
 
 data MouseDown = MouseDownReq deriving (Show, Eq, Ord)
+data MouseBtn = MLeft | MMiddle | MRight | MUp | MDown deriving (Show, Eq)
 
 numbered [t| MouseDown |]
 instance Request MouseDown where
 	data Occurred MouseDown = OccurredMouseDown [MouseBtn] deriving Show
 
-data MouseBtn = MLeft | MMiddle | MRight | MUp | MDown deriving (Show, Eq)
-
 mouseDown :: React (Singleton MouseDown) [MouseBtn]
 mouseDown = await (MouseDownReq >+ UnionListNil) \ev ->
 	let OccurredMouseDown mbs = extract ev in pure mbs
+
+data MouseMove = MouseMoveReq deriving (Show, Eq, Ord)
+type Point = (Integer, Integer)
+
+numbered [t| MouseMove |]
+instance Request MouseMove where
+	data Occurred MouseMove = OccurredMouseMove Point deriving Show
+
+mouseMove :: React (Singleton MouseMove) Point
+mouseMove = await (MouseMoveReq >+ UnionListNil) \ev ->
+	let OccurredMouseMove p = extract ev in pure p
 
 data TryWait = TryWaitReq DiffTime deriving (Show, Eq, Ord)
 
@@ -40,4 +50,4 @@ sleep t = do
 type SigG = Sig GuiEv
 type ReactG = React GuiEv
 
-type GuiEv = MouseDown :- TryWait :- 'Nil
+type GuiEv = MouseDown :- MouseMove :- TryWait :- 'Nil

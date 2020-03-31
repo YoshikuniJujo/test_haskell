@@ -2,10 +2,10 @@
 
 module TryMyInterface.Boxes where
 
-import Prelude hiding (cycle)
+import Prelude hiding (repeat, cycle)
 
 import Data.Bool
-import Data.List.NonEmpty hiding (cycle)
+import Data.List.NonEmpty hiding (repeat, cycle)
 import Data.List.Infinite
 
 import TryMyInterface.Boxes.Events
@@ -34,3 +34,11 @@ cycleColor = cc (cycle $ fromList [Red .. Magenta]) 1 where
 			=<< waitFor (adjust $ middleClick `before` rightClick)
 
 data Color = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
+
+mousePos :: SigG Point ()
+mousePos = repeat $ adjust mouseMove
+
+curRect :: Point -> SigG Rect ()
+curRect p1 = Rect p1 <$%> mousePos
+
+data Rect = Rect { leftup :: Point, rightdown :: Point } deriving Show
