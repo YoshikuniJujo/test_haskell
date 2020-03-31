@@ -15,3 +15,8 @@ leftClick, middleClick, rightClick :: React (Singleton MouseDown) ()
 
 sameClick :: ReactG Bool
 sameClick = adjust $ (==) <$> mouseDown <*> mouseDown
+
+doubler :: ReactG ()
+doubler = do
+	adjust rightClick
+	bool doubler (pure ()) =<< adjust (rightClick `before` sleep 0.2)

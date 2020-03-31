@@ -5,6 +5,7 @@ module TryMyInterface.TryReact where
 
 import Control.Monad.State
 import Data.Time.Clock.System
+import Data.Time.Clock.TAI
 
 import MonadicFrp.MyInterface
 import TryMyInterface.Boxes
@@ -27,5 +28,13 @@ trySameClick = withField "trySameClick" \f ->
 
 trySleep :: IO ()
 trySleep = withField "trySleep" \f -> do
-	now <- systemToTAITime <$> getSystemTime
+	now <- getTAITime
 	interpret (handle 0.5 f) (adjust $ sleep 3) `runStateT` now >>= print
+
+tryDoubler :: IO ()
+tryDoubler = withField "tryDoubler" \f -> do
+	now <- getTAITime
+	interpret (handle 0.05 f) doubler `runStateT` now >>= print
+
+getTAITime :: IO AbsoluteTime
+getTAITime = systemToTAITime <$> getSystemTime
