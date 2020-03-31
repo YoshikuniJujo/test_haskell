@@ -15,11 +15,15 @@ import Data.Bool (bool)
 import Data.List.NonEmpty (fromList)
 import Data.Time (DiffTime)
 
-import Boxes.Events
-import MonadicFrp.Sig
-import MonadicFrp.React
+import Boxes.Events (
+	SigG, ISigG, ReactG, MouseDown, MouseUp, MouseBtn(..), Point,
+	mouseDown, mouseUp, mouseMove, sleep, deltaTime )
+import MonadicFrp.Sig (
+	cur, emit, always, waitFor, map, scanl, find, repeat, spawn, parList,
+	at, until, (<^>), indexBy )
+import MonadicFrp.React (React, adjust, before)
+import Data.List.Infinite (Infinite(..), cycle)
 import Data.Sorted
-import Data.List.Infinite
 
 clickOn :: MouseBtn -> React (Singleton MouseDown) ()
 clickOn b = mouseDown >>= bool (clickOn b) (pure ()) . (b `elem`)
