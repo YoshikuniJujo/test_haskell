@@ -46,3 +46,8 @@ drawElapsed f dt = do
 	clearField f
 	drawStr f 0x00ff00 "sans" 30 100 100 $ show dt
 	flushField f
+
+tryWiggleRect :: IO ()
+tryWiggleRect = withInterpretSig "tryWiggleRect"
+	(\f -> withFlush f . drawRect f 0xff0000)
+		. wiggleRect $ Rect (200, 150) (400, 300)
