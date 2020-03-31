@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module TryMyInterface.TryReact where
@@ -8,8 +9,15 @@ import TryMyInterface.Boxes.Events
 import TryMyInterface.Boxes.Handlers
 import Field
 
+withField :: String -> (Field -> IO a) -> IO a
+withField fn act = do
+	f <- openField fn [exposureMask, buttonPressMask]
+	act f <* closeField f
+
 tryLeftClick :: IO ()
-tryLeftClick = do
-	f <- openField "tryLeftClick" [exposureMask, buttonPressMask]
-	interpret (handleWithoutTime f) (adjust leftClick :: ReactG ()) >>= print
-	closeField f
+tryLeftClick = withField "tryLeftClick" \f ->
+	interpret (handleWithoutTime f) (adjust leftClick :: ReactG ())
+
+trySameClick :: IO ()
+trySameClick = withField "trySameClick" \f ->
+	interpret (handleWithoutTime f) sameClick >>= print

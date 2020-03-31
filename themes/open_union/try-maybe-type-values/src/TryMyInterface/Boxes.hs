@@ -12,3 +12,6 @@ clickOn b = mouseDown >>= bool (clickOn b) (pure ()) . (b `elem`)
 
 leftClick, middleClick, rightClick :: React (Singleton MouseDown) ()
 [leftClick, middleClick, rightClick] = clickOn <$> [MLeft, MMiddle, MRight]
+
+sameClick :: ReactG Bool
+sameClick = adjust $ (==) <$> mouseDown <*> mouseDown
