@@ -1,0 +1,57 @@
+{-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
+
+module MonadicFrp.MyInterface (
+	-- * Types
+	React, Sig, ISig,
+	-- * Run
+	interpret, interpretSig,
+	-- * React
+	await, adjust, before,
+	-- * Conversion
+	cur, emit, waitFor,
+	-- * Transformation
+	scanl, find,
+	-- * Repetition
+	repeat, spawn, parList,
+	-- * Parallel composition
+	at, until, indexBy,
+	-- * Flip Applicative
+	(<$%>), fpure, (<*%>)
+	) where
+
+import Prelude hiding (map, repeat, scanl, until)
+
+import MonadicFrp.Sig.Internal
+import MonadicFrp.React
+import Type.Flip
+import Data.UnionList
+import Data.Sorted hiding (Merge)
+
+instance Functor (Flip (Sig es) r) where
+	fmap f = Flip . map f . unflip
+
+instance (
+	Nihil es, Merge 'Nil es es,
+	Collapse 'True (Occurred :$: es) (Occurred :$: es),
+	Collapse 'True (Occurred :$: es) 'Nil,
+	(es :+: es) ~ es,
+	Merge es es es,
+	Semigroup r ) => Applicative (Flip (Sig es) r) where
+	pure = Flip . always
+	mf <*> mx = Flip $ unflip mf `app` unflip mx
+
+app :: (
+	(es :+: es) ~ es,
+	Merge es es es,
+	Collapse 'True (Occurred :$: es) (Occurred :$: es),
+	Semigroup r ) => Sig es (a -> b) r -> Sig es a r -> Sig es b r
+mf `app` mx = do
+	(l, r) <- mf <^> mx
+	case (l, r) of
+		(End x, End y) -> pure $ x <> y
+		(End x, _ :| _) -> pure x
+		(_ :| _, End y) -> pure y
+		(_ :| _, _ :| _) -> error "never occur"
