@@ -37,6 +37,7 @@ sleep t = do
 	t' <- tryWait t
 	if t' == t then pure () else sleep (t - t')
 
+type SigG = Sig GuiEv
 type ReactG = React GuiEv
 
 type GuiEv = MouseDown :- TryWait :- 'Nil
