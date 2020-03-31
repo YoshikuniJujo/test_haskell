@@ -65,7 +65,12 @@ getWait :: EvReqs GuiEv -> Maybe DiffTime
 getWait reqs = (\(TryWaitReq t) -> t) <$> prj reqs
 
 makeTimeObs :: EvReqs GuiEv -> DiffTime ->
-	Maybe (UnionList 'True (Occurred :$: TryWait :- 'Nil))
-makeTimeObs r t = case prj r of
-	Just (TryWaitReq _t') -> Just $ OccurredTryWait t >+ UnionListNil
-	Nothing -> Nothing
+	Maybe (UnionList 'True (Occurred :$: TryWait :- DeltaTime :- 'Nil))
+makeTimeObs r t = case (prj r, prj r) of
+	(Just (TryWaitReq _t'), Just DeltaTimeReq) ->
+		Just $ OccurredDeltaTime t >+. (OccurredTryWait t >+ UnionListNil)
+	(Just (TryWaitReq _t'), Nothing) ->
+		Just . expand $ OccurredTryWait t >+ UnionListNil
+	(Nothing, Just DeltaTimeReq) ->
+		Just . expand $ OccurredDeltaTime t >+ UnionListNil
+	(Nothing, Nothing) -> Nothing

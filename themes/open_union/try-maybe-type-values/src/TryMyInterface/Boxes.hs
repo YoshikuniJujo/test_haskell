@@ -2,11 +2,12 @@
 
 module TryMyInterface.Boxes where
 
-import Prelude hiding (repeat, cycle)
+import Prelude hiding (repeat, cycle, scanl)
 
 import Data.Bool
-import Data.List.NonEmpty hiding (repeat, cycle)
+import Data.List.NonEmpty hiding (repeat, cycle, scanl)
 import Data.List.Infinite
+import Data.Time
 
 import TryMyInterface.Boxes.Events
 import MonadicFrp.MyInterface
@@ -42,3 +43,6 @@ curRect :: Point -> SigG Rect ()
 curRect p1 = Rect p1 <$%> mousePos
 
 data Rect = Rect { leftup :: Point, rightdown :: Point } deriving Show
+
+elapsed :: SigG DiffTime ()
+elapsed = scanl (+) 0 . repeat $ adjust deltaTime

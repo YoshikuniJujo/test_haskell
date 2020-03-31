@@ -3,6 +3,7 @@
 module TryMyInterface.TrySig where
 
 import Control.Monad.State
+import Data.Time
 import Data.Time.Clock.System
 
 import TryMyInterface.Boxes
@@ -36,3 +37,12 @@ drawRect f clr (Rect (l_, u_) (r_, d_)) = fillRect f clr l u w h where
 	u = fromIntegral $ u_ `min` d_
 	w = fromIntegral . abs $ r_ - l_
 	h = fromIntegral . abs $ d_ - u_
+
+tryElapsed :: IO ()
+tryElapsed = withInterpretSig "tryElapsed" drawElapsed elapsed
+
+drawElapsed :: Field -> DiffTime -> IO ()
+drawElapsed f dt = do
+	clearField f
+	drawStr f 0x00ff00 "sans" 30 100 100 $ show dt
+	flushField f
