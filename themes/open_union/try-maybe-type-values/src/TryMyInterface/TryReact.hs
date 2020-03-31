@@ -3,6 +3,9 @@
 
 module TryMyInterface.TryReact where
 
+import Control.Monad.State
+import Data.Time.Clock.System
+
 import MonadicFrp.MyInterface
 import TryMyInterface.Boxes
 import TryMyInterface.Boxes.Events
@@ -21,3 +24,8 @@ tryLeftClick = withField "tryLeftClick" \f ->
 trySameClick :: IO ()
 trySameClick = withField "trySameClick" \f ->
 	interpret (handleWithoutTime f) sameClick >>= print
+
+trySleep :: IO ()
+trySleep = withField "trySleep" \f -> do
+	now <- systemToTAITime <$> getSystemTime
+	interpret (handle 0.5 f) (adjust $ sleep 3) `runStateT` now >>= print
