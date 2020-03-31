@@ -5,7 +5,7 @@
 
 module MonadicFrp.MyInterface (
 	-- * Types
-	React, Sig, ISig,
+	Sig, ISig, React, Request(..), EvReqs, EvOccs,
 	-- * Run
 	interpret, interpretSig,
 	-- * React
@@ -19,7 +19,11 @@ module MonadicFrp.MyInterface (
 	-- * Parallel composition
 	at, until, indexBy,
 	-- * Flip Applicative
-	(<$%>), fpure, (<*%>)
+	(<$%>), fpure, (<*%>),
+	-- * UnionList
+	UnionList(UnionListNil), (>+), expand, extract,
+	-- * Sorted
+	Sorted(Nil), (:-), Singleton, numbered
 	) where
 
 import Prelude hiding (map, repeat, scanl, until)
