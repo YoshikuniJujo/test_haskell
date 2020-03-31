@@ -56,3 +56,14 @@ wiggleRect (Rect lu rd) = rectAtTime <$%> elapsed where
 
 (+.) :: Point -> Point -> Point
 (x1, y1) +. (x2, y2) = (x1 + x2, y1 + y2)
+
+posInside :: Rect -> SigG Point r -> ReactG (Either Point r)
+posInside r = find (`inside` r)
+
+inside :: Point -> Rect -> Bool
+(x, y) `inside` Rect (l, u) (r, d) =
+	(l <= x && x <= r || r <= x && x <= l) &&
+	(u <= y && y <= d || d <= y && y <= u)
+
+firstPoint :: ReactG (Maybe Point)
+firstPoint = mousePos `at` leftClick

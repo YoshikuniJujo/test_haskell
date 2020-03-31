@@ -38,3 +38,8 @@ tryDoubler = withField "tryDoubler" \f -> do
 
 getTAITime :: IO AbsoluteTime
 getTAITime = systemToTAITime <$> getSystemTime
+
+tryFirstPoint :: IO ()
+tryFirstPoint = withField "tryFirstPoint" \f -> do
+	now <- getTAITime
+	interpret (handle 0.05 f) firstPoint `runStateT` now >>= print
