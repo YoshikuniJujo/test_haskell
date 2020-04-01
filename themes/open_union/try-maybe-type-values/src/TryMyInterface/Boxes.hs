@@ -90,3 +90,18 @@ chooseBoxColor r = Box <$%> wiggleRect r <*%> (() <$ cycleColor)
 chooseBoxColor' r = fpure Box <*%> wiggleRect r <*%> (() <$ cycleColor)
 
 data Box = Box Rect Color deriving Show
+
+drClickOn :: Rect -> ReactG (Either Point ())
+drClickOn r = posInside r (mousePos `indexBy` repeat doubler)
+
+box :: SigG Box ()
+box = () <$ do
+	r <- (`Box` Red) <$%> defineRect
+	chooseBoxColor r
+	waitFor $ drClickOn r
+
+newBoxes :: SigG (ISigG Box ()) ()
+newBoxes = spawn box
+
+boxes :: SigG [Box] ()
+boxes = parList newBoxes

@@ -68,6 +68,7 @@ deltaTime = await (DeltaTimeReq >+ UnionListNil) \ev ->
 	let OccurredDeltaTime t = extract ev in pure t
 
 type SigG = Sig GuiEv
+type ISigG = ISig GuiEv
 type ReactG = React GuiEv
 
 type GuiEv = MouseDown :- MouseUp :- MouseMove :- TryWait :- DeltaTime :- 'Nil

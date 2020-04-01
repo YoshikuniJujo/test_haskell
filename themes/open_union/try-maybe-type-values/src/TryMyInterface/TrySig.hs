@@ -83,3 +83,7 @@ colorToPixel = \case
 	Yellow -> 0xffff00
 	Cyan -> 0xff00ff
 	Magenta -> 0x00ffff
+
+tryBoxes :: IO ()
+tryBoxes = withInterpretSig "tryBoxes"
+	(\f -> withFlush f . (drawBox f `mapM_`) . reverse) boxes
