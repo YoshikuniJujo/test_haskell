@@ -9,22 +9,28 @@ module TryMyInterface.Boxes (
 
 import Prelude hiding (repeat, cycle, scanl, until)
 
-import Data.Bool
-import Data.List.NonEmpty hiding (repeat, cycle, scanl)
-import Data.List.Infinite
-import Data.Time
+import Data.Bool (bool)
+import Data.Maybe (fromMaybe)
+import Data.List.NonEmpty (fromList)
+import Data.List.Infinite (Infinite(..), cycle)
+import Data.Time (DiffTime)
 
-import TryMyInterface.Boxes.Events
-import MonadicFrp.MyInterface
+import TryMyInterface.Boxes.Events (
+	SigG, ISigG, ReactG, MouseDown, MouseUp, MouseBtn(..), Point,
+	mouseDown, mouseUp, mouseMove, sleep, deltaTime )
+import MonadicFrp.MyInterface (
+	React, Singleton,
+	adjust, before, emit, waitFor, scanl, find, repeat', spawn, parList,
+	at, until', indexBy, (<$%>), fpure, (<*%>) )
 
 clickOn :: MouseBtn -> React (Singleton MouseDown) ()
-clickOn b = mouseDown >>= bool (clickOn b) (pure ()) . (b `elem`)
-
-leftClick, middleClick, rightClick :: React (Singleton MouseDown) ()
-[leftClick, middleClick, rightClick] = clickOn <$> [MLeft, MMiddle, MRight]
+clickOn b = bool (clickOn b) (pure ()) . (b `elem`) =<< mouseDown
 
 releaseOn :: MouseBtn -> React (Singleton MouseUp) ()
 releaseOn b = bool (releaseOn b) (pure ()) . (b `elem`) =<< mouseUp
+
+leftClick, middleClick, rightClick :: React (Singleton MouseDown) ()
+[leftClick, middleClick, rightClick] = clickOn <$> [MLeft, MMiddle, MRight]
 
 leftUp :: React (Singleton MouseUp) ()
 leftUp = releaseOn MLeft
@@ -59,36 +65,26 @@ elapsed :: SigG DiffTime ()
 elapsed = scanl (+) 0 . repeat' $ adjust deltaTime
 
 wiggleRect :: Rect -> SigG Rect ()
-wiggleRect (Rect lu rd) = rectAtTime <$%> elapsed where
-	rectAtTime t = Rect (lu +. dx) (rd +. dx) where
-		dx = (	round (sin (fromRational (toRational t) * 5) * 15
-				:: Double),
-			0 )
-
-(+.) :: Point -> Point -> Point
-(x1, y1) +. (x2, y2) = (x1 + x2, y1 + y2)
+wiggleRect (Rect lu rd) = (<$%> elapsed) \t -> let
+	d = (round (sin (fromRational (toRational t) * 5) * 15 :: Double), 0) in
+	Rect (lu +. d) (rd +. d)
+	where (x, y) +. (dx, dy) = (x + dx, y + dy)
 
 posInside :: Rect -> SigG Point r -> ReactG (Either Point r)
-posInside r = find (`inside` r)
-
-inside :: Point -> Rect -> Bool
-(x, y) `inside` Rect (l, u) (r, d) =
-	(l <= x && x <= r || r <= x && x <= l) &&
-	(u <= y && y <= d || d <= y && y <= u)
+posInside rct = find (`inside` rct)
+	where (x, y) `inside` Rect (l, u) (r, d) =
+		(l <= x && x <= r || r <= x && x <= l) &&
+		(u <= y && y <= d || d <= y && y <= u)
 
 firstPoint :: ReactG (Maybe Point)
 firstPoint = mousePos `at` leftClick
 
 completeRect :: Point -> SigG Rect (Maybe Rect)
-completeRect p1 = (<$> curRect p1 `until'` leftUp) \case
-	Left rct -> Just rct
-	Right _ -> Nothing
+completeRect p1 = either Just (const Nothing) <$> curRect p1 `until'` leftUp
 
 defineRect :: SigG Rect Rect
 defineRect = waitFor firstPoint >>= \case
-	Just p1 -> completeRect p1 >>= \case
-		Just r -> pure r
-		Nothing -> error "never occur"
+	Just p1 -> fromMaybe (error "never occur") <$> completeRect p1
 	Nothing -> error "never occur"
 
 chooseBoxColor, chooseBoxColor' :: Rect -> SigG Box ()
@@ -98,7 +94,7 @@ chooseBoxColor' r = fpure Box <*%> wiggleRect r <*%> (() <$ cycleColor)
 data Box = Box Rect Color deriving Show
 
 drClickOn :: Rect -> ReactG (Either Point ())
-drClickOn r = posInside r (mousePos `indexBy` repeat' doubler)
+drClickOn r = posInside r $ mousePos `indexBy` repeat' doubler
 
 box :: SigG Box ()
 box = () <$ do
