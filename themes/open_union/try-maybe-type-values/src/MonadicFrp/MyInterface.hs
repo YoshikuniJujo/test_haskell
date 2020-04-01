@@ -9,7 +9,7 @@ module MonadicFrp.MyInterface (
 	-- * Run
 	interpret, interpretSig,
 	-- * React
-	await, adjust, before,
+	await', adjust, before,
 	-- * Conversion
 	emit, waitFor,
 	-- * Transformation
@@ -21,7 +21,7 @@ module MonadicFrp.MyInterface (
 	-- * Flip Applicative
 	(<$%>), fpure, (<*%>),
 	-- * UnionList
-	UnionList(UnionListNil), (>+.), (>+), expand, merge_, prj, extract,
+	UnionList(UnionListNil), (>+.), (>+), expand, merge_, prj,
 	-- * Sorted
 	Sorted(Nil), (:-), Singleton, (:$:), numbered
 	) where
@@ -56,3 +56,6 @@ mf `app` mx = do
 		(End x, _ :| _) -> pure x
 		(_ :| _, End y) -> pure y
 		(_ :| _, _ :| _) -> error "never occur"
+
+await' :: a -> (Occurred a -> b) -> React (Singleton a) b
+await' r f = await (singleton r) (pure . f . extract)

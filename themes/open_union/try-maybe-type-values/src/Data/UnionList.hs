@@ -8,7 +8,7 @@
 
 module Data.UnionList (
 	UnionList(UnionListNil), AddValue, MinValue, Nihil, Expand, Collapse, Merge, Project,
-	(>+), (>+.), (>-), expand, collapse, merge, merge_, prj, extract) where
+	(>+), (>+.), singleton, (>-), expand, collapse, merge, merge_, prj, extract) where
 
 import GHC.Stack
 import Data.Kind
@@ -31,6 +31,9 @@ infixr 5 >+
 
 (>+) :: AddValue a as (a :- as) => a -> UnionList b as -> UnionList b (a :- as)
 (>+) = (>+.)
+
+singleton :: a -> UnionList b (Singleton a)
+singleton = (>+ UnionListNil)
 
 class MinValue a (as :: Sorted Type) (as' :: Sorted Type) where
 	(>-.) :: Ord a => a -> UnionList b as -> UnionList b as'
