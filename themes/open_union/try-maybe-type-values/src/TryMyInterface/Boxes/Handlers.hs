@@ -3,7 +3,7 @@
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module TryMyInterface.Boxes.Handlers where
+module TryMyInterface.Boxes.Handlers (handleWithoutTime, handle) where
 
 import Control.Monad.State
 import Data.Maybe

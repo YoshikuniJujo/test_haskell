@@ -1,7 +1,8 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module TryMyInterface.TryReact where
+module TryMyInterface.TryReact (
+	tryLeftClick, trySameClick, trySleep, tryDoubler, tryFirstPoint ) where
 
 import Control.Monad.State
 import Data.Time.Clock.System

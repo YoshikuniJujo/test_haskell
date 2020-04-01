@@ -4,7 +4,12 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module TryMyInterface.Boxes.Events where
+module TryMyInterface.Boxes.Events (
+	SigG, ISigG, ReactG, GuiEv,
+	MouseDown, MouseUp, MouseMove, TryWait(..), DeltaTime(..), Occurred(..),
+	MouseBtn(..), Point,
+	mouseDown, mouseUp, mouseMove, sleep, deltaTime,
+	) where
 
 import Data.Time
 

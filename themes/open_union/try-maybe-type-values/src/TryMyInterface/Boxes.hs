@@ -1,7 +1,11 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module TryMyInterface.Boxes where
+module TryMyInterface.Boxes (
+	Box(..), Rect(..), Color(..),
+	leftClick, sameClick, doubler, firstPoint, cycleColor, curRect,
+	elapsed, wiggleRect, completeRect, defineRect,
+	chooseBoxColor, chooseBoxColor', boxes ) where
 
 import Prelude hiding (repeat, cycle, scanl, until)
 

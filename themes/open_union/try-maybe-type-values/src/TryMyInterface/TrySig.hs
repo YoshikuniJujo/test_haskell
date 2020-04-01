@@ -1,7 +1,10 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module TryMyInterface.TrySig where
+module TryMyInterface.TrySig (
+	tryCycleColor, tryCurRect, tryElapsed, tryWiggleRect, tryCompleteRect,
+	tryDefineRect, tryChooseBoxColor, tryChooseBoxColor', tryBoxes
+	) where
 
 import Control.Monad.State
 import Data.Time
