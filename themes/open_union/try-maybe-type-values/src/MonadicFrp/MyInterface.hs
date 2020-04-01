@@ -5,19 +5,19 @@
 
 module MonadicFrp.MyInterface (
 	-- * Types
-	Sig, ISig, React, Request(..), EvReqs, EvOccs,
+	Sig, ISig, React, Request(..), EvReqs, EvOccs, Mergeable,
 	-- * Run
 	interpret, interpretSig,
 	-- * React
 	await, adjust, before,
 	-- * Conversion
-	cur, emit, waitFor,
+	emit, waitFor,
 	-- * Transformation
 	scanl, find,
 	-- * Repetition
-	repeat, spawn, parList,
+	repeat', spawn, parList,
 	-- * Parallel composition
-	at, until, indexBy,
+	at, until', indexBy,
 	-- * Flip Applicative
 	(<$%>), fpure, (<*%>),
 	-- * UnionList

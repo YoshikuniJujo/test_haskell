@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module TryMyInterface.Boxes where
@@ -44,7 +44,7 @@ cycleColor = cc (cycle $ fromList [Red .. Magenta]) 1 where
 data Color = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
 
 mousePos :: SigG Point ()
-mousePos = repeat $ adjust mouseMove
+mousePos = repeat' $ adjust mouseMove
 
 curRect :: Point -> SigG Rect ()
 curRect p1 = Rect p1 <$%> mousePos
@@ -52,7 +52,7 @@ curRect p1 = Rect p1 <$%> mousePos
 data Rect = Rect { leftup :: Point, rightdown :: Point } deriving Show
 
 elapsed :: SigG DiffTime ()
-elapsed = scanl (+) 0 . repeat $ adjust deltaTime
+elapsed = scanl (+) 0 . repeat' $ adjust deltaTime
 
 wiggleRect :: Rect -> SigG Rect ()
 wiggleRect (Rect lu rd) = rectAtTime <$%> elapsed where
@@ -76,7 +76,9 @@ firstPoint :: ReactG (Maybe Point)
 firstPoint = mousePos `at` leftClick
 
 completeRect :: Point -> SigG Rect (Maybe Rect)
-completeRect p1 = cur . fst <$> curRect p1 `until` leftUp
+completeRect p1 = (<$> curRect p1 `until'` leftUp) \case
+	Left rct -> Just rct
+	Right _ -> Nothing
 
 defineRect :: SigG Rect Rect
 defineRect = waitFor firstPoint >>= \case
@@ -92,7 +94,7 @@ chooseBoxColor' r = fpure Box <*%> wiggleRect r <*%> (() <$ cycleColor)
 data Box = Box Rect Color deriving Show
 
 drClickOn :: Rect -> ReactG (Either Point ())
-drClickOn r = posInside r (mousePos `indexBy` repeat doubler)
+drClickOn r = posInside r (mousePos `indexBy` repeat' doubler)
 
 box :: SigG Box ()
 box = () <$ do

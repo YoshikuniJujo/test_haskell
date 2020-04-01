@@ -16,7 +16,7 @@ module MonadicFrp.Sig (
 	-- * Repetition
 	repeat, spawn, parList,
 	-- * Parallel composition
-	at, until, (<^>), indexBy
+	at, until, until', (<^>), indexBy
 	) where
 
 import Prelude hiding (map, scanl, repeat, until)

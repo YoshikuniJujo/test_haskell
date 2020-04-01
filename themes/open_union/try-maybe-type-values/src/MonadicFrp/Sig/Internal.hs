@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE DataKinds, TypeFamilies #-}
 {-# LANGUAGe FlexibleContexts #-}
@@ -14,9 +14,9 @@ module MonadicFrp.Sig.Internal (
 	-- * Transformation
 	map, scanl, find,
 	-- * Repetition
-	repeat, spawn, parList,
+	repeat, repeat', spawn, parList,
 	-- * Parallel composition
-	at, until, (<^>), indexBy
+	at, until, until', (<^>), indexBy
 	) where
 
 import Prelude hiding (map, repeat, scanl, break, until, tail)
@@ -74,8 +74,9 @@ emit a = emitAll $ a :| pure ()
 waitFor :: React es r -> Sig es a r
 waitFor = Sig . (pure <$>)
 
-repeat :: React es a -> Sig es a ()
+repeat, repeat' :: React es a -> Sig es a ()
 repeat x = xs where xs = Sig $ (:| xs) <$> x
+repeat' x = waitFor x >>= emit >> repeat' x
 
 map :: (a -> b) -> Sig es a r -> Sig es b r
 f `map` Sig l = Sig $ (f `imap`) <$> l
@@ -124,15 +125,23 @@ at :: Mergeable es es' =>
 l `at` a = cur . fst <$> res (l `until` a)
 
 until :: Mergeable es es' => Sig es a r ->
-	React es' b -> Sig (es :+: es') a (Sig es a r, React es' b)
+	React es' r' -> Sig (es :+: es') a (Sig es a r, React es' r')
 Sig l `until` a = waitFor (l `first` a) >>= un where
 	un (Done l', a') = do
 		(l'', a'') <- emitAll $ l' `iuntil` a'
 		pure (emitAll l'', a'')
 	un (l', a') = pure (Sig l', a')
 
+until' :: Mergeable es es' => Sig es a r -> React es' r' -> Sig (es :+: es') a (Either a r')
+l `until'` r = do
+	(l', r') <- l `until` r
+	pure case (l', r') of
+		(Sig (Done (l'' :| _)), _) -> Left l''
+		(_, Done r'') -> Right r''
+		_ -> error "never occur"
+
 iuntil :: Mergeable es es' => ISig es a r ->
-	React es' b -> ISig (es :+: es') a (ISig es a r, React es' b)
+	React es' r' -> ISig (es :+: es') a (ISig es a r, React es' r')
 End l `iuntil` a = pure (pure l, a)
 (h :| Sig t) `iuntil` a = h :| Sig (cont <$> t `first` a) where
 	cont (Done l', a') = l' `iuntil` a'
