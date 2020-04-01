@@ -50,4 +50,9 @@ drawElapsed f dt = do
 tryWiggleRect :: IO ()
 tryWiggleRect = withInterpretSig "tryWiggleRect"
 	(\f -> withFlush f . drawRect f 0xff0000)
-		. wiggleRect $ Rect (200, 150) (400, 300)
+	(wiggleRect $ Rect (200, 150) (400, 300))
+
+tryCompleteRect :: IO ()
+tryCompleteRect = withInterpretSig "tryCompleteRect"
+	(\f -> withFlush f . drawRect f 0xff0000)
+	(completeRect (200, 150))

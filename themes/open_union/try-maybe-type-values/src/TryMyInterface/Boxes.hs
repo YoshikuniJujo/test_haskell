@@ -2,7 +2,7 @@
 
 module TryMyInterface.Boxes where
 
-import Prelude hiding (repeat, cycle, scanl)
+import Prelude hiding (repeat, cycle, scanl, until)
 
 import Data.Bool
 import Data.List.NonEmpty hiding (repeat, cycle, scanl)
@@ -17,6 +17,12 @@ clickOn b = mouseDown >>= bool (clickOn b) (pure ()) . (b `elem`)
 
 leftClick, middleClick, rightClick :: React (Singleton MouseDown) ()
 [leftClick, middleClick, rightClick] = clickOn <$> [MLeft, MMiddle, MRight]
+
+releaseOn :: MouseBtn -> React (Singleton MouseUp) ()
+releaseOn b = bool (releaseOn b) (pure ()) . (b `elem`) =<< mouseUp
+
+leftUp :: React (Singleton MouseUp) ()
+leftUp = releaseOn MLeft
 
 sameClick :: ReactG Bool
 sameClick = adjust $ (==) <$> mouseDown <*> mouseDown
@@ -67,3 +73,6 @@ inside :: Point -> Rect -> Bool
 
 firstPoint :: ReactG (Maybe Point)
 firstPoint = mousePos `at` leftClick
+
+completeRect :: Point -> SigG Rect (Maybe Rect)
+completeRect p1 = cur . fst <$> curRect p1 `until` leftUp
