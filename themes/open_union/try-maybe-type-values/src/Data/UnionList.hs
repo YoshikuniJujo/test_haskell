@@ -8,7 +8,7 @@
 
 module Data.UnionList (
 	UnionList(UnionListNil), AddValue, MinValue, Nihil, Expand, Collapse, Merge, Project,
-	(>+), (>+.), singleton, (>-), expand, collapse, merge, merge_, prj, extract) where
+	(>+), (>+.), singleton, (>-), expand, collapse, merge, merge_, mergeMaybes, prj, extract) where
 
 import GHC.Stack
 import Data.Kind
@@ -142,3 +142,12 @@ numbered [t| Bool |]
 numbered [t| Char |]
 numbered [t| Integer |]
 numbered [t| Double |]
+
+mergeMaybes :: (
+	Merge es es' merged, Expand 'True es merged, Expand 'True es' merged
+	) =>
+	Maybe (UnionList 'True es) -> Maybe (UnionList 'True es') -> Maybe (UnionList 'True merged)
+Just u `mergeMaybes` Just u' = Just $ u `merge_` u'
+Just u `mergeMaybes` Nothing = Just $ expand u
+Nothing `mergeMaybes` Just u' = Just $ expand u'
+Nothing `mergeMaybes` Nothing = Nothing

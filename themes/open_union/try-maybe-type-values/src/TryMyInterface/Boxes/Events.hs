@@ -22,35 +22,35 @@ data MouseDown = MouseDownReq deriving (Show, Eq, Ord)
 data MouseBtn = MLeft | MMiddle | MRight | MUp | MDown deriving (Show, Eq)
 numbered [t| MouseDown |]
 instance Request MouseDown where
-	data Occurred MouseDown = OccurredMouseDown [MouseBtn] deriving Show
+	data Occurred MouseDown = OccMouseDown [MouseBtn] deriving Show
 
 mouseDown :: React (Singleton MouseDown) [MouseBtn]
-mouseDown = await' MouseDownReq \(OccurredMouseDown mbs) -> mbs
+mouseDown = await' MouseDownReq \(OccMouseDown mbs) -> mbs
 
 data MouseUp = MouseUpReq deriving (Show, Eq, Ord)
 numbered [t| MouseUp |]
 instance Request MouseUp where
-	data Occurred MouseUp = OccurredMouseUp [MouseBtn] deriving Show
+	data Occurred MouseUp = OccMouseUp [MouseBtn] deriving Show
 
 mouseUp :: React (Singleton MouseUp) [MouseBtn]
-mouseUp = await' MouseUpReq \(OccurredMouseUp mbs) -> mbs
+mouseUp = await' MouseUpReq \(OccMouseUp mbs) -> mbs
 
 data MouseMove = MouseMoveReq deriving (Show, Eq, Ord)
 type Point = (Integer, Integer)
 numbered [t| MouseMove |]
 instance Request MouseMove where
-	data Occurred MouseMove = OccurredMouseMove Point deriving Show
+	data Occurred MouseMove = OccMouseMove Point deriving Show
 
 mouseMove :: React (Singleton MouseMove) Point
-mouseMove = await' MouseMoveReq \(OccurredMouseMove p) -> p
+mouseMove = await' MouseMoveReq \(OccMouseMove p) -> p
 
-data TryWait = TryWaitReq DiffTime deriving (Show, Eq, Ord)
+data TryWait = TryWaitReq { getTryWaitReq :: DiffTime } deriving (Show, Eq, Ord)
 numbered [t| TryWait |]
 instance Request TryWait where
-	data Occurred TryWait = OccurredTryWait DiffTime deriving (Show, Eq, Ord)
+	data Occurred TryWait = OccTryWait DiffTime deriving (Show, Eq, Ord)
 
 tryWait :: DiffTime -> React (Singleton TryWait) DiffTime
-tryWait t = await' (TryWaitReq t) \(OccurredTryWait t') -> t'
+tryWait t = await' (TryWaitReq t) \(OccTryWait t') -> t'
 
 sleep :: DiffTime -> React (Singleton TryWait) ()
 sleep t = tryWait t >>= \t' -> bool (sleep (t - t')) (pure ()) (t' == t)
@@ -58,10 +58,10 @@ sleep t = tryWait t >>= \t' -> bool (sleep (t - t')) (pure ()) (t' == t)
 data DeltaTime = DeltaTimeReq deriving (Show, Eq, Ord)
 numbered [t| DeltaTime |]
 instance Request DeltaTime where
-	data Occurred DeltaTime = OccurredDeltaTime DiffTime deriving (Show, Eq, Ord)
+	data Occurred DeltaTime = OccDeltaTime DiffTime deriving (Show, Eq, Ord)
 
 deltaTime :: React (Singleton DeltaTime) DiffTime
-deltaTime = await' DeltaTimeReq \(OccurredDeltaTime t) -> t
+deltaTime = await' DeltaTimeReq \(OccDeltaTime t) -> t
 
 type SigG = Sig GuiEv
 type ISigG = ISig GuiEv

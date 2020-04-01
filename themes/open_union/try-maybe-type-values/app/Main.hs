@@ -1,6 +1,6 @@
 module Main where
 
-import Trials.TrySig (tryBoxes)
+import TryMyInterface.TrySig (tryBoxes)
 
 main :: IO ()
 main = tryBoxes
