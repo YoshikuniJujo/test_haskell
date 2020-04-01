@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module TryMyInterface.TrySig where
@@ -56,3 +57,29 @@ tryCompleteRect :: IO ()
 tryCompleteRect = withInterpretSig "tryCompleteRect"
 	(\f -> withFlush f . drawRect f 0xff0000)
 	(completeRect (200, 150))
+
+tryDefineRect :: IO ()
+tryDefineRect = withInterpretSig "tryDefineRect"
+	(\f -> withFlush f . drawRect f 0xff0000) defineRect
+
+tryChooseBoxColor :: IO ()
+tryChooseBoxColor = withInterpretSig "tryChooseBoxColor"
+	(\f -> withFlush f . drawBox f)
+	(chooseBoxColor $ Rect (200, 150) (400, 300))
+
+tryChooseBoxColor' :: IO ()
+tryChooseBoxColor' = withInterpretSig "tryChooseBoxColor'"
+	(\f -> withFlush f . drawBox f)
+	(chooseBoxColor' $ Rect (200, 150) (400, 300))
+
+drawBox :: Field -> Box -> IO ()
+drawBox f (Box rct clr) = drawRect f (colorToPixel clr) rct
+
+colorToPixel :: Color -> Pixel
+colorToPixel = \case
+	Red -> 0xff0000
+	Green -> 0x00ff00
+	Blue -> 0x0000ff
+	Yellow -> 0xffff00
+	Cyan -> 0xff00ff
+	Magenta -> 0x00ffff

@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module TryMyInterface.Boxes where
@@ -76,3 +77,16 @@ firstPoint = mousePos `at` leftClick
 
 completeRect :: Point -> SigG Rect (Maybe Rect)
 completeRect p1 = cur . fst <$> curRect p1 `until` leftUp
+
+defineRect :: SigG Rect Rect
+defineRect = waitFor firstPoint >>= \case
+	Just p1 -> completeRect p1 >>= \case
+		Just r -> pure r
+		Nothing -> error "never occur"
+	Nothing -> error "never occur"
+
+chooseBoxColor, chooseBoxColor' :: Rect -> SigG Box ()
+chooseBoxColor r = Box <$%> wiggleRect r <*%> (() <$ cycleColor)
+chooseBoxColor' r = fpure Box <*%> wiggleRect r <*%> (() <$ cycleColor)
+
+data Box = Box Rect Color deriving Show
