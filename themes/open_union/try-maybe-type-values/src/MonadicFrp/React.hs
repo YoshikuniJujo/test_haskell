@@ -2,7 +2,8 @@
 
 module MonadicFrp.React (
 	React, EvReqs, EvOccs, Request(..), Mergeable, CollapseOccurred,
-	await, interpret, adjust, before, first
+	Or(..),
+	await, interpret, adjust, first, first'
 	) where
 
 import MonadicFrp.React.Internal

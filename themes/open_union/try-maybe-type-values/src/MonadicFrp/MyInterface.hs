@@ -5,11 +5,11 @@
 
 module MonadicFrp.MyInterface (
 	-- * Types
-	Sig, ISig, React, Request(..), EvReqs, EvOccs, Mergeable,
+	Sig, ISig, React, Request(..), EvReqs, EvOccs, Mergeable, Or(..), Nihil, (:+:),
 	-- * Run
 	interpret, interpretSig,
 	-- * React
-	await', adjust, before,
+	await', adjust, first',
 	-- * Conversion
 	emit, waitFor,
 	-- * Transformation

@@ -21,7 +21,7 @@ import Boxes.Events (
 import MonadicFrp.Sig (
 	cur, emit, always, waitFor, map, scanl, find, repeat, spawn, parList,
 	at, until, (<^>), indexBy )
-import MonadicFrp.React (React, adjust, before)
+import MonadicFrp.React (React, Or(..), adjust, first')
 import Data.List.Infinite (Infinite(..), cycle)
 import Data.Sorted
 
@@ -47,16 +47,16 @@ doubler :: ReactG ()
 doubler = adjust do
 	r <- adjust do
 		adjust rightClick
-		rightClick `before` sleep 0.2
-	if r then pure () else doubler
+		rightClick `first'` sleep 0.2
+	case r of L _ -> pure (); _ -> doubler
 
 cycleColor :: SigG Color Int
 cycleColor = cc (cycle $ fromList [Red .. Magenta]) 1 where
 	cc :: Infinite Color -> Int -> SigG Color Int
 	cc (h :~ t) i = do
 		emit h
-		r <- waitFor . adjust $ middleClick `before` rightClick
-		if r then cc t (i + 1) else pure i
+		r <- waitFor . adjust $ middleClick `first'` rightClick
+		case r of L _ -> cc t (i + 1); _ -> pure i
 
 data Color = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
 

@@ -7,8 +7,9 @@
 
 module MonadicFrp.React.Internal (
 	React(..), EvReqs, EvOccs, Request(..), Mergeable, CollapseOccurred,
+	Or(..),
 	interpret, adjust,
-	first, before,
+	first, first',
 	done, never,
 	) where
 
@@ -62,20 +63,23 @@ l `first` r = case (l, r) of
 	ud1 = update @es @es'
 	ud2 = update @es' @es
 
+data Or a b = L a | R b | LR a b deriving Show
+
+first' :: Mergeable es es' => React es a -> React es' b -> React (es :+: es') (Or a b)
+l `first'` r = do
+	(l', r') <- l `first` r
+	pure case (done l', done r') of
+		(Just l'', Just r'') -> LR l'' r''
+		(Just l'', Nothing) -> L l''
+		(Nothing, Just r'') -> R r''
+		(Nothing, Nothing) -> error "never occur"
+
 update :: forall es es' a . Collapse 'True (Map Occurred (es :+: es')) (Map Occurred es) =>
 	React es a -> EvOccs (es :+: es') -> React es a
 update r@(Await _ c) oc = case collapse oc of
 	Just oc' -> c oc'
 	Nothing -> r
 update (Done _) _ = error "bad: first argument must be Await _ _"
-
-before ::
-	Mergeable es es' => React es a -> React es' b -> React (es :+: es') Bool
-a `before` b = do
-	(a', b') <- a `first` b
-	case (done a', done b') of
-		(Just _, Nothing) -> pure True
-		_ -> pure False
 
 done :: React es a -> Maybe a
 done (Done x) = Just x
