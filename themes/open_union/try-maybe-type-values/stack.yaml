@@ -44,7 +44,7 @@ extra-deps:
 - git: https://github.com/YoshikuniJujo/simple-field.git
   commit: c0310358bb3abb64712225748d8af797dc4ab7e1
 - git: https://github.com/YoshikuniJujo/type-flip
-  commit: d955a083f01e4d8984ec717bbe0b044bf0f01b3e
+  commit: e06944e1b52a7a12f90a0221d71aed1f8bbdb319
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

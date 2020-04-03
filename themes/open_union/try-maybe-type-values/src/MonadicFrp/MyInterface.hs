@@ -26,9 +26,10 @@ module MonadicFrp.MyInterface (
 
 import Prelude hiding (map, repeat, scanl, until)
 
+import Data.Type.Flip
+
 import MonadicFrp.Sig.Internal
 import MonadicFrp.React
-import Type.Flip
 import Data.UnionList
 import Data.Sorted hiding (Merge)
 

@@ -12,12 +12,12 @@ module TryMyInterface.Boxes (
 
 import Prelude hiding (repeat, cycle, scanl, until)
 
+import Data.Type.Flip ((<$%>), fpure, (<*%>))
 import Data.Bool (bool)
 import Data.Maybe (fromMaybe)
 import Data.List.NonEmpty (fromList)
 import Data.List.Infinite (Infinite(..), cycle)
 import Data.Time (DiffTime)
-import Type.Flip ((<$%>), fpure, (<*%>))
 
 import TryMyInterface.Boxes.Events (
 	SigG, ISigG, ReactG, MouseDown, MouseUp, MouseBtn(..), Point,
