@@ -14,9 +14,9 @@ module MonadicFrp.Sig.Internal (
 	-- * Transformation
 	map, scanl, find,
 	-- * Repetition
-	repeat, repeat', spawn, parList,
+	repeat_, repeat, spawn, parList_,
 	-- * Parallel composition
-	at, until, until', (<^>), indexBy
+	at, until_, until, (<^>), indexBy
 	) where
 
 import Prelude hiding (map, repeat, scanl, break, until, tail)
@@ -74,9 +74,9 @@ emit a = emitAll $ a :| pure ()
 waitFor :: React es r -> Sig es a r
 waitFor = Sig . (pure <$>)
 
-repeat, repeat' :: React es a -> Sig es a ()
-repeat x = xs where xs = Sig $ (:| xs) <$> x
-repeat' x = waitFor x >>= emit >> repeat' x
+repeat_, repeat :: React es a -> Sig es a ()
+repeat_ x = xs where xs = Sig $ (:| xs) <$> x
+repeat x = waitFor x >>= emit >> repeat x
 
 map :: (a -> b) -> Sig es a r -> Sig es b r
 f `map` Sig l = Sig $ (f `imap`) <$> l
@@ -122,19 +122,19 @@ ibreak _ is@(End _) = pure is
 
 at :: Mergeable es es' =>
 	Sig es a r -> React es' r' -> React (es :+: es') (Maybe a)
-l `at` a = cur . fst <$> res (l `until` a)
+l `at` a = cur . fst <$> res (l `until_` a)
 
-until :: Mergeable es es' => Sig es a r ->
+until_ :: Mergeable es es' => Sig es a r ->
 	React es' r' -> Sig (es :+: es') a (Sig es a r, React es' r')
-Sig l `until` a = waitFor (l `first` a) >>= un where
+Sig l `until_` a = waitFor (l `first_` a) >>= un where
 	un (Done l', a') = do
 		(l'', a'') <- emitAll $ l' `iuntil` a'
 		pure (emitAll l'', a'')
 	un (l', a') = pure (Sig l', a')
 
-until' :: Mergeable es es' => Sig es a r -> React es' r' -> Sig (es :+: es') a (Either a r')
-l `until'` r = do
-	(l', r') <- l `until` r
+until :: Mergeable es es' => Sig es a r -> React es' r' -> Sig (es :+: es') a (Either a r')
+l `until` r = do
+	(l', r') <- l `until_` r
 	pure case (l', r') of
 		(Sig (Done (l'' :| _)), _) -> Left l''
 		(_, Done r'') -> Right r''
@@ -143,7 +143,7 @@ l `until'` r = do
 iuntil :: Mergeable es es' => ISig es a r ->
 	React es' r' -> ISig (es :+: es') a (ISig es a r, React es' r')
 End l `iuntil` a = pure (pure l, a)
-(h :| Sig t) `iuntil` a = h :| Sig (cont <$> t `first` a) where
+(h :| Sig t) `iuntil` a = h :| Sig (cont <$> t `first_` a) where
 	cont (Done l', a') = l' `iuntil` a'
 	cont (t', Done a') = pure (h :| Sig t', pure a')
 	cont _ = error "never occur"
@@ -170,8 +170,8 @@ bothStart :: (
 	Merge es es' (es :+: es'), Merge es' es (es :+: es')
 	) => Sig es a r -> Sig es' b r' -> React (es :+: es') (ISig es a r, ISig es' b r')
 l `bothStart` Sig r = do
-	(Sig l', r') <- res $ l `until` r
-	(Sig r'', l'') <- res $ Sig r' `until` l'
+	(Sig l', r') <- res $ l `until_` r
+	(Sig r'', l'') <- res $ Sig r' `until_` l'
 	pure (done' l'', done' r'')
 
 done' :: React es a -> a
@@ -183,14 +183,14 @@ End a `pairs` b = pure (pure a, b)
 a `pairs` End b = pure (a, pure b)
 (hl :| Sig tl) `pairs` (hr :| Sig tr) = (hl, hr) :| tail
 	where
-	tail = Sig $ cont <$> tl `first` tr
+	tail = Sig $ cont <$> tl `first_` tr
 	cont (tl', tr') = lup hl tl' `pairs` lup hr tr'
 	lup _ (Done l) = l
 	lup h t = h :| Sig t
 
 indexBy ::
 	Mergeable es es' => Sig es a r -> Sig es' b r' -> Sig (es :+: es') a ()
-l `indexBy` Sig r = waitFor (res $ l `until` r) >>= \case
+l `indexBy` Sig r = waitFor (res $ l `until_` r) >>= \case
 	(_, Done (End _)) -> pure ()
 	(Sig (Done l'), r') -> l' `iindexBy` Sig r'
 	(Sig l', Done (_ :| r')) -> Sig l' `indexBy` r'
@@ -203,13 +203,13 @@ l `iindexBy` Sig r = waitFor (ires $ l `iuntil` r) >>= \case
 	_ -> pure ()
 
 spawn :: Sig es a r -> Sig es (ISig es a r) ()
-spawn (Sig l) = repeat l
+spawn (Sig l) = repeat_ l
 
-parList :: (
+parList_ :: (
 	Nihil es', (es :+: es') ~ es', (es' :+: es') ~ es',
 	Mergeable 'Nil es', Mergeable es' es, Mergeable es' es') =>
 	Sig es (ISig es' a r) r' -> Sig es' [a] ()
-parList x = emitAll $ iparList x
+parList_ x = emitAll $ iparList x
 
 iparList :: (
 	Nihil es', (es' :+: es') ~ es',

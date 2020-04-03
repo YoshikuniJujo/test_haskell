@@ -25,8 +25,8 @@ import TryMyInterface.Boxes.Events (
 	mouseDown, mouseUp, mouseMove, sleep, deltaTime )
 import MonadicFrp.MyInterface (
 	React, Singleton, Mergeable, (:+:),
-	adjust, first', emit, waitFor, scanl, find, repeat', spawn, parList,
-	at, until', indexBy )
+	adjust, first, emit, waitFor, scanl, find, repeat, spawn, parList,
+	at, until, indexBy )
 
 clickOn :: MouseBtn -> React (Singleton MouseDown) ()
 clickOn b = bool (clickOn b) (pure ()) . (b `elem`) =<< mouseDown
@@ -44,7 +44,7 @@ sameClick :: ReactG Bool
 sameClick = adjust $ (==) <$> mouseDown <*> mouseDown
 
 before :: Mergeable es es' => React es a -> React es' b -> React (es :+: es') Bool
-l `before` r = (<$> l `first'` r) \case L _ -> True; _ -> False
+l `before` r = (<$> l `first` r) \case L _ -> True; _ -> False
 
 doubler :: ReactG ()
 doubler = do
@@ -62,7 +62,7 @@ cycleColor = cc (cycle $ fromList [Red .. Magenta]) 1 where
 data Color = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
 
 mousePos :: SigG Point ()
-mousePos = repeat' $ adjust mouseMove
+mousePos = repeat $ adjust mouseMove
 
 curRect :: Point -> SigG Rect ()
 curRect p1 = Rect p1 <$%> mousePos
@@ -70,7 +70,7 @@ curRect p1 = Rect p1 <$%> mousePos
 data Rect = Rect { leftup :: Point, rightdown :: Point } deriving Show
 
 elapsed :: SigG DiffTime ()
-elapsed = scanl (+) 0 . repeat' $ adjust deltaTime
+elapsed = scanl (+) 0 . repeat $ adjust deltaTime
 
 wiggleRect :: Rect -> SigG Rect ()
 wiggleRect (Rect lu rd) = (<$%> elapsed) \t -> let
@@ -88,7 +88,7 @@ firstPoint :: ReactG (Maybe Point)
 firstPoint = mousePos `at` leftClick
 
 completeRect :: Point -> SigG Rect (Maybe Rect)
-completeRect p1 = either Just (const Nothing) <$> curRect p1 `until'` leftUp
+completeRect p1 = either Just (const Nothing) <$> curRect p1 `until` leftUp
 
 defineRect :: SigG Rect Rect
 defineRect = waitFor firstPoint >>= \case
@@ -102,7 +102,7 @@ chooseBoxColor' r = fpure Box <*%> wiggleRect r <*%> (() <$ cycleColor)
 data Box = Box Rect Color deriving Show
 
 drClickOn :: Rect -> ReactG (Either Point ())
-drClickOn r = posInside r $ mousePos `indexBy` repeat' doubler
+drClickOn r = posInside r $ mousePos `indexBy` repeat doubler
 
 box :: SigG Box ()
 box = () <$ do

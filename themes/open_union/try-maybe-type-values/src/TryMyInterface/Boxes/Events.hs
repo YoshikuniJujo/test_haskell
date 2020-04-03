@@ -16,7 +16,7 @@ import Data.Time (DiffTime)
 
 import MonadicFrp.MyInterface (
 	Sig, ISig, React, Request(..), Sorted(Nil), Singleton, (:-),
-	numbered, await' )
+	numbered, await )
 
 data MouseDown = MouseDownReq deriving (Show, Eq, Ord)
 data MouseBtn = MLeft | MMiddle | MRight | MUp | MDown deriving (Show, Eq)
@@ -25,7 +25,7 @@ instance Request MouseDown where
 	data Occurred MouseDown = OccMouseDown [MouseBtn] deriving Show
 
 mouseDown :: React (Singleton MouseDown) [MouseBtn]
-mouseDown = await' MouseDownReq \(OccMouseDown mbs) -> mbs
+mouseDown = await MouseDownReq \(OccMouseDown mbs) -> mbs
 
 data MouseUp = MouseUpReq deriving (Show, Eq, Ord)
 numbered [t| MouseUp |]
@@ -33,7 +33,7 @@ instance Request MouseUp where
 	data Occurred MouseUp = OccMouseUp [MouseBtn] deriving Show
 
 mouseUp :: React (Singleton MouseUp) [MouseBtn]
-mouseUp = await' MouseUpReq \(OccMouseUp mbs) -> mbs
+mouseUp = await MouseUpReq \(OccMouseUp mbs) -> mbs
 
 data MouseMove = MouseMoveReq deriving (Show, Eq, Ord)
 type Point = (Integer, Integer)
@@ -42,7 +42,7 @@ instance Request MouseMove where
 	data Occurred MouseMove = OccMouseMove Point deriving Show
 
 mouseMove :: React (Singleton MouseMove) Point
-mouseMove = await' MouseMoveReq \(OccMouseMove p) -> p
+mouseMove = await MouseMoveReq \(OccMouseMove p) -> p
 
 data TryWait = TryWaitReq { getTryWaitReq :: DiffTime } deriving (Show, Eq, Ord)
 numbered [t| TryWait |]
@@ -50,7 +50,7 @@ instance Request TryWait where
 	data Occurred TryWait = OccTryWait DiffTime deriving (Show, Eq, Ord)
 
 tryWait :: DiffTime -> React (Singleton TryWait) DiffTime
-tryWait t = await' (TryWaitReq t) \(OccTryWait t') -> t'
+tryWait t = await (TryWaitReq t) \(OccTryWait t') -> t'
 
 sleep :: DiffTime -> React (Singleton TryWait) ()
 sleep t = tryWait t >>= \t' -> bool (sleep (t - t')) (pure ()) (t' == t)
@@ -61,7 +61,7 @@ instance Request DeltaTime where
 	data Occurred DeltaTime = OccDeltaTime DiffTime deriving (Show, Eq, Ord)
 
 deltaTime :: React (Singleton DeltaTime) DiffTime
-deltaTime = await' DeltaTimeReq \(OccDeltaTime t) -> t
+deltaTime = await DeltaTimeReq \(OccDeltaTime t) -> t
 
 type SigG = Sig GuiEv
 type ISigG = ISig GuiEv

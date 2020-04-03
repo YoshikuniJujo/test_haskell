@@ -19,9 +19,9 @@ import Boxes.Events (
 	SigG, ISigG, ReactG, MouseDown, MouseUp, MouseBtn(..), Point,
 	mouseDown, mouseUp, mouseMove, sleep, deltaTime )
 import MonadicFrp.Sig (
-	cur, emit, always, waitFor, map, scanl, find, repeat, spawn, parList,
-	at, until, (<^>), indexBy )
-import MonadicFrp.React (React, Or(..), adjust, first')
+	cur, emit, always, waitFor, map, scanl, find, repeat_, spawn, parList_,
+	at, until_, (<^>), indexBy )
+import MonadicFrp.React (React, Or(..), adjust, first)
 import Data.List.Infinite (Infinite(..), cycle)
 import Data.Sorted
 
@@ -47,7 +47,7 @@ doubler :: ReactG ()
 doubler = adjust do
 	r <- adjust do
 		adjust rightClick
-		rightClick `first'` sleep 0.2
+		rightClick `first` sleep 0.2
 	case r of L _ -> pure (); _ -> doubler
 
 cycleColor :: SigG Color Int
@@ -55,13 +55,13 @@ cycleColor = cc (cycle $ fromList [Red .. Magenta]) 1 where
 	cc :: Infinite Color -> Int -> SigG Color Int
 	cc (h :~ t) i = do
 		emit h
-		r <- waitFor . adjust $ middleClick `first'` rightClick
+		r <- waitFor . adjust $ middleClick `first` rightClick
 		case r of L _ -> cc t (i + 1); _ -> pure i
 
 data Color = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
 
 mousePos :: SigG Point ()
-mousePos = repeat $ adjust mouseMove
+mousePos = repeat_ $ adjust mouseMove
 
 curRect :: Point -> SigG Rect ()
 curRect p1 = Rect p1 `map` mousePos
@@ -69,7 +69,7 @@ curRect p1 = Rect p1 `map` mousePos
 data Rect = Rect { leftup :: Point, rightdown :: Point } deriving Show
 
 elapsed :: SigG DiffTime ()
-elapsed = scanl (+) 0 . repeat $ adjust deltaTime
+elapsed = scanl (+) 0 . repeat_ $ adjust deltaTime
 
 wiggleRect :: Rect -> SigG Rect ()
 wiggleRect (Rect lu rd) = rectAtTime `map` elapsed where
@@ -94,7 +94,7 @@ firstPoint = mousePos `at` leftClick
 
 completeRect :: Point -> SigG Rect (Maybe Rect)
 completeRect p1 = do
-	(r, _) <- curRect p1 `until` leftUp
+	(r, _) <- curRect p1 `until_` leftUp
 	pure $ cur r
 
 defineRect :: SigG Rect Rect
@@ -110,7 +110,7 @@ chooseBoxColor r = () <$ (always Box :: SigG (Rect -> Color -> Box) ()) <^> wigg
 data Box = Box Rect Color deriving Show
 
 drClickOn :: Rect -> ReactG (Either Point ())
-drClickOn r = posInside r (mousePos `indexBy` repeat doubler)
+drClickOn r = posInside r (mousePos `indexBy` repeat_ doubler)
 
 box :: SigG Box ()
 box = () <$ do
@@ -122,4 +122,4 @@ newBoxes :: SigG (ISigG Box ()) ()
 newBoxes = spawn box
 
 boxes :: SigG [Box] ()
-boxes = parList newBoxes
+boxes = parList_ newBoxes

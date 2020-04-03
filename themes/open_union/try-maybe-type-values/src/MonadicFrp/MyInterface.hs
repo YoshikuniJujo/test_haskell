@@ -5,19 +5,19 @@
 
 module MonadicFrp.MyInterface (
 	-- * Types
-	Sig, ISig, React, Request(..), EvReqs, EvOccs, Mergeable, Nihil, (:+:),
+	Sig, ISig, React, EvReqs, EvOccs, Request(..), Mergeable, Nihil, (:+:),
 	-- * Run
 	interpret, interpretSig,
 	-- * React
-	await', adjust, first',
+	await, adjust, first,
 	-- * Conversion
 	emit, waitFor,
 	-- * Transformation
 	scanl, find,
 	-- * Repetition
-	repeat', spawn, parList,
+	repeat, spawn, parList,
 	-- * Parallel composition
-	at, until', indexBy,
+	at, until, indexBy,
 	-- * UnionList
 	(>+.), singleton, expand, mergeMaybes, prj,
 	-- * Sorted
@@ -56,5 +56,8 @@ mf `app` mx = do
 		(_ :| _, End y) -> pure y
 		(_ :| _, _ :| _) -> error "never occur"
 
-await' :: a -> (Occurred a -> b) -> React (Singleton a) b
-await' r f = await (singleton r) (pure . f . extract)
+await :: a -> (Occurred a -> b) -> React (Singleton a) b
+await r f = await_ (singleton r) (pure . f . extract)
+
+parList :: (Nihil es, (es :+: es) ~ es, Mergeable 'Nil es, Mergeable es es) => Sig es (ISig es a r) r' -> Sig es [a] ()
+parList = parList_

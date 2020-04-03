@@ -9,7 +9,7 @@ module MonadicFrp.React.Internal (
 	React(..), EvReqs, EvOccs, Request(..), Mergeable, CollapseOccurred,
 	Or(..),
 	interpret, adjust,
-	first, first',
+	first_, first,
 	done, never,
 	) where
 
@@ -47,26 +47,26 @@ interpret p (Await r c) = interpret p . c =<< p r
 adjust :: forall es es' a . (
 	Nihil es', (es :+: es') ~ es', Mergeable es es'
 	) => React es a -> React es' a
-adjust rct = (rct `first` (ignore :: React es' ())) >>= \case
+adjust rct = (rct `first_` (ignore :: React es' ())) >>= \case
 	(Done x, _) -> pure x
 	(rct', _) -> adjust @es @es' rct'
 
 ignore :: Nihil es => React es ()
 ignore = Await (expand UnionListNil) $ const ignore
 
-first :: forall es es' a b . Mergeable es es' =>
+first_ :: forall es es' a b . Mergeable es es' =>
 	React es a -> React es' b -> React (es :+: es') (React es a, React es' b)
-l `first` r = case (l, r) of
+l `first_` r = case (l, r) of
 	(Await el _, Await er _) ->
-		Await (el `merge` er) \(c :: EvOccs (es :+: es')) -> (l `ud1` c) `first` (r `ud2` c)
+		Await (el `merge` er) \(c :: EvOccs (es :+: es')) -> (l `ud1` c) `first_` (r `ud2` c)
 	_ -> Done (l, r)
 	where
 	ud1 = update @es @es'
 	ud2 = update @es' @es
 
-first' :: Mergeable es es' => React es a -> React es' b -> React (es :+: es') (Or a b)
-l `first'` r = do
-	(l', r') <- l `first` r
+first :: Mergeable es es' => React es a -> React es' b -> React (es :+: es') (Or a b)
+l `first` r = do
+	(l', r') <- l `first_` r
 	pure case (done l', done r') of
 		(Just l'', Just r'') -> LR l'' r''
 		(Just l'', Nothing) -> L l''

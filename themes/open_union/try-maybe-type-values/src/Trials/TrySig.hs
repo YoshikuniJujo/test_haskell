@@ -57,7 +57,7 @@ tryDeltaTime :: IO ()
 tryDeltaTime = do
 	f <- openField "tryDeltaTime" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
 	now <- systemToTAITime <$> getSystemTime
-	interpretSig (handle 0.5 f) (liftIO . print) (repeat $ adjust deltaTime) `runStateT` now >>= print
+	interpretSig (handle 0.5 f) (liftIO . print) (repeat_ $ adjust deltaTime) `runStateT` now >>= print
 	closeField f
 
 tryElapsed :: IO ()
