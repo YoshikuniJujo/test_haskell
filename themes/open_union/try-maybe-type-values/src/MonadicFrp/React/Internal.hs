@@ -15,6 +15,7 @@ module MonadicFrp.React.Internal (
 
 import Data.Kind
 
+import Data.Or
 import Data.Sorted hiding (Merge)
 import Data.UnionList
 
@@ -62,8 +63,6 @@ l `first` r = case (l, r) of
 	where
 	ud1 = update @es @es'
 	ud2 = update @es' @es
-
-data Or a b = L a | R b | LR a b deriving Show
 
 first' :: Mergeable es es' => React es a -> React es' b -> React (es :+: es') (Or a b)
 l `first'` r = do

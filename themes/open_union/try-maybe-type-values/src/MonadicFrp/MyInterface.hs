@@ -5,7 +5,7 @@
 
 module MonadicFrp.MyInterface (
 	-- * Types
-	Sig, ISig, React, Request(..), EvReqs, EvOccs, Mergeable, Or(..), Nihil, (:+:),
+	Sig, ISig, React, Request(..), EvReqs, EvOccs, Mergeable, Nihil, (:+:),
 	-- * Run
 	interpret, interpretSig,
 	-- * React
