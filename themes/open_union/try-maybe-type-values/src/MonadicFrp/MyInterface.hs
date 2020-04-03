@@ -5,7 +5,7 @@
 
 module MonadicFrp.MyInterface (
 	-- * Types
-	Sig, ISig, React, EvReqs, EvOccs, Request(..), Mergeable, Nihil, (:+:),
+	Sig, ISig, React, EvReqs, EvOccs, Request(..), First, Nihil, (:+:),
 	-- * Run
 	interpret, interpretSig,
 	-- * React
@@ -37,8 +37,7 @@ instance Functor (Flip (Sig es) r) where
 	fmap f = Flip . map f . unflip
 
 instance (
-	Nihil es, Mergeable 'Nil es,
-	(es :+: es) ~ es, Merge es es es,
+	Nihil es, (es :+: es) ~ es, First 'Nil es, First es es,
 	Semigroup r ) => Applicative (Flip (Sig es) r) where
 	pure = Flip . always
 	mf <*> mx = Flip $ unflip mf `app` unflip mx
@@ -59,5 +58,5 @@ mf `app` mx = do
 await :: a -> (Occurred a -> b) -> React (Singleton a) b
 await r f = await_ (singleton r) (pure . f . extract)
 
-parList :: (Nihil es, (es :+: es) ~ es, Mergeable 'Nil es, Mergeable es es) => Sig es (ISig es a r) r' -> Sig es [a] ()
+parList :: (Nihil es, (es :+: es) ~ es, First 'Nil es, First es es) => Sig es (ISig es a r) r' -> Sig es [a] ()
 parList = parList_

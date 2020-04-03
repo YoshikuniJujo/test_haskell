@@ -6,7 +6,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module MonadicFrp.React.Internal (
-	React(..), EvReqs, EvOccs, Request(..), Mergeable, CollapseOccurred,
+	React(..), EvReqs, EvOccs, Request(..), First, CollapseOccurred,
 	Or(..),
 	interpret, adjust,
 	first_, first,
@@ -45,7 +45,7 @@ interpret _ (Done x) = pure x
 interpret p (Await r c) = interpret p . c =<< p r
 
 adjust :: forall es es' a . (
-	Nihil es', (es :+: es') ~ es', Mergeable es es'
+	Nihil es', (es :+: es') ~ es', First es es'
 	) => React es a -> React es' a
 adjust rct = (rct `first_` (ignore :: React es' ())) >>= \case
 	(Done x, _) -> pure x
@@ -54,7 +54,7 @@ adjust rct = (rct `first_` (ignore :: React es' ())) >>= \case
 ignore :: Nihil es => React es ()
 ignore = Await (expand UnionListNil) $ const ignore
 
-first_ :: forall es es' a b . Mergeable es es' =>
+first_ :: forall es es' a b . First es es' =>
 	React es a -> React es' b -> React (es :+: es') (React es a, React es' b)
 l `first_` r = case (l, r) of
 	(Await el _, Await er _) ->
@@ -64,7 +64,7 @@ l `first_` r = case (l, r) of
 	ud1 = update @es @es'
 	ud2 = update @es' @es
 
-first :: Mergeable es es' => React es a -> React es' b -> React (es :+: es') (Or a b)
+first :: First es es' => React es a -> React es' b -> React (es :+: es') (Or a b)
 l `first` r = do
 	(l', r') <- l `first_` r
 	pure case (done l', done r') of
@@ -87,7 +87,7 @@ done (Await _ _) = Nothing
 never :: React 'Nil a
 never = Await UnionListNil undefined
 
-type Mergeable es es' = (
+type First es es' = (
 	(es :+: es') ~ (es' :+: es), Merge es es' (es :+: es'),
 	CollapseOccurred es es' )
 

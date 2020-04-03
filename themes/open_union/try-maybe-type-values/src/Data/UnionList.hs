@@ -53,11 +53,8 @@ infixr 5 >-
 (>-) = (>-.)
 
 class Nihil as where nihil :: UnionList b as
-
 instance Nihil 'Nil where nihil = UnionListNil
-
-instance Nihil as => Nihil (a ':~ as) where
-	nihil = Nothing :. nihil
+instance Nihil as => Nihil (a ':~ as) where nihil = Nothing :. nihil
 
 class Expand (b :: Bool) (as :: Sorted Type) (as' :: Sorted Type) where
 	expand :: UnionList b as -> UnionList b as'

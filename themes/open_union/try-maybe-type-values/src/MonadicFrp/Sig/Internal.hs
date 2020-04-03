@@ -120,11 +120,11 @@ ibreak p is@(h :| t)
 	| otherwise = h :| break p t
 ibreak _ is@(End _) = pure is
 
-at :: Mergeable es es' =>
+at :: First es es' =>
 	Sig es a r -> React es' r' -> React (es :+: es') (Maybe a)
 l `at` a = cur . fst <$> res (l `until_` a)
 
-until_ :: Mergeable es es' => Sig es a r ->
+until_ :: First es es' => Sig es a r ->
 	React es' r' -> Sig (es :+: es') a (Sig es a r, React es' r')
 Sig l `until_` a = waitFor (l `first_` a) >>= un where
 	un (Done l', a') = do
@@ -132,7 +132,7 @@ Sig l `until_` a = waitFor (l `first_` a) >>= un where
 		pure (emitAll l'', a'')
 	un (l', a') = pure (Sig l', a')
 
-until :: Mergeable es es' => Sig es a r -> React es' r' -> Sig (es :+: es') a (Either a r')
+until :: First es es' => Sig es a r -> React es' r' -> Sig (es :+: es') a (Either a r')
 l `until` r = do
 	(l', r') <- l `until_` r
 	pure case (l', r') of
@@ -140,7 +140,7 @@ l `until` r = do
 		(_, Done r'') -> Right r''
 		_ -> error "never occur"
 
-iuntil :: Mergeable es es' => ISig es a r ->
+iuntil :: First es es' => ISig es a r ->
 	React es' r' -> ISig (es :+: es') a (ISig es a r, React es' r')
 End l `iuntil` a = pure (pure l, a)
 (h :| Sig t) `iuntil` a = h :| Sig (cont <$> t `first_` a) where
@@ -148,15 +148,13 @@ End l `iuntil` a = pure (pure l, a)
 	cont (t', Done a') = pure (h :| Sig t', pure a')
 	cont _ = error "never occur"
 
-hold :: (Nihil es, Mergeable 'Nil es) => Sig es a r
+hold :: (Nihil es, First 'Nil es) => Sig es a r
 hold = waitFor $ adjust never
 
-always :: (
-	Nihil es, Merge 'Nil es es,
-	CollapseOccurred 'Nil es ) => a -> Sig es a r
+always :: (Nihil es, First 'Nil es) => a -> Sig es a r
 always a = emit a >> hold
 
-(<^>) :: (Mergeable es es', Mergeable es' es) =>
+(<^>) :: (First es es', First es' es) =>
 	Sig es (a -> b) r -> Sig es' a r' ->
 		Sig (es :+: es') b (ISig es (a -> b) r, ISig es' a r')
 l <^> r = do
@@ -177,7 +175,7 @@ l `bothStart` Sig r = do
 done' :: React es a -> a
 done' = fromJust . done
 
-pairs :: Mergeable es es' => ISig es a r ->
+pairs :: First es es' => ISig es a r ->
 	ISig es' b r' -> ISig (es :+: es') (a, b) (ISig es a r, ISig es' b r')
 End a `pairs` b = pure (pure a, b)
 a `pairs` End b = pure (a, pure b)
@@ -189,7 +187,7 @@ a `pairs` End b = pure (a, pure b)
 	lup h t = h :| Sig t
 
 indexBy ::
-	Mergeable es es' => Sig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either r r')
+	First es es' => Sig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either r r')
 l `indexBy` Sig r = waitFor (res $ l `until_` r) >>= \case
 	(_, Done (End y)) -> pure $ Right y
 	(Sig (Done l'), r') -> l' `iindexBy` Sig r'
@@ -197,7 +195,7 @@ l `indexBy` Sig r = waitFor (res $ l `until_` r) >>= \case
 	_ -> error "never occur"
 
 iindexBy ::
-	Mergeable es es' => ISig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either r r')
+	First es es' => ISig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either r r')
 l `iindexBy` Sig r = waitFor (ires $ l `iuntil` r) >>= \case
 	(hl :| tl, Done (_ :| tr)) -> emit hl >> (hl :| tl) `iindexBy` tr
 	(_, Done (End y)) -> pure $ Right y
@@ -209,7 +207,7 @@ spawn (Sig l) = repeat_ l
 
 parList_ :: (
 	Nihil es', (es :+: es') ~ es', (es' :+: es') ~ es',
-	Mergeable 'Nil es', Mergeable es' es, Mergeable es' es') =>
+	First 'Nil es', First es' es, First es' es') =>
 	Sig es (ISig es' a r) r' -> Sig es' [a] ()
 parList_ x = emitAll $ iparList x
 
@@ -217,8 +215,8 @@ iparList :: (
 	Nihil es', (es' :+: es') ~ es',
 	(es :+: es') ~ es',
 	Merge es' es' es', 
-	Mergeable 'Nil es',
-	Mergeable es' es
+	First 'Nil es',
+	First es' es
 	) => Sig es (ISig es' a r) r' -> ISig es' [a] ()
 iparList l = rl ([] :| hold) l where
 	rl t (Sig es) = do
@@ -228,7 +226,7 @@ iparList l = rl ([] :| hold) l where
 			Done (End _) -> pure ()
 			_ -> error "never occur"
 
-cons :: ((es :+: es) ~ es, Mergeable es es) =>
+cons :: ((es :+: es) ~ es, First es es) =>
 	ISig es a r -> ISig es [a] r' -> ISig es [a] ()
 cons h t = () <$ do
 	(h', t') <- uncurry (:) `imap` pairs h t

@@ -24,7 +24,7 @@ import TryMyInterface.Boxes.Events (
 	SigG, ISigG, ReactG, MouseDown, MouseUp, MouseBtn(..), Point,
 	mouseDown, mouseUp, mouseMove, sleep, deltaTime )
 import MonadicFrp.MyInterface (
-	React, Singleton, Mergeable, (:+:),
+	React, Singleton, First, (:+:),
 	adjust, first, emit, waitFor, scanl, find, repeat, spawn, parList,
 	at, until, indexBy )
 
@@ -43,7 +43,7 @@ leftUp = releaseOn MLeft
 sameClick :: ReactG Bool
 sameClick = adjust $ (==) <$> mouseDown <*> mouseDown
 
-before :: Mergeable es es' => React es a -> React es' b -> React (es :+: es') Bool
+before :: First es es' => React es a -> React es' b -> React (es :+: es') Bool
 l `before` r = (<$> l `first` r) \case L _ -> True; _ -> False
 
 doubler :: ReactG ()
