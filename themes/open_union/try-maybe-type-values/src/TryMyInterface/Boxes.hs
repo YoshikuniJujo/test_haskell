@@ -101,7 +101,7 @@ chooseBoxColor' r = fpure Box <*%> wiggleRect r <*%> (() <$ cycleColor)
 
 data Box = Box Rect Color deriving Show
 
-drClickOn :: Rect -> ReactG (Either Point ())
+drClickOn :: Rect -> ReactG (Either Point (Either () ()))
 drClickOn r = posInside r $ mousePos `indexBy` repeat doubler
 
 box :: SigG Box ()

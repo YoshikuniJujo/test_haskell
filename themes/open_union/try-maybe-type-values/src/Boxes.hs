@@ -109,7 +109,7 @@ chooseBoxColor r = () <$ (always Box :: SigG (Rect -> Color -> Box) ()) <^> wigg
 
 data Box = Box Rect Color deriving Show
 
-drClickOn :: Rect -> ReactG (Either Point ())
+drClickOn :: Rect -> ReactG (Either Point (Either () ()))
 drClickOn r = posInside r (mousePos `indexBy` repeat_ doubler)
 
 box :: SigG Box ()

@@ -189,18 +189,20 @@ a `pairs` End b = pure (a, pure b)
 	lup h t = h :| Sig t
 
 indexBy ::
-	Mergeable es es' => Sig es a r -> Sig es' b r' -> Sig (es :+: es') a ()
+	Mergeable es es' => Sig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either r r')
 l `indexBy` Sig r = waitFor (res $ l `until_` r) >>= \case
-	(_, Done (End _)) -> pure ()
+	(_, Done (End y)) -> pure $ Right y
 	(Sig (Done l'), r') -> l' `iindexBy` Sig r'
 	(Sig l', Done (_ :| r')) -> Sig l' `indexBy` r'
 	_ -> error "never occur"
 
 iindexBy ::
-	Mergeable es es' => ISig es a r -> Sig es' b r' -> Sig (es :+: es') a ()
+	Mergeable es es' => ISig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either r r')
 l `iindexBy` Sig r = waitFor (ires $ l `iuntil` r) >>= \case
 	(hl :| tl, Done (_ :| tr)) -> emit hl >> (hl :| tl) `iindexBy` tr
-	_ -> pure ()
+	(_, Done (End y)) -> pure $ Right y
+	(End x, _) -> pure $ Left x
+	_ -> error "never occur"
 
 spawn :: Sig es a r -> Sig es (ISig es a r) ()
 spawn (Sig l) = repeat_ l
