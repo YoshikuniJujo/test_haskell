@@ -220,12 +220,13 @@ iparList :: (
 	Mergeable 'Nil es',
 	Mergeable es' es
 	) => Sig es (ISig es' a r) r' -> ISig es' [a] ()
-iparList l = () <$ (rl ([] :| hold) l) where
+iparList l = rl ([] :| hold) l where
 	rl t (Sig es) = do
 		(t', es') <- t `iuntil` es
 		case es' of
 			Done (e'' :| es'') -> rl (cons e'' t') es''
-			_ -> t'
+			Done (End _) -> pure ()
+			_ -> error "never occur"
 
 cons :: ((es :+: es) ~ es, Mergeable es es) =>
 	ISig es a r -> ISig es [a] r' -> ISig es [a] ()
