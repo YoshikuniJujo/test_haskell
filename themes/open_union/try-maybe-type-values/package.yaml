@@ -26,6 +26,7 @@ dependencies:
 - time
 - random
 - simple-field
+- type-flip
 
 library:
   source-dirs: src

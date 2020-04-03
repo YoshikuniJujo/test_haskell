@@ -17,6 +17,7 @@ import Data.Maybe (fromMaybe)
 import Data.List.NonEmpty (fromList)
 import Data.List.Infinite (Infinite(..), cycle)
 import Data.Time (DiffTime)
+import Type.Flip ((<$%>), fpure, (<*%>))
 
 import TryMyInterface.Boxes.Events (
 	SigG, ISigG, ReactG, MouseDown, MouseUp, MouseBtn(..), Point,
@@ -24,7 +25,7 @@ import TryMyInterface.Boxes.Events (
 import MonadicFrp.MyInterface (
 	React, Singleton, Mergeable, Or(..), (:+:),
 	adjust, first', emit, waitFor, scanl, find, repeat', spawn, parList,
-	at, until', indexBy, (<$%>), fpure, (<*%>) )
+	at, until', indexBy )
 
 clickOn :: MouseBtn -> React (Singleton MouseDown) ()
 clickOn b = bool (clickOn b) (pure ()) . (b `elem`) =<< mouseDown

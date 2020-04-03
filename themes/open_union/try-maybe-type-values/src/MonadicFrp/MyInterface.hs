@@ -18,8 +18,6 @@ module MonadicFrp.MyInterface (
 	repeat', spawn, parList,
 	-- * Parallel composition
 	at, until', indexBy,
-	-- * Flip Applicative
-	(<$%>), fpure, (<*%>),
 	-- * UnionList
 	(>+.), singleton, expand, mergeMaybes, prj,
 	-- * Sorted

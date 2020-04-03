@@ -18,6 +18,20 @@ packages:
   original:
     git: https://github.com/YoshikuniJujo/simple-field.git
     commit: c0310358bb3abb64712225748d8af797dc4ab7e1
+- completed:
+    cabal-file:
+      size: 1267
+      sha256: cffd7f10899cbeca3bfb53342ecb45e6b17e6e59348c3f0ccdf96f0db4ef39a4
+    name: type-flip
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/type-flip
+    pantry-tree:
+      size: 509
+      sha256: df8c3b3e1cd70ab80cdd48bd36c253f4b53a20b71c2a52d64011a7d0b40d1d23
+    commit: d955a083f01e4d8984ec717bbe0b044bf0f01b3e
+  original:
+    git: https://github.com/YoshikuniJujo/type-flip
+    commit: d955a083f01e4d8984ec717bbe0b044bf0f01b3e
 snapshots:
 - completed:
     size: 491372
