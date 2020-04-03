@@ -22,7 +22,7 @@ import TryMyInterface.Boxes.Events (
 import MonadicFrp.MyInterface (
 	EvReqs, EvOccs,
 	(>+.), singleton, expand, mergeMaybes, prj,
-	Sorted(Nil), Singleton, (:-))
+	Set(Nil), Singleton, (:-))
 import Field (
 	Field, Event(..), Button,
 	withNextEvent, withNextEventTimeout',

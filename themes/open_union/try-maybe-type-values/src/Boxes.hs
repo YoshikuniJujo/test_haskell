@@ -23,7 +23,7 @@ import MonadicFrp.Sig (
 	at, until_, (<^>), indexBy )
 import MonadicFrp.React (React, Or(..), adjust, first)
 import Data.List.Infinite (Infinite(..), cycle)
-import Data.Sorted
+import Data.Type.Set
 
 clickOn :: MouseBtn -> React (Singleton MouseDown) ()
 clickOn b = mouseDown >>= bool (clickOn b) (pure ()) . (b `elem`)

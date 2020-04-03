@@ -16,15 +16,15 @@ module MonadicFrp.React.Internal (
 import Data.Kind
 
 import Data.Or
-import Data.Sorted hiding (Merge)
+import Data.Type.Set hiding (Merge)
 import Data.UnionList
 
-type EvReqs (es :: Sorted Type) = UnionList 'False es
-type EvOccs (es :: Sorted Type) = UnionList 'True (Occurred :$: es)
+type EvReqs (es :: Set Type) = UnionList 'False es
+type EvOccs (es :: Set Type) = UnionList 'True (Occurred :$: es)
 
 class Numbered e => Request e where data Occurred (e :: Type) :: Type
 
-data React (es :: Sorted Type) a =
+data React (es :: Set Type) a =
 	Done a | Await (EvReqs es) (EvOccs es -> React es a)
 
 instance Functor (React es) where

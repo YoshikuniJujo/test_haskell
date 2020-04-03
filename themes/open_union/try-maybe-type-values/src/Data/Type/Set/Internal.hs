@@ -4,9 +4,9 @@
 {-# LANGUAGE DataKinds, TypeFamilies, TypeFamilyDependencies, TypeOperators, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Sorted.Internal (
+module Data.Type.Set.Internal (
 	-- * Types
-	Sorted(..), Numbered, numbered,
+	Set(..), Numbered, numbered,
 	-- * Type Level Operators
 	Singleton, Insert, Merge, Map, (:-), (:+:), (:$:) ) where
 
@@ -25,12 +25,12 @@ class Numbered a where
 	type Number (a :: Type) = (r :: Nat) | r -> a
 
 infixr 5 :~
-data Sorted a = Nil | a :~ Sorted a
+data Set a = Nil | a :~ Set a
 
-type family Singleton (t :: Type) :: Sorted Type where
+type family Singleton (t :: Type) :: Set Type where
 	Singleton t = t ':~ 'Nil
 
-type family Insert (t :: Type) (ts :: Sorted Type) :: Sorted Type where
+type family Insert (t :: Type) (ts :: Set Type) :: Set Type where
 	Insert t 'Nil = t ':~ 'Nil
 	Insert t (t ':~ ts) = t ':~ ts
 	Insert t (t' ':~ ts) = If (Number t <=? Number t')
@@ -40,7 +40,7 @@ type family Insert (t :: Type) (ts :: Sorted Type) :: Sorted Type where
 infixr 5 :-
 type t :- ts = t `Insert` ts
 
-type family Merge (ts :: Sorted Type) (ts' :: Sorted Type) :: Sorted Type where
+type family Merge (ts :: Set Type) (ts' :: Set Type) :: Set Type where
 	Merge ts 'Nil = ts
 	Merge 'Nil ts' = ts'
 	Merge (t ':~ ts) (t ':~ ts') = t ':~ Merge ts ts'
@@ -51,7 +51,7 @@ type family Merge (ts :: Sorted Type) (ts' :: Sorted Type) :: Sorted Type where
 infixr 5 :+:
 type ts :+: ts' = ts `Merge` ts'
 
-type family Map (f :: Type -> Type) (ts :: Sorted Type) :: Sorted Type where
+type family Map (f :: Type -> Type) (ts :: Set Type) :: Set Type where
 	Map _f 'Nil = 'Nil
 	Map f (t ':~ ts) = f t ':~ Map f ts
 

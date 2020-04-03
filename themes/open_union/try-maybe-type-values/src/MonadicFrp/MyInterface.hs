@@ -20,8 +20,8 @@ module MonadicFrp.MyInterface (
 	at, until, indexBy,
 	-- * UnionList
 	(>+.), singleton, expand, mergeMaybes, prj,
-	-- * Sorted
-	Sorted(Nil), (:-), Singleton, numbered
+	-- * Type Set
+	Set(Nil), (:-), Singleton, numbered
 	) where
 
 import Prelude hiding (map, repeat, scanl, until)
@@ -31,7 +31,7 @@ import Data.Type.Flip
 import MonadicFrp.Sig.Internal
 import MonadicFrp.React
 import Data.UnionList
-import Data.Sorted hiding (Merge)
+import Data.Type.Set hiding (Merge)
 
 instance Functor (Flip (Sig es) r) where
 	fmap f = Flip . map f . unflip

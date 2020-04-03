@@ -12,13 +12,13 @@ module Data.UnionList (
 
 import GHC.Stack
 import Data.Kind
-import Data.Sorted.Internal hiding (Merge)
+import Data.Type.Set.Internal hiding (Merge)
 
-data UnionList :: Bool -> Sorted Type -> * where
+data UnionList :: Bool -> Set Type -> * where
 	UnionListNil :: UnionList b 'Nil
 	(:.) :: Maybe a -> UnionList b as -> UnionList b (a ':~ as)
 
-class AddValue a (as :: Sorted Type) (as' :: Sorted Type) where
+class AddValue a (as :: Set Type) (as' :: Set Type) where
 	(>+.) :: a -> UnionList b as -> UnionList b as'
 
 instance AddValue a as (a ':~ as) where
@@ -35,7 +35,7 @@ infixr 5 >+
 singleton :: a -> UnionList b (Singleton a)
 singleton = (>+ UnionListNil)
 
-class MinValue a (as :: Sorted Type) (as' :: Sorted Type) where
+class MinValue a (as :: Set Type) (as' :: Set Type) where
 	(>-.) :: Ord a => a -> UnionList b as -> UnionList b as'
 
 instance MinValue a (a ':~ as) (a ':~ as) where
@@ -56,7 +56,7 @@ class Nihil as where nihil :: UnionList b as
 instance Nihil 'Nil where nihil = UnionListNil
 instance Nihil as => Nihil (a ':~ as) where nihil = Nothing :. nihil
 
-class Expand (b :: Bool) (as :: Sorted Type) (as' :: Sorted Type) where
+class Expand (b :: Bool) (as :: Set Type) (as' :: Set Type) where
 	expand :: UnionList b as -> UnionList b as'
 
 instance Nihil as => Expand 'False 'Nil as where
@@ -71,7 +71,7 @@ instance {-# OVERLAPPABLE #-} Expand b as as' => Expand b (a ':~ as) (a ':~ as')
 instance {-# OVERLAPPABLE #-} Expand b (a ':~ as) as' => Expand b (a ':~ as) (a' ':~ as') where
 	expand xs = Nothing :. expand xs
 
-class Project a (as :: Sorted Type) where
+class Project a (as :: Set Type) where
 	prj :: UnionList b as -> Maybe a
 
 instance Project a 'Nil where
@@ -86,7 +86,7 @@ instance {-# OVERLAPPABLE #-} Project a as => Project a (a' ':~ as) where
 extract :: HasCallStack => UnionList 'True (Singleton a) -> a
 extract u = case prj u of Just x -> x; Nothing -> error "never occur"
 
-class Collapse0 (as :: Sorted Type) (as' :: Sorted Type) where
+class Collapse0 (as :: Set Type) (as' :: Set Type) where
 	collapse0 :: UnionList b as -> UnionList b as'
 
 instance {-# INCOHERENT #-} Nihil as' => Collapse0 'Nil as' where collapse0 = const nihil
@@ -98,7 +98,7 @@ instance Collapse0 as as' => Collapse0 (a ':~ as) (a ':~ as') where
 instance {-# OVERLAPPABLE #-} Collapse0 as as' => Collapse0 (a ':~ as) as' where
 	collapse0 (_ :. xs) = collapse0 xs
 
-class Collapse b (as :: Sorted Type) (as' :: Sorted Type) where
+class Collapse b (as :: Set Type) (as' :: Set Type) where
 	collapse :: UnionList b as -> Maybe (UnionList b as')
 
 instance Collapse0 as as' => Collapse 'False as as' where
@@ -115,7 +115,7 @@ instance (Collapse0 as as', Collapse 'True as as') => Collapse 'True (a ':~ as) 
 instance {-# OVERLAPPABLE #-} Collapse 'True as as' => Collapse 'True (a ':~ as) as' where
 	collapse (_ :. xs) = collapse xs
 
-class Merge (as :: Sorted Type) (as' :: Sorted Type) (merged :: Sorted Type) where
+class Merge (as :: Set Type) (as' :: Set Type) (merged :: Set Type) where
 	merge_ :: UnionList b as -> UnionList b as' -> UnionList b merged
 
 instance Merge 'Nil 'Nil 'Nil where

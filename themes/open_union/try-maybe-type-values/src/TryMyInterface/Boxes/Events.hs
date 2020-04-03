@@ -15,7 +15,7 @@ import Data.Bool (bool)
 import Data.Time (DiffTime)
 
 import MonadicFrp.MyInterface (
-	Sig, ISig, React, Request(..), Sorted(Nil), Singleton, (:-),
+	Sig, ISig, React, Request(..), Set(Nil), Singleton, (:-),
 	numbered, await )
 
 data MouseDown = MouseDownReq deriving (Show, Eq, Ord)

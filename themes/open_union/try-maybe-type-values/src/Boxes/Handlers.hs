@@ -15,7 +15,7 @@ import System.Exit
 import Boxes.Events
 import MonadicFrp.React
 import Data.UnionList
-import Data.Sorted
+import Data.Type.Set
 import Field
 
 handleWithoutTime :: Field -> EvReqs GuiEv -> IO (EvOccs GuiEv)

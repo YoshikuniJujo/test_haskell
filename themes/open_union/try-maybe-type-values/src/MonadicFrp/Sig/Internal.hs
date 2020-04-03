@@ -25,7 +25,7 @@ import Data.Maybe
 
 import MonadicFrp.React.Internal
 import Data.UnionList
-import Data.Sorted hiding (Merge)
+import Data.Type.Set hiding (Merge)
 
 infixr 5 :|
 newtype Sig es a r = Sig { unSig :: React es (ISig es a r) }

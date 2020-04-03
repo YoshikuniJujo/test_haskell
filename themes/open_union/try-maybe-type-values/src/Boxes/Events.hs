@@ -15,7 +15,7 @@ import Data.Time
 import MonadicFrp.Sig
 import MonadicFrp.React
 import Data.UnionList
-import Data.Sorted
+import Data.Type.Set
 
 data MouseDown = MouseDownReq deriving (Show, Eq, Ord)
 
