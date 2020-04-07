@@ -22,7 +22,7 @@ import TryMyInterface.Boxes.Events (
 	MouseBtn(..) )
 import MonadicFrp.MyInterface (
 	EvReqs, EvOccs,
-	(>+), singleton, expand, mergeMaybes, prj )
+	(>-), singleton, expand, merge', prj )
 import Field (
 	Field, Event(..), Button,
 	withNextEvent, withNextEventTimeout',
@@ -67,22 +67,22 @@ handle prd f reqs = do
 				_ -> pure Nothing
 			void $ pure (moccs :: Maybe (EvOccs GuiEv))
 			maybe (handle dt f reqs) pure
-				$ moccs `mergeMaybes` mkTimeObs reqs dt
+				$ moccs `merge'` mkTimeObs reqs dt
 
 mouseDownOcc ::
 	CInt -> CInt -> [MouseBtn] -> EvOccs (MouseMove :- MouseDown :- 'Nil)
-mouseDownOcc x y bs =OccMouseDown bs >+ mouseMoveOcc x y
+mouseDownOcc x y bs =OccMouseDown bs >- mouseMoveOcc x y
 
 mouseUpOcc ::
 	CInt -> CInt -> [MouseBtn] -> EvOccs (MouseMove :- MouseUp :- 'Nil)
-mouseUpOcc x y bs = OccMouseUp bs >+ mouseMoveOcc x y
+mouseUpOcc x y bs = OccMouseUp bs >- mouseMoveOcc x y
 
 mouseMoveOcc :: CInt -> CInt -> EvOccs (Singleton MouseMove)
 mouseMoveOcc x y = singleton $ OccMouseMove (fromIntegral x, fromIntegral y)
 
 mkTimeObs :: EvReqs GuiEv ->
 	DiffTime -> Maybe (EvOccs (TryWait :- DeltaTime :- 'Nil))
-mkTimeObs r t = mkTryWait r t `mergeMaybes` mkDeltaTime r t
+mkTimeObs r t = mkTryWait r t `merge'` mkDeltaTime r t
 
 mkTryWait :: EvReqs GuiEv -> DiffTime -> Maybe (EvOccs (Singleton TryWait))
 mkTryWait r t = (<$> prj r) \(TryWaitReq _) -> singleton $ OccTryWait t

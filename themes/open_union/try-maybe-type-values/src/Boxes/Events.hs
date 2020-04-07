@@ -14,7 +14,7 @@ import Data.Time
 
 import MonadicFrp.Sig
 import MonadicFrp.React
-import Data.UnionList
+import Data.UnionSet
 import Data.Type.Set
 
 data MouseDown = MouseDownReq deriving (Show, Eq, Ord)
@@ -26,7 +26,7 @@ instance Request MouseDown where
 data MouseBtn = MLeft | MMiddle | MRight | MUp | MDown deriving (Show, Eq)
 
 mouseDown :: React (Singleton MouseDown) [MouseBtn]
-mouseDown = await_ (MouseDownReq >+. UnionListNil) \ev ->
+mouseDown = await_ (MouseDownReq >- Empty) \ev ->
 	let OccurredMouseDown mbs = extract ev in pure mbs
 
 data MouseUp = MouseUpReq deriving (Show, Eq, Ord)
@@ -36,7 +36,7 @@ instance Request MouseUp where
 	data Occurred MouseUp = OccurredMouseUp [MouseBtn] deriving Show
 
 mouseUp :: React (Singleton MouseUp) [MouseBtn]
-mouseUp = await_ (MouseUpReq >+. UnionListNil) \ev ->
+mouseUp = await_ (MouseUpReq >- Empty) \ev ->
 	let OccurredMouseUp mbs = extract ev in pure mbs
 
 data MouseMove = MouseMoveReq deriving (Show, Eq, Ord)
@@ -47,7 +47,7 @@ instance Request MouseMove where
 	data Occurred MouseMove = OccurredMouseMove Point deriving Show
 
 mouseMove :: React (Singleton MouseMove) Point
-mouseMove = await_ (MouseMoveReq >+. UnionListNil) \ev ->
+mouseMove = await_ (MouseMoveReq >- Empty) \ev ->
 	let OccurredMouseMove p = extract ev in pure p
 
 data TryWait = TryWaitReq DiffTime deriving (Show, Eq, Ord)
@@ -57,7 +57,7 @@ instance Request TryWait where
 	data Occurred TryWait = OccurredTryWait DiffTime deriving (Show, Eq, Ord)
 
 tryWait :: DiffTime -> React (Singleton TryWait) DiffTime
-tryWait t = await_ (TryWaitReq t >+. UnionListNil) \ev ->
+tryWait t = await_ (TryWaitReq t >- Empty) \ev ->
 	let OccurredTryWait t' = extract ev in pure t'
 
 sleep :: DiffTime -> React (Singleton TryWait) ()
@@ -72,7 +72,7 @@ instance Request DeltaTime where
 	data Occurred DeltaTime = OccurredDeltaTime DiffTime deriving (Show, Eq, Ord)
 
 deltaTime :: React (Singleton DeltaTime) DiffTime
-deltaTime = await_ (DeltaTimeReq >+. UnionListNil) \ev ->
+deltaTime = await_ (DeltaTimeReq >- Empty) \ev ->
 	let OccurredDeltaTime t = extract ev in pure t
 
 type SigG = Sig GuiEv

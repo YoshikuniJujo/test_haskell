@@ -24,7 +24,7 @@ import Control.Monad
 import Data.Maybe
 
 import MonadicFrp.React.Internal
-import Data.UnionList
+import Data.UnionSet
 import Data.Type.Set hiding (Merge)
 
 infixr 5 :|

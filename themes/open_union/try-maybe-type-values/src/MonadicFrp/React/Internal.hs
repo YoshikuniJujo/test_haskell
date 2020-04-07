@@ -17,10 +17,10 @@ import Data.Kind
 
 import Data.Or
 import Data.Type.Set hiding (Merge)
-import Data.UnionList
+import Data.UnionSet
 
-type EvReqs (es :: Set Type) = UnionList 'False es
-type EvOccs (es :: Set Type) = UnionList 'True (Occurred :$: es)
+type EvReqs (es :: Set Type) = UnionSet 'False es
+type EvOccs (es :: Set Type) = UnionSet 'True (Occurred :$: es)
 
 class Numbered e => Request e where data Occurred (e :: Type) :: Type
 
@@ -52,7 +52,7 @@ adjust rct = (rct `first_` (ignore :: React es' ())) >>= \case
 	(rct', _) -> adjust @es @es' rct'
 
 ignore :: Nihil es => React es ()
-ignore = Await (expand UnionListNil) $ const ignore
+ignore = Await (expand Empty) $ const ignore
 
 first_ :: forall es es' a b . First es es' =>
 	React es a -> React es' b -> React (es :+: es') (React es a, React es' b)
@@ -85,7 +85,7 @@ done (Done x) = Just x
 done (Await _ _) = Nothing
 
 never :: React 'Nil a
-never = Await UnionListNil undefined
+never = Await Empty undefined
 
 type First es es' = (
 	(es :+: es') ~ (es' :+: es), Mergeable es es' (es :+: es'),
