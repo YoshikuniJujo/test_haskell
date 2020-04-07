@@ -1,12 +1,13 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module MonadicFrp.React (
-	React, EvReqs, EvOccs, Request(..), First, CollapsableOccurred,
-	Or(..),
-	await_, interpret, adjust, first_, first
-	) where
+	React, EvReqs, EvOccs, Request(..), Firstable, CollapsableOccurred,
+	interpret, await, adjust, first ) where
+
+import Data.Type.Set
+import Data.UnionSet
 
 import MonadicFrp.React.Internal
 
-await_ :: EvReqs es -> (EvOccs es -> React es a) -> React es a
-await_ = Await
+await :: a -> (Occurred a -> b) -> React (Singleton a) b
+await r f = Await (singleton r) (pure . f . extract)

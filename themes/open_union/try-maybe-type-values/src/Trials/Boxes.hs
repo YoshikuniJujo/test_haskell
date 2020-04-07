@@ -4,7 +4,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module TryMyInterface.Boxes (
+module Trials.Boxes (
 	Box(..), Rect(..), Color(..),
 	leftClick, sameClick, doubler, firstPoint, cycleColor, curRect,
 	elapsed, wiggleRect, completeRect, defineRect,
@@ -21,11 +21,11 @@ import Data.List.NonEmpty (fromList)
 import Data.List.Infinite (Infinite(..), cycle)
 import Data.Time (DiffTime)
 
-import TryMyInterface.Boxes.Events (
+import Trials.Boxes.Events (
 	SigG, ISigG, ReactG, MouseDown, MouseUp, MouseBtn(..), Point,
 	mouseDown, mouseUp, mouseMove, sleep, deltaTime )
-import MonadicFrp.MyInterface (
-	React, First,
+import MonadicFrp (
+	React, Firstable,
 	adjust, first, emit, waitFor, scanl, find, repeat, spawn, parList,
 	at, until, indexBy )
 
@@ -44,7 +44,7 @@ leftUp = releaseOn MLeft
 sameClick :: ReactG Bool
 sameClick = adjust $ (==) <$> mouseDown <*> mouseDown
 
-before :: First es es' => React es a -> React es' b -> React (es :+: es') Bool
+before :: Firstable es es' => React es a -> React es' b -> React (es :+: es') Bool
 l `before` r = (<$> l `first` r) \case L _ -> True; _ -> False
 
 doubler :: ReactG ()

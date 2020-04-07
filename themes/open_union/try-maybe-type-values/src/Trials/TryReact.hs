@@ -1,38 +1,45 @@
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.TryReact (tryLeftClick, trySameClick, trySleep, tryDoubler) where
+module Trials.TryReact (
+	tryLeftClick, trySameClick, trySleep, tryDoubler, tryFirstPoint ) where
 
-import Control.Monad.State
-import Data.Time.Clock.System
+import Control.Monad.State (runStateT)
+import Data.Time.Clock.System (getSystemTime, systemToTAITime)
+import Data.Time.Clock.TAI (AbsoluteTime)
 
-import Boxes
-import Boxes.Events
-import Boxes.Handlers
-import MonadicFrp.React
-import Field
+import Trials.Boxes (leftClick, sameClick, doubler, firstPoint)
+import Trials.Boxes.Handlers (handle, handleWithoutTime)
+import Trials.Boxes.Events (ReactG, sleep)
+import MonadicFrp (interpret, adjust)
+import Field (Field, openField, closeField, exposureMask, buttonPressMask)
+
+withField :: String -> (Field -> IO a) -> IO a
+withField fn act = (<*) <$> act <*> closeField
+	=<< openField fn [exposureMask, buttonPressMask]
 
 tryLeftClick :: IO ()
-tryLeftClick = do
-	f <- openField "tryLeftClick" [exposureMask, buttonPressMask]
-	interpret (handleWithoutTime f) (adjust leftClick :: ReactG ()) >>= print
-	closeField f
+tryLeftClick = withField "tryLeftClick" \f ->
+	interpret (handleWithoutTime f) (adjust leftClick :: ReactG ())
 
 trySameClick :: IO ()
-trySameClick = do
-	f <- openField "trySameClick" [exposureMask, buttonPressMask]
-	interpret (handleWithoutTime f) sameClick >>= print
-	closeField f
+trySameClick = withField "trySameClick" \f ->
+	print =<< interpret (handleWithoutTime f) sameClick
 
 trySleep :: IO ()
-trySleep = do
-	f <- openField "trySleep" [exposureMask, buttonPressMask]
-	now <- systemToTAITime <$> getSystemTime
-	interpret (handle 0.5 f) (adjust $ sleep 3) `runStateT` now >>= print
-	closeField f
+trySleep = withField "trySleep" \f -> do
+	now <- getTAITime
+	print =<< interpret (handle 0.5 f) (adjust $ sleep 3) `runStateT` now
 
 tryDoubler :: IO ()
-tryDoubler = do
-	f <- openField "trySleep" [exposureMask, buttonPressMask]
-	now <- systemToTAITime <$> getSystemTime
-	interpret (handle 0.05 f) doubler `runStateT` now >>= print
-	closeField f
+tryDoubler = withField "tryDoubler" \f -> do
+	now <- getTAITime
+	print =<< interpret (handle 0.05 f) doubler `runStateT` now
+
+tryFirstPoint :: IO ()
+tryFirstPoint = withField "tryFirstPoint" \f -> do
+	now <- getTAITime
+	print =<< interpret (handle 0.05 f) firstPoint `runStateT` now
+
+getTAITime :: IO AbsoluteTime
+getTAITime = systemToTAITime <$> getSystemTime

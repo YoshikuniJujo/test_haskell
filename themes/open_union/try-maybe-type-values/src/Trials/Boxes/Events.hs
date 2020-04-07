@@ -4,7 +4,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module TryMyInterface.Boxes.Events (
+module Trials.Boxes.Events (
 	SigG, ISigG, ReactG, GuiEv,
 	MouseDown, MouseUp, MouseMove, TryWait(..), DeltaTime(..), Occurred(..),
 	MouseBtn(..), Point,
@@ -15,7 +15,7 @@ import Data.Type.Set (Set(Nil), Singleton, (:-), numbered)
 import Data.Bool (bool)
 import Data.Time (DiffTime)
 
-import MonadicFrp.MyInterface (Sig, ISig, React, Request(..), await)
+import MonadicFrp (Sig, ISig, React, Request(..), await)
 
 data MouseDown = MouseDownReq deriving (Show, Eq, Ord)
 data MouseBtn = MLeft | MMiddle | MRight | MUp | MDown deriving (Show, Eq)

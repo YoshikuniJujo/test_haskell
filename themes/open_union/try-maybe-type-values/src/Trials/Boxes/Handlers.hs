@@ -4,25 +4,24 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module TryMyInterface.Boxes.Handlers (handleWithoutTime, handle) where
+module Trials.Boxes.Handlers (handleWithoutTime, handle) where
 
 import Foreign.C.Types (CInt)
 import Control.Monad (void)
 import Control.Monad.State (StateT, get, put, liftIO)
 import Data.Type.Set (Set(Nil), Singleton, (:-))
 import Data.Maybe (fromJust)
+import Data.UnionSet (prj, singleton, (>-), expand, merge')
 import Data.Time (DiffTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
 import System.Exit (exitSuccess)
 
-import TryMyInterface.Boxes.Events (
+import Trials.Boxes.Events (
 	GuiEv,
 	MouseDown, MouseUp, MouseMove, TryWait(..), DeltaTime(..), Occurred(..),
 	MouseBtn(..) )
-import MonadicFrp.MyInterface (
-	EvReqs, EvOccs,
-	(>-), singleton, expand, merge', prj )
+import MonadicFrp (EvReqs, EvOccs)
 import Field (
 	Field, Event(..), Button,
 	withNextEvent, withNextEventTimeout',

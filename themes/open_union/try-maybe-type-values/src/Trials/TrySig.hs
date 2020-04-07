@@ -2,49 +2,77 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.TrySig (
-	tryCycleColor, tryMousePos, tryCurRect,
-	tryDeltaTime, tryElapsed, tryWiggleRect,
-	tryPosInside, tryFirstPoint, tryCompleteRect, tryDefineRect,
-	tryChooseBoxColor, tryDrClickOn, tryBox, tryBoxes
-	) where
+	tryCycleColor, tryCurRect, tryElapsed, tryWiggleRect, tryCompleteRect,
+	tryDefineRect, tryChooseBoxColor, tryChooseBoxColor', tryBoxes ) where
 
-import Prelude hiding (repeat)
+import Control.Monad.State (runStateT, liftIO)
+import Data.Time (DiffTime)
+import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 
-import Control.Monad.State
-import Data.Time
-import Data.Time.Clock.System
+import Trials.Boxes (
+	Box(..), Rect(..), Color(..),
+	cycleColor, curRect, elapsed, wiggleRect,
+	completeRect, defineRect, chooseBoxColor, chooseBoxColor', boxes )
+import Trials.Boxes.Handlers (handle)
+import Trials.Boxes.Events (SigG)
+import MonadicFrp (interpretSig)
+import Field (
+	Field, Pixel,
+	openField, closeField, flushField, clearField, fillRect, drawStr,
+	exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask )
 
-import Boxes
-import Boxes.Events
-import Boxes.Handlers
-import MonadicFrp.Sig
-import MonadicFrp.React
-import Field
+withInterpretSig ::
+	Show r => String -> (Field -> a -> IO ()) -> SigG a r -> IO ()
+withInterpretSig fn op s = do
+	f <- openField fn [
+		exposureMask, buttonPressMask,
+		buttonReleaseMask, pointerMotionMask ]
+	now <- systemToTAITime <$> getSystemTime
+	print =<< interpretSig (handle 0.05 f) (liftIO . op f) s `runStateT` now
+	closeField f
 
 tryCycleColor :: IO ()
-tryCycleColor = do
-	f <- openField "tryCycleColor" [exposureMask, buttonPressMask, buttonReleaseMask]
-	now <- systemToTAITime <$> getSystemTime
-	interpretSig (handle 0.05 f) (liftIO . print) cycleColor `runStateT` now >>= print
-	closeField f
-
-tryMousePos :: IO ()
-tryMousePos = do
-	f <- openField "tryMousePos" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
-	now <- systemToTAITime <$> getSystemTime
-	interpretSig (handle 0.05 f) (liftIO . print) mousePos `runStateT` now >>= print
-	closeField f
+tryCycleColor = withInterpretSig "tryCycleColor" (const print) cycleColor
 
 tryCurRect :: IO ()
-tryCurRect = do
-	f <- openField "tryCurRect" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
-	now <- systemToTAITime <$> getSystemTime
-	interpretSig (handle 0.05 f) (liftIO . withFlush f . drawRect f 0xff0000)
-		(curRect (300, 200)) `runStateT` now >>= print
-	closeField f
+tryCurRect = withInterpretSig "tryCurRect"
+	(\f -> withFlush f . drawRect f 0xff0000) $ curRect (300, 200)
+
+tryElapsed :: IO ()
+tryElapsed = withInterpretSig "tryElapsed" drawElapsed elapsed
+
+tryWiggleRect :: IO ()
+tryWiggleRect = withInterpretSig "tryWiggleRect"
+	(\f -> withFlush f . drawRect f 0xff0000)
+	(wiggleRect $ Rect (200, 150) (400, 300))
+
+tryCompleteRect :: IO ()
+tryCompleteRect = withInterpretSig "tryCompleteRect"
+	(\f -> withFlush f . drawRect f 0xff0000) (completeRect (200, 150))
+
+tryDefineRect :: IO ()
+tryDefineRect = withInterpretSig "tryDefineRect"
+	(\f -> withFlush f . drawRect f 0xff0000) defineRect
+
+tryChooseBoxColor :: IO ()
+tryChooseBoxColor = withInterpretSig "tryChooseBoxColor"
+	(\f -> withFlush f . drawBox f)
+	(chooseBoxColor $ Rect (200, 150) (400, 300))
+
+tryChooseBoxColor' :: IO ()
+tryChooseBoxColor' = withInterpretSig "tryChooseBoxColor'"
+	(\f -> withFlush f . drawBox f)
+	(chooseBoxColor' $ Rect (200, 150) (400, 300))
+
+tryBoxes :: IO ()
+tryBoxes = withInterpretSig "tryBoxes"
+	(\f -> withFlush f . (drawBox f `mapM_`) . reverse) boxes
 
 withFlush :: Field -> IO () -> IO ()
 withFlush f act = clearField f >> act >> flushField f
+
+drawElapsed :: Field -> DiffTime -> IO ()
+drawElapsed f dt = withFlush f . drawStr f 0x00ff00 "sans" 30 100 100 $ show dt
 
 drawRect :: Field -> Pixel -> Rect -> IO ()
 drawRect f clr (Rect (l_, u_) (r_, d_)) = fillRect f clr l u w h where
@@ -53,108 +81,10 @@ drawRect f clr (Rect (l_, u_) (r_, d_)) = fillRect f clr l u w h where
 	w = fromIntegral . abs $ r_ - l_
 	h = fromIntegral . abs $ d_ - u_
 
-tryDeltaTime :: IO ()
-tryDeltaTime = do
-	f <- openField "tryDeltaTime" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
-	now <- systemToTAITime <$> getSystemTime
-	interpretSig (handle 0.5 f) (liftIO . print) (repeat_ $ adjust deltaTime) `runStateT` now >>= print
-	closeField f
-
-tryElapsed :: IO ()
-tryElapsed = do
-	f <- openField "tryElapsed" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
-	now <- systemToTAITime <$> getSystemTime
-	interpretSig (handle 0.05 f) (liftIO . drawElapsed f) elapsed `runStateT` now >>= print
-	closeField f
-
-drawElapsed :: Field -> DiffTime -> IO ()
-drawElapsed f dt = do
-	clearField f
-	drawStr f 0x00ff00 "sans" 30 100 100 $ show dt
-	flushField f
-
-tryWiggleRect :: IO ()
-tryWiggleRect = do
-	f <- openField "tryWiggleRect" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
-	now <- systemToTAITime <$> getSystemTime
-	interpretSig (handle 0.05 f) (liftIO . withFlush f . drawRect f 0xff0000)
-		(wiggleRect $ Rect (200, 150) (400, 300)) `runStateT` now >>= print
-	closeField f
-
-tryPosInside :: IO ()
-tryPosInside = do
-	let	r = Rect (300, 200) (600, 400)
-	f <- openField "tryPosInside" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
-	withFlush f $ drawRect f 0xff0000 r
-	now <- systemToTAITime <$> getSystemTime
-	interpret (handle 0.05 f) (posInside r mousePos) `runStateT` now >>= print
-	closeField f
-
-tryFirstPoint :: IO ()
-tryFirstPoint = do
-	f <- openField "tryPosInside" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
-	now <- systemToTAITime <$> getSystemTime
-	interpret (handle 0.05 f) firstPoint `runStateT` now >>= print
-	closeField f
-
-tryCompleteRect :: IO ()
-tryCompleteRect = do
-	f <- openField "tryCompleteRect" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
-	now <- systemToTAITime <$> getSystemTime
-	interpretSig (handle 0.05 f) (liftIO . withFlush f . drawRect f 0xff0000)
-		(completeRect (200, 150)) `runStateT` now >>= print
-	closeField f
-
-tryDefineRect :: IO ()
-tryDefineRect = do
-	f <- openField "tryDefineRect" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
-	now <- systemToTAITime <$> getSystemTime
-	interpretSig (handle 0.05 f) (liftIO . withFlush f . drawRect f 0xff0000)
-		defineRect `runStateT` now >>= print
-	closeField f
-
-tryChooseBoxColor :: IO ()
-tryChooseBoxColor = do
-	f <- openField "tryChooseBoxColor" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
-	now <- systemToTAITime <$> getSystemTime
-	interpretSig (handle 0.05 f)
-		(liftIO . withFlush f . drawBox f)
-		(chooseBoxColor (Rect (200, 150) (400, 300))) `runStateT` now >>= print
-	closeField f
-
 drawBox :: Field -> Box -> IO ()
 drawBox f (Box rct clr) = drawRect f (colorToPixel clr) rct
 
 colorToPixel :: Color -> Pixel
 colorToPixel = \case
-	Red -> 0xff0000
-	Green -> 0x00ff00
-	Blue -> 0x0000ff
-	Yellow -> 0xffff00
-	Cyan -> 0xff00ff
-	Magenta -> 0x00ffff
-
-tryDrClickOn :: IO ()
-tryDrClickOn = do
-	let	r = Rect (300, 200) (600, 400)
-	f <- openField "tryDrClickOn" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
-	withFlush f $ drawRect f 0xff0000 r
-	now <- systemToTAITime <$> getSystemTime
-	interpret (handle 0.05 f) (drClickOn r) `runStateT` now >>= print
-	closeField f
-
-tryBox :: IO ()
-tryBox = do
-	f <- openField "tryBox" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
-	now <- systemToTAITime <$> getSystemTime
-	interpretSig (handle 0.05 f)
-		(liftIO . withFlush f . drawBox f) box `runStateT` now >>= print
-	closeField f
-
-tryBoxes :: IO ()
-tryBoxes = do
-	f <- openField "tryBoxes" [exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask]
-	now <- systemToTAITime <$> getSystemTime
-	interpretSig (handle 0.05 f)
-		(liftIO . withFlush f . (drawBox f `mapM_`) . reverse) boxes `runStateT` now >>= print
-	closeField f
+	Red -> 0xff0000; Green -> 0x00ff00; Blue -> 0x0000ff
+	Yellow -> 0xffff00; Cyan -> 0xff00ff; Magenta -> 0x00ffff
