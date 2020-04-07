@@ -13,6 +13,7 @@ module TryMyInterface.Boxes (
 import Prelude hiding (repeat, cycle, scanl, until)
 
 import Data.Type.Flip ((<$%>), fpure, (<*%>))
+import Data.Type.Set (Singleton, (:+:))
 import Data.Bool (bool)
 import Data.Maybe (fromMaybe)
 import Data.Or (Or(..))
@@ -24,7 +25,7 @@ import TryMyInterface.Boxes.Events (
 	SigG, ISigG, ReactG, MouseDown, MouseUp, MouseBtn(..), Point,
 	mouseDown, mouseUp, mouseMove, sleep, deltaTime )
 import MonadicFrp.MyInterface (
-	React, Singleton, First, (:+:),
+	React, First,
 	adjust, first, emit, waitFor, scanl, find, repeat, spawn, parList,
 	at, until, indexBy )
 

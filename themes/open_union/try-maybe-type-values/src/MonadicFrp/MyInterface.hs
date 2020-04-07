@@ -19,9 +19,7 @@ module MonadicFrp.MyInterface (
 	-- * Parallel composition
 	at, until, indexBy,
 	-- * UnionList
-	Nihil, (>+), singleton, expand, mergeMaybes, prj,
-	-- * Type Set
-	Set(Nil), Singleton, (:-), (:+:), numbered
+	Nihil, expand, prj, singleton, (>+), mergeMaybes,
 	) where
 
 import Prelude hiding (map, repeat, scanl, until)

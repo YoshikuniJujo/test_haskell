@@ -9,6 +9,7 @@ module TryMyInterface.Boxes.Handlers (handleWithoutTime, handle) where
 import Foreign.C.Types (CInt)
 import Control.Monad (void)
 import Control.Monad.State (StateT, get, put, liftIO)
+import Data.Type.Set (Set(Nil), Singleton, (:-))
 import Data.Maybe (fromJust)
 import Data.Time (DiffTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
@@ -21,8 +22,7 @@ import TryMyInterface.Boxes.Events (
 	MouseBtn(..) )
 import MonadicFrp.MyInterface (
 	EvReqs, EvOccs,
-	(>+), singleton, expand, mergeMaybes, prj,
-	Set(Nil), Singleton, (:-))
+	(>+), singleton, expand, mergeMaybes, prj )
 import Field (
 	Field, Event(..), Button,
 	withNextEvent, withNextEventTimeout',

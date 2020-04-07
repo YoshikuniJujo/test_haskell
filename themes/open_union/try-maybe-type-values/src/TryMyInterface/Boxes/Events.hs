@@ -11,12 +11,11 @@ module TryMyInterface.Boxes.Events (
 	mouseDown, mouseUp, mouseMove, sleep, deltaTime,
 	) where
 
+import Data.Type.Set (Set(Nil), Singleton, (:-), numbered)
 import Data.Bool (bool)
 import Data.Time (DiffTime)
 
-import MonadicFrp.MyInterface (
-	Sig, ISig, React, Request(..), Set(Nil), Singleton, (:-),
-	numbered, await )
+import MonadicFrp.MyInterface (Sig, ISig, React, Request(..), await)
 
 data MouseDown = MouseDownReq deriving (Show, Eq, Ord)
 data MouseBtn = MLeft | MMiddle | MRight | MUp | MDown deriving (Show, Eq)
