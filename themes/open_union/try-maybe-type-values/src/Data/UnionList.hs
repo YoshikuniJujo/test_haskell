@@ -7,8 +7,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
 
 module Data.UnionList (
-	UnionList(UnionListNil), AddValue, MinValue, Nihil, Expand, Collapsable, Mergeable, Project,
-	(>+), (>+.), singleton, (>-), expand, collapse, merge, merge_, mergeMaybes, prj, extract) where
+	UnionList(UnionListNil), Insertable, MinValue, Nihil, Expandable, Collapsable, Mergeable, Projectable,
+	(>+.), singleton, (>-), expand, collapse, merge, merge_, mergeMaybes, prj, extract) where
 
 import GHC.Stack
 import Data.Kind
@@ -18,22 +18,17 @@ data UnionList :: Bool -> Set Type -> * where
 	UnionListNil :: UnionList b 'Nil
 	(:.) :: Maybe a -> UnionList b as -> UnionList b (a ':~ as)
 
-class AddValue a (as :: Set Type) (as' :: Set Type) where
+class Insertable a (as :: Set Type) (as' :: Set Type) where
 	(>+.) :: a -> UnionList b as -> UnionList b as'
 
-instance AddValue a as (a ':~ as) where
+instance Insertable a as (a ':~ as) where
 	x >+. xs = Just x :. xs
 
-instance {-# OVERLAPPABLE #-} AddValue a as as' => AddValue a (a' ':~ as) (a' ':~ as') where
+instance {-# OVERLAPPABLE #-} Insertable a as as' => Insertable a (a' ':~ as) (a' ':~ as') where
 	x >+. (y :. xs) = y :. (x >+. xs)
 
-infixr 5 >+
-
-(>+) :: AddValue a as (a :- as) => a -> UnionList b as -> UnionList b (a :- as)
-(>+) = (>+.)
-
 singleton :: a -> UnionList b (Singleton a)
-singleton = (>+ UnionListNil)
+singleton = (>+. UnionListNil)
 
 class MinValue a (as :: Set Type) (as' :: Set Type) where
 	(>-.) :: Ord a => a -> UnionList b as -> UnionList b as'
@@ -56,31 +51,31 @@ class Nihil as where nihil :: UnionList b as
 instance Nihil 'Nil where nihil = UnionListNil
 instance Nihil as => Nihil (a ':~ as) where nihil = Nothing :. nihil
 
-class Expand (b :: Bool) (as :: Set Type) (as' :: Set Type) where
+class Expandable (b :: Bool) (as :: Set Type) (as' :: Set Type) where
 	expand :: UnionList b as -> UnionList b as'
 
-instance Nihil as => Expand 'False 'Nil as where
+instance Nihil as => Expandable 'False 'Nil as where
 	expand UnionListNil = nihil
 
-instance Nihil as => Expand 'True (a ':~ 'Nil) (a ':~ as) where
+instance Nihil as => Expandable 'True (a ':~ 'Nil) (a ':~ as) where
 	expand (x :. UnionListNil) = x :. nihil
 
-instance {-# OVERLAPPABLE #-} Expand b as as' => Expand b (a ':~ as) (a ':~ as') where
+instance {-# OVERLAPPABLE #-} Expandable b as as' => Expandable b (a ':~ as) (a ':~ as') where
 	expand (x :. xs) = x :. expand xs
 
-instance {-# OVERLAPPABLE #-} Expand b (a ':~ as) as' => Expand b (a ':~ as) (a' ':~ as') where
+instance {-# OVERLAPPABLE #-} Expandable b (a ':~ as) as' => Expandable b (a ':~ as) (a' ':~ as') where
 	expand xs = Nothing :. expand xs
 
-class Project a (as :: Set Type) where
+class Projectable (as :: Set Type) a where
 	prj :: UnionList b as -> Maybe a
 
-instance Project a 'Nil where
+instance Projectable 'Nil a where
 	prj _ = Nothing
 
-instance Project a (a ':~ as) where
+instance Projectable (a ':~ as) a where
 	prj (x :. _) = x
 
-instance {-# OVERLAPPABLE #-} Project a as => Project a (a' ':~ as) where
+instance {-# OVERLAPPABLE #-} Projectable as a => Projectable (a' ':~ as) a where
 	prj (_ :. xs) = prj xs
 
 extract :: HasCallStack => UnionList 'True (Singleton a) -> a
@@ -141,7 +136,7 @@ numbered [t| Integer |]
 numbered [t| Double |]
 
 mergeMaybes :: (
-	Mergeable es es' merged, Expand 'True es merged, Expand 'True es' merged
+	Mergeable es es' merged, Expandable 'True es merged, Expandable 'True es' merged
 	) =>
 	Maybe (UnionList 'True es) -> Maybe (UnionList 'True es') -> Maybe (UnionList 'True merged)
 Just u `mergeMaybes` Just u' = Just $ u `merge_` u'

@@ -19,7 +19,7 @@ module MonadicFrp.MyInterface (
 	-- * Parallel composition
 	at, until, indexBy,
 	-- * UnionList
-	Nihil, (>+.), singleton, expand, mergeMaybes, prj,
+	Nihil, (>+), singleton, expand, mergeMaybes, prj,
 	-- * Type Set
 	Set(Nil), Singleton, (:-), (:+:), numbered
 	) where
@@ -60,3 +60,6 @@ await r f = await_ (singleton r) (pure . f . extract)
 
 parList :: (Nihil es, (es :+: es) ~ es, First 'Nil es, First es es) => Sig es (ISig es a r) r' -> Sig es [a] ()
 parList = parList_
+
+(>+) :: Insertable a as as' => a -> UnionList b as -> UnionList b as'
+(>+) = (>+.)

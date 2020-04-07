@@ -21,7 +21,7 @@ import TryMyInterface.Boxes.Events (
 	MouseBtn(..) )
 import MonadicFrp.MyInterface (
 	EvReqs, EvOccs,
-	(>+.), singleton, expand, mergeMaybes, prj,
+	(>+), singleton, expand, mergeMaybes, prj,
 	Set(Nil), Singleton, (:-))
 import Field (
 	Field, Event(..), Button,
@@ -71,11 +71,11 @@ handle prd f reqs = do
 
 mouseDownOcc ::
 	CInt -> CInt -> [MouseBtn] -> EvOccs (MouseMove :- MouseDown :- 'Nil)
-mouseDownOcc x y bs =OccMouseDown bs >+. mouseMoveOcc x y
+mouseDownOcc x y bs =OccMouseDown bs >+ mouseMoveOcc x y
 
 mouseUpOcc ::
 	CInt -> CInt -> [MouseBtn] -> EvOccs (MouseMove :- MouseUp :- 'Nil)
-mouseUpOcc x y bs = OccMouseUp bs >+. mouseMoveOcc x y
+mouseUpOcc x y bs = OccMouseUp bs >+ mouseMoveOcc x y
 
 mouseMoveOcc :: CInt -> CInt -> EvOccs (Singleton MouseMove)
 mouseMoveOcc x y = singleton $ OccMouseMove (fromIntegral x, fromIntegral y)

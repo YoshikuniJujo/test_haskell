@@ -21,7 +21,7 @@ import Field
 handleWithoutTime :: Field -> EvReqs GuiEv -> IO (EvOccs GuiEv)
 handleWithoutTime f reqs = withNextEvent f \case
 	ButtonEvent { ev_event_type = 4, ev_button = eb } | Just b <- button eb ->
-		pure . expand $ OccurredMouseDown [b] >+ UnionListNil
+		pure $ expand (OccurredMouseDown [b] >+. UnionListNil :: EvOccs (Singleton MouseDown))
 	_ -> handleWithoutTime f reqs
 
 button :: Button -> Maybe MouseBtn
@@ -46,18 +46,19 @@ handle dt f reqs = do
 					ev_x = x, ev_y = y } | Just b <- button eb ->
 					pure . Just $ expand (
 						OccurredMouseMove (fromIntegral x, fromIntegral y) >+.
-						(OccurredMouseDown [b] >+ UnionListNil)
+						(OccurredMouseDown [b] >+. UnionListNil :: EvOccs (Singleton MouseDown))
 							:: UnionList 'True (Occurred :$: (MouseMove :- Singleton MouseDown)))
 				Just ButtonEvent {
 					ev_event_type = 5, ev_button = eb,
 					ev_x = x, ev_y = y } | Just b <- button eb ->
 					pure . Just $ expand (
 						OccurredMouseMove (fromIntegral x, fromIntegral y) >+.
-						(OccurredMouseUp [b] >+ UnionListNil)
+						(OccurredMouseUp [b] >+. UnionListNil :: EvOccs (Singleton MouseUp))
 							:: UnionList 'True (Occurred :$: (MouseMove :- Singleton MouseUp)))
 				Just MotionEvent { ev_x = x, ev_y = y } ->
-					pure . Just . expand $
-						OccurredMouseMove (fromIntegral x, fromIntegral y) >+ UnionListNil
+					pure . Just $ expand
+						(OccurredMouseMove (fromIntegral x, fromIntegral y) >+. UnionListNil ::
+							EvOccs (Singleton MouseMove))
 				Just ExposeEvent {} -> liftIO (flushField f) >> pure Nothing
 				Just DestroyWindowEvent {} -> liftIO $ closeField f >> exitSuccess
 				Just ev	| isDeleteEvent f ev -> liftIO (destroyField f) >> pure Nothing
@@ -76,8 +77,8 @@ getWait reqs = (\(TryWaitReq t) -> t) <$> prj reqs
 makeTimeObs :: EvReqs GuiEv -> DiffTime -> Maybe (UnionList 'True (Occurred :$: TryWait :- DeltaTime :- 'Nil))
 makeTimeObs r t = case (prj r, prj r) of
 	(Just (TryWaitReq _t'), Just DeltaTimeReq) ->
-		Just $ OccurredDeltaTime t >+. (OccurredTryWait t >+ UnionListNil)
+		Just $ OccurredDeltaTime t >+. (OccurredTryWait t >+. UnionListNil :: EvOccs (Singleton TryWait))
 	(Just (TryWaitReq _t'), Nothing) ->
-		Just . expand $ OccurredTryWait t >+ UnionListNil
-	(Nothing, Just DeltaTimeReq) -> Just . expand $ OccurredDeltaTime t >+ UnionListNil
+		Just $ expand (OccurredTryWait t >+. UnionListNil :: EvOccs (Singleton TryWait))
+	(Nothing, Just DeltaTimeReq) -> Just $ expand (OccurredDeltaTime t >+. UnionListNil :: EvOccs (Singleton  DeltaTime))
 	(Nothing, Nothing) -> Nothing
