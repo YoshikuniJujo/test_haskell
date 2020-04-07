@@ -89,7 +89,7 @@ inside (x, y) (Rect (l, u) (r, d)) =
 	(l <= x && x <= r || r <= x && x <= l) &&
 	(u <= y && y <= d || d <= y && y <= u)
 
-firstPoint :: ReactG (Maybe Point)
+firstPoint :: ReactG (Either Point (Maybe ()))
 firstPoint = mousePos `at` leftClick
 
 completeRect :: Point -> SigG Rect (Maybe Rect)
@@ -99,17 +99,17 @@ completeRect p1 = do
 
 defineRect :: SigG Rect Rect
 defineRect = waitFor firstPoint >>= \case
-	Just p1 -> completeRect p1 >>= \case
+	Left p1 -> completeRect p1 >>= \case
 		Just r -> pure r
 		Nothing -> error "never occur"
-	Nothing -> error "never occur"
+	Right _ -> error "never occur"
 
 chooseBoxColor :: Rect -> SigG Box ()
 chooseBoxColor r = () <$ (always Box :: SigG (Rect -> Color -> Box) ()) <^> wiggleRect r <^> cycleColor
 
 data Box = Box Rect Color deriving Show
 
-drClickOn :: Rect -> ReactG (Either Point (Either () ()))
+drClickOn :: Rect -> ReactG (Either Point (Either Point (Maybe ())))
 drClickOn r = posInside r (mousePos `indexBy` repeat_ doubler)
 
 box :: SigG Box ()

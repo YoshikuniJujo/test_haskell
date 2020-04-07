@@ -7,7 +7,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
 
 module Data.UnionList (
-	UnionList(UnionListNil), AddValue, MinValue, Nihil, Expand, Collapse, Merge, Project,
+	UnionList(UnionListNil), AddValue, MinValue, Nihil, Expand, Collapsable, Mergeable, Project,
 	(>+), (>+.), singleton, (>-), expand, collapse, merge, merge_, mergeMaybes, prj, extract) where
 
 import GHC.Stack
@@ -98,41 +98,41 @@ instance Collapse0 as as' => Collapse0 (a ':~ as) (a ':~ as') where
 instance {-# OVERLAPPABLE #-} Collapse0 as as' => Collapse0 (a ':~ as) as' where
 	collapse0 (_ :. xs) = collapse0 xs
 
-class Collapse b (as :: Set Type) (as' :: Set Type) where
+class Collapsable b (as :: Set Type) (as' :: Set Type) where
 	collapse :: UnionList b as -> Maybe (UnionList b as')
 
-instance Collapse0 as as' => Collapse 'False as as' where
+instance Collapse0 as as' => Collapsable 'False as as' where
 	collapse = Just . collapse0
 
-instance {-# OVERLAPPABLE #-} Collapse 'True 'Nil as' where
+instance {-# OVERLAPPABLE #-} Collapsable 'True 'Nil as' where
 	collapse = const Nothing
 
-instance (Collapse0 as as', Collapse 'True as as') => Collapse 'True (a ':~ as) (a ':~ as') where
+instance (Collapse0 as as', Collapsable 'True as as') => Collapsable 'True (a ':~ as) (a ':~ as') where
 	collapse = \case
 		(Just x :. xs) -> Just $ Just x :. collapse0 xs
 		(Nothing :. xs) -> (Nothing :.) <$> collapse xs
 
-instance {-# OVERLAPPABLE #-} Collapse 'True as as' => Collapse 'True (a ':~ as) as' where
+instance {-# OVERLAPPABLE #-} Collapsable 'True as as' => Collapsable 'True (a ':~ as) as' where
 	collapse (_ :. xs) = collapse xs
 
-class Merge (as :: Set Type) (as' :: Set Type) (merged :: Set Type) where
+class Mergeable (as :: Set Type) (as' :: Set Type) (merged :: Set Type) where
 	merge_ :: UnionList b as -> UnionList b as' -> UnionList b merged
 
-instance Merge 'Nil 'Nil 'Nil where
+instance Mergeable 'Nil 'Nil 'Nil where
 	merge_ UnionListNil UnionListNil = UnionListNil
 
-instance (Ord a, Merge as as' merged) => Merge (a ':~ as) (a ':~ as') (a ':~ merged) where
+instance (Ord a, Mergeable as as' merged) => Mergeable (a ':~ as) (a ':~ as') (a ':~ merged) where
 	merge_ (Just x :. xs) (Just x' :. xs') = Just (x `min` x') :. merge_ xs xs'
 	merge_ (mx :. xs) (Nothing :. xs') = mx :. merge_ xs xs'
 	merge_ (Nothing :. xs) (mx' :. xs') = mx' :. merge_ xs xs'
 
-instance {-# OVERLAPPABLE #-} Merge as as' merged => Merge (a ':~ as) as'  (a ':~ merged) where
+instance {-# OVERLAPPABLE #-} Mergeable as as' merged => Mergeable (a ':~ as) as'  (a ':~ merged) where
 	merge_ (x :. xs) xs' = x :. merge_ xs xs'
 
-instance {-# OVERLAPPABLE #-} Merge as as' merged => Merge as (a ':~ as') (a ':~ merged) where
+instance {-# OVERLAPPABLE #-} Mergeable as as' merged => Mergeable as (a ':~ as') (a ':~ merged) where
 	merge_ xs (x :. xs') = x :. merge_ xs xs'
 
-merge :: Merge as as' (as :+: as') => UnionList b as -> UnionList b as' -> UnionList b (as :+: as')
+merge :: Mergeable as as' (as :+: as') => UnionList b as -> UnionList b as' -> UnionList b (as :+: as')
 merge = merge_
 	
 numbered [t| Bool |]
@@ -141,7 +141,7 @@ numbered [t| Integer |]
 numbered [t| Double |]
 
 mergeMaybes :: (
-	Merge es es' merged, Expand 'True es merged, Expand 'True es' merged
+	Mergeable es es' merged, Expand 'True es merged, Expand 'True es' merged
 	) =>
 	Maybe (UnionList 'True es) -> Maybe (UnionList 'True es') -> Maybe (UnionList 'True merged)
 Just u `mergeMaybes` Just u' = Just $ u `merge_` u'

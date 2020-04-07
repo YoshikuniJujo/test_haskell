@@ -6,7 +6,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module MonadicFrp.React.Internal (
-	React(..), EvReqs, EvOccs, Request(..), First, CollapseOccurred,
+	React(..), EvReqs, EvOccs, Request(..), First, CollapsableOccurred,
 	Or(..),
 	interpret, adjust,
 	first_, first,
@@ -73,7 +73,7 @@ l `first` r = do
 		(Nothing, Just r'') -> R r''
 		(Nothing, Nothing) -> error "never occur"
 
-update :: forall es es' a . Collapse 'True (Map Occurred (es :+: es')) (Map Occurred es) =>
+update :: forall es es' a . Collapsable 'True (Map Occurred (es :+: es')) (Map Occurred es) =>
 	React es a -> EvOccs (es :+: es') -> React es a
 update r@(Await _ c) oc = case collapse oc of
 	Just oc' -> c oc'
@@ -88,9 +88,8 @@ never :: React 'Nil a
 never = Await UnionListNil undefined
 
 type First es es' = (
-	(es :+: es') ~ (es' :+: es), Merge es es' (es :+: es'),
-	CollapseOccurred es es' )
+	(es :+: es') ~ (es' :+: es), Mergeable es es' (es :+: es'),
+	CollapsableOccurred es es', CollapsableOccurred es' es )
 
-type CollapseOccurred es es' = (
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es') )
+type CollapsableOccurred es es' =
+	Collapsable 'True (Occurred :$: (es :+: es')) (Occurred :$: es)

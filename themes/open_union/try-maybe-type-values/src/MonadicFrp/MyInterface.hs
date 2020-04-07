@@ -5,7 +5,7 @@
 
 module MonadicFrp.MyInterface (
 	-- * Types
-	Sig, ISig, React, EvReqs, EvOccs, Request(..), First, Nihil, (:+:),
+	Sig, ISig, React, EvReqs, EvOccs, Request(..), First,
 	-- * Run
 	interpret, interpretSig,
 	-- * React
@@ -19,9 +19,9 @@ module MonadicFrp.MyInterface (
 	-- * Parallel composition
 	at, until, indexBy,
 	-- * UnionList
-	(>+.), singleton, expand, mergeMaybes, prj,
+	Nihil, (>+.), singleton, expand, mergeMaybes, prj,
 	-- * Type Set
-	Set(Nil), (:-), Singleton, numbered
+	Set(Nil), Singleton, (:-), (:+:), numbered
 	) where
 
 import Prelude hiding (map, repeat, scanl, until)
@@ -44,8 +44,8 @@ instance (
 
 app :: (
 	(es :+: es) ~ es,
-	Merge es es es,
-	Collapse 'True (Occurred :$: es) (Occurred :$: es),
+	Mergeable es es es,
+	Collapsable 'True (Occurred :$: es) (Occurred :$: es),
 	Semigroup r ) => Sig es (a -> b) r -> Sig es a r -> Sig es b r
 mf `app` mx = do
 	(l, r) <- mf <^> mx

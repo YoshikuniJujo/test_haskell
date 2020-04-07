@@ -121,8 +121,23 @@ ibreak p is@(h :| t)
 ibreak _ is@(End _) = pure is
 
 at :: First es es' =>
-	Sig es a r -> React es' r' -> React (es :+: es') (Maybe a)
-l `at` a = cur . fst <$> res (l `until_` a)
+	Sig es a r -> React es' r' -> React (es :+: es') (Either a (Maybe r))
+l `at` a = do
+	(l', r') <- res $ l `until_` a
+	pure $ case (l', r') of
+		(Sig (Done (h :| _)), Done _) -> Left h
+		(Sig (Done (End l'')), _) -> Right $ Just l''
+		(Sig (Await _ _), Done _) -> Right Nothing
+		_ -> error "never occur"
+
+until :: First es es' => Sig es a r -> React es' r' -> Sig (es :+: es') a (Either a (Maybe r))
+l `until` r = do
+	(l', r') <- l `until_` r
+	pure case (l', r') of
+		(Sig (Done (l'' :| _)), Done _) -> Left l''
+		(Sig (Done (End l'')), _) -> Right $ Just l''
+		(Sig (Await _ _), Done _) -> Right Nothing
+		_ -> error "never occur"
 
 until_ :: First es es' => Sig es a r ->
 	React es' r' -> Sig (es :+: es') a (Sig es a r, React es' r')
@@ -131,14 +146,6 @@ Sig l `until_` a = waitFor (l `first_` a) >>= un where
 		(l'', a'') <- emitAll $ l' `iuntil` a'
 		pure (emitAll l'', a'')
 	un (l', a') = pure (Sig l', a')
-
-until :: First es es' => Sig es a r -> React es' r' -> Sig (es :+: es') a (Either a r')
-l `until` r = do
-	(l', r') <- l `until_` r
-	pure case (l', r') of
-		(Sig (Done (l'' :| _)), _) -> Left l''
-		(_, Done r'') -> Right r''
-		_ -> error "never occur"
 
 iuntil :: First es es' => ISig es a r ->
 	React es' r' -> ISig (es :+: es') a (ISig es a r, React es' r')
@@ -163,9 +170,9 @@ l <^> r = do
 
 bothStart :: (
 	(es :+: es') ~ (es' :+: es),
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
-	Collapse 'True (Occurred :$: (es :+: es')) (Occurred :$: es'),
-	Merge es es' (es :+: es'), Merge es' es (es :+: es')
+	Collapsable 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
+	Collapsable 'True (Occurred :$: (es :+: es')) (Occurred :$: es'),
+	Mergeable es es' (es :+: es'), Mergeable es' es (es :+: es')
 	) => Sig es a r -> Sig es' b r' -> React (es :+: es') (ISig es a r, ISig es' b r')
 l `bothStart` Sig r = do
 	(Sig l', r') <- res $ l `until_` r
@@ -187,19 +194,25 @@ a `pairs` End b = pure (a, pure b)
 	lup h t = h :| Sig t
 
 indexBy ::
-	First es es' => Sig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either r r')
+	First es es' => Sig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either a (Maybe r))
 l `indexBy` Sig r = waitFor (res $ l `until_` r) >>= \case
-	(_, Done (End y)) -> pure $ Right y
-	(Sig (Done l'), r') -> l' `iindexBy` Sig r'
+	(Sig (Done l'), r') -> (Just <$>) <$> l' `iindexBy'` Sig r'
 	(Sig l', Done (_ :| r')) -> Sig l' `indexBy` r'
+	(Sig _, Done (End _)) -> pure $ Right Nothing
 	_ -> error "never occur"
 
-iindexBy ::
-	First es es' => ISig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either r r')
-l `iindexBy` Sig r = waitFor (ires $ l `iuntil` r) >>= \case
-	(hl :| tl, Done (_ :| tr)) -> emit hl >> (hl :| tl) `iindexBy` tr
-	(_, Done (End y)) -> pure $ Right y
-	(End x, _) -> pure $ Left x
+_iuntil' :: First es es' => ISig es a r ->
+	React es' r' -> ISig (es :+: es') a (Either a r)
+l `_iuntil'` r = (<$> l `iuntil` r) \case
+	(h :| _, _) -> Left h
+	(End l', _) -> Right l'
+
+iindexBy' ::
+	First es es' => ISig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either a r)
+l `iindexBy'` Sig r = waitFor (ires $ l `iuntil` r) >>= \case
+	(hl :| tl, Done (_ :| tr)) -> emit hl >> (hl :| tl) `iindexBy'` tr
+	(hl :| _, Done (End _)) -> pure $ Left hl
+	(End l', _) -> pure $ Right l'
 	_ -> error "never occur"
 
 spawn :: Sig es a r -> Sig es (ISig es a r) ()
@@ -214,7 +227,7 @@ parList_ x = emitAll $ iparList x
 iparList :: (
 	Nihil es', (es' :+: es') ~ es',
 	(es :+: es') ~ es',
-	Merge es' es' es', 
+	Mergeable es' es' es',
 	First 'Nil es',
 	First es' es
 	) => Sig es (ISig es' a r) r' -> ISig es' [a] ()
