@@ -30,6 +30,7 @@ dependencies:
 - extra-data-yj
 - http-conduit
 - bytestring
+- aeson
 
 library:
   source-dirs: src
