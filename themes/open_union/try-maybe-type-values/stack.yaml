@@ -45,6 +45,8 @@ extra-deps:
   commit: c0310358bb3abb64712225748d8af797dc4ab7e1
 - git: https://github.com/YoshikuniJujo/type-flip
   commit: e06944e1b52a7a12f90a0221d71aed1f8bbdb319
+- git: https://github.com/YoshikuniJujo/extra-data-yj
+  commit: fa91936e1b636e24158a485e10e1c96c05509ee3
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

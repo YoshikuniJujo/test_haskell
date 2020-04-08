@@ -32,6 +32,20 @@ packages:
   original:
     git: https://github.com/YoshikuniJujo/type-flip
     commit: e06944e1b52a7a12f90a0221d71aed1f8bbdb319
+- completed:
+    cabal-file:
+      size: 1330
+      sha256: f93cf5ad7c6ae6aa96df97197b4299de0d37c025645eb05b639a83dbfb4c4442
+    name: extra-data-yj
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/extra-data-yj
+    pantry-tree:
+      size: 575
+      sha256: c90864cafebbe3ad24014663c983c7fbf41648908b70fde60c16910c234deff6
+    commit: fa91936e1b636e24158a485e10e1c96c05509ee3
+  original:
+    git: https://github.com/YoshikuniJujo/extra-data-yj
+    commit: fa91936e1b636e24158a485e10e1c96c05509ee3
 snapshots:
 - completed:
     size: 491372

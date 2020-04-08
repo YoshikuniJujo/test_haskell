@@ -27,6 +27,7 @@ dependencies:
 - random
 - simple-field
 - type-flip
+- extra-data-yj
 
 library:
   source-dirs: src
