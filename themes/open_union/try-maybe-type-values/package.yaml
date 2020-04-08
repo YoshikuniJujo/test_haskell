@@ -28,6 +28,8 @@ dependencies:
 - simple-field
 - type-flip
 - extra-data-yj
+- http-conduit
+- bytestring
 
 library:
   source-dirs: src
