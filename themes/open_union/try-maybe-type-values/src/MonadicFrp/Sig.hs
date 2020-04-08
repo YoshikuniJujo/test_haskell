@@ -20,6 +20,8 @@ module MonadicFrp.Sig (
 	) where
 
 import Prelude hiding (map, repeat, scanl, break, until, tail)
+
+import GHC.Stack
 import Control.Monad
 import Data.Type.Flip
 import Data.Maybe
@@ -64,6 +66,7 @@ interpretSig :: Monad m =>
 interpretSig p d = interpretSig' where
 	interpretSig' (Sig s) = interpret p s >>= interpretISig
 	interpretISig (End x) = pure x
+--	interpretISig (h :| Never) = d h >> interpretSig' 
 	interpretISig (h :| t) = d h >> interpretSig' t
 
 emitAll :: ISig es a b -> Sig es a b
@@ -144,7 +147,7 @@ Sig l `until_` a = waitFor (l `first_` a) >>= un where
 		pure (emitAll l'', a'')
 	un (l', a') = pure (Sig l', a')
 
-iuntil :: Firstable es es' => ISig es a r ->
+iuntil :: (HasCallStack, Firstable es es') => ISig es a r ->
 	React es' r' -> ISig (es :+: es') a (ISig es a r, React es' r')
 End l `iuntil` a = pure (pure l, a)
 (h :| Sig t) `iuntil` a = h :| Sig (cont <$> t `first_` a) where
@@ -152,10 +155,10 @@ End l `iuntil` a = pure (pure l, a)
 	cont (t', Done a') = pure (h :| Sig t', pure a')
 	cont _ = error "never occur"
 
-hold :: (Nihil es, Firstable 'Nil es) => Sig es a r
-hold = waitFor $ adjust never
+hold :: Sig es a r
+hold = waitFor Never
 
-always :: (Nihil es, Firstable 'Nil es) => a -> Sig es a r
+always :: a -> Sig es a r
 always a = emit a >> hold
 
 (<^>) :: (Firstable es es', Firstable es' es) =>
@@ -167,6 +170,8 @@ l <^> r = do
 
 bothStart :: (
 	(es :+: es') ~ (es' :+: es),
+	Expandable 'True es (es :+: es'),
+	Expandable 'True es' (es :+: es'),
 	Collapsable 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
 	Collapsable 'True (Occurred :$: (es :+: es')) (Occurred :$: es'),
 	Mergeable es es' (es :+: es'), Mergeable es' es (es :+: es')
@@ -215,20 +220,19 @@ l `iindexBy'` Sig r = waitFor (ires $ l `iuntil` r) >>= \case
 spawn :: Sig es a r -> Sig es (ISig es a r) ()
 spawn (Sig l) = repeat_ l
 
-parList :: (Nihil es, (es :+: es) ~ es, Firstable 'Nil es, Firstable es es) => Sig es (ISig es a r) r' -> Sig es [a] ()
+parList :: ((es :+: es) ~ es, Firstable es es) => Sig es (ISig es a r) r' -> Sig es [a] ()
 parList = parList_
 
 parList_ :: (
-	Nihil es', (es :+: es') ~ es', (es' :+: es') ~ es',
-	Firstable 'Nil es', Firstable es' es, Firstable es' es') =>
+	(es :+: es') ~ es', (es' :+: es') ~ es',
+	Firstable es' es, Firstable es' es') =>
 	Sig es (ISig es' a r) r' -> Sig es' [a] ()
 parList_ x = emitAll $ iparList x
 
 iparList :: (
-	Nihil es', (es' :+: es') ~ es',
+	(es' :+: es') ~ es',
 	(es :+: es') ~ es',
 	Mergeable es' es' es',
-	Firstable 'Nil es',
 	Firstable es' es
 	) => Sig es (ISig es' a r) r' -> ISig es' [a] ()
 iparList l = rl ([] :| hold) l where
@@ -250,7 +254,7 @@ instance Functor (Flip (Sig es) r) where
 	fmap f = Flip . map f . unflip
 
 instance (
-	Nihil es, (es :+: es) ~ es, Firstable 'Nil es, Firstable es es,
+	(es :+: es) ~ es, Firstable es es,
 	Semigroup r ) => Applicative (Flip (Sig es) r) where
 	pure = Flip . always
 	mf <*> mx = Flip $ unflip mf `app` unflip mx
@@ -258,6 +262,7 @@ instance (
 app :: (
 	(es :+: es) ~ es,
 	Mergeable es es es,
+	Expandable 'True es es,
 	Collapsable 'True (Occurred :$: es) (Occurred :$: es),
 	Semigroup r ) => Sig es (a -> b) r -> Sig es a r -> Sig es b r
 mf `app` mx = do

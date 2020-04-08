@@ -28,4 +28,4 @@ tryGetUsersJson = getGithubToken >>= \mba ->
 
 tryGetUser1 :: IO ()
 tryGetUser1 = getGithubToken >>= \mba ->
-	interpret (handle mba) getUser1 `runStateT` [] >>= print
+	interpret (handle mba) getUser1 `runStateT` [] >>= print . fst
