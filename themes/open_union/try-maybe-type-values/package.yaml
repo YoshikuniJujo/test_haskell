@@ -28,9 +28,14 @@ dependencies:
 - simple-field
 - type-flip
 - extra-data-yj
+
 - http-conduit
 - bytestring
 - aeson
+- vector
+- unordered-containers
+- scientific
+- text
 
 library:
   source-dirs: src

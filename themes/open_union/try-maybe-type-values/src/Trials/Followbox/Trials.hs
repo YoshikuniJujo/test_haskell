@@ -3,6 +3,7 @@
 
 module Trials.Followbox.Trials where
 
+import Control.Monad.State
 import System.Environment
 
 import qualified Data.ByteString as BS
@@ -19,8 +20,12 @@ getGithubToken =
 
 tryHttpGet :: IO ()
 tryHttpGet = getGithubToken >>= \mba ->
-	interpret (handle mba) (httpGet "https://api.github.com/users") >>= print
+	interpret (handleHttpGet mba) (httpGet "https://api.github.com/users") >>= print
 
 tryGetUsersJson :: IO ()
 tryGetUsersJson = getGithubToken >>= \mba ->
-	interpret (handle mba) ((take 3 <$>) <$> getUsersJson) >>= either putStrLn (print `mapM_`)
+	interpret (handleHttpGet mba) ((take 3 <$>) <$> getUsersJson) >>= either putStrLn (print `mapM_`)
+
+tryGetUser1 :: IO ()
+tryGetUser1 = getGithubToken >>= \mba ->
+	interpret (handle mba) getUser1 `runStateT` [] >>= print
