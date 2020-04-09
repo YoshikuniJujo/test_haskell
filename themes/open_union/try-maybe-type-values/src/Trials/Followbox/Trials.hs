@@ -29,3 +29,11 @@ tryGetUsersJson = getGithubToken >>= \mba ->
 tryGetUser1 :: IO ()
 tryGetUser1 = getGithubToken >>= \mba ->
 	interpret (handle mba) getUser1 `runStateT` [] >>= print . fst
+
+tryGetUser3 :: IO ()
+tryGetUser3 = getGithubToken >>= \mba ->
+	interpret (handle mba) (getUserN 3) `runStateT` [] >>= print . fst
+
+tryLeftClickUser3 :: IO ()
+tryLeftClickUser3 = getGithubToken >>= \mba ->
+	interpret (handle mba) (leftClickUserN 3) `runStateT` [] >>= print . fst
