@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Followbox.Aeson (Object, decodeJson) where
+module Trials.Followbox.Aeson (Object, Value(..), decodeJson) where
 
 import Data.Vector
 import Data.HashMap.Strict

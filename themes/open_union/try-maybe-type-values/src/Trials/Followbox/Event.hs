@@ -58,8 +58,21 @@ instance Request LoadJsons where
 loadJsons :: React (Singleton LoadJsons) [Object]
 loadJsons = await LoadJsonsReq \(OccLoadJsons os) -> os
 
+data Error = NotJson deriving (Show, Eq, Ord)
+
+data ErrorResult = Continue | Terminate deriving Show
+
+data RaiseError = RaiseError Error String deriving (Show, Eq, Ord)
+numbered [t| RaiseError |]
+instance Request RaiseError where
+	data Occurred RaiseError = OccRaiseError Error ErrorResult
+
+raiseError :: Error -> String -> React (Singleton RaiseError) ErrorResult
+raiseError e em = maybe (raiseError e em) pure =<< await (RaiseError e em)
+	\(OccRaiseError e' er) -> bool Nothing (Just er) $ e == e' 
+
 type SigF = Sig FollowboxEv
 type ISigF = ISig FollowboxEv
 type ReactF = React FollowboxEv
 
-type FollowboxEv = LeftClick :- HttpGet :- StoreJsons :- LoadJsons :- 'Nil
+type FollowboxEv = LeftClick :- HttpGet :- StoreJsons :- LoadJsons :- RaiseError :- 'Nil
