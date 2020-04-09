@@ -170,10 +170,10 @@ l <^> r = do
 
 bothStart :: (
 	(es :+: es') ~ (es' :+: es),
-	Expandable 'True es (es :+: es'),
-	Expandable 'True es' (es :+: es'),
-	Collapsable 'True (Occurred :$: (es :+: es')) (Occurred :$: es),
-	Collapsable 'True (Occurred :$: (es :+: es')) (Occurred :$: es'),
+	Expandable es (es :+: es'),
+	Expandable es' (es :+: es'),
+	Collapsable (Occurred :$: (es :+: es')) (Occurred :$: es),
+	Collapsable (Occurred :$: (es :+: es')) (Occurred :$: es'),
 	Mergeable es es' (es :+: es'), Mergeable es' es (es :+: es')
 	) => Sig es a r -> Sig es' b r' -> React (es :+: es') (ISig es a r, ISig es' b r')
 l `bothStart` Sig r = do
@@ -262,8 +262,8 @@ instance (
 app :: (
 	(es :+: es) ~ es,
 	Mergeable es es es,
-	Expandable 'True es es,
-	Collapsable 'True (Occurred :$: es) (Occurred :$: es),
+	Expandable es es,
+	Collapsable (Occurred :$: es) (Occurred :$: es),
 	Semigroup r ) => Sig es (a -> b) r -> Sig es a r -> Sig es b r
 mf `app` mx = do
 	(l, r) <- mf <^> mx

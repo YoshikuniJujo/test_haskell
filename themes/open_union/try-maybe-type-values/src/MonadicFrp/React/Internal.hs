@@ -16,8 +16,8 @@ import Data.Or
 import Data.Type.Set hiding (Merge)
 import Data.UnionSet
 
-type EvReqs (es :: Set Type) = UnionSet 'True es
-type EvOccs (es :: Set Type) = UnionSet 'True (Occurred :$: es)
+type EvReqs (es :: Set Type) = UnionSet es
+type EvOccs (es :: Set Type) = UnionSet (Occurred :$: es)
 
 class Numbered e => Request e where data Occurred (e :: Type) :: Type
 
@@ -48,7 +48,7 @@ interpret p (Await r c) = interpret p . c =<< p r
 interpret _ Never = error "never occur"			-- <- really?
 
 adjust :: forall es es' a . (
-	(es :+: es') ~ es', Firstable es es', Expandable 'True es es'
+	(es :+: es') ~ es', Firstable es es', Expandable es es'
 	) => React es a -> React es' a
 adjust rct@(Await r _) = (rct `first_` (ignore' r :: React es' ())) >>= \case
 	(Done x, _) -> pure x
@@ -56,7 +56,7 @@ adjust rct@(Await r _) = (rct `first_` (ignore' r :: React es' ())) >>= \case
 adjust (Done r) = Done r
 adjust Never = Never
 
-ignore' :: (Expandable 'True es es') => EvReqs es -> React es' ()
+ignore' :: (Expandable es es') => EvReqs es -> React es' ()
 ignore' r = Await (expand r) . const $ ignore' r
 
 first_ :: forall es es' a b . Firstable es es' =>
@@ -84,7 +84,7 @@ l `first` r = do
 		(Nothing, Just r'') -> R r''
 		(Nothing, Nothing) -> error "never occur"
 
-update :: forall es es' a . Collapsable 'True (Map Occurred (es :+: es')) (Map Occurred es) =>
+update :: forall es es' a . Collapsable (Map Occurred (es :+: es')) (Map Occurred es) =>
 	React es a -> EvOccs (es :+: es') -> React es a
 update r@(Await _ c) oc = case collapse oc of
 	Just oc' -> c oc'
@@ -99,8 +99,8 @@ done Never = Nothing
 
 type Firstable es es' = (
 	(es :+: es') ~ (es' :+: es), Mergeable es es' (es :+: es'),
-	Expandable 'True es (es :+: es'), Expandable 'True es' (es :+: es'),
+	Expandable es (es :+: es'), Expandable es' (es :+: es'),
 	CollapsableOccurred es es', CollapsableOccurred es' es )
 
 type CollapsableOccurred es es' =
-	Collapsable 'True (Occurred :$: (es :+: es')) (Occurred :$: es)
+	Collapsable (Occurred :$: (es :+: es')) (Occurred :$: es)
