@@ -44,6 +44,10 @@ tryGetUser3 :: IO ()
 tryGetUser3 = getGithubToken >>= \mba ->
 	interpret (handle mba) (getUserN 3) `runStateT` [] >>= print . fst
 
+tryGetLoginName3 :: IO ()
+tryGetLoginName3 = getGithubToken >>= \mba ->
+	interpret (handle mba) (getLoginNameNUntilError 3) `runStateT` [] >>= print . fst
+
 tryGetLoginName3Test :: TestMonad ()
 tryGetLoginName3Test = interpret testHandle (getLoginNameNUntilError 3) >>= log . show
 

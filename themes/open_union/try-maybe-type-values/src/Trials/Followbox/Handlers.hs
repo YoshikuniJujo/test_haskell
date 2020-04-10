@@ -46,11 +46,14 @@ handleLeftClick :: EvReqs (Singleton LeftClick) -> IO (EvOccs (Singleton LeftCli
 handleLeftClick _reqs = getLine >> pure (singleton OccLeftClick)
 
 handleRaiseError :: EvReqs (Singleton RaiseError) -> IO (Maybe (EvOccs (Singleton RaiseError)))
-handleRaiseError reqs = do
-	putStrLn $ "ERROR: " <> em
-	case e of
-		NotJson -> pure . Just . singleton $ OccRaiseError e Terminate
-		CatchError -> pure Nothing
+handleRaiseError reqs = case e of
+	NotJson -> do
+		putStrLn $ "ERROR: " <> em
+		pure . Just . singleton $ OccRaiseError e Terminate
+	NoLoginName -> do
+		putStrLn $ "ERROR: " <> em
+		pure . Just . singleton $ OccRaiseError e Terminate
+	CatchError -> pure Nothing
 	where RaiseError e em = extract reqs
 
 handle :: Maybe (BS.ByteString, FilePath) -> Handle (StateT [Object] IO) FollowboxEv
