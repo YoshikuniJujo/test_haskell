@@ -37,8 +37,8 @@ tryGetUser1 :: IO ()
 tryGetUser1 = getGithubToken >>= \mba ->
 	interpret (handle mba) getUser1 `runStateT` [] >>= print . fst
 
--- tryGetUser1Test :: TestMonad ()
--- tryGetUser1Test = interpret testHandleHttpGet getUser1UntilError >>= log
+tryGetUser1Test :: TestMonad ()
+tryGetUser1Test = interpret testHandle getUser1UntilError >>= log
 
 tryGetUser3 :: IO ()
 tryGetUser3 = getGithubToken >>= \mba ->
