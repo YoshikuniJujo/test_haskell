@@ -3,7 +3,7 @@
 
 module Trials.Followbox where
 
-import Prelude hiding (until)
+import Prelude hiding (until, repeat)
 
 import Control.Monad
 import Data.Type.Set
@@ -55,3 +55,6 @@ getUser1UntilError = getUser1 `first` terminateOccur
 
 getLoginNameNUntilError :: Int -> ReactF (Or [T.Text] ())
 getLoginNameNUntilError n = getLoginNameN n `first` terminateOccur
+
+getLoginNameQuit :: SigF T.Text (Either T.Text (Maybe ()))
+getLoginNameQuit = repeat (adjust leftClick >> getLoginName) `until` checkQuit

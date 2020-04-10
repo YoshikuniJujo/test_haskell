@@ -42,8 +42,11 @@ handleStoreJsons reqs = singleton (OccStoreJsons os) <$ put os
 handleLoadJsons :: Monad m => EvReqs (Singleton LoadJsons) -> StateT [Object] m (EvOccs (Singleton LoadJsons))
 handleLoadJsons _reqs = singleton . OccLoadJsons <$> get
 
-handleLeftClick :: EvReqs (Singleton LeftClick) -> IO (EvOccs (Singleton LeftClick))
-handleLeftClick _reqs = getLine >> pure (singleton OccLeftClick)
+handleLeftClick :: EvReqs (LeftClick :- Quit :- 'Nil) -> IO (EvOccs (LeftClick :- Quit :- 'Nil))
+handleLeftClick reqs = getLine >>= \case
+	"" -> liftIO (putStrLn "here") >> pure (expand $ singleton OccLeftClick)
+	"q" -> pure (expand $ singleton OccQuit)
+	_ -> handleLeftClick reqs
 
 handleRaiseError :: EvReqs (Singleton RaiseError) -> IO (Maybe (EvOccs (Singleton RaiseError)))
 handleRaiseError reqs = case e of

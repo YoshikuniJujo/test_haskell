@@ -1,4 +1,5 @@
 {-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE DataKinds, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Followbox.TestMonad where
@@ -67,8 +68,8 @@ testHandleStoreJsons reqs = do
 testHandleLoadJsons :: Handle TestMonad (Singleton LoadJsons)
 testHandleLoadJsons _reqs = singleton . OccLoadJsons <$> getJsons
 
-testHandleLeftClick :: Handle TestMonad (Singleton LeftClick)
-testHandleLeftClick _reqs = pure $ singleton OccLeftClick
+testHandleLeftClick :: Handle TestMonad (LeftClick :- Quit :- 'Nil)
+testHandleLeftClick _reqs = pure . expand $ singleton OccLeftClick
 
 testHandleRaiseError :: Handle' TestMonad (Singleton RaiseError)
 testHandleRaiseError reqs = do

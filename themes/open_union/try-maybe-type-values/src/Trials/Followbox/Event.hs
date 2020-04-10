@@ -58,6 +58,13 @@ instance Request LoadJsons where
 loadJsons :: React (Singleton LoadJsons) [Object]
 loadJsons = await LoadJsonsReq \(OccLoadJsons os) -> os
 
+data Quit = QuitReq deriving (Show, Eq, Ord)
+numbered [t| Quit |]
+instance Request Quit where data Occurred Quit = OccQuit
+
+checkQuit :: React (Singleton Quit) ()
+checkQuit = await QuitReq $ const ()
+
 data Error = NotJson | NoLoginName | CatchError deriving (Show, Eq, Ord)
 
 data ErrorResult = Continue | Terminate deriving Show
@@ -78,4 +85,4 @@ type SigF = Sig FollowboxEv
 type ISigF = ISig FollowboxEv
 type ReactF = React FollowboxEv
 
-type FollowboxEv = LeftClick :- HttpGet :- StoreJsons :- LoadJsons :- RaiseError :- 'Nil
+type FollowboxEv = LeftClick :- HttpGet :- StoreJsons :- LoadJsons :- Quit :- RaiseError :- 'Nil

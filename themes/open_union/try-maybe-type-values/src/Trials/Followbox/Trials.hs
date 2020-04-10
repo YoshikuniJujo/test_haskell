@@ -10,6 +10,7 @@ import System.Environment
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
+import qualified Data.Text.IO as T
 
 import MonadicFrp
 import Trials.Followbox
@@ -54,3 +55,7 @@ tryGetLoginName3Test = interpret testHandle (getLoginNameNUntilError 3) >>= log 
 tryLeftClickUser3 :: IO ()
 tryLeftClickUser3 = getGithubToken >>= \mba ->
 	interpret (handle mba) (leftClickUserN 3) `runStateT` [] >>= print . fst
+
+tryGetLoginNameQuit :: IO ()
+tryGetLoginNameQuit = getGithubToken >>= \mba ->
+	interpretSig (handle mba) (liftIO . T.putStrLn) getLoginNameQuit `runStateT` [] >>= print . fst
