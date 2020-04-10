@@ -42,19 +42,20 @@ putJsons os = do
 getJsons :: TestMonad [Object]
 getJsons = snd <$> get
 
-log :: Show a => a -> TestMonad ()
-log = lift . tell . (++ "\n") . show
+log :: String -> TestMonad ()
+log = lift . tell . (++ "\n")
 
 tryTestMonad :: TestMonad Int
 tryTestMonad = do
 	e <- getEvent
-	log e
+	log $ show e
 	pure 123
 
 testHandleHttpGet :: EvReqs (Singleton HttpGet) -> TestMonad (EvOccs (Singleton HttpGet))
 testHandleHttpGet reqs = do
-	log u
+	log $ "HTTP GET " <> u
 	pure . singleton $ OccHttpGet u [] "[{\"foo\": \"bar\"}]"
+--	pure . singleton $ OccHttpGet u [] "[]"
 	where HttpGetReq u = extract reqs
 
 testHandleStoreJsons :: Handle TestMonad (Singleton StoreJsons)
@@ -74,6 +75,7 @@ testHandleRaiseError reqs = do
 	log $ "ERROR: " <> em
 	case e of
 		NotJson -> pure . Just . singleton $ OccRaiseError e Terminate
+		NoLoginName -> pure . Just . singleton $ OccRaiseError e Terminate
 		CatchError -> pure Nothing
 	where RaiseError e em = extract reqs
 

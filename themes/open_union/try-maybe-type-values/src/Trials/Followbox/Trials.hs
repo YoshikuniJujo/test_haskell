@@ -27,7 +27,7 @@ tryHttpGet = getGithubToken >>= \mba ->
 	interpret (handleHttpGet mba) (httpGet "https://api.github.com/users") >>= print
 
 tryHttpGetTest :: TestMonad ()
-tryHttpGetTest = interpret testHandleHttpGet (httpGet "https://api.github.com/users") >>= log
+tryHttpGetTest = interpret testHandleHttpGet (httpGet "https://api.github.com/users") >>= log . show
 
 tryGetUsersJson :: IO ()
 tryGetUsersJson = getGithubToken >>= \mba ->
@@ -38,11 +38,14 @@ tryGetUser1 = getGithubToken >>= \mba ->
 	interpret (handle mba) getUser1 `runStateT` [] >>= print . fst
 
 tryGetUser1Test :: TestMonad ()
-tryGetUser1Test = interpret testHandle getUser1UntilError >>= log
+tryGetUser1Test = interpret testHandle getUser1UntilError >>= log . show
 
 tryGetUser3 :: IO ()
 tryGetUser3 = getGithubToken >>= \mba ->
 	interpret (handle mba) (getUserN 3) `runStateT` [] >>= print . fst
+
+tryGetLoginName3Test :: TestMonad ()
+tryGetLoginName3Test = interpret testHandle (getLoginNameNUntilError 3) >>= log . show
 
 tryLeftClickUser3 :: IO ()
 tryLeftClickUser3 = getGithubToken >>= \mba ->

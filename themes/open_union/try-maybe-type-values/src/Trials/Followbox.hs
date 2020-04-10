@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Followbox where
@@ -30,12 +30,20 @@ getUser1 = adjust loadJsons >>= \case
 getUserN :: Int -> ReactF [Object]
 getUserN n = n `replicateM` getUser1
 
-leftClickUserN :: Int -> ReactF [Either String T.Text]
+getLoginName :: ReactF T.Text
+getLoginName = loginNameFromObject <$> getUser1 >>= \case
+	Just ln -> pure ln
+	Nothing -> adjust (raiseError NoLoginName "No Login Name") >> getLoginName
+
+getLoginNameN :: Int -> ReactF [T.Text]
+getLoginNameN n = n `replicateM` getLoginName
+
+leftClickUserN :: Int -> ReactF [Maybe T.Text]
 leftClickUserN n = adjust leftClick >> (loginNameFromObject <$>) <$> getUserN n
 
-loginNameFromObject :: Object -> Either String T.Text
+loginNameFromObject :: Object -> Maybe T.Text
 loginNameFromObject o = case HM.lookup "login" o of
-	Just (String li) -> Right li; _ -> Left "no login name"
+	Just (String li) -> Just li; _ -> Nothing
 
 terminateOccur :: ReactF ()
 terminateOccur = adjust catchError >>= \case
@@ -44,3 +52,6 @@ terminateOccur = adjust catchError >>= \case
 
 getUser1UntilError :: ReactF (Or Object ())
 getUser1UntilError = getUser1 `first` terminateOccur
+
+getLoginNameNUntilError :: Int -> ReactF (Or [T.Text] ())
+getLoginNameNUntilError n = getLoginNameN n `first` terminateOccur

@@ -58,7 +58,7 @@ instance Request LoadJsons where
 loadJsons :: React (Singleton LoadJsons) [Object]
 loadJsons = await LoadJsonsReq \(OccLoadJsons os) -> os
 
-data Error = NotJson | CatchError deriving (Show, Eq, Ord)
+data Error = NotJson | NoLoginName | CatchError deriving (Show, Eq, Ord)
 
 data ErrorResult = Continue | Terminate deriving Show
 
