@@ -6,6 +6,7 @@ module Trials.Followbox where
 import Prelude hiding (until, repeat)
 
 import Control.Monad
+import Data.Type.Flip
 import Data.Type.Set
 import Data.Or
 
@@ -14,6 +15,7 @@ import qualified Data.HashMap.Strict as HM
 
 import Trials.Followbox.Event
 import Trials.Followbox.Aeson
+import Trials.Followbox.View
 import MonadicFrp
 
 getUsersJson :: React (Singleton HttpGet) (Either String [Object])
@@ -56,5 +58,8 @@ getUser1UntilError = getUser1 `first` terminateOccur
 getLoginNameNUntilError :: Int -> ReactF (Or [T.Text] ())
 getLoginNameNUntilError n = getLoginNameN n `first` terminateOccur
 
-getLoginNameQuit :: SigF T.Text (Either T.Text (Maybe ()))
-getLoginNameQuit = repeat (adjust leftClick >> getLoginName) `until` checkQuit
+getLoginNameQuit :: SigF View (Either T.Text (Maybe ()))
+getLoginNameQuit = loginNameToView <$%> (repeat (adjust leftClick >> getLoginName) `until` checkQuit)
+
+loginNameToView :: T.Text -> View
+loginNameToView n = [Text blue 24 (100, 100) n]

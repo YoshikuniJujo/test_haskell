@@ -10,12 +10,12 @@ import System.Environment
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
-import qualified Data.Text.IO as T
 
 import MonadicFrp.Run
 import Trials.Followbox
 import Trials.Followbox.Event
 import Trials.Followbox.Handlers
+import Trials.Followbox.View
 
 import Trials.Followbox.TestMonad
 
@@ -60,10 +60,10 @@ tryLeftClickUser3 = getGithubToken >>= \mba ->
 
 tryGetLoginNameQuit :: IO ()
 tryGetLoginNameQuit = getGithubToken >>= \mba ->
-	interpret (handle mba) (liftIO . T.putStrLn) getLoginNameQuit `runStateT` [] >>= print . fst
+	interpret (handle mba) (liftIO . print) getLoginNameQuit `runStateT` [] >>= print . fst
 
 tryGetLoginNameQuit' :: IO ()
 tryGetLoginNameQuit' = getGithubToken >>= \mba -> do
 	f <- openField "tryGetLoginNameQuit'" [exposureMask, buttonPressMask]
-	interpret (handle' f mba) (liftIO . T.putStrLn) getLoginNameQuit `runStateT` [] >>= print . fst
+	interpret (handle' f mba) (liftIO . view f) getLoginNameQuit `runStateT` [] >>= print . fst
 	closeField f
