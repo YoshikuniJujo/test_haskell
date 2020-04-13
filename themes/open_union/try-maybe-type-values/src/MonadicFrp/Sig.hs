@@ -8,7 +8,7 @@ module MonadicFrp.Sig (
 	-- * Types
 	Sig, ISig,
 	-- * Run Sig
-	interpretSig,
+	interpret,
 	-- * Conversion
 	emit, waitFor,
 	-- * Transformation
@@ -61,10 +61,9 @@ instance Monad (ISig es a) where
 	End r >>= f = f r
 	(h :| t) >>= f = h :| (t >>= Sig . pure . f)
 
-interpretSig :: Monad m =>
-	(EvReqs es -> m (EvOccs es)) -> (a -> m ()) -> Sig es a r -> m r
-interpretSig p d = interpretSig' where
-	interpretSig' (Sig s) = interpret p s >>= interpretISig
+interpret :: Monad m => Handle m es -> (a -> m ()) -> Sig es a r -> m r
+interpret p d = interpretSig' where
+	interpretSig' (Sig s) = interpretReact p s >>= interpretISig
 	interpretISig (End x) = pure x
 --	interpretISig (h :| Never) = d h >> interpretSig' 
 	interpretISig (h :| t) = d h >> interpretSig' t

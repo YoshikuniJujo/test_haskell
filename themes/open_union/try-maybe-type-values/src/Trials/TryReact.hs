@@ -11,7 +11,8 @@ import Data.Time.Clock.TAI (AbsoluteTime)
 import Trials.Boxes (leftClick, sameClick, doubler, firstPoint)
 import Trials.Boxes.Handlers (handle, handleWithoutTime)
 import Trials.Boxes.Events (ReactG, sleep)
-import MonadicFrp (interpret, adjust)
+import MonadicFrp (adjust)
+import MonadicFrp.Run (interpretReact)
 import Field (Field, openField, closeField, exposureMask, buttonPressMask)
 
 withField :: String -> (Field -> IO a) -> IO a
@@ -20,26 +21,26 @@ withField fn act = (<*) <$> act <*> closeField
 
 tryLeftClick :: IO ()
 tryLeftClick = withField "tryLeftClick" \f ->
-	interpret (handleWithoutTime f) (adjust leftClick :: ReactG ())
+	interpretReact (handleWithoutTime f) (adjust leftClick :: ReactG ())
 
 trySameClick :: IO ()
 trySameClick = withField "trySameClick" \f ->
-	print =<< interpret (handleWithoutTime f) sameClick
+	print =<< interpretReact (handleWithoutTime f) sameClick
 
 trySleep :: IO ()
 trySleep = withField "trySleep" \f -> do
 	now <- getTAITime
-	print =<< interpret (handle 0.5 f) (adjust $ sleep 3) `runStateT` now
+	print =<< interpretReact (handle 0.5 f) (adjust $ sleep 3) `runStateT` now
 
 tryDoubler :: IO ()
 tryDoubler = withField "tryDoubler" \f -> do
 	now <- getTAITime
-	print =<< interpret (handle 0.05 f) doubler `runStateT` now
+	print =<< interpretReact (handle 0.05 f) doubler `runStateT` now
 
 tryFirstPoint :: IO ()
 tryFirstPoint = withField "tryFirstPoint" \f -> do
 	now <- getTAITime
-	print =<< interpret (handle 0.05 f) firstPoint `runStateT` now
+	print =<< interpretReact (handle 0.05 f) firstPoint `runStateT` now
 
 getTAITime :: IO AbsoluteTime
 getTAITime = systemToTAITime <$> getSystemTime

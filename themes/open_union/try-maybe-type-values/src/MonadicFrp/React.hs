@@ -2,7 +2,8 @@
 
 module MonadicFrp.React (
 	React, EvReqs, EvOccs, Request(..), Firstable, CollapsableOccurred,
-	interpret, await, adjust, first ) where
+	interpretReact, await, adjust, first,
+	Handle, Handle' ) where
 
 import Data.Type.Set
 import Data.UnionSet

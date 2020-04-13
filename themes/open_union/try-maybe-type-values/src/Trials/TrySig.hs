@@ -15,7 +15,7 @@ import Trials.Boxes (
 	completeRect, defineRect, chooseBoxColor, chooseBoxColor', boxes )
 import Trials.Boxes.Handlers (handle)
 import Trials.Boxes.Events (SigG)
-import MonadicFrp (interpretSig)
+import MonadicFrp.Run (interpret)
 import Field (
 	Field, Pixel,
 	openField, closeField, flushField, clearField, fillRect, drawStr,
@@ -28,7 +28,7 @@ withInterpretSig fn op s = do
 		exposureMask, buttonPressMask,
 		buttonReleaseMask, pointerMotionMask ]
 	now <- systemToTAITime <$> getSystemTime
-	print =<< interpretSig (handle 0.05 f) (liftIO . op f) s `runStateT` now
+	print =<< interpret (handle 0.05 f) (liftIO . op f) s `runStateT` now
 	closeField f
 
 tryCycleColor :: IO ()

@@ -12,7 +12,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Text.IO as T
 
-import MonadicFrp
+import MonadicFrp.Run
 import Trials.Followbox
 import Trials.Followbox.Event
 import Trials.Followbox.Handlers
@@ -25,37 +25,37 @@ getGithubToken =
 
 tryHttpGet :: IO ()
 tryHttpGet = getGithubToken >>= \mba ->
-	interpret (handleHttpGet mba) (httpGet "https://api.github.com/users") >>= print
+	interpretReact (handleHttpGet mba) (httpGet "https://api.github.com/users") >>= print
 
 tryHttpGetTest :: TestMonad ()
-tryHttpGetTest = interpret testHandleHttpGet (httpGet "https://api.github.com/users") >>= log . show
+tryHttpGetTest = interpretReact testHandleHttpGet (httpGet "https://api.github.com/users") >>= log . show
 
 tryGetUsersJson :: IO ()
 tryGetUsersJson = getGithubToken >>= \mba ->
-	interpret (handleHttpGet mba) ((take 3 <$>) <$> getUsersJson) >>= either putStrLn (print `mapM_`)
+	interpretReact (handleHttpGet mba) ((take 3 <$>) <$> getUsersJson) >>= either putStrLn (print `mapM_`)
 
 tryGetUser1 :: IO ()
 tryGetUser1 = getGithubToken >>= \mba ->
-	interpret (handle mba) getUser1 `runStateT` [] >>= print . fst
+	interpretReact (handle mba) getUser1 `runStateT` [] >>= print . fst
 
 tryGetUser1Test :: TestMonad ()
-tryGetUser1Test = interpret testHandle getUser1UntilError >>= log . show
+tryGetUser1Test = interpretReact testHandle getUser1UntilError >>= log . show
 
 tryGetUser3 :: IO ()
 tryGetUser3 = getGithubToken >>= \mba ->
-	interpret (handle mba) (getUserN 3) `runStateT` [] >>= print . fst
+	interpretReact (handle mba) (getUserN 3) `runStateT` [] >>= print . fst
 
 tryGetLoginName3 :: IO ()
 tryGetLoginName3 = getGithubToken >>= \mba ->
-	interpret (handle mba) (getLoginNameNUntilError 3) `runStateT` [] >>= print . fst
+	interpretReact (handle mba) (getLoginNameNUntilError 3) `runStateT` [] >>= print . fst
 
 tryGetLoginName3Test :: TestMonad ()
-tryGetLoginName3Test = interpret testHandle (getLoginNameNUntilError 3) >>= log . show
+tryGetLoginName3Test = interpretReact testHandle (getLoginNameNUntilError 3) >>= log . show
 
 tryLeftClickUser3 :: IO ()
 tryLeftClickUser3 = getGithubToken >>= \mba ->
-	interpret (handle mba) (leftClickUserN 3) `runStateT` [] >>= print . fst
+	interpretReact (handle mba) (leftClickUserN 3) `runStateT` [] >>= print . fst
 
 tryGetLoginNameQuit :: IO ()
 tryGetLoginNameQuit = getGithubToken >>= \mba ->
-	interpretSig (handle mba) (liftIO . T.putStrLn) getLoginNameQuit `runStateT` [] >>= print . fst
+	interpret (handle mba) (liftIO . T.putStrLn) getLoginNameQuit `runStateT` [] >>= print . fst

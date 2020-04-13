@@ -7,7 +7,8 @@
 
 module MonadicFrp.React.Internal (
 	React(..), EvReqs, EvOccs, Request(..), Firstable, CollapsableOccurred,
-	interpret, adjust, first_, first, done
+	interpretReact, adjust, first_, first, done,
+	Handle, Handle'
 	) where
 
 import Data.Kind
@@ -42,10 +43,10 @@ instance Monad (React es) where
 	Await reqs k >>= f = Await reqs $ (>>= f) . k
 	Never >>= _ = Never
 
-interpret :: Monad m => (EvReqs es -> m (EvOccs es)) -> React es a -> m a
-interpret _ (Done x) = pure x
-interpret p (Await r c) = interpret p . c =<< p r
-interpret _ Never = error "never occur"			-- <- really?
+interpretReact :: Monad m => Handle m es -> React es a -> m a
+interpretReact _ (Done x) = pure x
+interpretReact p (Await r c) = interpretReact p . c =<< p r
+interpretReact _ Never = error "never occur"			-- <- really?
 
 adjust :: forall es es' a . (
 	(es :+: es') ~ es', Firstable es es', Expandable es es'
@@ -104,3 +105,6 @@ type Firstable es es' = (
 
 type CollapsableOccurred es es' =
 	Collapsable (Occurred :$: (es :+: es')) (Occurred :$: es)
+
+type Handle m es = EvReqs es -> m (EvOccs es)
+type Handle' m es = EvReqs es -> m (Maybe (EvOccs es))

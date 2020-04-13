@@ -8,8 +8,6 @@ module MonadicFrp (
 	-- * Types
 	Sig, ISig, React, EvReqs, EvOccs, Request(..),
 	Firstable, CollapsableOccurred,
-	-- * Run
-	interpret, interpretSig,
 	-- * Handle
 	Handle, Handle', retryHandle, mergeHandle,
 	-- * React
@@ -30,9 +28,6 @@ import Data.Type.Set
 import Data.UnionSet
 import MonadicFrp.Sig
 import MonadicFrp.React
-
-type Handle m es = EvReqs es -> m (EvOccs es)
-type Handle' m es = EvReqs es -> m (Maybe (EvOccs es))
 
 retryHandle :: Monad m => Handle' m es -> Handle m es
 retryHandle h reqs = h reqs >>= \case
