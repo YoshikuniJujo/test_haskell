@@ -19,6 +19,8 @@ import Trials.Followbox.Handlers
 
 import Trials.Followbox.TestMonad
 
+import Field
+
 getGithubToken :: IO (Maybe (BS.ByteString, FilePath))
 getGithubToken =
 	(<$> getArgs) \case [nm, tkn] -> Just (BSC.pack nm, tkn); _ -> Nothing
@@ -59,3 +61,9 @@ tryLeftClickUser3 = getGithubToken >>= \mba ->
 tryGetLoginNameQuit :: IO ()
 tryGetLoginNameQuit = getGithubToken >>= \mba ->
 	interpret (handle mba) (liftIO . T.putStrLn) getLoginNameQuit `runStateT` [] >>= print . fst
+
+tryGetLoginNameQuit' :: IO ()
+tryGetLoginNameQuit' = getGithubToken >>= \mba -> do
+	f <- openField "tryGetLoginNameQuit'" [exposureMask, buttonPressMask]
+	interpret (handle' f mba) (liftIO . T.putStrLn) getLoginNameQuit `runStateT` [] >>= print . fst
+	closeField f

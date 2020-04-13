@@ -20,6 +20,7 @@ import Trials.Followbox.Event
 import Trials.Followbox.BasicAuth
 import Trials.Followbox.Aeson
 import MonadicFrp.Handle
+import Field
 
 handleHttpGet :: Maybe (BS.ByteString, FilePath) -> EvReqs (Singleton HttpGet) -> IO (EvOccs (Singleton HttpGet))
 handleHttpGet mba reqs = do
@@ -66,3 +67,17 @@ handle mba = retry $
 	(Just <$>) . handleLoadJsons `merge`
 	liftIO . handleRaiseError `before`
 	liftIO . (Just <$>) . handleLeftClick
+
+handle' :: Field -> Maybe (BS.ByteString, FilePath) -> Handle (StateT [Object] IO) FollowboxEv
+handle' f mba = retry $
+	(Just <$>) . handleStoreJsons `merge`
+	liftIO . (Just <$>) . handleHttpGet mba `merge`
+	(Just <$>) . handleLoadJsons `merge`
+	liftIO . handleRaiseError `before`
+	liftIO . handleLeftClick' f
+
+handleLeftClick' :: Field -> EvReqs (LeftClick :- Quit :- 'Nil) -> IO (Maybe (EvOccs (LeftClick :- Quit :- 'Nil)))
+handleLeftClick' f _reqs = withNextEvent f \case
+	ButtonEvent { ev_event_type = 4, ev_button = 1 } -> pure . Just . expand . singleton $ OccLeftClick
+	ButtonEvent { ev_event_type = 4, ev_button = 3 } -> pure . Just . expand . singleton $ OccQuit
+	_ -> pure Nothing
