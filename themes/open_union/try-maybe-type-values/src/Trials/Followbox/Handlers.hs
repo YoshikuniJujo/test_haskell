@@ -61,8 +61,8 @@ handleRaiseError reqs = case e of
 
 handle :: Maybe (BS.ByteString, FilePath) -> Handle (StateT [Object] IO) FollowboxEv
 handle mba = retry $
-	liftIO . (Just <$>) . handleLeftClick `merge`
 	(Just <$>) . handleStoreJsons `merge`
 	liftIO . (Just <$>) . handleHttpGet mba `merge`
 	(Just <$>) . handleLoadJsons `merge`
-	liftIO . handleRaiseError
+	liftIO . handleRaiseError `before`
+	liftIO . (Just <$>) . handleLeftClick
