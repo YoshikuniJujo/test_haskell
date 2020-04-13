@@ -67,3 +67,9 @@ tryGetLoginNameQuit' = getGithubToken >>= \mba -> do
 	f <- openField "tryGetLoginNameQuit'" [exposureMask, buttonPressMask]
 	interpret (handle' f mba) (liftIO . view f) getLoginNameQuit `runStateT` [] >>= print . fst
 	closeField f
+
+tryGetLoginNameNQuit :: IO ()
+tryGetLoginNameNQuit = getGithubToken >>= \mba -> do
+	f <- openField "tryGetLoginNameNQuit'" [exposureMask, buttonPressMask]
+	interpret (handle' f mba) (liftIO . view f) getLoginNameNQuit `runStateT` [] >>= print . fst
+	closeField f

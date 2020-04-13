@@ -62,4 +62,13 @@ getLoginNameQuit :: SigF View (Either T.Text (Maybe ()))
 getLoginNameQuit = loginNameToView <$%> (repeat (adjust leftClick >> getLoginName) `until` checkQuit)
 
 loginNameToView :: T.Text -> View
-loginNameToView n = [Text blue 24 (100, 100) n]
+loginNameToView nm = [Text blue 24 (100, 100) nm]
+
+getLoginNameWithN :: Int -> ReactF [(Int, T.Text)]
+getLoginNameWithN n = zip [0 ..] <$> getLoginNameN n
+
+loginNameNToView :: Int -> T.Text -> View1
+loginNameNToView n nm = Text blue 24 (100, 100 + fromIntegral n * 50) nm
+
+getLoginNameNQuit :: SigF View (Either [(Int, T.Text)] (Maybe ()))
+getLoginNameNQuit = (uncurry loginNameNToView <$>) <$%> (repeat (adjust leftClick >> getLoginNameWithN 3) `until` checkQuit)
