@@ -10,13 +10,13 @@ import Control.Arrow
 import Control.Monad.Writer
 import Control.Monad.State
 import Data.Type.Set
-import Data.UnionSet
+import Data.UnionSet hiding (merge)
 
 import qualified Data.Text as T
 
 import Trials.Followbox.Event
 import Trials.Followbox.Aeson
-import MonadicFrp hiding (first)
+import MonadicFrp.Handle
 
 data Event = LeftClick | HttpResult T.Text deriving Show
 
@@ -81,8 +81,8 @@ testHandleRaiseError reqs = do
 	where RaiseError e em = extract reqs
 
 testHandle :: Handle TestMonad FollowboxEv
-testHandle = retryHandle $
-	(Just <$>) . testHandleHttpGet `mergeHandle`
-	(Just <$>) . testHandleStoreJsons `mergeHandle`
-	(Just <$>) . testHandleLoadJsons `mergeHandle`
-	(Just <$>) . testHandleLeftClick `mergeHandle` testHandleRaiseError
+testHandle = retry $
+	(Just <$>) . testHandleHttpGet `merge`
+	(Just <$>) . testHandleStoreJsons `merge`
+	(Just <$>) . testHandleLoadJsons `merge`
+	(Just <$>) . testHandleLeftClick `merge` testHandleRaiseError

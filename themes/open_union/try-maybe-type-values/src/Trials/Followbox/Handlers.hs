@@ -11,7 +11,7 @@ import Prelude hiding ((++))
 import Control.Monad.State
 import Data.Type.Set
 import Data.String
-import Data.UnionSet
+import Data.UnionSet hiding (merge)
 
 import qualified Data.ByteString as BS
 import qualified Network.HTTP.Simple as HTTP
@@ -19,7 +19,7 @@ import qualified Network.HTTP.Simple as HTTP
 import Trials.Followbox.Event
 import Trials.Followbox.BasicAuth
 import Trials.Followbox.Aeson
-import MonadicFrp
+import MonadicFrp.Handle
 
 handleHttpGet :: Maybe (BS.ByteString, FilePath) -> EvReqs (Singleton HttpGet) -> IO (EvOccs (Singleton HttpGet))
 handleHttpGet mba reqs = do
@@ -60,9 +60,9 @@ handleRaiseError reqs = case e of
 	where RaiseError e em = extract reqs
 
 handle :: Maybe (BS.ByteString, FilePath) -> Handle (StateT [Object] IO) FollowboxEv
-handle mba = retryHandle $
-	liftIO . (Just <$>) . handleLeftClick `mergeHandle`
-	(Just <$>) . handleStoreJsons `mergeHandle`
-	liftIO . (Just <$>) . handleHttpGet mba `mergeHandle`
-	(Just <$>) . handleLoadJsons `mergeHandle`
+handle mba = retry $
+	liftIO . (Just <$>) . handleLeftClick `merge`
+	(Just <$>) . handleStoreJsons `merge`
+	liftIO . (Just <$>) . handleHttpGet mba `merge`
+	(Just <$>) . handleLoadJsons `merge`
 	liftIO . handleRaiseError
