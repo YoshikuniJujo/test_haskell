@@ -38,9 +38,6 @@ getLoginName = loginNameFromObject <$> getUser1 >>= \case
 	Just ln -> pure ln
 	Nothing -> adjust (raiseError NoLoginName "No Login Name") >> getLoginName
 
-getLoginNameN :: Int -> ReactF [T.Text]
-getLoginNameN n = n `replicateM` getLoginName
-
 leftClickUserN :: Int -> ReactF [Maybe T.Text]
 leftClickUserN n = adjust leftClick >> (loginNameFromObject <$>) <$> getUserN n
 
@@ -56,17 +53,11 @@ terminateOccur = adjust catchError >>= \case
 getUser1UntilError :: ReactF (Or Object ())
 getUser1UntilError = getUser1 `first` terminateOccur
 
-getLoginNameNUntilError :: Int -> ReactF (Or [T.Text] ())
-getLoginNameNUntilError n = getLoginNameN n `first` terminateOccur
-
 getLoginNameQuit :: SigF View (Either T.Text (Maybe ()))
 getLoginNameQuit = loginNameToView <$%> (repeat (adjust leftClick >> getLoginName) `until` checkQuit)
 
 loginNameToView :: T.Text -> View
 loginNameToView nm = [Text blue 24 (100, 100) nm]
-
-getLoginNameWithN :: Int -> ReactF [(Int, T.Text)]
-getLoginNameWithN n = zip [0 ..] <$> getLoginNameN n
 
 loginNameNToView :: Int -> T.Text -> View1
 loginNameNToView n nm = Text blue 24 (100, 100 + fromIntegral n * 50) nm
@@ -74,22 +65,14 @@ loginNameNToView n nm = Text blue 24 (100, 100 + fromIntegral n * 50) nm
 getLoginNameNQuit :: SigF View (Either View (Maybe ()))
 getLoginNameNQuit = (repeat (adjust leftClick >> arrangeLoginNameN 3) `until` checkQuit)
 
-arrangeVertically :: Color -> FontSize -> Position -> [T.Text] -> ReactF View
-arrangeVertically _ _ _ [] = pure []
-arrangeVertically clr fs p@(x, y) (t : ts) = do
-	XGlyphInfo {
-		xGlyphInfoWidth = w,
-		xGlyphInfoHeight = _h,
-		xGlyphInfoX = x',
-		xGlyphInfoY = y' } <- adjust $ calcTextExtents "sans" fs t
-	(createLoginName clr fs p t (x - x' + w, y - y') ++) <$> arrangeVertically clr fs (x, y + round fs * 2) ts
+arrangeLoginNameN :: Integer -> ReactF View
+arrangeLoginNameN n = (concat . (fst <$>)) <$> viewLoginName `mapM` [0 .. n - 1]
 
-arrangeLoginNameN :: Int -> ReactF View
-arrangeLoginNameN n = arrangeVertically blue 36 (100, 100) =<< getLoginNameN n
-
-createLoginName :: Color -> Double -> Position -> T.Text -> Position -> View
-createLoginName clr fs p t (x', y') =
-	Text clr fs p t : createX 4 (round fs `div` 2) (x' + round fs `div` 2, y' + round fs * 3 `div` 8)
+createLoginName :: Color -> Double -> Position -> T.Text -> Position -> (View, Rect)
+createLoginName clr fs p t (x', y') = (
+	Text clr fs p t : createX 4 (round fs `div` 2) (x' + round fs `div` 2, y' + round fs * 3 `div` 8),
+	Rect	(x' + round fs `div` 2, y' + round fs * 3 `div` 8)
+		(x' + round fs, y' + round fs * 5 `div` 8) )
 
 createX :: Integer -> Integer -> Position -> View
 createX lw sz (x, y) = [
@@ -98,3 +81,17 @@ createX lw sz (x, y) = [
 
 data Rect = Rect { upperLeft :: Position, bottomRight :: Position }
 	deriving Show
+
+viewLoginName :: Integer -> ReactF (View, Rect)
+viewLoginName n = createLoginName1 n =<< getLoginName
+
+createLoginName1 :: Integer -> T.Text -> ReactF (View, Rect)
+createLoginName1 n t = do
+	XGlyphInfo {
+		xGlyphInfoWidth = w,
+		xGlyphInfoX = x,
+		xGlyphInfoY = y } <- adjust $ calcTextExtents "sans" 36 t
+	pure $ createLoginName blue 36 (100, 100 + n * 72) t (100 - x + w, 100 + n * 72 - y)
+
+-- clickOnRect :: Rect -> ReactF ()
+-- clickOnRect
