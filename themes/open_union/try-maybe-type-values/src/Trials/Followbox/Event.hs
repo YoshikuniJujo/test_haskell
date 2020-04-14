@@ -11,10 +11,12 @@ import Data.Bool
 import Network.HTTP.Simple (Header)
 
 import qualified Data.ByteString.Lazy as LBS
+import qualified Data.Text as T
 
 import MonadicFrp
 
 import Trials.Followbox.Aeson
+import Trials.Followbox.XGlyphInfo
 
 data Result = Failure | Succeed deriving Show
 
@@ -57,6 +59,21 @@ instance Request LoadJsons where
 
 loadJsons :: React (Singleton LoadJsons) [Object]
 loadJsons = await LoadJsonsReq \(OccLoadJsons os) -> os
+
+data CalcTextExtents = CalcTextExtentsReq String Double T.Text
+	deriving (Show, Eq, Ord)
+numbered [t| CalcTextExtents |]
+instance Request CalcTextExtents where
+	data Occurred CalcTextExtents =
+		OccCalcTextExtents String Double T.Text XGlyphInfo
+
+calcTextExtents :: String -> Double -> T.Text ->
+	React (Singleton CalcTextExtents) XGlyphInfo
+calcTextExtents fn fs t = maybe (calcTextExtents fn fs t) pure
+	=<< await (CalcTextExtentsReq fn fs t)
+		\(OccCalcTextExtents fn' fs' t' glp) ->
+			bool Nothing (Just glp)
+				$ fn == fn' && fs == fs' && t == t'
 
 data Quit = QuitReq deriving (Show, Eq, Ord)
 numbered [t| Quit |]

@@ -36,6 +36,7 @@ dependencies:
 - unordered-containers
 - scientific
 - text
+- X11-xft
 
 library:
   source-dirs: src

@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -10,6 +11,7 @@ import System.Environment
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
+import qualified Data.Text as T
 
 import MonadicFrp.Run
 import Trials.Followbox
@@ -64,12 +66,19 @@ tryGetLoginNameQuit = getGithubToken >>= \mba ->
 
 tryGetLoginNameQuit' :: IO ()
 tryGetLoginNameQuit' = getGithubToken >>= \mba -> do
-	f <- openField "tryGetLoginNameQuit'" [exposureMask, buttonPressMask]
+	f <- openField ("tryGetLoginNameQuit'" :: String) [exposureMask, buttonPressMask]
 	interpret (handle' f mba) (liftIO . view f) getLoginNameQuit `runStateT` [] >>= print . fst
 	closeField f
 
 tryGetLoginNameNQuit :: IO ()
 tryGetLoginNameNQuit = getGithubToken >>= \mba -> do
-	f <- openField "tryGetLoginNameNQuit'" [exposureMask, buttonPressMask]
+	f <- openField ("tryGetLoginNameNQuit'" :: String) [exposureMask, buttonPressMask]
 	interpret (handle' f mba) (liftIO . view f) getLoginNameNQuit `runStateT` [] >>= print . fst
+	closeField f
+
+tryCalcTextExtents :: IO ()
+tryCalcTextExtents = do
+	f <- openField ("tryCalcTextExtents" :: String) [exposureMask]
+	let	greeting = "Hello, world!" :: T.Text
+	interpretReact (handleCalcTextExtents f) (calcTextExtents "sans" 12.5 greeting) >>= print
 	closeField f

@@ -19,8 +19,9 @@ import qualified Network.HTTP.Simple as HTTP
 import Trials.Followbox.Event
 import Trials.Followbox.BasicAuth
 import Trials.Followbox.Aeson
+import Trials.Followbox.XGlyphInfo
 import MonadicFrp.Handle
-import Field
+import Field hiding (textExtents)
 
 handleHttpGet :: Maybe (BS.ByteString, FilePath) -> EvReqs (Singleton HttpGet) -> IO (EvOccs (Singleton HttpGet))
 handleHttpGet mba reqs = do
@@ -81,3 +82,7 @@ handleLeftClick' f _reqs = withNextEvent f \case
 	ButtonEvent { ev_event_type = 4, ev_button = 1 } -> pure . Just . expand . singleton $ OccLeftClick
 	ButtonEvent { ev_event_type = 4, ev_button = 3 } -> pure . Just . expand . singleton $ OccQuit
 	_ -> pure Nothing
+
+handleCalcTextExtents :: Field -> EvReqs (Singleton CalcTextExtents) -> IO (EvOccs (Singleton CalcTextExtents))
+handleCalcTextExtents f reqs = singleton . OccCalcTextExtents fn fs t <$> textExtents f fn fs t
+	where CalcTextExtentsReq fn fs t = extract reqs
