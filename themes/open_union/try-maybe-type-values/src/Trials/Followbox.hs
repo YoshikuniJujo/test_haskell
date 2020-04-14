@@ -16,7 +16,7 @@ import qualified Data.HashMap.Strict as HM
 import Trials.Followbox.Event
 import Trials.Followbox.View
 import Trials.Followbox.Aeson
--- import Trials.Followbox.XGlyphInfo
+import Trials.Followbox.XGlyphInfo
 import MonadicFrp
 
 getUsersJson :: React (Singleton HttpGet) (Either String [Object])
@@ -77,9 +77,24 @@ getLoginNameNQuit = (repeat (adjust leftClick >> arrangeLoginNameN 3) `until` ch
 arrangeVertically :: Color -> FontSize -> Position -> [T.Text] -> ReactF View
 arrangeVertically _ _ _ [] = pure []
 arrangeVertically clr fs p@(x, y) (t : ts) = do
---	XGlyphInfo { xGlyphInfoHeight = h } <- adjust $ calcTextExtents "sans" fs t
---	(Text clr fs p t :) <$> arrangeVertically clr fs (x, y + h * 3 `div` 2) ts
-	(Text clr fs p t :) <$> arrangeVertically clr fs (x, y + round fs * 3 `div` 2) ts
+	XGlyphInfo {
+		xGlyphInfoWidth = w,
+		xGlyphInfoHeight = _h,
+		xGlyphInfoX = x',
+		xGlyphInfoY = y' } <- adjust $ calcTextExtents "sans" fs t
+	(createLoginName clr fs p t (x - x' + w, y - y') ++) <$> arrangeVertically clr fs (x, y + round fs * 2) ts
 
 arrangeLoginNameN :: Int -> ReactF View
-arrangeLoginNameN n = arrangeVertically blue 24 (100, 100) =<<  getLoginNameN n
+arrangeLoginNameN n = arrangeVertically blue 36 (100, 100) =<< getLoginNameN n
+
+createLoginName :: Color -> Double -> Position -> T.Text -> Position -> View
+createLoginName clr fs p t (x', y') =
+	Text clr fs p t : createX 4 (round fs `div` 2) (x' + round fs `div` 2, y' + round fs * 3 `div` 8)
+
+createX :: Integer -> Integer -> Position -> View
+createX lw sz (x, y) = [
+	Line white lw (x, y) (x + sz, y + sz),
+	Line white lw (x + sz, y) (x, y + sz) ]
+
+data Rect = Rect { upperLeft :: Position, bottomRight :: Position }
+	deriving Show

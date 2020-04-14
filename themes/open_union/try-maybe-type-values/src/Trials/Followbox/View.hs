@@ -15,6 +15,7 @@ type View = [View1]
 
 data View1
 	= Text Color FontSize Position Text
+	| Line Color LineWidth Position Position
 	deriving Show
 
 data Color =
@@ -23,6 +24,7 @@ data Color =
 
 type Position = (Integer, Integer)
 type FontSize = Double
+type LineWidth = Integer
 
 view :: F.Field -> View -> IO ()
 view f v = do
@@ -31,8 +33,11 @@ view f v = do
 	F.flushField f
 
 view1 :: F.Field -> View1 -> IO ()
-view1 f (Text c fs (x, y) t) =
-	F.drawStr f (colorToPixel c) "sans" fs (fromIntegral x) (fromIntegral y) $ unpack t
+view1 f (Text c fs (x, y) t) = F.drawStr f
+	(colorToPixel c) "sans" fs (fromIntegral x) (fromIntegral y) $ unpack t
+view1 f (Line c lw_ (xs_, ys_) (xe_, ye_)) =
+	F.drawLine f (colorToPixel c) (fromIntegral lw_) xs ys xe ye
+	where [xs, ys, xe, ye] = fromIntegral <$> [xs_, ys_, xe_, ye_]
 
 colorToPixel :: Color -> F.Pixel
 colorToPixel Color { colorRed = r_, colorGreen = g_, colorBlue = b_ } =
