@@ -18,6 +18,15 @@ import MonadicFrp
 import Trials.Followbox.Aeson
 import Trials.Followbox.XGlyphInfo
 
+data Move = MoveReq deriving (Show, Eq, Ord)
+numbered [t| Move |]
+instance Request Move where
+	data Occurred Move = OccMove (Integer, Integer) deriving Show
+-- type Position = (Integer, Integer)
+
+move :: React (Singleton Move) (Integer, Integer)
+move = await MoveReq \(OccMove p) -> p
+
 data Result = Failure | Succeed deriving Show
 
 result :: a -> a -> Result -> a
@@ -103,6 +112,6 @@ type ISigF = ISig FollowboxEv
 type ReactF = React FollowboxEv
 
 type FollowboxEv =
-	LeftClick :- HttpGet :- StoreJsons :- LoadJsons :-
+	Move :- LeftClick :- HttpGet :- StoreJsons :- LoadJsons :-
 	CalcTextExtents :-
 	Quit :- RaiseError :- 'Nil

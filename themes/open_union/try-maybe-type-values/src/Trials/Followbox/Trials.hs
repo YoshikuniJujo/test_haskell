@@ -4,7 +4,7 @@
 
 module Trials.Followbox.Trials where
 
-import Prelude hiding (log)
+import Prelude hiding (log, until)
 
 import Control.Monad.State
 import System.Environment
@@ -14,6 +14,7 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Text as T
 
 import MonadicFrp.Run
+import MonadicFrp (until)
 import Trials.Followbox
 import Trials.Followbox.Event
 import Trials.Followbox.Handlers
@@ -74,4 +75,10 @@ tryCalcTextExtents = do
 	f <- openField ("tryCalcTextExtents" :: String) [exposureMask]
 	let	greeting = "Hello, world!" :: T.Text
 	interpretReact (handleCalcTextExtents f) (calcTextExtents "sans" 12.5 greeting) >>= print
+	closeField f
+
+tryMousePosition :: IO ()
+tryMousePosition = do
+	f <- openField ("tryMousePosition" :: String) [exposureMask, pointerMotionMask, buttonPressMask]
+	interpret (handle' f Nothing) (liftIO . print) (mousePosition `until` checkQuit) `runStateT` [] >>= print . fst
 	closeField f

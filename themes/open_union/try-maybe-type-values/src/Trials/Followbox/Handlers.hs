@@ -44,7 +44,7 @@ handleStoreJsons reqs = singleton (OccStoreJsons os) <$ put os
 handleLoadJsons :: Monad m => EvReqs (Singleton LoadJsons) -> StateT [Object] m (EvOccs (Singleton LoadJsons))
 handleLoadJsons _reqs = singleton . OccLoadJsons <$> get
 
-handleLeftClick :: EvReqs (LeftClick :- Quit :- 'Nil) -> IO (EvOccs (LeftClick :- Quit :- 'Nil))
+handleLeftClick :: EvReqs (Move :- LeftClick :- Quit :- 'Nil) -> IO (EvOccs (Move :- LeftClick :- Quit :- 'Nil))
 handleLeftClick reqs = getLine >>= \case
 	"" -> liftIO (putStrLn "here") >> pure (expand $ singleton OccLeftClick)
 	"q" -> pure (expand $ singleton OccQuit)
@@ -82,10 +82,12 @@ handle' f mba = retry $
 	liftIO . handleRaiseError `before`
 	liftIO . handleLeftClick' f
 
-handleLeftClick' :: Field -> EvReqs (LeftClick :- Quit :- 'Nil) -> IO (Maybe (EvOccs (LeftClick :- Quit :- 'Nil)))
+handleLeftClick' :: Field -> EvReqs (Move :- LeftClick :- Quit :- 'Nil) -> IO (Maybe (EvOccs (Move :- LeftClick :- Quit :- 'Nil)))
 handleLeftClick' f _reqs = withNextEvent f \case
-	ButtonEvent { ev_event_type = 4, ev_button = 1 } -> pure . Just . expand . singleton $ OccLeftClick
+	ButtonEvent { ev_event_type = 4, ev_button = 1, ev_x = x, ev_y = y } ->
+		pure . Just $ expand (OccMove (fromIntegral x, fromIntegral y) >- singleton OccLeftClick :: EvOccs (Move :- LeftClick :- 'Nil))
 	ButtonEvent { ev_event_type = 4, ev_button = 3 } -> pure . Just . expand . singleton $ OccQuit
+	MotionEvent { ev_x = x, ev_y = y } -> pure . Just . expand . singleton $ OccMove (fromIntegral x, fromIntegral y)
 	_ -> pure Nothing
 
 handleCalcTextExtents :: Field -> EvReqs (Singleton CalcTextExtents) -> IO (EvOccs (Singleton CalcTextExtents))

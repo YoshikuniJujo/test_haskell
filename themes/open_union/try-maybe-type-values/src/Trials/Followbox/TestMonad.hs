@@ -68,7 +68,7 @@ testHandleStoreJsons reqs = do
 testHandleLoadJsons :: Handle TestMonad (Singleton LoadJsons)
 testHandleLoadJsons _reqs = singleton . OccLoadJsons <$> getJsons
 
-testHandleLeftClick :: Handle TestMonad (LeftClick :- Quit :- 'Nil)
+testHandleLeftClick :: Handle TestMonad (Move :- LeftClick :- Quit :- 'Nil)
 testHandleLeftClick _reqs = pure . expand $ singleton OccLeftClick
 
 testHandleRaiseError :: Handle' TestMonad (Singleton RaiseError)

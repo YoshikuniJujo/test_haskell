@@ -95,3 +95,6 @@ createLoginName1 n t = do
 
 -- clickOnRect :: Rect -> ReactF ()
 -- clickOnRect
+
+mousePosition :: SigF Position ()
+mousePosition = repeat $ adjust move
