@@ -102,4 +102,7 @@ type SigF = Sig FollowboxEv
 type ISigF = ISig FollowboxEv
 type ReactF = React FollowboxEv
 
-type FollowboxEv = LeftClick :- HttpGet :- StoreJsons :- LoadJsons :- Quit :- RaiseError :- 'Nil
+type FollowboxEv =
+	LeftClick :- HttpGet :- StoreJsons :- LoadJsons :-
+	CalcTextExtents :-
+	Quit :- RaiseError :- 'Nil

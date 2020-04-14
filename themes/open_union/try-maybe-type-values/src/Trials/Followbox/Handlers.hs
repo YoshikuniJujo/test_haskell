@@ -61,11 +61,15 @@ handleRaiseError reqs = case e of
 	CatchError -> pure Nothing
 	where RaiseError e em = extract reqs
 
+dummyHandleCalcTextExtents :: EvReqs (Singleton CalcTextExtents) -> IO (Maybe (EvOccs (Singleton CalcTextExtents)))
+dummyHandleCalcTextExtents _reqs = pure Nothing
+
 handle :: Maybe (BS.ByteString, FilePath) -> Handle (StateT [Object] IO) FollowboxEv
 handle mba = retry $
 	(Just <$>) . handleStoreJsons `merge`
 	liftIO . (Just <$>) . handleHttpGet mba `merge`
 	(Just <$>) . handleLoadJsons `merge`
+	liftIO . dummyHandleCalcTextExtents `merge`
 	liftIO . handleRaiseError `before`
 	liftIO . (Just <$>) . handleLeftClick
 
@@ -74,6 +78,7 @@ handle' f mba = retry $
 	(Just <$>) . handleStoreJsons `merge`
 	liftIO . (Just <$>) . handleHttpGet mba `merge`
 	(Just <$>) . handleLoadJsons `merge`
+	liftIO . (Just <$>) . handleCalcTextExtents f `merge`
 	liftIO . handleRaiseError `before`
 	liftIO . handleLeftClick' f
 

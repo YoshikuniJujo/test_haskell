@@ -80,9 +80,14 @@ testHandleRaiseError reqs = do
 		CatchError -> pure Nothing
 	where RaiseError e em = extract reqs
 
+testHandleCalcTextExtents :: Handle' TestMonad (Singleton CalcTextExtents)
+testHandleCalcTextExtents _reqs = pure Nothing
+
 testHandle :: Handle TestMonad FollowboxEv
 testHandle = retry $
 	(Just <$>) . testHandleHttpGet `merge`
 	(Just <$>) . testHandleStoreJsons `merge`
 	(Just <$>) . testHandleLoadJsons `merge`
-	(Just <$>) . testHandleLeftClick `merge` testHandleRaiseError
+	(Just <$>) . testHandleLeftClick `merge`
+	testHandleRaiseError `merge`
+	testHandleCalcTextExtents
