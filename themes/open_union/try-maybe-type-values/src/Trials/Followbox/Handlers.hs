@@ -61,6 +61,9 @@ handleRaiseError reqs = case e of
 	NotJson -> do
 		putStrLn $ "ERROR: " <> em
 		pure . Just . singleton $ OccRaiseError e Terminate
+	EmptyJson -> do
+		putStrLn $ "ERROR: " <> em
+		pure . Just . singleton $ OccRaiseError e Continue
 	NoLoginName -> do
 		putStrLn $ "ERROR: " <> em
 		pure . Just . singleton $ OccRaiseError e Terminate

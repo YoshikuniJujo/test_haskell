@@ -79,7 +79,7 @@ tryMousePosition = do
 tryViewMultiLoginNameSig :: IO ()
 tryViewMultiLoginNameSig = getGithubToken >>= \mba -> do
 	f <- openField ("tryViewMultiLoginNameSig" :: String) [exposureMask, buttonPressMask]
-	() <$ interpret (handle' f mba) (liftIO . view f) (viewMultiLoginNameSig 3 `until` checkQuit) `runStateT` (mkStdGen 8, [])
+	() <$ interpret (handle' f mba) (liftIO . view f) (viewMultiLoginNameSig 3 `until` checkQuit `until` terminateOccur) `runStateT` (mkStdGen 8, [])
 	closeField f
 
 tryGetAvatarAddress :: IO ()

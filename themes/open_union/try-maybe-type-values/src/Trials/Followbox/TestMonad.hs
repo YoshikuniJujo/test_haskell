@@ -84,6 +84,7 @@ testHandleRaiseError reqs = do
 	log $ "ERROR: " <> em
 	case e of
 		NotJson -> pure . Just . singleton $ OccRaiseError e Terminate
+		EmptyJson -> pure . Just . singleton $ OccRaiseError e Terminate
 		NoLoginName -> pure . Just . singleton $ OccRaiseError e Terminate
 		NoAvatarAddress -> pure . Just . singleton $ OccRaiseError e Terminate
 		NoAvatar -> pure . Just . singleton $ OccRaiseError e Terminate

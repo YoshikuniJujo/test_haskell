@@ -112,7 +112,7 @@ checkQuit :: React (Singleton Quit) ()
 checkQuit = await QuitReq $ const ()
 
 data Error
-	= NotJson | NoLoginName | NoAvatarAddress | NoAvatar | CatchError
+	= NotJson | EmptyJson | NoLoginName | NoAvatarAddress | NoAvatar | CatchError
 	deriving (Show, Eq, Ord)
 
 data ErrorResult = Continue | Terminate deriving Show

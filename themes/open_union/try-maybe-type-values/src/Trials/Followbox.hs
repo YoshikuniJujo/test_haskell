@@ -39,7 +39,7 @@ getUser1 :: ReactF Object
 getUser1 = adjust loadJsons >>= \case
 	[] -> adjust getUsersJson >>= \case
 		Right (o : os) -> o <$ adjust (storeJsons $ take 8 os)
-		Right [] -> adjust (raiseError NotJson "Empty JSON") >> getUser1
+		Right [] -> adjust (raiseError EmptyJson "Empty JSON") >> getUser1
 		Left em -> adjust (raiseError NotJson em) >> getUser1
 	o : os -> o <$ adjust (storeJsons os)
 
