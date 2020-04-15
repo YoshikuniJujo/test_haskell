@@ -83,7 +83,7 @@ data Rect = Rect { upperLeft :: Position, bottomRight :: Position }
 	deriving Show
 
 viewMultiLoginNameSig :: Integer -> SigF View ()
-viewMultiLoginNameSig n = concat <$%> fsequence (viewLoginNameSig <$> [0 .. n - 1])
+viewMultiLoginNameSig n = concat <$%> ftraverse viewLoginNameSig [0 .. n - 1]
 
 viewLoginNameSig :: Integer -> SigF View ()
 viewLoginNameSig n = do
