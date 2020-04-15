@@ -37,6 +37,8 @@ dependencies:
 - scientific
 - text
 - X11-xft
+- JuicyPixels
+- JuicyPixels-extra
 
 library:
   source-dirs: src

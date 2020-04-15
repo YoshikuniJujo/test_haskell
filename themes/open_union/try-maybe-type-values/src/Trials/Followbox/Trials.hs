@@ -54,10 +54,6 @@ tryLeftClickUser3 :: IO ()
 tryLeftClickUser3 = getGithubToken >>= \mba ->
 	interpretReact (handle mba) (leftClickUserN 3) `runStateT` [] >>= print . fst
 
-tryGetLoginNameQuit :: IO ()
-tryGetLoginNameQuit = getGithubToken >>= \mba ->
-	interpret (handle mba) (liftIO . print) getLoginNameQuit `runStateT` [] >>= print . fst
-
 tryGetLoginNameQuit' :: IO ()
 tryGetLoginNameQuit' = getGithubToken >>= \mba -> do
 	f <- openField ("tryGetLoginNameQuit'" :: String) [exposureMask, buttonPressMask]
@@ -67,7 +63,7 @@ tryGetLoginNameQuit' = getGithubToken >>= \mba -> do
 tryGetLoginNameNQuit :: IO ()
 tryGetLoginNameNQuit = getGithubToken >>= \mba -> do
 	f <- openField ("tryGetLoginNameNQuit'" :: String) [exposureMask, buttonPressMask]
-	interpret (handle' f mba) (liftIO . view f) getLoginNameNQuit `runStateT` [] >>= print . fst
+	() <$ interpret (handle' f mba) (liftIO . view f) getLoginNameNQuit `runStateT` []
 	closeField f
 
 tryCalcTextExtents :: IO ()
@@ -86,11 +82,11 @@ tryMousePosition = do
 tryViewLoginNameSig :: IO ()
 tryViewLoginNameSig = getGithubToken >>= \mba -> do
 	f <- openField ("tryViewLoginNameSig" :: String) [exposureMask, buttonPressMask]
-	interpret (handle' f mba) (liftIO . view f) (viewLoginNameSig 0 "foo" `until` checkQuit) `runStateT` [] >>= print . fst
+	() <$ interpret (handle' f mba) (liftIO . view f) (viewLoginNameSig 0 "foo" `until` checkQuit) `runStateT` []
 	closeField f
 
 tryViewMultiLoginNameSig :: IO ()
 tryViewMultiLoginNameSig = getGithubToken >>= \mba -> do
 	f <- openField ("tryViewMultiLoginNameSig" :: String) [exposureMask, buttonPressMask]
-	interpret (handle' f mba) (liftIO . view f) (viewMultiLoginNameSig 3 `until` checkQuit) `runStateT` [] >>= print . fst
+	() <$ interpret (handle' f mba) (liftIO . view f) (viewMultiLoginNameSig 3 `until` checkQuit) `runStateT` []
 	closeField f
