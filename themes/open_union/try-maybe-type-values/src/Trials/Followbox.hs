@@ -53,7 +53,7 @@ terminateOccur = adjust catchError >>= \case
 getUser1UntilError :: ReactF (Or Object ())
 getUser1UntilError = getUser1 `first` terminateOccur
 
-getLoginNameQuit :: SigF View (Either T.Text (Maybe ()))
+getLoginNameQuit :: SigF View (Either (T.Text, ()) (Maybe ()))
 getLoginNameQuit = loginNameToView <$%> (repeat (adjust leftClick >> getLoginName) `until` checkQuit)
 
 loginNameToView :: T.Text -> View
@@ -62,7 +62,7 @@ loginNameToView nm = [Text blue 24 (100, 100) nm]
 loginNameNToView :: Int -> T.Text -> View1
 loginNameNToView n nm = Text blue 24 (100, 100 + fromIntegral n * 50) nm
 
-getLoginNameNQuit :: SigF View (Either View (Maybe ()))
+getLoginNameNQuit :: SigF View (Either (View, ()) (Maybe ()))
 getLoginNameNQuit = (repeat (adjust leftClick >> arrangeLoginNameN 3) `until` checkQuit)
 
 arrangeLoginNameN :: Integer -> ReactF View
@@ -91,10 +91,15 @@ viewMultiLoginNameSig n = do
 	where
 	vmlns nxt@(vn, rn) rfs@(vr, rr) = do
 		lns <- fromIntegral n `replicateM` waitFor getLoginName
-		((title :) . (vn ++) . (vr ++) . concat <$%> ftraverse (uncurry viewLoginNameSig) ([0 .. n - 1] `zip` lns))
+		r <- ((title :) . (vn ++) . (vr ++) . concat <$%> ftraverse (uncurry viewLoginNameSig) ([0 .. n - 1] `zip` lns))
 			`until` (clickOnRect rn `first` clickOnRect rr)
---		case r of
---			_ -> pure (r :: ())
+		case r of
+			Left (_, L _) -> pure ()
+			Left (_, LR _ _) -> pure ()
+			Left (_, R _) -> do
+				emit $ title : vn ++ vr
+				waitFor . adjust $ storeJsons []
+			Right _ -> error "never occur"
 		vmlns nxt rfs
 
 viewLoginNameSig :: Integer -> T.Text -> SigF View ()

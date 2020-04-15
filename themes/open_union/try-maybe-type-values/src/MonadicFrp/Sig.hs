@@ -120,20 +120,20 @@ ibreak p is@(h :| t)
 ibreak _ is@(End _) = pure is
 
 at :: Firstable es es' =>
-	Sig es a r -> React es' r' -> React (es :+: es') (Either a (Maybe r))
+	Sig es a r -> React es' r' -> React (es :+: es') (Either (a, r') (Maybe r))
 l `at` a = do
 	(l', r') <- res $ l `until_` a
 	pure $ case (l', r') of
-		(Sig (Done (h :| _)), Done _) -> Left h
+		(Sig (Done (h :| _)), Done r'') -> Left (h, r'')
 		(Sig (Done (End l'')), _) -> Right $ Just l''
 		(Sig (Await _ _), Done _) -> Right Nothing
 		_ -> error "never occur"
 
-until :: Firstable es es' => Sig es a r -> React es' r' -> Sig (es :+: es') a (Either a (Maybe r))
+until :: Firstable es es' => Sig es a r -> React es' r' -> Sig (es :+: es') a (Either (a, r') (Maybe r))
 l `until` r = do
 	(l', r') <- l `until_` r
 	pure case (l', r') of
-		(Sig (Done (l'' :| _)), Done _) -> Left l''
+		(Sig (Done (l'' :| _)), Done r'') -> Left (l'', r'')
 		(Sig (Done (End l'')), _) -> Right $ Just l''
 		(Sig (Await _ _), Done _) -> Right Nothing
 		_ -> error "never occur"
@@ -195,7 +195,7 @@ a `pairs` End b = pure (a, pure b)
 	lup h t = h :| Sig t
 
 indexBy ::
-	Firstable es es' => Sig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either a (Maybe r))
+	Firstable es es' => Sig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either (a, r') (Maybe r))
 l `indexBy` Sig r = waitFor (res $ l `until_` r) >>= \case
 	(Sig (Done l'), r') -> (Just <$>) <$> l' `iindexBy'` Sig r'
 	(Sig l', Done (_ :| r')) -> Sig l' `indexBy` r'
@@ -209,10 +209,10 @@ l `_iuntil'` r = (<$> l `iuntil` r) \case
 	(End l', _) -> Right l'
 
 iindexBy' ::
-	Firstable es es' => ISig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either a r)
+	Firstable es es' => ISig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either (a, r') r)
 l `iindexBy'` Sig r = waitFor (ires $ l `iuntil` r) >>= \case
 	(hl :| tl, Done (_ :| tr)) -> emit hl >> (hl :| tl) `iindexBy'` tr
-	(hl :| _, Done (End _)) -> pure $ Left hl
+	(hl :| _, Done (End r')) -> pure $ Left (hl, r')
 	(End l', _) -> pure $ Right l'
 	_ -> error "never occur"
 

@@ -85,15 +85,15 @@ posInside rct = find (`inside` rct)
 		(l <= x && x <= r || r <= x && x <= l) &&
 		(u <= y && y <= d || d <= y && y <= u)
 
-firstPoint :: ReactG (Either Point (Maybe ()))
+firstPoint :: ReactG (Either (Point, ()) (Maybe ()))
 firstPoint = mousePos `at` leftClick
 
 completeRect :: Point -> SigG Rect (Maybe Rect)
-completeRect p1 = either Just (const Nothing) <$> curRect p1 `until` leftUp
+completeRect p1 = either (Just . fst) (const Nothing) <$> curRect p1 `until` leftUp
 
 defineRect :: SigG Rect Rect
 defineRect = waitFor firstPoint >>= \case
-	Left p1 -> fromMaybe (error "never occur") <$> completeRect p1
+	Left (p1, _) -> fromMaybe (error "never occur") <$> completeRect p1
 	Right _ -> error "never occur"
 
 chooseBoxColor, chooseBoxColor' :: Rect -> SigG Box ()
@@ -102,7 +102,7 @@ chooseBoxColor' r = fpure Box <*%> wiggleRect r <*%> (() <$ cycleColor)
 
 data Box = Box Rect Color deriving Show
 
-drClickOn :: Rect -> ReactG (Either Point (Either Point (Maybe ())))
+drClickOn :: Rect -> ReactG (Either Point (Either (Point, ()) (Maybe ())))
 drClickOn r = posInside r $ mousePos `indexBy` repeat doubler
 
 box :: SigG Box ()
