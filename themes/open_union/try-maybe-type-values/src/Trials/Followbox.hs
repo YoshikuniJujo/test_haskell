@@ -35,15 +35,15 @@ getUser1 = adjust loadJsons >>= \case
 getUserN :: Int -> ReactF [Object]
 getUserN n = n `replicateM` getUser1
 
-getLoginName :: ReactF T.Text
-getLoginName = loginNameFromObject <$> getUser1 >>= \case
+getLoginName :: Object -> ReactF T.Text
+getLoginName o = pure (loginNameFromObject o) >>= \case
 	Just ln -> pure ln
-	Nothing -> adjust (raiseError NoLoginName "No Login Name") >> getLoginName
+	Nothing -> adjust (raiseError NoLoginName "No Login Name") >> getLoginName o
 
-getAvatarAddress :: ReactF T.Text
-getAvatarAddress = avatorAddressFromObject <$> getUser1 >>= \case
+getAvatarAddress :: Object -> ReactF T.Text
+getAvatarAddress o = avatorAddressFromObject <$> getUser1 >>= \case
 	Just ln -> pure ln
-	Nothing -> adjust (raiseError NoAvatarAddress "No Avatar Address") >> getAvatarAddress
+	Nothing -> adjust (raiseError NoAvatarAddress "No Avatar Address") >> getAvatarAddress o
 
 viewAvatar :: SigF View ()
 viewAvatar = do
@@ -51,17 +51,18 @@ viewAvatar = do
 	emit v
 	waitFor $ adjust leftClick
 
-viewAvatarReact :: ReactF View
-viewAvatarReact = do
-	ev <- viewAvatarReactEither
-	case ev of
-		Left em -> adjust (raiseError NoAvatar em) >> viewAvatarReact
-		Right v -> pure v
+type Avatar = JP.Image JP.PixelRGBA8
 
-viewAvatarReactEither :: ReactF (Either String View)
-viewAvatarReactEither = do
-	url <- getAvatarAddress
-	((: []) . Image (100, 100) <$>) . bsToImage . snd <$> adjust (httpGet $ T.unpack url)
+viewAvatarReact :: ReactF View
+viewAvatarReact = (: []) . Image (100, 100) <$> (viewAvatarGen =<< getUser1)
+
+viewAvatarGen :: Object -> ReactF Avatar
+viewAvatarGen o = do
+	url <- getAvatarAddress o
+	ea <- (scale 80 80 <$>) . bsToImage . snd <$> adjust (httpGet $ T.unpack url)
+	case ea of
+		Left em -> adjust (raiseError NoAvatar em) >> viewAvatarGen o
+		Right v -> pure v
 
 leftClickUserN :: Int -> ReactF [Maybe T.Text]
 leftClickUserN n = adjust leftClick >> (loginNameFromObject <$>) <$> getUserN n
@@ -82,7 +83,8 @@ getUser1UntilError :: ReactF (Or Object ())
 getUser1UntilError = getUser1 `first` terminateOccur
 
 getLoginNameQuit :: SigF View (Either (T.Text, ()) (Maybe ()))
-getLoginNameQuit = loginNameToView <$%> (repeat (adjust leftClick >> getLoginName) `until` checkQuit)
+getLoginNameQuit = loginNameToView
+	<$%> repeat (adjust leftClick >> (getLoginName =<< getUser1)) `until` checkQuit
 
 loginNameToView :: T.Text -> View
 loginNameToView nm = [Text blue 24 (100, 100) nm]
@@ -110,6 +112,11 @@ createX lw sz (x, y) = [
 data Rect = Rect { upperLeft :: Position, bottomRight :: Position }
 	deriving Show
 
+getAvatarLoginName :: ReactF (Avatar, T.Text)
+getAvatarLoginName = do
+	obj <- getUser1
+	(,) <$> viewAvatarGen obj <*> getLoginName obj
+
 viewMultiLoginNameSig :: Integer -> SigF View ()
 viewMultiLoginNameSig n = do
 	(vn, rn) <- waitFor next
@@ -118,7 +125,7 @@ viewMultiLoginNameSig n = do
 	vmlns (vn, rn) (vr, rr)
 	where
 	vmlns nxt@(vn, rn) rfs@(vr, rr) = do
-		lns <- fromIntegral n `replicateM` waitFor getLoginName
+		lns <- fromIntegral n `replicateM` waitFor getAvatarLoginName
 		r <- ((title :) . (vn ++) . (vr ++) . concat <$%> ftraverse (uncurry viewLoginNameSig) ([0 .. n - 1] `zip` lns))
 			`until` (clickOnRect rn `first` clickOnRect rr)
 		case r of
@@ -130,15 +137,15 @@ viewMultiLoginNameSig n = do
 			Right _ -> error "never occur"
 		vmlns nxt rfs
 
-viewLoginNameSig :: Integer -> T.Text -> SigF View ()
-viewLoginNameSig n ln = do
+viewLoginNameSig :: Integer -> (Avatar, T.Text) -> SigF View ()
+viewLoginNameSig n (a, ln) = do
 	(v, r) <- waitFor $ createLoginName1 n ln
-	emit v
+	emit $ Image (100, 120 + 120 * n) a : v
 	waitFor $ clickOnRect r
-	viewLoginNameSig n =<< waitFor getLoginName
+	viewLoginNameSig n =<< waitFor getAvatarLoginName
 
 viewLoginName :: Integer -> ReactF (View, Rect)
-viewLoginName n = createLoginName1 n =<< getLoginName
+viewLoginName n = createLoginName1 n =<< getLoginName =<< getUser1
 
 createLoginName1 :: Integer -> T.Text -> ReactF (View, Rect)
 createLoginName1 n t = do
@@ -146,7 +153,7 @@ createLoginName1 n t = do
 		xGlyphInfoWidth = w,
 		xGlyphInfoX = x,
 		xGlyphInfoY = y } <- adjust $ calcTextExtents "sans" 36 t
-	pure $ createLoginName blue 36 (180, 180 + n * 90) t (180 - x + w, 180 + n * 90 - y)
+	pure $ createLoginName blue 36 (210, 180 + n * 120) t (210 - x + w, 180 + n * 120 - y)
 
 clickOnRect :: Rect -> ReactF ()
 clickOnRect r = () <$ find (`isInsideOf` r) (mousePosition `indexBy` repeat leftClick)
@@ -175,5 +182,5 @@ linkText fs p@(x0, y0) t = do
 			(x0 - x + w, y0 - y + h) )
 
 next, refresh :: ReactF (View, Rect)
-next = linkText 30 (600, 80) "Next"
-refresh = linkText 30 (700, 80) "Refresh"
+next = linkText 30 (500, 80) "Next"
+refresh = linkText 30 (600, 80) "Refresh"

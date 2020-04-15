@@ -79,12 +79,6 @@ tryMousePosition = do
 	interpret (handle' f Nothing) (liftIO . print) (mousePosition `until` checkQuit) `runStateT` [] >>= print . fst
 	closeField f
 
-tryViewLoginNameSig :: IO ()
-tryViewLoginNameSig = getGithubToken >>= \mba -> do
-	f <- openField ("tryViewLoginNameSig" :: String) [exposureMask, buttonPressMask]
-	() <$ interpret (handle' f mba) (liftIO . view f) (viewLoginNameSig 0 "foo" `until` checkQuit) `runStateT` []
-	closeField f
-
 tryViewMultiLoginNameSig :: IO ()
 tryViewMultiLoginNameSig = getGithubToken >>= \mba -> do
 	f <- openField ("tryViewMultiLoginNameSig" :: String) [exposureMask, buttonPressMask]
@@ -94,7 +88,7 @@ tryViewMultiLoginNameSig = getGithubToken >>= \mba -> do
 tryGetAvatarAddress :: IO ()
 tryGetAvatarAddress = getGithubToken >>= \mba -> do
 	f <- openField ("tryGetAvatarAddress" :: String) [exposureMask]
-	interpretReact (handle' f mba) (getAvatarAddress `first` catchError) `runStateT` [] >>= print . fst
+	interpretReact (handle' f mba) ((getAvatarAddress =<< getUser1) `first` catchError) `runStateT` [] >>= print . fst
 	closeField f
 
 tryViewAvatar :: IO ()
