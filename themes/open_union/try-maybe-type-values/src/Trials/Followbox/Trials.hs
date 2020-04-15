@@ -82,3 +82,15 @@ tryMousePosition = do
 	f <- openField ("tryMousePosition" :: String) [exposureMask, pointerMotionMask, buttonPressMask]
 	interpret (handle' f Nothing) (liftIO . print) (mousePosition `until` checkQuit) `runStateT` [] >>= print . fst
 	closeField f
+
+tryViewLoginNameSig :: IO ()
+tryViewLoginNameSig = getGithubToken >>= \mba -> do
+	f <- openField ("tryViewLoginNameSig" :: String) [exposureMask, buttonPressMask]
+	interpret (handle' f mba) (liftIO . view f) (viewLoginNameSig 0 `until` checkQuit) `runStateT` [] >>= print . fst
+	closeField f
+
+tryViewMultiLoginNameSig :: IO ()
+tryViewMultiLoginNameSig = getGithubToken >>= \mba -> do
+	f <- openField ("tryViewMultiLoginNameSig" :: String) [exposureMask, buttonPressMask]
+	interpret (handle' f mba) (liftIO . view f) (viewMultiLoginNameSig 3 `until` checkQuit) `runStateT` [] >>= print . fst
+	closeField f

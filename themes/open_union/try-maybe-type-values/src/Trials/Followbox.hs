@@ -82,6 +82,16 @@ createX lw sz (x, y) = [
 data Rect = Rect { upperLeft :: Position, bottomRight :: Position }
 	deriving Show
 
+viewMultiLoginNameSig :: Integer -> SigF View ()
+viewMultiLoginNameSig n = concat <$%> fsequence (viewLoginNameSig <$> [0 .. n - 1])
+
+viewLoginNameSig :: Integer -> SigF View ()
+viewLoginNameSig n = do
+	(v, r) <- waitFor (viewLoginName n)
+	emit v
+	waitFor $ clickOnRect r
+	viewLoginNameSig n
+
 viewLoginName :: Integer -> ReactF (View, Rect)
 viewLoginName n = createLoginName1 n =<< getLoginName
 
@@ -93,8 +103,11 @@ createLoginName1 n t = do
 		xGlyphInfoY = y } <- adjust $ calcTextExtents "sans" 36 t
 	pure $ createLoginName blue 36 (100, 100 + n * 72) t (100 - x + w, 100 + n * 72 - y)
 
--- clickOnRect :: Rect -> ReactF ()
--- clickOnRect
+clickOnRect :: Rect -> ReactF ()
+clickOnRect r = () <$ find (`isInsideOf` r) (mousePosition `indexBy` repeat leftClick)
 
 mousePosition :: SigF Position ()
 mousePosition = repeat $ adjust move
+
+isInsideOf :: Position -> Rect -> Bool
+isInsideOf (x, y) (Rect (l, t) (r, b)) = l <= x && x <= r && t <= y && y <= b
