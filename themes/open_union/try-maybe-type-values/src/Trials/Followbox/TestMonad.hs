@@ -77,6 +77,8 @@ testHandleRaiseError reqs = do
 	case e of
 		NotJson -> pure . Just . singleton $ OccRaiseError e Terminate
 		NoLoginName -> pure . Just . singleton $ OccRaiseError e Terminate
+		NoAvatarAddress -> pure . Just . singleton $ OccRaiseError e Terminate
+		NoAvatar -> pure . Just . singleton $ OccRaiseError e Terminate
 		CatchError -> pure Nothing
 	where RaiseError e em = extract reqs
 

@@ -58,6 +58,12 @@ handleRaiseError reqs = case e of
 	NoLoginName -> do
 		putStrLn $ "ERROR: " <> em
 		pure . Just . singleton $ OccRaiseError e Terminate
+	NoAvatarAddress -> do
+		putStrLn $ "ERROR: " <> em
+		pure . Just . singleton $ OccRaiseError e Terminate
+	NoAvatar -> do
+		putStrLn $ "ERROR: " <> em
+		pure . Just . singleton $ OccRaiseError e Terminate
 	CatchError -> pure Nothing
 	where RaiseError e em = extract reqs
 

@@ -14,7 +14,7 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Text as T
 
 import MonadicFrp.Run
-import MonadicFrp (until)
+import MonadicFrp (until, first)
 import Trials.Followbox
 import Trials.Followbox.Event
 import Trials.Followbox.Handlers
@@ -89,4 +89,16 @@ tryViewMultiLoginNameSig :: IO ()
 tryViewMultiLoginNameSig = getGithubToken >>= \mba -> do
 	f <- openField ("tryViewMultiLoginNameSig" :: String) [exposureMask, buttonPressMask]
 	() <$ interpret (handle' f mba) (liftIO . view f) (viewMultiLoginNameSig 3 `until` checkQuit) `runStateT` []
+	closeField f
+
+tryGetAvatarAddress :: IO ()
+tryGetAvatarAddress = getGithubToken >>= \mba -> do
+	f <- openField ("tryGetAvatarAddress" :: String) [exposureMask]
+	interpretReact (handle' f mba) (getAvatarAddress `first` catchError) `runStateT` [] >>= print . fst
+	closeField f
+
+tryViewAvatar :: IO ()
+tryViewAvatar = getGithubToken >>= \mba -> do
+	f <- openField ("tryViewAvatar" :: String) [exposureMask, buttonPressMask]
+	() <$ interpret (handle' f mba) (liftIO . view f) (viewAvatar `until` catchError) `runStateT` []
 	closeField f

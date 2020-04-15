@@ -18,6 +18,7 @@ import Trials.Followbox.Event
 import Trials.Followbox.View
 import Trials.Followbox.Aeson
 import Trials.Followbox.XGlyphInfo
+import Trials.Followbox.Image
 import MonadicFrp
 
 getUsersJson :: React (Singleton HttpGet) (Either String [Object])
@@ -39,11 +40,37 @@ getLoginName = loginNameFromObject <$> getUser1 >>= \case
 	Just ln -> pure ln
 	Nothing -> adjust (raiseError NoLoginName "No Login Name") >> getLoginName
 
+getAvatarAddress :: ReactF T.Text
+getAvatarAddress = avatorAddressFromObject <$> getUser1 >>= \case
+	Just ln -> pure ln
+	Nothing -> adjust (raiseError NoAvatarAddress "No Avatar Address") >> getAvatarAddress
+
+viewAvatar :: SigF View ()
+viewAvatar = do
+	v <- waitFor viewAvatarReact
+	emit v
+	waitFor $ adjust leftClick
+
+viewAvatarReact :: ReactF View
+viewAvatarReact = do
+	ev <- viewAvatarReactEither
+	case ev of
+		Left em -> adjust (raiseError NoAvatar em) >> viewAvatarReact
+		Right v -> pure v
+
+viewAvatarReactEither :: ReactF (Either String View)
+viewAvatarReactEither = do
+	url <- getAvatarAddress
+	((: []) . Image (100, 100) <$>) . bsToImage . snd <$> adjust (httpGet $ T.unpack url)
+
 leftClickUserN :: Int -> ReactF [Maybe T.Text]
 leftClickUserN n = adjust leftClick >> (loginNameFromObject <$>) <$> getUserN n
 
-loginNameFromObject :: Object -> Maybe T.Text
+loginNameFromObject, avatorAddressFromObject :: Object -> Maybe T.Text
 loginNameFromObject o = case HM.lookup "login" o of
+	Just (String li) -> Just li; _ -> Nothing
+
+avatorAddressFromObject o = case HM.lookup "avatar_url" o of
 	Just (String li) -> Just li; _ -> Nothing
 
 terminateOccur :: ReactF ()
