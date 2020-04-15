@@ -83,11 +83,13 @@ data Rect = Rect { upperLeft :: Position, bottomRight :: Position }
 	deriving Show
 
 viewMultiLoginNameSig :: Integer -> SigF View ()
-viewMultiLoginNameSig n = concat <$%> ftraverse (uncurry viewLoginNameSig) ([0 .. n - 1] `zip` ["foo", "bar", "baz"])
+viewMultiLoginNameSig n = do
+	lns <- fromIntegral n `replicateM` waitFor getLoginName
+	concat <$%> ftraverse (uncurry viewLoginNameSig) ([0 .. n - 1] `zip` lns)
 
 viewLoginNameSig :: Integer -> T.Text -> SigF View ()
 viewLoginNameSig n ln = do
-	(v, r) <- waitFor $ createLoginName1 n ln -- (viewLoginName n)
+	(v, r) <- waitFor $ createLoginName1 n ln
 	emit v
 	waitFor $ clickOnRect r
 	viewLoginNameSig n =<< waitFor getLoginName
