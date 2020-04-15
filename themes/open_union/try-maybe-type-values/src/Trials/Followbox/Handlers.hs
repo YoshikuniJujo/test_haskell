@@ -12,6 +12,7 @@ import Control.Monad.State
 import Data.Type.Set
 import Data.String
 import Data.UnionSet hiding (merge)
+import System.Random
 
 import qualified Data.ByteString as BS
 import qualified Network.HTTP.Simple as HTTP
@@ -37,12 +38,17 @@ handleHttpGet mba reqs = do
 setUserAgent :: BS.ByteString -> HTTP.Request -> HTTP.Request
 setUserAgent ua = HTTP.setRequestHeader "User-Agent" [ua]
 
-handleStoreJsons :: Monad m => EvReqs (Singleton StoreJsons) -> StateT [Object] m (EvOccs (Singleton StoreJsons))
-handleStoreJsons reqs = singleton (OccStoreJsons os) <$ put os
+putObjects :: Monad m => [Object] -> StateT (x, [Object]) m ()
+putObjects os = do
+	(g, _) <- get
+	put (g, os)
+
+handleStoreJsons :: Monad m => EvReqs (Singleton StoreJsons) -> StateT (StdGen, [Object]) m (EvOccs (Singleton StoreJsons))
+handleStoreJsons reqs = singleton (OccStoreJsons os) <$ putObjects os
 	where StoreJsons os = extract reqs
 
-handleLoadJsons :: Monad m => EvReqs (Singleton LoadJsons) -> StateT [Object] m (EvOccs (Singleton LoadJsons))
-handleLoadJsons _reqs = singleton . OccLoadJsons <$> get
+handleLoadJsons :: Monad m => EvReqs (Singleton LoadJsons) -> StateT (StdGen, [Object]) m (EvOccs (Singleton LoadJsons))
+handleLoadJsons _reqs = singleton . OccLoadJsons . snd <$> get
 
 handleLeftClick :: EvReqs (Move :- LeftClick :- Quit :- 'Nil) -> IO (EvOccs (Move :- LeftClick :- Quit :- 'Nil))
 handleLeftClick reqs = getLine >>= \case
@@ -70,17 +76,31 @@ handleRaiseError reqs = case e of
 dummyHandleCalcTextExtents :: EvReqs (Singleton CalcTextExtents) -> IO (Maybe (EvOccs (Singleton CalcTextExtents)))
 dummyHandleCalcTextExtents _reqs = pure Nothing
 
-handle :: Maybe (BS.ByteString, FilePath) -> Handle (StateT [Object] IO) FollowboxEv
+handleStoreRandomGen :: Monad m => EvReqs (Singleton StoreRandomGen) -> StateT (StdGen, x) m (EvOccs (Singleton StoreRandomGen))
+handleStoreRandomGen reqs = do
+	(_, os) <- get
+	put (g, os)
+	pure . singleton $ OccStoreRandomGen g
+	where StoreRandomGen g = extract reqs
+
+handleLoadRandomGen :: Monad m => EvReqs (Singleton LoadRandomGen) -> StateT (StdGen, x) m (EvOccs (Singleton LoadRandomGen))
+handleLoadRandomGen _reqs = singleton . OccLoadRandomGen . fst <$> get
+
+handle :: Maybe (BS.ByteString, FilePath) -> Handle (StateT (StdGen, [Object]) IO) FollowboxEv
 handle mba = retry $
 	(Just <$>) . handleStoreJsons `merge`
 	liftIO . (Just <$>) . handleHttpGet mba `merge`
 	(Just <$>) . handleLoadJsons `merge`
 	liftIO . dummyHandleCalcTextExtents `merge`
+	(Just <$>) . handleStoreRandomGen `merge`
+	(Just <$>) . handleLoadRandomGen `merge`
 	liftIO . handleRaiseError `before`
 	liftIO . (Just <$>) . handleLeftClick
 
-handle' :: Field -> Maybe (BS.ByteString, FilePath) -> Handle (StateT [Object] IO) FollowboxEv
+handle' :: Field -> Maybe (BS.ByteString, FilePath) -> Handle (StateT (StdGen, [Object]) IO) FollowboxEv
 handle' f mba = retry $
+	(Just <$>) . handleStoreRandomGen `merge`
+	(Just <$>) . handleLoadRandomGen `merge`
 	(Just <$>) . handleStoreJsons `merge`
 	liftIO . (Just <$>) . handleHttpGet mba `merge`
 	(Just <$>) . handleLoadJsons `merge`

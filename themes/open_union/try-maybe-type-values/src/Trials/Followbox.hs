@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE DataKinds, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Followbox where
@@ -9,6 +10,7 @@ import Control.Monad
 import Data.Type.Flip
 import Data.Type.Set
 import Data.Or
+import System.Random hiding (next)
 
 import qualified Data.Text as T
 import qualified Data.HashMap.Strict as HM
@@ -21,8 +23,17 @@ import Trials.Followbox.XGlyphInfo
 import Trials.Followbox.Image
 import MonadicFrp
 
-getUsersJson :: React (Singleton HttpGet) (Either String [Object])
-getUsersJson = decodeJson . snd <$> httpGet "https://api.github.com/users"
+-- type Uri = String
+
+apiUsers :: Int -> Uri
+apiUsers s = "https://api.github.com/users?since=" <> show s
+
+getUsersJson :: React (StoreRandomGen :- LoadRandomGen :- HttpGet :- 'Nil) (Either String [Object])
+getUsersJson = do
+	g <- adjust loadRandomGen
+	let	(n, g') = randomR (0, 2 ^ (27 :: Int)) g
+	adjust $ storeRandomGen g'
+	decodeJson . snd <$> adjust (httpGet $ apiUsers n) -- "https://api.github.com/users")
 
 getUser1 :: ReactF Object
 getUser1 = adjust loadJsons >>= \case

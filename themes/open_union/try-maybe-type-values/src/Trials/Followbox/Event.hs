@@ -2,12 +2,13 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
 
 module Trials.Followbox.Event where
 
 import Data.Type.Set
 import Data.Bool
+import System.Random
 import Network.HTTP.Simple (Header)
 
 import qualified Data.ByteString.Lazy as LBS
@@ -51,6 +52,25 @@ instance Request HttpGet where
 httpGet :: Uri -> React (Singleton HttpGet) ([Header], LBS.ByteString)
 httpGet u = maybe (httpGet u) pure =<< await (HttpGetReq u)
 	\(OccHttpGet u' hs c) -> bool Nothing (Just (hs, c)) $ u == u'
+
+data StoreRandomGen = StoreRandomGen StdGen deriving (Show, Eq, Ord)
+instance Eq StdGen where g1 == g2 = show g1 == show g2
+instance Ord StdGen where g1 <= g2 = show g1 <= show g2
+numbered [t| StoreRandomGen |]
+instance Request StoreRandomGen where
+	data Occurred StoreRandomGen = OccStoreRandomGen StdGen deriving Show
+
+storeRandomGen :: StdGen -> React (Singleton StoreRandomGen) ()
+storeRandomGen g = result (storeRandomGen g) (pure ()) =<< await (StoreRandomGen g)
+	\(OccStoreRandomGen g') -> bool Failure Succeed $ g == g'
+
+data LoadRandomGen = LoadRandomGenReq deriving (Show, Eq, Ord)
+numbered [t| LoadRandomGen |]
+instance Request LoadRandomGen where
+	data Occurred LoadRandomGen = OccLoadRandomGen StdGen
+
+loadRandomGen :: React (Singleton LoadRandomGen) StdGen
+loadRandomGen = await LoadRandomGenReq \(OccLoadRandomGen g) -> g
 
 data StoreJsons = StoreJsons [Object] deriving (Show, Eq, Ord)
 numbered [t| StoreJsons |]
@@ -114,6 +134,7 @@ type ISigF = ISig FollowboxEv
 type ReactF = React FollowboxEv
 
 type FollowboxEv =
-	Move :- LeftClick :- HttpGet :- StoreJsons :- LoadJsons :-
+	Move :- LeftClick :- HttpGet :-
+	StoreRandomGen :- LoadRandomGen :- StoreJsons :- LoadJsons :-
 	CalcTextExtents :-
 	Quit :- RaiseError :- 'Nil

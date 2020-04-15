@@ -11,6 +11,7 @@ import Control.Monad.Writer
 import Control.Monad.State
 import Data.Type.Set
 import Data.UnionSet hiding (merge)
+import System.Random
 
 import qualified Data.Text as T
 
@@ -59,6 +60,13 @@ testHandleHttpGet reqs = do
 --	pure . singleton $ OccHttpGet u [] "[]"
 	where HttpGetReq u = extract reqs
 
+testHandleStoreRandomGen :: Handle TestMonad (Singleton StoreRandomGen)
+testHandleStoreRandomGen reqs = pure . singleton $ OccStoreRandomGen g
+	where StoreRandomGen g = extract reqs
+
+testHandleLoadRandomGen :: Handle TestMonad (Singleton LoadRandomGen)
+testHandleLoadRandomGen _reqs = pure . singleton . OccLoadRandomGen $ mkStdGen 8
+
 testHandleStoreJsons :: Handle TestMonad (Singleton StoreJsons)
 testHandleStoreJsons reqs = do
 	putJsons os
@@ -92,4 +100,6 @@ testHandle = retry $
 	(Just <$>) . testHandleLoadJsons `merge`
 	(Just <$>) . testHandleLeftClick `merge`
 	testHandleRaiseError `merge`
-	testHandleCalcTextExtents
+	testHandleCalcTextExtents `merge`
+	(Just <$>) . testHandleStoreRandomGen `merge`
+	(Just <$>) . testHandleLoadRandomGen
