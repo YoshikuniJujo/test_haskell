@@ -72,7 +72,7 @@ createLoginName :: Color -> Double -> Position -> T.Text -> Position -> (View, R
 createLoginName clr fs p t (x', y') = (
 	Text clr fs p t : createX 4 (round fs `div` 2) (x' + round fs `div` 2, y' + round fs * 3 `div` 8),
 	Rect	(x' + round fs `div` 2, y' + round fs * 3 `div` 8)
-		(x' + round fs, y' + round fs * 5 `div` 8) )
+		(x' + round fs, y' + round fs * 7 `div` 8) )
 
 createX :: Integer -> Integer -> Position -> View
 createX lw sz (x, y) = [
