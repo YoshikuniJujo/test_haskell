@@ -86,7 +86,7 @@ tryMousePosition = do
 tryViewLoginNameSig :: IO ()
 tryViewLoginNameSig = getGithubToken >>= \mba -> do
 	f <- openField ("tryViewLoginNameSig" :: String) [exposureMask, buttonPressMask]
-	interpret (handle' f mba) (liftIO . view f) (viewLoginNameSig 0 `until` checkQuit) `runStateT` [] >>= print . fst
+	interpret (handle' f mba) (liftIO . view f) (viewLoginNameSig 0 "foo" `until` checkQuit) `runStateT` [] >>= print . fst
 	closeField f
 
 tryViewMultiLoginNameSig :: IO ()
