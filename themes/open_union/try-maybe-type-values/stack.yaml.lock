@@ -27,11 +27,11 @@ packages:
     git: https://github.com/YoshikuniJujo/type-flip
     pantry-tree:
       size: 514
-      sha256: f011b5efc08f269c35c9cecc962c53fc0c969bd6991dfe2abdff2950452e58fc
-    commit: 3ee912b94989209cacc8a87c2fc5f0604a0b4dfd
+      sha256: 99ca62af8ffd0d68ec8e00467ab183e23f66b4e2c428ec7627af7a732f3f06d8
+    commit: a0fa8260e2c68cdf00d6890e1f8c0efaa4f71f05
   original:
     git: https://github.com/YoshikuniJujo/type-flip
-    commit: 3ee912b94989209cacc8a87c2fc5f0604a0b4dfd
+    commit: a0fa8260e2c68cdf00d6890e1f8c0efaa4f71f05
 - completed:
     cabal-file:
       size: 1330

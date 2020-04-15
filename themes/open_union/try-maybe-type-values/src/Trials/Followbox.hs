@@ -84,8 +84,18 @@ data Rect = Rect { upperLeft :: Position, bottomRight :: Position }
 
 viewMultiLoginNameSig :: Integer -> SigF View ()
 viewMultiLoginNameSig n = do
-	lns <- fromIntegral n `replicateM` waitFor getLoginName
-	concat <$%> ftraverse (uncurry viewLoginNameSig) ([0 .. n - 1] `zip` lns)
+	(vn, rn) <- waitFor next
+	(vr, rr) <- waitFor refresh
+	emit $ title : vn ++ vr
+	vmlns (vn, rn) (vr, rr)
+	where
+	vmlns nxt@(vn, rn) rfs@(vr, rr) = do
+		lns <- fromIntegral n `replicateM` waitFor getLoginName
+		((title :) . (vn ++) . (vr ++) . concat <$%> ftraverse (uncurry viewLoginNameSig) ([0 .. n - 1] `zip` lns))
+			`until` (clickOnRect rn `first` clickOnRect rr)
+--		case r of
+--			_ -> pure (r :: ())
+		vmlns nxt rfs
 
 viewLoginNameSig :: Integer -> T.Text -> SigF View ()
 viewLoginNameSig n ln = do
@@ -103,7 +113,7 @@ createLoginName1 n t = do
 		xGlyphInfoWidth = w,
 		xGlyphInfoX = x,
 		xGlyphInfoY = y } <- adjust $ calcTextExtents "sans" 36 t
-	pure $ createLoginName blue 36 (100, 100 + n * 72) t (100 - x + w, 100 + n * 72 - y)
+	pure $ createLoginName blue 36 (180, 180 + n * 90) t (180 - x + w, 180 + n * 90 - y)
 
 clickOnRect :: Rect -> ReactF ()
 clickOnRect r = () <$ find (`isInsideOf` r) (mousePosition `indexBy` repeat leftClick)
@@ -113,3 +123,24 @@ mousePosition = repeat $ adjust move
 
 isInsideOf :: Position -> Rect -> Bool
 isInsideOf (x, y) (Rect (l, t) (r, b)) = l <= x && x <= r && t <= y && y <= b
+
+title :: View1
+title = Text white 36 (50, 80) "Who to follow"
+
+linkText :: Double -> Position -> T.Text -> ReactF (View, Rect)
+linkText fs p@(x0, y0) t = do
+	XGlyphInfo {
+		xGlyphInfoWidth = w,
+		xGlyphInfoHeight = h,
+		xGlyphInfoX = x,
+		xGlyphInfoY = y } <- adjust $ calcTextExtents "sans" fs t
+	pure (	[	Text blue fs p t,
+			Line blue 4
+				(x0 - x, y0 + 6)
+				(x0 + w - x, y0 + 6) ],
+		Rect	(x0 - x, y0 - y)
+			(x0 - x + w, y0 - y + h) )
+
+next, refresh :: ReactF (View, Rect)
+next = linkText 30 (600, 80) "Next"
+refresh = linkText 30 (700, 80) "Refresh"
