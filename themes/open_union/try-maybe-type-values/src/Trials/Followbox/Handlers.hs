@@ -10,8 +10,10 @@ import Prelude hiding ((++))
 
 import Control.Monad.State
 import Data.Type.Set
+import Data.Bool
 import Data.String
 import Data.UnionSet hiding (merge)
+import Data.Time
 import System.Random
 
 import qualified Data.ByteString as BS
@@ -23,6 +25,26 @@ import Trials.Followbox.Aeson
 import Trials.Followbox.XGlyphInfo
 import MonadicFrp.Handle
 import Field hiding (textExtents)
+
+type FollowboxM = StateT (StdGen, [Object], Maybe UTCTime)
+
+getObjects :: Monad m => FollowboxM m [Object]
+getObjects = (<$> get) \(_, os, _) -> os
+
+putObjects :: Monad m => [Object] -> FollowboxM m ()
+putObjects os = get >>= \(g, _, slp) -> put (g, os, slp)
+
+getRandomGen :: Monad m => FollowboxM m StdGen
+getRandomGen = (<$> get) \(g, _, _) -> g
+
+putRandomGen :: Monad m => StdGen -> FollowboxM m ()
+putRandomGen g = get >>= \(_, os, slp) -> put (g, os, slp)
+
+getSleepUntil :: Monad m => FollowboxM m (Maybe UTCTime)
+getSleepUntil = (<$> get) \(_, _, slp) -> slp
+
+putSleepUntil :: Monad m => Maybe UTCTime -> FollowboxM m ()
+putSleepUntil slp = get >>= \(g, os, _) -> put (g, os, slp)
 
 handleHttpGet :: Maybe (BS.ByteString, FilePath) -> EvReqs (Singleton HttpGet) -> IO (EvOccs (Singleton HttpGet))
 handleHttpGet mba reqs = do
@@ -38,23 +60,18 @@ handleHttpGet mba reqs = do
 setUserAgent :: BS.ByteString -> HTTP.Request -> HTTP.Request
 setUserAgent ua = HTTP.setRequestHeader "User-Agent" [ua]
 
-putObjects :: Monad m => [Object] -> StateT (x, [Object]) m ()
-putObjects os = do
-	(g, _) <- get
-	put (g, os)
-
-handleStoreJsons :: Monad m => EvReqs (Singleton StoreJsons) -> StateT (StdGen, [Object]) m (EvOccs (Singleton StoreJsons))
+handleStoreJsons :: Monad m => EvReqs (Singleton StoreJsons) -> FollowboxM m (EvOccs (Singleton StoreJsons))
 handleStoreJsons reqs = singleton (OccStoreJsons os) <$ putObjects os
 	where StoreJsons os = extract reqs
 
-handleLoadJsons :: Monad m => EvReqs (Singleton LoadJsons) -> StateT (StdGen, [Object]) m (EvOccs (Singleton LoadJsons))
-handleLoadJsons _reqs = singleton . OccLoadJsons . snd <$> get
+handleLoadJsons :: Monad m => EvReqs (Singleton LoadJsons) -> FollowboxM m (EvOccs (Singleton LoadJsons))
+handleLoadJsons _reqs = singleton . OccLoadJsons <$> getObjects
 
-handleLeftClick :: EvReqs (Move :- LeftClick :- Quit :- 'Nil) -> IO (EvOccs (Move :- LeftClick :- Quit :- 'Nil))
-handleLeftClick reqs = getLine >>= \case
+handleLeftClickNoField :: EvReqs (Move :- LeftClick :- Quit :- 'Nil) -> IO (EvOccs (Move :- LeftClick :- Quit :- 'Nil))
+handleLeftClickNoField reqs = getLine >>= \case
 	"" -> liftIO (putStrLn "here") >> pure (expand $ singleton OccLeftClick)
 	"q" -> pure (expand $ singleton OccQuit)
-	_ -> handleLeftClick reqs
+	_ -> handleLeftClickNoField reqs
 
 handleRaiseError :: EvReqs (Singleton RaiseError) -> IO (Maybe (EvOccs (Singleton RaiseError)))
 handleRaiseError reqs = case e of
@@ -79,17 +96,16 @@ handleRaiseError reqs = case e of
 dummyHandleCalcTextExtents :: EvReqs (Singleton CalcTextExtents) -> IO (Maybe (EvOccs (Singleton CalcTextExtents)))
 dummyHandleCalcTextExtents _reqs = pure Nothing
 
-handleStoreRandomGen :: Monad m => EvReqs (Singleton StoreRandomGen) -> StateT (StdGen, x) m (EvOccs (Singleton StoreRandomGen))
+handleStoreRandomGen :: Monad m => EvReqs (Singleton StoreRandomGen) -> FollowboxM m (EvOccs (Singleton StoreRandomGen))
 handleStoreRandomGen reqs = do
-	(_, os) <- get
-	put (g, os)
+	putRandomGen g
 	pure . singleton $ OccStoreRandomGen g
 	where StoreRandomGen g = extract reqs
 
-handleLoadRandomGen :: Monad m => EvReqs (Singleton LoadRandomGen) -> StateT (StdGen, x) m (EvOccs (Singleton LoadRandomGen))
-handleLoadRandomGen _reqs = singleton . OccLoadRandomGen . fst <$> get
+handleLoadRandomGen :: Monad m => EvReqs (Singleton LoadRandomGen) -> FollowboxM m (EvOccs (Singleton LoadRandomGen))
+handleLoadRandomGen _reqs = singleton . OccLoadRandomGen <$> getRandomGen
 
-handle :: Maybe (BS.ByteString, FilePath) -> Handle (StateT (StdGen, [Object]) IO) FollowboxEv
+handle :: Maybe (BS.ByteString, FilePath) -> Handle (FollowboxM IO) FollowboxEv
 handle mba = retry $
 	(Just <$>) . handleStoreJsons `merge`
 	liftIO . (Just <$>) . handleHttpGet mba `merge`
@@ -97,10 +113,12 @@ handle mba = retry $
 	liftIO . dummyHandleCalcTextExtents `merge`
 	(Just <$>) . handleStoreRandomGen `merge`
 	(Just <$>) . handleLoadRandomGen `merge`
-	liftIO . handleRaiseError `before`
-	liftIO . (Just <$>) . handleLeftClick
+	liftIO . handleRaiseError `merge`
+	(Just <$>) . handleBeginSleep `merge`
+	handleEndSleep `before`
+	liftIO . (Just <$>) . handleLeftClickNoField
 
-handle' :: Field -> Maybe (BS.ByteString, FilePath) -> Handle (StateT (StdGen, [Object]) IO) FollowboxEv
+handle' :: Field -> Maybe (BS.ByteString, FilePath) -> Handle (FollowboxM IO) FollowboxEv
 handle' f mba = retry $
 	(Just <$>) . handleStoreRandomGen `merge`
 	(Just <$>) . handleLoadRandomGen `merge`
@@ -108,8 +126,15 @@ handle' f mba = retry $
 	liftIO . (Just <$>) . handleHttpGet mba `merge`
 	(Just <$>) . handleLoadJsons `merge`
 	liftIO . (Just <$>) . handleCalcTextExtents f `merge`
-	liftIO . handleRaiseError `before`
-	liftIO . handleLeftClick' f
+	liftIO . handleRaiseError `merge`
+	(Just <$>) . handleBeginSleep `merge`
+	handleEndSleep `before`
+	handleLeftClick f
+
+handleLeftClick :: Field -> EvReqs (Move :- LeftClick :- Quit :- 'Nil) -> FollowboxM IO (Maybe (EvOccs (Move :- LeftClick :- Quit :- 'Nil)))
+handleLeftClick f reqs = getSleepUntil >>= liftIO . \case
+	Nothing -> handleLeftClick' f reqs
+	Just t -> handleLeftClickUntil f t reqs
 
 handleLeftClick' :: Field -> EvReqs (Move :- LeftClick :- Quit :- 'Nil) -> IO (Maybe (EvOccs (Move :- LeftClick :- Quit :- 'Nil)))
 handleLeftClick' f _reqs = withNextEvent f \case
@@ -119,6 +144,39 @@ handleLeftClick' f _reqs = withNextEvent f \case
 	MotionEvent { ev_x = x, ev_y = y } -> pure . Just . expand . singleton $ OccMove (fromIntegral x, fromIntegral y)
 	_ -> pure Nothing
 
+handleLeftClickUntil :: Field -> UTCTime -> EvReqs (Move :- LeftClick :- Quit :- 'Nil) ->
+	IO (Maybe (EvOccs (Move :- LeftClick :- Quit :- 'Nil)))
+handleLeftClickUntil f t _reqs = withNextEventUntil f t \case
+	Just ButtonEvent { ev_event_type = 4, ev_button = 1, ev_x = x, ev_y = y } ->
+		pure . Just $ expand (OccMove (fromIntegral x, fromIntegral y) >- singleton OccLeftClick :: EvOccs (Move :- LeftClick :- 'Nil))
+	Just ButtonEvent { ev_event_type = 4, ev_button = 3 } -> pure . Just . expand . singleton $ OccQuit
+	Just MotionEvent { ev_x = x, ev_y = y } -> pure . Just . expand . singleton $ OccMove (fromIntegral x, fromIntegral y)
+	_ -> pure Nothing
+
+withNextEventUntil :: Field -> UTCTime -> (Maybe Event -> IO a) -> IO a
+withNextEventUntil f t act = do
+	now <- getCurrentTime
+	let	dt = t `diffUTCTime` now
+	withNextEventTimeout' f (round $ dt * 1000000) act
+
 handleCalcTextExtents :: Field -> EvReqs (Singleton CalcTextExtents) -> IO (EvOccs (Singleton CalcTextExtents))
 handleCalcTextExtents f reqs = singleton . OccCalcTextExtents fn fs t <$> textExtents f fn fs t
 	where CalcTextExtentsReq fn fs t = extract reqs
+
+handleBeginSleep :: Monad m => EvReqs (Singleton BeginSleep) -> FollowboxM m (EvOccs (Singleton BeginSleep))
+handleBeginSleep reqs = getSleepUntil >>= \case
+	Just t -> pure . singleton $ OccBeginSleep t
+	Nothing -> case extract reqs of
+		BeginSleep t -> do
+			putSleepUntil $ Just t
+			pure . singleton $ OccBeginSleep t
+		CheckBeginSleep -> pure $ singleton NotOccBeginSleep
+
+handleEndSleep :: EvReqs (Singleton EndSleep) -> FollowboxM IO (Maybe (EvOccs (Singleton EndSleep)))
+handleEndSleep _reqs = getSleepUntil >>= \case
+	Just t -> do
+		now <- liftIO getCurrentTime
+		bool	(pure Nothing)
+			(putSleepUntil Nothing >> pure (Just $ singleton OccEndSleep))
+			(t <= now)
+	Nothing -> pure . Just $ singleton OccEndSleep

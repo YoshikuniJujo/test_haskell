@@ -7,6 +7,7 @@ module Trials.Followbox.Trials where
 import Prelude hiding (log, until)
 
 import Control.Monad.State
+import Data.Time
 import System.Environment
 import System.Random
 
@@ -20,10 +21,14 @@ import Trials.Followbox
 import Trials.Followbox.Event
 import Trials.Followbox.Handlers
 import Trials.Followbox.View
+import Trials.Followbox.Aeson
 
 import Trials.Followbox.TestMonad
 
 import Field
+
+initialState :: (StdGen, [Object], Maybe UTCTime)
+initialState = (mkStdGen 8, [], Nothing)
 
 getGithubToken :: IO (Maybe (BS.ByteString, FilePath))
 getGithubToken =
@@ -38,29 +43,29 @@ tryHttpGetTest = interpretReact testHandleHttpGet (httpGet "https://api.github.c
 
 tryGetUser1 :: IO ()
 tryGetUser1 = getGithubToken >>= \mba ->
-	interpretReact (handle mba) getUser1 `runStateT` (mkStdGen 8, []) >>= print . fst
+	interpretReact (handle mba) getUser1 `runStateT` initialState >>= print . fst
 
 tryGetUser1Test :: TestMonad ()
 tryGetUser1Test = interpretReact testHandle getUser1UntilError >>= log . show
 
 tryGetUser3 :: IO ()
 tryGetUser3 = getGithubToken >>= \mba ->
-	interpretReact (handle mba) (getUserN 3) `runStateT` (mkStdGen 8, []) >>= print . fst
+	interpretReact (handle mba) (getUserN 3) `runStateT` initialState >>= print . fst
 
 tryLeftClickUser3 :: IO ()
 tryLeftClickUser3 = getGithubToken >>= \mba ->
-	interpretReact (handle mba) (leftClickUserN 3) `runStateT` (mkStdGen 8, []) >>= print . fst
+	interpretReact (handle mba) (leftClickUserN 3) `runStateT` initialState >>= print . fst
 
 tryGetLoginNameQuit' :: IO ()
 tryGetLoginNameQuit' = getGithubToken >>= \mba -> do
 	f <- openField ("tryGetLoginNameQuit'" :: String) [exposureMask, buttonPressMask]
-	interpret (handle' f mba) (liftIO . view f) getLoginNameQuit `runStateT` (mkStdGen 8, []) >>= print . fst
+	interpret (handle' f mba) (liftIO . view f) getLoginNameQuit `runStateT` initialState >>= print . fst
 	closeField f
 
 tryGetLoginNameNQuit :: IO ()
 tryGetLoginNameNQuit = getGithubToken >>= \mba -> do
 	f <- openField ("tryGetLoginNameNQuit'" :: String) [exposureMask, buttonPressMask]
-	() <$ interpret (handle' f mba) (liftIO . view f) getLoginNameNQuit `runStateT` (mkStdGen 8, [])
+	() <$ interpret (handle' f mba) (liftIO . view f) getLoginNameNQuit `runStateT` initialState
 	closeField f
 
 tryCalcTextExtents :: IO ()
@@ -73,23 +78,23 @@ tryCalcTextExtents = do
 tryMousePosition :: IO ()
 tryMousePosition = do
 	f <- openField ("tryMousePosition" :: String) [exposureMask, pointerMotionMask, buttonPressMask]
-	interpret (handle' f Nothing) (liftIO . print) (mousePosition `until` checkQuit) `runStateT` (mkStdGen 8, []) >>= print . fst
+	interpret (handle' f Nothing) (liftIO . print) (mousePosition `until` checkQuit) `runStateT` initialState >>= print . fst
 	closeField f
 
 tryViewMultiLoginNameSig :: IO ()
 tryViewMultiLoginNameSig = getGithubToken >>= \mba -> do
 	f <- openField ("tryViewMultiLoginNameSig" :: String) [exposureMask, buttonPressMask]
-	() <$ interpret (handle' f mba) (liftIO . view f) (viewMultiLoginNameSig 3 `until` checkQuit `until` terminateOccur) `runStateT` (mkStdGen 8, [])
+	() <$ interpret (handle' f mba) (liftIO . view f) (viewMultiLoginNameSig 3 `until` checkQuit `until` terminateOccur) `runStateT` initialState
 	closeField f
 
 tryGetAvatarAddress :: IO ()
 tryGetAvatarAddress = getGithubToken >>= \mba -> do
 	f <- openField ("tryGetAvatarAddress" :: String) [exposureMask]
-	interpretReact (handle' f mba) ((getAvatarAddress =<< getUser1) `first` catchError) `runStateT` (mkStdGen 8, []) >>= print . fst
+	interpretReact (handle' f mba) ((getAvatarAddress =<< getUser1) `first` catchError) `runStateT` initialState >>= print . fst
 	closeField f
 
 tryViewAvatar :: IO ()
 tryViewAvatar = getGithubToken >>= \mba -> do
 	f <- openField ("tryViewAvatar" :: String) [exposureMask, buttonPressMask]
-	() <$ interpret (handle' f mba) (liftIO . view f) (viewAvatar `until` catchError) `runStateT` (mkStdGen 8, [])
+	() <$ interpret (handle' f mba) (liftIO . view f) (viewAvatar `until` catchError) `runStateT` initialState
 	closeField f

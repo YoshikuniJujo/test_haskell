@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
@@ -8,6 +8,7 @@ module Trials.Followbox.Event where
 
 import Data.Type.Set
 import Data.Bool
+import Data.Time
 import System.Random
 import Network.HTTP.Simple (Header)
 
@@ -104,6 +105,29 @@ calcTextExtents fn fs t = maybe (calcTextExtents fn fs t) pure
 			bool Nothing (Just glp)
 				$ fn == fn' && fs == fs' && t == t'
 
+data BeginSleep = BeginSleep UTCTime | CheckBeginSleep deriving (Show, Eq, Ord)
+numbered [t| BeginSleep |]
+instance Request BeginSleep where
+	data Occurred BeginSleep = OccBeginSleep UTCTime | NotOccBeginSleep
+		deriving Show
+
+beginSleep :: UTCTime -> React (Singleton BeginSleep) ()
+beginSleep t = result (beginSleep t) (pure ()) =<< await (BeginSleep t) \case
+	OccBeginSleep t' | t == t' -> Succeed
+	_ -> Failure
+
+checkBeginSleep :: React (Singleton BeginSleep) (Maybe UTCTime)
+checkBeginSleep = await CheckBeginSleep
+	\case OccBeginSleep t -> Just t; NotOccBeginSleep -> Nothing
+
+data EndSleep = EndSleepReq deriving (Show, Eq, Ord)
+numbered [t| EndSleep |]
+instance Request EndSleep where
+	data Occurred EndSleep = OccEndSleep deriving Show
+
+endSleep :: React (Singleton EndSleep) ()
+endSleep = await EndSleepReq \OccEndSleep -> ()
+
 data Quit = QuitReq deriving (Show, Eq, Ord)
 numbered [t| Quit |]
 instance Request Quit where data Occurred Quit = OccQuit
@@ -136,5 +160,5 @@ type ReactF = React FollowboxEv
 type FollowboxEv =
 	Move :- LeftClick :- HttpGet :-
 	StoreRandomGen :- LoadRandomGen :- StoreJsons :- LoadJsons :-
-	CalcTextExtents :-
+	CalcTextExtents :- BeginSleep :- EndSleep :-
 	Quit :- RaiseError :- 'Nil

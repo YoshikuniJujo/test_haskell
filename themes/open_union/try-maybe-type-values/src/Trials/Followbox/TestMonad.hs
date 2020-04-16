@@ -103,4 +103,8 @@ testHandle = retry $
 	testHandleRaiseError `merge`
 	testHandleCalcTextExtents `merge`
 	(Just <$>) . testHandleStoreRandomGen `merge`
-	(Just <$>) . testHandleLoadRandomGen
+	(Just <$>) . testHandleLoadRandomGen `merge`
+	testHandleBeginSleep
+
+testHandleBeginSleep :: Handle' TestMonad (BeginSleep :- EndSleep :- 'Nil)
+testHandleBeginSleep _reqs = pure Nothing
