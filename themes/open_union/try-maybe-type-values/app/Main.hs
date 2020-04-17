@@ -1,6 +1,6 @@
 module Main where
 
-import Trials.TrySig (tryBoxes)
+import Trials.Followbox.Trials (tryViewMultiLoginName)
 
 main :: IO ()
-main = tryBoxes
+main = tryViewMultiLoginName

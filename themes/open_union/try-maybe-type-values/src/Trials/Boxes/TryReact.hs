@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.TryReact (
+module Trials.Boxes.TryReact (
 	tryLeftClick, trySameClick, trySleep, tryDoubler, tryFirstPoint ) where
 
 import Control.Monad.State (runStateT)

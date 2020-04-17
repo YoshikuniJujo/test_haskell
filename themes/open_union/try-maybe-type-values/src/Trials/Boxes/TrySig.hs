@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.TrySig (
+module Trials.Boxes.TrySig (
 	tryCycleColor, tryCurRect, tryElapsed, tryWiggleRect, tryCompleteRect,
 	tryDefineRect, tryChooseBoxColor, tryChooseBoxColor', tryBoxes ) where
 
