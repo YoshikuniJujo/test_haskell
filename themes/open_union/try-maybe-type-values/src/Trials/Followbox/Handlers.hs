@@ -14,6 +14,7 @@ import Data.Bool
 import Data.String
 import Data.UnionSet hiding (merge)
 import Data.Time
+import System.Process
 import System.Random
 
 import qualified Data.ByteString as BS
@@ -90,6 +91,9 @@ handleRaiseError reqs = case e of
 	NoAvatar -> do
 		putStrLn $ "ERROR: " <> em
 		pure . Just . singleton $ OccRaiseError e Terminate
+	NoHtmlUrl -> do
+		putStrLn $ "ERROR: " <> em
+		pure . Just . singleton $ OccRaiseError e Terminate
 	CatchError -> pure Nothing
 	where RaiseError e em = extract reqs
 
@@ -105,8 +109,8 @@ handleStoreRandomGen reqs = do
 handleLoadRandomGen :: Monad m => EvReqs (Singleton LoadRandomGen) -> FollowboxM m (EvOccs (Singleton LoadRandomGen))
 handleLoadRandomGen _reqs = singleton . OccLoadRandomGen <$> getRandomGen
 
-handle :: Maybe (BS.ByteString, FilePath) -> Handle (FollowboxM IO) FollowboxEv
-handle mba = retry $
+handle :: FilePath -> Maybe (BS.ByteString, FilePath) -> Handle (FollowboxM IO) FollowboxEv
+handle brws mba = retry $
 	(Just <$>) . handleStoreJsons `merge`
 	liftIO . (Just <$>) . handleHttpGet mba `merge`
 	(Just <$>) . handleLoadJsons `merge`
@@ -116,11 +120,12 @@ handle mba = retry $
 	liftIO . handleRaiseError `merge`
 	handleBeginSleep `merge`
 	handleEndSleep `merge`
-	liftIO . (Just <$>) . handleGetTimeZone `before`
+	liftIO . (Just <$>) . handleGetTimeZone `merge`
+	liftIO . (Just <$>) . handleBrowse brws  `before`
 	liftIO . (Just <$>) . handleLeftClickNoField
 
-handle' :: Field -> Maybe (BS.ByteString, FilePath) -> Handle (FollowboxM IO) FollowboxEv
-handle' f mba = retry $
+handle' :: Field -> FilePath -> Maybe (BS.ByteString, FilePath) -> Handle (FollowboxM IO) FollowboxEv
+handle' f brws mba = retry $
 	(Just <$>) . handleStoreRandomGen `merge`
 	(Just <$>) . handleLoadRandomGen `merge`
 	(Just <$>) . handleStoreJsons `merge`
@@ -130,7 +135,8 @@ handle' f mba = retry $
 	liftIO . handleRaiseError `merge`
 	handleBeginSleep `merge`
 	handleEndSleep `merge`
-	liftIO . (Just <$>) . handleGetTimeZone `before`
+	liftIO . (Just <$>) . handleGetTimeZone `merge`
+	liftIO . (Just <$>) . handleBrowse brws  `before`
 	handleLeftClick f
 
 handleLeftClick :: Field -> EvReqs (Move :- LeftClick :- Quit :- 'Nil) -> FollowboxM IO (Maybe (EvOccs (Move :- LeftClick :- Quit :- 'Nil)))
@@ -195,3 +201,7 @@ handleGetTimeZone :: EvReqs (Singleton GetTimeZone) -> IO (EvOccs (Singleton Get
 handleGetTimeZone _reqs = do
 	tz <- getCurrentTimeZone
 	pure . singleton $ OccGetTimeZone tz
+
+handleBrowse :: FilePath -> Handle IO (Singleton Browse)
+handleBrowse brws reqs = spawnProcess brws [u] >> pure (singleton OccBrowse)
+	where Browse u = extract reqs

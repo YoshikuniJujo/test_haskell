@@ -82,6 +82,11 @@ getAvatarAddress o = avatorAddressFromObject <$> getUser1 >>= \case
 	Just ln -> pure ln
 	Nothing -> adjust (raiseError NoAvatarAddress "No Avatar Address") >> getAvatarAddress o
 
+getHtmlUrl :: Object -> ReactF T.Text
+getHtmlUrl o = pure (htmlUrlFromObject o) >>= \case
+	Just u -> pure u
+	Nothing -> adjust (raiseError NoHtmlUrl "No HTML URL") >> getHtmlUrl o
+
 viewAvatar :: SigF View ()
 viewAvatar = do
 	v <- waitFor viewAvatarReact
@@ -104,11 +109,14 @@ viewAvatarGen o = do
 leftClickUserN :: Int -> ReactF [Maybe T.Text]
 leftClickUserN n = adjust leftClick >> (loginNameFromObject <$>) <$> getUserN n
 
-loginNameFromObject, avatorAddressFromObject :: Object -> Maybe T.Text
+loginNameFromObject, avatorAddressFromObject, htmlUrlFromObject :: Object -> Maybe T.Text
 loginNameFromObject o = case HM.lookup "login" o of
 	Just (String li) -> Just li; _ -> Nothing
 
 avatorAddressFromObject o = case HM.lookup "avatar_url" o of
+	Just (String li) -> Just li; _ -> Nothing
+
+htmlUrlFromObject o = case HM.lookup "html_url" o of
 	Just (String li) -> Just li; _ -> Nothing
 
 terminateOccur :: ReactF ()
@@ -133,13 +141,17 @@ getLoginNameNQuit :: SigF View (Either (View, ()) (Maybe ()))
 getLoginNameNQuit = (repeat (adjust leftClick >> arrangeLoginNameN 3) `until` checkQuit)
 
 arrangeLoginNameN :: Integer -> ReactF View
-arrangeLoginNameN n = (concat . (fst <$>)) <$> viewLoginName `mapM` [0 .. n - 1]
+arrangeLoginNameN n = (concat . (fst3 <$>)) <$> viewLoginName `mapM` [0 .. n - 1]
 
-createLoginName :: Color -> Double -> Position -> T.Text -> Position -> (View, Rect)
-createLoginName clr fs p t (x', y') = (
+fst3 :: (a, b, c) -> a
+fst3 (x, _, _) = x
+
+createLoginName :: Color -> Double -> Position -> T.Text -> Position -> Rect -> (View, Rect, Rect)
+createLoginName clr fs p t (x', y') r' = (
 	Text clr fs p t : createX 4 (round fs `div` 2) (x' + round fs `div` 2, y' + round fs * 3 `div` 8),
 	Rect	(x' + round fs `div` 2, y' + round fs * 3 `div` 8)
-		(x' + round fs, y' + round fs * 7 `div` 8) )
+		(x' + round fs, y' + round fs * 7 `div` 8),
+	r' )
 
 createX :: Integer -> Integer -> Position -> View
 createX lw sz (x, y) = [
@@ -149,10 +161,10 @@ createX lw sz (x, y) = [
 data Rect = Rect { upperLeft :: Position, bottomRight :: Position }
 	deriving Show
 
-getAvatarLoginName :: ReactF (Avatar, T.Text)
+getAvatarLoginName :: ReactF (Avatar, T.Text, T.Text)
 getAvatarLoginName = do
 	obj <- getUser1
-	(,) <$> viewAvatarGen obj <*> getLoginName obj
+	(,,) <$> viewAvatarGen obj <*> getLoginName obj <*> getHtmlUrl obj
 
 viewMultiLoginName :: Integer -> SigF View ()
 viewMultiLoginName n = (<>) <$%> viewMultiLoginNameSig n <*%> viewResetTime
@@ -177,23 +189,25 @@ viewMultiLoginNameSig n = do
 			Right _ -> error "never occur"
 		vmlns nxt rfs
 
-viewLoginNameSig :: Integer -> (Avatar, T.Text) -> SigF View ()
-viewLoginNameSig n (a, ln) = do
-	(v, r) <- waitFor $ createLoginName1 n ln
+viewLoginNameSig :: Integer -> (Avatar, T.Text, T.Text) -> SigF View ()
+viewLoginNameSig n (a, ln, u) = do
+	(v, r, r') <- waitFor $ createLoginName1 n ln
 	emit $ Image (100, 120 + 120 * n) a : v
-	waitFor $ clickOnRect r
+	void $ waitFor (forever $ clickOnRect r' >> adjust (browse $ T.unpack u)) `until` clickOnRect r
 	viewLoginNameSig n =<< waitFor getAvatarLoginName
 
-viewLoginName :: Integer -> ReactF (View, Rect)
+viewLoginName :: Integer -> ReactF (View, Rect, Rect)
 viewLoginName n = createLoginName1 n =<< getLoginName =<< getUser1
 
-createLoginName1 :: Integer -> T.Text -> ReactF (View, Rect)
+createLoginName1 :: Integer -> T.Text -> ReactF (View, Rect, Rect)
 createLoginName1 n t = do
 	XGlyphInfo {
 		xGlyphInfoWidth = w,
+		xGlyphInfoHeight = h,
 		xGlyphInfoX = x,
 		xGlyphInfoY = y } <- adjust $ calcTextExtents "sans" 36 t
 	pure $ createLoginName blue 36 (210, 180 + n * 120) t (210 - x + w, 180 + n * 120 - y)
+		(Rect (210 - x, 180 + n * 120 - y) (210 - x + w, 180 + n * 120 - y + h))
 
 clickOnRect :: Rect -> ReactF ()
 clickOnRect r = () <$ find (`isInsideOf` r) (mousePosition `indexBy` repeat leftClick)

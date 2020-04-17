@@ -39,6 +39,7 @@ dependencies:
 - X11-xft
 - JuicyPixels
 - JuicyPixels-extra
+- process
 
 library:
   source-dirs: src

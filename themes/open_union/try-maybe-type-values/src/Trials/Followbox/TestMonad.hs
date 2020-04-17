@@ -88,6 +88,7 @@ testHandleRaiseError reqs = do
 		NoLoginName -> pure . Just . singleton $ OccRaiseError e Terminate
 		NoAvatarAddress -> pure . Just . singleton $ OccRaiseError e Terminate
 		NoAvatar -> pure . Just . singleton $ OccRaiseError e Terminate
+		NoHtmlUrl -> pure . Just . singleton $ OccRaiseError e Terminate
 		CatchError -> pure Nothing
 	where RaiseError e em = extract reqs
 
@@ -105,10 +106,14 @@ testHandle = retry $
 	(Just <$>) . testHandleStoreRandomGen `merge`
 	(Just <$>) . testHandleLoadRandomGen `merge`
 	testHandleBeginSleep `merge`
-	testHandleGetTimeZone
+	testHandleGetTimeZone `merge`
+	testHandleBrowse
 
 testHandleBeginSleep :: Handle' TestMonad (BeginSleep :- EndSleep :- 'Nil)
 testHandleBeginSleep _reqs = pure Nothing
 
 testHandleGetTimeZone :: Handle' TestMonad (Singleton GetTimeZone)
 testHandleGetTimeZone _reqs = pure Nothing
+
+testHandleBrowse :: Handle' TestMonad (Singleton Browse)
+testHandleBrowse _reqs = pure Nothing

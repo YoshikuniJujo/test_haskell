@@ -134,6 +134,13 @@ instance Request GetTimeZone where
 getTimeZone :: React (Singleton GetTimeZone) TimeZone
 getTimeZone = await GetTimeZone \(OccGetTimeZone tz) -> tz
 
+data Browse = Browse Uri deriving (Show, Eq, Ord)
+numbered [t| Browse |]
+instance Request Browse where data Occurred Browse = OccBrowse deriving Show
+
+browse :: Uri -> React (Singleton Browse) ()
+browse u = await (Browse u) \OccBrowse -> ()
+
 data Quit = QuitReq deriving (Show, Eq, Ord)
 numbered [t| Quit |]
 instance Request Quit where data Occurred Quit = OccQuit
@@ -142,7 +149,7 @@ checkQuit :: React (Singleton Quit) ()
 checkQuit = await QuitReq $ const ()
 
 data Error
-	= NotJson | EmptyJson | NoLoginName | NoAvatarAddress | NoAvatar | CatchError
+	= NotJson | EmptyJson | NoLoginName | NoAvatarAddress | NoAvatar | NoHtmlUrl | CatchError
 	deriving (Show, Eq, Ord)
 
 data ErrorResult = Continue | Terminate deriving Show
@@ -166,5 +173,5 @@ type ReactF = React FollowboxEv
 type FollowboxEv =
 	Move :- LeftClick :- HttpGet :-
 	StoreRandomGen :- LoadRandomGen :- StoreJsons :- LoadJsons :-
-	CalcTextExtents :- BeginSleep :- EndSleep :- GetTimeZone :-
+	CalcTextExtents :- BeginSleep :- EndSleep :- GetTimeZone :- Browse :-
 	Quit :- RaiseError :- 'Nil
