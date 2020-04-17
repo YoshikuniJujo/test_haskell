@@ -140,22 +140,27 @@ handleLeftClick f reqs = getSleepUntil >>= liftIO . \case
 
 handleLeftClick' :: Field -> EvReqs (Move :- LeftClick :- Quit :- 'Nil) -> IO (Maybe (EvOccs (Move :- LeftClick :- Quit :- 'Nil)))
 handleLeftClick' f _reqs = withNextEvent f \case
-	ExposeEvent { } -> flushField f >> pure Nothing
+	DestroyWindowEvent {} -> pure . Just . expand $ singleton OccQuit
+	ExposeEvent {} -> flushField f >> pure Nothing
 	ButtonEvent { ev_event_type = 4, ev_button = 1, ev_x = x, ev_y = y } ->
 		pure . Just $ expand (OccMove (fromIntegral x, fromIntegral y) >- singleton OccLeftClick :: EvOccs (Move :- LeftClick :- 'Nil))
 	ButtonEvent { ev_event_type = 4, ev_button = 3 } -> pure . Just . expand . singleton $ OccQuit
 	MotionEvent { ev_x = x, ev_y = y } -> pure . Just . expand . singleton $ OccMove (fromIntegral x, fromIntegral y)
-	_ -> pure Nothing
+	ev	| isDeleteEvent f ev -> destroyField f >> pure Nothing
+		| otherwise -> pure Nothing
 
 handleLeftClickUntil :: Field -> UTCTime -> EvReqs (Move :- LeftClick :- Quit :- 'Nil) ->
 	IO (Maybe (EvOccs (Move :- LeftClick :- Quit :- 'Nil)))
 handleLeftClickUntil f t _reqs = withNextEventUntil f t \case
+	Just DestroyWindowEvent {} -> pure . Just . expand $ singleton OccQuit
 	Just ExposeEvent { } -> flushField f >> pure Nothing
 	Just ButtonEvent { ev_event_type = 4, ev_button = 1, ev_x = x, ev_y = y } ->
 		pure . Just $ expand (OccMove (fromIntegral x, fromIntegral y) >- singleton OccLeftClick :: EvOccs (Move :- LeftClick :- 'Nil))
 	Just ButtonEvent { ev_event_type = 4, ev_button = 3 } -> pure . Just . expand . singleton $ OccQuit
 	Just MotionEvent { ev_x = x, ev_y = y } -> pure . Just . expand . singleton $ OccMove (fromIntegral x, fromIntegral y)
-	_ -> pure Nothing
+	Just ev	| isDeleteEvent f ev -> destroyField f >> pure Nothing
+		| otherwise -> pure Nothing
+	Nothing -> pure Nothing
 
 withNextEventUntil :: Field -> UTCTime -> (Maybe Event -> IO a) -> IO a
 withNextEventUntil f t act = do
