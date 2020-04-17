@@ -16,9 +16,9 @@ import Data.Kind
 import Data.Type.Bool
 import System.Random
 
-numbered :: TypeQ -> DecsQ
-numbered t = ((: []) <$>) . instanceD (cxt []) (conT ''Numbered `appT` t) $ (: []) do
-	n <- runIO $ abs <$> randomIO
+numbered :: Int -> TypeQ -> DecsQ
+numbered s t = ((: []) <$>) . instanceD (cxt []) (conT ''Numbered `appT` t) $ (: []) do
+	n <- runIO $ abs <$> randomRIO (0, 2 ^ s) -- randomIO
 	tySynInstD $ tySynEqn Nothing (conT ''Number `appT` t) (litT $ numTyLit n)
 
 class Numbered a where
