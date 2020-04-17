@@ -4,7 +4,9 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Followbox.Handlers where
+module Trials.Followbox.Handle (
+	handle, handle', handleHttpGet, handleCalcTextExtents
+	) where
 
 import Prelude hiding ((++))
 

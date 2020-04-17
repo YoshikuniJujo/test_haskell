@@ -19,7 +19,7 @@ import MonadicFrp.Run
 import MonadicFrp (until, first)
 import Trials.Followbox
 import Trials.Followbox.Event
-import Trials.Followbox.Handlers
+import Trials.Followbox.Handle
 import Trials.Followbox.View
 import Trials.Followbox.Aeson
 
