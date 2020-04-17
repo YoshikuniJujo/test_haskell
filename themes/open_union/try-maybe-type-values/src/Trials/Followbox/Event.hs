@@ -108,17 +108,15 @@ calcTextExtents fn fs t = maybe (calcTextExtents fn fs t) pure
 data BeginSleep = BeginSleep UTCTime | CheckBeginSleep deriving (Show, Eq, Ord)
 numbered [t| BeginSleep |]
 instance Request BeginSleep where
-	data Occurred BeginSleep = OccBeginSleep UTCTime | NotOccBeginSleep
-		deriving Show
+	data Occurred BeginSleep = OccBeginSleep UTCTime deriving Show
 
 beginSleep :: UTCTime -> React (Singleton BeginSleep) ()
 beginSleep t = result (beginSleep t) (pure ()) =<< await (BeginSleep t) \case
 	OccBeginSleep t' | t == t' -> Succeed
 	_ -> Failure
 
-checkBeginSleep :: React (Singleton BeginSleep) (Maybe UTCTime)
-checkBeginSleep = await CheckBeginSleep
-	\case OccBeginSleep t -> Just t; NotOccBeginSleep -> Nothing
+checkBeginSleep :: React (Singleton BeginSleep) UTCTime
+checkBeginSleep = await CheckBeginSleep \case OccBeginSleep t -> t
 
 data EndSleep = EndSleepReq deriving (Show, Eq, Ord)
 numbered [t| EndSleep |]
@@ -127,6 +125,14 @@ instance Request EndSleep where
 
 endSleep :: React (Singleton EndSleep) ()
 endSleep = await EndSleepReq \OccEndSleep -> ()
+
+data GetTimeZone = GetTimeZone deriving (Show, Eq, Ord)
+numbered [t| GetTimeZone |]
+instance Request GetTimeZone where
+	data Occurred GetTimeZone = OccGetTimeZone TimeZone deriving Show
+
+getTimeZone :: React (Singleton GetTimeZone) TimeZone
+getTimeZone = await GetTimeZone \(OccGetTimeZone tz) -> tz
 
 data Quit = QuitReq deriving (Show, Eq, Ord)
 numbered [t| Quit |]
@@ -160,5 +166,5 @@ type ReactF = React FollowboxEv
 type FollowboxEv =
 	Move :- LeftClick :- HttpGet :-
 	StoreRandomGen :- LoadRandomGen :- StoreJsons :- LoadJsons :-
-	CalcTextExtents :- BeginSleep :- EndSleep :-
+	CalcTextExtents :- BeginSleep :- EndSleep :- GetTimeZone :-
 	Quit :- RaiseError :- 'Nil

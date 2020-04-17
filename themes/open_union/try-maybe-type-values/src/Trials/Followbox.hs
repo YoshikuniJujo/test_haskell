@@ -10,8 +10,12 @@ import Control.Monad
 import Data.Type.Flip
 import Data.Type.Set
 import Data.Or
+import Data.String
+import Data.Time.Clock.POSIX
+import Data.Time.LocalTime hiding (getTimeZone)
 import System.Random hiding (next)
 
+import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Text as T
 import qualified Data.HashMap.Strict as HM
 import qualified Codec.Picture as JP
@@ -28,12 +32,34 @@ import MonadicFrp
 apiUsers :: Int -> Uri
 apiUsers s = "https://api.github.com/users?since=" <> show s
 
-getUsersJson :: React (StoreRandomGen :- LoadRandomGen :- HttpGet :- 'Nil) (Either String [Object])
+getUsersJson :: React (
+	StoreRandomGen :- LoadRandomGen :- HttpGet :- BeginSleep :- EndSleep :- 'Nil
+	) (Either String [Object])
 getUsersJson = do
 	g <- adjust loadRandomGen
 	let	(n, g') = randomR (0, 2 ^ (27 :: Int)) g
 	adjust $ storeRandomGen g'
-	decodeJson . snd <$> adjust (httpGet $ apiUsers n) -- "https://api.github.com/users")
+	(h, b) <- adjust . httpGet $ apiUsers n
+	let	mrmn = read . BSC.unpack <$> lookup (fromString "X-RateLimit-Remaining") h :: Maybe Int
+		mrst = posixSecondsToUTCTime . fromInteger . read . BSC.unpack <$> lookup (fromString "X-RateLimit-Reset") h
+	case (mrmn, mrst) of
+		(Just rmn, _) | rmn > 0 -> pure $ decodeJson b
+		(Just _, Just t) -> adjust (beginSleep t) >> adjust endSleep >> getUsersJson
+		(Just _, Nothing) -> error "No X-RateLimit-Reset"
+		(Nothing, _) -> error "No X-RateLimit-Remaining header"
+
+viewResetTimeReact :: React (BeginSleep :- GetTimeZone :- 'Nil) View
+viewResetTimeReact = do
+	t <- adjust checkBeginSleep
+	tz <- adjust getTimeZone
+	pure [Text white 30 (100, 500) $ "Wait until " <> T.pack (show $ utcToLocalTime tz t)]
+
+viewResetTime :: SigF View ()
+viewResetTime = do
+	emit []
+	emit =<< waitFor (adjust viewResetTimeReact)
+	waitFor $ adjust endSleep
+	viewResetTime
 
 getUser1 :: ReactF Object
 getUser1 = adjust loadJsons >>= \case
@@ -127,6 +153,9 @@ getAvatarLoginName :: ReactF (Avatar, T.Text)
 getAvatarLoginName = do
 	obj <- getUser1
 	(,) <$> viewAvatarGen obj <*> getLoginName obj
+
+viewMultiLoginName :: Integer -> SigF View ()
+viewMultiLoginName n = (<>) <$%> viewMultiLoginNameSig n <*%> viewResetTime
 
 viewMultiLoginNameSig :: Integer -> SigF View ()
 viewMultiLoginNameSig n = do

@@ -104,7 +104,11 @@ testHandle = retry $
 	testHandleCalcTextExtents `merge`
 	(Just <$>) . testHandleStoreRandomGen `merge`
 	(Just <$>) . testHandleLoadRandomGen `merge`
-	testHandleBeginSleep
+	testHandleBeginSleep `merge`
+	testHandleGetTimeZone
 
 testHandleBeginSleep :: Handle' TestMonad (BeginSleep :- EndSleep :- 'Nil)
 testHandleBeginSleep _reqs = pure Nothing
+
+testHandleGetTimeZone :: Handle' TestMonad (Singleton GetTimeZone)
+testHandleGetTimeZone _reqs = pure Nothing

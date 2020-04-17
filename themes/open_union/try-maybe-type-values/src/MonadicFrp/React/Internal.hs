@@ -51,14 +51,11 @@ interpretReact _ Never = error "never occur"			-- <- really?
 adjust :: forall es es' a . (
 	(es :+: es') ~ es', Firstable es es', Expandable es es'
 	) => React es a -> React es' a
-adjust rct@(Await r _) = (rct `first_` (ignore' r :: React es' ())) >>= \case
-	(Done x, _) -> pure x
-	(rct', _) -> adjust @es @es' rct'
 adjust (Done r) = Done r
 adjust Never = Never
-
-ignore' :: (Expandable es es') => EvReqs es -> React es' ()
-ignore' r = Await (expand r) . const $ ignore' r
+adjust rct = (rct `first_` (Never :: React es' ())) >>= \case
+	(Done x, _) -> pure x
+	(rct', _) -> adjust @es @es' rct'
 
 first_ :: forall es es' a b . Firstable es es' =>
 	React es a -> React es' b -> React (es :+: es') (React es a, React es' b)

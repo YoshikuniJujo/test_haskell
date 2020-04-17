@@ -19,7 +19,7 @@ import System.Random
 import qualified Data.ByteString as BS
 import qualified Network.HTTP.Simple as HTTP
 
-import Trials.Followbox.Event
+import Trials.Followbox.Event hiding (getTimeZone)
 import Trials.Followbox.BasicAuth
 import Trials.Followbox.Aeson
 import Trials.Followbox.XGlyphInfo
@@ -114,8 +114,9 @@ handle mba = retry $
 	(Just <$>) . handleStoreRandomGen `merge`
 	(Just <$>) . handleLoadRandomGen `merge`
 	liftIO . handleRaiseError `merge`
-	(Just <$>) . handleBeginSleep `merge`
-	handleEndSleep `before`
+	handleBeginSleep `merge`
+	handleEndSleep `merge`
+	liftIO . (Just <$>) . handleGetTimeZone `before`
 	liftIO . (Just <$>) . handleLeftClickNoField
 
 handle' :: Field -> Maybe (BS.ByteString, FilePath) -> Handle (FollowboxM IO) FollowboxEv
@@ -127,8 +128,9 @@ handle' f mba = retry $
 	(Just <$>) . handleLoadJsons `merge`
 	liftIO . (Just <$>) . handleCalcTextExtents f `merge`
 	liftIO . handleRaiseError `merge`
-	(Just <$>) . handleBeginSleep `merge`
-	handleEndSleep `before`
+	handleBeginSleep `merge`
+	handleEndSleep `merge`
+	liftIO . (Just <$>) . handleGetTimeZone `before`
 	handleLeftClick f
 
 handleLeftClick :: Field -> EvReqs (Move :- LeftClick :- Quit :- 'Nil) -> FollowboxM IO (Maybe (EvOccs (Move :- LeftClick :- Quit :- 'Nil)))
@@ -138,6 +140,7 @@ handleLeftClick f reqs = getSleepUntil >>= liftIO . \case
 
 handleLeftClick' :: Field -> EvReqs (Move :- LeftClick :- Quit :- 'Nil) -> IO (Maybe (EvOccs (Move :- LeftClick :- Quit :- 'Nil)))
 handleLeftClick' f _reqs = withNextEvent f \case
+	ExposeEvent { } -> flushField f >> pure Nothing
 	ButtonEvent { ev_event_type = 4, ev_button = 1, ev_x = x, ev_y = y } ->
 		pure . Just $ expand (OccMove (fromIntegral x, fromIntegral y) >- singleton OccLeftClick :: EvOccs (Move :- LeftClick :- 'Nil))
 	ButtonEvent { ev_event_type = 4, ev_button = 3 } -> pure . Just . expand . singleton $ OccQuit
@@ -147,6 +150,7 @@ handleLeftClick' f _reqs = withNextEvent f \case
 handleLeftClickUntil :: Field -> UTCTime -> EvReqs (Move :- LeftClick :- Quit :- 'Nil) ->
 	IO (Maybe (EvOccs (Move :- LeftClick :- Quit :- 'Nil)))
 handleLeftClickUntil f t _reqs = withNextEventUntil f t \case
+	Just ExposeEvent { } -> flushField f >> pure Nothing
 	Just ButtonEvent { ev_event_type = 4, ev_button = 1, ev_x = x, ev_y = y } ->
 		pure . Just $ expand (OccMove (fromIntegral x, fromIntegral y) >- singleton OccLeftClick :: EvOccs (Move :- LeftClick :- 'Nil))
 	Just ButtonEvent { ev_event_type = 4, ev_button = 3 } -> pure . Just . expand . singleton $ OccQuit
@@ -163,14 +167,15 @@ handleCalcTextExtents :: Field -> EvReqs (Singleton CalcTextExtents) -> IO (EvOc
 handleCalcTextExtents f reqs = singleton . OccCalcTextExtents fn fs t <$> textExtents f fn fs t
 	where CalcTextExtentsReq fn fs t = extract reqs
 
-handleBeginSleep :: Monad m => EvReqs (Singleton BeginSleep) -> FollowboxM m (EvOccs (Singleton BeginSleep))
-handleBeginSleep reqs = getSleepUntil >>= \case
-	Just t -> pure . singleton $ OccBeginSleep t
-	Nothing -> case extract reqs of
-		BeginSleep t -> do
-			putSleepUntil $ Just t
-			pure . singleton $ OccBeginSleep t
-		CheckBeginSleep -> pure $ singleton NotOccBeginSleep
+handleBeginSleep :: Monad m => EvReqs (Singleton BeginSleep) -> FollowboxM m (Maybe (EvOccs (Singleton BeginSleep)))
+handleBeginSleep reqs = case extract reqs of
+	BeginSleep t -> do
+		getSleepUntil >>= \case
+			Just t' -> pure . Just . singleton $ OccBeginSleep t'
+			Nothing -> do
+				putSleepUntil $ Just t
+				pure . Just . singleton $ OccBeginSleep t
+	CheckBeginSleep -> pure Nothing
 
 handleEndSleep :: EvReqs (Singleton EndSleep) -> FollowboxM IO (Maybe (EvOccs (Singleton EndSleep)))
 handleEndSleep _reqs = getSleepUntil >>= \case
@@ -180,3 +185,8 @@ handleEndSleep _reqs = getSleepUntil >>= \case
 			(putSleepUntil Nothing >> pure (Just $ singleton OccEndSleep))
 			(t <= now)
 	Nothing -> pure . Just $ singleton OccEndSleep
+
+handleGetTimeZone :: EvReqs (Singleton GetTimeZone) -> IO (EvOccs (Singleton GetTimeZone))
+handleGetTimeZone _reqs = do
+	tz <- getCurrentTimeZone
+	pure . singleton $ OccGetTimeZone tz
