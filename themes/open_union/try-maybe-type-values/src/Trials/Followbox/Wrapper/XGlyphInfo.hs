@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Followbox.XGlyphInfo (XGlyphInfo(..), textExtents) where
+module Trials.Followbox.Wrapper.XGlyphInfo (XGlyphInfo(..), textExtents) where
 
 import qualified Data.Text as T
 import qualified Graphics.X11.Xrender as Xr

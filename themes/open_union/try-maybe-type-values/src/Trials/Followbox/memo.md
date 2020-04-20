@@ -15,10 +15,11 @@ memo
 ### remove
 
 * [x] Trials.Followbox.TestMonad
+* [x] Trials.Followbox.Image
+* [x] Trials.Followbox.BasicAuth
 
 ### move to sub directory
 
-* [ ] Trials.Followbox.Aeson
-* [ ] Trials.Followbox.BasicAuth
-* [ ] Trials.Followbox.Image
-* [ ] Trials.Followbox.XGlyphInfo
+* [x] Trials.Followbox.Wrapper
+	+ [x] Trials.Followbox.Aeson
+	+ [x] Trials.Followbox.XGlyphInfo

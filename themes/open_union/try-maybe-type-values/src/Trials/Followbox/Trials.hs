@@ -20,7 +20,7 @@ import Trials.Followbox
 import Trials.Followbox.Event
 import Trials.Followbox.Handle
 import Trials.Followbox.View
-import Trials.Followbox.Aeson
+import Trials.Followbox.Wrapper.Aeson
 
 import Field
 

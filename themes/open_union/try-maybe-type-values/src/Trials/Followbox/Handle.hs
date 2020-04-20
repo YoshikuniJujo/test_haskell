@@ -20,10 +20,14 @@ import System.Random
 import qualified Data.ByteString as BS
 import qualified Network.HTTP.Simple as HTTP
 
+import Network.HTTP.Simple
+
+import qualified Data.ByteString.Char8 as BSC
+import qualified Data.ByteString.Lazy as LBS
+
 import Trials.Followbox.Event hiding (getTimeZone)
-import Trials.Followbox.BasicAuth
-import Trials.Followbox.Aeson
-import Trials.Followbox.XGlyphInfo
+import Trials.Followbox.Wrapper.Aeson
+import Trials.Followbox.Wrapper.XGlyphInfo
 import MonadicFrp.Handle
 import Field hiding (textExtents)
 
@@ -181,3 +185,13 @@ handleGetTimeZone _reqs = do
 handleBrowse :: FilePath -> Handle IO (Singleton Browse)
 handleBrowse brws reqs = spawnProcess brws [u] >> pure (singleton OccBrowse)
 	where Browse u = extract reqs
+
+removeLastNL :: BS.ByteString -> BS.ByteString
+removeLastNL ba
+	| Just (bs, '\n') <- BSC.unsnoc ba = bs
+	| otherwise = ba
+
+httpBasicAuth :: BS.ByteString -> FilePath -> Request -> IO (Response LBS.ByteString)
+httpBasicAuth usr fp rq = do
+	p <- BS.readFile fp
+	httpLBS $ setRequestBasicAuth usr (removeLastNL p) rq

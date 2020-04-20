@@ -18,13 +18,15 @@ import System.Random hiding (next)
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Text as T
 import qualified Data.HashMap.Strict as HM
+
+import qualified Data.ByteString.Lazy as LBS
 import qualified Codec.Picture as JP
+import qualified Codec.Picture.Extra as JP
 
 import Trials.Followbox.Event
 import Trials.Followbox.View
-import Trials.Followbox.Aeson
-import Trials.Followbox.XGlyphInfo
-import Trials.Followbox.Image
+import Trials.Followbox.Wrapper.Aeson
+import Trials.Followbox.Wrapper.XGlyphInfo
 import MonadicFrp
 
 -- type Uri = String
@@ -238,3 +240,9 @@ linkText fs p@(x0, y0) t = do
 next, refresh :: ReactF (View, Rect)
 next = linkText 30 (500, 80) "Next"
 refresh = linkText 30 (600, 80) "Refresh"
+
+bsToImage :: LBS.ByteString -> Either String (JP.Image JP.PixelRGBA8)
+bsToImage lbs = JP.convertRGBA8 <$> JP.decodeImage (LBS.toStrict lbs)
+
+scale :: Integer -> Integer -> JP.Image JP.PixelRGBA8 -> JP.Image JP.PixelRGBA8
+scale w_ h_ = JP.scaleBilinear w h where [w, h] = fromIntegral <$> [w_, h_]

@@ -39,8 +39,8 @@ import qualified Data.Text as T
 
 import MonadicFrp
 
-import Trials.Followbox.Aeson
-import Trials.Followbox.XGlyphInfo
+import Trials.Followbox.Wrapper.Aeson
+import Trials.Followbox.Wrapper.XGlyphInfo
 
 data Move = MoveReq deriving (Show, Eq, Ord)
 numbered 8 [t| Move |]
