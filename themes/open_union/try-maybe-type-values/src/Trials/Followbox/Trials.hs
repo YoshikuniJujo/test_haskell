@@ -22,8 +22,6 @@ import Trials.Followbox.Handle
 import Trials.Followbox.View
 import Trials.Followbox.Aeson
 
-import Trials.Followbox.TestMonad
-
 import Field
 
 browser :: FilePath
@@ -36,17 +34,11 @@ getGithubToken :: IO (Maybe (BS.ByteString, FilePath))
 getGithubToken =
 	(<$> getArgs) \case [nm, tkn] -> Just (BSC.pack nm, tkn); _ -> Nothing
 
-tryHttpGetTest :: TestMonad ()
-tryHttpGetTest = interpretReact testHandleHttpGet (httpGet "https://api.github.com/users") >>= log . show
-
 tryGetUser1 :: IO ()
 tryGetUser1 = getGithubToken >>= \mba -> do
 	f <- openField ("tryGetUser1" :: String) [exposureMask, buttonPressMask]
 	interpretReact (handle f browser mba) getUser1 `runStateT` initialState >>= print . fst
 	closeField f
-
-tryGetUser1Test :: TestMonad ()
-tryGetUser1Test = interpretReact testHandle getUser1UntilError >>= log . show
 
 tryGetUser3 :: IO ()
 tryGetUser3 = getGithubToken >>= \mba -> do

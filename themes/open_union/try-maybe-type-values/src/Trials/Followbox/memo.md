@@ -14,7 +14,7 @@ memo
 
 ### remove
 
-* [ ] Trials.Followbox.TestMonad
+* [x] Trials.Followbox.TestMonad
 
 ### move to sub directory
 
