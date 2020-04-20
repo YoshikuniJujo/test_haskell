@@ -4,9 +4,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Followbox.Handle (
-	handle, handle', handleHttpGet, handleCalcTextExtents
-	) where
+module Trials.Followbox.Handle (FollowboxM, handle) where
 
 import Prelude hiding ((++))
 
@@ -70,12 +68,6 @@ handleStoreJsons reqs = singleton (OccStoreJsons os) <$ putObjects os
 handleLoadJsons :: Monad m => EvReqs (Singleton LoadJsons) -> FollowboxM m (EvOccs (Singleton LoadJsons))
 handleLoadJsons _reqs = singleton . OccLoadJsons <$> getObjects
 
-handleLeftClickNoField :: EvReqs (Move :- LeftClick :- Quit :- 'Nil) -> IO (EvOccs (Move :- LeftClick :- Quit :- 'Nil))
-handleLeftClickNoField reqs = getLine >>= \case
-	"" -> liftIO (putStrLn "here") >> pure (expand $ singleton OccLeftClick)
-	"q" -> pure (expand $ singleton OccQuit)
-	_ -> handleLeftClickNoField reqs
-
 handleRaiseError :: EvReqs (Singleton RaiseError) -> IO (Maybe (EvOccs (Singleton RaiseError)))
 handleRaiseError reqs = case e of
 	NotJson -> do
@@ -99,9 +91,6 @@ handleRaiseError reqs = case e of
 	CatchError -> pure Nothing
 	where RaiseError e em = extract reqs
 
-dummyHandleCalcTextExtents :: EvReqs (Singleton CalcTextExtents) -> IO (Maybe (EvOccs (Singleton CalcTextExtents)))
-dummyHandleCalcTextExtents _reqs = pure Nothing
-
 handleStoreRandomGen :: Monad m => EvReqs (Singleton StoreRandomGen) -> FollowboxM m (EvOccs (Singleton StoreRandomGen))
 handleStoreRandomGen reqs = do
 	putRandomGen g
@@ -111,23 +100,8 @@ handleStoreRandomGen reqs = do
 handleLoadRandomGen :: Monad m => EvReqs (Singleton LoadRandomGen) -> FollowboxM m (EvOccs (Singleton LoadRandomGen))
 handleLoadRandomGen _reqs = singleton . OccLoadRandomGen <$> getRandomGen
 
-handle :: FilePath -> Maybe (BS.ByteString, FilePath) -> Handle (FollowboxM IO) FollowboxEv
-handle brws mba = retry $
-	(Just <$>) . handleStoreJsons `merge`
-	liftIO . (Just <$>) . handleHttpGet mba `merge`
-	(Just <$>) . handleLoadJsons `merge`
-	liftIO . dummyHandleCalcTextExtents `merge`
-	(Just <$>) . handleStoreRandomGen `merge`
-	(Just <$>) . handleLoadRandomGen `merge`
-	liftIO . handleRaiseError `merge`
-	handleBeginSleep `merge`
-	handleEndSleep `merge`
-	liftIO . (Just <$>) . handleGetTimeZone `merge`
-	liftIO . (Just <$>) . handleBrowse brws  `before`
-	liftIO . (Just <$>) . handleLeftClickNoField
-
-handle' :: Field -> FilePath -> Maybe (BS.ByteString, FilePath) -> Handle (FollowboxM IO) FollowboxEv
-handle' f brws mba = retry $
+handle :: Field -> FilePath -> Maybe (BS.ByteString, FilePath) -> Handle (FollowboxM IO) FollowboxEv
+handle f brws mba = retry $
 	(Just <$>) . handleStoreRandomGen `merge`
 	(Just <$>) . handleLoadRandomGen `merge`
 	(Just <$>) . handleStoreJsons `merge`
