@@ -2,7 +2,9 @@
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Followbox where
+module Trials.Followbox (
+	getUser1, getUserN, leftClickUserN, getLoginNameQuit, getLoginNameNQuit,
+	viewMultiLoginName, terminateOccur ) where
 
 import Prelude hiding (until, repeat)
 
@@ -89,16 +91,7 @@ getHtmlUrl o = pure (htmlUrlFromObject o) >>= \case
 	Just u -> pure u
 	Nothing -> adjust (raiseError NoHtmlUrl "No HTML URL") >> getHtmlUrl o
 
-viewAvatar :: SigF View ()
-viewAvatar = do
-	v <- waitFor viewAvatarReact
-	emit v
-	waitFor $ adjust leftClick
-
 type Avatar = JP.Image JP.PixelRGBA8
-
-viewAvatarReact :: ReactF View
-viewAvatarReact = (: []) . Image (100, 100) <$> (viewAvatarGen =<< getUser1)
 
 viewAvatarGen :: Object -> ReactF Avatar
 viewAvatarGen o = do
@@ -126,18 +119,12 @@ terminateOccur = adjust catchError >>= \case
 	Continue -> terminateOccur
 	Terminate -> pure ()
 
-getUser1UntilError :: ReactF (Or Object ())
-getUser1UntilError = getUser1 `first` terminateOccur
-
 getLoginNameQuit :: SigF View (Either (T.Text, ()) (Maybe ()))
 getLoginNameQuit = loginNameToView
 	<$%> repeat (adjust leftClick >> (getLoginName =<< getUser1)) `until` checkQuit
 
 loginNameToView :: T.Text -> View
 loginNameToView nm = [Text blue 24 (100, 100) nm]
-
-loginNameNToView :: Int -> T.Text -> View1
-loginNameNToView n nm = Text blue 24 (100, 100 + fromIntegral n * 50) nm
 
 getLoginNameNQuit :: SigF View (Either (View, ()) (Maybe ()))
 getLoginNameNQuit = (repeat (adjust leftClick >> arrangeLoginNameN 3) `until` checkQuit)

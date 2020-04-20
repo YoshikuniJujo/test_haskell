@@ -15,7 +15,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 
 import MonadicFrp.Run
-import MonadicFrp (until, first)
+import MonadicFrp (until)
 import Trials.Followbox
 import Trials.Followbox.Event
 import Trials.Followbox.Handle
@@ -64,26 +64,8 @@ tryGetLoginNameNQuit = getGithubToken >>= \mba -> do
 	() <$ interpret (handle f browser mba) (liftIO . view f) getLoginNameNQuit `runStateT` initialState
 	closeField f
 
-tryMousePosition :: IO ()
-tryMousePosition = do
-	f <- openField ("tryMousePosition" :: String) [exposureMask, pointerMotionMask, buttonPressMask]
-	interpret (handle f browser Nothing) (liftIO . print) (mousePosition `until` checkQuit) `runStateT` initialState >>= print . fst
-	closeField f
-
 tryViewMultiLoginName :: IO ()
 tryViewMultiLoginName = getGithubToken >>= \mba -> do
 	f <- openField ("tryViewMultiLoginName" :: String) [exposureMask, buttonPressMask]
 	() <$ interpret (handle f browser mba) (liftIO . view f) (viewMultiLoginName 3 `until` checkQuit `until` terminateOccur) `runStateT` initialState
-	closeField f
-
-tryGetAvatarAddress :: IO ()
-tryGetAvatarAddress = getGithubToken >>= \mba -> do
-	f <- openField ("tryGetAvatarAddress" :: String) [exposureMask]
-	interpretReact (handle f browser mba) ((getAvatarAddress =<< getUser1) `first` catchError) `runStateT` initialState >>= print . fst
-	closeField f
-
-tryViewAvatar :: IO ()
-tryViewAvatar = getGithubToken >>= \mba -> do
-	f <- openField ("tryViewAvatar" :: String) [exposureMask, buttonPressMask]
-	() <$ interpret (handle f browser mba) (liftIO . view f) (viewAvatar `until` catchError) `runStateT` initialState
 	closeField f
