@@ -1,9 +1,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Followbox.View (
-	view, View, View1(..), Color, FontSize, Position,
-	white, blue
-	) where
+	View, View1(..), view, Color, white, blue, FontSize, Position ) where
 
 import Control.Monad
 import Control.Monad.ST
