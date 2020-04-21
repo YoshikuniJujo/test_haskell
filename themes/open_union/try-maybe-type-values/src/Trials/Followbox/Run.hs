@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Followbox.Run (runFollowbox, WindowTitle) where
+module Trials.Followbox.Run (runFollowbox, WindowTitle, FollowboxState) where
 
 import Control.Monad.State
 import Data.List
@@ -32,7 +32,7 @@ defaultBrowser = "firefox"
 initialState :: (StdGen, [Object], Maybe UTCTime)
 initialState = (mkStdGen 8, [], Nothing)
 
-runFollowbox :: WindowTitle -> SigF View a -> IO (a, (StdGen, [Object], Maybe UTCTime))
+runFollowbox :: WindowTitle -> SigF View a -> IO (a, FollowboxState)
 runFollowbox ttl sig = getFollowboxInfo >>= \case
 	Left em -> putStrLn em >> exitFailure
 	Right fi -> runFollowboxGen ttl fi sig
