@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -6,27 +6,35 @@ module Trials.Followbox (followbox) where
 
 import Prelude hiding (until, repeat)
 
-import Control.Monad
-import Data.Type.Flip
-import Data.Type.Set
-import Data.Or
-import Data.String
-import Data.Time.Clock.POSIX
-import Data.Time.LocalTime hiding (getTimeZone)
-import System.Random hiding (next)
+import Control.Monad (void, forever, replicateM)
+import Data.Type.Flip ((<$%>), (<*%>), ftraverse)
+import Data.Type.Set (Set(Nil), (:-))
+import Data.Or (Or(..))
+import Data.Time.LocalTime (utcToLocalTime)
+import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
+import System.Random (randomR)
 
-import qualified Data.ByteString.Char8 as BSC
-import qualified Data.Text as T
 import qualified Data.HashMap.Strict as HM
-
+import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as LBS
+import qualified Data.Text as T
 import qualified Codec.Picture as JP
 import qualified Codec.Picture.Extra as JP
 
-import Trials.Followbox.Event
-import Trials.Followbox.View
-import Trials.Followbox.Wrapper.Aeson
-import MonadicFrp
+import MonadicFrp (
+	React, adjust, first, emit, waitFor, find, repeat, until, indexBy )
+import Trials.Followbox.Event (
+	SigF, ReactF, move, leftClick,
+	StoreRandomGen, LoadRandomGen, storeRandomGen, loadRandomGen,
+	Object, Value(..), storeJsons, loadJsons,
+	HttpGet, Uri, httpGet, XGlyphInfo(..), calcTextExtents,
+	GetTimeZone, getTimeZone, browse,
+	BeginSleep, EndSleep, beginSleep, checkBeginSleep, endSleep, checkQuit,
+	Error(..), ErrorResult(..), raiseError, catchError )
+import Trials.Followbox.View (View, View1(..), Color, white, blue, Position)
+import Trials.Followbox.Wrapper.Aeson (decodeJson)
+
+---------------------------------------------------------------------------
 
 apiUsers :: Int -> Uri
 apiUsers s = "https://api.github.com/users?since=" <> show s
@@ -39,8 +47,8 @@ getUsersJson = do
 	let	(n, g') = randomR (0, 2 ^ (27 :: Int)) g
 	adjust $ storeRandomGen g'
 	(h, b) <- adjust . httpGet $ apiUsers n
-	let	mrmn = read . BSC.unpack <$> lookup (fromString "X-RateLimit-Remaining") h :: Maybe Int
-		mrst = posixSecondsToUTCTime . fromInteger . read . BSC.unpack <$> lookup (fromString "X-RateLimit-Reset") h
+	let	mrmn = read . BSC.unpack <$> lookup "X-RateLimit-Remaining" h :: Maybe Int
+		mrst = posixSecondsToUTCTime . fromInteger . read . BSC.unpack <$> lookup "X-RateLimit-Reset" h
 	case (mrmn, mrst) of
 		(Just rmn, _) | rmn > 0 -> pure $ decodeJson b
 		(Just _, Just t) -> adjust (beginSleep t) >> adjust endSleep >> getUsersJson
