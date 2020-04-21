@@ -2,9 +2,7 @@
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Followbox (
-	getUser1, getUserN, leftClickUserN, getLoginNameQuit, getLoginNameNQuit,
-	followbox ) where
+module Trials.Followbox (followbox) where
 
 import Prelude hiding (until, repeat)
 
@@ -73,9 +71,6 @@ getUser1 = adjust loadJsons >>= \case
 		Left em -> adjust (raiseError NotJson em) >> getUser1
 	o : os -> o <$ adjust (storeJsons os)
 
-getUserN :: Int -> ReactF [Object]
-getUserN n = n `replicateM` getUser1
-
 getLoginName :: Object -> ReactF T.Text
 getLoginName o = pure (loginNameFromObject o) >>= \case
 	Just ln -> pure ln
@@ -101,9 +96,6 @@ viewAvatarGen o = do
 		Left em -> adjust (raiseError NoAvatar em) >> viewAvatarGen o
 		Right v -> pure v
 
-leftClickUserN :: Int -> ReactF [Maybe T.Text]
-leftClickUserN n = adjust leftClick >> (loginNameFromObject <$>) <$> getUserN n
-
 loginNameFromObject, avatorAddressFromObject, htmlUrlFromObject :: Object -> Maybe T.Text
 loginNameFromObject o = case HM.lookup "login" o of
 	Just (String li) -> Just li; _ -> Nothing
@@ -118,22 +110,6 @@ terminateOccur :: ReactF ()
 terminateOccur = adjust catchError >>= \case
 	Continue -> terminateOccur
 	Terminate -> pure ()
-
-getLoginNameQuit :: SigF View (Either (T.Text, ()) (Maybe ()))
-getLoginNameQuit = loginNameToView
-	<$%> repeat (adjust leftClick >> (getLoginName =<< getUser1)) `until` checkQuit
-
-loginNameToView :: T.Text -> View
-loginNameToView nm = [Text blue 24 (100, 100) nm]
-
-getLoginNameNQuit :: SigF View (Either (View, ()) (Maybe ()))
-getLoginNameNQuit = (repeat (adjust leftClick >> arrangeLoginNameN 3) `until` checkQuit)
-
-arrangeLoginNameN :: Integer -> ReactF View
-arrangeLoginNameN n = (concat . (fst3 <$>)) <$> viewLoginName `mapM` [0 .. n - 1]
-
-fst3 :: (a, b, c) -> a
-fst3 (x, _, _) = x
 
 createLoginName :: Color -> Double -> Position -> T.Text -> Position -> Rect -> (View, Rect, Rect)
 createLoginName clr fs p t (x', y') r' = (
@@ -184,9 +160,6 @@ viewLoginNameSig n (a, ln, u) = do
 	emit $ Image (100, 120 + 120 * n) a : v
 	void $ waitFor (forever $ clickOnRect r' >> adjust (browse $ T.unpack u)) `until` clickOnRect r
 	viewLoginNameSig n =<< waitFor getAvatarLoginName
-
-viewLoginName :: Integer -> ReactF (View, Rect, Rect)
-viewLoginName n = createLoginName1 n =<< getLoginName =<< getUser1
 
 createLoginName1 :: Integer -> T.Text -> ReactF (View, Rect, Rect)
 createLoginName1 n t = do
