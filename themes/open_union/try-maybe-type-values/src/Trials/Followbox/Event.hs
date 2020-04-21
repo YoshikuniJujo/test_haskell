@@ -128,8 +128,6 @@ loadJsons = await LoadJsonsReq \(OccLoadJsons os) -> os
 
 data CalcTextExtents = CalcTextExtentsReq FontName FontSize T.Text
 	deriving (Show, Eq, Ord)
-type FontName = String
-type FontSize = Double
 numbered 8 [t| CalcTextExtents |]
 instance Request CalcTextExtents where
 	data Occurred CalcTextExtents =
