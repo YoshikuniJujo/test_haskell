@@ -18,13 +18,13 @@ module Trials.Followbox.Event (
 	-- ** RandomGen
 	StoreRandomGen(..), LoadRandomGen, storeRandomGen, loadRandomGen,
 	-- ** Jsons
-	StoreJsons(..), LoadJsons, storeJsons, loadJsons,
+	StoreJsons(..), LoadJsons, Object, Value(..), storeJsons, loadJsons,
 
 	-- * REQUEST DATA
 	-- ** HttpGet
 	HttpGet(..), Uri, httpGet,
 	-- ** CalcTextExtents
-	CalcTextExtents(..), FontName, FontSize, calcTextExtents,
+	CalcTextExtents(..), XGlyphInfo(..), FontName, FontSize, calcTextExtents,
 	-- ** GetTimeZone
 	GetTimeZone, getTimeZone,
 

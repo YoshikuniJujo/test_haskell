@@ -6,7 +6,6 @@ module Trials.Followbox.Run (runFollowbox, WindowTitle, FollowboxState) where
 
 import Control.Monad.State
 import Data.List
-import Data.Time
 import System.Environment
 import System.Console.GetOpt
 import System.Exit
@@ -16,10 +15,9 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 
 import MonadicFrp.Run
-import Trials.Followbox.Event
+import Trials.Followbox.Event (SigF)
 import Trials.Followbox.Handle
 import Trials.Followbox.View
-import Trials.Followbox.Wrapper.Aeson
 
 import Field
 
@@ -29,7 +27,7 @@ type WindowTitle = String
 defaultBrowser :: Browser
 defaultBrowser = "firefox"
 
-initialState :: (StdGen, [Object], Maybe UTCTime)
+initialState :: FollowboxState
 initialState = (mkStdGen 8, [], Nothing)
 
 runFollowbox :: WindowTitle -> SigF View a -> IO (a, FollowboxState)
@@ -37,7 +35,7 @@ runFollowbox ttl sig = getFollowboxInfo >>= \case
 	Left em -> putStrLn em >> exitFailure
 	Right fi -> runFollowboxGen ttl fi sig
 
-runFollowboxGen :: WindowTitle -> FollowboxInfo -> SigF View a -> IO (a, (StdGen, [Object], Maybe UTCTime))
+runFollowboxGen :: WindowTitle -> FollowboxInfo -> SigF View a -> IO (a, FollowboxState)
 runFollowboxGen ttl fi sg = do
 	f <- openField ttl [exposureMask, buttonPressMask]
 	interpret (handle f brs mba) (liftIO . view f) sg `runStateT` initialState <* closeField f

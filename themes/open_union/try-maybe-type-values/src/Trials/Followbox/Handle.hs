@@ -25,10 +25,9 @@ import Network.HTTP.Simple
 
 import qualified Data.ByteString.Lazy as LBS
 
-import Trials.Followbox.Event hiding (getTimeZone)
-import Trials.Followbox.Wrapper.Aeson
-import Trials.Followbox.Wrapper.XGlyphInfo
 import MonadicFrp.Handle
+import Trials.Followbox.Event hiding (getTimeZone)
+import Trials.Followbox.Wrapper.XGlyphInfo
 import Field hiding (textExtents)
 
 type FollowboxM = StateT FollowboxState

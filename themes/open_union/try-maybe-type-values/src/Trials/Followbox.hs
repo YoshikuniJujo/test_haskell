@@ -26,10 +26,7 @@ import qualified Codec.Picture.Extra as JP
 import Trials.Followbox.Event
 import Trials.Followbox.View
 import Trials.Followbox.Wrapper.Aeson
-import Trials.Followbox.Wrapper.XGlyphInfo
 import MonadicFrp
-
--- type Uri = String
 
 apiUsers :: Int -> Uri
 apiUsers s = "https://api.github.com/users?since=" <> show s
