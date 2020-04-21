@@ -1,8 +1,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Followbox.View (
-	View, View1(..), view, Color, white, blue, Position, FontSize, LineWidth
-	) where
+	View, View1(..), view,
+	Color, white, blue, Position, FontName, FontSize, LineWidth ) where
 
 import Control.Monad
 import Control.Monad.ST
@@ -19,7 +19,7 @@ import qualified Field as F
 type View = [View1]
 
 data View1
-	= Text Color FontSize Position Text
+	= Text Color FontName FontSize Position Text
 	| Line Color LineWidth Position Position
 	| Image Position (Image PixelRGBA8)
 
@@ -28,6 +28,7 @@ data Color =
 	deriving Show
 
 type Position = (Integer, Integer)
+type FontName = String
 type FontSize = Double
 type LineWidth = Integer
 
@@ -38,8 +39,8 @@ view f v = do
 	F.flushField f
 
 view1 :: F.Field -> View1 -> IO ()
-view1 f (Text c fs (x, y) t) = F.drawStr f
-	(colorToPixel c) "sans" fs (fromIntegral x) (fromIntegral y) $ unpack t
+view1 f (Text c fn fs (x, y) t) = F.drawStr f
+	(colorToPixel c) fn fs (fromIntegral x) (fromIntegral y) $ unpack t
 view1 f (Line c lw_ (xs_, ys_) (xe_, ye_)) =
 	F.drawLine f (colorToPixel c) (fromIntegral lw_) xs ys xe ye
 	where [xs, ys, xe, ye] = fromIntegral <$> [xs_, ys_, xe_, ye_]

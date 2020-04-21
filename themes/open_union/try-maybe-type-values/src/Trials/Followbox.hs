@@ -54,7 +54,7 @@ viewResetTimeReact :: React (BeginSleep :- GetTimeZone :- 'Nil) View
 viewResetTimeReact = do
 	t <- adjust checkBeginSleep
 	tz <- adjust getTimeZone
-	pure [Text white 30 (100, 500) $ "Wait until " <> T.pack (show $ utcToLocalTime tz t)]
+	pure [Text white "sans" 30 (100, 500) $ "Wait until " <> T.pack (show $ utcToLocalTime tz t)]
 
 viewResetTime :: SigF View ()
 viewResetTime = do
@@ -113,7 +113,7 @@ terminateOccur = adjust catchError >>= \case
 
 createLoginName :: Color -> Double -> Position -> T.Text -> Position -> Rect -> (View, Rect, Rect)
 createLoginName clr fs p t (x', y') r' = (
-	Text clr fs p t : createX 4 (round fs `div` 2) (x' + round fs `div` 2, y' + round fs * 3 `div` 8),
+	Text clr "sans" fs p t : createX 4 (round fs `div` 2) (x' + round fs `div` 2, y' + round fs * 3 `div` 8),
 	Rect	(x' + round fs `div` 2, y' + round fs * 3 `div` 8)
 		(x' + round fs, y' + round fs * 7 `div` 8),
 	r' )
@@ -181,7 +181,7 @@ isInsideOf :: Position -> Rect -> Bool
 isInsideOf (x, y) (Rect (l, t) (r, b)) = l <= x && x <= r && t <= y && y <= b
 
 title :: View1
-title = Text white 36 (50, 80) "Who to follow"
+title = Text white "sans" 36 (50, 80) "Who to follow"
 
 linkText :: Double -> Position -> T.Text -> ReactF (View, Rect)
 linkText fs p@(x0, y0) t = do
@@ -190,7 +190,7 @@ linkText fs p@(x0, y0) t = do
 		xGlyphInfoHeight = h,
 		xGlyphInfoX = x,
 		xGlyphInfoY = y } <- adjust $ calcTextExtents "sans" fs t
-	pure (	[	Text blue fs p t,
+	pure (	[	Text blue "sans" fs p t,
 			Line blue 4
 				(x0 - x, y0 + 6)
 				(x0 + w - x, y0 + 6) ],
