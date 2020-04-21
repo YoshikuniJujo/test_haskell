@@ -2,7 +2,9 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Followbox.Trials where
+module Trials.Followbox.Trials (
+	tryGetUser1, tryGetUser3, tryLeftClickUser3, tryGetLoginNameQuit,
+	tryGetLoginNameNQuit, tryViewMultiLoginName ) where
 
 import Prelude hiding (log, until)
 
@@ -52,9 +54,9 @@ tryLeftClickUser3 = getGithubToken >>= \mba -> do
 	interpretReact (handle f browser mba) (leftClickUserN 3) `runStateT` initialState >>= print . fst
 	closeField f
 
-tryGetLoginNameQuit' :: IO ()
-tryGetLoginNameQuit' = getGithubToken >>= \mba -> do
-	f <- openField ("tryGetLoginNameQuit'" :: String) [exposureMask, buttonPressMask]
+tryGetLoginNameQuit :: IO ()
+tryGetLoginNameQuit = getGithubToken >>= \mba -> do
+	f <- openField ("tryGetLoginNameQuit" :: String) [exposureMask, buttonPressMask]
 	interpret (handle f browser mba) (liftIO . view f) getLoginNameQuit `runStateT` initialState >>= print . fst
 	closeField f
 

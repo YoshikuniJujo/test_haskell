@@ -10,7 +10,7 @@ memo
 * [x] Trials.Followbox.Handle
 * [x] Trials.Followbox.View
 * [x] Trials.Followbox
-* [ ] Trials.Followbox.Trials
+* [x] Trials.Followbox.Trials
 
 ### remove
 
