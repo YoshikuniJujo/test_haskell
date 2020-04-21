@@ -22,7 +22,6 @@ import qualified Network.HTTP.Simple as HTTP
 
 import Network.HTTP.Simple
 
-import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as LBS
 
 import Trials.Followbox.Event hiding (getTimeZone)
@@ -51,7 +50,9 @@ getSleepUntil = (<$> get) \(_, _, slp) -> slp
 putSleepUntil :: Monad m => Maybe UTCTime -> FollowboxM m ()
 putSleepUntil slp = get >>= \(g, os, _) -> put (g, os, slp)
 
-handleHttpGet :: Maybe (BS.ByteString, FilePath) -> EvReqs (Singleton HttpGet) -> IO (EvOccs (Singleton HttpGet))
+-- BS.readFile t
+
+handleHttpGet :: Maybe (BS.ByteString, BS.ByteString) -> EvReqs (Singleton HttpGet) -> IO (EvOccs (Singleton HttpGet))
 handleHttpGet mba reqs = do
 	r <- hg . setUserAgent "Yoshio" $ fromString u
 	print $ HTTP.getResponseHeader "X-RateLimit-Remaining" r
@@ -104,7 +105,7 @@ handleStoreRandomGen reqs = do
 handleLoadRandomGen :: Monad m => EvReqs (Singleton LoadRandomGen) -> FollowboxM m (EvOccs (Singleton LoadRandomGen))
 handleLoadRandomGen _reqs = singleton . OccLoadRandomGen <$> getRandomGen
 
-handle :: Field -> FilePath -> Maybe (BS.ByteString, FilePath) -> Handle (FollowboxM IO) FollowboxEv
+handle :: Field -> FilePath -> Maybe (BS.ByteString, BS.ByteString) -> Handle (FollowboxM IO) FollowboxEv
 handle f brws mba = retry $
 	(Just <$>) . handleStoreRandomGen `merge`
 	(Just <$>) . handleLoadRandomGen `merge`
@@ -186,12 +187,5 @@ handleBrowse :: FilePath -> Handle IO (Singleton Browse)
 handleBrowse brws reqs = spawnProcess brws [u] >> pure (singleton OccBrowse)
 	where Browse u = extract reqs
 
-removeLastNL :: BS.ByteString -> BS.ByteString
-removeLastNL ba
-	| Just (bs, '\n') <- BSC.unsnoc ba = bs
-	| otherwise = ba
-
-httpBasicAuth :: BS.ByteString -> FilePath -> Request -> IO (Response LBS.ByteString)
-httpBasicAuth usr fp rq = do
-	p <- BS.readFile fp
-	httpLBS $ setRequestBasicAuth usr (removeLastNL p) rq
+httpBasicAuth :: BS.ByteString -> BS.ByteString -> Request -> IO (Response LBS.ByteString)
+httpBasicAuth usr p rq = httpLBS $ setRequestBasicAuth usr p rq

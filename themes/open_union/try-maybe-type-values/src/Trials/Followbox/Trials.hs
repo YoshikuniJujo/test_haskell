@@ -23,5 +23,5 @@ tryGetLoginNameNQuit :: IO ()
 tryGetLoginNameNQuit = () <$ runFollowbox browser "tryGetLoginNameNQuit" getLoginNameNQuit
 
 tryViewMultiLoginName :: IO ()
-tryViewMultiLoginName = () <$ runFollowbox browser "tryViewMultiLoginName"
+tryViewMultiLoginName = () <$ runFollowbox' "tryViewMultiLoginName"
 	(viewMultiLoginName 3 `until` checkQuit `until` terminateOccur)
