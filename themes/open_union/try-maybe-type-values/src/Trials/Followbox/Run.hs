@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Followbox.Run (runFollowbox, runFollowbox', Browser, WindowTitle) where
+module Trials.Followbox.Run (runFollowbox, WindowTitle) where
 
 import Control.Monad.State
 import Data.List
@@ -34,18 +34,8 @@ defaultBrowser = "firefox"
 initialState :: (StdGen, [Object], Maybe UTCTime)
 initialState = (mkStdGen 8, [], Nothing)
 
-getGithubToken :: IO (Maybe (BS.ByteString, BS.ByteString))
-getGithubToken = getArgs >>= \case
-	[nm, tkn] -> Just . (BSC.pack nm ,) <$> BS.readFile tkn
-	_ -> pure Nothing
-
-runFollowbox :: Browser -> WindowTitle -> SigF View a -> IO (a, (StdGen, [Object], Maybe UTCTime))
-runFollowbox brs ttl sg = getGithubToken >>= \mba -> do
-	f <- openField ttl [exposureMask, buttonPressMask]
-	interpret (handle f brs mba) (liftIO . view f) sg `runStateT` initialState <* closeField f
-
-runFollowbox' :: WindowTitle -> SigF View a -> IO (a, (StdGen, [Object], Maybe UTCTime))
-runFollowbox' ttl sig = getFollowboxInfo >>= \case
+runFollowbox :: WindowTitle -> SigF View a -> IO (a, (StdGen, [Object], Maybe UTCTime))
+runFollowbox ttl sig = getFollowboxInfo >>= \case
 	Left em -> putStrLn em >> exitFailure
 	Right fi -> runFollowboxGen ttl fi sig
 

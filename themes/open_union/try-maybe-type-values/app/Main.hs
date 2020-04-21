@@ -1,6 +1,7 @@
 module Main where
 
-import Trials.Followbox.Trials (tryViewMultiLoginName)
+import Trials.Followbox
+import Trials.Followbox.Run
 
 main :: IO ()
-main = tryViewMultiLoginName
+main = () <$ runFollowbox "Followbox" followbox

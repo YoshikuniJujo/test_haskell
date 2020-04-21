@@ -4,7 +4,7 @@
 
 module Trials.Followbox (
 	getUser1, getUserN, leftClickUserN, getLoginNameQuit, getLoginNameNQuit,
-	viewMultiLoginName, terminateOccur ) where
+	followbox ) where
 
 import Prelude hiding (until, repeat)
 
@@ -233,3 +233,6 @@ bsToImage lbs = JP.convertRGBA8 <$> JP.decodeImage (LBS.toStrict lbs)
 
 scale :: Integer -> Integer -> JP.Image JP.PixelRGBA8 -> JP.Image JP.PixelRGBA8
 scale w_ h_ = JP.scaleBilinear w h where [w, h] = fromIntegral <$> [w_, h_]
+
+followbox :: SigF View ()
+followbox = () <$ viewMultiLoginName 3 `until` checkQuit `until` terminateOccur
