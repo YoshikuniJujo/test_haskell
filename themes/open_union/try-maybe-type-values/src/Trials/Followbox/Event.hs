@@ -9,23 +9,37 @@ module Trials.Followbox.Event (
 	SigF, ReactF, FollowboxEv, Occurred(..),
 
 	-- * MOUSE EVENT
-	Move, move, LeftClick, leftClick,
+	-- ** Move
+	Move, move,
+	-- ** LeftClick
+	LeftClick, leftClick,
 
 	-- * STORE AND LOAD
-	StoreRandomGen(..), storeRandomGen, LoadRandomGen, loadRandomGen,
-	StoreJsons(..), storeJsons, LoadJsons, loadJsons,
+	-- ** RandomGen
+	StoreRandomGen(..), LoadRandomGen, storeRandomGen, loadRandomGen,
+	-- ** Jsons
+	StoreJsons(..), LoadJsons, storeJsons, loadJsons,
 
 	-- * REQUEST DATA
-	HttpGet(..), Uri, httpGet, CalcTextExtents(..), calcTextExtents,
+	-- ** HttpGet
+	HttpGet(..), Uri, httpGet,
+	-- ** CalcTextExtents
+	CalcTextExtents(..), FontName, FontSize, calcTextExtents,
+	-- ** GetTimeZone
 	GetTimeZone, getTimeZone,
 
 	-- * ACTION
+	-- ** Browse
 	Browse(..), browse,
 
 	-- * SLEEP, QUIT AND ERROR
-	BeginSleep(..), beginSleep, checkBeginSleep, EndSleep, endSleep,
+	-- ** BeginSleep and EndSleep
+	BeginSleep(..), EndSleep, beginSleep, checkBeginSleep, endSleep,
+	-- ** Quit
 	Quit, checkQuit,
-	RaiseError(..), Error(..), ErrorResult(..), raiseError, catchError
+	-- ** RaiseError
+	RaiseError(..), Error(..), ErrorMessage, ErrorResult(..),
+	raiseError, catchError
 	) where
 
 import Data.Type.Set
@@ -112,14 +126,16 @@ instance Request LoadJsons where
 loadJsons :: React (Singleton LoadJsons) [Object]
 loadJsons = await LoadJsonsReq \(OccLoadJsons os) -> os
 
-data CalcTextExtents = CalcTextExtentsReq String Double T.Text
+data CalcTextExtents = CalcTextExtentsReq FontName FontSize T.Text
 	deriving (Show, Eq, Ord)
+type FontName = String
+type FontSize = Double
 numbered 8 [t| CalcTextExtents |]
 instance Request CalcTextExtents where
 	data Occurred CalcTextExtents =
 		OccCalcTextExtents String Double T.Text XGlyphInfo
 
-calcTextExtents :: String -> Double -> T.Text ->
+calcTextExtents :: FontName -> FontSize -> T.Text ->
 	React (Singleton CalcTextExtents) XGlyphInfo
 calcTextExtents fn fs t = maybe (calcTextExtents fn fs t) pure
 	=<< await (CalcTextExtentsReq fn fs t)
@@ -176,12 +192,13 @@ data Error
 
 data ErrorResult = Continue | Terminate deriving Show
 
-data RaiseError = RaiseError Error String deriving (Show, Eq, Ord)
+data RaiseError = RaiseError Error ErrorMessage deriving (Show, Eq, Ord)
+type ErrorMessage = String
 numbered 8 [t| RaiseError |]
 instance Request RaiseError where
 	data Occurred RaiseError = OccRaiseError Error ErrorResult
 
-raiseError :: Error -> String -> React (Singleton RaiseError) ()
+raiseError :: Error -> ErrorMessage -> React (Singleton RaiseError) ()
 raiseError e em = bool (raiseError e em) (pure ()) =<< await (RaiseError e em)
 	\(OccRaiseError e' _er) -> e == e'
 
