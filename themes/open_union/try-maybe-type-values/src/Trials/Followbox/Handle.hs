@@ -4,7 +4,8 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Followbox.Handle (FollowboxM, handle) where
+module Trials.Followbox.Handle (
+	handle, FollowboxM, FollowboxState, GithubUserName, GithubToken ) where
 
 import Prelude hiding ((++))
 
@@ -30,7 +31,8 @@ import Trials.Followbox.Wrapper.XGlyphInfo
 import MonadicFrp.Handle
 import Field hiding (textExtents)
 
-type FollowboxM = StateT (StdGen, [Object], Maybe UTCTime)
+type FollowboxM = StateT FollowboxState
+type FollowboxState = (StdGen, [Object], Maybe UTCTime)
 
 getObjects :: Monad m => FollowboxM m [Object]
 getObjects = (<$> get) \(_, os, _) -> os
@@ -105,7 +107,10 @@ handleStoreRandomGen reqs = do
 handleLoadRandomGen :: Monad m => EvReqs (Singleton LoadRandomGen) -> FollowboxM m (EvOccs (Singleton LoadRandomGen))
 handleLoadRandomGen _reqs = singleton . OccLoadRandomGen <$> getRandomGen
 
-handle :: Field -> FilePath -> Maybe (BS.ByteString, BS.ByteString) -> Handle (FollowboxM IO) FollowboxEv
+type GithubUserName = BS.ByteString
+type GithubToken = BS.ByteString
+
+handle :: Field -> FilePath -> Maybe (GithubUserName, GithubToken) -> Handle (FollowboxM IO) FollowboxEv
 handle f brws mba = retry $
 	(Just <$>) . handleStoreRandomGen `merge`
 	(Just <$>) . handleLoadRandomGen `merge`

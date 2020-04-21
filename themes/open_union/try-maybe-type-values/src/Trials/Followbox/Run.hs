@@ -24,8 +24,6 @@ import Trials.Followbox.Wrapper.Aeson
 import Field
 
 type Browser = FilePath
-type GithubUserName = BS.ByteString
-type GithubToken = BS.ByteString
 type WindowTitle = String
 
 defaultBrowser :: Browser
