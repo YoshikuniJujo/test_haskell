@@ -22,7 +22,7 @@ module Trials.Followbox.Event (
 
 	-- * REQUEST DATA
 	-- ** HttpGet
-	HttpGet(..), Uri, httpGet,
+	HttpGet(..), Uri, Header, httpGet,
 	-- ** CalcTextExtents
 	CalcTextExtents(..), XGlyphInfo(..), FontName, FontSize, calcTextExtents,
 	-- ** GetTimeZone

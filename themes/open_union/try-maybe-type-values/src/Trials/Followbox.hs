@@ -10,7 +10,7 @@ import Control.Monad (void, forever, replicateM)
 import Data.Type.Flip ((<$%>), (<*%>), ftraverse)
 import Data.Type.Set (Set(Nil), (:-))
 import Data.Or (Or(..))
-import Data.Time.LocalTime (utcToLocalTime)
+import Data.Time (UTCTime, utcToLocalTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 
 import qualified Data.HashMap.Strict as HM
@@ -25,7 +25,7 @@ import MonadicFrp (
 import Trials.Followbox.Event (
 	SigF, ReactF, move, leftClick, getRandomR,
 	Object, Value(..), storeJsons, loadJsons,
-	Uri, httpGet, XGlyphInfo(..), calcTextExtents,
+	Uri, Header, httpGet, XGlyphInfo(..), calcTextExtents,
 	GetTimeZone, getTimeZone, browse,
 	BeginSleep, beginSleep, checkBeginSleep, endSleep, checkQuit,
 	Error(..), ErrorResult(..), raiseError, catchError )
@@ -37,28 +37,25 @@ import Trials.Followbox.Wrapper.Aeson (decodeJson)
 apiUsers :: Int -> Uri
 apiUsers = ("https://api.github.com/users?since=" <>) . show
 
-{-
-getRandomR :: Random a => (a, a) -> ReactF a
-getRandomR (mn, mx) = do
-	g <- adjust loadRandomGen
-	let	(x, g') = randomR (mn, mx) g
-	adjust $ storeRandomGen g'
-	pure x
-	-}
-
 getUsers :: ReactF (Either String [Object])
 getUsers = do
 	n <- adjust $ getRandomR (0, 2 ^ (27 :: Int))
 	(h, b) <- adjust . httpGet $ apiUsers n
-	let	mrmn = read . BSC.unpack <$> lookup "X-RateLimit-Remaining" h
-		mrst = posixSecondsToUTCTime . fromInteger
-			. read . BSC.unpack <$> lookup "X-RateLimit-Reset" h
-	case (mrmn, mrst) of
+	case (lookupRateLimitRemaining h, lookupRateLimitReset h) of
 		(Just rmn, _) | rmn > (0 :: Int) -> pure $ decodeJson b
 		(Just _, Just t) ->
 			adjust (beginSleep t) >> adjust endSleep >> getUsers
 		(Just _, Nothing) -> error "No X-RateLimit-Reset"
 		(Nothing, _) -> error "No X-RateLimit-Remaining header"
+
+lookupRateLimitRemaining :: [Header] -> Maybe Int
+lookupRateLimitRemaining =
+	(read . BSC.unpack <$>) . lookup "X-RateLimit-Remaining"
+
+lookupRateLimitReset :: [Header] -> Maybe UTCTime
+lookupRateLimitReset =
+	(posixSecondsToUTCTime . fromInteger . read . BSC.unpack <$>)
+		. lookup "X-RateLimit-Reset"
 
 viewResetTimeReact :: React (BeginSleep :- GetTimeZone :- 'Nil) View
 viewResetTimeReact = do
