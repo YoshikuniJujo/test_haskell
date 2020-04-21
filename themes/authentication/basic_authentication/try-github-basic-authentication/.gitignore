@@ -2,3 +2,4 @@
 try-github-basic-authentication.cabal
 *~
 github_token.txt
+github_token.txt.crypted
