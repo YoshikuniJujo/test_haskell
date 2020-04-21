@@ -16,7 +16,7 @@ module Trials.Followbox.Event (
 
 	-- * STORE AND LOAD
 	-- ** RandomGen
-	StoreRandomGen(..), LoadRandomGen, storeRandomGen, loadRandomGen,
+	StoreRandomGen(..), LoadRandomGen, getRandomR,
 	-- ** Jsons
 	StoreJsons(..), LoadJsons, Object, Value(..), storeJsons, loadJsons,
 
@@ -108,6 +108,13 @@ instance Request LoadRandomGen where
 
 loadRandomGen :: React (Singleton LoadRandomGen) StdGen
 loadRandomGen = await LoadRandomGenReq \(OccLoadRandomGen g) -> g
+
+getRandomR :: Random a => (a, a) -> React (StoreRandomGen :- LoadRandomGen :- 'Nil) a
+getRandomR (mn, mx) = do
+	g <- adjust loadRandomGen
+	let	(x, g') = randomR (mn, mx) g
+	adjust $ storeRandomGen g'
+	pure x
 
 data StoreJsons = StoreJsons [Object] deriving (Show, Eq, Ord)
 numbered 8 [t| StoreJsons |]

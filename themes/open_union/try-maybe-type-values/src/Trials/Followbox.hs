@@ -4,7 +4,7 @@
 
 module Trials.Followbox (followbox) where
 
-import Prelude hiding (until, repeat)
+import Prelude hiding (until, repeat, (++))
 
 import Control.Monad (void, forever, replicateM)
 import Data.Type.Flip ((<$%>), (<*%>), ftraverse)
@@ -12,7 +12,6 @@ import Data.Type.Set (Set(Nil), (:-))
 import Data.Or (Or(..))
 import Data.Time.LocalTime (utcToLocalTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
-import System.Random (randomR)
 
 import qualified Data.HashMap.Strict as HM
 import qualified Data.ByteString.Char8 as BSC
@@ -24,12 +23,11 @@ import qualified Codec.Picture.Extra as JP
 import MonadicFrp (
 	React, adjust, first, emit, waitFor, find, repeat, until, indexBy )
 import Trials.Followbox.Event (
-	SigF, ReactF, move, leftClick,
-	StoreRandomGen, LoadRandomGen, storeRandomGen, loadRandomGen,
+	SigF, ReactF, move, leftClick, getRandomR,
 	Object, Value(..), storeJsons, loadJsons,
-	HttpGet, Uri, httpGet, XGlyphInfo(..), calcTextExtents,
+	Uri, httpGet, XGlyphInfo(..), calcTextExtents,
 	GetTimeZone, getTimeZone, browse,
-	BeginSleep, EndSleep, beginSleep, checkBeginSleep, endSleep, checkQuit,
+	BeginSleep, beginSleep, checkBeginSleep, endSleep, checkQuit,
 	Error(..), ErrorResult(..), raiseError, catchError )
 import Trials.Followbox.View (View, View1(..), Color, white, blue, Position)
 import Trials.Followbox.Wrapper.Aeson (decodeJson)
@@ -37,21 +35,28 @@ import Trials.Followbox.Wrapper.Aeson (decodeJson)
 ---------------------------------------------------------------------------
 
 apiUsers :: Int -> Uri
-apiUsers s = "https://api.github.com/users?since=" <> show s
+apiUsers = ("https://api.github.com/users?since=" <>) . show
 
-getUsersJson :: React (
-	StoreRandomGen :- LoadRandomGen :- HttpGet :- BeginSleep :- EndSleep :- 'Nil
-	) (Either String [Object])
-getUsersJson = do
+{-
+getRandomR :: Random a => (a, a) -> ReactF a
+getRandomR (mn, mx) = do
 	g <- adjust loadRandomGen
-	let	(n, g') = randomR (0, 2 ^ (27 :: Int)) g
+	let	(x, g') = randomR (mn, mx) g
 	adjust $ storeRandomGen g'
+	pure x
+	-}
+
+getUsers :: ReactF (Either String [Object])
+getUsers = do
+	n <- adjust $ getRandomR (0, 2 ^ (27 :: Int))
 	(h, b) <- adjust . httpGet $ apiUsers n
-	let	mrmn = read . BSC.unpack <$> lookup "X-RateLimit-Remaining" h :: Maybe Int
-		mrst = posixSecondsToUTCTime . fromInteger . read . BSC.unpack <$> lookup "X-RateLimit-Reset" h
+	let	mrmn = read . BSC.unpack <$> lookup "X-RateLimit-Remaining" h
+		mrst = posixSecondsToUTCTime . fromInteger
+			. read . BSC.unpack <$> lookup "X-RateLimit-Reset" h
 	case (mrmn, mrst) of
-		(Just rmn, _) | rmn > 0 -> pure $ decodeJson b
-		(Just _, Just t) -> adjust (beginSleep t) >> adjust endSleep >> getUsersJson
+		(Just rmn, _) | rmn > (0 :: Int) -> pure $ decodeJson b
+		(Just _, Just t) ->
+			adjust (beginSleep t) >> adjust endSleep >> getUsers
 		(Just _, Nothing) -> error "No X-RateLimit-Reset"
 		(Nothing, _) -> error "No X-RateLimit-Remaining header"
 
@@ -70,7 +75,7 @@ viewResetTime = do
 
 getUser1 :: ReactF Object
 getUser1 = adjust loadJsons >>= \case
-	[] -> adjust getUsersJson >>= \case
+	[] -> adjust getUsers >>= \case
 		Right (o : os) -> o <$ adjust (storeJsons $ take 8 os)
 		Right [] -> adjust (raiseError EmptyJson "Empty JSON") >> getUser1
 		Left em -> adjust (raiseError NotJson em) >> getUser1
@@ -143,18 +148,18 @@ viewMultiLoginNameSig :: Integer -> SigF View ()
 viewMultiLoginNameSig n = do
 	(vn, rn) <- waitFor next
 	(vr, rr) <- waitFor refresh
-	emit $ title : vn ++ vr
+	emit $ title : vn <> vr
 	vmlns (vn, rn) (vr, rr)
 	where
 	vmlns nxt@(vn, rn) rfs@(vr, rr) = do
 		lns <- fromIntegral n `replicateM` waitFor getAvatarLoginName
-		r <- ((title :) . (vn ++) . (vr ++) . concat <$%> ftraverse (uncurry viewLoginNameSig) ([0 .. n - 1] `zip` lns))
+		r <- ((title :) . (vn <>) . (vr <>) . concat <$%> ftraverse (uncurry viewLoginNameSig) ([0 .. n - 1] `zip` lns))
 			`until` (clickOnRect rn `first` clickOnRect rr)
 		case r of
 			Left (_, L _) -> pure ()
 			Left (_, LR _ _) -> pure ()
 			Left (_, R _) -> do
-				emit $ title : vn ++ vr
+				emit $ title : vn <> vr
 				waitFor . adjust $ storeJsons []
 			Right _ -> error "never occur"
 		vmlns nxt rfs

@@ -46,6 +46,10 @@ Main
 ### Body
 
 * [ ] Trials.Followbox
+	+ [x] imports
+	+ [ ] body
+		- [x] move getRandomR to Trials.Followbox.Event
+		- [ ] others
 * [ ] Trials.Followbox.Event
 * [ ] Trials.Followbox.Run
 * [ ] Trials.Followbox.Handle
