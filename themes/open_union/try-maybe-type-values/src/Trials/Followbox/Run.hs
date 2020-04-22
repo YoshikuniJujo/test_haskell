@@ -40,7 +40,7 @@ runFollowbox ttl sig = getFollowboxInfo >>= \case
 runFollowboxGen :: WindowTitle -> FollowboxInfo -> SigF View a -> IO ((a, [(R.StdGenVersion, StdGen)]), FollowboxState)
 runFollowboxGen ttl fi sg = do
 	f <- openField ttl [exposureMask, buttonPressMask]
-	interpret (handle f brs mba) (liftIO . view f) sg `runStateT` [(R.StdGenVersion 0, mkStdGen 8)] `runStateT` initialState <* closeField f
+	interpret (handle f brs mba) (liftIO . view f) sg `runStateT` [(R.version0, mkStdGen 8)] `runStateT` initialState <* closeField f
 	where FollowboxInfo { fiBrowser = brs, fiGithubUserNameToken = mba } = fi
 
 data FollowboxInfo = FollowboxInfo {

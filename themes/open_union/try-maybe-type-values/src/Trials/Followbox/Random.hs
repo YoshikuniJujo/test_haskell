@@ -4,7 +4,9 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Followbox.Random (StdGenVersion(..), RandomM, RandomEv, handle, getRandom, getRandomR) where
+module Trials.Followbox.Random (
+	RandomM, RandomEv, handle, getRandom, getRandomR,
+	StdGenVersion, version0 ) where
 
 import Control.Monad.State
 import Data.Type.Set
@@ -20,6 +22,9 @@ import MonadicFrp.Handle
 import Trials.TryThreadId hiding (sample1)
 
 data StdGenVersion = StdGenVersion Int deriving (Show, Eq, Ord)
+
+version0 :: StdGenVersion
+version0 = StdGenVersion 0
 
 nextVersion :: StdGenVersion -> StdGenVersion
 nextVersion (StdGenVersion v) = StdGenVersion $ v + 1
