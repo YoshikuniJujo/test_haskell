@@ -9,7 +9,7 @@ module MonadicFrp (
 	Sig, ISig, React, EvReqs, EvOccs, Request(..),
 	Firstable, CollapsableOccurred,
 	-- * React
-	await, adjust, first,
+	await, await', adjust, first,
 	-- * Conversion
 	emit, waitFor,
 	-- * Transformation

@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE DataKinds, KindSignatures, TypeOperators, ConstraintKinds #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -17,6 +17,8 @@ import Data.Or
 import Data.Type.Set hiding (Merge)
 import Data.UnionSet
 
+import MonadicFrp.ThreadId
+
 type EvReqs (es :: Set Type) = UnionSet es
 type EvOccs (es :: Set Type) = UnionSet (Occurred :$: es)
 
@@ -24,29 +26,38 @@ class (Numbered e, Mrgable e) => Request e where data Occurred (e :: Type) :: Ty
 
 data React (es :: Set Type) a
 	= Done a
-	| Await (EvReqs es) (EvOccs es -> React es a)
+	| Await (EvReqs es) (EvOccs es -> ThreadId -> React es (a, ThreadId))
 	| Never
 
 instance Functor (React es) where
 	f `fmap` Done x = Done $ f x
-	f `fmap` Await reqs k = Await reqs $ (f <$>) . k
+	f `fmap` Await reqs k = Await reqs \oc ti -> (\(x, ti') -> (f x, ti')) <$> k oc ti
 	_ `fmap` Never = Never
 
 instance Applicative (React es) where
 	pure = Done
 	Done f <*> mx = f <$> mx
-	Await reqs kf <*> mx = Await reqs $ (>>= (<$> mx)) . kf
+	Await reqs kf <*> mx = Await reqs \oc ti -> do
+		(f, ti') <- kf oc ti
+		r <- f <$> mx
+		pure (r, ti')
 	Never <*> _ = Never
 
 instance Monad (React es) where
 	Done x >>= f = f x
-	Await reqs k >>= f = Await reqs $ (>>= f) . k
+	Await reqs k >>= f = Await reqs \oc ti -> do
+		(x, ti') <- k oc ti
+		r <- f x
+		pure (r, ti')
 	Never >>= _ = Never
 
 interpretReact :: Monad m => Handle m es -> React es a -> m a
-interpretReact _ (Done x) = pure x
-interpretReact p (Await r c) = interpretReact p . c =<< p r
-interpretReact _ Never = error "never occur"			-- <- really?
+interpretReact = interpretReact' rootThreadId
+
+interpretReact' :: Monad m => ThreadId -> Handle m es -> React es a -> m a
+interpretReact' _ _ (Done x) = pure x
+interpretReact' ti p (Await r c) = fst <$> (interpretReact' ti p . (`c` ti) =<< p r)
+interpretReact' _ _ Never = error "never occur"			-- <- really?
 
 adjust :: forall es es' a . (
 	(es :+: es') ~ es', Firstable es es', Expandable es es'
@@ -61,11 +72,14 @@ first_ :: forall es es' a b . Firstable es es' =>
 	React es a -> React es' b -> React (es :+: es') (React es a, React es' b)
 l `first_` r = case (l, r) of
 	(Await el _, Await er _) ->
-		Await (el `merge` er) \(c :: EvOccs (es :+: es')) -> (l `ud1` c) `first_` (r `ud2` c)
+		Await (el `merge` er) \(c :: EvOccs (es :+: es')) ti ->
+			let (ti1, ti2) = forkThreadId ti in (, ti) <$>  ud1 l c ti1 `first_` ud2 r c ti2
 	(Await el _, Never) ->
-		Await (expand el) \(c :: EvOccs (es :+: es')) -> (l `ud1` c) `first_` (r `ud2` c)
+		Await (expand el) \(c :: EvOccs (es :+: es')) ti ->
+			let (ti1, ti2) = forkThreadId ti in (, ti) <$>  ud1 l c ti1 `first_` ud2 r c ti2
 	(Never, Await er _) ->
-		Await (expand er) \(c :: EvOccs (es :+: es')) -> (l `ud1` c) `first_` (r `ud2` c)
+		Await (expand er) \(c :: EvOccs (es :+: es')) ti ->
+			let (ti1, ti2) = forkThreadId ti in (, ti) <$>  ud1 l c ti1 `first_` ud2 r c ti2
 	(Done _, _) -> Done (l, r)
 	(_, Done _) -> Done (l, r)
 	(Never, Never) -> error "bad"
@@ -83,12 +97,12 @@ l `first` r = do
 		(Nothing, Nothing) -> error "never occur"
 
 update :: forall es es' a . Collapsable (Map Occurred (es :+: es')) (Map Occurred es) =>
-	React es a -> EvOccs (es :+: es') -> React es a
-update r@(Await _ c) oc = case collapse oc of
-	Just oc' -> c oc'
+	React es a -> EvOccs (es :+: es') -> ThreadId -> React es a
+update r@(Await _ c) oc ti = case collapse oc of
+	Just oc' -> fst <$> c oc' ti
 	Nothing -> r
-update Never _ = Never
-update (Done _) _ = error "bad: first argument must be Await _ _"
+update Never _ _ = Never
+update (Done _) _ _ = error "bad: first argument must be Await _ _"
 
 done :: React es a -> Maybe a
 done (Done x) = Just x
