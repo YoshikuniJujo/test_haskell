@@ -19,6 +19,8 @@ import Trials.Followbox.Event (SigF)
 import Trials.Followbox.Handle
 import Trials.Followbox.View
 
+import qualified Trials.Followbox.Random as R
+
 import Field
 
 type Browser = FilePath
@@ -30,15 +32,15 @@ defaultBrowser = "firefox"
 initialState :: FollowboxState
 initialState = (mkStdGen 8, [], Nothing)
 
-runFollowbox :: WindowTitle -> SigF View a -> IO (a, FollowboxState)
+runFollowbox :: WindowTitle -> SigF View a -> IO ((a, [(R.StdGenVersion, StdGen)]), FollowboxState)
 runFollowbox ttl sig = getFollowboxInfo >>= \case
 	Left em -> putStrLn em >> exitFailure
 	Right fi -> runFollowboxGen ttl fi sig
 
-runFollowboxGen :: WindowTitle -> FollowboxInfo -> SigF View a -> IO (a, FollowboxState)
+runFollowboxGen :: WindowTitle -> FollowboxInfo -> SigF View a -> IO ((a, [(R.StdGenVersion, StdGen)]), FollowboxState)
 runFollowboxGen ttl fi sg = do
 	f <- openField ttl [exposureMask, buttonPressMask]
-	interpret (handle f brs mba) (liftIO . view f) sg `runStateT` initialState <* closeField f
+	interpret (handle f brs mba) (liftIO . view f) sg `runStateT` [(R.StdGenVersion 0, mkStdGen 8)] `runStateT` initialState <* closeField f
 	where FollowboxInfo { fiBrowser = brs, fiGithubUserNameToken = mba } = fi
 
 data FollowboxInfo = FollowboxInfo {

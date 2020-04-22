@@ -16,7 +16,7 @@ module Trials.Followbox.Event (
 
 	-- * STORE AND LOAD
 	-- ** RandomGen
-	StoreRandomGen(..), LoadRandomGen, getRandomR,
+	getRandomR,
 	-- ** Jsons
 	StoreJsons(..), LoadJsons, Object, Value(..), storeJsons, loadJsons,
 
@@ -45,7 +45,6 @@ module Trials.Followbox.Event (
 import Data.Type.Set
 import Data.Bool
 import Data.Time hiding (getTimeZone)
-import System.Random
 import Network.HTTP.Simple (Header)
 
 import qualified Data.ByteString.Lazy as LBS
@@ -55,6 +54,8 @@ import MonadicFrp
 
 import Trials.Followbox.Wrapper.Aeson
 import Trials.Followbox.Wrapper.XGlyphInfo
+
+import Trials.Followbox.Random
 
 data Move = MoveReq deriving (Show, Eq, Ord)
 numbered 8 [t| Move |]
@@ -89,32 +90,6 @@ instance Request HttpGet where
 httpGet :: Uri -> React (Singleton HttpGet) ([Header], LBS.ByteString)
 httpGet u = maybe (httpGet u) pure =<< await (HttpGetReq u)
 	\(OccHttpGet u' hs c) -> bool Nothing (Just (hs, c)) $ u == u'
-
-data StoreRandomGen = StoreRandomGen StdGen deriving (Show, Eq, Ord)
-instance Eq StdGen where g1 == g2 = show g1 == show g2
-instance Ord StdGen where g1 <= g2 = show g1 <= show g2
-numbered 8 [t| StoreRandomGen |]
-instance Request StoreRandomGen where
-	data Occurred StoreRandomGen = OccStoreRandomGen StdGen deriving Show
-
-storeRandomGen :: StdGen -> React (Singleton StoreRandomGen) ()
-storeRandomGen g = result (storeRandomGen g) (pure ()) =<< await (StoreRandomGen g)
-	\(OccStoreRandomGen g') -> bool Failure Succeed $ g == g'
-
-data LoadRandomGen = LoadRandomGenReq deriving (Show, Eq, Ord)
-numbered 8 [t| LoadRandomGen |]
-instance Request LoadRandomGen where
-	data Occurred LoadRandomGen = OccLoadRandomGen StdGen
-
-loadRandomGen :: React (Singleton LoadRandomGen) StdGen
-loadRandomGen = await LoadRandomGenReq \(OccLoadRandomGen g) -> g
-
-getRandomR :: Random a => (a, a) -> React (StoreRandomGen :- LoadRandomGen :- 'Nil) a
-getRandomR (mn, mx) = do
-	g <- adjust loadRandomGen
-	let	(x, g') = randomR (mn, mx) g
-	adjust $ storeRandomGen g'
-	pure x
 
 data StoreJsons = StoreJsons [Object] deriving (Show, Eq, Ord)
 numbered 8 [t| StoreJsons |]
@@ -213,8 +188,10 @@ catchError = await (RaiseError CatchError "") \(OccRaiseError _ er) -> er
 type SigF = Sig FollowboxEv
 type ReactF = React FollowboxEv
 
-type FollowboxEv =
+type FollowboxEvGen =
 	Move :- LeftClick :-
-	StoreRandomGen :- LoadRandomGen :- StoreJsons :- LoadJsons :-
+	StoreJsons :- LoadJsons :-
 	HttpGet :- CalcTextExtents :- GetTimeZone :- Browse :-
 	BeginSleep :- EndSleep :- Quit :- RaiseError :- 'Nil
+
+type FollowboxEv = FollowboxEvGen :+: RandomEv

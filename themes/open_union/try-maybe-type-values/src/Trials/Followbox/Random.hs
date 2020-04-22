@@ -4,12 +4,11 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.TryMrgable where
+module Trials.Followbox.Random (StdGenVersion(..), RandomM, RandomEv, handle, getRandom, getRandomR) where
 
 import Control.Monad.State
 import Data.Type.Set
 import Data.UnionSet hiding (merge)
-import Data.Or
 import Data.Bool
 import System.Random
 
@@ -19,12 +18,6 @@ import MonadicFrp.ThreadId
 import MonadicFrp.Handle
 
 import Trials.TryThreadId hiding (sample1)
-
-data Result = Failure | Succeed deriving Show
-
-result :: a -> a -> Result -> a
-result f _ Failure = f
-result _ s Succeed = s
 
 data StdGenVersion = StdGenVersion Int deriving (Show, Eq, Ord)
 
@@ -108,8 +101,4 @@ getRandom = atomicModifyRandomGen random
 getRandomR :: Random a => (a, a) -> React RandomEv a
 getRandomR = atomicModifyRandomGen . randomR
 
-sample1 :: React RandomEv [Word]
-sample1 = replicateM 10 getRandom
-
-sample2 :: React RandomEv (Word `Or` Word `Or` Word)
-sample2 = getRandom `first` getRandom `first` getRandom
+type RandomM = StateT [(StdGenVersion, StdGen)]
