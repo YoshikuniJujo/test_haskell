@@ -56,3 +56,9 @@ Main
 * [ ] Trials.Followbox.View
 * [ ] Trials.Followbox.Wrappwer.Aeson
 * [ ] Trials.Followbox.Wrappwer.XGlyphInfo
+
+### Mrgable
+
+* [ ] resolve orphan instance StdGen
+	+ instance Mrgable StoreRandomGen ...
+	+ instance Mrgable LoadRandomGen ...

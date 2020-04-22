@@ -20,7 +20,7 @@ import Data.UnionSet
 type EvReqs (es :: Set Type) = UnionSet es
 type EvOccs (es :: Set Type) = UnionSet (Occurred :$: es)
 
-class Numbered e => Request e where data Occurred (e :: Type) :: Type
+class (Numbered e, Mrgable e) => Request e where data Occurred (e :: Type) :: Type
 
 data React (es :: Set Type) a
 	= Done a

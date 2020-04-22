@@ -1,13 +1,13 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables, DefaultSignatures #-}
 {-# LANGUAGE DataKinds, KindSignatures, TypeOperators #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, FlexibleContexts #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, FlexibleContexts, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.UnionSet (
-	UnionSet(Empty), Projectable, Nihil, Insertable, Expandable, Collapsable, Mergeable,
+	UnionSet(Empty), Projectable, Nihil, Insertable, Expandable, Collapsable, Mrgable(..), Mergeable,
 	prj, extract, singleton, (>-), expand, collapse, merge, merge' ) where
 
 import Data.Kind
@@ -88,14 +88,18 @@ instance {-# OVERLAPPABLE #-} Collapsable as as' =>
 	Collapsable (a ':~ as) as' where
 	collapse (_ :. xs) = collapse xs
 
+class Mrgable a where mrg :: a -> a -> a
+
+instance {-# OVERLAPPABLE #-} Ord a => Mrgable a where mrg = min
+
 class Mergeable (as :: Set Type) (as' :: Set Type) (merged :: Set Type) where
 	merge :: UnionSet as -> UnionSet as' -> UnionSet merged
 
 instance Mergeable 'Nil 'Nil 'Nil where merge Empty Empty = Empty
 
-instance (Ord a, Mergeable as as' merged) =>
+instance (Mrgable a, Mergeable as as' merged) =>
 	Mergeable (a ':~ as) (a ':~ as') (a ':~ merged) where
-	merge (Just x :. xs) (Just x' :. xs') = Just (x `min` x') :. merge xs xs'
+	merge (Just x :. xs) (Just x' :. xs') = Just (x `mrg` x') :. merge xs xs'
 	merge (mx :. xs) (Nothing :. xs') = mx :. merge xs xs'
 	merge (Nothing :. xs) (mx' :. xs') = mx' :. merge xs xs'
 
