@@ -30,7 +30,7 @@ import MonadicFrp.Handle
 import Trials.Followbox.Event hiding (getTimeZone)
 import Field
 
-import Trials.Followbox.Random as R
+import Trials.Followbox.Random
 
 type FollowboxM = StateT FollowboxState
 data FollowboxState = FollowboxState {
@@ -114,7 +114,8 @@ type GithubToken = BS.ByteString
 
 handle :: Field -> FilePath -> Maybe (GithubUserName, GithubToken) -> Handle (FollowboxM IO) FollowboxEv
 handle f brws mba = retry $
-	(Just <$>) . R.handle `merge` (
+	handleGetThreadId `merge`
+	handleRandom `merge`
 	(Just <$>) . handleStoreJsons `merge`
 	liftIO . (Just <$>) . handleHttpGet mba `merge`
 	(Just <$>) . handleLoadJsons `merge`
@@ -123,7 +124,7 @@ handle f brws mba = retry $
 	handleBeginSleep `merge`
 	handleEndSleep `merge`
 	liftIO . (Just <$>) . handleGetTimeZone `merge`
-	liftIO . (Just <$>) . handleBrowse brws ) `before`
+	liftIO . (Just <$>) . handleBrowse brws `before`
 	handleLeftClick f
 
 handleLeftClick :: Field -> EvReqs (Move :- LeftClick :- Quit :- 'Nil) -> (FollowboxM IO) (Maybe (EvOccs (Move :- LeftClick :- Quit :- 'Nil)))

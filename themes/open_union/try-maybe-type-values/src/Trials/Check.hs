@@ -13,21 +13,21 @@ import MonadicFrp
 import MonadicFrp.Run
 
 data Foo = FooReq deriving (Show, Eq, Ord)
-numbered 4 [t| Foo |]
+numbered 8 [t| Foo |]
 instance Request Foo where data Occurred Foo = OccFoo deriving Show
 
 foo :: React (Singleton Foo) ()
 foo = await FooReq \OccFoo -> ()
 
 data Bar = BarReq deriving (Show, Eq, Ord)
-numbered 4 [t| Bar |]
+numbered 8 [t| Bar |]
 instance Request Bar where data Occurred Bar = OccBar deriving Show
 
 bar :: React (Singleton Bar) ()
 bar = await BarReq \OccBar -> ()
 
 data Baz = BazReq deriving (Show, Eq, Ord)
-numbered 4 [t| Baz |]
+numbered 8 [t| Baz |]
 instance Request Baz where data Occurred Baz = OccBaz deriving Show
 
 baz :: React (Singleton Baz) ()

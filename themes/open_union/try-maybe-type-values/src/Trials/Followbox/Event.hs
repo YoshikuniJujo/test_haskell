@@ -55,6 +55,7 @@ import qualified Data.Text as T
 
 import MonadicFrp
 
+import Trials.Followbox.ThreadId
 import Trials.Followbox.Random
 
 data Move = MoveReq deriving (Show, Eq, Ord)
@@ -197,4 +198,4 @@ type FollowboxEvGen =
 	HttpGet :- CalcTextExtents :- GetTimeZone :- Browse :-
 	BeginSleep :- EndSleep :- Quit :- RaiseError :- 'Nil
 
-type FollowboxEv = FollowboxEvGen :+: RandomEv
+type FollowboxEv = GetThreadId :- FollowboxEvGen :+: RandomEv
