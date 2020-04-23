@@ -19,7 +19,7 @@ import MonadicFrp.Run
 import MonadicFrp.ThreadId
 import MonadicFrp.Handle
 
-import Trials.TryThreadId hiding (sample1)
+import Trials.Followbox.ThreadId
 
 data StdGenVersion = StdGenVersion Int deriving (Show, Eq, Ord)
 

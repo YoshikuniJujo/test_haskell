@@ -4,7 +4,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.TryThreadId where
+module Trials.Followbox.ThreadId where
 
 import Data.Type.Set
 import Data.Or

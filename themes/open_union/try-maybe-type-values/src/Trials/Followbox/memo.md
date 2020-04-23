@@ -9,7 +9,7 @@ Main
   +- Trials.Followbox
   |    +- Trials.Followbox.Event
   |    |    +- Trials.Followbox.Random
-  |    |    |    +- Trials.TryThreadId
+  |    |    |    +- Trials.Followbox.ThreadId
   |    +- Trials.Followbox.View
   +- Trials.Followbox.Run
        +- Trials.Followbox.Handle
@@ -23,10 +23,12 @@ Main
 ----------------
 
 * [ ] module hierarchy
-	+ [ ] move Trials.TryThreadId -> Trials.Followbox.ThreadId
+	+ [x] move Trials.TryThreadId -> Trials.Followbox.ThreadId
 
 ### API
 
+* [ ] Trials.Followbox.ThreadId
+* [ ] Trials.Followbox.Random
 * [ ] Trials.Followbox.Event
 * [ ] Trials.Followbox.Handle
 * [ ] Trials.Followbox.View
