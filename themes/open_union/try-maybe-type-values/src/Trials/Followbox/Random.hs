@@ -5,8 +5,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Followbox.Random (
-	RandomM, RandomEv, handle, getRandom, getRandomR,
-	StdGenVersion, version0 ) where
+	RandomState(..), RandomM, RandomEv, handle, getRandom, getRandomR,
+	StdGenVersion, version0, StdRandomState, initialStdRandomState ) where
 
 import Control.Monad.State
 import Data.Type.Set
@@ -71,29 +71,26 @@ type RandomEv = GetThreadId :- StoreRandomGen :- LoadRandomGen :- Rollback :- 'N
 handleGetThreadId :: Applicative m => Handle m (Singleton GetThreadId)
 handleGetThreadId _reqs = pure $ singleton OccGetThreadId
 
-handleStoreRandomGen :: Monad m => Handle (StateT [(StdGenVersion, StdGen)] m) (Singleton StoreRandomGen)
+handleStoreRandomGen :: (Monad m, RandomState s) => Handle (StateT s  m) (Singleton StoreRandomGen)
 handleStoreRandomGen reqs = do
-	vgs <- get
-	let	v = fst $ head vgs
-	modify ((nextVersion v, g) :)
+	v <- gets $ fst . getVersionStdGen
+	modify $ (`putVersionStdGen` (nextVersion v, g)) -- ((nextVersion v, g) :)
 	pure . singleton $ OccStoreRandomGen ti v
 	where StoreRandomGen ti g = extract reqs
 
-handleLoadRandomGen :: Monad m => Handle (StateT [(StdGenVersion, StdGen)] m) (Singleton LoadRandomGen)
+handleLoadRandomGen :: (Monad m, RandomState s) => Handle (StateT s  m) (Singleton LoadRandomGen)
 handleLoadRandomGen _reqs = do
-	vgs <- get
-	pure . singleton . uncurry OccLoadRandomGen $ head vgs
+	vg <- gets getVersionStdGen
+	pure . singleton $ uncurry OccLoadRandomGen vg
 
-handleRollback :: Monad m => Handle (StateT [(StdGenVersion, StdGen)] m) (Singleton Rollback)
+handleRollback :: (Monad m, RandomState s) => Handle (StateT s m) (Singleton Rollback)
 handleRollback reqs = do
-	vgs <- get
-	let	v' = fst $ head vgs
-	when (v /= v') $ error "can't rollback"
-	modify tail
+	modify $ either error id . (`rollbackStdGen` v)
 	pure $ singleton OccRollback
 	where RollbackReq v = extract reqs
 
-handle :: Monad m => Handle (StateT [(StdGenVersion, StdGen)] m) RandomEv
+handle :: (Monad m, RandomState s) => Handle (StateT s  m) RandomEv
+-- handle :: Monad m => Handle (RandomM m) RandomEv
 handle = retry $
 	(Just <$>) . handleGetThreadId `merge`
 	(Just <$>) . handleStoreRandomGen `merge`
@@ -106,4 +103,22 @@ getRandom = atomicModifyRandomGen random
 getRandomR :: Random a => (a, a) -> React RandomEv a
 getRandomR = atomicModifyRandomGen . randomR
 
-type RandomM = StateT [(StdGenVersion, StdGen)]
+data StdRandomState = StdRandomState { getStdRandomState :: [(StdGenVersion, StdGen)] }
+
+initialStdRandomState :: StdRandomState
+initialStdRandomState = StdRandomState [(version0, mkStdGen 8)]
+
+type RandomM = StateT StdRandomState -- [(StdGenVersion, StdGen)]
+
+class RandomState s where
+	getVersionStdGen :: s -> (StdGenVersion, StdGen)
+	putVersionStdGen :: s -> (StdGenVersion, StdGen) -> s
+	rollbackStdGen :: s -> StdGenVersion -> Either String s
+
+instance RandomState StdRandomState where
+	getVersionStdGen = head . getStdRandomState
+	putVersionStdGen s = StdRandomState . (: getStdRandomState s)
+	rollbackStdGen (StdRandomState ((v0, _) : vgs)) v
+		| v == v0 = Right $ StdRandomState vgs
+		| otherwise = Left "can't rollback"
+	rollbackStdGen (StdRandomState []) _ = Left "can't rollback"

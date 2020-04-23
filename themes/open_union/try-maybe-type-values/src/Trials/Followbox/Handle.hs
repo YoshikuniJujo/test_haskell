@@ -5,7 +5,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Followbox.Handle (
-	Trials.Followbox.Handle.handle, FollowboxM, FollowboxState, GithubUserName, GithubToken ) where
+	Trials.Followbox.Handle.handle, FollowboxM, FollowboxState, initialFollowboxState, GithubUserName, GithubToken ) where
 
 import Prelude hiding ((++))
 
@@ -33,19 +33,39 @@ import Field hiding (textExtents)
 import Trials.Followbox.Random as R
 
 type FollowboxM = StateT FollowboxState
-type FollowboxState = (StdGen, [Object], Maybe UTCTime)
+data FollowboxState = FollowboxState {
+	fsBoo :: StdGen,
+	fsObjects :: [Object],
+	fsSleepUntil :: Maybe UTCTime,
+	fsVersionRandomGens :: [(StdGenVersion, StdGen)] }
+	deriving Show
+
+initialFollowboxState :: FollowboxState
+initialFollowboxState = FollowboxState {
+	fsBoo = mkStdGen 8,
+	fsObjects = [],
+	fsSleepUntil = Nothing,
+	fsVersionRandomGens = [(version0, mkStdGen 8)] }
+
+instance RandomState FollowboxState where
+	getVersionStdGen = head . fsVersionRandomGens
+	putVersionStdGen s (v, g) = s { fsVersionRandomGens = (v, g) : fsVersionRandomGens s }
+	rollbackStdGen s@FollowboxState { fsVersionRandomGens = (v0, _) : vgs } v
+		| v == v0 = Right s { fsVersionRandomGens = vgs }
+		| otherwise = Left "can't rollback"
+	rollbackStdGen _ _ = Left "can't rollback"
 
 getObjects :: Monad m => FollowboxM m [Object]
-getObjects = (<$> get) \(_, os, _) -> os
+getObjects = gets fsObjects
 
 putObjects :: Monad m => [Object] -> FollowboxM m ()
-putObjects os = get >>= \(g, _, slp) -> put (g, os, slp)
+putObjects os = modify \s -> s { fsObjects = os }
 
 getSleepUntil :: Monad m => FollowboxM m (Maybe UTCTime)
-getSleepUntil = (<$> get) \(_, _, slp) -> slp
+getSleepUntil = gets fsSleepUntil
 
 putSleepUntil :: Monad m => Maybe UTCTime -> FollowboxM m ()
-putSleepUntil slp = get >>= \(g, os, _) -> put (g, os, slp)
+putSleepUntil slp = modify \s -> s { fsSleepUntil = slp }
 
 handleHttpGet :: Maybe (BS.ByteString, BS.ByteString) -> EvReqs (Singleton HttpGet) -> IO (EvOccs (Singleton HttpGet))
 handleHttpGet mba reqs = do
@@ -94,9 +114,9 @@ handleRaiseError reqs = case e of
 type GithubUserName = BS.ByteString
 type GithubToken = BS.ByteString
 
-handle :: Field -> FilePath -> Maybe (GithubUserName, GithubToken) -> Handle (RandomM (FollowboxM IO)) FollowboxEv
+handle :: Field -> FilePath -> Maybe (GithubUserName, GithubToken) -> Handle (FollowboxM IO) FollowboxEv
 handle f brws mba = retry $
-	(Just <$>) . R.handle `merge` lift . (
+	(Just <$>) . R.handle `merge` (
 	(Just <$>) . handleStoreJsons `merge`
 	liftIO . (Just <$>) . handleHttpGet mba `merge`
 	(Just <$>) . handleLoadJsons `merge`
@@ -108,8 +128,8 @@ handle f brws mba = retry $
 	liftIO . (Just <$>) . handleBrowse brws ) `before`
 	handleLeftClick f
 
-handleLeftClick :: Field -> EvReqs (Move :- LeftClick :- Quit :- 'Nil) -> RandomM (FollowboxM IO) (Maybe (EvOccs (Move :- LeftClick :- Quit :- 'Nil)))
-handleLeftClick f reqs = lift $ getSleepUntil >>= liftIO . \case
+handleLeftClick :: Field -> EvReqs (Move :- LeftClick :- Quit :- 'Nil) -> (FollowboxM IO) (Maybe (EvOccs (Move :- LeftClick :- Quit :- 'Nil)))
+handleLeftClick f reqs = getSleepUntil >>= liftIO . \case
 	Nothing -> handleLeftClick' f reqs
 	Just t -> handleLeftClickUntil f t reqs
 
