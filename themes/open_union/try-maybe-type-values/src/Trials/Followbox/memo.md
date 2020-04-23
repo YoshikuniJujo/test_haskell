@@ -22,12 +22,12 @@ Main
 リファクタリング
 ----------------
 
-* [ ] module hierarchy
+* [x] module hierarchy
 	+ [x] move Trials.TryThreadId -> Trials.Followbox.ThreadId
 
 ### API
 
-* [ ] Trials.Followbox.ThreadId
+* [x] Trials.Followbox.ThreadId
 * [ ] Trials.Followbox.Random
 * [ ] Trials.Followbox.Event
 * [ ] Trials.Followbox.Handle
