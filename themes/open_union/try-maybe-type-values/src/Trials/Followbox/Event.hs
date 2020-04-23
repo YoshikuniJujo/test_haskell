@@ -15,8 +15,6 @@ module Trials.Followbox.Event (
 	LeftClick, leftClick,
 
 	-- * STORE AND LOAD
-	-- ** RandomGen
-	getRandomR,
 	-- ** Jsons
 	StoreJsons(..), LoadJsons, Object, Value(..), storeJsons, loadJsons,
 

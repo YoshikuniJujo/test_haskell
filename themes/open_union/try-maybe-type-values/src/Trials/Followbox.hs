@@ -23,8 +23,9 @@ import qualified Codec.Picture.Extra as JP
 
 import MonadicFrp (
 	React, adjust, first, emit, waitFor, find, repeat, until, indexBy )
+import Trials.Followbox.Random (getRandomR)
 import Trials.Followbox.Event (
-	SigF, ReactF, move, leftClick, getRandomR,
+	SigF, ReactF, move, leftClick,
 	Object, Value(..), storeJsons, loadJsons,
 	Uri, Header, httpGet, XGlyphInfo(..), calcTextExtents,
 	GetTimeZone, getTimeZone, browse,

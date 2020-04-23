@@ -47,9 +47,9 @@ Main
 * [ ] Trials.Followbox
 	+ [ ] imports
 	+ [ ] body
+* [ ] Trials.Followbox.ThreadId
+* [ ] Trials.Followbox.Random
 * [ ] Trials.Followbox.Event
 * [ ] Trials.Followbox.Run
 * [ ] Trials.Followbox.Handle
 * [ ] Trials.Followbox.View
-* [ ] Trials.Followbox.Wrappwer.Aeson
-* [ ] Trials.Followbox.Wrappwer.XGlyphInfo
