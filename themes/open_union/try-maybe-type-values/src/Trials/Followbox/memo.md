@@ -28,7 +28,7 @@ Main
 ### API
 
 * [x] Trials.Followbox.ThreadId
-* [ ] Trials.Followbox.Random
+* [x] Trials.Followbox.Random
 * [ ] Trials.Followbox.Event
 * [ ] Trials.Followbox.Handle
 * [ ] Trials.Followbox.View

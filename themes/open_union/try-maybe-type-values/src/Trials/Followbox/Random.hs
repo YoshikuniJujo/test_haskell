@@ -5,8 +5,14 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Followbox.Random (
-	RandomState(..), RandomEv, handleGetThreadId, handleRandom, getRandom, getRandomR,
-	StdGenVersion, version0 ) where
+	-- * MONADIC FRP REQUESTS
+	RandomEv,
+	-- * HANDLE
+	RandomState(..), handleRandom,
+	StdGenVersion, version0,
+	-- * REACT
+	getRandom, getRandomR
+	) where
 
 import Control.Monad.State
 import Data.Type.Set

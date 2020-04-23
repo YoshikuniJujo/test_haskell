@@ -30,6 +30,7 @@ import MonadicFrp.Handle
 import Trials.Followbox.Event hiding (getTimeZone)
 import Field
 
+import Trials.Followbox.ThreadId
 import Trials.Followbox.Random
 
 type FollowboxM = StateT FollowboxState
