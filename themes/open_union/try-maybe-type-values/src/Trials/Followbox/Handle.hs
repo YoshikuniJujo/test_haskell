@@ -34,7 +34,6 @@ import Trials.Followbox.Random as R
 
 type FollowboxM = StateT FollowboxState
 data FollowboxState = FollowboxState {
-	fsBoo :: StdGen,
 	fsObjects :: [Object],
 	fsSleepUntil :: Maybe UTCTime,
 	fsVersionRandomGens :: [(StdGenVersion, StdGen)] }
@@ -42,7 +41,6 @@ data FollowboxState = FollowboxState {
 
 initialFollowboxState :: FollowboxState
 initialFollowboxState = FollowboxState {
-	fsBoo = mkStdGen 8,
 	fsObjects = [],
 	fsSleepUntil = Nothing,
 	fsVersionRandomGens = [(version0, mkStdGen 8)] }
