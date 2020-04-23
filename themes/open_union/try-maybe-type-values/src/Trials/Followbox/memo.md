@@ -8,14 +8,13 @@ memo
 Main
   +- Trials.Followbox
   |    +- Trials.Followbox.Event
-  |    |    +- Trials.Followbox.Wrapper.Aeson
-  |    |    +- Trials.Followbox.Wrapper.XGlyphInfo
+  |    |    +- Trials.Followbox.Random
+  |    |    |    +- Trials.TryThreadId
   |    +- Trials.Followbox.View
-  |    +- Trials.Followbox.Wrapper.Aeson
   +- Trials.Followbox.Run
        +- Trials.Followbox.Handle
        |    +- Trials.Followbox.Event
-       |    +- Trials.Followbox.Wrapper.XGlyphInfo
+       |    +- Trials.Followbox.Random
        +- Trials.Followbox.Event
        +- Trials.Followbox.View
 ```
@@ -23,42 +22,32 @@ Main
 リファクタリング
 ----------------
 
+* [ ] module hierarchy
+	+ [ ] move Trials.TryThreadId -> Trials.Followbox.ThreadId
+
 ### API
 
-* [x] Trials.Followbox.Event
-* [x] Trials.Followbox.Handle
-* [x] Trials.Followbox.View
-* [x] Trials.Followbox
-* [x] Trials.Followbox.Trials
+* [ ] Trials.Followbox.Event
+* [ ] Trials.Followbox.Handle
+* [ ] Trials.Followbox.View
+* [ ] Trials.Followbox
+* [ ] Trials.Followbox.Trials
 
 ### remove
 
-* [x] Trials.Followbox.TestMonad
-* [x] Trials.Followbox.Image
-* [x] Trials.Followbox.BasicAuth
+* [x] Trials.Followbox.Wrapper.Aeson
+* [x] Trials.Followbox.Wrapper.XGlyphInfo
 
 ### move to sub directory
-
-* [x] Trials.Followbox.Wrapper
-	+ [x] Trials.Followbox.Aeson
-	+ [x] Trials.Followbox.XGlyphInfo
 
 ### Body
 
 * [ ] Trials.Followbox
-	+ [x] imports
+	+ [ ] imports
 	+ [ ] body
-		- [x] move getRandomR to Trials.Followbox.Event
-		- [ ] others
 * [ ] Trials.Followbox.Event
 * [ ] Trials.Followbox.Run
 * [ ] Trials.Followbox.Handle
 * [ ] Trials.Followbox.View
 * [ ] Trials.Followbox.Wrappwer.Aeson
 * [ ] Trials.Followbox.Wrappwer.XGlyphInfo
-
-### Mrgable
-
-* [ ] resolve orphan instance StdGen
-	+ instance Mrgable StoreRandomGen ...
-	+ instance Mrgable LoadRandomGen ...

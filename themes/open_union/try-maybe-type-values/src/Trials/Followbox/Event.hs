@@ -43,17 +43,17 @@ module Trials.Followbox.Event (
 	) where
 
 import Data.Type.Set
+import Data.UnionSet
 import Data.Bool
 import Data.Time hiding (getTimeZone)
+import Data.Aeson hiding (Result)
 import Network.HTTP.Simple (Header)
+import Graphics.X11.Xrender
 
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 
 import MonadicFrp
-
-import Trials.Followbox.Wrapper.Aeson
-import Trials.Followbox.Wrapper.XGlyphInfo
 
 import Trials.Followbox.Random
 
@@ -91,8 +91,9 @@ httpGet :: Uri -> React (Singleton HttpGet) ([Header], LBS.ByteString)
 httpGet u = maybe (httpGet u) pure =<< await (HttpGetReq u)
 	\(OccHttpGet u' hs c) -> bool Nothing (Just (hs, c)) $ u == u'
 
-data StoreJsons = StoreJsons [Object] deriving (Show, Eq, Ord)
+data StoreJsons = StoreJsons [Object] deriving Show
 numbered 8 [t| StoreJsons |]
+instance Mrgable StoreJsons where os1 `mrg` _os2 = os1
 instance Request StoreJsons where
 	data Occurred StoreJsons = OccStoreJsons [Object]
 
@@ -110,6 +111,8 @@ loadJsons = await LoadJsonsReq \(OccLoadJsons os) -> os
 
 data CalcTextExtents = CalcTextExtentsReq FontName FontSize T.Text
 	deriving (Show, Eq, Ord)
+type FontName = String
+type FontSize = Double
 numbered 8 [t| CalcTextExtents |]
 instance Request CalcTextExtents where
 	data Occurred CalcTextExtents =

@@ -19,6 +19,7 @@ import System.Process
 import System.Random
 
 import qualified Data.ByteString as BS
+import qualified Data.Text as T
 import qualified Network.HTTP.Simple as HTTP
 
 import Network.HTTP.Simple
@@ -27,8 +28,7 @@ import qualified Data.ByteString.Lazy as LBS
 
 import MonadicFrp.Handle
 import Trials.Followbox.Event hiding (getTimeZone)
-import Trials.Followbox.Wrapper.XGlyphInfo
-import Field hiding (textExtents)
+import Field
 
 import Trials.Followbox.Random as R
 
@@ -162,7 +162,7 @@ withNextEventUntil f t act = do
 	withNextEventTimeout' f (round $ dt * 1000000) act
 
 handleCalcTextExtents :: Field -> EvReqs (Singleton CalcTextExtents) -> IO (EvOccs (Singleton CalcTextExtents))
-handleCalcTextExtents f reqs = singleton . OccCalcTextExtents fn fs t <$> textExtents f fn fs t
+handleCalcTextExtents f reqs = singleton . OccCalcTextExtents fn fs t <$> textExtents f fn fs (T.unpack t)
 	where CalcTextExtentsReq fn fs t = extract reqs
 
 handleBeginSleep :: Monad m => EvReqs (Singleton BeginSleep) -> FollowboxM m (Maybe (EvOccs (Singleton BeginSleep)))

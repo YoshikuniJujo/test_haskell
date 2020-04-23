@@ -12,6 +12,7 @@ import Data.Type.Set (Set(Nil), (:-))
 import Data.Or (Or(..))
 import Data.Time (UTCTime, utcToLocalTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
+import Data.Aeson (eitherDecode)
 
 import qualified Data.HashMap.Strict as HM
 import qualified Data.ByteString.Char8 as BSC
@@ -30,7 +31,6 @@ import Trials.Followbox.Event (
 	BeginSleep, beginSleep, checkBeginSleep, endSleep, checkQuit,
 	Error(..), ErrorResult(..), raiseError, catchError )
 import Trials.Followbox.View (View, View1(..), Color, white, blue, Position)
-import Trials.Followbox.Wrapper.Aeson (decodeJson)
 
 ---------------------------------------------------------------------------
 
@@ -42,7 +42,7 @@ getUsers = do
 	n <- adjust $ getRandomR (0, 2 ^ (27 :: Int))
 	(h, b) <- adjust . httpGet $ apiUsers n
 	case (lookupRateLimitRemaining h, lookupRateLimitReset h) of
-		(Just rmn, _) | rmn > (0 :: Int) -> pure $ decodeJson b
+		(Just rmn, _) | rmn > (0 :: Int) -> pure $ eitherDecode b
 		(Just _, Just t) ->
 			adjust (beginSleep t) >> adjust endSleep >> getUsers
 		(Just _, Nothing) -> error "No X-RateLimit-Reset"
@@ -171,10 +171,11 @@ viewLoginNameSig n (a, ln, u) = do
 createLoginName1 :: Integer -> T.Text -> ReactF (View, Rect, Rect)
 createLoginName1 n t = do
 	XGlyphInfo {
-		xGlyphInfoWidth = w,
-		xGlyphInfoHeight = h,
-		xGlyphInfoX = x,
-		xGlyphInfoY = y } <- adjust $ calcTextExtents "sans" 36 t
+		xglyphinfo_width = w_,
+		xglyphinfo_height = h_,
+		xglyphinfo_x = x_,
+		xglyphinfo_y = y_ } <- adjust $ calcTextExtents "sans" 36 t
+	let	[w, h, x, y] = fromIntegral <$> [w_, h_, x_, y_]
 	pure $ createLoginName blue 36 (210, 180 + n * 120) t (210 - x + w, 180 + n * 120 - y)
 		(Rect (210 - x, 180 + n * 120 - y) (210 - x + w, 180 + n * 120 - y + h))
 
@@ -193,10 +194,11 @@ title = Text white "sans" 36 (50, 80) "Who to follow"
 linkText :: Double -> Position -> T.Text -> ReactF (View, Rect)
 linkText fs p@(x0, y0) t = do
 	XGlyphInfo {
-		xGlyphInfoWidth = w,
-		xGlyphInfoHeight = h,
-		xGlyphInfoX = x,
-		xGlyphInfoY = y } <- adjust $ calcTextExtents "sans" fs t
+		xglyphinfo_width = w_,
+		xglyphinfo_height = h_,
+		xglyphinfo_x = x_,
+		xglyphinfo_y = y_ } <- adjust $ calcTextExtents "sans" fs t
+	let	[w, h, x, y] = fromIntegral <$> [w_, h_, x_, y_]
 	pure (	[	Text blue "sans" fs p t,
 			Line blue 4
 				(x0 - x, y0 + 6)
