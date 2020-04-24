@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -41,6 +41,11 @@ data FollowboxState = FollowboxState {
 	fsSleepUntil :: Maybe UTCTime,
 	fsVersionRandomGens :: [(StdGenVersion, StdGen)] }
 	deriving Show
+
+type VersionStdGens = [(StdGenVersion, StdGen)]
+
+initialVersionStdGens :: StdGen -> VersionStdGens
+initialVersionStdGens = (: []) . (stdGenVersion0 ,)
 
 initialFollowboxState :: FollowboxState
 initialFollowboxState = FollowboxState {

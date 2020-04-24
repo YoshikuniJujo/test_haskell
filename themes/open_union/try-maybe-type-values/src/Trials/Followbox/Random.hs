@@ -5,11 +5,10 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Followbox.Random (
-	-- * MONADIC FRP REQUESTS
-	RandomEv,
+	-- * BASIC TYPES
+	RandomEv, StdGenVersion, stdGenVersion0,
 	-- * HANDLE
 	RandomState(..), handleRandom,
-	VersionStdGens, StdGenVersion, initialVersionStdGens,
 	-- * REACT
 	getRandom, getRandomR
 	) where
@@ -29,15 +28,10 @@ import Trials.Followbox.ThreadId
 
 ---------------------------------------------------------------------------
 
-type VersionStdGens = [(StdGenVersion, StdGen)]
-
-initialVersionStdGens :: StdGen -> VersionStdGens
-initialVersionStdGens = (: []) . (version0 ,)
-
 data StdGenVersion = StdGenVersion Int deriving (Show, Eq, Ord)
 
-version0 :: StdGenVersion
-version0 = StdGenVersion 0
+stdGenVersion0 :: StdGenVersion
+stdGenVersion0 = StdGenVersion 0
 
 nextVersion :: StdGenVersion -> StdGenVersion
 nextVersion (StdGenVersion v) = StdGenVersion $ v + 1
