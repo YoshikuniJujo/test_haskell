@@ -34,7 +34,10 @@ diffUTCTime' :: UTCTime -> UTCTime -> Double
 t1 `diffUTCTime'` t2 = fromRational . toRational $ t1 `diffUTCTime` t2
 
 readCounts :: FilePath -> IO Counts
-readCounts fp = ((\[dy, i, _d] -> (read dy, read i)) . words <$>) . lines <$> readFile fp
+readCounts fp = ((\[dy, i, _d] -> (read dy, read i)) . take 3 . words <$>) . lines <$> readFile fp
+
+readDeathCounts :: FilePath -> IO Counts
+readDeathCounts fp = ((\[dy, _i, d] -> (read dy, read d)) . take 3 . words <$>) . lines <$> readFile fp
 
 drawGraph :: Field -> Pixel -> CInt -> [Point] -> IO ()
 drawGraph f c lw ps = drawLines f c lw ps
@@ -69,6 +72,10 @@ mkDiff ((_d0, c0) : dcs@((d1, c1) : _)) = (d1, c1 - c0) : mkDiff dcs
 drawDiffFromFile :: Field -> FilePath -> IO ()
 drawDiffFromFile f fp = drawGraph f 0xffffff 2 =<<
 	(countToPoint (read "2020-01-01", read "2020-05-01") (100, 500) (0, 1500) (400, 100) <$>) . filter ((/= 0) . snd) . mkDiff <$> readCounts fp
+
+drawDeathDiffFromFile :: Field -> FilePath -> IO ()
+drawDeathDiffFromFile f fp = drawGraph f 0xffffff 2 =<<
+	(countToPoint (read "2020-01-01", read "2020-05-01") (100, 500) (0, 50) (400, 100) <$>) . filter ((/= 0) . snd) . mkDiff <$> readDeathCounts fp
 
 drawDiff :: Field -> Counts -> IO ()
 drawDiff f cs = drawGraph f 0x0000ff 5
@@ -198,6 +205,24 @@ drawDiffWithModel = do
 	waitExposure f
 	pure f
 
+drawDeathDiff :: IO Field
+drawDeathDiff = do
+	f <- openField "foo" [exposureMask]
+--	drawDeathDiff f $ mkDeathModel (read "2020-01-02") (read "2020-04-24")
+	drawDeathDiffFromFile f "data.txt"
+	drawScale''' f 0
+	drawScale''' f 10
+	drawScale''' f 20
+	drawScale''' f 30
+	drawScale''' f 40
+	drawScale''' f 50
+	drawDayScale f $ read "2020-01-15"
+	drawDayScale f $ read "2020-02-15"
+	drawDayScale f $ read "2020-03-15"
+	drawDayScale f $ read "2020-04-15"
+	waitExposure f
+	pure f
+
 drawLineP :: Field -> Point -> Point -> IO ()
 drawLineP f (Point x1 y1) (Point x2 y2) = drawLine f 0xffffff 2 x1 y1 x2 y2
 
@@ -230,6 +255,16 @@ drawScale'' f c = do
 	where
 	Point x y =
 		(countToPoint (read "2020-01-01", read "2020-05-01") (100, 500) (0, 1500) (400, 100) (read "2020-05-15", c))
+
+drawScale''' :: Field -> Double -> IO ()
+drawScale''' f c = do
+	drawLineP f
+		(countToPoint (read "2020-01-01", read "2020-05-01") (100, 500) (0, 50) (400, 100) (read "2020-05-05", c))
+		(countToPoint (read "2020-01-01", read "2020-05-01") (100, 500) (0, 50) (400, 100) (read "2020-05-11", c))
+	drawStr f 0xffffff "sans" 12 x (y + 6) (show c)
+	where
+	Point x y =
+		(countToPoint (read "2020-01-01", read "2020-05-01") (100, 500) (0, 50) (400, 100) (read "2020-05-15", c))
 
 drawSemilogScale :: Field -> Double -> IO ()
 drawSemilogScale f c = do
