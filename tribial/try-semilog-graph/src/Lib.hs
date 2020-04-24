@@ -66,6 +66,14 @@ mkDiff [] = []
 mkDiff [_] = []
 mkDiff ((_d0, c0) : dcs@((d1, c1) : _)) = (d1, c1 - c0) : mkDiff dcs
 
+drawDiffFromFile :: Field -> FilePath -> IO ()
+drawDiffFromFile f fp = drawGraph f 0xffffff 2 =<<
+	(countToPoint (read "2020-01-01", read "2020-05-01") (100, 500) (0, 1500) (400, 100) <$>) . filter ((/= 0) . snd) . mkDiff <$> readCounts fp
+
+drawDiff :: Field -> Counts -> IO ()
+drawDiff f cs = drawGraph f 0x0000ff 5
+	$ (countToPoint (read "2020-01-01", read "2020-05-01") (100, 500) (0, 1500) (400, 100) <$>) . filter ((/= 0) . snd) $ mkDiff cs
+
 drawDiffSemilog :: Field -> FilePath -> IO ()
 drawDiffSemilog f fp = drawGraph f 0xffffff 2 =<<
 	(countToSemilog (read "2020-01-01", read "2020-05-01") (100, 500) (1, 18000) (400, 100) <$>) . filter ((/= 0) . snd) . mkDiff <$> readCounts fp
@@ -74,6 +82,14 @@ toWeekly :: Counts -> Counts
 toWeekly [] = []
 toWeekly (c : cs) = c : toWeekly (drop 6 cs)
 
+drawWeeklyDiffFromFile :: Field -> FilePath -> IO ()
+drawWeeklyDiffFromFile f fp = drawGraph f 0xffffff 2 =<<
+	(countToPoint (read "2020-01-01", read "2020-05-01") (100, 500) (0, 8000) (400, 100) <$>) . mkDiff . toWeekly <$> readCounts fp
+
+drawWeeklyDiff :: Field -> Counts -> IO ()
+drawWeeklyDiff f cs = drawGraph f 0x0000ff 5
+	$ (countToPoint (read "2020-01-01", read "2020-05-01") (100, 500) (0, 8000) (400, 100) <$>) . filter ((/= 0) . snd) . mkDiff $ toWeekly cs
+
 drawWeeklyDiffSemilogFromFile :: Field -> FilePath -> IO ()
 drawWeeklyDiffSemilogFromFile f fp = drawGraph f 0xffffff 2 =<<
 	(countToSemilog (read "2020-01-01", read "2020-05-01") (100, 500) (1, 18000) (400, 100) <$>) . filter ((/= 0) . snd) . mkDiff . toWeekly <$> readCounts fp
@@ -81,7 +97,6 @@ drawWeeklyDiffSemilogFromFile f fp = drawGraph f 0xffffff 2 =<<
 drawWeeklyDiffSemilog :: Field -> Counts -> IO ()
 drawWeeklyDiffSemilog f cs = drawGraph f 0x0000ff 5
 	$ (countToSemilog (read "2020-01-01", read "2020-05-01") (100, 500) (1, 18000) (400, 100) <$>) . filter ((/= 0) . snd) . mkDiff $ toWeekly cs
-
 
 model :: Floating a => Day -> a
 model d = 2 ** (fromIntegral (d `diffDays` fromGregorian 2020 1 2) / 8)
@@ -148,6 +163,41 @@ drawWeeklyDiffSemilogWithModel = do
 	waitExposure f
 	pure f
 
+drawWeeklyDiffWithModel :: IO Field
+drawWeeklyDiffWithModel = do
+	f <- openField "foo" [exposureMask]
+	drawWeeklyDiff f $ mkModel (read "2020-01-02") (read "2020-04-24")
+	drawWeeklyDiffFromFile f "data.txt"
+	drawScale' f 0
+	drawScale' f 2500
+	drawScale' f 5000
+	drawScale' f 7500
+	drawScale' f 10000
+	drawDayScale f $ read "2020-01-15"
+	drawDayScale f $ read "2020-02-15"
+	drawDayScale f $ read "2020-03-15"
+	drawDayScale f $ read "2020-04-15"
+	waitExposure f
+	pure f
+
+drawDiffWithModel :: IO Field
+drawDiffWithModel = do
+	f <- openField "foo" [exposureMask]
+	drawDiff f $ mkModel (read "2020-01-02") (read "2020-04-24")
+	drawDiffFromFile f "data.txt"
+	drawScale'' f 0
+	drawScale'' f 500
+	drawScale'' f 1000
+	drawScale'' f 1500
+	drawScale'' f 2000
+	drawScale'' f 2500
+	drawDayScale f $ read "2020-01-15"
+	drawDayScale f $ read "2020-02-15"
+	drawDayScale f $ read "2020-03-15"
+	drawDayScale f $ read "2020-04-15"
+	waitExposure f
+	pure f
+
 drawLineP :: Field -> Point -> Point -> IO ()
 drawLineP f (Point x1 y1) (Point x2 y2) = drawLine f 0xffffff 2 x1 y1 x2 y2
 
@@ -160,6 +210,26 @@ drawScale f c = do
 	where
 	Point x y =
 		(countToPoint (read "2020-01-01", read "2020-05-01") (100, 500) (0, 18000) (400, 100) (read "2020-05-15", c))
+
+drawScale' :: Field -> Double -> IO ()
+drawScale' f c = do
+	drawLineP f
+		(countToPoint (read "2020-01-01", read "2020-05-01") (100, 500) (0, 8000) (400, 100) (read "2020-05-05", c))
+		(countToPoint (read "2020-01-01", read "2020-05-01") (100, 500) (0, 8000) (400, 100) (read "2020-05-11", c))
+	drawStr f 0xffffff "sans" 12 x (y + 6) (show c)
+	where
+	Point x y =
+		(countToPoint (read "2020-01-01", read "2020-05-01") (100, 500) (0, 8000) (400, 100) (read "2020-05-15", c))
+
+drawScale'' :: Field -> Double -> IO ()
+drawScale'' f c = do
+	drawLineP f
+		(countToPoint (read "2020-01-01", read "2020-05-01") (100, 500) (0, 1500) (400, 100) (read "2020-05-05", c))
+		(countToPoint (read "2020-01-01", read "2020-05-01") (100, 500) (0, 1500) (400, 100) (read "2020-05-11", c))
+	drawStr f 0xffffff "sans" 12 x (y + 6) (show c)
+	where
+	Point x y =
+		(countToPoint (read "2020-01-01", read "2020-05-01") (100, 500) (0, 1500) (400, 100) (read "2020-05-15", c))
 
 drawSemilogScale :: Field -> Double -> IO ()
 drawSemilogScale f c = do
