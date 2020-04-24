@@ -12,7 +12,9 @@ import Data.Type.Set (Set(Nil), (:-))
 import Data.Or (Or(..))
 import Data.Time (UTCTime, utcToLocalTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
-import Data.Aeson (eitherDecode)
+import Data.Aeson (Object, Value(..), eitherDecode)
+import Network.HTTP.Simple (Header)
+import Graphics.X11.Xrender (XGlyphInfo(..))
 
 import qualified Data.HashMap.Strict as HM
 import qualified Data.ByteString.Char8 as BSC
@@ -26,8 +28,8 @@ import MonadicFrp (
 import Trials.Followbox.Random (getRandomR)
 import Trials.Followbox.Event (
 	SigF, ReactF, move, leftClick,
-	Object, Value(..), storeJsons, loadJsons,
-	Uri, Header, httpGet, XGlyphInfo(..), calcTextExtents,
+	storeJsons, loadJsons,
+	Uri, httpGet, calcTextExtents,
 	GetTimeZone, getTimeZone, browse,
 	BeginSleep, beginSleep, checkBeginSleep, endSleep, checkQuit,
 	Error(..), ErrorResult(..), raiseError, catchError )

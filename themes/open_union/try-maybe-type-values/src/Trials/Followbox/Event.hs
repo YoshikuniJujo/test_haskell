@@ -6,23 +6,23 @@
 
 module Trials.Followbox.Event (
 	-- * GENERAL
-	SigF, ReactF, FollowboxEv, Occurred(..),
+	SigF, ReactF, FollowboxEv, FollowboxEvGen, Occurred(..),
 
 	-- * MOUSE EVENT
 	-- ** Move
-	Move, move,
+	Move, Position, move,
 	-- ** LeftClick
 	LeftClick, leftClick,
 
 	-- * STORE AND LOAD
 	-- ** Jsons
-	StoreJsons(..), LoadJsons, Object, Value(..), storeJsons, loadJsons,
+	StoreJsons(..), LoadJsons, storeJsons, loadJsons,
 
 	-- * REQUEST DATA
 	-- ** HttpGet
-	HttpGet(..), Uri, Header, httpGet,
+	HttpGet(..), Uri, httpGet,
 	-- ** CalcTextExtents
-	CalcTextExtents(..), XGlyphInfo(..), FontName, FontSize, calcTextExtents,
+	CalcTextExtents(..), FontName, FontSize, calcTextExtents,
 	-- ** GetTimeZone
 	GetTimeZone, getTimeZone,
 
@@ -59,10 +59,10 @@ import Trials.Followbox.Random
 data Move = MoveReq deriving (Show, Eq, Ord)
 numbered 8 [t| Move |]
 instance Request Move where
-	data Occurred Move = OccMove (Integer, Integer) deriving Show
--- type Position = (Integer, Integer)
+	data Occurred Move = OccMove Position deriving Show
+type Position = (Integer, Integer)
 
-move :: React (Singleton Move) (Integer, Integer)
+move :: React (Singleton Move) Position
 move = await MoveReq \(OccMove p) -> p
 
 data Result = Failure | Succeed deriving Show

@@ -15,6 +15,7 @@ import Data.Bool
 import Data.String
 import Data.UnionSet hiding (merge)
 import Data.Time
+import Data.Aeson
 import System.Process
 import System.Random
 
