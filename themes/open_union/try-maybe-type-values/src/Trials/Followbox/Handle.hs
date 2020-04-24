@@ -5,7 +5,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Followbox.Handle (
-	Trials.Followbox.Handle.handle, FollowboxM, FollowboxState, initialFollowboxState, GithubUserName, GithubToken ) where
+	handle, Browser, GithubUserName, GithubToken,
+	FollowboxM, FollowboxState, initialFollowboxState ) where
 
 import Prelude hiding ((++))
 
@@ -114,7 +115,9 @@ handleRaiseError reqs = case e of
 type GithubUserName = BS.ByteString
 type GithubToken = BS.ByteString
 
-handle :: Field -> FilePath -> Maybe (GithubUserName, GithubToken) -> Handle (FollowboxM IO) FollowboxEv
+type Browser = FilePath
+
+handle :: Field -> Browser -> Maybe (GithubUserName, GithubToken) -> Handle (FollowboxM IO) FollowboxEv
 handle f brws mba = retry $
 	handleGetThreadId `merge`
 	handleRandom `merge`

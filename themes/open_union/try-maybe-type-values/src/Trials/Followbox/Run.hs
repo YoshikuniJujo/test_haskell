@@ -20,7 +20,6 @@ import Trials.Followbox.View
 
 import Field
 
-type Browser = FilePath
 type WindowTitle = String
 
 defaultBrowser :: Browser

@@ -30,7 +30,7 @@ Main
 * [x] Trials.Followbox.ThreadId
 * [x] Trials.Followbox.Random
 * [x] Trials.Followbox.Event
-* [ ] Trials.Followbox.Handle
+* [x] Trials.Followbox.Handle
 * [ ] Trials.Followbox.View
 * [ ] Trials.Followbox
 * [ ] Trials.Followbox.Trials
