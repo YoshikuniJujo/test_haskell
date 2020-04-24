@@ -46,7 +46,7 @@ initialFollowboxState :: FollowboxState
 initialFollowboxState = FollowboxState {
 	fsObjects = [],
 	fsSleepUntil = Nothing,
-	fsVersionRandomGens = [(version0, mkStdGen 8)] }
+	fsVersionRandomGens = initialVersionStdGens $ mkStdGen 8 }
 
 instance RandomState FollowboxState where
 	getVersionStdGen = head . fsVersionRandomGens

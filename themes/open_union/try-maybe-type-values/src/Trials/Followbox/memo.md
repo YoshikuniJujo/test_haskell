@@ -49,6 +49,7 @@ Main
 * [x] Trials.Followbox.TypeSynonym
 * [x] Trials.Followbox.ThreadId
 * [ ] Trials.Followbox.Random
+	+ [ ] consider to use NotEmpty
 * [ ] Trials.Followbox.Event
 * [ ] Trials.Followbox
 	+ [ ] imports

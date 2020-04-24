@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, TupleSections #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -9,7 +9,7 @@ module Trials.Followbox.Random (
 	RandomEv,
 	-- * HANDLE
 	RandomState(..), handleRandom,
-	StdGenVersion, version0,
+	VersionStdGens, StdGenVersion, initialVersionStdGens,
 	-- * REACT
 	getRandom, getRandomR
 	) where
@@ -26,6 +26,13 @@ import MonadicFrp.ThreadId
 import MonadicFrp.Handle
 
 import Trials.Followbox.ThreadId
+
+---------------------------------------------------------------------------
+
+type VersionStdGens = [(StdGenVersion, StdGen)]
+
+initialVersionStdGens :: StdGen -> VersionStdGens
+initialVersionStdGens = (: []) . (version0 ,)
 
 data StdGenVersion = StdGenVersion Int deriving (Show, Eq, Ord)
 
