@@ -29,11 +29,12 @@ import Trials.Followbox.Random (getRandomR)
 import Trials.Followbox.Event (
 	SigF, ReactF, move, leftClick,
 	storeJsons, loadJsons,
-	Uri, httpGet, calcTextExtents,
+	httpGet, calcTextExtents,
 	GetTimeZone, getTimeZone, browse,
 	BeginSleep, beginSleep, checkBeginSleep, endSleep, checkQuit,
 	Error(..), ErrorResult(..), raiseError, catchError )
-import Trials.Followbox.View (View, View1(..), Color, white, blue, Position)
+import Trials.Followbox.View (View, View1(..), Color, white, blue)
+import Trials.Followbox.TypeSynonym
 
 ---------------------------------------------------------------------------
 

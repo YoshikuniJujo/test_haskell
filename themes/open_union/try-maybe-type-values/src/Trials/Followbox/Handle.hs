@@ -5,8 +5,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Followbox.Handle (
-	handle, Browser, GithubUserName, GithubToken,
-	FollowboxM, FollowboxState, initialFollowboxState ) where
+	handle, FollowboxM, FollowboxState, initialFollowboxState ) where
 
 import Prelude hiding ((++))
 
@@ -34,6 +33,7 @@ import Field
 
 import Trials.Followbox.ThreadId
 import Trials.Followbox.Random
+import Trials.Followbox.TypeSynonym
 
 type FollowboxM = StateT FollowboxState
 data FollowboxState = FollowboxState {
@@ -111,11 +111,6 @@ handleRaiseError reqs = case e of
 		pure . Just . singleton $ OccRaiseError e Terminate
 	CatchError -> pure Nothing
 	where RaiseError e em = extract reqs
-
-type GithubUserName = BS.ByteString
-type GithubToken = BS.ByteString
-
-type Browser = FilePath
 
 handle :: Field -> Browser -> Maybe (GithubUserName, GithubToken) -> Handle (FollowboxM IO) FollowboxEv
 handle f brws mba = retry $

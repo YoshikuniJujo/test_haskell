@@ -10,7 +10,7 @@ module Trials.Followbox.Event (
 
 	-- * MOUSE EVENT
 	-- ** Move
-	Move, Position, move,
+	Move, move,
 	-- ** LeftClick
 	LeftClick, leftClick,
 
@@ -20,9 +20,9 @@ module Trials.Followbox.Event (
 
 	-- * REQUEST DATA
 	-- ** HttpGet
-	HttpGet(..), Uri, httpGet,
+	HttpGet(..), httpGet,
 	-- ** CalcTextExtents
-	CalcTextExtents(..), FontName, FontSize, calcTextExtents,
+	CalcTextExtents(..), calcTextExtents,
 	-- ** GetTimeZone
 	GetTimeZone, getTimeZone,
 
@@ -36,7 +36,7 @@ module Trials.Followbox.Event (
 	-- ** Quit
 	Quit, checkQuit,
 	-- ** RaiseError
-	RaiseError(..), Error(..), ErrorMessage, ErrorResult(..),
+	RaiseError(..), Error(..), ErrorResult(..),
 	raiseError, catchError
 	) where
 
@@ -55,12 +55,12 @@ import MonadicFrp
 
 import Trials.Followbox.ThreadId
 import Trials.Followbox.Random
+import Trials.Followbox.TypeSynonym
 
 data Move = MoveReq deriving (Show, Eq, Ord)
 numbered 8 [t| Move |]
 instance Request Move where
 	data Occurred Move = OccMove Position deriving Show
-type Position = (Integer, Integer)
 
 move :: React (Singleton Move) Position
 move = await MoveReq \(OccMove p) -> p
@@ -80,7 +80,6 @@ leftClick :: React (Singleton LeftClick) ()
 leftClick = await LeftClickReq \OccLeftClick -> ()
 
 data HttpGet = HttpGetReq Uri deriving (Show, Eq, Ord)
-type Uri = String
 numbered 8 [t| HttpGet |]
 instance Request HttpGet where
 	data Occurred HttpGet = OccHttpGet Uri [Header] LBS.ByteString
@@ -110,8 +109,6 @@ loadJsons = await LoadJsonsReq \(OccLoadJsons os) -> os
 
 data CalcTextExtents = CalcTextExtentsReq FontName FontSize T.Text
 	deriving (Show, Eq, Ord)
-type FontName = String
-type FontSize = Double
 numbered 8 [t| CalcTextExtents |]
 instance Request CalcTextExtents where
 	data Occurred CalcTextExtents =
@@ -175,7 +172,6 @@ data Error
 data ErrorResult = Continue | Terminate deriving Show
 
 data RaiseError = RaiseError Error ErrorMessage deriving (Show, Eq, Ord)
-type ErrorMessage = String
 numbered 8 [t| RaiseError |]
 instance Request RaiseError where
 	data Occurred RaiseError = OccRaiseError Error ErrorResult

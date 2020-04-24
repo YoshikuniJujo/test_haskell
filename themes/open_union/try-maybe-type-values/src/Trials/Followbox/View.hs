@@ -1,8 +1,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Followbox.View (
-	View, View1(..), view,
-	Color, white, blue, Position, FontName, FontSize, LineWidth ) where
+	View, View1(..), view, Color, white, blue, ) where
 
 import Control.Monad
 import Control.Monad.ST
@@ -13,6 +12,8 @@ import Codec.Picture (Image(imageWidth, imageHeight, imageData), PixelRGBA8)
 
 import qualified Data.Vector.Generic.Mutable as MV
 import qualified Data.Vector.Storable as V
+
+import Trials.Followbox.TypeSynonym
 
 import qualified Field as F
 
@@ -26,11 +27,6 @@ data View1
 data Color =
 	Color { colorRed :: Word8, colorGreen :: Word8, colorBlue :: Word8 }
 	deriving Show
-
-type Position = (Integer, Integer)
-type FontName = String
-type FontSize = Double
-type LineWidth = Integer
 
 view :: F.Field -> View -> IO ()
 view f v = do

@@ -17,10 +17,9 @@ import MonadicFrp.Run
 import Trials.Followbox.Event (SigF)
 import Trials.Followbox.Handle
 import Trials.Followbox.View
+import Trials.Followbox.TypeSynonym
 
 import Field
-
-type WindowTitle = String
 
 defaultBrowser :: Browser
 defaultBrowser = "firefox"

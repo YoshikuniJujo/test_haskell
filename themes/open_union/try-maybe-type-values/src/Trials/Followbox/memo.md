@@ -10,13 +10,17 @@ Main
   |    +- Trials.Followbox.Event
   |    |    +- Trials.Followbox.Random
   |    |    |    +- Trials.Followbox.ThreadId
+  |    |    +- Trials.Followbox.TypeSynonym
   |    +- Trials.Followbox.View
+  |         +- Trials.Followbox.TypeSynonym
   +- Trials.Followbox.Run
        +- Trials.Followbox.Handle
        |    +- Trials.Followbox.Event
        |    +- Trials.Followbox.Random
+       |    +- Trials.Followbox.TypeSynonym
        +- Trials.Followbox.Event
        +- Trials.Followbox.View
+       +- Trials.Followbox.TypeSynonym
 ```
 
 リファクタリング
@@ -31,6 +35,7 @@ Main
 * [x] Trials.Followbox.Random
 * [x] Trials.Followbox.Event
 * [x] Trials.Followbox.Handle
+* [x] Trials.Followbox.TypeSynonym
 * [ ] Trials.Followbox.View
 * [ ] Trials.Followbox
 * [ ] Trials.Followbox.Trials
