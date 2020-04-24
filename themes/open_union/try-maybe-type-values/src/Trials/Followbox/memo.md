@@ -36,25 +36,23 @@ Main
 * [x] Trials.Followbox.Event
 * [x] Trials.Followbox.Handle
 * [x] Trials.Followbox.TypeSynonym
-* [ ] Trials.Followbox.View
-* [ ] Trials.Followbox
-* [ ] Trials.Followbox.Trials
+* [x] Trials.Followbox.View
+* [x] Trials.Followbox
+* [x] Trials.Followbox.Run
 
 ### remove
 
-* [x] Trials.Followbox.Wrapper.Aeson
-* [x] Trials.Followbox.Wrapper.XGlyphInfo
-
-### move to sub directory
+### move and rename
 
 ### Body
 
-* [ ] Trials.Followbox
-	+ [ ] imports
-	+ [ ] body
+* [ ] Trials.Followbox.TypeSynonym
 * [ ] Trials.Followbox.ThreadId
 * [ ] Trials.Followbox.Random
 * [ ] Trials.Followbox.Event
-* [ ] Trials.Followbox.Run
-* [ ] Trials.Followbox.Handle
+* [ ] Trials.Followbox
+	+ [ ] imports
+	+ [ ] body
 * [ ] Trials.Followbox.View
+* [ ] Trials.Followbox.Handle
+* [ ] Trials.Followbox.Run

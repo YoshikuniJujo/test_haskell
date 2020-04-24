@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Followbox.Run (runFollowbox, WindowTitle, FollowboxState) where
+module Trials.Followbox.Run (runFollowbox) where
 
 import Control.Monad.State
 import Data.List
