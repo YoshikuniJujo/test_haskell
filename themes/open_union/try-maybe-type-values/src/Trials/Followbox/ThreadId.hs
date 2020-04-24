@@ -5,15 +5,16 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Followbox.ThreadId (
-	GetThreadId, Occurred(OccGetThreadId), handleGetThreadId, getThreadId
-	) where
+	GetThreadId, Occurred(..), handleGetThreadId, getThreadId ) where
 
-import Data.Type.Set
-import Data.UnionSet
+import Data.Type.Set (Singleton, numbered)
+import Data.UnionSet (singleton)
 
-import MonadicFrp
-import MonadicFrp.Handle
-import MonadicFrp.ThreadId
+import MonadicFrp (React, Request(..), await')
+import MonadicFrp.Handle (Handle')
+import MonadicFrp.ThreadId (ThreadId)
+
+---------------------------------------------------------------------------
 
 data GetThreadId = GetThreadIdReq deriving (Show, Eq, Ord)
 numbered 8 [t| GetThreadId |]
