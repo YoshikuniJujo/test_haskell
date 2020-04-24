@@ -46,7 +46,7 @@ Main
 
 ### Body
 
-* [ ] Trials.Followbox.TypeSynonym
+* [x] Trials.Followbox.TypeSynonym
 * [ ] Trials.Followbox.ThreadId
 * [ ] Trials.Followbox.Random
 * [ ] Trials.Followbox.Event

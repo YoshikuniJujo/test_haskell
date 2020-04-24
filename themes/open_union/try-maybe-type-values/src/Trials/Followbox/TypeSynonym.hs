@@ -6,23 +6,26 @@ module Trials.Followbox.TypeSynonym (
 	-- * GITHUB
 	GithubUserName, GithubToken,
 	-- * OTHERS
-	Uri, Browser, ErrorMessage
-	) where
+	Uri, Browser, ErrorMessage ) where
 
 import Data.ByteString as BS
 
-type Position = (Integer, Integer)
-type FontName = String
-type FontSize = Double
-type LineWidth = Integer
-
-type Uri = String
-
-type ErrorMessage = String
-
-type Browser = FilePath
+-- FIELD
 
 type WindowTitle = String
+type Position = (Integer, Integer)
+type LineWidth = Integer
+type FontName = String
+type FontSize = Double
+
+-- GITHUB
 
 type GithubUserName = BS.ByteString
 type GithubToken = BS.ByteString
+
+-- OTHERS
+
+type Uri = String
+type Browser = FilePath
+type ErrorMessage = String
+
