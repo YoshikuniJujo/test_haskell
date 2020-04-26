@@ -122,7 +122,7 @@ drawSemilog f cs = drawGraph f 0x0000ff 5
 drawWithModel :: IO Field
 drawWithModel = do
 	f <- openField "foo" [exposureMask]
-	drawCounts f $ mkModel (read "2020-01-02") (read "2020-04-24")
+	drawCounts f $ mkModel (read "2020-01-02") (read "2020-04-26")
 	drawCountsFromFile f "data.txt"
 	drawScale f 0
 	drawScale f 5000
@@ -139,7 +139,7 @@ drawWithModel = do
 drawSemilogWithModel :: IO Field
 drawSemilogWithModel = do
 	f <- openField "foo" [exposureMask]
-	drawSemilog f $ mkModel (read "2020-01-02") (read "2020-04-24")
+	drawSemilog f $ mkModel (read "2020-01-02") (read "2020-04-26")
 	drawSemilogFromFile f "data.txt"
 	drawSemilogScale f 1
 	drawSemilogScale f 10
@@ -156,7 +156,7 @@ drawSemilogWithModel = do
 drawWeeklyDiffSemilogWithModel :: IO Field
 drawWeeklyDiffSemilogWithModel = do
 	f <- openField "foo" [exposureMask]
-	drawWeeklyDiffSemilog f $ mkModel (read "2020-01-02") (read "2020-04-24")
+	drawWeeklyDiffSemilog f $ mkModel (read "2020-01-02") (read "2020-04-26")
 	drawWeeklyDiffSemilogFromFile f "data.txt"
 	drawSemilogScale f 1
 	drawSemilogScale f 10
@@ -173,7 +173,7 @@ drawWeeklyDiffSemilogWithModel = do
 drawWeeklyDiffWithModel :: IO Field
 drawWeeklyDiffWithModel = do
 	f <- openField "foo" [exposureMask]
-	drawWeeklyDiff f $ mkModel (read "2020-01-02") (read "2020-04-24")
+	drawWeeklyDiff f $ mkModel (read "2020-01-02") (read "2020-04-26")
 	drawWeeklyDiffFromFile f "data.txt"
 	drawScale' f 0
 	drawScale' f 2500
@@ -190,7 +190,7 @@ drawWeeklyDiffWithModel = do
 drawDiffWithModel :: IO Field
 drawDiffWithModel = do
 	f <- openField "foo" [exposureMask]
-	drawDiff f $ mkModel (read "2020-01-02") (read "2020-04-24")
+	drawDiff f $ mkModel (read "2020-01-02") (read "2020-04-27")
 	drawDiffFromFile f "data.txt"
 	drawScale'' f 0
 	drawScale'' f 500
@@ -208,7 +208,7 @@ drawDiffWithModel = do
 drawDeathDiff :: IO Field
 drawDeathDiff = do
 	f <- openField "foo" [exposureMask]
---	drawDeathDiff f $ mkDeathModel (read "2020-01-02") (read "2020-04-24")
+--	drawDeathDiff f $ mkDeathModel (read "2020-01-02") (read "2020-04-26")
 	drawDeathDiffFromFile f "data.txt"
 	drawScale''' f 0
 	drawScale''' f 10
