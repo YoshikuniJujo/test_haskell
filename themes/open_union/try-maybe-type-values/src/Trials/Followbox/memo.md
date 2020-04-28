@@ -49,11 +49,13 @@ Main
 * [x] Trials.Followbox.TypeSynonym
 * [x] Trials.Followbox.ThreadId
 * [ ] Trials.Followbox.Random
-	+ [ ] consider to use NotEmpty
+	+ [ ] imports
+	+ [ ] body
 * [ ] Trials.Followbox.Event
 * [ ] Trials.Followbox
 	+ [ ] imports
 	+ [ ] body
 * [ ] Trials.Followbox.View
 * [ ] Trials.Followbox.Handle
+	+ [ ] consider to use NotEmpty
 * [ ] Trials.Followbox.Run

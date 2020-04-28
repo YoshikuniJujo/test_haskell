@@ -13,18 +13,17 @@ module Trials.Followbox.Random (
 	getRandom, getRandomR
 	) where
 
-import Control.Monad.State
-import Data.Type.Set
-import Data.UnionSet hiding (merge)
-import Data.Bool
-import System.Random
+import Control.Monad.State (StateT, gets, modify)
+import Data.Type.Set (numbered, Set(Nil), Singleton, (:-))
+import Data.UnionSet (Mrgable(..), singleton, extract)
+import Data.Bool (bool)
+import System.Random (Random, StdGen, random, randomR)
 
-import MonadicFrp
-import MonadicFrp.Run
-import MonadicFrp.ThreadId
-import MonadicFrp.Handle
-
-import Trials.Followbox.ThreadId
+import MonadicFrp (Request(..), React, adjust, await)
+import MonadicFrp.Run ()
+import MonadicFrp.Handle (Handle, Handle', merge)
+import MonadicFrp.ThreadId (ThreadId)
+import Trials.Followbox.ThreadId (GetThreadId, getThreadId)
 
 ---------------------------------------------------------------------------
 
