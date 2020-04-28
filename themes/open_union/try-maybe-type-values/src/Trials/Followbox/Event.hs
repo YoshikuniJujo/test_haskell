@@ -40,22 +40,24 @@ module Trials.Followbox.Event (
 	raiseError, catchError
 	) where
 
-import Data.Type.Set
-import Data.UnionSet
-import Data.Bool
-import Data.Time hiding (getTimeZone)
-import Data.Aeson hiding (Result)
+import Data.Type.Set (numbered, Singleton, Set(Nil), (:-), (:+:))
+import Data.UnionSet (Mrgable(..))
+import Data.Bool (bool)
+import Data.Time (UTCTime, TimeZone)
+import Data.Aeson (Object)
 import Network.HTTP.Simple (Header)
-import Graphics.X11.Xrender
+import Graphics.X11.Xrender (XGlyphInfo)
 
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 
-import MonadicFrp
+import MonadicFrp (Request(..), Sig, React, await)
+import Trials.Followbox.Random (RandomEv)
+import Trials.Followbox.ThreadId (GetThreadId)
+import Trials.Followbox.TypeSynonym (
+	Position, Uri, FontName, FontSize, ErrorMessage )
 
-import Trials.Followbox.ThreadId
-import Trials.Followbox.Random
-import Trials.Followbox.TypeSynonym
+---------------------------------------------------------------------------
 
 data Move = MoveReq deriving (Show, Eq, Ord)
 numbered 8 [t| Move |]
