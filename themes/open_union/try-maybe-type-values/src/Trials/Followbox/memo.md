@@ -53,6 +53,7 @@ Main
 	+ [x] body
 * [ ] Trials.Followbox.Event
 	+ [x] imports
+	* [x] structure
 	+ [ ] body
 * [ ] Trials.Followbox
 	+ [ ] imports

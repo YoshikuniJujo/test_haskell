@@ -59,6 +59,12 @@ import Trials.Followbox.TypeSynonym (
 
 ---------------------------------------------------------------------------
 
+---------------------------------------------------------------------------
+-- MOUSE EVENT
+---------------------------------------------------------------------------
+
+-- MOVE
+
 data Move = MoveReq deriving (Show, Eq, Ord)
 numbered 8 [t| Move |]
 instance Request Move where
@@ -73,6 +79,8 @@ result :: a -> a -> Result -> a
 result f _ Failure = f
 result _ s Succeed = s
 
+-- LEFT CLICK
+
 data LeftClick = LeftClickReq deriving (Show, Eq, Ord)
 numbered 8 [t| LeftClick |]
 instance Request LeftClick where
@@ -81,15 +89,11 @@ instance Request LeftClick where
 leftClick :: React (Singleton LeftClick) ()
 leftClick = await LeftClickReq \OccLeftClick -> ()
 
-data HttpGet = HttpGetReq Uri deriving (Show, Eq, Ord)
-numbered 8 [t| HttpGet |]
-instance Request HttpGet where
-	data Occurred HttpGet = OccHttpGet Uri [Header] LBS.ByteString
-		deriving Show
+---------------------------------------------------------------------------
+-- STORE AND LOAD
+---------------------------------------------------------------------------
 
-httpGet :: Uri -> React (Singleton HttpGet) ([Header], LBS.ByteString)
-httpGet u = maybe (httpGet u) pure =<< await (HttpGetReq u)
-	\(OccHttpGet u' hs c) -> bool Nothing (Just (hs, c)) $ u == u'
+-- JSONS
 
 data StoreJsons = StoreJsons [Object] deriving Show
 numbered 8 [t| StoreJsons |]
@@ -109,6 +113,24 @@ instance Request LoadJsons where
 loadJsons :: React (Singleton LoadJsons) [Object]
 loadJsons = await LoadJsonsReq \(OccLoadJsons os) -> os
 
+---------------------------------------------------------------------------
+-- REQUEST DATA
+---------------------------------------------------------------------------
+
+-- HTTP GET
+
+data HttpGet = HttpGetReq Uri deriving (Show, Eq, Ord)
+numbered 8 [t| HttpGet |]
+instance Request HttpGet where
+	data Occurred HttpGet = OccHttpGet Uri [Header] LBS.ByteString
+		deriving Show
+
+httpGet :: Uri -> React (Singleton HttpGet) ([Header], LBS.ByteString)
+httpGet u = maybe (httpGet u) pure =<< await (HttpGetReq u)
+	\(OccHttpGet u' hs c) -> bool Nothing (Just (hs, c)) $ u == u'
+
+-- CALC TEXT EXTENTS
+
 data CalcTextExtents = CalcTextExtentsReq FontName FontSize T.Text
 	deriving (Show, Eq, Ord)
 numbered 8 [t| CalcTextExtents |]
@@ -123,6 +145,35 @@ calcTextExtents fn fs t = maybe (calcTextExtents fn fs t) pure
 		\(OccCalcTextExtents fn' fs' t' glp) ->
 			bool Nothing (Just glp)
 				$ fn == fn' && fs == fs' && t == t'
+
+-- GET TIME ZONE
+
+data GetTimeZone = GetTimeZone deriving (Show, Eq, Ord)
+numbered 8 [t| GetTimeZone |]
+instance Request GetTimeZone where
+	data Occurred GetTimeZone = OccGetTimeZone TimeZone deriving Show
+
+getTimeZone :: React (Singleton GetTimeZone) TimeZone
+getTimeZone = await GetTimeZone \(OccGetTimeZone tz) -> tz
+
+---------------------------------------------------------------------------
+-- ACTION
+---------------------------------------------------------------------------
+
+-- BROWSE
+
+data Browse = Browse Uri deriving (Show, Eq, Ord)
+numbered 8 [t| Browse |]
+instance Request Browse where data Occurred Browse = OccBrowse deriving Show
+
+browse :: Uri -> React (Singleton Browse) ()
+browse u = await (Browse u) \OccBrowse -> ()
+
+---------------------------------------------------------------------------
+-- SLEEP, QUIT AND ERROR
+---------------------------------------------------------------------------
+
+-- BEGIN SLEEP AND END SLEEP
 
 data BeginSleep = BeginSleep UTCTime | CheckBeginSleep deriving (Show, Eq, Ord)
 numbered 8 [t| BeginSleep |]
@@ -145,20 +196,7 @@ instance Request EndSleep where
 endSleep :: React (Singleton EndSleep) ()
 endSleep = await EndSleepReq \OccEndSleep -> ()
 
-data GetTimeZone = GetTimeZone deriving (Show, Eq, Ord)
-numbered 8 [t| GetTimeZone |]
-instance Request GetTimeZone where
-	data Occurred GetTimeZone = OccGetTimeZone TimeZone deriving Show
-
-getTimeZone :: React (Singleton GetTimeZone) TimeZone
-getTimeZone = await GetTimeZone \(OccGetTimeZone tz) -> tz
-
-data Browse = Browse Uri deriving (Show, Eq, Ord)
-numbered 8 [t| Browse |]
-instance Request Browse where data Occurred Browse = OccBrowse deriving Show
-
-browse :: Uri -> React (Singleton Browse) ()
-browse u = await (Browse u) \OccBrowse -> ()
+-- QUIT
 
 data Quit = QuitReq deriving (Show, Eq, Ord)
 numbered 8 [t| Quit |]
@@ -166,6 +204,8 @@ instance Request Quit where data Occurred Quit = OccQuit
 
 checkQuit :: React (Singleton Quit) ()
 checkQuit = await QuitReq $ const ()
+
+-- ERROR
 
 data Error
 	= NotJson | EmptyJson | NoLoginName | NoAvatarAddress | NoAvatar | NoHtmlUrl | CatchError
@@ -184,6 +224,10 @@ raiseError e em = bool (raiseError e em) (pure ()) =<< await (RaiseError e em)
 
 catchError :: React (Singleton RaiseError) ErrorResult
 catchError = await (RaiseError CatchError "") \(OccRaiseError _ er) -> er
+
+---------------------------------------------------------------------------
+-- GENERAL
+---------------------------------------------------------------------------
 
 type SigF = Sig FollowboxEv
 type ReactF = React FollowboxEv
