@@ -4,7 +4,7 @@
 
 module Trials.Followbox (followbox) where
 
-import Prelude hiding (until, repeat, (++))
+import Prelude hiding (until, repeat)
 
 import Control.Monad (void, forever, replicateM)
 import Data.Type.Flip ((<$%>), (<*%>), ftraverse)
@@ -25,16 +25,14 @@ import qualified Codec.Picture.Extra as JP
 
 import MonadicFrp (
 	React, adjust, first, emit, waitFor, find, repeat, until, indexBy )
-import Trials.Followbox.Random (getRandomR)
 import Trials.Followbox.Event (
-	SigF, ReactF, move, leftClick,
-	storeJsons, loadJsons,
-	httpGet, calcTextExtents,
-	GetTimeZone, getTimeZone, browse,
+	SigF, ReactF, move, leftClick, storeJsons, loadJsons,
+	httpGet, calcTextExtents, GetTimeZone, getTimeZone, browse,
 	BeginSleep, beginSleep, checkBeginSleep, endSleep, checkQuit,
 	Error(..), ErrorResult(..), raiseError, catchError )
 import Trials.Followbox.View (View, View1(..), Color, white, blue)
-import Trials.Followbox.TypeSynonym
+import Trials.Followbox.Random (getRandomR)
+import Trials.Followbox.TypeSynonym (Position, Uri)
 
 ---------------------------------------------------------------------------
 
