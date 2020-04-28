@@ -48,9 +48,9 @@ Main
 
 * [x] Trials.Followbox.TypeSynonym
 * [x] Trials.Followbox.ThreadId
-* [ ] Trials.Followbox.Random
-	+ [ ] imports
-	+ [ ] body
+* [x] Trials.Followbox.Random
+	+ [x] imports
+	+ [x] body
 * [ ] Trials.Followbox.Event
 * [ ] Trials.Followbox
 	+ [ ] imports
