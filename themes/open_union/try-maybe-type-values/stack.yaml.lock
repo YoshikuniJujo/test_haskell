@@ -28,10 +28,10 @@ packages:
     pantry-tree:
       size: 514
       sha256: 99ca62af8ffd0d68ec8e00467ab183e23f66b4e2c428ec7627af7a732f3f06d8
-    commit: a0fa8260e2c68cdf00d6890e1f8c0efaa4f71f05
+    commit: 6d5f547977522a66d48402b208a868524e7855fd
   original:
     git: https://github.com/YoshikuniJujo/type-flip
-    commit: a0fa8260e2c68cdf00d6890e1f8c0efaa4f71f05
+    commit: 6d5f547977522a66d48402b208a868524e7855fd
 - completed:
     cabal-file:
       size: 1330

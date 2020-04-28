@@ -119,6 +119,8 @@ ibreak p is@(h :| t)
 	| otherwise = h :| break p t
 ibreak _ is@(End _) = pure is
 
+infixr 7 `at`
+
 at :: Firstable es es' =>
 	Sig es a r -> React es' r' -> React (es :+: es') (Either (a, r') (Maybe r))
 l `at` a = do
@@ -128,6 +130,8 @@ l `at` a = do
 		(Sig (Done (End l'')), _) -> Right $ Just l''
 		(Sig (Await _ _), Done _) -> Right Nothing
 		_ -> error "never occur"
+
+infixl 7 `until`
 
 until :: Firstable es es' => Sig es a r -> React es' r' -> Sig (es :+: es') a (Either (a, r') (Maybe r))
 l `until` r = do
@@ -193,6 +197,8 @@ a `pairs` End b = pure (a, pure b)
 	cont (tl', tr') = lup hl tl' `pairs` lup hr tr'
 	lup _ (Done l) = l
 	lup h t = h :| Sig t
+
+infixl 7 `indexBy`
 
 indexBy ::
 	Firstable es es' => Sig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either (a, r') (Maybe r))

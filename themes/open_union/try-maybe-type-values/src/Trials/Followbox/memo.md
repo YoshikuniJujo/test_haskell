@@ -57,10 +57,10 @@ Main
 	+ [x] body
 * [ ] Trials.Followbox
 	+ [x] imports
-	+ [ ] structure
-		- [x] 1st
-		- [ ] 2nd
+	+ [x] structure
 	+ [ ] body
+		- [x] until user1
+		- [ ] rest
 * [ ] Trials.Followbox.View
 * [ ] Trials.Followbox.Handle
 	+ [ ] consider to use NotEmpty

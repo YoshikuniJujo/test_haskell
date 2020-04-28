@@ -7,9 +7,8 @@ module Trials.Followbox (followbox) where
 
 import Prelude hiding (until, repeat)
 
-import Control.Monad (void, forever, replicateM)
+import Control.Monad (forever, replicateM)
 import Data.Type.Flip ((<$%>), (<*%>), ftraverse)
-import Data.Type.Set (Set(Nil), (:-))
 import Data.Or (Or(..))
 import Data.Time (utcToLocalTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
@@ -23,12 +22,11 @@ import qualified Data.Text as T
 import qualified Codec.Picture as JP
 import qualified Codec.Picture.Extra as JP
 
-import MonadicFrp (
-	React, adjust, first, emit, waitFor, find, repeat, until, indexBy )
+import MonadicFrp (adjust, first, emit, waitFor, find, repeat, until, indexBy)
 import Trials.Followbox.Event (
-	SigF, ReactF, move, leftClick, storeJsons, loadJsons,
-	httpGet, calcTextExtents, GetTimeZone, getTimeZone, browse,
-	BeginSleep, beginSleep, checkBeginSleep, endSleep, checkQuit,
+	SigF, ReactF, move, leftClick, clearJsons, storeJsons, loadJsons,
+	httpGet, calcTextExtents, getTimeZone, browse,
+	beginSleep, checkBeginSleep, endSleep, checkQuit,
 	Error(..), ErrorResult(..), raiseError, catchError )
 import Trials.Followbox.View (View, View1(..), white, blue)
 import Trials.Followbox.Random (getRandomR)
@@ -37,58 +35,51 @@ import Trials.Followbox.TypeSynonym (Position, Avatar, ErrorMessage)
 ---------------------------------------------------------------------------
 
 followbox :: SigF View ()
-followbox = () <$ usersAndResetTime 3 `until` checkQuit `until` checkTerminate
-	where
-	checkTerminate :: ReactF ()
-	checkTerminate = adjust catchError >>=
+followbox = () <$ fieldWithResetTime 3 `until` checkQuit `until` checkTerminate
+	where checkTerminate = catchError >>=
 		\case Continue -> checkTerminate; Terminate -> pure ()
 
-usersAndResetTime :: Integer -> SigF View ()
-usersAndResetTime n = (<>) <$%> users n <*%> resetTime
+fieldWithResetTime :: Integer -> SigF View ()
+fieldWithResetTime n = (<>) <$%> field n <*%> resetTime
 
 resetTime :: SigF View ()
-resetTime = forever do
-	emit [] >> (emit =<< waitFor (adjust makeResetTime))
+resetTime = forever $ (emit [] >>) do
+	emit =<< waitFor do
+		(t, tz) <- (,) <$> adjust checkBeginSleep <*> adjust getTimeZone
+		pure [Text white "sans" 30 (100, 500) . T.pack
+			$ "Wait until " <> show (utcToLocalTime tz t)]
 	waitFor $ adjust endSleep
-	where
-	makeResetTime :: React (BeginSleep :- GetTimeZone :- 'Nil) View
-	makeResetTime = do
-		(t, tz) <- (,) <$> adjust checkBeginSleep  <*> adjust getTimeZone
-		pure [Text white "sans" 30 (100, 500)
-			$ "Wait until " <> T.pack (show $ utcToLocalTime tz t)]
 
-users :: Integer -> SigF View ()
-users n = do
-	(vn, rn) <- waitFor next
-	(vr, rr) <- waitFor refresh
-	emit $ title : vn <> vr
-	vmlns (vn, rn) (vr, rr)
-	where
-	vmlns nxt@(vn, rn) rfs@(vr, rr) = do
-		lns <- fromIntegral n `replicateM` waitFor getUser
-		r <- ((title :) . (vn <>) . (vr <>) . concat <$%> ftraverse (uncurry viewFields) ([0 .. n - 1] `zip` lns))
-			`until` (clickOnRect rn `first` clickOnRect rr)
-		case r of
+field :: Integer -> SigF View ()
+field n = do
+	(vn, rn) <- waitFor $ linkText 30 (500, 80) "Next"
+	(vr, rr) <- waitFor $ linkText 30 (600, 80) "Refresh"
+	let	frame = title : vn <> vr
+		clear = emit frame
+	clear >> forever do
+		us <- fromIntegral n `replicateM` waitFor getUser
+		(frame <>) <$%> users us `until` rn `first` rr >>= \case
 			Left (_, L _) -> pure ()
 			Left (_, LR _ _) -> pure ()
-			Left (_, R _) -> do
-				emit $ title : vn <> vr
-				waitFor . adjust $ storeJsons []
+			Left (_, R _) -> clear >> waitFor (adjust clearJsons)
 			Right _ -> error "never occur"
-		vmlns nxt rfs
-	title = Text white "sans" 36 (50, 80) "Who to follow"
-	next = linkText 30 (500, 80) "Next"
-	refresh = linkText 30 (600, 80) "Refresh"
+	where title = Text white "sans" 36 (50, 80) "Who to follow"
 
-viewFields :: Integer -> (Avatar, T.Text, T.Text) -> SigF View ()
-viewFields n (a, ln, u) = do
-	(v, r, r') <- waitFor $ viewField1 n ln
+users :: [(Avatar, T.Text, T.Text)] -> SigF View ()
+users us = concat <$%> uncurry user1 `ftraverse` zip [0 ..] us
+
+user1 :: Integer -> (Avatar, T.Text, T.Text) -> SigF View ()
+user1 n (a, nm, u) = do
+	(v, l, x) <- waitFor $ name n nm
 	emit $ Image (100, 120 + 120 * n) a : v
-	void $ waitFor (forever $ clickOnRect r' >> adjust (browse $ T.unpack u)) `until` clickOnRect r
-	viewFields n =<< waitFor getUser
+	() <$ waitFor (forever $ l >> adjust (browse u)) `until` x
+	user1 n =<< waitFor getUser
 
-viewField1 :: Integer -> T.Text -> ReactF (View, Rect, Rect)
-viewField1 n t = do
+data Rect = Rect { upperLeft :: Position, bottomRight :: Position }
+	deriving Show
+
+name :: Integer -> T.Text -> ReactF (View, ReactF (), ReactF ())
+name n t = do
 	XGlyphInfo {
 		xglyphinfo_width = w_,
 		xglyphinfo_height = h_,
@@ -100,25 +91,15 @@ viewField1 n t = do
 	where
 	createLoginName clr fs p (x', y') r' = (
 		Text clr "sans" fs p t : createX 4 (round fs `div` 2) (x' + round fs `div` 2, y' + round fs * 3 `div` 8),
-		Rect	(x' + round fs `div` 2, y' + round fs * 3 `div` 8)
-			(x' + round fs, y' + round fs * 7 `div` 8),
-		r' )
+		clickOnRect r',
+		clickOnRect $ Rect	(x' + round fs `div` 2, y' + round fs * 3 `div` 8)
+			(x' + round fs, y' + round fs * 7 `div` 8) )
 		where
 		createX lw sz (x, y) = [
 			Line white lw (x, y) (x + sz, y + sz),
 			Line white lw (x + sz, y) (x, y + sz) ]
 
-data Rect = Rect { upperLeft :: Position, bottomRight :: Position }
-	deriving Show
-
-clickOnRect :: Rect -> ReactF ()
-clickOnRect (Rect (l, t) (r, b)) = () <$ find isInside (mousePosition `indexBy` repeat leftClick)
-	where
-	mousePosition :: SigF Position ()
-	mousePosition = repeat $ adjust move
-	isInside (x, y) = l <= x && x <= r && t <= y && y <= b
-
-linkText :: Double -> Position -> T.Text -> ReactF (View, Rect)
+linkText :: Double -> Position -> T.Text -> ReactF (View, ReactF ())
 linkText fs p@(x0, y0) t = do
 	XGlyphInfo {
 		xglyphinfo_width = w_,
@@ -130,8 +111,15 @@ linkText fs p@(x0, y0) t = do
 			Line blue 4
 				(x0 - x, y0 + 6)
 				(x0 + w - x, y0 + 6) ],
-		Rect	(x0 - x, y0 - y)
+		clickOnRect $ Rect	(x0 - x, y0 - y)
 			(x0 - x + w, y0 - y + h) )
+
+clickOnRect :: Rect -> ReactF ()
+clickOnRect (Rect (l, t) (r, b)) = () <$ find isInside (mousePosition `indexBy` repeat leftClick)
+	where
+	mousePosition :: SigF Position ()
+	mousePosition = repeat $ adjust move
+	isInside (x, y) = l <= x && x <= r && t <= y && y <= b
 
 getUser :: ReactF (Avatar, T.Text, T.Text)
 getUser = makeUser <$> getObject1 >>= \case
@@ -154,7 +142,7 @@ getUser = makeUser <$> getObject1 >>= \case
 
 getAvatar :: T.Text -> ReactF (Either (Error, ErrorMessage) Avatar)
 getAvatar url = do
-	ea <- (scale 80 80 <$>) . bsToImage . snd <$> adjust (httpGet $ T.unpack url)
+	ea <- (scale 80 80 <$>) . bsToImage . snd <$> adjust (httpGet url)
 	case ea of
 		Left em -> pure $ Left (NoAvatar, em)
 		Right v -> pure $ Right v
@@ -188,4 +176,4 @@ getObjects = do
 	lookupRateLimitReset =
 		(posixSecondsToUTCTime . fromInteger . read . BSC.unpack <$>)
 			. lookup "X-RateLimit-Reset"
-	apiUsers = ("https://api.github.com/users?since=" <>) . show @Int
+	apiUsers = ("https://api.github.com/users?since=" <>) . T.pack . show @Int

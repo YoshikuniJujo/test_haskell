@@ -16,7 +16,7 @@ module Trials.Followbox.Event (
 
 	-- * STORE AND LOAD
 	-- ** Jsons
-	StoreJsons(..), LoadJsons, storeJsons, loadJsons,
+	StoreJsons(..), LoadJsons, clearJsons, storeJsons, loadJsons,
 
 	-- * REQUEST DATA
 	-- ** HttpGet
@@ -102,6 +102,9 @@ instance Request StoreJsons where
 storeJsons :: [Object] -> React (Singleton StoreJsons) ()
 storeJsons os = result (storeJsons os) (pure ()) =<< await (StoreJsons os)
 	\(OccStoreJsons os') -> bool Failure Succeed $ os == os'
+
+clearJsons :: React (Singleton StoreJsons) ()
+clearJsons = storeJsons []
 
 data LoadJsons = LoadJsonsReq deriving (Show, Eq, Ord)
 numbered 8 [t| LoadJsons |]

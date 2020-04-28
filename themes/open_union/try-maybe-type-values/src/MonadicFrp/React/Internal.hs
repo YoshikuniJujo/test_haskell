@@ -87,6 +87,8 @@ l `first_` r = case (l, r) of
 	ud1 = update @es @es'
 	ud2 = update @es' @es
 
+infixr 8 `first`
+
 first :: Firstable es es' => React es a -> React es' b -> React (es :+: es') (Or a b)
 l `first` r = do
 	(l', r') <- l `first_` r

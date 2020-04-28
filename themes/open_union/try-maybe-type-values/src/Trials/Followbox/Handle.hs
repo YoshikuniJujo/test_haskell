@@ -75,7 +75,7 @@ putSleepUntil slp = modify \s -> s { fsSleepUntil = slp }
 
 handleHttpGet :: Maybe (BS.ByteString, BS.ByteString) -> EvReqs (Singleton HttpGet) -> IO (EvOccs (Singleton HttpGet))
 handleHttpGet mba reqs = do
-	r <- hg . setUserAgent "Yoshio" $ fromString u
+	r <- hg . setUserAgent "Yoshio" . fromString $ T.unpack u
 	print $ HTTP.getResponseHeader "X-RateLimit-Remaining" r
 	pure . singleton $ OccHttpGet u (HTTP.getResponseHeaders r) (HTTP.getResponseBody r)
 	where
@@ -196,7 +196,7 @@ handleGetTimeZone _reqs = do
 	pure . singleton $ OccGetTimeZone tz
 
 handleBrowse :: FilePath -> Handle IO (Singleton Browse)
-handleBrowse brws reqs = spawnProcess brws [u] >> pure (singleton OccBrowse)
+handleBrowse brws reqs = spawnProcess brws [T.unpack u] >> pure (singleton OccBrowse)
 	where Browse u = extract reqs
 
 httpBasicAuth :: BS.ByteString -> BS.ByteString -> Request -> IO (Response LBS.ByteString)
