@@ -51,10 +51,10 @@ Main
 * [x] Trials.Followbox.Random
 	+ [x] imports
 	+ [x] body
-* [ ] Trials.Followbox.Event
+* [x] Trials.Followbox.Event
 	+ [x] imports
 	* [x] structure
-	+ [ ] body
+	+ [x] body
 * [ ] Trials.Followbox
 	+ [ ] imports
 	+ [ ] body

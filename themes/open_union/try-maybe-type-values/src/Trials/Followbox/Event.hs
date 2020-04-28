@@ -59,6 +59,11 @@ import Trials.Followbox.TypeSynonym (
 
 ---------------------------------------------------------------------------
 
+data Result = Failure | Succeed deriving Show
+
+result :: a -> a -> Result -> a
+result f s = \case Failure -> f; Succeed -> s
+
 ---------------------------------------------------------------------------
 -- MOUSE EVENT
 ---------------------------------------------------------------------------
@@ -67,17 +72,10 @@ import Trials.Followbox.TypeSynonym (
 
 data Move = MoveReq deriving (Show, Eq, Ord)
 numbered 8 [t| Move |]
-instance Request Move where
-	data Occurred Move = OccMove Position deriving Show
+instance Request Move where data Occurred Move = OccMove Position deriving Show
 
 move :: React (Singleton Move) Position
 move = await MoveReq \(OccMove p) -> p
-
-data Result = Failure | Succeed deriving Show
-
-result :: a -> a -> Result -> a
-result f _ Failure = f
-result _ s Succeed = s
 
 -- LEFT CLICK
 
@@ -107,8 +105,7 @@ storeJsons os = result (storeJsons os) (pure ()) =<< await (StoreJsons os)
 
 data LoadJsons = LoadJsonsReq deriving (Show, Eq, Ord)
 numbered 8 [t| LoadJsons |]
-instance Request LoadJsons where
-	data Occurred LoadJsons = OccLoadJsons [Object]
+instance Request LoadJsons where data Occurred LoadJsons = OccLoadJsons [Object]
 
 loadJsons :: React (Singleton LoadJsons) [Object]
 loadJsons = await LoadJsonsReq \(OccLoadJsons os) -> os
@@ -136,7 +133,7 @@ data CalcTextExtents = CalcTextExtentsReq FontName FontSize T.Text
 numbered 8 [t| CalcTextExtents |]
 instance Request CalcTextExtents where
 	data Occurred CalcTextExtents =
-		OccCalcTextExtents String Double T.Text XGlyphInfo
+		OccCalcTextExtents FontName FontSize T.Text XGlyphInfo
 
 calcTextExtents :: FontName -> FontSize -> T.Text ->
 	React (Singleton CalcTextExtents) XGlyphInfo
@@ -182,8 +179,7 @@ instance Request BeginSleep where
 
 beginSleep :: UTCTime -> React (Singleton BeginSleep) ()
 beginSleep t = result (beginSleep t) (pure ()) =<< await (BeginSleep t) \case
-	OccBeginSleep t' | t == t' -> Succeed
-	_ -> Failure
+	OccBeginSleep t' | t == t' -> Succeed; _ -> Failure
 
 checkBeginSleep :: React (Singleton BeginSleep) UTCTime
 checkBeginSleep = await CheckBeginSleep \case OccBeginSleep t -> t
@@ -208,8 +204,8 @@ checkQuit = await QuitReq $ const ()
 -- ERROR
 
 data Error
-	= NotJson | EmptyJson | NoLoginName | NoAvatarAddress | NoAvatar | NoHtmlUrl | CatchError
-	deriving (Show, Eq, Ord)
+	= NotJson | EmptyJson | NoLoginName | NoAvatarAddress | NoAvatar
+	| NoHtmlUrl | CatchError deriving (Show, Eq, Ord)
 
 data ErrorResult = Continue | Terminate deriving Show
 
@@ -232,10 +228,10 @@ catchError = await (RaiseError CatchError "") \(OccRaiseError _ er) -> er
 type SigF = Sig FollowboxEv
 type ReactF = React FollowboxEv
 
+type FollowboxEv = GetThreadId :- RandomEv :+: FollowboxEvGen
+
 type FollowboxEvGen =
 	Move :- LeftClick :-
 	StoreJsons :- LoadJsons :-
 	HttpGet :- CalcTextExtents :- GetTimeZone :- Browse :-
 	BeginSleep :- EndSleep :- Quit :- RaiseError :- 'Nil
-
-type FollowboxEv = GetThreadId :- FollowboxEvGen :+: RandomEv
