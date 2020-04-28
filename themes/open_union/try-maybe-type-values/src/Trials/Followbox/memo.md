@@ -58,6 +58,8 @@ Main
 * [ ] Trials.Followbox
 	+ [x] imports
 	+ [ ] structure
+		- [x] 1st
+		- [ ] 2nd
 	+ [ ] body
 * [ ] Trials.Followbox.View
 * [ ] Trials.Followbox.Handle

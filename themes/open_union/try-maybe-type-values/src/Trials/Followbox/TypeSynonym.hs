@@ -6,9 +6,10 @@ module Trials.Followbox.TypeSynonym (
 	-- * GITHUB
 	GithubUserName, GithubToken,
 	-- * OTHERS
-	Uri, Browser, ErrorMessage ) where
+	Uri, Avatar, Browser, ErrorMessage ) where
 
 import Data.ByteString as BS
+import qualified Codec.Picture as JP
 
 -- FIELD
 
@@ -26,6 +27,6 @@ type GithubToken = BS.ByteString
 -- OTHERS
 
 type Uri = String
+type Avatar = JP.Image JP.PixelRGBA8
 type Browser = FilePath
 type ErrorMessage = String
-
