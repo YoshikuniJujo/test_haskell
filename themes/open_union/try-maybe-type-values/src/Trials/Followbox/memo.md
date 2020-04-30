@@ -60,7 +60,9 @@ Main
 	+ [x] structure
 	+ [ ] body
 		- [x] until user1
-		- [ ] rest
+		- [x] rest
+		- [ ] add no header errors
+		- [ ] 2nd
 * [ ] Trials.Followbox.View
 * [ ] Trials.Followbox.Handle
 	+ [ ] consider to use NotEmpty
