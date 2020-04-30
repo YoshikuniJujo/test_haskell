@@ -28,9 +28,9 @@ import Trials.Followbox.Event (
 	httpGet, calcTextExtents, getTimeZone, browse,
 	beginSleep, checkBeginSleep, endSleep, checkQuit,
 	Error(..), ErrorResult(..), raiseError, catchError )
-import Trials.Followbox.View (View, View1(..), white, blue)
+import Trials.Followbox.View (View, View1(..), Color, white, blue)
 import Trials.Followbox.Random (getRandomR)
-import Trials.Followbox.TypeSynonym (Position, Avatar, ErrorMessage)
+import Trials.Followbox.TypeSynonym (Position, Avatar, ErrorMessage, FontSize, LineWidth)
 
 ---------------------------------------------------------------------------
 
@@ -70,34 +70,35 @@ users us = concat <$%> uncurry user1 `ftraverse` zip [0 ..] us
 
 user1 :: Integer -> (Avatar, T.Text, T.Text) -> SigF View ()
 user1 n (a, nm, u) = do
-	(v, l, x) <- waitFor $ name n nm
-	emit $ Image (100, 120 + 120 * n) a : v
+	((v, l), (v', x)) <- waitFor $ name n nm
+	emit $ Image (100, 120 + 120 * n) a : (v <> v')
 	() <$ waitFor (forever $ l >> adjust (browse u)) `until` x
 	user1 n =<< waitFor getUser
 
 data Rect = Rect { upperLeft :: Position, bottomRight :: Position }
 	deriving Show
 
-name :: Integer -> T.Text -> ReactF (View, ReactF (), ReactF ())
+name :: Integer -> T.Text -> ReactF ((View, ReactF ()), (View, ReactF ()))
 name n t = do
-	XGlyphInfo {
-		xglyphinfo_width = w_,
-		xglyphinfo_height = h_,
-		xglyphinfo_x = x_,
-		xglyphinfo_y = y_ } <- adjust $ calcTextExtents "sans" 36 t
+	XGlyphInfo {	xglyphinfo_width = w_, xglyphinfo_height = h_,
+			xglyphinfo_x = x_, xglyphinfo_y = y_ } <-
+		adjust $ calcTextExtents "sans" 36 t
 	let	[w, h, x, y] = fromIntegral <$> [w_, h_, x_, y_]
-	pure $ createLoginName blue 36 (210, 180 + n * 120) (210 - x + w, 180 + n * 120 - y)
+	pure $ createLoginName blue 36 (210, 180 + n * 120) (210 - x + w, 180 + n * 120 - y) t
 		(Rect (210 - x, 180 + n * 120 - y) (210 - x + w, 180 + n * 120 - y + h))
-	where
-	createLoginName clr fs p (x', y') r' = (
-		Text clr "sans" fs p t : createX 4 (round fs `div` 2) (x' + round fs `div` 2, y' + round fs * 3 `div` 8),
-		clickOnRect r',
-		clickOnRect $ Rect	(x' + round fs `div` 2, y' + round fs * 3 `div` 8)
-			(x' + round fs, y' + round fs * 7 `div` 8) )
-		where
-		createX lw sz (x, y) = [
-			Line white lw (x, y) (x + sz, y + sz),
-			Line white lw (x + sz, y) (x, y + sz) ]
+
+
+createLoginName :: Color -> FontSize -> Position -> (Integer, Integer) -> T.Text -> Rect -> ((View, ReactF ()), (View, ReactF ()))
+createLoginName clr fs p (x', y') t r' = (
+		([Text clr "sans" fs p t], clickOnRect r'),
+		createX 4 (round fs `div` 2) (x' + round fs `div` 2, y' + round fs * 3 `div` 8) )
+
+
+createX :: LineWidth -> Integer -> (Integer, Integer) -> (View, ReactF ())
+createX lw sz (x, y) = (
+	[	Line white lw (x, y) (x + sz, y + sz),
+		Line white lw (x + sz, y) (x, y + sz) ],
+	clickOnRect $ Rect (x, y) (x + sz, y + sz) )
 
 linkText :: Double -> Position -> T.Text -> ReactF (View, ReactF ())
 linkText fs p@(x0, y0) t = do
