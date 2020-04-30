@@ -61,7 +61,7 @@ Main
 	+ [ ] body
 		- [x] until user1
 		- [x] rest
-		- [ ] add no header errors
+		- [x] add no header errors
 		- [ ] 2nd
 * [ ] Trials.Followbox.View
 * [ ] Trials.Followbox.Handle

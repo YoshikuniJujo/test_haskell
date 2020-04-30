@@ -96,6 +96,12 @@ handleLoadJsons _reqs = singleton . OccLoadJsons <$> getObjects
 
 handleRaiseError :: EvReqs (Singleton RaiseError) -> IO (Maybe (EvOccs (Singleton RaiseError)))
 handleRaiseError reqs = case e of
+	NoRateLimitRemaining -> do
+		putStrLn $ "ERROR: " <> em
+		pure . Just . singleton $ OccRaiseError e Terminate
+	NoRateLimitReset -> do
+		putStrLn $ "ERROR: " <> em
+		pure . Just . singleton $ OccRaiseError e Terminate
 	NotJson -> do
 		putStrLn $ "ERROR: " <> em
 		pure . Just . singleton $ OccRaiseError e Terminate

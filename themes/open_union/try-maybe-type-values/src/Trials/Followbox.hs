@@ -159,8 +159,14 @@ getObjects = do
 		(Just rmn, _) | rmn > (0 :: Int) -> pure $ eitherDecode b
 		(Just _, Just t) ->
 			adjust (beginSleep t) >> adjust endSleep >> getObjects
-		(Just _, Nothing) -> error "No X-RateLimit-Reset"
-		(Nothing, _) -> error "No X-RateLimit-Remaining header"
+		(Just _, Nothing) -> do
+			adjust $ raiseError NoRateLimitReset
+				"No X-RateLimit-Reset header"
+			getObjects
+		(Nothing, _) -> do
+			adjust $ raiseError NoRateLimitRemaining
+				"No X-RateLimit-Remaining header"
+			getObjects
 	where
 	lookupRateLimitRemaining =
 		(read . BSC.unpack <$>) . lookup "X-RateLimit-Remaining"
