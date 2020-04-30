@@ -15,14 +15,14 @@ import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import Data.Aeson (Object, Value(..), eitherDecode)
 import Text.Read (readMaybe)
 import Graphics.X11.Xrender (XGlyphInfo(..))
+import Codec.Picture (convertRGBA8, decodeImage)
+import Codec.Picture.Extra (scaleBilinear)
 
 import qualified Data.HashMap.Strict as HM
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
-import Codec.Picture hiding (Image)
-import Codec.Picture.Extra
 
 import MonadicFrp (adjust, first, emit, waitFor, find, repeat, until, indexBy)
 import Trials.Followbox.Event (
@@ -30,11 +30,10 @@ import Trials.Followbox.Event (
 	httpGet, calcTextExtents, getTimeZone, browse,
 	beginSleep, checkBeginSleep, endSleep, checkQuit,
 	Error(..), ErrorResult(..), raiseError, catchError )
--- import Trials.Followbox.View (View, View1(..), Color, white, blue)
 import Trials.Followbox.View (View, View1(..), white, blue)
 import Trials.Followbox.Random (getRandomR)
--- import Trials.Followbox.TypeSynonym (Position, Avatar, ErrorMessage, FontName, FontSize, LineWidth)
-import Trials.Followbox.TypeSynonym (Position, Avatar, ErrorMessage, FontName, FontSize)
+import Trials.Followbox.TypeSynonym (
+	Position, Avatar, FontName, FontSize, ErrorMessage )
 
 ---------------------------------------------------------------------------
 
