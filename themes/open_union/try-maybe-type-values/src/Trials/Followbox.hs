@@ -10,12 +10,14 @@ import Prelude hiding (until, repeat)
 import Control.Monad (forever, replicateM)
 import Data.Type.Flip ((<$%>), (<*%>), ftraverse)
 import Data.Or (Or(..))
-import Data.Time (utcToLocalTime)
+import Data.Time (UTCTime, utcToLocalTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import Data.Aeson (Object, Value(..), eitherDecode)
+import Text.Read (readMaybe)
 import Graphics.X11.Xrender (XGlyphInfo(..))
 
 import qualified Data.HashMap.Strict as HM
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
@@ -154,23 +156,22 @@ getObject1 = adjust loadJsons >>= \case
 getObjects :: ReactF (Either String [Object])
 getObjects = do
 	n <- adjust $ getRandomR (0, 2 ^ (27 :: Int))
-	(h, b) <- adjust . httpGet $ apiUsers n
-	case (lookupRateLimitRemaining h, lookupRateLimitReset h) of
+	(h, b) <- adjust . httpGet $ api n
+	case (rlRmnng h, rlRst h) of
 		(Just rmn, _) | rmn > (0 :: Int) -> pure $ eitherDecode b
 		(Just _, Just t) ->
 			adjust (beginSleep t) >> adjust endSleep >> getObjects
-		(Just _, Nothing) -> do
-			adjust $ raiseError NoRateLimitReset
-				"No X-RateLimit-Reset header"
-			getObjects
-		(Nothing, _) -> do
-			adjust $ raiseError NoRateLimitRemaining
-				"No X-RateLimit-Remaining header"
-			getObjects
+		(Just _, Nothing) ->
+			adjust (uncurry raiseError rlRstErr) >> getObjects
+		(Nothing, _) ->
+			adjust (uncurry raiseError rlRmnngErr) >> getObjects
 	where
-	lookupRateLimitRemaining =
-		(read . BSC.unpack <$>) . lookup "X-RateLimit-Remaining"
-	lookupRateLimitReset =
-		(posixSecondsToUTCTime . fromInteger . read . BSC.unpack <$>)
-			. lookup "X-RateLimit-Reset"
-	apiUsers = ("https://api.github.com/users?since=" <>) . T.pack . show @Int
+	api = ("https://api.github.com/users?since=" <>) . T.pack . show @Int
+	rlRmnng = (read . BSC.unpack <$>) . lookup "X-RateLimit-Remaining"
+	rlRst = (posixSeconds =<<) . lookup "X-RateLimit-Reset"
+	rlRmnngErr = (NoRateLimitRemaining, "No X-RateLimit-Remaining header")
+	rlRstErr = (NoRateLimitReset, "No X-RateLimit-Reset header")
+
+posixSeconds :: BS.ByteString -> Maybe UTCTime
+posixSeconds =
+	(posixSecondsToUTCTime . fromInteger <$>) . readMaybe . BSC.unpack
