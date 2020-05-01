@@ -57,18 +57,18 @@ Main
 	* [x] structure
 	+ [x] body
 * [x] Trials.Followbox.Clickable
-* [ ] Trials.Followbox
+* [x] Trials.Followbox
 	+ [x] imports
 		- [x] 1st
 		- [x] snd
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] until user1
 		- [x] rest
 		- [x] add no header errors
 		- [x] replace magic number with symbolic constant
 		- [x] 2nd
-		- [ ] 3rd
+		- [x] 3rd
 * [ ] Trials.Followbox.View
 * [ ] Trials.Followbox.Handle
 	+ [ ] consider to use NotEmpty

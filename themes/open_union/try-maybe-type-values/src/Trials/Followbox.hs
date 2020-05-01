@@ -23,7 +23,9 @@ import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 
 import MonadicFrp (adjust, first, emit, waitFor, until)
-import Trials.Followbox.Clickable
+import Trials.Followbox.Clickable (
+	Clickable, view, click, clickable,
+	WithTextExtents, clickableText, withTextExtents, nextToText, translate )
 import Trials.Followbox.Event (
 	SigF, ReactF, clearJsons, storeJsons, loadJsons,
 	httpGet, getTimeZone, browse,
@@ -38,6 +40,9 @@ import Trials.Followbox.TypeSynonym (
 
 numOfUsers :: Integer
 numOfUsers = 3
+
+userPageMax :: Int
+userPageMax = 2 ^ (27 :: Int)
 
 defaultFont :: FontName
 defaultFont = "sans"
@@ -102,9 +107,6 @@ field n = do
 	title = twhite largeSize titlePosition "Who to follow"
 	link p t = clickableText p <$> withTextExtents defaultFont middleSize t
 
-twhite :: FontSize -> Position -> T.Text -> View1
-twhite = Text white defaultFont
-
 users :: [(Avatar, T.Text, T.Text)] -> SigF View ()
 users us = concat <$%> uncurry user1 `ftraverse` zip [0 ..] us
 
@@ -146,12 +148,12 @@ getUser = makeUser <$> getObject1 >>= \case
 getAvatar :: T.Text -> ReactF (Either (Error, ErrorMessage) Avatar)
 getAvatar url = (<$> adjust (httpGet url)) . (. bsToImage . snd) $ either
 	(Left . (NoAvatar ,)) (Right . scaleBilinear avatarSizeX avatarSizeY)
-	where bsToImage lbs = convertRGBA8 <$> decodeImage (LBS.toStrict lbs)
+	where bsToImage = (convertRGBA8 <$>) . decodeImage . LBS.toStrict
 
 getObject1 :: ReactF Object
 getObject1 = adjust loadJsons >>= \case
 	[] -> getObjects >>= \case
-		Right (o : os) -> o <$ adjust (storeJsons $ take 8 os)
+		Right (o : os) -> o <$ adjust (storeJsons os)
 		Right [] -> do
 			adjust $ raiseError EmptyJson "Empty JSON"
 			getObject1
@@ -160,7 +162,7 @@ getObject1 = adjust loadJsons >>= \case
 
 getObjects :: ReactF (Either String [Object])
 getObjects = do
-	n <- adjust $ getRandomR (0, 2 ^ (27 :: Int))
+	n <- adjust $ getRandomR (0, userPageMax)
 	(h, b) <- adjust . httpGet $ api n
 	case (rlRmnng h, rlRst h) of
 		(Just rmn, _) | rmn > (0 :: Int) -> pure $ eitherDecode b
@@ -178,6 +180,9 @@ getObjects = do
 	rlRstErr = (NoRateLimitReset, "No X-RateLimit-Reset header")
 
 ---------------------------------------------------------------------------
+
+twhite :: FontSize -> Position -> T.Text -> View1
+twhite = Text white defaultFont
 
 posixSeconds :: BS.ByteString -> Maybe UTCTime
 posixSeconds =
