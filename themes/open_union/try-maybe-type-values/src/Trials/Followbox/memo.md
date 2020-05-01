@@ -64,6 +64,7 @@ Main
 		- [x] until user1
 		- [x] rest
 		- [x] add no header errors
+		- [x] replace magic number with symbolic constant
 		- [ ] 2nd
 * [ ] Trials.Followbox.View
 * [ ] Trials.Followbox.Handle

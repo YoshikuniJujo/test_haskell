@@ -37,7 +37,7 @@ module Trials.Followbox.Event (
 	Quit, checkQuit,
 	-- ** RaiseError
 	RaiseError(..), Error(..), ErrorResult(..),
-	raiseError, catchError
+	raiseError, checkTerminate
 	) where
 
 import Data.Type.Set (numbered, Singleton, Set(Nil), (:-), (:+:))
@@ -224,6 +224,10 @@ raiseError e em = bool (raiseError e em) (pure ()) =<< await (RaiseError e em)
 
 catchError :: React (Singleton RaiseError) ErrorResult
 catchError = await (RaiseError CatchError "") \(OccRaiseError _ er) -> er
+
+checkTerminate :: React (Singleton RaiseError) ()
+checkTerminate = catchError >>= \case
+	Continue -> checkTerminate; Terminate -> pure ()
 
 ---------------------------------------------------------------------------
 -- GENERAL

@@ -29,7 +29,7 @@ import Trials.Followbox.Event (
 	SigF, ReactF, move, leftClick, clearJsons, storeJsons, loadJsons,
 	httpGet, calcTextExtents, getTimeZone, browse,
 	beginSleep, checkBeginSleep, endSleep, checkQuit,
-	Error(..), ErrorResult(..), raiseError, catchError )
+	Error(..), raiseError, checkTerminate )
 import Trials.Followbox.View (View, View1(..), white, blue)
 import Trials.Followbox.Random (getRandomR)
 import Trials.Followbox.TypeSynonym (
@@ -37,10 +37,38 @@ import Trials.Followbox.TypeSynonym (
 
 ---------------------------------------------------------------------------
 
+numberOfUsers :: Integer
+numberOfUsers = 3
+
+defaultFont :: FontName
+defaultFont = "sans"
+
+middleSize, largeSize :: FontSize
+middleSize = 30
+largeSize = 36
+
+avatarSizeX, avatarSizeY :: Int
+avatarSizeX = 80
+avatarSizeY = 80
+
+titlePosition, nextPosition, refreshPosition, resetTimePosition :: Position
+titlePosition = (50, 80)
+nextPosition = (500, 80)
+refreshPosition = (600, 80)
+resetTimePosition = (100, 500)
+
+avatarPosition, namePosition :: Integer -> Position
+avatarPosition n = (100, 120 * (n + 1))
+namePosition n = (210, 120 * (n + 1) + 60)
+
+xMergin :: Integer
+xMergin = 4
+
+---------------------------------------------------------------------------
+
 followbox :: SigF View ()
-followbox = () <$ fieldWithResetTime 3 `until` checkQuit `until` checkTerminate
-	where checkTerminate = catchError >>=
-		\case Continue -> checkTerminate; Terminate -> pure ()
+followbox = () <$ fieldWithResetTime numberOfUsers
+	`until` checkQuit `until` checkTerminate
 
 fieldWithResetTime :: Integer -> SigF View ()
 fieldWithResetTime n = (<>) <$%> field n <*%> resetTime
@@ -49,14 +77,15 @@ resetTime :: SigF View ()
 resetTime = forever $ (emit [] >>) do
 	emit =<< waitFor do
 		(t, tz) <- (,) <$> adjust checkBeginSleep <*> adjust getTimeZone
-		pure [Text white "sans" 30 (100, 500) . T.pack
+		pure [Text white defaultFont middleSize resetTimePosition . T.pack
 			$ "Wait until " <> show (utcToLocalTime tz t)]
 	waitFor $ adjust endSleep
 
 field :: Integer -> SigF View ()
 field n = do
 	((vn, rn), (vr, rr)) <- waitFor $ (,)
-		<$> linkText (500, 80) "Next" <*> linkText (600, 80) "Refresh"
+		<$> linkText nextPosition "Next"
+		<*> linkText refreshPosition "Refresh"
 	let	frame = title : vn <> vr
 		clear = emit frame
 	clear >> forever do
@@ -67,8 +96,8 @@ field n = do
 			Left (_, R _) -> clear >> waitFor (adjust clearJsons)
 			Right _ -> error "never occur"
 	where
-	title = Text white "sans" 36 (50, 80) "Who to follow"
-	linkText p t = clickableText p <$> withTextExtents "sans" 30 t
+	title = Text white defaultFont largeSize titlePosition "Who to follow"
+	linkText p t = clickableText p <$> withTextExtents defaultFont middleSize t
 
 users :: [(Avatar, T.Text, T.Text)] -> SigF View ()
 users us = concat <$%> uncurry user1 `ftraverse` zip [0 ..] us
@@ -76,7 +105,7 @@ users us = concat <$%> uncurry user1 `ftraverse` zip [0 ..] us
 user1 :: Integer -> (Avatar, T.Text, T.Text) -> SigF View ()
 user1 n (a, nm, u) = do
 	((v, l), (v', x)) <- waitFor $ name n nm
-	emit $ Image (100, 120 + 120 * n) a : (v <> v')
+	emit $ Image (avatarPosition n) a : (v <> v')
 	() <$ waitFor (forever $ l >> adjust (browse u)) `until` x
 	user1 n =<< waitFor getUser
 
@@ -86,9 +115,9 @@ data Rect = Rect { upperLeft :: Position, bottomRight :: Position }
 type Clickable = (View, ReactF ())
 
 name :: Integer -> T.Text -> ReactF (Clickable, Clickable)
-name n t = (<$> withTextExtents "sans" fs t) \wte ->
+name n t = (<$> withTextExtents defaultFont largeSize t) \wte ->
 	(clickableText p wte, clickableX xs $ positionX p wte)
-	where p = (210, 180 + n * 120); fs = 36; xs = round fs `div` 2
+	where p = namePosition n; xs = round largeSize `div` 2
 
 type WithTextExtents = (FontName, FontSize, T.Text, XGlyphInfo)
 
@@ -106,7 +135,8 @@ clickableText (x, y) (fn, fs, t, xg) = (
 clickableX :: Integer -> (Integer, Integer) -> Clickable
 clickableX sz (x0, y0) = (
 	[Line white 4 (x0, y0) (x1, y1), Line white 4 (x1, y0) (x0, y1)],
-	clickOnRect $ Rect (x0, y0) (x1, y1) )
+	clickOnRect $ Rect
+		(x0 - xMergin, y0 - xMergin) (x1 + xMergin, y1 + xMergin) )
 	where [x1, y1] = (+ sz) <$> [x0, y0]
 
 positionX :: Position -> WithTextExtents -> Position
@@ -138,8 +168,8 @@ getUser = makeUser <$> getObject1 >>= \case
 		Just (String li) -> Right li; _ -> Left (e, em)
 
 getAvatar :: T.Text -> ReactF (Either (Error, ErrorMessage) Avatar)
-getAvatar url = (<$> adjust (httpGet url)) . (. bsToImage . snd)
-	$ either (Left . (NoAvatar ,)) (Right . scaleBilinear 80 80)
+getAvatar url = (<$> adjust (httpGet url)) . (. bsToImage . snd) $ either
+	(Left . (NoAvatar ,)) (Right . scaleBilinear avatarSizeX avatarSizeY)
 	where bsToImage lbs = convertRGBA8 <$> decodeImage (LBS.toStrict lbs)
 
 getObject1 :: ReactF Object
