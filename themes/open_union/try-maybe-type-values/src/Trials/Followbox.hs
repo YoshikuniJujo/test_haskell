@@ -37,38 +37,40 @@ import Trials.Followbox.TypeSynonym (
 
 ---------------------------------------------------------------------------
 
-numberOfUsers :: Integer
-numberOfUsers = 3
+numOfUsers :: Integer
+numOfUsers = 3
 
 defaultFont :: FontName
 defaultFont = "sans"
 
 middleSize, largeSize :: FontSize
-middleSize = 30
-largeSize = 36
+middleSize = 30; largeSize = 36
 
 avatarSizeX, avatarSizeY :: Int
-avatarSizeX = 80
-avatarSizeY = 80
+(avatarSizeX, avatarSizeY) = (80, 80)
 
 titlePosition, nextPosition, refreshPosition, resetTimePosition :: Position
-titlePosition = (50, 80)
-nextPosition = (500, 80)
-refreshPosition = (600, 80)
-resetTimePosition = (100, 500)
+titlePosition = (50, 80); nextPosition = (500, 80)
+refreshPosition = (600, 80); resetTimePosition = (100, 500)
 
 avatarPosition, namePosition :: Integer -> Position
 avatarPosition n = (100, 120 * (n + 1))
 namePosition n = (210, 120 * (n + 1) + 60)
 
-xMergin :: Integer
-xMergin = 4
+crossSize :: Integer
+crossSize = round largeSize `div` 2
+
+crossPosition :: Position -> WithTextExtents -> Position
+crossPosition p wte = translate (nextToText p wte) wte (1 / 2, - 5 / 8)
+
+crossMergin :: Integer
+crossMergin = 4
 
 ---------------------------------------------------------------------------
 
 followbox :: SigF View ()
-followbox = () <$ fieldWithResetTime numberOfUsers
-	`until` checkQuit `until` checkTerminate
+followbox = () <$
+	fieldWithResetTime numOfUsers `until` checkQuit `until` checkTerminate
 
 fieldWithResetTime :: Integer -> SigF View ()
 fieldWithResetTime n = (<>) <$%> field n <*%> resetTime
@@ -77,81 +79,55 @@ resetTime :: SigF View ()
 resetTime = forever $ (emit [] >>) do
 	emit =<< waitFor do
 		(t, tz) <- (,) <$> adjust checkBeginSleep <*> adjust getTimeZone
-		pure [Text white defaultFont middleSize resetTimePosition . T.pack
+		pure [twhite middleSize resetTimePosition . T.pack
 			$ "Wait until " <> show (utcToLocalTime tz t)]
 	waitFor $ adjust endSleep
 
 field :: Integer -> SigF View ()
 field n = do
-	((vn, rn), (vr, rr)) <- waitFor $ (,)
-		<$> linkText nextPosition "Next"
-		<*> linkText refreshPosition "Refresh"
-	let	frame = title : vn <> vr
+	(nxt, rfs) <- waitFor $ (,)
+		<$> link nextPosition "Next"
+		<*> link refreshPosition "Refresh"
+	let	frame = title : view nxt <> view rfs
 		clear = emit frame
 	clear >> forever do
-		us <- fromIntegral n `replicateM` waitFor getUser
-		(frame <>) <$%> users us `until` rn `first` rr >>= \case
-			Left (_, L _) -> pure ()
-			Left (_, LR _ _) -> pure ()
-			Left (_, R _) -> clear >> waitFor (adjust clearJsons)
-			Right _ -> error "never occur"
+		us <- waitFor $ fromIntegral n `replicateM` getUser
+		(frame <>) <$%>
+			users us `until` click nxt `first` click rfs >>= \case
+				Left (_, L _) -> pure ()
+				Left (_, LR _ _) -> pure ()
+				Left (_, R _) ->
+					clear >> waitFor (adjust clearJsons)
+				Right _ -> error "never occur"
 	where
-	title = Text white defaultFont largeSize titlePosition "Who to follow"
-	linkText p t = clickableText p <$> withTextExtents defaultFont middleSize t
+	title = twhite largeSize titlePosition "Who to follow"
+	link p t = clickableText p <$> withTextExtents defaultFont middleSize t
+
+twhite :: FontSize -> Position -> T.Text -> View1
+twhite = Text white defaultFont
 
 users :: [(Avatar, T.Text, T.Text)] -> SigF View ()
 users us = concat <$%> uncurry user1 `ftraverse` zip [0 ..] us
 
 user1 :: Integer -> (Avatar, T.Text, T.Text) -> SigF View ()
-user1 n (a, nm, u) = do
-	((v, l), (v', x)) <- waitFor $ name n nm
-	emit $ Image (avatarPosition n) a : (v <> v')
-	() <$ waitFor (forever $ l >> adjust (browse u)) `until` x
+user1 n (a, ln, u) = do
+	(nm, cr) <- waitFor $ name n ln
+	emit $ Image (avatarPosition n) a : view nm <> view cr
+	() <$ waitFor (forever $ click nm >> adjust (browse u)) `until` click cr
 	user1 n =<< waitFor getUser
-
-data Rect = Rect { upperLeft :: Position, bottomRight :: Position }
-	deriving Show
-
-type Clickable = (View, ReactF ())
 
 name :: Integer -> T.Text -> ReactF (Clickable, Clickable)
 name n t = (<$> withTextExtents defaultFont largeSize t) \wte ->
-	(clickableText p wte, clickableX xs $ positionX p wte)
-	where p = namePosition n; xs = round largeSize `div` 2
+	(clickableText p wte, cross crossSize $ crossPosition p wte)
+	where p = namePosition n
 
-type WithTextExtents = (FontName, FontSize, T.Text, XGlyphInfo)
-
-withTextExtents :: FontName -> FontSize -> T.Text -> ReactF WithTextExtents
-withTextExtents fn fs t = (fn, fs, t,) <$> adjust (calcTextExtents fn fs t)
-
-clickableText :: Position -> WithTextExtents -> Clickable
-clickableText (x, y) (fn, fs, t, xg) = (
-	[Text blue fn fs (x, y) t], 
-	clickOnRect $ Rect (x - gx, y - gy) (x - gx + gw, y - gy + gh) )
-	where [gx, gy, gw, gh] = fromIntegral . ($ xg) <$> [
-		xglyphinfo_x, xglyphinfo_y,
-		xglyphinfo_width, xglyphinfo_height ]
-
-clickableX :: Integer -> (Integer, Integer) -> Clickable
-clickableX sz (x0, y0) = (
+cross :: Integer -> (Integer, Integer) -> Clickable
+cross sz (x0, y0) = (
 	[Line white 4 (x0, y0) (x1, y1), Line white 4 (x1, y0) (x0, y1)],
 	clickOnRect $ Rect
-		(x0 - xMergin, y0 - xMergin) (x1 + xMergin, y1 + xMergin) )
+		(x0 - crossMergin, y0 - crossMergin)
+		(x1 + crossMergin, y1 + crossMergin) )
 	where [x1, y1] = (+ sz) <$> [x0, y0]
-
-positionX :: Position -> WithTextExtents -> Position
-positionX (x, y) (_, fs, _, xg) = (
-	x - fromXg xglyphinfo_x + fromXg xglyphinfo_width + round fs `div` 2,
-	y - fromXg xglyphinfo_y + round fs * 3 `div` 8 )
-	where fromXg = fromIntegral . ($ xg)
-
-clickOnRect :: Rect -> ReactF ()
-clickOnRect (Rect (l, t) (r, b)) =
-	() <$ find isInside (mousePosition `indexBy` repeat leftClick)
-	where
-	mousePosition :: SigF Position ()
-	mousePosition = repeat $ adjust move
-	isInside (x, y) = l <= x && x <= r && t <= y && y <= b
 
 getUser :: ReactF (Avatar, T.Text, T.Text)
 getUser = makeUser <$> getObject1 >>= \case
@@ -200,6 +176,48 @@ getObjects = do
 	rlRst = (posixSeconds =<<) . lookup "X-RateLimit-Reset"
 	rlRmnngErr = (NoRateLimitRemaining, "No X-RateLimit-Remaining header")
 	rlRstErr = (NoRateLimitReset, "No X-RateLimit-Reset header")
+
+---------------------------------------------------------------------------
+
+type Clickable = (View, ReactF ())
+
+view :: Clickable -> View
+view = fst
+
+click :: Clickable -> ReactF ()
+click = snd
+
+type WithTextExtents = (FontName, FontSize, T.Text, XGlyphInfo)
+
+withTextExtents :: FontName -> FontSize -> T.Text -> ReactF WithTextExtents
+withTextExtents fn fs t = (fn, fs, t,) <$> adjust (calcTextExtents fn fs t)
+
+data Rect = Rect { upLeft :: Position, botRight :: Position } deriving Show
+
+clickableText :: Position -> WithTextExtents -> Clickable
+clickableText (x, y) (fn, fs, t, xg) = (
+	[Text blue fn fs (x, y) t],
+	clickOnRect $ Rect (x - gx, y - gy) (x - gx + gw, y - gy + gh) )
+	where [gx, gy, gw, gh] = fromIntegral . ($ xg) <$> [
+		xglyphinfo_x, xglyphinfo_y,
+		xglyphinfo_width, xglyphinfo_height ]
+
+translate :: Position -> WithTextExtents -> (Rational, Rational) -> Position
+translate (x, y) (_, fs, _, _) (dx, dy) =
+	(x + round (fs' * dx), y + round (fs' * dy)) where fs' = toRational fs
+
+nextToText :: Position -> WithTextExtents -> Position
+nextToText (x, y) (_, _, _, xg) =
+	(x + fromXg xglyphinfo_xOff, y + fromXg xglyphinfo_yOff)
+	where fromXg = fromIntegral . ($ xg)
+
+clickOnRect :: Rect -> ReactF ()
+clickOnRect (Rect (l, t) (r, b)) =
+	() <$ find isInside (mousePosition `indexBy` repeat leftClick)
+	where
+	mousePosition :: SigF Position ()
+	mousePosition = repeat $ adjust move
+	isInside (x, y) = l <= x && x <= r && t <= y && y <= b
 
 posixSeconds :: BS.ByteString -> Maybe UTCTime
 posixSeconds =

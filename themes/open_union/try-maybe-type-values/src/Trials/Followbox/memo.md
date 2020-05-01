@@ -65,7 +65,8 @@ Main
 		- [x] rest
 		- [x] add no header errors
 		- [x] replace magic number with symbolic constant
-		- [ ] 2nd
+		- [x] 2nd
+		- [ ] 3rd
 * [ ] Trials.Followbox.View
 * [ ] Trials.Followbox.Handle
 	+ [ ] consider to use NotEmpty
