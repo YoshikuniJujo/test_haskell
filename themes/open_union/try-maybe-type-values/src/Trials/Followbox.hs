@@ -1,6 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE DataKinds, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Followbox (followbox) where
@@ -14,7 +13,6 @@ import Data.Time (UTCTime, utcToLocalTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import Data.Aeson (Object, Value(..), eitherDecode)
 import Text.Read (readMaybe)
-import Graphics.X11.Xrender (XGlyphInfo(..))
 import Codec.Picture (convertRGBA8, decodeImage)
 import Codec.Picture.Extra (scaleBilinear)
 
@@ -24,13 +22,14 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 
-import MonadicFrp (adjust, first, emit, waitFor, find, repeat, until, indexBy)
+import MonadicFrp (adjust, first, emit, waitFor, until)
+import Trials.Followbox.Clickable
 import Trials.Followbox.Event (
-	SigF, ReactF, move, leftClick, clearJsons, storeJsons, loadJsons,
-	httpGet, calcTextExtents, getTimeZone, browse,
+	SigF, ReactF, clearJsons, storeJsons, loadJsons,
+	httpGet, getTimeZone, browse,
 	beginSleep, checkBeginSleep, endSleep, checkQuit,
 	Error(..), raiseError, checkTerminate )
-import Trials.Followbox.View (View, View1(..), white, blue)
+import Trials.Followbox.View (View, View1(..), white)
 import Trials.Followbox.Random (getRandomR)
 import Trials.Followbox.TypeSynonym (
 	Position, Avatar, FontName, FontSize, ErrorMessage )
@@ -111,23 +110,24 @@ users us = concat <$%> uncurry user1 `ftraverse` zip [0 ..] us
 
 user1 :: Integer -> (Avatar, T.Text, T.Text) -> SigF View ()
 user1 n (a, ln, u) = do
-	(nm, cr) <- waitFor $ name n ln
+	(nm, cr) <- waitFor $ nameCross n ln
 	emit $ Image (avatarPosition n) a : view nm <> view cr
 	() <$ waitFor (forever $ click nm >> adjust (browse u)) `until` click cr
 	user1 n =<< waitFor getUser
 
-name :: Integer -> T.Text -> ReactF (Clickable, Clickable)
-name n t = (<$> withTextExtents defaultFont largeSize t) \wte ->
+nameCross :: Integer -> T.Text -> ReactF (Clickable, Clickable)
+nameCross n t = (<$> withTextExtents defaultFont largeSize t) \wte ->
 	(clickableText p wte, cross crossSize $ crossPosition p wte)
 	where p = namePosition n
 
 cross :: Integer -> (Integer, Integer) -> Clickable
-cross sz (x0, y0) = (
-	[Line white 4 (x0, y0) (x1, y1), Line white 4 (x1, y0) (x0, y1)],
-	clickOnRect $ Rect
-		(x0 - crossMergin, y0 - crossMergin)
-		(x1 + crossMergin, y1 + crossMergin) )
-	where [x1, y1] = (+ sz) <$> [x0, y0]
+cross sz (x0, y0) = clickable
+	[Line white 4 (x0, y0) (x1, y1), Line white 4 (x1, y0) (x0, y1)]
+	(x0', y0') (x1', y1')
+	where
+	[x1, y1] = (+ sz) <$> [x0, y0]
+	[x0', y0'] = subtract crossMergin <$> [x0, y0]
+	[x1', y1'] = (+ crossMergin) <$> [x1, y1]
 
 getUser :: ReactF (Avatar, T.Text, T.Text)
 getUser = makeUser <$> getObject1 >>= \case
@@ -178,46 +178,6 @@ getObjects = do
 	rlRstErr = (NoRateLimitReset, "No X-RateLimit-Reset header")
 
 ---------------------------------------------------------------------------
-
-type Clickable = (View, ReactF ())
-
-view :: Clickable -> View
-view = fst
-
-click :: Clickable -> ReactF ()
-click = snd
-
-type WithTextExtents = (FontName, FontSize, T.Text, XGlyphInfo)
-
-withTextExtents :: FontName -> FontSize -> T.Text -> ReactF WithTextExtents
-withTextExtents fn fs t = (fn, fs, t,) <$> adjust (calcTextExtents fn fs t)
-
-data Rect = Rect { upLeft :: Position, botRight :: Position } deriving Show
-
-clickableText :: Position -> WithTextExtents -> Clickable
-clickableText (x, y) (fn, fs, t, xg) = (
-	[Text blue fn fs (x, y) t],
-	clickOnRect $ Rect (x - gx, y - gy) (x - gx + gw, y - gy + gh) )
-	where [gx, gy, gw, gh] = fromIntegral . ($ xg) <$> [
-		xglyphinfo_x, xglyphinfo_y,
-		xglyphinfo_width, xglyphinfo_height ]
-
-translate :: Position -> WithTextExtents -> (Rational, Rational) -> Position
-translate (x, y) (_, fs, _, _) (dx, dy) =
-	(x + round (fs' * dx), y + round (fs' * dy)) where fs' = toRational fs
-
-nextToText :: Position -> WithTextExtents -> Position
-nextToText (x, y) (_, _, _, xg) =
-	(x + fromXg xglyphinfo_xOff, y + fromXg xglyphinfo_yOff)
-	where fromXg = fromIntegral . ($ xg)
-
-clickOnRect :: Rect -> ReactF ()
-clickOnRect (Rect (l, t) (r, b)) =
-	() <$ find isInside (mousePosition `indexBy` repeat leftClick)
-	where
-	mousePosition :: SigF Position ()
-	mousePosition = repeat $ adjust move
-	isInside (x, y) = l <= x && x <= r && t <= y && y <= b
 
 posixSeconds :: BS.ByteString -> Maybe UTCTime
 posixSeconds =

@@ -7,6 +7,7 @@ memo
 ```
 Main
   +- Trials.Followbox
+  |    +- Trials.Followbox.Clickable
   |    +- Trials.Followbox.Event
   |    |    +- Trials.Followbox.Random
   |    |    |    +- Trials.Followbox.ThreadId
@@ -55,6 +56,7 @@ Main
 	+ [x] imports
 	* [x] structure
 	+ [x] body
+* [x] Trials.Followbox.Clickable
 * [ ] Trials.Followbox
 	+ [x] imports
 		- [x] 1st
