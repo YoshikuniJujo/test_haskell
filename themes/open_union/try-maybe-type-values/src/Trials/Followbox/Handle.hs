@@ -7,8 +7,11 @@
 module Trials.Followbox.Handle (
 	handle, FollowboxM, FollowboxState, initialFollowboxState ) where
 
+import Prelude hiding (head)
+
 import Control.Monad.State (StateT, liftIO, gets, modify)
 import Data.Type.Set (Set(Nil), Singleton, (:-))
+import Data.List.NonEmpty (NonEmpty(..), head, cons)
 import Data.UnionSet (singleton, (>-), extract, expand)
 import Data.Bool (bool)
 import Data.String (fromString)
@@ -37,13 +40,13 @@ type FollowboxM = StateT FollowboxState
 data FollowboxState = FollowboxState {
 	fsObjects :: [Object],
 	fsSleepUntil :: Maybe UTCTime,
-	fsVersionRandomGens :: [(StdGenVersion, StdGen)] }
+	fsVersionRandomGens :: NonEmpty (StdGenVersion, StdGen) }
 	deriving Show
 
-type VersionStdGens = [(StdGenVersion, StdGen)]
+type VersionStdGens = NonEmpty (StdGenVersion, StdGen)
 
 initialVersionStdGens :: StdGen -> VersionStdGens
-initialVersionStdGens = (: []) . (stdGenVersion0 ,)
+initialVersionStdGens = (:| []) . (stdGenVersion0 ,)
 
 initialFollowboxState :: FollowboxState
 initialFollowboxState = FollowboxState {
@@ -53,9 +56,9 @@ initialFollowboxState = FollowboxState {
 
 instance RandomState FollowboxState where
 	getVersionStdGen = head . fsVersionRandomGens
-	putVersionStdGen s (v, g) = s { fsVersionRandomGens = (v, g) : fsVersionRandomGens s }
-	rollbackStdGen s@FollowboxState { fsVersionRandomGens = (v0, _) : vgs } v
-		| v == v0 = Right s { fsVersionRandomGens = vgs }
+	putVersionStdGen s (v, g) = s { fsVersionRandomGens = (v, g) `cons` fsVersionRandomGens s }
+	rollbackStdGen s@FollowboxState { fsVersionRandomGens = (v0, _) :| vg : vgs } v
+		| v == v0 = Right s { fsVersionRandomGens = vg :| vgs }
 		| otherwise = Left "can't rollback"
 	rollbackStdGen _ _ = Left "can't rollback"
 
