@@ -73,5 +73,6 @@ Main
 * [ ] Trials.Followbox.Handle
 	+ [x] imports
 	+ [x] consider to use NotEmpty
+	+ [x] structure
 	+ [ ] body
 * [ ] Trials.Followbox.Run

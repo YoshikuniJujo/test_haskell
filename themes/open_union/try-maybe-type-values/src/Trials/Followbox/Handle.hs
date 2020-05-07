@@ -9,7 +9,7 @@ module Trials.Followbox.Handle (
 
 import Prelude hiding (head)
 
-import Control.Monad.State (StateT, liftIO, gets, modify)
+import Control.Monad.State (StateT, lift, gets, modify)
 import Data.Type.Set (Set(Nil), Singleton, (:-))
 import Data.List.NonEmpty (NonEmpty(..), head, cons)
 import Data.UnionSet (singleton, (>-), extract, expand)
@@ -21,7 +21,6 @@ import System.Random (StdGen, mkStdGen)
 import System.Process (spawnProcess)
 
 import qualified Data.ByteString as BS
-import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 import qualified Network.HTTP.Simple as HTTP
 
@@ -43,21 +42,17 @@ data FollowboxState = FollowboxState {
 	fsVersionRandomGens :: NonEmpty (StdGenVersion, StdGen) }
 	deriving Show
 
-type VersionStdGens = NonEmpty (StdGenVersion, StdGen)
-
-initialVersionStdGens :: StdGen -> VersionStdGens
-initialVersionStdGens = (:| []) . (stdGenVersion0 ,)
-
 initialFollowboxState :: FollowboxState
 initialFollowboxState = FollowboxState {
-	fsObjects = [],
-	fsSleepUntil = Nothing,
-	fsVersionRandomGens = initialVersionStdGens $ mkStdGen 8 }
+	fsObjects = [], fsSleepUntil = Nothing,
+	fsVersionRandomGens = (stdGenVersion0, mkStdGen 8) :| [] }
 
 instance RandomState FollowboxState where
 	getVersionStdGen = head . fsVersionRandomGens
-	putVersionStdGen s (v, g) = s { fsVersionRandomGens = (v, g) `cons` fsVersionRandomGens s }
-	rollbackStdGen s@FollowboxState { fsVersionRandomGens = (v0, _) :| vg : vgs } v
+	putVersionStdGen s (v, g) =
+		s { fsVersionRandomGens = (v, g) `cons` fsVersionRandomGens s }
+	rollbackStdGen
+		s@FollowboxState { fsVersionRandomGens = (v0, _) :| vg : vgs } v
 		| v == v0 = Right s { fsVersionRandomGens = vg :| vgs }
 		| otherwise = Left "can't rollback"
 	rollbackStdGen _ _ = Left "can't rollback"
@@ -74,6 +69,42 @@ getSleepUntil = gets fsSleepUntil
 putSleepUntil :: Monad m => Maybe UTCTime -> FollowboxM m ()
 putSleepUntil slp = modify \s -> s { fsSleepUntil = slp }
 
+---------------------------------------------------------------------------
+-- HANDLE
+---------------------------------------------------------------------------
+
+handle :: Field -> Browser -> Maybe (GithubUserName, GithubToken) -> Handle (FollowboxM IO) FollowboxEv
+handle f brws mba = retry $
+	handleGetThreadId `merge` handleRandom `merge`
+	handleStoreLoadJsons `merge`
+	lift . just . handleHttpGet mba `merge`
+	lift . just . handleCalcTextExtents f `merge`
+	lift . just . handleGetTimeZone `merge`
+	lift . just . handleBrowse brws `merge`
+	handleBeginEndSleep `merge`
+	lift . handleRaiseError `before`
+	handleMouse f
+
+just :: Functor f => f a -> f (Maybe a)
+just = (Just <$>)
+
+-- STORE AND LOAD JSONS
+
+type StoreLoadJsons = StoreJsons :- LoadJsons :- 'Nil
+
+handleStoreLoadJsons :: Monad m =>
+	EvReqs StoreLoadJsons -> FollowboxM m (Maybe (EvOccs StoreLoadJsons))
+handleStoreLoadJsons = just . handleStoreJsons `merge` just . handleLoadJsons
+
+handleStoreJsons :: Monad m => EvReqs (Singleton StoreJsons) -> FollowboxM m (EvOccs (Singleton StoreJsons))
+handleStoreJsons reqs = singleton (OccStoreJsons os) <$ putObjects os
+	where StoreJsons os = extract reqs
+
+handleLoadJsons :: Monad m => EvReqs (Singleton LoadJsons) -> FollowboxM m (EvOccs (Singleton LoadJsons))
+handleLoadJsons _reqs = singleton . OccLoadJsons <$> getObjects
+
+-- HTTP GET
+
 handleHttpGet :: Maybe (BS.ByteString, BS.ByteString) -> EvReqs (Singleton HttpGet) -> IO (EvOccs (Singleton HttpGet))
 handleHttpGet mba reqs = do
 	r <- hg . setUserAgent "Yoshio" . fromString $ T.unpack u
@@ -84,63 +115,79 @@ handleHttpGet mba reqs = do
 		Just (nm, tkn) -> httpBasicAuth nm tkn
 		Nothing -> HTTP.httpLBS
 	HttpGetReq u = extract reqs
+	setUserAgent ua = HTTP.setRequestHeader "User-Agent" [ua]
+	httpBasicAuth usr p rq = HTTP.httpLBS $ HTTP.setRequestBasicAuth usr p rq
 
-setUserAgent :: BS.ByteString -> HTTP.Request -> HTTP.Request
-setUserAgent ua = HTTP.setRequestHeader "User-Agent" [ua]
+-- CALC TEXT EXTENTS
 
-handleStoreJsons :: Monad m => EvReqs (Singleton StoreJsons) -> FollowboxM m (EvOccs (Singleton StoreJsons))
-handleStoreJsons reqs = singleton (OccStoreJsons os) <$ putObjects os
-	where StoreJsons os = extract reqs
+handleCalcTextExtents :: Field -> EvReqs (Singleton CalcTextExtents) -> IO (EvOccs (Singleton CalcTextExtents))
+handleCalcTextExtents f reqs = singleton . OccCalcTextExtents fn fs t <$> textExtents f fn fs (T.unpack t)
+	where CalcTextExtentsReq fn fs t = extract reqs
 
-handleLoadJsons :: Monad m => EvReqs (Singleton LoadJsons) -> FollowboxM m (EvOccs (Singleton LoadJsons))
-handleLoadJsons _reqs = singleton . OccLoadJsons <$> getObjects
+-- GET TIME ZONE
+
+handleGetTimeZone :: EvReqs (Singleton GetTimeZone) -> IO (EvOccs (Singleton GetTimeZone))
+handleGetTimeZone _reqs = do
+	tz <- getCurrentTimeZone
+	pure . singleton $ OccGetTimeZone tz
+
+-- BROWSE
+
+handleBrowse :: FilePath -> Handle IO (Singleton Browse)
+handleBrowse brws reqs = spawnProcess brws [T.unpack u] >> pure (singleton OccBrowse)
+	where Browse u = extract reqs
+
+-- BEGIN AND END SLEEP
+
+type BeginEndSleepEv = BeginSleep :- EndSleep :- 'Nil
+
+handleBeginEndSleep :: EvReqs BeginEndSleepEv -> FollowboxM IO (Maybe (EvOccs BeginEndSleepEv))
+handleBeginEndSleep = handleBeginSleep `merge` handleEndSleep
+
+handleBeginSleep :: Monad m => EvReqs (Singleton BeginSleep) -> FollowboxM m (Maybe (EvOccs (Singleton BeginSleep)))
+handleBeginSleep reqs = case extract reqs of
+	BeginSleep t -> do
+		getSleepUntil >>= \case
+			Just t' -> pure . Just . singleton $ OccBeginSleep t'
+			Nothing -> do
+				putSleepUntil $ Just t
+				pure . Just . singleton $ OccBeginSleep t
+	CheckBeginSleep -> pure Nothing
+
+handleEndSleep :: EvReqs (Singleton EndSleep) -> FollowboxM IO (Maybe (EvOccs (Singleton EndSleep)))
+handleEndSleep _reqs = getSleepUntil >>= \case
+	Just t -> do
+		now <- lift getCurrentTime
+		bool	(pure Nothing)
+			(putSleepUntil Nothing >> pure (Just $ singleton OccEndSleep))
+			(t <= now)
+	Nothing -> pure . Just $ singleton OccEndSleep
+
+-- RAISE ERROR
 
 handleRaiseError :: EvReqs (Singleton RaiseError) -> IO (Maybe (EvOccs (Singleton RaiseError)))
-handleRaiseError reqs = case e of
-	NoRateLimitRemaining -> do
-		putStrLn $ "ERROR: " <> em
-		pure . Just . singleton $ OccRaiseError e Terminate
-	NoRateLimitReset -> do
-		putStrLn $ "ERROR: " <> em
-		pure . Just . singleton $ OccRaiseError e Terminate
-	NotJson -> do
-		putStrLn $ "ERROR: " <> em
-		pure . Just . singleton $ OccRaiseError e Terminate
-	EmptyJson -> do
-		putStrLn $ "ERROR: " <> em
-		pure . Just . singleton $ OccRaiseError e Continue
-	NoLoginName -> do
-		putStrLn $ "ERROR: " <> em
-		pure . Just . singleton $ OccRaiseError e Terminate
-	NoAvatarAddress -> do
-		putStrLn $ "ERROR: " <> em
-		pure . Just . singleton $ OccRaiseError e Terminate
-	NoAvatar -> do
-		putStrLn $ "ERROR: " <> em
-		pure . Just . singleton $ OccRaiseError e Terminate
-	NoHtmlUrl -> do
-		putStrLn $ "ERROR: " <> em
-		pure . Just . singleton $ OccRaiseError e Terminate
-	CatchError -> pure Nothing
-	where RaiseError e em = extract reqs
+handleRaiseError reqs = case errorResult e of
+	Nothing -> pure Nothing
+	Just r -> do
+		putStrLn ("ERROR: " <> em)
+		pure . Just . singleton $ OccRaiseError e r
+	where
+	RaiseError e em = extract reqs
+	errorResult = \case
+		NoRateLimitRemaining -> Just Terminate
+		NoRateLimitReset -> Just Terminate
+		NotJson -> Just Terminate
+		EmptyJson -> Just Continue
+		NoLoginName -> Just Terminate
+		NoAvatarAddress -> Just Terminate
+		NoAvatar -> Just Terminate
+		NoHtmlUrl -> Just Terminate
+		CatchError -> Nothing
 
-handle :: Field -> Browser -> Maybe (GithubUserName, GithubToken) -> Handle (FollowboxM IO) FollowboxEv
-handle f brws mba = retry $
-	handleGetThreadId `merge`
-	handleRandom `merge`
-	(Just <$>) . handleStoreJsons `merge`
-	liftIO . (Just <$>) . handleHttpGet mba `merge`
-	(Just <$>) . handleLoadJsons `merge`
-	liftIO . (Just <$>) . handleCalcTextExtents f `merge`
-	liftIO . handleRaiseError `merge`
-	handleBeginSleep `merge`
-	handleEndSleep `merge`
-	liftIO . (Just <$>) . handleGetTimeZone `merge`
-	liftIO . (Just <$>) . handleBrowse brws `before`
-	handleLeftClick f
+-- MOUSE
 
-handleLeftClick :: Field -> EvReqs (Move :- LeftClick :- Quit :- 'Nil) -> (FollowboxM IO) (Maybe (EvOccs (Move :- LeftClick :- Quit :- 'Nil)))
-handleLeftClick f reqs = getSleepUntil >>= liftIO . \case
+handleMouse :: Field -> EvReqs (Move :- LeftClick :- Quit :- 'Nil) -> (FollowboxM IO) (Maybe (EvOccs (Move :- LeftClick :- Quit :- 'Nil)))
+handleMouse f reqs = getSleepUntil >>= lift . \case
 	Nothing -> handleLeftClick' f reqs
 	Just t -> handleLeftClickUntil f t reqs
 
@@ -173,38 +220,3 @@ withNextEventUntil f t act = do
 	now <- getCurrentTime
 	let	dt = t `diffUTCTime` now
 	withNextEventTimeout' f (round $ dt * 1000000) act
-
-handleCalcTextExtents :: Field -> EvReqs (Singleton CalcTextExtents) -> IO (EvOccs (Singleton CalcTextExtents))
-handleCalcTextExtents f reqs = singleton . OccCalcTextExtents fn fs t <$> textExtents f fn fs (T.unpack t)
-	where CalcTextExtentsReq fn fs t = extract reqs
-
-handleBeginSleep :: Monad m => EvReqs (Singleton BeginSleep) -> FollowboxM m (Maybe (EvOccs (Singleton BeginSleep)))
-handleBeginSleep reqs = case extract reqs of
-	BeginSleep t -> do
-		getSleepUntil >>= \case
-			Just t' -> pure . Just . singleton $ OccBeginSleep t'
-			Nothing -> do
-				putSleepUntil $ Just t
-				pure . Just . singleton $ OccBeginSleep t
-	CheckBeginSleep -> pure Nothing
-
-handleEndSleep :: EvReqs (Singleton EndSleep) -> FollowboxM IO (Maybe (EvOccs (Singleton EndSleep)))
-handleEndSleep _reqs = getSleepUntil >>= \case
-	Just t -> do
-		now <- liftIO getCurrentTime
-		bool	(pure Nothing)
-			(putSleepUntil Nothing >> pure (Just $ singleton OccEndSleep))
-			(t <= now)
-	Nothing -> pure . Just $ singleton OccEndSleep
-
-handleGetTimeZone :: EvReqs (Singleton GetTimeZone) -> IO (EvOccs (Singleton GetTimeZone))
-handleGetTimeZone _reqs = do
-	tz <- getCurrentTimeZone
-	pure . singleton $ OccGetTimeZone tz
-
-handleBrowse :: FilePath -> Handle IO (Singleton Browse)
-handleBrowse brws reqs = spawnProcess brws [T.unpack u] >> pure (singleton OccBrowse)
-	where Browse u = extract reqs
-
-httpBasicAuth :: BS.ByteString -> BS.ByteString -> HTTP.Request -> IO (HTTP.Response LBS.ByteString)
-httpBasicAuth usr p rq = HTTP.httpLBS $ HTTP.setRequestBasicAuth usr p rq
