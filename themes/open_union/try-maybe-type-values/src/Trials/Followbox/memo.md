@@ -69,7 +69,7 @@ Main
 		- [x] replace magic number with symbolic constant
 		- [x] 2nd
 		- [x] 3rd
-* [ ] Trials.Followbox.View
+* [x] Trials.Followbox.View
 * [ ] Trials.Followbox.Handle
 	+ [ ] consider to use NotEmpty
 * [ ] Trials.Followbox.Run
