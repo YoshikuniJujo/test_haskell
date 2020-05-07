@@ -71,5 +71,7 @@ Main
 		- [x] 3rd
 * [x] Trials.Followbox.View
 * [ ] Trials.Followbox.Handle
+	+ [x] imports
 	+ [ ] consider to use NotEmpty
+	+ [ ] body
 * [ ] Trials.Followbox.Run

@@ -7,33 +7,31 @@
 module Trials.Followbox.Handle (
 	handle, FollowboxM, FollowboxState, initialFollowboxState ) where
 
-import Prelude hiding ((++))
-
-import Control.Monad.State
-import Data.Type.Set
-import Data.Bool
-import Data.String
-import Data.UnionSet hiding (merge)
-import Data.Time
-import Data.Aeson
-import System.Process
-import System.Random
+import Control.Monad.State (StateT, liftIO, gets, modify)
+import Data.Type.Set (Set(Nil), Singleton, (:-))
+import Data.UnionSet (singleton, (>-), extract, expand)
+import Data.Bool (bool)
+import Data.String (fromString)
+import Data.Aeson (Object)
+import Data.Time (UTCTime, getCurrentTime, getCurrentTimeZone, diffUTCTime)
+import System.Random (StdGen, mkStdGen)
+import System.Process (spawnProcess)
 
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 import qualified Network.HTTP.Simple as HTTP
 
-import Network.HTTP.Simple
-
-import qualified Data.ByteString.Lazy as LBS
-
 import MonadicFrp.Handle
 import Trials.Followbox.Event hiding (getTimeZone)
-import Field
-
-import Trials.Followbox.ThreadId
 import Trials.Followbox.Random
-import Trials.Followbox.TypeSynonym
+import Trials.Followbox.ThreadId
+import Trials.Followbox.TypeSynonym (Browser, GithubUserName, GithubToken)
+import Field (
+	Field, Event(..), flushField, destroyField, isDeleteEvent,
+	withNextEvent, withNextEventTimeout', textExtents )
+
+---------------------------------------------------------------------------
 
 type FollowboxM = StateT FollowboxState
 data FollowboxState = FollowboxState {
@@ -205,5 +203,5 @@ handleBrowse :: FilePath -> Handle IO (Singleton Browse)
 handleBrowse brws reqs = spawnProcess brws [T.unpack u] >> pure (singleton OccBrowse)
 	where Browse u = extract reqs
 
-httpBasicAuth :: BS.ByteString -> BS.ByteString -> Request -> IO (Response LBS.ByteString)
-httpBasicAuth usr p rq = httpLBS $ setRequestBasicAuth usr p rq
+httpBasicAuth :: BS.ByteString -> BS.ByteString -> HTTP.Request -> IO (HTTP.Response LBS.ByteString)
+httpBasicAuth usr p rq = HTTP.httpLBS $ HTTP.setRequestBasicAuth usr p rq
