@@ -74,5 +74,6 @@ Main
 	+ [x] imports
 	+ [x] consider to use NotEmpty
 	+ [x] structure
-	+ [ ] body
+	+ [x] body until `HTTP GET'
+	+ [ ] body from `CALC TEXT EXTENTS'
 * [ ] Trials.Followbox.Run

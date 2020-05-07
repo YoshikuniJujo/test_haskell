@@ -4,7 +4,7 @@ module Trials.Followbox.TypeSynonym (
 	-- * FIELD
 	WindowTitle, Position, LineWidth, FontName, FontSize,
 	-- * GITHUB
-	GithubUserName, GithubToken,
+	GithubNameToken, GithubUserName, GithubToken,
 	-- * OTHERS
 	Uri, Avatar, Browser, ErrorMessage ) where
 
@@ -22,6 +22,7 @@ type FontSize = Double
 
 -- GITHUB
 
+type GithubNameToken = (GithubUserName, GithubToken)
 type GithubUserName = BS.ByteString
 type GithubToken = BS.ByteString
 

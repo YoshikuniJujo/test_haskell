@@ -5,7 +5,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Followbox.Handle (
-	handle, FollowboxM, FollowboxState, initialFollowboxState ) where
+	handle, FbM, FollowboxState, initialFollowboxState ) where
 
 import Prelude hiding (head)
 
@@ -20,22 +20,21 @@ import Data.Time (UTCTime, getCurrentTime, getCurrentTimeZone, diffUTCTime)
 import System.Random (StdGen, mkStdGen)
 import System.Process (spawnProcess)
 
-import qualified Data.ByteString as BS
 import qualified Data.Text as T
-import qualified Network.HTTP.Simple as HTTP
+import qualified Network.HTTP.Simple as H
 
 import MonadicFrp.Handle
 import Trials.Followbox.Event hiding (getTimeZone)
 import Trials.Followbox.Random
 import Trials.Followbox.ThreadId
-import Trials.Followbox.TypeSynonym (Browser, GithubUserName, GithubToken)
+import Trials.Followbox.TypeSynonym (Browser, GithubNameToken)
 import Field (
 	Field, Event(..), flushField, destroyField, isDeleteEvent,
 	withNextEvent, withNextEventTimeout', textExtents )
 
 ---------------------------------------------------------------------------
 
-type FollowboxM = StateT FollowboxState
+type FbM = StateT FollowboxState
 data FollowboxState = FollowboxState {
 	fsObjects :: [Object],
 	fsSleepUntil :: Maybe UTCTime,
@@ -57,23 +56,24 @@ instance RandomState FollowboxState where
 		| otherwise = Left "can't rollback"
 	rollbackStdGen _ _ = Left "can't rollback"
 
-getObjects :: Monad m => FollowboxM m [Object]
+getObjects :: Monad m => FbM m [Object]
 getObjects = gets fsObjects
 
-putObjects :: Monad m => [Object] -> FollowboxM m ()
+putObjects :: Monad m => [Object] -> FbM m ()
 putObjects os = modify \s -> s { fsObjects = os }
 
-getSleepUntil :: Monad m => FollowboxM m (Maybe UTCTime)
+getSleepUntil :: Monad m => FbM m (Maybe UTCTime)
 getSleepUntil = gets fsSleepUntil
 
-putSleepUntil :: Monad m => Maybe UTCTime -> FollowboxM m ()
+putSleepUntil :: Monad m => Maybe UTCTime -> FbM m ()
 putSleepUntil slp = modify \s -> s { fsSleepUntil = slp }
 
 ---------------------------------------------------------------------------
 -- HANDLE
 ---------------------------------------------------------------------------
 
-handle :: Field -> Browser -> Maybe (GithubUserName, GithubToken) -> Handle (FollowboxM IO) FollowboxEv
+handle ::
+	Field -> Browser -> Maybe GithubNameToken -> Handle (FbM IO) FollowboxEv
 handle f brws mba = retry $
 	handleGetThreadId `merge` handleRandom `merge`
 	handleStoreLoadJsons `merge`
@@ -81,8 +81,7 @@ handle f brws mba = retry $
 	lift . just . handleCalcTextExtents f `merge`
 	lift . just . handleGetTimeZone `merge`
 	lift . just . handleBrowse brws `merge`
-	handleBeginEndSleep `merge`
-	lift . handleRaiseError `before`
+	handleBeginEndSleep `merge` lift . handleRaiseError `before`
 	handleMouse f
 
 just :: Functor f => f a -> f (Maybe a)
@@ -92,31 +91,27 @@ just = (Just <$>)
 
 type StoreLoadJsons = StoreJsons :- LoadJsons :- 'Nil
 
-handleStoreLoadJsons :: Monad m =>
-	EvReqs StoreLoadJsons -> FollowboxM m (Maybe (EvOccs StoreLoadJsons))
+handleStoreLoadJsons :: Monad m => Handle' (FbM m) StoreLoadJsons
 handleStoreLoadJsons = just . handleStoreJsons `merge` just . handleLoadJsons
 
-handleStoreJsons :: Monad m => EvReqs (Singleton StoreJsons) -> FollowboxM m (EvOccs (Singleton StoreJsons))
+handleStoreJsons :: Monad m => Handle (FbM m) (Singleton StoreJsons)
 handleStoreJsons reqs = singleton (OccStoreJsons os) <$ putObjects os
 	where StoreJsons os = extract reqs
 
-handleLoadJsons :: Monad m => EvReqs (Singleton LoadJsons) -> FollowboxM m (EvOccs (Singleton LoadJsons))
+handleLoadJsons :: Monad m => Handle (FbM m) (Singleton LoadJsons)
 handleLoadJsons _reqs = singleton . OccLoadJsons <$> getObjects
 
 -- HTTP GET
 
-handleHttpGet :: Maybe (BS.ByteString, BS.ByteString) -> EvReqs (Singleton HttpGet) -> IO (EvOccs (Singleton HttpGet))
-handleHttpGet mba reqs = do
-	r <- hg . setUserAgent "Yoshio" . fromString $ T.unpack u
-	print $ HTTP.getResponseHeader "X-RateLimit-Remaining" r
-	pure . singleton $ OccHttpGet u (HTTP.getResponseHeaders r) (HTTP.getResponseBody r)
-	where
-	hg = case mba of
-		Just (nm, tkn) -> httpBasicAuth nm tkn
-		Nothing -> HTTP.httpLBS
-	HttpGetReq u = extract reqs
-	setUserAgent ua = HTTP.setRequestHeader "User-Agent" [ua]
-	httpBasicAuth usr p rq = HTTP.httpLBS $ HTTP.setRequestBasicAuth usr p rq
+handleHttpGet :: Maybe GithubNameToken -> Handle IO (Singleton HttpGet)
+handleHttpGet mgnt reqs = do
+	r <- H.httpLBS . maybe id (uncurry H.setRequestBasicAuth) mgnt
+		. H.setRequestHeader "User-Agent" ["Yoshio"]
+		. fromString $ T.unpack u
+	print $ H.getResponseHeader "X-RateLimit-Remaining" r
+	pure . singleton
+		$ OccHttpGet u (H.getResponseHeaders r) (H.getResponseBody r)
+	where HttpGetReq u = extract reqs
 
 -- CALC TEXT EXTENTS
 
@@ -141,10 +136,10 @@ handleBrowse brws reqs = spawnProcess brws [T.unpack u] >> pure (singleton OccBr
 
 type BeginEndSleepEv = BeginSleep :- EndSleep :- 'Nil
 
-handleBeginEndSleep :: EvReqs BeginEndSleepEv -> FollowboxM IO (Maybe (EvOccs BeginEndSleepEv))
+handleBeginEndSleep :: EvReqs BeginEndSleepEv -> FbM IO (Maybe (EvOccs BeginEndSleepEv))
 handleBeginEndSleep = handleBeginSleep `merge` handleEndSleep
 
-handleBeginSleep :: Monad m => EvReqs (Singleton BeginSleep) -> FollowboxM m (Maybe (EvOccs (Singleton BeginSleep)))
+handleBeginSleep :: Monad m => EvReqs (Singleton BeginSleep) -> FbM m (Maybe (EvOccs (Singleton BeginSleep)))
 handleBeginSleep reqs = case extract reqs of
 	BeginSleep t -> do
 		getSleepUntil >>= \case
@@ -154,7 +149,7 @@ handleBeginSleep reqs = case extract reqs of
 				pure . Just . singleton $ OccBeginSleep t
 	CheckBeginSleep -> pure Nothing
 
-handleEndSleep :: EvReqs (Singleton EndSleep) -> FollowboxM IO (Maybe (EvOccs (Singleton EndSleep)))
+handleEndSleep :: EvReqs (Singleton EndSleep) -> FbM IO (Maybe (EvOccs (Singleton EndSleep)))
 handleEndSleep _reqs = getSleepUntil >>= \case
 	Just t -> do
 		now <- lift getCurrentTime
@@ -186,7 +181,7 @@ handleRaiseError reqs = case errorResult e of
 
 -- MOUSE
 
-handleMouse :: Field -> EvReqs (Move :- LeftClick :- Quit :- 'Nil) -> (FollowboxM IO) (Maybe (EvOccs (Move :- LeftClick :- Quit :- 'Nil)))
+handleMouse :: Field -> EvReqs (Move :- LeftClick :- Quit :- 'Nil) -> (FbM IO) (Maybe (EvOccs (Move :- LeftClick :- Quit :- 'Nil)))
 handleMouse f reqs = getSleepUntil >>= lift . \case
 	Nothing -> handleLeftClick' f reqs
 	Just t -> handleLeftClickUntil f t reqs
