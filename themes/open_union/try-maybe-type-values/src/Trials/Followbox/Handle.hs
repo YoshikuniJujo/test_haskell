@@ -179,37 +179,31 @@ handleRaiseError reqs = case errorResult e of
 
 -- MOUSE
 
-handleMouse :: Field -> EvReqs (Move :- LeftClick :- Quit :- 'Nil) -> (FbM IO) (Maybe (EvOccs (Move :- LeftClick :- Quit :- 'Nil)))
-handleMouse f reqs = getSleepUntil >>= lift . \case
-	Nothing -> handleLeftClick' f reqs
-	Just t -> handleLeftClickUntil f t reqs
+type MouseEv = Move :- LeftClick :- Quit :- 'Nil
+type MoveLeftClick = Move :- LeftClick :- 'Nil
 
-handleLeftClick' :: Field -> EvReqs (Move :- LeftClick :- Quit :- 'Nil) -> IO (Maybe (EvOccs (Move :- LeftClick :- Quit :- 'Nil)))
-handleLeftClick' f _reqs = withNextEvent f \case
+handleMouse :: Field -> Handle' (FbM IO) MouseEv
+handleMouse f _reqs = getSleepUntil >>= lift . \case
+	Nothing -> withNextEvent f $ eventToEvent f
+	Just t -> withNextEventUntil f t $ maybe (pure Nothing) (eventToEvent f)
+
+eventToEvent :: Field -> Event -> IO (Maybe (EvOccs MouseEv))
+eventToEvent f = \case
 	DestroyWindowEvent {} -> pure . Just . expand $ singleton OccQuit
-	ExposeEvent {} -> flushField f >> pure Nothing
+	ExposeEvent {} -> Nothing <$ flushField f
 	ButtonEvent { ev_event_type = 4, ev_button = 1, ev_x = x, ev_y = y } ->
-		pure . Just $ expand (OccMove (fromIntegral x, fromIntegral y) >- singleton OccLeftClick :: EvOccs (Move :- LeftClick :- 'Nil))
-	ButtonEvent { ev_event_type = 4, ev_button = 3 } -> pure . Just . expand . singleton $ OccQuit
-	MotionEvent { ev_x = x, ev_y = y } -> pure . Just . expand . singleton $ OccMove (fromIntegral x, fromIntegral y)
-	ev	| isDeleteEvent f ev -> destroyField f >> pure Nothing
+		pure . Just $ expand occs
+		where
+		occs :: EvOccs MoveLeftClick
+		occs = occMove x y >- singleton OccLeftClick
+	ButtonEvent { ev_event_type = 4, ev_button = 3 } ->
+		pure . Just . expand . singleton $ OccQuit
+	MotionEvent { ev_x = x, ev_y = y } ->
+		pure . Just . expand . singleton $ occMove x y
+	ev	| isDeleteEvent f ev -> Nothing <$ destroyField f
 		| otherwise -> pure Nothing
-
-handleLeftClickUntil :: Field -> UTCTime -> EvReqs (Move :- LeftClick :- Quit :- 'Nil) ->
-	IO (Maybe (EvOccs (Move :- LeftClick :- Quit :- 'Nil)))
-handleLeftClickUntil f t _reqs = withNextEventUntil f t \case
-	Just DestroyWindowEvent {} -> pure . Just . expand $ singleton OccQuit
-	Just ExposeEvent { } -> flushField f >> pure Nothing
-	Just ButtonEvent { ev_event_type = 4, ev_button = 1, ev_x = x, ev_y = y } ->
-		pure . Just $ expand (OccMove (fromIntegral x, fromIntegral y) >- singleton OccLeftClick :: EvOccs (Move :- LeftClick :- 'Nil))
-	Just ButtonEvent { ev_event_type = 4, ev_button = 3 } -> pure . Just . expand . singleton $ OccQuit
-	Just MotionEvent { ev_x = x, ev_y = y } -> pure . Just . expand . singleton $ OccMove (fromIntegral x, fromIntegral y)
-	Just ev	| isDeleteEvent f ev -> destroyField f >> pure Nothing
-		| otherwise -> pure Nothing
-	Nothing -> pure Nothing
+	where occMove x y = OccMove (fromIntegral x, fromIntegral y)
 
 withNextEventUntil :: Field -> UTCTime -> (Maybe Event -> IO a) -> IO a
-withNextEventUntil f t act = do
-	now <- getCurrentTime
-	let	dt = t `diffUTCTime` now
-	withNextEventTimeout' f (round $ dt * 1000000) act
+withNextEventUntil f t act = getCurrentTime >>= \now ->
+	withNextEventTimeout' f (round $ t `diffUTCTime` now * 1000000) act

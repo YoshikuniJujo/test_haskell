@@ -70,7 +70,7 @@ Main
 		- [x] 2nd
 		- [x] 3rd
 * [x] Trials.Followbox.View
-* [ ] Trials.Followbox.Handle
+* [x] Trials.Followbox.Handle
 	+ [x] imports
 	+ [x] consider to use NotEmpty
 	+ [x] structure
@@ -78,7 +78,7 @@ Main
 	+ [x] body from \`CALC TEXT EXTENTS' until \`BROWSE'
 	+ [x] body \`BEGIN AND END SLEEP'
 	+ [x] body \`RAISE ERROR'
-	+ [ ] body \`MOUSE'
+	+ [x] body \`MOUSE'
 * [ ] Trials.Followbox.Run
 
 ### Correct
