@@ -79,9 +79,9 @@ Main
 	+ [x] body \`BEGIN AND END SLEEP'
 	+ [x] body \`RAISE ERROR'
 	+ [x] body \`MOUSE'
-* [ ] Trials.Followbox.Run
+* [x] Trials.Followbox.Run
 	+ [x] imports
-	+ [ ] body
+	+ [x] body
 
 ### Correct
 

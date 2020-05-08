@@ -26,19 +26,28 @@ import Field (openField, closeField, exposureMask, buttonPressMask)
 defaultBrowser :: Browser
 defaultBrowser = "firefox"
 
-initialState :: FollowboxState
-initialState = initialFollowboxState
-
 runFollowbox :: WindowTitle -> SigF View a -> IO (a, FollowboxState)
 runFollowbox ttl sig = getFollowboxInfo >>= \case
 	Left em -> putStrLn em >> exitFailure
-	Right fi -> runFollowboxGen ttl fi sig
+	Right fi -> runFb ttl fi sig
 
-runFollowboxGen :: WindowTitle -> FollowboxInfo -> SigF View a -> IO (a, FollowboxState)
-runFollowboxGen ttl fi sg = do
+runFb :: WindowTitle -> FollowboxInfo -> SigF View a -> IO (a, FollowboxState)
+runFb ttl i sg = do
 	f <- openField ttl [exposureMask, buttonPressMask]
-	interpret (handle f brs mba) (lift . view f) sg `runStateT` initialState <* closeField f
-	where FollowboxInfo { fiBrowser = brs, fiGithubUserNameToken = mba } = fi
+	interpret (handle f brs gnt) (lift . view f) sg
+		`runStateT` initialFollowboxState <* closeField f
+	where FollowboxInfo { fiBrowser = brs, fiGithubUserNameToken = gnt } = i
+
+---------------------------------------------------------------------------
+
+getFollowboxInfo :: IO (Either String FollowboxInfo)
+getFollowboxInfo = do
+	(os, args, ems) <- getOpt Permute followboxOptions <$> getArgs
+	case (args, ems) of
+		([], []) ->
+			either (pure . Left) optionsToInfo . chkDupOpt $ sort os
+		(_, []) -> pure $ Left "Only options are permitted"
+		_ -> pure . Left $ concat ems
 
 data FollowboxInfo = FollowboxInfo {
 	fiBrowser :: Browser,
@@ -50,27 +59,6 @@ data FollowboxOption
 	| FoGithubUserName GithubUserName | FoGithubToken FilePath
 	deriving (Show, Eq, Ord)
 
-checkDupOption :: [FollowboxOption] -> Either String [FollowboxOption]
-checkDupOption [] = Right []
-checkDupOption (FoBrowser _ : FoBrowser _ : _) =
-	Left "Duplicate Browser options"
-checkDupOption (FoGithubUserName _ : FoGithubUserName _ : _) =
-	Left "Duplicate GitHub user options"
-checkDupOption (FoGithubToken _ : FoGithubToken _ : _) =
-	Left "Duplicate GitHub token options"
-checkDupOption (o : os) = (o :) <$> checkDupOption os
-
-followboxOptionToInfo :: [FollowboxOption] -> IO (Either String FollowboxInfo)
-followboxOptionToInfo [] = pure $ Right FollowboxInfo {
-	fiBrowser = defaultBrowser, fiGithubUserNameToken = Nothing }
-followboxOptionToInfo (FoBrowser brs : os) =
-	((\fi -> fi { fiBrowser = brs }) <$>) <$> followboxOptionToInfo os
-followboxOptionToInfo (FoGithubUserName un : FoGithubToken fp : os) = do
-	r <- followboxOptionToInfo os
-	tkn <- removeLastNL <$> BS.readFile fp
-	pure $ (\fi -> fi { fiGithubUserNameToken = Just (un, tkn) }) <$> r
-followboxOptionToInfo _ = pure $ Left "Bad option set"
-
 followboxOptions :: [OptDescr FollowboxOption]
 followboxOptions = [
 	Option "b" ["browser"] (ReqArg FoBrowser "browser")
@@ -79,20 +67,26 @@ followboxOptions = [
 		(ReqArg (FoGithubUserName . BSC.pack) "GitHub user name")
 		"Set GitHub user name",
 	Option "t" ["github-token"]
-		(ReqArg FoGithubToken "GitHub token") "Set Github token" ]
+		(ReqArg FoGithubToken "GitHub token") "Set GitHub token" ]
 
-getFollowboxInfo :: IO (Either String FollowboxInfo)
-getFollowboxInfo = do
-	args <- getArgs
-	let	(os, args', errs) = getOpt Permute followboxOptions args
-	case (args', errs) of
-		([], []) -> do
-			let	os' = checkDupOption $ sort os
-			either (pure . Left) followboxOptionToInfo os'
-		(_, []) -> pure $ Left "No options are permited"
-		_ -> pure . Left $ concat errs
+optionsToInfo :: [FollowboxOption] -> IO (Either String FollowboxInfo)
+optionsToInfo [] = pure $ Right FollowboxInfo {
+	fiBrowser = defaultBrowser, fiGithubUserNameToken = Nothing }
+optionsToInfo (FoBrowser brs : os) =
+	((\fi -> fi { fiBrowser = brs }) <$>) <$> optionsToInfo os
+optionsToInfo (FoGithubUserName un : FoGithubToken fp : os) = do
+	r <- optionsToInfo os
+	tkn <- trim <$> BS.readFile fp
+	pure $ (\fi -> fi { fiGithubUserNameToken = Just (un, tkn) }) <$> r
+	where trim ba | Just (bs, '\n') <- BSC.unsnoc ba = bs | otherwise = ba
+optionsToInfo _ = pure $ Left "Bad option set"
 
-removeLastNL :: BS.ByteString -> BS.ByteString
-removeLastNL ba
-	| Just (bs, '\n') <- BSC.unsnoc ba = bs
-	| otherwise = ba
+chkDupOpt :: [FollowboxOption] -> Either String [FollowboxOption]
+chkDupOpt [] = Right []
+chkDupOpt (FoBrowser _ : FoBrowser _ : _) =
+	Left "Duplicate Browser options"
+chkDupOpt (FoGithubUserName _ : FoGithubUserName _ : _) =
+	Left "Duplicate GitHub user options"
+chkDupOpt (FoGithubToken _ : FoGithubToken _ : _) =
+	Left "Duplicate GitHub token options"
+chkDupOpt (o : os) = (o :) <$> chkDupOpt os
