@@ -77,7 +77,8 @@ Main
 	+ [x] body until \`HTTP GET'
 	+ [x] body from \`CALC TEXT EXTENTS' until \`BROWSE'
 	+ [x] body \`BEGIN AND END SLEEP'
-	+ [ ] body from \`RAISE ERROR'
+	+ [x] body \`RAISE ERROR'
+	+ [ ] body \`MOUSE'
 * [ ] Trials.Followbox.Run
 
 ### Correct

@@ -159,14 +159,13 @@ handleEndSleep _reqs = getSleepUntil >>= \case
 
 -- RAISE ERROR
 
-handleRaiseError :: EvReqs (Singleton RaiseError) -> IO (Maybe (EvOccs (Singleton RaiseError)))
+handleRaiseError :: Handle' IO (Singleton RaiseError)
 handleRaiseError reqs = case errorResult e of
 	Nothing -> pure Nothing
-	Just r -> do
-		putStrLn ("ERROR: " <> em)
-		pure . Just . singleton $ OccRaiseError e r
+	Just r -> Just (singleton $ OccRaiseError e r) <$ putStrLn emsg
 	where
 	RaiseError e em = extract reqs
+	emsg = "ERROR: " <> em
 	errorResult = \case
 		NoRateLimitRemaining -> Just Terminate
 		NoRateLimitReset -> Just Terminate
