@@ -65,8 +65,11 @@ putObjects os = modify \s -> s { fsObjects = os }
 getSleepUntil :: Monad m => FbM m (Maybe UTCTime)
 getSleepUntil = gets fsSleepUntil
 
-putSleepUntil :: Monad m => Maybe UTCTime -> FbM m ()
-putSleepUntil slp = modify \s -> s { fsSleepUntil = slp }
+putSleepUntil :: Monad m => UTCTime -> FbM m ()
+putSleepUntil slp = modify \s -> s { fsSleepUntil = Just slp }
+
+resetSleep :: Monad m => FbM m ()
+resetSleep = modify \s -> s { fsSleepUntil = Nothing }
 
 ---------------------------------------------------------------------------
 -- HANDLE
@@ -135,27 +138,24 @@ handleBrowse brws reqs = singleton OccBrowse <$ spawnProcess brws [T.unpack u]
 
 type BeginEndSleepEv = BeginSleep :- EndSleep :- 'Nil
 
-handleBeginEndSleep :: EvReqs BeginEndSleepEv -> FbM IO (Maybe (EvOccs BeginEndSleepEv))
+handleBeginEndSleep :: Handle' (FbM IO) BeginEndSleepEv
 handleBeginEndSleep = handleBeginSleep `merge` handleEndSleep
 
-handleBeginSleep :: Monad m => EvReqs (Singleton BeginSleep) -> FbM m (Maybe (EvOccs (Singleton BeginSleep)))
+handleBeginSleep :: Monad m => Handle' (FbM m) (Singleton BeginSleep)
 handleBeginSleep reqs = case extract reqs of
-	BeginSleep t -> do
-		getSleepUntil >>= \case
-			Just t' -> pure . Just . singleton $ OccBeginSleep t'
-			Nothing -> do
-				putSleepUntil $ Just t
-				pure . Just . singleton $ OccBeginSleep t
+	BeginSleep t -> getSleepUntil >>= \case
+		Just t' -> pure . Just . singleton $ OccBeginSleep t'
+		Nothing -> Just (singleton $ OccBeginSleep t)
+			<$ putSleepUntil t
 	CheckBeginSleep -> pure Nothing
 
-handleEndSleep :: EvReqs (Singleton EndSleep) -> FbM IO (Maybe (EvOccs (Singleton EndSleep)))
+handleEndSleep :: Handle' (FbM IO) (Singleton EndSleep)
 handleEndSleep _reqs = getSleepUntil >>= \case
-	Just t -> do
-		now <- lift getCurrentTime
-		bool	(pure Nothing)
-			(putSleepUntil Nothing >> pure (Just $ singleton OccEndSleep))
-			(t <= now)
-	Nothing -> pure . Just $ singleton OccEndSleep
+	Just t -> bool cnt (es <$ resetSleep) . (t <=) =<< lift getCurrentTime
+	Nothing -> pure es
+	where
+	cnt = pure Nothing
+	es = Just $ singleton OccEndSleep
 
 -- RAISE ERROR
 

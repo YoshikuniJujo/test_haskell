@@ -74,9 +74,10 @@ Main
 	+ [x] imports
 	+ [x] consider to use NotEmpty
 	+ [x] structure
-	+ [x] body until `HTTP GET'
-	+ [x] body from `CALC TEXT EXTENTS' until `BROWSE`
-	+ [ ] body from `BROWSE`
+	+ [x] body until \`HTTP GET'
+	+ [x] body from \`CALC TEXT EXTENTS' until \`BROWSE'
+	+ [x] body \`BEGIN AND END SLEEP'
+	+ [ ] body from \`RAISE ERROR'
 * [ ] Trials.Followbox.Run
 
 ### Correct
