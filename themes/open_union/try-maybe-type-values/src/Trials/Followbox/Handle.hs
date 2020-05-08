@@ -115,21 +115,20 @@ handleHttpGet mgnt reqs = do
 
 -- CALC TEXT EXTENTS
 
-handleCalcTextExtents :: Field -> EvReqs (Singleton CalcTextExtents) -> IO (EvOccs (Singleton CalcTextExtents))
-handleCalcTextExtents f reqs = singleton . OccCalcTextExtents fn fs t <$> textExtents f fn fs (T.unpack t)
+handleCalcTextExtents :: Field -> Handle IO (Singleton CalcTextExtents)
+handleCalcTextExtents f reqs = singleton
+	. OccCalcTextExtents fn fs t <$> textExtents f fn fs (T.unpack t)
 	where CalcTextExtentsReq fn fs t = extract reqs
 
 -- GET TIME ZONE
 
-handleGetTimeZone :: EvReqs (Singleton GetTimeZone) -> IO (EvOccs (Singleton GetTimeZone))
-handleGetTimeZone _reqs = do
-	tz <- getCurrentTimeZone
-	pure . singleton $ OccGetTimeZone tz
+handleGetTimeZone :: Handle IO (Singleton GetTimeZone)
+handleGetTimeZone _reqs = singleton . OccGetTimeZone <$> getCurrentTimeZone
 
 -- BROWSE
 
 handleBrowse :: FilePath -> Handle IO (Singleton Browse)
-handleBrowse brws reqs = spawnProcess brws [T.unpack u] >> pure (singleton OccBrowse)
+handleBrowse brws reqs = singleton OccBrowse <$ spawnProcess brws [T.unpack u]
 	where Browse u = extract reqs
 
 -- BEGIN AND END SLEEP

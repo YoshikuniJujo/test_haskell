@@ -75,5 +75,10 @@ Main
 	+ [x] consider to use NotEmpty
 	+ [x] structure
 	+ [x] body until `HTTP GET'
-	+ [ ] body from `CALC TEXT EXTENTS'
+	+ [x] body from `CALC TEXT EXTENTS' until `BROWSE`
+	+ [ ] body from `BROWSE`
 * [ ] Trials.Followbox.Run
+
+### Correct
+
+* [ ] try to use ThreadId to load objects
