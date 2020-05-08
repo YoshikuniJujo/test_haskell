@@ -4,22 +4,24 @@
 
 module Trials.Followbox.Run (runFollowbox) where
 
-import Control.Monad.State
-import Data.List
-import System.Environment
-import System.Console.GetOpt
-import System.Exit
+import Control.Monad.State (runStateT, lift)
+import Data.List (sort)
+import System.Environment (getArgs)
+import System.Exit (exitFailure)
+import System.Console.GetOpt (ArgOrder(..), OptDescr(..), ArgDescr(..), getOpt)
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 
-import MonadicFrp.Run
+import MonadicFrp.Run (interpret)
 import Trials.Followbox.Event (SigF)
-import Trials.Followbox.Handle
-import Trials.Followbox.View
-import Trials.Followbox.TypeSynonym
+import Trials.Followbox.Handle (handle, FollowboxState, initialFollowboxState)
+import Trials.Followbox.View (View, view)
+import Trials.Followbox.TypeSynonym (
+	WindowTitle, Browser, GithubNameToken, GithubUserName )
+import Field (openField, closeField, exposureMask, buttonPressMask)
 
-import Field
+---------------------------------------------------------------------------
 
 defaultBrowser :: Browser
 defaultBrowser = "firefox"
@@ -35,12 +37,12 @@ runFollowbox ttl sig = getFollowboxInfo >>= \case
 runFollowboxGen :: WindowTitle -> FollowboxInfo -> SigF View a -> IO (a, FollowboxState)
 runFollowboxGen ttl fi sg = do
 	f <- openField ttl [exposureMask, buttonPressMask]
-	interpret (handle f brs mba) (liftIO . view f) sg `runStateT` initialState <* closeField f
+	interpret (handle f brs mba) (lift . view f) sg `runStateT` initialState <* closeField f
 	where FollowboxInfo { fiBrowser = brs, fiGithubUserNameToken = mba } = fi
 
 data FollowboxInfo = FollowboxInfo {
 	fiBrowser :: Browser,
-	fiGithubUserNameToken :: Maybe (GithubUserName, GithubToken) }
+	fiGithubUserNameToken :: Maybe GithubNameToken }
 	deriving Show
 
 data FollowboxOption

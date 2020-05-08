@@ -80,6 +80,8 @@ Main
 	+ [x] body \`RAISE ERROR'
 	+ [x] body \`MOUSE'
 * [ ] Trials.Followbox.Run
+	+ [x] imports
+	+ [ ] body
 
 ### Correct
 
