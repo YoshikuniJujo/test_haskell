@@ -9,7 +9,7 @@ import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 import Data.Time.Clock.TAI (AbsoluteTime)
 
 import Trials.Boxes (leftClick, sameClick, doubler, firstPoint)
-import Trials.Boxes.Handlers (handle, handleWithoutTime)
+import Trials.Boxes.Handle (handle, handleWithoutTime)
 import Trials.Boxes.Events (ReactG, sleep)
 import MonadicFrp (adjust)
 import MonadicFrp.Run (interpretReact)

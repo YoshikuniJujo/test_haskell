@@ -4,7 +4,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Boxes.Handlers (handleWithoutTime, handle) where
+module Trials.Boxes.Handle (SigG, handleWithoutTime, handle) where
 
 import Foreign.C.Types (CInt)
 import Control.Monad (void)
@@ -18,7 +18,7 @@ import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
 import System.Exit (exitSuccess)
 
 import Trials.Boxes.Events (
-	GuiEv,
+	GuiEv, SigG,
 	MouseDown, MouseUp, MouseMove, TryWait(..), DeltaTime(..), Occurred(..),
 	MouseBtn(..) )
 import MonadicFrp (EvReqs, EvOccs)

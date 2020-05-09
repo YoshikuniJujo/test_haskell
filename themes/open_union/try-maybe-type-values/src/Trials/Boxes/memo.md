@@ -6,23 +6,25 @@ memo
 
 ```
 Main
-  +- Trials.Boxes.TrySig
-       +- Trials.Boxes
-            +- Trials.Boxes.Events
-       +- Trials.Boxes.Handlers
-       +- Trials.Boxes.Events
+  +- Trials.Boxes
+  |    +- Trials.Boxes.Events
+  |    +- Trials.Boxes.View
+  +- Trials.Boxes.Run
+       +- Trials.Boxes.Handle
+       |    +- Trials.Boxes.Events
+       +- Trials.Boxes.View
 ```
 
 リファクタリング
 ----------------
 
-* [ ] module hierarchy
+* [x] module hierarchy
 
 ### API
 
 * [ ] Trials.Boxes.Events
 * [ ] Trials.Boxes
-* [ ] Trials.Boxes.Handlers
+* [ ] Trials.Boxes.Handle
 * [ ] Trials.Boxes.TryReact
 * [ ] Trials.Boxes.TrySig
 
@@ -30,7 +32,7 @@ Main
 
 * [ ] Trials.Boxes.Events
 * [ ] Trials.Boxes
-* [ ] Trials.Boxes.Handlers
+* [ ] Trials.Boxes.Handle
 * [ ] Trials.Boxes.TryReact
 * [ ] Trials.Boxes.TrySig
 * [ ] Main

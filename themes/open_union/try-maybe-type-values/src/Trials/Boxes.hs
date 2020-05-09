@@ -5,7 +5,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Boxes (
-	Box(..), Rect(..), Color(..),
 	leftClick, sameClick, doubler, firstPoint, cycleColor, curRect,
 	elapsed, wiggleRect, completeRect, defineRect,
 	chooseBoxColor, chooseBoxColor', boxes ) where
@@ -24,6 +23,7 @@ import Data.Time (DiffTime)
 import Trials.Boxes.Events (
 	SigG, ISigG, ReactG, MouseDown, MouseUp, MouseBtn(..), Point,
 	mouseDown, mouseUp, mouseMove, sleep, deltaTime )
+import Trials.Boxes.View
 import MonadicFrp (
 	React, Firstable,
 	adjust, first, emit, waitFor, scanl, find, repeat, spawn, parList,
@@ -60,15 +60,11 @@ cycleColor = cc (cycle $ fromList [Red .. Magenta]) 1 where
 		bool (pure i) (cc t $ i + 1)
 			=<< waitFor (adjust $ middleClick `before` rightClick)
 
-data Color = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
-
 mousePos :: SigG Point ()
 mousePos = repeat $ adjust mouseMove
 
 curRect :: Point -> SigG Rect ()
 curRect p1 = Rect p1 <$%> mousePos
-
-data Rect = Rect { leftup :: Point, rightdown :: Point } deriving Show
 
 elapsed :: SigG DiffTime ()
 elapsed = scanl (+) 0 . repeat $ adjust deltaTime
@@ -99,8 +95,6 @@ defineRect = waitFor firstPoint >>= \case
 chooseBoxColor, chooseBoxColor' :: Rect -> SigG Box ()
 chooseBoxColor r = Box <$%> wiggleRect r <*%> (() <$ cycleColor)
 chooseBoxColor' r = fpure Box <*%> wiggleRect r <*%> (() <$ cycleColor)
-
-data Box = Box Rect Color deriving Show
 
 drClickOn :: Rect -> ReactG (Either Point (Either (Point, ()) (Maybe ())))
 drClickOn r = posInside r $ mousePos `indexBy` repeat doubler
