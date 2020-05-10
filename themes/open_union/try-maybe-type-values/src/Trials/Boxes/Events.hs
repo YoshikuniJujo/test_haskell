@@ -5,10 +5,13 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Boxes.Events (
-	SigG, ISigG, ReactG, GuiEv,
-	MouseDown, MouseUp, MouseMove, TryWait(..), DeltaTime(..), Occurred(..),
-	MouseBtn(..), Point,
-	mouseDown, mouseUp, mouseMove, sleep, deltaTime,
+	-- * GENERAL
+	SigG, ISigG, ReactG, GuiEv, Occurred(..),
+	-- * TIME
+	TryWait(..), sleep, DeltaTime(..), deltaTime,
+	-- * MOUSE
+	MouseDown, MouseUp, MouseBtn(..), mouseDown, mouseUp,
+	MouseMove, Point, mouseMove
 	) where
 
 import Data.Type.Set (Set(Nil), Singleton, (:-), numbered)

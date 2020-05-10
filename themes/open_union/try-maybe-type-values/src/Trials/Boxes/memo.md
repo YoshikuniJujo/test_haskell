@@ -23,6 +23,8 @@ Main
 ### API
 
 * [ ] Trials.Boxes.Events
+	+ [x] 1st
+	+ [ ] 2nd
 * [ ] Trials.Boxes
 * [ ] Trials.Boxes.Handle
 * [ ] Trials.Boxes.TryReact
