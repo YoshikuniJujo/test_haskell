@@ -8,7 +8,7 @@ import Data.Time (DiffTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 
 import Trials.Boxes.View (Box(..), Rect(..), Color(..))
-import Trials.Boxes.Handle (SigG, handle)
+import Trials.Boxes.Handle (SigG, handle, handle')
 import MonadicFrp.Run (interpret)
 import Field (
 	Field, Pixel,
@@ -22,7 +22,7 @@ withInterpretSig fn op s = do
 		exposureMask, buttonPressMask,
 		buttonReleaseMask, pointerMotionMask ]
 	now <- systemToTAITime <$> getSystemTime
-	print =<< interpret (handle 0.05 f) (liftIO . op f) s `runStateT` now
+	print =<< interpret (handle' 0.05 f) (liftIO . op f) s `runStateT` now
 	closeField f
 
 withFlush :: Field -> IO () -> IO ()

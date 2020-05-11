@@ -2,14 +2,14 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Boxes.TryReact (
-	tryLeftClick, trySameClick, trySleep, tryDoubler, tryFirstPoint ) where
+	tryLeftClick, trySameClick, trySleep, trySleep', tryDoubler, tryDoubler', tryFirstPoint ) where
 
 import Control.Monad.State (runStateT)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 import Data.Time.Clock.TAI (AbsoluteTime)
 
 import Trials.Boxes (leftClick, sameClick, doubler, firstPoint)
-import Trials.Boxes.Handle (handle, handleWithoutTime)
+import Trials.Boxes.Handle (handle, handle', handleWithoutTime)
 import Trials.Boxes.Events (ReactG, sleep)
 import MonadicFrp (adjust)
 import MonadicFrp.Run (interpretReact)
@@ -32,10 +32,20 @@ trySleep = withField "trySleep" \f -> do
 	now <- getTAITime
 	print =<< interpretReact (handle 0.5 f) (adjust $ sleep 3) `runStateT` now
 
+trySleep' :: IO ()
+trySleep' = withField "trySleep" \f -> do
+	now <- getTAITime
+	print =<< interpretReact (handle' 0.5 f) (adjust $ sleep 3) `runStateT` now
+
 tryDoubler :: IO ()
 tryDoubler = withField "tryDoubler" \f -> do
 	now <- getTAITime
 	print =<< interpretReact (handle 0.05 f) doubler `runStateT` now
+
+tryDoubler' :: IO ()
+tryDoubler' = withField "tryDoubler" \f -> do
+	now <- getTAITime
+	print =<< interpretReact (handle' 0.05 f) doubler `runStateT` now
 
 tryFirstPoint :: IO ()
 tryFirstPoint = withField "tryFirstPoint" \f -> do
