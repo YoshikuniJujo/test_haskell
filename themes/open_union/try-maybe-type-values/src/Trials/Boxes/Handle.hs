@@ -8,7 +8,7 @@ module Trials.Boxes.Handle (SigG, handleWithoutTime, handle, handle') where
 
 import Foreign.C.Types (CInt)
 import Control.Monad (void)
-import Control.Monad.State (StateT, get, put, lift, liftIO)
+import Control.Monad.State (StateT, get, put, gets, lift, liftIO)
 import Data.Type.Set (Set(Nil), Singleton, (:-))
 import Data.Bool (bool)
 import Data.Maybe (fromJust)
@@ -35,49 +35,54 @@ handleWithoutTime f reqs = withNextEvent f \case
 			pure . expand . singleton $ OccMouseDown [b]
 	_ -> handleWithoutTime f reqs
 
-handleTime :: Handle' (StateT AbsoluteTime IO) (TryWait :- DeltaTime :- 'Nil)
-handleTime reqs = do
-	now <- lift $ systemToTAITime <$> getSystemTime
-	case prj reqs of
-		Just (TryWaitReq t) -> do
-			lst <- get
-			let	dt = now `diffAbsoluteTime` lst
-			bool	(do	put now
-					pure . Just $ OccTryWait dt >-
-						singleton (OccDeltaTime dt))
-				(do	put $ t `addAbsoluteTime` lst
-					pure . Just $ OccTryWait t >-
-						singleton (OccDeltaTime t))
-				(dt >= t)
-		Nothing -> do
-			lst <- get
-			let	dt = now `diffAbsoluteTime` lst
-			put now
-			pure . Just . expand $ singleton (OccDeltaTime dt)
+handleTryWait :: Monad m =>
+	AbsoluteTime -> Handle' (StateT AbsoluteTime m) (TryWait :- DeltaTime :- 'Nil)
+handleTryWait now reqs = case prj reqs of
+	Just (TryWaitReq t) -> do
+		lst <- get
+		let	dt = now `diffAbsoluteTime` lst
+		bool	(do	put now
+				pure . Just $ OccTryWait dt >-
+					singleton (OccDeltaTime dt))
+			(do	put $ t `addAbsoluteTime` lst
+				pure . Just $ OccTryWait t >-
+					singleton (OccDeltaTime t))
+			(dt >= t)
+	Nothing -> do
+		lst <- get
+		let	dt = now `diffAbsoluteTime` lst
+		put now
+		pure . Just . expand $ singleton (OccDeltaTime dt)
 
-handleMouse :: DiffTime -> Field -> Handle' (StateT AbsoluteTime IO) (MouseDown :- MouseUp :- MouseMove :- 'Nil)
-handleMouse prd f _reqs = do
-	put . systemToTAITime =<< lift getSystemTime
-	lift $ withNextEventTimeout'' f prd \case
-		Just ButtonEvent {
-			ev_event_type = 4, ev_button = eb,
-			ev_x = x, ev_y = y }
-			| Just b <- button eb -> pure . Just
-				. expand $ mouseDownOcc x y [b]
-		Just ButtonEvent {
-			ev_event_type = 5, ev_button = eb,
-			ev_x = x, ev_y = y }
-			| Just b <- button eb -> pure . Just
-				. expand $ mouseUpOcc x y [b]
-		Just MotionEvent { ev_x = x, ev_y = y } ->
-			pure . Just . expand $ mouseMoveOcc x y
-		Just ExposeEvent {} ->
-			Nothing <$ flushField f
-		Just DestroyWindowEvent {} ->
-			closeField f >> exitSuccess
-		Just ev	| isDeleteEvent f ev ->
-			Nothing <$ destroyField f
-		_ -> pure Nothing
+handleDeltaTime :: Monad m =>
+	AbsoluteTime -> Handle (StateT AbsoluteTime m) (Singleton DeltaTime)
+handleDeltaTime now _reqs = gets $ singleton . OccDeltaTime . (now `diffAbsoluteTime`)
+
+
+handleNow :: Monad m => AbsoluteTime -> Handle' (StateT AbsoluteTime m) GuiEv
+handleNow now _reqs = Nothing <$ put now
+
+handleMouse' :: DiffTime -> Field -> Handle' IO (MouseDown :- MouseUp :- MouseMove :- 'Nil)
+handleMouse' prd f _reqs = withNextEventTimeout'' f prd \case
+	Just ButtonEvent {
+		ev_event_type = 4, ev_button = eb,
+		ev_x = x, ev_y = y }
+		| Just b <- button eb -> pure . Just
+			. expand $ mouseDownOcc x y [b]
+	Just ButtonEvent {
+		ev_event_type = 5, ev_button = eb,
+		ev_x = x, ev_y = y }
+		| Just b <- button eb -> pure . Just
+			. expand $ mouseUpOcc x y [b]
+	Just MotionEvent { ev_x = x, ev_y = y } ->
+		pure . Just . expand $ mouseMoveOcc x y
+	Just ExposeEvent {} ->
+		Nothing <$ flushField f
+	Just DestroyWindowEvent {} ->
+		closeField f >> exitSuccess
+	Just ev	| isDeleteEvent f ev ->
+		Nothing <$ destroyField f
+	_ -> pure Nothing
 
 handle, handle' :: DiffTime ->
 	Field -> EvReqs GuiEv -> StateT AbsoluteTime IO (EvOccs GuiEv)
@@ -113,7 +118,10 @@ handle prd f reqs = do
 			maybe (handle dt f reqs) pure
 				$ moccs `merge'` mkTimeObs reqs dt
 
-handle' prd f = retry $ handleTime `merge` handleMouse prd f
+handle' prd f = retry $ \reqs -> do -- handleTime `merge` handleMouse prd f
+	now <- lift $ systemToTAITime <$> getSystemTime
+	handleTryWait now `merge` handleNow now `merge` lift . handleMouse' prd f $ reqs
+	
 
 mouseDownOcc ::
 	CInt -> CInt -> [MouseBtn] -> EvOccs (MouseMove :- MouseDown :- 'Nil)
