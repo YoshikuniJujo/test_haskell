@@ -59,10 +59,10 @@ interpretReact' _ _ (Done x) = pure x
 interpretReact' ti p (Await r c) = fst <$> (interpretReact' ti p . (`c` ti) =<< p r)
 interpretReact' _ _ Never = error "never occur"			-- <- really?
 
-interpretReactSt :: Monad m => st -> HandleSt m st es -> React es a -> m (a, st)
+interpretReactSt :: Monad m => st -> HandleSt st m es -> React es a -> m (a, st)
 interpretReactSt = interpretReactSt' rootThreadId
 
-interpretReactSt' :: Monad m => ThreadId -> st -> HandleSt m st es -> React es a -> m (a, st)
+interpretReactSt' :: Monad m => ThreadId -> st -> HandleSt st m es -> React es a -> m (a, st)
 interpretReactSt' _ st _ (Done x) = pure (x, st)
 interpretReactSt' ti st p (Await r c) = do
 	(x, st') <- p st r
@@ -132,4 +132,4 @@ type CollapsableOccurred es es' =
 
 type Handle m es = EvReqs es -> m (EvOccs es)
 type Handle' m es = EvReqs es -> m (Maybe (EvOccs es))
-type HandleSt m st es = st -> EvReqs es -> m (EvOccs es, st)
+type HandleSt st m es = st -> EvReqs es -> m (EvOccs es, st)

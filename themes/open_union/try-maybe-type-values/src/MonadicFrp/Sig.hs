@@ -68,7 +68,7 @@ interpret p d = interpretSig' where
 --	interpretISig (h :| Never) = d h >> interpretSig' 
 	interpretISig (h :| t) = d h >> interpretSig' t
 
-interpretSt :: Monad m => st -> HandleSt m st es -> (a -> m ()) -> Sig es a r -> m r
+interpretSt :: Monad m => st -> HandleSt st m es -> (a -> m ()) -> Sig es a r -> m r
 interpretSt st0 p d = interpretSig st0 where
 	interpretSig st (Sig s) = do
 		(x, st') <- interpretReactSt st p s

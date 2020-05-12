@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -43,10 +43,34 @@ tickTack :: Sig (Singleton TryWait) (Tick, Tack) ()
 tickTack = (,) <$%> tick 0 <*%> tack 0
 
 handle :: Handle IO (Singleton TryWait)
-handle reqs = do
+handle _reqs = do
 	threadDelay 500000
 	pure . singleton $ OccTryWait 0.5
-	where TryWaitReq t = extract reqs
+--	where TryWaitReq t = extract reqs
 
 runSleep :: IO ()
 runSleep = interpret handle print tickTack
+
+data AB = A | B DiffTime deriving Show
+
+handle' :: HandleSt AB IO (Singleton TryWait)
+handle' = \case A -> handleA; B t -> handleB t
+
+handleA :: EvReqs (Singleton TryWait) -> IO (EvOccs (Singleton TryWait), AB)
+handleA reqs = do
+	threadDelay 2000000
+	bool	(pure (singleton $ OccTryWait 2, A))
+		(pure (singleton $ OccTryWait t, B $ 2 - t))
+		(t < 2)
+	where TryWaitReq t = extract reqs
+
+handleB :: Applicative m =>
+	DiffTime -> EvReqs (Singleton TryWait) -> m (EvOccs (Singleton TryWait), AB)
+handleB t' reqs = bool
+	(pure (singleton $ OccTryWait t', A))
+	(pure (singleton $ OccTryWait t, B $ t' - t))
+	(t < t')
+	where TryWaitReq t = extract reqs
+	
+runSleep' :: IO ()
+runSleep' = interpretSt A handle' print tickTack

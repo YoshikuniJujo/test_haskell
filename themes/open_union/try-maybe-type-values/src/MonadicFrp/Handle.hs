@@ -6,7 +6,7 @@
 
 module MonadicFrp.Handle (
 	-- * Types
-	Sig, React, Handle, Handle', EvReqs, EvOccs,
+	Sig, React, Handle, Handle', HandleSt, EvReqs, EvOccs,
 	-- * Composer
 	retry, before, merge
 	) where
