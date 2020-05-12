@@ -7,8 +7,8 @@
 
 module MonadicFrp.React.Internal (
 	React(..), EvReqs, EvOccs, Request(..), Firstable, CollapsableOccurred,
-	interpretReact, adjust, first_, first, done,
-	Handle, Handle'
+	interpretReact, interpretReactSt, adjust, first_, first, done,
+	Handle, Handle', HandleSt
 	) where
 
 import Data.Kind
@@ -58,6 +58,17 @@ interpretReact' :: Monad m => ThreadId -> Handle m es -> React es a -> m a
 interpretReact' _ _ (Done x) = pure x
 interpretReact' ti p (Await r c) = fst <$> (interpretReact' ti p . (`c` ti) =<< p r)
 interpretReact' _ _ Never = error "never occur"			-- <- really?
+
+interpretReactSt :: Monad m => st -> HandleSt m st es -> React es a -> m (a, st)
+interpretReactSt = interpretReactSt' rootThreadId
+
+interpretReactSt' :: Monad m => ThreadId -> st -> HandleSt m st es -> React es a -> m (a, st)
+interpretReactSt' _ st _ (Done x) = pure (x, st)
+interpretReactSt' ti st p (Await r c) = do
+	(x, st') <- p st r
+	((x', _ti'), st'') <- interpretReactSt' ti st' p $ c x ti
+	pure (x', st'')
+interpretReactSt' _ _ _ Never = error "never occur"		-- <- really?
 
 adjust :: forall es es' a . (
 	(es :+: es') ~ es', Firstable es es', Expandable es es'
@@ -121,3 +132,4 @@ type CollapsableOccurred es es' =
 
 type Handle m es = EvReqs es -> m (EvOccs es)
 type Handle' m es = EvReqs es -> m (Maybe (EvOccs es))
+type HandleSt m st es = st -> EvReqs es -> m (EvOccs es, st)

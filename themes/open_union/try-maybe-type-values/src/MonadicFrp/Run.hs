@@ -8,7 +8,7 @@ module MonadicFrp.Run (
 	-- * Types
 	Sig, React, Handle, EvReqs, EvOccs,
 	-- * Run
-	interpret, interpretReact
+	interpret, interpretSt, interpretReact, interpretReactSt
 	) where
 
 import Prelude hiding (map, repeat, scanl, until)

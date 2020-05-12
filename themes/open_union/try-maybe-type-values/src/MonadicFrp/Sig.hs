@@ -8,7 +8,7 @@ module MonadicFrp.Sig (
 	-- * Types
 	Sig, ISig,
 	-- * Run Sig
-	interpret,
+	interpret, interpretSt,
 	-- * Conversion
 	emit, waitFor,
 	-- * Transformation
@@ -67,6 +67,14 @@ interpret p d = interpretSig' where
 	interpretISig (End x) = pure x
 --	interpretISig (h :| Never) = d h >> interpretSig' 
 	interpretISig (h :| t) = d h >> interpretSig' t
+
+interpretSt :: Monad m => st -> HandleSt m st es -> (a -> m ()) -> Sig es a r -> m r
+interpretSt st0 p d = interpretSig st0 where
+	interpretSig st (Sig s) = do
+		(x, st') <- interpretReactSt st p s
+		interpretISig st' x
+	interpretISig _st (End x) = pure x
+	interpretISig st (h :| t) = d h >> interpretSig st t
 
 emitAll :: ISig es a b -> Sig es a b
 emitAll = Sig . pure
