@@ -6,9 +6,9 @@
 
 module MonadicFrp.Handle (
 	-- * Types
-	Sig, React, Handle, Handle', HandleSt, EvReqs, EvOccs,
+	Sig, React, Handle, Handle', HandleSt, HandleSt', EvReqs, EvOccs,
 	-- * Composer
-	retry, before, merge
+	retry, before, merge, retrySt
 	) where
 
 import Prelude hiding (map, repeat, scanl, until)
@@ -21,6 +21,11 @@ import MonadicFrp.React
 retry :: Monad m => Handle' m es -> Handle m es
 retry h reqs = h reqs >>= \case
 	Just occs -> pure occs; Nothing -> retry h reqs
+
+retrySt :: Monad m => HandleSt' st m es -> HandleSt st m es
+retrySt h st reqs = h st reqs >>= \case
+	(Just occs, st') -> pure (occs, st')
+	(Nothing, st') -> retrySt h st' reqs
 
 infixr 5 `before`
 

@@ -8,7 +8,7 @@
 module MonadicFrp.React.Internal (
 	React(..), EvReqs, EvOccs, Request(..), Firstable, CollapsableOccurred,
 	interpretReact, interpretReactSt, adjust, first_, first, done,
-	Handle, Handle', HandleSt
+	Handle, Handle', HandleSt, HandleSt'
 	) where
 
 import Data.Kind
@@ -133,3 +133,4 @@ type CollapsableOccurred es es' =
 type Handle m es = EvReqs es -> m (EvOccs es)
 type Handle' m es = EvReqs es -> m (Maybe (EvOccs es))
 type HandleSt st m es = st -> EvReqs es -> m (EvOccs es, st)
+type HandleSt' st m es = st -> EvReqs es -> m (Maybe (EvOccs es), st)

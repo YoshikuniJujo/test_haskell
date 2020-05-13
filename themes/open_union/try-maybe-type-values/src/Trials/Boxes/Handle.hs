@@ -4,7 +4,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Boxes.Handle (SigG, handleWithoutTime, handle, handle') where
+module Trials.Boxes.Handle (SigG, handleWithoutTime, handle, handle', handleSt, AB(..)) where
 
 import Foreign.C.Types (CInt)
 import Control.Monad (void)
@@ -12,7 +12,7 @@ import Control.Monad.State (StateT, get, put, gets, lift, liftIO)
 import Data.Type.Set (Set(Nil), Singleton, (:-))
 import Data.Bool (bool)
 import Data.Maybe (fromJust)
-import Data.UnionSet (prj, singleton, (>-), expand, merge')
+import Data.UnionSet (prj, singleton, (>-), expand, collapse, merge')
 import Data.Time (DiffTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
@@ -62,8 +62,54 @@ handleDeltaTime now _reqs = gets $ singleton . OccDeltaTime . (now `diffAbsolute
 handleNow :: Monad m => AbsoluteTime -> Handle' (StateT AbsoluteTime m) GuiEv
 handleNow now _reqs = Nothing <$ put now
 
-handleMouse' :: DiffTime -> Field -> Handle' IO (MouseDown :- MouseUp :- MouseMove :- 'Nil)
-handleMouse' prd f _reqs = withNextEventTimeout'' f prd \case
+data AB = A | B AbsoluteTime deriving Show
+
+handleSt :: DiffTime -> Field -> HandleSt AB (StateT AbsoluteTime IO) GuiEv
+handleSt prd f = retrySt \case A -> handleA prd f; B now -> handleB now
+
+handleA :: DiffTime -> Field -> EvReqs GuiEv -> StateT AbsoluteTime IO (Maybe (EvOccs GuiEv), AB)
+handleA prd f reqs = do
+	r1 <- maybe (pure Nothing) (lift . handleMouse prd f) $ collapse reqs
+	now <- lift $ systemToTAITime <$> getSystemTime
+	lst <- get
+	let	dt = now `diffAbsoluteTime` lst
+	case prj reqs of
+		Just (TryWaitReq t)
+			| t < dt -> do
+				put $ t `addAbsoluteTime` lst
+				pure (Just (OccTryWait t >- singleton (OccDeltaTime t)
+					:: EvOccs (DeltaTime :- TryWait :- 'Nil)) `merge'` r1, B now)
+			| otherwise -> do
+				put now
+				pure (Just (OccTryWait dt >- singleton (OccDeltaTime dt)
+					:: EvOccs (DeltaTime :- TryWait :- 'Nil)) `merge'` r1, A)
+		Nothing -> do
+			put now
+			pure ( expand <$>
+				(Just (singleton $ OccDeltaTime dt) `merge'` r1 ::
+					Maybe (EvOccs (DeltaTime :- MouseDown :- MouseUp :- MouseMove :- 'Nil))),
+				A )
+
+handleB :: AbsoluteTime -> EvReqs GuiEv -> StateT AbsoluteTime IO (Maybe (EvOccs GuiEv), AB)
+handleB now reqs = do
+	lst <- get
+	let	dt = now `diffAbsoluteTime` lst
+	case prj reqs of
+		Just (TryWaitReq t)
+			| t < dt -> do
+				put $ t `addAbsoluteTime` lst
+				pure (expand <$> Just (OccTryWait t >- singleton (OccDeltaTime t)
+					:: EvOccs (DeltaTime :- TryWait :- 'Nil)), B now)
+			| otherwise -> do
+				put now
+				pure (expand <$> Just (OccTryWait dt >- singleton (OccDeltaTime dt)
+					:: EvOccs (DeltaTime :- TryWait :- 'Nil)), A)
+		Nothing -> do
+			put now
+			pure (expand <$> (Just . singleton $ OccDeltaTime dt), A)
+
+handleMouse :: DiffTime -> Field -> Handle' IO (MouseDown :- MouseUp :- MouseMove :- 'Nil)
+handleMouse prd f _reqs = withNextEventTimeout'' f prd \case
 	Just ButtonEvent {
 		ev_event_type = 4, ev_button = eb,
 		ev_x = x, ev_y = y }
@@ -120,7 +166,7 @@ handle prd f reqs = do
 
 handle' prd f = retry $ \reqs -> do -- handleTime `merge` handleMouse prd f
 	now <- lift $ systemToTAITime <$> getSystemTime
-	handleTryWait now `merge` handleNow now `merge` lift . handleMouse' prd f $ reqs
+	handleTryWait now `merge` handleNow now `merge` lift . handleMouse prd f $ reqs
 	
 
 mouseDownOcc ::
