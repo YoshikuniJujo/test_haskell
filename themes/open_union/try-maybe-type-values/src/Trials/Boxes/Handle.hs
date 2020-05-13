@@ -4,14 +4,11 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Boxes.Handle (SigG, handleWithoutTime, handle, handle', handleSt, AB(..)) where
+module Trials.Boxes.Handle (SigG, handleWithoutTime, handle, AB(..)) where
 
 import Foreign.C.Types (CInt)
-import Control.Monad (void)
-import Control.Monad.State (StateT, get, put, gets, lift, liftIO)
+import Control.Monad.State (StateT, get, put, lift)
 import Data.Type.Set (Set(Nil), Singleton, (:-))
-import Data.Bool (bool)
-import Data.Maybe (fromJust)
 import Data.UnionSet (prj, singleton, (>-), expand, collapse, merge')
 import Data.Time (DiffTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
@@ -35,37 +32,10 @@ handleWithoutTime f reqs = withNextEvent f \case
 			pure . expand . singleton $ OccMouseDown [b]
 	_ -> handleWithoutTime f reqs
 
-handleTryWait :: Monad m =>
-	AbsoluteTime -> Handle' (StateT AbsoluteTime m) (TryWait :- DeltaTime :- 'Nil)
-handleTryWait now reqs = case prj reqs of
-	Just (TryWaitReq t) -> do
-		lst <- get
-		let	dt = now `diffAbsoluteTime` lst
-		bool	(do	put now
-				pure . Just $ OccTryWait dt >-
-					singleton (OccDeltaTime dt))
-			(do	put $ t `addAbsoluteTime` lst
-				pure . Just $ OccTryWait t >-
-					singleton (OccDeltaTime t))
-			(dt >= t)
-	Nothing -> do
-		lst <- get
-		let	dt = now `diffAbsoluteTime` lst
-		put now
-		pure . Just . expand $ singleton (OccDeltaTime dt)
-
-handleDeltaTime :: Monad m =>
-	AbsoluteTime -> Handle (StateT AbsoluteTime m) (Singleton DeltaTime)
-handleDeltaTime now _reqs = gets $ singleton . OccDeltaTime . (now `diffAbsoluteTime`)
-
-
-handleNow :: Monad m => AbsoluteTime -> Handle' (StateT AbsoluteTime m) GuiEv
-handleNow now _reqs = Nothing <$ put now
-
 data AB = A | B AbsoluteTime deriving Show
 
-handleSt :: DiffTime -> Field -> HandleSt AB (StateT AbsoluteTime IO) GuiEv
-handleSt prd f = retrySt \case A -> handleA prd f; B now -> handleB now
+handle :: DiffTime -> Field -> HandleSt AB (StateT AbsoluteTime IO) GuiEv
+handle prd f = retrySt \case A -> handleA prd f; B now -> handleB now
 
 handleA :: DiffTime -> Field -> EvReqs GuiEv -> StateT AbsoluteTime IO (Maybe (EvOccs GuiEv), AB)
 handleA prd f reqs = do
@@ -130,45 +100,6 @@ handleMouse prd f _reqs = withNextEventTimeout'' f prd \case
 		Nothing <$ destroyField f
 	_ -> pure Nothing
 
-handle, handle' :: DiffTime ->
-	Field -> EvReqs GuiEv -> StateT AbsoluteTime IO (EvOccs GuiEv)
-handle prd f reqs = do
-	(lst, now) <- (,) <$> get <*> liftIO (systemToTAITime <$> getSystemTime)
-	let	dt = now `diffAbsoluteTime` lst
-	case getTryWaitReq <$> prj reqs of
-		Just t | dt >= t -> do
-			put $ t `addAbsoluteTime` lst
-			pure . expand . fromJust $ mkTimeObs reqs t
-		_ -> do	put now
-			moccs <- liftIO $ withNextEventTimeout'' f prd \case
-				Just ButtonEvent {
-					ev_event_type = 4, ev_button = eb,
-					ev_x = x, ev_y = y }
-					| Just b <- button eb -> pure . Just
-						. expand $ mouseDownOcc x y [b]
-				Just ButtonEvent {
-					ev_event_type = 5, ev_button = eb,
-					ev_x = x, ev_y = y }
-					| Just b <- button eb -> pure . Just
-						. expand $ mouseUpOcc x y [b]
-				Just MotionEvent { ev_x = x, ev_y = y } ->
-					pure . Just . expand $ mouseMoveOcc x y
-				Just ExposeEvent {} ->
-					Nothing <$ flushField f
-				Just DestroyWindowEvent {} ->
-					closeField f >> exitSuccess
-				Just ev	| isDeleteEvent f ev ->
-					Nothing <$ destroyField f
-				_ -> pure Nothing
-			void $ pure (moccs :: Maybe (EvOccs GuiEv))
-			maybe (handle dt f reqs) pure
-				$ moccs `merge'` mkTimeObs reqs dt
-
-handle' prd f = retry $ \reqs -> do -- handleTime `merge` handleMouse prd f
-	now <- lift $ systemToTAITime <$> getSystemTime
-	handleTryWait now `merge` handleNow now `merge` lift . handleMouse prd f $ reqs
-	
-
 mouseDownOcc ::
 	CInt -> CInt -> [MouseBtn] -> EvOccs (MouseMove :- MouseDown :- 'Nil)
 mouseDownOcc x y bs =OccMouseDown bs >- mouseMoveOcc x y
@@ -179,16 +110,6 @@ mouseUpOcc x y bs = OccMouseUp bs >- mouseMoveOcc x y
 
 mouseMoveOcc :: CInt -> CInt -> EvOccs (Singleton MouseMove)
 mouseMoveOcc x y = singleton $ OccMouseMove (fromIntegral x, fromIntegral y)
-
-mkTimeObs :: EvReqs GuiEv ->
-	DiffTime -> Maybe (EvOccs (TryWait :- DeltaTime :- 'Nil))
-mkTimeObs r t = mkTryWait r t `merge'` mkDeltaTime r t
-
-mkTryWait :: EvReqs GuiEv -> DiffTime -> Maybe (EvOccs (Singleton TryWait))
-mkTryWait r t = (<$> prj r) \(TryWaitReq _) -> singleton $ OccTryWait t
-
-mkDeltaTime :: EvReqs GuiEv -> DiffTime -> Maybe (EvOccs (Singleton DeltaTime))
-mkDeltaTime r t = (<$> prj r) \DeltaTimeReq -> singleton $ OccDeltaTime t
 
 withNextEventTimeout'' :: Field -> DiffTime -> (Maybe Event -> IO a) ->  IO a
 withNextEventTimeout'' f = withNextEventTimeout' f . round . (* 1000000)
