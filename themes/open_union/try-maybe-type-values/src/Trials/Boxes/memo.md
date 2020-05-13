@@ -91,6 +91,7 @@ Main
 リファクタリング
 ----------------
 
+* `->` Body : Trials.Boxes.Handle
 * [ ] module hierarchy
 	+ [ ] Trials.Boxes.Mouse
 	+ [ ] Trials.Boxes.Mouse
@@ -115,6 +116,11 @@ Main
 * [ ] Trials.Boxes.Events
 * [ ] Trials.Boxes
 * [ ] Trials.Boxes.Handle
+	+ [ ] 1st
+		- [x] handleTime
+		- [ ] others
+	+ [ ] imports
+	+ [ ] body
 * [ ] Trials.Boxes.TryReact
 * [ ] Trials.Boxes.TrySig
 * [ ] Main

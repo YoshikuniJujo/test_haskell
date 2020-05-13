@@ -7,6 +7,7 @@
 module Trials.Boxes.Handle (SigG, handleWithoutTime, handle, AB(..)) where
 
 import Foreign.C.Types (CInt)
+import Control.Arrow
 import Control.Monad.State (StateT, get, put, lift)
 import Data.Type.Set (Set(Nil), Singleton, (:-))
 import Data.UnionSet (prj, singleton, (>-), expand, collapse, merge')
@@ -41,42 +42,31 @@ handleA :: DiffTime -> Field -> EvReqs GuiEv -> StateT AbsoluteTime IO (Maybe (E
 handleA prd f reqs = do
 	r1 <- maybe (pure Nothing) (lift . handleMouse prd f) $ collapse reqs
 	now <- lift $ systemToTAITime <$> getSystemTime
-	lst <- get
-	let	dt = now `diffAbsoluteTime` lst
-	case prj reqs of
-		Just (TryWaitReq t)
-			| t < dt -> do
-				put $ t `addAbsoluteTime` lst
-				pure (Just (OccTryWait t >- singleton (OccDeltaTime t)
-					:: EvOccs (DeltaTime :- TryWait :- 'Nil)) `merge'` r1, B now)
-			| otherwise -> do
-				put now
-				pure (Just (OccTryWait dt >- singleton (OccDeltaTime dt)
-					:: EvOccs (DeltaTime :- TryWait :- 'Nil)) `merge'` r1, A)
-		Nothing -> do
-			put now
-			pure ( expand <$>
-				(Just (singleton $ OccDeltaTime dt) `merge'` r1 ::
-					Maybe (EvOccs (DeltaTime :- MouseDown :- MouseUp :- MouseMove :- 'Nil))),
-				A )
+	maybe	((expand <$> r1, A) <$ put now)
+		(((((`merge'` r1) . Just) `first`) <$>) . handleTime now) $ collapse reqs
 
 handleB :: AbsoluteTime -> EvReqs GuiEv -> StateT AbsoluteTime IO (Maybe (EvOccs GuiEv), AB)
-handleB now reqs = do
+handleB now reqs = maybe
+	((Nothing, A) <$ put now)
+	((((Just . expand) `first`) <$>) . handleTime now) $ collapse reqs
+
+handleTime :: Monad m => AbsoluteTime ->
+	EvReqs (TryWait :- DeltaTime :- 'Nil) ->
+	StateT AbsoluteTime m (EvOccs (TryWait :- DeltaTime :- 'Nil), AB)
+handleTime now reqs = do
 	lst <- get
 	let	dt = now `diffAbsoluteTime` lst
 	case prj reqs of
 		Just (TryWaitReq t)
 			| t < dt -> do
 				put $ t `addAbsoluteTime` lst
-				pure (expand <$> Just (OccTryWait t >- singleton (OccDeltaTime t)
-					:: EvOccs (DeltaTime :- TryWait :- 'Nil)), B now)
+				pure (OccTryWait t >- singleton (OccDeltaTime t), B now)
 			| otherwise -> do
 				put now
-				pure (expand <$> Just (OccTryWait dt >- singleton (OccDeltaTime dt)
-					:: EvOccs (DeltaTime :- TryWait :- 'Nil)), A)
+				pure (OccTryWait dt >- singleton (OccDeltaTime dt), A)
 		Nothing -> do
 			put now
-			pure (expand <$> (Just . singleton $ OccDeltaTime dt), A)
+			pure (expand . singleton $ OccDeltaTime dt, A)
 
 handleMouse :: DiffTime -> Field -> Handle' IO (MouseDown :- MouseUp :- MouseMove :- 'Nil)
 handleMouse prd f _reqs = withNextEventTimeout'' f prd \case
