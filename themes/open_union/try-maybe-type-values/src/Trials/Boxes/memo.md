@@ -118,6 +118,8 @@ Main
 * [ ] Trials.Boxes.Handle
 	+ [ ] 1st
 		- [x] handleTime
+		- [x] expandHandleSt
+		- [ ] mergeHandleSt
 		- [ ] others
 	+ [ ] imports
 	+ [ ] body

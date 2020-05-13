@@ -133,4 +133,4 @@ type CollapsableOccurred es es' =
 type Handle m es = EvReqs es -> m (EvOccs es)
 type Handle' m es = EvReqs es -> m (Maybe (EvOccs es))
 type HandleSt st m es = st -> EvReqs es -> m (EvOccs es, st)
-type HandleSt' st m es = st -> EvReqs es -> m (Maybe (EvOccs es), st)
+type HandleSt' st st' m es = st -> EvReqs es -> m (Maybe (EvOccs es), st')
