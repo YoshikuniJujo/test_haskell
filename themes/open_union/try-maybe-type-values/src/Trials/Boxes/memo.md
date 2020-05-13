@@ -119,7 +119,7 @@ Main
 	+ [ ] 1st
 		- [x] handleTime
 		- [x] expandHandleSt
-		- [ ] mergeHandleSt
+		- [x] mergeHandleSt
 		- [ ] others
 	+ [ ] imports
 	+ [ ] body

@@ -7,10 +7,9 @@
 module Trials.Boxes.Handle (SigG, handleWithoutTime, handle, AB(..)) where
 
 import Foreign.C.Types (CInt)
-import Control.Arrow
 import Control.Monad.State (StateT, get, put, lift)
-import Data.Type.Set (Set(Nil), Singleton, (:-), (:$:))
-import Data.UnionSet (prj, singleton, (>-), expand, collapse, merge', Expandable, Collapsable)
+import Data.Type.Set (Set(Nil), Singleton, (:-))
+import Data.UnionSet (prj, singleton, (>-), expand)
 import Data.Time (DiffTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
@@ -39,11 +38,19 @@ handle :: DiffTime -> Field -> HandleSt AB (StateT AbsoluteTime IO) GuiEv
 handle prd f = retrySt \case A -> handleA prd f; B now -> handleB now
 
 handleA :: DiffTime -> Field -> EvReqs GuiEv -> StateT AbsoluteTime IO (Maybe (EvOccs GuiEv), AB)
-handleA prd f reqs = do
-	r1 <- maybe (pure Nothing) (lift . handleMouse prd f) $ collapse reqs
+handleA = curry $ mergeHandleSt handleMouse' (const $ pure ()) handleNow (const do
 	now <- lift $ systemToTAITime <$> getSystemTime
-	maybe	((expand <$> r1, A) <$ put now)
-		((((`merge'` r1) `first`) <$>) . handleTime now) $ collapse reqs
+	A <$ put now)
+
+handleMouse' :: HandleSt' (DiffTime, Field) () (StateT AbsoluteTime IO) (MouseDown :- MouseUp :- MouseMove :- 'Nil)
+handleMouse' (prd, f) reqs = do
+	r1 <- lift $ handleMouse prd f reqs
+	pure (r1, ())
+
+handleNow :: HandleSt' () AB (StateT AbsoluteTime IO) (TryWait :- DeltaTime :- 'Nil)
+handleNow () reqs = do
+	now <- lift $ systemToTAITime <$> getSystemTime
+	handleTime now reqs
 
 handleB :: Monad m => AbsoluteTime -> EvReqs GuiEv -> StateT AbsoluteTime m (Maybe (EvOccs GuiEv), AB)
 handleB = expandHandleSt handleTime (\now -> A <$ put now)

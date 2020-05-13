@@ -8,7 +8,7 @@ module MonadicFrp.Handle (
 	-- * Types
 	Sig, React, Handle, Handle', HandleSt, HandleSt', EvReqs, EvOccs,
 	-- * Composer
-	retry, before, merge, retrySt, expandHandleSt
+	retry, before, merge, retrySt, expandHandleSt, mergeHandleSt
 	) where
 
 import Prelude hiding (map, repeat, scanl, until)
@@ -62,3 +62,18 @@ expandHandleSt :: (
 expandHandleSt h o st reqs = maybe
 	((Nothing ,) <$> o st)
 	((((expand <$>) `first`) <$>) . h st) $ collapse reqs
+	
+mergeHandleSt :: (
+	Monad m,
+	Collapsable (es :+: es') es, Collapsable (es :+: es') es',
+	Expandable (Occurred :$: es) (Occurred :$: (es :+: es')),
+	Expandable (Occurred :$: es') (Occurred :$: (es :+: es')),
+	Mergeable (Occurred :$: es) (Occurred :$: es') (Occurred :$: (es :+: es'))
+	) =>
+	HandleSt' st st' m es -> (st -> m st') ->
+	HandleSt' st' st'' m es' -> (st' -> m st'') ->
+	HandleSt' st st'' m (es :+: es')
+mergeHandleSt h1 o1 h2 o2 st reqs = do
+	(r1, st') <- maybe ((Nothing ,) <$> o1 st) (h1 st) $ collapse reqs
+	(r2, st'') <- maybe ((Nothing ,) <$> o2 st') (h2 st') $ collapse reqs
+	pure (r1 `merge'` r2, st'')
