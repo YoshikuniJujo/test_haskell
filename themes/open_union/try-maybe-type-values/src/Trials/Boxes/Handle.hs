@@ -38,9 +38,8 @@ handle :: DiffTime -> Field -> HandleSt AB (StateT AbsoluteTime IO) GuiEv
 handle prd f = retrySt \case A -> handleA prd f; B now -> handleB now
 
 handleA :: DiffTime -> Field -> EvReqs GuiEv -> StateT AbsoluteTime IO (Maybe (EvOccs GuiEv), AB)
-handleA = curry $ mergeHandleSt handleMouse' (const $ pure ()) handleNow (const do
-	now <- lift $ systemToTAITime <$> getSystemTime
-	A <$ put now)
+handleA = curry $ mergeHandleSt handleMouse' (const $ pure ()) handleNow
+	(const $ A <$ (put . systemToTAITime =<< lift getSystemTime))
 
 handleMouse' :: HandleSt' (DiffTime, Field) () (StateT AbsoluteTime IO) (MouseDown :- MouseUp :- MouseMove :- 'Nil)
 handleMouse' (prd, f) reqs = do
