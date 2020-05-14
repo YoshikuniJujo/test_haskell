@@ -8,13 +8,13 @@ module Trials.Boxes.Events (
 	-- * GENERAL
 	SigG, ISigG, ReactG, GuiEv, Occurred(..),
 	-- * TIME
-	TryWait(..), sleep, DeltaTime(..), deltaTime,
+	TimeEv, TryWait(..), sleep, DeltaTime(..), deltaTime,
 	-- * MOUSE
-	MouseDown, MouseUp, MouseBtn(..), mouseDown, mouseUp,
+	MouseEv, MouseDown, MouseUp, MouseBtn(..), mouseDown, mouseUp,
 	MouseMove, Point, mouseMove
 	) where
 
-import Data.Type.Set (Set(Nil), Singleton, (:-), numbered)
+import Data.Type.Set (Set(Nil), Singleton, (:-), (:+:), numbered)
 import Data.Bool (bool)
 import Data.Time (DiffTime)
 
@@ -44,4 +44,5 @@ type SigG = Sig GuiEv
 type ISigG = ISig GuiEv
 type ReactG = React GuiEv
 
-type GuiEv = MouseDown :- MouseUp :- MouseMove :- TryWait :- DeltaTime :- 'Nil
+type GuiEv = MouseEv :+: TimeEv
+type TimeEv = TryWait :- DeltaTime :- 'Nil

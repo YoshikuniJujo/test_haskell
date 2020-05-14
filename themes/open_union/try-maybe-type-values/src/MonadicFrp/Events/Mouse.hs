@@ -8,11 +8,11 @@ module MonadicFrp.Events.Mouse (
 	-- * GENERAL
 	Occurred(..),
 	-- * MOUSE EVENT
-	MouseDown, MouseUp, MouseBtn(..), mouseDown, mouseUp,
+	MouseEv, MouseDown, MouseUp, MouseBtn(..), mouseDown, mouseUp,
 	MouseMove, Point, mouseMove,
 	) where
 
-import Data.Type.Set (Singleton, numbered)
+import Data.Type.Set (Set(Nil), Singleton, numbered, (:-))
 
 import MonadicFrp
 
@@ -41,3 +41,5 @@ instance Request MouseMove where
 
 mouseMove :: React (Singleton MouseMove) Point
 mouseMove = await MouseMoveReq \(OccMouseMove p) -> p
+
+type MouseEv = MouseDown :- MouseUp :- MouseMove :- 'Nil

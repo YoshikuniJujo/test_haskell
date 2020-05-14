@@ -98,14 +98,13 @@ Main
 
 ### API
 
-* [ ] Trials.Boxes.Events
+* [x] Trials.Boxes.Events
 	+ [x] 1st
-	+ [ ] 2nd
-		- [ ] Occurred ?
-		- [ ] others
-* [ ] Trials.Boxes.Mouse
+	+ [x] 2nd
 * [ ] Trials.Boxes
+* [ ] Trials.Boxes.View
 * [ ] Trials.Boxes.Handle
+* [ ] Trials.Boxes.Run
 * [ ] Trials.Boxes.TryReact
 * [ ] Trials.Boxes.TrySig
 
@@ -113,6 +112,7 @@ Main
 
 * [ ] Trials.Boxes.Events
 * [ ] Trials.Boxes
+* [ ] Trials.Boxes.View
 * [ ] Trials.Boxes.Handle
 	+ [ ] 1st
 		- [x] handleTime
@@ -121,6 +121,7 @@ Main
 		- [ ] others
 	+ [ ] imports
 	+ [ ] body
+* [ ] Trials.Boxes.Run
 * [ ] Trials.Boxes.TryReact
 * [ ] Trials.Boxes.TrySig
 * [ ] Main
