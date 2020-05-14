@@ -102,7 +102,7 @@ Main
 	+ [x] 1st
 	+ [x] 2nd
 * [x] Trials.Boxes
-* [ ] Trials.Boxes.View
+* [x] Trials.Boxes.View
 * [ ] Trials.Boxes.Handle
 * [ ] Trials.Boxes.Run
 
