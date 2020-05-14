@@ -91,9 +91,8 @@ Main
 リファクタリング
 ----------------
 
-* `->` Body : Trials.Boxes.Handle
 * [ ] module hierarchy
-	+ [ ] Trials.Boxes.Mouse
+	+ [x] Trials.Boxes.Mouse
 	+ [ ] Trials.Boxes.Mouse
 		- -> MonadicFrp.Events.Mouse
 		- -> MonadicFrp.XHandle.Mouse
