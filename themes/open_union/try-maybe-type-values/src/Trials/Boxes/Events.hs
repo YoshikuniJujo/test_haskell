@@ -19,7 +19,7 @@ import Data.Bool (bool)
 import Data.Time (DiffTime)
 
 import MonadicFrp (Sig, ISig, React, Request(..), await)
-import Trials.Boxes.Mouse
+import MonadicFrp.Events.Mouse
 
 data TryWait = TryWaitReq { getTryWaitReq :: DiffTime } deriving (Show, Eq, Ord)
 numbered 8 [t| TryWait |]

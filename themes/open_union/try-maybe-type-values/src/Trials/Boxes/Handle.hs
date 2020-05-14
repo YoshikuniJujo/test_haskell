@@ -17,10 +17,10 @@ import Trials.Boxes.Events (
 	GuiEv, SigG, TryWait(..), DeltaTime(..), Occurred(..) )
 	
 import MonadicFrp.Handle
+import MonadicFrp.Events.Mouse
+import MonadicFrp.XFieldHandle.Mouse
 import Field (Field)
 	
-import Trials.Boxes.Mouse
-
 handleWithoutTime :: Field -> EvReqs GuiEv -> IO (EvOccs GuiEv)
 handleWithoutTime f = retry $ ((expand <$>) <$>) . maybe (pure Nothing) (handleMouse Nothing f) . collapse
 

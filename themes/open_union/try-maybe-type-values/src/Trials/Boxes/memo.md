@@ -8,7 +8,6 @@ memo
 Main
   +- Trials.Boxes
   |    +- Trials.Boxes.Events
-  |    |    +- Trials.Boxes.Mouse
   |    +- Trials.Boxes.View
   +- Trials.Boxes.Run
        +- Trials.Boxes.Handle
@@ -91,9 +90,9 @@ Main
 リファクタリング
 ----------------
 
-* [ ] module hierarchy
+* [x] module hierarchy
 	+ [x] Trials.Boxes.Mouse
-	+ [ ] Trials.Boxes.Mouse
+	+ [x] Trials.Boxes.Mouse
 		- -> MonadicFrp.Events.Mouse
 		- -> MonadicFrp.XHandle.Mouse
 

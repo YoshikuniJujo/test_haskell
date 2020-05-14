@@ -4,51 +4,18 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Boxes.Mouse (
-	-- * GENERAL
-	Occurred(..),
-	-- * MOUSE EVENT
-	MouseDown, MouseUp, MouseBtn(..), mouseDown, mouseUp,
-	MouseMove, Point, mouseMove,
-	-- * MOUSE HANDLE
-	handleMouse
-	) where
+module MonadicFrp.XFieldHandle.Mouse (handleMouse) where
 
 import Foreign.C.Types
-import Data.Type.Set (Set(Nil), Singleton, numbered, (:-))
+import Data.Type.Set (Set(Nil), Singleton, (:-))
 import Data.UnionSet
 import Data.Time
 import System.Exit
 
-import MonadicFrp (React, Request(..), await, EvOccs)
+import MonadicFrp -- (React, Request(..), await, EvOccs)
 import MonadicFrp.Handle
+import MonadicFrp.Events.Mouse
 import Field
-
-data MouseDown = MouseDownReq deriving (Show, Eq, Ord)
-data MouseBtn = MLeft | MMiddle | MRight | MUp | MDown deriving (Show, Eq, Ord)
-numbered 8 [t| MouseDown |]
-instance Request MouseDown where
-	data Occurred MouseDown = OccMouseDown [MouseBtn] deriving (Show, Eq, Ord)
-
-mouseDown :: React (Singleton MouseDown) [MouseBtn]
-mouseDown = await MouseDownReq \(OccMouseDown mbs) -> mbs
-
-data MouseUp = MouseUpReq deriving (Show, Eq, Ord)
-numbered 8 [t| MouseUp |]
-instance Request MouseUp where
-	data Occurred MouseUp = OccMouseUp [MouseBtn] deriving (Show, Eq, Ord)
-
-mouseUp :: React (Singleton MouseUp) [MouseBtn]
-mouseUp = await MouseUpReq \(OccMouseUp mbs) -> mbs
-
-data MouseMove = MouseMoveReq deriving (Show, Eq, Ord)
-type Point = (Integer, Integer)
-numbered 8 [t| MouseMove |]
-instance Request MouseMove where
-	data Occurred MouseMove = OccMouseMove Point deriving (Show, Eq, Ord)
-
-mouseMove :: React (Singleton MouseMove) Point
-mouseMove = await MouseMoveReq \(OccMouseMove p) -> p
 
 handleMouse :: Maybe DiffTime -> Field -> Handle' IO (MouseDown :- MouseUp :- MouseMove :- 'Nil)
 handleMouse Nothing f _reqs = withNextEvent f $ eventToEvent f
