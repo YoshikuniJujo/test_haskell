@@ -20,7 +20,7 @@ import Data.List.NonEmpty (fromList)
 import Data.List.Infinite (Infinite(..), cycle)
 import Data.Time (DiffTime)
 
-import Trials.Boxes.Events (
+import Trials.Boxes.Event (
 	SigG, ISigG, ReactG, MouseDown, MouseUp, MouseBtn(..), Point,
 	mouseDown, mouseUp, mouseMove, sleep, deltaTime )
 import Trials.Boxes.View

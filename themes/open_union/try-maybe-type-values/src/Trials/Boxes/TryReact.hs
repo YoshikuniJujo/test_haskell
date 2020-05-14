@@ -10,7 +10,7 @@ import Data.Time.Clock.TAI (AbsoluteTime)
 
 import Trials.Boxes (leftClick, sameClick, doubler, firstPoint)
 import Trials.Boxes.Handle (handle, AB(..), handleWithoutTime)
-import Trials.Boxes.Events (ReactG, sleep)
+import Trials.Boxes.Event (ReactG, sleep)
 import MonadicFrp (adjust)
 import MonadicFrp.Run (interpretReact, interpretReactSt)
 import Field (Field, openField, closeField, exposureMask, buttonPressMask)

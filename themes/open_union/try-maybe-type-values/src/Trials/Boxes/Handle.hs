@@ -13,7 +13,7 @@ import Data.Time (DiffTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
 
-import Trials.Boxes.Events (
+import Trials.Boxes.Event (
 	GuiEv, SigG, TryWait(..), DeltaTime(..), Occurred(..) )
 	
 import MonadicFrp.Handle

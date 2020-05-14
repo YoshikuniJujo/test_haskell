@@ -4,7 +4,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Boxes.Events (
+module Trials.Boxes.Event (
 	-- * GENERAL
 	SigG, ISigG, ReactG, GuiEv, Occurred(..),
 	-- * TIME
