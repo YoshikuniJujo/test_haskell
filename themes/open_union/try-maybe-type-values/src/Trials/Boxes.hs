@@ -4,14 +4,11 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Boxes (
-	leftClick, sameClick, doubler, firstPoint, cycleColor, curRect,
-	elapsed, wiggleRect, completeRect, defineRect,
-	chooseBoxColor, chooseBoxColor', boxes ) where
+module Trials.Boxes (boxes) where
 
 import Prelude hiding (repeat, cycle, scanl, until)
 
-import Data.Type.Flip ((<$%>), fpure, (<*%>))
+import Data.Type.Flip ((<$%>), (<*%>))
 import Data.Type.Set (Singleton, (:+:))
 import Data.Bool (bool)
 import Data.Maybe (fromMaybe)
@@ -40,9 +37,6 @@ leftClick, middleClick, rightClick :: React (Singleton MouseDown) ()
 
 leftUp :: React (Singleton MouseUp) ()
 leftUp = releaseOn MLeft
-
-sameClick :: ReactG Bool
-sameClick = adjust $ (==) <$> mouseDown <*> mouseDown
 
 before :: Firstable es es' => React es a -> React es' b -> React (es :+: es') Bool
 l `before` r = (<$> l `first` r) \case L _ -> True; _ -> False
@@ -92,9 +86,8 @@ defineRect = waitFor firstPoint >>= \case
 	Left (p1, _) -> fromMaybe (error "never occur") <$> completeRect p1
 	Right _ -> error "never occur"
 
-chooseBoxColor, chooseBoxColor' :: Rect -> SigG Box ()
+chooseBoxColor :: Rect -> SigG Box ()
 chooseBoxColor r = Box <$%> wiggleRect r <*%> (() <$ cycleColor)
-chooseBoxColor' r = fpure Box <*%> wiggleRect r <*%> (() <$ cycleColor)
 
 drClickOn :: Rect -> ReactG (Either Point (Either (Point, ()) (Maybe ())))
 drClickOn r = posInside r $ mousePos `indexBy` repeat doubler

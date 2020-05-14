@@ -101,12 +101,10 @@ Main
 * [x] Trials.Boxes.Events
 	+ [x] 1st
 	+ [x] 2nd
-* [ ] Trials.Boxes
+* [x] Trials.Boxes
 * [ ] Trials.Boxes.View
 * [ ] Trials.Boxes.Handle
 * [ ] Trials.Boxes.Run
-* [ ] Trials.Boxes.TryReact
-* [ ] Trials.Boxes.TrySig
 
 ### Body
 
@@ -122,6 +120,4 @@ Main
 	+ [ ] imports
 	+ [ ] body
 * [ ] Trials.Boxes.Run
-* [ ] Trials.Boxes.TryReact
-* [ ] Trials.Boxes.TrySig
 * [ ] Main
