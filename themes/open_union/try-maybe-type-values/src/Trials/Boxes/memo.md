@@ -109,7 +109,7 @@ Main
 
 ### Body
 
-* [ ] Trials.Boxes.Events
+* [x] Trials.Boxes.Events
 * [ ] Trials.Boxes
 * [ ] Trials.Boxes.View
 * [ ] Trials.Boxes.Handle

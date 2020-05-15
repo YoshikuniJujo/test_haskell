@@ -11,15 +11,18 @@ module Trials.Boxes.Event (
 	TimeEv, TryWait(..), sleep, DeltaTime(..), deltaTime,
 	-- * MOUSE
 	MouseEv, MouseDown, MouseUp, MouseBtn(..), mouseDown, mouseUp,
-	MouseMove, Point, mouseMove
-	) where
+	MouseMove, Point, mouseMove ) where
 
 import Data.Type.Set (Set(Nil), Singleton, (:-), (:+:), numbered)
 import Data.Bool (bool)
 import Data.Time (DiffTime)
 
 import MonadicFrp (Sig, ISig, React, Request(..), await)
-import MonadicFrp.Events.Mouse
+import MonadicFrp.Events.Mouse (
+	MouseEv, MouseDown, MouseUp, MouseBtn(..), mouseDown, mouseUp,
+	MouseMove, Point, mouseMove )
+
+---------------------------------------------------------------------------
 
 data TryWait = TryWaitReq { getTryWaitReq :: DiffTime } deriving (Show, Eq, Ord)
 numbered 8 [t| TryWait |]
@@ -43,6 +46,5 @@ deltaTime = await DeltaTimeReq \(OccDeltaTime t) -> t
 type SigG = Sig GuiEv
 type ISigG = ISig GuiEv
 type ReactG = React GuiEv
-
 type GuiEv = MouseEv :+: TimeEv
 type TimeEv = TryWait :- DeltaTime :- 'Nil
