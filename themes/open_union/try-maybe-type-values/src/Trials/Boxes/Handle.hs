@@ -4,11 +4,11 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Boxes.Handle (SigG, handleWithoutTime, handle, AB(..)) where
+module Trials.Boxes.Handle (AB(..), handle) where
 
 import Control.Monad.State (StateT, get, put, lift)
 import Data.Type.Set (Set(Nil), (:-))
-import Data.UnionSet (prj, singleton, (>-), expand, collapse)
+import Data.UnionSet (prj, singleton, (>-), expand)
 import Data.Time (DiffTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
@@ -20,9 +20,6 @@ import MonadicFrp.Handle
 import MonadicFrp.Events.Mouse
 import MonadicFrp.XFieldHandle.Mouse
 import Field (Field)
-	
-handleWithoutTime :: Field -> EvReqs GuiEv -> IO (EvOccs GuiEv)
-handleWithoutTime f = retry $ ((expand <$>) <$>) . maybe (pure Nothing) (handleMouse Nothing f) . collapse
 
 data AB = A | B AbsoluteTime deriving Show
 

@@ -6,11 +6,12 @@ module Trials.Boxes.Run (runBoxes) where
 import Control.Monad.State (runStateT, liftIO)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 
-import Trials.Boxes.Handle (SigG, handle, AB(..))
 import MonadicFrp.Run (interpretSt)
 import Field (
 	Field, openField, closeField,
 	exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask )
+import Trials.Boxes.Event
+import Trials.Boxes.Handle (handle, AB(..))
 import Trials.Boxes.View
 
 runBoxes :: Show r => String -> SigG [Box] r -> IO ()

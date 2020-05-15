@@ -10,6 +10,7 @@ Main
   |    +- Trials.Boxes.Events
   |    +- Trials.Boxes.View
   +- Trials.Boxes.Run
+       +- Trials.Boxes.Events
        +- Trials.Boxes.Handle
        |    +- Trials.Boxes.Events
        +- Trials.Boxes.View
@@ -103,7 +104,7 @@ Main
 	+ [x] 2nd
 * [x] Trials.Boxes
 * [x] Trials.Boxes.View
-* [ ] Trials.Boxes.Handle
+* [x] Trials.Boxes.Handle
 * [ ] Trials.Boxes.Run
 
 ### Body
