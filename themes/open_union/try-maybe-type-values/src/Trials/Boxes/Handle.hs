@@ -4,7 +4,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Boxes.Handle (AB(..), handle) where
+module Trials.Boxes.Handle (AB(..), handleBoxes) where
 
 import Control.Monad.State (StateT, get, put, lift)
 import Data.Type.Set (Set(Nil), (:-))
@@ -13,8 +13,7 @@ import Data.Time (DiffTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
 
-import Trials.Boxes.Event (
-	GuiEv, SigG, TryWait(..), DeltaTime(..), Occurred(..) )
+import Trials.Boxes.Event (GuiEv, TryWait(..), DeltaTime(..), Occurred(..))
 	
 import MonadicFrp.Handle
 import MonadicFrp.Events.Mouse
@@ -23,8 +22,8 @@ import Field (Field)
 
 data AB = A | B AbsoluteTime deriving Show
 
-handle :: DiffTime -> Field -> HandleSt AB (StateT AbsoluteTime IO) GuiEv
-handle prd f = retrySt \case A -> handleA prd f; B now -> handleB now
+handleBoxes :: DiffTime -> Field -> HandleSt AB (StateT AbsoluteTime IO) GuiEv
+handleBoxes prd f = retrySt \case A -> handleA prd f; B now -> handleB now
 
 handleA :: DiffTime -> Field -> EvReqs GuiEv -> StateT AbsoluteTime IO (Maybe (EvOccs GuiEv), AB)
 handleA = curry $ mergeHandleSt handleMouse' (const $ pure ()) handleNow

@@ -105,7 +105,7 @@ Main
 * [x] Trials.Boxes
 * [x] Trials.Boxes.View
 * [x] Trials.Boxes.Handle
-* [ ] Trials.Boxes.Run
+* [x] Trials.Boxes.Run
 
 ### Body
 
