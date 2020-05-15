@@ -111,7 +111,7 @@ Main
 
 * [x] Trials.Boxes.Events
 * [x] Trials.Boxes
-* [ ] Trials.Boxes.View
+* [x] Trials.Boxes.View
 * [ ] Trials.Boxes.Handle
 	+ [ ] 1st
 		- [x] handleTime
