@@ -13,10 +13,10 @@ import Data.Time (DiffTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
 	
-import MonadicFrp
+import MonadicFrp (EvReqs, EvOccs)
 import MonadicFrp.Handle (HandleSt, HandleSt', retrySt, expandHandleSt, mergeHandleSt)
-import MonadicFrp.Events.Mouse
-import MonadicFrp.XFieldHandle.Mouse
+import MonadicFrp.Events.Mouse (MouseEv)
+import MonadicFrp.XFieldHandle.Mouse (handleMouse)
 import Trials.Boxes.Event (GuiEv, TryWait(..), DeltaTime(..), Occurred(..))
 import Field (Field)
 
@@ -55,7 +55,7 @@ handleTime now reqs = do
 			put now
 			pure (Just $ expand . singleton $ OccDeltaTime dt, A)
 
-handleMouse' :: HandleSt' (DiffTime, Field) () (StateT AbsoluteTime IO) (MouseDown :- MouseUp :- MouseMove :- 'Nil)
+handleMouse' :: HandleSt' (DiffTime, Field) () (StateT AbsoluteTime IO) MouseEv
 handleMouse' (prd, f) reqs = do
 	r1 <- lift $ handleMouse (Just prd) f reqs
 	pure (r1, ())
