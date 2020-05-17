@@ -12,13 +12,15 @@ import Data.UnionSet (prj, singleton, (>-), expand)
 import Data.Time (DiffTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
-
-import Trials.Boxes.Event (GuiEv, TryWait(..), DeltaTime(..), Occurred(..))
 	
-import MonadicFrp.Handle
+import MonadicFrp
+import MonadicFrp.Handle (HandleSt, HandleSt', retrySt, expandHandleSt, mergeHandleSt)
 import MonadicFrp.Events.Mouse
 import MonadicFrp.XFieldHandle.Mouse
+import Trials.Boxes.Event (GuiEv, TryWait(..), DeltaTime(..), Occurred(..))
 import Field (Field)
+
+---------------------------------------------------------------------------
 
 data AB = A | B AbsoluteTime deriving Show
 

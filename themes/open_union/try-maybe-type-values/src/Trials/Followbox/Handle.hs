@@ -23,6 +23,7 @@ import System.Process (spawnProcess)
 import qualified Data.Text as T
 import qualified Network.HTTP.Simple as H
 
+import MonadicFrp
 import MonadicFrp.Handle
 import Trials.Followbox.Event hiding (getTimeZone)
 import Trials.Followbox.Random

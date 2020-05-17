@@ -113,11 +113,10 @@ Main
 * [x] Trials.Boxes
 * [x] Trials.Boxes.View
 * [ ] Trials.Boxes.Handle
-	+ [ ] 1st
+	+ [x] 1st
 		- [x] handleTime
 		- [x] expandHandleSt
 		- [x] mergeHandleSt
-		- [ ] others
 	+ [ ] imports
 	+ [ ] body
 * [ ] Trials.Boxes.Run
