@@ -16,7 +16,6 @@ import Prelude hiding (map, repeat, scanl, until)
 import Control.Arrow
 import Data.Type.Set
 import Data.UnionSet hiding (merge)
-import MonadicFrp.Sig
 import MonadicFrp.React hiding (first)
 
 retry :: Monad m => Handle' m es -> Handle m es

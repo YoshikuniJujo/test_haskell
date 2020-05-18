@@ -11,7 +11,7 @@ import Field (
 	Field, openField, closeField,
 	exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask )
 import Trials.Boxes.Event
-import Trials.Boxes.Handle (handleBoxes, AB(..))
+import Trials.Boxes.Handle (handleBoxes, Mode(..))
 import Trials.Boxes.View
 
 runBoxes :: Show r => String -> SigG [Box] r -> IO ()
@@ -24,5 +24,5 @@ withInterpretSig fn op s = do
 		exposureMask, buttonPressMask,
 		buttonReleaseMask, pointerMotionMask ]
 	now <- systemToTAITime <$> getSystemTime
-	print =<< interpretSt A (handleBoxes 0.05 f) (liftIO . op f) s `runStateT` now
+	print =<< interpretSt InitMode (handleBoxes 0.05 f) (liftIO . op f) s `runStateT` now
 	closeField f

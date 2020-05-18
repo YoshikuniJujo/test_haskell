@@ -112,12 +112,12 @@ Main
 * [x] Trials.Boxes.Events
 * [x] Trials.Boxes
 * [x] Trials.Boxes.View
-* [ ] Trials.Boxes.Handle
+* [x] Trials.Boxes.Handle
 	+ [x] 1st
 		- [x] handleTime
 		- [x] expandHandleSt
 		- [x] mergeHandleSt
 	+ [x] imports
-	+ [ ] body
+	+ [x] body
 * [ ] Trials.Boxes.Run
 * [ ] Main

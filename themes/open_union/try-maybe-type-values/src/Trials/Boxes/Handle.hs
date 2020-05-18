@@ -4,58 +4,57 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Boxes.Handle (AB(..), handleBoxes) where
+module Trials.Boxes.Handle (Mode(InitMode), handleBoxes) where
 
 import Control.Monad.State (StateT, get, put, lift)
-import Data.Type.Set (Set(Nil), (:-))
 import Data.UnionSet (prj, singleton, (>-), expand)
 import Data.Time (DiffTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
 	
-import MonadicFrp (EvReqs, EvOccs)
-import MonadicFrp.Handle (HandleSt, HandleSt', retrySt, expandHandleSt, mergeHandleSt)
+import MonadicFrp.Handle (
+	HandleSt, HandleSt', retrySt, expandHandleSt, mergeHandleSt )
 import MonadicFrp.Events.Mouse (MouseEv)
 import MonadicFrp.XFieldHandle.Mouse (handleMouse)
-import Trials.Boxes.Event (GuiEv, TryWait(..), DeltaTime(..), Occurred(..))
+import Trials.Boxes.Event (GuiEv, TimeEv, TryWait(..), Occurred(..))
 import Field (Field)
 
 ---------------------------------------------------------------------------
 
-data AB = A | B AbsoluteTime deriving Show
+data Mode = InitMode | WaitMode AbsoluteTime deriving Show
 
-handleBoxes :: DiffTime -> Field -> HandleSt AB (StateT AbsoluteTime IO) GuiEv
-handleBoxes prd f = retrySt \case A -> handleA prd f; B now -> handleB now
+handleBoxes :: DiffTime -> Field -> HandleSt Mode (StateT AbsoluteTime IO) GuiEv
+handleBoxes prd f = retrySt \case
+	InitMode -> handleInit (prd, f); WaitMode now -> handleWait now
 
-handleA :: DiffTime -> Field -> EvReqs GuiEv -> StateT AbsoluteTime IO (Maybe (EvOccs GuiEv), AB)
-handleA = curry $ mergeHandleSt handleMouse' (const $ pure ()) handleNow
-	(const $ A <$ (put . systemToTAITime =<< lift getSystemTime))
-
-handleNow :: HandleSt' () AB (StateT AbsoluteTime IO) (TryWait :- DeltaTime :- 'Nil)
-handleNow () reqs = do
-	now <- lift $ systemToTAITime <$> getSystemTime
-	handleTime now reqs
-
-handleB :: Monad m => AbsoluteTime -> EvReqs GuiEv -> StateT AbsoluteTime m (Maybe (EvOccs GuiEv), AB)
-handleB = expandHandleSt handleTime (\now -> A <$ put now)
-
-handleTime :: Monad m => HandleSt' AbsoluteTime AB (StateT AbsoluteTime m) (TryWait :- DeltaTime :- 'Nil)
-handleTime now reqs = do
-	lst <- get
-	let	dt = now `diffAbsoluteTime` lst
-	case prj reqs of
-		Just (TryWaitReq t)
-			| t < dt -> do
-				put $ t `addAbsoluteTime` lst
-				pure (Just $ OccTryWait t >- singleton (OccDeltaTime t), B now)
-			| otherwise -> do
-				put now
-				pure (Just $ OccTryWait dt >- singleton (OccDeltaTime dt), A)
-		Nothing -> do
-			put now
-			pure (Just $ expand . singleton $ OccDeltaTime dt, A)
+handleInit :: HandleSt' (DiffTime, Field) Mode (StateT AbsoluteTime IO) GuiEv
+handleInit = mergeHandleSt
+	handleMouse' (\_ -> pure ())
+	handleNow (\_ -> InitMode <$ (put =<< lift getTaiTime))
 
 handleMouse' :: HandleSt' (DiffTime, Field) () (StateT AbsoluteTime IO) MouseEv
-handleMouse' (prd, f) reqs = do
-	r1 <- lift $ handleMouse (Just prd) f reqs
-	pure (r1, ())
+handleMouse' (prd, f) reqs = lift $ (, ()) <$> handleMouse (Just prd) f reqs
+
+handleNow :: HandleSt' () Mode (StateT AbsoluteTime IO) TimeEv
+handleNow () reqs = (`handleTime` reqs) =<< lift getTaiTime
+
+getTaiTime :: IO AbsoluteTime
+getTaiTime = systemToTAITime <$> getSystemTime
+
+handleWait :: Monad m =>
+	HandleSt' AbsoluteTime Mode (StateT AbsoluteTime m) GuiEv
+handleWait = expandHandleSt handleTime ((InitMode <$) . put)
+
+handleTime :: Monad m =>
+	HandleSt' AbsoluteTime Mode (StateT AbsoluteTime m) TimeEv
+handleTime now reqs = get >>= \lst -> do
+	let	dt = now `diffAbsoluteTime` lst
+		odt = singleton $ OccDeltaTime dt
+	case prj reqs of
+		Just (TryWaitReq t)
+			| t < dt -> (Just $ OccTryWait t >- odt', WaitMode now)
+				<$ put (t `addAbsoluteTime` lst)
+			| otherwise -> (Just $ OccTryWait dt >- odt, InitMode)
+				<$ put now
+			where odt' = singleton $ OccDeltaTime t
+		Nothing -> (Just . expand $ odt, InitMode) <$ put now
