@@ -2,8 +2,8 @@
 
 module Main where
 
-import Trials.Boxes
-import Trials.Boxes.Run
+import Trials.Boxes (boxes)
+import Trials.Boxes.Run (runBoxes)
 
 main :: IO ()
 main = runBoxes "Boxes" boxes
