@@ -8,11 +8,14 @@ module MonadicFrp.Events.Mouse (
 	-- * GENERAL
 	Occurred(..),
 	-- * MOUSE EVENT
-	MouseEv, MouseDown, MouseUp, MouseBtn(..), mouseDown, mouseUp,
-	MouseMove, Point, mouseMove, DeleteEvent, deleteEvent
+	MouseEv, MouseBtn(..), Point,
+	MouseDown, mouseDown, clickOn, leftClick, middleClick, rightClick,
+	MouseUp, mouseUp, releaseOn, leftUp, middleUp, rightUp,
+	MouseMove, mouseMove, DeleteEvent, deleteEvent
 	) where
 
 import Data.Type.Set (Set(Nil), Singleton, numbered, (:-))
+import Data.Bool (bool)
 
 import MonadicFrp
 
@@ -25,6 +28,12 @@ instance Request MouseDown where
 mouseDown :: React (Singleton MouseDown) [MouseBtn]
 mouseDown = await MouseDownReq \(OccMouseDown mbs) -> mbs
 
+clickOn :: MouseBtn -> React (Singleton MouseDown) ()
+clickOn b = bool (clickOn b) (pure ()) . (b `elem`) =<< mouseDown
+
+leftClick, middleClick, rightClick :: React (Singleton MouseDown) ()
+[leftClick, middleClick, rightClick] = clickOn <$> [MLeft, MMiddle, MRight]
+
 data MouseUp = MouseUpReq deriving (Show, Eq, Ord)
 numbered 8 [t| MouseUp |]
 instance Request MouseUp where
@@ -32,6 +41,12 @@ instance Request MouseUp where
 
 mouseUp :: React (Singleton MouseUp) [MouseBtn]
 mouseUp = await MouseUpReq \(OccMouseUp mbs) -> mbs
+
+releaseOn :: MouseBtn -> React (Singleton MouseUp) ()
+releaseOn b = bool (releaseOn b) (pure ()) . (b `elem`) =<< mouseUp
+
+leftUp, middleUp, rightUp :: React (Singleton MouseUp) ()
+[leftUp, middleUp, rightUp] = releaseOn <$> [MLeft, MMiddle, MRight]
 
 data MouseMove = MouseMoveReq deriving (Show, Eq, Ord)
 type Point = (Integer, Integer)

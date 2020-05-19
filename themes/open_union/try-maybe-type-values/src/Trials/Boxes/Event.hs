@@ -10,7 +10,8 @@ module Trials.Boxes.Event (
 	-- * TIME
 	TimeEv, TryWait(..), sleep, DeltaTime(..), deltaTime,
 	-- * MOUSE
-	MouseEv, MouseDown, MouseUp, MouseBtn(..), mouseDown, mouseUp,
+	MouseEv, MouseDown, MouseUp, MouseBtn(..),
+	leftClick, middleClick, rightClick, leftUp,
 	MouseMove, Point, mouseMove, DeleteEvent, deleteEvent ) where
 
 import Data.Type.Set (Set(Nil), Singleton, (:-), (:+:), numbered)
@@ -19,8 +20,9 @@ import Data.Time (DiffTime)
 
 import MonadicFrp (Sig, ISig, React, Request(..), await)
 import MonadicFrp.Events.Mouse (
-	MouseEv, MouseDown, MouseUp, MouseBtn(..), mouseDown, mouseUp,
-	MouseMove, Point, mouseMove, DeleteEvent, deleteEvent )
+	MouseEv, MouseDown, MouseUp, MouseBtn(..), MouseMove,
+	Point, DeleteEvent,
+	leftClick, middleClick, rightClick, leftUp, mouseMove, deleteEvent )
 
 ---------------------------------------------------------------------------
 

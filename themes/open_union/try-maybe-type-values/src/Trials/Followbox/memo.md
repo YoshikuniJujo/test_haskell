@@ -24,6 +24,12 @@ Main
        +- Trials.Followbox.TypeSynonym
 ```
 
+TODO
+----
+
+* [ ] LeftClickなどではなくMonadicFrp.Events.Mouseを使うようにする
+	+ [ ] MonadicFrp.Events.MouseにleftClick, rightClick, middleClickを追加する
+
 リファクタリング
 ----------------
 

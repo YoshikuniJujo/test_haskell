@@ -8,7 +8,7 @@ module Trials.Boxes (boxes) where
 
 import Prelude hiding (repeat, cycle, scanl, until)
 
-import Data.Type.Set (Singleton, (:+:))
+import Data.Type.Set ((:+:))
 import Data.Type.Flip ((<$%>), (<*%>))
 import Data.Bool (bool)
 import Data.Maybe (fromMaybe)
@@ -25,22 +25,10 @@ import MonadicFrp (
 	at, until, indexBy )
 import Trials.Boxes.View (Box(..), Rect(..), Color(..))
 import Trials.Boxes.Event (
-	SigG, ReactG, sleep, deltaTime,
-	MouseDown, MouseUp, MouseBtn(..), mouseDown, mouseUp, Point, mouseMove, deleteEvent )
+	SigG, ReactG, Point, sleep, deltaTime,
+	leftClick, middleClick, rightClick, leftUp, mouseMove, deleteEvent )
 
 ---------------------------------------------------------------------------
-
-clickOn :: MouseBtn -> React (Singleton MouseDown) ()
-clickOn b = bool (clickOn b) (pure ()) . (b `elem`) =<< mouseDown
-
-releaseOn :: MouseBtn -> React (Singleton MouseUp) ()
-releaseOn b = bool (releaseOn b) (pure ()) . (b `elem`) =<< mouseUp
-
-leftClick, middleClick, rightClick :: React (Singleton MouseDown) ()
-[leftClick, middleClick, rightClick] = clickOn <$> [MLeft, MMiddle, MRight]
-
-leftUp :: React (Singleton MouseUp) ()
-leftUp = releaseOn MLeft
 
 before :: Firstable es es' => React es a -> React es' b -> React (es :+: es') Bool
 l `before` r = (<$> l `first` r) \case L _ -> True; _ -> False

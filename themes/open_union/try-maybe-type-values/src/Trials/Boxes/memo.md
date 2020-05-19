@@ -20,6 +20,7 @@ TODO
 ----
 
 * [x] close buttonイベントを追加
+* [x] leftClickなどをMonadicFrp.Events.Mouseに移動させる
 
 バグフィックス
 --------------
