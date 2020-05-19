@@ -29,7 +29,7 @@ import Trials.Followbox.Clickable (
 import Trials.Followbox.Event (
 	SigF, ReactF, clearJsons, storeJsons, loadJsons,
 	httpGet, getTimeZone, browse,
-	beginSleep, checkBeginSleep, endSleep, checkQuit,
+	beginSleep, checkBeginSleep, endSleep, deleteEvent,
 	Error(..), raiseError, checkTerminate )
 import Trials.Followbox.View (View, View1(..), white)
 import Trials.Followbox.Random (getRandomR)
@@ -74,7 +74,7 @@ crossMergin = 4
 
 followbox :: SigF View ()
 followbox = () <$
-	fieldWithResetTime numOfUsers `until` checkQuit `until` checkTerminate
+	fieldWithResetTime numOfUsers `until` deleteEvent `until` checkTerminate
 
 fieldWithResetTime :: Integer -> SigF View ()
 fieldWithResetTime n = (<>) <$%> field n <*%> resetTime

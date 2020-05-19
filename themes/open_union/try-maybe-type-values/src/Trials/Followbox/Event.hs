@@ -9,10 +9,11 @@ module Trials.Followbox.Event (
 	SigF, ReactF, FollowboxEv, FollowboxEvGen, Occurred(..),
 
 	-- * MOUSE EVENT
+	MouseEv, MouseMove, MouseDown,
 	-- ** Move
-	Move, move,
+	mouseMove,
 	-- ** LeftClick
-	LeftClick, leftClick,
+	leftClick,
 
 	-- * STORE AND LOAD
 	-- ** Jsons
@@ -34,7 +35,7 @@ module Trials.Followbox.Event (
 	-- ** BeginSleep and EndSleep
 	BeginSleep(..), EndSleep, beginSleep, checkBeginSleep, endSleep,
 	-- ** Quit
-	Quit, checkQuit,
+	deleteEvent,
 	-- ** RaiseError
 	RaiseError(..), Error(..), ErrorResult(..),
 	raiseError, checkTerminate
@@ -52,10 +53,11 @@ import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 
 import MonadicFrp (Request(..), Sig, React, await)
+import MonadicFrp.Events.Mouse
 import Trials.Followbox.Random (RandomEv)
 import Trials.Followbox.ThreadId (GetThreadId)
 import Trials.Followbox.TypeSynonym (
-	Position, Uri, FontName, FontSize, ErrorMessage )
+	Uri, FontName, FontSize, ErrorMessage )
 
 ---------------------------------------------------------------------------
 
@@ -63,29 +65,6 @@ data Result = Failure | Succeed deriving Show
 
 result :: a -> a -> Result -> a
 result f s = \case Failure -> f; Succeed -> s
-
----------------------------------------------------------------------------
--- MOUSE EVENT
----------------------------------------------------------------------------
-
--- MOVE
-
-data Move = MoveReq deriving (Show, Eq, Ord)
-numbered 8 [t| Move |]
-instance Request Move where data Occurred Move = OccMove Position deriving Show
-
-move :: React (Singleton Move) Position
-move = await MoveReq \(OccMove p) -> p
-
--- LEFT CLICK
-
-data LeftClick = LeftClickReq deriving (Show, Eq, Ord)
-numbered 8 [t| LeftClick |]
-instance Request LeftClick where
-	data Occurred LeftClick = OccLeftClick deriving Show
-
-leftClick :: React (Singleton LeftClick) ()
-leftClick = await LeftClickReq \OccLeftClick -> ()
 
 ---------------------------------------------------------------------------
 -- STORE AND LOAD
@@ -195,15 +174,6 @@ instance Request EndSleep where
 endSleep :: React (Singleton EndSleep) ()
 endSleep = await EndSleepReq \OccEndSleep -> ()
 
--- QUIT
-
-data Quit = QuitReq deriving (Show, Eq, Ord)
-numbered 8 [t| Quit |]
-instance Request Quit where data Occurred Quit = OccQuit
-
-checkQuit :: React (Singleton Quit) ()
-checkQuit = await QuitReq $ const ()
-
 -- ERROR
 
 data Error
@@ -236,10 +206,9 @@ checkTerminate = catchError >>= \case
 type SigF = Sig FollowboxEv
 type ReactF = React FollowboxEv
 
-type FollowboxEv = GetThreadId :- RandomEv :+: FollowboxEvGen
+type FollowboxEv = GetThreadId :- RandomEv :+: MouseEv :+: FollowboxEvGen
 
 type FollowboxEvGen =
-	Move :- LeftClick :-
 	StoreJsons :- LoadJsons :-
 	HttpGet :- CalcTextExtents :- GetTimeZone :- Browse :-
-	BeginSleep :- EndSleep :- Quit :- RaiseError :- 'Nil
+	BeginSleep :- EndSleep :- RaiseError :- 'Nil

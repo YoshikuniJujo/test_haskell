@@ -12,7 +12,7 @@ import Prelude hiding (head)
 import Control.Monad.State (StateT, lift, gets, modify)
 import Data.Type.Set (Set(Nil), Singleton, (:-))
 import Data.List.NonEmpty (NonEmpty(..), head, cons)
-import Data.UnionSet (singleton, (>-), extract, expand)
+import Data.UnionSet (singleton, extract)
 import Data.Bool (bool)
 import Data.String (fromString)
 import Data.Aeson (Object)
@@ -23,15 +23,13 @@ import System.Process (spawnProcess)
 import qualified Data.Text as T
 import qualified Network.HTTP.Simple as H
 
-import MonadicFrp
 import MonadicFrp.Handle
+import MonadicFrp.XFieldHandle.Mouse
 import Trials.Followbox.Event hiding (getTimeZone)
 import Trials.Followbox.Random
 import Trials.Followbox.ThreadId
 import Trials.Followbox.TypeSynonym (Browser, GithubNameToken)
-import Field (
-	Field, Event(..), flushField, destroyField, isDeleteEvent,
-	withNextEvent, withNextEventTimeout', textExtents )
+import Field (Field, textExtents)
 
 ---------------------------------------------------------------------------
 
@@ -86,7 +84,7 @@ handle f brws mba = retry $
 	lift . just . handleGetTimeZone `merge`
 	lift . just . handleBrowse brws `merge`
 	handleBeginEndSleep `merge` lift . handleRaiseError `before`
-	handleMouse f
+	handleMouse' f
 
 just :: Functor f => f a -> f (Maybe a)
 just = (Just <$>)
@@ -180,31 +178,9 @@ handleRaiseError reqs = case errorResult e of
 
 -- MOUSE
 
-type MouseEv = Move :- LeftClick :- Quit :- 'Nil
-type MoveLeftClick = Move :- LeftClick :- 'Nil
-
-handleMouse :: Field -> Handle' (FbM IO) MouseEv
-handleMouse f _reqs = getSleepUntil >>= lift . \case
-	Nothing -> withNextEvent f $ eventToEvent f
-	Just t -> withNextEventUntil f t $ maybe (pure Nothing) (eventToEvent f)
-
-eventToEvent :: Field -> Event -> IO (Maybe (EvOccs MouseEv))
-eventToEvent f = \case
-	DestroyWindowEvent {} -> pure . Just . expand $ singleton OccQuit
-	ExposeEvent {} -> Nothing <$ flushField f
-	ButtonEvent { ev_event_type = 4, ev_button = 1, ev_x = x, ev_y = y } ->
-		pure . Just $ expand occs
-		where
-		occs :: EvOccs MoveLeftClick
-		occs = occMove x y >- singleton OccLeftClick
-	ButtonEvent { ev_event_type = 4, ev_button = 3 } ->
-		pure . Just . expand . singleton $ OccQuit
-	MotionEvent { ev_x = x, ev_y = y } ->
-		pure . Just . expand . singleton $ occMove x y
-	ev	| isDeleteEvent f ev -> Nothing <$ destroyField f
-		| otherwise -> pure Nothing
-	where occMove x y = OccMove (fromIntegral x, fromIntegral y)
-
-withNextEventUntil :: Field -> UTCTime -> (Maybe Event -> IO a) -> IO a
-withNextEventUntil f t act = getCurrentTime >>= \now ->
-	withNextEventTimeout' f (round $ t `diffUTCTime` now * 1000000) act
+handleMouse' :: Field -> Handle' (FbM IO) MouseEv
+handleMouse' f reqs = getSleepUntil >>= lift . \case
+	Nothing -> handleMouse Nothing f reqs
+	Just t -> do
+		now <- getCurrentTime
+		handleMouse (Just . fromRational . toRational $ now `diffUTCTime` t) f reqs

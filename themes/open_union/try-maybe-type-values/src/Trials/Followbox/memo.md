@@ -27,8 +27,8 @@ Main
 TODO
 ----
 
-* [ ] LeftClickなどではなくMonadicFrp.Events.Mouseを使うようにする
-	+ [ ] MonadicFrp.Events.MouseにleftClick, rightClick, middleClickを追加する
+* [x] LeftClickなどではなくMonadicFrp.Events.Mouseを使うようにする
+	+ [x] MonadicFrp.Events.MouseにleftClick, rightClick, middleClickを追加する
 
 リファクタリング
 ----------------
