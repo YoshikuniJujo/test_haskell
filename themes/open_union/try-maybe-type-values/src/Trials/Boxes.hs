@@ -26,7 +26,7 @@ import MonadicFrp (
 import Trials.Boxes.View (Box(..), Rect(..), Color(..))
 import Trials.Boxes.Event (
 	SigG, ReactG, sleep, deltaTime,
-	MouseDown, MouseUp, MouseBtn(..), mouseDown, mouseUp, Point, mouseMove )
+	MouseDown, MouseUp, MouseBtn(..), mouseDown, mouseUp, Point, mouseMove, deleteEvent )
 
 ---------------------------------------------------------------------------
 
@@ -95,4 +95,4 @@ box = (`Box` Red) <$%> defineRect >>= \r ->
 	chooseBoxColor r >> waitFor (drClickOn r)
 
 boxes :: SigG [Box] ()
-boxes = parList $ spawn box
+boxes = () <$ parList (spawn box) `until` deleteEvent

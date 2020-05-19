@@ -17,11 +17,11 @@ import MonadicFrp.Handle
 import MonadicFrp.Events.Mouse
 import Field
 
-handleMouse :: Maybe DiffTime -> Field -> Handle' IO (MouseDown :- MouseUp :- MouseMove :- 'Nil)
+handleMouse :: Maybe DiffTime -> Field -> Handle' IO MouseEv
 handleMouse Nothing f _reqs = withNextEvent f $ eventToEvent f
 handleMouse (Just prd) f _reqs = withNextEventTimeout'' f prd $ maybe (pure Nothing) (eventToEvent f)
 
-eventToEvent :: Field -> Event -> IO (Maybe (EvOccs (MouseDown :- MouseUp :- MouseMove :- 'Nil)))
+eventToEvent :: Field -> Event -> IO (Maybe (EvOccs MouseEv))
 eventToEvent f = \case
 	ButtonEvent {
 		ev_event_type = 4, ev_button = eb,
@@ -39,7 +39,8 @@ eventToEvent f = \case
 		Nothing <$ flushField f
 	DestroyWindowEvent {} ->
 		closeField f >> exitSuccess
-	ev	| isDeleteEvent f ev -> Nothing <$ destroyField f
+--	ev	| isDeleteEvent f ev -> Nothing <$ destroyField f
+	ev	| isDeleteEvent f ev -> pure . Just . expand $ singleton OccDeleteEvent
 		| otherwise -> pure Nothing
 
 mouseDownOcc ::

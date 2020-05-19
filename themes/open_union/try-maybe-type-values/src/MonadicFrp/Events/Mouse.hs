@@ -9,7 +9,7 @@ module MonadicFrp.Events.Mouse (
 	Occurred(..),
 	-- * MOUSE EVENT
 	MouseEv, MouseDown, MouseUp, MouseBtn(..), mouseDown, mouseUp,
-	MouseMove, Point, mouseMove,
+	MouseMove, Point, mouseMove, DeleteEvent, deleteEvent
 	) where
 
 import Data.Type.Set (Set(Nil), Singleton, numbered, (:-))
@@ -42,4 +42,12 @@ instance Request MouseMove where
 mouseMove :: React (Singleton MouseMove) Point
 mouseMove = await MouseMoveReq \(OccMouseMove p) -> p
 
-type MouseEv = MouseDown :- MouseUp :- MouseMove :- 'Nil
+data DeleteEvent = DeleteEventReq deriving (Show, Eq, Ord)
+numbered 8 [t| DeleteEvent |]
+instance Request DeleteEvent where
+	data Occurred DeleteEvent = OccDeleteEvent deriving (Show, Eq, Ord)
+
+deleteEvent :: React (Singleton DeleteEvent) ()
+deleteEvent = await DeleteEventReq \OccDeleteEvent -> ()
+
+type MouseEv = MouseDown :- MouseUp :- MouseMove :- DeleteEvent :- 'Nil

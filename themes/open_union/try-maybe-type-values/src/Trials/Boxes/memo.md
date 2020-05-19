@@ -16,6 +16,11 @@ Main
        +- Trials.Boxes.View
 ```
 
+TODO
+----
+
+* [x] close buttonイベントを追加
+
 バグフィックス
 --------------
 
