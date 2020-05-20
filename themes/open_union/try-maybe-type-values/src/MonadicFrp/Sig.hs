@@ -180,6 +180,7 @@ l <^> r = do
 	emitAll $ uncurry ($) `imap` pairs l' r'
 
 bothStart :: (
+	HasCallStack,
 	(es :+: es') ~ (es' :+: es),
 	Expandable es (es :+: es'),
 	Expandable es' (es :+: es'),
@@ -192,8 +193,11 @@ l `bothStart` Sig r = do
 	(Sig r'', l'') <- res $ Sig r' `until_` l'
 	pure (done' l'', done' r'')
 
-done' :: React es a -> a
-done' = fromJust . done
+done' :: HasCallStack => React es a -> a
+-- done' = fromJust . done
+done' (Done x) = x
+done' (Await _ _) = error "Await _ _"
+done' Never = error "Never"
 
 pairs :: Firstable es es' => ISig es a r ->
 	ISig es' b r' -> ISig (es :+: es') (a, b) (ISig es a r, ISig es' b r')

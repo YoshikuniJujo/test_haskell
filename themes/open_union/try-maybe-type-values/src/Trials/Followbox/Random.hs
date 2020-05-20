@@ -78,14 +78,14 @@ class RandomState s where
 	rollbackStdGen :: s -> StdGenVersion -> Either String s
 
 handleStoreRandomGen :: (Monad m, RandomState s) =>
-	Handle (StateT s  m) (Singleton StoreRandomGen)
+	Handle (StateT s m) (Singleton StoreRandomGen)
 handleStoreRandomGen reqs = gets (fst . getVersionStdGen) >>= \v ->
 	singleton (OccStoreRandomGen ti v)
 		<$ modify (`putVersionStdGen` (nextVersion v, g))
 	where StoreRandomGen ti g = extract reqs
 
 handleLoadRandomGen :: (Monad m, RandomState s) =>
-	Handle (StateT s  m) (Singleton LoadRandomGen)
+	Handle (StateT s m) (Singleton LoadRandomGen)
 handleLoadRandomGen _reqs =
 	singleton . uncurry OccLoadRandomGen <$> gets getVersionStdGen
 
@@ -95,7 +95,7 @@ handleRollback reqs = singleton (OccRollback v)
 	<$ modify (either error id . (`rollbackStdGen` v))
 	where RollbackReq v = extract reqs
 
-handleRandom :: (Monad m, RandomState s) => Handle' (StateT s  m) RandomEv
+handleRandom :: (Monad m, RandomState s) => Handle' (StateT s m) RandomEv
 handleRandom =
 	(Just <$>) . handleStoreRandomGen `merge`
 	(Just <$>) . handleLoadRandomGen `merge`
