@@ -2,6 +2,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Lock where
@@ -16,27 +17,31 @@ import MonadicFrp.ThreadId
 import Trials.Followbox.ThreadId
 
 type LockId = Int
+type RetryTime = Int
 
 class LockState s where
 	isLocked :: s -> LockId -> Bool
 	lockIt :: s -> LockId -> s
 	unlockIt :: s -> LockId -> s
 
-data GetLock = GetLockReq LockId ThreadId deriving (Show, Eq)
+data GetLock = GetLockReq LockId ThreadId RetryTime deriving (Show, Eq)
 numbered 8 [t| GetLock |]
-instance Mrgable GetLock where gl1 `mrg` _gl2 = gl1
+instance Mrgable GetLock where
+	gl1@(GetLockReq _ _ rt1) `mrg` gl2@(GetLockReq _ _ rt2)
+		| rt1 >= rt2 = gl1
+		| otherwise = gl2
 instance Request GetLock where
 	data Occurred GetLock = OccGetLock LockId ThreadId
 
-getLock :: LockId -> React (GetThreadId :- GetLock :- 'Nil) ()
-getLock l = adjust getThreadId >>= \ti ->
-	bool (getLock l) (pure ()) =<< adjust (await (GetLockReq l ti)
-		\(OccGetLock l' ti') -> l == l' && ti == ti')
+getLock :: LockId -> RetryTime -> React (GetThreadId :- GetLock :- 'Nil) ()
+getLock l rt = adjust getThreadId >>= \ti ->
+	maybe (pure ()) (getLock l) =<< adjust (await (GetLockReq l ti rt)
+		\(OccGetLock l' ti') -> if l == l' && ti == ti' then Nothing else Just $ rt + 1)
 
 handleGetLock :: (LockState s, Monad m) => Handle' (StateT s m) (Singleton GetLock)
 handleGetLock reqs = get >>= \s ->
 	bool (Just (singleton $ OccGetLock l ti) <$ modify (`lockIt` l)) (pure Nothing) $ s `isLocked` l
-	where GetLockReq l ti = extract reqs
+	where GetLockReq l ti _ = extract reqs
 
 data Unlock = UnlockReq LockId deriving Show
 numbered 8 [t| Unlock |]
@@ -50,4 +55,12 @@ handleUnlock :: (LockState s, Monad m) => Handle' (StateT s m) (Singleton Unlock
 handleUnlock reqs = Just (singleton OccUnlock) <$ modify (`unlockIt` l)
 	where UnlockReq l = extract reqs
 
--- withLock :: 
+withLock :: (
+	Firstable es es', Expandable es es',
+	Firstable (GetThreadId :- GetLock :- 'Nil) es', Expandable (GetThreadId :- GetLock :- 'Nil) es',
+	Firstable (Singleton Unlock) es', Expandable (Singleton Unlock) es',
+	(es' :+: es) ~ es',
+	(es' :+: (GetThreadId :- GetLock :- 'Nil)) ~ es',
+	(es' :+: (Unlock :- 'Nil)) ~ es'
+	) => LockId -> React es a -> React es' a
+withLock l act = adjust (getLock l 0) >> adjust act <* adjust (unlock l)
