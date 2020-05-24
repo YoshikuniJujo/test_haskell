@@ -16,16 +16,35 @@ import MonadicFrp.Handle
 import MonadicFrp.ThreadId
 import Trials.Followbox.ThreadId
 
-type LockId = Int
+data LockId = LockId Int deriving (Show, Eq)
 type RetryTime = Int
 
 class LockState s where
 	isLocked :: s -> LockId -> Bool
 	lockIt :: s -> LockId -> s
 	unlockIt :: s -> LockId -> s
+	getLockId :: s -> LockId
+	putLockId :: s -> LockId -> s
+
+data NewLockId = NewLockIdReq ThreadId deriving (Show, Eq)
+numbered 9 [t| NewLockId |]
+instance Mrgable NewLockId where nl1 `mrg` _nl2 = nl1
+instance Request NewLockId where
+	data Occurred NewLockId = OccNewLockId LockId ThreadId
+
+newLockId :: React (GetThreadId :- NewLockId :- 'Nil) LockId
+newLockId = adjust getThreadId >>= \ti ->
+	maybe newLockId pure =<< adjust (await (NewLockIdReq ti)
+		\(OccNewLockId l ti') -> bool Nothing (Just l) $ ti == ti')
+
+handleNewLockId :: (LockState s, Monad m) => Handle' (StateT s m) (Singleton NewLockId)
+handleNewLockId reqs = get >>= \s -> do
+	let	l@(LockId i) = getLockId s
+	Just (singleton $ OccNewLockId l ti) <$ modify (`putLockId` LockId (i + 1))
+	where NewLockIdReq ti = extract reqs
 
 data GetLock = GetLockReq LockId ThreadId RetryTime deriving (Show, Eq)
-numbered 8 [t| GetLock |]
+numbered 9 [t| GetLock |]
 instance Mrgable GetLock where
 	gl1@(GetLockReq _ _ rt1) `mrg` gl2@(GetLockReq _ _ rt2)
 		| rt1 >= rt2 = gl1
@@ -44,7 +63,7 @@ handleGetLock reqs = get >>= \s ->
 	where GetLockReq l ti _ = extract reqs
 
 data Unlock = UnlockReq LockId deriving Show
-numbered 8 [t| Unlock |]
+numbered 9 [t| Unlock |]
 instance Mrgable Unlock where ul1 `mrg` _ul2 = ul1
 instance Request Unlock where data Occurred Unlock = OccUnlock
 

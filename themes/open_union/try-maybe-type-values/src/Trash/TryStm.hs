@@ -23,7 +23,7 @@ nextVersion :: StmIntVersion -> StmIntVersion
 nextVersion (StmIntVersion n) = StmIntVersion $ n + 1
 
 data StoreStmInt = StoreStmIntReq ThreadId Int deriving Show
-numbered 8 [t| StoreStmInt |]
+numbered 9 [t| StoreStmInt |]
 instance Mrgable StoreStmInt where i1 `mrg` _i2 = i1
 instance Request StoreStmInt where
 	data Occurred StoreStmInt = OccStoreStmInt ThreadId StmIntVersion
@@ -35,7 +35,7 @@ storeStmInt n = adjust getThreadId >>= \ti ->
 		\(OccStoreStmInt ti' v) -> bool Nothing (Just v) $ ti == ti')
 
 data LoadStmInt = LoadStmIntReq deriving (Show, Eq, Ord)
-numbered 8 [t| LoadStmInt |]
+numbered 9 [t| LoadStmInt |]
 instance Request LoadStmInt where
 	data Occurred LoadStmInt = OccLoadStmInt StmIntVersion Int
 
@@ -43,7 +43,7 @@ loadStmInt :: React (Singleton LoadStmInt) (StmIntVersion, Int)
 loadStmInt = await LoadStmIntReq \(OccLoadStmInt v n) -> (v, n)
 
 data Rollback = RollbackReq StmIntVersion deriving (Show, Eq, Ord)
-numbered 8 [t| Rollback |]
+numbered 9 [t| Rollback |]
 instance Request Rollback where
 	data Occurred Rollback = OccRollback StmIntVersion deriving Show
 

@@ -17,7 +17,7 @@ import MonadicFrp.ThreadId (ThreadId)
 ---------------------------------------------------------------------------
 
 data GetThreadId = GetThreadIdReq deriving (Show, Eq, Ord)
-numbered 8 [t| GetThreadId |]
+numbered 9 [t| GetThreadId |]
 instance Request GetThreadId where data Occurred GetThreadId = OccGetThreadId
 
 handleGetThreadId :: Applicative m => Handle' m (Singleton GetThreadId)

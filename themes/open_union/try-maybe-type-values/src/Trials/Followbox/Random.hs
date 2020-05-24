@@ -38,7 +38,7 @@ nextVersion :: StdGenVersion -> StdGenVersion
 nextVersion (StdGenVersion v) = StdGenVersion $ v + 1
 
 data StoreRandomGen = StoreRandomGen ThreadId StdGen deriving Show
-numbered 8 [t| StoreRandomGen |]
+numbered 9 [t| StoreRandomGen |]
 instance Mrgable StoreRandomGen where g1 `mrg` _g2 = g1
 instance Request StoreRandomGen where
 	data Occurred StoreRandomGen = OccStoreRandomGen ThreadId StdGenVersion
@@ -51,7 +51,7 @@ storeRandomGen g = adjust getThreadId >>= \ti ->
 		\(OccStoreRandomGen ti' v) -> bool Nothing (Just v) $ ti == ti')
 
 data LoadRandomGen = LoadRandomGenReq deriving (Show, Eq, Ord)
-numbered 8 [t| LoadRandomGen |]
+numbered 9 [t| LoadRandomGen |]
 instance Request LoadRandomGen where
 	data Occurred LoadRandomGen = OccLoadRandomGen StdGenVersion StdGen
 		deriving Show
@@ -60,7 +60,7 @@ loadRandomGen :: React (Singleton LoadRandomGen) (StdGenVersion, StdGen)
 loadRandomGen = await LoadRandomGenReq \(OccLoadRandomGen v g) -> (v, g)
 
 data Rollback = RollbackReq StdGenVersion deriving (Show, Eq, Ord)
-numbered 8 [t| Rollback |]
+numbered 9 [t| Rollback |]
 instance Request Rollback where
 	data Occurred Rollback = OccRollback StdGenVersion deriving Show
 

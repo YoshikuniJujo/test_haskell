@@ -21,7 +21,7 @@ import MonadicFrp
 
 data MouseDown = MouseDownReq deriving (Show, Eq, Ord)
 data MouseBtn = MLeft | MMiddle | MRight | MUp | MDown deriving (Show, Eq, Ord)
-numbered 8 [t| MouseDown |]
+numbered 9 [t| MouseDown |]
 instance Request MouseDown where
 	data Occurred MouseDown = OccMouseDown [MouseBtn] deriving (Show, Eq, Ord)
 
@@ -35,7 +35,7 @@ leftClick, middleClick, rightClick :: React (Singleton MouseDown) ()
 [leftClick, middleClick, rightClick] = clickOn <$> [MLeft, MMiddle, MRight]
 
 data MouseUp = MouseUpReq deriving (Show, Eq, Ord)
-numbered 8 [t| MouseUp |]
+numbered 9 [t| MouseUp |]
 instance Request MouseUp where
 	data Occurred MouseUp = OccMouseUp [MouseBtn] deriving (Show, Eq, Ord)
 
@@ -50,7 +50,7 @@ leftUp, middleUp, rightUp :: React (Singleton MouseUp) ()
 
 data MouseMove = MouseMoveReq deriving (Show, Eq, Ord)
 type Point = (Integer, Integer)
-numbered 8 [t| MouseMove |]
+numbered 9 [t| MouseMove |]
 instance Request MouseMove where
 	data Occurred MouseMove = OccMouseMove Point deriving (Show, Eq, Ord)
 
@@ -58,7 +58,7 @@ mouseMove :: React (Singleton MouseMove) Point
 mouseMove = await MouseMoveReq \(OccMouseMove p) -> p
 
 data DeleteEvent = DeleteEventReq deriving (Show, Eq, Ord)
-numbered 8 [t| DeleteEvent |]
+numbered 9 [t| DeleteEvent |]
 instance Request DeleteEvent where
 	data Occurred DeleteEvent = OccDeleteEvent deriving (Show, Eq, Ord)
 

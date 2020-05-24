@@ -27,7 +27,7 @@ import MonadicFrp.Events.Mouse (
 ---------------------------------------------------------------------------
 
 data TryWait = TryWaitReq { getTryWaitReq :: DiffTime } deriving (Show, Eq, Ord)
-numbered 8 [t| TryWait |]
+numbered 9 [t| TryWait |]
 instance Request TryWait where
 	data Occurred TryWait = OccTryWait DiffTime deriving (Show, Eq, Ord)
 
@@ -38,7 +38,7 @@ sleep :: DiffTime -> React (Singleton TryWait) ()
 sleep t = tryWait t >>= \t' -> bool (sleep (t - t')) (pure ()) (t' == t)
 
 data DeltaTime = DeltaTimeReq deriving (Show, Eq, Ord)
-numbered 8 [t| DeltaTime |]
+numbered 9 [t| DeltaTime |]
 instance Request DeltaTime where
 	data Occurred DeltaTime = OccDeltaTime DiffTime deriving (Show, Eq, Ord)
 

@@ -18,7 +18,7 @@ import MonadicFrp.Run
 import MonadicFrp.Handle
 
 data TryWait = TryWaitReq { getTryWaitReq :: DiffTime } deriving (Show, Eq, Ord)
-numbered 8 [t| TryWait |]
+numbered 9 [t| TryWait |]
 instance Request TryWait where
 	data Occurred TryWait = OccTryWait DiffTime deriving Show
 
