@@ -5,3 +5,4 @@ TODO
 ----
 
 * [ ] モジュールTrials.Lockのリファクタリング
+	+ [x] API
