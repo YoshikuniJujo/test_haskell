@@ -7,7 +7,7 @@
 
 module Trials.Lock (
 	-- * TYPES
-	LockEv, LockState(..), LockId,
+	LockEv, NewLockId, GetLock, Unlock, LockState(..), LockId,
 	-- * FUNCTIONS
 	newLockId, withLock, handleLock ) where
 
@@ -80,13 +80,16 @@ handleUnlock reqs = Just (singleton OccUnlock) <$ modify (`unlockIt` l)
 	where UnlockReq l = extract reqs
 
 withLock :: (
-	Firstable es es', Expandable es es',
-	Firstable (GetThreadId :- GetLock :- 'Nil) es', Expandable (GetThreadId :- GetLock :- 'Nil) es',
-	Firstable (Singleton Unlock) es', Expandable (Singleton Unlock) es',
-	(es' :+: es) ~ es',
-	(es' :+: (GetThreadId :- GetLock :- 'Nil)) ~ es',
-	(es' :+: (Unlock :- 'Nil)) ~ es'
-	) => LockId -> React es a -> React es' a
+	(es :+: es') ~ es',
+	((GetThreadId :- GetLock :- 'Nil) :+: es') ~ es',
+	((Singleton Unlock) :+: es') ~ es',
+	Firstable es es',
+	Firstable (GetThreadId :- GetLock :- 'Nil) es',
+	Firstable (Singleton Unlock) es',
+	Expandable es es',
+	Expandable (GetThreadId :- GetLock :- 'Nil) es',
+	Expandable (Singleton Unlock) es' ) =>
+	LockId -> React es a -> React es' a
 withLock l act = adjust (getLock l 0) >> adjust act <* adjust (unlock l)
 
 type LockEv = NewLockId :- GetLock :- Unlock :- 'Nil
