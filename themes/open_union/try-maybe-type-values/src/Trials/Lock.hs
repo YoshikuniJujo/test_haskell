@@ -6,13 +6,14 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Lock (
-	LockState(..), LockId, LockEv, LockEv', newLockId, withLock,
-	handleNewLockId, handleGetLock, handleUnlock
-	) where
+	-- * TYPES
+	LockEv, LockState(..), LockId,
+	-- * FUNCTIONS
+	newLockId, withLock, handleLock ) where
 
 import Control.Monad.State
 import Data.Type.Set
-import Data.UnionSet
+import Data.UnionSet hiding (merge)
 import Data.Bool
 import MonadicFrp
 import MonadicFrp.Handle
@@ -88,5 +89,8 @@ withLock :: (
 	) => LockId -> React es a -> React es' a
 withLock l act = adjust (getLock l 0) >> adjust act <* adjust (unlock l)
 
-type LockEv = GetThreadId :- GetLock :- Unlock :- 'Nil
-type LockEv' = NewLockId :- LockEv
+type LockEv = NewLockId :- GetLock :- Unlock :- 'Nil
+
+handleLock :: (LockState s, Monad m) =>
+	Handle' (StateT s m) (NewLockId :- GetLock :- Unlock :- 'Nil)
+handleLock = handleNewLockId `merge` handleGetLock `merge` handleUnlock

@@ -72,22 +72,10 @@ repeatAdd1 = repeat add1
 add1add1add1 :: Sig (StoreInt :- LoadInt :- 'Nil) (Int, Int, Int) ()
 add1add1add1 = (,,) <$%> repeatAdd1 <*%> repeatAdd1 <*%> repeatAdd1
 
-type LockedInt = LockEv :+: (StoreInt :- LoadInt :- 'Nil) -- GetThreadId :- GetLock :- Unlock :- StoreInt :- LoadInt :- 'Nil
-type LockedInt' = LockEv' :+: (StoreInt :- LoadInt :- 'Nil)
---	GetThreadId :- NewLockId :- GetLock :- Unlock :- StoreInt :- LoadInt :-
---	'Nil
+type LockedInt' = GetThreadId :- LockEv :+: (StoreInt :- LoadInt :- 'Nil)
 
-add1' :: LockId -> React LockedInt Int
+add1' :: LockId -> React LockedInt' Int
 add1' l = withLock l add1
-
-repeatAdd1' :: LockId -> Sig LockedInt Int ()
-repeatAdd1' l = repeat $ add1' l
-
-add1add1 :: LockId -> Sig LockedInt (Int, Int) ()
-add1add1 l = (,) <$%> repeatAdd1' l <*%> repeatAdd1' l
-
-add1add1add1' :: LockId -> Sig LockedInt (Int, Int, Int) ()
-add1add1add1' l = (,,) <$%> repeatAdd1' l <*%> repeatAdd1' l <*%> repeatAdd1' l
 
 tryLock :: Sig LockedInt' (Int, Int, Int) ()
 tryLock = do
@@ -95,22 +83,10 @@ tryLock = do
 	let	foo = repeat . adjust $ add1' l
 	(,,) <$%> foo <*%> foo <*%> foo
 
-handleStoreLoadIntWithLock :: (LockState s, IntState s, Monad m) => Handle (StateT s m) LockedInt
-handleStoreLoadIntWithLock = retry $
-	handleGetThreadId `merge`
-	handleGetLock `merge`
-	handleUnlock `merge`
-	handleStoreInt `merge`
-	handleLoadInt
-
 handleStoreLoadIntWithLockNew :: (LockState s, IntState s, Monad m) => Handle (StateT s m) LockedInt'
 handleStoreLoadIntWithLockNew = retry $
-	handleNewLockId `merge`
-	handleGetThreadId `merge`
-	handleGetLock `merge`
-	handleUnlock `merge`
-	handleStoreInt `merge`
-	handleLoadInt
+	handleGetThreadId `merge` handleLock `merge`
+	handleStoreInt `merge` handleLoadInt
 
 data LockIntState = LockIntState {
 	nextLockId :: Int,
@@ -131,11 +107,6 @@ instance IntState LockIntState where
 initialLockIntState :: LockIntState
 initialLockIntState =
 	LockIntState { nextLockId = 0, lockState = [], intState = 0 }
-
-handleStoreLoadIntWithLock' :: Handle (StateT LockIntState IO) LockedInt
-handleStoreLoadIntWithLock' reqs = do
-	lift $ threadDelay 250000
-	handleStoreLoadIntWithLock reqs
 
 handleStoreLoadIntWithLockNew' :: Handle (StateT LockIntState IO) LockedInt'
 handleStoreLoadIntWithLockNew' reqs = do
