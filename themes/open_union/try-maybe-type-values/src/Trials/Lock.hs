@@ -5,7 +5,10 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Lock where
+module Trials.Lock (
+	LockState(..), LockId, LockEv, LockEv', newLockId, withLock,
+	handleNewLockId, handleGetLock, handleUnlock
+	) where
 
 import Control.Monad.State
 import Data.Type.Set
@@ -23,8 +26,8 @@ class LockState s where
 	isLocked :: s -> LockId -> Bool
 	lockIt :: s -> LockId -> s
 	unlockIt :: s -> LockId -> s
-	getLockId :: s -> LockId
-	putLockId :: s -> LockId -> s
+	getLockId :: s -> Int
+	putLockId :: s -> Int -> s
 
 data NewLockId = NewLockIdReq ThreadId deriving (Show, Eq)
 numbered 9 [t| NewLockId |]
@@ -39,8 +42,9 @@ newLockId = adjust getThreadId >>= \ti ->
 
 handleNewLockId :: (LockState s, Monad m) => Handle' (StateT s m) (Singleton NewLockId)
 handleNewLockId reqs = get >>= \s -> do
-	let	l@(LockId i) = getLockId s
-	Just (singleton $ OccNewLockId l ti) <$ modify (`putLockId` LockId (i + 1))
+	let	i = getLockId s
+		l = LockId i
+	Just (singleton $ OccNewLockId l ti) <$ modify (`putLockId` (i + 1))
 	where NewLockIdReq ti = extract reqs
 
 data GetLock = GetLockReq LockId ThreadId RetryTime deriving (Show, Eq)
@@ -83,3 +87,6 @@ withLock :: (
 	(es' :+: (Unlock :- 'Nil)) ~ es'
 	) => LockId -> React es a -> React es' a
 withLock l act = adjust (getLock l 0) >> adjust act <* adjust (unlock l)
+
+type LockEv = GetThreadId :- GetLock :- Unlock :- 'Nil
+type LockEv' = NewLockId :- LockEv

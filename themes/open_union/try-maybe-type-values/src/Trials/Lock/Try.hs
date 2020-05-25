@@ -72,10 +72,10 @@ repeatAdd1 = repeat add1
 add1add1add1 :: Sig (StoreInt :- LoadInt :- 'Nil) (Int, Int, Int) ()
 add1add1add1 = (,,) <$%> repeatAdd1 <*%> repeatAdd1 <*%> repeatAdd1
 
-type LockedInt = GetThreadId :- GetLock :- Unlock :- StoreInt :- LoadInt :- 'Nil
-type LockedInt' =
-	GetThreadId :- NewLockId :- GetLock :- Unlock :- StoreInt :- LoadInt :-
-	'Nil
+type LockedInt = LockEv :+: (StoreInt :- LoadInt :- 'Nil) -- GetThreadId :- GetLock :- Unlock :- StoreInt :- LoadInt :- 'Nil
+type LockedInt' = LockEv' :+: (StoreInt :- LoadInt :- 'Nil)
+--	GetThreadId :- NewLockId :- GetLock :- Unlock :- StoreInt :- LoadInt :-
+--	'Nil
 
 add1' :: LockId -> React LockedInt Int
 add1' l = withLock l add1
@@ -113,7 +113,7 @@ handleStoreLoadIntWithLockNew = retry $
 	handleLoadInt
 
 data LockIntState = LockIntState {
-	nextLockId :: LockId,
+	nextLockId :: Int,
 	lockState :: [LockId],
 	intState :: Int } deriving Show
 
@@ -130,7 +130,7 @@ instance IntState LockIntState where
 
 initialLockIntState :: LockIntState
 initialLockIntState =
-	LockIntState { nextLockId = LockId 0, lockState = [], intState = 0 }
+	LockIntState { nextLockId = 0, lockState = [], intState = 0 }
 
 handleStoreLoadIntWithLock' :: Handle (StateT LockIntState IO) LockedInt
 handleStoreLoadIntWithLock' reqs = do
