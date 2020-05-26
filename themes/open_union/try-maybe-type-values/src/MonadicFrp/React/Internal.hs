@@ -17,7 +17,7 @@ import Data.Or
 import Data.Type.Set hiding (Merge)
 import Data.UnionSet
 
-import MonadicFrp.ThreadId
+import MonadicFrp.ThreadId.Type
 
 type EvReqs (es :: Set Type) = UnionSet es
 type EvOccs (es :: Set Type) = UnionSet (Occurred :$: es)

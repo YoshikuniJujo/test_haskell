@@ -18,7 +18,6 @@ import Data.Bool
 import MonadicFrp
 import MonadicFrp.Handle
 import MonadicFrp.ThreadId
-import Trials.Followbox.ThreadId
 
 data LockId = LockId Int deriving (Show, Eq)
 type RetryTime = Int

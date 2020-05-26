@@ -1,14 +1,28 @@
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module MonadicFrp.ThreadId where
+module MonadicFrp.ThreadId (
+	ThreadId, GetThreadId, Occurred(..), handleGetThreadId, getThreadId
+	) where
 
-import Data.Bits
+import Data.Type.Set (Singleton, numbered)
+import Data.UnionSet (singleton)
 
-data ThreadId = ThreadId Word Integer deriving (Show, Eq)
+import MonadicFrp (React, Request(..), await')
+import MonadicFrp.Handle (Handle')
+import MonadicFrp.ThreadId.Type (ThreadId)
 
-rootThreadId :: ThreadId
-rootThreadId = ThreadId 0 0
+---------------------------------------------------------------------------
 
-forkThreadId :: ThreadId -> (ThreadId, ThreadId)
-forkThreadId (ThreadId n i) =
-	(ThreadId n $ i + 1, ThreadId (n `setBit` fromIntegral i) $ i + 1)
+data GetThreadId = GetThreadIdReq deriving (Show, Eq, Ord)
+numbered 9 [t| GetThreadId |]
+instance Request GetThreadId where data Occurred GetThreadId = OccGetThreadId
+
+handleGetThreadId :: Applicative m => Handle' m (Singleton GetThreadId)
+handleGetThreadId _reqs = pure . Just $ singleton OccGetThreadId
+
+getThreadId :: React (Singleton GetThreadId) ThreadId
+getThreadId = await' GetThreadIdReq \ti OccGetThreadId -> ti

@@ -29,9 +29,9 @@ TODO
 
 * [x] LeftClickなどではなくMonadicFrp.Events.Mouseを使うようにする
 	+ [x] MonadicFrp.Events.MouseにleftClick, rightClick, middleClickを追加する
-* [ ] RandomでLockを使うようにする
+* [x] RandomでLockを使うようにする
 	+ [x] Trials.Followbox.NewRandomを定義する
-	+ [ ] 置き換える
+	+ [x] 置き換える
 
 リファクタリング
 ----------------

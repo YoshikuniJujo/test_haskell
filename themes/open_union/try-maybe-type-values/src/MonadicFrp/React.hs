@@ -9,7 +9,7 @@ import Data.Type.Set
 import Data.UnionSet
 
 import MonadicFrp.React.Internal
-import MonadicFrp.ThreadId
+import MonadicFrp.ThreadId.Type
 
 await :: a -> (Occurred a -> b) -> React (Singleton a) b
 await r f = Await (singleton r) (\oc ti -> pure (f $ extract oc, ti))

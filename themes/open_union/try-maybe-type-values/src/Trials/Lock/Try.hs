@@ -17,8 +17,8 @@ import Data.List (delete)
 
 import MonadicFrp
 import MonadicFrp.Handle
+import MonadicFrp.ThreadId
 import Trials.Lock
-import Trials.Followbox.ThreadId
 
 class IntState s where
 	getInt :: s -> Int
