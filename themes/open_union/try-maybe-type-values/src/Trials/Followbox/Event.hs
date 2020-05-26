@@ -54,6 +54,7 @@ import qualified Data.Text as T
 
 import MonadicFrp (Request(..), Sig, React, await)
 import MonadicFrp.Events.Mouse
+import Trials.Lock
 import Trials.Followbox.Random (RandomEv)
 import Trials.Followbox.ThreadId (GetThreadId)
 import Trials.Followbox.TypeSynonym (
@@ -206,7 +207,7 @@ checkTerminate = catchError >>= \case
 type SigF = Sig FollowboxEv
 type ReactF = React FollowboxEv
 
-type FollowboxEv = GetThreadId :- RandomEv :+: MouseEv :+: FollowboxEvGen
+type FollowboxEv = GetThreadId :- LockEv :+: RandomEv :+: MouseEv :+: FollowboxEvGen
 
 type FollowboxEvGen =
 	StoreJsons :- LoadJsons :-

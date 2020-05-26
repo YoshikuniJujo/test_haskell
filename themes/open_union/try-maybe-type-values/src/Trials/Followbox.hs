@@ -6,7 +6,7 @@ module Trials.Followbox (followbox) where
 
 import Prelude hiding (until, repeat)
 
-import Control.Monad (forever, replicateM)
+import Control.Monad (forever)
 import Data.Type.Flip ((<$%>), (<*%>), ftraverse)
 import Data.Or (Or(..))
 import Data.Time (UTCTime, utcToLocalTime)
@@ -23,6 +23,7 @@ import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 
 import MonadicFrp (adjust, first, emit, waitFor, until)
+import Trials.Lock
 import Trials.Followbox.Clickable (
 	Clickable, view, click, clickable,
 	WithTextExtents, clickableText, withTextExtents, nextToText, translate )
@@ -87,6 +88,11 @@ resetTime = forever $ (emit [] >>) do
 			$ "Wait until " <> show (utcToLocalTime tz t)]
 	waitFor $ adjust endSleep
 
+data Locks = Locks { lockRandom :: LockId, lockObjects :: LockId } deriving Show
+
+newLocks :: ReactF Locks
+newLocks = Locks <$> adjust newLockId <*> adjust newLockId
+
 field :: Integer -> SigF View ()
 field n = do
 	(nxt, rfs) <- waitFor $ (,)
@@ -94,10 +100,10 @@ field n = do
 		<*> link refreshPosition "Refresh"
 	let	frame = title : view nxt <> view rfs
 		clear = emit frame
+	ls <- waitFor newLocks
 	clear >> forever do
-		us <- waitFor $ fromIntegral n `replicateM` getUser
 		(frame <>) <$%>
-			users us `until` click nxt `first` click rfs >>= \case
+			users' ls n `until` click nxt `first` click rfs >>= \case
 				Left (_, L _) -> pure ()
 				Left (_, LR _ _) -> pure ()
 				Left (_, R _) ->
@@ -107,15 +113,16 @@ field n = do
 	title = twhite largeSize titlePosition "Who to follow"
 	link p t = clickableText p <$> withTextExtents defaultFont middleSize t
 
-users :: [(Avatar, T.Text, T.Text)] -> SigF View ()
-users us = concat <$%> uncurry user1 `ftraverse` zip [0 ..] us
+users' :: Locks -> Integer -> SigF View ()
+users' ls n = concat <$%> user1' ls `ftraverse` [0 .. n - 1]
 
-user1 :: Integer -> (Avatar, T.Text, T.Text) -> SigF View ()
-user1 n (a, ln, u) = do
+user1' :: Locks -> Integer -> SigF View ()
+user1' ls n = do
+	(a, ln, u) <- waitFor (getUser ls)
 	(nm, cr) <- waitFor $ nameCross n ln
 	emit $ Image (avatarPosition n) a : view nm <> view cr
 	() <$ waitFor (forever $ click nm >> adjust (browse u)) `until` click cr
-	user1 n =<< waitFor getUser
+	user1' ls n
 
 nameCross :: Integer -> T.Text -> ReactF (Clickable, Clickable)
 nameCross n t = (<$> withTextExtents defaultFont largeSize t) \wte ->
@@ -131,11 +138,11 @@ cross sz (x0, y0) = clickable
 	[x0', y0'] = subtract crossMergin <$> [x0, y0]
 	[x1', y1'] = (+ crossMergin) <$> [x1, y1]
 
-getUser :: ReactF (Avatar, T.Text, T.Text)
-getUser = makeUser <$> getObject1 >>= \case
-	Left (e, em) -> adjust (raiseError e em) >> getUser
+getUser :: Locks -> ReactF (Avatar, T.Text, T.Text)
+getUser ls = makeUser <$> getObject1 ls >>= \case
+	Left (e, em) -> adjust (raiseError e em) >> getUser ls
 	Right (au, l, u) -> getAvatar au >>= \case
-		Left (e, em) -> adjust (raiseError e em) >> getUser
+		Left (e, em) -> adjust (raiseError e em) >> getUser ls
 		Right a -> pure (a, l, u)
 	where
 	makeUser o = (,,)
@@ -150,15 +157,18 @@ getAvatar url = (<$> adjust (httpGet url)) . (. bsToImage . snd) $ either
 	(Left . (NoAvatar ,)) (Right . scaleBilinear avatarSizeX avatarSizeY)
 	where bsToImage = (convertRGBA8 <$>) . decodeImage . LBS.toStrict
 
-getObject1 :: ReactF Object
-getObject1 = adjust loadJsons >>= \case
-	[] -> getObjects >>= \case
-		Right (o : os) -> o <$ adjust (storeJsons os)
-		Right [] -> do
-			adjust $ raiseError EmptyJson "Empty JSON"
-			getObject1
-		Left em -> adjust (raiseError NotJson em) >> getObject1
+getObject1 :: Locks -> ReactF Object
+getObject1 ls = withLock (lockObjects ls) $ adjust loadJsons >>= \case
+	[] -> getObject1'
 	o : os -> o <$ adjust (storeJsons os)
+
+getObject1' :: ReactF Object
+getObject1' = getObjects >>= \case
+	Right (o : os) -> o <$ adjust (storeJsons os)
+	Right [] -> do
+		adjust $ raiseError EmptyJson "Empty JSON"
+		getObject1'
+	Left em -> adjust (raiseError NotJson em) >> getObject1'
 
 getObjects :: ReactF (Either String [Object])
 getObjects = do

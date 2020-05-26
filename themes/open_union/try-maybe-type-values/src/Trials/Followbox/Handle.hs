@@ -11,7 +11,8 @@ import Prelude hiding (head)
 
 import Control.Monad.State (StateT, lift, gets, modify)
 import Data.Type.Set (Set(Nil), Singleton, (:-))
-import Data.List.NonEmpty (NonEmpty(..), head, cons)
+import Data.List (delete)
+import Data.List.NonEmpty (NonEmpty(..), head)
 import Data.UnionSet (singleton, extract)
 import Data.Bool (bool)
 import Data.String (fromString)
@@ -25,6 +26,7 @@ import qualified Network.HTTP.Simple as H
 
 import MonadicFrp.Handle
 import MonadicFrp.XFieldHandle.Mouse
+import Trials.Lock
 import Trials.Followbox.Event hiding (getTimeZone)
 import Trials.Followbox.Random
 import Trials.Followbox.ThreadId
@@ -35,25 +37,29 @@ import Field (Field, textExtents)
 
 type FbM = StateT FollowboxState
 data FollowboxState = FollowboxState {
+	fsNextLockId :: Int,
+	fsLockState :: [LockId],
 	fsObjects :: [Object],
 	fsSleepUntil :: Maybe UTCTime,
-	fsVersionRandomGens :: NonEmpty (StdGenVersion, StdGen) }
+	fsVersionRandomGens :: NonEmpty ((), StdGen) }
 	deriving Show
 
 initialFollowboxState :: FollowboxState
 initialFollowboxState = FollowboxState {
+	fsNextLockId = 0, fsLockState = [],
 	fsObjects = [], fsSleepUntil = Nothing,
-	fsVersionRandomGens = (stdGenVersion0, mkStdGen 8) :| [] }
+	fsVersionRandomGens = ((), mkStdGen 8) :| [] }
+
+instance LockState FollowboxState where
+	getLockId = fsNextLockId
+	putLockId s l = s { fsNextLockId = l }
+	isLocked s l = l `elem` fsLockState s
+	lockIt s l = s { fsLockState = l : fsLockState s }
+	unlockIt s l = s { fsLockState = delete l $ fsLockState s }
 
 instance RandomState FollowboxState where
-	getVersionStdGen = head . fsVersionRandomGens
-	putVersionStdGen s (v, g) =
-		s { fsVersionRandomGens = (v, g) `cons` fsVersionRandomGens s }
-	rollbackStdGen
-		s@FollowboxState { fsVersionRandomGens = (v0, _) :| vg : vgs } v
-		| v == v0 = Right s { fsVersionRandomGens = vg :| vgs }
-		| otherwise = Left "can't rollback"
-	rollbackStdGen _ _ = Left "can't rollback"
+	getRandomGen = snd . head . fsVersionRandomGens
+	putRandomGen s g = s { fsVersionRandomGens = ((), g) :| [] }
 
 getObjects :: Monad m => FbM m [Object]
 getObjects = gets fsObjects
@@ -77,7 +83,7 @@ resetSleep = modify \s -> s { fsSleepUntil = Nothing }
 handle ::
 	Field -> Browser -> Maybe GithubNameToken -> Handle (FbM IO) FollowboxEv
 handle f brws mba = retry $
-	handleGetThreadId `merge` handleRandom `merge`
+	handleGetThreadId `merge` handleLock `merge` handleRandom `merge`
 	handleStoreLoadJsons `merge`
 	lift . just . handleHttpGet mba `merge`
 	lift . just . handleCalcTextExtents f `merge`
