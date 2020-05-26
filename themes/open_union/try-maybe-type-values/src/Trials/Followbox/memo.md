@@ -38,10 +38,10 @@ TODO
 ### API
 
 * [x] Trials.Followbox.Random
-* [ ] Trials.Followbox.Event
-* [ ] Trials.Followbox.View
-* [ ] Trials.Followbox.Clickable
-* [ ] Trials.Followbox
+* [x] Trials.Followbox.Event
+* [x] Trials.Followbox.View
+* [x] Trials.Followbox.Clickable
+* [x] Trials.Followbox
 * [ ] Trials.Followbox.Handle
 * [ ] Trials.Followbox.Run
 * [ ] Trials.Followbox.TypeSynonym

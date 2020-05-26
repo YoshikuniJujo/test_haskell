@@ -2,9 +2,9 @@
 
 module Trials.Followbox.Clickable (
 	-- * CLICKABLE
-	Clickable, view, click, clickable,
+	Clickable, view, click, clickable, clickableText,
 	-- * WITH TEXT EXTENTS
-	WithTextExtents, clickableText, withTextExtents, nextToText, translate
+	WithTextExtents, withTextExtents, nextToText, translate
 	) where
 
 import Prelude hiding (repeat)
