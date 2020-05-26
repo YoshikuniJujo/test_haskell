@@ -23,7 +23,7 @@ import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 
 import MonadicFrp (adjust, first, emit, waitFor, until)
-import Trials.Lock
+import MonadicFrp.Lock
 import Trials.Followbox.Clickable (
 	Clickable, view, click, clickable,
 	WithTextExtents, clickableText, withTextExtents, nextToText, translate )

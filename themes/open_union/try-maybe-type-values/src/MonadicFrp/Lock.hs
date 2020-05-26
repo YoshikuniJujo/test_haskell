@@ -5,7 +5,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Lock (
+module MonadicFrp.Lock (
 	-- * TYPES
 	LockEv, NewLockId, GetLock, Unlock, LockState(..), LockId,
 	-- * FUNCTIONS

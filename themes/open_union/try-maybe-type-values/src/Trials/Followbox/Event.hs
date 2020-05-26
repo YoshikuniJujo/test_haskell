@@ -54,8 +54,8 @@ import qualified Data.Text as T
 
 import MonadicFrp (Request(..), Sig, React, await)
 import MonadicFrp.ThreadId (GetThreadId)
+import MonadicFrp.Lock
 import MonadicFrp.Events.Mouse
-import Trials.Lock
 import Trials.Followbox.Random (RandomEv)
 import Trials.Followbox.TypeSynonym (
 	Uri, FontName, FontSize, ErrorMessage )

@@ -17,7 +17,7 @@ TODO
 		Eventの変換用の関数を用意しておきloopのなかで使えるようにしておく感じか
 * [x] Lockの実装
 * [x] Trials.Followbox.ThreadIdをMonadicFrp.ThreadIdか、あるいはそれ以下に移動させる
-* [ ] Trials.LockをMonadicFrp.Lockに移動させる
+* [x] Trials.LockをMonadicFrp.Lockに移動させる
 * [ ] Trials.Lockのリファクタリングなど
 * [ ] Reactにだけではなく、Sigにもadjust的なものを定義することを検討
 * [ ] Handleで「ひとつのループのなかに、別のモジュール由来のものを入れられる」ような仕組みを作成する

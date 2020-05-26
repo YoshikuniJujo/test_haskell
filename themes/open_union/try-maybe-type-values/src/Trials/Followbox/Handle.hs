@@ -26,8 +26,8 @@ import qualified Network.HTTP.Simple as H
 
 import MonadicFrp.Handle
 import MonadicFrp.ThreadId
+import MonadicFrp.Lock
 import MonadicFrp.XFieldHandle.Mouse
-import Trials.Lock
 import Trials.Followbox.Event hiding (getTimeZone)
 import Trials.Followbox.Random
 import Trials.Followbox.TypeSynonym (Browser, GithubNameToken)
