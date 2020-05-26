@@ -5,7 +5,10 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Followbox.Random (
-	RandomEv, RandomState(..), getRandom, getRandomR, handleRandom ) where
+	-- * TYPE
+	RandomEv, RandomState(..),
+	-- * FUNCTION
+	getRandom, getRandomR, handleRandom ) where
 
 import Control.Monad.State
 import Data.Type.Set
