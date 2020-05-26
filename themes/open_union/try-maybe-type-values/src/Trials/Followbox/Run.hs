@@ -15,7 +15,7 @@ import qualified Data.ByteString.Char8 as BSC
 
 import MonadicFrp.Run (interpret)
 import Trials.Followbox.Event (SigF)
-import Trials.Followbox.Handle (handle, FollowboxState, initialFollowboxState)
+import Trials.Followbox.Handle (handleFollowbox, FollowboxState, initialFollowboxState)
 import Trials.Followbox.View (View, view)
 import Trials.Followbox.TypeSynonym (
 	WindowTitle, Browser, GithubNameToken, GithubUserName )
@@ -34,7 +34,7 @@ runFollowbox ttl sig = getFollowboxInfo >>= \case
 runFb :: WindowTitle -> FollowboxInfo -> SigF View a -> IO (a, FollowboxState)
 runFb ttl i sg = do
 	f <- openField ttl [exposureMask, buttonPressMask]
-	interpret (handle f brs gnt) (lift . view f) sg
+	interpret (handleFollowbox f brs gnt) (lift . view f) sg
 		`runStateT` initialFollowboxState <* closeField f
 	where FollowboxInfo { fiBrowser = brs, fiGithubUserNameToken = gnt } = i
 

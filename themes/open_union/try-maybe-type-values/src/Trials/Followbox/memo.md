@@ -42,7 +42,7 @@ TODO
 * [x] Trials.Followbox.View
 * [x] Trials.Followbox.Clickable
 * [x] Trials.Followbox
-* [ ] Trials.Followbox.Handle
+* [x] Trials.Followbox.Handle
 * [ ] Trials.Followbox.Run
 * [ ] Trials.Followbox.TypeSynonym
 

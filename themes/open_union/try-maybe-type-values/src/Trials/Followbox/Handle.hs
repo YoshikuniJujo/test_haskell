@@ -5,7 +5,10 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Followbox.Handle (
-	handle, FbM, FollowboxState, initialFollowboxState ) where
+	-- * HANDLE
+	handleFollowbox,
+	-- * STATE
+	FbM, FollowboxState, initialFollowboxState ) where
 
 import Prelude hiding (head)
 
@@ -80,8 +83,9 @@ resetSleep = modify \s -> s { fsSleepUntil = Nothing }
 -- HANDLE
 ---------------------------------------------------------------------------
 
-handle ::
+handleFollowbox, handle ::
 	Field -> Browser -> Maybe GithubNameToken -> Handle (FbM IO) FollowboxEv
+handleFollowbox = handle
 handle f brws mba = retry $
 	handleGetThreadId `merge` handleLock `merge` handleRandom `merge`
 	handleStoreLoadJsons `merge`
