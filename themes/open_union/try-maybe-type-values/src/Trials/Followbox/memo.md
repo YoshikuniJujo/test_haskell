@@ -43,12 +43,8 @@ TODO
 * [x] Trials.Followbox.Clickable
 * [x] Trials.Followbox
 * [x] Trials.Followbox.Handle
-* [ ] Trials.Followbox.Run
-* [ ] Trials.Followbox.TypeSynonym
-
-### remove
-
-### move and rename
+* [x] Trials.Followbox.Run
+* [x] Trials.Followbox.TypeSynonym
 
 ### Body
 
@@ -73,7 +69,3 @@ TODO
 	+ [ ] imports
 	+ [ ] body
 * [ ] Trials.Followbox.TypeSynonym
-
-### Correct
-
-* [ ] try to use ThreadId to load objects
