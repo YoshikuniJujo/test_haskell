@@ -8,7 +8,7 @@ cb_motion_notify_event(GtkWidget *widget, GdkEventMotion *event, gpointer user_d
 
 	printf("MOTION EVENT OCCUR\n");
 	if (gdk_event_get_axis ((GdkEvent *)event, GDK_AXIS_PRESSURE, &pressure)) {
-		printf("PEN PRESSURE\n");
+		printf("PEN PRESSURE: %lf\n", pressure);
 	} else {
 		printf("NO PEN PRESSURE\n");
 	}
