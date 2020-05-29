@@ -5,7 +5,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module MonadicFrp.Lock (
+module MonadicFrp.EventHandle.Lock (
 	-- * TYPES
 	LockEv, NewLockId, GetLock, Unlock, LockState(..), LockId,
 	-- * FUNCTIONS
@@ -17,7 +17,7 @@ import Data.UnionSet hiding (merge)
 import Data.Bool
 import MonadicFrp
 import MonadicFrp.Handle
-import MonadicFrp.ThreadId
+import MonadicFrp.EventHandle.ThreadId
 
 data LockId = LockId Int deriving (Show, Eq)
 type RetryTime = Int

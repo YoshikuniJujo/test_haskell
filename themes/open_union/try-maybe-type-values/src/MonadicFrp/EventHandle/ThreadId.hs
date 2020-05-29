@@ -4,7 +4,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module MonadicFrp.ThreadId (
+module MonadicFrp.EventHandle.ThreadId (
 	ThreadId, GetThreadId, Occurred(..), handleGetThreadId, getThreadId
 	) where
 

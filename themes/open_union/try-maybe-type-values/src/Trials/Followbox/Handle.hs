@@ -28,8 +28,8 @@ import qualified Data.Text as T
 import qualified Network.HTTP.Simple as H
 
 import MonadicFrp.Handle
-import MonadicFrp.ThreadId
-import MonadicFrp.Lock
+import MonadicFrp.EventHandle.ThreadId
+import MonadicFrp.EventHandle.Lock
 import MonadicFrp.XFieldHandle.Mouse
 import Trials.Followbox.Event hiding (getTimeZone)
 import Trials.Followbox.Random

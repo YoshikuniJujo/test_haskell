@@ -20,10 +20,10 @@ TODO
 * [x] Trials.LockをMonadicFrp.Lockに移動させる
 * [ ] MonadicFrp以下を整理する
 	+ [x] MonadicFrp.EventsをMonadicFrp.Eventにする
-	+ [ ] MonadicFrp.EventHandleを作成
-	+ [ ] MonadicFrp.Lockを上記ディレクトリ下に
-	+ [ ] MonadicFrp.ThreadIdを上記ディレクトリ下に
-		- [ ] MonadicFrp.ThreadId.Typeは(とりあえず)そのままにする
+	+ [x] MonadicFrp.EventHandleを作成
+	+ [x] MonadicFrp.Lockを上記ディレクトリ下に
+	+ [x] MonadicFrp.ThreadIdを上記ディレクトリ下に
+		- [x] MonadicFrp.ThreadId.Typeは(とりあえず)そのままにする
 	+ [ ] MonadicFrp.Randomを上記ディレクトリ下に
 * [ ] Followboxのリファクタリング
 * [ ] Trials.Lockのリファクタリングなど

@@ -49,8 +49,8 @@ import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 
 import MonadicFrp (Request(..), Sig, React, await)
-import MonadicFrp.ThreadId (GetThreadId)
-import MonadicFrp.Lock
+import MonadicFrp.EventHandle.ThreadId (GetThreadId)
+import MonadicFrp.EventHandle.Lock
 import MonadicFrp.Event.Mouse
 import Trials.Followbox.Random (RandomEv)
 import Trials.Followbox.TypeSynonym (
