@@ -49,7 +49,7 @@ TODO
 ### Body
 
 * [ ] Trials.Followbox.Random
-	+ [ ] imports
+	+ [x] imports
 	+ [ ] body
 * [ ] Trials.Followbox.Event
 	+ [ ] imports

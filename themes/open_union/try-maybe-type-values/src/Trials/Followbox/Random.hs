@@ -10,13 +10,15 @@ module Trials.Followbox.Random (
 	-- * FUNCTION
 	getRandom, getRandomR, handleRandom ) where
 
-import Control.Monad.State
-import Data.Type.Set
-import Data.UnionSet hiding (merge)
-import System.Random
+import Control.Monad.State (StateT, gets, modify)
+import Data.Type.Set (Set(Nil), Singleton, numbered, (:-))
+import Data.UnionSet (Mrgable(..), singleton, extract)
+import System.Random (Random, StdGen, random, randomR)
 
-import MonadicFrp
-import MonadicFrp.Handle
+import MonadicFrp (Request, Occurred, React, await, adjust)
+import MonadicFrp.Handle (Handle', merge)
+
+---------------------------------------------------------------------------
 
 class RandomState s where
 	getRandomGen :: s -> StdGen
