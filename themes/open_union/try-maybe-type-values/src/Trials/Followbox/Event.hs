@@ -37,7 +37,7 @@ module Trials.Followbox.Event (
 	raiseError, checkTerminate
 	) where
 
-import Data.Type.Set (numbered, Singleton, Set(Nil), (:-), (:+:))
+import Data.Type.Set (Set(Nil), Singleton, numbered, (:-), (:+:))
 import Data.UnionSet (Mrgable(..))
 import Data.Bool (bool)
 import Data.Time (UTCTime, TimeZone)
@@ -49,12 +49,12 @@ import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 
 import MonadicFrp (Request(..), Sig, React, await)
-import MonadicFrp.EventHandle.ThreadId (GetThreadId)
-import MonadicFrp.EventHandle.Lock
-import MonadicFrp.Event.Mouse
 import MonadicFrp.EventHandle.Random (RandomEv)
-import Trials.Followbox.TypeSynonym (
-	Uri, FontName, FontSize, ErrorMessage )
+import MonadicFrp.EventHandle.Lock (LockEv)
+import MonadicFrp.EventHandle.ThreadId (GetThreadId)
+import MonadicFrp.Event.Mouse (
+	MouseEv, MouseDown, MouseMove, leftClick, mouseMove, deleteEvent )
+import Trials.Followbox.TypeSynonym (Uri, FontName, FontSize, ErrorMessage)
 
 ---------------------------------------------------------------------------
 
