@@ -52,7 +52,7 @@ import MonadicFrp (Request(..), Sig, React, await)
 import MonadicFrp.EventHandle.ThreadId (GetThreadId)
 import MonadicFrp.EventHandle.Lock
 import MonadicFrp.Event.Mouse
-import Trials.Followbox.Random (RandomEv)
+import MonadicFrp.EventHandle.Random (RandomEv)
 import Trials.Followbox.TypeSynonym (
 	Uri, FontName, FontSize, ErrorMessage )
 

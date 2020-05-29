@@ -24,7 +24,7 @@ TODO
 	+ [x] MonadicFrp.Lockを上記ディレクトリ下に
 	+ [x] MonadicFrp.ThreadIdを上記ディレクトリ下に
 		- [x] MonadicFrp.ThreadId.Typeは(とりあえず)そのままにする
-	+ [ ] MonadicFrp.Randomを上記ディレクトリ下に
+	+ [x] MonadicFrp.Randomを上記ディレクトリ下に
 * [ ] Followboxのリファクタリング
 * [ ] Trials.Lockのリファクタリングなど
 * [ ] Reactにだけではなく、Sigにもadjust的なものを定義することを検討

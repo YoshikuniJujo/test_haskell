@@ -4,7 +4,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trials.Followbox.Random (
+module MonadicFrp.EventHandle.Random (
 	-- * TYPE
 	RandomEv, RandomState(..),
 	-- * FUNCTION

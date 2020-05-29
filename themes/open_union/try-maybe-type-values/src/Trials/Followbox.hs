@@ -24,6 +24,7 @@ import qualified Data.Text as T
 
 import MonadicFrp (adjust, first, emit, waitFor, until)
 import MonadicFrp.EventHandle.Lock
+import MonadicFrp.EventHandle.Random (getRandomR)
 import Trials.Followbox.Clickable (
 	Clickable, view, click, clickable,
 	WithTextExtents, clickableText, withTextExtents, nextToText, translate )
@@ -33,7 +34,6 @@ import Trials.Followbox.Event (
 	beginSleep, checkBeginSleep, endSleep, deleteEvent,
 	Error(..), raiseError, checkTerminate )
 import Trials.Followbox.View (View, View1(..), white)
-import Trials.Followbox.Random (getRandomR)
 import Trials.Followbox.TypeSynonym (
 	Position, Avatar, FontName, FontSize, ErrorMessage )
 

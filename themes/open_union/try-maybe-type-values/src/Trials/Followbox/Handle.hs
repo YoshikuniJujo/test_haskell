@@ -31,8 +31,8 @@ import MonadicFrp.Handle
 import MonadicFrp.EventHandle.ThreadId
 import MonadicFrp.EventHandle.Lock
 import MonadicFrp.XFieldHandle.Mouse
+import MonadicFrp.EventHandle.Random
 import Trials.Followbox.Event hiding (getTimeZone)
-import Trials.Followbox.Random
 import Trials.Followbox.TypeSynonym (Browser, GithubNameToken)
 import Field (Field, textExtents)
 

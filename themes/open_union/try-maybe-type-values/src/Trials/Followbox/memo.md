@@ -9,14 +9,12 @@ Main
   +- Trials.Followbox
   |    +- Trials.Followbox.Clickable
   |    +- Trials.Followbox.Event
-  |    |    +- Trials.Followbox.Random
   |    |    +- Trials.Followbox.TypeSynonym
   |    +- Trials.Followbox.View
   |         +- Trials.Followbox.TypeSynonym
   +- Trials.Followbox.Run
        +- Trials.Followbox.Handle
        |    +- Trials.Followbox.Event
-       |    +- Trials.Followbox.Random
        |    +- Trials.Followbox.TypeSynonym
        +- Trials.Followbox.Event
        +- Trials.Followbox.View
@@ -31,14 +29,13 @@ TODO
 * [x] RandomでLockを使うようにする
 	+ [x] Trials.Followbox.NewRandomを定義する
 	+ [x] 置き換える
-* [ ] Trials.Followbox.RandomをMonadicFrp.Randomに移動することを検討する
+* [x] Trials.Followbox.RandomをMonadicFrp.Randomに移動することを検討する
 
 リファクタリング
 ----------------
 
 ### API
 
-* [x] Trials.Followbox.Random
 * [x] Trials.Followbox.Event
 * [x] Trials.Followbox.View
 * [x] Trials.Followbox.Clickable
@@ -49,10 +46,6 @@ TODO
 
 ### Body
 
-* [x] Trials.Followbox.Random
-	+ [x] imports
-	+ [x] structure
-	+ [x] body
 * [ ] Trials.Followbox.Event
 	+ [ ] imports
 	* [ ] structure
