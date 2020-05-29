@@ -4,7 +4,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module MonadicFrp.Events.Mouse (
+module MonadicFrp.Event.Mouse (
 	-- * GENERAL
 	Occurred(..),
 	-- * MOUSE EVENT

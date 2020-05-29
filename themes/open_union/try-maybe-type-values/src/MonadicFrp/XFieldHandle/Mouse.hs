@@ -14,7 +14,7 @@ import System.Exit
 
 import MonadicFrp -- (React, Request(..), await, EvOccs)
 import MonadicFrp.Handle
-import MonadicFrp.Events.Mouse
+import MonadicFrp.Event.Mouse
 import Field
 
 handleMouse :: Maybe DiffTime -> Field -> Handle' IO MouseEv

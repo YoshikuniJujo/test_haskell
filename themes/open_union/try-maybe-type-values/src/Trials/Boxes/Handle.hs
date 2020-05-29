@@ -14,9 +14,8 @@ import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
 	
 import MonadicFrp.Handle (
 	HandleSt, HandleSt', retrySt, expandHandleSt, mergeHandleSt )
-import MonadicFrp.Events.Mouse (MouseEv)
 import MonadicFrp.XFieldHandle.Mouse (handleMouse)
-import Trials.Boxes.Event (GuiEv, TimeEv, TryWait(..), Occurred(..))
+import Trials.Boxes.Event (GuiEv, MouseEv, TimeEv, TryWait(..), Occurred(..))
 import Field (Field)
 
 ---------------------------------------------------------------------------

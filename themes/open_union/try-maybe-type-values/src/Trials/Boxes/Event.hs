@@ -19,7 +19,7 @@ import Data.Bool (bool)
 import Data.Time (DiffTime)
 
 import MonadicFrp (Sig, ISig, React, Request(..), await)
-import MonadicFrp.Events.Mouse (
+import MonadicFrp.Event.Mouse (
 	MouseEv, MouseDown, MouseUp, MouseBtn(..), MouseMove,
 	Point, DeleteEvent,
 	leftClick, middleClick, rightClick, leftUp, mouseMove, deleteEvent )

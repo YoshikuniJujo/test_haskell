@@ -18,6 +18,13 @@ TODO
 * [x] Lockの実装
 * [x] Trials.Followbox.ThreadIdをMonadicFrp.ThreadIdか、あるいはそれ以下に移動させる
 * [x] Trials.LockをMonadicFrp.Lockに移動させる
+* [ ] MonadicFrp以下を整理する
+	+ [x] MonadicFrp.EventsをMonadicFrp.Eventにする
+	+ [ ] MonadicFrp.EventHandleを作成
+	+ [ ] MonadicFrp.Lockを上記ディレクトリ下に
+	+ [ ] MonadicFrp.ThreadIdを上記ディレクトリ下に
+		- [ ] MonadicFrp.ThreadId.Typeは(とりあえず)そのままにする
+	+ [ ] MonadicFrp.Randomを上記ディレクトリ下に
 * [ ] Followboxのリファクタリング
 * [ ] Trials.Lockのリファクタリングなど
 * [ ] Reactにだけではなく、Sigにもadjust的なものを定義することを検討
