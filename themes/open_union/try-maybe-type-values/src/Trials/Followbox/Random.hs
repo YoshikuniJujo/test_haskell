@@ -20,9 +20,7 @@ import MonadicFrp.Handle (Handle', merge)
 
 ---------------------------------------------------------------------------
 
-class RandomState s where
-	getRandomGen :: s -> StdGen
-	putRandomGen :: s -> StdGen -> s
+-- STORE RANDOM GEN
 
 data StoreRandomGen = StoreRandomGenReq StdGen deriving Show
 numbered 9 [t| StoreRandomGen |]
@@ -33,10 +31,7 @@ instance Request StoreRandomGen where
 storeRandomGen :: StdGen -> React (Singleton StoreRandomGen) ()
 storeRandomGen g = await (StoreRandomGenReq g) (const ())
 
-handleStoreRandomGen :: (RandomState s, Monad m) =>
-	Handle' (StateT s m) (Singleton StoreRandomGen)
-handleStoreRandomGen reqs = Just (singleton OccStoreRandomGen) <$ modify (`putRandomGen` g)
-	where StoreRandomGenReq g = extract reqs
+-- LOAD RANDOM GEN
 
 data LoadRandomGen = LoadRandomGenReq deriving (Show, Eq, Ord)
 numbered 9 [t| LoadRandomGen |]
@@ -46,9 +41,11 @@ instance Request LoadRandomGen where
 loadRandomGen :: React (Singleton LoadRandomGen) StdGen
 loadRandomGen = await LoadRandomGenReq \(OccLoadRandomGen g) -> g
 
-handleLoadRandomGen :: (RandomState s, Monad m) =>
-	Handle' (StateT s m) (Singleton LoadRandomGen)
-handleLoadRandomGen _reqs = Just . singleton . OccLoadRandomGen <$> gets getRandomGen
+-- RANDOM EVENT
+
+type RandomEv = StoreRandomGen :- LoadRandomGen :- 'Nil
+
+-- GET RANDOM
 
 getRandom :: Random a => React RandomEv a
 getRandom = modifyRandomGen random
@@ -62,7 +59,20 @@ modifyRandomGen f = do
 	let	(r, g') = f g
 	r <$ adjust (storeRandomGen g')
 
+-- HANDLE
+
+class RandomState s where
+	getRandomGen :: s -> StdGen
+	putRandomGen :: s -> StdGen -> s
+
 handleRandom :: (RandomState s, Monad m) => Handle' (StateT s m) RandomEv
 handleRandom = handleStoreRandomGen `merge` handleLoadRandomGen
 
-type RandomEv = StoreRandomGen :- LoadRandomGen :- 'Nil
+handleStoreRandomGen :: (RandomState s, Monad m) =>
+	Handle' (StateT s m) (Singleton StoreRandomGen)
+handleStoreRandomGen reqs = Just (singleton OccStoreRandomGen) <$ modify (`putRandomGen` g)
+	where StoreRandomGenReq g = extract reqs
+
+handleLoadRandomGen :: (RandomState s, Monad m) =>
+	Handle' (StateT s m) (Singleton LoadRandomGen)
+handleLoadRandomGen _reqs = Just . singleton . OccLoadRandomGen <$> gets getRandomGen

@@ -31,6 +31,7 @@ TODO
 * [x] RandomでLockを使うようにする
 	+ [x] Trials.Followbox.NewRandomを定義する
 	+ [x] 置き換える
+* [ ] Trials.Followbox.RandomをMonadicFrp.Randomに移動することを検討する
 
 リファクタリング
 ----------------
@@ -50,6 +51,7 @@ TODO
 
 * [ ] Trials.Followbox.Random
 	+ [x] imports
+	+ [x] structure
 	+ [ ] body
 * [ ] Trials.Followbox.Event
 	+ [ ] imports
