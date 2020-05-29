@@ -24,12 +24,12 @@ import MonadicFrp.Handle (Handle', merge)
 
 data StoreRandomGen = StoreRandomGenReq StdGen deriving Show
 numbered 9 [t| StoreRandomGen |]
-instance Mrgable StoreRandomGen where g1 `mrg` _g2 = g1
+instance Mrgable StoreRandomGen where gl `mrg` _gr = gl
 instance Request StoreRandomGen where
 	data Occurred StoreRandomGen = OccStoreRandomGen
 
 storeRandomGen :: StdGen -> React (Singleton StoreRandomGen) ()
-storeRandomGen g = await (StoreRandomGenReq g) (const ())
+storeRandomGen g = await (StoreRandomGenReq g) \_ -> ()
 
 -- LOAD RANDOM GEN
 
@@ -55,8 +55,7 @@ getRandomR = modifyRandomGen . randomR
 
 modifyRandomGen :: (StdGen -> (a, StdGen)) -> React RandomEv a
 modifyRandomGen f = do
-	g <- adjust loadRandomGen
-	let	(r, g') = f g
+	(r, g') <- f <$> adjust loadRandomGen
 	r <$ adjust (storeRandomGen g')
 
 -- HANDLE
@@ -70,9 +69,11 @@ handleRandom = handleStoreRandomGen `merge` handleLoadRandomGen
 
 handleStoreRandomGen :: (RandomState s, Monad m) =>
 	Handle' (StateT s m) (Singleton StoreRandomGen)
-handleStoreRandomGen reqs = Just (singleton OccStoreRandomGen) <$ modify (`putRandomGen` g)
+handleStoreRandomGen reqs =
+	Just (singleton OccStoreRandomGen) <$ modify (`putRandomGen` g)
 	where StoreRandomGenReq g = extract reqs
 
 handleLoadRandomGen :: (RandomState s, Monad m) =>
 	Handle' (StateT s m) (Singleton LoadRandomGen)
-handleLoadRandomGen _reqs = Just . singleton . OccLoadRandomGen <$> gets getRandomGen
+handleLoadRandomGen _reqs =
+	Just . singleton . OccLoadRandomGen <$> gets getRandomGen

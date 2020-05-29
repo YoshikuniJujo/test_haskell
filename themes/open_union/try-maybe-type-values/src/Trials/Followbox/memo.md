@@ -49,10 +49,10 @@ TODO
 
 ### Body
 
-* [ ] Trials.Followbox.Random
+* [x] Trials.Followbox.Random
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 * [ ] Trials.Followbox.Event
 	+ [ ] imports
 	* [ ] structure
