@@ -6,7 +6,7 @@
 
 module Trials.Followbox.Event (
 	-- * GENERAL
-	SigF, ReactF, FollowboxEv, FollowboxEvGen, Occurred(..),
+	SigF, ReactF, FollowboxEv, Occurred(..),
 
 	-- * MOUSE EVENT
 	MouseEv, MouseMove, MouseDown, mouseMove, leftClick,
@@ -58,16 +58,24 @@ import Trials.Followbox.TypeSynonym (Uri, FontName, FontSize, ErrorMessage)
 
 ---------------------------------------------------------------------------
 
-data Result = Failure | Succeed deriving Show
-
-result :: a -> a -> Result -> a
-result f s = \case Failure -> f; Succeed -> s
-
 ---------------------------------------------------------------------------
--- STORE AND LOAD
+-- STRUCTURE
 ---------------------------------------------------------------------------
 
--- JSONS
+-- * STORE AND LOAD JSON OBJECT LIST
+-- * REQUEST DATA
+-- 	+ HTTP GET
+--	+ CALC TEXT EXTENTS
+--	+ TIME ZONE
+-- * ACTION - BROWSE
+-- * SLEEP AND ERROR
+--	+ BEGIN SLEEP AND END SLEEP
+--	+ ERROR
+-- * FOLLOWBOX EVENT TYPE
+
+---------------------------------------------------------------------------
+-- STORE AND LOAD JSON OBJECT LIST
+---------------------------------------------------------------------------
 
 data StoreJsons = StoreJsons [Object] deriving Show
 numbered 9 [t| StoreJsons |]
@@ -76,8 +84,8 @@ instance Request StoreJsons where
 	data Occurred StoreJsons = OccStoreJsons [Object]
 
 storeJsons :: [Object] -> React (Singleton StoreJsons) ()
-storeJsons os = result (storeJsons os) (pure ()) =<< await (StoreJsons os)
-	\(OccStoreJsons os') -> bool Failure Succeed $ os == os'
+storeJsons os = bool (storeJsons os) (pure ()) =<< await (StoreJsons os)
+	\(OccStoreJsons os') -> os == os'
 
 clearJsons :: React (Singleton StoreJsons) ()
 clearJsons = storeJsons []
@@ -122,7 +130,7 @@ calcTextExtents fn fs t = maybe (calcTextExtents fn fs t) pure
 			bool Nothing (Just glp)
 				$ fn == fn' && fs == fs' && t == t'
 
--- GET TIME ZONE
+-- TIME ZONE
 
 data GetTimeZone = GetTimeZone deriving (Show, Eq, Ord)
 numbered 9 [t| GetTimeZone |]
@@ -133,10 +141,8 @@ getTimeZone :: React (Singleton GetTimeZone) TimeZone
 getTimeZone = await GetTimeZone \(OccGetTimeZone tz) -> tz
 
 ---------------------------------------------------------------------------
--- ACTION
+-- ACTION - BROWSE
 ---------------------------------------------------------------------------
-
--- BROWSE
 
 data Browse = Browse Uri deriving (Show, Eq, Ord)
 numbered 9 [t| Browse |]
@@ -146,7 +152,7 @@ browse :: Uri -> React (Singleton Browse) ()
 browse u = await (Browse u) \OccBrowse -> ()
 
 ---------------------------------------------------------------------------
--- SLEEP, QUIT AND ERROR
+-- SLEEP AND ERROR
 ---------------------------------------------------------------------------
 
 -- BEGIN SLEEP AND END SLEEP
@@ -157,8 +163,8 @@ instance Request BeginSleep where
 	data Occurred BeginSleep = OccBeginSleep UTCTime deriving Show
 
 beginSleep :: UTCTime -> React (Singleton BeginSleep) ()
-beginSleep t = result (beginSleep t) (pure ()) =<< await (BeginSleep t) \case
-	OccBeginSleep t' | t == t' -> Succeed; _ -> Failure
+beginSleep t = bool (beginSleep t) (pure ()) =<< await (BeginSleep t) \case
+	OccBeginSleep t' | t == t' -> True; _ -> False
 
 checkBeginSleep :: React (Singleton BeginSleep) UTCTime
 checkBeginSleep = await CheckBeginSleep \case OccBeginSleep t -> t
@@ -171,6 +177,7 @@ instance Request EndSleep where
 endSleep :: React (Singleton EndSleep) ()
 endSleep = await EndSleepReq \OccEndSleep -> ()
 
+-- BEGIN SLEEP AND END SLEEP
 -- ERROR
 
 data Error
@@ -197,15 +204,13 @@ checkTerminate = catchError >>= \case
 	Continue -> checkTerminate; Terminate -> pure ()
 
 ---------------------------------------------------------------------------
--- GENERAL
+-- FOLLOWBOX EVENT TYPE
 ---------------------------------------------------------------------------
 
 type SigF = Sig FollowboxEv
 type ReactF = React FollowboxEv
 
-type FollowboxEv = GetThreadId :- LockEv :+: RandomEv :+: MouseEv :+: FollowboxEvGen
-
-type FollowboxEvGen =
+type FollowboxEv = GetThreadId :- LockEv :+: RandomEv :+: MouseEv :+:
 	StoreJsons :- LoadJsons :-
 	HttpGet :- CalcTextExtents :- GetTimeZone :- Browse :-
 	BeginSleep :- EndSleep :- RaiseError :- 'Nil
