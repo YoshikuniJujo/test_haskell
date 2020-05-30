@@ -46,10 +46,10 @@ TODO
 
 ### Body
 
-* [ ] Trials.Followbox.Event
+* [x] Trials.Followbox.Event
 	+ [x] imports
 	* [x] structure
-	+ [ ] body
+	+ [x] body
 * [ ] Trials.Followbox.Clickable
 * [ ] Trials.Followbox
 	+ [ ] imports

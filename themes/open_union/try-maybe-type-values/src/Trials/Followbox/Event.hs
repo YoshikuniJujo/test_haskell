@@ -84,8 +84,8 @@ instance Request StoreJsons where
 	data Occurred StoreJsons = OccStoreJsons [Object]
 
 storeJsons :: [Object] -> React (Singleton StoreJsons) ()
-storeJsons os = bool (storeJsons os) (pure ()) =<< await (StoreJsons os)
-	\(OccStoreJsons os') -> os == os'
+storeJsons os = bool (storeJsons os) (pure ())
+	=<< await (StoreJsons os) \(OccStoreJsons os') -> os == os'
 
 clearJsons :: React (Singleton StoreJsons) ()
 clearJsons = storeJsons []
@@ -127,8 +127,7 @@ calcTextExtents :: FontName -> FontSize -> T.Text ->
 calcTextExtents fn fs t = maybe (calcTextExtents fn fs t) pure
 	=<< await (CalcTextExtentsReq fn fs t)
 		\(OccCalcTextExtents fn' fs' t' glp) ->
-			bool Nothing (Just glp)
-				$ fn == fn' && fs == fs' && t == t'
+			bool Nothing (Just glp) $ (fn, fs, t) == (fn', fs', t')
 
 -- TIME ZONE
 
@@ -177,7 +176,6 @@ instance Request EndSleep where
 endSleep :: React (Singleton EndSleep) ()
 endSleep = await EndSleepReq \OccEndSleep -> ()
 
--- BEGIN SLEEP AND END SLEEP
 -- ERROR
 
 data Error
