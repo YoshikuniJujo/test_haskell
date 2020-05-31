@@ -14,10 +14,15 @@ import Graphics.X11.Xrender (XGlyphInfo(..))
 import qualified Data.Text as T
 
 import MonadicFrp (adjust, find, repeat, indexBy)
-import Trials.Followbox.Event (SigF, ReactF, mouseMove, leftClick, calcTextExtents)
+import Trials.Followbox.Event (
+	SigF, ReactF, leftClick, mouseMove, calcTextExtents )
 import Trials.Followbox.View (View, View1(..), blue)
 import Trials.Followbox.TypeSynonym (Position, FontName, FontSize)
 
+---------------------------------------------------------------------------
+
+---------------------------------------------------------------------------
+-- CLICKABLE
 ---------------------------------------------------------------------------
 
 data Clickable = Clickable View (ReactF ())
@@ -38,6 +43,10 @@ clickOn (l, t) (r, b) =
 
 mousePosition :: SigF Position ()
 mousePosition = repeat $ adjust mouseMove
+
+---------------------------------------------------------------------------
+-- WITH TEXT EXTENTS
+---------------------------------------------------------------------------
 
 data WithTextExtents = WithTextExtents FontName FontSize T.Text XGlyphInfo
 

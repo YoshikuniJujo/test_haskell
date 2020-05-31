@@ -48,9 +48,11 @@ TODO
 
 * [x] Trials.Followbox.Event
 	+ [x] imports
-	* [x] structure
+	+ [x] structure
 	+ [x] body
 * [ ] Trials.Followbox.Clickable
+	+ [x] structure
+	+ [ ] body
 * [ ] Trials.Followbox
 	+ [ ] imports
 	+ [ ] structure
