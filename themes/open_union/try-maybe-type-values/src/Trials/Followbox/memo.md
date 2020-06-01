@@ -50,9 +50,9 @@ TODO
 	+ [x] imports
 	+ [x] structure
 	+ [x] body
-* [ ] Trials.Followbox.Clickable
+* [x] Trials.Followbox.Clickable
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 * [ ] Trials.Followbox
 	+ [ ] imports
 	+ [ ] structure

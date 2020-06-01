@@ -34,7 +34,7 @@ click :: Clickable -> ReactF ()
 click (Clickable _ r) = r
 
 clickable :: View -> Position -> Position -> Clickable
-clickable v ul br = Clickable v (clickOn ul br)
+clickable v ul br = Clickable v $ clickOn ul br
 
 clickOn :: Position -> Position -> ReactF ()
 clickOn (l, t) (r, b) =
@@ -51,9 +51,11 @@ mousePosition = repeat $ adjust mouseMove
 data WithTextExtents = WithTextExtents FontName FontSize T.Text XGlyphInfo
 
 clickableText :: Position -> WithTextExtents -> Clickable
-clickableText (x, y) (WithTextExtents fn fs t xg) = clickable
-	[Text blue fn fs (x, y) t] (x - gx, y - gy) (x - gx + gw, y - gy + gh)
-	where [gx, gy, gw, gh] = fromIntegral . ($ xg) <$> [
+clickableText p@(x, y) (WithTextExtents fn fs t xg) =
+	clickable [Text blue fn fs p t] (left, top) (left + gw, top + gh)
+	where
+	(left, top) = (x - gx, y - gy)
+	[gx, gy, gw, gh] = fromIntegral . ($ xg) <$> [
 		xglyphinfo_x, xglyphinfo_y,
 		xglyphinfo_width, xglyphinfo_height ]
 
@@ -66,6 +68,5 @@ translate (x, y) (WithTextExtents _ fs _ _) (dx, dy) =
 	(x + round (fs' * dx), y + round (fs' * dy)) where fs' = toRational fs
 
 nextToText :: Position -> WithTextExtents -> Position
-nextToText (x, y) (WithTextExtents _ _ _ xg) = (x + xo, y + yo)
-	where [xo, yo] =
-		fromIntegral . ($ xg) <$> [xglyphinfo_xOff, xglyphinfo_yOff]
+nextToText (x, y) (WithTextExtents _ _ _ xg) = (x + xo, y + yo) where
+	[xo, yo] = fromIntegral . ($ xg) <$> [xglyphinfo_xOff, xglyphinfo_yOff]
