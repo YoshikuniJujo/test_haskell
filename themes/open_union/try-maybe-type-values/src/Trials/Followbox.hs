@@ -38,6 +38,17 @@ import Trials.Followbox.TypeSynonym (
 
 ---------------------------------------------------------------------------
 
+-- * PARAMETER LIST
+-- * SIG AND REACT
+--	+ FOLLOWBOX
+--	+ USERS
+--	+ GET USER
+-- * HELPER FUNCTION
+
+---------------------------------------------------------------------------
+-- PARAMETER LIST
+---------------------------------------------------------------------------
+
 numOfUsers :: Integer
 numOfUsers = 3
 
@@ -71,6 +82,10 @@ crossMergin :: Integer
 crossMergin = 4
 
 ---------------------------------------------------------------------------
+-- SIG AND REACT
+---------------------------------------------------------------------------
+
+-- FOLLOWBOX
 
 followbox :: SigF View ()
 followbox = () <$
@@ -102,7 +117,7 @@ field n = do
 	ls <- waitFor newLocks
 	clear >> forever do
 		(frame <>) <$%>
-			users' ls n `until` click nxt `first` click rfs >>= \case
+			users ls n `until` click nxt `first` click rfs >>= \case
 				Left (_, L _) -> pure ()
 				Left (_, LR _ _) -> pure ()
 				Left (_, R _) ->
@@ -112,16 +127,18 @@ field n = do
 	title = twhite largeSize titlePosition "Who to follow"
 	link p t = clickableText p <$> withTextExtents defaultFont middleSize t
 
-users' :: Locks -> Integer -> SigF View ()
-users' ls n = concat <$%> user1' ls `ftraverse` [0 .. n - 1]
+-- USERS
 
-user1' :: Locks -> Integer -> SigF View ()
-user1' ls n = do
+users :: Locks -> Integer -> SigF View ()
+users ls n = concat <$%> user1 ls `ftraverse` [0 .. n - 1]
+
+user1 :: Locks -> Integer -> SigF View ()
+user1 ls n = do
 	(a, ln, u) <- waitFor (getUser ls)
 	(nm, cr) <- waitFor $ nameCross n ln
 	emit $ Image (avatarPosition n) a : view nm <> view cr
 	() <$ waitFor (forever $ click nm >> adjust (browse u)) `until` click cr
-	user1' ls n
+	user1 ls n
 
 nameCross :: Integer -> T.Text -> ReactF (Clickable, Clickable)
 nameCross n t = (<$> withTextExtents defaultFont largeSize t) \wte ->
@@ -136,6 +153,8 @@ cross sz (x0, y0) = clickable
 	[x1, y1] = (+ sz) <$> [x0, y0]
 	[x0', y0'] = subtract crossMergin <$> [x0, y0]
 	[x1', y1'] = (+ crossMergin) <$> [x1, y1]
+
+-- GET USER
 
 getUser :: Locks -> ReactF (Avatar, T.Text, T.Text)
 getUser ls = makeUser <$> getObject1 ls >>= \case
@@ -188,6 +207,8 @@ getObjects = do
 	rlRmnngErr = (NoRateLimitRemaining, "No X-RateLimit-Remaining header")
 	rlRstErr = (NoRateLimitReset, "No X-RateLimit-Reset header")
 
+---------------------------------------------------------------------------
+-- HELPER FUNCTION
 ---------------------------------------------------------------------------
 
 twhite :: FontSize -> Position -> T.Text -> View1
