@@ -64,19 +64,19 @@ middleSize = 30; largeSize = 36
 avatarSizeX, avatarSizeY :: Int
 (avatarSizeX, avatarSizeY) = (80, 80)
 
-titlePosition, nextPosition, refreshPosition, resetTimePosition :: Position
-titlePosition = (50, 80); nextPosition = (500, 80)
-refreshPosition = (600, 80); resetTimePosition = (100, 500)
+titlePos, nextPos, refreshPos, resetTimePos :: Position
+titlePos = (50, 80); nextPos = (500, 80)
+refreshPos = (600, 80); resetTimePos = (100, 500)
 
-avatarPosition, namePosition :: Integer -> Position
-avatarPosition n = (100, 120 * (n + 1))
-namePosition n = (210, 120 * (n + 1) + 60)
+avatarPos, namePos :: Integer -> Position
+avatarPos n = (100, 120 * (n + 1))
+namePos n = (210, 120 * (n + 1) + 60)
 
 crossSize :: Integer
 crossSize = round largeSize `div` 2
 
-crossPosition :: Position -> WithTextExtents -> Position
-crossPosition p wte = translate (nextToText p wte) wte (1 / 2, - 5 / 8)
+crossPos :: Position -> WithTextExtents -> Position
+crossPos p wte = translate (nextToText p wte) wte (1 / 2, - 5 / 8)
 
 crossMergin :: Integer
 crossMergin = 4
@@ -94,73 +94,64 @@ followbox = () <$
 fieldWithResetTime :: Integer -> SigF View ()
 fieldWithResetTime n = (<>) <$%> field n <*%> resetTime
 
+field :: Integer -> SigF View ()
+field n = do
+	(nxt, rfs) <- waitFor
+		$ (,) <$> link nextPos "Next" <*> link refreshPos "Refresh"
+	let	frame = title : view nxt <> view rfs; clear = emit frame
+	lck <- waitFor $ adjust newLockId
+	(clear >>) . forever $ (frame <>)
+		<$%> users lck n `until` click nxt `first` click rfs >>= \case
+			Left (_, L _) -> pure ()
+			Left (_, LR _ _) -> pure ()
+			Left (_, R _) -> clear >> waitFor (adjust clearJsons)
+			Right _ -> error "never occur"
+	where
+	title = twhite largeSize titlePos "Who to follow"
+	link p t = clickableText p <$> withTextExtents defaultFont middleSize t
+
 resetTime :: SigF View ()
-resetTime = forever $ (emit [] >>) do
+resetTime = forever $ emit [] >> do
 	emit =<< waitFor do
 		(t, tz) <- (,) <$> adjust checkBeginSleep <*> adjust getTimeZone
-		pure [twhite middleSize resetTimePosition . T.pack
+		pure [twhite middleSize resetTimePos . T.pack
 			$ "Wait until " <> show (utcToLocalTime tz t)]
 	waitFor $ adjust endSleep
 
-data Locks = Locks { lockRandom :: LockId, lockObjects :: LockId } deriving Show
-
-newLocks :: ReactF Locks
-newLocks = Locks <$> adjust newLockId <*> adjust newLockId
-
-field :: Integer -> SigF View ()
-field n = do
-	(nxt, rfs) <- waitFor $ (,)
-		<$> link nextPosition "Next"
-		<*> link refreshPosition "Refresh"
-	let	frame = title : view nxt <> view rfs
-		clear = emit frame
-	ls <- waitFor newLocks
-	clear >> forever do
-		(frame <>) <$%>
-			users ls n `until` click nxt `first` click rfs >>= \case
-				Left (_, L _) -> pure ()
-				Left (_, LR _ _) -> pure ()
-				Left (_, R _) ->
-					clear >> waitFor (adjust clearJsons)
-				Right _ -> error "never occur"
-	where
-	title = twhite largeSize titlePosition "Who to follow"
-	link p t = clickableText p <$> withTextExtents defaultFont middleSize t
-
 -- USERS
 
-users :: Locks -> Integer -> SigF View ()
-users ls n = concat <$%> user1 ls `ftraverse` [0 .. n - 1]
+users :: LockId -> Integer -> SigF View ()
+users lck n = concat <$%> user1 lck `ftraverse` [0 .. n - 1]
 
-user1 :: Locks -> Integer -> SigF View ()
-user1 ls n = do
-	(a, ln, u) <- waitFor (getUser ls)
+user1 :: LockId -> Integer -> SigF View ()
+user1 lck n = do
+	(a, ln, u) <- waitFor $ getUser lck
 	(nm, cr) <- waitFor $ nameCross n ln
-	emit $ Image (avatarPosition n) a : view nm <> view cr
+	emit $ Image (avatarPos n) a : view nm <> view cr
 	() <$ waitFor (forever $ click nm >> adjust (browse u)) `until` click cr
-	user1 ls n
+	user1 lck n
 
 nameCross :: Integer -> T.Text -> ReactF (Clickable, Clickable)
 nameCross n t = (<$> withTextExtents defaultFont largeSize t) \wte ->
-	(clickableText p wte, cross crossSize $ crossPosition p wte)
-	where p = namePosition n
+	(clickableText p wte, cross $ crossPos p wte)
+	where p = namePos n
 
-cross :: Integer -> (Integer, Integer) -> Clickable
-cross sz (x0, y0) = clickable
-	[Line white 4 (x0, y0) (x1, y1), Line white 4 (x1, y0) (x0, y1)]
-	(x0', y0') (x1', y1')
+cross :: Position -> Clickable
+cross (l, t) = clickable [line lt rb, line lb rt] (l', t') (r', b')
 	where
-	[x1, y1] = (+ sz) <$> [x0, y0]
-	[x0', y0'] = subtract crossMergin <$> [x0, y0]
-	[x1', y1'] = (+ crossMergin) <$> [x1, y1]
+	line = Line white 4
+	[lt, lb, rt, rb] = [(l, t), (l, b), (r, t), (r, b)]
+	[r, b] = (+ crossSize) <$> [l, t]
+	[l', t'] = subtract crossMergin <$> [l, t]
+	[r', b'] = (+ crossMergin) <$> [r, b]
 
 -- GET USER
 
-getUser :: Locks -> ReactF (Avatar, T.Text, T.Text)
-getUser ls = makeUser <$> getObject1 ls >>= \case
-	Left (e, em) -> adjust (raiseError e em) >> getUser ls
+getUser :: LockId -> ReactF (Avatar, T.Text, T.Text)
+getUser lck = makeUser <$> getObject1 lck >>= \case
+	Left (e, em) -> adjust (raiseError e em) >> getUser lck
 	Right (au, l, u) -> getAvatar au >>= \case
-		Left (e, em) -> adjust (raiseError e em) >> getUser ls
+		Left (e, em) -> adjust (raiseError e em) >> getUser lck
 		Right a -> pure (a, l, u)
 	where
 	makeUser o = (,,)
@@ -175,8 +166,8 @@ getAvatar url = (<$> adjust (httpGet url)) . (. bsToImage . snd) $ either
 	(Left . (NoAvatar ,)) (Right . scaleBilinear avatarSizeX avatarSizeY)
 	where bsToImage = (convertRGBA8 <$>) . decodeImage . LBS.toStrict
 
-getObject1 :: Locks -> ReactF Object
-getObject1 ls = withLock (lockObjects ls) $ adjust loadJsons >>= \case
+getObject1 :: LockId -> ReactF Object
+getObject1 lck = withLock lck $ adjust loadJsons >>= \case
 	[] -> getObject1'
 	o : os -> o <$ adjust (storeJsons os)
 

@@ -57,6 +57,8 @@ TODO
 	+ [x] imports
 	+ [x] structure
 	+ [ ] body
+		- [x] before GET USER
+		- [ ] GET USER and after GET USER
 * [ ] Trials.Followbox.View
 * [ ] Trials.Followbox.Handle
 	+ [ ] imports
