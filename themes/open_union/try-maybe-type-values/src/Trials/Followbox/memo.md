@@ -54,7 +54,7 @@ TODO
 	+ [x] structure
 	+ [x] body
 * [ ] Trials.Followbox
-	+ [ ] imports
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] Trials.Followbox.View

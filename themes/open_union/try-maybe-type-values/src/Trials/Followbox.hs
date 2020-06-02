@@ -4,7 +4,7 @@
 
 module Trials.Followbox (followbox) where
 
-import Prelude hiding (until, repeat)
+import Prelude hiding (until)
 
 import Control.Monad (forever)
 import Data.Type.Flip ((<$%>), (<*%>), ftraverse)
@@ -13,7 +13,7 @@ import Data.Time (UTCTime, utcToLocalTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import Data.Aeson (Object, Value(..), eitherDecode)
 import Text.Read (readMaybe)
-import Codec.Picture (convertRGBA8, decodeImage)
+import Codec.Picture (decodeImage, convertRGBA8)
 import Codec.Picture.Extra (scaleBilinear)
 
 import qualified Data.HashMap.Strict as HM
@@ -23,16 +23,15 @@ import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 
 import MonadicFrp (adjust, first, emit, waitFor, until)
-import MonadicFrp.EventHandle.Lock
+import MonadicFrp.EventHandle.Lock (LockId, newLockId, withLock)
 import MonadicFrp.EventHandle.Random (getRandomR)
-import Trials.Followbox.Clickable (
-	Clickable, view, click, clickable,
-	WithTextExtents, clickableText, withTextExtents, nextToText, translate )
 import Trials.Followbox.Event (
-	SigF, ReactF, clearJsons, storeJsons, loadJsons,
-	httpGet, getTimeZone, browse,
-	beginSleep, checkBeginSleep, endSleep, deleteEvent,
+	SigF, ReactF, clearJsons, storeJsons, loadJsons, httpGet, getTimeZone,
+	browse, beginSleep, checkBeginSleep, endSleep, deleteEvent,
 	Error(..), raiseError, checkTerminate )
+import Trials.Followbox.Clickable (
+	Clickable, view, click, clickable, clickableText,
+	WithTextExtents, withTextExtents, nextToText, translate )
 import Trials.Followbox.View (View, View1(..), white)
 import Trials.Followbox.TypeSynonym (
 	Position, Avatar, FontName, FontSize, ErrorMessage )

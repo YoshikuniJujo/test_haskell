@@ -9,7 +9,7 @@ module Trials.Followbox.Event (
 	SigF, ReactF, FollowboxEv, Occurred(..),
 
 	-- * MOUSE EVENT
-	MouseEv, MouseMove, MouseDown, mouseMove, leftClick,
+	MouseEv, MouseMove, MouseDown, leftClick, mouseMove,
 
 	-- * STORE AND LOAD
 	-- ** Jsons
