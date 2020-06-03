@@ -53,12 +53,12 @@ TODO
 * [x] Trials.Followbox.Clickable
 	+ [x] structure
 	+ [x] body
-* [ ] Trials.Followbox
+* [x] Trials.Followbox
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] before GET USER
-		- [ ] GET USER and after GET USER
+		- [x] GET USER and after GET USER
 * [ ] Trials.Followbox.View
 * [ ] Trials.Followbox.Handle
 	+ [ ] imports

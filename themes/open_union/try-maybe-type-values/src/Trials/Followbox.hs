@@ -148,7 +148,7 @@ cross (l, t) = clickable [line lt rb, line lb rt] (l', t') (r', b')
 -- GET USER
 
 getUser :: LockId -> ReactF (Avatar, T.Text, T.Text)
-getUser lck = makeUser <$> getObject1 lck >>= \case
+getUser lck = makeUser <$> getObj1 lck >>= \case
 	Left (e, em) -> adjust (raiseError e em) >> getUser lck
 	Right (au, l, u) -> getAvatar au >>= \case
 		Left (e, em) -> adjust (raiseError e em) >> getUser lck
@@ -166,37 +166,32 @@ getAvatar url = (<$> adjust (httpGet url)) . (. bsToImage . snd) $ either
 	(Left . (NoAvatar ,)) (Right . scaleBilinear avatarSizeX avatarSizeY)
 	where bsToImage = (convertRGBA8 <$>) . decodeImage . LBS.toStrict
 
-getObject1 :: LockId -> ReactF Object
-getObject1 lck = withLock lck $ adjust loadJsons >>= \case
-	[] -> getObject1'
-	o : os -> o <$ adjust (storeJsons os)
+getObj1 :: LockId -> ReactF Object
+getObj1 lck = withLock lck $ adjust loadJsons >>= \case
+	[] -> getObj1FromWeb; o : os -> o <$ adjust (storeJsons os)
 
-getObject1' :: ReactF Object
-getObject1' = getObjects >>= \case
+getObj1FromWeb :: ReactF Object
+getObj1FromWeb = getObjs >>= \case
 	Right (o : os) -> o <$ adjust (storeJsons os)
-	Right [] -> do
-		adjust $ raiseError EmptyJson "Empty JSON"
-		getObject1'
-	Left em -> adjust (raiseError NotJson em) >> getObject1'
+	Right [] -> adjust (raiseError EmptyJson "Empty JSON") >> getObj1FromWeb
+	Left em -> adjust (raiseError NotJson em) >> getObj1FromWeb
 
-getObjects :: ReactF (Either String [Object])
-getObjects = do
+getObjs :: ReactF (Either String [Object])
+getObjs = do
 	n <- adjust $ getRandomR (0, userPageMax)
 	(h, b) <- adjust . httpGet $ api n
-	case (rlRmnng h, rlRst h) of
+	case (rmng h, rst h) of
 		(Just rmn, _) | rmn > (0 :: Int) -> pure $ eitherDecode b
 		(Just _, Just t) ->
-			adjust (beginSleep t) >> adjust endSleep >> getObjects
-		(Just _, Nothing) ->
-			adjust (uncurry raiseError rlRstErr) >> getObjects
-		(Nothing, _) ->
-			adjust (uncurry raiseError rlRmnngErr) >> getObjects
+			adjust (beginSleep t) >> adjust endSleep >> getObjs
+		(Just _, Nothing) -> adjust (uncurry raiseError rstE) >> getObjs
+		(Nothing, _) -> adjust (uncurry raiseError rmngE) >> getObjs
 	where
 	api = ("https://api.github.com/users?since=" <>) . T.pack . show @Int
-	rlRmnng = (read . BSC.unpack <$>) . lookup "X-RateLimit-Remaining"
-	rlRst = (posixSeconds =<<) . lookup "X-RateLimit-Reset"
-	rlRmnngErr = (NoRateLimitRemaining, "No X-RateLimit-Remaining header")
-	rlRstErr = (NoRateLimitReset, "No X-RateLimit-Reset header")
+	rmng = (read . BSC.unpack <$>) . lookup "X-RateLimit-Remaining"
+	rst = (posixSeconds =<<) . lookup "X-RateLimit-Reset"
+	rmngE = (NoRateLimitRemaining, "No X-RateLimit-Remaining header")
+	rstE = (NoRateLimitReset, "No X-RateLimit-Reset header")
 
 ---------------------------------------------------------------------------
 -- HELPER FUNCTION
