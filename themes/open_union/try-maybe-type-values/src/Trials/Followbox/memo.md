@@ -59,9 +59,9 @@ TODO
 	+ [x] body
 		- [x] before GET USER
 		- [x] GET USER and after GET USER
-* [ ] Trials.Followbox.View
+* [x] Trials.Followbox.View
 * [ ] Trials.Followbox.Handle
-	+ [ ] imports
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] Trials.Followbox.Run

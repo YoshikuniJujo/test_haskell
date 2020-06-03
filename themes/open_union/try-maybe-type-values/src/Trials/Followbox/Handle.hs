@@ -14,10 +14,10 @@ import Prelude hiding (head)
 
 import Control.Monad.State (StateT, lift, gets, modify)
 import Data.Type.Set (Set(Nil), Singleton, (:-))
-import Data.List (delete)
-import Data.List.NonEmpty (NonEmpty(..), head)
 import Data.UnionSet (singleton, extract)
 import Data.Bool (bool)
+import Data.List (delete)
+import Data.List.NonEmpty (NonEmpty(..), head)
 import Data.String (fromString)
 import Data.Aeson (Object)
 import Data.Time (UTCTime, getCurrentTime, getCurrentTimeZone, diffUTCTime)
@@ -27,12 +27,15 @@ import System.Process (spawnProcess)
 import qualified Data.Text as T
 import qualified Network.HTTP.Simple as H
 
-import MonadicFrp.Handle
-import MonadicFrp.EventHandle.ThreadId
-import MonadicFrp.EventHandle.Lock
-import MonadicFrp.XFieldHandle.Mouse
-import MonadicFrp.EventHandle.Random
-import Trials.Followbox.Event hiding (getTimeZone)
+import MonadicFrp.Handle (Handle, Handle', retry, merge, before)
+import MonadicFrp.EventHandle.ThreadId (handleGetThreadId)
+import MonadicFrp.EventHandle.Lock (LockState(..), LockId, handleLock)
+import MonadicFrp.EventHandle.Random (RandomState(..), handleRandom)
+import MonadicFrp.XFieldHandle.Mouse (handleMouse)
+import Trials.Followbox.Event (
+	FollowboxEv, MouseEv, Occurred(..), StoreJsons(..), LoadJsons,
+	HttpGet(..), CalcTextExtents(..), GetTimeZone, Browse(..),
+	BeginSleep(..), EndSleep, RaiseError(..), Error(..), ErrorResult(..) )
 import Trials.Followbox.TypeSynonym (Browser, GithubNameToken)
 import Field (Field, textExtents)
 
