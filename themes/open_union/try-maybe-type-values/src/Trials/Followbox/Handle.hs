@@ -31,9 +31,10 @@ import MonadicFrp.Handle (Handle, Handle', retry, merge, before)
 import MonadicFrp.EventHandle.ThreadId (handleGetThreadId)
 import MonadicFrp.EventHandle.Lock (LockState(..), LockId, handleLock)
 import MonadicFrp.EventHandle.Random (RandomState(..), handleRandom)
+import MonadicFrp.Event.Mouse (MouseEv)
 import MonadicFrp.XFieldHandle.Mouse (handleMouse)
 import Trials.Followbox.Event (
-	FollowboxEv, MouseEv, Occurred(..), StoreJsons(..), LoadJsons,
+	FollowboxEv, Occurred(..), StoreJsons(..), LoadJsons,
 	HttpGet(..), CalcTextExtents(..), GetTimeZone, Browse(..),
 	BeginSleep(..), EndSleep, RaiseError(..), Error(..), ErrorResult(..) )
 import Trials.Followbox.TypeSynonym (Browser, GithubNameToken)

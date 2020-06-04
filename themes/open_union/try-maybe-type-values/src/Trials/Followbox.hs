@@ -25,9 +25,10 @@ import qualified Data.Text as T
 import MonadicFrp (adjust, first, emit, waitFor, until)
 import MonadicFrp.EventHandle.Lock (LockId, newLockId, withLock)
 import MonadicFrp.EventHandle.Random (getRandomR)
+import MonadicFrp.Event.Mouse (deleteEvent)
 import Trials.Followbox.Event (
 	SigF, ReactF, clearJsons, storeJsons, loadJsons, httpGet, getTimeZone,
-	browse, beginSleep, checkBeginSleep, endSleep, deleteEvent,
+	browse, beginSleep, checkBeginSleep, endSleep,
 	Error(..), raiseError, checkTerminate )
 import Trials.Followbox.Clickable (
 	Clickable, view, click, clickable, clickableText,

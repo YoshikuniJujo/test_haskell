@@ -14,8 +14,8 @@ import Graphics.X11.Xrender (XGlyphInfo(..))
 import qualified Data.Text as T
 
 import MonadicFrp (adjust, find, repeat, indexBy)
-import Trials.Followbox.Event (
-	SigF, ReactF, leftClick, mouseMove, calcTextExtents )
+import MonadicFrp.Event.Mouse (leftClick, mouseMove)
+import Trials.Followbox.Event (SigF, ReactF, calcTextExtents)
 import Trials.Followbox.View (View, View1(..), blue)
 import Trials.Followbox.TypeSynonym (Position, FontName, FontSize)
 

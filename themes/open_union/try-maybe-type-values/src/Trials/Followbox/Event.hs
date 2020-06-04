@@ -8,9 +8,6 @@ module Trials.Followbox.Event (
 	-- * GENERAL
 	SigF, ReactF, FollowboxEv, Occurred(..),
 
-	-- * MOUSE EVENT
-	MouseEv, MouseMove, MouseDown, leftClick, mouseMove,
-
 	-- * STORE AND LOAD
 	-- ** Jsons
 	StoreJsons(..), LoadJsons, clearJsons, storeJsons, loadJsons,
@@ -27,11 +24,9 @@ module Trials.Followbox.Event (
 	-- ** Browse
 	Browse(..), browse,
 
-	-- * SLEEP, QUIT AND ERROR
+	-- * SLEEP AND ERROR
 	-- ** BeginSleep and EndSleep
 	BeginSleep(..), EndSleep, beginSleep, checkBeginSleep, endSleep,
-	-- ** Quit
-	deleteEvent,
 	-- ** RaiseError
 	RaiseError(..), Error(..), ErrorResult(..),
 	raiseError, checkTerminate
@@ -52,8 +47,7 @@ import MonadicFrp (Request(..), Sig, React, await)
 import MonadicFrp.EventHandle.Random (RandomEv)
 import MonadicFrp.EventHandle.Lock (LockEv)
 import MonadicFrp.EventHandle.ThreadId (GetThreadId)
-import MonadicFrp.Event.Mouse (
-	MouseEv, MouseDown, MouseMove, leftClick, mouseMove, deleteEvent )
+import MonadicFrp.Event.Mouse (MouseEv)
 import Trials.Followbox.TypeSynonym (Uri, FontName, FontSize, ErrorMessage)
 
 ---------------------------------------------------------------------------
