@@ -62,8 +62,9 @@ TODO
 * [x] Trials.Followbox.View
 * [ ] Trials.Followbox.Handle
 	+ [x] imports
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] fsVersionRandomGen
 * [ ] Trials.Followbox.Run
 	+ [ ] imports
 	+ [ ] body

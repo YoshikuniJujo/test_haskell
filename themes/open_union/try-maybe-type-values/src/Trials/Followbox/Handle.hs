@@ -42,6 +42,17 @@ import Field (Field, textExtents)
 
 ---------------------------------------------------------------------------
 
+-- * STATE
+-- 	+ FULLOWBOX STATE
+-- 	+ PUT AND GET EACH STATE
+-- * HANDLE
+--	+ MOUSE
+--	+ STORE AND LOAD JSONS
+--	+ REQUEST DATA
+--	+ BROWSE
+--	+ BEGIN AND END SLEEP
+--	+ RAISE ERROR
+
 ---------------------------------------------------------------------------
 -- STATE
 ---------------------------------------------------------------------------
@@ -111,6 +122,15 @@ handle f brws mba = retry $
 just :: Functor f => f a -> f (Maybe a)
 just = (Just <$>)
 
+-- MOUSE
+
+handleMouse' :: Field -> Handle' (FbM IO) MouseEv
+handleMouse' f reqs = getSleepUntil >>= lift . \case
+	Nothing -> handleMouse Nothing f reqs
+	Just t -> do
+		now <- getCurrentTime
+		handleMouse (Just . fromRational . toRational $ now `diffUTCTime` t) f reqs
+
 -- STORE AND LOAD JSONS
 
 type StoreLoadJsons = StoreJsons :- LoadJsons :- 'Nil
@@ -125,7 +145,7 @@ handleStoreJsons reqs = singleton (OccStoreJsons os) <$ putObjects os
 handleLoadJsons :: Monad m => Handle (FbM m) (Singleton LoadJsons)
 handleLoadJsons _reqs = singleton . OccLoadJsons <$> getObjects
 
--- HTTP GET
+-- REQUEST DATA
 
 handleHttpGet :: Maybe GithubNameToken -> Handle IO (Singleton HttpGet)
 handleHttpGet mgnt reqs = do
@@ -137,14 +157,10 @@ handleHttpGet mgnt reqs = do
 		$ OccHttpGet u (H.getResponseHeaders r) (H.getResponseBody r)
 	where HttpGetReq u = extract reqs
 
--- CALC TEXT EXTENTS
-
 handleCalcTextExtents :: Field -> Handle IO (Singleton CalcTextExtents)
 handleCalcTextExtents f reqs = singleton
 	. OccCalcTextExtents fn fs t <$> textExtents f fn fs (T.unpack t)
 	where CalcTextExtentsReq fn fs t = extract reqs
-
--- GET TIME ZONE
 
 handleGetTimeZone :: Handle IO (Singleton GetTimeZone)
 handleGetTimeZone _reqs = singleton . OccGetTimeZone <$> getCurrentTimeZone
@@ -197,12 +213,3 @@ handleRaiseError reqs = case errorResult e of
 		NoAvatar -> Just Terminate
 		NoHtmlUrl -> Just Terminate
 		CatchError -> Nothing
-
--- MOUSE
-
-handleMouse' :: Field -> Handle' (FbM IO) MouseEv
-handleMouse' f reqs = getSleepUntil >>= lift . \case
-	Nothing -> handleMouse Nothing f reqs
-	Just t -> do
-		now <- getCurrentTime
-		handleMouse (Just . fromRational . toRational $ now `diffUTCTime` t) f reqs
