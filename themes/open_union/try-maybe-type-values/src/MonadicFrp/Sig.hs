@@ -141,13 +141,19 @@ l `at` a = do
 
 infixl 7 `until`
 
-until :: Firstable es es' => Sig es a r -> React es' r' -> Sig (es :+: es') a (Either (a, r') (Maybe r))
+until :: (
+	Firstable es es',
+	(es :+: (es :+: es')) ~ (es :+: es'),
+	Firstable es (es :+: es'), Expandable es (es :+: es')) =>
+	Sig es a r -> React es' r' -> Sig (es :+: es') a (Either (Either a r, r') (Maybe r))
 l `until` r = do
 	(l', r') <- l `until_` r
-	pure case (l', r') of
-		(Sig (Done (l'' :| _)), Done r'') -> Left (l'', r'')
-		(Sig (Done (End l'')), _) -> Right $ Just l''
-		(Sig (Await _ _), Done _) -> Right Nothing
+	case (l', r') of
+		(Sig (Done (l'' :| _)), Done r'') -> pure $ Left (Left l'', r'')
+		(Sig (Done (End l'')), _) -> pure . Right $ Just l''
+		(Sig c@(Await _ _), Done r'') -> waitFor (adjust c) >>= \case
+			a :| _ -> pure $ Left (Left a, r'')
+			End rr -> pure $ Left (Right rr, r'')
 		_ -> error "never occur"
 
 until_ :: Firstable es es' => Sig es a r ->

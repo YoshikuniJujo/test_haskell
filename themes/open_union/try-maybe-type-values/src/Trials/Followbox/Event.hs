@@ -175,7 +175,7 @@ endSleep = await EndSleepReq \OccEndSleep -> ()
 data Error
 	= NoRateLimitRemaining | NoRateLimitReset
 	| NotJson | EmptyJson | NoLoginName | NoAvatarAddress | NoAvatar
-	| NoHtmlUrl | CatchError deriving (Show, Eq, Ord)
+	| NoHtmlUrl | Trace | CatchError deriving (Show, Eq, Ord)
 
 data ErrorResult = Continue | Terminate deriving Show
 

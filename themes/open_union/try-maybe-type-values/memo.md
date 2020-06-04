@@ -18,13 +18,15 @@ TODO
 * [x] Lockの実装
 * [x] Trials.Followbox.ThreadIdをMonadicFrp.ThreadIdか、あるいはそれ以下に移動させる
 * [x] Trials.LockをMonadicFrp.Lockに移動させる
-* [ ] MonadicFrp以下を整理する
+* [x] MonadicFrp以下を整理する
 	+ [x] MonadicFrp.EventsをMonadicFrp.Eventにする
 	+ [x] MonadicFrp.EventHandleを作成
 	+ [x] MonadicFrp.Lockを上記ディレクトリ下に
 	+ [x] MonadicFrp.ThreadIdを上記ディレクトリ下に
 		- [x] MonadicFrp.ThreadId.Typeは(とりあえず)そのままにする
 	+ [x] MonadicFrp.Randomを上記ディレクトリ下に
+* [ ] untilの型の修正
+	+ Maybe r を r にする
 * [ ] Followboxのリファクタリング
 * [ ] Trials.Lockのリファクタリングなど
 * [ ] Reactにだけではなく、Sigにもadjust的なものを定義することを検討

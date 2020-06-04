@@ -106,7 +106,8 @@ field n = do
 			Left (_, L _) -> pure ()
 			Left (_, LR _ _) -> pure ()
 			Left (_, R _) -> clear >> waitFor (adjust clearJsons)
-			Right _ -> error "never occur"
+			Right Nothing -> error "Oh, gosh!"
+			Right (Just _) -> error "never occur"
 	where
 	title = twhite largeSize titlePos "Who to follow"
 	link p t = clickableText p <$> withTextExtents defaultFont middleSize t
@@ -126,6 +127,7 @@ users lck n = concat <$%> user1 lck `ftraverse` [0 .. n - 1]
 
 user1 :: LockId -> Integer -> SigF View ()
 user1 lck n = do
+	waitFor . adjust . raiseError Trace $ "user1: n == " ++ show n
 	(a, ln, u) <- waitFor $ getUser lck
 	(nm, cr) <- waitFor $ nameCross n ln
 	emit $ Image (avatarPos n) a : view nm <> view cr
@@ -183,8 +185,13 @@ getObjs = do
 	(h, b) <- adjust . httpGet $ api n
 	case (rmng h, rst h) of
 		(Just rmn, _) | rmn > (0 :: Int) -> pure $ eitherDecode b
-		(Just _, Just t) ->
-			adjust (beginSleep t) >> adjust endSleep >> getObjs
+		(Just _, Just t) -> do
+			adjust (raiseError Trace "TRACE HERE 1")
+			adjust (beginSleep t)
+			adjust (raiseError Trace "TRACE HERE 2")
+			adjust endSleep
+			adjust (raiseError Trace "TRACE HERE 3")
+			getObjs
 		(Just _, Nothing) -> adjust (uncurry raiseError rstE) >> getObjs
 		(Nothing, _) -> adjust (uncurry raiseError rmngE) >> getObjs
 	where

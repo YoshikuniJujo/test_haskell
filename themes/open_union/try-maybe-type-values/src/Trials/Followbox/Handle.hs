@@ -45,12 +45,14 @@ import Field (Field, textExtents)
 -- 	+ FULLOWBOX STATE
 -- 	+ PUT AND GET EACH STATE
 -- * HANDLE
+--	+ FOLLOWBOX
 --	+ MOUSE
 --	+ STORE AND LOAD JSONS
 --	+ REQUEST DATA
 --	+ BROWSE
 --	+ BEGIN AND END SLEEP
 --	+ RAISE ERROR
+--	+ HELPER FUNCTION
 
 ---------------------------------------------------------------------------
 -- STATE
@@ -98,10 +100,11 @@ resetSleep = modify \s -> s { fsSleepUntil = Nothing }
 -- HANDLE
 ---------------------------------------------------------------------------
 
-handleFollowbox, handle ::
+-- FOLLOWBOX
+
+handleFollowbox ::
 	Field -> Browser -> Maybe GithubNameToken -> Handle (FbM IO) FollowboxEv
-handleFollowbox = handle
-handle f brws mba = retry $
+handleFollowbox f brws mba = retry $
 	handleGetThreadId `merge` handleLock `merge` handleRandom `merge`
 	handleStoreLoadJsons `merge`
 	lift . just . handleHttpGet mba `merge`
@@ -109,19 +112,15 @@ handle f brws mba = retry $
 	lift . just . handleGetTimeZone `merge`
 	lift . just . handleBrowse brws `merge`
 	handleBeginEndSleep `merge` lift . handleRaiseError `before`
-	handleMouse' f
-
-just :: Functor f => f a -> f (Maybe a)
-just = (Just <$>)
+	handleMouseWithSleep f
 
 -- MOUSE
 
-handleMouse' :: Field -> Handle' (FbM IO) MouseEv
-handleMouse' f reqs = getSleepUntil >>= lift . \case
+handleMouseWithSleep :: Field -> Handle' (FbM IO) MouseEv
+handleMouseWithSleep f reqs = getSleepUntil >>= lift . \case
 	Nothing -> handleMouse Nothing f reqs
-	Just t -> do
-		now <- getCurrentTime
-		handleMouse (Just . fromRational . toRational $ now `diffUTCTime` t) f reqs
+	Just t -> getCurrentTime >>= \now ->
+		handleMouse (Just . realToFrac $ t `diffUTCTime` now) f reqs
 
 -- STORE AND LOAD JSONS
 
@@ -145,6 +144,7 @@ handleHttpGet mgnt reqs = do
 		. H.setRequestHeader "User-Agent" ["Yoshio"]
 		. fromString $ T.unpack u
 	print $ H.getResponseHeader "X-RateLimit-Remaining" r
+	print $ H.getResponseHeader "X-RateLimit-Reset" r
 	pure . singleton
 		$ OccHttpGet u (H.getResponseHeaders r) (H.getResponseBody r)
 	where HttpGetReq u = extract reqs
@@ -204,4 +204,10 @@ handleRaiseError reqs = case errorResult e of
 		NoAvatarAddress -> Just Terminate
 		NoAvatar -> Just Terminate
 		NoHtmlUrl -> Just Terminate
+		Trace -> Just Continue
 		CatchError -> Nothing
+
+-- HELPER FUNCTION
+
+just :: Functor f => f a -> f (Maybe a)
+just = (Just <$>)
