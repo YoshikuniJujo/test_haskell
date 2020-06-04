@@ -9,6 +9,7 @@ import Data.List (sort)
 import System.Environment (getArgs)
 import System.Exit (exitFailure)
 import System.Console.GetOpt (ArgOrder(..), OptDescr(..), ArgDescr(..), getOpt)
+import System.Random (mkStdGen)
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
@@ -35,7 +36,7 @@ runFb :: WindowTitle -> FollowboxInfo -> SigF View a -> IO (a, FollowboxState)
 runFb ttl i sg = do
 	f <- openField ttl [exposureMask, buttonPressMask]
 	interpret (handleFollowbox f brs gnt) (lift . view f) sg
-		`runStateT` initialFollowboxState <* closeField f
+		`runStateT` initialFollowboxState (mkStdGen 8) <* closeField f
 	where FollowboxInfo { fiBrowser = brs, fiGithubUserNameToken = gnt } = i
 
 ---------------------------------------------------------------------------

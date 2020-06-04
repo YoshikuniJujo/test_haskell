@@ -17,11 +17,10 @@ import Data.Type.Set (Set(Nil), Singleton, (:-))
 import Data.UnionSet (singleton, extract)
 import Data.Bool (bool)
 import Data.List (delete)
-import Data.List.NonEmpty (NonEmpty(..), head)
 import Data.String (fromString)
 import Data.Aeson (Object)
 import Data.Time (UTCTime, getCurrentTime, getCurrentTimeZone, diffUTCTime)
-import System.Random (StdGen, mkStdGen)
+import System.Random (StdGen)
 import System.Process (spawnProcess)
 
 import qualified Data.Text as T
@@ -61,31 +60,24 @@ import Field (Field, textExtents)
 
 type FbM = StateT FollowboxState
 data FollowboxState = FollowboxState {
-	fsNextLockId :: Int,
-	fsLockState :: [LockId],
-	fsObjects :: [Object],
-	fsSleepUntil :: Maybe UTCTime,
-	fsVersionRandomGens :: NonEmpty ((), StdGen) }
-	deriving Show
+	fsNextLockId :: Int, fsLockState :: [LockId], fsObjects :: [Object],
+	fsSleepUntil :: Maybe UTCTime, fsRandomGen :: StdGen } deriving Show
 
-initialFollowboxState :: FollowboxState
-initialFollowboxState = FollowboxState {
-	fsNextLockId = 0, fsLockState = [],
-	fsObjects = [], fsSleepUntil = Nothing,
-	fsVersionRandomGens = ((), mkStdGen 8) :| [] }
+initialFollowboxState :: StdGen -> FollowboxState
+initialFollowboxState g = FollowboxState {
+	fsNextLockId = 0, fsLockState = [], fsObjects = [],
+	fsSleepUntil = Nothing, fsRandomGen = g }
 
 -- PUT AND GET EACH STATE
 
 instance LockState FollowboxState where
-	getLockId = fsNextLockId
-	putLockId s l = s { fsNextLockId = l }
+	getLockId = fsNextLockId; putLockId s l = s { fsNextLockId = l }
 	isLocked s l = l `elem` fsLockState s
 	lockIt s l = s { fsLockState = l : fsLockState s }
 	unlockIt s l = s { fsLockState = delete l $ fsLockState s }
 
 instance RandomState FollowboxState where
-	getRandomGen = snd . head . fsVersionRandomGens
-	putRandomGen s g = s { fsVersionRandomGens = ((), g) :| [] }
+	getRandomGen = fsRandomGen; putRandomGen s g = s { fsRandomGen = g }
 
 getObjects :: Monad m => FbM m [Object]
 getObjects = gets fsObjects

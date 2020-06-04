@@ -64,7 +64,9 @@ TODO
 	+ [x] imports
 	+ [x] structure
 	+ [ ] body
-		- [ ] fsVersionRandomGen
+		- [x] fsVersionRandomGen
+		- [x] STATE
+		- [ ] HANDLE
 * [ ] Trials.Followbox.Run
 	+ [ ] imports
 	+ [ ] body
