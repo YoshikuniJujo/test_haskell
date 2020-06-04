@@ -106,8 +106,7 @@ field n = do
 			Left (_, L _) -> pure ()
 			Left (_, LR _ _) -> pure ()
 			Left (_, R _) -> clear >> waitFor (adjust clearJsons)
-			Right Nothing -> error "Oh, gosh!"
-			Right (Just _) -> error "never occur"
+			Right _ -> error "never occur"
 	where
 	title = twhite largeSize titlePos "Who to follow"
 	link p t = clickableText p <$> withTextExtents defaultFont middleSize t

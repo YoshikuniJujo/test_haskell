@@ -24,7 +24,6 @@ import Prelude hiding (map, repeat, scanl, break, until, tail)
 import GHC.Stack
 import Control.Monad
 import Data.Type.Flip
-import Data.Maybe
 
 import MonadicFrp.React.Internal
 import Data.UnionSet
@@ -145,12 +144,12 @@ until :: (
 	Firstable es es',
 	(es :+: (es :+: es')) ~ (es :+: es'),
 	Firstable es (es :+: es'), Expandable es (es :+: es')) =>
-	Sig es a r -> React es' r' -> Sig (es :+: es') a (Either (Either a r, r') (Maybe r))
+	Sig es a r -> React es' r' -> Sig (es :+: es') a (Either (Either a r, r') r)
 l `until` r = do
 	(l', r') <- l `until_` r
 	case (l', r') of
 		(Sig (Done (l'' :| _)), Done r'') -> pure $ Left (Left l'', r'')
-		(Sig (Done (End l'')), _) -> pure . Right $ Just l''
+		(Sig (Done (End l'')), _) -> pure $ Right l''
 		(Sig c@(Await _ _), Done r'') -> waitFor (adjust c) >>= \case
 			a :| _ -> pure $ Left (Left a, r'')
 			End rr -> pure $ Left (Right rr, r'')

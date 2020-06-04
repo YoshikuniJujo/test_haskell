@@ -25,8 +25,9 @@ TODO
 	+ [x] MonadicFrp.ThreadIdを上記ディレクトリ下に
 		- [x] MonadicFrp.ThreadId.Typeは(とりあえず)そのままにする
 	+ [x] MonadicFrp.Randomを上記ディレクトリ下に
-* [ ] untilの型の修正
+* [x] untilの型の修正
 	+ Maybe r を r にする
+* [ ] untilを(すこし)リファクタリング
 * [ ] Followboxのリファクタリング
 * [ ] Trials.Lockのリファクタリングなど
 * [ ] Reactにだけではなく、Sigにもadjust的なものを定義することを検討
