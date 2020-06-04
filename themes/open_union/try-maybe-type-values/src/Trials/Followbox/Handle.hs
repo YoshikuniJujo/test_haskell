@@ -41,6 +41,12 @@ import Field (Field, textExtents)
 
 ---------------------------------------------------------------------------
 
+---------------------------------------------------------------------------
+-- STATE
+---------------------------------------------------------------------------
+
+-- FOLLOWQBOX STATE
+
 type FbM = StateT FollowboxState
 data FollowboxState = FollowboxState {
 	fsNextLockId :: Int,
@@ -55,6 +61,8 @@ initialFollowboxState = FollowboxState {
 	fsNextLockId = 0, fsLockState = [],
 	fsObjects = [], fsSleepUntil = Nothing,
 	fsVersionRandomGens = ((), mkStdGen 8) :| [] }
+
+-- PUT AND GET EACH STATE
 
 instance LockState FollowboxState where
 	getLockId = fsNextLockId
