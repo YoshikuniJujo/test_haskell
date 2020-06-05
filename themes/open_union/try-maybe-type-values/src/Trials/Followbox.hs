@@ -103,10 +103,10 @@ field n = do
 	lck <- waitFor $ adjust newLockId
 	(clear >>) . forever $ (frame <>)
 		<$%> users lck n `until` click nxt `first` click rfs >>= \case
-			Left (_, L _) -> pure ()
-			Left (_, LR _ _) -> pure ()
-			Left (_, R _) -> clear >> waitFor (adjust clearJsons)
-			Right _ -> error "never occur"
+			Right (_, L _) -> pure ()
+			Right (_, LR _ _) -> pure ()
+			Right (_, R _) -> clear >> waitFor (adjust clearJsons)
+			Left _ -> error "never occur"
 	where
 	title = twhite largeSize titlePos "Who to follow"
 	link p t = clickableText p <$> withTextExtents defaultFont middleSize t

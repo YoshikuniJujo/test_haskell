@@ -144,27 +144,27 @@ until :: (
 	Firstable es es',
 	(es :+: (es :+: es')) ~ (es :+: es'),
 	Firstable es (es :+: es'), Expandable es (es :+: es')) =>
-	Sig es a r -> React es' r' -> Sig (es :+: es') a (Either (Either a r, r') r)
+	Sig es a r -> React es' r' -> Sig (es :+: es') a (Either r (Either a r, r'))
 l `until` r = do
 	(l', r') <- l `until_` r
 	case (l', r') of
-		(Sig (Done (l'' :| _)), Done r'') -> pure $ Left (Left l'', r'')
-		(Sig (Done (End l'')), Done r'') -> pure $ Left (Right l'', r'')
-		(Sig (Done (End l'')), _) -> pure $ Right l''
+		(Sig (Done (l'' :| _)), Done r'') -> pure $ Right (Left l'', r'')
+		(Sig (Done (End l'')), Done r'') -> pure $ Right (Right l'', r'')
+		(Sig (Done (End l'')), _) -> pure $ Left l''
 		(Sig c@(Await _ _), Done r'') -> waitFor (adjust c) >>= \case
-			a :| _ -> pure $ Left (Left a, r'')
-			End rr -> pure $ Left (Right rr, r'')
+			a :| _ -> pure $ Right (Left a, r'')
+			End rr -> pure $ Right (Right rr, r'')
 		_ -> error "never occur"
 
 break :: Firstable es es' =>
-	Sig es a r -> React es' r' -> Sig (es :+: es') a (Either (Maybe (Either a r), r') r)
+	Sig es a r -> React es' r' -> Sig (es :+: es') a (Either r (Maybe (Either a r), r'))
 l `break` r = do
 	(l', r') <- l `until_` r
 	case (l', r') of
-		(Sig (Done (l'' :| _)), Done r'') -> pure $ Left (Just $ Left l'', r'')
-		(Sig (Done (End l'')), Done r'') -> pure $ Left (Just $ Right l'', r'')
-		(Sig (Done (End l'')), _) -> pure $ Right l''
-		(Sig (Await _ _), Done r'') -> pure $ Left (Nothing, r'')
+		(Sig (Done (l'' :| _)), Done r'') -> pure $ Right (Just $ Left l'', r'')
+		(Sig (Done (End l'')), Done r'') -> pure $ Right (Just $ Right l'', r'')
+		(Sig (Done (End l'')), _) -> pure $ Left l''
+		(Sig (Await _ _), Done r'') -> pure $ Right (Nothing, r'')
 		_ -> error "never occur"
 
 until_ :: Firstable es es' => Sig es a r ->
