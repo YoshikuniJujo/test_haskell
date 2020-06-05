@@ -13,7 +13,7 @@ module Trials.Followbox.Handle (
 import Prelude hiding (head)
 
 import Control.Monad.State (StateT, lift, gets, modify)
-import Data.Type.Set (Set(Nil), Singleton, (:-))
+import Data.Type.Set (Singleton)
 import Data.UnionSet (singleton, extract)
 import Data.Bool (bool)
 import Data.List (delete)
@@ -111,7 +111,8 @@ handleFollowbox f brws mba = retry $
 	lift . just . handleCalcTextExtents f `merge`
 	lift . just . handleGetTimeZone `merge`
 	lift . just . handleBrowse brws `merge`
-	handleBeginEndSleep `merge` lift . handleRaiseError `before`
+	handleBeginSleep `merge` handleEndSleep `merge`
+	lift . handleRaiseError `before`
 	handleMouseWithSleep f
 
 -- MOUSE
@@ -139,7 +140,6 @@ handleHttpGet mgnt reqs = do
 		. H.setRequestHeader "User-Agent" ["Yoshio"]
 		. fromString $ T.unpack u
 	print $ H.getResponseHeader "X-RateLimit-Remaining" r
-	print $ H.getResponseHeader "X-RateLimit-Reset" r
 	pure . singleton
 		$ OccHttpGet u (H.getResponseHeaders r) (H.getResponseBody r)
 	where HttpGetReq u = extract reqs
@@ -154,43 +154,36 @@ handleGetTimeZone _reqs = singleton . OccGetTimeZone <$> getCurrentTimeZone
 
 -- BROWSE
 
-handleBrowse :: FilePath -> Handle IO (Singleton Browse)
+handleBrowse :: Browser -> Handle IO (Singleton Browse)
 handleBrowse brws reqs = singleton OccBrowse <$ spawnProcess brws [T.unpack u]
 	where Browse u = extract reqs
 
 -- BEGIN AND END SLEEP
 
-type BeginEndSleepEv = BeginSleep :- EndSleep :- 'Nil
-
-handleBeginEndSleep :: Handle' (FbM IO) BeginEndSleepEv
-handleBeginEndSleep = handleBeginSleep `merge` handleEndSleep
-
 handleBeginSleep :: Monad m => Handle' (FbM m) (Singleton BeginSleep)
 handleBeginSleep reqs = case extract reqs of
 	BeginSleep t -> getSleepUntil >>= \case
 		Just t' -> pure . Just . singleton $ OccBeginSleep t'
-		Nothing -> Just (singleton $ OccBeginSleep t)
-			<$ putSleepUntil t
+		Nothing -> Just (singleton $ OccBeginSleep t) <$ putSleepUntil t
 	CheckBeginSleep -> pure Nothing
 
 handleEndSleep :: Handle' (FbM IO) (Singleton EndSleep)
 handleEndSleep _reqs = getSleepUntil >>= \case
-	Just t -> bool cnt (es <$ resetSleep) . (t <=) =<< lift getCurrentTime
-	Nothing -> pure es
-	where
-	cnt = pure Nothing
-	es = Just $ singleton OccEndSleep
+	Just t -> lift getCurrentTime >>=
+		bool (pure Nothing) (e <$ resetSleep) . (t <=)
+	Nothing -> pure e
+	where e = Just $ singleton OccEndSleep
 
 -- RAISE ERROR
 
 handleRaiseError :: Handle' IO (Singleton RaiseError)
-handleRaiseError reqs = case errorResult e of
+handleRaiseError reqs = case er e of
 	Nothing -> pure Nothing
 	Just r -> Just (singleton $ OccRaiseError e r) <$ putStrLn emsg
 	where
 	RaiseError e em = extract reqs
 	emsg = "ERROR: " <> em
-	errorResult = \case
+	er = \case
 		NoRateLimitRemaining -> Just Terminate
 		NoRateLimitReset -> Just Terminate
 		NotJson -> Just Terminate

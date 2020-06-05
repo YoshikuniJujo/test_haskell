@@ -61,20 +61,25 @@ TODO
 		- [x] before GET USER
 		- [x] GET USER and after GET USER
 * [x] Trials.Followbox.View
-* [ ] Trials.Followbox.Handle
+* [x] Trials.Followbox.Handle
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] fsVersionRandomGen
 		- [x] STATE
 		- [x] HANDLE - FOLLOWBOX
 		- [x] HANDLE - MOUSE
 		- [x] HANDLE - STORE AND LOAD JSONS
-		- [ ] HANDLE - REQUEST DATA
-			* [ ] handleHttpGet
-			* [ ] handleCalcTextExtents
-			* [ ] handleGetTimeZone
-		- [ ] HANDLE - AFTER REQUEST DATA
+		- [x] HANDLE - REQUEST DATA
+			* [x] handleHttpGet
+			* [x] handleCalcTextExtents
+			* [x] handleGetTimeZone
+		- [x] HANDLE - BROWSE
+		- [x] HANDLE - BEGIN AND END SLEEP
+			* [x] handleBeginSleep
+			* [x] handleEndSleep
+		- [x] HANDLE - RAISE ERROR
+		- [x] HANDLE - HELPER FUNCTION
 * [ ] Trials.Followbox.Run
 	+ [ ] imports
 	+ [ ] body
