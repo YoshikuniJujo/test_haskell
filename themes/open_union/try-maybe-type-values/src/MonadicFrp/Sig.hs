@@ -149,6 +149,7 @@ l `until` r = do
 	(l', r') <- l `until_` r
 	case (l', r') of
 		(Sig (Done (l'' :| _)), Done r'') -> pure $ Left (Left l'', r'')
+		(Sig (Done (End l'')), Done r'') -> pure $ Left (Right l'', r'')
 		(Sig (Done (End l'')), _) -> pure $ Right l''
 		(Sig c@(Await _ _), Done r'') -> waitFor (adjust c) >>= \case
 			a :| _ -> pure $ Left (Left a, r'')
@@ -161,6 +162,7 @@ l `break` r = do
 	(l', r') <- l `until_` r
 	case (l', r') of
 		(Sig (Done (l'' :| _)), Done r'') -> pure $ Left (Just $ Left l'', r'')
+		(Sig (Done (End l'')), Done r'') -> pure $ Left (Just $ Right l'', r'')
 		(Sig (Done (End l'')), _) -> pure $ Right l''
 		(Sig (Await _ _), Done r'') -> pure $ Left (Nothing, r'')
 		_ -> error "never occur"
