@@ -17,10 +17,10 @@ module MonadicFrp (
 	-- * Repetition
 	repeat, spawn, parList,
 	-- * Parallel composition
-	at, until, indexBy,
+	at, break, until, indexBy,
 	) where
 
-import Prelude hiding (map, repeat, scanl, until)
+import Prelude hiding (map, repeat, scanl, break, until)
 
 import MonadicFrp.Sig
 import MonadicFrp.React

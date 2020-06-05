@@ -4,7 +4,7 @@
 
 module Trials.Followbox (followbox) where
 
-import Prelude hiding (until)
+import Prelude hiding (break, until)
 
 import Control.Monad (forever)
 import Data.Type.Flip ((<$%>), (<*%>), ftraverse)
@@ -22,7 +22,7 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 
-import MonadicFrp (adjust, first, emit, waitFor, until)
+import MonadicFrp (adjust, first, emit, waitFor, break, until)
 import MonadicFrp.EventHandle.Lock (LockId, newLockId, withLock)
 import MonadicFrp.EventHandle.Random (getRandomR)
 import MonadicFrp.Event.Mouse (deleteEvent)
@@ -90,7 +90,7 @@ crossMergin = 4
 
 followbox :: SigF View ()
 followbox = () <$
-	fieldWithResetTime numOfUsers `until` deleteEvent `until` checkTerminate
+	fieldWithResetTime numOfUsers `break` deleteEvent `break` checkTerminate
 
 fieldWithResetTime :: Integer -> SigF View ()
 fieldWithResetTime n = (<>) <$%> field n <*%> resetTime
@@ -130,7 +130,7 @@ user1 lck n = do
 	(a, ln, u) <- waitFor $ getUser lck
 	(nm, cr) <- waitFor $ nameCross n ln
 	emit $ Image (avatarPos n) a : view nm <> view cr
-	() <$ waitFor (forever $ click nm >> adjust (browse u)) `until` click cr
+	() <$ waitFor (forever $ click nm >> adjust (browse u)) `break` click cr
 	user1 lck n
 
 nameCross :: Integer -> T.Text -> ReactF (Clickable, Clickable)

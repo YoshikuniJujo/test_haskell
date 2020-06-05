@@ -16,7 +16,7 @@ module MonadicFrp.Sig (
 	-- * Repetition
 	repeat, spawn, parList,
 	-- * Parallel composition
-	at, until, indexBy
+	at, break, until, indexBy
 	) where
 
 import Prelude hiding (map, repeat, scanl, break, until, tail)
@@ -104,7 +104,7 @@ iscanl f i (Sig l) = i :| (waitFor l >>= lsl) where
 	lsl (End x) = pure x
 
 find :: (a -> Bool) -> Sig es a r -> React es (Either a r)
-find p l = icur <$> res (break p l)
+find p l = icur <$> res (brk p l)
 
 icur :: ISig es a b -> Either a b
 icur (h :| _) = Left h
@@ -117,13 +117,13 @@ ires :: ISig es a b -> React es b
 ires (_ :| t) = res t
 ires (End a) = pure a
 
-break :: (a -> Bool) -> Sig es a r -> Sig es a (ISig es a r)
-break p (Sig l) = Sig $ ibreak p <$> l
+brk :: (a -> Bool) -> Sig es a r -> Sig es a (ISig es a r)
+brk p (Sig l) = Sig $ ibreak p <$> l
 
 ibreak :: (a -> Bool) -> ISig es a r -> ISig es a (ISig es a r)
 ibreak p is@(h :| t)
 	| p h = pure is
-	| otherwise = h :| break p t
+	| otherwise = h :| brk p t
 ibreak _ is@(End _) = pure is
 
 infixr 7 `at`
@@ -138,7 +138,7 @@ l `at` a = do
 		(Sig (Await _ _), Done _) -> Right Nothing
 		_ -> error "never occur"
 
-infixl 7 `until`
+infixl 7 `break`, `until`
 
 until :: (
 	Firstable es es',
@@ -153,6 +153,16 @@ l `until` r = do
 		(Sig c@(Await _ _), Done r'') -> waitFor (adjust c) >>= \case
 			a :| _ -> pure $ Left (Left a, r'')
 			End rr -> pure $ Left (Right rr, r'')
+		_ -> error "never occur"
+
+break :: Firstable es es' =>
+	Sig es a r -> React es' r' -> Sig (es :+: es') a (Either (Maybe (Either a r), r') r)
+l `break` r = do
+	(l', r') <- l `until_` r
+	case (l', r') of
+		(Sig (Done (l'' :| _)), Done r'') -> pure $ Left (Just $ Left l'', r'')
+		(Sig (Done (End l'')), _) -> pure $ Right l''
+		(Sig (Await _ _), Done r'') -> pure $ Left (Nothing, r'')
 		_ -> error "never occur"
 
 until_ :: Firstable es es' => Sig es a r ->
