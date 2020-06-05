@@ -106,7 +106,7 @@ handleFollowbox ::
 	Field -> Browser -> Maybe GithubNameToken -> Handle (FbM IO) FollowboxEv
 handleFollowbox f brws mba = retry $
 	handleGetThreadId `merge` handleLock `merge` handleRandom `merge`
-	handleStoreLoadJsons `merge`
+	just . handleStoreJsons `merge` just . handleLoadJsons `merge`
 	lift . just . handleHttpGet mba `merge`
 	lift . just . handleCalcTextExtents f `merge`
 	lift . just . handleGetTimeZone `merge`
@@ -123,11 +123,6 @@ handleMouseWithSleep f reqs = getSleepUntil >>= lift . \case
 		handleMouse (Just . realToFrac $ t `diffUTCTime` now) f reqs
 
 -- STORE AND LOAD JSONS
-
-type StoreLoadJsons = StoreJsons :- LoadJsons :- 'Nil
-
-handleStoreLoadJsons :: Monad m => Handle' (FbM m) StoreLoadJsons
-handleStoreLoadJsons = just . handleStoreJsons `merge` just . handleLoadJsons
 
 handleStoreJsons :: Monad m => Handle (FbM m) (Singleton StoreJsons)
 handleStoreJsons reqs = singleton (OccStoreJsons os) <$ putObjects os

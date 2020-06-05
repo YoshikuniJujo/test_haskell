@@ -27,7 +27,7 @@ TODO
 	+ [x] MonadicFrp.Randomを上記ディレクトリ下に
 * [x] untilの型の修正
 	+ Maybe r を r にする
-* [ ] untilを(すこし)リファクタリング
+* [x] untilを(すこし)リファクタリング
 * [ ] Followboxのリファクタリング
 * [ ] Trials.Lockのリファクタリングなど
 * [ ] Reactにだけではなく、Sigにもadjust的なものを定義することを検討

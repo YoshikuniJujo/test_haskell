@@ -203,6 +203,5 @@ type SigF = Sig FollowboxEv
 type ReactF = React FollowboxEv
 
 type FollowboxEv = GetThreadId :- LockEv :+: RandomEv :+: MouseEv :+:
-	StoreJsons :- LoadJsons :-
-	HttpGet :- CalcTextExtents :- GetTimeZone :- Browse :-
-	BeginSleep :- EndSleep :- RaiseError :- 'Nil
+	StoreJsons :- LoadJsons :- HttpGet :- CalcTextExtents :- GetTimeZone :-
+	Browse :- BeginSleep :- EndSleep :- RaiseError :- 'Nil

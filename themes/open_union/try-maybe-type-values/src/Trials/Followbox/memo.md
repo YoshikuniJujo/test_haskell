@@ -30,7 +30,7 @@ TODO
 	+ [x] Trials.Followbox.NewRandomを定義する
 	+ [x] 置き換える
 * [x] Trials.Followbox.RandomをMonadicFrp.Randomに移動することを検討する
-* [ ] MonadicFrp.Sigのバグフィックスの後始末
+* [x] MonadicFrp.Sigのバグフィックスの後始末
 
 リファクタリング
 ----------------
@@ -68,8 +68,13 @@ TODO
 		- [x] fsVersionRandomGen
 		- [x] STATE
 		- [x] HANDLE - FOLLOWBOX
-		- [ ] HANDLE - MOUSE
-		- [ ] HANDLE - AFTER MOUSE
+		- [x] HANDLE - MOUSE
+		- [x] HANDLE - STORE AND LOAD JSONS
+		- [ ] HANDLE - REQUEST DATA
+			* [ ] handleHttpGet
+			* [ ] handleCalcTextExtents
+			* [ ] handleGetTimeZone
+		- [ ] HANDLE - AFTER REQUEST DATA
 * [ ] Trials.Followbox.Run
 	+ [ ] imports
 	+ [ ] body
