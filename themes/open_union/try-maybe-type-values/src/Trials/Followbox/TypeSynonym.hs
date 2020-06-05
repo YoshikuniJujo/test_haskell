@@ -8,9 +8,11 @@ module Trials.Followbox.TypeSynonym (
 	-- * OTHERS
 	Uri, Avatar, Browser, ErrorMessage ) where
 
-import Data.ByteString as BS
-import Data.Text as T
-import qualified Codec.Picture as JP
+import Data.ByteString (ByteString)
+import Data.Text (Text)
+import Codec.Picture (Image, PixelRGBA8)
+
+---------------------------------------------------------------------------
 
 -- FIELD
 
@@ -23,12 +25,12 @@ type FontSize = Double
 -- GITHUB
 
 type GithubNameToken = (GithubUserName, GithubToken)
-type GithubUserName = BS.ByteString
-type GithubToken = BS.ByteString
+type GithubUserName = ByteString
+type GithubToken = ByteString
 
 -- OTHERS
 
-type Uri = T.Text
-type Avatar = JP.Image JP.PixelRGBA8
+type Uri = Text
+type Avatar = Image PixelRGBA8
 type Browser = FilePath
 type ErrorMessage = String

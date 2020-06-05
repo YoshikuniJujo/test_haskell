@@ -87,4 +87,4 @@ TODO
 		- [x] RUN FOLLOWBOX
 		- [x] GET FOLLOWBOX INFO
 		- [x] GET OPT
-* [ ] Trials.Followbox.TypeSynonym
+* [x] Trials.Followbox.TypeSynonym
