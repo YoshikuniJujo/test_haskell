@@ -82,5 +82,6 @@ TODO
 		- [x] HANDLE - HELPER FUNCTION
 * [ ] Trials.Followbox.Run
 	+ [x] imports
+	+ [x] structure
 	+ [ ] body
 * [ ] Trials.Followbox.TypeSynonym

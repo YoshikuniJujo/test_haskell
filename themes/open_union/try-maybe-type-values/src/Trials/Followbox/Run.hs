@@ -25,6 +25,14 @@ import Field (openField, closeField, exposureMask, buttonPressMask)
 
 ---------------------------------------------------------------------------
 
+-- * RUN FOLLOWBOX
+-- * GET FOLLOWBOX INFO
+-- * GET OPT
+
+---------------------------------------------------------------------------
+-- RUN FOLLOWBOX
+---------------------------------------------------------------------------
+
 defaultBrowser :: Browser
 defaultBrowser = "firefox"
 
@@ -41,6 +49,8 @@ runFb ttl i sg = do
 	where FollowboxInfo { fiBrowser = brs, fiGithubUserNameToken = gnt } = i
 
 ---------------------------------------------------------------------------
+-- GET FOLLOWBOX INFO
+---------------------------------------------------------------------------
 
 getFollowboxInfo :: IO (Either String FollowboxInfo)
 getFollowboxInfo = do
@@ -56,21 +66,6 @@ data FollowboxInfo = FollowboxInfo {
 	fiGithubUserNameToken :: Maybe GithubNameToken }
 	deriving Show
 
-data FollowboxOption
-	= FoBrowser Browser
-	| FoGithubUserName GithubUserName | FoGithubToken FilePath
-	deriving (Show, Eq, Ord)
-
-followboxOptions :: [OptDescr FollowboxOption]
-followboxOptions = [
-	Option "b" ["browser"] (ReqArg FoBrowser "browser")
-		"Set browser to access GitHub user page",
-	Option "u" ["github-user-name"]
-		(ReqArg (FoGithubUserName . BSC.pack) "GitHub user name")
-		"Set GitHub user name",
-	Option "t" ["github-token"]
-		(ReqArg FoGithubToken "GitHub token") "Set GitHub token" ]
-
 optionsToInfo :: [FollowboxOption] -> IO (Either String FollowboxInfo)
 optionsToInfo [] = pure $ Right FollowboxInfo {
 	fiBrowser = defaultBrowser, fiGithubUserNameToken = Nothing }
@@ -83,6 +78,15 @@ optionsToInfo (FoGithubUserName un : FoGithubToken fp : os) = do
 	where trim ba | Just (bs, '\n') <- BSC.unsnoc ba = bs | otherwise = ba
 optionsToInfo _ = pure $ Left "Bad option set"
 
+---------------------------------------------------------------------------
+-- GET OPT
+---------------------------------------------------------------------------
+
+data FollowboxOption
+	= FoBrowser Browser
+	| FoGithubUserName GithubUserName | FoGithubToken FilePath
+	deriving (Show, Eq, Ord)
+
 chkDupOpt :: [FollowboxOption] -> Either String [FollowboxOption]
 chkDupOpt [] = Right []
 chkDupOpt (FoBrowser _ : FoBrowser _ : _) =
@@ -92,3 +96,13 @@ chkDupOpt (FoGithubUserName _ : FoGithubUserName _ : _) =
 chkDupOpt (FoGithubToken _ : FoGithubToken _ : _) =
 	Left "Duplicate GitHub token options"
 chkDupOpt (o : os) = (o :) <$> chkDupOpt os
+
+followboxOptions :: [OptDescr FollowboxOption]
+followboxOptions = [
+	Option "b" ["browser"] (ReqArg FoBrowser "browser")
+		"Set browser to access GitHub user page",
+	Option "u" ["github-user-name"]
+		(ReqArg (FoGithubUserName . BSC.pack) "GitHub user name")
+		"Set GitHub user name",
+	Option "t" ["github-token"]
+		(ReqArg FoGithubToken "GitHub token") "Set GitHub token" ]
