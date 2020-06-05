@@ -84,4 +84,7 @@ TODO
 	+ [x] imports
 	+ [x] structure
 	+ [ ] body
+		- [x] RUN FOLLOWBOX
+		- [ ] GET FOLLOWBOX INFO
+		- [ ] GET OPT
 * [ ] Trials.Followbox.TypeSynonym

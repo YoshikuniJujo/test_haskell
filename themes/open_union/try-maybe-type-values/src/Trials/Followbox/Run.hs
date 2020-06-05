@@ -39,14 +39,14 @@ defaultBrowser = "firefox"
 runFollowbox :: WindowTitle -> SigF View a -> IO (a, FollowboxState)
 runFollowbox ttl sig = getFollowboxInfo >>= \case
 	Left em -> putStrLn em >> exitFailure
-	Right fi -> runFb ttl fi sig
+	Right fi -> run ttl fi sig
 
-runFb :: WindowTitle -> FollowboxInfo -> SigF View a -> IO (a, FollowboxState)
-runFb ttl i sg = do
-	f <- openField ttl [exposureMask, buttonPressMask]
-	interpret (handleFollowbox f brs gnt) (lift . view f) sg
+run :: WindowTitle -> FollowboxInfo -> SigF View a -> IO (a, FollowboxState)
+run ttl fi sg = openField ttl [exposureMask, buttonPressMask] >>= \f ->
+	interpret (handleFollowbox f brs mgnt) (lift . view f) sg
 		`runStateT` initialFollowboxState (mkStdGen 8) <* closeField f
-	where FollowboxInfo { fiBrowser = brs, fiGithubUserNameToken = gnt } = i
+	where
+	FollowboxInfo { fiBrowser = brs, fiGithubUserNameToken = mgnt } = fi
 
 ---------------------------------------------------------------------------
 -- GET FOLLOWBOX INFO
