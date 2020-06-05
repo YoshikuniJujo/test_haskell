@@ -16,7 +16,8 @@ import qualified Data.ByteString.Char8 as BSC
 
 import MonadicFrp.Run (interpret)
 import Trials.Followbox.Event (SigF)
-import Trials.Followbox.Handle (handleFollowbox, FollowboxState, initialFollowboxState)
+import Trials.Followbox.Handle (
+	FollowboxState, handleFollowbox, initialFollowboxState )
 import Trials.Followbox.View (View, view)
 import Trials.Followbox.TypeSynonym (
 	WindowTitle, Browser, GithubNameToken, GithubUserName )
