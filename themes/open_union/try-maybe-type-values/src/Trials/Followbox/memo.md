@@ -80,11 +80,11 @@ TODO
 			* [x] handleEndSleep
 		- [x] HANDLE - RAISE ERROR
 		- [x] HANDLE - HELPER FUNCTION
-* [ ] Trials.Followbox.Run
+* [x] Trials.Followbox.Run
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] RUN FOLLOWBOX
-		- [ ] GET FOLLOWBOX INFO
-		- [ ] GET OPT
+		- [x] GET FOLLOWBOX INFO
+		- [x] GET OPT
 * [ ] Trials.Followbox.TypeSynonym

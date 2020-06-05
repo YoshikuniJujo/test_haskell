@@ -52,6 +52,10 @@ run ttl fi sg = openField ttl [exposureMask, buttonPressMask] >>= \f ->
 -- GET FOLLOWBOX INFO
 ---------------------------------------------------------------------------
 
+data FollowboxInfo = FollowboxInfo {
+	fiBrowser :: Browser, fiGithubUserNameToken :: Maybe GithubNameToken }
+	deriving Show
+
 getFollowboxInfo :: IO (Either String FollowboxInfo)
 getFollowboxInfo = do
 	(os, args, ems) <- getOpt Permute followboxOptions <$> getArgs
@@ -60,11 +64,6 @@ getFollowboxInfo = do
 			either (pure . Left) optionsToInfo . chkDupOpt $ sort os
 		(_, []) -> pure $ Left "Only options are permitted"
 		_ -> pure . Left $ concat ems
-
-data FollowboxInfo = FollowboxInfo {
-	fiBrowser :: Browser,
-	fiGithubUserNameToken :: Maybe GithubNameToken }
-	deriving Show
 
 optionsToInfo :: [FollowboxOption] -> IO (Either String FollowboxInfo)
 optionsToInfo [] = pure $ Right FollowboxInfo {
