@@ -29,6 +29,7 @@ TODO
 	+ Maybe r を r にする
 * [x] untilを(すこし)リファクタリング
 * [x] Followboxのリファクタリング
+* [ ] Trials.NewRandomで「状態」をSigのなかであつかう仕組みを試す
 * [ ] MonadicFrp以下のリファクタリング
 * [ ] Trials.Lockのリファクタリングなど
 * [ ] Reactにだけではなく、Sigにもadjust的なものを定義することを検討
