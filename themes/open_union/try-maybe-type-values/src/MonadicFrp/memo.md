@@ -55,7 +55,9 @@ refactor API to expose
 	+ [x] Transformation
 	+ [x] Repetition
 	+ [x] Parallel composition
-* [ ] MonadicFrp.Handle
+* [x] MonadicFrp.Handle
+	+ [x] Types
+	+ [x] Composer
 * [ ] MonadicFrp.Run
 
 ### library

@@ -1,12 +1,12 @@
 {-# LANGUAGE LambdaCase, TupleSections #-}
-{-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE DataKinds, TypeOperators, ConstraintKinds #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
 
 module MonadicFrp.Handle (
 	-- * Types
-	Handle, Handle', HandleSt, HandleSt',
+	Handle, Handle', HandleSt, HandleSt', Beforable,
 	-- * Composer
 	retry, before, merge, retrySt, expandHandleSt, mergeHandleSt
 	) where
@@ -27,14 +27,14 @@ retrySt h st reqs = h st reqs >>= \case
 	(Just occs, st') -> pure (occs, st')
 	(Nothing, st') -> retrySt h st' reqs
 
+type Beforable es es' = (
+	Collapsable (es :+: es') es, Collapsable (es :+: es') es',
+	Expandable (Occurred :$: es) (Occurred :$: es :+: es'),
+	Expandable (Occurred :$: es') (Occurred :$: es :+: es') )
+
 infixr 5 `before`
 
-before :: (
-	Monad m,
-	Expandable (Occurred :$: es) (Occurred :$: es :+: es'),
-	Expandable (Occurred :$: es') (Occurred :$: es :+: es'),
-	Collapsable (es :+: es') es, Collapsable (es :+: es') es'
-	) => Handle' m es -> Handle' m es' -> Handle' m (es :+: es')
+before :: (Monad m, Beforable es es') => Handle' m es -> Handle' m es' -> Handle' m (es :+: es')
 before h1 h2 reqs = maybe (pure Nothing) h1 (collapse reqs) >>= \case
 	Just occs -> pure . Just $ expand occs
 	Nothing -> (expand <$>) <$> maybe (pure Nothing) h2 (collapse reqs)
@@ -42,10 +42,7 @@ before h1 h2 reqs = maybe (pure Nothing) h1 (collapse reqs) >>= \case
 infixr 6 `merge`
 
 merge :: (
-	Monad m,
-	Expandable (Occurred :$: es) (Occurred :$: es :+: es'),
-	Expandable (Occurred :$: es') (Occurred :$: es :+: es'),
-	Collapsable (es :+: es') es, Collapsable (es :+: es') es',
+	Monad m, Beforable es es',
 	Mergeable (Occurred :$: es) (Occurred :$: es') (Occurred :$: es :+: es')
 	) => Handle' m es -> Handle' m es' -> Handle' m (es :+: es')
 merge h1 h2 reqs = do
@@ -54,8 +51,8 @@ merge h1 h2 reqs = do
 	pure $ r1 `merge'` r2
 
 expandHandleSt :: (
-	Monad m,
-	Expandable (Occurred :$: es) (Occurred :$: es'), Collapsable es' es) =>
+	Monad m, Collapsable es' es,
+	Expandable (Occurred :$: es) (Occurred :$: es')) =>
 	HandleSt' st st' m es -> (st -> m st') ->
 	HandleSt' st st' m es'
 expandHandleSt h o st reqs = maybe
@@ -63,10 +60,7 @@ expandHandleSt h o st reqs = maybe
 	((((expand <$>) `first`) <$>) . h st) $ collapse reqs
 	
 mergeHandleSt :: (
-	Monad m,
-	Collapsable (es :+: es') es, Collapsable (es :+: es') es',
-	Expandable (Occurred :$: es) (Occurred :$: (es :+: es')),
-	Expandable (Occurred :$: es') (Occurred :$: (es :+: es')),
+	Monad m, Beforable es es',
 	Mergeable (Occurred :$: es) (Occurred :$: es') (Occurred :$: (es :+: es'))
 	) =>
 	HandleSt' st st' m es -> (st -> m st') ->
