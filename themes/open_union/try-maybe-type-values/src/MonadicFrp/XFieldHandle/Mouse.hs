@@ -4,7 +4,9 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module MonadicFrp.XFieldHandle.Mouse (handleMouse) where
+module MonadicFrp.XFieldHandle.Mouse (
+	-- * Handle Mouse
+	handleMouse ) where
 
 import Foreign.C.Types
 import Data.Type.Set (Set(Nil), Singleton, (:-))
