@@ -69,7 +69,7 @@ refactor API to expose
 	+ [x] Lock
 	+ [x] Random
 * [ ] Mouse
-	+ [ ] MonadicFrp.Event.Mouse
+	+ [x] MonadicFrp.Event.Mouse
 	+ [ ] MonadicFrp.XFieldHandle.Mouse
 
 refactor

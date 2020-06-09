@@ -5,13 +5,18 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module MonadicFrp.Event.Mouse (
-	-- * GENERAL
+	-- * Occurred
 	Occurred(..),
-	-- * MOUSE EVENT
+	-- * Mouse Event
 	MouseEv, MouseBtn(..), Point,
+	-- ** Mouse Down
 	MouseDown, mouseDown, clickOn, leftClick, middleClick, rightClick,
+	-- ** Mouse Up
 	MouseUp, mouseUp, releaseOn, leftUp, middleUp, rightUp,
-	MouseMove, mouseMove, DeleteEvent, deleteEvent
+	-- ** Mouse Move
+	MouseMove, mouseMove,
+	-- ** Delete Event
+	DeleteEvent, deleteEvent
 	) where
 
 import Data.Type.Set (Set(Nil), Singleton, numbered, (:-))
