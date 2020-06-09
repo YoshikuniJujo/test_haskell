@@ -29,7 +29,7 @@ TODO
 	+ Maybe r を r にする
 * [x] untilを(すこし)リファクタリング
 * [x] Followboxのリファクタリング
-* [ ] hlintによるリファクタリング
+* [x] hlintによるリファクタリング
 * [x] Trials.NewRandomで「状態」をSigのなかであつかう仕組みを試す
 * [ ] MonadicFrp以下のリファクタリング
 * [ ] Data.Type.Setのリファクタリング

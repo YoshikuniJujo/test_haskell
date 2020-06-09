@@ -16,7 +16,7 @@ import Data.Time
 import MonadicFrp
 import MonadicFrp.Run
 
-data TryWait = TryWaitReq { getTryWaitReq :: DiffTime } deriving (Show, Eq, Ord)
+newtype TryWait = TryWaitReq { getTryWaitReq :: DiffTime } deriving (Show, Eq, Ord)
 numbered 9 [t| TryWait |]
 instance Request TryWait where
 	data Occurred TryWait = OccTryWait DiffTime deriving Show
@@ -28,9 +28,9 @@ sleep :: DiffTime -> React (Singleton TryWait) ()
 sleep t = tryWait t >>= \t' -> bool (sleep (t - t')) (pure ()) (t' == t)
 -- sleep t = tryWait t >>= \t' -> bool (sleep (t - t')) (pure ()) (t' >= t)
 
-data Tick = Tick Int deriving Show
+newtype Tick = Tick Int deriving Show
 
-data Tack = Tack Int deriving Show
+newtype Tack = Tack Int deriving Show
 
 tick :: Int -> Sig (Singleton TryWait) Tick ()
 tick n = emit (Tick n) >> waitFor (sleep 3) >> tick (n + 1)

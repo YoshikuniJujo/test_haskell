@@ -26,7 +26,7 @@ import MonadicFrp.Event.Mouse (
 
 ---------------------------------------------------------------------------
 
-data TryWait = TryWaitReq { getTryWaitReq :: DiffTime } deriving (Show, Eq, Ord)
+newtype TryWait = TryWaitReq { getTryWaitReq :: DiffTime } deriving (Show, Eq, Ord)
 numbered 9 [t| TryWait |]
 instance Request TryWait where
 	data Occurred TryWait = OccTryWait DiffTime deriving (Show, Eq, Ord)

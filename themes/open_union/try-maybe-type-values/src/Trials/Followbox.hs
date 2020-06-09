@@ -6,7 +6,7 @@ module Trials.Followbox (followbox) where
 
 import Prelude hiding (break, until)
 
-import Control.Monad (forever)
+import Control.Monad (forever, (<=<))
 import Data.Type.Flip ((<$%>), (<*%>), ftraverse)
 import Data.Or (Or(..))
 import Data.Time (UTCTime, utcToLocalTime)
@@ -149,6 +149,8 @@ cross (l, t) = clickable [line lt rb, line lb rt] (l', t') (r', b')
 
 -- GET USER
 
+{-# ANN getUser ("HLint: ignore Redundant <$>" :: String) #-}
+
 getUser :: LockId -> ReactF (Avatar, T.Text, T.Text)
 getUser lck = makeUser <$> getObj1 lck >>= \case
 	Left (e, em) -> adjust (raiseError e em) >> getUser lck
@@ -196,7 +198,7 @@ getObjs = do
 	where
 	api = ("https://api.github.com/users?since=" <>) . T.pack . show @Int
 	rmng = (read . BSC.unpack <$>) . lookup "X-RateLimit-Remaining"
-	rst = (posixSeconds =<<) . lookup "X-RateLimit-Reset"
+	rst = posixSeconds <=< lookup "X-RateLimit-Reset"
 	rmngE = (NoRateLimitRemaining, "No X-RateLimit-Remaining header")
 	rstE = (NoRateLimitReset, "No X-RateLimit-Reset header")
 

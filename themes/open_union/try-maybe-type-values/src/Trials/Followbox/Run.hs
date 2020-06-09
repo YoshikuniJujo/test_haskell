@@ -1,5 +1,4 @@
-{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Followbox.Run (runFollowbox) where

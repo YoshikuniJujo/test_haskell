@@ -21,7 +21,7 @@ import MonadicFrp
 import MonadicFrp.Handle
 import MonadicFrp.EventHandle.ThreadId
 
-data LockId = LockId Int deriving (Show, Eq)
+newtype LockId = LockId Int deriving (Show, Eq)
 type RetryTime = Int
 
 class LockState s where
@@ -31,7 +31,7 @@ class LockState s where
 	lockIt :: s -> LockId -> s
 	unlockIt :: s -> LockId -> s
 
-data NewLockId = NewLockIdReq ThreadId deriving (Show, Eq)
+newtype NewLockId = NewLockIdReq ThreadId deriving (Show, Eq)
 numbered 9 [t| NewLockId |]
 instance Mrgable NewLockId where nl1 `mrg` _nl2 = nl1
 instance Request NewLockId where
@@ -68,7 +68,7 @@ handleGetLock reqs = get >>= \s ->
 	bool (Just (singleton $ OccGetLock l ti) <$ modify (`lockIt` l)) (pure Nothing) $ s `isLocked` l
 	where GetLockReq l ti _ = extract reqs
 
-data Unlock = UnlockReq LockId deriving Show
+newtype Unlock = UnlockReq LockId deriving Show
 numbered 9 [t| Unlock |]
 instance Mrgable Unlock where ul1 `mrg` _ul2 = ul1
 instance Request Unlock where data Occurred Unlock = OccUnlock
@@ -85,7 +85,7 @@ withLock :: (
 	((GetThreadId :- GetLock :- 'Nil) :+: es') ~ es',
 	Firstable (GetThreadId :- GetLock :- 'Nil) es',
 	Expandable (GetThreadId :- GetLock :- 'Nil) es',
-	((Singleton Unlock) :+: es') ~ es',
+	(Singleton Unlock :+: es') ~ es',
 	Firstable (Singleton Unlock) es',
 	Expandable (Singleton Unlock) es' ) =>
 	LockId -> React es a -> React es' a

@@ -235,7 +235,7 @@ infixl 7 `indexBy`
 indexBy :: (Firstable es es', Adjustable es (es :+: es')) =>
 	Sig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either r (Either a r, r'))
 l `indexBy` Sig r = waitFor (res $ l `until_` r) >>= \case
-	(Sig (Done l'), r') -> (either Left  Right) <$> l' `iindexBy'` Sig r'
+	(Sig (Done l'), r') -> l' `iindexBy'` Sig r'
 	(Sig l', Done (_ :| r')) -> Sig l' `indexBy` r'
 	(Sig c@(Await _ _), Done (End r'')) -> waitFor (adjust c) >>= \case
 		a :| _ -> pure $ Right (Left a, r'')
@@ -274,7 +274,7 @@ iparList :: (
 	Mergeable es' es' es',
 	Firstable es' es
 	) => Sig es (ISig es' a r) r' -> ISig es' [a] ()
-iparList l = rl ([] :| hold) l where
+iparList = rl ([] :| hold) where
 	rl t (Sig es) = do
 		(t', es') <- t `iuntil` es
 		case es' of

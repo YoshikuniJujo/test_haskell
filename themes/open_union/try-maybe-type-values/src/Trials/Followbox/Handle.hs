@@ -1,6 +1,5 @@
-{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 

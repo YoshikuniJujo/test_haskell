@@ -1,6 +1,6 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
-{-# LANGUAGE DataKinds, KindSignatures, TypeOperators, ConstraintKinds #-}
+{-# LANGUAGE DataKinds, TypeOperators, ConstraintKinds #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts, AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -11,6 +11,7 @@ module MonadicFrp.React.Internal (
 	Handle, Handle', HandleSt, HandleSt'
 	) where
 
+import qualified Control.Arrow as A
 import Data.Kind
 
 import Data.Or
@@ -31,7 +32,7 @@ data React (es :: Set Type) a
 
 instance Functor (React es) where
 	f `fmap` Done x = Done $ f x
-	f `fmap` Await reqs k = Await reqs \oc ti -> (\(x, ti') -> (f x, ti')) <$> k oc ti
+	f `fmap` Await reqs k = Await reqs \oc ti -> A.first f <$> k oc ti
 	_ `fmap` Never = Never
 
 instance Applicative (React es) where

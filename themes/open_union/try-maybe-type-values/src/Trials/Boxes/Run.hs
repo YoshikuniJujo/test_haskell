@@ -1,4 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trials.Boxes.Run (runBoxes) where
@@ -26,6 +25,5 @@ withInterpretSig fn op s = do
 		exposureMask, buttonPressMask,
 		buttonReleaseMask, pointerMotionMask ]
 	print	=<< (interpretSt InitMode (handleBoxes 0.05 f) (liftIO . op f) s
-			`runStateT`)
-		=<< systemToTAITime <$> getSystemTime
+			`runStateT`) . systemToTAITime =<< getSystemTime
 	closeField f

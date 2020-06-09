@@ -71,7 +71,7 @@ import Trials.Followbox.TypeSynonym (Uri, FontName, FontSize, ErrorMessage)
 -- STORE AND LOAD JSON OBJECT LIST
 ---------------------------------------------------------------------------
 
-data StoreJsons = StoreJsons [Object] deriving Show
+newtype StoreJsons = StoreJsons [Object] deriving Show
 numbered 9 [t| StoreJsons |]
 instance Mrgable StoreJsons where os1 `mrg` _os2 = os1
 instance Request StoreJsons where
@@ -97,7 +97,7 @@ loadJsons = await LoadJsonsReq \(OccLoadJsons os) -> os
 
 -- HTTP GET
 
-data HttpGet = HttpGetReq Uri deriving (Show, Eq, Ord)
+newtype HttpGet = HttpGetReq Uri deriving (Show, Eq, Ord)
 numbered 9 [t| HttpGet |]
 instance Request HttpGet where
 	data Occurred HttpGet = OccHttpGet Uri [Header] LBS.ByteString
@@ -137,7 +137,7 @@ getTimeZone = await GetTimeZone \(OccGetTimeZone tz) -> tz
 -- ACTION - BROWSE
 ---------------------------------------------------------------------------
 
-data Browse = Browse Uri deriving (Show, Eq, Ord)
+newtype Browse = Browse Uri deriving (Show, Eq, Ord)
 numbered 9 [t| Browse |]
 instance Request Browse where data Occurred Browse = OccBrowse deriving Show
 

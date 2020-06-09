@@ -24,8 +24,12 @@ data Counter = CountUp | GetCount deriving (Show, Eq, Ord)
 numbered 9 [t| Counter |]
 instance Request Counter where data Occurred Counter = OccCounter deriving Show
 
+{-# ANN countUp "HLInt: ignore Use const" #-}
+
 countUp :: React (Singleton Counter) ()
 countUp = await CountUp \_ -> ()
+
+{-# ANN getCount "HLint: ignore Use const" #-}
 
 getCount :: React (Singleton Counter) ()
 getCount = await GetCount \_ -> ()

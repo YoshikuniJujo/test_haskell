@@ -24,11 +24,13 @@ import MonadicFrp.Handle (Handle', merge)
 
 -- STORE RANDOM GEN
 
-data StoreRandomGen = StoreRandomGenReq StdGen deriving Show
+newtype StoreRandomGen = StoreRandomGenReq StdGen deriving Show
 numbered 9 [t| StoreRandomGen |]
 instance Mrgable StoreRandomGen where gl `mrg` _gr = gl
 instance Request StoreRandomGen where
 	data Occurred StoreRandomGen = OccStoreRandomGen
+
+{-# ANN storeRandomGen "HLint: ignore Use const" #-}
 
 storeRandomGen :: StdGen -> React (Singleton StoreRandomGen) ()
 storeRandomGen g = await (StoreRandomGenReq g) \_ -> ()
@@ -78,4 +80,4 @@ handleStoreRandomGen reqs =
 handleLoadRandomGen :: (RandomState s, Monad m) =>
 	Handle' (StateT s m) (Singleton LoadRandomGen)
 handleLoadRandomGen _reqs =
-	Just . singleton . OccLoadRandomGen <$> gets getRandomGen
+	gets $ Just . singleton . OccLoadRandomGen . getRandomGen

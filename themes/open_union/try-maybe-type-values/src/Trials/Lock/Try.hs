@@ -28,7 +28,7 @@ instance IntState Int where
 	getInt = id
 	putInt = flip const
 
-data StoreInt = StoreIntReq Int deriving (Show, Eq, Ord)
+newtype StoreInt = StoreIntReq Int deriving (Show, Eq, Ord)
 numbered 9 [t| StoreInt |]
 instance Request StoreInt where
 	data Occurred StoreInt = OccStoreInt
@@ -49,7 +49,7 @@ handleStoreInt reqs = Just (singleton OccStoreInt) <$ modify (`putInt` n)
 	where StoreIntReq n = extract reqs
 
 handleLoadInt :: (IntState s, Monad m) => Handle' (StateT s m) (Singleton LoadInt)
-handleLoadInt _reqs = Just . singleton . OccLoadInt <$> gets getInt
+handleLoadInt _reqs = gets $ Just . singleton . OccLoadInt . getInt
 
 handleStoreLoadInt :: Monad m => Handle (StateT Int m) (StoreInt :- LoadInt :- 'Nil)
 handleStoreLoadInt = retry $ handleStoreInt `merge` handleLoadInt
