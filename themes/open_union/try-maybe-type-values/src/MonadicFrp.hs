@@ -7,7 +7,7 @@
 module MonadicFrp (
 	-- * Types
 	Sig, ISig, React, EvReqs, EvOccs, Request(..),
-	Firstable, CollapsableOccurred,
+	Adjustable, Firstable, CollapsableOccurred,
 	-- * React
 	await, await', adjust, first,
 	-- * Conversion

@@ -128,22 +128,21 @@ ibreak _ is@(End _) = pure is
 
 infixr 7 `at`
 
-at :: Firstable es es' =>
-	Sig es a r -> React es' r' -> React (es :+: es') (Either (a, r') (Maybe r))
+at :: (Firstable es es', Adjustable es (es :+: es')) =>
+	Sig es a r -> React es' r' -> React (es :+: es') (Either r (a, r'))
 l `at` a = do
 	(l', r') <- res $ l `until_` a
-	pure $ case (l', r') of
-		(Sig (Done (h :| _)), Done r'') -> Left (h, r'')
-		(Sig (Done (End l'')), _) -> Right $ Just l''
-		(Sig (Await _ _), Done _) -> Right Nothing
+	case (l', r') of
+		(Sig (Done (h :| _)), Done r'') -> pure $ Right (h, r'')
+		(Sig (Done (End l'')), _) -> pure . Left $ l''
+		(Sig c@(Await _ _), Done r'') -> adjust c >>= \case
+			aa :| _ -> pure $ Right (aa, r'')
+			End rr -> pure $ Left rr
 		_ -> error "never occur"
 
 infixl 7 `break`, `until`
 
-until :: (
-	Firstable es es',
-	(es :+: (es :+: es')) ~ (es :+: es'),
-	Firstable es (es :+: es'), Expandable es (es :+: es')) =>
+until :: (Firstable es es', Adjustable es (es :+: es')) =>
 	Sig es a r -> React es' r' -> Sig (es :+: es') a (Either r (Either a r, r'))
 l `until` r = do
 	(l', r') <- l `until_` r
@@ -229,12 +228,14 @@ a `pairs` End b = pure (a, pure b)
 
 infixl 7 `indexBy`
 
-indexBy ::
-	Firstable es es' => Sig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either (a, r') (Maybe r))
+indexBy :: (Firstable es es', Adjustable es (es :+: es')) =>
+	Sig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either r (Either a r, r'))
 l `indexBy` Sig r = waitFor (res $ l `until_` r) >>= \case
-	(Sig (Done l'), r') -> (Just <$>) <$> l' `iindexBy'` Sig r'
+	(Sig (Done l'), r') -> (either Left  Right) <$> l' `iindexBy'` Sig r'
 	(Sig l', Done (_ :| r')) -> Sig l' `indexBy` r'
-	(Sig _, Done (End _)) -> pure $ Right Nothing
+	(Sig c@(Await _ _), Done (End r'')) -> waitFor (adjust c) >>= \case
+		a :| _ -> pure $ Right (Left a, r'')
+		End rr -> pure $ Right (Right rr, r'')
 	_ -> error "never occur"
 
 _iuntil' :: Firstable es es' => ISig es a r ->
@@ -244,11 +245,11 @@ l `_iuntil'` r = (<$> l `iuntil` r) \case
 	(End l', _) -> Right l'
 
 iindexBy' ::
-	Firstable es es' => ISig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either (a, r') r)
+	Firstable es es' => ISig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either r (Either a r, r'))
 l `iindexBy'` Sig r = waitFor (ires $ l `iuntil` r) >>= \case
 	(hl :| tl, Done (_ :| tr)) -> emit hl >> (hl :| tl) `iindexBy'` tr
-	(hl :| _, Done (End r')) -> pure $ Left (hl, r')
-	(End l', _) -> pure $ Right l'
+	(hl :| _, Done (End r')) -> pure $ Right (Left hl, r')
+	(End l', _) -> pure $ Left l'
 	_ -> error "never occur"
 
 spawn :: Sig es a r -> Sig es (ISig es a r) ()

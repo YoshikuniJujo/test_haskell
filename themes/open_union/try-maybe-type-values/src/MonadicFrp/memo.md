@@ -48,7 +48,13 @@ refactor API to expose
 
 ### base
 
-* [ ] MonadicFrp
+* [x] MonadicFrp
+	+ [x] Types
+	+ [x] React
+	+ [x] Conversion
+	+ [x] Transformation
+	+ [x] Repetition
+	+ [x] Parallel composition
 * [ ] MonadicFrp.Handle
 * [ ] MonadicFrp.Run
 

@@ -6,7 +6,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module MonadicFrp.React.Internal (
-	React(..), EvReqs, EvOccs, Request(..), Firstable, CollapsableOccurred,
+	React(..), EvReqs, EvOccs, Request(..), Adjustable, Firstable, CollapsableOccurred,
 	interpretReact, interpretReactSt, adjust, first_, first, done,
 	Handle, Handle', HandleSt, HandleSt'
 	) where
@@ -70,9 +70,7 @@ interpretReactSt' ti st p (Await r c) = do
 	pure (x', st'')
 interpretReactSt' _ _ _ Never = error "never occur"		-- <- really?
 
-adjust :: forall es es' a . (
-	(es :+: es') ~ es', Firstable es es', Expandable es es'
-	) => React es a -> React es' a
+adjust :: forall es es' a . Adjustable es es' => React es a -> React es' a
 adjust (Done r) = Done r
 adjust Never = Never
 adjust rct = (rct `first_` (Never :: React es' ())) >>= \case
@@ -121,6 +119,9 @@ done :: React es a -> Maybe a
 done (Done x) = Just x
 done (Await _ _) = Nothing
 done Never = Nothing
+
+type Adjustable es es' =
+	((es :+: es') ~ es', Firstable es es', Expandable es es')
 
 type Firstable es es' = (
 	(es :+: es') ~ (es' :+: es), Mergeable es es' (es :+: es'),

@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module MonadicFrp.React (
-	React, EvReqs, EvOccs, Request(..), Firstable, CollapsableOccurred,
+	React, EvReqs, EvOccs, Request(..), Adjustable, Firstable, CollapsableOccurred,
 	interpretReact, interpretReactSt, await, await', adjust, first,
 	Handle, Handle', HandleSt, HandleSt' ) where
 

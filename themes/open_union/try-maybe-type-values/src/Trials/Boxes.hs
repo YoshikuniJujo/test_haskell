@@ -58,7 +58,7 @@ wiggleRect (Rect lu rd) = (<$%> elapsed) \t -> let
 	Rect ((+ dx) `Arr.first` lu) ((+ dx) `Arr.first` rd)
 
 firstPoint :: ReactG (Maybe Point)
-firstPoint = either (Just . fst) (const Nothing) <$> mousePos `at` leftClick
+firstPoint = either (const Nothing) (Just . fst) <$> mousePos `at` leftClick
 
 completeRect :: Point -> SigG Rect (Maybe Rect)
 completeRect p1 =
