@@ -15,7 +15,6 @@ import Data.Time
 
 import MonadicFrp
 import MonadicFrp.Run
-import MonadicFrp.Handle
 
 data TryWait = TryWaitReq { getTryWaitReq :: DiffTime } deriving (Show, Eq, Ord)
 numbered 9 [t| TryWait |]

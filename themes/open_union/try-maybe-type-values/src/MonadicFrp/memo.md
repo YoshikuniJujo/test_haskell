@@ -58,7 +58,9 @@ refactor API to expose
 * [x] MonadicFrp.Handle
 	+ [x] Types
 	+ [x] Composer
-* [ ] MonadicFrp.Run
+* [x] MonadicFrp.Run
+	+ [x] Types
+	+ [x] Run
 
 ### library
 

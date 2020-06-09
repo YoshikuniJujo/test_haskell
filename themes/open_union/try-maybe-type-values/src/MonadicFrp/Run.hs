@@ -6,7 +6,7 @@
 
 module MonadicFrp.Run (
 	-- * Types
-	Sig, React, Handle, EvReqs, EvOccs,
+	Sig, React, Handle, HandleSt,
 	-- * Run
 	interpret, interpretSt, interpretReact, interpretReactSt
 	) where
