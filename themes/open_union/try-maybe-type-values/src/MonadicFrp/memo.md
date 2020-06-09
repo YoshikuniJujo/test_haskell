@@ -75,10 +75,8 @@ refactor API to expose
 refactor
 --------
 
-* [ ] MonadicFrp
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
+* [x] MonadicFrp
+	+ [x] imports
 * [ ] MonadicFrp.Sig
 	+ [ ] API
 	+ [ ] imports

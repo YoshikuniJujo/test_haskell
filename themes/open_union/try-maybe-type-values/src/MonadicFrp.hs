@@ -1,7 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE DataKinds, TypeOperators #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
 
 module MonadicFrp (
@@ -20,7 +16,12 @@ module MonadicFrp (
 	at, break, until, indexBy,
 	) where
 
-import Prelude hiding (map, repeat, scanl, break, until)
+import Prelude hiding (repeat, scanl, break, until)
 
-import MonadicFrp.Sig
-import MonadicFrp.React
+import MonadicFrp.Sig (
+	Sig, ISig, emit, waitFor, scanl, find, repeat, spawn, parList,
+	at, break,  until, indexBy )
+import MonadicFrp.React (
+	React, EvReqs, EvOccs, Request(..),
+	Adjustable, Firstable, CollapsableOccurred,
+	await, await', adjust, first )
