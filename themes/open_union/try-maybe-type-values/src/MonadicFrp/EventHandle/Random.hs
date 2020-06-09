@@ -5,10 +5,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module MonadicFrp.EventHandle.Random (
-	-- * TYPE
+	-- * Types
 	RandomEv, RandomState(..),
-	-- * FUNCTION
-	getRandom, getRandomR, handleRandom ) where
+	-- * React
+	getRandom, getRandomR,
+	-- * Handle
+	handleRandom ) where
 
 import Control.Monad.State (StateT, gets, modify)
 import Data.Type.Set (Set(Nil), Singleton, numbered, (:-))
