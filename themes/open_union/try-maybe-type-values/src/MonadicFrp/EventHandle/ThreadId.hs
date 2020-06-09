@@ -5,7 +5,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module MonadicFrp.EventHandle.ThreadId (
-	ThreadId, GetThreadId, Occurred(..), handleGetThreadId, getThreadId
+	-- * Types
+	ThreadId, GetThreadId, Occurred(..),
+	-- * React
+	getThreadId,
+	-- * Handle
+	handleGetThreadId
 	) where
 
 import Data.Type.Set (Singleton, numbered)

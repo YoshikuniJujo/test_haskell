@@ -94,11 +94,11 @@ data LockIntState = LockIntState {
 	intState :: Int } deriving Show
 
 instance LockState LockIntState where
+	getNextLockId = nextLockId
+	putNextLockId s l = s { nextLockId = l }
 	isLocked = flip elem . lockState
 	lockIt s l = s { lockState = l : lockState s }
 	unlockIt s l = s { lockState = delete l $ lockState s }
-	getLockId = nextLockId
-	putLockId s l = s { nextLockId = l }
 
 instance IntState LockIntState where
 	getInt = intState

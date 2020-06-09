@@ -73,7 +73,7 @@ initialFollowboxState g = FollowboxState {
 -- PUT AND GET EACH STATE
 
 instance LockState FollowboxState where
-	getLockId = fsNextLockId; putLockId s l = s { fsNextLockId = l }
+	getNextLockId = fsNextLockId; putNextLockId s l = s { fsNextLockId = l }
 	isLocked s l = l `elem` fsLockState s
 	lockIt s l = s { fsLockState = l : fsLockState s }
 	unlockIt s l = s { fsLockState = delete l $ fsLockState s }

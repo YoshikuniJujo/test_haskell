@@ -6,10 +6,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module MonadicFrp.EventHandle.Lock (
-	-- * TYPES
-	LockEv, NewLockId, GetLock, Unlock, LockState(..), LockId,
-	-- * FUNCTIONS
-	newLockId, withLock, handleLock ) where
+	-- * Types
+	LockEv, NewLockId, GetLock, Unlock, LockId, LockState(..),
+	-- * React
+	newLockId, withLock,
+	-- * Handle
+	handleLock ) where
 
 import Control.Monad.State
 import Data.Type.Set
@@ -23,11 +25,11 @@ data LockId = LockId Int deriving (Show, Eq)
 type RetryTime = Int
 
 class LockState s where
+	getNextLockId :: s -> Int
+	putNextLockId :: s -> Int -> s
 	isLocked :: s -> LockId -> Bool
 	lockIt :: s -> LockId -> s
 	unlockIt :: s -> LockId -> s
-	getLockId :: s -> Int
-	putLockId :: s -> Int -> s
 
 data NewLockId = NewLockIdReq ThreadId deriving (Show, Eq)
 numbered 9 [t| NewLockId |]
@@ -42,9 +44,9 @@ newLockId = adjust getThreadId >>= \ti ->
 
 handleNewLockId :: (LockState s, Monad m) => Handle' (StateT s m) (Singleton NewLockId)
 handleNewLockId reqs = get >>= \s -> do
-	let	i = getLockId s
+	let	i = getNextLockId s
 		l = LockId i
-	Just (singleton $ OccNewLockId l ti) <$ modify (`putLockId` (i + 1))
+	Just (singleton $ OccNewLockId l ti) <$ modify (`putNextLockId` (i + 1))
 	where NewLockIdReq ti = extract reqs
 
 data GetLock = GetLockReq LockId ThreadId RetryTime deriving (Show, Eq)
@@ -79,20 +81,17 @@ handleUnlock reqs = Just (singleton OccUnlock) <$ modify (`unlockIt` l)
 	where UnlockReq l = extract reqs
 
 withLock :: (
-	(es :+: es') ~ es',
+	(es :+: es') ~ es', Firstable es es', Expandable es es',
 	((GetThreadId :- GetLock :- 'Nil) :+: es') ~ es',
-	((Singleton Unlock) :+: es') ~ es',
-	Firstable es es',
 	Firstable (GetThreadId :- GetLock :- 'Nil) es',
-	Firstable (Singleton Unlock) es',
-	Expandable es es',
 	Expandable (GetThreadId :- GetLock :- 'Nil) es',
+	((Singleton Unlock) :+: es') ~ es',
+	Firstable (Singleton Unlock) es',
 	Expandable (Singleton Unlock) es' ) =>
 	LockId -> React es a -> React es' a
 withLock l act = adjust (getLock l 0) >> adjust act <* adjust (unlock l)
 
 type LockEv = NewLockId :- GetLock :- Unlock :- 'Nil
 
-handleLock :: (LockState s, Monad m) =>
-	Handle' (StateT s m) (NewLockId :- GetLock :- Unlock :- 'Nil)
+handleLock :: (LockState s, Monad m) => Handle' (StateT s m) LockEv
 handleLock = handleNewLockId `merge` handleGetLock `merge` handleUnlock

@@ -65,8 +65,8 @@ refactor API to expose
 ### library
 
 * [ ] MonadicFrp.EventHandle
-	+ [ ] Thread
-	+ [ ] Lock
+	+ [x] Thread
+	+ [x] Lock
 	+ [ ] Random
 * [ ] Mouse
 	+ [ ] MonadicFrp.Event.Mouse
