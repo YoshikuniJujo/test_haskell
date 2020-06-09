@@ -1,6 +1,6 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE DataKinds, TypeFamilies #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGe FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -15,19 +15,23 @@ module MonadicFrp.Sig (
 	scanl, find,
 	-- * Repetition
 	repeat, spawn, parList,
-	-- * Parallel composition
+	-- * Parallel Composition
 	at, break, until, indexBy
 	) where
 
-import Prelude hiding (map, repeat, scanl, break, until, tail)
+import Prelude hiding (map, repeat, scanl, break, until)
 
-import GHC.Stack
-import Control.Monad
-import Data.Type.Flip
+import GHC.Stack (HasCallStack)
+import Control.Monad (void)
+import Data.Type.Flip (Flip(..))
+import Data.Type.Set ((:+:), (:$:))
+import Data.UnionSet (Expandable, Collapsable, Mergeable)
 
-import MonadicFrp.React.Internal
-import Data.UnionSet
-import Data.Type.Set hiding (Merge)
+import MonadicFrp.React.Internal (
+	React(..), Occurred, Adjustable, Firstable, Handle, HandleSt,
+	adjust, first_, interpretReact, interpretReactSt )
+
+---------------------------------------------------------------------------
 
 infixr 5 :|
 newtype Sig es a r = Sig { unSig :: React es (ISig es a r) }
@@ -219,10 +223,10 @@ pairs :: Firstable es es' => ISig es a r ->
 	ISig es' b r' -> ISig (es :+: es') (a, b) (ISig es a r, ISig es' b r')
 End a `pairs` b = pure (pure a, b)
 a `pairs` End b = pure (a, pure b)
-(hl :| Sig tl) `pairs` (hr :| Sig tr) = (hl, hr) :| tail
+(hl :| Sig tl) `pairs` (hr :| Sig tr) = (hl, hr) :| tl'
 	where
-	tail = Sig $ cont <$> tl `first_` tr
-	cont (tl', tr') = lup hl tl' `pairs` lup hr tr'
+	tl' = Sig $ cont <$> tl `first_` tr
+	cont (tl'', tr') = lup hl tl'' `pairs` lup hr tr'
 	lup _ (Done l) = l
 	lup h t = h :| Sig t
 

@@ -29,8 +29,11 @@ TODO
 	+ Maybe r を r にする
 * [x] untilを(すこし)リファクタリング
 * [x] Followboxのリファクタリング
-* [ ] Trials.NewRandomで「状態」をSigのなかであつかう仕組みを試す
+* [ ] hlintによるリファクタリング
+* [x] Trials.NewRandomで「状態」をSigのなかであつかう仕組みを試す
 * [ ] MonadicFrp以下のリファクタリング
+* [ ] Data.Type.Setのリファクタリング
+* [ ] Data.UnionSetのリファクタリング
 * [ ] Trials.Lockのリファクタリングなど
 * [ ] Reactにだけではなく、Sigにもadjust的なものを定義することを検討
 * [ ] Handleで「ひとつのループのなかに、別のモジュール由来のものを入れられる」ような仕組みを作成する

@@ -78,8 +78,8 @@ refactor
 * [x] MonadicFrp
 	+ [x] imports
 * [ ] MonadicFrp.Sig
-	+ [ ] API
-	+ [ ] imports
+	+ [x] API
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] MonadicFrp.React
