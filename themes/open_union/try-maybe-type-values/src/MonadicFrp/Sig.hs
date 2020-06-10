@@ -23,7 +23,7 @@ import Prelude hiding (map, repeat, scanl, break, until)
 
 import GHC.Stack (HasCallStack)
 import Control.Monad (void)
-import Data.Type.Flip (Flip(..))
+import Data.Type.Flip (Flip(..), (<$%>), (<*%>))
 import Data.Type.Set ((:+:), (:$:))
 import Data.UnionSet (Expandable, Collapsable, Mergeable)
 
@@ -41,7 +41,6 @@ import MonadicFrp.React.Internal (
 -- * TRANSFORMATION
 -- * REPETITION
 -- * PARALLEL COMPOSITION
--- * HOLD, PAIRS AND IMAP
 
 ---------------------------------------------------------------------------
 -- TYPE SIG AND ISIG
@@ -50,6 +49,9 @@ import MonadicFrp.React.Internal (
 infixr 5 :|
 newtype Sig es a r = Sig { unSig :: React es (ISig es a r) }
 data ISig es a r = End r | a :| Sig es a r
+
+hold :: Sig es a r
+hold = waitFor Never
 
 -- MONAD
 
@@ -86,7 +88,7 @@ instance Functor (Flip (Sig es) r) where
 	fmap f = Flip . map f . unflip
 
 map :: (a -> b) -> Sig es a r -> Sig es b r
-f `map` Sig l = Sig $ (f `imap`) <$> l
+f `map` Sig l = Sig $ (f <$%>) <$> l
 
 instance (
 	(es :+: es) ~ es, Firstable es es,
@@ -116,7 +118,7 @@ mf `app` mx = do
 		Sig (es :+: es') b (ISig es (a -> b) r, ISig es' a r')
 l <^> r = do
 	(l', r') <- waitFor $ bothStart l r
-	emitAll $ uncurry ($) `imap` pairs l' r'
+	emitAll $ uncurry ($) <$%> pairs l' r'
 
 bothStart :: (
 	HasCallStack,
@@ -142,8 +144,41 @@ instance Functor (Flip (ISig es) r) where
 	fmap f = Flip . imap f . unflip
 
 imap :: (a -> b) -> ISig es a r -> ISig es b r
-f `imap` (h :| t) = f h :| (f `map` t)
+f `imap` (h :| t) = f h :| (f <$%> t)
 _ `imap` (End x) = pure x
+
+instance ((es :+: es) ~ es, Firstable es es, Semigroup r) =>
+	Applicative (Flip (ISig es) r) where
+	pure = Flip . ialways
+	mf <*> mx = Flip $ unflip mf `iapp` unflip mx
+
+ialways :: a -> ISig es a r
+ialways = (:| hold)
+
+iapp :: ((es :+: es) ~ es, Firstable es es, Semigroup r) =>
+	ISig es (a -> b) r -> ISig es a r -> ISig es b r
+mf `iapp` mx = do
+	(l, r) <- uncurry ($) <$%> mf `pairs` mx
+	case (l, r) of
+		(End x, End y) -> pure $ x <> y
+		(End x, _ :| _) -> pure x
+		(_ :| _, End y) -> pure y
+		(_ :| _, _ :| _) -> error "never occur"
+
+pairs :: Firstable es es' => ISig es a r ->
+	ISig es' b r' -> ISig (es :+: es') (a, b) (ISig es a r, ISig es' b r')
+End a `pairs` b = pure (pure a, b)
+a `pairs` End b = pure (a, pure b)
+(hl :| Sig tl) `pairs` (hr :| Sig tr) = (hl, hr) :| tl'
+	where
+	tl' = Sig $ cont <$> tl `first_` tr
+	cont (tl'', tr') = lup hl tl'' `pairs` lup hr tr'
+	lup _ (Done l) = l
+	lup h t = h :| Sig t
+
+pairs' :: ((es :+: es) ~ es, Firstable es es, Semigroup r)  => ISig es a r ->
+	ISig es b r -> ISig es (a, b) r
+l `pairs'` r = (,) <$%> l <*%> r
 
 ---------------------------------------------------------------------------
 -- INTERPRET
@@ -248,8 +283,8 @@ iparList = rl ([] :| hold) where
 cons :: ((es :+: es) ~ es, Firstable es es) =>
 	ISig es a r -> ISig es [a] r' -> ISig es [a] ()
 cons h t = () <$ do
-	(h', t') <- uncurry (:) `imap` pairs h t
-	void $ (: []) `imap` h'
+	(h', t') <- uncurry (:) <$%> pairs h t
+	void $ (: []) <$%> h'
 	void t'
 
 ---------------------------------------------------------------------------
@@ -337,21 +372,3 @@ l `iindexBy'` Sig r = waitFor (ires $ l `iuntil` r) >>= \case
 	(hl :| _, Done (End r')) -> pure $ Right (Left hl, r')
 	(End l', _) -> pure $ Left l'
 	_ -> error "never occur"
-
----------------------------------------------------------------------------
--- HOLD, PAIRS AND IMAP
----------------------------------------------------------------------------
-
-hold :: Sig es a r
-hold = waitFor Never
-
-pairs :: Firstable es es' => ISig es a r ->
-	ISig es' b r' -> ISig (es :+: es') (a, b) (ISig es a r, ISig es' b r')
-End a `pairs` b = pure (pure a, b)
-a `pairs` End b = pure (a, pure b)
-(hl :| Sig tl) `pairs` (hr :| Sig tr) = (hl, hr) :| tl'
-	where
-	tl' = Sig $ cont <$> tl `first_` tr
-	cont (tl'', tr') = lup hl tl'' `pairs` lup hr tr'
-	lup _ (Done l) = l
-	lup h t = h :| Sig t
