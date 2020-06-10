@@ -33,9 +33,25 @@ import MonadicFrp.React.Internal (
 
 ---------------------------------------------------------------------------
 
+-- * TYPE SIG AND ISIG
+--	+ MONAD
+--	+ FLIP APPLICATIVE
+-- * INTERPRET
+-- * CONVERSION
+-- * TRANSFORMATION
+-- * REPETITION
+-- * PARALLEL COMPOSITION
+-- * HOLD, PAIRS AND IMAP
+
+---------------------------------------------------------------------------
+-- TYPE SIG AND ISIG
+---------------------------------------------------------------------------
+
 infixr 5 :|
 newtype Sig es a r = Sig { unSig :: React es (ISig es a r) }
 data ISig es a r = End r | a :| Sig es a r
+
+-- MONAD
 
 instance Functor (Sig es a) where
 	f `fmap` Sig s = Sig $ (f <$>) <$> s
@@ -64,11 +80,79 @@ instance Monad (ISig es a) where
 	End r >>= f = f r
 	(h :| t) >>= f = h :| (t >>= Sig . pure . f)
 
+-- FLIP APPLICATIVE
+
+instance Functor (Flip (Sig es) r) where
+	fmap f = Flip . map f . unflip
+
+map :: (a -> b) -> Sig es a r -> Sig es b r
+f `map` Sig l = Sig $ (f `imap`) <$> l
+
+instance (
+	(es :+: es) ~ es, Firstable es es,
+	Semigroup r ) => Applicative (Flip (Sig es) r) where
+	pure = Flip . always
+	mf <*> mx = Flip $ unflip mf `app` unflip mx
+
+always :: a -> Sig es a r
+always a = emit a >> hold
+
+app :: (
+	(es :+: es) ~ es,
+	Mergeable es es es,
+	Expandable es es,
+	Collapsable (Occurred :$: es) (Occurred :$: es),
+	Semigroup r ) => Sig es (a -> b) r -> Sig es a r -> Sig es b r
+mf `app` mx = do
+	(l, r) <- mf <^> mx
+	case (l, r) of
+		(End x, End y) -> pure $ x <> y
+		(End x, _ :| _) -> pure x
+		(_ :| _, End y) -> pure y
+		(_ :| _, _ :| _) -> error "never occur"
+
+(<^>) :: (Firstable es es', Firstable es' es) =>
+	Sig es (a -> b) r -> Sig es' a r' ->
+		Sig (es :+: es') b (ISig es (a -> b) r, ISig es' a r')
+l <^> r = do
+	(l', r') <- waitFor $ bothStart l r
+	emitAll $ uncurry ($) `imap` pairs l' r'
+
+bothStart :: (
+	HasCallStack,
+	(es :+: es') ~ (es' :+: es),
+	Expandable es (es :+: es'),
+	Expandable es' (es :+: es'),
+	Collapsable (Occurred :$: (es :+: es')) (Occurred :$: es),
+	Collapsable (Occurred :$: (es :+: es')) (Occurred :$: es'),
+	Mergeable es es' (es :+: es'), Mergeable es' es (es :+: es')
+	) => Sig es a r -> Sig es' b r' -> React (es :+: es') (ISig es a r, ISig es' b r')
+l `bothStart` Sig r = do
+	(Sig l', r') <- res $ l `until_` r
+	(Sig r'', l'') <- res $ Sig r' `until_` l'
+	pure (done' l'', done' r'')
+
+done' :: HasCallStack => React es a -> a
+-- done' = fromJust . done
+done' (Done x) = x
+done' (Await _ _) = error "Await _ _"
+done' Never = error "Never"
+
+instance Functor (Flip (ISig es) r) where
+	fmap f = Flip . imap f . unflip
+
+imap :: (a -> b) -> ISig es a r -> ISig es b r
+f `imap` (h :| t) = f h :| (f `map` t)
+_ `imap` (End x) = pure x
+
+---------------------------------------------------------------------------
+-- INTERPRET
+---------------------------------------------------------------------------
+
 interpret :: Monad m => Handle m es -> (a -> m ()) -> Sig es a r -> m r
 interpret p d = interpretSig' where
 	interpretSig' (Sig s) = interpretReact p s >>= interpretISig
 	interpretISig (End x) = pure x
---	interpretISig (h :| Never) = d h >> interpretSig' 
 	interpretISig (h :| t) = d h >> interpretSig' t
 
 interpretSt :: Monad m => st -> HandleSt st m es -> (a -> m ()) -> Sig es a r -> m r
@@ -79,25 +163,22 @@ interpretSt st0 p d = interpretSig st0 where
 	interpretISig _st (End x) = pure x
 	interpretISig st (h :| t) = d h >> interpretSig st t
 
-emitAll :: ISig es a b -> Sig es a b
-emitAll = Sig . pure
+---------------------------------------------------------------------------
+-- CONVERSION
+---------------------------------------------------------------------------
 
 emit :: a -> Sig es a ()
 emit a = emitAll $ a :| pure ()
 
+emitAll :: ISig es a b -> Sig es a b
+emitAll = Sig . pure
+
 waitFor :: React es r -> Sig es a r
 waitFor = Sig . (pure <$>)
 
-repeat_, repeat :: React es a -> Sig es a ()
-repeat_ x = xs where xs = Sig $ (:| xs) <$> x
-repeat x = waitFor x >>= emit >> repeat x
-
-map :: (a -> b) -> Sig es a r -> Sig es b r
-f `map` Sig l = Sig $ (f `imap`) <$> l
-
-imap :: (a -> b) -> ISig es a r -> ISig es b r
-f `imap` (h :| t) = f h :| (f `map` t)
-_ `imap` (End x) = pure x
+---------------------------------------------------------------------------
+-- TRANSFORMATION
+---------------------------------------------------------------------------
 
 scanl :: (b -> a -> b) -> b -> Sig es a r -> Sig es b r
 scanl f i = emitAll . iscanl f i
@@ -130,134 +211,16 @@ ibreak p is@(h :| t)
 	| otherwise = h :| brk p t
 ibreak _ is@(End _) = pure is
 
-infixr 7 `at`
+---------------------------------------------------------------------------
+-- REPETITION
+---------------------------------------------------------------------------
 
-at :: (Firstable es es', Adjustable es (es :+: es')) =>
-	Sig es a r -> React es' r' -> React (es :+: es') (Either r (a, r'))
-l `at` a = do
-	(l', r') <- res $ l `until_` a
-	case (l', r') of
-		(Sig (Done (h :| _)), Done r'') -> pure $ Right (h, r'')
-		(Sig (Done (End l'')), _) -> pure . Left $ l''
-		(Sig c@(Await _ _), Done r'') -> adjust c >>= \case
-			aa :| _ -> pure $ Right (aa, r'')
-			End rr -> pure $ Left rr
-		_ -> error "never occur"
-
-infixl 7 `break`, `until`
-
-until :: (Firstable es es', Adjustable es (es :+: es')) =>
-	Sig es a r -> React es' r' -> Sig (es :+: es') a (Either r (Either a r, r'))
-l `until` r = do
-	(l', r') <- l `until_` r
-	case (l', r') of
-		(Sig (Done (l'' :| _)), Done r'') -> pure $ Right (Left l'', r'')
-		(Sig (Done (End l'')), Done r'') -> pure $ Right (Right l'', r'')
-		(Sig (Done (End l'')), _) -> pure $ Left l''
-		(Sig c@(Await _ _), Done r'') -> waitFor (adjust c) >>= \case
-			a :| _ -> pure $ Right (Left a, r'')
-			End rr -> pure $ Right (Right rr, r'')
-		_ -> error "never occur"
-
-break :: Firstable es es' =>
-	Sig es a r -> React es' r' -> Sig (es :+: es') a (Either r (Maybe (Either a r), r'))
-l `break` r = do
-	(l', r') <- l `until_` r
-	case (l', r') of
-		(Sig (Done (l'' :| _)), Done r'') -> pure $ Right (Just $ Left l'', r'')
-		(Sig (Done (End l'')), Done r'') -> pure $ Right (Just $ Right l'', r'')
-		(Sig (Done (End l'')), _) -> pure $ Left l''
-		(Sig (Await _ _), Done r'') -> pure $ Right (Nothing, r'')
-		_ -> error "never occur"
-
-until_ :: Firstable es es' => Sig es a r ->
-	React es' r' -> Sig (es :+: es') a (Sig es a r, React es' r')
-Sig l `until_` a = waitFor (l `first_` a) >>= un where
-	un (Done l', a') = do
-		(l'', a'') <- emitAll $ l' `iuntil` a'
-		pure (emitAll l'', a'')
-	un (l', a') = pure (Sig l', a')
-
-iuntil :: (HasCallStack, Firstable es es') => ISig es a r ->
-	React es' r' -> ISig (es :+: es') a (ISig es a r, React es' r')
-End l `iuntil` a = pure (pure l, a)
-(h :| Sig t) `iuntil` a = h :| Sig (cont <$> t `first_` a) where
-	cont (Done l', a') = l' `iuntil` a'
-	cont (t', Done a') = pure (h :| Sig t', pure a')
-	cont _ = error "never occur"
-
-hold :: Sig es a r
-hold = waitFor Never
-
-always :: a -> Sig es a r
-always a = emit a >> hold
-
-(<^>) :: (Firstable es es', Firstable es' es) =>
-	Sig es (a -> b) r -> Sig es' a r' ->
-		Sig (es :+: es') b (ISig es (a -> b) r, ISig es' a r')
-l <^> r = do
-	(l', r') <- waitFor $ bothStart l r
-	emitAll $ uncurry ($) `imap` pairs l' r'
-
-bothStart :: (
-	HasCallStack,
-	(es :+: es') ~ (es' :+: es),
-	Expandable es (es :+: es'),
-	Expandable es' (es :+: es'),
-	Collapsable (Occurred :$: (es :+: es')) (Occurred :$: es),
-	Collapsable (Occurred :$: (es :+: es')) (Occurred :$: es'),
-	Mergeable es es' (es :+: es'), Mergeable es' es (es :+: es')
-	) => Sig es a r -> Sig es' b r' -> React (es :+: es') (ISig es a r, ISig es' b r')
-l `bothStart` Sig r = do
-	(Sig l', r') <- res $ l `until_` r
-	(Sig r'', l'') <- res $ Sig r' `until_` l'
-	pure (done' l'', done' r'')
-
-done' :: HasCallStack => React es a -> a
--- done' = fromJust . done
-done' (Done x) = x
-done' (Await _ _) = error "Await _ _"
-done' Never = error "Never"
-
-pairs :: Firstable es es' => ISig es a r ->
-	ISig es' b r' -> ISig (es :+: es') (a, b) (ISig es a r, ISig es' b r')
-End a `pairs` b = pure (pure a, b)
-a `pairs` End b = pure (a, pure b)
-(hl :| Sig tl) `pairs` (hr :| Sig tr) = (hl, hr) :| tl'
-	where
-	tl' = Sig $ cont <$> tl `first_` tr
-	cont (tl'', tr') = lup hl tl'' `pairs` lup hr tr'
-	lup _ (Done l) = l
-	lup h t = h :| Sig t
-
-infixl 7 `indexBy`
-
-indexBy :: (Firstable es es', Adjustable es (es :+: es')) =>
-	Sig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either r (Either a r, r'))
-l `indexBy` Sig r = waitFor (res $ l `until_` r) >>= \case
-	(Sig (Done l'), r') -> l' `iindexBy'` Sig r'
-	(Sig l', Done (_ :| r')) -> Sig l' `indexBy` r'
-	(Sig c@(Await _ _), Done (End r'')) -> waitFor (adjust c) >>= \case
-		a :| _ -> pure $ Right (Left a, r'')
-		End rr -> pure $ Right (Right rr, r'')
-	_ -> error "never occur"
-
-_iuntil' :: Firstable es es' => ISig es a r ->
-	React es' r' -> ISig (es :+: es') a (Either a r)
-l `_iuntil'` r = (<$> l `iuntil` r) \case
-	(h :| _, _) -> Left h
-	(End l', _) -> Right l'
-
-iindexBy' ::
-	Firstable es es' => ISig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either r (Either a r, r'))
-l `iindexBy'` Sig r = waitFor (ires $ l `iuntil` r) >>= \case
-	(hl :| tl, Done (_ :| tr)) -> emit hl >> (hl :| tl) `iindexBy'` tr
-	(hl :| _, Done (End r')) -> pure $ Right (Left hl, r')
-	(End l', _) -> pure $ Left l'
-	_ -> error "never occur"
+repeat :: React es a -> Sig es a ()
+-- repeat_ x = xs where xs = Sig $ (:| xs) <$> x
+repeat x = waitFor x >>= emit >> repeat x
 
 spawn :: Sig es a r -> Sig es (ISig es a r) ()
-spawn (Sig l) = repeat_ l
+spawn (Sig l) = repeat l
 
 parList :: ((es :+: es) ~ es, Firstable es es) => Sig es (ISig es a r) r' -> Sig es [a] ()
 parList = parList_
@@ -289,25 +252,106 @@ cons h t = () <$ do
 	void $ (: []) `imap` h'
 	void t'
 
-instance Functor (Flip (Sig es) r) where
-	fmap f = Flip . map f . unflip
+---------------------------------------------------------------------------
+-- PARALLEL COMPOSITION
+---------------------------------------------------------------------------
 
-instance (
-	(es :+: es) ~ es, Firstable es es,
-	Semigroup r ) => Applicative (Flip (Sig es) r) where
-	pure = Flip . always
-	mf <*> mx = Flip $ unflip mf `app` unflip mx
+infixr 7 `at`
 
-app :: (
-	(es :+: es) ~ es,
-	Mergeable es es es,
-	Expandable es es,
-	Collapsable (Occurred :$: es) (Occurred :$: es),
-	Semigroup r ) => Sig es (a -> b) r -> Sig es a r -> Sig es b r
-mf `app` mx = do
-	(l, r) <- mf <^> mx
-	case (l, r) of
-		(End x, End y) -> pure $ x <> y
-		(End x, _ :| _) -> pure x
-		(_ :| _, End y) -> pure y
-		(_ :| _, _ :| _) -> error "never occur"
+at :: (Firstable es es', Adjustable es (es :+: es')) =>
+	Sig es a r -> React es' r' -> React (es :+: es') (Either r (a, r'))
+l `at` a = do
+	(l', r') <- res $ l `until_` a
+	case (l', r') of
+		(Sig (Done (h :| _)), Done r'') -> pure $ Right (h, r'')
+		(Sig (Done (End l'')), _) -> pure . Left $ l''
+		(Sig c@(Await _ _), Done r'') -> adjust c >>= \case
+			aa :| _ -> pure $ Right (aa, r'')
+			End rr -> pure $ Left rr
+		_ -> error "never occur"
+
+infixl 7 `break`, `until`
+
+break :: Firstable es es' =>
+	Sig es a r -> React es' r' -> Sig (es :+: es') a (Either r (Maybe (Either a r), r'))
+l `break` r = do
+	(l', r') <- l `until_` r
+	case (l', r') of
+		(Sig (Done (l'' :| _)), Done r'') -> pure $ Right (Just $ Left l'', r'')
+		(Sig (Done (End l'')), Done r'') -> pure $ Right (Just $ Right l'', r'')
+		(Sig (Done (End l'')), _) -> pure $ Left l''
+		(Sig (Await _ _), Done r'') -> pure $ Right (Nothing, r'')
+		_ -> error "never occur"
+
+until :: (Firstable es es', Adjustable es (es :+: es')) =>
+	Sig es a r -> React es' r' -> Sig (es :+: es') a (Either r (Either a r, r'))
+l `until` r = do
+	(l', r') <- l `until_` r
+	case (l', r') of
+		(Sig (Done (l'' :| _)), Done r'') -> pure $ Right (Left l'', r'')
+		(Sig (Done (End l'')), Done r'') -> pure $ Right (Right l'', r'')
+		(Sig (Done (End l'')), _) -> pure $ Left l''
+		(Sig c@(Await _ _), Done r'') -> waitFor (adjust c) >>= \case
+			a :| _ -> pure $ Right (Left a, r'')
+			End rr -> pure $ Right (Right rr, r'')
+		_ -> error "never occur"
+
+until_ :: Firstable es es' => Sig es a r ->
+	React es' r' -> Sig (es :+: es') a (Sig es a r, React es' r')
+Sig l `until_` a = waitFor (l `first_` a) >>= un where
+	un (Done l', a') = do
+		(l'', a'') <- emitAll $ l' `iuntil` a'
+		pure (emitAll l'', a'')
+	un (l', a') = pure (Sig l', a')
+
+iuntil :: (HasCallStack, Firstable es es') => ISig es a r ->
+	React es' r' -> ISig (es :+: es') a (ISig es a r, React es' r')
+End l `iuntil` a = pure (pure l, a)
+(h :| Sig t) `iuntil` a = h :| Sig (cont <$> t `first_` a) where
+	cont (Done l', a') = l' `iuntil` a'
+	cont (t', Done a') = pure (h :| Sig t', pure a')
+	cont _ = error "never occur"
+
+infixl 7 `indexBy`
+
+indexBy :: (Firstable es es', Adjustable es (es :+: es')) =>
+	Sig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either r (Either a r, r'))
+l `indexBy` Sig r = waitFor (res $ l `until_` r) >>= \case
+	(Sig (Done l'), r') -> l' `iindexBy'` Sig r'
+	(Sig l', Done (_ :| r')) -> Sig l' `indexBy` r'
+	(Sig c@(Await _ _), Done (End r'')) -> waitFor (adjust c) >>= \case
+		a :| _ -> pure $ Right (Left a, r'')
+		End rr -> pure $ Right (Right rr, r'')
+	_ -> error "never occur"
+
+_iuntil' :: Firstable es es' => ISig es a r ->
+	React es' r' -> ISig (es :+: es') a (Either a r)
+l `_iuntil'` r = (<$> l `iuntil` r) \case
+	(h :| _, _) -> Left h
+	(End l', _) -> Right l'
+
+iindexBy' ::
+	Firstable es es' => ISig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either r (Either a r, r'))
+l `iindexBy'` Sig r = waitFor (ires $ l `iuntil` r) >>= \case
+	(hl :| tl, Done (_ :| tr)) -> emit hl >> (hl :| tl) `iindexBy'` tr
+	(hl :| _, Done (End r')) -> pure $ Right (Left hl, r')
+	(End l', _) -> pure $ Left l'
+	_ -> error "never occur"
+
+---------------------------------------------------------------------------
+-- HOLD, PAIRS AND IMAP
+---------------------------------------------------------------------------
+
+hold :: Sig es a r
+hold = waitFor Never
+
+pairs :: Firstable es es' => ISig es a r ->
+	ISig es' b r' -> ISig (es :+: es') (a, b) (ISig es a r, ISig es' b r')
+End a `pairs` b = pure (pure a, b)
+a `pairs` End b = pure (a, pure b)
+(hl :| Sig tl) `pairs` (hr :| Sig tr) = (hl, hr) :| tl'
+	where
+	tl' = Sig $ cont <$> tl `first_` tr
+	cont (tl'', tr') = lup hl tl'' `pairs` lup hr tr'
+	lup _ (Done l) = l
+	lup h t = h :| Sig t

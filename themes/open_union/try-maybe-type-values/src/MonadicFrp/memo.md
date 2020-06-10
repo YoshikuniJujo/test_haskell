@@ -81,6 +81,9 @@ refactor
 	+ [x] API
 	+ [x] imports
 	+ [ ] structure
+		- [x] 1st
+		- [ ] instance Applicative (Flip (ISig es) r)
+		- [ ] 2nd
 	+ [ ] body
 * [ ] MonadicFrp.React
 	+ [ ] API
