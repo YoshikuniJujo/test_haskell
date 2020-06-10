@@ -22,6 +22,7 @@ module MonadicFrp.Sig (
 import Prelude hiding (map, repeat, scanl, break, until)
 
 import GHC.Stack (HasCallStack)
+import Control.Arrow ((***))
 import Control.Monad (void)
 import Data.Type.Flip (Flip(..), (<$%>), (<*%>))
 import Data.Type.Set ((:+:), (:$:))
@@ -52,50 +53,45 @@ infixr 5 :|
 newtype Sig es a r = Sig { unSig :: React es (ISig es a r) }
 data ISig es a r = End r | a :| Sig es a r
 
+isig :: (r -> b) -> (a -> Sig es a r -> b) -> ISig es a r -> b
+isig e c = \case End x -> e x; h :| t -> c h t
+
 -- HOLD AND PAIRS
 
 hold :: Sig es a r
 hold = waitFor Never
 
-pairs :: Firstable es es' => ISig es a r ->
-	ISig es' b r' -> ISig (es :+: es') (a, b) (ISig es a r, ISig es' b r')
-End a `pairs` b = pure (pure a, b)
-a `pairs` End b = pure (a, pure b)
-(hl :| Sig tl) `pairs` (hr :| Sig tr) = (hl, hr) :| tl'
+pairs :: Firstable es es' => ISig es a r -> ISig es' b r' ->
+	ISig (es :+: es') (a, b) (ISig es a r, ISig es' b r')
+End l `pairs` r = pure (pure l, r)
+l `pairs` End r = pure (l, pure r)
+(hl :| Sig tl) `pairs` (hr :| Sig tr) = (hl, hr) :| t'
 	where
-	tl' = Sig $ cont <$> tl `first_` tr
-	cont (tl'', tr') = lup hl tl'' `pairs` lup hr tr'
-	lup _ (Done l) = l
-	lup h t = h :| Sig t
+	t' = Sig $ uncurry pairs . ((hl ?:|) *** (hr ?:|)) <$> tl `first_` tr
+	(?:|) h = \case Done t -> t; t -> h :| Sig t
 
 -- MONAD
 
-instance Functor (Sig es a) where
-	f `fmap` Sig s = Sig $ (f <$>) <$> s
+instance Functor (Sig es a) where f `fmap` Sig s = Sig $ (f <$>) <$> s
 
 instance Applicative (Sig es a) where
-	pure = Sig . pure . pure
-	Sig lf <*> mx = Sig $ lf >>= ib where
-		ib (End f) = unSig $ f <$> mx
-		ib (h :| t) = pure $ h :| (t >>= (<$> mx))
+	pure = emitAll . pure
+	Sig rf <*> mx = Sig $ isig
+		(unSig . (<$> mx)) (\h -> pure . (h :|) . ((<$> mx) =<<)) =<< rf
 
 instance Monad (Sig es a) where
-	Sig l >>= f = Sig $ l >>= ib where
-		ib (End x) = unSig $ f x
-		ib (h :| t) = pure $ h :| (t >>= f)
+	Sig r >>= f =
+		Sig $ isig (unSig . f) (\h -> pure . (h :|) . (f =<<)) =<< r
 
 instance Functor (ISig es a) where
-	f `fmap` End x = End $ f x
-	f `fmap` (h :| t) = h :| (f <$> t)
+	fmap f = isig (End . f) (\h -> (h :|) . (f <$>))
 
 instance Applicative (ISig es a) where
 	pure = End
-	End f <*> mx = f <$> mx
-	(h :| tf) <*> mx = h :| (tf >>= Sig . pure . (<$> mx))
+	mf <*> mx = isig (<$> mx) (\h -> (h :|) . (emitAll . (<$> mx) =<<)) mf
 
 instance Monad (ISig es a) where
-	End r >>= f = f r
-	(h :| t) >>= f = h :| (t >>= Sig . pure . f)
+	m >>= f = isig f (\h -> (h :|) . (emitAll . f =<<)) m
 
 -- FLIP APPLICATIVE
 

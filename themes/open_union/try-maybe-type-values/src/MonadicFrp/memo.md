@@ -85,6 +85,17 @@ refactor
 		- [x] instance Applicative (Flip (ISig es) r)
 		- [x] 2nd
 	+ [ ] body
+		- [ ] TYPE SIG AND ISIG
+			* [x] general
+			* [x] HOLD AND PAIRS
+			* [x] MONAD
+			* [ ] FLIP APPLICATIVE
+		- [ ] INTERPRET
+		- [ ] COMBINATOR
+			* [ ] CONVERSION
+			* [ ] TRANSFORMATION
+			* [ ] REPETITION
+			* [ ] PARALLEL COMPOSITION
 * [ ] MonadicFrp.React
 	+ [ ] API
 	+ [ ] imports
