@@ -80,11 +80,10 @@ refactor
 * [ ] MonadicFrp.Sig
 	+ [x] API
 	+ [x] imports
-	+ [ ] structure
+	+ [x] structure
 		- [x] 1st
 		- [x] instance Applicative (Flip (ISig es) r)
-		- [ ] correct parList to use Flip Applicative ISig
-		- [ ] 2nd
+		- [x] 2nd
 	+ [ ] body
 * [ ] MonadicFrp.React
 	+ [ ] API

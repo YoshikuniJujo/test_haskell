@@ -34,13 +34,15 @@ import MonadicFrp.React.Internal (
 ---------------------------------------------------------------------------
 
 -- * TYPE SIG AND ISIG
+--	+ HOLD AND PAIRS
 --	+ MONAD
 --	+ FLIP APPLICATIVE
 -- * INTERPRET
--- * CONVERSION
--- * TRANSFORMATION
--- * REPETITION
--- * PARALLEL COMPOSITION
+-- * COMBINATOR
+--	+ CONVERSION
+--	+ TRANSFORMATION
+--	+ REPETITION
+--	+ PARALLEL COMPOSITION
 
 ---------------------------------------------------------------------------
 -- TYPE SIG AND ISIG
@@ -50,8 +52,21 @@ infixr 5 :|
 newtype Sig es a r = Sig { unSig :: React es (ISig es a r) }
 data ISig es a r = End r | a :| Sig es a r
 
+-- HOLD AND PAIRS
+
 hold :: Sig es a r
 hold = waitFor Never
+
+pairs :: Firstable es es' => ISig es a r ->
+	ISig es' b r' -> ISig (es :+: es') (a, b) (ISig es a r, ISig es' b r')
+End a `pairs` b = pure (pure a, b)
+a `pairs` End b = pure (a, pure b)
+(hl :| Sig tl) `pairs` (hr :| Sig tr) = (hl, hr) :| tl'
+	where
+	tl' = Sig $ cont <$> tl `first_` tr
+	cont (tl'', tr') = lup hl tl'' `pairs` lup hr tr'
+	lup _ (Done l) = l
+	lup h t = h :| Sig t
 
 -- MONAD
 
@@ -106,19 +121,8 @@ app :: (
 	Collapsable (Occurred :$: es) (Occurred :$: es),
 	Semigroup r ) => Sig es (a -> b) r -> Sig es a r -> Sig es b r
 mf `app` mx = do
-	(l, r) <- mf <^> mx
-	case (l, r) of
-		(End x, End y) -> pure $ x <> y
-		(End x, _ :| _) -> pure x
-		(_ :| _, End y) -> pure y
-		(_ :| _, _ :| _) -> error "never occur"
-
-(<^>) :: (Firstable es es', Firstable es' es) =>
-	Sig es (a -> b) r -> Sig es' a r' ->
-		Sig (es :+: es') b (ISig es (a -> b) r, ISig es' a r')
-l <^> r = do
-	(l', r') <- waitFor $ bothStart l r
-	emitAll $ uncurry ($) <$%> pairs l' r'
+	(mf', mx') <- waitFor $ bothStart mf mx
+	emitAll $ mf' <*%> mx'
 
 bothStart :: (
 	HasCallStack,
@@ -165,21 +169,6 @@ mf `iapp` mx = do
 		(_ :| _, End y) -> pure y
 		(_ :| _, _ :| _) -> error "never occur"
 
-pairs :: Firstable es es' => ISig es a r ->
-	ISig es' b r' -> ISig (es :+: es') (a, b) (ISig es a r, ISig es' b r')
-End a `pairs` b = pure (pure a, b)
-a `pairs` End b = pure (a, pure b)
-(hl :| Sig tl) `pairs` (hr :| Sig tr) = (hl, hr) :| tl'
-	where
-	tl' = Sig $ cont <$> tl `first_` tr
-	cont (tl'', tr') = lup hl tl'' `pairs` lup hr tr'
-	lup _ (Done l) = l
-	lup h t = h :| Sig t
-
-pairs' :: ((es :+: es) ~ es, Firstable es es, Semigroup r)  => ISig es a r ->
-	ISig es b r -> ISig es (a, b) r
-l `pairs'` r = (,) <$%> l <*%> r
-
 ---------------------------------------------------------------------------
 -- INTERPRET
 ---------------------------------------------------------------------------
@@ -199,8 +188,10 @@ interpretSt st0 p d = interpretSig st0 where
 	interpretISig st (h :| t) = d h >> interpretSig st t
 
 ---------------------------------------------------------------------------
--- CONVERSION
+-- COMBINATOR
 ---------------------------------------------------------------------------
+
+-- CONVERSION
 
 emit :: a -> Sig es a ()
 emit a = emitAll $ a :| pure ()
@@ -210,21 +201,6 @@ emitAll = Sig . pure
 
 waitFor :: React es r -> Sig es a r
 waitFor = Sig . (pure <$>)
-
----------------------------------------------------------------------------
--- TRANSFORMATION
----------------------------------------------------------------------------
-
-scanl :: (b -> a -> b) -> b -> Sig es a r -> Sig es b r
-scanl f i = emitAll . iscanl f i
-
-iscanl :: (b -> a -> b) -> b -> Sig es a r -> ISig es b r
-iscanl f i (Sig l) = i :| (waitFor l >>= lsl) where
-	lsl (h :| t) = scanl f (f i h) t
-	lsl (End x) = pure x
-
-find :: (a -> Bool) -> Sig es a r -> React es (Either a r)
-find p l = icur <$> res (brk p l)
 
 icur :: ISig es a b -> Either a b
 icur (h :| _) = Left h
@@ -237,18 +213,29 @@ ires :: ISig es a b -> React es b
 ires (_ :| t) = res t
 ires (End a) = pure a
 
-brk :: (a -> Bool) -> Sig es a r -> Sig es a (ISig es a r)
-brk p (Sig l) = Sig $ ibreak p <$> l
+-- TRANSFORMATION
 
-ibreak :: (a -> Bool) -> ISig es a r -> ISig es a (ISig es a r)
-ibreak p is@(h :| t)
+scanl :: (b -> a -> b) -> b -> Sig es a r -> Sig es b r
+scanl f i = emitAll . iscanl f i
+
+iscanl :: (b -> a -> b) -> b -> Sig es a r -> ISig es b r
+iscanl f i (Sig l) = i :| (waitFor l >>= lsl) where
+	lsl (h :| t) = scanl f (f i h) t
+	lsl (End x) = pure x
+
+find :: (a -> Bool) -> Sig es a r -> React es (Either a r)
+find p l = icur <$> res (brk p l)
+
+brk :: (a -> Bool) -> Sig es a r -> Sig es a (ISig es a r)
+brk p (Sig l) = Sig $ ibrk p <$> l
+
+ibrk :: (a -> Bool) -> ISig es a r -> ISig es a (ISig es a r)
+ibrk p is@(h :| t)
 	| p h = pure is
 	| otherwise = h :| brk p t
-ibreak _ is@(End _) = pure is
+ibrk _ is@(End _) = pure is
 
----------------------------------------------------------------------------
 -- REPETITION
----------------------------------------------------------------------------
 
 repeat :: React es a -> Sig es a ()
 -- repeat_ x = xs where xs = Sig $ (:| xs) <$> x
@@ -258,13 +245,7 @@ spawn :: Sig es a r -> Sig es (ISig es a r) ()
 spawn (Sig l) = repeat l
 
 parList :: ((es :+: es) ~ es, Firstable es es) => Sig es (ISig es a r) r' -> Sig es [a] ()
-parList = parList_
-
-parList_ :: (
-	(es :+: es') ~ es', (es' :+: es') ~ es',
-	Firstable es' es, Firstable es' es') =>
-	Sig es (ISig es' a r) r' -> Sig es' [a] ()
-parList_ x = emitAll $ iparList x
+parList x = emitAll $ iparList x
 
 iparList :: (
 	(es' :+: es') ~ es',
@@ -283,13 +264,11 @@ iparList = rl ([] :| hold) where
 cons :: ((es :+: es) ~ es, Firstable es es) =>
 	ISig es a r -> ISig es [a] r' -> ISig es [a] ()
 cons h t = () <$ do
-	(h', t') <- uncurry (:) <$%> pairs h t
+	(h', t') <- uncurry (:) <$%> h `pairs` t
 	void $ (: []) <$%> h'
 	void t'
 
----------------------------------------------------------------------------
 -- PARALLEL COMPOSITION
----------------------------------------------------------------------------
 
 infixr 7 `at`
 
@@ -352,23 +331,17 @@ infixl 7 `indexBy`
 indexBy :: (Firstable es es', Adjustable es (es :+: es')) =>
 	Sig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either r (Either a r, r'))
 l `indexBy` Sig r = waitFor (res $ l `until_` r) >>= \case
-	(Sig (Done l'), r') -> l' `iindexBy'` Sig r'
+	(Sig (Done l'), r') -> l' `iindexBy` Sig r'
 	(Sig l', Done (_ :| r')) -> Sig l' `indexBy` r'
 	(Sig c@(Await _ _), Done (End r'')) -> waitFor (adjust c) >>= \case
 		a :| _ -> pure $ Right (Left a, r'')
 		End rr -> pure $ Right (Right rr, r'')
 	_ -> error "never occur"
 
-_iuntil' :: Firstable es es' => ISig es a r ->
-	React es' r' -> ISig (es :+: es') a (Either a r)
-l `_iuntil'` r = (<$> l `iuntil` r) \case
-	(h :| _, _) -> Left h
-	(End l', _) -> Right l'
-
-iindexBy' ::
+iindexBy ::
 	Firstable es es' => ISig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either r (Either a r, r'))
-l `iindexBy'` Sig r = waitFor (ires $ l `iuntil` r) >>= \case
-	(hl :| tl, Done (_ :| tr)) -> emit hl >> (hl :| tl) `iindexBy'` tr
+l `iindexBy` Sig r = waitFor (ires $ l `iuntil` r) >>= \case
+	(hl :| tl, Done (_ :| tr)) -> emit hl >> (hl :| tl) `iindexBy` tr
 	(hl :| _, Done (End r')) -> pure $ Right (Left hl, r')
 	(End l', _) -> pure $ Left l'
 	_ -> error "never occur"
