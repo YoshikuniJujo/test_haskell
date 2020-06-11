@@ -25,11 +25,11 @@ import GHC.Stack (HasCallStack)
 import Control.Arrow ((***))
 import Control.Monad (void)
 import Data.Type.Flip (Flip(..), (<$%>), (<*%>))
-import Data.Type.Set ((:+:), (:$:))
-import Data.UnionSet (Expandable, Collapsable, Mergeable)
+import Data.Type.Set ((:+:))
+import Data.UnionSet (Mergeable)
 
 import MonadicFrp.React.Internal (
-	React(..), Occurred, Adjustable, Firstable, Handle, HandleSt,
+	React(..), Adjustable, Firstable, Handle, HandleSt,
 	adjust, first_, interpretReact, interpretReactSt )
 
 ---------------------------------------------------------------------------
@@ -38,6 +38,8 @@ import MonadicFrp.React.Internal (
 --	+ HOLD AND PAIRS
 --	+ MONAD
 --	+ FLIP APPLICATIVE
+--		- Sig
+--		- ISig
 -- * INTERPRET
 -- * COMBINATOR
 --	+ CONVERSION
@@ -95,57 +97,41 @@ instance Monad (ISig es a) where
 
 -- FLIP APPLICATIVE
 
+-- Sig
+
 instance Functor (Flip (Sig es) r) where
-	fmap f = Flip . map f . unflip
+	fmap f = Flip . Sig . ((f <$%>) <$>) . unSig . unflip
 
-map :: (a -> b) -> Sig es a r -> Sig es b r
-f `map` Sig l = Sig $ (f <$%>) <$> l
-
-instance (
-	(es :+: es) ~ es, Firstable es es,
-	Semigroup r ) => Applicative (Flip (Sig es) r) where
-	pure = Flip . always
+instance ((es :+: es) ~ es, Firstable es es, Semigroup r) =>
+	Applicative (Flip (Sig es) r) where
+	pure = Flip . (>> hold) . emit
 	mf <*> mx = Flip $ unflip mf `app` unflip mx
 
-always :: a -> Sig es a r
-always a = emit a >> hold
-
-app :: (
-	(es :+: es) ~ es,
-	Mergeable es es es,
-	Expandable es es,
-	Collapsable (Occurred :$: es) (Occurred :$: es),
-	Semigroup r ) => Sig es (a -> b) r -> Sig es a r -> Sig es b r
-mf `app` mx = do
-	(mf', mx') <- waitFor $ bothStart mf mx
-	emitAll $ mf' <*%> mx'
+app :: (HasCallStack, (es :+: es) ~ es, Firstable es es, Semigroup r) =>
+	Sig es (a -> b) r -> Sig es a r -> Sig es b r
+mf `app` mx = emitAll . uncurry (<*%>) =<< waitFor (mf `bothStart` mx)
 
 bothStart :: (
-	HasCallStack,
-	(es :+: es') ~ (es' :+: es),
-	Expandable es (es :+: es'),
-	Expandable es' (es :+: es'),
-	Collapsable (Occurred :$: (es :+: es')) (Occurred :$: es),
-	Collapsable (Occurred :$: (es :+: es')) (Occurred :$: es'),
-	Mergeable es es' (es :+: es'), Mergeable es' es (es :+: es')
-	) => Sig es a r -> Sig es' b r' -> React (es :+: es') (ISig es a r, ISig es' b r')
+	HasCallStack, Firstable es es',
+	Mergeable es es' (es :+: es'), Mergeable es' es (es :+: es') ) =>
+	Sig es a r -> Sig es' b r' ->
+	React (es :+: es') (ISig es a r, ISig es' b r')
 l `bothStart` Sig r = do
 	(Sig l', r') <- res $ l `until_` r
 	(Sig r'', l'') <- res $ Sig r' `until_` l'
-	pure (done' l'', done' r'')
+	pure (ex l'', ex r'')
+	where
+	ex :: HasCallStack => React es a -> a
+	ex = \case
+		Done x -> x
+		Await _ _ -> error "Await _ _"; Never -> error "Never"
 
-done' :: HasCallStack => React es a -> a
--- done' = fromJust . done
-done' (Done x) = x
-done' (Await _ _) = error "Await _ _"
-done' Never = error "Never"
+-- ISig
 
-instance Functor (Flip (ISig es) r) where
-	fmap f = Flip . imap f . unflip
+instance Functor (Flip (ISig es) r) where fmap f = Flip . imap f . unflip
 
 imap :: (a -> b) -> ISig es a r -> ISig es b r
-f `imap` (h :| t) = f h :| (f <$%> t)
-_ `imap` (End x) = pure x
+imap f = isig pure (\h t -> f h :| (f <$%> t))
 
 instance ((es :+: es) ~ es, Firstable es es, Semigroup r) =>
 	Applicative (Flip (ISig es) r) where
