@@ -19,7 +19,7 @@ module MonadicFrp.Sig (
 	at, break, until, indexBy
 	) where
 
-import Prelude hiding (map, repeat, scanl, break, until)
+import Prelude hiding (repeat, scanl, break, until)
 
 import GHC.Stack (HasCallStack)
 import Control.Arrow ((***))
@@ -128,28 +128,19 @@ l `bothStart` Sig r = do
 
 -- ISig
 
-instance Functor (Flip (ISig es) r) where fmap f = Flip . imap f . unflip
-
-imap :: (a -> b) -> ISig es a r -> ISig es b r
-imap f = isig pure (\h t -> f h :| (f <$%> t))
+instance Functor (Flip (ISig es) r) where
+	fmap f = Flip . isig pure (\h -> (f h :|) . (f <$%>)) . unflip
 
 instance ((es :+: es) ~ es, Firstable es es, Semigroup r) =>
 	Applicative (Flip (ISig es) r) where
-	pure = Flip . ialways
+	pure = Flip . (:| hold)
 	mf <*> mx = Flip $ unflip mf `iapp` unflip mx
-
-ialways :: a -> ISig es a r
-ialways = (:| hold)
 
 iapp :: ((es :+: es) ~ es, Firstable es es, Semigroup r) =>
 	ISig es (a -> b) r -> ISig es a r -> ISig es b r
-mf `iapp` mx = do
-	(l, r) <- uncurry ($) <$%> mf `pairs` mx
-	case (l, r) of
-		(End x, End y) -> pure $ x <> y
-		(End x, _ :| _) -> pure x
-		(_ :| _, End y) -> pure y
-		(_ :| _, _ :| _) -> error "never occur"
+mf `iapp` mx = (<$> (uncurry ($) <$%> mf `pairs` mx)) \case
+	(End x, End y) -> x <> y; (End x, _ :| _) -> x; (_ :| _, End y) -> y
+	(_ :| _, _ :| _) -> error "never occur"
 
 ---------------------------------------------------------------------------
 -- INTERPRET

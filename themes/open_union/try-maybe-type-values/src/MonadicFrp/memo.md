@@ -85,11 +85,11 @@ refactor
 		- [x] instance Applicative (Flip (ISig es) r)
 		- [x] 2nd
 	+ [ ] body
-		- [ ] TYPE SIG AND ISIG
+		- [x] TYPE SIG AND ISIG
 			* [x] general
 			* [x] HOLD AND PAIRS
 			* [x] MONAD
-			* [ ] FLIP APPLICATIVE
+			* [x] FLIP APPLICATIVE
 		- [ ] INTERPRET
 		- [ ] COMBINATOR
 			* [ ] CONVERSION
