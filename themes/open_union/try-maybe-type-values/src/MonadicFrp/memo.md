@@ -91,6 +91,8 @@ refactor
 			* [x] MONAD
 			* [x] FLIP APPLICATIVE
 		- [ ] INTERPRET
+			* [x] 1st
+			* [ ] 2nd
 		- [ ] COMBINATOR
 			* [ ] CONVERSION
 			* [ ] TRANSFORMATION

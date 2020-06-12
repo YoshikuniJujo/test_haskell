@@ -147,18 +147,15 @@ mf `iapp` mx = (<$> (uncurry ($) <$%> mf `pairs` mx)) \case
 ---------------------------------------------------------------------------
 
 interpret :: Monad m => Handle m es -> (a -> m ()) -> Sig es a r -> m r
-interpret p d = interpretSig' where
-	interpretSig' (Sig s) = interpretReact p s >>= interpretISig
-	interpretISig (End x) = pure x
-	interpretISig (h :| t) = d h >> interpretSig' t
+interpret p d = go where
+	go (Sig s) = interpretReact p s >>= isig pure \h -> (d h >>) . go
 
-interpretSt :: Monad m => st -> HandleSt st m es -> (a -> m ()) -> Sig es a r -> m r
-interpretSt st0 p d = interpretSig st0 where
-	interpretSig st (Sig s) = do
+interpretSt ::
+	Monad m => st -> HandleSt st m es -> (a -> m ()) -> Sig es a r -> m r
+interpretSt st0 p d = go st0 where
+	go st (Sig s) = do
 		(x, st') <- interpretReactSt st p s
-		interpretISig st' x
-	interpretISig _st (End x) = pure x
-	interpretISig st (h :| t) = d h >> interpretSig st t
+		isig pure (\h t -> d h >> go st' t) x
 
 ---------------------------------------------------------------------------
 -- COMBINATOR
