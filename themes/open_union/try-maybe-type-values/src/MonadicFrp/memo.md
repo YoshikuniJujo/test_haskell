@@ -90,9 +90,9 @@ refactor
 			* [x] HOLD AND PAIRS
 			* [x] MONAD
 			* [x] FLIP APPLICATIVE
-		- [ ] INTERPRET
+		- [x] INTERPRET
 			* [x] 1st
-			* [ ] 2nd
+			* [x] 2nd
 		- [ ] COMBINATOR
 			* [ ] CONVERSION
 			* [ ] TRANSFORMATION
