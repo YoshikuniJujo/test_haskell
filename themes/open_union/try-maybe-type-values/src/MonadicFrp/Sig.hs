@@ -22,7 +22,7 @@ module MonadicFrp.Sig (
 import Prelude hiding (repeat, scanl, break, until)
 
 import GHC.Stack (HasCallStack)
-import Control.Arrow ((***))
+import Control.Arrow ((***), first)
 import Control.Monad (void)
 import Data.Type.Flip (Flip(..), (<$%>), (<*%>))
 import Data.Type.Set ((:+:))
@@ -35,7 +35,7 @@ import MonadicFrp.React.Internal (
 ---------------------------------------------------------------------------
 
 -- * TYPE SIG AND ISIG
---	+ HOLD AND PAIRS
+--	+ HOLD, PAIRS AND PAUSE
 --	+ MONAD
 --	+ FLIP APPLICATIVE
 --		- Sig
@@ -58,19 +58,38 @@ data ISig es a r = End r | a :| Sig es a r
 isig :: (r -> b) -> (a -> Sig es a r -> b) -> ISig es a r -> b
 isig e c = \case End x -> e x; h :| t -> c h t
 
--- HOLD AND PAIRS
+-- HOLD, PAIRS AND PAUSE
 
 hold :: Sig es a r
 hold = waitFor Never
 
-pairs :: Firstable es es' => ISig es a r -> ISig es' b r' ->
+ipairs :: Firstable es es' => ISig es a r -> ISig es' b r' ->
 	ISig (es :+: es') (a, b) (ISig es a r, ISig es' b r')
-End l `pairs` r = pure (pure l, r)
-l `pairs` End r = pure (l, pure r)
-(hl :| Sig tl) `pairs` (hr :| Sig tr) = (hl, hr) :| t'
+End l `ipairs` r = pure (pure l, r)
+l `ipairs` End r = pure (l, pure r)
+(hl :| Sig tl) `ipairs` (hr :| Sig tr) = (hl, hr) :| t'
 	where
-	t' = Sig $ uncurry pairs . ((hl ?:|) *** (hr ?:|)) <$> tl `first_` tr
+	t' = Sig $ uncurry ipairs . ((hl ?:|) *** (hr ?:|)) <$> tl `first_` tr
 	(?:|) h = \case Done t -> t; t -> h :| Sig t
+
+pause :: Firstable es es' => Sig es a r -> React es' r' ->
+	Sig (es :+: es') a (Sig es a r, React es' r')
+Sig l `pause` r = waitFor (l `first_` r) >>= \case
+	(Done l', r') -> (emitAll `first`) <$> emitAll (l' `ipause` r')
+	(l', r'@(Done _)) -> pure (Sig l', r')
+	(Await _ _, Await _ _) -> error "never occur"
+	(Never, Await _ _) -> error "never occur"
+	(_, Never) -> error "never occur"
+
+ipause :: (HasCallStack, Firstable es es') => ISig es a r -> React es' r' ->
+	ISig (es :+: es') a (ISig es a r, React es' r')
+l@(End _) `ipause` r = pure (l, r)
+(h :| t) `ipause` r = (h :|) $ (<$> (t `pause` r)) \case
+	(Sig (Done t'), r') -> (t', r')
+	(t', r'@(Done _)) -> (h :| t', r')
+	(Sig (Await _ _), Await _ _) -> error "never occur"
+	(Sig Never, Await _ _) -> error "never occur"
+	(_, Never) -> error "never occur"
 
 -- MONAD
 
@@ -117,8 +136,8 @@ bothStart :: (
 	Sig es a r -> Sig es' b r' ->
 	React (es :+: es') (ISig es a r, ISig es' b r')
 l `bothStart` Sig r = do
-	(Sig l', r') <- res $ l `until_` r
-	(Sig r'', l'') <- res $ Sig r' `until_` l'
+	(Sig l', r') <- res $ l `pause` r
+	(Sig r'', l'') <- res $ Sig r' `pause` l'
 	pure (ex l'', ex r'')
 	where
 	ex :: HasCallStack => React es a -> a
@@ -138,7 +157,7 @@ instance ((es :+: es) ~ es, Firstable es es, Semigroup r) =>
 
 iapp :: ((es :+: es) ~ es, Firstable es es, Semigroup r) =>
 	ISig es (a -> b) r -> ISig es a r -> ISig es b r
-mf `iapp` mx = (<$> (uncurry ($) <$%> mf `pairs` mx)) \case
+mf `iapp` mx = (<$> (uncurry ($) <$%> mf `ipairs` mx)) \case
 	(End x, End y) -> x <> y; (End x, _ :| _) -> x; (_ :| _, End y) -> y
 	(_ :| _, _ :| _) -> error "never occur"
 
@@ -183,12 +202,10 @@ ires = isig pure (const res)
 -- TRANSFORMATION
 
 scanl :: (b -> a -> b) -> b -> Sig es a r -> Sig es b r
-scanl f i = emitAll . iscanl f i
+scanl op v = emitAll . iscanl op v
 
 iscanl :: (b -> a -> b) -> b -> Sig es a r -> ISig es b r
-iscanl f i (Sig l) = i :| (waitFor l >>= lsl) where
-	lsl (h :| t) = scanl f (f i h) t
-	lsl (End x) = pure x
+iscanl op v (Sig r) = v :| (isig pure (scanl op . (v `op`)) =<< waitFor r)
 
 find :: (a -> Bool) -> Sig es a r -> React es (Either a r)
 find p l = icur <$> res (brk p l)
@@ -222,7 +239,7 @@ iparList :: (
 	) => Sig es (ISig es' a r) r' -> ISig es' [a] ()
 iparList = rl ([] :| hold) where
 	rl t (Sig es) = do
-		(t', es') <- t `iuntil` es
+		(t', es') <- t `ipause` es
 		case es' of
 			Done (e'' :| es'') -> rl (cons e'' t') es''
 			Done (End _) -> pure ()
@@ -231,7 +248,7 @@ iparList = rl ([] :| hold) where
 cons :: ((es :+: es) ~ es, Firstable es es) =>
 	ISig es a r -> ISig es [a] r' -> ISig es [a] ()
 cons h t = () <$ do
-	(h', t') <- uncurry (:) <$%> h `pairs` t
+	(h', t') <- uncurry (:) <$%> h `ipairs` t
 	void $ (: []) <$%> h'
 	void t'
 
@@ -242,7 +259,7 @@ infixr 7 `at`
 at :: (Firstable es es', Adjustable es (es :+: es')) =>
 	Sig es a r -> React es' r' -> React (es :+: es') (Either r (a, r'))
 l `at` a = do
-	(l', r') <- res $ l `until_` a
+	(l', r') <- res $ l `pause` a
 	case (l', r') of
 		(Sig (Done (h :| _)), Done r'') -> pure $ Right (h, r'')
 		(Sig (Done (End l'')), _) -> pure . Left $ l''
@@ -256,7 +273,7 @@ infixl 7 `break`, `until`
 break :: Firstable es es' =>
 	Sig es a r -> React es' r' -> Sig (es :+: es') a (Either r (Maybe (Either a r), r'))
 l `break` r = do
-	(l', r') <- l `until_` r
+	(l', r') <- l `pause` r
 	case (l', r') of
 		(Sig (Done (l'' :| _)), Done r'') -> pure $ Right (Just $ Left l'', r'')
 		(Sig (Done (End l'')), Done r'') -> pure $ Right (Just $ Right l'', r'')
@@ -267,7 +284,7 @@ l `break` r = do
 until :: (Firstable es es', Adjustable es (es :+: es')) =>
 	Sig es a r -> React es' r' -> Sig (es :+: es') a (Either r (Either a r, r'))
 l `until` r = do
-	(l', r') <- l `until_` r
+	(l', r') <- l `pause` r
 	case (l', r') of
 		(Sig (Done (l'' :| _)), Done r'') -> pure $ Right (Left l'', r'')
 		(Sig (Done (End l'')), Done r'') -> pure $ Right (Right l'', r'')
@@ -277,27 +294,11 @@ l `until` r = do
 			End rr -> pure $ Right (Right rr, r'')
 		_ -> error "never occur"
 
-until_ :: Firstable es es' => Sig es a r ->
-	React es' r' -> Sig (es :+: es') a (Sig es a r, React es' r')
-Sig l `until_` a = waitFor (l `first_` a) >>= un where
-	un (Done l', a') = do
-		(l'', a'') <- emitAll $ l' `iuntil` a'
-		pure (emitAll l'', a'')
-	un (l', a') = pure (Sig l', a')
-
-iuntil :: (HasCallStack, Firstable es es') => ISig es a r ->
-	React es' r' -> ISig (es :+: es') a (ISig es a r, React es' r')
-End l `iuntil` a = pure (pure l, a)
-(h :| Sig t) `iuntil` a = h :| Sig (cont <$> t `first_` a) where
-	cont (Done l', a') = l' `iuntil` a'
-	cont (t', Done a') = pure (h :| Sig t', pure a')
-	cont _ = error "never occur"
-
 infixl 7 `indexBy`
 
 indexBy :: (Firstable es es', Adjustable es (es :+: es')) =>
 	Sig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either r (Either a r, r'))
-l `indexBy` Sig r = waitFor (res $ l `until_` r) >>= \case
+l `indexBy` Sig r = waitFor (res $ l `pause` r) >>= \case
 	(Sig (Done l'), r') -> l' `iindexBy` Sig r'
 	(Sig l', Done (_ :| r')) -> Sig l' `indexBy` r'
 	(Sig c@(Await _ _), Done (End r'')) -> waitFor (adjust c) >>= \case
@@ -307,7 +308,7 @@ l `indexBy` Sig r = waitFor (res $ l `until_` r) >>= \case
 
 iindexBy ::
 	Firstable es es' => ISig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either r (Either a r, r'))
-l `iindexBy` Sig r = waitFor (ires $ l `iuntil` r) >>= \case
+l `iindexBy` Sig r = waitFor (ires $ l `ipause` r) >>= \case
 	(hl :| tl, Done (_ :| tr)) -> emit hl >> (hl :| tl) `iindexBy` tr
 	(hl :| _, Done (End r')) -> pure $ Right (Left hl, r')
 	(End l', _) -> pure $ Left l'
