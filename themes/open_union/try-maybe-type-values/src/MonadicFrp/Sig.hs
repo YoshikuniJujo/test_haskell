@@ -65,12 +65,11 @@ hold = waitFor Never
 
 ipairs :: Firstable es es' => ISig es a r -> ISig es' b r' ->
 	ISig (es :+: es') (a, b) (ISig es a r, ISig es' b r')
-End l `ipairs` r = pure (pure l, r)
-l `ipairs` End r = pure (l, pure r)
-(hl :| Sig tl) `ipairs` (hr :| Sig tr) = (hl, hr) :| t'
-	where
-	t' = Sig $ uncurry ipairs . ((hl ?:|) *** (hr ?:|)) <$> tl `first_` tr
-	(?:|) h = \case Done t -> t; t -> h :| Sig t
+l@(End _) `ipairs` r = pure (l, r)
+l `ipairs` r@(End _) = pure (l, r)
+(hl :| Sig tl) `ipairs` (hr :| Sig tr) = ((hl, hr) :|) . Sig
+	$ uncurry ipairs . ((hl ?:|) *** (hr ?:|)) <$> tl `first_` tr
+	where (?:|) h = \case Done t -> t; t -> h :| Sig t
 
 pause :: Firstable es es' => Sig es a r -> React es' r' ->
 	Sig (es :+: es') a (Sig es a r, React es' r')

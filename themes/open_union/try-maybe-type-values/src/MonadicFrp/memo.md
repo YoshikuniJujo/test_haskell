@@ -87,7 +87,7 @@ refactor
 	+ [ ] body
 		- [x] TYPE SIG AND ISIG
 			* [x] general
-			* [x] HOLD AND PAIRS
+			* [ ] HOLD, PAIRS AND PAUSE
 			* [x] MONAD
 			* [x] FLIP APPLICATIVE
 		- [x] INTERPRET
