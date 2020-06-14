@@ -163,7 +163,7 @@ interpretSt st0 hdl vw = go st0 where
 -- CONVERSION
 
 emit :: a -> Sig es a ()
-emit a = emitAll $ a :| pure ()
+emit = emitAll . (:| pure ())
 
 emitAll :: ISig es a b -> Sig es a b
 emitAll = Sig . pure
@@ -172,15 +172,13 @@ waitFor :: React es r -> Sig es a r
 waitFor = Sig . (pure <$>)
 
 icur :: ISig es a b -> Either a b
-icur (h :| _) = Left h
-icur (End r) = Right r
+icur = isig Right (const . Left)
 
 res :: Sig es a b -> React es b
-res (Sig l) = ires =<< l
+res = (ires =<<) . unSig
 
 ires :: ISig es a b -> React es b
-ires (_ :| t) = res t
-ires (End a) = pure a
+ires = isig pure (const res)
 
 -- TRANSFORMATION
 

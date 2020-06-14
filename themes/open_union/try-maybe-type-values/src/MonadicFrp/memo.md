@@ -94,7 +94,7 @@ refactor
 			* [x] 1st
 			* [x] 2nd
 		- [ ] COMBINATOR
-			* [ ] CONVERSION
+			* [x] CONVERSION
 			* [ ] TRANSFORMATION
 			* [ ] REPETITION
 			* [ ] PARALLEL COMPOSITION
