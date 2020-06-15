@@ -96,7 +96,7 @@ refactor
 		- [ ] COMBINATOR
 			* [x] CONVERSION
 			* [x] TRANSFORMATION
-			* [ ] REPETITION
+			* [x] REPETITION
 			* [ ] PARALLEL COMPOSITION
 * [ ] MonadicFrp.React
 	+ [ ] API

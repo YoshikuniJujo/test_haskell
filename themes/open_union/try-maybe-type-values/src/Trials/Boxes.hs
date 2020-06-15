@@ -6,7 +6,7 @@
 
 module Trials.Boxes (boxes) where
 
-import Prelude hiding (repeat, cycle, scanl, until)
+import Prelude hiding (repeat, cycle, scanl, until, break)
 
 import Data.Type.Set ((:+:))
 import Data.Type.Flip ((<$%>), (<*%>))
@@ -22,7 +22,7 @@ import qualified Control.Arrow as Arr
 import MonadicFrp (
 	React, Firstable,
 	adjust, first, emit, waitFor, scanl, find, repeat, spawn, parList,
-	at, until, indexBy )
+	at, break, until, indexBy )
 import Trials.Boxes.View (Box(..), Rect(..), Color(..))
 import Trials.Boxes.Event (
 	SigG, ReactG, Point, sleep, deltaTime,
@@ -66,8 +66,8 @@ completeRect p1 =
 
 defineRect :: SigG Rect Rect
 defineRect = waitFor firstPoint >>= \case
-	Nothing -> error "never occur"
-	Just p1 -> fromMaybe (error "never occur") <$> completeRect p1
+	Nothing -> error "never occur 1"
+	Just p1 -> fromMaybe (error "never occur 2") <$> completeRect p1
 
 chooseBoxColor :: Rect -> SigG Box ()
 chooseBoxColor r = Box <$%> wiggleRect r <*%> cycleColor
@@ -83,4 +83,4 @@ box = (`Box` Red) <$%> defineRect >>= \r ->
 	chooseBoxColor r >> waitFor (drClickOn r)
 
 boxes :: SigG [Box] ()
-boxes = () <$ parList (spawn box) `until` deleteEvent
+boxes = () <$ parList (spawn box) `break` deleteEvent

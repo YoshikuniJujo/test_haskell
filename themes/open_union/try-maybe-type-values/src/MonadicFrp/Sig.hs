@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGe FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
@@ -23,7 +23,7 @@ import Prelude hiding (repeat, scanl, break, until)
 
 import GHC.Stack (HasCallStack)
 import Control.Arrow ((***), first)
-import Control.Monad (void)
+import Control.Monad (forever)
 import Data.Type.Flip (Flip(..), (<$%>), (<*%>))
 import Data.Type.Set ((:+:))
 import Data.UnionSet (Mergeable)
@@ -217,35 +217,28 @@ find p = (icur <$>) . res . brk
 -- REPETITION
 
 repeat :: React es a -> Sig es a ()
--- repeat_ x = xs where xs = Sig $ (:| xs) <$> x
-repeat x = waitFor x >>= emit >> repeat x
+repeat = forever . (emit =<<) . waitFor
 
 spawn :: Sig es a r -> Sig es (ISig es a r) ()
-spawn (Sig l) = repeat l
+spawn  = repeat . unSig
 
-parList :: ((es :+: es) ~ es, Firstable es es) => Sig es (ISig es a r) r' -> Sig es [a] ()
-parList x = emitAll $ iparList x
+parList :: ((es :+: es) ~ es, Firstable es es) =>
+	Sig es (ISig es a r) r' -> Sig es [a] ([r], r')
+parList (Sig r) = iparList =<< waitFor r
 
-iparList :: (
-	(es' :+: es') ~ es',
-	(es :+: es') ~ es',
-	Mergeable es' es' es',
-	Firstable es' es
-	) => Sig es (ISig es' a r) r' -> ISig es' [a] ()
-iparList = rl ([] :| hold) where
-	rl t (Sig es) = do
-		(t', es') <- t `ipause` es
-		case es' of
-			Done (e'' :| es'') -> rl (cons e'' t') es''
-			Done (End _) -> pure ()
-			_ -> error "never occur"
+iparList :: ((es :+: es) ~ es, Firstable es es) =>
+	ISig es (ISig es a r) r' -> Sig es [a] ([r], r')
+iparList = isig (pure . ([] ,)) $ go . ((: []) <$>) . ((: []) <$%>) where
+	go s (Sig r) = emitAll (s `ipause` r) >>= \case
+		(s', Done (h :| t)) -> go (uncurry (:) <$> h `cons` s') t
+		(s', Done (End y)) -> (, y) <$> emitAll s'
+		(End x, r') -> emit [] >> ((x ++) `first`) <$> parList (Sig r')
+		_ -> error "never occur"
 
 cons :: ((es :+: es) ~ es, Firstable es es) =>
-	ISig es a r -> ISig es [a] r' -> ISig es [a] ()
-cons h t = () <$ do
-	(h', t') <- uncurry (:) <$%> h `ipairs` t
-	void $ (: []) <$%> h'
-	void t'
+	ISig es a r -> ISig es [a] r' -> ISig es [a] (r, r')
+h `cons` t = uncurry (:) <$%> h `ipairs` t >>=
+	\(h', t') -> (,) <$> ((: []) <$%> h') <*> t'
 
 -- PARALLEL COMPOSITION
 
