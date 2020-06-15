@@ -207,16 +207,12 @@ iscanl :: (b -> a -> b) -> b -> Sig es a r -> ISig es b r
 iscanl op v (Sig r) = v :| (isig pure (scanl op . (v `op`)) =<< waitFor r)
 
 find :: (a -> Bool) -> Sig es a r -> React es (Either a r)
-find p l = icur <$> res (brk p l)
-
-brk :: (a -> Bool) -> Sig es a r -> Sig es a (ISig es a r)
-brk p (Sig l) = Sig $ ibrk p <$> l
-
-ibrk :: (a -> Bool) -> ISig es a r -> ISig es a (ISig es a r)
-ibrk p is@(h :| t)
-	| p h = pure is
-	| otherwise = h :| brk p t
-ibrk _ is@(End _) = pure is
+find p = (icur <$>) . res . brk
+	where
+	brk = Sig . (ibrk <$>) . unSig
+	ibrk = \case
+		is@(End _) -> pure is
+		is@(h :| t) | p h -> pure is | otherwise -> h :| brk t
 
 -- REPETITION
 

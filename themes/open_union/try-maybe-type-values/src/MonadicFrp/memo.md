@@ -87,7 +87,7 @@ refactor
 	+ [ ] body
 		- [x] TYPE SIG AND ISIG
 			* [x] general
-			* [ ] HOLD, PAIRS AND PAUSE
+			* [x] HOLD, PAIRS AND PAUSE
 			* [x] MONAD
 			* [x] FLIP APPLICATIVE
 		- [x] INTERPRET
@@ -95,7 +95,7 @@ refactor
 			* [x] 2nd
 		- [ ] COMBINATOR
 			* [x] CONVERSION
-			* [ ] TRANSFORMATION
+			* [x] TRANSFORMATION
 			* [ ] REPETITION
 			* [ ] PARALLEL COMPOSITION
 * [ ] MonadicFrp.React
