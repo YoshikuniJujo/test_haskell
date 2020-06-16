@@ -23,7 +23,7 @@ import Prelude hiding (repeat, scanl, break, until)
 
 import GHC.Stack (HasCallStack)
 import Control.Arrow ((***), first)
-import Control.Monad (forever)
+import Control.Monad ((<=<), forever)
 import Data.Type.Flip (Flip(..), (<$%>), (<*%>))
 import Data.Type.Set ((:+:))
 import Data.UnionSet (Mergeable)
@@ -193,7 +193,7 @@ icur :: ISig es a b -> Either a b
 icur = isig Right (const . Left)
 
 res :: Sig es a b -> React es b
-res = (ires =<<) . unSig
+res = ires <=< unSig
 
 ires :: ISig es a b -> React es b
 ires = isig pure (const res)
@@ -217,7 +217,7 @@ find p = (icur <$>) . res . brk
 -- REPETITION
 
 repeat :: React es a -> Sig es a ()
-repeat = forever . (emit =<<) . waitFor
+repeat = forever . (emit <=< waitFor)
 
 spawn :: Sig es a r -> Sig es (ISig es a r) ()
 spawn  = repeat . unSig

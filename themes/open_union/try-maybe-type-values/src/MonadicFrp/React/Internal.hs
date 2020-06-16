@@ -14,8 +14,7 @@ module MonadicFrp.React.Internal (
 	-- * Interpret
 	interpretReact, interpretReactSt,
 	-- * Combinator
-	adjust, first, par
-	) where
+	adjust, first, par ) where
 
 import qualified Control.Arrow as A
 import Data.Kind
