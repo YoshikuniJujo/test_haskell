@@ -108,7 +108,7 @@ refactor
 	+ [x] body
 * [ ] MonadicFrp.React.Internal
 	+ [x] API
-	+ [ ] imports
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] MonadicFrp.ThreadId.Type

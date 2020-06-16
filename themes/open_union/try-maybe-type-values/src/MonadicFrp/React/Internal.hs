@@ -16,14 +16,18 @@ module MonadicFrp.React.Internal (
 	-- * Combinator
 	adjust, first, par ) where
 
+import Data.Kind (Type)
+import Data.Type.Set (Set, Numbered, (:+:), (:$:))
+import Data.UnionSet (
+	UnionSet, Mrgable, Mergeable, Expandable, Collapsable,
+	merge, expand, collapse )
+import Data.Or (Or(..))
+
 import qualified Control.Arrow as A
-import Data.Kind
 
-import Data.Or
-import Data.Type.Set hiding (Merge)
-import Data.UnionSet
+import MonadicFrp.ThreadId.Type (ThreadId, rootThreadId, forkThreadId)
 
-import MonadicFrp.ThreadId.Type
+---------------------------------------------------------------------------
 
 type EvReqs (es :: Set Type) = UnionSet es
 type EvOccs (es :: Set Type) = UnionSet (Occurred :$: es)
@@ -113,7 +117,7 @@ l `first` r = do
 		(Nothing, Just r'') -> R r''
 		(Nothing, Nothing) -> error "never occur"
 
-update :: forall es es' a . Collapsable (Map Occurred (es :+: es')) (Map Occurred es) =>
+update :: forall es es' a . Collapsable (Occurred :$: (es :+: es')) (Occurred :$: es) =>
 	React es a -> EvOccs (es :+: es') -> ThreadId -> React es a
 update r@(Await _ c) oc ti = case collapse oc of
 	Just oc' -> fst <$> c oc' ti
