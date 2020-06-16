@@ -122,7 +122,7 @@ done (Await _ _) = Nothing
 done Never = Nothing
 
 type Adjustable es es' =
-	((es :+: es') ~ es', Firstable es es', Expandable es es')
+	((es :+: es') ~ es', Expandable es es', Firstable es es')
 
 type Firstable es es' = (
 	(es :+: es') ~ (es' :+: es), Mergeable es es' (es :+: es'),

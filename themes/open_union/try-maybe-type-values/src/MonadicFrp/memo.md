@@ -103,7 +103,7 @@ refactor
 				+ [x] until
 				+ [x] indexBy
 * [ ] MonadicFrp.React
-	+ [ ] API
+	+ [x] API
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body

@@ -1,9 +1,15 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module MonadicFrp.React (
-	React, EvReqs, EvOccs, Request(..), Adjustable, Firstable, CollapsableOccurred,
-	interpretReact, interpretReactSt, await, await', adjust, first,
-	Handle, Handle', HandleSt, HandleSt' ) where
+	-- * Type
+	React, EvReqs, EvOccs, Request(..),
+	Adjustable, Firstable, CollapsableOccurred,
+	-- * Interpret
+	interpretReact, interpretReactSt,
+	-- * Handle
+	Handle, Handle', HandleSt, HandleSt',
+	-- * Combinator
+	await, await', adjust, first ) where
 
 import Data.Type.Set
 import Data.UnionSet
