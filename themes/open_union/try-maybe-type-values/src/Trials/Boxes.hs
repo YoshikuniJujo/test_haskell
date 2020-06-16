@@ -62,7 +62,7 @@ firstPoint = either (const Nothing) (Just . fst) <$> mousePos `at` leftClick
 
 completeRect :: Point -> SigG Rect (Maybe Rect)
 completeRect p1 =
-	either (const Nothing) (either Just (const Nothing) . fst) <$> curRect p1 `until` leftUp
+	either (const Nothing) (Just . fst) <$> curRect p1 `until` leftUp
 
 defineRect :: SigG Rect Rect
 defineRect = waitFor firstPoint >>= \case

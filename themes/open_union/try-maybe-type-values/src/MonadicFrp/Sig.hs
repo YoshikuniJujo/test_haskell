@@ -263,16 +263,15 @@ l `break` r = (<$> l `pause` r) \case
 	(_, Never) -> error "never occur"
 
 until :: (Firstable es es', Adjustable es (es :+: es')) =>
-	Sig es a r -> React es' r' -> Sig (es :+: es') a (Either r (Either a r, r'))
+	Sig es a r -> React es' r' -> Sig (es :+: es') a (Either r (a, r'))
 l `until` r = do
 	(l', r') <- l `pause` r
 	case (l', r') of
-		(Sig (Done (l'' :| _)), Done r'') -> pure $ Right (Left l'', r'')
-		(Sig (Done (End l'')), Done r'') -> pure $ Right (Right l'', r'')
 		(Sig (Done (End l'')), _) -> pure $ Left l''
+		(Sig (Done (l'' :| _)), Done r'') -> pure $ Right (l'', r'')
 		(Sig c@(Await _ _), Done r'') -> waitFor (adjust c) >>= \case
-			a :| _ -> pure $ Right (Left a, r'')
-			End rr -> pure $ Right (Right rr, r'')
+			a :| _ -> pure $ Right (a, r'')
+			End rr -> pure $ Left rr
 		_ -> error "never occur"
 
 infixl 7 `indexBy`
