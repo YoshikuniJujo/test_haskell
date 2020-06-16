@@ -264,15 +264,9 @@ l `break` r = (<$> l `pause` r) \case
 
 until :: (Firstable es es', Adjustable es (es :+: es')) =>
 	Sig es a r -> React es' r' -> Sig (es :+: es') a (Either r (a, r'))
-l `until` r = do
-	(l', r') <- l `pause` r
-	case (l', r') of
-		(Sig (Done (End l'')), _) -> pure $ Left l''
-		(Sig (Done (l'' :| _)), Done r'') -> pure $ Right (l'', r'')
-		(Sig c@(Await _ _), Done r'') -> waitFor (adjust c) >>= \case
-			a :| _ -> pure $ Right (a, r'')
-			End rr -> pure $ Left rr
-		_ -> error "never occur"
+l `until` r = l `pause` r >>= \(Sig l', r') -> (<$> waitFor (adjust l')) \case
+	End x -> Left x
+	h :| _ -> case r' of Done y -> Right (h, y); _ -> error "never occur"
 
 infixl 7 `indexBy`
 

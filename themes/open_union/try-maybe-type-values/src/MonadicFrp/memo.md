@@ -100,7 +100,7 @@ refactor
 			* [ ] PARALLEL COMPOSITION
 				+ [x] at
 				+ [x] break
-				+ [ ] until
+				+ [x] until
 				+ [ ] indexBy
 * [ ] MonadicFrp.React
 	+ [ ] API
