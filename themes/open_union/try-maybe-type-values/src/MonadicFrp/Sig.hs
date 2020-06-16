@@ -271,19 +271,18 @@ l `until` r = l `pause` r >>= \(Sig l', r') -> (<$> waitFor (adjust l')) \case
 infixl 7 `indexBy`
 
 indexBy :: (Firstable es es', Adjustable es (es :+: es')) =>
-	Sig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either r (Either a r, r'))
+	Sig es a r -> Sig es' b r' ->
+	Sig (es :+: es') a (Either r (Maybe a, r'))
 l `indexBy` Sig r = waitFor (res $ l `pause` r) >>= \case
-	(Sig (Done l'), r') -> l' `iindexBy` Sig r'
+	(Sig (Done l'), r') -> (first Just <$>) <$> l' `iindexBy` Sig r'
 	(Sig l', Done (_ :| r')) -> Sig l' `indexBy` r'
-	(Sig c@(Await _ _), Done (End r'')) -> waitFor (adjust c) >>= \case
-		a :| _ -> pure $ Right (Left a, r'')
-		End rr -> pure $ Right (Right rr, r'')
+	(Sig _, Done (End y)) -> pure $ Right (Nothing, y)
 	_ -> error "never occur"
 
-iindexBy ::
-	Firstable es es' => ISig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either r (Either a r, r'))
+iindexBy :: Firstable es es' =>
+	ISig es a r -> Sig es' b r' -> Sig (es :+: es') a (Either r (a, r'))
 l `iindexBy` Sig r = waitFor (ires $ l `ipause` r) >>= \case
-	(hl :| tl, Done (_ :| tr)) -> emit hl >> (hl :| tl) `iindexBy` tr
-	(hl :| _, Done (End r')) -> pure $ Right (Left hl, r')
-	(End l', _) -> pure $ Left l'
+	(End x, _) -> pure $ Left x
+	(l'@(hl :| _), Done (_ :| tr)) -> emit hl >> l' `iindexBy` tr
+	(hl :| _, Done (End y)) -> pure $ Right (hl, y)
 	_ -> error "never occur"

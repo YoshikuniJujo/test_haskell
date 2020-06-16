@@ -77,14 +77,14 @@ refactor
 
 * [x] MonadicFrp
 	+ [x] imports
-* [ ] MonadicFrp.Sig
+* [x] MonadicFrp.Sig
 	+ [x] API
 	+ [x] imports
 	+ [x] structure
 		- [x] 1st
 		- [x] instance Applicative (Flip (ISig es) r)
 		- [x] 2nd
-	+ [ ] body
+	+ [x] body
 		- [x] TYPE SIG AND ISIG
 			* [x] general
 			* [x] HOLD, PAIRS AND PAUSE
@@ -93,15 +93,15 @@ refactor
 		- [x] INTERPRET
 			* [x] 1st
 			* [x] 2nd
-		- [ ] COMBINATOR
+		- [x] COMBINATOR
 			* [x] CONVERSION
 			* [x] TRANSFORMATION
 			* [x] REPETITION
-			* [ ] PARALLEL COMPOSITION
+			* [x] PARALLEL COMPOSITION
 				+ [x] at
 				+ [x] break
 				+ [x] until
-				+ [ ] indexBy
+				+ [x] indexBy
 * [ ] MonadicFrp.React
 	+ [ ] API
 	+ [ ] imports
