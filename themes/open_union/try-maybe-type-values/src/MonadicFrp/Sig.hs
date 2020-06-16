@@ -246,15 +246,9 @@ infixr 7 `at`
 
 at :: (Firstable es es', Adjustable es (es :+: es')) =>
 	Sig es a r -> React es' r' -> React (es :+: es') (Either r (a, r'))
-l `at` a = do
-	(l', r') <- res $ l `pause` a
-	case (l', r') of
-		(Sig (Done (h :| _)), Done r'') -> pure $ Right (h, r'')
-		(Sig (Done (End l'')), _) -> pure . Left $ l''
-		(Sig c@(Await _ _), Done r'') -> adjust c >>= \case
-			aa :| _ -> pure $ Right (aa, r'')
-			End rr -> pure $ Left rr
-		_ -> error "never occur"
+l `at` r = res (l `pause` r) >>= \(Sig l', r') -> (<$> adjust l') \case
+	End x -> Left x
+	h :| _ -> case r' of Done y -> Right (h, y); _ -> error "never occur"
 
 infixl 7 `break`, `until`
 

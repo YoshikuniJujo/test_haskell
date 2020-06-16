@@ -98,6 +98,10 @@ refactor
 			* [x] TRANSFORMATION
 			* [x] REPETITION
 			* [ ] PARALLEL COMPOSITION
+				+ [x] at
+				+ [ ] break
+				+ [ ] until
+				+ [ ] indexBy
 * [ ] MonadicFrp.React
 	+ [ ] API
 	+ [ ] imports
