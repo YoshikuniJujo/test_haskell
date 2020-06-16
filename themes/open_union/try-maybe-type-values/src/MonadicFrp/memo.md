@@ -107,7 +107,7 @@ refactor
 	+ [x] imports
 	+ [x] body
 * [ ] MonadicFrp.React.Internal
-	+ [ ] API
+	+ [x] API
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body

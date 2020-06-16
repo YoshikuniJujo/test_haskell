@@ -6,9 +6,15 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module MonadicFrp.React.Internal (
-	React(..), EvReqs, EvOccs, Request(..), Adjustable, Firstable, CollapsableOccurred,
-	interpretReact, interpretReactSt, adjust, first_, first, done,
-	Handle, Handle', HandleSt, HandleSt'
+	-- * Type
+	React(..), EvReqs, EvOccs, Request(..),
+	Adjustable, Firstable, CollapsableOccurred,
+	-- * Handle
+	Handle, Handle', HandleSt, HandleSt',
+	-- * Interpret
+	interpretReact, interpretReactSt,
+	-- * Combinator
+	adjust, first, par
 	) where
 
 import qualified Control.Arrow as A
@@ -74,22 +80,22 @@ interpretReactSt' _ _ _ Never = error "never occur"		-- <- really?
 adjust :: forall es es' a . Adjustable es es' => React es a -> React es' a
 adjust (Done r) = Done r
 adjust Never = Never
-adjust rct = (rct `first_` (Never :: React es' ())) >>= \case
+adjust rct = (rct `par` (Never :: React es' ())) >>= \case
 	(Done x, _) -> pure x
 	(rct', _) -> adjust @es @es' rct'
 
-first_ :: forall es es' a b . Firstable es es' =>
+par :: forall es es' a b . Firstable es es' =>
 	React es a -> React es' b -> React (es :+: es') (React es a, React es' b)
-l `first_` r = case (l, r) of
+l `par` r = case (l, r) of
 	(Await el _, Await er _) ->
 		Await (el `merge` er) \(c :: EvOccs (es :+: es')) ti ->
-			let (ti1, ti2) = forkThreadId ti in (, ti) <$>  ud1 l c ti1 `first_` ud2 r c ti2
+			let (ti1, ti2) = forkThreadId ti in (, ti) <$>  ud1 l c ti1 `par` ud2 r c ti2
 	(Await el _, Never) ->
 		Await (expand el) \(c :: EvOccs (es :+: es')) ti ->
-			let (ti1, ti2) = forkThreadId ti in (, ti) <$>  ud1 l c ti1 `first_` ud2 r c ti2
+			let (ti1, ti2) = forkThreadId ti in (, ti) <$>  ud1 l c ti1 `par` ud2 r c ti2
 	(Never, Await er _) ->
 		Await (expand er) \(c :: EvOccs (es :+: es')) ti ->
-			let (ti1, ti2) = forkThreadId ti in (, ti) <$>  ud1 l c ti1 `first_` ud2 r c ti2
+			let (ti1, ti2) = forkThreadId ti in (, ti) <$>  ud1 l c ti1 `par` ud2 r c ti2
 	(Done _, _) -> Done (l, r)
 	(_, Done _) -> Done (l, r)
 	(Never, Never) -> error "bad"
@@ -101,7 +107,7 @@ infixr 8 `first`
 
 first :: Firstable es es' => React es a -> React es' b -> React (es :+: es') (Or a b)
 l `first` r = do
-	(l', r') <- l `first_` r
+	(l', r') <- l `par` r
 	pure case (done l', done r') of
 		(Just l'', Just r'') -> LR l'' r''
 		(Just l'', Nothing) -> L l''

@@ -30,7 +30,7 @@ import Data.UnionSet (Mergeable)
 
 import MonadicFrp.React.Internal (
 	React(..), Adjustable, Firstable, Handle, HandleSt,
-	adjust, first_, interpretReact, interpretReactSt )
+	adjust, par, interpretReact, interpretReactSt )
 
 ---------------------------------------------------------------------------
 
@@ -68,12 +68,12 @@ ipairs :: Firstable es es' => ISig es a r -> ISig es' b r' ->
 l@(End _) `ipairs` r = pure (l, r)
 l `ipairs` r@(End _) = pure (l, r)
 (hl :| Sig tl) `ipairs` (hr :| Sig tr) = ((hl, hr) :|) . Sig
-	$ uncurry ipairs . ((hl ?:|) *** (hr ?:|)) <$> tl `first_` tr
+	$ uncurry ipairs . ((hl ?:|) *** (hr ?:|)) <$> tl `par` tr
 	where (?:|) h = \case Done t -> t; t -> h :| Sig t
 
 pause :: Firstable es es' => Sig es a r -> React es' r' ->
 	Sig (es :+: es') a (Sig es a r, React es' r')
-Sig l `pause` r = waitFor (l `first_` r) >>= \case
+Sig l `pause` r = waitFor (l `par` r) >>= \case
 	(Done l', r') -> (emitAll `first`) <$> emitAll (l' `ipause` r')
 	(l', r'@(Done _)) -> pure (Sig l', r')
 	(Await _ _, Await _ _) -> error "never occur"
