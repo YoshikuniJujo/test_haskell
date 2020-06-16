@@ -99,7 +99,7 @@ refactor
 			* [x] REPETITION
 			* [ ] PARALLEL COMPOSITION
 				+ [x] at
-				+ [ ] break
+				+ [x] break
 				+ [ ] until
 				+ [ ] indexBy
 * [ ] MonadicFrp.React

@@ -252,16 +252,17 @@ l `at` r = res (l `pause` r) >>= \(Sig l', r') -> (<$> adjust l') \case
 
 infixl 7 `break`, `until`
 
-break :: Firstable es es' =>
-	Sig es a r -> React es' r' -> Sig (es :+: es') a (Either r (Maybe (Either a r), r'))
-l `break` r = do
-	(l', r') <- l `pause` r
-	case (l', r') of
-		(Sig (Done (l'' :| _)), Done r'') -> pure $ Right (Just $ Left l'', r'')
-		(Sig (Done (End l'')), Done r'') -> pure $ Right (Just $ Right l'', r'')
-		(Sig (Done (End l'')), _) -> pure $ Left l''
-		(Sig (Await _ _), Done r'') -> pure $ Right (Nothing, r'')
-		_ -> error "never occur"
+break :: Firstable es es' => Sig es a r -> React es' r' ->
+	Sig (es :+: es') a (Either r (Maybe (Either a r), r'))
+l `break` r = (<$> l `pause` r) \case
+	(Sig (Done (End x)), Await _ _) -> Left x
+	(Sig l', Done r') -> Right $ (, r') case l' of
+		Await _ _ -> Nothing
+		Done (h :| _) -> Just $ Left h
+		Done (End x) -> Just $ Right x
+		Never -> error "never occur"
+	(_, Await _ _) -> error "never occur"
+	(_, Never) -> error "never occur"
 
 until :: (Firstable es es', Adjustable es (es :+: es')) =>
 	Sig es a r -> React es' r' -> Sig (es :+: es') a (Either r (Either a r, r'))
