@@ -114,8 +114,8 @@ refactor
 		- [x] TYPE REACT
 			* [x] TYPE DEFINITION
 			* [x] MONAD
-		- [ ] HANDLE
-		- [ ] INTERPRET
+		- [x] HANDLE
+		- [x] INTERPRET
 		- [ ] COMBINATOR
 			* [ ] TYPE SYNONYM
 			* [ ] FUNCTION

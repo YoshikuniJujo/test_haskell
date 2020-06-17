@@ -87,24 +87,19 @@ type HandleSt' st st' m es = st -> EvReqs es -> m (Maybe (EvOccs es), st')
 -- INTERPRET
 ---------------------------------------------------------------------------
 
-interpretReact :: Monad m => Handle m es -> React es a -> m a
-interpretReact = interpretReact' rootThreadId
+interpretReact :: forall m es a . Monad m => Handle m es -> React es a -> m a
+interpretReact hdl = go where
+	go :: React es b -> m b
+	go = react (error "never end") pure \rqs k ->
+		fst <$> (go . (`k` rootThreadId) =<< hdl rqs)
 
-interpretReact' :: Monad m => ThreadId -> Handle m es -> React es a -> m a
-interpretReact' _ _ (Done x) = pure x
-interpretReact' ti p (Await r c) = fst <$> (interpretReact' ti p . (`c` ti) =<< p r)
-interpretReact' _ _ Never = error "never occur"			-- <- really?
-
-interpretReactSt :: Monad m => st -> HandleSt st m es -> React es a -> m (a, st)
-interpretReactSt = interpretReactSt' rootThreadId
-
-interpretReactSt' :: Monad m => ThreadId -> st -> HandleSt st m es -> React es a -> m (a, st)
-interpretReactSt' _ st _ (Done x) = pure (x, st)
-interpretReactSt' ti st p (Await r c) = do
-	(x, st') <- p st r
-	((x', _ti'), st'') <- interpretReactSt' ti st' p $ c x ti
-	pure (x', st'')
-interpretReactSt' _ _ _ Never = error "never occur"		-- <- really?
+interpretReactSt :: forall st m es a . Monad m =>
+	st -> HandleSt st m es -> React es a -> m (a, st)
+interpretReactSt st0 hdl = go st0 where
+	go :: st -> React es b -> m (b, st)
+	go st = react (error "never end") (pure . (, st)) \rqs k -> do
+		(x, st') <- hdl st rqs
+		(fst `A.first`) <$> go st' (k x rootThreadId)
 
 ---------------------------------------------------------------------------
 -- COMBINATOR
