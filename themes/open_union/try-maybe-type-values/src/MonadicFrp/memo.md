@@ -120,7 +120,7 @@ refactor
 			* [x] CONTEXT SYNONYM
 			* [ ] FUNCTION
 				+ [x] adjust
-				+ [ ] first
+				+ [x] first
 				+ [ ] par
 * [ ] MonadicFrp.ThreadId.Type
 	+ [ ] API

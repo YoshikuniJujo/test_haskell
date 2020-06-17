@@ -128,14 +128,12 @@ adjust = \case
 
 infixr 8 `first`
 
-first :: Firstable es es' => React es a -> React es' b -> React (es :+: es') (Or a b)
-l `first` r = do
-	(l', r') <- l `par` r
-	pure case (done l', done r') of
-		(Just l'', Just r'') -> LR l'' r''
-		(Just l'', Nothing) -> L l''
-		(Nothing, Just r'') -> R r''
-		(Nothing, Nothing) -> error "never occur"
+first :: Firstable es es' =>
+	React es a -> React es' b -> React (es :+: es') (Or a b)
+l `first` r = (<$> l `par` r) \case
+	(Done l', Done r') -> LR l' r'
+	(Done l', _) -> L l'; (_, Done r') -> R r'
+	_ -> error "never occur"
 
 par :: forall es es' a b . Firstable es es' =>
 	React es a -> React es' b -> React (es :+: es') (React es a, React es' b)
@@ -163,8 +161,3 @@ update r@(Await _ c) oc ti = case collapse oc of
 	Nothing -> r
 update Never _ _ = Never
 update (Done _) _ _ = error "bad: first argument must be Await _ _"
-
-done :: React es a -> Maybe a
-done (Done x) = Just x
-done (Await _ _) = Nothing
-done Never = Nothing
