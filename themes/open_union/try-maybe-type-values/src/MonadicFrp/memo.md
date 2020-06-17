@@ -117,8 +117,11 @@ refactor
 		- [x] HANDLE
 		- [x] INTERPRET
 		- [ ] COMBINATOR
-			* [ ] TYPE SYNONYM
+			* [x] CONTEXT SYNONYM
 			* [ ] FUNCTION
+				+ [x] adjust
+				+ [ ] first
+				+ [ ] par
 * [ ] MonadicFrp.ThreadId.Type
 	+ [ ] API
 	+ [ ] imports

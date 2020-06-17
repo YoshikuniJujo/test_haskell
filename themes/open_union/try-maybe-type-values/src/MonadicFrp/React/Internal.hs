@@ -35,7 +35,7 @@ import MonadicFrp.ThreadId.Type (ThreadId, rootThreadId, forkThreadId)
 -- * HANDLE
 -- * INTERPRET
 -- * COMBINATOR
---	+ TYPE SYNONYM
+--	+ CONSTRAINT SYNONYM
 --	+ FUNCTION
 
 ---------------------------------------------------------------------------
@@ -105,7 +105,7 @@ interpretReactSt st0 hdl = go st0 where
 -- COMBINATOR
 ---------------------------------------------------------------------------
 
--- TYPE SYNONYM
+-- CONSTRAINT SYNONYM
 
 type Adjustable es es' =
 	((es :+: es') ~ es', Expandable es es', Firstable es es')
@@ -121,11 +121,21 @@ type CollapsableOccurred es es' =
 -- FUNCTION
 
 adjust :: forall es es' a . Adjustable es es' => React es a -> React es' a
-adjust (Done r) = Done r
-adjust Never = Never
-adjust rct = (rct `par` (Never :: React es' ())) >>= \case
-	(Done x, _) -> pure x
-	(rct', _) -> adjust @es @es' rct'
+adjust = \case
+	Never -> Never; Done x -> pure x
+	r@(Await _ _) -> (r `par` (Never :: React es' ())) >>= \case
+		(Done x, _) -> pure x; _ -> error "never occur"
+
+infixr 8 `first`
+
+first :: Firstable es es' => React es a -> React es' b -> React (es :+: es') (Or a b)
+l `first` r = do
+	(l', r') <- l `par` r
+	pure case (done l', done r') of
+		(Just l'', Just r'') -> LR l'' r''
+		(Just l'', Nothing) -> L l''
+		(Nothing, Just r'') -> R r''
+		(Nothing, Nothing) -> error "never occur"
 
 par :: forall es es' a b . Firstable es es' =>
 	React es a -> React es' b -> React (es :+: es') (React es a, React es' b)
@@ -141,21 +151,10 @@ l `par` r = case (l, r) of
 			let (ti1, ti2) = forkThreadId ti in (, ti) <$>  ud1 l c ti1 `par` ud2 r c ti2
 	(Done _, _) -> Done (l, r)
 	(_, Done _) -> Done (l, r)
-	(Never, Never) -> error "bad"
+	(Never, Never) -> error "never end"
 	where
 	ud1 = update @es @es'
 	ud2 = update @es' @es
-
-infixr 8 `first`
-
-first :: Firstable es es' => React es a -> React es' b -> React (es :+: es') (Or a b)
-l `first` r = do
-	(l', r') <- l `par` r
-	pure case (done l', done r') of
-		(Just l'', Just r'') -> LR l'' r''
-		(Just l'', Nothing) -> L l''
-		(Nothing, Just r'') -> R r''
-		(Nothing, Nothing) -> error "never occur"
 
 update :: forall es es' a . Collapsable (Occurred :$: (es :+: es')) (Occurred :$: es) =>
 	React es a -> EvOccs (es :+: es') -> ThreadId -> React es a
