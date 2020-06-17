@@ -29,6 +29,21 @@ import MonadicFrp.ThreadId.Type (ThreadId, rootThreadId, forkThreadId)
 
 ---------------------------------------------------------------------------
 
+-- * TYPE REACT
+--	+ TYPE DEFINITION
+--	+ MONAD
+-- * HANDLE
+-- * INTERPRET
+-- * COMBINATOR
+--	+ TYPE SYNONYM
+--	+ FUNCTION
+
+---------------------------------------------------------------------------
+-- TYPE REACT
+---------------------------------------------------------------------------
+
+-- TYPE DEFINITION
+
 type EvReqs (es :: Set Type) = UnionSet es
 type EvOccs (es :: Set Type) = UnionSet (Occurred :$: es)
 
@@ -38,6 +53,8 @@ data React (es :: Set Type) a
 	= Done a
 	| Await (EvReqs es) (EvOccs es -> ThreadId -> React es (a, ThreadId))
 	| Never
+
+-- MONAD
 
 instance Functor (React es) where
 	f `fmap` Done x = Done $ f x
@@ -61,6 +78,19 @@ instance Monad (React es) where
 		pure (r, ti')
 	Never >>= _ = Never
 
+---------------------------------------------------------------------------
+-- HANDLE
+---------------------------------------------------------------------------
+
+type Handle m es = EvReqs es -> m (EvOccs es)
+type Handle' m es = EvReqs es -> m (Maybe (EvOccs es))
+type HandleSt st m es = st -> EvReqs es -> m (EvOccs es, st)
+type HandleSt' st st' m es = st -> EvReqs es -> m (Maybe (EvOccs es), st')
+
+---------------------------------------------------------------------------
+-- INTERPRET
+---------------------------------------------------------------------------
+
 interpretReact :: Monad m => Handle m es -> React es a -> m a
 interpretReact = interpretReact' rootThreadId
 
@@ -79,6 +109,25 @@ interpretReactSt' ti st p (Await r c) = do
 	((x', _ti'), st'') <- interpretReactSt' ti st' p $ c x ti
 	pure (x', st'')
 interpretReactSt' _ _ _ Never = error "never occur"		-- <- really?
+
+---------------------------------------------------------------------------
+-- COMBINATOR
+---------------------------------------------------------------------------
+
+-- TYPE SYNONYM
+
+type Adjustable es es' =
+	((es :+: es') ~ es', Expandable es es', Firstable es es')
+
+type Firstable es es' = (
+	(es :+: es') ~ (es' :+: es), Mergeable es es' (es :+: es'),
+	Expandable es (es :+: es'), Expandable es' (es :+: es'),
+	CollapsableOccurred es es', CollapsableOccurred es' es )
+
+type CollapsableOccurred es es' =
+	Collapsable (Occurred :$: (es :+: es')) (Occurred :$: es)
+
+-- FUNCTION
 
 adjust :: forall es es' a . Adjustable es es' => React es a -> React es' a
 adjust (Done r) = Done r
@@ -129,19 +178,3 @@ done :: React es a -> Maybe a
 done (Done x) = Just x
 done (Await _ _) = Nothing
 done Never = Nothing
-
-type Adjustable es es' =
-	((es :+: es') ~ es', Expandable es es', Firstable es es')
-
-type Firstable es es' = (
-	(es :+: es') ~ (es' :+: es), Mergeable es es' (es :+: es'),
-	Expandable es (es :+: es'), Expandable es' (es :+: es'),
-	CollapsableOccurred es es', CollapsableOccurred es' es )
-
-type CollapsableOccurred es es' =
-	Collapsable (Occurred :$: (es :+: es')) (Occurred :$: es)
-
-type Handle m es = EvReqs es -> m (EvOccs es)
-type Handle' m es = EvReqs es -> m (Maybe (EvOccs es))
-type HandleSt st m es = st -> EvReqs es -> m (EvOccs es, st)
-type HandleSt' st st' m es = st -> EvReqs es -> m (Maybe (EvOccs es), st')

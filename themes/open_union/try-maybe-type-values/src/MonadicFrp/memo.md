@@ -109,7 +109,7 @@ refactor
 * [ ] MonadicFrp.React.Internal
 	+ [x] API
 	+ [x] imports
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
 * [ ] MonadicFrp.ThreadId.Type
 	+ [ ] API
