@@ -47,36 +47,32 @@ import MonadicFrp.ThreadId.Type (ThreadId, rootThreadId, forkThreadId)
 type EvReqs (es :: Set Type) = UnionSet es
 type EvOccs (es :: Set Type) = UnionSet (Occurred :$: es)
 
-class (Numbered e, Mrgable e) => Request e where data Occurred (e :: Type) :: Type
+class (Numbered e, Mrgable e) => Request e where
+	data Occurred (e :: Type) :: Type
 
 data React (es :: Set Type) a
-	= Done a
+	= Never | Done a
 	| Await (EvReqs es) (EvOccs es -> ThreadId -> React es (a, ThreadId))
-	| Never
+
+react :: b -> (a -> b) ->
+	(EvReqs es -> (EvOccs es -> ThreadId -> React es (a, ThreadId)) -> b) ->
+	React es a -> b
+react n d a = \case Never -> n; Done x -> d x; Await rqs k -> a rqs k
 
 -- MONAD
 
 instance Functor (React es) where
-	f `fmap` Done x = Done $ f x
-	f `fmap` Await reqs k = Await reqs \oc ti -> A.first f <$> k oc ti
-	_ `fmap` Never = Never
+	fmap f = react Never (Done . f)
+		\rqs k -> Await rqs \oc ti -> A.first f <$> k oc ti
 
 instance Applicative (React es) where
 	pure = Done
-	Done f <*> mx = f <$> mx
-	Await reqs kf <*> mx = Await reqs \oc ti -> do
-		(f, ti') <- kf oc ti
-		r <- f <$> mx
-		pure (r, ti')
-	Never <*> _ = Never
+	mf <*> mx = ($ mf) $ react Never (<$> mx) \rqs kf ->
+		Await rqs \oc ti -> kf oc ti >>= \(f, ti') -> (, ti') . f <$> mx
 
 instance Monad (React es) where
-	Done x >>= f = f x
-	Await reqs k >>= f = Await reqs \oc ti -> do
-		(x, ti') <- k oc ti
-		r <- f x
-		pure (r, ti')
-	Never >>= _ = Never
+	m >>= f = ($ m) $ react Never f \rqs k ->
+		Await rqs \oc ti -> k oc ti >>= \(x, ti') -> (, ti') <$> f x
 
 ---------------------------------------------------------------------------
 -- HANDLE
