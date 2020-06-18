@@ -135,29 +135,19 @@ l `first` r = (<$> l `par` r) \case
 	(Done l', _) -> L l'; (_, Done r') -> R r'
 	_ -> error "never occur"
 
-par :: forall es es' a b . Firstable es es' =>
-	React es a -> React es' b -> React (es :+: es') (React es a, React es' b)
+par :: forall es es' a b . Firstable es es' => React es a -> React es' b ->
+	React (es :+: es') (React es a, React es' b)
 l `par` r = case (l, r) of
-	(Await el _, Await er _) ->
-		Await (el `merge` er) \(c :: EvOccs (es :+: es')) ti ->
-			let (ti1, ti2) = forkThreadId ti in (, ti) <$>  ud1 l c ti1 `par` ud2 r c ti2
-	(Await el _, Never) ->
-		Await (expand el) \(c :: EvOccs (es :+: es')) ti ->
-			let (ti1, ti2) = forkThreadId ti in (, ti) <$>  ud1 l c ti1 `par` ud2 r c ti2
-	(Never, Await er _) ->
-		Await (expand er) \(c :: EvOccs (es :+: es')) ti ->
-			let (ti1, ti2) = forkThreadId ti in (, ti) <$>  ud1 l c ti1 `par` ud2 r c ti2
-	(Done _, _) -> Done (l, r)
-	(_, Done _) -> Done (l, r)
 	(Never, Never) -> error "never end"
-	where
-	ud1 = update @es @es'
-	ud2 = update @es' @es
+	(Done _, _) -> pure (l, r); (_, Done _) -> pure (l, r)
+	(Never, Await rr _) -> Await (expand rr) k
+	(Await rl _, Never) -> Await (expand rl) k
+	(Await rl _, Await rr _) -> Await (rl `merge` rr) k
+	where k oc ti = (, ti) <$> let (ti1, ti2) = forkThreadId ti in
+		update @es @es' l oc ti1 `par` update @es' @es r oc ti2
 
 update :: forall es es' a . Collapsable (Occurred :$: (es :+: es')) (Occurred :$: es) =>
 	React es a -> EvOccs (es :+: es') -> ThreadId -> React es a
-update r@(Await _ c) oc ti = case collapse oc of
-	Just oc' -> fst <$> c oc' ti
-	Nothing -> r
-update Never _ _ = Never
-update (Done _) _ _ = error "bad: first argument must be Await _ _"
+update r oc ti = ($ r) $ react Never
+	(error "first argument should not be Done _")
+	\_ k -> case collapse oc of Nothing -> r; Just oc' -> fst <$> k oc' ti

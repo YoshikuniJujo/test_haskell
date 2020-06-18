@@ -110,18 +110,18 @@ refactor
 	+ [x] API
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] TYPE REACT
 			* [x] TYPE DEFINITION
 			* [x] MONAD
 		- [x] HANDLE
 		- [x] INTERPRET
-		- [ ] COMBINATOR
+		- [x] COMBINATOR
 			* [x] CONTEXT SYNONYM
-			* [ ] FUNCTION
+			* [x] FUNCTION
 				+ [x] adjust
 				+ [x] first
-				+ [ ] par
+				+ [x] par
 * [ ] MonadicFrp.ThreadId.Type
 	+ [ ] API
 	+ [ ] imports
