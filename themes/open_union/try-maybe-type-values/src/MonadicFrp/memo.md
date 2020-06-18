@@ -103,14 +103,14 @@ refactor
 	+ [x] API
 	+ [x] imports
 	+ [x] body
-* [ ] MonadicFrp.React.Internal
+* [x] MonadicFrp.React.Internal
 	+ [x] API
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
-		- [ ] TYPE REACT
-			* [ ] TYPE DEFINITION
-				+ [ ] ThreadId
+	+ [x] body
+		- [x] TYPE REACT
+			* [x] TYPE DEFINITION
+				+ [x] ThreadId
 			* [x] MONAD
 		- [x] HANDLE
 		- [x] INTERPRET

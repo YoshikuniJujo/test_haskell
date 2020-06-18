@@ -22,6 +22,5 @@ import MonadicFrp.Sig (
 	Sig, ISig, emit, waitFor, scanl, find, repeat, spawn, parList,
 	at, break,  until, indexBy )
 import MonadicFrp.React (
-	React, EvReqs, EvOccs, Request(..), ThreadId,
-	Adjustable, Firstable, CollapsableOccurred,
-	await, adjust, first )
+	React, EvReqs, EvOccs, Request(..),
+	Adjustable, Firstable, CollapsableOccurred, await, adjust, first )
