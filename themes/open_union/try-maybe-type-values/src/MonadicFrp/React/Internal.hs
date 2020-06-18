@@ -7,7 +7,7 @@
 
 module MonadicFrp.React.Internal (
 	-- * Type
-	React(..), EvReqs, EvOccs, Request(..),
+	React(..), EvReqs, EvOccs, Request(..), ThreadId,
 	Adjustable, Firstable, CollapsableOccurred,
 	-- * Handle
 	Handle, Handle', HandleSt, HandleSt',
@@ -22,10 +22,9 @@ import Data.UnionSet (
 	UnionSet, Mrgable, Mergeable, Expandable, Collapsable,
 	merge, expand, collapse )
 import Data.Or (Or(..))
+import Data.Bits (setBit)
 
 import qualified Control.Arrow as A
-
-import MonadicFrp.ThreadId.Type (ThreadId, rootThreadId, forkThreadId)
 
 ---------------------------------------------------------------------------
 
@@ -58,6 +57,15 @@ react :: b -> (a -> b) ->
 	(EvReqs es -> (EvOccs es -> ThreadId -> React es (a, ThreadId)) -> b) ->
 	React es a -> b
 react n d a = \case Never -> n; Done x -> d x; Await rqs k -> a rqs k
+
+data ThreadId = ThreadId Word Integer deriving (Show, Eq)
+
+rootThreadId :: ThreadId
+rootThreadId = ThreadId 0 0
+
+forkThreadId :: ThreadId -> (ThreadId, ThreadId)
+forkThreadId (ThreadId n i) =
+	(ThreadId n $ i + 1, ThreadId (n `setBit` fromIntegral i) $ i + 1)
 
 -- MONAD
 

@@ -16,9 +16,9 @@ module MonadicFrp.EventHandle.ThreadId (
 import Data.Type.Set (Singleton, numbered)
 import Data.UnionSet (singleton)
 
-import MonadicFrp (React, Request(..), await')
+import MonadicFrp (React, Request(..))
+import MonadicFrp.React (ThreadId, await')
 import MonadicFrp.Handle (Handle')
-import MonadicFrp.ThreadId.Type (ThreadId)
 
 ---------------------------------------------------------------------------
 

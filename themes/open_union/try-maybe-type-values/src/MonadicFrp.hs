@@ -5,7 +5,7 @@ module MonadicFrp (
 	Sig, ISig, React, EvReqs, EvOccs, Request(..),
 	Adjustable, Firstable, CollapsableOccurred,
 	-- * React
-	await, await', adjust, first,
+	await, adjust, first,
 	-- * Conversion
 	emit, waitFor,
 	-- * Transformation
@@ -22,6 +22,6 @@ import MonadicFrp.Sig (
 	Sig, ISig, emit, waitFor, scanl, find, repeat, spawn, parList,
 	at, break,  until, indexBy )
 import MonadicFrp.React (
-	React, EvReqs, EvOccs, Request(..),
+	React, EvReqs, EvOccs, Request(..), ThreadId,
 	Adjustable, Firstable, CollapsableOccurred,
-	await, await', adjust, first )
+	await, adjust, first )

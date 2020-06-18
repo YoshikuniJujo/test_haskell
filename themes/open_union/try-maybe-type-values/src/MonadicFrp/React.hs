@@ -3,7 +3,7 @@
 
 module MonadicFrp.React (
 	-- * Type
-	React, EvReqs, EvOccs, Request(..),
+	React, EvReqs, EvOccs, Request(..), ThreadId,
 	Adjustable, Firstable, CollapsableOccurred,
 	-- * Handle
 	Handle, Handle', HandleSt, HandleSt',
@@ -16,11 +16,10 @@ import Data.Type.Set (Singleton)
 import Data.UnionSet (extract, singleton)
 
 import MonadicFrp.React.Internal (
-	React(..), EvReqs, EvOccs, Request(..),
+	React(..), EvReqs, EvOccs, Request(..), ThreadId,
 	Adjustable, Firstable, CollapsableOccurred,
 	Handle, Handle', HandleSt, HandleSt',
 	interpretReact, interpretReactSt, adjust, first )
-import MonadicFrp.ThreadId.Type (ThreadId)
 
 ---------------------------------------------------------------------------
 

@@ -12,7 +12,7 @@ modules to expose
 
 ### library
 
-* MonadicFrp.EventHandle.Thread
+* MonadicFrp.EventHandle.ThreadId
 * MonadicFrp.EventHandle.Lock
 * MonadicFrp.EventHandle.Random
 * MonadicFrp.Event.Mouse
@@ -25,11 +25,8 @@ module hierarchy
 MonadicFrp
   + MonadicFrp.Sig
   |   + MonadicFrp.React.Internal
-          + MonadicFrp.ThreadId.Type
   + MonadicFrp.React
       + MonadicFrp.React.Internal
-      |   + MonadicFrp.ThreadId.Type
-      + MonadicFrp.ThreadId.Type
 ```
 
 ```
@@ -110,9 +107,10 @@ refactor
 	+ [x] API
 	+ [x] imports
 	+ [x] structure
-	+ [x] body
-		- [x] TYPE REACT
-			* [x] TYPE DEFINITION
+	+ [ ] body
+		- [ ] TYPE REACT
+			* [ ] TYPE DEFINITION
+				+ [ ] ThreadId
 			* [x] MONAD
 		- [x] HANDLE
 		- [x] INTERPRET
@@ -122,11 +120,6 @@ refactor
 				+ [x] adjust
 				+ [x] first
 				+ [x] par
-* [ ] MonadicFrp.ThreadId.Type
-	+ [ ] API
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
 * [ ] MonadicFrp.Handle
 	+ [ ] imports
 	+ [ ] structure
@@ -135,7 +128,7 @@ refactor
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body
-* [ ] MonadicFrp.EventHandle.Thread
+* [ ] MonadicFrp.EventHandle.ThreadId
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body
