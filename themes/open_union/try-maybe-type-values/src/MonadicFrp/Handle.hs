@@ -11,12 +11,14 @@ module MonadicFrp.Handle (
 	retry, before, merge, retrySt, expandHandleSt, mergeHandleSt
 	) where
 
-import Prelude hiding (map, repeat, scanl, until)
+import Control.Arrow (first)
+import Data.Type.Set ((:+:), (:$:))
+import Data.UnionSet (
+	Mergeable, Expandable, Collapsable, merge', expand, collapse )
 
-import Control.Arrow
-import Data.Type.Set
-import Data.UnionSet hiding (merge)
-import MonadicFrp.React hiding (first)
+import MonadicFrp.React (Occurred, Handle, Handle', HandleSt, HandleSt')
+
+---------------------------------------------------------------------------
 
 retry :: Monad m => Handle' m es -> Handle m es
 retry h reqs = h reqs >>= \case

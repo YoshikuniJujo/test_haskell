@@ -121,7 +121,7 @@ refactor
 				+ [x] first
 				+ [x] par
 * [ ] MonadicFrp.Handle
-	+ [ ] imports
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] MonadicFrp.Run
