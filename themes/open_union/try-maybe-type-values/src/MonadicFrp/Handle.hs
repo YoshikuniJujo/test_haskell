@@ -68,43 +68,35 @@ infixr 6 `merge`
 merge :: (
 	Applicative m, Beforable es es', MergeableOccurred es es' (es :+: es')
 	) => Handle' m es -> Handle' m es' -> Handle' m (es :+: es')
-merge hdl1 hdl2 reqs = merge' <$> collapse hdl1 reqs <*> collapse hdl2 reqs
+merge hdl1 hdl2 rqs = merge' <$> collapse hdl1 rqs <*> collapse hdl2 rqs
 
 ---------------------------------------------------------------------------
 -- HANDLE WITH HANDLE
 ---------------------------------------------------------------------------
 
 retrySt :: Monad m => HandleSt' st st m es -> HandleSt st m es
-retrySt h st reqs = h st reqs >>= \case
-	(Just occs, st') -> pure (occs, st')
-	(Nothing, st') -> retrySt h st' reqs
+retrySt hdl st rqs = hdl st rqs >>= \(mocc, st') ->
+	maybe (retrySt hdl st' rqs) (pure . (, st')) mocc
 
-expandSt :: (Monad m, Collapsable es' es, ExpandableOccurred es es') =>
-	HandleSt' st st' m es -> (st -> m st') ->
-	HandleSt' st st' m es'
-expandSt h o st reqs = maybe
-	((Nothing ,) <$> o st)
-	((((US.expand <$>) `first`) <$>) . h st) $ US.collapse reqs
+collapseSt :: (Applicative m, Collapsable es' es) =>
+	(st -> EvReqs es -> m (Maybe (EvOccs es), st')) ->
+	(st -> m st') -> st -> EvReqs es' -> m (Maybe (EvOccs es), st')
+collapseSt hdl ot st = maybe ((Nothing ,) <$> ot st) (hdl st) . US.collapse
 
-infixr 5 `beforeSt`
+expandSt :: (Applicative m, Collapsable es' es, ExpandableOccurred es es') =>
+	HandleSt' st st' m es -> (st -> m st') -> HandleSt' st st' m es'
+expandSt hdl o st rqs = first (US.expand <$>) <$> collapseSt hdl o st rqs
 
 beforeSt :: (Monad m, Beforable es es') =>
 	HandleSt' st st' m es -> (st -> m st') ->
 	HandleSt' st' st'' m es' -> (st' -> m st'') ->
 	HandleSt' st st'' m (es :+: es')
-beforeSt h1 o1 h2 o2 st reqs = do
-	(r, st') <- maybe ((Nothing ,) <$> o1 st) (h1 st) (US.collapse reqs)
-	case r of
-		Just occs -> (Just (US.expand occs) ,) <$> o2 st'
-		Nothing -> first (US.expand <$>) <$> maybe ((Nothing ,) <$> o2 st') (h2 st') (US.collapse reqs)
-
-infixr 6 `mergeSt`
+beforeSt hdl1 ot1 hdl2 ot2 st rqs = expandSt hdl1 ot1 st rqs >>= \(mocc, st') ->
+	maybe (expandSt hdl2 ot2 st' rqs) ((<$> ot2 st') . (,) . Just) mocc
 
 mergeSt :: (Monad m, Beforable es es', MergeableOccurred es es' (es :+: es')) =>
 	HandleSt' st st' m es -> (st -> m st') ->
 	HandleSt' st' st'' m es' -> (st' -> m st'') ->
 	HandleSt' st st'' m (es :+: es')
-mergeSt h1 o1 h2 o2 st reqs = do
-	(r1, st') <- maybe ((Nothing ,) <$> o1 st) (h1 st) $ US.collapse reqs
-	(r2, st'') <- maybe ((Nothing ,) <$> o2 st') (h2 st') $ US.collapse reqs
-	pure (r1 `merge'` r2, st'')
+mergeSt hdl1 ot1 hdl2 ot2 st rqs = collapseSt hdl1 ot1 st rqs >>= \(mocc1, st') ->
+	first (mocc1 `merge'`) <$> collapseSt hdl2 ot2 st' rqs

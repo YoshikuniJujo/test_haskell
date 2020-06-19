@@ -120,7 +120,7 @@ refactor
 				+ [x] adjust
 				+ [x] first
 				+ [x] par
-* [ ] MonadicFrp.Handle
+* [x] MonadicFrp.Handle
 	+ [x] imports
 	* [x] rename expandHandleSt and mergeHandleSt
 		+ to expandSt, mergeSt
@@ -128,10 +128,10 @@ refactor
 	* [x] define fixity to expandSt, beforeSt and mergeSt
 	* [x] API
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] CONSTRAINT SYNONYM
 		- [x] HANDLE WITH NO STATE
-		- [ ] HANDLE WITH STATE
+		- [x] HANDLE WITH STATE
 * [ ] MonadicFrp.Run
 	+ [ ] imports
 	+ [ ] structure
@@ -156,3 +156,16 @@ refactor
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body
+
+TODO
+----
+
+* [ ] add function to test
+	+ [ ] foo :: React es a -> (EvReqs es -> EvOccs es) -> React es a
+		- [ ] foo' :: React es a -> (EvReqs es -> m (EvOccs es)) -> m (React es a)
+		- [ ] getFoo :: React es a -> EvReqs es
+		- [ ] putFoo :: React es a -> EvOccs es -> React es a
+	+ [ ] bar :: Sig es a r -> (EvReqs es -> EvOccs es) -> (Maybe a, Sig es a r)
+		- [ ] bar' :: Sig es a r -> (EvReqs es -> m (EvOccs es)) -> m (Maybe a, Sig es a r)
+		- [ ] getBar :: Sig es a r -> EvReqs es
+		- [ ] putBar :: Sig es a r -> EvOccs es -> (Maybe a, Sig es a r)
