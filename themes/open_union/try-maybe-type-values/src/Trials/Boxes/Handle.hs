@@ -13,7 +13,7 @@ import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
 	
 import MonadicFrp.Handle (
-	HandleSt, HandleSt', retrySt, expandHandleSt, mergeHandleSt )
+	HandleSt, HandleSt', retrySt, expandSt, mergeSt )
 import MonadicFrp.XFieldHandle.Mouse (handleMouse)
 import Trials.Boxes.Event (GuiEv, MouseEv, TimeEv, TryWait(..), Occurred(..))
 import Field (Field)
@@ -27,7 +27,7 @@ handleBoxes prd f = retrySt \case
 	InitMode -> handleInit (prd, f); WaitMode now -> handleWait now
 
 handleInit :: HandleSt' (DiffTime, Field) Mode (StateT AbsoluteTime IO) GuiEv
-handleInit = mergeHandleSt
+handleInit = mergeSt
 	handleMouse' (\_ -> pure ())
 	handleNow (\_ -> InitMode <$ (put =<< lift getTaiTime))
 
@@ -42,7 +42,7 @@ getTaiTime = systemToTAITime <$> getSystemTime
 
 handleWait :: Monad m =>
 	HandleSt' AbsoluteTime Mode (StateT AbsoluteTime m) GuiEv
-handleWait = expandHandleSt handleTime ((InitMode <$) . put)
+handleWait = expandSt handleTime ((InitMode <$) . put)
 
 handleTime :: Monad m =>
 	HandleSt' AbsoluteTime Mode (StateT AbsoluteTime m) TimeEv

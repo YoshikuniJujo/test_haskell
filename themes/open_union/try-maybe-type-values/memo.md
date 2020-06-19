@@ -66,3 +66,9 @@ TODO
 	+ GHCレベルでのサポートが必要では
 	+ いまはTHでtype Number Foo = 123みたいにやってる
 	+ 上記のようなやりかただとFoo aみたいな型に対応できない
+
+### 参考
+
+```
+themes/papers/monadic_functional_reactive_programming/try-monadic-functional-reactive-programming/
+```

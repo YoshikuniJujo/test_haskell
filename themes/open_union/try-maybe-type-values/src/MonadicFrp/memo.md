@@ -122,6 +122,11 @@ refactor
 				+ [x] par
 * [ ] MonadicFrp.Handle
 	+ [x] imports
+	* [x] rename expandHandleSt and mergeHandleSt
+		+ to expandSt, mergeSt
+	* [ ] make beforeSt
+	* [ ] define fixity to expandSt, beforeSt and mergeSt
+	* [ ] API
 	+ [ ] structure
 	+ [ ] body
 * [ ] MonadicFrp.Run
