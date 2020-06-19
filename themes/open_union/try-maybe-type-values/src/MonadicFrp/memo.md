@@ -125,7 +125,7 @@ refactor
 	* [x] rename expandHandleSt and mergeHandleSt
 		+ to expandSt, mergeSt
 	* [x] make beforeSt
-	* [ ] define fixity to expandSt, beforeSt and mergeSt
+	* [x] define fixity to expandSt, beforeSt and mergeSt
 	* [ ] API
 	+ [ ] structure
 	+ [ ] body

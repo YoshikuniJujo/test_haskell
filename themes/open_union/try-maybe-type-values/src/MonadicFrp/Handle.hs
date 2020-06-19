@@ -61,6 +61,8 @@ expandSt h o st reqs = maybe
 	((Nothing ,) <$> o st)
 	((((expand <$>) `first`) <$>) . h st) $ collapse reqs
 
+infixr 5 `beforeSt`
+
 beforeSt :: (Monad m, Beforable es es') =>
 	HandleSt' st st' m es -> (st -> m st') ->
 	HandleSt' st' st'' m es' -> (st' -> m st'') ->
@@ -70,7 +72,9 @@ beforeSt h1 o1 h2 o2 st reqs = do
 	case r of
 		Just occs -> (Just (expand occs) ,) <$> o2 st'
 		Nothing -> first (expand <$>) <$> maybe ((Nothing ,) <$> o2 st') (h2 st') (collapse reqs)
-	
+
+infixr 6 `mergeSt`
+
 mergeSt :: (
 	Monad m, Beforable es es',
 	Mergeable (Occurred :$: es) (Occurred :$: es') (Occurred :$: (es :+: es'))
