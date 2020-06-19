@@ -124,7 +124,7 @@ refactor
 	+ [x] imports
 	* [x] rename expandHandleSt and mergeHandleSt
 		+ to expandSt, mergeSt
-	* [ ] make beforeSt
+	* [x] make beforeSt
 	* [ ] define fixity to expandSt, beforeSt and mergeSt
 	* [ ] API
 	+ [ ] structure

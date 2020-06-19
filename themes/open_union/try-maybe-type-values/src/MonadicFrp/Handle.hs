@@ -8,7 +8,7 @@ module MonadicFrp.Handle (
 	-- * Types
 	Handle, Handle', HandleSt, HandleSt', Beforable,
 	-- * Composer
-	retry, before, merge, retrySt, expandSt, mergeSt
+	retry, before, merge, retrySt, expandSt, beforeSt, mergeSt
 	) where
 
 import Control.Arrow (first)
@@ -60,6 +60,16 @@ expandSt :: (
 expandSt h o st reqs = maybe
 	((Nothing ,) <$> o st)
 	((((expand <$>) `first`) <$>) . h st) $ collapse reqs
+
+beforeSt :: (Monad m, Beforable es es') =>
+	HandleSt' st st' m es -> (st -> m st') ->
+	HandleSt' st' st'' m es' -> (st' -> m st'') ->
+	HandleSt' st st'' m (es :+: es')
+beforeSt h1 o1 h2 o2 st reqs = do
+	(r, st') <- maybe ((Nothing ,) <$> o1 st) (h1 st) (collapse reqs)
+	case r of
+		Just occs -> (Just (expand occs) ,) <$> o2 st'
+		Nothing -> first (expand <$>) <$> maybe ((Nothing ,) <$> o2 st') (h2 st') (collapse reqs)
 	
 mergeSt :: (
 	Monad m, Beforable es es',
