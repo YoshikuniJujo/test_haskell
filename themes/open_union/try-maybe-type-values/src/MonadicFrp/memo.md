@@ -126,7 +126,7 @@ refactor
 		+ to expandSt, mergeSt
 	* [x] make beforeSt
 	* [x] define fixity to expandSt, beforeSt and mergeSt
-	* [ ] API
+	* [x] API
 	+ [ ] structure
 	+ [ ] body
 * [ ] MonadicFrp.Run

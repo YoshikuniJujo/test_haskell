@@ -14,7 +14,7 @@ import Data.Time
 import System.Exit
 
 import MonadicFrp -- (React, Request(..), await, EvOccs)
-import MonadicFrp.Handle
+import MonadicFrp.Handle hiding (expand)
 import MonadicFrp.Event.Mouse
 import Field
 
