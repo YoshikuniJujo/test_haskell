@@ -23,14 +23,13 @@ import MonadicFrp.React (Occurred, Handle, Handle', HandleSt, HandleSt')
 
 ---------------------------------------------------------------------------
 
-retry :: Monad m => Handle' m es -> Handle m es
-retry h reqs = h reqs >>= \case
-	Just occs -> pure occs; Nothing -> retry h reqs
+-- * CONSTRAINT SYNONYM
+-- * HANDLE WITH NO STATE
+-- * HANDLE WITH STATE
 
-retrySt :: Monad m => HandleSt' st st m es -> HandleSt st m es
-retrySt h st reqs = h st reqs >>= \case
-	(Just occs, st') -> pure (occs, st')
-	(Nothing, st') -> retrySt h st' reqs
+---------------------------------------------------------------------------
+-- CONSTRAINT SYNONYM
+---------------------------------------------------------------------------
 
 type Beforable es es' = (
 	Collapsable (es :+: es') es, Collapsable (es :+: es') es',
@@ -41,6 +40,14 @@ type ExpandableOccurred es es' = Expandable (Occurred :$: es) (Occurred :$: es')
 
 type MergeableOccurred es es' eses' =
 	Mergeable (Occurred :$: es) (Occurred :$: es') (Occurred :$: eses')
+
+---------------------------------------------------------------------------
+-- HANDLE WITH NO STATE
+---------------------------------------------------------------------------
+
+retry :: Monad m => Handle' m es -> Handle m es
+retry h reqs = h reqs >>= \case
+	Just occs -> pure occs; Nothing -> retry h reqs
 
 expand :: (Monad m, Collapsable es' es, ExpandableOccurred es es') =>
 	Handle' m es -> Handle' m es'
@@ -61,6 +68,15 @@ merge h1 h2 reqs = do
 	r1 <- maybe (pure Nothing) h1 $ collapse reqs
 	r2 <- maybe (pure Nothing) h2 $ collapse reqs
 	pure $ r1 `merge'` r2
+
+---------------------------------------------------------------------------
+-- HANDLE WITH HANDLE
+---------------------------------------------------------------------------
+
+retrySt :: Monad m => HandleSt' st st m es -> HandleSt st m es
+retrySt h st reqs = h st reqs >>= \case
+	(Just occs, st') -> pure (occs, st')
+	(Nothing, st') -> retrySt h st' reqs
 
 expandSt :: (Monad m, Collapsable es' es, ExpandableOccurred es es') =>
 	HandleSt' st st' m es -> (st -> m st') ->
