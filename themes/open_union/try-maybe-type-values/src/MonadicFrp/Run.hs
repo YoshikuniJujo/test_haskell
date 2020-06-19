@@ -10,7 +10,5 @@ module MonadicFrp.Run (
 	interpret, interpretSt, interpretReact, interpretReactSt
 	) where
 
-import Prelude hiding (map, repeat, scanl, until)
-
-import MonadicFrp.Sig
-import MonadicFrp.React
+import MonadicFrp.Sig (Sig, interpret, interpretSt)
+import MonadicFrp.React (React, Handle, HandleSt, interpretReact, interpretReactSt)

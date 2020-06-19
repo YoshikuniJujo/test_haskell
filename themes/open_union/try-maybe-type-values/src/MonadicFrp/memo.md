@@ -132,27 +132,30 @@ refactor
 		- [x] CONSTRAINT SYNONYM
 		- [x] HANDLE WITH NO STATE
 		- [x] HANDLE WITH STATE
-* [ ] MonadicFrp.Run
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
+* [x] MonadicFrp.Run
+	+ [x] imports
 * [ ] MonadicFrp.EventHandle.ThreadId
+	+ [ ] API
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] MonadicFrp.EventHandle.Lock
+	+ [ ] API
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] MonadicFrp.EventHandle.Random
+	+ [ ] API
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] MonadicFrp.Event.Mouse
+	+ [ ] API
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] MonadicFrp.XFieldHandle.Mouse
+	+ [ ] API
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body
