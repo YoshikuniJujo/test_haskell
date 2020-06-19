@@ -129,6 +129,9 @@ refactor
 	* [x] API
 	+ [x] structure
 	+ [ ] body
+		- [x] CONSTRAINT SYNONYM
+		- [x] HANDLE WITH NO STATE
+		- [ ] HANDLE WITH STATE
 * [ ] MonadicFrp.Run
 	+ [ ] imports
 	+ [ ] structure
