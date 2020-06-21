@@ -136,9 +136,8 @@ refactor
 	+ [x] imports
 * [ ] MonadicFrp.EventHandle.ThreadId
 	+ [x] API
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
+	+ [x] imports
+	+ [x] body
 * [ ] MonadicFrp.EventHandle.Lock
 	+ [ ] API
 	+ [ ] imports

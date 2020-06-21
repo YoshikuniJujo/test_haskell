@@ -10,8 +10,7 @@ module MonadicFrp.EventHandle.ThreadId (
 	-- * Handle
 	handleGetThreadId,
 	-- * Event
-	getThreadId
-	) where
+	getThreadId ) where
 
 import Data.Type.Set (Singleton, numbered)
 import Data.UnionSet (singleton)
@@ -27,7 +26,7 @@ numbered 9 [t| GetThreadId |]
 instance Request GetThreadId where data Occurred GetThreadId = OccGetThreadId
 
 handleGetThreadId :: Applicative m => Handle' m (Singleton GetThreadId)
-handleGetThreadId _reqs = pure . Just $ singleton OccGetThreadId
+handleGetThreadId _rqs = pure . Just $ singleton OccGetThreadId
 
 getThreadId :: React (Singleton GetThreadId) ThreadId
 getThreadId = await' GetThreadIdReq \ti OccGetThreadId -> ti
