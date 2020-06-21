@@ -6,12 +6,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module MonadicFrp.EventHandle.Lock (
-	-- * Types
+	-- * Type
 	LockEv, NewLockId, GetLock, Unlock, LockId, LockState(..),
-	-- * React
-	newLockId, withLock,
 	-- * Handle
-	handleLock ) where
+	handleLock,
+	-- * Event
+	GetThreadIdGetLock, SingletonUnlock, newLockId, withLock ) where
 
 import Control.Monad.State
 import Data.Type.Set
@@ -80,14 +80,16 @@ handleUnlock :: (LockState s, Monad m) => Handle' (StateT s m) (Singleton Unlock
 handleUnlock reqs = Just (singleton OccUnlock) <$ modify (`unlockIt` l)
 	where UnlockReq l = extract reqs
 
+type GetThreadIdGetLock = GetThreadId :- GetLock :- 'Nil
+type SingletonUnlock = Singleton Unlock
+
 withLock :: (
-	(es :+: es') ~ es', Firstable es es', Expandable es es',
-	((GetThreadId :- GetLock :- 'Nil) :+: es') ~ es',
-	Firstable (GetThreadId :- GetLock :- 'Nil) es',
-	Expandable (GetThreadId :- GetLock :- 'Nil) es',
-	(Singleton Unlock :+: es') ~ es',
-	Firstable (Singleton Unlock) es',
-	Expandable (Singleton Unlock) es' ) =>
+	(es :+: es') ~ es',
+	(GetThreadIdGetLock :+: es') ~ es', (SingletonUnlock :+: es') ~ es',
+	Expandable es es',
+	Expandable GetThreadIdGetLock es', Expandable SingletonUnlock es',
+	Firstable es es',
+	Firstable GetThreadIdGetLock es', Firstable SingletonUnlock es' ) =>
 	LockId -> React es a -> React es' a
 withLock l act = adjust (getLock l 0) >> adjust act <* adjust (unlock l)
 

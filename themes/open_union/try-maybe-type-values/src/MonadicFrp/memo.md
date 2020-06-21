@@ -134,12 +134,12 @@ refactor
 		- [x] HANDLE WITH STATE
 * [x] MonadicFrp.Run
 	+ [x] imports
-* [ ] MonadicFrp.EventHandle.ThreadId
+* [x] MonadicFrp.EventHandle.ThreadId
 	+ [x] API
 	+ [x] imports
 	+ [x] body
 * [ ] MonadicFrp.EventHandle.Lock
-	+ [ ] API
+	+ [x] API
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body
