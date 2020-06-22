@@ -51,21 +51,21 @@ class LockState s where
 
 newtype NewLockId = NewLockIdReq ThreadId deriving (Show, Eq)
 numbered 9 [t| NewLockId |]
-instance Mrgable NewLockId where nl1 `mrg` _nl2 = nl1
+instance Mrgable NewLockId where i1 `mrg` _i2 = i1
 instance Request NewLockId where
 	data Occurred NewLockId = OccNewLockId LockId ThreadId
 
 newLockId :: React (GetThreadId :- NewLockId :- 'Nil) LockId
 newLockId = adjust getThreadId >>= \ti ->
 	maybe newLockId pure =<< adjust (await (NewLockIdReq ti)
-		\(OccNewLockId l ti') -> bool Nothing (Just l) $ ti == ti')
+		\(OccNewLockId i ti') -> bool Nothing (Just i) $ ti == ti')
 
-handleNewLockId :: (LockState s, Monad m) => Handle' (StateT s m) (Singleton NewLockId)
-handleNewLockId reqs = get >>= \s -> do
-	let	i = getNextLockId s
-		l = LockId i
-	Just (singleton $ OccNewLockId l ti) <$ modify (`putNextLockId` (i + 1))
-	where NewLockIdReq ti = extract reqs
+handleNewLockId ::
+	(LockState s, Monad m) => Handle' (StateT s m) (Singleton NewLockId)
+handleNewLockId rqs = get >>= \s -> let i = getNextLockId s in
+	Just (singleton $ OccNewLockId (LockId i) ti)
+		<$ modify (`putNextLockId` (i + 1))
+	where NewLockIdReq ti = extract rqs
 
 -- GETLOCK
 
