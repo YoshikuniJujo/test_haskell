@@ -24,8 +24,19 @@ import MonadicFrp.EventHandle.ThreadId (GetThreadId, ThreadId, getThreadId)
 
 ---------------------------------------------------------------------------
 
+-- * LOCKID AND LOCKSTATE
+-- * EVENT
+--	+ NEWLOCKID
+--	+ GETLOCK
+--	+ UNLOCK
+-- * LOCKEV
+-- * WITHLOCK
+
+---------------------------------------------------------------------------
+-- LOCKID AND LOCKSTATE
+---------------------------------------------------------------------------
+
 newtype LockId = LockId Int deriving (Show, Eq)
-type RetryTime = Int
 
 class LockState s where
 	getNextLockId :: s -> Int
@@ -33,6 +44,12 @@ class LockState s where
 	isLocked :: s -> LockId -> Bool
 	lockIt :: s -> LockId -> s
 	unlockIt :: s -> LockId -> s
+
+---------------------------------------------------------------------------
+-- EVENT
+---------------------------------------------------------------------------
+
+-- NEWLOCKID
 
 newtype NewLockId = NewLockIdReq ThreadId deriving (Show, Eq)
 numbered 9 [t| NewLockId |]
@@ -52,7 +69,10 @@ handleNewLockId reqs = get >>= \s -> do
 	Just (singleton $ OccNewLockId l ti) <$ modify (`putNextLockId` (i + 1))
 	where NewLockIdReq ti = extract reqs
 
+-- GETLOCK
+
 data GetLock = GetLockReq LockId ThreadId RetryTime deriving (Show, Eq)
+type RetryTime = Int
 numbered 9 [t| GetLock |]
 instance Mrgable GetLock where
 	gl1@(GetLockReq _ _ rt1) `mrg` gl2@(GetLockReq _ _ rt2)
@@ -71,6 +91,8 @@ handleGetLock reqs = get >>= \s ->
 	bool (Just (singleton $ OccGetLock l ti) <$ modify (`lockIt` l)) (pure Nothing) $ s `isLocked` l
 	where GetLockReq l ti _ = extract reqs
 
+-- UNLOCK
+
 newtype Unlock = UnlockReq LockId deriving Show
 numbered 9 [t| Unlock |]
 instance Mrgable Unlock where ul1 `mrg` _ul2 = ul1
@@ -82,6 +104,19 @@ unlock l = await (UnlockReq l) (const ())
 handleUnlock :: (LockState s, Monad m) => Handle' (StateT s m) (Singleton Unlock)
 handleUnlock reqs = Just (singleton OccUnlock) <$ modify (`unlockIt` l)
 	where UnlockReq l = extract reqs
+
+---------------------------------------------------------------------------
+-- LOCKEV
+---------------------------------------------------------------------------
+
+type LockEv = NewLockId :- GetLock :- Unlock :- 'Nil
+
+handleLock :: (LockState s, Monad m) => Handle' (StateT s m) LockEv
+handleLock = handleNewLockId `merge` handleGetLock `merge` handleUnlock
+
+---------------------------------------------------------------------------
+-- WITHLOCK
+---------------------------------------------------------------------------
 
 type GetThreadIdGetLock = GetThreadId :- GetLock :- 'Nil
 type SingletonUnlock = Singleton Unlock
@@ -95,8 +130,3 @@ withLock :: (
 	Firstable GetThreadIdGetLock es', Firstable SingletonUnlock es' ) =>
 	LockId -> React es a -> React es' a
 withLock l act = adjust (getLock l 0) >> adjust act <* adjust (unlock l)
-
-type LockEv = NewLockId :- GetLock :- Unlock :- 'Nil
-
-handleLock :: (LockState s, Monad m) => Handle' (StateT s m) LockEv
-handleLock = handleNewLockId `merge` handleGetLock `merge` handleUnlock

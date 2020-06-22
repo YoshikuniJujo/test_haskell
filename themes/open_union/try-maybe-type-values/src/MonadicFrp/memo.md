@@ -141,7 +141,7 @@ refactor
 * [ ] MonadicFrp.EventHandle.Lock
 	+ [x] API
 	+ [x] imports
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
 * [ ] MonadicFrp.EventHandle.Random
 	+ [ ] API
