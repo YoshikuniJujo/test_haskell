@@ -144,10 +144,10 @@ refactor
 	+ [x] structure
 	+ [ ] body
 		- [x] LOCKID AND LOCKSTATE
-		- [ ] EVENT
+		- [x] EVENT
 			* [x] NEWLOCKID
 			* [x] GETLOCK
-			* [ ] UNLOCK
+			* [x] UNLOCK
 		- [ ] LOCKEV
 		- [ ] WITHLOCK
 * [ ] MonadicFrp.EventHandle.Random

@@ -98,15 +98,16 @@ handleGetLock rqs = get >>= \s -> bool
 
 newtype Unlock = UnlockReq LockId deriving Show
 numbered 9 [t| Unlock |]
-instance Mrgable Unlock where ul1 `mrg` _ul2 = ul1
+instance Mrgable Unlock where u1 `mrg` _u2 = u1
 instance Request Unlock where data Occurred Unlock = OccUnlock
 
 unlock :: LockId -> React (Singleton Unlock) ()
-unlock l = await (UnlockReq l) (const ())
+unlock l = await (UnlockReq l) \_ -> ()
 
-handleUnlock :: (LockState s, Monad m) => Handle' (StateT s m) (Singleton Unlock)
-handleUnlock reqs = Just (singleton OccUnlock) <$ modify (`unlockIt` l)
-	where UnlockReq l = extract reqs
+handleUnlock ::
+	(LockState s, Monad m) => Handle' (StateT s m) (Singleton Unlock)
+handleUnlock rqs = Just (singleton OccUnlock) <$ modify (`unlockIt` l)
+	where UnlockReq l = extract rqs
 
 ---------------------------------------------------------------------------
 -- LOCKEV
