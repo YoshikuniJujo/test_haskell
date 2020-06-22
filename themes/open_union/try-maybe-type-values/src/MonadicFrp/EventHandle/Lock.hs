@@ -29,8 +29,7 @@ import MonadicFrp.EventHandle.ThreadId (GetThreadId, ThreadId, getThreadId)
 --	+ NEWLOCKID
 --	+ GETLOCK
 --	+ UNLOCK
--- * LOCKEV
--- * WITHLOCK
+-- * HANDLE AND WITHLOCK
 
 ---------------------------------------------------------------------------
 -- LOCKID AND LOCKSTATE
@@ -101,6 +100,8 @@ numbered 9 [t| Unlock |]
 instance Mrgable Unlock where u1 `mrg` _u2 = u1
 instance Request Unlock where data Occurred Unlock = OccUnlock
 
+type SingletonUnlock = Singleton Unlock
+
 unlock :: LockId -> React (Singleton Unlock) ()
 unlock l = await (UnlockReq l) \_ -> ()
 
@@ -110,19 +111,13 @@ handleUnlock rqs = Just (singleton OccUnlock) <$ modify (`unlockIt` l)
 	where UnlockReq l = extract rqs
 
 ---------------------------------------------------------------------------
--- LOCKEV
+-- HANDLE AND WITHLOCK
 ---------------------------------------------------------------------------
 
 type LockEv = NewLockId :- GetLock :- Unlock :- 'Nil
 
 handleLock :: (LockState s, Monad m) => Handle' (StateT s m) LockEv
 handleLock = handleNewLockId `merge` handleGetLock `merge` handleUnlock
-
----------------------------------------------------------------------------
--- WITHLOCK
----------------------------------------------------------------------------
-
-type SingletonUnlock = Singleton Unlock
 
 withLock :: (
 	(es :+: es') ~ es',
