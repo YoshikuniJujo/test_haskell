@@ -73,21 +73,26 @@ data GetLock = GetLockReq LockId ThreadId RetryTime deriving (Show, Eq)
 type RetryTime = Int
 numbered 9 [t| GetLock |]
 instance Mrgable GetLock where
-	gl1@(GetLockReq _ _ rt1) `mrg` gl2@(GetLockReq _ _ rt2)
-		| rt1 >= rt2 = gl1
-		| otherwise = gl2
+	g1@(GetLockReq _ _ rt1) `mrg` g2@(GetLockReq _ _ rt2)
+		| rt1 >= rt2 = g1 | otherwise = g2
 instance Request GetLock where
 	data Occurred GetLock = OccGetLock LockId ThreadId
 
-getLock :: LockId -> RetryTime -> React (GetThreadId :- GetLock :- 'Nil) ()
+type GetThreadIdGetLock = GetThreadId :- GetLock :- 'Nil
+
+getLock :: LockId -> RetryTime -> React GetThreadIdGetLock ()
 getLock l rt = adjust getThreadId >>= \ti ->
 	maybe (pure ()) (getLock l) =<< adjust (await (GetLockReq l ti rt)
-		\(OccGetLock l' ti') -> if l == l' && ti == ti' then Nothing else Just $ rt + 1)
+		\(OccGetLock l' ti') ->
+			bool (Just $ rt + 1) Nothing $ l == l' && ti == ti')
 
-handleGetLock :: (LockState s, Monad m) => Handle' (StateT s m) (Singleton GetLock)
-handleGetLock reqs = get >>= \s ->
-	bool (Just (singleton $ OccGetLock l ti) <$ modify (`lockIt` l)) (pure Nothing) $ s `isLocked` l
-	where GetLockReq l ti _ = extract reqs
+handleGetLock ::
+	(LockState s, Monad m) => Handle' (StateT s m) (Singleton GetLock)
+handleGetLock rqs = get >>= \s -> bool
+	(Just (singleton $ OccGetLock l ti) <$ modify (`lockIt` l))
+	(pure Nothing)
+	(s `isLocked` l)
+	where GetLockReq l ti _ = extract rqs
 
 -- UNLOCK
 
@@ -116,7 +121,6 @@ handleLock = handleNewLockId `merge` handleGetLock `merge` handleUnlock
 -- WITHLOCK
 ---------------------------------------------------------------------------
 
-type GetThreadIdGetLock = GetThreadId :- GetLock :- 'Nil
 type SingletonUnlock = Singleton Unlock
 
 withLock :: (

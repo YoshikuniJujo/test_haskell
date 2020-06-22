@@ -146,7 +146,7 @@ refactor
 		- [x] LOCKID AND LOCKSTATE
 		- [ ] EVENT
 			* [x] NEWLOCKID
-			* [ ] GETLOCK
+			* [x] GETLOCK
 			* [ ] UNLOCK
 		- [ ] LOCKEV
 		- [ ] WITHLOCK
