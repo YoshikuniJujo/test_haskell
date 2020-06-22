@@ -140,7 +140,7 @@ refactor
 	+ [x] body
 * [ ] MonadicFrp.EventHandle.Lock
 	+ [x] API
-	+ [ ] imports
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] MonadicFrp.EventHandle.Random

@@ -13,13 +13,16 @@ module MonadicFrp.EventHandle.Lock (
 	-- * Event
 	GetThreadIdGetLock, SingletonUnlock, newLockId, withLock ) where
 
-import Control.Monad.State
-import Data.Type.Set
-import Data.UnionSet hiding (merge)
-import Data.Bool
-import MonadicFrp
-import MonadicFrp.Handle
-import MonadicFrp.EventHandle.ThreadId
+import Control.Monad.State (StateT, get, modify)
+import Data.Type.Set (Set(Nil), Singleton, (:-), (:+:), numbered)
+import Data.UnionSet (Mrgable(..), Expandable, singleton, extract)
+import Data.Bool (bool)
+
+import MonadicFrp (Request(..), React, Firstable, await, adjust)
+import MonadicFrp.Handle (Handle', merge)
+import MonadicFrp.EventHandle.ThreadId (GetThreadId, ThreadId, getThreadId)
+
+---------------------------------------------------------------------------
 
 newtype LockId = LockId Int deriving (Show, Eq)
 type RetryTime = Int
