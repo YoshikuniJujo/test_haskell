@@ -39,11 +39,9 @@ import MonadicFrp.EventHandle.ThreadId (GetThreadId, ThreadId, getThreadId)
 newtype LockId = LockId Int deriving (Show, Eq)
 
 class LockState s where
-	getNextLockId :: s -> Int
-	putNextLockId :: s -> Int -> s
+	getNextLockId :: s -> Int; putNextLockId :: s -> Int -> s
 	isLocked :: s -> LockId -> Bool
-	lockIt :: s -> LockId -> s
-	unlockIt :: s -> LockId -> s
+	lockIt :: s -> LockId -> s; unlockIt :: s -> LockId -> s
 
 ---------------------------------------------------------------------------
 -- EVENT

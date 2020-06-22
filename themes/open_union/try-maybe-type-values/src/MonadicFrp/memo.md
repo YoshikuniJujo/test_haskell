@@ -143,6 +143,13 @@ refactor
 	+ [x] imports
 	+ [x] structure
 	+ [ ] body
+		- [x] LOCKID AND LOCKSTATE
+		- [ ] EVENT
+			* [ ] NEWLOCKID
+			* [ ] GETLOCK
+			* [ ] UNLOCK
+		- [ ] LOCKEV
+		- [ ] WITHLOCK
 * [ ] MonadicFrp.EventHandle.Random
 	+ [ ] API
 	+ [ ] imports
