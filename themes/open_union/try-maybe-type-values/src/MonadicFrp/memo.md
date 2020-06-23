@@ -151,8 +151,8 @@ refactor
 		- [x] HANDLE AND WITHLOCK
 * [ ] MonadicFrp.EventHandle.Random
 	+ [x] API
-	+ [ ] imports
-	+ [ ] structure
+	+ [x] imports
+	+ [x] structure
 	+ [ ] body
 * [ ] MonadicFrp.Event.Mouse
 	+ [ ] API

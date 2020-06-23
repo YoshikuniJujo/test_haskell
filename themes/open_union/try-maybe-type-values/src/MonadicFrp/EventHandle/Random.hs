@@ -22,6 +22,18 @@ import MonadicFrp.Handle (Handle', merge)
 
 ---------------------------------------------------------------------------
 
+-- * EVENT
+--	+ STORE RANDOM GEN
+--	+ LOAD RANDOM GEN
+-- * REACT AND HANDLE
+--	+ TYPE
+--	+ GET RANDOM FUNCTION
+--	+ HANDLE
+
+---------------------------------------------------------------------------
+-- EVENT
+---------------------------------------------------------------------------
+
 -- STORE RANDOM GEN
 
 newtype StoreRandomGen = StoreRandomGenReq StdGen deriving Show
@@ -45,11 +57,15 @@ instance Request LoadRandomGen where
 loadRandomGen :: React (Singleton LoadRandomGen) StdGen
 loadRandomGen = await LoadRandomGenReq \(OccLoadRandomGen g) -> g
 
--- RANDOM EVENT
+---------------------------------------------------------------------------
+-- REACT AND HANDKLE
+---------------------------------------------------------------------------
+
+-- TYPE
 
 type RandomEv = StoreRandomGen :- LoadRandomGen :- 'Nil
 
--- GET RANDOM
+-- GET RANDOM FUNCTION
 
 getRandom :: Random a => React RandomEv a
 getRandom = modifyRandomGen random
