@@ -164,8 +164,12 @@ refactor
 * [ ] MonadicFrp.Event.Mouse
 	+ [x] API
 	+ [x] imports
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] MOUSE DOWN
+		- [ ] MOUSE UP
+		- [ ] MOUSE MOVE
+		- [ ] DELETE EVENT
 * [ ] MonadicFrp.XFieldHandle.Mouse
 	+ [ ] API
 	+ [ ] imports

@@ -26,6 +26,15 @@ import MonadicFrp (Request(..), React, await)
 
 ---------------------------------------------------------------------------
 
+-- * MOUSE DOWN
+-- * MOUSE UP
+-- * MOUSE MOVE	
+-- * DELETE EVENT
+
+---------------------------------------------------------------------------
+-- MOUSE DOWN
+---------------------------------------------------------------------------
+
 data MouseDown = MouseDownReq deriving (Show, Eq, Ord)
 data MouseBtn = MLeft | MMiddle | MRight | MUp | MDown deriving (Show, Eq, Ord)
 numbered 9 [t| MouseDown |]
@@ -41,6 +50,10 @@ clickOn b = bool (clickOn b) (pure ()) . (b `elem`) =<< mouseDown
 leftClick, middleClick, rightClick :: React (Singleton MouseDown) ()
 [leftClick, middleClick, rightClick] = clickOn <$> [MLeft, MMiddle, MRight]
 
+---------------------------------------------------------------------------
+-- MOUSE UP
+---------------------------------------------------------------------------
+
 data MouseUp = MouseUpReq deriving (Show, Eq, Ord)
 numbered 9 [t| MouseUp |]
 instance Request MouseUp where
@@ -55,6 +68,10 @@ releaseOn b = bool (releaseOn b) (pure ()) . (b `elem`) =<< mouseUp
 leftUp, middleUp, rightUp :: React (Singleton MouseUp) ()
 [leftUp, middleUp, rightUp] = releaseOn <$> [MLeft, MMiddle, MRight]
 
+---------------------------------------------------------------------------
+-- MOUSE MOVE
+---------------------------------------------------------------------------
+
 data MouseMove = MouseMoveReq deriving (Show, Eq, Ord)
 type Point = (Integer, Integer)
 numbered 9 [t| MouseMove |]
@@ -63,6 +80,10 @@ instance Request MouseMove where
 
 mouseMove :: React (Singleton MouseMove) Point
 mouseMove = await MouseMoveReq \(OccMouseMove p) -> p
+
+---------------------------------------------------------------------------
+-- DELETE EVENT
+---------------------------------------------------------------------------
 
 data DeleteEvent = DeleteEventReq deriving (Show, Eq, Ord)
 numbered 9 [t| DeleteEvent |]
