@@ -15,8 +15,10 @@ module Data.OneOrMore (
 	-- * FUNCTION
 	prj, extract, singleton, (>-), expand, collapse, merge, merge' ) where
 
-import Data.Kind
-import Data.Type.Set.Internal hiding (Merge)
+import Data.Kind (Type)
+import Data.Type.Set.Internal (Set(..), Singleton)
+
+---------------------------------------------------------------------------
 
 data OneOrMore :: Set Type -> Type where
 	Empty :: OneOrMore 'Nil
