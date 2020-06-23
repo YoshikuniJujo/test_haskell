@@ -28,13 +28,13 @@ import System.Random (randomRIO)
 -- NUMBERED
 ---------------------------------------------------------------------------
 
-numbered :: Int -> TypeQ -> DecsQ
-numbered s t = ((: []) <$>) . instanceD (cxt []) (conT ''Numbered `appT` t) $ (: []) do
-	n <- runIO $ abs <$> randomRIO (0, 2 ^ s) -- randomIO
-	tySynInstD $ tySynEqn Nothing (conT ''Number `appT` t) (litT $ numTyLit n)
+class Numbered a where type Number (a :: Type) = (r :: Nat) | r -> a
 
-class Numbered a where
-	type Number (a :: Type) = (r :: Nat) | r -> a
+numbered :: Int -> TypeQ -> DecsQ
+numbered s t =
+	((: []) <$>) . instanceD (cxt []) (conT ''Numbered `appT` t) . (: [])
+		$ tySynInstD . tySynEqn Nothing (conT ''Number `appT` t)
+			. litT . numTyLit =<< runIO (randomRIO (0, 2 ^ s - 1))
 
 ---------------------------------------------------------------------------
 -- TYPE SET
@@ -43,33 +43,27 @@ class Numbered a where
 infixr 5 :~
 data Set a = Nil | a :~ Set a
 
-type family Singleton (t :: Type) :: Set Type where
-	Singleton t = t ':~ 'Nil
-
-type family Insert (t :: Type) (ts :: Set Type) :: Set Type where
-	Insert t 'Nil = t ':~ 'Nil
-	Insert t (t ':~ ts) = t ':~ ts
-	Insert t (t' ':~ ts) = If (Number t <=? Number t')
-		(t ':~ t' ':~ ts)
-		(t' ':~ Insert t ts)
+type Singleton t = t ':~ 'Nil
 
 infixr 5 :-
 type t :- ts = t `Insert` ts
+type family Insert (t :: Type) (ts :: Set Type) :: Set Type where
+	Insert t 'Nil = t ':~ 'Nil
+	Insert t (t ':~ ts) = t ':~ ts
+	Insert t (t' ':~ ts) = If
+		(Number t <=? Number t') (t ':~ t' ':~ ts) (t' ':~ Insert t ts)
 
+infixr 5 :+:
+type ts :+: ts' = ts `Merge` ts'
 type family Merge (ts :: Set Type) (ts' :: Set Type) :: Set Type where
 	Merge ts 'Nil = ts
 	Merge 'Nil ts' = ts'
 	Merge (t ':~ ts) (t ':~ ts') = t ':~ Merge ts ts'
 	Merge (t ':~ ts) (t' ':~ ts') = If (Number t <=? Number t')
-		(t ':~ Merge ts (t' ':~ ts'))
-		(t' ':~ Merge (t ':~ ts) ts')
-
-infixr 5 :+:
-type ts :+: ts' = ts `Merge` ts'
-
-type family Map (f :: Type -> Type) (ts :: Set Type) :: Set Type where
-	Map _f 'Nil = 'Nil
-	Map f (t ':~ ts) = f t ':~ Map f ts
+		(t ':~ Merge ts (t' ':~ ts')) (t' ':~ Merge (t ':~ ts) ts')
 
 infixl 4 :$:
-type f :$: t = f `Map` t
+type f :$: ts = f `Map` ts
+type family Map (f :: Type -> Type) (ts :: Set Type) :: Set Type where
+	Map _f 'Nil = 'Nil
+	Map f (t ':~ ts) = f t ':~ f `Map` ts
