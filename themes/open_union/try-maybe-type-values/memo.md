@@ -31,7 +31,7 @@ TODO
 * [x] Followboxのリファクタリング
 * [x] hlintによるリファクタリング
 * [x] Trials.NewRandomで「状態」をSigのなかであつかう仕組みを試す
-* [ ] MonadicFrp以下のリファクタリング
+* [x] MonadicFrp以下のリファクタリング
 * [ ] Data.Type.Setのリファクタリング
 * [ ] Data.UnionSetのリファクタリング
 * [ ] Trials.Lockのリファクタリングなど
