@@ -18,7 +18,7 @@ import MonadicFrp.Handle (Handle')
 import MonadicFrp.Event.Mouse (
 	Occurred(..), MouseEv, MouseDown, MouseUp, MouseMove, MouseBtn(..) )
 import Field (
-	Field, Event(..), Button, flushField, closeField,
+	Field, Event(..), flushField, closeField,
 	withNextEvent, withNextEventTimeout', isDeleteEvent )
 
 ---------------------------------------------------------------------------
@@ -31,47 +31,36 @@ import Field (
 ---------------------------------------------------------------------------
 
 handleMouse :: Maybe DiffTime -> Field -> Handle' IO MouseEv
-handleMouse Nothing f _reqs = withNextEvent f $ eventToEv f
-handleMouse (Just prd) f _reqs =
-	withNextEventTimeout'' f prd $ maybe (pure Nothing) (eventToEv f)
-	where
-	withNextEventTimeout'' :: Field -> DiffTime -> (Maybe Event -> IO a) ->  IO a
-	withNextEventTimeout'' f = withNextEventTimeout' f . round . (* 1000000)
+handleMouse Nothing f _rqs = withNextEvent f $ eventToEv f
+handleMouse (Just prd) f _rqs = withNextEventTimeout' f
+	(round $ prd * 1000000) $ maybe (pure Nothing) (eventToEv f)
 
 ---------------------------------------------------------------------------
 -- EVENT TO EV
 ---------------------------------------------------------------------------
 
+type MouseMoveDown = MouseMove :- MouseDown :- 'Nil
+type MouseMoveUp = MouseMove :- MouseUp :- 'Nil
+
 eventToEv :: Field -> Event -> IO (Maybe (EvOccs MouseEv))
 eventToEv f = \case
-	ButtonEvent {
-		ev_event_type = 4, ev_button = eb,
-		ev_x = x, ev_y = y } | Just b <- button eb ->
-			pure . Just . expand $ mouseDownOcc x y [b]
-	ButtonEvent {
-		ev_event_type = 5, ev_button = eb,
-		ev_x = x, ev_y = y } | Just b <- button eb ->
-			pure . Just . expand $ mouseUpOcc x y [b]
-	MotionEvent { ev_x = x, ev_y = y } ->
-		pure . Just . expand $ mouseMoveOcc x y
+	ButtonEvent { ev_event_type = 4, ev_button = eb, ev_x = x, ev_y = y }
+		| Just b <- btn eb -> pure . Just . expand $ omd x y [b]
+	ButtonEvent { ev_event_type = 5, ev_button = eb, ev_x = x, ev_y = y }
+		| Just b <- btn eb -> pure . Just . expand $ omu x y [b]
+	MotionEvent { ev_x = x, ev_y = y } -> pure . Just . expand $ omm x y
 	ExposeEvent {} -> Nothing <$ flushField f
 	DestroyWindowEvent {} -> closeField f >> exitSuccess
-	ev	| isDeleteEvent f ev ->
-			pure . Just . expand $ singleton OccDeleteEvent
+	ev	| isDeleteEvent f ev -> pure . Just $ expand ode
 		| otherwise -> pure Nothing
-
-mouseDownOcc ::
-	CInt -> CInt -> [MouseBtn] -> EvOccs (MouseMove :- MouseDown :- 'Nil)
-mouseDownOcc x y bs =OccMouseDown bs >- mouseMoveOcc x y
-
-mouseUpOcc ::
-	CInt -> CInt -> [MouseBtn] -> EvOccs (MouseMove :- MouseUp :- 'Nil)
-mouseUpOcc x y bs = OccMouseUp bs >- mouseMoveOcc x y
-
-mouseMoveOcc :: CInt -> CInt -> EvOccs (Singleton MouseMove)
-mouseMoveOcc x y = singleton $ OccMouseMove (fromIntegral x, fromIntegral y)
-
-button :: Button -> Maybe MouseBtn
-button = \case
-	1 -> Just MLeft; 2 -> Just MMiddle; 3 -> Just MRight
-	4 -> Just MUp; 5 -> Just MDown; _ -> Nothing
+	where
+	omd :: CInt -> CInt -> [MouseBtn] -> EvOccs MouseMoveDown
+	omd x y bs = OccMouseDown bs >- omm x y
+	omu :: CInt -> CInt -> [MouseBtn] -> EvOccs MouseMoveUp
+	omu x y bs = OccMouseUp bs >- omm x y
+	omm :: CInt -> CInt -> EvOccs (Singleton MouseMove)
+	omm x y = singleton $ OccMouseMove (fromIntegral x, fromIntegral y)
+	ode = singleton OccDeleteEvent
+	btn = \case
+		1 -> Just MLeft; 2 -> Just MMiddle; 3 -> Just MRight
+		4 -> Just MUp; 5 -> Just MDown; _ -> Nothing
