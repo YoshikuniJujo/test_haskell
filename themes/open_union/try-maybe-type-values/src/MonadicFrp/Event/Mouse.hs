@@ -19,10 +19,12 @@ module MonadicFrp.Event.Mouse (
 	DeleteEvent, deleteEvent
 	) where
 
-import Data.Type.Set (Set(Nil), Singleton, numbered, (:-))
+import Data.Type.Set (Set(Nil), Singleton, (:-), numbered)
 import Data.Bool (bool)
 
-import MonadicFrp
+import MonadicFrp (Request(..), React, await)
+
+---------------------------------------------------------------------------
 
 data MouseDown = MouseDownReq deriving (Show, Eq, Ord)
 data MouseBtn = MLeft | MMiddle | MRight | MUp | MDown deriving (Show, Eq, Ord)

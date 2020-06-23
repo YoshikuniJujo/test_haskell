@@ -162,8 +162,8 @@ refactor
 			* [x] GET RANDOM FUNCTION
 			* [x] HANDLE
 * [ ] MonadicFrp.Event.Mouse
-	+ [ ] API
-	+ [ ] imports
+	+ [x] API
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] MonadicFrp.XFieldHandle.Mouse
