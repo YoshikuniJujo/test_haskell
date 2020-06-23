@@ -10,8 +10,12 @@ module Data.OneOrMore (
 	-- * Type
 	OneOrMore(Empty),
 	-- * Property
-	Projectable, Nihil, Insertable, Expandable, Collapsable,
-	Selectable(..), Mergeable,
+	-- ** Basic Property
+	Projectable, Insertable,
+	-- ** Expandable and Collapsable
+	Expandable, Nihil, Collapsable,
+	-- ** Mergeable
+	Mergeable, Selectable(..),
 	-- * FUNCTION
 	prj, extract, singleton, (>-), expand, collapse, merge, merge' ) where
 
@@ -20,9 +24,42 @@ import Data.Type.Set.Internal (Set(..), Singleton)
 
 ---------------------------------------------------------------------------
 
+-- * ONEORMORE TYPE
+-- * BASIC PROPERTY
+--	+ PROJECTABLE
+--	+ INSERTABLE
+-- * EXPANDABLE AND COLLAPSABLE
+--	+ EXPANDABLE
+--	+ COLLAPSABLE
+-- * MERGEABLE
+
+---------------------------------------------------------------------------
+-- ONEORMORE TYPE
+---------------------------------------------------------------------------
+
 data OneOrMore :: Set Type -> Type where
 	Empty :: OneOrMore 'Nil
 	(:.) :: Maybe a -> OneOrMore as -> OneOrMore (a ':~ as)
+
+singleton :: a -> OneOrMore (Singleton a)
+singleton = (>- Empty)
+
+---------------------------------------------------------------------------
+-- BASIC PROPERTY
+---------------------------------------------------------------------------
+
+-- PROJECTABLE
+
+class Projectable (as :: Set Type) a where prj :: OneOrMore as -> Maybe a
+instance Projectable 'Nil a where prj _ = Nothing
+instance Projectable (a ':~ as) a where prj (x :. _) = x
+instance {-# OVERLAPPABLE #-} Projectable as a =>
+	Projectable (a' ':~ as) a where prj (_ :. xs) = prj xs
+
+extract :: OneOrMore (Singleton a) -> a
+extract u = case prj u of Just x -> x; Nothing -> error "never occur"
+
+-- INSERTABLE
 
 infixr 5 >-
 
@@ -35,12 +72,11 @@ instance Insertable a as (a ':~ as) where
 instance {-# OVERLAPPABLE #-} Insertable a as as' => Insertable a (a' ':~ as) (a' ':~ as') where
 	x >- (y :. xs) = y :. (x >- xs)
 
-singleton :: a -> OneOrMore (Singleton a)
-singleton = (>- Empty)
+---------------------------------------------------------------------------
+-- EXPANDABLE AND COLLAPSABLE
+---------------------------------------------------------------------------
 
-class Nihil as where nihil :: OneOrMore as
-instance Nihil 'Nil where nihil = Empty
-instance Nihil as => Nihil (a ':~ as) where nihil = Nothing :. nihil
+-- EXPANDABLE
 
 class Expandable (as :: Set Type) (as' :: Set Type) where
 	expand :: OneOrMore as -> OneOrMore as'
@@ -54,20 +90,11 @@ instance {-# OVERLAPPABLE #-} Expandable as as' => Expandable (a ':~ as) (a ':~ 
 instance {-# OVERLAPPABLE #-} Expandable (a ':~ as) as' => Expandable (a ':~ as) (a' ':~ as') where
 	expand xs = Nothing :. expand xs
 
-class Projectable (as :: Set Type) a where
-	prj :: OneOrMore as -> Maybe a
+class Nihil as where nihil :: OneOrMore as
+instance Nihil 'Nil where nihil = Empty
+instance Nihil as => Nihil (a ':~ as) where nihil = Nothing :. nihil
 
-instance Projectable 'Nil a where
-	prj _ = Nothing
-
-instance Projectable (a ':~ as) a where
-	prj (x :. _) = x
-
-instance {-# OVERLAPPABLE #-} Projectable as a => Projectable (a' ':~ as) a where
-	prj (_ :. xs) = prj xs
-
-extract :: OneOrMore (Singleton a) -> a
-extract u = case prj u of Just x -> x; Nothing -> error "never occur"
+-- COLLAPSABLE
 
 class Collapsable0 (as :: Set Type) (as' :: Set Type) where
 	collapse0 :: OneOrMore as -> OneOrMore as'
@@ -94,6 +121,10 @@ instance (Collapsable0 as as', Collapsable as as') =>
 instance {-# OVERLAPPABLE #-} Collapsable as as' =>
 	Collapsable (a ':~ as) as' where
 	collapse (_ :. xs) = collapse xs
+
+---------------------------------------------------------------------------
+-- MERGEABLE
+---------------------------------------------------------------------------
 
 class Selectable a where select :: a -> a -> a
 

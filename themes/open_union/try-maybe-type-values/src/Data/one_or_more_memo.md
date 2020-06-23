@@ -21,5 +21,13 @@ refactor
 * [ ] Data.OneOrMore
 	+ [x] API
 	+ [x] imports
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] ONEORMORE TYPE
+		- [ ] BASIC PROPERTY
+			* [ ] PROJECTABLE
+			* [ ] INSERTABLE
+		- [ ] EXPANDABLE AND COLLAPSABLE
+			* [ ] EXPANDABLE
+			* [ ] COLLAPSABLE
+		- [ ] MERGEABLE
