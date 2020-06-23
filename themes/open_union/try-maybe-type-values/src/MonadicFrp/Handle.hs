@@ -14,9 +14,9 @@ module MonadicFrp.Handle (
 
 import Control.Arrow (first)
 import Data.Type.Set ((:+:), (:$:))
-import Data.UnionSet (Mergeable, Expandable, Collapsable, merge')
+import Data.OneOrMore (Mergeable, Expandable, Collapsable, merge')
 
-import qualified Data.UnionSet as US
+import qualified Data.OneOrMore as OOM
 
 import MonadicFrp.React (
 	Occurred, Handle, Handle', HandleSt, HandleSt', EvReqs, EvOccs )
@@ -51,11 +51,11 @@ retry hdl rqs = maybe (retry hdl rqs) pure =<< hdl rqs
 collapse :: (Applicative m, Collapsable es' es) =>
 	(EvReqs es -> m (Maybe (EvOccs es))) ->
 	EvReqs es' -> m (Maybe (EvOccs es))
-collapse hdl = maybe (pure Nothing) hdl . US.collapse
+collapse hdl = maybe (pure Nothing) hdl . OOM.collapse
 
 expand :: (Applicative m, Collapsable es' es, ExpandableOccurred es es') =>
 	Handle' m es -> Handle' m es'
-expand hdl = ((US.expand <$>) <$>) . collapse hdl
+expand hdl = ((OOM.expand <$>) <$>) . collapse hdl
 
 infixr 5 `before`
 
@@ -81,11 +81,11 @@ retrySt hdl st rqs = hdl st rqs >>= \(mocc, st') ->
 collapseSt :: (Applicative m, Collapsable es' es) =>
 	(st -> EvReqs es -> m (Maybe (EvOccs es), st')) ->
 	(st -> m st') -> st -> EvReqs es' -> m (Maybe (EvOccs es), st')
-collapseSt hdl ot st = maybe ((Nothing ,) <$> ot st) (hdl st) . US.collapse
+collapseSt hdl ot st = maybe ((Nothing ,) <$> ot st) (hdl st) . OOM.collapse
 
 expandSt :: (Applicative m, Collapsable es' es, ExpandableOccurred es es') =>
 	HandleSt' st st' m es -> (st -> m st') -> HandleSt' st st' m es'
-expandSt hdl o st rqs = first (US.expand <$>) <$> collapseSt hdl o st rqs
+expandSt hdl o st rqs = first (OOM.expand <$>) <$> collapseSt hdl o st rqs
 
 beforeSt :: (Monad m, Beforable es es') =>
 	HandleSt' st st' m es -> (st -> m st') ->

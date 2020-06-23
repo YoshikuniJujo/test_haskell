@@ -13,7 +13,7 @@ import Prelude hiding (head)
 
 import Control.Monad.State (StateT, lift, gets, modify)
 import Data.Type.Set (Singleton)
-import Data.UnionSet (singleton, extract)
+import Data.OneOrMore (singleton, extract)
 import Data.Bool (bool)
 import Data.List (delete)
 import Data.String (fromString)

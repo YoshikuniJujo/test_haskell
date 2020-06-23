@@ -6,7 +6,7 @@
 	FlexibleInstances, FlexibleContexts, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.UnionSet (
+module Data.OneOrMore (
 	-- * Type
 	UnionSet(Empty), Projectable, Nihil, Insertable, Expandable, Collapsable, Mrgable(..), Mergeable,
 	-- * FUNCTION

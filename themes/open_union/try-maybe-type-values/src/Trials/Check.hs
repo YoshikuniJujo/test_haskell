@@ -7,7 +7,7 @@
 module Trials.Check where
 
 import Data.Type.Set
-import Data.UnionSet
+import Data.OneOrMore
 
 import MonadicFrp
 import MonadicFrp.Run

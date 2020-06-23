@@ -14,7 +14,7 @@ module MonadicFrp.EventHandle.Random (
 
 import Control.Monad.State (StateT, gets, modify)
 import Data.Type.Set (Set(Nil), Singleton, numbered, (:-))
-import Data.UnionSet (Mrgable(..), singleton, extract)
+import Data.OneOrMore (Mrgable(..), singleton, extract)
 import System.Random (Random, StdGen, random, randomR)
 
 import MonadicFrp (Request, Occurred, React, await, adjust)

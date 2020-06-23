@@ -12,7 +12,7 @@ import Control.Monad.State
 import Control.Concurrent
 import Data.Type.Set
 import Data.Type.Flip
-import Data.UnionSet hiding (merge)
+import Data.OneOrMore hiding (merge)
 import Data.List (delete)
 
 import MonadicFrp

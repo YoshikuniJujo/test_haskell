@@ -33,7 +33,7 @@ module Trials.Followbox.Event (
 	) where
 
 import Data.Type.Set (Set(Nil), Singleton, numbered, (:-), (:+:))
-import Data.UnionSet (Mrgable(..))
+import Data.OneOrMore (Mrgable(..))
 import Data.Bool (bool)
 import Data.Time (UTCTime, TimeZone)
 import Data.Aeson (Object)

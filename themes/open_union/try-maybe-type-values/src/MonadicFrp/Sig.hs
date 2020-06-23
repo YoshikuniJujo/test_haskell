@@ -26,7 +26,7 @@ import Control.Arrow ((***), first)
 import Control.Monad ((<=<), forever)
 import Data.Type.Flip (Flip(..), (<$%>), (<*%>))
 import Data.Type.Set ((:+:))
-import Data.UnionSet (Mergeable)
+import Data.OneOrMore (Mergeable)
 
 import MonadicFrp.React.Internal (
 	React(..), Adjustable, Firstable, Handle, HandleSt,

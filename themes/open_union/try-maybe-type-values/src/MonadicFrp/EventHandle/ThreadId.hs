@@ -13,7 +13,7 @@ module MonadicFrp.EventHandle.ThreadId (
 	getThreadId ) where
 
 import Data.Type.Set (Singleton, numbered)
-import Data.UnionSet (singleton)
+import Data.OneOrMore (singleton)
 
 import MonadicFrp (React, Request(..))
 import MonadicFrp.React (ThreadId, await')

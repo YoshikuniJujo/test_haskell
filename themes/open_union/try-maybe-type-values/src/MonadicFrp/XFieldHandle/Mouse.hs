@@ -9,7 +9,7 @@ module MonadicFrp.XFieldHandle.Mouse (
 
 import Foreign.C.Types (CInt)
 import Data.Type.Set (Set(Nil), Singleton, (:-))
-import Data.UnionSet (singleton, expand, (>-))
+import Data.OneOrMore (singleton, expand, (>-))
 import Data.Time (DiffTime)
 import System.Exit (exitSuccess)
 

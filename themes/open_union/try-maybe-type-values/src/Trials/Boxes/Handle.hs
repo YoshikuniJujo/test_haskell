@@ -7,7 +7,7 @@
 module Trials.Boxes.Handle (Mode(InitMode), handleBoxes) where
 
 import Control.Monad.State (StateT, get, put, lift)
-import Data.UnionSet (prj, singleton, (>-), expand)
+import Data.OneOrMore (prj, singleton, (>-), expand)
 import Data.Time (DiffTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)

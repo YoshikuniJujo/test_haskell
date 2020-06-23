@@ -13,7 +13,7 @@ module MonadicFrp.React (
 	await, await', adjust, first ) where
 
 import Data.Type.Set (Singleton)
-import Data.UnionSet (extract, singleton)
+import Data.OneOrMore (extract, singleton)
 
 import MonadicFrp.React.Internal (
 	React(..), EvReqs, EvOccs, Request(..), ThreadId,

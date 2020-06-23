@@ -10,7 +10,7 @@ import Prelude hiding (scanl, repeat, break)
 
 import Data.Type.Flip
 import Data.Type.Set
-import Data.UnionSet
+import Data.OneOrMore
 
 import MonadicFrp
 import MonadicFrp.Handle

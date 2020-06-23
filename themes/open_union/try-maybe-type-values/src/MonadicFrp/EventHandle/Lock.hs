@@ -15,7 +15,7 @@ module MonadicFrp.EventHandle.Lock (
 
 import Control.Monad.State (StateT, get, modify)
 import Data.Type.Set (Set(Nil), Singleton, (:-), (:+:), numbered)
-import Data.UnionSet (Mrgable(..), Expandable, singleton, extract)
+import Data.OneOrMore (Mrgable(..), Expandable, singleton, extract)
 import Data.Bool (bool)
 
 import MonadicFrp (Request(..), React, Firstable, await, adjust)

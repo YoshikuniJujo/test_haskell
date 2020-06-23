@@ -9,7 +9,7 @@ module Trials.Sleep where
 import Control.Concurrent
 import Data.Type.Flip
 import Data.Type.Set
-import Data.UnionSet
+import Data.OneOrMore
 import Data.Bool
 import Data.Time
 

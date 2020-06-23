@@ -18,7 +18,7 @@ module MonadicFrp.React.Internal (
 
 import Data.Kind (Type)
 import Data.Type.Set (Set, Numbered, (:+:), (:$:))
-import Data.UnionSet (
+import Data.OneOrMore (
 	UnionSet, Mrgable, Mergeable, Expandable, Collapsable,
 	merge, expand, collapse )
 import Data.Or (Or(..))
