@@ -33,7 +33,7 @@ TODO
 * [x] Trials.NewRandomで「状態」をSigのなかであつかう仕組みを試す
 * [x] MonadicFrp以下のリファクタリング
 * [x] Data.Type.Setのリファクタリング
-* [ ] Data.UnionSetのリファクタリング
+* [x] Data.OneOrMore(Data.UnionSet)のリファクタリング
 * [ ] Trials.Lockのリファクタリングなど
 * [ ] Reactにだけではなく、Sigにもadjust的なものを定義することを検討
 * [ ] Handleで「ひとつのループのなかに、別のモジュール由来のものを入れられる」ような仕組みを作成する

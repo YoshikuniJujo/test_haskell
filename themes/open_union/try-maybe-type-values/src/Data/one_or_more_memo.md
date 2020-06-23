@@ -22,12 +22,12 @@ refactor
 	+ [x] API
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
-		- [ ] ONEORMORE TYPE
-		- [ ] BASIC PROPERTY
-			* [ ] PROJECTABLE
-			* [ ] INSERTABLE
-		- [ ] EXPANDABLE AND COLLAPSABLE
-			* [ ] EXPANDABLE
-			* [ ] COLLAPSABLE
-		- [ ] MERGEABLE
+	+ [x] body
+		- [x] ONEORMORE TYPE
+		- [x] BASIC PROPERTY
+			* [x] PROJECTABLE
+			* [x] INSERTABLE
+		- [x] EXPANDABLE AND COLLAPSABLE
+			* [x] EXPANDABLE
+			* [x] COLLAPSABLE
+		- [x] MERGEABLE
