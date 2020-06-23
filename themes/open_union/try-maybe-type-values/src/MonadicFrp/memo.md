@@ -173,7 +173,7 @@ refactor
 * [ ] MonadicFrp.XFieldHandle.Mouse
 	+ [x] API
 	+ [x] imports
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
 
 TODO
