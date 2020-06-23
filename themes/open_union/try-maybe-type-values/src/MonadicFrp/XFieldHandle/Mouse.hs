@@ -7,16 +7,21 @@ module MonadicFrp.XFieldHandle.Mouse (
 	-- * Handle Mouse
 	handleMouse ) where
 
-import Foreign.C.Types
+import Foreign.C.Types (CInt)
 import Data.Type.Set (Set(Nil), Singleton, (:-))
-import Data.UnionSet
-import Data.Time
-import System.Exit
+import Data.UnionSet (singleton, expand, (>-))
+import Data.Time (DiffTime)
+import System.Exit (exitSuccess)
 
-import MonadicFrp -- (React, Request(..), await, EvOccs)
-import MonadicFrp.Handle hiding (expand)
-import MonadicFrp.Event.Mouse
-import Field
+import MonadicFrp (EvOccs)
+import MonadicFrp.Handle (Handle')
+import MonadicFrp.Event.Mouse (
+	Occurred(..), MouseEv, MouseDown, MouseUp, MouseMove, MouseBtn(..) )
+import Field (
+	Field, Event(..), Button, flushField, closeField,
+	withNextEvent, withNextEventTimeout', isDeleteEvent )
+
+---------------------------------------------------------------------------
 
 handleMouse :: Maybe DiffTime -> Field -> Handle' IO MouseEv
 handleMouse Nothing f _reqs = withNextEvent f $ eventToEvent f
@@ -36,11 +41,8 @@ eventToEvent f = \case
 			. expand $ mouseUpOcc x y [b]
 	MotionEvent { ev_x = x, ev_y = y } ->
 		pure . Just . expand $ mouseMoveOcc x y
-	ExposeEvent {} ->
-		Nothing <$ flushField f
-	DestroyWindowEvent {} ->
-		closeField f >> exitSuccess
---	ev	| isDeleteEvent f ev -> Nothing <$ destroyField f
+	ExposeEvent {} -> Nothing <$ flushField f
+	DestroyWindowEvent {} -> closeField f >> exitSuccess
 	ev	| isDeleteEvent f ev -> pure . Just . expand $ singleton OccDeleteEvent
 		| otherwise -> pure Nothing
 
