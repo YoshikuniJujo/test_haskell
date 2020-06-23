@@ -21,6 +21,13 @@ import System.Random (randomRIO)
 
 ---------------------------------------------------------------------------
 
+-- * NUMBERED
+-- * TYPE SET
+
+---------------------------------------------------------------------------
+-- NUMBERED
+---------------------------------------------------------------------------
+
 numbered :: Int -> TypeQ -> DecsQ
 numbered s t = ((: []) <$>) . instanceD (cxt []) (conT ''Numbered `appT` t) $ (: []) do
 	n <- runIO $ abs <$> randomRIO (0, 2 ^ s) -- randomIO
@@ -28,6 +35,10 @@ numbered s t = ((: []) <$>) . instanceD (cxt []) (conT ''Numbered `appT` t) $ (:
 
 class Numbered a where
 	type Number (a :: Type) = (r :: Nat) | r -> a
+
+---------------------------------------------------------------------------
+-- TYPE SET
+---------------------------------------------------------------------------
 
 infixr 5 :~
 data Set a = Nil | a :~ Set a
