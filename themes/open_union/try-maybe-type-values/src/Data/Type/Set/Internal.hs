@@ -1,13 +1,14 @@
--- {-# LANGUAGE StandaloneKindSignatures #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE DataKinds, TypeFamilyDependencies, TypeOperators, UndecidableInstances #-}
+{-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE TypeFamilyDependencies #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Type.Set.Internal (
-	-- * Types
+	-- * Type
 	Set(..), Numbered, numbered,
-	-- * Type Level Operators
+	-- * Operator
 	Singleton, Insert, Merge, Map, (:-), (:+:), (:$:) ) where
 
 import GHC.TypeLits
