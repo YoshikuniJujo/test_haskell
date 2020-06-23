@@ -74,26 +74,24 @@ getRandomR :: Random a => (a, a) -> React RandomEv a
 getRandomR = modifyRandomGen . randomR
 
 modifyRandomGen :: (StdGen -> (a, StdGen)) -> React RandomEv a
-modifyRandomGen f = do
-	(r, g') <- f <$> adjust loadRandomGen
+modifyRandomGen f = (f <$> adjust loadRandomGen) >>= \(r, g') ->
 	r <$ adjust (storeRandomGen g')
 
 -- HANDLE
 
 class RandomState s where
-	getRandomGen :: s -> StdGen
-	putRandomGen :: s -> StdGen -> s
+	getRandomGen :: s -> StdGen; putRandomGen :: s -> StdGen -> s
 
 handleRandom :: (RandomState s, Monad m) => Handle' (StateT s m) RandomEv
 handleRandom = handleStoreRandomGen `merge` handleLoadRandomGen
 
 handleStoreRandomGen :: (RandomState s, Monad m) =>
 	Handle' (StateT s m) (Singleton StoreRandomGen)
-handleStoreRandomGen reqs =
+handleStoreRandomGen rqs =
 	Just (singleton OccStoreRandomGen) <$ modify (`putRandomGen` g)
-	where StoreRandomGenReq g = extract reqs
+	where StoreRandomGenReq g = extract rqs
 
 handleLoadRandomGen :: (RandomState s, Monad m) =>
 	Handle' (StateT s m) (Singleton LoadRandomGen)
-handleLoadRandomGen _reqs =
+handleLoadRandomGen _rqs =
 	gets $ Just . singleton . OccLoadRandomGen . getRandomGen

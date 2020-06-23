@@ -149,11 +149,18 @@ refactor
 			* [x] GETLOCK
 			* [x] UNLOCK
 		- [x] HANDLE AND WITHLOCK
-* [ ] MonadicFrp.EventHandle.Random
+* [x] MonadicFrp.EventHandle.Random
 	+ [x] API
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
+		- [x] EVENT
+			* [x] STORE RANDOM GEN
+			* [x] LOAD RANDOM GEN
+		- [x] REACT AND HANDLE
+			* [x] TYPE
+			* [x] GET RANDOM FUNCTION
+			* [x] HANDLE
 * [ ] MonadicFrp.Event.Mouse
 	+ [ ] API
 	+ [ ] imports
