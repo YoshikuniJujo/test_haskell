@@ -102,6 +102,8 @@ instance Request Unlock where data Occurred Unlock = OccUnlock
 
 type SingletonUnlock = Singleton Unlock
 
+{-# ANN unlock "HLint: ignore Use const" #-}
+
 unlock :: LockId -> React (Singleton Unlock) ()
 unlock l = await (UnlockReq l) \_ -> ()
 
