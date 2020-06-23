@@ -30,6 +30,7 @@ import MonadicFrp (Request(..), React, await)
 -- * MOUSE UP
 -- * MOUSE MOVE	
 -- * DELETE EVENT
+-- * MOUSE EV
 
 ---------------------------------------------------------------------------
 -- MOUSE DOWN
@@ -39,7 +40,8 @@ data MouseDown = MouseDownReq deriving (Show, Eq, Ord)
 data MouseBtn = MLeft | MMiddle | MRight | MUp | MDown deriving (Show, Eq, Ord)
 numbered 9 [t| MouseDown |]
 instance Request MouseDown where
-	data Occurred MouseDown = OccMouseDown [MouseBtn] deriving (Show, Eq, Ord)
+	data Occurred MouseDown = OccMouseDown [MouseBtn]
+		deriving (Show, Eq, Ord)
 
 mouseDown :: React (Singleton MouseDown) [MouseBtn]
 mouseDown = await MouseDownReq \(OccMouseDown mbs) -> mbs
@@ -92,5 +94,9 @@ instance Request DeleteEvent where
 
 deleteEvent :: React (Singleton DeleteEvent) ()
 deleteEvent = await DeleteEventReq \OccDeleteEvent -> ()
+
+---------------------------------------------------------------------------
+-- MOUSE EV
+---------------------------------------------------------------------------
 
 type MouseEv = MouseDown :- MouseUp :- MouseMove :- DeleteEvent :- 'Nil
