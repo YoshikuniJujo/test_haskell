@@ -150,7 +150,7 @@ refactor
 			* [x] UNLOCK
 		- [x] HANDLE AND WITHLOCK
 * [ ] MonadicFrp.EventHandle.Random
-	+ [ ] API
+	+ [x] API
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body
