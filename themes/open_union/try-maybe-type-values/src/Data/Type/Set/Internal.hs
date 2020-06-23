@@ -11,11 +11,15 @@ module Data.Type.Set.Internal (
 	-- * Operator
 	Singleton, Insert, Merge, Map, (:-), (:+:), (:$:) ) where
 
-import GHC.TypeLits
-import Language.Haskell.TH hiding (Type)
-import Data.Kind
-import Data.Type.Bool
-import System.Random
+import GHC.TypeLits (Nat, type (<=?))
+import Language.Haskell.TH (
+	TypeQ, DecsQ, runIO,
+	conT, appT, litT, numTyLit, instanceD, cxt, tySynInstD, tySynEqn )
+import Data.Kind (Type)
+import Data.Type.Bool (If)
+import System.Random (randomRIO)
+
+---------------------------------------------------------------------------
 
 numbered :: Int -> TypeQ -> DecsQ
 numbered s t = ((: []) <$>) . instanceD (cxt []) (conT ''Numbered `appT` t) $ (: []) do
