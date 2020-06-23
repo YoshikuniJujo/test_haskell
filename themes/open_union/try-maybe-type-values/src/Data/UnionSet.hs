@@ -2,11 +2,14 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, FlexibleContexts, UndecidableInstances #-}
+{-# LANGUAGE MultiParamTypeClasses,
+	FlexibleInstances, FlexibleContexts, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.UnionSet (
+	-- * Type
 	UnionSet(Empty), Projectable, Nihil, Insertable, Expandable, Collapsable, Mrgable(..), Mergeable,
+	-- * FUNCTION
 	prj, extract, singleton, (>-), expand, collapse, merge, merge' ) where
 
 import Data.Kind

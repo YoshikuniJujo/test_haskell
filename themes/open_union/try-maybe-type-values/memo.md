@@ -32,7 +32,7 @@ TODO
 * [x] hlintによるリファクタリング
 * [x] Trials.NewRandomで「状態」をSigのなかであつかう仕組みを試す
 * [x] MonadicFrp以下のリファクタリング
-* [ ] Data.Type.Setのリファクタリング
+* [x] Data.Type.Setのリファクタリング
 * [ ] Data.UnionSetのリファクタリング
 * [ ] Trials.Lockのリファクタリングなど
 * [ ] Reactにだけではなく、Sigにもadjust的なものを定義することを検討
