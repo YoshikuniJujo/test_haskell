@@ -12,10 +12,9 @@ Data.Type.Set
 refactor
 --------
 
-* [ ] Data.Type.Set
-	+ [ ] API
-	+ [ ] imports
-	+ [ ] body
+* [x] Data.Type.Set
+	+ [x] API
+	+ [x] imports
 * [ ] Data.Type.Set.Internal
 	+ [ ] API
 	+ [ ] imports

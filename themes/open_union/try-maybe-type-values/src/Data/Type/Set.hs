@@ -1,9 +1,11 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Type.Set (
-	-- * Types
+	-- * Type
 	Set(Nil), Numbered, numbered,
-	-- * Type Level Operators
+	-- * Operator
 	Singleton, Insert, Merge, Map, (:-), (:+:), (:$:) ) where
 
-import Data.Type.Set.Internal
+import Data.Type.Set.Internal (
+	Set(Nil), Numbered, numbered,
+	Singleton, Insert, Merge, Map, (:-), (:+:), (:$:) )
