@@ -19,7 +19,7 @@ module MonadicFrp.React.Internal (
 import Data.Kind (Type)
 import Data.Type.Set (Set, Numbered, (:+:), (:$:))
 import Data.OneOrMore (
-	UnionSet, Mrgable, Mergeable, Expandable, Collapsable,
+	OneOrMore, Selectable, Mergeable, Expandable, Collapsable,
 	merge, expand, collapse )
 import Data.Or (Or(..))
 import Data.Bits (setBit)
@@ -44,10 +44,10 @@ import qualified Control.Arrow as A
 
 -- TYPE DEFINITION
 
-type EvReqs (es :: Set Type) = UnionSet es
-type EvOccs (es :: Set Type) = UnionSet (Occurred :$: es)
+type EvReqs (es :: Set Type) = OneOrMore es
+type EvOccs (es :: Set Type) = OneOrMore (Occurred :$: es)
 
-class (Numbered e, Mrgable e) => Request e where
+class (Numbered e, Selectable e) => Request e where
 	data Occurred (e :: Type) :: Type
 
 data React (es :: Set Type) a

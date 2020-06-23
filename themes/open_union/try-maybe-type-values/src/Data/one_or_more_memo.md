@@ -5,21 +5,21 @@ hierarchy
 ---------
 
 ```
-Data.UnionSet
+Data.OneOrMore
 ```
 
 todo
 ----
 
-* [ ] rename UnionSet to OneOrMore
+* [x] rename UnionSet to OneOrMore
 	+ [x] rename module
-	+ [ ] rename ADT
+	+ [x] rename ADT
 
 refactor
 --------
 
-* [ ] Data.UnionSet
-	+ [ ] API
+* [ ] Data.OneOrMore
+	+ [x] API
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body

@@ -33,7 +33,7 @@ module Trials.Followbox.Event (
 	) where
 
 import Data.Type.Set (Set(Nil), Singleton, numbered, (:-), (:+:))
-import Data.OneOrMore (Mrgable(..))
+import Data.OneOrMore (Selectable(..))
 import Data.Bool (bool)
 import Data.Time (UTCTime, TimeZone)
 import Data.Aeson (Object)
@@ -73,7 +73,7 @@ import Trials.Followbox.TypeSynonym (Uri, FontName, FontSize, ErrorMessage)
 
 newtype StoreJsons = StoreJsons [Object] deriving Show
 numbered 9 [t| StoreJsons |]
-instance Mrgable StoreJsons where os1 `mrg` _os2 = os1
+instance Selectable StoreJsons where os1 `select` _os2 = os1
 instance Request StoreJsons where
 	data Occurred StoreJsons = OccStoreJsons [Object]
 

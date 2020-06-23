@@ -15,7 +15,7 @@ module MonadicFrp.EventHandle.Lock (
 
 import Control.Monad.State (StateT, get, modify)
 import Data.Type.Set (Set(Nil), Singleton, (:-), (:+:), numbered)
-import Data.OneOrMore (Mrgable(..), Expandable, singleton, extract)
+import Data.OneOrMore (Selectable(..), Expandable, singleton, extract)
 import Data.Bool (bool)
 
 import MonadicFrp (Request(..), React, Firstable, await, adjust)
@@ -50,7 +50,7 @@ class LockState s where
 
 newtype NewLockId = NewLockIdReq ThreadId deriving (Show, Eq)
 numbered 9 [t| NewLockId |]
-instance Mrgable NewLockId where i1 `mrg` _i2 = i1
+instance Selectable NewLockId where i1 `select` _i2 = i1
 instance Request NewLockId where
 	data Occurred NewLockId = OccNewLockId LockId ThreadId
 
@@ -71,8 +71,8 @@ handleNewLockId rqs = get >>= \s -> let i = getNextLockId s in
 data GetLock = GetLockReq LockId ThreadId RetryTime deriving (Show, Eq)
 type RetryTime = Int
 numbered 9 [t| GetLock |]
-instance Mrgable GetLock where
-	g1@(GetLockReq _ _ rt1) `mrg` g2@(GetLockReq _ _ rt2)
+instance Selectable GetLock where
+	g1@(GetLockReq _ _ rt1) `select` g2@(GetLockReq _ _ rt2)
 		| rt1 >= rt2 = g1 | otherwise = g2
 instance Request GetLock where
 	data Occurred GetLock = OccGetLock LockId ThreadId
@@ -97,7 +97,7 @@ handleGetLock rqs = get >>= \s -> bool
 
 newtype Unlock = UnlockReq LockId deriving Show
 numbered 9 [t| Unlock |]
-instance Mrgable Unlock where u1 `mrg` _u2 = u1
+instance Selectable Unlock where u1 `select` _u2 = u1
 instance Request Unlock where data Occurred Unlock = OccUnlock
 
 type SingletonUnlock = Singleton Unlock

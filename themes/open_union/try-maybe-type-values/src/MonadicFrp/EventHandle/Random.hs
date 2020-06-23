@@ -14,7 +14,7 @@ module MonadicFrp.EventHandle.Random (
 
 import Control.Monad.State (StateT, gets, modify)
 import Data.Type.Set (Set(Nil), Singleton, numbered, (:-))
-import Data.OneOrMore (Mrgable(..), singleton, extract)
+import Data.OneOrMore (Selectable(..), singleton, extract)
 import System.Random (Random, StdGen, random, randomR)
 
 import MonadicFrp (Request, Occurred, React, await, adjust)
@@ -38,7 +38,7 @@ import MonadicFrp.Handle (Handle', merge)
 
 newtype StoreRandomGen = StoreRandomGenReq StdGen deriving Show
 numbered 9 [t| StoreRandomGen |]
-instance Mrgable StoreRandomGen where gl `mrg` _gr = gl
+instance Selectable StoreRandomGen where gl `select` _gr = gl
 instance Request StoreRandomGen where
 	data Occurred StoreRandomGen = OccStoreRandomGen
 
