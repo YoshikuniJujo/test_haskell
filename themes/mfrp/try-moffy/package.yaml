@@ -24,6 +24,7 @@ dependencies:
 - template-haskell
 - random
 - simple-field
+- extra-data-yj
 
 library:
   source-dirs: src

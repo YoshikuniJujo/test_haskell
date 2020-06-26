@@ -3,6 +3,8 @@
 module Trial.StepByStepBox where
 
 import Data.Type.Set
+import Data.Or
+
 import Moffy.React
 import Moffy.Event.Mouse
 import Moffy.XFieldHandle.Mouse
@@ -24,3 +26,12 @@ trySameClick :: IO Bool
 trySameClick = do
 	f <- openField "TRY SAME CLICK" [buttonPressMask]
 	interpretReact (retry $ handleMouse f) sameClick <* closeField f
+
+leftOrRightClick :: React s (Singleton MouseDown) (Or () ())
+leftOrRightClick = do
+	leftClick `first` rightClick
+
+tryLeftOrRightClick :: IO (Or () ())
+tryLeftOrRightClick = do
+	f <- openField "LEFT OR RIGHT CLICK" [buttonPressMask]
+	interpretReact (retry $ handleMouse f) leftOrRightClick <* closeField f

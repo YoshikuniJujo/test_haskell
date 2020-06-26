@@ -7,6 +7,8 @@
 module Moffy.Event.Mouse where
 
 import Data.Type.Set
+import Data.Bool
+
 import Moffy.React
 
 data MouseDown = MouseDownReq deriving (Show, Eq, Ord)
@@ -18,3 +20,9 @@ instance Request MouseDown where
 
 mouseDown :: React s (Singleton MouseDown) [MouseBtn]
 mouseDown = await MouseDownReq \(OccMouseDown mbs) -> mbs
+
+clickOn :: MouseBtn -> React s (Singleton MouseDown) ()
+clickOn b = bool (clickOn b) (pure ()) . (b `elem`) =<< mouseDown
+
+leftClick, middleClick, rightClick :: React s (Singleton MouseDown) ()
+[leftClick, middleClick, rightClick] = clickOn <$> [MLeft, MMiddle, MRight]

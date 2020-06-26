@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 69e1519f31b155338302e1e7ac4acbf5262daa56a3c47a6572577ed456f11b7d
+-- hash: efb370632315a24cca9ebd3efb57183faeadae1e0c016e84476da6b180040ea0
 
 name:           try-moffy
 version:        0.1.0.0
@@ -44,6 +44,7 @@ library
       src
   build-depends:
       base >=4.7 && <5
+    , extra-data-yj
     , random
     , simple-field
     , template-haskell
@@ -58,6 +59,7 @@ executable try-moffy-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , extra-data-yj
     , random
     , simple-field
     , template-haskell
@@ -74,6 +76,7 @@ test-suite try-moffy-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , extra-data-yj
     , random
     , simple-field
     , template-haskell
