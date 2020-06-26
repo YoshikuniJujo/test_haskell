@@ -101,6 +101,12 @@ instance {-# OVERLAPPABLE #-} Updatable es a es' b => Update es a es' b where
 		(Just b', Nothing) -> (c `qApp` b', r')
 		(Nothing, Just b'') -> (r, c' `qApp` b'')
 		(Nothing, Nothing) -> (r, r')
+	update r@(Never :>>= _) r'@(Await _ :>>= c') b = case collapse b of
+		Just b'' -> (r, c' `qApp` b'')
+		Nothing -> (r, r')
+	update r@(Await _ :>>= c) r'@(Never :>>= _) b = case collapse b of
+		Just b' -> (c `qApp` b', r')
+		Nothing -> (r, r')
 	update r r' _ = (r, r')
 
 instance Updatable es a es a => Update es a es a where
@@ -115,15 +121,30 @@ update' r@(Await _ :>>= c) r'@(Await _ :>>= c') b = case (collapse b, collapse b
 		(Just b', Nothing) -> (c `qApp` b', r')
 		(Nothing, Just b'') -> (r, c' `qApp` b'')
 		(Nothing, Nothing) -> (r, r')
+update' r@(Never :>>= _) r'@(Await _ :>>= c') b = case collapse b of
+	Just b'' -> (r, c' `qApp` b'')
+	Nothing -> (r, r')
+update' r@(Await _ :>>= c) r'@(Never :>>= _) b = case collapse b of
+	Just b' -> (c `qApp` b', r')
+	Nothing -> (r, r')
 update' r r' _ = (r, r')
 
 par' ::	(
 	CollapsableOccurred (es :+: es') es, CollapsableOccurred (es :+: es') es',
-	Mergeable es es' (es :+: es')
+	Mergeable es es' (es :+: es'),
+	Expandable es (es :+: es'), Expandable es' (es :+: es')
 	) => React s es a -> React s es' b -> React s (es :+: es') (React s es a, React s es' b)
 l `par'` r = case (l, r) of
 	(Await el :>>= _, Await er :>>= _) -> let
 		e = el `merge` er
+		c b = let (u, u') = update' l r b in u `par'` u' in
+		Await e >>>= c
+	(Never :>>= _, Await er :>>= _) -> let
+		e = expand er
+		c b = let (u, u') = update' l r b in u `par'` u' in
+		Await e >>>= c
+	(Await el :>>= _, Never :>>= _) -> let
+		e = expand el
 		c b = let (u, u') = update' l r b in u `par'` u' in
 		Await e >>>= c
 	_ -> Pure (l, r)
@@ -133,7 +154,9 @@ adjust :: forall s es es' a . (
 	Mergeable es es' es',
 	(es :+: es') ~ es',
 	CollapsableOccurred es' es,
-	CollapsableOccurred es' es'
+	CollapsableOccurred es' es',
+	Expandable es es',
+	Expandable es' es'
 	) => React s es a -> React s es' a
 adjust = \case
 	Pure x -> pure x
