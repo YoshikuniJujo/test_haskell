@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE GADTs, TypeFamilies, ConstraintKinds #-}
@@ -73,6 +74,10 @@ par ::	(
 	Mergeable es es' (es :+: es')
 	) => React s es a -> React s es' b -> React s (es :+: es') (React s es a, React s es' b)
 l `par` r = case (l, r) of
+	(Never :>>= _, Never :>>= _) -> error "never end"
+--	(Done _, _) -> pure (l, r)
+--	(_, Done _) -> pure (l, r)
+--	(Never, Await er :>>= c) 
 	(Await el :>>= _, Await er :>>= _) -> let
 		e = el `merge` er
 		c b = let (u, u') = update l r b in u `par` u' in
@@ -101,3 +106,41 @@ instance {-# OVERLAPPABLE #-} Updatable es a es' b => Update es a es' b where
 instance Updatable es a es a => Update es a es a where
 	update (Await _ :>>= c) (Await _ :>>= c') b = qAppPar c c' b
 	update r r' _ = (r, r')
+
+update' :: (
+	CollapsableOccurred (es :+: es') es, CollapsableOccurred (es :+: es') es'
+	) => React s es a -> React s es' b -> EvOccs (es :+: es') -> (React s es a, React s es' b)
+update' r@(Await _ :>>= c) r'@(Await _ :>>= c') b = case (collapse b, collapse b) of
+		(Just b', Just b'') -> (c `qApp` b', c' `qApp` b'')
+		(Just b', Nothing) -> (c `qApp` b', r')
+		(Nothing, Just b'') -> (r, c' `qApp` b'')
+		(Nothing, Nothing) -> (r, r')
+update' r r' _ = (r, r')
+
+par' ::	(
+	CollapsableOccurred (es :+: es') es, CollapsableOccurred (es :+: es') es',
+	Mergeable es es' (es :+: es')
+	) => React s es a -> React s es' b -> React s (es :+: es') (React s es a, React s es' b)
+l `par'` r = case (l, r) of
+	(Await el :>>= _, Await er :>>= _) -> let
+		e = el `merge` er
+		c b = let (u, u') = update' l r b in u `par'` u' in
+		Await e >>>= c
+	_ -> Pure (l, r)
+
+adjust :: forall s es es' a . (
+--	Update es a es' a,
+	Mergeable es es' es',
+	(es :+: es') ~ es',
+	CollapsableOccurred es' es,
+	CollapsableOccurred es' es'
+	) => React s es a -> React s es' a
+adjust = \case
+	Pure x -> pure x
+	(Never :>>= _) -> Never >>>= pure
+--	GetThreadId :>>= c -> GetThreadId :>>= adjust c
+--	r@(Await _ :>>= _) -> (r `par'` (Never >>>= pure :: React s es' b)) >>= \case
+	r -> (r `par'` (Never >>>= pure :: React s es' b)) >>= \case
+		(Pure x, _) -> pure x
+		(Await _ :>>= _, _) -> error "Await _ _"
+		_ -> error "never occur"

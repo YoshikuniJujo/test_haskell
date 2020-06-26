@@ -4,7 +4,9 @@ memo
 todo
 ----
 
-* [ ] parallel freer
+* [x] parallel freer
+* [ ] adjust
+* [ ] check leftDown \`first\` rightUp
 
 ref
 ---

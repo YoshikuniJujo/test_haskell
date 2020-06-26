@@ -1,8 +1,8 @@
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.StepByStepBox where
 
-import Data.Type.Set
 import Data.Or
 
 import Moffy.React
@@ -14,10 +14,10 @@ import Field
 tryClick :: IO [MouseBtn]
 tryClick = do
 	f <- openField "TRY CLICK" [buttonPressMask]
-	interpretReact (retry $ handleMouse f) mouseDown <* closeField f
+	interpretReact (retry $ handleMouse f) (adjust mouseDown) <* closeField f
 
-sameClick :: React s (Singleton MouseDown) Bool
-sameClick = do
+sameClick :: React s MouseEv Bool
+sameClick = adjust do
 	pressed1 <- mouseDown
 	pressed2 <- mouseDown
 	pure $ pressed1 == pressed2
@@ -27,9 +27,8 @@ trySameClick = do
 	f <- openField "TRY SAME CLICK" [buttonPressMask]
 	interpretReact (retry $ handleMouse f) sameClick <* closeField f
 
-leftOrRightClick :: React s (Singleton MouseDown) (Or () ())
-leftOrRightClick = do
-	leftClick `first` rightClick
+leftOrRightClick :: React s MouseEv (Or () ())
+leftOrRightClick = adjust $ leftClick `first` rightClick
 
 tryLeftOrRightClick :: IO (Or () ())
 tryLeftOrRightClick = do
