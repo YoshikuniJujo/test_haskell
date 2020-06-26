@@ -32,6 +32,12 @@ data Rct es a where
 	Await :: EvReqs es -> Rct es (EvOccs es)
 type React s es a = Freer s FTCQueue (Taggable s) (Rct es) a
 
+getThreadId :: React s es ThreadId
+getThreadId = GetThreadId >>>= pure
+
+putThreadId :: ThreadId -> React s es ()
+putThreadId ti = PutThreadId ti >>>= pure
+
 data ThreadId = ThreadId Natural Int deriving (Show, Eq)
 
 rootThreadId :: ThreadId
