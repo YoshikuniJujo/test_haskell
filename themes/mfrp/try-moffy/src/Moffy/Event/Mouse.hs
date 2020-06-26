@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -26,3 +26,19 @@ clickOn b = bool (clickOn b) (pure ()) . (b `elem`) =<< mouseDown
 
 leftClick, middleClick, rightClick :: React s (Singleton MouseDown) ()
 [leftClick, middleClick, rightClick] = clickOn <$> [MLeft, MMiddle, MRight]
+
+data MouseUp = MouseUpReq deriving (Show, Eq, Ord)
+numbered 9 [t| MouseUp |]
+instance Request MouseUp where
+	data Occurred MouseUp = OccMouseUp [MouseBtn] deriving (Show, Eq, Ord)
+
+mouseUp :: React s (Singleton MouseUp) [MouseBtn]
+mouseUp = await MouseUpReq \(OccMouseUp mbs) -> mbs
+
+releaseOn :: MouseBtn -> React s (Singleton MouseUp) ()
+releaseOn b = bool (releaseOn b) (pure ()) . (b `elem`) =<< mouseUp
+
+leftUP, middleUp, rightUp :: React s (Singleton MouseUp) ()
+[leftUP, middleUp, rightUp] = releaseOn <$> [MLeft, MMiddle, MRight]
+
+type MouseEv = MouseDown :- MouseUp :- 'Nil
