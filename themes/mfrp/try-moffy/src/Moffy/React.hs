@@ -66,6 +66,11 @@ retry hdl rqs = maybe (retry hdl rqs) pure =<< hdl rqs
 await :: a -> (Occurred a -> b) -> React s (Singleton a) b
 await r f = Await (singleton r) >>>= (pure . f . extract)
 
+await' :: a -> (ThreadId -> Occurred a -> b) -> React s (Singleton a) b
+await' r f = Await (singleton r) >>>= \o -> do
+	ti <- getThreadId
+	pure . f ti $ extract o
+
 first :: (
 	Expandable es (es :+: es'), Expandable es' (es :+: es'),
 	Update es a es' b,
@@ -74,6 +79,12 @@ first :: (
 l `first` r = (<$> l `par` r) \case
 	(Pure l', Pure r') -> LR l' r'
 	(Pure l', _) -> L l'; (_, Pure r') -> R r'
+	(Await _ :>>= _, _) -> error "(Await _ :>>= _, _)"
+	(_, Await _ :>>= _) -> error "(_, Await _ :>>= _)"
+	(Never :>>= _, _) -> error "(Never, _)"
+	(_, Never :>>= _) -> error "(_, Never)"
+	(GetThreadId :>>= _, _) -> error "(GetThreadId :>>= _, _)"
+	(_, GetThreadId :>>= _) -> error "(_, GetThreadId :>>= _)"
 	_ -> error "never occur"
 
 par ::	(
@@ -83,6 +94,14 @@ par ::	(
 	) => React s es a -> React s es' b -> React s (es :+: es') (React s es a, React s es' b)
 l `par` r = case (l, r) of
 	(Never :>>= _, Never :>>= _) -> error "never end"
+	(GetThreadId :>>= c, r') -> do
+		ti <- getThreadId
+		let	(ti1, _ti2) = forkThreadId ti
+		(c `qApp` ti1) `par` r'
+	(rct, GetThreadId :>>= c') -> do
+		ti <- getThreadId
+		let	(_ti1, ti2) = forkThreadId ti
+		rct `par` (c' `qApp` ti2)
 	(Pure _, _) -> pure (l, r)
 	(_, Pure _) -> pure (l, r)
 --	(Never, Await er :>>= c) 
