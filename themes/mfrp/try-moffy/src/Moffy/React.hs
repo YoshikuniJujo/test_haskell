@@ -194,7 +194,7 @@ l `par'` r = case (l, r) of
 		e = expand el
 		c b = let (u, u') = update' l rootThreadId r rootThreadId b in u `par'` u' in
 		Await e >>>= c
---	(GetThreadId :>>= c, r') -> (c
+	(GetThreadId :>>= c, r') -> (c `qApp` rootThreadId) `par'` r'
 	_ -> Pure (l, r)
 
 adjust :: forall s es es' a . (
