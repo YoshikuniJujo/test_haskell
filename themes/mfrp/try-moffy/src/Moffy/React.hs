@@ -134,6 +134,7 @@ l `par` r = case (l, r) of
 
 type ExpandableOccurred es es' = Expandable (Occurred :$: es) (Occurred :$: es')
 type CollapsableOccurred es es' = Collapsable (Occurred :$: es) (Occurred :$: es')
+type MergeableOccurred es es' eses' = Mergeable (Occurred :$: es) (Occurred :$: es') (Occurred :$: eses')
 
 type Updatable es a es' b = (
 	CollapsableOccurred (es :+: es') es, CollapsableOccurred (es :+: es') es',
