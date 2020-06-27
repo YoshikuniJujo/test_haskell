@@ -67,6 +67,7 @@ await :: a -> (Occurred a -> b) -> React s (Singleton a) b
 await r f = Await (singleton r) >>>= (pure . f . extract)
 
 first :: (
+	Expandable es (es :+: es'), Expandable es' (es :+: es'),
 	Update es a es' b,
 	Mergeable es es' (es :+: es')
 	) => React s es a -> React s es' b -> React s (es :+: es') (Or a b)
@@ -77,17 +78,39 @@ l `first` r = (<$> l `par` r) \case
 
 par ::	(
 	Update es a es' b,
-	Mergeable es es' (es :+: es')
+	Mergeable es es' (es :+: es'),
+	Expandable es (es :+: es'), Expandable es' (es :+: es')
 	) => React s es a -> React s es' b -> React s (es :+: es') (React s es a, React s es' b)
 l `par` r = case (l, r) of
 	(Never :>>= _, Never :>>= _) -> error "never end"
---	(Done _, _) -> pure (l, r)
---	(_, Done _) -> pure (l, r)
+	(Pure _, _) -> pure (l, r)
+	(_, Pure _) -> pure (l, r)
 --	(Never, Await er :>>= c) 
 	(Await el :>>= _, Await er :>>= _) -> let
 		e = el `merge` er
-		c b = let (u, u') = update l r b in u `par` u' in
-		Await e >>>= c
+		c b ti = let
+			(ti1, ti2) = forkThreadId ti
+			(u, u') = update l ti1 r ti2 b in u `par` u' in do
+			o <- Await e >>>= pure
+			ti <- getThreadId
+			c o ti
+--		Await e >>>= c
+	(Await el :>>= _, _) -> let
+		e = expand el
+		c b ti = let
+			(ti1, ti2) = forkThreadId ti
+			(u, u') = update l ti1 r ti2 b in u `par` u' in do
+			o <- Await e >>>= pure
+			ti <- getThreadId
+			c o ti
+	(_, Await er :>>= _) -> let
+		e = expand er
+		c b ti = let
+			(ti1, ti2) = forkThreadId ti
+			(u, u') = update l ti1 r ti2 b in u `par` u' in do
+			o <- Await e >>>= pure
+			ti <- getThreadId
+			c o ti
 	_ -> Pure (l, r)
 
 type CollapsableOccurred es es' = Collapsable (Occurred :$: es) (Occurred :$: es')
@@ -99,41 +122,59 @@ type Updatable es a es' b = (
 class (	CollapsableOccurred (es :+: es') es, CollapsableOccurred (es :+: es') es',
 	(Occurred :$: es) ~ (Occurred :$: es :+: es) ) =>
 	Update es a es' b where
-	update :: React s es a -> React s es' b -> EvOccs (es :+: es') -> (React s es a, React s es' b)
+	update ::
+		React s es a -> ThreadId ->
+		React s es' b -> ThreadId ->
+		EvOccs (es :+: es') -> (React s es a, React s es' b)
 
 instance {-# OVERLAPPABLE #-} Updatable es a es' b => Update es a es' b where
-	update r@(Await _ :>>= c) r'@(Await _ :>>= c') b = case (collapse b, collapse b) of
+	update (GetThreadId :>>= c) ti r' ti' b = update (c `qApp` ti) ti r' ti' b
+	update r ti (GetThreadId :>>= c') ti' b = update r ti (c' `qApp` ti') ti' b
+	update (PutThreadId ti :>>= c) _ r' ti' b = update (c `qApp` ()) ti r' ti' b
+	update r ti (PutThreadId ti' :>>= c') _ b = update r ti (c' `qApp` ()) ti' b
+	update r@(Await _ :>>= c) _ r'@(Await _ :>>= c') _ b = case (collapse b, collapse b) of
 		(Just b', Just b'') -> (c `qApp` b', c' `qApp` b'')
 		(Just b', Nothing) -> (c `qApp` b', r')
 		(Nothing, Just b'') -> (r, c' `qApp` b'')
 		(Nothing, Nothing) -> (r, r')
-	update r@(Never :>>= _) r'@(Await _ :>>= c') b = case collapse b of
+	update r@(Never :>>= _) _ r'@(Await _ :>>= c') _ b = case collapse b of
 		Just b'' -> (r, c' `qApp` b'')
 		Nothing -> (r, r')
-	update r@(Await _ :>>= c) r'@(Never :>>= _) b = case collapse b of
+	update r@(Await _ :>>= c) _ r'@(Never :>>= _) _ b = case collapse b of
 		Just b' -> (c `qApp` b', r')
 		Nothing -> (r, r')
-	update r r' _ = (r, r')
+	update r _ r' _ _ = (r, r')
 
 instance Updatable es a es a => Update es a es a where
-	update (Await _ :>>= c) (Await _ :>>= c') b = qAppPar c c' b
-	update r r' _ = (r, r')
+	update (GetThreadId :>>= c) ti r' ti' b = update (c `qApp` ti) ti r' ti' b
+	update r ti (GetThreadId :>>= c') ti' b = update r ti (c' `qApp` ti') ti' b
+	update (PutThreadId ti :>>= c) _ r' ti' b = update (c `qApp` ()) ti r' ti' b
+	update r ti (PutThreadId ti' :>>= c') _ b = update r ti (c' `qApp` ()) ti' b
+	update (Await _ :>>= c) _ (Await _ :>>= c') _ b = qAppPar c c' b
+	update r _ r' _ _ = (r, r')
 
 update' :: (
 	CollapsableOccurred (es :+: es') es, CollapsableOccurred (es :+: es') es'
-	) => React s es a -> React s es' b -> EvOccs (es :+: es') -> (React s es a, React s es' b)
-update' r@(Await _ :>>= c) r'@(Await _ :>>= c') b = case (collapse b, collapse b) of
+	) =>
+	React s es a -> ThreadId ->
+	React s es' b -> ThreadId ->
+	EvOccs (es :+: es') -> (React s es a, React s es' b)
+update' (GetThreadId :>>= c) ti r' ti' b = update' (c `qApp` ti) ti r' ti' b
+update' r ti (GetThreadId :>>= c') ti' b = update' r ti (c' `qApp` ti') ti' b
+update' (PutThreadId ti :>>= c) _ r' ti' b = update' (c `qApp` ()) ti r' ti' b
+update' r ti (PutThreadId ti' :>>= c) _ b = update' r ti (c `qApp` ()) ti' b
+update' r@(Await _ :>>= c) _ r'@(Await _ :>>= c') _ b = case (collapse b, collapse b) of
 		(Just b', Just b'') -> (c `qApp` b', c' `qApp` b'')
 		(Just b', Nothing) -> (c `qApp` b', r')
 		(Nothing, Just b'') -> (r, c' `qApp` b'')
 		(Nothing, Nothing) -> (r, r')
-update' r@(Never :>>= _) r'@(Await _ :>>= c') b = case collapse b of
+update' r@(Never :>>= _) _ r'@(Await _ :>>= c') _ b = case collapse b of
 	Just b'' -> (r, c' `qApp` b'')
 	Nothing -> (r, r')
-update' r@(Await _ :>>= c) r'@(Never :>>= _) b = case collapse b of
+update' r@(Await _ :>>= c) _ r'@(Never :>>= _) _ b = case collapse b of
 	Just b' -> (c `qApp` b', r')
 	Nothing -> (r, r')
-update' r r' _ = (r, r')
+update' r _ r' _ _ = (r, r')
 
 par' ::	(
 	CollapsableOccurred (es :+: es') es, CollapsableOccurred (es :+: es') es',
@@ -143,16 +184,17 @@ par' ::	(
 l `par'` r = case (l, r) of
 	(Await el :>>= _, Await er :>>= _) -> let
 		e = el `merge` er
-		c b = let (u, u') = update' l r b in u `par'` u' in
+		c b = let (u, u') = update' l rootThreadId r rootThreadId b in u `par'` u' in
 		Await e >>>= c
-	(Never :>>= _, Await er :>>= _) -> let
+	(_ :>>= _, Await er :>>= _) -> let
 		e = expand er
-		c b = let (u, u') = update' l r b in u `par'` u' in
+		c b = let (u, u') = update' l rootThreadId r rootThreadId b in u `par'` u' in
 		Await e >>>= c
-	(Await el :>>= _, Never :>>= _) -> let
+	(Await el :>>= _, _ :>>= _) -> let
 		e = expand el
-		c b = let (u, u') = update' l r b in u `par'` u' in
+		c b = let (u, u') = update' l rootThreadId r rootThreadId b in u `par'` u' in
 		Await e >>>= c
+--	(GetThreadId :>>= c, r') -> (c
 	_ -> Pure (l, r)
 
 adjust :: forall s es es' a . (
@@ -172,4 +214,6 @@ adjust = \case
 	r -> (r `par'` (Never >>>= pure :: React s es' b)) >>= \case
 		(Pure x, _) -> pure x
 		(Await _ :>>= _, _) -> error "Await _ _"
+		(GetThreadId :>>= _, _) -> error "GetThreadId"
+		(PutThreadId _ :>>= _, _) -> error "PutThreadId _"
 		_ -> error "never occur"
