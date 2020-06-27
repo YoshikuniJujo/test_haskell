@@ -60,9 +60,6 @@ interpretReact hdl r = fst <$> runReact rootThreadId hdl r
 type Handle m es = EvReqs es -> m (EvOccs es)
 type Handle' m es = EvReqs es -> m (Maybe (EvOccs es))
 
-retry :: Monad m => Handle' m es -> Handle m es
-retry hdl rqs = maybe (retry hdl rqs) pure =<< hdl rqs
-
 await :: a -> (Occurred a -> b) -> React s (Singleton a) b
 await r f = Await (singleton r) >>>= (pure . f . extract)
 

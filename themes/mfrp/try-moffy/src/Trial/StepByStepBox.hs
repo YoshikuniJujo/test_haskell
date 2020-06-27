@@ -6,6 +6,7 @@ module Trial.StepByStepBox where
 import Data.Or
 
 import Moffy.React
+import Moffy.Handle
 import Moffy.Event.Mouse
 import Moffy.XFieldHandle.Mouse
 

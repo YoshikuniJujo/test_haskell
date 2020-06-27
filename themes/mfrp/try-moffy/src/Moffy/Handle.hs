@@ -11,6 +11,9 @@ import qualified Data.OneOrMore as OOM
 
 import Moffy.React
 
+retry :: Monad m => Handle' m es -> Handle m es
+retry hdl rqs = maybe (retry hdl rqs) pure =<< hdl rqs
+
 collapse :: (Applicative m, Collapsable es' es) =>
 	Handle' m es -> EvReqs es' -> m (Maybe (EvOccs es))
 collapse hdl = maybe (pure Nothing) hdl . OOM.collapse
