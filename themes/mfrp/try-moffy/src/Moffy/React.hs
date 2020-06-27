@@ -132,6 +132,7 @@ l `par` r = case (l, r) of
 			c o ti
 	_ -> Pure (l, r)
 
+type ExpandableOccurred es es' = Expandable (Occurred :$: es) (Occurred :$: es')
 type CollapsableOccurred es es' = Collapsable (Occurred :$: es) (Occurred :$: es')
 
 type Updatable es a es' b = (
