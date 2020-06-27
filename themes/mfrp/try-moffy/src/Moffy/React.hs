@@ -203,17 +203,19 @@ par' ::	(
 l `par'` r = case (l, r) of
 	(Await el :>>= _, Await er :>>= _) -> let
 		e = el `merge` er
-		c b = let (u, u') = update' l rootThreadId r rootThreadId b in u `par'` u' in
-		Await e >>>= c
+		c b ti = let (u, u') = update' l ti r ti b in u `par'` u' in
+		Await e >>>= \b -> c b =<< getThreadId
 	(_ :>>= _, Await er :>>= _) -> let
 		e = expand er
-		c b = let (u, u') = update' l rootThreadId r rootThreadId b in u `par'` u' in
-		Await e >>>= c
+		c b ti = let (u, u') = update' l ti r ti b in u `par'` u' in
+		Await e >>>= \b -> c b =<< getThreadId
 	(Await el :>>= _, _ :>>= _) -> let
 		e = expand el
-		c b = let (u, u') = update' l rootThreadId r rootThreadId b in u `par'` u' in
-		Await e >>>= c
-	(GetThreadId :>>= c, r') -> (c `qApp` rootThreadId) `par'` r'
+		c b ti = let (u, u') = update' l ti r ti b in u `par'` u' in
+		Await e >>>= \b -> c b =<< getThreadId
+	(GetThreadId :>>= c, r') -> do
+		ti <- getThreadId
+		(c `qApp` ti) `par'` r'
 	_ -> Pure (l, r)
 
 adjust :: forall s es es' a . (
