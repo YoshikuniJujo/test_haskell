@@ -16,6 +16,8 @@ eventToEv :: Field -> Event -> IO (Maybe (EvOccs MouseEv)) -- IO (Maybe (EvOccs 
 eventToEv _f = \case
 	ButtonEvent { ev_event_type = 4, ev_button = eb, ev_x = _x, ev_y = _y }
 		| Just b <- btn eb -> pure . Just . expand . singleton $ OccMouseDown [b]
+	ButtonEvent { ev_event_type = 5, ev_button = eb, ev_x = _x, ev_y = _y }
+		| Just b <- btn eb -> pure . Just . expand . singleton $ OccMouseUp [b]
 	_ -> pure Nothing
 	where
 	btn = \case

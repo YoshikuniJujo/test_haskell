@@ -34,3 +34,11 @@ tryLeftOrRightClick :: IO (Or () ())
 tryLeftOrRightClick = do
 	f <- openField "LEFT OR RIGHT CLICK" [buttonPressMask]
 	interpretReact (retry $ handleMouse f) leftOrRightClick <* closeField f
+
+leftDownRightUp :: React s MouseEv (Or () ())
+leftDownRightUp = leftClick `first` rightUp
+
+tryLeftDownRightUp :: IO (Or () ())
+tryLeftDownRightUp = do
+	f <- openField "LEFT DOWN RIGHT UP" [buttonPressMask, buttonReleaseMask]
+	interpretReact (retry $ handleMouse f) leftDownRightUp <* closeField f
