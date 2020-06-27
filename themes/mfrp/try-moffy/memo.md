@@ -5,8 +5,8 @@ todo
 ----
 
 * [x] parallel freer
-* [ ] adjust
-* [ ] check leftDown \`first\` rightUp
+* [x] adjust
+* [x] check leftDown \`first\` rightUp
 
 ref
 ---
@@ -14,3 +14,9 @@ ref
 ```
 themes/papers/monadic_functional_reactive_programming/try-monadic-functional-reactive-programming/
 ```
+task
+----
+
+* [ ] qAppParで再帰的にタグをつけるのをやめる
+	+ [ ] 明示的にタグづけしたレベルだけ効率化する
+* [ ] タグづけした部分ではThreadIdはうまく働かないことを確かめる
