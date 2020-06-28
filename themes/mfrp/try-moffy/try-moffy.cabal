@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f0eb26f50db19573859747182228f17fdf2c3f5b8280277c26ed1cd3f7428bd1
+-- hash: 8531b5c28fb914aaa085c70437b05446d4a5fde017844f96e03c1cfdfdf8ce84
 
 name:           try-moffy
 version:        0.1.0.0
@@ -39,6 +39,8 @@ library
       Moffy.XFieldHandle.Mouse
       Sequence
       TaggableFunction
+      Trial.Boxes.Event
+      Trial.Boxes.Handle
       Trial.StepByStepBox
       Trial.TryThreadId
   other-modules:
@@ -48,9 +50,11 @@ library
   build-depends:
       base >=4.7 && <5
     , extra-data-yj
+    , monads-tf
     , random
     , simple-field
     , template-haskell
+    , time
   default-language: Haskell2010
 
 executable try-moffy-exe
@@ -63,9 +67,11 @@ executable try-moffy-exe
   build-depends:
       base >=4.7 && <5
     , extra-data-yj
+    , monads-tf
     , random
     , simple-field
     , template-haskell
+    , time
     , try-moffy
   default-language: Haskell2010
 
@@ -80,8 +86,10 @@ test-suite try-moffy-test
   build-depends:
       base >=4.7 && <5
     , extra-data-yj
+    , monads-tf
     , random
     , simple-field
     , template-haskell
+    , time
     , try-moffy
   default-language: Haskell2010

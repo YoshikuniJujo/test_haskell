@@ -4,13 +4,16 @@
 module Moffy.XFieldHandle.Mouse where
 
 import Data.OneOrMore
+import Data.Time
 
 import Moffy.React
 import Moffy.Event.Mouse
 import Field
 
-handleMouse :: Field -> Handle' IO MouseEv -- (Singleton MouseDown)
-handleMouse f _rqs = withNextEvent f $ eventToEv f
+handleMouse :: Maybe DiffTime -> Field -> Handle' IO MouseEv -- (Singleton MouseDown)
+handleMouse Nothing f _rqs = withNextEvent f $ eventToEv f
+handleMouse (Just prd) f _rqs = withNextEventTimeout' f
+	(round $ prd * 1000000) $ maybe (pure Nothing) (eventToEv f)
 
 eventToEv :: Field -> Event -> IO (Maybe (EvOccs MouseEv)) -- IO (Maybe (EvOccs (Singleton MouseDown)))
 eventToEv _f = \case

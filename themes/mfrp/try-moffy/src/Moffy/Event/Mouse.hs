@@ -38,7 +38,7 @@ mouseUp = await MouseUpReq \(OccMouseUp mbs) -> mbs
 releaseOn :: MouseBtn -> React s (Singleton MouseUp) ()
 releaseOn b = bool (releaseOn b) (pure ()) . (b `elem`) =<< mouseUp
 
-leftUP, middleUp, rightUp :: React s (Singleton MouseUp) ()
-[leftUP, middleUp, rightUp] = releaseOn <$> [MLeft, MMiddle, MRight]
+leftUp, middleUp, rightUp :: React s (Singleton MouseUp) ()
+[leftUp, middleUp, rightUp] = releaseOn <$> [MLeft, MMiddle, MRight]
 
 type MouseEv = MouseDown :- MouseUp :- 'Nil

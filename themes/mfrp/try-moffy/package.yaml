@@ -25,6 +25,8 @@ dependencies:
 - random
 - simple-field
 - extra-data-yj
+- time
+- monads-tf
 
 library:
   source-dirs: src

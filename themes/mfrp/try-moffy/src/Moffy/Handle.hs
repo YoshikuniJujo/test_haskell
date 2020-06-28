@@ -3,11 +3,14 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Moffy.Handle where
+module Moffy.Handle (
+	Handle, Handle', retry, expand, before, merge,
+	HandleSt, HandleSt', retrySt, expandSt, beforeSt, mergeSt
+	) where
 
 import Control.Arrow
 import Data.Type.Set
-import Data.OneOrMore hiding (expand, collapse)
+import Data.OneOrMore hiding (merge, expand, collapse)
 
 import qualified Data.OneOrMore as OOM
 

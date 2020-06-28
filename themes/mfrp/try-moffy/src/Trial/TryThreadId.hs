@@ -27,5 +27,5 @@ leftRightThreadId =
 tryLeftRightThreadId :: IO (Or ThreadId ThreadId)
 tryLeftRightThreadId = do
 	f <- openField "TRY LEFT RIGHT THREAD ID" [buttonPressMask]
-	interpretReact (retry $ handleGetThreadId `before` handleMouse f) leftRightThreadId
+	interpretReact (retry $ handleGetThreadId `before` handleMouse Nothing f) leftRightThreadId
 		<* closeField f
