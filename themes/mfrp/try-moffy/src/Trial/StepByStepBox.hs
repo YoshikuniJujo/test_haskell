@@ -1,15 +1,24 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.StepByStepBox where
 
+import Control.Monad.State
+import Data.Type.Set
+import Data.OneOrMore
 import Data.Or
+import Data.Time
+import Data.Time.Clock.System
 
 import Moffy.React
-import Moffy.Handle
+import Moffy.Handle hiding (before)
 import Moffy.Event.Mouse
 import Moffy.XFieldHandle.Mouse
 
+import Trial.Boxes.Event
+import Trial.Boxes.Handle
 import Field
 
 tryClick :: IO [MouseBtn]
@@ -43,3 +52,24 @@ tryLeftDownRightUp :: IO (Or () ())
 tryLeftDownRightUp = do
 	f <- openField "LEFT DOWN RIGHT UP" [buttonPressMask, buttonReleaseMask]
 	interpretReact (retry $ handleMouse Nothing f) leftDownRightUp <* closeField f
+
+before :: (
+	Update es a es' b, Expandable es (es :+: es'), Expandable es' (es :+: es'),
+	Mergeable es es' (es :+: es')
+	) =>
+	React s es a -> React s es' b -> React s (es :+: es') Bool
+a `before` b = a `first` b >>= \case
+	L _ -> pure True
+	_ -> pure False
+
+doubler :: ReactG s ()
+doubler = do
+	adjust rightClick
+	r <- adjust (rightClick `before` sleep 0.2)
+	if r then pure () else doubler
+
+tryDoubler :: IO ()
+tryDoubler = do
+	f <- openField "TRY DOUBLER" [buttonPressMask]
+	(interpretReactSt InitMode (handleBoxes 0.05 f) doubler `runStateT`) . systemToTAITime =<< getSystemTime
+	closeField f
