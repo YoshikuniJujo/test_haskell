@@ -1,19 +1,24 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.StepByStepBox where
 
+import Prelude hiding (cycle)
+
 import Control.Monad.State
 import Data.Type.Set
 import Data.OneOrMore
 import Data.Or
-import Data.List.NonEmpty
+import Data.Bool
+import Data.List.NonEmpty hiding (cycle)
 import Data.List.Infinite
 import Data.Time.Clock.System
 
 import Moffy.React
+import Moffy.Sig
 import Moffy.Handle hiding (before)
 import Moffy.Event.Mouse
 import Moffy.XFieldHandle.Mouse
@@ -75,6 +80,16 @@ tryDoubler = do
 	void . (interpretReactSt InitMode (handleBoxes 0.05 f) doubler `runStateT`) . systemToTAITime =<< getSystemTime
 	closeField f
 
-data Color = Read | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
+data Color = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
 
--- cycleColor
+cycleColor :: SigG s Color ()
+cycleColor = cc . cycle $ fromList [Red .. Magenta] where
+	cc (h :~ t) = emit h >>
+		(bool (pure ()) (cc t)
+			=<< waitFor (adjust $ middleClick `before` rightClick))
+
+tryCycleColor :: IO ()
+tryCycleColor = do
+	f <- openField "TrY CYCLE COLOR" [buttonPressMask]
+	void . (interpretSt InitMode (handleBoxes 0.05 f) (liftIO . print) cycleColor `runStateT`) . systemToTAITime =<< getSystemTime
+	closeField f

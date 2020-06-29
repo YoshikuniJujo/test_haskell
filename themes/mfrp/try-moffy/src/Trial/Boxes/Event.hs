@@ -6,7 +6,7 @@
 
 module Trial.Boxes.Event (
 	-- * GENERAL
---	SigG, ISigG,
+	SigG, ISigG,
 	ReactG, GuiEv, Occurred(..),
 	-- * TIME
 	TimeEv, TryWait(..), sleep, DeltaTime(..), deltaTime,
@@ -20,6 +20,7 @@ import Data.Bool (bool)
 import Data.Time (DiffTime)
 
 import Moffy.React (React, Request(..), await)
+import Moffy.Sig
 import Moffy.Event.Mouse
 
 ---------------------------------------------------------------------------
@@ -43,8 +44,8 @@ instance Request DeltaTime where
 deltaTime :: React s (Singleton DeltaTime) DiffTime
 deltaTime = await DeltaTimeReq \(OccDeltaTime t) -> t
 
--- type SigG = Sig GuiEv
--- type ISigG = ISig GuiEv
+type SigG s = Sig s GuiEv
+type ISigG s = ISig s GuiEv
 type ReactG s a = React s GuiEv a
 type GuiEv = MouseEv :+: TimeEv
 type TimeEv = TryWait :- DeltaTime :- 'Nil

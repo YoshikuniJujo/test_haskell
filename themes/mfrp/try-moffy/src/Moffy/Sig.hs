@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Moffy.Sig where
@@ -33,13 +33,24 @@ instance Applicative (ISig s es a) where
 instance Monad (ISig s es a) where
 	m >>= f = isig f (\h -> (h :|) . (emitAll . f =<<)) m
 
+emit :: a -> Sig s es a ()
+emit = emitAll . (:| pure ())
+
 emitAll :: ISig s es a b -> Sig s es a b
 emitAll = Sig . pure
 
-{-
 hold :: Sig s es a r
 hold = waitFor never
 
 waitFor :: React s es r -> Sig s es a r
 waitFor = Sig . (pure <$>)
--}
+
+interpret :: Monad m => Handle m es -> (a -> m ()) -> Sig s es a r -> m r
+interpret hdl vw = go where
+	go (Sig s) = interpretReact hdl s >>= isig pure \h -> (vw h >>) . go
+
+interpretSt ::
+	Monad m => st -> HandleSt st m es -> (a -> m ()) -> Sig s es a r -> m r
+interpretSt st0 hdl vw = go st0 where
+	go st (Sig s) = interpretReactSt st hdl s >>= \(is, st') ->
+		isig pure (\h -> (vw h >>) . go st') is
