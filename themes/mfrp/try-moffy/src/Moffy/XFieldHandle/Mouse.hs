@@ -8,6 +8,7 @@ import Foreign.C.Types
 import Data.Type.Set
 import Data.OneOrMore
 import Data.Time
+import System.Exit
 
 import Moffy.React
 import Moffy.Event.Mouse
@@ -19,13 +20,15 @@ handleMouse (Just prd) f _rqs = withNextEventTimeout' f
 	(round $ prd * 1000000) $ maybe (pure Nothing) (eventToEv f)
 
 eventToEv :: Field -> Event -> IO (Maybe (EvOccs MouseEv))
-eventToEv _f = \case
+eventToEv f = \case
 	ButtonEvent { ev_event_type = 4, ev_button = eb, ev_x = x, ev_y = y }
 		| Just b <- btn eb -> pure . Just . expand $ omd x y [b]
 	ButtonEvent { ev_event_type = 5, ev_button = eb, ev_x = x, ev_y = y }
 		| Just b <- btn eb -> pure . Just . expand $ omu x y [b]
+	DestroyWindowEvent {} -> closeField f >> exitSuccess
 	MotionEvent { ev_x = x, ev_y = y } -> pure . Just . expand $ omm x y
-	_ -> pure Nothing
+	ev	| isDeleteEvent f ev -> Nothing <$ destroyField f
+		| otherwise -> pure Nothing
 	where
 	btn = \case
 		1 -> Just MLeft; 2 -> Just MMiddle; 3 -> Just MRight

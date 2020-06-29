@@ -17,6 +17,7 @@ themes/papers/monadic_functional_reactive_programming/try-monadic-functional-rea
 task
 ----
 
+* [ ] DeleteEventでちゃんと終了するようにする
 * [ ] qAppParで再帰的にタグをつけるのをやめる
 	+ [ ] 明示的にタグづけしたレベルだけ効率化する
 * [ ] タグづけした部分ではThreadIdはうまく働かないことを確かめる
