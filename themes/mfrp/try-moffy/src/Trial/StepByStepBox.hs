@@ -114,8 +114,8 @@ data Rect = Rect { leftup :: Point, rightdown :: Point } deriving Show
 
 tryCurRect :: IO ()
 tryCurRect = do
-	f <- openField "TRY CUR RECT" [pointerMotionMask]
-	void . (interpretSt InitMode (handleBoxes 0.05 f) (liftIO . print) (curRect (150, 100)) `runStateT`)
+	f <- openField "TRY CUR RECT" [pointerMotionMask, exposureMask]
+	void . (interpretSt InitMode (handleBoxes 0.05 f) (liftIO . withFlush f . drawRect f (colorToPixel Red)) (curRect (150, 100)) `runStateT`)
 		. systemToTAITime =<< getSystemTime
 	closeField f
 
@@ -128,3 +128,18 @@ tryElapsed = do
 	void . (interpretSt InitMode (handleBoxes 0.05 f) (liftIO . print) elapsed `runStateT`)
 		. systemToTAITime =<< getSystemTime
 	closeField f
+
+withFlush :: Field -> IO a -> IO a
+withFlush f act = clearField f >> act <* flushField f
+
+drawRect :: Field -> Pixel -> Rect -> IO ()
+drawRect f clr (Rect (l_, u_) (r_, d_)) = fillRect f clr l u w h where
+	l = fromIntegral $ l_ `min` r_
+	u = fromIntegral $ u_ `min` d_
+	w = fromIntegral . abs $ r_ - l_
+	h = fromIntegral . abs $ d_ - u_
+
+colorToPixel :: Color -> Pixel
+colorToPixel = \case
+	Red -> 0xff0000; Green -> 0x00ff00; Blue -> 0x0000ff
+	Yellow -> 0xffff00; Cyan -> 0xff00ff; Magenta -> 0x00ffff

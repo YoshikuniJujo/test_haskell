@@ -25,8 +25,9 @@ eventToEv f = \case
 		| Just b <- btn eb -> pure . Just . expand $ omd x y [b]
 	ButtonEvent { ev_event_type = 5, ev_button = eb, ev_x = x, ev_y = y }
 		| Just b <- btn eb -> pure . Just . expand $ omu x y [b]
-	DestroyWindowEvent {} -> closeField f >> exitSuccess
 	MotionEvent { ev_x = x, ev_y = y } -> pure . Just . expand $ omm x y
+	ExposeEvent {} -> Nothing <$ flushField f
+	DestroyWindowEvent {} -> closeField f >> exitSuccess
 	ev	| isDeleteEvent f ev -> Nothing <$ destroyField f
 		| otherwise -> pure Nothing
 	where
