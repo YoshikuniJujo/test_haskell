@@ -6,7 +6,7 @@
 
 module Trial.StepByStepBox where
 
-import Prelude hiding (cycle, repeat)
+import Prelude hiding (cycle, repeat, scanl)
 
 import Control.Monad.State
 import Data.Type.Flip
@@ -14,8 +14,9 @@ import Data.Type.Set
 import Data.OneOrMore
 import Data.Or
 import Data.Bool
-import Data.List.NonEmpty hiding (cycle, repeat)
-import Data.List.Infinite hiding (repeat)
+import Data.List.NonEmpty hiding (cycle, repeat, scanl)
+import Data.List.Infinite hiding (repeat, scanl)
+import Data.Time
 import Data.Time.Clock.System
 
 import Moffy.React
@@ -115,5 +116,15 @@ tryCurRect :: IO ()
 tryCurRect = do
 	f <- openField "TRY CUR RECT" [pointerMotionMask]
 	void . (interpretSt InitMode (handleBoxes 0.05 f) (liftIO . print) (curRect (150, 100)) `runStateT`)
+		. systemToTAITime =<< getSystemTime
+	closeField f
+
+elapsed :: SigG s DiffTime ()
+elapsed = scanl (+) 0 (repeat $ adjust deltaTime)
+
+tryElapsed :: IO ()
+tryElapsed = do
+	f <- openField "TRY ELAPSED" []
+	void . (interpretSt InitMode (handleBoxes 0.05 f) (liftIO . print) elapsed `runStateT`)
 		. systemToTAITime =<< getSystemTime
 	closeField f

@@ -4,6 +4,8 @@
 
 module Moffy.Sig where
 
+import Prelude hiding (scanl)
+
 import Control.Monad
 import Data.Type.Flip
 
@@ -67,3 +69,9 @@ interpretSt st0 hdl vw = go st0 where
 
 repeat :: React s es a -> Sig s es a ()
 repeat = forever . (emit <=< waitFor)
+
+scanl :: (b -> a -> b) -> b -> Sig s es a r -> Sig s es b r
+scanl op v = emitAll . iscanl op v
+
+iscanl :: (b -> a -> b) -> b -> Sig s es a r -> ISig s es b r
+iscanl op v (Sig r) = v :| (isig pure (scanl op . (v `op`)) =<< waitFor r)
