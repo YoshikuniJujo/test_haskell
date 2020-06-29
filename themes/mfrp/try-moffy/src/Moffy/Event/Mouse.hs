@@ -41,4 +41,13 @@ releaseOn b = bool (releaseOn b) (pure ()) . (b `elem`) =<< mouseUp
 leftUp, middleUp, rightUp :: React s (Singleton MouseUp) ()
 [leftUp, middleUp, rightUp] = releaseOn <$> [MLeft, MMiddle, MRight]
 
-type MouseEv = MouseDown :- MouseUp :- 'Nil
+data MouseMove = MouseMoveReq deriving (Show, Eq, Ord)
+type Point = (Integer, Integer)
+numbered 9 [t| MouseMove |]
+instance Request MouseMove where
+	data Occurred MouseMove = OccMouseMove Point deriving (Show, Eq, Ord)
+
+mouseMove :: React s (Singleton MouseMove) Point
+mouseMove  = await MouseMoveReq \(OccMouseMove p) -> p
+
+type MouseEv = MouseDown :- MouseUp :- MouseMove :- 'Nil

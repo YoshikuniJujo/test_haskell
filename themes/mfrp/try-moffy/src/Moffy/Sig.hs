@@ -3,6 +3,8 @@
 
 module Moffy.Sig where
 
+import Control.Monad
+
 import Moffy.React
 
 infixr 5 :|
@@ -54,3 +56,6 @@ interpretSt ::
 interpretSt st0 hdl vw = go st0 where
 	go st (Sig s) = interpretReactSt st hdl s >>= \(is, st') ->
 		isig pure (\h -> (vw h >>) . go st') is
+
+repeat :: React s es a -> Sig s es a ()
+repeat = forever . (emit <=< waitFor)

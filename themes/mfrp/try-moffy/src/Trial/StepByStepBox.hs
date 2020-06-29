@@ -6,15 +6,15 @@
 
 module Trial.StepByStepBox where
 
-import Prelude hiding (cycle)
+import Prelude hiding (cycle, repeat)
 
 import Control.Monad.State
 import Data.Type.Set
 import Data.OneOrMore
 import Data.Or
 import Data.Bool
-import Data.List.NonEmpty hiding (cycle)
-import Data.List.Infinite
+import Data.List.NonEmpty hiding (cycle, repeat)
+import Data.List.Infinite hiding (repeat)
 import Data.Time.Clock.System
 
 import Moffy.React
@@ -25,7 +25,7 @@ import Moffy.XFieldHandle.Mouse
 
 import Trial.Boxes.Event
 import Trial.Boxes.Handle
-import Field
+import Field hiding (Point)
 
 tryClick :: IO [MouseBtn]
 tryClick = do
@@ -52,7 +52,7 @@ tryLeftOrRightClick = do
 	interpretReact (retry $ handleMouse Nothing f) leftOrRightClick <* closeField f
 
 leftDownRightUp :: React s MouseEv (Or () ())
-leftDownRightUp = leftClick `first` rightUp
+leftDownRightUp = adjust $ leftClick `first` rightUp
 
 tryLeftDownRightUp :: IO (Or () ())
 tryLeftDownRightUp = do
@@ -90,6 +90,17 @@ cycleColor = cc . cycle $ fromList [Red .. Magenta] where
 
 tryCycleColor :: IO ()
 tryCycleColor = do
-	f <- openField "TrY CYCLE COLOR" [buttonPressMask]
+	f <- openField "TRY CYCLE COLOR" [buttonPressMask]
 	void . (interpretSt InitMode (handleBoxes 0.05 f) (liftIO . print) cycleColor `runStateT`) . systemToTAITime =<< getSystemTime
+	closeField f
+
+-- type Point = (Integer, Integer)
+
+mousePos :: SigG s Point ()
+mousePos = repeat $ adjust mouseMove
+
+tryMousePos :: IO ()
+tryMousePos = do
+	f <- openField "TRY MOUSE POS" [pointerMotionMask]
+	void . (interpretSt InitMode (handleBoxes 0.05 f) (liftIO . print) mousePos `runStateT`) . systemToTAITime =<< getSystemTime	
 	closeField f
