@@ -9,7 +9,8 @@ import Control.Monad.State
 import Data.Type.Set
 import Data.OneOrMore
 import Data.Or
-import Data.Time
+import Data.List.NonEmpty
+import Data.List.Infinite
 import Data.Time.Clock.System
 
 import Moffy.React
@@ -71,5 +72,9 @@ doubler = do
 tryDoubler :: IO ()
 tryDoubler = do
 	f <- openField "TRY DOUBLER" [buttonPressMask]
-	(interpretReactSt InitMode (handleBoxes 0.05 f) doubler `runStateT`) . systemToTAITime =<< getSystemTime
+	void . (interpretReactSt InitMode (handleBoxes 0.05 f) doubler `runStateT`) . systemToTAITime =<< getSystemTime
 	closeField f
+
+data Color = Read | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
+
+-- cycleColor

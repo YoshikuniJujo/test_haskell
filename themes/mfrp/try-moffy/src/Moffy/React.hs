@@ -253,3 +253,6 @@ adjust = \case
 		(GetThreadId :>>= _, _) -> error "GetThreadId"
 		(PutThreadId _ :>>= _, _) -> error "PutThreadId _"
 		_ -> error "never occur"
+
+never :: React s es a
+never = Never >>>= pure
