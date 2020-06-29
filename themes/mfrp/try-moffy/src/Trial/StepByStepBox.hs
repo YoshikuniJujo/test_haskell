@@ -9,6 +9,7 @@ module Trial.StepByStepBox where
 import Prelude hiding (cycle, repeat)
 
 import Control.Monad.State
+import Data.Type.Flip
 import Data.Type.Set
 import Data.OneOrMore
 import Data.Or
@@ -103,4 +104,16 @@ tryMousePos :: IO ()
 tryMousePos = do
 	f <- openField "TRY MOUSE POS" [pointerMotionMask]
 	void . (interpretSt InitMode (handleBoxes 0.05 f) (liftIO . print) mousePos `runStateT`) . systemToTAITime =<< getSystemTime	
+	closeField f
+
+curRect :: Point -> SigG s Rect ()
+curRect p1 = Rect p1 <$%> mousePos
+
+data Rect = Rect { leftup :: Point, rightdown :: Point } deriving Show
+
+tryCurRect :: IO ()
+tryCurRect = do
+	f <- openField "TRY CUR RECT" [pointerMotionMask]
+	void . (interpretSt InitMode (handleBoxes 0.05 f) (liftIO . print) (curRect (150, 100)) `runStateT`)
+		. systemToTAITime =<< getSystemTime
 	closeField f

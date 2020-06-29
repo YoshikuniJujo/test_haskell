@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7be7ad8fa25cb501baf289c248d0b07f2aaea20fab31caa99de329edc6b7d7e8
+-- hash: 8f7e6b3ea96c3e12a749dcd7550e3f2799a7221cc2803a395033109277a798c6
 
 name:           try-moffy
 version:        0.1.0.0
@@ -56,6 +56,7 @@ library
     , simple-field
     , template-haskell
     , time
+    , type-flip
   default-language: Haskell2010
 
 executable try-moffy-exe
@@ -74,6 +75,7 @@ executable try-moffy-exe
     , template-haskell
     , time
     , try-moffy
+    , type-flip
   default-language: Haskell2010
 
 test-suite try-moffy-test
@@ -93,4 +95,5 @@ test-suite try-moffy-test
     , template-haskell
     , time
     , try-moffy
+    , type-flip
   default-language: Haskell2010

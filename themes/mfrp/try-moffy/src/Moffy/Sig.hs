@@ -1,9 +1,11 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Moffy.Sig where
 
 import Control.Monad
+import Data.Type.Flip
 
 import Moffy.React
 
@@ -34,6 +36,12 @@ instance Applicative (ISig s es a) where
 
 instance Monad (ISig s es a) where
 	m >>= f = isig f (\h -> (h :|) . (emitAll . f =<<)) m
+
+instance Functor (Flip (Sig s es) r) where
+	fmap f = Flip . Sig . ((f <$%>) <$>) . unSig . unflip
+
+instance Functor (Flip (ISig s es) r) where
+	fmap f = Flip . isig pure (\h -> (f h :|) . (f <$%>)) . unflip
 
 emit :: a -> Sig s es a ()
 emit = emitAll . (:| pure ())

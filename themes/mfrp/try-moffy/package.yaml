@@ -27,6 +27,7 @@ dependencies:
 - extra-data-yj
 - time
 - monads-tf
+- type-flip
 
 library:
   source-dirs: src

@@ -26,6 +26,17 @@ packages:
   original:
     git: https://github.com/YoshikuniJujo/extra-data-yj
     commit: 23a243df2ca44306ca8cb8e93f286c524a77c332
+- completed:
+    name: type-flip
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/type-flip
+    pantry-tree:
+      size: 570
+      sha256: 9831a4354e6f7f35799575325defda7b5c1c35045b76b36efb796da046fc411a
+    commit: e725f7e5064c0543e024c0c29aaa91f21cc2a45f
+  original:
+    git: https://github.com/YoshikuniJujo/type-flip
+    commit: e725f7e5064c0543e024c0c29aaa91f21cc2a45f
 snapshots:
 - completed:
     size: 531674
