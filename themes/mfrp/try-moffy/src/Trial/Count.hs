@@ -4,8 +4,10 @@
 module Trial.Count where
 
 import Data.Or
+import System.Random
 
 import Moffy.React
+import Moffy.Sig
 import Moffy.Handle
 import Moffy.Event.Mouse
 import Moffy.XFieldHandle.Mouse
@@ -21,3 +23,30 @@ tryLeftCount :: IO Int
 tryLeftCount = do
 	f <- openField "TRY LEFT COUNT" [buttonPressMask, exposureMask]
 	interpretReact (retry $ handleMouse Nothing f) (leftCount 0) <* closeField f
+
+leftCountSig :: Int -> Sig s MouseEv Int Int
+leftCountSig c = do
+	emit c
+	waitFor (adjust $ leftClick `first` rightClick) >>= \case
+		L () -> leftCountSig $ c + 1
+		R () -> pure c
+		LR () () -> pure $ c + 1
+
+tryLeftCountSig :: IO Int
+tryLeftCountSig = do
+	f <- openField "TRY LEFT COUNT SIG" [buttonPressMask, exposureMask]
+	interpret (retry $ handleMouse Nothing f) print (leftCountSig 0) <* closeField f
+
+leftRandomSig :: StdGen -> Sig a MouseEv Int StdGen
+leftRandomSig g = do
+	let	(i, g') = random g
+	emit i
+	waitFor (adjust $ leftClick `first` rightClick) >>= \case
+		L () -> leftRandomSig g'
+		R () -> pure g'
+		LR () () -> pure g'
+
+tryLeftRandomSig :: IO StdGen
+tryLeftRandomSig = do
+	f <- openField "TRY LEFT RANDOM SIG" [buttonPressMask, exposureMask]
+	interpret (retry $ handleMouse Nothing f) print (leftRandomSig $ mkStdGen 8) <* closeField f
