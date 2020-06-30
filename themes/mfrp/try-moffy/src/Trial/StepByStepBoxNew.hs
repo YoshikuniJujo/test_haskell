@@ -136,3 +136,20 @@ wiggleRect (Rect lu rd) = (<$%> elapsed) \t -> let
 
 tryWiggleRectNew :: IO ()
 tryWiggleRectNew = trySigGRect "TRY WIGGLE RECT" . wiggleRect $ Rect (200, 150) (400, 300)
+
+posInside :: Rect -> SigG s Point y -> ReactG s (Either Point y)
+posInside rct = find (`inside` rct)
+
+inside :: Point -> Rect -> Bool
+(x, y) `inside` Rect (l, u) (r, d) =
+	(l <= x && x <= r || r <= x && x <= l) &&
+	(u <= y && y <= d || d <= y && y <= u)
+
+tryPosInsideNew :: IO (Either Point ())
+tryPosInsideNew = do
+	f <- openField "TRY POS INSIDE" [pointerMotionMask, exposureMask]
+	drawRect f (colorToPixel Red) $ Rect (200, 150) (400, 300)
+	((r, _), _) <- (interpretReactSt InitMode (handleBoxes 0.05 f)
+			(posInside (Rect (200, 150) (400, 300)) mousePos) `runStateT`)
+		. systemToTAITime =<< getSystemTime
+	r <$ closeField f
