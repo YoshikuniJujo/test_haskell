@@ -12,8 +12,9 @@ import Control.Monad.State
 import Data.Type.Flip
 import Data.Type.Set
 import Data.OneOrMore
-import Data.Or
 import Data.Bool
+import Data.Maybe
+import Data.Or
 import Data.List.NonEmpty hiding (cycle, repeat, scanl)
 import Data.List.Infinite hiding (repeat, scanl)
 import Data.Time
@@ -193,13 +194,24 @@ completeRect :: Point -> SigG s Rect (Maybe Rect)
 completeRect p1 =
 	either (const Nothing) (Just . fst) <$> curRect p1 `until` leftUp
 
-tryCompleteRect :: IO (Maybe Rect)
-tryCompleteRect = do
-	f <- openField "TRY COMPLETE RECT"
-		[pointerMotionMask, buttonPressMask, buttonReleaseMask, exposureMask]
+trySigGRect :: String -> SigG s Rect r -> IO r
+trySigGRect ttl sig = do
+	f <- openField ttl [
+		pointerMotionMask, buttonPressMask, buttonReleaseMask,
+		exposureMask ]
 	(r, _) <- (interpretSt InitMode (handleBoxes 0.05 f)
-				(liftIO . withFlush f . drawRect f (colorToPixel Red))
-				(completeRect (200, 150)) `runStateT`)
-		. systemToTAITime =<< getSystemTime
+				(liftIO . withFlush f . drawRect f (colorToPixel Red)) sig `runStateT`)
+			. systemToTAITime =<< getSystemTime
 	closeField f
 	pure r
+
+tryCompleteRect :: IO (Maybe Rect)
+tryCompleteRect = trySigGRect "TRY COMPLETE RECT" (completeRect (200, 150))
+
+defineRect :: SigG s Rect Rect
+defineRect = waitFor firstPoint >>= \case
+	Nothing -> error "never occur"
+	Just p1 -> fromMaybe (error "never occur") <$> completeRect p1
+
+tryDefineRect :: IO Rect
+tryDefineRect = trySigGRect "TRY DEFINE RECT" defineRect
