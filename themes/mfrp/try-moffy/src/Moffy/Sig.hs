@@ -121,8 +121,18 @@ l@(End _) `ipause` r = pure (l, r)
 	(t', r'@(Pure _)) -> (h :| t', r')
 	_ -> error "never occur"
 
+infixr 7 `at`
+
 at :: (Parable es (ISig s es a r) es' r', Adjustable es (es :+: es')) =>
 	Sig s es a r -> React s es' r' -> React s (es :+: es') (Either r (a, r'))
 l `at` r = res (l `pause` r) >>= \(Sig l', r') -> (<$> adjust l') \case
+	End x -> Left x
+	h :| _ -> case r' of Pure y -> Right (h, y); _ -> error "never occur"
+
+infixl 7 `until`
+
+until :: (Parable es (ISig s es a r) es' r', Adjustable es (es :+: es')) =>
+	Sig s es a r -> React s es' r' -> Sig s (es :+: es') a (Either r (a, r'))
+l `until` r = l `pause` r >>= \(Sig l', r') -> (<$> waitFor (adjust l')) \case
 	End x -> Left x
 	h :| _ -> case r' of Pure y -> Right (h, y); _ -> error "never occur"

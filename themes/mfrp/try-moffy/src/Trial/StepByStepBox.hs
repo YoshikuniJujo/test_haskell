@@ -6,7 +6,7 @@
 
 module Trial.StepByStepBox where
 
-import Prelude hiding (cycle, repeat, scanl)
+import Prelude hiding (cycle, repeat, scanl, until)
 
 import Control.Monad.State
 import Data.Type.Flip
@@ -185,6 +185,21 @@ tryFirstPoint = do
 	f <- openField "TRY FIRST POINT"
 		[pointerMotionMask, buttonPressMask, exposureMask]
 	((r, _), _) <- (interpretReactSt InitMode (handleBoxes 0.05 f) firstPoint `runStateT`)
+		. systemToTAITime =<< getSystemTime
+	closeField f
+	pure r
+
+completeRect :: Point -> SigG s Rect (Maybe Rect)
+completeRect p1 =
+	either (const Nothing) (Just . fst) <$> curRect p1 `until` leftUp
+
+tryCompleteRect :: IO (Maybe Rect)
+tryCompleteRect = do
+	f <- openField "TRY COMPLETE RECT"
+		[pointerMotionMask, buttonPressMask, buttonReleaseMask, exposureMask]
+	(r, _) <- (interpretSt InitMode (handleBoxes 0.05 f)
+				(liftIO . withFlush f . drawRect f (colorToPixel Red))
+				(completeRect (200, 150)) `runStateT`)
 		. systemToTAITime =<< getSystemTime
 	closeField f
 	pure r
