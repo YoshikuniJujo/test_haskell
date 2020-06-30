@@ -7,6 +7,7 @@ import Data.Or
 import System.Random
 
 import Moffy.React
+import Moffy.React.Common
 import Moffy.Sig
 import Moffy.Handle
 import Moffy.Event.Mouse

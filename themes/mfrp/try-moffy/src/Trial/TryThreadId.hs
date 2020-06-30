@@ -6,7 +6,8 @@ module Trial.TryThreadId where
 import Data.Type.Set
 import Data.Or
 
-import Moffy.React hiding (getThreadId)
+import Moffy.React
+import Moffy.React.Common hiding (getThreadId)
 import Moffy.Handle
 import Moffy.EventHandle.ThreadId
 import Moffy.Event.Mouse

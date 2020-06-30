@@ -23,6 +23,7 @@ import Data.Time.Clock.System
 import qualified Control.Arrow as Arr
 
 import Moffy.React
+import Moffy.React.Common
 import Moffy.Sig
 import Moffy.Handle hiding (before)
 import Moffy.Event.Mouse

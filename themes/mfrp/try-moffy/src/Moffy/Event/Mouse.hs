@@ -9,7 +9,7 @@ module Moffy.Event.Mouse where
 import Data.Type.Set
 import Data.Bool
 
-import Moffy.React
+import Moffy.React.Common
 
 data MouseDown = MouseDownReq deriving (Show, Eq, Ord)
 data MouseBtn = MLeft | MMiddle | MRight | MUp | MDown deriving (Show, Eq, Ord)

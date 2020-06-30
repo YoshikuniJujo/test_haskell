@@ -10,7 +10,7 @@ import Data.OneOrMore
 import Data.Time
 import System.Exit
 
-import Moffy.React
+import Moffy.React.Common
 import Moffy.Event.Mouse
 import Field
 

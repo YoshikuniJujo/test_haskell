@@ -9,7 +9,7 @@ module Moffy.EventHandle.ThreadId where
 import Data.Type.Set
 import Data.OneOrMore
 
-import Moffy.React
+import Moffy.React.Common
 
 data GetThreadId = GetThreadIdReq deriving (Show, Eq, Ord)
 numbered 9 [t| GetThreadId |]

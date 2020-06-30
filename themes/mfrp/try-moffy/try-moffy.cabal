@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e879915fcf0acd088a8c43b66684157989828c38798e42f89a95a39a9a690836
+-- hash: a4a27b3eaa663d54612e7b8bae409ddd389b85df8baccdb5e5c0daefdbe39d12
 
 name:           try-moffy
 version:        0.1.0.0
@@ -36,6 +36,7 @@ library
       Moffy.EventHandle.ThreadId
       Moffy.Handle
       Moffy.React
+      Moffy.React.Common
       Moffy.ReactNew
       Moffy.Sig
       Moffy.XFieldHandle.Mouse
@@ -45,6 +46,7 @@ library
       Trial.Boxes.Handle
       Trial.Count
       Trial.StepByStepBox
+      Trial.StepByStepBoxNew
       Trial.TryThreadId
   other-modules:
       Paths_try_moffy

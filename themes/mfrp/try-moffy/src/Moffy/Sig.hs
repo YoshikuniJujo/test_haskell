@@ -15,6 +15,7 @@ import Data.Type.Flip
 import qualified Control.Arrow as Arr
 
 import Moffy.React
+import Moffy.React.Common
 import Freer
 
 infixr 5 :|
