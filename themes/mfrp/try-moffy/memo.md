@@ -7,6 +7,8 @@ todo
 * [x] parallel freer
 * [x] adjust
 * [x] check leftDown \`first\` rightUp
+* [x] `update :: React s es a -> ... -> React s es' b -> ...` -> `update :: React s es a -> ... -> React s es b -> ...`
+	+ adjustしてからupdateする感じか
 
 ref
 ---
