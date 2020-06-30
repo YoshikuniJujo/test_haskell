@@ -75,3 +75,20 @@ scanl op v = emitAll . iscanl op v
 
 iscanl :: (b -> a -> b) -> b -> Sig s es a r -> ISig s es b r
 iscanl op v (Sig r) = v :| (isig pure (scanl op . (v `op`)) =<< waitFor r)
+
+find :: (a -> Bool) -> Sig s es a r -> React s es (Either a r)
+find p = (icur <$>) . res . brk
+	where
+	brk = Sig . (ibrk <$>) . unSig
+	ibrk = \case
+		is@(End _) -> pure is
+		is@(h :| t) | p h -> pure is | otherwise -> h :| brk t
+
+icur :: ISig s es a b -> Either a b
+icur = isig Right (const . Left)
+
+res :: Sig s es a b -> React s es b
+res = ires <=< unSig
+
+ires :: ISig s es a b -> React s es b
+ires = isig pure (const res)
