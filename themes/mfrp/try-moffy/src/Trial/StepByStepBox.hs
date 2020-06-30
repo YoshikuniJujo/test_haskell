@@ -25,6 +25,7 @@ import qualified Control.Arrow as Arr
 import Moffy.React
 import Moffy.React.Common
 import Moffy.Sig
+import Moffy.Sig.Common
 import Moffy.Handle hiding (before)
 import Moffy.Event.Mouse
 import Moffy.XFieldHandle.Mouse

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a4a27b3eaa663d54612e7b8bae409ddd389b85df8baccdb5e5c0daefdbe39d12
+-- hash: 6e92e5baffd4cb891b0a669ad22496e9ef0cd1c54be806908f43a01bf22fa4f6
 
 name:           try-moffy
 version:        0.1.0.0
@@ -39,6 +39,7 @@ library
       Moffy.React.Common
       Moffy.ReactNew
       Moffy.Sig
+      Moffy.Sig.Common
       Moffy.XFieldHandle.Mouse
       Sequence
       TaggableFunction

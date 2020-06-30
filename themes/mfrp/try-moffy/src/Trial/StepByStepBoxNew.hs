@@ -5,15 +5,20 @@
 
 module Trial.StepByStepBoxNew where
 
+import Prelude hiding (cycle)
+
 import Control.Monad.State
 import Data.Type.Set
 import Data.OneOrMore
 import Data.Bool
 import Data.Or
+import Data.List.NonEmpty hiding (cycle, repeat, scanl)
+import Data.List.Infinite hiding (repeat, scanl)
 import Data.Time.Clock.System
 
 import Moffy.ReactNew
 import Moffy.React.Common
+import Moffy.Sig.Common
 import Moffy.Handle hiding (before)
 import Moffy.Event.Mouse
 import Moffy.XFieldHandle.Mouse
@@ -60,4 +65,18 @@ tryDoublerNew :: IO ()
 tryDoublerNew = do
 	f <- openField "TRY DOUBLER" [buttonPressMask, exposureMask]
 	void . (interpretReactSt InitMode (handleBoxes 0.05 f) doubler `runStateT`) . systemToTAITime =<< getSystemTime
+	closeField f
+
+data Color = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
+
+cycleColor :: SigG s Color ()
+cycleColor = cc . cycle $ fromList [Red .. Magenta] where
+	cc (h :~ t) = emit h >>
+		(bool (pure ()) (cc t)
+			=<< waitFor (adjust $ middleClick `before` rightClick))
+
+tryCycleColorNew :: IO ()
+tryCycleColorNew = do
+	f <- openField "TRY CYCLE COLOR" [buttonPressMask, exposureMask]
+	void . (interpretSt InitMode (handleBoxes 0.05 f) (liftIO . print) cycleColor `runStateT`) . systemToTAITime =<< getSystemTime
 	closeField f
