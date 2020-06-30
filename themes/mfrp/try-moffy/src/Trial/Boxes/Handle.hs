@@ -6,7 +6,8 @@
 
 module Trial.Boxes.Handle (Mode(InitMode), handleBoxes) where
 
-import Control.Monad.State (StateT, get, put, lift)
+import Control.Monad.State (StateT, get, put, lift, liftIO)
+import Control.Concurrent
 import Data.OneOrMore (prj, singleton, (>-), expand)
 import Data.Time (DiffTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
@@ -28,7 +29,7 @@ handleBoxes prd f = retrySt \case
 
 handleInit :: HandleSt' (DiffTime, Field) Mode (StateT AbsoluteTime IO) GuiEv
 handleInit = mergeSt
-	handleMouse' (\_ -> pure ())
+	handleMouse' (\(prd, _) -> liftIO . threadDelay . round $ prd * 1000000)
 	handleNow (\_ -> InitMode <$ (put =<< lift getTaiTime))
 
 handleMouse' :: HandleSt' (DiffTime, Field) () (StateT AbsoluteTime IO) MouseEv

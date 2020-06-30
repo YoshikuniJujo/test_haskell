@@ -19,6 +19,8 @@ import Data.List.Infinite hiding (repeat, scanl)
 import Data.Time
 import Data.Time.Clock.System
 
+import qualified Control.Arrow as Arr
+
 import Moffy.React
 import Moffy.Sig
 import Moffy.Handle hiding (before)
@@ -124,8 +126,8 @@ elapsed = scanl (+) 0 (repeat $ adjust deltaTime)
 
 tryElapsed :: IO ()
 tryElapsed = do
-	f <- openField "TRY ELAPSED" []
-	void . (interpretSt InitMode (handleBoxes 0.05 f) (liftIO . print) elapsed `runStateT`)
+	f <- openField "TRY ELAPSED" [exposureMask]
+	void . (interpretSt InitMode (handleBoxes 1 f) (liftIO . print) elapsed `runStateT`)
 		. systemToTAITime =<< getSystemTime
 	closeField f
 
@@ -143,3 +145,16 @@ colorToPixel :: Color -> Pixel
 colorToPixel = \case
 	Red -> 0xff0000; Green -> 0x00ff00; Blue -> 0x0000ff
 	Yellow -> 0xffff00; Cyan -> 0xff00ff; Magenta -> 0x00ffff
+
+wiggleRect :: Rect -> SigG s Rect ()
+wiggleRect (Rect lu rd) = (<$%> elapsed) \t -> let
+	dx = round (sin (fromRational (toRational t) * 5) * 15 :: Double) in
+	Rect ((+ dx) `Arr.first` lu) ((+ dx) `Arr.first` rd)
+
+tryWiggleRect :: IO ()
+tryWiggleRect = do
+	f <- openField "TRY WIGGLE RECT" [buttonPressMask, exposureMask]
+	void . (interpretSt InitMode (handleBoxes 0.05 f)
+		(liftIO . withFlush f . drawRect f (colorToPixel Red))
+		(wiggleRect $ Rect (200, 150) (400, 300)) `runStateT`) . systemToTAITime =<< getSystemTime
+	closeField f
