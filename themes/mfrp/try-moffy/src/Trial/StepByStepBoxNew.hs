@@ -1,11 +1,11 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.StepByStepBoxNew where
 
-import Prelude hiding (cycle, repeat)
+import Prelude hiding (cycle, repeat, scanl)
 
 import Control.Monad.State
 import Data.Type.Set
@@ -15,7 +15,10 @@ import Data.Bool
 import Data.Or
 import Data.List.NonEmpty hiding (cycle, repeat, scanl)
 import Data.List.Infinite hiding (repeat, scanl)
+import Data.Time
 import Data.Time.Clock.System
+
+import qualified Control.Arrow as Arr
 
 import Moffy.ReactNew
 import Moffy.React.Common
@@ -122,3 +125,14 @@ colorToPixel :: Color -> Pixel
 colorToPixel = \case
 	Red -> 0xff0000; Green -> 0x00ff00; Blue -> 0x0000ff
 	Yellow -> 0xffff00; Cyan -> 0xff00ff; Magenta -> 0x00ffff
+
+elapsed :: SigG s DiffTime ()
+elapsed = scanl (+) 0 (repeat $ adjust deltaTime)
+
+wiggleRect :: Rect -> SigG s Rect ()
+wiggleRect (Rect lu rd) = (<$%> elapsed) \t -> let
+	dx = round (sin (fromRational (toRational t) * 5) * 15 :: Double) in
+	Rect ((+ dx) `Arr.first` lu) ((+ dx) `Arr.first` rd)
+
+tryWiggleRectNew :: IO ()
+tryWiggleRectNew = trySigGRect "TRY WIGGLE RECT" . wiggleRect $ Rect (200, 150) (400, 300)
