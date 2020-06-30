@@ -9,6 +9,7 @@ import Prelude hiding (cycle, repeat)
 
 import Control.Monad.State
 import Data.Type.Set
+import Data.Type.Flip
 import Data.OneOrMore
 import Data.Bool
 import Data.Or
@@ -89,3 +90,35 @@ tryMousePosNew = do
 	f <- openField "TRY MOUSE POS" [pointerMotionMask, exposureMask]
 	void . (interpretSt InitMode (handleBoxes 0.05 f) (liftIO . print) mousePos `runStateT`) . systemToTAITime =<< getSystemTime
 	closeField f
+
+curRect :: Point -> SigG s Rect ()
+curRect p1 = Rect p1 <$%> mousePos
+
+tryCurRectNew :: IO ()
+tryCurRectNew = trySigGRect "TRY CUR RECT" $ curRect (200, 150)
+
+data Rect = Rect { leftup :: Point, rightdown :: Point  }
+
+trySigGRect :: String -> SigG s Rect r -> IO r
+trySigGRect ttl sig = do
+	f <- openField ttl [
+		pointerMotionMask, buttonPressMask, buttonReleaseMask,
+		exposureMask ]
+	(r, _) <- (interpretSt InitMode (handleBoxes 0.05 f)
+				(liftIO . withFlush f . drawRect f (colorToPixel Red)) sig `runStateT`)
+			. systemToTAITime =<< getSystemTime
+	r <$ closeField f
+
+withFlush :: Field -> IO a -> IO a
+withFlush f act = clearField f >> act <* flushField f
+
+drawRect :: Field -> Pixel -> Rect -> IO ()
+drawRect f clr (Rect (l_, u_) (r_, d_)) = fillRect f clr l u w h where
+	[l, u] = fromIntegral <$> [l_ `min` r_, u_ `min` d_]
+	[w, h] = fromIntegral <$> [abs $ r_ - l_, abs $ d_ - u_]
+
+
+colorToPixel :: Color -> Pixel
+colorToPixel = \case
+	Red -> 0xff0000; Green -> 0x00ff00; Blue -> 0x0000ff
+	Yellow -> 0xffff00; Cyan -> 0xff00ff; Magenta -> 0x00ffff
