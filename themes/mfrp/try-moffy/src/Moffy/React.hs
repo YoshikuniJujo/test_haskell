@@ -100,11 +100,12 @@ l `first` r = (<$> l `par` r) \case
 	(_, GetThreadId :>>= _) -> error "(_, GetThreadId :>>= _)"
 	_ -> error "never occur"
 
-par ::	(
-	Update es a es' b,
-	Mergeable es es' (es :+: es'),
-	Expandable es (es :+: es'), Expandable es' (es :+: es')
-	) => React s es a -> React s es' b -> React s (es :+: es') (React s es a, React s es' b)
+type Parable es a es' b = (
+	Update es a es' b, Mergeable es es' (es :+: es'),
+	Expandable es (es :+: es'), Expandable es' (es :+: es') )
+
+par ::	Parable es a es' b =>
+	React s es a -> React s es' b -> React s (es :+: es') (React s es a, React s es' b)
 l `par` r = case (l, r) of
 	(Never :>>= _, Never :>>= _) -> error "never end"
 	(GetThreadId :>>= c, r') -> do
@@ -233,15 +234,12 @@ l `par'` r = case (l, r) of
 		(c `qApp` ti) `par'` r'
 	_ -> Pure (l, r)
 
-adjust :: forall s es es' a . (
---	Update es a es' a,
-	Mergeable es es' es',
-	(es :+: es') ~ es',
-	CollapsableOccurred es' es,
-	CollapsableOccurred es' es',
-	Expandable es es',
-	Expandable es' es'
-	) => React s es a -> React s es' a
+type Adjustable es es' = (
+	(es :+: es') ~ es', Mergeable es es' es',
+	CollapsableOccurred es' es, CollapsableOccurred es' es',
+	Expandable es es', Expandable es' es' )
+
+adjust :: forall s es es' a . Adjustable es es' => React s es a -> React s es' a
 adjust = \case
 	Pure x -> pure x
 	(Never :>>= _) -> Never >>>= pure

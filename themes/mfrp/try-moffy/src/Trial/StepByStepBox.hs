@@ -175,3 +175,16 @@ tryPosInside = do
 		. systemToTAITime =<< getSystemTime
 	closeField f
 	pure r
+
+firstPoint :: ReactG s (Maybe Point)
+firstPoint = (<$> mousePos `at` leftClick)
+	\case Left () -> Nothing; Right (p, ()) -> Just p
+
+tryFirstPoint :: IO (Maybe Point)
+tryFirstPoint = do
+	f <- openField "TRY FIRST POINT"
+		[pointerMotionMask, buttonPressMask, exposureMask]
+	((r, _), _) <- (interpretReactSt InitMode (handleBoxes 0.05 f) firstPoint `runStateT`)
+		. systemToTAITime =<< getSystemTime
+	closeField f
+	pure r
