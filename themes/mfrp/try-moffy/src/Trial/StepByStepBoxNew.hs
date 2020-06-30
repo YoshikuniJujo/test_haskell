@@ -5,7 +5,7 @@
 
 module Trial.StepByStepBoxNew where
 
-import Prelude hiding (cycle)
+import Prelude hiding (cycle, repeat)
 
 import Control.Monad.State
 import Data.Type.Set
@@ -22,7 +22,7 @@ import Moffy.Sig.Common
 import Moffy.Handle hiding (before)
 import Moffy.Event.Mouse
 import Moffy.XFieldHandle.Mouse
-import Field
+import Field hiding (Point)
 
 import Trial.Boxes.Event
 import Trial.Boxes.Handle
@@ -79,4 +79,13 @@ tryCycleColorNew :: IO ()
 tryCycleColorNew = do
 	f <- openField "TRY CYCLE COLOR" [buttonPressMask, exposureMask]
 	void . (interpretSt InitMode (handleBoxes 0.05 f) (liftIO . print) cycleColor `runStateT`) . systemToTAITime =<< getSystemTime
+	closeField f
+
+mousePos :: SigG s Point ()
+mousePos = repeat $ adjust mouseMove
+
+tryMousePosNew :: IO ()
+tryMousePosNew = do
+	f <- openField "TRY MOUSE POS" [pointerMotionMask, exposureMask]
+	void . (interpretSt InitMode (handleBoxes 0.05 f) (liftIO . print) mousePos `runStateT`) . systemToTAITime =<< getSystemTime
 	closeField f
