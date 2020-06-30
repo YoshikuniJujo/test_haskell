@@ -22,6 +22,7 @@ import qualified Control.Arrow as Arr
 
 import Moffy.ReactNew
 import Moffy.React.Common
+import Moffy.Sig
 import Moffy.Sig.Common
 import Moffy.Handle hiding (before)
 import Moffy.Event.Mouse
@@ -153,3 +154,7 @@ tryPosInsideNew = do
 			(posInside (Rect (200, 150) (400, 300)) mousePos) `runStateT`)
 		. systemToTAITime =<< getSystemTime
 	r <$ closeField f
+
+firstPoint :: ReactG s (Maybe Point)
+firstPoint = (<$> mousePos `at` leftClick)
+	\case Left () -> Nothing; Right (p, ()) -> Just p
