@@ -14,7 +14,6 @@ import Data.OneOrMore hiding (merge, expand, collapse)
 
 import qualified Data.OneOrMore as OOM
 
-import Moffy.React hiding (first)
 import Moffy.React.Common
 
 retry :: Monad m => Handle' m es -> Handle m es
