@@ -6,6 +6,7 @@
 module Trial.StepByStepBox where
 
 import Prelude hiding (cycle, repeat, scanl, until)
+import qualified Prelude as P
 
 import Control.Monad.State
 import Data.Type.Set
@@ -220,3 +221,25 @@ box = (() <$) $ (`Box` Red) <$%> defineRect >>= \r ->
 
 tryBox :: IO ()
 tryBox = trySigGBox "TRY BOX" box
+
+newBoxes :: SigG s (ISigG s Box ()) ()
+newBoxes = spawn box
+
+boxes :: SigG s [Box] ()
+boxes = () <$ parList newBoxes
+
+trySigGBoxes :: String -> SigG s [Box] r -> IO r
+trySigGBoxes ttl sig = do
+	f <- openField ttl [
+		pointerMotionMask, buttonPressMask, buttonReleaseMask,
+		exposureMask ]
+	(r, _) <- (interpretSt InitMode (handleBoxes 0.05 f)
+				(liftIO . drawBoxes f) sig `runStateT`)
+			. systemToTAITime =<< getSystemTime
+	r <$ closeField f
+
+drawBoxes :: Field -> [Box] -> IO ()
+drawBoxes f = withFlush f . (drawBox f `mapM_`) . P.reverse
+
+tryBoxes :: IO ()
+tryBoxes = trySigGBoxes "TRY BOXES" boxes

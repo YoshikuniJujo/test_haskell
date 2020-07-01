@@ -1,10 +1,12 @@
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
 
 module Moffy.Sig where
+
+import Prelude hiding (repeat)
 
 import Control.Arrow ((***))
 import Data.Type.Set
@@ -139,3 +141,25 @@ l `iindexBy` Sig r = waitFor (ires $ l `ipause` r) >>= \case
 	(l'@(hl :| _), Pure (_ :| tr)) -> emit hl >> l' `iindexBy` tr
 	(hl :| _, Pure (End y)) -> pure $ Right (hl, y)
 	_ -> error "never occur"
+
+spawn :: Sig s es a r -> Sig s es (ISig s es a r) ()
+spawn = repeat . unSig
+
+parList :: Mergeable es es es => Sig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
+parList (Sig r) = iparList =<< waitFor r
+
+iparList :: (
+	Mergeable es es es
+	) => ISig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
+iparList = isig (pure . ([] ,)) $ go . ((: []) <$>) . ((: []) <$%>) where
+	go s (Sig r) = emitAll (s `ipause` r) >>= \case
+		(s', Pure (h :| t)) -> go (uncurry (:) <$> h `cons` s') t
+		(s', Pure (End y)) -> (, y) <$> emitAll s'
+		(End x, r') -> emit [] >> ((x ++) `Arr.first`) <$> parList (Sig r')
+		_ -> error "never occur"
+
+cons :: (
+	Mergeable es es es
+	) => ISig s es a r -> ISig s es [a] r' -> ISig s es [a] (r, r')
+h `cons` t = uncurry (:) <$%> h `ipairs` t >>= \(h', t') ->
+	(,) <$> ((: []) <$%> h') <*> t'
