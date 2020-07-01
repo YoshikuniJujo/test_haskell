@@ -23,7 +23,7 @@ import qualified Control.Arrow as Arr
 
 import Moffy.ReactNew
 import Moffy.React.Common
-import Moffy.Sig
+import Moffy.SigNew
 import Moffy.Sig.Common
 import Moffy.Handle hiding (before)
 import Moffy.Event.Mouse
@@ -186,3 +186,24 @@ defineRect = waitFor firstPoint >>= \case
 
 tryDefineRectNew :: IO Rect
 tryDefineRectNew = trySigGRect "TRY DEFINE RECT" defineRect
+
+chooseBoxColor :: Rect -> SigG s Box ()
+chooseBoxColor r = Box <$%> wiggleRect r <*%> cycleColor
+
+data Box = Box Rect Color deriving Show
+
+tryChooseBoxColor :: IO ()
+tryChooseBoxColor = trySigGBox "TRY CHOOSE BOX COLOR" . chooseBoxColor $ Rect (200, 150) (400, 300)
+
+trySigGBox :: String -> SigG s Box r -> IO r
+trySigGBox ttl sig = do
+	f <- openField ttl [
+		pointerMotionMask, buttonPressMask, buttonReleaseMask,
+		exposureMask ]
+	(r, _) <- (interpretSt InitMode (handleBoxes 0.05 f)
+				(liftIO . withFlush f . drawBox f) sig `runStateT`)
+			. systemToTAITime =<< getSystemTime
+	r <$ closeField f
+
+drawBox :: Field -> Box -> IO ()
+drawBox f (Box rct clr) = drawRect f (colorToPixel clr) rct
