@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a61f8d30a00e05f8c2e9703b3b08055d9b22ffa39d01e0ab881ddfa71b6abd06
+-- hash: 876edda84c4c69eeb0992877a2643aa807281f55741168f57cf6f669e5fa57c3
 
 name:           try-moffy
 version:        0.1.0.0
@@ -44,6 +44,7 @@ library
       TaggableFunction
       Trial.Boxes.Event
       Trial.Boxes.Handle
+      Trial.CheckSharing
       Trial.Count
       Trial.StepByStepBox
       Trial.TryCheckDup
