@@ -96,5 +96,6 @@ qAppParOpened tg p q x = case (viewl p, viewl q) of
 		(T, T) -> (r `qApp` x, r' `qApp` x)
 		_ -> case t $$ x of
 			Pure y -> qAppParOpened tg r (unsafeCoerce r') y
-			tx :>>= p' -> (tx :>>= (next tg <| p' >< r), tx :>>= (next tg <| p' >< unsafeCoerce r'))
+			tx :>>= p' -> (tx :>>= (p' >< r), tx :>>= (p' >< unsafeCoerce r'))
+--			tx :>>= p' -> (tx :>>= (next tg <| p' >< r), tx :>>= (next tg <| p' >< unsafeCoerce r'))
 	_ -> error "never occur: no close tag"
