@@ -20,6 +20,7 @@ themes/papers/monadic_functional_reactive_programming/try-monadic-functional-rea
 task
 ----
 
-* [ ] qAppParで再帰的にタグをつけるのをやめる
-	+ [ ] 明示的にタグづけしたレベルだけ効率化する
-* [ ] タグづけした部分ではThreadIdはうまく働かないことを確かめる
+* [x] qAppParで再帰的にタグをつけるのをやめる
+	+ [x] 明示的にタグづけしたレベルだけ効率化する
+* [x] タグづけした部分ではThreadIdはうまく働かないことを確かめる
+	+ 問題は生じていない様子
