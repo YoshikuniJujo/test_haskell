@@ -103,6 +103,15 @@ tryCurRectNew = trySigGRect "TRY CUR RECT" $ curRect (200, 150)
 
 data Rect = Rect { leftup :: Point, rightdown :: Point  }
 
+tryReactG :: String -> ReactG s r -> IO r
+tryReactG ttl sig = do
+	f <- openField ttl [
+		pointerMotionMask, buttonPressMask, buttonReleaseMask,
+		exposureMask ]
+	((r, _), _) <- (interpretReactSt InitMode (handleBoxes 0.05 f) sig `runStateT`)
+			. systemToTAITime =<< getSystemTime
+	r <$ closeField f
+
 trySigGRect :: String -> SigG s Rect r -> IO r
 trySigGRect ttl sig = do
 	f <- openField ttl [
@@ -158,3 +167,6 @@ tryPosInsideNew = do
 firstPoint :: ReactG s (Maybe Point)
 firstPoint = (<$> mousePos `at` leftClick)
 	\case Left () -> Nothing; Right (p, ()) -> Just p
+
+tryFirstPointNew :: IO (Maybe Point)
+tryFirstPointNew = tryReactG "TRY FIRST POINT" firstPoint
