@@ -4,7 +4,7 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
 
-module Moffy.SigNew where
+module Moffy.Sig where
 
 import Control.Arrow ((***))
 import Data.Type.Set
@@ -13,7 +13,7 @@ import Data.OneOrMore
 
 import qualified Control.Arrow as Arr
 
-import Moffy.ReactNew
+import Moffy.React
 import Moffy.React.Common
 import Moffy.Sig.Common
 import Freer

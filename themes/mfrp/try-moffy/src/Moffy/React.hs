@@ -6,13 +6,11 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Moffy.ReactNew where
+module Moffy.React where
 
 import Data.Type.Set
 import Data.OneOrMore
 import Data.Or
-
-import qualified Control.Arrow as A
 
 import Freer
 

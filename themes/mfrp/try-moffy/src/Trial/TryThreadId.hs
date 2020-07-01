@@ -1,12 +1,12 @@
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.TryThreadIdNew where
+module Trial.TryThreadId where
 
 import Data.Type.Set
 import Data.Or
 
-import Moffy.ReactNew
+import Moffy.React
 import Moffy.React.Common hiding (getThreadId)
 import Moffy.Handle
 import Moffy.EventHandle.ThreadId
@@ -25,8 +25,8 @@ leftRightThreadId =
 	(adjust leftClick >> adjust getThreadId :: React s (GetThreadId :- MouseEv) ThreadId) `first`
 	(adjust rightClick >> adjust getThreadId :: React s (GetThreadId :- MouseEv) ThreadId)
 
-tryLeftRightThreadIdNew :: IO (Or ThreadId ThreadId)
-tryLeftRightThreadIdNew = do
+tryLeftRightThreadId :: IO (Or ThreadId ThreadId)
+tryLeftRightThreadId = do
 	f <- openField "TRY LEFT RIGHT THREAD ID" [buttonPressMask]
 	interpretReact (retry $ handleGetThreadId `before` handleMouse Nothing f) leftRightThreadId
 		<* closeField f

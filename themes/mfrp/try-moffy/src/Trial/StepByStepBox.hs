@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.StepByStepBoxNew where
+module Trial.StepByStepBox where
 
 import Prelude hiding (cycle, repeat, scanl, until)
 
@@ -21,9 +21,9 @@ import Data.Time.Clock.System
 
 import qualified Control.Arrow as Arr
 
-import Moffy.ReactNew
+import Moffy.React
 import Moffy.React.Common
-import Moffy.SigNew
+import Moffy.Sig
 import Moffy.Sig.Common
 import Moffy.Handle hiding (before)
 import Moffy.Event.Mouse
@@ -33,26 +33,26 @@ import Field hiding (Point)
 import Trial.Boxes.Event
 import Trial.Boxes.Handle
 
-tryClickNew :: IO [MouseBtn]
-tryClickNew = do
+tryClick :: IO [MouseBtn]
+tryClick = do
 	f <- openField "TRY CLICK" [buttonPressMask, exposureMask]
 	interpretReact (retry $ handleMouse Nothing f) (adjust mouseDown) <* closeField f
 
-sameClickNew :: React s MouseEv Bool
-sameClickNew = adjust $ (==) <$> mouseDown <*> mouseDown
+sameClick :: React s MouseEv Bool
+sameClick = adjust $ (==) <$> mouseDown <*> mouseDown
 
-trySameClickNew :: IO Bool
-trySameClickNew = do
+trySameClick :: IO Bool
+trySameClick = do
 	f <- openField "TRY SAME CLICK" [buttonPressMask]
-	interpretReact (retry $ handleMouse Nothing f) sameClickNew <* closeField f
+	interpretReact (retry $ handleMouse Nothing f) sameClick <* closeField f
 
-leftDownRightUpNew :: React s MouseEv (Or () ())
-leftDownRightUpNew = adjust $ leftClick `first` rightUp
+leftDownRightUp :: React s MouseEv (Or () ())
+leftDownRightUp = adjust $ leftClick `first` rightUp
 
-tryLeftDownRightUpNew :: IO (Or () ())
-tryLeftDownRightUpNew = do
+tryLeftDownRightUp :: IO (Or () ())
+tryLeftDownRightUp = do
 	f <- openField "LEFT DOWN RIGHT UP" [buttonPressMask, buttonReleaseMask]
-	interpretReact (retry $ handleMouse Nothing f) leftDownRightUpNew <* closeField f
+	interpretReact (retry $ handleMouse Nothing f) leftDownRightUp <* closeField f
 
 before :: (
 	Update a b,
@@ -67,8 +67,8 @@ doubler = do
 	adjust rightClick
 	bool doubler (pure ()) =<< adjust (rightClick `before` sleep 0.2)
 
-tryDoublerNew :: IO ()
-tryDoublerNew = do
+tryDoubler :: IO ()
+tryDoubler = do
 	f <- openField "TRY DOUBLER" [buttonPressMask, exposureMask]
 	void . (interpretReactSt InitMode (handleBoxes 0.05 f) doubler `runStateT`) . systemToTAITime =<< getSystemTime
 	closeField f
@@ -81,8 +81,8 @@ cycleColor = cc . cycle $ fromList [Red .. Magenta] where
 		(bool (pure ()) (cc t)
 			=<< waitFor (adjust $ middleClick `before` rightClick))
 
-tryCycleColorNew :: IO ()
-tryCycleColorNew = do
+tryCycleColor :: IO ()
+tryCycleColor = do
 	f <- openField "TRY CYCLE COLOR" [buttonPressMask, exposureMask]
 	void . (interpretSt InitMode (handleBoxes 0.05 f) (liftIO . print) cycleColor `runStateT`) . systemToTAITime =<< getSystemTime
 	closeField f
@@ -90,8 +90,8 @@ tryCycleColorNew = do
 mousePos :: SigG s Point ()
 mousePos = repeat $ adjust mouseMove
 
-tryMousePosNew :: IO ()
-tryMousePosNew = do
+tryMousePos :: IO ()
+tryMousePos = do
 	f <- openField "TRY MOUSE POS" [pointerMotionMask, exposureMask]
 	void . (interpretSt InitMode (handleBoxes 0.05 f) (liftIO . print) mousePos `runStateT`) . systemToTAITime =<< getSystemTime
 	closeField f
@@ -99,8 +99,8 @@ tryMousePosNew = do
 curRect :: Point -> SigG s Rect ()
 curRect p1 = Rect p1 <$%> mousePos
 
-tryCurRectNew :: IO ()
-tryCurRectNew = trySigGRect "TRY CUR RECT" $ curRect (200, 150)
+tryCurRect :: IO ()
+tryCurRect = trySigGRect "TRY CUR RECT" $ curRect (200, 150)
 
 data Rect = Rect { leftup :: Point, rightdown :: Point  } deriving Show
 
@@ -145,8 +145,8 @@ wiggleRect (Rect lu rd) = (<$%> elapsed) \t -> let
 	dx = round (sin (fromRational (toRational t) * 5) * 15 :: Double) in
 	Rect ((+ dx) `Arr.first` lu) ((+ dx) `Arr.first` rd)
 
-tryWiggleRectNew :: IO ()
-tryWiggleRectNew = trySigGRect "TRY WIGGLE RECT" . wiggleRect $ Rect (200, 150) (400, 300)
+tryWiggleRect :: IO ()
+tryWiggleRect = trySigGRect "TRY WIGGLE RECT" . wiggleRect $ Rect (200, 150) (400, 300)
 
 posInside :: Rect -> SigG s Point y -> ReactG s (Either Point y)
 posInside rct = find (`inside` rct)
@@ -156,8 +156,8 @@ inside :: Point -> Rect -> Bool
 	(l <= x && x <= r || r <= x && x <= l) &&
 	(u <= y && y <= d || d <= y && y <= u)
 
-tryPosInsideNew :: IO (Either Point ())
-tryPosInsideNew = do
+tryPosInside :: IO (Either Point ())
+tryPosInside = do
 	f <- openField "TRY POS INSIDE" [pointerMotionMask, exposureMask]
 	drawRect f (colorToPixel Red) $ Rect (200, 150) (400, 300)
 	((r, _), _) <- (interpretReactSt InitMode (handleBoxes 0.05 f)
@@ -169,23 +169,23 @@ firstPoint :: ReactG s (Maybe Point)
 firstPoint = (<$> mousePos `at` leftClick)
 	\case Left () -> Nothing; Right (p, ()) -> Just p
 
-tryFirstPointNew :: IO (Maybe Point)
-tryFirstPointNew = tryReactG "TRY FIRST POINT" firstPoint
+tryFirstPoint :: IO (Maybe Point)
+tryFirstPoint = tryReactG "TRY FIRST POINT" firstPoint
 
 completeRect :: Point -> SigG s Rect (Maybe Rect)
 completeRect p1 =
 	either (const Nothing) (Just . fst) <$> curRect p1 `until` leftUp
 
-tryCompleteRectNew :: IO (Maybe Rect)
-tryCompleteRectNew = trySigGRect "TRY COMPLETE RECT" $ completeRect (200, 150)
+tryCompleteRect :: IO (Maybe Rect)
+tryCompleteRect = trySigGRect "TRY COMPLETE RECT" $ completeRect (200, 150)
 
 defineRect :: SigG s Rect Rect
 defineRect = waitFor firstPoint >>= \case
 	Nothing -> error "never occur"
 	Just p1 -> fromMaybe (error "never occur") <$> completeRect p1
 
-tryDefineRectNew :: IO Rect
-tryDefineRectNew = trySigGRect "TRY DEFINE RECT" defineRect
+tryDefineRect :: IO Rect
+tryDefineRect = trySigGRect "TRY DEFINE RECT" defineRect
 
 chooseBoxColor :: Rect -> SigG s Box ()
 chooseBoxColor r = Box <$%> wiggleRect r <*%> cycleColor
