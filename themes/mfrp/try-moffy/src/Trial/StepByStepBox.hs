@@ -207,3 +207,16 @@ trySigGBox ttl sig = do
 
 drawBox :: Field -> Box -> IO ()
 drawBox f (Box rct clr) = drawRect f (colorToPixel clr) rct
+
+drClickOn :: Rect -> ReactG s (Either Point (Either () (Maybe Point, ())))
+drClickOn rct = posInside rct $ mousePos `indexBy` repeat doubler
+
+tryDrClickOn :: IO (Either Point (Either () (Maybe Point, ())))
+tryDrClickOn = tryReactG "TRY DOUBLE RIGHT CLICK ON" (drClickOn $ Rect (200, 150) (400, 300))
+
+box :: SigG s Box ()
+box = (() <$) $ (`Box` Red) <$%> defineRect >>= \r ->
+	chooseBoxColor r >> waitFor (drClickOn r)
+
+tryBox :: IO ()
+tryBox = trySigGBox "TRY BOX" box

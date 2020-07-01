@@ -112,3 +112,30 @@ l `ipairs` r@(End _) = pure (l, r)
 (hl :| Sig tl) `ipairs` (hr :| Sig tr) = ((hl, hr) :|) . Sig
 	$ uncurry ipairs . ((hl ?:|) *** (hr ?:|)) <$> tl `par` tr
 	where (?:|) h = \case Pure t -> t; t -> h :| Sig t
+
+infixl 7 `indexBy`
+
+indexBy :: (
+	((es :+: es') :+: (es :+: es')) ~ (es :+: es'),
+	Update (ISig s (es :+: es') a r) (ISig s (es :+: es') b r'),
+	CollapsableOccurred (es :+: es') es,
+	CollapsableOccurred (es :+: es') es',
+	CollapsableOccurred (es :+: es') (es :+: es'),
+	Expandable es (es :+: es'), Expandable es' (es :+: es'),
+	Expandable (es :+: es') (es :+: es'),
+	Mergeable (es :+: es') (es :+: es') (es :+: es')
+	) => Sig s es a r -> Sig s es' b r' -> Sig s (es :+: es') a (Either r (Maybe a, r'))
+l `indexBy` s = let Sig r = adjustSig s in waitFor (res $ adjustSig l `pause` r) >>= \case
+	(Sig (Pure l'), r') -> (Arr.first Just <$>) <$> l' `iindexBy` Sig r'
+	(Sig l', Pure (_ :| r')) -> Sig l' `indexBy` r'
+	(Sig _, Pure (End y)) -> pure $ Right (Nothing, y)
+	_ -> error "never occur"
+
+iindexBy :: (
+	Update (ISig s es a r) (ISig s es b r'), Mergeable es es es
+	) => ISig s es a r -> Sig s es b r' -> Sig s es a (Either r (a, r'))
+l `iindexBy` Sig r = waitFor (ires $ l `ipause` r) >>= \case
+	(End x, _) -> pure $ Left x
+	(l'@(hl :| _), Pure (_ :| tr)) -> emit hl >> l' `iindexBy` tr
+	(hl :| _, Pure (End y)) -> pure $ Right (hl, y)
+	_ -> error "never occur"
