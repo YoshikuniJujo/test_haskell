@@ -11,7 +11,6 @@ module Moffy.React.Common where
 import Data.Kind
 import Data.Type.Set
 import Data.OneOrMore
-import Data.Or
 import Data.Bits
 import Numeric.Natural
 
@@ -30,15 +29,11 @@ class (Numbered e, Selectable e) => Request e where
 data Rct es a where
 	Never :: Rct es a
 	GetThreadId :: Rct es ThreadId
-	PutThreadId :: ThreadId -> Rct es ()
 	Await :: EvReqs es -> Rct es (EvOccs es)
 type React s es a = Freer s FTCQueue (Taggable s) (Rct es) a
 
 getThreadId :: React s es ThreadId
 getThreadId = GetThreadId >>>= pure
-
-putThreadId :: ThreadId -> React s es ()
-putThreadId ti = PutThreadId ti >>>= pure
 
 data ThreadId = ThreadId Natural Int deriving (Show, Eq)
 
@@ -53,7 +48,6 @@ runReact :: Monad m => ThreadId -> Handle m es -> React s es a -> m (a, ThreadId
 runReact ti _ (Pure x) = pure (x, ti)
 runReact _ _ (Never :>>= _) = error "never end"
 runReact ti hdl (GetThreadId :>>= c) = runReact ti hdl (c `qApp` ti)
-runReact _ hdl (PutThreadId ti' :>>= c) = runReact ti' hdl (c `qApp` ())
 runReact ti hdl (Await rqs :>>= c) = runReact ti hdl . (c `qApp`) =<< hdl rqs
 
 interpretReact :: Monad m => Handle m es -> React s es a -> m a
@@ -63,7 +57,6 @@ runReactSt :: Monad m => st -> ThreadId -> HandleSt st m es -> React s es a -> m
 runReactSt st ti _ (Pure x) = pure ((x, ti), st)
 runReactSt _ _ _ (Never :>>= _) = error "never end"
 runReactSt st ti hdl (GetThreadId :>>= c) = runReactSt st ti hdl (c `qApp` ti)
-runReactSt st _ hdl (PutThreadId ti' :>>= c) = runReactSt st ti' hdl (c `qApp` ())
 runReactSt st ti hdl (Await rqs :>>= c) = do
 	(x, st') <- hdl st rqs
 	runReactSt st' ti hdl (c `qApp` x)

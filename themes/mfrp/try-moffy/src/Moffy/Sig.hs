@@ -27,9 +27,7 @@ Sig l `pause` r = waitFor (l `par` r) >>= \case
 	(_, Never :>>= _) -> error "never occur"
 	(Never :>>= _, _) -> error "never occur"
 	(GetThreadId :>>= _, _) -> error "never occur"
-	(PutThreadId _ :>>= _, _) -> error "never occur"
 	(_, GetThreadId :>>= _) -> error "never occur"
-	(_, PutThreadId _ :>>= _) -> error "never occur"
 
 ipause :: Parable es (ISig s es a r) es' r' =>
 	ISig s es a r -> React s es' r' -> ISig s (es :+: es') a (ISig s es a r, React s es' r')

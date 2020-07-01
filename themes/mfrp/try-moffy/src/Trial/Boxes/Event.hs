@@ -20,7 +20,6 @@ import Data.Bool (bool)
 import Data.Time (DiffTime)
 
 import Moffy.React.Common (React, Request(..), await)
-import Moffy.Sig
 import Moffy.Sig.Common
 import Moffy.Event.Mouse
 

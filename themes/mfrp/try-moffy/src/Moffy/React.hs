@@ -93,8 +93,6 @@ class (	CollapsableOccurred (es :+: es') es, CollapsableOccurred (es :+: es') es
 instance {-# OVERLAPPABLE #-} Updatable es a es' b => Update es a es' b where
 	update (GetThreadId :>>= c) ti r' ti' b = update (c `qApp` ti) ti r' ti' b
 	update r ti (GetThreadId :>>= c') ti' b = update r ti (c' `qApp` ti') ti' b
-	update (PutThreadId ti :>>= c) _ r' ti' b = update (c `qApp` ()) ti r' ti' b
-	update r ti (PutThreadId ti' :>>= c') _ b = update r ti (c' `qApp` ()) ti' b
 	update r@(Await _ :>>= c) _ r'@(Await _ :>>= c') _ b = case (collapse b, collapse b) of
 		(Just b', Just b'') -> (c `qApp` b', c' `qApp` b'')
 		(Just b', Nothing) -> (c `qApp` b', r')
@@ -111,8 +109,6 @@ instance {-# OVERLAPPABLE #-} Updatable es a es' b => Update es a es' b where
 instance Updatable es a es a => Update es a es a where
 	update (GetThreadId :>>= c) ti r' ti' b = update (c `qApp` ti) ti r' ti' b
 	update r ti (GetThreadId :>>= c') ti' b = update r ti (c' `qApp` ti') ti' b
-	update (PutThreadId ti :>>= c) _ r' ti' b = update (c `qApp` ()) ti r' ti' b
-	update r ti (PutThreadId ti' :>>= c') _ b = update r ti (c' `qApp` ()) ti' b
 	update (Await _ :>>= c) _ (Await _ :>>= c') _ b = qAppPar c c' b
 	update r _ r' _ _ = (r, r')
 
@@ -124,8 +120,6 @@ update' :: (
 	EvOccs (es :+: es') -> (React s es a, React s es' b)
 update' (GetThreadId :>>= c) ti r' ti' b = update' (c `qApp` ti) ti r' ti' b
 update' r ti (GetThreadId :>>= c') ti' b = update' r ti (c' `qApp` ti') ti' b
-update' (PutThreadId ti :>>= c) _ r' ti' b = update' (c `qApp` ()) ti r' ti' b
-update' r ti (PutThreadId ti' :>>= c) _ b = update' r ti (c `qApp` ()) ti' b
 update' r@(Await _ :>>= c) _ r'@(Await _ :>>= c') _ b = case (collapse b, collapse b) of
 		(Just b', Just b'') -> (c `qApp` b', c' `qApp` b'')
 		(Just b', Nothing) -> (c `qApp` b', r')
@@ -177,5 +171,4 @@ adjust = \case
 		(Pure x, _) -> pure x
 		(Await _ :>>= _, _) -> error "Await _ _"
 		(GetThreadId :>>= _, _) -> error "GetThreadId"
-		(PutThreadId _ :>>= _, _) -> error "PutThreadId _"
 		_ -> error "never occur"

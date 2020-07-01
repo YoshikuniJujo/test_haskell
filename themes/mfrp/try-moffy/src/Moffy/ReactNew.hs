@@ -27,8 +27,6 @@ class Update a b where
 instance {-# OVERLAPPABLE #-} Update a b where
 	update (GetThreadId :>>= c) ti r' ti' b = update (c `qApp` ti) ti r' ti' b
 	update r ti (GetThreadId :>>= c') ti' b = update r ti (c' `qApp` ti') ti' b
-	update (PutThreadId ti :>>= c) _ r' ti' b = update (c `qApp` ()) ti r' ti' b
-	update r ti (PutThreadId ti' :>>= c') _ b = update r ti (c' `qApp` ()) ti' b
 	update (Await _ :>>= c) _ (Await _ :>>= c') _ b = (c `qApp` b, c' `qApp` b)
 	update r@(Never :>>= _) _ (Await _ :>>= c') _ b = (r, c' `qApp` b)
 	update (Await _ :>>= c) _ r'@(Never :>>= _) _ b = (c `qApp` b, r')
@@ -37,8 +35,6 @@ instance {-# OVERLAPPABLE #-} Update a b where
 instance Update a a where
 	update (GetThreadId :>>= c) ti r' ti' b = update (c `qApp` ti) ti r' ti' b
 	update r ti (GetThreadId :>>= c') ti' b = update r ti (c' `qApp` ti') ti' b
-	update (PutThreadId ti :>>= c) _ r' ti' b = update (c `qApp` ()) ti r' ti' b
-	update r ti (PutThreadId ti' :>>= c') _ b = update r ti (c' `qApp` ()) ti' b
 	update (Await _ :>>= c) _ (Await _ :>>= c') _ b = qAppPar c c' b
 	update r _ r' _ _ = (r, r')
 
@@ -51,7 +47,6 @@ adjust = \case
 		Just occ' -> adjust $ c `qApp` occ'
 		Nothing -> adjust l
 	GetThreadId :>>= c -> GetThreadId >>>= \ti -> adjust $ c `qApp` ti
-	PutThreadId ti :>>= c -> PutThreadId ti >>>= \() -> adjust $ c `qApp` ()
 
 first :: (
 	Update a b,
@@ -80,10 +75,6 @@ l `par` r = case (l, r) of
 		ti <- getThreadId
 		let	(_ti1, ti2) = forkThreadId ti
 		l' `par` (c' `qApp` ti2)
-	(PutThreadId ti :>>= c, r') ->
-		(A.first (putThreadId ti >>)) <$> (c `qApp` ()) `par` r'
-	(l', PutThreadId ti' :>>= c') ->
-		(A.second (putThreadId ti' >>)) <$> l' `par` (c' `qApp` ())
 	(Await el :>>= _, Await er :>>= _) -> let
 		e = el `merge` er
 		c b ti = let
