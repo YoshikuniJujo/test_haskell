@@ -5,7 +5,7 @@
 
 module Trial.StepByStepBox where
 
-import Prelude hiding (cycle, repeat, scanl, until)
+import Prelude hiding (cycle, repeat, scanl, until, break)
 import qualified Prelude as P
 
 import Control.Monad.State
@@ -15,7 +15,7 @@ import Data.OneOrMore
 import Data.Bool
 import Data.Maybe
 import Data.Or
-import Data.List.NonEmpty hiding (cycle, repeat, scanl)
+import Data.List.NonEmpty hiding (cycle, repeat, scanl, break)
 import Data.List.Infinite hiding (repeat, scanl)
 import Data.Time
 import Data.Time.Clock.System
@@ -242,4 +242,4 @@ drawBoxes :: Field -> [Box] -> IO ()
 drawBoxes f = withFlush f . (drawBox f `mapM_`) . P.reverse
 
 tryBoxes :: IO ()
-tryBoxes = trySigGBoxes "TRY BOXES" boxes
+tryBoxes = (() <$) . trySigGBoxes "TRY BOXES" $ boxes `break` deleteEvent

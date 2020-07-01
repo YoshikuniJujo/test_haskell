@@ -62,7 +62,20 @@ adjustISig :: (
 adjustISig (End x) = End x
 adjustISig (h :| t) = h :| adjustSig t
 
-infixl 7 `until`
+infixl 7 `break`, `until`
+
+break :: (
+	Update (ISig s (es :+: es') a r) r',
+	CollapsableOccurred (es :+: es') es,
+	CollapsableOccurred (es :+: es') es',
+	Expandable es (es :+: es'), Expandable es' (es :+: es'),
+	Mergeable (es :+: es') (es :+: es') (es :+: es')
+	) => Sig s es a r -> React s es' r' -> Sig s (es :+: es') a (Either r (Maybe a, r'))
+l `break` r = (<$> adjustSig l `pause` adjust r) \case
+	(Sig (Pure (End x)), _) -> Left x
+	(Sig (Await _ :>>= _), Pure r') -> Right (Nothing, r')
+	(Sig (Pure (h :| _)), Pure r') -> Right (Just h, r')
+	_ -> error "never occur"
 
 until :: (
 	Update (ISig s (es :+: es') a r) r',

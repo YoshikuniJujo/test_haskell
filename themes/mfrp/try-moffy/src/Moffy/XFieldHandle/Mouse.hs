@@ -28,7 +28,7 @@ eventToEv f = \case
 	MotionEvent { ev_x = x, ev_y = y } -> pure . Just . expand $ omm x y
 	ExposeEvent {} -> Nothing <$ flushField f
 	DestroyWindowEvent {} -> closeField f >> exitSuccess
-	ev	| isDeleteEvent f ev -> Nothing <$ destroyField f
+	ev	| isDeleteEvent f ev -> pure . Just . expand $ singleton OccDeleteEvent -- Nothing <$ destroyField f
 		| otherwise -> pure Nothing
 	where
 	btn = \case

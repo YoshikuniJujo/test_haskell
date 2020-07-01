@@ -50,4 +50,12 @@ instance Request MouseMove where
 mouseMove :: React s (Singleton MouseMove) Point
 mouseMove  = await MouseMoveReq \(OccMouseMove p) -> p
 
-type MouseEv = MouseDown :- MouseUp :- MouseMove :- 'Nil
+data DeleteEvent = DeleteEventReq deriving (Show, Eq, Ord)
+numbered 9 [t| DeleteEvent |]
+instance Request DeleteEvent where
+	data Occurred DeleteEvent = OccDeleteEvent deriving (Show, Eq, Ord)
+
+deleteEvent :: React s (Singleton DeleteEvent) ()
+deleteEvent = await DeleteEventReq \OccDeleteEvent -> ()
+
+type MouseEv = MouseDown :- MouseUp :- MouseMove :- DeleteEvent :- 'Nil
