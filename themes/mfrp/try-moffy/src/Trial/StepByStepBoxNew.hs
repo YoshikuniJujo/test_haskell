@@ -5,7 +5,7 @@
 
 module Trial.StepByStepBoxNew where
 
-import Prelude hiding (cycle, repeat, scanl)
+import Prelude hiding (cycle, repeat, scanl, until)
 
 import Control.Monad.State
 import Data.Type.Set
@@ -101,7 +101,7 @@ curRect p1 = Rect p1 <$%> mousePos
 tryCurRectNew :: IO ()
 tryCurRectNew = trySigGRect "TRY CUR RECT" $ curRect (200, 150)
 
-data Rect = Rect { leftup :: Point, rightdown :: Point  }
+data Rect = Rect { leftup :: Point, rightdown :: Point  } deriving Show
 
 tryReactG :: String -> ReactG s r -> IO r
 tryReactG ttl sig = do
@@ -170,3 +170,10 @@ firstPoint = (<$> mousePos `at` leftClick)
 
 tryFirstPointNew :: IO (Maybe Point)
 tryFirstPointNew = tryReactG "TRY FIRST POINT" firstPoint
+
+completeRect :: Point -> SigG s Rect (Maybe Rect)
+completeRect p1 =
+	either (const Nothing) (Just . fst) <$> curRect p1 `until` leftUp
+
+tryCompleteRectNew :: IO (Maybe Rect)
+tryCompleteRectNew = trySigGRect "TRY COMPLETE RECT" $ completeRect (200, 150)
