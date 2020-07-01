@@ -12,6 +12,7 @@ import Data.Type.Set
 import Data.Type.Flip
 import Data.OneOrMore
 import Data.Bool
+import Data.Maybe
 import Data.Or
 import Data.List.NonEmpty hiding (cycle, repeat, scanl)
 import Data.List.Infinite hiding (repeat, scanl)
@@ -177,3 +178,11 @@ completeRect p1 =
 
 tryCompleteRectNew :: IO (Maybe Rect)
 tryCompleteRectNew = trySigGRect "TRY COMPLETE RECT" $ completeRect (200, 150)
+
+defineRect :: SigG s Rect Rect
+defineRect = waitFor firstPoint >>= \case
+	Nothing -> error "never occur"
+	Just p1 -> fromMaybe (error "never occur") <$> completeRect p1
+
+tryDefineRectNew :: IO Rect
+tryDefineRectNew = trySigGRect "TRY DEFINE RECT" defineRect
