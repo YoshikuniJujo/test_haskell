@@ -38,7 +38,7 @@ tryLeftCountSig = do
 	f <- openField "TRY LEFT COUNT SIG" [buttonPressMask, exposureMask]
 	interpret (retry $ handleMouse Nothing f) print (leftCountSig 0) <* closeField f
 
-leftRandomSig :: StdGen -> Sig a MouseEv Int StdGen
+leftRandomSig :: StdGen -> Sig s MouseEv Int StdGen
 leftRandomSig g = do
 	let	(i, g') = random g
 	emit i
@@ -51,3 +51,5 @@ tryLeftRandomSig :: IO StdGen
 tryLeftRandomSig = do
 	f <- openField "TRY LEFT RANDOM SIG" [buttonPressMask, exposureMask]
 	interpret (retry $ handleMouse Nothing f) print (leftRandomSig $ mkStdGen 8) <* closeField f
+
+-- tryTry :: React s MouseEv (Int, Int -> (React s MouseEv ...
