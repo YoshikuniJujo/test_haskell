@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2ce7ea05dbfe9960cfbaf1bfada1d5d77e2af71aeae35f0013045966147bbe97
+-- hash: 87fc3bc4fef4175e5449b5ee3a278207e5abce8b85bdd69946bdb48f638dae1b
 
 name:           try-moffy
 version:        0.1.0.0
@@ -52,9 +52,11 @@ library
       Trial.CheckSharing.ThreadId
       Trial.Count
       Trial.CountWithLock
+      Trial.Followbox
       Trial.Followbox.Clickable
       Trial.Followbox.Event
       Trial.Followbox.Handle
+      Trial.Followbox.Run
       Trial.Followbox.TypeSynonym
       Trial.Followbox.View
       Trial.StepByStepBox
@@ -66,6 +68,7 @@ library
       src
   build-depends:
       JuicyPixels
+    , JuicyPixels-extra
     , X11-xft
     , aeson
     , base >=4.7 && <5
@@ -80,18 +83,21 @@ library
     , text
     , time
     , type-flip
+    , unordered-containers
     , vector
   default-language: Haskell2010
 
-executable try-moffy-exe
-  main-is: Main.hs
+executable followbox
+  main-is: followbox.hs
   other-modules:
+      Main
       Paths_try_moffy
   hs-source-dirs:
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       JuicyPixels
+    , JuicyPixels-extra
     , X11-xft
     , aeson
     , base >=4.7 && <5
@@ -107,6 +113,36 @@ executable try-moffy-exe
     , time
     , try-moffy
     , type-flip
+    , unordered-containers
+    , vector
+  default-language: Haskell2010
+
+executable try-moffy-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_try_moffy
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyPixels
+    , JuicyPixels-extra
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , simple-field
+    , template-haskell
+    , text
+    , time
+    , try-moffy
+    , type-flip
+    , unordered-containers
     , vector
   default-language: Haskell2010
 
@@ -120,6 +156,7 @@ test-suite try-moffy-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       JuicyPixels
+    , JuicyPixels-extra
     , X11-xft
     , aeson
     , base >=4.7 && <5
@@ -135,5 +172,6 @@ test-suite try-moffy-test
     , time
     , try-moffy
     , type-flip
+    , unordered-containers
     , vector
   default-language: Haskell2010
