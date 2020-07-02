@@ -28,6 +28,12 @@ dependencies:
 - time
 - monads-tf
 - type-flip
+- bytestring
+- text
+- JuicyPixels
+- aeson
+- X11-xft
+- http-conduit
 
 library:
   source-dirs: src
