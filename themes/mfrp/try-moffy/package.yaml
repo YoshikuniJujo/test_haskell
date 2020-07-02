@@ -35,6 +35,7 @@ dependencies:
 - X11-xft
 - http-conduit
 - vector
+- process
 
 library:
   source-dirs: src

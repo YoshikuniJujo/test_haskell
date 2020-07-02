@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e1bc94669ce463477d535e5feb1cafcd10c9941bdeefd5c8aba1e3c7410fc86a
+-- hash: 2ce7ea05dbfe9960cfbaf1bfada1d5d77e2af71aeae35f0013045966147bbe97
 
 name:           try-moffy
 version:        0.1.0.0
@@ -54,6 +54,7 @@ library
       Trial.CountWithLock
       Trial.Followbox.Clickable
       Trial.Followbox.Event
+      Trial.Followbox.Handle
       Trial.Followbox.TypeSynonym
       Trial.Followbox.View
       Trial.StepByStepBox
@@ -72,6 +73,7 @@ library
     , extra-data-yj
     , http-conduit
     , monads-tf
+    , process
     , random
     , simple-field
     , template-haskell
@@ -97,6 +99,7 @@ executable try-moffy-exe
     , extra-data-yj
     , http-conduit
     , monads-tf
+    , process
     , random
     , simple-field
     , template-haskell
@@ -124,6 +127,7 @@ test-suite try-moffy-test
     , extra-data-yj
     , http-conduit
     , monads-tf
+    , process
     , random
     , simple-field
     , template-haskell
