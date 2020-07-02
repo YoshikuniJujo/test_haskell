@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c601afcdefebc4b9f866e39207018632e903c8f8325f6ca4367f77511787493e
+-- hash: e1bc94669ce463477d535e5feb1cafcd10c9941bdeefd5c8aba1e3c7410fc86a
 
 name:           try-moffy
 version:        0.1.0.0
@@ -52,8 +52,10 @@ library
       Trial.CheckSharing.ThreadId
       Trial.Count
       Trial.CountWithLock
+      Trial.Followbox.Clickable
       Trial.Followbox.Event
       Trial.Followbox.TypeSynonym
+      Trial.Followbox.View
       Trial.StepByStepBox
       Trial.TryCheckDup
       Trial.TryThreadId
@@ -76,6 +78,7 @@ library
     , text
     , time
     , type-flip
+    , vector
   default-language: Haskell2010
 
 executable try-moffy-exe
@@ -101,6 +104,7 @@ executable try-moffy-exe
     , time
     , try-moffy
     , type-flip
+    , vector
   default-language: Haskell2010
 
 test-suite try-moffy-test
@@ -127,4 +131,5 @@ test-suite try-moffy-test
     , time
     , try-moffy
     , type-flip
+    , vector
   default-language: Haskell2010

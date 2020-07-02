@@ -34,6 +34,7 @@ dependencies:
 - aeson
 - X11-xft
 - http-conduit
+- vector
 
 library:
   source-dirs: src
