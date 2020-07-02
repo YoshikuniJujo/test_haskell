@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7f5fd43adebaafa1c1726c0d7c119eb2184db137bd5162bfac27a418a2d76f94
+-- hash: 0b2e04cef366b8a83e5f8f504f75775574aa64d55f66b6e7525b8e26b16bc82f
 
 name:           try-moffy
 version:        0.1.0.0
@@ -33,6 +33,7 @@ library
       Freer
       FTCQueue
       Moffy.Event.Mouse
+      Moffy.EventHandle.Lock
       Moffy.EventHandle.Random
       Moffy.EventHandle.ThreadId
       Moffy.Handle
@@ -50,6 +51,7 @@ library
       Trial.CheckSharing.EvInt
       Trial.CheckSharing.ThreadId
       Trial.Count
+      Trial.CountWithLock
       Trial.StepByStepBox
       Trial.TryCheckDup
       Trial.TryThreadId

@@ -10,7 +10,8 @@ todo
 * [x] `update :: React s es a -> ... -> React s es' b -> ...` -> `update :: React s es a -> ... -> React s es b -> ...`
 	+ adjustしてからupdateする感じか
 * [x] DeleteEventでちゃんと終了するようにする
-* [ ] Moffy.EventHandle.Random
+* [x] Moffy.EventHandle.Random
+* [x] Moffy.EventHandle.Lock
 
 ref
 ---
