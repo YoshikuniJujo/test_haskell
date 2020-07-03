@@ -62,5 +62,14 @@ expandSt hdl o st rqs = first (OOM.expand <$>) <$> collapseSt hdl o st rqs
 beforeSt hdl1 ot1 hdl2 ot2 st rqs = expandSt hdl1 ot1 st rqs >>= \(mocc, st') ->
 	maybe (expandSt hdl2 ot2 st' rqs) ((<$> ot2 st') . (,) . Just) mocc
 
+mergeSt :: (
+	Monad m,
+	Collapsable (es :+: es') es, Collapsable (es :+: es') es',
+	ExpandableOccurred es (es :+: es'), ExpandableOccurred es' (es :+: es'),
+	MergeableOccurred es es' (es :+: es')
+	) =>
+	HandleSt' st st' m es -> (st -> m st') ->
+	HandleSt' st' st'' m es' -> (st' -> m st'') ->
+	HandleSt' st st'' m (es :+: es')
 mergeSt hdl1 ot1 hdl2 ot2 st rqs = collapseSt hdl1 ot1 st rqs >>= \(mocc1, st') ->
 	first (mocc1 `merge'`) <$> collapseSt hdl2 ot2 st' rqs

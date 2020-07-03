@@ -13,7 +13,7 @@ todo
 * [x] Moffy.EventHandle.Random
 * [x] Moffy.EventHandle.Lock
 * [ ] -Wallによるrefactoring
-	+ [ ] 警告の出るモジュールをリストアップ
+	+ [x] 警告の出るモジュールをリストアップ
 	+ [ ] Moffy.Handle
 	+ [ ] Trial.CheckRandom
 	+ [ ] Trial.CheckSharing.ThreadId
