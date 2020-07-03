@@ -19,7 +19,7 @@ todo
 	+ [x] Trial.CheckSharing.ThreadId
 	+ [x] Trial.CountWithLock
 	+ [x] Trial.TryCheckDup
-* [ ] hlintによるrefactoring
+* [x] hlintによるrefactoring
 * [ ] モジュールの整理
 
 ref

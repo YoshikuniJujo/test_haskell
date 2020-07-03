@@ -35,7 +35,7 @@ singleOccEvInt :: Int -> EvOccs (Singleton EvInt)
 singleOccEvInt = singleton . OccEvInt
 
 update' :: React s es a -> React s es a -> EvOccs es -> (React s es a, React s es a)
-update' l r occ = update l rootThreadId r rootThreadId occ
+update' l r  = update l rootThreadId r rootThreadId
 
 mkWrongPair :: Count s (React s (Singleton EvInt) (Int, Int), React s (Singleton EvInt) (Int, Int))
 mkWrongPair = do

@@ -15,10 +15,10 @@ import Moffy.XFieldHandle.Mouse
 import Field
 
 trySingleThreadId :: IO ThreadId
-trySingleThreadId = interpretReact (retry $ handleGetThreadId) getThreadId
+trySingleThreadId = interpretReact (retry handleGetThreadId) getThreadId
 
 tryDoubleThreadId :: IO (Or ThreadId ThreadId)
-tryDoubleThreadId = interpretReact (retry $ handleGetThreadId) $ getThreadId `first` getThreadId
+tryDoubleThreadId = interpretReact (retry handleGetThreadId) $ getThreadId `first` getThreadId
 
 leftRightThreadId :: React s (GetThreadId :- MouseEv) (Or ThreadId ThreadId)
 leftRightThreadId =

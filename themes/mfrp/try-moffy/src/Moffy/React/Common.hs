@@ -1,7 +1,6 @@
-{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
-{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE GADTs, TypeFamilies, ConstraintKinds #-}
 {-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}

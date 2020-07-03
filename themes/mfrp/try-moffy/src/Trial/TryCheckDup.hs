@@ -3,7 +3,7 @@
 
 module Trial.TryCheckDup where
 
-
+import Control.Monad
 import Control.Monad.State
 import Data.Time.Clock.System
 
@@ -21,7 +21,7 @@ tryCheckDup = do
 	f <- openField "右クリックのあとに左クリックが2回あったら終了" [
 		exposureMask, buttonPressMask, pointerMotionMask ]
 	t <- systemToTAITime <$> getSystemTime
-	(print =<<) . (`runStateT` t) $ runCount $ do
+	print <=< (`runStateT` t) $ runCount $ do
 		cd <- addTag checkDup
 		pure $ interpretReactSt InitMode (handleBoxes 0.05 f) do
 			() <$ checkDup `first` checkDup
