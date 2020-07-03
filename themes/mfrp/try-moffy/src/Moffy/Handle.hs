@@ -58,7 +58,15 @@ expandSt :: (Applicative m, Collapsable es' es, ExpandableOccurred es es') =>
 	HandleSt' st st' m es -> (st -> m st') -> HandleSt' st st' m es'
 expandSt hdl o st rqs = first (OOM.expand <$>) <$> collapseSt hdl o st rqs
 
--- beforeSt :: (Monad m, Beforable es es') =>
+
+beforeSt :: (
+	Monad m,
+	Collapsable (es :+: es') es, Collapsable (es :+: es') es',
+	ExpandableOccurred es (es :+: es'), ExpandableOccurred es' (es :+: es')
+	) =>
+	HandleSt' st st' m es -> (st -> m st') ->
+	HandleSt' st' st'' m es' -> (st' -> m st'') ->
+	HandleSt' st st'' m (es :+: es')
 beforeSt hdl1 ot1 hdl2 ot2 st rqs = expandSt hdl1 ot1 st rqs >>= \(mocc, st') ->
 	maybe (expandSt hdl2 ot2 st' rqs) ((<$> ot2 st') . (,) . Just) mocc
 
