@@ -14,11 +14,11 @@ todo
 * [x] Moffy.EventHandle.Lock
 * [ ] -Wallによるrefactoring
 	+ [x] 警告の出るモジュールをリストアップ
-	+ [ ] Moffy.Handle
-	+ [ ] Trial.CheckRandom
-	+ [ ] Trial.CheckSharing.ThreadId
-	+ [ ] Trial.CountWithLock
-	+ [ ] Trial.TryCheckDup
+	+ [x] Moffy.Handle
+	+ [x] Trial.CheckRandom
+	+ [x] Trial.CheckSharing.ThreadId
+	+ [x] Trial.CountWithLock
+	+ [x] Trial.TryCheckDup
 * [ ] hlintによるrefactoring
 * [ ] モジュールの整理
 

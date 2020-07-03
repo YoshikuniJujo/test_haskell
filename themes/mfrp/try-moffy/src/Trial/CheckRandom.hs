@@ -2,16 +2,13 @@
 
 module Trial.CheckRandom where
 
+
 import Control.Monad.State
 import System.Random
 
 import Moffy.React.Common
 import Moffy.Handle
 import Moffy.EventHandle.Random
-
-instance RandomState StdGen where
-	getRandomGen = id
-	putRandomGen = flip const
 
 trySimpleRandom :: State StdGen Int
 trySimpleRandom = interpretReact (retry handleRandom) getRandom

@@ -83,6 +83,8 @@ modifyRandomGen f = (f <$> adjust loadRandomGen) >>= \(r, g') ->
 class RandomState s where
 	getRandomGen :: s -> StdGen; putRandomGen :: s -> StdGen -> s
 
+instance RandomState StdGen where getRandomGen = id; putRandomGen = flip const
+
 handleRandom :: (RandomState s, Monad m) => Handle' (StateT s m) RandomEv
 handleRandom = handleStoreRandomGen `merge` handleLoadRandomGen
 

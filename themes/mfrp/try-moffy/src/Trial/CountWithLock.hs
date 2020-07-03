@@ -50,6 +50,7 @@ data LockCountSt = LockCountSt {
 	counter :: Int, nextLockId :: Int, lockState :: [LockId]
 	} deriving Show
 
+initLockCountSt :: LockCountSt
 initLockCountSt = LockCountSt 0 0 []
 
 instance LockState LockCountSt where
@@ -66,5 +67,5 @@ instance CountState LockCountSt where
 lockCount :: (Or Int Int, LockCountSt)
 lockCount = (`runState` initLockCountSt) $ interpretReact (retry $ handleGetThreadId `merge` handleLock `merge` handleCount) do
 	li <- adjust newLockId
-	count2WithLock li -- :: React s (Count :- GetThreadId :- LockEv) (Or Int Int)
+	() <$ count2WithLock li -- :: React s (Count :- GetThreadId :- LockEv) (Or Int Int)
 	count2WithLock li

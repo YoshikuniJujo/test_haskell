@@ -3,13 +3,13 @@
 
 module Trial.TryCheckDup where
 
+
 import Control.Monad.State
 import Data.Time.Clock.System
 
 import Moffy.React
 import Moffy.React.Common
 import Moffy.Event.Mouse
-import Moffy.XFieldHandle.Mouse
 import Trial.Boxes.Event
 import Trial.Boxes.Handle
 import Trial.StepByStepBox
@@ -24,7 +24,7 @@ tryCheckDup = do
 	(print =<<) . (`runStateT` t) $ runCount $ do
 		cd <- addTag checkDup
 		pure $ interpretReactSt InitMode (handleBoxes 0.05 f) do
-			checkDup `first` checkDup
+			() <$ checkDup `first` checkDup
 			cd `first` cd
 	closeField f
 				
