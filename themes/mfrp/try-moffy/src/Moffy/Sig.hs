@@ -39,12 +39,8 @@ l@(End _) `ipause` r = pure (l, r)
 
 infixr 7 `at`
 
-at :: (
-	Update (ISig s (es :+: es') a r) r',
-	CollapsableOccurred (es :+: es') es, CollapsableOccurred (es :+: es') es',
-	Expandable es (es :+: es'), Expandable es' (es :+: es'),
-	Mergeable (es :+: es') (es :+: es') (es :+: es')
-	) => Sig s es a r -> React s es' r' -> React s (es :+: es') (Either r (a, r'))
+at :: Firstable es es' (ISig s (es :+: es') a r) r' =>
+	Sig s es a r -> React s es' r' -> React s (es :+: es') (Either r (a, r'))
 l `at` r = res (adjustSig l `pause` adjust r) >>= \(Sig l', r') -> (<$> l') \case
 	End x -> Left x
 	h :| _ -> case r' of Pure y -> Right (h, y); _ -> error "never occur"
@@ -64,13 +60,8 @@ adjustISig (h :| t) = h :| adjustSig t
 
 infixl 7 `break`, `until`
 
-break :: (
-	Update (ISig s (es :+: es') a r) r',
-	CollapsableOccurred (es :+: es') es,
-	CollapsableOccurred (es :+: es') es',
-	Expandable es (es :+: es'), Expandable es' (es :+: es'),
-	Mergeable (es :+: es') (es :+: es') (es :+: es')
-	) => Sig s es a r -> React s es' r' -> Sig s (es :+: es') a (Either r (Maybe a, r'))
+break :: Firstable es es' (ISig s (es :+: es') a r) r' =>
+	Sig s es a r -> React s es' r' -> Sig s (es :+: es') a (Either r (Maybe a, r'))
 l `break` r = (<$> adjustSig l `pause` adjust r) \case
 	(Sig (Pure (End x)), _) -> Left x
 	(Sig (Await _ :>>= _), Pure r') -> Right (Nothing, r')
@@ -78,14 +69,9 @@ l `break` r = (<$> adjustSig l `pause` adjust r) \case
 	_ -> error "never occur"
 
 until :: (
-	Update (ISig s (es :+: es') a r) r',
-	CollapsableOccurred (es :+: es') es,
-	CollapsableOccurred (es :+: es') es',
-	CollapsableOccurred (es :+: es') (es :+: es'),
-	Expandable es (es :+: es'), Expandable es' (es :+: es'),
-	Expandable (es :+: es') (es :+: es'),
-	Mergeable (es :+: es') (es :+: es') (es :+: es')
-	) => Sig s es a r -> React s es' r' -> Sig s (es :+: es') a (Either r (a, r'))
+	Firstable es es' (ISig s (es :+: es') a r) r',
+	Adjustable (es :+: es') (es :+: es') ) =>
+	Sig s es a r -> React s es' r' -> Sig s (es :+: es') a (Either r (a, r'))
 l `until` r = adjustSig l `pause` adjust r >>= \(Sig l', r') -> (<$> waitFor (adjust l')) \case
 	End x -> Left x
 	h :| _ -> case r' of Pure y -> Right (h, y); _ -> error "never occur"
@@ -132,13 +118,8 @@ infixl 7 `indexBy`
 
 indexBy :: (
 	((es :+: es') :+: (es :+: es')) ~ (es :+: es'),
-	Update (ISig s (es :+: es') a r) (ISig s (es :+: es') b r'),
-	CollapsableOccurred (es :+: es') es,
-	CollapsableOccurred (es :+: es') es',
-	CollapsableOccurred (es :+: es') (es :+: es'),
-	Expandable es (es :+: es'), Expandable es' (es :+: es'),
-	Expandable (es :+: es') (es :+: es'),
-	Mergeable (es :+: es') (es :+: es') (es :+: es')
+	Firstable es es' (ISig s (es :+: es') a r) (ISig s (es :+: es') b r'),
+	Adjustable (es :+: es') (es :+: es')
 	) => Sig s es a r -> Sig s es' b r' -> Sig s (es :+: es') a (Either r (Maybe a, r'))
 l `indexBy` s = let Sig r = adjustSig s in waitFor (res $ adjustSig l `pause` r) >>= \case
 	(Sig (Pure l'), r') -> (Arr.first Just <$>) <$> l' `iindexBy` Sig r'

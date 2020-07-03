@@ -35,8 +35,9 @@ instance Update a a where
 	update (Await _ :>>= c) _ (Await _ :>>= c') _ b = qAppPar c c' b
 	update r _ r' _ _ = (r, r')
 
-adjust :: (Expandable es es', CollapsableOccurred es' es) =>
-	React s es a -> React s es' a
+type Adjustable es es' = (Expandable es es', CollapsableOccurred es' es)
+
+adjust :: Adjustable es es' => React s es a -> React s es' a
 adjust = \case
 	Pure x -> pure x
 	Never :>>= _ -> Never >>>= pure
@@ -45,12 +46,12 @@ adjust = \case
 		Nothing -> adjust l
 	GetThreadId :>>= c -> GetThreadId >>>= \ti -> adjust $ c `qApp` ti
 
-first :: (
-	Update a b,
-	Expandable es (es :+: es'), Expandable es' (es :+: es'), 
-	CollapsableOccurred (es :+: es') es, CollapsableOccurred (es :+: es') es',
-	Mergeable (es :+: es') (es :+: es') (es :+: es')
-	) => React s es a -> React s es' b -> React s (es :+: es') (Or a b)
+type Firstable es es' a b = (
+	Update a b, Adjustable es (es :+: es'), Adjustable es' (es :+: es'),
+	Mergeable (es :+: es') (es :+: es') (es :+: es') )
+
+first :: Firstable es es' a b =>
+	React s es a -> React s es' b -> React s (es :+: es') (Or a b)
 l `first` r = (<$> adjust l `par` adjust r) \case
 	(Pure x, Pure y) -> LR x y
 	(Pure x, _) -> L x; (_, Pure y) -> R y
