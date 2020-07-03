@@ -12,6 +12,15 @@ todo
 * [x] DeleteEventでちゃんと終了するようにする
 * [x] Moffy.EventHandle.Random
 * [x] Moffy.EventHandle.Lock
+* [ ] -Wallによるrefactoring
+	+ [ ] 警告の出るモジュールをリストアップ
+	+ [ ] Moffy.Handle
+	+ [ ] Trial.CheckRandom
+	+ [ ] Trial.CheckSharing.ThreadId
+	+ [ ] Trial.CountWithLock
+	+ [ ] Trial.TryCheckDup
+* [ ] hlintによるrefactoring
+* [ ] モジュールの整理
 
 ref
 ---
