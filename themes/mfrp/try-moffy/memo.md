@@ -34,6 +34,50 @@ todo
 	+ [x] Trial.Boxes
 	+ [x] Trial.StepByStepBox
 	+ [x] Trial.Followbox
+* [ ] refactoring
+
+refactoring
+-----------
+
+### Moffy
+
+#### module hierarchy
+
+```
+Control.Moffy
+  + Moffy.Sig
+  |   + Moffy.Sig.Common
+  |   |   + Moffy.React.Common
+  |   + Moffy.React
+  |   |   + Moffy.React.Common
+  |   + Moffy.React.Common
+  + Moffy.Sig.Common
+  + Moffy.React
+  + MOffy.React.Common
+
+Control.Moffy.Handle
+  + Moffy.Handle
+  |   + Moffy.React.Common
+  + Moffy.React.Comon
+
+Control.Moffy.Run
+  + Moffy.Sig.Common
+  + Moffy.React
+  + Moffy.React.Common
+```
+
+#### todo
+
+* [ ] モジュールの整理
+	+ [x] 現在のモジュール構造のチェック
+	+ [ ] モジュールの整理
+* [ ] API
+* [ ] imports
+* [ ] body
+
+### Trials
+
+### Moffy Base
 
 ref
 ---
