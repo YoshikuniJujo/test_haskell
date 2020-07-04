@@ -22,7 +22,7 @@ todo
 * [x] hlintによるrefactoring
 * [ ] モジュールの整理
 	+ [x] Control.Moffy
-	+ [ ] Control.Moffy.Handle
+	+ [x] Control.Moffy.Handle
 	+ [ ] Control.Moffy.Run
 
 ref

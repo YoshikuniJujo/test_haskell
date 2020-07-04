@@ -1,10 +1,10 @@
 {-# LANGUAGE TupleSections #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeOperators, ConstraintKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Moffy.Handle (
-	Handle, Handle', retry, expand, before, merge,
+	Handle, Handle', ExpandableHandle, retry, expand, before, merge,
 	HandleSt, HandleSt', retrySt, expandSt, beforeSt, mergeSt
 	) where
 
@@ -23,7 +23,9 @@ collapse :: (Applicative m, Collapsable es' es) =>
 	Handle' m es -> EvReqs es' -> m (Maybe (EvOccs es))
 collapse hdl = maybe (pure Nothing) hdl . OOM.collapse
 
-expand :: (Applicative m, ExpandableOccurred es es', Collapsable es' es) =>
+type ExpandableHandle es es' = (Collapsable es' es, ExpandableOccurred es es')
+
+expand :: (Applicative m, ExpandableHandle es es') =>
 	Handle' m es -> Handle' m es'
 expand hdl = ((OOM.expand <$>) <$>) . collapse hdl
 
@@ -31,8 +33,7 @@ infixr 5 `before`
 
 before :: (
 	Monad m,
-	ExpandableOccurred es (es :+: es'), ExpandableOccurred es' (es :+: es'),
-	Collapsable (es :+: es') es, Collapsable (es :+: es') es' ) =>
+	ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es') ) =>
 	Handle' m es -> Handle' m es' -> Handle' m (es :+: es')
 before hdl1 hdl2 rqs = maybe (expand hdl2 rqs) (pure . Just) =<< expand hdl1 rqs
 
@@ -40,9 +41,8 @@ infixr 6 `merge`
 
 merge :: (
 	Applicative m,
-	MergeableOccurred es es' (es :+: es'),
-	ExpandableOccurred es (es :+: es'), ExpandableOccurred es' (es :+: es'),
-	Collapsable (es :+: es') es, Collapsable (es :+: es') es' ) =>
+	ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es'),
+	MergeableOccurred es es' (es :+: es') ) =>
 	Handle' m es -> Handle' m es' -> Handle' m (es :+: es')
 merge hdl1 hdl2 rqs = merge' <$> collapse hdl1 rqs <*> collapse hdl2 rqs
 
@@ -54,16 +54,14 @@ collapseSt :: (Applicative m, Collapsable es' es) =>
 	HandleSt' st st' m es -> (st -> m st') -> st -> EvReqs es' -> m (Maybe (EvOccs es), st')
 collapseSt hdl ot st = maybe ((Nothing ,) <$> ot st) (hdl st) . OOM.collapse
 
-expandSt :: (Applicative m, Collapsable es' es, ExpandableOccurred es es') =>
+expandSt :: (Applicative m, ExpandableHandle es es') =>
 	HandleSt' st st' m es -> (st -> m st') -> HandleSt' st st' m es'
 expandSt hdl o st rqs = first (OOM.expand <$>) <$> collapseSt hdl o st rqs
 
 
 beforeSt :: (
 	Monad m,
-	Collapsable (es :+: es') es, Collapsable (es :+: es') es',
-	ExpandableOccurred es (es :+: es'), ExpandableOccurred es' (es :+: es')
-	) =>
+	ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es') ) =>
 	HandleSt' st st' m es -> (st -> m st') ->
 	HandleSt' st' st'' m es' -> (st' -> m st'') ->
 	HandleSt' st st'' m (es :+: es')
@@ -72,10 +70,8 @@ beforeSt hdl1 ot1 hdl2 ot2 st rqs = expandSt hdl1 ot1 st rqs >>= \(mocc, st') ->
 
 mergeSt :: (
 	Monad m,
-	Collapsable (es :+: es') es, Collapsable (es :+: es') es',
-	ExpandableOccurred es (es :+: es'), ExpandableOccurred es' (es :+: es'),
-	MergeableOccurred es es' (es :+: es')
-	) =>
+	ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es'),
+	MergeableOccurred es es' (es :+: es') ) =>
 	HandleSt' st st' m es -> (st -> m st') ->
 	HandleSt' st' st'' m es' -> (st' -> m st'') ->
 	HandleSt' st st'' m (es :+: es')
