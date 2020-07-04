@@ -17,9 +17,8 @@ import Data.Type.Set (Set(Nil), Singleton, numbered, (:-))
 import Data.OneOrMore (Selectable(..), singleton, extract)
 import System.Random (Random, StdGen, random, randomR)
 
-import Moffy.React
-import Moffy.React.Common
-import Moffy.Handle
+import Control.Moffy
+import Control.Moffy.Handle
 
 ---------------------------------------------------------------------------
 

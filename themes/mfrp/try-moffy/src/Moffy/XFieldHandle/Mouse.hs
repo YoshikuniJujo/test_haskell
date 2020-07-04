@@ -10,7 +10,8 @@ import Data.OneOrMore
 import Data.Time
 import System.Exit
 
-import Moffy.React.Common
+import Control.Moffy
+import Control.Moffy.Handle hiding (expand)
 import Moffy.Event.Mouse
 import Field
 

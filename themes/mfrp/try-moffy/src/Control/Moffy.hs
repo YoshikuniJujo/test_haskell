@@ -17,7 +17,7 @@ module Control.Moffy (
 
 import Prelude hiding (repeat, scanl, until, break)
 
-import Moffy.Sig
-import Moffy.Sig.Common
-import Moffy.React
-import Moffy.React.Common
+import Control.Moffy.Internal.Sig
+import Control.Moffy.Internal.Sig.Common
+import Control.Moffy.Internal.React
+import Control.Moffy.Internal.React.Common

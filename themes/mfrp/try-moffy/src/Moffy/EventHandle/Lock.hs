@@ -18,9 +18,8 @@ import Data.Type.Set (Set(Nil), Singleton, (:-), (:+:), numbered)
 import Data.OneOrMore hiding (merge)
 import Data.Bool (bool)
 
-import Moffy.React
-import Moffy.React.Common hiding (getThreadId)
-import Moffy.Handle
+import Control.Moffy
+import Control.Moffy.Handle
 import Moffy.EventHandle.ThreadId
 
 ---------------------------------------------------------------------------
@@ -123,12 +122,15 @@ handleLock :: (LockState s, Monad m) => Handle' (StateT s m) LockEv
 handleLock = handleNewLockId `merge` handleGetLock `merge` handleUnlock
 
 withLock :: (
-	CollapsableOccurred es' GetThreadIdGetLock,
-	CollapsableOccurred es' es,
-	CollapsableOccurred es' SingletonUnlock,
+	Adjustable GetThreadIdGetLock es',
+	Adjustable es es',
+	Adjustable SingletonUnlock es',
+--	CollapsableOccurred es' GetThreadIdGetLock,
+--	CollapsableOccurred es' es,
+--	CollapsableOccurred es' SingletonUnlock,
 	(es :+: es') ~ es',
-	(GetThreadIdGetLock :+: es') ~ es', (SingletonUnlock :+: es') ~ es',
-	Expandable es es',
-	Expandable GetThreadIdGetLock es', Expandable SingletonUnlock es'
+	(GetThreadIdGetLock :+: es') ~ es', (SingletonUnlock :+: es') ~ es'
+--	Expandable es es',
+--	Expandable GetThreadIdGetLock es', Expandable SingletonUnlock es'
 	) => LockId -> React s es a -> React s es' a
 withLock l act = adjust (getLock l 0) >> adjust act <* adjust (unlock l)

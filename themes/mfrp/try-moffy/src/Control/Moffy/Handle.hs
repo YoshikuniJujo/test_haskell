@@ -8,5 +8,5 @@ module Control.Moffy.Handle (
 	retry, expand, before, merge, retrySt, expandSt, beforeSt, mergeSt
 	) where
 
-import Moffy.React.Common
-import Moffy.Handle
+import Control.Moffy.Internal.React.Common
+import Control.Moffy.Internal.Handle

@@ -4,7 +4,7 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
 
-module Moffy.Sig where
+module Control.Moffy.Internal.Sig where
 
 import Prelude hiding (repeat)
 
@@ -15,9 +15,9 @@ import Data.OneOrMore
 
 import qualified Control.Arrow as Arr
 
-import Moffy.React
-import Moffy.React.Common
-import Moffy.Sig.Common
+import Control.Moffy.Internal.React
+import Control.Moffy.Internal.React.Common
+import Control.Moffy.Internal.Sig.Common
 import Freer
 
 pause :: (

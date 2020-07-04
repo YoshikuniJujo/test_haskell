@@ -3,14 +3,14 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Moffy.Sig.Common where
+module Control.Moffy.Internal.Sig.Common where
 
 import Prelude hiding (scanl)
 
 import Control.Monad
 import Data.Type.Flip
 
-import Moffy.React.Common
+import Control.Moffy.Internal.React.Common
 
 infixr 5 :|
 newtype Sig s es a r = Sig { unSig :: React s es (ISig s es a r) }

@@ -45,25 +45,25 @@ refactoring
 
 ```
 Control.Moffy
-  + Moffy.Sig
-  |   + Moffy.Sig.Common
-  |   |   + Moffy.React.Common
-  |   + Moffy.React
-  |   |   + Moffy.React.Common
-  |   + Moffy.React.Common
-  + Moffy.Sig.Common
-  + Moffy.React
-  + MOffy.React.Common
+  + Control.Moffy.Internal.Sig
+  |   + Control.Moffy.Internal.Sig.Common
+  |   |   + Control.Moffy.Internal.React.Common
+  |   + Control.Moffy.Internal.React
+  |   |   + Control.Moffy.Internal.React.Common
+  |   + Control.Moffy.Internal.React.Common
+  + Control.Moffy.Internal.Sig.Common
+  + Control.Moffy.Internal.React
+  + Control.Moffy.Internal.React.Common
 
 Control.Moffy.Handle
-  + Moffy.Handle
-  |   + Moffy.React.Common
-  + Moffy.React.Comon
+  + Control.Moffy.Internal.Handle
+  |   + Control.Moffy.Internal.React.Common
+  + Control.Moffy.Internal.React.Comon
 
 Control.Moffy.Run
-  + Moffy.Sig.Common
-  + Moffy.React
-  + Moffy.React.Common
+  + Control.Moffy.Internal.Sig.Common
+  + Control.Moffy.Internal.React
+  + Control.Moffy.Internal.React.Common
 ```
 
 #### todo
@@ -74,8 +74,8 @@ Control.Moffy.Run
 		- [ ] Moffy.ReactとMoffy.React.Commonについて
 			* [x] add export list
 			* [ ] othres
+		- [x] Control.Moffy.Internal.Fooに移動
 		- [ ] Moffy.SigとMoffy.Sig.Commonについて
-		- [ ] Control.Moffy.Internal.Fooに移動
 * [ ] API
 * [ ] imports
 * [ ] body

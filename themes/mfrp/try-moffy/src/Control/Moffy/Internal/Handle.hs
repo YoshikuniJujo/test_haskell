@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Moffy.Handle (
+module Control.Moffy.Internal.Handle (
 	Handle, Handle', ExpandableHandle, retry, expand, before, merge,
 	HandleSt, HandleSt', retrySt, expandSt, beforeSt, mergeSt
 	) where
@@ -14,7 +14,7 @@ import Data.OneOrMore hiding (merge, expand, collapse)
 
 import qualified Data.OneOrMore as OOM
 
-import Moffy.React.Common
+import Control.Moffy.Internal.React.Common
 
 retry :: Monad m => Handle' m es -> Handle m es
 retry hdl rqs = maybe (retry hdl rqs) pure =<< hdl rqs

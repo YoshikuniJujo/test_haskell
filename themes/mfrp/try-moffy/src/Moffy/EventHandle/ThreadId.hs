@@ -11,7 +11,7 @@ module Moffy.EventHandle.ThreadId (
 import Data.Type.Set
 import Data.OneOrMore
 
-import Moffy.React.Common
+import Control.Moffy.Internal.React.Common
 
 data GetThreadId = GetThreadIdReq deriving (Show, Eq, Ord)
 numbered 9 [t| GetThreadId |]

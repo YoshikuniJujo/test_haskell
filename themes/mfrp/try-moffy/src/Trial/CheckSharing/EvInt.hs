@@ -11,8 +11,8 @@ import Data.Type.Set
 import Data.OneOrMore
 import Freer
 
-import Moffy.React
-import Moffy.React.Common
+import Control.Moffy.Internal.React
+import Control.Moffy.Internal.React.Common
 
 data EvInt = EvIntReq deriving (Show, Eq, Ord)
 numbered 9 [t| EvInt |]
