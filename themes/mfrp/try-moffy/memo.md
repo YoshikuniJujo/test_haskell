@@ -24,6 +24,16 @@ todo
 	+ [x] Control.Moffy
 	+ [x] Control.Moffy.Handle
 	+ [x] Control.Moffy.Run
+* [ ] 上記3つのモジュールを利用するようにする
+	+ [x] Trial.CheckRandom
+	+ [ ] Trial.Count
+	+ [ ] Trial.CountWithLock
+	+ [ ] Trial.TryThreadId
+	+ [ ] Trial.TryCheckDup
+	+ [ ] Trial.CheckSaring
+	+ [ ] Trial.Boxes
+	+ [ ] Trial.StepByStepBox
+	+ [ ] Trial.Followbox
 
 ref
 ---

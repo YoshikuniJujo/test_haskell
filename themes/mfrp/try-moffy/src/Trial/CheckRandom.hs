@@ -2,12 +2,12 @@
 
 module Trial.CheckRandom where
 
-
 import Control.Monad.State
+import Control.Moffy
+import Control.Moffy.Handle
+import Control.Moffy.Run
 import System.Random
 
-import Moffy.React.Common
-import Moffy.Handle
 import Moffy.EventHandle.Random
 
 trySimpleRandom :: State StdGen Int
