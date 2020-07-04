@@ -20,4 +20,4 @@ import Prelude hiding (repeat, scanl, until, break)
 import Control.Moffy.Internal.Sig
 import Control.Moffy.Internal.Sig.Common
 import Control.Moffy.Internal.React
-import Control.Moffy.Internal.React.Common
+import Control.Moffy.Internal.React.Type

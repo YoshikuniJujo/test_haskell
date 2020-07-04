@@ -5,19 +5,18 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Internal.React.Common (
-	React, Rct(..), Request(..), EvReqs, EvOccs, Handle, Handle', HandleSt, HandleSt',
+module Control.Moffy.Internal.React.Type (
+	React, Rct(..), Request(..), EvReqs, EvOccs,
+	Handle, Handle', HandleSt, HandleSt',
 	CollapsableOccurred, ExpandableOccurred, MergeableOccurred,
 	ThreadId, forkThreadId, getThreadId, rootThreadId,
-	interpretReact, interpretReactSt, await, await', never ) where
+	await, await', never ) where
 
 import Data.Kind
 import Data.Type.Set
 import Data.OneOrMore
 import Data.Bits
 import Numeric.Natural
-
-import qualified Control.Arrow as A
 
 import Freer
 import FTCQueue
@@ -51,31 +50,6 @@ step :: React s es a -> EvOccs es -> React s es a
 step (Await _ :>>= c) = (c `qApp`)
 step _ = error "not await"
 
-runReact :: Monad m => ThreadId -> Handle m es -> React s es a -> m (a, ThreadId)
-runReact ti _ (Pure x) = pure (x, ti)
-runReact _ _ (Never :>>= _) = error "never end"
-runReact ti hdl (GetThreadId :>>= c) = runReact ti hdl (c `qApp` ti)
-runReact ti hdl (Await rqs :>>= c) = runReact ti hdl . (c `qApp`) =<< hdl rqs
-
-interpretReact :: Monad m => Handle m es -> React s es a -> m a
-interpretReact hdl r = fst <$> runReact rootThreadId hdl r
-
-runReactSt :: Monad m => st -> ThreadId -> HandleSt st m es -> React s es a -> m ((a, ThreadId), st)
-runReactSt st ti _ (Pure x) = pure ((x, ti), st)
-runReactSt _ _ _ (Never :>>= _) = error "never end"
-runReactSt st ti hdl (GetThreadId :>>= c) = runReactSt st ti hdl (c `qApp` ti)
-runReactSt st ti hdl (Await rqs :>>= c) = do
-	(x, st') <- hdl st rqs
-	runReactSt st' ti hdl (c `qApp` x)
-
-interpretReactSt :: Monad m => st -> HandleSt st m es -> React s es a -> m (a, st)
-interpretReactSt st0 hdl r = (fst `A.first`) <$> runReactSt st0 rootThreadId hdl r
-
-type Handle m es = EvReqs es -> m (EvOccs es)
-type Handle' m es = EvReqs es -> m (Maybe (EvOccs es))
-type HandleSt st m es = st -> EvReqs es -> m (EvOccs es, st)
-type HandleSt' st st' m es = st -> EvReqs es -> m (Maybe (EvOccs es), st')
-
 await :: a -> (Occurred a -> b) -> React s (Singleton a) b
 await r f = Await (singleton r) >>>= (pure . f . extract)
 
@@ -90,3 +64,8 @@ type MergeableOccurred es es' eses' = Mergeable (Occurred :$: es) (Occurred :$: 
 
 never :: React s es a
 never = Never >>>= pure
+
+type Handle m es = EvReqs es -> m (EvOccs es)
+type Handle' m es = EvReqs es -> m (Maybe (EvOccs es))
+type HandleSt st m es = st -> EvReqs es -> m (EvOccs es, st)
+type HandleSt' st st' m es = st -> EvReqs es -> m (Maybe (EvOccs es), st')

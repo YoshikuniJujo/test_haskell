@@ -16,7 +16,7 @@ import Data.OneOrMore
 import qualified Control.Arrow as Arr
 
 import Control.Moffy.Internal.React
-import Control.Moffy.Internal.React.Common
+import Control.Moffy.Internal.React.Type
 import Control.Moffy.Internal.Sig.Common
 import Freer
 

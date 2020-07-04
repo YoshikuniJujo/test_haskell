@@ -10,7 +10,8 @@ import Prelude hiding (scanl)
 import Control.Monad
 import Data.Type.Flip
 
-import Control.Moffy.Internal.React.Common
+import Control.Moffy.Internal.React.Type
+import Control.Moffy.Internal.React.Run
 
 infixr 5 :|
 newtype Sig s es a r = Sig { unSig :: React s es (ISig s es a r) }

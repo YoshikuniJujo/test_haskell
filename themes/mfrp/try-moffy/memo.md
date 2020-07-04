@@ -75,7 +75,9 @@ Control.Moffy.Run
 			* [x] add export list
 			* [ ] othres
 		- [x] Control.Moffy.Internal.Fooに移動
-		- [ ] Moffy.SigとMoffy.Sig.Commonについて
+		- [ ] Control.Moffy.Internal.ReactとControl.Moffy.Internal.React.Commonについて
+			* [ ] Type, Handle, Runをきれいに分ける
+		- [ ] Control.Moffy.Internal.SigとControl.Moffy.Internal.Sig.Commonについて
 * [ ] API
 * [ ] imports
 * [ ] body

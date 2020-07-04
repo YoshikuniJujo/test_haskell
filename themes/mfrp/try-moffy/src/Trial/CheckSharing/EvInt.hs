@@ -12,7 +12,7 @@ import Data.OneOrMore
 import Freer
 
 import Control.Moffy.Internal.React
-import Control.Moffy.Internal.React.Common
+import Control.Moffy.Internal.React.Type
 
 data EvInt = EvIntReq deriving (Show, Eq, Ord)
 numbered 9 [t| EvInt |]

@@ -14,7 +14,7 @@ import Data.Or
 
 import Freer
 
-import Control.Moffy.Internal.React.Common
+import Control.Moffy.Internal.React.Type
 
 class Update a b where
 	update ::

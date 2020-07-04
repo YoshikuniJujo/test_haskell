@@ -7,5 +7,5 @@ module Control.Moffy.Run (
 	interpret, interpretSt, interpretReact, interpretReactSt,
 	) where
 
-import Control.Moffy.Internal.React.Common
+import Control.Moffy.Internal.React.Run
 import Control.Moffy.Internal.Sig.Common

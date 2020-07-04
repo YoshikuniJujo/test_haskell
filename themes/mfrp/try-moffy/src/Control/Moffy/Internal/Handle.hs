@@ -14,7 +14,7 @@ import Data.OneOrMore hiding (merge, expand, collapse)
 
 import qualified Data.OneOrMore as OOM
 
-import Control.Moffy.Internal.React.Common
+import Control.Moffy.Internal.React.Type
 
 retry :: Monad m => Handle' m es -> Handle m es
 retry hdl rqs = maybe (retry hdl rqs) pure =<< hdl rqs
