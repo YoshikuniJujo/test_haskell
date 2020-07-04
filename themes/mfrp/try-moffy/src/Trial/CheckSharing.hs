@@ -3,12 +3,12 @@
 module Trial.CheckSharing where
 
 import Control.Concurrent
+import Control.Moffy
+import Control.Moffy.Handle
+import Control.Moffy.Run
 import Data.Or
 import System.IO.Unsafe
 
-import Moffy.React
-import Moffy.React.Common
-import Moffy.Handle
 import Moffy.Event.Mouse
 import Moffy.XFieldHandle.Mouse
 import Freer

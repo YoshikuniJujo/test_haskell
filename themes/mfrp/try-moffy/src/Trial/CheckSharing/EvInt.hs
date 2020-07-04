@@ -6,10 +6,10 @@
 
 module Trial.CheckSharing.EvInt where
 
+import Control.Moffy
+import Control.Moffy.Run
 import Data.Type.Set
 import Data.OneOrMore
-import Moffy.React
-import Moffy.React.Common
 import Freer
 
 data EvInt = EvIntReq deriving (Show, Eq, Ord)
@@ -22,10 +22,6 @@ evInt = await EvIntReq \(OccEvInt n) -> n
 
 evInt2 :: React s (Singleton EvInt) (Int, Int)
 evInt2 = (,) <$> evInt <*> evInt
-
-step :: React s es a -> EvOccs es -> React s es a
-step (Await _ :>>= c) = (c `qApp`)
-step _ = error "not await"
 
 fromPure :: React s es a -> a
 fromPure (Pure x) = x

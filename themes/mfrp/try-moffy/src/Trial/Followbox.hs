@@ -7,6 +7,7 @@ module Trial.Followbox (followbox) where
 import Prelude hiding (break, until)
 
 import Control.Monad (forever, (<=<))
+import Control.Moffy
 import Data.Type.Flip ((<$%>), (<*%>), ftraverse)
 import Data.Or (Or(..))
 import Data.Time (UTCTime, utcToLocalTime)
@@ -22,9 +23,6 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 
-import Moffy.React
-import Moffy.Sig
-import Moffy.Sig.Common
 import Moffy.EventHandle.Lock (LockId, newLockId, withLock)
 import Moffy.EventHandle.Random (getRandomR)
 import Moffy.Event.Mouse (deleteEvent)

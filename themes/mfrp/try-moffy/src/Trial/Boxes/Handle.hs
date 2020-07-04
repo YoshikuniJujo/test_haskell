@@ -6,15 +6,14 @@
 
 module Trial.Boxes.Handle (Mode(InitMode), handleBoxes) where
 
-import Control.Monad.State (StateT, get, put, lift, liftIO)
 import Control.Concurrent
+import Control.Moffy.Handle hiding (expand)
+import Control.Monad.State (StateT, get, put, lift, liftIO)
 import Data.OneOrMore (prj, singleton, (>-), expand)
 import Data.Time (DiffTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
 	
-import Moffy.Handle (
-	HandleSt, HandleSt', retrySt, expandSt, mergeSt )
 import Moffy.XFieldHandle.Mouse (handleMouse)
 import Trial.Boxes.Event (GuiEv, MouseEv, TimeEv, TryWait(..), Occurred(..))
 import Field (Field)

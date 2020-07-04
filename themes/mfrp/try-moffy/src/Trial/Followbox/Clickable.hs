@@ -9,13 +9,11 @@ module Trial.Followbox.Clickable (
 
 import Prelude hiding (repeat)
 
+import Control.Moffy
 import Graphics.X11.Xrender (XGlyphInfo(..))
 
 import qualified Data.Text as T
 
-import Moffy.React
-import Moffy.Sig
-import Moffy.Sig.Common
 import Moffy.Event.Mouse (leftClick, mouseMove)
 import Trial.Followbox.Event (SigF, ReactF, calcTextExtents)
 import Trial.Followbox.View (View, View1(..), blue)

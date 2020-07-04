@@ -9,9 +9,11 @@ import Prelude hiding (cycle, repeat, scanl, until, break)
 import qualified Prelude as P
 
 import Control.Monad.State
+import Control.Moffy
+import Control.Moffy.Handle hiding (before)
+import Control.Moffy.Run
 import Data.Type.Set
 import Data.Type.Flip
-import Data.OneOrMore
 import Data.Bool
 import Data.Maybe
 import Data.Or
@@ -22,11 +24,6 @@ import Data.Time.Clock.System
 
 import qualified Control.Arrow as Arr
 
-import Moffy.React
-import Moffy.React.Common
-import Moffy.Sig
-import Moffy.Sig.Common
-import Moffy.Handle hiding (before)
 import Moffy.Event.Mouse
 import Moffy.XFieldHandle.Mouse
 import Field hiding (Point)
@@ -55,12 +52,8 @@ tryLeftDownRightUp = do
 	f <- openField "LEFT DOWN RIGHT UP" [buttonPressMask, buttonReleaseMask]
 	interpretReact (retry $ handleMouse Nothing f) leftDownRightUp <* closeField f
 
-before :: (
-	Update a b,
-	CollapsableOccurred (es :+: es') es, CollapsableOccurred (es :+: es') es',
-	Expandable es (es :+: es'), Expandable es' (es :+: es'),
-	Mergeable (es :+: es') (es :+: es') (es :+: es')
-	) => React s es a -> React s es' b -> React s (es :+: es') Bool
+before :: Firstable es es' a b =>
+	React s es a -> React s es' b -> React s (es :+: es') Bool
 l `before` r = l `first` r >>= \case L _ -> pure True; _ -> pure False
 
 doubler :: ReactG s ()

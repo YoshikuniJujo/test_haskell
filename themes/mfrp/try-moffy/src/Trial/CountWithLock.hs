@@ -7,14 +7,14 @@
 module Trial.CountWithLock where
 
 import Control.Monad.State
+import Control.Moffy
+import Control.Moffy.Handle
+import Control.Moffy.Run
 import Data.Type.Set
 import Data.OneOrMore hiding (merge)
 import Data.Or
 import Data.List
 
-import Moffy.React
-import Moffy.React.Common
-import Moffy.Handle
 import Moffy.EventHandle.ThreadId
 import Moffy.EventHandle.Lock
 

@@ -12,6 +12,7 @@ module Trial.Followbox.Handle (
 import Prelude hiding (head)
 
 import Control.Monad.State (StateT, lift, gets, modify)
+import Control.Moffy.Handle
 import Data.Type.Set (Singleton)
 import Data.OneOrMore (singleton, extract)
 import Data.Bool (bool)
@@ -25,7 +26,6 @@ import System.Process (spawnProcess)
 import qualified Data.Text as T
 import qualified Network.HTTP.Simple as H
 
-import Moffy.Handle (Handle, Handle', retry, merge, before)
 import Moffy.EventHandle.ThreadId (handleGetThreadId)
 import Moffy.EventHandle.Lock (LockState(..), LockId, handleLock)
 import Moffy.EventHandle.Random (RandomState(..), handleRandom)

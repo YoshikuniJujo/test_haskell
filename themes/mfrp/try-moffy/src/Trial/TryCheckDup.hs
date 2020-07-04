@@ -5,10 +5,10 @@ module Trial.TryCheckDup where
 
 import Control.Monad
 import Control.Monad.State
+import Control.Moffy
+import Control.Moffy.Run
 import Data.Time.Clock.System
 
-import Moffy.React
-import Moffy.React.Common
 import Moffy.Event.Mouse
 import Trial.Boxes.Event
 import Trial.Boxes.Handle

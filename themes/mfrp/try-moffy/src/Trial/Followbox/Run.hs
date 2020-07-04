@@ -4,6 +4,7 @@
 module Trial.Followbox.Run (runFollowbox) where
 
 import Control.Monad.State (runStateT, lift)
+import Control.Moffy.Run
 import Data.List (sort)
 import System.Environment (getArgs)
 import System.Exit (exitFailure)
@@ -13,7 +14,6 @@ import System.Random (mkStdGen)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 
-import Moffy.Sig.Common (interpret)
 import Trial.Followbox.Event (SigF)
 import Trial.Followbox.Handle (
 	FollowboxState, handleFollowbox, initialFollowboxState )

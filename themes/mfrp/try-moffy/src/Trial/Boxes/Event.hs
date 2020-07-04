@@ -15,12 +15,11 @@ module Trial.Boxes.Event (
 	leftClick, middleClick, rightClick, leftUp ) where
 --	MouseMove, Point, mouseMove, DeleteEvent, deleteEvent ) where
 
+import Control.Moffy
 import Data.Type.Set (Set(Nil), Singleton, (:-), (:+:), numbered)
 import Data.Bool (bool)
 import Data.Time (DiffTime)
 
-import Moffy.React.Common (React, Request(..), await)
-import Moffy.Sig.Common
 import Moffy.Event.Mouse
 
 ---------------------------------------------------------------------------

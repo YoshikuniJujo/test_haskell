@@ -43,6 +43,10 @@ forkThreadId :: ThreadId -> (ThreadId, ThreadId)
 forkThreadId (ThreadId n i) =
 	(ThreadId n $ i + 1, ThreadId (n `setBit` i) $ i + 1)
 
+step :: React s es a -> EvOccs es -> React s es a
+step (Await _ :>>= c) = (c `qApp`)
+step _ = error "not await"
+
 runReact :: Monad m => ThreadId -> Handle m es -> React s es a -> m (a, ThreadId)
 runReact ti _ (Pure x) = pure (x, ti)
 runReact _ _ (Never :>>= _) = error "never end"

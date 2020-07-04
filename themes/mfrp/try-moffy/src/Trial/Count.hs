@@ -3,13 +3,12 @@
 
 module Trial.Count where
 
+import Control.Moffy
+import Control.Moffy.Handle
+import Control.Moffy.Run
 import Data.Or
 import System.Random
 
-import Moffy.React
-import Moffy.React.Common
-import Moffy.Sig.Common
-import Moffy.Handle
 import Moffy.Event.Mouse
 import Moffy.XFieldHandle.Mouse
 import Field

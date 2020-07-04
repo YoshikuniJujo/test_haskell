@@ -3,12 +3,12 @@
 
 module Trial.TryThreadId where
 
+import Control.Moffy
+import Control.Moffy.Run
+import Control.Moffy.Handle
 import Data.Type.Set
 import Data.Or
 
-import Moffy.React
-import Moffy.React.Common hiding (getThreadId)
-import Moffy.Handle
 import Moffy.EventHandle.ThreadId
 import Moffy.Event.Mouse
 import Moffy.XFieldHandle.Mouse

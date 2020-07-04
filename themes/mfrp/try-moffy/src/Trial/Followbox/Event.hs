@@ -32,6 +32,7 @@ module Trial.Followbox.Event (
 	raiseError, checkTerminate
 	) where
 
+import Control.Moffy
 import Data.Type.Set (Set(Nil), Singleton, numbered, (:-), (:+:))
 import Data.OneOrMore (Selectable(..))
 import Data.Bool (bool)
@@ -43,8 +44,6 @@ import Graphics.X11.Xrender (XGlyphInfo)
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 
-import Moffy.React.Common
-import Moffy.Sig.Common
 import Moffy.EventHandle.Random (RandomEv)
 import Moffy.EventHandle.Lock (LockEv)
 import Moffy.EventHandle.ThreadId (GetThreadId)
