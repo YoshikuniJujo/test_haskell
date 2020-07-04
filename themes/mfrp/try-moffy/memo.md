@@ -20,10 +20,10 @@ todo
 	+ [x] Trial.CountWithLock
 	+ [x] Trial.TryCheckDup
 * [x] hlintによるrefactoring
-* [ ] モジュールの整理
+* [x] モジュールの追加
 	+ [x] Control.Moffy
 	+ [x] Control.Moffy.Handle
-	+ [ ] Control.Moffy.Run
+	+ [x] Control.Moffy.Run
 
 ref
 ---
