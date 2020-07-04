@@ -5,7 +5,11 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Moffy.React.Common where
+module Moffy.React.Common (
+	React, Rct(..), Request(..), EvReqs, EvOccs, Handle, Handle', HandleSt, HandleSt',
+	CollapsableOccurred, ExpandableOccurred, MergeableOccurred,
+	ThreadId, forkThreadId, getThreadId, rootThreadId,
+	interpretReact, interpretReactSt, await, await', never ) where
 
 import Data.Kind
 import Data.Type.Set

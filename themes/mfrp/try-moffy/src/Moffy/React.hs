@@ -5,7 +5,8 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Moffy.React where
+module Moffy.React (
+	Update, Adjustable, Firstable, adjust, first, par, update ) where
 
 import Data.Type.Set
 import Data.OneOrMore

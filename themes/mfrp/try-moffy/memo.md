@@ -71,6 +71,11 @@ Control.Moffy.Run
 * [ ] モジュールの整理
 	+ [x] 現在のモジュール構造のチェック
 	+ [ ] モジュールの整理
+		- [ ] Moffy.ReactとMoffy.React.Commonについて
+			* [x] add export list
+			* [ ] othres
+		- [ ] Moffy.SigとMoffy.Sig.Commonについて
+		- [ ] Control.Moffy.Internal.Fooに移動
 * [ ] API
 * [ ] imports
 * [ ] body

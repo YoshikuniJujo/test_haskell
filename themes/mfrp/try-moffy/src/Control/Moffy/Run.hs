@@ -5,10 +5,7 @@ module Control.Moffy.Run (
 	Sig, React,
 	-- * Run
 	interpret, interpretSt, interpretReact, interpretReactSt,
-	-- * Temporary
-	step, update, rootThreadId
 	) where
 
-import Moffy.React
 import Moffy.React.Common
 import Moffy.Sig.Common
