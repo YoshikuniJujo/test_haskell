@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e44e5ace81543d7a3dc1514f431231ed04d545e5404dcefd615e89da47adcc78
+-- hash: e042fe8441713b1138452b39487b74e935869bfed4c4d42b75d9be5a85c9f25c
 
 name:           try-moffy
 version:        0.1.0.0
@@ -33,7 +33,8 @@ library
       Control.Moffy.Internal.React.Run
       Control.Moffy.Internal.React.Type
       Control.Moffy.Internal.Sig
-      Control.Moffy.Internal.Sig.Common
+      Control.Moffy.Internal.Sig.Run
+      Control.Moffy.Internal.Sig.Type
       Control.Moffy.Run
       Data.OneOrMore
       Data.Type.Set

@@ -5,11 +5,7 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Internal.React.Run (
-	React, Rct(..), Request(..), EvReqs, EvOccs, Handle, Handle', HandleSt, HandleSt',
-	CollapsableOccurred, ExpandableOccurred, MergeableOccurred,
-	ThreadId, forkThreadId, getThreadId, rootThreadId,
-	interpretReact, interpretReactSt, await, await', never ) where
+module Control.Moffy.Internal.React.Run (interpretReact, interpretReactSt) where
 
 import qualified Control.Arrow as A
 

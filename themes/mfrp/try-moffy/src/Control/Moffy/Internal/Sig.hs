@@ -17,7 +17,7 @@ import qualified Control.Arrow as Arr
 
 import Control.Moffy.Internal.React
 import Control.Moffy.Internal.React.Type
-import Control.Moffy.Internal.Sig.Common
+import Control.Moffy.Internal.Sig.Type
 import Freer
 
 pause :: (

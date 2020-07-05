@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Internal.Sig.Common where
+module Control.Moffy.Internal.Sig.Type where
 
 import Prelude hiding (scanl)
 
@@ -11,7 +11,6 @@ import Control.Monad
 import Data.Type.Flip
 
 import Control.Moffy.Internal.React.Type
-import Control.Moffy.Internal.React.Run
 
 infixr 5 :|
 newtype Sig s es a r = Sig { unSig :: React s es (ISig s es a r) }
@@ -58,16 +57,6 @@ hold = waitFor never
 
 waitFor :: React s es r -> Sig s es a r
 waitFor = Sig . (pure <$>)
-
-interpret :: Monad m => Handle m es -> (a -> m ()) -> Sig s es a r -> m r
-interpret hdl vw = go where
-	go (Sig s) = interpretReact hdl s >>= isig pure \h -> (vw h >>) . go
-
-interpretSt ::
-	Monad m => st -> HandleSt st m es -> (a -> m ()) -> Sig s es a r -> m r
-interpretSt st0 hdl vw = go st0 where
-	go st (Sig s) = interpretReactSt st hdl s >>= \(is, st') ->
-		isig pure (\h -> (vw h >>) . go st') is
 
 repeat :: React s es a -> Sig s es a ()
 repeat = forever . (emit <=< waitFor)

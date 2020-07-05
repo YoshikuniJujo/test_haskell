@@ -69,17 +69,14 @@ Control.Moffy.Run
 #### todo
 
 * [ ] モジュールの整理
-	+ [x] 現在のモジュール構造のチェック
-	+ [ ] モジュールの整理
-		- [ ] Moffy.ReactとMoffy.React.Commonについて
-			* [x] add export list
-			* [ ] othres
+	+ [ ] 現在のモジュール構造のチェック
+	+ [x] モジュールの整理
 		- [x] Control.Moffy.Internal.Fooに移動
-		- [ ] Control.Moffy.Internal.ReactとControl.Moffy.Internal.React.Commonについて
-			* [ ] Type, Handle, Runをきれいに分ける
-				+ [ ] Control.Moffy.Internal..Handle -> Control.Moffy.Handle
-				+ [ ] others
-		- [ ] Control.Moffy.Internal.SigとControl.Moffy.Internal.Sig.Commonについて
+		- [x] Control.Moffy.Internal.ReactとControl.Moffy.Internal.React.Commonについて
+			* [x] Type, Handle, Runをきれいに分ける
+				+ [x] Control.Moffy.Internal..Handle -> Control.Moffy.Handle
+				+ [x] others
+		- [x] Control.Moffy.Internal.SigとControl.Moffy.Internal.Sig.Commonについて
 * [ ] API
 * [ ] imports
 * [ ] body
