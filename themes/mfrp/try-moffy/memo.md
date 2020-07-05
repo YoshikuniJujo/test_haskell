@@ -45,31 +45,28 @@ refactoring
 
 ```
 Control.Moffy
-  + Control.Moffy.Internal.Sig
-  |   + Control.Moffy.Internal.Sig.Common
-  |   |   + Control.Moffy.Internal.React.Common
-  |   + Control.Moffy.Internal.React
-  |   |   + Control.Moffy.Internal.React.Common
-  |   + Control.Moffy.Internal.React.Common
-  + Control.Moffy.Internal.Sig.Common
-  + Control.Moffy.Internal.React
-  + Control.Moffy.Internal.React.Common
+  +- Control.Moffy.Internal.Sig
+  |   +- Control.Moffy.Internal.Sig.Type
+  |   +- Control.Moffy.Internal.React
+  |   +- Control.Moffy.INternal.React.Type
+  +- Control.Moffy.Internal.Sig.Type
+  |   +- Control.Moffy.Internal.React.Type
+  +- Control.Moffy.Internal.React
+  |   +- Control.Moffy.Internal.React.Type
+  +- Control.Moffy.Internal.React.Type
 
 Control.Moffy.Handle
-  + Control.Moffy.Internal.Handle
-  |   + Control.Moffy.Internal.React.Common
-  + Control.Moffy.Internal.React.Comon
+  +- Control.Moffy.Internal.React.Type
 
 Control.Moffy.Run
-  + Control.Moffy.Internal.Sig.Common
-  + Control.Moffy.Internal.React
-  + Control.Moffy.Internal.React.Common
+  +- Control.Moffy.Internal.Sig.Type
+  +- Control.Moffy.Internal.React.Type
 ```
 
 #### todo
 
 * [ ] モジュールの整理
-	+ [ ] 現在のモジュール構造のチェック
+	+ [x] 現在のモジュール構造のチェック
 	+ [x] モジュールの整理
 		- [x] Control.Moffy.Internal.Fooに移動
 		- [x] Control.Moffy.Internal.ReactとControl.Moffy.Internal.React.Commonについて
@@ -77,6 +74,9 @@ Control.Moffy.Run
 				+ [x] Control.Moffy.Internal..Handle -> Control.Moffy.Handle
 				+ [x] others
 		- [x] Control.Moffy.Internal.SigとControl.Moffy.Internal.Sig.Commonについて
+	+ [ ] Moffy.EventHandle
+	+ [ ] Moffy.Event
+	+ [ ] Moffy.XFieldHandle
 * [ ] API
 * [ ] imports
 * [ ] body

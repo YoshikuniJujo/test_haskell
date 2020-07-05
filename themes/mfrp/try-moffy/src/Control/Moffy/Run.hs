@@ -17,7 +17,6 @@ import Prelude hiding (scanl)
 
 import Control.Moffy.Internal.Sig.Type
 import Control.Moffy.Internal.React.Type
--- import Control.Moffy.Internal.React.Run
 
 runReact :: Monad m => ThreadId -> Handle m es -> React s es a -> m (a, ThreadId)
 runReact ti _ (Pure x) = pure (x, ti)
