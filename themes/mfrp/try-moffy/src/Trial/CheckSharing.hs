@@ -10,7 +10,7 @@ import Data.Or
 import System.IO.Unsafe
 
 import Control.Moffy.Event.Mouse
-import Moffy.XFieldHandle.Mouse
+import Control.Moffy.Handle.Mouse.XField
 import Freer
 import Field
 

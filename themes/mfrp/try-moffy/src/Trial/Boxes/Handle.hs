@@ -14,7 +14,7 @@ import Data.Time (DiffTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
 	
-import Moffy.XFieldHandle.Mouse (handleMouse)
+import Control.Moffy.Handle.Mouse.XField (handleMouse)
 import Trial.Boxes.Event (GuiEv, MouseEv, TimeEv, TryWait(..), Occurred(..))
 import Field (Field)
 

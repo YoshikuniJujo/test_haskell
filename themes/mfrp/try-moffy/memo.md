@@ -75,7 +75,7 @@ Control.Moffy.Run
 				+ [x] others
 		- [x] Control.Moffy.Internal.SigとControl.Moffy.Internal.Sig.Commonについて
 	+ [x] Moffy.Event -> Control.Moffy.Event
-	+ [ ] Moffy.XFieldHandle.Mouse
+	+ [x] Moffy.XFieldHandle.Mouse
 		- -> Control.Moffy.Handle.Mouse.XFieldHandle or
 		- -> Control.Moffy.Handle.XFieldHandle.Mouse
 	+ [ ] Moffy.EventHandle

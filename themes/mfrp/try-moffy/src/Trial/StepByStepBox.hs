@@ -25,7 +25,7 @@ import Data.Time.Clock.System
 import qualified Control.Arrow as Arr
 
 import Control.Moffy.Event.Mouse
-import Moffy.XFieldHandle.Mouse
+import Control.Moffy.Handle.Mouse.XField
 import Field hiding (Point)
 
 import Trial.Boxes.Event
