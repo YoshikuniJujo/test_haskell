@@ -4,7 +4,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Moffy.Event.Mouse where
+module Control.Moffy.Event.Mouse where
 
 import Data.Type.Set
 import Data.Bool

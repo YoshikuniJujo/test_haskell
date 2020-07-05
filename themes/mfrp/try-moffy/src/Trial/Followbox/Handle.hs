@@ -29,7 +29,7 @@ import qualified Network.HTTP.Simple as H
 import Moffy.EventHandle.ThreadId (handleGetThreadId)
 import Moffy.EventHandle.Lock (LockState(..), LockId, handleLock)
 import Moffy.EventHandle.Random (RandomState(..), handleRandom)
-import Moffy.Event.Mouse (MouseEv)
+import Control.Moffy.Event.Mouse (MouseEv)
 import Moffy.XFieldHandle.Mouse (handleMouse)
 import Trial.Followbox.Event (
 	FollowboxEv, Occurred(..), StoreJsons(..), LoadJsons,

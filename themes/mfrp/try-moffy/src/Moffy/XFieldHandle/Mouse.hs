@@ -12,7 +12,7 @@ import System.Exit
 
 import Control.Moffy
 import Control.Moffy.Handle hiding (expand)
-import Moffy.Event.Mouse
+import Control.Moffy.Event.Mouse
 import Field
 
 handleMouse :: Maybe DiffTime -> Field -> Handle' IO MouseEv

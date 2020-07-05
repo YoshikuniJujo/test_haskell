@@ -20,7 +20,7 @@ import Data.Type.Set (Set(Nil), Singleton, (:-), (:+:), numbered)
 import Data.Bool (bool)
 import Data.Time (DiffTime)
 
-import Moffy.Event.Mouse
+import Control.Moffy.Event.Mouse
 
 ---------------------------------------------------------------------------
 

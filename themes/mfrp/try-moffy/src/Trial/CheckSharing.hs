@@ -9,7 +9,7 @@ import Control.Moffy.Run
 import Data.Or
 import System.IO.Unsafe
 
-import Moffy.Event.Mouse
+import Control.Moffy.Event.Mouse
 import Moffy.XFieldHandle.Mouse
 import Freer
 import Field

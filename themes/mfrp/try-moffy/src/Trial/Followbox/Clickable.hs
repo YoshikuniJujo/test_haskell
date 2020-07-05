@@ -14,7 +14,7 @@ import Graphics.X11.Xrender (XGlyphInfo(..))
 
 import qualified Data.Text as T
 
-import Moffy.Event.Mouse (leftClick, mouseMove)
+import Control.Moffy.Event.Mouse (leftClick, mouseMove)
 import Trial.Followbox.Event (SigF, ReactF, calcTextExtents)
 import Trial.Followbox.View (View, View1(..), blue)
 import Trial.Followbox.TypeSynonym (Position, FontName, FontSize)
