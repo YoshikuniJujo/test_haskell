@@ -10,7 +10,8 @@ import Control.Moffy.Run
 import Data.Type.Set
 import Data.Or
 
-import Moffy.EventHandle.ThreadId
+import Moffy.EventHandle.ThreadId.Handle
+import Moffy.EventHandle.ThreadId.Event
 
 import Control.Moffy.Event.Mouse
 import Control.Moffy.Handle.XField.Mouse

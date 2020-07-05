@@ -26,7 +26,7 @@ import System.Process (spawnProcess)
 import qualified Data.Text as T
 import qualified Network.HTTP.Simple as H
 
-import Moffy.EventHandle.ThreadId (handleGetThreadId)
+import Moffy.EventHandle.ThreadId.Handle (handleGetThreadId)
 import Moffy.EventHandle.Lock (LockState(..), LockId, handleLock)
 import Moffy.EventHandle.Random (RandomState(..), handleRandom)
 import Control.Moffy.Event.Mouse (MouseEv)

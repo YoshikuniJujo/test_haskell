@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b1fde86ac795ec90368be12a7fa969f5078b26d92ca3b61d011f46bc7d32df25
+-- hash: 1a409ff2cb9320f06e04fb9dfc8fbbc267a5968513b7f6c06fa5b1abe6e0316e
 
 name:           try-moffy
 version:        0.1.0.0
@@ -43,7 +43,8 @@ library
       FTCQueue
       Moffy.EventHandle.Lock
       Moffy.EventHandle.Random
-      Moffy.EventHandle.ThreadId
+      Moffy.EventHandle.ThreadId.Event
+      Moffy.EventHandle.ThreadId.Handle
       Sequence
       TaggableFunction
       Trial.Boxes.Event
