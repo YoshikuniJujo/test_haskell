@@ -10,7 +10,7 @@ import Data.Or
 import System.Random
 
 import Control.Moffy.Event.Mouse
-import Control.Moffy.Handle.Mouse.XField
+import Control.Moffy.Handle.XField.Mouse
 import Field
 
 leftCount :: Int -> React s MouseEv Int

@@ -30,7 +30,7 @@ import Moffy.EventHandle.ThreadId (handleGetThreadId)
 import Moffy.EventHandle.Lock (LockState(..), LockId, handleLock)
 import Moffy.EventHandle.Random (RandomState(..), handleRandom)
 import Control.Moffy.Event.Mouse (MouseEv)
-import Control.Moffy.Handle.Mouse.XField (handleMouse)
+import Control.Moffy.Handle.XField.Mouse (handleMouse)
 import Trial.Followbox.Event (
 	FollowboxEv, Occurred(..), StoreJsons(..), LoadJsons,
 	HttpGet(..), CalcTextExtents(..), GetTimeZone, Browse(..),

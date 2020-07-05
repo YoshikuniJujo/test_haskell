@@ -13,7 +13,7 @@ import Data.Or
 import Moffy.EventHandle.ThreadId
 
 import Control.Moffy.Event.Mouse
-import Control.Moffy.Handle.Mouse.XField
+import Control.Moffy.Handle.XField.Mouse
 import Freer
 import Field
 

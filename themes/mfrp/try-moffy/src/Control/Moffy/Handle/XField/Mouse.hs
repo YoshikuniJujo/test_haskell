@@ -2,7 +2,7 @@
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Handle.Mouse.XField where
+module Control.Moffy.Handle.XField.Mouse where
 
 import Foreign.C.Types
 import Data.Type.Set

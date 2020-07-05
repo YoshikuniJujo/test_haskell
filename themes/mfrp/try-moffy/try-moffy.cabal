@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b5b44ca0ca85167a9d03748925ee4b889dedcfd94c6bbae3ae31945f333dc5cb
+-- hash: b1fde86ac795ec90368be12a7fa969f5078b26d92ca3b61d011f46bc7d32df25
 
 name:           try-moffy
 version:        0.1.0.0
@@ -30,7 +30,7 @@ library
       Control.Moffy
       Control.Moffy.Event.Mouse
       Control.Moffy.Handle
-      Control.Moffy.Handle.Mouse.XField
+      Control.Moffy.Handle.XField.Mouse
       Control.Moffy.Internal.React
       Control.Moffy.Internal.React.Type
       Control.Moffy.Internal.Sig
