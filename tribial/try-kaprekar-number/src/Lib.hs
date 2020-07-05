@@ -1,7 +1,8 @@
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
 module Lib where
 
 import Data.List
-import Data.Word
 import Numeric.Natural
 
 toDec :: Natural -> [Word]
@@ -21,3 +22,7 @@ step = subtract <$> minNum <*> maxNum
 
 untilFix :: Eq a => (a -> a) -> a -> a
 untilFix f x | x == x' = x | otherwise = untilFix f x' where x' = f x
+
+untilFixScan :: Eq a => (a -> a) -> a -> [a]
+untilFixScan f x | x == x' = [x] | otherwise = x : untilFixScan f x'
+	where x' = f x
