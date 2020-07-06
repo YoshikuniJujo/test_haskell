@@ -20,7 +20,7 @@ import Data.Bool (bool)
 
 import Control.Moffy
 import Control.Moffy.Handle
-import Moffy.EventHandle.ThreadId.Handle
+import Control.Moffy.Handle.ThreadId
 import Moffy.EventHandle.ThreadId.Event
 
 ---------------------------------------------------------------------------
