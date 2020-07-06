@@ -94,9 +94,22 @@ Control.Moffy.Run
 * [ ] imports
 * [ ] body
 
-### Trials
-
 ### Moffy Base
+
+#### Freer
+
+* [x] Freer -> Freer, Fun
+* [ ] Freer -> Control.Monad.Freer.Par
+* [ ] Sequence -> Control.Monad.Freer.Par.Sequence
+* [ ] Fun -> Control.Monad.Freer.Par.Fun
+* [ ] Control.Monad.Freer.Par.FTCQueue
+* [ ] Control.Monad.Freer.Par.TaggableFunction
+
+#### One Or More
+
+#### Type Set
+
+### Trials
 
 ref
 ---
