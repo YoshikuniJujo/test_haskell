@@ -19,8 +19,8 @@ import Data.Bits
 import Numeric.Natural
 
 import Control.Monad.Freer.Par
-import FTCQueue
-import TaggableFunction
+import Control.Monad.Freer.Par.FTCQueue
+import Control.Monad.Freer.Par.TaggableFunction
 
 type EvReqs (es :: Set Type) = OneOrMore es
 type EvOccs (es :: Set Type) = OneOrMore (Occurred :$: es)

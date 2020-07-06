@@ -1,7 +1,7 @@
 {-# LANGUAGE GADTs #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module TaggableFunction (Taggable) where
+module Control.Monad.Freer.Par.TaggableFunction (Taggable) where
 
 import Control.Monad.Freer.Par.Fun
 

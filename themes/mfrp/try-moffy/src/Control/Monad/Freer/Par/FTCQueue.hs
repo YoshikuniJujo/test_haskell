@@ -1,7 +1,7 @@
 {-# LANGUAGE ExistentialQuantification, GADTs #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module FTCQueue (FTCQueue) where
+module Control.Monad.Freer.Par.FTCQueue (FTCQueue) where
 
 import Control.Monad.Freer.Par.Sequence
 
