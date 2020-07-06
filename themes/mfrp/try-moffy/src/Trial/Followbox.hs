@@ -24,7 +24,7 @@ import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 
 import Control.Moffy.Event.Lock (LockId, newLockId, withLock)
-import Moffy.EventHandle.Random (getRandomR)
+import Moffy.EventHandle.Random.Event (getRandomR)
 import Control.Moffy.Event.Mouse (deleteEvent)
 import Trial.Followbox.Event (
 	SigF, ReactF, clearJsons, storeJsons, loadJsons, httpGet, getTimeZone,

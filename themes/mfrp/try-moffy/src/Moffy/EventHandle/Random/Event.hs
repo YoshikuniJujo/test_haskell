@@ -4,21 +4,18 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Moffy.EventHandle.Random (
+module Moffy.EventHandle.Random.Event (
 	-- * Type
-	RandomEv, RandomState(..),
-	-- * Handle
-	handleRandom,
+	RandomEv, StoreRandomGen(..), LoadRandomGen,
+	Occurred(OccStoreRandomGen, OccLoadRandomGen),
 	-- * Event
 	getRandom, getRandomR ) where
 
-import Control.Monad.State (StateT, gets, modify)
 import Data.Type.Set (Set(Nil), Singleton, numbered, (:-))
-import Data.OneOrMore (Selectable(..), singleton, extract)
+import Data.OneOrMore (Selectable(..))
 import System.Random (Random, StdGen, random, randomR)
 
 import Control.Moffy
-import Control.Moffy.Handle
 
 ---------------------------------------------------------------------------
 
@@ -76,24 +73,3 @@ getRandomR = modifyRandomGen . randomR
 modifyRandomGen :: (StdGen -> (a, StdGen)) -> React s RandomEv a
 modifyRandomGen f = (f <$> adjust loadRandomGen) >>= \(r, g') ->
 	r <$ adjust (storeRandomGen g')
-
--- HANDLE
-
-class RandomState s where
-	getRandomGen :: s -> StdGen; putRandomGen :: s -> StdGen -> s
-
-instance RandomState StdGen where getRandomGen = id; putRandomGen = flip const
-
-handleRandom :: (RandomState s, Monad m) => Handle' (StateT s m) RandomEv
-handleRandom = handleStoreRandomGen `merge` handleLoadRandomGen
-
-handleStoreRandomGen :: (RandomState s, Monad m) =>
-	Handle' (StateT s m) (Singleton StoreRandomGen)
-handleStoreRandomGen rqs =
-	Just (singleton OccStoreRandomGen) <$ modify (`putRandomGen` g)
-	where StoreRandomGenReq g = extract rqs
-
-handleLoadRandomGen :: (RandomState s, Monad m) =>
-	Handle' (StateT s m) (Singleton LoadRandomGen)
-handleLoadRandomGen _rqs =
-	gets $ Just . singleton . OccLoadRandomGen . getRandomGen

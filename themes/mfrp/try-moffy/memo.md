@@ -88,6 +88,8 @@ Control.Moffy.Run
 			* [x] -> Moffy.EventHandle.Lock.Event, Moffy.EventHandle.Lock.Handle
 			* [x] -> Moffy.EventHandle.Lock -> Control.Moffy.Event, Control.Moffy.Handle
 		- [ ] Moffy.EventHandle.Random
+			* [x] -> Moffy.EventHandle.Random.Event, Moffy.EventHandle.Random.Handle
+			* [ ] -> Moffy.EventHandle.Random -> Control.Moffy.Event, Control.Moffy.Handle
 * [ ] API
 * [ ] imports
 * [ ] body
