@@ -5,7 +5,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Moffy.EventHandle.Lock.Event (
+module Control.Moffy.Event.Lock (
 	-- * Type
 	LockEv, NewLockId(..), GetLock(..), Unlock(..), LockId(..), LockState(..),
 	Occurred(OccNewLockId, OccGetLock, OccUnlock),

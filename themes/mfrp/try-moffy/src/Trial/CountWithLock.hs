@@ -16,8 +16,8 @@ import Data.Or
 import Data.List
 
 import Control.Moffy.Handle.ThreadId
-import Moffy.EventHandle.Lock.Handle
-import Moffy.EventHandle.Lock.Event
+import Control.Moffy.Handle.Lock
+import Control.Moffy.Event.Lock
 
 data Count = CountReq deriving (Show, Eq, Ord)
 numbered 9 [t| Count |]

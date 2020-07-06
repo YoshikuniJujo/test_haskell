@@ -5,7 +5,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Moffy.EventHandle.Lock.Handle (
+module Control.Moffy.Handle.Lock (
 	-- * Type
 	LockEv, LockState(..), LockId,
 	-- * Handle
@@ -17,7 +17,7 @@ import Data.OneOrMore hiding (merge)
 import Data.Bool (bool)
 
 import Control.Moffy.Handle
-import Moffy.EventHandle.Lock.Event
+import Control.Moffy.Event.Lock
 
 ---------------------------------------------------------------------------
 
