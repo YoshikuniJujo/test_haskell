@@ -4,7 +4,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Moffy.EventHandle.Random.Event (
+module Control.Moffy.Event.Random (
 	-- * Type
 	RandomEv, StoreRandomGen(..), LoadRandomGen,
 	Occurred(OccStoreRandomGen, OccLoadRandomGen),

@@ -8,8 +8,8 @@ import Control.Moffy.Handle
 import Control.Moffy.Run
 import System.Random
 
-import Moffy.EventHandle.Random.Event
-import Moffy.EventHandle.Random.Handle
+import Control.Moffy.Event.Random
+import Control.Moffy.Handle.Random
 
 trySimpleRandom :: State StdGen Int
 trySimpleRandom = interpretReact (retry handleRandom) getRandom

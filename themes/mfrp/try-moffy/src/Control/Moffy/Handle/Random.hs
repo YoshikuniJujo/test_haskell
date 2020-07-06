@@ -4,7 +4,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Moffy.EventHandle.Random.Handle (
+module Control.Moffy.Handle.Random (
 	-- * Type
 	RandomEv, RandomState(..),
 	-- * Handle
@@ -16,7 +16,7 @@ import Data.OneOrMore (singleton, extract)
 import System.Random (StdGen)
 
 import Control.Moffy.Handle
-import Moffy.EventHandle.Random.Event
+import Control.Moffy.Event.Random
 
 ---------------------------------------------------------------------------
 

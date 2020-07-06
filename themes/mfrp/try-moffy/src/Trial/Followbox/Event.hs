@@ -44,7 +44,7 @@ import Graphics.X11.Xrender (XGlyphInfo)
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 
-import Moffy.EventHandle.Random.Event (RandomEv)
+import Control.Moffy.Event.Random (RandomEv)
 import Control.Moffy.Event.Lock (LockEv)
 import Control.Moffy.Event.ThreadId (GetThreadId)
 import Control.Moffy.Event.Mouse (MouseEv)

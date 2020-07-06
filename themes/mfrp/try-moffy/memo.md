@@ -78,7 +78,7 @@ Control.Moffy.Run
 	+ [x] Moffy.XFieldHandle.Mouse
 		- -> Control.Moffy.Handle.Mouse.XField or
 		- [x] -> Control.Moffy.Handle.XField.Mouse
-	+ [ ] Moffy.EventHandle
+	+ [x] Moffy.EventHandle
 		- -> Control.Moffy.Event
 		- -> Control.Moffy.Handle
 		- [x] Moffy.EventHandle.ThreadId
@@ -87,9 +87,9 @@ Control.Moffy.Run
 		- [x] Moffy.EventHandle.Lock
 			* [x] -> Moffy.EventHandle.Lock.Event, Moffy.EventHandle.Lock.Handle
 			* [x] -> Moffy.EventHandle.Lock -> Control.Moffy.Event, Control.Moffy.Handle
-		- [ ] Moffy.EventHandle.Random
+		- [x] Moffy.EventHandle.Random
 			* [x] -> Moffy.EventHandle.Random.Event, Moffy.EventHandle.Random.Handle
-			* [ ] -> Moffy.EventHandle.Random -> Control.Moffy.Event, Control.Moffy.Handle
+			* [x] -> Moffy.EventHandle.Random -> Control.Moffy.Event, Control.Moffy.Handle
 * [ ] API
 * [ ] imports
 * [ ] body
