@@ -3,7 +3,7 @@
 
 module FTCQueue (FTCQueue) where
 
-import Sequence
+import Control.Monad.Freer.Par.Sequence
 
 data FTCQueue cat a b where
 	Empty :: FTCQueue cat a a

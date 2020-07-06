@@ -99,8 +99,8 @@ Control.Moffy.Run
 #### Freer
 
 * [x] Freer -> Freer, Fun
-* [ ] Freer -> Control.Monad.Freer.Par
-* [ ] Sequence -> Control.Monad.Freer.Par.Sequence
+* [x] Freer -> Control.Monad.Freer.Par
+* [x] Sequence -> Control.Monad.Freer.Par.Sequence
 * [ ] Fun -> Control.Monad.Freer.Par.Fun
 * [ ] Control.Monad.Freer.Par.FTCQueue
 * [ ] Control.Monad.Freer.Par.TaggableFunction

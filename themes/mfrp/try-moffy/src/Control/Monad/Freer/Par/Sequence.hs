@@ -1,7 +1,7 @@
 {-# LANGUAGE GADTs #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Sequence where
+module Control.Monad.Freer.Par.Sequence where
 
 class Sequence sq where
 	empty :: sq cat a a
