@@ -13,7 +13,7 @@ import Control.Moffy.Event.Mouse
 import Trial.Boxes.Event
 import Trial.Boxes.Handle
 import Trial.StepByStepBox
-import Freer
+import Control.Monad.Freer.Par
 import Field
 
 tryCheckDup :: IO ()
