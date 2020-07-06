@@ -4,9 +4,9 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Moffy.EventHandle.ThreadId.Event (
+module Control.Moffy.Event.ThreadId (
 	GetThreadId, Occurred(OccGetThreadId), ThreadId,
-	Moffy.EventHandle.ThreadId.Event.getThreadId ) where
+	Control.Moffy.Event.ThreadId.getThreadId ) where
 
 import Data.Type.Set
 

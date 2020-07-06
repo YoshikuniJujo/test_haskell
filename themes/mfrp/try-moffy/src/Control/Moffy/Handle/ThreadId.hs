@@ -10,7 +10,7 @@ import Data.Type.Set
 import Data.OneOrMore
 
 import Control.Moffy.Internal.React.Type
-import Moffy.EventHandle.ThreadId.Event
+import Control.Moffy.Event.ThreadId
 
 handleGetThreadId :: Applicative m => Handle' m (Singleton GetThreadId)
 handleGetThreadId _rqs = pure . Just $ singleton OccGetThreadId

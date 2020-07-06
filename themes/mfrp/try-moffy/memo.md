@@ -81,10 +81,12 @@ Control.Moffy.Run
 	+ [ ] Moffy.EventHandle
 		- -> Control.Moffy.Event
 		- -> Control.Moffy.Handle
-		- [ ] Moffy.EventHandle.ThreadId
+		- [x] Moffy.EventHandle.ThreadId
 			* [x] -> Moffy.EventHandle.ThreadId.Event, Moffy.EventHandle.ThreadId.Handle
-			* [ ] Moffy.EventHandle.ThreadId -> Control.Moffy.Event, Control.Moffy.Handle
+			* [x] Moffy.EventHandle.ThreadId -> Control.Moffy.Event, Control.Moffy.Handle
 		- [ ] Moffy.EventHandle.Lock
+			* [ ] -> Moffy.EventHandle.Lock.Event, Moffy.EventHandle.Lock.Handle
+			* [ ] -> Moffy.EventHandle.Lock -> Control.Moffy.Event, Control.Moffy.Handle
 		- [ ] Moffy.EventHandle.Random
 * [ ] API
 * [ ] imports

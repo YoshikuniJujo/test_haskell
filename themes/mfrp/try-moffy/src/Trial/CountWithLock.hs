@@ -15,7 +15,7 @@ import Data.OneOrMore hiding (merge)
 import Data.Or
 import Data.List
 
-import Moffy.EventHandle.ThreadId.Event
+import Control.Moffy.Event.ThreadId
 import Control.Moffy.Handle.ThreadId
 import Moffy.EventHandle.Lock
 
