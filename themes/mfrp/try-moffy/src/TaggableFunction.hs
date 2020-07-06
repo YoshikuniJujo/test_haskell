@@ -3,7 +3,7 @@
 
 module TaggableFunction (Taggable) where
 
-import Fun
+import Control.Monad.Freer.Par.Fun
 
 data Taggable s m a b where
 	Open :: Integer -> Integer -> Taggable s m a a

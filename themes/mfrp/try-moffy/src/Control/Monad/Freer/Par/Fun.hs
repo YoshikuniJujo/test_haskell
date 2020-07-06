@@ -2,7 +2,7 @@
 {-# LANGUAGE KindSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Fun (
+module Control.Monad.Freer.Par.Fun (
 	Fun(..), Tag(..), Tg(..), MaybeTg(..), Boolean(..)
 	) where
 

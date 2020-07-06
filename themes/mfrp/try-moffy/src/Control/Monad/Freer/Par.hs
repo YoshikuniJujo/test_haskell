@@ -11,7 +11,7 @@ import Control.Arrow
 import Unsafe.Coerce
 
 import Control.Monad.Freer.Par.Sequence
-import Fun
+import Control.Monad.Freer.Par.Fun
 
 data Freer s sq (f :: (* -> *) -> * -> * -> *) t a = Pure a | forall x . t x :>>= sq (f (Freer s sq f t)) x a
 
