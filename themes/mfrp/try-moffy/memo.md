@@ -85,7 +85,7 @@ Control.Moffy.Run
 			* [x] -> Moffy.EventHandle.ThreadId.Event, Moffy.EventHandle.ThreadId.Handle
 			* [x] Moffy.EventHandle.ThreadId -> Control.Moffy.Event, Control.Moffy.Handle
 		- [ ] Moffy.EventHandle.Lock
-			* [ ] -> Moffy.EventHandle.Lock.Event, Moffy.EventHandle.Lock.Handle
+			* [x] -> Moffy.EventHandle.Lock.Event, Moffy.EventHandle.Lock.Handle
 			* [ ] -> Moffy.EventHandle.Lock -> Control.Moffy.Event, Control.Moffy.Handle
 		- [ ] Moffy.EventHandle.Random
 * [ ] API

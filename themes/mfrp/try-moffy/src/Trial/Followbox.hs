@@ -23,7 +23,7 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 
-import Moffy.EventHandle.Lock (LockId, newLockId, withLock)
+import Moffy.EventHandle.Lock.Event (LockId, newLockId, withLock)
 import Moffy.EventHandle.Random (getRandomR)
 import Control.Moffy.Event.Mouse (deleteEvent)
 import Trial.Followbox.Event (

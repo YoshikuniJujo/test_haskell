@@ -5,22 +5,18 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Moffy.EventHandle.Lock (
+module Moffy.EventHandle.Lock.Event (
 	-- * Type
-	LockEv, NewLockId, GetLock, Unlock, LockId, LockState(..),
-	-- * Handle
-	handleLock,
+	LockEv, NewLockId(..), GetLock(..), Unlock(..), LockId(..), LockState(..),
+	Occurred(OccNewLockId, OccGetLock, OccUnlock),
 	-- * Event
 	GetThreadIdGetLock, SingletonUnlock, newLockId, withLock ) where
 
-import Control.Monad.State (StateT, get, modify)
 import Data.Type.Set (Set(Nil), Singleton, (:-), (:+:), numbered)
 import Data.OneOrMore hiding (merge)
 import Data.Bool (bool)
 
 import Control.Moffy
-import Control.Moffy.Handle
-import Control.Moffy.Handle.ThreadId
 import Control.Moffy.Event.ThreadId
 
 ---------------------------------------------------------------------------
@@ -60,13 +56,6 @@ newLockId = adjust getThreadId >>= \ti ->
 	maybe newLockId pure =<< adjust (await (NewLockIdReq ti)
 		\(OccNewLockId i ti') -> bool Nothing (Just i) $ ti == ti')
 
-handleNewLockId ::
-	(LockState s, Monad m) => Handle' (StateT s m) (Singleton NewLockId)
-handleNewLockId rqs = get >>= \s -> let i = getNextLockId s in
-	Just (singleton $ OccNewLockId (LockId i) ti)
-		<$ modify (`putNextLockId` (i + 1))
-	where NewLockIdReq ti = extract rqs
-
 -- GETLOCK
 
 data GetLock = GetLockReq LockId ThreadId RetryTime deriving (Show, Eq)
@@ -86,14 +75,6 @@ getLock l rt = adjust getThreadId >>= \ti ->
 		\(OccGetLock l' ti') ->
 			bool (Just $ rt + 1) Nothing $ l == l' && ti == ti')
 
-handleGetLock ::
-	(LockState s, Monad m) => Handle' (StateT s m) (Singleton GetLock)
-handleGetLock rqs = get >>= \s -> bool
-	(Just (singleton $ OccGetLock l ti) <$ modify (`lockIt` l))
-	(pure Nothing)
-	(s `isLocked` l)
-	where GetLockReq l ti _ = extract rqs
-
 -- UNLOCK
 
 newtype Unlock = UnlockReq LockId deriving Show
@@ -108,19 +89,11 @@ type SingletonUnlock = Singleton Unlock
 unlock :: LockId -> React s (Singleton Unlock) ()
 unlock l = await (UnlockReq l) \_ -> ()
 
-handleUnlock ::
-	(LockState s, Monad m) => Handle' (StateT s m) (Singleton Unlock)
-handleUnlock rqs = Just (singleton OccUnlock) <$ modify (`unlockIt` l)
-	where UnlockReq l = extract rqs
-
 ---------------------------------------------------------------------------
--- HANDLE AND WITHLOCK
+-- WITHLOCK
 ---------------------------------------------------------------------------
 
 type LockEv = NewLockId :- GetLock :- Unlock :- 'Nil
-
-handleLock :: (LockState s, Monad m) => Handle' (StateT s m) LockEv
-handleLock = handleNewLockId `merge` handleGetLock `merge` handleUnlock
 
 withLock :: (
 	Adjustable GetThreadIdGetLock es',

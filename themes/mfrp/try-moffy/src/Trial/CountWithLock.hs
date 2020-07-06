@@ -15,9 +15,9 @@ import Data.OneOrMore hiding (merge)
 import Data.Or
 import Data.List
 
-import Control.Moffy.Event.ThreadId
 import Control.Moffy.Handle.ThreadId
-import Moffy.EventHandle.Lock
+import Moffy.EventHandle.Lock.Handle
+import Moffy.EventHandle.Lock.Event
 
 data Count = CountReq deriving (Show, Eq, Ord)
 numbered 9 [t| Count |]

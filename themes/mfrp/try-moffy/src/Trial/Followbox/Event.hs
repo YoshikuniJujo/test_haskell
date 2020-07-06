@@ -45,7 +45,7 @@ import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 
 import Moffy.EventHandle.Random (RandomEv)
-import Moffy.EventHandle.Lock (LockEv)
+import Moffy.EventHandle.Lock.Event (LockEv)
 import Control.Moffy.Event.ThreadId (GetThreadId)
 import Control.Moffy.Event.Mouse (MouseEv)
 import Trial.Followbox.TypeSynonym (Uri, FontName, FontSize, ErrorMessage)
