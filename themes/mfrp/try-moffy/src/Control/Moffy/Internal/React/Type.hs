@@ -18,7 +18,7 @@ import Data.OneOrMore
 import Data.Bits
 import Numeric.Natural
 
-import Freer
+import Control.Monad.Freer.Par
 import FTCQueue
 import TaggableFunction
 

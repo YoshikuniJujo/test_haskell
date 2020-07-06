@@ -9,7 +9,7 @@ module Trial.CheckSharing.EvInt where
 import Control.Moffy
 import Data.Type.Set
 import Data.OneOrMore
-import Freer
+import Control.Monad.Freer.Par
 
 import Control.Moffy.Internal.React
 import Control.Moffy.Internal.React.Type

@@ -15,7 +15,7 @@ import Control.Moffy.Event.ThreadId
 
 import Control.Moffy.Event.Mouse
 import Control.Moffy.Handle.XField.Mouse
-import Freer
+import Control.Monad.Freer.Par
 import Field
 
 checkParGetThreadId :: IO (Or ThreadId ThreadId)

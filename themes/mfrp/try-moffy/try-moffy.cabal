@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e3c6be637fd84742745743706c42b275ad5ee0b2c5ad756d7837d24703a15555
+-- hash: fca84e29a0474b1fc8b6589139ffdd59fd9984171663800b1e15dd0290093d60
 
 name:           try-moffy
 version:        0.1.0.0
@@ -42,10 +42,10 @@ library
       Control.Moffy.Internal.Sig
       Control.Moffy.Internal.Sig.Type
       Control.Moffy.Run
+      Control.Monad.Freer.Par
       Data.OneOrMore
       Data.Type.Set
       Data.Type.Set.Internal
-      Freer
       FTCQueue
       Fun
       Sequence

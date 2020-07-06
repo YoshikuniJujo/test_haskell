@@ -2,7 +2,7 @@
 {-# LANGUAGE KindSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Freer (
+module Control.Monad.Freer.Par (
 	Freer(..), (>>>=), qApp, qAppPar,
 	Count, runCount, addTag, Fun(..), Tag(..), Tg(..), MaybeTg(..), Boolean(..)
 	) where

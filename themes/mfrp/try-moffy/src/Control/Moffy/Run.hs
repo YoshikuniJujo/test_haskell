@@ -11,7 +11,7 @@ module Control.Moffy.Run (
 
 import qualified Control.Arrow as A
 
-import Freer
+import Control.Monad.Freer.Par
 
 import Prelude hiding (scanl)
 

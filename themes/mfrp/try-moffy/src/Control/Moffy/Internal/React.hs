@@ -12,7 +12,7 @@ import Data.Type.Set
 import Data.OneOrMore
 import Data.Or
 
-import Freer
+import Control.Monad.Freer.Par
 
 import Control.Moffy.Internal.React.Type
 

@@ -11,7 +11,7 @@ import System.IO.Unsafe
 
 import Control.Moffy.Event.Mouse
 import Control.Moffy.Handle.XField.Mouse
-import Freer
+import Control.Monad.Freer.Par
 import Field
 
 heavy :: () -> Int

@@ -18,7 +18,7 @@ import qualified Control.Arrow as Arr
 import Control.Moffy.Internal.React
 import Control.Moffy.Internal.React.Type
 import Control.Moffy.Internal.Sig.Type
-import Freer
+import Control.Monad.Freer.Par
 
 pause :: (
 	Update (ISig s es a r) r', Mergeable es es es
