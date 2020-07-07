@@ -34,8 +34,8 @@ runMouseReact r = do
 runSharingHeavy :: IO (Or Int Int)
 runSharingHeavy = do
 	f <- openField "RUN SHARING HEAVY" [exposureMask]
-	r <- runCount $ do
-		hr <- addTag $ heavyReact ()
+	r <- runUnique $ do
+		hr <- tag $ heavyReact ()
 		pure $ interpretReact (retry $ handleMouse Nothing f) $ hr `first` hr
 	r <$ closeField f
 
@@ -45,23 +45,23 @@ runNoSharingHeavy = runMouseReact $ heavyReact () `first` heavyReact ()
 runSharingHeavyHeavy :: IO (Or (Int, Int) (Int, Int))
 runSharingHeavyHeavy = do
 	f <- openField "RUN SHARING HEAVY HEAVY" [buttonPressMask, exposureMask]
-	r <- runCount $ do
-		hr <- addTag $ (,) <$> heavyReact () <*> heavyReact ()
+	r <- runUnique $ do
+		hr <- tag $ (,) <$> heavyReact () <*> heavyReact ()
 		pure $ interpretReact (retry $ handleMouse Nothing f) $ hr `first` hr
 	r <$ closeField f
 
 runSharingHeavy' :: IO (Or Int Int)
 runSharingHeavy' = do
 	f <- openField "RUN SHARING HEAVY" [buttonPressMask, exposureMask]
-	r <- runCount $ do
-		hr <- addTag $ heavyReact' ()
+	r <- runUnique $ do
+		hr <- tag $ heavyReact' ()
 		pure $ interpretReact (retry $ handleMouse Nothing f) $ hr `first` hr
 	r <$ closeField f
 
 runSharingHeavyHeavy' :: IO (Or (Int, Int) (Int, Int))
 runSharingHeavyHeavy' = do
 	f <- openField "RUN SHARING HEAVY HEAVY" [buttonPressMask, exposureMask]
-	r <- runCount $ do
-		hr <- addTag $ (,) <$> heavyReact' () <*> heavyReact' ()
+	r <- runUnique $ do
+		hr <- tag $ (,) <$> heavyReact' () <*> heavyReact' ()
 		pure $ interpretReact (retry $ handleMouse Nothing f) $ hr `first` hr
 	r <$ closeField f

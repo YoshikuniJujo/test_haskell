@@ -35,14 +35,14 @@ singleOccEvInt = singleton . OccEvInt
 update' :: React s es a -> React s es a -> EvOccs es -> (React s es a, React s es a)
 update' l r  = update l rootThreadId r rootThreadId
 
-mkWrongPair :: Count s (React s (Singleton EvInt) (Int, Int), React s (Singleton EvInt) (Int, Int))
+mkWrongPair :: Unique s (React s (Singleton EvInt) (Int, Int), React s (Singleton EvInt) (Int, Int))
 mkWrongPair = do
-	ei <- addTag evInt2
+	ei <- tag evInt2
 	let	(ei1, _ei2) = update' ei ei $ singleOccEvInt 123
 		(_ei3, ei4) = update' ei ei $ singleOccEvInt 321
 	pure (ei1, ei4)
 
-mkWrongResult :: Count s ((Int, Int), (Int, Int))
+mkWrongResult :: Unique s ((Int, Int), (Int, Int))
 mkWrongResult = do
 	(l, r) <- mkWrongPair
 	let	(l', r') = update' l r $ singleOccEvInt 444

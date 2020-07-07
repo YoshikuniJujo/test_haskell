@@ -133,7 +133,7 @@ Control.Monad.Freer.Par.TaggableFunction
 	+ [x] API
 	+ [x] body
 * [ ] Control.Monad.Freer.Par
-	+ [ ] API
+	+ [x] API
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body

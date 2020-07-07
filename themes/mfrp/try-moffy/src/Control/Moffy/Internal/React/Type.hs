@@ -32,7 +32,7 @@ data Rct es a where
 	Never :: Rct es a
 	GetThreadId :: Rct es ThreadId
 	Await :: EvReqs es -> Rct es (EvOccs es)
-type React s es a = Freer s FTCQueue (TaggableFun s) (Rct es) a
+type React s es a = Freer s FTCQueue TaggableFun (Rct es) a
 
 getThreadId :: React s es ThreadId
 getThreadId = GetThreadId >>>= pure

@@ -4,23 +4,22 @@
 module Control.Monad.Freer.Par.TaggableFunction (TaggableFun) where
 
 import Control.Monad.Freer.Par.Fun
-import Numeric.Natural
 
-data TaggableFun s m a b where
-	Open :: Natural -> TaggableFun s m a a
-	Close :: Natural -> TaggableFun s m a a
-	Fun :: (a -> m b) -> TaggableFun s m a b
+data TaggableFun m a b where
+	Open :: Id -> TaggableFun m a a
+	Close :: Id -> TaggableFun m a a
+	Fun :: (a -> m b) -> TaggableFun m a b
 
-instance Fun (TaggableFun s) where
+instance Fun TaggableFun where
 	fun = Fun
 	($$) (Open _) = pure
 	($$) (Close _) = pure
 	($$) (Fun f) = f
 
-instance Taggable (TaggableFun s) where
+instance Taggable TaggableFun where
 	open t = Open t
 	close t = Close t
-	checkOpen (Open t) (Open t') | t == t' = J (Tag t)
+	checkOpen (Open t) (Open t') | t == t' = J t
 	checkOpen _ _ = N
-	checkClose (Tag t) (Close t') | t == t' = T
+	checkClose t (Close t') | t == t' = T
 	checkClose _ _ = F

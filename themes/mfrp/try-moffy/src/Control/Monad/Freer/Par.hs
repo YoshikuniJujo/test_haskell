@@ -3,9 +3,10 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Freer.Par (
+	-- * Freer
 	Freer(..), (>>>=), qApp, qAppPar,
-	Count, runCount, addTag, Fun(..), Taggable(..), Tag(..), MaybeTag(..), Boolean(..)
-	) where
+	-- * Unique ID
+	Unique, runUnique, tag ) where
 
 import Control.Arrow
 import Unsafe.Coerce
@@ -13,8 +14,10 @@ import Numeric.Natural
 
 import Control.Monad.Freer.Par.Sequence
 import Control.Monad.Freer.Par.Fun
+import Control.Monad.Freer.Par.Internal.Id
 
-data Freer s sq (f :: (* -> *) -> * -> * -> *) t a = Pure a | forall x . t x :>>= sq (f (Freer s sq f t)) x a
+data Freer s sq (f :: (* -> *) -> * -> * -> *) t a =
+	Pure a | forall x . t x :>>= sq (f (Freer s sq f t)) x a
 
 instance (Sequence sq, Fun f) => Functor (Freer s sq f t) where
 	f `fmap` Pure x = Pure $ f x
@@ -39,28 +42,28 @@ q `qApp` x = case viewl q of
 		Pure y -> r `qApp` y
 		tx :>>= q' -> tx :>>= (q' >< r)
 
-newtype Count s a = Count { unCount :: Natural -> (a, Natural) }
+newtype Unique s a = Unique { unUnique :: Natural -> (a, Natural) }
 
-instance Functor (Count s) where f `fmap` Count k = Count $ (f `first`) . k
+instance Functor (Unique s) where f `fmap` Unique k = Unique $ (f `first`) . k
 
-instance Applicative (Count s) where
-	pure = Count . (,)
-	Count k <*> mx = Count $ uncurry unCount . ((<$> mx) `first`) . k
+instance Applicative (Unique s) where
+	pure = Unique . (,)
+	Unique k <*> mx = Unique $ uncurry unUnique . ((<$> mx) `first`) . k
 
-instance Monad (Count s) where
-	Count k >>= f = Count $ uncurry unCount . (f `first`) . k
+instance Monad (Unique s) where
+	Unique k >>= f = Unique $ uncurry unUnique . (f `first`) . k
 
-runCount :: (forall s . Count s a) -> a
-runCount (Count k) = fst $ k 0
+runUnique :: (forall s . Unique s a) -> a
+runUnique (Unique k) = fst $ k 0
 
-countup :: Count s Natural
-countup = Count $ id &&& (+ 1)
+countup :: Unique s Natural
+countup = Unique $ id &&& (+ 1)
 
-addTag :: (Sequence sq, Fun f, Taggable f) => Freer s sq f t a -> Count s (Freer s sq f t a)
-addTag m@(Pure _) = pure m
-addTag (tx :>>= fs) = do
+tag :: (Sequence sq, Fun f, Taggable f) => Freer s sq f t a -> Unique s (Freer s sq f t a)
+tag m@(Pure _) = pure m
+tag (tx :>>= fs) = do
 	tg <- countup
-	pure $ tx :>>= (open tg <| fs |> close tg)
+	pure $ tx :>>= (open (Id tg) <| fs |> close (Id tg))
 
 qAppPar :: (Sequence sq, Fun f, Taggable f) =>
 	sq (f (Freer s sq f t)) a b -> sq (f (Freer s sq f t)) a b -> a -> (Freer s sq f t b, Freer s sq f t b)
@@ -70,7 +73,7 @@ qAppPar p q x = case (viewl p, viewl q) of
 		N -> (p `qApp` x, q `qApp` x)
 	_ -> (p `qApp` x, q `qApp` x)
 
-qAppParOpened :: (Sequence sq, Fun f, Taggable f) => Tag ->
+qAppParOpened :: (Sequence sq, Fun f, Taggable f) => Id ->
 	sq (f (Freer s sq f t)) a b -> sq (f (Freer s sq f t)) a b -> a -> (Freer s sq f t b, Freer s sq f t b)
 qAppParOpened tg p q x = case (viewl p, viewl q) of
 	(t :<| r, t' :<| r') -> case (checkClose tg t, checkClose tg t') of
