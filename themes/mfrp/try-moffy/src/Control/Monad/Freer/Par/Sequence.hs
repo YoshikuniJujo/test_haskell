@@ -1,7 +1,8 @@
 {-# LANGUAGE GADTs #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Freer.Par.Sequence where
+module Control.Monad.Freer.Par.Sequence (
+	Sequence(..), ViewL(..), (<|), (|>) ) where
 
 class Sequence sq where
 	empty :: sq cat a a
@@ -13,8 +14,8 @@ data ViewL sq cat a b where
 	EmptyL :: ViewL sq cat a a
 	(:<|) :: cat a x -> sq cat x b -> ViewL sq cat a b
 
-(|>) :: Sequence sq => sq cat a b -> cat b c -> sq cat a c
-s |> c = s >< singleton c
-
 (<|) :: Sequence sq => cat a b -> sq cat b c -> sq cat a c
 c <| s = singleton c >< s
+
+(|>) :: Sequence sq => sq cat a b -> cat b c -> sq cat a c
+s |> c = s >< singleton c

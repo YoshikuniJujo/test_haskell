@@ -35,6 +35,11 @@ todo
 	+ [x] Trial.StepByStepBox
 	+ [x] Trial.Followbox
 * [ ] refactoring
+	+ [ ] Control.Monad.Freer.Par
+	+ [ ] Data.Type.Set
+	+ [ ] Data.OneOrMore
+	+ [ ] Control.Moffy
+	+ [ ] Trial
 
 refactoring
 -----------
@@ -96,7 +101,9 @@ Control.Moffy.Run
 
 ### Moffy Base
 
-#### Freer
+#### Control.Monad.Freer.Par
+
+##### module hierarchy
 
 * [x] Freer -> Freer, Fun
 * [x] Freer -> Control.Monad.Freer.Par
@@ -104,6 +111,44 @@ Control.Moffy.Run
 * [x] Fun -> Control.Monad.Freer.Par.Fun
 * [x] Control.Monad.Freer.Par.FTCQueue
 * [x] Control.Monad.Freer.Par.TaggableFunction
+
+```
+Control.Monad.Freer.Par
+  +- Control.Monad.Freer.Par.Sequence
+  +- Control.Monad.Freer.Par.Fun
+
+Control.Monad.Freer.Par.FTCQueue
+  +- Control.Monad.Freer.Par.Sequence
+
+Control.Monad.Freer.Par.TaggableFunction
+  +- Control.Monad.Freer.Par.Fun
+```
+
+##### refactoring
+
+* [x] Control.Monad.Freer.Par.Sequence
+	+ [x] API
+	+ [x] body
+* [ ] Control.Monad.Freer.Par.Fun
+	+ [ ] API
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
+* [ ] Control.Monad.Freer.Par
+	+ [ ] API
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
+* [ ] Control.Monad.Freer.Par.FTCQueue
+	+ [ ] API
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
+* [ ] Control.Monad.Freer.Par.TaggableFunction
+	+ [ ] API
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
 
 #### One Or More
 
