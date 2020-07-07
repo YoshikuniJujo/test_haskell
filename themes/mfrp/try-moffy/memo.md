@@ -145,11 +145,10 @@ Control.Monad.Freer.Par.TaggableFunction
 	+ [x] API
 	+ [x] imports
 	+ [x] body
-* [ ] Control.Monad.Freer.Par.TaggableFunction
-	+ [ ] API
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
+* [x] Control.Monad.Freer.Par.TaggableFunction
+	+ [x] API
+	+ [x] imports
+	+ [x] body
 
 #### One Or More
 
