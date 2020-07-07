@@ -100,8 +100,8 @@ instance Monad (Unique s) where
 runUnique :: (forall s . Unique s a) -> a
 runUnique (Unique k) = fst $ k 0
 
-tag :: (Sequence sq, Fun f, Taggable f) => Freer s sq f t a -> Unique s (Freer s sq f t a)
+tag :: (Sequence sq, Fun f, Taggable f) =>
+	Freer s sq f t a -> Unique s (Freer s sq f t a)
 tag m@(Pure _) = pure m
-tag (tx :>>= fs) = do
-	tg <- Unique $ id &&& (+ 1)
-	pure $ tx :>>= (open (Id tg) <| fs |> close (Id tg))
+tag (tx :>>= fs) = (<$> Unique (id &&& (+ 1))) \n ->
+	let tg = Id n in tx :>>= (open tg <| fs |> close tg)
