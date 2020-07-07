@@ -137,9 +137,9 @@ Control.Monad.Freer.Par.TaggableFunction
 	+ [x] imports
 	+ [x] structure
 	+ [ ] body
-		- [ ] PARALLEL FREER
+		- [x] PARALLEL FREER
 			* [x] TYPE AND MONAD
-			* [ ] APPLICATION
+			* [x] APPLICATION
 		- [ ] UNIQUE ID
 * [ ] Control.Monad.Freer.Par.FTCQueue
 	+ [ ] API
