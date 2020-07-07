@@ -141,11 +141,10 @@ Control.Monad.Freer.Par.TaggableFunction
 			* [x] TYPE AND MONAD
 			* [x] APPLICATION
 		- [x] UNIQUE ID
-* [ ] Control.Monad.Freer.Par.FTCQueue
-	+ [ ] API
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
+* [x] Control.Monad.Freer.Par.FTCQueue
+	+ [x] API
+	+ [x] imports
+	+ [x] body
 * [ ] Control.Monad.Freer.Par.TaggableFunction
 	+ [ ] API
 	+ [ ] imports
