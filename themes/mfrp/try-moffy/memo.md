@@ -134,7 +134,7 @@ Control.Monad.Freer.Par.TaggableFunction
 	+ [x] body
 * [ ] Control.Monad.Freer.Par
 	+ [x] API
-	+ [ ] imports
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] Control.Monad.Freer.Par.FTCQueue

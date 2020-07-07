@@ -1,5 +1,6 @@
-{-# LANGUAGE ExistentialQuantification, GADTs, RankNTypes #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE ExistentialQuantification, GADTs #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Freer.Par (
@@ -8,13 +9,16 @@ module Control.Monad.Freer.Par (
 	-- * Unique ID
 	Unique, runUnique, tag ) where
 
-import Control.Arrow
-import Unsafe.Coerce
-import Numeric.Natural
+import Control.Arrow ((&&&), first)
+import Numeric.Natural (Natural)
+import Unsafe.Coerce (unsafeCoerce)
 
-import Control.Monad.Freer.Par.Sequence
-import Control.Monad.Freer.Par.Fun
-import Control.Monad.Freer.Par.Internal.Id
+import Control.Monad.Freer.Par.Sequence (Sequence(..), ViewL(..), (<|), (|>))
+import Control.Monad.Freer.Par.Fun (
+	Fun(..), Taggable(..), MaybeId(..), Boolean(..) )
+import Control.Monad.Freer.Par.Internal.Id (Id(..))
+
+---------------------------------------------------------------------------
 
 data Freer s sq (f :: (* -> *) -> * -> * -> *) t a =
 	Pure a | forall x . t x :>>= sq (f (Freer s sq f t)) x a
