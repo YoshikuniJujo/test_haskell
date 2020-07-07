@@ -1,6 +1,5 @@
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
