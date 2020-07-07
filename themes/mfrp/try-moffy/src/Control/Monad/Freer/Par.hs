@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE ExistentialQuantification, GADTs #-}
@@ -34,30 +35,32 @@ import Control.Monad.Freer.Par.Internal.Id (Id(..))
 data Freer s sq (f :: (* -> *) -> * -> * -> *) t a =
 	Pure a | forall x . t x :>>= sq (f (Freer s sq f t)) x a
 
-(>>>=) :: (Sequence sq, Fun f) => t a -> (a -> Freer s sq f t b) -> Freer s sq f t b
+(>>>=) :: (Sequence sq, Fun f) =>
+	t a -> (a -> Freer s sq f t b) -> Freer s sq f t b
 m >>>= f = m :>>= singleton (fun f)
 
+freer :: (a -> b) -> (forall x . t x -> sq (f (Freer s sq f t)) x a -> b) ->
+	Freer s sq f t a -> b
+freer f _ (Pure x) = f x; freer _ g (m :>>= k) = g m k
+
 instance (Sequence sq, Fun f) => Functor (Freer s sq f t) where
-	f `fmap` Pure x = Pure $ f x
-	f `fmap` (m :>>= k) = m :>>= (k |> fun (Pure . f))
+	fmap f = freer (Pure . f) \m k -> m :>>= (k |> fun (Pure . f))
 
 instance (Sequence sq, Fun f) => Applicative (Freer s sq f t) where
 	pure = Pure
-	Pure f <*> mx = f <$> mx
-	(m :>>= k) <*> mx = m :>>= (k |> fun (<$> mx))
+	mf <*> mx = freer (<$> mx) (\m k -> m :>>= (k |> fun (<$> mx))) mf
 
 instance (Sequence sq, Fun f) => Monad (Freer s sq f t) where
-	Pure x >>= f = f x
-	(m :>>= k) >>= f = m :>>= (k |> fun f)
+	m >>= f = freer f (\m' k -> m' :>>= (k |> fun f)) m
 
 -- APPLICATION
 
-qApp :: (Sequence sq, Fun f) => sq (f (Freer s sq f t)) a b -> a -> Freer s sq f t b
+qApp :: (Sequence sq, Fun f) =>
+	sq (f (Freer s sq f t)) a b -> a -> Freer s sq f t b
 q `qApp` x = case viewl q of
 	EmptyL -> pure x
 	f :<| r -> case f $$ x of
-		Pure y -> r `qApp` y
-		tx :>>= q' -> tx :>>= (q' >< r)
+		Pure y -> r `qApp` y; tx :>>= q' -> tx :>>= (q' >< r)
 
 qAppPar :: (Sequence sq, Fun f, Taggable f) =>
 	sq (f (Freer s sq f t)) a b -> sq (f (Freer s sq f t)) a b -> a -> (Freer s sq f t b, Freer s sq f t b)
