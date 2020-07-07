@@ -1,28 +1,28 @@
-{-# LANGUAGE ExistentialQuantification, GADTs, RankNTypes #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE GADTs #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Freer.Par.Fun (
-	Fun(..), Tag(..), Tg(..), MaybeTg(..), Boolean(..)
-	) where
+	Fun(..), Taggable(..), Tag(..), MaybeTag(..), Boolean(..) ) where
+
+import Numeric.Natural
 
 class Fun f where
 	fun :: (a -> m b) -> f m a b
 	($$) :: Applicative m => f m a b -> a -> m b
 
-data MaybeTg a b c where
-	N :: MaybeTg a b c
-	J :: Tg -> MaybeTg a a a
+class Taggable (t :: (* -> *) -> * -> * -> *) where
+	open :: Natural -> t m a a
+	close :: Natural -> t m a a
+	checkOpen :: t m a b -> t m a c -> MaybeTag a b c
+	checkClose :: Tag -> t m a b -> Boolean a b
+
+newtype Tag = Tag Natural deriving Show
+
+data MaybeTag a b c where
+	N :: MaybeTag a b c
+	J :: Tag -> MaybeTag a a a
 
 data Boolean a b where
 	F :: Boolean a b
 	T :: Boolean a a
-
-data Tg = Tg Integer Integer deriving Show
-
-class Tag (t :: (* -> *) -> * -> * -> *) where
-	open :: Integer -> t m a a
-	next :: Tg -> t m a a
-	close :: Integer -> t m a a
-	checkOpen :: t m a b -> t m a c -> MaybeTg a b c
-	checkClose :: Tg -> t m a b -> Boolean a b

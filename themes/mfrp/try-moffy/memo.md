@@ -129,11 +129,9 @@ Control.Monad.Freer.Par.TaggableFunction
 * [x] Control.Monad.Freer.Par.Sequence
 	+ [x] API
 	+ [x] body
-* [ ] Control.Monad.Freer.Par.Fun
-	+ [ ] API
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
+* [x] Control.Monad.Freer.Par.Fun
+	+ [x] API
+	+ [x] body
 * [ ] Control.Monad.Freer.Par
 	+ [ ] API
 	+ [ ] imports

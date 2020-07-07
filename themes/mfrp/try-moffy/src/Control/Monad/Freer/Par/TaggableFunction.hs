@@ -1,26 +1,26 @@
 {-# LANGUAGE GADTs #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Freer.Par.TaggableFunction (Taggable) where
+module Control.Monad.Freer.Par.TaggableFunction (TaggableFun) where
 
 import Control.Monad.Freer.Par.Fun
+import Numeric.Natural
 
-data Taggable s m a b where
-	Open :: Integer -> Integer -> Taggable s m a a
-	Close :: Integer -> Taggable s m a a
-	Fun :: (a -> m b) -> Taggable s m a b
+data TaggableFun s m a b where
+	Open :: Natural -> TaggableFun s m a a
+	Close :: Natural -> TaggableFun s m a a
+	Fun :: (a -> m b) -> TaggableFun s m a b
 
-instance Fun (Taggable s) where
+instance Fun (TaggableFun s) where
 	fun = Fun
-	($$) (Open _ _) = pure
+	($$) (Open _) = pure
 	($$) (Close _) = pure
 	($$) (Fun f) = f
 
-instance Tag (Taggable s) where
-	open t = Open t 0
-	next (Tg t m) = Open t (m + 1)
+instance Taggable (TaggableFun s) where
+	open t = Open t
 	close t = Close t
-	checkOpen (Open t m) (Open t' m') | t == t' && m == m' = J (Tg t m)
+	checkOpen (Open t) (Open t') | t == t' = J (Tag t)
 	checkOpen _ _ = N
-	checkClose (Tg t _) (Close t') | t == t' = T
+	checkClose (Tag t) (Close t') | t == t' = T
 	checkClose _ _ = F

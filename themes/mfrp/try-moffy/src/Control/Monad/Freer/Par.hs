@@ -4,11 +4,12 @@
 
 module Control.Monad.Freer.Par (
 	Freer(..), (>>>=), qApp, qAppPar,
-	Count, runCount, addTag, Fun(..), Tag(..), Tg(..), MaybeTg(..), Boolean(..)
+	Count, runCount, addTag, Fun(..), Taggable(..), Tag(..), MaybeTag(..), Boolean(..)
 	) where
 
 import Control.Arrow
 import Unsafe.Coerce
+import Numeric.Natural
 
 import Control.Monad.Freer.Par.Sequence
 import Control.Monad.Freer.Par.Fun
@@ -38,7 +39,7 @@ q `qApp` x = case viewl q of
 		Pure y -> r `qApp` y
 		tx :>>= q' -> tx :>>= (q' >< r)
 
-newtype Count s a = Count { unCount :: Integer -> (a, Integer) }
+newtype Count s a = Count { unCount :: Natural -> (a, Natural) }
 
 instance Functor (Count s) where f `fmap` Count k = Count $ (f `first`) . k
 
@@ -52,16 +53,16 @@ instance Monad (Count s) where
 runCount :: (forall s . Count s a) -> a
 runCount (Count k) = fst $ k 0
 
-countup :: Count s Integer
+countup :: Count s Natural
 countup = Count $ id &&& (+ 1)
 
-addTag :: (Sequence sq, Fun f, Tag f) => Freer s sq f t a -> Count s (Freer s sq f t a)
+addTag :: (Sequence sq, Fun f, Taggable f) => Freer s sq f t a -> Count s (Freer s sq f t a)
 addTag m@(Pure _) = pure m
 addTag (tx :>>= fs) = do
 	tg <- countup
 	pure $ tx :>>= (open tg <| fs |> close tg)
 
-qAppPar :: (Sequence sq, Fun f, Tag f) =>
+qAppPar :: (Sequence sq, Fun f, Taggable f) =>
 	sq (f (Freer s sq f t)) a b -> sq (f (Freer s sq f t)) a b -> a -> (Freer s sq f t b, Freer s sq f t b)
 qAppPar p q x = case (viewl p, viewl q) of
 	(t :<| r, t' :<| r') -> case checkOpen t t' of
@@ -69,7 +70,7 @@ qAppPar p q x = case (viewl p, viewl q) of
 		N -> (p `qApp` x, q `qApp` x)
 	_ -> (p `qApp` x, q `qApp` x)
 
-qAppParOpened :: (Sequence sq, Fun f, Tag f) => Tg ->
+qAppParOpened :: (Sequence sq, Fun f, Taggable f) => Tag ->
 	sq (f (Freer s sq f t)) a b -> sq (f (Freer s sq f t)) a b -> a -> (Freer s sq f t b, Freer s sq f t b)
 qAppParOpened tg p q x = case (viewl p, viewl q) of
 	(t :<| r, t' :<| r') -> case (checkClose tg t, checkClose tg t') of
