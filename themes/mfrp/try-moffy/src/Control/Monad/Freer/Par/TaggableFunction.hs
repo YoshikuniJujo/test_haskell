@@ -4,7 +4,7 @@
 
 module Control.Monad.Freer.Par.TaggableFunction (TaggableFun) where
 
-import Control.Monad.Freer.Par.Fun (
+import Control.Monad.Freer.Par.Funable (
 	Fun(..), Taggable(..), MaybeId(..), Boolean(..), Id )
 
 ---------------------------------------------------------------------------

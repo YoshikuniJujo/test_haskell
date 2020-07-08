@@ -2,7 +2,7 @@
 {-# LANGUAGE GADTs #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Freer.Par.Fun (
+module Control.Monad.Freer.Par.Funable (
 	Fun(..), Taggable(..), MaybeId(..), Boolean(..), Id ) where
 
 import Control.Monad.Freer.Par.Internal.Id

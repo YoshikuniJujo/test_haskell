@@ -15,7 +15,7 @@ import Numeric.Natural (Natural)
 import Unsafe.Coerce (unsafeCoerce)
 
 import Control.Monad.Freer.Par.Sequence (Sequence(..), ViewL(..), (<|), (|>))
-import Control.Monad.Freer.Par.Fun (
+import Control.Monad.Freer.Par.Funable (
 	Fun(..), Taggable(..), MaybeId(..), Boolean(..) )
 import Control.Monad.Freer.Par.Internal.Id (Id(..))
 
