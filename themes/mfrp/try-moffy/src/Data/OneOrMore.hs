@@ -13,7 +13,7 @@ module Data.OneOrMore (
 	-- ** Basic Property
 	Projectable, Insertable,
 	-- ** Expandable and Collapsable
-	Expandable, Nihil, Collapsable,
+	Expandable, Collapsable,
 	-- ** Mergeable
 	Mergeable, Selectable(..),
 	-- * FUNCTION
@@ -32,6 +32,8 @@ import Data.Type.Set.Internal (Set(Nil, (:~)), Singleton)
 -- * EXPANDABLE AND COLLAPSABLE
 --	+ EXPANDABLE
 --	+ COLLAPSABLE
+--		- Collapsable0
+--		- Collapsable
 -- * MERGEABLE
 
 ---------------------------------------------------------------------------

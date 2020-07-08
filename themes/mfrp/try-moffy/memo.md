@@ -163,7 +163,7 @@ Data.OneOrMore
 * [ ] Data.OneOrMore
 	+ [x] API
 	+ [x] imports
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
 
 #### Type Set
