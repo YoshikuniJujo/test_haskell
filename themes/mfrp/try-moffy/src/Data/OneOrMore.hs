@@ -17,10 +17,11 @@ module Data.OneOrMore (
 	-- ** Mergeable
 	Mergeable, Selectable(..),
 	-- * FUNCTION
-	extract, project, singleton, (>-), expand, collapse, merge, merge' ) where
+	extract, project, singleton, (>-), expand, collapse, merge, merge'
+	) where
 
 import Data.Kind (Type)
-import Data.Type.Set.Internal (Set(..), Singleton)
+import Data.Type.Set.Internal (Set(Nil, (:~)), Singleton)
 
 ---------------------------------------------------------------------------
 
