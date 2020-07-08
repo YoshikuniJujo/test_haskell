@@ -34,10 +34,11 @@ todo
 	+ [x] Trial.Boxes
 	+ [x] Trial.StepByStepBox
 	+ [x] Trial.Followbox
+* [ ] solve problem about Id and Taggable
 * [ ] refactoring
 	+ [x] Control.Monad.Freer.Par
 	+ [x] Data.OneOrMore
-	+ [ ] Data.Type.Set
+	+ [x] Data.Type.Set
 	+ [ ] Control.Moffy
 	+ [ ] Trial
 
@@ -95,9 +96,21 @@ Control.Moffy.Run
 		- [x] Moffy.EventHandle.Random
 			* [x] -> Moffy.EventHandle.Random.Event, Moffy.EventHandle.Random.Handle
 			* [x] -> Moffy.EventHandle.Random -> Control.Moffy.Event, Control.Moffy.Handle
-* [ ] API
-* [ ] imports
-* [ ] body
+* [ ] refactoring
+
+#### refactoring
+
+* [ ] Control.Moffy
+	+ [ ] API
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
+* [ ] Control.Moffy.Internal.Sig
+* [ ] Control.Moffy.Internal.Sig.Type
+* [ ] Control.Moffy.Internal.React
+* [ ] Control.Moffy.Internal.React.Type
+* [ ] Control.Moffy.Handle
+* [ ] Control.Moffy.Run
 
 ### Moffy Base
 
