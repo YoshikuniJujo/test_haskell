@@ -57,7 +57,7 @@ instance {-# OVERLAPPABLE #-} Projectable as a =>
 	Projectable (a' ':~ as) a where project (_ :. xs) = project xs
 
 extract :: OneOrMore (Singleton a) -> a
-extract u = case project u of Just x -> x; Nothing -> error "never occur"
+extract xs = case project xs of Just x -> x; Nothing -> error "never occur"
 
 -- INSERTABLE
 

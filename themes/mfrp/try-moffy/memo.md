@@ -35,9 +35,9 @@ todo
 	+ [x] Trial.StepByStepBox
 	+ [x] Trial.Followbox
 * [ ] refactoring
-	+ [ ] Control.Monad.Freer.Par
-	+ [ ] Data.Type.Set
+	+ [x] Control.Monad.Freer.Par
 	+ [ ] Data.OneOrMore
+	+ [ ] Data.Type.Set
 	+ [ ] Control.Moffy
 	+ [ ] Trial
 
@@ -165,6 +165,16 @@ Data.OneOrMore
 	+ [x] imports
 	+ [x] structure
 	+ [ ] body
+		- [x] ONEORMORE TYPE
+		- [x] BASIC PROPERTY
+			* [x] PROJECTABLE
+			* [x] INSERTABLE
+		- [ ] EXPANDABLE AND COLLAPSABLE
+			* [ ] EXPANDABLE
+			* [ ] COLLAPSABLE
+				+ [ ] Collapsable0
+				+ [ ] Collapsable
+		- [ ] MERGEABLE
 
 #### Type Set
 
