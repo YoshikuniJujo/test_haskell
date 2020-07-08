@@ -164,17 +164,17 @@ Data.OneOrMore
 	+ [x] API
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] ONEORMORE TYPE
 		- [x] BASIC PROPERTY
 			* [x] PROJECTABLE
 			* [x] INSERTABLE
-		- [ ] EXPANDABLE AND COLLAPSABLE
-			* [ ] EXPANDABLE
-			* [ ] COLLAPSABLE
-				+ [ ] Collapsable0
-				+ [ ] Collapsable
-		- [ ] MERGEABLE
+		- [x] EXPANDABLE AND COLLAPSABLE
+			* [x] EXPANDABLE
+			* [x] COLLAPSABLE
+				+ [x] Collapsable0
+				+ [x] Collapsable
+		- [x] MERGEABLE
 
 #### Type Set
 
