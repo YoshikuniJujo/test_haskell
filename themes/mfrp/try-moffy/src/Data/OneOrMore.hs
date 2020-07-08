@@ -3,12 +3,12 @@
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses,
-	FlexibleInstances, FlexibleContexts, UndecidableInstances #-}
+	FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.OneOrMore (
 	-- * Type
-	OneOrMore(Empty),
+	OneOrMore,
 	-- * Property
 	-- ** Basic Property
 	Projectable, Insertable,
@@ -17,7 +17,7 @@ module Data.OneOrMore (
 	-- ** Mergeable
 	Mergeable, Selectable(..),
 	-- * FUNCTION
-	prj, extract, singleton, (>-), expand, collapse, merge, merge' ) where
+	extract, project, singleton, (>-), expand, collapse, merge, merge' ) where
 
 import Data.Kind (Type)
 import Data.Type.Set.Internal (Set(..), Singleton)
@@ -47,14 +47,14 @@ data OneOrMore :: Set Type -> Type where
 
 -- PROJECTABLE
 
-class Projectable (as :: Set Type) a where prj :: OneOrMore as -> Maybe a
-instance Projectable 'Nil a where prj _ = Nothing
-instance Projectable (a ':~ as) a where prj (x :. _) = x
+class Projectable (as :: Set Type) a where project :: OneOrMore as -> Maybe a
+instance Projectable 'Nil a where project _ = Nothing
+instance Projectable (a ':~ as) a where project (x :. _) = x
 instance {-# OVERLAPPABLE #-} Projectable as a =>
-	Projectable (a' ':~ as) a where prj (_ :. xs) = prj xs
+	Projectable (a' ':~ as) a where project (_ :. xs) = project xs
 
 extract :: OneOrMore (Singleton a) -> a
-extract u = case prj u of Just x -> x; Nothing -> error "never occur"
+extract u = case project u of Just x -> x; Nothing -> error "never occur"
 
 -- INSERTABLE
 

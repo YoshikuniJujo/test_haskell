@@ -152,6 +152,20 @@ Control.Monad.Freer.Par.TaggableFunction
 
 #### One Or More
 
+##### module hierarchy
+
+```
+Data.OneOrMore
+```
+
+##### refactor
+
+* [ ] Data.OneOrMore
+	+ [x] API
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
+
 #### Type Set
 
 ### Trials

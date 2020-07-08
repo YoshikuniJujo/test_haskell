@@ -9,7 +9,7 @@ module Trial.Boxes.Handle (Mode(InitMode), handleBoxes) where
 import Control.Concurrent
 import Control.Moffy.Handle hiding (expand)
 import Control.Monad.State (StateT, get, put, lift, liftIO)
-import Data.OneOrMore (prj, singleton, (>-), expand)
+import Data.OneOrMore (project, singleton, (>-), expand)
 import Data.Time (DiffTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
@@ -49,7 +49,7 @@ handleTime :: Monad m =>
 handleTime now reqs = get >>= \lst -> do
 	let	dt = now `diffAbsoluteTime` lst
 		odt = singleton $ OccDeltaTime dt
-	case prj reqs of
+	case project reqs of
 		Just (TryWaitReq t)
 			| t < dt -> (Just $ OccTryWait t >- odt', WaitMode now)
 				<$ put (t `addAbsoluteTime` lst)
