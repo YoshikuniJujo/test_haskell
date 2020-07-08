@@ -7,14 +7,14 @@
 
 module Data.Type.Set.Internal (
 	-- * Type
-	Set(..), Numbered, numbered,
+	Set(Nil, (:~)), Numbered, numbered,
 	-- * Operator
 	Singleton, Insert, Merge, Map, (:-), (:+:), (:$:) ) where
 
 import GHC.TypeLits (Nat, type (<=?))
 import Language.Haskell.TH (
 	TypeQ, DecsQ, runIO,
-	conT, appT, litT, numTyLit, instanceD, cxt, tySynInstD, tySynEqn )
+	instanceD, cxt, tySynInstD, tySynEqn, conT, appT, litT, numTyLit )
 import Data.Kind (Type)
 import Data.Type.Bool (If)
 import System.Random (randomRIO)
@@ -31,8 +31,8 @@ import System.Random (randomRIO)
 class Numbered a where type Number (a :: Type) = (r :: Nat) | r -> a
 
 numbered :: Int -> TypeQ -> DecsQ
-numbered s t =
-	((: []) <$>) . instanceD (cxt []) (conT ''Numbered `appT` t) . (: [])
+numbered s t = ((: []) <$>)
+	. instanceD (cxt []) (conT ''Numbered `appT` t) . (: [])
 		$ tySynInstD . tySynEqn Nothing (conT ''Number `appT` t)
 			. litT . numTyLit =<< runIO (randomRIO (0, 2 ^ s - 1))
 

@@ -36,7 +36,7 @@ todo
 	+ [x] Trial.Followbox
 * [ ] refactoring
 	+ [x] Control.Monad.Freer.Par
-	+ [ ] Data.OneOrMore
+	+ [x] Data.OneOrMore
 	+ [ ] Data.Type.Set
 	+ [ ] Control.Moffy
 	+ [ ] Trial
@@ -70,7 +70,7 @@ Control.Moffy.Run
 
 #### todo
 
-* [ ] モジュールの整理
+* [x] モジュールの整理
 	+ [x] 現在のモジュール構造のチェック
 	+ [x] モジュールの整理
 		- [x] Control.Moffy.Internal.Fooに移動
@@ -160,7 +160,7 @@ Data.OneOrMore
 
 ##### refactor
 
-* [ ] Data.OneOrMore
+* [x] Data.OneOrMore
 	+ [x] API
 	+ [x] imports
 	+ [x] structure
@@ -177,6 +177,24 @@ Data.OneOrMore
 		- [x] MERGEABLE
 
 #### Type Set
+
+##### module hierarchy
+
+```
+Data.Type.Set
+  +- Data.Type.Set.Internal
+```
+
+##### refactor
+
+* [x] Data.Type.Set
+	+ [x] API
+	+ [x] imports
+* [x] Data.Type.Set.Internal
+	+ [x] API
+	+ [x] imports
+	+ [x] structure
+	+ [x] body
 
 ### Trials
 
