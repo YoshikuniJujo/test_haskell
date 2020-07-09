@@ -34,16 +34,17 @@ todo
 	+ [x] Trial.Boxes
 	+ [x] Trial.StepByStepBox
 	+ [x] Trial.Followbox
-* [ ] solve problem about Id and Taggable
+* [x] solve problem about Id and Taggable
 	+ [x] rename Control.Monad.Freer.Par.Fun to ...Funable
 	+ [x] rename Fun to Funable
-	+ [ ] others
+	+ [x] others
 * [ ] refactoring
 	+ [x] Control.Monad.Freer.Par
 	+ [x] Data.OneOrMore
 	+ [x] Data.Type.Set
 	+ [ ] Control.Moffy
 	+ [ ] Trial
+	+ [ ] Control.Monad.Freer.Par
 
 refactoring
 -----------
