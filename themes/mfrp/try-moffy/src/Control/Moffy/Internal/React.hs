@@ -6,7 +6,10 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Internal.React (
-	Update, Adjustable, Firstable, adjust, first, par, update ) where
+	-- * Type
+	Update, Adjustable, Firstable,
+	-- * Function
+	adjust, first, par, update ) where
 
 import Data.Type.Set
 import Data.OneOrMore

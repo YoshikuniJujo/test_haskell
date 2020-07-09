@@ -4,9 +4,13 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
 
-module Control.Moffy.Internal.Sig where
+module Control.Moffy.Internal.Sig (
+	-- * Repetition
+	spawn, parList,
+	-- * Parallel Composition
+	at, break, until, indexBy ) where
 
-import Prelude hiding (repeat)
+import Prelude hiding (repeat, until, break)
 
 import Control.Arrow ((***))
 import Data.Type.Set

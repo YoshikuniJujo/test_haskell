@@ -3,9 +3,16 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Internal.Sig.Type where
+module Control.Moffy.Internal.Sig.Type (
+	-- * Type
+	Sig(..), ISig(..), isig,
+	-- * Function
+	-- ** Basic
+	emit, emitAll, waitFor, res, ires, hold,
+	-- ** Practical
+	repeat, scanl, find ) where
 
-import Prelude hiding (scanl)
+import Prelude hiding (repeat, scanl)
 
 import Control.Monad
 import Data.Type.Flip

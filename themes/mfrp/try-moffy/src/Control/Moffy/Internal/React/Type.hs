@@ -6,10 +6,16 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Internal.React.Type (
-	React, Rct(..), Request(..), EvReqs, EvOccs,
+	-- * Type
+	-- ** Basic
+	React, Rct(..), getThreadId, Request(..), EvReqs, EvOccs,
+	-- ** Handle
 	Handle, Handle', HandleSt, HandleSt',
-	CollapsableOccurred, ExpandableOccurred, MergeableOccurred,
-	ThreadId, forkThreadId, getThreadId, rootThreadId,
+	-- ** Occurred Context
+	ExpandableOccurred, CollapsableOccurred, MergeableOccurred,
+	-- * ThreadId
+	ThreadId, rootThreadId, forkThreadId,
+	-- * Basic Function
 	await, await', never ) where
 
 import Data.Kind
@@ -60,7 +66,7 @@ await' r f = Await (singleton r) >>>= \o -> do
 
 type ExpandableOccurred es es' = Expandable (Occurred :$: es) (Occurred :$: es')
 type CollapsableOccurred es es' = Collapsable (Occurred :$: es) (Occurred :$: es')
-type MergeableOccurred es es' eses' = Mergeable (Occurred :$: es) (Occurred :$: es') (Occurred :$: eses')
+type MergeableOccurred es es' mrg = Mergeable (Occurred :$: es) (Occurred :$: es') (Occurred :$: mrg)
 
 never :: React s es a
 never = Never >>>= pure
