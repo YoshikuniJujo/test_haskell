@@ -104,12 +104,14 @@ Control.Moffy.Run
 
 #### refactoring
 
-* [ ] Control.Moffy
+* [x] Control.Moffy
 	+ [x] API
+	+ [x] imports
+* [ ] Control.Moffy.Internal.Sig
+	+ [ ] API
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body
-* [ ] Control.Moffy.Internal.Sig
 * [ ] Control.Moffy.Internal.Sig.Type
 * [ ] Control.Moffy.Internal.React
 * [ ] Control.Moffy.Internal.React.Type
