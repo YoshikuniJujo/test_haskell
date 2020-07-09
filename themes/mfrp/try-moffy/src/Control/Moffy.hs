@@ -2,7 +2,8 @@
 
 module Control.Moffy (
 	-- * Types
-	Sig, ISig, React, EvReqs, EvOccs, Request(..), Firstable, Adjustable,
+	Sig, ISig, React, Rct, EvReqs, EvOccs, Request(..),
+	Firstable, Adjustable,
 	-- * React
 	await, adjust, first,
 	-- * Conversion

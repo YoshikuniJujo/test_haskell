@@ -105,7 +105,7 @@ Control.Moffy.Run
 #### refactoring
 
 * [ ] Control.Moffy
-	+ [ ] API
+	+ [x] API
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body
