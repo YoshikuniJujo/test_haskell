@@ -3,11 +3,11 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Freer.Par.Funable (
-	Fun(..), Taggable(..), MaybeId(..), Boolean(..), Id ) where
+	Funable(..), Taggable(..), MaybeId(..), Boolean(..), Id ) where
 
 import Control.Monad.Freer.Par.Internal.Id
 
-class Fun f where
+class Funable f where
 	fun :: (a -> m b) -> f m a b
 	($$) :: Applicative m => f m a b -> a -> m b
 

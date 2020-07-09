@@ -36,6 +36,7 @@ todo
 	+ [x] Trial.Followbox
 * [ ] solve problem about Id and Taggable
 	+ [x] rename Control.Monad.Freer.Par.Fun to ...Funable
+	+ [x] rename Fun to Funable
 	+ [ ] others
 * [ ] refactoring
 	+ [x] Control.Monad.Freer.Par

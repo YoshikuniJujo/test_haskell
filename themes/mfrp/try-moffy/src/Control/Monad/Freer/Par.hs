@@ -16,7 +16,7 @@ import Unsafe.Coerce (unsafeCoerce)
 
 import Control.Monad.Freer.Par.Sequence (Sequence(..), ViewL(..), (<|), (|>))
 import Control.Monad.Freer.Par.Funable (
-	Fun(..), Taggable(..), MaybeId(..), Boolean(..) )
+	Funable(..), Taggable(..), MaybeId(..), Boolean(..) )
 import Control.Monad.Freer.Par.Internal.Id (Id(..))
 
 ---------------------------------------------------------------------------
@@ -35,7 +35,7 @@ import Control.Monad.Freer.Par.Internal.Id (Id(..))
 data Freer s sq (f :: (* -> *) -> * -> * -> *) t a =
 	Pure a | forall x . t x :>>= sq (f (Freer s sq f t)) x a
 
-(>>>=) :: (Sequence sq, Fun f) =>
+(>>>=) :: (Sequence sq, Funable f) =>
 	t a -> (a -> Freer s sq f t b) -> Freer s sq f t b
 m >>>= f = m :>>= singleton (fun f)
 
@@ -43,33 +43,33 @@ freer :: (a -> b) -> (forall x . t x -> sq (f (Freer s sq f t)) x a -> b) ->
 	Freer s sq f t a -> b
 freer f _ (Pure x) = f x; freer _ g (m :>>= k) = g m k
 
-instance (Sequence sq, Fun f) => Functor (Freer s sq f t) where
+instance (Sequence sq, Funable f) => Functor (Freer s sq f t) where
 	fmap f = freer (Pure . f) \m k -> m :>>= (k |> fun (Pure . f))
 
-instance (Sequence sq, Fun f) => Applicative (Freer s sq f t) where
+instance (Sequence sq, Funable f) => Applicative (Freer s sq f t) where
 	pure = Pure
 	mf <*> mx = freer (<$> mx) (\m k -> m :>>= (k |> fun (<$> mx))) mf
 
-instance (Sequence sq, Fun f) => Monad (Freer s sq f t) where
+instance (Sequence sq, Funable f) => Monad (Freer s sq f t) where
 	m >>= f = freer f (\m' k -> m' :>>= (k |> fun f)) m
 
 -- APPLICATION
 
-qApp :: (Sequence sq, Fun f) =>
+qApp :: (Sequence sq, Funable f) =>
 	sq (f (Freer s sq f t)) a b -> a -> Freer s sq f t b
 q `qApp` x = case viewl q of
 	EmptyL -> pure x
 	f :<| r -> case f $$ x of
 		Pure y -> r `qApp` y; tx :>>= q' -> tx :>>= (q' >< r)
 
-qAppPar :: (Sequence sq, Fun f, Taggable f) =>
+qAppPar :: (Sequence sq, Funable f, Taggable f) =>
 	sq (f (Freer s sq f t)) a b -> sq (f (Freer s sq f t)) a b -> a ->
 	(Freer s sq f t b, Freer s sq f t b)
 qAppPar p q x = case (viewl p, viewl q) of
 	(t :<| r, t' :<| r') | J tg <- checkOpen t t' -> qAppParOpened tg r r' x
 	_ -> (p `qApp` x, q `qApp` x)
 
-qAppParOpened :: (Sequence sq, Fun f, Taggable f) => Id ->
+qAppParOpened :: (Sequence sq, Funable f, Taggable f) => Id ->
 	sq (f (Freer s sq f t)) a b -> sq (f (Freer s sq f t)) a b -> a ->
 	(Freer s sq f t b, Freer s sq f t b)
 qAppParOpened tg p q x = case (viewl p, viewl q) of
@@ -100,7 +100,7 @@ instance Monad (Unique s) where
 runUnique :: (forall s . Unique s a) -> a
 runUnique (Unique k) = fst $ k 0
 
-tag :: (Sequence sq, Fun f, Taggable f) =>
+tag :: (Sequence sq, Funable f, Taggable f) =>
 	Freer s sq f t a -> Unique s (Freer s sq f t a)
 tag m@(Pure _) = pure m
 tag (tx :>>= fs) = (<$> Unique (id &&& (+ 1))) \n ->

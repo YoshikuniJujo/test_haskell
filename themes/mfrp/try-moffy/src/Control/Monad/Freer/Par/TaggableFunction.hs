@@ -5,7 +5,7 @@
 module Control.Monad.Freer.Par.TaggableFunction (TaggableFun) where
 
 import Control.Monad.Freer.Par.Funable (
-	Fun(..), Taggable(..), MaybeId(..), Boolean(..), Id )
+	Funable(..), Taggable(..), MaybeId(..), Boolean(..), Id )
 
 ---------------------------------------------------------------------------
 
@@ -13,7 +13,7 @@ data TaggableFun m a b where
 	Open, Close :: Id -> TaggableFun m a a
 	Fun :: (a -> m b) -> TaggableFun m a b
 
-instance Fun TaggableFun where
+instance Funable TaggableFun where
 	fun = Fun
 	($$) = \case (Open _) -> pure; (Close _) -> pure; (Fun f) -> f
 
