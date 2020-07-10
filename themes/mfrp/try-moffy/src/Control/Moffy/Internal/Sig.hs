@@ -29,61 +29,22 @@ import Control.Monad.Freer.Par (Freer(Pure), pattern (:>>=))
 
 ---------------------------------------------------------------------------
 
-pause :: (
-	Update (ISig s es a r) r', Mergeable es es es
-	) => Sig s es a r -> React s es r' -> Sig s es a (Sig s es a r, React s es r')
-Sig l `pause` r = waitFor (l `par` r) >>= \case
-	(Pure l', r') -> (emitAll `Arr.first`) <$> emitAll (l' `ipause` r')
-	(l', r'@(Pure _)) -> pure (Sig l', r')
-	_ -> error "never occur"
+-- * FLIP APPLIICATIVE
+-- * REPETITIVE COMBINATOR
+--	+ SPAWN
+--	+ PAR LIST
+-- * PARALLEL COMBINATOR
+--	+ AT
+--	+ BREAK AND UNTIL
+--	+ INDEX BY
+-- * BASIC COMBINATOR
+--	+ PAUSE
+--	+ PAIRS
+--	+ ADJUST
 
-ipause :: (
-	Update (ISig s es a r) r', Mergeable es es es
-	) => ISig s es a r -> React s es r' -> ISig s es a (ISig s es a r, React s es r')
-l@(End _) `ipause` r = pure (l, r)
-(h :| t) `ipause` r = (h :|) $ (<$> (t `pause` r)) \case
-	(Sig (Pure t'), r') -> (t', r')
-	(t', r'@(Pure _)) -> (h :| t', r')
-	_ -> error "never occur"
-
-infixr 7 `at`
-
-at :: Firstable es es' (ISig s (es :+: es') a r) r' =>
-	Sig s es a r -> React s es' r' -> React s (es :+: es') (Either r (a, r'))
-l `at` r = res (adjustSig l `pause` adjust r) >>= \(Sig l', r') -> (<$> l') \case
-	End x -> Left x
-	h :| _ -> case r' of Pure y -> Right (h, y); _ -> error "never occur"
-
-adjustSig :: (
-	CollapsableOccurred es' es,
-	Expandable es es'
-	) => Sig s es a r -> Sig s es' a r
-adjustSig (Sig r) = Sig $ adjustISig <$> adjust r 
-
-adjustISig :: (
-	CollapsableOccurred es' es,
-	Expandable es es'
-	) => ISig s es a r -> ISig s es' a r
-adjustISig (End x) = End x
-adjustISig (h :| t) = h :| adjustSig t
-
-infixl 7 `break`, `until`
-
-break :: Firstable es es' (ISig s (es :+: es') a r) r' =>
-	Sig s es a r -> React s es' r' -> Sig s (es :+: es') a (Either r (Maybe a, r'))
-l `break` r = (<$> adjustSig l `pause` adjust r) \case
-	(Sig (Pure (End x)), _) -> Left x
-	(Sig (Await _ :>>= _), Pure r') -> Right (Nothing, r')
-	(Sig (Pure (h :| _)), Pure r') -> Right (Just h, r')
-	_ -> error "never occur"
-
-until :: (
-	Firstable es es' (ISig s (es :+: es') a r) r',
-	Adjustable (es :+: es') (es :+: es') ) =>
-	Sig s es a r -> React s es' r' -> Sig s (es :+: es') a (Either r (a, r'))
-l `until` r = adjustSig l `pause` adjust r >>= \(Sig l', r') -> (<$> waitFor (adjust l')) \case
-	End x -> Left x
-	h :| _ -> case r' of Pure y -> Right (h, y); _ -> error "never occur"
+---------------------------------------------------------------------------
+-- FLIP APPLICATIVE
+---------------------------------------------------------------------------
 
 instance (Mergeable es es es, Semigroup r) => Applicative (Flip (Sig s es) r) where
 	pure = Flip . (>> hold) . emit
@@ -113,15 +74,72 @@ l `bothStart` Sig r = do
 	pure (ex l'', ex r'')
 	where ex = \case Pure x -> x; _ -> error "bad"
 
-ipairs :: (
-	Update (ISig s es a r) (ISig s es b r'),
+---------------------------------------------------------------------------
+-- REPETITIVE COMBINATOR
+---------------------------------------------------------------------------
+
+-- SPAWN
+
+spawn :: Sig s es a r -> Sig s es (ISig s es a r) ()
+spawn = repeat . unSig
+
+-- PAR 	LIST
+
+parList :: Mergeable es es es => Sig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
+parList (Sig r) = iparList =<< waitFor r
+
+iparList :: (
 	Mergeable es es es
-	) => ISig s es a r -> ISig s es b r' -> ISig s es (a, b) (ISig s es a r, ISig s es b r')
-l@(End _) `ipairs` r = pure (l, r)
-l `ipairs` r@(End _) = pure (l, r)
-(hl :| Sig tl) `ipairs` (hr :| Sig tr) = ((hl, hr) :|) . Sig
-	$ uncurry ipairs . ((hl ?:|) *** (hr ?:|)) <$> tl `par` tr
-	where (?:|) h = \case Pure t -> t; t -> h :| Sig t
+	) => ISig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
+iparList = isig (pure . ([] ,)) $ go . ((: []) <$>) . ((: []) <$%>) where
+	go s (Sig r) = emitAll (s `ipause` r) >>= \case
+		(s', Pure (h :| t)) -> go (uncurry (:) <$> h `cons` s') t
+		(s', Pure (End y)) -> (, y) <$> emitAll s'
+		(End x, r') -> emit [] >> ((x ++) `Arr.first`) <$> parList (Sig r')
+		_ -> error "never occur"
+
+cons :: (
+	Mergeable es es es
+	) => ISig s es a r -> ISig s es [a] r' -> ISig s es [a] (r, r')
+h `cons` t = uncurry (:) <$%> h `ipairs` t >>= \(h', t') ->
+	(,) <$> ((: []) <$%> h') <*> t'
+
+---------------------------------------------------------------------------
+-- PARALLEL COMBINATOR
+---------------------------------------------------------------------------
+
+-- AT
+
+infixr 7 `at`
+
+at :: Firstable es es' (ISig s (es :+: es') a r) r' =>
+	Sig s es a r -> React s es' r' -> React s (es :+: es') (Either r (a, r'))
+l `at` r = res (adjustSig l `pause` adjust r) >>= \(Sig l', r') -> (<$> l') \case
+	End x -> Left x
+	h :| _ -> case r' of Pure y -> Right (h, y); _ -> error "never occur"
+
+-- BREAK AND UNTIL
+
+infixl 7 `break`, `until`
+
+break :: Firstable es es' (ISig s (es :+: es') a r) r' =>
+	Sig s es a r -> React s es' r' -> Sig s (es :+: es') a (Either r (Maybe a, r'))
+l `break` r = (<$> adjustSig l `pause` adjust r) \case
+	(Sig (Pure (End x)), _) -> Left x
+	(Sig (Await _ :>>= _), Pure r') -> Right (Nothing, r')
+	(Sig (Pure (h :| _)), Pure r') -> Right (Just h, r')
+	_ -> error "never occur"
+
+until :: (
+	Firstable es es' (ISig s (es :+: es') a r) r',
+	Adjustable (es :+: es') (es :+: es') ) =>
+	Sig s es a r -> React s es' r' -> Sig s (es :+: es') a (Either r (a, r'))
+l `until` r = adjustSig l `pause` adjust r >>= \(Sig l', r') -> (<$> waitFor (adjust l')) \case
+	End x -> Left x
+	h :| _ -> case r' of Pure y -> Right (h, y); _ -> error "never occur"
+
+
+-- INDEX BY
 
 infixl 7 `indexBy`
 
@@ -145,24 +163,52 @@ l `iindexBy` Sig r = waitFor (ires $ l `ipause` r) >>= \case
 	(hl :| _, Pure (End y)) -> pure $ Right (hl, y)
 	_ -> error "never occur"
 
-spawn :: Sig s es a r -> Sig s es (ISig s es a r) ()
-spawn = repeat . unSig
+---------------------------------------------------------------------------
+-- BASIC COMBINATOR
+---------------------------------------------------------------------------
 
-parList :: Mergeable es es es => Sig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
-parList (Sig r) = iparList =<< waitFor r
+-- PAUSE
 
-iparList :: (
+pause :: (
+	Update (ISig s es a r) r', Mergeable es es es
+	) => Sig s es a r -> React s es r' -> Sig s es a (Sig s es a r, React s es r')
+Sig l `pause` r = waitFor (l `par` r) >>= \case
+	(Pure l', r') -> (emitAll `Arr.first`) <$> emitAll (l' `ipause` r')
+	(l', r'@(Pure _)) -> pure (Sig l', r')
+	_ -> error "never occur"
+
+ipause :: (
+	Update (ISig s es a r) r', Mergeable es es es
+	) => ISig s es a r -> React s es r' -> ISig s es a (ISig s es a r, React s es r')
+l@(End _) `ipause` r = pure (l, r)
+(h :| t) `ipause` r = (h :|) $ (<$> (t `pause` r)) \case
+	(Sig (Pure t'), r') -> (t', r')
+	(t', r'@(Pure _)) -> (h :| t', r')
+	_ -> error "never occur"
+
+-- PAIRS
+
+ipairs :: (
+	Update (ISig s es a r) (ISig s es b r'),
 	Mergeable es es es
-	) => ISig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
-iparList = isig (pure . ([] ,)) $ go . ((: []) <$>) . ((: []) <$%>) where
-	go s (Sig r) = emitAll (s `ipause` r) >>= \case
-		(s', Pure (h :| t)) -> go (uncurry (:) <$> h `cons` s') t
-		(s', Pure (End y)) -> (, y) <$> emitAll s'
-		(End x, r') -> emit [] >> ((x ++) `Arr.first`) <$> parList (Sig r')
-		_ -> error "never occur"
+	) => ISig s es a r -> ISig s es b r' -> ISig s es (a, b) (ISig s es a r, ISig s es b r')
+l@(End _) `ipairs` r = pure (l, r)
+l `ipairs` r@(End _) = pure (l, r)
+(hl :| Sig tl) `ipairs` (hr :| Sig tr) = ((hl, hr) :|) . Sig
+	$ uncurry ipairs . ((hl ?:|) *** (hr ?:|)) <$> tl `par` tr
+	where (?:|) h = \case Pure t -> t; t -> h :| Sig t
 
-cons :: (
-	Mergeable es es es
-	) => ISig s es a r -> ISig s es [a] r' -> ISig s es [a] (r, r')
-h `cons` t = uncurry (:) <$%> h `ipairs` t >>= \(h', t') ->
-	(,) <$> ((: []) <$%> h') <*> t'
+-- ADJUST
+
+adjustSig :: (
+	CollapsableOccurred es' es,
+	Expandable es es'
+	) => Sig s es a r -> Sig s es' a r
+adjustSig (Sig r) = Sig $ adjustISig <$> adjust r
+
+adjustISig :: (
+	CollapsableOccurred es' es,
+	Expandable es es'
+	) => ISig s es a r -> ISig s es' a r
+adjustISig (End x) = End x
+adjustISig (h :| t) = h :| adjustSig t

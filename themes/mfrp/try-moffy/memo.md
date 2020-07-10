@@ -110,8 +110,20 @@ Control.Moffy.Run
 * [ ] Control.Moffy.Internal.Sig
 	+ [x] API
 	+ [x] imports
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] FLIP APPLICATIVE
+		- [ ] REPETITIVE COMBINATOR
+			* [ ] SPAWN
+			* [ ] PAR LIST
+		- [ ] PARALLEL COMBINATOR
+			* [ ] AT
+			* [ ] BRAEK AND UNTIL
+			* [ ] INDEX BY
+		- [ ] BASIC COMBINATOR
+			* [ ] PAUSE
+			* [ ] PAIRS
+			* [ ] ADJUST
 * [ ] Control.Moffy.Internal.Sig.Type
 	+ [x] API
 	+ [ ] imports
