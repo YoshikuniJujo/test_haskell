@@ -117,7 +117,7 @@ Control.Moffy.Run
 			* [x] SPAWN
 			* [x] PAR LIST
 		- [ ] PARALLEL COMBINATOR
-			* [ ] AT
+			* [x] AT
 			* [ ] BRAEK AND UNTIL
 			* [ ] INDEX BY
 		- [ ] BASIC COMBINATOR

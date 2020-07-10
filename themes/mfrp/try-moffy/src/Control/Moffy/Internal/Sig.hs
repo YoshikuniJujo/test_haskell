@@ -114,10 +114,13 @@ h `cons` t = uncurry (:) <$%> h `ipairs` t >>= \(h', t') ->
 infixr 7 `at`
 
 at :: Firstable es es' (ISig s (es :+: es') a r) r' =>
-	Sig s es a r -> React s es' r' -> React s (es :+: es') (Either r (a, r'))
-l `at` r = res (adjustSig l `pause` adjust r) >>= \(Sig l', r') -> (<$> l') \case
-	End x -> Left x
-	h :| _ -> case r' of Pure y -> Right (h, y); _ -> error "never occur"
+	Sig s es a r -> React s es' r' ->
+	React s (es :+: es') (Either r (a, r'))
+l `at` r = res (adjustSig l `pause` adjust r) >>= \(Sig l', r') ->
+	(<$> l') \case
+		End x -> Left x
+		h :| _ -> case r' of
+			Pure y -> Right (h, y); _ :>>= _ -> error "never occur"
 
 -- BREAK AND UNTIL
 
