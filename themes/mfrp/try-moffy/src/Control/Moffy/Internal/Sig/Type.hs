@@ -46,7 +46,8 @@ isig e c = \case End x -> e x; h :| t -> c h t
 
 -- MONAD
 
-instance Functor (Sig s es a) where f `fmap` Sig s = Sig $ (f <$>) <$> s
+instance Functor (Sig s es a) where -- f `fmap` Sig s = Sig $ (f <$>) <$> s
+	fmap f = Sig . ((f <$>) <$>) . unSig
 
 instance Applicative (Sig s es a) where
 	pure = emitAll . pure
