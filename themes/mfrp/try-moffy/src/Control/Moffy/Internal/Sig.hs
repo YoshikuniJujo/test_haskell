@@ -127,21 +127,22 @@ l `at` r = res (adjustSig l `pause` adjust r) >>= \(Sig l', r') ->
 infixl 7 `break`, `until`
 
 break :: Firstable es es' (ISig s (es :+: es') a r) r' =>
-	Sig s es a r -> React s es' r' -> Sig s (es :+: es') a (Either r (Maybe a, r'))
+	Sig s es a r -> React s es' r' ->
+	Sig s (es :+: es') a (Either r (Maybe a, r'))
 l `break` r = (<$> adjustSig l `pause` adjust r) \case
 	(Sig (Pure (End x)), _) -> Left x
 	(Sig (Await _ :>>= _), Pure r') -> Right (Nothing, r')
 	(Sig (Pure (h :| _)), Pure r') -> Right (Just h, r')
 	_ -> error "never occur"
 
-until :: (
-	Firstable es es' (ISig s (es :+: es') a r) r',
-	Adjustable (es :+: es') (es :+: es') ) =>
-	Sig s es a r -> React s es' r' -> Sig s (es :+: es') a (Either r (a, r'))
-l `until` r = adjustSig l `pause` adjust r >>= \(Sig l', r') -> (<$> waitFor (adjust l')) \case
-	End x -> Left x
-	h :| _ -> case r' of Pure y -> Right (h, y); _ -> error "never occur"
-
+until :: Firstable es es' (ISig s (es :+: es') a r) r' =>
+	Sig s es a r -> React s es' r' ->
+	Sig s (es :+: es') a (Either r (a, r'))
+l `until` r = adjustSig l `pause` adjust r >>= \(Sig l', r') ->
+	(<$> waitFor l') \case
+		End x -> Left x
+		h :| _ -> case r' of
+			Pure y -> Right (h, y); _ -> error "never occur"
 
 -- INDEX BY
 
