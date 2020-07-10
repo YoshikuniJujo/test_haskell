@@ -46,11 +46,14 @@ import Control.Monad.Freer.Par (Freer(Pure), pattern (:>>=))
 -- FLIP APPLICATIVE
 ---------------------------------------------------------------------------
 
-instance (Mergeable es es es, Semigroup r) => Applicative (Flip (Sig s es) r) where
-	pure = Flip . (>> hold) . emit
+instance (Mergeable es es es, Semigroup r) =>
+	Applicative (Flip (Sig s es) r) where
+--	pure = Flip . (>> hold) . emit
+	pure = Flip . Sig . pure . unflip . pure
 	mf <*> mx = Flip $ unflip mf `app` unflip mx
 
-instance (Mergeable es es es, Semigroup r) => Applicative (Flip (ISig s es) r) where
+instance (Mergeable es es es, Semigroup r) =>
+	Applicative (Flip (ISig s es) r) where
 	pure = Flip . (:| hold)
 	mf <*> mx = Flip $ unflip mf `iapp` unflip mx
 
@@ -65,9 +68,11 @@ mf `iapp` mx = (<$> (uncurry ($) <$%> mf `ipairs` mx)) \case
 	(_ :| _, _ :| _) -> error "never occur"
 
 bothStart :: (
-	Update (ISig s es a r) (ISig s es b r'), Update (ISig s es b r') (ISig s es a r),
-	Mergeable es es es
-	) => Sig s es a r -> Sig s es b r' -> React s es (ISig s es a r, ISig s es b r')
+	Update (ISig s es a r) (ISig s es b r'),
+	Update (ISig s es b r') (ISig s es a r),
+	Mergeable es es es) =>
+	Sig s es a r -> Sig s es b r' ->
+	React s es (ISig s es a r, ISig s es b r')
 l `bothStart` Sig r = do
 	(Sig l', r') <- res $ l `pause` r
 	(Sig r'', l'') <- res $ Sig r' `pause` l'
