@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
@@ -13,16 +14,20 @@ module Control.Moffy.Internal.Sig (
 import Prelude hiding (repeat, until, break)
 
 import Control.Arrow ((***))
-import Data.Type.Set
-import Data.Type.Flip
-import Data.OneOrMore
+import Data.Type.Set ((:+:))
+import Data.Type.Flip (Flip(..), (<$%>), (<*%>))
+import Data.OneOrMore (Expandable, Mergeable)
 
 import qualified Control.Arrow as Arr
 
-import Control.Moffy.Internal.React
-import Control.Moffy.Internal.React.Type
-import Control.Moffy.Internal.Sig.Type
-import Control.Monad.Freer.Par
+import Control.Moffy.Internal.Sig.Type (
+	Sig(..), ISig(..), isig,
+	emit, emitAll, waitFor, res, ires, hold, repeat )
+import Control.Moffy.Internal.React (Update, Adjustable, Firstable, adjust, par)
+import Control.Moffy.Internal.React.Type (React, Rct(..), CollapsableOccurred)
+import Control.Monad.Freer.Par (Freer(Pure), pattern (:>>=))
+
+---------------------------------------------------------------------------
 
 pause :: (
 	Update (ISig s es a r) r', Mergeable es es es

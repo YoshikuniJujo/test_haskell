@@ -109,7 +109,7 @@ Control.Moffy.Run
 	+ [x] imports
 * [ ] Control.Moffy.Internal.Sig
 	+ [x] API
-	+ [ ] imports
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] Control.Moffy.Internal.Sig.Type
