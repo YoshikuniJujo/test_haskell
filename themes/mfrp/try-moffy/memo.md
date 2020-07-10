@@ -116,10 +116,10 @@ Control.Moffy.Run
 		- [x] REPETITIVE COMBINATOR
 			* [x] SPAWN
 			* [x] PAR LIST
-		- [ ] PARALLEL COMBINATOR
+		- [x] PARALLEL COMBINATOR
 			* [x] AT
 			* [x] BRAEK AND UNTIL
-			* [ ] INDEX BY
+			* [x] INDEX BY
 		- [ ] BASIC COMBINATOR
 			* [ ] PAUSE
 			* [ ] PAIRS

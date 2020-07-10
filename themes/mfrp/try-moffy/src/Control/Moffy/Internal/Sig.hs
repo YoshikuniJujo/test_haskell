@@ -1,5 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
@@ -116,7 +116,7 @@ infixr 7 `at`
 at :: Firstable es es' (ISig s (es :+: es') a r) r' =>
 	Sig s es a r -> React s es' r' ->
 	React s (es :+: es') (Either r (a, r'))
-l `at` r = res (adjustSig l `pause` adjust r) >>= \(Sig l', r') ->
+(adjustSig -> l) `at` (adjust -> r) = res (l `pause` r) >>= \(Sig l', r') ->
 	(<$> l') \case
 		End x -> Left x
 		h :| _ -> case r' of
@@ -129,7 +129,7 @@ infixl 7 `break`, `until`
 break :: Firstable es es' (ISig s (es :+: es') a r) r' =>
 	Sig s es a r -> React s es' r' ->
 	Sig s (es :+: es') a (Either r (Maybe a, r'))
-l `break` r = (<$> adjustSig l `pause` adjust r) \case
+(adjustSig -> l) `break` (adjust -> r) = (<$> l `pause` r) \case
 	(Sig (Pure (End x)), _) -> Left x
 	(Sig (Await _ :>>= _), Pure r') -> Right (Nothing, r')
 	(Sig (Pure (h :| _)), Pure r') -> Right (Just h, r')
@@ -138,7 +138,7 @@ l `break` r = (<$> adjustSig l `pause` adjust r) \case
 until :: Firstable es es' (ISig s (es :+: es') a r) r' =>
 	Sig s es a r -> React s es' r' ->
 	Sig s (es :+: es') a (Either r (a, r'))
-l `until` r = adjustSig l `pause` adjust r >>= \(Sig l', r') ->
+(adjustSig -> l) `until` (adjust -> r) = l `pause` r >>= \(Sig l', r') ->
 	(<$> waitFor l') \case
 		End x -> Left x
 		h :| _ -> case r' of
@@ -149,22 +149,26 @@ l `until` r = adjustSig l `pause` adjust r >>= \(Sig l', r') ->
 infixl 7 `indexBy`
 
 indexBy :: (
-	((es :+: es') :+: (es :+: es')) ~ (es :+: es'),
-	Firstable es es' (ISig s (es :+: es') a r) (ISig s (es :+: es') b r'),
-	Adjustable (es :+: es') (es :+: es')
-	) => Sig s es a r -> Sig s es' b r' -> Sig s (es :+: es') a (Either r (Maybe a, r'))
-l `indexBy` s = let Sig r = adjustSig s in waitFor (res $ adjustSig l `pause` r) >>= \case
+	Update (ISig s (es :+: es') a r) (ISig s (es :+: es') b r'),
+	Mergeable (es :+: es') (es :+: es') (es :+: es'),
+	Adjustable es (es :+: es'), Adjustable es' (es :+: es')) =>
+	Sig s es a r -> Sig s es' b r' ->
+	Sig s (es :+: es') a (Either r (Maybe a, r'))
+(adjustSig -> l) `indexBy` (adjustSig -> r) = l `indexBy_` r
+
+indexBy_ :: (Update (ISig s es a r) (ISig s es b r'), Mergeable es es es ) =>
+	Sig s es a r -> Sig s es b r' -> Sig s es a (Either r (Maybe a, r'))
+l `indexBy_` Sig r = waitFor (res $ l `pause` r) >>= \case
 	(Sig (Pure l'), r') -> (first Just <$>) <$> l' `iindexBy` Sig r'
-	(Sig l', Pure (_ :| r')) -> Sig l' `indexBy` r'
+	(Sig l', Pure (_ :| r')) -> Sig l' `indexBy_` r'
 	(Sig _, Pure (End y)) -> pure $ Right (Nothing, y)
 	_ -> error "never occur"
 
-iindexBy :: (
-	Update (ISig s es a r) (ISig s es b r'), Mergeable es es es
-	) => ISig s es a r -> Sig s es b r' -> Sig s es a (Either r (a, r'))
+iindexBy :: (Update (ISig s es a r) (ISig s es b r'), Mergeable es es es) =>
+	ISig s es a r -> Sig s es b r' -> Sig s es a (Either r (a, r'))
 l `iindexBy` Sig r = waitFor (ires $ l `ipause` r) >>= \case
 	(End x, _) -> pure $ Left x
-	(l'@(hl :| _), Pure (_ :| tr)) -> emit hl >> l' `iindexBy` tr
+	(l'@(hl :| _), Pure (_ :| r')) -> emit hl >> l' `iindexBy` r'
 	(hl :| _, Pure (End y)) -> pure $ Right (hl, y)
 	_ -> error "never occur"
 
