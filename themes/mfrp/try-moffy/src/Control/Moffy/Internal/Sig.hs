@@ -178,17 +178,17 @@ l `iindexBy` Sig r = waitFor (ires $ l `ipause` r) >>= \case
 
 -- PAUSE
 
-pause :: (
-	Update (ISig s es a r) r', Mergeable es es es
-	) => Sig s es a r -> React s es r' -> Sig s es a (Sig s es a r, React s es r')
+pause :: (Update (ISig s es a r) r', Mergeable es es es) =>
+	Sig s es a r -> React s es r' ->
+	Sig s es a (Sig s es a r, React s es r')
 Sig l `pause` r = waitFor (l `par` r) >>= \case
-	(Pure l', r') -> (emitAll `first`) <$> emitAll (l' `ipause` r')
+	(Pure l', r') -> first emitAll <$> emitAll (l' `ipause` r')
 	(l', r'@(Pure _)) -> pure (Sig l', r')
 	_ -> error "never occur"
 
-ipause :: (
-	Update (ISig s es a r) r', Mergeable es es es
-	) => ISig s es a r -> React s es r' -> ISig s es a (ISig s es a r, React s es r')
+ipause :: (Update (ISig s es a r) r', Mergeable es es es) =>
+	ISig s es a r -> React s es r' ->
+	ISig s es a (ISig s es a r, React s es r')
 l@(End _) `ipause` r = pure (l, r)
 (h :| t) `ipause` r = (h :|) $ (<$> (t `pause` r)) \case
 	(Sig (Pure t'), r') -> (t', r')

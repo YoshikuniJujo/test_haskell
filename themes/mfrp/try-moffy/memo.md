@@ -121,7 +121,7 @@ Control.Moffy.Run
 			* [x] BRAEK AND UNTIL
 			* [x] INDEX BY
 		- [ ] BASIC COMBINATOR
-			* [ ] PAUSE
+			* [x] PAUSE
 			* [ ] PAIRS
 			* [ ] ADJUST
 * [ ] Control.Moffy.Internal.Sig.Type
