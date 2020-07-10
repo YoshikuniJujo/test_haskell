@@ -126,7 +126,7 @@ Control.Moffy.Run
 			* [x] ADJUST
 * [ ] Control.Moffy.Internal.Sig.Type
 	+ [x] API
-	+ [ ] imports
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] Control.Moffy.Internal.React

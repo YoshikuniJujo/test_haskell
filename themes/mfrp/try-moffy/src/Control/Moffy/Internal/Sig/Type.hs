@@ -14,10 +14,12 @@ module Control.Moffy.Internal.Sig.Type (
 
 import Prelude hiding (repeat, scanl)
 
-import Control.Monad
-import Data.Type.Flip
+import Control.Monad (forever, (<=<))
+import Data.Type.Flip (Flip(..), (<$%>))
 
-import Control.Moffy.Internal.React.Type
+import Control.Moffy.Internal.React.Type (React, never)
+
+---------------------------------------------------------------------------
 
 infixr 5 :|
 newtype Sig s es a r = Sig { unSig :: React s es (ISig s es a r) }
