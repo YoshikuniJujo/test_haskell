@@ -48,7 +48,6 @@ import Control.Monad.Freer.Par (Freer(Pure), pattern (:>>=))
 
 instance (Mergeable es es es, Semigroup r) =>
 	Applicative (Flip (Sig s es) r) where
---	pure = Flip . (>> hold) . emit
 	pure = Flip . Sig . pure . unflip . pure
 	mf <*> mx = Flip $ unflip mf `app` unflip mx
 
@@ -61,23 +60,23 @@ app :: (Mergeable es es es, Semigroup r) =>
 	Sig s es (a -> b) r -> Sig s es a r -> Sig s es b r
 mf `app` mx = emitAll . uncurry (<*%>) =<< waitFor (mf `bothStart` mx)
 
-iapp :: (Mergeable es es es, Semigroup r) =>
-	ISig s es (a -> b) r -> ISig s es a r -> ISig s es b r
-mf `iapp` mx = (<$> (uncurry ($) <$%> mf `ipairs` mx)) \case
-	(End x, End y) -> x <> y; (End x, _ :| _) -> x; (_ :| _, End y) -> y
-	(_ :| _, _ :| _) -> error "never occur"
-
 bothStart :: (
 	Update (ISig s es a r) (ISig s es b r'),
 	Update (ISig s es b r') (ISig s es a r),
-	Mergeable es es es) =>
+	Mergeable es es es ) =>
 	Sig s es a r -> Sig s es b r' ->
 	React s es (ISig s es a r, ISig s es b r')
 l `bothStart` Sig r = do
 	(Sig l', r') <- res $ l `pause` r
 	(Sig r'', l'') <- res $ Sig r' `pause` l'
 	pure (ex l'', ex r'')
-	where ex = \case Pure x -> x; _ -> error "bad"
+	where ex = \case Pure x -> x; _ -> error "never occur"
+
+iapp :: (Mergeable es es es, Semigroup r) =>
+	ISig s es (a -> b) r -> ISig s es a r -> ISig s es b r
+mf `iapp` mx = (<$> (uncurry ($) <$%> mf `ipairs` mx)) \case
+	(End x, End y) -> x <> y; (End x, _ :| _) -> x; (_ :| _, End y) -> y
+	(_ :| _, _ :| _) -> error "never occur"
 
 ---------------------------------------------------------------------------
 -- REPETITIVE COMBINATOR

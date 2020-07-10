@@ -112,7 +112,7 @@ Control.Moffy.Run
 	+ [x] imports
 	+ [x] structure
 	+ [ ] body
-		- [ ] FLIP APPLICATIVE
+		- [x] FLIP APPLICATIVE
 		- [ ] REPETITIVE COMBINATOR
 			* [ ] SPAWN
 			* [ ] PAR LIST
