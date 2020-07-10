@@ -16,13 +16,13 @@ import Prelude hiding (repeat, until, break)
 import Control.Arrow ((***), first)
 import Data.Type.Set ((:+:))
 import Data.Type.Flip (Flip(..), (<$%>), (<*%>))
-import Data.OneOrMore (Expandable, Mergeable)
+import Data.OneOrMore (Mergeable)
 
 import Control.Moffy.Internal.Sig.Type (
 	Sig(..), ISig(..), isig,
 	emit, emitAll, waitFor, res, ires, hold, repeat )
 import Control.Moffy.Internal.React (Update, Adjustable, Firstable, adjust, par)
-import Control.Moffy.Internal.React.Type (React, Rct(..), CollapsableOccurred)
+import Control.Moffy.Internal.React.Type (React, Rct(..))
 import Control.Monad.Freer.Par (Freer(Pure), pattern (:>>=))
 
 ---------------------------------------------------------------------------
@@ -197,10 +197,9 @@ l@(End _) `ipause` r = pure (l, r)
 
 -- PAIRS
 
-ipairs :: (
-	Update (ISig s es a r) (ISig s es b r'),
-	Mergeable es es es
-	) => ISig s es a r -> ISig s es b r' -> ISig s es (a, b) (ISig s es a r, ISig s es b r')
+ipairs :: (Update (ISig s es a r) (ISig s es b r'), Mergeable es es es) =>
+	ISig s es a r -> ISig s es b r' ->
+	ISig s es (a, b) (ISig s es a r, ISig s es b r')
 l@(End _) `ipairs` r = pure (l, r)
 l `ipairs` r@(End _) = pure (l, r)
 (hl :| Sig tl) `ipairs` (hr :| Sig tr) = ((hl, hr) :|) . Sig
@@ -209,15 +208,8 @@ l `ipairs` r@(End _) = pure (l, r)
 
 -- ADJUST
 
-adjustSig :: (
-	CollapsableOccurred es' es,
-	Expandable es es'
-	) => Sig s es a r -> Sig s es' a r
+adjustSig :: Adjustable es es' => Sig s es a r -> Sig s es' a r
 adjustSig (Sig r) = Sig $ adjustISig <$> adjust r
 
-adjustISig :: (
-	CollapsableOccurred es' es,
-	Expandable es es'
-	) => ISig s es a r -> ISig s es' a r
-adjustISig (End x) = End x
-adjustISig (h :| t) = h :| adjustSig t
+adjustISig :: Adjustable es es' => ISig s es a r -> ISig s es' a r
+adjustISig = isig End \h -> (h :|) . adjustSig

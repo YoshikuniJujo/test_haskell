@@ -107,11 +107,11 @@ Control.Moffy.Run
 * [x] Control.Moffy
 	+ [x] API
 	+ [x] imports
-* [ ] Control.Moffy.Internal.Sig
+* [x] Control.Moffy.Internal.Sig
 	+ [x] API
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] FLIP APPLICATIVE
 		- [x] REPETITIVE COMBINATOR
 			* [x] SPAWN
@@ -120,10 +120,10 @@ Control.Moffy.Run
 			* [x] AT
 			* [x] BRAEK AND UNTIL
 			* [x] INDEX BY
-		- [ ] BASIC COMBINATOR
+		- [x] BASIC COMBINATOR
 			* [x] PAUSE
-			* [ ] PAIRS
-			* [ ] ADJUST
+			* [x] PAIRS
+			* [x] ADJUST
 * [ ] Control.Moffy.Internal.Sig.Type
 	+ [x] API
 	+ [ ] imports
