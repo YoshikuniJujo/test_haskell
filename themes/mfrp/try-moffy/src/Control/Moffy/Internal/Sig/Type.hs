@@ -21,12 +21,30 @@ import Control.Moffy.Internal.React.Type (React, never)
 
 ---------------------------------------------------------------------------
 
+-- * TYPE
+-- * TYPE CLASS INSTANCE
+--	+ MONAD
+--	+ FLIP FUNCTION
+-- * FUNCTION
+--	+ BASIC
+--	+ PRACTICAL
+
+---------------------------------------------------------------------------
+-- TYPE
+---------------------------------------------------------------------------
+
 infixr 5 :|
 newtype Sig s es a r = Sig { unSig :: React s es (ISig s es a r) }
 data ISig s es a r = End r | a :| Sig s es a r
 
 isig :: (r -> b) -> (a -> Sig s es a r -> b) -> ISig s es a r -> b
 isig e c = \case End x -> e x; h :| t -> c h t
+
+---------------------------------------------------------------------------
+-- TYPE CLASS INSTANCE
+---------------------------------------------------------------------------
+
+-- MONAD
 
 instance Functor (Sig s es a) where f `fmap` Sig s = Sig $ (f <$>) <$> s
 
@@ -49,11 +67,19 @@ instance Applicative (ISig s es a) where
 instance Monad (ISig s es a) where
 	m >>= f = isig f (\h -> (h :|) . (emitAll . f =<<)) m
 
+-- FLIP FUNCTOR
+
 instance Functor (Flip (Sig s es) r) where
 	fmap f = Flip . Sig . ((f <$%>) <$>) . unSig . unflip
 
 instance Functor (Flip (ISig s es) r) where
 	fmap f = Flip . isig pure (\h -> (f h :|) . (f <$%>)) . unflip
+
+---------------------------------------------------------------------------
+-- FUNCTION
+---------------------------------------------------------------------------
+
+-- BASIC
 
 emit :: a -> Sig s es a ()
 emit = emitAll . (:| pure ())
@@ -66,6 +92,17 @@ hold = waitFor never
 
 waitFor :: React s es r -> Sig s es a r
 waitFor = Sig . (pure <$>)
+
+icur :: ISig s es a b -> Either a b
+icur = isig Right (const . Left)
+
+res :: Sig s es a b -> React s es b
+res = ires <=< unSig
+
+ires :: ISig s es a b -> React s es b
+ires = isig pure (const res)
+
+-- PRACTICAL
 
 repeat :: React s es a -> Sig s es a ()
 repeat = forever . (emit <=< waitFor)
@@ -83,12 +120,3 @@ find p = (icur <$>) . res . brk
 	ibrk = \case
 		is@(End _) -> pure is
 		is@(h :| t) | p h -> pure is | otherwise -> h :| brk t
-
-icur :: ISig s es a b -> Either a b
-icur = isig Right (const . Left)
-
-res :: Sig s es a b -> React s es b
-res = ires <=< unSig
-
-ires :: ISig s es a b -> React s es b
-ires = isig pure (const res)
