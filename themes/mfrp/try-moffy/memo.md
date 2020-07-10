@@ -113,9 +113,9 @@ Control.Moffy.Run
 	+ [x] structure
 	+ [ ] body
 		- [x] FLIP APPLICATIVE
-		- [ ] REPETITIVE COMBINATOR
-			* [ ] SPAWN
-			* [ ] PAR LIST
+		- [x] REPETITIVE COMBINATOR
+			* [x] SPAWN
+			* [x] PAR LIST
 		- [ ] PARALLEL COMBINATOR
 			* [ ] AT
 			* [ ] BRAEK AND UNTIL

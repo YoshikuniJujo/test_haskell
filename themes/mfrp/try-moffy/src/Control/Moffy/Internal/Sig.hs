@@ -13,12 +13,10 @@ module Control.Moffy.Internal.Sig (
 
 import Prelude hiding (repeat, until, break)
 
-import Control.Arrow ((***))
+import Control.Arrow ((***), first)
 import Data.Type.Set ((:+:))
 import Data.Type.Flip (Flip(..), (<$%>), (<*%>))
 import Data.OneOrMore (Expandable, Mergeable)
-
-import qualified Control.Arrow as Arr
 
 import Control.Moffy.Internal.Sig.Type (
 	Sig(..), ISig(..), isig,
@@ -89,24 +87,23 @@ spawn = repeat . unSig
 
 -- PAR 	LIST
 
-parList :: Mergeable es es es => Sig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
+parList :: Mergeable es es es =>
+	Sig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
 parList (Sig r) = iparList =<< waitFor r
 
-iparList :: (
-	Mergeable es es es
-	) => ISig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
+iparList :: Mergeable es es es =>
+	ISig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
 iparList = isig (pure . ([] ,)) $ go . ((: []) <$>) . ((: []) <$%>) where
 	go s (Sig r) = emitAll (s `ipause` r) >>= \case
-		(s', Pure (h :| t)) -> go (uncurry (:) <$> h `cons` s') t
+		(s', Pure (h :| t)) -> go (h `cons` s') t
 		(s', Pure (End y)) -> (, y) <$> emitAll s'
-		(End x, r') -> emit [] >> ((x ++) `Arr.first`) <$> parList (Sig r')
-		_ -> error "never occur"
+		(End x, r') -> emit [] >> ((x ++) `first`) <$> parList (Sig r')
+		(_ :| _, _ :>>= _) -> error "never occur"
 
-cons :: (
-	Mergeable es es es
-	) => ISig s es a r -> ISig s es [a] r' -> ISig s es [a] (r, r')
+cons :: Mergeable es es es =>
+	ISig s es a r -> ISig s es [a] [r] -> ISig s es [a] [r]
 h `cons` t = uncurry (:) <$%> h `ipairs` t >>= \(h', t') ->
-	(,) <$> ((: []) <$%> h') <*> t'
+	(:) <$> ((: []) <$%> h') <*> t'
 
 ---------------------------------------------------------------------------
 -- PARALLEL COMBINATOR
@@ -153,7 +150,7 @@ indexBy :: (
 	Adjustable (es :+: es') (es :+: es')
 	) => Sig s es a r -> Sig s es' b r' -> Sig s (es :+: es') a (Either r (Maybe a, r'))
 l `indexBy` s = let Sig r = adjustSig s in waitFor (res $ adjustSig l `pause` r) >>= \case
-	(Sig (Pure l'), r') -> (Arr.first Just <$>) <$> l' `iindexBy` Sig r'
+	(Sig (Pure l'), r') -> (first Just <$>) <$> l' `iindexBy` Sig r'
 	(Sig l', Pure (_ :| r')) -> Sig l' `indexBy` r'
 	(Sig _, Pure (End y)) -> pure $ Right (Nothing, y)
 	_ -> error "never occur"
@@ -177,7 +174,7 @@ pause :: (
 	Update (ISig s es a r) r', Mergeable es es es
 	) => Sig s es a r -> React s es r' -> Sig s es a (Sig s es a r, React s es r')
 Sig l `pause` r = waitFor (l `par` r) >>= \case
-	(Pure l', r') -> (emitAll `Arr.first`) <$> emitAll (l' `ipause` r')
+	(Pure l', r') -> (emitAll `first`) <$> emitAll (l' `ipause` r')
 	(l', r'@(Pure _)) -> pure (Sig l', r')
 	_ -> error "never occur"
 
