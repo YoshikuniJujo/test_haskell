@@ -129,6 +129,13 @@ Control.Moffy.Run
 	+ [x] imports
 	+ [x] structure
 	+ [ ] body
+		- [x] TYPE
+		- [x] TYPE CLASS INSTANCE
+			* [x] MONAD
+			* [x] FLIOP FUNCTOR
+		- [ ] FUNCTION
+			* [ ] BASIC
+			* [ ] PRACTICAL
 * [ ] Control.Moffy.Internal.React
 	+ [x] API
 	+ [ ] imports

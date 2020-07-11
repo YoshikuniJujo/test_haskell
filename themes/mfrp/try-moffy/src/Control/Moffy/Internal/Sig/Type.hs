@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -24,7 +25,7 @@ import Control.Moffy.Internal.React.Type (React, never)
 -- * TYPE
 -- * TYPE CLASS INSTANCE
 --	+ MONAD
---	+ FLIP FUNCTION
+--	+ FLIP FUNCTOR
 -- * FUNCTION
 --	+ BASIC
 --	+ PRACTICAL
@@ -46,13 +47,12 @@ isig e c = \case End x -> e x; h :| t -> c h t
 
 -- MONAD
 
-instance Functor (Sig s es a) where -- f `fmap` Sig s = Sig $ (f <$>) <$> s
-	fmap f = Sig . ((f <$>) <$>) . unSig
+instance Functor (Sig s es a) where fmap f = Sig . ((f <$>) <$>) . unSig
 
 instance Applicative (Sig s es a) where
 	pure = emitAll . pure
-	Sig rf <*> mx = Sig $ isig
-		(unSig . (<$> mx)) (\h -> pure . (h :|) . ((<$> mx) =<<)) =<< rf
+	Sig rf <*> (flip (<$>) -> ax) =
+		Sig $ isig (unSig . ax) (\h -> pure . (h :|) . (ax =<<)) =<< rf
 
 instance Monad (Sig s es a) where
 	Sig r >>= f =
@@ -63,7 +63,8 @@ instance Functor (ISig s es a) where
 
 instance Applicative (ISig s es a) where
 	pure = End
-	mf <*> mx = isig (<$> mx) (\h -> (h :|) . (emitAll . (<$> mx) =<<)) mf
+	mf <*> (flip (<$>) -> ax) =
+		isig ax (\h -> (h :|) . (emitAll . ax =<<)) mf
 
 instance Monad (ISig s es a) where
 	m >>= f = isig f (\h -> (h :|) . (emitAll . f =<<)) m
