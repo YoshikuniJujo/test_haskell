@@ -139,7 +139,7 @@ Control.Moffy.Run
 * [ ] Control.Moffy.Internal.React
 	+ [x] API
 	+ [x] imports
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
 * [ ] Control.Moffy.Internal.React.Type
 	+ [x] API
