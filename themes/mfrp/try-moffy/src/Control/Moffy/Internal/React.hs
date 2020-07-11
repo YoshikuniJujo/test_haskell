@@ -1,8 +1,9 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE DataKinds, TypeOperators #-}
-{-# LANGUAGE GADTs, TypeFamilies, ConstraintKinds #-}
-{-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE ScopedTypeVariables, PatternSynonyms #-}
+{-# LANGUAGE DataKinds, TypeOperators, ConstraintKinds #-}
+{-# LANGUAGE GADTs, TypeFamilies #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances,
+	UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Internal.React (
@@ -11,13 +12,17 @@ module Control.Moffy.Internal.React (
 	-- * Function
 	adjust, first, par, update ) where
 
-import Data.Type.Set
-import Data.OneOrMore
-import Data.Or
+import Control.Monad.Freer.Par (
+	Freer(..), pattern (:>>=), (>>>=), qApp, qAppPar )
+import Data.Type.Set ((:+:))
+import Data.OneOrMore (Expandable, Mergeable, expand, collapse, merge)
+import Data.Or (Or(..))
 
-import Control.Monad.Freer.Par
+import Control.Moffy.Internal.React.Type (
+	React, Rct(..), getThreadId, EvOccs, CollapsableOccurred,
+	ThreadId, forkThreadId, never )
 
-import Control.Moffy.Internal.React.Type
+---------------------------------------------------------------------------
 
 class Update a b where
 	update ::

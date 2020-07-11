@@ -138,7 +138,7 @@ Control.Moffy.Run
 			* [x] PRACTICAL
 * [ ] Control.Moffy.Internal.React
 	+ [x] API
-	+ [ ] imports
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] Control.Moffy.Internal.React.Type
