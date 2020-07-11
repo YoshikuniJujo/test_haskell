@@ -89,20 +89,20 @@ emit = emitAll . (:| pure ())
 emitAll :: ISig s es a b -> Sig s es a b
 emitAll = Sig . pure
 
-hold :: Sig s es a r
-hold = waitFor never
-
 waitFor :: React s es r -> Sig s es a r
 waitFor = Sig . (pure <$>)
 
 icur :: ISig s es a b -> Either a b
-icur = isig Right (const . Left)
+icur = isig Right $ const . Left
 
 res :: Sig s es a b -> React s es b
 res = ires <=< unSig
 
 ires :: ISig s es a b -> React s es b
-ires = isig pure (const res)
+ires = isig pure $ const res
+
+hold :: Sig s es a r
+hold = waitFor never
 
 -- PRACTICAL
 
@@ -119,6 +119,6 @@ find :: (a -> Bool) -> Sig s es a r -> React s es (Either a r)
 find p = (icur <$>) . res . brk
 	where
 	brk = Sig . (ibrk <$>) . unSig
-	ibrk = \case
-		is@(End _) -> pure is
-		is@(h :| t) | p h -> pure is | otherwise -> h :| brk t
+	ibrk is = case is of
+		End _ -> pure is
+		h :| t | p h -> pure is | otherwise -> h :| brk t

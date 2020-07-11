@@ -124,18 +124,18 @@ Control.Moffy.Run
 			* [x] PAUSE
 			* [x] PAIRS
 			* [x] ADJUST
-* [ ] Control.Moffy.Internal.Sig.Type
+* [x] Control.Moffy.Internal.Sig.Type
 	+ [x] API
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] TYPE
 		- [x] TYPE CLASS INSTANCE
 			* [x] MONAD
 			* [x] FLIOP FUNCTOR
-		- [ ] FUNCTION
-			* [ ] BASIC
-			* [ ] PRACTICAL
+		- [x] FUNCTION
+			* [x] BASIC
+			* [x] PRACTICAL
 * [ ] Control.Moffy.Internal.React
 	+ [x] API
 	+ [ ] imports
