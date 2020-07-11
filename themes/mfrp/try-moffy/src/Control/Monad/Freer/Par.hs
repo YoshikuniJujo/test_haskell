@@ -40,6 +40,8 @@ data Freer s sq (f :: (* -> *) -> * -> * -> *) t a =
 pattern (:>>=) :: t x -> Fun s sq f t x a -> Freer s sq f t a
 pattern x :>>= k <- x ::>>= (Fun -> k)
 
+infix 1 >>>=
+
 (>>>=) :: (Sequence sq, Funable f) =>
 	t a -> (a -> Freer s sq f t b) -> Freer s sq f t b
 m >>>= f = m ::>>= singleton (fun f)

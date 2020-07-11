@@ -39,10 +39,9 @@ adjust :: Adjustable es es' => React s es a -> React s es' a
 adjust = \case
 	Pure x -> pure x
 	Never :>>= _ -> Never >>>= pure
-	l@(Await e :>>= c) -> Await (expand e) >>>= \occ -> case collapse occ of
-		Just occ' -> adjust $ c `qApp` occ'
-		Nothing -> adjust l
-	GetThreadId :>>= c -> GetThreadId >>>= \ti -> adjust $ c `qApp` ti
+	r@(Await e :>>= c) ->
+		Await (expand e) >>>= adjust . maybe r (c `qApp`) . collapse
+	GetThreadId :>>= c -> GetThreadId >>>= adjust . (c `qApp`)
 
 ---------------------------------------------------------------------------
 -- FIRST

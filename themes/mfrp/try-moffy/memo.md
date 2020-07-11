@@ -141,6 +141,10 @@ Control.Moffy.Run
 	+ [x] imports
 	+ [x] structure
 	+ [ ] body
+		- [x] ADJUST
+		- [ ] FIRST
+		- [ ] PAR
+		- [ ] UPDATE
 * [ ] Control.Moffy.Internal.React.Type
 	+ [x] API
 	+ [ ] imports
