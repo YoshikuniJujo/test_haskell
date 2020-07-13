@@ -13,13 +13,13 @@ module Control.Moffy.Internal.React (
 	adjust, first, par, update ) where
 
 import Control.Monad.Freer.Par (
-	Freer(..), pattern (:>>=), (>>>=), qApp, qAppPar )
+	Freer(..), pattern (:>>=), (>>>=), (=<<<), qApp, qAppPar )
 import Data.Type.Set ((:+:))
 import Data.OneOrMore (Expandable, Mergeable, expand, collapse, merge)
 import Data.Or (Or(..))
 
 import Control.Moffy.Internal.React.Type (
-	React, Rct(..), getThreadId, EvOccs, CollapsableOccurred,
+	React, Rct(..), EvOccs, CollapsableOccurred,
 	ThreadId, forkThreadId, never )
 
 ---------------------------------------------------------------------------
@@ -68,18 +68,10 @@ l `par` r = case (l, r) of
 	(Pure _, _) -> pure (l, r); (_, Pure _) -> pure (l, r)
 	(Never :>>= _, _) -> (never ,) . Pure <$> r
 	(_, Never :>>= _) -> (, never) . Pure <$> l
-	(GetThreadId :>>= c, _) ->
-		(`par` r) =<< (c `qApp`) . fst . forkThreadId <$> getThreadId
-	(_, GetThreadId :>>= c') ->
-		(l `par`) =<< (c' `qApp`) . snd . forkThreadId <$> getThreadId
-	(Await el :>>= _, Await er :>>= _) -> let
-		e = el `merge` er
-		c b ti = let
-			(ti1, ti2) = forkThreadId ti
-			(u, u') = update l ti1 r ti2 b in u `par` u' in do
-			o <- Await e >>>= pure
-			ti <- getThreadId
-			c o ti
+	(GetThreadId :>>= c, _) -> (`par` r) =<< qApp c . fst <$> forkThreadId
+	(_, GetThreadId :>>= c') -> (l `par`) =<< qApp c' . snd <$> forkThreadId
+	(Await el :>>= _, Await er :>>= _) -> forkThreadId >>= \(t, u) ->
+		uncurry par . update l t r u =<< pure =<<< Await (el `merge` er)
 
 ---------------------------------------------------------------------------
 -- UPDATE

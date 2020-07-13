@@ -6,7 +6,7 @@
 
 module Control.Monad.Freer.Par (
 	-- * Freer
-	Freer(Pure), Fun, pattern (:>>=), (>>>=), qApp, qAppPar,
+	Freer(Pure), Fun, pattern (:>>=), (>>>=), (=<<<), qApp, qAppPar,
 	-- * Unique ID
 	Unique, runUnique, tag ) where
 
@@ -40,11 +40,15 @@ data Freer s sq (f :: (* -> *) -> * -> * -> *) t a =
 pattern (:>>=) :: t x -> Fun s sq f t x a -> Freer s sq f t a
 pattern x :>>= k <- x ::>>= (Fun -> k)
 
-infix 1 >>>=
+infix 8 >>>=, =<<<
 
 (>>>=) :: (Sequence sq, Funable f) =>
 	t a -> (a -> Freer s sq f t b) -> Freer s sq f t b
 m >>>= f = m ::>>= singleton (fun f)
+
+(=<<<) :: (Sequence sq, Funable f) =>
+	(a -> Freer s sq f t b) -> t a -> Freer s sq f t b
+(=<<<) = flip (>>>=)
 
 freer :: (a -> b) -> (forall x . t x -> sq (f (Freer s sq f t)) x a -> b) ->
 	Freer s sq f t a -> b

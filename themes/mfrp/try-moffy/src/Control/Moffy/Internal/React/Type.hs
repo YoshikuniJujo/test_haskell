@@ -8,7 +8,7 @@
 module Control.Moffy.Internal.React.Type (
 	-- * Type
 	-- ** Basic
-	React, Rct(..), getThreadId, Request(..), EvReqs, EvOccs,
+	React, Rct(..), Request(..), EvReqs, EvOccs,
 	-- ** Handle
 	Handle, Handle', HandleSt, HandleSt',
 	-- ** Occurred Context
@@ -48,8 +48,11 @@ data ThreadId = ThreadId Natural Int deriving (Show, Eq)
 rootThreadId :: ThreadId
 rootThreadId = ThreadId 0 0
 
-forkThreadId :: ThreadId -> (ThreadId, ThreadId)
-forkThreadId (ThreadId n i) =
+forkThreadId :: React s es (ThreadId, ThreadId)
+forkThreadId = forkThreadId_ <$> getThreadId
+
+forkThreadId_ :: ThreadId -> (ThreadId, ThreadId)
+forkThreadId_ (ThreadId n i) =
 	(ThreadId n $ i + 1, ThreadId (n `setBit` i) $ i + 1)
 
 step :: React s es a -> EvOccs es -> React s es a
