@@ -65,18 +65,13 @@ par :: (Update a b, Mergeable es es es) =>
 	React s es a -> React s es b -> React s es (React s es a, React s es b)
 l `par` r = case (l, r) of
 	(Never :>>= _, Never :>>= _) -> never
-	(Pure _, _) -> pure (l, r)
-	(_, Pure _) -> pure (l, r)
+	(Pure _, _) -> pure (l, r); (_, Pure _) -> pure (l, r)
 	(Never :>>= _, _) -> (never ,) . Pure <$> r
 	(_, Never :>>= _) -> (, never) . Pure <$> l
-	(GetThreadId :>>= c, r') -> do
-		ti <- getThreadId
-		let	(ti1, _ti2) = forkThreadId ti
-		(c `qApp` ti1) `par` r'
-	(l', GetThreadId :>>= c') -> do
-		ti <- getThreadId
-		let	(_ti1, ti2) = forkThreadId ti
-		l' `par` (c' `qApp` ti2)
+	(GetThreadId :>>= c, _) ->
+		(`par` r) =<< (c `qApp`) . fst . forkThreadId <$> getThreadId
+	(_, GetThreadId :>>= c') ->
+		(l `par`) =<< (c' `qApp`) . snd . forkThreadId <$> getThreadId
 	(Await el :>>= _, Await er :>>= _) -> let
 		e = el `merge` er
 		c b ti = let
