@@ -68,8 +68,8 @@ l `par` r = case (l, r) of
 	(Pure _, _) -> pure (l, r); (_, Pure _) -> pure (l, r)
 	(Never :>>= _, _) -> (never ,) . Pure <$> r
 	(_, Never :>>= _) -> (, never) . Pure <$> l
-	(GetThreadId :>>= c, _) -> (`par` r) =<< qApp c . fst <$> forkThreadId
-	(_, GetThreadId :>>= c') -> (l `par`) =<< qApp c' . snd <$> forkThreadId
+	(GetThreadId :>>= c, _) -> (`par` r) . qApp c . fst =<< forkThreadId
+	(_, GetThreadId :>>= c') -> (l `par`) . qApp c' . snd =<< forkThreadId
 	(Await el :>>= _, Await er :>>= _) -> forkThreadId >>= \(t, u) ->
 		uncurry par . update l t r u =<< pure =<<< Await (el `merge` er)
 
