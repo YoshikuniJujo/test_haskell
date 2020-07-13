@@ -44,10 +44,10 @@ data Rct es a where
 	Never :: Rct es a; GetThreadId :: Rct es ThreadId
 	Await :: EvReqs es -> Rct es (EvOccs es)
 
-class (Numbered e, Selectable e) => Request e where data Occurred e
-
 type EvReqs (es :: Set Type) = OneOrMore es
 type EvOccs (es :: Set Type) = OneOrMore (Occurred :$: es)
+
+class (Numbered e, Selectable e) => Request e where data Occurred e
 
 ---------------------------------------------------------------------------
 -- THREAD ID
@@ -59,23 +59,18 @@ rootThreadId :: ThreadId
 rootThreadId = ThreadId 0 0
 
 forkThreadId :: React s es (ThreadId, ThreadId)
-forkThreadId = forkThreadId_ <$> pure =<<< GetThreadId
-
-forkThreadId_ :: ThreadId -> (ThreadId, ThreadId)
-forkThreadId_ (ThreadId n i) =
-	(ThreadId n $ i + 1, ThreadId (n `setBit` i) $ i + 1)
+forkThreadId = GetThreadId >>>= \(ThreadId n i) ->
+	pure (ThreadId n $ i + 1, ThreadId (n `setBit` i) $ i + 1)
 
 ---------------------------------------------------------------------------
 -- AWAIT AND NEVER
 ---------------------------------------------------------------------------
 
 await :: a -> (Occurred a -> b) -> React s (Singleton a) b
-await r f = Await (singleton r) >>>= (pure . f . extract)
+await r f = pure . f . extract =<<< Await (singleton r)
 
 await' :: a -> (ThreadId -> Occurred a -> b) -> React s (Singleton a) b
-await' r f = Await (singleton r) >>>= \o -> do
-	ti <- pure =<<< GetThreadId
-	pure . f ti $ extract o
+await' r f = await r . f =<<< GetThreadId
 
 never :: React s es a
-never = Never >>>= pure
+never = pure =<<< Never

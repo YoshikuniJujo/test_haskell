@@ -145,14 +145,14 @@ Control.Moffy.Run
 		- [x] FIRST
 		- [x] PAR
 		- [x] UPDATE
-* [ ] Control.Moffy.Internal.React.Type
+* [x] Control.Moffy.Internal.React.Type
 	+ [x] API
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
-		- [ ] REACT AND HANDLE
-		- [ ] THREAD ID
-		- [ ] AWAIT AND NEVER
+	+ [x] body
+		- [x] REACT AND HANDLE
+		- [x] THREAD ID
+		- [x] AWAIT AND NEVER
 * [ ] Control.Moffy.Handle
 * [ ] Control.Moffy.Run
 
