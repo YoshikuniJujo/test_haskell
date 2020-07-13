@@ -142,7 +142,7 @@ Control.Moffy.Run
 	+ [x] structure
 	+ [ ] body
 		- [x] ADJUST
-		- [ ] FIRST
+		- [x] FIRST
 		- [ ] PAR
 		- [ ] UPDATE
 * [ ] Control.Moffy.Internal.React.Type

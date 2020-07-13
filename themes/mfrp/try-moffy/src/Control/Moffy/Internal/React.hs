@@ -1,5 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
-{-# LANGUAGE ScopedTypeVariables, PatternSynonyms #-}
+{-# LANGUAGE ScopedTypeVariables, PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE DataKinds, TypeOperators, ConstraintKinds #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances,
@@ -53,9 +53,8 @@ type Firstable es es' a b = (
 
 first :: Firstable es es' a b =>
 	React s es a -> React s es' b -> React s (es :+: es') (Or a b)
-l `first` r = (<$> adjust l `par` adjust r) \case
-	(Pure x, Pure y) -> LR x y
-	(Pure x, _) -> L x; (_, Pure y) -> R y
+(adjust -> l) `first` (adjust -> r) = (<$> l `par` r) \case
+	(Pure x, Pure y) -> LR x y; (Pure x, _) -> L x; (_, Pure y) -> R y
 	(_ :>>= _, _:>>= _) -> error "never occur"
 
 ---------------------------------------------------------------------------
