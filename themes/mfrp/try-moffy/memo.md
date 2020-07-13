@@ -136,15 +136,15 @@ Control.Moffy.Run
 		- [x] FUNCTION
 			* [x] BASIC
 			* [x] PRACTICAL
-* [ ] Control.Moffy.Internal.React
+* [x] Control.Moffy.Internal.React
 	+ [x] API
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] ADJUST
 		- [x] FIRST
 		- [x] PAR
-		- [ ] UPDATE
+		- [x] UPDATE
 * [ ] Control.Moffy.Internal.React.Type
 	+ [x] API
 	+ [ ] imports

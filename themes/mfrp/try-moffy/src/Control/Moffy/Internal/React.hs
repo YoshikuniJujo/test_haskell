@@ -79,20 +79,21 @@ l `par` r = case (l, r) of
 
 class Update a b where
 	update ::
-		React s es a -> ThreadId ->
-		React s es b -> ThreadId ->
+		React s es a -> ThreadId -> React s es b -> ThreadId ->
 		EvOccs es -> (React s es a, React s es b)
 
 instance {-# OVERLAPPABLE #-} Update a b where
-	update (GetThreadId :>>= c) ti r' ti' b = update (c `qApp` ti) ti r' ti' b
-	update r ti (GetThreadId :>>= c') ti' b = update r ti (c' `qApp` ti') ti' b
+	update (GetThreadId :>>= c) t r u b = update (c `qApp` t) t r u b
+	update l t (GetThreadId :>>= c') u b = update l t (c' `qApp` u) u b
 	update (Await _ :>>= c) _ (Await _ :>>= c') _ b = (c `qApp` b, c' `qApp` b)
-	update r@(Never :>>= _) _ (Await _ :>>= c') _ b = (r, c' `qApp` b)
-	update (Await _ :>>= c) _ r'@(Never :>>= _) _ b = (c `qApp` b, r')
-	update r _ r' _ _ = (r, r')
+	update l@(Never :>>= _) _ (Await _ :>>= c') _ b = (l, c' `qApp` b)
+	update (Await _ :>>= c) _ r@(Never :>>= _) _ b = (c `qApp` b, r)
+	update l _ r _ _ = (l, r)
 
 instance Update a a where
-	update (GetThreadId :>>= c) ti r' ti' b = update (c `qApp` ti) ti r' ti' b
-	update r ti (GetThreadId :>>= c') ti' b = update r ti (c' `qApp` ti') ti' b
+	update (GetThreadId :>>= c) t r u b = update (c `qApp` t) t r u b
+	update l t (GetThreadId :>>= c') u b = update l t (c' `qApp` u) u b
 	update (Await _ :>>= c) _ (Await _ :>>= c') _ b = qAppPar c c' b
-	update r _ r' _ _ = (r, r')
+	update l@(Never :>>= _) _ (Await _ :>>= c') _ b = (l, c' `qApp` b)
+	update (Await _ :>>= c) _ r@(Never :>>= _) _ b = (c `qApp` b, r)
+	update l _ r _ _ = (l, r)
