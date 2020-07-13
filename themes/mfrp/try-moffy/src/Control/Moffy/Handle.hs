@@ -14,13 +14,15 @@ module Control.Moffy.Handle (
 	retrySt, expandSt, beforeSt, mergeSt
 	) where
 
-import Control.Arrow
-import Data.Type.Set
-import Data.OneOrMore hiding (merge, expand, collapse)
+import Control.Arrow (first)
+import Control.Moffy.Internal.React.Type (
+	Handle, HandleSt, EvReqs, EvOccs, Occurred )
+import Data.Type.Set ((:+:), (:$:))
+import Data.OneOrMore (Expandable, Collapsable, Mergeable, merge')
 
 import qualified Data.OneOrMore as OOM
 
-import Control.Moffy.Internal.React.Type
+---------------------------------------------------------------------------
 
 type Handle' m es = EvReqs es -> m (Maybe (EvOccs es))
 type HandleSt' st st' m es = st -> EvReqs es -> m (Maybe (EvOccs es), st')
