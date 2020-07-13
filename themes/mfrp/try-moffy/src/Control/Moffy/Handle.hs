@@ -4,11 +4,14 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Handle (
-	-- * Type
+	-- * Type and Constraint
 	Handle, Handle', HandleSt, HandleSt',
 	ExpandableHandle, MergeableOccurred,
 	-- * Composer
-	retry, expand, before, merge, retrySt, expandSt, beforeSt, mergeSt
+	-- ** Plain
+	retry, expand, before, merge,
+	-- ** With State
+	retrySt, expandSt, beforeSt, mergeSt
 	) where
 
 import Control.Arrow
