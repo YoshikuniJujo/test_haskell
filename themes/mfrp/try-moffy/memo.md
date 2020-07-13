@@ -148,8 +148,11 @@ Control.Moffy.Run
 * [ ] Control.Moffy.Internal.React.Type
 	+ [x] API
 	+ [x] imports
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] REACT AND HANDLE
+		- [ ] THREAD ID
+		- [ ] AWAIT AND NEVER
 * [ ] Control.Moffy.Handle
 * [ ] Control.Moffy.Run
 

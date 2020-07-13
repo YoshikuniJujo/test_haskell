@@ -8,7 +8,7 @@ module Control.Moffy.Handle.ThreadId (GetThreadId, handleGetThreadId) where
 import Data.Type.Set
 import Data.OneOrMore
 
-import Control.Moffy.Internal.React.Type
+import Control.Moffy.Handle
 import Control.Moffy.Event.ThreadId
 
 handleGetThreadId :: Applicative m => Handle' m (Singleton GetThreadId)

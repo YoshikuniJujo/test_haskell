@@ -14,13 +14,13 @@ module Control.Moffy.Internal.React (
 
 import Control.Monad.Freer.Par (
 	Freer(..), pattern (:>>=), (>>>=), (=<<<), qApp, qAppPar )
-import Data.Type.Set ((:+:))
-import Data.OneOrMore (Expandable, Mergeable, expand, collapse, merge)
+import Data.Type.Set ((:+:), (:$:))
+import Data.OneOrMore (
+	Expandable, Collapsable, Mergeable, expand, collapse, merge )
 import Data.Or (Or(..))
 
 import Control.Moffy.Internal.React.Type (
-	React, Rct(..), EvOccs, CollapsableOccurred,
-	ThreadId, forkThreadId, never )
+	React, Rct(..), EvOccs, Occurred, ThreadId, forkThreadId, never )
 
 ---------------------------------------------------------------------------
 
@@ -33,7 +33,8 @@ import Control.Moffy.Internal.React.Type (
 -- ADJUST
 ---------------------------------------------------------------------------
 
-type Adjustable es es' = (Expandable es es', CollapsableOccurred es' es)
+type Adjustable es es' = (
+	Expandable es es', Collapsable (Occurred :$: es') (Occurred :$: es) )
 
 adjust :: Adjustable es es' => React s es a -> React s es' a
 adjust = \case

@@ -19,6 +19,9 @@ import qualified Data.OneOrMore as OOM
 
 import Control.Moffy.Internal.React.Type
 
+type Handle' m es = EvReqs es -> m (Maybe (EvOccs es))
+type HandleSt' st st' m es = st -> EvReqs es -> m (Maybe (EvOccs es), st')
+
 retry :: Monad m => Handle' m es -> Handle m es
 retry hdl rqs = maybe (retry hdl rqs) pure =<< hdl rqs
 
@@ -27,6 +30,7 @@ collapse :: (Applicative m, Collapsable es' es) =>
 collapse hdl = maybe (pure Nothing) hdl . OOM.collapse
 
 type ExpandableHandle es es' = (Collapsable es' es, ExpandableOccurred es es')
+type ExpandableOccurred es es' = Expandable (Occurred :$: es) (Occurred :$: es')
 
 expand :: (Applicative m, ExpandableHandle es es') =>
 	Handle' m es -> Handle' m es'
@@ -41,6 +45,8 @@ before :: (
 before hdl1 hdl2 rqs = maybe (expand hdl2 rqs) (pure . Just) =<< expand hdl1 rqs
 
 infixr 6 `merge`
+
+type MergeableOccurred es es' mrg = Mergeable (Occurred :$: es) (Occurred :$: es') (Occurred :$: mrg)
 
 merge :: (
 	Applicative m,
