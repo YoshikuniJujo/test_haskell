@@ -1,8 +1,9 @@
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE DataKinds, TypeOperators #-}
-{-# LANGUAGE GADTs, TypeFamilies, ConstraintKinds #-}
-{-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE ScopedTypeVariables, PatternSynonyms #-}
+{-# LANGUAGE DataKinds, TypeOperators, ConstraintKinds #-}
+{-# LANGUAGE GADTs, TypeFamilies #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances,
+	UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Internal.React.Type (
@@ -18,15 +19,18 @@ module Control.Moffy.Internal.React.Type (
 	-- * Basic Function
 	await, await', never ) where
 
-import Data.Kind
-import Data.Type.Set
-import Data.OneOrMore
-import Data.Bits
-import Numeric.Natural
+import Control.Monad.Freer.Par (Freer, (>>>=))
+import Control.Monad.Freer.Par.FTCQueue (FTCQueue)
+import Control.Monad.Freer.Par.TaggableFunction (TaggableFun)
+import Data.Kind (Type)
+import Data.Type.Set (Set, Numbered, Singleton, (:$:))
+import Data.OneOrMore (
+	OneOrMore, Expandable, Collapsable, Selectable, Mergeable,
+	extract, singleton )
+import Data.Bits (setBit)
+import Numeric.Natural (Natural)
 
-import Control.Monad.Freer.Par
-import Control.Monad.Freer.Par.FTCQueue
-import Control.Monad.Freer.Par.TaggableFunction
+---------------------------------------------------------------------------
 
 type EvReqs (es :: Set Type) = OneOrMore es
 type EvOccs (es :: Set Type) = OneOrMore (Occurred :$: es)
@@ -54,10 +58,6 @@ forkThreadId = forkThreadId_ <$> getThreadId
 forkThreadId_ :: ThreadId -> (ThreadId, ThreadId)
 forkThreadId_ (ThreadId n i) =
 	(ThreadId n $ i + 1, ThreadId (n `setBit` i) $ i + 1)
-
-step :: React s es a -> EvOccs es -> React s es a
-step (Await _ :>>= c) = (c `qApp`)
-step _ = error "not await"
 
 await :: a -> (Occurred a -> b) -> React s (Singleton a) b
 await r f = Await (singleton r) >>>= (pure . f . extract)

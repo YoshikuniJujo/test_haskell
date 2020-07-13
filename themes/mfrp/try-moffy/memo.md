@@ -147,7 +147,7 @@ Control.Moffy.Run
 		- [x] UPDATE
 * [ ] Control.Moffy.Internal.React.Type
 	+ [x] API
-	+ [ ] imports
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] Control.Moffy.Handle
