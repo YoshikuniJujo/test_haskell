@@ -168,7 +168,7 @@ Control.Moffy.Run
 	+ [x] imports
 	+ [x] structure
 	+ [ ] body
-		- [ ] RUN SIG
+		- [x] RUN SIG
 		- [ ] RUN REACT
 
 ### Moffy library

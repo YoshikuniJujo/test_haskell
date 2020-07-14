@@ -23,7 +23,7 @@ tryCheckDup = do
 	t <- systemToTAITime <$> getSystemTime
 	print <=< (`runStateT` t) $ runUnique $ do
 		cd <- tag checkDup
-		pure $ interpretReactSt InitMode (handleBoxes 0.05 f) do
+		pure $ interpretReactSt (handleBoxes 0.05 f) InitMode do
 			() <$ checkDup `first` checkDup
 			cd `first` cd
 	closeField f
