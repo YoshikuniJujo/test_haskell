@@ -8,7 +8,7 @@ mergesort [] = []
 mergesort [xs] = xs
 mergesort xss = mergesort $ mergePairs xss
 
-mergePairs :: Ord a => [[a]] ->[[a]]
+mergePairs :: Ord a => [[a]] -> [[a]]
 mergePairs [] = []
 mergePairs [xs] = [xs]
 mergePairs (xs : ys : xss) = merge xs ys : mergePairs xss
