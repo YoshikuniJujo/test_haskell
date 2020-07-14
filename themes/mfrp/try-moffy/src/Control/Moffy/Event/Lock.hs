@@ -7,4 +7,7 @@ module Control.Moffy.Event.Lock (
 	GetThreadIdNewLockId, newLockId,
 	GetThreadIdGetLock, SingletonUnlock, withLock ) where
 
-import Control.Moffy.Event.Lock.Internal
+import Control.Moffy.Event.Lock.Internal (
+	LockEv, LockState(..), LockId,
+	GetThreadIdNewLockId, newLockId,
+	GetThreadIdGetLock, SingletonUnlock, withLock )
