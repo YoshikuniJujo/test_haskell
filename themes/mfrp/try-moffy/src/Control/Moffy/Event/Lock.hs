@@ -23,23 +23,23 @@ import Control.Moffy.Event.ThreadId (GetThreadId, ThreadId, getThreadId)
 
 ---------------------------------------------------------------------------
 
--- * LOCKID AND LOCKSTATE
+-- * LOCKSTATE AND LOCKID
 -- * EVENT
 --	+ NEWLOCKID
 --	+ GETLOCK
 --	+ UNLOCK
--- * HANDLE AND WITHLOCK
+-- * WITHLOCK
 
 ---------------------------------------------------------------------------
--- LOCKID AND LOCKSTATE
+-- LOCKSTATE AND LOCKID
 ---------------------------------------------------------------------------
-
-newtype LockId = LockId Int deriving (Show, Eq)
 
 class LockState s where
 	getNextLockId :: s -> Int; putNextLockId :: s -> Int -> s
 	isLocked :: s -> LockId -> Bool
 	lockIt :: s -> LockId -> s; unlockIt :: s -> LockId -> s
+
+newtype LockId = LockId Int deriving (Show, Eq)
 
 ---------------------------------------------------------------------------
 -- EVENT
