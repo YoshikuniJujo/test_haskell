@@ -177,6 +177,9 @@ Control.Moffy.Run
 * [x] Control.Moffy.Handle.ThreadId
 * [ ] Control.Moffy.Event.Lock
 	+ [x] API
+	+ [ ] imports
+* [ ] Control.Moffy.Event.Lock.Internal
+	+ [x] API
 	+ [x] imports
 	+ [x] structure
 	+ [ ] body

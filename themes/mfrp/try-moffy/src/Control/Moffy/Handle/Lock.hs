@@ -16,7 +16,7 @@ import Data.OneOrMore hiding (merge)
 import Data.Bool (bool)
 
 import Control.Moffy.Handle
-import Control.Moffy.Event.Lock
+import Control.Moffy.Event.Lock.Internal
 
 ---------------------------------------------------------------------------
 
