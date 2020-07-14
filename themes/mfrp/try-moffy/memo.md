@@ -153,16 +153,16 @@ Control.Moffy.Run
 		- [x] REACT AND HANDLE
 		- [x] THREAD ID
 		- [x] AWAIT AND NEVER
-* [ ] Control.Moffy.Handle
+* [x] Control.Moffy.Handle
 	+ [x] API
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] PLAIN
-		- [ ] WITH STATE
+		- [x] WITH STATE
 			* [x] HandleSt': flip st and (EvReqs es)
 			* [x] HandleSt: flip st and (EvReqs es)
-			* [ ] others
+			* [x] others
 * [ ] Control.Moffy.Run
 
 ### Moffy library

@@ -78,12 +78,13 @@ retrySt hdl rqs st = hdl rqs st >>= \(mocc, st') ->
 	maybe (retrySt hdl rqs st') (pure . (, st')) mocc
 
 collapseSt :: (Applicative m, Collapsable es' es) =>
-	HandleSt' st st' m es -> (st -> m st') -> EvReqs es' -> st -> m (Maybe (EvOccs es), st')
-collapseSt hdl ot rqs = maybe (((Nothing ,) <$>) . ot) hdl (OOM.collapse rqs)
+	HandleSt' st st' m es -> (st -> m st') -> EvReqs es' -> st ->
+	m (Maybe (EvOccs es), st')
+collapseSt hdl ot (OOM.collapse -> rqs) = maybe (((Nothing ,) <$>) . ot) hdl rqs
 
 expandSt :: (Applicative m, ExpandableHandle es es') =>
 	HandleSt' st st' m es -> (st -> m st') -> HandleSt' st st' m es'
-expandSt hdl o st rqs = first (OOM.expand <$>) <$> collapseSt hdl o st rqs
+expandSt hdl ot st rqs = first (OOM.expand <$>) <$> collapseSt hdl ot st rqs
 
 
 beforeSt :: (
@@ -92,8 +93,8 @@ beforeSt :: (
 	HandleSt' st st' m es -> (st -> m st') ->
 	HandleSt' st' st'' m es' -> (st' -> m st'') ->
 	HandleSt' st st'' m (es :+: es')
-beforeSt hdl1 ot1 hdl2 ot2 rqs st = expandSt hdl1 ot1 rqs st >>= \(mocc, st') ->
-	maybe (expandSt hdl2 ot2 rqs st') ((<$> ot2 st') . (,) . Just) mocc
+beforeSt l otl r otr rqs st = expandSt l otl rqs st >>= \(mocc, st') ->
+	maybe (expandSt r otr rqs st') ((<$> otr st') . (,) . Just) mocc
 
 mergeSt :: (
 	Monad m,
@@ -102,5 +103,5 @@ mergeSt :: (
 	HandleSt' st st' m es -> (st -> m st') ->
 	HandleSt' st' st'' m es' -> (st' -> m st'') ->
 	HandleSt' st st'' m (es :+: es')
-mergeSt hdl1 ot1 hdl2 ot2 rqs st = collapseSt hdl1 ot1 rqs st >>= \(mocc1, st') ->
-	first (mocc1 `merge'`) <$> collapseSt hdl2 ot2 rqs st'
+mergeSt l otl r otr rqs st = collapseSt l otl rqs st >>= \(mocc, st') ->
+	first (mocc `merge'`) <$> collapseSt r otr rqs st'
