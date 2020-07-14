@@ -1,11 +1,12 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Event.ThreadId (
-	GetThreadId, Occurred(OccGetThreadId), ThreadId, getThreadId ) where
+	GetThreadId, pattern OccGetThreadId, ThreadId, getThreadId ) where
 
 import Control.Moffy.Internal.React.Type (
 	React, Request(Occurred), ThreadId, await' )
