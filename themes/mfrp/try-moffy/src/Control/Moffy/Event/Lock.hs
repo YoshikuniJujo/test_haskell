@@ -15,11 +15,11 @@ module Control.Moffy.Event.Lock (
 	GetThreadIdGetLock, SingletonUnlock, newLockId, withLock ) where
 
 import Data.Type.Set (Set(Nil), Singleton, (:-), (:+:), numbered)
-import Data.OneOrMore hiding (merge)
+import Data.OneOrMore (Selectable(..))
 import Data.Bool (bool)
 
-import Control.Moffy
-import Control.Moffy.Event.ThreadId
+import Control.Moffy (React, Request(..), Adjustable, adjust, await)
+import Control.Moffy.Event.ThreadId (GetThreadId, ThreadId, getThreadId)
 
 ---------------------------------------------------------------------------
 
