@@ -156,8 +156,10 @@ Control.Moffy.Run
 * [ ] Control.Moffy.Handle
 	+ [x] API
 	+ [x] imports
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] PLAIN
+		- [ ] WITH STATE
 * [ ] Control.Moffy.Run
 
 ### Moffy library

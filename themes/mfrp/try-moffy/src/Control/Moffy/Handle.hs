@@ -4,14 +4,13 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Handle (
-	-- * Type and Constraint
-	Handle, Handle', HandleSt, HandleSt',
+	-- * Constraint
 	ExpandableHandle, MergeableOccurred,
 	-- * Composer
 	-- ** Plain
-	retry, expand, before, merge,
+	Handle, Handle', retry, expand, before, merge,
 	-- ** With State
-	retrySt, expandSt, beforeSt, mergeSt
+	HandleSt, HandleSt', retrySt, expandSt, beforeSt, mergeSt
 	) where
 
 import Control.Arrow (first)
@@ -24,8 +23,14 @@ import qualified Data.OneOrMore as OOM
 
 ---------------------------------------------------------------------------
 
+-- * PLAIN
+-- * WITH STATE
+
+---------------------------------------------------------------------------
+-- PLAIN
+---------------------------------------------------------------------------
+
 type Handle' m es = EvReqs es -> m (Maybe (EvOccs es))
-type HandleSt' st st' m es = st -> EvReqs es -> m (Maybe (EvOccs es), st')
 
 retry :: Monad m => Handle' m es -> Handle m es
 retry hdl rqs = maybe (retry hdl rqs) pure =<< hdl rqs
@@ -34,8 +39,8 @@ collapse :: (Applicative m, Collapsable es' es) =>
 	Handle' m es -> EvReqs es' -> m (Maybe (EvOccs es))
 collapse hdl = maybe (pure Nothing) hdl . OOM.collapse
 
-type ExpandableHandle es es' = (Collapsable es' es, ExpandableOccurred es es')
-type ExpandableOccurred es es' = Expandable (Occurred :$: es) (Occurred :$: es')
+type ExpandableHandle es es' =
+	(Collapsable es' es, Expandable (Occurred :$: es) (Occurred :$: es'))
 
 expand :: (Applicative m, ExpandableHandle es es') =>
 	Handle' m es -> Handle' m es'
@@ -49,9 +54,10 @@ before :: (
 	Handle' m es -> Handle' m es' -> Handle' m (es :+: es')
 before hdl1 hdl2 rqs = maybe (expand hdl2 rqs) (pure . Just) =<< expand hdl1 rqs
 
-infixr 6 `merge`
+type MergeableOccurred es es' mrg =
+	Mergeable (Occurred :$: es) (Occurred :$: es') (Occurred :$: mrg)
 
-type MergeableOccurred es es' mrg = Mergeable (Occurred :$: es) (Occurred :$: es') (Occurred :$: mrg)
+infixr 6 `merge`
 
 merge :: (
 	Applicative m,
@@ -59,6 +65,12 @@ merge :: (
 	MergeableOccurred es es' (es :+: es') ) =>
 	Handle' m es -> Handle' m es' -> Handle' m (es :+: es')
 merge hdl1 hdl2 rqs = merge' <$> collapse hdl1 rqs <*> collapse hdl2 rqs
+
+---------------------------------------------------------------------------
+-- WITH STATE
+---------------------------------------------------------------------------
+
+type HandleSt' st st' m es = st -> EvReqs es -> m (Maybe (EvOccs es), st')
 
 retrySt :: Monad m => HandleSt' st st m es -> HandleSt st m es
 retrySt hdl st rqs = hdl st rqs >>= \(mocc, st') ->
