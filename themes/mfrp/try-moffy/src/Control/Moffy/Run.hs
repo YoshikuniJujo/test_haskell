@@ -17,25 +17,12 @@ import Control.Moffy.Internal.React.Type (
 
 ---------------------------------------------------------------------------
 
-runReact :: Monad m => ThreadId -> Handle m es -> React s es a -> m (a, ThreadId)
-runReact ti _ (Pure x) = pure (x, ti)
-runReact _ _ (Never :>>= _) = error "never end"
-runReact ti hdl (GetThreadId :>>= c) = runReact ti hdl (c `qApp` ti)
-runReact ti hdl (Await rqs :>>= c) = runReact ti hdl . (c `qApp`) =<< hdl rqs
+-- * RUN SIG
+-- * RUN REACT
 
-interpretReact :: Monad m => Handle m es -> React s es a -> m a
-interpretReact hdl r = fst <$> runReact rootThreadId hdl r
-
-runReactSt :: Monad m => st -> ThreadId -> HandleSt st m es -> React s es a -> m ((a, ThreadId), st)
-runReactSt st ti _ (Pure x) = pure ((x, ti), st)
-runReactSt _ _ _ (Never :>>= _) = error "never end"
-runReactSt st ti hdl (GetThreadId :>>= c) = runReactSt st ti hdl (c `qApp` ti)
-runReactSt st ti hdl (Await rqs :>>= c) = do
-	(x, st') <- hdl rqs st
-	runReactSt st' ti hdl (c `qApp` x)
-
-interpretReactSt :: Monad m => st -> HandleSt st m es -> React s es a -> m (a, st)
-interpretReactSt st0 hdl r = (fst `first`) <$> runReactSt st0 rootThreadId hdl r
+---------------------------------------------------------------------------
+-- RUN SIG
+---------------------------------------------------------------------------
 
 interpret :: Monad m => Handle m es -> (a -> m ()) -> Sig s es a r -> m r
 interpret hdl vw = go where
@@ -46,3 +33,27 @@ interpretSt ::
 interpretSt st0 hdl vw = go st0 where
 	go st (Sig s) = interpretReactSt st hdl s >>= \(is, st') ->
 		isig pure (\h -> (vw h >>) . go st') is
+
+---------------------------------------------------------------------------
+-- RUN REACT
+---------------------------------------------------------------------------
+
+interpretReact :: Monad m => Handle m es -> React s es a -> m a
+interpretReact hdl r = fst <$> runReact rootThreadId hdl r
+
+runReact :: Monad m => ThreadId -> Handle m es -> React s es a -> m (a, ThreadId)
+runReact ti _ (Pure x) = pure (x, ti)
+runReact _ _ (Never :>>= _) = error "never end"
+runReact ti hdl (GetThreadId :>>= c) = runReact ti hdl (c `qApp` ti)
+runReact ti hdl (Await rqs :>>= c) = runReact ti hdl . (c `qApp`) =<< hdl rqs
+
+interpretReactSt :: Monad m => st -> HandleSt st m es -> React s es a -> m (a, st)
+interpretReactSt st0 hdl r = (fst `first`) <$> runReactSt st0 rootThreadId hdl r
+
+runReactSt :: Monad m => st -> ThreadId -> HandleSt st m es -> React s es a -> m ((a, ThreadId), st)
+runReactSt st ti _ (Pure x) = pure ((x, ti), st)
+runReactSt _ _ _ (Never :>>= _) = error "never end"
+runReactSt st ti hdl (GetThreadId :>>= c) = runReactSt st ti hdl (c `qApp` ti)
+runReactSt st ti hdl (Await rqs :>>= c) = do
+	(x, st') <- hdl rqs st
+	runReactSt st' ti hdl (c `qApp` x)
