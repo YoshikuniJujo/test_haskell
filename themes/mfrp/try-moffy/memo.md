@@ -176,6 +176,10 @@ Control.Moffy.Run
 * [x] Control.Moffy.Event.ThreadId
 * [x] Control.Moffy.Handle.ThreadId
 * [ ] Control.Moffy.Event.Lock
+	+ [x] API
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
 * [ ] Control.Moffy.Handle.Lock
 * [ ] Control.Moffy.Event.Random
 * [ ] Control.Moffy.Handle.Random

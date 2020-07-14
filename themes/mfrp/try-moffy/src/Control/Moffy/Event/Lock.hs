@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -7,8 +8,9 @@
 
 module Control.Moffy.Event.Lock (
 	-- * Type
-	LockEv, NewLockId(..), GetLock(..), Unlock(..), LockId(..), LockState(..),
-	Occurred(OccNewLockId, OccGetLock, OccUnlock),
+	LockEv, LockState(..), LockId(..),
+	NewLockId(..), pattern OccNewLockId, GetLock(..), pattern OccGetLock,
+	Unlock(..), pattern OccUnlock,
 	-- * Event
 	GetThreadIdGetLock, SingletonUnlock, newLockId, withLock ) where
 
@@ -96,15 +98,9 @@ unlock l = await (UnlockReq l) \_ -> ()
 type LockEv = NewLockId :- GetLock :- Unlock :- 'Nil
 
 withLock :: (
-	Adjustable GetThreadIdGetLock es',
-	Adjustable es es',
-	Adjustable SingletonUnlock es',
---	CollapsableOccurred es' GetThreadIdGetLock,
---	CollapsableOccurred es' es,
---	CollapsableOccurred es' SingletonUnlock,
 	(es :+: es') ~ es',
-	(GetThreadIdGetLock :+: es') ~ es', (SingletonUnlock :+: es') ~ es'
---	Expandable es es',
---	Expandable GetThreadIdGetLock es', Expandable SingletonUnlock es'
-	) => LockId -> React s es a -> React s es' a
+	(GetThreadIdGetLock :+: es') ~ es', (SingletonUnlock :+: es') ~ es',
+	Adjustable es es',
+	Adjustable GetThreadIdGetLock es', Adjustable SingletonUnlock es') =>
+	LockId -> React s es a -> React s es' a
 withLock l act = adjust (getLock l 0) >> adjust act <* adjust (unlock l)
