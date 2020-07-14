@@ -39,21 +39,24 @@ interpretSt hdl st0 vw = (`go` st0) where
 ---------------------------------------------------------------------------
 
 interpretReact :: Monad m => Handle m es -> React s es a -> m a
-interpretReact hdl r = fst <$> runReact rootThreadId hdl r
+interpretReact hdl r = fst <$> runReact hdl r rootThreadId
 
-runReact :: Monad m => ThreadId -> Handle m es -> React s es a -> m (a, ThreadId)
-runReact ti _ (Pure x) = pure (x, ti)
-runReact _ _ (Never :>>= _) = error "never end"
-runReact ti hdl (GetThreadId :>>= c) = runReact ti hdl (c `qApp` ti)
-runReact ti hdl (Await rqs :>>= c) = runReact ti hdl . (c `qApp`) =<< hdl rqs
+runReact ::
+	Monad m => Handle m es -> React s es a -> ThreadId -> m (a, ThreadId)
+runReact _ (Pure x) t = pure (x, t)
+runReact _ (Never :>>= _) _ = error "never end"
+runReact h (GetThreadId :>>= c) t = runReact h (c `qApp` t) t
+runReact h (Await rqs :>>= c) t = flip (runReact h) t . (c `qApp`) =<< h rqs
 
-interpretReactSt :: Monad m => HandleSt st m es -> st -> React s es a -> m (a, st)
-interpretReactSt hdl st0 r = (fst `first`) <$> runReactSt st0 rootThreadId hdl r
+interpretReactSt ::
+	Monad m => HandleSt st m es -> st -> React s es a -> m (a, st)
+interpretReactSt hdl st r = (fst `first`) <$> runReactSt hdl st r rootThreadId
 
-runReactSt :: Monad m => st -> ThreadId -> HandleSt st m es -> React s es a -> m ((a, ThreadId), st)
-runReactSt st ti _ (Pure x) = pure ((x, ti), st)
-runReactSt _ _ _ (Never :>>= _) = error "never end"
-runReactSt st ti hdl (GetThreadId :>>= c) = runReactSt st ti hdl (c `qApp` ti)
-runReactSt st ti hdl (Await rqs :>>= c) = do
-	(x, st') <- hdl rqs st
-	runReactSt st' ti hdl (c `qApp` x)
+runReactSt :: Monad m =>
+	HandleSt st m es -> st -> React s es a -> ThreadId ->
+	m ((a, ThreadId), st)
+runReactSt _ st (Pure x) t = pure ((x, t), st)
+runReactSt _ _ (Never :>>= _) _ = error "never end"
+runReactSt h st (GetThreadId :>>= c) t = runReactSt h st (c `qApp` t) t
+runReactSt h st (Await rqs :>>= c) t =
+	h rqs st >>= \(x, st') -> runReactSt h st' (c `qApp` x) t

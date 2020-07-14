@@ -163,13 +163,13 @@ Control.Moffy.Run
 			* [x] HandleSt': flip st and (EvReqs es)
 			* [x] HandleSt: flip st and (EvReqs es)
 			* [x] others
-* [ ] Control.Moffy.Run
+* [x] Control.Moffy.Run
 	+ [x] API
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] RUN SIG
-		- [ ] RUN REACT
+		- [x] RUN REACT
 
 ### Moffy library
 
