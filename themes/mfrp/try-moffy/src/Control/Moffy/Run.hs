@@ -4,7 +4,7 @@
 
 module Control.Moffy.Run (
 	-- * Type
-	Sig, React,
+	Sig, React, Handle, HandleSt,
 	-- * Run
 	interpret, interpretSt, interpretReact, interpretReactSt,
 	) where
@@ -37,15 +37,6 @@ runReactSt st ti hdl (Await rqs :>>= c) = do
 
 interpretReactSt :: Monad m => st -> HandleSt st m es -> React s es a -> m (a, st)
 interpretReactSt st0 hdl r = (fst `A.first`) <$> runReactSt st0 rootThreadId hdl r
-
-{-
-{-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
-
-module Control.Moffy.Internal.Sig.Run where
--}
 
 interpret :: Monad m => Handle m es -> (a -> m ()) -> Sig s es a r -> m r
 interpret hdl vw = go where
