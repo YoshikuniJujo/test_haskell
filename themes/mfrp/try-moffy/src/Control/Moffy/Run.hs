@@ -32,7 +32,7 @@ runReactSt st ti _ (Pure x) = pure ((x, ti), st)
 runReactSt _ _ _ (Never :>>= _) = error "never end"
 runReactSt st ti hdl (GetThreadId :>>= c) = runReactSt st ti hdl (c `qApp` ti)
 runReactSt st ti hdl (Await rqs :>>= c) = do
-	(x, st') <- hdl st rqs
+	(x, st') <- hdl rqs st
 	runReactSt st' ti hdl (c `qApp` x)
 
 interpretReactSt :: Monad m => st -> HandleSt st m es -> React s es a -> m (a, st)

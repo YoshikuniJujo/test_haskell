@@ -38,7 +38,7 @@ import Numeric.Natural (Natural)
 type React s es a = Freer s FTCQueue TaggableFun (Rct es) a
 
 type Handle m es = EvReqs es -> m (EvOccs es)
-type HandleSt st m es = st -> EvReqs es -> m (EvOccs es, st)
+type HandleSt st m es = EvReqs es -> st -> m (EvOccs es, st)
 
 data Rct es a where
 	Never :: Rct es a; GetThreadId :: Rct es ThreadId

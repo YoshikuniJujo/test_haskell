@@ -71,15 +71,15 @@ merge (collapse -> l) (collapse -> r) rqs = merge' <$> l rqs <*> r rqs
 -- WITH STATE
 ---------------------------------------------------------------------------
 
-type HandleSt' st st' m es = st -> EvReqs es -> m (Maybe (EvOccs es), st')
+type HandleSt' st st' m es = EvReqs es -> st -> m (Maybe (EvOccs es), st')
 
 retrySt :: Monad m => HandleSt' st st m es -> HandleSt st m es
-retrySt hdl st rqs = hdl st rqs >>= \(mocc, st') ->
-	maybe (retrySt hdl st' rqs) (pure . (, st')) mocc
+retrySt hdl rqs st = hdl rqs st >>= \(mocc, st') ->
+	maybe (retrySt hdl rqs st') (pure . (, st')) mocc
 
 collapseSt :: (Applicative m, Collapsable es' es) =>
-	HandleSt' st st' m es -> (st -> m st') -> st -> EvReqs es' -> m (Maybe (EvOccs es), st')
-collapseSt hdl ot st = maybe ((Nothing ,) <$> ot st) (hdl st) . OOM.collapse
+	HandleSt' st st' m es -> (st -> m st') -> EvReqs es' -> st -> m (Maybe (EvOccs es), st')
+collapseSt hdl ot rqs = maybe (((Nothing ,) <$>) . ot) hdl (OOM.collapse rqs)
 
 expandSt :: (Applicative m, ExpandableHandle es es') =>
 	HandleSt' st st' m es -> (st -> m st') -> HandleSt' st st' m es'
@@ -92,8 +92,8 @@ beforeSt :: (
 	HandleSt' st st' m es -> (st -> m st') ->
 	HandleSt' st' st'' m es' -> (st' -> m st'') ->
 	HandleSt' st st'' m (es :+: es')
-beforeSt hdl1 ot1 hdl2 ot2 st rqs = expandSt hdl1 ot1 st rqs >>= \(mocc, st') ->
-	maybe (expandSt hdl2 ot2 st' rqs) ((<$> ot2 st') . (,) . Just) mocc
+beforeSt hdl1 ot1 hdl2 ot2 rqs st = expandSt hdl1 ot1 rqs st >>= \(mocc, st') ->
+	maybe (expandSt hdl2 ot2 rqs st') ((<$> ot2 st') . (,) . Just) mocc
 
 mergeSt :: (
 	Monad m,
@@ -102,5 +102,5 @@ mergeSt :: (
 	HandleSt' st st' m es -> (st -> m st') ->
 	HandleSt' st' st'' m es' -> (st' -> m st'') ->
 	HandleSt' st st'' m (es :+: es')
-mergeSt hdl1 ot1 hdl2 ot2 st rqs = collapseSt hdl1 ot1 st rqs >>= \(mocc1, st') ->
-	first (mocc1 `merge'`) <$> collapseSt hdl2 ot2 st' rqs
+mergeSt hdl1 ot1 hdl2 ot2 rqs st = collapseSt hdl1 ot1 rqs st >>= \(mocc1, st') ->
+	first (mocc1 `merge'`) <$> collapseSt hdl2 ot2 rqs st'

@@ -23,8 +23,8 @@ import Field (Field)
 data Mode = InitMode | WaitMode AbsoluteTime deriving Show
 
 handleBoxes :: DiffTime -> Field -> HandleSt Mode (StateT AbsoluteTime IO) GuiEv
-handleBoxes prd f = retrySt \case
-	InitMode -> handleInit (prd, f); WaitMode now -> handleWait now
+handleBoxes prd f rqs = (`retrySt` rqs) \rqs' -> \case
+	InitMode -> (rqs' `handleInit` (prd, f)); WaitMode now -> (rqs' `handleWait` now)
 
 handleInit :: HandleSt' (DiffTime, Field) Mode (StateT AbsoluteTime IO) GuiEv
 handleInit = mergeSt
@@ -32,10 +32,10 @@ handleInit = mergeSt
 	handleNow (\_ -> InitMode <$ (put =<< lift getTaiTime))
 
 handleMouse' :: HandleSt' (DiffTime, Field) () (StateT AbsoluteTime IO) MouseEv
-handleMouse' (prd, f) reqs = lift $ (, ()) <$> handleMouse (Just prd) f reqs
+handleMouse' reqs (prd, f) = lift $ (, ()) <$> handleMouse (Just prd) f reqs
 
 handleNow :: HandleSt' () Mode (StateT AbsoluteTime IO) TimeEv
-handleNow () reqs = (`handleTime` reqs) =<< lift getTaiTime
+handleNow reqs () = (reqs `handleTime`) =<< lift getTaiTime
 
 getTaiTime :: IO AbsoluteTime
 getTaiTime = systemToTAITime <$> getSystemTime
@@ -46,7 +46,7 @@ handleWait = expandSt handleTime ((InitMode <$) . put)
 
 handleTime :: Monad m =>
 	HandleSt' AbsoluteTime Mode (StateT AbsoluteTime m) TimeEv
-handleTime now reqs = get >>= \lst -> do
+handleTime reqs now = get >>= \lst -> do
 	let	dt = now `diffAbsoluteTime` lst
 		odt = singleton $ OccDeltaTime dt
 	case project reqs of
