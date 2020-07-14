@@ -23,15 +23,15 @@ import Control.Moffy.Event.ThreadId (GetThreadId, ThreadId, getThreadId)
 
 ---------------------------------------------------------------------------
 
--- * LOCKSTATE AND LOCKID
+-- * LOCK STATE AND LOCK ID
 -- * EVENT
---	+ NEWLOCKID
---	+ GETLOCK
+--	+ NEW LOCK ID
+--	+ GET LOCK
 --	+ UNLOCK
 -- * WITHLOCK
 
 ---------------------------------------------------------------------------
--- LOCKSTATE AND LOCKID
+-- LOCK STATE AND LOCK ID
 ---------------------------------------------------------------------------
 
 class LockState s where
@@ -45,7 +45,7 @@ newtype LockId = LockId Int deriving (Show, Eq)
 -- EVENT
 ---------------------------------------------------------------------------
 
--- NEWLOCKID
+-- NEW LOCK ID
 
 newtype NewLockId = NewLockIdReq ThreadId deriving (Show, Eq)
 numbered 9 [t| NewLockId |]
@@ -58,7 +58,7 @@ newLockId = adjust getThreadId >>= \ti ->
 	maybe newLockId pure =<< adjust (await (NewLockIdReq ti)
 		\(OccNewLockId i ti') -> bool Nothing (Just i) $ ti == ti')
 
--- GETLOCK
+-- GET LOCK
 
 data GetLock = GetLockReq LockId ThreadId RetryTime deriving (Show, Eq)
 type RetryTime = Int
