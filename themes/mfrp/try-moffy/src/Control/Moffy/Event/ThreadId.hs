@@ -5,16 +5,15 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Event.ThreadId (
-	GetThreadId, Occurred(OccGetThreadId), ThreadId,
-	Control.Moffy.Event.ThreadId.getThreadId ) where
+	GetThreadId, Occurred(OccGetThreadId), ThreadId, getThreadId ) where
 
-import Data.Type.Set
-
-import Control.Moffy.Internal.React.Type
+import Control.Moffy.Internal.React.Type (
+	React, Request(Occurred), ThreadId, await' )
+import Data.Type.Set (numbered, Singleton)
 
 data GetThreadId = GetThreadIdReq deriving (Show, Eq, Ord)
 numbered 9 [t| GetThreadId |]
 instance Request GetThreadId where data Occurred GetThreadId = OccGetThreadId
 
 getThreadId :: React s (Singleton GetThreadId) ThreadId
-getThreadId = await' GetThreadIdReq \ti OccGetThreadId -> ti
+getThreadId = await' GetThreadIdReq \t OccGetThreadId -> t

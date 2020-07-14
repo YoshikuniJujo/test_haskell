@@ -173,7 +173,7 @@ Control.Moffy.Run
 
 ### Moffy library
 
-* [ ] Control.Moffy.Event.ThreadId
+* [x] Control.Moffy.Event.ThreadId
 * [ ] Control.Moffy.Handle.ThreadId
 * [ ] Control.Moffy.Event.Lock
 * [ ] Control.Moffy.Handle.Lock
