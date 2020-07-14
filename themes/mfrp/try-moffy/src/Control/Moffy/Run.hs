@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -6,17 +7,15 @@ module Control.Moffy.Run (
 	-- * Type
 	Sig, React, Handle, HandleSt,
 	-- * Run
-	interpret, interpretSt, interpretReact, interpretReactSt,
-	) where
+	interpret, interpretSt, interpretReact, interpretReactSt ) where
 
-import qualified Control.Arrow as A
+import Control.Arrow (first)
+import Control.Monad.Freer.Par (Freer(..), pattern (:>>=), qApp)
+import Control.Moffy.Internal.Sig.Type (Sig(..), isig)
+import Control.Moffy.Internal.React.Type (
+	Handle, HandleSt, React, Rct(..), ThreadId, rootThreadId )
 
-import Control.Monad.Freer.Par
-
-import Prelude hiding (scanl)
-
-import Control.Moffy.Internal.Sig.Type
-import Control.Moffy.Internal.React.Type
+---------------------------------------------------------------------------
 
 runReact :: Monad m => ThreadId -> Handle m es -> React s es a -> m (a, ThreadId)
 runReact ti _ (Pure x) = pure (x, ti)
@@ -36,7 +35,7 @@ runReactSt st ti hdl (Await rqs :>>= c) = do
 	runReactSt st' ti hdl (c `qApp` x)
 
 interpretReactSt :: Monad m => st -> HandleSt st m es -> React s es a -> m (a, st)
-interpretReactSt st0 hdl r = (fst `A.first`) <$> runReactSt st0 rootThreadId hdl r
+interpretReactSt st0 hdl r = (fst `first`) <$> runReactSt st0 rootThreadId hdl r
 
 interpret :: Monad m => Handle m es -> (a -> m ()) -> Sig s es a r -> m r
 interpret hdl vw = go where
