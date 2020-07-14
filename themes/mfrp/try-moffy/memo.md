@@ -158,7 +158,7 @@ Control.Moffy.Run
 	+ [x] imports
 	+ [x] structure
 	+ [ ] body
-		- [ ] PLAIN
+		- [x] PLAIN
 		- [ ] WITH STATE
 * [ ] Control.Moffy.Run
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE TypeOperators, ConstraintKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -52,7 +53,7 @@ before :: (
 	Monad m,
 	ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es') ) =>
 	Handle' m es -> Handle' m es' -> Handle' m (es :+: es')
-before hdl1 hdl2 rqs = maybe (expand hdl2 rqs) (pure . Just) =<< expand hdl1 rqs
+before (expand -> l) (expand -> r) rqs = maybe (l rqs) (pure . Just) =<< r rqs
 
 type MergeableOccurred es es' mrg =
 	Mergeable (Occurred :$: es) (Occurred :$: es') (Occurred :$: mrg)
@@ -64,7 +65,7 @@ merge :: (
 	ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es'),
 	MergeableOccurred es es' (es :+: es') ) =>
 	Handle' m es -> Handle' m es' -> Handle' m (es :+: es')
-merge hdl1 hdl2 rqs = merge' <$> collapse hdl1 rqs <*> collapse hdl2 rqs
+merge (collapse -> l) (collapse -> r) rqs = merge' <$> l rqs <*> r rqs
 
 ---------------------------------------------------------------------------
 -- WITH STATE
