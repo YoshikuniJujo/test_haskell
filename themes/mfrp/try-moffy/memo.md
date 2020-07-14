@@ -183,9 +183,9 @@ Control.Moffy.Run
 	+ [x] imports
 	+ [x] structure
 	+ [ ] body
-		- [ ] LOCKSTATE AND LOCKID
+		- [x] LOCKSTATE AND LOCKID
 		- [ ] EVENT
-			* [ ] NEW LOCK ID
+			* [x] NEW LOCK ID
 			* [ ] GET LOCK
 			* [ ] UNLOCK
 		- [ ] WITHLOCK

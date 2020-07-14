@@ -50,16 +50,16 @@ newtype LockId = LockId Int deriving (Show, Eq)
 
 newtype NewLockId = NewLockIdReq ThreadId deriving (Show, Eq)
 numbered 9 [t| NewLockId |]
-instance Selectable NewLockId where i1 `select` _i2 = i1
+instance Selectable NewLockId where l `select` _r = l
 instance Request NewLockId where
 	data Occurred NewLockId = OccNewLockId LockId ThreadId
 
 type GetThreadIdNewLockId = GetThreadId :- NewLockId :- 'Nil
 
 newLockId :: React s GetThreadIdNewLockId LockId
-newLockId = adjust getThreadId >>= \ti ->
-	maybe newLockId pure =<< adjust (await (NewLockIdReq ti)
-		\(OccNewLockId i ti') -> bool Nothing (Just i) $ ti == ti')
+newLockId = adjust getThreadId >>= \t -> maybe newLockId pure =<< adjust (
+	await (NewLockIdReq t)
+		\(OccNewLockId i t') -> bool Nothing (Just i) $ t == t' )
 
 -- GET LOCK
 
