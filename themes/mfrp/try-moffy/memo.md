@@ -198,7 +198,7 @@ Control.Moffy.Run
 		+ [x] HANDLE
 * [ ] Control.Moffy.Event.Random
 	+ [x] API
-	+ [ ] imports
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] Control.Moffy.Handle.Random
