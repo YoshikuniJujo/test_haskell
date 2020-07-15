@@ -1,5 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,11 +15,18 @@ import Control.Moffy.Handle (Handle', merge)
 import Control.Moffy.Event.Lock.Internal (
 	LockEv, LockId(..), NewLockId(..), pattern OccNewLockId,
 	GetLock(..), pattern OccGetLock, Unlock(..), pattern OccUnlock )
-import Control.Monad.State (StateT, get, modify)
+import Control.Monad.State (StateT, gets, modify)
 import Data.Type.Set (Singleton)
 import Data.OneOrMore (extract, singleton)
 import Data.Bool (bool)
 
+---------------------------------------------------------------------------
+
+-- * LOCK STATE
+-- * HANDLE
+
+---------------------------------------------------------------------------
+-- LOCK STATE
 ---------------------------------------------------------------------------
 
 class LockState s where
@@ -27,25 +34,26 @@ class LockState s where
 	isLocked :: s -> LockId -> Bool
 	lockIt :: s -> LockId -> s; unlockIt :: s -> LockId -> s
 
-handleNewLockId ::
-	(LockState s, Monad m) => Handle' (StateT s m) (Singleton NewLockId)
-handleNewLockId rqs = get >>= \s -> let i = getNextLockId s in
-	Just (singleton $ OccNewLockId (LockId i) ti)
-		<$ modify (`putNextLockId` (i + 1))
-	where NewLockIdReq ti = extract rqs
-
-handleGetLock ::
-	(LockState s, Monad m) => Handle' (StateT s m) (Singleton GetLock)
-handleGetLock rqs = get >>= \s -> bool
-	(Just (singleton $ OccGetLock l ti) <$ modify (`lockIt` l))
-	(pure Nothing)
-	(s `isLocked` l)
-	where GetLockReq l ti _ = extract rqs
-
-handleUnlock ::
-	(LockState s, Monad m) => Handle' (StateT s m) (Singleton Unlock)
-handleUnlock rqs = Just (singleton OccUnlock) <$ modify (`unlockIt` l)
-	where UnlockReq l = extract rqs
+---------------------------------------------------------------------------
+-- HANDLE
+---------------------------------------------------------------------------
 
 handleLock :: (LockState s, Monad m) => Handle' (StateT s m) LockEv
 handleLock = handleNewLockId `merge` handleGetLock `merge` handleUnlock
+
+handleNewLockId ::
+	(LockState s, Monad m) => Handle' (StateT s m) (Singleton NewLockId)
+handleNewLockId (extract -> NewLockIdReq ti) = gets getNextLockId >>= \i ->
+	Just (singleton $ OccNewLockId (LockId i) ti)
+		<$ modify (`putNextLockId` (i + 1))
+
+handleGetLock ::
+	(LockState s, Monad m) => Handle' (StateT s m) (Singleton GetLock)
+handleGetLock (extract -> GetLockReq l t _) = gets (`isLocked` l) >>= bool
+	(Just (singleton $ OccGetLock l t) <$ modify (`lockIt` l))
+	(pure Nothing)
+
+handleUnlock ::
+	(LockState s, Monad m) => Handle' (StateT s m) (Singleton Unlock)
+handleUnlock (extract -> UnlockReq l) =
+	Just (singleton OccUnlock) <$ modify (`unlockIt` l)

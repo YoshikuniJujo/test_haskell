@@ -189,11 +189,13 @@ Control.Moffy.Run
 			* [x] GET LOCK
 			* [x] UNLOCK
 		- [x] WITHLOCK
-* [ ] Control.Moffy.Handle.Lock
+* [x] Control.Moffy.Handle.Lock
 	+ [x] API
 	+ [x] imports
-	+ [ ] structure
-	+ [ ] body
+	+ [x] structure
+	+ [x] body
+		+ [x] LOCK STATE
+		+ [x] HANDLE
 * [ ] Control.Moffy.Event.Random
 * [ ] Control.Moffy.Handle.Random
 * [ ] Control.Moffy.Event.Mouse
