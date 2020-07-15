@@ -7,6 +7,7 @@ import Data.Bool
 import Numeric
 
 import Field
+import Graphics.X11 (keysymToString)
 
 tryField :: IO ()
 tryField = do
@@ -21,8 +22,8 @@ loop f = do
 			print ke
 			putStrLn . (`showHex` "") =<< keycodeToKeysym f (ev_keycode ke) 0
 			putStrLn . (`showHex` "") =<< keycodeToKeysym f (ev_keycode ke) 1
-			putStrLn . (`showHex` "") =<< keycodeToKeysym f (ev_keycode ke) 2
-			putStrLn . (`showHex` "") =<< keycodeToKeysym f (ev_keycode ke) 3
+			putStrLn . keysymToString =<< keycodeToKeysym f (ev_keycode ke) 0
+			putStrLn . keysymToString =<< keycodeToKeysym f (ev_keycode ke) 1
 		ev	| isDeleteEvent f ev -> pure False
 			| otherwise -> True <$ print ev
 	bool (pure ()) (loop f) c

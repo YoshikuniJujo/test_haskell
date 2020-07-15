@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 656b6755dde6d3cb969695dad1c8d958465c978060219f740f692dda0f9f9748
+-- hash: 1063f09195ec0286cb4a61e122819d0bb5e4503cbe73149b0e029b864f9994be
 
 name:           try-simple-field
 version:        0.1.0.0
@@ -33,7 +33,8 @@ library
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
+      X11
+    , base >=4.7 && <5
     , simple-field
   default-language: Haskell2010
 
@@ -45,7 +46,8 @@ executable try-simple-field-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      X11
+    , base >=4.7 && <5
     , simple-field
     , try-simple-field
   default-language: Haskell2010
@@ -59,7 +61,8 @@ test-suite try-simple-field-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      X11
+    , base >=4.7 && <5
     , simple-field
     , try-simple-field
   default-language: Haskell2010
