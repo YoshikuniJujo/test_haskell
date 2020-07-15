@@ -10,7 +10,7 @@ module Control.Moffy.Event.Random (
 	RandomEv,
 	StoreRandomGen(..), pattern OccStoreRandomGen,
 	LoadRandomGen, pattern OccLoadRandomGen,
-	-- * Event
+	-- * GET RANDOM
 	getRandom, getRandomR ) where
 
 import Control.Moffy (React, Request(..), adjust, await)
@@ -23,9 +23,7 @@ import System.Random (Random, StdGen, random, randomR)
 -- * EVENT
 --	+ STORE RANDOM GEN
 --	+ LOAD RANDOM GEN
--- * REACT
---	+ TYPE
---	+ GET RANDOM FUNCTION
+-- * RANDOM EV AND GET RANDOM
 
 ---------------------------------------------------------------------------
 -- EVENT
@@ -53,14 +51,10 @@ loadRandomGen :: React s (Singleton LoadRandomGen) StdGen
 loadRandomGen = await LoadRandomGenReq \(OccLoadRandomGen g) -> g
 
 ---------------------------------------------------------------------------
--- REACT
+-- RANDOM EV AND GET RANDOM
 ---------------------------------------------------------------------------
 
--- TYPE
-
 type RandomEv = StoreRandomGen :- LoadRandomGen :- 'Nil
-
--- GET RANDOM FUNCTION
 
 getRandom :: Random a => React s RandomEv a
 getRandom = modifyRandomGen random

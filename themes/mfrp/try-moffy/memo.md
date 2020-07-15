@@ -196,17 +196,17 @@ Control.Moffy.Run
 	+ [x] body
 		+ [x] LOCK STATE
 		+ [x] HANDLE
-* [ ] Control.Moffy.Event.Random
+* [x] Control.Moffy.Event.Random
 	+ [x] API
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
-		- [ ] EVENT
+	+ [x] body
+		- [x] EVENT
 			* [x] STORE RANDOM GEN
-			* [ ] LOAD RANDOM GEN
-		- [ ] REACT
-			* [ ] TYPE
-			* [ ] GET RANDOM FUNCTION
+			* [x] LOAD RANDOM GEN
+		- [x] REACT
+			* [x] TYPE
+			* [x] GET RANDOM FUNCTION
 * [ ] Control.Moffy.Handle.Random
 * [ ] Control.Moffy.Event.Mouse
 * [ ] Control.Moffy.Handle.XField.Mouse
