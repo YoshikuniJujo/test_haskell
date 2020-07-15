@@ -23,10 +23,9 @@ import System.Random (Random, StdGen, random, randomR)
 -- * EVENT
 --	+ STORE RANDOM GEN
 --	+ LOAD RANDOM GEN
--- * REACT AND HANDLE
+-- * REACT
 --	+ TYPE
 --	+ GET RANDOM FUNCTION
---	+ HANDLE
 
 ---------------------------------------------------------------------------
 -- EVENT
@@ -36,14 +35,12 @@ import System.Random (Random, StdGen, random, randomR)
 
 newtype StoreRandomGen = StoreRandomGenReq StdGen deriving Show
 numbered 9 [t| StoreRandomGen |]
-instance Selectable StoreRandomGen where gl `select` _gr = gl
+instance Selectable StoreRandomGen where l `select` _r = l
 instance Request StoreRandomGen where
 	data Occurred StoreRandomGen = OccStoreRandomGen
 
-{-# ANN storeRandomGen "HLint: ignore Use const" #-}
-
 storeRandomGen :: StdGen -> React s (Singleton StoreRandomGen) ()
-storeRandomGen g = await (StoreRandomGenReq g) \_ -> ()
+storeRandomGen g = await (StoreRandomGenReq g) \OccStoreRandomGen -> ()
 
 -- LOAD RANDOM GEN
 
@@ -56,7 +53,7 @@ loadRandomGen :: React s (Singleton LoadRandomGen) StdGen
 loadRandomGen = await LoadRandomGenReq \(OccLoadRandomGen g) -> g
 
 ---------------------------------------------------------------------------
--- REACT AND HANDKLE
+-- REACT
 ---------------------------------------------------------------------------
 
 -- TYPE

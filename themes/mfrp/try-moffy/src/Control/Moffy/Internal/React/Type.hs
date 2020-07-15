@@ -1,5 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE ScopedTypeVariables, PatternSynonyms #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds, TypeOperators, ConstraintKinds #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances,
