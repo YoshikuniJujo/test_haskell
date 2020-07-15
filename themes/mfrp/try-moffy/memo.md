@@ -184,10 +184,10 @@ Control.Moffy.Run
 	+ [x] structure
 	+ [ ] body
 		- [x] LOCKSTATE AND LOCKID
-		- [ ] EVENT
+		- [x] EVENT
 			* [x] NEW LOCK ID
-			* [ ] GET LOCK
-			* [ ] UNLOCK
+			* [x] GET LOCK
+			* [x] UNLOCK
 		- [ ] WITHLOCK
 * [ ] Control.Moffy.Handle.Lock
 * [ ] Control.Moffy.Event.Random
