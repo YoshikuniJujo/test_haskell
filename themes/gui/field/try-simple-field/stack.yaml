@@ -41,7 +41,7 @@ packages:
 #
 extra-deps:
 - git: https://github.com/YoshikuniJujo/simple-field.git
-  commit: 4a19b9c5d672ba81c5130ee549890048b8fd24a0
+  commit: 245206936562178c9ea8d53e6de68228a1f78d2e
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
