@@ -8,7 +8,7 @@
 
 module Control.Moffy.Event.Lock.Internal (
 	-- * Type
-	LockEv, LockState(..), LockId(..),
+	LockEv, LockId(..),
 	NewLockId(..), pattern OccNewLockId, GetLock(..), pattern OccGetLock,
 	Unlock(..), pattern OccUnlock,
 	-- * Event
@@ -34,11 +34,6 @@ import Control.Moffy.Event.ThreadId (GetThreadId, ThreadId, getThreadId)
 ---------------------------------------------------------------------------
 -- LOCK STATE AND LOCK ID
 ---------------------------------------------------------------------------
-
-class LockState s where
-	getNextLockId :: s -> Int; putNextLockId :: s -> Int -> s
-	isLocked :: s -> LockId -> Bool
-	lockIt :: s -> LockId -> s; unlockIt :: s -> LockId -> s
 
 newtype LockId = LockId Int deriving (Show, Eq)
 

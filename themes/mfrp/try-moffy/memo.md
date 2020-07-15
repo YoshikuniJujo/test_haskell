@@ -178,18 +178,22 @@ Control.Moffy.Run
 * [x] Control.Moffy.Event.Lock
 	+ [x] API
 	+ [x] imports
-* [ ] Control.Moffy.Event.Lock.Internal
+* [x] Control.Moffy.Event.Lock.Internal
 	+ [x] API
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] LOCKSTATE AND LOCKID
 		- [x] EVENT
 			* [x] NEW LOCK ID
 			* [x] GET LOCK
 			* [x] UNLOCK
-		- [ ] WITHLOCK
+		- [x] WITHLOCK
 * [ ] Control.Moffy.Handle.Lock
+	+ [x] API
+	+ [x] imports
+	+ [ ] structure
+	+ [ ] body
 * [ ] Control.Moffy.Event.Random
 * [ ] Control.Moffy.Handle.Random
 * [ ] Control.Moffy.Event.Mouse

@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,22 +11,21 @@ module Control.Moffy.Handle.Lock (
 	-- * Handle
 	handleLock ) where
 
+import Control.Moffy.Handle (Handle', merge)
+import Control.Moffy.Event.Lock.Internal (
+	LockEv, LockId(..), NewLockId(..), pattern OccNewLockId,
+	GetLock(..), pattern OccGetLock, Unlock(..), pattern OccUnlock )
 import Control.Monad.State (StateT, get, modify)
 import Data.Type.Set (Singleton)
-import Data.OneOrMore hiding (merge)
+import Data.OneOrMore (extract, singleton)
 import Data.Bool (bool)
-
-import Control.Moffy.Handle
-import Control.Moffy.Event.Lock.Internal
 
 ---------------------------------------------------------------------------
 
--- * LOCKID AND LOCKSTATE
--- * EVENT
---	+ NEWLOCKID
---	+ GETLOCK
---	+ UNLOCK
--- * HANDLE AND WITHLOCK
+class LockState s where
+	getNextLockId :: s -> Int; putNextLockId :: s -> Int -> s
+	isLocked :: s -> LockId -> Bool
+	lockIt :: s -> LockId -> s; unlockIt :: s -> LockId -> s
 
 handleNewLockId ::
 	(LockState s, Monad m) => Handle' (StateT s m) (Singleton NewLockId)
@@ -46,10 +46,6 @@ handleUnlock ::
 	(LockState s, Monad m) => Handle' (StateT s m) (Singleton Unlock)
 handleUnlock rqs = Just (singleton OccUnlock) <$ modify (`unlockIt` l)
 	where UnlockReq l = extract rqs
-
----------------------------------------------------------------------------
--- HANDLE AND WITHLOCK
----------------------------------------------------------------------------
 
 handleLock :: (LockState s, Monad m) => Handle' (StateT s m) LockEv
 handleLock = handleNewLockId `merge` handleGetLock `merge` handleUnlock
