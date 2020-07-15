@@ -27,10 +27,11 @@ module Control.Moffy.Event.Mouse (
 	-- ** Delete Event
 	deleteEvent ) where
 
-import Data.Type.Set
-import Data.Bool
+import Control.Moffy (React, Request(..), await)
+import Data.Type.Set (numbered, Set(Nil), Singleton, (:-))
+import Data.Bool (bool)
 
-import Control.Moffy
+---------------------------------------------------------------------------
 
 data MouseDown = MouseDownReq deriving (Show, Eq, Ord)
 data MouseBtn = MLeft | MMiddle | MRight | MUp | MDown deriving (Show, Eq, Ord)

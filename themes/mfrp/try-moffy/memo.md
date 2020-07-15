@@ -216,7 +216,7 @@ Control.Moffy.Run
 		- [x] HANDLE
 * [ ] Control.Moffy.Event.Mouse
 	+ [x] API
-	+ [ ] imports
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] Control.Moffy.Handle.XField.Mouse
