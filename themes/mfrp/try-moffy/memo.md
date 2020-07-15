@@ -38,10 +38,12 @@ todo
 	+ [x] rename Control.Monad.Freer.Par.Fun to ...Funable
 	+ [x] rename Fun to Funable
 	+ [x] others
-* [ ] refactoring
+* [x] refactoring
 	+ [x] Control.Monad.Freer.Par
 	+ [x] Data.OneOrMore
 	+ [x] Data.Type.Set
+* [ ] try using key events of X11
+* [ ] refactoring
 	+ [ ] Control.Moffy
 	+ [ ] Trial
 	+ [ ] Control.Monad.Freer.Par
@@ -224,7 +226,13 @@ Control.Moffy.Run
 		- [x] MOUSE MOVE
 		- [x] DELETE EVENT
 		- [x] MOUSE EV
+* [ ] Control.Moffy.Event.Key
+* [ ] Control.Moffy.Handle.XField.Key
 * [ ] Control.Moffy.Handle.XField.Mouse
+	+ [ ] API
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
 
 ### Moffy Base
 
