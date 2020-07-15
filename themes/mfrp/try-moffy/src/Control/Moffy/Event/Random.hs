@@ -1,13 +1,15 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Event.Random (
 	-- * Type
-	RandomEv, StoreRandomGen(..), LoadRandomGen,
-	Occurred(OccStoreRandomGen, OccLoadRandomGen),
+	RandomEv,
+	StoreRandomGen(..), pattern OccStoreRandomGen,
+	LoadRandomGen, pattern OccLoadRandomGen,
 	-- * Event
 	getRandom, getRandomR ) where
 
