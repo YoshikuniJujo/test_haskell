@@ -1,10 +1,31 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Event.Mouse where
+module Control.Moffy.Event.Mouse (
+	-- * Type
+	-- ** Mouse Ev
+	MouseEv,
+	-- ** Basic
+	MouseBtn(..), Point,
+	-- ** Each Event
+	MouseDown, pattern OccMouseDown,
+	MouseUp, pattern OccMouseUp,
+	MouseMove, pattern OccMouseMove,
+	DeleteEvent, pattern OccDeleteEvent,
+
+	-- * Event
+	-- ** Mouse Down
+	mouseDown, leftClick, middleClick, rightClick,
+	-- ** Mouse Up
+	mouseUp, leftUp, middleUp, rightUp,
+	-- ** Mouse Move
+	mouseMove,
+	-- ** Delete Event
+	deleteEvent ) where
 
 import Data.Type.Set
 import Data.Bool
