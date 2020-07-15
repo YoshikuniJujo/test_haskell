@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -10,38 +11,40 @@ module Control.Moffy.Handle.Random (
 	handleRandom ) where
 
 import Control.Monad.State (StateT, gets, modify)
+import Control.Moffy.Handle (Handle', merge)
+import Control.Moffy.Event.Random (
+	RandomEv,
+	StoreRandomGen(..), pattern OccStoreRandomGen,
+	LoadRandomGen, pattern OccLoadRandomGen )
 import Data.Type.Set (Singleton)
-import Data.OneOrMore (singleton, extract)
+import Data.OneOrMore (extract, singleton)
 import System.Random (StdGen)
-
-import Control.Moffy.Handle
-import Control.Moffy.Event.Random
 
 ---------------------------------------------------------------------------
 
--- * EVENT
---	+ STORE RANDOM GEN
---	+ LOAD RANDOM GEN
--- * REACT AND HANDLE
---	+ TYPE
---	+ GET RANDOM FUNCTION
---	+ HANDLE
+-- * RANDOM STATE
+-- * HANDLE
 
--- HANDLE
+---------------------------------------------------------------------------
+-- RANDOM STATE
+---------------------------------------------------------------------------
 
 class RandomState s where
 	getRandomGen :: s -> StdGen; putRandomGen :: s -> StdGen -> s
 
 instance RandomState StdGen where getRandomGen = id; putRandomGen = flip const
 
+---------------------------------------------------------------------------
+-- HANDLE
+---------------------------------------------------------------------------
+
 handleRandom :: (RandomState s, Monad m) => Handle' (StateT s m) RandomEv
 handleRandom = handleStoreRandomGen `merge` handleLoadRandomGen
 
 handleStoreRandomGen :: (RandomState s, Monad m) =>
 	Handle' (StateT s m) (Singleton StoreRandomGen)
-handleStoreRandomGen rqs =
+handleStoreRandomGen (extract -> StoreRandomGenReq g) =
 	Just (singleton OccStoreRandomGen) <$ modify (`putRandomGen` g)
-	where StoreRandomGenReq g = extract rqs
 
 handleLoadRandomGen :: (RandomState s, Monad m) =>
 	Handle' (StateT s m) (Singleton LoadRandomGen)
