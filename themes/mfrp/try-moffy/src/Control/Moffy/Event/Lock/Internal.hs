@@ -24,7 +24,7 @@ import Control.Moffy.Event.ThreadId (GetThreadId, ThreadId, getThreadId)
 
 ---------------------------------------------------------------------------
 
--- * LOCK STATE AND LOCK ID
+-- * LOCK ID
 -- * EVENT
 --	+ NEW LOCK ID
 --	+ GET LOCK
@@ -32,7 +32,7 @@ import Control.Moffy.Event.ThreadId (GetThreadId, ThreadId, getThreadId)
 -- * WITHLOCK
 
 ---------------------------------------------------------------------------
--- LOCK STATE AND LOCK ID
+-- LOCK ID
 ---------------------------------------------------------------------------
 
 newtype LockId = LockId Int deriving (Show, Eq)
