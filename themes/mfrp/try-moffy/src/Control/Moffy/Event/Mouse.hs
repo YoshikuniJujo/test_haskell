@@ -33,6 +33,16 @@ import Data.Bool (bool)
 
 ---------------------------------------------------------------------------
 
+-- * MOUSE DOWN
+-- * MOUSE UP
+-- * MOUSE MOVE
+-- * DELETE EVENT
+-- * MOUSE EV
+
+---------------------------------------------------------------------------
+-- MOUSE DOWN
+---------------------------------------------------------------------------
+
 data MouseDown = MouseDownReq deriving (Show, Eq, Ord)
 data MouseBtn = MLeft | MMiddle | MRight | MUp | MDown deriving (Show, Eq, Ord)
 numbered 9 [t| MouseDown |]
@@ -41,7 +51,7 @@ instance Request MouseDown where
 		deriving (Show, Eq, Ord)
 
 mouseDown :: React s (Singleton MouseDown) [MouseBtn]
-mouseDown = await MouseDownReq \(OccMouseDown mbs) -> mbs
+mouseDown = await MouseDownReq \(OccMouseDown bs) -> bs
 
 clickOn :: MouseBtn -> React s (Singleton MouseDown) ()
 clickOn b = bool (clickOn b) (pure ()) . (b `elem`) =<< mouseDown
@@ -49,19 +59,27 @@ clickOn b = bool (clickOn b) (pure ()) . (b `elem`) =<< mouseDown
 leftClick, middleClick, rightClick :: React s (Singleton MouseDown) ()
 [leftClick, middleClick, rightClick] = clickOn <$> [MLeft, MMiddle, MRight]
 
+---------------------------------------------------------------------------
+-- MOUSE UP
+---------------------------------------------------------------------------
+
 data MouseUp = MouseUpReq deriving (Show, Eq, Ord)
 numbered 9 [t| MouseUp |]
 instance Request MouseUp where
 	data Occurred MouseUp = OccMouseUp [MouseBtn] deriving (Show, Eq, Ord)
 
 mouseUp :: React s (Singleton MouseUp) [MouseBtn]
-mouseUp = await MouseUpReq \(OccMouseUp mbs) -> mbs
+mouseUp = await MouseUpReq \(OccMouseUp bs) -> bs
 
 releaseOn :: MouseBtn -> React s (Singleton MouseUp) ()
 releaseOn b = bool (releaseOn b) (pure ()) . (b `elem`) =<< mouseUp
 
 leftUp, middleUp, rightUp :: React s (Singleton MouseUp) ()
 [leftUp, middleUp, rightUp] = releaseOn <$> [MLeft, MMiddle, MRight]
+
+---------------------------------------------------------------------------
+-- MOUSE MOVE
+---------------------------------------------------------------------------
 
 data MouseMove = MouseMoveReq deriving (Show, Eq, Ord)
 type Point = (Integer, Integer)
@@ -72,6 +90,10 @@ instance Request MouseMove where
 mouseMove :: React s (Singleton MouseMove) Point
 mouseMove  = await MouseMoveReq \(OccMouseMove p) -> p
 
+---------------------------------------------------------------------------
+-- DELETE EVENT
+---------------------------------------------------------------------------
+
 data DeleteEvent = DeleteEventReq deriving (Show, Eq, Ord)
 numbered 9 [t| DeleteEvent |]
 instance Request DeleteEvent where
@@ -79,5 +101,9 @@ instance Request DeleteEvent where
 
 deleteEvent :: React s (Singleton DeleteEvent) ()
 deleteEvent = await DeleteEventReq \OccDeleteEvent -> ()
+
+---------------------------------------------------------------------------
+-- MOUSE EV
+---------------------------------------------------------------------------
 
 type MouseEv = MouseDown :- MouseUp :- MouseMove :- DeleteEvent :- 'Nil
