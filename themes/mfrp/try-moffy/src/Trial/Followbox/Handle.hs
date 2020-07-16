@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -14,7 +15,7 @@ import Prelude hiding (head)
 import Control.Monad.State (StateT, lift, gets, modify)
 import Control.Moffy.Handle
 import Data.Type.Set (Singleton)
-import Data.OneOrMore (singleton, extract)
+import Data.OneOrMore (pattern Singleton)
 import Data.Bool (bool)
 import Data.List (delete)
 import Data.String (fromString)
@@ -125,45 +126,41 @@ handleMouseWithSleep f reqs = getSleepUntil >>= lift . \case
 -- STORE AND LOAD JSONS
 
 handleStoreJsons :: Monad m => Handle (FbM m) (Singleton StoreJsons)
-handleStoreJsons reqs = singleton (OccStoreJsons os) <$ putObjects os
-	where StoreJsons os = extract reqs
+handleStoreJsons (Singleton (StoreJsons os)) = Singleton (OccStoreJsons os) <$ putObjects os
 
 handleLoadJsons :: Monad m => Handle (FbM m) (Singleton LoadJsons)
-handleLoadJsons _reqs = singleton . OccLoadJsons <$> getObjects
+handleLoadJsons _reqs = Singleton . OccLoadJsons <$> getObjects
 
 -- REQUEST DATA
 
 handleHttpGet :: Maybe GithubNameToken -> Handle IO (Singleton HttpGet)
-handleHttpGet mgnt reqs = do
+handleHttpGet mgnt (Singleton (HttpGetReq u)) = do
 	r <- H.httpLBS . maybe id (uncurry H.setRequestBasicAuth) mgnt
 		. H.setRequestHeader "User-Agent" ["Yoshio"]
 		. fromString $ T.unpack u
 	print $ H.getResponseHeader "X-RateLimit-Remaining" r
-	pure . singleton
+	pure . Singleton
 		$ OccHttpGet u (H.getResponseHeaders r) (H.getResponseBody r)
-	where HttpGetReq u = extract reqs
 
 handleCalcTextExtents :: Field -> Handle IO (Singleton CalcTextExtents)
-handleCalcTextExtents f reqs = singleton
+handleCalcTextExtents f (Singleton (CalcTextExtentsReq fn fs t)) = Singleton
 	. OccCalcTextExtents fn fs t <$> textExtents f fn fs (T.unpack t)
-	where CalcTextExtentsReq fn fs t = extract reqs
 
 handleGetTimeZone :: Handle IO (Singleton GetTimeZone)
-handleGetTimeZone _reqs = singleton . OccGetTimeZone <$> getCurrentTimeZone
+handleGetTimeZone _reqs = Singleton . OccGetTimeZone <$> getCurrentTimeZone
 
 -- BROWSE
 
 handleBrowse :: Browser -> Handle IO (Singleton Browse)
-handleBrowse brws reqs = singleton OccBrowse <$ spawnProcess brws [T.unpack u]
-	where Browse u = extract reqs
+handleBrowse brws (Singleton (Browse u)) = Singleton OccBrowse <$ spawnProcess brws [T.unpack u]
 
 -- BEGIN AND END SLEEP
 
 handleBeginSleep :: Monad m => Handle' (FbM m) (Singleton BeginSleep)
-handleBeginSleep reqs = case extract reqs of
+handleBeginSleep (Singleton bs) = case bs of
 	BeginSleep t -> getSleepUntil >>= \case
-		Just t' -> pure . Just . singleton $ OccBeginSleep t'
-		Nothing -> Just (singleton $ OccBeginSleep t) <$ putSleepUntil t
+		Just t' -> pure . Just . Singleton $ OccBeginSleep t'
+		Nothing -> Just (Singleton $ OccBeginSleep t) <$ putSleepUntil t
 	CheckBeginSleep -> pure Nothing
 
 handleEndSleep :: Handle' (FbM IO) (Singleton EndSleep)
@@ -171,16 +168,15 @@ handleEndSleep _reqs = getSleepUntil >>= \case
 	Just t -> lift getCurrentTime >>=
 		bool (pure Nothing) (e <$ resetSleep) . (t <=)
 	Nothing -> pure e
-	where e = Just $ singleton OccEndSleep
+	where e = Just $ Singleton OccEndSleep
 
 -- RAISE ERROR
 
 handleRaiseError :: Handle' IO (Singleton RaiseError)
-handleRaiseError reqs = case er e of
+handleRaiseError (Singleton (RaiseError e em)) = case er e of
 	Nothing -> pure Nothing
-	Just r -> Just (singleton $ OccRaiseError e r) <$ putStrLn emsg
+	Just r -> Just (Singleton $ OccRaiseError e r) <$ putStrLn emsg
 	where
-	RaiseError e em = extract reqs
 	emsg = "ERROR: " <> em
 	er = \case
 		NoRateLimitRemaining -> Just Terminate

@@ -29,7 +29,7 @@ eventToEv f = \case
 	MotionEvent { ev_x = x, ev_y = y } -> pure . Just . expand $ omm x y
 	ExposeEvent {} -> Nothing <$ flushField f
 	DestroyWindowEvent {} -> closeField f >> exitSuccess
-	ev	| isDeleteEvent f ev -> pure . Just . expand $ singleton OccDeleteEvent -- Nothing <$ destroyField f
+	ev	| isDeleteEvent f ev -> pure . Just . expand $ Singleton OccDeleteEvent -- Nothing <$ destroyField f
 		| otherwise -> pure Nothing
 	where
 	btn = \case
@@ -40,4 +40,4 @@ eventToEv f = \case
 	omu :: CInt -> CInt -> [MouseBtn] -> EvOccs (MouseMove :- MouseUp :- 'Nil)
 	omu x y bs = OccMouseUp bs >- omm x y
 	omm :: CInt -> CInt -> EvOccs (Singleton MouseMove)
-	omm x y = singleton $ OccMouseMove (fromIntegral x, fromIntegral y)
+	omm x y = Singleton $ OccMouseMove (fromIntegral x, fromIntegral y)

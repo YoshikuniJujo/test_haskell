@@ -30,7 +30,7 @@ fromPure (Pure x) = x
 fromPure _ = error "not pure"
 
 singleOccEvInt :: Int -> EvOccs (Singleton EvInt)
-singleOccEvInt = singleton . OccEvInt
+singleOccEvInt = Singleton . OccEvInt
 
 update' :: React s es a -> React s es a -> EvOccs es -> (React s es a, React s es a)
 update' l r  = update l rootThreadId r rootThreadId

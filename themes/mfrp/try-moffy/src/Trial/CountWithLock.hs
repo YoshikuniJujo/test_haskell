@@ -30,7 +30,7 @@ class CountState s where getCount :: s -> Int; putCount :: s -> Int -> s
 instance CountState Int where getCount = id; putCount = flip const
 
 handleCount :: (Monad m, CountState s) => Handle' (StateT s m) (Singleton Count)
-handleCount _rqs = Just . singleton . OccCount <$> do
+handleCount _rqs = Just . Singleton . OccCount <$> do
 	n <- gets getCount
 	modify (`putCount` (n + 1))
 	pure n

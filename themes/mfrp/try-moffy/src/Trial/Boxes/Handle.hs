@@ -1,5 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables, PatternSynonyms #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -9,7 +9,7 @@ module Trial.Boxes.Handle (Mode(InitMode), handleBoxes) where
 import Control.Concurrent
 import Control.Moffy.Handle hiding (expand)
 import Control.Monad.State (StateT, get, put, lift, liftIO)
-import Data.OneOrMore (project, singleton, (>-), expand)
+import Data.OneOrMore (project, pattern Singleton, (>-), expand)
 import Data.Time (DiffTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
@@ -48,12 +48,12 @@ handleTime :: Monad m =>
 	HandleSt' AbsoluteTime Mode (StateT AbsoluteTime m) TimeEv
 handleTime reqs now = get >>= \lst -> do
 	let	dt = now `diffAbsoluteTime` lst
-		odt = singleton $ OccDeltaTime dt
+		odt = Singleton $ OccDeltaTime dt
 	case project reqs of
 		Just (TryWaitReq t)
 			| t < dt -> (Just $ OccTryWait t >- odt', WaitMode now)
 				<$ put (t `addAbsoluteTime` lst)
 			| otherwise -> (Just $ OccTryWait dt >- odt, InitMode)
 				<$ put now
-			where odt' = singleton $ OccDeltaTime t
+			where odt' = Singleton $ OccDeltaTime t
 		Nothing -> (Just . expand $ odt, InitMode) <$ put now

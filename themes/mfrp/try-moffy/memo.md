@@ -42,10 +42,10 @@ todo
 	+ [x] Control.Monad.Freer.Par
 	+ [x] Data.OneOrMore
 	+ [x] Data.Type.Set
-* [ ] use pattern synonym Singleton
+* [x] use pattern synonym Singleton
 	+ [x] define pattern Singleton
-	+ [ ] remove function singleton and extract
-	+ [ ] correct other modules
+	+ [x] remove function singleton and extract
+	+ [x] correct other modules
 * [ ] try using key events of X11
 * [ ] refactoring
 	+ [ ] Control.Moffy

@@ -9,7 +9,7 @@ module Control.Moffy.Handle.ThreadId (GetThreadId, handleGetThreadId) where
 import Control.Moffy.Handle (Handle')
 import Control.Moffy.Event.ThreadId (GetThreadId, pattern OccGetThreadId)
 import Data.Type.Set (Singleton)
-import Data.OneOrMore (singleton)
+import Data.OneOrMore (pattern Singleton)
 
 handleGetThreadId :: Applicative m => Handle' m (Singleton GetThreadId)
-handleGetThreadId _rqs = pure . Just $ singleton OccGetThreadId
+handleGetThreadId _rqs = pure . Just $ Singleton OccGetThreadId

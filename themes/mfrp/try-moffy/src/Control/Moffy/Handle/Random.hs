@@ -17,7 +17,7 @@ import Control.Moffy.Event.Random (
 	StoreRandomGen(..), pattern OccStoreRandomGen,
 	LoadRandomGen, pattern OccLoadRandomGen )
 import Data.Type.Set (Singleton)
-import Data.OneOrMore (extract, singleton)
+import Data.OneOrMore (pattern Singleton)
 import System.Random (StdGen)
 
 ---------------------------------------------------------------------------
@@ -43,10 +43,10 @@ handleRandom = handleStoreRandomGen `merge` handleLoadRandomGen
 
 handleStoreRandomGen :: (RandomState s, Monad m) =>
 	Handle' (StateT s m) (Singleton StoreRandomGen)
-handleStoreRandomGen (extract -> StoreRandomGenReq g) =
-	Just (singleton OccStoreRandomGen) <$ modify (`putRandomGen` g)
+handleStoreRandomGen (Singleton (StoreRandomGenReq g)) =
+	Just (Singleton OccStoreRandomGen) <$ modify (`putRandomGen` g)
 
 handleLoadRandomGen :: (RandomState s, Monad m) =>
 	Handle' (StateT s m) (Singleton LoadRandomGen)
 handleLoadRandomGen _rqs =
-	gets $ Just . singleton . OccLoadRandomGen . getRandomGen
+	gets $ Just . Singleton . OccLoadRandomGen . getRandomGen

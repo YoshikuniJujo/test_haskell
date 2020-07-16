@@ -1,5 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables, PatternSynonyms #-}
 {-# LANGUAGE DataKinds, TypeOperators, ConstraintKinds #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances,
@@ -21,7 +21,7 @@ import Control.Monad.Freer.Par.FTCQueue (FTCQueue)
 import Control.Monad.Freer.Par.TaggableFunction (TaggableFun)
 import Data.Kind (Type)
 import Data.Type.Set (Set, Numbered, Singleton, (:$:))
-import Data.OneOrMore (OneOrMore, Selectable, extract, singleton)
+import Data.OneOrMore (OneOrMore, Selectable, pattern Singleton)
 import Data.Bits (setBit)
 import Numeric.Natural (Natural)
 
@@ -67,7 +67,7 @@ forkThreadId = GetThreadId >>>= \(ThreadId n i) ->
 ---------------------------------------------------------------------------
 
 await :: a -> (Occurred a -> b) -> React s (Singleton a) b
-await r f = pure . f . extract =<<< Await (singleton r)
+await r f = pure . f . (\(Singleton x) -> x) =<<< Await (Singleton r)
 
 await' :: a -> (ThreadId -> Occurred a -> b) -> React s (Singleton a) b
 await' r f = await r . f =<<< GetThreadId

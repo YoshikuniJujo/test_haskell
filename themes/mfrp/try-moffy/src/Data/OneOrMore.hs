@@ -17,7 +17,7 @@ module Data.OneOrMore (
 	-- ** Mergeable
 	Mergeable, Selectable(..),
 	-- * FUNCTION
-	pattern Singleton, extract, project, singleton, (>-), expand, collapse, merge, merge'
+	pattern Singleton, project, (>-), expand, collapse, merge, merge'
 	) where
 
 import Data.Kind (Type)
@@ -56,11 +56,10 @@ instance Projectable (a ':~ as) a where project (x :. _) = x
 instance {-# OVERLAPPABLE #-} Projectable as a =>
 	Projectable (a' ':~ as) a where project (_ :. xs) = project xs
 
+{-# COMPLETE Singleton #-}
+
 pattern Singleton :: a -> OneOrMore (Singleton a)
 pattern Singleton x = Just x :. Empty
-
-extract :: OneOrMore (Singleton a) -> a
-extract xs = case project xs of Just x -> x; Nothing -> error "never occur"
 
 -- INSERTABLE
 
@@ -75,9 +74,6 @@ instance Insertable a as (a ':~ as) where
 instance {-# OVERLAPPABLE #-} Insertable a as as' =>
 	Insertable a (a' ':~ as) (a' ':~ as') where
 	x >- (y :. xs) = y :. (x >- xs)
-
-singleton :: a -> OneOrMore (Singleton a)
-singleton = (>- Empty)
 
 ---------------------------------------------------------------------------
 -- EXPANDABLE AND COLLAPSABLE
