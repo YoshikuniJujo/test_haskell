@@ -50,6 +50,8 @@ todo
 	+ [ ] Control.Moffy.Event.Key
 		- [x] pattern synonym to ASCII
 		- [ ] key to char ASCII
+			* use PatternSynonyms and ViewPatterns
+				+ pattern AsciiKey :: Char -> Key
 		- [ ] others
 	+ [ ] Control.Moffy.Handle.XField.Key
 * [ ] refactoring
