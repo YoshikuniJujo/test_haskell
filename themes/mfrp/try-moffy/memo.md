@@ -47,11 +47,18 @@ todo
 	+ [x] remove function singleton and extract
 	+ [x] correct other modules
 * [ ] try using key events of X11
+	+ [ ] Control.Moffy.Event.Key
+		- [x] pattern synonym to ASCII
+		- [ ] key to char ASCII
+		- [ ] others
+	+ [ ] Control.Moffy.Handle.XField.Key
 * [ ] refactoring
 	+ [ ] Control.Moffy
 	+ [ ] Trial
 	+ [ ] Control.Monad.Freer.Par
 	+ [ ] Data.OneOrMore
+	+ [ ] module structure of Control.Moffy.Event.Key
+	+ [ ] Control.Moffy.Event.Key
 
 refactoring
 -----------
