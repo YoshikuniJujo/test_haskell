@@ -1,5 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables, PatternSynonyms #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses,
@@ -17,7 +17,7 @@ module Data.OneOrMore (
 	-- ** Mergeable
 	Mergeable, Selectable(..),
 	-- * FUNCTION
-	extract, project, singleton, (>-), expand, collapse, merge, merge'
+	pattern Singleton, extract, project, singleton, (>-), expand, collapse, merge, merge'
 	) where
 
 import Data.Kind (Type)
@@ -55,6 +55,9 @@ instance Projectable 'Nil a where project _ = Nothing
 instance Projectable (a ':~ as) a where project (x :. _) = x
 instance {-# OVERLAPPABLE #-} Projectable as a =>
 	Projectable (a' ':~ as) a where project (_ :. xs) = project xs
+
+pattern Singleton :: a -> OneOrMore (Singleton a)
+pattern Singleton x = Just x :. Empty
 
 extract :: OneOrMore (Singleton a) -> a
 extract xs = case project xs of Just x -> x; Nothing -> error "never occur"
