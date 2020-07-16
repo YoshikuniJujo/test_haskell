@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 93b6047d3a70682aac8cd6e994eb99c11806a017ec5206c3be513f8cdb939776
+-- hash: 6d916f18938ce6812fb72ef2562f3beaf85531a820d2b90f8524e853a7ec3dc9
 
 name:           check-guard-pattern
 version:        0.1.0.0
@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       Lib
+      NonZero
       Word32
   other-modules:
       Paths_check_guard_pattern
