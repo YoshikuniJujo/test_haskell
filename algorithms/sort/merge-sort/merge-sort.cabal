@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0407aff7cf565c2627ea6f98fea33c1871aba959ed949cb5b8f817e5de8d68a5
+-- hash: cf8cd490f4dbba555ad6803eb58dda1a96d1e31b0ccb1cd8651f5f28fb8cd68d
 
 name:           merge-sort
 version:        0.1.0.0
@@ -29,6 +29,7 @@ library
   exposed-modules:
       MergeSort
       MergeSortIm
+      MergeSortImBy
       MergeSortImTrial
       MergeSortImTrial2
   other-modules:
@@ -89,6 +90,21 @@ executable foo
 executable merge-sort-exe
   main-is: Main.hs
   other-modules:
+      Paths_merge_sort
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , merge-sort
+    , monads-tf
+    , random
+  default-language: Haskell2010
+
+executable sortBy
+  main-is: sortBy.hs
+  other-modules:
+      Main
       Paths_merge_sort
   hs-source-dirs:
       app
