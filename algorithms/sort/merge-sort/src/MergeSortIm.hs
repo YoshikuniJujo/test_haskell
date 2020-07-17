@@ -1,4 +1,5 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE RankNTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module MergeSortIm where
@@ -8,19 +9,28 @@ import System.Random
 
 type LenList a = (Int, [a])
 
+type LenList' a b = (Int -> [a] -> b) -> b
+
 popSorted :: Ord a => [a] -> (Maybe (LenList a), [a])
 popSorted = \case
 	[] -> (Nothing, [])
 	[x] -> (Just $ singleton x, [])
 	x : y : xs
 		| x <= y -> Just `first` asc y (x `cons`) xs
+--		| x <= y -> Just `first` asc' y (x `cons'`) xs
 		| otherwise -> Just `first` desc y (singleton x) xs
 
 singleton :: a -> LenList a
 singleton x = (1, [x])
 
+singleton' :: a -> LenList' a b
+singleton' x f = f 1 [x]
+
 cons :: a -> LenList a -> LenList a
 cons x (n, xs) = (n + 1, x : xs)
+
+cons' :: a -> LenList' a b -> LenList' a b
+cons' x ll f = ll \n xs -> f (n + 1) (x : xs)
 
 asc :: Ord a => a -> (LenList a -> LenList a) -> [a] -> (LenList a, [a])
 asc x s = \case
@@ -28,6 +38,13 @@ asc x s = \case
 	xa@(y : xs)
 		| x <= y -> asc y (s . (x `cons`)) xs
 		| otherwise -> (s $ singleton x, xa)
+
+asc' :: Ord a => a -> (forall b . LenList' a b -> LenList' a b) -> [a] -> (LenList a, [a])
+asc' x s = \case
+	[] -> (s (singleton' x) \n xs -> (n, xs), [])
+	xa@(y : xs)
+		| x <= y -> asc' y (s . (x `cons'`)) xs
+		| otherwise -> (s (singleton' x) \n xs -> (n, xs), xa)
 
 desc :: Ord a => a -> LenList a -> [a] -> (LenList a, [a])
 desc x s = \case
