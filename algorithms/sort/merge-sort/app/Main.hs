@@ -3,7 +3,8 @@
 module Main where
 
 import MergeSortIm (mergesortim)
-import Data.List
+-- import Data.List
+import RewriteSort (sort)
 import System.Random
 
 sample0 :: [Int]
