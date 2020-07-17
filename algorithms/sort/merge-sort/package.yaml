@@ -37,6 +37,33 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - merge-sort
+  foo:
+    main:                foo.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - merge-sort
+  bar:
+    main:                bar.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - merge-sort
+  baz:
+    main:                baz.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - merge-sort
 
 tests:
   merge-sort-test:
