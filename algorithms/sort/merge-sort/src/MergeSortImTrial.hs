@@ -10,7 +10,7 @@ import System.Random
 state :: (s -> (a, s)) -> State s a
 state f = StateT $ Identity . f
 
-sepAscDesc :: Ord a => [a] ->[[a]]
+sepAscDesc :: Ord a => [a] -> [[a]]
 sepAscDesc [] = []
 sepAscDesc xs@[_] = [xs]
 sepAscDesc (x0 : y0 : xs0)
