@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6b8d330e0fa940f6bf1d44cbe7fad56fb8053dff536938e6bb291a9f155b62b5
+-- hash: 222f3ddc23d0400cf57d8a2f633ff4fab8938580649fa67540d56a9840656d69
 
 name:           merge-sort
 version:        0.1.0.0
@@ -31,6 +31,7 @@ library
       MergeSort
       MergeSortIm
       MergeSortImBy
+      MergeSortImState
       MergeSortImTrial
       MergeSortImTrial2
       RewriteSort
