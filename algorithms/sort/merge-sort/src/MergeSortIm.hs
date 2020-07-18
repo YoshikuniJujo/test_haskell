@@ -65,11 +65,13 @@ list (_, xs) = xs
 merge :: Ord a => LenList a -> LenList a -> LenList a
 merge (nl, xs0) (nr, ys0) = (nl + nr, xs0 `mrg` ys0)
 	where
+	xa@(x : xs) `mrg` ya@(y : ys)
+		| x `compare` y == GT = y : xa `mrg` ys
+		| otherwise = x : xs `mrg` ya
+--		| x <= y = x : xs `mrg` ya
+--		| otherwise = y : xa `mrg` ys
 	xs `mrg` [] = xs
 	[] `mrg` ys = ys
-	xa@(x : xs) `mrg` ya@(y : ys)
-		| x <= y = x : xs `mrg` ya
-		| otherwise = y : xa `mrg` ys
 
 sortWithLeft :: Ord a => Maybe Int -> LenList a -> [a] -> (LenList a, [a])
 sortWithLeft (Just ms) l xs | len l >= ms = (l, xs)

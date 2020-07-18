@@ -23,9 +23,12 @@ dependencies:
 - base >= 4.7 && < 5
 - monads-tf
 - random
+- deepseq
 
 library:
   source-dirs: src
+  ghc-options:
+  - -O2
 
 executables:
   merge-sort-exe:
@@ -35,6 +38,7 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -O2
     dependencies:
     - merge-sort
   foo:
@@ -68,6 +72,26 @@ executables:
     main:                sortBy.hs
     source-dirs:         app
     ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - merge-sort
+  hoge:
+    main:                hoge.hs
+    source-dirs:         app
+    ghc-options:
+    - -O2
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - merge-sort
+  baseSort:
+    main:                baseSort.hs
+    source-dirs:         app
+    ghc-options:
+    - -O2
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
