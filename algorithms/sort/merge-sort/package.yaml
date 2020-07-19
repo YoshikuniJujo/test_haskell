@@ -97,6 +97,16 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - merge-sort
+  originalRewrite:
+    main:                originalRewrite.hs
+    source-dirs:         app
+    ghc-options:
+    - -O2
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - merge-sort
 
 tests:
   merge-sort-test:
