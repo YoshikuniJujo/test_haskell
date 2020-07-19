@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b1980784ebf07ca24d491f9199735aa81a83eeea86a087118db5bbc80de778f7
+-- hash: 1e367b46a8ea6c86b140357ad76d5e91494cc2945d9478d6ef9d11042fc976f6
 
 name:           merge-sort
 version:        0.1.0.0
@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       BaseSortState
+      CheckClassFun
       ForProfile
       MergeSort
       MergeSortIm
@@ -89,6 +90,22 @@ executable baz
   hs-source-dirs:
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , deepseq
+    , merge-sort
+    , monads-tf
+    , random
+  default-language: Haskell2010
+
+executable checkClassFun
+  main-is: checkClassFun.hs
+  other-modules:
+      Main
+      Paths_merge_sort
+  hs-source-dirs:
+      app
+  ghc-options: -O2 -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
     , deepseq
