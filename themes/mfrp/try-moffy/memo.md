@@ -49,9 +49,11 @@ todo
 * [ ] try using key events of X11
 	+ [ ] Control.Moffy.Event.Key
 		- [x] pattern synonym to ASCII
-		- [ ] key to char ASCII
+		- [x] key to char ASCII
 			* use PatternSynonyms and ViewPatterns
 				+ pattern AsciiKey :: Char -> Key
+		- [ ] pattern synonym to HHKB key other than ASCII
+			* [ ] make keysym file
 		- [ ] others
 	+ [ ] Control.Moffy.Handle.XField.Key
 * [ ] refactoring
