@@ -59,7 +59,8 @@ todo
 			* [ ] Key Release Event
 		- [ ] others
 	+ [ ] Control.Moffy.Handle.XField.Key
-		- [ ] handle Key Press Event
+		- [x] handle Key Press Event
+			* [x] check shift by ShiftMask
 		- [ ] handle Key Release Event
 * [ ] refactoring
 	+ [ ] Control.Moffy
