@@ -1,14 +1,21 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Event.Key (
+	-- * Key Down Event
+	KeyDown, pattern OccKeyDown, keyDown,
+	-- * Key
 	pattern AsciiKey,
-	module Control.Moffy.Event.Key.XK
-	) where
+	module Control.Moffy.Event.Key.XK ) where
 
+import Control.Moffy
 import Control.Moffy.Event.Key.XK
 import Control.Moffy.Event.Key.Internal
+import Data.Type.Set
 import Data.Char
 
 pattern AsciiKey :: Char -> Key
@@ -18,3 +25,11 @@ toAsciiChar :: Key -> Maybe Char
 toAsciiChar (Key k)
 	| 0x20 <= k && k <= 0x7e = Just . chr $ fromIntegral k
 	| otherwise = Nothing
+
+data KeyDown = KeyDownReq deriving (Show, Eq, Ord)
+numbered 9 [t| KeyDown |]
+instance Request KeyDown where
+	data Occurred KeyDown = OccKeyDown Key deriving (Show, Eq, Ord)
+
+keyDown :: React s (Singleton KeyDown) Key
+keyDown = await KeyDownReq \(OccKeyDown k) -> k

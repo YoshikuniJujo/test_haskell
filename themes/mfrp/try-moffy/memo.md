@@ -52,10 +52,15 @@ todo
 		- [x] key to char ASCII
 			* use PatternSynonyms and ViewPatterns
 				+ pattern AsciiKey :: Char -> Key
-		- [ ] pattern synonym to HHKB key other than ASCII
-			* [ ] make keysym file
+		- [x] pattern synonym to HHKB key other than ASCII
+			* [x] make keysym file
+		- [ ] Key Events
+			* [x] Key Press Event
+			* [ ] Key Release Event
 		- [ ] others
 	+ [ ] Control.Moffy.Handle.XField.Key
+		- [ ] handle Key Press Event
+		- [ ] handle Key Release Event
 * [ ] refactoring
 	+ [ ] Control.Moffy
 	+ [ ] Trial

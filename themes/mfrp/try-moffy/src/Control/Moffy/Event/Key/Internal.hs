@@ -7,7 +7,7 @@ import Language.Haskell.TH
 import Control.Monad
 import Data.Word
 
-newtype Key = Key Word32 deriving (Show, Eq)
+newtype Key = Key Word32 deriving (Show, Eq, Ord)
 
 xkBackSpaceToDelete :: DecsQ
 xkBackSpaceToDelete = concat <$> zipWithM (flip mkXk)
