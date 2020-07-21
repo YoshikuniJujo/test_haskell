@@ -10,11 +10,11 @@ packages:
     git: https://github.com/YoshikuniJujo/simple-field.git
     pantry-tree:
       size: 788
-      sha256: feaedd2a45b4129f98ff8f283ce3671c9f6d04862571c135bf23cea111d8a996
-    commit: 4a19b9c5d672ba81c5130ee549890048b8fd24a0
+      sha256: 3337c22609eeaa3dd46736e613a2bb14b46447715a64adbd5d8857e60705a9a5
+    commit: 7523e8fd87ca0b842cf2d80d1f53a013a090f72a
   original:
     git: https://github.com/YoshikuniJujo/simple-field.git
-    commit: 4a19b9c5d672ba81c5130ee549890048b8fd24a0
+    commit: 7523e8fd87ca0b842cf2d80d1f53a013a090f72a
 - completed:
     name: extra-data-yj
     version: 0.1.0.0

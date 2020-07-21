@@ -25,18 +25,24 @@ import Data.Time.Clock.System
 import qualified Control.Arrow as Arr
 
 import Control.Moffy.Event.Mouse
+import Control.Moffy.Event.Delete
 import Control.Moffy.Handle.XField.Mouse
+import Control.Moffy.Handle.XField
 import Field hiding (Point)
 
 import Trial.Boxes.Event
 import Trial.Boxes.Handle
+
+import qualified Data.OneOrMore
+
+handleMouse = handleXField \case MouseEv e -> Just $ Data.OneOrMore.expand e; _ -> Nothing
 
 tryClick :: IO [MouseBtn]
 tryClick = do
 	f <- openField "TRY CLICK" [buttonPressMask, exposureMask]
 	interpretReact (retry $ handleMouse Nothing f) (adjust mouseDown) <* closeField f
 
-sameClick :: React s MouseEv Bool
+sameClick :: React s (DeleteEvent :- MouseEv) Bool
 sameClick = adjust $ (==) <$> mouseDown <*> mouseDown
 
 trySameClick :: IO Bool
@@ -44,7 +50,7 @@ trySameClick = do
 	f <- openField "TRY SAME CLICK" [buttonPressMask]
 	interpretReact (retry $ handleMouse Nothing f) sameClick <* closeField f
 
-leftDownRightUp :: React s MouseEv (Or () ())
+leftDownRightUp :: React s (DeleteEvent :- MouseEv) (Or () ())
 leftDownRightUp = adjust $ leftClick `first` rightUp
 
 tryLeftDownRightUp :: IO (Or () ())

@@ -1,6 +1,6 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -14,13 +14,13 @@ import Prelude hiding (head)
 
 import Control.Monad.State (StateT, lift, gets, modify)
 import Control.Moffy.Handle
-import Data.Type.Set (Singleton)
+import Data.Type.Set (Singleton, (:-))
 import Data.OneOrMore (pattern Singleton)
 import Data.Bool (bool)
 import Data.List (delete)
 import Data.String (fromString)
 import Data.Aeson (Object)
-import Data.Time (UTCTime, getCurrentTime, getCurrentTimeZone, diffUTCTime)
+import Data.Time (UTCTime, getCurrentTime, getCurrentTimeZone, diffUTCTime, DiffTime)
 import System.Random (StdGen)
 import System.Process (spawnProcess)
 
@@ -31,13 +31,20 @@ import Control.Moffy.Handle.ThreadId (handleGetThreadId)
 import Control.Moffy.Handle.Lock (LockState(..), LockId, handleLock)
 import Control.Moffy.Handle.Random (RandomState(..), handleRandom)
 import Control.Moffy.Event.Mouse (MouseEv)
-import Control.Moffy.Handle.XField.Mouse (handleMouse)
+import Control.Moffy.Event.Delete
+import Control.Moffy.Handle.XField.Mouse
+import Control.Moffy.Handle.XField
 import Trial.Followbox.Event (
 	FollowboxEv, Occurred(..), StoreJsons(..), LoadJsons,
 	HttpGet(..), CalcTextExtents(..), GetTimeZone, Browse(..),
 	BeginSleep(..), EndSleep, RaiseError(..), Error(..), ErrorResult(..) )
 import Trial.Followbox.TypeSynonym (Browser, GithubNameToken)
 import Field (Field, textExtents)
+
+import qualified Data.OneOrMore
+
+handleMouse :: Maybe DiffTime -> Field -> Handle' IO (DeleteEvent :- MouseEv)
+handleMouse mprd f rqs = handleXField (\case MouseEv e -> Just $ Data.OneOrMore.expand e; _ -> Nothing) mprd f rqs
 
 ---------------------------------------------------------------------------
 
@@ -115,9 +122,11 @@ handleFollowbox f brws mba = retry $
 	lift . handleRaiseError `before`
 	handleMouseWithSleep f
 
+type MouseEv' = DeleteEvent :- MouseEv
+
 -- MOUSE
 
-handleMouseWithSleep :: Field -> Handle' (FbM IO) MouseEv
+handleMouseWithSleep :: Field -> Handle' (FbM IO) MouseEv'
 handleMouseWithSleep f reqs = getSleepUntil >>= lift . \case
 	Nothing -> handleMouse Nothing f reqs
 	Just t -> getCurrentTime >>= \now ->

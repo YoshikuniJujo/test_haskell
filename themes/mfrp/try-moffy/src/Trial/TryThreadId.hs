@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -12,8 +13,18 @@ import Data.Or
 import Control.Moffy.Handle.ThreadId
 import Control.Moffy.Event.ThreadId
 import Control.Moffy.Event.Mouse
+import Control.Moffy.Event.Delete
 import Control.Moffy.Handle.XField.Mouse
+import Control.Moffy.Handle.XField
 import Field
+
+import Data.Time
+import qualified Data.OneOrMore
+
+type MouseEv' = DeleteEvent :- MouseEv
+
+handleMouse :: Maybe DiffTime -> Field -> Handle' IO (DeleteEvent :- MouseEv)
+handleMouse mprd f rqs = handleXField (\case MouseEv e -> Just $ Data.OneOrMore.expand e; _ -> Nothing) mprd f rqs
 
 trySingleThreadId :: IO ThreadId
 trySingleThreadId = interpretReact (retry handleGetThreadId) getThreadId
@@ -21,10 +32,10 @@ trySingleThreadId = interpretReact (retry handleGetThreadId) getThreadId
 tryDoubleThreadId :: IO (Or ThreadId ThreadId)
 tryDoubleThreadId = interpretReact (retry handleGetThreadId) $ getThreadId `first` getThreadId
 
-leftRightThreadId :: React s (GetThreadId :- MouseEv) (Or ThreadId ThreadId)
+leftRightThreadId :: React s (GetThreadId :- MouseEv') (Or ThreadId ThreadId)
 leftRightThreadId =
-	(adjust leftClick >> adjust getThreadId :: React s (GetThreadId :- MouseEv) ThreadId) `first`
-	(adjust rightClick >> adjust getThreadId :: React s (GetThreadId :- MouseEv) ThreadId)
+	(adjust leftClick >> adjust getThreadId :: React s (GetThreadId :- MouseEv') ThreadId) `first`
+	(adjust rightClick >> adjust getThreadId :: React s (GetThreadId :- MouseEv') ThreadId)
 
 tryLeftRightThreadId :: IO (Or ThreadId ThreadId)
 tryLeftRightThreadId = do

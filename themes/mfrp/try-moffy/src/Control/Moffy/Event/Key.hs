@@ -1,15 +1,17 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Event.Key (
+	-- * Type
+	KeyEv,
 	-- * Key Down Event
 	KeyDown, pattern OccKeyDown, keyDown,
 	-- * Key
-	pattern AsciiKey,
+	Key(..), pattern AsciiKey,
 	module Control.Moffy.Event.Key.XK ) where
 
 import Control.Moffy
@@ -33,3 +35,5 @@ instance Request KeyDown where
 
 keyDown :: React s (Singleton KeyDown) Key
 keyDown = await KeyDownReq \(OccKeyDown k) -> k
+
+type KeyEv = KeyDown :- 'Nil

@@ -41,7 +41,7 @@ packages:
 #
 extra-deps:
 - git: https://github.com/YoshikuniJujo/simple-field.git
-  commit: 4a19b9c5d672ba81c5130ee549890048b8fd24a0
+  commit: 7523e8fd87ca0b842cf2d80d1f53a013a090f72a
 - git: https://github.com/YoshikuniJujo/extra-data-yj
   commit: 23a243df2ca44306ca8cb8e93f286c524a77c332
 - git: https://github.com/YoshikuniJujo/type-flip

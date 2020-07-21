@@ -1,6 +1,6 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, PatternSynonyms #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -9,16 +9,22 @@ module Trial.Boxes.Handle (Mode(InitMode), handleBoxes) where
 import Control.Concurrent
 import Control.Moffy.Handle hiding (expand)
 import Control.Monad.State (StateT, get, put, lift, liftIO)
+import Data.Type.Set
 import Data.OneOrMore (project, pattern Singleton, (>-), expand)
 import Data.Time (DiffTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
 	
-import Control.Moffy.Handle.XField.Mouse (handleMouse)
+import Control.Moffy.Handle.XField.Mouse
+import Control.Moffy.Handle.XField
+import Control.Moffy.Event.Delete
 import Trial.Boxes.Event (GuiEv, MouseEv, TimeEv, TryWait(..), Occurred(..))
 import Field (Field)
 
 ---------------------------------------------------------------------------
+
+handleMouse :: Maybe DiffTime -> Field -> Handle' IO (DeleteEvent :- MouseEv)
+handleMouse = handleXField \case MouseEv e -> Just $ expand e; _ -> Nothing
 
 data Mode = InitMode | WaitMode AbsoluteTime deriving Show
 
@@ -31,7 +37,7 @@ handleInit = mergeSt
 	handleMouse' (\(prd, _) -> liftIO . threadDelay . round $ prd * 1000000)
 	handleNow (\_ -> InitMode <$ (put =<< lift getTaiTime))
 
-handleMouse' :: HandleSt' (DiffTime, Field) () (StateT AbsoluteTime IO) MouseEv
+handleMouse' :: HandleSt' (DiffTime, Field) () (StateT AbsoluteTime IO) (DeleteEvent :- MouseEv)
 handleMouse' reqs (prd, f) = lift $ (, ()) <$> handleMouse (Just prd) f reqs
 
 handleNow :: HandleSt' () Mode (StateT AbsoluteTime IO) TimeEv

@@ -21,6 +21,7 @@ import Data.Bool (bool)
 import Data.Time (DiffTime)
 
 import Control.Moffy.Event.Mouse
+import Control.Moffy.Event.Delete
 
 ---------------------------------------------------------------------------
 
@@ -46,5 +47,5 @@ deltaTime = await DeltaTimeReq \(OccDeltaTime t) -> t
 type SigG s = Sig s GuiEv
 type ISigG s = ISig s GuiEv
 type ReactG s a = React s GuiEv a
-type GuiEv = MouseEv :+: TimeEv
+type GuiEv = DeleteEvent :- MouseEv :+: TimeEv
 type TimeEv = TryWait :- DeltaTime :- 'Nil

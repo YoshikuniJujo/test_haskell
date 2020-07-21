@@ -15,7 +15,6 @@ module Control.Moffy.Event.Mouse (
 	MouseDown, pattern OccMouseDown,
 	MouseUp, pattern OccMouseUp,
 	MouseMove, pattern OccMouseMove,
-	DeleteEvent, pattern OccDeleteEvent,
 
 	-- * Event
 	-- ** Mouse Down
@@ -24,8 +23,7 @@ module Control.Moffy.Event.Mouse (
 	mouseUp, leftUp, middleUp, rightUp,
 	-- ** Mouse Move
 	mouseMove,
-	-- ** Delete Event
-	deleteEvent ) where
+	) where
 
 import Control.Moffy (React, Request(..), await)
 import Data.Type.Set (numbered, Set(Nil), Singleton, (:-))
@@ -106,4 +104,4 @@ deleteEvent = await DeleteEventReq \OccDeleteEvent -> ()
 -- MOUSE EV
 ---------------------------------------------------------------------------
 
-type MouseEv = MouseDown :- MouseUp :- MouseMove :- DeleteEvent :- 'Nil
+type MouseEv = MouseDown :- MouseUp :- MouseMove :- 'Nil

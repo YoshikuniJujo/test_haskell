@@ -38,6 +38,7 @@ dependencies:
 - vector
 - process
 - unordered-containers
+- X11
 
 library:
   source-dirs: src

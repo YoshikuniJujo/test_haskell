@@ -25,7 +25,7 @@ import qualified Data.Text as T
 
 import Control.Moffy.Event.Lock (LockId, newLockId, withLock)
 import Control.Moffy.Event.Random (getRandomR)
-import Control.Moffy.Event.Mouse (deleteEvent)
+import Control.Moffy.Event.Delete (deleteEvent)
 import Trial.Followbox.Event (
 	SigF, ReactF, clearJsons, storeJsons, loadJsons, httpGet, getTimeZone,
 	browse, beginSleep, checkBeginSleep, endSleep,

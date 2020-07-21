@@ -1,36 +1,30 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Handle.XField.Mouse where
+module Control.Moffy.Handle.XField.Mouse (pattern MouseEv) where
 
 import Foreign.C.Types
 import Data.Type.Set
 import Data.OneOrMore
-import Data.Time
-import System.Exit
 
 import Control.Moffy
-import Control.Moffy.Handle hiding (expand)
 import Control.Moffy.Event.Mouse
 import Field
 
-handleMouse :: Maybe DiffTime -> Field -> Handle' IO MouseEv
-handleMouse Nothing f _rqs = withNextEvent f $ eventToEv f
-handleMouse (Just prd) f _rqs = withNextEventTimeout' f
-	(round $ prd * 1000000) $ maybe (pure Nothing) (eventToEv f)
+pattern MouseEv :: EvOccs MouseEv -> Event'
+pattern MouseEv ev <- (mouseEv -> Just ev)
 
-eventToEv :: Field -> Event -> IO (Maybe (EvOccs MouseEv))
-eventToEv f = \case
-	ButtonEvent { ev_event_type = 4, ev_button = eb, ev_x = x, ev_y = y }
-		| Just b <- btn eb -> pure . Just . expand $ omd x y [b]
-	ButtonEvent { ev_event_type = 5, ev_button = eb, ev_x = x, ev_y = y }
-		| Just b <- btn eb -> pure . Just . expand $ omu x y [b]
-	MotionEvent { ev_x = x, ev_y = y } -> pure . Just . expand $ omm x y
-	ExposeEvent {} -> Nothing <$ flushField f
-	DestroyWindowEvent {} -> closeField f >> exitSuccess
-	ev	| isDeleteEvent f ev -> pure . Just . expand $ Singleton OccDeleteEvent -- Nothing <$ destroyField f
-		| otherwise -> pure Nothing
+mouseEv :: Event' -> Maybe (EvOccs MouseEv)
+mouseEv = \case
+	(ButtonEvent { ev_event_type = 4, ev_button = eb, ev_x = x, ev_y = y }, _)
+		| Just b <- btn eb -> Just . expand $ omd x y [b]
+	(ButtonEvent { ev_event_type = 5, ev_button = eb, ev_x = x, ev_y = y }, _)
+		| Just b <- btn eb -> Just . expand $ omu x y [b]
+	(MotionEvent { ev_x = x, ev_y = y }, _) -> Just . expand $ omm x y
+	_ -> Nothing
 	where
 	btn = \case
 		1 -> Just MLeft; 2 -> Just MMiddle; 3 -> Just MRight

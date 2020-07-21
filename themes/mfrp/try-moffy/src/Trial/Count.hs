@@ -1,4 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.Count where
@@ -6,14 +7,25 @@ module Trial.Count where
 import Control.Moffy
 import Control.Moffy.Handle
 import Control.Moffy.Run
+import Data.Type.Set
 import Data.Or
 import System.Random
 
 import Control.Moffy.Event.Mouse
+import Control.Moffy.Event.Delete
 import Control.Moffy.Handle.XField.Mouse
+import Control.Moffy.Handle.XField
 import Field
 
-leftCount :: Int -> React s MouseEv Int
+import Data.Time
+import Data.OneOrMore
+
+type MouseEv' = DeleteEvent :- MouseEv
+
+handleMouse :: Maybe DiffTime -> Field -> Handle' IO (DeleteEvent :- MouseEv)
+handleMouse mprd f rqs = handleXField (\case MouseEv e -> Just $ Data.OneOrMore.expand e; _ -> Nothing) mprd f rqs
+
+leftCount :: Int -> React s MouseEv' Int
 leftCount c = adjust (leftClick `first` rightClick) >>= \case
 	L () -> leftCount $ c + 1
 	R () -> pure c
@@ -24,7 +36,7 @@ tryLeftCount = do
 	f <- openField "TRY LEFT COUNT" [buttonPressMask, exposureMask]
 	interpretReact (retry $ handleMouse Nothing f) (leftCount 0) <* closeField f
 
-leftCountSig :: Int -> Sig s MouseEv Int Int
+leftCountSig :: Int -> Sig s MouseEv' Int Int
 leftCountSig c = do
 	emit c
 	waitFor (adjust $ leftClick `first` rightClick) >>= \case
@@ -37,7 +49,7 @@ tryLeftCountSig = do
 	f <- openField "TRY LEFT COUNT SIG" [buttonPressMask, exposureMask]
 	interpret (retry $ handleMouse Nothing f) print (leftCountSig 0) <* closeField f
 
-leftRandomSig :: StdGen -> Sig s MouseEv Int StdGen
+leftRandomSig :: StdGen -> Sig s MouseEv' Int StdGen
 leftRandomSig g = do
 	let	(i, g') = random g
 	emit i

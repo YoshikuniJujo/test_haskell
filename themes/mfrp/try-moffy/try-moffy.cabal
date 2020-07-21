@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6177ac71d49bef40870797d13749add875d8caa2d8eae9feb40d779def26a2bb
+-- hash: f55bca51b3c730f6d26314822848691edc4851fb9aff6f6e3618a517da8135c4
 
 name:           try-moffy
 version:        0.1.0.0
@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       Control.Moffy
+      Control.Moffy.Event.Delete
       Control.Moffy.Event.Key
       Control.Moffy.Event.Key.Internal
       Control.Moffy.Event.Key.XK
@@ -40,6 +41,8 @@ library
       Control.Moffy.Handle.Lock
       Control.Moffy.Handle.Random
       Control.Moffy.Handle.ThreadId
+      Control.Moffy.Handle.XField
+      Control.Moffy.Handle.XField.Key
       Control.Moffy.Handle.XField.Mouse
       Control.Moffy.Internal.React
       Control.Moffy.Internal.React.Type
@@ -72,6 +75,7 @@ library
       Trial.Followbox.View
       Trial.StepByStepBox
       Trial.TryCheckDup
+      Trial.TryKey
       Trial.TryThreadId
   other-modules:
       Paths_try_moffy
@@ -80,6 +84,7 @@ library
   build-depends:
       JuicyPixels
     , JuicyPixels-extra
+    , X11
     , X11-xft
     , aeson
     , base >=4.7 && <5
@@ -109,6 +114,7 @@ executable followbox
   build-depends:
       JuicyPixels
     , JuicyPixels-extra
+    , X11
     , X11-xft
     , aeson
     , base >=4.7 && <5
@@ -138,6 +144,7 @@ executable try-moffy-exe
   build-depends:
       JuicyPixels
     , JuicyPixels-extra
+    , X11
     , X11-xft
     , aeson
     , base >=4.7 && <5
@@ -168,6 +175,7 @@ test-suite try-moffy-test
   build-depends:
       JuicyPixels
     , JuicyPixels-extra
+    , X11
     , X11-xft
     , aeson
     , base >=4.7 && <5
