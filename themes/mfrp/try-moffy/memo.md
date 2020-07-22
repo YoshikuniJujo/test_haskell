@@ -46,29 +46,28 @@ todo
 	+ [x] define pattern Singleton
 	+ [x] remove function singleton and extract
 	+ [x] correct other modules
-* [ ] try using key events of X11
-	+ [ ] Control.Moffy.Event.Key
+* [x] try using key events of X11
+	+ [x] Control.Moffy.Event.Key
 		- [x] pattern synonym to ASCII
 		- [x] key to char ASCII
 			* use PatternSynonyms and ViewPatterns
 				+ pattern AsciiKey :: Char -> Key
 		- [x] pattern synonym to HHKB key other than ASCII
 			* [x] make keysym file
-		- [ ] Key Events
+		- [x] Key Events
 			* [x] Key Press Event
-			* [ ] Key Release Event
-		- [ ] others
-	+ [ ] Control.Moffy.Handle.XField.Key
+			* [x] Key Release Event
+	+ [x] Control.Moffy.Handle.XField.Key
 		- [x] handle Key Press Event
 			* [x] check shift by ShiftMask
-		- [ ] handle Key Release Event
+		- [x] handle Key Release Event
 * [ ] refactoring
 	+ [ ] Control.Moffy
+	+ [ ] module structure of Control.Moffy.Event.Key
+	+ [ ] Control.Moffy.Event.Key
 	+ [ ] Trial
 	+ [ ] Control.Monad.Freer.Par
 	+ [ ] Data.OneOrMore
-	+ [ ] module structure of Control.Moffy.Event.Key
-	+ [ ] Control.Moffy.Event.Key
 
 refactoring
 -----------
@@ -197,6 +196,38 @@ Control.Moffy.Run
 
 ### Moffy library
 
+#### module hierarchy
+
+```
+Control.Moffy.Event
+  + Control.Moffy.Event.ThreadId
+  + Control.Moffy.Event.Lock
+      + Control.Moffy.Event.Lock.Internal
+  + Control.Moffy.Event.Random
+  + Control.Moffy.Event.Delete
+  + Control.Moffy.Event.Key
+      + Control.Moffy.Event.Key.XK
+      + Control.Moffy.Event.Key.Internal
+Control.Moffy.Handle
+  + Control.Moffy.Handle.ThreadId
+  + Control.Moffy.Handle.Lock
+  + Control.Moffy.Handle.Random
+  + Control.Moffy.Handle.XField
+      + Control.Moffy.Handle.XField.Key
+      + Control.Moffy.Handle.XField.Mouse
+```
+
+#### module dependency hierarchy
+
+```
+Control.Moffy.Event.Key
+  + Control.Moffy.Event.Key.XK
+      + Control.Moffy.Event.Key.Internal
+  + Control.Moffy.Event.Key.Internal
+```
+
+#### refactor modules
+
 * [x] Control.Moffy.Event.ThreadId
 * [x] Control.Moffy.Handle.ThreadId
 * [x] Control.Moffy.Event.Lock
@@ -248,6 +279,14 @@ Control.Moffy.Run
 		- [x] MOUSE MOVE
 		- [x] DELETE EVENT
 		- [x] MOUSE EV
+* [ ] Control.Moffy.Event.Key
+	+ [ ] module hierarchy
+		- [ ] rename or not Control.Moffy.Event.Key.XK
+			* [x] move it under Control.Moffy.Event.Key.Internal
+			* [ ] rename or not it
+		- [ ] rename or not Control.Moffy.Event.Key.Internal
+		- [ ] API of Control.Moffy.Event.Key.XK
+		- [ ] API of Control.Moffy.Event.Key.Internal
 * [ ] Control.Moffy.Event.Key
 * [ ] Control.Moffy.Handle.XField.Key
 * [ ] Control.Moffy.Handle.XField.Mouse

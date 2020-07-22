@@ -2,7 +2,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Event.Key.XK where
+module Control.Moffy.Event.Key.Internal.XK where
 
 import Control.Moffy.Event.Key.Internal
 

@@ -14,10 +14,10 @@ module Control.Moffy.Event.Key (
 	KeyUp, pattern OccKeyUp, keyUp,
 	-- * Key
 	Key(..), pattern AsciiKey,
-	module Control.Moffy.Event.Key.XK ) where
+	module Control.Moffy.Event.Key.Internal.XK ) where
 
 import Control.Moffy
-import Control.Moffy.Event.Key.XK
+import Control.Moffy.Event.Key.Internal.XK
 import Control.Moffy.Event.Key.Internal
 import Data.Type.Set
 import Data.Char
