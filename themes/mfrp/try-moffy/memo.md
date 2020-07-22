@@ -292,7 +292,7 @@ Control.Moffy.Event.Key
 	+ [x] imports
 	+ [x] structure
 	+ [ ] body
-		- [ ] TYPA AND AUXILIARY FUNCTION
+		- [x] TYPA AND AUXILIARY FUNCTION
 		- [ ] DEFINITION OF PATTERN XK_FOO
 			* [ ] VOID SYMBOL
 			* [ ] TTY FUNCTION KEYS

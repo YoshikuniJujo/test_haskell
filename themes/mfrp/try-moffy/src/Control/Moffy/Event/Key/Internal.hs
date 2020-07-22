@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Event.Key.Internal (
@@ -56,12 +57,9 @@ concatR :: [[a]] -> [a]
 concatR = concat . reverse
 
 mkXk :: String -> Integer -> DecsQ
-mkXk s n = do
-	let	xkn = mkName $ "XK_" ++ s
-	sequence [
-		patSynSigD xkn $ conT ''Key,
-		patSynD xkn (prefixPatSyn []) implBidir (conP 'Key [litP $ integerL n])
-		]
+mkXk (mkName . ("XK_" ++) -> nm) n = sequence [
+	patSynSigD nm $ conT ''Key,
+	patSynD nm (prefixPatSyn []) implBidir (conP 'Key [litP $ integerL n]) ]
 
 ---------------------------------------------------------------------------
 -- DEFINITION OF PATTERN XK_FOO
