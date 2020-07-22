@@ -24,12 +24,15 @@ module Control.Moffy.Event.Key.Internal (
 	-- ** Latin 1 (only ASCII)
 	xkSpaceToSlash, xkDigit,
 	xkColonToAt, xkUpperAlph,
-	xkBlacketleftToGrave, xkLowerAlph, xkBraceleftToAsciitilde
-	) where
+	xkBlacketleftToGrave, xkLowerAlph, xkBraceleftToAsciitilde ) where
 
-import Language.Haskell.TH
-import Control.Monad
-import Data.Word
+import Language.Haskell.TH (
+	DecsQ, mkName, conP, litP, conT, integerL,
+	patSynSigD, patSynD, prefixPatSyn, implBidir )
+import Control.Monad (zipWithM)
+import Data.Word (Word32)
+
+---------------------------------------------------------------------------
 
 newtype Key = Key Word32 deriving (Show, Eq, Ord)
 

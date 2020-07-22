@@ -289,7 +289,7 @@ Control.Moffy.Event.Key
 		- [x] API of Control.Moffy.Event.Key.Internal
 * [ ] Control.Moffy.Event.Key.Internal
 	+ [x] API
-	+ [ ] imports
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] Control.Moffy.Event.Key.Internal.XK
