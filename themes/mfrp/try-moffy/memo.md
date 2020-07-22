@@ -290,8 +290,18 @@ Control.Moffy.Event.Key
 * [ ] Control.Moffy.Event.Key.Internal
 	+ [x] API
 	+ [x] imports
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] TYPA AND AUXILIARY FUNCTION
+		- [ ] DEFINITION OF PATTERN XK_FOO
+			* [ ] VOID SYMBOL
+			* [ ] TTY FUNCTION KEYS
+			* [ ] JAPANESE KEYBOARD SUPPORT
+			* [ ] CURSOR CONTROL AND MOTION
+			* [ ] MISC FUNCTION
+			* [ ] AUXILIARY FUNCTIONS
+			* [ ] KEYBOARD (XKB) EXTENSION FUNCTION AND MODIFIER KEYS
+			* [ ] LATIN 1 (only ASCII)
 * [ ] Control.Moffy.Event.Key.Internal.XK
 	+ [ ] API
 	+ [ ] imports
