@@ -9,11 +9,11 @@ import System.IO
 import Numeric
 
 import Field
-import Graphics.X11 (keysymToString, KeyCode, KeySym)
+import Graphics.X11 (keysymToString, KeySym)
 
 tryField :: FilePath -> IO ()
 tryField fp = do
-	f <- openField "テスト" [exposureMask, keyPressMask, buttonPressMask]
+	f <- openField "テスト" [exposureMask, keyPressMask, keyReleaseMask, buttonPressMask]
 	h <- openFile fp WriteMode
 	loop f h
 	hClose h
@@ -22,8 +22,8 @@ tryField fp = do
 loop :: Field -> Handle -> IO ()
 loop f h = do
 	c <- withNextEvent f \case
-		ke@KeyEvent {} -> True <$ do
---			print ke
+		(ke@KeyEvent {}, _) -> True <$ do
+			print ke
 			putStrWd . formatKeySym =<< keycodeToKeysym f (ev_keycode ke) 0
 			putStrLn . formatKeySym =<< keycodeToKeysym f (ev_keycode ke) 1
 
@@ -35,8 +35,8 @@ loop f h = do
 			putStrWd . keysymToString =<< keycodeToKeysym f (ev_keycode ke) 0
 			putStrLn . keysymToString =<< keycodeToKeysym f (ev_keycode ke) 1
 -}
-		ButtonEvent {} -> True <$ (putStrLn "" >> hPutStrLn h "")
-		ev	| isDeleteEvent f ev -> pure False
+		(ButtonEvent {}, _) -> True <$ (putStrLn "" >> hPutStrLn h "")
+		(ev, _)	| isDeleteEvent f ev -> pure False
 			| otherwise -> True <$ print ev
 	bool (pure ()) (loop f h) c
 
