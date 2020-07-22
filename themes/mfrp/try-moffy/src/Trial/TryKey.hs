@@ -15,19 +15,28 @@ import Control.Moffy.Handle.XField
 import Control.Moffy.Handle.XField.Key
 import Data.Type.Set
 import Data.OneOrMore
-
+import Data.Or
 
 import Field
 
-action :: Sig s (DeleteEvent :- KeyEv) Char ()
-action = () <$ repeat asciiKey `break` deleteEvent
+action :: Sig s (DeleteEvent :- KeyEv) (Or Char Char) ()
+action = () <$ repeat (asciiKey `first` asciiKeyUp) `break` deleteEvent
 
 asciiKey :: React s KeyEv Char
-asciiKey = keyDown >>= \case AsciiKey c -> pure c; _ -> asciiKey
+asciiKey = adjust keyDown >>= \case
+	AsciiKey c -> pure c
+	XK_Return -> pure '\n'
+	_ -> asciiKey
+
+asciiKeyUp :: React s KeyEv Char
+asciiKeyUp = adjust keyUp >>= \case
+	AsciiKey c -> pure c
+	XK_Return -> pure '\n'
+	_ -> asciiKeyUp
 
 run :: IO ()
 run = do
-	f <- openField "TRY KEY" [exposureMask, keyPressMask]
+	f <- openField "TRY KEY" [exposureMask, keyPressMask, keyReleaseMask]
 	interpret (retry $ handleKey f) print action
 	closeField f
 

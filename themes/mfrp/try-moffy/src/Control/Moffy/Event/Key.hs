@@ -10,6 +10,8 @@ module Control.Moffy.Event.Key (
 	KeyEv,
 	-- * Key Down Event
 	KeyDown, pattern OccKeyDown, keyDown,
+	-- * Key Up Event
+	KeyUp, pattern OccKeyUp, keyUp,
 	-- * Key
 	Key(..), pattern AsciiKey,
 	module Control.Moffy.Event.Key.XK ) where
@@ -36,4 +38,12 @@ instance Request KeyDown where
 keyDown :: React s (Singleton KeyDown) Key
 keyDown = await KeyDownReq \(OccKeyDown k) -> k
 
-type KeyEv = KeyDown :- 'Nil
+data KeyUp = KeyUpReq deriving (Show, Eq, Ord)
+numbered 9 [t| KeyUp |]
+instance Request KeyUp where
+	data Occurred KeyUp = OccKeyUp Key deriving (Show, Eq, Ord)
+
+keyUp :: React s (Singleton KeyUp) Key
+keyUp = await KeyUpReq \(OccKeyUp k) -> k
+
+type KeyEv = KeyDown :- KeyUp :- 'Nil
