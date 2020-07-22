@@ -8,7 +8,7 @@ import Control.Moffy.Event.Key.Internal
 
 xkVoidSymbol
 
-xkBackSpaceToDelete
+xkTtyFunctionKeys
 xkJapaneseKeyboard
 xkCursorControlAndMotion
 xkMiscFunctions

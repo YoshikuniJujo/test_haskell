@@ -287,21 +287,22 @@ Control.Moffy.Event.Key
 		- [x] rename or not Control.Moffy.Event.Key.Internal
 		- [x] API of Control.Moffy.Event.Key.Internal.XK
 		- [x] API of Control.Moffy.Event.Key.Internal
-* [ ] Control.Moffy.Event.Key.Internal
+* [x] Control.Moffy.Event.Key.Internal
 	+ [x] API
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] TYPA AND AUXILIARY FUNCTION
-		- [ ] DEFINITION OF PATTERN XK_FOO
-			* [ ] VOID SYMBOL
-			* [ ] TTY FUNCTION KEYS
-			* [ ] JAPANESE KEYBOARD SUPPORT
-			* [ ] CURSOR CONTROL AND MOTION
-			* [ ] MISC FUNCTION
-			* [ ] AUXILIARY FUNCTIONS
-			* [ ] KEYBOARD (XKB) EXTENSION FUNCTION AND MODIFIER KEYS
-			* [ ] LATIN 1 (only ASCII)
+		- [x] DEFINITION OF PATTERN XK_FOO
+			* [x] VOID SYMBOL
+			* [x] TTY FUNCTION KEYS
+			* [x] JAPANESE KEYBOARD SUPPORT
+			* [x] CURSOR CONTROL AND MOTION
+			* [x] MISC FUNCTION
+			* [x] AUXILIARY FUNCTIONS
+			* [x] MODIFIERS
+			* [x] KEYBOARD (XKB) EXTENSION FUNCTION AND MODIFIER KEYS
+			* [x] LATIN 1 (only ASCII)
 * [ ] Control.Moffy.Event.Key.Internal.XK
 	+ [ ] API
 	+ [ ] imports

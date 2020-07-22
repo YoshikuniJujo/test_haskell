@@ -9,7 +9,7 @@ module Control.Moffy.Event.Key.Internal (
 	-- ** Void Symbol
 	xkVoidSymbol,
 	-- ** TTY function keys
-	xkBackSpaceToDelete,
+	xkTtyFunctionKeys,
 	-- ** Japanese keyboard
 	xkJapaneseKeyboard,
 	-- ** Cursor control & motion
@@ -72,45 +72,51 @@ xkVoidSymbol = mkXk "VoidSymbol" 0xffffff
 
 -- TTY FUNCTION KEYS
 
-xkBackSpaceToDelete :: DecsQ
-xkBackSpaceToDelete = concatR <$> zipWithM (flip mkXk)
-	([0xff08 .. 0xff0b] ++ [0xff0d] ++ [0xff13 .. 0xff15] ++ [0xff1b] ++ [0xffff]) [
-		"BackSpace", "Tab", "Linefeed", "Clear", "Return", "Pause", "Scroll_Lock",
-		"Sys_Req", "Escape", "Delete" ]
+xkTtyFunctionKeys :: DecsQ
+xkTtyFunctionKeys = concatR <$> zipWithM (flip mkXk)
+	(	[0xff08 .. 0xff0b] ++ [0xff0d] ++
+		[0xff13 .. 0xff15] ++ [0xff1b] ++ [0xffff] )
+	[	"BackSpace", "Tab", "Linefeed", "Clear", "Return", "Pause",
+		"Scroll_Lock", "Sys_Req", "Escape", "Delete" ]
 
 -- JAPANESE KEYBOARD SUPPORT
 
 xkJapaneseKeyboard :: DecsQ
-xkJapaneseKeyboard = concatR <$> zipWithM (flip mkXk) ([0xff21 .. 0xff30] ++ [0xff37, 0xff3e, 0xff3e]) [
-	"Kanji", "Muhenkan", "Henkan_Mode", "Henkan", "Romaji", "Hiragana", "Katakana", "Hiragana_Katakana",
-	"Zenkaku", "Hankaku", "Zenkaku_Hankaku", "Touroku", "Massho", "Kana_Lock", "Kana_Shift", "Eisu_Shift",
-	"Kanji_Bangou", "Zen_Koho", "Mae_Koho" ]
+xkJapaneseKeyboard = concatR <$> zipWithM (flip mkXk)
+	([0xff21 .. 0xff30] ++ [0xff37, 0xff3e, 0xff3e]) [
+		"Kanji", "Muhenkan", "Henkan_Mode", "Henkan", "Romaji",
+		"Hiragana", "Katakana", "Hiragana_Katakana", "Zenkaku",
+		"Hankaku", "Zenkaku_Hankaku", "Touroku", "Massho", "Kana_Lock",
+		"Kana_Shift", "Eisu_Shift", "Kanji_Bangou", "Zen_Koho",
+		"Mae_Koho" ]
 
 -- CURSOR CONTROL AND MOTION
 
 xkCursorControlAndMotion :: DecsQ
 xkCursorControlAndMotion = concatR <$> zipWithM (flip mkXk) [0xff50 .. 0xff58] [
-	"Home", "Left", "Up", "Right", "Down", "Prior", "Next", "End", "Begin"
-	]
+	"Home", "Left", "Up", "Right", "Down", "Prior", "Next", "End", "Begin" ]
 
 -- MISC FUNCTION
 
 xkMiscFunctions :: DecsQ
-xkMiscFunctions = concatR <$> zipWithM (flip mkXk) ([0xff60 .. 0xff6b] ++ [0xff7e, 0xff7f]) [
-	"Select", "Print", "Excecute", "Insert", "Undo", "Redo", "Menu", "Find", "Cancel",
-	"Help", "Break", "Mode_switch", "Num_Lock" ]
+xkMiscFunctions = concatR <$> zipWithM (flip mkXk)
+	([0xff60 .. 0xff6b] ++ [0xff7e, 0xff7f]) [
+		"Select", "Print", "Excecute", "Insert", "Undo", "Redo", "Menu",
+		"Find", "Cancel", "Help", "Break", "Mode_switch", "Num_Lock" ]
 
 -- AUXILIARY FUNCTIONS
 
 xkF1ToF35 :: DecsQ
-xkF1ToF35 = concatR <$> zipWithM mkXk (("F" ++) . show <$> [1 :: Int .. 35]) [0xffbe .. 0xffe0]
+xkF1ToF35 = concatR <$> zipWithM mkXk
+	(('F' :) . show <$> [1 :: Int .. 35]) [0xffbe .. 0xffe0]
 
 -- MODIFIERS
 
 xkModifiers :: DecsQ
 xkModifiers = concatR <$> zipWithM (flip mkXk) [0xffe1 .. 0xffee] [
-	"Shift_L", "Shift_R", "Control_L", "Control_R", "Caps_Lock", "Shift_Lock",
-	"Meta_L", "Meta_R", "Alt_L", "Alt_R", "Super_L", "Super_R", "Hyper_L", "Hyper_R" ]
+	"Shift_L", "Shift_R", "Control_L", "Control_R", "Caps_Lock",
+	"Shift_Lock", "Meta_L", "Meta_R", "Alt_L", "Alt_R", "Super_L",
+	"Super_R", "Hyper_L", "Hyper_R" ]
 
 -- KEYBOARD (XKB) EXTENSION FUNCTION AND MODIFIER KEYS
 
@@ -120,29 +126,31 @@ xkIsoLeftTab = mkXk "ISO_Left_Tab" 0xfe20
 -- LATIN 1 (only ASCII)
 
 xkSpaceToSlash :: DecsQ
-xkSpaceToSlash = concatR <$> zipWithM (flip mkXk) [0x0020 ..] [
+xkSpaceToSlash = concatR <$> zipWithM (flip mkXk) [0x0020 .. 0x002f] [
 	"space", "exclam", "quotedbl", "numbersign", "dollar", "percent",
 	"ampersand", "apostrophe", "parenleft", "parenright", "asterisk",
 	"plus", "comma", "minus", "period", "slash" ]
 
 xkDigit :: DecsQ
-xkDigit = concatR <$> zipWithM mkXk ((: []) <$> ['0' .. '9']) [0x0030 ..]
+xkDigit = concatR <$> zipWithM mkXk ((: []) <$> ['0' .. '9']) [0x0030 .. 0x0039]
 
 xkColonToAt :: DecsQ
-xkColonToAt = concatR <$> zipWithM (flip mkXk) [0x003a ..] [
+xkColonToAt = concatR <$> zipWithM (flip mkXk) [0x003a .. 0x0040] [
 	"colon", "semicolon", "less", "equal", "greater", "question", "at" ]
 
 xkUpperAlph :: DecsQ
-xkUpperAlph = concatR <$> zipWithM mkXk ((: []) <$> ['A' .. 'Z']) [0x0041 ..]
+xkUpperAlph =
+	concatR <$> zipWithM mkXk ((: []) <$> ['A' .. 'Z']) [0x0041 .. 0x005a]
 
 xkBlacketleftToGrave :: DecsQ
-xkBlacketleftToGrave = concatR <$> zipWithM (flip mkXk) [0x005b ..] [
+xkBlacketleftToGrave = concatR <$> zipWithM (flip mkXk) [0x005b .. 0x0060] [
 	"bracketleft", "backslash", "bracketright", "asciicircum", "underscore",
 	"grave" ]
 
 xkLowerAlph :: DecsQ
-xkLowerAlph = concatR <$> zipWithM mkXk ((: []) <$> ['a' .. 'z']) [0x0061 ..]
+xkLowerAlph =
+	concatR <$> zipWithM mkXk ((: []) <$> ['a' .. 'z']) [0x0061 .. 0x007a]
 
 xkBraceleftToAsciitilde :: DecsQ
-xkBraceleftToAsciitilde = concatR <$> zipWithM (flip mkXk) [0x007b ..] [
+xkBraceleftToAsciitilde = concatR <$> zipWithM (flip mkXk) [0x007b .. 0x007e] [
 	"braceleft", "bar", "braceright", "asciitilde" ]
