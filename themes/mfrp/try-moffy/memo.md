@@ -279,15 +279,29 @@ Control.Moffy.Event.Key
 		- [x] MOUSE MOVE
 		- [x] DELETE EVENT
 		- [x] MOUSE EV
-* [ ] Control.Moffy.Event.Key
-	+ [ ] module hierarchy
-		- [ ] rename or not Control.Moffy.Event.Key.XK
+* [x] Control.Moffy.Event.Key
+	+ [x] module hierarchy
+		- [x] rename or not Control.Moffy.Event.Key.XK
 			* [x] move it under Control.Moffy.Event.Key.Internal
-			* [ ] rename or not it
-		- [ ] rename or not Control.Moffy.Event.Key.Internal
-		- [ ] API of Control.Moffy.Event.Key.XK
-		- [ ] API of Control.Moffy.Event.Key.Internal
+			* [x] rename or not it
+		- [x] rename or not Control.Moffy.Event.Key.Internal
+		- [x] API of Control.Moffy.Event.Key.Internal.XK
+		- [x] API of Control.Moffy.Event.Key.Internal
+* [ ] Control.Moffy.Event.Internal
+	+ [ ] API
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
+* [ ] Control.Moffy.Event.Internal.XK
+	+ [ ] API
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
 * [ ] Control.Moffy.Event.Key
+	+ [ ] API
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
 * [ ] Control.Moffy.Handle.XField.Key
 * [ ] Control.Moffy.Handle.XField.Mouse
 	+ [ ] API

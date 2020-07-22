@@ -6,6 +6,8 @@ module Control.Moffy.Event.Key.Internal.XK where
 
 import Control.Moffy.Event.Key.Internal
 
+xkVoidSymbol
+
 xkBackSpaceToDelete
 xkJapaneseKeyboard
 xkCursorControlAndMotion
