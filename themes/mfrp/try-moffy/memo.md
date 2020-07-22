@@ -304,8 +304,8 @@ Control.Moffy.Event.Key
 			* [x] KEYBOARD (XKB) EXTENSION FUNCTION AND MODIFIER KEYS
 			* [x] LATIN 1 (only ASCII)
 * [ ] Control.Moffy.Event.Key.Internal.XK
-	+ [ ] API
-	+ [ ] imports
+	+ [x] API
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] Control.Moffy.Event.Key
