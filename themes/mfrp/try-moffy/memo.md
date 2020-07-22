@@ -287,12 +287,12 @@ Control.Moffy.Event.Key
 		- [x] rename or not Control.Moffy.Event.Key.Internal
 		- [x] API of Control.Moffy.Event.Key.Internal.XK
 		- [x] API of Control.Moffy.Event.Key.Internal
-* [ ] Control.Moffy.Event.Internal
-	+ [ ] API
+* [ ] Control.Moffy.Event.Key.Internal
+	+ [x] API
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body
-* [ ] Control.Moffy.Event.Internal.XK
+* [ ] Control.Moffy.Event.Key.Internal.XK
 	+ [ ] API
 	+ [ ] imports
 	+ [ ] structure

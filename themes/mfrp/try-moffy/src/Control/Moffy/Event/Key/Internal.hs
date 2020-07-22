@@ -5,13 +5,26 @@ module Control.Moffy.Event.Key.Internal (
 	-- * Type
 	Key(..),
 	-- * Template
+	-- ** Void Symbol
 	xkVoidSymbol,
-	xkBackSpaceToDelete, xkJapaneseKeyboard, xkCursorControlAndMotion,
-	xkMiscFunctions, xkF1ToF35,
+	-- ** TTY function keys
+	xkBackSpaceToDelete,
+	-- ** Japanese keyboard
+	xkJapaneseKeyboard,
+	-- ** Cursor control & motion
+	xkCursorControlAndMotion,
+	-- ** Misc function
+	xkMiscFunctions,
+	-- ** Auxiliary functions: F1 to F35
+	xkF1ToF35,
+	-- ** Modifiers
+	xkModifiers,
+	-- ** Keyboard (XKB) Extension function and modifier keys
+	xkIsoLeftTab,
+	-- ** Latin 1 (only ASCII)
 	xkSpaceToSlash, xkDigit,
 	xkColonToAt, xkUpperAlph,
-	xkBlacketleftToGrave, xkLowerAlph, xkBraceleftToAsciitilde,
-	xkModifiers, xkIsoLeftTab
+	xkBlacketleftToGrave, xkLowerAlph, xkBraceleftToAsciitilde
 	) where
 
 import Language.Haskell.TH

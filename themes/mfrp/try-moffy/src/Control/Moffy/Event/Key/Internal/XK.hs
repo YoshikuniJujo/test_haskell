@@ -13,6 +13,8 @@ xkJapaneseKeyboard
 xkCursorControlAndMotion
 xkMiscFunctions
 xkF1ToF35
+xkModifiers
+xkIsoLeftTab
 
 xkSpaceToSlash
 xkDigit
@@ -21,7 +23,3 @@ xkUpperAlph
 xkBlacketleftToGrave
 xkLowerAlph
 xkBraceleftToAsciitilde
-
-xkModifiers
-
-xkIsoLeftTab
