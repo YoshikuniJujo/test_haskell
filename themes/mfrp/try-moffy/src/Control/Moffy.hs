@@ -5,7 +5,7 @@ module Control.Moffy (
 	Sig, ISig, React, Rct, EvReqs, EvOccs, Request(..),
 	Firstable, Adjustable,
 	-- * React
-	await, adjust, first,
+	await, adjust, first, adjustSig,
 	-- * Conversion
 	emit, waitFor,
 	-- * Transformation
@@ -17,7 +17,7 @@ module Control.Moffy (
 
 import Prelude hiding (repeat, scanl, until, break)
 
-import Control.Moffy.Internal.Sig (spawn, parList, at, break, until, indexBy)
+import Control.Moffy.Internal.Sig (adjustSig, spawn, parList, at, break, until, indexBy)
 import Control.Moffy.Internal.Sig.Type (
 	Sig, ISig, emit, waitFor, scanl, find, repeat )
 import Control.Moffy.Internal.React (Firstable, Adjustable, adjust, first)

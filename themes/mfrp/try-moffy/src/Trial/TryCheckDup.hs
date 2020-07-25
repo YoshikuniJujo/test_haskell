@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE DataKinds, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.TryCheckDup where
@@ -7,6 +8,7 @@ import Control.Monad
 import Control.Monad.State
 import Control.Moffy
 import Control.Moffy.Run
+import Data.Type.Set
 import Data.Time.Clock.System
 
 import Control.Moffy.Event.Mouse
@@ -29,5 +31,5 @@ tryCheckDup = do
 	closeField f
 				
 
-checkDup :: ReactG s ()
+checkDup :: React s (MouseDown :- TryWait :- 'Nil) ()
 checkDup = doubler >> adjust leftClick

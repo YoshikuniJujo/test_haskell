@@ -6,6 +6,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
 
 module Control.Moffy.Internal.Sig (
+	adjustSig,
 	-- * Repetition
 	spawn, parList,
 	-- * Parallel Composition

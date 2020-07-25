@@ -14,16 +14,9 @@ import System.IO.Unsafe
 
 import Control.Moffy.Event.Mouse
 import Control.Moffy.Event.Delete
-import Control.Moffy.Handle.XField.Mouse
 import Control.Moffy.Handle.XField
 import Control.Monad.Freer.Par
 import Field
-
-import Data.OneOrMore
-import Data.Time
-
-handleMouse :: Maybe DiffTime -> Field -> Handle' IO (DeleteEvent :- MouseEv)
-handleMouse mprd f rqs = handleWith (\case MouseEv e -> Just $ Data.OneOrMore.expand e; _ -> Nothing) mprd f rqs
 
 type MouseEv' = DeleteEvent :- MouseEv
 
@@ -41,7 +34,7 @@ heavyReact' u = do
 runMouseReact :: React s (DeleteEvent :- MouseEv) r -> IO r
 runMouseReact r = do
 	f <- openField "RUN REACT" [exposureMask]
-	interpretReact (retry $ handleMouse Nothing f) r
+	interpretReact (retry $ handle Nothing f) r
 		<* closeField f
 
 runSharingHeavy :: IO (Or Int Int)
@@ -49,7 +42,7 @@ runSharingHeavy = do
 	f <- openField "RUN SHARING HEAVY" [exposureMask]
 	r <- runUnique $ do
 		hr <- tag $ heavyReact ()
-		pure $ interpretReact (retry $ handleMouse Nothing f) $ hr `first` hr
+		pure $ interpretReact (retry $ handle Nothing f) $ hr `first` hr
 	r <$ closeField f
 
 runNoSharingHeavy :: IO (Or Int Int)
@@ -60,7 +53,7 @@ runSharingHeavyHeavy = do
 	f <- openField "RUN SHARING HEAVY HEAVY" [buttonPressMask, exposureMask]
 	r <- runUnique $ do
 		hr <- tag $ (,) <$> heavyReact () <*> heavyReact ()
-		pure $ interpretReact (retry $ handleMouse Nothing f) $ hr `first` hr
+		pure $ interpretReact (retry $ handle Nothing f) $ hr `first` hr
 	r <$ closeField f
 
 runSharingHeavy' :: IO (Or Int Int)
@@ -68,7 +61,7 @@ runSharingHeavy' = do
 	f <- openField "RUN SHARING HEAVY" [buttonPressMask, exposureMask]
 	r <- runUnique $ do
 		hr <- tag $ heavyReact' ()
-		pure $ interpretReact (retry $ handleMouse Nothing f) $ hr `first` hr
+		pure $ interpretReact (retry $ handle Nothing f) $ hr `first` hr
 	r <$ closeField f
 
 runSharingHeavyHeavy' :: IO (Or (Int, Int) (Int, Int))
@@ -76,5 +69,5 @@ runSharingHeavyHeavy' = do
 	f <- openField "RUN SHARING HEAVY HEAVY" [buttonPressMask, exposureMask]
 	r <- runUnique $ do
 		hr <- tag $ (,) <$> heavyReact' () <*> heavyReact' ()
-		pure $ interpretReact (retry $ handleMouse Nothing f) $ hr `first` hr
+		pure $ interpretReact (retry $ handle Nothing f) $ hr `first` hr
 	r <$ closeField f

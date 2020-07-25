@@ -73,6 +73,11 @@ todo
 	+ [ ] Trial
 	+ [ ] Control.Monad.Freer.Par
 	+ [ ] Data.OneOrMore
+	+ [ ] Control.Moffy
+		- [ ] consider rename adjust and adjustSig
+			* [ ] adjust -> adjustReact ?
+			* [ ] adjustSig -> adjust ?
+		- [ ] others
 
 refactoring
 -----------
@@ -322,9 +327,11 @@ Control.Moffy.Event.Key
 		- [x] PATTERN
 * [ ] Control.Moffy.Handle.XField
 	+ [ ] API
-		- [ ] function handle
+		- [x] function handle
 			* [x] define
-			* [ ] use
+			* [x] use
+				+ [x] replace handleKey
+				+ [x] replace handleMouse
 		- [ ] others
 	+ [ ] imports
 	+ [ ] structure
