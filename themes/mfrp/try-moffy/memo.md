@@ -332,6 +332,8 @@ Control.Moffy.Event.Key
 			* [x] use
 				+ [x] replace handleKey
 				+ [x] replace handleMouse
+		- [ ] add XFieldEv
+			* [ ] consider rename XFieldEv -> GuiEv or others
 		- [ ] others
 	+ [ ] imports
 	+ [ ] structure
