@@ -35,7 +35,7 @@ import Trial.Boxes.Handle
 
 import qualified Data.OneOrMore
 
-handleMouse = handleXField \case MouseEv e -> Just $ Data.OneOrMore.expand e; _ -> Nothing
+handleMouse = handleWith \case MouseEv e -> Just $ Data.OneOrMore.expand e; _ -> Nothing
 
 tryClick :: IO [MouseBtn]
 tryClick = do

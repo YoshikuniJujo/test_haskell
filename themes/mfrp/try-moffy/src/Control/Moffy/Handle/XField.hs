@@ -4,7 +4,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Handle.XField (handleXField) where
+module Control.Moffy.Handle.XField (handleWith) where
 
 import Data.Type.Set
 import Data.OneOrMore
@@ -16,12 +16,12 @@ import Control.Moffy.Handle hiding (expand)
 import Control.Moffy.Event.Delete
 import Field
 
-handleXField :: (
+handleWith :: (
 	Expandable (Singleton (Occurred DeleteEvent)) (Occurred :$: evs)
 	) =>
 	(Event' -> Maybe (EvOccs evs)) -> Maybe DiffTime -> Field -> Handle' IO evs
-handleXField etoe Nothing f rqs = withNextEvent f $ eventToEv rqs etoe f
-handleXField etoe (Just prd) f rqs = withNextEventTimeout' f
+handleWith etoe Nothing f rqs = withNextEvent f $ eventToEv rqs etoe f
+handleWith etoe (Just prd) f rqs = withNextEventTimeout' f
 	(round $ prd * 1000000) $ maybe (pure Nothing) (eventToEv rqs etoe f)
 
 eventToEv :: (

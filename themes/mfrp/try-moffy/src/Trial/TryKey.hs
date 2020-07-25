@@ -41,4 +41,4 @@ run = do
 	closeField f
 
 handleKey :: Field -> Handle' IO (DeleteEvent :- KeyEv)
-handleKey = handleXField (\case KeyEv kev -> Just $ expand kev; _ -> Nothing) Nothing
+handleKey = handleWith (\case KeyEv kev -> Just $ expand kev; _ -> Nothing) Nothing

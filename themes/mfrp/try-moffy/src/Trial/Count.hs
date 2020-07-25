@@ -23,7 +23,7 @@ import Data.OneOrMore
 type MouseEv' = DeleteEvent :- MouseEv
 
 handleMouse :: Maybe DiffTime -> Field -> Handle' IO (DeleteEvent :- MouseEv)
-handleMouse mprd f rqs = handleXField (\case MouseEv e -> Just $ Data.OneOrMore.expand e; _ -> Nothing) mprd f rqs
+handleMouse mprd f rqs = handleWith (\case MouseEv e -> Just $ Data.OneOrMore.expand e; _ -> Nothing) mprd f rqs
 
 leftCount :: Int -> React s MouseEv' Int
 leftCount c = adjust (leftClick `first` rightClick) >>= \case

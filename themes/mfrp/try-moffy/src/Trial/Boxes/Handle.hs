@@ -24,7 +24,7 @@ import Field (Field)
 ---------------------------------------------------------------------------
 
 handleMouse :: Maybe DiffTime -> Field -> Handle' IO (DeleteEvent :- MouseEv)
-handleMouse = handleXField \case MouseEv e -> Just $ expand e; _ -> Nothing
+handleMouse = handleWith \case MouseEv e -> Just $ expand e; _ -> Nothing
 
 data Mode = InitMode | WaitMode AbsoluteTime deriving Show
 
