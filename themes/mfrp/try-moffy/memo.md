@@ -308,13 +308,13 @@ Control.Moffy.Event.Key
 	+ [x] imports
 	+ [x] structure
 	+ [x] body
-* [ ] Control.Moffy.Event.Key
+* [x] Control.Moffy.Event.Key
 	+ [x] API
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
-		- [ ] EVENT
-		- [ ] PATTERN
+	+ [x] body
+		- [x] EVENT
+		- [x] PATTERN
 * [ ] Control.Moffy.Handle.XField.Key
 * [ ] Control.Moffy.Handle.XField.Mouse
 	+ [ ] API

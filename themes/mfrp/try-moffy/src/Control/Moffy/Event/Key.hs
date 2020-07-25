@@ -20,6 +20,7 @@ import Control.Moffy (React, Request(..), await)
 import Control.Moffy.Event.Key.Internal (Key(..))
 import Control.Moffy.Event.Key.Internal.XK
 import Data.Type.Set (numbered, pattern Nil, Singleton, (:-))
+import Data.Bool (bool)
 import Data.Char (chr)
 
 ---------------------------------------------------------------------------
@@ -57,6 +58,5 @@ pattern AsciiKey :: Char -> Key
 pattern AsciiKey c <- (asciiKey -> Just c)
 
 asciiKey :: Key -> Maybe Char
-asciiKey (Key k)
-	| 0x20 <= k && k <= 0x7e = Just . chr $ fromIntegral k
-	| otherwise = Nothing
+asciiKey (Key k) =
+	bool Nothing (Just . chr $ fromIntegral k) (0x20 <= k && k <= 0x7e)
