@@ -24,13 +24,12 @@ import Data.Char (chr)
 
 ---------------------------------------------------------------------------
 
-pattern AsciiKey :: Char -> Key
-pattern AsciiKey c <- (toAsciiChar -> Just c)
+-- * EVENT
+-- * PATTERN
 
-toAsciiChar :: Key -> Maybe Char
-toAsciiChar (Key k)
-	| 0x20 <= k && k <= 0x7e = Just . chr $ fromIntegral k
-	| otherwise = Nothing
+---------------------------------------------------------------------------
+-- EVENT
+---------------------------------------------------------------------------
 
 data KeyDown = KeyDownReq deriving (Show, Eq, Ord)
 numbered 9 [t| KeyDown |]
@@ -49,3 +48,15 @@ keyUp :: React s (Singleton KeyUp) Key
 keyUp = await KeyUpReq \(OccKeyUp k) -> k
 
 type KeyEv = KeyDown :- KeyUp :- 'Nil
+
+---------------------------------------------------------------------------
+-- PATTERN
+---------------------------------------------------------------------------
+
+pattern AsciiKey :: Char -> Key
+pattern AsciiKey c <- (asciiKey -> Just c)
+
+asciiKey :: Key -> Maybe Char
+asciiKey (Key k)
+	| 0x20 <= k && k <= 0x7e = Just . chr $ fromIntegral k
+	| otherwise = Nothing
