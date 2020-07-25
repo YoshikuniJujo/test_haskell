@@ -309,8 +309,8 @@ Control.Moffy.Event.Key
 	+ [x] structure
 	+ [x] body
 * [ ] Control.Moffy.Event.Key
-	+ [ ] API
-	+ [ ] imports
+	+ [x] API
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] Control.Moffy.Handle.XField.Key

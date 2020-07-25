@@ -16,11 +16,13 @@ module Control.Moffy.Event.Key (
 	Key(..), pattern AsciiKey,
 	module Control.Moffy.Event.Key.Internal.XK ) where
 
-import Control.Moffy
+import Control.Moffy (React, Request(..), await)
+import Control.Moffy.Event.Key.Internal (Key(..))
 import Control.Moffy.Event.Key.Internal.XK
-import Control.Moffy.Event.Key.Internal
-import Data.Type.Set
-import Data.Char
+import Data.Type.Set (numbered, pattern Nil, Singleton, (:-))
+import Data.Char (chr)
+
+---------------------------------------------------------------------------
 
 pattern AsciiKey :: Char -> Key
 pattern AsciiKey c <- (toAsciiChar -> Just c)
