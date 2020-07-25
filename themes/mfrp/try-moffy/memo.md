@@ -61,11 +61,11 @@ todo
 		- [x] handle Key Press Event
 			* [x] check shift by ShiftMask
 		- [x] handle Key Release Event
-* [ ] modify interpret to use adjust
+* [x] modify interpret to use adjust
 	+ [x] interpretReact
-	+ [ ] interpretReactSt
-	+ [ ] interpret
-	+ [ ] interpretSt
+	+ [x] interpretReactSt
+	+ [x] interpret
+	+ [x] interpretSt
 * [ ] refactoring
 	+ [ ] Control.Moffy
 	+ [ ] module structure of Control.Moffy.Event.Key
