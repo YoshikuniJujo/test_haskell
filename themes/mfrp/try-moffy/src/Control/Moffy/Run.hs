@@ -1,6 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Run (
@@ -12,6 +13,7 @@ module Control.Moffy.Run (
 import Control.Arrow (first)
 import Control.Monad.Freer.Par (Freer(..), pattern (:>>=), qApp)
 import Control.Moffy.Internal.Sig.Type (Sig(..), isig)
+import Control.Moffy.Internal.React (Adjustable, adjust)
 import Control.Moffy.Internal.React.Type (
 	Handle, HandleSt, React, Rct(..), ThreadId, rootThreadId )
 
@@ -24,7 +26,7 @@ import Control.Moffy.Internal.React.Type (
 -- RUN SIG
 ---------------------------------------------------------------------------
 
-interpret :: Monad m => Handle m es -> (a -> m ()) -> Sig s es a r -> m r
+interpret :: (Monad m, Adjustable es es) => Handle m es -> (a -> m ()) -> Sig s es a r -> m r
 interpret hdl vw = go where
 	go (Sig s) = isig pure ((. go) . (>>) . vw) =<< interpretReact hdl s
 
@@ -38,8 +40,8 @@ interpretSt hdl st0 vw = (`go` st0) where
 -- RUN REACT
 ---------------------------------------------------------------------------
 
-interpretReact :: Monad m => Handle m es -> React s es a -> m a
-interpretReact hdl r = fst <$> runReact hdl r rootThreadId
+interpretReact :: (Monad m, Adjustable es es') => Handle m es' -> React s es a -> m a
+interpretReact hdl r = fst <$> runReact hdl (adjust r) rootThreadId
 
 runReact ::
 	Monad m => Handle m es -> React s es a -> ThreadId -> m (a, ThreadId)
