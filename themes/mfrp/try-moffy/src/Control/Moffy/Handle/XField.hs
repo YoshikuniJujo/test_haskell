@@ -4,7 +4,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Handle.XField (handle, handleWith) where
+module Control.Moffy.Handle.XField (GuiEv, handle, handleWith) where
 
 import Data.Type.Set
 import Data.OneOrMore
@@ -20,7 +20,9 @@ import Control.Moffy.Handle.XField.Key
 import Control.Moffy.Handle.XField.Mouse
 import Field
 
-handle :: Maybe DiffTime -> Field -> Handle' IO (DeleteEvent :- KeyEv :+: MouseEv)
+type GuiEv = DeleteEvent :- KeyEv :+: MouseEv
+
+handle :: Maybe DiffTime -> Field -> Handle' IO GuiEv
 handle = handleWith \case
 	KeyEv kev -> Just $ expand kev; MouseEv mev -> Just $ expand mev
 	_ -> Nothing

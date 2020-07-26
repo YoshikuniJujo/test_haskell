@@ -11,7 +11,7 @@ module Trial.Boxes.Event (
 	-- * TIME
 	TimeEv, TryWait(..), sleep, DeltaTime(..), deltaTime,
 	-- * MOUSE
-	MouseEv, MouseDown, MouseUp, MouseBtn(..),
+	GuiEv, MouseDown, MouseUp, MouseBtn(..),
 	leftClick, middleClick, rightClick, leftUp ) where
 --	MouseMove, Point, mouseMove, DeleteEvent, deleteEvent ) where
 
@@ -20,6 +20,7 @@ import Data.Type.Set (Set(Nil), Singleton, (:-), (:+:), numbered)
 import Data.Bool (bool)
 import Data.Time (DiffTime)
 
+import Control.Moffy.Handle.XField
 import Control.Moffy.Event.Mouse
 import Control.Moffy.Event.Delete
 
@@ -47,5 +48,5 @@ deltaTime = await DeltaTimeReq \(OccDeltaTime t) -> t
 type SigG s = Sig s BoxEv
 type ISigG s = ISig s BoxEv
 type ReactG s a = React s BoxEv a
-type BoxEv = DeleteEvent :- MouseEv :+: TimeEv
+type BoxEv = GuiEv :+: TimeEv
 type TimeEv = TryWait :- DeltaTime :- 'Nil
