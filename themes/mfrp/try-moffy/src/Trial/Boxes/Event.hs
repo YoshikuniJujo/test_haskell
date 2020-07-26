@@ -7,7 +7,7 @@
 module Trial.Boxes.Event (
 	-- * GENERAL
 	SigG, ISigG,
-	ReactG, GuiEv, Occurred(..),
+	ReactG, BoxEv, Occurred(..),
 	-- * TIME
 	TimeEv, TryWait(..), sleep, DeltaTime(..), deltaTime,
 	-- * MOUSE
@@ -44,8 +44,8 @@ instance Request DeltaTime where
 deltaTime :: React s (Singleton DeltaTime) DiffTime
 deltaTime = await DeltaTimeReq \(OccDeltaTime t) -> t
 
-type SigG s = Sig s GuiEv
-type ISigG s = ISig s GuiEv
-type ReactG s a = React s GuiEv a
-type GuiEv = DeleteEvent :- MouseEv :+: TimeEv
+type SigG s = Sig s BoxEv
+type ISigG s = ISig s BoxEv
+type ReactG s a = React s BoxEv a
+type BoxEv = DeleteEvent :- MouseEv :+: TimeEv
 type TimeEv = TryWait :- DeltaTime :- 'Nil

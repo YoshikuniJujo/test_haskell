@@ -100,7 +100,7 @@ tryCurRect = trySigGRect "TRY CUR RECT" $ curRect (200, 150)
 
 data Rect = Rect { leftup :: Point, rightdown :: Point  } deriving Show
 
-tryReactG :: Adjustable es (KeyEv :+: GuiEv) => String -> React s es r -> IO r
+tryReactG :: Adjustable es (KeyEv :+: BoxEv) => String -> React s es r -> IO r
 tryReactG ttl sig = do
 	f <- openField ttl [
 		pointerMotionMask, buttonPressMask, buttonReleaseMask,
@@ -109,7 +109,7 @@ tryReactG ttl sig = do
 			. systemToTAITime =<< getSystemTime
 	r <$ closeField f
 
-trySigGRect :: Adjustable es (KeyEv :+: GuiEv) => String -> Sig s es Rect r -> IO r
+trySigGRect :: Adjustable es (KeyEv :+: BoxEv) => String -> Sig s es Rect r -> IO r
 trySigGRect ttl sig = do
 	f <- openField ttl [
 		pointerMotionMask, buttonPressMask, buttonReleaseMask,
@@ -191,7 +191,7 @@ data Box = Box Rect Color deriving Show
 tryChooseBoxColor :: IO ()
 tryChooseBoxColor = trySigGBox "TRY CHOOSE BOX COLOR" . chooseBoxColor $ Rect (200, 150) (400, 300)
 
-trySigGBox :: Adjustable es (KeyEv :+: GuiEv) => String -> Sig s es Box r -> IO r
+trySigGBox :: Adjustable es (KeyEv :+: BoxEv) => String -> Sig s es Box r -> IO r
 trySigGBox ttl sig = do
 	f <- openField ttl [
 		pointerMotionMask, buttonPressMask, buttonReleaseMask,

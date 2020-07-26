@@ -18,18 +18,18 @@ import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
 import Control.Moffy.Handle.XField
 import Control.Moffy.Event.Delete
 import Control.Moffy.Event.Key
-import Trial.Boxes.Event (GuiEv, MouseEv, TimeEv, TryWait(..), Occurred(..))
+import Trial.Boxes.Event (BoxEv, MouseEv, TimeEv, TryWait(..), Occurred(..))
 import Field (Field)
 
 ---------------------------------------------------------------------------
 
 data Mode = InitMode | WaitMode AbsoluteTime deriving Show
 
-handleBoxes :: DiffTime -> Field -> HandleSt Mode (StateT AbsoluteTime IO) (KeyEv :+: GuiEv)
+handleBoxes :: DiffTime -> Field -> HandleSt Mode (StateT AbsoluteTime IO) (KeyEv :+: BoxEv)
 handleBoxes prd f rqs = (`retrySt` rqs) \rqs' -> \case
 	InitMode -> (rqs' `handleInit` (prd, f)); WaitMode now -> (rqs' `handleWait` now)
 
-handleInit :: HandleSt' (DiffTime, Field) Mode (StateT AbsoluteTime IO) (KeyEv :+: GuiEv)
+handleInit :: HandleSt' (DiffTime, Field) Mode (StateT AbsoluteTime IO) (KeyEv :+: BoxEv)
 handleInit = mergeSt
 	handleMouse' (\(prd, _) -> liftIO . threadDelay . round $ prd * 1000000)
 	handleNow (\_ -> InitMode <$ (put =<< lift getTaiTime))
@@ -44,7 +44,7 @@ getTaiTime :: IO AbsoluteTime
 getTaiTime = systemToTAITime <$> getSystemTime
 
 handleWait :: Monad m =>
-	HandleSt' AbsoluteTime Mode (StateT AbsoluteTime m) (KeyEv :+: GuiEv)
+	HandleSt' AbsoluteTime Mode (StateT AbsoluteTime m) (KeyEv :+: BoxEv)
 handleWait = expandSt handleTime ((InitMode <$) . put)
 
 handleTime :: Monad m =>

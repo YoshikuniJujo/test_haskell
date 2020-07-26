@@ -333,7 +333,9 @@ Control.Moffy.Event.Key
 				+ [x] replace handleKey
 				+ [x] replace handleMouse
 		- [ ] add XFieldEv
+			* [x] rename GuiEv to BoxEv
 			* [ ] consider rename XFieldEv -> GuiEv or others
+			* [ ] try to use GuiEv in followbox
 		- [ ] others
 	+ [ ] imports
 	+ [ ] structure
