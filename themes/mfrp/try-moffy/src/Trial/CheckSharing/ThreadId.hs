@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 

@@ -1,4 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 

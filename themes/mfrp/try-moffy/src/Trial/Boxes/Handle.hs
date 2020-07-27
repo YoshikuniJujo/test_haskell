@@ -1,6 +1,6 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, PatternSynonyms #-}
-{-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -9,14 +9,12 @@ module Trial.Boxes.Handle (Mode(InitMode), handleBoxes) where
 import Control.Concurrent
 import Control.Moffy.Handle hiding (expand)
 import Control.Monad.State (StateT, get, put, lift, liftIO)
-import Data.Type.Set
 import Data.OneOrMore (project, pattern Singleton, (>-), expand)
 import Data.Time (DiffTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
 	
 import Control.Moffy.Handle.XField
-import Control.Moffy.Event.Key
 import Trial.Boxes.Event (BoxEv, TimeEv, TryWait(..), Occurred(..))
 import Field (Field)
 

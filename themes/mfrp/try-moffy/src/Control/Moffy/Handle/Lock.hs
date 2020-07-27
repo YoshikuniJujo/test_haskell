@@ -1,5 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}

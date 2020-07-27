@@ -1,5 +1,4 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
