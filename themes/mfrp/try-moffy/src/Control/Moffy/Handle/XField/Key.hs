@@ -5,16 +5,21 @@ module Control.Moffy.Handle.XField.Key (
 	-- * Pattern
 	pattern KeyEv ) where
 
-import Control.Moffy
-import Control.Moffy.Event.Key
-import Data.OneOrMore
-import Field
+import Control.Moffy (EvOccs)
+import Control.Moffy.Event.Key (
+	KeyEv, Key(..), pattern OccKeyDown, pattern OccKeyUp )
+import Data.OneOrMore (pattern Singleton, expand)
+import Field (Event', Event(..), evEvent, evKeySym)
+
+---------------------------------------------------------------------------
 
 pattern KeyEv :: EvOccs KeyEv -> Event'
-pattern KeyEv ev <- (keyEv -> Just ev)
+pattern KeyEv kev <- (keyEv -> Just kev)
 
 keyEv :: Event' -> Maybe (EvOccs KeyEv)
 keyEv ev = case (evEvent ev, evKeySym ev) of
-	(KeyEvent { ev_event_type = 2 }, Just (fromIntegral -> s)) -> Just . expand . Singleton . OccKeyDown $ Key s
-	(KeyEvent { ev_event_type = 3 }, Just (fromIntegral -> s)) -> Just . expand . Singleton . OccKeyUp $ Key s
+	(KeyEvent { ev_event_type = 2 }, Just (fromIntegral -> s)) ->
+		Just . expand . Singleton . OccKeyDown $ Key s
+	(KeyEvent { ev_event_type = 3 }, Just (fromIntegral -> s)) ->
+		Just . expand . Singleton . OccKeyUp $ Key s
 	_ -> Nothing
