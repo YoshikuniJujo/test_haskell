@@ -80,6 +80,24 @@ Control.Moffy.Run
 			* [x] structure
 			* [x] rename or not
 		- [ ] others
+			* [x] Type
+				+ [x] Sig
+				+ [x] ISig
+				+ [x] React
+				+ [x] Rct
+				+ [x] EvReqs
+				+ [x] EvOccs
+				+ [x] Request
+			* [x] Constraint
+			* [ ] Combinator
+				+ [x] Await and Adjust
+				+ [x] structure
+				+ [x] Conversion
+					- [x] rename Conversion to Simple Sig
+				+ [ ] Simple Sig
+				+ [ ] Traverse
+				+ [ ] Parallel
+				+ [ ] Copies
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body

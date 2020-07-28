@@ -8,14 +8,14 @@ module Control.Moffy (
 	-- * Combinator
 	-- ** Await and Adjust
 	await, adjust, adjustSig,
-	-- ** Conversion
-	emit, waitFor,
-	-- ** Transformation
-	scanl, find,
-	-- ** Repetition
-	repeat, spawn, parList,
-	-- ** Parallel Composition
-	first, at, break, until, indexBy ) where
+	-- ** Simple Sig
+	emit, waitFor, repeat,
+	-- ** Traverse
+	find, scanl,
+	-- ** Parallel
+	first, at, break, until, indexBy,
+	-- ** Copies
+	spawn, parList ) where
 
 import Prelude hiding (repeat, scanl, until, break)
 
