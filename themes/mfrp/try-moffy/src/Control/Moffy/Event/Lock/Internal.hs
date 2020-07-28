@@ -44,7 +44,7 @@ newtype LockId = LockId Int deriving (Show, Eq)
 -- NEW LOCK ID
 
 newtype NewLockId = NewLockIdReq ThreadId deriving (Show, Eq)
-numbered 32 [t| NewLockId |]
+numbered 64 [t| NewLockId |]
 instance Selectable NewLockId where l `select` _r = l
 instance Request NewLockId where
 	data Occurred NewLockId = OccNewLockId LockId ThreadId
@@ -60,7 +60,7 @@ newLockId = adjust getThreadId >>= \t -> maybe newLockId pure =<< adjust (
 
 data GetLock = GetLockReq LockId ThreadId RetryTime deriving (Show, Eq)
 type RetryTime = Int
-numbered 32 [t| GetLock |]
+numbered 64 [t| GetLock |]
 instance Selectable GetLock where
 	l@(GetLockReq _ _ rl) `select` r@(GetLockReq _ _ rr)
 		| rl >= rr = l | otherwise = r
@@ -78,7 +78,7 @@ getLock l rt = adjust getThreadId >>= \t ->
 -- UNLOCK
 
 newtype Unlock = UnlockReq LockId deriving Show
-numbered 32 [t| Unlock |]
+numbered 64 [t| Unlock |]
 instance Selectable Unlock where l `select` _r = l
 instance Request Unlock where data Occurred Unlock = OccUnlock
 

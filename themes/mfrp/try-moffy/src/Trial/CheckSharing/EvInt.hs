@@ -15,7 +15,7 @@ import Control.Moffy.Internal.React
 import Control.Moffy.Internal.React.Type
 
 data EvInt = EvIntReq deriving (Show, Eq, Ord)
-numbered 32 [t| EvInt |]
+numbered 64 [t| EvInt |]
 instance Request EvInt where
 	newtype Occurred EvInt = OccEvInt Int deriving Show
 
