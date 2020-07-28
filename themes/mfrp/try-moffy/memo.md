@@ -78,6 +78,7 @@ todo
 			* [ ] adjust -> adjustReact ?
 			* [ ] adjustSig -> adjust ?
 		- [ ] others
+	+ [ ] Data.Type.Set
 
 refactoring
 -----------

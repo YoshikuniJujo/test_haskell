@@ -18,7 +18,6 @@ import Language.Haskell.TH (
 	TypeQ, DecsQ, runIO,
 	instanceD, cxt, tySynInstD, tySynEqn, conT, appT, litT, numTyLit )
 import Data.Kind (Type)
-import Data.Type.Bool (If)
 import System.Random (randomRIO)
 
 ---------------------------------------------------------------------------
@@ -52,10 +51,8 @@ type t :- ts = t `Insert` ts
 type family Insert (t :: Type) (ts :: Set Type) :: Set Type where
 	Insert t 'Nil = t ':~ 'Nil
 	Insert t (t ':~ ts) = t ':~ ts
---	Insert t (t' ':~ ts) =
---		BOOL (InsertElse t' (Insert t ts)) (InsertThen t t' ts) $ (Number t <=? Number t')
-	Insert t (t' ':~ ts) = If
-		(Number t <=? Number t') (t ':~ t' ':~ ts) (t' ':~ Insert t ts)
+	Insert t (t' ':~ ts) =
+		BOOL (InsertElse t' (Insert t ts)) (InsertThen t t' ts) $ (Number t <=? Number t')
 
 data InsertElse t' i :: () >-> k
 type instance InsertElse  t' i $ '() = t' ':~ i
@@ -69,14 +66,10 @@ type family Merge (ts :: Set Type) (ts' :: Set Type) :: Set Type where
 	Merge ts 'Nil = ts
 	Merge 'Nil ts' = ts'
 	Merge (t ':~ ts) (t ':~ ts') = t ':~ Merge ts ts'
-	{-
 	Merge (t ':~ ts) (t' ':~ ts') = BOOL
 		(ConsMerge' t ts t' ts')
 		(ConsMerge t ts t' ts')
 		$ (Number t <=? Number t')
-		-}
-	Merge (t ':~ ts) (t' ':~ ts') = If (Number t <=? Number t')
-		(t ':~ Merge ts (t' ':~ ts')) (t' ':~ Merge (t ':~ ts) ts')
 
 infixl 4 :$:
 type f :$: ts = f `Map` ts
