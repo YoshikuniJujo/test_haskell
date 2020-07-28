@@ -67,6 +67,10 @@ todo
 	+ [x] interpret
 	+ [x] interpretSt
 * [ ] refactoring
+	+ [ ] package simple-field
+		- [ ] API
+			* [ ] about Event'
+			* [ ] others
 	+ [ ] Control.Moffy
 	+ [ ] module structure of Control.Moffy.Event.Key
 	+ [ ] Control.Moffy.Event.Key
@@ -79,6 +83,9 @@ todo
 			* [ ] adjustSig -> adjust ?
 		- [ ] others
 	+ [ ] Data.Type.Set
+		- [ ] numbered use fixed 64
+		- [ ] others
+	+ [ ] Control.Moffy.Handle
 
 refactoring
 -----------

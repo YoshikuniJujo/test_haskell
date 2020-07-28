@@ -6,7 +6,7 @@
 
 module Control.Moffy.Handle (
 	-- * Constraint
-	ExpandableHandle, MergeableOccurred,
+	ExpandableHandle, ExpandableOccurred, MergeableOccurred,
 	-- * Composer
 	-- ** Plain
 	Handle, Handle', retry, expand, before, merge,
@@ -40,8 +40,9 @@ collapse :: (Applicative m, Collapsable es' es) =>
 	Handle' m es -> EvReqs es' -> m (Maybe (EvOccs es))
 collapse hdl = maybe (pure Nothing) hdl . OOM.collapse
 
-type ExpandableHandle es es' =
-	(Collapsable es' es, Expandable (Occurred :$: es) (Occurred :$: es'))
+type ExpandableHandle es es' = (Collapsable es' es, ExpandableOccurred es es')
+
+type ExpandableOccurred es es' = Expandable (Occurred :$: es) (Occurred :$: es')
 
 expand :: (Applicative m, ExpandableHandle es es') =>
 	Handle' m es -> Handle' m es'
