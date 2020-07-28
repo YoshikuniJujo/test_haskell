@@ -139,7 +139,7 @@ Control.Moffy.Run
 		- [x] Moffy.EventHandle.Random
 			* [x] -> Moffy.EventHandle.Random.Event, Moffy.EventHandle.Random.Handle
 			* [x] -> Moffy.EventHandle.Random -> Control.Moffy.Event, Control.Moffy.Handle
-* [ ] refactoring
+* [x] refactoring
 
 #### refactoring
 
@@ -353,11 +353,11 @@ Control.Moffy.Event.Key
 	+ [x] imports
 	+ [x] structure
 	+ [x] body
-* [ ] Control.Moffy.Handle.XField.Mouse
+* [x] Control.Moffy.Handle.XField.Mouse
 	+ [x] API
 	+ [x] imports
-	+ [ ] structure
-	+ [ ] body
+	+ [x] structure
+	+ [x] body
 
 ### Moffy Base
 
