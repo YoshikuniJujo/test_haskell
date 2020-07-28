@@ -19,11 +19,11 @@ pattern MouseEv ev <- (mouseEv -> Just ev)
 
 mouseEv :: Event' -> Maybe (EvOccs MouseEv)
 mouseEv = \case
-	(ButtonEvent { ev_event_type = 4, ev_button = eb, ev_x = x, ev_y = y }, _)
+	(evEvent -> ButtonEvent { ev_event_type = 4, ev_button = eb, ev_x = x, ev_y = y })
 		| Just b <- btn eb -> Just . expand $ omd x y [b]
-	(ButtonEvent { ev_event_type = 5, ev_button = eb, ev_x = x, ev_y = y }, _)
+	(evEvent -> ButtonEvent { ev_event_type = 5, ev_button = eb, ev_x = x, ev_y = y })
 		| Just b <- btn eb -> Just . expand $ omu x y [b]
-	(MotionEvent { ev_x = x, ev_y = y }, _) -> Just . expand $ omm x y
+	(evEvent -> MotionEvent { ev_x = x, ev_y = y }) -> Just . expand $ omm x y
 	_ -> Nothing
 	where
 	btn = \case

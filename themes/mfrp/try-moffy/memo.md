@@ -67,10 +67,8 @@ todo
 	+ [x] interpret
 	+ [x] interpretSt
 * [ ] refactoring
-	+ [ ] package simple-field
-		- [ ] API
-			* [ ] about Event'
-			* [ ] others
+	+ [x] package simple-field
+		- [x] about Event'
 	+ [ ] Control.Moffy
 	+ [ ] module structure of Control.Moffy.Event.Key
 	+ [ ] Control.Moffy.Event.Key

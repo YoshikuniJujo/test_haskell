@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -40,8 +41,8 @@ eventToEv :: (
 	Expandable (Singleton (Occurred DeleteEvent)) (Occurred :$: es) ) =>
 	EvReqs es -> (Event' -> Maybe (EvOccs es)) -> Field -> Event' -> IO (Maybe (EvOccs es))
 eventToEv _rqs etoe f = \case
-	(ExposeEvent {}, _) -> Nothing <$ flushField f
-	(DestroyWindowEvent {}, _) -> closeField f >> exitSuccess
-	ev'@(ev, _)
+	(evEvent -> ExposeEvent {}) -> Nothing <$ flushField f
+	(evEvent -> DestroyWindowEvent {}) -> closeField f >> exitSuccess
+	ev'@(evEvent -> ev)
 		| isDeleteEvent f ev -> pure . Just . expand $ Singleton OccDeleteEvent
 		| otherwise -> pure $ etoe ev'
