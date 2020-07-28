@@ -74,7 +74,7 @@ import Trial.Followbox.TypeSynonym (Uri, FontName, FontSize, ErrorMessage)
 ---------------------------------------------------------------------------
 
 newtype StoreJsons = StoreJsons [Object] deriving Show
-numbered 9 [t| StoreJsons |]
+numbered 32 [t| StoreJsons |]
 instance Selectable StoreJsons where os1 `select` _os2 = os1
 instance Request StoreJsons where
 	data Occurred StoreJsons = OccStoreJsons [Object]
@@ -87,7 +87,7 @@ clearJsons :: React s (Singleton StoreJsons) ()
 clearJsons = storeJsons []
 
 data LoadJsons = LoadJsonsReq deriving (Show, Eq, Ord)
-numbered 9 [t| LoadJsons |]
+numbered 32 [t| LoadJsons |]
 instance Request LoadJsons where data Occurred LoadJsons = OccLoadJsons [Object]
 
 loadJsons :: React s (Singleton LoadJsons) [Object]
@@ -100,7 +100,7 @@ loadJsons = await LoadJsonsReq \(OccLoadJsons os) -> os
 -- HTTP GET
 
 newtype HttpGet = HttpGetReq Uri deriving (Show, Eq, Ord)
-numbered 9 [t| HttpGet |]
+numbered 32 [t| HttpGet |]
 instance Request HttpGet where
 	data Occurred HttpGet = OccHttpGet Uri [Header] LBS.ByteString
 		deriving Show
@@ -113,7 +113,7 @@ httpGet u = maybe (httpGet u) pure =<< await (HttpGetReq u)
 
 data CalcTextExtents = CalcTextExtentsReq FontName FontSize T.Text
 	deriving (Show, Eq, Ord)
-numbered 9 [t| CalcTextExtents |]
+numbered 32 [t| CalcTextExtents |]
 instance Request CalcTextExtents where
 	data Occurred CalcTextExtents =
 		OccCalcTextExtents FontName FontSize T.Text XGlyphInfo
@@ -128,7 +128,7 @@ calcTextExtents fn fs t = maybe (calcTextExtents fn fs t) pure
 -- TIME ZONE
 
 data GetTimeZone = GetTimeZone deriving (Show, Eq, Ord)
-numbered 9 [t| GetTimeZone |]
+numbered 32 [t| GetTimeZone |]
 instance Request GetTimeZone where
 	data Occurred GetTimeZone = OccGetTimeZone TimeZone deriving Show
 
@@ -140,7 +140,7 @@ getTimeZone = await GetTimeZone \(OccGetTimeZone tz) -> tz
 ---------------------------------------------------------------------------
 
 newtype Browse = Browse Uri deriving (Show, Eq, Ord)
-numbered 9 [t| Browse |]
+numbered 32 [t| Browse |]
 instance Request Browse where data Occurred Browse = OccBrowse deriving Show
 
 browse :: Uri -> React s (Singleton Browse) ()
@@ -153,7 +153,7 @@ browse u = await (Browse u) \OccBrowse -> ()
 -- BEGIN SLEEP AND END SLEEP
 
 data BeginSleep = BeginSleep UTCTime | CheckBeginSleep deriving (Show, Eq, Ord)
-numbered 9 [t| BeginSleep |]
+numbered 32 [t| BeginSleep |]
 instance Request BeginSleep where
 	data Occurred BeginSleep = OccBeginSleep UTCTime deriving Show
 
@@ -165,7 +165,7 @@ checkBeginSleep :: React s (Singleton BeginSleep) UTCTime
 checkBeginSleep = await CheckBeginSleep \case OccBeginSleep t -> t
 
 data EndSleep = EndSleepReq deriving (Show, Eq, Ord)
-numbered 9 [t| EndSleep |]
+numbered 32 [t| EndSleep |]
 instance Request EndSleep where
 	data Occurred EndSleep = OccEndSleep deriving Show
 
@@ -182,7 +182,7 @@ data Error
 data ErrorResult = Continue | Terminate deriving Show
 
 data RaiseError = RaiseError Error ErrorMessage deriving (Show, Eq, Ord)
-numbered 9 [t| RaiseError |]
+numbered 32 [t| RaiseError |]
 instance Request RaiseError where
 	data Occurred RaiseError = OccRaiseError Error ErrorResult
 

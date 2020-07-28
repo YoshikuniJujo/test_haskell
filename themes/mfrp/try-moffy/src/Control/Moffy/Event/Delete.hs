@@ -23,7 +23,7 @@ import Data.Type.Set (numbered, Singleton)
 ---------------------------------------------------------------------------
 
 data DeleteEvent = DeleteEventReq deriving (Show, Eq, Ord)
-numbered 9 [t| DeleteEvent |]
+numbered 32 [t| DeleteEvent |]
 instance Request DeleteEvent where
 	data Occurred DeleteEvent = OccDeleteEvent deriving (Show, Eq, Ord)
 

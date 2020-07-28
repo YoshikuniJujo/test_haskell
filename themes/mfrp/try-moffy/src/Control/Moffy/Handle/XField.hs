@@ -3,7 +3,11 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Handle.XField (GuiEv, handle, handleWith) where
+module Control.Moffy.Handle.XField (
+	-- * Type
+	GuiEv,
+	-- * Function
+	handle, handleWith) where
 
 import Data.Type.Set
 import Data.OneOrMore

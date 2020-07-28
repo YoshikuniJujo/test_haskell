@@ -13,7 +13,7 @@ import Control.Moffy.Internal.React.Type (
 import Data.Type.Set (numbered, Singleton)
 
 data GetThreadId = GetThreadIdReq deriving (Show, Eq, Ord)
-numbered 9 [t| GetThreadId |]
+numbered 32 [t| GetThreadId |]
 instance Request GetThreadId where data Occurred GetThreadId = OccGetThreadId
 
 getThreadId :: React s (Singleton GetThreadId) ThreadId
