@@ -349,7 +349,7 @@ Control.Moffy.Event.Key
 		- [x] TYPE
 		- [x] FUNCTION
 * [ ] Control.Moffy.Handle.XField.Key
-	+ [ ] API
+	+ [x] API
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body

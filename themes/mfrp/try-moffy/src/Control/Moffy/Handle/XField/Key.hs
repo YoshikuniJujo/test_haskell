@@ -1,7 +1,9 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Handle.XField.Key (pattern KeyEv) where
+module Control.Moffy.Handle.XField.Key (
+	-- * Pattern
+	pattern KeyEv ) where
 
 import Control.Moffy
 import Control.Moffy.Event.Key
