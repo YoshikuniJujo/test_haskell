@@ -344,8 +344,10 @@ Control.Moffy.Event.Key
 			* [x] try to use GuiEv in followbox
 		- [x] others
 	+ [x] imports
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] TYPE
+		- [ ] FUNCTION
 * [ ] Control.Moffy.Handle.XField.Key
 	+ [ ] API
 	+ [ ] imports
