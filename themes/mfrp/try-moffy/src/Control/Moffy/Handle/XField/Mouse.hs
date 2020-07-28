@@ -8,13 +8,17 @@ module Control.Moffy.Handle.XField.Mouse (
 	-- * Pattern
 	pattern MouseEv ) where
 
-import Foreign.C.Types
-import Data.Type.Set
-import Data.OneOrMore
+import Foreign.C.Types (CInt)
+import Control.Moffy (EvOccs)
+import Control.Moffy.Event.Mouse (
+	MouseEv, MouseBtn(..),
+	MouseDown, pattern OccMouseDown, MouseUp, pattern OccMouseUp,
+	MouseMove, pattern OccMouseMove )
+import Data.Type.Set (pattern Nil, Singleton, (:-))
+import Data.OneOrMore (pattern Singleton, (>-), expand)
+import Field (Event', evEvent, Event(..))
 
-import Control.Moffy
-import Control.Moffy.Event.Mouse
-import Field
+---------------------------------------------------------------------------
 
 pattern MouseEv :: EvOccs MouseEv -> Event'
 pattern MouseEv ev <- (mouseEv -> Just ev)
