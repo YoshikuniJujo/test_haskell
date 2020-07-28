@@ -53,7 +53,7 @@ before :: (
 	Monad m,
 	ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es') ) =>
 	Handle' m es -> Handle' m es' -> Handle' m (es :+: es')
-before (expand -> l) (expand -> r) rqs = maybe (l rqs) (pure . Just) =<< r rqs
+before (expand -> l) (expand -> r) rqs = maybe (r rqs) (pure . Just) =<< l rqs
 
 type MergeableOccurred es es' mrg =
 	Mergeable (Occurred :$: es) (Occurred :$: es') (Occurred :$: mrg)
