@@ -14,7 +14,7 @@ import Prelude hiding (head)
 
 import Control.Monad.State (StateT, lift, gets, modify)
 import Control.Moffy.Handle
-import Data.Type.Set (Singleton, (:-))
+import Data.Type.Set (Singleton, (:-), (:+:))
 import Data.OneOrMore (pattern Singleton)
 import Data.Bool (bool)
 import Data.List (delete)
@@ -30,8 +30,9 @@ import qualified Network.HTTP.Simple as H
 import Control.Moffy.Handle.ThreadId (handleGetThreadId)
 import Control.Moffy.Handle.Lock (LockState(..), LockId, handleLock)
 import Control.Moffy.Handle.Random (RandomState(..), handleRandom)
-import Control.Moffy.Event.Mouse (MouseEv)
 import Control.Moffy.Event.Delete
+import Control.Moffy.Event.Key
+import Control.Moffy.Event.Mouse (MouseEv)
 import Control.Moffy.Handle.XField.Mouse
 import Control.Moffy.Handle.XField
 import Trial.Followbox.Event (
@@ -43,7 +44,7 @@ import Field (Field, textExtents)
 
 import qualified Data.OneOrMore
 
-handleMouse :: Maybe DiffTime -> Field -> Handle' IO (DeleteEvent :- MouseEv)
+handleMouse :: Maybe DiffTime -> Field -> Handle' IO MouseEv'
 handleMouse = handleWith (\case MouseEv e -> Just $ Data.OneOrMore.expand e; _ -> Nothing)
 
 ---------------------------------------------------------------------------
@@ -110,7 +111,7 @@ resetSleep = modify \s -> s { fsSleepUntil = Nothing }
 -- FOLLOWBOX
 
 handleFollowbox ::
-	Field -> Browser -> Maybe GithubNameToken -> Handle (FbM IO) FollowboxEv
+	Field -> Browser -> Maybe GithubNameToken -> Handle (FbM IO) FollowboxEv -- (KeyEv :+: FollowboxEv)
 handleFollowbox f brws mba = retry $
 	handleGetThreadId `merge` handleLock `merge` handleRandom `merge`
 	just . handleStoreJsons `merge` just . handleLoadJsons `merge`
@@ -126,11 +127,13 @@ type MouseEv' = DeleteEvent :- MouseEv
 
 -- MOUSE
 
-handleMouseWithSleep :: Field -> Handle' (FbM IO) MouseEv'
+handleMouseWithSleep :: Field -> Handle' (FbM IO) MouseEv' -- GuiEv -- MouseEv'
 handleMouseWithSleep f reqs = getSleepUntil >>= lift . \case
 	Nothing -> handleMouse Nothing f reqs
+--	Nothing -> handle Nothing f reqs
 	Just t -> getCurrentTime >>= \now ->
 		handleMouse (Just . realToFrac $ t `diffUTCTime` now) f reqs
+--		handle (Just . realToFrac $ t `diffUTCTime` now) f reqs
 
 -- STORE AND LOAD JSONS
 

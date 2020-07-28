@@ -49,6 +49,7 @@ import Control.Moffy.Event.Lock (LockEv)
 import Control.Moffy.Event.ThreadId (GetThreadId)
 import Control.Moffy.Event.Mouse (MouseEv)
 import Control.Moffy.Event.Delete
+-- import Control.Moffy.Handle.XField
 import Trial.Followbox.TypeSynonym (Uri, FontName, FontSize, ErrorMessage)
 
 ---------------------------------------------------------------------------
@@ -203,6 +204,7 @@ checkTerminate = catchError >>= \case
 type SigF s = Sig s FollowboxEv
 type ReactF s a = React s FollowboxEv a
 
+-- type FollowboxEv = GetThreadId :- LockEv :+: RandomEv :+: GuiEv :+:
 type FollowboxEv = DeleteEvent :- GetThreadId :- LockEv :+: RandomEv :+: MouseEv :+:
 	StoreJsons :- LoadJsons :- HttpGet :- CalcTextExtents :- GetTimeZone :-
 	Browse :- BeginSleep :- EndSleep :- RaiseError :- 'Nil
