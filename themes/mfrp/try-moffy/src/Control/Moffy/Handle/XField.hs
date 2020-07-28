@@ -48,13 +48,15 @@ handleWith :: ExpandableOccurred (Singleton DeleteEvent) es =>
 	(Event' -> Maybe (EvOccs es)) ->
 	Maybe DiffTime -> Field -> Handle' IO es
 handleWith etoe Nothing f rqs = withNextEvent f $ eventToEv etoe f rqs
-handleWith etoe (Just prd) f rqs =
-	withNextEventTimeout' f prd $ maybe (pure Nothing) (eventToEv etoe f rqs)
+handleWith etoe (Just prd) f rqs = withNextEventTimeout' f prd
+	$ maybe (pure Nothing) (eventToEv etoe f rqs)
 
 eventToEv :: ( ExpandableOccurred (Singleton DeleteEvent) es ) =>
-	(Event' -> Maybe (EvOccs es)) -> Field -> EvReqs es -> Event' -> IO (Maybe (EvOccs es))
+	(Event' -> Maybe (EvOccs es)) ->
+	Field -> EvReqs es -> Event' -> IO (Maybe (EvOccs es))
 eventToEv etoe f _rqs = \case
-	(evEvent -> ExposeEvent {}) -> Nothing <$ flushField f
-	ev'@(evEvent -> ev)
-		| isDeleteEvent f ev -> pure . Just . expand $ Singleton OccDeleteEvent
-		| otherwise -> pure $ etoe ev'
+	(evEvent -> ev)
+		| ExposeEvent {} <- ev -> Nothing <$ flushField f
+		| isDeleteEvent f ev ->
+			pure . Just . expand $ Singleton OccDeleteEvent
+	ev -> pure $ etoe ev
