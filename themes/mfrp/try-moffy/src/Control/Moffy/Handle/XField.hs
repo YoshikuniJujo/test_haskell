@@ -44,15 +44,16 @@ handle = handleWith \case
 	KeyEv kev -> Just $ expand kev; MouseEv mev -> Just $ expand mev
 	_ -> Nothing
 
-handleWith :: (ExpandableOccurred (Singleton DeleteEvent) es) =>
-	(Event' -> Maybe (EvOccs es)) -> Maybe DiffTime -> Field -> Handle' IO es
-handleWith etoe Nothing f rqs = withNextEvent f $ eventToEv rqs etoe f
+handleWith :: ExpandableOccurred (Singleton DeleteEvent) es =>
+	(Event' -> Maybe (EvOccs es)) ->
+	Maybe DiffTime -> Field -> Handle' IO es
+handleWith etoe Nothing f rqs = withNextEvent f $ eventToEv etoe f rqs
 handleWith etoe (Just prd) f rqs = withNextEventTimeout' f
-	(round $ prd * 1000000) $ maybe (pure Nothing) (eventToEv rqs etoe f)
+	(round $ prd * 1000000) $ maybe (pure Nothing) (eventToEv etoe f rqs)
 
 eventToEv :: ( ExpandableOccurred (Singleton DeleteEvent) es ) =>
-	EvReqs es -> (Event' -> Maybe (EvOccs es)) -> Field -> Event' -> IO (Maybe (EvOccs es))
-eventToEv _rqs etoe f = \case
+	(Event' -> Maybe (EvOccs es)) -> Field -> EvReqs es -> Event' -> IO (Maybe (EvOccs es))
+eventToEv etoe f _rqs = \case
 	(evEvent -> ExposeEvent {}) -> Nothing <$ flushField f
 	ev'@(evEvent -> ev)
 		| isDeleteEvent f ev -> pure . Just . expand $ Singleton OccDeleteEvent
