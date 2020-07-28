@@ -354,7 +354,7 @@ Control.Moffy.Event.Key
 	+ [x] structure
 	+ [x] body
 * [ ] Control.Moffy.Handle.XField.Mouse
-	+ [ ] API
+	+ [x] API
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body

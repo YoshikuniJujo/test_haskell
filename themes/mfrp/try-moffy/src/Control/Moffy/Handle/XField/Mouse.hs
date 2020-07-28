@@ -4,7 +4,9 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Handle.XField.Mouse (pattern MouseEv) where
+module Control.Moffy.Handle.XField.Mouse (
+	-- * Pattern
+	pattern MouseEv ) where
 
 import Foreign.C.Types
 import Data.Type.Set
