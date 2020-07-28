@@ -332,7 +332,7 @@ Control.Moffy.Event.Key
 		- [x] EVENT
 		- [x] PATTERN
 * [ ] Control.Moffy.Handle.XField
-	+ [ ] API
+	+ [x] API
 		- [x] function handle
 			* [x] define
 			* [x] use
@@ -342,8 +342,8 @@ Control.Moffy.Event.Key
 			* [x] rename GuiEv to BoxEv
 			* [x] consider rename XFieldEv -> GuiEv or others
 			* [x] try to use GuiEv in followbox
-		- [ ] others
-	+ [ ] imports
+		- [x] others
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] Control.Moffy.Handle.XField.Key

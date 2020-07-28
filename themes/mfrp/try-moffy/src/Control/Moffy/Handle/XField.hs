@@ -1,5 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -10,19 +10,21 @@ module Control.Moffy.Handle.XField (
 	-- * Function
 	handle, handleWith) where
 
-import Data.Type.Set
-import Data.OneOrMore
-import Data.Time
-import System.Exit
+import Control.Moffy (EvReqs, EvOccs)
+import Control.Moffy.Event.Delete (DeleteEvent, pattern OccDeleteEvent)
+import Control.Moffy.Event.Key (KeyEv)
+import Control.Moffy.Event.Mouse (MouseEv)
+import Control.Moffy.Handle (Handle', ExpandableOccurred)
+import Control.Moffy.Handle.XField.Key (pattern KeyEv)
+import Control.Moffy.Handle.XField.Mouse (pattern MouseEv)
+import Data.Type.Set (Singleton, (:-), (:+:))
+import Data.OneOrMore (pattern Singleton, expand)
+import Data.Time (DiffTime)
+import Field (
+	Field, flushField, Event', evEvent, Event(..),
+	withNextEvent, withNextEventTimeout', isDeleteEvent )
 
-import Control.Moffy
-import Control.Moffy.Handle hiding (expand)
-import Control.Moffy.Event.Delete
-import Control.Moffy.Event.Key
-import Control.Moffy.Event.Mouse
-import Control.Moffy.Handle.XField.Key
-import Control.Moffy.Handle.XField.Mouse
-import Field
+---------------------------------------------------------------------------
 
 type GuiEv = DeleteEvent :- KeyEv :+: MouseEv
 
@@ -37,12 +39,10 @@ handleWith etoe Nothing f rqs = withNextEvent f $ eventToEv rqs etoe f
 handleWith etoe (Just prd) f rqs = withNextEventTimeout' f
 	(round $ prd * 1000000) $ maybe (pure Nothing) (eventToEv rqs etoe f)
 
-eventToEv :: (
-	Expandable (Singleton (Occurred DeleteEvent)) (Occurred :$: es) ) =>
+eventToEv :: ( ExpandableOccurred (Singleton DeleteEvent) es ) =>
 	EvReqs es -> (Event' -> Maybe (EvOccs es)) -> Field -> Event' -> IO (Maybe (EvOccs es))
 eventToEv _rqs etoe f = \case
 	(evEvent -> ExposeEvent {}) -> Nothing <$ flushField f
-	(evEvent -> DestroyWindowEvent {}) -> closeField f >> exitSuccess
 	ev'@(evEvent -> ev)
 		| isDeleteEvent f ev -> pure . Just . expand $ Singleton OccDeleteEvent
 		| otherwise -> pure $ etoe ev'
