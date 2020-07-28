@@ -48,8 +48,8 @@ handleWith :: ExpandableOccurred (Singleton DeleteEvent) es =>
 	(Event' -> Maybe (EvOccs es)) ->
 	Maybe DiffTime -> Field -> Handle' IO es
 handleWith etoe Nothing f rqs = withNextEvent f $ eventToEv etoe f rqs
-handleWith etoe (Just prd) f rqs = withNextEventTimeout' f
-	(round $ prd * 1000000) $ maybe (pure Nothing) (eventToEv etoe f rqs)
+handleWith etoe (Just prd) f rqs =
+	withNextEventTimeout' f prd $ maybe (pure Nothing) (eventToEv etoe f rqs)
 
 eventToEv :: ( ExpandableOccurred (Singleton DeleteEvent) es ) =>
 	(Event' -> Maybe (EvOccs es)) -> Field -> EvReqs es -> Event' -> IO (Maybe (EvOccs es))
