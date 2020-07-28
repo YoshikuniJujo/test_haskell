@@ -1,19 +1,21 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy (
-	-- * Types
+	-- * Type
 	Sig, ISig, React, Rct, EvReqs, EvOccs, Request(..),
+	-- * Constraint
 	Firstable, Adjustable,
-	-- * React
-	await, adjust, first, adjustSig,
-	-- * Conversion
+	-- * Combinator
+	-- ** Await and Adjust
+	await, adjust, adjustSig,
+	-- ** Conversion
 	emit, waitFor,
-	-- * Transformation
+	-- ** Transformation
 	scanl, find,
-	-- * Repetition
+	-- ** Repetition
 	repeat, spawn, parList,
-	-- * Parallel Composition
-	at, break, until, indexBy ) where
+	-- ** Parallel Composition
+	first, at, break, until, indexBy ) where
 
 import Prelude hiding (repeat, scanl, until, break)
 

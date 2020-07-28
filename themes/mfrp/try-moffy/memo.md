@@ -76,7 +76,9 @@ Control.Moffy.Run
 
 * [ ] Control.Moffy
 	+ [ ] API
-		- [ ] adjustSig
+		- [x] adjustSig
+			* [x] structure
+			* [x] rename or not
 		- [ ] others
 	+ [ ] imports
 	+ [ ] structure
