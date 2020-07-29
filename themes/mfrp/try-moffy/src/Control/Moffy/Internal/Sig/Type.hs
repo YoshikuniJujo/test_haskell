@@ -11,7 +11,7 @@ module Control.Moffy.Internal.Sig.Type (
 	-- ** Basic
 	emit, emitAll, waitFor, res, ires, hold,
 	-- ** Practical
-	repeat, scanl, find ) where
+	repeat, find, scanl ) where
 
 import Prelude hiding (repeat, scanl)
 
@@ -85,19 +85,19 @@ instance Functor (Flip (ISig s es) r) where
 emit :: a -> Sig s es a ()
 emit = emitAll . (:| pure ())
 
-emitAll :: ISig s es a b -> Sig s es a b
+emitAll :: ISig s es a r -> Sig s es a r
 emitAll = Sig . pure
 
 waitFor :: React s es r -> Sig s es a r
 waitFor = Sig . (pure <$>)
 
-icur :: ISig s es a b -> Either a b
+icur :: ISig s es a r -> Either a r
 icur = isig Right $ const . Left
 
-res :: Sig s es a b -> React s es b
+res :: Sig s es a r -> React s es r
 res = ires <=< unSig
 
-ires :: ISig s es a b -> React s es b
+ires :: ISig s es a r -> React s es r
 ires = isig pure $ const res
 
 hold :: Sig s es a r
@@ -108,16 +108,16 @@ hold = waitFor never
 repeat :: React s es a -> Sig s es a ()
 repeat = forever . (emit <=< waitFor)
 
+find :: (a -> Bool) -> Sig s es a r -> React s es (Either a r)
+find p = (icur <$>) . res . brk
+	where
+	brk = Sig . (ibrk <$>) . unSig
+	ibrk i = case i of
+		End _ -> pure i
+		h :| t | p h -> pure i | otherwise -> h :| brk t
+
 scanl :: (b -> a -> b) -> b -> Sig s es a r -> Sig s es b r
 scanl op v = emitAll . iscanl op v
 
 iscanl :: (b -> a -> b) -> b -> Sig s es a r -> ISig s es b r
 iscanl op v (Sig r) = v :| (isig pure (scanl op . (v `op`)) =<< waitFor r)
-
-find :: (a -> Bool) -> Sig s es a r -> React s es (Either a r)
-find p = (icur <$>) . res . brk
-	where
-	brk = Sig . (ibrk <$>) . unSig
-	ibrk is = case is of
-		End _ -> pure is
-		h :| t | p h -> pure is | otherwise -> h :| brk t

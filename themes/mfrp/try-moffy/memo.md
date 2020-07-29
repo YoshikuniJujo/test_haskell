@@ -121,7 +121,7 @@ Control.Moffy.Run
 			* [x] ADJUST
 			* [x] PAIRS
 			* [x] PAUSE
-* [ ] Control.Moffy.Internal.Sig.Type
+* [x] Control.Moffy.Internal.Sig.Type
 	+ [x] API
 		- [x] Type
 		- [x] Function
@@ -129,15 +129,19 @@ Control.Moffy.Run
 			* [x] Practical
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
-		- [ ] TYPE
-		- [ ] CLASS INSTANCE
-			* [ ] MONAD
-			* [ ] FLIP FUNCTOR
-		- [ ] FUNCTION
-			* [ ] BASIC
-			* [ ] PRACTICAL
+	+ [x] body
+		- [x] TYPE
+		- [x] CLASS INSTANCE
+			* [x] MONAD
+			* [x] FLIP FUNCTOR
+		- [x] FUNCTION
+			* [x] BASIC
+			* [x] PRACTICAL
 * [ ] Control.Moffy.Internal.React
+	+ [ ] API
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
 * [ ] Control.Moffy.Internal.REact.Type
 * [ ] Control.Moffy.Handle
 * [ ] Control.Moffy.Run
