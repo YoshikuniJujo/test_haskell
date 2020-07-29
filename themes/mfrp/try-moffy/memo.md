@@ -106,7 +106,7 @@ Control.Moffy.Run
 		- [x] Adjust
 		- [x] Parallel
 		- [x] Copies
-	+ [ ] imports
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] Control.Moffy.Internal.Sig.Type

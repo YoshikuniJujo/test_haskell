@@ -15,17 +15,16 @@ module Control.Moffy.Internal.Sig (
 
 import Prelude hiding (repeat, until, break)
 
-import Control.Arrow ((***), first)
+import Control.Arrow (first, (***))
+import Control.Monad.Freer.Par (pattern Pure, pattern (:>>=))
+import Control.Moffy.Internal.Sig.Type (
+	Sig(..), ISig(..), isig,
+	emit, emitAll, waitFor, repeat, res, ires, hold )
+import Control.Moffy.Internal.React (Firstable, Adjustable, Update, adjust, par)
+import Control.Moffy.Internal.React.Type (React, Rct(..))
 import Data.Type.Set ((:+:))
 import Data.Type.Flip (Flip(..), (<$%>), (<*%>))
 import Data.OneOrMore (Mergeable)
-
-import Control.Moffy.Internal.Sig.Type (
-	Sig(..), ISig(..), isig,
-	emit, emitAll, waitFor, res, ires, hold, repeat )
-import Control.Moffy.Internal.React (Update, Adjustable, Firstable, adjust, par)
-import Control.Moffy.Internal.React.Type (React, Rct(..))
-import Control.Monad.Freer.Par (Freer(Pure), pattern (:>>=))
 
 ---------------------------------------------------------------------------
 
