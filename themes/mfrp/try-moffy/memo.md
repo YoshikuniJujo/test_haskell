@@ -107,7 +107,7 @@ Control.Moffy.Run
 		- [x] Parallel
 		- [x] Copies
 	+ [x] imports
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
 * [ ] Control.Moffy.Internal.Sig.Type
 * [ ] Control.Moffy.Internal.React
