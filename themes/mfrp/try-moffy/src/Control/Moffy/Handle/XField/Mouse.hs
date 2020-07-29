@@ -25,7 +25,7 @@ pattern MouseEv mev <- (mouseEv -> Just mev)
 type MoveAnd be = be :- Singleton MouseMove
 
 mouseEv :: Event' -> Maybe (EvOccs MouseEv)
-mouseEv ev = case (evEvent ev) of
+mouseEv ev = case evEvent ev of
 	ButtonEvent { ev_event_type = 4, ev_button = eb, ev_x = x, ev_y = y }
 		| Just b <- btn eb -> Just . expand $ down x y b
 	ButtonEvent { ev_event_type = 5, ev_button = eb, ev_x = x, ev_y = y }
