@@ -16,13 +16,12 @@ module Control.Moffy.Internal.React (
 
 import Control.Monad.Freer.Par (
 	Freer(..), pattern (:>>=), (>>>=), (=<<<), qApp, qAppPar )
+import Control.Moffy.Internal.React.Type (
+	React, Rct(..), EvOccs, Occurred, ThreadId, forkThreadId, never )
 import Data.Type.Set ((:+:), (:$:))
 import Data.OneOrMore (
 	Expandable, Collapsable, Mergeable, expand, collapse, merge )
 import Data.Or (Or(..))
-
-import Control.Moffy.Internal.React.Type (
-	React, Rct(..), EvOccs, Occurred, ThreadId, forkThreadId, never )
 
 ---------------------------------------------------------------------------
 

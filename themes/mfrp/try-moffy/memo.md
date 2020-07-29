@@ -143,7 +143,7 @@ Control.Moffy.Run
 		- [x] Class
 		- [x] Constraint
 		- [x] Function
-	+ [ ] imports
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] Control.Moffy.Internal.REact.Type
