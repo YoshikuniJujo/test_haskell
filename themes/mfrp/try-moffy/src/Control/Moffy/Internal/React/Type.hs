@@ -8,13 +8,14 @@
 
 module Control.Moffy.Internal.React.Type (
 	-- * React
+	-- ** Type
 	React, Rct(..), Request(..), EvReqs, EvOccs,
+	-- ** Never and Await
+	never, await, await',
 	-- * Handle
 	Handle, HandleSt,
 	-- * ThreadId
-	ThreadId, rootThreadId, forkThreadId,
-	-- * Await and Never
-	await, await', never ) where
+	ThreadId, rootThreadId, forkThreadId ) where
 
 import Control.Monad.Freer.Par (Freer, (>>>=), (=<<<))
 import Control.Monad.Freer.Par.FTCQueue (FTCQueue)
