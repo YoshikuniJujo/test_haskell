@@ -75,11 +75,11 @@ Control.Moffy.Run
 #### refactoring
 
 * [ ] Control.Moffy
-	+ [ ] API
+	+ [x] API
 		- [x] adjustSig
 			* [x] structure
 			* [x] rename or not
-		- [ ] others
+		- [x] others
 			* [x] Type
 				+ [x] Sig
 				+ [x] ISig
@@ -89,15 +89,15 @@ Control.Moffy.Run
 				+ [x] EvOccs
 				+ [x] Request
 			* [x] Constraint
-			* [ ] Combinator
+			* [x] Combinator
 				+ [x] Await and Adjust
 				+ [x] structure
 				+ [x] Conversion
 					- [x] rename Conversion to Simple Sig
-				+ [ ] Simple Sig
-				+ [ ] Traverse
-				+ [ ] Parallel
-				+ [ ] Copies
+				+ [x] Simple Sig
+				+ [x] Traverse
+				+ [x] Parallel
+				+ [x] Copies
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body

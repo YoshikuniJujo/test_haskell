@@ -149,10 +149,8 @@ until :: Firstable es es' (ISig s (es :+: es') a r) r' =>
 
 infixl 7 `indexBy`
 
-indexBy :: (
-	Update (ISig s (es :+: es') a r) (ISig s (es :+: es') b r'),
-	Mergeable (es :+: es') (es :+: es') (es :+: es'),
-	Adjustable es (es :+: es'), Adjustable es' (es :+: es')) =>
+indexBy ::
+	Firstable es es' (ISig s (es :+: es') a r) (ISig s (es :+: es') b r') =>
 	Sig s es a r -> Sig s es' b r' ->
 	Sig s (es :+: es') a (Either r (Maybe a, r'))
 (adjustSig -> l) `indexBy` (adjustSig -> r) = l `indexBy_` r

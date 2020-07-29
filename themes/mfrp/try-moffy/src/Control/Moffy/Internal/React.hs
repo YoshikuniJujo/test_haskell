@@ -52,6 +52,8 @@ type Firstable es es' a b = (
 	Update a b, Adjustable es (es :+: es'), Adjustable es' (es :+: es'),
 	Mergeable (es :+: es') (es :+: es') (es :+: es') )
 
+infixr 8 `first`
+
 first :: Firstable es es' a b =>
 	React s es a -> React s es' b -> React s (es :+: es') (Or a b)
 (adjust -> l) `first` (adjust -> r) = (<$> l `par` r) \case
