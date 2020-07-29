@@ -133,6 +133,9 @@ drawWithModel = do
 	drawDayScale f $ read "2020-02-15"
 	drawDayScale f $ read "2020-03-15"
 	drawDayScale f $ read "2020-04-15"
+	drawDayScale f $ read "2020-05-15"
+	drawDayScale f $ read "2020-06-15"
+	drawDayScale f $ read "2020-07-15"
 	waitExposure f
 	pure f
 
@@ -150,6 +153,9 @@ drawSemilogWithModel = do
 	drawDayScale f $ read "2020-02-15"
 	drawDayScale f $ read "2020-03-15"
 	drawDayScale f $ read "2020-04-15"
+	drawDayScale f $ read "2020-05-15"
+	drawDayScale f $ read "2020-06-15"
+	drawDayScale f $ read "2020-07-15"
 	waitExposure f
 	pure f
 
@@ -167,6 +173,9 @@ drawWeeklyDiffSemilogWithModel = do
 	drawDayScale f $ read "2020-02-15"
 	drawDayScale f $ read "2020-03-15"
 	drawDayScale f $ read "2020-04-15"
+	drawDayScale f $ read "2020-05-15"
+	drawDayScale f $ read "2020-06-15"
+	drawDayScale f $ read "2020-07-15"
 	waitExposure f
 	pure f
 
@@ -184,6 +193,9 @@ drawWeeklyDiffWithModel = do
 	drawDayScale f $ read "2020-02-15"
 	drawDayScale f $ read "2020-03-15"
 	drawDayScale f $ read "2020-04-15"
+	drawDayScale f $ read "2020-05-15"
+	drawDayScale f $ read "2020-06-15"
+	drawDayScale f $ read "2020-07-15"
 	waitExposure f
 	pure f
 
@@ -202,6 +214,9 @@ drawDiffWithModel = do
 	drawDayScale f $ read "2020-02-15"
 	drawDayScale f $ read "2020-03-15"
 	drawDayScale f $ read "2020-04-15"
+	drawDayScale f $ read "2020-05-15"
+	drawDayScale f $ read "2020-06-15"
+	drawDayScale f $ read "2020-07-15"
 	waitExposure f
 	pure f
 
@@ -220,6 +235,9 @@ drawDeathDiff = do
 	drawDayScale f $ read "2020-02-15"
 	drawDayScale f $ read "2020-03-15"
 	drawDayScale f $ read "2020-04-15"
+	drawDayScale f $ read "2020-05-15"
+	drawDayScale f $ read "2020-06-15"
+	drawDayScale f $ read "2020-07-15"
 	waitExposure f
 	pure f
 
