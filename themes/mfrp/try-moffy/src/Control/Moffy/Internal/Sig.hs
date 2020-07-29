@@ -130,8 +130,8 @@ indexBy_ :: (Update (ISig s es a r) (ISig s es b r'), Mergeable es es es ) =>
 	Sig s es a r -> Sig s es b r' -> Sig s es a (Either r (Maybe a, r'))
 l `indexBy_` Sig r = waitFor (res $ l `pause` r) >>= \case
 	(Sig (Pure l'), r') -> (first Just <$>) <$> l' `iindexBy` Sig r'
-	(Sig l', Pure (_ :| r')) -> Sig l' `indexBy_` r'
-	(Sig _, Pure (End y)) -> pure $ Right (Nothing, y)
+	(l', Pure (_ :| r')) -> l' `indexBy_` r'
+	(_, Pure (End y)) -> pure $ Right (Nothing, y)
 	_ -> error "never occur"
 
 iindexBy :: (Update (ISig s es a r) (ISig s es b r'), Mergeable es es es) =>

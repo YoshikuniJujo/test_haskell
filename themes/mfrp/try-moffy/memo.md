@@ -99,7 +99,7 @@ Control.Moffy.Run
 				+ [x] Parallel
 				+ [x] Copies
 	+ [x] imports
-* [ ] Control.Moffy.Internal.Sig
+* [x] Control.Moffy.Internal.Sig
 	+ [x] API
 		- [x] about adjustSig
 		- [x] structure
@@ -108,8 +108,24 @@ Control.Moffy.Run
 		- [x] Copies
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
+		- [x] FLIP APPLICATIVE
+		- [x] PARALLEL
+			* [x] AT
+			* [x] BREAK AND UNTIL
+			* [x] INDEX BY
+		- [x] COPIES
+			* [x] SPAWN
+			* [x] PAR LIST
+		- [x] BASIC
+			* [x] ADJUST
+			* [x] PAIRS
+			* [x] PAUSE
 * [ ] Control.Moffy.Internal.Sig.Type
+	+ [ ] API
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
 * [ ] Control.Moffy.Internal.React
 * [ ] Control.Moffy.Internal.REact.Type
 * [ ] Control.Moffy.Handle
