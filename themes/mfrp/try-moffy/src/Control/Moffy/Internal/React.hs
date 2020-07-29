@@ -7,10 +7,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Internal.React (
-	-- * Type
-	Update, Adjustable, Firstable,
+	-- * Class
+	Update,
+	-- * Constraint
+	Firstable, Adjustable,
 	-- * Function
-	adjust, first, par, update ) where
+	first, adjust, par, update ) where
 
 import Control.Monad.Freer.Par (
 	Freer(..), pattern (:>>=), (>>>=), (=<<<), qApp, qAppPar )

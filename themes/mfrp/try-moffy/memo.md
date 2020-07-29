@@ -138,7 +138,11 @@ Control.Moffy.Run
 			* [x] BASIC
 			* [x] PRACTICAL
 * [ ] Control.Moffy.Internal.React
-	+ [ ] API
+	+ [x] API
+		- [x] structure
+		- [x] Class
+		- [x] Constraint
+		- [x] Function
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body
