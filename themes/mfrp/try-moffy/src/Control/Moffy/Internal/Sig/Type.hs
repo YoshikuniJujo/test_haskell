@@ -22,7 +22,7 @@ import Data.Type.Flip (Flip(..), (<$%>))
 ---------------------------------------------------------------------------
 
 -- * TYPE
--- * TYPE CLASS INSTANCE
+-- * CLASS INSTANCE
 --	+ MONAD
 --	+ FLIP FUNCTOR
 -- * FUNCTION
@@ -41,7 +41,7 @@ isig :: (r -> b) -> (a -> Sig s es a r -> b) -> ISig s es a r -> b
 isig e c = \case End x -> e x; h :| t -> c h t
 
 ---------------------------------------------------------------------------
--- TYPE CLASS INSTANCE
+-- CLASS INSTANCE
 ---------------------------------------------------------------------------
 
 -- MONAD

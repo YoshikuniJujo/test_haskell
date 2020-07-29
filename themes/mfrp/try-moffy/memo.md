@@ -128,8 +128,15 @@ Control.Moffy.Run
 			* [x] Basic
 			* [x] Practical
 	+ [x] imports
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] TYPE
+		- [ ] CLASS INSTANCE
+			* [ ] MONAD
+			* [ ] FLIP FUNCTOR
+		- [ ] FUNCTION
+			* [ ] BASIC
+			* [ ] PRACTICAL
 * [ ] Control.Moffy.Internal.React
 * [ ] Control.Moffy.Internal.REact.Type
 * [ ] Control.Moffy.Handle
