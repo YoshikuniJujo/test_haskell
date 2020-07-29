@@ -99,6 +99,21 @@ Control.Moffy.Run
 				+ [x] Parallel
 				+ [x] Copies
 	+ [x] imports
+* [ ] Control.Moffy.Internal.Sig
+	+ [x] API
+		- [x] about adjustSig
+		- [x] structure
+		- [x] Adjust
+		- [x] Parallel
+		- [x] Copies
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
+* [ ] Control.Moffy.Internal.Sig.Type
+* [ ] Control.Moffy.Internal.React
+* [ ] Control.Moffy.Internal.REact.Type
+* [ ] Control.Moffy.Handle
+* [ ] Control.Moffy.Run
 
 ### Moffy library
 

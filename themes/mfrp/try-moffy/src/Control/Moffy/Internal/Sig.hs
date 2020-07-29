@@ -6,11 +6,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
 
 module Control.Moffy.Internal.Sig (
+	-- * Adjust
 	adjustSig,
-	-- * Repetition
-	spawn, parList,
-	-- * Parallel Composition
-	at, break, until, indexBy ) where
+	-- * Parallel
+	at, break, until, indexBy,
+	-- * Copies
+	spawn, parList ) where
 
 import Prelude hiding (repeat, until, break)
 
