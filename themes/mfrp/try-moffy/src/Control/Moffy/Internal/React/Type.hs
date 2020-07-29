@@ -28,18 +28,19 @@ import Numeric.Natural (Natural)
 
 ---------------------------------------------------------------------------
 
--- * REACT AND HANDLE
+-- * REACT
+--	+ TYPE
+--	+ NEVER AND AWAIT
+-- * HANDLE
 -- * THREAD ID
--- * AWAIT AND NEVER
 
 ---------------------------------------------------------------------------
--- REACT AND HANDLE
+-- REACT
 ---------------------------------------------------------------------------
+
+-- TYPE
 
 type React s es a = Freer s FTCQueue TaggableFun (Rct es) a
-
-type Handle m es = EvReqs es -> m (EvOccs es)
-type HandleSt st m es = EvReqs es -> st -> m (EvOccs es, st)
 
 data Rct es a where
 	Never :: Rct es a; GetThreadId :: Rct es ThreadId
@@ -49,6 +50,24 @@ type EvReqs (es :: Set Type) = OneOrMore es
 type EvOccs (es :: Set Type) = OneOrMore (Occurred :$: es)
 
 class (Numbered e, Selectable e) => Request e where data Occurred e
+
+-- NEVER AND AWAIT
+
+never :: React s es a
+never = pure =<<< Never
+
+await :: a -> (Occurred a -> b) -> React s (Singleton a) b
+await r f = Await (Singleton r) >>>= \(Singleton o) -> pure $ f o
+
+await' :: a -> (ThreadId -> Occurred a -> b) -> React s (Singleton a) b
+await' r f = await r . f =<<< GetThreadId
+
+---------------------------------------------------------------------------
+-- HANDLE
+---------------------------------------------------------------------------
+
+type Handle m es = EvReqs es -> m (EvOccs es)
+type HandleSt st m es = EvReqs es -> st -> m (EvOccs es, st)
 
 ---------------------------------------------------------------------------
 -- THREAD ID
@@ -62,16 +81,3 @@ rootThreadId = ThreadId 0 0
 forkThreadId :: React s es (ThreadId, ThreadId)
 forkThreadId = GetThreadId >>>= \(ThreadId n i) ->
 	pure (ThreadId n $ i + 1, ThreadId (n `setBit` i) $ i + 1)
-
----------------------------------------------------------------------------
--- AWAIT AND NEVER
----------------------------------------------------------------------------
-
-await :: a -> (Occurred a -> b) -> React s (Singleton a) b
-await r f = pure . f . (\(Singleton x) -> x) =<<< Await (Singleton r)
-
-await' :: a -> (ThreadId -> Occurred a -> b) -> React s (Singleton a) b
-await' r f = await r . f =<<< GetThreadId
-
-never :: React s es a
-never = pure =<<< Never

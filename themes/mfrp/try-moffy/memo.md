@@ -150,7 +150,7 @@ Control.Moffy.Run
 		- [x] FIRST
 		- [x] PAR
 		- [x] UPDATE
-* [ ] Control.Moffy.Internal.REact.Type
+* [x] Control.Moffy.Internal.React.Type
 	+ [x] API
 		- [x] structure
 		- [x] React
@@ -158,11 +158,24 @@ Control.Moffy.Run
 			* [x] Never and Await
 		- [x] Handle
 		- [x] ThreadId
+	+ [x] imports
+	+ [x] structure
+	+ [x] body
+		- [x] REACT
+			* [x] TYPE
+			* [x] NEVER AND AWAIT
+		- [x] HANDLE
+		- [x] THREAD ID
+* [ ] Control.Moffy.Handle
+	+ [ ] API
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body
-* [ ] Control.Moffy.Handle
 * [ ] Control.Moffy.Run
+	+ [ ] API
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
 
 ### Moffy library
 
