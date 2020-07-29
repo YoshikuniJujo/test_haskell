@@ -11,8 +11,7 @@ module Control.Moffy.Handle (
 	-- ** Plain
 	Handle, Handle', retry, expand, before, merge,
 	-- ** With State
-	HandleSt, HandleSt', retrySt, expandSt, beforeSt, mergeSt
-	) where
+	HandleSt, HandleSt', retrySt, expandSt, beforeSt, mergeSt ) where
 
 import Control.Arrow (first)
 import Control.Moffy.Internal.React.Type (
@@ -24,8 +23,18 @@ import qualified Data.OneOrMore as OOM
 
 ---------------------------------------------------------------------------
 
+-- * CONSTRAINT
 -- * PLAIN
 -- * WITH STATE
+
+---------------------------------------------------------------------------
+-- CONSTRAINT
+---------------------------------------------------------------------------
+
+type ExpandableHandle es es' = (Collapsable es' es, ExpandableOccurred es es')
+type ExpandableOccurred es es' = Expandable (Occurred :$: es) (Occurred :$: es')
+type MergeableOccurred es es' mrg =
+	Mergeable (Occurred :$: es) (Occurred :$: es') (Occurred :$: mrg)
 
 ---------------------------------------------------------------------------
 -- PLAIN
@@ -40,10 +49,6 @@ collapse :: (Applicative m, Collapsable es' es) =>
 	Handle' m es -> EvReqs es' -> m (Maybe (EvOccs es))
 collapse hdl = maybe (pure Nothing) hdl . OOM.collapse
 
-type ExpandableHandle es es' = (Collapsable es' es, ExpandableOccurred es es')
-
-type ExpandableOccurred es es' = Expandable (Occurred :$: es) (Occurred :$: es')
-
 expand :: (Applicative m, ExpandableHandle es es') =>
 	Handle' m es -> Handle' m es'
 expand hdl = ((OOM.expand <$>) <$>) . collapse hdl
@@ -55,9 +60,6 @@ before :: (
 	ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es') ) =>
 	Handle' m es -> Handle' m es' -> Handle' m (es :+: es')
 before (expand -> l) (expand -> r) rqs = maybe (r rqs) (pure . Just) =<< l rqs
-
-type MergeableOccurred es es' mrg =
-	Mergeable (Occurred :$: es) (Occurred :$: es') (Occurred :$: mrg)
 
 infixr 6 `merge`
 
@@ -75,13 +77,13 @@ merge (collapse -> l) (collapse -> r) rqs = merge' <$> l rqs <*> r rqs
 type HandleSt' st st' m es = EvReqs es -> st -> m (Maybe (EvOccs es), st')
 
 retrySt :: Monad m => HandleSt' st st m es -> HandleSt st m es
-retrySt hdl rqs st = hdl rqs st >>= \(mocc, st') ->
-	maybe (retrySt hdl rqs st') (pure . (, st')) mocc
+retrySt hdl rqs st = hdl rqs st >>= \(mo, st') ->
+	maybe (retrySt hdl rqs st') (pure . (, st')) mo
 
 collapseSt :: (Applicative m, Collapsable es' es) =>
-	HandleSt' st st' m es -> (st -> m st') -> EvReqs es' -> st ->
-	m (Maybe (EvOccs es), st')
-collapseSt hdl ot (OOM.collapse -> rqs) = maybe (((Nothing ,) <$>) . ot) hdl rqs
+	HandleSt' st st' m es -> (st -> m st') ->
+	EvReqs es' -> st -> m (Maybe (EvOccs es), st')
+collapseSt hdl ot = maybe (((Nothing ,) <$>) . ot) hdl . OOM.collapse
 
 expandSt :: (Applicative m, ExpandableHandle es es') =>
 	HandleSt' st st' m es -> (st -> m st') -> HandleSt' st st' m es'
@@ -94,8 +96,8 @@ beforeSt :: (
 	HandleSt' st st' m es -> (st -> m st') ->
 	HandleSt' st' st'' m es' -> (st' -> m st'') ->
 	HandleSt' st st'' m (es :+: es')
-beforeSt l otl r otr rqs st = expandSt l otl rqs st >>= \(mocc, st') ->
-	maybe (expandSt r otr rqs st') ((<$> otr st') . (,) . Just) mocc
+beforeSt l otl r otr rqs st = expandSt l otl rqs st >>= \(mo, st') ->
+	maybe (expandSt r otr rqs st') ((<$> otr st') . (,) . Just) mo
 
 mergeSt :: (
 	Monad m,
@@ -104,5 +106,5 @@ mergeSt :: (
 	HandleSt' st st' m es -> (st -> m st') ->
 	HandleSt' st' st'' m es' -> (st' -> m st'') ->
 	HandleSt' st st'' m (es :+: es')
-mergeSt l otl r otr rqs st = collapseSt l otl rqs st >>= \(mocc, st') ->
-	first (mocc `merge'`) <$> collapseSt r otr rqs st'
+mergeSt l otl r otr rqs st = collapseSt l otl rqs st >>= \(mo, st') ->
+	first (mo `merge'`) <$> collapseSt r otr rqs st'
