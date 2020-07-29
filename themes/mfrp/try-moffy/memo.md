@@ -74,7 +74,7 @@ Control.Moffy.Run
 
 #### refactoring
 
-* [ ] Control.Moffy
+* [x] Control.Moffy
 	+ [x] API
 		- [x] adjustSig
 			* [x] structure
@@ -98,9 +98,7 @@ Control.Moffy.Run
 				+ [x] Traverse
 				+ [x] Parallel
 				+ [x] Copies
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
+	+ [x] imports
 
 ### Moffy library
 
