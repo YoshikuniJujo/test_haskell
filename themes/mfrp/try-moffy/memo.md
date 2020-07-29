@@ -122,8 +122,12 @@ Control.Moffy.Run
 			* [x] PAIRS
 			* [x] PAUSE
 * [ ] Control.Moffy.Internal.Sig.Type
-	+ [ ] API
-	+ [ ] imports
+	+ [x] API
+		- [x] Type
+		- [x] Function
+			* [x] Basic
+			* [x] Practical
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] Control.Moffy.Internal.React

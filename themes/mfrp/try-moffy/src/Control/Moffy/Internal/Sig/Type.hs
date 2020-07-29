@@ -16,9 +16,8 @@ module Control.Moffy.Internal.Sig.Type (
 import Prelude hiding (repeat, scanl)
 
 import Control.Monad (forever, (<=<))
-import Data.Type.Flip (Flip(..), (<$%>))
-
 import Control.Moffy.Internal.React.Type (React, never)
+import Data.Type.Flip (Flip(..), (<$%>))
 
 ---------------------------------------------------------------------------
 
