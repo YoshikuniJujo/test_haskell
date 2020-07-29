@@ -137,16 +137,30 @@ Control.Moffy.Run
 		- [x] FUNCTION
 			* [x] BASIC
 			* [x] PRACTICAL
-* [ ] Control.Moffy.Internal.React
+* [x] Control.Moffy.Internal.React
 	+ [x] API
 		- [x] structure
 		- [x] Class
 		- [x] Constraint
 		- [x] Function
 	+ [x] imports
+	+ [x] structure
+	+ [x] body
+		- [x] ADJUST
+		- [x] FIRST
+		- [x] PAR
+		- [x] UPDATE
+* [ ] Control.Moffy.Internal.REact.Type
+	+ [x] API
+		- [x] structure
+		- [x] React
+			* [x] Type
+			* [x] Never and Await
+		- [x] Handle
+		- [x] ThreadId
+	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body
-* [ ] Control.Moffy.Internal.REact.Type
 * [ ] Control.Moffy.Handle
 * [ ] Control.Moffy.Run
 
