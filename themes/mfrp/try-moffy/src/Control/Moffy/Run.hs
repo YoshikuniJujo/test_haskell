@@ -15,18 +15,19 @@ import Control.Monad.Freer.Par (Freer(..), pattern (:>>=), qApp)
 import Control.Moffy.Internal.Sig.Type (Sig(..), isig)
 import Control.Moffy.Internal.React (Adjustable, adjust)
 import Control.Moffy.Internal.React.Type (
-	Handle, HandleSt, React, Rct(..), ThreadId, rootThreadId )
+	React, Rct(..), Handle, HandleSt, ThreadId, rootThreadId )
 
 ---------------------------------------------------------------------------
 
--- * RUN SIG
--- * RUN REACT
+-- * SIG
+-- * REACT
 
 ---------------------------------------------------------------------------
--- RUN SIG
+-- SIG
 ---------------------------------------------------------------------------
 
-interpret :: (Monad m, Adjustable es es') => Handle m es' -> (a -> m ()) -> Sig s es a r -> m r
+interpret :: (Monad m, Adjustable es es') =>
+	Handle m es' -> (a -> m ()) -> Sig s es a r -> m r
 interpret hdl vw = go where
 	go (Sig s) = isig pure ((. go) . (>>) . vw) =<< interpretReact hdl s
 
@@ -37,7 +38,7 @@ interpretSt hdl st0 vw = (`go` st0) where
 		isig (pure . (, st')) ((. (`go` st')) . (>>) . vw) is
 
 ---------------------------------------------------------------------------
--- RUN REACT
+-- REACT
 ---------------------------------------------------------------------------
 
 interpretReact :: (Monad m, Adjustable es es') =>

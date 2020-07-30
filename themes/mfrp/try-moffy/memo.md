@@ -184,10 +184,13 @@ Control.Moffy.Run
 	+ [x] API
 		- [x] consider whether or not to return st in interpretSt
 		- [x] Type
-		- [x] Run
-	+ [ ] imports
-	+ [ ] structure
+		- [ ] Run
+			* [ ] st -> Foo -> m (r, st) ===> Foo -> st -> m (r, st)
+	+ [x] imports
+	+ [x] structure
 	+ [ ] body
+		- [ ] SIG
+		- [ ] REACT
 
 ### Moffy library
 
