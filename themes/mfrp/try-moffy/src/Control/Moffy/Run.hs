@@ -32,9 +32,9 @@ interpret hdl vw = go where
 	go (Sig s) = isig pure ((. go) . (>>) . vw) =<< interpretReact hdl s
 
 interpretSt :: (Monad m, Adjustable es es') =>
-	HandleSt st m es' -> st -> (a -> m ()) -> Sig s es a r -> m (r, st)
-interpretSt hdl st0 vw = (`go` st0) where
-	Sig s `go` st = interpretReactSt hdl st s >>= \(is, st') ->
+	HandleSt st m es' -> (a -> m ()) -> Sig s es a r -> st -> m (r, st)
+interpretSt hdl vw sg st0 = (go sg st0) where
+	Sig s `go` st = interpretReactSt hdl s st >>= \(is, st') ->
 		isig (pure . (, st')) ((. (`go` st')) . (>>) . vw) is
 
 ---------------------------------------------------------------------------
@@ -53,8 +53,8 @@ runReact h (GetThreadId :>>= c) t = runReact h (c `qApp` t) t
 runReact h (Await rqs :>>= c) t = flip (runReact h) t . (c `qApp`) =<< h rqs
 
 interpretReactSt :: (Monad m, Adjustable es es') =>
-	HandleSt st m es' -> st -> React s es a -> m (a, st)
-interpretReactSt hdl st r = (fst `first`) <$> runReactSt hdl st (adjust r) rootThreadId
+	HandleSt st m es' -> React s es a -> st -> m (a, st)
+interpretReactSt hdl r st = (fst `first`) <$> runReactSt hdl st (adjust r) rootThreadId
 
 runReactSt :: Monad m =>
 	HandleSt st m es -> st -> React s es a -> ThreadId ->

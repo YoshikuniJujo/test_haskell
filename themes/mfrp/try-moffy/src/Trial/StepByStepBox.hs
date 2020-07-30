@@ -65,7 +65,7 @@ doubler = do
 tryDoubler :: IO ()
 tryDoubler = do
 	f <- openField "TRY DOUBLER" [buttonPressMask, exposureMask]
-	void . (interpretReactSt (handleBoxes 0.05 f) InitMode doubler `runStateT`) . systemToTAITime =<< getSystemTime
+	void . (interpretReactSt (handleBoxes 0.05 f) doubler InitMode `runStateT`) . systemToTAITime =<< getSystemTime
 	closeField f
 
 data Color = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
@@ -79,7 +79,7 @@ cycleColor = cc . cycle $ fromList [Red .. Magenta] where
 tryCycleColor :: IO ()
 tryCycleColor = do
 	f <- openField "TRY CYCLE COLOR" [buttonPressMask, exposureMask]
-	void . (interpretSt (handleBoxes 0.05 f) InitMode (liftIO . print) cycleColor `runStateT`) . systemToTAITime =<< getSystemTime
+	void . (interpretSt (handleBoxes 0.05 f) (liftIO . print) cycleColor InitMode `runStateT`) . systemToTAITime =<< getSystemTime
 	closeField f
 
 mousePos :: Sig s (Singleton MouseMove) Point ()
@@ -88,7 +88,7 @@ mousePos = repeat mouseMove
 tryMousePos :: IO ()
 tryMousePos = do
 	f <- openField "TRY MOUSE POS" [pointerMotionMask, exposureMask]
-	void . (interpretSt (handleBoxes 0.05 f) InitMode (liftIO . print) mousePos `runStateT`) . systemToTAITime =<< getSystemTime
+	void . (interpretSt (handleBoxes 0.05 f) (liftIO . print) mousePos InitMode `runStateT`) . systemToTAITime =<< getSystemTime
 	closeField f
 
 curRect :: Point -> Sig s (MouseMove :- 'Nil) Rect ()
@@ -104,7 +104,7 @@ tryReactG ttl sig = do
 	f <- openField ttl [
 		pointerMotionMask, buttonPressMask, buttonReleaseMask,
 		exposureMask ]
-	((r, _), _) <- (interpretReactSt (handleBoxes 0.05 f) InitMode sig `runStateT`)
+	((r, _), _) <- (interpretReactSt (handleBoxes 0.05 f) sig InitMode `runStateT`)
 			. systemToTAITime =<< getSystemTime
 	r <$ closeField f
 
@@ -113,8 +113,8 @@ trySigGRect ttl sig = do
 	f <- openField ttl [
 		pointerMotionMask, buttonPressMask, buttonReleaseMask,
 		exposureMask ]
-	(r, _) <- (interpretSt (handleBoxes 0.05 f) InitMode
-				(liftIO . withFlush f . drawRect f (colorToPixel Red)) sig `runStateT`)
+	(r, _) <- (interpretSt (handleBoxes 0.05 f)
+				(liftIO . withFlush f . drawRect f (colorToPixel Red)) sig InitMode `runStateT`)
 			. systemToTAITime =<< getSystemTime
 	r <$ closeField f
 
@@ -155,8 +155,8 @@ tryPosInside :: IO (Either Point ())
 tryPosInside = do
 	f <- openField "TRY POS INSIDE" [pointerMotionMask, exposureMask]
 	drawRect f (colorToPixel Red) $ Rect (200, 150) (400, 300)
-	((r, _), _) <- (interpretReactSt (handleBoxes 0.05 f) InitMode
-			(posInside (Rect (200, 150) (400, 300)) mousePos) `runStateT`)
+	((r, _), _) <- (interpretReactSt (handleBoxes 0.05 f)
+			(posInside (Rect (200, 150) (400, 300)) mousePos) InitMode `runStateT`)
 		. systemToTAITime =<< getSystemTime
 	r <$ closeField f
 
@@ -195,8 +195,8 @@ trySigGBox ttl sig = do
 	f <- openField ttl [
 		pointerMotionMask, buttonPressMask, buttonReleaseMask,
 		exposureMask ]
-	(r, _) <- (interpretSt (handleBoxes 0.05 f) InitMode
-				(liftIO . withFlush f . drawBox f) sig `runStateT`)
+	(r, _) <- (interpretSt (handleBoxes 0.05 f)
+				(liftIO . withFlush f . drawBox f) sig InitMode `runStateT`)
 			. systemToTAITime =<< getSystemTime
 	r <$ closeField f
 
@@ -227,8 +227,8 @@ trySigGBoxes ttl sig = do
 	f <- openField ttl [
 		pointerMotionMask, buttonPressMask, buttonReleaseMask,
 		exposureMask ]
-	(r, _) <- (interpretSt (handleBoxes 0.05 f) InitMode
-				(liftIO . drawBoxes f) sig `runStateT`)
+	(r, _) <- (interpretSt (handleBoxes 0.05 f)
+				(liftIO . drawBoxes f) sig InitMode `runStateT`)
 			. systemToTAITime =<< getSystemTime
 	r <$ closeField f
 
