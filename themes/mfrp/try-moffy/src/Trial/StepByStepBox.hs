@@ -94,7 +94,7 @@ tryMousePos = do
 curRect :: Point -> Sig s (MouseMove :- 'Nil) Rect ()
 curRect p1 = Rect p1 <$%> mousePos
 
-tryCurRect :: IO ()
+tryCurRect :: IO ((), Mode)
 tryCurRect = trySigGRect "TRY CUR RECT" $ curRect (200, 150)
 
 data Rect = Rect { leftup :: Point, rightdown :: Point  } deriving Show
@@ -108,7 +108,7 @@ tryReactG ttl sig = do
 			. systemToTAITime =<< getSystemTime
 	r <$ closeField f
 
-trySigGRect :: Adjustable es BoxEv => String -> Sig s es Rect r -> IO r
+trySigGRect :: Adjustable es BoxEv => String -> Sig s es Rect r -> IO (r, Mode)
 trySigGRect ttl sig = do
 	f <- openField ttl [
 		pointerMotionMask, buttonPressMask, buttonReleaseMask,
@@ -140,7 +140,7 @@ wiggleRect (Rect lu rd) = (<$%> elapsed) \t -> let
 	dx = round (sin (fromRational (toRational t) * 5) * 15 :: Double) in
 	Rect ((+ dx) `Arr.first` lu) ((+ dx) `Arr.first` rd)
 
-tryWiggleRect :: IO ()
+tryWiggleRect :: IO ((), Mode)
 tryWiggleRect = trySigGRect "TRY WIGGLE RECT" . wiggleRect $ Rect (200, 150) (400, 300)
 
 posInside :: Rect -> Sig s es Point y -> React s es (Either Point y)
@@ -171,7 +171,7 @@ completeRect :: Point -> Sig s (MouseUp :- MouseMove :- 'Nil) Rect (Maybe Rect)
 completeRect p1 =
 	either (const Nothing) (Just . fst) <$> curRect p1 `until` leftUp
 
-tryCompleteRect :: IO (Maybe Rect)
+tryCompleteRect :: IO (Maybe Rect, Mode)
 tryCompleteRect = trySigGRect "TRY COMPLETE RECT" $ completeRect (200, 150)
 
 defineRect :: Sig s (MouseDown :- MouseUp :- MouseMove :- 'Nil) Rect Rect
@@ -180,17 +180,17 @@ defineRect = waitFor (adjust firstPoint) >>= \case
 	Just p1 -> fromMaybe (error "never occur") <$> adjustSig (completeRect p1)
 
 tryDefineRect :: IO Rect
-tryDefineRect = trySigGRect "TRY DEFINE RECT" defineRect
+tryDefineRect = fst <$> trySigGRect "TRY DEFINE RECT" defineRect
 
 chooseBoxColor :: Rect -> Sig s (MouseDown :- DeltaTime :- 'Nil) Box ()
 chooseBoxColor r = Box <$%> adjustSig (wiggleRect r) <*%> adjustSig cycleColor
 
 data Box = Box Rect Color deriving Show
 
-tryChooseBoxColor :: IO ()
+tryChooseBoxColor :: IO ((), Mode)
 tryChooseBoxColor = trySigGBox "TRY CHOOSE BOX COLOR" . chooseBoxColor $ Rect (200, 150) (400, 300)
 
-trySigGBox :: Adjustable es BoxEv => String -> Sig s es Box r -> IO r
+trySigGBox :: Adjustable es BoxEv => String -> Sig s es Box r -> IO (r, Mode)
 trySigGBox ttl sig = do
 	f <- openField ttl [
 		pointerMotionMask, buttonPressMask, buttonReleaseMask,
@@ -214,7 +214,7 @@ box = (() <$) $ (`Box` Red) <$%> adjustSig defineRect >>= \r ->
 	adjustSig (chooseBoxColor r) >> waitFor (adjust $ drClickOn r)
 
 tryBox :: IO ()
-tryBox = trySigGBox "TRY BOX" box
+tryBox = fst <$> trySigGBox "TRY BOX" box
 
 newBoxes :: SigG s (ISigG s Box ()) ()
 newBoxes = spawn box
@@ -222,7 +222,7 @@ newBoxes = spawn box
 boxes :: SigG s [Box] ()
 boxes = () <$ parList newBoxes
 
-trySigGBoxes :: String -> SigG s [Box] r -> IO r
+trySigGBoxes :: String -> SigG s [Box] r -> IO (r, Mode)
 trySigGBoxes ttl sig = do
 	f <- openField ttl [
 		pointerMotionMask, buttonPressMask, buttonReleaseMask,

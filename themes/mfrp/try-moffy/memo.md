@@ -181,8 +181,10 @@ Control.Moffy.Run
 		- [x] PLAIN
 		- [x] WITH STATE
 * [ ] Control.Moffy.Run
-	+ [ ] API
-		- [ ] consider whether or not to return st in interpretSt
+	+ [x] API
+		- [x] consider whether or not to return st in interpretSt
+		- [x] Type
+		- [x] Run
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body

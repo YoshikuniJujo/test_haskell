@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, TupleSections #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,10 +31,10 @@ interpret hdl vw = go where
 	go (Sig s) = isig pure ((. go) . (>>) . vw) =<< interpretReact hdl s
 
 interpretSt :: (Monad m, Adjustable es es') =>
-	HandleSt st m es' -> st -> (a -> m ()) -> Sig s es a r -> m r
+	HandleSt st m es' -> st -> (a -> m ()) -> Sig s es a r -> m (r, st)
 interpretSt hdl st0 vw = (`go` st0) where
 	Sig s `go` st = interpretReactSt hdl st s >>= \(is, st') ->
-		isig pure ((. (`go` st')) . (>>) . vw) is
+		isig (pure . (, st')) ((. (`go` st')) . (>>) . vw) is
 
 ---------------------------------------------------------------------------
 -- RUN REACT
