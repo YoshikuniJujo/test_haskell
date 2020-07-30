@@ -12,6 +12,7 @@ todo
 	+ [x] package simple-field
 		- [x] about Event'
 	+ [ ] Control.Moffy
+		- [ ] consider whether or not to rename function `at'
 	+ [ ] module structure of Control.Moffy.Event.Key
 	+ [ ] Control.Moffy.Event.Key
 	+ [ ] Trial
