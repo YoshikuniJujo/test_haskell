@@ -162,7 +162,7 @@ tryPosInside = do
 
 firstPoint :: React s (MouseDown :- MouseMove :- 'Nil) (Maybe Point)
 firstPoint = (<$> mousePos `at` leftClick)
-	\case Left () -> Nothing; Right (p, ()) -> Just p
+	\case Left () -> Nothing; Right (p, ()) -> p
 
 tryFirstPoint :: IO (Maybe Point)
 tryFirstPoint = tryReactG "TRY FIRST POINT" firstPoint

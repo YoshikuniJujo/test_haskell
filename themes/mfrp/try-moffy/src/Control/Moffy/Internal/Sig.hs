@@ -87,12 +87,18 @@ infixr 7 `at`
 
 at :: Firstable es es' (ISig s (es :+: es') a r) r' =>
 	Sig s es a r -> React s es' r' ->
-	React s (es :+: es') (Either r (a, r'))
-(adjustSig -> l) `at` (adjust -> r) = res (l `pause` r) >>= \(Sig l', r') ->
-	(<$> l') \case
-		End x -> Left x
-		h :| _ -> case r' of
-			Pure y -> Right (h, y); _ :>>= _ -> error "never occur"
+	React s (es :+: es') (Either r (Maybe a, r'))
+(adjustSig -> Sig l) `at` (adjust -> r) = (l `par` r) >>= \case
+	(Pure l', r') -> (first Just <$>) <$> l' `iat` r'
+	(_, Pure y) -> pure $ Right (Nothing, y)
+	(_ :>>= _, _ :>>= _) -> error "never occur"
+
+iat :: (Update (ISig s es a r) r', Mergeable es es es) =>
+	ISig s es a r -> React s es r' -> React s es (Either r (a, r'))
+l `iat` r = ires (l `ipause` r) >>= \(l', r') -> pure case l' of
+	End x -> Left x
+	h :| _ -> case r' of
+		Pure y -> Right (h, y); _ :>>= _ -> error "never occur"
 
 -- BREAK AND UNTIL
 

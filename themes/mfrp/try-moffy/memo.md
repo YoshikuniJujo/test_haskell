@@ -11,8 +11,9 @@ todo
 * [ ] refactoring
 	+ [x] package simple-field
 		- [x] about Event'
-	+ [ ] Control.Moffy
-		- [ ] consider whether or not to rename function `at'
+	+ [x] Control.Moffy
+		- [x] consider whether or not to rename function `at'
+		- [x] correct action of function `at'
 	+ [ ] module structure of Control.Moffy.Event.Key
 	+ [ ] Control.Moffy.Event.Key
 	+ [ ] Trial
@@ -191,6 +192,10 @@ Control.Moffy.Run
 	+ [x] body
 		- [x] SIG
 		- [x] REACT
+* [x] Control.Moffy.Internal.Sig
+	+ [x] correct function at
+		- [x] define iat
+		- [x] use iat in at
 
 ### Moffy library
 
