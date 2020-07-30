@@ -1,21 +1,20 @@
 {-# LANGUAGE BlockArguments, TupleSections #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Run (
 	-- * Type
-	Sig, React, Handle, HandleSt,
+	Sig, React, Handle, HandleSt, St,
 	-- * Run
 	interpret, interpretSt, interpretReact, interpretReactSt ) where
 
-import Control.Arrow (first)
 import Control.Monad.Freer.Par (Freer(..), pattern (:>>=), qApp)
 import Control.Moffy.Internal.Sig.Type (Sig(..), isig)
 import Control.Moffy.Internal.React (Adjustable, adjust)
 import Control.Moffy.Internal.React.Type (
-	React, Rct(..), Handle, HandleSt, ThreadId, rootThreadId )
+	React, Rct(..), Handle, HandleSt, St, ThreadId, rootThreadId )
 
 ---------------------------------------------------------------------------
 
@@ -29,38 +28,35 @@ import Control.Moffy.Internal.React.Type (
 interpret :: (Monad m, Adjustable es es') =>
 	Handle m es' -> (a -> m ()) -> Sig s es a r -> m r
 interpret hdl vw = go where
-	go (Sig s) = isig pure ((. go) . (>>) . vw) =<< interpretReact hdl s
+	go (Sig r) = isig pure ((. go) . (>>) . vw) =<< interpretReact hdl r
 
 interpretSt :: (Monad m, Adjustable es es') =>
-	HandleSt st m es' -> (a -> m ()) -> Sig s es a r -> st -> m (r, st)
-interpretSt hdl vw sg st0 = (go sg st0) where
-	Sig s `go` st = interpretReactSt hdl s st >>= \(is, st') ->
-		isig (pure . (, st')) ((. (`go` st')) . (>>) . vw) is
+	HandleSt st m es' -> (a -> m ()) -> Sig s es a r -> St st m r
+interpretSt hdl vw = go where
+	Sig r `go` st = interpretReactSt hdl r st >>= \(i, st') ->
+		isig (pure . (, st')) ((. (`go` st')) . (>>) . vw) i
 
 ---------------------------------------------------------------------------
 -- REACT
 ---------------------------------------------------------------------------
 
 interpretReact :: (Monad m, Adjustable es es') =>
-	Handle m es' -> React s es a -> m a
-interpretReact hdl r = fst <$> runReact hdl (adjust r) rootThreadId
+	Handle m es' -> React s es r -> m r
+interpretReact hdl (adjust -> r) = run hdl r rootThreadId
 
-runReact ::
-	Monad m => Handle m es -> React s es a -> ThreadId -> m (a, ThreadId)
-runReact _ (Pure x) t = pure (x, t)
-runReact _ (Never :>>= _) _ = error "never end"
-runReact h (GetThreadId :>>= c) t = runReact h (c `qApp` t) t
-runReact h (Await rqs :>>= c) t = flip (runReact h) t . (c `qApp`) =<< h rqs
+run :: Monad m => Handle m es -> React s es r -> ThreadId -> m r
+run _ (Pure x) _ = pure x
+run _ (Never :>>= _) _ = error "never end"
+run hdl (GetThreadId :>>= c) t = run hdl (c `qApp` t) t
+run hdl (Await rqs :>>= c) t = flip (run hdl) t . (c `qApp`) =<< hdl rqs
 
 interpretReactSt :: (Monad m, Adjustable es es') =>
-	HandleSt st m es' -> React s es a -> st -> m (a, st)
-interpretReactSt hdl r st = (fst `first`) <$> runReactSt hdl st (adjust r) rootThreadId
+	HandleSt st m es' -> React s es r -> St st m r
+interpretReactSt hdl (adjust -> r) = runSt hdl r rootThreadId
 
-runReactSt :: Monad m =>
-	HandleSt st m es -> st -> React s es a -> ThreadId ->
-	m ((a, ThreadId), st)
-runReactSt _ st (Pure x) t = pure ((x, t), st)
-runReactSt _ _ (Never :>>= _) _ = error "never end"
-runReactSt h st (GetThreadId :>>= c) t = runReactSt h st (c `qApp` t) t
-runReactSt h st (Await rqs :>>= c) t =
-	h rqs st >>= \(x, st') -> runReactSt h st' (c `qApp` x) t
+runSt :: Monad m => HandleSt st m es -> React s es r -> ThreadId -> St st m r
+runSt _ (Pure x) _ st = pure (x, st)
+runSt _ (Never :>>= _) _ _ = error "never end"
+runSt hdl (GetThreadId :>>= c) t st = runSt hdl (c `qApp` t) t st
+runSt hdl (Await rqs :>>= c) t st =
+	hdl rqs st >>= \(x, st') -> runSt hdl (c `qApp` x) t st'

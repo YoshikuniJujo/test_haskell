@@ -180,7 +180,7 @@ Control.Moffy.Run
 		- [x] CONSTRAINT
 		- [x] PLAIN
 		- [x] WITH STATE
-* [ ] Control.Moffy.Run
+* [x] Control.Moffy.Run
 	+ [x] API
 		- [x] consider whether or not to return st in interpretSt
 		- [x] Type
@@ -188,9 +188,9 @@ Control.Moffy.Run
 			* [x] st -> Foo -> m (r, st) ===> Foo -> st -> m (r, st)
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
-		- [ ] SIG
-		- [ ] REACT
+	+ [x] body
+		- [x] SIG
+		- [x] REACT
 
 ### Moffy library
 
