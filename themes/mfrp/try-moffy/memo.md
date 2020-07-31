@@ -32,6 +32,7 @@ todo
 	+ [ ] Moffy library
 	+ [ ] Moffy base
 	+ [ ] Trials
+* [ ] move time event to Moffy library
 * [ ] separate
 	+ [ ] Trial
 	+ [ ] Data.OneOrMore (with Data.Type.Set)
@@ -241,7 +242,7 @@ Control.Moffy.Handle
 	+ [x] imports
 * [ ] Control.Moffy.Event.Lock.Internal
 	+ [x] API
-	+ [ ] imports
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] Control.Moffy.Handle.Lock

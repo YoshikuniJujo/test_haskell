@@ -18,12 +18,11 @@ module Control.Moffy.Event.Lock.Internal (
 	-- * Event
 	newLockId, withLock ) where
 
-import Data.Type.Set (Set(Nil), Singleton, (:-), (:+:), numbered)
-import Data.OneOrMore (Selectable(..))
-import Data.Bool (bool)
-
 import Control.Moffy (React, Request(..), Adjustable, adjust, await)
 import Control.Moffy.Event.ThreadId (GetThreadId, ThreadId, getThreadId)
+import Data.Type.Set (numbered, pattern Nil, Singleton, (:-), (:+:))
+import Data.OneOrMore (Selectable(..))
+import Data.Bool (bool)
 
 ---------------------------------------------------------------------------
 
