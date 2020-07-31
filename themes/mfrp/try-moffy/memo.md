@@ -256,8 +256,20 @@ Control.Moffy.Handle
 	+ [x] imports
 	+ [x] structure
 	+ [x] body
-* [ ] Control.Moffy.Event.Random
+* [x] separate Control.Moffy.Event.Random to ....Internal
+* [x] Control.Moffy.Event.Random
+	+ [x] API
+	+ [x] imports
+* [ ] Control.Moffy.Event.Random.Internal
+	+ [ ] API
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
 * [ ] Control.Moffy.Handle.Random
+	+ [ ] API
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
 * [ ] Control.Moffy.Event.Delete
 * [ ] Control.Moffy.Event.Key
 * [ ] Control.Moffy.Event.Key.Internal

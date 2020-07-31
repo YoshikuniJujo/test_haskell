@@ -12,7 +12,7 @@ module Control.Moffy.Handle.Random (
 
 import Control.Monad.State (StateT, gets, modify)
 import Control.Moffy.Handle (Handle', merge)
-import Control.Moffy.Event.Random (
+import Control.Moffy.Event.Random.Internal (
 	RandomEv,
 	StoreRandomGen(..), pattern OccStoreRandomGen,
 	LoadRandomGen, pattern OccLoadRandomGen )
