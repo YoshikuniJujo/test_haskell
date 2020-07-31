@@ -15,7 +15,7 @@ import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
 	
 import Control.Moffy.Handle.XField
-import Trial.Boxes.Event (BoxEv, TimeEv, TryWait(..), Occurred(..))
+import Trial.Boxes.Event (BoxEv, TimeEv, TryWait(..), pattern OccDeltaTime, pattern OccTryWait)
 import Field (Field)
 
 ---------------------------------------------------------------------------

@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -7,7 +8,7 @@
 module Trial.Boxes.Event (
 	-- * GENERAL
 	SigG, ISigG,
-	ReactG, BoxEv, Occurred(..),
+	ReactG, BoxEv, pattern OccDeltaTime, pattern OccTryWait,
 	-- * TIME
 	TimeEv, TryWait(..), sleep, DeltaTime(..), deltaTime,
 	-- * MOUSE
