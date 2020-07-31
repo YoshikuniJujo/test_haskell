@@ -251,7 +251,11 @@ Control.Moffy.Handle
 			* [x] GET LOCK
 			* [x] UNLOCK
 		- [x] WITH LOCK
-* [ ] Control.Moffy.Handle.Lock
+* [x] Control.Moffy.Handle.Lock
+	+ [x] API
+	+ [x] imports
+	+ [x] structure
+	+ [x] body
 * [ ] Control.Moffy.Event.Random
 * [ ] Control.Moffy.Handle.Random
 * [ ] Control.Moffy.Event.Delete

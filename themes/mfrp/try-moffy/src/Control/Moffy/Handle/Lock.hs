@@ -11,10 +11,10 @@ module Control.Moffy.Handle.Lock (
 	-- * Handle
 	handleLock ) where
 
-import Control.Moffy.Handle (Handle', merge)
 import Control.Moffy.Event.Lock.Internal (
 	LockEv, LockId(..), NewLockId(..), pattern OccNewLockId,
 	GetLock(..), pattern OccGetLock, Unlock(..), pattern OccUnlock )
+import Control.Moffy.Handle (Handle', merge)
 import Control.Monad.State (StateT, gets, modify)
 import Data.Type.Set (Singleton)
 import Data.OneOrMore (pattern Singleton)
@@ -43,8 +43,8 @@ handleLock = handleNewLockId `merge` handleGetLock `merge` handleUnlock
 
 handleNewLockId ::
 	(LockState s, Monad m) => Handle' (StateT s m) (Singleton NewLockId)
-handleNewLockId (Singleton (NewLockIdReq ti)) = gets getNextLockId >>= \i ->
-	Just (Singleton $ OccNewLockId (LockId i) ti)
+handleNewLockId (Singleton (NewLockIdReq t)) = gets getNextLockId >>= \i ->
+	Just (Singleton $ OccNewLockId (LockId i) t)
 		<$ modify (`putNextLockId` (i + 1))
 
 handleGetLock ::
