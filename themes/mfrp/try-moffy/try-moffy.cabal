@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9736a0117cd7e7742a73debf1edd01d0c0e95e6fb017d5f8c9a04ba17cc25ab4
+-- hash: b85adeae86e0298bc94e22fdfc9ffb0abe790c4b01eba8f0c53bcb6b88a81a3e
 
 name:           try-moffy
 version:        0.1.0.0
@@ -61,6 +61,7 @@ library
       Data.Type.Set.Internal
       Trial.Boxes.Event
       Trial.Boxes.Handle
+      Trial.Boxes.Handle.TimeEv
       Trial.CheckRandom
       Trial.CheckSharing
       Trial.CheckSharing.EvInt

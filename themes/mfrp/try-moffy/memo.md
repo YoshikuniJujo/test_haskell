@@ -278,6 +278,11 @@ Control.Moffy.Handle
 	+ [x] structure
 	+ [x] body
 * [ ] separate time event from boxes
+	+ [x] separate Trial.Boxes.Handle.TimeEv from Trial.Boxes.Handle
+	+ [ ] moddify Trial.Boxes.Handle.TimeEv
+	+ [ ] refactor Trial.Boxes.Handle.TimeEv
+	+ [ ] refactor Trial.Boxes.Event
+	+ [ ] others
 * [ ] Control.Moffy.Event.Delete
 * [ ] Control.Moffy.Event.Key
 * [ ] Control.Moffy.Event.Key.Internal

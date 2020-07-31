@@ -1,59 +1,23 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, PatternSynonyms #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.Boxes.Handle (Mode(InitMode), handleBoxes) where
 
-import Control.Concurrent
 import Control.Moffy.Handle hiding (expand)
-import Control.Monad.State (StateT, get, put, lift, liftIO)
-import Data.OneOrMore (project, pattern Singleton, (>-), expand)
+import Control.Monad.State (StateT)
 import Data.Time (DiffTime)
-import Data.Time.Clock.System (getSystemTime, systemToTAITime)
-import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
+import Data.Time.Clock.TAI (AbsoluteTime)
 	
 import Control.Moffy.Handle.XField
-import Trial.Boxes.Event (BoxEv, TimeEv, TryWait(..), pattern OccDeltaTime, pattern OccTryWait)
+import Trial.Boxes.Event (BoxEv)
 import Field (Field)
+
+import Trial.Boxes.Handle.TimeEv
 
 ---------------------------------------------------------------------------
 
-data Mode = InitMode | WaitMode AbsoluteTime deriving Show
-
-handleBoxes :: DiffTime -> Field -> HandleSt Mode (StateT AbsoluteTime IO)  BoxEv
-handleBoxes prd f rqs = (`retrySt` rqs) \rqs' -> \case
-	InitMode -> (rqs' `handleInit` (prd, f)); WaitMode now -> (rqs' `handleWait` now)
-
-handleInit :: HandleSt' (DiffTime, Field) Mode (StateT AbsoluteTime IO) BoxEv
-handleInit = mergeSt
-	handleMouse' (\(prd, _) -> liftIO . threadDelay . round $ prd * 1000000)
-	handleNow (\_ -> InitMode <$ (put =<< lift getTaiTime))
-
-handleMouse' :: HandleSt' (DiffTime, Field) () (StateT AbsoluteTime IO) GuiEv
-handleMouse' reqs (prd, f) = lift $ (, ()) <$> handle (Just prd) f reqs
-
-handleNow :: HandleSt' () Mode (StateT AbsoluteTime IO) TimeEv
-handleNow reqs () = (reqs `handleTime`) =<< lift getTaiTime
-
-getTaiTime :: IO AbsoluteTime
-getTaiTime = systemToTAITime <$> getSystemTime
-
-handleWait :: Monad m =>
-	HandleSt' AbsoluteTime Mode (StateT AbsoluteTime m) BoxEv
-handleWait = expandSt handleTime ((InitMode <$) . put)
-
-handleTime :: Monad m =>
-	HandleSt' AbsoluteTime Mode (StateT AbsoluteTime m) TimeEv
-handleTime reqs now = get >>= \lst -> do
-	let	dt = now `diffAbsoluteTime` lst
-		odt = Singleton $ OccDeltaTime dt
-	case project reqs of
-		Just (TryWaitReq t)
-			| t < dt -> (Just $ OccTryWait t >- odt', WaitMode now)
-				<$ put (t `addAbsoluteTime` lst)
-			| otherwise -> (Just $ OccTryWait dt >- odt, InitMode)
-				<$ put now
-			where odt' = Singleton $ OccDeltaTime t
-		Nothing -> (Just . expand $ odt, InitMode) <$ put now
+handleBoxes :: DiffTime -> Field -> HandleSt Mode (StateT AbsoluteTime IO) BoxEv
+handleBoxes = handleTimeEvPlus $ handle . Just
