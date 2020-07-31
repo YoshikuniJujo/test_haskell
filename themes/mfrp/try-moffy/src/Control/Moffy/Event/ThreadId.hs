@@ -8,9 +8,10 @@
 module Control.Moffy.Event.ThreadId (
 	GetThreadId, pattern OccGetThreadId, ThreadId, getThreadId ) where
 
-import Control.Moffy.Internal.React.Type (
-	React, Request(Occurred), ThreadId, await' )
+import Control.Moffy.Internal.React.Type (React, Request(..), ThreadId, await')
 import Data.Type.Set (numbered, Singleton)
+
+---------------------------------------------------------------------------
 
 data GetThreadId = GetThreadIdReq deriving (Show, Eq, Ord)
 numbered 64 [t| GetThreadId |]

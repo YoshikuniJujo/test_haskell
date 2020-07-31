@@ -68,6 +68,13 @@ Control.Moffy.Handle
 Control.Moffy.Run
   +- Control.Moffy.Internal.Sig.Type
   +- Control.Moffy.Internal.React.Type
+
+Control.Moffy.Event.ThreadId
+  +- Control.Moffy.Internal.React.Type
+
+Control.Moffy.Handle.ThreadId
+  +- Control.Moffy.Handle
+  +- Control.Moffy.Event.ThreadId
 ```
 
 #### todo
@@ -196,6 +203,15 @@ Control.Moffy.Run
 	+ [x] correct function at
 		- [x] define iat
 		- [x] use iat in at
+* [x] Control.Moffy.Event.ThreadId
+	+ [x] API
+	+ [x] imports
+	+ [x] body
+* [ ] Control.Moffy.Handle.ThreadId
+	+ [ ] API
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
 
 ### Moffy library
 
@@ -203,7 +219,6 @@ Control.Moffy.Run
 
 ```
 Control.Moffy.Event
-  + Control.Moffy.Event.ThreadId
   + Control.Moffy.Event.Lock
       + Control.Moffy.Event.Lock.Internal
   + Control.Moffy.Event.Random
@@ -213,7 +228,6 @@ Control.Moffy.Event
           + Control.Moffy.Event.Key.Internal
       + Control.Moffy.Event.Key.Internal
 Control.Moffy.Handle
-  + Control.Moffy.Handle.ThreadId
   + Control.Moffy.Handle.Lock
   + Control.Moffy.Handle.Random
   + Control.Moffy.Handle.XField
