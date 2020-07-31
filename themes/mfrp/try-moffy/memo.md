@@ -240,17 +240,17 @@ Control.Moffy.Handle
 * [x] Control.Moffy.Event.Lock
 	+ [x] API
 	+ [x] imports
-* [ ] Control.Moffy.Event.Lock.Internal
+* [x] Control.Moffy.Event.Lock.Internal
 	+ [x] API
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
-		- [ ] LOCK ID
-		- [ ] EVENT
-			* [ ] NEW LOCK ID
-			* [ ] GET LOCK
-			* [ ] UNLOCK
-		- [ ] WITH LOCK
+	+ [x] body
+		- [x] LOCK ID
+		- [x] EVENT
+			* [x] NEW LOCK ID
+			* [x] GET LOCK
+			* [x] UNLOCK
+		- [x] WITH LOCK
 * [ ] Control.Moffy.Handle.Lock
 * [ ] Control.Moffy.Event.Random
 * [ ] Control.Moffy.Handle.Random

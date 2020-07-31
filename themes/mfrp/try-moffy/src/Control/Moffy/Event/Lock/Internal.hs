@@ -64,18 +64,17 @@ data GetLock = GetLockReq LockId ThreadId RetryTime deriving (Show, Eq)
 type RetryTime = Int
 numbered 64 [t| GetLock |]
 instance Selectable GetLock where
-	l@(GetLockReq _ _ rl) `select` r@(GetLockReq _ _ rr)
-		| rl >= rr = l | otherwise = r
+	l@(GetLockReq _ _ rtl) `select` r@(GetLockReq _ _ rtr)
+		| rtl >= rtr = l | otherwise = r
 instance Request GetLock where
 	data Occurred GetLock = OccGetLock LockId ThreadId
 
 type GetThreadIdGetLock = GetThreadId :- GetLock :- 'Nil
 
 getLock :: LockId -> RetryTime -> React s GetThreadIdGetLock ()
-getLock l rt = adjust getThreadId >>= \t ->
-	maybe (pure ()) (getLock l) =<< adjust (await (GetLockReq l t rt)
-		\(OccGetLock l' t') ->
-			bool (Just $ rt + 1) Nothing $ l == l' && t == t')
+getLock l rt = adjust getThreadId >>= \t -> bool (getLock l $ rt + 1) (pure ())
+	=<< (adjust . await (GetLockReq l t rt))
+		\(OccGetLock l' t') -> l == l' && t == t'
 
 -- UNLOCK
 
