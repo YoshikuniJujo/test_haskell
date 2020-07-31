@@ -260,11 +260,15 @@ Control.Moffy.Handle
 * [x] Control.Moffy.Event.Random
 	+ [x] API
 	+ [x] imports
-* [ ] Control.Moffy.Event.Random.Internal
-	+ [ ] API
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
+* [x] Control.Moffy.Event.Random.Internal
+	+ [x] API
+	+ [x] imports
+	+ [x] structure
+	+ [x] body
+		- [x] EVENT
+			* [x] STORE RANDOM GEN
+			* [x] LOAD RANDOM GEN
+		- [x] RANDOM EV AND GET RANDOM
 * [ ] Control.Moffy.Handle.Random
 	+ [ ] API
 	+ [ ] imports

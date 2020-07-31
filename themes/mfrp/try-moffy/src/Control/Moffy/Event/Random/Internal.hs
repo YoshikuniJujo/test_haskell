@@ -13,8 +13,8 @@ module Control.Moffy.Event.Random.Internal (
 	-- * GET RANDOM
 	getRandom, getRandomR ) where
 
-import Control.Moffy (React, Request(..), adjust, await)
-import Data.Type.Set (numbered, Set(Nil), Singleton, (:-))
+import Control.Moffy (React, Request(..), await, adjust)
+import Data.Type.Set (numbered, pattern Nil, Singleton, (:-))
 import Data.OneOrMore (Selectable(..))
 import System.Random (Random, StdGen, random, randomR)
 
