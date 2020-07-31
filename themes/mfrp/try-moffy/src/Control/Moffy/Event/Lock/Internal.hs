@@ -31,7 +31,7 @@ import Data.Bool (bool)
 --	+ NEW LOCK ID
 --	+ GET LOCK
 --	+ UNLOCK
--- * WITHLOCK
+-- * WITH LOCK
 
 ---------------------------------------------------------------------------
 -- LOCK ID
@@ -90,7 +90,7 @@ unlock :: LockId -> React s (Singleton Unlock) ()
 unlock l = await (UnlockReq l) \OccUnlock -> ()
 
 ---------------------------------------------------------------------------
--- WITHLOCK
+-- WITH LOCK
 ---------------------------------------------------------------------------
 
 type LockEv = NewLockId :- GetLock :- Unlock :- 'Nil
