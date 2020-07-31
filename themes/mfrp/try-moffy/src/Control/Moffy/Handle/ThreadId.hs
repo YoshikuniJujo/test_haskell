@@ -6,10 +6,12 @@
 
 module Control.Moffy.Handle.ThreadId (GetThreadId, handleGetThreadId) where
 
-import Control.Moffy.Handle (Handle')
 import Control.Moffy.Event.ThreadId (GetThreadId, pattern OccGetThreadId)
+import Control.Moffy.Handle (Handle')
 import Data.Type.Set (Singleton)
 import Data.OneOrMore (pattern Singleton)
+
+---------------------------------------------------------------------------
 
 handleGetThreadId :: Applicative m => Handle' m (Singleton GetThreadId)
 handleGetThreadId _rqs = pure . Just $ Singleton OccGetThreadId

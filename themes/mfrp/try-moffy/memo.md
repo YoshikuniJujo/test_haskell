@@ -207,11 +207,10 @@ Control.Moffy.Handle.ThreadId
 	+ [x] API
 	+ [x] imports
 	+ [x] body
-* [ ] Control.Moffy.Handle.ThreadId
-	+ [ ] API
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
+* [x] Control.Moffy.Handle.ThreadId
+	+ [x] API
+	+ [x] imports
+	+ [x] body
 
 ### Moffy library
 
