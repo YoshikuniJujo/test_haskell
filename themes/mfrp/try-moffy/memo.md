@@ -236,6 +236,25 @@ Control.Moffy.Handle
 
 #### refactor modules
 
+* [x] Control.Moffy.Event.Lock
+	+ [x] API
+	+ [x] imports
+* [ ] Control.Moffy.Event.Lock.Internal
+	+ [ ] API
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
+* [ ] Control.Moffy.Handle.Lock
+* [ ] Control.Moffy.Event.Random
+* [ ] Control.Moffy.Handle.Random
+* [ ] Control.Moffy.Event.Delete
+* [ ] Control.Moffy.Event.Key
+* [ ] Control.Moffy.Event.Key.Internal
+* [ ] Control.Moffy.Event.Key.Internal.XK
+* [ ] Control.Moffy.Handle.XField
+* [ ] Control.Moffy.Handle.XField.Key
+* [ ] Control.Moffy.Handle.XField.Mouse
+
 ### Moffy Base
 
 #### Control.Monad.Freer.Par

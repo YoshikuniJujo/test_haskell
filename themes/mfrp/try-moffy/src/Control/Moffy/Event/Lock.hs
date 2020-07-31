@@ -2,12 +2,13 @@
 
 module Control.Moffy.Event.Lock (
 	-- * Type
-	LockEv, LockId,
+	LockEv, GetThreadIdNewLockId, GetThreadIdGetLock, SingletonUnlock,
+	LockId,
 	-- * Event
-	GetThreadIdNewLockId, newLockId,
-	GetThreadIdGetLock, SingletonUnlock, withLock ) where
+	newLockId,
+	withLock ) where
 
 import Control.Moffy.Event.Lock.Internal (
-	LockEv, LockId,
-	GetThreadIdNewLockId, newLockId,
-	GetThreadIdGetLock, SingletonUnlock, withLock )
+	LockEv, GetThreadIdNewLockId, GetThreadIdGetLock, SingletonUnlock,
+	LockId,
+	newLockId, withLock )
