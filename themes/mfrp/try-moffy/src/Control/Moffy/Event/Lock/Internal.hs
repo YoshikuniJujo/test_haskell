@@ -8,12 +8,15 @@
 
 module Control.Moffy.Event.Lock.Internal (
 	-- * Type
-	LockEv, LockId(..),
+	-- ** Type Synonym
+	LockEv, GetThreadIdNewLockId, GetThreadIdGetLock, SingletonUnlock,
+	RetryTime,
+	-- ** Event Type
 	NewLockId(..), pattern OccNewLockId, GetLock(..), pattern OccGetLock,
 	Unlock(..), pattern OccUnlock,
+	LockId(..),
 	-- * Event
-	GetThreadIdNewLockId, newLockId,
-	GetThreadIdGetLock, SingletonUnlock, withLock ) where
+	newLockId, withLock ) where
 
 import Data.Type.Set (Set(Nil), Singleton, (:-), (:+:), numbered)
 import Data.OneOrMore (Selectable(..))

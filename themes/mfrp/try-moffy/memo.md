@@ -240,7 +240,7 @@ Control.Moffy.Handle
 	+ [x] API
 	+ [x] imports
 * [ ] Control.Moffy.Event.Lock.Internal
-	+ [ ] API
+	+ [x] API
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body
