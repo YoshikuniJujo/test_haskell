@@ -43,6 +43,9 @@ todo
 		- [ ] Random
 		- [ ] Delete, Key and Mouse
 		- [ ] XField
+* [ ] make tetris like game
+	+ [ ] moffyris
+* [ ] make handle using GTK
 
 refactoring
 -----------
@@ -269,11 +272,12 @@ Control.Moffy.Handle
 			* [x] STORE RANDOM GEN
 			* [x] LOAD RANDOM GEN
 		- [x] RANDOM EV AND GET RANDOM
-* [ ] Control.Moffy.Handle.Random
+* [x] Control.Moffy.Handle.Random
 	+ [x] API
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
+	+ [x] imports
+	+ [x] structure
+	+ [x] body
+* [ ] separate time event from boxes
 * [ ] Control.Moffy.Event.Delete
 * [ ] Control.Moffy.Event.Key
 * [ ] Control.Moffy.Event.Key.Internal

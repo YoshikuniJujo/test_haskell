@@ -11,11 +11,10 @@ module Control.Moffy.Handle.Random (
 	handleRandom ) where
 
 import Control.Monad.State (StateT, gets, modify)
-import Control.Moffy.Handle (Handle', merge)
 import Control.Moffy.Event.Random.Internal (
-	RandomEv,
-	StoreRandomGen(..), pattern OccStoreRandomGen,
+	RandomEv, StoreRandomGen(..), pattern OccStoreRandomGen,
 	LoadRandomGen, pattern OccLoadRandomGen )
+import Control.Moffy.Handle (Handle', merge)
 import Data.Type.Set (Singleton)
 import Data.OneOrMore (pattern Singleton)
 import System.Random (StdGen)
