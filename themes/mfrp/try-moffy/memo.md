@@ -270,7 +270,7 @@ Control.Moffy.Handle
 			* [x] LOAD RANDOM GEN
 		- [x] RANDOM EV AND GET RANDOM
 * [ ] Control.Moffy.Handle.Random
-	+ [ ] API
+	+ [x] API
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body
