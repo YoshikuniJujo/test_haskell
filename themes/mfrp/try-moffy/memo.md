@@ -33,6 +33,10 @@ todo
 	+ [ ] Moffy base
 	+ [ ] Trials
 * [ ] move time event to Moffy library
+* [ ] consider wheter or not to use MonadState
+	+ [x] use MonadState in Control.Moffy.Handle.Lock
+	+ [ ] refactor Control.Moffy.Handle.Lock
+	+ [ ] others
 * [ ] separate
 	+ [ ] Trial
 	+ [ ] Data.OneOrMore (with Data.Type.Set)

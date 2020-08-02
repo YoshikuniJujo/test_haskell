@@ -15,7 +15,7 @@ import Control.Moffy.Event.Lock.Internal (
 	LockEv, LockId(..), NewLockId(..), pattern OccNewLockId,
 	GetLock(..), pattern OccGetLock, Unlock(..), pattern OccUnlock )
 import Control.Moffy.Handle (Handle', merge)
-import Control.Monad.State (StateT, gets, modify)
+import Control.Monad.State (MonadState(..), gets, modify)
 import Data.Type.Set (Singleton)
 import Data.OneOrMore (pattern Singleton)
 import Data.Bool (bool)
@@ -38,22 +38,22 @@ class LockState s where
 -- HANDLE
 ---------------------------------------------------------------------------
 
-handleLock :: (LockState s, Monad m) => Handle' (StateT s m) LockEv
+handleLock :: (LockState (StateType m), Monad m, MonadState m) => Handle' m LockEv
 handleLock = handleNewLockId `merge` handleGetLock `merge` handleUnlock
 
 handleNewLockId ::
-	(LockState s, Monad m) => Handle' (StateT s m) (Singleton NewLockId)
+	(LockState (StateType m), Monad m, MonadState m) => Handle' m (Singleton NewLockId)
 handleNewLockId (Singleton (NewLockIdReq t)) = gets getNextLockId >>= \i ->
 	Just (Singleton $ OccNewLockId (LockId i) t)
 		<$ modify (`putNextLockId` (i + 1))
 
 handleGetLock ::
-	(LockState s, Monad m) => Handle' (StateT s m) (Singleton GetLock)
+	(LockState (StateType m), Monad m, MonadState m) => Handle' m (Singleton GetLock)
 handleGetLock (Singleton (GetLockReq l t _)) = gets (`isLocked` l) >>= bool
 	(Just (Singleton $ OccGetLock l t) <$ modify (`lockIt` l))
 	(pure Nothing)
 
 handleUnlock ::
-	(LockState s, Monad m) => Handle' (StateT s m) (Singleton Unlock)
+	(LockState (StateType m), Monad m, MonadState m) => Handle' m (Singleton Unlock)
 handleUnlock (Singleton (UnlockReq l)) =
 	Just (Singleton OccUnlock) <$ modify (`unlockIt` l)
