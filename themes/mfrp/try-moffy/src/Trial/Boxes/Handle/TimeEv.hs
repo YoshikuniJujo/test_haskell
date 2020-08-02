@@ -4,11 +4,12 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Boxes.Handle.TimeEv (Mode(InitMode), handleTimeEvPlus) where
+module Trial.Boxes.Handle.TimeEv (
+	TaiTimeM(..), DelayM(..), Mode(InitMode), handleTimeEvPlus ) where
 
 import Control.Concurrent
 import Control.Moffy.Handle hiding (expand)
-import Control.Monad.State (StateT, get, put, lift, liftIO)
+import Control.Monad.State (StateT, get, put, lift)
 import Data.Type.Set ((:+:))
 import Data.OneOrMore (project, pattern Singleton, (>-), expand)
 import Data.Time (DiffTime)
@@ -22,32 +23,37 @@ import Trial.Boxes.Event (TimeEv, TryWait(..), pattern OccDeltaTime, pattern Occ
 data Mode = InitMode | WaitMode AbsoluteTime deriving Show
 
 handleTimeEvPlus :: (
+	Monad m, TaiTimeM m, DelayM m,
 	ExpandableHandle es (es :+: TimeEv),
 	ExpandableHandle TimeEv (es :+: TimeEv),
 	MergeableOccurred es TimeEv (es :+: TimeEv) ) =>
-	(DiffTime -> a -> Handle' IO es) ->
-	DiffTime -> a -> HandleSt Mode (StateT AbsoluteTime IO) (es :+: TimeEv)
+	(DiffTime -> a -> Handle' m es) ->
+	DiffTime -> a -> HandleSt Mode (StateT AbsoluteTime m) (es :+: TimeEv)
 handleTimeEvPlus hdl prd f rqs = (`retrySt` rqs) \rqs' -> \case
 	InitMode -> (handleInit hdl rqs' (prd, f)); WaitMode now -> (rqs' `handleWait` now)
 
 handleInit :: (
+	Monad m, TaiTimeM m, DelayM m,
 	ExpandableHandle es (es :+: TimeEv),
 	ExpandableHandle TimeEv (es :+: TimeEv),
 	MergeableOccurred es TimeEv (es :+: TimeEv) ) =>
-	(DiffTime -> a -> Handle' IO es) ->
-	HandleSt' (DiffTime, a) Mode (StateT AbsoluteTime IO) (es :+: TimeEv)
+	(DiffTime -> a -> Handle' m es) ->
+	HandleSt' (DiffTime, a) Mode (StateT AbsoluteTime m) (es :+: TimeEv)
 handleInit hdl = mergeSt
-	(toHandleSt' hdl) (\(prd, _) -> liftIO . threadDelay . round $ prd * 1000000)
+	(toHandleSt' hdl) (\(prd, _) -> lift . delay . round $ prd * 1000000)
 	handleNow (\_ -> InitMode <$ (put =<< lift getTaiTime))
 
 toHandleSt' :: Monad m => (DiffTime -> a -> Handle' m es) -> HandleSt' (DiffTime, a) () (StateT AbsoluteTime m) es
 toHandleSt' hdl reqs (prd, x) = lift $ (, ()) <$> hdl prd x reqs
 
-handleNow :: HandleSt' () Mode (StateT AbsoluteTime IO) TimeEv
+handleNow :: (Monad m, TaiTimeM m) => HandleSt' () Mode (StateT AbsoluteTime m) TimeEv
 handleNow reqs () = (reqs `handleTime`) =<< lift getTaiTime
 
-getTaiTime :: IO AbsoluteTime
-getTaiTime = systemToTAITime <$> getSystemTime
+class TaiTimeM m where getTaiTime :: m AbsoluteTime
+class DelayM m where delay :: Int -> m ()
+
+instance TaiTimeM IO where getTaiTime = systemToTAITime <$> getSystemTime
+instance DelayM IO where delay = threadDelay
 
 handleWait :: (Monad m, ExpandableHandle TimeEv es) =>
 	HandleSt' AbsoluteTime Mode (StateT AbsoluteTime m) es
