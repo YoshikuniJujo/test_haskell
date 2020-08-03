@@ -65,8 +65,14 @@ instance CountState LockCountSt where
 	getCount = counter
 	putCount s n = s { counter = n }
 
-lockCount :: (Or Int Int, LockCountSt)
+lockCount1 :: (Or Int Int, LockCountSt)
+lockCount1 = (`runState` initLockCountSt) $ interpretReact (retry $ handleGetThreadId `merge` handleLock `merge` handleCount) do
+	li <- adjust newLockId
+	count2WithLock li
+
+lockCount :: ((Or Int Int, Or Int Int), LockCountSt)
 lockCount = (`runState` initLockCountSt) $ interpretReact (retry $ handleGetThreadId `merge` handleLock `merge` handleCount) do
 	li <- adjust newLockId
-	() <$ count2WithLock li -- :: React s (Count :- GetThreadId :- LockEv) (Or Int Int)
-	count2WithLock li
+	c1 <- count2WithLock li -- :: React s (Count :- GetThreadId :- LockEv) (Or Int Int)
+	c2 <- count2WithLock li
+	pure (c1, c2)

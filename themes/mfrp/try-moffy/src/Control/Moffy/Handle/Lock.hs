@@ -1,6 +1,6 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -9,14 +9,14 @@ module Control.Moffy.Handle.Lock (
 	-- * Type
 	LockEv, LockState(..), LockId,
 	-- * Handle
-	handleLock ) where
+	handleLock, handleLock' ) where
 
 import Control.Moffy.Event.Lock.Internal (
 	LockEv, LockId(..), NewLockId(..), pattern OccNewLockId,
 	GetLock(..), pattern OccGetLock, Unlock(..), pattern OccUnlock )
-import Control.Moffy.Handle (Handle', merge)
+import Control.Moffy.Handle (Handle', HandleSt', merge, ExpandableHandle, MergeableOccurred, mergeSt)
 import Control.Monad.State (MonadState(..), gets, modify)
-import Data.Type.Set (Singleton)
+import Data.Type.Set (Singleton, (:+:))
 import Data.OneOrMore (pattern Singleton)
 import Data.Bool (bool)
 
@@ -57,3 +57,33 @@ handleUnlock ::
 	(LockState (StateType m), Monad m, MonadState m) => Handle' m (Singleton Unlock)
 handleUnlock (Singleton (UnlockReq l)) =
 	Just (Singleton OccUnlock) <$ modify (`unlockIt` l)
+
+---------------------------------------------------------------------------
+-- NEW HANDLE
+---------------------------------------------------------------------------
+
+mergeSt' :: (
+	Monad m, ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es'),
+	MergeableOccurred es es' (es :+: es') ) =>
+	HandleSt' st st m es -> HandleSt' st st m es' -> HandleSt' st st m (es :+: es')
+mergeSt' h1 h2 = mergeSt h1 pure h2 pure
+
+handleLock' :: (Monad m, LockState s) => HandleSt' s s m LockEv
+handleLock' = handleNewLockId' `mergeSt'` handleGetLock' `mergeSt'` handleUnlock'
+
+handleNewLockId' ::
+	(Applicative m, LockState s) => HandleSt' s s m (Singleton NewLockId)
+handleNewLockId' (Singleton (NewLockIdReq t)) s = let i = getNextLockId s in
+	pure (	Just . Singleton $ OccNewLockId (LockId i) t,
+		s `putNextLockId` (i + 1) )
+
+handleGetLock' ::
+	(Applicative m, LockState s) => HandleSt' s s m (Singleton GetLock)
+handleGetLock' (Singleton (GetLockReq l t _)) s = pure $ bool
+	(Just (Singleton $ OccGetLock l t), s `lockIt` l) (Nothing, s)
+	(s `isLocked` l)
+
+handleUnlock' ::
+	(Applicative m, LockState s) => HandleSt' s s m (Singleton Unlock)
+handleUnlock' (Singleton (UnlockReq l)) s =
+	pure (Just $ Singleton OccUnlock, s `unlockIt` l)

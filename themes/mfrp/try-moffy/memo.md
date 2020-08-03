@@ -33,6 +33,17 @@ todo
 	+ [ ] Moffy base
 	+ [ ] Trials
 * [ ] move time event to Moffy library
+* [ ] consider use HandleSt
+	+ [ ] Control.Moffy.Handle.Lock
+		- [x] make handleLock'
+		- [x] try using lock
+			* [x] use handleLock
+			* [ ] use handleLock'
+		- [ ] others
+	+ [ ] Control.Moffy.Handle.Random
+		- [ ] make handleRandom'
+		- [ ] others
+	+ [ ] others
 * [ ] consider wheter or not to use MonadState
 	+ [x] use MonadState in Control.Moffy.Handle.Lock
 	+ [ ] refactor Control.Moffy.Handle.Lock
