@@ -1,5 +1,6 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, TupleSections #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.TryLock where
@@ -68,4 +69,25 @@ tryLockLeftCount2 :: IO ((), LockSt)
 tryLockLeftCount2 = do
 	f <- openField "TRY LOCK LEFT COUNT 2" [buttonPressMask, exposureMask]
 	interpret (retry $ handleGetThreadId `merge` handleLock `before` liftIO . handle Nothing f) (liftIO . print) lockLeftCount2 `runStateT` LockSt 0 []
+		<* closeField f
+
+mergeSt' :: (
+	Monad m, ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es'),
+	MergeableOccurred es es' (es :+: es') ) =>
+	HandleSt' st st m es -> HandleSt' st st m es' -> HandleSt' st st m (es :+: es')
+mergeSt' h1 h2 = mergeSt h1 pure h2 pure
+
+liftSt :: Functor m => m r -> St st m r
+liftSt m s = (, s) <$> m
+
+handle' :: LockState s => Field -> HandleSt' s s IO GuiEv
+handle' f = liftSt . handle Nothing f
+
+handleGetThreadId' :: LockState s => HandleSt' s s IO (Singleton GetThreadId)
+handleGetThreadId' = liftSt . handleGetThreadId
+
+tryLockLeftCount2' :: IO ((), LockSt)
+tryLockLeftCount2' = do
+	f <- openField "TRY LOCK LEFT COUNT 2" [buttonPressMask, exposureMask]
+	interpretSt (retrySt $ handleGetThreadId' `mergeSt'` handleLock' `mergeSt'` handle' f) print lockLeftCount2 (LockSt 0 [])
 		<* closeField f

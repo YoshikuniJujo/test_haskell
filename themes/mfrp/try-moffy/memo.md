@@ -38,8 +38,12 @@ todo
 		- [x] make handleLock'
 		- [x] try using lock
 			* [x] use handleLock
-			* [ ] use handleLock'
+			* [x] use handleLock'
 		- [ ] others
+	+ [ ] consider whether or not to move mergeSt' to Control.Moffy.Handle
+		from Trial.TryLock and Control.Moffy.Handle.Lock
+	+ [ ] consider whether or not to move liftSt to Control.Moffy.Internal.React.Type
+		from Trial.TryLock
 	+ [ ] Control.Moffy.Handle.Random
 		- [ ] make handleRandom'
 		- [ ] others
