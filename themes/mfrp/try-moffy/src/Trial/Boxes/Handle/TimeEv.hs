@@ -5,11 +5,10 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.Boxes.Handle.TimeEv (
-	TaiTimeM(..), DelayM(..), Mode(InitMode), handleTimeEvPlus ) where
+	TaiTimeM(..), DelayM(..), Mode(InitMode), handleTimeEvPlus' ) where
 
-import Control.Concurrent
 import Control.Moffy.Handle hiding (expand)
-import Control.Monad.State (StateT, get, put, lift)
+import Control.Concurrent
 import Data.Type.Set ((:+:))
 import Data.OneOrMore (project, pattern Singleton, (>-), expand)
 import Data.Time (DiffTime)
@@ -26,32 +25,33 @@ class ModeState s where getMode :: s -> Mode; putMode :: s -> Mode -> s
 
 instance ModeState Mode where getMode = id; putMode = flip const
 
-handleTimeEvPlus :: (
+handleTimeEvPlus' :: (
 	Monad m, TaiTimeM m, DelayM m,
 	ExpandableHandle es (es :+: TimeEv),
 	ExpandableHandle TimeEv (es :+: TimeEv),
 	MergeableOccurred es TimeEv (es :+: TimeEv) ) =>
 	(DiffTime -> a -> Handle' m es) ->
-	DiffTime -> a -> HandleSt' Mode Mode (StateT AbsoluteTime m) (es :+: TimeEv)
-handleTimeEvPlus hdl prd f rqs = \case
-	InitMode -> (handleInit hdl rqs (prd, f)); WaitMode now -> (rqs `handleWait` now)
+	DiffTime -> a -> HandleSt' (Mode, AbsoluteTime) (Mode, AbsoluteTime) m (es :+: TimeEv)
+handleTimeEvPlus' hdl prd f rqs (md, tai) = case md of
+	InitMode -> handleInit' hdl rqs ((prd, f), tai)
+	WaitMode now -> handleWait' rqs (now, tai)
 
-handleInit :: (
+handleInit' :: (
 	Monad m, TaiTimeM m, DelayM m,
 	ExpandableHandle es (es :+: TimeEv),
 	ExpandableHandle TimeEv (es :+: TimeEv),
 	MergeableOccurred es TimeEv (es :+: TimeEv) ) =>
 	(DiffTime -> a -> Handle' m es) ->
-	HandleSt' (DiffTime, a) Mode (StateT AbsoluteTime m) (es :+: TimeEv)
-handleInit hdl = mergeSt
-	(toHandleSt' hdl) (\(prd, _) -> lift . delay . round $ prd * 1000000)
-	handleNow (\_ -> InitMode <$ (put =<< lift getTaiTime))
+	HandleSt' ((DiffTime, a), AbsoluteTime) (Mode, AbsoluteTime) m (es :+: TimeEv)
+handleInit' hdl = mergeSt
+	(toHandleSt' hdl) (\((prd, _), tai) -> tai <$ delay (round $ prd * 1000000))
+	handleNow' (\_ -> (InitMode ,) <$> getTaiTime)
 
-toHandleSt' :: Monad m => (DiffTime -> a -> Handle' m es) -> HandleSt' (DiffTime, a) () (StateT AbsoluteTime m) es
-toHandleSt' hdl reqs (prd, x) = lift $ (, ()) <$> hdl prd x reqs
+toHandleSt' :: Monad m => (DiffTime -> a -> Handle' m es) -> HandleSt' ((DiffTime, a), AbsoluteTime) AbsoluteTime m es
+toHandleSt' hdl rqs ((prd, x), tai) = (, tai) <$> hdl prd x rqs
 
-handleNow :: (Monad m, TaiTimeM m) => HandleSt' () Mode (StateT AbsoluteTime m) TimeEv
-handleNow reqs () = (reqs `handleTime`) =<< lift getTaiTime
+handleNow' :: (Monad m, TaiTimeM m) => HandleSt' AbsoluteTime (Mode, AbsoluteTime) m TimeEv
+handleNow' rqs lst = handleTime' rqs . (, lst) =<< getTaiTime
 
 class TaiTimeM m where getTaiTime :: m AbsoluteTime
 class DelayM m where delay :: Int -> m ()
@@ -59,20 +59,20 @@ class DelayM m where delay :: Int -> m ()
 instance TaiTimeM IO where getTaiTime = systemToTAITime <$> getSystemTime
 instance DelayM IO where delay = threadDelay
 
-handleWait :: (Monad m, ExpandableHandle TimeEv es) =>
-	HandleSt' AbsoluteTime Mode (StateT AbsoluteTime m) es
-handleWait = expandSt handleTime ((InitMode <$) . put)
+handleWait' :: (Monad m, ExpandableHandle TimeEv es) =>
+	HandleSt' (AbsoluteTime, AbsoluteTime) (Mode, AbsoluteTime) m es
+handleWait' = expandSt handleTime' (pure . (InitMode ,) . fst)
 
-handleTime :: Monad m =>
-	HandleSt' AbsoluteTime Mode (StateT AbsoluteTime m) TimeEv
-handleTime reqs now = get >>= \lst -> do
-	let	dt = now `diffAbsoluteTime` lst
-		odt = Singleton $ OccDeltaTime dt
-	case project reqs of
+handleTime' :: Monad m =>
+	HandleSt' (AbsoluteTime, AbsoluteTime) (Mode, AbsoluteTime) m TimeEv
+handleTime' rqs (now, lst) = let -- do
+	dt = now `diffAbsoluteTime` lst
+	odt = Singleton $ OccDeltaTime dt in
+	case project rqs of
 		Just (TryWaitReq t)
-			| t < dt -> (Just $ OccTryWait t >- odt', WaitMode now)
-				<$ put (t `addAbsoluteTime` lst)
-			| otherwise -> (Just $ OccTryWait dt >- odt, InitMode)
-				<$ put now
+			| t < dt  -> pure (
+				Just $ OccTryWait t >- odt',
+				(WaitMode now, t `addAbsoluteTime` lst) )
+			| otherwise -> pure (Just $ OccTryWait dt >- odt', (InitMode, now))
 			where odt' = Singleton $ OccDeltaTime t
-		Nothing -> (Just . expand $ odt, InitMode) <$ put now
+		Nothing -> pure (Just . expand $ odt, (InitMode, now))

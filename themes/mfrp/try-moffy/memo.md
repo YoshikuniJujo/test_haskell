@@ -308,7 +308,7 @@ Control.Moffy.Handle
 	+ [ ] moddify Trial.Boxes.Handle.TimeEv
 		- [x] use m (TaiMonad m) instead of IO
 		- [x] handleTimeEvPlus: consider to return HandleSt' instead of HandleSt
-		- [ ] handleBoxes: use AbsoluteTimeState instead of StateT
+		- [x] handleBoxes: use AbsoluteTimeState instead of StateT
 			* [x] make handleBoxes'
 			* [x] replace handleBoxes by handleBoxes'
 				+ [x] replace about tryBoxes
@@ -316,9 +316,10 @@ Control.Moffy.Handle
 			* [x] remove handleBoxes
 				+ [x] move to where clause
 				+ [x] remove
-			* [ ] rename handleBoxes' to handleBoxes
+			* [x] rename handleBoxes' to handleBoxes
+		- [x] handleTimeEvPlus: use HandleSt' instead of StateT
+		- [ ] rename handleTimeEvPlus' to handleTimeEvPlus
 		- [ ] handletimeEvPlus: use AbsoluteTimeState instead of StateT
-		- [ ] handleTimeEvPlus: use ModeState s
 		- [ ] use HandleSt'
 			* `ModeState s =>`
 				`(DiffTime -> a -> HandleSt' s s m) -> Difftime ->`
