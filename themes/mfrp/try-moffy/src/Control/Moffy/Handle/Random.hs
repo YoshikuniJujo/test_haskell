@@ -8,13 +8,12 @@ module Control.Moffy.Handle.Random (
 	-- * Type
 	RandomEv, RandomState(..),
 	-- * Handle
-	handleRandom, handleRandom' ) where
+	handleRandom' ) where
 
-import Control.Monad.State (StateT, gets, modify)
 import Control.Moffy.Event.Random.Internal (
 	RandomEv, StoreRandomGen(..), pattern OccStoreRandomGen,
 	LoadRandomGen, pattern OccLoadRandomGen )
-import Control.Moffy.Handle (Handle', HandleSt', merge, mergeSt')
+import Control.Moffy.Handle (HandleSt', mergeSt')
 import Data.Type.Set (Singleton)
 import Data.OneOrMore (pattern Singleton)
 import System.Random (StdGen)
@@ -32,23 +31,6 @@ class RandomState s where
 	getRandomGen :: s -> StdGen; putRandomGen :: s -> StdGen -> s
 
 instance RandomState StdGen where getRandomGen = id; putRandomGen = flip const
-
----------------------------------------------------------------------------
--- HANDLE
----------------------------------------------------------------------------
-
-handleRandom :: (RandomState s, Monad m) => Handle' (StateT s m) RandomEv
-handleRandom = handleStoreRandomGen `merge` handleLoadRandomGen
-
-handleStoreRandomGen :: (RandomState s, Monad m) =>
-	Handle' (StateT s m) (Singleton StoreRandomGen)
-handleStoreRandomGen (Singleton (StoreRandomGenReq g)) =
-	Just (Singleton OccStoreRandomGen) <$ modify (`putRandomGen` g)
-
-handleLoadRandomGen :: (RandomState s, Monad m) =>
-	Handle' (StateT s m) (Singleton LoadRandomGen)
-handleLoadRandomGen _rqs =
-	gets $ Just . Singleton . OccLoadRandomGen . getRandomGen
 
 ---------------------------------------------------------------------------
 -- NEW HANDLE

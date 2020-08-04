@@ -50,7 +50,7 @@ todo
 	+ [ ] Control.Moffy.Handle.Random
 		- [x] make handleRandom'
 		- [x] try using random
-		- [ ] remove handleRandom
+		- [x] remove handleRandom
 		- [ ] rename from handleRandom' to handlrRandom
 	+ [x] use in Followbox
 	+ [x] compare old and new module Handle of Followbox

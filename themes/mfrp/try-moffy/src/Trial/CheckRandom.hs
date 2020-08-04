@@ -3,7 +3,6 @@
 module Trial.CheckRandom where
 
 import Control.Monad
-import Control.Monad.State
 import Control.Moffy
 import Control.Moffy.Handle
 import Control.Moffy.Run
@@ -22,22 +21,6 @@ getRandoms n = n `replicateM` getRandom
 
 getRandomRs :: Random a => (a, a) -> Int -> React s RandomEv [a]
 getRandomRs mms n = n `replicateM` getRandomR mms
-
----------------------------------------------------------------------------
--- OLD HANDLE
----------------------------------------------------------------------------
-
-trySimpleRandom :: State StdGen Int
-trySimpleRandom = interpretReact (retry handleRandom) getRandom
-
-runStateStdGen :: Int -> State StdGen a -> (a, StdGen)
-runStateStdGen n = (`runState` mkStdGen n)
-
-runReactRandom :: React s RandomEv a -> Int -> (a, StdGen)
-runReactRandom r n = interpretReact (retry handleRandom) r `runState` mkStdGen n
-
-exampleRandoms :: [Int]
-exampleRandoms = fst $ getRandomRs (1, 6) 100 `runReactRandom` 8
 
 ---------------------------------------------------------------------------
 -- NEW HANDLE
