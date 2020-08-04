@@ -11,7 +11,7 @@ module Control.Moffy.Handle (
 	-- ** Plain
 	Handle, Handle', retry, expand, before, merge,
 	-- ** With State
-	HandleSt, HandleSt', St, liftSt, retrySt, expandSt, beforeSt, mergeSt ) where
+	HandleSt, HandleSt', St, liftSt, retrySt, expandSt, beforeSt, mergeSt, mergeSt' ) where
 
 import Control.Arrow (first)
 import Control.Moffy.Internal.React.Type (
@@ -108,3 +108,9 @@ mergeSt :: (
 	HandleSt' st st'' m (es :+: es')
 mergeSt l otl r otr rqs st = collapseSt l otl rqs st >>= \(mo, st') ->
 	first (mo `merge'`) <$> collapseSt r otr rqs st'
+
+mergeSt' :: (
+	Monad m, ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es'),
+	MergeableOccurred es es' (es :+: es') ) =>
+	HandleSt' st st m es -> HandleSt' st st m es' -> HandleSt' st st m (es :+: es')
+mergeSt' h1 h2 = mergeSt h1 pure h2 pure

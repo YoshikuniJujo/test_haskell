@@ -44,7 +44,7 @@ todo
 		- [ ] others
 	+ [x] consider whether or not to move liftSt to Control.Moffy.Internal.React.Type
 		from Trial.TryLock
-	+ [ ] consider whether or not to move mergeSt' to Control.Moffy.Handle
+	+ [x] consider whether or not to move mergeSt' to Control.Moffy.Handle
 		from Trial.TryLock and Control.Moffy.Handle.Lock
 	+ [ ] Control.Moffy.Handle.Random
 		- [ ] make handleRandom'

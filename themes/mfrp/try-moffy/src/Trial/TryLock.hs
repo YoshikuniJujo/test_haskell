@@ -71,12 +71,6 @@ tryLockLeftCount2 = do
 	interpret (retry $ handleGetThreadId `merge` handleLock `before` liftIO . handle Nothing f) (liftIO . print) lockLeftCount2 `runStateT` LockSt 0 []
 		<* closeField f
 
-mergeSt' :: (
-	Monad m, ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es'),
-	MergeableOccurred es es' (es :+: es') ) =>
-	HandleSt' st st m es -> HandleSt' st st m es' -> HandleSt' st st m (es :+: es')
-mergeSt' h1 h2 = mergeSt h1 pure h2 pure
-
 handle' :: LockState s => Field -> HandleSt' s s IO GuiEv
 handle' f = liftSt . handle Nothing f
 

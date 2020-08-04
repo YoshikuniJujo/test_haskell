@@ -14,9 +14,9 @@ module Control.Moffy.Handle.Lock (
 import Control.Moffy.Event.Lock.Internal (
 	LockEv, LockId(..), NewLockId(..), pattern OccNewLockId,
 	GetLock(..), pattern OccGetLock, Unlock(..), pattern OccUnlock )
-import Control.Moffy.Handle (Handle', HandleSt', merge, ExpandableHandle, MergeableOccurred, mergeSt)
+import Control.Moffy.Handle (Handle', HandleSt', merge, mergeSt')
 import Control.Monad.State (MonadState(..), gets, modify)
-import Data.Type.Set (Singleton, (:+:))
+import Data.Type.Set (Singleton)
 import Data.OneOrMore (pattern Singleton)
 import Data.Bool (bool)
 
@@ -61,12 +61,6 @@ handleUnlock (Singleton (UnlockReq l)) =
 ---------------------------------------------------------------------------
 -- NEW HANDLE
 ---------------------------------------------------------------------------
-
-mergeSt' :: (
-	Monad m, ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es'),
-	MergeableOccurred es es' (es :+: es') ) =>
-	HandleSt' st st m es -> HandleSt' st st m es' -> HandleSt' st st m (es :+: es')
-mergeSt' h1 h2 = mergeSt h1 pure h2 pure
 
 handleLock' :: (Monad m, LockState s) => HandleSt' s s m LockEv
 handleLock' = handleNewLockId' `mergeSt'` handleGetLock' `mergeSt'` handleUnlock'
