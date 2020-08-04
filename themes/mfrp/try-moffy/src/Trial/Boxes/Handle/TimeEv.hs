@@ -22,6 +22,10 @@ import Trial.Boxes.Event (TimeEv, TryWait(..), pattern OccDeltaTime, pattern Occ
 
 data Mode = InitMode | WaitMode AbsoluteTime deriving Show
 
+class ModeState s where getMode :: s -> Mode; putMode :: s -> Mode -> s
+
+instance ModeState Mode where getMode = id; putMode = flip const
+
 handleTimeEvPlus :: (
 	Monad m, TaiTimeM m, DelayM m,
 	ExpandableHandle es (es :+: TimeEv),

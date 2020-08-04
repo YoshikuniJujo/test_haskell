@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -222,13 +222,12 @@ newBoxes = spawn box
 boxes :: SigG s [Box] ()
 boxes = () <$ parList newBoxes
 
-trySigGBoxes :: String -> SigG s [Box] r -> IO (r, Mode)
-trySigGBoxes ttl sig = do
+trySigGBoxes' :: String -> SigG s [Box] r -> IO r
+trySigGBoxes' ttl sig = do
 	f <- openField ttl [
 		pointerMotionMask, buttonPressMask, buttonReleaseMask,
 		exposureMask ]
-	(r, _) <- (interpretSt (handleBoxes 0.05 f)
-				(liftIO . drawBoxes f) sig InitMode `runStateT`)
+	(r, _) <- interpretSt (handleBoxes' 0.05 f) (drawBoxes f) sig . (InitMode ,)
 			. systemToTAITime =<< getSystemTime
 	r <$ closeField f
 
@@ -236,4 +235,4 @@ drawBoxes :: Field -> [Box] -> IO ()
 drawBoxes f = withFlush f . (drawBox f `mapM_`) . P.reverse
 
 tryBoxes :: IO ()
-tryBoxes = (() <$) . trySigGBoxes "TRY BOXES" $ boxes `break` deleteEvent
+tryBoxes = () <$ trySigGBoxes' "TRY BOXES" (boxes `break` deleteEvent)
