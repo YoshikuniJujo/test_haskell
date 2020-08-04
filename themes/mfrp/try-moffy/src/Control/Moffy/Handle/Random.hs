@@ -54,7 +54,7 @@ handleLoadRandomGen _rqs =
 -- NEW HANDLE
 ---------------------------------------------------------------------------
 
-handleRandom' :: (Monad m, RandomState s) => HandleSt' s s m RandomEv
+handleRandom' :: (RandomState s, Monad m) => HandleSt' s s m RandomEv
 handleRandom' = handleStoreRandomGen' `mergeSt'` handleLoadRandomGen'
 
 handleStoreRandomGen' :: (Applicative m, RandomState s) =>

@@ -48,7 +48,7 @@ todo
 		from Trial.TryLock and Control.Moffy.Handle.Lock
 	+ [ ] Control.Moffy.Handle.Random
 		- [x] make handleRandom'
-		- [ ] try using random
+		- [x] try using random
 		- [ ] others
 	+ [ ] others
 * [ ] consider wheter or not to use MonadState
