@@ -20,4 +20,4 @@ import Trial.Boxes.Handle.TimeEv
 ---------------------------------------------------------------------------
 
 handleBoxes :: DiffTime -> Field -> HandleSt Mode (StateT AbsoluteTime IO) BoxEv
-handleBoxes = handleTimeEvPlus $ handle . Just
+handleBoxes = (retrySt .) . handleTimeEvPlus (handle . Just)

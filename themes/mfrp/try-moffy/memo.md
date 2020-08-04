@@ -306,10 +306,13 @@ Control.Moffy.Handle
 * [ ] separate time event from boxes
 	+ [x] separate Trial.Boxes.Handle.TimeEv from Trial.Boxes.Handle
 	+ [ ] moddify Trial.Boxes.Handle.TimeEv
-		- [ ] use m (TaiMonad m) instead of IO
-		- [ ] use StateT s m
-			* `(DiffTime -> a -> Handle' (StateT s m)) -> Difftime ->`
-				`a -> HandleSt Mode (StateT s m) (es :+: TimeEv)`
+		- [x] use m (TaiMonad m) instead of IO
+		- [x] handleTimeEvPlus: consider to return HandleSt' instead of HandleSt
+		- [ ] handleTimeEvPlus: use ModeState s
+		- [ ] use HandleSt'
+			* `ModeState s =>`
+				`(DiffTime -> a -> HandleSt' s s m) -> Difftime ->`
+				`a -> HandleSt' s s m (es :+: TimeEv)`
 		- [ ] others
 	+ [ ] refactor Trial.Boxes.Handle.TimeEv
 	+ [ ] refactor Trial.Boxes.Event

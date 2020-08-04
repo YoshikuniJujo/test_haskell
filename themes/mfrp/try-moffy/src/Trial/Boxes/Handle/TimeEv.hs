@@ -28,9 +28,9 @@ handleTimeEvPlus :: (
 	ExpandableHandle TimeEv (es :+: TimeEv),
 	MergeableOccurred es TimeEv (es :+: TimeEv) ) =>
 	(DiffTime -> a -> Handle' m es) ->
-	DiffTime -> a -> HandleSt Mode (StateT AbsoluteTime m) (es :+: TimeEv)
-handleTimeEvPlus hdl prd f rqs = (`retrySt` rqs) \rqs' -> \case
-	InitMode -> (handleInit hdl rqs' (prd, f)); WaitMode now -> (rqs' `handleWait` now)
+	DiffTime -> a -> HandleSt' Mode Mode (StateT AbsoluteTime m) (es :+: TimeEv)
+handleTimeEvPlus hdl prd f rqs = \case
+	InitMode -> (handleInit hdl rqs (prd, f)); WaitMode now -> (rqs `handleWait` now)
 
 handleInit :: (
 	Monad m, TaiTimeM m, DelayM m,
