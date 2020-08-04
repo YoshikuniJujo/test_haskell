@@ -47,7 +47,8 @@ todo
 	+ [x] consider whether or not to move mergeSt' to Control.Moffy.Handle
 		from Trial.TryLock and Control.Moffy.Handle.Lock
 	+ [ ] Control.Moffy.Handle.Random
-		- [ ] make handleRandom'
+		- [x] make handleRandom'
+		- [ ] try using random
 		- [ ] others
 	+ [ ] others
 * [ ] consider wheter or not to use MonadState
