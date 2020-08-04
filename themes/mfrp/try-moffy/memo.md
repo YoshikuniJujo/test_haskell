@@ -35,23 +35,23 @@ todo
 	+ [ ] Control.Moffy.Internal.React.Type
 	+ [ ] Control.Moffy.Handle
 * [ ] move time event to Moffy library
-* [ ] consider use HandleSt
-	+ [ ] Control.Moffy.Handle.Lock
+* [x] consider use HandleSt
+	+ [x] Control.Moffy.Handle.Lock
 		- [x] make handleLock'
 		- [x] try using lock
 			* [x] use handleLock
 			* [x] use handleLock'
 		- [x] remove handleLock
-		- [ ] rename from handleLock' to handleLock
+		- [x] rename from handleLock' to handleLock
 	+ [x] consider whether or not to move liftSt to Control.Moffy.Internal.React.Type
 		from Trial.TryLock
 	+ [x] consider whether or not to move mergeSt' to Control.Moffy.Handle
 		from Trial.TryLock and Control.Moffy.Handle.Lock
-	+ [ ] Control.Moffy.Handle.Random
+	+ [x] Control.Moffy.Handle.Random
 		- [x] make handleRandom'
 		- [x] try using random
 		- [x] remove handleRandom
-		- [ ] rename from handleRandom' to handlrRandom
+		- [x] rename from handleRandom' to handlrRandom
 	+ [x] use in Followbox
 	+ [x] compare old and new module Handle of Followbox
 	+ [x] remove old Handle of Followbox

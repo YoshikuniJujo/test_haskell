@@ -8,7 +8,7 @@ module Control.Moffy.Handle.Random (
 	-- * Type
 	RandomEv, RandomState(..),
 	-- * Handle
-	handleRandom' ) where
+	handleRandom ) where
 
 import Control.Moffy.Event.Random.Internal (
 	RandomEv, StoreRandomGen(..), pattern OccStoreRandomGen,
@@ -36,8 +36,8 @@ instance RandomState StdGen where getRandomGen = id; putRandomGen = flip const
 -- NEW HANDLE
 ---------------------------------------------------------------------------
 
-handleRandom' :: (RandomState s, Monad m) => HandleSt' s s m RandomEv
-handleRandom' = handleStoreRandomGen' `mergeSt'` handleLoadRandomGen'
+handleRandom :: (RandomState s, Monad m) => HandleSt' s s m RandomEv
+handleRandom = handleStoreRandomGen' `mergeSt'` handleLoadRandomGen'
 
 handleStoreRandomGen' :: (Applicative m, RandomState s) =>
 	HandleSt' s s m (Singleton StoreRandomGen)

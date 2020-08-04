@@ -9,7 +9,7 @@ module Control.Moffy.Handle.Lock (
 	-- * Type
 	LockEv, LockState(..), LockId,
 	-- * Handle
-	handleLock' ) where
+	handleLock ) where
 
 import Control.Moffy.Event.Lock.Internal (
 	LockEv, LockId(..), NewLockId(..), pattern OccNewLockId,
@@ -37,8 +37,8 @@ class LockState s where
 -- NEW HANDLE
 ---------------------------------------------------------------------------
 
-handleLock' :: (Monad m, LockState s) => HandleSt' s s m LockEv
-handleLock' = handleNewLockId' `mergeSt'` handleGetLock' `mergeSt'` handleUnlock'
+handleLock :: (Monad m, LockState s) => HandleSt' s s m LockEv
+handleLock = handleNewLockId' `mergeSt'` handleGetLock' `mergeSt'` handleUnlock'
 
 handleNewLockId' ::
 	(Applicative m, LockState s) => HandleSt' s s m (Singleton NewLockId)

@@ -27,13 +27,13 @@ getRandomRs mms n = n `replicateM` getRandomR mms
 ---------------------------------------------------------------------------
 
 trySimpleRandom' :: StdGen -> Identity (Int, StdGen)
-trySimpleRandom' = interpretReactSt (retrySt handleRandom') getRandom
+trySimpleRandom' = interpretReactSt (retrySt handleRandom) getRandom
 
 runStateStdGen' :: Int -> St StdGen m a -> m (a, StdGen)
 runStateStdGen' n = ($ mkStdGen n)
 
 runReactRandom' :: Monad m => React s RandomEv a -> Int -> m (a, StdGen)
-runReactRandom' r n = interpretReactSt (retrySt handleRandom') r $ mkStdGen n
+runReactRandom' r n = interpretReactSt (retrySt handleRandom) r $ mkStdGen n
 
 exampleRandoms' :: [Int]
 exampleRandoms' = runIdentity $ fst <$> getRandomRs (1, 6) 100 `runReactRandom'` 8

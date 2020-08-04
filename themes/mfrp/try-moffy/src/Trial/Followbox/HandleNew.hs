@@ -27,8 +27,8 @@ import qualified Data.Text as T
 import qualified Network.HTTP.Simple as H
 
 import Control.Moffy.Handle.ThreadId (handleGetThreadId)
-import Control.Moffy.Handle.Lock (LockState(..), LockId, handleLock')
-import Control.Moffy.Handle.Random (RandomState(..), handleRandom')
+import Control.Moffy.Handle.Lock (LockState(..), LockId, handleLock)
+import Control.Moffy.Handle.Random (RandomState(..), handleRandom)
 import Control.Moffy.Handle.XField
 import Trial.Followbox.Event (
 	FollowboxEv, Occurred(..), StoreJsons(..), LoadJsons,
@@ -90,7 +90,7 @@ instance RandomState FollowboxState where
 handleFollowbox' ::
 	Field -> Browser -> Maybe GithubNameToken -> HandleF IO (GuiEv :+: FollowboxEv)
 handleFollowbox' f brws mba = retrySt $
-	liftSt . handleGetThreadId `mergeSt'` handleLock' `mergeSt'` handleRandom' `mergeSt'`
+	liftSt . handleGetThreadId `mergeSt'` handleLock `mergeSt'` handleRandom `mergeSt'`
 	handleStoreJsons' `mergeSt'` handleLoadJsons' `mergeSt'`
 	liftSt . just . handleHttpGet mba `mergeSt'`
 	liftSt . just . handleCalcTextExtents f `mergeSt'`
