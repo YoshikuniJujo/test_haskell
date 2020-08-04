@@ -8,11 +8,10 @@ module Trial.Followbox.HandleNew (
 	-- * HANDLE
 	handleFollowbox',
 	-- * STATE
-	FollowboxState, initialFollowboxState ) where
+	HandleF, FollowboxState, initialFollowboxState ) where
 
 import Prelude hiding (head)
 
-import Control.Arrow
 import Control.Moffy.Handle
 import Data.Type.Set (Singleton, (:+:))
 import Data.OneOrMore (pattern Singleton)
@@ -68,8 +67,8 @@ initialFollowboxState g = FollowboxState {
 	fsNextLockId = 0, fsLockState = [], fsObjects = [],
 	fsSleepUntil = Nothing, fsRandomGen = g }
 
-type HandleF m es = HandleSt' FollowboxState FollowboxState m es
-type HandleF' m es = HandleSt FollowboxState m es
+type HandleF m es = HandleSt FollowboxState m es
+type HandleF' m es = HandleSt' FollowboxState FollowboxState m es
 
 -- PUT AND GET EACH STATE
 
@@ -89,33 +88,33 @@ instance RandomState FollowboxState where
 -- FOLLOWBOX
 
 handleFollowbox' ::
-	Field -> Browser -> Maybe GithubNameToken -> HandleF' IO (GuiEv :+: FollowboxEv)
+	Field -> Browser -> Maybe GithubNameToken -> HandleF IO (GuiEv :+: FollowboxEv)
 handleFollowbox' f brws mba = retrySt $
 	liftSt . handleGetThreadId `mergeSt'` handleLock' `mergeSt'` handleRandom' `mergeSt'`
 	handleStoreJsons' `mergeSt'` handleLoadJsons' `mergeSt'`
-	handleHttpGet' mba `mergeSt'`
-	handleCalcTextExtents' f `mergeSt'`
-	handleGetTimeZone' `mergeSt'`
-	handleBrowse' brws `mergeSt'`
+	liftSt . just . handleHttpGet mba `mergeSt'`
+	liftSt . just . handleCalcTextExtents f `mergeSt'`
+	liftSt . just . handleGetTimeZone `mergeSt'`
+	liftSt . just . handleBrowse brws `mergeSt'`
 	handleBeginSleep' `mergeSt'` handleEndSleep' `mergeSt'`
-	handleRaiseError' `beforeSt'`
+	liftSt . handleRaiseError `beforeSt'`
 	handleMouseWithSleep' f
 
 -- MOUSE
 
-handleMouseWithSleep' :: Field -> HandleF IO GuiEv
-handleMouseWithSleep' f rqs s = case fsSleepUntil s of
-	Nothing -> (, s) <$> handle Nothing f rqs
+handleMouseWithSleep' :: Field -> HandleF' IO GuiEv
+handleMouseWithSleep' f rqs s = (, s) <$> case fsSleepUntil s of
+	Nothing -> handle Nothing f rqs
 	Just t -> getCurrentTime >>= \now ->
-		(, s) <$> handle (Just . realToFrac $ t `diffUTCTime` now) f rqs
+		handle (Just . realToFrac $ t `diffUTCTime` now) f rqs
 
 -- STORE AND LOAD JSONS
 
-handleStoreJsons' :: Monad m => HandleF m (Singleton StoreJsons)
+handleStoreJsons' :: Monad m => HandleF' m (Singleton StoreJsons)
 handleStoreJsons' (Singleton (StoreJsons os)) s =
 	pure (Just . Singleton $ OccStoreJsons os, s { fsObjects = os })
 
-handleLoadJsons' :: Monad m => HandleF m (Singleton LoadJsons)
+handleLoadJsons' :: Monad m => HandleF' m (Singleton LoadJsons)
 handleLoadJsons' _rqs s = pure (Just . Singleton . OccLoadJsons $ fsObjects s, s)
 
 -- REQUEST DATA
@@ -136,33 +135,21 @@ handleCalcTextExtents f (Singleton (CalcTextExtentsReq fn fs t)) = Singleton
 handleGetTimeZone :: Handle IO (Singleton GetTimeZone)
 handleGetTimeZone _reqs = Singleton . OccGetTimeZone <$> getCurrentTimeZone
 
-handleHttpGet' :: Maybe GithubNameToken -> HandleF IO (Singleton HttpGet)
-handleHttpGet' mgnt = ((first Just <$>) .) . liftSt . handleHttpGet mgnt
-
-handleCalcTextExtents' :: Field -> HandleF IO (Singleton CalcTextExtents)
-handleCalcTextExtents' f = ((first Just <$>) .) . liftSt . handleCalcTextExtents f
-
-handleGetTimeZone' :: HandleF IO (Singleton GetTimeZone)
-handleGetTimeZone' = ((first Just <$>) .) . liftSt . handleGetTimeZone
-
 -- BROWSE
 
 handleBrowse :: Browser -> Handle IO (Singleton Browse)
 handleBrowse brws (Singleton (Browse u)) = Singleton OccBrowse <$ spawnProcess brws [T.unpack u]
 
-handleBrowse' :: Browser -> HandleF IO (Singleton Browse)
-handleBrowse' brws = ((first Just <$>) .) . liftSt . handleBrowse brws
-
 -- BEGIN AND END SLEEP
 
-handleBeginSleep' :: Monad m => HandleF m (Singleton BeginSleep)
+handleBeginSleep' :: Monad m => HandleF' m (Singleton BeginSleep)
 handleBeginSleep' (Singleton bs) s = case bs of
 	BeginSleep t -> case fsSleepUntil s of
 		Just t' -> pure (Just . Singleton $ OccBeginSleep t', s)
 		Nothing -> pure (Just . Singleton $ OccBeginSleep t, s { fsSleepUntil = Just t })
 	CheckBeginSleep -> pure (Nothing, s)
 
-handleEndSleep' :: HandleF IO (Singleton EndSleep)
+handleEndSleep' :: HandleF' IO (Singleton EndSleep)
 handleEndSleep' _rqs s = case fsSleepUntil s of
 	Just t -> getCurrentTime >>= bool
 		(pure (Nothing, s))
@@ -189,5 +176,7 @@ handleRaiseError (Singleton (RaiseError e em)) = case er e of
 		Trace -> Just Continue
 		CatchError -> Nothing
 
-handleRaiseError' :: HandleF IO (Singleton RaiseError)
-handleRaiseError' = liftSt . handleRaiseError
+-- HELPER FUNCTION
+
+just :: Functor f => f a -> f (Maybe a)
+just = (Just <$>)

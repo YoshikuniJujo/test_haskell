@@ -50,6 +50,8 @@ todo
 		- [x] make handleRandom'
 		- [x] try using random
 		- [ ] others
+	+ [x] use in Followbox
+	+ [x] compare old and new module Handle of Followbox
 	+ [ ] others
 * [ ] consider wheter or not to use MonadState
 	+ [x] use MonadState in Control.Moffy.Handle.Lock
