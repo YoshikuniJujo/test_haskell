@@ -11,11 +11,11 @@ module Control.Moffy.Handle (
 	-- ** Plain
 	Handle, Handle', retry, expand, before, merge,
 	-- ** With State
-	HandleSt, HandleSt', retrySt, expandSt, beforeSt, mergeSt ) where
+	HandleSt, HandleSt', St, liftSt, retrySt, expandSt, beforeSt, mergeSt ) where
 
 import Control.Arrow (first)
 import Control.Moffy.Internal.React.Type (
-	Handle, HandleSt, EvReqs, EvOccs, Occurred )
+	Handle, HandleSt, St, liftSt, EvReqs, EvOccs, Occurred )
 import Data.Type.Set ((:+:), (:$:))
 import Data.OneOrMore (Expandable, Collapsable, Mergeable, merge')
 

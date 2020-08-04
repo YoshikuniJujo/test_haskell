@@ -77,9 +77,6 @@ mergeSt' :: (
 	HandleSt' st st m es -> HandleSt' st st m es' -> HandleSt' st st m (es :+: es')
 mergeSt' h1 h2 = mergeSt h1 pure h2 pure
 
-liftSt :: Functor m => m r -> St st m r
-liftSt m s = (, s) <$> m
-
 handle' :: LockState s => Field -> HandleSt' s s IO GuiEv
 handle' f = liftSt . handle Nothing f
 

@@ -32,6 +32,8 @@ todo
 	+ [ ] Moffy library
 	+ [ ] Moffy base
 	+ [ ] Trials
+	+ [ ] Control.Moffy.Internal.React.Type
+	+ [ ] Control.Moffy.Handle
 * [ ] move time event to Moffy library
 * [ ] consider use HandleSt
 	+ [ ] Control.Moffy.Handle.Lock
@@ -40,10 +42,10 @@ todo
 			* [x] use handleLock
 			* [x] use handleLock'
 		- [ ] others
+	+ [x] consider whether or not to move liftSt to Control.Moffy.Internal.React.Type
+		from Trial.TryLock
 	+ [ ] consider whether or not to move mergeSt' to Control.Moffy.Handle
 		from Trial.TryLock and Control.Moffy.Handle.Lock
-	+ [ ] consider whether or not to move liftSt to Control.Moffy.Internal.React.Type
-		from Trial.TryLock
 	+ [ ] Control.Moffy.Handle.Random
 		- [ ] make handleRandom'
 		- [ ] others
