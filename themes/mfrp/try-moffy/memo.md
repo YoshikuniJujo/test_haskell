@@ -52,7 +52,7 @@ todo
 		- [ ] others
 	+ [x] use in Followbox
 	+ [x] compare old and new module Handle of Followbox
-	+ [ ] others
+	+ [x] remove old Handle of Followbox
 * [ ] consider wheter or not to use MonadState
 	+ [x] use MonadState in Control.Moffy.Handle.Lock
 	+ [ ] refactor Control.Moffy.Handle.Lock
