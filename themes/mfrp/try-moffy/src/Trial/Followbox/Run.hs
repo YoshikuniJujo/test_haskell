@@ -3,7 +3,7 @@
 
 module Trial.Followbox.Run (runFollowbox) where
 
-import Control.Monad.State (runStateT, lift)
+-- import Control.Monad.State (runStateT, lift)
 import Control.Moffy.Run
 import Data.List (sort)
 import System.Environment (getArgs)
@@ -15,8 +15,12 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 
 import Trial.Followbox.Event (SigF)
+{-
 import Trial.Followbox.Handle (
 	FollowboxState, handleFollowbox, initialFollowboxState )
+	-}
+import Trial.Followbox.HandleNew (
+	FollowboxState, handleFollowbox', initialFollowboxState )
 import Trial.Followbox.View (View, view)
 import Trial.Followbox.TypeSynonym (
 	WindowTitle, Browser, GithubNameToken, GithubUserName )
@@ -42,8 +46,8 @@ runFollowbox ttl sig = getFollowboxInfo >>= \case
 
 run :: WindowTitle -> FollowboxInfo -> SigF s View a -> IO (a, FollowboxState)
 run ttl fi sg = openField ttl [exposureMask, buttonPressMask] >>= \f ->
-	interpret (handleFollowbox f brs mgnt) (lift . view f) sg
-		`runStateT` initialFollowboxState (mkStdGen 8) <* closeField f
+	interpretSt (handleFollowbox' f brs mgnt) (view f) sg
+		(initialFollowboxState $ mkStdGen 8) <* closeField f
 	where
 	FollowboxInfo { fiBrowser = brs, fiGithubUserNameToken = mgnt } = fi
 

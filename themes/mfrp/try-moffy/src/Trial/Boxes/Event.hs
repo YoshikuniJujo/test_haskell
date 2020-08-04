@@ -23,7 +23,6 @@ import Data.Time (DiffTime)
 
 import Control.Moffy.Handle.XField
 import Control.Moffy.Event.Mouse
-import Control.Moffy.Event.Delete
 
 ---------------------------------------------------------------------------
 

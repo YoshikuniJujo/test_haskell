@@ -11,7 +11,7 @@ module Control.Moffy.Handle (
 	-- ** Plain
 	Handle, Handle', retry, expand, before, merge,
 	-- ** With State
-	HandleSt, HandleSt', St, liftSt, retrySt, expandSt, beforeSt, mergeSt, mergeSt' ) where
+	HandleSt, HandleSt', St, liftSt, retrySt, expandSt, beforeSt, beforeSt', mergeSt, mergeSt' ) where
 
 import Control.Arrow (first)
 import Control.Moffy.Internal.React.Type (
@@ -53,7 +53,7 @@ expand :: (Applicative m, ExpandableHandle es es') =>
 	Handle' m es -> Handle' m es'
 expand hdl = ((OOM.expand <$>) <$>) . collapse hdl
 
-infixr 5 `before`
+infixr 5 `before`, `beforeSt'`
 
 before :: (
 	Monad m,
@@ -61,7 +61,7 @@ before :: (
 	Handle' m es -> Handle' m es' -> Handle' m (es :+: es')
 before (expand -> l) (expand -> r) rqs = maybe (r rqs) (pure . Just) =<< l rqs
 
-infixr 6 `merge`
+infixr 6 `merge`, `mergeSt'`
 
 merge :: (
 	Applicative m,
@@ -89,7 +89,6 @@ expandSt :: (Applicative m, ExpandableHandle es es') =>
 	HandleSt' st st' m es -> (st -> m st') -> HandleSt' st st' m es'
 expandSt hdl ot st rqs = first (OOM.expand <$>) <$> collapseSt hdl ot st rqs
 
-
 beforeSt :: (
 	Monad m,
 	ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es') ) =>
@@ -98,6 +97,12 @@ beforeSt :: (
 	HandleSt' st st'' m (es :+: es')
 beforeSt l otl r otr rqs st = expandSt l otl rqs st >>= \(mo, st') ->
 	maybe (expandSt r otr rqs st') ((<$> otr st') . (,) . Just) mo
+
+beforeSt' :: (
+	Monad m,
+	ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es') ) =>
+	HandleSt' st st m es -> HandleSt' st st m es' -> HandleSt' st st m (es :+: es')
+beforeSt' l r = beforeSt l pure r pure
 
 mergeSt :: (
 	Monad m,
