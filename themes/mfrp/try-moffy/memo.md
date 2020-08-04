@@ -310,10 +310,12 @@ Control.Moffy.Handle
 		- [x] handleTimeEvPlus: consider to return HandleSt' instead of HandleSt
 		- [ ] handleBoxes: use AbsoluteTimeState instead of StateT
 			* [x] make handleBoxes'
-			* [ ] replace handleBoxes by handleBoxes'
+			* [x] replace handleBoxes by handleBoxes'
 				+ [x] replace about tryBoxes
-				+ [ ] others
-			* [ ] remove handleBoxes
+				+ [x] others
+			* [x] remove handleBoxes
+				+ [x] move to where clause
+				+ [x] remove
 			* [ ] rename handleBoxes' to handleBoxes
 		- [ ] handletimeEvPlus: use AbsoluteTimeState instead of StateT
 		- [ ] handleTimeEvPlus: use ModeState s

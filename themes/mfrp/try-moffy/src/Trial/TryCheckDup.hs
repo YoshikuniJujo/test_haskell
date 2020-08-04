@@ -4,8 +4,6 @@
 
 module Trial.TryCheckDup where
 
-import Control.Monad
-import Control.Monad.State
 import Control.Moffy
 import Control.Moffy.Run
 import Data.Type.Set
@@ -23,9 +21,9 @@ tryCheckDup = do
 	f <- openField "右クリックのあとに左クリックが2回あったら終了" [
 		exposureMask, buttonPressMask, pointerMotionMask ]
 	t <- systemToTAITime <$> getSystemTime
-	print <=< (`runStateT` t) $ runUnique $ do
+	print =<< runUnique do
 		cd <- tag checkDup
-		pure . ($ InitMode) $ interpretReactSt (handleBoxes 0.05 f) do
+		pure . ($ (InitMode, t)) $ interpretReactSt (handleBoxes' 0.05 f) do
 			() <$ checkDup `first` checkDup
 			cd `first` cd
 	closeField f

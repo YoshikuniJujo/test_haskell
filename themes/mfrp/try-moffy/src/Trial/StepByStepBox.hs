@@ -65,7 +65,7 @@ doubler = do
 tryDoubler :: IO ()
 tryDoubler = do
 	f <- openField "TRY DOUBLER" [buttonPressMask, exposureMask]
-	void . (interpretReactSt (handleBoxes 0.05 f) doubler InitMode `runStateT`) . systemToTAITime =<< getSystemTime
+	void . interpretReactSt (handleBoxes' 0.05 f) doubler . (InitMode ,) . systemToTAITime =<< getSystemTime
 	closeField f
 
 data Color = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
@@ -79,7 +79,7 @@ cycleColor = cc . cycle $ fromList [Red .. Magenta] where
 tryCycleColor :: IO ()
 tryCycleColor = do
 	f <- openField "TRY CYCLE COLOR" [buttonPressMask, exposureMask]
-	void . (interpretSt (handleBoxes 0.05 f) (liftIO . print) cycleColor InitMode `runStateT`) . systemToTAITime =<< getSystemTime
+	void . interpretSt (handleBoxes' 0.05 f) print cycleColor . (InitMode ,) . systemToTAITime =<< getSystemTime
 	closeField f
 
 mousePos :: Sig s (Singleton MouseMove) Point ()
@@ -88,13 +88,13 @@ mousePos = repeat mouseMove
 tryMousePos :: IO ()
 tryMousePos = do
 	f <- openField "TRY MOUSE POS" [pointerMotionMask, exposureMask]
-	void . (interpretSt (handleBoxes 0.05 f) (liftIO . print) mousePos InitMode `runStateT`) . systemToTAITime =<< getSystemTime
+	void . interpretSt (handleBoxes' 0.05 f) print mousePos . (InitMode ,) . systemToTAITime =<< getSystemTime
 	closeField f
 
 curRect :: Point -> Sig s (MouseMove :- 'Nil) Rect ()
 curRect p1 = Rect p1 <$%> mousePos
 
-tryCurRect :: IO ((), Mode)
+tryCurRect :: IO ()
 tryCurRect = trySigGRect "TRY CUR RECT" $ curRect (200, 150)
 
 data Rect = Rect { leftup :: Point, rightdown :: Point  } deriving Show
@@ -104,17 +104,17 @@ tryReactG ttl sig = do
 	f <- openField ttl [
 		pointerMotionMask, buttonPressMask, buttonReleaseMask,
 		exposureMask ]
-	((r, _), _) <- (interpretReactSt (handleBoxes 0.05 f) sig InitMode `runStateT`)
+	(r, _) <- interpretReactSt (handleBoxes' 0.05 f) sig . (InitMode ,)
 			. systemToTAITime =<< getSystemTime
 	r <$ closeField f
 
-trySigGRect :: Adjustable es BoxEv => String -> Sig s es Rect r -> IO (r, Mode)
+trySigGRect :: Adjustable es BoxEv => String -> Sig s es Rect r -> IO r
 trySigGRect ttl sig = do
 	f <- openField ttl [
 		pointerMotionMask, buttonPressMask, buttonReleaseMask,
 		exposureMask ]
-	(r, _) <- (interpretSt (handleBoxes 0.05 f)
-				(liftIO . withFlush f . drawRect f (colorToPixel Red)) sig InitMode `runStateT`)
+	(r, _) <- interpretSt (handleBoxes' 0.05 f)
+				(withFlush f . drawRect f (colorToPixel Red)) sig . (InitMode ,)
 			. systemToTAITime =<< getSystemTime
 	r <$ closeField f
 
@@ -140,7 +140,7 @@ wiggleRect (Rect lu rd) = (<$%> elapsed) \t -> let
 	dx = round (sin (fromRational (toRational t) * 5) * 15 :: Double) in
 	Rect ((+ dx) `Arr.first` lu) ((+ dx) `Arr.first` rd)
 
-tryWiggleRect :: IO ((), Mode)
+tryWiggleRect :: IO ()
 tryWiggleRect = trySigGRect "TRY WIGGLE RECT" . wiggleRect $ Rect (200, 150) (400, 300)
 
 posInside :: Rect -> Sig s es Point y -> React s es (Either Point y)
@@ -155,8 +155,8 @@ tryPosInside :: IO (Either Point ())
 tryPosInside = do
 	f <- openField "TRY POS INSIDE" [pointerMotionMask, exposureMask]
 	drawRect f (colorToPixel Red) $ Rect (200, 150) (400, 300)
-	((r, _), _) <- (interpretReactSt (handleBoxes 0.05 f)
-			(posInside (Rect (200, 150) (400, 300)) mousePos) InitMode `runStateT`)
+	(r, _) <- interpretReactSt (handleBoxes' 0.05 f)
+			(posInside (Rect (200, 150) (400, 300)) mousePos) . (InitMode ,)
 		. systemToTAITime =<< getSystemTime
 	r <$ closeField f
 
@@ -171,7 +171,7 @@ completeRect :: Point -> Sig s (MouseUp :- MouseMove :- 'Nil) Rect (Maybe Rect)
 completeRect p1 =
 	either (const Nothing) (Just . fst) <$> curRect p1 `until` leftUp
 
-tryCompleteRect :: IO (Maybe Rect, Mode)
+tryCompleteRect :: IO (Maybe Rect)
 tryCompleteRect = trySigGRect "TRY COMPLETE RECT" $ completeRect (200, 150)
 
 defineRect :: Sig s (MouseDown :- MouseUp :- MouseMove :- 'Nil) Rect Rect
@@ -180,23 +180,23 @@ defineRect = waitFor (adjust firstPoint) >>= \case
 	Just p1 -> fromMaybe (error "never occur") <$> adjustSig (completeRect p1)
 
 tryDefineRect :: IO Rect
-tryDefineRect = fst <$> trySigGRect "TRY DEFINE RECT" defineRect
+tryDefineRect = trySigGRect "TRY DEFINE RECT" defineRect
 
 chooseBoxColor :: Rect -> Sig s (MouseDown :- DeltaTime :- 'Nil) Box ()
 chooseBoxColor r = Box <$%> adjustSig (wiggleRect r) <*%> adjustSig cycleColor
 
 data Box = Box Rect Color deriving Show
 
-tryChooseBoxColor :: IO ((), Mode)
+tryChooseBoxColor :: IO ()
 tryChooseBoxColor = trySigGBox "TRY CHOOSE BOX COLOR" . chooseBoxColor $ Rect (200, 150) (400, 300)
 
-trySigGBox :: Adjustable es BoxEv => String -> Sig s es Box r -> IO (r, Mode)
+trySigGBox :: Adjustable es BoxEv => String -> Sig s es Box r -> IO r
 trySigGBox ttl sig = do
 	f <- openField ttl [
 		pointerMotionMask, buttonPressMask, buttonReleaseMask,
 		exposureMask ]
-	(r, _) <- (interpretSt (handleBoxes 0.05 f)
-				(liftIO . withFlush f . drawBox f) sig InitMode `runStateT`)
+	(r, _) <- interpretSt (handleBoxes' 0.05 f)
+				(withFlush f . drawBox f) sig . (InitMode ,)
 			. systemToTAITime =<< getSystemTime
 	r <$ closeField f
 
@@ -214,7 +214,7 @@ box = (() <$) $ (`Box` Red) <$%> adjustSig defineRect >>= \r ->
 	adjustSig (chooseBoxColor r) >> waitFor (adjust $ drClickOn r)
 
 tryBox :: IO ()
-tryBox = fst <$> trySigGBox "TRY BOX" box
+tryBox = trySigGBox "TRY BOX" box
 
 newBoxes :: SigG s (ISigG s Box ()) ()
 newBoxes = spawn box
