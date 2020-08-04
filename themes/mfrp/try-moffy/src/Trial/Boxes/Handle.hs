@@ -1,6 +1,6 @@
-{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
-{-# LANGUAGE ScopedTypeVariables, PatternSynonyms #-}
-{-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 

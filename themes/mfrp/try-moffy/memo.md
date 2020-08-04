@@ -41,7 +41,8 @@ todo
 		- [x] try using lock
 			* [x] use handleLock
 			* [x] use handleLock'
-		- [ ] others
+		- [x] remove handleLock
+		- [ ] rename from handleLock' to handleLock
 	+ [x] consider whether or not to move liftSt to Control.Moffy.Internal.React.Type
 		from Trial.TryLock
 	+ [x] consider whether or not to move mergeSt' to Control.Moffy.Handle
@@ -49,7 +50,8 @@ todo
 	+ [ ] Control.Moffy.Handle.Random
 		- [x] make handleRandom'
 		- [x] try using random
-		- [ ] others
+		- [ ] remove handleRandom
+		- [ ] rename from handleRandom' to handlrRandom
 	+ [x] use in Followbox
 	+ [x] compare old and new module Handle of Followbox
 	+ [x] remove old Handle of Followbox

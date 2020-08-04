@@ -6,12 +6,8 @@
 
 module Trial.CountWithLock where
 
-import Control.Monad.State
 import Control.Moffy
-import Control.Moffy.Handle
-import Control.Moffy.Run
 import Data.Type.Set
-import Data.OneOrMore hiding (merge)
 import Data.Or
 import Data.List
 
@@ -29,17 +25,8 @@ count = await CountReq \(OccCount n) -> n
 class CountState s where getCount :: s -> Int; putCount :: s -> Int -> s
 instance CountState Int where getCount = id; putCount = flip const
 
-handleCount :: (Monad m, CountState s) => Handle' (StateT s m) (Singleton Count)
-handleCount _rqs = Just . Singleton . OccCount <$> do
-	n <- gets getCount
-	modify (`putCount` (n + 1))
-	pure n
-
 count2 :: React s (Singleton Count) (Or Int Int)
 count2 = count `first` count
-
-noLockCount :: (Or Int Int, Int)
-noLockCount = interpretReact (retry handleCount) (count2 >> count2) `runState` 0
 
 count2WithLock :: LockId -> React s (Count :- GetThreadId :- LockEv) (Or Int Int)
 count2WithLock li =
@@ -64,15 +51,3 @@ instance LockState LockCountSt where
 instance CountState LockCountSt where
 	getCount = counter
 	putCount s n = s { counter = n }
-
-lockCount1 :: (Or Int Int, LockCountSt)
-lockCount1 = (`runState` initLockCountSt) $ interpretReact (retry $ handleGetThreadId `merge` handleLock `merge` handleCount) do
-	li <- adjust newLockId
-	count2WithLock li
-
-lockCount :: ((Or Int Int, Or Int Int), LockCountSt)
-lockCount = (`runState` initLockCountSt) $ interpretReact (retry $ handleGetThreadId `merge` handleLock `merge` handleCount) do
-	li <- adjust newLockId
-	c1 <- count2WithLock li -- :: React s (Count :- GetThreadId :- LockEv) (Or Int Int)
-	c2 <- count2WithLock li
-	pure (c1, c2)

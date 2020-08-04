@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase, TupleSections #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -6,7 +6,6 @@
 module Trial.TryLock where
 
 import Control.Monad
-import Control.Monad.State
 import Control.Moffy
 import Control.Moffy.Event.ThreadId
 import Control.Moffy.Event.Lock
@@ -64,12 +63,6 @@ instance LockState LockSt where
 	isLocked LockSt { lockState = ls } li = li `elem` ls
 	lockIt s li = s { lockState = li : lockState s }
 	unlockIt s li = s { lockState = delete li (lockState s) }
-
-tryLockLeftCount2 :: IO ((), LockSt)
-tryLockLeftCount2 = do
-	f <- openField "TRY LOCK LEFT COUNT 2" [buttonPressMask, exposureMask]
-	interpret (retry $ handleGetThreadId `merge` handleLock `before` liftIO . handle Nothing f) (liftIO . print) lockLeftCount2 `runStateT` LockSt 0 []
-		<* closeField f
 
 handle' :: LockState s => Field -> HandleSt' s s IO GuiEv
 handle' f = liftSt . handle Nothing f
