@@ -334,10 +334,10 @@ Control.Moffy.Handle
 		- [x] handleTimeEvPlus: use s instead of (Mode, AbsoluteTime)
 		- [x] handleTimeEvPlus: use HandleSt' instead of Handle' as argument
 		- [x] handleTimeEvPlus: try using HandleSt' instead of `DiffTime -> a -> `
-		- [ ] handleTimeEvPlus: add state s to argument function of handleTimeEvPlus
+		- [x] handleTimeEvPlus: add state s to argument function of handleTimeEvPlus
 			* [x] step 1
-			* [ ] others
-		- [ ] use HandleSt'
+			* [x] others
+		- [x] use HandleSt'
 			* `ModeState s =>`
 				`(DiffTime -> a -> HandleSt' s s m) -> Difftime ->`
 				`a -> HandleSt' s s m (es :+: TimeEv)`
