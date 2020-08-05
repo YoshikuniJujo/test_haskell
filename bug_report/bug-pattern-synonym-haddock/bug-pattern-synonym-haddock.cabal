@@ -1,0 +1,38 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: bbb07de44253db42deda7253b4cbb850163d6b19dcfa384eab96c9bd2f607422
+
+name:           bug-pattern-synonym-haddock
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-moffy#readme>
+homepage:       https://github.com/YoshikuniJujo/try-moffy#readme
+bug-reports:    https://github.com/YoshikuniJujo/try-moffy/issues
+author:         Yoshikuni Jujo
+maintainer:     PAF01143@nifty.ne.jp
+copyright:      Yoshikuni Jujo
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/YoshikuniJujo/try-moffy
+
+library
+  exposed-modules:
+      A
+      B
+  other-modules:
+      Paths_bug_pattern_synonym_haddock
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+  default-language: Haskell2010
