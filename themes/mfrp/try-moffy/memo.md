@@ -341,8 +341,9 @@ Control.Moffy.Handle
 			* `ModeState s =>`
 				`(DiffTime -> a -> HandleSt' s s m) -> Difftime ->`
 				`a -> HandleSt' s s m (es :+: TimeEv)`
-		- [ ] move TimeEv to Control.Moffy.Event.TimeEv
-		- [ ] move Trial.Boxes.Handle.TimeEv to Control.Moffy.Handle.TimeEv
+		- [x] separate TimeEv from Trial.Boxes.Event
+		- [ ] move TimeEv to Control.Moffy.Event.Time
+		- [ ] move Trial.Boxes.Handle.TimeEv to Control.Moffy.Handle.Time
 		- [ ] others
 	+ [ ] refactor Trial.Boxes.Handle.TimeEv
 	+ [ ] refactor Trial.Boxes.Event

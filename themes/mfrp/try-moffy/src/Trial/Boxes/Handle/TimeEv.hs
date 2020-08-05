@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
+{-# LANGUAGE BlockArguments, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, PatternSynonyms #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
@@ -16,7 +16,7 @@ import Data.Time (DiffTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
 	
-import Trial.Boxes.Event (TimeEv, TryWait(..), pattern OccDeltaTime, pattern OccTryWait)
+import Trial.Boxes.Event.Time (TimeEv, TryWait(..), pattern OccDeltaTime, pattern OccTryWait)
 
 ---------------------------------------------------------------------------
 
@@ -43,7 +43,7 @@ handleTimeEvPlus hdl rqs0 (prd, f0, s0) = case md of
 	WaitMode now -> pt <$> handleWait rqs0 (now, tai)
 	where
 	md = getMode s0; tai = getTai s0
-	pt (r, (m, t)) = (r, ((`putMode` m) $ (`putTai` t) s0))
+	pt (r, (m, t)) = (r, (`putMode` m) $ (`putTai` t) s0)
 
 handleInit :: (
 	TimeState s,
@@ -56,9 +56,6 @@ handleInit :: (
 handleInit hdl = mergeSt
 	hdl (\(prd, _, s) -> s <$ delay (round $ prd * 1000000))
 	handleNow' (\s  -> putTai s <$> getTaiTime)
-
-toHandleSt :: Monad m => HandleSt' (DiffTime, a, ()) () m es -> HandleSt' (DiffTime, a, s) s m es
-toHandleSt hdl rqs (prd, x, tai) = (, tai) . fst <$> hdl rqs (prd, x, ())
 
 handleNow' :: (Monad m, TaiTimeM m, TimeState s) => HandleSt' s s m TimeEv
 handleNow' rqs s = do
