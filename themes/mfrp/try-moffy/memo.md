@@ -342,13 +342,12 @@ Control.Moffy.Handle
 				`(DiffTime -> a -> HandleSt' s s m) -> Difftime ->`
 				`a -> HandleSt' s s m (es :+: TimeEv)`
 		- [x] separate TimeEv from Trial.Boxes.Event
-	- [x] move TimeEv to Control.Moffy.Event.Time
-		* [x] separate TimeEv from Trial.Boxes.Event
-			+ [x] tribial fix for haddock bug
-		* [x] move Trial.Boxes.Event.Time to Control.Moffy.Event.Time
-	- [ ] move Trial.Boxes.Handle.TimeEv to Control.Moffy.Handle.Time
-	- [ ] others
-	+ [ ] refactor Trial.Boxes.Handle.TimeEv
+	+ [x] move TimeEv to Control.Moffy.Event.Time
+		- [x] separate TimeEv from Trial.Boxes.Event
+			* [x] tribial fix for haddock bug
+		- [x] move Trial.Boxes.Event.Time to Control.Moffy.Event.Time
+	+ [x] move Trial.Boxes.Handle.TimeEv to Control.Moffy.Handle.Time
+	+ [ ] refactor Control.Moffy.Handle.Time
 	+ [ ] refactor Trial.Boxes.Event
 	+ [ ] others
 * [ ] Control.Moffy.Event.Delete

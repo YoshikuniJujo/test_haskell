@@ -4,7 +4,7 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Boxes.Handle.TimeEv (
+module Control.Moffy.Handle.Time (
 	TimeState(..), TaiTimeM(..), DelayM(..), Mode(InitMode), handleTimeEvPlus ) where
 
 import Control.Arrow
