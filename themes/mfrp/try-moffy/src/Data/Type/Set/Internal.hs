@@ -92,4 +92,4 @@ data ConsMerge t ts t' ts' :: () >-> k
 type instance ConsMerge t ts t' ts' $ '() = t ':~ Merge ts (t' ':~ ts')
 
 data ConsMerge' t ts t' ts' :: () >-> k
-type instance ConsMerge' t ts t' ts' $ '() = t' ':~ Merge (t :~ ts) ts'
+type instance ConsMerge' t ts t' ts' $ '() = t' ':~ Merge (t ':~ ts) ts'
