@@ -27,8 +27,7 @@ import Control.Moffy.Internal.React.Type (
 
 interpret :: (Monad m, Adjustable es es') =>
 	Handle m es' -> (a -> m ()) -> Sig s es a r -> m r
-interpret hdl vw = go where
-	go (Sig r) = isig pure ((. go) . (>>) . vw) =<< interpretReact hdl r
+interpret hdl vw rqs = fst <$> interpretSt (simple hdl) vw rqs ()
 
 interpretSt :: (Monad m, Adjustable es es') =>
 	HandleSt st m es' -> (a -> m ()) -> Sig s es a r -> St st m r
@@ -42,13 +41,7 @@ interpretSt hdl vw = go where
 
 interpretReact :: (Monad m, Adjustable es es') =>
 	Handle m es' -> React s es r -> m r
-interpretReact hdl (adjust -> r) = run hdl r rootThreadId
-
-run :: Monad m => Handle m es -> React s es r -> ThreadId -> m r
-run _ (Pure x) _ = pure x
-run _ (Never :>>= _) _ = error "never end"
-run hdl (GetThreadId :>>= c) t = run hdl (c `qApp` t) t
-run hdl (Await rqs :>>= c) t = flip (run hdl) t . (c `qApp`) =<< hdl rqs
+interpretReact hdl rqs = fst <$> interpretReactSt (simple hdl) rqs ()
 
 interpretReactSt :: (Monad m, Adjustable es es') =>
 	HandleSt st m es' -> React s es r -> St st m r
@@ -60,3 +53,6 @@ runSt _ (Never :>>= _) _ _ = error "never end"
 runSt hdl (GetThreadId :>>= c) t st = runSt hdl (c `qApp` t) t st
 runSt hdl (Await rqs :>>= c) t st =
 	hdl rqs st >>= \(x, st') -> runSt hdl (c `qApp` x) t st'
+
+simple :: Functor m => Handle m es -> HandleSt () m es
+simple hdl rqs () = (, ()) <$> hdl rqs

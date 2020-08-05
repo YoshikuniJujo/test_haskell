@@ -4,16 +4,31 @@ memo
 todo
 ----
 
+* [x] rewrite interpretReact to use interpretReactSt
+	+ [x] define function simple
+		- `simple :: Handle m es -> HandleSt () () m es`
+	+ [x] use function simple
+* [x] rewrite interpret to use interpretSt
+	+ [x] use function simple
+* [ ] consider whether to remove interpret and interpretReact
+	+ [ ] remove interpret and interpretReact
+	+ [ ] rename interpretSt and interpretReactSt
+		to interpret and interpretReact
+* [ ] consider whether to remove Handle and Handle'
+	+ [ ] remove Handle and Handle'
+	+ [ ] rename HandleSt and HandleSt' to Handle and Handle'
+	+ [ ] consider whether to add (for example) function simple
+		to make SimpleHandle
+* [ ] consider whether or not to change
+	+ from HandleSt' s s m es
+	+ to HandleSt' s m es
 * [ ] check module hierarchy
-	+ [x] Moffy
+	+ [ ] Moffy
 	+ [ ] Moffy library
 	+ [ ] Moffy base
+	+ [ ] Trial
 * [ ] refactoring
-	+ [x] package simple-field
-		- [x] about Event'
-	+ [x] Control.Moffy
-		- [x] consider whether or not to rename function `at'
-		- [x] correct action of function `at'
+	+ [ ] Control.Moffy
 	+ [ ] module structure of Control.Moffy.Event.Key
 	+ [ ] Control.Moffy.Event.Key
 	+ [ ] Trial
@@ -35,28 +50,7 @@ todo
 	+ [ ] Control.Moffy.Internal.React.Type
 	+ [ ] Control.Moffy.Handle
 * [ ] move time event to Moffy library
-* [x] consider use HandleSt
-	+ [x] Control.Moffy.Handle.Lock
-		- [x] make handleLock'
-		- [x] try using lock
-			* [x] use handleLock
-			* [x] use handleLock'
-		- [x] remove handleLock
-		- [x] rename from handleLock' to handleLock
-	+ [x] consider whether or not to move liftSt to Control.Moffy.Internal.React.Type
-		from Trial.TryLock
-	+ [x] consider whether or not to move mergeSt' to Control.Moffy.Handle
-		from Trial.TryLock and Control.Moffy.Handle.Lock
-	+ [x] Control.Moffy.Handle.Random
-		- [x] make handleRandom'
-		- [x] try using random
-		- [x] remove handleRandom
-		- [x] rename from handleRandom' to handlrRandom
-	+ [x] use in Followbox
-	+ [x] compare old and new module Handle of Followbox
-	+ [x] remove old Handle of Followbox
 * [ ] consider wheter or not to use MonadState
-	+ [x] use MonadState in Control.Moffy.Handle.Lock
 	+ [ ] refactor Control.Moffy.Handle.Lock
 	+ [ ] others
 * [ ] separate
@@ -72,18 +66,6 @@ todo
 * [ ] make tetris like game
 	+ [ ] moffyris
 * [ ] make handle using GTK
-* [ ] consider whether to remove interpret and interpretReact
-	+ [ ] remove interpret and interpretReact
-	+ [ ] rename interpretSt and interpretReactSt
-		to interpret and interpretReact
-* [ ] consider whether to remove Handle and Handle'
-	+ [ ] remove Handle and Handle'
-	+ [ ] rename HandleSt and HandleSt' to Handle and Handle'
-	+ [ ] consider whether to add (for example) function simple
-		to make SimpleHandle
-* [ ] consider whether or not to change
-	+ from HandleSt' s s m es
-	+ to HandleSt' s m es
 
 refactoring
 -----------
