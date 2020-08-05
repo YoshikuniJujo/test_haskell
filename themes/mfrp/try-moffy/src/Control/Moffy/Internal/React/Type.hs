@@ -13,7 +13,7 @@ module Control.Moffy.Internal.React.Type (
 	-- ** Never and Await
 	never, await, await',
 	-- * Handle
-	Handle, HandleSt, St, liftSt,
+	Handle, HandleSt, liftHandle, St, liftSt,
 	-- * ThreadId
 	ThreadId, rootThreadId, forkThreadId ) where
 
@@ -69,6 +69,9 @@ await' r f = await r . f =<<< GetThreadId
 type Handle m es = EvReqs es -> m (EvOccs es)
 type HandleSt st m es = EvReqs es -> St st m (EvOccs es)
 type St st m a = st -> m (a, st)
+
+liftHandle :: Functor m => Handle m es -> HandleSt st m es
+liftHandle = (liftSt .)
 
 liftSt :: Functor m => m r -> St st m r
 liftSt m s = (, s) <$> m

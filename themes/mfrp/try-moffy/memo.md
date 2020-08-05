@@ -10,6 +10,7 @@ todo
 	+ [x] use function simple
 * [x] rewrite interpret to use interpretSt
 	+ [x] use function simple
+* [x] define function liftHandle
 * [ ] consider whether to remove interpret and interpretReact
 	+ [ ] remove interpret and interpretReact
 	+ [ ] rename interpretSt and interpretReactSt
