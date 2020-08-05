@@ -19,7 +19,10 @@ import Trial.Boxes.Handle.TimeEv
 ---------------------------------------------------------------------------
 
 handleBoxes :: DiffTime -> Field -> HandleSt (Mode, AbsoluteTime) IO BoxEv
-handleBoxes dt f = retrySt $ handleTimeEvPlus handle' dt f
+handleBoxes dt f = retrySt $ fromSt (handleTimeEvPlus handle') dt f
 
 handle' :: HandleSt' (DiffTime, Field) () IO GuiEv
 handle' rqs (dt, f) = (, ()) <$> handle (Just dt) f rqs
+
+fromSt :: HandleSt' (a, b, s) s' m es -> a -> b -> HandleSt' s s' m es
+fromSt hdl x y rqs s = hdl rqs (x, y, s)

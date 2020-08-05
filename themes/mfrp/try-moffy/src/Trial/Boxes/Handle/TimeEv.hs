@@ -37,10 +37,10 @@ handleTimeEvPlus :: (
 	ExpandableHandle TimeEv (es :+: TimeEv),
 	MergeableOccurred es TimeEv (es :+: TimeEv) ) =>
 	HandleSt' (DiffTime, a) () m es ->
-	DiffTime -> a -> HandleSt' s s m (es :+: TimeEv)
-handleTimeEvPlus hdl prd f rqs s0 = case md of
-	InitMode -> pt <$> handleInit hdl' rqs ((prd, f), tai)
-	WaitMode now -> pt <$> handleWait rqs (now, tai)
+	HandleSt' (DiffTime, a, s) s m (es :+: TimeEv)
+handleTimeEvPlus hdl rqs0 (prd, f0, s0) = case md of
+	InitMode -> pt <$> handleInit hdl' rqs0 ((prd, f0), tai)
+	WaitMode now -> pt <$> handleWait rqs0 (now, tai)
 	where
 	hdl' dt f rqs = fst <$> hdl rqs (dt, f)
 	md = getMode s0; tai = getTai s0
