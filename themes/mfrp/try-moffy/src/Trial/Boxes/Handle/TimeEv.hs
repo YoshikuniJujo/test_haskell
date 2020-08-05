@@ -36,29 +36,36 @@ handleTimeEvPlus :: (
 	ExpandableHandle es (es :+: TimeEv),
 	ExpandableHandle TimeEv (es :+: TimeEv),
 	MergeableOccurred es TimeEv (es :+: TimeEv) ) =>
-	HandleSt' (DiffTime, a) () m es ->
+	HandleSt' (DiffTime, a, ()) () m es ->
 	HandleSt' (DiffTime, a, s) s m (es :+: TimeEv)
 handleTimeEvPlus hdl rqs0 (prd, f0, s0) = case md of
-	InitMode -> pt <$> handleInit hdl' rqs0 ((prd, f0), tai)
+	InitMode -> handleInit hdl rqs0 ((prd, f0), s0)
 	WaitMode now -> pt <$> handleWait rqs0 (now, tai)
 	where
-	hdl' dt f rqs = fst <$> hdl rqs (dt, f)
 	md = getMode s0; tai = getTai s0
 	pt (r, (m, t)) = (r, ((`putMode` m) $ (`putTai` t) s0))
 
 handleInit :: (
+	TimeState s,
 	Monad m, TaiTimeM m, DelayM m,
 	ExpandableHandle es (es :+: TimeEv),
 	ExpandableHandle TimeEv (es :+: TimeEv),
 	MergeableOccurred es TimeEv (es :+: TimeEv) ) =>
-	(DiffTime -> a -> Handle' m es) ->
-	HandleSt' ((DiffTime, a), AbsoluteTime) (Mode, AbsoluteTime) m (es :+: TimeEv)
-handleInit hdl = mergeSt
+	HandleSt' (DiffTime, a, ()) () m es ->
+	HandleSt' ((DiffTime, a), s) s m (es :+: TimeEv)
+handleInit hdl = toHandleTaiToS $ mergeSt
 	(toHandleSt hdl) (\((prd, _), tai) -> tai <$ delay (round $ prd * 1000000))
 	handleNow (\_ -> (InitMode ,) <$> getTaiTime)
 
-toHandleSt :: Monad m => (DiffTime -> a -> Handle' m es) -> HandleSt' ((DiffTime, a), AbsoluteTime) AbsoluteTime m es
-toHandleSt hdl rqs ((prd, x), tai) = (, tai) <$> hdl prd x rqs
+toHandleSt :: Monad m => HandleSt' (DiffTime, a, ()) () m es -> HandleSt' ((DiffTime, a), AbsoluteTime) AbsoluteTime m es
+toHandleSt hdl rqs ((prd, x), tai) = (, tai) . fst <$> hdl rqs (prd, x, ())
+
+toHandleTaiToS :: (Monad m, TimeState s) =>
+	HandleSt' ((DiffTime, a), AbsoluteTime) (Mode, AbsoluteTime) m es ->
+	HandleSt' ((DiffTime, a), s) s m es
+toHandleTaiToS hdl rqs ((dt, f), s) = do
+	(r, (md, tai)) <- hdl rqs ((dt, f), getTai s)
+	pure (r, (`putMode` md) $ (`putTai` tai) s)
 
 handleNow :: (Monad m, TaiTimeM m) => HandleSt' AbsoluteTime (Mode, AbsoluteTime) m TimeEv
 handleNow rqs lst = handleTime rqs . (, lst) =<< getTaiTime
