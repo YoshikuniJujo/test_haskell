@@ -72,6 +72,15 @@ todo
 * [ ] make tetris like game
 	+ [ ] moffyris
 * [ ] make handle using GTK
+* [ ] consider whether to remove interpret and interpretReact
+	+ [ ] remove interpret and interpretReact
+	+ [ ] rename interpretSt and interpretReactSt
+		to interpret and interpretReact
+* [ ] consider whether to remove Handle and Handle'
+	+ [ ] remove Handle and Handle'
+	+ [ ] rename HandleSt and HandleSt' to Handle and Handle'
+	+ [ ] consider whether to add (for example) function simple
+		to make SimpleHandle
 
 refactoring
 -----------
@@ -318,12 +327,14 @@ Control.Moffy.Handle
 				+ [x] remove
 			* [x] rename handleBoxes' to handleBoxes
 		- [x] handleTimeEvPlus: use HandleSt' instead of StateT
-		- [ ] rename handleTimeEvPlus' to handleTimeEvPlus
-		- [ ] handletimeEvPlus: use AbsoluteTimeState instead of StateT
+		- [x] rename handleTimeEvPlus' to handleTimeEvPlus
+		- [ ] handletimeEvPlus: use HandleSt' instead of Handle' as argument
 		- [ ] use HandleSt'
 			* `ModeState s =>`
 				`(DiffTime -> a -> HandleSt' s s m) -> Difftime ->`
 				`a -> HandleSt' s s m (es :+: TimeEv)`
+		- [ ] move TimeEv to Control.Moffy.Event.TimeEv
+		- [ ] move Trial.Boxes.Handle.TimeEv to Control.Moffy.Handle.TimeEv
 		- [ ] others
 	+ [ ] refactor Trial.Boxes.Handle.TimeEv
 	+ [ ] refactor Trial.Boxes.Event

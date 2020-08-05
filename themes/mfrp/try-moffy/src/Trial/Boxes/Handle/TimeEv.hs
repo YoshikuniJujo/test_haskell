@@ -5,7 +5,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.Boxes.Handle.TimeEv (
-	TaiTimeM(..), DelayM(..), Mode(InitMode), handleTimeEvPlus' ) where
+	TaiTimeM(..), DelayM(..), Mode(InitMode), handleTimeEvPlus ) where
 
 import Control.Moffy.Handle hiding (expand)
 import Control.Concurrent
@@ -25,14 +25,14 @@ class ModeState s where getMode :: s -> Mode; putMode :: s -> Mode -> s
 
 instance ModeState Mode where getMode = id; putMode = flip const
 
-handleTimeEvPlus' :: (
+handleTimeEvPlus :: (
 	Monad m, TaiTimeM m, DelayM m,
 	ExpandableHandle es (es :+: TimeEv),
 	ExpandableHandle TimeEv (es :+: TimeEv),
 	MergeableOccurred es TimeEv (es :+: TimeEv) ) =>
 	(DiffTime -> a -> Handle' m es) ->
 	DiffTime -> a -> HandleSt' (Mode, AbsoluteTime) (Mode, AbsoluteTime) m (es :+: TimeEv)
-handleTimeEvPlus' hdl prd f rqs (md, tai) = case md of
+handleTimeEvPlus hdl prd f rqs (md, tai) = case md of
 	InitMode -> handleInit' hdl rqs ((prd, f), tai)
 	WaitMode now -> handleWait' rqs (now, tai)
 
