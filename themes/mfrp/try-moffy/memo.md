@@ -328,6 +328,7 @@ Control.Moffy.Handle
 			* [x] rename handleBoxes' to handleBoxes
 		- [x] handleTimeEvPlus: use HandleSt' instead of StateT
 		- [x] rename handleTimeEvPlus' to handleTimeEvPlus
+		- [x] handleTimeEvPlus: use s instead of (Mode, AbsoluteTime)
 		- [ ] handletimeEvPlus: use HandleSt' instead of Handle' as argument
 		- [ ] use HandleSt'
 			* `ModeState s =>`
