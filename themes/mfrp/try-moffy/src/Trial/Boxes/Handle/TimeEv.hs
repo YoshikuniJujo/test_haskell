@@ -16,7 +16,7 @@ import Data.Time (DiffTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
 	
-import Trial.Boxes.Event.Time (TimeEv, TryWait(..), pattern OccDeltaTime, pattern OccTryWait)
+import Control.Moffy.Event.Time (TimeEv, TryWait(..), pattern OccDeltaTime, pattern OccTryWait)
 
 ---------------------------------------------------------------------------
 

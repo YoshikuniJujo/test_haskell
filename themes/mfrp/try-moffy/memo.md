@@ -317,7 +317,7 @@ Control.Moffy.Handle
 	+ [x] body
 * [ ] separate time event from boxes
 	+ [x] separate Trial.Boxes.Handle.TimeEv from Trial.Boxes.Handle
-	+ [ ] moddify Trial.Boxes.Handle.TimeEv
+	+ [x] moddify Trial.Boxes.Handle.TimeEv
 		- [x] use m (TaiMonad m) instead of IO
 		- [x] handleTimeEvPlus: consider to return HandleSt' instead of HandleSt
 		- [x] handleBoxes: use AbsoluteTimeState instead of StateT
@@ -342,9 +342,12 @@ Control.Moffy.Handle
 				`(DiffTime -> a -> HandleSt' s s m) -> Difftime ->`
 				`a -> HandleSt' s s m (es :+: TimeEv)`
 		- [x] separate TimeEv from Trial.Boxes.Event
-		- [ ] move TimeEv to Control.Moffy.Event.Time
-		- [ ] move Trial.Boxes.Handle.TimeEv to Control.Moffy.Handle.Time
-		- [ ] others
+	- [x] move TimeEv to Control.Moffy.Event.Time
+		* [x] separate TimeEv from Trial.Boxes.Event
+			+ [x] tribial fix for haddock bug
+		* [x] move Trial.Boxes.Event.Time to Control.Moffy.Event.Time
+	- [ ] move Trial.Boxes.Handle.TimeEv to Control.Moffy.Handle.Time
+	- [ ] others
 	+ [ ] refactor Trial.Boxes.Handle.TimeEv
 	+ [ ] refactor Trial.Boxes.Event
 	+ [ ] others

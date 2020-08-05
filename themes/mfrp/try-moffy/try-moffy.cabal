@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bce6bdcac95458388bfd0c969547cd0ab1ecbd7f4f6c7cb394730a629be7568c
+-- hash: 572ee35eec32eb6be40ccca2e457e5d08c3fe3916fe01ebb8f5b04cd192fd980
 
 name:           try-moffy
 version:        0.1.0.0
@@ -38,6 +38,7 @@ library
       Control.Moffy.Event.Random
       Control.Moffy.Event.Random.Internal
       Control.Moffy.Event.ThreadId
+      Control.Moffy.Event.Time
       Control.Moffy.Handle
       Control.Moffy.Handle.Lock
       Control.Moffy.Handle.Random
@@ -60,7 +61,6 @@ library
       Data.Type.Set
       Data.Type.Set.Internal
       Trial.Boxes.Event
-      Trial.Boxes.Event.Time
       Trial.Boxes.Handle
       Trial.Boxes.Handle.TimeEv
       Trial.CheckRandom

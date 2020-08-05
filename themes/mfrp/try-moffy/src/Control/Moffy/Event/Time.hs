@@ -5,7 +5,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Boxes.Event.Time (
+module Control.Moffy.Event.Time (
 	-- * GENERAL
 	pattern OccDeltaTime, pattern OccTryWait,
 	-- * TIME
