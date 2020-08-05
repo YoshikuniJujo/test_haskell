@@ -81,6 +81,9 @@ todo
 	+ [ ] rename HandleSt and HandleSt' to Handle and Handle'
 	+ [ ] consider whether to add (for example) function simple
 		to make SimpleHandle
+* [ ] consider whether or not to change
+	+ from HandleSt' s s m es
+	+ to HandleSt' s m es
 
 refactoring
 -----------
@@ -329,7 +332,8 @@ Control.Moffy.Handle
 		- [x] handleTimeEvPlus: use HandleSt' instead of StateT
 		- [x] rename handleTimeEvPlus' to handleTimeEvPlus
 		- [x] handleTimeEvPlus: use s instead of (Mode, AbsoluteTime)
-		- [ ] handletimeEvPlus: use HandleSt' instead of Handle' as argument
+		- [x] handleTimeEvPlus: use HandleSt' instead of Handle' as argument
+		- [ ] handleTimeEvPlus: try using HandleSt' instead of `DiffTime -> a -> `
 		- [ ] use HandleSt'
 			* `ModeState s =>`
 				`(DiffTime -> a -> HandleSt' s s m) -> Difftime ->`

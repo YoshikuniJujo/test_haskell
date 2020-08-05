@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,4 +19,7 @@ import Trial.Boxes.Handle.TimeEv
 ---------------------------------------------------------------------------
 
 handleBoxes :: DiffTime -> Field -> HandleSt (Mode, AbsoluteTime) IO BoxEv
-handleBoxes dt f = retrySt $ handleTimeEvPlus (handle . Just) dt f
+handleBoxes dt f = retrySt $ handleTimeEvPlus handle' dt f
+
+handle' :: HandleSt' (DiffTime, Field) () IO GuiEv
+handle' rqs (dt, f) = (, ()) <$> handle (Just dt) f rqs
