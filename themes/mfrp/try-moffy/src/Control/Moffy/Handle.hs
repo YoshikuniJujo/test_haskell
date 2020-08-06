@@ -11,14 +11,15 @@ module Control.Moffy.Handle (
 	-- ** Plain
 	Handle, Handle', retry, expand, before, merge,
 	-- ** With State
-	St, liftSt, HandleSt, HandleSt', retrySt, expandSt, beforeSt, mergeSt,
+	HandleSt, HandleSt', liftHandle, liftHandle', St, liftSt,
+	retrySt, expandSt, beforeSt, mergeSt,
 	-- ** With Input and OUtput
 	HandleIo', expandIo, beforeIo, mergeIo
 	) where
 
 import Control.Arrow (first)
 import Control.Moffy.Internal.React.Type (
-	Handle, HandleSt, St, liftSt, EvReqs, EvOccs, Occurred )
+	Handle, HandleSt, St, liftSt, liftHandle, EvReqs, EvOccs, Occurred )
 import Data.Type.Set ((:+:), (:$:))
 import Data.OneOrMore (Expandable, Collapsable, Mergeable, merge')
 
@@ -78,6 +79,9 @@ merge (collapse -> l) (collapse -> r) rqs = merge' <$> l rqs <*> r rqs
 ---------------------------------------------------------------------------
 
 type HandleSt' st m es = HandleIo' st st m es
+
+liftHandle' :: Functor m => Handle' m es -> HandleSt' st m es
+liftHandle' = (liftSt .)
 
 retrySt :: Monad m => HandleSt' st m es -> HandleSt st m es
 retrySt hdl rqs st = hdl rqs st >>= \(mo, st') ->

@@ -18,6 +18,7 @@ todo
 		- `type HandleSt' st m es = HandleIo' st st m es`
 	+ [x] rename functions about HandleIo'
 	* [x] define function expandSt
+	* [x] define function liftHandle'
 	* [ ] define function foo and bar
 		+ [ ] create name for function foo and bar
 		+ [ ] foo :: (a -> HandleSt' st m es) -> HandleIo' (a, st) st m es
