@@ -183,9 +183,31 @@ Control.Moffy.Handle.ThreadId
 				+ [x] until
 				+ [x] indexBy
 			* [x] Copies
+	+ [x] imports
+* [ ] Control.Moffy.Internal.Sig
+	+ [ ] API
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body
+* [ ] Control.Moffy.Internal.Sig.Type
+	+ [ ] API
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
+* [ ] Control.Moffy.Internal.React
+	+ [ ] API
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
+* [ ] Control.Moffy.Internal.React.Type
+	+ [ ] API
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
+* [ ] Control.Moffy.Handle
+* [ ] Control.Moffy.Run
+* [ ] Control.Moffy.Event.ThreadId
+* [ ] Control.Moffy.Handle.ThreadId
 
 ## Moffy library
 
