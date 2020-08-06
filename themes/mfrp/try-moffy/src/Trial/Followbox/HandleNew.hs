@@ -90,14 +90,14 @@ instance RandomState FollowboxState where
 handleFollowbox' ::
 	Field -> Browser -> Maybe GithubNameToken -> HandleF IO (GuiEv :+: FollowboxEv)
 handleFollowbox' f brws mba = retrySt $
-	liftSt . handleGetThreadId `mergeSt'` handleLock `mergeSt'` handleRandom `mergeSt'`
-	handleStoreJsons' `mergeSt'` handleLoadJsons' `mergeSt'`
-	liftSt . just . handleHttpGet mba `mergeSt'`
-	liftSt . just . handleCalcTextExtents f `mergeSt'`
-	liftSt . just . handleGetTimeZone `mergeSt'`
-	liftSt . just . handleBrowse brws `mergeSt'`
-	handleBeginSleep' `mergeSt'` handleEndSleep' `mergeSt'`
-	liftSt . handleRaiseError `beforeSt'`
+	liftSt . handleGetThreadId `mergeSt` handleLock `mergeSt` handleRandom `mergeSt`
+	handleStoreJsons' `mergeSt` handleLoadJsons' `mergeSt`
+	liftSt . just . handleHttpGet mba `mergeSt`
+	liftSt . just . handleCalcTextExtents f `mergeSt`
+	liftSt . just . handleGetTimeZone `mergeSt`
+	liftSt . just . handleBrowse brws `mergeSt`
+	handleBeginSleep' `mergeSt` handleEndSleep' `mergeSt`
+	liftSt . handleRaiseError `beforeSt`
 	handleMouseWithSleep' f
 
 -- MOUSE

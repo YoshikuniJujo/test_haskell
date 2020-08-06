@@ -13,9 +13,12 @@ todo
 * [x] define function liftHandle
 * [ ] correct Handle, HandleSt and so on
 	+ Handle, Handle', HandleSt, HandleSt', HandleIo, HandleIo'
-		- HandleSt st m es = HandleIo st st m es
 	+ [x] rename HandleSt' to HandleIo'
-	+ [ ] rename functions about HandleIo'
+	+ [x] define HandleSt'
+		- `type HandleSt' st m es = HandleIo' st st m es`
+	+ [x] rename functions about HandleIo'
+	+ [ ] define HandleIo and redefine HandleSt using HandleIo
+		- `type HandleSt st m es = HandleIo st st m es`
 	+ [ ] others
 * [ ] consider whether to remove interpret and interpretReact
 	+ [ ] remove interpret and interpretReact

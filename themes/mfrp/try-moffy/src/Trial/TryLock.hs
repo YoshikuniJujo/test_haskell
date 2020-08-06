@@ -73,5 +73,5 @@ handleGetThreadId' = liftSt . handleGetThreadId
 tryLockLeftCount2' :: IO ((), LockSt)
 tryLockLeftCount2' = do
 	f <- openField "TRY LOCK LEFT COUNT 2" [buttonPressMask, exposureMask]
-	interpretSt (retrySt $ handleGetThreadId' `mergeSt'` handleLock `mergeSt'` handle' f) print lockLeftCount2 (LockSt 0 [])
+	interpretSt (retrySt $ handleGetThreadId' `mergeSt` handleLock `mergeSt` handle' f) print lockLeftCount2 (LockSt 0 [])
 		<* closeField f

@@ -53,7 +53,7 @@ handleInit :: (
 	MergeableOccurred es TimeEv (es :+: TimeEv) ) =>
 	HandleIo' (DiffTime, a, s) s m es ->
 	HandleIo' (DiffTime, a, s) s m (es :+: TimeEv)
-handleInit hdl = mergeSt
+handleInit hdl = mergeIo
 	hdl (\(prd, _, s) -> s <$ delay (round $ prd * 1000000))
 	handleNow' (\s  -> putTai s <$> getTaiTime)
 
@@ -73,7 +73,7 @@ instance DelayM IO where delay = threadDelay
 
 handleWait :: (Monad m, ExpandableHandle TimeEv es) =>
 	HandleIo' (AbsoluteTime, AbsoluteTime) (Mode, AbsoluteTime) m es
-handleWait = expandSt handleTime (pure . (InitMode ,) . fst)
+handleWait = expandIo handleTime (pure . (InitMode ,) . fst)
 
 handleTime :: Monad m =>
 	HandleIo' (AbsoluteTime, AbsoluteTime) (Mode, AbsoluteTime) m TimeEv
