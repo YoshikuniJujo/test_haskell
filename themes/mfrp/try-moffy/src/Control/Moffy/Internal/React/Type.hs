@@ -56,8 +56,8 @@ class (Numbered e, Selectable e) => Request e where data Occurred e
 never :: React s es a
 never = pure =<<< Never
 
-await :: a -> (Occurred a -> b) -> React s (Singleton a) b
-await r f = Await (Singleton r) >>>= \(Singleton o) -> pure $ f o
+await :: e -> (Occurred e -> r) -> React s (Singleton e) r
+await rq f = Await (Singleton rq) >>>= \(Singleton o) -> pure $ f o
 
 await' :: a -> (ThreadId -> Occurred a -> b) -> React s (Singleton a) b
 await' r f = await r . f =<<< GetThreadId

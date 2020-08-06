@@ -105,7 +105,7 @@ hold = waitFor never
 
 -- PRACTICAL
 
-repeat :: React s es a -> Sig s es a ()
+repeat :: React s es a -> Sig s es a r
 repeat = forever . (emit <=< waitFor)
 
 find :: (a -> Bool) -> Sig s es a r -> React s es (Either a r)
