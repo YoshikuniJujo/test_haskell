@@ -11,7 +11,7 @@ module Control.Moffy.Handle (
 	-- ** Plain
 	Handle, Handle', retry, expand, before, merge,
 	-- ** With State
-	St, liftSt, HandleSt, retrySt, beforeSt, mergeSt,
+	St, liftSt, HandleSt, retrySt, expandSt, beforeSt, mergeSt,
 	-- ** With Input and OUtput
 	HandleIo', expandIo, beforeIo, mergeIo
 	) where
@@ -82,6 +82,10 @@ type HandleSt' st m es = HandleIo' st st m es
 retrySt :: Monad m => HandleSt' st m es -> HandleSt st m es
 retrySt hdl rqs st = hdl rqs st >>= \(mo, st') ->
 	maybe (retrySt hdl rqs st') (pure . (, st')) mo
+
+expandSt :: (Applicative m, ExpandableHandle es es') =>
+	HandleSt' st m es -> HandleSt' st m es'
+expandSt hdl = expandIo hdl pure
 
 beforeSt :: (
 	Monad m,

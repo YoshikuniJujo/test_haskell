@@ -17,6 +17,7 @@ todo
 	+ [x] define HandleSt'
 		- `type HandleSt' st m es = HandleIo' st st m es`
 	+ [x] rename functions about HandleIo'
+	* [x] define function expandSt
 	+ [ ] define HandleIo and redefine HandleSt using HandleIo
 		- `type HandleSt st m es = HandleIo st st m es`
 	+ [ ] others
