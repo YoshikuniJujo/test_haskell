@@ -11,6 +11,12 @@ todo
 * [x] rewrite interpret to use interpretSt
 	+ [x] use function simple
 * [x] define function liftHandle
+* [ ] correct Handle, HandleSt and so on
+	+ Handle, Handle', HandleSt, HandleSt', HandleIo, HandleIo'
+		- HandleSt st m es = HandleIo st st m es
+	+ [x] rename HandleSt' to HandleIo'
+	+ [ ] rename functions about HandleIo'
+	+ [ ] others
 * [ ] consider whether to remove interpret and interpretReact
 	+ [ ] remove interpret and interpretReact
 	+ [ ] rename interpretSt and interpretReactSt

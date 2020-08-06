@@ -20,8 +20,8 @@ import Field (Field)
 handleBoxes :: DiffTime -> Field -> HandleSt (Mode, AbsoluteTime) IO BoxEv
 handleBoxes dt f = retrySt $ fromSt (handleTimeEvPlus handle') dt f
 
-handle' :: HandleSt' (DiffTime, Field, s) s IO GuiEv
+handle' :: HandleIo' (DiffTime, Field, s) s IO GuiEv
 handle' rqs (dt, f, s) = (, s) <$> handle (Just dt) f rqs
 
-fromSt :: HandleSt' (a, b, s) s' m es -> a -> b -> HandleSt' s s' m es
+fromSt :: HandleIo' (a, b, s) s' m es -> a -> b -> HandleIo' s s' m es
 fromSt hdl x y rqs s = hdl rqs (x, y, s)

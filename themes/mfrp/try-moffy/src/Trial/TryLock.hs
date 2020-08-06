@@ -64,10 +64,10 @@ instance LockState LockSt where
 	lockIt s li = s { lockState = li : lockState s }
 	unlockIt s li = s { lockState = delete li (lockState s) }
 
-handle' :: LockState s => Field -> HandleSt' s s IO GuiEv
+handle' :: LockState s => Field -> HandleIo' s s IO GuiEv
 handle' f = liftSt . handle Nothing f
 
-handleGetThreadId' :: LockState s => HandleSt' s s IO (Singleton GetThreadId)
+handleGetThreadId' :: LockState s => HandleIo' s s IO (Singleton GetThreadId)
 handleGetThreadId' = liftSt . handleGetThreadId
 
 tryLockLeftCount2' :: IO ((), LockSt)

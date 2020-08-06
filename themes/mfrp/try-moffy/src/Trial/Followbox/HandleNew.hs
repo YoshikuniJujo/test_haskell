@@ -68,7 +68,7 @@ initialFollowboxState g = FollowboxState {
 	fsSleepUntil = Nothing, fsRandomGen = g }
 
 type HandleF m es = HandleSt FollowboxState m es
-type HandleF' m es = HandleSt' FollowboxState FollowboxState m es
+type HandleF' m es = HandleIo' FollowboxState FollowboxState m es
 
 -- PUT AND GET EACH STATE
 
