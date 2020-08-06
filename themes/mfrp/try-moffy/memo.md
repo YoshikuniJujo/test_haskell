@@ -19,10 +19,13 @@ todo
 	+ [x] rename functions about HandleIo'
 	* [x] define function expandSt
 	* [x] define function liftHandle'
-	* [ ] define function foo and bar
-		+ [ ] create name for function foo and bar
-		+ [ ] foo :: (a -> HandleSt' st m es) -> HandleIo' (a, st) st m es
-		+ [ ] bar :: HandleIo' (a, st) st m es -> a -> HandleSt' st m es
+	* [x] define function pushInput and popInput
+		+ [x] create name for function foo and bar
+			- foo -> pushInput
+			- bar -> popInput
+		+ [x] foo :: (a -> HandleSt' st m es) -> HandleIo' (a, st) st m es
+		+ [x] bar :: HandleIo' (a, st) st m es -> a -> HandleSt' st m es
+		+ [x] use pushInput and popInput
 	+ [ ] define HandleIo and redefine HandleSt using HandleIo
 		- `type HandleSt st m es = HandleIo st st m es`
 	+ [ ] others

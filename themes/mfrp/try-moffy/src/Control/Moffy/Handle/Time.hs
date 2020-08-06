@@ -36,10 +36,10 @@ handleTimeEvPlus :: (
 	ExpandableHandle es (es :+: TimeEv),
 	ExpandableHandle TimeEv (es :+: TimeEv),
 	MergeableOccurred es TimeEv (es :+: TimeEv) ) =>
-	HandleIo' (DiffTime, a, s) s m es ->
-	HandleIo' (DiffTime, a, s) s m (es :+: TimeEv)
-handleTimeEvPlus hdl rqs0 (prd, f0, s0) = case md of
-	InitMode -> handleInit hdl rqs0 (prd, f0, s0)
+	HandleIo' ((DiffTime, a), s) s m es ->
+	HandleIo' ((DiffTime, a), s) s m (es :+: TimeEv)
+handleTimeEvPlus hdl rqs0 ((prd, f0), s0) = case md of
+	InitMode -> handleInit hdl rqs0 ((prd, f0), s0)
 	WaitMode now -> pt <$> handleWait rqs0 (now, tai)
 	where
 	md = getMode s0; tai = getTai s0
@@ -51,10 +51,10 @@ handleInit :: (
 	ExpandableHandle es (es :+: TimeEv),
 	ExpandableHandle TimeEv (es :+: TimeEv),
 	MergeableOccurred es TimeEv (es :+: TimeEv) ) =>
-	HandleIo' (DiffTime, a, s) s m es ->
-	HandleIo' (DiffTime, a, s) s m (es :+: TimeEv)
+	HandleIo' ((DiffTime, a), s) s m es ->
+	HandleIo' ((DiffTime, a), s) s m (es :+: TimeEv)
 handleInit hdl = mergeIo
-	hdl (\(prd, _, s) -> s <$ delay (round $ prd * 1000000))
+	hdl (\((prd, _), s) -> s <$ delay (round $ prd * 1000000))
 	handleNow' (\s  -> putTai s <$> getTaiTime)
 
 handleNow' :: (Monad m, TaiTimeM m, TimeState s) => HandleIo' s s m TimeEv

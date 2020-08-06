@@ -14,7 +14,7 @@ module Control.Moffy.Handle (
 	HandleSt, HandleSt', liftHandle, liftHandle', St, liftSt,
 	retrySt, expandSt, beforeSt, mergeSt,
 	-- ** With Input and OUtput
-	HandleIo', expandIo, beforeIo, mergeIo
+	HandleIo', pushInput, popInput, expandIo, beforeIo, mergeIo
 	) where
 
 import Control.Arrow (first)
@@ -108,6 +108,12 @@ mergeSt h1 h2 = mergeIo h1 pure h2 pure
 ---------------------------------------------------------------------------
 
 type HandleIo' i o m es = EvReqs es -> i -> m (Maybe (EvOccs es), o)
+
+pushInput :: (a -> HandleSt' st m es) -> HandleIo' (a, st) st m es
+pushInput hdl rqs (x, st) = hdl x rqs st
+
+popInput :: HandleIo' (a, st) st m es -> a -> HandleSt' st m es
+popInput hdl x rqs st = hdl rqs (x, st)
 
 collapseIo :: (Applicative m, Collapsable es' es) =>
 	HandleIo' i o m es -> (i -> m o) ->
