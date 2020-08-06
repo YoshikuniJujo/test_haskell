@@ -11,7 +11,7 @@ module Control.Moffy.Handle (
 	-- ** Plain
 	Handle, Handle', retry, expand, before, merge,
 	-- ** With State
-	St, liftSt, HandleSt, retrySt, expandSt, beforeSt, mergeSt,
+	St, liftSt, HandleSt, HandleSt', retrySt, expandSt, beforeSt, mergeSt,
 	-- ** With Input and OUtput
 	HandleIo', expandIo, beforeIo, mergeIo
 	) where
