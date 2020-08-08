@@ -71,7 +71,7 @@ todo
 ----
 
 * [ ] check module hierarchy
-	+ [ ] Moffy
+	+ [x] Moffy
 	+ [ ] Moffy library
 	+ [ ] Moffy base
 	+ [ ] Trial
@@ -159,7 +159,7 @@ Control.Moffy.Handle.ThreadId
 
 ### refactoring
 
-* [ ] Control.Moffy
+* [x] Control.Moffy
 	+ [x] API
 		- [x] Type
 			* [x] Sig
