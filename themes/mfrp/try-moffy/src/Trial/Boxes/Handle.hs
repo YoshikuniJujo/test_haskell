@@ -1,7 +1,3 @@
-{-# LANGUAGE BlockArguments, TupleSections #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.Boxes.Handle (Mode(InitMode), handleBoxes) where

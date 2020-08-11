@@ -1,8 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE DataKinds, TypeOperators #-}
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.Boxes.Event (

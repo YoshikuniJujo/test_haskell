@@ -106,7 +106,7 @@ repeat = forever . (emit <=< waitFor)
 
 find :: (a -> Bool) -> Sig s es a r -> React s es (Either a r)
 find p = go where
-	go = (igo =<<) . unSig
+	go = igo <=< unSig
 	igo = isig (pure . Right) \h -> bool go (const . pure $ Left h) (p h)
 
 scanl :: (b -> a -> b) -> b -> Sig s es a r -> Sig s es b r

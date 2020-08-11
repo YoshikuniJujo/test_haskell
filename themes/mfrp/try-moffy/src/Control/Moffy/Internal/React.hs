@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE DataKinds, TypeOperators, ConstraintKinds #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
