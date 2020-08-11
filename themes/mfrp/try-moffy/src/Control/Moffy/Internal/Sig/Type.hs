@@ -18,6 +18,7 @@ import Prelude hiding (repeat, scanl)
 import Control.Monad (forever, (<=<))
 import Control.Moffy.Internal.React.Type (React, never)
 import Data.Type.Flip (Flip(..), (<$%>))
+import Data.Bool (bool)
 
 ---------------------------------------------------------------------------
 
@@ -89,9 +90,6 @@ emitAll = Sig . pure
 waitFor :: React s es r -> Sig s es a r
 waitFor = Sig . (pure <$>)
 
-icur :: ISig s es a r -> Either a r
-icur = isig Right $ const . Left
-
 res :: Sig s es a r -> React s es r
 res = ires <=< unSig
 
@@ -107,12 +105,9 @@ repeat :: React s es a -> Sig s es a r
 repeat = forever . (emit <=< waitFor)
 
 find :: (a -> Bool) -> Sig s es a r -> React s es (Either a r)
-find p = (icur <$>) . res . brk
-	where
-	brk = Sig . (ibrk <$>) . unSig
-	ibrk i = case i of
-		End _ -> pure i
-		h :| t | p h -> pure i | otherwise -> h :| brk t
+find p = go where
+	go = (igo =<<) . unSig
+	igo = isig (pure . Right) \h -> bool go (const . pure $ Left h) (p h)
 
 scanl :: (b -> a -> b) -> b -> Sig s es a r -> Sig s es b r
 scanl op v = emitAll . iscanl op v

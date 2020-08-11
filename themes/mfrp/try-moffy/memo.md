@@ -236,16 +236,16 @@ Control.Moffy.Handle.ThreadId
 				+ [x] scanl
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] TYPE
-		- [ ] CLASS INSTANCE
+		- [x] CLASS INSTANCE
 			* [x] MONAD
 				+ [x] Sig
 				+ [x] ISig
-			* [ ] FLIP FUNCTOR
-		- [ ] FUNCTION
-			* [ ] BASIC
-			* [ ] PRACTICAL
+			* [x] FLIP FUNCTOR
+		- [x] FUNCTION
+			* [x] BASIC
+			* [x] PRACTICAL
 * [ ] Control.Moffy.Internal.React
 	+ [ ] API
 	+ [ ] imports
