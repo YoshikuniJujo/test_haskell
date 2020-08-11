@@ -13,7 +13,9 @@ module Control.Moffy.Internal.React.Type (
 	-- ** Never and Await
 	never, await, await',
 	-- * Handle
-	Handle, HandleSt, liftHandle, St, liftSt,
+	Handle, HandleSt, liftHandle,
+	-- * St
+	St, liftSt,
 	-- * ThreadId
 	ThreadId, rootThreadId, forkThreadId ) where
 
