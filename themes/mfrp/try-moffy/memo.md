@@ -208,8 +208,8 @@ Control.Moffy.Handle.ThreadId
 				+ [x] function exposeBoth
 				+ [x] function iapp
 		- [ ] PARALLEL
-			* [ ] AT
-			* [ ] BREAK AND UNTIL
+			* [x] AT
+			* [x] BREAK AND UNTIL
 			* [ ] INDEX BY
 		- [ ] COPIES
 			* [ ] SPAWN

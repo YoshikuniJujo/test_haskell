@@ -98,9 +98,8 @@ at :: Firstable es es' (ISig s (es :+: es') a r) r' =>
 
 iat :: (Update (ISig s es a r) r', Mergeable es es es) =>
 	ISig s es a r -> React s es r' -> React s es (Either r (a, r'))
-l `iat` r = ires (l `ipause` r) >>= \(l', r') -> pure case l' of
-	End x -> Left x
-	h :| _ -> case r' of
+l `iat` r = (<$> ires (l `ipause` r)) \case
+	(End x, _) -> Left x; (h :| _, r') -> case r' of
 		Pure y -> Right (h, y); _ :>>= _ -> error "never occur"
 
 -- BREAK AND UNTIL
