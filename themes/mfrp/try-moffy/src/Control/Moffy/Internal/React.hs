@@ -69,8 +69,7 @@ par :: (Update a b, Mergeable es es es) =>
 l `par` r = case (l, r) of
 	(_ :=<< Never, _ :=<< Never) -> never
 	(Pure _, _) -> pure (l, r); (_, Pure _) -> pure (l, r)
-	(_ :=<< Never, _) -> (never ,) . Pure <$> r
-	(_, _ :=<< Never) -> (, never) . Pure <$> l
+	(_ :=<< Never, _) -> pure (l, r); (_, _ :=<< Never) -> pure (l, r)
 	(c :=<< GetThreadId, _) -> (`par` r) . qApp c . fst =<< forkThreadId
 	(_, c' :=<< GetThreadId) -> (l `par`) . qApp c' . snd =<< forkThreadId
 	(_ :=<< Await el, _ :=<< Await er) -> forkThreadId >>= \(t, u) ->

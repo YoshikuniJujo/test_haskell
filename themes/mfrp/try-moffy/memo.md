@@ -246,7 +246,7 @@ Control.Moffy.Handle.ThreadId
 		- [x] FUNCTION
 			* [x] BASIC
 			* [x] PRACTICAL
-* [ ] Control.Moffy.Internal.React
+* [x] Control.Moffy.Internal.React
 	+ [x] API
 		- [x] Class
 		- [x] Constraint
@@ -258,11 +258,14 @@ Control.Moffy.Handle.ThreadId
 			* [x] par
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] FIRST
 		- [x] ADJUST
-		- [ ] PAR
-		- [ ] UPDATE
+		- [x] PAR
+		- [x] UPDATE
+			* [x] class
+			* [x] instance a a
+			* [x] instance a b
 * [ ] Control.Moffy.Internal.React.Type
 	+ [ ] API
 	+ [ ] imports
