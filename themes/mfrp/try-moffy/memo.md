@@ -185,7 +185,19 @@ Control.Moffy.Handle.ThreadId
 			* [x] Copies
 	+ [x] imports
 * [ ] Control.Moffy.Internal.Sig
-	+ [ ] API
+	+ [x] API
+		- [x] Adjust
+		- [x] Parallel
+			* [x] at
+			* [x] break
+			* [x] until
+			* [x] indexBy
+		- [x] Copies
+			* [x] spawn
+			* [x] parList
+		- [x] Orphan instances
+			* [x] Applicative (Flip (ISig s es) r)
+			* [x] Applicative (Flip (Sig s es) r)
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body

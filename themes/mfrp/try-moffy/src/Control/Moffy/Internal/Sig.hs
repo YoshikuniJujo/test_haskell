@@ -154,7 +154,7 @@ l `iindexBy` Sig r = waitFor (ires $ l `ipause` r) >>= \case
 
 -- SPAWN
 
-spawn :: Sig s es a r -> Sig s es (ISig s es a r) ()
+spawn :: Sig s es a r -> Sig s es (ISig s es a r) r'
 spawn = repeat . unSig
 
 -- PAR 	LIST
