@@ -12,7 +12,7 @@ module Control.Moffy.Internal.React (
 	-- * Constraint
 	Firstable, Adjustable,
 	-- * Function
-	first, adjust, par, update ) where
+	first, adjust, par) where
 
 import Control.Monad.Freer.Par (
 	Freer(..), pattern (:>>=), (>>>=), (=<<<), qApp, qAppPar )

@@ -11,8 +11,8 @@ import Data.Type.Set
 import Data.OneOrMore
 import Control.Monad.Freer.Par
 
-import Control.Moffy.Internal.React
-import Control.Moffy.Internal.React.Type
+-- import Control.Moffy.Internal.React
+-- import Control.Moffy.Internal.React.Type
 
 data EvInt = EvIntReq deriving (Show, Eq, Ord)
 numbered 64 [t| EvInt |]
@@ -32,6 +32,7 @@ fromPure _ = error "not pure"
 singleOccEvInt :: Int -> EvOccs (Singleton EvInt)
 singleOccEvInt = Singleton . OccEvInt
 
+{-
 update' :: React s es a -> React s es a -> EvOccs es -> (React s es a, React s es a)
 update' l r  = update l rootThreadId r rootThreadId
 
@@ -47,3 +48,4 @@ mkWrongResult = do
 	(l, r) <- mkWrongPair
 	let	(l', r') = update' l r $ singleOccEvInt 444
 	pure (fromPure l', fromPure r')
+	-}
