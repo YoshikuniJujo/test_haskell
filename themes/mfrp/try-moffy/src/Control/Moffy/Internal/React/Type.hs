@@ -59,7 +59,7 @@ never = pure =<<< Never
 await :: e -> (Occurred e -> r) -> React s (Singleton e) r
 await rq f = Await (Singleton rq) >>>= \(Singleton o) -> pure $ f o
 
-await' :: a -> (ThreadId -> Occurred a -> b) -> React s (Singleton a) b
+await' :: e -> (ThreadId -> Occurred e -> r) -> React s (Singleton e) r
 await' r f = await r . f =<<< GetThreadId
 
 ---------------------------------------------------------------------------
