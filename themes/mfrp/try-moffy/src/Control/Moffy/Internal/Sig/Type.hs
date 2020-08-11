@@ -49,8 +49,7 @@ isig e c = \case End x -> e x; h :| t -> c h t
 instance Functor (Sig s es a) where fmap f = Sig . ((f <$>) <$>) . unSig
 
 instance Applicative (Sig s es a) where
-	pure = emitAll . pure
-	Sig rf <*> (flip (<$>) -> ax) =
+	pure = emitAll . pure; Sig rf <*> (flip (<$>) -> ax) =
 		Sig $ isig (unSig . ax) (\h -> pure . (h :|) . (ax =<<)) =<< rf
 
 instance Monad (Sig s es a) where
@@ -61,8 +60,7 @@ instance Functor (ISig s es a) where
 	fmap f = isig (End . f) (\h -> (h :|) . (f <$>))
 
 instance Applicative (ISig s es a) where
-	pure = End
-	mf <*> (flip (<$>) -> ax) =
+	pure = End; mf <*> (flip (<$>) -> ax) =
 		isig ax (\h -> (h :|) . (emitAll . ax =<<)) mf
 
 instance Monad (ISig s es a) where

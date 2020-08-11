@@ -219,10 +219,33 @@ Control.Moffy.Handle.ThreadId
 			* [x] PAIRS
 			* [x] PAUSE
 * [ ] Control.Moffy.Internal.Sig.Type
-	+ [ ] API
-	+ [ ] imports
-	+ [ ] structure
+	+ [x] API
+		- [x] Type
+			* [x] type Sig
+			* [x] type ISig
+			* [x] function isig
+		- [x] Function
+			* [x] Basic
+				+ [x] emit and emitAll
+				+ [x] waitFor
+				+ [x] res and ires
+				+ [x] hold
+			* [x] Practical
+				+ [x] repeat
+				+ [x] find
+				+ [x] scanl
+	+ [x] imports
+	+ [x] structure
 	+ [ ] body
+		- [x] TYPE
+		- [ ] CLASS INSTANCE
+			* [x] MONAD
+				+ [x] Sig
+				+ [x] ISig
+			* [ ] FLIP FUNCTOR
+		- [ ] FUNCTION
+			* [ ] BASIC
+			* [ ] PRACTICAL
 * [ ] Control.Moffy.Internal.React
 	+ [ ] API
 	+ [ ] imports
