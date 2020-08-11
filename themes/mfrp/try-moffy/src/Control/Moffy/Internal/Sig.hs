@@ -45,6 +45,8 @@ import Data.OneOrMore (Mergeable)
 -- FLIP APPLICATIVE
 ---------------------------------------------------------------------------
 
+-- INSTANCE
+
 instance (Mergeable es es es, Semigroup r) =>
 	Applicative (Flip (Sig s es) r) where
 	pure = Flip . Sig . pure . unflip . pure
@@ -55,17 +57,18 @@ instance (Mergeable es es es, Semigroup r) =>
 	pure = Flip . (:| hold)
 	mf <*> mx = Flip $ unflip mf `iapp` unflip mx
 
+-- APP AND IAPP
+
 app :: (Mergeable es es es, Semigroup r) =>
 	Sig s es (a -> b) r -> Sig s es a r -> Sig s es b r
-mf `app` mx = emitAll . uncurry (<*%>) =<< waitFor (mf `bothStart` mx)
+mf `app` mx = emitAll . uncurry (<*%>) =<< waitFor (mf `exposeBoth` mx)
 
-bothStart :: (
+exposeBoth :: (
 	Update (ISig s es a r) (ISig s es b r'),
-	Update (ISig s es b r') (ISig s es a r),
-	Mergeable es es es ) =>
+	Update (ISig s es b r') (ISig s es a r), Mergeable es es es ) =>
 	Sig s es a r -> Sig s es b r' ->
 	React s es (ISig s es a r, ISig s es b r')
-l `bothStart` Sig r = do
+l `exposeBoth` Sig r = do
 	(Sig l', r') <- res $ l `pause` r
 	(Sig r'', l'') <- res $ Sig r' `pause` l'
 	pure (ex l'', ex r'')

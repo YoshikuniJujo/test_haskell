@@ -201,7 +201,12 @@ Control.Moffy.Handle.ThreadId
 	+ [x] imports
 	+ [x] structure
 	+ [ ] body
-		- [ ] FLIP APPLICATIVE
+		- [x] FLIP APPLICATIVE
+			* [x] INSTANCE
+			* [x] APP AND IAPP
+				+ [x] function app
+				+ [x] function exposeBoth
+				+ [x] function iapp
 		- [ ] PARALLEL
 			* [ ] AT
 			* [ ] BREAK AND UNTIL
