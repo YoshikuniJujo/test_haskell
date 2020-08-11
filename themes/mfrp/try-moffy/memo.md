@@ -256,9 +256,13 @@ Control.Moffy.Handle.ThreadId
 			* [x] first
 			* [x] adjust
 			* [x] par
-	+ [ ] imports
-	+ [ ] structure
+	+ [x] imports
+	+ [x] structure
 	+ [ ] body
+		- [x] FIRST
+		- [x] ADJUST
+		- [ ] PAR
+		- [ ] UPDATE
 * [ ] Control.Moffy.Internal.React.Type
 	+ [ ] API
 	+ [ ] imports

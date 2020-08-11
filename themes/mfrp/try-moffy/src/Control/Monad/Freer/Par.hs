@@ -6,7 +6,8 @@
 
 module Control.Monad.Freer.Par (
 	-- * Freer
-	Freer(Pure), Fun, pattern (:>>=), (>>>=), (=<<<), qApp, qAppPar,
+	Freer(Pure), Fun, pattern (:>>=), (>>>=), pattern (:=<<), (=<<<),
+	qApp, qAppPar,
 	-- * Unique ID
 	Unique, runUnique, tag ) where
 
@@ -39,6 +40,11 @@ data Freer s sq (f :: (* -> *) -> * -> * -> *) t a =
 
 pattern (:>>=) :: t x -> Fun s sq f t x a -> Freer s sq f t a
 pattern x :>>= k <- x ::>>= (Fun -> k)
+
+{-# COMPLETE Pure, (:=<<) #-}
+
+pattern (:=<<) :: Fun s sq f t x a -> t x -> Freer s sq f t a
+pattern k :=<< x <- x ::>>= (Fun -> k)
 
 infix 8 >>>=, =<<<
 
