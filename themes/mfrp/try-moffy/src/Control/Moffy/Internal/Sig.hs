@@ -216,7 +216,7 @@ ipause :: (Update (ISig s es a r) r', Mergeable es es es) =>
 	ISig s es a r -> React s es r' ->
 	ISig s es a (ISig s es a r, React s es r')
 l@(End _) `ipause` r = pure (l, r)
-(h :| t) `ipause` r = (h :|) $ (<$> (t `pause` r)) \case
+(h :| t) `ipause` r = (h :|) $ (<$> t `pause` r) \case
 	(Sig (Pure t'), r') -> (t', r')
 	(t', r'@(Pure _)) -> (h :| t', r')
 	_ -> error "never occur"

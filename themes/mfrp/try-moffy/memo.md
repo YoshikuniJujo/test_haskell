@@ -184,7 +184,7 @@ Control.Moffy.Handle.ThreadId
 				+ [x] indexBy
 			* [x] Copies
 	+ [x] imports
-* [ ] Control.Moffy.Internal.Sig
+* [x] Control.Moffy.Internal.Sig
 	+ [x] API
 		- [x] Adjust
 		- [x] Parallel
@@ -200,24 +200,24 @@ Control.Moffy.Handle.ThreadId
 			* [x] Applicative (Flip (Sig s es) r)
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] FLIP APPLICATIVE
 			* [x] INSTANCE
 			* [x] APP AND IAPP
 				+ [x] function app
 				+ [x] function exposeBoth
 				+ [x] function iapp
-		- [ ] PARALLEL
+		- [x] PARALLEL
 			* [x] AT
 			* [x] BREAK AND UNTIL
-			* [ ] INDEX BY
-		- [ ] COPIES
-			* [ ] SPAWN
-			* [ ] PAR LIST
-		- [ ] BASIC
-			* [ ] ADJUST
-			* [ ] PAIRS
-			* [ ] PAUSE
+			* [x] INDEX BY
+		- [x] COPIES
+			* [x] SPAWN
+			* [x] PAR LIST
+		- [x] BASIC
+			* [x] ADJUST
+			* [x] PAIRS
+			* [x] PAUSE
 * [ ] Control.Moffy.Internal.Sig.Type
 	+ [ ] API
 	+ [ ] imports
