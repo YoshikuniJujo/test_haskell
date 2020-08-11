@@ -1,9 +1,7 @@
-{-# LANGUAGE BlockArguments, TupleSections #-}
-{-# LANGUAGE ScopedTypeVariables, PatternSynonyms #-}
-{-# LANGUAGE DataKinds, TypeOperators, ConstraintKinds #-}
+{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
-{-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances,
-	UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Internal.React.Type (
