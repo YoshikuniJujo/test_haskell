@@ -266,7 +266,7 @@ Control.Moffy.Handle.ThreadId
 			* [x] class
 			* [x] instance a a
 			* [x] instance a b
-* [ ] Control.Moffy.Internal.React.Type
+* [x] Control.Moffy.Internal.React.Type
 	+ [x] API
 		- [x] React
 			* [x] Type
@@ -290,9 +290,15 @@ Control.Moffy.Handle.ThreadId
 			* [x] data ThreadId
 			* [x] function rootThreadId
 			* [x] react forkThreadId
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
+	+ [x] imports
+	+ [x] structure
+	+ [x] body
+		- [x] REACT
+			* [x] TYPE
+			* [x] NEVER AND AWAIT
+		- [x] HANDLE
+		- [x] ST
+		- [x] THREAD ID
 * [ ] Control.Moffy.Handle
 * [ ] Control.Moffy.Run
 * [ ] Control.Moffy.Event.ThreadId

@@ -1,4 +1,3 @@
-{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
@@ -22,7 +21,7 @@ import Control.Monad.Freer.Par.FTCQueue (FTCQueue)
 import Control.Monad.Freer.Par.TaggableFunction (TaggableFun)
 import Data.Kind (Type)
 import Data.Type.Set (Set, Numbered, Singleton, (:$:))
-import Data.OneOrMore (OneOrMore, Selectable, pattern Singleton)
+import Data.OneOrMore (OneOrMore, Selectable, pattern Singleton, unSingleton)
 import Data.Bits (setBit)
 import Numeric.Natural (Natural)
 
@@ -32,6 +31,7 @@ import Numeric.Natural (Natural)
 --	+ TYPE
 --	+ NEVER AND AWAIT
 -- * HANDLE
+-- * ST
 -- * THREAD ID
 
 ---------------------------------------------------------------------------
@@ -40,10 +40,10 @@ import Numeric.Natural (Natural)
 
 -- TYPE
 
-type React s es a = Freer s FTCQueue TaggableFun (Rct es) a
+type React s es r = Freer s FTCQueue TaggableFun (Rct es) r
 
-data Rct es a where
-	Never :: Rct es a; GetThreadId :: Rct es ThreadId
+data Rct es r where
+	Never :: Rct es r; GetThreadId :: Rct es ThreadId
 	Await :: EvReqs es -> Rct es (EvOccs es)
 
 type EvReqs (es :: Set Type) = OneOrMore es
@@ -57,10 +57,10 @@ never :: React s es a
 never = pure =<<< Never
 
 await :: e -> (Occurred e -> r) -> React s (Singleton e) r
-await rq f = Await (Singleton rq) >>>= \(Singleton o) -> pure $ f o
+await rq f = pure . f . unSingleton =<<< Await (Singleton rq)
 
 await' :: e -> (ThreadId -> Occurred e -> r) -> React s (Singleton e) r
-await' r f = await r . f =<<< GetThreadId
+await' rq f = await rq . f =<<< GetThreadId
 
 ---------------------------------------------------------------------------
 -- HANDLE
@@ -68,13 +68,18 @@ await' r f = await r . f =<<< GetThreadId
 
 type Handle m es = EvReqs es -> m (EvOccs es)
 type HandleSt st m es = EvReqs es -> St st m (EvOccs es)
-type St st m a = st -> m (a, st)
 
 liftHandle :: Functor m => Handle m es -> HandleSt st m es
 liftHandle = (liftSt .)
 
+---------------------------------------------------------------------------
+-- ST
+---------------------------------------------------------------------------
+
+type St st m a = st -> m (a, st)
+
 liftSt :: Functor m => m r -> St st m r
-liftSt m s = (, s) <$> m
+liftSt m = (<$> m) . flip (,)
 
 ---------------------------------------------------------------------------
 -- THREAD ID

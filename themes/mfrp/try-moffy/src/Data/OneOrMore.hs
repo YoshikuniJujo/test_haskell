@@ -17,7 +17,8 @@ module Data.OneOrMore (
 	-- ** Mergeable
 	Mergeable, Selectable(..),
 	-- * FUNCTION
-	pattern Singleton, project, (>-), expand, collapse, merge, merge'
+	pattern Singleton, unSingleton, project, (>-),
+	expand, collapse, merge, merge'
 	) where
 
 import Data.Kind (Type)
@@ -60,6 +61,9 @@ instance {-# OVERLAPPABLE #-} Projectable as a =>
 
 pattern Singleton :: a -> OneOrMore (Singleton a)
 pattern Singleton x = Just x :. Empty
+
+unSingleton :: OneOrMore (Singleton a) -> a
+unSingleton (Singleton x) = x
 
 -- INSERTABLE
 
