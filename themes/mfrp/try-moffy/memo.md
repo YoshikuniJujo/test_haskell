@@ -300,6 +300,19 @@ Control.Moffy.Handle.ThreadId
 		- [x] ST
 		- [x] THREAD ID
 * [ ] Control.Moffy.Handle
+	+ [ ] API
+		- [x] Constraint
+			* [x] ExpandableHandle
+			* [x] ExpandableOccurred
+			* [x] MergeableOccurred
+		- [ ] Composer
+			* [ ] Plain
+			* [ ] With State
+			* [ ] With Input and Output
+	+ [ ] extension
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
 * [ ] Control.Moffy.Run
 * [ ] Control.Moffy.Event.ThreadId
 * [ ] Control.Moffy.Handle.ThreadId

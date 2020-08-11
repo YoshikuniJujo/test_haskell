@@ -13,7 +13,7 @@ module Control.Moffy.Handle (
 	-- ** With State
 	HandleSt, HandleSt', liftHandle, liftHandle', St, liftSt,
 	retrySt, expandSt, beforeSt, mergeSt,
-	-- ** With Input and OUtput
+	-- ** With Input and Output
 	HandleIo', pushInput, popInput, expandIo, beforeIo, mergeIo
 	) where
 
@@ -35,7 +35,7 @@ import qualified Data.OneOrMore as OOM
 -- CONSTRAINT
 ---------------------------------------------------------------------------
 
-type ExpandableHandle es es' = (Collapsable es' es, ExpandableOccurred es es')
+type ExpandableHandle es es' = (ExpandableOccurred es es', Collapsable es' es)
 type ExpandableOccurred es es' = Expandable (Occurred :$: es) (Occurred :$: es')
 type MergeableOccurred es es' mrg =
 	Mergeable (Occurred :$: es) (Occurred :$: es') (Occurred :$: mrg)
