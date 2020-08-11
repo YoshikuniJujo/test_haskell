@@ -198,9 +198,21 @@ Control.Moffy.Handle.ThreadId
 		- [x] Orphan instances
 			* [x] Applicative (Flip (ISig s es) r)
 			* [x] Applicative (Flip (Sig s es) r)
-	+ [ ] imports
-	+ [ ] structure
+	+ [x] imports
+	+ [x] structure
 	+ [ ] body
+		- [ ] FLIP APPLICATIVE
+		- [ ] PARALLEL
+			* [ ] AT
+			* [ ] BREAK AND UNTIL
+			* [ ] INDEX BY
+		- [ ] COPIES
+			* [ ] SPAWN
+			* [ ] PAR LIST
+		- [ ] BASIC
+			* [ ] ADJUST
+			* [ ] PAIRS
+			* [ ] PAUSE
 * [ ] Control.Moffy.Internal.Sig.Type
 	+ [ ] API
 	+ [ ] imports

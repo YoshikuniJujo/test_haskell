@@ -13,7 +13,7 @@ module Control.Moffy.Internal.Sig (
 	-- * Copies
 	spawn, parList ) where
 
-import Prelude hiding (repeat, until, break)
+import Prelude hiding (repeat, break, until)
 
 import Control.Arrow (first, (***))
 import Control.Monad.Freer.Par (pattern Pure, pattern (:>>=))
