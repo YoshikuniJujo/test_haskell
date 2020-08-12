@@ -125,7 +125,7 @@ todo
 		to make SimpleHandle
 
 
-Moffy
+Moffy (9)
 -----
 
 ### module hierarchy
@@ -218,7 +218,7 @@ Control.Moffy.Handle.ThreadId
 			* [x] ADJUST
 			* [x] PAIRS
 			* [x] PAUSE
-* [ ] Control.Moffy.Internal.Sig.Type
+* [x] Control.Moffy.Internal.Sig.Type
 	+ [x] API
 		- [x] Type
 			* [x] type Sig
@@ -299,7 +299,7 @@ Control.Moffy.Handle.ThreadId
 		- [x] HANDLE
 		- [x] ST
 		- [x] THREAD ID
-* [ ] Control.Moffy.Handle
+* [x] Control.Moffy.Handle
 	+ [x] API
 		- [x] Constraint
 			* [x] ExpandableHandle
@@ -380,29 +380,60 @@ Control.Moffy.Handle.ThreadId
 	+ [x] imports
 	+ [x] body
 
-## Moffy library
+## Moffy library (16)
 
 ### module hierarchy
 
 ```
 Control.Moffy.Event
   + Control.Moffy.Event.Lock
-      + Control.Moffy.Event.Lock.Internal
+	+ Control.Moffy.Event.Lock.Internal
   + Control.Moffy.Event.Random
+	+ Control.Moffy.Event.Random.Internal
+  + Control.Moffy.Event.Time
   + Control.Moffy.Event.Delete
   + Control.Moffy.Event.Key
       + Control.Moffy.Event.Key.Internal.XK
           + Control.Moffy.Event.Key.Internal
       + Control.Moffy.Event.Key.Internal
+  + Control.Moffy.Event.Mouse
 Control.Moffy.Handle
   + Control.Moffy.Handle.Lock
   + Control.Moffy.Handle.Random
+  + Control.Moffy.Handle.Time
   + Control.Moffy.Handle.XField
       + Control.Moffy.Handle.XField.Key
       + Control.Moffy.Handle.XField.Mouse
 ```
 
 ### refactor modules
+
+* [x] Control.Moffy.Event.Lock
+	+ [x] API
+		- [x] Type
+		- [x] Event
+	+ [x] extension
+	+ [x] import
+* [ ] Control.Moffy.Event.Lock.Internal
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
+* [ ] Control.Moffy.Handle.Lock
+* [ ] Control.Moffy.Event.Random
+* [ ] Control.Moffy.Event.Random.Internal
+* [ ] Control.Moffy.Handle.Random
+* [ ] Control.Moffy.Event.Time
+* [ ] Control.Moffy.Handle.Time
+* [ ] Control.Moffy.Event.Delete
+* [ ] Control.Moffy.Event.Key
+* [ ] Control.Moffy.Event.Key.Internal
+* [ ] Control.Moffy.Event.Key.Internal.XK
+* [ ] Control.Moffy.Event.Mouse
+* [ ] Control.Moffy.Handle.XField
+* [ ] Control.Moffy.Handle.XField.Key
+* [ ] Control.Moffy.Handle.XField.Mouse
 
 Moffy Base
 ----------

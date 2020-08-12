@@ -5,10 +5,8 @@ module Control.Moffy.Event.Lock (
 	LockEv, GetThreadIdNewLockId, GetThreadIdGetLock, SingletonUnlock,
 	LockId,
 	-- * Event
-	newLockId,
-	withLock ) where
+	newLockId, withLock ) where
 
 import Control.Moffy.Event.Lock.Internal (
 	LockEv, GetThreadIdNewLockId, GetThreadIdGetLock, SingletonUnlock,
-	LockId,
-	newLockId, withLock )
+	LockId, newLockId, withLock )
