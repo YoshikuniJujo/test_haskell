@@ -22,16 +22,15 @@ module Control.Moffy.Handle (
 	-- *** Type
 	HandleIo', pushInput, popInput,
 	-- *** Composer
-	expandIo, beforeIo, mergeIo
-	) where
+	expandIo, beforeIo, mergeIo ) where
 
 import Control.Arrow (first)
 import Control.Moffy.Internal.React.Type (
-	Handle, HandleSt, St, liftSt, liftHandle, EvReqs, EvOccs, Occurred )
+	Handle, HandleSt, liftHandle, St, liftSt, EvReqs, EvOccs, Occurred )
 import Data.Type.Set ((:+:), (:$:))
-import Data.OneOrMore (Expandable, Collapsable, Mergeable, merge')
+import Data.OneOrMore (Expandable, Collapsable, Mergeable)
 
-import qualified Data.OneOrMore as OOM
+import qualified Data.OneOrMore as OOM (expand, collapse, merge')
 
 ---------------------------------------------------------------------------
 
@@ -80,7 +79,7 @@ merge :: (
 	ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es'),
 	MergeableOccurred es es' (es :+: es') ) =>
 	Handle' m es -> Handle' m es' -> Handle' m (es :+: es')
-merge (collapse -> l) (collapse -> r) rqs = merge' <$> l rqs <*> r rqs
+merge (collapse -> l) (collapse -> r) rqs = OOM.merge' <$> l rqs <*> r rqs
 
 ---------------------------------------------------------------------------
 -- WITH STATE
@@ -150,4 +149,4 @@ mergeIo :: (
 	HandleIo' x o m es' -> (x -> m o) ->
 	HandleIo' i o m (es :+: es')
 mergeIo l otl r otr rqs st = collapseIo l otl rqs st >>= \(mo, st') ->
-	first (mo `merge'`) <$> collapseIo r otr rqs st'
+	first (mo `OOM.merge'`) <$> collapseIo r otr rqs st'

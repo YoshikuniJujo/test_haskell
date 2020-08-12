@@ -337,8 +337,8 @@ Control.Moffy.Handle.ThreadId
 					- [x] expandIo
 					- [x] beforeIo
 					- [x] mergeIo
-	+ [ ] extension
-	+ [ ] imports
+	+ [x] extension
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [ ] Control.Moffy.Run
