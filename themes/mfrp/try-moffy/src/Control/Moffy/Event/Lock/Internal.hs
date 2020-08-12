@@ -53,7 +53,7 @@ instance Request NewLockId where
 type GetThreadIdNewLockId = GetThreadId :- NewLockId :- 'Nil
 
 newLockId :: React s GetThreadIdNewLockId LockId
-newLockId = adjust getThreadId >>= \t -> maybe newLockId pure =<< adjust (
+newLockId = adjust getThreadId >>= \t -> newLockId `maybe` pure =<< adjust (
 	await (NewLockIdReq t)
 		\(OccNewLockId i t') -> bool Nothing (Just i) $ t == t' )
 

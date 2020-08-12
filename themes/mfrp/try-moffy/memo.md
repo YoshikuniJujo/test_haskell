@@ -422,8 +422,14 @@ Control.Moffy.Handle
 		- [x] Event
 	+ [x] extension
 	+ [x] import
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [x] LOCK ID
+		- [ ] EVENT
+			* [x] NEW LOCK ID
+			* [ ] GET LOCK
+			* [ ] UNLOCK
+		- [ ] WITH LOCK
 * [ ] Control.Moffy.Handle.Lock
 * [ ] Control.Moffy.Event.Random
 * [ ] Control.Moffy.Event.Random.Internal
