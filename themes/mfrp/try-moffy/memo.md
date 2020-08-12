@@ -365,21 +365,20 @@ Control.Moffy.Handle.ThreadId
 	+ [x] body
 		- [x] SIG
 		- [x] REACT
-* [ ] Control.Moffy.Event.ThreadId
+* [x] Control.Moffy.Event.ThreadId
 	+ [x] API
 	+ [x] extension
 	+ [x] imports
-	+ [ ] body
+	+ [x] body
 		- [x] data GetThreadId
-		- [ ] numbered
-		- [ ] instance Request
-		- [ ] function getThreadId
-* [ ] Control.Moffy.Handle.ThreadId
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
+		- [x] numbered
+		- [x] instance Request
+		- [x] function getThreadId
+* [x] Control.Moffy.Handle.ThreadId
+	+ [x] API
+	+ [x] extension
+	+ [x] imports
+	+ [x] body
 
 ## Moffy library
 

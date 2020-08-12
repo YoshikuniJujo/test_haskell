@@ -1,10 +1,11 @@
-{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Handle.ThreadId (GetThreadId, handleGetThreadId) where
+module Control.Moffy.Handle.ThreadId (
+	-- * GetThreadId
+	GetThreadId,
+	-- * Handle
+	handleGetThreadId ) where
 
 import Control.Moffy.Event.ThreadId (GetThreadId, pattern OccGetThreadId)
 import Control.Moffy.Handle (Handle')
