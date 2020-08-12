@@ -6,7 +6,10 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Event.ThreadId (
-	GetThreadId, pattern OccGetThreadId, ThreadId, getThreadId ) where
+	-- * GetThreadId
+	GetThreadId, pattern OccGetThreadId, getThreadId,
+	-- * ThreadId
+	ThreadId ) where
 
 import Control.Moffy.Internal.React.Type (React, Request(..), ThreadId, await')
 import Data.Type.Set (numbered, Singleton)

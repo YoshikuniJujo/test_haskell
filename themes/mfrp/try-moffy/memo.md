@@ -366,11 +366,14 @@ Control.Moffy.Handle.ThreadId
 		- [x] SIG
 		- [x] REACT
 * [ ] Control.Moffy.Event.ThreadId
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] imports
-	+ [ ] structure
+	+ [x] API
+	+ [x] extension
+	+ [x] imports
 	+ [ ] body
+		- [x] data GetThreadId
+		- [ ] numbered
+		- [ ] instance Request
+		- [ ] function getThreadId
 * [ ] Control.Moffy.Handle.ThreadId
 	+ [ ] API
 	+ [ ] extension
@@ -479,5 +482,14 @@ ref
 ```
 themes/papers/monadic_functional_reactive_programming/try-monadic-functional-reactive-programming/
 ```
+
+```
+f :: Integer -> Integer -> Rational
+f (fromInteger . (2 ^) -> m) n = 1 - product [m - fromInteger n + 1 .. m] / m ^ n
+
+> fromRational . recip $ f 64 10000 :: Double
+3.6897177865255615e11
+```
+
 task
 ----
