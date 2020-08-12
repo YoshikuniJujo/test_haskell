@@ -7,14 +7,22 @@
 module Control.Moffy.Handle (
 	-- * Constraint
 	ExpandableHandle, ExpandableOccurred, MergeableOccurred,
-	-- * Composer
+	-- * Handle and Function
 	-- ** Plain
-	Handle, Handle', retry, expand, before, merge,
+	-- *** Type
+	Handle, Handle',
+	-- *** Composer
+	retry, expand, before, merge,
 	-- ** With State
+	-- *** Type
 	HandleSt, HandleSt', liftHandle, liftHandle', St, liftSt,
+	-- *** Composer
 	retrySt, expandSt, beforeSt, mergeSt,
 	-- ** With Input and Output
-	HandleIo', pushInput, popInput, expandIo, beforeIo, mergeIo
+	-- *** Type
+	HandleIo', pushInput, popInput,
+	-- *** Composer
+	expandIo, beforeIo, mergeIo
 	) where
 
 import Control.Arrow (first)
@@ -78,7 +86,8 @@ merge (collapse -> l) (collapse -> r) rqs = merge' <$> l rqs <*> r rqs
 -- WITH STATE
 ---------------------------------------------------------------------------
 
-type HandleSt' st m es = HandleIo' st st m es
+type HandleSt' st m es = EvReqs es -> St st m (Maybe (EvOccs es))
+-- ^ > type HandleSt' st m es = HandleIo' st st m es
 
 liftHandle' :: Functor m => Handle' m es -> HandleSt' st m es
 liftHandle' = (liftSt .)
@@ -94,13 +103,13 @@ expandSt hdl = expandIo hdl pure
 beforeSt :: (
 	Monad m,
 	ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es') ) =>
-	HandleIo' st st m es -> HandleIo' st st m es' -> HandleIo' st st m (es :+: es')
+	HandleSt' st m es -> HandleSt' st m es' -> HandleSt' st m (es :+: es')
 beforeSt l r = beforeIo l pure r pure
 
 mergeSt :: (
 	Monad m, ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es'),
 	MergeableOccurred es es' (es :+: es') ) =>
-	HandleIo' st st m es -> HandleIo' st st m es' -> HandleIo' st st m (es :+: es')
+	HandleSt' st m es -> HandleSt' st m es' -> HandleSt' st m (es :+: es')
 mergeSt h1 h2 = mergeIo h1 pure h2 pure
 
 ---------------------------------------------------------------------------

@@ -300,15 +300,43 @@ Control.Moffy.Handle.ThreadId
 		- [x] ST
 		- [x] THREAD ID
 * [ ] Control.Moffy.Handle
-	+ [ ] API
+	+ [x] API
 		- [x] Constraint
 			* [x] ExpandableHandle
 			* [x] ExpandableOccurred
 			* [x] MergeableOccurred
-		- [ ] Composer
-			* [ ] Plain
-			* [ ] With State
-			* [ ] With Input and Output
+		- [x] Handle and Function
+			* [x] Plain
+				+ [x] Type
+					- [x] Handle
+					- [x] Handle'
+				+ [x] Composer
+					- [x] retry
+					- [x] expand
+					- [x] before
+					- [x] merge
+			* [x] With State
+				+ [x] Type
+					- [x] HandleSt
+					- [x] HandleSt'
+					- [x] liftHandle
+					- [x] liftHandle'
+					- [x] St
+					- [x] liftSt
+				+ [x] Composer
+					- [x] retrySt
+					- [x] expandSt
+					- [x] beforeSt
+					- [x] mergeSt
+			* [x] With Input and Output
+				+ [x] Type
+					- [x] HelloIo'
+					- [x] pushInput
+					- [x] popInput
+				+ [x] Composer
+					- [x] expandIo
+					- [x] beforeIo
+					- [x] mergeIo
 	+ [ ] extension
 	+ [ ] imports
 	+ [ ] structure
