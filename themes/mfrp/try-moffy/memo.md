@@ -355,9 +355,28 @@ Control.Moffy.Handle.ThreadId
 		- [x] WITH INPUT AND OUTPUT
 			* [x] TYPE
 			* [x] COMPOSER
-* [ ] Control.Moffy.Run
+* [x] Control.Moffy.Run
+	+ [x] API
+		- [x] Type
+		- [x] Run
+	+ [x] extension
+	+ [x] imports
+	+ [x] structure
+	+ [x] body
+		- [x] SIG
+		- [x] REACT
 * [ ] Control.Moffy.Event.ThreadId
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
 * [ ] Control.Moffy.Handle.ThreadId
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
 
 ## Moffy library
 
