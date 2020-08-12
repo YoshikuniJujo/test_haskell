@@ -415,9 +415,13 @@ Control.Moffy.Handle
 	+ [x] extension
 	+ [x] import
 * [ ] Control.Moffy.Event.Lock.Internal
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] import
+	+ [x] API
+		- [x] Type
+			* [x] Type Synonym
+			* [x] Event Type
+		- [x] Event
+	+ [x] extension
+	+ [x] import
 	+ [ ] structure
 	+ [ ] body
 * [ ] Control.Moffy.Handle.Lock

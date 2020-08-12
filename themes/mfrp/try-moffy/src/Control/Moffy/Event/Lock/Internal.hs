@@ -13,13 +13,12 @@ module Control.Moffy.Event.Lock.Internal (
 	RetryTime,
 	-- ** Event Type
 	NewLockId(..), pattern OccNewLockId, GetLock(..), pattern OccGetLock,
-	Unlock(..), pattern OccUnlock,
-	LockId(..),
+	Unlock(..), pattern OccUnlock, LockId(..),
 	-- * Event
 	newLockId, withLock ) where
 
 import Control.Moffy (React, Request(..), Adjustable, adjust, await)
-import Control.Moffy.Event.ThreadId (GetThreadId, ThreadId, getThreadId)
+import Control.Moffy.Event.ThreadId (GetThreadId, getThreadId, ThreadId)
 import Data.Type.Set (numbered, pattern Nil, Singleton, (:-), (:+:))
 import Data.OneOrMore (Selectable(..))
 import Data.Bool (bool)
