@@ -81,7 +81,8 @@ before :: (
 	Monad m,
 	ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es') ) =>
 	Handle' m es -> Handle' m es' -> Handle' m (es :+: es')
-before (expand -> l) (expand -> r) rqs = r rqs `maybe` (pure . Just) =<< l rqs
+((expand -> l) `before` (expand -> r)) rqs =
+	r rqs `maybe` (pure . Just) =<< l rqs
 
 infixr 6 `merge`, `mergeSt`
 
@@ -90,7 +91,7 @@ merge :: (
 	ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es'),
 	MergeableOccurred es es' (es :+: es') ) =>
 	Handle' m es -> Handle' m es' -> Handle' m (es :+: es')
-merge (collapse -> l) (collapse -> r) rqs = OOM.merge' <$> l rqs <*> r rqs
+((collapse -> l) `merge` (collapse -> r)) rqs = OOM.merge' <$> l rqs <*> r rqs
 
 ---------------------------------------------------------------------------
 -- WITH STATE
@@ -112,19 +113,19 @@ retrySt hdl rqs st = hdl rqs st >>= \(mo, st') ->
 
 expandSt :: (Applicative m, ExpandableHandle es es') =>
 	HandleSt' st m es -> HandleSt' st m es'
-expandSt hdl = expandIo hdl pure
+expandSt = (`expandIo` pure)
 
 beforeSt :: (
 	Monad m,
 	ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es') ) =>
 	HandleSt' st m es -> HandleSt' st m es' -> HandleSt' st m (es :+: es')
-beforeSt l r = beforeIo l pure r pure
+l `beforeSt` r = beforeIo l pure r pure
 
 mergeSt :: (
 	Monad m, ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es'),
 	MergeableOccurred es es' (es :+: es') ) =>
 	HandleSt' st m es -> HandleSt' st m es' -> HandleSt' st m (es :+: es')
-mergeSt h1 h2 = mergeIo h1 pure h2 pure
+l `mergeSt` r = mergeIo l pure r pure
 
 ---------------------------------------------------------------------------
 -- WITH INPUT AND OUTPUT
@@ -135,37 +136,35 @@ mergeSt h1 h2 = mergeIo h1 pure h2 pure
 type HandleIo' i o m es = EvReqs es -> i -> m (Maybe (EvOccs es), o)
 
 pushInput :: (a -> HandleSt' st m es) -> HandleIo' (a, st) st m es
-pushInput hdl rqs (x, st) = hdl x rqs st
+pushInput hdl = uncurry . flip hdl
 
 popInput :: HandleIo' (a, st) st m es -> a -> HandleSt' st m es
-popInput hdl x rqs st = hdl rqs (x, st)
+popInput hdl = flip $ curry . hdl
 
 -- COMPOSER
 
 collapseIo :: (Applicative m, Collapsable es' es) =>
 	HandleIo' i o m es -> (i -> m o) ->
 	EvReqs es' -> i -> m (Maybe (EvOccs es), o)
-collapseIo hdl ot = maybe (((Nothing ,) <$>) . ot) hdl . OOM.collapse
+collapseIo hdl nh = ((((Nothing ,) <$>) . nh) `maybe` hdl) . OOM.collapse
 
 expandIo :: (Applicative m, ExpandableHandle es es') =>
 	HandleIo' i o m es -> (i -> m o) -> HandleIo' i o m es'
-expandIo hdl ot st rqs = first (OOM.expand <$>) <$> collapseIo hdl ot st rqs
+expandIo hdl nh i rqs = first (OOM.expand <$>) <$> collapseIo hdl nh i rqs
 
 beforeIo :: (
 	Monad m,
 	ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es') ) =>
 	HandleIo' i x m es -> (i -> m x) ->
-	HandleIo' x o m es' -> (x -> m o) ->
-	HandleIo' i o m (es :+: es')
-beforeIo l otl r otr rqs st = expandIo l otl rqs st >>= \(mo, st') ->
-	maybe (expandIo r otr rqs st') ((<$> otr st') . (,) . Just) mo
+	HandleIo' x o m es' -> (x -> m o) -> HandleIo' i o m (es :+: es')
+beforeIo l nhl r nhr rqs st = expandIo l nhl rqs st >>= \(mo, st') ->
+	maybe (expandIo r nhr rqs st') ((<$> nhr st') . (,) . Just) mo
 
 mergeIo :: (
 	Monad m,
 	ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es'),
 	MergeableOccurred es es' (es :+: es') ) =>
 	HandleIo' i x m es -> (i -> m x) ->
-	HandleIo' x o m es' -> (x -> m o) ->
-	HandleIo' i o m (es :+: es')
-mergeIo l otl r otr rqs st = collapseIo l otl rqs st >>= \(mo, st') ->
-	first (mo `OOM.merge'`) <$> collapseIo r otr rqs st'
+	HandleIo' x o m es' -> (x -> m o) -> HandleIo' i o m (es :+: es')
+mergeIo l nhl r nhr rqs st = collapseIo l nhl rqs st >>= \(mo, st') ->
+	first (mo `OOM.merge'`) <$> collapseIo r nhr rqs st'

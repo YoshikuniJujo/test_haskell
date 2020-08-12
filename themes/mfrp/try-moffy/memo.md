@@ -339,18 +339,22 @@ Control.Moffy.Handle.ThreadId
 					- [x] mergeIo
 	+ [x] extension
 	+ [x] imports
-	+ [ ] structure
-	+ [ ] body
+	+ [x] structure
+	+ [x] body
 		- [x] CONSTRAINT
 		- [x] PLAIN
 			* [x] TYPE
 			* [x] COMPOSER
-		- [ ] WITH STATE
-			* [ ] TYPE
-			* [ ] COMPOSER
-		- [ ] WITH INPUT AND OUTPUT
-			* [ ] TYPE
-			* [ ] COMPOSER
+		- [x] WITH STATE
+			* [x] TYPE
+			* [x] COMPOSER
+				+ [x] retrySt
+				+ [x] expandSt
+				+ [x] beforeSt
+				+ [x] mergeSt
+		- [x] WITH INPUT AND OUTPUT
+			* [x] TYPE
+			* [x] COMPOSER
 * [ ] Control.Moffy.Run
 * [ ] Control.Moffy.Event.ThreadId
 * [ ] Control.Moffy.Handle.ThreadId
