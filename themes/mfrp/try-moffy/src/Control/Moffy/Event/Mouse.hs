@@ -43,7 +43,7 @@ import Data.Bool (bool)
 
 data MouseDown = MouseDownReq deriving (Show, Eq, Ord)
 data MouseBtn = MLeft | MMiddle | MRight | MUp | MDown deriving (Show, Eq, Ord)
-numbered 64 [t| MouseDown |]
+numbered [t| MouseDown |]
 instance Request MouseDown where
 	data Occurred MouseDown = OccMouseDown [MouseBtn]
 		deriving (Show, Eq, Ord)
@@ -62,7 +62,7 @@ leftClick, middleClick, rightClick :: React s (Singleton MouseDown) ()
 ---------------------------------------------------------------------------
 
 data MouseUp = MouseUpReq deriving (Show, Eq, Ord)
-numbered 64 [t| MouseUp |]
+numbered [t| MouseUp |]
 instance Request MouseUp where
 	data Occurred MouseUp = OccMouseUp [MouseBtn] deriving (Show, Eq, Ord)
 
@@ -81,7 +81,7 @@ leftUp, middleUp, rightUp :: React s (Singleton MouseUp) ()
 
 data MouseMove = MouseMoveReq deriving (Show, Eq, Ord)
 type Point = (Integer, Integer)
-numbered 64 [t| MouseMove |]
+numbered [t| MouseMove |]
 instance Request MouseMove where
 	data Occurred MouseMove = OccMouseMove Point deriving (Show, Eq, Ord)
 

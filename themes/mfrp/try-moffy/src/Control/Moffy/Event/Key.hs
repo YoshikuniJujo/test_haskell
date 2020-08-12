@@ -33,7 +33,7 @@ import Data.Char (chr)
 ---------------------------------------------------------------------------
 
 data KeyDown = KeyDownReq deriving (Show, Eq, Ord)
-numbered 64 [t| KeyDown |]
+numbered [t| KeyDown |]
 instance Request KeyDown where
 	data Occurred KeyDown = OccKeyDown Key deriving (Show, Eq, Ord)
 
@@ -41,7 +41,7 @@ keyDown :: React s (Singleton KeyDown) Key
 keyDown = await KeyDownReq \(OccKeyDown k) -> k
 
 data KeyUp = KeyUpReq deriving (Show, Eq, Ord)
-numbered 64 [t| KeyUp |]
+numbered [t| KeyUp |]
 instance Request KeyUp where
 	data Occurred KeyUp = OccKeyUp Key deriving (Show, Eq, Ord)
 

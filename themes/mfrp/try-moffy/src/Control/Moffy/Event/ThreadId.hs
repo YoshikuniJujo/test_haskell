@@ -17,7 +17,7 @@ import Data.Type.Set (numbered, Singleton)
 ---------------------------------------------------------------------------
 
 data GetThreadId = GetThreadIdReq deriving (Show, Eq, Ord)
-numbered 64 [t| GetThreadId |]
+numbered [t| GetThreadId |]
 instance Request GetThreadId where data Occurred GetThreadId = OccGetThreadId
 
 getThreadId :: React s (Singleton GetThreadId) ThreadId

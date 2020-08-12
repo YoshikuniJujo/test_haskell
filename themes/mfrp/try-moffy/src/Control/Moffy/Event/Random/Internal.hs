@@ -32,7 +32,7 @@ import System.Random (Random, StdGen, random, randomR)
 -- STORE RANDOM GEN
 
 newtype StoreRandomGen = StoreRandomGenReq StdGen deriving Show
-numbered 64 [t| StoreRandomGen |]
+numbered [t| StoreRandomGen |]
 instance Selectable StoreRandomGen where l `select` _r = l
 instance Request StoreRandomGen where
 	data Occurred StoreRandomGen = OccStoreRandomGen
@@ -43,7 +43,7 @@ storeRandomGen g = await (StoreRandomGenReq g) \OccStoreRandomGen -> ()
 -- LOAD RANDOM GEN
 
 data LoadRandomGen = LoadRandomGenReq deriving (Show, Eq, Ord)
-numbered 64 [t| LoadRandomGen |]
+numbered [t| LoadRandomGen |]
 instance Request LoadRandomGen where
 	data Occurred LoadRandomGen = OccLoadRandomGen StdGen deriving Show
 

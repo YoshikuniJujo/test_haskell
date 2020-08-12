@@ -15,7 +15,7 @@ import Control.Monad.Freer.Par
 -- import Control.Moffy.Internal.React.Type
 
 data EvInt = EvIntReq deriving (Show, Eq, Ord)
-numbered 64 [t| EvInt |]
+numbered [t| EvInt |]
 instance Request EvInt where
 	newtype Occurred EvInt = OccEvInt Int deriving Show
 

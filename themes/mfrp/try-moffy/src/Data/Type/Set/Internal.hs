@@ -31,11 +31,12 @@ import System.Random (randomRIO)
 
 class Numbered a where type Number (a :: Type) = (r :: Nat) | r -> a
 
-numbered :: Int -> TypeQ -> DecsQ
-numbered s t = ((: []) <$>)
+numbered :: TypeQ -> DecsQ
+numbered t = ((: []) <$>)
 	. instanceD (cxt []) (conT ''Numbered `appT` t) . (: [])
 		$ tySynInstD . tySynEqn Nothing (conT ''Number `appT` t)
 			. litT . numTyLit =<< runIO (randomRIO (0, 2 ^ s - 1))
+	where s = 64 :: Int
 
 ---------------------------------------------------------------------------
 -- TYPE SET

@@ -16,7 +16,7 @@ import Control.Moffy.Handle.Lock
 import Control.Moffy.Event.Lock
 
 data Count = CountReq deriving (Show, Eq, Ord)
-numbered 64 [t| Count |]
+numbered [t| Count |]
 instance Request Count where data Occurred Count = OccCount Int deriving Show
 
 count :: React s (Singleton Count) Int
