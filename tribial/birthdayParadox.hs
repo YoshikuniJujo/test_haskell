@@ -20,3 +20,9 @@ foo'' i n = foo' (2 ^ i) n
 
 baz' :: Integer -> Integer -> IO ()
 baz' i n = putStrLn $ showFFloat Nothing (fromRational $ foo'' i n * 100) . ('%' :) $ ""
+
+foo''' :: Integer -> Integer -> Double
+foo''' (fromInteger -> i) (fromInteger -> n) = 1 - product [2 ** i - n + 1 .. 2 ** i] / (2 ** i) ** n
+
+f :: Integer -> Integer -> Rational
+f (fromInteger . (2 ^) -> m) n = 1 - product [m - fromInteger n + 1 .. m] / m ^ n
