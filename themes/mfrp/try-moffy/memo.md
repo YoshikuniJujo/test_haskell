@@ -341,6 +341,16 @@ Control.Moffy.Handle.ThreadId
 	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
+		- [x] CONSTRAINT
+		- [x] PLAIN
+			* [x] TYPE
+			* [x] COMPOSER
+		- [ ] WITH STATE
+			* [ ] TYPE
+			* [ ] COMPOSER
+		- [ ] WITH INPUT AND OUTPUT
+			* [ ] TYPE
+			* [ ] COMPOSER
 * [ ] Control.Moffy.Run
 * [ ] Control.Moffy.Event.ThreadId
 * [ ] Control.Moffy.Handle.ThreadId

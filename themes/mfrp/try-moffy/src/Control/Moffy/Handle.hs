@@ -36,7 +36,14 @@ import qualified Data.OneOrMore as OOM (expand, collapse, merge')
 
 -- * CONSTRAINT
 -- * PLAIN
+--	+ TYPE
+--	+ COMPOSER
 -- * WITH STATE
+--	+ TYPE
+--	+ COMPOSER
+-- * WITH INPUT AND OUTPUT
+--	+ TYPE
+--	+ COMPOSER
 
 ---------------------------------------------------------------------------
 -- CONSTRAINT
@@ -51,14 +58,18 @@ type MergeableOccurred es es' mrg =
 -- PLAIN
 ---------------------------------------------------------------------------
 
+-- TYPE
+
 type Handle' m es = EvReqs es -> m (Maybe (EvOccs es))
 
+-- COMPOSER
+
 retry :: Monad m => Handle' m es -> Handle m es
-retry hdl rqs = maybe (retry hdl rqs) pure =<< hdl rqs
+retry hdl rqs = retry hdl rqs `maybe` pure =<< hdl rqs
 
 collapse :: (Applicative m, Collapsable es' es) =>
 	Handle' m es -> EvReqs es' -> m (Maybe (EvOccs es))
-collapse hdl = maybe (pure Nothing) hdl . OOM.collapse
+collapse hdl = (pure Nothing `maybe` hdl) . OOM.collapse
 
 expand :: (Applicative m, ExpandableHandle es es') =>
 	Handle' m es -> Handle' m es'
@@ -70,7 +81,7 @@ before :: (
 	Monad m,
 	ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es') ) =>
 	Handle' m es -> Handle' m es' -> Handle' m (es :+: es')
-before (expand -> l) (expand -> r) rqs = maybe (r rqs) (pure . Just) =<< l rqs
+before (expand -> l) (expand -> r) rqs = r rqs `maybe` (pure . Just) =<< l rqs
 
 infixr 6 `merge`, `mergeSt`
 
@@ -85,11 +96,15 @@ merge (collapse -> l) (collapse -> r) rqs = OOM.merge' <$> l rqs <*> r rqs
 -- WITH STATE
 ---------------------------------------------------------------------------
 
+-- TYPE
+
 type HandleSt' st m es = EvReqs es -> St st m (Maybe (EvOccs es))
 -- ^ > type HandleSt' st m es = HandleIo' st st m es
 
 liftHandle' :: Functor m => Handle' m es -> HandleSt' st m es
 liftHandle' = (liftSt .)
+
+-- COMPOSER
 
 retrySt :: Monad m => HandleSt' st m es -> HandleSt st m es
 retrySt hdl rqs st = hdl rqs st >>= \(mo, st') ->
@@ -115,6 +130,8 @@ mergeSt h1 h2 = mergeIo h1 pure h2 pure
 -- WITH INPUT AND OUTPUT
 ---------------------------------------------------------------------------
 
+-- TYPE
+
 type HandleIo' i o m es = EvReqs es -> i -> m (Maybe (EvOccs es), o)
 
 pushInput :: (a -> HandleSt' st m es) -> HandleIo' (a, st) st m es
@@ -122,6 +139,8 @@ pushInput hdl rqs (x, st) = hdl x rqs st
 
 popInput :: HandleIo' (a, st) st m es -> a -> HandleSt' st m es
 popInput hdl x rqs st = hdl rqs (x, st)
+
+-- COMPOSER
 
 collapseIo :: (Applicative m, Collapsable es' es) =>
 	HandleIo' i o m es -> (i -> m o) ->
