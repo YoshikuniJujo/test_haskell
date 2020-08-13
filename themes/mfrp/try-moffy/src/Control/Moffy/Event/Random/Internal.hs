@@ -6,12 +6,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Event.Random.Internal (
-	-- * Type
-	RandomEv,
+	-- * Store Random Gen
 	StoreRandomGen(..), pattern OccStoreRandomGen,
+	-- * Load Random Gen
 	LoadRandomGen, pattern OccLoadRandomGen,
-	-- * GET RANDOM
-	getRandom, getRandomR ) where
+	-- * Get Random
+	RandomEv, getRandom, getRandomR ) where
 
 import Control.Moffy (React, Request(..), await, adjust)
 import Data.Type.Set (numbered, pattern Nil, Singleton, (:-))
@@ -45,7 +45,7 @@ storeRandomGen g = await (StoreRandomGenReq g) \OccStoreRandomGen -> ()
 data LoadRandomGen = LoadRandomGenReq deriving (Show, Eq, Ord)
 numbered [t| LoadRandomGen |]
 instance Request LoadRandomGen where
-	data Occurred LoadRandomGen = OccLoadRandomGen StdGen deriving Show
+	data Occurred LoadRandomGen = OccLoadRandomGen StdGen
 
 loadRandomGen :: React s (Singleton LoadRandomGen) StdGen
 loadRandomGen = await LoadRandomGenReq \(OccLoadRandomGen g) -> g
@@ -63,5 +63,5 @@ getRandomR :: Random a => (a, a) -> React s RandomEv a
 getRandomR = modifyRandomGen . randomR
 
 modifyRandomGen :: (StdGen -> (a, StdGen)) -> React s RandomEv a
-modifyRandomGen f = (f <$> adjust loadRandomGen) >>= \(r, g') ->
-	r <$ adjust (storeRandomGen g')
+modifyRandomGen f =
+	f <$> adjust loadRandomGen >>= \(r, g) -> r <$ adjust (storeRandomGen g)

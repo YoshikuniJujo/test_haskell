@@ -445,22 +445,28 @@ Control.Moffy.Handle
 			* [x] handleNewLockId
 			* [x] handleGetLock
 			* [x] handleUnlock
-* [ ] Control.Moffy.Event.Random
+* [x] Control.Moffy.Event.Random
 	+ [x] API
 		- [x] Type
 		- [x] Get Random
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
-* [ ] Control.Moffy.Event.Random.Internal
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
+	+ [x] extension
+	+ [x] import
+* [x] Control.Moffy.Event.Random.Internal
+	+ [x] API
+	+ [x] extension
+	+ [x] import
+	+ [x] structure
+	+ [x] body
+		- [x] EVENT
+			* [x] STORE RANDOM GEN
+			* [x] LOAD RANDOM GEN
+		- [x] RANDOM EV AND GET RANDOM
 * [ ] Control.Moffy.Handle.Random
 	+ [ ] API
+		- [ ] Type
+			* [ ] type RandomEv
+			* [ ] class RandomState
+		- [ ] Handle
 	+ [ ] extension
 	+ [ ] import
 	+ [ ] structure
