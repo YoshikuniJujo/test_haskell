@@ -435,9 +435,16 @@ Control.Moffy.Handle
 		- [x] Type
 		- [x] Handle
 	+ [x] extension
-	+ [ ] import
-	+ [ ] structure
+	+ [x] import
+	+ [x] structure
 	+ [ ] body
+		- [x] remove prime
+		- [ ] LOCK STATE
+		- [ ] HANDLE
+			* [ ] handleLock
+			* [ ] handleNewLockId
+			* [ ] handleGetLock
+			* [ ] handleUnlock
 * [ ] Control.Moffy.Event.Random
 * [ ] Control.Moffy.Event.Random.Internal
 * [ ] Control.Moffy.Handle.Random
