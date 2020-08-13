@@ -37,18 +37,17 @@ handleLock :: (LockState s, Monad m) => HandleSt' s m LockEv
 handleLock = handleNewLockId `mergeSt` handleGetLock `mergeSt` handleUnlock
 
 handleNewLockId ::
-	(Applicative m, LockState s) => HandleSt' s m (Singleton NewLockId)
+	(LockState s, Applicative m) => HandleSt' s m (Singleton NewLockId)
 handleNewLockId (Singleton (NewLockIdReq t)) s = let i = getNextLockId s in
 	pure (	Just . Singleton $ OccNewLockId (LockId i) t,
 		s `putNextLockId` (i + 1) )
 
 handleGetLock ::
-	(Applicative m, LockState s) => HandleSt' s m (Singleton GetLock)
-handleGetLock (Singleton (GetLockReq l t _)) s = pure $ bool
-	(Just (Singleton $ OccGetLock l t), s `lockIt` l) (Nothing, s)
-	(s `isLocked` l)
+	(LockState s, Applicative m) => HandleSt' s m (Singleton GetLock)
+handleGetLock (Singleton (GetLockReq i t _)) s = pure $ bool
+	(Just (Singleton $ OccGetLock i t), s `lockIt` i) (Nothing, s)
+	(s `isLocked` i)
 
-handleUnlock ::
-	(Applicative m, LockState s) => HandleSt' s m (Singleton Unlock)
-handleUnlock (Singleton (UnlockReq l)) s =
-	pure (Just $ Singleton OccUnlock, s `unlockIt` l)
+handleUnlock :: (LockState s, Applicative m) => HandleSt' s m (Singleton Unlock)
+handleUnlock (Singleton (UnlockReq i)) s =
+	pure (Just $ Singleton OccUnlock, s `unlockIt` i)
