@@ -434,7 +434,7 @@ Control.Moffy.Handle
 	+ [x] API
 		- [x] Type
 		- [x] Handle
-	+ [ ] extension
+	+ [x] extension
 	+ [ ] import
 	+ [ ] structure
 	+ [ ] body

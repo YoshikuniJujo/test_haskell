@@ -1,8 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Handle.Lock (
