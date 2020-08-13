@@ -76,7 +76,7 @@ todo
 	+ [ ] Moffy base
 	+ [ ] Trial
 * [ ] refactoring
-	+ [ ] Control.Moffy
+	+ [x] Control.Moffy
 	+ [ ] module structure of Control.Moffy.Event.Key
 	+ [ ] Control.Moffy.Event.Key
 	+ [ ] Trial
@@ -91,7 +91,7 @@ todo
 		- [ ] numbered use fixed 64
 		- [ ] others
 	+ [ ] Control.Moffy.Handle
-	+ [ ] Moffy
+	+ [x] Moffy
 	+ [ ] Moffy library
 	+ [ ] Moffy base
 	+ [ ] Trials
@@ -414,7 +414,7 @@ Control.Moffy.Handle
 		- [x] Event
 	+ [x] extension
 	+ [x] import
-* [ ] Control.Moffy.Event.Lock.Internal
+* [x] Control.Moffy.Event.Lock.Internal
 	+ [x] API
 		- [x] Type
 			* [x] Type Synonym
@@ -423,14 +423,21 @@ Control.Moffy.Handle
 	+ [x] extension
 	+ [x] import
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] LOCK ID
-		- [ ] EVENT
+		- [x] EVENT
 			* [x] NEW LOCK ID
-			* [ ] GET LOCK
-			* [ ] UNLOCK
-		- [ ] WITH LOCK
+			* [x] GET LOCK
+			* [x] UNLOCK
+		- [x] WITH LOCK
 * [ ] Control.Moffy.Handle.Lock
+	+ [x] API
+		- [x] Type
+		- [x] Handle
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
 * [ ] Control.Moffy.Event.Random
 * [ ] Control.Moffy.Event.Random.Internal
 * [ ] Control.Moffy.Handle.Random

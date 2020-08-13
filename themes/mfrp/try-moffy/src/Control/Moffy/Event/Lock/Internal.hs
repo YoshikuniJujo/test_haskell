@@ -53,9 +53,9 @@ instance Request NewLockId where
 type GetThreadIdNewLockId = GetThreadId :- NewLockId :- 'Nil
 
 newLockId :: React s GetThreadIdNewLockId LockId
-newLockId = adjust getThreadId >>= \t -> newLockId `maybe` pure =<< adjust (
-	await (NewLockIdReq t)
-		\(OccNewLockId i t') -> bool Nothing (Just i) $ t == t' )
+newLockId = adjust getThreadId >>= \t -> newLockId `maybe` pure
+	=<< (adjust . await (NewLockIdReq t))
+		\(OccNewLockId i t') -> bool Nothing (Just i) $ t == t'
 
 -- GET LOCK
 
@@ -71,9 +71,9 @@ instance Request GetLock where
 type GetThreadIdGetLock = GetThreadId :- GetLock :- 'Nil
 
 getLock :: LockId -> RetryTime -> React s GetThreadIdGetLock ()
-getLock l rt = adjust getThreadId >>= \t -> bool (getLock l $ rt + 1) (pure ())
-	=<< (adjust . await (GetLockReq l t rt))
-		\(OccGetLock l' t') -> l == l' && t == t'
+getLock i rt = adjust getThreadId >>= \t -> getLock i (rt + 1) `bool` pure ()
+	=<< (adjust . await (GetLockReq i t rt))
+		\(OccGetLock i' t') -> i == i' && t == t'
 
 -- UNLOCK
 
