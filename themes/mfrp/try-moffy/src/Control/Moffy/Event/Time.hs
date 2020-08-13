@@ -13,8 +13,8 @@ module Control.Moffy.Event.Time (
 	-- * Sleep
 	TryWait(..), pattern OccTryWait, sleep ) where
 
-import Control.Moffy
-import Data.Type.Set (Set(Nil), Singleton, (:-), numbered)
+import Control.Moffy (React, Request(..), await)
+import Data.Type.Set (numbered, pattern Nil, Singleton, (:-))
 import Data.Bool (bool)
 import Data.Time (DiffTime)
 

@@ -485,8 +485,8 @@ Control.Moffy.Handle
 			* [x] newtype TryWait
 			* [x] pattern OccTryWait
 			* [x] function sleep
-	+ [ ] extension
-	+ [ ] import
+	+ [x] extension
+	+ [x] import
 	+ [ ] structure
 	+ [ ] body
 * [ ] Control.Moffy.Handle.Time
