@@ -6,10 +6,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Event.Time (
-	-- * GENERAL
-	pattern OccDeltaTime, pattern OccTryWait,
-	-- * TIME
-	TimeEv, TryWait(..), sleep, DeltaTime(..), deltaTime ) where
+	-- * Time Ev
+	TimeEv,
+	-- * Delta Time
+	DeltaTime(..), pattern OccDeltaTime, deltaTime,
+	-- * Sleep
+	TryWait(..), pattern OccTryWait, sleep ) where
 
 import Control.Moffy
 import Data.Type.Set (Set(Nil), Singleton, (:-), numbered)
@@ -18,7 +20,7 @@ import Data.Time (DiffTime)
 
 ---------------------------------------------------------------------------
 
-newtype TryWait = TryWaitReq { getTryWaitReq :: DiffTime } deriving (Show, Eq, Ord)
+newtype TryWait = TryWaitReq DiffTime deriving (Show, Eq, Ord)
 numbered [t| TryWait |]
 instance Request TryWait where
 	data Occurred TryWait = OccTryWait DiffTime deriving (Show, Eq, Ord)
@@ -37,4 +39,4 @@ instance Request DeltaTime where
 deltaTime :: React s (Singleton DeltaTime) DiffTime
 deltaTime = await DeltaTimeReq \(OccDeltaTime t) -> t
 
-type TimeEv = TryWait :- DeltaTime :- 'Nil
+type TimeEv = DeltaTime :- TryWait :- 'Nil
