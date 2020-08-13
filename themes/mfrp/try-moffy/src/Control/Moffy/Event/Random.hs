@@ -3,7 +3,7 @@
 module Control.Moffy.Event.Random (
 	-- * Type
 	RandomEv,
-	-- * GET RANDOM
+	-- * Get Random
 	getRandom, getRandomR ) where
 
 import Control.Moffy.Event.Random.Internal (RandomEv, getRandom, getRandomR)

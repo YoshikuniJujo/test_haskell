@@ -446,7 +446,9 @@ Control.Moffy.Handle
 			* [x] handleGetLock
 			* [x] handleUnlock
 * [ ] Control.Moffy.Event.Random
-	+ [ ] API
+	+ [x] API
+		- [x] Type
+		- [x] Get Random
 	+ [ ] extension
 	+ [ ] import
 	+ [ ] structure
