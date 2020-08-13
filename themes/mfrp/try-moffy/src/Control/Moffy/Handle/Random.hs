@@ -1,7 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Handle.Random (
@@ -33,18 +30,18 @@ class RandomState s where
 instance RandomState StdGen where getRandomGen = id; putRandomGen = flip const
 
 ---------------------------------------------------------------------------
--- NEW HANDLE
+-- HANDLE
 ---------------------------------------------------------------------------
 
 handleRandom :: (RandomState s, Monad m) => HandleSt' s m RandomEv
 handleRandom = handleStoreRandomGen' `mergeSt` handleLoadRandomGen'
 
-handleStoreRandomGen' :: (Applicative m, RandomState s) =>
+handleStoreRandomGen' :: (RandomState s, Applicative m) =>
 	HandleSt' s m (Singleton StoreRandomGen)
 handleStoreRandomGen' (Singleton (StoreRandomGenReq g)) s =
 	pure (Just $ Singleton OccStoreRandomGen, s `putRandomGen` g)
 
-handleLoadRandomGen' :: (Applicative m, RandomState s) =>
+handleLoadRandomGen' :: (RandomState s, Applicative m) =>
 	HandleSt' s m (Singleton LoadRandomGen)
 handleLoadRandomGen' _rqs s =
 	pure (Just . Singleton . OccLoadRandomGen $ getRandomGen s, s)
