@@ -462,11 +462,11 @@ Control.Moffy.Handle
 			* [x] LOAD RANDOM GEN
 		- [x] RANDOM EV AND GET RANDOM
 * [ ] Control.Moffy.Handle.Random
-	+ [ ] API
-		- [ ] Type
-			* [ ] type RandomEv
-			* [ ] class RandomState
-		- [ ] Handle
+	+ [x] API
+		- [x] Type
+			* [x] type RandomEv
+			* [x] class RandomState
+		- [x] Handle
 	+ [ ] extension
 	+ [ ] import
 	+ [ ] structure
