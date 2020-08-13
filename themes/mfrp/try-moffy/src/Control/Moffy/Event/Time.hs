@@ -20,6 +20,17 @@ import Data.Time (DiffTime)
 
 ---------------------------------------------------------------------------
 
+-- * SLEEP
+-- * DELTA TIME
+-- * TIME EV
+
+---------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------
+-- SLEEP
+---------------------------------------------------------------------------
+
 newtype TryWait = TryWaitReq DiffTime deriving (Show, Eq, Ord)
 numbered [t| TryWait |]
 instance Request TryWait where
@@ -31,6 +42,10 @@ tryWait t = await (TryWaitReq t) \(OccTryWait t') -> t'
 sleep :: DiffTime -> React s (Singleton TryWait) ()
 sleep t = tryWait t >>= \t' -> bool (sleep (t - t')) (pure ()) (t' == t)
 
+---------------------------------------------------------------------------
+-- DELTA TIME
+---------------------------------------------------------------------------
+
 data DeltaTime = DeltaTimeReq deriving (Show, Eq, Ord)
 numbered [t| DeltaTime |]
 instance Request DeltaTime where
@@ -38,5 +53,9 @@ instance Request DeltaTime where
 
 deltaTime :: React s (Singleton DeltaTime) DiffTime
 deltaTime = await DeltaTimeReq \(OccDeltaTime t) -> t
+
+---------------------------------------------------------------------------
+-- TIME EV
+---------------------------------------------------------------------------
 
 type TimeEv = DeltaTime :- TryWait :- 'Nil

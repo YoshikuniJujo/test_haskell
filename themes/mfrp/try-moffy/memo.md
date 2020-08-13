@@ -487,8 +487,11 @@ Control.Moffy.Handle
 			* [x] function sleep
 	+ [x] extension
 	+ [x] import
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] SLEEP
+		- [ ] DELTA TIME
+		- [ ] TIME EV
 * [ ] Control.Moffy.Handle.Time
 	+ [ ] API
 	+ [ ] extension
