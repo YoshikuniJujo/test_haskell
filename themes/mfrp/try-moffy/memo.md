@@ -506,7 +506,17 @@ Control.Moffy.Handle
 		- [x] Handle
 	+ [x] extension
 	+ [x] import
-	+ [ ] structure
+	+ [x] structure and body
+		- class
+			* TimeState
+				+ Mode
+			* TaiTimeM
+			* DelayM
+		- function
+			* handleTimeEvPlus
+			* handleInit
+			* handleWait
+			* handletime
 	+ [ ] body
 * [ ] Control.Moffy.Event.Delete
 * [ ] Control.Moffy.Event.Key
