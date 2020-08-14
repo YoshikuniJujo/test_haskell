@@ -493,7 +493,7 @@ Control.Moffy.Handle
 		- [x] DELTA TIME
 		- [x] SLEEP
 		- [x] TIME EV
-* [ ] Control.Moffy.Handle.Time
+* [x] Control.Moffy.Handle.Time
 	+ [x] consider whether or not to rename Mode
 	+ [x] rename InitMode to InitialMode
 	+ [x] API
@@ -579,7 +579,23 @@ Control.Moffy.Handle
 			* [x] KEYBOARD (XKB) EXTENSION FUNCTION AND MODIFIER KEYS
 			* [x] LATIN 1 (only ASCII)
 * [ ] Control.Moffy.Event.Key.Internal.XK
-	+ [ ] API
+	+ [x] API
+		- [x] Void Symbol
+		- [x] Tty Function Keys
+		- [x] Japanese Keyboard
+		- [x] Cursor Control & Motion
+		- [x] Misc Function
+		- [x] Ausiliary Functions: F1 to F35
+		- [x] Modifiers
+		- [x] Keyboard (Xkb) Extension Function and Modifier Keys
+		- [x] Latin 1 (Only Ascii)
+			* [x] Space to Slash
+			* [x] Digit
+			* [x] Colon to At
+			* [x] Upper Alphabet
+			* [x] Blacketleft to Grave
+			* [x] Lower Alphabet
+			* [x] Braceleft to Asciitilde
 	+ [ ] extension
 	+ [ ] import
 	+ [ ] structure

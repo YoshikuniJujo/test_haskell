@@ -16,34 +16,80 @@ import Control.Moffy.Event.Key.Internal (
 -- + NOT VISIBLE
 -- + ASCII
 
+---------------------------------------------------------------------------
+
 -- * Key
 
 ---------------------------------------------------------------------------
--- ** Void Symbol
+-- VOID SYMBOL
 ---------------------------------------------------------------------------
+
+-- ** Void Symbol
 
 xkVoidSymbol
 
 ---------------------------------------------------------------------------
--- ** Not Visible
+-- NOT VISIBLE
 ---------------------------------------------------------------------------
 
+-- ** Tty Function Keys
+
 xkTtyFunctionKeys
+
+-- ** Japanese Keyboard
+
 xkJapaneseKeyboard
+
+-- ** Cursor Control & Motion
+
 xkCursorControlAndMotion
+
+-- ** Misc Function
+
 xkMiscFunctions
+
+-- ** Ausiliary Functions: F1 to F35
+
 xkF1ToF35
+
+-- ** Modifiers
+
 xkModifiers
+
+-- ** Keyboard (Xkb) Extension Function and Modifier Keys
+
 xkIsoLeftTab
 	
 ---------------------------------------------------------------------------
--- ** Ascii
+-- ASCII
 ---------------------------------------------------------------------------
 
+-- ** Latin 1 (Only Ascii)
+
+-- *** Space to Slash
+
 xkSpaceToSlash
+
+-- *** Digit
+
 xkDigit
+
+-- *** Colon to At
+
 xkColonToAt
+
+-- *** Upper Alphabet
+
 xkUpperAlph
+
+-- *** Blacketleft to Grave
+
 xkBlacketleftToGrave
+
+-- *** Lower Alphabet
+
 xkLowerAlph
+
+-- *** Braceleft to Asciitilde
+
 xkBraceleftToAsciitilde
