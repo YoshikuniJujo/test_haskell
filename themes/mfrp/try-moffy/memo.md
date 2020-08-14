@@ -527,11 +527,37 @@ Control.Moffy.Handle
 			* [x] handleInit
 			* [x] handleWait
 			* [x] handleTime
-* [ ] Control.Moffy.Event.Delete
+* [x] Control.Moffy.Event.Delete
+	+ [x] API
+		- [x] Type
+		- [x] Event
+	+ [x] extension
+	+ [x] import
+	+ [x] body
 * [ ] Control.Moffy.Event.Key
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
 * [ ] Control.Moffy.Event.Key.Internal
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
 * [ ] Control.Moffy.Event.Key.Internal.XK
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
 * [ ] Control.Moffy.Event.Mouse
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
 * [ ] Control.Moffy.Handle.XField
 * [ ] Control.Moffy.Handle.XField.Key
 * [ ] Control.Moffy.Handle.XField.Mouse
