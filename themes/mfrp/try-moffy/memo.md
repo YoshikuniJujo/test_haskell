@@ -517,7 +517,16 @@ Control.Moffy.Handle
 			* handleInit
 			* handleWait
 			* handletime
-	+ [ ] body
+	+ [x] body
+		- [x] CLASS
+			* [x] TIME STATE
+			* [x] TAI TIME MONAD
+			* [x] DELAY MONAD
+		- [x] HANDLE
+			* [x] handleTimeEvPlus
+			* [x] handleInit
+			* [x] handleWait
+			* [x] handleTime
 * [ ] Control.Moffy.Event.Delete
 * [ ] Control.Moffy.Event.Key
 * [ ] Control.Moffy.Event.Key.Internal
