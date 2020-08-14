@@ -504,8 +504,8 @@ Control.Moffy.Handle
 			* [x] DelayM
 		- [x] Mode
 		- [x] Handle
-	+ [ ] extension
-	+ [ ] import
+	+ [x] extension
+	+ [x] import
 	+ [ ] structure
 	+ [ ] body
 * [ ] Control.Moffy.Event.Delete

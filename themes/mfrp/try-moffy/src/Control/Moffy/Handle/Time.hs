@@ -1,6 +1,6 @@
-{-# LANGUAGE BlockArguments, TupleSections #-}
-{-# LANGUAGE ScopedTypeVariables, PatternSynonyms #-}
-{-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -12,17 +12,18 @@ module Control.Moffy.Handle.Time (
 	-- * Handle
 	handleTimeEvPlus ) where
 
-import Control.Arrow
-import Control.Moffy.Handle hiding (expand)
-import Control.Concurrent
+import Control.Arrow (first, second)
+import Control.Moffy.Event.Time (
+	TimeEv, pattern OccDeltaTime, TryWait(..), pattern OccTryWait )
+import Control.Moffy.Handle (
+	ExpandableHandle, MergeableOccurred, HandleIo', expandIo, mergeIo )
+import Control.Concurrent (threadDelay)
 import Data.Type.Set ((:+:))
-import Data.OneOrMore (project, pattern Singleton, (>-), expand)
+import Data.OneOrMore (pattern Singleton, (>-), project, expand)
 import Data.Time (DiffTime)
-import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
+import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 	
-import Control.Moffy.Event.Time (TimeEv, TryWait(..), pattern OccDeltaTime, pattern OccTryWait)
-
 ---------------------------------------------------------------------------
 
 data Mode = InitialMode | WaitMode AbsoluteTime deriving Show
