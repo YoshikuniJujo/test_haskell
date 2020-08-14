@@ -13,6 +13,7 @@ module Control.Moffy.Event.Time (
 	-- * Sleep
 	TryWait(..), pattern OccTryWait, sleep ) where
 
+import GHC.Stack (HasCallStack)
 import Control.Moffy (React, Request(..), await)
 import Data.Type.Set (numbered, pattern Nil, Singleton, (:-))
 import Data.Bool (bool)
@@ -20,27 +21,11 @@ import Data.Time (DiffTime)
 
 ---------------------------------------------------------------------------
 
--- * SLEEP
 -- * DELTA TIME
+-- * SLEEP
 -- * TIME EV
 
 ---------------------------------------------------------------------------
-
-
----------------------------------------------------------------------------
--- SLEEP
----------------------------------------------------------------------------
-
-newtype TryWait = TryWaitReq DiffTime deriving (Show, Eq, Ord)
-numbered [t| TryWait |]
-instance Request TryWait where
-	data Occurred TryWait = OccTryWait DiffTime deriving (Show, Eq, Ord)
-
-tryWait :: DiffTime -> React s (Singleton TryWait) DiffTime
-tryWait t = await (TryWaitReq t) \(OccTryWait t') -> t'
-
-sleep :: DiffTime -> React s (Singleton TryWait) ()
-sleep t = tryWait t >>= \t' -> bool (sleep (t - t')) (pure ()) (t' == t)
 
 ---------------------------------------------------------------------------
 -- DELTA TIME
@@ -48,11 +33,25 @@ sleep t = tryWait t >>= \t' -> bool (sleep (t - t')) (pure ()) (t' == t)
 
 data DeltaTime = DeltaTimeReq deriving (Show, Eq, Ord)
 numbered [t| DeltaTime |]
-instance Request DeltaTime where
-	data Occurred DeltaTime = OccDeltaTime DiffTime deriving (Show, Eq, Ord)
+instance Request DeltaTime where data Occurred DeltaTime = OccDeltaTime DiffTime
 
 deltaTime :: React s (Singleton DeltaTime) DiffTime
 deltaTime = await DeltaTimeReq \(OccDeltaTime t) -> t
+
+---------------------------------------------------------------------------
+-- SLEEP
+---------------------------------------------------------------------------
+
+newtype TryWait = TryWaitReq DiffTime deriving (Show, Eq, Ord)
+numbered [t| TryWait |]
+instance Request TryWait where data Occurred TryWait = OccTryWait DiffTime
+
+tryWait :: DiffTime -> React s (Singleton TryWait) DiffTime
+tryWait t = await (TryWaitReq t) \(OccTryWait t') -> t'
+
+sleep :: HasCallStack => DiffTime -> React s (Singleton TryWait) ()
+sleep t | t <= 0 = error "sleep t: t (seconds) should be positive"
+sleep t = tryWait t >>= \t' -> bool (sleep (t - t')) (pure ()) (t' == t)
 
 ---------------------------------------------------------------------------
 -- TIME EV

@@ -123,6 +123,7 @@ todo
 	+ [ ] rename HandleSt and HandleSt' to Handle and Handle'
 	+ [ ] consider whether to add (for example) function simple
 		to make SimpleHandle
+* [ ] consider whether or not to put `deriving Show' to Occurred Foo
 
 
 Moffy (9)
@@ -473,7 +474,7 @@ Control.Moffy.Handle
 	+ [x] body
 		- [x] RANDOM STATE
 		- [x] HANDLE
-* [ ] Control.Moffy.Event.Time
+* [x] Control.Moffy.Event.Time
 	+ [x] API
 		- [x] structure
 		- [x] Type Ev
@@ -488,10 +489,10 @@ Control.Moffy.Handle
 	+ [x] extension
 	+ [x] import
 	+ [x] structure
-	+ [ ] body
-		- [ ] SLEEP
-		- [ ] DELTA TIME
-		- [ ] TIME EV
+	+ [x] body
+		- [x] DELTA TIME
+		- [x] SLEEP
+		- [x] TIME EV
 * [ ] Control.Moffy.Handle.Time
 	+ [ ] API
 	+ [ ] extension
