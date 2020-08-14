@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Boxes.Handle (Mode(InitMode), handleBoxes) where
+module Trial.Boxes.Handle (Mode(InitialMode), handleBoxes) where
 
 import Control.Moffy.Handle hiding (expand)
 import Control.Moffy.Handle.Time

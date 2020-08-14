@@ -5,7 +5,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Handle.Time (
-	TimeState(..), TaiTimeM(..), DelayM(..), Mode(InitMode), handleTimeEvPlus ) where
+	-- * Class
+	TimeState(..), TaiTimeM(..), DelayM(..),
+	-- * Mode
+	Mode(InitialMode),
+	-- * Handle
+	handleTimeEvPlus ) where
 
 import Control.Arrow
 import Control.Moffy.Handle hiding (expand)
@@ -20,7 +25,7 @@ import Control.Moffy.Event.Time (TimeEv, TryWait(..), pattern OccDeltaTime, patt
 
 ---------------------------------------------------------------------------
 
-data Mode = InitMode | WaitMode AbsoluteTime deriving Show
+data Mode = InitialMode | WaitMode AbsoluteTime deriving Show
 
 class TimeState s where
 	getMode :: s -> Mode; putMode :: s -> Mode -> s
@@ -39,7 +44,7 @@ handleTimeEvPlus :: (
 	HandleIo' ((DiffTime, a), s) s m es ->
 	HandleIo' ((DiffTime, a), s) s m (es :+: TimeEv)
 handleTimeEvPlus hdl rqs0 ((prd, f0), s0) = case md of
-	InitMode -> handleInit hdl rqs0 ((prd, f0), s0)
+	InitialMode -> handleInit hdl rqs0 ((prd, f0), s0)
 	WaitMode now -> pt <$> handleWait rqs0 (now, tai)
 	where
 	md = getMode s0; tai = getTai s0
@@ -73,7 +78,7 @@ instance DelayM IO where delay = threadDelay
 
 handleWait :: (Monad m, ExpandableHandle TimeEv es) =>
 	HandleIo' (AbsoluteTime, AbsoluteTime) (Mode, AbsoluteTime) m es
-handleWait = expandIo handleTime (pure . (InitMode ,) . fst)
+handleWait = expandIo handleTime (pure . (InitialMode ,) . fst)
 
 handleTime :: Monad m =>
 	HandleIo' (AbsoluteTime, AbsoluteTime) (Mode, AbsoluteTime) m TimeEv
@@ -85,6 +90,6 @@ handleTime rqs (now, lst) = let -- do
 			| t < dt  -> pure (
 				Just $ OccTryWait t >- odt',
 				(WaitMode now, t `addAbsoluteTime` lst) )
-			| otherwise -> pure (Just $ OccTryWait dt >- odt', (InitMode, now))
+			| otherwise -> pure (Just $ OccTryWait dt >- odt', (InitialMode, now))
 			where odt' = Singleton $ OccDeltaTime t
-		Nothing -> pure (Just . expand $ odt, (InitMode, now))
+		Nothing -> pure (Just . expand $ odt, (InitialMode, now))

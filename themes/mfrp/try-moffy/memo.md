@@ -494,7 +494,16 @@ Control.Moffy.Handle
 		- [x] SLEEP
 		- [x] TIME EV
 * [ ] Control.Moffy.Handle.Time
+	+ [x] consider whether or not to rename Mode
+	+ [x] rename InitMode to InitialMode
 	+ [ ] API
+		- [x] structure
+		- [ ] Class
+			* [ ] TimeState
+			* [ ] TaiTimeM
+			* [ ] DelayM
+		- [ ] Mode
+		- [ ] Handle
 	+ [ ] extension
 	+ [ ] import
 	+ [ ] structure
