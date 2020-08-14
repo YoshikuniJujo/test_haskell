@@ -59,7 +59,7 @@ handleInit :: (
 	HandleIo' ((DiffTime, a), s) s m es ->
 	HandleIo' ((DiffTime, a), s) s m (es :+: TimeEv)
 handleInit hdl = mergeIo
-	hdl (\((prd, _), s) -> s <$ delay (round $ prd * 1000000))
+	hdl (\((prd, _), s) -> s <$ delay prd)
 	handleNow' (\s  -> putTai s <$> getTaiTime)
 
 handleNow' :: (Monad m, TaiTimeM m, TimeState s) => HandleIo' s s m TimeEv
@@ -71,10 +71,10 @@ handleNow :: (Monad m, TaiTimeM m) => HandleIo' AbsoluteTime (Mode, AbsoluteTime
 handleNow rqs lst = handleTime rqs . (, lst) =<< getTaiTime
 
 class TaiTimeM m where getTaiTime :: m AbsoluteTime
-class DelayM m where delay :: Int -> m ()
+class DelayM m where delay :: DiffTime -> m ()
 
 instance TaiTimeM IO where getTaiTime = systemToTAITime <$> getSystemTime
-instance DelayM IO where delay = threadDelay
+instance DelayM IO where delay = threadDelay . round . (* 10 ^ (6 :: Int))
 
 handleWait :: (Monad m, ExpandableHandle TimeEv es) =>
 	HandleIo' (AbsoluteTime, AbsoluteTime) (Mode, AbsoluteTime) m es

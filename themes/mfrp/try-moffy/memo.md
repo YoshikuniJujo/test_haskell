@@ -496,14 +496,14 @@ Control.Moffy.Handle
 * [ ] Control.Moffy.Handle.Time
 	+ [x] consider whether or not to rename Mode
 	+ [x] rename InitMode to InitialMode
-	+ [ ] API
+	+ [x] API
 		- [x] structure
-		- [ ] Class
-			* [ ] TimeState
-			* [ ] TaiTimeM
-			* [ ] DelayM
-		- [ ] Mode
-		- [ ] Handle
+		- [x] Class
+			* [x] TimeState
+			* [x] TaiTimeM
+			* [x] DelayM
+		- [x] Mode
+		- [x] Handle
 	+ [ ] extension
 	+ [ ] import
 	+ [ ] structure
