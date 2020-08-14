@@ -578,7 +578,7 @@ Control.Moffy.Handle
 			* [x] MODIFIERS
 			* [x] KEYBOARD (XKB) EXTENSION FUNCTION AND MODIFIER KEYS
 			* [x] LATIN 1 (only ASCII)
-* [ ] Control.Moffy.Event.Key.Internal.XK
+* [x] Control.Moffy.Event.Key.Internal.XK
 	+ [x] API
 		- [x] Void Symbol
 		- [x] Tty Function Keys
@@ -596,12 +596,39 @@ Control.Moffy.Handle
 			* [x] Blacketleft to Grave
 			* [x] Lower Alphabet
 			* [x] Braceleft to Asciitilde
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
+	+ [x] extension
+	+ [x] import
+	+ [x] structure
+	+ [x] body
+		- [x] VOID SYMBOL
+		- [x] NOT VISIBLE
+		- [x] ASCII
 * [ ] Control.Moffy.Event.Mouse
+	+ [ ] consider whether or not to unlist [MouseBtn]
 	+ [ ] API
+		- [x] structure
+		- [ ] Type
+			* [ ] MouseEv
+			* [ ] MouseBtn
+			* [ ] Point
+		- [ ] Mouse Down
+			* [ ] MouseDown
+			* [ ] OccMouseDown
+			* [ ] mouseDown
+			* [ ] leftClick
+			* [ ] middleClick
+			* [ ] rightClick
+		- [ ] Mouse Up
+			* [ ] MouseUp
+			* [ ] OccMouseUp
+			* [ ] mouseUp
+			* [ ] leftUp
+			* [ ] middleUp
+			* [ ] rightUp
+		- [ ] Mouse Move
+			* [ ] MouseMove
+			* [ ] OccMouseMove
+			* [ ] mouseMove
 	+ [ ] extension
 	+ [ ] import
 	+ [ ] structure

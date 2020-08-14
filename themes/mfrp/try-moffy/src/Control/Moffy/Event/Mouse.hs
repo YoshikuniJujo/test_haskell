@@ -7,22 +7,15 @@
 
 module Control.Moffy.Event.Mouse (
 	-- * Type
-	-- ** Mouse Ev
-	MouseEv,
-	-- ** Basic
-	MouseBtn(..), Point,
-	-- ** Each Event
-	MouseDown, pattern OccMouseDown,
-	MouseUp, pattern OccMouseUp,
-	MouseMove, pattern OccMouseMove,
-
+	MouseEv, MouseBtn(..), Point,
 	-- * Event
 	-- ** Mouse Down
+	MouseDown, pattern OccMouseDown,
 	mouseDown, leftClick, middleClick, rightClick,
 	-- ** Mouse Up
-	mouseUp, leftUp, middleUp, rightUp,
+	MouseUp, pattern OccMouseUp, mouseUp, leftUp, middleUp, rightUp,
 	-- ** Mouse Move
-	mouseMove,
+	MouseMove, pattern OccMouseMove, mouseMove
 	) where
 
 import Control.Moffy (React, Request(..), await)
