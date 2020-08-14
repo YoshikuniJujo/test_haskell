@@ -26,27 +26,35 @@ import Data.Char (chr)
 ---------------------------------------------------------------------------
 
 -- * EVENT
+--	+ KEY DOWN
+--	+ KEY UP
+--	+ KEY EV
 -- * PATTERN
 
 ---------------------------------------------------------------------------
 -- EVENT
 ---------------------------------------------------------------------------
 
+-- KEY DOWN
+
 data KeyDown = KeyDownReq deriving (Show, Eq, Ord)
 numbered [t| KeyDown |]
 instance Request KeyDown where
-	data Occurred KeyDown = OccKeyDown Key deriving (Show, Eq, Ord)
+	data Occurred KeyDown = OccKeyDown Key deriving Show
 
 keyDown :: React s (Singleton KeyDown) Key
 keyDown = await KeyDownReq \(OccKeyDown k) -> k
 
+-- KEY UP
+
 data KeyUp = KeyUpReq deriving (Show, Eq, Ord)
 numbered [t| KeyUp |]
-instance Request KeyUp where
-	data Occurred KeyUp = OccKeyUp Key deriving (Show, Eq, Ord)
+instance Request KeyUp where data Occurred KeyUp = OccKeyUp Key deriving Show
 
 keyUp :: React s (Singleton KeyUp) Key
 keyUp = await KeyUpReq \(OccKeyUp k) -> k
+
+-- KEY EV
 
 type KeyEv = KeyDown :- KeyUp :- 'Nil
 
