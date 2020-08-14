@@ -73,17 +73,17 @@ xkVoidSymbol = mkXk "VoidSymbol" 0xffffff
 -- TTY FUNCTION KEYS
 
 xkTtyFunctionKeys :: DecsQ
-xkTtyFunctionKeys = concatR <$> zipWithM (flip mkXk)
-	(	[0xff08 .. 0xff0b] ++ [0xff0d] ++
-		[0xff13 .. 0xff15] ++ [0xff1b] ++ [0xffff] )
+xkTtyFunctionKeys = concatR <$> zipWithM mkXk
 	[	"BackSpace", "Tab", "Linefeed", "Clear", "Return", "Pause",
 		"Scroll_Lock", "Sys_Req", "Escape", "Delete" ]
+	(	[0xff08 .. 0xff0b] ++ [0xff0d] ++
+		[0xff13 .. 0xff15] ++ [0xff1b] ++ [0xffff] )
 
 -- JAPANESE KEYBOARD SUPPORT
 
 xkJapaneseKeyboard :: DecsQ
 xkJapaneseKeyboard = concatR <$> zipWithM (flip mkXk)
-	([0xff21 .. 0xff30] ++ [0xff37, 0xff3e, 0xff3e]) [
+	([0xff21 .. 0xff30] ++ [0xff37, 0xff3d, 0xff3e]) [
 		"Kanji", "Muhenkan", "Henkan_Mode", "Henkan", "Romaji",
 		"Hiragana", "Katakana", "Hiragana_Katakana", "Zenkaku",
 		"Hankaku", "Zenkaku_Hankaku", "Touroku", "Massho", "Kana_Lock",

@@ -550,12 +550,34 @@ Control.Moffy.Handle
 			* [x] KEY UP
 			* [x] KEY EV
 		- [x] PATTERN
-* [ ] Control.Moffy.Event.Key.Internal
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
+* [x] Control.Moffy.Event.Key.Internal
+	+ [x] API
+		- [x] Type
+		- [x] Template
+			* [x] Void Symbol
+			* [x] Tty Function Keys
+			* [x] Japanese Keyboard
+			* [x] Cursor Control & Motion
+			* [x] Misc Function
+			* [x] Auxiliary functions: F1 to F35
+			* [x] Modifiers
+			* [x] Keyboard (XKB) Extension Function and Modifier Keys
+			* [x] Latin 1 (only Ascii)
+	+ [x] extension
+	+ [x] import
+	+ [x] structure
+	+ [x] body
+		- [x] TYPE AND AUXILIARY FUNCTION
+		- [x] DEFINITION OF PATTERN XK_FOO
+			* [x] VOID SYMBOL
+			* [x] TTY FUNCTION KEYS
+			* [x] JAPANESE KEYBOARD SUPPORT
+			* [x] CURSOR CONTROL AND MOTION
+			* [x] MISC FUNCTION
+			* [x] AUXILIARY FUNCTION
+			* [x] MODIFIERS
+			* [x] KEYBOARD (XKB) EXTENSION FUNCTION AND MODIFIER KEYS
+			* [x] LATIN 1 (only ASCII)
 * [ ] Control.Moffy.Event.Key.Internal.XK
 	+ [ ] API
 	+ [ ] extension
