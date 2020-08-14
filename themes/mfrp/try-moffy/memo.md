@@ -535,7 +535,12 @@ Control.Moffy.Handle
 	+ [x] import
 	+ [x] body
 * [ ] Control.Moffy.Event.Key
-	+ [ ] API
+	+ [x] API
+		- [x] Key Ev
+		- [x] Key Down Event
+		- [x] Key Up Event
+		- [x] Key
+		- [x] module Control.Moffy.Event.Key.Internal.XK
 	+ [ ] extension
 	+ [ ] import
 	+ [ ] structure

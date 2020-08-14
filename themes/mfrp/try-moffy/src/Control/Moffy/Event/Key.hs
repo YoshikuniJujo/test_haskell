@@ -6,7 +6,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Event.Key (
-	-- * Type
+	-- * Key Ev
 	KeyEv,
 	-- * Key Down Event
 	KeyDown, pattern OccKeyDown, keyDown,
