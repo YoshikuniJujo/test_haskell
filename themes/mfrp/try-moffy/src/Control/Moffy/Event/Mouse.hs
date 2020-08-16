@@ -38,14 +38,14 @@ data MouseDown = MouseDownReq deriving (Show, Eq, Ord)
 data MouseBtn = MLeft | MMiddle | MRight | MUp | MDown deriving (Show, Eq, Ord)
 numbered [t| MouseDown |]
 instance Request MouseDown where
-	data Occurred MouseDown = OccMouseDown [MouseBtn]
+	data Occurred MouseDown = OccMouseDown MouseBtn
 		deriving (Show, Eq, Ord)
 
-mouseDown :: React s (Singleton MouseDown) [MouseBtn]
+mouseDown :: React s (Singleton MouseDown) MouseBtn
 mouseDown = await MouseDownReq \(OccMouseDown bs) -> bs
 
 clickOn :: MouseBtn -> React s (Singleton MouseDown) ()
-clickOn b = bool (clickOn b) (pure ()) . (b `elem`) =<< mouseDown
+clickOn b = bool (clickOn b) (pure ()) . (== b) =<< mouseDown
 
 leftClick, middleClick, rightClick :: React s (Singleton MouseDown) ()
 [leftClick, middleClick, rightClick] = clickOn <$> [MLeft, MMiddle, MRight]
@@ -57,13 +57,13 @@ leftClick, middleClick, rightClick :: React s (Singleton MouseDown) ()
 data MouseUp = MouseUpReq deriving (Show, Eq, Ord)
 numbered [t| MouseUp |]
 instance Request MouseUp where
-	data Occurred MouseUp = OccMouseUp [MouseBtn] deriving (Show, Eq, Ord)
+	data Occurred MouseUp = OccMouseUp MouseBtn deriving (Show, Eq, Ord)
 
-mouseUp :: React s (Singleton MouseUp) [MouseBtn]
+mouseUp :: React s (Singleton MouseUp) MouseBtn
 mouseUp = await MouseUpReq \(OccMouseUp bs) -> bs
 
 releaseOn :: MouseBtn -> React s (Singleton MouseUp) ()
-releaseOn b = bool (releaseOn b) (pure ()) . (b `elem`) =<< mouseUp
+releaseOn b = bool (releaseOn b) (pure ()) . (== b) =<< mouseUp
 
 leftUp, middleUp, rightUp :: React s (Singleton MouseUp) ()
 [leftUp, middleUp, rightUp] = releaseOn <$> [MLeft, MMiddle, MRight]

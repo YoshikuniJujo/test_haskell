@@ -36,6 +36,6 @@ mouseEv ev = case evEvent ev of
 	btn = \case
 		1 -> Just MLeft; 2 -> Just MMiddle; 3 -> Just MRight
 		4 -> Just MUp; 5 -> Just MDown; _ -> Nothing
-	down x y b = OccMouseDown [b] >- move x y :: EvOccs (MoveAnd MouseDown)
-	up x y b = OccMouseUp [b] >- move x y :: EvOccs (MoveAnd MouseUp)
+	down x y b = OccMouseDown b >- move x y :: EvOccs (MoveAnd MouseDown)
+	up x y b = OccMouseUp b >- move x y :: EvOccs (MoveAnd MouseUp)
 	move x y = Singleton $ OccMouseMove (fromIntegral x, fromIntegral y)

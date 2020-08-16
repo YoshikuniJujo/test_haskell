@@ -32,7 +32,7 @@ import Field hiding (Point)
 import Trial.Boxes.Event
 import Trial.Boxes.Handle
 
-tryClick :: IO [MouseBtn]
+tryClick :: IO MouseBtn
 tryClick = do
 	f <- openField "TRY CLICK" [buttonPressMask, exposureMask]
 	interpretReact (retry $ handle Nothing f) mouseDown <* closeField f

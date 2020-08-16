@@ -604,7 +604,7 @@ Control.Moffy.Handle
 		- [x] NOT VISIBLE
 		- [x] ASCII
 * [ ] Control.Moffy.Event.Mouse
-	+ [ ] consider whether or not to unlist [MouseBtn]
+	+ [x] consider whether or not to unlist [MouseBtn]
 	+ [ ] API
 		- [x] structure
 		- [ ] Type
