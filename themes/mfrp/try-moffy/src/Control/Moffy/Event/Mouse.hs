@@ -19,9 +19,9 @@ module Control.Moffy.Event.Mouse (
 	) where
 
 import Control.Moffy (React, Request(..), await)
-import Data.Type.Set (numbered, Set(Nil), Singleton, (:-))
+import Data.Type.Set (numbered, pattern Nil, Singleton, (:-))
 import Data.Bool (bool)
-import Data.Word
+import Data.Word (Word32)
 
 ---------------------------------------------------------------------------
 

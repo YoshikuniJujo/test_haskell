@@ -632,7 +632,7 @@ Control.Moffy.Handle
 			* [x] OccMouseMove
 			* [x] mouseMove
 	+ [x] extension
-	+ [ ] import
+	+ [x] import
 	+ [ ] structure
 	+ [ ] body
 * [ ] Control.Moffy.Handle.XField
