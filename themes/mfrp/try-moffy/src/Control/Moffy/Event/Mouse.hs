@@ -21,6 +21,7 @@ module Control.Moffy.Event.Mouse (
 import Control.Moffy (React, Request(..), await)
 import Data.Type.Set (numbered, Set(Nil), Singleton, (:-))
 import Data.Bool (bool)
+import Data.Word
 
 ---------------------------------------------------------------------------
 
@@ -35,7 +36,13 @@ import Data.Bool (bool)
 ---------------------------------------------------------------------------
 
 data MouseDown = MouseDownReq deriving (Show, Eq, Ord)
-data MouseBtn = MLeft | MMiddle | MRight | MUp | MDown deriving (Show, Eq, Ord)
+data MouseBtn
+	= ButtonLeft | ButtonMiddle | ButtonRight
+	| ScrollUp | ScrollDown | ScrollLeft | ScrollRight
+	| PageBack | PageForward
+	| ButtonFn1 | ButtonFn2 | ButtonFn3
+	| ButtonUnknown Word32
+	deriving (Show, Eq, Ord)
 numbered [t| MouseDown |]
 instance Request MouseDown where
 	data Occurred MouseDown = OccMouseDown MouseBtn
@@ -48,7 +55,7 @@ clickOn :: MouseBtn -> React s (Singleton MouseDown) ()
 clickOn b = bool (clickOn b) (pure ()) . (== b) =<< mouseDown
 
 leftClick, middleClick, rightClick :: React s (Singleton MouseDown) ()
-[leftClick, middleClick, rightClick] = clickOn <$> [MLeft, MMiddle, MRight]
+[leftClick, middleClick, rightClick] = clickOn <$> [ButtonLeft, ButtonMiddle, ButtonRight]
 
 ---------------------------------------------------------------------------
 -- MOUSE UP
@@ -66,7 +73,7 @@ releaseOn :: MouseBtn -> React s (Singleton MouseUp) ()
 releaseOn b = bool (releaseOn b) (pure ()) . (== b) =<< mouseUp
 
 leftUp, middleUp, rightUp :: React s (Singleton MouseUp) ()
-[leftUp, middleUp, rightUp] = releaseOn <$> [MLeft, MMiddle, MRight]
+[leftUp, middleUp, rightUp] = releaseOn <$> [ButtonLeft, ButtonMiddle, ButtonRight]
 
 ---------------------------------------------------------------------------
 -- MOUSE MOVE

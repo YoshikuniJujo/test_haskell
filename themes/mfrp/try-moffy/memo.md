@@ -610,6 +610,8 @@ Control.Moffy.Handle
 		- [ ] Type
 			* [x] MouseEv
 			* [ ] MouseBtn
+				+ [x] rename and add buttons
+				+ [ ] others
 			* [ ] Point
 		- [ ] Mouse Down
 			* [ ] MouseDown

@@ -27,15 +27,18 @@ type MoveAnd be = be :- Singleton MouseMove
 mouseEv :: Event' -> Maybe (EvOccs MouseEv)
 mouseEv ev = case evEvent ev of
 	ButtonEvent { ev_event_type = 4, ev_button = eb, ev_x = x, ev_y = y }
-		| Just b <- btn eb -> Just . expand $ down x y b
+		| b <- btn eb -> Just . expand $ down x y b
 	ButtonEvent { ev_event_type = 5, ev_button = eb, ev_x = x, ev_y = y }
-		| Just b <- btn eb -> Just . expand $ up x y b
+		| b <- btn eb -> Just . expand $ up x y b
 	MotionEvent { ev_x = x, ev_y = y } -> Just . expand $ move x y
 	_ -> Nothing
 	where
 	btn = \case
-		1 -> Just MLeft; 2 -> Just MMiddle; 3 -> Just MRight
-		4 -> Just MUp; 5 -> Just MDown; _ -> Nothing
+		1 -> ButtonLeft; 2 -> ButtonMiddle; 3 -> ButtonRight
+		4 -> ScrollUp; 5 -> ScrollDown; 6 -> ScrollLeft; 7 -> ScrollRight
+		8 -> PageBack; 9 -> PageForward
+		10 -> ButtonFn1; 11 -> ButtonFn2; 12 -> ButtonFn3
+		n -> ButtonUnknown n
 	down x y b = OccMouseDown b >- move x y :: EvOccs (MoveAnd MouseDown)
 	up x y b = OccMouseUp b >- move x y :: EvOccs (MoveAnd MouseUp)
 	move x y = Singleton $ OccMouseMove (fromIntegral x, fromIntegral y)
