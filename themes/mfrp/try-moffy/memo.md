@@ -633,8 +633,19 @@ Control.Moffy.Handle
 			* [x] mouseMove
 	+ [x] extension
 	+ [x] import
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		+ [x] MOUSE DOWN
+			- [x] data MouseDown
+			- [x] numbered MouseDown
+			- [x] instance Request MouseDown
+			- [x] data MouseBtn
+			- [x] function mouseDown
+			- [x] function clickOn
+			- [x] function leftClick, middleClick, rightClick
+		+ [ ] MOUSE UP
+		+ [ ] MOUSE MOVE
+		+ [ ] MOUSE EV
 * [ ] Control.Moffy.Handle.XField
 * [ ] Control.Moffy.Handle.XField.Key
 * [ ] Control.Moffy.Handle.XField.Mouse

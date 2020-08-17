@@ -28,7 +28,6 @@ import Data.Word (Word32)
 -- * MOUSE DOWN
 -- * MOUSE UP
 -- * MOUSE MOVE
--- * DELETE EVENT
 -- * MOUSE EV
 
 ---------------------------------------------------------------------------
@@ -36,26 +35,26 @@ import Data.Word (Word32)
 ---------------------------------------------------------------------------
 
 data MouseDown = MouseDownReq deriving (Show, Eq, Ord)
+numbered [t| MouseDown |]
+instance Request MouseDown where
+	data Occurred MouseDown = OccMouseDown MouseBtn deriving Show
+
 data MouseBtn
 	= ButtonLeft | ButtonMiddle | ButtonRight
 	| ScrollUp | ScrollDown | ScrollLeft | ScrollRight
-	| PageBack | PageForward
-	| ButtonFn1 | ButtonFn2 | ButtonFn3
+	| PageBack | PageForward | ButtonFn1 | ButtonFn2 | ButtonFn3
 	| ButtonUnknown Word32
 	deriving (Show, Eq, Ord)
-numbered [t| MouseDown |]
-instance Request MouseDown where
-	data Occurred MouseDown = OccMouseDown MouseBtn
-		deriving (Show, Eq, Ord)
 
 mouseDown :: React s (Singleton MouseDown) MouseBtn
-mouseDown = await MouseDownReq \(OccMouseDown bs) -> bs
+mouseDown = await MouseDownReq \(OccMouseDown b) -> b
 
 clickOn :: MouseBtn -> React s (Singleton MouseDown) ()
 clickOn b = bool (clickOn b) (pure ()) . (== b) =<< mouseDown
 
 leftClick, middleClick, rightClick :: React s (Singleton MouseDown) ()
-[leftClick, middleClick, rightClick] = clickOn <$> [ButtonLeft, ButtonMiddle, ButtonRight]
+[leftClick, middleClick, rightClick] =
+	clickOn <$> [ButtonLeft, ButtonMiddle, ButtonRight]
 
 ---------------------------------------------------------------------------
 -- MOUSE UP
