@@ -63,26 +63,28 @@ leftClick, middleClick, rightClick :: React s (Singleton MouseDown) ()
 data MouseUp = MouseUpReq deriving (Show, Eq, Ord)
 numbered [t| MouseUp |]
 instance Request MouseUp where
-	data Occurred MouseUp = OccMouseUp MouseBtn deriving (Show, Eq, Ord)
+	data Occurred MouseUp = OccMouseUp MouseBtn deriving Show
 
 mouseUp :: React s (Singleton MouseUp) MouseBtn
-mouseUp = await MouseUpReq \(OccMouseUp bs) -> bs
+mouseUp = await MouseUpReq \(OccMouseUp b) -> b
 
 releaseOn :: MouseBtn -> React s (Singleton MouseUp) ()
 releaseOn b = bool (releaseOn b) (pure ()) . (== b) =<< mouseUp
 
 leftUp, middleUp, rightUp :: React s (Singleton MouseUp) ()
-[leftUp, middleUp, rightUp] = releaseOn <$> [ButtonLeft, ButtonMiddle, ButtonRight]
+[leftUp, middleUp, rightUp] =
+	releaseOn <$> [ButtonLeft, ButtonMiddle, ButtonRight]
 
 ---------------------------------------------------------------------------
 -- MOUSE MOVE
 ---------------------------------------------------------------------------
 
 data MouseMove = MouseMoveReq deriving (Show, Eq, Ord)
-type Point = (Integer, Integer)
 numbered [t| MouseMove |]
 instance Request MouseMove where
-	data Occurred MouseMove = OccMouseMove Point deriving (Show, Eq, Ord)
+	data Occurred MouseMove = OccMouseMove Point deriving Show
+
+type Point = (Integer, Integer)
 
 mouseMove :: React s (Singleton MouseMove) Point
 mouseMove  = await MouseMoveReq \(OccMouseMove p) -> p

@@ -603,9 +603,9 @@ Control.Moffy.Handle
 		- [x] VOID SYMBOL
 		- [x] NOT VISIBLE
 		- [x] ASCII
-* [ ] Control.Moffy.Event.Mouse
+* [x] Control.Moffy.Event.Mouse
 	+ [x] consider whether or not to unlist [MouseBtn]
-	+ [ ] API
+	+ [x] API
 		- [x] structure
 		- [x] Type
 			* [x] MouseEv
@@ -634,7 +634,7 @@ Control.Moffy.Handle
 	+ [x] extension
 	+ [x] import
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		+ [x] MOUSE DOWN
 			- [x] data MouseDown
 			- [x] numbered MouseDown
@@ -643,12 +643,38 @@ Control.Moffy.Handle
 			- [x] function mouseDown
 			- [x] function clickOn
 			- [x] function leftClick, middleClick, rightClick
-		+ [ ] MOUSE UP
-		+ [ ] MOUSE MOVE
-		+ [ ] MOUSE EV
+		+ [x] MOUSE UP
+			- [x] data MouseUp
+			- [x] numbered MouseUp
+			- [x] instance Request MouseUp
+			- [x] function mouseUp
+			- [x] function releaseOn
+			- [x] function leftUp, middleUp, rightUp
+		+ [x] MOUSE MOVE
+			- [x] data MouseMove
+			- [x] numbered MouseMove
+			- [x] instance Request MouseMove
+			- [x] type Point
+			- [x] function mouseMove
+		+ [x] MOUSE EV
 * [ ] Control.Moffy.Handle.XField
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
 * [ ] Control.Moffy.Handle.XField.Key
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
 * [ ] Control.Moffy.Handle.XField.Mouse
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
 
 Moffy Base
 ----------
