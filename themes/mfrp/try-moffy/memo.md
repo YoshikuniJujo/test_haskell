@@ -607,31 +607,31 @@ Control.Moffy.Handle
 	+ [x] consider whether or not to unlist [MouseBtn]
 	+ [ ] API
 		- [x] structure
-		- [ ] Type
+		- [x] Type
 			* [x] MouseEv
-			* [ ] MouseBtn
+			* [x] MouseBtn
 				+ [x] rename and add buttons
-				+ [ ] others
-			* [ ] Point
-		- [ ] Mouse Down
-			* [ ] MouseDown
-			* [ ] OccMouseDown
-			* [ ] mouseDown
-			* [ ] leftClick
-			* [ ] middleClick
-			* [ ] rightClick
-		- [ ] Mouse Up
-			* [ ] MouseUp
-			* [ ] OccMouseUp
-			* [ ] mouseUp
-			* [ ] leftUp
-			* [ ] middleUp
-			* [ ] rightUp
-		- [ ] Mouse Move
-			* [ ] MouseMove
-			* [ ] OccMouseMove
-			* [ ] mouseMove
-	+ [ ] extension
+				+ [x] others
+			* [x] Point
+		- [x] Mouse Down
+			* [x] MouseDown
+			* [x] OccMouseDown
+			* [x] mouseDown
+			* [x] leftClick
+			* [x] middleClick
+			* [x] rightClick
+		- [x] Mouse Up
+			* [x] MouseUp
+			* [x] OccMouseUp
+			* [x] mouseUp
+			* [x] leftUp
+			* [x] middleUp
+			* [x] rightUp
+		- [x] Mouse Move
+			* [x] MouseMove
+			* [x] OccMouseMove
+			* [x] mouseMove
+	+ [x] extension
 	+ [ ] import
 	+ [ ] structure
 	+ [ ] body

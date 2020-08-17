@@ -64,4 +64,4 @@ getRandomR = modifyRandomGen . randomR
 
 modifyRandomGen :: (StdGen -> (a, StdGen)) -> React s RandomEv a
 modifyRandomGen f =
-	f <$> adjust loadRandomGen >>= \(r, g) -> r <$ adjust (storeRandomGen g)
+	adjust loadRandomGen >>= (. f) \(r, g) -> r <$ adjust (storeRandomGen g)
