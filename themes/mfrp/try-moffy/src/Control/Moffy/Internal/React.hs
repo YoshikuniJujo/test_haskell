@@ -15,7 +15,7 @@ module Control.Moffy.Internal.React (
 	first, adjust, par) where
 
 import Control.Monad.Freer.Par (
-	Freer(..), pattern (:=<<), (=<<<), qApp, qAppPar )
+	Freer(..), pattern (:=<<), (=<<<), app, appPar )
 import Control.Moffy.Internal.React.Type (
 	React, Rct(..), EvOccs, Occurred, ThreadId, forkThreadId, never )
 import Data.Type.Set ((:+:), (:$:))
@@ -57,8 +57,8 @@ adjust :: Adjustable es es' => React s es a -> React s es' a
 adjust = \case
 	Pure x -> pure x; _ :=<< Never -> never
 	r@(c :=<< Await e) ->
-		adjust . maybe r (c `qApp`) . collapse =<<< Await (expand e)
-	c :=<< GetThreadId -> adjust . (c `qApp`) =<<< GetThreadId
+		adjust . maybe r (c `app`) . collapse =<<< Await (expand e)
+	c :=<< GetThreadId -> adjust . (c `app`) =<<< GetThreadId
 
 ---------------------------------------------------------------------------
 -- PAR
@@ -70,8 +70,8 @@ l `par` r = case (l, r) of
 	(_ :=<< Never, _ :=<< Never) -> never
 	(Pure _, _) -> pure (l, r); (_, Pure _) -> pure (l, r)
 	(_ :=<< Never, _) -> pure (l, r); (_, _ :=<< Never) -> pure (l, r)
-	(c :=<< GetThreadId, _) -> (`par` r) . qApp c . fst =<< forkThreadId
-	(_, c' :=<< GetThreadId) -> (l `par`) . qApp c' . snd =<< forkThreadId
+	(c :=<< GetThreadId, _) -> (`par` r) . app c . fst =<< forkThreadId
+	(_, c' :=<< GetThreadId) -> (l `par`) . app c' . snd =<< forkThreadId
 	(_ :=<< Await el, _ :=<< Await er) -> forkThreadId >>= \(t, u) ->
 		uncurry par . update l t r u =<< pure =<<< Await (el `merge` er)
 
@@ -85,17 +85,17 @@ class Update a b where
 		EvOccs es -> (React s es a, React s es b)
 
 instance Update a a where
-	update (c :=<< GetThreadId) t r u b = update (c `qApp` t) t r u b
-	update l t (c' :=<< GetThreadId) u b = update l t (c' `qApp` u) u b
-	update l@(_ :=<< Never) _ (c' :=<< Await _) _ b = (l, c' `qApp` b)
-	update (c :=<< Await _) _ r@(_ :=<< Never) _ b = (c `qApp` b, r)
-	update (c :=<< Await _) _ (c' :=<< Await _) _ b = qAppPar c c' b
+	update (c :=<< GetThreadId) t r u b = update (c `app` t) t r u b
+	update l t (c' :=<< GetThreadId) u b = update l t (c' `app` u) u b
+	update l@(_ :=<< Never) _ (c' :=<< Await _) _ b = (l, c' `app` b)
+	update (c :=<< Await _) _ r@(_ :=<< Never) _ b = (c `app` b, r)
+	update (c :=<< Await _) _ (c' :=<< Await _) _ b = appPar c c' b
 	update l _ r _ _ = (l, r)
 
 instance {-# OVERLAPPABLE #-} Update a b where
-	update (c :=<< GetThreadId) t r u b = update (c `qApp` t) t r u b
-	update l t (c' :=<< GetThreadId) u b = update l t (c' `qApp` u) u b
-	update l@(_ :=<< Never) _ (c' :=<< Await _) _ b = (l, c' `qApp` b)
-	update (c :=<< Await _) _ r@(_ :=<< Never) _ b = (c `qApp` b, r)
-	update (c :=<< Await _) _ (c' :=<< Await _) _ b = (c `qApp` b, c' `qApp` b)
+	update (c :=<< GetThreadId) t r u b = update (c `app` t) t r u b
+	update l t (c' :=<< GetThreadId) u b = update l t (c' `app` u) u b
+	update l@(_ :=<< Never) _ (c' :=<< Await _) _ b = (l, c' `app` b)
+	update (c :=<< Await _) _ r@(_ :=<< Never) _ b = (c `app` b, r)
+	update (c :=<< Await _) _ (c' :=<< Await _) _ b = (c `app` b, c' `app` b)
 	update l _ r _ _ = (l, r)

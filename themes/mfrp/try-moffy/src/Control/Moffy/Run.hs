@@ -10,7 +10,7 @@ module Control.Moffy.Run (
 	-- * Run
 	interpret, interpretSt, interpretReact, interpretReactSt ) where
 
-import Control.Monad.Freer.Par (Freer(..), pattern (:=<<), qApp)
+import Control.Monad.Freer.Par (Freer(..), pattern (:=<<), app)
 import Control.Moffy.Internal.Sig.Type (Sig(..), isig)
 import Control.Moffy.Internal.React (Adjustable, adjust)
 import Control.Moffy.Internal.React.Type (
@@ -51,6 +51,6 @@ interpretReactSt hdl (adjust -> r) = runSt hdl r rootThreadId
 runSt :: Monad m => HandleSt st m es -> React s es r -> ThreadId -> St st m r
 runSt _ (Pure x) _ st = pure (x, st)
 runSt _ (_ :=<< Never) _ _ = error "never end"
-runSt hdl (c :=<< GetThreadId) t st = runSt hdl (c `qApp` t) t st
+runSt hdl (c :=<< GetThreadId) t st = runSt hdl (c `app` t) t st
 runSt hdl (c :=<< Await rqs) t st =
-	hdl rqs st >>= \(x, st') -> runSt hdl (c `qApp` x) t st'
+	hdl rqs st >>= \(x, st') -> runSt hdl (c `app` x) t st'

@@ -6,8 +6,14 @@
 
 module Control.Monad.Freer.Par (
 	-- * Freer
-	Freer(Pure), Fun, pattern (:>>=), pattern (:=<<), (>>>=), (=<<<),
-	qApp, qAppPar,
+	-- ** Type
+	Freer(Pure), Fun,
+	-- ** Pattern
+	pattern (:>>=), pattern (:=<<),
+	-- ** Bind
+	(>>>=), (=<<<),
+	-- ** Apply
+	app, appPar,
 	-- * Tagged
 	Tagged, runTagged, tag ) where
 
@@ -74,18 +80,20 @@ instance (Sequence sq, Funable f) => Monad (Freer s sq f t) where
 
 newtype Fun s sq f t a b = Fun (sq (f (Freer s sq f t)) a b)
 
-qApp :: (Sequence sq, Funable f) =>
+app, qApp :: (Sequence sq, Funable f) =>
 --	sq (f (Freer s sq f t)) a b -> a -> Freer s sq f t b
 	Fun s sq f t a b -> a -> Freer s sq f t b
+app = qApp
 Fun q `qApp` x = case viewl q of
 	EmptyL -> pure x
 	f :<| r -> case f $$ x of
 		Pure y -> Fun r `qApp` y; tx ::>>= q' -> tx ::>>= (q' >< r)
 
-qAppPar :: (Sequence sq, Funable f, Taggable f) =>
+appPar, qAppPar :: (Sequence sq, Funable f, Taggable f) =>
 --	sq (f (Freer s sq f t)) a b -> sq (f (Freer s sq f t)) a b -> a ->
 	Fun s sq f t a b -> Fun s sq f t a b -> a ->
 	(Freer s sq f t b, Freer s sq f t b)
+appPar = qAppPar
 qAppPar (Fun p) (Fun q) x = case (viewl p, viewl q) of
 	(t :<| r, t' :<| r') | J tg <- checkOpen t t' -> qAppParOpened tg r r' x
 	_ -> (Fun p `qApp` x, Fun q `qApp` x)
