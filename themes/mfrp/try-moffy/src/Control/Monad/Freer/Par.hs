@@ -92,14 +92,11 @@ infixr 7 =<<<
 
 -- APPLICATION
 
-app, qApp :: (Sequence sq, Funable f) =>
---	sq (f (Freer s sq f t)) a b -> a -> Freer s sq f t b
-	Fun s sq f t a b -> a -> Freer s sq f t b
-app = qApp
-Fun q `qApp` x = case viewl q of
+app :: (Sequence sq, Funable f) => Fun s sq f t a b -> a -> Freer s sq f t b
+Fun fa `app` x = case viewl fa of
 	EmptyL -> pure x
-	f :<| r -> case f $$ x of
-		Pure_ y -> Fun r `qApp` y; tx ::>>= q' -> tx ::>>= q' >< r
+	f :<| fs -> case f $$ x of
+		Pure_ y -> Fun fs `app` y; t ::>>= k -> t ::>>= k >< fs
 
 appPar, qAppPar :: (Sequence sq, Funable f, Taggable f) =>
 --	sq (f (Freer s sq f t)) a b -> sq (f (Freer s sq f t)) a b -> a ->
@@ -107,17 +104,17 @@ appPar, qAppPar :: (Sequence sq, Funable f, Taggable f) =>
 	(Freer s sq f t b, Freer s sq f t b)
 appPar = qAppPar
 qAppPar (Fun p) (Fun q) x = case (viewl p, viewl q) of
-	(t :<| r, t' :<| r') | J tg <- checkOpen t t' -> qAppParOpened tg r r' x
-	_ -> (Fun p `qApp` x, Fun q `qApp` x)
+	(t :<| r, t' :<| r') | J tg <- checkOpen t t' -> appParOpened tg r r' x
+	_ -> (Fun p `app` x, Fun q `app` x)
 
-qAppParOpened :: (Sequence sq, Funable f, Taggable f) => Id ->
+appParOpened :: (Sequence sq, Funable f, Taggable f) => Id ->
 	sq (f (Freer s sq f t)) a b -> sq (f (Freer s sq f t)) a b -> a ->
 	(Freer s sq f t b, Freer s sq f t b)
-qAppParOpened tg p q x = case (viewl p, viewl q) of
+appParOpened tg p q x = case (viewl p, viewl q) of
 	(t :<| r, t' :<| r') -> case (checkClose tg t, checkClose tg t') of
-		(T, T) -> (Fun r `qApp` x, Fun r' `qApp` x)
+		(T, T) -> (Fun r `app` x, Fun r' `app` x)
 		_ -> case t $$ x of
-			Pure_ y -> qAppParOpened tg r (unsafeCoerce r') y
+			Pure_ y -> appParOpened tg r (unsafeCoerce r') y
 			tx ::>>= p' -> (
 				tx ::>>= p' >< r,
 				tx ::>>= p' >< unsafeCoerce r' )
