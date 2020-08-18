@@ -709,6 +709,7 @@ Control.Monad.Freer.Par.TaggableFunction
 
 * [ ] Control.Monad.Freer.Par
 	+ [ ] API
+		- [x] rename Unique
 		- [ ] structure
 		- [ ] others
 	+ [ ] extension

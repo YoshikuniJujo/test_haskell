@@ -25,7 +25,7 @@ checkParGetThreadId = interpretReact (retry handleGetThreadId) $ getThreadId `fi
 runSharingParGetThreadId :: IO (Or ThreadId ThreadId)
 runSharingParGetThreadId = do
 	f <- openField "RUN SHARING PAR GET THREADID" [buttonPressMask, exposureMask]
-	r <- runUnique do
+	r <- runTagged do
 		gt <- tag (adjust leftClick >> adjust getThreadId :: React s (GetThreadId :- DeleteEvent :- MouseEv) ThreadId)
 		pure $ interpretReact (retry $ handleGetThreadId `before` handle (Just 0.05) f) $ gt `first` gt
 	r <$ closeField f

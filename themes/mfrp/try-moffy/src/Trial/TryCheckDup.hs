@@ -21,7 +21,7 @@ tryCheckDup = do
 	f <- openField "右クリックのあとに左クリックが2回あったら終了" [
 		exposureMask, buttonPressMask, pointerMotionMask ]
 	t <- systemToTAITime <$> getSystemTime
-	print =<< runUnique do
+	print =<< runTagged do
 		cd <- tag checkDup
 		pure . ($ (InitialMode, t)) $ interpretReactSt (handleBoxes 0.05 f) do
 			() <$ checkDup `first` checkDup

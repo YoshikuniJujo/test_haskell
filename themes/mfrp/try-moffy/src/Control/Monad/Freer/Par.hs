@@ -8,8 +8,8 @@ module Control.Monad.Freer.Par (
 	-- * Freer
 	Freer(Pure), Fun, pattern (:>>=), (>>>=), pattern (:=<<), (=<<<),
 	qApp, qAppPar,
-	-- * Unique ID
-	Unique, runUnique, tag ) where
+	-- * Tagged
+	Tagged, runTagged, tag ) where
 
 import Control.Arrow ((&&&), first)
 import Numeric.Natural (Natural)
@@ -107,22 +107,22 @@ qAppParOpened tg p q x = case (viewl p, viewl q) of
 -- UNIQUE ID
 ---------------------------------------------------------------------------
 
-newtype Unique s a = Unique { unUnique :: Natural -> (a, Natural) }
+newtype Tagged s a = Tagged { unTagged :: Natural -> (a, Natural) }
 
-instance Functor (Unique s) where f `fmap` Unique k = Unique $ (f `first`) . k
+instance Functor (Tagged s) where f `fmap` Tagged k = Tagged $ (f `first`) . k
 
-instance Applicative (Unique s) where
-	pure = Unique . (,)
-	Unique k <*> mx = Unique $ uncurry unUnique . ((<$> mx) `first`) . k
+instance Applicative (Tagged s) where
+	pure = Tagged . (,)
+	Tagged k <*> mx = Tagged $ uncurry unTagged . ((<$> mx) `first`) . k
 
-instance Monad (Unique s) where
-	Unique k >>= f = Unique $ uncurry unUnique . (f `first`) . k
+instance Monad (Tagged s) where
+	Tagged k >>= f = Tagged $ uncurry unTagged . (f `first`) . k
 
-runUnique :: (forall s . Unique s a) -> a
-runUnique (Unique k) = fst $ k 0
+runTagged :: (forall s . Tagged s a) -> a
+runTagged (Tagged k) = fst $ k 0
 
 tag :: (Sequence sq, Funable f, Taggable f) =>
-	Freer s sq f t a -> Unique s (Freer s sq f t a)
+	Freer s sq f t a -> Tagged s (Freer s sq f t a)
 tag m@(Pure _) = pure m
-tag (tx ::>>= fs) = (<$> Unique (id &&& (+ 1))) \n ->
+tag (tx ::>>= fs) = (<$> Tagged (id &&& (+ 1))) \n ->
 	let tg = Id n in tx ::>>= (open tg <| fs |> close tg)
