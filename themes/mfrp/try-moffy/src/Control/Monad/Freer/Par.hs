@@ -98,26 +98,23 @@ Fun fa `app` x = case viewl fa of
 	f :<| fs -> case f $$ x of
 		Pure_ y -> Fun fs `app` y; t ::>>= k -> t ::>>= k >< fs
 
-appPar, qAppPar :: (Sequence sq, Funable f, Taggable f) =>
---	sq (f (Freer s sq f t)) a b -> sq (f (Freer s sq f t)) a b -> a ->
+appPar :: (Sequence sq, Funable f, Taggable f) =>
 	Fun s sq f t a b -> Fun s sq f t a b -> a ->
 	(Freer s sq f t b, Freer s sq f t b)
-appPar = qAppPar
-qAppPar (Fun p) (Fun q) x = case (viewl p, viewl q) of
-	(t :<| r, t' :<| r') | J tg <- checkOpen t t' -> appParOpened tg r r' x
-	_ -> (Fun p `app` x, Fun q `app` x)
+appPar fl@(Fun l) fr@(Fun r) x = case (viewl l, viewl r) of
+	(f :<| fs, g :<| gs) | J tg <- checkOpen f g -> appParOpened tg fs gs x
+	_ -> (fl `app` x, fr `app` x)
 
 appParOpened :: (Sequence sq, Funable f, Taggable f) => Id ->
 	sq (f (Freer s sq f t)) a b -> sq (f (Freer s sq f t)) a b -> a ->
 	(Freer s sq f t b, Freer s sq f t b)
-appParOpened tg p q x = case (viewl p, viewl q) of
-	(t :<| r, t' :<| r') -> case (checkClose tg t, checkClose tg t') of
-		(T, T) -> (Fun r `app` x, Fun r' `app` x)
-		_ -> case t $$ x of
-			Pure_ y -> appParOpened tg r (unsafeCoerce r') y
-			tx ::>>= p' -> (
-				tx ::>>= p' >< r,
-				tx ::>>= p' >< unsafeCoerce r' )
+appParOpened tg l r x = case (viewl l, viewl r) of
+	(f :<| fs, g :<| gs) -> case (checkClose tg f, checkClose tg g) of
+		(T, T) -> (Fun fs `app` x, Fun gs `app` x)
+		_ -> case f $$ x of
+			Pure_ y -> appParOpened tg fs (unsafeCoerce gs) y
+			t ::>>= k ->
+				(t ::>>= k >< fs, t ::>>= k >< unsafeCoerce gs)
 	_ -> error "never occur: no close tag"
 
 ---------------------------------------------------------------------------
