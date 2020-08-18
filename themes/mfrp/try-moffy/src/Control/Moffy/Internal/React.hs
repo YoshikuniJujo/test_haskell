@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE DataKinds, TypeOperators, ConstraintKinds #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
@@ -69,7 +69,8 @@ par :: (Update a b, Mergeable es es es) =>
 l `par` r = case (l, r) of
 	(_ :=<< Never, _ :=<< Never) -> never
 	(Pure _, _) -> pure (l, r); (_, Pure _) -> pure (l, r)
-	(_ :=<< Never, _) -> pure (l, r); (_, _ :=<< Never) -> pure (l, r)
+	(_ :=<< Never, _) -> (never ,) . pure <$> r
+	(_, _ :=<< Never) -> (, never) . pure <$> l
 	(c :=<< GetThreadId, _) -> (`par` r) . app c . fst =<< forkThreadId
 	(_, c' :=<< GetThreadId) -> (l `par`) . app c' . snd =<< forkThreadId
 	(_ :=<< Await el, _ :=<< Await er) -> forkThreadId >>= \(t, u) ->
