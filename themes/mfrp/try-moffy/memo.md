@@ -678,12 +678,11 @@ Control.Moffy.Handle
 	+ [x] extension
 	+ [x] import
 	+ [x] body
-* [ ] Control.Moffy.Handle.XField.Mouse
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
+* [x] Control.Moffy.Handle.XField.Mouse
+	+ [x] API
+	+ [x] extension
+	+ [x] import
+	+ [x] body
 
 Moffy Base
 ----------
