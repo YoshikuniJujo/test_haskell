@@ -664,10 +664,15 @@ Control.Moffy.Handle
 		- [x] Handle
 			* [x] function handle
 			* [x] function handleWith
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
+	+ [x] extension
+	+ [x] import
+	+ [x] structure
 	+ [ ] body
+		- [ ] GUI EV
+		- [ ] HANDLE
+			* [ ] function handle
+			* [ ] function handleWith
+			* [ ] function eventToEv
 * [ ] Control.Moffy.Handle.XField.Key
 	+ [ ] API
 	+ [ ] extension

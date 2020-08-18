@@ -1,6 +1,6 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
-{-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -26,17 +26,17 @@ import Field (
 
 ---------------------------------------------------------------------------
 
--- * TYPE
--- * FUNCTION
+-- * GUI EV
+-- * HANDLE
 
 ---------------------------------------------------------------------------
--- TYPE
+-- GUI EV
 ---------------------------------------------------------------------------
 
 type GuiEv = DeleteEvent :- KeyEv :+: MouseEv
 
 ---------------------------------------------------------------------------
--- FUNCTION
+-- HANDLE
 ---------------------------------------------------------------------------
 
 handle :: Maybe DiffTime -> Field -> Handle' IO GuiEv
