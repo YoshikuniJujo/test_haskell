@@ -18,9 +18,8 @@ module Control.Monad.Freer.Par (
 	Tagged, runTagged, tag ) where
 
 import Control.Arrow (first, (&&&))
-import Control.Monad.Freer.Par.Sequence (Sequence(..), ViewL(..), (<|), (|>))
-import Control.Monad.Freer.Par.Funable (
-	Funable(..), Taggable(..), MaybeId(..), Boolean(..) )
+import Control.Monad.Freer.Par.Sequence (Sequence(..), ViewL(..), (|>), mapS)
+import Control.Monad.Freer.Par.Funable (Funable(..), Taggable(..))
 import Control.Monad.Freer.Par.Internal.Id (Id(..))
 import Numeric.Natural (Natural)
 import Unsafe.Coerce (unsafeCoerce)
@@ -101,10 +100,34 @@ Fun fa `app` x = case viewl fa of
 appPar :: (Sequence sq, Funable f, Taggable f) =>
 	Fun s sq f t a b -> Fun s sq f t a b -> a ->
 	(Freer s sq f t b, Freer s sq f t b)
+appPar (Fun l) (Fun r) = appParOpened l r
+{-
 appPar fl@(Fun l) fr@(Fun r) x = case (viewl l, viewl r) of
 	(f :<| fs, g :<| gs) | J tg <- checkOpen f g -> appParOpened tg fs gs x
 	_ -> (fl `app` x, fr `app` x)
+	-}
 
+appParOpened :: (Sequence sq, Funable f, Taggable f) =>
+	sq (f (Freer s sq f t)) a b -> sq (f (Freer s sq f t)) a b -> a ->
+	(Freer s sq f t b, Freer s sq f t b)
+appParOpened l r x = case (viewl l, viewl r) of
+	(EmptyL, _) -> (Fun l `app` x, Fun r `app` x)
+	(_, EmptyL) -> (Fun l `app` x, Fun r `app` x)
+	(f :<| fs, g :<| gs)
+		| Just tg <- getTag f, Just tg' <- getTag g, tg == tg' -> case f $$ x of
+			Pure_ y -> appParOpened fs (unsafeCoerce gs) y
+			t ::>>= k ->
+				(t ::>>= k >< fs, t ::>>= k >< unsafeCoerce gs)
+		| otherwise -> (Fun l `app` x, Fun r `app` x)
+		{-
+		(T, T) -> (Fun fs `app` x, Fun gs `app` x)
+		_ -> case f $$ x of
+			Pure_ y -> appParOpened tg fs (unsafeCoerce gs) y
+			t ::>>= k ->
+				(t ::>>= k >< fs, t ::>>= k >< unsafeCoerce gs)
+				-}
+
+{-
 appParOpened :: (Sequence sq, Funable f, Taggable f) => Id ->
 	sq (f (Freer s sq f t)) a b -> sq (f (Freer s sq f t)) a b -> a ->
 	(Freer s sq f t b, Freer s sq f t b)
@@ -116,6 +139,7 @@ appParOpened tg l r x = case (viewl l, viewl r) of
 			t ::>>= k ->
 				(t ::>>= k >< fs, t ::>>= k >< unsafeCoerce gs)
 	_ -> error "never occur: no close tag"
+	-}
 
 ---------------------------------------------------------------------------
 -- TAGGED
@@ -138,5 +162,5 @@ runTagged (Tagged k) = fst $ k 0
 tag :: (Sequence sq, Funable f, Taggable f) =>
 	Freer s sq f t a -> Tagged s (Freer s sq f t a)
 tag m@(Pure_ _) = pure m
-tag (tx ::>>= fs) = (<$> Tagged (id &&& (+ 1))) \n ->
-	let tg = Id n in tx ::>>= open tg <| (fs |> close tg)
+tag (tx ::>>= fs) =
+	(tx ::>>=) <$> (\f -> (`putTag` f) <$> Tagged (Id &&& (+ 1))) `mapS` fs

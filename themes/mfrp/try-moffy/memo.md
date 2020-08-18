@@ -707,9 +707,9 @@ Control.Monad.Freer.Par.TaggableFunction
 
 #### repair
 
-* [ ] repair tag system
+* [x] repair tag system
 	+ [x] make package try-freer-par
-	+ [ ] copy from package try-freer-par
+	+ [x] copy from package try-freer-par
 
 #### refactoring
 
