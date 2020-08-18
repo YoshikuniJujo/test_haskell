@@ -7,9 +7,9 @@
 module Control.Monad.Freer.Par (
 	-- * Freer
 	-- ** Type
-	Freer(Pure), Fun,
+	Freer, Fun,
 	-- ** Pattern
-	pattern (:>>=), pattern (:=<<),
+	pattern Pure, pattern (:>>=), pattern (:=<<),
 	-- ** Bind
 	(>>>=), (=<<<),
 	-- ** Apply
@@ -40,14 +40,19 @@ import Control.Monad.Freer.Par.Internal.Id (Id(..))
 -- TYPE AND MONAD
 
 data Freer s sq (f :: (* -> *) -> * -> * -> *) t a =
-	Pure a | forall x . t x ::>>= sq (f (Freer s sq f t)) x a
+	Pure_ a | forall x . t x ::>>= sq (f (Freer s sq f t)) x a
+
+pattern Pure :: a -> Freer s sq f t a
+pattern Pure x <- Pure_ x
 
 {-# COMPLETE Pure, (:>>=) #-}
+-- {-# COMPLETE Pure_, (:>>=) #-}
 
 pattern (:>>=) :: t x -> Fun s sq f t x a -> Freer s sq f t a
 pattern x :>>= k <- x ::>>= (Fun -> k)
 
 {-# COMPLETE Pure, (:=<<) #-}
+-- {-# COMPLETE Pure_, (:=<<) #-}
 
 pattern (:=<<) :: Fun s sq f t x a -> t x -> Freer s sq f t a
 pattern k :=<< x <- x ::>>= (Fun -> k)
@@ -64,13 +69,13 @@ m >>>= f = m ::>>= singleton (fun f)
 
 freer :: (a -> b) -> (forall x . t x -> sq (f (Freer s sq f t)) x a -> b) ->
 	Freer s sq f t a -> b
-freer f _ (Pure x) = f x; freer _ g (m ::>>= k) = g m k
+freer f _ (Pure_ x) = f x; freer _ g (m ::>>= k) = g m k
 
 instance (Sequence sq, Funable f) => Functor (Freer s sq f t) where
-	fmap f = freer (Pure . f) \m k -> m ::>>= (k |> fun (Pure . f))
+	fmap f = freer (Pure_ . f) \m k -> m ::>>= (k |> fun (Pure_ . f))
 
 instance (Sequence sq, Funable f) => Applicative (Freer s sq f t) where
-	pure = Pure
+	pure = Pure_
 	mf <*> mx = freer (<$> mx) (\m k -> m ::>>= (k |> fun (<$> mx))) mf
 
 instance (Sequence sq, Funable f) => Monad (Freer s sq f t) where
@@ -87,7 +92,7 @@ app = qApp
 Fun q `qApp` x = case viewl q of
 	EmptyL -> pure x
 	f :<| r -> case f $$ x of
-		Pure y -> Fun r `qApp` y; tx ::>>= q' -> tx ::>>= (q' >< r)
+		Pure_ y -> Fun r `qApp` y; tx ::>>= q' -> tx ::>>= (q' >< r)
 
 appPar, qAppPar :: (Sequence sq, Funable f, Taggable f) =>
 --	sq (f (Freer s sq f t)) a b -> sq (f (Freer s sq f t)) a b -> a ->
@@ -105,7 +110,7 @@ qAppParOpened tg p q x = case (viewl p, viewl q) of
 	(t :<| r, t' :<| r') -> case (checkClose tg t, checkClose tg t') of
 		(T, T) -> (Fun r `qApp` x, Fun r' `qApp` x)
 		_ -> case t $$ x of
-			Pure y -> qAppParOpened tg r (unsafeCoerce r') y
+			Pure_ y -> qAppParOpened tg r (unsafeCoerce r') y
 			tx ::>>= p' -> (
 				tx ::>>= (p' >< r),
 				tx ::>>= (p' >< unsafeCoerce r') )
@@ -131,6 +136,6 @@ runTagged (Tagged k) = fst $ k 0
 
 tag :: (Sequence sq, Funable f, Taggable f) =>
 	Freer s sq f t a -> Tagged s (Freer s sq f t a)
-tag m@(Pure _) = pure m
+tag m@(Pure_ _) = pure m
 tag (tx ::>>= fs) = (<$> Tagged (id &&& (+ 1))) \n ->
 	let tg = Id n in tx ::>>= (open tg <| fs |> close tg)

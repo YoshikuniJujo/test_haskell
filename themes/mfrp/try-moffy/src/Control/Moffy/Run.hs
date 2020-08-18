@@ -10,7 +10,7 @@ module Control.Moffy.Run (
 	-- * Run
 	interpret, interpretSt, interpretReact, interpretReactSt ) where
 
-import Control.Monad.Freer.Par (Freer(..), pattern (:=<<), app)
+import Control.Monad.Freer.Par (pattern Pure, pattern (:=<<), app)
 import Control.Moffy.Internal.Sig.Type (Sig(..), isig)
 import Control.Moffy.Internal.React (Adjustable, adjust)
 import Control.Moffy.Internal.React.Type (

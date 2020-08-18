@@ -708,18 +708,30 @@ Control.Monad.Freer.Par.TaggableFunction
 #### refactoring
 
 * [ ] Control.Monad.Freer.Par
-	+ [ ] API
+	+ [x] API
 		- [x] rename Unique
 		- [x] consider whether or not to rename qApp and qAppPar
 			* qApp -> app
 			* qAppPar -> appPar
 		- [x] structure
-		- [ ] Freer
-			* [ ] Type
-			* [ ] Pattern
-			* [ ] Bind
-			* [ ] Apply
-		- [ ] Tagged
+		- [x] Freer
+			* [x] Type
+				+ [x] data Freer
+				+ [x] data Fun
+			* [x] Pattern
+				+ [x] pattern Pure
+				+ [x] pattern (:>>=)
+				+ [x] pattern (:=<<)
+			* [x] Bind
+				+ [x] operator (>>>=)
+				+ [x] operator (=<<<)
+			* [x] Apply
+				+ [x] function app
+				+ [x] function appPar
+		- [x] Tagged
+			* [x] data Tagged
+			* [x] function runTagged
+			* [x] function tag
 	+ [ ] extension
 	+ [ ] import
 	+ [ ] structure

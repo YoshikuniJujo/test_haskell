@@ -15,7 +15,7 @@ module Control.Moffy.Internal.React (
 	first, adjust, par) where
 
 import Control.Monad.Freer.Par (
-	Freer(..), pattern (:=<<), (=<<<), app, appPar )
+	pattern Pure, pattern (:=<<), (=<<<), app, appPar )
 import Control.Moffy.Internal.React.Type (
 	React, Rct(..), EvOccs, Occurred, ThreadId, forkThreadId, never )
 import Data.Type.Set ((:+:), (:$:))
