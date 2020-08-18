@@ -18,8 +18,8 @@ pattern KeyEv kev <- (keyEv -> Just kev)
 
 keyEv :: Event' -> Maybe (EvOccs KeyEv)
 keyEv ev = case (evEvent ev, evKeySym ev) of
-	(KeyEvent { ev_event_type = 2 }, Just (fromIntegral -> s)) ->
+	(KeyEvent { ev_event_type = 2 }, Just s) ->
 		Just . expand . Singleton . OccKeyDown $ Key s
-	(KeyEvent { ev_event_type = 3 }, Just (fromIntegral -> s)) ->
+	(KeyEvent { ev_event_type = 3 }, Just s) ->
 		Just . expand . Singleton . OccKeyUp $ Key s
 	_ -> Nothing

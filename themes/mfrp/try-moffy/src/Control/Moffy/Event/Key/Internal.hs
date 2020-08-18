@@ -31,7 +31,7 @@ import Language.Haskell.TH (
 	DecsQ, mkName, conP, litP, conT, integerL,
 	patSynSigD, patSynD, prefixPatSyn, implBidir )
 import Control.Monad (zipWithM)
-import Data.Word (Word32)
+import Data.Word (Word64)
 
 ---------------------------------------------------------------------------
 
@@ -51,7 +51,7 @@ import Data.Word (Word32)
 -- TYPE AND AUXILIARY FUNCTION
 ---------------------------------------------------------------------------
 
-newtype Key = Key Word32 deriving (Show, Eq, Ord)
+newtype Key = Key Word64 deriving (Show, Eq, Ord)
 
 concatR :: [[a]] -> [a]
 concatR = concat . reverse

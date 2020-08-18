@@ -673,12 +673,11 @@ Control.Moffy.Handle
 			* [x] function handle
 			* [x] function handleWith
 			* [x] function eventToEv
-* [ ] Control.Moffy.Handle.XField.Key
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
+* [x] Control.Moffy.Handle.XField.Key
+	+ [x] API
+	+ [x] extension
+	+ [x] import
+	+ [x] body
 * [ ] Control.Moffy.Handle.XField.Mouse
 	+ [ ] API
 	+ [ ] extension
