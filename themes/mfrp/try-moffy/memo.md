@@ -735,7 +735,8 @@ Control.Monad.Freer.Par.TaggableFunction
 	+ [x] extension
 	+ [x] import
 	+ [x] structure
-	+ [ ] consider whether or not add fixity of (::>>=), (<|) and (|>)
+	+ [x] consider whether or not add fixity of (::>>=), (<|) and (|>)
+	+ [x] consider whether or not add fixity of (>>>=) and (=<<<)
 	+ [ ] body
 		- [ ] PARALLEL FREER
 			* [ ] TYPE AND MONAD

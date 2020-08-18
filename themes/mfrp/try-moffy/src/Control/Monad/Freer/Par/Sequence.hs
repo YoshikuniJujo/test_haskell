@@ -4,6 +4,8 @@
 module Control.Monad.Freer.Par.Sequence (
 	Sequence(..), ViewL(..), (<|), (|>) ) where
 
+infixr 8 ><
+
 class Sequence sq where
 	empty :: sq cat a a
 	singleton :: cat a b -> sq cat a b
@@ -14,8 +16,12 @@ data ViewL sq cat a b where
 	EmptyL :: ViewL sq cat a a
 	(:<|) :: cat a x -> sq cat x b -> ViewL sq cat a b
 
+infixr 8 <|
+
 (<|) :: Sequence sq => cat a b -> sq cat b c -> sq cat a c
 c <| s = singleton c >< s
+
+infixl 8 |>
 
 (|>) :: Sequence sq => sq cat a b -> cat b c -> sq cat a c
 s |> c = s >< singleton c

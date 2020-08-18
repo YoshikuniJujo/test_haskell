@@ -40,6 +40,8 @@ import Unsafe.Coerce (unsafeCoerce)
 
 -- TYPE AND MONAD
 
+infixl 7 ::>>=
+
 data Freer s sq (f :: (* -> *) -> * -> * -> *) t a =
 	Pure_ a | forall x . t x ::>>= sq (f (Freer s sq f t)) x a
 
@@ -48,14 +50,14 @@ freer :: (a -> b) -> (forall x . t x -> sq (f (Freer s sq f t)) x a -> b) ->
 freer p b = \case Pure_ x -> p x; t ::>>= k -> t `b` k
 
 instance (Sequence sq, Funable f) => Functor (Freer s sq f t) where
-	fmap f = freer (Pure_ . f) \t k -> t ::>>= (k |> fun (Pure_ . f))
+	fmap f = freer (Pure_ . f) \t k -> t ::>>= k |> fun (Pure_ . f)
 
 instance (Sequence sq, Funable f) => Applicative (Freer s sq f t) where
 	pure = Pure_
-	mf <*> mx = freer (<$> mx) (\m k -> m ::>>= (k |> fun (<$> mx))) mf
+	mf <*> mx = freer (<$> mx) (\m k -> m ::>>= k |> fun (<$> mx)) mf
 
 instance (Sequence sq, Funable f) => Monad (Freer s sq f t) where
-	m >>= f = freer f (\m' k -> m' ::>>= (k |> fun f)) m
+	m >>= f = freer f (\m' k -> m' ::>>= k |> fun f) m
 
 newtype Fun s sq f t a b = Fun (sq (f (Freer s sq f t)) a b)
 
@@ -76,11 +78,13 @@ pattern k :=<< x <- x ::>>= (Fun -> k)
 
 -- BIND
 
-infix 8 >>>=, =<<<
+infixl 7 >>>=
 
 (>>>=) :: (Sequence sq, Funable f) =>
 	t a -> (a -> Freer s sq f t b) -> Freer s sq f t b
 m >>>= f = m ::>>= singleton (fun f)
+
+infixr 7 =<<<
 
 (=<<<) :: (Sequence sq, Funable f) =>
 	(a -> Freer s sq f t b) -> t a -> Freer s sq f t b
@@ -95,7 +99,7 @@ app = qApp
 Fun q `qApp` x = case viewl q of
 	EmptyL -> pure x
 	f :<| r -> case f $$ x of
-		Pure_ y -> Fun r `qApp` y; tx ::>>= q' -> tx ::>>= (q' >< r)
+		Pure_ y -> Fun r `qApp` y; tx ::>>= q' -> tx ::>>= q' >< r
 
 appPar, qAppPar :: (Sequence sq, Funable f, Taggable f) =>
 --	sq (f (Freer s sq f t)) a b -> sq (f (Freer s sq f t)) a b -> a ->
@@ -115,8 +119,8 @@ qAppParOpened tg p q x = case (viewl p, viewl q) of
 		_ -> case t $$ x of
 			Pure_ y -> qAppParOpened tg r (unsafeCoerce r') y
 			tx ::>>= p' -> (
-				tx ::>>= (p' >< r),
-				tx ::>>= (p' >< unsafeCoerce r') )
+				tx ::>>= p' >< r,
+				tx ::>>= p' >< unsafeCoerce r' )
 	_ -> error "never occur: no close tag"
 
 ---------------------------------------------------------------------------
@@ -141,4 +145,4 @@ tag :: (Sequence sq, Funable f, Taggable f) =>
 	Freer s sq f t a -> Tagged s (Freer s sq f t a)
 tag m@(Pure_ _) = pure m
 tag (tx ::>>= fs) = (<$> Tagged (id &&& (+ 1))) \n ->
-	let tg = Id n in tx ::>>= (open tg <| fs |> close tg)
+	let tg = Id n in tx ::>>= open tg <| (fs |> close tg)
