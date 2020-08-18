@@ -6,7 +6,7 @@
 
 module Control.Monad.Freer.Par (
 	-- * Freer
-	Freer(Pure), Fun, pattern (:>>=), (>>>=), pattern (:=<<), (=<<<),
+	Freer(Pure), Fun, pattern (:>>=), pattern (:=<<), (>>>=), (=<<<),
 	qApp, qAppPar,
 	-- * Tagged
 	Tagged, runTagged, tag ) where

@@ -710,6 +710,9 @@ Control.Monad.Freer.Par.TaggableFunction
 * [ ] Control.Monad.Freer.Par
 	+ [ ] API
 		- [x] rename Unique
+		- [ ] consider whether or not to rename qApp and qAppPar
+			* qApp -> app
+			* qAppPar -> appPar
 		- [ ] structure
 		- [ ] others
 	+ [ ] extension
