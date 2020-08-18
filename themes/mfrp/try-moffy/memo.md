@@ -705,6 +705,10 @@ Control.Monad.Freer.Par.TaggableFunction
   +- Control.Monad.Freer.Par.Funable
 ```
 
+#### repair
+
+* [ ] repair tag system
+
 #### refactoring
 
 * [ ] Control.Monad.Freer.Par
