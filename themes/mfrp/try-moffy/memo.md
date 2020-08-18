@@ -732,10 +732,22 @@ Control.Monad.Freer.Par.TaggableFunction
 			* [x] data Tagged
 			* [x] function runTagged
 			* [x] function tag
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
+	+ [x] extension
+	+ [x] import
+	+ [x] structure
 	+ [ ] body
+		- [ ] PARALLEL FREER
+			* [ ] TYPE AND MONAD
+				+ [ ] data Freer
+				+ [ ] function freer
+				+ [ ] instance Functor
+				+ [ ] instance Applicative
+				+ [ ] instance Monad
+				+ [ ] newtype Fun
+			* [ ] PATTERN
+			* [ ] BIND
+			* [ ] APPLICATION
+		- [ ] TAGGED
 * [ ] Control.Monad.Freer.Par.Sequence
 	+ [ ] API
 	+ [ ] extension

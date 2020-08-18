@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE RankNTypes, ViewPatterns, PatternSynonyms #-}
+{-# LANGUAGE RankNTypes, PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE ExistentialQuantification, GADTs #-}
+{-# LANGUAGE GADTs #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Freer.Par (
@@ -17,21 +17,22 @@ module Control.Monad.Freer.Par (
 	-- * Tagged
 	Tagged, runTagged, tag ) where
 
-import Control.Arrow ((&&&), first)
-import Numeric.Natural (Natural)
-import Unsafe.Coerce (unsafeCoerce)
-
+import Control.Arrow (first, (&&&))
 import Control.Monad.Freer.Par.Sequence (Sequence(..), ViewL(..), (<|), (|>))
 import Control.Monad.Freer.Par.Funable (
 	Funable(..), Taggable(..), MaybeId(..), Boolean(..) )
 import Control.Monad.Freer.Par.Internal.Id (Id(..))
+import Numeric.Natural (Natural)
+import Unsafe.Coerce (unsafeCoerce)
 
 ---------------------------------------------------------------------------
 
 -- * PARALLEL FREER
 --	+ TYPE AND MONAD
+--	+ PATTERN
+--	+ BIND
 --	+ APPLICATION
--- * UNIQUE ID
+-- * TAGGED
 
 ---------------------------------------------------------------------------
 -- PARALLEL FREER
@@ -41,31 +42,6 @@ import Control.Monad.Freer.Par.Internal.Id (Id(..))
 
 data Freer s sq (f :: (* -> *) -> * -> * -> *) t a =
 	Pure_ a | forall x . t x ::>>= sq (f (Freer s sq f t)) x a
-
-pattern Pure :: a -> Freer s sq f t a
-pattern Pure x <- Pure_ x
-
-{-# COMPLETE Pure, (:>>=) #-}
--- {-# COMPLETE Pure_, (:>>=) #-}
-
-pattern (:>>=) :: t x -> Fun s sq f t x a -> Freer s sq f t a
-pattern x :>>= k <- x ::>>= (Fun -> k)
-
-{-# COMPLETE Pure, (:=<<) #-}
--- {-# COMPLETE Pure_, (:=<<) #-}
-
-pattern (:=<<) :: Fun s sq f t x a -> t x -> Freer s sq f t a
-pattern k :=<< x <- x ::>>= (Fun -> k)
-
-infix 8 >>>=, =<<<
-
-(>>>=) :: (Sequence sq, Funable f) =>
-	t a -> (a -> Freer s sq f t b) -> Freer s sq f t b
-m >>>= f = m ::>>= singleton (fun f)
-
-(=<<<) :: (Sequence sq, Funable f) =>
-	(a -> Freer s sq f t b) -> t a -> Freer s sq f t b
-(=<<<) = flip (>>>=)
 
 freer :: (a -> b) -> (forall x . t x -> sq (f (Freer s sq f t)) x a -> b) ->
 	Freer s sq f t a -> b
@@ -81,9 +57,36 @@ instance (Sequence sq, Funable f) => Applicative (Freer s sq f t) where
 instance (Sequence sq, Funable f) => Monad (Freer s sq f t) where
 	m >>= f = freer f (\m' k -> m' ::>>= (k |> fun f)) m
 
--- APPLICATION
-
 newtype Fun s sq f t a b = Fun (sq (f (Freer s sq f t)) a b)
+
+-- PATTERN
+
+pattern Pure :: a -> Freer s sq f t a
+pattern Pure x <- Pure_ x
+
+{-# COMPLETE Pure, (:>>=) #-}
+
+pattern (:>>=) :: t x -> Fun s sq f t x a -> Freer s sq f t a
+pattern x :>>= k <- x ::>>= (Fun -> k)
+
+{-# COMPLETE Pure, (:=<<) #-}
+
+pattern (:=<<) :: Fun s sq f t x a -> t x -> Freer s sq f t a
+pattern k :=<< x <- x ::>>= (Fun -> k)
+
+-- BIND
+
+infix 8 >>>=, =<<<
+
+(>>>=) :: (Sequence sq, Funable f) =>
+	t a -> (a -> Freer s sq f t b) -> Freer s sq f t b
+m >>>= f = m ::>>= singleton (fun f)
+
+(=<<<) :: (Sequence sq, Funable f) =>
+	(a -> Freer s sq f t b) -> t a -> Freer s sq f t b
+(=<<<) = flip (>>>=)
+
+-- APPLICATION
 
 app, qApp :: (Sequence sq, Funable f) =>
 --	sq (f (Freer s sq f t)) a b -> a -> Freer s sq f t b
@@ -117,7 +120,7 @@ qAppParOpened tg p q x = case (viewl p, viewl q) of
 	_ -> error "never occur: no close tag"
 
 ---------------------------------------------------------------------------
--- UNIQUE ID
+-- TAGGED
 ---------------------------------------------------------------------------
 
 newtype Tagged s a = Tagged { unTagged :: Natural -> (a, Natural) }
