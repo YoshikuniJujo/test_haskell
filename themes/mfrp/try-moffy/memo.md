@@ -761,10 +761,8 @@ Control.Monad.Freer.Par.TaggableFunction
 				+ [x] operator (=<<<)
 			* [ ] APPLICATION
 				+ [x] function app
-				+ [x] function appPar
+				+ [ ] function appPar
 				+ [ ] function appParOpened
-					- [x] refactoring
-					- [ ] repair if it need
 		- [ ] TAGGED
 * [ ] Control.Monad.Freer.Par.Sequence
 	+ [ ] API
