@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE RankNTypes, PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE GADTs #-}
@@ -45,10 +45,10 @@ data Freer s sq (f :: (* -> *) -> * -> * -> *) t a =
 
 freer :: (a -> b) -> (forall x . t x -> sq (f (Freer s sq f t)) x a -> b) ->
 	Freer s sq f t a -> b
-freer f _ (Pure_ x) = f x; freer _ g (m ::>>= k) = g m k
+freer p b = \case Pure_ x -> p x; t ::>>= k -> t `b` k
 
 instance (Sequence sq, Funable f) => Functor (Freer s sq f t) where
-	fmap f = freer (Pure_ . f) \m k -> m ::>>= (k |> fun (Pure_ . f))
+	fmap f = freer (Pure_ . f) \t k -> t ::>>= (k |> fun (Pure_ . f))
 
 instance (Sequence sq, Funable f) => Applicative (Freer s sq f t) where
 	pure = Pure_
