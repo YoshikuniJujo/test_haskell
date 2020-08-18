@@ -7,7 +7,7 @@
 module Control.Moffy.Handle.XField (
 	-- * Type
 	GuiEv,
-	-- * Function
+	-- * Handle
 	handle, handleWith) where
 
 import Control.Moffy (EvReqs, EvOccs)

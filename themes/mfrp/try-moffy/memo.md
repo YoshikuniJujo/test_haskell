@@ -658,7 +658,12 @@ Control.Moffy.Handle
 			- [x] function mouseMove
 		+ [x] MOUSE EV
 * [ ] Control.Moffy.Handle.XField
-	+ [ ] API
+	+ [x] API
+		- [x] structure
+		- [x] Type
+		- [x] Handle
+			* [x] function handle
+			* [x] function handleWith
 	+ [ ] extension
 	+ [ ] import
 	+ [ ] structure
