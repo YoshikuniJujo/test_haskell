@@ -739,16 +739,23 @@ Control.Monad.Freer.Par.TaggableFunction
 	+ [x] consider whether or not add fixity of (>>>=) and (=<<<)
 	+ [ ] body
 		- [ ] PARALLEL FREER
-			* [ ] TYPE AND MONAD
+			* [x] TYPE AND MONAD
 				+ [x] data Freer
 				+ [x] function freer
-				+ [ ] instance Functor
-				+ [ ] instance Applicative
-				+ [ ] instance Monad
-				+ [ ] newtype Fun
-			* [ ] PATTERN
-			* [ ] BIND
+				+ [x] instance Functor
+				+ [x] instance Applicative
+				+ [x] instance Monad
+				+ [x] newtype Fun
+			* [x] PATTERN
+				+ [x] pattern Pure
+				+ [x] pattern (:>>=)
+				+ [x] pattern (:=<<)
+			* [x] BIND
+				+ [x] operator (>>>=)
+				+ [x] operator (=<<<)
 			* [ ] APPLICATION
+				+ [ ] function app
+				+ [ ] function appPar
 		- [ ] TAGGED
 * [ ] Control.Monad.Freer.Par.Sequence
 	+ [ ] API

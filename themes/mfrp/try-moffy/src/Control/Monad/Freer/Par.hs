@@ -54,10 +54,10 @@ instance (Sequence sq, Funable f) => Functor (Freer s sq f t) where
 
 instance (Sequence sq, Funable f) => Applicative (Freer s sq f t) where
 	pure = Pure_
-	mf <*> mx = freer (<$> mx) (\m k -> m ::>>= k |> fun (<$> mx)) mf
+	mf <*> (flip (<$>) -> ax) = freer ax (\t -> (t ::>>=) . (|> fun ax)) mf
 
 instance (Sequence sq, Funable f) => Monad (Freer s sq f t) where
-	m >>= f = freer f (\m' k -> m' ::>>= k |> fun f) m
+	m >>= f = freer f (\t -> (t ::>>=) . (|> fun f)) m
 
 newtype Fun s sq f t a b = Fun (sq (f (Freer s sq f t)) a b)
 
@@ -69,12 +69,12 @@ pattern Pure x <- Pure_ x
 {-# COMPLETE Pure, (:>>=) #-}
 
 pattern (:>>=) :: t x -> Fun s sq f t x a -> Freer s sq f t a
-pattern x :>>= k <- x ::>>= (Fun -> k)
+pattern t :>>= k <- t ::>>= (Fun -> k)
 
 {-# COMPLETE Pure, (:=<<) #-}
 
 pattern (:=<<) :: Fun s sq f t x a -> t x -> Freer s sq f t a
-pattern k :=<< x <- x ::>>= (Fun -> k)
+pattern k :=<< t <- t ::>>= (Fun -> k)
 
 -- BIND
 
@@ -82,7 +82,7 @@ infixl 7 >>>=
 
 (>>>=) :: (Sequence sq, Funable f) =>
 	t a -> (a -> Freer s sq f t b) -> Freer s sq f t b
-m >>>= f = m ::>>= singleton (fun f)
+(>>>=) m = (m ::>>=) . singleton . fun
 
 infixr 7 =<<<
 
