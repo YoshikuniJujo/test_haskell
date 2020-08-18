@@ -4,9 +4,8 @@ memo
 structure
 ---------
 
-* Moffy
+* Moffy (9)
 	+ Control.Moffy
-		+ Event.ThreadId
 		+ Handle
 		+ Run
 		+ Internal
@@ -14,8 +13,9 @@ structure
 			- Sig.Type
 			- React
 			- React.Type
-
-* Moffy library
+		+ Event.ThreadId
+		+ Handle.ThreadId
+* Moffy library (16)
 	+ Control.Moffy.Event
 		- Lock
 			* Internal
@@ -34,17 +34,17 @@ structure
 		- XField
 			* Key
 			* Mouse
-* Moffy base
-	+ Data.OneOrMore
-	+ Data.Type.Set
+* Moffy base (9)
+	+ Data.OneOrMore (1)
+	+ Data.Type.Set (2)
 		+ Internal
-	+ Control.Monad.Freer.Par
+	+ Control.Monad.Freer.Par (6)
 		- Sequence
 		- Funable
 		- FTCQueue
 		- TaggableFunction
 		- Internal.Id
-* Trial
+* Trial (20)
 	+ CheckRandom
 	+ Count
 	+ CountWithLock
@@ -72,7 +72,7 @@ todo
 
 * [ ] check module hierarchy
 	+ [x] Moffy
-	+ [ ] Moffy library
+	+ [x] Moffy library
 	+ [ ] Moffy base
 	+ [ ] Trial
 * [ ] refactoring
@@ -92,7 +92,7 @@ todo
 		- [ ] others
 	+ [ ] Control.Moffy.Handle
 	+ [x] Moffy
-	+ [ ] Moffy library
+	+ [x] Moffy library
 	+ [ ] Moffy base
 	+ [ ] Trials
 	+ [ ] Control.Moffy.Internal.React.Type
@@ -684,10 +684,10 @@ Control.Moffy.Handle
 	+ [x] import
 	+ [x] body
 
-Moffy Base
+Moffy Base (9)
 ----------
 
-### Control.Monad.Freer.Par
+### Control.Monad.Freer.Par (6)
 
 #### module hierarchy
 
@@ -707,7 +707,36 @@ Control.Monad.Freer.Par.TaggableFunction
 
 #### refactoring
 
-### One Or More
+* [ ] Control.Monad.Freer.Par
+	+ [ ] API
+		- [ ] structure
+		- [ ] others
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
+* [ ] Control.Monad.Freer.Par.Sequence
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
+* [ ] Control.Monad.Freer.Par.Funable
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
+* [ ] Control.Monad.Freer.Par.Internal.Id
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
+* [ ] Control.Monad.Freer.Par.FTCQueue
+* [ ] Control.Monad.Freer.Par.TaggableFunction
+
+### One Or More (1)
 
 #### module hierarchy
 
@@ -717,7 +746,7 @@ Data.OneOrMore
 
 #### refactor
 
-### Type Set
+### Type Set (2)
 
 #### module hierarchy
 
