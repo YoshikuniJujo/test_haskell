@@ -1,10 +1,12 @@
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE GADTs #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Monad.Freer.Par.FTCQueue (FTCQueue) where
+module Control.Monad.Freer.Par.FTCQueue (
+	-- * FTCQueue
+	FTCQueue ) where
 
+import Control.Arrow ((>>>))
 import Control.Monad.Freer.Par.Sequence (Sequence(..), ViewL(..))
 
 ---------------------------------------------------------------------------
@@ -16,7 +18,7 @@ data FTCQueue cat a b where
 
 instance Sequence FTCQueue where
 	empty = Empty; singleton x = Node Empty x Empty
-	l >< r = case viewl r of EmptyL -> l; x :<| r' -> Node l x r'
+	(><) l = viewl >>> \case EmptyL -> l; x :<| r -> Node l x r
 	viewl = \case Empty -> EmptyL; Node l x r -> vwl l x r
 
 vwl :: FTCQueue cat a b -> cat b c -> FTCQueue cat c d -> ViewL FTCQueue cat a d

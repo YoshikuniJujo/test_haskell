@@ -798,12 +798,11 @@ Control.Monad.Freer.Par.TaggableFunction
 	+ [x] API
 	+ [x] import
 	+ [x] body
-* [ ] Control.Monad.Freer.Par.FTCQueue
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
+* [x] Control.Monad.Freer.Par.FTCQueue
+	+ [x] API
+	+ [x] extension
+	+ [x] import
+	+ [x] body
 * [ ] Control.Monad.Freer.Par.TaggableFunction
 	+ [ ] API
 	+ [ ] extension
