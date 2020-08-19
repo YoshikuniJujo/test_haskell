@@ -783,7 +783,10 @@ Control.Monad.Freer.Par.TaggableFunction
 		- [x] SEQUENCE AND VIEWL
 		- [x] COMBINATOR
 * [ ] Control.Monad.Freer.Par.Funable
-	+ [ ] API
+	+ [x] API
+		- [x] structure
+		- [x] Funable
+		- [x] Taggalble
 	+ [ ] extension
 	+ [ ] import
 	+ [ ] structure
