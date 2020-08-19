@@ -24,27 +24,26 @@ module Data.OneOrMore (
 	-- ** Expand and Collapse
 	expand, collapse,
 	-- ** Merge
-	merge, merge'
-	) where
+	merge, merge' ) where
 
 import Data.Kind (Type)
 import Data.Type.Set.Internal (Set(Nil, (:~)), Singleton)
 
 ---------------------------------------------------------------------------
 
--- * ONEORMORE TYPE
+-- * ONE OR MORE TYPE
 -- * BASIC PROPERTY
 --	+ PROJECTABLE
 --	+ INSERTABLE
 -- * EXPANDABLE AND COLLAPSABLE
 --	+ EXPANDABLE
 --	+ COLLAPSABLE
---		- Collapsable0
---		- Collapsable
+--		- COLLAPSABLE 0
+--		- COLLAPSABLE
 -- * MERGEABLE
 
 ---------------------------------------------------------------------------
--- ONEORMORE TYPE
+-- ONE OR MORE TYPE
 ---------------------------------------------------------------------------
 
 data OneOrMore :: Set Type -> Type where
@@ -78,8 +77,7 @@ infixr 5 >-
 class Insertable a (as :: Set Type) (as' :: Set Type) where
 	(>-) :: a -> OneOrMore as -> OneOrMore as'
 
-instance Insertable a as (a ':~ as) where
-	x >- xs = Just x :. xs
+instance Insertable a as (a ':~ as) where x >- xs = Just x :. xs
 
 instance {-# OVERLAPPABLE #-} Insertable a as as' =>
 	Insertable a (a' ':~ as) (a' ':~ as') where
@@ -90,10 +88,6 @@ instance {-# OVERLAPPABLE #-} Insertable a as as' =>
 ---------------------------------------------------------------------------
 
 -- EXPANDABLE
-
-class Nihil as where nihil :: OneOrMore as
-instance Nihil 'Nil where nihil = Empty
-instance Nihil as => Nihil (a ':~ as) where nihil = Nothing :. nihil
 
 class Expandable (as :: Set Type) (as' :: Set Type) where
 	expand :: OneOrMore as -> OneOrMore as'
@@ -109,9 +103,13 @@ instance {-# OVERLAPPABLE #-} Expandable (a ':~ as) as' =>
 	Expandable (a ':~ as) (a' ':~ as') where
 	expand xs = Nothing :. expand xs
 
+class Nihil as where nihil :: OneOrMore as
+instance Nihil 'Nil where nihil = Empty
+instance Nihil as => Nihil (a ':~ as) where nihil = Nothing :. nihil
+
 -- COLLAPSABLE
 
--- Collapsable0
+-- COLLAPSABLE 0
 
 class Collapsable0 (as :: Set Type) (as' :: Set Type) where
 	collapse0 :: OneOrMore as -> OneOrMore as'
@@ -126,7 +124,7 @@ instance {-# OVERLAPPABLE #-} Collapsable0 as (a' ':~ as') =>
 	Collapsable0 (a ':~ as) (a' ':~ as') where
 	collapse0 (_ :. xs) = collapse0 xs
 
--- Collapsable
+-- COLLAPSABLE
 
 class Collapsable (as :: Set Type) (as' :: Set Type) where
 	collapse :: OneOrMore as -> Maybe (OneOrMore as')
@@ -146,9 +144,6 @@ instance {-# OVERLAPPABLE #-} Collapsable as as' =>
 ---------------------------------------------------------------------------
 -- MERGEABLE
 ---------------------------------------------------------------------------
-
-class Selectable a where select :: a -> a -> a
-instance {-# OVERLAPPABLE #-} Ord a => Selectable a where select = min
 
 class Mergeable (as :: Set Type) (as' :: Set Type) (mrg :: Set Type) where
 	merge :: OneOrMore as -> OneOrMore as' -> OneOrMore mrg
@@ -170,10 +165,13 @@ instance {-# OVERLAPPABLE #-} Mergeable as as' mrg =>
 	Mergeable as (a ':~ as') (a ':~ mrg) where
 	merge xs (x :. xs') = x :. merge xs xs'
 
+class Selectable a where select :: a -> a -> a
+instance {-# OVERLAPPABLE #-} Ord a => Selectable a where select = min
+
 merge' :: (Mergeable as as' mrg, Expandable as mrg, Expandable as' mrg ) =>
 	Maybe (OneOrMore as) -> Maybe (OneOrMore as') -> Maybe (OneOrMore mrg)
-mu `merge'` mu' = case (mu, mu') of
-	(Just u, Just u') -> Just $ u `merge` u'
-	(Just u, Nothing) -> Just $ expand u
-	(Nothing, Just u') -> Just $ expand u'
+ml `merge'` mr = case (ml, mr) of
+	(Just l, Just r) -> Just $ l `merge` r
+	(Just l, Nothing) -> Just $ expand l
+	(Nothing, Just r) -> Just $ expand r
 	(Nothing, Nothing) -> Nothing

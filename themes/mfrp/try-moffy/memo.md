@@ -822,7 +822,7 @@ Data.OneOrMore
 
 #### refactor
 
-* [ ] Data.OneOrMore
+* [x] Data.OneOrMore
 	+ [x] API
 		- [x] structure
 		- [x] Type
@@ -850,9 +850,27 @@ Data.OneOrMore
 				+ [x] merge
 				+ [x] merge'
 	+ [x] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
+	+ [x] import
+	+ [x] structure
+	+ [x] body
+		- [x] ONE OR MORE TYPE
+		- [x] BASIC PROPERTY
+			* [x] PROJECTABLE
+				+ [x] class Projectable
+				+ [x] pattern Singleton
+				+ [x] function unSingleton
+			* [x] INSERTABLE
+		- [x] EXPANDABLE AND COLLAPSABLE
+			* [x] EXPANDABLE
+				+ [x] class Expandable
+				+ [x] class Nihil
+			* [x] COLLAPSABLE
+				+ [x] COLLAPSABLE 0
+				+ [x] COLLAPSABLE
+		- [x] MERGEABLE
+			* [x] class Mergeable
+			* [x] class Selectable
+			* [x] function merge'
 
 ### Type Set (2)
 
