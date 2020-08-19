@@ -16,9 +16,15 @@ module Data.OneOrMore (
 	Expandable, Collapsable,
 	-- ** Mergeable
 	Mergeable, Selectable(..),
-	-- * FUNCTION
-	pattern Singleton, unSingleton, project, (>-),
-	expand, collapse, merge, merge'
+	-- * Function
+	-- ** Single Type
+	pattern Singleton, unSingleton,
+	-- ** Multiple Type
+	project, (>-),
+	-- ** Expand and Collapse
+	expand, collapse,
+	-- ** Merge
+	merge, merge'
 	) where
 
 import Data.Kind (Type)

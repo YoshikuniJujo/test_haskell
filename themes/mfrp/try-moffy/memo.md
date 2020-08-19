@@ -822,6 +822,24 @@ Data.OneOrMore
 
 #### refactor
 
+* [ ] Data.OneOrMore
+	+ [ ] API
+		- [x] structure
+		- [ ] Type
+		- [ ] Property
+			* [ ] Basic Property
+			* [ ] Expandable and Collapsable
+			* [ ] Mergeable
+		- [ ] Function
+			* [ ] Single Type
+			* [ ] Multiple Type
+			* [ ] Expand and Collapse
+			* [ ] Merge
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
+
 ### Type Set (2)
 
 #### module hierarchy
@@ -832,6 +850,19 @@ Data.Type.Set
 ```
 
 #### refactor
+
+* [ ] Data.Type.Set
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
+* [ ] Data.Type.Set.Internal
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
 
 Trials
 ------
