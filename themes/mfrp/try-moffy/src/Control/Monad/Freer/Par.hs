@@ -19,7 +19,7 @@ module Control.Monad.Freer.Par (
 
 import Control.Arrow (first, (&&&))
 import Control.Monad.Freer.Par.Sequence (Sequence(..), ViewL(..), (|>), mapS)
-import Control.Monad.Freer.Par.Funable (Funable(..), Taggable(..))
+import Control.Monad.Freer.Par.Funable (Funable(..), Taggable(..), sameTag)
 import Control.Monad.Freer.Par.Internal.Id (Id(..))
 import Numeric.Natural (Natural)
 import Unsafe.Coerce (unsafeCoerce)
@@ -58,7 +58,7 @@ instance (Sequence sq, Funable f) => Applicative (Freer s sq f t) where
 instance (Sequence sq, Funable f) => Monad (Freer s sq f t) where
 	m >>= f = freer f (\t -> (t ::>>=) . (|> fun f)) m
 
-newtype Fun s sq f t a b = Fun (sq (f (Freer s sq f t)) a b)
+newtype Fun s sq f t a b = Fun { unFun :: sq (f (Freer s sq f t)) a b }
 
 -- PATTERN
 
@@ -92,54 +92,34 @@ infixr 7 =<<<
 -- APPLICATION
 
 app :: (Sequence sq, Funable f) => Fun s sq f t a b -> a -> Freer s sq f t b
-Fun fa `app` x = case viewl fa of
-	EmptyL -> pure x
-	f :<| fs -> case f $$ x of
-		Pure_ y -> Fun fs `app` y; t ::>>= k -> t ::>>= k >< fs
+app = aps . unFun
 
 appPar :: (Sequence sq, Funable f, Taggable f) =>
 	Fun s sq f t a b -> Fun s sq f t a b -> a ->
 	(Freer s sq f t b, Freer s sq f t b)
-appPar (Fun l) (Fun r) = appParOpened l r
-{-
-appPar fl@(Fun l) fr@(Fun r) x = case (viewl l, viewl r) of
-	(f :<| fs, g :<| gs) | J tg <- checkOpen f g -> appParOpened tg fs gs x
-	_ -> (fl `app` x, fr `app` x)
-	-}
+Fun l `appPar` Fun r = l `apsPar` r
 
-appParOpened :: (Sequence sq, Funable f, Taggable f) =>
+aps :: (Sequence sq, Funable f) =>
+	sq (f (Freer s sq f t)) a b -> a -> Freer s sq f t b
+aps = (. viewl) \case EmptyL -> pure; f :<| fs -> aps' f fs
+
+aps' :: (Sequence sq, Funable f) =>
+	f (Freer s sq f t) a x ->
+	sq (f (Freer s sq f t)) x b -> a -> Freer s sq f t b
+aps' f fs = (. (f $$)) \case Pure_ y -> fs `aps` y; t ::>>= k -> t ::>>= k >< fs
+
+apsPar :: (Sequence sq, Funable f, Taggable f) =>
 	sq (f (Freer s sq f t)) a b -> sq (f (Freer s sq f t)) a b -> a ->
 	(Freer s sq f t b, Freer s sq f t b)
-appParOpened l r x = case (viewl l, viewl r) of
-	(EmptyL, _) -> (Fun l `app` x, Fun r `app` x)
-	(_, EmptyL) -> (Fun l `app` x, Fun r `app` x)
-	(f :<| fs, g :<| gs)
-		| Just tg <- getTag f, Just tg' <- getTag g, tg == tg' -> case f $$ x of
-			Pure_ y -> appParOpened fs (unsafeCoerce gs) y
-			t ::>>= k ->
-				(t ::>>= k >< fs, t ::>>= k >< unsafeCoerce gs)
-		| otherwise -> (Fun l `app` x, Fun r `app` x)
-		{-
-		(T, T) -> (Fun fs `app` x, Fun gs `app` x)
-		_ -> case f $$ x of
-			Pure_ y -> appParOpened tg fs (unsafeCoerce gs) y
-			t ::>>= k ->
-				(t ::>>= k >< fs, t ::>>= k >< unsafeCoerce gs)
-				-}
-
-{-
-appParOpened :: (Sequence sq, Funable f, Taggable f) => Id ->
-	sq (f (Freer s sq f t)) a b -> sq (f (Freer s sq f t)) a b -> a ->
-	(Freer s sq f t b, Freer s sq f t b)
-appParOpened tg l r x = case (viewl l, viewl r) of
-	(f :<| fs, g :<| gs) -> case (checkClose tg f, checkClose tg g) of
-		(T, T) -> (Fun fs `app` x, Fun gs `app` x)
-		_ -> case f $$ x of
-			Pure_ y -> appParOpened tg fs (unsafeCoerce gs) y
-			t ::>>= k ->
-				(t ::>>= k >< fs, t ::>>= k >< unsafeCoerce gs)
-	_ -> error "never occur: no close tag"
-	-}
+(l `apsPar` r) x = case (viewl l, viewl r) of
+	(EmptyL, EmptyL) -> (pure x, pure x)
+	(EmptyL, g :<| gs) -> (pure x, aps' g gs x)
+	(f :<| fs, EmptyL) -> (aps' f fs x, pure x)
+	(f :<| fs, g :<| gs@(unsafeCoerce -> gs'))
+		| getTag f `sameTag` getTag g -> case f $$ x of
+			Pure_ y -> fs `apsPar` gs' $ y
+			t ::>>= k -> (t ::>>= k >< fs, t ::>>= k >< gs')
+		| otherwise -> (aps' f fs x, aps' g gs x)
 
 ---------------------------------------------------------------------------
 -- TAGGED
