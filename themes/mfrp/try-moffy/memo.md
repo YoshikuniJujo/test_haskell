@@ -803,12 +803,14 @@ Control.Monad.Freer.Par.TaggableFunction
 	+ [x] extension
 	+ [x] import
 	+ [x] body
-* [ ] Control.Monad.Freer.Par.TaggableFunction
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
+* [x] Control.Monad.Freer.Par.TaggableFunction
+	+ [x] API
+	+ [x] extension
+	+ [x] import
+	+ [x] body
+		- [x] data TaggableFun
+		- [x] instance Funable TaggableFun
+		- [x] instance Taggable TaggableFun
 
 ### One Or More (1)
 
