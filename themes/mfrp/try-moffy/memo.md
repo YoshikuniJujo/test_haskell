@@ -823,19 +823,33 @@ Data.OneOrMore
 #### refactor
 
 * [ ] Data.OneOrMore
-	+ [ ] API
+	+ [x] API
 		- [x] structure
-		- [ ] Type
-		- [ ] Property
-			* [ ] Basic Property
-			* [ ] Expandable and Collapsable
-			* [ ] Mergeable
-		- [ ] Function
-			* [ ] Single Type
-			* [ ] Multiple Type
-			* [ ] Expand and Collapse
-			* [ ] Merge
-	+ [ ] extension
+		- [x] Type
+		- [x] Property
+			* [x] Basic Property
+				+ [x] Projectable
+				+ [x] Insertable
+			* [x] Expandable and Collapsable
+				+ [x] Expandable
+				+ [x] Collapsable
+			* [x] Mergeable
+				+ [x] Mergeable
+				+ [x] Selectable
+		- [x] Function
+			* [x] Single Type
+				+ [x] pattern Singleton
+				+ [x] function unSingleton
+			* [x] Multiple Type
+				+ [x] function project
+				+ [x] operator (>-)
+			* [x] Expand and Collapse
+				+ [x] expand
+				+ [x] collapse
+			* [x] Merge
+				+ [x] merge
+				+ [x] merge'
+	+ [x] extension
 	+ [ ] import
 	+ [ ] structure
 	+ [ ] body

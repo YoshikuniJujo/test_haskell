@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE ScopedTypeVariables, PatternSynonyms #-}
-{-# LANGUAGE DataKinds, TypeOperators #-}
-{-# LANGUAGE GADTs, TypeFamilies #-}
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds, KindSignatures, TypeOperators #-}
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE MultiParamTypeClasses,
 	FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
