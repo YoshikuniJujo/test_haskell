@@ -774,6 +774,11 @@ Control.Monad.Freer.Par.TaggableFunction
 			* [x] function tag
 * [ ] Control.Monad.Freer.Par.Sequence
 	+ [ ] API
+		- [x] structure
+		- [ ] Sequence
+		- [ ] Push
+		- [ ] Map
+		- [ ] View
 	+ [ ] extension
 	+ [ ] import
 	+ [ ] structure

@@ -3,7 +3,14 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Monad.Freer.Par.Sequence (
-	Sequence(..), ViewL(..), (<|), (|>), mapS ) where
+	-- * Sequence
+	Sequence(..),
+	-- * Push
+	(<|), (|>),
+	-- * Map
+	mapS,
+	-- * View
+	ViewL(..) ) where
 
 infixr 8 ><
 
