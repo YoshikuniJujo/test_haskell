@@ -794,14 +794,22 @@ Control.Monad.Freer.Par.TaggableFunction
 		- [x] class Taggable
 		- [x] data Tag
 		- [x] function sameTag
-* [ ] Control.Monad.Freer.Par.Internal.Id
+* [x] Control.Monad.Freer.Par.Internal.Id
+	+ [x] API
+	+ [x] import
+	+ [x] body
+* [ ] Control.Monad.Freer.Par.FTCQueue
 	+ [ ] API
 	+ [ ] extension
 	+ [ ] import
 	+ [ ] structure
 	+ [ ] body
-* [ ] Control.Monad.Freer.Par.FTCQueue
 * [ ] Control.Monad.Freer.Par.TaggableFunction
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
 
 ### One Or More (1)
 
