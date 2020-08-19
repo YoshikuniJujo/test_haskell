@@ -772,15 +772,16 @@ Control.Monad.Freer.Par.TaggableFunction
 			* [x] instance Monad
 			* [x] function runTagged
 			* [x] function tag
-* [ ] Control.Monad.Freer.Par.Sequence
+* [x] Control.Monad.Freer.Par.Sequence
 	+ [x] API
 		- [x] structure
 		- [x] Sequence and ViewL
 		- [x] Combinator
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
+	+ [x] extension
+	+ [x] structure
+	+ [x] body
+		- [x] SEQUENCE AND VIEWL
+		- [x] COMBINATOR
 * [ ] Control.Monad.Freer.Par.Funable
 	+ [ ] API
 	+ [ ] extension
