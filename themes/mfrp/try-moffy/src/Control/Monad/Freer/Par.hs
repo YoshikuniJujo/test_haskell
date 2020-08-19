@@ -131,7 +131,8 @@ instance Functor (Tagged s) where f `fmap` Tagged k = Tagged $ (f `first`) . k
 
 instance Applicative (Tagged s) where
 	pure = Tagged . (,)
-	Tagged k <*> mx = Tagged $ uncurry unTagged . ((<$> mx) `first`) . k
+	Tagged k <*> (flip (<$>) -> ax) =
+		Tagged $ uncurry unTagged . (ax `first`) . k
 
 instance Monad (Tagged s) where
 	Tagged k >>= f = Tagged $ uncurry unTagged . (f `first`) . k
@@ -142,5 +143,4 @@ runTagged (Tagged k) = fst $ k 0
 tag :: (Sequence sq, Funable f, Taggable f) =>
 	Freer s sq f t a -> Tagged s (Freer s sq f t a)
 tag m@(Pure_ _) = pure m
-tag (tx ::>>= fs) =
-	(tx ::>>=) <$> (\f -> (`putTag` f) <$> Tagged (Id &&& (+ 1))) `mapS` fs
+tag (t ::>>= k) = (t ::>>=) <$> ((<$> Tagged (Id &&& succ)) . putTag) `mapS` k

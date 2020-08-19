@@ -713,7 +713,7 @@ Control.Monad.Freer.Par.TaggableFunction
 
 #### refactoring
 
-* [ ] Control.Monad.Freer.Par
+* [x] Control.Monad.Freer.Par
 	+ [x] API
 		- [x] rename Unique
 		- [x] consider whether or not to rename qApp and qAppPar
@@ -743,7 +743,7 @@ Control.Monad.Freer.Par.TaggableFunction
 	+ [x] structure
 	+ [x] consider whether or not add fixity of (::>>=), (<|) and (|>)
 	+ [x] consider whether or not add fixity of (>>>=) and (=<<<)
-	+ [ ] body
+	+ [x] body
 		- [x] PARALLEL FREER
 			* [x] TYPE AND MONAD
 				+ [x] data Freer
@@ -765,13 +765,13 @@ Control.Monad.Freer.Par.TaggableFunction
 				+ [x] function aps
 				+ [x] function aps'
 				+ [x] function apsPar
-		- [ ] TAGGED
-			* [ ] newtype Tagged
-			* [ ] instance Functor
-			* [ ] instance Applicative
-			* [ ] instance Monad
-			* [ ] function runTagged
-			* [ ] function tag
+		- [x] TAGGED
+			* [x] newtype Tagged
+			* [x] instance Functor
+			* [x] instance Applicative
+			* [x] instance Monad
+			* [x] function runTagged
+			* [x] function tag
 * [ ] Control.Monad.Freer.Par.Sequence
 	+ [ ] API
 	+ [ ] extension

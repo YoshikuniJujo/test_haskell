@@ -17,5 +17,5 @@ sameTag :: Tag -> Tag -> Bool
 l `sameTag` r | Tag i <- l, Tag j <- r = i == j | otherwise = False
 
 class Taggable (t :: (* -> *) -> * -> * -> *) where
-	putTag :: Id -> t m a b -> t m a b
+	putTag :: t m a b -> Id -> t m a b
 	getTag :: t m a b -> Tag

@@ -14,5 +14,5 @@ data TaggableFun m a b where
 instance Funable TaggableFun where fun = Fun NoTag; ($$) (Fun _ f) = f
 
 instance Taggable TaggableFun where
-	putTag i (Fun _ f) = Fun (Tag i) f
+	putTag (Fun _ f) i = Fun (Tag i) f
 	getTag (Fun t _) = t
