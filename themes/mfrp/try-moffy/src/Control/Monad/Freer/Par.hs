@@ -17,7 +17,7 @@ module Control.Monad.Freer.Par (
 	-- * Tagged
 	Tagged, runTagged, tag ) where
 
-import Control.Arrow (first, (&&&))
+import Control.Arrow (first, (&&&), (>>>))
 import Control.Monad.Freer.Par.Sequence (Sequence(..), ViewL(..), (|>), mapS)
 import Control.Monad.Freer.Par.Funable (Funable(..), Taggable(..), sameTag)
 import Control.Monad.Freer.Par.Internal.Id (Id(..))
@@ -101,12 +101,12 @@ Fun l `appPar` Fun r = l `apsPar` r
 
 aps :: (Sequence sq, Funable f) =>
 	sq (f (Freer s sq f t)) a b -> a -> Freer s sq f t b
-aps = (. viewl) \case EmptyL -> pure; f :<| fs -> aps' f fs
+aps = viewl >>> \case EmptyL -> pure; f :<| fs -> aps' f fs
 
 aps' :: (Sequence sq, Funable f) =>
 	f (Freer s sq f t) a x ->
 	sq (f (Freer s sq f t)) x b -> a -> Freer s sq f t b
-aps' f fs = (. (f $$)) \case Pure_ y -> fs `aps` y; t ::>>= k -> t ::>>= k >< fs
+aps' f fs = (f $$) >>> \case Pure_ y -> fs `aps` y; t ::>>= k -> t ::>>= k >< fs
 
 apsPar :: (Sequence sq, Funable f, Taggable f) =>
 	sq (f (Freer s sq f t)) a b -> sq (f (Freer s sq f t)) a b -> a ->
