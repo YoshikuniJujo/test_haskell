@@ -782,15 +782,18 @@ Control.Monad.Freer.Par.TaggableFunction
 	+ [x] body
 		- [x] SEQUENCE AND VIEWL
 		- [x] COMBINATOR
-* [ ] Control.Monad.Freer.Par.Funable
+* [x] Control.Monad.Freer.Par.Funable
 	+ [x] API
 		- [x] structure
 		- [x] Funable
 		- [x] Taggalble
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
+	+ [x] extension
+	+ [x] import
+	+ [x] body
+		- [x] class Funable
+		- [x] class Taggable
+		- [x] data Tag
+		- [x] function sameTag
 * [ ] Control.Monad.Freer.Par.Internal.Id
 	+ [ ] API
 	+ [ ] extension
