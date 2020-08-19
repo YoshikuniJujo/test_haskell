@@ -1,10 +1,14 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Type.Set (
-	-- * Type
-	Set(Nil), Numbered, numbered,
+	-- * Set
+	Set(Nil),
+	-- * Numbered
+	Numbered, numbered,
+	-- * Function
+	Singleton, Insert, Merge, Map,
 	-- * Operator
-	Singleton, Insert, Merge, Map, (:-), (:+:), (:$:) ) where
+	(:-), (:+:), (:$:) ) where
 
 import Data.Type.Set.Internal (
 	Set(Nil), Numbered, numbered,

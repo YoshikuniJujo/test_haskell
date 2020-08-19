@@ -885,10 +885,12 @@ Data.Type.Set
 
 * [ ] Data.Type.Set
 	+ [ ] API
-	+ [ ] extension
+		- [x] structure
+		- [ ] Set
+		- [ ] Numbered
+		- [ ] Function
+		- [ ] Operator
 	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
 * [ ] Data.Type.Set.Internal
 	+ [ ] API
 	+ [ ] extension
@@ -896,7 +898,7 @@ Data.Type.Set
 	+ [ ] structure
 	+ [ ] body
 
-Trials
+Trials (20)
 ------
 
 ### tribial
