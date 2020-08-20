@@ -70,6 +70,11 @@ structure
 todo
 ----
 
+* [x] repair Control.Moffy.Internal.React.first
+	+ [x] rename AdjustableAdjustable
+	+ [x] remove first
+	+ [x] rename first' to first
+* [ ] refactor Control.Moffy.Internal.React
 * [ ] check module hierarchy
 	+ [x] Moffy
 	+ [x] Moffy library

@@ -97,6 +97,6 @@ withLock :: (
 	(es :+: es') ~ es',
 	(GetThreadIdGetLock :+: es') ~ es', (SingletonUnlock :+: es') ~ es',
 	Adjustable es es',
-	Adjustable GetThreadIdGetLock es', Adjustable SingletonUnlock es') =>
+	Adjustable GetThreadIdGetLock es', Adjustable SingletonUnlock es' ) =>
 	LockId -> React s es a -> React s es' a
 withLock l act = adjust (getLock l 0) >> adjust act <* adjust (unlock l)
