@@ -932,6 +932,11 @@ Trials (20)
 
 #### TrySharing
 
+##### repair
+
+* [x] use showButton
+* [x] remove old functions
+
 ##### refactoring
 
 * [ ] Trial.TrySharing

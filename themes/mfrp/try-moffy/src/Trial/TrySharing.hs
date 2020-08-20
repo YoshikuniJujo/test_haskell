@@ -29,9 +29,11 @@ runSharingShowButton2 :: IO (Or String String)
 runSharingShowButton2 =
 	runTagged $ tag showButton >>= \sb -> pure . runMouseEv $ sb `first` sb
 
-calc :: () -> Int
-calc _ = unsafePerformIO
-	$ 123 <$ (message "START" >> threadDelay 2000000 >> message "END")
+runSharingShowButton2Button2 :: IO (Or (String, String) (String, String))
+runSharingShowButton2Button2 = runTagged $ do
+	sb <- tag showButton
+	let	sb2 = (,) <$> sb <*> sb
+	pure . runMouseEv $ sb2 `first` sb2
 
 message :: String -> IO ()
 message msg = putStrLn . ("\n" ++) . (msg ++) . (": " ++) . show =<< getCurrentTime
@@ -40,42 +42,3 @@ runMouseEv :: React s MouseEv r -> IO r
 runMouseEv r = do
 	f <- openField "RUN REACT" [exposureMask, buttonPressMask]
 	interpretReact (retry $ handle Nothing f) r <* closeField f
-
-calcReact :: () -> React s MouseEv Int
-calcReact u = pure $ calc u
-
-calcReact' :: () -> React s MouseEv Int
-calcReact' u = adjust leftClick >> pure (calc u)
-
-runCalc2 :: IO (Or Int Int)
--- runCalc2 = run $ calcReact () `first` calcReact ()
-runCalc2 = runMouseEv $ hr `first` hr
-	where hr = calcReact ()
-
-runSharingCalc2 :: IO (Or Int Int)
-runSharingCalc2 =
-	runTagged $ tag (calcReact ()) >>= \hr -> pure . runMouseEv $ hr `first` hr
-
-runSharingCalcCalc :: IO (Or (Int, Int) (Int, Int))
-runSharingCalcCalc = do
-	f <- openField "RUN SHARING HEAVY HEAVY" [buttonPressMask, exposureMask]
-	r <- runTagged $ do
-		hr <- tag $ (,) <$> calcReact () <*> calcReact ()
-		pure $ interpretReact (retry $ handle Nothing f) $ hr `first` hr
-	r <$ closeField f
-
-runSharingCalc' :: IO (Or Int Int)
-runSharingCalc' = do
-	f <- openField "RUN SHARING HEAVY" [buttonPressMask, exposureMask]
-	r <- runTagged $ do
-		hr <- tag $ calcReact' ()
-		pure $ interpretReact (retry $ handle Nothing f) $ hr `first` hr
-	r <$ closeField f
-
-runSharingCalcCalc' :: IO (Or (Int, Int) (Int, Int))
-runSharingCalcCalc' = do
-	f <- openField "RUN SHARING HEAVY HEAVY" [buttonPressMask, exposureMask]
-	r <- runTagged $ do
-		hr <- tag $ (,) <$> calcReact' () <*> calcReact' ()
-		pure $ interpretReact (retry $ handle Nothing f) $ hr `first` hr
-	r <$ closeField f
