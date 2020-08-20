@@ -883,20 +883,29 @@ Data.Type.Set
 
 #### refactor
 
-* [ ] Data.Type.Set
-	+ [ ] API
+* [x] Data.Type.Set
+	+ [x] API
 		- [x] structure
-		- [ ] Set
-		- [ ] Numbered
-		- [ ] Function
-		- [ ] Operator
-	+ [ ] import
-* [ ] Data.Type.Set.Internal
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
+		- [x] Set
+		- [x] Numbered
+		- [x] Function
+		- [x] Operator
+	+ [x] import
+* [x] Data.Type.Set.Internal
+	+ [x] API
+	+ [x] extension
+	+ [x] import
+	+ [x] structure
+	+ [x] body
+		- [x] TYPE SET
+			* [x] DATA DEFINITION
+			* [x] COMBINATOR
+				+ [x] Singleton
+				+ [x] Insert
+				+ [x] Merge
+				+ [x] Map
+		- [x] NUMBERED
+		- [x] BOOL
 
 Trials (20)
 ------
