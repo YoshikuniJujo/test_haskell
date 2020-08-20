@@ -12,7 +12,7 @@ module Control.Moffy.Internal.React (
 	-- * Constraint
 	Firstable, Adjustable,
 	-- * Function
-	first, adjust, par) where
+	first, first', adjust, par) where
 
 import Control.Monad.Freer.Par (
 	pattern Pure, pattern (:=<<), (=<<<), app, appPar )
@@ -46,9 +46,24 @@ first :: Firstable es es' a b =>
 	(Pure x, Pure y) -> LR x y; (Pure x, _) -> L x; (_, Pure y) -> R y
 	(_ :=<< _, _:=<< _) -> error "never occur"
 
+first' :: (Firstable es es' a b,
+	AdjustableAdjustable es (es :+: es'),
+	AdjustableAdjustable es' (es :+: es') ) =>
+	React s es a -> React s es' b -> React s (es :+: es') (Or a b)
+(adjust' -> l) `first'` (adjust' -> r) = (<$> l `par` r) \case
+	(Pure x, Pure y) -> LR x y; (Pure x, _) -> L x; (_, Pure y) -> R y
+	(_ :=<< _, _:=<< _) -> error "never occur"
+
 ---------------------------------------------------------------------------
 -- ADJUST
 ---------------------------------------------------------------------------
+
+class AdjustableAdjustable es es' where
+	adjust' :: Adjustable es es' => React s es a -> React s es' a
+
+instance AdjustableAdjustable es es where adjust' = id
+
+instance {-# OVERLAPPABLE #-} AdjustableAdjustable es es' where adjust' = adjust
 
 type Adjustable es es' = (
 	Expandable es es', Collapsable (Occurred :$: es') (Occurred :$: es) )

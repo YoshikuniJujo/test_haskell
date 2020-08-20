@@ -27,7 +27,7 @@ runShowButton2 = runMouseEv $ showButton `first` showButton
 
 runSharingShowButton2 :: IO (Or String String)
 runSharingShowButton2 =
-	runTagged $ tag showButton >>= \sb -> pure . runMouseEv $ sb `first` sb
+	runTagged $ tag showButton >>= \sb -> pure . runMouseEv $ sb `first'` sb
 
 calc :: () -> Int
 calc _ = unsafePerformIO
