@@ -925,7 +925,17 @@ Trials (20)
 		- [x] function evalRandom
 		- [x] function getRandomRs
 
-#### CheckSharing
+#### TrySharing
+
+##### refactoring
+
+* [ ] Trial.TrySharing
+	+ [x] rename
+	+ [ ] API
+	+ [x] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
 
 #### CheckSharing.EvInt
 
