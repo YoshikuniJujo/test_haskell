@@ -910,9 +910,20 @@ Data.Type.Set
 Trials (20)
 ------
 
-### tribial
+### tribial (10)
 
-#### Check Random
+#### Try Random
+
+##### refactoring
+
+* [x] Trial.TryRandom
+	+ [x] rename
+	+ [x] API
+	+ [x] import
+	+ [x] body
+		- [x] list exampleRandomRs
+		- [x] function evalRandom
+		- [x] function getRandomRs
 
 #### CheckSharing
 
@@ -930,9 +941,9 @@ Trials (20)
 
 #### Try ThreadId
 
-### Boxes
+### Boxes (3)
 
-### Followbox
+### Followbox (7)
 
 ref
 ---
