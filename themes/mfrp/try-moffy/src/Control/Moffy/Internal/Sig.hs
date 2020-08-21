@@ -15,12 +15,13 @@ module Control.Moffy.Internal.Sig (
 
 import Prelude hiding (repeat, break, until)
 
-import Control.Arrow (first, (***))
-import Control.Monad.Freer.Par (pattern Pure, pattern (:>>=))
+import Control.Arrow (first, (>>>), (***))
+import Control.Monad.Freer.Par (pattern Pure, pattern (:=<<))
 import Control.Moffy.Internal.Sig.Type (
 	Sig(..), ISig(..), isig,
 	emit, emitAll, waitFor, repeat, res, ires, hold )
-import Control.Moffy.Internal.React (Firstable, Adjustable, Updatable, adjust, par)
+import Control.Moffy.Internal.React (
+	Firstable, Adjustable, Updatable, adjust, par )
 import Control.Moffy.Internal.React.Type (React, Rct(..))
 import Data.Type.Set ((:+:))
 import Data.Type.Flip (Flip(..), (<$%>), (<*%>))
@@ -29,6 +30,8 @@ import Data.OneOrMore (Mergeable)
 ---------------------------------------------------------------------------
 
 -- * FLIP APPLIICATIVE
+--	+ INSTANCE
+--	+ APP AND IAPP
 -- * PARALLEL
 --	+ AT
 --	+ BREAK AND UNTIL
@@ -36,7 +39,7 @@ import Data.OneOrMore (Mergeable)
 -- * COPIES
 --	+ SPAWN
 --	+ PAR LIST
--- * BASIC
+-- * BASIC COMBINATOR
 --	+ ADJUST
 --	+ PAIRS
 --	+ PAUSE
@@ -94,13 +97,14 @@ at :: Firstable es es' (ISig s (es :+: es') a r) r' =>
 (adjustSig -> Sig l) `at` (adjust -> r) = (l `par` r) >>= \case
 	(Pure l', r') -> (first Just <$>) <$> l' `iat` r'
 	(_, Pure y) -> pure $ Right (Nothing, y)
-	(_ :>>= _, _ :>>= _) -> error "never occur"
+	(_ :=<< _, _ :=<< _) -> error "never occur"
 
 iat :: (Updatable (ISig s es a r) r', Mergeable es es es) =>
 	ISig s es a r -> React s es r' -> React s es (Either r (a, r'))
 l `iat` r = (<$> ires (l `ipause` r)) \case
-	(End x, _) -> Left x; (h :| _, r') -> case r' of
-		Pure y -> Right (h, y); _ :>>= _ -> error "never occur"
+	(End x, _) -> Left x
+	(h :| _, Pure y) -> Right (h, y)
+	(_ :| _, _ :=<< _) -> error "never occur"
 
 -- BREAK AND UNTIL
 
@@ -109,11 +113,12 @@ infixl 7 `break`, `until`
 break :: Firstable es es' (ISig s (es :+: es') a r) r' =>
 	Sig s es a r -> React s es' r' ->
 	Sig s (es :+: es') a (Either r (Maybe a, r'))
-(adjustSig -> l) `break` (adjust -> r) = (<$> l `pause` r) \case
-	(Sig (Pure (End x)), _) -> Left x
-	(Sig (Await _ :>>= _), Pure r') -> Right (Nothing, r')
-	(Sig (Pure (h :| _)), Pure r') -> Right (Just h, r')
-	_ -> error "never occur"
+(adjustSig -> l) `break` (adjust -> r) = (<$> l `pause` r)
+	$ first unSig >>> \case
+		(Pure (End x), _) -> Left x
+		(_ :=<< Await _, Pure r') -> Right (Nothing, r')
+		(Pure (h :| _), Pure r') -> Right (Just h, r')
+		_ -> error "never occur"
 
 until :: Firstable es es' (ISig s (es :+: es') a r) r' =>
 	Sig s es a r -> React s es' r' ->
@@ -134,7 +139,7 @@ indexBy ::
 	Sig s (es :+: es') a (Either r (Maybe a, r'))
 (adjustSig -> l) `indexBy` (adjustSig -> r) = l `indexBy_` r
 
-indexBy_ :: (Updatable (ISig s es a r) (ISig s es b r'), Mergeable es es es ) =>
+indexBy_ :: (Updatable (ISig s es a r) (ISig s es b r'), Mergeable es es es) =>
 	Sig s es a r -> Sig s es b r' -> Sig s es a (Either r (Maybe a, r'))
 l `indexBy_` Sig r = waitFor (res $ l `pause` r) >>= \case
 	(Sig (Pure l'), r') -> (first Just <$>) <$> l' `iindexBy` Sig r'
@@ -172,7 +177,7 @@ iparList = isig (pure . ([] ,)) $ go . ((: []) <$>) . ((: []) <$%>) where
 		(s', Pure (h :| t)) -> go (h `cons` s') t
 		(s', Pure (End y)) -> (, y) <$> emitAll s'
 		(End x, r') -> emit [] >> ((x ++) `first`) <$> parList (Sig r')
-		(_ :| _, _ :>>= _) -> error "never occur"
+		(_ :| _, _ :=<< _) -> error "never occur"
 
 cons :: Mergeable es es es =>
 	ISig s es a r -> ISig s es [a] [r] -> ISig s es [a] [r]

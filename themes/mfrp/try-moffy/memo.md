@@ -193,36 +193,44 @@ Control.Moffy.Handle.ThreadId
 			* [x] Copies
 	+ [x] imports
 * [ ] Control.Moffy.Internal.Sig
-	+ [ ] API
+	+ [x] API
 		- [x] Adjust
-		- [ ] Parallel
+		- [x] Parallel
 			* [x] at
-			* [ ] break
-			* [ ] until
-			* [ ] indexBy
-		- [ ] Copies
-			* [ ] spawn
-			* [ ] parList
-		- [ ] Orphan instances
-			* [ ] Applicative (Flip (ISig s es) r)
-			* [ ] Applicative (Flip (Sig s es) r)
-	+ [ ] imports
-	+ [ ] structure
+			* [x] break
+			* [x] until
+			* [x] indexBy
+		- [x] Copies
+			* [x] spawn
+			* [x] parList
+		- [x] Orphan instances
+			* [x] Applicative (Flip (ISig s es) r)
+			* [x] Applicative (Flip (Sig s es) r)
+	+ [x] extension
+	+ [x] imports
+	+ [x] structure
 	+ [ ] body
-		- [ ] FLIP APPLICATIVE
-			* [ ] INSTANCE
-			* [ ] APP AND IAPP
-				+ [ ] function app
-				+ [ ] function exposeBoth
-				+ [ ] function iapp
-		- [ ] PARALLEL
-			* [ ] AT
-			* [ ] BREAK AND UNTIL
-			* [ ] INDEX BY
+		- [x] FLIP APPLICATIVE
+			* [x] INSTANCE
+			* [x] APP AND IAPP
+				+ [x] function app
+				+ [x] function exposeBoth
+				+ [x] function iapp
+		- [x] PARALLEL
+			* [x] AT
+				+ [x] function at
+				+ [x] function iat
+			* [x] BREAK AND UNTIL
+				+ [x] function break
+				+ [x] function until
+			* [x] INDEX BY
+				+ [x] function indexBy
+				+ [x] function indexBy_
+				+ [x] function iindexBy
 		- [ ] COPIES
 			* [ ] SPAWN
 			* [ ] PAR LIST
-		- [ ] BASIC
+		- [ ] BASIC COMBINATOR
 			* [ ] ADJUST
 			* [ ] PAIRS
 			* [ ] PAUSE
