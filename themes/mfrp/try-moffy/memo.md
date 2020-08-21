@@ -75,6 +75,7 @@ todo
 	+ [x] remove first
 	+ [x] rename first' to first
 * [ ] refactor Control.Moffy.Internal.React
+* [ ] refactor Control.Moffy.Internal.Sig
 * [ ] check module hierarchy
 	+ [x] Moffy
 	+ [x] Moffy library
@@ -190,40 +191,40 @@ Control.Moffy.Handle.ThreadId
 				+ [x] indexBy
 			* [x] Copies
 	+ [x] imports
-* [x] Control.Moffy.Internal.Sig
-	+ [x] API
-		- [x] Adjust
-		- [x] Parallel
-			* [x] at
-			* [x] break
-			* [x] until
-			* [x] indexBy
-		- [x] Copies
-			* [x] spawn
-			* [x] parList
-		- [x] Orphan instances
-			* [x] Applicative (Flip (ISig s es) r)
-			* [x] Applicative (Flip (Sig s es) r)
-	+ [x] imports
-	+ [x] structure
-	+ [x] body
-		- [x] FLIP APPLICATIVE
-			* [x] INSTANCE
-			* [x] APP AND IAPP
-				+ [x] function app
-				+ [x] function exposeBoth
-				+ [x] function iapp
-		- [x] PARALLEL
-			* [x] AT
-			* [x] BREAK AND UNTIL
-			* [x] INDEX BY
-		- [x] COPIES
-			* [x] SPAWN
-			* [x] PAR LIST
-		- [x] BASIC
-			* [x] ADJUST
-			* [x] PAIRS
-			* [x] PAUSE
+* [ ] Control.Moffy.Internal.Sig
+	+ [ ] API
+		- [ ] Adjust
+		- [ ] Parallel
+			* [ ] at
+			* [ ] break
+			* [ ] until
+			* [ ] indexBy
+		- [ ] Copies
+			* [ ] spawn
+			* [ ] parList
+		- [ ] Orphan instances
+			* [ ] Applicative (Flip (ISig s es) r)
+			* [ ] Applicative (Flip (Sig s es) r)
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
+		- [ ] FLIP APPLICATIVE
+			* [ ] INSTANCE
+			* [ ] APP AND IAPP
+				+ [ ] function app
+				+ [ ] function exposeBoth
+				+ [ ] function iapp
+		- [ ] PARALLEL
+			* [ ] AT
+			* [ ] BREAK AND UNTIL
+			* [ ] INDEX BY
+		- [ ] COPIES
+			* [ ] SPAWN
+			* [ ] PAR LIST
+		- [ ] BASIC
+			* [ ] ADJUST
+			* [ ] PAIRS
+			* [ ] PAUSE
 * [x] Control.Moffy.Internal.Sig.Type
 	+ [x] API
 		- [x] Type
@@ -252,26 +253,28 @@ Control.Moffy.Handle.ThreadId
 		- [x] FUNCTION
 			* [x] BASIC
 			* [x] PRACTICAL
-* [x] Control.Moffy.Internal.React
+* [ ] Control.Moffy.Internal.React
 	+ [x] API
 		- [x] Class
-		- [x] Constraint
-			* [x] Firstable
 			* [x] Adjustable
+			* [x] Updatetable
+		- [x] Constraint Synonym
+			* [x] Firstable
+			* [x] CollapsableOccurred
 		- [x] Function
 			* [x] first
 			* [x] adjust
 			* [x] par
-	+ [x] imports
-	+ [x] structure
-	+ [x] body
-		- [x] FIRST
-		- [x] ADJUST
-		- [x] PAR
-		- [x] UPDATE
-			* [x] class
-			* [x] instance a a
-			* [x] instance a b
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
+		- [ ] FIRST
+		- [ ] ADJUST
+		- [ ] PAR
+		- [ ] UPDATE
+			* [ ] class
+			* [ ] instance a a
+			* [ ] instance a b
 * [x] Control.Moffy.Internal.React.Type
 	+ [x] API
 		- [x] React

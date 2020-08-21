@@ -20,7 +20,7 @@ import Control.Monad.Freer.Par (pattern Pure, pattern (:>>=))
 import Control.Moffy.Internal.Sig.Type (
 	Sig(..), ISig(..), isig,
 	emit, emitAll, waitFor, repeat, res, ires, hold )
-import Control.Moffy.Internal.React (Firstable, Adjustable, Update, adjust, par)
+import Control.Moffy.Internal.React (Firstable, Adjustable, Updatable, adjust, par)
 import Control.Moffy.Internal.React.Type (React, Rct(..))
 import Data.Type.Set ((:+:))
 import Data.Type.Flip (Flip(..), (<$%>), (<*%>))
@@ -64,8 +64,8 @@ app :: (Mergeable es es es, Semigroup r) =>
 mf `app` mx = emitAll . uncurry (<*%>) =<< waitFor (mf `exposeBoth` mx)
 
 exposeBoth :: (
-	Update (ISig s es a r) (ISig s es b r'),
-	Update (ISig s es b r') (ISig s es a r), Mergeable es es es ) =>
+	Updatable (ISig s es a r) (ISig s es b r'),
+	Updatable (ISig s es b r') (ISig s es a r), Mergeable es es es ) =>
 	Sig s es a r -> Sig s es b r' ->
 	React s es (ISig s es a r, ISig s es b r')
 l `exposeBoth` Sig r = do
@@ -96,7 +96,7 @@ at :: Firstable es es' (ISig s (es :+: es') a r) r' =>
 	(_, Pure y) -> pure $ Right (Nothing, y)
 	(_ :>>= _, _ :>>= _) -> error "never occur"
 
-iat :: (Update (ISig s es a r) r', Mergeable es es es) =>
+iat :: (Updatable (ISig s es a r) r', Mergeable es es es) =>
 	ISig s es a r -> React s es r' -> React s es (Either r (a, r'))
 l `iat` r = (<$> ires (l `ipause` r)) \case
 	(End x, _) -> Left x; (h :| _, r') -> case r' of
@@ -134,7 +134,7 @@ indexBy ::
 	Sig s (es :+: es') a (Either r (Maybe a, r'))
 (adjustSig -> l) `indexBy` (adjustSig -> r) = l `indexBy_` r
 
-indexBy_ :: (Update (ISig s es a r) (ISig s es b r'), Mergeable es es es ) =>
+indexBy_ :: (Updatable (ISig s es a r) (ISig s es b r'), Mergeable es es es ) =>
 	Sig s es a r -> Sig s es b r' -> Sig s es a (Either r (Maybe a, r'))
 l `indexBy_` Sig r = waitFor (res $ l `pause` r) >>= \case
 	(Sig (Pure l'), r') -> (first Just <$>) <$> l' `iindexBy` Sig r'
@@ -142,7 +142,7 @@ l `indexBy_` Sig r = waitFor (res $ l `pause` r) >>= \case
 	(_, Pure (End y)) -> pure $ Right (Nothing, y)
 	_ -> error "never occur"
 
-iindexBy :: (Update (ISig s es a r) (ISig s es b r'), Mergeable es es es) =>
+iindexBy :: (Updatable (ISig s es a r) (ISig s es b r'), Mergeable es es es) =>
 	ISig s es a r -> Sig s es b r' -> Sig s es a (Either r (a, r'))
 l `iindexBy` Sig r = waitFor (ires $ l `ipause` r) >>= \case
 	(End x, _) -> pure $ Left x
@@ -193,7 +193,7 @@ adjustISig = isig End \h -> (h :|) . adjustSig
 
 -- PAIRS
 
-ipairs :: (Update (ISig s es a r) (ISig s es b r'), Mergeable es es es) =>
+ipairs :: (Updatable (ISig s es a r) (ISig s es b r'), Mergeable es es es) =>
 	ISig s es a r -> ISig s es b r' ->
 	ISig s es (a, b) (ISig s es a r, ISig s es b r')
 l@(End _) `ipairs` r = pure (l, r)
@@ -204,7 +204,7 @@ l `ipairs` r@(End _) = pure (l, r)
 
 -- PAUSE
 
-pause :: (Update (ISig s es a r) r', Mergeable es es es) =>
+pause :: (Updatable (ISig s es a r) r', Mergeable es es es) =>
 	Sig s es a r -> React s es r' ->
 	Sig s es a (Sig s es a r, React s es r')
 Sig l `pause` r = waitFor (l `par` r) >>= \case
@@ -212,7 +212,7 @@ Sig l `pause` r = waitFor (l `par` r) >>= \case
 	(l', r'@(Pure _)) -> pure (Sig l', r')
 	_ -> error "never occur"
 
-ipause :: (Update (ISig s es a r) r', Mergeable es es es) =>
+ipause :: (Updatable (ISig s es a r) r', Mergeable es es es) =>
 	ISig s es a r -> React s es r' ->
 	ISig s es a (ISig s es a r, React s es r')
 l@(End _) `ipause` r = pure (l, r)
