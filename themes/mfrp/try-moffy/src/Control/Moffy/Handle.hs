@@ -15,7 +15,7 @@ module Control.Moffy.Handle (
 	retry, expand, before, merge,
 	-- ** With State
 	-- *** Type
-	HandleSt, HandleSt', liftHandle, liftHandle', St, liftSt,
+	HandleSt, HandleSt', St, liftHandle, liftHandle', liftSt,
 	-- *** Composer
 	retrySt, expandSt, beforeSt, mergeSt,
 	-- ** With Input and Output
