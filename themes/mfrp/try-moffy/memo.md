@@ -75,9 +75,10 @@ todo
 	+ [x] remove first
 	+ [x] rename first' to first
 * [x] refactor Control.Moffy.Internal.React
-* [ ] refactor Control.Moffy.Internal.Sig
+* [x] refactor Control.Moffy.Internal.Sig
 * [ ] refactor Control.Moffy.Internal.React.Type
-	+ [ ] move constraint synonym FooOccurred to here
+	+ [x] move constraint synonym FooOccurred to here
+* [ ] refactor Control.Moffy.Handle
 * [ ] check module hierarchy
 	+ [x] Moffy
 	+ [x] Moffy library

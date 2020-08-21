@@ -26,9 +26,10 @@ module Control.Moffy.Handle (
 
 import Control.Arrow (first)
 import Control.Moffy.Internal.React.Type (
-	Handle, HandleSt, liftHandle, St, liftSt, EvReqs, EvOccs, Occurred )
-import Data.Type.Set ((:+:), (:$:))
-import Data.OneOrMore (Expandable, Collapsable, Mergeable)
+	Handle, HandleSt, liftHandle, St, liftSt, EvReqs, EvOccs,
+	ExpandableOccurred, MergeableOccurred )
+import Data.Type.Set ((:+:))
+import Data.OneOrMore (Collapsable)
 
 import qualified Data.OneOrMore as OOM (expand, collapse, merge')
 
@@ -50,9 +51,6 @@ import qualified Data.OneOrMore as OOM (expand, collapse, merge')
 ---------------------------------------------------------------------------
 
 type ExpandableHandle es es' = (ExpandableOccurred es es', Collapsable es' es)
-type ExpandableOccurred es es' = Expandable (Occurred :$: es) (Occurred :$: es')
-type MergeableOccurred es es' mrg =
-	Mergeable (Occurred :$: es) (Occurred :$: es') (Occurred :$: mrg)
 
 ---------------------------------------------------------------------------
 -- PLAIN

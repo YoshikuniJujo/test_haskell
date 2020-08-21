@@ -5,7 +5,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Internal.React.Type (
-	CollapsableOccurred,
+	ExpandableOccurred, CollapsableOccurred, MergeableOccurred,
 	-- * React
 	-- ** Type
 	React, Rct(..), Request(..), EvReqs, EvOccs,
@@ -24,7 +24,8 @@ import Control.Monad.Freer.Par.TaggableFunction (TaggableFun)
 import Data.Kind (Type)
 import Data.Type.Set (Set, Numbered, Singleton, (:$:))
 import Data.OneOrMore (
-	OneOrMore, Selectable, pattern Singleton, unSingleton, Collapsable )
+	OneOrMore, Selectable, pattern Singleton, unSingleton,
+	Expandable, Collapsable, Mergeable )
 import Data.Bits (setBit)
 import Numeric.Natural (Natural)
 
@@ -41,8 +42,13 @@ import Numeric.Natural (Natural)
 -- FOO
 ---------------------------------------------------------------------------
 
+type ExpandableOccurred es es' = Expandable (Occurred :$: es) (Occurred :$: es')
+
 type CollapsableOccurred es es' =
 	Collapsable (Occurred :$: es) (Occurred :$: es')
+
+type MergeableOccurred es es' mrg =
+	Mergeable (Occurred :$: es) (Occurred :$: es') (Occurred :$: mrg)
 
 ---------------------------------------------------------------------------
 -- REACT
