@@ -191,10 +191,10 @@ h `cons` t = uncurry (:) <$%> h `ipairs` t >>= \(h', t') ->
 -- ADJUST
 
 adjustSig :: Adjustable es es' => Sig s es a r -> Sig s es' a r
-adjustSig (Sig r) = Sig $ adjustISig <$> adjust r
+adjustSig = Sig . (adjustISig <$>) . adjust . unSig
 
 adjustISig :: Adjustable es es' => ISig s es a r -> ISig s es' a r
-adjustISig = isig End \h -> (h :|) . adjustSig
+adjustISig = isig End $ (adjustSig >>>) . (:|)
 
 -- PAIRS
 
@@ -205,7 +205,7 @@ l@(End _) `ipairs` r = pure (l, r)
 l `ipairs` r@(End _) = pure (l, r)
 (hl :| Sig tl) `ipairs` (hr :| Sig tr) = ((hl, hr) :|) . Sig
 	$ uncurry ipairs . ((hl ?:|) *** (hr ?:|)) <$> tl `par` tr
-	where (?:|) h = \case Pure t -> t; t -> h :| Sig t
+	where (?:|) h = \case Pure i -> i; t -> h :| Sig t
 
 -- PAUSE
 
