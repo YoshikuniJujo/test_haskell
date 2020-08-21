@@ -1,6 +1,7 @@
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE TypeOperators, ConstraintKinds #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -26,12 +27,12 @@ module Control.Moffy.Handle (
 
 import Control.Arrow (first)
 import Control.Moffy.Internal.React.Type (
-	Handle, HandleSt, liftHandle, St, liftSt, EvReqs, EvOccs,
-	ExpandableOccurred, MergeableOccurred )
+	ExpandableOccurred, MergeableOccurred,
+	Handle, HandleSt, St, liftHandle, liftSt, EvReqs, EvOccs )
 import Data.Type.Set ((:+:))
-import Data.OneOrMore (Collapsable)
+import Data.OneOrMore (Collapsable, merge')
 
-import qualified Data.OneOrMore as OOM (expand, collapse, merge')
+import qualified Data.OneOrMore as OOM (expand, collapse)
 
 ---------------------------------------------------------------------------
 
@@ -89,7 +90,7 @@ merge :: (
 	ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es'),
 	MergeableOccurred es es' (es :+: es') ) =>
 	Handle' m es -> Handle' m es' -> Handle' m (es :+: es')
-((collapse -> l) `merge` (collapse -> r)) rqs = OOM.merge' <$> l rqs <*> r rqs
+((collapse -> l) `merge` (collapse -> r)) rqs = merge' <$> l rqs <*> r rqs
 
 ---------------------------------------------------------------------------
 -- WITH STATE
@@ -107,7 +108,7 @@ liftHandle' = (liftSt .)
 
 retrySt :: Monad m => HandleSt' st m es -> HandleSt st m es
 retrySt hdl rqs st = hdl rqs st >>= \(mo, st') ->
-	maybe (retrySt hdl rqs st') (pure . (, st')) mo
+	(retrySt hdl rqs st' `maybe` (pure . (, st'))) mo
 
 expandSt :: (Applicative m, ExpandableHandle es es') =>
 	HandleSt' st m es -> HandleSt' st m es'
@@ -120,7 +121,8 @@ beforeSt :: (
 l `beforeSt` r = beforeIo l pure r pure
 
 mergeSt :: (
-	Monad m, ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es'),
+	Monad m,
+	ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es'),
 	MergeableOccurred es es' (es :+: es') ) =>
 	HandleSt' st m es -> HandleSt' st m es' -> HandleSt' st m (es :+: es')
 l `mergeSt` r = mergeIo l pure r pure
@@ -134,10 +136,10 @@ l `mergeSt` r = mergeIo l pure r pure
 type HandleIo' i o m es = EvReqs es -> i -> m (Maybe (EvOccs es), o)
 
 pushInput :: (a -> HandleSt' st m es) -> HandleIo' (a, st) st m es
-pushInput hdl = uncurry . flip hdl
+pushInput = (uncurry .) . flip
 
 popInput :: HandleIo' (a, st) st m es -> a -> HandleSt' st m es
-popInput hdl = flip $ curry . hdl
+popInput = flip . (curry .)
 
 -- COMPOSER
 
@@ -156,7 +158,7 @@ beforeIo :: (
 	HandleIo' i x m es -> (i -> m x) ->
 	HandleIo' x o m es' -> (x -> m o) -> HandleIo' i o m (es :+: es')
 beforeIo l nhl r nhr rqs st = expandIo l nhl rqs st >>= \(mo, st') ->
-	maybe (expandIo r nhr rqs st') ((<$> nhr st') . (,) . Just) mo
+	(expandIo r nhr rqs st' `maybe` (((<$> nhr st')) . (,) . Just)) mo
 
 mergeIo :: (
 	Monad m,
@@ -165,4 +167,4 @@ mergeIo :: (
 	HandleIo' i x m es -> (i -> m x) ->
 	HandleIo' x o m es' -> (x -> m o) -> HandleIo' i o m (es :+: es')
 mergeIo l nhl r nhr rqs st = collapseIo l nhl rqs st >>= \(mo, st') ->
-	first (mo `OOM.merge'`) <$> collapseIo r nhr rqs st'
+	first (mo `merge'`) <$> collapseIo r nhr rqs st'

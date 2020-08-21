@@ -330,7 +330,7 @@ Control.Moffy.Handle.ThreadId
 		- [x] CONSTRAINT SYNONYM
 		- [x] HANDLE
 		- [x] THREAD ID
-* [ ] Control.Moffy.Handle
+* [x] Control.Moffy.Handle
 	+ [x] API
 		- [x] structure
 		- [x] Constraint
@@ -369,24 +369,38 @@ Control.Moffy.Handle.ThreadId
 					- [x] expandIo
 					- [x] beforeIo
 					- [x] mergeIo
-	+ [ ] extension
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
-		- [ ] CONSTRAINT
-		- [ ] PLAIN
-			* [ ] TYPE
-			* [ ] COMPOSER
-		- [ ] WITH STATE
-			* [ ] TYPE
-			* [ ] COMPOSER
-				+ [ ] retrySt
-				+ [ ] expandSt
-				+ [ ] beforeSt
-				+ [ ] mergeSt
-		- [ ] WITH INPUT AND OUTPUT
-			* [ ] TYPE
-			* [ ] COMPOSER
+	+ [x] extension
+	+ [x] imports
+	+ [x] structure
+	+ [x] body
+		- [x] CONSTRAINT
+		- [x] PLAIN
+			* [x] TYPE
+			* [x] COMPOSER
+				+ [x] retry
+				+ [x] collapse
+				+ [x] expand
+				+ [x] before
+				+ [x] merge
+		- [x] WITH STATE
+			* [x] TYPE
+				+ [x] type HandleSt'
+				+ [x] function liftHandle'
+			* [x] COMPOSER
+				+ [x] retrySt
+				+ [x] expandSt
+				+ [x] beforeSt
+				+ [x] mergeSt
+		- [x] WITH INPUT AND OUTPUT
+			* [x] TYPE
+				+ [x] type HandleIo'
+				+ [x] function pushInput
+				+ [x] function popInput
+			* [x] COMPOSER
+				+ [x] function collapseIo
+				+ [x] function expandIo
+				+ [x] function beforeIo
+				+ [x] function mregeIo
 * [x] Control.Moffy.Run
 	+ [x] API
 		- [x] Type
