@@ -302,29 +302,29 @@ Control.Moffy.Handle.ThreadId
 			* [x] instance a a
 			* [x] instance a b
 * [ ] Control.Moffy.Internal.React.Type
-	+ [ ] API
-		- [ ] React
-			* [ ] Type
-				+ [ ] type React
-				+ [ ] data Rct
-				+ [ ] class Request
-				+ [ ] type EvReqs
-				+ [ ] type EvOccs
-			* [ ] Never and Await
-				+ [ ] never
-				+ [ ] await
-				+ [ ] await'
-		- [ ] Handle
-			* [ ] type Handle
-			* [ ] type HandleSt
-			* [ ] function liftHandle
-		- [ ] St
-			* [ ] type St
-			* [ ] function liftSt
-		- [ ] ThreadId
-			* [ ] data ThreadId
-			* [ ] function rootThreadId
-			* [ ] react forkThreadId
+	+ [x] API
+		- [x] structure
+		- [x] Type React
+			* [x] type React
+			* [x] data Rct
+		- [x] Class Request
+		- [x] Type Synonym
+			* [x] type EvReqs
+			* [x] type EvOccs
+		- [x] Never and Await
+			* [x] never
+			* [x] await
+			* [x] await'
+		- [x] Handle
+			* [x] type Handle
+			* [x] type HandleSt
+			* [x] type St
+			* [x] function liftHandle
+			* [x] function liftSt
+		- [x] ThreadId
+			* [x] data ThreadId
+			* [x] function rootThreadId
+			* [x] react forkThreadId
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body

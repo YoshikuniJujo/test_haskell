@@ -5,16 +5,18 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Internal.React.Type (
+	-- * Type React
+	React, Rct(..),
+	-- * Class Request
+	Request(..),
+	-- * Type Synonym
+	EvReqs, EvOccs,
+	-- * Constraint Synonym
 	ExpandableOccurred, CollapsableOccurred, MergeableOccurred,
-	-- * React
-	-- ** Type
-	React, Rct(..), Request(..), EvReqs, EvOccs,
-	-- ** Never and Await
+	-- * Never and Await
 	never, await, await',
 	-- * Handle
-	Handle, HandleSt, liftHandle,
-	-- * St
-	St, liftSt,
+	Handle, HandleSt, St, liftHandle, liftSt,
 	-- * ThreadId
 	ThreadId, rootThreadId, forkThreadId ) where
 
