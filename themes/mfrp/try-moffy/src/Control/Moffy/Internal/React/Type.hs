@@ -1,9 +1,11 @@
 {-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE DataKinds, TypeOperators, ConstraintKinds #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Internal.React.Type (
+	CollapsableOccurred,
 	-- * React
 	-- ** Type
 	React, Rct(..), Request(..), EvReqs, EvOccs,
@@ -21,7 +23,8 @@ import Control.Monad.Freer.Par.FTCQueue (FTCQueue)
 import Control.Monad.Freer.Par.TaggableFunction (TaggableFun)
 import Data.Kind (Type)
 import Data.Type.Set (Set, Numbered, Singleton, (:$:))
-import Data.OneOrMore (OneOrMore, Selectable, pattern Singleton, unSingleton)
+import Data.OneOrMore (
+	OneOrMore, Selectable, pattern Singleton, unSingleton, Collapsable )
 import Data.Bits (setBit)
 import Numeric.Natural (Natural)
 
@@ -33,6 +36,13 @@ import Numeric.Natural (Natural)
 -- * HANDLE
 -- * ST
 -- * THREAD ID
+
+---------------------------------------------------------------------------
+-- FOO
+---------------------------------------------------------------------------
+
+type CollapsableOccurred es es' =
+	Collapsable (Occurred :$: es) (Occurred :$: es')
 
 ---------------------------------------------------------------------------
 -- REACT

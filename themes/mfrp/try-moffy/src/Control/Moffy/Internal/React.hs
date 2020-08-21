@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
-{-# LANGUAGE ScopedTypeVariables, PatternSynonyms, ViewPatterns #-}
-{-# LANGUAGE DataKinds, TypeOperators, ConstraintKinds #-}
-{-# LANGUAGE GADTs, TypeFamilies #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE TypeOperators, ConstraintKinds #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances,
 	UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -10,17 +10,17 @@ module Control.Moffy.Internal.React (
 	-- * Class
 	Adjustable, Updatable,
 	-- * Constraint Synonym
-	Firstable, CollapsableOccurred,
+	Firstable,
 	-- * Function
 	first, adjust, par) where
 
 import Control.Monad.Freer.Par (
 	pattern Pure, pattern (:=<<), (=<<<), app, appPar )
 import Control.Moffy.Internal.React.Type (
-	React, Rct(..), EvOccs, Occurred, ThreadId, forkThreadId, never )
-import Data.Type.Set ((:+:), (:$:))
-import Data.OneOrMore (
-	Expandable, Collapsable, Mergeable, expand, collapse, merge )
+	React, Rct(..), EvOccs, CollapsableOccurred,
+	ThreadId, forkThreadId, never )
+import Data.Type.Set ((:+:))
+import Data.OneOrMore (Expandable, Mergeable, expand, collapse, merge)
 import Data.Or (Or(..))
 
 ---------------------------------------------------------------------------
@@ -50,21 +50,18 @@ first :: Firstable es es' a b =>
 -- ADJUST
 ---------------------------------------------------------------------------
 
-class Adjustable es es' where
-	adjust :: React s es a -> React s es' a
-
+class Adjustable es es' where adjust :: React s es a -> React s es' a
 instance Adjustable es es where adjust = id
+instance {-# OVERLAPPABLE #-} (Expandable es es', CollapsableOccurred es' es) =>
+	Adjustable es es' where adjust = adj
 
-instance {-# OVERLAPPABLE #-} (Expandable es es', CollapsableOccurred es es') => Adjustable es es' where adjust = adjustOld
-
-type CollapsableOccurred es es' = Collapsable (Occurred :$: es') (Occurred :$: es)
-
-adjustOld :: (Expandable es es', CollapsableOccurred es es') => React s es a -> React s es' a
-adjustOld = \case
+adj :: (Expandable es es', CollapsableOccurred es' es) =>
+	React s es a -> React s es' a
+adj = \case
 	Pure x -> pure x; _ :=<< Never -> never
+	c :=<< GetThreadId -> adj . (c `app`) =<<< GetThreadId
 	r@(c :=<< Await e) ->
-		adjustOld . maybe r (c `app`) . collapse =<<< Await (expand e)
-	c :=<< GetThreadId -> adjustOld . (c `app`) =<<< GetThreadId
+		adj . maybe r (c `app`) . collapse =<<< Await (expand e)
 
 ---------------------------------------------------------------------------
 -- PAR
@@ -73,8 +70,8 @@ adjustOld = \case
 par :: (Updatable a b, Mergeable es es es) =>
 	React s es a -> React s es b -> React s es (React s es a, React s es b)
 l `par` r = case (l, r) of
-	(_ :=<< Never, _ :=<< Never) -> never
 	(Pure _, _) -> pure (l, r); (_, Pure _) -> pure (l, r)
+	(_ :=<< Never, _ :=<< Never) -> never
 	(_ :=<< Never, _) -> (never ,) . pure <$> r
 	(_, _ :=<< Never) -> (, never) . pure <$> l
 	(c :=<< GetThreadId, _) -> (`par` r) . app c . fst =<< forkThreadId
@@ -87,22 +84,21 @@ l `par` r = case (l, r) of
 ---------------------------------------------------------------------------
 
 class Updatable a b where
-	update ::
-		React s es a -> ThreadId -> React s es b -> ThreadId ->
+	update :: React s es a -> ThreadId -> React s es b -> ThreadId ->
 		EvOccs es -> (React s es a, React s es b)
 
 instance Updatable a a where
-	update (c :=<< GetThreadId) t r u b = update (c `app` t) t r u b
-	update l t (c' :=<< GetThreadId) u b = update l t (c' `app` u) u b
-	update l@(_ :=<< Never) _ (c' :=<< Await _) _ b = (l, c' `app` b)
-	update (c :=<< Await _) _ r@(_ :=<< Never) _ b = (c `app` b, r)
-	update (c :=<< Await _) _ (c' :=<< Await _) _ b = appPar c c' b
+	update (c :=<< GetThreadId) t r u x = update (c `app` t) t r u x
+	update l t (c' :=<< GetThreadId) u x = update l t (c' `app` u) u x
+	update l@(_ :=<< Never) _ (c' :=<< Await _) _ x = (l, c' `app` x)
+	update (c :=<< Await _) _ r@(_ :=<< Never) _ x = (c `app` x, r)
+	update (c :=<< Await _) _ (c' :=<< Await _) _ x = appPar c c' x
 	update l _ r _ _ = (l, r)
 
 instance {-# OVERLAPPABLE #-} Updatable a b where
-	update (c :=<< GetThreadId) t r u b = update (c `app` t) t r u b
-	update l t (c' :=<< GetThreadId) u b = update l t (c' `app` u) u b
-	update l@(_ :=<< Never) _ (c' :=<< Await _) _ b = (l, c' `app` b)
-	update (c :=<< Await _) _ r@(_ :=<< Never) _ b = (c `app` b, r)
-	update (c :=<< Await _) _ (c' :=<< Await _) _ b = (c `app` b, c' `app` b)
+	update (c :=<< GetThreadId) t r u x = update (c `app` t) t r u x
+	update l t (c' :=<< GetThreadId) u x = update l t (c' `app` u) u x
+	update l@(_ :=<< Never) _ (c' :=<< Await _) _ x = (l, c' `app` x)
+	update (c :=<< Await _) _ r@(_ :=<< Never) _ x = (c `app` x, r)
+	update (c :=<< Await _) _ (c' :=<< Await _) _ x = (c `app` x, c' `app` x)
 	update l _ r _ _ = (l, r)

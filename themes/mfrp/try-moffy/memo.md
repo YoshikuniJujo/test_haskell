@@ -74,8 +74,10 @@ todo
 	+ [x] rename AdjustableAdjustable
 	+ [x] remove first
 	+ [x] rename first' to first
-* [ ] refactor Control.Moffy.Internal.React
+* [x] refactor Control.Moffy.Internal.React
 * [ ] refactor Control.Moffy.Internal.Sig
+* [ ] refactor Control.Moffy.Internal.React.Type
+	+ [ ] move constraint synonym FooOccurred to here
 * [ ] check module hierarchy
 	+ [x] Moffy
 	+ [x] Moffy library
@@ -101,7 +103,6 @@ todo
 	+ [x] Moffy library
 	+ [ ] Moffy base
 	+ [ ] Trials
-	+ [ ] Control.Moffy.Internal.React.Type
 	+ [ ] Control.Moffy.Handle
 * [ ] move time event to Moffy library
 * [ ] consider wheter or not to use MonadState
@@ -193,9 +194,9 @@ Control.Moffy.Handle.ThreadId
 	+ [x] imports
 * [ ] Control.Moffy.Internal.Sig
 	+ [ ] API
-		- [ ] Adjust
+		- [x] Adjust
 		- [ ] Parallel
-			* [ ] at
+			* [x] at
 			* [ ] break
 			* [ ] until
 			* [ ] indexBy
@@ -253,7 +254,7 @@ Control.Moffy.Handle.ThreadId
 		- [x] FUNCTION
 			* [x] BASIC
 			* [x] PRACTICAL
-* [ ] Control.Moffy.Internal.React
+* [x] Control.Moffy.Internal.React
 	+ [x] API
 		- [x] Class
 			* [x] Adjustable
@@ -265,49 +266,57 @@ Control.Moffy.Handle.ThreadId
 			* [x] first
 			* [x] adjust
 			* [x] par
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
-		- [ ] FIRST
-		- [ ] ADJUST
-		- [ ] PAR
-		- [ ] UPDATE
-			* [ ] class
-			* [ ] instance a a
-			* [ ] instance a b
-* [x] Control.Moffy.Internal.React.Type
-	+ [x] API
-		- [x] React
-			* [x] Type
-				+ [x] type React
-				+ [x] data Rct
-				+ [x] class Request
-				+ [x] type EvReqs
-				+ [x] type EvOccs
-			* [x] Never and Await
-				+ [x] never
-				+ [x] await
-				+ [x] await'
-		- [x] Handle
-			* [x] type Handle
-			* [x] type HandleSt
-			* [x] function liftHandle
-		- [x] St
-			* [x] type St
-			* [x] function liftSt
-		- [x] ThreadId
-			* [x] data ThreadId
-			* [x] function rootThreadId
-			* [x] react forkThreadId
+	+ [x] extension
 	+ [x] imports
 	+ [x] structure
 	+ [x] body
-		- [x] REACT
-			* [x] TYPE
-			* [x] NEVER AND AWAIT
-		- [x] HANDLE
-		- [x] ST
-		- [x] THREAD ID
+		- [x] FIRST
+			* [x] constraint synonym Firstable
+			* [x] function first
+		- [x] ADJUST
+			* [x] structure
+			* [x] rename adjustOld to adj
+			* [x] class Adjustable
+			* [x] instance Adjustable
+			* [x] function adj
+		- [x] PAR
+		- [x] UPDATE
+			* [x] class
+			* [x] instance a a
+			* [x] instance a b
+* [ ] Control.Moffy.Internal.React.Type
+	+ [ ] API
+		- [ ] React
+			* [ ] Type
+				+ [ ] type React
+				+ [ ] data Rct
+				+ [ ] class Request
+				+ [ ] type EvReqs
+				+ [ ] type EvOccs
+			* [ ] Never and Await
+				+ [ ] never
+				+ [ ] await
+				+ [ ] await'
+		- [ ] Handle
+			* [ ] type Handle
+			* [ ] type HandleSt
+			* [ ] function liftHandle
+		- [ ] St
+			* [ ] type St
+			* [ ] function liftSt
+		- [ ] ThreadId
+			* [ ] data ThreadId
+			* [ ] function rootThreadId
+			* [ ] react forkThreadId
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
+		- [ ] REACT
+			* [ ] TYPE
+			* [ ] NEVER AND AWAIT
+		- [ ] HANDLE
+		- [ ] ST
+		- [ ] THREAD ID
 * [x] Control.Moffy.Handle
 	+ [x] API
 		- [x] Constraint
