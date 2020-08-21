@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
+{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
