@@ -76,7 +76,7 @@ todo
 	+ [x] rename first' to first
 * [x] refactor Control.Moffy.Internal.React
 * [x] refactor Control.Moffy.Internal.Sig
-* [ ] refactor Control.Moffy.Internal.React.Type
+* [x] refactor Control.Moffy.Internal.React.Type
 	+ [x] move constraint synonym FooOccurred to here
 * [ ] refactor Control.Moffy.Handle
 * [ ] check module hierarchy
@@ -99,16 +99,11 @@ todo
 	+ [ ] Data.Type.Set
 		- [ ] numbered use fixed 64
 		- [ ] others
-	+ [ ] Control.Moffy.Handle
 	+ [x] Moffy
 	+ [x] Moffy library
 	+ [ ] Moffy base
 	+ [ ] Trials
-	+ [ ] Control.Moffy.Handle
 * [ ] move time event to Moffy library
-* [ ] consider wheter or not to use MonadState
-	+ [ ] refactor Control.Moffy.Handle.Lock
-	+ [ ] others
 * [ ] separate
 	+ [ ] Trial
 	+ [ ] Data.OneOrMore (with Data.Type.Set)
@@ -301,7 +296,7 @@ Control.Moffy.Handle.ThreadId
 			* [x] class
 			* [x] instance a a
 			* [x] instance a b
-* [ ] Control.Moffy.Internal.React.Type
+* [x] Control.Moffy.Internal.React.Type
 	+ [x] API
 		- [x] structure
 		- [x] Type React
@@ -325,71 +320,72 @@ Control.Moffy.Handle.ThreadId
 			* [x] data ThreadId
 			* [x] function rootThreadId
 			* [x] react forkThreadId
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
-		- [ ] REACT
-			* [ ] TYPE
-			* [ ] NEVER AND AWAIT
-		- [ ] HANDLE
-		- [ ] ST
-		- [ ] THREAD ID
-* [x] Control.Moffy.Handle
-	+ [x] API
-		- [x] Constraint
-			* [x] ExpandableHandle
-			* [x] ExpandableOccurred
-			* [x] MergeableOccurred
-		- [x] Handle and Function
-			* [x] Plain
-				+ [x] Type
-					- [x] Handle
-					- [x] Handle'
-				+ [x] Composer
-					- [x] retry
-					- [x] expand
-					- [x] before
-					- [x] merge
-			* [x] With State
-				+ [x] Type
-					- [x] HandleSt
-					- [x] HandleSt'
-					- [x] liftHandle
-					- [x] liftHandle'
-					- [x] St
-					- [x] liftSt
-				+ [x] Composer
-					- [x] retrySt
-					- [x] expandSt
-					- [x] beforeSt
-					- [x] mergeSt
-			* [x] With Input and Output
-				+ [x] Type
-					- [x] HelloIo'
-					- [x] pushInput
-					- [x] popInput
-				+ [x] Composer
-					- [x] expandIo
-					- [x] beforeIo
-					- [x] mergeIo
 	+ [x] extension
 	+ [x] imports
 	+ [x] structure
 	+ [x] body
-		- [x] CONSTRAINT
-		- [x] PLAIN
+		- [x] REACT
 			* [x] TYPE
-			* [x] COMPOSER
-		- [x] WITH STATE
-			* [x] TYPE
-			* [x] COMPOSER
-				+ [x] retrySt
-				+ [x] expandSt
-				+ [x] beforeSt
-				+ [x] mergeSt
-		- [x] WITH INPUT AND OUTPUT
-			* [x] TYPE
-			* [x] COMPOSER
+			* [x] NEVER AND AWAIT
+		- [x] CONSTRAINT SYNONYM
+		- [x] HANDLE
+		- [x] THREAD ID
+* [ ] Control.Moffy.Handle
+	+ [ ] API
+		- [ ] Constraint
+			* [ ] ExpandableHandle
+			* [ ] ExpandableOccurred
+			* [ ] MergeableOccurred
+		- [ ] Handle and Function
+			* [ ] Plain
+				+ [ ] Type
+					- [ ] Handle
+					- [ ] Handle'
+				+ [ ] Composer
+					- [ ] retry
+					- [ ] expand
+					- [ ] before
+					- [ ] merge
+			* [ ] With State
+				+ [ ] Type
+					- [ ] HandleSt
+					- [ ] HandleSt'
+					- [ ] liftHandle
+					- [ ] liftHandle'
+					- [ ] St
+					- [ ] liftSt
+				+ [ ] Composer
+					- [ ] retrySt
+					- [ ] expandSt
+					- [ ] beforeSt
+					- [ ] mergeSt
+			* [ ] With Input and Output
+				+ [ ] Type
+					- [ ] HelloIo'
+					- [ ] pushInput
+					- [ ] popInput
+				+ [ ] Composer
+					- [ ] expandIo
+					- [ ] beforeIo
+					- [ ] mergeIo
+	+ [ ] extension
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
+		- [ ] CONSTRAINT
+		- [ ] PLAIN
+			* [ ] TYPE
+			* [ ] COMPOSER
+		- [ ] WITH STATE
+			* [ ] TYPE
+			* [ ] COMPOSER
+				+ [ ] retrySt
+				+ [ ] expandSt
+				+ [ ] beforeSt
+				+ [ ] mergeSt
+		- [ ] WITH INPUT AND OUTPUT
+			* [ ] TYPE
+			* [ ] COMPOSER
 * [x] Control.Moffy.Run
 	+ [x] API
 		- [x] Type

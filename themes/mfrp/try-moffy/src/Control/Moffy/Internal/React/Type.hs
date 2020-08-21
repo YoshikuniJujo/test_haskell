@@ -36,21 +36,9 @@ import Numeric.Natural (Natural)
 -- * REACT
 --	+ TYPE
 --	+ NEVER AND AWAIT
+-- * CONSTRAINT SYNONYM
 -- * HANDLE
--- * ST
 -- * THREAD ID
-
----------------------------------------------------------------------------
--- FOO
----------------------------------------------------------------------------
-
-type ExpandableOccurred es es' = Expandable (Occurred :$: es) (Occurred :$: es')
-
-type CollapsableOccurred es es' =
-	Collapsable (Occurred :$: es) (Occurred :$: es')
-
-type MergeableOccurred es es' mrg =
-	Mergeable (Occurred :$: es) (Occurred :$: es') (Occurred :$: mrg)
 
 ---------------------------------------------------------------------------
 -- REACT
@@ -64,10 +52,10 @@ data Rct es r where
 	Never :: Rct es r; GetThreadId :: Rct es ThreadId
 	Await :: EvReqs es -> Rct es (EvOccs es)
 
+class (Numbered e, Selectable e) => Request e where data Occurred e
+
 type EvReqs (es :: Set Type) = OneOrMore es
 type EvOccs (es :: Set Type) = OneOrMore (Occurred :$: es)
-
-class (Numbered e, Selectable e) => Request e where data Occurred e
 
 -- NEVER AND AWAIT
 
@@ -81,20 +69,27 @@ await' :: e -> (ThreadId -> Occurred e -> r) -> React s (Singleton e) r
 await' rq f = await rq . f =<<< GetThreadId
 
 ---------------------------------------------------------------------------
+-- CONSTRAINT SYNONYM
+---------------------------------------------------------------------------
+
+type ExpandableOccurred es es' = Expandable (Occurred :$: es) (Occurred :$: es')
+
+type CollapsableOccurred es es' =
+	Collapsable (Occurred :$: es) (Occurred :$: es')
+
+type MergeableOccurred es es' mrg =
+	Mergeable (Occurred :$: es) (Occurred :$: es') (Occurred :$: mrg)
+
+---------------------------------------------------------------------------
 -- HANDLE
 ---------------------------------------------------------------------------
 
 type Handle m es = EvReqs es -> m (EvOccs es)
 type HandleSt st m es = EvReqs es -> St st m (EvOccs es)
+type St st m a = st -> m (a, st)
 
 liftHandle :: Functor m => Handle m es -> HandleSt st m es
 liftHandle = (liftSt .)
-
----------------------------------------------------------------------------
--- ST
----------------------------------------------------------------------------
-
-type St st m a = st -> m (a, st)
 
 liftSt :: Functor m => m r -> St st m r
 liftSt m = (<$> m) . flip (,)
