@@ -78,7 +78,7 @@ todo
 * [x] refactor Control.Moffy.Internal.Sig
 * [x] refactor Control.Moffy.Internal.React.Type
 	+ [x] move constraint synonym FooOccurred to here
-* [ ] refactor Control.Moffy.Handle
+* [x] refactor Control.Moffy.Handle
 * [ ] check module hierarchy
 	+ [x] Moffy
 	+ [x] Moffy library
@@ -976,6 +976,10 @@ Trials (20)
 
 * [x] use showButton
 * [x] remove old functions
+
+##### addition
+
+* [ ] add nest first trial
 
 ##### refactoring
 
