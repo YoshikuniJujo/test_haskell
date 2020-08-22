@@ -79,6 +79,7 @@ todo
 * [x] refactor Control.Moffy.Internal.React.Type
 	+ [x] move constraint synonym FooOccurred to here
 * [x] refactor Control.Moffy.Handle
+* [ ] separate WithThreadId and WithNoThreadId
 * [ ] check module hierarchy
 	+ [x] Moffy
 	+ [x] Moffy library
