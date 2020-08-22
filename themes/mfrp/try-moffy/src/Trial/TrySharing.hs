@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.TrySharing where
@@ -28,6 +29,19 @@ runShowButton2 = runMouseEv $ showButton `first` showButton
 runSharingShowButton2 :: IO (Or String String)
 runSharingShowButton2 =
 	runTagged $ tag showButton >>= \sb -> pure . runMouseEv $ sb `first` sb
+
+runSharingShowButton4 :: IO (Or (Or String String) (Or String String))
+runSharingShowButton4 = runTagged do
+	sb <- tag showButton
+	sb' <- tag $ sb `first` sb
+	pure . runMouseEv $ sb' `first` sb'
+
+runSharingShowButton8 :: IO (Or (Or (Or String String) (Or String String)) (Or (Or String String) (Or String String)))
+runSharingShowButton8 = runTagged do
+	sb <- tag showButton
+	sb' <- tag $ sb `first` sb
+	sb'' <- tag $ sb' `first` sb'
+	pure . runMouseEv $ sb'' `first` sb''
 
 runSharingShowButton2Button2 :: IO (Or (String, String) (String, String))
 runSharingShowButton2Button2 = runTagged $ do

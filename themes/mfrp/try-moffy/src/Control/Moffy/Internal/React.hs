@@ -19,6 +19,7 @@ import Control.Monad.Freer.Par (
 import Control.Moffy.Internal.React.Type (
 	React, Rct(..), EvOccs, CollapsableOccurred,
 	ThreadId, forkThreadId, never )
+--	ThreadId, rootThreadId, never )
 import Data.Type.Set ((:+:))
 import Data.OneOrMore (Expandable, Mergeable, expand, collapse, merge)
 import Data.Or (Or(..))
@@ -69,14 +70,19 @@ adj = \case
 
 par :: (Updatable a b, Mergeable es es es) =>
 	React s es a -> React s es b -> React s es (React s es a, React s es b)
-l `par` r = case (l, r) of
+par = par' forkThreadId
+-- par = par' $ pure (rootThreadId, rootThreadId)
+
+par' :: (Updatable a b, Mergeable es es es) =>
+	React s es (ThreadId, ThreadId) -> React s es a -> React s es b -> React s es (React s es a, React s es b)
+par' ft l r = case (l, r) of
 	(Pure _, _) -> pure (l, r); (_, Pure _) -> pure (l, r)
 	(_ :=<< Never, _ :=<< Never) -> never
 	(_ :=<< Never, _) -> (never ,) . pure <$> r
 	(_, _ :=<< Never) -> (, never) . pure <$> l
-	(c :=<< GetThreadId, _) -> (`par` r) . app c . fst =<< forkThreadId
-	(_, c' :=<< GetThreadId) -> (l `par`) . app c' . snd =<< forkThreadId
-	(_ :=<< Await el, _ :=<< Await er) -> forkThreadId >>= \(t, u) ->
+	(c :=<< GetThreadId, _) -> (`par` r) . app c . fst =<< ft
+	(_, c' :=<< GetThreadId) -> (l `par`) . app c' . snd =<< ft
+	(_ :=<< Await el, _ :=<< Await er) -> ft >>= \(t, u) ->
 		uncurry par . update l t r u =<< pure =<<< Await (el `merge` er)
 
 ---------------------------------------------------------------------------

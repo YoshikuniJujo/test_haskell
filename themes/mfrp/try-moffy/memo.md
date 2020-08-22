@@ -80,6 +80,14 @@ todo
 	+ [x] move constraint synonym FooOccurred to here
 * [x] refactor Control.Moffy.Handle
 * [ ] separate WithThreadId and WithNoThreadId
+	+ [ ] add NoThreadId and noThreadId
+	+ [ ] make module Control.Moffy.Internal.Par
+		- [ ] define functions
+			* first_, at_, break_, until_, indexBy_, parList_
+			* `foo_ :: React s es (ThreadId, ThreadId) -> ...`
+	+ [ ] make module Control.Moffy.NoThreadId
+		- [ ] define functions
+			* first', at', break', until', indexBy', parList'
 * [ ] check module hierarchy
 	+ [x] Moffy
 	+ [x] Moffy library
