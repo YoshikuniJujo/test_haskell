@@ -18,7 +18,7 @@ module Control.Moffy.Internal.React.Type (
 	-- * Handle
 	Handle, HandleSt, St, liftHandle, liftSt,
 	-- * ThreadId
-	ThreadId, rootThreadId, forkThreadId ) where
+	ThreadId, noThreadId, rootThreadId, forkThreadId ) where
 
 import Control.Monad.Freer.Par (Freer, (>>>=), (=<<<))
 import Control.Monad.Freer.Par.FTCQueue (FTCQueue)
@@ -98,9 +98,10 @@ liftSt m = (<$> m) . flip (,)
 -- THREAD ID
 ---------------------------------------------------------------------------
 
-data ThreadId = ThreadId Natural Int deriving (Show, Eq)
+data ThreadId = NoThreadId | ThreadId Natural Int deriving (Show, Eq)
 
-rootThreadId :: ThreadId
+noThreadId, rootThreadId :: ThreadId
+noThreadId = NoThreadId
 rootThreadId = ThreadId 0 0
 
 forkThreadId :: React s es (ThreadId, ThreadId)

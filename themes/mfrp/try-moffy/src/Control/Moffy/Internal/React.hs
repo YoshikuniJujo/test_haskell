@@ -19,7 +19,7 @@ import Control.Monad.Freer.Par (
 import Control.Moffy.Internal.React.Type (
 	React, Rct(..), EvOccs, CollapsableOccurred,
 	ThreadId, forkThreadId, never )
---	ThreadId, rootThreadId, never )
+--	ThreadId, noThreadId, never )
 import Data.Type.Set ((:+:))
 import Data.OneOrMore (Expandable, Mergeable, expand, collapse, merge)
 import Data.Or (Or(..))
@@ -71,7 +71,7 @@ adj = \case
 par :: (Updatable a b, Mergeable es es es) =>
 	React s es a -> React s es b -> React s es (React s es a, React s es b)
 par = par' forkThreadId
--- par = par' $ pure (rootThreadId, rootThreadId)
+-- par = par' $ pure (noThreadId, noThreadId)
 
 par' :: (Updatable a b, Mergeable es es es) =>
 	React s es (ThreadId, ThreadId) -> React s es a -> React s es b -> React s es (React s es a, React s es b)
