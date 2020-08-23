@@ -12,7 +12,7 @@ module Control.Moffy.Internal.React (
 	-- * Constraint Synonym
 	Firstable,
 	-- * Function
-	first, adjust, par_) where
+	first_, adjust, par_) where
 
 import Control.Monad.Freer.Par (
 	pattern Pure, pattern (:=<<), (=<<<), app, appPar )
@@ -38,12 +38,6 @@ import Data.Or (Or(..))
 type Firstable es es' a b = (
 	Updatable a b, Adjustable es (es :+: es'), Adjustable es' (es :+: es'),
 	Mergeable (es :+: es') (es :+: es') (es :+: es') )
-
-infixr 8 `first`
-
-first :: Firstable es es' a b =>
-	React s es a -> React s es' b -> React s (es :+: es') (Or a b)
-first = first_ forkThreadId
 
 first_ :: Firstable es es' a b =>
 	React s (es :+: es') (ThreadId, ThreadId) -> React s es a -> React s es' b -> React s (es :+: es') (Or a b)

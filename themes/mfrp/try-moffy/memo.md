@@ -87,6 +87,12 @@ todo
 			* `foo_ :: React s es (ThreadId, ThreadId) -> ...`
 	+ [ ] correct module Control.Moffy
 		- [ ] move definition of first, at, break, until, indexBy, parList from Internal.React and Internal.Sig
+			* [x] first
+			* [ ] at
+			* [ ] break
+			* [ ] until
+			* [ ] indexBy
+			* [ ] parList
 	+ [ ] make module Control.Moffy.NoThreadId
 		- [ ] define functions
 			* first', at', break', until', indexBy', parList'
@@ -95,6 +101,7 @@ todo
 * [ ] refactor Control.Moffy.NoThreadId
 * [ ] refactor Control.Moffy.Internal.React
 * [ ] refactor Control.Moffy.Internal.Sig
+* [ ] refactor Control.Moffy
 * [ ] check module hierarchy
 	+ [ ] Moffy
 	+ [x] Moffy library
