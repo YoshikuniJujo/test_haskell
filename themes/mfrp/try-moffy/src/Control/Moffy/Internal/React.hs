@@ -12,7 +12,7 @@ module Control.Moffy.Internal.React (
 	-- * Constraint Synonym
 	Firstable,
 	-- * Function
-	first, adjust, par) where
+	first, adjust, par_) where
 
 import Control.Monad.Freer.Par (
 	pattern Pure, pattern (:=<<), (=<<<), app, appPar )
@@ -43,7 +43,11 @@ infixr 8 `first`
 
 first :: Firstable es es' a b =>
 	React s es a -> React s es' b -> React s (es :+: es') (Or a b)
-(adjust -> l) `first` (adjust -> r) = (<$> l `par` r) \case
+first = first_ forkThreadId
+
+first_ :: Firstable es es' a b =>
+	React s (es :+: es') (ThreadId, ThreadId) -> React s es a -> React s es' b -> React s (es :+: es') (Or a b)
+first_ ft (adjust -> l) (adjust -> r) = (<$> par_ ft l r) \case
 	(Pure x, Pure y) -> LR x y; (Pure x, _) -> L x; (_, Pure y) -> R y
 	(_ :=<< _, _:=<< _) -> error "never occur"
 
@@ -68,22 +72,24 @@ adj = \case
 -- PAR
 ---------------------------------------------------------------------------
 
+{-
 par :: (Updatable a b, Mergeable es es es) =>
 	React s es a -> React s es b -> React s es (React s es a, React s es b)
-par = par' forkThreadId
--- par = par' $ pure (noThreadId, noThreadId)
+par = par_ forkThreadId
+-- par = par_ $ pure (noThreadId, noThreadId)
+-}
 
-par' :: (Updatable a b, Mergeable es es es) =>
+par_ :: (Updatable a b, Mergeable es es es) =>
 	React s es (ThreadId, ThreadId) -> React s es a -> React s es b -> React s es (React s es a, React s es b)
-par' ft l r = case (l, r) of
+par_ ft l r = case (l, r) of
 	(Pure _, _) -> pure (l, r); (_, Pure _) -> pure (l, r)
 	(_ :=<< Never, _ :=<< Never) -> never
 	(_ :=<< Never, _) -> (never ,) . pure <$> r
 	(_, _ :=<< Never) -> (, never) . pure <$> l
-	(c :=<< GetThreadId, _) -> (`par` r) . app c . fst =<< ft
-	(_, c' :=<< GetThreadId) -> (l `par`) . app c' . snd =<< ft
+	(c :=<< GetThreadId, _) -> flip (par_ ft) r . app c . fst =<< ft
+	(_, c' :=<< GetThreadId) -> par_ ft l . app c' . snd =<< ft
 	(_ :=<< Await el, _ :=<< Await er) -> ft >>= \(t, u) ->
-		uncurry par . update l t r u =<< pure =<<< Await (el `merge` er)
+		uncurry (par_ ft) . update l t r u =<< pure =<<< Await (el `merge` er)
 
 ---------------------------------------------------------------------------
 -- UPDATE

@@ -81,16 +81,20 @@ todo
 * [x] refactor Control.Moffy.Handle
 * [ ] separate WithThreadId and WithNoThreadId
 	+ [x] add NoThreadId and noThreadId
-	+ [ ] make module Control.Moffy.Internal.Par
-		- [ ] define functions
+	+ [x] correct module Control.Moffy.Internal.React and Control.Moffy.Internal.Sig
+		- [x] define functions
 			* first_, at_, break_, until_, indexBy_, parList_
 			* `foo_ :: React s es (ThreadId, ThreadId) -> ...`
+	+ [ ] correct module Control.Moffy
+		- [ ] move definition of first, at, break, until, indexBy, parList from Internal.React and Internal.Sig
 	+ [ ] make module Control.Moffy.NoThreadId
 		- [ ] define functions
 			* first', at', break', until', indexBy', parList'
+			* app', iapp'
 * [ ] refactor Control.Moffy.Internal.React.Type
 * [ ] refactor Control.Moffy.NoThreadId
 * [ ] refactor Control.Moffy.Internal.React
+* [ ] refactor Control.Moffy.Internal.Sig
 * [ ] check module hierarchy
 	+ [ ] Moffy
 	+ [x] Moffy library
