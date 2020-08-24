@@ -25,9 +25,10 @@ import Control.Moffy.Internal.Sig.Type (
 	emit, emitAll, waitFor, repeat, res, ires, hold )
 import Control.Moffy.Internal.React (
 	Firstable, Adjustable, Updatable, adjust, par_ )
-import Control.Moffy.Internal.React.Type (React, Rct(..), ThreadId, forkThreadId)
+import Control.Moffy.Internal.React.Type (
+	React, Rct(..), ThreadId, forkThreadId )
 import Data.Type.Set ((:+:))
-import Data.Type.Flip (Flip(..), (<$%>), (<*%>))
+import Data.Type.Flip (Flip(..), (<$%>))
 import Data.OneOrMore (Mergeable)
 
 ---------------------------------------------------------------------------
@@ -66,14 +67,14 @@ instance (Mergeable es es es, Semigroup r) =>
 -- APP AND IAPP
 
 app_ :: (Mergeable es es es, Semigroup r) =>
-	React s es (ThreadId, ThreadId) -> Sig s es (a -> b) r -> Sig s es a r -> Sig s es b r
-app_ ft mf mx = emitAll . uncurry (<*%>) =<< waitFor (exposeBoth_ ft mf mx)
+	React s es (ThreadId, ThreadId) ->
+	Sig s es (a -> b) r -> Sig s es a r -> Sig s es b r
+app_ ft mf mx = emitAll . uncurry (iapp_ ft) =<< waitFor (exposeBoth_ ft mf mx)
 
 exposeBoth_ :: (
 	Updatable (ISig s es a r) (ISig s es b r'),
 	Updatable (ISig s es b r') (ISig s es a r), Mergeable es es es ) =>
-	React s es (ThreadId, ThreadId) ->
-	Sig s es a r -> Sig s es b r' ->
+	React s es (ThreadId, ThreadId) -> Sig s es a r -> Sig s es b r' ->
 	React s es (ISig s es a r, ISig s es b r')
 exposeBoth_ ft l (Sig r) = do
 	(Sig l', r') <- res $ pause_ ft l r
@@ -82,7 +83,8 @@ exposeBoth_ ft l (Sig r) = do
 	where ex = \case Pure x -> x; _ -> error "never occur"
 
 iapp_ :: (Mergeable es es es, Semigroup r) =>
-	React s es (ThreadId, ThreadId) -> ISig s es (a -> b) r -> ISig s es a r -> ISig s es b r
+	React s es (ThreadId, ThreadId) ->
+	ISig s es (a -> b) r -> ISig s es a r -> ISig s es b r
 iapp_ ft mf mx = (<$> (uncurry ($) <$%> ipairs_ ft mf mx)) \case
 	(End x, End y) -> x <> y; (End x, _ :| _) -> x; (_ :| _, End y) -> y
 	(_ :| _, _ :| _) -> error "never occur"

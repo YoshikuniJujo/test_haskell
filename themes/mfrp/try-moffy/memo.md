@@ -294,41 +294,43 @@ Control.Moffy.Handle.ThreadId
 			* [x] Applicative (Flip (ISig s es) r)
 			* [x] Applicative (Flip (Sig s es) r)
 	+ [x] extension
-	+ [ ] imports
-	+ [ ] structure
+	+ [x] imports
+	+ [x] structure
 	+ [ ] body
-		- [ ] FLIP APPLICATIVE
-			* [ ] INSTANCE
-			* [ ] APP AND IAPP
-				+ [ ] function app
-				+ [ ] function exposeBoth
-				+ [ ] function iapp
+		- [x] FLIP APPLICATIVE
+			* [x] INSTANCE
+				+ [x] instance Applicative (Flip (Sig s es ) r)
+				+ [x] instance Applicative (Flip (ISig s es) r)
+			* [x] APP AND IAPP
+				+ [x] function app_
+				+ [x] function exposeBoth_
+				+ [x] function iapp_
 		- [ ] PARALLEL
 			* [ ] AT
-				+ [ ] function at
-				+ [ ] function iat
+				+ [ ] function at_
+				+ [ ] function iat_
 			* [ ] BREAK AND UNTIL
-				+ [ ] function break
-				+ [ ] function until
+				+ [ ] function break_
+				+ [ ] function until_
 			* [ ] INDEX BY
-				+ [ ] function indexBy
 				+ [ ] function indexBy_
-				+ [ ] function iindexBy
+				+ [ ] function indexByGen_
+				+ [ ] function iiindexBy_
 		- [ ] COPIES
 			* [ ] SPAWN
 			* [ ] PAR LIST
-				+ [ ] function parList
-				+ [ ] function iparList
-				+ [ ] function cons
+				+ [ ] function parList_
+				+ [ ] function iparList_
+				+ [ ] function cons_
 		- [ ] BASIC COMBINATOR
 			* [ ] ADJUST
 				+ [ ] function adjustSig
 				+ [ ] function adjustISig
 			* [ ] PAIRS
-				+ [ ] function ipairs
+				+ [ ] function ipairs_
 			* [ ] PAUSE
-				+ [ ] function pause
-				+ [ ] function ipause
+				+ [ ] function pause_
+				+ [ ] function ipause_
 * [x] Control.Moffy.Internal.Sig.Type
 	+ [x] API
 		- [x] Type
