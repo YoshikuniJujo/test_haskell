@@ -4,8 +4,9 @@ memo
 structure
 ---------
 
-* Moffy (9)
+* Moffy (10)
 	+ Control.Moffy
+		+ NoThreadId
 		+ Handle
 		+ Run
 		+ Internal
@@ -102,12 +103,12 @@ todo
 			* [x] break' and until'
 			* [x] indexBy'
 			* [x] parList'
-* [ ] try with Trial.TrySharing
-* [ ] refactor Control.Moffy.Internal.React.Type
-* [ ] refactor Control.Moffy.NoThreadId
-* [ ] refactor Control.Moffy.Internal.React
-* [ ] refactor Control.Moffy.Internal.Sig
+* [x] try with Trial.TrySharing
 * [ ] refactor Control.Moffy
+* [ ] refactor Control.Moffy.NoThreadId
+* [ ] refactor Control.Moffy.Internal.Sig
+* [ ] refactor Control.Moffy.Internal.React
+* [ ] refactor Control.Moffy.Internal.React.Type
 * [ ] check module hierarchy
 	+ [ ] Moffy
 	+ [x] Moffy library
@@ -175,6 +176,12 @@ Control.Moffy
   |   +- Control.Moffy.Internal.React.Type
   +- Control.Moffy.Internal.React.Type
 
+Control.Moffy.NoThreadId
+  +- Control.Moffy.Internal.Sig
+  +- Control.Moffy.Internal.Sig.Type
+  +- Control.Moffy.Internal.React
+  +- Control.Moffy.Internal.React.Type
+
 Control.Moffy.Handle
   +- Control.Moffy.Internal.React.Type
 
@@ -192,31 +199,34 @@ Control.Moffy.Handle.ThreadId
 
 ### refactoring
 
-* [x] Control.Moffy
-	+ [x] API
-		- [x] Type
-			* [x] Sig
-			* [x] ISig
-			* [x] React
-			* [x] Rct
-			* [x] EvReqs
-			* [x] EvOccs
-			* [x] class Request
-		- [x] Constraint
-			* [x] Firstable
-			* [x] Adjustable
-		- [x] Combinator
-			* [x] Await and Adjust
-			* [x] Simple Sig
-			* [x] Traverse
-			* [x] Parallel
-				+ [x] first
-				+ [x] at
-				+ [x] break
-				+ [x] until
-				+ [x] indexBy
-			* [x] Copies
-	+ [x] imports
+* [ ] Control.Moffy
+	+ [ ] API
+		- [ ] Type
+			* [ ] Sig
+			* [ ] ISig
+			* [ ] React
+			* [ ] Rct
+			* [ ] EvReqs
+			* [ ] EvOccs
+			* [ ] class Request
+		- [ ] Constraint
+			* [ ] Firstable
+			* [ ] Adjustable
+		- [ ] Combinator
+			* [ ] Await and Adjust
+			* [ ] Simple Sig
+			* [ ] Traverse
+			* [ ] Parallel
+				+ [ ] first
+				+ [ ] at
+				+ [ ] break
+				+ [ ] until
+				+ [ ] indexBy
+			* [ ] Copies
+	+ [ ] extension
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
 * [x] Control.Moffy.Internal.Sig
 	+ [x] API
 		- [x] Adjust
@@ -1008,8 +1018,7 @@ Trials (20)
 
 ##### addition
 
-* [ ] add nest first trial
-	+ next
+* [x] add nest first trial
 
 ##### refactoring
 
