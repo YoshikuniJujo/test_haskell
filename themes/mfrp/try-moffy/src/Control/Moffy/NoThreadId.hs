@@ -3,7 +3,14 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.NoThreadId where
+module Control.Moffy.NoThreadId (
+	-- * Applicative
+	app', iapp',
+	-- * Parallel
+	first', at', break', until', indexBy',
+	-- * Copies
+	parList',
+	) where
 
 import Control.Moffy.Internal.Sig
 import Control.Moffy.Internal.Sig.Type

@@ -248,7 +248,19 @@ Control.Moffy.Handle.ThreadId
 		- [x] COPIES
 			* [x] function parList
 * [ ] Control.Moffy.NoThreadId
-	+ [ ] API
+	+ [x] API
+		- [x] structure
+		- [x] Applicative
+			* [x] function app'
+			* [x] function iapp'
+		- [x] Parallel
+			* [x] function first'
+			* [x] function at'
+			* [x] function break'
+			* [x] function until'
+			* [x] indexBy'
+		- [x] Copies
+			* [x] parList'
 	+ [ ] extension
 	+ [ ] imports
 	+ [ ] structure
