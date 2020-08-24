@@ -4,14 +4,16 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy (
-	-- * Type
-	Sig, ISig, React, Rct, EvReqs, EvOccs, Request(..),
+	-- * Sig
+	Sig, ISig,
+	-- * React
+	React, Rct, EvReqs, EvOccs, Request(..),
 	-- * Constraint
 	Firstable, Adjustable,
 	-- * Combinator
 	-- ** Await and Adjust
 	await, adjust, adjustSig,
-	-- ** Simple Sig
+	-- ** Create Sig
 	emit, waitFor, repeat,
 	-- ** Traverse
 	find, scanl,

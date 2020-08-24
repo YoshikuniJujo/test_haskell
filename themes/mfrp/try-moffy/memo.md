@@ -201,9 +201,11 @@ Control.Moffy.Handle.ThreadId
 
 * [ ] Control.Moffy
 	+ [ ] API
-		- [ ] Type
+		- [x] structure
+		- [ ] Sig
 			* [ ] Sig
 			* [ ] ISig
+		- [ ] React
 			* [ ] React
 			* [ ] Rct
 			* [ ] EvReqs
@@ -214,7 +216,7 @@ Control.Moffy.Handle.ThreadId
 			* [ ] Adjustable
 		- [ ] Combinator
 			* [ ] Await and Adjust
-			* [ ] Simple Sig
+			* [ ] Create Sig
 			* [ ] Traverse
 			* [ ] Parallel
 				+ [ ] first
