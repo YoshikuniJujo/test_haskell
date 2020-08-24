@@ -47,3 +47,15 @@ until' :: Firstable es es' (ISig s (es :+: es') a r) r' =>
 	Sig s es a r -> React s es' r' ->
 	Sig s (es :+: es') a (Either r (a, r'))
 until' = until_ noForkThreadId
+
+infixl 7 `indexBy'`
+
+indexBy' ::
+	Firstable es es' (ISig s (es :+: es') a r) (ISig s (es :+: es') b r') =>
+	Sig s es a r -> Sig s es' b r' ->
+	Sig s (es :+: es') a (Either r (Maybe a, r'))
+indexBy' = indexBy_ noForkThreadId
+
+parList' :: Mergeable es es es =>
+	Sig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
+parList' = parList_ noForkThreadId

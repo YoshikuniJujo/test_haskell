@@ -52,9 +52,9 @@ structure
 	+ TryKey
 	+ TryLock
 	+ TryThreadId
-	+ CheckSharing
-		- EvInt
-		- ThreadId
+	+ TrySharing
+	+ CheckSharing.EvInt
+	+ CheckSharing.TrheadId
 	+ StepByStepBox
 	+ Boxes
 		- Event
@@ -79,7 +79,7 @@ todo
 * [x] refactor Control.Moffy.Internal.React.Type
 	+ [x] move constraint synonym FooOccurred to here
 * [x] refactor Control.Moffy.Handle
-* [ ] separate WithThreadId and WithNoThreadId
+* [x] separate WithThreadId and WithNoThreadId
 	+ [x] add NoThreadId and noThreadId
 	+ [x] correct module Control.Moffy.Internal.React and Control.Moffy.Internal.Sig
 		- [x] define functions
@@ -93,15 +93,16 @@ todo
 			* [x] until
 			* [x] indexBy
 			* [x] parList
-	+ [ ] make module Control.Moffy.NoThreadId
-		- [ ] define functions
+	+ [x] make module Control.Moffy.NoThreadId
+		- [x] define functions
 			* [x] app'
 			* [x] iapp'
 			* [x] first'
 			* [x] at'
 			* [x] break' and until'
-			* [ ] indexBy'
-			* [ ] parList'
+			* [x] indexBy'
+			* [x] parList'
+* [ ] try with Trial.TrySharing
 * [ ] refactor Control.Moffy.Internal.React.Type
 * [ ] refactor Control.Moffy.NoThreadId
 * [ ] refactor Control.Moffy.Internal.React
@@ -1008,6 +1009,7 @@ Trials (20)
 ##### addition
 
 * [ ] add nest first trial
+	+ next
 
 ##### refactoring
 
