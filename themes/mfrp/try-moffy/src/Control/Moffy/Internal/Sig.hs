@@ -9,10 +9,9 @@ module Control.Moffy.Internal.Sig (
 	-- * Adjust
 	adjustSig,
 	-- * Parallel
-	indexBy,
 	at_, break_, until_, indexBy_,
 	-- * Copies
-	spawn, parList, parList_,
+	spawn, parList_,
 	-- * Applicative Like
 	app_, iapp_
 	) where
@@ -132,14 +131,6 @@ until_ ft (adjustSig -> l) (adjust -> r) = pause_ ft l r >>= \(Sig l', r') ->
 
 -- INDEX BY
 
-infixl 7 `indexBy`
-
-indexBy ::
-	Firstable es es' (ISig s (es :+: es') a r) (ISig s (es :+: es') b r') =>
-	Sig s es a r -> Sig s es' b r' ->
-	Sig s (es :+: es') a (Either r (Maybe a, r'))
-indexBy = indexBy_ forkThreadId
-
 indexBy_ ::
 	Firstable es es' (ISig s (es :+: es') a r) (ISig s (es :+: es') b r') =>
 	React s (es :+: es') (ThreadId, ThreadId) ->
@@ -173,10 +164,6 @@ spawn :: Sig s es a r -> Sig s es (ISig s es a r) r'
 spawn = repeat . unSig
 
 -- PAR 	LIST
-
-parList :: Mergeable es es es =>
-	Sig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
-parList = parList_ forkThreadId
 
 parList_ :: Mergeable es es es =>
 	React s es (ThreadId, ThreadId) -> Sig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')

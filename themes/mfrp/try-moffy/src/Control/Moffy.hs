@@ -23,13 +23,14 @@ module Control.Moffy (
 import Prelude hiding (repeat, scanl, until, break)
 
 import Control.Moffy.Internal.Sig (
-	adjustSig, at_, break_, until_, indexBy, spawn, parList )
+	adjustSig, at_, break_, until_, indexBy_, spawn, parList_ )
 import Control.Moffy.Internal.Sig.Type (
 	Sig, ISig, emit, waitFor, repeat, find, scanl )
 import Control.Moffy.Internal.React (Firstable, Adjustable, first_, adjust)
 import Control.Moffy.Internal.React.Type (
 	React, Rct, EvReqs, EvOccs, Request(..), await, forkThreadId )
 import Data.Type.Set ((:+:))
+import Data.OneOrMore (Mergeable)
 import Data.Or (Or)
 
 infixr 8 `first`
@@ -56,3 +57,15 @@ until :: Firstable es es' (ISig s (es :+: es') a r) r' =>
 	Sig s es a r -> React s es' r' ->
 	Sig s (es :+: es') a (Either r (a, r'))
 until = until_ forkThreadId
+
+infixl 7 `indexBy`
+
+indexBy ::
+	Firstable es es' (ISig s (es :+: es') a r) (ISig s (es :+: es') b r') =>
+	Sig s es a r -> Sig s es' b r' ->
+	Sig s (es :+: es') a (Either r (Maybe a, r'))
+indexBy = indexBy_ forkThreadId
+
+parList :: Mergeable es es es =>
+	Sig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
+parList = parList_ forkThreadId
