@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 73054aa70ce8b6b18ff6c4a74db3badc5b8d970796af555682255d0f28fa9309
+-- hash: edeb9c3176550d13e388badd434386b4a822bff0cf56057ab9ad2aa32c93a857
 
 name:           try-moffy
 version:        0.1.0.0
@@ -51,6 +51,7 @@ library
       Control.Moffy.Internal.React.Type
       Control.Moffy.Internal.Sig
       Control.Moffy.Internal.Sig.Type
+      Control.Moffy.NoThreadId
       Control.Moffy.Run
       Control.Monad.Freer.Par
       Control.Monad.Freer.Par.FTCQueue

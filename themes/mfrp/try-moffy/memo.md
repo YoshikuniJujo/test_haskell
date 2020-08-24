@@ -95,8 +95,13 @@ todo
 			* [x] parList
 	+ [ ] make module Control.Moffy.NoThreadId
 		- [ ] define functions
-			* app', iapp'
-			* first', at', break', until', indexBy', parList'
+			* [ ] app'
+			* [ ] iapp'
+			* [x] first'
+			* [ ] at'
+			* [ ] break' and until'
+			* [ ] indexBy'
+			* [ ] parList'
 * [ ] refactor Control.Moffy.Internal.React.Type
 * [ ] refactor Control.Moffy.NoThreadId
 * [ ] refactor Control.Moffy.Internal.React
