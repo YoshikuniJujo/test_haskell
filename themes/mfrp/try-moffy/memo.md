@@ -391,13 +391,17 @@ Control.Moffy.Handle.ThreadId
 * [ ] Control.Moffy.Internal.React.Type
 	+ [ ] API
 		- [ ] structure
-		- [ ] Type React
-			* [ ] type React
-			* [ ] data Rct
-		- [ ] Class Request
-		- [ ] Type Synonym
-			* [ ] type EvReqs
-			* [ ] type EvOccs
+		- [x] Type React
+			* [x] type React
+			* [x] data Rct
+		- [x] Class Request
+		- [x] Type Synonym
+			* [x] type EvReqs
+			* [x] type EvOccs
+		- [ ] Constraint Synonym
+			* [ ] ExpandableOccurred
+			* [ ] CollapsableOccurred
+			* [ ] MergeableOccurred
 		- [ ] Never and Await
 			* [ ] never
 			* [ ] await
@@ -410,7 +414,8 @@ Control.Moffy.Handle.ThreadId
 			* [ ] function liftSt
 		- [ ] ThreadId
 			* [ ] data ThreadId
-			* [ ] function rootThreadId
+			* [ ] value rootThreadId
+			* [ ] react noForkThreadId
 			* [ ] react forkThreadId
 	+ [ ] extension
 	+ [ ] imports
