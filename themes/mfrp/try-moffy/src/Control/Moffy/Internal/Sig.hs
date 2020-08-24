@@ -9,7 +9,7 @@ module Control.Moffy.Internal.Sig (
 	-- * Adjust
 	adjustSig,
 	-- * Parallel
-	at, break, until, indexBy,
+	break, until, indexBy,
 	at_, break_, until_, indexBy_,
 	-- * Copies
 	spawn, parList, parList_,
@@ -93,13 +93,6 @@ iapp_ ft mf mx = (<$> (uncurry ($) <$%> ipairs_ ft mf mx)) \case
 ---------------------------------------------------------------------------
 
 -- AT
-
-infixr 7 `at`
-
-at :: Firstable es es' (ISig s (es :+: es') a r) r' =>
-	Sig s es a r -> React s es' r' ->
-	React s (es :+: es') (Either r (Maybe a, r'))
-at = at_ forkThreadId
 
 at_ :: Firstable es es' (ISig s (es :+: es') a r) r' =>
 	React s (es :+: es') (ThreadId, ThreadId) ->  Sig s es a r -> React s es' r' ->
