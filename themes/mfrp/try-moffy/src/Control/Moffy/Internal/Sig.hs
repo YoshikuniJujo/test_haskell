@@ -220,8 +220,7 @@ ipairs_ ft (hl :| Sig tl) (hr :| Sig tr) = ((hl, hr) :|) . Sig
 -- PAUSE
 
 pause_ :: (Updatable (ISig s es a r) r', Mergeable es es es) =>
-	React s es (ThreadId, ThreadId) ->
-	Sig s es a r -> React s es r' ->
+	React s es (ThreadId, ThreadId) -> Sig s es a r -> React s es r' ->
 	Sig s es a (Sig s es a r, React s es r')
 pause_ ft (Sig l) r = waitFor (par_ ft l r) >>= \case
 	(Pure l', r') -> first emitAll <$> emitAll (ipause_ ft l' r')
