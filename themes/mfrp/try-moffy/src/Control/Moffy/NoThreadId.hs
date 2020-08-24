@@ -12,13 +12,16 @@ module Control.Moffy.NoThreadId (
 	parList',
 	) where
 
-import Control.Moffy.Internal.Sig
-import Control.Moffy.Internal.Sig.Type
-import Control.Moffy.Internal.React
-import Control.Moffy.Internal.React.Type
-import Data.Type.Set
-import Data.OneOrMore
-import Data.Or
+import Control.Moffy.Internal.Sig (
+	app_, iapp_, at_, break_, until_, indexBy_, parList_ )
+import Control.Moffy.Internal.Sig.Type (Sig, ISig)
+import Control.Moffy.Internal.React (Firstable, first_)
+import Control.Moffy.Internal.React.Type (React, noForkThreadId)
+import Data.Type.Set ((:+:))
+import Data.OneOrMore (Mergeable)
+import Data.Or (Or)
+
+---------------------------------------------------------------------------
 
 infixl 4 `app'`, `iapp'`
 

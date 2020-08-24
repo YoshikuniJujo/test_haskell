@@ -261,8 +261,8 @@ Control.Moffy.Handle.ThreadId
 			* [x] indexBy'
 		- [x] Copies
 			* [x] parList'
-	+ [ ] extension
-	+ [ ] imports
+	+ [x] extension
+	+ [x] imports
 	+ [ ] structure
 	+ [ ] body
 * [x] Control.Moffy.Internal.Sig
