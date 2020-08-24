@@ -23,6 +23,14 @@ import Data.Or (Or)
 
 ---------------------------------------------------------------------------
 
+-- * APPLICATIVE
+-- * PARALLEL
+-- * COPIES
+
+---------------------------------------------------------------------------
+-- APPLICATIVE
+---------------------------------------------------------------------------
+
 infixl 4 `app'`, `iapp'`
 
 app' :: (Mergeable es es es, Semigroup r) =>
@@ -32,6 +40,10 @@ app' = app_ noForkThreadId
 iapp' :: (Mergeable es es es, Semigroup r) =>
 	ISig s es (a -> b) r -> ISig s es a r -> ISig s es b r
 iapp' = iapp_ noForkThreadId
+
+---------------------------------------------------------------------------
+-- PARALLEL
+---------------------------------------------------------------------------
 
 infixr 8 `first'`
 
@@ -65,6 +77,10 @@ indexBy' ::
 	Sig s es a r -> Sig s es' b r' ->
 	Sig s (es :+: es') a (Either r (Maybe a, r'))
 indexBy' = indexBy_ noForkThreadId
+
+---------------------------------------------------------------------------
+-- COPIES
+---------------------------------------------------------------------------
 
 parList' :: Mergeable es es es =>
 	Sig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
