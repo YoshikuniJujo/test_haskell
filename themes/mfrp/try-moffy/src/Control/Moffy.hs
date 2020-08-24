@@ -23,7 +23,7 @@ module Control.Moffy (
 import Prelude hiding (repeat, scanl, until, break)
 
 import Control.Moffy.Internal.Sig (
-	adjustSig, at_, break, until, indexBy, spawn, parList )
+	adjustSig, at_, break_, until_, indexBy, spawn, parList )
 import Control.Moffy.Internal.Sig.Type (
 	Sig, ISig, emit, waitFor, repeat, find, scanl )
 import Control.Moffy.Internal.React (Firstable, Adjustable, first_, adjust)
@@ -44,3 +44,15 @@ at :: Firstable es es' (ISig s (es :+: es') a r) r' =>
 	Sig s es a r -> React s es' r' ->
 	React s (es :+: es') (Either r (Maybe a, r'))
 at = at_ forkThreadId
+
+infixl 7 `break`, `until`
+
+break :: Firstable es es' (ISig s (es :+: es') a r) r' =>
+	Sig s es a r -> React s es' r' ->
+	Sig s (es :+: es') a (Either r (Maybe a, r'))
+break = break_ forkThreadId
+
+until :: Firstable es es' (ISig s (es :+: es') a r) r' =>
+	Sig s es a r -> React s es' r' ->
+	Sig s (es :+: es') a (Either r (a, r'))
+until = until_ forkThreadId

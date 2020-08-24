@@ -9,7 +9,7 @@ module Control.Moffy.Internal.Sig (
 	-- * Adjust
 	adjustSig,
 	-- * Parallel
-	break, until, indexBy,
+	indexBy,
 	at_, break_, until_, indexBy_,
 	-- * Copies
 	spawn, parList, parList_,
@@ -110,18 +110,6 @@ iat_ ft l r = (<$> ires (ipause_ ft l r)) \case
 	(_ :| _, _ :=<< _) -> error "never occur"
 
 -- BREAK AND UNTIL
-
-infixl 7 `break`, `until`
-
-break :: Firstable es es' (ISig s (es :+: es') a r) r' =>
-	Sig s es a r -> React s es' r' ->
-	Sig s (es :+: es') a (Either r (Maybe a, r'))
-break = break_ forkThreadId
-
-until :: Firstable es es' (ISig s (es :+: es') a r) r' =>
-	Sig s es a r -> React s es' r' ->
-	Sig s (es :+: es') a (Either r (a, r'))
-until = until_ forkThreadId
 
 break_ :: Firstable es es' (ISig s (es :+: es') a r) r' =>
 	React s (es :+: es') (ThreadId, ThreadId) -> Sig s es a r -> React s es' r' ->
