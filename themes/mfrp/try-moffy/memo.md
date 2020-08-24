@@ -95,8 +95,8 @@ todo
 			* [x] parList
 	+ [ ] make module Control.Moffy.NoThreadId
 		- [ ] define functions
-			* [ ] app'
-			* [ ] iapp'
+			* [x] app'
+			* [x] iapp'
 			* [x] first'
 			* [ ] at'
 			* [ ] break' and until'
