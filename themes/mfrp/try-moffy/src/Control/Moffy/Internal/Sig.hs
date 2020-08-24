@@ -96,7 +96,8 @@ iapp_ ft mf mx = (<$> (uncurry ($) <$%> ipairs_ ft mf mx)) \case
 -- AT
 
 at_ :: Firstable es es' (ISig s (es :+: es') a r) r' =>
-	React s (es :+: es') (ThreadId, ThreadId) ->  Sig s es a r -> React s es' r' ->
+	React s (es :+: es') (ThreadId, ThreadId) ->
+	Sig s es a r -> React s es' r' ->
 	React s (es :+: es') (Either r (Maybe a, r'))
 at_ ft (adjustSig -> Sig l) (adjust -> r) = par_ ft l r >>= \case
 	(Pure l', r') -> (first Just <$>) <$> iat_ ft l' r'
@@ -104,16 +105,17 @@ at_ ft (adjustSig -> Sig l) (adjust -> r) = par_ ft l r >>= \case
 	(_ :=<< _, _ :=<< _) -> error "never occur"
 
 iat_ :: (Updatable (ISig s es a r) r', Mergeable es es es) =>
-	React s es (ThreadId, ThreadId) -> ISig s es a r -> React s es r' -> React s es (Either r (a, r'))
+	React s es (ThreadId, ThreadId) ->
+	ISig s es a r -> React s es r' -> React s es (Either r (a, r'))
 iat_ ft l r = (<$> ires (ipause_ ft l r)) \case
-	(End x, _) -> Left x
-	(h :| _, Pure y) -> Right (h, y)
+	(End x, _) -> Left x; (h :| _, Pure y) -> Right (h, y)
 	(_ :| _, _ :=<< _) -> error "never occur"
 
 -- BREAK AND UNTIL
 
 break_ :: Firstable es es' (ISig s (es :+: es') a r) r' =>
-	React s (es :+: es') (ThreadId, ThreadId) -> Sig s es a r -> React s es' r' ->
+	React s (es :+: es') (ThreadId, ThreadId) ->
+	Sig s es a r -> React s es' r' ->
 	Sig s (es :+: es') a (Either r (Maybe a, r'))
 break_ ft (adjustSig -> l) (adjust -> r) = (<$> pause_ ft l r)
 	$ first unSig >>> \case
@@ -123,7 +125,8 @@ break_ ft (adjustSig -> l) (adjust -> r) = (<$> pause_ ft l r)
 		_ -> error "never occur"
 
 until_ :: Firstable es es' (ISig s (es :+: es') a r) r' =>
-	React s (es :+: es') (ThreadId, ThreadId) -> Sig s es a r -> React s es' r' ->
+	React s (es :+: es') (ThreadId, ThreadId) ->
+	Sig s es a r -> React s es' r' ->
 	Sig s (es :+: es') a (Either r (a, r'))
 until_ ft (adjustSig -> l) (adjust -> r) = pause_ ft l r >>= \(Sig l', r') ->
 	(<$> waitFor l') \case
@@ -140,8 +143,10 @@ indexBy_ ::
 	Sig s (es :+: es') a (Either r (Maybe a, r'))
 indexBy_ ft (adjustSig -> l) (adjustSig -> r) = indexByGen_ ft l r
 
-indexByGen_ :: (Updatable (ISig s es a r) (ISig s es b r'), Mergeable es es es) =>
-	React s es (ThreadId, ThreadId) -> Sig s es a r -> Sig s es b r' -> Sig s es a (Either r (Maybe a, r'))
+indexByGen_ ::
+	(Updatable (ISig s es a r) (ISig s es b r'), Mergeable es es es) =>
+	React s es (ThreadId, ThreadId) ->
+	Sig s es a r -> Sig s es b r' -> Sig s es a (Either r (Maybe a, r'))
 indexByGen_ ft l (Sig r) = waitFor (res $ pause_ ft l r) >>= \case
 	(Sig (Pure l'), r') -> (first Just <$>) <$> iindexBy_ ft l' (Sig r')
 	(l', Pure (_ :| r')) -> indexByGen_ ft l' r'
@@ -149,7 +154,8 @@ indexByGen_ ft l (Sig r) = waitFor (res $ pause_ ft l r) >>= \case
 	_ -> error "never occur"
 
 iindexBy_ :: (Updatable (ISig s es a r) (ISig s es b r'), Mergeable es es es) =>
-	React s es (ThreadId, ThreadId) -> ISig s es a r -> Sig s es b r' -> Sig s es a (Either r (a, r'))
+	React s es (ThreadId, ThreadId) ->
+	ISig s es a r -> Sig s es b r' -> Sig s es a (Either r (a, r'))
 iindexBy_ ft l (Sig r) = waitFor (ires $ ipause_ ft l r) >>= \case
 	(End x, _) -> pure $ Left x
 	(l'@(hl :| _), Pure (_ :| r')) -> emit hl >> iindexBy_ ft l' r'
@@ -168,20 +174,23 @@ spawn = repeat . unSig
 -- PAR 	LIST
 
 parList_ :: Mergeable es es es =>
-	React s es (ThreadId, ThreadId) -> Sig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
+	React s es (ThreadId, ThreadId) ->
+	Sig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
 parList_ ft (Sig r) = iparList_ ft =<< waitFor r
 
 iparList_ :: Mergeable es es es =>
-	React s es (ThreadId, ThreadId) -> ISig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
+	React s es (ThreadId, ThreadId) ->
+	ISig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
 iparList_ ft = isig (pure . ([] ,)) $ go . ((: []) <$>) . ((: []) <$%>) where
 	go s (Sig r) = emitAll (ipause_ ft s r) >>= \case
 		(s', Pure (h :| t)) -> go (cons_ ft h s') t
 		(s', Pure (End y)) -> (, y) <$> emitAll s'
-		(End x, r') -> emit [] >> ((x ++) `first`) <$> parList_ ft (Sig r')
+		(End x, r') -> emit [] >> first (x ++) <$> parList_ ft (Sig r')
 		(_ :| _, _ :=<< _) -> error "never occur"
 
 cons_ :: Mergeable es es es =>
-	React s es (ThreadId, ThreadId) -> ISig s es a r -> ISig s es [a] [r] -> ISig s es [a] [r]
+	React s es (ThreadId, ThreadId) ->
+	ISig s es a r -> ISig s es [a] [r] -> ISig s es [a] [r]
 cons_ ft h t = uncurry (:) <$%> ipairs_ ft h t >>= \(h', t') ->
 	(:) <$> ((: []) <$%> h') <*> t'
 
