@@ -28,3 +28,22 @@ infixr 8 `first'`
 first' :: Firstable es es' a b =>
 	React s es a -> React s es' b -> React s (es :+: es') (Or a b)
 first' = first_ noForkThreadId
+
+infixr 7 `at'`
+
+at' :: Firstable es es' (ISig s (es :+: es') a r) r' =>
+	Sig s es a r -> React s es' r' ->
+	React s (es :+: es') (Either r (Maybe a, r'))
+at' = at_ noForkThreadId
+
+infixl 7 `break'`, `until'`
+
+break' :: Firstable es es' (ISig s (es :+: es') a r) r' =>
+	Sig s es a r -> React s es' r' ->
+	Sig s (es :+: es') a (Either r (Maybe a, r'))
+break' = break_ noForkThreadId
+
+until' :: Firstable es es' (ISig s (es :+: es') a r) r' =>
+	Sig s es a r -> React s es' r' ->
+	Sig s (es :+: es') a (Either r (a, r'))
+until' = until_ noForkThreadId
