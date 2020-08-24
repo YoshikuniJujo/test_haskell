@@ -14,11 +14,11 @@ module Control.Moffy.Internal.React (
 	-- * Function
 	first_, adjust, par_) where
 
+import Control.Arrow ((***))
 import Control.Monad.Freer.Par (
 	pattern Pure, pattern (:=<<), (=<<<), app, appPar )
 import Control.Moffy.Internal.React.Type (
-	React, Rct(..), EvOccs, CollapsableOccurred,
-	ThreadId, never )
+	React, Rct(..), EvOccs, CollapsableOccurred, ThreadId, never )
 import Data.Type.Set ((:+:))
 import Data.OneOrMore (Expandable, Mergeable, expand, collapse, merge)
 import Data.Or (Or(..))
@@ -28,7 +28,7 @@ import Data.Or (Or(..))
 -- * FIRST
 -- * ADJUST
 -- * PAR
--- * UPDATE
+-- * UPDATABLE
 
 ---------------------------------------------------------------------------
 -- FIRST
@@ -39,7 +39,8 @@ type Firstable es es' a b = (
 	Mergeable (es :+: es') (es :+: es') (es :+: es') )
 
 first_ :: Firstable es es' a b =>
-	React s (es :+: es') (ThreadId, ThreadId) -> React s es a -> React s es' b -> React s (es :+: es') (Or a b)
+	React s (es :+: es') (ThreadId, ThreadId) ->
+	React s es a -> React s es' b -> React s (es :+: es') (Or a b)
 first_ ft (adjust -> l) (adjust -> r) = (<$> par_ ft l r) \case
 	(Pure x, Pure y) -> LR x y; (Pure x, _) -> L x; (_, Pure y) -> R y
 	(_ :=<< _, _:=<< _) -> error "never occur"
@@ -66,19 +67,23 @@ adj = \case
 ---------------------------------------------------------------------------
 
 par_ :: (Updatable a b, Mergeable es es es) =>
-	React s es (ThreadId, ThreadId) -> React s es a -> React s es b -> React s es (React s es a, React s es b)
+	React s es (ThreadId, ThreadId) ->
+	React s es a -> React s es b -> React s es (React s es a, React s es b)
 par_ ft l r = case (l, r) of
 	(Pure _, _) -> pure (l, r); (_, Pure _) -> pure (l, r)
 	(_ :=<< Never, _ :=<< Never) -> never
 	(_ :=<< Never, _) -> (never ,) . pure <$> r
 	(_, _ :=<< Never) -> (, never) . pure <$> l
+	(c :=<< GetThreadId, c' :=<< GetThreadId) ->
+		uncurry (par_ ft) . (app c *** app c') =<< ft
 	(c :=<< GetThreadId, _) -> flip (par_ ft) r . app c . fst =<< ft
 	(_, c' :=<< GetThreadId) -> par_ ft l . app c' . snd =<< ft
 	(_ :=<< Await el, _ :=<< Await er) -> ft >>= \(t, u) ->
-		uncurry (par_ ft) . update l t r u =<< pure =<<< Await (el `merge` er)
+		uncurry (par_ ft)
+			. update l t r u =<< pure =<<< Await (el `merge` er)
 
 ---------------------------------------------------------------------------
--- UPDATE
+-- UPDATABLE
 ---------------------------------------------------------------------------
 
 class Updatable a b where
@@ -86,6 +91,8 @@ class Updatable a b where
 		EvOccs es -> (React s es a, React s es b)
 
 instance Updatable a a where
+	update (c :=<< GetThreadId) t (c' :=<< GetThreadId) u x =
+		update (c `app` t) t (c' `app` u) u x
 	update (c :=<< GetThreadId) t r u x = update (c `app` t) t r u x
 	update l t (c' :=<< GetThreadId) u x = update l t (c' `app` u) u x
 	update l@(_ :=<< Never) _ (c' :=<< Await _) _ x = (l, c' `app` x)
@@ -94,6 +101,8 @@ instance Updatable a a where
 	update l _ r _ _ = (l, r)
 
 instance {-# OVERLAPPABLE #-} Updatable a b where
+	update (c :=<< GetThreadId) t (c' :=<< GetThreadId) u x =
+		update (c `app` t) t (c' `app` u) u x
 	update (c :=<< GetThreadId) t r u x = update (c `app` t) t r u x
 	update l t (c' :=<< GetThreadId) u x = update l t (c' `app` u) u x
 	update l@(_ :=<< Never) _ (c' :=<< Await _) _ x = (l, c' `app` x)

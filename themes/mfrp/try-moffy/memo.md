@@ -359,36 +359,35 @@ Control.Moffy.Handle.ThreadId
 		- [x] FUNCTION
 			* [x] BASIC
 			* [x] PRACTICAL
-* [ ] Control.Moffy.Internal.React
-	+ [ ] API
-		- [ ] Class
-			* [ ] Adjustable
-			* [ ] Updatetable
-		- [ ] Constraint Synonym
-			* [ ] Firstable
-			* [ ] CollapsableOccurred
-		- [ ] Function
-			* [ ] first
-			* [ ] adjust
-			* [ ] par
-	+ [ ] extension
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
-		- [ ] FIRST
-			* [ ] constraint synonym Firstable
-			* [ ] function first
-		- [ ] ADJUST
-			* [ ] structure
-			* [ ] rename adjustOld to adj
-			* [ ] class Adjustable
-			* [ ] instance Adjustable
-			* [ ] function adj
-		- [ ] PAR
-		- [ ] UPDATE
-			* [ ] class
-			* [ ] instance a a
-			* [ ] instance a b
+* [x] Control.Moffy.Internal.React
+	+ [x] API
+		- [x] structure
+		- [x] Class
+			* [x] Adjustable
+			* [x] Updatetable
+		- [x] Constraint Synonym
+			* [x] Firstable
+		- [x] Function
+			* [x] first_
+			* [x] adjust
+			* [x] par_
+	+ [x] extension
+	+ [x] imports
+	+ [x] structure
+	+ [x] body
+		- [x] FIRST
+			* [x] constraint synonym Firstable
+			* [x] function first_
+		- [x] ADJUST
+			* [x] structure
+			* [x] class Adjustable
+			* [x] instance Adjustable
+			* [x] function adj
+		- [x] PAR
+		- [x] UPDATABLE
+			* [x] class Updatable
+			* [x] instance Updatable a a
+			* [x] instance Updatable a b
 * [ ] Control.Moffy.Internal.React.Type
 	+ [ ] API
 		- [ ] structure
