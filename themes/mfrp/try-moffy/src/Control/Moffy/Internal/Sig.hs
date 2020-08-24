@@ -96,7 +96,7 @@ iapp_ ft mf mx = (<$> (uncurry ($) <$%> ipairs_ ft mf mx)) \case
 at_ :: Firstable es es' (ISig s (es :+: es') a r) r' =>
 	React s (es :+: es') (ThreadId, ThreadId) ->  Sig s es a r -> React s es' r' ->
 	React s (es :+: es') (Either r (Maybe a, r'))
-at_ ft (adjustSig -> Sig l) (adjust -> r) = (par_ ft l r) >>= \case
+at_ ft (adjustSig -> Sig l) (adjust -> r) = par_ ft l r >>= \case
 	(Pure l', r') -> (first Just <$>) <$> iat_ ft l' r'
 	(_, Pure y) -> pure $ Right (Nothing, y)
 	(_ :=<< _, _ :=<< _) -> error "never occur"

@@ -293,7 +293,7 @@ Control.Moffy.Handle.ThreadId
 		- [x] Orphan instances
 			* [x] Applicative (Flip (ISig s es) r)
 			* [x] Applicative (Flip (Sig s es) r)
-	+ [ ] extension
+	+ [x] extension
 	+ [ ] imports
 	+ [ ] structure
 	+ [ ] body

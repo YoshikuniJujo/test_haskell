@@ -1,7 +1,6 @@
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE TypeOperators, ConstraintKinds #-}
-{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -158,7 +157,7 @@ beforeIo :: (
 	HandleIo' i x m es -> (i -> m x) ->
 	HandleIo' x o m es' -> (x -> m o) -> HandleIo' i o m (es :+: es')
 beforeIo l nhl r nhr rqs st = expandIo l nhl rqs st >>= \(mo, st') ->
-	(expandIo r nhr rqs st' `maybe` (((<$> nhr st')) . (,) . Just)) mo
+	(expandIo r nhr rqs st' `maybe` ((<$> nhr st') . (,) . Just)) mo
 
 mergeIo :: (
 	Monad m,
