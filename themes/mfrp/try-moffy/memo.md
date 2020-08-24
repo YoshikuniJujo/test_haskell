@@ -105,7 +105,7 @@ todo
 			* [x] parList'
 * [x] try with Trial.TrySharing
 * [x] refactor Control.Moffy
-* [ ] refactor Control.Moffy.NoThreadId
+* [x] refactor Control.Moffy.NoThreadId
 * [ ] refactor Control.Moffy.Internal.Sig
 * [ ] refactor Control.Moffy.Internal.React
 * [ ] refactor Control.Moffy.Internal.React.Type
@@ -247,7 +247,7 @@ Control.Moffy.Handle.ThreadId
 			* [x] function indexBy
 		- [x] COPIES
 			* [x] function parList
-* [ ] Control.Moffy.NoThreadId
+* [x] Control.Moffy.NoThreadId
 	+ [x] API
 		- [x] structure
 		- [x] Applicative
@@ -264,31 +264,35 @@ Control.Moffy.Handle.ThreadId
 	+ [x] extension
 	+ [x] imports
 	+ [x] structure
-	+ [ ] body
-		- [ ] APPLICATIVE
-			* [ ] function app'
-			* [ ] function iapp'
-		- [ ] PARALLEL
-			* [ ] function first'
-			* [ ] function at'
-			* [ ] function break' and until'
-			* [ ] function indexBy'
-		- [ ] COPIES
-			* [ ] function parList'
+	+ [x] body
+		- [x] APPLICATIVE
+			* [x] function app'
+			* [x] function iapp'
+		- [x] PARALLEL
+			* [x] function first'
+			* [x] function at'
+			* [x] function break' and until'
+			* [x] function indexBy'
+		- [x] COPIES
+			* [x] function parList'
 * [ ] Control.Moffy.Internal.Sig
-	+ [ ] API
-		- [ ] Adjust
-		- [ ] Parallel
-			* [ ] at
-			* [ ] break
-			* [ ] until
-			* [ ] indexBy
-		- [ ] Copies
-			* [ ] spawn
-			* [ ] parList
-		- [ ] Orphan instances
-			* [ ] Applicative (Flip (ISig s es) r)
-			* [ ] Applicative (Flip (Sig s es) r)
+	+ [x] API
+		- [x] structure
+		- [x] Adjust
+		- [x] Applicative
+			* [x] app_
+			* [x] iapp_
+		- [x] Parallel
+			* [x] at
+			* [x] break
+			* [x] until
+			* [x] indexBy
+		- [x] Copies
+			* [x] spawn
+			* [x] parList
+		- [x] Orphan instances
+			* [x] Applicative (Flip (ISig s es) r)
+			* [x] Applicative (Flip (Sig s es) r)
 	+ [ ] extension
 	+ [ ] imports
 	+ [ ] structure

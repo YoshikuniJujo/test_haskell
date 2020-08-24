@@ -8,12 +8,12 @@
 module Control.Moffy.Internal.Sig (
 	-- * Adjust
 	adjustSig,
+	-- * Applicative
+	app_, iapp_,
 	-- * Parallel
 	at_, break_, until_, indexBy_,
 	-- * Copies
-	spawn, parList_,
-	-- * Applicative Like
-	app_, iapp_
+	spawn, parList_
 	) where
 
 import Prelude hiding (repeat, break, until)
