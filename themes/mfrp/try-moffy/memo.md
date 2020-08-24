@@ -199,8 +199,8 @@ Control.Moffy.Handle.ThreadId
 
 ### refactoring
 
-* [ ] Control.Moffy
-	+ [ ] API
+* [x] Control.Moffy
+	+ [x] API
 		- [x] structure
 		- [x] Sig
 			* [x] Sig
@@ -214,20 +214,41 @@ Control.Moffy.Handle.ThreadId
 		- [x] Constraint
 			* [x] Firstable
 			* [x] Adjustable
-		- [ ] Combinator
-			* [ ] Await and Adjust
-				+ [ ] await
-				+ [ ] adjust
-				+ [ ] adjustSig
-			* [ ] Create Sig
-			* [ ] Traverse
-			* [ ] Parallel
-				+ [ ] first
-				+ [ ] at
-				+ [ ] break
-				+ [ ] until
-				+ [ ] indexBy
-			* [ ] Copies
+		- [x] Combinator
+			* [x] Await and Adjust
+				+ [x] await
+				+ [x] adjust
+				+ [x] adjustSig
+			* [x] Create Sig
+				+ [x] emit
+				+ [x] waitFor
+				+ [x] repeat
+			* [x] Traverse
+				+ [x] find
+				+ [x] scanl
+			* [x] Parallel
+				+ [x] first
+				+ [x] at
+				+ [x] break
+				+ [x] until
+				+ [x] indexBy
+			* [x] Copies
+				+ [x] spawn
+				+ [x] parList
+	+ [x] extension
+	+ [x] imports
+	+ [x] structure
+	+ [x] body
+		- [x] PARALLEL
+			* [x] function first
+			* [x] function at
+			* [x] function break
+			* [x] function until
+			* [x] function indexBy
+		- [x] COPIES
+			* [x] function parList
+* [ ] Control.Moffy.NoThreadId
+	+ [ ] API
 	+ [ ] extension
 	+ [ ] imports
 	+ [ ] structure

@@ -35,6 +35,15 @@ import Data.Type.Set ((:+:))
 import Data.OneOrMore (Mergeable)
 import Data.Or (Or)
 
+---------------------------------------------------------------------------
+
+-- * PARALLEL
+-- * COPIES
+
+---------------------------------------------------------------------------
+-- PARALLEL
+---------------------------------------------------------------------------
+
 infixr 8 `first`
 
 first :: Firstable es es' a b =>
@@ -67,6 +76,10 @@ indexBy ::
 	Sig s es a r -> Sig s es' b r' ->
 	Sig s (es :+: es') a (Either r (Maybe a, r'))
 indexBy = indexBy_ forkThreadId
+
+---------------------------------------------------------------------------
+-- COPIES
+---------------------------------------------------------------------------
 
 parList :: Mergeable es es es =>
 	Sig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
