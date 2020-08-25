@@ -19,7 +19,7 @@ module Control.Moffy.Internal.React.Type (
 	-- * ThreadId
 	ThreadId, rootThreadId, noForkThreadId, forkThreadId ) where
 
-import Control.Monad.Freer.Par (Freer, (>>>=), (=<<<))
+import Control.Monad.Freer.Par (Freer, (=<<<), (>>>=))
 import Control.Monad.Freer.Par.FTCQueue (FTCQueue)
 import Control.Monad.Freer.Par.TaggableFunction (TaggableFun)
 import Data.Kind (Type)

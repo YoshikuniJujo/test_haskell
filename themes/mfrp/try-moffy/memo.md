@@ -389,7 +389,7 @@ Control.Moffy.Handle.ThreadId
 			* [x] class Updatable
 			* [x] instance Updatable a a
 			* [x] instance Updatable a b
-* [ ] Control.Moffy.Internal.React.Type
+* [x] Control.Moffy.Internal.React.Type
 	+ [x] API
 		- [x] structure
 		- [x] React
@@ -418,16 +418,36 @@ Control.Moffy.Handle.ThreadId
 			* [x] value rootThreadId
 			* [x] react noForkThreadId
 			* [x] react forkThreadId
-	+ [ ] extension
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
-		- [ ] REACT
-			* [ ] TYPE
-			* [ ] NEVER AND AWAIT
-		- [ ] CONSTRAINT SYNONYM
-		- [ ] HANDLE
-		- [ ] THREAD ID
+	+ [x] extension
+	+ [x] imports
+	+ [x] structure
+	+ [x] body
+		- [x] REACT
+			* [x] TYPE
+				+ [x] type React
+				+ [x] data Rct
+				+ [x] class Request
+				+ [x] type EvReqs
+				+ [x] type EvOccs
+			* [x] NEVER AND AWAIT
+				+ [x] react never
+				+ [x] function await
+				+ [x] function await'
+		- [x] CONSTRAINT SYNONYM
+			* [x] ExpandableOccurred
+			* [x] CollapsableOccurred
+			* [x] MergeableOccurred
+		- [x] HANDLE
+			* [x] type Handle
+			* [x] type HandleSt
+			* [x] type St
+			* [x] funciton liftHandle
+			* [x] function liftSt
+		- [x] THREAD ID
+			* [x] data ThreadId
+			* [x] value rootThreadId
+			* [x] react noForkThreadId
+			* [x] react forkThreadId
 * [ ] Control.Moffy.Handle
 	+ [ ] API
 		- [ ] structure
