@@ -5,13 +5,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Internal.React.Type (
-	-- * Type React
-	React, Rct(..),
-	-- * Class Request
+	-- * React
+	-- ** Type React and Data Rct
+	React, Rct(..), EvReqs, EvOccs,
+	-- ** Class Request
 	Request(..),
-	-- * Type Synonym
-	EvReqs, EvOccs,
-	-- * Constraint Synonym
+	-- ** Constraint Synonym for Data Occurred
 	ExpandableOccurred, CollapsableOccurred, MergeableOccurred,
 	-- * Never and Await
 	never, await, await',
