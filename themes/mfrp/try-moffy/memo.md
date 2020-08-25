@@ -108,8 +108,8 @@ todo
 * [x] refactor Control.Moffy.NoThreadId
 * [x] refactor Control.Moffy.Internal.Sig
 * [x] refactor Control.Moffy.Internal.React
-* [ ] refactor Control.Moffy.Internal.React.Type
-* [ ] refactor Control.Moffy.Handle
+* [x] refactor Control.Moffy.Internal.React.Type
+* [x] refactor Control.Moffy.Handle
 * [ ] check module hierarchy
 	+ [ ] Moffy
 	+ [x] Moffy library
@@ -1103,9 +1103,9 @@ Trials (20)
 
 * [ ] Trial.TrySharing
 	+ [x] rename
-	+ [ ] API
+	+ [x] API
 	+ [x] extension
-	+ [ ] import
+	+ [x] import
 	+ [ ] structure
 	+ [ ] body
 

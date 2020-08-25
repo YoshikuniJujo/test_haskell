@@ -1,21 +1,33 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.TrySharing where
+module Trial.TrySharing (
+	-- * No Sharing
+	runShowButton2,
+	-- * Sharing
+	-- ** Simple
+	runSharingShowButton2,
+	-- ** Nest first'
+	runSharingShowButton4, runSharingShowButton8,
+	-- ** Two Time Click
+	runSharingShowButton2Button2
+	) where
 
-import Control.Concurrent
-import Control.Moffy
-import Control.Moffy.NoThreadId
-import Control.Moffy.Handle
-import Control.Moffy.Run
-import Data.Or
-import Data.Time
-import System.IO.Unsafe
+import Control.Monad.Freer.Par (runTagged, tag)
+import Control.Moffy (React, adjust, first)
+import Control.Moffy.NoThreadId (first')
+import Control.Moffy.Event.Mouse (MouseEv, mouseDown)
+import Control.Moffy.Handle (retry)
+import Control.Moffy.Handle.XField (handle)
+import Control.Moffy.Run (interpretReact)
+import Control.Concurrent (threadDelay)
+import Data.Or (Or)
+import Data.Time (getCurrentTime)
+import System.IO.Unsafe (unsafePerformIO)
 
-import Control.Moffy.Event.Mouse
-import Control.Moffy.Handle.XField
-import Control.Monad.Freer.Par
-import Field
+import Field (openField, closeField, exposureMask, buttonPressMask)
+
+---------------------------------------------------------------------------
 
 show' :: Show a => a -> String
 show' x = unsafePerformIO
