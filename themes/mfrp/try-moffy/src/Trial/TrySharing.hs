@@ -14,7 +14,7 @@ module Trial.TrySharing (
 	) where
 
 import Control.Monad.Freer.Par (runTagged, tag)
-import Control.Moffy (React, adjust, first)
+import Control.Moffy (React, adjust)
 import Control.Moffy.NoThreadId (first')
 import Control.Moffy.Event.Mouse (MouseEv, mouseDown)
 import Control.Moffy.Handle (retry)
@@ -35,6 +35,7 @@ import Field (openField, closeField, exposureMask, buttonPressMask)
 --	+ NEST FIRST'
 --	+ TWO TIME CLICK
 -- * TOOLS
+--	+ TYPE OR'
 --	+ RUN MOUSE EV
 --	+ SHOW BUTTON
 
@@ -42,8 +43,8 @@ import Field (openField, closeField, exposureMask, buttonPressMask)
 -- NO SHARING
 ---------------------------------------------------------------------------
 
-runShowButton2 :: IO (Or String String)
-runShowButton2 = runMouseEv $ showButton `first` showButton
+runShowButton2 :: IO (Or' String)
+runShowButton2 = runMouseEv $ showButton `first'` showButton
 
 ---------------------------------------------------------------------------
 -- SHARING
@@ -51,19 +52,19 @@ runShowButton2 = runMouseEv $ showButton `first` showButton
 
 -- SIMPLE
 
-runSharingShowButton2 :: IO (Or String String)
+runSharingShowButton2 :: IO (Or' String)
 runSharingShowButton2 =
-	runTagged $ tag showButton >>= \sb -> pure . runMouseEv $ sb `first` sb
+	runTagged $ tag showButton >>= \sb -> pure . runMouseEv $ sb `first'` sb
 
 -- NEST FIRST'
 
-runSharingShowButton4 :: IO (Or (Or String String) (Or String String))
+runSharingShowButton4 :: IO (Or' (Or' String))
 runSharingShowButton4 = runTagged do
 	sb <- tag showButton
 	sb' <- tag $ sb `first'` sb
 	pure . runMouseEv $ sb' `first'` sb'
 
-runSharingShowButton8 :: IO (Or (Or (Or String String) (Or String String)) (Or (Or String String) (Or String String)))
+runSharingShowButton8 :: IO (Or' (Or' (Or' String)))
 runSharingShowButton8 = runTagged do
 	sb <- tag showButton
 	sb' <- tag $ sb `first'` sb
@@ -72,21 +73,25 @@ runSharingShowButton8 = runTagged do
 
 -- TWO TIME CLICK
 
-runSharingShowButton2Button2 :: IO (Or (String, String) (String, String))
+runSharingShowButton2Button2 :: IO (Or' (String, String))
 runSharingShowButton2Button2 = runTagged $ do
 	sb <- tag showButton
 	let	sb2 = (,) <$> sb <*> sb
-	pure . runMouseEv $ sb2 `first` sb2
+	pure . runMouseEv $ sb2 `first'` sb2
 
 ---------------------------------------------------------------------------
 -- TOOLS
 ---------------------------------------------------------------------------
 
+-- TYPE OR'
+
+type Or' a = Or a a
+
 -- RUN MOUSE EV
 
 runMouseEv :: React s MouseEv r -> IO r
 runMouseEv r = do
-	f <- openField "RUN REACT" [exposureMask, buttonPressMask]
+	f <- openField "TRY SHARING" [exposureMask, buttonPressMask]
 	interpretReact (retry $ handle Nothing f) r <* closeField f
 
 -- SHOW BUTTON
@@ -99,4 +104,5 @@ show' x = unsafePerformIO
 	$ show x <$ (message "Start" >> threadDelay 2000000 >> message "END")
 
 message :: String -> IO ()
-message msg = putStrLn . ("\n" ++) . (msg ++) . (": " ++) . show =<< getCurrentTime
+message msg =
+	putStrLn . ("\n" ++) . (msg ++) . (": " ++) . show =<< getCurrentTime

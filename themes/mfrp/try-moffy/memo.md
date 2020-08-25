@@ -1101,28 +1101,40 @@ Trials (20)
 
 ##### refactoring
 
-* [ ] Trial.TrySharing
+* [x] Trial.TrySharing
 	+ [x] rename
 	+ [x] API
 	+ [x] extension
 	+ [x] import
 	+ [x] structure
-	+ [ ] body
-		- [ ] NO SHARING
-		- [ ] SHARING
-			* [ ] SIMPLE
-			* [ ] NEST FIRST'
-				+ [ ] function runSharingShowButton4
-				+ [ ] function runSharingShowButton8
-			* [ ] TWO TIME CLICK
-		- [ ] TOOLS
-			* [ ] RUN MOUSE EV
-			* [ ] SHOW BUTTON
-				+ [ ] function showButton
-				+ [ ] function show'
-				+ [ ] message
+	+ [x] body
+		- [x] NO SHARING
+		- [x] SHARING
+			* [x] SIMPLE
+			* [x] NEST FIRST'
+				+ [x] function runSharingShowButton4
+				+ [x] function runSharingShowButton8
+			* [x] TWO TIME CLICK
+		- [x] TOOLS
+			* [x] TYPE OR'
+			* [x] RUN MOUSE EV
+			* [x] SHOW BUTTON
+				+ [x] function showButton
+				+ [x] function show'
+				+ [x] message
 
 #### CheckSharing.EvInt
+
+##### refactoring
+
+* CheckSharing.EvInt
+	+ [ ] view
+	+ [ ] rename
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
 
 #### CheckSharing.ThreadId
 
