@@ -1128,6 +1128,11 @@ Trials (20)
 ##### refactoring
 
 * CheckSharing.EvInt
+	+ [x] remove it
+
+#### CheckSharing.ThreadId
+
+* CheckSharing.ThreadId
 	+ [ ] view
 	+ [ ] rename
 	+ [ ] API
@@ -1135,8 +1140,6 @@ Trials (20)
 	+ [ ] import
 	+ [ ] structure
 	+ [ ] body
-
-#### CheckSharing.ThreadId
 
 #### Count
 
