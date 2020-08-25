@@ -1106,8 +1106,21 @@ Trials (20)
 	+ [x] API
 	+ [x] extension
 	+ [x] import
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] NO SHARING
+		- [ ] SHARING
+			* [ ] SIMPLE
+			* [ ] NEST FIRST'
+				+ [ ] function runSharingShowButton4
+				+ [ ] function runSharingShowButton8
+			* [ ] TWO TIME CLICK
+		- [ ] TOOLS
+			* [ ] RUN MOUSE EV
+			* [ ] SHOW BUTTON
+				+ [ ] function showButton
+				+ [ ] function show'
+				+ [ ] message
 
 #### CheckSharing.EvInt
 

@@ -29,19 +29,33 @@ import Field (openField, closeField, exposureMask, buttonPressMask)
 
 ---------------------------------------------------------------------------
 
-show' :: Show a => a -> String
-show' x = unsafePerformIO
-	$ show x <$ (message "Start" >> threadDelay 2000000 >> message "END")
+-- * NO SHARING
+-- * SHARING
+--	+ SIMPLE
+--	+ NEST FIRST'
+--	+ TWO TIME CLICK
+-- * TOOLS
+--	+ RUN MOUSE EV
+--	+ SHOW BUTTON
 
-showButton :: React s MouseEv String
-showButton = adjust $ show' <$> mouseDown
+---------------------------------------------------------------------------
+-- NO SHARING
+---------------------------------------------------------------------------
 
 runShowButton2 :: IO (Or String String)
 runShowButton2 = runMouseEv $ showButton `first` showButton
 
+---------------------------------------------------------------------------
+-- SHARING
+---------------------------------------------------------------------------
+
+-- SIMPLE
+
 runSharingShowButton2 :: IO (Or String String)
 runSharingShowButton2 =
 	runTagged $ tag showButton >>= \sb -> pure . runMouseEv $ sb `first` sb
+
+-- NEST FIRST'
 
 runSharingShowButton4 :: IO (Or (Or String String) (Or String String))
 runSharingShowButton4 = runTagged do
@@ -56,16 +70,33 @@ runSharingShowButton8 = runTagged do
 	sb'' <- tag $ sb' `first'` sb'
 	pure . runMouseEv $ sb'' `first'` sb''
 
+-- TWO TIME CLICK
+
 runSharingShowButton2Button2 :: IO (Or (String, String) (String, String))
 runSharingShowButton2Button2 = runTagged $ do
 	sb <- tag showButton
 	let	sb2 = (,) <$> sb <*> sb
 	pure . runMouseEv $ sb2 `first` sb2
 
-message :: String -> IO ()
-message msg = putStrLn . ("\n" ++) . (msg ++) . (": " ++) . show =<< getCurrentTime
+---------------------------------------------------------------------------
+-- TOOLS
+---------------------------------------------------------------------------
+
+-- RUN MOUSE EV
 
 runMouseEv :: React s MouseEv r -> IO r
 runMouseEv r = do
 	f <- openField "RUN REACT" [exposureMask, buttonPressMask]
 	interpretReact (retry $ handle Nothing f) r <* closeField f
+
+-- SHOW BUTTON
+
+showButton :: React s MouseEv String
+showButton = adjust $ show' <$> mouseDown
+
+show' :: Show a => a -> String
+show' x = unsafePerformIO
+	$ show x <$ (message "Start" >> threadDelay 2000000 >> message "END")
+
+message :: String -> IO ()
+message msg = putStrLn . ("\n" ++) . (msg ++) . (": " ++) . show =<< getCurrentTime
