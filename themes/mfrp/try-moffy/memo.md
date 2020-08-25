@@ -1130,16 +1130,26 @@ Trials (20)
 * CheckSharing.EvInt
 	+ [x] remove it
 
-#### CheckSharing.ThreadId
+#### TrySharing.ThreadId
 
-* CheckSharing.ThreadId
-	+ [ ] view
-	+ [ ] rename
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
+* [x] TrySharing.ThreadId
+	+ [x] view
+	+ [x] rename
+	+ [x] API
+	+ [x] extension
+	+ [x] import
+	+ [x] structure
+	+ [x] body
+		- [x] TRIAL
+			* [x] action runFirstGetThreadId
+			* [x] action runSharingFirstGetThreadId
+			* [x] action runSharingFirstGetThreadId'
+		- [x] PARTS
+			* [x] type Or'
+			* [x] runMouseThreadId
+			* [x] react heavyGetThreadId
+			* [x] react heavyMouseDown
+			* [x] function heavyId
 
 #### Count
 
