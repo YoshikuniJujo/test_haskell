@@ -26,8 +26,8 @@ module Control.Moffy.Handle (
 
 import Control.Arrow (first)
 import Control.Moffy.Internal.React.Type (
-	ExpandableOccurred, MergeableOccurred,
-	Handle, HandleSt, St, liftHandle, liftSt, EvReqs, EvOccs )
+	EvReqs, EvOccs, ExpandableOccurred, MergeableOccurred,
+	Handle, HandleSt, St, liftHandle, liftSt )
 import Data.Type.Set ((:+:))
 import Data.OneOrMore (Collapsable, merge')
 
@@ -149,7 +149,7 @@ collapseIo hdl nh = ((((Nothing ,) <$>) . nh) `maybe` hdl) . OOM.collapse
 
 expandIo :: (Applicative m, ExpandableHandle es es') =>
 	HandleIo' i o m es -> (i -> m o) -> HandleIo' i o m es'
-expandIo hdl nh i rqs = first (OOM.expand <$>) <$> collapseIo hdl nh i rqs
+expandIo hdl nh rqs = (first (OOM.expand <$>) <$>) . collapseIo hdl nh rqs
 
 beforeIo :: (
 	Monad m,

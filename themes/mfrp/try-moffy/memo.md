@@ -448,77 +448,77 @@ Control.Moffy.Handle.ThreadId
 			* [x] value rootThreadId
 			* [x] react noForkThreadId
 			* [x] react forkThreadId
-* [ ] Control.Moffy.Handle
-	+ [ ] API
-		- [ ] structure
-		- [ ] Constraint
-			* [ ] ExpandableHandle
-			* [ ] ExpandableOccurred
-			* [ ] MergeableOccurred
-		- [ ] Handle and Function
-			* [ ] Plain
-				+ [ ] Type
-					- [ ] Handle
-					- [ ] Handle'
-				+ [ ] Composer
-					- [ ] retry
-					- [ ] expand
-					- [ ] before
-					- [ ] merge
-			* [ ] With State
-				+ [ ] Type
-					- [ ] HandleSt
-					- [ ] HandleSt'
-					- [ ] St
-					- [ ] liftHandle
-					- [ ] liftHandle'
-					- [ ] liftSt
-				+ [ ] Composer
-					- [ ] retrySt
-					- [ ] expandSt
-					- [ ] beforeSt
-					- [ ] mergeSt
-			* [ ] With Input and Output
-				+ [ ] Type
-					- [ ] HelloIo'
-					- [ ] pushInput
-					- [ ] popInput
-				+ [ ] Composer
-					- [ ] expandIo
-					- [ ] beforeIo
-					- [ ] mergeIo
-	+ [ ] extension
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
-		- [ ] CONSTRAINT
-		- [ ] PLAIN
-			* [ ] TYPE
-			* [ ] COMPOSER
-				+ [ ] retry
-				+ [ ] collapse
-				+ [ ] expand
-				+ [ ] before
-				+ [ ] merge
-		- [ ] WITH STATE
-			* [ ] TYPE
-				+ [ ] type HandleSt'
-				+ [ ] function liftHandle'
-			* [ ] COMPOSER
-				+ [ ] retrySt
-				+ [ ] expandSt
-				+ [ ] beforeSt
-				+ [ ] mergeSt
-		- [ ] WITH INPUT AND OUTPUT
-			* [ ] TYPE
-				+ [ ] type HandleIo'
-				+ [ ] function pushInput
-				+ [ ] function popInput
-			* [ ] COMPOSER
-				+ [ ] function collapseIo
-				+ [ ] function expandIo
-				+ [ ] function beforeIo
-				+ [ ] function mregeIo
+* [x] Control.Moffy.Handle
+	+ [x] API
+		- [x] structure
+		- [x] Constraint
+			* [x] ExpandableHandle
+			* [x] ExpandableOccurred
+			* [x] MergeableOccurred
+		- [x] Handle and Function
+			* [x] Plain
+				+ [x] Type
+					- [x] Handle
+					- [x] Handle'
+				+ [x] Composer
+					- [x] retry
+					- [x] expand
+					- [x] before
+					- [x] merge
+			* [x] With State
+				+ [x] Type
+					- [x] HandleSt
+					- [x] HandleSt'
+					- [x] St
+					- [x] liftHandle
+					- [x] liftHandle'
+					- [x] liftSt
+				+ [x] Composer
+					- [x] retrySt
+					- [x] expandSt
+					- [x] beforeSt
+					- [x] mergeSt
+			* [x] With Input and Output
+				+ [x] Type
+					- [x] HelloIo'
+					- [x] pushInput
+					- [x] popInput
+				+ [x] Composer
+					- [x] expandIo
+					- [x] beforeIo
+					- [x] mergeIo
+	+ [x] extension
+	+ [x] imports
+	+ [x] structure
+	+ [x] body
+		- [x] CONSTRAINT
+		- [x] PLAIN
+			* [x] TYPE
+			* [x] COMPOSER
+				+ [x] retry
+				+ [x] collapse
+				+ [x] expand
+				+ [x] before
+				+ [x] merge
+		- [x] WITH STATE
+			* [x] TYPE
+				+ [x] type HandleSt'
+				+ [x] function liftHandle'
+			* [x] COMPOSER
+				+ [x] retrySt
+				+ [x] expandSt
+				+ [x] beforeSt
+				+ [x] mergeSt
+		- [x] WITH INPUT AND OUTPUT
+			* [x] TYPE
+				+ [x] type HandleIo'
+				+ [x] function pushInput
+				+ [x] function popInput
+			* [x] COMPOSER
+				+ [x] function collapseIo
+				+ [x] function expandIo
+				+ [x] function beforeIo
+				+ [x] function mregeIo
 * [x] Control.Moffy.Run
 	+ [x] API
 		- [x] Type
