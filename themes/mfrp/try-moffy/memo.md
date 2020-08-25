@@ -1163,33 +1163,41 @@ Trials (20)
 			* [x] runMouseReact
 			* [x] runMouse
 
-#### Count With Lock
-
-* [ ] Trial.CountWithLock
-	+ [ ] view
-	+ [ ] consider whether or not to rename
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
-
-#### Try Check Dup
-
-* [ ] Trial.TryCheckDup
-	+ [ ] view
-	+ [ ] consider whether or not to rename
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
-
 #### Try Key
+
+* [x] Trial.TryKey
+	+ [x] view
+	+ [x] consider whether or not to rename
+	+ [x] API
+	+ [x] extension
+	+ [x] import
+	+ [x] body
+		- [x] action tryKey
+		- [x] sig keySig
+		- [x] react asciiKey
+		- [x] react asciiKeyUp
 
 #### Try ThreadId
 
+* [ ] Trial.ThreadId
+	+ [ ] view
+	+ [ ] consider whether or not to rename
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
+
 #### Try Lock
+
+* [ ] Trial.TryLock
+	+ [ ] view
+	+ [ ] consider whether or not to rename
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
 
 #### Try Random
 
@@ -1204,7 +1212,31 @@ Trials (20)
 		- [ ] function evalRandom
 		- [ ] function getRandomRs
 
+#### Count With Lock
+
+* [ ] Trial.CountWithLock
+	+ [ ] consider whether or not to remove
+	+ [ ] view
+	+ [ ] consider whether or not to rename
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
+
 ### Boxes (3)
+
+### Try Check Dup
+
+* [ ] Trial.TryCheckDup
+	+ [ ] consider whether or not to remove
+	+ [ ] view
+	+ [ ] consider whether or not to rename
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
 
 ### Followbox (7)
 
