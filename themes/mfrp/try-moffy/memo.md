@@ -158,6 +158,7 @@ todo
 	+ [ ] consider whether to add (for example) function simple
 		to make SimpleHandle
 * [ ] consider whether or not to put `deriving Show' to Occurred Foo
+* [ ] define Data.Or.or
 
 
 Moffy (9)
@@ -1075,19 +1076,6 @@ Trials (20)
 
 ### tribial (10)
 
-#### Try Random
-
-##### refactoring
-
-* [x] Trial.TryRandom
-	+ [x] rename
-	+ [x] API
-	+ [x] import
-	+ [x] body
-		- [x] list exampleRandomRs
-		- [x] function evalRandom
-		- [x] function getRandomRs
-
 #### TrySharing
 
 ##### repair
@@ -1153,13 +1141,68 @@ Trials (20)
 
 #### Count
 
+##### refactoring
+
+* [x] Trial.Count
+	+ [x] view
+	+ [x] consider whether or not to rename
+	+ [x] API
+	+ [x] extension
+	+ [x] import
+	+ [x] structure
+	+ [x] body
+		- [x] TRIAL
+			* [x] action tryLeftCount
+			* [x] action tryLeftCountSig
+			* [x] action tryLeftRandomSig
+		- [x] REACT AND SIG
+			* [x] function leftCount
+			* [x] function leftCountSig
+			* [x] function leftRandomSig
+		- [x] RUN
+			* [x] runMouseReact
+			* [x] runMouse
+
 #### Count With Lock
 
+* [ ] Trial.CountWithLock
+	+ [ ] view
+	+ [ ] consider whether or not to rename
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
+
 #### Try Check Dup
+
+* [ ] Trial.TryCheckDup
+	+ [ ] view
+	+ [ ] consider whether or not to rename
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
 
 #### Try Key
 
 #### Try ThreadId
+
+#### Try Lock
+
+#### Try Random
+
+##### refactoring
+
+* [ ] Trial.TryRandom
+	+ [ ] rename
+	+ [ ] API
+	+ [ ] import
+	+ [ ] body
+		- [ ] list exampleRandomRs
+		- [ ] function evalRandom
+		- [ ] function getRandomRs
 
 ### Boxes (3)
 

@@ -29,8 +29,8 @@ leftCount c = do
 		R () -> pure c
 		LR () () -> pure $ c + 1
 
-tryLeftCount :: IO Int
-tryLeftCount = do
+tryLeftCount' :: IO Int
+tryLeftCount' = do
 	f <- openField "TRY LEFT COUNT" [buttonPressMask, exposureMask]
 	interpret (retry $ handle Nothing f) print (leftCount 0) <* closeField f
 
