@@ -3,7 +3,11 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.TryLock where
+module Trial.TryLock (
+	-- * Type
+	LockSt,
+	-- * Action
+	trySingleLeftCount, tryNoLockLeftCount2, tryLockLeftCount2 ) where
 
 import Control.Monad
 import Control.Moffy
@@ -29,8 +33,8 @@ leftCount c = do
 		R () -> pure c
 		LR () () -> pure $ c + 1
 
-tryLeftCount' :: IO Int
-tryLeftCount' = do
+trySingleLeftCount :: IO Int
+trySingleLeftCount = do
 	f <- openField "TRY LEFT COUNT" [buttonPressMask, exposureMask]
 	interpret (retry $ handle Nothing f) print (leftCount 0) <* closeField f
 
@@ -70,8 +74,8 @@ handle' f = liftSt . handle Nothing f
 handleGetThreadId' :: LockState s => HandleIo' s s IO (Singleton GetThreadId)
 handleGetThreadId' = liftSt . handleGetThreadId
 
-tryLockLeftCount2' :: IO ((), LockSt)
-tryLockLeftCount2' = do
+tryLockLeftCount2 :: IO ((), LockSt)
+tryLockLeftCount2 = do
 	f <- openField "TRY LOCK LEFT COUNT 2" [buttonPressMask, exposureMask]
 	interpretSt (retrySt $ handleGetThreadId' `mergeSt` handleLock `mergeSt` handle' f) print lockLeftCount2 (LockSt 0 [])
 		<* closeField f

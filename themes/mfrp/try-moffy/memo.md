@@ -1197,9 +1197,9 @@ Trials (20)
 #### Try Lock
 
 * [ ] Trial.TryLock
-	+ [ ] view
-	+ [ ] consider whether or not to rename
-	+ [ ] API
+	+ [x] view
+	+ [x] consider whether or not to rename
+	+ [x] API
 	+ [ ] extension
 	+ [ ] import
 	+ [ ] structure
