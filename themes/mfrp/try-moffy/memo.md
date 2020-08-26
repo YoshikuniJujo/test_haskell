@@ -1241,10 +1241,24 @@ Trials (20)
 
 ### Boxes (3)
 
+#### module hierarchy
+
+```
+Main
+  +- Trial.Boxes
+  |    +- Trial.Boxes.Box
+  |    +- Trial.Boxes.Event
+  +- Trial.Boxes.Run
+       +- Trial.Boxes.Handle
+       |    +- Trial.Boxes.Event
+       +- Trial.Boxes.View
+            +- Trial.Boxes.Box
+```
+
 #### refactoring
 
-* [ ] refactor module name and hierarchy
-* [ ] check module hierarchy
+* [x] refactor module name and hierarchy
+* [x] check module hierarchy
 * [ ] refactor each modules
 
 ##### module Trial.StepByStepBox
@@ -1256,10 +1270,10 @@ Trials (20)
 * [x] separate to Trial.Boxes and other
 	+ [x] create empty module Trial.Boxes.View
 	+ [x] others
-* [ ] rename to Trial.Boxes.Run
-	+ [ ] rename
-	+ [ ] API
-* [ ] repair app/Main.hs
+* [x] rename to Trial.Boxes.Run
+	+ [x] rename
+	+ [x] API
+* [x] repair app/Main.hs
 
 ##### module Trial.Boxes.Event
 

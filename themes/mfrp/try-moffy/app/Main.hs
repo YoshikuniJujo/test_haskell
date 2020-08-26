@@ -1,6 +1,12 @@
 module Main where
 
-import Trial.StepByStepBox
+import Prelude hiding (break)
+
+import Control.Moffy
+import Control.Moffy.Event.Delete
+
+import Trial.Boxes
+import Trial.Boxes.Run
 
 main :: IO ()
-main = tryBoxes
+main = () <$ trySigGBoxes' "TRY BOXES" (boxes `break` deleteEvent)

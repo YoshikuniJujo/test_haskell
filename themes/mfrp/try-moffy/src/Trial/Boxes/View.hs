@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Boxes.View where
+module Trial.Boxes.View (Box, drawBoxes) where
 
 import Trial.Boxes.Box
 import Field

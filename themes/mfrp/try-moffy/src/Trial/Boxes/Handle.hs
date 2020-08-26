@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Boxes.Handle (Mode(InitialMode), handleBoxes) where
+module Trial.Boxes.Handle (SigG, Mode(InitialMode), handleBoxes) where
 
 import Control.Moffy.Handle hiding (expand)
 import Control.Moffy.Handle.Time
@@ -8,7 +8,7 @@ import Data.Time (DiffTime)
 import Data.Time.Clock.TAI (AbsoluteTime)
 	
 import Control.Moffy.Handle.XField
-import Trial.Boxes.Event (BoxEv)
+import Trial.Boxes.Event (SigG, BoxEv)
 import Field (Field)
 
 ---------------------------------------------------------------------------
