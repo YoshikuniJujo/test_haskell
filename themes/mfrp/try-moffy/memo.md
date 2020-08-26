@@ -1289,8 +1289,27 @@ Main
 	+ [x] API
 	+ [x] extension
 	+ [x] import
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] BOXES
+			* [ ] sig boxes
+			* [ ] sig newBoxes
+			* [ ] sig box
+		- [ ] DEFINE RECT
+			* [ ] sig defineRect
+			* [ ] react firstPoint
+			* [ ] function completeRect
+			* [ ] function curRect
+		- [ ] CHOOSE BOX COLOR
+			* [ ] function chooseBoxColor
+			* [ ] function wiggleRect
+			* [ ] sig cycleColor
+		- [ ] DR CLICK ON
+			* [ ] function drClickOn
+			* [ ] function posInside
+			* [ ] function inside
+			* [ ] react doubler
+		- [ ] BEFORE
 * [ ] Trial.Boxes.Box
 * [ ] Trial.Boxes.BoxEv
 * [ ] Trial.Boxes.Run

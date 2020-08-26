@@ -32,17 +32,34 @@ import Trial.Boxes.BoxEv (SigG, ISigG)
 
 ---------------------------------------------------------------------------
 
-curRect :: Point -> Sig s (MouseMove :- 'Nil) Rect ()
-curRect p1 = Rect p1 <$%> mousePos
+-- * BOXES
+-- * DEFINE RECT
+-- * CHOOSE BOX COLOR
+-- * DR CLICK ON
+-- * BEFORE
 
-inside :: Point -> Rect -> Bool
-(x, y) `inside` Rect (l, u) (r, d) =
-	(l <= x && x <= r || r <= x && x <= l) &&
-	(u <= y && y <= d || d <= y && y <= u)
+---------------------------------------------------------------------------
+-- BOXES
+---------------------------------------------------------------------------
 
-before :: Firstable es es' a b =>
-	React s es a -> React s es' b -> React s (es :+: es') Bool
-l `before` r = l `first` r >>= \case L _ -> pure True; _ -> pure False
+boxes :: SigG s [Box] ()
+boxes = () <$ parList newBoxes
+
+newBoxes :: SigG s (ISigG s Box ()) ()
+newBoxes = spawn box
+
+box :: SigG s Box ()
+box = (() <$) $ (`Box` Red) <$%> adjustSig defineRect >>= \r ->
+	adjustSig (chooseBoxColor r) >> waitFor (adjust $ drClickOn r)
+
+---------------------------------------------------------------------------
+-- DEFINE RECT
+---------------------------------------------------------------------------
+
+defineRect :: Sig s (MouseDown :- MouseUp :- MouseMove :- 'Nil) Rect Rect
+defineRect = waitFor (adjust firstPoint) >>= \case
+	Nothing -> error "never occur"
+	Just p1 -> fromMaybe (error "never occur") <$> adjustSig (completeRect p1)
 
 firstPoint :: React s (MouseDown :- MouseMove :- 'Nil) (Maybe Point)
 firstPoint = (<$> mousePos `at` leftClick)
@@ -51,6 +68,16 @@ firstPoint = (<$> mousePos `at` leftClick)
 completeRect :: Point -> Sig s (MouseUp :- MouseMove :- 'Nil) Rect (Maybe Rect)
 completeRect p1 =
 	either (const Nothing) (Just . fst) <$> curRect p1 `until` leftUp
+
+curRect :: Point -> Sig s (MouseMove :- 'Nil) Rect ()
+curRect p1 = Rect p1 <$%> mousePos
+
+---------------------------------------------------------------------------
+-- CHOOSE BOX COLOR
+---------------------------------------------------------------------------
+
+chooseBoxColor :: Rect -> Sig s (MouseDown :- DeltaTime :- 'Nil) Box ()
+chooseBoxColor r = Box <$%> adjustSig (wiggleRect r) <*%> adjustSig cycleColor
 
 wiggleRect :: Rect -> Sig s (Singleton DeltaTime) Rect ()
 wiggleRect (Rect lu rd) = (<$%> elapsed) \t -> let
@@ -63,31 +90,30 @@ cycleColor = cc . cycle $ fromList [Red .. Magenta] where
 		(bool (pure ()) (cc t)
 			=<< waitFor (middleClick `before` rightClick))
 
+---------------------------------------------------------------------------
+-- DR CLICK ON
+---------------------------------------------------------------------------
+
+drClickOn :: Rect -> React s (MouseDown :- MouseMove :- TryWait :- 'Nil) (Either Point (Either () (Maybe Point, ())))
+drClickOn rct = posInside rct $ mousePos `indexBy` repeat doubler
+
 posInside :: Rect -> Sig s es Point y -> React s es (Either Point y)
 posInside rct = find (`inside` rct)
+
+inside :: Point -> Rect -> Bool
+(x, y) `inside` Rect (l, u) (r, d) =
+	(l <= x && x <= r || r <= x && x <= l) &&
+	(u <= y && y <= d || d <= y && y <= u)
 
 doubler :: React s (MouseDown :- TryWait :- 'Nil) ()
 doubler = do
 	adjust rightClick
 	bool doubler (pure ()) =<< (rightClick `before` sleep 0.2)
 
-defineRect :: Sig s (MouseDown :- MouseUp :- MouseMove :- 'Nil) Rect Rect
-defineRect = waitFor (adjust firstPoint) >>= \case
-	Nothing -> error "never occur"
-	Just p1 -> fromMaybe (error "never occur") <$> adjustSig (completeRect p1)
+---------------------------------------------------------------------------
+-- BEFORE
+---------------------------------------------------------------------------
 
-chooseBoxColor :: Rect -> Sig s (MouseDown :- DeltaTime :- 'Nil) Box ()
-chooseBoxColor r = Box <$%> adjustSig (wiggleRect r) <*%> adjustSig cycleColor
-
-drClickOn :: Rect -> React s (MouseDown :- MouseMove :- TryWait :- 'Nil) (Either Point (Either () (Maybe Point, ())))
-drClickOn rct = posInside rct $ mousePos `indexBy` repeat doubler
-
-box :: SigG s Box ()
-box = (() <$) $ (`Box` Red) <$%> adjustSig defineRect >>= \r ->
-	adjustSig (chooseBoxColor r) >> waitFor (adjust $ drClickOn r)
-
-newBoxes :: SigG s (ISigG s Box ()) ()
-newBoxes = spawn box
-
-boxes :: SigG s [Box] ()
-boxes = () <$ parList newBoxes
+before :: Firstable es es' a b =>
+	React s es a -> React s es' b -> React s (es :+: es') Bool
+l `before` r = l `first` r >>= \case L _ -> pure True; _ -> pure False
