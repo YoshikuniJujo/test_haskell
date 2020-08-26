@@ -1,6 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.TryLock (
@@ -9,21 +8,24 @@ module Trial.TryLock (
 	-- * Action
 	trySingleLeftCount, tryNoLockLeftCount2, tryLockLeftCount2 ) where
 
-import Control.Monad
-import Control.Moffy
-import Control.Moffy.Event.ThreadId
-import Control.Moffy.Event.Lock
-import Control.Moffy.Event.Mouse
-import Control.Moffy.Handle
-import Control.Moffy.Handle.ThreadId
-import Control.Moffy.Handle.Lock
-import Control.Moffy.Handle.XField
-import Control.Moffy.Run
-import Data.Type.Set
-import Data.Type.Flip
-import Data.Or
-import Data.List
-import Field
+import Control.Monad (void)
+import Control.Moffy (Sig, adjust, emit, waitFor, first)
+import Control.Moffy.Event.ThreadId (GetThreadId)
+import Control.Moffy.Event.Lock (LockEv, LockId, newLockId, withLock)
+import Control.Moffy.Event.Mouse (MouseDown, leftClick, rightClick)
+import Control.Moffy.Handle (HandleIo', retry, liftSt, retrySt, mergeSt)
+import Control.Moffy.Handle.ThreadId (handleGetThreadId)
+import Control.Moffy.Handle.Lock (LockState(..), handleLock)
+import Control.Moffy.Handle.XField (GuiEv, handle)
+import Control.Moffy.Run (interpret, interpretSt)
+import Data.Type.Set (Singleton, (:-))
+import Data.Type.Flip ((<$%>), (<*%>))
+import Data.Or (Or(..))
+import Data.List (delete)
+
+import Field (Field, openField, closeField, exposureMask, buttonPressMask)
+
+---------------------------------------------------------------------------
 
 leftCount :: Int -> Sig s (Singleton MouseDown) Int Int
 leftCount c = do

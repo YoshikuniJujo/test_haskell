@@ -1200,8 +1200,8 @@ Trials (20)
 	+ [x] view
 	+ [x] consider whether or not to rename
 	+ [x] API
-	+ [ ] extension
-	+ [ ] import
+	+ [x] extension
+	+ [x] import
 	+ [ ] structure
 	+ [ ] body
 
