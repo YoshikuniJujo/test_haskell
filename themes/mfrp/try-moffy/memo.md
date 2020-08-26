@@ -1244,13 +1244,21 @@ Trials (20)
 #### refactoring
 
 * [ ] refactor module name and hierarchy
+* [ ] refactor each modules
 
 ##### module Trial.StepByStepBox
 
-* [ ] view
-* [ ] separate to Trial.Boxes and other
+* [x] view
+* [x] separate to Trial.Boxes and other
 	+ [x] create empty module Trial.Boxes
+	+ [x] others
+* [ ] separate to Trial.Boxes and other
+	+ [ ] create empty module Trial.Boxes.View
 	+ [ ] others
+* [ ] rename to Trial.Boxes.Run
+	+ [ ] rename
+	+ [ ] API
+* [ ] repair app/Main.hs
 
 ##### module Trial.Boxes.Event
 

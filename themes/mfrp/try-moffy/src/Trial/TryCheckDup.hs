@@ -12,7 +12,7 @@ import Data.Time.Clock.System
 import Control.Moffy.Event.Mouse
 import Trial.Boxes.Event
 import Trial.Boxes.Handle
-import Trial.StepByStepBox
+import Trial.Boxes
 import Control.Monad.Freer.Par
 import Field
 
