@@ -41,11 +41,10 @@ import Field (openField, closeField, exposureMask, buttonPressMask)
 data LockSt = LockSt { nextLockId :: Int, lockState :: [LockId] } deriving Show
 
 instance LockState LockSt where
-	getNextLockId = nextLockId
-	putNextLockId s li = s { nextLockId = li }
+	getNextLockId = nextLockId; putNextLockId s li = s { nextLockId = li }
 	isLocked LockSt { lockState = ls } li = li `elem` ls
 	lockIt s li = s { lockState = li : lockState s }
-	unlockIt s li = s { lockState = delete li (lockState s) }
+	unlockIt s li = s { lockState = delete li $ lockState s }
 
 ---------------------------------------------------------------------------
 -- TRIAL
@@ -57,12 +56,8 @@ trySingleLeftCount :: IO Int
 trySingleLeftCount = runClick $ leftCount 0
 
 leftCount :: Int -> Sig s (Singleton MouseDown) Int Int
-leftCount c = do
-	emit c
-	waitFor (leftClick `first` rightClick) >>= \case
-		L () -> leftCount $ c + 1
-		R () -> pure c
-		LR () () -> pure $ c + 1
+leftCount c = emit c >> waitFor (leftClick `first` rightClick) >>= \case
+	L () -> leftCount $ c + 1; R () -> pure c; LR () () -> pure $ c + 1
 
 -- NO LOCK
 
@@ -77,12 +72,11 @@ tryLockLeftCount2 = runClickLockSt  do
 	l <- waitFor $ adjust newLockId
 	(,) <$%> void (lockLeftCount l 0) <*%> void (lockLeftCount l 0)
 
-lockLeftCount :: LockId -> Int -> Sig s (MouseDown :- GetThreadId :- LockEv) Int Int
-lockLeftCount l c = do
-	emit c
-	waitFor (withLock l $ leftClick `first` rightClick) >>= \case
-		L () -> lockLeftCount l $ c + 1
-		R () -> pure c
+lockLeftCount ::
+	LockId -> Int -> Sig s (MouseDown :- GetThreadId :- LockEv) Int Int
+lockLeftCount l c =
+	emit c >> waitFor (withLock l $ leftClick `first` rightClick) >>= \case
+		L () -> lockLeftCount l $ c + 1; R () -> pure c
 		LR () () -> pure $ c + 1
 
 ---------------------------------------------------------------------------
@@ -92,13 +86,13 @@ lockLeftCount l c = do
 runClick :: Show a => Sig s (Singleton MouseDown) a r -> IO r
 runClick s = do
 	f <- openField "TRY LEFT COUNT" [buttonPressMask, exposureMask]
-	interpret (retry $ handle Nothing f) print s  <* closeField f
+	interpret (retry $ handle Nothing f) print s <* closeField f
 
-runClickLockSt :: Show a => Sig s (MouseDown :- GetThreadId :- LockEv) a r -> IO (r, LockSt)
+runClickLockSt :: Show a =>
+	Sig s (MouseDown :- GetThreadId :- LockEv) a r -> IO (r, LockSt)
 runClickLockSt s = do
 	f <- openField "TRY LOCK LEFT COUNT 2" [buttonPressMask, exposureMask]
-	interpretSt (retrySt $ handleGetThreadId' `mergeSt` handleLock `mergeSt` handle' f) print s (LockSt 0 [])
-		<* closeField f
-	where
-	handle' f = liftSt . handle Nothing f
-	handleGetThreadId' = liftSt . handleGetThreadId
+	interpretSt (hdl f) print s (LockSt 0 []) <* closeField f
+	where hdl f = retrySt $
+		liftSt . handleGetThreadId `mergeSt` handleLock `mergeSt`
+		liftSt . handle Nothing f

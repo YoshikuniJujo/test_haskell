@@ -1196,28 +1196,28 @@ Trials (20)
 
 #### Try Lock
 
-* [ ] Trial.TryLock
+* [x] Trial.TryLock
 	+ [x] view
 	+ [x] consider whether or not to rename
 	+ [x] API
 	+ [x] extension
 	+ [x] import
 	+ [x] structure
-	+ [ ] body
-		- [ ] LOCK ST
-			* [ ] data LockSt
-			* [ ] instance LockState LockSt
-		- [ ] TRIAL
-			* [ ] SINGLE
-				+ [ ] action trySingleLeftCount
-				+ [ ] function leftCount
-			* [ ] NO LOCK
-			* [ ] LOCK
-				+ [ ] action tryLockLeftCount2
-				+ [ ] function lockLeftCount
-		- [ ] RUN
-			* [ ] function runClick
-			* [ ] function runClickLockSt
+	+ [x] body
+		- [x] LOCK ST
+			* [x] data LockSt
+			* [x] instance LockState LockSt
+		- [x] TRIAL
+			* [x] SINGLE
+				+ [x] action trySingleLeftCount
+				+ [x] function leftCount
+			* [x] NO LOCK
+			* [x] LOCK
+				+ [x] action tryLockLeftCount2
+				+ [x] function lockLeftCount
+		- [x] RUN
+			* [x] function runClick
+			* [x] function runClickLockSt
 
 #### Try Random
 
