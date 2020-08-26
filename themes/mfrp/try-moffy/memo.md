@@ -1241,6 +1241,21 @@ Trials (20)
 
 ### Boxes (3)
 
+#### refactoring
+
+* [ ] refactor module name and hierarchy
+
+##### module Trial.StepByStepBox
+
+* [ ] view
+* [ ] separate to Trial.Boxes and other
+	+ [x] create empty module Trial.Boxes
+	+ [ ] others
+
+##### module Trial.Boxes.Event
+
+##### module Trial.Boxes.Handle
+
 ### Try Check Dup
 
 * [ ] Trial.TryCheckDup

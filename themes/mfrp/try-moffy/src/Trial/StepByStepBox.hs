@@ -30,6 +30,8 @@ import Control.Moffy.Event.Mouse
 import Control.Moffy.Handle.XField
 import Field hiding (Point)
 
+import Trial.Boxes
+
 import Trial.Boxes.Event
 import Trial.Boxes.Handle
 
