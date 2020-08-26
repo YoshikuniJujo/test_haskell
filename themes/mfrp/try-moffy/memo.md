@@ -1179,14 +1179,20 @@ Trials (20)
 
 #### Try ThreadId
 
-* [ ] Trial.ThreadId
-	+ [ ] view
-	+ [ ] consider whether or not to rename
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
+* [x] Trial.ThreadId
+	+ [x] view
+	+ [x] consider whether or not to rename
+	+ [x] API
+	+ [x] extension
+	+ [x] import
+	+ [x] body
+		- [x] trySingleThreadId
+		- [x] tryDoubleThreadId
+		- [x] runGetThreadId
+		- [x] tryLeftRightThreadId
+		- [x] tryLeftRightThreadId'
+		- [x] runMouseGetThreadId
+		- [x] clickThenGetThreadId
 
 #### Try Lock
 
