@@ -1291,15 +1291,14 @@ Main
 	+ [x] import
 	+ [x] structure
 	+ [ ] body
-		- [ ] BOXES
-			* [ ] sig boxes
-			* [ ] sig newBoxes
-			* [ ] sig box
-		- [ ] DEFINE RECT
-			* [ ] sig defineRect
-			* [ ] react firstPoint
-			* [ ] function completeRect
-			* [ ] function curRect
+		- [x] BOXES
+			* [x] sig boxes
+			* [x] sig box
+		- [x] DEFINE RECT
+			* [x] sig defineRect
+			* [x] react firstPoint
+			* [x] function completeRect
+			* [x] value neverOccur
 		- [ ] CHOOSE BOX COLOR
 			* [ ] function chooseBoxColor
 			* [ ] function wiggleRect
@@ -1310,6 +1309,7 @@ Main
 			* [ ] function inside
 			* [ ] react doubler
 		- [ ] BEFORE
+	+ [ ] import
 * [ ] Trial.Boxes.Box
 * [ ] Trial.Boxes.BoxEv
 * [ ] Trial.Boxes.Run

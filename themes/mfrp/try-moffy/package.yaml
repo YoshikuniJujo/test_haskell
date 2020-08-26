@@ -26,6 +26,7 @@ dependencies:
 - simple-field
 - extra-data-yj
 - time
+- transformers
 - monads-tf
 - type-flip
 - bytestring

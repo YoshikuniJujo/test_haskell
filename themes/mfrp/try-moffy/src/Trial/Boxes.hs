@@ -10,6 +10,8 @@ module Trial.Boxes (
 
 import Prelude hiding (repeat, cycle, scanl, until)
 
+import Control.Monad (void)
+import Control.Monad.Trans.Except
 import Control.Moffy (
 	Sig, React, Firstable, adjust, adjustSig, emit, waitFor, repeat, find,
 	first, at, until, indexBy, spawn, parList )
@@ -20,7 +22,6 @@ import Control.Moffy.Event.Time (DeltaTime, TryWait, elapsed, sleep)
 import Data.Type.Set (pattern Nil, Singleton, (:-), (:+:))
 import Data.Type.Flip ((<$%>), (<*%>))
 import Data.Bool (bool)
-import Data.Maybe (fromMaybe)
 import Data.List.NonEmpty (fromList)
 import Data.List.Infinite (Infinite(..), cycle)
 import Data.Or (Or(..))
@@ -28,7 +29,7 @@ import Data.Or (Or(..))
 import qualified Control.Arrow as Arr (first)
 
 import Trial.Boxes.Box (Box(..), Rect(..), Color(..))
-import Trial.Boxes.BoxEv (SigG, ISigG)
+import Trial.Boxes.BoxEv (SigG)
 
 ---------------------------------------------------------------------------
 
@@ -43,34 +44,32 @@ import Trial.Boxes.BoxEv (SigG, ISigG)
 ---------------------------------------------------------------------------
 
 boxes :: SigG s [Box] ()
-boxes = () <$ parList newBoxes
-
-newBoxes :: SigG s (ISigG s Box ()) ()
-newBoxes = spawn box
+boxes = () <$ parList (spawn box)
 
 box :: SigG s Box ()
-box = (() <$) $ (`Box` Red) <$%> adjustSig defineRect >>= \r ->
-	adjustSig (chooseBoxColor r) >> waitFor (adjust $ drClickOn r)
+box = void $ (`Box` Red) <$%> adjustSig defineRect
+	>>= (>>) <$> adjustSig . chooseBoxColor <*> waitFor . adjust . drClickOn
 
 ---------------------------------------------------------------------------
 -- DEFINE RECT
 ---------------------------------------------------------------------------
 
 defineRect :: Sig s (MouseDown :- MouseUp :- MouseMove :- 'Nil) Rect Rect
-defineRect = waitFor (adjust firstPoint) >>= \case
-	Nothing -> error "never occur"
-	Just p1 -> fromMaybe (error "never occur") <$> adjustSig (completeRect p1)
+defineRect = (either error pure =<<) . runExceptT
+	$ ExceptT . adjustSig . completeRect
+		=<< ExceptT (waitFor $ adjust firstPoint)
 
-firstPoint :: React s (MouseDown :- MouseMove :- 'Nil) (Maybe Point)
+firstPoint :: React s (MouseDown :- MouseMove :- 'Nil) (Either String Point)
 firstPoint = (<$> mousePos `at` leftClick)
-	\case Left () -> Nothing; Right (p, ()) -> p
+	$ const neverOccur `either` (maybe neverOccur Right . fst)
 
-completeRect :: Point -> Sig s (MouseUp :- MouseMove :- 'Nil) Rect (Maybe Rect)
-completeRect p1 =
-	either (const Nothing) (Just . fst) <$> curRect p1 `until` leftUp
+completeRect ::
+	Point -> Sig s (MouseUp :- MouseMove :- 'Nil) Rect (Either String Rect)
+completeRect p1 = (<$> (Rect p1 <$%> mousePos) `until` leftUp)
+	$ const neverOccur `either` (Right . fst)
 
-curRect :: Point -> Sig s (MouseMove :- 'Nil) Rect ()
-curRect p1 = Rect p1 <$%> mousePos
+neverOccur :: Either String a
+neverOccur = Left "never occur"
 
 ---------------------------------------------------------------------------
 -- CHOOSE BOX COLOR
