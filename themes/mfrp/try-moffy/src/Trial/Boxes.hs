@@ -4,7 +4,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Boxes where
+module Trial.Boxes (Box(..), Rect(..), Color(..), boxes, doubler) where
 
 import Prelude hiding (repeat, cycle, scanl, until)
 
@@ -21,11 +21,8 @@ import Data.Time
 
 import qualified Control.Arrow as Arr
 
+import Trial.Boxes.Box
 import Trial.Boxes.Event
-
-data Color = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
-data Rect = Rect { leftup :: Point, rightdown :: Point  } deriving Show
-data Box = Box Rect Color deriving Show
 
 curRect :: Point -> Sig s (MouseMove :- 'Nil) Rect ()
 curRect p1 = Rect p1 <$%> mousePos

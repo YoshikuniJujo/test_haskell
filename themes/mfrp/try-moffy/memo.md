@@ -1244,6 +1244,7 @@ Trials (20)
 #### refactoring
 
 * [ ] refactor module name and hierarchy
+* [ ] check module hierarchy
 * [ ] refactor each modules
 
 ##### module Trial.StepByStepBox
@@ -1252,9 +1253,9 @@ Trials (20)
 * [x] separate to Trial.Boxes and other
 	+ [x] create empty module Trial.Boxes
 	+ [x] others
-* [ ] separate to Trial.Boxes and other
-	+ [ ] create empty module Trial.Boxes.View
-	+ [ ] others
+* [x] separate to Trial.Boxes and other
+	+ [x] create empty module Trial.Boxes.View
+	+ [x] others
 * [ ] rename to Trial.Boxes.Run
 	+ [ ] rename
 	+ [ ] API
