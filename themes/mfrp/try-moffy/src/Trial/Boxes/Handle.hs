@@ -8,7 +8,7 @@ import Data.Time (DiffTime)
 import Data.Time.Clock.TAI (AbsoluteTime)
 	
 import Control.Moffy.Handle.XField
-import Trial.Boxes.Event (SigG, BoxEv)
+import Trial.Boxes.BoxEv (SigG, BoxEv)
 import Field (Field)
 
 ---------------------------------------------------------------------------

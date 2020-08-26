@@ -1247,10 +1247,10 @@ Trials (20)
 Main
   +- Trial.Boxes
   |    +- Trial.Boxes.Box
-  |    +- Trial.Boxes.Event
+  |    +- Trial.Boxes.BoxEv
   +- Trial.Boxes.Run
        +- Trial.Boxes.Handle
-       |    +- Trial.Boxes.Event
+       |    +- Trial.Boxes.BoxEv
        +- Trial.Boxes.View
             +- Trial.Boxes.Box
 ```
@@ -1286,13 +1286,13 @@ Main
 	+ [x] consider
 		- [x] whether or not to move elapsed to Control.Moffy.Event.Time
 		- [x] whether or not to move mousePos to Control.Moffy.Event.Mouse
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] import
+	+ [x] API
+	+ [x] extension
+	+ [x] import
 	+ [ ] structure
 	+ [ ] body
 * [ ] Trial.Boxes.Box
-* [ ] Trial.Boxes.Event
+* [ ] Trial.Boxes.BoxEv
 * [ ] Trial.Boxes.Run
 * [ ] Trial.Boxes.Handle
 * [ ] Trial.Boxes.View
@@ -1301,6 +1301,7 @@ Main
 
 * [ ] Trial.TryCheckDup
 	+ [ ] consider whether or not to remove
+		- [ ] remove doubler from export list of Trial.Boxes
 	+ [ ] view
 	+ [ ] consider whether or not to rename
 	+ [ ] API

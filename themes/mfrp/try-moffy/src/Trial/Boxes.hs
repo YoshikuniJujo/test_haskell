@@ -1,27 +1,36 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE MonoLocalBinds, PatternSynonyms #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Boxes (Box(..), Rect(..), Color(..), boxes, doubler) where
+module Trial.Boxes (
+	-- * Sig and React
+	boxes, doubler ) where
 
 import Prelude hiding (repeat, cycle, scanl, until)
 
-import Control.Moffy
-import Control.Moffy.Event.Mouse
-import Data.Type.Set
-import Data.Type.Flip
-import Data.Bool
-import Data.Maybe
-import Data.List.NonEmpty hiding (cycle, repeat, scanl, break)
-import Data.List.Infinite hiding (repeat, scanl)
-import Data.Or
+import Control.Moffy (
+	Sig, React, Firstable, adjust, adjustSig, emit, waitFor, repeat, find,
+	first, at, until, indexBy, spawn, parList )
+import Control.Moffy.Event.Mouse (
+	MouseDown, MouseUp, MouseMove, Point,
+	leftClick, middleClick, rightClick, leftUp, mousePos )
+import Control.Moffy.Event.Time (DeltaTime, TryWait, elapsed, sleep)
+import Data.Type.Set (pattern Nil, Singleton, (:-), (:+:))
+import Data.Type.Flip ((<$%>), (<*%>))
+import Data.Bool (bool)
+import Data.Maybe (fromMaybe)
+import Data.List.NonEmpty (fromList)
+import Data.List.Infinite (Infinite(..), cycle)
+import Data.Or (Or(..))
 
-import qualified Control.Arrow as Arr
+import qualified Control.Arrow as Arr (first)
 
-import Trial.Boxes.Box
-import Trial.Boxes.Event
+import Trial.Boxes.Box (Box(..), Rect(..), Color(..))
+import Trial.Boxes.BoxEv (SigG, ISigG)
+
+---------------------------------------------------------------------------
 
 curRect :: Point -> Sig s (MouseMove :- 'Nil) Rect ()
 curRect p1 = Rect p1 <$%> mousePos

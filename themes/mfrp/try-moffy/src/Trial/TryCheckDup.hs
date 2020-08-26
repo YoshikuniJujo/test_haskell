@@ -10,7 +10,7 @@ import Data.Type.Set
 import Data.Time.Clock.System
 
 import Control.Moffy.Event.Mouse
-import Trial.Boxes.Event
+import Control.Moffy.Event.Time
 import Trial.Boxes.Handle
 import Trial.Boxes
 import Control.Monad.Freer.Par
