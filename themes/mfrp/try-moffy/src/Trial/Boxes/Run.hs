@@ -4,7 +4,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Boxes.Run (trySigGBoxes') where
+module Trial.Boxes.Run (runBoxes) where
 
 import Prelude hiding (cycle, repeat, scanl, until, break)
 
@@ -16,8 +16,8 @@ import Field hiding (Point)
 import Trial.Boxes.Handle
 import Trial.Boxes.View
 
-trySigGBoxes' :: String -> SigG s [Box] r -> IO r
-trySigGBoxes' ttl sig = do
+runBoxes :: String -> SigG s [Box] r -> IO r
+runBoxes ttl sig = do
 	f <- openField ttl [
 		pointerMotionMask, buttonPressMask, buttonReleaseMask,
 		exposureMask ]

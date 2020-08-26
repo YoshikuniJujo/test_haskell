@@ -1239,7 +1239,7 @@ Trials (20)
 	+ [x] view
 	+ [x] consider whether or not to remove
 
-### Boxes (3)
+### Boxes (6)
 
 #### module hierarchy
 
@@ -1275,9 +1275,27 @@ Main
 	+ [x] API
 * [x] repair app/Main.hs
 
-##### module Trial.Boxes.Event
+##### each modules
 
-##### module Trial.Boxes.Handle
+* [x] Main
+	+ [x] import
+	+ [x] body
+		- [x] rename trySigGBoxes' to runBoxes
+* [ ] Trial.Boxes
+	+ [ ] view
+	+ [ ] consider
+		- [ ] whether or not to move elapsed to Control.Moffy.Event.Time
+		- [ ] whether or not to move mousePos to Control.Moffy.Event.Mouse
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
+* [ ] Trial.Boxes.Box
+* [ ] Trial.Boxes.Event
+* [ ] Trial.Boxes.Run
+* [ ] Trial.Boxes.Handle
+* [ ] Trial.Boxes.View
 
 ### Try Check Dup
 

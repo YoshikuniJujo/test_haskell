@@ -2,11 +2,11 @@ module Main where
 
 import Prelude hiding (break)
 
-import Control.Moffy
-import Control.Moffy.Event.Delete
+import Control.Moffy (break)
+import Control.Moffy.Event.Delete (deleteEvent)
 
-import Trial.Boxes
-import Trial.Boxes.Run
+import Trial.Boxes (boxes)
+import Trial.Boxes.Run (runBoxes)
 
 main :: IO ()
-main = () <$ trySigGBoxes' "TRY BOXES" (boxes `break` deleteEvent)
+main = () <$ runBoxes "TRY BOXES" (boxes `break` deleteEvent)
