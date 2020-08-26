@@ -1235,15 +1235,9 @@ Trials (20)
 
 #### Count With Lock
 
-* [ ] Trial.CountWithLock
-	+ [ ] consider whether or not to remove
-	+ [ ] view
-	+ [ ] consider whether or not to rename
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
+* [x] Trial.CountWithLock
+	+ [x] view
+	+ [x] consider whether or not to remove
 
 ### Boxes (3)
 
