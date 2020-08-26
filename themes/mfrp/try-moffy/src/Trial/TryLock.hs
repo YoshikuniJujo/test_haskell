@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -13,53 +13,30 @@ import Control.Moffy (Sig, adjust, emit, waitFor, first)
 import Control.Moffy.Event.ThreadId (GetThreadId)
 import Control.Moffy.Event.Lock (LockEv, LockId, newLockId, withLock)
 import Control.Moffy.Event.Mouse (MouseDown, leftClick, rightClick)
-import Control.Moffy.Handle (HandleIo', retry, liftSt, retrySt, mergeSt)
+import Control.Moffy.Handle (retry, liftSt, retrySt, mergeSt)
 import Control.Moffy.Handle.ThreadId (handleGetThreadId)
 import Control.Moffy.Handle.Lock (LockState(..), handleLock)
-import Control.Moffy.Handle.XField (GuiEv, handle)
+import Control.Moffy.Handle.XField (handle)
 import Control.Moffy.Run (interpret, interpretSt)
 import Data.Type.Set (Singleton, (:-))
 import Data.Type.Flip ((<$%>), (<*%>))
 import Data.Or (Or(..))
 import Data.List (delete)
 
-import Field (Field, openField, closeField, exposureMask, buttonPressMask)
+import Field (openField, closeField, exposureMask, buttonPressMask)
 
 ---------------------------------------------------------------------------
 
-leftCount :: Int -> Sig s (Singleton MouseDown) Int Int
-leftCount c = do
-	emit c
-	waitFor (leftClick `first` rightClick) >>= \case
-		L () -> leftCount $ c + 1
-		R () -> pure c
-		LR () () -> pure $ c + 1
+-- * LOCK ST
+-- * TRIAl
+--	+ SINGLE
+--	+ NO LOCK
+--	+ LOCK
+-- * RUN
 
-trySingleLeftCount :: IO Int
-trySingleLeftCount = do
-	f <- openField "TRY LEFT COUNT" [buttonPressMask, exposureMask]
-	interpret (retry $ handle Nothing f) print (leftCount 0) <* closeField f
-
-noLockLeftCount2 :: Sig s (Singleton MouseDown) (Int, Int) ()
-noLockLeftCount2 = (,) <$%> void (leftCount 0) <*%> void (leftCount 0)
-
-tryNoLockLeftCount2 :: IO ()
-tryNoLockLeftCount2 = do
-	f <- openField "TRY NO LOCK LEFT COUNT 2" [buttonPressMask, exposureMask]
-	interpret (retry $ handle Nothing f) print noLockLeftCount2 <* closeField f
-
-lockLeftCount :: LockId -> Int -> Sig s (MouseDown :- GetThreadId :- LockEv) Int Int
-lockLeftCount l c = do
-	emit c
-	waitFor (withLock l $ leftClick `first` rightClick) >>= \case
-		L () -> lockLeftCount l $ c + 1
-		R () -> pure c
-		LR () () -> pure $ c + 1
-
-lockLeftCount2 :: Sig s (MouseDown :- GetThreadId :- LockEv) (Int, Int) ()
-lockLeftCount2 = do
-	l <- waitFor $ adjust newLockId
-	(,) <$%> void (lockLeftCount l 0) <*%> void (lockLeftCount l 0)
+---------------------------------------------------------------------------
+-- LOCK ST
+---------------------------------------------------------------------------
 
 data LockSt = LockSt { nextLockId :: Int, lockState :: [LockId] } deriving Show
 
@@ -70,14 +47,58 @@ instance LockState LockSt where
 	lockIt s li = s { lockState = li : lockState s }
 	unlockIt s li = s { lockState = delete li (lockState s) }
 
-handle' :: LockState s => Field -> HandleIo' s s IO GuiEv
-handle' f = liftSt . handle Nothing f
+---------------------------------------------------------------------------
+-- TRIAL
+---------------------------------------------------------------------------
 
-handleGetThreadId' :: LockState s => HandleIo' s s IO (Singleton GetThreadId)
-handleGetThreadId' = liftSt . handleGetThreadId
+-- SINGLE
+
+trySingleLeftCount :: IO Int
+trySingleLeftCount = runClick $ leftCount 0
+
+leftCount :: Int -> Sig s (Singleton MouseDown) Int Int
+leftCount c = do
+	emit c
+	waitFor (leftClick `first` rightClick) >>= \case
+		L () -> leftCount $ c + 1
+		R () -> pure c
+		LR () () -> pure $ c + 1
+
+-- NO LOCK
+
+tryNoLockLeftCount2 :: IO ()
+tryNoLockLeftCount2 =
+	runClick $ (,) <$%> void (leftCount 0) <*%> void (leftCount 0)
+
+-- LOCK
 
 tryLockLeftCount2 :: IO ((), LockSt)
-tryLockLeftCount2 = do
+tryLockLeftCount2 = runClickLockSt  do
+	l <- waitFor $ adjust newLockId
+	(,) <$%> void (lockLeftCount l 0) <*%> void (lockLeftCount l 0)
+
+lockLeftCount :: LockId -> Int -> Sig s (MouseDown :- GetThreadId :- LockEv) Int Int
+lockLeftCount l c = do
+	emit c
+	waitFor (withLock l $ leftClick `first` rightClick) >>= \case
+		L () -> lockLeftCount l $ c + 1
+		R () -> pure c
+		LR () () -> pure $ c + 1
+
+---------------------------------------------------------------------------
+-- RUN
+---------------------------------------------------------------------------
+
+runClick :: Show a => Sig s (Singleton MouseDown) a r -> IO r
+runClick s = do
+	f <- openField "TRY LEFT COUNT" [buttonPressMask, exposureMask]
+	interpret (retry $ handle Nothing f) print s  <* closeField f
+
+runClickLockSt :: Show a => Sig s (MouseDown :- GetThreadId :- LockEv) a r -> IO (r, LockSt)
+runClickLockSt s = do
 	f <- openField "TRY LOCK LEFT COUNT 2" [buttonPressMask, exposureMask]
-	interpretSt (retrySt $ handleGetThreadId' `mergeSt` handleLock `mergeSt` handle' f) print lockLeftCount2 (LockSt 0 [])
+	interpretSt (retrySt $ handleGetThreadId' `mergeSt` handleLock `mergeSt` handle' f) print s (LockSt 0 [])
 		<* closeField f
+	where
+	handle' f = liftSt . handle Nothing f
+	handleGetThreadId' = liftSt . handleGetThreadId

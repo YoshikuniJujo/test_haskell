@@ -1202,8 +1202,22 @@ Trials (20)
 	+ [x] API
 	+ [x] extension
 	+ [x] import
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] LOCK ST
+			* [ ] data LockSt
+			* [ ] instance LockState LockSt
+		- [ ] TRIAL
+			* [ ] SINGLE
+				+ [ ] action trySingleLeftCount
+				+ [ ] function leftCount
+			* [ ] NO LOCK
+			* [ ] LOCK
+				+ [ ] action tryLockLeftCount2
+				+ [ ] function lockLeftCount
+		- [ ] RUN
+			* [ ] function runClick
+			* [ ] function runClickLockSt
 
 #### Try Random
 
