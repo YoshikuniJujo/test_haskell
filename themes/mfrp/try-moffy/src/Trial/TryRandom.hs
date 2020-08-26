@@ -2,7 +2,7 @@
 
 module Trial.TryRandom (
 	-- * Example Random Number List
-	exampleRandomRs ) where
+	diceTrialList ) where
 
 import Control.Monad (replicateM)
 import Control.Moffy (React)
@@ -11,15 +11,15 @@ import Control.Moffy.Handle (retrySt)
 import Control.Moffy.Handle.Random (handleRandom)
 import Control.Moffy.Run (interpretReactSt)
 import Data.Functor.Identity (runIdentity)
-import System.Random (Random, mkStdGen)
+import System.Random (Random, StdGen, mkStdGen)
 
 ---------------------------------------------------------------------------
 
-exampleRandomRs :: [Int]
-exampleRandomRs = runIdentity $ getRandomRs (1, 6) 100 `evalRandom` 8
+diceTrialList :: [Int]
+diceTrialList = runIdentity $ getRandomRs (1, 6) 100 `evalRandom` mkStdGen 8
 
-evalRandom :: Monad m => React s RandomEv a -> Int -> m a
-evalRandom r n = fst <$> interpretReactSt (retrySt handleRandom) r (mkStdGen n)
+evalRandom :: Monad m => React s RandomEv a -> StdGen -> m a
+evalRandom  r = (fst <$>) . interpretReactSt (retrySt handleRandom) r
 
 getRandomRs :: Random a => (a, a) -> Int -> React s RandomEv [a]
 getRandomRs = flip replicateM . getRandomR

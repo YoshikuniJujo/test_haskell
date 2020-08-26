@@ -1223,14 +1223,15 @@ Trials (20)
 
 ##### refactoring
 
-* [ ] Trial.TryRandom
-	+ [ ] rename
-	+ [ ] API
-	+ [ ] import
-	+ [ ] body
-		- [ ] list exampleRandomRs
-		- [ ] function evalRandom
-		- [ ] function getRandomRs
+* [x] Trial.TryRandom
+	+ [x] view
+	+ [x] consider whether or not to rename
+	+ [x] API
+	+ [x] import
+	+ [x] body
+		- [x] list diceTrial
+		- [x] function evalRandom
+		- [x] function getRandomRs
 
 #### Count With Lock
 
