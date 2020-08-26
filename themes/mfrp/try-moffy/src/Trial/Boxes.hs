@@ -17,7 +17,6 @@ import Data.Maybe
 import Data.List.NonEmpty hiding (cycle, repeat, scanl, break)
 import Data.List.Infinite hiding (repeat, scanl)
 import Data.Or
-import Data.Time
 
 import qualified Control.Arrow as Arr
 
@@ -26,9 +25,6 @@ import Trial.Boxes.Event
 
 curRect :: Point -> Sig s (MouseMove :- 'Nil) Rect ()
 curRect p1 = Rect p1 <$%> mousePos
-
-elapsed :: Sig s (Singleton DeltaTime) DiffTime ()
-elapsed = scanl (+) 0 (repeat deltaTime)
 
 inside :: Point -> Rect -> Bool
 (x, y) `inside` Rect (l, u) (r, d) =
@@ -60,9 +56,6 @@ cycleColor = cc . cycle $ fromList [Red .. Magenta] where
 
 posInside :: Rect -> Sig s es Point y -> React s es (Either Point y)
 posInside rct = find (`inside` rct)
-
-mousePos :: Sig s (Singleton MouseMove) Point ()
-mousePos = repeat mouseMove
 
 doubler :: React s (MouseDown :- TryWait :- 'Nil) ()
 doubler = do

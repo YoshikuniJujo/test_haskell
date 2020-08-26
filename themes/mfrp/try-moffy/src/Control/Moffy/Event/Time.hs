@@ -9,12 +9,14 @@ module Control.Moffy.Event.Time (
 	-- * Time Ev
 	TimeEv,
 	-- * Delta Time
-	DeltaTime(..), pattern OccDeltaTime, deltaTime,
+	DeltaTime(..), pattern OccDeltaTime, deltaTime, elapsed,
 	-- * Sleep
 	TryWait(..), pattern OccTryWait, sleep ) where
 
+import Prelude hiding (repeat, scanl)
+
 import GHC.Stack (HasCallStack)
-import Control.Moffy (React, Request(..), await)
+import Control.Moffy (Sig, React, Request(..), await, repeat, scanl)
 import Data.Type.Set (numbered, pattern Nil, Singleton, (:-))
 import Data.Bool (bool)
 import Data.Time (DiffTime)
@@ -37,6 +39,9 @@ instance Request DeltaTime where data Occurred DeltaTime = OccDeltaTime DiffTime
 
 deltaTime :: React s (Singleton DeltaTime) DiffTime
 deltaTime = await DeltaTimeReq \(OccDeltaTime t) -> t
+
+elapsed :: Sig s (Singleton DeltaTime) DiffTime ()
+elapsed = scanl (+) 0 $ repeat deltaTime
 
 ---------------------------------------------------------------------------
 -- SLEEP

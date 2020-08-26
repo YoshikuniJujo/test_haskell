@@ -6,7 +6,7 @@ module Trial.Boxes.Event (
 	SigG, ISigG,
 	ReactG, BoxEv, -- pattern OccDeltaTime, pattern OccTryWait,
 	-- * TIME
-	TimeEv, TryWait(..), sleep, DeltaTime(..), deltaTime,
+	TimeEv, TryWait(..), sleep, DeltaTime(..), elapsed,
 	-- * MOUSE
 	GuiEv, MouseDown, MouseUp, MouseBtn(..),
 	leftClick, middleClick, rightClick, leftUp ) where

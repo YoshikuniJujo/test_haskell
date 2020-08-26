@@ -1282,10 +1282,10 @@ Main
 	+ [x] body
 		- [x] rename trySigGBoxes' to runBoxes
 * [ ] Trial.Boxes
-	+ [ ] view
-	+ [ ] consider
-		- [ ] whether or not to move elapsed to Control.Moffy.Event.Time
-		- [ ] whether or not to move mousePos to Control.Moffy.Event.Mouse
+	+ [x] view
+	+ [x] consider
+		- [x] whether or not to move elapsed to Control.Moffy.Event.Time
+		- [x] whether or not to move mousePos to Control.Moffy.Event.Mouse
 	+ [ ] API
 	+ [ ] extension
 	+ [ ] import

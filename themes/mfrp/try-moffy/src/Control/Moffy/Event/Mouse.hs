@@ -15,10 +15,12 @@ module Control.Moffy.Event.Mouse (
 	-- ** Mouse Up
 	MouseUp, pattern OccMouseUp, mouseUp, leftUp, middleUp, rightUp,
 	-- ** Mouse Move
-	MouseMove, pattern OccMouseMove, mouseMove
+	MouseMove, pattern OccMouseMove, mouseMove, mousePos
 	) where
 
-import Control.Moffy (React, Request(..), await)
+import Prelude hiding (repeat)
+
+import Control.Moffy (Sig, React, Request(..), await, repeat)
 import Data.Type.Set (numbered, pattern Nil, Singleton, (:-))
 import Data.Bool (bool)
 import Data.Word (Word32)
@@ -88,6 +90,9 @@ type Point = (Integer, Integer)
 
 mouseMove :: React s (Singleton MouseMove) Point
 mouseMove  = await MouseMoveReq \(OccMouseMove p) -> p
+
+mousePos :: Sig s (Singleton MouseMove) Point ()
+mousePos = repeat mouseMove
 
 ---------------------------------------------------------------------------
 -- MOUSE EV
