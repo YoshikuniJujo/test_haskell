@@ -1,16 +1,18 @@
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Boxes.BoxEv where
+module Trial.Boxes.BoxEv (
+	-- * BoxEv
+	SigB, ISigB, ReactB, BoxEv ) where
 
-import Control.Moffy
-import Control.Moffy.Event.Time
-import Control.Moffy.Event.Delete
-import Control.Moffy.Event.Key
-import Control.Moffy.Event.Mouse
-import Data.Type.Set
+import Control.Moffy (Sig, ISig, React)
+import Control.Moffy.Event.Time (TimeEv)
+import Control.Moffy.Event.Delete (DeleteEvent)
+import Control.Moffy.Event.Key (KeyEv)
+import Control.Moffy.Event.Mouse (MouseEv)
+import Data.Type.Set ((:-), (:+:))
 
-type SigG s = Sig s BoxEv
-type ISigG s = ISig s BoxEv
-type ReactG s a = React s BoxEv a
+type SigB s = Sig s BoxEv
+type ISigB s = ISig s BoxEv
+type ReactB s r = React s BoxEv r
 type BoxEv = DeleteEvent :- KeyEv :+: MouseEv :+: TimeEv

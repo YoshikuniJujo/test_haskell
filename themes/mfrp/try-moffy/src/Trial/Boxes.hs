@@ -29,7 +29,7 @@ import Data.Or (Or(..))
 import qualified Control.Arrow as Arr (first)
 
 import Trial.Boxes.Box (Box(..), Rect(..), Color(..))
-import Trial.Boxes.BoxEv (SigG)
+import Trial.Boxes.BoxEv (SigB)
 
 ---------------------------------------------------------------------------
 
@@ -43,10 +43,10 @@ import Trial.Boxes.BoxEv (SigG)
 -- BOXES
 ---------------------------------------------------------------------------
 
-boxes :: SigG s [Box] ()
+boxes :: SigB s [Box] ()
 boxes = () <$ parList (spawn box)
 
-box :: SigG s Box ()
+box :: SigB s Box ()
 box = (`Box` Red) <$%> adjustSig defineRect
 	>>= (>>) <$> adjustSig . chooseBoxColor <*> waitFor . adjust . drClickOn
 

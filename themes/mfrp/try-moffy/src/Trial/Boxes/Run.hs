@@ -16,7 +16,7 @@ import Field hiding (Point)
 import Trial.Boxes.Handle
 import Trial.Boxes.View
 
-runBoxes :: String -> SigG s [Box] r -> IO r
+runBoxes :: String -> SigB s [Box] r -> IO r
 runBoxes ttl sig = do
 	f <- openField ttl [
 		pointerMotionMask, buttonPressMask, buttonReleaseMask,

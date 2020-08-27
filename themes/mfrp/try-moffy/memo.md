@@ -1312,15 +1312,19 @@ Main
 	+ [x] API
 	+ [x] import
 	+ [x] body
-* [ ] Trial.Boxes.BoxEv
+* [x] Trial.Boxes.BoxEv
+	+ [x] API
+		- [x] rename SigG, ISigG and ReactG to SigB, ISigB and ReactB
+		- [x] others
+	+ [x] extension
+	+ [x] import
+	+ [x] body
+* [ ] Trial.Boxes.Run
 	+ [ ] API
-		- [ ] rename SigG, ISigG and ReactG to SigB, ISigB and ReactB
-		- [ ] others
 	+ [ ] extension
 	+ [ ] import
 	+ [ ] structure
 	+ [ ] body
-* [ ] Trial.Boxes.Run
 * [ ] Trial.Boxes.Handle
 * [ ] Trial.Boxes.View
 
