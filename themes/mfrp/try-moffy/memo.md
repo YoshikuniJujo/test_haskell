@@ -1259,7 +1259,7 @@ Main
 
 * [x] refactor module name and hierarchy
 * [x] check module hierarchy
-* [ ] refactor each modules
+* [x] refactor each modules
 
 ##### module Trial.StepByStepBox
 
@@ -1281,7 +1281,7 @@ Main
 	+ [x] import
 	+ [x] body
 		- [x] rename trySigGBoxes' to runBoxes
-* [ ] Trial.Boxes
+* [x] Trial.Boxes
 	+ [x] view
 	+ [x] consider
 		- [x] whether or not to move elapsed to Control.Moffy.Event.Time
@@ -1339,7 +1339,11 @@ Main
 		- [x] drawREct
 		- [x] withFlush
 * [x] consider unify module Trial.Boxes.Run and Trial.Boxes.Handle
-* [ ] Trial.Boxes.Run
+* [x] Trial.Boxes.Run
+	+ [x] API
+	+ [x] extension
+	+ [x] import
+	+ [x] body
 
 ### Try Check Dup
 

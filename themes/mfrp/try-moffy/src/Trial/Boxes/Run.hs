@@ -5,15 +5,16 @@ module Trial.Boxes.Run (
 	-- * runBoxes
 	runBoxes ) where
 
-import Control.Moffy.Handle
-import Control.Moffy.Handle.Time
-import Control.Moffy.Handle.XField
+import Control.Moffy.Handle (
+	HandleSt, retrySt, liftHandle', popInput, pushInput )
+import Control.Moffy.Handle.Time (Mode(..), handleTimeEvPlus)
+import Control.Moffy.Handle.XField (handle)
 import Control.Moffy.Run (interpretSt)
-import Data.Time
-import Data.Time.Clock.TAI
+import Data.Time (DiffTime)
+import Data.Time.Clock.TAI (AbsoluteTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 
-import Trial.Boxes.BoxEv
+import Trial.Boxes.BoxEv (SigB, BoxEv)
 import Trial.Boxes.View (Box, drawBoxes)
 import Field (
 	Field, openField, closeField,
