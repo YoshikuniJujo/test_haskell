@@ -19,7 +19,7 @@ import Trial.Followbox.Event (SigF)
 import Trial.Followbox.Handle (
 	FollowboxState, handleFollowbox, initialFollowboxState )
 	-}
-import Trial.Followbox.HandleNew (
+import Trial.Followbox.Handle (
 	FollowboxState, handleFollowbox', initialFollowboxState )
 import Trial.Followbox.View (View, view)
 import Trial.Followbox.TypeSynonym (

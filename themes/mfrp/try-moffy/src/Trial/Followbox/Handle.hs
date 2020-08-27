@@ -4,7 +4,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Followbox.HandleNew (
+module Trial.Followbox.Handle (
 	-- * HANDLE
 	handleFollowbox',
 	-- * STATE

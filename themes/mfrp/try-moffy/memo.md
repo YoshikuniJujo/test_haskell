@@ -63,8 +63,9 @@ structure
 	+ Followbox
 		- Clickable
 		- Event
-		- HandleNew
+		- Handle
 		- View
+		- ViewType
 		- Run
 		- TypeSynonym
 
@@ -1367,7 +1368,7 @@ Main
   |    |    +- Trial.Followbox.TypeSynonym
   |    +- Trial.Followbox.TypeSynonym
   +- Trial.Followbox.Run
-       +- Trial.Followbox.HandleNew
+       +- Trial.Followbox.Handle
        |    +- Trial.Followbox.Event
        |    +- Trial.Followbox.TypeSynonym
        +- Trial.Followbox.View
