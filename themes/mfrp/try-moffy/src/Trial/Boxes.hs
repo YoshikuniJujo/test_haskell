@@ -11,7 +11,7 @@ module Trial.Boxes (
 import Prelude hiding (repeat, cycle, scanl, until)
 
 import Control.Monad (void)
-import Control.Monad.Trans.Except
+import Control.Monad.Trans.Except (pattern ExceptT, runExceptT)
 import Control.Moffy (
 	Sig, React, Firstable, adjust, adjustSig, emit, waitFor, repeat, find,
 	first, at, until, indexBy, spawn, parList )
@@ -47,7 +47,7 @@ boxes :: SigG s [Box] ()
 boxes = () <$ parList (spawn box)
 
 box :: SigG s Box ()
-box = void $ (`Box` Red) <$%> adjustSig defineRect
+box = (`Box` Red) <$%> adjustSig defineRect
 	>>= (>>) <$> adjustSig . chooseBoxColor <*> waitFor . adjust . drClickOn
 
 ---------------------------------------------------------------------------
@@ -93,21 +93,15 @@ cycleColor = go . cycle $ fromList [Red .. Magenta] where
 -- DR CLICK ON
 ---------------------------------------------------------------------------
 
-drClickOn :: Rect -> React s (MouseDown :- MouseMove :- TryWait :- 'Nil) (Either Point (Either () (Maybe Point, ())))
-drClickOn rct = posInside rct $ mousePos `indexBy` repeat doubler
-
-posInside :: Rect -> Sig s es Point y -> React s es (Either Point y)
-posInside rct = find (`inside` rct)
-
-inside :: Point -> Rect -> Bool
-(x, y) `inside` Rect (l, u) (r, d) =
-	(l <= x && x <= r || r <= x && x <= l) &&
-	(u <= y && y <= d || d <= y && y <= u)
+drClickOn :: Rect -> React s (MouseDown :- MouseMove :- TryWait :- 'Nil) ()
+drClickOn rct = void . find (`inside` rct) $ mousePos `indexBy` repeat doubler
+	where (x, y) `inside` Rect (l, u) (r, d) =
+		(l <= x && x <= r || r <= x && x <= l) &&
+		(u <= y && y <= d || d <= y && y <= u)
 
 doubler :: React s (MouseDown :- TryWait :- 'Nil) ()
-doubler = do
-	adjust rightClick
-	bool doubler (pure ()) =<< (rightClick `before` sleep 0.2)
+doubler = adjust rightClick
+	>> (bool doubler (pure ()) =<< rightClick `before` sleep 0.2)
 
 ---------------------------------------------------------------------------
 -- BEFORE

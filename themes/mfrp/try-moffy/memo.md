@@ -1290,7 +1290,7 @@ Main
 	+ [x] extension
 	+ [x] import
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] BOXES
 			* [x] sig boxes
 			* [x] sig box
@@ -1303,14 +1303,17 @@ Main
 			* [x] function chooseBoxColor
 			* [x] function wiggleRect
 			* [x] sig cycleColor
-		- [ ] DR CLICK ON
-			* [ ] function drClickOn
-			* [ ] function posInside
-			* [ ] function inside
-			* [ ] react doubler
-		- [ ] BEFORE
-	+ [ ] import
+		- [x] DR CLICK ON
+			* [x] function drClickOn
+			* [x] react doubler
+		- [x] BEFORE
+	+ [x] import
 * [ ] Trial.Boxes.Box
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
 * [ ] Trial.Boxes.BoxEv
 * [ ] Trial.Boxes.Run
 * [ ] Trial.Boxes.Handle
