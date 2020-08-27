@@ -1325,12 +1325,19 @@ Main
 	+ [x] import
 	+ [x] body
 * [ ] Trial.Boxes.Handle
-	+ [ ] API
+	+ [x] API
 	+ [ ] extension
 	+ [ ] import
 	+ [ ] structure
 	+ [ ] body
 * [ ] Trial.Boxes.View
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
+* [ ] consider unify module Trial.Boxes.Run and Trial.Boxes.Handle
+* [ ] Trial.Boxes.Run
 
 ### Try Check Dup
 
