@@ -9,29 +9,17 @@ module Trial.Followbox.View (
 import Control.Monad (zipWithM_)
 import Control.Monad.ST (ST)
 import Data.Bits ((.|.), shiftL)
-import Data.Word (Word8)
 import Codec.Picture (Image(imageWidth, imageHeight, imageData), PixelRGBA8)
 
 import qualified Data.Text as T
 import qualified Data.Vector.Generic.Mutable as MV
 import qualified Data.Vector.Storable as V
 
-import Trial.Followbox.TypeSynonym (Position, LineWidth, FontName, FontSize)
+import Trial.Followbox.ViewType
 
 import qualified Field as F
 
 ---------------------------------------------------------------------------
-
-type View = [View1]
-
-data View1
-	= Text Color FontName FontSize Position T.Text
-	| Line Color LineWidth Position Position
-	| Image Position (Image PixelRGBA8)
-
-data Color =
-	Color { colorRed :: Word8, colorGreen :: Word8, colorBlue :: Word8 }
-	deriving Show
 
 view :: F.Field -> View -> IO ()
 view f v = F.clearField f >> view1 f `mapM_` v >> F.flushField f
@@ -52,10 +40,6 @@ colorToPixel :: Color -> F.Pixel
 colorToPixel Color { colorRed = r_, colorGreen = g_, colorBlue = b_ } =
 	r `shiftL` 16 .|. g `shiftL` 8 .|. b
 	where [r, g, b] = fromIntegral <$> [r_, g_, b_]
-
-white, blue :: Color
-white = Color { colorRed = 0xff, colorGreen = 0xff, colorBlue = 0xff }
-blue = Color { colorRed = 0x30, colorGreen = 0x66, colorBlue = 0xd6 }
 
 drawImagePixel ::
 	F.Field -> Image PixelRGBA8 -> F.Position -> F.Position -> IO ()

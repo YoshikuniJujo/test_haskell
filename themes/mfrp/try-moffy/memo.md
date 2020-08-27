@@ -133,7 +133,6 @@ todo
 	+ [x] Moffy
 	+ [x] Moffy library
 	+ [ ] Moffy base
-	+ [ ] Trials
 * [ ] move time event to Moffy library
 * [ ] separate
 	+ [ ] Trial
@@ -1351,7 +1350,39 @@ Main
 	+ [x] consider whether or not to remove
 		- [x] remove doubler from export list of Trial.Boxes
 
-### Followbox (7)
+### Followbox (8)
+
+#### module hierarchy
+
+```
+Main
+  +- Trial.Followbox
+  |    +- Trial.Followbox.Event
+  |    |    +- Trial.Followbox.TypeSynonym
+  |    +- Trial.Followbox.Clickable
+  |    |    +- Trial.Followbox.Event
+  |    |    +- Trial.Followbox.ViewType
+  |    |    +- Trial.Followbox.TypeSynonym
+  |    +- Trial.Followbox.ViewType
+  |    |    +- Trial.Followbox.TypeSynonym
+  |    +- Trial.Followbox.TypeSynonym
+  +- Trial.Followbox.Run
+       +- Trial.Followbox.HandleNew
+       |    +- Trial.Followbox.Event
+       |    +- Trial.Followbox.TypeSynonym
+       +- Trial.Followbox.View
+       |    +- Trial.Followbox.ViewType
+       +- Trial.Followbox.TypeSynonym
+```
+
+#### refactoring
+
+* [ ] refactor module dependencies
+	+ [x] make module Trial.Followbox not to depend Trial.Followbox.View
+		- [x] separate Trial.Followbox.View to itself and Trial.Followbox.ViewType
+		- [x] Trial.Followbox import ....ViewType instead of ...View
+	+ [ ] rename Trial.Followbox.HandleNew to ...Handle
+	+ [ ] others
 
 ref
 ---

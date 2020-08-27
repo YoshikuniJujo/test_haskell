@@ -33,7 +33,7 @@ import Trial.Followbox.Event (
 import Trial.Followbox.Clickable (
 	Clickable, view, click, clickable, clickableText,
 	WithTextExtents, withTextExtents, nextToText, translate )
-import Trial.Followbox.View (View, View1(..), white)
+import Trial.Followbox.ViewType (View, View1(..), white)
 import Trial.Followbox.TypeSynonym (
 	Position, Avatar, FontName, FontSize, ErrorMessage )
 
