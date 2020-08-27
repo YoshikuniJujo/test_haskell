@@ -1328,12 +1328,16 @@ Main
 	+ [x] API
 	+ [x] import
 	+ [x] body
-* [ ] Trial.Boxes.View
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
+* [x] Trial.Boxes.View
+	+ [x] API
+	+ [x] extension
+	+ [x] import
+	+ [x] structure
+	+ [x] body
+		- [x] drawBoxes
+		- [x] drawBox
+		- [x] drawREct
+		- [x] withFlush
 * [ ] consider unify module Trial.Boxes.Run and Trial.Boxes.Handle
 * [ ] Trial.Boxes.Run
 
