@@ -1324,12 +1324,10 @@ Main
 	+ [x] extension
 	+ [x] import
 	+ [x] body
-* [ ] Trial.Boxes.Handle
+* [x] Trial.Boxes.Handle
 	+ [x] API
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
+	+ [x] import
+	+ [x] body
 * [ ] Trial.Boxes.View
 	+ [ ] API
 	+ [ ] extension

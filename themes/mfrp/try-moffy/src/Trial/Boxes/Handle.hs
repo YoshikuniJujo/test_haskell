@@ -6,12 +6,13 @@ module Trial.Boxes.Handle (
 	-- * Types
 	SigB, Mode(InitialMode) ) where
 
-import Control.Moffy.Handle hiding (expand)
-import Control.Moffy.Handle.Time
+import Control.Moffy.Handle (
+	HandleSt, liftHandle', retrySt, popInput, pushInput )
+import Control.Moffy.Handle.Time (Mode(InitialMode), handleTimeEvPlus)
+import Control.Moffy.Handle.XField (handle)
 import Data.Time (DiffTime)
 import Data.Time.Clock.TAI (AbsoluteTime)
 	
-import Control.Moffy.Handle.XField
 import Trial.Boxes.BoxEv (SigB, BoxEv)
 import Field (Field)
 
