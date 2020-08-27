@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -9,12 +9,15 @@ module Trial.Followbox (
 import Prelude hiding (break, until)
 
 import Control.Monad (forever, (<=<))
-import Control.Moffy
+import Control.Moffy (adjust, emit, waitFor, first, break, until)
+import Control.Moffy.Event.Lock (LockId, newLockId, withLock)
+import Control.Moffy.Event.Random (getRandomR)
+import Control.Moffy.Event.Delete (deleteEvent)
 import Data.Type.Flip ((<$%>), (<*%>), ftraverse)
 import Data.Or (Or(..))
+import Data.Aeson (Object, Value(..), eitherDecode)
 import Data.Time (UTCTime, utcToLocalTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
-import Data.Aeson (Object, Value(..), eitherDecode)
 import Text.Read (readMaybe)
 import Codec.Picture (decodeImage, convertRGBA8)
 import Codec.Picture.Extra (scaleBilinear)
@@ -25,9 +28,6 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 
-import Control.Moffy.Event.Lock (LockId, newLockId, withLock)
-import Control.Moffy.Event.Random (getRandomR)
-import Control.Moffy.Event.Delete (deleteEvent)
 import Trial.Followbox.Event (
 	SigF, ReactF, clearJsons, storeJsons, loadJsons, httpGet, getTimeZone,
 	browse, beginSleep, checkBeginSleep, endSleep,

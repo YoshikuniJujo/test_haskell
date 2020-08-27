@@ -1388,8 +1388,8 @@ Main
 	+ [x] body
 * [ ] Trial.Followbox
 	+ [x] API
-	+ [ ] extension
-	+ [ ] import
+	+ [x] extension
+	+ [x] import
 	+ [ ] structure
 	+ [ ] body
 * [ ] Trial.Followbox.Clickable
