@@ -1390,8 +1390,39 @@ Main
 	+ [x] API
 	+ [x] extension
 	+ [x] import
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] PARAMETER LIST
+			* [ ] numOfUsers
+			* [ ] userPageMax
+			* [ ] defaultFont
+			* [ ] middleSize, largeSize
+			* [ ] avatarSizeX, avatarSizeY
+			* [ ] titlePos, nextPos, refreshPos, resetTimePos
+			* [ ] crossSize
+			* [ ] crossPos
+			* [ ] crossMargin
+		- [ ] SIG AND REACT
+			* [ ] FOLLOWBOX
+				+ [ ] followbox
+				+ [ ] fieldWithResetTime
+				+ [ ] field
+				+ [ ] resetTime
+			* [ ] USERS
+				+ [ ] users
+				+ [ ] user1
+				+ [ ] nameCross
+				+ [ ] cross
+			* [ ] GET USER
+				+ [ ] getUser
+				+ [ ] getAvatar
+			* [ ] GET OBJECT
+				+ [ ] getObj1
+				+ [ ] getObj1FromWeb
+				+ [ ] getObjs
+		- [ ] HELPER FUNCTION
+			* [ ] twhite
+			* [ ] posixSeconds
 * [ ] Trial.Followbox.Clickable
 * [ ] Trial.Followbox.Event
 * [ ] Trial.Followbox.TypeSynonym

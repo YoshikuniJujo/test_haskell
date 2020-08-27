@@ -46,6 +46,7 @@ import Trial.Followbox.TypeSynonym (
 --	+ FOLLOWBOX
 --	+ USERS
 --	+ GET USER
+--	+ GET OBJECT
 -- * HELPER FUNCTION
 
 ---------------------------------------------------------------------------
@@ -171,6 +172,8 @@ getAvatar :: T.Text -> ReactF s (Either (Error, ErrorMessage) Avatar)
 getAvatar url = (<$> adjust (httpGet url)) . (. bsToImage . snd) $ either
 	(Left . (NoAvatar ,)) (Right . scaleBilinear avatarSizeX avatarSizeY)
 	where bsToImage = (convertRGBA8 <$>) . decodeImage . LBS.toStrict
+
+-- GET OBJECT
 
 getObj1 :: LockId -> ReactF s Object
 getObj1 lck = withLock lck $ adjust loadJsons >>= \case
