@@ -1378,12 +1378,27 @@ Main
 
 #### refactoring
 
-* [ ] refactor module dependencies
+* [x] refactor module dependencies
 	+ [x] make module Trial.Followbox not to depend Trial.Followbox.View
 		- [x] separate Trial.Followbox.View to itself and Trial.Followbox.ViewType
 		- [x] Trial.Followbox import ....ViewType instead of ...View
-	+ [ ] rename Trial.Followbox.HandleNew to ...Handle
-	+ [ ] others
+	+ [x] rename Trial.Followbox.HandleNew to ...Handle
+* [x] Main
+	+ [x] import
+	+ [x] body
+* [ ] Trial.Followbox
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
+* [ ] Trial.Followbox.Clickable
+* [ ] Trial.Followbox.Event
+* [ ] Trial.Followbox.TypeSynonym
+* [ ] Trial.Followbox.Run
+* [ ] Trial.Followbox.Handle
+* [ ] Trial.Followbox.View
+* [ ] Trial.Followbox.ViewType
 
 ref
 ---

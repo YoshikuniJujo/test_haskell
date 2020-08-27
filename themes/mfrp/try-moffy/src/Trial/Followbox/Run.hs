@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Followbox.Run (runFollowbox) where
+module Trial.Followbox.Run (runFollowbox, evalFollowbox) where
 
 -- import Control.Monad.State (runStateT, lift)
 import Control.Moffy.Run
@@ -38,6 +38,9 @@ import Field (openField, closeField, exposureMask, buttonPressMask)
 
 defaultBrowser :: Browser
 defaultBrowser = "firefox"
+
+evalFollowbox :: WindowTitle -> SigF s View a -> IO a
+evalFollowbox = ((fst <$>) .) . runFollowbox
 
 runFollowbox :: WindowTitle -> SigF s View a -> IO (a, FollowboxState)
 runFollowbox ttl sig = getFollowboxInfo >>= \case
