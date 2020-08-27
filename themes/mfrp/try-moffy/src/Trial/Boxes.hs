@@ -5,8 +5,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.Boxes (
-	-- * Sig and React
-	boxes, doubler ) where
+	-- * Sig boxes
+	boxes ) where
 
 import Prelude hiding (repeat, cycle, scanl, until)
 

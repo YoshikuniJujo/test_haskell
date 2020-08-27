@@ -1338,21 +1338,14 @@ Main
 		- [x] drawBox
 		- [x] drawREct
 		- [x] withFlush
-* [ ] consider unify module Trial.Boxes.Run and Trial.Boxes.Handle
+* [x] consider unify module Trial.Boxes.Run and Trial.Boxes.Handle
 * [ ] Trial.Boxes.Run
 
 ### Try Check Dup
 
-* [ ] Trial.TryCheckDup
-	+ [ ] consider whether or not to remove
-		- [ ] remove doubler from export list of Trial.Boxes
-	+ [ ] view
-	+ [ ] consider whether or not to rename
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
+* [x] Trial.TryCheckDup
+	+ [x] consider whether or not to remove
+		- [x] remove doubler from export list of Trial.Boxes
 
 ### Followbox (7)
 
