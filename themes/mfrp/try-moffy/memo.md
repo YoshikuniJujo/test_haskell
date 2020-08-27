@@ -1319,13 +1319,17 @@ Main
 	+ [x] extension
 	+ [x] import
 	+ [x] body
-* [ ] Trial.Boxes.Run
+* [x] Trial.Boxes.Run
+	+ [x] API
+	+ [x] extension
+	+ [x] import
+	+ [x] body
+* [ ] Trial.Boxes.Handle
 	+ [ ] API
 	+ [ ] extension
 	+ [ ] import
 	+ [ ] structure
 	+ [ ] body
-* [ ] Trial.Boxes.Handle
 * [ ] Trial.Boxes.View
 
 ### Try Check Dup

@@ -1,26 +1,26 @@
-{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
-{-# LANGUAGE MonoLocalBinds #-}
-{-# LANGUAGE DataKinds, TypeOperators #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Boxes.Run (runBoxes) where
+module Trial.Boxes.Run (
+	-- * runBoxes
+	runBoxes ) where
 
-import Prelude hiding (cycle, repeat, scanl, until, break)
+import Control.Moffy.Run (interpretSt)
+import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 
-import Control.Moffy.Run
-import Data.Time.Clock.System
+import Trial.Boxes.Handle (SigB, Mode(..), handleBoxes)
+import Trial.Boxes.View (Box, drawBoxes)
+import Field (
+	openField, closeField,
+	exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask )
 
-import Field hiding (Point)
-
-import Trial.Boxes.Handle
-import Trial.Boxes.View
+---------------------------------------------------------------------------
 
 runBoxes :: String -> SigB s [Box] r -> IO r
-runBoxes ttl sig = do
+runBoxes ttl s = do
 	f <- openField ttl [
-		pointerMotionMask, buttonPressMask, buttonReleaseMask,
-		exposureMask ]
-	(r, _) <- interpretSt (handleBoxes 0.05 f) (drawBoxes f) sig . (InitialMode ,)
-			. systemToTAITime =<< getSystemTime
+		exposureMask,
+		buttonPressMask, buttonReleaseMask, pointerMotionMask ]
+	(r, _) <- interpretSt (handleBoxes 0.05 f) (drawBoxes f) s
+		. (InitialMode ,) . systemToTAITime =<< getSystemTime
 	r <$ closeField f
