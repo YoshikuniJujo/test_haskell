@@ -1299,10 +1299,10 @@ Main
 			* [x] react firstPoint
 			* [x] function completeRect
 			* [x] value neverOccur
-		- [ ] CHOOSE BOX COLOR
-			* [ ] function chooseBoxColor
-			* [ ] function wiggleRect
-			* [ ] sig cycleColor
+		- [x] CHOOSE BOX COLOR
+			* [x] function chooseBoxColor
+			* [x] function wiggleRect
+			* [x] sig cycleColor
 		- [ ] DR CLICK ON
 			* [ ] function drClickOn
 			* [ ] function posInside

@@ -84,9 +84,9 @@ wiggleRect (Rect lu rd) = (<$%> elapsed) \t -> let
 	Rect ((+ dx) `Arr.first` lu) ((+ dx) `Arr.first` rd)
 
 cycleColor :: Sig s (Singleton MouseDown) Color ()
-cycleColor = cc . cycle $ fromList [Red .. Magenta] where
-	cc (h :~ t) = emit h >>
-		(bool (pure ()) (cc t)
+cycleColor = go . cycle $ fromList [Red .. Magenta] where
+	go (h :~ t) = emit h >>
+		(bool (pure ()) (go t)
 			=<< waitFor (middleClick `before` rightClick))
 
 ---------------------------------------------------------------------------
