@@ -1,7 +1,11 @@
-module Trial.Boxes.Box where
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-import Control.Moffy.Event.Mouse
+module Trial.Boxes.Box (
+	-- * Box
+	Box(..), Rect(..), Color(..) ) where
 
-data Color = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
-data Rect = Rect { leftup :: Point, rightdown :: Point  } deriving Show
+import Control.Moffy.Event.Mouse (Point)
+
 data Box = Box Rect Color deriving Show
+data Rect = Rect { leftup :: Point, rightdown :: Point  } deriving Show
+data Color = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)

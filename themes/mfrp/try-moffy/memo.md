@@ -1308,13 +1308,18 @@ Main
 			* [x] react doubler
 		- [x] BEFORE
 	+ [x] import
-* [ ] Trial.Boxes.Box
+* [x] Trial.Boxes.Box
+	+ [x] API
+	+ [x] import
+	+ [x] body
+* [ ] Trial.Boxes.BoxEv
 	+ [ ] API
+		- [ ] rename SigG, ISigG and ReactG to SigB, ISigB and ReactB
+		- [ ] others
 	+ [ ] extension
 	+ [ ] import
 	+ [ ] structure
 	+ [ ] body
-* [ ] Trial.Boxes.BoxEv
 * [ ] Trial.Boxes.Run
 * [ ] Trial.Boxes.Handle
 * [ ] Trial.Boxes.View
