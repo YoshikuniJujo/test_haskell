@@ -2,7 +2,9 @@
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Followbox (followbox) where
+module Trial.Followbox (
+	-- * followbox
+	followbox ) where
 
 import Prelude hiding (break, until)
 
