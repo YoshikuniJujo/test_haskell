@@ -6,7 +6,7 @@
 
 module Trial.Followbox.Handle (
 	-- * HANDLE
-	handleFollowbox',
+	handleFollowbox,
 	-- * STATE
 	HandleF, FollowboxState, initialFollowboxState ) where
 
@@ -92,8 +92,9 @@ instance RandomState FollowboxState where
 
 -- FOLLOWBOX
 
-handleFollowbox' ::
+handleFollowbox, handleFollowbox' ::
 	Field -> Browser -> Maybe GithubNameToken -> HandleF IO (GuiEv :+: FollowboxEv)
+handleFollowbox = handleFollowbox'
 handleFollowbox' f brws mba = retrySt $
 	liftSt . handleGetThreadId `mergeSt` handleLock `mergeSt` handleRandom `mergeSt`
 	handleStoreJsons' `mergeSt` handleLoadJsons' `mergeSt`

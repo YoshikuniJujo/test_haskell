@@ -1562,7 +1562,7 @@ Main
 * [ ] Trial.Followbox.Run
 	+ [x] API
 	+ [x] extension
-	+ [ ] import
+	+ [x] import
 	+ [ ] structure
 	+ [ ] body
 * [ ] Trial.Followbox.Handle
