@@ -1,34 +1,30 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
 
 module Trial.Followbox.Event (
-	-- * GENERAL
-	SigF, ReactF, FollowboxEv, Occurred(..),
-
-	-- * STORE AND LOAD
-	-- ** Jsons
-	StoreJsons(..), LoadJsons, clearJsons, storeJsons, loadJsons,
-
-	-- * REQUEST DATA
-	-- ** HttpGet
-	HttpGet(..), httpGet,
-	-- ** CalcTextExtents
-	CalcTextExtents(..), calcTextExtents,
-	-- ** GetTimeZone
-	GetTimeZone, getTimeZone,
-
-	-- * ACTION
-	-- ** Browse
-	Browse(..), browse,
-
-	-- * SLEEP AND ERROR
-	-- ** BeginSleep and EndSleep
-	BeginSleep(..), EndSleep, beginSleep, checkBeginSleep, endSleep,
-	-- ** RaiseError
-	RaiseError(..), Error(..), ErrorResult(..),
+	-- * Followbox Event
+	SigF, ReactF, FollowboxEv,
+	-- * Store and Load Jsons
+	StoreJsons(..), pattern OccStoreJsons, LoadJsons, pattern OccLoadJsons,
+	clearJsons, storeJsons, loadJsons,
+	-- * Request Data
+	-- ** Http Get
+	HttpGet(..), pattern OccHttpGet, httpGet,
+	-- ** Calc Text Extents
+	CalcTextExtents(..), pattern OccCalcTextExtents, calcTextExtents,
+	-- ** Get Time Zone
+	GetTimeZone, pattern OccGetTimeZone, getTimeZone,
+	-- * Browse
+	Browse(..), pattern OccBrowse, browse,
+	-- * Sleep
+	BeginSleep(..), pattern OccBeginSleep, EndSleep, pattern OccEndSleep,
+	beginSleep, checkBeginSleep, endSleep,
+	-- * Raise Error
+	RaiseError(..), pattern OccRaiseError, Error(..), ErrorResult(..),
 	raiseError, checkTerminate
 	) where
 

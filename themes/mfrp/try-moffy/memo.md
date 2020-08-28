@@ -1452,6 +1452,51 @@ Main
 		- [x] SIG AND REACT: USERS: function user1
 * [ ] Trial.Followbox.Event
 	+ [ ] API
+		- [x] structure
+		- [ ] Followbox Event
+			* [ ] type SigF
+			* [ ] type ReactF
+			* [ ] type FollowboxEv
+		- [ ] Store and Load Jsons
+			* [ ] data StoreJsons
+			* [ ] pattern OccStoreJsons
+			* [ ] data LoadJsons
+			* [ ] pattern OccLoadJsons
+			* [ ] clearJsons
+			* [ ] storeJsons
+			* [ ] loadJsons
+		- [ ] Request Data
+			* [ ] Http Get
+				+ [ ] data HttpGet
+				+ [ ] pattern OccHttpGet
+				+ [ ] httpGet
+			* [ ] Calc Text Extents
+				+ [ ] data CalcTextExtents
+				+ [ ] pattern OccCalcTextExtents
+				+ [ ] calcTextExtents
+			* [ ] Get Time Zone
+				+ [ ] data GetTimeZone
+				+ [ ] pattern OccGetTimeZone
+				+ [ ] getTimeZone
+		- [ ] Browse
+			+ [ ] data Browse
+			+ [ ] pattern OccBrowse
+			+ [ ] browse
+		- [ ] Sleep
+			+ [ ] data BeginSleep
+			+ [ ] pattern OccBeginSleep
+			+ [ ] data EndSleep
+			+ [ ] pattern OccEndSleep
+			+ [ ] beginSleep
+			+ [ ] checkBeginSleep
+			+ [ ] endSleep
+		- [ ] Raise Error
+			+ [ ] data RaiseError
+			+ [ ] pattern OccRaiseError
+			+ [ ] data Error
+			+ [ ] data ErrorResult
+			+ [ ] raiseError
+			+ [ ] checkTerminate
 	+ [ ] extension
 	+ [ ] import
 	+ [ ] structure

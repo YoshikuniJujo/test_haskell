@@ -31,9 +31,14 @@ import Control.Moffy.Handle.Lock (LockState(..), LockId, handleLock)
 import Control.Moffy.Handle.Random (RandomState(..), handleRandom)
 import Control.Moffy.Handle.XField
 import Trial.Followbox.Event (
-	FollowboxEv, Occurred(..), StoreJsons(..), LoadJsons,
+	FollowboxEv, StoreJsons(..), LoadJsons,
 	HttpGet(..), CalcTextExtents(..), GetTimeZone, Browse(..),
-	BeginSleep(..), EndSleep, RaiseError(..), Error(..), ErrorResult(..) )
+	BeginSleep(..), EndSleep, RaiseError(..), Error(..), ErrorResult(..),
+	pattern OccStoreJsons, pattern OccLoadJsons,
+	pattern OccHttpGet, pattern OccCalcTextExtents,
+	pattern OccGetTimeZone, pattern OccBrowse,
+	pattern OccBeginSleep, pattern OccEndSleep, pattern OccRaiseError
+	)
 import Trial.Followbox.TypeSynonym (Browser, GithubNameToken)
 import Field (Field, textExtents)
 
