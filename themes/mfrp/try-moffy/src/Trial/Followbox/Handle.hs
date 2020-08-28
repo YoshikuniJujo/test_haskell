@@ -116,7 +116,7 @@ handleMouseWithSleep' f rqs s = (, s) <$> case fsSleepUntil s of
 -- STORE AND LOAD JSONS
 
 handleStoreJsons' :: Monad m => HandleF' m (Singleton StoreJsons)
-handleStoreJsons' (Singleton (StoreJsons os)) s =
+handleStoreJsons' (Singleton (StoreJsonsReq os)) s =
 	pure (Just . Singleton $ OccStoreJsons os, s { fsObjects = os })
 
 handleLoadJsons' :: Monad m => HandleF' m (Singleton LoadJsons)

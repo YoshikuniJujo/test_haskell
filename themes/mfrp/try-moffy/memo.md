@@ -1451,52 +1451,52 @@ Main
 		- [x] SIG AND REACT: FOLLOWBOX: function field
 		- [x] SIG AND REACT: USERS: function user1
 * [ ] Trial.Followbox.Event
-	+ [ ] API
+	+ [x] API
 		- [x] structure
-		- [ ] Followbox Event
-			* [ ] type SigF
-			* [ ] type ReactF
-			* [ ] type FollowboxEv
-		- [ ] Store and Load Jsons
-			* [ ] data StoreJsons
-			* [ ] pattern OccStoreJsons
-			* [ ] data LoadJsons
-			* [ ] pattern OccLoadJsons
-			* [ ] clearJsons
-			* [ ] storeJsons
-			* [ ] loadJsons
-		- [ ] Request Data
-			* [ ] Http Get
-				+ [ ] data HttpGet
-				+ [ ] pattern OccHttpGet
-				+ [ ] httpGet
-			* [ ] Calc Text Extents
-				+ [ ] data CalcTextExtents
-				+ [ ] pattern OccCalcTextExtents
-				+ [ ] calcTextExtents
-			* [ ] Get Time Zone
-				+ [ ] data GetTimeZone
-				+ [ ] pattern OccGetTimeZone
-				+ [ ] getTimeZone
-		- [ ] Browse
-			+ [ ] data Browse
-			+ [ ] pattern OccBrowse
-			+ [ ] browse
-		- [ ] Sleep
-			+ [ ] data BeginSleep
-			+ [ ] pattern OccBeginSleep
-			+ [ ] data EndSleep
-			+ [ ] pattern OccEndSleep
-			+ [ ] beginSleep
-			+ [ ] checkBeginSleep
-			+ [ ] endSleep
-		- [ ] Raise Error
-			+ [ ] data RaiseError
-			+ [ ] pattern OccRaiseError
-			+ [ ] data Error
-			+ [ ] data ErrorResult
-			+ [ ] raiseError
-			+ [ ] checkTerminate
+		- [x] Followbox Event
+			* [x] type SigF
+			* [x] type ReactF
+			* [x] type FollowboxEv
+		- [x] Store and Load Jsons
+			* [x] data StoreJsons
+			* [x] pattern OccStoreJsons
+			* [x] data LoadJsons
+			* [x] pattern OccLoadJsons
+			* [x] clearJsons
+			* [x] storeJsons
+			* [x] loadJsons
+		- [x] Request Data
+			* [x] Http Get
+				+ [x] data HttpGet
+				+ [x] pattern OccHttpGet
+				+ [x] httpGet
+			* [x] Calc Text Extents
+				+ [x] data CalcTextExtents
+				+ [x] pattern OccCalcTextExtents
+				+ [x] calcTextExtents
+			* [x] Get Time Zone
+				+ [x] data GetTimeZone
+				+ [x] pattern OccGetTimeZone
+				+ [x] getTimeZone
+		- [x] Browse
+			+ [x] data Browse
+			+ [x] pattern OccBrowse
+			+ [x] browse
+		- [x] Sleep
+			+ [x] data BeginSleep
+			+ [x] pattern OccBeginSleep
+			+ [x] data EndSleep
+			+ [x] pattern OccEndSleep
+			+ [x] beginSleep
+			+ [x] checkBeginSleep
+			+ [x] endSleep
+		- [x] Raise Error
+			+ [x] data RaiseError
+			+ [x] pattern OccRaiseError
+			+ [x] data Error
+			+ [x] data ErrorResult
+			+ [x] raiseError
+			+ [x] checkTerminate
 	+ [ ] extension
 	+ [ ] import
 	+ [ ] structure

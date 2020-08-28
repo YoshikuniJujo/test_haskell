@@ -69,7 +69,7 @@ import Trial.Followbox.TypeSynonym (Uri, FontName, FontSize, ErrorMessage)
 -- STORE AND LOAD JSON OBJECT LIST
 ---------------------------------------------------------------------------
 
-newtype StoreJsons = StoreJsons [Object] deriving Show
+newtype StoreJsons = StoreJsonsReq [Object] deriving Show
 numbered [t| StoreJsons |]
 instance Selectable StoreJsons where os1 `select` _os2 = os1
 instance Request StoreJsons where
@@ -77,7 +77,7 @@ instance Request StoreJsons where
 
 storeJsons :: [Object] -> React s (Singleton StoreJsons) ()
 storeJsons os = bool (storeJsons os) (pure ())
-	=<< await (StoreJsons os) \(OccStoreJsons os') -> os == os'
+	=<< await (StoreJsonsReq os) \(OccStoreJsons os') -> os == os'
 
 clearJsons :: React s (Singleton StoreJsons) ()
 clearJsons = storeJsons []
