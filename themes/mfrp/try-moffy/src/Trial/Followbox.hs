@@ -184,8 +184,8 @@ getAvatar url = (<$> adjust (httpGet url))
 -- GET OBJECT
 
 getObj1 :: LockId -> ReactF s Object
-getObj1 lck = withLock lck $ adjust loadJsons >>= \case
-	[] -> getObj1FromWeb; o : os -> o <$ adjust (storeJsons os)
+getObj1 lck = withLock lck $ adjust loadJsons
+	>>= \case [] -> getObj1FromWeb; o : os -> o <$ adjust (storeJsons os)
 
 getObj1FromWeb :: ReactF s Object
 getObj1FromWeb = getObjs >>= \case
@@ -199,13 +199,8 @@ getObjs = do
 	(h, b) <- adjust . httpGet $ api n
 	case (rmng h, rst h) of
 		(Just rmn, _) | rmn > (0 :: Int) -> pure $ eitherDecode b
-		(Just _, Just t) -> do
-			adjust (raiseError Trace "TRACE HERE 1")
-			adjust (beginSleep t)
-			adjust (raiseError Trace "TRACE HERE 2")
-			adjust endSleep
-			adjust (raiseError Trace "TRACE HERE 3")
-			getObjs
+		(Just _, Just t) ->
+			adjust (beginSleep t) >> adjust endSleep >> getObjs
 		(Just _, Nothing) -> adjust (uncurry raiseError rstE) >> getObjs
 		(Nothing, _) -> adjust (uncurry raiseError rmngE) >> getObjs
 	where

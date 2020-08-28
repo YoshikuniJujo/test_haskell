@@ -1386,12 +1386,12 @@ Main
 * [x] Main
 	+ [x] import
 	+ [x] body
-* [ ] Trial.Followbox
+* [x] Trial.Followbox
 	+ [x] API
 	+ [x] extension
 	+ [x] import
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] PARAMETER LIST
 			* [x] view
 			* [x] NUMBER OF USER TO DISPLAY
@@ -1410,7 +1410,7 @@ Main
 				+ [x] crossSize
 				+ [x] crossPos
 				+ [x] crossMargin
-		- [ ] SIG AND REACT
+		- [x] SIG AND REACT
 			* [x] FOLLOWBOX
 				+ [x] followbox
 				+ [x] fieldWithResetTime
@@ -1423,14 +1423,14 @@ Main
 			* [x] GET USER
 				+ [x] getUser
 				+ [x] getAvatar
-			* [ ] GET OBJECT
-				+ [ ] getObj1
-				+ [ ] getObj1FromWeb
-				+ [ ] getObjs
-		- [ ] HELPER FUNCTION
-			* [ ] twhite
-			* [ ] lwhite
-			* [ ] posixSeconds
+			* [x] GET OBJECT
+				+ [x] getObj1
+				+ [x] getObj1FromWeb
+				+ [x] getObjs
+		- [x] HELPER FUNCTION
+			* [x] twhite
+			* [x] lwhite
+			* [x] posixSeconds
 * [ ] Trial.Followbox.Clickable
 * [ ] Trial.Followbox.Event
 * [ ] Trial.Followbox.TypeSynonym
