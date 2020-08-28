@@ -13,6 +13,10 @@ import Data.Text (Text)
 import Codec.Picture (Image, PixelRGBA8)
 
 ---------------------------------------------------------------------------
+-- * FIELD
+-- * GITHUB
+-- * OTHERS
+---------------------------------------------------------------------------
 
 -- FIELD
 
@@ -21,6 +25,7 @@ type Position = (Integer, Integer)
 type LineWidth = Integer
 type FontName = String
 type FontSize = Double
+type Avatar = Image PixelRGBA8
 
 -- GITHUB
 
@@ -31,6 +36,5 @@ type GithubToken = ByteString
 -- OTHERS
 
 type Uri = Text
-type Avatar = Image PixelRGBA8
 type Browser = FilePath
 type ErrorMessage = String

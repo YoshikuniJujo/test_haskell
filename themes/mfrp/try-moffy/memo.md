@@ -1537,7 +1537,7 @@ Main
 			* [x] type SigF
 			* [x] type ReactF
 			* [x] type FollowboxEv
-* [ ] Trial.Followbox.TypeSynonym
+* [x] Trial.Followbox.TypeSynonym
 	+ [x] API
 		- [x] structure
 		- [x] rename from FOO to Foo
@@ -1556,11 +1556,15 @@ Main
 			* [x] Uri
 			* [x] Browser
 			* [x] ErrorMessage
+	+ [x] import
+	+ [x] structure
+	+ [x] body
+* [ ] Trial.Followbox.Run
+	+ [ ] API
 	+ [ ] extension
 	+ [ ] import
 	+ [ ] structure
 	+ [ ] body
-* [ ] Trial.Followbox.Run
 * [ ] Trial.Followbox.Handle
 * [ ] Trial.Followbox.View
 * [ ] Trial.Followbox.ViewType
