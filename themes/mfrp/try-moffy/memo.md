@@ -1431,25 +1431,25 @@ Main
 			* [x] twhite
 			* [x] lwhite
 			* [x] posixSeconds
-* [ ] Trial.Followbox.Clickable
+* [x] Trial.Followbox.Clickable
 	+ [x] API
 	+ [x] import
 	+ [x] structure
+	+ [x] body
+		- [x] consider to change view and click to field
+		- [x] CLICKABLE
+			* [x] data Clickable
+			* [x] clickable
+		- [x] WITH TEXT EXTENTS
+			* [x] data WithTextExtents
+			* [x] clickableText
+			* [x] withTextExtents
+			* [x] nextToText
+			* [x] translate
+* [ ] Trial.Followbox
 	+ [ ] body
-		- [ ] consider to change view and click to field
-		- [ ] CLICKABLE
-			* [ ] data Clickable
-			* [ ] view
-			* [ ] click
-			* [ ] clickable
-			* [ ] clickOn
-			* [ ] mousePosition
-		- [ ] WITH TEXT EXTENTS
-			* [ ] data WithTextExtents
-			* [ ] clickableText
-			* [ ] withTextExtents
-			* [ ] nextToText
-			* [ ] translate
+		- [ ] SIG AND REACT: FOLLOWBOX: function field
+		- [ ] SIG AND REACT: USERS: function user1
 * [ ] Trial.Followbox.Event
 	+ [ ] API
 	+ [ ] extension

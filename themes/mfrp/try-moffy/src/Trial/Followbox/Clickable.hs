@@ -1,3 +1,4 @@
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.Followbox.Clickable (
@@ -9,13 +10,14 @@ module Trial.Followbox.Clickable (
 
 import Prelude hiding (repeat)
 
-import Control.Moffy (adjust, repeat, find, indexBy)
-import Control.Moffy.Event.Mouse (leftClick, mouseMove)
+import Control.Moffy (React, adjust, repeat, find, indexBy)
+import Control.Moffy.Event.Mouse (MouseEv, leftClick, mouseMove)
+import Data.Type.Set (Singleton)
 import Graphics.X11.Xrender (XGlyphInfo(..))
 
 import qualified Data.Text as T
 
-import Trial.Followbox.Event (SigF, ReactF, calcTextExtents)
+import Trial.Followbox.Event (CalcTextExtents, calcTextExtents)
 import Trial.Followbox.ViewType (View, View1(..), blue)
 import Trial.Followbox.TypeSynonym (Position, FontName, FontSize)
 
@@ -28,24 +30,12 @@ import Trial.Followbox.TypeSynonym (Position, FontName, FontSize)
 -- CLICKABLE
 ---------------------------------------------------------------------------
 
-data Clickable s = Clickable View (ReactF s ())
-
-view :: Clickable s -> View
-view (Clickable v _) = v
-
-click :: Clickable s -> ReactF s ()
-click (Clickable _ r) = r
+data Clickable s = Clickable { view :: View, click :: React s MouseEv () }
 
 clickable :: View -> Position -> Position -> Clickable s
-clickable v ul br = Clickable v $ clickOn ul br
-
-clickOn :: Position -> Position -> ReactF s ()
-clickOn (l, t) (r, b) =
-	() <$ find inside (mousePosition `indexBy` repeat leftClick)
-	where inside (x, y) = l <= x && x <= r && t <= y && y <= b
-
-mousePosition :: SigF s Position ()
-mousePosition = repeat $ adjust mouseMove
+clickable v (l, t) (r, b) = Clickable v
+	. adjust $ () <$ find isd (repeat mouseMove `indexBy` repeat leftClick)
+	where isd (x, y) = l <= x && x <= r && t <= y && y <= b
 
 ---------------------------------------------------------------------------
 -- WITH TEXT EXTENTS
@@ -54,22 +44,21 @@ mousePosition = repeat $ adjust mouseMove
 data WithTextExtents = WithTextExtents FontName FontSize T.Text XGlyphInfo
 
 clickableText :: Position -> WithTextExtents -> Clickable s
-clickableText p@(x, y) (WithTextExtents fn fs t xg) =
-	clickable [Text blue fn fs p t] (left, top) (left + gw, top + gh)
-	where
-	(left, top) = (x - gx, y - gy)
+clickableText p@(x, y) (WithTextExtents fn fs txt xg) =
+	clickable [Text blue fn fs p txt] (l, t) (l + gw, t + gh) where
+	(l, t) = (x - gx, y - gy)
 	[gx, gy, gw, gh] = fromIntegral . ($ xg) <$> [
 		xglyphinfo_x, xglyphinfo_y,
 		xglyphinfo_width, xglyphinfo_height ]
 
-withTextExtents :: FontName -> FontSize -> T.Text -> ReactF s WithTextExtents
-withTextExtents fn fs t =
-	WithTextExtents fn fs t <$> adjust (calcTextExtents fn fs t)
+withTextExtents :: FontName -> FontSize -> T.Text ->
+	React s (Singleton CalcTextExtents) WithTextExtents
+withTextExtents fn fs t = WithTextExtents fn fs t <$> calcTextExtents fn fs t
 
 nextToText :: Position -> WithTextExtents -> Position
 nextToText (x, y) (WithTextExtents _ _ _ xg) = (x + xo, y + yo) where
 	[xo, yo] = fromIntegral . ($ xg) <$> [xglyphinfo_xOff, xglyphinfo_yOff]
 
 translate :: Position -> WithTextExtents -> (Rational, Rational) -> Position
-translate (x, y) (WithTextExtents _ fs _ _) (dx, dy) =
-	(x + round (fs' * dx), y + round (fs' * dy)) where fs' = toRational fs
+translate (x, y) (WithTextExtents _ (toRational -> fs) _ _) (dx, dy) =
+	(x + round (fs * dx), y + round (fs * dy))

@@ -1,5 +1,6 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.Followbox (
@@ -128,7 +129,8 @@ field n = do
 			Left _ -> error "never occur"
 	where
 	title = twhite largeSize titlePos "Who to follow"
-	link p t = clickableText p <$> withTextExtents defaultFont middleSize t
+	link p t = clickableText p
+		<$> adjust (withTextExtents defaultFont middleSize t)
 
 resetTime :: SigF s View ()
 resetTime = forever $ emit [] >> do
@@ -146,10 +148,10 @@ users lck n = concat <$%> (forever . user1 lck) `ftraverse` [0 .. n - 1]
 user1 :: LockId -> Integer -> SigF s View ()
 user1 lck n = do
 	(a, ln, u) <- waitFor $ getUser lck
-	wte <- waitFor $ withTextExtents defaultFont largeSize ln
+	wte <- waitFor . adjust $ withTextExtents defaultFont largeSize ln
 	let	nm = clickableText np wte; cr = cross $ crossPos np wte
 	emit $ Image (avatarPos n) a : view nm <> view cr
-	() <$ waitFor (forever $ click nm >> adjust (browse u)) `break` click cr
+	() <$ waitFor (forever $ (adjust $ click nm :: ReactF s ()) >> adjust (browse u)) `break` click cr
 	where np = namePos n
 
 cross :: Position -> Clickable s
