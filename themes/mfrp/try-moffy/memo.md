@@ -1446,10 +1446,10 @@ Main
 			* [x] withTextExtents
 			* [x] nextToText
 			* [x] translate
-* [ ] Trial.Followbox
-	+ [ ] body
-		- [ ] SIG AND REACT: FOLLOWBOX: function field
-		- [ ] SIG AND REACT: USERS: function user1
+* [x] Trial.Followbox
+	+ [x] body
+		- [x] SIG AND REACT: FOLLOWBOX: function field
+		- [x] SIG AND REACT: USERS: function user1
 * [ ] Trial.Followbox.Event
 	+ [ ] API
 	+ [ ] extension

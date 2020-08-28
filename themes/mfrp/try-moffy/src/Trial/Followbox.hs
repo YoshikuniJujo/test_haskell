@@ -10,7 +10,7 @@ module Trial.Followbox (
 import Prelude hiding (break, until)
 
 import Control.Arrow ((>>>))
-import Control.Monad (forever, (<=<))
+import Control.Monad (void, forever, (<=<))
 import Control.Moffy (adjust, emit, waitFor, first, break, until)
 import Control.Moffy.Event.Lock (LockId, newLockId, withLock)
 import Control.Moffy.Event.Random (getRandomR)
@@ -151,7 +151,8 @@ user1 lck n = do
 	wte <- waitFor . adjust $ withTextExtents defaultFont largeSize ln
 	let	nm = clickableText np wte; cr = cross $ crossPos np wte
 	emit $ Image (avatarPos n) a : view nm <> view cr
-	() <$ waitFor (forever $ (adjust $ click nm :: ReactF s ()) >> adjust (browse u)) `break` click cr
+	void . (`break` click cr) . waitFor $ forever
+		(adjust (click nm) >> adjust (browse u) :: ReactF s ())
 	where np = namePos n
 
 cross :: Position -> Clickable s
