@@ -25,31 +25,34 @@ import Field (openField, closeField, exposureMask, buttonPressMask)
 
 ---------------------------------------------------------------------------
 
+-- * DEFAULT BROWSER
 -- * RUN FOLLOWBOX
 -- * GET FOLLOWBOX INFO
 -- * GET OPT
 
 ---------------------------------------------------------------------------
--- RUN FOLLOWBOX
+-- DEFAULT BROWSER
 ---------------------------------------------------------------------------
 
 defaultBrowser :: Browser
 defaultBrowser = "firefox"
 
+---------------------------------------------------------------------------
+-- RUN FOLLOWBOX
+---------------------------------------------------------------------------
+
+runFollowbox :: WindowTitle -> SigF s View a -> IO (a, FollowboxState)
+runFollowbox ttl s =
+	either ((>> exitFailure) . putStrLn) (run ttl s) =<< getFollowboxInfo
+
 evalFollowbox :: WindowTitle -> SigF s View a -> IO a
 evalFollowbox = ((fst <$>) .) . runFollowbox
 
-runFollowbox :: WindowTitle -> SigF s View a -> IO (a, FollowboxState)
-runFollowbox ttl sig = getFollowboxInfo >>= \case
-	Left em -> putStrLn em >> exitFailure
-	Right fi -> run ttl fi sig
-
-run :: WindowTitle -> FollowboxInfo -> SigF s View a -> IO (a, FollowboxState)
-run ttl fi sg = openField ttl [exposureMask, buttonPressMask] >>= \f ->
-	interpretSt (handleFollowbox f brs mgnt) (view f) sg
-		(initialFollowboxState $ mkStdGen 8) <* closeField f
-	where
-	FollowboxInfo { fiBrowser = brs, fiGithubUserNameToken = mgnt } = fi
+run :: WindowTitle -> SigF s View a -> FollowboxInfo -> IO (a, FollowboxState)
+run ttl s FollowboxInfo { fiBrowser = brs, fiGithubUserNameToken = mgnt } =
+	openField ttl [exposureMask, buttonPressMask] >>= \f ->
+		interpretSt (handleFollowbox f brs mgnt) (view f) s
+			(initialFollowboxState $ mkStdGen 8) <* closeField f
 
 ---------------------------------------------------------------------------
 -- GET FOLLOWBOX INFO

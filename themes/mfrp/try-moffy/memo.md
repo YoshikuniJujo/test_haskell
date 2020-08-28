@@ -111,6 +111,8 @@ todo
 * [x] refactor Control.Moffy.Internal.React
 * [x] refactor Control.Moffy.Internal.React.Type
 * [x] refactor Control.Moffy.Handle
+* [ ] make handle using GTK
+	+ [ ] consider to use TChan in Handle.TChan
 * [ ] check module hierarchy
 	+ [ ] Moffy
 	+ [x] Moffy library
@@ -147,7 +149,6 @@ todo
 		- [ ] XField
 * [ ] make tetris like game
 	+ [ ] moffyris
-* [ ] make handle using GTK
 * [ ] consider whether to remove interpret and interpretReact
 	+ [ ] remove interpret and interpretReact
 	+ [ ] rename interpretSt and interpretReactSt
@@ -1563,8 +1564,21 @@ Main
 	+ [x] API
 	+ [x] extension
 	+ [x] import
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [x] DEFAULt BROWSER
+		- [x] RUN FOLLOWBOX
+			* [x] runFollowbox
+			* [x] evalFollowbox
+			* [x] run
+		- [ ] GET FOLLOWBOX INFO
+			* [ ] data FollowboxInfo
+			* [ ] getFollowboxInfo
+			* [ ] optionToInfo
+		- [ ] GET OPT
+			* [ ] data FollowboxOption
+			* [ ] chkDupOpt
+			* [ ] followboxOptions
 * [ ] Trial.Followbox.Handle
 * [ ] Trial.Followbox.View
 * [ ] Trial.Followbox.ViewType
