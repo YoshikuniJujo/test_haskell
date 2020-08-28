@@ -1392,27 +1392,34 @@ Main
 	+ [x] import
 	+ [x] structure
 	+ [ ] body
-		- [ ] PARAMETER LIST
-			* [ ] numOfUsers
-			* [ ] userPageMax
-			* [ ] defaultFont
-			* [ ] middleSize, largeSize
-			* [ ] avatarSizeX, avatarSizeY
-			* [ ] titlePos, nextPos, refreshPos, resetTimePos
-			* [ ] crossSize
-			* [ ] crossPos
-			* [ ] crossMargin
+		- [x] PARAMETER LIST
+			* [x] view
+			* [x] NUMBER OF USER TO DISPLAY
+			* [x] MAX NUMBER OF GITHUB USER
+			* [x] BACKGROUND
+				+ [x] titlePos
+				+ [x] nextPos
+				+ [x] refreshPos
+				+ [x] resetTimePos
+			* [x] FONT
+				+ [x] defaultFont
+				+ [x] middleSize, largeSize
+			* [x] AVATAR, NAME AND CROSS
+				+ [x] avatarSizeX, avatarSizeY
+				+ [x] avatarPos, namePos
+				+ [x] crossSize
+				+ [x] crossPos
+				+ [x] crossMargin
 		- [ ] SIG AND REACT
-			* [ ] FOLLOWBOX
-				+ [ ] followbox
-				+ [ ] fieldWithResetTime
-				+ [ ] field
-				+ [ ] resetTime
-			* [ ] USERS
-				+ [ ] users
-				+ [ ] user1
-				+ [ ] nameCross
-				+ [ ] cross
+			* [x] FOLLOWBOX
+				+ [x] followbox
+				+ [x] fieldWithResetTime
+				+ [x] field
+				+ [x] resetTime
+			* [x] USERS
+				+ [x] users
+				+ [x] user1
+				+ [x] cross
 			* [ ] GET USER
 				+ [ ] getUser
 				+ [ ] getAvatar
@@ -1422,6 +1429,7 @@ Main
 				+ [ ] getObjs
 		- [ ] HELPER FUNCTION
 			* [ ] twhite
+			* [ ] lwhite
 			* [ ] posixSeconds
 * [ ] Trial.Followbox.Clickable
 * [ ] Trial.Followbox.Event

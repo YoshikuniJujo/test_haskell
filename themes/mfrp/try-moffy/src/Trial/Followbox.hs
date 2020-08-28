@@ -42,6 +42,11 @@ import Trial.Followbox.TypeSynonym (
 ---------------------------------------------------------------------------
 
 -- * PARAMETER LIST
+-- 	+ NUMBER OF USER TO DISPLAY
+-- 	+ MAX NUMBER OF GITHUB USER
+-- 	+ BACKGROUND
+-- 	+ FONT
+-- 	+ AVATAR, NAME AND CROSS
 -- * SIG AND REACT
 --	+ FOLLOWBOX
 --	+ USERS
@@ -53,11 +58,23 @@ import Trial.Followbox.TypeSynonym (
 -- PARAMETER LIST
 ---------------------------------------------------------------------------
 
+-- NUMBER OF USER TO DISPLAY
+
 numOfUsers :: Integer
 numOfUsers = 3
 
+-- MAX NUMBER OF GITHUB USER
+
 userPageMax :: Int
 userPageMax = 2 ^ (27 :: Int)
+
+-- BACKGROUND
+
+titlePos, nextPos, refreshPos, resetTimePos :: Position
+titlePos = (50, 80); nextPos = (500, 80)
+refreshPos = (600, 80); resetTimePos = (100, 500)
+
+-- FONT
 
 defaultFont :: FontName
 defaultFont = "sans"
@@ -65,16 +82,14 @@ defaultFont = "sans"
 middleSize, largeSize :: FontSize
 middleSize = 30; largeSize = 36
 
+-- AVATAR, NAME AND CROSS
+
 avatarSizeX, avatarSizeY :: Int
 (avatarSizeX, avatarSizeY) = (80, 80)
 
-titlePos, nextPos, refreshPos, resetTimePos :: Position
-titlePos = (50, 80); nextPos = (500, 80)
-refreshPos = (600, 80); resetTimePos = (100, 500)
-
 avatarPos, namePos :: Integer -> Position
-avatarPos n = (100, 120 * (n + 1))
-namePos n = (210, 120 * (n + 1) + 60)
+avatarPos n = (100, 120 + 120 * n)
+namePos n = (210, 180 + 120 * n)
 
 crossSize :: Integer
 crossSize = round largeSize `div` 2
@@ -125,26 +140,20 @@ resetTime = forever $ emit [] >> do
 -- USERS
 
 users :: LockId -> Integer -> SigF s View ()
-users lck n = concat <$%> user1 lck `ftraverse` [0 .. n - 1]
+users lck n = concat <$%> (forever . user1 lck) `ftraverse` [0 .. n - 1]
 
 user1 :: LockId -> Integer -> SigF s View ()
 user1 lck n = do
-	waitFor . adjust . raiseError Trace $ "user1: n == " ++ show n
 	(a, ln, u) <- waitFor $ getUser lck
-	(nm, cr) <- waitFor $ nameCross n ln
+	wte <- waitFor $ withTextExtents defaultFont largeSize ln
+	let	nm = clickableText np wte; cr = cross $ crossPos np wte
 	emit $ Image (avatarPos n) a : view nm <> view cr
 	() <$ waitFor (forever $ click nm >> adjust (browse u)) `break` click cr
-	user1 lck n
-
-nameCross :: Integer -> T.Text -> ReactF s (Clickable s, Clickable s)
-nameCross n t = (<$> withTextExtents defaultFont largeSize t) \wte ->
-	(clickableText p wte, cross $ crossPos p wte)
-	where p = namePos n
+	where np = namePos n
 
 cross :: Position -> Clickable s
-cross (l, t) = clickable [line lt rb, line lb rt] (l', t') (r', b')
+cross (l, t) = clickable [lwhite lt rb, lwhite lb rt] (l', t') (r', b')
 	where
-	line = Line white 4
 	[lt, lb, rt, rb] = [(l, t), (l, b), (r, t), (r, b)]
 	[r, b] = (+ crossSize) <$> [l, t]
 	[l', t'] = subtract crossMergin <$> [l, t]
@@ -213,6 +222,9 @@ getObjs = do
 
 twhite :: FontSize -> Position -> T.Text -> View1
 twhite = Text white defaultFont
+
+lwhite :: Position -> Position -> View1
+lwhite = Line white 4
 
 posixSeconds :: BS.ByteString -> Maybe UTCTime
 posixSeconds =
