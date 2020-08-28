@@ -1499,8 +1499,44 @@ Main
 			+ [x] checkTerminate
 	+ [x] extension
 	+ [x] import
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] STORE AND LOAD JSON OBJECT LIST
+			* [ ] define and instance Request of StoreJsons
+			* [ ] function clearJsons
+			* [ ] function storeJsons
+			* [ ] define and instance Request of LoadJsons
+			* [ ] functin loadJsons
+		- [ ] REQUEST DATA
+			* [ ] HTTP GET
+				+ [ ] define and instance Request of HttpGet
+				+ [ ] function httpGet
+			* [ ] CALC TEXT EXTENTS
+				+ [ ] define and instance Request of CalcTextExtents
+				+ [ ] function calcTextExtents
+			* [ ] TIME ZONE
+				+ [ ] define and instance Request of GetTimeZone
+				+ [ ] function getTimeZone
+		- [ ] BROWSE
+			* [ ] define and instance Request of Browse
+			* [ ] function browse
+		- [ ] SLEEP
+			* [ ] define and instance Request of BeginSleep
+			* [ ] function beginSleep
+			* [ ] function checkBeginSleep
+			* [ ] define and instance Request of EndSleep
+			* [ ] function endSleep
+		- [ ] RAISE ERROR
+			* [ ] data Error
+			* [ ] data ErrorResult
+			* [ ] define and instance Request of RaiseError
+			* [ ] function raiseError
+			* [ ] function catchError
+			* [ ] function checkTerminate
+		- [ ] FOLLOWBOX EVENT TYPE
+			* [ ] type SigF
+			* [ ] type ReactF
+			* [ ] type FollowboxEv
 * [ ] Trial.Followbox.TypeSynonym
 * [ ] Trial.Followbox.Run
 * [ ] Trial.Followbox.Handle

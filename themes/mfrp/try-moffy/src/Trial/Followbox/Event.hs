@@ -48,19 +48,14 @@ import Trial.Followbox.TypeSynonym (Uri, FontName, FontSize, ErrorMessage)
 
 ---------------------------------------------------------------------------
 
----------------------------------------------------------------------------
--- STRUCTURE
----------------------------------------------------------------------------
-
 -- * STORE AND LOAD JSON OBJECT LIST
 -- * REQUEST DATA
 -- 	+ HTTP GET
 --	+ CALC TEXT EXTENTS
 --	+ TIME ZONE
--- * ACTION - BROWSE
--- * SLEEP AND ERROR
---	+ BEGIN SLEEP AND END SLEEP
---	+ ERROR
+-- * BROWSE
+-- * SLEEP
+-- * RAISE ERROR
 -- * FOLLOWBOX EVENT TYPE
 
 ---------------------------------------------------------------------------
@@ -73,12 +68,12 @@ instance Selectable StoreJsons where os1 `select` _os2 = os1
 instance Request StoreJsons where
 	data Occurred StoreJsons = OccStoreJsons [Object]
 
+clearJsons :: React s (Singleton StoreJsons) ()
+clearJsons = storeJsons []
+
 storeJsons :: [Object] -> React s (Singleton StoreJsons) ()
 storeJsons os = bool (storeJsons os) (pure ())
 	=<< await (StoreJsonsReq os) \(OccStoreJsons os') -> os == os'
-
-clearJsons :: React s (Singleton StoreJsons) ()
-clearJsons = storeJsons []
 
 data LoadJsons = LoadJsonsReq deriving (Show, Eq, Ord)
 numbered [t| LoadJsons |]
@@ -130,7 +125,7 @@ getTimeZone :: React s (Singleton GetTimeZone) TimeZone
 getTimeZone = await GetTimeZone \(OccGetTimeZone tz) -> tz
 
 ---------------------------------------------------------------------------
--- ACTION - BROWSE
+-- BROWSE
 ---------------------------------------------------------------------------
 
 newtype Browse = Browse Uri deriving (Show, Eq, Ord)
@@ -141,10 +136,8 @@ browse :: Uri -> React s (Singleton Browse) ()
 browse u = await (Browse u) \OccBrowse -> ()
 
 ---------------------------------------------------------------------------
--- SLEEP AND ERROR
+-- SLEEP
 ---------------------------------------------------------------------------
-
--- BEGIN SLEEP AND END SLEEP
 
 data BeginSleep = BeginSleep UTCTime | CheckBeginSleep deriving (Show, Eq, Ord)
 numbered [t| BeginSleep |]
@@ -166,7 +159,9 @@ instance Request EndSleep where
 endSleep :: React s (Singleton EndSleep) ()
 endSleep = await EndSleepReq \OccEndSleep -> ()
 
--- ERROR
+---------------------------------------------------------------------------
+-- RAISE ERROR
+---------------------------------------------------------------------------
 
 data Error
 	= NoRateLimitRemaining | NoRateLimitReset
@@ -198,7 +193,6 @@ checkTerminate = catchError >>= \case
 type SigF s = Sig s FollowboxEv
 type ReactF s a = React s FollowboxEv a
 
--- type FollowboxEv = GetThreadId :- LockEv :+: RandomEv :+: GuiEv :+:
-type FollowboxEv = DeleteEvent :- GetThreadId :- LockEv :+: RandomEv :+: MouseEv :+:
+type FollowboxEv = GetThreadId :- LockEv :+: RandomEv :+: DeleteEvent :- MouseEv :+:
 	StoreJsons :- LoadJsons :- HttpGet :- CalcTextExtents :- GetTimeZone :-
 	Browse :- BeginSleep :- EndSleep :- RaiseError :- 'Nil
