@@ -8,6 +8,7 @@ module Trial.Followbox (
 
 import Prelude hiding (break, until)
 
+import Control.Arrow ((>>>))
 import Control.Monad (forever, (<=<))
 import Control.Moffy (adjust, emit, waitFor, first, break, until)
 import Control.Moffy.Event.Lock (LockId, newLockId, withLock)
@@ -164,23 +165,21 @@ cross (l, t) = clickable [lwhite lt rb, lwhite lb rt] (l', t') (r', b')
 {-# ANN getUser ("HLint: ignore Redundant <$>" :: String) #-}
 
 getUser :: LockId -> ReactF s (Avatar, T.Text, T.Text)
-getUser lck = makeUser <$> getObj1 lck >>= \case
-	Left (e, em) -> adjust (raiseError e em) >> getUser lck
-	Right (au, l, u) -> getAvatar au >>= \case
-		Left (e, em) -> adjust (raiseError e em) >> getUser lck
-		Right a -> pure (a, l, u)
+getUser lck = ex3 <$> getObj1 lck >>= err `either` \(au, ln, u) ->
+	getAvatar au >>= err `either` (pure . (, ln, u))
 	where
-	makeUser o = (,,)
-		<$> getField o "avatar_url" NoAvatarAddress "No Avatar Address"
-		<*> getField o "login" NoLoginName "No Login Name"
-		<*> getField o "html_url" NoHtmlUrl "No HTML URL"
-	getField o k e em = case HM.lookup k o of
-		Just (String li) -> Right li; _ -> Left (e, em)
+	ex3 o = (,,)
+		<$> ex o "avatar_url" (NoAvatarAddress, "No Avatar Address")
+		<*> ex o "login" (NoLoginName, "No Login Name")
+		<*> ex o "html_url" (NoHtmlUrl, "No HTML URL")
+	ex o k e = case HM.lookup k o of Just (String v) -> Right v; _ -> Left e
+	err e = adjust (uncurry raiseError e) >> getUser lck
 
 getAvatar :: T.Text -> ReactF s (Either (Error, ErrorMessage) Avatar)
-getAvatar url = (<$> adjust (httpGet url)) . (. bsToImage . snd) $ either
-	(Left . (NoAvatar ,)) (Right . scaleBilinear avatarSizeX avatarSizeY)
-	where bsToImage = (convertRGBA8 <$>) . decodeImage . LBS.toStrict
+getAvatar url = (<$> adjust (httpGet url))
+	$ snd >>> LBS.toStrict >>> decodeImage >>> either
+		(Left . (NoAvatar ,))
+		(Right . scaleBilinear avatarSizeX avatarSizeY . convertRGBA8)
 
 -- GET OBJECT
 

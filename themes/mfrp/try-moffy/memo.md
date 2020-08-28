@@ -1420,9 +1420,9 @@ Main
 				+ [x] users
 				+ [x] user1
 				+ [x] cross
-			* [ ] GET USER
-				+ [ ] getUser
-				+ [ ] getAvatar
+			* [x] GET USER
+				+ [x] getUser
+				+ [x] getAvatar
 			* [ ] GET OBJECT
 				+ [ ] getObj1
 				+ [ ] getObj1FromWeb
