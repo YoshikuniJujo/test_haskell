@@ -175,22 +175,22 @@ instance Request RaiseError where
 	data Occurred RaiseError = OccRaiseError Error ErrorResult
 
 raiseError :: Error -> ErrorMessage -> React s (Singleton RaiseError) ()
-raiseError e em = bool (raiseError e em) (pure ()) =<< await (RaiseError e em)
-	\(OccRaiseError e' _er) -> e == e'
+raiseError e em = bool (raiseError e em) (pure ())
+	=<< await (RaiseError e em) \(OccRaiseError e' _er) -> e == e'
 
 catchError :: React s (Singleton RaiseError) ErrorResult
 catchError = await (RaiseError CatchError "") \(OccRaiseError _ er) -> er
 
 checkTerminate :: React s (Singleton RaiseError) ()
-checkTerminate = catchError >>= \case
-	Continue -> checkTerminate; Terminate -> pure ()
+checkTerminate = catchError
+	>>= \case Continue -> checkTerminate; Terminate -> pure ()
 
 ---------------------------------------------------------------------------
 -- FOLLOWBOX EVENT TYPE
 ---------------------------------------------------------------------------
 
 type SigF s = Sig s FollowboxEv
-type ReactF s a = React s FollowboxEv a
+type ReactF s r = React s FollowboxEv r
 
 type FollowboxEv = GetThreadId :- LockEv :+: RandomEv :+: DeleteEvent :- MouseEv :+:
 	StoreJsons :- LoadJsons :- HttpGet :- CalcTextExtents :- GetTimeZone :-

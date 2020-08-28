@@ -1450,7 +1450,7 @@ Main
 	+ [x] body
 		- [x] SIG AND REACT: FOLLOWBOX: function field
 		- [x] SIG AND REACT: USERS: function user1
-* [ ] Trial.Followbox.Event
+* [x] Trial.Followbox.Event
 	+ [x] API
 		- [x] structure
 		- [x] Followbox Event
@@ -1500,7 +1500,7 @@ Main
 	+ [x] extension
 	+ [x] import
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] STORE AND LOAD JSON OBJECT LIST
 			* [x] define and instance Request of StoreJsons
 			* [x] function clearJsons
@@ -1517,27 +1517,34 @@ Main
 			* [x] TIME ZONE
 				+ [x] define and instance Request of GetTimeZone
 				+ [x] function getTimeZone
-		- [ ] BROWSE
-			* [ ] define and instance Request of Browse
-			* [ ] function browse
-		- [ ] SLEEP
-			* [ ] define and instance Request of BeginSleep
-			* [ ] function beginSleep
-			* [ ] function checkBeginSleep
-			* [ ] define and instance Request of EndSleep
-			* [ ] function endSleep
-		- [ ] RAISE ERROR
-			* [ ] data Error
-			* [ ] data ErrorResult
-			* [ ] define and instance Request of RaiseError
-			* [ ] function raiseError
-			* [ ] function catchError
-			* [ ] function checkTerminate
-		- [ ] FOLLOWBOX EVENT TYPE
-			* [ ] type SigF
-			* [ ] type ReactF
-			* [ ] type FollowboxEv
+		- [x] BROWSE
+			* [x] define and instance Request of Browse
+			* [x] function browse
+		- [x] SLEEP
+			* [x] define and instance Request of BeginSleep
+			* [x] function beginSleep
+			* [x] function checkBeginSleep
+			* [x] define and instance Request of EndSleep
+			* [x] function endSleep
+		- [x] RAISE ERROR
+			* [x] data Error
+			* [x] data ErrorResult
+			* [x] define and instance Request of RaiseError
+			* [x] function raiseError
+			* [x] function catchError
+			* [x] function checkTerminate
+		- [x] FOLLOWBOX EVENT TYPE
+			* [x] type SigF
+			* [x] type ReactF
+			* [x] type FollowboxEv
 * [ ] Trial.Followbox.TypeSynonym
+	+ [ ] API
+		- [ ] structure
+		- [ ] others
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
 * [ ] Trial.Followbox.Run
 * [ ] Trial.Followbox.Handle
 * [ ] Trial.Followbox.View
