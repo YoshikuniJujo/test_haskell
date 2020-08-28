@@ -1432,7 +1432,17 @@ Main
 			* [x] lwhite
 			* [x] posixSeconds
 * [ ] Trial.Followbox.Clickable
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
 * [ ] Trial.Followbox.Event
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
 * [ ] Trial.Followbox.TypeSynonym
 * [ ] Trial.Followbox.Run
 * [ ] Trial.Followbox.Handle

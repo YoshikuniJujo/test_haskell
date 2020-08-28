@@ -10,7 +10,7 @@ module Trial.Boxes (
 
 import Prelude hiding (repeat, cycle, scanl, until)
 
-import Control.Monad (void)
+import Control.Monad (void, (<=<))
 import Control.Monad.Trans.Except (pattern ExceptT, runExceptT)
 import Control.Moffy (
 	Sig, React, Firstable, adjust, adjustSig, emit, waitFor, repeat, find,
@@ -55,7 +55,7 @@ box = (`Box` Red) <$%> adjustSig defineRect
 ---------------------------------------------------------------------------
 
 defineRect :: Sig s (MouseDown :- MouseUp :- MouseMove :- 'Nil) Rect Rect
-defineRect = (either error pure =<<) . runExceptT
+defineRect = either error pure <=< runExceptT
 	$ ExceptT . adjustSig . completeRect
 		=<< ExceptT (waitFor $ adjust firstPoint)
 
