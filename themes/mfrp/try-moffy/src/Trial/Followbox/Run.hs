@@ -1,7 +1,9 @@
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Followbox.Run (runFollowbox, evalFollowbox) where
+module Trial.Followbox.Run (
+	-- * Run Follow Box
+	runFollowbox, evalFollowbox ) where
 
 -- import Control.Monad.State (runStateT, lift)
 import Control.Moffy.Run
