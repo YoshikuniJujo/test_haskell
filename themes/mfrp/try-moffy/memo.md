@@ -1560,25 +1560,25 @@ Main
 	+ [x] import
 	+ [x] structure
 	+ [x] body
-* [ ] Trial.Followbox.Run
+* [x] Trial.Followbox.Run
 	+ [x] API
 	+ [x] extension
 	+ [x] import
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] DEFAULt BROWSER
 		- [x] RUN FOLLOWBOX
 			* [x] runFollowbox
 			* [x] evalFollowbox
 			* [x] run
-		- [ ] GET FOLLOWBOX INFO
-			* [ ] data FollowboxInfo
-			* [ ] getFollowboxInfo
-			* [ ] optionToInfo
-		- [ ] GET OPT
-			* [ ] data FollowboxOption
-			* [ ] chkDupOpt
-			* [ ] followboxOptions
+		- [x] GET FOLLOWBOX INFO
+			* [x] data FollowboxInfo
+			* [x] getFollowboxInfo
+			* [x] optionToInfo
+		- [x] GET OPT
+			* [x] data FollowboxOption
+			* [x] chkDupOpt
+			* [x] followboxOptions
 * [ ] Trial.Followbox.Handle
 * [ ] Trial.Followbox.View
 * [ ] Trial.Followbox.ViewType

@@ -60,7 +60,6 @@ run ttl s FollowboxInfo { fiBrowser = brs, fiGithubUserNameToken = mgnt } =
 
 data FollowboxInfo = FollowboxInfo {
 	fiBrowser :: Browser, fiGithubUserNameToken :: Maybe GithubNameToken }
-	deriving Show
 
 getFollowboxInfo :: IO (Either String FollowboxInfo)
 getFollowboxInfo = do
@@ -94,8 +93,7 @@ data FollowboxOption
 
 chkDupOpt :: [FollowboxOption] -> Either String [FollowboxOption]
 chkDupOpt [] = Right []
-chkDupOpt (FoBrowser _ : FoBrowser _ : _) =
-	Left "Duplicate Browser options"
+chkDupOpt (FoBrowser _ : FoBrowser _ : _) = Left "Duplicate Browser options"
 chkDupOpt (FoGithubUserName _ : FoGithubUserName _ : _) =
 	Left "Duplicate GitHub user options"
 chkDupOpt (FoGithubToken _ : FoGithubToken _ : _) =
