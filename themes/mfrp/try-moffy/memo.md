@@ -1497,8 +1497,8 @@ Main
 			+ [x] data ErrorResult
 			+ [x] raiseError
 			+ [x] checkTerminate
-	+ [ ] extension
-	+ [ ] import
+	+ [x] extension
+	+ [x] import
 	+ [ ] structure
 	+ [ ] body
 * [ ] Trial.Followbox.TypeSynonym

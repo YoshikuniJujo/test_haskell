@@ -25,27 +25,25 @@ module Trial.Followbox.Event (
 	beginSleep, checkBeginSleep, endSleep,
 	-- * Raise Error
 	RaiseError(..), pattern OccRaiseError, Error(..), ErrorResult(..),
-	raiseError, checkTerminate
-	) where
+	raiseError, checkTerminate ) where
 
-import Control.Moffy
+import Control.Moffy (Sig, React, Request(..), await)
+import Control.Moffy.Event.ThreadId (GetThreadId)
+import Control.Moffy.Event.Lock (LockEv)
+import Control.Moffy.Event.Random (RandomEv)
+import Control.Moffy.Event.Delete (DeleteEvent)
+import Control.Moffy.Event.Mouse (MouseEv)
 import Data.Type.Set (Set(Nil), Singleton, numbered, (:-), (:+:))
 import Data.OneOrMore (Selectable(..))
 import Data.Bool (bool)
-import Data.Time (UTCTime, TimeZone)
 import Data.Aeson (Object)
+import Data.Time (UTCTime, TimeZone)
 import Network.HTTP.Simple (Header)
 import Graphics.X11.Xrender (XGlyphInfo)
 
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 
-import Control.Moffy.Event.Random (RandomEv)
-import Control.Moffy.Event.Lock (LockEv)
-import Control.Moffy.Event.ThreadId (GetThreadId)
-import Control.Moffy.Event.Mouse (MouseEv)
-import Control.Moffy.Event.Delete
--- import Control.Moffy.Handle.XField
 import Trial.Followbox.TypeSynonym (Uri, FontName, FontSize, ErrorMessage)
 
 ---------------------------------------------------------------------------
