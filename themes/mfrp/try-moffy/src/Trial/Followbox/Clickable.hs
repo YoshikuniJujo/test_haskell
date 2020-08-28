@@ -1,25 +1,28 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.Followbox.Clickable (
-	-- * CLICKABLE
+	-- * Clickable
 	Clickable, view, click, clickable, clickableText,
-	-- * WITH TEXT EXTENTS
+	-- * With Text Extents
 	WithTextExtents, withTextExtents, nextToText, translate
 	) where
 
 import Prelude hiding (repeat)
 
-import Control.Moffy
+import Control.Moffy (adjust, repeat, find, indexBy)
+import Control.Moffy.Event.Mouse (leftClick, mouseMove)
 import Graphics.X11.Xrender (XGlyphInfo(..))
 
 import qualified Data.Text as T
 
-import Control.Moffy.Event.Mouse (leftClick, mouseMove)
 import Trial.Followbox.Event (SigF, ReactF, calcTextExtents)
 import Trial.Followbox.ViewType (View, View1(..), blue)
 import Trial.Followbox.TypeSynonym (Position, FontName, FontSize)
 
 ---------------------------------------------------------------------------
+
+-- * CLICKABLE
+-- * WITH TEXT EXTENTS
 
 ---------------------------------------------------------------------------
 -- CLICKABLE
@@ -63,10 +66,10 @@ withTextExtents :: FontName -> FontSize -> T.Text -> ReactF s WithTextExtents
 withTextExtents fn fs t =
 	WithTextExtents fn fs t <$> adjust (calcTextExtents fn fs t)
 
-translate :: Position -> WithTextExtents -> (Rational, Rational) -> Position
-translate (x, y) (WithTextExtents _ fs _ _) (dx, dy) =
-	(x + round (fs' * dx), y + round (fs' * dy)) where fs' = toRational fs
-
 nextToText :: Position -> WithTextExtents -> Position
 nextToText (x, y) (WithTextExtents _ _ _ xg) = (x + xo, y + yo) where
 	[xo, yo] = fromIntegral . ($ xg) <$> [xglyphinfo_xOff, xglyphinfo_yOff]
+
+translate :: Position -> WithTextExtents -> (Rational, Rational) -> Position
+translate (x, y) (WithTextExtents _ fs _ _) (dx, dy) =
+	(x + round (fs' * dx), y + round (fs' * dy)) where fs' = toRational fs

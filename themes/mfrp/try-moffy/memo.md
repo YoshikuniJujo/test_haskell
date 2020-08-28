@@ -1432,11 +1432,24 @@ Main
 			* [x] lwhite
 			* [x] posixSeconds
 * [ ] Trial.Followbox.Clickable
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
+	+ [x] API
+	+ [x] import
+	+ [x] structure
 	+ [ ] body
+		- [ ] consider to change view and click to field
+		- [ ] CLICKABLE
+			* [ ] data Clickable
+			* [ ] view
+			* [ ] click
+			* [ ] clickable
+			* [ ] clickOn
+			* [ ] mousePosition
+		- [ ] WITH TEXT EXTENTS
+			* [ ] data WithTextExtents
+			* [ ] clickableText
+			* [ ] withTextExtents
+			* [ ] nextToText
+			* [ ] translate
 * [ ] Trial.Followbox.Event
 	+ [ ] API
 	+ [ ] extension
