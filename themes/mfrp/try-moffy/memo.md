@@ -1538,9 +1538,24 @@ Main
 			* [x] type ReactF
 			* [x] type FollowboxEv
 * [ ] Trial.Followbox.TypeSynonym
-	+ [ ] API
-		- [ ] structure
-		- [ ] others
+	+ [x] API
+		- [x] structure
+		- [x] rename from FOO to Foo
+		- [x] Field
+			* [x] WindowTitle
+			* [x] Position
+			* [x] LineWidth
+			* [x] FontName
+			* [x] FontSize
+			* [x] Avatar
+		- [x] GitHub
+			* [x] GithubNameToken
+			* [x] GithubUserName
+			* [x] GithubToken
+		- [x] Others
+			* [x] Uri
+			* [x] Browser
+			* [x] ErrorMessage
 	+ [ ] extension
 	+ [ ] import
 	+ [ ] structure

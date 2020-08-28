@@ -1,12 +1,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.Followbox.TypeSynonym (
-	-- * FIELD
-	WindowTitle, Position, LineWidth, FontName, FontSize,
-	-- * GITHUB
+	-- * Field
+	WindowTitle, Position, LineWidth, FontName, FontSize, Avatar,
+	-- * GitHub
 	GithubNameToken, GithubUserName, GithubToken,
-	-- * OTHERS
-	Uri, Avatar, Browser, ErrorMessage ) where
+	-- * Others
+	Uri, Browser, ErrorMessage ) where
 
 import Data.ByteString (ByteString)
 import Data.Text (Text)
