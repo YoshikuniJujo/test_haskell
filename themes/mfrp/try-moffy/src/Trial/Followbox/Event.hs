@@ -64,7 +64,7 @@ import Trial.Followbox.TypeSynonym (Uri, FontName, FontSize, ErrorMessage)
 
 newtype StoreJsons = StoreJsonsReq [Object] deriving Show
 numbered [t| StoreJsons |]
-instance Selectable StoreJsons where os1 `select` _os2 = os1
+instance Selectable StoreJsons where l `select` _r = l
 instance Request StoreJsons where
 	data Occurred StoreJsons = OccStoreJsons [Object]
 
@@ -92,7 +92,6 @@ newtype HttpGet = HttpGetReq Uri deriving (Show, Eq, Ord)
 numbered [t| HttpGet |]
 instance Request HttpGet where
 	data Occurred HttpGet = OccHttpGet Uri [Header] LBS.ByteString
-		deriving Show
 
 httpGet :: Uri -> React s (Singleton HttpGet) ([Header], LBS.ByteString)
 httpGet u = maybe (httpGet u) pure =<< await (HttpGetReq u)
@@ -116,13 +115,13 @@ calcTextExtents fn fs t = maybe (calcTextExtents fn fs t) pure
 
 -- TIME ZONE
 
-data GetTimeZone = GetTimeZone deriving (Show, Eq, Ord)
+data GetTimeZone = GetTimeZoneReq deriving (Show, Eq, Ord)
 numbered [t| GetTimeZone |]
 instance Request GetTimeZone where
 	data Occurred GetTimeZone = OccGetTimeZone TimeZone deriving Show
 
 getTimeZone :: React s (Singleton GetTimeZone) TimeZone
-getTimeZone = await GetTimeZone \(OccGetTimeZone tz) -> tz
+getTimeZone = await GetTimeZoneReq \(OccGetTimeZone tz) -> tz
 
 ---------------------------------------------------------------------------
 -- BROWSE

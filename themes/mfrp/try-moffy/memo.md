@@ -1501,22 +1501,22 @@ Main
 	+ [x] import
 	+ [x] structure
 	+ [ ] body
-		- [ ] STORE AND LOAD JSON OBJECT LIST
-			* [ ] define and instance Request of StoreJsons
-			* [ ] function clearJsons
-			* [ ] function storeJsons
-			* [ ] define and instance Request of LoadJsons
-			* [ ] functin loadJsons
-		- [ ] REQUEST DATA
-			* [ ] HTTP GET
-				+ [ ] define and instance Request of HttpGet
-				+ [ ] function httpGet
-			* [ ] CALC TEXT EXTENTS
-				+ [ ] define and instance Request of CalcTextExtents
-				+ [ ] function calcTextExtents
-			* [ ] TIME ZONE
-				+ [ ] define and instance Request of GetTimeZone
-				+ [ ] function getTimeZone
+		- [x] STORE AND LOAD JSON OBJECT LIST
+			* [x] define and instance Request of StoreJsons
+			* [x] function clearJsons
+			* [x] function storeJsons
+			* [x] define and instance Request of LoadJsons
+			* [x] functin loadJsons
+		- [x] REQUEST DATA
+			* [x] HTTP GET
+				+ [x] define and instance Request of HttpGet
+				+ [x] function httpGet
+			* [x] CALC TEXT EXTENTS
+				+ [x] define and instance Request of CalcTextExtents
+				+ [x] function calcTextExtents
+			* [x] TIME ZONE
+				+ [x] define and instance Request of GetTimeZone
+				+ [x] function getTimeZone
 		- [ ] BROWSE
 			* [ ] define and instance Request of Browse
 			* [ ] function browse
