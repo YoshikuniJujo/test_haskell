@@ -1,18 +1,21 @@
-{-# LANGUAGE BlockArguments, LambdaCase, TupleSections, OverloadedStrings #-}
+{-# LANGUAGE LambdaCase, TupleSections, OverloadedStrings #-}
 {-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE DataKinds, TypeOperators #-}
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.Followbox.Handle (
-	-- * HANDLE
-	handleFollowbox,
-	-- * STATE
-	HandleF, FollowboxState, initialFollowboxState ) where
+	-- * Handle
+	HandleF, handleFollowbox,
+	-- * State
+	FollowboxState, initialFollowboxState ) where
 
-import Prelude hiding (head)
-
-import Control.Moffy.Handle
+import Control.Moffy.Handle (
+	Handle, Handle', HandleSt, HandleIo',
+	liftSt, retrySt, beforeSt, mergeSt )
+import Control.Moffy.Handle.ThreadId (handleGetThreadId)
+import Control.Moffy.Handle.Lock (LockState(..), LockId, handleLock)
+import Control.Moffy.Handle.Random (RandomState(..), handleRandom)
+import Control.Moffy.Handle.XField (GuiEv, handle)
 import Data.Type.Set (Singleton, (:+:))
 import Data.OneOrMore (pattern Singleton)
 import Data.Bool (bool)
@@ -26,19 +29,13 @@ import System.Process (spawnProcess)
 import qualified Data.Text as T
 import qualified Network.HTTP.Simple as H
 
-import Control.Moffy.Handle.ThreadId (handleGetThreadId)
-import Control.Moffy.Handle.Lock (LockState(..), LockId, handleLock)
-import Control.Moffy.Handle.Random (RandomState(..), handleRandom)
-import Control.Moffy.Handle.XField
 import Trial.Followbox.Event (
-	FollowboxEv, StoreJsons(..), LoadJsons,
-	HttpGet(..), CalcTextExtents(..), GetTimeZone, Browse(..),
-	BeginSleep(..), EndSleep, RaiseError(..), Error(..), ErrorResult(..),
-	pattern OccStoreJsons, pattern OccLoadJsons,
-	pattern OccHttpGet, pattern OccCalcTextExtents,
-	pattern OccGetTimeZone, pattern OccBrowse,
-	pattern OccBeginSleep, pattern OccEndSleep, pattern OccRaiseError
-	)
+	FollowboxEv, StoreJsons(..), pattern OccStoreJsons,
+	LoadJsons, pattern OccLoadJsons, HttpGet(..), pattern OccHttpGet,
+	CalcTextExtents(..), pattern OccCalcTextExtents,
+	GetTimeZone, pattern OccGetTimeZone, Browse(..), pattern OccBrowse,
+	BeginSleep(..), pattern OccBeginSleep, EndSleep, pattern OccEndSleep,
+	RaiseError(..), pattern OccRaiseError, Error(..), ErrorResult(..) )
 import Trial.Followbox.TypeSynonym (Browser, GithubNameToken)
 import Field (Field, textExtents)
 

@@ -1580,6 +1580,18 @@ Main
 			* [x] chkDupOpt
 			* [x] followboxOptions
 * [ ] Trial.Followbox.Handle
+	+ [x] API
+		- [x] structure
+		- [x] Handle
+			* [x] type HandleF
+			* [x] handleFollowbox
+		- [x] State
+			* [x] data FollowboxState
+			* [x] initialFollowboxState
+	+ [x] extension
+	+ [x] import
+	+ [ ] structure
+	+ [ ] body
 * [ ] Trial.Followbox.View
 * [ ] Trial.Followbox.ViewType
 
