@@ -1590,13 +1590,19 @@ Main
 			* [x] initialFollowboxState
 	+ [x] extension
 	+ [x] import
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
-		- [ ] STATE
-			* [ ] FOLLOWBOX STATE
-			* [ ] PUT AND GET EACH STATE
+		- [x] STATE
+			* [x] FOLLOWBOX STATE
+				+ [x] data FollowboxState
+				+ [x] initialFollowboxState
+				+ [x] type HandleF
+				+ [x] type HandleF'
+			* [x] PUT AND GET EACH STATE
+				+ [x] instance LockState FollowboxState
+				+ [x] instance RandomState FollowboxState
 		- [ ] HANDLE
-			* [ ] FOLLOWBOX
+			* [x] FOLLOWBOX
 			* [ ] MOUSE
 			* [ ] STORE AND LOAD JSONS
 			* [ ] REQUEST DATA

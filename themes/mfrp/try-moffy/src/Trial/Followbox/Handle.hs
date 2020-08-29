@@ -10,8 +10,8 @@ module Trial.Followbox.Handle (
 	FollowboxState, initialFollowboxState ) where
 
 import Control.Moffy.Handle (
-	Handle, Handle', HandleSt, HandleIo',
-	liftSt, retrySt, beforeSt, mergeSt )
+	Handle, Handle', HandleSt, HandleSt', HandleIo',
+	liftHandle', retrySt, beforeSt, mergeSt )
 import Control.Moffy.Handle.ThreadId (handleGetThreadId)
 import Control.Moffy.Handle.Lock (LockState(..), LockId, handleLock)
 import Control.Moffy.Handle.Random (RandomState(..), handleRandom)
@@ -89,36 +89,35 @@ instance RandomState FollowboxState where
 
 -- FOLLOWBOX
 
-handleFollowbox, handleFollowbox' ::
-	Field -> Browser -> Maybe GithubNameToken -> HandleF IO (GuiEv :+: FollowboxEv)
-handleFollowbox = handleFollowbox'
-handleFollowbox' f brws mba = retrySt $
-	liftSt . handleGetThreadId `mergeSt` handleLock `mergeSt` handleRandom `mergeSt`
-	handleStoreJsons' `mergeSt` handleLoadJsons' `mergeSt`
-	liftSt . just . handleHttpGet mba `mergeSt`
-	liftSt . just . handleCalcTextExtents f `mergeSt`
-	liftSt . just . handleGetTimeZone `mergeSt`
-	liftSt . just . handleBrowse brws `mergeSt`
+handleFollowbox :: Field -> Browser -> Maybe GithubNameToken ->
+	HandleF IO (GuiEv :+: FollowboxEv)
+handleFollowbox f brws mba = retrySt $
+	liftHandle' handleGetThreadId `mergeSt` handleLock `mergeSt`
+	handleRandom `mergeSt`
+	handleStoreJsons `mergeSt` handleLoadJsons `mergeSt`
+	liftOnJust (handleHttpGet mba) `mergeSt`
+	liftOnJust (handleCalcTextExtents f) `mergeSt`
+	liftOnJust handleGetTimeZone `mergeSt`
+	liftOnJust (handleBrowse brws) `mergeSt`
 	handleBeginSleep' `mergeSt` handleEndSleep' `mergeSt`
-	liftSt . handleRaiseError `beforeSt`
-	handleMouseWithSleep' f
+	liftHandle' handleRaiseError `beforeSt` handleMouseWithSleep f
 
 -- MOUSE
 
-handleMouseWithSleep' :: Field -> HandleF' IO GuiEv
-handleMouseWithSleep' f rqs s = (, s) <$> case fsSleepUntil s of
+handleMouseWithSleep :: Field -> HandleF' IO GuiEv
+handleMouseWithSleep f rqs s = (, s) <$> case fsSleepUntil s of
 	Nothing -> handle Nothing f rqs
 	Just t -> getCurrentTime >>= \now ->
 		handle (Just . realToFrac $ t `diffUTCTime` now) f rqs
 
 -- STORE AND LOAD JSONS
 
-handleStoreJsons' :: Monad m => HandleF' m (Singleton StoreJsons)
-handleStoreJsons' (Singleton (StoreJsonsReq os)) s =
+handleStoreJsons :: Monad m => HandleF' m (Singleton StoreJsons)
+handleStoreJsons (Singleton (StoreJsonsReq os)) s =
 	pure (Just . Singleton $ OccStoreJsons os, s { fsObjects = os })
 
-handleLoadJsons' :: Monad m => HandleF' m (Singleton LoadJsons)
-handleLoadJsons' _rqs s = pure (Just . Singleton . OccLoadJsons $ fsObjects s, s)
+handleLoadJsons :: Monad m => HandleF' m (Singleton LoadJsons)
+handleLoadJsons _rqs s = pure (Just . Singleton . OccLoadJsons $ fsObjects s, s)
 
 -- REQUEST DATA
 
@@ -183,5 +182,5 @@ handleRaiseError (Singleton (RaiseError e em)) = case er e of
 -- HELPER FUNCTION
 ---------------------------------------------------------------------------
 
-just :: Functor f => f a -> f (Maybe a)
-just = (Just <$>)
+liftOnJust :: Functor f => Handle f es -> HandleSt' st f es
+liftOnJust = liftHandle' . ((Just <$>) .)
