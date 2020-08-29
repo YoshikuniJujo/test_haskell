@@ -42,7 +42,7 @@ import Field (Field, textExtents)
 ---------------------------------------------------------------------------
 
 -- * STATE
--- 	+ FULLOWBOX STATE
+-- 	+ FOLLOWBOX STATE
 -- 	+ PUT AND GET EACH STATE
 -- * HANDLE
 --	+ FOLLOWBOX
@@ -52,13 +52,13 @@ import Field (Field, textExtents)
 --	+ BROWSE
 --	+ BEGIN AND END SLEEP
 --	+ RAISE ERROR
---	+ HELPER FUNCTION
+-- * HELPER FUNCTION
 
 ---------------------------------------------------------------------------
 -- STATE
 ---------------------------------------------------------------------------
 
--- FOLLOWQBOX STATE
+-- FOLLOWOBOX STATE
 
 data FollowboxState = FollowboxState {
 	fsNextLockId :: Int, fsLockState :: [LockId], fsObjects :: [Object],
@@ -179,7 +179,9 @@ handleRaiseError (Singleton (RaiseError e em)) = case er e of
 		Trace -> Just Continue
 		CatchError -> Nothing
 
+---------------------------------------------------------------------------
 -- HELPER FUNCTION
+---------------------------------------------------------------------------
 
 just :: Functor f => f a -> f (Maybe a)
 just = (Just <$>)

@@ -1592,6 +1592,18 @@ Main
 	+ [x] import
 	+ [ ] structure
 	+ [ ] body
+		- [ ] STATE
+			* [ ] FOLLOWBOX STATE
+			* [ ] PUT AND GET EACH STATE
+		- [ ] HANDLE
+			* [ ] FOLLOWBOX
+			* [ ] MOUSE
+			* [ ] STORE AND LOAD JSONS
+			* [ ] REQUEST DATA
+			* [ ] BROWSE
+			* [ ] BEGIN AND END SLEEP
+			* [ ] RAISE ERROR
+		- [ ] HELPER FUNCTION
 * [ ] Trial.Followbox.View
 * [ ] Trial.Followbox.ViewType
 
