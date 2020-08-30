@@ -1,5 +1,18 @@
 #include <gtk/gtk.h>
 
+void
+foo(int *n)
+{
+	printf("%d\n", *n);
+	(*n)++;
+}
+
+void
+foo_array(int *n, char ***strs)
+{
+	for (int i = 0; i < *n; i++) printf("%s\n", (*strs)[i]);
+}
+
 int
 // hello_main(int argc, char *argv[])
 hello_main()

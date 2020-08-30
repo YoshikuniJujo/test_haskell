@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 67788396401f39dbb85f8ca335bd973d03536ef187138cc521f556e3d0cdb3a4
+-- hash: ff37e9141a3652fe62cdecd392e9b0574f1fac7cc9f1f05435ee252187bf1841
 
 name:           try-hello-gtk
 version:        0.1.0.0
@@ -28,6 +28,8 @@ source-repository head
 library
   exposed-modules:
       Lib
+      Try
+      Values
   other-modules:
       Paths_try_hello_gtk
   hs-source-dirs:
