@@ -99,7 +99,7 @@ handleFollowbox f brws mba = retrySt $
 	liftOnJust (handleCalcTextExtents f) `mergeSt`
 	liftOnJust handleGetTimeZone `mergeSt`
 	liftOnJust (handleBrowse brws) `mergeSt`
-	handleBeginSleep' `mergeSt` handleEndSleep' `mergeSt`
+	handleBeginSleep `mergeSt` handleEndSleep `mergeSt`
 	liftHandle' handleRaiseError `beforeSt` handleMouseWithSleep f
 
 -- MOUSE
@@ -140,22 +140,26 @@ handleGetTimeZone _reqs = Singleton . OccGetTimeZone <$> getCurrentTimeZone
 -- BROWSE
 
 handleBrowse :: Browser -> Handle IO (Singleton Browse)
-handleBrowse brws (Singleton (Browse u)) = Singleton OccBrowse <$ spawnProcess brws [T.unpack u]
+handleBrowse brws (Singleton (Browse u)) =
+	Singleton OccBrowse <$ spawnProcess brws [T.unpack u]
 
 -- BEGIN AND END SLEEP
 
-handleBeginSleep' :: Monad m => HandleF' m (Singleton BeginSleep)
-handleBeginSleep' (Singleton bs) s = case bs of
+handleBeginSleep :: Monad m => HandleF' m (Singleton BeginSleep)
+handleBeginSleep (Singleton bs) s = case bs of
 	BeginSleep t -> case fsSleepUntil s of
 		Just t' -> pure (Just . Singleton $ OccBeginSleep t', s)
-		Nothing -> pure (Just . Singleton $ OccBeginSleep t, s { fsSleepUntil = Just t })
+		Nothing -> pure (
+			Just . Singleton $ OccBeginSleep t,
+			s { fsSleepUntil = Just t } )
 	CheckBeginSleep -> pure (Nothing, s)
 
-handleEndSleep' :: HandleF' IO (Singleton EndSleep)
-handleEndSleep' _rqs s = case fsSleepUntil s of
+handleEndSleep :: HandleF' IO (Singleton EndSleep)
+handleEndSleep _rqs s = case fsSleepUntil s of
 	Just t -> getCurrentTime >>= bool
 		(pure (Nothing, s))
-		(pure (Just $ Singleton OccEndSleep, s { fsSleepUntil = Nothing })) . (t <=)
+		(pure (Just $ Singleton OccEndSleep,
+			s { fsSleepUntil = Nothing })) . (t <=)
 	Nothing -> pure (Just $ Singleton OccEndSleep, s)
 
 -- RAISE ERROR

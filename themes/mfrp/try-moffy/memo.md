@@ -1579,7 +1579,7 @@ Main
 			* [x] data FollowboxOption
 			* [x] chkDupOpt
 			* [x] followboxOptions
-* [ ] Trial.Followbox.Handle
+* [x] Trial.Followbox.Handle
 	+ [x] API
 		- [x] structure
 		- [x] Handle
@@ -1591,7 +1591,7 @@ Main
 	+ [x] extension
 	+ [x] import
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] STATE
 			* [x] FOLLOWBOX STATE
 				+ [x] data FollowboxState
@@ -1601,16 +1601,24 @@ Main
 			* [x] PUT AND GET EACH STATE
 				+ [x] instance LockState FollowboxState
 				+ [x] instance RandomState FollowboxState
-		- [ ] HANDLE
+		- [x] HANDLE
 			* [x] FOLLOWBOX
-			* [ ] MOUSE
-			* [ ] STORE AND LOAD JSONS
-			* [ ] REQUEST DATA
-			* [ ] BROWSE
-			* [ ] BEGIN AND END SLEEP
-			* [ ] RAISE ERROR
-		- [ ] HELPER FUNCTION
+			* [x] MOUSE
+			* [x] STORE AND LOAD JSONS
+			* [x] REQUEST DATA
+				- [x] handleHttpGet
+				- [x] handleCalcTextExtents
+				- [x] handleGetTimeZone
+			* [x] BROWSE
+			* [x] BEGIN AND END SLEEP
+			* [x] RAISE ERROR
+		- [x] HELPER FUNCTION
 * [ ] Trial.Followbox.View
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
 * [ ] Trial.Followbox.ViewType
 
 ref
