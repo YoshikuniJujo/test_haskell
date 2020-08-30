@@ -1613,12 +1613,29 @@ Main
 			* [x] BEGIN AND END SLEEP
 			* [x] RAISE ERROR
 		- [x] HELPER FUNCTION
-* [ ] Trial.Followbox.View
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
+* [x] Trial.Followbox.View
+	+ [x] API
+		- [x] View
+			* [x] type View
+			* [x] data View1
+			* [x] function view
+		- [x] Color
+			* [x] data Color
+			* [x] value white
+			* [x] value blue
+	+ [x] import
+	+ [x] structure
+	+ [x] body
+		- [x] VIEW
+			* [x] view
+			* [x] view1
+				+ [x] match Text
+				+ [x] match Line
+				+ [x] match Image
+			* [x] colorToPixel
+		- [x] DRAW PIXEL IMAGE
+			* [x] drawImagePixel
+			* [x] swap02s
 * [ ] Trial.Followbox.ViewType
 
 ref
