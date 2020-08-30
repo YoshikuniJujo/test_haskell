@@ -9,8 +9,7 @@ module Trial.Followbox.ViewType (
 
 import Data.Word (Word8)
 import Codec.Picture (Image, PixelRGBA8)
-
-import qualified Data.Text as T
+import Data.Text (Text)
 
 import Trial.Followbox.TypeSynonym (Position, LineWidth, FontName, FontSize)
 
@@ -19,7 +18,7 @@ import Trial.Followbox.TypeSynonym (Position, LineWidth, FontName, FontSize)
 type View = [View1]
 
 data View1
-	= Text Color FontName FontSize Position T.Text
+	= Text Color FontName FontSize Position Text
 	| Line Color LineWidth Position Position
 	| Image Position (Image PixelRGBA8)
 

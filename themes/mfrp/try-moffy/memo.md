@@ -1636,7 +1636,7 @@ Main
 		- [x] DRAW PIXEL IMAGE
 			* [x] drawImagePixel
 			* [x] swap02s
-* [ ] Trial.Followbox.ViewType
+* [x] Trial.Followbox.ViewType
 
 ref
 ---
