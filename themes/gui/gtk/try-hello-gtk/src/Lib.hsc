@@ -21,8 +21,17 @@ foreign import ccall "gtk_init" c_gtk_init :: Ptr CInt -> Ptr (Ptr CString) -> I
 foreign import ccall "gtk_window_new" c_gtk_window_new :: #{type GtkWindowType} -> IO (Ptr GtkWidget)
 foreign import ccall "gtk_widget_show_all" c_gtk_widget_show_all :: Ptr GtkWidget -> IO ()
 foreign import ccall "gtk_main" c_gtk_main :: IO ()
+foreign import ccall "gtk_main_quit" c_gtk_main_quit :: IO ()
+
+-- foreign import ccall "g_signal_connect" c_g_signal_connect ::
+--	Ptr GtkWidget -> CString -> FunPtr (Ptr a -> IO ()) -> Ptr a -> IO ()
+
+-- foreign import ccall "wrapper" g_callback :: (Ptr a -> IO()) -> IO (FunPtr (Ptr a -> IO ()))
 
 foreign import ccall "hello_main" c_hello_main :: IO ()
+
+-- gSignalConnect :: GtkWidget -> String -> (a -> IO ()) -> a -> IO ()
+-- gSignalConnect
 
 gtkInit :: [String] -> IO [String]
 gtkInit as = allocaArray (length as) \arr -> do
