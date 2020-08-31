@@ -9,8 +9,9 @@
 
 module Lib (
 	GtkWidget, gtkInit, gtkWindowNew, gtkWidgetShowAll, gtkMain,
-	Event, AsPointer, gSignalConnect, Destroy(..), gtkMainQuit,
-	KeyPressEvent(..), 
+	Event, Handler, AsPointer, gSignalConnect, Destroy(..), gtkMainQuit,
+	KeyEvent(..),  boolToGBoolean, ButtonEvent(..), keyval, GdkEventKey,
+	hardwareKeycode
 	) where
 
 #include <gtk/gtk.h>
@@ -22,6 +23,7 @@ import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
 import Data.Word
+import Data.Int
 
 import Values
 
@@ -52,6 +54,10 @@ type Handler e a = Ptr GtkWidget -> Ptr e -> Ptr a -> IO ()
 data GdkEventKey = GdkEventKey (Ptr GdkEventKey)
 -}
 
+boolToGBoolean :: Bool -> #type gboolean
+boolToGBoolean False = #const FALSE
+boolToGBoolean True = #const TRUE
+
 class Event e where
 	type Handler e a
 	eventName :: e -> String
@@ -63,20 +69,43 @@ instance Event Destroy where
 	eventName Destroy = "destroy"
 	g_callback = g_callback0
 
-data KeyPressEvent = KeyPressEvent deriving Show
-instance Event KeyPressEvent where
-	type Handler KeyPressEvent a = GtkWidget -> GdkEventKey -> Ptr a -> IO ()
+data KeyEvent = KeyPressEvent | KeyReleaseEvent deriving Show
+instance Event KeyEvent where
+	type Handler KeyEvent a = GtkWidget -> GdkEventKey -> Ptr a -> IO #type gboolean
 	eventName KeyPressEvent = "key-press-event"
-	g_callback = g_callback_keypress
+	eventName KeyReleaseEvent = "key-release-event"
+	g_callback = g_callback_key
 newtype GdkEventKey = GdkEventKey (Ptr GdkEventKey) deriving Show
+
+keyval :: GdkEventKey -> IO #type guint
+keyval (GdkEventKey p) = c_keyval p
+
+c_keyval :: Ptr GdkEventKey -> IO #type guint
+c_keyval = #peek GdkEventKey, keyval
+
+hardwareKeycode :: GdkEventKey -> IO #type guint16
+hardwareKeycode (GdkEventKey p) = c_hardware_keycode p
+
+c_hardware_keycode :: Ptr GdkEventKey -> IO #type guint16
+c_hardware_keycode = #peek GdkEventKey, hardware_keycode
+
+data ButtonEvent = ButtonPressEvent | ButtonReleaseEvent deriving Show
+newtype GdkEventButton = GdkEventButton (Ptr GdkEventButton) deriving Show
+instance Event ButtonEvent where
+	type Handler ButtonEvent a = GtkWidget -> GdkEventButton -> Ptr a -> IO #type gboolean
+	eventName ButtonPressEvent = "button-press-event"
+	eventName ButtonReleaseEvent = "button-release-event"
+	g_callback = g_callback_button
 
 foreign import capi "gtk/gtk.h g_signal_connect" c_g_signal_connect ::
 	Ptr GtkWidget -> CString -> FunPtr () -> Ptr a -> IO ()
 
 -- foreign import ccall "wrapper" g_callback :: Handler e a -> IO (FunPtr (Handler e a))
 foreign import ccall "wrapper" g_callback0 :: IO () -> IO (FunPtr (IO ()))
-foreign import ccall "wrapper" g_callback_keypress ::
-	(GtkWidget -> GdkEventKey -> Ptr a -> IO ()) -> IO (FunPtr (GtkWidget -> GdkEventKey -> Ptr a -> IO ()))
+foreign import ccall "wrapper" g_callback_key ::
+	(GtkWidget -> GdkEventKey -> Ptr a -> IO #{type gboolean}) -> IO (FunPtr (GtkWidget -> GdkEventKey -> Ptr a -> IO #{type gboolean}))
+foreign import ccall "wrapper" g_callback_button ::
+	(GtkWidget -> GdkEventButton -> Ptr a -> IO #{type gboolean}) -> IO (FunPtr (GtkWidget -> GdkEventButton -> Ptr a -> IO #{type gboolean}))
 
 foreign import ccall "hello_main" c_hello_main :: IO ()
 
