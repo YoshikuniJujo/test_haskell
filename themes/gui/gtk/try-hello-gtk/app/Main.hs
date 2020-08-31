@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
 module Main where
 
 import System.Environment
@@ -12,4 +14,6 @@ main = do
 	print as'
 	win <- gtkWindowNew gtkWindowToplevel
 	gtkWidgetShowAll win
+	gSignalConnect win Destroy gtkMainQuit ()
+	gSignalConnect win KeyPressEvent (\a b c -> print (a, b, c)) ()
 	gtkMain

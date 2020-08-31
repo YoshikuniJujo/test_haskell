@@ -1,7 +1,17 @@
+{-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE BlockArguments, TupleSections #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
+-- {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleInstances, UndecidableInstances, AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Lib (GtkWidget, gtkInit, gtkWindowNew, gtkWidgetShowAll, gtkMain) where
+module Lib (
+	GtkWidget, gtkInit, gtkWindowNew, gtkWidgetShowAll, gtkMain,
+	Event, AsPointer, gSignalConnect, Destroy(..), gtkMainQuit,
+	KeyPressEvent(..), 
+	) where
 
 #include <gtk/gtk.h>
 
@@ -15,7 +25,18 @@ import Data.Word
 
 import Values
 
-data GtkWidget = GtkWidget (Ptr GtkWidget)
+newtype GtkWidget = GtkWidget (Ptr GtkWidget) deriving Show
+
+class AsPointer a where
+	asPointer :: a -> (Ptr a -> IO b) -> IO b
+
+instance AsPointer GtkWidget where
+	asPointer (GtkWidget p) f = f p
+
+instance Storable a => AsPointer a where
+	asPointer x f = alloca \p -> do
+		poke p x
+		f p
 
 foreign import ccall "gtk_init" c_gtk_init :: Ptr CInt -> Ptr (Ptr CString) -> IO ()
 foreign import ccall "gtk_window_new" c_gtk_window_new :: #{type GtkWindowType} -> IO (Ptr GtkWidget)
@@ -23,15 +44,60 @@ foreign import ccall "gtk_widget_show_all" c_gtk_widget_show_all :: Ptr GtkWidge
 foreign import ccall "gtk_main" c_gtk_main :: IO ()
 foreign import ccall "gtk_main_quit" c_gtk_main_quit :: IO ()
 
--- foreign import ccall "g_signal_connect" c_g_signal_connect ::
---	Ptr GtkWidget -> CString -> FunPtr (Ptr a -> IO ()) -> Ptr a -> IO ()
+gtkMainQuit :: IO ()
+gtkMainQuit = c_gtk_main_quit
 
--- foreign import ccall "wrapper" g_callback :: (Ptr a -> IO()) -> IO (FunPtr (Ptr a -> IO ()))
+{-
+type Handler e a = Ptr GtkWidget -> Ptr e -> Ptr a -> IO ()
+data GdkEventKey = GdkEventKey (Ptr GdkEventKey)
+-}
+
+class Event e where
+	type Handler e a
+	eventName :: e -> String
+	g_callback :: Handler e a -> IO (FunPtr (Handler e a))
+
+data Destroy = Destroy deriving Show
+instance Event Destroy where
+	type Handler Destroy a = IO ()
+	eventName Destroy = "destroy"
+	g_callback = g_callback0
+
+data KeyPressEvent = KeyPressEvent deriving Show
+instance Event KeyPressEvent where
+	type Handler KeyPressEvent a = GtkWidget -> GdkEventKey -> Ptr a -> IO ()
+	eventName KeyPressEvent = "key-press-event"
+	g_callback = g_callback_keypress
+newtype GdkEventKey = GdkEventKey (Ptr GdkEventKey) deriving Show
+
+foreign import capi "gtk/gtk.h g_signal_connect" c_g_signal_connect ::
+	Ptr GtkWidget -> CString -> FunPtr () -> Ptr a -> IO ()
+
+-- foreign import ccall "wrapper" g_callback :: Handler e a -> IO (FunPtr (Handler e a))
+foreign import ccall "wrapper" g_callback0 :: IO () -> IO (FunPtr (IO ()))
+foreign import ccall "wrapper" g_callback_keypress ::
+	(GtkWidget -> GdkEventKey -> Ptr a -> IO ()) -> IO (FunPtr (GtkWidget -> GdkEventKey -> Ptr a -> IO ()))
 
 foreign import ccall "hello_main" c_hello_main :: IO ()
 
--- gSignalConnect :: GtkWidget -> String -> (a -> IO ()) -> a -> IO ()
--- gSignalConnect
+gSignalConnect :: forall e a . (Event e, AsPointer a) => GtkWidget -> e -> Handler e a -> a -> IO ()
+gSignalConnect (GtkWidget pw) e h x = do
+	cs <- newCString $ eventName e
+	cb <- castFunPtr <$> g_callback @e @a h
+	asPointer x $ c_g_signal_connect pw cs cb
+--	alloca \p -> do
+--		poke p x
+--		c_g_signal_connect pw cs cb p
+
+{-
+gSignalConnect :: Storable a => GtkWidget -> String -> (Handler e a) -> a -> IO ()
+gSignalConnect (GtkWidget pw) en h x = do
+	cs <- newCString en
+	cb <- g_callback h
+	alloca \p -> do
+		poke p x
+		c_g_signal_connect pw cs cb p
+		-}
 
 gtkInit :: [String] -> IO [String]
 gtkInit as = allocaArray (length as) \arr -> do
