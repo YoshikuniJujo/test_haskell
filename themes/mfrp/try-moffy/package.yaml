@@ -40,6 +40,7 @@ dependencies:
 - process
 - unordered-containers
 - X11
+- stm
 
 library:
   source-dirs: src
@@ -57,6 +58,15 @@ executables:
     - try-moffy
   followbox:
     main:                followbox.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy
+  tryGtk:
+    main:                tryGtk.hs
     source-dirs:         app
     ghc-options:
     - -threaded

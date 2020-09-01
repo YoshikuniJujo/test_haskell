@@ -112,7 +112,16 @@ todo
 * [x] refactor Control.Moffy.Internal.React.Type
 * [x] refactor Control.Moffy.Handle
 * [ ] make handle using GTK
-	+ [ ] consider to use TChan in Handle.TChan
+	+ [x] consider to use TChan in Handle.TChan
+	+ [x] handle Delete Event
+	+ [ ] handle Mouse Event
+	+ [ ] handle Time Event
+	+ [ ] others
+* [ ] about window
+	+ [ ] make window
+	+ [ ] make multiple window
+	+ [ ] window move event
+	+ [ ] make tear-off sample
 * [ ] check module hierarchy
 	+ [ ] Moffy
 	+ [x] Moffy library
