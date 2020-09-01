@@ -114,15 +114,15 @@ todo
 * [ ] make handle using GTK
 	+ [x] consider to use TChan in Handle.TChan
 	+ [x] handle Delete Event
-	+ [ ] handle Mouse Event
+	+ [x] handle Mouse Event
 		- [x] MotionNotifyEvent
 			* [x] make MotionNotifyEvent
 			* [x] add gtk_widget_set_events
-		- [ ] ButtonPressEvent and ButtoReleaseEvent
+		- [x] ButtonPressEvent and ButtoReleaseEvent
 			* [x] extract button
 			* [x] extract x and y
 			* [x] ButtonPressEvent
-			* [ ] ButtonReleaseEvent
+			* [x] ButtonReleaseEvent
 	+ [ ] handle Time Event
 		- [ ] Delta Time Event
 		- [ ] Sleep

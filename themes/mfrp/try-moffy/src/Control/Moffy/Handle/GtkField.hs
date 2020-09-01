@@ -26,7 +26,7 @@ tryGtk = do
 	gSignalConnect w Destroy gtkMainQuit ()
 	gtkMain
 
-tryUseTChan :: IO (TChan (EvOccs (M.DeleteEvent :- MouseDown :- MouseMove :- 'Nil)))
+tryUseTChan :: IO (TChan (EvOccs (M.DeleteEvent :- MouseEv)))
 tryUseTChan = do
 	c <- newTChanIO
 	void . forkIO $ do
@@ -38,6 +38,9 @@ tryUseTChan = do
 			atomically (writeTChan c . Oom.expand $ Singleton OccDeleteEvent))) ()
 		gSignalConnect w ButtonPressEvent (\a b c' -> False <$ (print (a, b, c') >> do
 			e <- gdkEventButtonToOccMouseDown b
+			atomically (writeTChan c $ Oom.expand e))) ()
+		gSignalConnect w ButtonReleaseEvent (\a b c' -> False <$ (print (a, b, c') >> do
+			e <- gdkEventButtonToOccMouseUp b
 			atomically (writeTChan c $ Oom.expand e))) ()
 		gSignalConnect w MotionNotifyEvent (\a b c' -> False <$ (print (a, b, c') >> do
 			e <- gdkEventMotionToOccMouseMove b
@@ -63,17 +66,28 @@ gdkEventButtonToOccMouseDown e = do
 		1 -> ButtonLeft; 2 -> ButtonMiddle; 3 -> ButtonRight
 		n -> ButtonUnknown n
 
+gdkEventButtonToOccMouseUp :: GdkEventButton -> IO (EvOccs (MouseUp :- MouseMove :- 'Nil))
+gdkEventButtonToOccMouseUp e = do
+	x <- round <$> gdkEventButtonX e
+	y <- round <$> gdkEventButtonY e
+	b <- gdkEventButtonButton e
+	pure $ OccMouseUp (btn b) >- Singleton (OccMouseMove (x, y))
+	where
+	btn = \case
+		1 -> ButtonLeft; 2 -> ButtonMiddle; 3 -> ButtonRight
+		n -> ButtonUnknown n
+
 runUseTChan :: IO ()
 runUseTChan = do
 	c <- tryUseTChan
 	atomically (readTChan c)
 	gtkMainQuit
 
-handleDelete :: TChan (EvOccs (M.DeleteEvent :- MouseDown :- MouseMove :- 'Nil)) -> Handle IO (M.DeleteEvent :- MouseDown :- MouseMove :- 'Nil)
+handleDelete :: TChan (EvOccs (M.DeleteEvent :- MouseEv)) -> Handle IO (M.DeleteEvent :- MouseEv)
 handleDelete c _rqs = atomically $ readTChan c
 
 runHandleDelete :: IO ()
 runHandleDelete = do
 	c <- tryUseTChan
-	interpret (handleDelete c) print $ repeat (mouseMove `first` mouseDown)  `break` deleteEvent
+	interpret (handleDelete c) print $ repeat (mouseMove `first` mouseDown `first` mouseUp)  `break` deleteEvent
 	gtkMainQuit
