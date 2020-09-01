@@ -10,6 +10,7 @@ import Control.Monad
 import Control.Moffy
 import Control.Moffy.Run
 import Control.Moffy.Event.Delete as M
+import Control.Moffy.Event.Key
 import Control.Moffy.Event.Mouse
 import Control.Moffy.Handle
 import Control.Concurrent
@@ -32,7 +33,10 @@ tryGtk = do
 	gSignalConnect w Destroy gtkMainQuit ()
 	gtkMain
 
-tryUseTChan :: IO (TChan (EvOccs (M.DeleteEvent :- MouseEv)))
+print' :: a -> IO ()
+print' _ = pure ()
+
+tryUseTChan :: IO (TChan (EvOccs (M.DeleteEvent :- KeyEv :+: MouseEv)))
 tryUseTChan = do
 	c <- newTChanIO
 	void . forkIO $ do
@@ -40,20 +44,36 @@ tryUseTChan = do
 		w <- gtkWindowNew gtkWindowToplevel
 		gtkWidgetSetEvents w [gdkPointerMotionMask]
 		gtkWidgetShowAll w
-		gSignalConnect w DeleteEvent (\a b c' -> True <$ (print (a, b, c') >>
+		gSignalConnect w DeleteEvent (\a b c' -> True <$ (print' (a, b, c') >>
 			atomically (writeTChan c . Oom.expand $ Singleton OccDeleteEvent))) ()
-		gSignalConnect w ButtonPressEvent (\a b c' -> False <$ (print (a, b, c') >> do
+		gSignalConnect w KeyPressEvent (\a b c' -> False <$ (print' (a, b, c') >> do
+			e <- gdkEventKeyToOccKeyDown b
+			atomically (writeTChan c $ Oom.expand e))) ()
+		gSignalConnect w KeyReleaseEvent (\a b c' -> False <$ (print' (a, b, c') >> do
+			e <- gdkEventKeyToOccKeyUp b
+			atomically (writeTChan c $ Oom.expand e))) ()
+		gSignalConnect w ButtonPressEvent (\a b c' -> False <$ (print' (a, b, c') >> do
 			e <- gdkEventButtonToOccMouseDown b
 			atomically (writeTChan c $ Oom.expand e))) ()
-		gSignalConnect w ButtonReleaseEvent (\a b c' -> False <$ (print (a, b, c') >> do
+		gSignalConnect w ButtonReleaseEvent (\a b c' -> False <$ (print' (a, b, c') >> do
 			e <- gdkEventButtonToOccMouseUp b
 			atomically (writeTChan c $ Oom.expand e))) ()
-		gSignalConnect w MotionNotifyEvent (\a b c' -> False <$ (print (a, b, c') >> do
+		gSignalConnect w MotionNotifyEvent (\a b c' -> False <$ (print' (a, b, c') >> do
 			e <- gdkEventMotionToOccMouseMove b
 			atomically (writeTChan c $ Oom.expand e))) ()
 		gSignalConnect w Destroy gtkMainQuit ()
 		gtkMain
 	pure c
+
+gdkEventKeyToOccKeyDown :: GdkEventKey -> IO (EvOccs (Singleton KeyDown))
+gdkEventKeyToOccKeyDown e = do
+	kv <- keyval e
+	pure . Singleton . OccKeyDown . Key $ fromIntegral kv
+
+gdkEventKeyToOccKeyUp :: GdkEventKey -> IO (EvOccs (Singleton KeyUp))
+gdkEventKeyToOccKeyUp e = do
+	kv <- keyval e
+	pure . Singleton . OccKeyUp . Key $ fromIntegral kv
 
 gdkEventMotionToOccMouseMove :: GdkEventMotion -> IO (EvOccs (Singleton MouseMove))
 gdkEventMotionToOccMouseMove e = do
@@ -89,15 +109,17 @@ runUseTChan = do
 	atomically (readTChan c)
 	gtkMainQuit
 
-handleDelete :: DiffTime -> TChan (EvOccs (M.DeleteEvent :- MouseEv)) -> Handle' IO (M.DeleteEvent :- MouseEv)
+handleDelete :: DiffTime -> TChan (EvOccs (M.DeleteEvent :- KeyEv :+: MouseEv)) -> Handle' IO (M.DeleteEvent :- KeyEv :+: MouseEv)
 handleDelete t c _rqs = timeout (round $ t * 1000000) . atomically $ readTChan c
 
 runHandleDelete :: IO ()
 runHandleDelete = do
 	c <- tryUseTChan
-	interpret (retry $ handleDelete 0.1 c) print $ repeat (mouseMove `first` mouseDown `first` mouseUp)  `break` deleteEvent
+	interpret (retry $ handleDelete 0.1 c) print
+		$ repeat (keyDown `first` keyUp `first` mouseMove `first` mouseDown `first` mouseUp)  `break` deleteEvent
 	gtkMainQuit
 
-handleBoxesFoo :: DiffTime -> TChan (EvOccs (M.DeleteEvent :- MouseEv)) -> HandleSt (Mode, AbsoluteTime) IO (TimeEv :+: M.DeleteEvent :- MouseEv)
+handleBoxesFoo :: DiffTime -> TChan (EvOccs (M.DeleteEvent :- KeyEv :+: MouseEv)) ->
+	HandleSt (Mode, AbsoluteTime) IO (TimeEv :+: M.DeleteEvent :- KeyEv :+: MouseEv)
 handleBoxesFoo = ((retrySt .) .) . curry . popInput . handleTimeEvPlus
 	. pushInput . uncurry $ (liftHandle' .) . handleDelete

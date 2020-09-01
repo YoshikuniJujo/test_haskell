@@ -123,18 +123,12 @@ todo
 			* [x] extract x and y
 			* [x] ButtonPressEvent
 			* [x] ButtonReleaseEvent
-	+ [ ] handle Key Event
-		- [ ] KeyPressEvent and KeyReleaseEvent
-			* [ ] KeyPressEvent
-			* [ ] KeyReleaseEvent
-	+ [ ] handle Time Event
-		- [ ] Delta Time Event
-			* [x] handleDeltaTimeTChan
-			* [ ] others
-		- [ ] Sleep
-			* [ ] handleSleepTChan
-			* [ ] others
-		- [ ] make trial
+	+ [x] handle Key Event
+		- [x] KeyPressEvent and KeyReleaseEvent
+			* [x] KeyPressEvent
+			* [x] KeyReleaseEvent
+	+ [ ] remove Control.Moffy.Handle.TimeTChan
+	+ [ ] draw rectangle
 	+ [ ] arrange
 	+ [ ] others
 * [ ] about window
