@@ -1,6 +1,6 @@
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE BlockArguments, TupleSections #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables, ViewPatterns #-}
 {-# LANGUAGE TypeApplications #-}
 -- {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -8,10 +8,17 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Lib (
-	GtkWidget, gtkInit, gtkWindowNew, gtkWidgetShowAll, gtkMain,
-	Event, Handler, AsPointer, gSignalConnect, Destroy(..), gtkMainQuit,
-	KeyEvent(..),  boolToGBoolean, ButtonEvent(..), keyval, GdkEventKey,
-	hardwareKeycode
+	-- * Basic
+	GtkWidget, gtkInit, gtkWindowNew, gtkWidgetShowAll, gtkMain, gtkMainQuit,
+	-- * Event General
+	Event, Handler, AsPointer, gSignalConnect,
+	-- * Each Event
+	-- ** Destroy
+	Destroy(..),
+	-- ** KeyEvent
+	KeyEvent(..), GdkEventKey, keyval, hardwareKeycode,
+	-- ** ButtonEvent
+	ButtonEvent(..)
 	) where
 
 #include <gtk/gtk.h>
@@ -31,14 +38,17 @@ newtype GtkWidget = GtkWidget (Ptr GtkWidget) deriving Show
 
 class AsPointer a where
 	asPointer :: a -> (Ptr a -> IO b) -> IO b
+	asValue :: Ptr a -> IO a
 
 instance AsPointer GtkWidget where
 	asPointer (GtkWidget p) f = f p
+	asValue = pure . GtkWidget
 
 instance Storable a => AsPointer a where
 	asPointer x f = alloca \p -> do
 		poke p x
 		f p
+	asValue p = peek p
 
 foreign import ccall "gtk_init" c_gtk_init :: Ptr CInt -> Ptr (Ptr CString) -> IO ()
 foreign import ccall "gtk_window_new" c_gtk_window_new :: #{type GtkWindowType} -> IO (Ptr GtkWidget)
@@ -60,22 +70,33 @@ boolToGBoolean True = #const TRUE
 
 class Event e where
 	type Handler e a
+	type CHandler e a
 	eventName :: e -> String
-	g_callback :: Handler e a -> IO (FunPtr (Handler e a))
+	handlerToCHandler :: AsPointer a => Handler e a -> CHandler e a
+	g_callback :: CHandler e a -> IO (FunPtr (CHandler e a))
 
 data Destroy = Destroy deriving Show
 instance Event Destroy where
 	type Handler Destroy a = IO ()
+	type CHandler Destroy a = IO ()
+	handlerToCHandler = id
 	eventName Destroy = "destroy"
 	g_callback = g_callback0
 
 data KeyEvent = KeyPressEvent | KeyReleaseEvent deriving Show
 instance Event KeyEvent where
-	type Handler KeyEvent a = GtkWidget -> GdkEventKey -> Ptr a -> IO #type gboolean
+	type Handler KeyEvent a = GtkWidget -> GdkEventKey -> a -> IO Bool
+	type CHandler KeyEvent a = GtkWidget -> GdkEventKey -> Ptr a -> IO #type gboolean
 	eventName KeyPressEvent = "key-press-event"
 	eventName KeyReleaseEvent = "key-release-event"
+	handlerToCHandler = handlerToCHandlerKey
 	g_callback = g_callback_key
 newtype GdkEventKey = GdkEventKey (Ptr GdkEventKey) deriving Show
+
+handlerToCHandlerKey :: AsPointer a => Handler KeyEvent a -> CHandler KeyEvent a
+handlerToCHandlerKey h w e px = do
+	x <- asValue px
+	boolToGBoolean <$> h w e x
 
 keyval :: GdkEventKey -> IO #type guint
 keyval (GdkEventKey p) = c_keyval p
@@ -92,10 +113,17 @@ c_hardware_keycode = #peek GdkEventKey, hardware_keycode
 data ButtonEvent = ButtonPressEvent | ButtonReleaseEvent deriving Show
 newtype GdkEventButton = GdkEventButton (Ptr GdkEventButton) deriving Show
 instance Event ButtonEvent where
-	type Handler ButtonEvent a = GtkWidget -> GdkEventButton -> Ptr a -> IO #type gboolean
+	type Handler ButtonEvent a = GtkWidget -> GdkEventButton -> a -> IO Bool
+	type CHandler ButtonEvent a = GtkWidget -> GdkEventButton -> Ptr a -> IO #type gboolean
 	eventName ButtonPressEvent = "button-press-event"
 	eventName ButtonReleaseEvent = "button-release-event"
+	handlerToCHandler = handlerToCHandlerButton
 	g_callback = g_callback_button
+
+handlerToCHandlerButton :: AsPointer a => Handler ButtonEvent a -> CHandler ButtonEvent a
+handlerToCHandlerButton h w e px = do
+	x <- asValue px
+	boolToGBoolean <$> h w e x
 
 foreign import capi "gtk/gtk.h g_signal_connect" c_g_signal_connect ::
 	Ptr GtkWidget -> CString -> FunPtr () -> Ptr a -> IO ()
@@ -107,19 +135,16 @@ foreign import ccall "wrapper" g_callback_key ::
 foreign import ccall "wrapper" g_callback_button ::
 	(GtkWidget -> GdkEventButton -> Ptr a -> IO #{type gboolean}) -> IO (FunPtr (GtkWidget -> GdkEventButton -> Ptr a -> IO #{type gboolean}))
 
-foreign import ccall "hello_main" c_hello_main :: IO ()
+-- foreign import ccall "hello_main" c_hello_main :: IO ()
 
 gSignalConnect :: forall e a . (Event e, AsPointer a) => GtkWidget -> e -> Handler e a -> a -> IO ()
-gSignalConnect (GtkWidget pw) e h x = do
+gSignalConnect (GtkWidget pw) e (handlerToCHandler @e @a -> h) x = do
 	cs <- newCString $ eventName e
 	cb <- castFunPtr <$> g_callback @e @a h
 	asPointer x $ c_g_signal_connect pw cs cb
---	alloca \p -> do
---		poke p x
---		c_g_signal_connect pw cs cb p
 
 {-
-gSignalConnect :: Storable a => GtkWidget -> String -> (Handler e a) -> a -> IO ()
+gSignalConnect :: Storable a => GtkWidget -> String -> (CHandler e a) -> a -> IO ()
 gSignalConnect (GtkWidget pw) en h x = do
 	cs <- newCString en
 	cb <- g_callback h
