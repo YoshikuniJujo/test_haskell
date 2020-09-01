@@ -125,7 +125,13 @@ todo
 			* [x] ButtonReleaseEvent
 	+ [ ] handle Time Event
 		- [ ] Delta Time Event
+			* [x] handleDeltaTimeTChan
+			* [ ] others
 		- [ ] Sleep
+			* [ ] handleSleepTChan
+			* [ ] others
+		- [ ] make trial
+	+ [ ] arrange
 	+ [ ] others
 * [ ] about window
 	+ [ ] make window
