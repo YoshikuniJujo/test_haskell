@@ -115,12 +115,14 @@ todo
 	+ [x] consider to use TChan in Handle.TChan
 	+ [x] handle Delete Event
 	+ [ ] handle Mouse Event
-		- [ ] MoveEvent
+		- [x] MotionNotifyEvent
 			- [x] make MotionNotifyEvent
-			- [ ] add gtk_widget_set_events
-			- [ ] others
-		- [ ] others
+			- [x] add gtk_widget_set_events
+		- [ ] ButtonPressEvent
+		- [ ] ButtonReleaseEvent
 	+ [ ] handle Time Event
+		- [ ] Delta Time Event
+		- [ ] Sleep
 	+ [ ] others
 * [ ] about window
 	+ [ ] make window

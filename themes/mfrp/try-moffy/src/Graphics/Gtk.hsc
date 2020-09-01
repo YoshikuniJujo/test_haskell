@@ -8,9 +8,11 @@
 
 module Graphics.Gtk (
 	-- * Basic
-	GtkWidget, gtkInit,
+	GtkWidget, gtkInit, gtkMain, gtkMainQuit,
+	gtkWidgetSetEvents, gtkWidgetShowAll,
 	gtkWindowNew, gtkWindowToplevel, gtkWindowPopup,
-	gtkWidgetShowAll, gtkMain, gtkMainQuit,
+	-- * Gdk Event Mask
+	gdkPointerMotionMask,
 	-- * Event General
 	Event, Handler, AsPointer, gSignalConnect,
 	-- * Each Event
@@ -23,7 +25,7 @@ module Graphics.Gtk (
 	-- ** ButtonEvent
 	ButtonEvent(..),
 	-- ** MotionNotifyEvent
-	MotionNotifyEvent(..)
+	MotionNotifyEvent(..), GdkEventMotion, gdkEventMotionX, gdkEventMotionY
 	) where
 
 #include <gtk/gtk.h>
@@ -153,6 +155,14 @@ instance Event MotionNotifyEvent where
 	handlerToCHandler = handlerToCHandlerMotion
 	g_callback = g_callback_motion
 
+gdkEventMotionX, gdkEventMotionY :: GdkEventMotion -> IO #type gdouble
+gdkEventMotionX (GdkEventMotion p) = c_GdkEventMotion_x p
+gdkEventMotionY (GdkEventMotion p) = c_GdkEventMotion_y p
+
+c_GdkEventMotion_x, c_GdkEventMotion_y :: Ptr GdkEventMotion -> IO #type gdouble
+c_GdkEventMotion_x = #peek GdkEventMotion, x
+c_GdkEventMotion_y = #peek GdkEventMotion, y
+
 handlerToCHandlerMotion :: AsPointer a => Handler MotionNotifyEvent a -> CHandler MotionNotifyEvent a
 handlerToCHandlerMotion h w e px = do
 	x <- asValue px
@@ -209,3 +219,9 @@ gtkWidgetShowAll (GtkWidget pw) = c_gtk_widget_show_all pw
 
 gtkMain :: IO ()
 gtkMain = c_gtk_main
+
+foreign import ccall "gtk_widget_set_events" c_gtk_widget_set_events :: Ptr GtkWidget -> #{type gint} -> IO ()
+
+gtkWidgetSetEvents :: GtkWidget -> [GdkEventMask] -> IO ()
+gtkWidgetSetEvents (GtkWidget w) ms = c_gtk_widget_set_events w ms'
+	where GdkEventMask ms' = unifyGdkEventMask ms

@@ -3,6 +3,8 @@
 
 module Control.Moffy.Handle.GtkField where
 
+import Prelude hiding (repeat, break)
+
 import Control.Monad
 import Control.Moffy
 import Control.Moffy.Run
@@ -29,14 +31,22 @@ tryUseTChan = do
 	void . forkIO $ do
 		[] <- gtkInit []
 		w <- gtkWindowNew gtkWindowToplevel
+		gtkWidgetSetEvents w [gdkPointerMotionMask]
 		gtkWidgetShowAll w
 		gSignalConnect w DeleteEvent (\a b c' -> True <$ (print (a, b, c') >>
 			atomically (writeTChan c . Oom.expand $ Singleton OccDeleteEvent))) ()
-		gSignalConnect w MotionNotifyEvent (\a b c' -> False <$ (print (a, b, c') >>
-			atomically (writeTChan c . Oom.expand $ Singleton (OccMouseMove (0, 0))))) ()
+		gSignalConnect w MotionNotifyEvent (\a b c' -> False <$ (print (a, b, c') >> do
+			e <- gdkEventMotionToOccMouseMove b
+			atomically (writeTChan c $ Oom.expand e))) ()
 		gSignalConnect w Destroy gtkMainQuit ()
 		gtkMain
 	pure c
+
+gdkEventMotionToOccMouseMove :: GdkEventMotion -> IO (EvOccs (Singleton MouseMove))
+gdkEventMotionToOccMouseMove e = do
+	x <- round <$> gdkEventMotionX e
+	y <- round <$> gdkEventMotionY e
+	pure $ Singleton $ OccMouseMove (x, y)
 
 runUseTChan :: IO ()
 runUseTChan = do
@@ -50,5 +60,5 @@ handleDelete c _rqs = atomically $ readTChan c
 runHandleDelete :: IO ()
 runHandleDelete = do
 	c <- tryUseTChan
-	interpretReact (handleDelete c) $ deleteEvent `first` mouseMove
+	interpret (handleDelete c) print $ repeat mouseMove `break` deleteEvent
 	gtkMainQuit
