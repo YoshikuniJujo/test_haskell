@@ -116,10 +116,13 @@ todo
 	+ [x] handle Delete Event
 	+ [ ] handle Mouse Event
 		- [x] MotionNotifyEvent
-			- [x] make MotionNotifyEvent
-			- [x] add gtk_widget_set_events
-		- [ ] ButtonPressEvent
-		- [ ] ButtonReleaseEvent
+			* [x] make MotionNotifyEvent
+			* [x] add gtk_widget_set_events
+		- [ ] ButtonPressEvent and ButtoReleaseEvent
+			* [x] extract button
+			* [x] extract x and y
+			* [x] ButtonPressEvent
+			* [ ] ButtonReleaseEvent
 	+ [ ] handle Time Event
 		- [ ] Delta Time Event
 		- [ ] Sleep

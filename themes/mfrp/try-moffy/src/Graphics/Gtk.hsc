@@ -23,7 +23,7 @@ module Graphics.Gtk (
 	-- ** KeyEvent
 	KeyEvent(..), GdkEventKey, keyval, hardwareKeycode,
 	-- ** ButtonEvent
-	ButtonEvent(..),
+	ButtonEvent(..), GdkEventButton, gdkEventButtonButton, gdkEventButtonX, gdkEventButtonY,
 	-- ** MotionNotifyEvent
 	MotionNotifyEvent(..), GdkEventMotion, gdkEventMotionX, gdkEventMotionY
 	) where
@@ -140,6 +140,20 @@ instance Event ButtonEvent where
 	eventName ButtonReleaseEvent = "button-release-event"
 	handlerToCHandler = handlerToCHandlerButton
 	g_callback = g_callback_button
+
+gdkEventButtonButton :: GdkEventButton -> IO #type guint
+gdkEventButtonButton (GdkEventButton e) = c_GdkEventButton_button e
+
+c_GdkEventButton_button :: Ptr GdkEventButton -> IO #type guint
+c_GdkEventButton_button = #peek GdkEventButton, button
+
+gdkEventButtonX, gdkEventButtonY :: GdkEventButton -> IO #type gdouble
+gdkEventButtonX (GdkEventButton e) = c_GdkEventButton_x e
+gdkEventButtonY (GdkEventButton e) = c_GdkEventButton_y e
+
+c_GdkEventButton_x, c_GdkEventButton_y :: Ptr GdkEventButton -> IO #type gdouble
+c_GdkEventButton_x = #peek GdkEventButton, x
+c_GdkEventButton_y = #peek GdkEventButton, y
 
 handlerToCHandlerButton :: AsPointer a => Handler ButtonEvent a -> CHandler ButtonEvent a
 handlerToCHandlerButton h w e px = do
