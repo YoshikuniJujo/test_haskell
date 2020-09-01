@@ -13,10 +13,16 @@ import Control.Moffy.Event.Delete as M
 import Control.Moffy.Event.Mouse
 import Control.Moffy.Handle
 import Control.Concurrent
-import Control.Concurrent.STM
+import Control.Concurrent.STM hiding (retry)
 import Data.Type.Set
 import Data.OneOrMore as Oom
+import Data.Time
+import System.Timeout
 import Graphics.Gtk as Gtk
+
+import Control.Moffy.Event.Time
+import Control.Moffy.Handle.Time
+import Data.Time.Clock.TAI
 
 tryGtk :: IO ()
 tryGtk = do
@@ -83,11 +89,15 @@ runUseTChan = do
 	atomically (readTChan c)
 	gtkMainQuit
 
-handleDelete :: TChan (EvOccs (M.DeleteEvent :- MouseEv)) -> Handle IO (M.DeleteEvent :- MouseEv)
-handleDelete c _rqs = atomically $ readTChan c
+handleDelete :: DiffTime -> TChan (EvOccs (M.DeleteEvent :- MouseEv)) -> Handle' IO (M.DeleteEvent :- MouseEv)
+handleDelete t c _rqs = timeout (round $ t * 1000000) . atomically $ readTChan c
 
 runHandleDelete :: IO ()
 runHandleDelete = do
 	c <- tryUseTChan
-	interpret (handleDelete c) print $ repeat (mouseMove `first` mouseDown `first` mouseUp)  `break` deleteEvent
+	interpret (retry $ handleDelete 0.1 c) print $ repeat (mouseMove `first` mouseDown `first` mouseUp)  `break` deleteEvent
 	gtkMainQuit
+
+handleBoxesFoo :: DiffTime -> TChan (EvOccs (M.DeleteEvent :- MouseEv)) -> HandleSt (Mode, AbsoluteTime) IO (TimeEv :+: M.DeleteEvent :- MouseEv)
+handleBoxesFoo = ((retrySt .) .) . curry . popInput . handleTimeEvPlus
+	. pushInput . uncurry $ (liftHandle' .) . handleDelete

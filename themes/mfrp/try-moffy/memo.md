@@ -123,6 +123,10 @@ todo
 			* [x] extract x and y
 			* [x] ButtonPressEvent
 			* [x] ButtonReleaseEvent
+	+ [ ] handle Key Event
+		- [ ] KeyPressEvent and KeyReleaseEvent
+			* [ ] KeyPressEvent
+			* [ ] KeyReleaseEvent
 	+ [ ] handle Time Event
 		- [ ] Delta Time Event
 			* [x] handleDeltaTimeTChan
