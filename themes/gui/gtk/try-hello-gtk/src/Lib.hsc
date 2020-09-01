@@ -9,7 +9,9 @@
 
 module Lib (
 	-- * Basic
-	GtkWidget, gtkInit, gtkWindowNew, gtkWidgetShowAll, gtkMain, gtkMainQuit,
+	GtkWidget, gtkInit,
+	gtkWindowNew, gtkWindowToplevel, gtkWindowPopup,
+	gtkWidgetShowAll, gtkMain, gtkMainQuit,
 	-- * Event General
 	Event, Handler, AsPointer, gSignalConnect,
 	-- * Each Event
