@@ -21,7 +21,9 @@ module Graphics.Gtk (
 	-- ** KeyEvent
 	KeyEvent(..), GdkEventKey, keyval, hardwareKeycode,
 	-- ** ButtonEvent
-	ButtonEvent(..)
+	ButtonEvent(..),
+	-- ** MotionNotifyEvent
+	MotionNotifyEvent(..)
 	) where
 
 #include <gtk/gtk.h>
@@ -142,6 +144,20 @@ handlerToCHandlerButton h w e px = do
 	x <- asValue px
 	boolToGBoolean <$> h w e x
 
+data MotionNotifyEvent = MotionNotifyEvent deriving Show
+newtype GdkEventMotion = GdkEventMotion (Ptr GdkEventMotion) deriving Show
+instance Event MotionNotifyEvent where
+	type Handler MotionNotifyEvent a = GtkWidget -> GdkEventMotion -> a -> IO Bool
+	type CHandler MotionNotifyEvent a = GtkWidget -> GdkEventMotion -> Ptr a -> IO #type gboolean
+	eventName MotionNotifyEvent = "motion-notify-event"
+	handlerToCHandler = handlerToCHandlerMotion
+	g_callback = g_callback_motion
+
+handlerToCHandlerMotion :: AsPointer a => Handler MotionNotifyEvent a -> CHandler MotionNotifyEvent a
+handlerToCHandlerMotion h w e px = do
+	x <- asValue px
+	boolToGBoolean <$> h w e x
+
 foreign import capi "gtk/gtk.h g_signal_connect" c_g_signal_connect ::
 	Ptr GtkWidget -> CString -> FunPtr () -> Ptr a -> IO ()
 
@@ -152,6 +168,7 @@ foreign import ccall "wrapper" g_callback_key ::
 foreign import ccall "wrapper" g_callback_button ::
 	(GtkWidget -> GdkEventButton -> Ptr a -> IO #{type gboolean}) -> IO (FunPtr (GtkWidget -> GdkEventButton -> Ptr a -> IO #{type gboolean}))
 foreign import ccall "wrapper" g_callback_delete :: CHandler DeleteEvent a -> IO (FunPtr (CHandler DeleteEvent a))
+foreign import ccall "wrapper" g_callback_motion :: CHandler MotionNotifyEvent a -> IO (FunPtr (CHandler MotionNotifyEvent a))
 
 -- foreign import ccall "hello_main" c_hello_main :: IO ()
 

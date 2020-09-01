@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Handle.GtkField where
@@ -6,11 +7,12 @@ import Control.Monad
 import Control.Moffy
 import Control.Moffy.Run
 import Control.Moffy.Event.Delete as M
+import Control.Moffy.Event.Mouse
 import Control.Moffy.Handle
 import Control.Concurrent
 import Control.Concurrent.STM
 import Data.Type.Set
-import Data.OneOrMore
+import Data.OneOrMore as Oom
 import Graphics.Gtk as Gtk
 
 tryGtk :: IO ()
@@ -21,7 +23,7 @@ tryGtk = do
 	gSignalConnect w Destroy gtkMainQuit ()
 	gtkMain
 
-tryUseTChan :: IO (TChan (EvOccs (Singleton M.DeleteEvent)))
+tryUseTChan :: IO (TChan (EvOccs (M.DeleteEvent :- MouseMove :- 'Nil)))
 tryUseTChan = do
 	c <- newTChanIO
 	void . forkIO $ do
@@ -29,7 +31,9 @@ tryUseTChan = do
 		w <- gtkWindowNew gtkWindowToplevel
 		gtkWidgetShowAll w
 		gSignalConnect w DeleteEvent (\a b c' -> True <$ (print (a, b, c') >>
-			atomically (writeTChan c $ Singleton OccDeleteEvent))) ()
+			atomically (writeTChan c . Oom.expand $ Singleton OccDeleteEvent))) ()
+		gSignalConnect w MotionNotifyEvent (\a b c' -> False <$ (print (a, b, c') >>
+			atomically (writeTChan c . Oom.expand $ Singleton (OccMouseMove (0, 0))))) ()
 		gSignalConnect w Destroy gtkMainQuit ()
 		gtkMain
 	pure c
@@ -40,11 +44,11 @@ runUseTChan = do
 	atomically (readTChan c)
 	gtkMainQuit
 
-handleDelete :: TChan (EvOccs (Singleton M.DeleteEvent)) -> Handle IO (Singleton M.DeleteEvent)
+handleDelete :: TChan (EvOccs (M.DeleteEvent :- MouseMove :- 'Nil)) -> Handle IO (M.DeleteEvent :- MouseMove :- 'Nil)
 handleDelete c _rqs = atomically $ readTChan c
 
 runHandleDelete :: IO ()
 runHandleDelete = do
 	c <- tryUseTChan
-	interpretReact (handleDelete c) deleteEvent
+	interpretReact (handleDelete c) $ deleteEvent `first` mouseMove
 	gtkMainQuit
