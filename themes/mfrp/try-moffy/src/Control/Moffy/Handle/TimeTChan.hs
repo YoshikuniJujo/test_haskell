@@ -17,7 +17,7 @@ import Data.Time.Clock.System
 handleDeltaTimeTChan :: DiffTime -> IO (TChan (EvOccs (Singleton DeltaTime)))
 handleDeltaTimeTChan t = do
 	c <- newTChanIO
-	c <$ ((handleDeltaTimeTChanSt t c `evalStateT`) =<< systemToTAITime <$> getSystemTime)
+	c <$ (forkIO $ (handleDeltaTimeTChanSt t c `evalStateT`) =<< systemToTAITime <$> getSystemTime)
 
 handleDeltaTimeTChanSt :: DiffTime -> TChan (EvOccs (Singleton DeltaTime)) -> StateT AbsoluteTime IO ()
 handleDeltaTimeTChanSt t c = forever do
