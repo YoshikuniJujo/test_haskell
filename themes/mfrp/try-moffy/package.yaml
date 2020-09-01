@@ -43,6 +43,7 @@ dependencies:
 
 library:
   source-dirs: src
+  pkg-config-dependencies: gtk+-3.0
 
 executables:
   try-moffy-exe:

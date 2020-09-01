@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 197641ff43906949d1fb2956fb98c6689ac6d319f0b1ad5a2cef3cd4a8c259d8
+-- hash: da88a8c554670e96e0667a1130eef4fe8e03f1ffb0a126ace8c7287dcddf21ef
 
 name:           try-moffy
 version:        0.1.0.0
@@ -62,6 +62,8 @@ library
       Data.OneOrMore
       Data.Type.Set
       Data.Type.Set.Internal
+      Graphics.Gtk
+      Graphics.Gtk.Values
       Trial.Boxes
       Trial.Boxes.Box
       Trial.Boxes.BoxEv
@@ -86,6 +88,8 @@ library
       Paths_try_moffy
   hs-source-dirs:
       src
+  pkgconfig-depends:
+      gtk+-3.0
   build-depends:
       JuicyPixels
     , JuicyPixels-extra
