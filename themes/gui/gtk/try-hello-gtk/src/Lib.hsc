@@ -15,6 +15,8 @@ module Lib (
 	-- * Each Event
 	-- ** Destroy
 	Destroy(..),
+	-- ** DeleteEvent
+	DeleteEvent(..),
 	-- ** KeyEvent
 	KeyEvent(..), GdkEventKey, keyval, hardwareKeycode,
 	-- ** ButtonEvent
@@ -83,6 +85,20 @@ instance Event Destroy where
 	eventName Destroy = "destroy"
 	g_callback = g_callback0
 
+data DeleteEvent = DeleteEvent deriving Show
+newtype GdkEventDelete = GdkEventDelete (Ptr GdkEventDelete) deriving Show
+instance Event DeleteEvent where
+	type Handler DeleteEvent a = GtkWidget -> GdkEventDelete -> a -> IO Bool
+	type CHandler DeleteEvent a = GtkWidget -> GdkEventDelete -> Ptr a -> IO #type gboolean
+	eventName DeleteEvent = "delete-event"
+	handlerToCHandler = handlerToCHandlerDelete
+	g_callback = g_callback_delete
+
+handlerToCHandlerDelete :: AsPointer a => Handler DeleteEvent a -> CHandler DeleteEvent a
+handlerToCHandlerDelete h w e px = do
+	x <- asValue px
+	boolToGBoolean <$> h w e x
+
 data KeyEvent = KeyPressEvent | KeyReleaseEvent deriving Show
 instance Event KeyEvent where
 	type Handler KeyEvent a = GtkWidget -> GdkEventKey -> a -> IO Bool
@@ -134,6 +150,7 @@ foreign import ccall "wrapper" g_callback_key ::
 	(GtkWidget -> GdkEventKey -> Ptr a -> IO #{type gboolean}) -> IO (FunPtr (GtkWidget -> GdkEventKey -> Ptr a -> IO #{type gboolean}))
 foreign import ccall "wrapper" g_callback_button ::
 	(GtkWidget -> GdkEventButton -> Ptr a -> IO #{type gboolean}) -> IO (FunPtr (GtkWidget -> GdkEventButton -> Ptr a -> IO #{type gboolean}))
+foreign import ccall "wrapper" g_callback_delete :: CHandler DeleteEvent a -> IO (FunPtr (CHandler DeleteEvent a))
 
 -- foreign import ccall "hello_main" c_hello_main :: IO ()
 

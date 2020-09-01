@@ -14,6 +14,7 @@ main = do
 	print as'
 	win <- gtkWindowNew gtkWindowToplevel
 	gtkWidgetShowAll win
+	gSignalConnect win DeleteEvent (\a b c -> False <$ print (a, b, c)) ()
 	gSignalConnect win Destroy gtkMainQuit ()
 	gSignalConnect win KeyPressEvent printKeyPressEvent ()
 	gSignalConnect win KeyReleaseEvent (\a b c -> False <$ print (a, b, c)) ()
