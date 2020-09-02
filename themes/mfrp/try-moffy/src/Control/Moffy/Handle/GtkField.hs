@@ -60,13 +60,6 @@ tryUseTChan = allocaMutable \m -> do
 		[] <- gtkInit []
 		w <- gtkWindowNew gtkWindowToplevel
 
-		forkIO . forever $ do
-			v <- atomically $ readTChan c'
-			print v
-			freeArr =<< peekMutable m
-			pokeMutable m =<< newArr v
-			gtkWidgetQueueDraw w
-
 --		gtkWidgetSetEvents w [gdkPointerMotionMask]
 		gtkWidgetSetEvents w [gdkButtonMotionMask]
 		gSignalConnect w DeleteEvent (\a b c' -> True <$ (print' (a, b, c') >>
@@ -84,7 +77,7 @@ tryUseTChan = allocaMutable \m -> do
 		gSignalConnect w ButtonReleaseEvent (\a b c' -> True <$ (print' (a, b, c') >> do
 			e <- gdkEventButtonToOccMouseUp b
 			atomically (writeTChan c $ Oom.expand e))) ()
-		gSignalConnect w MotionNotifyEvent (\a b c' -> False <$ (print' (a, b, c') >> do
+		gSignalConnect w MotionNotifyEvent (\a b c' -> True <$ (print' (a, b, c') >> do
 			e <- gdkEventMotionToOccMouseMove b
 			atomically (writeTChan c $ Oom.expand e))) ()
 		gSignalConnect w Destroy gtkMainQuit ()
@@ -94,12 +87,21 @@ tryUseTChan = allocaMutable \m -> do
 --		gSignalConnect da DrawEvent (\a b c' -> False <$ print (a, b, c')) ()
 		gSignalConnect da DrawEvent tryDraw m
 
+		forkIO . forever $ do
+			v <- atomically $ readTChan c'
+			print v
+			old <- peekMutable m
+--			freeArr =<< peekMutable m
+			pokeMutable m =<< newArr v
+			freeArr old
+			gtkWidgetQueueDraw da
+
 		gtkWidgetShowAll w
 		gtkMain
 	pure (c, c')
 
 tryDraw :: (Storable a, Drawable a) => GtkWidget -> CairoT -> Mutable (Arr a) -> IO Bool
-tryDraw w cr x = False <$ do
+tryDraw w cr x = True <$ do
 	print (w, cr, x)
 --	print =<< peekMutable x
 	cairoMoveTo cr 100 100
