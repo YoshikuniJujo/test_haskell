@@ -4,6 +4,8 @@
 void draw_callback(GtkWidget *, cairo_t *);
 static gint configure_callback(GtkWidget *, GdkEventConfigure *, GdkPixbuf **);
 
+gboolean button_press_event(GtkWidget *, GdkEventButton *, int *);
+
 gboolean
 foo (gpointer user_data)
 {
@@ -17,12 +19,16 @@ main(int argc, char *argv[])
 	GdkPixbuf *pb;
 //	GdkPixmap *pm;
 
+	int x = 0;
+
 	gtk_init(&argc, &argv);
 
 	g_timeout_add(10000, (GSourceFunc) foo, NULL);
 
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+	g_signal_connect(window, "button-press-event", G_CALLBACK(button_press_event), &x);
+	g_signal_connect(window, "button-press-event", G_CALLBACK(button_press_event), &x);
 
 	da = gtk_drawing_area_new();
 	gtk_container_add(GTK_CONTAINER(window), da);
@@ -59,4 +65,20 @@ configure_callback(GtkWidget *widget, GdkEventConfigure *event, GdkPixbuf **pb)
 	printf("width: %d\n", event->width);
 	printf("height: %d\n", event->height);
 	*pb = gdk_pixbuf_new(GDK_COLORSPACE_RGB, FALSE, 8, event->width, event->height);
+}
+
+gboolean
+button_press_event(GtkWidget *w, GdkEventButton *e, int *x)
+{
+	printf("hello\n");
+	printf("widget: %p\n", w);
+	printf("event: %p\n", e);
+	printf("type: %d\n", e -> type);
+	printf("send_event: %d\n", e -> send_event);
+	printf("time: %d\n", e -> time);
+	printf("state: %d, button: %d\n", e -> state, e -> button);
+	printf("x: %d\n", *x);
+	(*x)++;
+	return FALSE;
+//	return TRUE;
 }
