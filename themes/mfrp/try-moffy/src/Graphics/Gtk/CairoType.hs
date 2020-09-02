@@ -1,0 +1,7 @@
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module Graphics.Gtk.CairoType where
+
+import Foreign.Ptr
+
+newtype CairoT = CairoT (Ptr CairoT) deriving Show

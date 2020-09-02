@@ -10,7 +10,11 @@ module Graphics.Gtk (
 	-- * Basic
 	GtkWidget, gtkInit, gtkMain, gtkMainQuit,
 	gtkWidgetSetEvents, gtkWidgetShowAll,
+	-- * Widget
 	gtkWindowNew, gtkWindowToplevel, gtkWindowPopup,
+	gtkDrawingAreaNew,
+	-- * Container
+	castWidgetToContainer, gtkContainerAdd,
 	-- * Gdk Event Mask
 	gdkPointerMotionMask,
 	-- * Event General
@@ -25,7 +29,9 @@ module Graphics.Gtk (
 	-- ** ButtonEvent
 	ButtonEvent(..), GdkEventButton, gdkEventButtonButton, gdkEventButtonX, gdkEventButtonY,
 	-- ** MotionNotifyEvent
-	MotionNotifyEvent(..), GdkEventMotion, gdkEventMotionX, gdkEventMotionY
+	MotionNotifyEvent(..), GdkEventMotion, gdkEventMotionX, gdkEventMotionY,
+	-- ** DrawEvent
+	DrawEvent(..), CairoT
 	) where
 
 #include <gtk/gtk.h>
@@ -39,9 +45,11 @@ import Foreign.C.String
 import Data.Word
 import Data.Int
 
+import Graphics.Gtk.CairoType
 import Graphics.Gtk.Values
 
 newtype GtkWidget = GtkWidget (Ptr GtkWidget) deriving Show
+newtype GtkContainer = GtkContainer (Ptr GtkContainer) deriving Show
 
 class AsPointer a where
 	asPointer :: a -> (Ptr a -> IO b) -> IO b
@@ -58,10 +66,20 @@ instance Storable a => AsPointer a where
 	asValue p = peek p
 
 foreign import ccall "gtk_init" c_gtk_init :: Ptr CInt -> Ptr (Ptr CString) -> IO ()
-foreign import ccall "gtk_window_new" c_gtk_window_new :: #{type GtkWindowType} -> IO (Ptr GtkWidget)
 foreign import ccall "gtk_widget_show_all" c_gtk_widget_show_all :: Ptr GtkWidget -> IO ()
 foreign import ccall "gtk_main" c_gtk_main :: IO ()
 foreign import ccall "gtk_main_quit" c_gtk_main_quit :: IO ()
+foreign import ccall "gtk_container_add" c_gtk_container_add :: Ptr GtkContainer -> Ptr GtkWidget -> IO ()
+foreign import capi "GTK_CONTAINER" c_GTK_CONTAINER :: Ptr GtkWidget -> Ptr GtkContainer
+
+foreign import ccall "gtk_window_new" c_gtk_window_new :: #{type GtkWindowType} -> IO (Ptr GtkWidget)
+foreign import ccall "gtk_drawing_area_new" c_gtk_drawing_area_new :: IO (Ptr GtkWidget)
+
+castWidgetToContainer :: GtkWidget -> GtkContainer
+castWidgetToContainer (GtkWidget w) = GtkContainer $ c_GTK_CONTAINER w
+
+gtkContainerAdd :: GtkContainer -> GtkWidget -> IO ()
+gtkContainerAdd (GtkContainer c) (GtkWidget w) = c_gtk_container_add c w
 
 gtkMainQuit :: IO ()
 gtkMainQuit = c_gtk_main_quit
@@ -185,6 +203,19 @@ handlerToCHandlerMotion h w e px = do
 foreign import capi "gtk/gtk.h g_signal_connect" c_g_signal_connect ::
 	Ptr GtkWidget -> CString -> FunPtr () -> Ptr a -> IO ()
 
+data DrawEvent = DrawEvent deriving Show
+instance Event DrawEvent where
+	type Handler DrawEvent a = GtkWidget -> CairoT -> a -> IO Bool
+	type CHandler DrawEvent a = GtkWidget -> CairoT -> Ptr a -> IO #type gboolean
+	eventName DrawEvent = "draw"
+	handlerToCHandler = handlerToCHandlerDraw
+	g_callback = g_callback_draw
+
+handlerToCHandlerDraw :: AsPointer a => Handler DrawEvent a -> CHandler DrawEvent a
+handlerToCHandlerDraw h w e px = do
+	x <- asValue px
+	boolToGBoolean <$> h w e x
+
 -- foreign import ccall "wrapper" g_callback :: Handler e a -> IO (FunPtr (Handler e a))
 foreign import ccall "wrapper" g_callback0 :: IO () -> IO (FunPtr (IO ()))
 foreign import ccall "wrapper" g_callback_key ::
@@ -193,6 +224,7 @@ foreign import ccall "wrapper" g_callback_button ::
 	(GtkWidget -> GdkEventButton -> Ptr a -> IO #{type gboolean}) -> IO (FunPtr (GtkWidget -> GdkEventButton -> Ptr a -> IO #{type gboolean}))
 foreign import ccall "wrapper" g_callback_delete :: CHandler DeleteEvent a -> IO (FunPtr (CHandler DeleteEvent a))
 foreign import ccall "wrapper" g_callback_motion :: CHandler MotionNotifyEvent a -> IO (FunPtr (CHandler MotionNotifyEvent a))
+foreign import ccall "wrapper" g_callback_draw :: CHandler DrawEvent a -> IO (FunPtr (CHandler DrawEvent a))
 
 -- foreign import ccall "hello_main" c_hello_main :: IO ()
 
@@ -227,6 +259,9 @@ gtkInit as = allocaArray (length as) \arr -> do
 
 gtkWindowNew :: GtkWindowType -> IO GtkWidget
 gtkWindowNew (GtkWindowType wt) = GtkWidget <$> c_gtk_window_new wt
+
+gtkDrawingAreaNew :: IO GtkWidget
+gtkDrawingAreaNew = GtkWidget <$> c_gtk_drawing_area_new
 
 gtkWidgetShowAll :: GtkWidget -> IO ()
 gtkWidgetShowAll (GtkWidget pw) = c_gtk_widget_show_all pw

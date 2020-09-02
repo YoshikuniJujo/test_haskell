@@ -20,6 +20,7 @@ import Data.OneOrMore as Oom
 import Data.Time
 import System.Timeout
 import Graphics.Gtk as Gtk
+import Graphics.Gtk.Cairo
 
 import Control.Moffy.Event.Time
 import Control.Moffy.Handle.Time
@@ -43,7 +44,6 @@ tryUseTChan = do
 		[] <- gtkInit []
 		w <- gtkWindowNew gtkWindowToplevel
 		gtkWidgetSetEvents w [gdkPointerMotionMask]
-		gtkWidgetShowAll w
 		gSignalConnect w DeleteEvent (\a b c' -> True <$ (print' (a, b, c') >>
 			atomically (writeTChan c . Oom.expand $ Singleton OccDeleteEvent))) ()
 		gSignalConnect w KeyPressEvent (\a b c' -> False <$ (print' (a, b, c') >> do
@@ -62,8 +62,21 @@ tryUseTChan = do
 			e <- gdkEventMotionToOccMouseMove b
 			atomically (writeTChan c $ Oom.expand e))) ()
 		gSignalConnect w Destroy gtkMainQuit ()
+		da <- gtkDrawingAreaNew
+		gtkContainerAdd (castWidgetToContainer w) da
+--		gSignalConnect da DrawEvent (\a b c' -> False <$ print (a, b, c')) ()
+		gSignalConnect da DrawEvent tryDraw ()
+
+		gtkWidgetShowAll w
 		gtkMain
 	pure c
+
+tryDraw :: Show a => GtkWidget -> CairoT -> a -> IO Bool
+tryDraw w cr x = False <$ do
+	print (w, cr, x)
+	cairoMoveTo cr 100 100
+	cairoLineTo cr 500 400
+	cairoStroke cr
 
 gdkEventKeyToOccKeyDown :: GdkEventKey -> IO (EvOccs (Singleton KeyDown))
 gdkEventKeyToOccKeyDown e = do
