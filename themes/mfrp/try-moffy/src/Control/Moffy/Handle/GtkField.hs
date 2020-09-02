@@ -38,13 +38,27 @@ tryGtk = do
 print' :: a -> IO ()
 print' _ = pure ()
 
-tryUseTChan :: IO (TChan (EvOccs (M.DeleteEvent :- KeyEv :+: MouseEv)))
+class Drawable a where draw :: CairoT -> a -> IO ()
+
+instance Drawable Double where
+	draw cr n = do
+		cairoMoveTo cr 200 100
+		cairoLineTo cr (210 + 10 * n) (110 + 10 * n)
+		cairoStroke cr
+
+tryUseTChan :: IO (TChan (EvOccs (M.DeleteEvent :- KeyEv :+: MouseEv)), TChan Double)
 tryUseTChan = allocaMutable \m -> do
-	_ <- pure (m :: Mutable Int)
 	c <- newTChanIO
+	c' <- newTChanIO
 	void . forkIO $ do
 		[] <- gtkInit []
 		w <- gtkWindowNew gtkWindowToplevel
+
+		forkIO $ do
+			v <- atomically $ readTChan c'
+			pokeMutable m v
+			gtkWidgetQueueDraw w
+
 		gtkWidgetSetEvents w [gdkPointerMotionMask]
 		gSignalConnect w DeleteEvent (\a b c' -> True <$ (print' (a, b, c') >>
 			atomically (writeTChan c . Oom.expand $ Singleton OccDeleteEvent))) ()
@@ -73,15 +87,16 @@ tryUseTChan = allocaMutable \m -> do
 
 		gtkWidgetShowAll w
 		gtkMain
-	pure c
+	pure (c, c')
 
-tryDraw :: (Show a, Storable a) => GtkWidget -> CairoT -> Mutable a -> IO Bool
+tryDraw :: (Show a, Storable a, Drawable a) => GtkWidget -> CairoT -> Mutable a -> IO Bool
 tryDraw w cr x = False <$ do
 	print (w, cr, x)
 	print =<< peekMutable x
 	cairoMoveTo cr 100 100
 	cairoLineTo cr 500 400
 	cairoStroke cr
+	draw cr =<< peekMutable x
 
 gdkEventKeyToOccKeyDown :: GdkEventKey -> IO (EvOccs (Singleton KeyDown))
 gdkEventKeyToOccKeyDown e = do
@@ -123,7 +138,7 @@ gdkEventButtonToOccMouseUp e = do
 
 runUseTChan :: IO ()
 runUseTChan = do
-	c <- tryUseTChan
+	(c, c') <- tryUseTChan
 	atomically (readTChan c)
 	gtkMainQuit
 
@@ -132,7 +147,7 @@ handleDelete t c _rqs = timeout (round $ t * 1000000) . atomically $ readTChan c
 
 runHandleDelete :: IO ()
 runHandleDelete = do
-	c <- tryUseTChan
+	(c, c') <- tryUseTChan
 	interpret (retry $ handleDelete 0.1 c) print
 		$ repeat (keyDown `first` keyUp `first` mouseMove `first` mouseDown `first` mouseUp)  `break` deleteEvent
 	gtkMainQuit

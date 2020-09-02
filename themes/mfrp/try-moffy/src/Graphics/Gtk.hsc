@@ -10,6 +10,7 @@ module Graphics.Gtk (
 	-- * Basic
 	GtkWidget, gtkInit, gtkMain, gtkMainQuit,
 	gtkWidgetSetEvents, gtkWidgetShowAll,
+	gtkWidgetQueueDraw,
 	-- * Widget
 	gtkWindowNew, gtkWindowToplevel, gtkWindowPopup,
 	gtkDrawingAreaNew,
@@ -91,6 +92,11 @@ foreign import capi "GTK_CONTAINER" c_GTK_CONTAINER :: Ptr GtkWidget -> Ptr GtkC
 
 foreign import ccall "gtk_window_new" c_gtk_window_new :: #{type GtkWindowType} -> IO (Ptr GtkWidget)
 foreign import ccall "gtk_drawing_area_new" c_gtk_drawing_area_new :: IO (Ptr GtkWidget)
+
+foreign import ccall "gtk_widget_queue_draw" c_gtk_widget_queue_draw :: Ptr GtkWidget -> IO ()
+
+gtkWidgetQueueDraw :: GtkWidget -> IO ()
+gtkWidgetQueueDraw (GtkWidget w) = c_gtk_widget_queue_draw w
 
 castWidgetToContainer :: GtkWidget -> GtkContainer
 castWidgetToContainer (GtkWidget w) = GtkContainer $ c_GTK_CONTAINER w

@@ -20,7 +20,7 @@ import Trial.Boxes
 
 runBoxes :: SigB s [Box] r -> IO r
 runBoxes s = do
-	c <- tryUseTChan
+	(c, c') <- tryUseTChan
 	(r, _) <- interpretSt (handleBoxesFoo 0.1 c) print s . (InitialMode ,) . systemToTAITime =<< getSystemTime
 	r <$ gtkMainQuit
 
