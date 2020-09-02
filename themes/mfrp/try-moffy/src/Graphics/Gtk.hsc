@@ -98,6 +98,9 @@ foreign import ccall "gtk_drawing_area_new" c_gtk_drawing_area_new :: IO (Ptr Gt
 
 foreign import ccall "gtk_widget_queue_draw" c_gtk_widget_queue_draw :: Ptr GtkWidget -> IO ()
 
+foreign import ccall "g_timeout_add" c_g_timeout_add ::
+	#{type guint} -> FunPtr (Ptr () -> IO #{type gboolean}) -> Ptr () -> IO #type guint
+
 gtkWidgetQueueDraw :: GtkWidget -> IO ()
 gtkWidgetQueueDraw (GtkWidget w) = c_gtk_widget_queue_draw w
 
