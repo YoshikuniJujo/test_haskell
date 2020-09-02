@@ -78,9 +78,10 @@ tryUseTChan = do
 		gSignalConnect w ButtonReleaseEvent (\a b c' -> True <$ (print' (a, b, c') >> do
 			e <- gdkEventButtonToOccMouseUp b
 			atomically (writeTChan c $ Oom.expand e))) ()
-		gSignalConnect w MotionNotifyEvent (\a b c' -> True <$ (print' (a, b, c') >> do
+		gSignalConnect w MotionNotifyEvent (\a b c' -> True <$ do
+			print' (a, b, c')
 			e <- gdkEventMotionToOccMouseMove b
-			atomically (writeTChan c $ Oom.expand e))) ()
+			atomically (writeTChan c $ Oom.expand e)) ()
 		gSignalConnect w Destroy gtkMainQuit ()
 
 		da <- gtkDrawingAreaNew
@@ -95,7 +96,10 @@ tryUseTChan = do
 --			freeArr =<< peekMutable m
 			pokeMutable m =<< newArr v
 			freeArr old
+			print =<< peekMutable m
+			print =<< peekArr =<< peekMutable m
 			gtkWidgetQueueDraw da
+			print =<< peekArr =<< peekMutable m
 
 		gtkWidgetShowAll w
 		gtkMain
