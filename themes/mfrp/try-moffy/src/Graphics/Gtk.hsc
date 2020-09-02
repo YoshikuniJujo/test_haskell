@@ -31,7 +31,9 @@ module Graphics.Gtk (
 	-- ** MotionNotifyEvent
 	MotionNotifyEvent(..), GdkEventMotion, gdkEventMotionX, gdkEventMotionY,
 	-- ** DrawEvent
-	DrawEvent(..), CairoT
+	DrawEvent(..), CairoT,
+	-- * Mutable
+	Mutable, allocaMutable, peekMutable, pokeMutable
 	) where
 
 #include <gtk/gtk.h>
@@ -59,11 +61,26 @@ instance AsPointer GtkWidget where
 	asPointer (GtkWidget p) f = f p
 	asValue = pure . GtkWidget
 
-instance Storable a => AsPointer a where
+instance {-# OVERLAPPABLE #-} Storable a => AsPointer a where
 	asPointer x f = alloca \p -> do
 		poke p x
 		f p
 	asValue p = peek p
+
+newtype Mutable a = Mutable (Ptr a) deriving Show
+
+allocaMutable :: Storable a => (Mutable a -> IO b) -> IO b
+allocaMutable f = alloca $ f . Mutable
+
+peekMutable :: Storable a => Mutable a -> IO a
+peekMutable (Mutable p) = peek p
+
+pokeMutable :: Storable a => Mutable a -> a -> IO ()
+pokeMutable (Mutable p) = poke p
+
+instance AsPointer (Mutable a) where
+	asPointer (Mutable p) f = f $ castPtr p
+	asValue = pure . Mutable . castPtr
 
 foreign import ccall "gtk_init" c_gtk_init :: Ptr CInt -> Ptr (Ptr CString) -> IO ()
 foreign import ccall "gtk_widget_show_all" c_gtk_widget_show_all :: Ptr GtkWidget -> IO ()
@@ -233,16 +250,6 @@ gSignalConnect (GtkWidget pw) e (handlerToCHandler @e @a -> h) x = do
 	cs <- newCString $ eventName e
 	cb <- castFunPtr <$> g_callback @e @a h
 	asPointer x $ c_g_signal_connect pw cs cb
-
-{-
-gSignalConnect :: Storable a => GtkWidget -> String -> (CHandler e a) -> a -> IO ()
-gSignalConnect (GtkWidget pw) en h x = do
-	cs <- newCString en
-	cb <- g_callback h
-	alloca \p -> do
-		poke p x
-		c_g_signal_connect pw cs cb p
-		-}
 
 gtkInit :: [String] -> IO [String]
 gtkInit as = allocaArray (length as) \arr -> do

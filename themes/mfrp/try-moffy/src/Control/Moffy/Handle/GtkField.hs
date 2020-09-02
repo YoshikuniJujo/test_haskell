@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -25,6 +25,7 @@ import Graphics.Gtk.Cairo
 import Control.Moffy.Event.Time
 import Control.Moffy.Handle.Time
 import Data.Time.Clock.TAI
+import Foreign.Storable
 
 tryGtk :: IO ()
 tryGtk = do
@@ -38,7 +39,8 @@ print' :: a -> IO ()
 print' _ = pure ()
 
 tryUseTChan :: IO (TChan (EvOccs (M.DeleteEvent :- KeyEv :+: MouseEv)))
-tryUseTChan = do
+tryUseTChan = allocaMutable \m -> do
+	_ <- pure (m :: Mutable Int)
 	c <- newTChanIO
 	void . forkIO $ do
 		[] <- gtkInit []
@@ -52,28 +54,31 @@ tryUseTChan = do
 		gSignalConnect w KeyReleaseEvent (\a b c' -> False <$ (print' (a, b, c') >> do
 			e <- gdkEventKeyToOccKeyUp b
 			atomically (writeTChan c $ Oom.expand e))) ()
-		gSignalConnect w ButtonPressEvent (\a b c' -> False <$ (print' (a, b, c') >> do
+		gSignalConnect w ButtonPressEvent (\a b c' -> True <$ (print' (a, b, c') >> do
+			pokeMutable m . (+ 1) =<< peekMutable m
 			e <- gdkEventButtonToOccMouseDown b
 			atomically (writeTChan c $ Oom.expand e))) ()
-		gSignalConnect w ButtonReleaseEvent (\a b c' -> False <$ (print' (a, b, c') >> do
+		gSignalConnect w ButtonReleaseEvent (\a b c' -> True <$ (print' (a, b, c') >> do
 			e <- gdkEventButtonToOccMouseUp b
 			atomically (writeTChan c $ Oom.expand e))) ()
 		gSignalConnect w MotionNotifyEvent (\a b c' -> False <$ (print' (a, b, c') >> do
 			e <- gdkEventMotionToOccMouseMove b
 			atomically (writeTChan c $ Oom.expand e))) ()
 		gSignalConnect w Destroy gtkMainQuit ()
+
 		da <- gtkDrawingAreaNew
 		gtkContainerAdd (castWidgetToContainer w) da
 --		gSignalConnect da DrawEvent (\a b c' -> False <$ print (a, b, c')) ()
-		gSignalConnect da DrawEvent tryDraw ()
+		gSignalConnect da DrawEvent tryDraw m
 
 		gtkWidgetShowAll w
 		gtkMain
 	pure c
 
-tryDraw :: Show a => GtkWidget -> CairoT -> a -> IO Bool
+tryDraw :: (Show a, Storable a) => GtkWidget -> CairoT -> Mutable a -> IO Bool
 tryDraw w cr x = False <$ do
 	print (w, cr, x)
+	print =<< peekMutable x
 	cairoMoveTo cr 100 100
 	cairoLineTo cr 500 400
 	cairoStroke cr
