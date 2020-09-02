@@ -10,6 +10,7 @@ import Control.Moffy.Event.Delete
 import Control.Moffy.Handle.GtkField
 import Control.Moffy.Handle.Time
 import Control.Moffy.Run
+import Control.Concurrent.STM
 import Data.Time.Clock.System
 import Graphics.Gtk
 
@@ -17,11 +18,12 @@ import Trial.Boxes.BoxEv
 import Trial.Boxes.View
 
 import Trial.Boxes
+import Trial.Boxes.Box
 
 runBoxes :: SigB s [Box] r -> IO r
 runBoxes s = do
 	(c, c') <- tryUseTChan
-	(r, _) <- interpretSt (handleBoxesFoo 0.1 c) print s . (InitialMode ,) . systemToTAITime =<< getSystemTime
+	(r, _) <- interpretSt (handleBoxesFoo 0.1 c) (atomically . writeTChan c') s . (InitialMode ,) . systemToTAITime =<< getSystemTime
 	r <$ gtkMainQuit
 
 main :: IO ()

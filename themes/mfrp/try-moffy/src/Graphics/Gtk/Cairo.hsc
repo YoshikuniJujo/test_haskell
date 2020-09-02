@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gtk.Cairo (
-	cairoMoveTo, cairoLineTo, cairoStroke
+	cairoMoveTo, cairoLineTo, cairoStroke, cairoRectangle
 	) where
 
 import Foreign.Ptr
@@ -18,3 +18,8 @@ cairoLineTo (CairoT cr) = c_cairo_line_to cr
 
 cairoStroke :: CairoT -> IO ()
 cairoStroke (CairoT cr) = c_cairo_stroke cr
+
+foreign import ccall "cairo_rectangle" c_cairo_rectangle :: Ptr CairoT -> #{type double} -> #{type double} -> #{type double} -> #{type double} -> IO ()
+
+cairoRectangle :: CairoT -> #{type double} -> #{type double} -> #{type double} -> #{type double} -> IO ()
+cairoRectangle (CairoT cr) = c_cairo_rectangle cr
