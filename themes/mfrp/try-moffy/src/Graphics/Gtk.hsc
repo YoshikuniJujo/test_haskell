@@ -71,7 +71,10 @@ instance {-# OVERLAPPABLE #-} Storable a => AsPointer a where
 newtype Mutable a = Mutable (Ptr a) deriving Show
 
 allocaMutable :: Storable a => (Mutable a -> IO b) -> IO b
-allocaMutable f = alloca $ f . Mutable
+-- allocaMutable f = alloca $ f . Mutable
+allocaMutable f = do
+	p <- malloc
+	f $ Mutable p
 
 peekMutable :: Storable a => Mutable a -> IO a
 peekMutable (Mutable p) = peek p

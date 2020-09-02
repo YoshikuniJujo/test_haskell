@@ -52,11 +52,12 @@ instance Drawable Double where
 		cairoStroke cr
 
 tryUseTChan :: (Show a, Storable a, Drawable a) => IO (TChan (EvOccs (M.DeleteEvent :- KeyEv :+: MouseEv)), TChan [a])
-tryUseTChan = allocaMutable \m -> do
-	pokeMutable m =<< newArr []
+tryUseTChan = do
+
 	c <- newTChanIO
 	c' <- newTChanIO
-	void . forkIO $ do
+	void . forkIO $ allocaMutable \m -> do
+		pokeMutable m =<< newArr []
 		[] <- gtkInit []
 		w <- gtkWindowNew gtkWindowToplevel
 
