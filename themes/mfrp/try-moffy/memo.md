@@ -128,12 +128,13 @@ todo
 			* [x] KeyPressEvent
 			* [x] KeyReleaseEvent
 	+ [x] remove Control.Moffy.Handle.TimeTChan
-	+ [ ] draw rectangle
+	+ [x] draw rectangle
 		- [x] draw contour
-		- [ ] set color
-		- [ ] fill rectangle
+		- [x] set color
+		- [x] fill rectangle
 	+ [x] free Mutable
 	+ [ ] arrange
+	+ [ ] test followbox
 	+ [ ] refactoring
 	+ [ ] others
 * [ ] about window

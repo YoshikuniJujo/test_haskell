@@ -45,7 +45,7 @@ print' _ = pure ()
 
 class Drawable a where draw :: CairoT -> a -> IO ()
 
-instance Drawable a => Drawable [a] where draw cr xs = draw cr `mapM_` xs
+instance Drawable a => Drawable [a] where draw cr xs = draw cr `mapM_` reverse xs
 
 instance Drawable Double where
 	draw cr n = do
