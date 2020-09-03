@@ -137,6 +137,9 @@ todo
 	+ [ ] test followbox
 		- [x] draw character
 		- [ ] draw image
+		- [ ] investigate about XGlyphInfo
+			* cairo_text_extents_t
+			* cairo_text_extents
 		- [ ] try followbox
 	+ [ ] refactoring
 	+ [ ] others
