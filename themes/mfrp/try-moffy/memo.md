@@ -137,6 +137,10 @@ todo
 	+ [ ] test followbox
 		- [x] draw character
 		- [ ] draw image
+			* [ ] try to use cairo_image_surface_create_from_png from C
+			* [ ] try to use cairo_image_surface_create_from_png from Haskell
+			* [ ] try to use cairo_image_surface_create_from_png_stream from C
+			* [ ] try to use cairo_image_surface_create_from_png_stream from Haskell
 		- [ ] investigate about XGlyphInfo
 			* cairo_text_extents_t
 			* cairo_text_extents
