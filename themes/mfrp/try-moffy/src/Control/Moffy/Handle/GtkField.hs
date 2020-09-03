@@ -28,6 +28,8 @@ import Control.Moffy.Handle.Time
 import Data.Time.Clock.TAI
 import Foreign.Storable
 
+import Data.Bool
+
 import Arr
 
 tryGtk :: IO ()
@@ -89,21 +91,44 @@ tryUseTChan = do
 --		gSignalConnect da DrawEvent (\a b c' -> False <$ print (a, b, c')) ()
 		gSignalConnect da DrawEvent tryDraw m
 
-		forkIO . forever $ do
-			v <- atomically $ readTChan c'
-			print v
-			old <- peekMutable m
---			freeArr =<< peekMutable m
-			pokeMutable m =<< newArr v
-			freeArr old
-			print =<< peekMutable m
-			print =<< peekArr =<< peekMutable m
-			gtkWidgetQueueDraw da
-			print =<< peekArr =<< peekMutable m
+		flip (gTimeoutAdd 100) () $ const do
+			putStrLn "here"
+--		forkIO . forever $ do
+--			threadDelay 100000
+			atomically (lastTChan c') >>= \case
+				Nothing -> pure True
+				Just v -> do
+--			v <- atomically $ readTChan c'
+			{-
+			v <- atomically $ do
+				x <- readTChan c'
+				lastTChan x c' -- readTChan c'
+				-}
+					print v
+					old <- peekMutable m
+		--			freeArr =<< peekMutable m
+					pokeMutable m =<< newArr v
+					freeArr old
+					print =<< peekMutable m
+					print =<< peekArr =<< peekMutable m
+					gtkWidgetQueueDraw da
+					print =<< peekArr =<< peekMutable m
+					pure True
 
 		gtkWidgetShowAll w
 		gtkMain
 	pure (c, c')
+
+lastTChan :: TChan a -> STM (Maybe a)
+lastTChan c = do
+	tryReadTChan c >>= \case
+		Nothing -> pure Nothing
+		Just x -> bool (lastTChan c) (pure $ Just x) =<< isEmptyTChan c
+
+lastTChan' :: a -> TChan a -> STM a
+lastTChan' x c = do
+	mx' <- tryReadTChan c
+	maybe (pure x) (`lastTChan'` c) mx'
 
 tryDraw :: (Storable a, Drawable a) => GtkWidget -> CairoT -> Mutable (Arr a) -> IO Bool
 tryDraw w cr x = True <$ do
