@@ -19,7 +19,7 @@ module Graphics.Gtk (
 	-- * Gdk Event Mask
 	gdkPointerMotionMask,
 	-- * Event General
-	Event, Handler, AsPointer, gSignalConnect,
+	Event, Handler, AsPointer, gSignalConnect, gTimeoutAdd,
 	-- * Each Event
 	-- ** Destroy
 	Destroy(..),
@@ -100,6 +100,11 @@ foreign import ccall "gtk_widget_queue_draw" c_gtk_widget_queue_draw :: Ptr GtkW
 
 foreign import ccall "g_timeout_add" c_g_timeout_add ::
 	#{type guint} -> FunPtr (Ptr a -> IO #{type gboolean}) -> Ptr a -> IO #type guint
+
+gTimeoutAdd :: AsPointer a => #{type guint} -> (a -> IO Bool) -> a -> IO #type guint
+gTimeoutAdd t f x = do
+	fp <- g_callback_timeout \x' -> (boolToGBoolean <$>) . f =<< asValue x'
+	asPointer x $ c_g_timeout_add t fp
 
 gtkWidgetQueueDraw :: GtkWidget -> IO ()
 gtkWidgetQueueDraw (GtkWidget w) = c_gtk_widget_queue_draw w
@@ -254,6 +259,8 @@ foreign import ccall "wrapper" g_callback_button ::
 foreign import ccall "wrapper" g_callback_delete :: CHandler DeleteEvent a -> IO (FunPtr (CHandler DeleteEvent a))
 foreign import ccall "wrapper" g_callback_motion :: CHandler MotionNotifyEvent a -> IO (FunPtr (CHandler MotionNotifyEvent a))
 foreign import ccall "wrapper" g_callback_draw :: CHandler DrawEvent a -> IO (FunPtr (CHandler DrawEvent a))
+foreign import ccall "wrapper" g_callback_timeout ::
+	(Ptr a -> IO #{type gboolean}) -> IO (FunPtr (Ptr a -> IO #{type gboolean}))
 
 -- foreign import ccall "hello_main" c_hello_main :: IO ()
 
