@@ -132,7 +132,7 @@ todo
 		- [x] draw contour
 		- [ ] set color
 		- [ ] fill rectangle
-	+ [ ] free Mutable
+	+ [x] free Mutable
 	+ [ ] arrange
 	+ [ ] refactoring
 	+ [ ] others
