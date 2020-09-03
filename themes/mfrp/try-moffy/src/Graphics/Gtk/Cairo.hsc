@@ -1,14 +1,21 @@
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gtk.Cairo (
 	cairoSetSourceRgb,
 	cairoStroke, cairoStrokePreserve, cairoFill,
 	cairoMoveTo, cairoLineTo, cairoRectangle,
+	cairoShowText, cairoSetFontSize, cairoSelectFontFace
 	) where
 
 import Foreign.Ptr
+import Foreign.C
+import Data.Word
 
 import Graphics.Gtk.CairoType
+import Graphics.Gtk.Cairo.Values
+
+#include <cairo.h>
 
 foreign import ccall "cairo_move_to" c_cairo_move_to :: Ptr CairoT -> #{type double} -> #{type double} -> IO ()
 foreign import ccall "cairo_line_to" c_cairo_line_to :: Ptr CairoT -> #{type double} -> #{type double} -> IO ()
@@ -42,3 +49,22 @@ foreign import ccall "cairo_fill" c_cairo_fill :: Ptr CairoT -> IO ()
 
 cairoFill :: CairoT -> IO ()
 cairoFill (CairoT cr) = c_cairo_fill cr
+
+foreign import ccall "cairo_show_text" c_cairo_show_text :: Ptr CairoT -> CString -> IO ()
+
+cairoShowText :: CairoT -> String -> IO ()
+cairoShowText (CairoT cr) s = withCString s $ c_cairo_show_text cr
+
+foreign import ccall "cairo_set_font_size" c_cairo_set_font_size ::
+	Ptr CairoT -> #{type double} -> IO ()
+
+
+cairoSetFontSize :: CairoT -> #{type double} -> IO ()
+cairoSetFontSize (CairoT cr) = c_cairo_set_font_size cr
+
+foreign import ccall "cairo_select_font_face" c_cairo_select_font_face ::
+	Ptr CairoT -> CString -> #{type cairo_font_slant_t} -> #{type cairo_font_weight_t} -> IO ()
+
+cairoSelectFontFace :: CairoT -> String -> CairoFontSlantT -> CairoFontWeightT -> IO ()
+cairoSelectFontFace (CairoT cr) fn (CairoFontSlantT sl) (CairoFontWeightT w) =
+	withCString fn \cfn -> c_cairo_select_font_face cr cfn sl w

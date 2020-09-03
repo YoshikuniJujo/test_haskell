@@ -74,8 +74,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-moffy
-  testPointerMotion:
-    main:                testPointerMotion.hs
+  tryCairo:
+    main:                tryCairo.hs
     source-dirs:         app
     ghc-options:
     - -threaded

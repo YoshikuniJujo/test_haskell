@@ -135,6 +135,9 @@ todo
 	+ [x] free Mutable
 	+ [ ] arrange
 	+ [ ] test followbox
+		- [x] draw character
+		- [ ] draw image
+		- [ ] try followbox
 	+ [ ] refactoring
 	+ [ ] others
 * [ ] about window
