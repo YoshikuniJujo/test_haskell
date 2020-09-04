@@ -4,7 +4,8 @@ module Graphics.Gtk.Cairo.Values (
 	CairoFontSlantT(..),
 	cairoFontSlantNormal, cairoFontSlantItalic, cairoFontSlantOblique,
 	CairoFontWeightT(..),
-	cairoFontWeightNormal, cairoFontWeightBold
+	cairoFontWeightNormal, cairoFontWeightBold,
+	CairoStatusT(..), cairoStatusSuccess, cairoStatusReadError
 	) where
 
 import Data.Word
@@ -20,3 +21,7 @@ newtype CairoFontWeightT = CairoFontWeightT #{type cairo_font_weight_t} deriving
 
 #enum CairoFontWeightT, CairoFontWeightT, \
 	CAIRO_FONT_WEIGHT_NORMAL, CAIRO_FONT_WEIGHT_BOLD
+
+newtype CairoStatusT = CairoStatusT #{type cairo_status_t} deriving Show
+
+#enum CairoStatusT, CairoStatusT, CAIRO_STATUS_SUCCESS, CAIRO_STATUS_READ_ERROR

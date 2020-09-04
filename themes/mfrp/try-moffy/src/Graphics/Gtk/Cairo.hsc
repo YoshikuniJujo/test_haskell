@@ -8,13 +8,17 @@ module Graphics.Gtk.Cairo (
 	cairoShowText, cairoSetFontSize, cairoSelectFontFace,
 	CairoSurfaceT,
 	cairoImageSurfaceCreateFromPng, cairoSurfaceDestroy, cairoWithImageSurfaceFromPng,
-	cairoSetSourceSurface, cairoPaint
+	cairoSetSourceSurface, cairoPaint,
+	CairoReadFunc, cairoImageSurfaceCreateFromPngStream, cairoWithImageSurfaceFromPngStream
 	) where
 
 import Foreign.Ptr
+import Foreign.Marshal.Array
 import Foreign.C
 import Control.Exception
 import Data.Word
+
+import qualified Data.ByteString as BS
 
 import Graphics.Gtk.CairoType
 import Graphics.Gtk.Cairo.Values
@@ -105,3 +109,33 @@ foreign import ccall "cairo_paint" c_cairo_paint :: Ptr CairoT -> IO ()
 
 cairoPaint :: CairoT -> IO ()
 cairoPaint (CairoT cr) = c_cairo_paint cr
+
+foreign import ccall "cairo_image_surface_create_from_png_stream"
+	c_cairo_image_surface_create_from_png_stream ::
+	FunPtr (CCairoReadFunc a) -> Ptr a -> IO (Ptr CairoSurfaceT)
+
+type CCairoReadFunc a = Ptr a -> CString -> #{type unsigned int} -> IO #{type cairo_status_t}
+type CairoReadFunc a = a -> #{type unsigned int} -> IO (CairoStatusT, Maybe BS.ByteString)
+
+cairoReadFuncToCCairoReadFunc :: AsPointer a => CairoReadFunc a -> CCairoReadFunc a
+cairoReadFuncToCCairoReadFunc f px bf ln = do
+	x <- asValue px
+	(CairoStatusT st, mbs) <- f x ln
+	case mbs of
+		Nothing -> pure st
+		Just bs	| BS.length bs == fromIntegral ln ->
+				st <$ BS.useAsCString bs \cs -> copyArray bf cs (fromIntegral ln)
+			| otherwise -> pure let CairoStatusT err = cairoStatusReadError in err
+
+foreign import ccall "wrapper" c_cairo_read_func_t :: CCairoReadFunc a -> IO (FunPtr (CCairoReadFunc a))
+
+cairoImageSurfaceCreateFromPngStream :: AsPointer a => CairoReadFunc a -> a -> IO CairoSurfaceT
+cairoImageSurfaceCreateFromPngStream f x = do
+	cf <- c_cairo_read_func_t $ cairoReadFuncToCCairoReadFunc f
+	asPointer x $
+		(CairoSurfaceT <$>) . c_cairo_image_surface_create_from_png_stream cf
+
+cairoWithImageSurfaceFromPngStream ::
+	AsPointer a => CairoReadFunc a -> a -> (CairoSurfaceT -> IO b) -> IO b
+cairoWithImageSurfaceFromPngStream rf x =
+	bracket (cairoImageSurfaceCreateFromPngStream rf x) cairoSurfaceDestroy
