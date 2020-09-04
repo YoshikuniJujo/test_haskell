@@ -34,7 +34,12 @@ main = do
 
 draw :: GtkWidget -> CairoT -> CairoSurfaceT -> IO Bool
 draw _ cr s = True <$ do
-	cairoSetSourceSurface cr s 50 50
+	cairoScale cr (1 / 3) (1 / 3)
+	cairoSetSourceSurface cr s 50 150
+	cairoPaint cr
+	cairoIdentityMatrix cr
+	cairoScale cr (1 / 2) (1 / 2)
+	cairoSetSourceSurface cr s 600 150
 	cairoPaint cr
 
 readPngFunc :: Handle -> CairoReadFunc ()

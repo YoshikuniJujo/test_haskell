@@ -142,7 +142,7 @@ todo
 			* [x] try to use cairo_image_surface_create_from_png_stream from C
 			* [x] try to use cairo_image_surface_create_from_png_stream from Haskell
 		- [x] draw image from web
-		- [ ] resize image
+		- [x] resize image
 		- [ ] investigate about XGlyphInfo
 			* cairo_text_extents_t
 			* cairo_text_extents

@@ -9,7 +9,8 @@ module Graphics.Gtk.Cairo (
 	CairoSurfaceT,
 	cairoImageSurfaceCreateFromPng, cairoSurfaceDestroy, cairoWithImageSurfaceFromPng,
 	cairoSetSourceSurface, cairoPaint,
-	CairoReadFunc, cairoImageSurfaceCreateFromPngStream, cairoWithImageSurfaceFromPngStream
+	CairoReadFunc, cairoImageSurfaceCreateFromPngStream, cairoWithImageSurfaceFromPngStream,
+	cairoScale, cairoIdentityMatrix
 	) where
 
 import Foreign.Ptr
@@ -139,3 +140,13 @@ cairoWithImageSurfaceFromPngStream ::
 	AsPointer a => CairoReadFunc a -> a -> (CairoSurfaceT -> IO b) -> IO b
 cairoWithImageSurfaceFromPngStream rf x =
 	bracket (cairoImageSurfaceCreateFromPngStream rf x) cairoSurfaceDestroy
+
+foreign import ccall "cairo_scale" c_cairo_scale :: Ptr CairoT -> #{type double} -> #{type double} -> IO ()
+
+cairoScale :: CairoT -> #{type double} -> #{type double} -> IO ()
+cairoScale (CairoT cr) = c_cairo_scale cr
+
+foreign import ccall "cairo_identity_matrix" c_cairo_identity_matrix :: Ptr CairoT -> IO ()
+
+cairoIdentityMatrix :: CairoT -> IO ()
+cairoIdentityMatrix (CairoT cr) = c_cairo_identity_matrix cr
