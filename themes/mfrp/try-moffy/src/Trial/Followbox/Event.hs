@@ -39,7 +39,7 @@ import Data.Bool (bool)
 import Data.Aeson (Object)
 import Data.Time (UTCTime, TimeZone)
 import Network.HTTP.Simple (Header)
-import Graphics.X11.Xrender (XGlyphInfo)
+import Trial.Followbox.TextExtents (TextExtents)
 
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
@@ -104,10 +104,10 @@ data CalcTextExtents = CalcTextExtentsReq FontName FontSize T.Text
 numbered [t| CalcTextExtents |]
 instance Request CalcTextExtents where
 	data Occurred CalcTextExtents =
-		OccCalcTextExtents FontName FontSize T.Text XGlyphInfo
+		OccCalcTextExtents FontName FontSize T.Text TextExtents
 
 calcTextExtents :: FontName -> FontSize -> T.Text ->
-	React s (Singleton CalcTextExtents) XGlyphInfo
+	React s (Singleton CalcTextExtents) TextExtents
 calcTextExtents fn fs t = maybe (calcTextExtents fn fs t) pure
 	=<< await (CalcTextExtentsReq fn fs t)
 		\(OccCalcTextExtents fn' fs' t' glp) ->

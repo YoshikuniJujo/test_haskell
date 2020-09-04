@@ -147,12 +147,15 @@ todo
 			* cairo_text_extents_t
 			* cairo_text_extents
 		- [x] consider whether or not to change Point from using Integer to using Double
-		- [ ] consider whether or not to change Color from using Integer to using Double
-		- [ ] define TextExtents
+		- [x] consider whether or not to change textExtents from using Integer to using Double
+		- [x] rename module Trial.Followbox.Xrender to Trial.Followbox.TextExtents
+		- [x] define TextExtents
 			* `data TextExtents { `
 			* `textExtentsXBearing :: Double, textExtentsYBearing :: Double,`
 			* `textExtentsWidth :: Double, textExtentsHeight :: Double,`
 			* `textExtentsXAdvance :: Double, textExtentsYAdvance :: Double }`
+		- [ ] define TextExtents Handler on GTK
+		- [ ] define instance Drawable [view type of Followbox]
 		- [ ] try followbox
 	+ [ ] consider whether or not to use ForeignPtr to free memory for cairo surface
 	+ [ ] refactoring

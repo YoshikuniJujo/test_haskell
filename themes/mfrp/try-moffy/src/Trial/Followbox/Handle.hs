@@ -39,6 +39,8 @@ import Trial.Followbox.Event (
 import Trial.Followbox.TypeSynonym (Browser, GithubNameToken)
 import Field (Field, textExtents)
 
+import Trial.Followbox.TextExtents
+
 ---------------------------------------------------------------------------
 
 -- * STATE
@@ -132,7 +134,7 @@ handleHttpGet mgnt (Singleton (HttpGetReq u)) = do
 
 handleCalcTextExtents :: Field -> Handle IO (Singleton CalcTextExtents)
 handleCalcTextExtents f (Singleton (CalcTextExtentsReq fn fs t)) = Singleton
-	. OccCalcTextExtents fn fs t <$> textExtents f fn fs (T.unpack t)
+	. OccCalcTextExtents fn fs t . xGlyphInfoToNew <$> textExtents f fn fs (T.unpack t)
 
 handleGetTimeZone :: Handle IO (Singleton GetTimeZone)
 handleGetTimeZone _reqs = Singleton . OccGetTimeZone <$> getCurrentTimeZone

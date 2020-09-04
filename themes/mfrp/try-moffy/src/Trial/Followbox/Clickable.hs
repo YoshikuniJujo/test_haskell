@@ -13,7 +13,8 @@ import Prelude hiding (repeat)
 import Control.Moffy (React, adjust, repeat, find, indexBy)
 import Control.Moffy.Event.Mouse (MouseEv, leftClick, mouseMove)
 import Data.Type.Set (Singleton)
-import Graphics.X11.Xrender (XGlyphInfo(..))
+-- import Graphics.X11.Xrender (XGlyphInfo(..))
+import Trial.Followbox.TextExtents (TextExtents(..))
 
 import qualified Data.Text as T
 
@@ -41,15 +42,15 @@ clickable v (l, t) (r, b) = Clickable v
 -- WITH TEXT EXTENTS
 ---------------------------------------------------------------------------
 
-data WithTextExtents = WithTextExtents FontName FontSize T.Text XGlyphInfo
+data WithTextExtents = WithTextExtents FontName FontSize T.Text TextExtents
 
 clickableText :: Position -> WithTextExtents -> Clickable s
 clickableText p@(x, y) (WithTextExtents fn fs txt xg) =
 	clickable [Text blue fn fs p txt] (l, t) (l + gw, t + gh) where
 	(l, t) = (x - gx, y - gy)
-	[gx, gy, gw, gh] = fromIntegral . ($ xg) <$> [
-		xglyphinfo_x, xglyphinfo_y,
-		xglyphinfo_width, xglyphinfo_height ]
+	[gx, gy, gw, gh] = ($ xg) <$> [
+		textExtentsXBearing, textExtentsYBearing,
+		textExtentsWidth, textExtentsHeight ]
 
 withTextExtents :: FontName -> FontSize -> T.Text ->
 	React s (Singleton CalcTextExtents) WithTextExtents
@@ -57,7 +58,7 @@ withTextExtents fn fs t = WithTextExtents fn fs t <$> calcTextExtents fn fs t
 
 nextToText :: Position -> WithTextExtents -> Position
 nextToText (x, y) (WithTextExtents _ _ _ xg) = (x + xo, y + yo) where
-	[xo, yo] = fromIntegral . ($ xg) <$> [xglyphinfo_xOff, xglyphinfo_yOff]
+	[xo, yo] = ($ xg) <$> [textExtentsXAdvance, textExtentsYAdvance]
 
 translate :: Position -> WithTextExtents -> (Rational, Rational) -> Position
 translate (x, y) (WithTextExtents _ (toRational -> fs) _ _) (dx, dy) =
