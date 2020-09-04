@@ -61,4 +61,4 @@ nextToText (x, y) (WithTextExtents _ _ _ xg) = (x + xo, y + yo) where
 
 translate :: Position -> WithTextExtents -> (Rational, Rational) -> Position
 translate (x, y) (WithTextExtents _ (toRational -> fs) _ _) (dx, dy) =
-	(x + round (fs * dx), y + round (fs * dy))
+	(x + fromRational (fs * dx), y + fromRational (fs * dy))

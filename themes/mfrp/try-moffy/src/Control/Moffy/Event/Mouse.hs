@@ -86,7 +86,7 @@ numbered [t| MouseMove |]
 instance Request MouseMove where
 	data Occurred MouseMove = OccMouseMove Point deriving Show
 
-type Point = (Integer, Integer)
+type Point = (Double, Double)
 
 mouseMove :: React s (Singleton MouseMove) Point
 mouseMove  = await MouseMoveReq \(OccMouseMove p) -> p

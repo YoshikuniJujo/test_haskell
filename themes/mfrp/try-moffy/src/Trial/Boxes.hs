@@ -80,7 +80,7 @@ chooseBoxColor r = Box <$%> adjustSig (wiggleRect r) <*%> adjustSig cycleColor
 
 wiggleRect :: Rect -> Sig s (Singleton DeltaTime) Rect ()
 wiggleRect (Rect lu rd) = (<$%> elapsed) \t -> let
-	dx = round (sin (fromRational (toRational t) * 5) * 15 :: Double) in
+	dx = (sin (fromRational (toRational t) * 5) * 15 :: Double) in
 	Rect ((+ dx) `Arr.first` lu) ((+ dx) `Arr.first` rd)
 
 cycleColor :: Sig s (Singleton MouseDown) Color ()

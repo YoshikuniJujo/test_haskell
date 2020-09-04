@@ -146,6 +146,13 @@ todo
 		- [ ] investigate about XGlyphInfo
 			* cairo_text_extents_t
 			* cairo_text_extents
+		- [x] consider whether or not to change Point from using Integer to using Double
+		- [ ] consider whether or not to change Color from using Integer to using Double
+		- [ ] define TextExtents
+			* `data TextExtents { `
+			* `textExtentsXBearing :: Double, textExtentsYBearing :: Double,`
+			* `textExtentsWidth :: Double, textExtentsHeight :: Double,`
+			* `textExtentsXAdvance :: Double, textExtentsYAdvance :: Double }`
 		- [ ] try followbox
 	+ [ ] consider whether or not to use ForeignPtr to free memory for cairo surface
 	+ [ ] refactoring

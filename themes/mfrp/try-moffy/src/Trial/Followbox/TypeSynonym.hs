@@ -21,7 +21,7 @@ import Codec.Picture (Image, PixelRGBA8)
 -- FIELD
 
 type WindowTitle = String
-type Position = (Integer, Integer)
+type Position = (Double, Double)
 type LineWidth = Integer
 type FontName = String
 type FontSize = Double

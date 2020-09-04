@@ -89,17 +89,17 @@ middleSize = 30; largeSize = 36
 avatarSizeX, avatarSizeY :: Int
 (avatarSizeX, avatarSizeY) = (80, 80)
 
-avatarPos, namePos :: Integer -> Position
+avatarPos, namePos :: Double -> Position
 avatarPos n = (100, 120 + 120 * n)
 namePos n = (210, 180 + 120 * n)
 
-crossSize :: Integer
-crossSize = round largeSize `div` 2
+crossSize :: Double
+crossSize = largeSize / 2
 
 crossPos :: Position -> WithTextExtents -> Position
 crossPos p wte = translate (nextToText p wte) wte (1 / 2, - 5 / 8)
 
-crossMergin :: Integer
+crossMergin :: Double
 crossMergin = 4
 
 ---------------------------------------------------------------------------
@@ -150,10 +150,10 @@ user1 lck n = do
 	(a, ln, u) <- waitFor $ getUser lck
 	wte <- waitFor . adjust $ withTextExtents defaultFont largeSize ln
 	let	nm = clickableText np wte; cr = cross $ crossPos np wte
-	emit $ Image (avatarPos n) a : view nm <> view cr
+	emit $ Image (avatarPos $ fromIntegral n) a : view nm <> view cr
 	void . (`break` click cr) . waitFor $ forever
 		(adjust (click nm) >> adjust (browse u) :: ReactF s ())
-	where np = namePos n
+	where np = namePos $ fromIntegral n
 
 cross :: Position -> Clickable s
 cross (l, t) = clickable [lwhite lt rb, lwhite lb rt] (l', t') (r', b')

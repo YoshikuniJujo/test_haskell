@@ -21,8 +21,8 @@ drawBox f (Box rct clr) = drawRect f (clrToPx clr) rct
 
 drawRect :: Field -> Pixel -> Rect -> IO ()
 drawRect f clr (Rect (l_, u_) (r_, d_)) = fillRect f clr l u w h where
-	[l, u] = fromIntegral <$> [l_ `min` r_, u_ `min` d_]
-	[w, h] = fromIntegral <$> [abs $ r_ - l_, abs $ d_ - u_]
+	[l, u] = round <$> [l_ `min` r_, u_ `min` d_]
+	[w, h] = round <$> [abs $ r_ - l_, abs $ d_ - u_]
 
 withFlush :: Field -> IO a -> IO a
 withFlush f act = clearField f >> act <* flushField f

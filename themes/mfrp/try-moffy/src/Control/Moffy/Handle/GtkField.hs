@@ -151,14 +151,14 @@ gdkEventKeyToOccKeyUp e = do
 
 gdkEventMotionToOccMouseMove :: GdkEventMotion -> IO (EvOccs (Singleton MouseMove))
 gdkEventMotionToOccMouseMove e = do
-	x <- round <$> gdkEventMotionX e
-	y <- round <$> gdkEventMotionY e
+	x <- gdkEventMotionX e
+	y <- gdkEventMotionY e
 	pure $ Singleton $ OccMouseMove (x, y)
 
 gdkEventButtonToOccMouseDown :: GdkEventButton -> IO (EvOccs (MouseDown :- MouseMove :- 'Nil))
 gdkEventButtonToOccMouseDown e = do
-	x <- round <$> gdkEventButtonX e
-	y <- round <$> gdkEventButtonY e
+	x <- gdkEventButtonX e
+	y <- gdkEventButtonY e
 	b <- gdkEventButtonButton e
 	pure $ OccMouseDown (btn b) >- Singleton (OccMouseMove (x, y))
 	where
@@ -168,8 +168,8 @@ gdkEventButtonToOccMouseDown e = do
 
 gdkEventButtonToOccMouseUp :: GdkEventButton -> IO (EvOccs (MouseUp :- MouseMove :- 'Nil))
 gdkEventButtonToOccMouseUp e = do
-	x <- round <$> gdkEventButtonX e
-	y <- round <$> gdkEventButtonY e
+	x <- gdkEventButtonX e
+	y <- gdkEventButtonY e
 	b <- gdkEventButtonButton e
 	pure $ OccMouseUp (btn b) >- Singleton (OccMouseMove (x, y))
 	where

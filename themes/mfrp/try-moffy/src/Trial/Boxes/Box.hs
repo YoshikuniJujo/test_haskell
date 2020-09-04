@@ -18,13 +18,15 @@ data Rect = Rect { leftup :: Point, rightdown :: Point  } deriving Show
 data Color = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
 
 instance Storable Box where
-	sizeOf _ = sizeOf @Int undefined * 5
-	alignment _ = alignment @Int undefined
+	sizeOf _ = sizeOf @Double undefined * 4 + sizeOf @Int undefined
+	alignment _ = max (alignment @Int undefined) (alignment @Double undefined)
 	peek p = do
-		[l, u, r, d, c] <- peekArray 5 (castPtr p)
-		pure $ Box (Rect (fromIntegral l, fromIntegral u) (fromIntegral r, fromIntegral d)) (toEnum c)
-	poke p (Box (Rect (l, u) (r, d)) c) = pokeArray (castPtr p)
-		[fromIntegral l, fromIntegral u, fromIntegral r, fromIntegral d, fromEnum c]
+		[l, u, r, d] <- peekArray 4 (castPtr p)
+		c <- peek . castPtr $ p `plusPtr` (sizeOf @Double undefined * 4)
+		pure $ Box (Rect (l, u) (r, d)) (toEnum c)
+	poke p (Box (Rect (l, u) (r, d)) c) = do
+		pokeArray (castPtr p) [l, u, r, d]
+		poke (castPtr $ p `plusPtr` (sizeOf @Double undefined * 4)) $ fromEnum c
 
 instance Drawable Box where
 	draw cr b@(Box (Rect (l_, u_) (r, d)) c) = do
@@ -34,10 +36,10 @@ instance Drawable Box where
 		cairoStrokePreserve cr
 		cairoFill cr
 		where
-		l = fromIntegral $ min l_ r
-		u = fromIntegral $ min u_ d
-		w = fromIntegral $ abs $ l_ - r
-		h = fromIntegral $ abs $ u_ - d
+		l = min l_ r
+		u = min u_ d
+		w = abs $ l_ - r
+		h = abs $ u_ - d
 
 uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (x, y, z) = f x y z

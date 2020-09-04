@@ -36,14 +36,14 @@ view f v = clearField f >> view1 f `mapM_` v >> flushField f
 view1 :: Field -> View1 -> IO ()
 view1 f (Text
 	(colorToPixel -> p) fn fs
-	(fromIntegral -> x, fromIntegral -> y)
-	(T.unpack -> s)) = drawStr f p fn fs x y s
+	(x, y)
+	(T.unpack -> s)) = drawStr f p fn fs (round x) (round y) s
 view1 f (Line
 	(colorToPixel -> p) (fromIntegral -> lw)
-	(fromIntegral -> x1, fromIntegral -> y1)
-	(fromIntegral -> x2, fromIntegral -> y2)) = drawLine f p lw x1 y1 x2 y2
+	(round -> x1, round -> y1)
+	(round -> x2, round -> y2)) = drawLine f p lw x1 y1 x2 y2
 view1 f (Image
-	(fromIntegral -> x, fromIntegral -> y) img) = drawImagePixel f img x y
+	(round -> x, round -> y) img) = drawImagePixel f img x y
 
 colorToPixel :: Color -> Pixel
 colorToPixel Color {
