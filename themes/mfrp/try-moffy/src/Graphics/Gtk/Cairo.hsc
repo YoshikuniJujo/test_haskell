@@ -5,15 +5,20 @@ module Graphics.Gtk.Cairo (
 	cairoSetSourceRgb,
 	cairoStroke, cairoStrokePreserve, cairoFill,
 	cairoMoveTo, cairoLineTo, cairoRectangle,
-	cairoShowText, cairoSetFontSize, cairoSelectFontFace
+	cairoShowText, cairoSetFontSize, cairoSelectFontFace,
+	CairoSurfaceT,
+	cairoImageSurfaceCreateFromPng, cairoSurfaceDestroy, cairoWithImageSurfaceFromPng,
+	cairoSetSourceSurface, cairoPaint
 	) where
 
 import Foreign.Ptr
 import Foreign.C
+import Control.Exception
 import Data.Word
 
 import Graphics.Gtk.CairoType
 import Graphics.Gtk.Cairo.Values
+import Graphics.Gtk.AsPointer
 
 #include <cairo.h>
 
@@ -68,3 +73,35 @@ foreign import ccall "cairo_select_font_face" c_cairo_select_font_face ::
 cairoSelectFontFace :: CairoT -> String -> CairoFontSlantT -> CairoFontWeightT -> IO ()
 cairoSelectFontFace (CairoT cr) fn (CairoFontSlantT sl) (CairoFontWeightT w) =
 	withCString fn \cfn -> c_cairo_select_font_face cr cfn sl w
+
+newtype CairoSurfaceT = CairoSurfaceT (Ptr CairoSurfaceT) deriving Show
+
+instance AsPointer CairoSurfaceT where
+	asPointer (CairoSurfaceT p) = ($ p)
+	asValue = pure . CairoSurfaceT
+
+foreign import ccall "cairo_image_surface_create_from_png" c_cairo_image_surface_create_from_png ::
+	CString -> IO (Ptr CairoSurfaceT)
+
+cairoImageSurfaceCreateFromPng :: FilePath -> IO CairoSurfaceT
+cairoImageSurfaceCreateFromPng fp = withCString fp $ (CairoSurfaceT <$>) . c_cairo_image_surface_create_from_png
+
+foreign import ccall "cairo_surface_destroy" c_cairo_surface_destroy :: Ptr CairoSurfaceT -> IO ()
+
+cairoSurfaceDestroy :: CairoSurfaceT -> IO ()
+cairoSurfaceDestroy (CairoSurfaceT s) = c_cairo_surface_destroy s
+
+cairoWithImageSurfaceFromPng  :: FilePath -> (CairoSurfaceT -> IO a) -> IO a
+cairoWithImageSurfaceFromPng fp =
+	bracket (cairoImageSurfaceCreateFromPng fp) cairoSurfaceDestroy
+
+foreign import ccall "cairo_set_source_surface" c_cairo_set_source_surface ::
+	Ptr CairoT -> Ptr CairoSurfaceT -> #{type double} -> #{type double} -> IO ()
+
+cairoSetSourceSurface :: CairoT -> CairoSurfaceT -> #{type double} -> #{type double} -> IO ()
+cairoSetSourceSurface (CairoT cr) (CairoSurfaceT s) x y = c_cairo_set_source_surface cr s x y
+
+foreign import ccall "cairo_paint" c_cairo_paint :: Ptr CairoT -> IO ()
+
+cairoPaint :: CairoT -> IO ()
+cairoPaint (CairoT cr) = c_cairo_paint cr

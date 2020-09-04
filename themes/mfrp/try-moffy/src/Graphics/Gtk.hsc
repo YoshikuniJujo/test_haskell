@@ -50,23 +50,14 @@ import Data.Int
 
 import Graphics.Gtk.CairoType
 import Graphics.Gtk.Values
+import Graphics.Gtk.AsPointer
 
 newtype GtkWidget = GtkWidget (Ptr GtkWidget) deriving Show
 newtype GtkContainer = GtkContainer (Ptr GtkContainer) deriving Show
 
-class AsPointer a where
-	asPointer :: a -> (Ptr a -> IO b) -> IO b
-	asValue :: Ptr a -> IO a
-
 instance AsPointer GtkWidget where
 	asPointer (GtkWidget p) f = f p
 	asValue = pure . GtkWidget
-
-instance {-# OVERLAPPABLE #-} Storable a => AsPointer a where
-	asPointer x f = alloca \p -> do
-		poke p x
-		f p
-	asValue p = peek p
 
 newtype Mutable a = Mutable (Ptr a) deriving Show
 
