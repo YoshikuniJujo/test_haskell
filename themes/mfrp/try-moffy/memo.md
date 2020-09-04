@@ -138,7 +138,7 @@ todo
 		- [x] draw character
 		- [ ] draw image
 			* [x] try to use cairo_image_surface_create_from_png from C
-			* [ ] try to use cairo_image_surface_create_from_png from Haskell
+			* [x] try to use cairo_image_surface_create_from_png from Haskell
 			* [ ] try to use cairo_image_surface_create_from_png_stream from C
 			* [ ] try to use cairo_image_surface_create_from_png_stream from Haskell
 		- [ ] investigate about XGlyphInfo

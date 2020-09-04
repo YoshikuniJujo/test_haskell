@@ -17,9 +17,13 @@ main(int argc, char *argv[])
 	GtkWidget *w, *da;
 	cairo_surface_t *pngimage;
 
-	pngimage = cairo_image_surface_create_from_png("saikoro.png");
-
 	gtk_init(&argc, &argv);
+
+	if (argc != 2) {
+		printf ("tryPnfFromFile some.png\n");
+		return 1; }
+
+	pngimage = cairo_image_surface_create_from_png(argv[1]);
 
 	w = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	g_signal_connect(w, "destroy", G_CALLBACK(gtk_main_quit), NULL);
