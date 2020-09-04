@@ -139,13 +139,14 @@ todo
 		- [ ] draw image
 			* [x] try to use cairo_image_surface_create_from_png from C
 			* [x] try to use cairo_image_surface_create_from_png from Haskell
-			* [ ] try to use cairo_image_surface_create_from_png_stream from C
+			* [x] try to use cairo_image_surface_create_from_png_stream from C
 			* [ ] try to use cairo_image_surface_create_from_png_stream from Haskell
+		- [ ] resize image
 		- [ ] investigate about XGlyphInfo
 			* cairo_text_extents_t
 			* cairo_text_extents
 		- [ ] try followbox
-	+ [ ] use ForeignPtr to free memory for cairo surface
+	+ [ ] consider whether or not to use ForeignPtr to free memory for cairo surface
 	+ [ ] refactoring
 	+ [ ] others
 * [ ] about window
