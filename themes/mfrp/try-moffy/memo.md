@@ -143,7 +143,7 @@ todo
 			* [x] try to use cairo_image_surface_create_from_png_stream from Haskell
 		- [x] draw image from web
 		- [x] resize image
-		- [ ] investigate about XGlyphInfo
+		- [x] investigate about XGlyphInfo
 			* cairo_text_extents_t
 			* cairo_text_extents
 		- [x] consider whether or not to change Point from using Integer to using Double
@@ -155,6 +155,7 @@ todo
 			* `textExtentsWidth :: Double, textExtentsHeight :: Double,`
 			* `textExtentsXAdvance :: Double, textExtentsYAdvance :: Double }`
 		- [ ] define TextExtents Handler on GTK
+		- [ ] try followbox with print
 		- [ ] define instance Drawable [view type of Followbox]
 		- [ ] try followbox
 	+ [ ] consider whether or not to use ForeignPtr to free memory for cairo surface
