@@ -96,8 +96,14 @@ tryUseTChan = do
 			atomically (lastTChan cr) >>= \case
 				Nothing -> pure True
 				Just rqs -> do
-					putStrLn "rqs"
-					pure True
+--					putStrLn "here"
+					case project rqs of
+						Nothing -> pure True
+--						Just (TextExtents xb yb tw th xa ya) -> do
+						Just (CalcTextExtentsReq fn fs t) -> do
+							putStrLn "CalcTextExtents"
+							print (fn, fs, t)
+							pure True
 
 		void . flip (gTimeoutAdd 100) () $ const do
 			atomically (lastTChan c') >>= \case

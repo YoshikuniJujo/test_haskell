@@ -164,8 +164,10 @@ todo
 		- [ ] define TextExtents Handler on GTK
 			* [x] add CalcTextExtents to EvOccs
 			* [x] add TChan to send EvReqs (2)
-			* [ ] print (2)
+			* [x] print (2)
+			* [ ] add cairo_text_extents
 			* [ ] add converter :: (2) -> (1)
+			* [ ] add converter from cairo_text_extents_t to TextExtents
 			* [ ] add TChan to send font information and text (1)
 		- [ ] add trial for TextExtents on GTK
 		- [ ] try followbox with print
