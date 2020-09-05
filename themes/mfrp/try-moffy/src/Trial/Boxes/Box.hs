@@ -30,7 +30,6 @@ instance Storable Box where
 
 instance Drawable Box where
 	draw cr b@(Box (Rect (l_, u_) (r, d)) c) = do
-		print b
 		uncurry3 (cairoSetSourceRgb cr) $ colorToRgb c
 		cairoRectangle cr l u w h
 		cairoStrokePreserve cr

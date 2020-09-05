@@ -18,7 +18,6 @@ import Trial.Boxes.BoxEv
 import Trial.Boxes.View
 
 import Trial.Boxes
-import Trial.Boxes.Box
 
 runBoxes :: SigB s [Box] r -> IO r
 runBoxes s = do
