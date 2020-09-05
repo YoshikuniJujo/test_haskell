@@ -12,8 +12,6 @@ import Data.Bool
 
 import qualified Data.Text as T
 
-import Trial.Followbox.TypeSynonym
-
 -- CALC TEXT EXTENTS
 
 type FontName = String
