@@ -1,22 +1,24 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Handle.XField (
 	-- * Type
-	GuiEv,
+	GuiEv, CalcTextExtents,
 	-- * Handle
-	handle, handleWith) where
+	handle, handle', handleWith) where
 
 import Control.Moffy (EvReqs, EvOccs)
 import Control.Moffy.Event.Delete (DeleteEvent, pattern OccDeleteEvent)
 import Control.Moffy.Event.Key (KeyEv)
 import Control.Moffy.Event.Mouse (MouseEv)
-import Control.Moffy.Handle (Handle', ExpandableOccurred)
+import Control.Moffy.Event.CalcTextExtents
+import Control.Moffy.Handle (Handle', ExpandableOccurred, before)
 import Control.Moffy.Handle.XField.Key (pattern KeyEv)
 import Control.Moffy.Handle.XField.Mouse (pattern MouseEv)
+import Control.Moffy.Handle.XField.CalcTextExtents
 import Data.Type.Set (Singleton, (:-), (:+:))
 import Data.OneOrMore (pattern Singleton, expand)
 import Data.Time (DiffTime)
@@ -38,6 +40,9 @@ type GuiEv = DeleteEvent :- KeyEv :+: MouseEv
 ---------------------------------------------------------------------------
 -- HANDLE
 ---------------------------------------------------------------------------
+
+handle' :: Maybe DiffTime -> Field -> Handle' IO (CalcTextExtents :- GuiEv)
+handle' mt f = (Just <$>) . handleCalcTextExtents f `before` handle mt f
 
 handle :: Maybe DiffTime -> Field -> Handle' IO GuiEv
 handle = handleWith \case

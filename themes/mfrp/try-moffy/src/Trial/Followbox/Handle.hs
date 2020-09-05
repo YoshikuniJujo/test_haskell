@@ -15,9 +15,8 @@ import Control.Moffy.Handle (
 import Control.Moffy.Handle.ThreadId (handleGetThreadId)
 import Control.Moffy.Handle.Lock (LockState(..), LockId, handleLock)
 import Control.Moffy.Handle.Random (RandomState(..), handleRandom)
-import Control.Moffy.Handle.XField (GuiEv, handle)
-import Control.Moffy.Handle.XField.CalcTextExtents
-import Data.Type.Set (Singleton, (:+:))
+import Control.Moffy.Handle.XField (GuiEv, handle', CalcTextExtents)
+import Data.Type.Set (Singleton, (:-), (:+:))
 import Data.OneOrMore (pattern Singleton)
 import Data.Bool (bool)
 import Data.List (delete)
@@ -96,7 +95,6 @@ handleFollowbox f brws mba = retrySt $
 	handleRandom `mergeSt`
 	handleStoreJsons `mergeSt` handleLoadJsons `mergeSt`
 	liftOnJust (handleHttpGet mba) `mergeSt`
-	liftOnJust (handleCalcTextExtents f) `mergeSt`
 	liftOnJust handleGetTimeZone `mergeSt`
 	liftOnJust (handleBrowse brws) `mergeSt`
 	handleBeginSleep `mergeSt` handleEndSleep `mergeSt`
@@ -104,11 +102,11 @@ handleFollowbox f brws mba = retrySt $
 
 -- MOUSE
 
-handleMouseWithSleep :: Field -> HandleF' IO GuiEv
+handleMouseWithSleep :: Field -> HandleF' IO (CalcTextExtents :- GuiEv)
 handleMouseWithSleep f rqs s = (, s) <$> case fsSleepUntil s of
-	Nothing -> handle Nothing f rqs
+	Nothing -> handle' Nothing f rqs
 	Just t -> getCurrentTime >>= \now ->
-		handle (Just . realToFrac $ t `diffUTCTime` now) f rqs
+		handle' (Just . realToFrac $ t `diffUTCTime` now) f rqs
 
 -- STORE AND LOAD JSONS
 

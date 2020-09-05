@@ -159,7 +159,7 @@ todo
 			* [x] move TextExtents to module Control.Moffy.Event.CalcTextExtents
 			* [x] move TypeSynonyms to module Control.MOffy.Event.CalcTextExtents
 		- [x] move TextExtents handle to Control.Moffy.Handle.XField.TextExtents
-		- [ ] add TextExtents handle to Control.Moffy.Handle.XField.handle
+		- [x] add TextExtents handle to Control.Moffy.Handle.XField.handle
 		- [ ] define TextExtents Handler on GTK
 		- [ ] try followbox with print
 		- [ ] define instance Drawable [view type of Followbox]
