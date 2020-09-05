@@ -12,6 +12,7 @@ import Control.Moffy.Run
 import Control.Moffy.Event.Delete as M
 import Control.Moffy.Event.Key
 import Control.Moffy.Event.Mouse
+import Control.Moffy.Event.CalcTextExtents
 import Control.Moffy.Handle
 import Control.Concurrent
 import Control.Concurrent.STM hiding (retry)
@@ -53,7 +54,8 @@ instance Drawable Double where
 		cairoLineTo cr (210 + 10 * n) (110 + 10 * n)
 		cairoStroke cr
 
-tryUseTChan :: (Show a, Storable a, Drawable a) => IO (TChan (EvOccs (M.DeleteEvent :- KeyEv :+: MouseEv)), TChan [a])
+tryUseTChan :: (Show a, Storable a, Drawable a) =>
+	IO (TChan (EvOccs (CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv)), TChan [a])
 tryUseTChan = do
 
 	c <- newTChanIO
@@ -63,8 +65,8 @@ tryUseTChan = do
 		[] <- gtkInit []
 		w <- gtkWindowNew gtkWindowToplevel
 
---		gtkWidgetSetEvents w [gdkPointerMotionMask]
-		gtkWidgetSetEvents w [gdkButtonMotionMask]
+		gtkWidgetSetEvents w [gdkPointerMotionMask]
+--		gtkWidgetSetEvents w [gdkButtonMotionMask]
 		gSignalConnect w DeleteEvent (\a b x' -> True <$ (print' (a, b, x') >>
 			atomically (writeTChan c . Oom.expand $ Singleton OccDeleteEvent))) ()
 		gSignalConnect w KeyPressEvent (\a b x' -> False <$ (print' (a, b, x') >> do
@@ -160,10 +162,10 @@ gdkEventButtonToOccMouseUp e = do
 		1 -> ButtonLeft; 2 -> ButtonMiddle; 3 -> ButtonRight
 		n -> ButtonUnknown n
 
-handleDelete :: DiffTime -> TChan (EvOccs (M.DeleteEvent :- KeyEv :+: MouseEv)) -> Handle' IO (M.DeleteEvent :- KeyEv :+: MouseEv)
+handleDelete :: DiffTime -> TChan (EvOccs (CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv)) -> Handle' IO (CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv)
 handleDelete t c _rqs = timeout (round $ t * 1000000) . atomically $ readTChan c
 
-handleBoxesFoo :: DiffTime -> TChan (EvOccs (M.DeleteEvent :- KeyEv :+: MouseEv)) ->
-	HandleSt (Mode, AbsoluteTime) IO (TimeEv :+: M.DeleteEvent :- KeyEv :+: MouseEv)
+handleBoxesFoo :: DiffTime -> TChan (EvOccs (CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv)) ->
+	HandleSt (Mode, AbsoluteTime) IO (CalcTextExtents :- TimeEv :+: M.DeleteEvent :- KeyEv :+: MouseEv)
 handleBoxesFoo = ((retrySt .) .) . curry . popInput . handleTimeEvPlus
 	. pushInput . uncurry $ (liftHandle' .) . handleDelete
