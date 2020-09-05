@@ -163,7 +163,7 @@ todo
 		- [x] add trial for TextExtents
 		- [ ] define TextExtents Handler on GTK
 			* [x] add CalcTextExtents to EvOccs
-			* [ ] add TChan to send EvReqs (2)
+			* [x] add TChan to send EvReqs (2)
 			* [ ] print (2)
 			* [ ] add converter :: (2) -> (1)
 			* [ ] add TChan to send font information and text (1)

@@ -21,8 +21,8 @@ import Trial.Boxes
 
 runBoxes :: SigB s [Box] r -> IO r
 runBoxes s = do
-	(c, c') <- tryUseTChan
-	(r, _) <- interpretSt (handleBoxesFoo 0.1 c) (atomically . writeTChan c') s . (InitialMode ,) . systemToTAITime =<< getSystemTime
+	(cr, c, c') <- tryUseTChan
+	(r, _) <- interpretSt (handleBoxesFoo 0.1 cr c) (atomically . writeTChan c') s . (InitialMode ,) . systemToTAITime =<< getSystemTime
 	r <$ gtkMainQuit
 
 main :: IO ()

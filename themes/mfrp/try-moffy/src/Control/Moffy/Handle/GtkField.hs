@@ -22,7 +22,6 @@ import Data.Time
 import System.Timeout
 import Graphics.Gtk as Gtk
 import Graphics.Gtk.Cairo
-import Graphics.Gtk.Values
 
 import Control.Moffy.Event.Time
 import Control.Moffy.Handle.Time
@@ -54,10 +53,12 @@ instance Drawable Double where
 		cairoLineTo cr (210 + 10 * n) (110 + 10 * n)
 		cairoStroke cr
 
-tryUseTChan :: (Show a, Storable a, Drawable a) =>
-	IO (TChan (EvOccs (CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv)), TChan [a])
+type GuiEv = CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv
+
+tryUseTChan :: (Show a, Storable a, Drawable a) => IO (TChan (EvReqs GuiEv), TChan (EvOccs GuiEv), TChan [a])
 tryUseTChan = do
 
+	cr <- newTChanIO
 	c <- newTChanIO
 	c' <- newTChanIO
 	void . forkIO $ allocaMutable \m -> do
@@ -91,6 +92,13 @@ tryUseTChan = do
 		gtkContainerAdd (castWidgetToContainer w) da
 		gSignalConnect da DrawEvent tryDraw m
 
+		void . flip (gTimeoutAdd 101) () $ const do
+			atomically (lastTChan cr) >>= \case
+				Nothing -> pure True
+				Just rqs -> do
+					putStrLn "rqs"
+					pure True
+
 		void . flip (gTimeoutAdd 100) () $ const do
 			atomically (lastTChan c') >>= \case
 				Nothing -> pure True
@@ -103,7 +111,7 @@ tryUseTChan = do
 
 		gtkWidgetShowAll w
 		gtkMain
-	pure (c, c')
+	pure (cr, c, c')
 
 lastTChan :: TChan a -> STM (Maybe a)
 lastTChan c = do
@@ -162,10 +170,19 @@ gdkEventButtonToOccMouseUp e = do
 		1 -> ButtonLeft; 2 -> ButtonMiddle; 3 -> ButtonRight
 		n -> ButtonUnknown n
 
-handleDelete :: DiffTime -> TChan (EvOccs (CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv)) -> Handle' IO (CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv)
-handleDelete t c _rqs = timeout (round $ t * 1000000) . atomically $ readTChan c
+handleDelete :: DiffTime -> TChan (EvReqs GuiEv) -> TChan (EvOccs GuiEv) -> Handle' IO GuiEv
+-- handleDelete :: DiffTime -> TChan (EvOccs GuiEv) -> Handle' IO GuiEv
+handleDelete t cr c rqs = timeout (round $ t * 1000000) do
+	atomically $ writeTChan cr rqs
+	atomically $ readTChan c
 
-handleBoxesFoo :: DiffTime -> TChan (EvOccs (CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv)) ->
-	HandleSt (Mode, AbsoluteTime) IO (CalcTextExtents :- TimeEv :+: M.DeleteEvent :- KeyEv :+: MouseEv)
-handleBoxesFoo = ((retrySt .) .) . curry . popInput . handleTimeEvPlus
-	. pushInput . uncurry $ (liftHandle' .) . handleDelete
+-- uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
+-- uncurry3 f (x, y, z) = f x y z
+
+curry3 :: ((a, b, c) -> d) -> a -> b -> c -> d
+curry3 f x y z = f (x, y, z)
+
+handleBoxesFoo :: DiffTime -> TChan (EvReqs GuiEv) -> TChan (EvOccs GuiEv) ->
+	HandleSt (Mode, AbsoluteTime) IO (TimeEv :+: GuiEv)
+handleBoxesFoo dt cr co = retrySt
+	$ ((\f x y z -> f (x, (y, z))) . popInput . handleTimeEvPlus . pushInput) (\(x, (y, z)) -> (((liftHandle' .) .) . handleDelete) x y z) dt cr co
