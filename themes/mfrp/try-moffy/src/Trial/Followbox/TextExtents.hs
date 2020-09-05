@@ -2,15 +2,9 @@
 
 module Trial.Followbox.TextExtents where
 
-import qualified Graphics.X11.Xrender as X
+import Control.Moffy.Event.CalcTextExtents
 
-data TextExtents = TextExtents {
-	textExtentsXBearing :: Double,
-	textExtentsYBearing :: Double,
-	textExtentsWidth :: Double,
-	textExtentsHeight :: Double,
-	textExtentsXAdvance :: Double,
-	textExtentsYAdvance :: Double } deriving Show
+import qualified Graphics.X11.Xrender as X
 
 xGlyphInfoToX :: TextExtents -> X.XGlyphInfo
 xGlyphInfoToX (TextExtents x_ y_ w_ h_ xo_ yo_) = X.XGlyphInfo w h x y xo yo

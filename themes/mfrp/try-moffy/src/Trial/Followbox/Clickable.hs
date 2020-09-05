@@ -5,22 +5,23 @@ module Trial.Followbox.Clickable (
 	-- * Clickable
 	Clickable, view, click, clickable, clickableText,
 	-- * With Text Extents
-	WithTextExtents, withTextExtents, nextToText, translate
+	WithTextExtents, withTextExtents, nextToText, translate,
+	-- * Temporary
+	FontName, FontSize
 	) where
 
 import Prelude hiding (repeat)
 
 import Control.Moffy (React, adjust, repeat, find, indexBy)
 import Control.Moffy.Event.Mouse (MouseEv, leftClick, mouseMove)
+import Control.Moffy.Event.CalcTextExtents (TextExtents(..), FontName, FontSize)
 import Data.Type.Set (Singleton)
--- import Graphics.X11.Xrender (XGlyphInfo(..))
-import Trial.Followbox.TextExtents (TextExtents(..))
 
 import qualified Data.Text as T
 
 import Trial.Followbox.Event (CalcTextExtents, calcTextExtents)
 import Trial.Followbox.ViewType (View, View1(..), blue)
-import Trial.Followbox.TypeSynonym (Position, FontName, FontSize)
+import Trial.Followbox.TypeSynonym (Position)
 
 ---------------------------------------------------------------------------
 

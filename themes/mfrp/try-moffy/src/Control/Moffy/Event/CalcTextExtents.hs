@@ -12,10 +12,12 @@ import Data.Bool
 
 import qualified Data.Text as T
 
-import Trial.Followbox.TextExtents
 import Trial.Followbox.TypeSynonym
 
 -- CALC TEXT EXTENTS
+
+type FontName = String
+type FontSize = Double
 
 data CalcTextExtents = CalcTextExtentsReq FontName FontSize T.Text
 	deriving (Show, Eq, Ord)
@@ -23,6 +25,14 @@ numbered [t| CalcTextExtents |]
 instance Request CalcTextExtents where
 	data Occurred CalcTextExtents =
 		OccCalcTextExtents FontName FontSize T.Text TextExtents
+
+data TextExtents = TextExtents {
+	textExtentsXBearing :: Double,
+	textExtentsYBearing :: Double,
+	textExtentsWidth :: Double,
+	textExtentsHeight :: Double,
+	textExtentsXAdvance :: Double,
+	textExtentsYAdvance :: Double } deriving Show
 
 calcTextExtents :: FontName -> FontSize -> T.Text ->
 	React s (Singleton CalcTextExtents) TextExtents

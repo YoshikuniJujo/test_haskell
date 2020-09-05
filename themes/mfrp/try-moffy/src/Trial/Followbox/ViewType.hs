@@ -6,12 +6,12 @@ module Trial.Followbox.ViewType (
 	-- * COLOR
 	Color(..), white, blue ) where
 
-
+import Control.Moffy.Event.CalcTextExtents (FontName, FontSize)
 import Data.Word (Word8)
 import Codec.Picture (Image, PixelRGBA8)
 import Data.Text (Text)
 
-import Trial.Followbox.TypeSynonym (Position, LineWidth, FontName, FontSize)
+import Trial.Followbox.TypeSynonym (Position, LineWidth)
 
 ---------------------------------------------------------------------------
 
