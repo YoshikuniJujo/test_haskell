@@ -16,6 +16,7 @@ import Control.Moffy.Handle.ThreadId (handleGetThreadId)
 import Control.Moffy.Handle.Lock (LockState(..), LockId, handleLock)
 import Control.Moffy.Handle.Random (RandomState(..), handleRandom)
 import Control.Moffy.Handle.XField (GuiEv, handle)
+import Control.Moffy.Handle.XField.CalcTextExtents
 import Data.Type.Set (Singleton, (:+:))
 import Data.OneOrMore (pattern Singleton)
 import Data.Bool (bool)
@@ -29,18 +30,14 @@ import System.Process (spawnProcess)
 import qualified Data.Text as T
 import qualified Network.HTTP.Simple as H
 
-import Control.Moffy.Event.CalcTextExtents
 import Trial.Followbox.Event (
 	FollowboxEv, StoreJsons(..), pattern OccStoreJsons,
 	LoadJsons, pattern OccLoadJsons, HttpGet(..), pattern OccHttpGet,
---	CalcTextExtents(..), pattern OccCalcTextExtents,
 	GetTimeZone, pattern OccGetTimeZone, Browse(..), pattern OccBrowse,
 	BeginSleep(..), pattern OccBeginSleep, EndSleep, pattern OccEndSleep,
 	RaiseError(..), pattern OccRaiseError, Error(..), ErrorResult(..) )
 import Trial.Followbox.TypeSynonym (Browser, GithubNameToken)
-import Field (Field, textExtents)
-
-import Trial.Followbox.TextExtents
+import Field (Field)
 
 ---------------------------------------------------------------------------
 
@@ -132,10 +129,6 @@ handleHttpGet mgnt (Singleton (HttpGetReq u)) = do
 	print $ H.getResponseHeader "X-RateLimit-Remaining" r
 	pure . Singleton
 		$ OccHttpGet u (H.getResponseHeaders r) (H.getResponseBody r)
-
-handleCalcTextExtents :: Field -> Handle IO (Singleton CalcTextExtents)
-handleCalcTextExtents f (Singleton (CalcTextExtentsReq fn fs t)) = Singleton
-	. OccCalcTextExtents fn fs t . xGlyphInfoToNew <$> textExtents f fn fs (T.unpack t)
 
 handleGetTimeZone :: Handle IO (Singleton GetTimeZone)
 handleGetTimeZone _reqs = Singleton . OccGetTimeZone <$> getCurrentTimeZone
