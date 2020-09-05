@@ -33,18 +33,17 @@ import Control.Moffy.Event.Lock (LockEv)
 import Control.Moffy.Event.Random (RandomEv)
 import Control.Moffy.Event.Delete (DeleteEvent)
 import Control.Moffy.Event.Mouse (MouseEv)
+import Control.Moffy.Event.CalcTextExtents
 import Data.Type.Set (Set(Nil), Singleton, numbered, (:-), (:+:))
 import Data.OneOrMore (Selectable(..))
 import Data.Bool (bool)
 import Data.Aeson (Object)
 import Data.Time (UTCTime, TimeZone)
 import Network.HTTP.Simple (Header)
-import Trial.Followbox.TextExtents (TextExtents)
 
 import qualified Data.ByteString.Lazy as LBS
-import qualified Data.Text as T
 
-import Trial.Followbox.TypeSynonym (Uri, FontName, FontSize, ErrorMessage)
+import Trial.Followbox.TypeSynonym (Uri, ErrorMessage)
 
 ---------------------------------------------------------------------------
 
@@ -96,22 +95,6 @@ instance Request HttpGet where
 httpGet :: Uri -> React s (Singleton HttpGet) ([Header], LBS.ByteString)
 httpGet u = maybe (httpGet u) pure =<< await (HttpGetReq u)
 	\(OccHttpGet u' hs c) -> bool Nothing (Just (hs, c)) $ u == u'
-
--- CALC TEXT EXTENTS
-
-data CalcTextExtents = CalcTextExtentsReq FontName FontSize T.Text
-	deriving (Show, Eq, Ord)
-numbered [t| CalcTextExtents |]
-instance Request CalcTextExtents where
-	data Occurred CalcTextExtents =
-		OccCalcTextExtents FontName FontSize T.Text TextExtents
-
-calcTextExtents :: FontName -> FontSize -> T.Text ->
-	React s (Singleton CalcTextExtents) TextExtents
-calcTextExtents fn fs t = maybe (calcTextExtents fn fs t) pure
-	=<< await (CalcTextExtentsReq fn fs t)
-		\(OccCalcTextExtents fn' fs' t' glp) ->
-			bool Nothing (Just glp) $ (fn, fs, t) == (fn', fs', t')
 
 -- TIME ZONE
 

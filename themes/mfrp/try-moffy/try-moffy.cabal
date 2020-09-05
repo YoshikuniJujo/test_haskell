@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: aa6ce2cfd2b935676dbb7cc0a111b2d58d573c15971ff8948cdaf6bd56938490
+-- hash: 5bfce16ef04779bc0648a352ac8b1ff23510b2e814cb7b5489956e53ff6e4eb4
 
 name:           try-moffy
 version:        0.1.0.0
@@ -29,6 +29,7 @@ library
   exposed-modules:
       Arr
       Control.Moffy
+      Control.Moffy.Event.CalcTextExtents
       Control.Moffy.Event.Delete
       Control.Moffy.Event.Key
       Control.Moffy.Event.Key.Internal
