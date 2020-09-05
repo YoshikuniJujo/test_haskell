@@ -14,8 +14,8 @@ module Trial.Followbox.Event (
 	-- * Request Data
 	-- ** Http Get
 	HttpGet(..), pattern OccHttpGet, httpGet,
-	-- ** Calc Text Extents
-	CalcTextExtents(..), pattern OccCalcTextExtents, calcTextExtents,
+--	-- ** Calc Text Extents
+--	CalcTextExtents(..), pattern OccCalcTextExtents, calcTextExtents,
 	-- ** Get Time Zone
 	GetTimeZone, pattern OccGetTimeZone, getTimeZone,
 	-- * Browse

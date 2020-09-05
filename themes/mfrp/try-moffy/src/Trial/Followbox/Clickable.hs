@@ -19,7 +19,7 @@ import Data.Type.Set (Singleton)
 
 import qualified Data.Text as T
 
-import Trial.Followbox.Event (CalcTextExtents, calcTextExtents)
+import Control.Moffy.Event.CalcTextExtents (CalcTextExtents, calcTextExtents)
 import Trial.Followbox.ViewType (View, View1(..), blue)
 import Trial.Followbox.TypeSynonym (Position)
 

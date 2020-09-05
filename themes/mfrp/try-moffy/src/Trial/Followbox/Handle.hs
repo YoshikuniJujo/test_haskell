@@ -29,10 +29,11 @@ import System.Process (spawnProcess)
 import qualified Data.Text as T
 import qualified Network.HTTP.Simple as H
 
+import Control.Moffy.Event.CalcTextExtents
 import Trial.Followbox.Event (
 	FollowboxEv, StoreJsons(..), pattern OccStoreJsons,
 	LoadJsons, pattern OccLoadJsons, HttpGet(..), pattern OccHttpGet,
-	CalcTextExtents(..), pattern OccCalcTextExtents,
+--	CalcTextExtents(..), pattern OccCalcTextExtents,
 	GetTimeZone, pattern OccGetTimeZone, Browse(..), pattern OccBrowse,
 	BeginSleep(..), pattern OccBeginSleep, EndSleep, pattern OccEndSleep,
 	RaiseError(..), pattern OccRaiseError, Error(..), ErrorResult(..) )
