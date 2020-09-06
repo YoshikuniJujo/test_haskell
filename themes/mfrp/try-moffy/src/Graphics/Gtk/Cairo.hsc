@@ -10,16 +10,23 @@ module Graphics.Gtk.Cairo (
 	cairoImageSurfaceCreateFromPng, cairoSurfaceDestroy, cairoWithImageSurfaceFromPng,
 	cairoSetSourceSurface, cairoPaint,
 	CairoReadFunc, cairoImageSurfaceCreateFromPngStream, cairoWithImageSurfaceFromPngStream,
-	cairoScale, cairoIdentityMatrix
+	cairoScale, cairoIdentityMatrix,
+	cairoWithTextExtents,
+	cairoTextExtentsXBearing, cairoTextExtentsYBearing,
+	cairoTextExtentsWidth, cairoTextExtentsHeight,
+	cairoTextExtentsXAdvance, cairoTextExtentsYAdvance
 	) where
 
 import Foreign.Ptr
-import Foreign.Marshal.Array
+import Foreign.Marshal
+import Foreign.Storable
 import Foreign.C
 import Control.Exception
 import Data.Word
 
 import qualified Data.ByteString as BS
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 
 import Graphics.Gtk.CairoType
 import Graphics.Gtk.Cairo.Values
@@ -150,3 +157,24 @@ foreign import ccall "cairo_identity_matrix" c_cairo_identity_matrix :: Ptr Cair
 
 cairoIdentityMatrix :: CairoT -> IO ()
 cairoIdentityMatrix (CairoT cr) = c_cairo_identity_matrix cr
+
+newtype CairoTextExtentsT = CairoTextExtentsT (Ptr CairoTextExtentsT) deriving Show
+
+foreign import ccall "cairo_text_extents" c_cairo_text_extents :: Ptr CairoT -> CString -> (Ptr CairoTextExtentsT) -> IO ()
+
+cairoWithTextExtents :: CairoT -> T.Text -> (CairoTextExtentsT -> IO a) -> IO a
+cairoWithTextExtents (CairoT cr) txt f = BS.useAsCString (T.encodeUtf8 txt) \cs -> allocaBytes #{size cairo_text_extents_t} \p -> do
+	c_cairo_text_extents cr cs p
+	f (CairoTextExtentsT p)
+
+cairoTextExtentsXBearing, cairoTextExtentsYBearing :: CairoTextExtentsT -> IO #{type double}
+cairoTextExtentsXBearing (CairoTextExtentsT e) = #{peek cairo_text_extents_t, x_bearing} e
+cairoTextExtentsYBearing (CairoTextExtentsT e) = #{peek cairo_text_extents_t, y_bearing} e
+
+cairoTextExtentsWidth, cairoTextExtentsHeight :: CairoTextExtentsT -> IO #{type double}
+cairoTextExtentsWidth (CairoTextExtentsT e) = #{peek cairo_text_extents_t, width} e
+cairoTextExtentsHeight (CairoTextExtentsT e) = #{peek cairo_text_extents_t, height} e
+
+cairoTextExtentsXAdvance, cairoTextExtentsYAdvance :: CairoTextExtentsT -> IO #{type double}
+cairoTextExtentsXAdvance (CairoTextExtentsT e) = #{peek cairo_text_extents_t, x_advance} e
+cairoTextExtentsYAdvance (CairoTextExtentsT e) = #{peek cairo_text_extents_t, y_advance} e

@@ -165,7 +165,7 @@ todo
 			* [x] add CalcTextExtents to EvOccs
 			* [x] add TChan to send EvReqs (2)
 			* [x] print (2)
-			* [ ] add cairo_text_extents
+			* [x] add cairo_text_extents
 			* [ ] add converter :: (2) -> (1)
 			* [ ] add converter from cairo_text_extents_t to TextExtents
 			* [ ] add TChan to send font information and text (1)
