@@ -28,6 +28,8 @@ import Control.Moffy.Handle.Time
 import Data.Time.Clock.TAI
 import Foreign.Storable
 
+import qualified Data.Text as T
+
 import Data.Bool
 
 import Arr
@@ -62,6 +64,7 @@ tryUseTChan = do
 	c <- newTChanIO
 	c' <- newTChanIO
 	void . forkIO $ allocaMutable \m -> do
+		ftc <- newTChanIO
 		pokeMutable m =<< newArr []
 		[] <- gtkInit []
 		w <- gtkWindowNew gtkWindowToplevel
@@ -90,7 +93,7 @@ tryUseTChan = do
 
 		da <- gtkDrawingAreaNew
 		gtkContainerAdd (castWidgetToContainer w) da
-		gSignalConnect da DrawEvent tryDraw m
+		gSignalConnect da DrawEvent (tryDraw ftc) m
 
 		void . flip (gTimeoutAdd 101) () $ const do
 			atomically (lastTChan cr) >>= \case
@@ -103,6 +106,8 @@ tryUseTChan = do
 						Just (CalcTextExtentsReq fn fs t) -> do
 							putStrLn "CalcTextExtents"
 							print (fn, fs, t)
+							atomically $ writeTChan ftc (fn, fs, t)
+							gtkWidgetQueueDraw da
 							pure True
 
 		void . flip (gTimeoutAdd 100) () $ const do
@@ -130,12 +135,16 @@ lastTChan' x c = do
 	mx' <- tryReadTChan c
 	maybe (pure x) (`lastTChan'` c) mx'
 
-tryDraw :: (Storable a, Drawable a) => GtkWidget -> CairoT -> Mutable (Arr a) -> IO Bool
-tryDraw w cr x = True <$ do
+tryDraw :: (Storable a, Drawable a) => TChan (FontName, FontSize, T.Text) -> GtkWidget -> CairoT -> Mutable (Arr a) -> IO Bool
+tryDraw ftc w cr x = True <$ do
 	print' (w, cr, x)
 --	cairoMoveTo cr 100 100
 --	cairoLineTo cr 500 400
 --	cairoStroke cr
+	m3 <- atomically $ lastTChan ftc
+	case m3 of
+		Just (fn, fs, txt) -> cairoWithTextExtents cr txt $ \e -> print =<< cairoTextExtentsYBearing e
+		Nothing -> pure ()
 	draw cr =<< peekArr =<< peekMutable x
 
 gdkEventKeyToOccKeyDown :: GdkEventKey -> IO (EvOccs (Singleton KeyDown))
