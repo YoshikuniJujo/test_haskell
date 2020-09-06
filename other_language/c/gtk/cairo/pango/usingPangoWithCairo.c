@@ -1,7 +1,8 @@
 #include <gtk/gtk.h>
 
 #define RADIUS 150
-#define FONT "Sans Bold 27"
+// #define FONT "Sans Bold 27"
+#define FONT "Sans Bold"
 
 static void
 draw_text(cairo_t *cr)
@@ -16,11 +17,17 @@ draw_text(cairo_t *cr)
 
 	pango_layout_set_text (layout, "Text", -1);
 	desc = pango_font_description_from_string (FONT);
+	pango_font_description_set_size(desc, 27 * PANGO_SCALE);
 	pango_layout_set_font_description(layout, desc);
-	pango_font_description_free(desc);
 
 	pango_cairo_show_layout(cr, layout);
 
+	cairo_move_to (cr, 50, 50);
+	pango_font_description_set_size(desc, 20 * PANGO_SCALE);
+	pango_layout_set_font_description(layout, desc);
+	pango_cairo_show_layout(cr, layout);
+
+	pango_font_description_free(desc);
 	g_object_unref(layout);
 }
 
