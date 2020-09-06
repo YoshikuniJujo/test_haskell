@@ -143,7 +143,11 @@ tryDraw ftc w cr x = True <$ do
 --	cairoStroke cr
 	m3 <- atomically $ lastTChan ftc
 	case m3 of
-		Just (fn, fs, txt) -> cairoWithTextExtents cr txt $ \e -> print =<< cairoTextExtentsYBearing e
+		Just (fn, fs, txt) -> cairoWithTextExtents cr txt $ \e -> do
+			print =<< cairoTextExtentsXBearing e
+			print =<< cairoTextExtentsYBearing e
+			print =<< cairoTextExtentsWidth e
+			print =<< cairoTextExtentsHeight e
 		Nothing -> pure ()
 	draw cr =<< peekArr =<< peekMutable x
 
