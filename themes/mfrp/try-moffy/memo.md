@@ -161,6 +161,12 @@ todo
 		- [x] move TextExtents handle to Control.Moffy.Handle.XField.TextExtents
 		- [x] add TextExtents handle to Control.Moffy.Handle.XField.handle
 		- [x] add trial for TextExtents
+		- [ ] try pango_layout_get_extents and pango_layout_get_pixel_extents
+		- [ ] change TextExtents
+			* [x] dfine TextExtents'
+			* [ ] define calcTextExtents'
+			* [ ] change signal
+			* [ ] rename
 		- [ ] define TextExtents Handler on GTK
 			* [x] add CalcTextExtents to EvOccs
 			* [x] add TChan to send EvReqs (2)

@@ -16,6 +16,7 @@ import qualified Data.Text as T
 
 type FontName = String
 type FontSize = Double
+type Position = (Double, Double)
 
 data CalcTextExtents = CalcTextExtentsReq FontName FontSize T.Text
 	deriving (Show, Eq, Ord)
@@ -32,9 +33,38 @@ data TextExtents = TextExtents {
 	textExtentsXAdvance :: Double,
 	textExtentsYAdvance :: Double } deriving Show
 
+data TextExtents' = TextExtents' {
+	textExtentsInkRect :: Rectangle,
+	textExtentsLogicalRect :: Rectangle } deriving Show
+
+data Rectangle = Rectangle {
+	rectangleLeft :: Double,
+	rectangleTop :: Double,
+	recatngleWidth :: Double,
+	rectangleHeight :: Double } deriving Show
+
 calcTextExtents :: FontName -> FontSize -> T.Text ->
 	React s (Singleton CalcTextExtents) TextExtents
 calcTextExtents fn fs t = maybe (calcTextExtents fn fs t) pure
 	=<< await (CalcTextExtentsReq fn fs t)
 		\(OccCalcTextExtents fn' fs' t' glp) ->
 			bool Nothing (Just glp) $ (fn, fs, t) == (fn', fs', t')
+
+{-
+calcTextExtents' :: FontName -> FontSize -> Position -> T.Text ->
+	React s (Singleton CalcTextExtents) TextExtents'
+calcTextExtents'
+
+mkTextExtents' :: Position -> TextExtents -> TextExtents'
+mkTextExtents' (x, y) e = TextExtents' {
+	textExtentsInkRect = Rectangle
+	textExtentsLogicalRect = Rectangle
+	}
+	where
+	l = x - textExtentsXBearing e
+	t = y - textExtentsYBearing e
+	w = textExtentsWidth e
+	h = textExtentsHeight e
+	w' = textExtentsXAdvance e + textExtentsXBearing e
+	h' = textExtentsYAdvance e + textExtentsYBearing e
+-}
