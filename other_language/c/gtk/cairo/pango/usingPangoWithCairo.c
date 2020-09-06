@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <gtk/gtk.h>
 
 #define RADIUS 150
@@ -11,6 +12,10 @@ draw_text(cairo_t *cr)
 	PangoFontDescription *desc;
 	int i;
 
+	PangoRectangle ink_rect, logical_rect;
+
+	printf("PANGO_SCALE: %d\n", PANGO_SCALE);
+
 	cairo_translate(cr, RADIUS, RADIUS);
 
 	layout = pango_cairo_create_layout(cr);
@@ -20,11 +25,26 @@ draw_text(cairo_t *cr)
 	pango_font_description_set_size(desc, 27 * PANGO_SCALE);
 	pango_layout_set_font_description(layout, desc);
 
+	pango_layout_get_extents(layout, &ink_rect, &logical_rect);
+	printf("%d %d %d %d\n", ink_rect.x, ink_rect.y, ink_rect.width, ink_rect.height);
+	printf("%d %d %d %d\n", logical_rect.x, logical_rect.y, logical_rect.width, logical_rect.height);
+	pango_layout_get_pixel_extents(layout, &ink_rect, &logical_rect);
+	printf("%d %d %d %d\n", ink_rect.x, ink_rect.y, ink_rect.width, ink_rect.height);
+	printf("%d %d %d %d\n", logical_rect.x, logical_rect.y, logical_rect.width, logical_rect.height);
+
 	pango_cairo_show_layout(cr, layout);
 
 	cairo_move_to (cr, 50, 50);
 	pango_font_description_set_size(desc, 20 * PANGO_SCALE);
 	pango_layout_set_font_description(layout, desc);
+
+	pango_layout_get_extents(layout, &ink_rect, &logical_rect);
+	printf("%d %d %d %d\n", ink_rect.x, ink_rect.y, ink_rect.width, ink_rect.height);
+	printf("%d %d %d %d\n", logical_rect.x, logical_rect.y, logical_rect.width, logical_rect.height);
+	pango_layout_get_pixel_extents(layout, &ink_rect, &logical_rect);
+	printf("%d %d %d %d\n", ink_rect.x, ink_rect.y, ink_rect.width, ink_rect.height);
+	printf("%d %d %d %d\n", logical_rect.x, logical_rect.y, logical_rect.width, logical_rect.height);
+
 	pango_cairo_show_layout(cr, layout);
 
 	pango_font_description_free(desc);
