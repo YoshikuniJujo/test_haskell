@@ -12,6 +12,7 @@ import Control.Monad.ST (ST)
 import Data.Vector.Storable (Storable, MVector, modify)
 import Data.Bits ((.|.), shiftL)
 import Codec.Picture (Image(imageWidth, imageHeight, imageData), PixelRGBA8)
+import Graphics.X11.Xrender
 
 import qualified Data.Text as T
 import qualified Data.Vector.Generic.Mutable as MV
@@ -19,7 +20,7 @@ import qualified Data.Vector.Generic.Mutable as MV
 import Trial.Followbox.ViewType (View, View1(..), Color(..), white, blue)
 import Field (
 	Field, Pixel, Position,
-	clearField, flushField, drawLine, drawStr, drawImage )
+	clearField, flushField, drawLine, drawStr, drawImage, textExtents )
 
 ---------------------------------------------------------------------------
 
@@ -37,7 +38,9 @@ view1 :: Field -> View1 -> IO ()
 view1 f (Text
 	(colorToPixel -> p) fn fs
 	(x, y)
-	(T.unpack -> s)) = drawStr f p fn fs (round x) (round y) s
+	(T.unpack -> s)) = do
+		XGlyphInfo _ _ dx dy _ _ <- textExtents f fn fs s
+		drawStr f p fn fs (round x + fromIntegral dx) (round y + fromIntegral dy) s
 view1 f (Line
 	(colorToPixel -> p) (fromIntegral -> lw)
 	(round -> x1, round -> y1)

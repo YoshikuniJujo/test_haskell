@@ -14,12 +14,12 @@ import Prelude hiding (repeat)
 
 import Control.Moffy (React, adjust, repeat, find, indexBy)
 import Control.Moffy.Event.Mouse (MouseEv, leftClick, mouseMove)
-import Control.Moffy.Event.CalcTextExtents (TextExtents(..), FontName, FontSize)
+import Control.Moffy.Event.CalcTextExtents (TextExtents'(..), FontName, FontSize, Rectangle(..))
 import Data.Type.Set (Singleton)
 
 import qualified Data.Text as T
 
-import Control.Moffy.Event.CalcTextExtents (CalcTextExtents, calcTextExtents)
+import Control.Moffy.Event.CalcTextExtents (CalcTextExtents, calcTextExtents')
 import Trial.Followbox.ViewType (View, View1(..), blue)
 import Trial.Followbox.TypeSynonym (Position)
 
@@ -43,23 +43,22 @@ clickable v (l, t) (r, b) = Clickable v
 -- WITH TEXT EXTENTS
 ---------------------------------------------------------------------------
 
-data WithTextExtents = WithTextExtents FontName FontSize T.Text TextExtents
+data WithTextExtents = WithTextExtents FontName FontSize T.Text TextExtents'
 
 clickableText :: Position -> WithTextExtents -> Clickable s
 clickableText p@(x, y) (WithTextExtents fn fs txt xg) =
 	clickable [Text blue fn fs p txt] (l, t) (l + gw, t + gh) where
-	(l, t) = (x - gx, y - gy)
-	[gx, gy, gw, gh] = ($ xg) <$> [
-		textExtentsXBearing, textExtentsYBearing,
-		textExtentsWidth, textExtentsHeight ]
+	(l, t) = (x, y)
+	[gw, gh] = ($ xg) <$> [
+		rectangleWidth . textExtentsInkRect, rectangleHeight . textExtentsInkRect ]
 
 withTextExtents :: FontName -> FontSize -> T.Text ->
 	React s (Singleton CalcTextExtents) WithTextExtents
-withTextExtents fn fs t = WithTextExtents fn fs t <$> calcTextExtents fn fs t
+withTextExtents fn fs t = WithTextExtents fn fs t <$> calcTextExtents' fn fs t
 
 nextToText :: Position -> WithTextExtents -> Position
-nextToText (x, y) (WithTextExtents _ _ _ xg) = (x + xo, y + yo) where
-	[xo, yo] = ($ xg) <$> [textExtentsXAdvance, textExtentsYAdvance]
+nextToText (x, y) (WithTextExtents _ _ _ xg) = (x + xo, y) where
+	[xo, _yo] = ($ xg) <$> [rectangleWidth . textExtentsLogicalRect, rectangleHeight . textExtentsLogicalRect]
 
 translate :: Position -> WithTextExtents -> (Rational, Rational) -> Position
 translate (x, y) (WithTextExtents _ (toRational -> fs) _ _) (dx, dy) =

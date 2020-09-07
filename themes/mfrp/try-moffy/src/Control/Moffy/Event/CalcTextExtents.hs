@@ -40,15 +40,17 @@ data TextExtents' = TextExtents' {
 data Rectangle = Rectangle {
 	rectangleLeft :: Double,
 	rectangleTop :: Double,
-	recatngleWidth :: Double,
+	rectangleWidth :: Double,
 	rectangleHeight :: Double } deriving Show
 
+{-
 calcTextExtents :: FontName -> FontSize -> T.Text ->
 	React s (Singleton CalcTextExtents) TextExtents
 calcTextExtents fn fs t = maybe (calcTextExtents fn fs t) pure
 	=<< await (CalcTextExtentsReq fn fs t)
 		\(OccCalcTextExtents fn' fs' t' glp) ->
 			bool Nothing (Just glp) $ (fn, fs, t) == (fn', fs', t')
+			-}
 
 calcTextExtents' :: FontName -> FontSize -> T.Text ->
 	React s (Singleton CalcTextExtents) TextExtents'
@@ -67,4 +69,4 @@ mkTextExtents' e = TextExtents' {
 	w = textExtentsWidth e
 	h = textExtentsHeight e
 	w' = textExtentsXAdvance e + textExtentsXBearing e
-	h' = textExtentsXAdvance e + textExtentsYBearing e
+	h' = textExtentsYAdvance e + textExtentsYBearing e

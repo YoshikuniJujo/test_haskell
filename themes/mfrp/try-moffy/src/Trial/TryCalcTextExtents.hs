@@ -22,9 +22,9 @@ import qualified Data.Text as T
 
 import Field
 
-tryCalcTextExtents :: T.Text -> Sig s (DeleteEvent :- CalcTextExtents :- 'Nil) (T.Text, TextExtents) ()
+tryCalcTextExtents :: T.Text -> Sig s (DeleteEvent :- CalcTextExtents :- 'Nil) (T.Text, TextExtents') ()
 tryCalcTextExtents txt =
-	(emit . (txt ,) =<< waitFor (adjust $ calcTextExtents "Sans" 20 txt)) >> waitFor (adjust deleteEvent)
+	(emit . (txt ,) =<< waitFor (adjust $ calcTextExtents' "Sans" 20 txt)) >> waitFor (adjust deleteEvent)
 
 runTryCalcTextExtents :: IO ()
 runTryCalcTextExtents = do

@@ -73,8 +73,8 @@ userPageMax = 2 ^ (27 :: Int)
 -- BACKGROUND
 
 titlePos, nextPos, refreshPos, resetTimePos :: Position
-titlePos = (50, 80); nextPos = (500, 80)
-refreshPos = (600, 80); resetTimePos = (100, 500)
+titlePos = (50, 44); nextPos = (500, 44)
+refreshPos = (600, 44); resetTimePos = (100, 470)
 
 -- FONT
 
@@ -91,13 +91,13 @@ avatarSizeX, avatarSizeY :: Int
 
 avatarPos, namePos :: Double -> Position
 avatarPos n = (100, 120 + 120 * n)
-namePos n = (210, 180 + 120 * n)
+namePos n = (210, 150 + 120 * n)
 
 crossSize :: Double
 crossSize = largeSize / 2
 
 crossPos :: Position -> WithTextExtents -> Position
-crossPos p wte = translate (nextToText p wte) wte (1 / 2, - 5 / 8)
+crossPos p wte = translate (nextToText p wte) wte (1 / 2, 3 / 8)
 
 crossMergin :: Double
 crossMergin = 4

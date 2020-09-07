@@ -177,7 +177,10 @@ todo
 				+ [x] pango_layout_get_pixel_extents
 				+ [x] pango_cairo_show_layout
 			* [x] show pango extents in GTK main loop
+			* [x] move string
+			* [x] use calcTextExtents'
 			* [ ] change signal
+				+ [ ] move converter from Event to Handle
 			* [ ] rename
 		- [ ] define TextExtents Handler on GTK
 			* [x] add CalcTextExtents to EvOccs
