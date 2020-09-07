@@ -186,6 +186,7 @@ todo
 		- [x] add trial for TextExtents on GTK
 		- [x] make handleFollowboxWith
 		- [ ] make handler for followbox on GTK
+			* [ ] make Trial.Followbox.RunGtk
 		- [ ] try followbox with print
 		- [ ] define instance Drawable [view type of Followbox]
 		- [ ] try followbox
