@@ -50,21 +50,21 @@ calcTextExtents fn fs t = maybe (calcTextExtents fn fs t) pure
 		\(OccCalcTextExtents fn' fs' t' glp) ->
 			bool Nothing (Just glp) $ (fn, fs, t) == (fn', fs', t')
 
-{-
-calcTextExtents' :: FontName -> FontSize -> Position -> T.Text ->
+calcTextExtents' :: FontName -> FontSize -> T.Text ->
 	React s (Singleton CalcTextExtents) TextExtents'
-calcTextExtents'
+calcTextExtents' fn fs t = maybe (calcTextExtents' fn fs t) (pure . mkTextExtents')
+	=<< await (CalcTextExtentsReq fn fs t)
+		\(OccCalcTextExtents fn' fs' t' glp) ->
+			bool Nothing (Just glp) $ (fn, fs, t) == (fn', fs', t')
 
-mkTextExtents' :: Position -> TextExtents -> TextExtents'
-mkTextExtents' (x, y) e = TextExtents' {
-	textExtentsInkRect = Rectangle
-	textExtentsLogicalRect = Rectangle
-	}
+mkTextExtents' :: TextExtents -> TextExtents'
+mkTextExtents' e = TextExtents' {
+	textExtentsInkRect = Rectangle l t w h,
+	textExtentsLogicalRect = Rectangle l t w' h' }
 	where
-	l = x - textExtentsXBearing e
-	t = y - textExtentsYBearing e
+	l = 0
+	t = 0
 	w = textExtentsWidth e
 	h = textExtentsHeight e
 	w' = textExtentsXAdvance e + textExtentsXBearing e
-	h' = textExtentsYAdvance e + textExtentsYBearing e
--}
+	h' = textExtentsXAdvance e + textExtentsYBearing e

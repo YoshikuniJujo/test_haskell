@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d4952c9b4d1f89718be150ef0ece249c1e51c6987a89255a8316b91d658d224f
+-- hash: 28e2c553bcacb0a579209c64643ca1b483ad664ca1adcbc151ddc0d0945800cb
 
 name:           try-moffy
 version:        0.1.0.0
@@ -71,6 +71,7 @@ library
       Graphics.Gtk.Cairo
       Graphics.Gtk.Cairo.Values
       Graphics.Gtk.CairoType
+      Graphics.Gtk.Pango
       Graphics.Gtk.Values
       Trial.Boxes
       Trial.Boxes.Box
@@ -289,6 +290,39 @@ executable tryCairoTextExtents
 
 executable tryGtk
   main-is: tryGtk.hs
+  other-modules:
+      Main
+      Paths_try_moffy
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyPixels
+    , JuicyPixels-extra
+    , X11
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , simple-field
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy
+    , type-flip
+    , unordered-containers
+    , vector
+  default-language: Haskell2010
+
+executable tryPango
+  main-is: tryPango.hs
   other-modules:
       Main
       Paths_try_moffy

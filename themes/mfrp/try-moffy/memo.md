@@ -163,8 +163,17 @@ todo
 		- [x] add trial for TextExtents
 		- [ ] try pango_layout_get_extents and pango_layout_get_pixel_extents
 		- [ ] change TextExtents
-			* [x] dfine TextExtents'
-			* [ ] define calcTextExtents'
+			* [x] define TextExtents'
+			* [x] define calcTextExtents'
+			* [ ] make wrapper of pango_layout_get_extents
+				+ [x] pango_cairo_create_layout
+				+ [x] pango_layout_set_text
+				+ [ ] pango_font_description_from_string
+				+ [ ] pango_font_description_set_size
+				+ [ ] pango_layout_set_font_description
+				+ [ ] pango_layout_get_extents
+				+ [ ] pango_layout_get_pixel_extents
+				+ [x] pango_cairo_show_layout
 			* [ ] change signal
 			* [ ] rename
 		- [ ] define TextExtents Handler on GTK
