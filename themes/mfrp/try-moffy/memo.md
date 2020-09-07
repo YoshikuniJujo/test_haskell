@@ -168,9 +168,9 @@ todo
 			* [ ] make wrapper of pango_layout_get_extents
 				+ [x] pango_cairo_create_layout
 				+ [x] pango_layout_set_text
-				+ [ ] pango_font_description_from_string
+				+ [x] pango_font_description_from_string
 				+ [ ] pango_font_description_set_size
-				+ [ ] pango_layout_set_font_description
+				+ [x] pango_layout_set_font_description
 				+ [ ] pango_layout_get_extents
 				+ [ ] pango_layout_get_pixel_extents
 				+ [x] pango_cairo_show_layout

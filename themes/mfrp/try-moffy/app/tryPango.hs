@@ -25,10 +25,23 @@ draw w cr _ = True <$ do
 	cairoLineTo cr 500 400
 	cairoStroke cr
 	l <- pangoCairoCreateLayout cr
+
 	cairoMoveTo cr 200 120
 	pangoLayoutSetText l "Hello, world!"
 	pangoCairoShowLayout cr l
 	cairoMoveTo cr 200 150
+	pangoLayoutSetText l "こんにちは、世界!"
+	pangoCairoShowLayout cr l
+
+	sans <- pangoFontDescriptionFromString "Sans"
+--	serif <- pangoFontDescriptionFromString "Serif"
+	pangoLayoutSetFontDescription l sans
+--	pangoLayoutSetFontDescription l serif
+
+	cairoMoveTo cr 200 180
+	pangoLayoutSetText l "Hello, world!"
+	pangoCairoShowLayout cr l
+	cairoMoveTo cr 200 210
 	pangoLayoutSetText l "こんにちは、世界!"
 	pangoCairoShowLayout cr l
 	{-

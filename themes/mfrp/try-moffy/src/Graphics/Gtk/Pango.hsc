@@ -35,3 +35,21 @@ foreign import ccall "pango_cairo_show_layout" c_pango_cairo_show_layout ::
 
 pangoCairoShowLayout :: CairoT -> PangoLayout -> IO ()
 pangoCairoShowLayout (CairoT cr) (PangoLayout l) = c_pango_cairo_show_layout cr l
+
+newtype PangoFontDescription = PangoFontDescription (Ptr PangoFontDescription)
+	deriving Show
+
+foreign import ccall "pango_font_description_from_string" c_pango_font_description_from_string ::
+	CString -> IO (Ptr PangoFontDescription)
+
+pangoFontDescriptionFromString :: T.Text -> IO PangoFontDescription
+pangoFontDescriptionFromString txt =
+	BS.useAsCString (T.encodeUtf8 txt) \cs ->
+		PangoFontDescription <$> c_pango_font_description_from_string cs
+
+foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font_description ::
+	Ptr PangoLayout -> Ptr PangoFontDescription -> IO ()
+
+pangoLayoutSetFontDescription :: PangoLayout -> PangoFontDescription -> IO ()
+pangoLayoutSetFontDescription (PangoLayout l) (PangoFontDescription d) =
+	c_pango_layout_set_font_description l d
