@@ -184,6 +184,8 @@ todo
 			* [ ] rename
 		- [x] define TextExtents Handler on GTK
 		- [x] add trial for TextExtents on GTK
+		- [x] make handleFollowboxWith
+		- [ ] make handler for followbox on GTK
 		- [ ] try followbox with print
 		- [ ] define instance Drawable [view type of Followbox]
 		- [ ] try followbox

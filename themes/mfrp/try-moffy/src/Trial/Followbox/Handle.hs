@@ -5,12 +5,9 @@
 
 module Trial.Followbox.Handle (
 	-- * Handle
-	HandleF, HandleF',
+	HandleF, HandleF', handleFollowboxWith, GuiEv,
 	-- * State
 	FollowboxState(..), initialFollowboxState,
-
-	handleMouseWithSleep, handleRaiseError, handleEndSleep, handleBeginSleep,
-	handleBrowse, liftOnJust, handleGetTimeZone, handleHttpGet, handleLoadJsons, handleStoreJsons,
 	) where
 
 import Control.Moffy.Event.Delete
@@ -18,9 +15,11 @@ import Control.Moffy.Event.Key
 import Control.Moffy.Event.Mouse
 import Control.Moffy.Event.CalcTextExtents (CalcTextExtents)
 import Control.Moffy.Handle (
-	Handle, Handle', HandleSt, HandleSt', HandleIo', liftHandle')
-import Control.Moffy.Handle.Lock (LockState(..), LockId)
-import Control.Moffy.Handle.Random (RandomState(..))
+	Handle, Handle', HandleSt, HandleSt', HandleIo', liftHandle',
+	retrySt, beforeSt, mergeSt )
+import Control.Moffy.Handle.ThreadId (handleGetThreadId)
+import Control.Moffy.Handle.Lock (LockState(..), LockId, handleLock)
+import Control.Moffy.Handle.Random (RandomState(..), handleRandom)
 import Data.Type.Set (Singleton, (:-), (:+:))
 import Data.OneOrMore (pattern Singleton)
 import Data.Bool (bool)
@@ -35,7 +34,7 @@ import qualified Data.Text as T
 import qualified Network.HTTP.Simple as H
 
 import Trial.Followbox.Event (
-	StoreJsons(..), pattern OccStoreJsons,
+	FollowboxEv, StoreJsons(..), pattern OccStoreJsons,
 	LoadJsons, pattern OccLoadJsons, HttpGet(..), pattern OccHttpGet,
 	GetTimeZone, pattern OccGetTimeZone, Browse(..), pattern OccBrowse,
 	BeginSleep(..), pattern OccBeginSleep, EndSleep, pattern OccEndSleep,
@@ -91,6 +90,22 @@ instance RandomState FollowboxState where
 ---------------------------------------------------------------------------
 -- HANDLE
 ---------------------------------------------------------------------------
+
+-- FOLLOWBOX
+
+handleFollowboxWith ::
+	(Maybe DiffTime -> f -> Handle' IO (CalcTextExtents :- GuiEv)) ->
+	f -> Browser -> Maybe GithubNameToken ->
+	HandleF IO (GuiEv :+: FollowboxEv)
+handleFollowboxWith h f brws mba = retrySt $
+	liftHandle' handleGetThreadId `mergeSt` handleLock `mergeSt`
+	handleRandom `mergeSt`
+	handleStoreJsons `mergeSt` handleLoadJsons `mergeSt`
+	liftOnJust (handleHttpGet mba) `mergeSt`
+	liftOnJust handleGetTimeZone `mergeSt`
+	liftOnJust (handleBrowse brws) `mergeSt`
+	handleBeginSleep `mergeSt` handleEndSleep `mergeSt`
+	liftHandle' handleRaiseError `beforeSt` handleMouseWithSleep h f
 
 -- MOUSE
 
