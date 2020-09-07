@@ -169,8 +169,10 @@ todo
 				+ [x] pango_cairo_create_layout
 				+ [x] pango_layout_set_text
 				+ [x] pango_font_description_from_string
-				+ [ ] pango_font_description_set_size
+				+ [x] pango_font_description_set_size
+				+ [x] pango_font_description_set_absolute_size
 				+ [x] pango_layout_set_font_description
+				+ [ ] difference of size and absolute size
 				+ [ ] pango_layout_get_extents
 				+ [ ] pango_layout_get_pixel_extents
 				+ [x] pango_cairo_show_layout

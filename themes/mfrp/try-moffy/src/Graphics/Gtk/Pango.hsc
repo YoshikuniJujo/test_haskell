@@ -53,3 +53,17 @@ foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font
 pangoLayoutSetFontDescription :: PangoLayout -> PangoFontDescription -> IO ()
 pangoLayoutSetFontDescription (PangoLayout l) (PangoFontDescription d) =
 	c_pango_layout_set_font_description l d
+
+foreign import ccall "pango_font_description_set_size" c_pango_font_description_set_size ::
+	Ptr PangoFontDescription -> #{type gint} -> IO ()
+
+pangoFontDescriptionSetSize :: PangoFontDescription -> #{type gint} -> IO ()
+pangoFontDescriptionSetSize (PangoFontDescription d) =
+	c_pango_font_description_set_size d . (* #{const PANGO_SCALE})
+
+foreign import ccall "pango_font_description_set_absolute_size" c_pango_font_description_set_absolute_size ::
+	Ptr PangoFontDescription -> #{type double} -> IO ()
+
+pangoFontDescriptionSetAbsoluteSize :: PangoFontDescription -> #{type double} -> IO ()
+pangoFontDescriptionSetAbsoluteSize (PangoFontDescription d) =
+	c_pango_font_description_set_absolute_size d . (* #{const PANGO_SCALE})

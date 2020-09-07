@@ -34,16 +34,29 @@ draw w cr _ = True <$ do
 	pangoCairoShowLayout cr l
 
 	sans <- pangoFontDescriptionFromString "Sans"
+
+	pangoFontDescriptionSetAbsoluteSize sans 20
 --	serif <- pangoFontDescriptionFromString "Serif"
 	pangoLayoutSetFontDescription l sans
 --	pangoLayoutSetFontDescription l serif
-
 	cairoMoveTo cr 200 180
 	pangoLayoutSetText l "Hello, world!"
 	pangoCairoShowLayout cr l
 	cairoMoveTo cr 200 210
 	pangoLayoutSetText l "こんにちは、世界!"
 	pangoCairoShowLayout cr l
+
+	pangoFontDescriptionSetSize sans 20
+--	serif <- pangoFontDescriptionFromString "Serif"
+	pangoLayoutSetFontDescription l sans
+--	pangoLayoutSetFontDescription l serif
+	cairoMoveTo cr 200 240
+	pangoLayoutSetText l "Hello, world!"
+	pangoCairoShowLayout cr l
+	cairoMoveTo cr 200 270
+	pangoLayoutSetText l "こんにちは、世界!"
+	pangoCairoShowLayout cr l
+
 	{-
 	cairoSelectFontFace cr "Serif" cairoFontSlantNormal cairoFontWeightNormal
 	cairoSetFontSize cr 30
