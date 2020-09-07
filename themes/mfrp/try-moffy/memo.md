@@ -176,7 +176,7 @@ todo
 				+ [x] pango_layout_get_extents
 				+ [x] pango_layout_get_pixel_extents
 				+ [x] pango_cairo_show_layout
-			* [ ] show pango extents in GTK main loop
+			* [x] show pango extents in GTK main loop
 			* [ ] change signal
 			* [ ] rename
 		- [ ] define TextExtents Handler on GTK

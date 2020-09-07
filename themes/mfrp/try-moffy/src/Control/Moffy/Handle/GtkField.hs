@@ -22,6 +22,7 @@ import Data.Time
 import System.Timeout
 import Graphics.Gtk as Gtk
 import Graphics.Gtk.Cairo
+import Graphics.Gtk.Pango
 
 import Control.Moffy.Event.Time
 import Control.Moffy.Handle.Time
@@ -143,11 +144,25 @@ tryDraw ftc w cr x = True <$ do
 --	cairoStroke cr
 	m3 <- atomically $ lastTChan ftc
 	case m3 of
-		Just (fn, fs, txt) -> cairoWithTextExtents cr txt $ \e -> do
-			print =<< cairoTextExtentsXBearing e
-			print =<< cairoTextExtentsYBearing e
-			print =<< cairoTextExtentsWidth e
-			print =<< cairoTextExtentsHeight e
+		Just (fn, fs, txt) -> do
+			cairoWithTextExtents cr txt $ \e -> do
+				print =<< cairoTextExtentsXBearing e
+				print =<< cairoTextExtentsYBearing e
+				print =<< cairoTextExtentsWidth e
+				print =<< cairoTextExtentsHeight e
+			l <- pangoCairoCreateLayout cr
+			pangoLayoutSetText l txt
+			pangoLayoutWithPixelExtents l \ie le -> do
+				putStrLn "ink_rect"
+				print =<< pangoRectangleX ie
+				print =<< pangoRectangleY ie
+				print =<< pangoRectangleWidth ie
+				print =<< pangoRectangleHeight ie
+				putStrLn "logical_rect"
+				print =<< pangoRectangleX le
+				print =<< pangoRectangleY le
+				print =<< pangoRectangleWidth le
+				print =<< pangoRectangleHeight le
 		Nothing -> pure ()
 	draw cr =<< peekArr =<< peekMutable x
 

@@ -69,24 +69,6 @@ draw w cr _ = True <$ do
 	pangoLayoutSetText l "こんにちは、世界!"
 	pangoCairoShowLayout cr l
 
-	{-
-	cairoSelectFontFace cr "Serif" cairoFontSlantNormal cairoFontWeightNormal
-	cairoSetFontSize cr 30
-	cairoShowText cr "Hello, world! "
-	cairoShowText cr "こんにちは、世界!"
-	cairoMoveTo cr 200 160
-	cairoSelectFontFace cr "Serif" cairoFontSlantNormal cairoFontWeightBold
-	cairoSetFontSize cr 30
-	cairoShowText cr "Hello, world! "
-	cairoShowText cr "こんにちは、世界!"
-	cairoMoveTo cr 200 200
-	cairoSelectFontFace cr "Sans" cairoFontSlantNormal cairoFontWeightNormal
-	cairoSetFontSize cr 30
-	cairoShowText cr "Hello, world! "
-	cairoShowText cr "こんにちは、世界!"
-	cairoMoveTo cr 200 240
-	cairoSelectFontFace cr "Sans" cairoFontSlantNormal cairoFontWeightBold
-	cairoSetFontSize cr 30
-	cairoShowText cr "Hello, world! "
-	cairoShowText cr "こんにちは、世界!"
-	-}
+	pangoLayoutSetText l "top left"
+	cairoMoveTo cr 0 0
+	pangoCairoShowLayout cr l
