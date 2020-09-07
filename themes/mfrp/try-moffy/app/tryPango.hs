@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 import Graphics.Gtk
@@ -40,6 +40,18 @@ draw w cr _ = True <$ do
 	pangoLayoutSetFontDescription l sans
 --	pangoLayoutSetFontDescription l serif
 	cairoMoveTo cr 200 180
+--	pangoLayoutWithExtents l \ie le -> do
+	pangoLayoutWithPixelExtents l \ie le -> do
+		print ie
+		print =<< pangoRectangleX ie
+		print =<< pangoRectangleY ie
+		print =<< pangoRectangleWidth ie
+		print =<< pangoRectangleHeight ie
+		print le
+		print =<< pangoRectangleX le
+		print =<< pangoRectangleY le
+		print =<< pangoRectangleWidth le
+		print =<< pangoRectangleHeight le
 	pangoLayoutSetText l "Hello, world!"
 	pangoCairoShowLayout cr l
 	cairoMoveTo cr 200 210

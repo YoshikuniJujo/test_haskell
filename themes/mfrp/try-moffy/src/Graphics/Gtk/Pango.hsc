@@ -5,6 +5,8 @@
 module Graphics.Gtk.Pango where
 
 import Foreign.Ptr
+import Foreign.Marshal
+import Foreign.Storable
 import Foreign.C
 import Data.Int
 import Graphics.Gtk.CairoType
@@ -67,3 +69,32 @@ foreign import ccall "pango_font_description_set_absolute_size" c_pango_font_des
 pangoFontDescriptionSetAbsoluteSize :: PangoFontDescription -> #{type double} -> IO ()
 pangoFontDescriptionSetAbsoluteSize (PangoFontDescription d) =
 	c_pango_font_description_set_absolute_size d . (* #{const PANGO_SCALE})
+
+newtype PangoRectangle = PangoRectangle (Ptr PangoRectangle) deriving Show
+
+foreign import ccall "pango_layout_get_extents" c_pango_layout_get_extents ::
+	Ptr PangoLayout -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+
+pangoLayoutWithExtents :: PangoLayout -> (PangoRectangle -> PangoRectangle -> IO a) -> IO a
+pangoLayoutWithExtents (PangoLayout l) f =
+	allocaBytes #{size PangoRectangle} \pir ->
+		allocaBytes #{size PangoRectangle} \plr -> do
+			c_pango_layout_get_extents l pir plr
+			f (PangoRectangle pir) (PangoRectangle plr)
+
+pangoRectangleX, pangoRectangleY, pangoRectangleWidth,
+	pangoRectangleHeight :: PangoRectangle -> IO #{type int}
+pangoRectangleX (PangoRectangle r) = #{peek PangoRectangle, x} r
+pangoRectangleY (PangoRectangle r) = #{peek PangoRectangle, y} r
+pangoRectangleWidth (PangoRectangle r) = #{peek PangoRectangle, width} r
+pangoRectangleHeight (PangoRectangle r) = #{peek PangoRectangle, height} r
+
+foreign import ccall "pango_layout_get_pixel_extents" c_pango_layout_get_pixel_extents ::
+	Ptr PangoLayout -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+
+pangoLayoutWithPixelExtents :: PangoLayout -> (PangoRectangle -> PangoRectangle -> IO a) -> IO a
+pangoLayoutWithPixelExtents (PangoLayout l) f =
+	allocaBytes #{size PangoRectangle} \pir ->
+		allocaBytes #{size PangoRectangle} \plr -> do
+			c_pango_layout_get_pixel_extents l pir plr
+			f (PangoRectangle pir) (PangoRectangle plr)
