@@ -6,7 +6,7 @@
 #define FONT "Sans Bold"
 
 static void
-draw_text(cairo_t *cr)
+draw_text(cairo_t *cr, char *str)
 {
 	PangoLayout *layout;
 	PangoFontDescription *desc;
@@ -20,7 +20,7 @@ draw_text(cairo_t *cr)
 
 	layout = pango_cairo_create_layout(cr);
 
-	pango_layout_set_text (layout, "Text", -1);
+	pango_layout_set_text (layout, str, -1);
 	desc = pango_font_description_from_string (FONT);
 	pango_font_description_set_size(desc, 27 * PANGO_SCALE);
 	pango_layout_set_font_description(layout, desc);
@@ -59,6 +59,10 @@ main(int argc, char *argv[])
 	cairo_status_t status;
 	cairo_surface_t *surface;
 
+	if (argc != 2) {
+		printf("./usingPangoWithCairo some_string\n");
+		return 1; }
+
 	filename = "some.png";
 
 	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 2 * RADIUS, 2 * RADIUS);
@@ -68,7 +72,7 @@ main(int argc, char *argv[])
 	cairo_line_to (cr, 400, 400);
 	cairo_stroke(cr);
 
-	draw_text(cr);
+	draw_text(cr, argv[1]);
 
 	status = cairo_surface_write_to_png(surface, filename);
 	cairo_surface_destroy(surface);
