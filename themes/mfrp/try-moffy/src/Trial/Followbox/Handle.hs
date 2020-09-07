@@ -5,24 +5,29 @@
 
 module Trial.Followbox.Handle (
 	-- * Handle
-	HandleF, handleFollowbox,
+	HandleF, HandleF',
 	-- * State
-	FollowboxState, initialFollowboxState ) where
+	FollowboxState(..), initialFollowboxState,
 
+	handleMouseWithSleep, handleRaiseError, handleEndSleep, handleBeginSleep,
+	handleBrowse, liftOnJust, handleGetTimeZone, handleHttpGet, handleLoadJsons, handleStoreJsons,
+	) where
+
+import Control.Moffy.Event.Delete
+import Control.Moffy.Event.Key
+import Control.Moffy.Event.Mouse
+import Control.Moffy.Event.CalcTextExtents (CalcTextExtents)
 import Control.Moffy.Handle (
-	Handle, Handle', HandleSt, HandleSt', HandleIo',
-	liftHandle', retrySt, beforeSt, mergeSt )
-import Control.Moffy.Handle.ThreadId (handleGetThreadId)
-import Control.Moffy.Handle.Lock (LockState(..), LockId, handleLock)
-import Control.Moffy.Handle.Random (RandomState(..), handleRandom)
-import Control.Moffy.Handle.XField (GuiEv, handle', CalcTextExtents)
+	Handle, Handle', HandleSt, HandleSt', HandleIo', liftHandle')
+import Control.Moffy.Handle.Lock (LockState(..), LockId)
+import Control.Moffy.Handle.Random (RandomState(..))
 import Data.Type.Set (Singleton, (:-), (:+:))
 import Data.OneOrMore (pattern Singleton)
 import Data.Bool (bool)
 import Data.List (delete)
 import Data.String (fromString)
 import Data.Aeson (Object)
-import Data.Time (UTCTime, getCurrentTime, getCurrentTimeZone, diffUTCTime)
+import Data.Time (UTCTime, getCurrentTime, getCurrentTimeZone, diffUTCTime, DiffTime)
 import System.Random (StdGen)
 import System.Process (spawnProcess)
 
@@ -30,13 +35,12 @@ import qualified Data.Text as T
 import qualified Network.HTTP.Simple as H
 
 import Trial.Followbox.Event (
-	FollowboxEv, StoreJsons(..), pattern OccStoreJsons,
+	StoreJsons(..), pattern OccStoreJsons,
 	LoadJsons, pattern OccLoadJsons, HttpGet(..), pattern OccHttpGet,
 	GetTimeZone, pattern OccGetTimeZone, Browse(..), pattern OccBrowse,
 	BeginSleep(..), pattern OccBeginSleep, EndSleep, pattern OccEndSleep,
 	RaiseError(..), pattern OccRaiseError, Error(..), ErrorResult(..) )
 import Trial.Followbox.TypeSynonym (Browser, GithubNameToken)
-import Field (Field)
 
 ---------------------------------------------------------------------------
 
@@ -56,6 +60,8 @@ import Field (Field)
 ---------------------------------------------------------------------------
 -- STATE
 ---------------------------------------------------------------------------
+
+type GuiEv = DeleteEvent :- (KeyEv :+: MouseEv)
 
 -- FOLLOWOBOX STATE
 
@@ -86,27 +92,15 @@ instance RandomState FollowboxState where
 -- HANDLE
 ---------------------------------------------------------------------------
 
--- FOLLOWBOX
-
-handleFollowbox :: Field -> Browser -> Maybe GithubNameToken ->
-	HandleF IO (GuiEv :+: FollowboxEv)
-handleFollowbox f brws mba = retrySt $
-	liftHandle' handleGetThreadId `mergeSt` handleLock `mergeSt`
-	handleRandom `mergeSt`
-	handleStoreJsons `mergeSt` handleLoadJsons `mergeSt`
-	liftOnJust (handleHttpGet mba) `mergeSt`
-	liftOnJust handleGetTimeZone `mergeSt`
-	liftOnJust (handleBrowse brws) `mergeSt`
-	handleBeginSleep `mergeSt` handleEndSleep `mergeSt`
-	liftHandle' handleRaiseError `beforeSt` handleMouseWithSleep f
-
 -- MOUSE
 
-handleMouseWithSleep :: Field -> HandleF' IO (CalcTextExtents :- GuiEv)
-handleMouseWithSleep f rqs s = (, s) <$> case fsSleepUntil s of
-	Nothing -> handle' Nothing f rqs
+handleMouseWithSleep ::
+	(Maybe DiffTime -> f -> Handle' IO (CalcTextExtents :- GuiEv)) ->
+	f -> HandleF' IO (CalcTextExtents :- GuiEv)
+handleMouseWithSleep h f rqs s = (, s) <$> case fsSleepUntil s of
+	Nothing -> h Nothing f rqs
 	Just t -> getCurrentTime >>= \now ->
-		handle' (Just . realToFrac $ t `diffUTCTime` now) f rqs
+		h (Just . realToFrac $ t `diffUTCTime` now) f rqs
 
 -- STORE AND LOAD JSONS
 

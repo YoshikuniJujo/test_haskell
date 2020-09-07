@@ -221,9 +221,9 @@ gdkEventButtonToOccMouseUp e = do
 		1 -> ButtonLeft; 2 -> ButtonMiddle; 3 -> ButtonRight
 		n -> ButtonUnknown n
 
-handleDelete :: DiffTime -> TChan (EvReqs GuiEv) -> TChan (EvOccs GuiEv) -> Handle' IO GuiEv
+handleDelete :: Maybe DiffTime -> TChan (EvReqs GuiEv) -> TChan (EvOccs GuiEv) -> Handle' IO GuiEv
 -- handleDelete :: DiffTime -> TChan (EvOccs GuiEv) -> Handle' IO GuiEv
-handleDelete t cr c rqs = timeout (round $ t * 1000000) do
+handleDelete mt cr c rqs = maybe (Just <$>) (timeout . round . (* 1000000)) mt do
 	atomically $ writeTChan cr rqs
 	atomically $ readTChan c
 
@@ -236,4 +236,4 @@ curry3 f x y z = f (x, y, z)
 handleBoxesFoo :: DiffTime -> TChan (EvReqs GuiEv) -> TChan (EvOccs GuiEv) ->
 	HandleSt (Mode, AbsoluteTime) IO (TimeEv :+: GuiEv)
 handleBoxesFoo dt cr co = retrySt
-	$ ((\f x y z -> f (x, (y, z))) . popInput . handleTimeEvPlus . pushInput) (\(x, (y, z)) -> (((liftHandle' .) .) . handleDelete) x y z) dt cr co
+	$ ((\f x y z -> f (x, (y, z))) . popInput . handleTimeEvPlus . pushInput) (\(x, (y, z)) -> (((liftHandle' .) .) . handleDelete . Just) x y z) dt cr co
