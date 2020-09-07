@@ -1,10 +1,14 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Event.CalcTextExtents where
+module Control.Moffy.Event.CalcTextExtents (
+	CalcTextExtents(..), pattern OccCalcTextExtents,
+	TextExtents'(..), Rectangle(..), FontName, FontSize, calcTextExtents'
+	) where
 
 import Control.Moffy
 import Data.Type.Set
@@ -16,22 +20,13 @@ import qualified Data.Text as T
 
 type FontName = String
 type FontSize = Double
-type Position = (Double, Double)
 
 data CalcTextExtents = CalcTextExtentsReq FontName FontSize T.Text
 	deriving (Show, Eq, Ord)
 numbered [t| CalcTextExtents |]
 instance Request CalcTextExtents where
 	data Occurred CalcTextExtents =
-		OccCalcTextExtents FontName FontSize T.Text TextExtents
-
-data TextExtents = TextExtents {
-	textExtentsXBearing :: Double,
-	textExtentsYBearing :: Double,
-	textExtentsWidth :: Double,
-	textExtentsHeight :: Double,
-	textExtentsXAdvance :: Double,
-	textExtentsYAdvance :: Double } deriving Show
+		OccCalcTextExtents FontName FontSize T.Text TextExtents'
 
 data TextExtents' = TextExtents' {
 	textExtentsInkRect :: Rectangle,
@@ -54,19 +49,7 @@ calcTextExtents fn fs t = maybe (calcTextExtents fn fs t) pure
 
 calcTextExtents' :: FontName -> FontSize -> T.Text ->
 	React s (Singleton CalcTextExtents) TextExtents'
-calcTextExtents' fn fs t = maybe (calcTextExtents' fn fs t) (pure . mkTextExtents')
+calcTextExtents' fn fs t = maybe (calcTextExtents' fn fs t) pure
 	=<< await (CalcTextExtentsReq fn fs t)
 		\(OccCalcTextExtents fn' fs' t' glp) ->
 			bool Nothing (Just glp) $ (fn, fs, t) == (fn', fs', t')
-
-mkTextExtents' :: TextExtents -> TextExtents'
-mkTextExtents' e = TextExtents' {
-	textExtentsInkRect = Rectangle l t w h,
-	textExtentsLogicalRect = Rectangle l t w' h' }
-	where
-	l = 0
-	t = 0
-	w = textExtentsWidth e
-	h = textExtentsHeight e
-	w' = textExtentsXAdvance e + textExtentsXBearing e
-	h' = textExtentsYAdvance e + textExtentsYBearing e

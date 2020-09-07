@@ -24,7 +24,7 @@ import Field
 
 tryCalcTextExtents :: T.Text -> Sig s (DeleteEvent :- CalcTextExtents :- 'Nil) (T.Text, TextExtents') ()
 tryCalcTextExtents txt =
-	(emit . (txt ,) =<< waitFor (adjust $ calcTextExtents' "Sans" 20 txt)) >> waitFor (adjust deleteEvent)
+	(emit . (txt ,) =<< waitFor (adjust $ calcTextExtents' "Sans" 30 txt)) >> waitFor (adjust deleteEvent)
 
 runTryCalcTextExtents :: IO ()
 runTryCalcTextExtents = do
@@ -36,7 +36,8 @@ runTryCalcTextExtentsGtk :: IO ()
 runTryCalcTextExtentsGtk = do
 	(cr, c, c' :: TChan [()]) <- tryUseTChan
 --	fst <$> ((interpretSt (handleBoxesFoo 0.1 cr c) (atomically . writeTChan c') (tryCalcTextExtents "hello") . (InitialMode ,) . systemToTAITime =<< getSystemTime)
-	fst <$> ((interpretSt (handleBoxesFoo 0.1 cr c) print (tryCalcTextExtents "hello") . (InitialMode ,) . systemToTAITime =<< getSystemTime)
+--	fst <$> ((interpretSt (handleBoxesFoo 0.1 cr c) print (tryCalcTextExtents "hello") . (InitialMode ,) . systemToTAITime =<< getSystemTime)
+	fst <$> ((interpretSt (handleBoxesFoo 0.1 cr c) print (tryCalcTextExtents "Text, hello jj!") . (InitialMode ,) . systemToTAITime =<< getSystemTime)
 		<* gtkMainQuit)
 
 instance Drawable () where

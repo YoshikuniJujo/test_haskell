@@ -161,7 +161,7 @@ todo
 		- [x] move TextExtents handle to Control.Moffy.Handle.XField.TextExtents
 		- [x] add TextExtents handle to Control.Moffy.Handle.XField.handle
 		- [x] add trial for TextExtents
-		- [ ] try pango_layout_get_extents and pango_layout_get_pixel_extents
+		- [x] try pango_layout_get_extents and pango_layout_get_pixel_extents
 		- [ ] change TextExtents
 			* [x] define TextExtents'
 			* [x] define calcTextExtents'
@@ -179,18 +179,11 @@ todo
 			* [x] show pango extents in GTK main loop
 			* [x] move string
 			* [x] use calcTextExtents'
-			* [ ] change signal
-				+ [ ] move converter from Event to Handle
+			* [x] change signal
+				+ [x] move converter from Event to Handle
 			* [ ] rename
-		- [ ] define TextExtents Handler on GTK
-			* [x] add CalcTextExtents to EvOccs
-			* [x] add TChan to send EvReqs (2)
-			* [x] print (2)
-			* [x] add cairo_text_extents
-			* [ ] add converter :: (2) -> (1)
-			* [ ] add converter from cairo_text_extents_t to TextExtents
-			* [ ] add TChan to send font information and text (1)
-		- [ ] add trial for TextExtents on GTK
+		- [x] define TextExtents Handler on GTK
+		- [x] add trial for TextExtents on GTK
 		- [ ] try followbox with print
 		- [ ] define instance Drawable [view type of Followbox]
 		- [ ] try followbox

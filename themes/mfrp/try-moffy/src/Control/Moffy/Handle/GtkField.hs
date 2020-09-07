@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -18,6 +19,7 @@ import Control.Concurrent
 import Control.Concurrent.STM hiding (retry)
 import Data.Type.Set
 import Data.OneOrMore as Oom
+import Data.Int
 import Data.Time
 import System.Timeout
 import Graphics.Gtk as Gtk
@@ -94,7 +96,7 @@ tryUseTChan = do
 
 		da <- gtkDrawingAreaNew
 		gtkContainerAdd (castWidgetToContainer w) da
-		gSignalConnect da DrawEvent (tryDraw ftc) m
+		gSignalConnect da DrawEvent (tryDraw ftc c) m
 
 		void . flip (gTimeoutAdd 101) () $ const do
 			atomically (lastTChan cr) >>= \case
@@ -136,8 +138,8 @@ lastTChan' x c = do
 	mx' <- tryReadTChan c
 	maybe (pure x) (`lastTChan'` c) mx'
 
-tryDraw :: (Storable a, Drawable a) => TChan (FontName, FontSize, T.Text) -> GtkWidget -> CairoT -> Mutable (Arr a) -> IO Bool
-tryDraw ftc w cr x = True <$ do
+tryDraw :: (Storable a, Drawable a) => TChan (FontName, FontSize, T.Text) -> TChan (EvOccs GuiEv) -> GtkWidget -> CairoT -> Mutable (Arr a) -> IO Bool
+tryDraw ftc co w cr x = True <$ do
 	print' (w, cr, x)
 --	cairoMoveTo cr 100 100
 --	cairoLineTo cr 500 400
@@ -152,7 +154,10 @@ tryDraw ftc w cr x = True <$ do
 				print =<< cairoTextExtentsHeight e
 			l <- pangoCairoCreateLayout cr
 			pangoLayoutSetText l txt
-			pangoLayoutWithPixelExtents l \ie le -> do
+			d <- pangoFontDescriptionFromString $ T.pack fn
+			pangoFontDescriptionSetAbsoluteSize d fs
+			pangoLayoutSetFontDescription l d
+			te <- pangoLayoutWithPixelExtents l \ie le -> do
 				putStrLn "ink_rect"
 				print =<< pangoRectangleX ie
 				print =<< pangoRectangleY ie
@@ -163,8 +168,20 @@ tryDraw ftc w cr x = True <$ do
 				print =<< pangoRectangleY le
 				print =<< pangoRectangleWidth le
 				print =<< pangoRectangleHeight le
+				mkTextExtents ie le
+			atomically . writeTChan co . Oom.expand . Singleton
+				$ OccCalcTextExtents fn fs txt te
 		Nothing -> pure ()
 	draw cr =<< peekArr =<< peekMutable x
+
+rectangle :: Int32 -> Int32 -> Int32 -> Int32 -> Rectangle
+rectangle (fromIntegral -> l) (fromIntegral -> t) (fromIntegral -> w) (fromIntegral -> h) =
+	Rectangle l t w h
+
+mkTextExtents :: PangoRectangle -> PangoRectangle -> IO TextExtents'
+mkTextExtents ie le = TextExtents'
+	<$> (rectangle <$> pangoRectangleX ie <*> pangoRectangleY ie <*> pangoRectangleWidth ie <*> pangoRectangleHeight ie)
+	<*> (rectangle <$> pangoRectangleX le <*> pangoRectangleY le <*> pangoRectangleWidth le <*> pangoRectangleHeight le)
 
 gdkEventKeyToOccKeyDown :: GdkEventKey -> IO (EvOccs (Singleton KeyDown))
 gdkEventKeyToOccKeyDown e = do
