@@ -47,11 +47,13 @@ tryGtk = do
 print' :: a -> IO ()
 print' _ = pure ()
 
-class Drawable a where draw :: CairoT -> a -> IO ()
+class Drawable a where
+	draw :: CairoT -> a -> IO ()
 
 instance Drawable () where draw _ () = pure ()
 
-instance Drawable a => Drawable [a] where draw cr xs = draw cr `mapM_` reverse xs
+instance Drawable a => Drawable [a] where
+	draw cr xs = draw cr `mapM_` reverse xs
 
 instance Drawable Double where
 	draw cr n = do
@@ -61,14 +63,14 @@ instance Drawable Double where
 
 type GuiEv = CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv
 
-tryUseTChan :: (Show a, Drawable a) => IO (TChan (EvReqs GuiEv), TChan (EvOccs GuiEv), TChan [a])
+tryUseTChan :: (Drawable a, Monoid a) => IO (TChan (EvReqs GuiEv), TChan (EvOccs GuiEv), TChan a)
 tryUseTChan = do
 
 	cr <- newTChanIO
 	c <- newTChanIO
 	c' <- newTChanIO
 	void . forkIO $ allocaMutable \m -> do
-		tx <- atomically $ newTVar []
+		tx <- atomically $ newTVar mempty
 
 		ftc <- newTChanIO
 --		pokeMutable m =<< newArr []
@@ -121,9 +123,6 @@ tryUseTChan = do
 				Nothing -> pure True
 				Just v -> do
 					atomically $ writeTVar tx v
---					old <- peekMutable m
---					pokeMutable m =<< newArr v
---					freeArr old
 					gtkWidgetQueueDraw da
 					pure True
 
@@ -143,13 +142,8 @@ lastTChan' x c = do
 	maybe (pure x) (`lastTChan'` c) mx'
 
 tryDraw :: Drawable a =>
-	TChan (FontName, FontSize, T.Text) -> TChan (EvOccs GuiEv) -> TVar [a] -> GtkWidget -> CairoT -> Mutable (Arr a) -> IO Bool
--- tryDraw :: Drawable a => TChan (FontName, FontSize, T.Text) -> TChan (EvOccs GuiEv) -> GtkWidget -> CairoT -> Mutable (Arr a) -> IO Bool
+	TChan (FontName, FontSize, T.Text) -> TChan (EvOccs GuiEv) -> TVar a -> GtkWidget -> CairoT -> Mutable (Arr a) -> IO Bool
 tryDraw ftc co tx w cr x = True <$ do
---	print' (w, cr, x)
---	cairoMoveTo cr 100 100
---	cairoLineTo cr 500 400
---	cairoStroke cr
 	m3 <- atomically $ lastTChan ftc
 	case m3 of
 		Just (fn, fs, txt) -> do

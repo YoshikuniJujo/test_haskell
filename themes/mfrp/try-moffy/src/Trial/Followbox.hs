@@ -35,7 +35,7 @@ import Trial.Followbox.Event (
 import Trial.Followbox.Clickable (
 	Clickable, view, click, clickable, clickableText,
 	WithTextExtents, withTextExtents, nextToText, translate, FontName, FontSize )
-import Trial.Followbox.ViewType (View, View1(..), white, Png(..))
+import Trial.Followbox.ViewType (View(..), View1(..), white, Png(..))
 import Trial.Followbox.TypeSynonym (Position, ErrorMessage)
 
 ---------------------------------------------------------------------------
@@ -116,7 +116,7 @@ field :: Integer -> SigF s View ()
 field n = do
 	(nxt, rfs) <- waitFor
 		$ (,) <$> link nextPos "Next" <*> link refreshPos "Refresh"
-	let	frame = title : view nxt <> view rfs; clear = emit frame
+	let	frame = View [title] <> view nxt <> view rfs; clear = emit frame
 	lck <- waitFor $ adjust newLockId
 	(clear >>) . forever $ (frame <>)
 		<$%> users lck n `until` click nxt `first` click rfs >>= \case
@@ -130,30 +130,30 @@ field n = do
 		<$> adjust (withTextExtents defaultFont middleSize t)
 
 resetTime :: SigF s View ()
-resetTime = forever $ emit [] >> do
+resetTime = forever $ emit (View []) >> do
 	emit =<< waitFor do
 		(t, tz) <- (,) <$> adjust checkBeginSleep <*> adjust getTimeZone
-		pure [twhite middleSize resetTimePos . T.pack
+		pure $ View [twhite middleSize resetTimePos . T.pack
 			$ "Wait until " <> show (utcToLocalTime tz t)]
 	waitFor $ adjust endSleep
 
 -- USERS
 
 users :: LockId -> Integer -> SigF s View ()
-users lck n = concat <$%> (forever . user1 lck) `ftraverse` [0 .. n - 1]
+users lck n = mconcat <$%> (forever . user1 lck) `ftraverse` [0 .. n - 1]
 
 user1 :: LockId -> Integer -> SigF s View ()
 user1 lck n = do
 	(a, ln, u) <- waitFor $ getUser lck
 	wte <- waitFor . adjust $ withTextExtents defaultFont largeSize ln
 	let	nm = clickableText np wte; cr = cross $ crossPos np wte
-	emit $ Image (avatarPos $ fromIntegral n) a : view nm <> view cr
+	emit $ View [Image (avatarPos $ fromIntegral n) a] <> view nm <> view cr
 	void . (`break` click cr) . waitFor $ forever
 		(adjust (click nm) >> adjust (browse u) :: ReactF s ())
 	where np = namePos $ fromIntegral n
 
 cross :: Position -> Clickable s
-cross (l, t) = clickable [lwhite lt rb, lwhite lb rt] (l', t') (r', b')
+cross (l, t) = clickable (View [lwhite lt rb, lwhite lb rt]) (l', t') (r', b')
 	where
 	[lt, lb, rt, rb] = [(l, t), (l, b), (r, t), (r, b)]
 	[r, b] = (+ crossSize) <$> [l, t]

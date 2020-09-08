@@ -20,7 +20,7 @@ import Data.Type.Set (Singleton)
 import qualified Data.Text as T
 
 import Control.Moffy.Event.CalcTextExtents (CalcTextExtents, calcTextExtents')
-import Trial.Followbox.ViewType (View, View1(..), blue)
+import Trial.Followbox.ViewType (View(..), View1(..), blue)
 import Trial.Followbox.TypeSynonym (Position)
 
 ---------------------------------------------------------------------------
@@ -47,7 +47,7 @@ data WithTextExtents = WithTextExtents FontName FontSize T.Text TextExtents'
 
 clickableText :: Position -> WithTextExtents -> Clickable s
 clickableText p@(x, y) (WithTextExtents fn fs txt xg) =
-	clickable [Text blue fn fs p txt] (l, t) (l + gw, t + gh) where
+	clickable (View [Text blue fn fs p txt]) (l, t) (l + gw, t + gh) where
 	(l, t) = (x, y)
 	[gw, gh] = ($ xg) <$> [
 		rectangleWidth . textExtentsInkRect, rectangleHeight . textExtentsInkRect ]

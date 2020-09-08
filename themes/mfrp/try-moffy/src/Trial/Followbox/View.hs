@@ -19,7 +19,7 @@ import qualified Data.Text as T
 import qualified Data.Vector.Generic.Mutable as MV
 import qualified Codec.Picture as P
 
-import Trial.Followbox.ViewType (View, View1(..), Color(..), white, blue, Png(..))
+import Trial.Followbox.ViewType (View(..), View1(..), Color(..), white, blue, Png(..))
 import Field (
 	Field, Pixel, Position,
 	clearField, flushField, drawLine, drawStr, drawImage, textExtents )
@@ -34,7 +34,7 @@ import Field (
 ---------------------------------------------------------------------------
 
 view :: Field -> View -> IO ()
-view f v = clearField f >> view1 f `mapM_` v >> flushField f
+view f (View v) = clearField f >> view1 f `mapM_` v >> flushField f
 
 view1 :: Field -> View1 -> IO ()
 view1 f (Text
