@@ -206,8 +206,12 @@ todo
 					- [x] write PNG format to ByteString
 					- [x] use these
 		- [x] try followbox
-	+ [ ] consider whether or not to use ForeignPtr to free memory for cairo surface
 	+ [ ] refactoring
+		- [x] remove module Arr
+		- [ ] view module hierarchy
+		- [ ] refactor module hierarchy
+		- [ ] refactor about GTK
+	+ [ ] consider whether or not to use ForeignPtr to free memory for cairo surface
 	+ [ ] others
 * [ ] about window
 	+ [ ] make window

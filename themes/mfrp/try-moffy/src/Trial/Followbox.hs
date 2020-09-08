@@ -184,31 +184,7 @@ getAvatarPng url = (<$> adjust (httpGet url))
 		(Right . Png avatarSizeX avatarSizeY)
 
 convert :: BS.ByteString -> Either String BS.ByteString
--- convert img = LBS.toStrict <$> (P.encodeDynamicPng =<< P.decodeImage img)
--- convert img = LBS.toStrict <$> (encodeDynamicPngAndFormat =<< P.decodeImage img)
 convert img = LBS.toStrict . P.encodePng . P.convertRGB8 <$> P.decodeImage img
-
-encodeDynamicPngAndFormat :: P.DynamicImage -> Either String LBS.ByteString
-encodeDynamicPngAndFormat dimg = case P.encodeDynamicPng dimg of
-	Right p -> Right p
-	Left emsg -> Left $ emsg ++ ": " ++ showFormat dimg
-
-showFormat :: P.DynamicImage -> String
-showFormat (P.ImageY8 _) = "ImageY8"
-showFormat (P.ImageY16 _) = "ImageY16"
-showFormat (P.ImageY32 _) = "ImageY32"
-showFormat (P.ImageYF _) = "ImageYF"
-showFormat (P.ImageYA8 _) = "ImageYA8"
-showFormat (P.ImageYA16 _) = "ImageYA16"
-showFormat (P.ImageRGB8 _) = "ImageRGB8"
-showFormat (P.ImageRGB16 _) = "ImageRGB16"
-showFormat (P.ImageRGBF _) = "ImageRGBF"
-showFormat (P.ImageRGBA8 _) = "ImageRGBA8"
-showFormat (P.ImageRGBA16 _) = "ImageRGBA16"
-showFormat (P.ImageYCbCr8 _) = "ImageYCBCr8"
-showFormat (P.ImageCMYK8 _) = "ImageCMYK8"
-showFormat (P.ImageCMYK16 _) = "ImageCMYK16"
-showFormat _ = "other format"
 
 -- GET OBJECT
 

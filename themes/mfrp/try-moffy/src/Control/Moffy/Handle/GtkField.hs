@@ -34,8 +34,6 @@ import qualified Data.Text as T
 
 import Data.Bool
 
-import Arr
-
 tryGtk :: IO ()
 tryGtk = do
 	[] <- gtkInit []
@@ -56,7 +54,7 @@ instance Drawable a => Drawable [a] where
 	draw w cr xs = draw w cr `mapM_` reverse xs
 
 instance Drawable Double where
-	draw w cr n = do
+	draw _ cr n = do
 		cairoMoveTo cr 200 100
 		cairoLineTo cr (210 + 10 * n) (110 + 10 * n)
 		cairoStroke cr
@@ -69,7 +67,7 @@ tryUseTChan = do
 	cr <- newTChanIO
 	c <- newTChanIO
 	c' <- newTChanIO
-	void . forkIO $ allocaMutable \m -> do
+	void . forkIO $ do
 		tx <- atomically $ newTVar mempty
 
 		ftc <- newTChanIO
@@ -101,7 +99,7 @@ tryUseTChan = do
 
 		da <- gtkDrawingAreaNew
 		gtkContainerAdd (castWidgetToContainer w) da
-		gSignalConnect da DrawEvent (tryDraw ftc c tx) m
+		gSignalConnect da DrawEvent (tryDraw ftc c tx) ()
 
 		void . flip (gTimeoutAdd 101) () $ const do
 			atomically (lastTChan cr) >>= \case
@@ -142,8 +140,8 @@ lastTChan' x c = do
 	maybe (pure x) (`lastTChan'` c) mx'
 
 tryDraw :: Drawable a =>
-	TChan (FontName, FontSize, T.Text) -> TChan (EvOccs GuiEv) -> TVar a -> GtkWidget -> CairoT -> Mutable (Arr a) -> IO Bool
-tryDraw ftc co tx w cr x = True <$ do
+	TChan (FontName, FontSize, T.Text) -> TChan (EvOccs GuiEv) -> TVar a -> GtkWidget -> CairoT -> () -> IO Bool
+tryDraw ftc co tx w cr () = True <$ do
 	m3 <- atomically $ lastTChan ftc
 	case m3 of
 		Just (fn, fs, txt) -> do
