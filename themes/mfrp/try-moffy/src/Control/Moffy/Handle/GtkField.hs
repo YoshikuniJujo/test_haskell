@@ -33,6 +33,7 @@ import Data.Time.Clock.TAI
 import qualified Data.Text as T
 
 import Data.Bool
+import Data.Word
 
 tryGtk :: IO ()
 tryGtk = do
@@ -170,7 +171,7 @@ tryDraw ftc co tx w cr () = True <$ do
 			atomically . writeTChan co . Oom.expand . Singleton
 				$ OccCalcTextExtents fn fs txt te
 		Nothing -> pure ()
-	draw w cr =<< atomically (readTVar tx)
+	draw w cr =<< readTVarIO tx
 --	draw cr =<< peekArr =<< peekMutable x
 
 rectangle :: Int32 -> Int32 -> Int32 -> Int32 -> Rectangle
@@ -200,20 +201,23 @@ gdkEventMotionToOccMouseMove e = do
 
 gdkEventButtonToOccMouseDown :: GdkEventButton -> IO (EvOccs (MouseDown :- MouseMove :- 'Nil))
 gdkEventButtonToOccMouseDown e = do
-	x <- gdkEventButtonX e
-	y <- gdkEventButtonY e
-	b <- gdkEventButtonButton e
+	(x, y, b) <- getButtonInfo e
 	pure $ OccMouseDown (btn b) >- Singleton (OccMouseMove (x, y))
 	where
 	btn = \case
 		1 -> ButtonLeft; 2 -> ButtonMiddle; 3 -> ButtonRight
 		n -> ButtonUnknown n
 
-gdkEventButtonToOccMouseUp :: GdkEventButton -> IO (EvOccs (MouseUp :- MouseMove :- 'Nil))
-gdkEventButtonToOccMouseUp e = do
+getButtonInfo :: GdkEventButton -> IO (Double, Double, Word32)
+getButtonInfo e = do
 	x <- gdkEventButtonX e
 	y <- gdkEventButtonY e
 	b <- gdkEventButtonButton e
+	pure (x, y, b)
+
+gdkEventButtonToOccMouseUp :: GdkEventButton -> IO (EvOccs (MouseUp :- MouseMove :- 'Nil))
+gdkEventButtonToOccMouseUp e = do
+	(x, y, b) <- getButtonInfo e
 	pure $ OccMouseUp (btn b) >- Singleton (OccMouseMove (x, y))
 	where
 	btn = \case

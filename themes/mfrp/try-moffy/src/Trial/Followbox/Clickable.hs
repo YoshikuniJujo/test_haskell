@@ -14,12 +14,13 @@ import Prelude hiding (repeat)
 
 import Control.Moffy (React, adjust, repeat, find, indexBy)
 import Control.Moffy.Event.Mouse (MouseEv, leftClick, mouseMove)
-import Control.Moffy.Event.CalcTextExtents (TextExtents'(..), FontName, FontSize, Rectangle(..))
+import Control.Moffy.Event.CalcTextExtents (
+	TextExtents'(..), FontName, FontSize, Rectangle(..),
+	CalcTextExtents, calcTextExtents' )
 import Data.Type.Set (Singleton)
 
 import qualified Data.Text as T
 
-import Control.Moffy.Event.CalcTextExtents (CalcTextExtents, calcTextExtents')
 import Trial.Followbox.ViewType (View(..), View1(..), blue)
 import Trial.Followbox.TypeSynonym (Position)
 

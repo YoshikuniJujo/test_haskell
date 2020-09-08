@@ -53,8 +53,8 @@ view1 f (Image
 		Right i -> drawImagePixel f i x y
 
 decodePng :: Png -> Either String (P.Image P.PixelRGBA8)
-decodePng p = ($ P.decodeImage (pngData p)) $ either Left
-	(Right . scaleBilinear (round $ pngWidth p) (round $ pngHeight p) . P.convertRGBA8)
+decodePng p = ($ P.decodeImage (pngData p)) $ fmap
+	(scaleBilinear (round $ pngWidth p) (round $ pngHeight p) . P.convertRGBA8)
 
 colorToPixel :: Color -> Pixel
 colorToPixel Color {

@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeApplications, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.Boxes.Box (

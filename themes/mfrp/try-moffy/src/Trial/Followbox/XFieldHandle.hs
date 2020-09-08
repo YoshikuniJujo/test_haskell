@@ -1,5 +1,3 @@
-{-# LANGUAGE LambdaCase, TupleSections, OverloadedStrings #-}
-{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
