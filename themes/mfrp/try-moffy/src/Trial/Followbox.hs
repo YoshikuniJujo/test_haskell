@@ -21,15 +21,12 @@ import Data.Aeson (Object, Value(..), eitherDecode)
 import Data.Time (UTCTime, utcToLocalTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import Text.Read (readMaybe)
-import Codec.Picture (decodeImage, convertRGBA8)
-import Codec.Picture.Extra (scaleBilinear)
 
 import qualified Data.HashMap.Strict as HM
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
-import qualified Codec.Picture as P
 
 import Trial.Followbox.Event (
 	SigF, ReactF, clearJsons, storeJsons, loadJsons, httpGet, getTimeZone,
@@ -39,8 +36,7 @@ import Trial.Followbox.Clickable (
 	Clickable, view, click, clickable, clickableText,
 	WithTextExtents, withTextExtents, nextToText, translate, FontName, FontSize )
 import Trial.Followbox.ViewType (View, View1(..), white, Png(..))
-import Trial.Followbox.TypeSynonym (
-	Position, Avatar, ErrorMessage )
+import Trial.Followbox.TypeSynonym (Position, ErrorMessage)
 
 ---------------------------------------------------------------------------
 
@@ -168,9 +164,9 @@ cross (l, t) = clickable [lwhite lt rb, lwhite lb rt] (l', t') (r', b')
 
 {-# ANN getUser ("HLint: ignore Redundant <$>" :: String) #-}
 
-getUser :: LockId -> ReactF s (Avatar, T.Text, T.Text)
+getUser :: LockId -> ReactF s (Png, T.Text, T.Text)
 getUser lck = ex3 <$> getObj1 lck >>= err `either` \(au, ln, u) ->
-	getAvatar au >>= err `either` (pure . (, ln, u))
+	getAvatarPng au >>= (pure . (, ln, u))
 	where
 	ex3 o = (,,)
 		<$> ex o "avatar_url" (NoAvatarAddress, "No Avatar Address")
@@ -179,17 +175,9 @@ getUser lck = ex3 <$> getObj1 lck >>= err `either` \(au, ln, u) ->
 	ex o k e = case HM.lookup k o of Just (String v) -> Right v; _ -> Left e
 	err e = adjust (uncurry raiseError e) >> getUser lck
 
-getAvatar :: T.Text -> ReactF s (Either (Error, ErrorMessage) Avatar)
-getAvatar url = decodePng <$> getAvatarPng url
-
 getAvatarPng :: T.Text -> ReactF s Png
 getAvatarPng url = (<$> adjust (httpGet url))
 	$ snd >>> LBS.toStrict >>> Png avatarSizeX avatarSizeY
-
-decodePng :: Png -> Either (Error, ErrorMessage) (P.Image P.PixelRGBA8)
-decodePng p = ($ decodeImage (pngData p)) $ either
-	(Left . (NoAvatar ,))
-	(Right . scaleBilinear (pngWidth p) (pngHeight p) . convertRGBA8)
 
 -- GET OBJECT
 

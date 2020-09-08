@@ -48,7 +48,9 @@ view1 f (Line
 	(round -> x1, round -> y1)
 	(round -> x2, round -> y2)) = drawLine f p lw x1 y1 x2 y2
 view1 f (Image
-	(round -> x, round -> y) img) = drawImagePixel f img x y
+	(round -> x, round -> y) img) = case decodePng img of
+		Left em -> putStrLn ("error: " ++ em) >> pure ()
+		Right i -> drawImagePixel f i x y
 
 decodePng :: Png -> Either String (P.Image P.PixelRGBA8)
 decodePng p = ($ P.decodeImage (pngData p)) $ either Left

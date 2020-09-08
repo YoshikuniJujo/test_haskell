@@ -8,7 +8,6 @@ module Trial.Followbox.ViewType (
 
 import Control.Moffy.Event.CalcTextExtents (FontName, FontSize)
 import Data.Word (Word8)
-import Codec.Picture (Image, PixelRGBA8)
 import Data.Text (Text)
 
 import qualified Data.ByteString as BS
@@ -22,7 +21,7 @@ type View = [View1]
 data View1
 	= Text Color FontName FontSize Position Text
 	| Line Color LineWidth Position Position
-	| Image Position (Image PixelRGBA8)
+	| Image Position Png
 
 instance Show View1 where
 	show (Text c fn fs p t) = "Text " ++ show c ++ " " ++ show fn ++ " " ++ show fs ++ " " ++ show p ++ " " ++ show t
