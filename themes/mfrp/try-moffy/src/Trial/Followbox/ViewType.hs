@@ -22,6 +22,11 @@ data View1
 	| Line Color LineWidth Position Position
 	| Image Position (Image PixelRGBA8)
 
+instance Show View1 where
+	show (Text c fn fs p t) = "Text " ++ show c ++ " " ++ show fn ++ " " ++ show fs ++ " " ++ show p ++ " " ++ show t
+	show (Line c lw s e) = "Line " ++ show c ++ " " ++ show lw ++ " " ++ show s ++ " " ++ show e
+	show (Image p _) = "Image " ++ show p ++ " <Image PixelRGBA8>"
+
 data Color =
 	Color { colorRed :: Word8, colorGreen :: Word8, colorBlue :: Word8 }
 	deriving Show

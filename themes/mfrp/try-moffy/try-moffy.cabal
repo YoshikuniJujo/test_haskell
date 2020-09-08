@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 113e4c0854b0d196e146844ee85ab0170b557f04740aa849a702c1877e9f2343
+-- hash: e55aff3bd7c24ba2bac3122b53830b4a3e81e18c255a298ba216d5ad27bdfed9
 
 name:           try-moffy
 version:        0.1.0.0
@@ -84,6 +84,7 @@ library
       Trial.Followbox.Event
       Trial.Followbox.Handle
       Trial.Followbox.Run
+      Trial.Followbox.RunGtk
       Trial.Followbox.TypeSynonym
       Trial.Followbox.View
       Trial.Followbox.ViewType
@@ -127,6 +128,39 @@ library
 
 executable followbox
   main-is: followbox.hs
+  other-modules:
+      Main
+      Paths_try_moffy
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyPixels
+    , JuicyPixels-extra
+    , X11
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , simple-field
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy
+    , type-flip
+    , unordered-containers
+    , vector
+  default-language: Haskell2010
+
+executable followboxGtk
+  main-is: followboxGtk.hs
   other-modules:
       Main
       Paths_try_moffy

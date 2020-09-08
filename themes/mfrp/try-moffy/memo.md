@@ -185,9 +185,10 @@ todo
 		- [x] define TextExtents Handler on GTK
 		- [x] add trial for TextExtents on GTK
 		- [x] make handleFollowboxWith
-		- [ ] make handler for followbox on GTK
-			* [ ] make Trial.Followbox.RunGtk
-		- [ ] try followbox with print
+		- [x] make handler for followbox on GTK
+			* [x] make Trial.Followbox.RunGtk
+		- [x] try followbox with print
+		- [ ] move png converter to viewer
 		- [ ] define instance Drawable [view type of Followbox]
 		- [ ] try followbox
 	+ [ ] consider whether or not to use ForeignPtr to free memory for cairo surface

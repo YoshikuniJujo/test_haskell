@@ -39,6 +39,3 @@ runTryCalcTextExtentsGtk = do
 --	fst <$> ((interpretSt (handleBoxesFoo 0.1 cr c) print (tryCalcTextExtents "hello") . (InitialMode ,) . systemToTAITime =<< getSystemTime)
 	fst <$> ((interpretSt (handleBoxesFoo 0.1 cr c) print (tryCalcTextExtents "Text, hello jj!") . (InitialMode ,) . systemToTAITime =<< getSystemTime)
 		<* gtkMainQuit)
-
-instance Drawable () where
-	draw _ _ = pure ()
