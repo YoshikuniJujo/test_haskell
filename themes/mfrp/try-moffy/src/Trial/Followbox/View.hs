@@ -12,12 +12,14 @@ import Control.Monad.ST (ST)
 import Data.Vector.Storable (Storable, MVector, modify)
 import Data.Bits ((.|.), shiftL)
 import Codec.Picture (Image(imageWidth, imageHeight, imageData), PixelRGBA8)
+import Codec.Picture.Extra
 import Graphics.X11.Xrender
 
 import qualified Data.Text as T
 import qualified Data.Vector.Generic.Mutable as MV
+import qualified Codec.Picture as P
 
-import Trial.Followbox.ViewType (View, View1(..), Color(..), white, blue)
+import Trial.Followbox.ViewType (View, View1(..), Color(..), white, blue, Png(..))
 import Field (
 	Field, Pixel, Position,
 	clearField, flushField, drawLine, drawStr, drawImage, textExtents )
@@ -47,6 +49,10 @@ view1 f (Line
 	(round -> x2, round -> y2)) = drawLine f p lw x1 y1 x2 y2
 view1 f (Image
 	(round -> x, round -> y) img) = drawImagePixel f img x y
+
+decodePng :: Png -> Either String (P.Image P.PixelRGBA8)
+decodePng p = ($ P.decodeImage (pngData p)) $ either Left
+	(Right . scaleBilinear (pngWidth p) (pngHeight p) . P.convertRGBA8)
 
 colorToPixel :: Color -> Pixel
 colorToPixel Color {

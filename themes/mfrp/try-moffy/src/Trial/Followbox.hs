@@ -38,7 +38,7 @@ import Trial.Followbox.Event (
 import Trial.Followbox.Clickable (
 	Clickable, view, click, clickable, clickableText,
 	WithTextExtents, withTextExtents, nextToText, translate, FontName, FontSize )
-import Trial.Followbox.ViewType (View, View1(..), white)
+import Trial.Followbox.ViewType (View, View1(..), white, Png(..))
 import Trial.Followbox.TypeSynonym (
 	Position, Avatar, ErrorMessage )
 
@@ -180,17 +180,14 @@ getUser lck = ex3 <$> getObj1 lck >>= err `either` \(au, ln, u) ->
 	err e = adjust (uncurry raiseError e) >> getUser lck
 
 getAvatar :: T.Text -> ReactF s (Either (Error, ErrorMessage) Avatar)
-getAvatar url = decodeAvatar <$> getAvatarPng url
+getAvatar url = decodePng <$> getAvatarPng url
 
 getAvatarPng :: T.Text -> ReactF s Png
 getAvatarPng url = (<$> adjust (httpGet url))
 	$ snd >>> LBS.toStrict >>> Png avatarSizeX avatarSizeY
 
-data Png = Png { pngWidth :: Int, pngHeight :: Int, pngData :: BS.ByteString }
-	deriving Show
-
-decodeAvatar :: Png -> Either (Error, ErrorMessage) (P.Image P.PixelRGBA8)
-decodeAvatar p = ($ decodeImage (pngData p)) $ either
+decodePng :: Png -> Either (Error, ErrorMessage) (P.Image P.PixelRGBA8)
+decodePng p = ($ decodeImage (pngData p)) $ either
 	(Left . (NoAvatar ,))
 	(Right . scaleBilinear (pngWidth p) (pngHeight p) . convertRGBA8)
 

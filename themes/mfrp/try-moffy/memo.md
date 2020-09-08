@@ -190,7 +190,11 @@ todo
 		- [x] try followbox with print
 		- [ ] move png converter to viewer
 			* [x] separate getAvatar to getAvatarPng and decodeAvatar
-			* [ ] others
+			* [x] rename decodeAvatar to decodePng
+			* [x] copy decodePng to viewer
+			* [ ] change View type to use Png
+			* [ ] repair getAvatar and viewer
+			* [ ] remove decodePng at module Trial.Followbox
 		- [ ] define instance Drawable [view type of Followbox]
 		- [ ] try followbox
 	+ [ ] consider whether or not to use ForeignPtr to free memory for cairo surface

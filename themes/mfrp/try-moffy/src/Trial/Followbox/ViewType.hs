@@ -4,12 +4,14 @@ module Trial.Followbox.ViewType (
 	-- * VIEW
 	View, View1(..),
 	-- * COLOR
-	Color(..), white, blue ) where
+	Color(..), white, blue, Png(..) ) where
 
 import Control.Moffy.Event.CalcTextExtents (FontName, FontSize)
 import Data.Word (Word8)
 import Codec.Picture (Image, PixelRGBA8)
 import Data.Text (Text)
+
+import qualified Data.ByteString as BS
 
 import Trial.Followbox.TypeSynonym (Position, LineWidth)
 
@@ -34,3 +36,6 @@ data Color =
 white, blue :: Color
 white = Color { colorRed = 0xff, colorGreen = 0xff, colorBlue = 0xff }
 blue = Color { colorRed = 0x30, colorGreen = 0x66, colorBlue = 0xd6 }
+
+data Png = Png { pngWidth :: Int, pngHeight :: Int, pngData :: BS.ByteString }
+	deriving Show
