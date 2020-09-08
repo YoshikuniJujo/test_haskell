@@ -29,7 +29,7 @@ instance Storable Box where
 		poke (castPtr $ p `plusPtr` (sizeOf @Double undefined * 4)) $ fromEnum c
 
 instance Drawable Box where
-	draw cr b@(Box (Rect (l_, u_) (r, d)) c) = do
+	draw _ cr b@(Box (Rect (l_, u_) (r, d)) c) = do
 		uncurry3 (cairoSetSourceRgb cr) $ colorToRgb c
 		cairoRectangle cr l u w h
 		cairoStrokePreserve cr

@@ -17,6 +17,7 @@ import qualified Data.Text as T
 import Trial.Followbox.TypeSynonym (Position, LineWidth)
 
 import Control.Moffy.Handle.GtkField
+import Graphics.Gtk
 import Graphics.Gtk.Cairo
 import Graphics.Gtk.Pango
 
@@ -52,10 +53,18 @@ data Png = Png { pngWidth :: Int, pngHeight :: Int, pngData :: BS.ByteString }
 	deriving Show
 
 instance Drawable View where
-	draw cr (View v) = draw cr v
+	draw wdt cr (View v) = do
+		w <- gtkWidgetGetAllocatedWidth wdt
+		h <- gtkWidgetGetAllocatedHeight wdt
+		print (w, h)
+		cairoSetSourceRgb cr 0 0 0
+		cairoRectangle cr 0 0 (fromIntegral w) (fromIntegral h)
+		cairoStrokePreserve cr
+		cairoFill cr
+		draw wdt cr v
 
 instance Drawable View1 where
-	draw cr (Text c fn fs (x, y) t) = do
+	draw _ cr (Text c fn fs (x, y) t) = do
 		l <- pangoCairoCreateLayout cr
 		d <- pangoFontDescriptionFromString $ T.pack fn
 		pangoFontDescriptionSetAbsoluteSize d fs
@@ -64,13 +73,13 @@ instance Drawable View1 where
 		uncurry3 (cairoSetSourceRgb cr) $ colorToRgb c
 		cairoMoveTo cr x y
 		pangoCairoShowLayout cr l
-	draw cr (Line c w (xb, yb) (xe, ye)) = do
+	draw _ cr (Line c w (xb, yb) (xe, ye)) = do
 		uncurry3 (cairoSetSourceRgb cr) $ colorToRgb c
 		cairoSetLineWidth cr w
 		cairoMoveTo cr xb yb
 		cairoLineTo cr xe ye
 		cairoStroke cr
-	draw cr (Image _ _) = pure ()
+	draw _ cr (Image _ _) = pure ()
 
 uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (x, y, z) = f x y z

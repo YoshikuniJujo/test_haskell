@@ -34,7 +34,9 @@ module Graphics.Gtk (
 	-- ** DrawEvent
 	DrawEvent(..), CairoT,
 	-- * Mutable
-	Mutable, allocaMutable, peekMutable, pokeMutable
+	Mutable, allocaMutable, peekMutable, pokeMutable,
+	-- * Others
+	gtkWidgetGetAllocatedWidth, gtkWidgetGetAllocatedHeight
 	) where
 
 #include <gtk/gtk.h>
@@ -288,3 +290,10 @@ foreign import ccall "gtk_widget_set_events" c_gtk_widget_set_events :: Ptr GtkW
 gtkWidgetSetEvents :: GtkWidget -> [GdkEventMask] -> IO ()
 gtkWidgetSetEvents (GtkWidget w) ms = c_gtk_widget_set_events w ms'
 	where GdkEventMask ms' = unifyGdkEventMask ms
+
+foreign import ccall "gtk_widget_get_allocated_width" c_gtk_widget_get_allocated_width :: Ptr GtkWidget -> IO #{type int}
+foreign import ccall "gtk_widget_get_allocated_height" c_gtk_widget_get_allocated_height :: Ptr GtkWidget -> IO #{type int}
+
+gtkWidgetGetAllocatedWidth, gtkWidgetGetAllocatedHeight :: GtkWidget -> IO #{type int}
+gtkWidgetGetAllocatedWidth (GtkWidget w) = c_gtk_widget_get_allocated_width w
+gtkWidgetGetAllocatedHeight (GtkWidget w) = c_gtk_widget_get_allocated_height w

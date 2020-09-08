@@ -48,15 +48,15 @@ print' :: a -> IO ()
 print' _ = pure ()
 
 class Drawable a where
-	draw :: CairoT -> a -> IO ()
+	draw :: GtkWidget -> CairoT -> a -> IO ()
 
-instance Drawable () where draw _ () = pure ()
+instance Drawable () where draw _ _ () = pure ()
 
 instance Drawable a => Drawable [a] where
-	draw cr xs = draw cr `mapM_` reverse xs
+	draw w cr xs = draw w cr `mapM_` reverse xs
 
 instance Drawable Double where
-	draw cr n = do
+	draw w cr n = do
 		cairoMoveTo cr 200 100
 		cairoLineTo cr (210 + 10 * n) (110 + 10 * n)
 		cairoStroke cr
@@ -172,7 +172,7 @@ tryDraw ftc co tx w cr x = True <$ do
 			atomically . writeTChan co . Oom.expand . Singleton
 				$ OccCalcTextExtents fn fs txt te
 		Nothing -> pure ()
-	draw cr =<< atomically (readTVar tx)
+	draw w cr =<< atomically (readTVar tx)
 --	draw cr =<< peekArr =<< peekMutable x
 
 rectangle :: Int32 -> Int32 -> Int32 -> Int32 -> Rectangle
