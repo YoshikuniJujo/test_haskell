@@ -16,3 +16,6 @@ convert = do
 
 convertByteString :: BS.ByteString -> Either String BS.ByteString
 convertByteString jpg = LBS.toStrict <$> (encodeDynamicPng =<< decodeImage jpg)
+
+convert2 :: BS.ByteString -> Either String BS.ByteString
+convert2 img = LBS.toStrict . encodePng . convertRGB8 <$> decodeImage img
