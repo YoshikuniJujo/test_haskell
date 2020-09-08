@@ -196,10 +196,10 @@ todo
 			* [x] repair getAvatar and viewer
 			* [x] remove decodePng at module Trial.Followbox
 		- [ ] define instance Drawable [view type of Followbox]
-			* [ ] show text
-			* [ ] set font and size
+			* [x] show text
+			* [x] set font and size
 			* [ ] set color
-			* [ ] show line
+			* [x] show line
 			* [ ] show image
 		- [ ] try followbox
 	+ [ ] consider whether or not to use ForeignPtr to free memory for cairo surface

@@ -44,7 +44,7 @@ view1 f (Text
 		XGlyphInfo _ _ dx dy _ _ <- textExtents f fn fs s
 		drawStr f p fn fs (round x + fromIntegral dx) (round y + fromIntegral dy) s
 view1 f (Line
-	(colorToPixel -> p) (fromIntegral -> lw)
+	(colorToPixel -> p) (round -> lw)
 	(round -> x1, round -> y1)
 	(round -> x2, round -> y2)) = drawLine f p lw x1 y1 x2 y2
 view1 f (Image

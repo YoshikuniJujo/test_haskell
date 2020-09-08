@@ -22,7 +22,7 @@ import Codec.Picture (Image, PixelRGBA8)
 
 type WindowTitle = String
 type Position = (Double, Double)
-type LineWidth = Integer
+type LineWidth = Double
 type Avatar = Image PixelRGBA8
 
 -- GITHUB

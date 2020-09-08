@@ -4,7 +4,7 @@
 module Graphics.Gtk.Cairo (
 	cairoSetSourceRgb,
 	cairoStroke, cairoStrokePreserve, cairoFill,
-	cairoMoveTo, cairoLineTo, cairoRectangle,
+	cairoSetLineWidth, cairoMoveTo, cairoLineTo, cairoRectangle,
 	cairoShowText, cairoSetFontSize, cairoSelectFontFace,
 	CairoSurfaceT,
 	cairoImageSurfaceCreateFromPng, cairoSurfaceDestroy, cairoWithImageSurfaceFromPng,
@@ -38,12 +38,17 @@ foreign import ccall "cairo_move_to" c_cairo_move_to :: Ptr CairoT -> #{type dou
 foreign import ccall "cairo_line_to" c_cairo_line_to :: Ptr CairoT -> #{type double} -> #{type double} -> IO ()
 foreign import ccall "cairo_stroke" c_cairo_stroke :: Ptr CairoT -> IO ()
 
+foreign import ccall "cairo_set_line_width" c_cairo_set_line_width :: Ptr CairoT -> #{type double} -> IO ()
+
 cairoMoveTo, cairoLineTo :: CairoT -> #{type double} -> #{type double} -> IO ()
 cairoMoveTo (CairoT cr) = c_cairo_move_to cr
 cairoLineTo (CairoT cr) = c_cairo_line_to cr
 
 cairoStroke :: CairoT -> IO ()
 cairoStroke (CairoT cr) = c_cairo_stroke cr
+
+cairoSetLineWidth :: CairoT -> #{type double} -> IO ()
+cairoSetLineWidth (CairoT cr) = c_cairo_set_line_width cr
 
 foreign import ccall "cairo_rectangle" c_cairo_rectangle :: Ptr CairoT -> #{type double} -> #{type double} -> #{type double} -> #{type double} -> IO ()
 

@@ -11,6 +11,7 @@ import Data.Word (Word8)
 import Data.Text (Text)
 
 import qualified Data.ByteString as BS
+import qualified Data.Text as T
 
 import Trial.Followbox.TypeSynonym (Position, LineWidth)
 
@@ -46,8 +47,15 @@ data Png = Png { pngWidth :: Int, pngHeight :: Int, pngData :: BS.ByteString }
 instance Drawable View1 where
 	draw cr (Text c fn fs (x, y) t) = do
 		l <- pangoCairoCreateLayout cr
+		d <- pangoFontDescriptionFromString $ T.pack fn
+		pangoFontDescriptionSetAbsoluteSize d fs
+		pangoLayoutSetFontDescription l d
 		pangoLayoutSetText l t
 		cairoMoveTo cr x y
 		pangoCairoShowLayout cr l
-	draw cr (Line _ _ _ _) = pure ()
+	draw cr (Line c w (xb, yb) (xe, ye)) = do
+		cairoSetLineWidth cr w
+		cairoMoveTo cr xb yb
+		cairoLineTo cr xe ye
+		cairoStroke cr
 	draw cr (Image _ _) = pure ()
