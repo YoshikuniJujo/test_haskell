@@ -29,6 +29,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
+import qualified Codec.Picture as P
 
 import Trial.Followbox.Event (
 	SigF, ReactF, clearJsons, storeJsons, loadJsons, httpGet, getTimeZone,
@@ -179,10 +180,19 @@ getUser lck = ex3 <$> getObj1 lck >>= err `either` \(au, ln, u) ->
 	err e = adjust (uncurry raiseError e) >> getUser lck
 
 getAvatar :: T.Text -> ReactF s (Either (Error, ErrorMessage) Avatar)
-getAvatar url = (<$> adjust (httpGet url))
-	$ snd >>> LBS.toStrict >>> decodeImage >>> either
-		(Left . (NoAvatar ,))
-		(Right . scaleBilinear avatarSizeX avatarSizeY . convertRGBA8)
+getAvatar url = decodeAvatar <$> getAvatarPng url
+
+getAvatarPng :: T.Text -> ReactF s Png
+getAvatarPng url = (<$> adjust (httpGet url))
+	$ snd >>> LBS.toStrict >>> Png avatarSizeX avatarSizeY
+
+data Png = Png { pngWidth :: Int, pngHeight :: Int, pngData :: BS.ByteString }
+	deriving Show
+
+decodeAvatar :: Png -> Either (Error, ErrorMessage) (P.Image P.PixelRGBA8)
+decodeAvatar p = ($ decodeImage (pngData p)) $ either
+	(Left . (NoAvatar ,))
+	(Right . scaleBilinear (pngWidth p) (pngHeight p) . convertRGBA8)
 
 -- GET OBJECT
 

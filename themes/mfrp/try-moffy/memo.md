@@ -189,6 +189,8 @@ todo
 			* [x] make Trial.Followbox.RunGtk
 		- [x] try followbox with print
 		- [ ] move png converter to viewer
+			* [x] separate getAvatar to getAvatarPng and decodeAvatar
+			* [ ] others
 		- [ ] define instance Drawable [view type of Followbox]
 		- [ ] try followbox
 	+ [ ] consider whether or not to use ForeignPtr to free memory for cairo surface
