@@ -10,6 +10,7 @@ module Graphics.Gtk.Cairo (
 	cairoImageSurfaceCreateFromPng, cairoSurfaceDestroy, cairoWithImageSurfaceFromPng,
 	cairoSetSourceSurface, cairoPaint,
 	CairoReadFunc, cairoImageSurfaceCreateFromPngStream, cairoWithImageSurfaceFromPngStream,
+	cairoImageSurfaceGetWidth, cairoImageSurfaceGetHeight,
 	cairoScale, cairoIdentityMatrix,
 	cairoWithTextExtents,
 	cairoTextExtentsXBearing, cairoTextExtentsYBearing,
@@ -23,6 +24,7 @@ import Foreign.Storable
 import Foreign.C
 import Control.Exception
 import Data.Word
+import Data.Int
 
 import qualified Data.ByteString as BS
 import qualified Data.Text as T
@@ -152,6 +154,13 @@ cairoWithImageSurfaceFromPngStream ::
 	AsPointer a => CairoReadFunc a -> a -> (CairoSurfaceT -> IO b) -> IO b
 cairoWithImageSurfaceFromPngStream rf x =
 	bracket (cairoImageSurfaceCreateFromPngStream rf x) cairoSurfaceDestroy
+
+foreign import ccall "cairo_image_surface_get_width" c_cairo_image_surface_get_width :: Ptr CairoSurfaceT -> IO #{type int}
+foreign import ccall "cairo_image_surface_get_height" c_cairo_image_surface_get_height :: Ptr CairoSurfaceT -> IO #{type int}
+
+cairoImageSurfaceGetWidth, cairoImageSurfaceGetHeight :: CairoSurfaceT -> IO #{type int}
+cairoImageSurfaceGetWidth (CairoSurfaceT s) = c_cairo_image_surface_get_width s
+cairoImageSurfaceGetHeight (CairoSurfaceT s) = c_cairo_image_surface_get_height s
 
 foreign import ccall "cairo_scale" c_cairo_scale :: Ptr CairoT -> #{type double} -> #{type double} -> IO ()
 

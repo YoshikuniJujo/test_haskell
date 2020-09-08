@@ -83,7 +83,7 @@ middleSize = 30; largeSize = 36
 
 -- AVATAR, NAME AND CROSS
 
-avatarSizeX, avatarSizeY :: Int
+avatarSizeX, avatarSizeY :: Double
 (avatarSizeX, avatarSizeY) = (80, 80)
 
 avatarPos, namePos :: Double -> Position

@@ -198,9 +198,11 @@ todo
 		- [ ] define instance Drawable [view type of Followbox]
 			* [x] show text
 			* [x] set font and size
-			* [ ] set color
+			* [x] set color
 			* [x] show line
 			* [ ] show image
+				+ [x] show png
+				+ [ ] show jpg
 		- [ ] try followbox
 	+ [ ] consider whether or not to use ForeignPtr to free memory for cairo surface
 	+ [ ] refactoring

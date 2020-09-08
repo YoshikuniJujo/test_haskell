@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -17,8 +18,11 @@ import qualified Data.Text as T
 import Trial.Followbox.TypeSynonym (Position, LineWidth)
 
 import Control.Moffy.Handle.GtkField
+import Control.Concurrent.STM
+
 import Graphics.Gtk
 import Graphics.Gtk.Cairo
+import Graphics.Gtk.Cairo.Values
 import Graphics.Gtk.Pango
 
 ---------------------------------------------------------------------------
@@ -49,7 +53,7 @@ white, blue :: Color
 white = Color { colorRed = 0xff, colorGreen = 0xff, colorBlue = 0xff }
 blue = Color { colorRed = 0x30, colorGreen = 0x66, colorBlue = 0xd6 }
 
-data Png = Png { pngWidth :: Int, pngHeight :: Int, pngData :: BS.ByteString }
+data Png = Png { pngWidth :: Double, pngHeight :: Double, pngData :: BS.ByteString }
 	deriving Show
 
 instance Drawable View where
@@ -79,7 +83,15 @@ instance Drawable View1 where
 		cairoMoveTo cr xb yb
 		cairoLineTo cr xe ye
 		cairoStroke cr
-	draw _ cr (Image _ _) = pure ()
+	draw _ cr (Image (x, y) (Png w h bs)) = do
+		tbs <- atomically $ newTVar bs
+		cairoWithImageSurfaceFromPngStream (bsToCairoReadFunc tbs) () \png -> do
+			w0 <- cairoImageSurfaceGetWidth png
+			h0 <- cairoImageSurfaceGetHeight png
+			cairoScale cr (w / fromIntegral w0) (h / fromIntegral h0)
+			cairoSetSourceSurface cr png (x * fromIntegral w0 / w) (y * fromIntegral h0 / h)
+			cairoPaint cr
+			cairoIdentityMatrix cr
 
 uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (x, y, z) = f x y z
@@ -87,3 +99,9 @@ uncurry3 f (x, y, z) = f x y z
 colorToRgb :: Color -> (Double, Double, Double)
 colorToRgb (Color (fromIntegral -> r) (fromIntegral -> g) (fromIntegral -> b)) =
 	(r / 0xff, g / 0xff, b / 0xff)
+
+bsToCairoReadFunc :: TVar BS.ByteString -> CairoReadFunc ()
+bsToCairoReadFunc tbs () (fromIntegral -> n) = atomically $ readTVar tbs >>= \bs -> case () of
+	_	| BS.length bs >= n -> (cairoStatusSuccess, Just t) <$ writeTVar tbs d
+		| otherwise -> pure (cairoStatusReadError, Nothing)
+		where (t, d) = BS.splitAt n bs
