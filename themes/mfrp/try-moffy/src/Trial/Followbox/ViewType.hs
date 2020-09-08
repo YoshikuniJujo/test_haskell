@@ -14,6 +14,10 @@ import qualified Data.ByteString as BS
 
 import Trial.Followbox.TypeSynonym (Position, LineWidth)
 
+import Control.Moffy.Handle.GtkField
+import Graphics.Gtk.Cairo
+import Graphics.Gtk.Pango
+
 ---------------------------------------------------------------------------
 
 type View = [View1]
@@ -38,3 +42,12 @@ blue = Color { colorRed = 0x30, colorGreen = 0x66, colorBlue = 0xd6 }
 
 data Png = Png { pngWidth :: Int, pngHeight :: Int, pngData :: BS.ByteString }
 	deriving Show
+
+instance Drawable View1 where
+	draw cr (Text c fn fs (x, y) t) = do
+		l <- pangoCairoCreateLayout cr
+		pangoLayoutSetText l t
+		cairoMoveTo cr x y
+		pangoCairoShowLayout cr l
+	draw cr (Line _ _ _ _) = pure ()
+	draw cr (Image _ _) = pure ()

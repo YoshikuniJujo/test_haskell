@@ -188,14 +188,19 @@ todo
 		- [x] make handler for followbox on GTK
 			* [x] make Trial.Followbox.RunGtk
 		- [x] try followbox with print
-		- [ ] move png converter to viewer
+		- [x] move png converter to viewer
 			* [x] separate getAvatar to getAvatarPng and decodeAvatar
 			* [x] rename decodeAvatar to decodePng
 			* [x] copy decodePng to viewer
-			* [ ] change View type to use Png
-			* [ ] repair getAvatar and viewer
-			* [ ] remove decodePng at module Trial.Followbox
+			* [x] change View type to use Png
+			* [x] repair getAvatar and viewer
+			* [x] remove decodePng at module Trial.Followbox
 		- [ ] define instance Drawable [view type of Followbox]
+			* [ ] show text
+			* [ ] set font and size
+			* [ ] set color
+			* [ ] show line
+			* [ ] show image
 		- [ ] try followbox
 	+ [ ] consider whether or not to use ForeignPtr to free memory for cairo surface
 	+ [ ] refactoring

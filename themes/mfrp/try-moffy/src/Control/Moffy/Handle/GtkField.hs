@@ -29,7 +29,6 @@ import Graphics.Gtk.Pango
 import Control.Moffy.Event.Time
 import Control.Moffy.Handle.Time
 import Data.Time.Clock.TAI
-import Foreign.Storable
 
 import qualified Data.Text as T
 
@@ -62,15 +61,17 @@ instance Drawable Double where
 
 type GuiEv = CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv
 
-tryUseTChan :: (Show a, Storable a, Drawable a) => IO (TChan (EvReqs GuiEv), TChan (EvOccs GuiEv), TChan [a])
+tryUseTChan :: (Show a, Drawable a) => IO (TChan (EvReqs GuiEv), TChan (EvOccs GuiEv), TChan [a])
 tryUseTChan = do
 
 	cr <- newTChanIO
 	c <- newTChanIO
 	c' <- newTChanIO
 	void . forkIO $ allocaMutable \m -> do
+		tx <- atomically $ newTVar []
+
 		ftc <- newTChanIO
-		pokeMutable m =<< newArr []
+--		pokeMutable m =<< newArr []
 		[] <- gtkInit []
 		w <- gtkWindowNew gtkWindowToplevel
 
@@ -98,7 +99,7 @@ tryUseTChan = do
 
 		da <- gtkDrawingAreaNew
 		gtkContainerAdd (castWidgetToContainer w) da
-		gSignalConnect da DrawEvent (tryDraw ftc c) m
+		gSignalConnect da DrawEvent (tryDraw ftc c tx) m
 
 		void . flip (gTimeoutAdd 101) () $ const do
 			atomically (lastTChan cr) >>= \case
@@ -119,9 +120,10 @@ tryUseTChan = do
 			atomically (lastTChan c') >>= \case
 				Nothing -> pure True
 				Just v -> do
-					old <- peekMutable m
-					pokeMutable m =<< newArr v
-					freeArr old
+					atomically $ writeTVar tx v
+--					old <- peekMutable m
+--					pokeMutable m =<< newArr v
+--					freeArr old
 					gtkWidgetQueueDraw da
 					pure True
 
@@ -140,9 +142,11 @@ lastTChan' x c = do
 	mx' <- tryReadTChan c
 	maybe (pure x) (`lastTChan'` c) mx'
 
-tryDraw :: (Storable a, Drawable a) => TChan (FontName, FontSize, T.Text) -> TChan (EvOccs GuiEv) -> GtkWidget -> CairoT -> Mutable (Arr a) -> IO Bool
-tryDraw ftc co w cr x = True <$ do
-	print' (w, cr, x)
+tryDraw :: Drawable a =>
+	TChan (FontName, FontSize, T.Text) -> TChan (EvOccs GuiEv) -> TVar [a] -> GtkWidget -> CairoT -> Mutable (Arr a) -> IO Bool
+-- tryDraw :: Drawable a => TChan (FontName, FontSize, T.Text) -> TChan (EvOccs GuiEv) -> GtkWidget -> CairoT -> Mutable (Arr a) -> IO Bool
+tryDraw ftc co tx w cr x = True <$ do
+--	print' (w, cr, x)
 --	cairoMoveTo cr 100 100
 --	cairoLineTo cr 500 400
 --	cairoStroke cr
@@ -174,7 +178,8 @@ tryDraw ftc co w cr x = True <$ do
 			atomically . writeTChan co . Oom.expand . Singleton
 				$ OccCalcTextExtents fn fs txt te
 		Nothing -> pure ()
-	draw cr =<< peekArr =<< peekMutable x
+	draw cr =<< atomically (readTVar tx)
+--	draw cr =<< peekArr =<< peekMutable x
 
 rectangle :: Int32 -> Int32 -> Int32 -> Int32 -> Rectangle
 rectangle (fromIntegral -> l) (fromIntegral -> t) (fromIntegral -> w) (fromIntegral -> h) =
