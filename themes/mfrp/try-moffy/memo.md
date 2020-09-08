@@ -134,7 +134,7 @@ todo
 		- [x] fill rectangle
 	+ [x] free Mutable
 	+ [ ] arrange
-	+ [ ] test followbox
+	+ [x] test followbox
 		- [x] draw character
 		- [x] draw image
 			* [x] try to use cairo_image_surface_create_from_png from C
@@ -162,7 +162,7 @@ todo
 		- [x] add TextExtents handle to Control.Moffy.Handle.XField.handle
 		- [x] add trial for TextExtents
 		- [x] try pango_layout_get_extents and pango_layout_get_pixel_extents
-		- [ ] change TextExtents
+		- [x] change TextExtents
 			* [x] define TextExtents'
 			* [x] define calcTextExtents'
 			* [x] make wrapper of pango_layout_get_extents
@@ -181,7 +181,6 @@ todo
 			* [x] use calcTextExtents'
 			* [x] change signal
 				+ [x] move converter from Event to Handle
-			* [ ] rename
 		- [x] define TextExtents Handler on GTK
 		- [x] add trial for TextExtents on GTK
 		- [x] make handleFollowboxWith
@@ -195,15 +194,18 @@ todo
 			* [x] change View type to use Png
 			* [x] repair getAvatar and viewer
 			* [x] remove decodePng at module Trial.Followbox
-		- [ ] define instance Drawable [view type of Followbox]
+		- [x] define instance Drawable [view type of Followbox]
 			* [x] show text
 			* [x] set font and size
 			* [x] set color
 			* [x] show line
-			* [ ] show image
+			* [x] show image
 				+ [x] show png
-				+ [ ] show jpg
-		- [ ] try followbox
+				+ [x] show jpg
+					- [x] read multiple format image from ByteString
+					- [x] write PNG format to ByteString
+					- [x] use these
+		- [x] try followbox
 	+ [ ] consider whether or not to use ForeignPtr to free memory for cairo surface
 	+ [ ] refactoring
 	+ [ ] others

@@ -38,6 +38,8 @@ import Trial.Followbox.Clickable (
 import Trial.Followbox.ViewType (View(..), View1(..), white, Png(..))
 import Trial.Followbox.TypeSynonym (Position, ErrorMessage)
 
+import qualified Codec.Picture as P
+
 ---------------------------------------------------------------------------
 
 -- * PARAMETER LIST
@@ -166,7 +168,7 @@ cross (l, t) = clickable (View [lwhite lt rb, lwhite lb rt]) (l', t') (r', b')
 
 getUser :: LockId -> ReactF s (Png, T.Text, T.Text)
 getUser lck = ex3 <$> getObj1 lck >>= err `either` \(au, ln, u) ->
-	getAvatarPng au >>= (pure . (, ln, u))
+	getAvatarPng au >>= either err (pure . (, ln, u))
 	where
 	ex3 o = (,,)
 		<$> ex o "avatar_url" (NoAvatarAddress, "No Avatar Address")
@@ -175,9 +177,38 @@ getUser lck = ex3 <$> getObj1 lck >>= err `either` \(au, ln, u) ->
 	ex o k e = case HM.lookup k o of Just (String v) -> Right v; _ -> Left e
 	err e = adjust (uncurry raiseError e) >> getUser lck
 
-getAvatarPng :: T.Text -> ReactF s Png
+getAvatarPng :: T.Text -> ReactF s (Either (Error, ErrorMessage) Png)
 getAvatarPng url = (<$> adjust (httpGet url))
-	$ snd >>> LBS.toStrict >>> Png avatarSizeX avatarSizeY
+	$ snd >>> LBS.toStrict >>> convert >>> either
+		(Left . (NoAvatar ,))
+		(Right . Png avatarSizeX avatarSizeY)
+
+convert :: BS.ByteString -> Either String BS.ByteString
+-- convert img = LBS.toStrict <$> (P.encodeDynamicPng =<< P.decodeImage img)
+-- convert img = LBS.toStrict <$> (encodeDynamicPngAndFormat =<< P.decodeImage img)
+convert img = LBS.toStrict . P.encodePng . P.convertRGB8 <$> P.decodeImage img
+
+encodeDynamicPngAndFormat :: P.DynamicImage -> Either String LBS.ByteString
+encodeDynamicPngAndFormat dimg = case P.encodeDynamicPng dimg of
+	Right p -> Right p
+	Left emsg -> Left $ emsg ++ ": " ++ showFormat dimg
+
+showFormat :: P.DynamicImage -> String
+showFormat (P.ImageY8 _) = "ImageY8"
+showFormat (P.ImageY16 _) = "ImageY16"
+showFormat (P.ImageY32 _) = "ImageY32"
+showFormat (P.ImageYF _) = "ImageYF"
+showFormat (P.ImageYA8 _) = "ImageYA8"
+showFormat (P.ImageYA16 _) = "ImageYA16"
+showFormat (P.ImageRGB8 _) = "ImageRGB8"
+showFormat (P.ImageRGB16 _) = "ImageRGB16"
+showFormat (P.ImageRGBF _) = "ImageRGBF"
+showFormat (P.ImageRGBA8 _) = "ImageRGBA8"
+showFormat (P.ImageRGBA16 _) = "ImageRGBA16"
+showFormat (P.ImageYCbCr8 _) = "ImageYCBCr8"
+showFormat (P.ImageCMYK8 _) = "ImageCMYK8"
+showFormat (P.ImageCMYK16 _) = "ImageCMYK16"
+showFormat _ = "other format"
 
 -- GET OBJECT
 
