@@ -23,7 +23,7 @@ import Control.Moffy.Internal.Sig.Type (
 	Sig(..), ISig(..), isig,
 	emit, emitAll, waitFor, repeat, res, ires, hold )
 import Control.Moffy.Internal.React (
-	Firstable, Adjustable, Updatable, adjust, par_ )
+	Firstable, Adjustable, Updatable, adjust, par )
 import Control.Moffy.Internal.React.Type (
 	React, Rct(..), ThreadId, forkThreadId )
 import Data.Type.Set ((:+:))
@@ -98,7 +98,7 @@ at_ :: Firstable es es' (ISig s (es :+: es') a r) r' =>
 	React s (es :+: es') (ThreadId, ThreadId) ->
 	Sig s es a r -> React s es' r' ->
 	React s (es :+: es') (Either r (Maybe a, r'))
-at_ ft (adjustSig -> Sig l) (adjust -> r) = par_ ft l r >>= \case
+at_ ft (adjustSig -> Sig l) (adjust -> r) = par ft l r >>= \case
 	(Pure l', r') -> (first Just <$>) <$> iat_ ft l' r'
 	(_, Pure y) -> pure $ Right (Nothing, y)
 	(_ :=<< _, _ :=<< _) -> error "never occur"
@@ -175,22 +175,22 @@ spawn = repeat . unSig
 parList_ :: Mergeable es es es =>
 	React s es (ThreadId, ThreadId) ->
 	Sig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
-parList_ ft (Sig r) = iparList_ ft =<< waitFor r
+parList_ ft (Sig r) = reverse <$%> (iparList ft =<< waitFor r)
 
-iparList_ :: Mergeable es es es =>
+iparList :: Mergeable es es es =>
 	React s es (ThreadId, ThreadId) ->
 	ISig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
-iparList_ ft = isig (pure . ([] ,)) $ go . ((: []) <$>) . ((: []) <$%>) where
+iparList ft = isig (pure . ([] ,)) $ go . ((: []) <$>) . ((: []) <$%>) where
 	go s (Sig r) = emitAll (ipause ft s r) >>= \case
-		(s', Pure (h :| t)) -> go (cons_ ft h s') t
+		(s', Pure (h :| t)) -> go (cons ft h s') t
 		(s', Pure (End y)) -> (, y) <$> emitAll s'
 		(End x, r') -> emit [] >> first (x ++) <$> parList_ ft (Sig r')
 		(_ :| _, _ :=<< _) -> error "never occur"
 
-cons_ :: Mergeable es es es =>
+cons :: Mergeable es es es =>
 	React s es (ThreadId, ThreadId) ->
 	ISig s es a r -> ISig s es [a] [r] -> ISig s es [a] [r]
-cons_ ft h t = uncurry (:) <$%> ipairs ft h t >>= \(h', t') ->
+cons ft h t = uncurry (:) <$%> ipairs ft h t >>= \(h', t') ->
 	(:) <$> ((: []) <$%> h') <*> t'
 
 ---------------------------------------------------------------------------
@@ -213,7 +213,7 @@ ipairs :: (Updatable (ISig s es a r) (ISig s es b r'), Mergeable es es es) =>
 ipairs _ l@(End _) r = pure (l, r)
 ipairs _ l r@(End _) = pure (l, r)
 ipairs ft (hl :| Sig tl) (hr :| Sig tr) = ((hl, hr) :|) . Sig
-	$ uncurry (ipairs ft) . ((hl ?:|) *** (hr ?:|)) <$> par_ ft tl tr
+	$ uncurry (ipairs ft) . ((hl ?:|) *** (hr ?:|)) <$> par ft tl tr
 	where (?:|) h = \case Pure i -> i; t -> h :| Sig t
 
 -- PAUSE
@@ -221,7 +221,7 @@ ipairs ft (hl :| Sig tl) (hr :| Sig tr) = ((hl, hr) :|) . Sig
 pause :: (Updatable (ISig s es a r) r', Mergeable es es es) =>
 	React s es (ThreadId, ThreadId) -> Sig s es a r -> React s es r' ->
 	Sig s es a (Sig s es a r, React s es r')
-pause ft (Sig l) r = waitFor (par_ ft l r) >>= \case
+pause ft (Sig l) r = waitFor (par ft l r) >>= \case
 	(Pure l', r') -> first emitAll <$> emitAll (ipause ft l' r')
 	(l', r'@(Pure _)) -> pure (Sig l', r')
 	_ -> error "never occur"

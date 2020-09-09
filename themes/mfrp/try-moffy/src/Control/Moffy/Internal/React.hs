@@ -12,7 +12,7 @@ module Control.Moffy.Internal.React (
 	-- * Constraint Synonym
 	Firstable,
 	-- * Function
-	first_, adjust, par_) where
+	first_, adjust, par) where
 
 import Control.Arrow ((***))
 import Control.Monad.Freer.Par (
@@ -41,7 +41,7 @@ type Firstable es es' a b = (
 first_ :: Firstable es es' a b =>
 	React s (es :+: es') (ThreadId, ThreadId) ->
 	React s es a -> React s es' b -> React s (es :+: es') (Or a b)
-first_ ft (adjust -> l) (adjust -> r) = (<$> par_ ft l r) \case
+first_ ft (adjust -> l) (adjust -> r) = (<$> par ft l r) \case
 	(Pure x, Pure y) -> LR x y; (Pure x, _) -> L x; (_, Pure y) -> R y
 	(_ :=<< _, _:=<< _) -> error "never occur"
 
@@ -66,20 +66,20 @@ adj = \case
 -- PAR
 ---------------------------------------------------------------------------
 
-par_ :: (Updatable a b, Mergeable es es es) =>
+par :: (Updatable a b, Mergeable es es es) =>
 	React s es (ThreadId, ThreadId) ->
 	React s es a -> React s es b -> React s es (React s es a, React s es b)
-par_ ft l r = case (l, r) of
+par ft l r = case (l, r) of
 	(Pure _, _) -> pure (l, r); (_, Pure _) -> pure (l, r)
 	(_ :=<< Never, _ :=<< Never) -> never
 	(_ :=<< Never, _) -> (never ,) . pure <$> r
 	(_, _ :=<< Never) -> (, never) . pure <$> l
 	(c :=<< GetThreadId, c' :=<< GetThreadId) ->
-		uncurry (par_ ft) . (app c *** app c') =<< ft
-	(c :=<< GetThreadId, _) -> flip (par_ ft) r . app c . fst =<< ft
-	(_, c' :=<< GetThreadId) -> par_ ft l . app c' . snd =<< ft
+		uncurry (par ft) . (app c *** app c') =<< ft
+	(c :=<< GetThreadId, _) -> flip (par ft) r . app c . fst =<< ft
+	(_, c' :=<< GetThreadId) -> par ft l . app c' . snd =<< ft
 	(_ :=<< Await el, _ :=<< Await er) -> ft >>= \(t, u) ->
-		uncurry (par_ ft)
+		uncurry (par ft)
 			. update l t r u =<< pure =<<< Await (el `merge` er)
 
 ---------------------------------------------------------------------------

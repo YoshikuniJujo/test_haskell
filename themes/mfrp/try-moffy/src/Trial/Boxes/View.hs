@@ -11,7 +11,7 @@ import Field (Field, Pixel, flushField, clearField, fillRect)
 ---------------------------------------------------------------------------
 
 drawBoxes :: Field -> [Box] -> IO ()
-drawBoxes f = withFlush f . (drawBox f `mapM_`) . reverse
+drawBoxes f = withFlush f . (drawBox f `mapM_`)
 
 drawBox :: Field -> Box -> IO ()
 drawBox f (Box rct clr) = drawRect f (clrToPx clr) rct

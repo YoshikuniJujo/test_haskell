@@ -52,7 +52,7 @@ class Drawable a where
 instance Drawable () where draw _ _ () = pure ()
 
 instance Drawable a => Drawable [a] where
-	draw w cr xs = draw w cr `mapM_` reverse xs
+	draw w cr xs = draw w cr `mapM_` xs
 
 instance Drawable Double where
 	draw _ cr n = do
