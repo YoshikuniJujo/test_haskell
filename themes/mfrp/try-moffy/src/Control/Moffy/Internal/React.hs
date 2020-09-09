@@ -12,7 +12,7 @@ module Control.Moffy.Internal.React (
 	-- * Constraint Synonym
 	Firstable,
 	-- * Function
-	first_, adjust, par) where
+	adjust, first_, par) where
 
 import Control.Arrow ((***))
 import Control.Monad.Freer.Par (

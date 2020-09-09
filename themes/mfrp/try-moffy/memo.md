@@ -409,12 +409,19 @@ Control.Moffy.Handle.ThreadId
 		- [x] FUNCTION
 			* [x] BASIC
 			* [x] PRACTICAL
-* [ ] Control.Moffy.Internal.React
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
+* [x] Control.Moffy.Internal.React
+	+ [x] API
+		- [x] Class
+		- [x] Constraint Synonym
+		- [x] Function
+	+ [x] extension
+	+ [x] imports
+	+ [x] structure
+	+ [x] body
+		- [x] FIRST
+		- [x] ADJUST
+		- [x] PAR
+		- [x] UPDATABLE
 * [ ] Control.Moffy.Internal.React.Type
 	+ [ ] API
 	+ [ ] extension
