@@ -367,12 +367,18 @@ Control.Moffy.Handle.ThreadId
 			* [x] INSTANCE APPLICATIVE
 			* [x] APP AND IAPP
 				+ [x] function app_
-				* [x] function exposeBoth
-				* [x] function iapp_
-		- [ ] PARALLEL
-			* [ ] AT
-			* [ ] BREAK AND UNTIL
-			* [ ] INDEX BY
+				+ [x] function exposeBoth
+				+ [x] function iapp_
+		- [x] PARALLEL
+			* [x] AT
+			* [x] BREAK AND UNTIL
+				+ [x] break_
+				+ [x] until_
+			* [x] INDEX BY
+				+ [x] rename functions
+				+ [x] indexBy_
+				+ [x] indexByGen
+				+ [x] iindexBy
 		- [ ] COPIES
 			* [ ] SPAWN
 			* [ ] PAR LIST
