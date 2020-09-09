@@ -1,7 +1,6 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ViewPatterns #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Internal.Sig.Type (
@@ -58,7 +57,7 @@ instance Monad (Sig s es a) where
 		Sig $ isig (unSig . f) (\h -> pure . (h :|) . (f =<<)) =<< r
 
 instance Functor (ISig s es a) where
-	fmap f = isig (End . f) (\h -> (h :|) . (f <$>))
+	fmap f = isig (End . f) \h -> (h :|) . (f <$>)
 
 instance Applicative (ISig s es a) where
 	pure = End; mf <*> (flip (<$>) -> ax) =
@@ -110,7 +109,7 @@ find p = go where
 	igo = isig (pure . Right) \h -> bool go (const . pure $ Left h) (p h)
 
 scanl :: (b -> a -> b) -> b -> Sig s es a r -> Sig s es b r
-scanl op v = emitAll . iscanl op v
+scanl = ((emitAll .) .) . iscanl
 
 iscanl :: (b -> a -> b) -> b -> Sig s es a r -> ISig s es b r
 iscanl op v (Sig r) = v :| (isig pure (scanl op . (v `op`)) =<< waitFor r)

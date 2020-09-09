@@ -389,11 +389,26 @@ Control.Moffy.Handle.ThreadId
 			* [x] ADJUST
 			* [x] PAIRS
 			* [x] PAUSE
-* [ ] Control.Moffy.Internal.Sig.Type
-	+ [ ] API
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
+* [x] Control.Moffy.Internal.Sig.Type
+	+ [x] API
+		- [x] Type
+			* [x] newtype Sig
+			* [x] data ISig
+			* [x] function isig
+		- [x] Function
+			* [x] Basic
+			* [x] Practical
+	+ [x] extension
+	+ [x] imports
+	+ [x] structure
+	+ [x] body
+		- [x] TYPE
+		- [x] CLASS INSTANCE
+			* [x] MONAD
+			* [x] FLIP FUNCTOR
+		- [x] FUNCTION
+			* [x] BASIC
+			* [x] PRACTICAL
 * [ ] Control.Moffy.Internal.React
 	+ [ ] API
 	+ [ ] extension
