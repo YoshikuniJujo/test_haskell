@@ -7,21 +7,20 @@
 module Control.Moffy.Handle (
 	-- * Constraint
 	ExpandableHandle, ExpandableOccurred, MergeableOccurred,
-	-- * Handle and Function
-	-- ** Plain
-	-- *** Type
+	-- * Plain Handle
+	-- ** Type
 	Handle, Handle',
-	-- *** Composer
+	-- ** Composer
 	retry, expand, before, merge,
-	-- ** With State
-	-- *** Type
+	-- * Handle with State
+	-- ** Type
 	HandleSt, HandleSt', St, liftHandle, liftHandle', liftSt,
-	-- *** Composer
+	-- ** Composer
 	retrySt, expandSt, beforeSt, mergeSt,
-	-- ** With Input and Output
-	-- *** Type
+	-- * Handle with Input and Output
+	-- ** Type
 	HandleIo', pushInput, popInput,
-	-- *** Composer
+	-- ** Composer
 	expandIo, beforeIo, mergeIo ) where
 
 import Control.Arrow (first)

@@ -442,7 +442,18 @@ Control.Moffy.Handle.ThreadId
 		- [x] HANDLE
 		- [x] THREAD ID
 * [ ] Control.Moffy.Handle
-	+ [ ] API
+	+ [x] API
+		- [x] structure
+		- [x] Constraint
+		- [x] Plain Handle
+			* [x] Type
+			* [x] Composer
+		- [x] Handle with State
+			* [x] Type
+			* [x] Composer
+		- [x] Handle with Input and Output
+			* [x] Type
+			* [x] Composer
 	+ [ ] extension
 	+ [ ] imports
 	+ [ ] structure
