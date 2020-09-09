@@ -231,6 +231,7 @@ todo
 	+ [ ] refactor Moffy base (9)
 	+ [ ] refactor GTK (7)
 	+ [ ] refactor Trial (23)
+	+ [ ] refactor app/foo.hs (8)
 * [ ] about window
 	+ [ ] make window
 	+ [ ] make multiple window
@@ -352,11 +353,33 @@ Control.Moffy.Handle.ThreadId
 	+ [x] structure
 	+ [x] body
 * [ ] Control.Moffy.Internal.Sig
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] imports
-	+ [ ] structure
+	+ [x] API
+		- [x] Adjust
+		- [x] Applicative
+		- [x] Parallel
+		- [x] Copies
+		- [x] Orphan instances
+	+ [x] extension
+	+ [x] imports
+	+ [x] structure
 	+ [ ] body
+		- [x] FLIP APPLICATIVE
+			* [x] INSTANCE APPLICATIVE
+			* [x] APP AND IAPP
+				+ [x] function app_
+				* [x] function exposeBoth
+				* [x] function iapp_
+		- [ ] PARALLEL
+			* [ ] AT
+			* [ ] BREAK AND UNTIL
+			* [ ] INDEX BY
+		- [ ] COPIES
+			* [ ] SPAWN
+			* [ ] PAR LIST
+		- [ ] BASIC COMBINATOR
+			* [ ] ADJUST
+			* [ ] PAIRS
+			* [ ] PAUSE
 * [ ] Control.Moffy.Internal.Sig.Type
 	+ [ ] API
 	+ [ ] imports
