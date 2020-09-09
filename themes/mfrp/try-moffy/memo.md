@@ -422,12 +422,25 @@ Control.Moffy.Handle.ThreadId
 		- [x] ADJUST
 		- [x] PAR
 		- [x] UPDATABLE
-* [ ] Control.Moffy.Internal.React.Type
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
+* [x] Control.Moffy.Internal.React.Type
+	+ [x] API
+		- [x] React
+			* [x] Type React and Data Rct
+			* [x] Class Request
+			* [x] Constraint Synonym for Data Occurred
+		- [x] Never and Await
+		- [x] Hanlde
+		- [x] ThreadId
+	+ [x] extension
+	+ [x] imports
+	+ [x] structure
+	+ [x] body
+		- [x] REACT
+			* [x] TYPE
+			* [x] NEVER AND AWAIT
+		- [x] CONSTRAINT SYNONYM
+		- [x] HANDLE
+		- [x] THREAD ID
 * [ ] Control.Moffy.Handle
 	+ [ ] API
 	+ [ ] extension

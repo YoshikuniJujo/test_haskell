@@ -15,7 +15,7 @@ import Control.Moffy.Internal.Sig (
 	app_, iapp_, at_, break_, until_, indexBy_, parList_ )
 import Control.Moffy.Internal.Sig.Type (Sig, ISig)
 import Control.Moffy.Internal.React (Firstable, first_)
-import Control.Moffy.Internal.React.Type (React, noForkThreadId)
+import Control.Moffy.Internal.React.Type (React, noThreadId)
 import Data.Type.Set ((:+:))
 import Data.OneOrMore (Mergeable)
 import Data.Or (Or)
@@ -34,11 +34,11 @@ infixl 4 `app'`, `iapp'`
 
 app' :: (Mergeable es es es, Semigroup r) =>
 	Sig s es (a -> b) r -> Sig s es a r -> Sig s es b r
-app' = app_ noForkThreadId
+app' = app_ noThreadId
 
 iapp' :: (Mergeable es es es, Semigroup r) =>
 	ISig s es (a -> b) r -> ISig s es a r -> ISig s es b r
-iapp' = iapp_ noForkThreadId
+iapp' = iapp_ noThreadId
 
 ---------------------------------------------------------------------------
 -- PARALLEL
@@ -48,26 +48,26 @@ infixr 8 `first'`
 
 first' :: Firstable es es' a b =>
 	React s es a -> React s es' b -> React s (es :+: es') (Or a b)
-first' = first_ noForkThreadId
+first' = first_ noThreadId
 
 infixr 7 `at'`
 
 at' :: Firstable es es' (ISig s (es :+: es') a r) r' =>
 	Sig s es a r -> React s es' r' ->
 	React s (es :+: es') (Either r (Maybe a, r'))
-at' = at_ noForkThreadId
+at' = at_ noThreadId
 
 infixl 7 `break'`, `until'`
 
 break' :: Firstable es es' (ISig s (es :+: es') a r) r' =>
 	Sig s es a r -> React s es' r' ->
 	Sig s (es :+: es') a (Either r (Maybe a, r'))
-break' = break_ noForkThreadId
+break' = break_ noThreadId
 
 until' :: Firstable es es' (ISig s (es :+: es') a r) r' =>
 	Sig s es a r -> React s es' r' ->
 	Sig s (es :+: es') a (Either r (a, r'))
-until' = until_ noForkThreadId
+until' = until_ noThreadId
 
 infixl 7 `indexBy'`
 
@@ -75,7 +75,7 @@ indexBy' ::
 	Firstable es es' (ISig s (es :+: es') a r) (ISig s (es :+: es') b r') =>
 	Sig s es a r -> Sig s es' b r' ->
 	Sig s (es :+: es') a (Either r (Maybe a, r'))
-indexBy' = indexBy_ noForkThreadId
+indexBy' = indexBy_ noThreadId
 
 ---------------------------------------------------------------------------
 -- COPIES
@@ -83,4 +83,4 @@ indexBy' = indexBy_ noForkThreadId
 
 parList' :: Mergeable es es es =>
 	Sig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
-parList' = parList_ noForkThreadId
+parList' = parList_ noThreadId
