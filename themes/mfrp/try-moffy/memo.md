@@ -441,7 +441,7 @@ Control.Moffy.Handle.ThreadId
 		- [x] CONSTRAINT SYNONYM
 		- [x] HANDLE
 		- [x] THREAD ID
-* [ ] Control.Moffy.Handle
+* [x] Control.Moffy.Handle
 	+ [x] API
 		- [x] structure
 		- [x] Constraint
@@ -454,10 +454,20 @@ Control.Moffy.Handle.ThreadId
 		- [x] Handle with Input and Output
 			* [x] Type
 			* [x] Composer
-	+ [ ] extension
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
+	+ [x] extension
+	+ [x] imports
+	+ [x] structure
+	+ [x] body
+		- [x] CONSTRAINT
+		- [x] PLAIN HANDLE
+			* [x] TYPE
+			* [x] COMPOSER
+		- [x] HANDLE WITH STATE
+			* [x] TYPE
+			* [x] COMPOSER
+		- [x] HANDLE WITH INPUT AND OUTPUT
+			* [x] TYPE
+			* [x] COMPOSER
 * [ ] Control.Moffy.Run
 	+ [ ] API
 	+ [ ] extension

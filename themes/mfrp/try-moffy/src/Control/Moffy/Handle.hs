@@ -35,13 +35,13 @@ import qualified Data.OneOrMore as OOM (expand, collapse)
 ---------------------------------------------------------------------------
 
 -- * CONSTRAINT
--- * PLAIN
+-- * PLAIN HANDLE
 --	+ TYPE
 --	+ COMPOSER
--- * WITH STATE
+-- * HANDLE WITH STATE
 --	+ TYPE
 --	+ COMPOSER
--- * WITH INPUT AND OUTPUT
+-- * HANDLE WITH INPUT AND OUTPUT
 --	+ TYPE
 --	+ COMPOSER
 
@@ -52,7 +52,7 @@ import qualified Data.OneOrMore as OOM (expand, collapse)
 type ExpandableHandle es es' = (ExpandableOccurred es es', Collapsable es' es)
 
 ---------------------------------------------------------------------------
--- PLAIN
+-- PLAIN HANDLE
 ---------------------------------------------------------------------------
 
 -- TYPE
@@ -91,7 +91,7 @@ merge :: (
 ((collapse -> l) `merge` (collapse -> r)) rqs = merge' <$> l rqs <*> r rqs
 
 ---------------------------------------------------------------------------
--- WITH STATE
+-- HANDLE WITH STATE
 ---------------------------------------------------------------------------
 
 -- TYPE
@@ -126,7 +126,7 @@ mergeSt :: (
 l `mergeSt` r = mergeIo l pure r pure
 
 ---------------------------------------------------------------------------
--- WITH INPUT AND OUTPUT
+-- HANDLE WITH INPUT AND OUTPUT
 ---------------------------------------------------------------------------
 
 -- TYPE
