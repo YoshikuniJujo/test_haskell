@@ -6,17 +6,17 @@ structure
 
 * Moffy (10)
 	+ Control.Moffy
-		+ NoThreadId
-		+ Handle
-		+ Run
-		+ Internal
-			- Sig
-			- Sig.Type
-			- React
-			- React.Type
-		+ Event.ThreadId
-		+ Handle.ThreadId
-* Moffy library (16)
+		- NoThreadId
+		- Handle
+		- Run
+		- Internal
+			* Sig
+			* Sig.Type
+			* React
+			* React.Type
+		- Event.ThreadId
+		- Handle.ThreadId
+* Moffy library (20)
 	+ Control.Moffy.Event
 		- Lock
 			* Internal
@@ -28,13 +28,16 @@ structure
 			* Internal
 			* Internal.XK
 		- Mouse
+		- CalcTextExtents
 	+ Control.Moffy.Handle
 		- Lock
 		- Random
 		- Time
+		- GtkField
 		- XField
 			* Key
 			* Mouse
+			* CalcTextExtents
 * Moffy base (9)
 	+ Data.OneOrMore (1)
 	+ Data.Type.Set (2)
@@ -45,28 +48,37 @@ structure
 		- FTCQueue
 		- TaggableFunction
 		- Internal.Id
-* Trial (20)
-	+ CheckRandom
+* GTK (7)
+	+ Graphics.Gtk
+		- Cairo
+			* Values
+		- CairoType
+		- Pango
+		- Values
+		- AsPointer
+* Trial (23)
+	+ TryRandom
 	+ Count
-	+ CountWithLock
-	+ TryCheckDup
 	+ TryKey
 	+ TryLock
 	+ TryThreadId
 	+ TrySharing
-	+ CheckSharing.EvInt
-	+ CheckSharing.TrheadId
-	+ StepByStepBox
-	+ Boxes
-		- Event
-		- Handle
-	+ Followbox
+		- ThreadId
+	+ TryCalcTextExtents
+	+ Boxes (5)
+		- Box
+		- BoxEv
+		- Run
+		- View
+	+ Followbox (10)
 		- Clickable
 		- Event
 		- Handle
+		- XFieldHandle
 		- View
 		- ViewType
 		- Run
+		- RunGtk
 		- TypeSynonym
 
 todo
@@ -208,11 +220,17 @@ todo
 		- [x] try followbox
 	+ [ ] refactoring
 		- [x] remove module Arr
-		- [ ] view module hierarchy
+		- [x] view module hierarchy
 		- [ ] refactor module hierarchy
 		- [ ] refactor about GTK
 	+ [ ] consider whether or not to use ForeignPtr to free memory for cairo surface
 	+ [ ] others
+* [ ] refactoring
+	+ [ ] refactor Moffy (10)		<- now
+	+ [ ] refactor Moffy library (20)
+	+ [ ] refactor Moffy base (9)
+	+ [ ] refactor GTK (7)
+	+ [ ] refactor Trial (23)
 * [ ] about window
 	+ [ ] make window
 	+ [ ] make multiple window
@@ -267,8 +285,8 @@ todo
 * [ ] define Data.Or.or
 
 
-Moffy (9)
------
+Moffy (10)
+----------
 
 ### module hierarchy
 
@@ -309,349 +327,77 @@ Control.Moffy.Handle.ThreadId
 
 * [x] Control.Moffy
 	+ [x] API
-		- [x] structure
 		- [x] Sig
-			* [x] Sig
-			* [x] ISig
 		- [x] React
-			* [x] React
-			* [x] Rct
-			* [x] EvReqs
-			* [x] EvOccs
-			* [x] class Request
 		- [x] Constraint
-			* [x] Firstable
-			* [x] Adjustable
 		- [x] Combinator
 			* [x] Await and Adjust
-				+ [x] await
-				+ [x] adjust
-				+ [x] adjustSig
 			* [x] Create Sig
-				+ [x] emit
-				+ [x] waitFor
-				+ [x] repeat
 			* [x] Traverse
-				+ [x] find
-				+ [x] scanl
 			* [x] Parallel
-				+ [x] first
-				+ [x] at
-				+ [x] break
-				+ [x] until
-				+ [x] indexBy
 			* [x] Copies
-				+ [x] spawn
-				+ [x] parList
 	+ [x] extension
 	+ [x] imports
 	+ [x] structure
 	+ [x] body
 		- [x] PARALLEL
-			* [x] function first
-			* [x] function at
-			* [x] function break
-			* [x] function until
-			* [x] function indexBy
 		- [x] COPIES
-			* [x] function parList
 * [x] Control.Moffy.NoThreadId
 	+ [x] API
-		- [x] structure
 		- [x] Applicative
-			* [x] function app'
-			* [x] function iapp'
 		- [x] Parallel
-			* [x] function first'
-			* [x] function at'
-			* [x] function break'
-			* [x] function until'
-			* [x] indexBy'
 		- [x] Copies
-			* [x] parList'
 	+ [x] extension
 	+ [x] imports
 	+ [x] structure
 	+ [x] body
-		- [x] APPLICATIVE
-			* [x] function app'
-			* [x] function iapp'
-		- [x] PARALLEL
-			* [x] function first'
-			* [x] function at'
-			* [x] function break' and until'
-			* [x] function indexBy'
-		- [x] COPIES
-			* [x] function parList'
-* [x] Control.Moffy.Internal.Sig
-	+ [x] API
-		- [x] structure
-		- [x] Adjust
-		- [x] Applicative
-			* [x] app_
-			* [x] iapp_
-		- [x] Parallel
-			* [x] at
-			* [x] break
-			* [x] until
-			* [x] indexBy
-		- [x] Copies
-			* [x] spawn
-			* [x] parList
-		- [x] Orphan instances
-			* [x] Applicative (Flip (ISig s es) r)
-			* [x] Applicative (Flip (Sig s es) r)
-	+ [x] extension
-	+ [x] imports
-	+ [x] structure
-	+ [x] body
-		- [x] FLIP APPLICATIVE
-			* [x] INSTANCE
-				+ [x] instance Applicative (Flip (Sig s es ) r)
-				+ [x] instance Applicative (Flip (ISig s es) r)
-			* [x] APP AND IAPP
-				+ [x] function app_
-				+ [x] function exposeBoth_
-				+ [x] function iapp_
-		- [x] PARALLEL
-			* [x] AT
-				+ [x] function at_
-				+ [x] function iat_
-			* [x] BREAK AND UNTIL
-				+ [x] function break_
-				+ [x] function until_
-			* [x] INDEX BY
-				+ [x] function indexBy_
-				+ [x] function indexByGen_
-				+ [x] function iiindexBy_
-		- [x] COPIES
-			* [x] SPAWN
-			* [x] PAR LIST
-				+ [x] function parList_
-				+ [x] function iparList_
-				+ [x] function cons_
-		- [x] BASIC COMBINATOR
-			* [x] ADJUST
-				+ [x] function adjustSig
-				+ [x] function adjustISig
-			* [x] PAIRS
-				+ [x] function ipairs_
-			* [x] PAUSE
-				+ [x] function pause_
-				+ [x] function ipause_
-* [x] Control.Moffy.Internal.Sig.Type
-	+ [x] API
-		- [x] Type
-			* [x] type Sig
-			* [x] type ISig
-			* [x] function isig
-		- [x] Function
-			* [x] Basic
-				+ [x] emit and emitAll
-				+ [x] waitFor
-				+ [x] res and ires
-				+ [x] hold
-			* [x] Practical
-				+ [x] repeat
-				+ [x] find
-				+ [x] scanl
-	+ [x] imports
-	+ [x] structure
-	+ [x] body
-		- [x] TYPE
-		- [x] CLASS INSTANCE
-			* [x] MONAD
-				+ [x] Sig
-				+ [x] ISig
-			* [x] FLIP FUNCTOR
-		- [x] FUNCTION
-			* [x] BASIC
-			* [x] PRACTICAL
-* [x] Control.Moffy.Internal.React
-	+ [x] API
-		- [x] structure
-		- [x] Class
-			* [x] Adjustable
-			* [x] Updatetable
-		- [x] Constraint Synonym
-			* [x] Firstable
-		- [x] Function
-			* [x] first_
-			* [x] adjust
-			* [x] par_
-	+ [x] extension
-	+ [x] imports
-	+ [x] structure
-	+ [x] body
-		- [x] FIRST
-			* [x] constraint synonym Firstable
-			* [x] function first_
-		- [x] ADJUST
-			* [x] structure
-			* [x] class Adjustable
-			* [x] instance Adjustable
-			* [x] function adj
-		- [x] PAR
-		- [x] UPDATABLE
-			* [x] class Updatable
-			* [x] instance Updatable a a
-			* [x] instance Updatable a b
-* [x] Control.Moffy.Internal.React.Type
-	+ [x] API
-		- [x] structure
-		- [x] React
-			* [x] Type React and Data Rct
-				+ [x] type React
-				+ [x] data Rct
-				+ [x] type EvReqs
-				+ [x] type EvOccs
-			* [x] Class Request
-			* [x] Constraint Synonym for Data Occurred
-				+ [x] ExpandableOccurred
-				+ [x] CollapsableOccurred
-				+ [x] MergeableOccurred
-		- [x] Never and Await
-			* [x] never
-			* [x] await
-			* [x] await'
-		- [x] Handle
-			* [x] type Handle
-			* [x] type HandleSt
-			* [x] type St
-			* [x] function liftHandle
-			* [x] function liftSt
-		- [x] ThreadId
-			* [x] data ThreadId
-			* [x] value rootThreadId
-			* [x] react noForkThreadId
-			* [x] react forkThreadId
-	+ [x] extension
-	+ [x] imports
-	+ [x] structure
-	+ [x] body
-		- [x] REACT
-			* [x] TYPE
-				+ [x] type React
-				+ [x] data Rct
-				+ [x] class Request
-				+ [x] type EvReqs
-				+ [x] type EvOccs
-			* [x] NEVER AND AWAIT
-				+ [x] react never
-				+ [x] function await
-				+ [x] function await'
-		- [x] CONSTRAINT SYNONYM
-			* [x] ExpandableOccurred
-			* [x] CollapsableOccurred
-			* [x] MergeableOccurred
-		- [x] HANDLE
-			* [x] type Handle
-			* [x] type HandleSt
-			* [x] type St
-			* [x] funciton liftHandle
-			* [x] function liftSt
-		- [x] THREAD ID
-			* [x] data ThreadId
-			* [x] value rootThreadId
-			* [x] react noForkThreadId
-			* [x] react forkThreadId
-* [x] Control.Moffy.Handle
-	+ [x] API
-		- [x] structure
-		- [x] Constraint
-			* [x] ExpandableHandle
-			* [x] ExpandableOccurred
-			* [x] MergeableOccurred
-		- [x] Handle and Function
-			* [x] Plain
-				+ [x] Type
-					- [x] Handle
-					- [x] Handle'
-				+ [x] Composer
-					- [x] retry
-					- [x] expand
-					- [x] before
-					- [x] merge
-			* [x] With State
-				+ [x] Type
-					- [x] HandleSt
-					- [x] HandleSt'
-					- [x] St
-					- [x] liftHandle
-					- [x] liftHandle'
-					- [x] liftSt
-				+ [x] Composer
-					- [x] retrySt
-					- [x] expandSt
-					- [x] beforeSt
-					- [x] mergeSt
-			* [x] With Input and Output
-				+ [x] Type
-					- [x] HelloIo'
-					- [x] pushInput
-					- [x] popInput
-				+ [x] Composer
-					- [x] expandIo
-					- [x] beforeIo
-					- [x] mergeIo
-	+ [x] extension
-	+ [x] imports
-	+ [x] structure
-	+ [x] body
-		- [x] CONSTRAINT
-		- [x] PLAIN
-			* [x] TYPE
-			* [x] COMPOSER
-				+ [x] retry
-				+ [x] collapse
-				+ [x] expand
-				+ [x] before
-				+ [x] merge
-		- [x] WITH STATE
-			* [x] TYPE
-				+ [x] type HandleSt'
-				+ [x] function liftHandle'
-			* [x] COMPOSER
-				+ [x] retrySt
-				+ [x] expandSt
-				+ [x] beforeSt
-				+ [x] mergeSt
-		- [x] WITH INPUT AND OUTPUT
-			* [x] TYPE
-				+ [x] type HandleIo'
-				+ [x] function pushInput
-				+ [x] function popInput
-			* [x] COMPOSER
-				+ [x] function collapseIo
-				+ [x] function expandIo
-				+ [x] function beforeIo
-				+ [x] function mregeIo
-* [x] Control.Moffy.Run
-	+ [x] API
-		- [x] Type
-		- [x] Run
-	+ [x] extension
-	+ [x] imports
-	+ [x] structure
-	+ [x] body
-		- [x] SIG
-		- [x] REACT
-* [x] Control.Moffy.Event.ThreadId
-	+ [x] API
-	+ [x] extension
-	+ [x] imports
-	+ [x] body
-		- [x] data GetThreadId
-		- [x] numbered
-		- [x] instance Request
-		- [x] function getThreadId
-* [x] Control.Moffy.Handle.ThreadId
-	+ [x] API
-	+ [x] extension
-	+ [x] imports
-	+ [x] body
+* [ ] Control.Moffy.Internal.Sig
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
+* [ ] Control.Moffy.Internal.Sig.Type
+	+ [ ] API
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
+* [ ] Control.Moffy.Internal.React
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
+* [ ] Control.Moffy.Internal.React.Type
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
+* [ ] Control.Moffy.Handle
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
+* [ ] Control.Moffy.Run
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] imports
+	+ [ ] structure
+	+ [ ] body
+* [ ] Control.Moffy.Event.ThreadId
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] imports
+	+ [ ] body
+* [ ] Control.Moffy.Handle.ThreadId
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] imports
+	+ [ ] body
 
-## Moffy library (16)
+## Moffy library (20)
 
 ### module hierarchy
 

@@ -9,8 +9,7 @@ module Control.Moffy.NoThreadId (
 	-- * Parallel
 	first', at', break', until', indexBy',
 	-- * Copies
-	parList',
-	) where
+	parList' ) where
 
 import Control.Moffy.Internal.Sig (
 	app_, iapp_, at_, break_, until_, indexBy_, parList_ )
