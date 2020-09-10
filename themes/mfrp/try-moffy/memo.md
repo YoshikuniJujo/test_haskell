@@ -470,6 +470,8 @@ Control.Moffy.Handle.ThreadId
 			* [x] COMPOSER
 * [ ] Control.Moffy.Run
 	+ [ ] API
+		- [x] Type
+		- [ ] Run
 	+ [ ] extension
 	+ [ ] imports
 	+ [ ] structure
