@@ -169,7 +169,7 @@ todo
 		- [x] move TextExtents event to Control.Moffy.Event.TextExtents
 			* [x] move CalcTextExtents
 			* [x] move TextExtents to module Control.Moffy.Event.CalcTextExtents
-			* [x] move TypeSynonyms to module Control.MOffy.Event.CalcTextExtents
+			* [x] move TypeSynonyms to module Control.Moffy.Event.CalcTextExtents
 		- [x] move TextExtents handle to Control.Moffy.Handle.XField.TextExtents
 		- [x] add TextExtents handle to Control.Moffy.Handle.XField.handle
 		- [x] add trial for TextExtents
@@ -487,16 +487,18 @@ Control.Moffy.Handle.ThreadId
 			* [x] interpretReact
 			* [x] interpretReactSt
 			* [x] runSt
-* [ ] Control.Moffy.Event.ThreadId
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] imports
-	+ [ ] body
-* [ ] Control.Moffy.Handle.ThreadId
-	+ [ ] API
-	+ [ ] extension
-	+ [ ] imports
-	+ [ ] body
+* [x] Control.Moffy.Event.ThreadId
+	+ [x] API
+		- [x] GetThreadId
+		- [x] ThreadId
+	+ [x] extension
+	+ [x] imports
+	+ [x] body
+* [x] Control.Moffy.Handle.ThreadId
+	+ [x] API
+	+ [x] extension
+	+ [x] imports
+	+ [x] body
 
 ## Moffy library (20)
 
@@ -515,6 +517,7 @@ Control.Moffy.Event
           + Control.Moffy.Event.Key.Internal
       + Control.Moffy.Event.Key.Internal
   + Control.Moffy.Event.Mouse
+  + Control.Moffy.Event.CalcTextExtents
 Control.Moffy.Handle
   + Control.Moffy.Handle.Lock
   + Control.Moffy.Handle.Random
@@ -522,6 +525,8 @@ Control.Moffy.Handle
   + Control.Moffy.Handle.XField
       + Control.Moffy.Handle.XField.Key
       + Control.Moffy.Handle.XField.Mouse
+      + Control.Moffy.Handle.XField.CalcTextExtents
+  + Control.Moffy.Handle.GtkField
 ```
 
 ### refactor modules
@@ -530,100 +535,98 @@ Control.Moffy.Handle
 	+ [x] API
 		- [x] Type
 		- [x] Event
-	+ [x] extension
 	+ [x] import
-* [x] Control.Moffy.Event.Lock.Internal
+* [ ] Control.Moffy.Event.Lock.Internal
 	+ [x] API
-		- [x] Type
-			* [x] Type Synonym
-			* [x] Event Type
+		- [x] Type Synonym
+		- [x] Event Type
 		- [x] Event
-	+ [x] extension
-	+ [x] import
-	+ [x] structure
-	+ [x] body
-		- [x] LOCK ID
-		- [x] EVENT
-			* [x] NEW LOCK ID
-			* [x] GET LOCK
-			* [x] UNLOCK
-		- [x] WITH LOCK
-* [x] Control.Moffy.Handle.Lock
-	+ [x] API
-		- [x] Type
-		- [x] Handle
-	+ [x] extension
-	+ [x] import
-	+ [x] structure
-	+ [x] body
-		- [x] remove prime
-		- [x] LOCK STATE
-		- [x] HANDLE
-			* [x] handleLock
-			* [x] handleNewLockId
-			* [x] handleGetLock
-			* [x] handleUnlock
-* [x] Control.Moffy.Event.Random
-	+ [x] API
-		- [x] Type
-		- [x] Get Random
-	+ [x] extension
-	+ [x] import
-* [x] Control.Moffy.Event.Random.Internal
-	+ [x] API
-	+ [x] extension
-	+ [x] import
-	+ [x] structure
-	+ [x] body
-		- [x] EVENT
-			* [x] STORE RANDOM GEN
-			* [x] LOAD RANDOM GEN
-		- [x] RANDOM EV AND GET RANDOM
-* [x] Control.Moffy.Handle.Random
-	+ [x] API
-		- [x] Type
-			* [x] type RandomEv
-			* [x] class RandomState
-		- [x] Handle
-	+ [x] extension
-	+ [x] import
-	+ [x] structure
-	+ [x] body
-		- [x] RANDOM STATE
-		- [x] HANDLE
-* [x] Control.Moffy.Event.Time
-	+ [x] API
-		- [x] structure
-		- [x] Type Ev
-		- [x] Delta Time
-			* [x] data DeltaTime
-			* [x] pattern OccDeltaTime
-			* [x] function deltaTime
-		- [x] Sleep
-			* [x] newtype TryWait
-			* [x] pattern OccTryWait
-			* [x] function sleep
-	+ [x] extension
-	+ [x] import
-	+ [x] structure
-	+ [x] body
-		- [x] DELTA TIME
-		- [x] SLEEP
-		- [x] TIME EV
-* [x] Control.Moffy.Handle.Time
-	+ [x] consider whether or not to rename Mode
-	+ [x] rename InitMode to InitialMode
-	+ [x] API
-		- [x] structure
-		- [x] Class
-			* [x] TimeState
-			* [x] TaiTimeM
-			* [x] DelayM
-		- [x] Mode
-		- [x] Handle
-	+ [x] extension
-	+ [x] import
-	+ [x] structure and body
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
+		- [ ] LOCK ID
+		- [ ] EVENT
+			* [ ] NEW LOCK ID
+			* [ ] GET LOCK
+			* [ ] UNLOCK
+		- [ ] WITH LOCK
+* [ ] Control.Moffy.Handle.Lock
+	+ [ ] API
+		- [ ] Type
+		- [ ] Handle
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
+		- [ ] remove prime
+		- [ ] LOCK STATE
+		- [ ] HANDLE
+			* [ ] handleLock
+			* [ ] handleNewLockId
+			* [ ] handleGetLock
+			* [ ] handleUnlock
+* [ ] Control.Moffy.Event.Random
+	+ [ ] API
+		- [ ] Type
+		- [ ] Get Random
+	+ [ ] extension
+	+ [ ] import
+* [ ] Control.Moffy.Event.Random.Internal
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
+		- [ ] EVENT
+			* [ ] STORE RANDOM GEN
+			* [ ] LOAD RANDOM GEN
+		- [ ] RANDOM EV AND GET RANDOM
+* [ ] Control.Moffy.Handle.Random
+	+ [ ] API
+		- [ ] Type
+			* [ ] type RandomEv
+			* [ ] class RandomState
+		- [ ] Handle
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
+		- [ ] RANDOM STATE
+		- [ ] HANDLE
+* [ ] Control.Moffy.Event.Time
+	+ [ ] API
+		- [ ] structure
+		- [ ] Type Ev
+		- [ ] Delta Time
+			* [ ] data DeltaTime
+			* [ ] pattern OccDeltaTime
+			* [ ] function deltaTime
+		- [ ] Sleep
+			* [ ] newtype TryWait
+			* [ ] pattern OccTryWait
+			* [ ] function sleep
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
+		- [ ] DELTA TIME
+		- [ ] SLEEP
+		- [ ] TIME EV
+* [ ] Control.Moffy.Handle.Time
+	+ [ ] consider whether or not to rename Mode
+	+ [ ] rename InitMode to InitialMode
+	+ [ ] API
+		- [ ] structure
+		- [ ] Class
+			* [ ] TimeState
+			* [ ] TaiTimeM
+			* [ ] DelayM
+		- [ ] Mode
+		- [ ] Handle
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure and body
 		- class
 			* TimeState
 				+ Mode
@@ -634,172 +637,184 @@ Control.Moffy.Handle
 			* handleInit
 			* handleWait
 			* handletime
-	+ [x] body
-		- [x] CLASS
-			* [x] TIME STATE
-			* [x] TAI TIME MONAD
-			* [x] DELAY MONAD
-		- [x] HANDLE
-			* [x] handleTimeEvPlus
-			* [x] handleInit
-			* [x] handleWait
-			* [x] handleTime
-* [x] Control.Moffy.Event.Delete
-	+ [x] API
-		- [x] Type
-		- [x] Event
-	+ [x] extension
-	+ [x] import
-	+ [x] body
-* [x] Control.Moffy.Event.Key
-	+ [x] API
-		- [x] Key Ev
-		- [x] Key Down Event
-		- [x] Key Up Event
-		- [x] Key
-		- [x] module Control.Moffy.Event.Key.Internal.XK
-	+ [x] extension
-	+ [x] import
-	+ [x] structure
-	+ [x] body
-		- [x] EVENT
-			* [x] KEY DOWN
-			* [x] KEY UP
-			* [x] KEY EV
-		- [x] PATTERN
-* [x] Control.Moffy.Event.Key.Internal
-	+ [x] API
-		- [x] Type
-		- [x] Template
-			* [x] Void Symbol
-			* [x] Tty Function Keys
-			* [x] Japanese Keyboard
-			* [x] Cursor Control & Motion
-			* [x] Misc Function
-			* [x] Auxiliary functions: F1 to F35
-			* [x] Modifiers
-			* [x] Keyboard (XKB) Extension Function and Modifier Keys
-			* [x] Latin 1 (only Ascii)
-	+ [x] extension
-	+ [x] import
-	+ [x] structure
-	+ [x] body
-		- [x] TYPE AND AUXILIARY FUNCTION
-		- [x] DEFINITION OF PATTERN XK_FOO
-			* [x] VOID SYMBOL
-			* [x] TTY FUNCTION KEYS
-			* [x] JAPANESE KEYBOARD SUPPORT
-			* [x] CURSOR CONTROL AND MOTION
-			* [x] MISC FUNCTION
-			* [x] AUXILIARY FUNCTION
-			* [x] MODIFIERS
-			* [x] KEYBOARD (XKB) EXTENSION FUNCTION AND MODIFIER KEYS
-			* [x] LATIN 1 (only ASCII)
-* [x] Control.Moffy.Event.Key.Internal.XK
-	+ [x] API
-		- [x] Void Symbol
-		- [x] Tty Function Keys
-		- [x] Japanese Keyboard
-		- [x] Cursor Control & Motion
-		- [x] Misc Function
-		- [x] Ausiliary Functions: F1 to F35
-		- [x] Modifiers
-		- [x] Keyboard (Xkb) Extension Function and Modifier Keys
-		- [x] Latin 1 (Only Ascii)
-			* [x] Space to Slash
-			* [x] Digit
-			* [x] Colon to At
-			* [x] Upper Alphabet
-			* [x] Blacketleft to Grave
-			* [x] Lower Alphabet
-			* [x] Braceleft to Asciitilde
-	+ [x] extension
-	+ [x] import
-	+ [x] structure
-	+ [x] body
-		- [x] VOID SYMBOL
-		- [x] NOT VISIBLE
-		- [x] ASCII
-* [x] Control.Moffy.Event.Mouse
-	+ [x] consider whether or not to unlist [MouseBtn]
-	+ [x] API
-		- [x] structure
-		- [x] Type
-			* [x] MouseEv
-			* [x] MouseBtn
-				+ [x] rename and add buttons
-				+ [x] others
-			* [x] Point
-		- [x] Mouse Down
-			* [x] MouseDown
-			* [x] OccMouseDown
-			* [x] mouseDown
-			* [x] leftClick
-			* [x] middleClick
-			* [x] rightClick
-		- [x] Mouse Up
-			* [x] MouseUp
-			* [x] OccMouseUp
-			* [x] mouseUp
-			* [x] leftUp
-			* [x] middleUp
-			* [x] rightUp
-		- [x] Mouse Move
-			* [x] MouseMove
-			* [x] OccMouseMove
-			* [x] mouseMove
-	+ [x] extension
-	+ [x] import
-	+ [x] structure
-	+ [x] body
-		+ [x] MOUSE DOWN
-			- [x] data MouseDown
-			- [x] numbered MouseDown
-			- [x] instance Request MouseDown
-			- [x] data MouseBtn
-			- [x] function mouseDown
-			- [x] function clickOn
-			- [x] function leftClick, middleClick, rightClick
-		+ [x] MOUSE UP
-			- [x] data MouseUp
-			- [x] numbered MouseUp
-			- [x] instance Request MouseUp
-			- [x] function mouseUp
-			- [x] function releaseOn
-			- [x] function leftUp, middleUp, rightUp
-		+ [x] MOUSE MOVE
-			- [x] data MouseMove
-			- [x] numbered MouseMove
-			- [x] instance Request MouseMove
-			- [x] type Point
-			- [x] function mouseMove
-		+ [x] MOUSE EV
-* [x] Control.Moffy.Handle.XField
-	+ [x] API
-		- [x] structure
-		- [x] Type
-		- [x] Handle
-			* [x] function handle
-			* [x] function handleWith
-	+ [x] extension
-	+ [x] import
-	+ [x] structure
-	+ [x] body
-		- [x] GUI EV
-		- [x] HANDLE
-			* [x] function handle
-			* [x] function handleWith
-			* [x] function eventToEv
-* [x] Control.Moffy.Handle.XField.Key
-	+ [x] API
-	+ [x] extension
-	+ [x] import
-	+ [x] body
-* [x] Control.Moffy.Handle.XField.Mouse
-	+ [x] API
-	+ [x] extension
-	+ [x] import
-	+ [x] body
+	+ [ ] body
+		- [ ] CLASS
+			* [ ] TIME STATE
+			* [ ] TAI TIME MONAD
+			* [ ] DELAY MONAD
+		- [ ] HANDLE
+			* [ ] handleTimeEvPlus
+			* [ ] handleInit
+			* [ ] handleWait
+			* [ ] handleTime
+* [ ] Control.Moffy.Event.Delete
+	+ [ ] API
+		- [ ] Type
+		- [ ] Event
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] body
+* [ ] Control.Moffy.Event.Key
+	+ [ ] API
+		- [ ] Key Ev
+		- [ ] Key Down Event
+		- [ ] Key Up Event
+		- [ ] Key
+		- [ ] module Control.Moffy.Event.Key.Internal.XK
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
+		- [ ] EVENT
+			* [ ] KEY DOWN
+			* [ ] KEY UP
+			* [ ] KEY EV
+		- [ ] PATTERN
+* [ ] Control.Moffy.Event.Key.Internal
+	+ [ ] API
+		- [ ] Type
+		- [ ] Template
+			* [ ] Void Symbol
+			* [ ] Tty Function Keys
+			* [ ] Japanese Keyboard
+			* [ ] Cursor Control & Motion
+			* [ ] Misc Function
+			* [ ] Auxiliary functions: F1 to F35
+			* [ ] Modifiers
+			* [ ] Keyboard (XKB) Extension Function and Modifier Keys
+			* [ ] Latin 1 (only Ascii)
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
+		- [ ] TYPE AND AUXILIARY FUNCTION
+		- [ ] DEFINITION OF PATTERN XK_FOO
+			* [ ] VOID SYMBOL
+			* [ ] TTY FUNCTION KEYS
+			* [ ] JAPANESE KEYBOARD SUPPORT
+			* [ ] CURSOR CONTROL AND MOTION
+			* [ ] MISC FUNCTION
+			* [ ] AUXILIARY FUNCTION
+			* [ ] MODIFIERS
+			* [ ] KEYBOARD (XKB) EXTENSION FUNCTION AND MODIFIER KEYS
+			* [ ] LATIN 1 (only ASCII)
+* [ ] Control.Moffy.Event.Key.Internal.XK
+	+ [ ] API
+		- [ ] Void Symbol
+		- [ ] Tty Function Keys
+		- [ ] Japanese Keyboard
+		- [ ] Cursor Control & Motion
+		- [ ] Misc Function
+		- [ ] Ausiliary Functions: F1 to F35
+		- [ ] Modifiers
+		- [ ] Keyboard (Xkb) Extension Function and Modifier Keys
+		- [ ] Latin 1 (Only Ascii)
+			* [ ] Space to Slash
+			* [ ] Digit
+			* [ ] Colon to At
+			* [ ] Upper Alphabet
+			* [ ] Blacketleft to Grave
+			* [ ] Lower Alphabet
+			* [ ] Braceleft to Asciitilde
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
+		- [ ] VOID SYMBOL
+		- [ ] NOT VISIBLE
+		- [ ] ASCII
+* [ ] Control.Moffy.Event.Mouse
+	+ [ ] consider whether or not to unlist [MouseBtn]
+	+ [ ] API
+		- [ ] structure
+		- [ ] Type
+			* [ ] MouseEv
+			* [ ] MouseBtn
+				+ [ ] rename and add buttons
+				+ [ ] others
+			* [ ] Point
+		- [ ] Mouse Down
+			* [ ] MouseDown
+			* [ ] OccMouseDown
+			* [ ] mouseDown
+			* [ ] leftClick
+			* [ ] middleClick
+			* [ ] rightClick
+		- [ ] Mouse Up
+			* [ ] MouseUp
+			* [ ] OccMouseUp
+			* [ ] mouseUp
+			* [ ] leftUp
+			* [ ] middleUp
+			* [ ] rightUp
+		- [ ] Mouse Move
+			* [ ] MouseMove
+			* [ ] OccMouseMove
+			* [ ] mouseMove
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
+		+ [ ] MOUSE DOWN
+			- [ ] data MouseDown
+			- [ ] numbered MouseDown
+			- [ ] instance Request MouseDown
+			- [ ] data MouseBtn
+			- [ ] function mouseDown
+			- [ ] function clickOn
+			- [ ] function leftClick, middleClick, rightClick
+		+ [ ] MOUSE UP
+			- [ ] data MouseUp
+			- [ ] numbered MouseUp
+			- [ ] instance Request MouseUp
+			- [ ] function mouseUp
+			- [ ] function releaseOn
+			- [ ] function leftUp, middleUp, rightUp
+		+ [ ] MOUSE MOVE
+			- [ ] data MouseMove
+			- [ ] numbered MouseMove
+			- [ ] instance Request MouseMove
+			- [ ] type Point
+			- [ ] function mouseMove
+		+ [ ] MOUSE EV
+* [ ] Control.Moffy.Handle.XField
+	+ [ ] API
+		- [ ] structure
+		- [ ] Type
+		- [ ] Handle
+			* [ ] function handle
+			* [ ] function handleWith
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] structure
+	+ [ ] body
+		- [ ] GUI EV
+		- [ ] HANDLE
+			* [ ] function handle
+			* [ ] function handleWith
+			* [ ] function eventToEv
+* [ ] Control.Moffy.Handle.XField.Key
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] body
+* [ ] Control.Moffy.Handle.XField.Mouse
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] body
+* [ ] Control.Moffy.Event.CalcTextExtents
+	+ [ ] rename
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ ] body
+* [ ] Control.Moffy.Handle.GtkField
+	+ [ ] rename
+	+ [ ] API
+	+ [ ] extension
+	+ [ ] import
+	+ [ [ body
 
 Moffy Base (9)
 ----------

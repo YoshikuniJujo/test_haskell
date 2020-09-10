@@ -7,11 +7,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Event.Lock.Internal (
-	-- * Type
-	-- ** Type Synonym
+	-- * Type Synonym
 	LockEv, GetThreadIdNewLockId, GetThreadIdGetLock, SingletonUnlock,
-	RetryTime,
-	-- ** Event Type
+	-- * Event Type
 	NewLockId(..), pattern OccNewLockId, GetLock(..), pattern OccGetLock,
 	Unlock(..), pattern OccUnlock, LockId(..),
 	-- * Event
