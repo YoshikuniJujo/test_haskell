@@ -536,36 +536,35 @@ Control.Moffy.Handle
 		- [x] Type
 		- [x] Event
 	+ [x] import
-* [ ] Control.Moffy.Event.Lock.Internal
+* [x] Control.Moffy.Event.Lock.Internal
 	+ [x] API
 		- [x] Type Synonym
 		- [x] Event Type
 		- [x] Event
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
-		- [ ] LOCK ID
-		- [ ] EVENT
-			* [ ] NEW LOCK ID
-			* [ ] GET LOCK
-			* [ ] UNLOCK
-		- [ ] WITH LOCK
-* [ ] Control.Moffy.Handle.Lock
-	+ [ ] API
-		- [ ] Type
-		- [ ] Handle
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
-		- [ ] remove prime
-		- [ ] LOCK STATE
-		- [ ] HANDLE
-			* [ ] handleLock
-			* [ ] handleNewLockId
-			* [ ] handleGetLock
-			* [ ] handleUnlock
+	+ [x] extension
+	+ [x] import
+	+ [x] structure
+	+ [x] body
+		- [x] LOCK ID
+		- [x] EVENT
+			* [x] NEW LOCK ID
+			* [x] GET LOCK
+			* [x] UNLOCK
+		- [x] WITH LOCK
+* [x] Control.Moffy.Handle.Lock
+	+ [x] API
+		- [x] Type
+		- [x] Handle
+	+ [x] extension
+	+ [x] import
+	+ [x] structure
+	+ [x] body
+		- [x] LOCK STATE
+		- [x] HANDLE
+			* [x] handleLock
+			* [x] handleNewLockId
+			* [x] handleGetLock
+			* [x] handleUnlock
 * [ ] Control.Moffy.Event.Random
 	+ [ ] API
 		- [ ] Type
