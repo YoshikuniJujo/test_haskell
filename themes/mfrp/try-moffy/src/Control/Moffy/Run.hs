@@ -1,7 +1,6 @@
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Run (
@@ -53,4 +52,4 @@ runSt _ (Pure x) _ st = pure (x, st)
 runSt _ (_ :=<< Never) _ _ = error "never end"
 runSt hdl (c :=<< GetThreadId) t st = runSt hdl (c `app` t) t st
 runSt hdl (c :=<< Await rqs) t st =
-	hdl rqs st >>= \(x, st') -> runSt hdl (c `app` x) t st'
+	hdl rqs st >>= \(o, st') -> runSt hdl (c `app` o) t st'

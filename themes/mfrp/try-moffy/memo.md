@@ -468,14 +468,25 @@ Control.Moffy.Handle.ThreadId
 		- [x] HANDLE WITH INPUT AND OUTPUT
 			* [x] TYPE
 			* [x] COMPOSER
-* [ ] Control.Moffy.Run
+* [x] Control.Moffy.Run
 	+ [x] API
 		- [x] Type
 		- [x] Run
-	+ [ ] extension
-	+ [ ] imports
-	+ [ ] structure
-	+ [ ] body
+	+ [x] extension
+	+ [x] imports
+	+ [x] structure
+	+ [x] body
+		- [x] SIG
+			* [x] interpret
+			* [x] interpretSt
+				+ ``\h -> (vw h >>) . (`go` st')``
+				+ ``\h -> (`go` st') >>> (vw h >>)``
+				+ ``(. (`go` st')) . (>>) . vw``
+				+ ``((`go` st') >>>) . (>>) . vw``
+		- [x] REACT
+			* [x] interpretReact
+			* [x] interpretReactSt
+			* [x] runSt
 * [ ] Control.Moffy.Event.ThreadId
 	+ [ ] API
 	+ [ ] extension
