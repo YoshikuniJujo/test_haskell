@@ -469,9 +469,9 @@ Control.Moffy.Handle.ThreadId
 			* [x] TYPE
 			* [x] COMPOSER
 * [ ] Control.Moffy.Run
-	+ [ ] API
+	+ [x] API
 		- [x] Type
-		- [ ] Run
+		- [x] Run
 	+ [ ] extension
 	+ [ ] imports
 	+ [ ] structure
