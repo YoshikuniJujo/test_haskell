@@ -646,22 +646,22 @@ Control.Moffy.Handle
 	+ [x] extension
 	+ [x] import
 	+ [x] body
-* [ ] Control.Moffy.Event.Key
-	+ [ ] API
-		- [ ] Key Ev
-		- [ ] Key Down Event
-		- [ ] Key Up Event
-		- [ ] Key
-		- [ ] module Control.Moffy.Event.Key.Internal.XK
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
-		- [ ] EVENT
-			* [ ] KEY DOWN
-			* [ ] KEY UP
-			* [ ] KEY EV
-		- [ ] PATTERN
+* [x] Control.Moffy.Event.Key
+	+ [x] API
+		- [x] Key Event
+		- [x] Key Down Event
+		- [x] Key Up Event
+		- [x] Key
+		- [x] module Control.Moffy.Event.Key.Internal.XK
+	+ [x] extension
+	+ [x] import
+	+ [x] structure
+	+ [x] body
+		- [x] EVENT
+			* [x] KEY DOWN
+			* [x] KEY UP
+			* [x] KEY EVENT
+		- [x] PATTERN
 * [ ] Control.Moffy.Event.Key.Internal
 	+ [ ] API
 		- [ ] Type

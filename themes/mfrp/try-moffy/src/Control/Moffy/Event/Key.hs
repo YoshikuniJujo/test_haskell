@@ -6,7 +6,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Event.Key (
-	-- * Key Ev
+	-- * Key Event
 	KeyEv,
 	-- * Key Down Event
 	KeyDown, pattern OccKeyDown, keyDown,
@@ -28,7 +28,7 @@ import Data.Char (chr)
 -- * EVENT
 --	+ KEY DOWN
 --	+ KEY UP
---	+ KEY EV
+--	+ KEY EVENT
 -- * PATTERN
 
 ---------------------------------------------------------------------------
@@ -54,7 +54,7 @@ instance Request KeyUp where data Occurred KeyUp = OccKeyUp Key deriving Show
 keyUp :: React s (Singleton KeyUp) Key
 keyUp = await KeyUpReq \(OccKeyUp k) -> k
 
--- KEY EV
+-- KEY EVENT
 
 type KeyEv = KeyDown :- KeyUp :- 'Nil
 
