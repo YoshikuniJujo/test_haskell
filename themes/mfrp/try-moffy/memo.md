@@ -639,13 +639,13 @@ Control.Moffy.Handle
 			* [x] handleI
 			* [x] handleF
 			* [x] handleTime
-* [ ] Control.Moffy.Event.Delete
-	+ [ ] API
-		- [ ] Type
-		- [ ] Event
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] body
+* [x] Control.Moffy.Event.Delete
+	+ [x] API
+		- [x] Type
+		- [x] Event
+	+ [x] extension
+	+ [x] import
+	+ [x] body
 * [ ] Control.Moffy.Event.Key
 	+ [ ] API
 		- [ ] Key Ev
