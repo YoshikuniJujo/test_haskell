@@ -594,7 +594,7 @@ Control.Moffy.Handle
 	+ [x] body
 		- [x] RANDOM STATE
 		- [x] HANDLE
-* [ ] Control.Moffy.Event.Time
+* [x] Control.Moffy.Event.Time
 	+ [x] API
 		- [x] structure
 		- [x] Time Event
@@ -607,13 +607,13 @@ Control.Moffy.Handle
 			* [x] newtype TryWait
 			* [x] pattern OccTryWait
 			* [x] function sleep
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
-		- [ ] DELTA TIME
-		- [ ] SLEEP
-		- [ ] TIME EV
+	+ [x] extension
+	+ [x] import
+	+ [x] structure
+	+ [x] body
+		- [x] ELAPSED
+		- [x] SLEEP
+		- [x] TIME EVENT
 * [ ] Control.Moffy.Handle.Time
 	+ [ ] consider whether or not to rename Mode
 	+ [ ] rename InitMode to InitialMode
