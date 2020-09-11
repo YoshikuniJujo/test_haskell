@@ -13,6 +13,7 @@ module Control.Moffy.Event.Random.Internal (
 	-- * Get Random
 	RandomEv, getRandom, getRandomR ) where
 
+import Control.Arrow ((>>>))
 import Control.Moffy (React, Request(..), await, adjust)
 import Data.Type.Set (numbered, pattern Nil, Singleton, (:-))
 import Data.OneOrMore (Selectable(..))
@@ -62,5 +63,5 @@ getRandomR :: Random a => (a, a) -> React s RandomEv a
 getRandomR = modifyRandomGen . randomR
 
 modifyRandomGen :: (StdGen -> (a, StdGen)) -> React s RandomEv a
-modifyRandomGen f =
-	adjust loadRandomGen >>= (. f) \(r, g) -> r <$ adjust (storeRandomGen g)
+modifyRandomGen f = adjust loadRandomGen
+	>>= (f >>> \(r, g) -> r <$ adjust (storeRandomGen g))
