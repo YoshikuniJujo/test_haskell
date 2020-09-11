@@ -1,5 +1,5 @@
-{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE LambdaCase, TupleSections #-}
+{-# LANGUAGE PatternSynonyms, ConstraintKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -10,9 +10,9 @@ module Control.Moffy.Handle.Time (
 	-- * IO Mimicable
 	TaiTimeM(..), DelayM(..),
 	-- * Handle
-	handleTimeEvPlus ) where
+	Timable, handleTimeEvPlus ) where
 
-import Control.Arrow (first, second)
+import Control.Arrow (first, second, (>>>))
 import Control.Moffy.Event.Time (
 	TimeEv, pattern OccDeltaTime, TryWait(..), pattern OccTryWait )
 import Control.Moffy.Handle (
@@ -26,19 +26,15 @@ import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 	
 ---------------------------------------------------------------------------
 
--- * CLASS
---	+ TIME STATE
---	+ TAI TIME MONAD
---	+ DELAY MONAD
+-- * TIME STATE
+-- * IO MIMICABLE
 -- * HANDLE
 
 ---------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------
--- CLASS
----------------------------------------------------------------------------
-
 -- TIME STATE
+---------------------------------------------------------------------------
 
 class TimeState s where
 	getMode :: s -> Mode; putMode :: s -> Mode -> s
@@ -55,14 +51,14 @@ updateTimeState s (m, t) = s `putMode` m `putLatestTime` t
 data Mode = InitialMode | FlushWaitMode AbsoluteTime deriving Show
 
 mode :: a -> (AbsoluteTime -> a) -> Mode -> a
-mode im wm = \case InitialMode -> im; FlushWaitMode t -> wm t
+mode im fwm = \case InitialMode -> im; FlushWaitMode t -> fwm t
 
--- TAI TIME MONAD
+---------------------------------------------------------------------------
+-- IO MIMICABLE
+---------------------------------------------------------------------------
 
 class TaiTimeM m where getCurrentTime :: m AbsoluteTime
 instance TaiTimeM IO where getCurrentTime = systemToTAITime <$> getSystemTime
-
--- DELAY MONAD
 
 class DelayM m where delay :: DiffTime -> m ()
 instance DelayM IO where delay = threadDelay . round . (* 10 ^ (6 :: Int))
@@ -71,46 +67,42 @@ instance DelayM IO where delay = threadDelay . round . (* 10 ^ (6 :: Int))
 -- HANDLE
 ---------------------------------------------------------------------------
 
-handleTimeEvPlus :: (
-	TimeState s, Monad m, TaiTimeM m, DelayM m,
+type Timable es = (
 	ExpandableHandle es (es :+: TimeEv),
 	ExpandableHandle TimeEv (es :+: TimeEv),
-	MergeableOccurred es TimeEv (es :+: TimeEv) ) =>
-	HandleIo' ((DiffTime, a), s) s m es ->
-	HandleIo' ((DiffTime, a), s) s m (es :+: TimeEv)
-handleTimeEvPlus hdl rqs i@(_, s) = mode
-	(handleInit hdl rqs i) (handleWait rqs . (, s) . (, getLatestTime s))
-	(getMode s)
+	MergeableOccurred es TimeEv (es :+: TimeEv) )
 
-handleInit :: (
-	TimeState s, Monad m, TaiTimeM m, DelayM m,
-	ExpandableHandle es (es :+: TimeEv),
-	ExpandableHandle TimeEv (es :+: TimeEv),
-	MergeableOccurred es TimeEv (es :+: TimeEv) ) =>
+handleTimeEvPlus :: (TimeState s, Monad m, TaiTimeM m, DelayM m, Timable es) =>
 	HandleIo' ((DiffTime, a), s) s m es ->
 	HandleIo' ((DiffTime, a), s) s m (es :+: TimeEv)
-handleInit hdl = mergeIo
+handleTimeEvPlus hdl rqs i@(_, s) = ($ s) $ getMode
+	>>> mode (handleI hdl rqs i) (handleF rqs . (, s) . (, getLatestTime s))
+
+handleI :: (TimeState s, Monad m, TaiTimeM m, DelayM m, Timable es) =>
+	HandleIo' ((DiffTime, a), s) s m es ->
+	HandleIo' ((DiffTime, a), s) s m (es :+: TimeEv)
+handleI hdl = mergeIo
 	hdl (\((d, _), s) -> s <$ delay d)
 	(\rqs s -> (updateTimeState s `second`)
 		<$> (handleTime rqs . (, getLatestTime s) =<< getCurrentTime))
 	((<$> getCurrentTime) . putLatestTime)
 
-handleWait :: (TimeState s, Monad m, ExpandableHandle TimeEv es) =>
+handleF :: (TimeState s, Monad m, ExpandableHandle TimeEv es) =>
 	HandleIo' ((AbsoluteTime, AbsoluteTime), s) s m es
-handleWait rqs (nl, s) = (updateTimeState s `second`)
+handleF rqs (nl, s) = (updateTimeState s `second`)
 	<$> expandIo handleTime (pure . (InitialMode ,) . fst) rqs nl
 
 handleTime :: Monad m =>
 	HandleIo' (AbsoluteTime, AbsoluteTime) (Mode, AbsoluteTime) m TimeEv
-handleTime rqs (now, lst) = let dt = now `diffAbsoluteTime` lst in
-	case project rqs of
-		Just (TryWaitReq t)
-			| t < dt  -> pure (
-				Just $ OccTryWait t >- Singleton (OccDeltaTime t),
-				(FlushWaitMode now, t `addAbsoluteTime` lst) )
-			| otherwise -> pure (
-				Just $ OccTryWait dt >- Singleton (OccDeltaTime dt),
-				(InitialMode, now) )
-		Nothing -> pure (
-			Just . expand . Singleton $ OccDeltaTime dt,
+handleTime rqs (now, lst) = case project rqs of
+	Just (TryWaitReq t)
+		| t < dt  -> pure (
+			Just $ OccTryWait t >- Singleton (OccDeltaTime t),
+			(FlushWaitMode now, t `addAbsoluteTime` lst) )
+		| otherwise -> pure (
+			Just $ OccTryWait dt >- Singleton (OccDeltaTime dt),
 			(InitialMode, now) )
+	Nothing -> pure (
+		Just . expand . Singleton $ OccDeltaTime dt,
+		(InitialMode, now) )
+	where dt = now `diffAbsoluteTime` lst

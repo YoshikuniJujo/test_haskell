@@ -614,41 +614,31 @@ Control.Moffy.Handle
 		- [x] ELAPSED
 		- [x] SLEEP
 		- [x] TIME EVENT
-* [ ] Control.Moffy.Handle.Time
+* [x] Control.Moffy.Handle.Time
 	+ [x] consider whether or not to rename Mode
 	+ [x] rename WaitMode to FlushWaitMode
-	+ [ ] API
-		- [ ] structure
-		- [ ] TimeState
-			* [ ] class TimeState
-			* [ ] data Mode
-		- [ ] IO Mimicable
-			* [ ] TaiTimeM
-			* [ ] DelayM
-		- [ ] Handle
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure and body
-		- class
-			* TimeState
-				+ Mode
-			* TaiTimeM
-			* DelayM
-		- function
-			* handleTimeEvPlus
-			* handleInit
-			* handleWait
-			* handletime
-	+ [ ] body
-		- [ ] CLASS
-			* [ ] TIME STATE
-			* [ ] TAI TIME MONAD
-			* [ ] DELAY MONAD
-		- [ ] HANDLE
-			* [ ] handleTimeEvPlus
-			* [ ] handleInit
-			* [ ] handleWait
-			* [ ] handleTime
+	+ [x] API
+		- [x] structure
+		- [x] TimeState
+			* [x] class TimeState
+			* [x] data Mode
+		- [x] IO Mimicable
+			* [x] TaiTimeM
+			* [x] DelayM
+		- [x] Handle
+		- [x] define Timable
+	+ [x] extension
+	+ [x] import
+	+ [x] structure and body
+	+ [x] body
+		- [x] TIME STATE
+		- [x] IO MIMICABLE
+		- [x] HANDLE
+			* [x] constraint synonym Timable
+			* [x] handleTimeEvPlus
+			* [x] handleI
+			* [x] handleF
+			* [x] handleTime
 * [ ] Control.Moffy.Event.Delete
 	+ [ ] API
 		- [ ] Type
