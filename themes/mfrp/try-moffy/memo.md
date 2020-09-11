@@ -225,6 +225,20 @@ todo
 		- [ ] refactor about GTK
 	+ [ ] consider whether or not to use ForeignPtr to free memory for cairo surface
 	+ [ ] others
+* [ ] remake key event
+	+ [ ] consider Pattern vs Value
+	+ use #enum of hsc2hs
+	+ [x] copy /usr/include/X11/keysymdef.h to /include/X11/
+	+ [x] add include-dirs to package.yaml
+	+ [ ] make Control.Moffy.Event.Key.Internal.TryKeyValue
+		- [ ] XK_VoidSymbol
+		- [ ] TTY function keys
+		- [ ] International & multi-key character composition
+		- [ ] Japanese keyboard support
+	+ [ ] use new module
+	+ [ ] remove old module
+	+ [ ] rename and arrange module hierarchy
+	+ [ ] others
 * [ ] refactoring
 	+ [ ] refactor Moffy (10)		<- now
 	+ [ ] refactor Moffy library (20)
@@ -664,7 +678,7 @@ Control.Moffy.Handle
 		- [x] PATTERN
 * [ ] Control.Moffy.Event.Key.Internal
 	+ [ ] API
-		- [ ] Type
+		- [x] Type
 		- [ ] Template
 			* [ ] Void Symbol
 			* [ ] Tty Function Keys

@@ -72,6 +72,7 @@ xkVoidSymbol = mkXk "VoidSymbol" 0xffffff
 
 -- TTY FUNCTION KEYS
 
+-- | TTY function keys
 xkTtyFunctionKeys :: DecsQ
 xkTtyFunctionKeys = concatR <$> zipWithM mkXk
 	[	"BackSpace", "Tab", "Linefeed", "Clear", "Return", "Pause",

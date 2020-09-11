@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e021d576192b4de843898fba94f31f068cd695f821aed5b5d9060d5c5413b45d
+-- hash: 9d1e33c915f9df3b522d8c396cbb4a8b0fe86b9103062c63d2fb42f1f6235d94
 
 name:           try-moffy
 version:        0.1.0.0
@@ -32,6 +32,7 @@ library
       Control.Moffy.Event.Delete
       Control.Moffy.Event.Key
       Control.Moffy.Event.Key.Internal
+      Control.Moffy.Event.Key.Internal.TryKeyValue
       Control.Moffy.Event.Key.Internal.XK
       Control.Moffy.Event.Lock
       Control.Moffy.Event.Lock.Internal
@@ -99,6 +100,8 @@ library
       Paths_try_moffy
   hs-source-dirs:
       src
+  include-dirs:
+      include
   pkgconfig-depends:
       gtk+-3.0
   build-depends:
