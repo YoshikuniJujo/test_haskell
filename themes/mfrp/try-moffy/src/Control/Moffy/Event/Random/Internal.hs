@@ -20,16 +20,13 @@ import System.Random (Random, StdGen, random, randomR)
 
 ---------------------------------------------------------------------------
 
--- * EVENT
---	+ STORE RANDOM GEN
---	+ LOAD RANDOM GEN
+-- * STORE RANDOM GEN
+-- * LOAD RANDOM GEN
 -- * RANDOM EV AND GET RANDOM
 
 ---------------------------------------------------------------------------
--- EVENT
----------------------------------------------------------------------------
-
 -- STORE RANDOM GEN
+---------------------------------------------------------------------------
 
 newtype StoreRandomGen = StoreRandomGenReq StdGen deriving Show
 numbered [t| StoreRandomGen |]
@@ -40,7 +37,9 @@ instance Request StoreRandomGen where
 storeRandomGen :: StdGen -> React s (Singleton StoreRandomGen) ()
 storeRandomGen g = await (StoreRandomGenReq g) \OccStoreRandomGen -> ()
 
+---------------------------------------------------------------------------
 -- LOAD RANDOM GEN
+---------------------------------------------------------------------------
 
 data LoadRandomGen = LoadRandomGenReq deriving (Show, Eq, Ord)
 numbered [t| LoadRandomGen |]
