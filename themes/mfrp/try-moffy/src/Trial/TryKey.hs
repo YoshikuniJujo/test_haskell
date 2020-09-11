@@ -10,7 +10,7 @@ import Prelude hiding (repeat, break)
 import Control.Moffy (Sig, React, adjust, first, repeat, break)
 import Control.Moffy.Event.Delete (DeleteEvent, deleteEvent)
 import Control.Moffy.Event.Key (
-	KeyEv, keyDown, keyUp, pattern AsciiKey, pattern XK_Return )
+	KeyEv, keyDown, keyUp, pattern AsciiKey, pattern XkReturn )
 import Control.Moffy.Handle (retry)
 import Control.Moffy.Handle.XField (handle)
 import Control.Moffy.Run (interpret)
@@ -31,8 +31,8 @@ keySig = () <$ repeat (asciiKey `first` asciiKeyUp) `break` deleteEvent
 
 asciiKey :: React s KeyEv Char
 asciiKey = adjust keyDown >>= \case
-	AsciiKey c -> pure c; XK_Return -> pure '\n'; _ -> asciiKey
+	AsciiKey c -> pure c; XkReturn -> pure '\n'; _ -> asciiKey
 
 asciiKeyUp :: React s KeyEv Char
 asciiKeyUp = adjust keyUp >>= \case
-	AsciiKey c -> pure c; XK_Return -> pure '\n'; _ -> asciiKeyUp
+	AsciiKey c -> pure c; XkReturn -> pure '\n'; _ -> asciiKeyUp

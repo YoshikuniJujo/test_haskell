@@ -277,8 +277,8 @@ todo
 		- [ ] Azeri
 		- [ ] Vietnamese
 		- [ ] Sinhala
-	+ [ ] use new module
-	+ [ ] remove old module
+	+ [x] use new module
+	+ [x] remove old module
 	+ [ ] rename and arrange module hierarchy
 	+ [ ] others
 * [ ] refactoring

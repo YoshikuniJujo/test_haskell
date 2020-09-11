@@ -14,14 +14,15 @@ module Control.Moffy.Event.Key (
 	KeyUp, pattern OccKeyUp, keyUp,
 	-- * Key
 	Key(..), pattern AsciiKey,
-	module Control.Moffy.Event.Key.Internal.XK ) where
+	module Control.Moffy.Event.Key.Internal.TryKeyValue ) where
 
 import Control.Moffy (React, Request(..), await)
 import Control.Moffy.Event.Key.Internal (Key(..))
-import Control.Moffy.Event.Key.Internal.XK
 import Data.Type.Set (numbered, pattern Nil, Singleton, (:-))
 import Data.Bool (bool)
 import Data.Char (chr)
+
+import Control.Moffy.Event.Key.Internal.TryKeyValue
 
 ---------------------------------------------------------------------------
 

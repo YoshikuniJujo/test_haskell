@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 861b7184bea87fc11f9bb4aea73770caae959ed722db98877c869955f573e0a7
+-- hash: fda9b467a4b683fa02978d3defc4bae161798791fa2c2cce01599c974731ee12
 
 name:           try-moffy
 version:        0.1.0.0
@@ -34,7 +34,6 @@ library
       Control.Moffy.Event.Key.Internal
       Control.Moffy.Event.Key.Internal.TH
       Control.Moffy.Event.Key.Internal.TryKeyValue
-      Control.Moffy.Event.Key.Internal.XK
       Control.Moffy.Event.Lock
       Control.Moffy.Event.Lock.Internal
       Control.Moffy.Event.Mouse

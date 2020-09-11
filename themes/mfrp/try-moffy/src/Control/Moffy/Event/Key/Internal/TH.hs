@@ -8,7 +8,7 @@ import Language.Haskell.TH
 import Control.Arrow
 import Data.Char
 
-import Control.Moffy.Event.Key
+import Control.Moffy.Event.Key.Internal
 
 foo :: Name -> DecsQ
 foo nm = sequence [
