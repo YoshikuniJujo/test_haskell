@@ -582,18 +582,18 @@ Control.Moffy.Handle
 		- [x] STORE RANDOM GEN
 		- [x] LOAD RANDOM GEN
 		- [x] RANDOM EV AND GET RANDOM
-* [ ] Control.Moffy.Handle.Random
-	+ [ ] API
-		- [ ] Type
-			* [ ] type RandomEv
-			* [ ] class RandomState
-		- [ ] Handle
-	+ [ ] extension
-	+ [ ] import
-	+ [ ] structure
-	+ [ ] body
-		- [ ] RANDOM STATE
-		- [ ] HANDLE
+* [x] Control.Moffy.Handle.Random
+	+ [x] API
+		- [x] Type
+			* [x] type RandomEv
+			* [x] class RandomState
+		- [x] Handle
+	+ [x] extension
+	+ [x] import
+	+ [x] structure
+	+ [x] body
+		- [x] RANDOM STATE
+		- [x] HANDLE
 * [ ] Control.Moffy.Event.Time
 	+ [ ] API
 		- [ ] structure

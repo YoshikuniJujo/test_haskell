@@ -34,14 +34,14 @@ instance RandomState StdGen where getRandomGen = id; putRandomGen = flip const
 ---------------------------------------------------------------------------
 
 handleRandom :: (RandomState s, Monad m) => HandleSt' s m RandomEv
-handleRandom = handleStoreRandomGen' `mergeSt` handleLoadRandomGen'
+handleRandom = handleStoreRandomGen `mergeSt` handleLoadRandomGen
 
-handleStoreRandomGen' :: (RandomState s, Applicative m) =>
+handleStoreRandomGen :: (RandomState s, Applicative m) =>
 	HandleSt' s m (Singleton StoreRandomGen)
-handleStoreRandomGen' (Singleton (StoreRandomGenReq g)) s =
+handleStoreRandomGen (Singleton (StoreRandomGenReq g)) s =
 	pure (Just $ Singleton OccStoreRandomGen, s `putRandomGen` g)
 
-handleLoadRandomGen' :: (RandomState s, Applicative m) =>
+handleLoadRandomGen :: (RandomState s, Applicative m) =>
 	HandleSt' s m (Singleton LoadRandomGen)
-handleLoadRandomGen' _rqs s =
+handleLoadRandomGen _rqs s =
 	pure (Just . Singleton . OccLoadRandomGen $ getRandomGen s, s)
