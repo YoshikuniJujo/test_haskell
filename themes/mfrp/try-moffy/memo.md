@@ -595,17 +595,18 @@ Control.Moffy.Handle
 		- [x] RANDOM STATE
 		- [x] HANDLE
 * [ ] Control.Moffy.Event.Time
-	+ [ ] API
-		- [ ] structure
-		- [ ] Type Ev
-		- [ ] Delta Time
-			* [ ] data DeltaTime
-			* [ ] pattern OccDeltaTime
-			* [ ] function deltaTime
-		- [ ] Sleep
-			* [ ] newtype TryWait
-			* [ ] pattern OccTryWait
-			* [ ] function sleep
+	+ [x] API
+		- [x] structure
+		- [x] Time Event
+		- [x] Elapsed
+			* [x] data DeltaTime
+			* [x] pattern OccDeltaTime
+			* [x] react deltaTime
+			* [x] sig elapsed
+		- [x] Sleep
+			* [x] newtype TryWait
+			* [x] pattern OccTryWait
+			* [x] function sleep
 	+ [ ] extension
 	+ [ ] import
 	+ [ ] structure

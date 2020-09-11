@@ -6,9 +6,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Event.Time (
-	-- * Time Ev
+	-- * Time Event
 	TimeEv,
-	-- * Delta Time
+	-- * Elapsed
 	DeltaTime(..), pattern OccDeltaTime, deltaTime, elapsed,
 	-- * Sleep
 	TryWait(..), pattern OccTryWait, sleep ) where
