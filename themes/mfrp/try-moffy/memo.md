@@ -615,15 +615,16 @@ Control.Moffy.Handle
 		- [x] SLEEP
 		- [x] TIME EVENT
 * [ ] Control.Moffy.Handle.Time
-	+ [ ] consider whether or not to rename Mode
-	+ [ ] rename InitMode to InitialMode
+	+ [x] consider whether or not to rename Mode
+	+ [x] rename WaitMode to FlushWaitMode
 	+ [ ] API
 		- [ ] structure
-		- [ ] Class
-			* [ ] TimeState
+		- [ ] TimeState
+			* [ ] class TimeState
+			* [ ] data Mode
+		- [ ] IO Mimicable
 			* [ ] TaiTimeM
 			* [ ] DelayM
-		- [ ] Mode
 		- [ ] Handle
 	+ [ ] extension
 	+ [ ] import

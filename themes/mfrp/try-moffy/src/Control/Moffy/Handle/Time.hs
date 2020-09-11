@@ -5,10 +5,10 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Handle.Time (
-	-- * Class
-	TimeState(..), TaiTimeM(..), DelayM(..),
-	-- * Mode
-	Mode(InitialMode),
+	-- * TimeState
+	TimeState(..), Mode(InitialMode),
+	-- * IO Mimicable
+	TaiTimeM(..), DelayM(..),
 	-- * Handle
 	handleTimeEvPlus ) where
 
@@ -52,10 +52,10 @@ instance TimeState (Mode, AbsoluteTime) where
 updateTimeState :: TimeState s => s -> (Mode, AbsoluteTime) -> s
 updateTimeState s (m, t) = s `putMode` m `putLatestTime` t
 
-data Mode = InitialMode | WaitMode AbsoluteTime deriving Show
+data Mode = InitialMode | FlushWaitMode AbsoluteTime deriving Show
 
 mode :: a -> (AbsoluteTime -> a) -> Mode -> a
-mode im wm = \case InitialMode -> im; WaitMode t -> wm t
+mode im wm = \case InitialMode -> im; FlushWaitMode t -> wm t
 
 -- TAI TIME MONAD
 
@@ -107,7 +107,7 @@ handleTime rqs (now, lst) = let dt = now `diffAbsoluteTime` lst in
 		Just (TryWaitReq t)
 			| t < dt  -> pure (
 				Just $ OccTryWait t >- Singleton (OccDeltaTime t),
-				(WaitMode now, t `addAbsoluteTime` lst) )
+				(FlushWaitMode now, t `addAbsoluteTime` lst) )
 			| otherwise -> pure (
 				Just $ OccTryWait dt >- Singleton (OccDeltaTime dt),
 				(InitialMode, now) )
