@@ -226,15 +226,57 @@ todo
 	+ [ ] consider whether or not to use ForeignPtr to free memory for cairo surface
 	+ [ ] others
 * [ ] remake key event
-	+ [ ] consider Pattern vs Value
+	+ [x] consider Pattern vs Value
 	+ use #enum of hsc2hs
 	+ [x] copy /usr/include/X11/keysymdef.h to /include/X11/
 	+ [x] add include-dirs to package.yaml
+	+ [x] make template to define Pattern from value
+	+ [ ] consider to move key patterns to other modules and other packages
 	+ [ ] make Control.Moffy.Event.Key.Internal.TryKeyValue
-		- [ ] XK_VoidSymbol
-		- [ ] TTY function keys
+		- [x] XK_VoidSymbol
+		- [x] TTY function keys
 		- [ ] International & multi-key character composition
 		- [ ] Japanese keyboard support
+		- [ ] ? XK_KOREAN
+		- [ ] Cursor control & motion
+		- [ ] Misc functions
+		- [ ] Keypad functions, keypad numbers cleverly chosen to map to ASCII
+		- [ ] Auxiliary functions
+		- [ ] Modifiers
+		- [ ] Keyboard (XKB) Extension function and modifier keys
+		- [ ] extra dead elements for German T3 layout
+		- [ ] dead vowels for universal syllable entry
+		- [ ] Single-Stroke Multiple-Character N-Graph Keysyms for The X Input Method
+		- [ ] 3270 Terminal Keys Byte 3 = 0xfd
+		- [ ] Latin 1 (ISO/IEC 8859-1 = Unicode U+0020..U+00FF) Byte 3 = 0
+		- [ ] Latin 2 Byte 3 = 1
+		- [ ] Latin 3 Byte 3 = 2
+		- [ ] Latin 4 Byte 3 = 3
+		- [ ] Latin 8
+		- [ ] Latin 9 Byte 3 = 0x13
+		- [ ] Katakana Byte 3 = 4
+		- [ ] Arabic Byte 3 = 5
+		- [ ] Cyrillic Byte 3 = 6
+		- [ ] Greek (based on an early draft of, and not quite identical to, ISO/IEC 8859-7 Byte 3 = 7
+		- [ ] Technical (from the DEC ...) Byte 3 = 8
+		- [ ] Speciual (from the DEC VT100 ...) Byte 3 = 9
+		- [ ] Publishing Byte 3 = 0x0a
+		- [ ] APL Byte 3 = 0x0b
+		- [ ] Hebrew Byte 3 = 0x0c
+		- [ ] Thai Byte 3 = 0x0d
+		- [ ] Korean Byte 3 = 0x0e
+		- [ ] Hungul Consonant Characters
+		- [ ] Hungul Vowel Characters
+		- [ ] Hangul syllable-final (JongSong) Characters
+		- [ ] Ancient Hangul Consonant Characters
+		- [ ] Ancient Hangul Vowel Characters
+		- [ ] Ancient Hangul syllable-final (JongSong) Characters
+		- [ ] Korean currency symbol
+		- [ ] Armenian
+		- [ ] Georgian
+		- [ ] Azeri
+		- [ ] Vietnamese
+		- [ ] Sinhala
 	+ [ ] use new module
 	+ [ ] remove old module
 	+ [ ] rename and arrange module hierarchy

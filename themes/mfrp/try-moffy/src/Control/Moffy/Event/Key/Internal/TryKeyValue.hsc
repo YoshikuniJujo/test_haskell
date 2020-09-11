@@ -1,8 +1,18 @@
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Event.Key.Internal.TryKeyValue where
+module Control.Moffy.Event.Key.Internal.TryKeyValue (
+	-- * Void symbol
+	pattern XkVoidsymbol,
+	-- * TTY function keys
+	pattern XkBackspace, pattern XkTab,
+	pattern XkLinefeed, pattern XkClear, pattern XkReturn,
+	pattern XkPause, pattern XkScrollLock, pattern XkSysReq,
+	pattern XkEscape, pattern XkDelete ) where
 
 import Control.Moffy.Event.Key.Internal
+import Control.Moffy.Event.Key.Internal.TH
 
 #define XK_MISCELLANY
 
@@ -24,3 +34,8 @@ import Control.Moffy.Event.Key.Internal
 	XK_Zenkaku_Hankaku, XK_Touroku, XK_Massyo, XK_Kana_Lock, \
 	XK_Kana_Shift, XK_Eisu_Shift, XK_Eisu_toggle, XK_Kanji_Bangou, \
 	XK_Zen_Koho, XK_Mae_Koho
+
+concat <$> foo `mapM` [
+	'xkVoidsymbol,
+	'xkBackspace, 'xkTab, 'xkLinefeed, 'xkClear, 'xkReturn, 'xkPause,
+	'xkScrollLock, 'xkSysReq, 'xkEscape, 'xkDelete ]
