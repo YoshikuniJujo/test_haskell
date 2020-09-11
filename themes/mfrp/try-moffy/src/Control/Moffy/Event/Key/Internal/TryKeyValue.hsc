@@ -12,7 +12,6 @@ module Control.Moffy.Event.Key.Internal.TryKeyValue (
 	pattern XkEscape, pattern XkDelete ) where
 
 import Control.Moffy.Event.Key.Internal
-import Control.Moffy.Event.Key.Internal.TH
 
 #define XK_MISCELLANY
 
