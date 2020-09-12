@@ -63,6 +63,9 @@ instance {-# OVERLAPPABLE #-} InsertableFun a as as' =>
 	InsertableFun a (a' ':~ as) (a' ':~ as') where
 	f >-- (g :.. fs) = g :.. (f >-- fs)
 
+(>--.) :: InsertableFun a as (a :- as) => (a -> b) -> OneOfThemFun as b -> OneOfThemFun (a :- as) b
+(>--.) = (>--)
+
 {-# COMPLETE SingletonFun #-}
 
 pattern SingletonFun :: (a -> b) -> OneOfThemFun (Singleton a) b

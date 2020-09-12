@@ -17,6 +17,7 @@ foo = expand $ Singleton True
 bar = expand $ Singleton ()
 baz = expand $ Singleton 'c'
 
-f :: OneOfThemFun (Bool :- () :- Char :- 'Nil) String
+f, g :: OneOfThemFun (Bool :- () :- Char :- 'Nil) String
 f = (show :: Bool -> String) >--
 	((show :: () -> String) >-- SingletonFun (show :: Char -> String) :: OneOfThemFun (() :- Char :- 'Nil) String)
+g = (show :: Bool -> String) >--. ((show :: () -> String) >--. SingletonFun (show :: Char -> String))

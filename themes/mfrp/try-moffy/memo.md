@@ -231,7 +231,8 @@ todo
 	+ [x] expand
 	+ [x] collapse
 	+ [x] `class InsertFun f (OneOfThemFun fs) where (>--) ...`
-	+ [x] `(>--) :: OneOfThem as -> [OneOfThem as'] -> [OneOfThem (as :+: as')]`
+	+ [x] `(>--.) :: (a -> b) -> OneOfThemFun as b -> OneOfThemFun (a :- as) b`
+	+ [ ] `(>-) :: OneOfThem as -> [OneOfThem as'] -> [OneOfThem (as :+: as')]`
 	+ [ ] review Data.OneOfThem and Trial.TryOneOfThem
 * [ ] use OneOfThem in view
 	+ [ ] `class Viewable v`
