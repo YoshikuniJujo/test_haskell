@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5dc7ed1e81ee41bc89c1b48eee361bb4ad19d8c1dbd8ac34d209b121bae61525
+-- hash: 7ee6741294c1e7262e5778130afd619f23c0e5f24dd0bdc976d0b9abe24139c6
 
 name:           try-moffy
 version:        0.1.0.0
@@ -62,6 +62,7 @@ library
       Control.Monad.Freer.Par.Internal.Id
       Control.Monad.Freer.Par.Sequence
       Control.Monad.Freer.Par.TaggableFunction
+      Data.OneOfThem
       Data.OneOrMore
       Data.Type.Set
       Data.Type.Set.Internal
@@ -91,6 +92,7 @@ library
       Trial.TryCalcTextExtents
       Trial.TryKey
       Trial.TryLock
+      Trial.TryOneOfThem
       Trial.TryRandom
       Trial.TrySharing
       Trial.TrySharing.ThreadId

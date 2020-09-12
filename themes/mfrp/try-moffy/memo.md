@@ -225,6 +225,15 @@ todo
 		- [ ] refactor about GTK
 	+ [ ] consider whether or not to use ForeignPtr to free memory for cairo surface
 	+ [ ] others
+* [ ] make OneOfThem
+	+ [x] add Data.OneOfThem
+	+ [x] Singleton
+	+ [x] expand
+	+ [x] collapse
+	+ [ ] `(>-) :: OneOfThem as -> [OneOfThem as'] -> [OneOfThem (as :+: as')]`
+* [ ] use OneOfThem in view
+	+ [ ] `class Viewable v`
+	+ [ ] `instance (Viewable a, Viewable (OneOfThem as)) => Viewable (OneOfThem (a :- as))`
 * [ ] remake key event
 	+ [x] consider Pattern vs Value
 	+ use #enum of hsc2hs

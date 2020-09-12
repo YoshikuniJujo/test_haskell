@@ -1,0 +1,51 @@
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE GADTs, TypeFamilies #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module Data.OneOfThem where
+
+import Data.Kind (Type)
+import Data.Type.Set.Internal -- (Set(Nil, (:~)), Singleton)
+
+data OneOfThem :: Set Type -> Type where
+	JustIt :: a -> OneOfThem (a ':~ as)
+	Wrap :: OneOfThem as -> OneOfThem (a ':~ as)
+
+{-# COMPLETE Singleton #-}
+
+pattern Singleton :: a -> OneOfThem (Singleton a)
+pattern Singleton x = JustIt x
+
+unSingleton :: OneOfThem (Singleton a) -> a
+unSingleton (Singleton x) = x
+
+class Expandable (as :: Set Type) (as' :: Set Type) where
+	expand :: OneOfThem as -> OneOfThem as'
+
+instance Expandable 'Nil as where expand _ = error "never occur"
+
+instance Expandable as as' => Expandable (a ':~ as) (a ':~ as') where
+	expand (JustIt x) = JustIt x
+	expand (Wrap oot) = Wrap $ expand oot
+
+instance {-# OVERLAPPABLE #-} Expandable (a ':~ as) as' =>
+	Expandable (a ':~ as) (a' ':~ as') where
+	expand x = Wrap $ expand x
+
+class Projectable (as :: Set Type) a where project :: OneOfThem as -> Maybe a
+
+class Collapsable (as :: Set Type) (as' :: Set Type) where
+	collapse :: OneOfThem as -> Maybe (OneOfThem as')
+
+instance Collapsable as 'Nil where collapse _ = Nothing
+
+instance Collapsable as as' => Collapsable (a ':~ as) (a ':~ as') where
+	collapse (JustIt x) = Just $ JustIt x
+	collapse (Wrap oot) = Wrap <$> collapse oot
+
+instance {-# OVERLAPPABLE #-} Collapsable as (a' ':~ as') =>
+	Collapsable (a ':~ as) (a' ':~ as') where
+	collapse (JustIt _) = Nothing
+	collapse (Wrap oot) = collapse oot
