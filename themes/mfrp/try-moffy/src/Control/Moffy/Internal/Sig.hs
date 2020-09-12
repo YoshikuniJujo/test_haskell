@@ -172,10 +172,11 @@ spawn = repeat . unSig
 
 -- PAR 	LIST
 
-parList_ :: Mergeable es es es =>
+parList_, parListGen :: Mergeable es es es =>
 	React s es (ThreadId, ThreadId) ->
 	Sig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
-parList_ ft (Sig r) = reverse <$%> (iparList ft =<< waitFor r)
+parList_ ft s = reverse <$%> parListGen ft s
+parListGen ft (Sig r) = iparList ft =<< waitFor r
 
 iparList :: Mergeable es es es =>
 	React s es (ThreadId, ThreadId) ->
@@ -184,7 +185,7 @@ iparList ft = isig (pure . ([] ,)) $ go . ((: []) <$>) . ((: []) <$%>) where
 	go s (Sig r) = emitAll (ipause ft s r) >>= \case
 		(s', Pure (h :| t)) -> go (cons ft h s') t
 		(s', Pure (End y)) -> (, y) <$> emitAll s'
-		(End x, r') -> emit [] >> first (x ++) <$> parList_ ft (Sig r')
+		(End x, r') -> emit [] >> first (x ++) <$> parListGen ft (Sig r')
 		(_ :| _, _ :=<< _) -> error "never occur"
 
 cons :: Mergeable es es es =>
