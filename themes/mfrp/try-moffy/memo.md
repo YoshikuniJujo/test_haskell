@@ -230,8 +230,9 @@ todo
 	+ [x] Singleton
 	+ [x] expand
 	+ [x] collapse
-	+ [ ] `class InsertFun f (OneOfThemFun fs) where (>--) ...`
-	+ [ ] `(>-) :: OneOfThem as -> [OneOfThem as'] -> [OneOfThem (as :+: as')]`
+	+ [x] `class InsertFun f (OneOfThemFun fs) where (>--) ...`
+	+ [x] `(>--) :: OneOfThem as -> [OneOfThem as'] -> [OneOfThem (as :+: as')]`
+	+ [ ] review Data.OneOfThem and Trial.TryOneOfThem
 * [ ] use OneOfThem in view
 	+ [ ] `class Viewable v`
 	+ [ ] `instance (Viewable a, Viewable (OneOfThem as)) => Viewable (OneOfThem (a :- as))`

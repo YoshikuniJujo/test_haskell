@@ -54,5 +54,26 @@ data OneOfThemFun (as :: Set Type) b where
 	EmptyFun :: OneOfThemFun 'Nil b
 	(:..) :: (a -> b) -> OneOfThemFun as b -> OneOfThemFun (a ':~ as) b
 
--- (>--) :: (a -> b) -> OneOfThemFun as b -> OneOfThemFun (a :- as) b
---	<- use class to insert function
+class InsertableFun a (as :: Set Type) (as' :: Set Type) where
+	(>--) :: (a -> b) -> OneOfThemFun as b -> OneOfThemFun as' b
+
+instance InsertableFun a as (a ':~ as) where f >-- fs = f :.. fs
+
+instance {-# OVERLAPPABLE #-} InsertableFun a as as' =>
+	InsertableFun a (a' ':~ as) (a' ':~ as') where
+	f >-- (g :.. fs) = g :.. (f >-- fs)
+
+{-# COMPLETE SingletonFun #-}
+
+pattern SingletonFun :: (a -> b) -> OneOfThemFun (Singleton a) b
+pattern SingletonFun f = f :.. EmptyFun
+
+class Applyable as where
+	apply :: OneOfThemFun as b -> OneOfThem as -> b
+
+instance Applyable (Singleton a) where
+	apply (SingletonFun f) (Singleton x) = f x
+
+instance {-# OVERLAPPABLE #-} Applyable as => Applyable (a ':~ as) where
+	apply (f :.. _) (JustIt x) = f x
+	apply (_ :.. fs) (Wrap xs) = fs `apply` xs
