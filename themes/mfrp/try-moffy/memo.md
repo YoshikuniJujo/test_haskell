@@ -234,7 +234,7 @@ todo
 	+ [x] define OneOrMoreApp
 	+ [x] make pattern Singleton
 	+ [x] class and instance ExpandableApp, CollapsableApp
-* [ ] use OneOrMoreApp in EvOccs
+* [x] use OneOrMoreApp in EvOccs
 * [ ] remove old applied Set
 * [ ] rename new applied Set
 * [ ] make OneOrMore function strict

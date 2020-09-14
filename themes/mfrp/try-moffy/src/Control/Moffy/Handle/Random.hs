@@ -15,6 +15,8 @@ import Data.Type.Set (Singleton)
 import Data.OneOrMore (pattern Singleton)
 import System.Random (StdGen)
 
+import Data.OneOrMoreApp
+
 ---------------------------------------------------------------------------
 
 -- * RANDOM STATE
@@ -39,9 +41,9 @@ handleRandom = handleStoreRandomGen `mergeSt` handleLoadRandomGen
 handleStoreRandomGen :: (RandomState s, Applicative m) =>
 	HandleSt' s m (Singleton StoreRandomGen)
 handleStoreRandomGen (Singleton (StoreRandomGenReq g)) s =
-	pure (Just $ Singleton OccStoreRandomGen, s `putRandomGen` g)
+	pure (Just $ SingletonApp OccStoreRandomGen, s `putRandomGen` g)
 
 handleLoadRandomGen :: (RandomState s, Applicative m) =>
 	HandleSt' s m (Singleton LoadRandomGen)
 handleLoadRandomGen _rqs s =
-	pure (Just . Singleton . OccLoadRandomGen $ getRandomGen s, s)
+	pure (Just . SingletonApp . OccLoadRandomGen $ getRandomGen s, s)

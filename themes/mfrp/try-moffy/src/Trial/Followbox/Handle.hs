@@ -41,6 +41,8 @@ import Trial.Followbox.Event (
 	RaiseError(..), pattern OccRaiseError, Error(..), ErrorResult(..) )
 import Trial.Followbox.TypeSynonym (Browser, GithubNameToken)
 
+import Data.OneOrMoreApp
+
 ---------------------------------------------------------------------------
 
 -- * STATE
@@ -121,10 +123,10 @@ handleMouseWithSleep h f rqs s = (, s) <$> case fsSleepUntil s of
 
 handleStoreJsons :: Monad m => HandleF' m (Singleton StoreJsons)
 handleStoreJsons (Singleton (StoreJsonsReq os)) s =
-	pure (Just . Singleton $ OccStoreJsons os, s { fsObjects = os })
+	pure (Just . SingletonApp $ OccStoreJsons os, s { fsObjects = os })
 
 handleLoadJsons :: Monad m => HandleF' m (Singleton LoadJsons)
-handleLoadJsons _rqs s = pure (Just . Singleton . OccLoadJsons $ fsObjects s, s)
+handleLoadJsons _rqs s = pure (Just . SingletonApp . OccLoadJsons $ fsObjects s, s)
 
 -- REQUEST DATA
 
@@ -134,26 +136,26 @@ handleHttpGet mgnt (Singleton (HttpGetReq u)) = do
 		. H.setRequestHeader "User-Agent" ["Yoshio"]
 		. fromString $ T.unpack u
 	print $ H.getResponseHeader "X-RateLimit-Remaining" r
-	pure . Singleton
+	pure . SingletonApp
 		$ OccHttpGet u (H.getResponseHeaders r) (H.getResponseBody r)
 
 handleGetTimeZone :: Handle IO (Singleton GetTimeZone)
-handleGetTimeZone _reqs = Singleton . OccGetTimeZone <$> getCurrentTimeZone
+handleGetTimeZone _reqs = SingletonApp . OccGetTimeZone <$> getCurrentTimeZone
 
 -- BROWSE
 
 handleBrowse :: Browser -> Handle IO (Singleton Browse)
 handleBrowse brws (Singleton (Browse u)) =
-	Singleton OccBrowse <$ spawnProcess brws [T.unpack u]
+	SingletonApp OccBrowse <$ spawnProcess brws [T.unpack u]
 
 -- BEGIN AND END SLEEP
 
 handleBeginSleep :: Monad m => HandleF' m (Singleton BeginSleep)
 handleBeginSleep (Singleton bs) s = case bs of
 	BeginSleep t -> case fsSleepUntil s of
-		Just t' -> pure (Just . Singleton $ OccBeginSleep t', s)
+		Just t' -> pure (Just . SingletonApp $ OccBeginSleep t', s)
 		Nothing -> pure (
-			Just . Singleton $ OccBeginSleep t,
+			Just . SingletonApp $ OccBeginSleep t,
 			s { fsSleepUntil = Just t } )
 	CheckBeginSleep -> pure (Nothing, s)
 
@@ -161,16 +163,16 @@ handleEndSleep :: HandleF' IO (Singleton EndSleep)
 handleEndSleep _rqs s = case fsSleepUntil s of
 	Just t -> getCurrentTime >>= bool
 		(pure (Nothing, s))
-		(pure (Just $ Singleton OccEndSleep,
+		(pure (Just $ SingletonApp OccEndSleep,
 			s { fsSleepUntil = Nothing })) . (t <=)
-	Nothing -> pure (Just $ Singleton OccEndSleep, s)
+	Nothing -> pure (Just $ SingletonApp OccEndSleep, s)
 
 -- RAISE ERROR
 
 handleRaiseError :: Handle' IO (Singleton RaiseError)
 handleRaiseError (Singleton (RaiseError e em)) = case er e of
 	Nothing -> pure Nothing
-	Just r -> Just (Singleton $ OccRaiseError e r) <$ putStrLn emsg
+	Just r -> Just (SingletonApp $ OccRaiseError e r) <$ putStrLn emsg
 	where
 	emsg = "ERROR: " <> em
 	er = \case

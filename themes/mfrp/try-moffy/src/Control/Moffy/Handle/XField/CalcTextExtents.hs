@@ -12,8 +12,10 @@ import qualified Graphics.X11.Xrender as X
 
 import Field
 
+import Data.OneOrMoreApp
+
 handleCalcTextExtents :: Field -> Handle IO (Singleton CalcTextExtents)
-handleCalcTextExtents f (Singleton (CalcTextExtentsReq fn fs t)) = Singleton
+handleCalcTextExtents f (Singleton (CalcTextExtentsReq fn fs t)) = SingletonApp
 	. OccCalcTextExtents fn fs t . mkTextExtents' . xGlyphInfoToNew <$> textExtents f fn fs (T.unpack t)
 
 xGlyphInfoToNew :: X.XGlyphInfo -> TextExtents

@@ -30,6 +30,9 @@ import Data.OneOrMore (
 import Data.Bits (setBit)
 import Numeric.Natural (Natural)
 
+import Data.Type.SetApp.Internal
+import Data.OneOrMoreApp
+
 ---------------------------------------------------------------------------
 
 -- * REACT
@@ -54,7 +57,7 @@ data Rct es r where
 class (Numbered e, Selectable e) => Request e where data Occurred e
 
 type EvReqs (es :: Set Type) = OneOrMore es
-type EvOccs (es :: Set Type) = OneOrMore (Occurred :$: es)
+type EvOccs (es :: Set Type) = OneOrMoreApp ('SetApp Occurred (Occurred :$: es))
 
 -- NEVER AND AWAIT
 
@@ -62,7 +65,7 @@ never :: React s es a
 never = pure =<<< Never
 
 await :: e -> (Occurred e -> r) -> React s (Singleton e) r
-await rq f = pure . f . unSingleton =<<< Await (Singleton rq)
+await rq f = pure . f . unSingletonApp =<<< Await (Singleton rq)
 
 await' :: e -> (ThreadId -> Occurred e -> r) -> React s (Singleton e) r
 await' rq f = await rq . f =<<< GetThreadId

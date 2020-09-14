@@ -35,6 +35,8 @@ import qualified Data.Text as T
 import Data.Bool
 import Data.Word
 
+import Data.OneOrMoreApp as Oom
+
 tryGtk :: IO ()
 tryGtk = do
 	[] <- gtkInit []
@@ -79,23 +81,23 @@ tryUseTChan = do
 		gtkWidgetSetEvents w [gdkPointerMotionMask]
 --		gtkWidgetSetEvents w [gdkButtonMotionMask]
 		gSignalConnect w DeleteEvent (\a b x' -> True <$ (print' (a, b, x') >>
-			atomically (writeTChan c . Oom.expand $ Singleton OccDeleteEvent))) ()
+			atomically (writeTChan c . Oom.expandApp $ SingletonApp OccDeleteEvent))) ()
 		gSignalConnect w KeyPressEvent (\a b x' -> False <$ (print' (a, b, x') >> do
 			e <- gdkEventKeyToOccKeyDown b
-			atomically (writeTChan c $ Oom.expand e))) ()
+			atomically (writeTChan c $ Oom.expandApp e))) ()
 		gSignalConnect w KeyReleaseEvent (\a b x' -> False <$ (print' (a, b, x') >> do
 			e <- gdkEventKeyToOccKeyUp b
-			atomically (writeTChan c $ Oom.expand e))) ()
+			atomically (writeTChan c $ Oom.expandApp e))) ()
 		gSignalConnect w ButtonPressEvent (\a b x' -> True <$ (print' (a, b, x') >> do
 			e <- gdkEventButtonToOccMouseDown b
-			atomically (writeTChan c $ Oom.expand e))) ()
+			atomically (writeTChan c $ Oom.expandApp e))) ()
 		gSignalConnect w ButtonReleaseEvent (\a b x' -> True <$ (print' (a, b, x') >> do
 			e <- gdkEventButtonToOccMouseUp b
-			atomically (writeTChan c $ Oom.expand e))) ()
+			atomically (writeTChan c $ Oom.expandApp e))) ()
 		gSignalConnect w MotionNotifyEvent (\a b x' -> True <$ do
 			print' (a, b, x')
 			e <- gdkEventMotionToOccMouseMove b
-			atomically (writeTChan c $ Oom.expand e)) ()
+			atomically (writeTChan c $ Oom.expandApp e)) ()
 		gSignalConnect w Destroy gtkMainQuit ()
 
 		da <- gtkDrawingAreaNew
@@ -168,7 +170,7 @@ tryDraw ftc co tx w cr () = True <$ do
 				print =<< pangoRectangleWidth le
 				print =<< pangoRectangleHeight le
 				mkTextExtents ie le
-			atomically . writeTChan co . Oom.expand . Singleton
+			atomically . writeTChan co . Oom.expandApp . SingletonApp
 				$ OccCalcTextExtents fn fs txt te
 		Nothing -> pure ()
 	draw w cr =<< readTVarIO tx
@@ -186,23 +188,23 @@ mkTextExtents ie le = TextExtents'
 gdkEventKeyToOccKeyDown :: GdkEventKey -> IO (EvOccs (Singleton KeyDown))
 gdkEventKeyToOccKeyDown e = do
 	kv <- keyval e
-	pure . Singleton . OccKeyDown . Key $ fromIntegral kv
+	pure . SingletonApp . OccKeyDown . Key $ fromIntegral kv
 
 gdkEventKeyToOccKeyUp :: GdkEventKey -> IO (EvOccs (Singleton KeyUp))
 gdkEventKeyToOccKeyUp e = do
 	kv <- keyval e
-	pure . Singleton . OccKeyUp . Key $ fromIntegral kv
+	pure . SingletonApp . OccKeyUp . Key $ fromIntegral kv
 
 gdkEventMotionToOccMouseMove :: GdkEventMotion -> IO (EvOccs (Singleton MouseMove))
 gdkEventMotionToOccMouseMove e = do
 	x <- gdkEventMotionX e
 	y <- gdkEventMotionY e
-	pure $ Singleton $ OccMouseMove (x, y)
+	pure $ SingletonApp $ OccMouseMove (x, y)
 
 gdkEventButtonToOccMouseDown :: GdkEventButton -> IO (EvOccs (MouseDown :- MouseMove :- 'Nil))
 gdkEventButtonToOccMouseDown e = do
 	(x, y, b) <- getButtonInfo e
-	pure $ OccMouseDown (btn b) >- Singleton (OccMouseMove (x, y))
+	pure $ OccMouseDown (btn b) >-^ SingletonApp (OccMouseMove (x, y))
 	where
 	btn = \case
 		1 -> ButtonLeft; 2 -> ButtonMiddle; 3 -> ButtonRight
@@ -218,7 +220,7 @@ getButtonInfo e = do
 gdkEventButtonToOccMouseUp :: GdkEventButton -> IO (EvOccs (MouseUp :- MouseMove :- 'Nil))
 gdkEventButtonToOccMouseUp e = do
 	(x, y, b) <- getButtonInfo e
-	pure $ OccMouseUp (btn b) >- Singleton (OccMouseMove (x, y))
+	pure $ OccMouseUp (btn b) >-^ SingletonApp (OccMouseMove (x, y))
 	where
 	btn = \case
 		1 -> ButtonLeft; 2 -> ButtonMiddle; 3 -> ButtonRight

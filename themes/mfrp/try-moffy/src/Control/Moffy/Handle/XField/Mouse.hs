@@ -16,6 +16,8 @@ import Data.Type.Set (Singleton, (:-))
 import Data.OneOrMore (pattern Singleton, expand, (>-))
 import Field (Event', evEvent, Event(..))
 
+import Data.OneOrMoreApp
+
 ---------------------------------------------------------------------------
 
 pattern MouseEv :: EvOccs MouseEv -> Event'
@@ -26,15 +28,15 @@ type MoveAnd e = e :- Singleton MouseMove
 mouseEv :: Event' -> Maybe (EvOccs MouseEv)
 mouseEv = (. evEvent) \case
 	ButtonEvent { ev_event_type = 4, ev_button = eb, ev_x = x, ev_y = y }
-		| b <- btn eb -> Just . expand $ down x y b
+		| b <- btn eb -> Just . expandApp $ down x y b
 	ButtonEvent { ev_event_type = 5, ev_button = eb, ev_x = x, ev_y = y }
-		| b <- btn eb -> Just . expand $ up x y b
-	MotionEvent { ev_x = x, ev_y = y } -> Just . expand $ move x y
+		| b <- btn eb -> Just . expandApp $ up x y b
+	MotionEvent { ev_x = x, ev_y = y } -> Just . expandApp $ move x y
 	_ -> Nothing
 	where
-	down x y b = OccMouseDown b >- move x y :: EvOccs (MoveAnd MouseDown)
-	up x y b = OccMouseUp b >- move x y :: EvOccs (MoveAnd MouseUp)
-	move x y = Singleton $ OccMouseMove (fromIntegral x, fromIntegral y)
+	down x y b = OccMouseDown b >-^ move x y :: EvOccs (MoveAnd MouseDown)
+	up x y b = OccMouseUp b >-^ move x y :: EvOccs (MoveAnd MouseUp)
+	move x y = SingletonApp $ OccMouseMove (fromIntegral x, fromIntegral y)
 	btn = \case
 		1 -> ButtonLeft; 2 -> ButtonMiddle; 3 -> ButtonRight
 		4 -> ScrollUp; 5 -> ScrollDown; 6 -> ScrollLeft; 7 -> ScrollRight

@@ -15,6 +15,8 @@ import Data.Type.Set (Singleton)
 import Data.OneOrMore (pattern Singleton)
 import Data.Bool (bool)
 
+import Data.OneOrMoreApp
+
 ---------------------------------------------------------------------------
 
 -- * LOCK STATE
@@ -39,16 +41,16 @@ handleLock = handleNewLockId `mergeSt` handleGetLock `mergeSt` handleUnlock
 handleNewLockId ::
 	(LockState s, Applicative m) => HandleSt' s m (Singleton NewLockId)
 handleNewLockId (Singleton (NewLockIdReq t)) s = pure (
-	Just . Singleton $ OccNewLockId (LockId i) t,
+	Just . SingletonApp $ OccNewLockId (LockId i) t,
 	s `putNextLockId` (i + 1) )
 	where i = getNextLockId s
 
 handleGetLock ::
 	(LockState s, Applicative m) => HandleSt' s m (Singleton GetLock)
 handleGetLock (Singleton (GetLockReq i t _)) s = pure $ bool
-	(Just . Singleton $ OccGetLock i t, s `lockIt` i) (Nothing, s)
+	(Just . SingletonApp $ OccGetLock i t, s `lockIt` i) (Nothing, s)
 	(s `isLocked` i)
 
 handleUnlock :: (LockState s, Applicative m) => HandleSt' s m (Singleton Unlock)
 handleUnlock (Singleton (UnlockReq i)) s =
-	pure (Just $ Singleton OccUnlock, s `unlockIt` i)
+	pure (Just $ SingletonApp OccUnlock, s `unlockIt` i)

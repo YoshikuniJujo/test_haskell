@@ -12,7 +12,9 @@ import Control.Moffy.Handle (Handle')
 import Data.Type.Set (Singleton)
 import Data.OneOrMore (pattern Singleton)
 
+import Data.OneOrMoreApp
+
 ---------------------------------------------------------------------------
 
 handleGetThreadId :: Applicative m => Handle' m (Singleton GetThreadId)
-handleGetThreadId _rqs = pure . Just $ Singleton OccGetThreadId
+handleGetThreadId _rqs = pure . Just $ SingletonApp OccGetThreadId

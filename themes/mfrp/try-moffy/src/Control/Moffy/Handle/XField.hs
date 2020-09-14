@@ -26,6 +26,8 @@ import Field (
 	Field, flushField, Event', evEvent, Event(..),
 	withNextEvent, withNextEventTimeout', isDeleteEvent )
 
+import Data.OneOrMoreApp
+
 ---------------------------------------------------------------------------
 
 -- * GUI EV
@@ -46,7 +48,7 @@ handle' mt f = (Just <$>) . handleCalcTextExtents f `before` handle mt f
 
 handle :: Maybe DiffTime -> Field -> Handle' IO GuiEv
 handle = handleWith \case
-	KeyEv kev -> Just $ expand kev; MouseEv mev -> Just $ expand mev
+	KeyEv kev -> Just $ expandApp kev; MouseEv mev -> Just $ expandApp mev
 	_ -> Nothing
 
 handleWith :: ExpandableOccurred (Singleton DeleteEvent) es =>
@@ -63,5 +65,5 @@ eventToEv etoe f _rqs = \case
 	(evEvent -> ev)
 		| ExposeEvent {} <- ev -> Nothing <$ flushField f
 		| isDeleteEvent f ev ->
-			pure . Just . expand $ Singleton OccDeleteEvent
+			pure . Just . expandApp $ SingletonApp OccDeleteEvent
 	ev -> pure $ etoe ev
