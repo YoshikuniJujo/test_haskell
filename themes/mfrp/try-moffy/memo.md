@@ -238,12 +238,17 @@ todo
 * [x] remove old applied Set
 * [ ] rename new applied Set
 	+ [x] rename `(:$:.)` to `(:$:)`
+	+ [x] Data.OneOrMoreApp: refactor API some
 	+ [ ] consider whether or not to remove suffix `App'
 		- or change to Suffix \'
 	+ [ ] others
 * [ ] make OneOrMore function strict
 	+ [ ] `(>-)`
 	+ [ ] merge
+	+ [ ] merge'
+	+ [ ] `(>-^)`
+	+ [ ] mergeApp
+	+ [ ] mergeApp'
 * [ ] make OneOfThem
 	+ [x] add Data.OneOfThem
 	+ [x] Singleton

@@ -6,11 +6,19 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.OneOrMoreApp (
-	OneOrMoreApp, ExpandableApp, CollapsableApp, MergeableApp,
+	-- * Type
+	OneOrMoreApp,
+	-- * Constraint Synonym
+	ExpandableApp, CollapsableApp, MergeableApp,
+	-- * Function
+	-- ** Single Type
 	pattern SingletonApp, unSingletonApp,
-	collapseApp, (>-^), expandApp,
-	mergeApp, mergeApp', projectApp
-	) where
+	-- ** Multiple Type
+	projectApp, (>-^),
+	-- ** Expand and Collapse
+	expandApp, collapseApp,
+	-- ** Merge
+	mergeApp, mergeApp' ) where
 
 import Data.Kind
 import Data.Type.Set.Internal
