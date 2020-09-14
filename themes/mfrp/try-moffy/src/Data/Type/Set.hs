@@ -6,10 +6,9 @@ module Data.Type.Set (
 	-- * Numbered
 	Numbered, numbered,
 	-- * Function
-	Singleton, Insert, Merge, Map,
+	Singleton, Insert, Merge,
 	-- * Operator
-	(:-), (:+:), (:$:) ) where
+	(:-), (:+:) ) where
 
 import Data.Type.Set.Internal (
-	Set(Nil), Numbered, numbered,
-	Singleton, Insert, Merge, Map, (:-), (:+:), (:$:) )
+	Set(Nil), Numbered, numbered, Singleton, Insert, Merge, (:-), (:+:) )

@@ -1,10 +1,16 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE ConstraintKinds, FlexibleContexts #-}
 {-# LANGUAGE DataKinds, KindSignatures, TypeOperators #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.OneOrMoreApp where
+module Data.OneOrMoreApp (
+	OneOrMoreApp, ExpandableApp, CollapsableApp, MergeableApp,
+	pattern SingletonApp, unSingletonApp,
+	collapseApp, (>-^), expandApp,
+	mergeApp, mergeApp', projectApp
+	) where
 
 import Data.Kind
 import Data.Type.Set.Internal
@@ -43,3 +49,7 @@ unOneOrMoreApp (OneOrMoreApp xs) = xs
 mergeApp' :: (Oom.Mergeable as as' mrg, Oom.Expandable as mrg, Oom.Expandable as' mrg) =>
 	Maybe (OneOrMoreApp ('SetApp f as)) -> Maybe (OneOrMoreApp ('SetApp f as')) -> Maybe (OneOrMoreApp ('SetApp f mrg))
 xs `mergeApp'` xs' = OneOrMoreApp <$> (unOneOrMoreApp <$> xs) `Oom.merge'` (unOneOrMoreApp <$> xs')
+
+type ExpandableApp f as as' = Oom.Expandable (f :$: as) (f :$: as')
+type CollapsableApp f as as' = Oom.Collapsable (f :$: as) (f :$: as')
+type MergeableApp f as as' mrg = Oom.Mergeable (f :$: as) (f :$: as') (f :$: mrg)

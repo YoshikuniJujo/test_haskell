@@ -23,14 +23,14 @@ import Control.Monad.Freer.Par (Freer, (=<<<), (>>>=))
 import Control.Monad.Freer.Par.FTCQueue (FTCQueue)
 import Control.Monad.Freer.Par.TaggableFunction (TaggableFun)
 import Data.Kind (Type)
-import Data.Type.Set (Set, Numbered, Singleton, (:$:))
+import Data.Type.Set (Set, Numbered, Singleton)
 import Data.OneOrMore (
 	OneOrMore, Selectable, pattern Singleton, unSingleton,
 	Expandable, Collapsable, Mergeable )
 import Data.Bits (setBit)
 import Numeric.Natural (Natural)
 
-import Data.Type.SetApp.Internal
+import Data.Type.SetApp
 import Data.OneOrMoreApp
 
 ---------------------------------------------------------------------------
@@ -57,7 +57,7 @@ data Rct es r where
 class (Numbered e, Selectable e) => Request e where data Occurred e
 
 type EvReqs (es :: Set Type) = OneOrMore es
-type EvOccs (es :: Set Type) = OneOrMoreApp ('SetApp Occurred (Occurred :$: es))
+type EvOccs (es :: Set Type) = OneOrMoreApp (Occurred :$:. es) -- ('SetApp Occurred (Occurred :$: es))
 
 -- NEVER AND AWAIT
 
@@ -74,13 +74,11 @@ await' rq f = await rq . f =<<< GetThreadId
 -- CONSTRAINT SYNONYM
 ---------------------------------------------------------------------------
 
-type ExpandableOccurred es es' = Expandable (Occurred :$: es) (Occurred :$: es')
+type ExpandableOccurred es es' = ExpandableApp Occurred es es'
 
-type CollapsableOccurred es es' =
-	Collapsable (Occurred :$: es) (Occurred :$: es')
+type CollapsableOccurred es es' = CollapsableApp Occurred es es'
 
-type MergeableOccurred es es' mrg =
-	Mergeable (Occurred :$: es) (Occurred :$: es') (Occurred :$: mrg)
+type MergeableOccurred es es' mrg = MergeableApp Occurred es es' mrg
 
 ---------------------------------------------------------------------------
 -- HANDLE
