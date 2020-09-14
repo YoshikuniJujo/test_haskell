@@ -228,9 +228,10 @@ todo
 * [x] make newtype SetApp
 	+ [x] make module Data.Type.SetApp.Internal
 	+ [x] define `newtype SetApp a = SetApp (Type -> Type) (Set a)`
-* [ ] make module Data.OneOrMore.Internal
+* [x] make module Data.OneOrMore.Internal
 * [ ] make newtype OneOrMoreApp
-	+ [ ] make module Data.OneOrMoreApp
+	+ [x] make module Data.OneOrMoreApp
+	+ [ ] define OneOrMoreApp
 	+ [ ] make pattern Singleton
 	+ [ ] class and instance ExpandableApp, CollapsableApp
 * [ ] use OneOrMoreApp in EvOccs
