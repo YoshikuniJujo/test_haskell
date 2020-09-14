@@ -225,6 +225,17 @@ todo
 		- [ ] refactor about GTK
 	+ [ ] consider whether or not to use ForeignPtr to free memory for cairo surface
 	+ [ ] others
+* [x] make newtype SetApp
+	+ [x] make module Data.Type.SetApp.Internal
+	+ [x] define `newtype SetApp a = SetApp (Type -> Type) (Set a)`
+* [ ] make module Data.OneOrMore.Internal
+* [ ] make newtype OneOrMoreApp
+	+ [ ] make module Data.OneOrMoreApp
+	+ [ ] make pattern Singleton
+	+ [ ] class and instance ExpandableApp, CollapsableApp
+* [ ] use OneOrMoreApp in EvOccs
+* [ ] remove old applied Set
+* [ ] rename new applied Set
 * [ ] make OneOrMore function strict
 	+ [ ] `(>-)`
 	+ [ ] merge
