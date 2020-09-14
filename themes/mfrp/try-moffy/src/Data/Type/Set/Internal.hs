@@ -12,7 +12,7 @@ module Data.Type.Set.Internal (
 	-- * Function
 	Singleton, Insert, Merge, Map,
 	-- * Operator
-	(:-), (:+:), (:$:) ) where
+	(:-), (:+:) ) where
 
 import GHC.TypeLits (Nat, type (<=?))
 import Language.Haskell.TH (
@@ -89,12 +89,9 @@ type instance MergeThen t ts t' ts' $ '() = t ':~ ts :+: (t' ':~ ts')
 
 -- Map
 
-infixl 4 :$:
-type f :$: ts = f `Map` ts
-
 type family Map (f :: Type -> Type) (ts :: Set Type) :: Set Type where
-	Map _f 'Nil = 'Nil
-	Map f (t ':~ ts) = f t ':~ (f :$: ts)
+	_ `Map` 'Nil = 'Nil
+	f `Map` (t ':~ ts) = f t ':~ (f `Map` ts)
 
 ---------------------------------------------------------------------------
 -- NUMBERED

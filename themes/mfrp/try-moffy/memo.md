@@ -237,6 +237,10 @@ todo
 * [x] use OneOrMoreApp in EvOccs
 * [x] remove old applied Set
 * [ ] rename new applied Set
+	+ [x] rename `(:$:.)` to `(:$:)`
+	+ [ ] consider whether or not to remove suffix `App'
+		- or change to Suffix \'
+	+ [ ] others
 * [ ] make OneOrMore function strict
 	+ [ ] `(>-)`
 	+ [ ] merge

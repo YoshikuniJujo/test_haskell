@@ -8,6 +8,6 @@ import Data.Type.Set.Internal
 
 data SetApp a = SetApp (Type -> Type) (Set a)
 
-infixl 4 :$:.
+infixl 4 :$:
 
-type f :$:. ts = 'SetApp f (f :$: ts)
+type f :$: ts = 'SetApp f (f `Map` ts)

@@ -57,7 +57,7 @@ data Rct es r where
 class (Numbered e, Selectable e) => Request e where data Occurred e
 
 type EvReqs (es :: Set Type) = OneOrMore es
-type EvOccs (es :: Set Type) = OneOrMoreApp (Occurred :$:. es) -- ('SetApp Occurred (Occurred :$: es))
+type EvOccs (es :: Set Type) = OneOrMoreApp (Occurred :$: es)
 
 -- NEVER AND AWAIT
 
