@@ -30,10 +30,10 @@ data OneOrMoreApp :: SetApp Type -> Type where
 
 {-# COMPLETE SingletonApp #-}
 
-pattern SingletonApp :: f a -> OneOrMoreApp ('SetApp f (f `Map` (Singleton a)))
+pattern SingletonApp :: a -> OneOrMoreApp ('SetApp f (Singleton a))
 pattern SingletonApp x = OneOrMoreApp (Oom.Singleton x)
 
-unSingletonApp :: OneOrMoreApp ('SetApp f (f `Map` (Singleton a))) -> f a
+unSingletonApp :: OneOrMoreApp ('SetApp f (Singleton a)) -> a
 unSingletonApp (SingletonApp x) = x
 
 expandApp :: Oom.Expandable as as' => OneOrMoreApp ('SetApp f as) -> OneOrMoreApp ('SetApp f as')
