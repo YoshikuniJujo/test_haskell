@@ -7,8 +7,8 @@ module Trial.Followbox.Shape (Line(..)) where
 
 import Data.Type.Set
 
-import Trial.Followbox.TypeSynonym (Position, LineWidth)
-import Trial.Followbox.Color
+import Trial.Followbox.TypeSynonym (LineWidth)
+import Trial.Followbox.Basic
 
 data Line = Line' Color LineWidth Position Position
 numbered [t| Line |]

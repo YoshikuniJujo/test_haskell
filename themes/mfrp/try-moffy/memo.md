@@ -267,7 +267,7 @@ todo
 	+ [x] repair others
 * [ ] make view modules
 	+ [x] separate Text, Line and Image to each module
-		- [x] module Trial.Followbox.Color
+		- [x] module Trial.Followbox.Basic: Color and Position
 		- [x] module Trial.Followbox.Text
 		- [x] module Trial.Followbox.Shape
 		- [x] module Trial.Followbox.Image

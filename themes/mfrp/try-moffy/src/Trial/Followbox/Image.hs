@@ -10,7 +10,7 @@ module Trial.Followbox.Image (Image(..), Png(..)) where
 import Data.Type.Set
 import qualified Data.ByteString as BS
 
-import Trial.Followbox.TypeSynonym (Position)
+import Trial.Followbox.Basic (Position)
 
 data Image = Image' Position Png
 data Png = Png { pngWidth :: Double, pngHeight :: Double, pngData :: BS.ByteString }

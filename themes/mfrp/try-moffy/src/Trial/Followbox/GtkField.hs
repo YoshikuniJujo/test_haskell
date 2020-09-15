@@ -29,7 +29,7 @@ import Data.OneOfThem
 
 import Trial.Followbox.ViewType
 
-import Trial.Followbox.Color
+import Trial.Followbox.Basic
 
 ---------------------------------------------------------------------------
 

@@ -22,7 +22,7 @@ import Data.Type.Set (Singleton)
 import qualified Data.Text as T
 
 import Trial.Followbox.ViewType (View(..), View1(..), blue, VText(..), Line(..), Image(..))
-import Trial.Followbox.TypeSynonym (Position)
+import Trial.Followbox.Basic (Position)
 
 import Data.OneOfThem
 

@@ -2,7 +2,7 @@
 
 module Trial.Followbox.TypeSynonym (
 	-- * Field
-	WindowTitle, Position, LineWidth, Avatar,
+	WindowTitle, LineWidth, Avatar,
 	-- * GitHub
 	GithubNameToken, GithubUserName, GithubToken,
 	-- * Others
@@ -21,7 +21,6 @@ import Codec.Picture (Image, PixelRGBA8)
 -- FIELD
 
 type WindowTitle = String
-type Position = (Double, Double)
 type LineWidth = Double
 type Avatar = Image PixelRGBA8
 

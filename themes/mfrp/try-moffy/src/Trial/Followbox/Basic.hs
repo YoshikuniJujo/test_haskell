@@ -1,7 +1,10 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Followbox.Color (Color(..), white, blue, colorToRgb) where
+module Trial.Followbox.Basic (
+	Color(..), white, blue, colorToRgb,
+	Position
+	) where
 
 import Data.Word (Word8)
 
@@ -16,3 +19,5 @@ blue = Color { colorRed = 0x30, colorGreen = 0x66, colorBlue = 0xd6 }
 colorToRgb :: Color -> (Double, Double, Double)
 colorToRgb (Color (fromIntegral -> r) (fromIntegral -> g) (fromIntegral -> b)) =
 	(r / 0xff, g / 0xff, b / 0xff)
+
+type Position = (Double, Double)

@@ -17,7 +17,7 @@ module Trial.Followbox.ViewType (
 import Data.Type.Set
 import Data.OneOfThem
 
-import Trial.Followbox.Color
+import Trial.Followbox.Basic
 import Trial.Followbox.Text
 import Trial.Followbox.Shape
 import Trial.Followbox.Image

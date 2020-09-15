@@ -8,11 +8,9 @@ module Trial.Followbox.Text (VText(..)) where
 import Control.Moffy.Event.CalcTextExtents (FontName, FontSize)
 import Data.Text (Text)
 
-import Trial.Followbox.TypeSynonym (Position)
-
 import Data.Type.Set
 
-import Trial.Followbox.Color
+import Trial.Followbox.Basic
 
 ---------------------------------------------------------------------------
 

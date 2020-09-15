@@ -36,7 +36,9 @@ import Trial.Followbox.Clickable (
 	Clickable, view, click, clickable, clickableText,
 	WithTextExtents, withTextExtents, nextToText, translate, FontName, FontSize )
 import Trial.Followbox.ViewType (View(..), View1, white, Png(..), VText(..), Line(..), Image(..))
-import Trial.Followbox.TypeSynonym (Position, ErrorMessage)
+import Trial.Followbox.TypeSynonym (ErrorMessage)
+
+import Trial.Followbox.Basic (Position)
 
 import qualified Codec.Picture as P
 
