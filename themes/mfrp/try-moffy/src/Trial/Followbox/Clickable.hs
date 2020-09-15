@@ -21,8 +21,8 @@ import Data.Type.Set (Singleton)
 
 import qualified Data.Text as T
 
-import Trial.Followbox.ViewType (View(..), View1(..), blue, VText(..), Line(..), Image(..))
-import Trial.Followbox.Basic (Position)
+import Trial.Followbox.ViewType (View(..), blue, VText(..))
+import Control.Moffy.Viewable.Basic (Position)
 
 import Data.OneOfThem
 

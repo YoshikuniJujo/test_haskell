@@ -29,7 +29,7 @@ import Data.OneOfThem
 
 import Trial.Followbox.ViewType
 
-import Trial.Followbox.Basic
+import Control.Moffy.Viewable.Basic
 
 ---------------------------------------------------------------------------
 

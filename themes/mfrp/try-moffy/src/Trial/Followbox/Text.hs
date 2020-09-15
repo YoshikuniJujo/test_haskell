@@ -10,7 +10,7 @@ import Data.Text (Text)
 
 import Data.Type.Set
 
-import Trial.Followbox.Basic
+import Control.Moffy.Viewable.Basic
 
 ---------------------------------------------------------------------------
 

@@ -1,10 +1,8 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Followbox.Basic (
-	Color(..), white, blue, colorToRgb,
-	Position
-	) where
+module Control.Moffy.Viewable.Basic (
+	Color(..), white, blue, colorToRgb, Position, LineWidth ) where
 
 import Data.Word (Word8)
 
@@ -21,3 +19,4 @@ colorToRgb (Color (fromIntegral -> r) (fromIntegral -> g) (fromIntegral -> b)) =
 	(r / 0xff, g / 0xff, b / 0xff)
 
 type Position = (Double, Double)
+type LineWidth = Double

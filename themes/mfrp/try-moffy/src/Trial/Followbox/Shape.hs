@@ -7,8 +7,7 @@ module Trial.Followbox.Shape (Line(..)) where
 
 import Data.Type.Set
 
-import Trial.Followbox.TypeSynonym (LineWidth)
-import Trial.Followbox.Basic
+import Control.Moffy.Viewable.Basic
 
 data Line = Line' Color LineWidth Position Position
 numbered [t| Line |]

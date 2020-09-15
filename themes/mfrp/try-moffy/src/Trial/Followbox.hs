@@ -38,7 +38,7 @@ import Trial.Followbox.Clickable (
 import Trial.Followbox.ViewType (View(..), View1, white, Png(..), VText(..), Line(..), Image(..))
 import Trial.Followbox.TypeSynonym (ErrorMessage)
 
-import Trial.Followbox.Basic (Position)
+import Control.Moffy.Viewable.Basic (Position)
 
 import qualified Codec.Picture as P
 

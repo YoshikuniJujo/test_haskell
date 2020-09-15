@@ -14,10 +14,10 @@ module Trial.Followbox.ViewType (
 	VText(..), Line(..), Image(..)
 	) where
 
+import Control.Moffy.Viewable.Basic
 import Data.Type.Set
 import Data.OneOfThem
 
-import Trial.Followbox.Basic
 import Trial.Followbox.Text
 import Trial.Followbox.Shape
 import Trial.Followbox.Image

@@ -275,7 +275,7 @@ todo
 		- [x] module Trial.Followbox.GtkField
 		- [x] module Trial.Followbox.ViewType
 	+ [ ] make module directory: Control.Moffy.Viewable
-		- [ ] module Control.Moffy.Viewable.Color
+		- [x] module Control.Moffy.Viewable.Basic
 		- [ ] module Control.Moffy.Viewable.Text
 		- [ ] module Control.Moffy.Viewable.Shape
 		- [ ] module Control.Moffy.Viewable.Image
