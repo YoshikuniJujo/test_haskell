@@ -4,7 +4,25 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.OneOfThem where
+module Data.OneOfThem (
+	-- * OneOfThem
+	-- ** Type
+	OneOfThem,
+	-- ** Single
+	pattern Singleton, unSingleton,
+	-- ** Multiple
+	-- *** Project
+	Projectable, project,
+	-- *** Expand
+	Expandable, (>-), expand,
+	-- * OneOfThemFun
+	-- ** Type and Apply
+	OneOfThemFun, apply,
+	-- ** Single
+	pattern SingletonFun,
+	-- ** Insert
+	InsertableFun, (>--)
+	) where
 
 import Data.Kind (Type)
 import Data.Type.Set.Internal -- (Set(Nil, (:~)), Singleton)

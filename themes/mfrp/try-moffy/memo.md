@@ -246,7 +246,7 @@ todo
 	+ [x] `(>-)`
 	+ [x] merge
 	+ [x] merge'
-* [ ] make OneOfThem
+* [x] make OneOfThem
 	+ [x] add Data.OneOfThem
 	+ [x] Singleton
 	+ [x] expand
@@ -259,8 +259,7 @@ todo
 	+ [x] rename `(>--$$$)` to `(>--)`
 	+ [x] infixr 5 `(>-)`
 	+ [x] infixr 5 `(>--)`
-	+ [ ] make export list of Data.OneOfThem
-	+ [ ] review Data.OneOfThem and Trial.TryOneOfThem
+	+ [x] make export list of Data.OneOfThem
 * [ ] use OneOfThem in view
 	+ [ ] `class Viewable v`
 	+ [ ] `instance (Viewable a, Viewable (OneOfThem as)) => Viewable (OneOfThem (a :- as))`
