@@ -46,17 +46,17 @@ projectApp :: Oom.Projectable as a => OneOrMoreApp ('SetApp f as) -> Maybe a
 projectApp (OneOrMoreApp xs) = Oom.project xs
 
 (>-^) :: Oom.Insertable a as as' => a -> OneOrMoreApp ('SetApp f as) -> OneOrMoreApp ('SetApp f as')
-x >-^ (OneOrMoreApp xs) = OneOrMoreApp $ x Oom.>- xs
+x >-^ (OneOrMoreApp xs) = OneOrMoreApp $ x Oom.>-. xs
 
 mergeApp :: Oom.Mergeable as as' mrg => OneOrMoreApp ('SetApp f as) -> OneOrMoreApp ('SetApp f as') -> OneOrMoreApp ('SetApp f mrg)
-mergeApp (OneOrMoreApp xs) (OneOrMoreApp xs') = OneOrMoreApp $ xs `Oom.merge` xs'
+mergeApp (OneOrMoreApp xs) (OneOrMoreApp xs') = OneOrMoreApp $ xs `Oom.merge_` xs'
 
 unOneOrMoreApp :: OneOrMoreApp ('SetApp f as) -> Oom.OneOrMore as
 unOneOrMoreApp (OneOrMoreApp xs) = xs
 
 mergeApp' :: (Oom.Mergeable as as' mrg, Oom.Expandable as mrg, Oom.Expandable as' mrg) =>
 	Maybe (OneOrMoreApp ('SetApp f as)) -> Maybe (OneOrMoreApp ('SetApp f as')) -> Maybe (OneOrMoreApp ('SetApp f mrg))
-xs `mergeApp'` xs' = OneOrMoreApp <$> (unOneOrMoreApp <$> xs) `Oom.merge'` (unOneOrMoreApp <$> xs')
+xs `mergeApp'` xs' = OneOrMoreApp <$> (unOneOrMoreApp <$> xs) `Oom.merge_'` (unOneOrMoreApp <$> xs')
 
 type ExpandableApp f as as' = Oom.Expandable (f `Map` as) (f `Map` as')
 type CollapsableApp f as as' = Oom.Collapsable (f `Map` as) (f `Map` as')

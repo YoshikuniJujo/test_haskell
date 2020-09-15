@@ -20,7 +20,7 @@ import Control.Monad.Freer.Par (
 import Control.Moffy.Internal.React.Type (
 	React, Rct(..), EvOccs, CollapsableOccurred, ThreadId, never )
 import Data.Type.Set ((:+:))
-import Data.OneOrMore (Expandable, Mergeable, expand, collapse, merge)
+import Data.OneOrMore (Expandable, Mergeable, expand, merge)
 import Data.Or (Or(..))
 
 import Data.OneOrMoreApp
@@ -38,6 +38,7 @@ import Data.OneOrMoreApp
 
 type Firstable es es' a b = (
 	Updatable a b, Adjustable es (es :+: es'), Adjustable es' (es :+: es'),
+	((es :+: es') :+: (es :+: es')) ~ (es :+: es'),
 	Mergeable (es :+: es') (es :+: es') (es :+: es') )
 
 first_ :: Firstable es es' a b =>
@@ -68,7 +69,7 @@ adj = \case
 -- PAR
 ---------------------------------------------------------------------------
 
-par :: (Updatable a b, Mergeable es es es) =>
+par :: (Updatable a b, Mergeable es es es, (es :+: es) ~ es) =>
 	React s es (ThreadId, ThreadId) ->
 	React s es a -> React s es b -> React s es (React s es a, React s es b)
 par ft l r = case (l, r) of

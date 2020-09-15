@@ -53,26 +53,26 @@ import Data.OneOrMore (Mergeable)
 
 -- INSTANCE APPLICATIVE
 
-instance (Mergeable es es es, Semigroup r) =>
+instance ((es :+: es) ~ es, Mergeable es es es, Semigroup r) =>
 	Applicative (Flip (Sig s es) r) where
 	pure = Flip . Sig . pure . unflip . pure
 	mf <*> mx = Flip $ app_ forkThreadId (unflip mf) (unflip mx)
 
-instance (Mergeable es es es, Semigroup r) =>
+instance ((es :+: es) ~ es, Mergeable es es es, Semigroup r) =>
 	Applicative (Flip (ISig s es) r) where
 	pure = Flip . (:| hold)
 	mf <*> mx = Flip $ iapp_ forkThreadId (unflip mf) (unflip mx)
 
 -- APP AND IAPP
 
-app_ :: (Mergeable es es es, Semigroup r) =>
+app_ :: ((es :+: es) ~ es, Mergeable es es es, Semigroup r) =>
 	React s es (ThreadId, ThreadId) ->
 	Sig s es (a -> b) r -> Sig s es a r -> Sig s es b r
 app_ ft mf mx = emitAll . uncurry (iapp_ ft) =<< waitFor (exposeBoth ft mf mx)
 
 exposeBoth :: (
 	Updatable (ISig s es a r) (ISig s es b r'),
-	Updatable (ISig s es b r') (ISig s es a r), Mergeable es es es ) =>
+	Updatable (ISig s es b r') (ISig s es a r), (es :+: es) ~ es, Mergeable es es es ) =>
 	React s es (ThreadId, ThreadId) -> Sig s es a r -> Sig s es b r' ->
 	React s es (ISig s es a r, ISig s es b r')
 exposeBoth ft l (Sig r) = do
@@ -81,7 +81,7 @@ exposeBoth ft l (Sig r) = do
 	pure (ex l'', ex r'')
 	where ex = \case Pure x -> x; _ -> error "never occur"
 
-iapp_ :: (Mergeable es es es, Semigroup r) =>
+iapp_ :: ((es :+: es) ~ es, Mergeable es es es, Semigroup r) =>
 	React s es (ThreadId, ThreadId) ->
 	ISig s es (a -> b) r -> ISig s es a r -> ISig s es b r
 iapp_ ft mf mx = (<$> (uncurry ($) <$%> ipairs ft mf mx)) \case
@@ -103,7 +103,7 @@ at_ ft (adjustSig -> Sig l) (adjust -> r) = par ft l r >>= \case
 	(_, Pure y) -> pure $ Right (Nothing, y)
 	(_ :=<< _, _ :=<< _) -> error "never occur"
 
-iat_ :: (Updatable (ISig s es a r) r', Mergeable es es es) =>
+iat_ :: (Updatable (ISig s es a r) r', (es :+: es) ~ es, Mergeable es es es) =>
 	React s es (ThreadId, ThreadId) ->
 	ISig s es a r -> React s es r' -> React s es (Either r (a, r'))
 iat_ ft l r = (<$> ires (ipause ft l r)) \case
@@ -143,7 +143,7 @@ indexBy_ ::
 indexBy_ ft (adjustSig -> l) (adjustSig -> r) = indexByGen ft l r
 
 indexByGen ::
-	(Updatable (ISig s es a r) (ISig s es b r'), Mergeable es es es) =>
+	(Updatable (ISig s es a r) (ISig s es b r'), (es :+: es) ~ es, Mergeable es es es) =>
 	React s es (ThreadId, ThreadId) ->
 	Sig s es a r -> Sig s es b r' -> Sig s es a (Either r (Maybe a, r'))
 indexByGen ft l (Sig r) = waitFor (res $ pause ft l r) >>= \case
@@ -152,7 +152,7 @@ indexByGen ft l (Sig r) = waitFor (res $ pause ft l r) >>= \case
 	(_, Pure (End y)) -> pure $ Right (Nothing, y)
 	_ -> error "never occur"
 
-iindexBy :: (Updatable (ISig s es a r) (ISig s es b r'), Mergeable es es es) =>
+iindexBy :: (Updatable (ISig s es a r) (ISig s es b r'), (es :+: es) ~ es, Mergeable es es es) =>
 	React s es (ThreadId, ThreadId) ->
 	ISig s es a r -> Sig s es b r' -> Sig s es a (Either r (a, r'))
 iindexBy ft l (Sig r) = waitFor (ires $ ipause ft l r) >>= \case
@@ -172,13 +172,13 @@ spawn = repeat . unSig
 
 -- PAR 	LIST
 
-parList_, parListGen :: Mergeable es es es =>
+parList_, parListGen :: ((es :+: es) ~ es, Mergeable es es es) =>
 	React s es (ThreadId, ThreadId) ->
 	Sig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
 parList_ ft s = reverse <$%> parListGen ft s
 parListGen ft (Sig r) = iparList ft =<< waitFor r
 
-iparList :: Mergeable es es es =>
+iparList :: ((es :+: es) ~ es, Mergeable es es es) =>
 	React s es (ThreadId, ThreadId) ->
 	ISig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
 iparList ft = isig (pure . ([] ,)) $ go . ((: []) <$>) . ((: []) <$%>) where
@@ -188,7 +188,7 @@ iparList ft = isig (pure . ([] ,)) $ go . ((: []) <$>) . ((: []) <$%>) where
 		(End x, r') -> emit [] >> first (x ++) <$> parListGen ft (Sig r')
 		(_ :| _, _ :=<< _) -> error "never occur"
 
-cons :: Mergeable es es es =>
+cons :: ((es :+: es) ~ es, Mergeable es es es) =>
 	React s es (ThreadId, ThreadId) ->
 	ISig s es a r -> ISig s es [a] [r] -> ISig s es [a] [r]
 cons ft h t = uncurry (:) <$%> ipairs ft h t >>= \(h', t') ->
@@ -208,7 +208,7 @@ adjustISig = isig End $ (adjustSig >>>) . (:|)
 
 -- PAIRS
 
-ipairs :: (Updatable (ISig s es a r) (ISig s es b r'), Mergeable es es es) =>
+ipairs :: (Updatable (ISig s es a r) (ISig s es b r'), Mergeable es es es, (es :+: es) ~ es) =>
 	React s es (ThreadId, ThreadId) -> ISig s es a r -> ISig s es b r' ->
 	ISig s es (a, b) (ISig s es a r, ISig s es b r')
 ipairs _ l@(End _) r = pure (l, r)
@@ -219,7 +219,7 @@ ipairs ft (hl :| Sig tl) (hr :| Sig tr) = ((hl, hr) :|) . Sig
 
 -- PAUSE
 
-pause :: (Updatable (ISig s es a r) r', Mergeable es es es) =>
+pause :: (Updatable (ISig s es a r) r', (es :+: es) ~ es, Mergeable es es es) =>
 	React s es (ThreadId, ThreadId) -> Sig s es a r -> React s es r' ->
 	Sig s es a (Sig s es a r, React s es r')
 pause ft (Sig l) r = waitFor (par ft l r) >>= \case
@@ -227,7 +227,7 @@ pause ft (Sig l) r = waitFor (par ft l r) >>= \case
 	(l', r'@(Pure _)) -> pure (Sig l', r')
 	_ -> error "never occur"
 
-ipause :: (Updatable (ISig s es a r) r', Mergeable es es es) =>
+ipause :: (Updatable (ISig s es a r) r', (es :+: es) ~ es, Mergeable es es es) =>
 	React s es (ThreadId, ThreadId) -> ISig s es a r -> React s es r' ->
 	ISig s es a (ISig s es a r, React s es r')
 ipause _ l@(End _) r = pure (l, r)

@@ -1,6 +1,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE MonoLocalBinds, PatternSynonyms #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 

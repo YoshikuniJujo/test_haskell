@@ -1,5 +1,6 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -32,11 +33,11 @@ import Data.Or (Or)
 
 infixl 4 `app'`, `iapp'`
 
-app' :: (Mergeable es es es, Semigroup r) =>
+app' :: ((es :+: es) ~ es, Mergeable es es es, Semigroup r) =>
 	Sig s es (a -> b) r -> Sig s es a r -> Sig s es b r
 app' = app_ noThreadId
 
-iapp' :: (Mergeable es es es, Semigroup r) =>
+iapp' :: ((es :+: es) ~ es, Mergeable es es es, Semigroup r) =>
 	ISig s es (a -> b) r -> ISig s es a r -> ISig s es b r
 iapp' = iapp_ noThreadId
 
@@ -81,6 +82,6 @@ indexBy' = indexBy_ noThreadId
 -- COPIES
 ---------------------------------------------------------------------------
 
-parList' :: Mergeable es es es =>
+parList' :: ((es :+: es) ~ es, Mergeable es es es) =>
 	Sig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
 parList' = parList_ noThreadId

@@ -20,14 +20,14 @@ module Data.OneOrMore.Internal (
 	-- ** Single Type
 	pattern Singleton, unSingleton,
 	-- ** Multiple Type
-	project, (>-),
+	project, (>-), (>-.),
 	-- ** Expand and Collapse
 	expand, collapse,
 	-- ** Merge
-	merge, merge' ) where
+	merge, merge', merge_, merge_' ) where
 
 import Data.Kind (Type)
-import Data.Type.Set.Internal (Set(Nil, (:~)), Singleton)
+import Data.Type.Set.Internal (Set(Nil, (:~)), Singleton, (:-), (:+:))
 
 ---------------------------------------------------------------------------
 
@@ -75,13 +75,16 @@ unSingleton (Singleton x) = x
 infixr 5 >-
 
 class Insertable a (as :: Set Type) (as' :: Set Type) where
-	(>-) :: a -> OneOrMore as -> OneOrMore as'
+	(>-.) :: a -> OneOrMore as -> OneOrMore as'
 
-instance Insertable a as (a ':~ as) where x >- xs = Just x :. xs
+instance Insertable a as (a ':~ as) where x >-. xs = Just x :. xs
 
 instance {-# OVERLAPPABLE #-} Insertable a as as' =>
 	Insertable a (a' ':~ as) (a' ':~ as') where
-	x >- (y :. xs) = y :. (x >- xs)
+	x >-. (y :. xs) = y :. (x >-. xs)
+
+(>-) :: Insertable a as (a :- as) => a -> OneOrMore as -> OneOrMore (a :- as)
+(>-) = (>-.)
 
 ---------------------------------------------------------------------------
 -- EXPANDABLE AND COLLAPSABLE
@@ -146,32 +149,42 @@ instance {-# OVERLAPPABLE #-} Collapsable as as' =>
 ---------------------------------------------------------------------------
 
 class Mergeable (as :: Set Type) (as' :: Set Type) (mrg :: Set Type) where
-	merge :: OneOrMore as -> OneOrMore as' -> OneOrMore mrg
+	merge_ :: OneOrMore as -> OneOrMore as' -> OneOrMore mrg
 
-instance Mergeable 'Nil 'Nil 'Nil where merge Empty Empty = Empty
+instance Mergeable 'Nil 'Nil 'Nil where merge_ Empty Empty = Empty
 
 instance (Selectable a, Mergeable as as' mrg) =>
 	Mergeable (a ':~ as) (a ':~ as') (a ':~ mrg) where
-	merge (Just x :. xs) (Just x' :. xs') =
-		Just (x `select` x') :. merge xs xs'
-	merge (mx :. xs) (Nothing :. xs') = mx :. merge xs xs'
-	merge (Nothing :. xs) (mx' :. xs') = mx' :. merge xs xs'
+	merge_ (Just x :. xs) (Just x' :. xs') =
+		Just (x `select` x') :. merge_ xs xs'
+	merge_ (mx :. xs) (Nothing :. xs') = mx :. merge_ xs xs'
+	merge_ (Nothing :. xs) (mx' :. xs') = mx' :. merge_ xs xs'
 
 instance {-# OVERLAPPABLE #-} Mergeable as as' mrg =>
 	Mergeable (a ':~ as) as'  (a ':~ mrg) where
-	merge (x :. xs) xs' = x :. merge xs xs'
+	merge_ (x :. xs) xs' = x :. merge_ xs xs'
 
 instance {-# OVERLAPPABLE #-} Mergeable as as' mrg =>
 	Mergeable as (a ':~ as') (a ':~ mrg) where
-	merge xs (x :. xs') = x :. merge xs xs'
+	merge_ xs (x :. xs') = x :. merge_ xs xs'
 
 class Selectable a where select :: a -> a -> a
 instance {-# OVERLAPPABLE #-} Ord a => Selectable a where select = min
 
-merge' :: (Mergeable as as' mrg, Expandable as mrg, Expandable as' mrg ) =>
+merge_' :: (Mergeable as as' mrg, Expandable as mrg, Expandable as' mrg ) =>
 	Maybe (OneOrMore as) -> Maybe (OneOrMore as') -> Maybe (OneOrMore mrg)
-ml `merge'` mr = case (ml, mr) of
-	(Just l, Just r) -> Just $ l `merge` r
+ml `merge_'` mr = case (ml, mr) of
+	(Just l, Just r) -> Just $ l `merge_` r
 	(Just l, Nothing) -> Just $ expand l
 	(Nothing, Just r) -> Just $ expand r
 	(Nothing, Nothing) -> Nothing
+
+merge :: Mergeable as as' (as :+: as') =>
+	OneOrMore as -> OneOrMore as' -> OneOrMore (as :+: as')
+merge = merge_
+
+merge' :: (
+	Mergeable as as' (as :+: as'),
+	Expandable as (as :+: as'), Expandable as' (as :+: as') ) =>
+	Maybe (OneOrMore as) -> Maybe (OneOrMore as') -> Maybe (OneOrMore (as :+: as'))
+merge' = merge_'

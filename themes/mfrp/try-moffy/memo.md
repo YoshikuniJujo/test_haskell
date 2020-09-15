@@ -242,10 +242,11 @@ todo
 	+ [ ] consider whether or not to remove suffix `App'
 		- or change to Suffix \'
 	+ [ ] others
-* [ ] make OneOrMore function strict
-	+ [ ] `(>-)`
-	+ [ ] merge
-	+ [ ] merge'
+* [x] make OneOrMore function strict
+	+ [x] `(>-)`
+	+ [x] merge
+	+ [x] merge'
+* [ ] make OneOrMoreApp function strict
 	+ [ ] `(>-^)`
 	+ [ ] mergeApp
 	+ [ ] mergeApp'

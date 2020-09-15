@@ -1,5 +1,6 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -81,6 +82,6 @@ indexBy = indexBy_ forkThreadId
 -- COPIES
 ---------------------------------------------------------------------------
 
-parList :: Mergeable es es es =>
+parList :: ((es :+: es) ~ es, Mergeable es es es) =>
 	Sig s es (ISig s es a r) r' -> Sig s es [a] ([r], r')
 parList = parList_ forkThreadId
