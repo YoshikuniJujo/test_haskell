@@ -35,10 +35,12 @@ import Trial.Followbox.Event (
 import Trial.Followbox.Clickable (
 	Clickable, view, click, clickable, clickableText,
 	WithTextExtents, withTextExtents, nextToText, translate, FontName, FontSize )
-import Trial.Followbox.ViewType (View(..), View1(..), white, Png(..))
+import Trial.Followbox.ViewType (View(..), View1, white, Png(..), VText(..), Line(..), Image(..))
 import Trial.Followbox.TypeSynonym (Position, ErrorMessage)
 
 import qualified Codec.Picture as P
+
+import Data.OneOfThem
 
 ---------------------------------------------------------------------------
 
@@ -149,7 +151,7 @@ user1 lck n = do
 	(a, ln, u) <- waitFor $ getUser lck
 	wte <- waitFor . adjust $ withTextExtents defaultFont largeSize ln
 	let	nm = clickableText np wte; cr = cross $ crossPos np wte
-	emit $ View [Image (avatarPos $ fromIntegral n) a] <> view nm <> view cr
+	emit $ View [expand . Singleton $ Image' (avatarPos $ fromIntegral n) a] <> view nm <> view cr
 	void . (`break` click cr) . waitFor $ forever
 		(adjust (click nm) >> adjust (browse u) :: ReactF s ())
 	where np = namePos $ fromIntegral n
@@ -220,10 +222,10 @@ getObjs = do
 ---------------------------------------------------------------------------
 
 twhite :: FontSize -> Position -> T.Text -> View1
-twhite = Text white defaultFont
+twhite fs p = expand . Singleton . Text' white defaultFont fs p
 
 lwhite :: Position -> Position -> View1
-lwhite = Line white 4
+lwhite p q = expand . Singleton $ Line' white 4 p q
 
 posixSeconds :: BS.ByteString -> Maybe UTCTime
 posixSeconds =

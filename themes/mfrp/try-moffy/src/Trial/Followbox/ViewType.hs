@@ -1,13 +1,18 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.Followbox.ViewType (
 	-- * VIEW
-	View(..), View1(..),
+	View(..), View1,
 	-- * COLOR
-	Color(..), white, blue, Png(..) ) where
+	Color(..), white, blue, Png(..),
+	-- * TEMP
+	VText(..), Line(..), Image(..)
+	) where
 
 import Control.Moffy.Event.CalcTextExtents (FontName, FontSize)
 import Data.Word (Word8)
@@ -26,12 +31,12 @@ import Graphics.Gtk.Cairo
 import Graphics.Gtk.Cairo.Values
 import Graphics.Gtk.Pango
 
--- import Data.Type.Set
--- import Data.OneOfThem
+import Data.Type.Set
+import Data.OneOfThem
 
 ---------------------------------------------------------------------------
 
-newtype View = View [View1] deriving Show
+newtype View = View [View1]
 
 instance Semigroup View where
 	View vs1 <> View vs2 = View $ vs1 <> vs2
@@ -43,17 +48,21 @@ data VText = Text' Color FontName FontSize Position Text
 data Line = Line' Color LineWidth Position Position
 data Image = Image' Position Png
 
--- type View1 = OneOfThem (VText :- Line :- Image :- 'Nil)
+type View1 = OneOfThem (VText :- Line :- Image :- 'Nil)
 
+{-
 data View1
 	= Text Color FontName FontSize Position Text
 	| Line Color LineWidth Position Position
 	| Image Position Png
+	-}
 
+{-
 instance Show View1 where
 	show (Text c fn fs p t) = "Text " ++ show c ++ " " ++ show fn ++ " " ++ show fs ++ " " ++ show p ++ " " ++ show t
 	show (Line c lw s e) = "Line " ++ show c ++ " " ++ show lw ++ " " ++ show s ++ " " ++ show e
 	show (Image p _) = "Image " ++ show p ++ " <Image PixelRGBA8>"
+	-}
 
 data Color =
 	Color { colorRed :: Word8, colorGreen :: Word8, colorBlue :: Word8 }
@@ -75,12 +84,14 @@ instance Drawable View where
 		cairoRectangle cr 0 0 (fromIntegral w) (fromIntegral h)
 		cairoStrokePreserve cr
 		cairoFill cr
-		draw wdt cr v
+		((drawText wdt cr >-- drawLine wdt cr >-- SingletonFun (drawImage wdt cr)) `apply`) `mapM_` v
 
+{-
 instance Drawable View1 where
 	draw wdgt cr (Text c fn fs (x, y) t) = drawText wdgt cr (Text' c fn fs (x, y) t)
 	draw wdgt cr (Line c w (xb, yb) (xe, ye)) = drawLine wdgt cr (Line' c w (xb, yb) (xe, ye))
 	draw wdgt cr (Image (x, y) (Png w h bs)) = drawImage wdgt cr (Image' (x, y) (Png w h bs))
+	-}
 
 drawText :: GtkWidget -> CairoT -> VText -> IO ()
 drawText _ cr (Text' c fn fs (x, y) t) = do
@@ -124,3 +135,7 @@ bsToCairoReadFunc tbs () (fromIntegral -> n) = atomically $ readTVar tbs >>= \bs
 	_	| BS.length bs >= n -> (cairoStatusSuccess, Just t) <$ writeTVar tbs d
 		| otherwise -> pure (cairoStatusReadError, Nothing)
 		where (t, d) = BS.splitAt n bs
+
+numbered [t| VText |]
+numbered [t| Line |]
+numbered [t| Image |]

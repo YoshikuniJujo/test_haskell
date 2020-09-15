@@ -19,10 +19,13 @@ import qualified Data.Text as T
 import qualified Data.Vector.Generic.Mutable as MV
 import qualified Codec.Picture as P
 
-import Trial.Followbox.ViewType (View(..), View1(..), Color(..), white, blue, Png(..))
+import Trial.Followbox.ViewType (
+	View(..), View1(..), Color(..), white, blue, Png(..), VText(..), Line(..), Image(..) )
 import Field (
 	Field, Pixel, Position,
 	clearField, flushField, drawLine, drawStr, drawImage, textExtents )
+
+import Data.OneOfThem
 
 ---------------------------------------------------------------------------
 
@@ -37,17 +40,21 @@ view :: Field -> View -> IO ()
 view f (View v) = clearField f >> view1 f `mapM_` v >> flushField f
 
 view1 :: Field -> View1 -> IO ()
-view1 f (Text
+view1 f = apply $ viewText f >-- viewLine f >-- SingletonFun (viewImage f)
+
+viewText f (Text'
 	(colorToPixel -> p) fn fs
 	(x, y)
 	(T.unpack -> s)) = do
 		XGlyphInfo _ _ dx dy _ _ <- textExtents f fn fs s
 		drawStr f p fn fs (round x + fromIntegral dx) (round y + fromIntegral dy) s
-view1 f (Line
+
+viewLine f (Line'
 	(colorToPixel -> p) (round -> lw)
 	(round -> x1, round -> y1)
 	(round -> x2, round -> y2)) = drawLine f p lw x1 y1 x2 y2
-view1 f (Image
+
+viewImage f (Image'
 	(round -> x, round -> y) img) = case decodePng img of
 		Left em -> putStrLn ("error: " ++ em) >> pure ()
 		Right i -> drawImagePixel f i x y
@@ -66,7 +73,7 @@ colorToPixel Color {
 -- DRAW IMAGE PIXEL
 ---------------------------------------------------------------------------
 
-drawImagePixel :: Field -> Image PixelRGBA8 -> Position -> Position -> IO ()
+drawImagePixel :: Field -> Codec.Picture.Image PixelRGBA8 -> Position -> Position -> IO ()
 drawImagePixel f img x y = drawImage f dt x y w h
 	where
 	dt = modify swap02s $ imageData img

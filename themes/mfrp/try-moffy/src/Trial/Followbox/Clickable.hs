@@ -21,8 +21,10 @@ import Data.Type.Set (Singleton)
 
 import qualified Data.Text as T
 
-import Trial.Followbox.ViewType (View(..), View1(..), blue)
+import Trial.Followbox.ViewType (View(..), View1(..), blue, VText(..), Line(..), Image(..))
 import Trial.Followbox.TypeSynonym (Position)
+
+import Data.OneOfThem
 
 ---------------------------------------------------------------------------
 
@@ -48,7 +50,7 @@ data WithTextExtents = WithTextExtents FontName FontSize T.Text TextExtents'
 
 clickableText :: Position -> WithTextExtents -> Clickable s
 clickableText p@(x, y) (WithTextExtents fn fs txt xg) =
-	clickable (View [Text blue fn fs p txt]) (l, t) (l + gw, t + gh) where
+	clickable (View [expand . Singleton $ Text' blue fn fs p txt]) (l, t) (l + gw, t + gh) where
 	(l, t) = (x, y)
 	[gw, gh] = ($ xg) <$> [
 		rectangleWidth . textExtentsInkRect, rectangleHeight . textExtentsInkRect ]
