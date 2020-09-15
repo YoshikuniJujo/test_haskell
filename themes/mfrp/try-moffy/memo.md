@@ -254,11 +254,11 @@ todo
 	+ [x] `class InsertFun f (OneOfThemFun fs) where (>--) ...`
 	+ [x] `(>--.) :: (a -> b) -> OneOfThemFun as b -> OneOfThemFun (a :- as) b`
 	+ [x] `(>-) :: OneOfThem as -> [OneOfThem as'] -> [OneOfThem (as :+: as')]`
-	+ [ ] rename `(>--.)` to `(>--$$$)`
-	+ [ ] rename `(>--)` to `(>--.)`
-	+ [ ] rename `(>--$$$)` to `(>--)`
-	+ [ ] infixr ? (>-)
-	+ [ ] infixr ? (>--)
+	+ [x] rename `(>--.)` to `(>--$$$)`
+	+ [x] rename `(>--)` to `(>--.)`
+	+ [x] rename `(>--$$$)` to `(>--)`
+	+ [x] infixr 5 `(>-)`
+	+ [x] infixr 5 `(>--)`
 	+ [ ] make export list of Data.OneOfThem
 	+ [ ] review Data.OneOfThem and Trial.TryOneOfThem
 * [ ] use OneOfThem in view

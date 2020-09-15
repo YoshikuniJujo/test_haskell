@@ -55,16 +55,18 @@ data OneOfThemFun (as :: Set Type) b where
 	(:..) :: (a -> b) -> OneOfThemFun as b -> OneOfThemFun (a ':~ as) b
 
 class InsertableFun a (as :: Set Type) (as' :: Set Type) where
-	(>--) :: (a -> b) -> OneOfThemFun as b -> OneOfThemFun as' b
+	(>--.) :: (a -> b) -> OneOfThemFun as b -> OneOfThemFun as' b
 
-instance InsertableFun a as (a ':~ as) where f >-- fs = f :.. fs
+instance InsertableFun a as (a ':~ as) where f >--. fs = f :.. fs
 
 instance {-# OVERLAPPABLE #-} InsertableFun a as as' =>
 	InsertableFun a (a' ':~ as) (a' ':~ as') where
-	f >-- (g :.. fs) = g :.. (f >-- fs)
+	f >--. (g :.. fs) = g :.. (f >--. fs)
 
-(>--.) :: InsertableFun a as (a :- as) => (a -> b) -> OneOfThemFun as b -> OneOfThemFun (a :- as) b
-(>--.) = (>--)
+infixr 5 >-, >--
+
+(>--) :: InsertableFun a as (a :- as) => (a -> b) -> OneOfThemFun as b -> OneOfThemFun (a :- as) b
+(>--) = (>--.)
 
 {-# COMPLETE SingletonFun #-}
 
