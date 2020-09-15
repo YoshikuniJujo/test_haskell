@@ -21,3 +21,6 @@ f, g :: OneOfThemFun (Bool :- () :- Char :- 'Nil) String
 f = (show :: Bool -> String) >--
 	((show :: () -> String) >-- SingletonFun (show :: Char -> String) :: OneOfThemFun (() :- Char :- 'Nil) String)
 g = (show :: Bool -> String) >--. ((show :: () -> String) >--. SingletonFun (show :: Char -> String))
+
+fooBarBaz :: [OneOfThem (Bool :- () :- Char :- 'Nil)]
+fooBarBaz = 'c' >- (True >- (() >- ('c' >- ([] :: [OneOfThem 'Nil]))))

@@ -246,10 +246,6 @@ todo
 	+ [x] `(>-)`
 	+ [x] merge
 	+ [x] merge'
-* [ ] make OneOrMoreApp function strict
-	+ [ ] `(>-^)`
-	+ [ ] mergeApp
-	+ [ ] mergeApp'
 * [ ] make OneOfThem
 	+ [x] add Data.OneOfThem
 	+ [x] Singleton
@@ -257,7 +253,13 @@ todo
 	+ [x] collapse
 	+ [x] `class InsertFun f (OneOfThemFun fs) where (>--) ...`
 	+ [x] `(>--.) :: (a -> b) -> OneOfThemFun as b -> OneOfThemFun (a :- as) b`
-	+ [ ] `(>-) :: OneOfThem as -> [OneOfThem as'] -> [OneOfThem (as :+: as')]`
+	+ [x] `(>-) :: OneOfThem as -> [OneOfThem as'] -> [OneOfThem (as :+: as')]`
+	+ [ ] rename `(>--.)` to `(>--$$$)`
+	+ [ ] rename `(>--)` to `(>--.)`
+	+ [ ] rename `(>--$$$)` to `(>--)`
+	+ [ ] infixr ? (>-)
+	+ [ ] infixr ? (>--)
+	+ [ ] make export list of Data.OneOfThem
 	+ [ ] review Data.OneOfThem and Trial.TryOneOfThem
 * [ ] use OneOfThem in view
 	+ [ ] `class Viewable v`

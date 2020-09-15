@@ -80,3 +80,6 @@ instance Applyable (Singleton a) where
 instance {-# OVERLAPPABLE #-} Applyable as => Applyable (a ':~ as) where
 	apply (f :.. _) (JustIt x) = f x
 	apply (_ :.. fs) (Wrap xs) = fs `apply` xs
+
+(>-) :: (Expandable (Singleton a) (a :- as), Expandable as (a :- as)) => a -> [OneOfThem as] -> [OneOfThem (a :- as)]
+x >- xs = expand (Singleton x) : (expand <$> xs)
