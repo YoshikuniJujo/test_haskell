@@ -6,10 +6,11 @@ module Trial.Followbox.GtkField (
 	-- * COLOR
 	Color(..), white, blue, Png(..),
 	-- * TEMP
-	VText(..), Line(..), Image(..)
+	VText(..), Line(..), Image(..),
+
+	drawFollowboxGtk
 	) where
 
-import Control.Moffy.Handle.GtkField
 import Control.Moffy.View.GtkField
 import Data.OneOfThem
 import Graphics.Gtk
@@ -19,8 +20,8 @@ import Trial.Followbox.ViewType
 
 ---------------------------------------------------------------------------
 
-instance Drawable View where
-	draw wdt cr (View v) = do
+drawFollowboxGtk :: GtkWidget -> CairoT -> View -> IO ()
+drawFollowboxGtk wdt cr (View v) = do
 		w <- gtkWidgetGetAllocatedWidth wdt
 		h <- gtkWidgetGetAllocatedHeight wdt
 		print (w, h)

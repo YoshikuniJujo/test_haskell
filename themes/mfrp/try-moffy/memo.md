@@ -285,12 +285,13 @@ todo
 	+ [x] move each modules under Control.Moffy.View
 * [ ] use OneOfThem in view of GTK
 	+ [x] define tryUseTChanGen: `tryUseTChanGen :: (GtkWidget -> CairoT -> a -> IO ()) -> IO (...)`
-	+ [ ] remove class Draw
-		- [ ] define drawFollowboxGtk
-		- [ ] use tryUseTChanGen
-		- [ ] remove class Draw
+	+ [x] remove instance Draw View
+		- [x] define drawFollowboxGtk
+		- [x] use tryUseTChanGen
+	* [ ] move Box to Control.Moffy.Viewable
+	* [ ] use tryUseTChanGen about Box
+	* [ ] remove class Draw
 	+ [ ] others
-* [ ] move Box to Control.Moffy.Viewable
 * [ ] make draw application
 	+ [ ] no fill rectangle
 	+ [ ] no fill lines and polygon
