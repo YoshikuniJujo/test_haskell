@@ -260,8 +260,9 @@ todo
 	+ [x] infixr 5 `(>-)`
 	+ [x] infixr 5 `(>--)`
 	+ [x] make export list of Data.OneOfThem
-* [ ] use OneOfThem in view
-	+ [ ] `class Viewable v`
+* [ ] use OneOfThem in view of GTK
+	+ [x] define tryUseTChanGen: `tryUseTChanGen :: (GtkWidget -> CairoT -> a -> IO ()) -> IO (...)`
+	+ [ ] define drawOot: `drawOot :: (GtkWidget -> CairoT -> ` ???
 	+ [ ] `instance (Viewable a, Viewable (OneOfThem as)) => Viewable (OneOfThem (a :- as))`
 * [ ] refactoring
 * [ ] remake key event

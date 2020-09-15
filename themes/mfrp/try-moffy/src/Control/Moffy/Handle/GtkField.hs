@@ -1,6 +1,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Handle.GtkField where
@@ -37,6 +38,8 @@ import Data.Word
 
 import Data.OneOrMoreApp as Oom
 
+import qualified Data.OneOfThem as Oot
+
 tryGtk :: IO ()
 tryGtk = do
 	[] <- gtkInit []
@@ -62,10 +65,21 @@ instance Drawable Double where
 		cairoLineTo cr (210 + 10 * n) (110 + 10 * n)
 		cairoStroke cr
 
+{-
+instance Drawable a => Drawable (Oot.OneOfThem (Singleton a)) where
+	draw w cr = (Oot.SingletonFun (draw w cr) `Oot.apply`)
+
+instance (Drawable a, Drawable (Oot.OneOfThem as)) => Drawable (Oot.OneOfThem (a :- as)) where
+	draw w cr = ((draw w cr >- draw w cr) `Oot.apply`)
+	-}
+
 type GuiEv = CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv
 
 tryUseTChan :: (Drawable a, Monoid a) => IO (TChan (EvReqs GuiEv), TChan (EvOccs GuiEv), TChan a)
-tryUseTChan = do
+tryUseTChan = tryUseTChanGen draw
+
+tryUseTChanGen :: Monoid a => (GtkWidget -> CairoT -> a -> IO ()) -> IO (TChan (EvReqs GuiEv), TChan (EvOccs GuiEv), TChan a)
+tryUseTChanGen dr = do
 
 	cr <- newTChanIO
 	c <- newTChanIO
@@ -102,7 +116,7 @@ tryUseTChan = do
 
 		da <- gtkDrawingAreaNew
 		gtkContainerAdd (castWidgetToContainer w) da
-		gSignalConnect da DrawEvent (tryDraw ftc c tx) ()
+		gSignalConnect da DrawEvent (tryDraw dr ftc c tx) ()
 
 		void . flip (gTimeoutAdd 101) () $ const do
 			atomically (lastTChan cr) >>= \case
@@ -142,9 +156,9 @@ lastTChan' x c = do
 	mx' <- tryReadTChan c
 	maybe (pure x) (`lastTChan'` c) mx'
 
-tryDraw :: Drawable a =>
+tryDraw :: (GtkWidget -> CairoT -> a -> IO ()) ->
 	TChan (FontName, FontSize, T.Text) -> TChan (EvOccs GuiEv) -> TVar a -> GtkWidget -> CairoT -> () -> IO Bool
-tryDraw ftc co tx w cr () = True <$ do
+tryDraw dr ftc co tx w cr () = True <$ do
 	m3 <- atomically $ lastTChan ftc
 	case m3 of
 		Just (fn, fs, txt) -> do
@@ -173,7 +187,7 @@ tryDraw ftc co tx w cr () = True <$ do
 			atomically . writeTChan co . Oom.expandApp . SingletonApp
 				$ OccCalcTextExtents fn fs txt te
 		Nothing -> pure ()
-	draw w cr =<< readTVarIO tx
+	dr w cr =<< readTVarIO tx
 --	draw cr =<< peekArr =<< peekMutable x
 
 rectangle :: Int32 -> Int32 -> Int32 -> Int32 -> Rectangle
