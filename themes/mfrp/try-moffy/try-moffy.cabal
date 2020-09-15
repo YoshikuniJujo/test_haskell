@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: df9f239c5c0d333d77e34e3a214efe226b013dbedc94639511412bff2b4a7184
+-- hash: 602cb0b0d5f616594bdb39e26a09f55a8240fe54106eb1f74be70f82383687cd
 
 name:           try-moffy
 version:        0.1.0.0
@@ -57,6 +57,9 @@ library
       Control.Moffy.NoThreadId
       Control.Moffy.Run
       Control.Moffy.Viewable.Basic
+      Control.Moffy.Viewable.Image
+      Control.Moffy.Viewable.Shape
+      Control.Moffy.Viewable.Text
       Control.Monad.Freer.Par
       Control.Monad.Freer.Par.FTCQueue
       Control.Monad.Freer.Par.Funable
@@ -89,11 +92,8 @@ library
       Trial.Followbox.Event
       Trial.Followbox.GtkField
       Trial.Followbox.Handle
-      Trial.Followbox.Image
       Trial.Followbox.Run
       Trial.Followbox.RunGtk
-      Trial.Followbox.Shape
-      Trial.Followbox.Text
       Trial.Followbox.TypeSynonym
       Trial.Followbox.ViewType
       Trial.Followbox.XField

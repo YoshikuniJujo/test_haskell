@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Followbox.Shape (Line(..)) where
+module Control.Moffy.Viewable.Shape (Line(..)) where
 
 import Data.Type.Set
 

@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Followbox.Text (VText(..)) where
+module Control.Moffy.Viewable.Text (VText(..)) where
 
 import Control.Moffy.Event.CalcTextExtents (FontName, FontSize)
 import Data.Text (Text)

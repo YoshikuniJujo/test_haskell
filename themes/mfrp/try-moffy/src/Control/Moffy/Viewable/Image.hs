@@ -5,7 +5,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Followbox.Image (Image(..), Png(..)) where
+module Control.Moffy.Viewable.Image (Image(..), Png(..)) where
 
 import Data.Type.Set
 import qualified Data.ByteString as BS

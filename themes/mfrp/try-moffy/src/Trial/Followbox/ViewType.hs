@@ -15,12 +15,11 @@ module Trial.Followbox.ViewType (
 	) where
 
 import Control.Moffy.Viewable.Basic
+import Control.Moffy.Viewable.Text
+import Control.Moffy.Viewable.Shape
+import Control.Moffy.Viewable.Image
 import Data.Type.Set
 import Data.OneOfThem
-
-import Trial.Followbox.Text
-import Trial.Followbox.Shape
-import Trial.Followbox.Image
 
 ---------------------------------------------------------------------------
 
