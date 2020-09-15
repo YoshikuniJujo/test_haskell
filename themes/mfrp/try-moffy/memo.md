@@ -261,6 +261,10 @@ todo
 	+ [x] infixr 5 `(>--)`
 	+ [x] make export list of Data.OneOfThem
 	+ [x] define mergeFun : `mergeFun :: OneOfThemFun as -> OneOfThemFun as' -> OneOfThemFun (as :+: as')`
+* [ ] separate View1 of followbox
+	+ [x] define drawTextGtk, drawLineGtk and drawImageGtk
+	+ [ ] change View1 definition: `View1 :: OneOfThem (Text :- Line :- Image :- 'Nil)`
+	+ [ ] repair others
 * [ ] use OneOfThem in view of GTK
 	+ [x] define tryUseTChanGen: `tryUseTChanGen :: (GtkWidget -> CairoT -> a -> IO ()) -> IO (...)`
 	+ [ ] define drawOot: `drawOot :: (GtkWidget -> CairoT -> ` ???

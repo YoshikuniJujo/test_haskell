@@ -1,5 +1,6 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE DataKinds, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.Followbox.ViewType (
@@ -25,6 +26,9 @@ import Graphics.Gtk.Cairo
 import Graphics.Gtk.Cairo.Values
 import Graphics.Gtk.Pango
 
+-- import Data.Type.Set
+-- import Data.OneOfThem
+
 ---------------------------------------------------------------------------
 
 newtype View = View [View1] deriving Show
@@ -34,6 +38,12 @@ instance Semigroup View where
 
 instance Monoid View where
 	mempty = View []
+
+data VText = Text' Color FontName FontSize Position Text
+data Line = Line' Color LineWidth Position Position
+data Image = Image' Position Png
+
+-- type View1 = OneOfThem (VText :- Line :- Image :- 'Nil)
 
 data View1
 	= Text Color FontName FontSize Position Text
@@ -68,30 +78,39 @@ instance Drawable View where
 		draw wdt cr v
 
 instance Drawable View1 where
-	draw _ cr (Text c fn fs (x, y) t) = do
-		l <- pangoCairoCreateLayout cr
-		d <- pangoFontDescriptionFromString $ T.pack fn
-		pangoFontDescriptionSetAbsoluteSize d fs
-		pangoLayoutSetFontDescription l d
-		pangoLayoutSetText l t
-		uncurry3 (cairoSetSourceRgb cr) $ colorToRgb c
-		cairoMoveTo cr x y
-		pangoCairoShowLayout cr l
-	draw _ cr (Line c w (xb, yb) (xe, ye)) = do
-		uncurry3 (cairoSetSourceRgb cr) $ colorToRgb c
-		cairoSetLineWidth cr w
-		cairoMoveTo cr xb yb
-		cairoLineTo cr xe ye
-		cairoStroke cr
-	draw _ cr (Image (x, y) (Png w h bs)) = do
-		tbs <- atomically $ newTVar bs
-		cairoWithImageSurfaceFromPngStream (bsToCairoReadFunc tbs) () \png -> do
-			w0 <- cairoImageSurfaceGetWidth png
-			h0 <- cairoImageSurfaceGetHeight png
-			cairoScale cr (w / fromIntegral w0) (h / fromIntegral h0)
-			cairoSetSourceSurface cr png (x * fromIntegral w0 / w) (y * fromIntegral h0 / h)
-			cairoPaint cr
-			cairoIdentityMatrix cr
+	draw wdgt cr (Text c fn fs (x, y) t) = drawText wdgt cr (Text' c fn fs (x, y) t)
+	draw wdgt cr (Line c w (xb, yb) (xe, ye)) = drawLine wdgt cr (Line' c w (xb, yb) (xe, ye))
+	draw wdgt cr (Image (x, y) (Png w h bs)) = drawImage wdgt cr (Image' (x, y) (Png w h bs))
+
+drawText :: GtkWidget -> CairoT -> VText -> IO ()
+drawText _ cr (Text' c fn fs (x, y) t) = do
+	l <- pangoCairoCreateLayout cr
+	d <- pangoFontDescriptionFromString $ T.pack fn
+	pangoFontDescriptionSetAbsoluteSize d fs
+	pangoLayoutSetFontDescription l d
+	pangoLayoutSetText l t
+	uncurry3 (cairoSetSourceRgb cr) $ colorToRgb c
+	cairoMoveTo cr x y
+	pangoCairoShowLayout cr l
+
+drawLine :: GtkWidget -> CairoT -> Line -> IO ()
+drawLine _ cr (Line' c w (xb, yb) (xe, ye)) = do
+	uncurry3 (cairoSetSourceRgb cr) $ colorToRgb c
+	cairoSetLineWidth cr w
+	cairoMoveTo cr xb yb
+	cairoLineTo cr xe ye
+	cairoStroke cr
+
+drawImage :: GtkWidget -> CairoT -> Image -> IO ()
+drawImage _ cr (Image' (x, y) (Png w h bs)) = do
+	tbs <- atomically $ newTVar bs
+	cairoWithImageSurfaceFromPngStream (bsToCairoReadFunc tbs) () \png -> do
+		w0 <- cairoImageSurfaceGetWidth png
+		h0 <- cairoImageSurfaceGetHeight png
+		cairoScale cr (w / fromIntegral w0) (h / fromIntegral h0)
+		cairoSetSourceSurface cr png (x * fromIntegral w0 / w) (y * fromIntegral h0 / h)
+		cairoPaint cr
+		cairoIdentityMatrix cr
 
 uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (x, y, z) = f x y z
