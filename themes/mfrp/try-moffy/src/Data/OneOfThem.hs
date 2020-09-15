@@ -21,7 +21,9 @@ module Data.OneOfThem (
 	-- ** Single
 	pattern SingletonFun,
 	-- ** Insert
-	InsertableFun, (>--)
+	InsertableFun, (>--),
+	-- ** Merge
+	MergeableFun, mergeFun
 	) where
 
 import Data.Kind (Type)
@@ -103,3 +105,19 @@ instance {-# OVERLAPPABLE #-} Applyable as => Applyable (a ':~ as) where
 
 (>-) :: (Expandable (Singleton a) (a :- as), Expandable as (a :- as)) => a -> [OneOfThem as] -> [OneOfThem (a :- as)]
 x >- xs = expand (Singleton x) : (expand <$> xs)
+
+class MergeableFun as as' mrg where
+	mergeFun_ :: OneOfThemFun as b -> OneOfThemFun as' b -> OneOfThemFun mrg b
+
+instance MergeableFun 'Nil 'Nil 'Nil where
+	mergeFun_ EmptyFun EmptyFun = EmptyFun
+
+instance MergeableFun as as' mrg => MergeableFun as (a' ':~ as') (a' ':~ mrg) where
+	mergeFun_ fs (g :.. gs) = g :.. mergeFun_ fs gs
+
+instance MergeableFun as as' mrg => MergeableFun (a ':~ as) as' (a ':~ mrg) where
+	mergeFun_ (f :.. fs) gs = f :.. mergeFun_ fs gs
+
+mergeFun :: MergeableFun as as' (as :+: as') =>
+	OneOfThemFun as b -> OneOfThemFun as' b -> OneOfThemFun (as :+: as') b
+mergeFun = mergeFun_

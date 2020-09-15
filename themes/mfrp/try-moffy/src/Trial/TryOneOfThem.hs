@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
@@ -22,3 +23,14 @@ f = (show :: Bool -> String) >-- (show :: () -> String) >-- SingletonFun (show :
 
 fooBarBaz :: [OneOfThem (Bool :- () :- Char :- 'Nil)]
 fooBarBaz = 'c' >- True >- () >- 'c' >- ([] :: [OneOfThem 'Nil])
+
+numbered [t| Integer |]
+
+g :: OneOfThemFun (Bool :- () :- 'Nil) String
+g = show @Bool >-- SingletonFun (show @())
+
+h :: OneOfThemFun (Char :- Integer :- 'Nil) String
+h = show @Char >-- SingletonFun (show @Integer)
+
+gh :: OneOfThemFun (Bool :- () :- Char :- Integer :- 'Nil) String
+gh = g `mergeFun` h
