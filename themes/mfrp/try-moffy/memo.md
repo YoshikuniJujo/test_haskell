@@ -286,8 +286,15 @@ todo
 * [ ] use OneOfThem in view of GTK
 	+ [x] define tryUseTChanGen: `tryUseTChanGen :: (GtkWidget -> CairoT -> a -> IO ()) -> IO (...)`
 	+ [ ] remove class Draw
+		- [ ] define drawFollowboxGtk
+		- [ ] use tryUseTChanGen
+		- [ ] remove class Draw
 	+ [ ] others
+* [ ] move Box to Control.Moffy.Viewable
 * [ ] make draw application
+	+ [ ] no fill rectangle
+	+ [ ] no fill lines and polygon
+	+ [ ] Bezier curve
 * [ ] refactoring
 * [ ] remake key event
 	+ [x] consider Pattern vs Value
