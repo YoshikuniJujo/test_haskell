@@ -1,7 +1,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Followbox.View (
+module Trial.Followbox.XField (
 	-- * View
 	View, View1(..), view,
 	-- * Color

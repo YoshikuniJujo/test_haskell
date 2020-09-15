@@ -266,8 +266,22 @@ todo
 	+ [x] change View1 definition: `View1 :: OneOfThem (Text :- Line :- Image :- 'Nil)`
 	+ [x] repair others
 * [ ] make view modules
-	+ [ ] separate Text, Line and Image to each module
+	+ [x] separate Text, Line and Image to each module
+		- [x] module Trial.Followbox.Color
+		- [x] module Trial.Followbox.Text
+		- [x] module Trial.Followbox.Shape
+		- [x] module Trial.Followbox.Image
+		- [x] module Trial.Followbox.XField
+		- [x] module Trial.Followbox.GtkField
+		- [x] module Trial.Followbox.ViewType
+	+ [ ] make module directory: Control.Moffy.Viewable
+		- [ ] module Control.Moffy.Viewable.Color
+		- [ ] module Control.Moffy.Viewable.Text
+		- [ ] module Control.Moffy.Viewable.Shape
+		- [ ] module Control.Moffy.Viewable.Image
 	+ [ ] make module directory: Control.Moffy.View
+		- [ ] module Control.Moffy.View.XField
+		- [ ] module Control.Moffy.View.GtkField
 	+ [ ] move each modules under Control.Moffy.View
 * [ ] use OneOfThem in view of GTK
 	+ [x] define tryUseTChanGen: `tryUseTChanGen :: (GtkWidget -> CairoT -> a -> IO ()) -> IO (...)`

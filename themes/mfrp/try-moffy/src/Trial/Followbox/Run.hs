@@ -17,7 +17,7 @@ import qualified Data.ByteString.Char8 as BSC
 import Trial.Followbox.Event (SigF)
 import Trial.Followbox.XFieldHandle (
 	handleFollowbox, FollowboxState, initialFollowboxState )
-import Trial.Followbox.View (View, view)
+import Trial.Followbox.XField (View, view)
 import Trial.Followbox.TypeSynonym (
 	WindowTitle, Browser, GithubNameToken, GithubUserName )
 import Field (openField, closeField, exposureMask, buttonPressMask)

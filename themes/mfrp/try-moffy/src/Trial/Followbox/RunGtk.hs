@@ -15,7 +15,7 @@ import Graphics.Gtk
 
 import Trial.Followbox.Event
 import Trial.Followbox.Handle
-import Trial.Followbox.View
+import Trial.Followbox.GtkField
 import Trial.Followbox.TypeSynonym
 
 handleFollowbox ::
