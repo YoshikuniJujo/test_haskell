@@ -265,7 +265,7 @@ todo
 	+ [x] define drawTextGtk, drawLineGtk and drawImageGtk
 	+ [x] change View1 definition: `View1 :: OneOfThem (Text :- Line :- Image :- 'Nil)`
 	+ [x] repair others
-* [ ] make view modules
+* [x] make view modules
 	+ [x] separate Text, Line and Image to each module
 		- [x] module Trial.Followbox.Basic: Color and Position
 		- [x] module Trial.Followbox.Text
@@ -279,14 +279,15 @@ todo
 		- [x] module Control.Moffy.Viewable.Text
 		- [x] module Control.Moffy.Viewable.Shape
 		- [x] module Control.Moffy.Viewable.Image
-	+ [ ] make module directory: Control.Moffy.View
-		- [ ] module Control.Moffy.View.XField
-		- [ ] module Control.Moffy.View.GtkField
-	+ [ ] move each modules under Control.Moffy.View
+	+ [x] make module directory: Control.Moffy.View
+		- [x] module Control.Moffy.View.XField
+		- [x] module Control.Moffy.View.GtkField
+	+ [x] move each modules under Control.Moffy.View
 * [ ] use OneOfThem in view of GTK
 	+ [x] define tryUseTChanGen: `tryUseTChanGen :: (GtkWidget -> CairoT -> a -> IO ()) -> IO (...)`
-	+ [ ] define drawOot: `drawOot :: (GtkWidget -> CairoT -> ` ???
-	+ [ ] `instance (Viewable a, Viewable (OneOfThem as)) => Viewable (OneOfThem (a :- as))`
+	+ [ ] remove class Draw
+	+ [ ] others
+* [ ] make draw application
 * [ ] refactoring
 * [ ] remake key event
 	+ [x] consider Pattern vs Value
