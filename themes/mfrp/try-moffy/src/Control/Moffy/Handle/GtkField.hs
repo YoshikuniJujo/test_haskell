@@ -4,13 +4,12 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Handle.GtkField where
+module Control.Moffy.Handle.GtkField (tryUseTChanGen, handle, GuiEv) where
 
 import Prelude hiding (repeat, break)
 
 import Control.Monad
 import Control.Moffy
-import Control.Moffy.Run
 import Control.Moffy.Event.Delete as M
 import Control.Moffy.Event.Key
 import Control.Moffy.Event.Mouse
@@ -27,27 +26,12 @@ import Graphics.Gtk as Gtk
 import Graphics.Gtk.Cairo
 import Graphics.Gtk.Pango
 
-import Control.Moffy.Event.Time
-import Control.Moffy.Handle.Time
-import Data.Time.Clock.TAI
-
 import qualified Data.Text as T
 
 import Data.Bool
 import Data.Word
 
 import Data.OneOrMoreApp as Oom
-
-tryGtk :: IO ()
-tryGtk = do
-	[] <- gtkInit []
-	w <- gtkWindowNew gtkWindowToplevel
-	gtkWidgetShowAll w
-	gSignalConnect w Destroy gtkMainQuit ()
-	gtkMain
-
-print' :: a -> IO ()
-print' _ = pure ()
 
 type GuiEv = CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv
 
@@ -65,23 +49,22 @@ tryUseTChanGen dr = do
 		w <- gtkWindowNew gtkWindowToplevel
 
 		gtkWidgetSetEvents w [gdkPointerMotionMask]
-		gSignalConnect w DeleteEvent (\a b x' -> True <$ (print' (a, b, x') >>
-			atomically (writeTChan c . Oom.expandApp $ SingletonApp OccDeleteEvent))) ()
-		gSignalConnect w KeyPressEvent (\a b x' -> False <$ (print' (a, b, x') >> do
-			e <- gdkEventKeyToOccKeyDown b
-			atomically (writeTChan c $ Oom.expandApp e))) ()
-		gSignalConnect w KeyReleaseEvent (\a b x' -> False <$ (print' (a, b, x') >> do
-			e <- gdkEventKeyToOccKeyUp b
-			atomically (writeTChan c $ Oom.expandApp e))) ()
-		gSignalConnect w ButtonPressEvent (\a b x' -> True <$ (print' (a, b, x') >> do
-			e <- gdkEventButtonToOccMouseDown b
-			atomically (writeTChan c $ Oom.expandApp e))) ()
-		gSignalConnect w ButtonReleaseEvent (\a b x' -> True <$ (print' (a, b, x') >> do
-			e <- gdkEventButtonToOccMouseUp b
-			atomically (writeTChan c $ Oom.expandApp e))) ()
-		gSignalConnect w MotionNotifyEvent (\a b x' -> True <$ do
-			print' (a, b, x')
-			e <- gdkEventMotionToOccMouseMove b
+		gSignalConnect w DeleteEvent (\_ _ _ -> True <$
+			(atomically (writeTChan c . Oom.expandApp $ SingletonApp OccDeleteEvent))) ()
+		gSignalConnect w KeyPressEvent (\_ ev _ -> False <$ do
+			e <- gdkEventKeyToOccKeyDown ev
+			atomically (writeTChan c $ Oom.expandApp e)) ()
+		gSignalConnect w KeyReleaseEvent (\_ ev _ -> False <$ do
+			e <- gdkEventKeyToOccKeyUp ev
+			atomically (writeTChan c $ Oom.expandApp e)) ()
+		gSignalConnect w ButtonPressEvent (\_ ev _ -> True <$ do
+			e <- gdkEventButtonToOccMouseDown ev
+			atomically (writeTChan c $ Oom.expandApp e)) ()
+		gSignalConnect w ButtonReleaseEvent (\_ ev _ -> True <$ do
+			e <- gdkEventButtonToOccMouseUp ev
+			atomically (writeTChan c $ Oom.expandApp e)) ()
+		gSignalConnect w MotionNotifyEvent (\_ ev _ -> True <$ do
+			e <- gdkEventMotionToOccMouseMove ev
 			atomically (writeTChan c $ Oom.expandApp e)) ()
 		gSignalConnect w Destroy gtkMainQuit ()
 
@@ -119,11 +102,6 @@ lastTChan c = do
 	tryReadTChan c >>= \case
 		Nothing -> pure Nothing
 		Just x -> bool (lastTChan c) (pure $ Just x) =<< isEmptyTChan c
-
-lastTChan' :: a -> TChan a -> STM a
-lastTChan' x c = do
-	mx' <- tryReadTChan c
-	maybe (pure x) (`lastTChan'` c) mx'
 
 tryDraw :: (GtkWidget -> CairoT -> a -> IO ()) ->
 	TChan (FontName, FontSize, T.Text) -> TChan (EvOccs GuiEv) -> TVar a -> GtkWidget -> CairoT -> () -> IO Bool
@@ -208,15 +186,7 @@ gdkEventButtonToOccMouseUp e = do
 		1 -> ButtonLeft; 2 -> ButtonMiddle; 3 -> ButtonRight
 		n -> ButtonUnknown n
 
-handleDelete :: Maybe DiffTime -> TChan (EvReqs GuiEv) -> TChan (EvOccs GuiEv) -> Handle' IO GuiEv
-handleDelete mt cr c rqs = maybe (Just <$>) (timeout . round . (* 1000000)) mt do
+handle :: Maybe DiffTime -> TChan (EvReqs GuiEv) -> TChan (EvOccs GuiEv) -> Handle' IO GuiEv
+handle mt cr c rqs = maybe (Just <$>) (timeout . round . (* 1000000)) mt do
 	atomically $ writeTChan cr rqs
 	atomically $ readTChan c
-
-curry3 :: ((a, b, c) -> d) -> a -> b -> c -> d
-curry3 f x y z = f (x, y, z)
-
-handleBoxesFoo :: DiffTime -> TChan (EvReqs GuiEv) -> TChan (EvOccs GuiEv) ->
-	HandleSt (Mode, AbsoluteTime) IO (TimeEv :+: GuiEv)
-handleBoxesFoo dt cr co = retrySt
-	$ ((\f x y z -> f (x, (y, z))) . popInput . handleTimeEvPlus . pushInput) (\(x, (y, z)) -> (((liftHandle' .) .) . handleDelete . Just) x y z) dt cr co

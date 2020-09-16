@@ -25,7 +25,7 @@ import Trial.Followbox.TypeSynonym
 handleFollowbox ::
 	(TChan (EvReqs (CalcTextExtents :- GuiEv)), TChan (EvOccs (CalcTextExtents :- GuiEv))) -> Browser ->
 	Maybe GithubNameToken -> HandleF IO (CalcTextExtents :- GuiEv :+: FollowboxEv)
-handleFollowbox = handleFollowboxWith (uncurry . handleDelete)
+handleFollowbox = handleFollowboxWith (uncurry . handle)
 
 runFollowbox :: Browser -> Maybe GithubNameToken -> SigF s View r -> IO r
 runFollowbox brs mgnt s = do

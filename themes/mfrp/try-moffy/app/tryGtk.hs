@@ -1,5 +1,5 @@
-{-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE BlockArguments, TupleSections #-}
+{-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -17,9 +17,16 @@ import Control.Concurrent.STM
 import Data.Time.Clock.System
 import Graphics.Gtk
 
+import Control.Moffy.Event.Time
+import Data.Time
+import Data.Time.Clock.TAI
+import Data.Type.Set
+
 import Trial.Boxes.BoxEv
 
 import Trial.Boxes
+
+import Control.Moffy.Handle
 
 runBoxes :: SigB s [Box] r -> IO r
 runBoxes s = do
@@ -29,3 +36,11 @@ runBoxes s = do
 
 main :: IO ()
 main = () <$ runBoxes (boxes `break` deleteEvent)
+
+curry3 :: ((a, b, c) -> d) -> a -> b -> c -> d
+curry3 f x y z = f (x, y, z)
+
+handleBoxesFoo :: DiffTime -> TChan (EvReqs GuiEv) -> TChan (EvOccs GuiEv) ->
+	HandleSt (Mode, AbsoluteTime) IO (TimeEv :+: GuiEv)
+handleBoxesFoo dt cr co = retrySt
+	$ ((\f x y z -> f (x, (y, z))) . popInput . handleTimeEvPlus . pushInput) (\(x, (y, z)) -> (((liftHandle' .) .) . handle . Just) x y z) dt cr co
