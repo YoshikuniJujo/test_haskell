@@ -28,11 +28,11 @@ import Control.Moffy.Internal.React.Type (
 	EvReqs, EvOccs, ExpandableOccurred, MergeableOccurred,
 	Handle, HandleSt, St, liftHandle, liftSt )
 import Data.Type.Set ((:+:))
-import Data.OneOrMore (Collapsable, merge')
-import Data.OneOrMoreApp
+import Data.OneOrMore (Collapsable)
+import Data.OneOrMoreApp (merge')
 
-import qualified Data.OneOrMore as OOM (expand, collapse)
-import qualified Data.OneOrMoreApp as OOM (expandApp, collapseApp)
+import qualified Data.OneOrMore as OOM (collapse)
+import qualified Data.OneOrMoreApp as OOM (expand)
 
 ---------------------------------------------------------------------------
 
@@ -72,7 +72,7 @@ collapse hdl = (pure Nothing `maybe` hdl) . OOM.collapse
 
 expand :: (Applicative m, ExpandableHandle es es') =>
 	Handle' m es -> Handle' m es'
-expand hdl = ((OOM.expandApp <$>) <$>) . collapse hdl
+expand hdl = ((OOM.expand <$>) <$>) . collapse hdl
 
 infixr 5 `before`, `beforeSt`
 
@@ -90,7 +90,7 @@ merge :: (
 	ExpandableHandle es (es :+: es'), ExpandableHandle es' (es :+: es'),
 	MergeableOccurred es es' (es :+: es') ) =>
 	Handle' m es -> Handle' m es' -> Handle' m (es :+: es')
-((collapse -> l) `merge` (collapse -> r)) rqs = mergeApp' <$> l rqs <*> r rqs
+((collapse -> l) `merge` (collapse -> r)) rqs = merge' <$> l rqs <*> r rqs
 
 ---------------------------------------------------------------------------
 -- HANDLE WITH STATE
@@ -150,7 +150,7 @@ collapseIo hdl nh = ((((Nothing ,) <$>) . nh) `maybe` hdl) . OOM.collapse
 
 expandIo :: (Applicative m, ExpandableHandle es es') =>
 	HandleIo' i o m es -> (i -> m o) -> HandleIo' i o m es'
-expandIo hdl nh rqs = (first (OOM.expandApp <$>) <$>) . collapseIo hdl nh rqs
+expandIo hdl nh rqs = (first (OOM.expand <$>) <$>) . collapseIo hdl nh rqs
 
 beforeIo :: (
 	Monad m,
@@ -167,4 +167,4 @@ mergeIo :: (
 	HandleIo' i x m es -> (i -> m x) ->
 	HandleIo' x o m es' -> (x -> m o) -> HandleIo' i o m (es :+: es')
 mergeIo l nhl r nhr rqs st = collapseIo l nhl rqs st >>= \(mo, st') ->
-	first (mo `mergeApp'`) <$> collapseIo r nhr rqs st'
+	first (mo `merge'`) <$> collapseIo r nhr rqs st'

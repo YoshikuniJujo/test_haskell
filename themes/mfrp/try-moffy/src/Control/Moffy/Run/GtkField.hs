@@ -1,5 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -20,7 +20,7 @@ import Control.Moffy.Event.CalcTextExtents
 import Control.Concurrent
 import Control.Concurrent.STM hiding (retry)
 import Data.Type.Set
-import Data.OneOrMore
+import Data.OneOrMore (project)
 import Graphics.Gtk as Gtk
 import Graphics.Gtk.Pango
 
@@ -29,7 +29,7 @@ import qualified Data.Text as T
 import Data.Bool
 import Data.Word
 
-import Data.OneOrMoreApp
+import Data.OneOrMoreApp (pattern Singleton, expand, (>-))
 
 -- GUI EVENT
 
@@ -52,22 +52,22 @@ runGtkMain dr = do
 		w <- gtkWindowNew gtkWindowToplevel
 		gtkWidgetSetEvents w [gdkPointerMotionMask]
 		gSignalConnect w DeleteEvent (\_ _ _ -> True <$
-			(atomically (writeTChan c . expandApp $ SingletonApp OccDeleteEvent))) ()
+			(atomically (writeTChan c . expand $ Singleton OccDeleteEvent))) ()
 		gSignalConnect w KeyPressEvent (\_ ev _ -> False <$ do
 			e <- gdkEventKeyToOccKeyDown ev
-			atomically (writeTChan c $ expandApp e)) ()
+			atomically (writeTChan c $ expand e)) ()
 		gSignalConnect w KeyReleaseEvent (\_ ev _ -> False <$ do
 			e <- gdkEventKeyToOccKeyUp ev
-			atomically (writeTChan c $ expandApp e)) ()
+			atomically (writeTChan c $ expand e)) ()
 		gSignalConnect w ButtonPressEvent (\_ ev _ -> True <$ do
 			e <- gdkEventButtonToOccMouseDown ev
-			atomically (writeTChan c $ expandApp e)) ()
+			atomically (writeTChan c $ expand e)) ()
 		gSignalConnect w ButtonReleaseEvent (\_ ev _ -> True <$ do
 			e <- gdkEventButtonToOccMouseUp ev
-			atomically (writeTChan c $ expandApp e)) ()
+			atomically (writeTChan c $ expand e)) ()
 		gSignalConnect w MotionNotifyEvent (\_ ev _ -> True <$ do
 			e <- gdkEventMotionToOccMouseMove ev
-			atomically (writeTChan c $ expandApp e)) ()
+			atomically (writeTChan c $ expand e)) ()
 		gSignalConnect w Destroy gtkMainQuit ()
 		da <- gtkDrawingAreaNew
 		gtkContainerAdd (castWidgetToContainer w) da
@@ -97,29 +97,29 @@ runGtkMain dr = do
 
 gdkEventKeyToOccKeyDown :: GdkEventKey -> IO (EvOccs (Singleton KeyDown))
 gdkEventKeyToOccKeyDown e =
-	SingletonApp . OccKeyDown . Key . fromIntegral <$> keyval e
+	Singleton . OccKeyDown . Key . fromIntegral <$> keyval e
 
 gdkEventKeyToOccKeyUp :: GdkEventKey -> IO (EvOccs (Singleton KeyUp))
 gdkEventKeyToOccKeyUp e =
-	SingletonApp . OccKeyUp . Key . fromIntegral <$> keyval e
+	Singleton . OccKeyUp . Key . fromIntegral <$> keyval e
 
 gdkEventButtonToOccMouseDown ::
 	GdkEventButton -> IO (EvOccs (MouseDown :- MouseMove :- 'Nil))
 gdkEventButtonToOccMouseDown e = do
 	p <- (,) <$> gdkEventButtonX e <*> gdkEventButtonY e
 	b <- gdkEventButtonButton e
-	pure $ OccMouseDown (button b) >-^ SingletonApp (OccMouseMove p)
+	pure $ OccMouseDown (button b) >- Singleton (OccMouseMove p)
 
 gdkEventButtonToOccMouseUp ::
 	GdkEventButton -> IO (EvOccs (MouseUp :- MouseMove :- 'Nil))
 gdkEventButtonToOccMouseUp e = do
 	p <- (,) <$> gdkEventButtonX e <*> gdkEventButtonY e
 	b <- gdkEventButtonButton e
-	pure $ OccMouseUp (button b) >-^ SingletonApp (OccMouseMove p)
+	pure $ OccMouseUp (button b) >- Singleton (OccMouseMove p)
 
 gdkEventMotionToOccMouseMove ::
 	GdkEventMotion -> IO (EvOccs (Singleton MouseMove))
-gdkEventMotionToOccMouseMove e = SingletonApp . OccMouseMove
+gdkEventMotionToOccMouseMove e = Singleton . OccMouseMove
 	<$> ((,) <$> gdkEventMotionX e <*> gdkEventMotionY e)
 
 button :: Word32 -> MouseBtn
@@ -139,7 +139,7 @@ draw dr ftc co tx wdgt cr () = True <$ do
 		pangoFontDescriptionSetAbsoluteSize d fs
 		pangoLayoutSetFontDescription l d
 		te <- pangoLayoutWithPixelExtents l \ie le -> mkTextExtents ie le
-		atomically . writeTChan co . expandApp . SingletonApp
+		atomically . writeTChan co . expand . Singleton
 			$ OccCalcTextExtents fn fs txt te
 	dr wdgt cr =<< readTVarIO tx
 

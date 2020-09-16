@@ -21,7 +21,7 @@ import Control.Moffy.Handle.ThreadId (handleGetThreadId)
 import Control.Moffy.Handle.Lock (LockState(..), LockId, handleLock)
 import Control.Moffy.Handle.Random (RandomState(..), handleRandom)
 import Data.Type.Set (Singleton, (:-), (:+:))
-import Data.OneOrMore (pattern Singleton)
+import Data.OneOrMore as Oom (pattern Singleton)
 import Data.Bool (bool)
 import Data.List (delete)
 import Data.String (fromString)
@@ -41,7 +41,7 @@ import Trial.Followbox.Event (
 	RaiseError(..), pattern OccRaiseError, Error(..), ErrorResult(..) )
 import Trial.Followbox.TypeSynonym (Browser, GithubNameToken)
 
-import Data.OneOrMoreApp
+import Data.OneOrMoreApp as Ooma
 
 ---------------------------------------------------------------------------
 
@@ -122,40 +122,40 @@ handleMouseWithSleep h f rqs s = (, s) <$> case fsSleepUntil s of
 -- STORE AND LOAD JSONS
 
 handleStoreJsons :: Monad m => HandleF' m (Singleton StoreJsons)
-handleStoreJsons (Singleton (StoreJsonsReq os)) s =
-	pure (Just . SingletonApp $ OccStoreJsons os, s { fsObjects = os })
+handleStoreJsons (Oom.Singleton (StoreJsonsReq os)) s =
+	pure (Just . Ooma.Singleton $ OccStoreJsons os, s { fsObjects = os })
 
 handleLoadJsons :: Monad m => HandleF' m (Singleton LoadJsons)
-handleLoadJsons _rqs s = pure (Just . SingletonApp . OccLoadJsons $ fsObjects s, s)
+handleLoadJsons _rqs s = pure (Just . Ooma.Singleton . OccLoadJsons $ fsObjects s, s)
 
 -- REQUEST DATA
 
 handleHttpGet :: Maybe GithubNameToken -> Handle IO (Singleton HttpGet)
-handleHttpGet mgnt (Singleton (HttpGetReq u)) = do
+handleHttpGet mgnt (Oom.Singleton (HttpGetReq u)) = do
 	r <- H.httpLBS . maybe id (uncurry H.setRequestBasicAuth) mgnt
 		. H.setRequestHeader "User-Agent" ["Yoshio"]
 		. fromString $ T.unpack u
 	print $ H.getResponseHeader "X-RateLimit-Remaining" r
-	pure . SingletonApp
+	pure . Ooma.Singleton
 		$ OccHttpGet u (H.getResponseHeaders r) (H.getResponseBody r)
 
 handleGetTimeZone :: Handle IO (Singleton GetTimeZone)
-handleGetTimeZone _reqs = SingletonApp . OccGetTimeZone <$> getCurrentTimeZone
+handleGetTimeZone _reqs = Ooma.Singleton . OccGetTimeZone <$> getCurrentTimeZone
 
 -- BROWSE
 
 handleBrowse :: Browser -> Handle IO (Singleton Browse)
-handleBrowse brws (Singleton (Browse u)) =
-	SingletonApp OccBrowse <$ spawnProcess brws [T.unpack u]
+handleBrowse brws (Oom.Singleton (Browse u)) =
+	Ooma.Singleton OccBrowse <$ spawnProcess brws [T.unpack u]
 
 -- BEGIN AND END SLEEP
 
 handleBeginSleep :: Monad m => HandleF' m (Singleton BeginSleep)
-handleBeginSleep (Singleton bs) s = case bs of
+handleBeginSleep (Oom.Singleton bs) s = case bs of
 	BeginSleep t -> case fsSleepUntil s of
-		Just t' -> pure (Just . SingletonApp $ OccBeginSleep t', s)
+		Just t' -> pure (Just . Ooma.Singleton $ OccBeginSleep t', s)
 		Nothing -> pure (
-			Just . SingletonApp $ OccBeginSleep t,
+			Just . Ooma.Singleton $ OccBeginSleep t,
 			s { fsSleepUntil = Just t } )
 	CheckBeginSleep -> pure (Nothing, s)
 
@@ -163,16 +163,16 @@ handleEndSleep :: HandleF' IO (Singleton EndSleep)
 handleEndSleep _rqs s = case fsSleepUntil s of
 	Just t -> getCurrentTime >>= bool
 		(pure (Nothing, s))
-		(pure (Just $ SingletonApp OccEndSleep,
+		(pure (Just $ Ooma.Singleton OccEndSleep,
 			s { fsSleepUntil = Nothing })) . (t <=)
-	Nothing -> pure (Just $ SingletonApp OccEndSleep, s)
+	Nothing -> pure (Just $ Ooma.Singleton OccEndSleep, s)
 
 -- RAISE ERROR
 
 handleRaiseError :: Handle' IO (Singleton RaiseError)
-handleRaiseError (Singleton (RaiseError e em)) = case er e of
+handleRaiseError (Oom.Singleton (RaiseError e em)) = case er e of
 	Nothing -> pure Nothing
-	Just r -> Just (SingletonApp $ OccRaiseError e r) <$ putStrLn emsg
+	Just r -> Just (Ooma.Singleton $ OccRaiseError e r) <$ putStrLn emsg
 	where
 	emsg = "ERROR: " <> em
 	er = \case

@@ -12,10 +12,10 @@ import Control.Moffy.Event.Random.Internal (
 	LoadRandomGen, pattern OccLoadRandomGen )
 import Control.Moffy.Handle (HandleSt', mergeSt)
 import Data.Type.Set (Singleton)
-import Data.OneOrMore (pattern Singleton)
+import Data.OneOrMore as Oom (pattern Singleton)
 import System.Random (StdGen)
 
-import Data.OneOrMoreApp
+import Data.OneOrMoreApp as Ooma (pattern Singleton)
 
 ---------------------------------------------------------------------------
 
@@ -40,10 +40,10 @@ handleRandom = handleStoreRandomGen `mergeSt` handleLoadRandomGen
 
 handleStoreRandomGen :: (RandomState s, Applicative m) =>
 	HandleSt' s m (Singleton StoreRandomGen)
-handleStoreRandomGen (Singleton (StoreRandomGenReq g)) s =
-	pure (Just $ SingletonApp OccStoreRandomGen, s `putRandomGen` g)
+handleStoreRandomGen (Oom.Singleton (StoreRandomGenReq g)) s =
+	pure (Just $ Ooma.Singleton OccStoreRandomGen, s `putRandomGen` g)
 
 handleLoadRandomGen :: (RandomState s, Applicative m) =>
 	HandleSt' s m (Singleton LoadRandomGen)
 handleLoadRandomGen _rqs s =
-	pure (Just . SingletonApp . OccLoadRandomGen $ getRandomGen s, s)
+	pure (Just . Ooma.Singleton . OccLoadRandomGen $ getRandomGen s, s)

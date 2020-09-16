@@ -1,3 +1,4 @@
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Handle.XField.CalcTextExtents where
@@ -5,17 +6,17 @@ module Control.Moffy.Handle.XField.CalcTextExtents where
 import Control.Moffy.Event.CalcTextExtents
 import Control.Moffy.Handle
 import Data.Type.Set
-import Data.OneOrMore
+import Data.OneOrMore as Oom
 
 import qualified Data.Text as T
 import qualified Graphics.X11.Xrender as X
 
 import Field
 
-import Data.OneOrMoreApp
+import Data.OneOrMoreApp as Ooma (pattern Singleton)
 
 handleCalcTextExtents :: Field -> Handle IO (Singleton CalcTextExtents)
-handleCalcTextExtents f (Singleton (CalcTextExtentsReq fn fs t)) = SingletonApp
+handleCalcTextExtents f (Oom.Singleton (CalcTextExtentsReq fn fs t)) = Ooma.Singleton
 	. OccCalcTextExtents fn fs t . mkTextExtents' . xGlyphInfoToNew <$> textExtents f fn fs (T.unpack t)
 
 xGlyphInfoToNew :: X.XGlyphInfo -> TextExtents

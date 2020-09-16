@@ -24,14 +24,13 @@ import Control.Monad.Freer.Par.FTCQueue (FTCQueue)
 import Control.Monad.Freer.Par.TaggableFunction (TaggableFun)
 import Data.Kind (Type)
 import Data.Type.Set (Set, Numbered, Singleton)
-import Data.OneOrMore (
-	OneOrMore, Selectable, pattern Singleton, unSingleton,
-	Expandable, Collapsable, Mergeable )
+import Data.OneOrMore (OneOrMore, Selectable, pattern Singleton)
 import Data.Bits (setBit)
 import Numeric.Natural (Natural)
 
 import Data.Type.SetApp
-import Data.OneOrMoreApp
+import Data.OneOrMoreApp (
+	OneOrMoreApp, Expandable, Collapsable, Mergeable, unSingleton )
 
 ---------------------------------------------------------------------------
 
@@ -65,7 +64,7 @@ never :: React s es a
 never = pure =<<< Never
 
 await :: e -> (Occurred e -> r) -> React s (Singleton e) r
-await rq f = pure . f . unSingletonApp =<<< Await (Singleton rq)
+await rq f = pure . f . unSingleton =<<< Await (Singleton rq)
 
 await' :: e -> (ThreadId -> Occurred e -> r) -> React s (Singleton e) r
 await' rq f = await rq . f =<<< GetThreadId
@@ -74,11 +73,11 @@ await' rq f = await rq . f =<<< GetThreadId
 -- CONSTRAINT SYNONYM
 ---------------------------------------------------------------------------
 
-type ExpandableOccurred es es' = ExpandableApp Occurred es es'
+type ExpandableOccurred es es' = Expandable Occurred es es'
 
-type CollapsableOccurred es es' = CollapsableApp Occurred es es'
+type CollapsableOccurred es es' = Collapsable Occurred es es'
 
-type MergeableOccurred es es' mrg = MergeableApp Occurred es es' mrg
+type MergeableOccurred es es' mrg = Mergeable Occurred es es' mrg
 
 ---------------------------------------------------------------------------
 -- HANDLE

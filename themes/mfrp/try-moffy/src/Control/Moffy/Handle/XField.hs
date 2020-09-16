@@ -20,7 +20,6 @@ import Control.Moffy.Handle.XField.Key (pattern KeyEv)
 import Control.Moffy.Handle.XField.Mouse (pattern MouseEv)
 import Control.Moffy.Handle.XField.CalcTextExtents
 import Data.Type.Set (Singleton, (:-), (:+:))
-import Data.OneOrMore (pattern Singleton, expand)
 import Data.Time (DiffTime)
 import Field (
 	Field, flushField, Event', evEvent, Event(..),
@@ -48,7 +47,7 @@ handle' mt f = (Just <$>) . handleCalcTextExtents f `before` handle mt f
 
 handle :: Maybe DiffTime -> Field -> Handle' IO GuiEv
 handle = handleWith \case
-	KeyEv kev -> Just $ expandApp kev; MouseEv mev -> Just $ expandApp mev
+	KeyEv kev -> Just $ expand kev; MouseEv mev -> Just $ expand mev
 	_ -> Nothing
 
 handleWith :: ExpandableOccurred (Singleton DeleteEvent) es =>
@@ -65,5 +64,5 @@ eventToEv etoe f _rqs = \case
 	(evEvent -> ev)
 		| ExposeEvent {} <- ev -> Nothing <$ flushField f
 		| isDeleteEvent f ev ->
-			pure . Just . expandApp $ SingletonApp OccDeleteEvent
+			pure . Just . expand $ Singleton OccDeleteEvent
 	ev -> pure $ etoe ev

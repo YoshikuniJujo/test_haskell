@@ -19,12 +19,12 @@ import Control.Moffy.Handle (
 	ExpandableHandle, MergeableOccurred, HandleIo', expandIo, mergeIo )
 import Control.Concurrent (threadDelay)
 import Data.Type.Set ((:+:))
-import Data.OneOrMore (pattern Singleton, (>-), project, expand)
+import Data.OneOrMore (project)
 import Data.Time (DiffTime)
 import Data.Time.Clock.TAI (AbsoluteTime, diffAbsoluteTime, addAbsoluteTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 
-import Data.OneOrMoreApp
+import Data.OneOrMoreApp (expand, pattern Singleton, (>-))
 	
 ---------------------------------------------------------------------------
 
@@ -99,12 +99,12 @@ handleTime :: Monad m =>
 handleTime rqs (now, lst) = case project rqs of
 	Just (TryWaitReq t)
 		| t < dt  -> pure (
-			Just $ OccTryWait t >-^ SingletonApp (OccDeltaTime t),
+			Just $ OccTryWait t >- Singleton (OccDeltaTime t),
 			(FlushWaitMode now, t `addAbsoluteTime` lst) )
 		| otherwise -> pure (
-			Just $ OccTryWait dt >-^ SingletonApp (OccDeltaTime dt),
+			Just $ OccTryWait dt >- Singleton (OccDeltaTime dt),
 			(InitialMode, now) )
 	Nothing -> pure (
-		Just . expandApp . SingletonApp $ OccDeltaTime dt,
+		Just . expand . Singleton $ OccDeltaTime dt,
 		(InitialMode, now) )
 	where dt = now `diffAbsoluteTime` lst

@@ -12,10 +12,10 @@ import Control.Moffy.Event.Lock.Internal (
 	GetLock(..), pattern OccGetLock, Unlock(..), pattern OccUnlock )
 import Control.Moffy.Handle (HandleSt', mergeSt)
 import Data.Type.Set (Singleton)
-import Data.OneOrMore (pattern Singleton)
+import Data.OneOrMore as Oom (pattern Singleton)
 import Data.Bool (bool)
 
-import Data.OneOrMoreApp
+import Data.OneOrMoreApp as Ooma (pattern Singleton)
 
 ---------------------------------------------------------------------------
 
@@ -40,17 +40,17 @@ handleLock = handleNewLockId `mergeSt` handleGetLock `mergeSt` handleUnlock
 
 handleNewLockId ::
 	(LockState s, Applicative m) => HandleSt' s m (Singleton NewLockId)
-handleNewLockId (Singleton (NewLockIdReq t)) s = pure (
-	Just . SingletonApp $ OccNewLockId (LockId i) t,
+handleNewLockId (Oom.Singleton (NewLockIdReq t)) s = pure (
+	Just . Ooma.Singleton $ OccNewLockId (LockId i) t,
 	s `putNextLockId` (i + 1) )
 	where i = getNextLockId s
 
 handleGetLock ::
 	(LockState s, Applicative m) => HandleSt' s m (Singleton GetLock)
-handleGetLock (Singleton (GetLockReq i t _)) s = pure $ bool
-	(Just . SingletonApp $ OccGetLock i t, s `lockIt` i) (Nothing, s)
+handleGetLock (Oom.Singleton (GetLockReq i t _)) s = pure $ bool
+	(Just . Ooma.Singleton $ OccGetLock i t, s `lockIt` i) (Nothing, s)
 	(s `isLocked` i)
 
 handleUnlock :: (LockState s, Applicative m) => HandleSt' s m (Singleton Unlock)
-handleUnlock (Singleton (UnlockReq i)) s =
-	pure (Just $ SingletonApp OccUnlock, s `unlockIt` i)
+handleUnlock (Oom.Singleton (UnlockReq i)) s =
+	pure (Just $ Ooma.Singleton OccUnlock, s `unlockIt` i)

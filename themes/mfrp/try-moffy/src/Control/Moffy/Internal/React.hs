@@ -23,7 +23,7 @@ import Data.Type.Set ((:+:))
 import Data.OneOrMore (Expandable, Mergeable, expand, merge)
 import Data.Or (Or(..))
 
-import Data.OneOrMoreApp
+import Data.OneOrMoreApp (collapse)
 
 ---------------------------------------------------------------------------
 
@@ -63,7 +63,7 @@ adj = \case
 	Pure x -> pure x; _ :=<< Never -> never
 	c :=<< GetThreadId -> adj . (c `app`) =<<< GetThreadId
 	r@(c :=<< Await e) ->
-		adj . maybe r (c `app`) . collapseApp =<<< Await (expand e)
+		adj . maybe r (c `app`) . collapse =<<< Await (expand e)
 
 ---------------------------------------------------------------------------
 -- PAR
