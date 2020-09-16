@@ -307,6 +307,7 @@ todo
 	+ [x] move tryUseTChanGen to Control.Moffy.Run.GtkField
 	+ [x] more general Control.Moffy.Handle.GtkField.handle
 	+ [x] rename Control.Moffy.Handle.GtkField to Control.Moffy.Handle.TChan
+* [ ] remove suffix App
 * [ ] refactor Control.Moffy.Run.GtkField some
 	+ [x] rename tryUseTChanGen to runGtkMain
 	+ [x] refactor some

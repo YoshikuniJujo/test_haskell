@@ -3,7 +3,11 @@
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Run.GtkField (GuiEv, runGtkMain) where
+module Control.Moffy.Run.GtkField (
+	-- * Gui Event
+	GuiEv,
+	-- * Run Gtk Main
+	GtkDrawer, runGtkMain) where
 
 import Prelude hiding (repeat, break)
 
@@ -16,7 +20,7 @@ import Control.Moffy.Event.CalcTextExtents
 import Control.Concurrent
 import Control.Concurrent.STM hiding (retry)
 import Data.Type.Set
-import Data.OneOrMore as Oom
+import Data.OneOrMore
 import Graphics.Gtk as Gtk
 import Graphics.Gtk.Pango
 
@@ -25,7 +29,7 @@ import qualified Data.Text as T
 import Data.Bool
 import Data.Word
 
-import Data.OneOrMoreApp as Oom
+import Data.OneOrMoreApp
 
 -- GUI EVENT
 
@@ -33,9 +37,10 @@ type GuiEv = CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv
 
 -- RUN GTK MAIN
 
+type GtkDrawer a = GtkWidget -> CairoT -> a -> IO ()
+
 runGtkMain :: Monoid a =>
-	(GtkWidget -> CairoT -> a -> IO ()) ->
-	IO (TChan (EvReqs GuiEv), TChan (EvOccs GuiEv), TChan a)
+	GtkDrawer a -> IO (TChan (EvReqs GuiEv), TChan (EvOccs GuiEv), TChan a)
 runGtkMain dr = do
 	cr <- newTChanIO
 	c <- newTChanIO
@@ -47,22 +52,22 @@ runGtkMain dr = do
 		w <- gtkWindowNew gtkWindowToplevel
 		gtkWidgetSetEvents w [gdkPointerMotionMask]
 		gSignalConnect w DeleteEvent (\_ _ _ -> True <$
-			(atomically (writeTChan c . Oom.expandApp $ SingletonApp OccDeleteEvent))) ()
+			(atomically (writeTChan c . expandApp $ SingletonApp OccDeleteEvent))) ()
 		gSignalConnect w KeyPressEvent (\_ ev _ -> False <$ do
 			e <- gdkEventKeyToOccKeyDown ev
-			atomically (writeTChan c $ Oom.expandApp e)) ()
+			atomically (writeTChan c $ expandApp e)) ()
 		gSignalConnect w KeyReleaseEvent (\_ ev _ -> False <$ do
 			e <- gdkEventKeyToOccKeyUp ev
-			atomically (writeTChan c $ Oom.expandApp e)) ()
+			atomically (writeTChan c $ expandApp e)) ()
 		gSignalConnect w ButtonPressEvent (\_ ev _ -> True <$ do
 			e <- gdkEventButtonToOccMouseDown ev
-			atomically (writeTChan c $ Oom.expandApp e)) ()
+			atomically (writeTChan c $ expandApp e)) ()
 		gSignalConnect w ButtonReleaseEvent (\_ ev _ -> True <$ do
 			e <- gdkEventButtonToOccMouseUp ev
-			atomically (writeTChan c $ Oom.expandApp e)) ()
+			atomically (writeTChan c $ expandApp e)) ()
 		gSignalConnect w MotionNotifyEvent (\_ ev _ -> True <$ do
 			e <- gdkEventMotionToOccMouseMove ev
-			atomically (writeTChan c $ Oom.expandApp e)) ()
+			atomically (writeTChan c $ expandApp e)) ()
 		gSignalConnect w Destroy gtkMainQuit ()
 		da <- gtkDrawingAreaNew
 		gtkContainerAdd (castWidgetToContainer w) da
@@ -124,22 +129,19 @@ button = \case
 
 -- DRAW
 
-draw :: (GtkWidget -> CairoT -> a -> IO ()) ->
-	TChan (FontName, FontSize, T.Text) -> TChan (EvOccs GuiEv) -> TVar a -> GtkWidget -> CairoT -> () -> IO Bool
-draw dr ftc co tx w cr () = True <$ do
-	m3 <- atomically $ lastTChan ftc
-	case m3 of
-		Just (fn, fs, txt) -> do
-			l <- pangoCairoCreateLayout cr
-			pangoLayoutSetText l txt
-			d <- pangoFontDescriptionFromString $ T.pack fn
-			pangoFontDescriptionSetAbsoluteSize d fs
-			pangoLayoutSetFontDescription l d
-			te <- pangoLayoutWithPixelExtents l \ie le -> mkTextExtents ie le
-			atomically . writeTChan co . Oom.expandApp . SingletonApp
-				$ OccCalcTextExtents fn fs txt te
-		Nothing -> pure ()
-	dr w cr =<< readTVarIO tx
+draw :: GtkDrawer a -> TChan (FontName, FontSize, T.Text) ->
+	TChan (EvOccs GuiEv) -> TVar a -> GtkWidget -> CairoT -> () -> IO Bool
+draw dr ftc co tx wdgt cr () = True <$ do
+	atomically (lastTChan ftc) >>= maybe (pure ()) \(fn, fs, txt) -> do
+		l <- pangoCairoCreateLayout cr
+		d <- pangoFontDescriptionFromString $ T.pack fn
+		pangoLayoutSetText l txt
+		pangoFontDescriptionSetAbsoluteSize d fs
+		pangoLayoutSetFontDescription l d
+		te <- pangoLayoutWithPixelExtents l \ie le -> mkTextExtents ie le
+		atomically . writeTChan co . expandApp . SingletonApp
+			$ OccCalcTextExtents fn fs txt te
+	dr wdgt cr =<< readTVarIO tx
 
 mkTextExtents :: PangoRectangle -> PangoRectangle -> IO TextExtents'
 mkTextExtents ie le = TextExtents' <$> r2r ie <*> r2r le
