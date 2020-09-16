@@ -299,7 +299,9 @@ todo
 * [x] remove Trial.Followbox.XField
 	+ [x] rename Trial.Followbox.Run to Trial.Followbox.RunXField
 	+ [x] others
-* [ ] remove Trial.Followbox.GtkField
+* [x] remove Trial.Followbox.GtkField
+	+ [x] rename Trial.Followbox.RunGtk to Trial.Followbox.RunGtkField
+	+ [x] others
 * [ ] separate Control.Moffy.Handle.XField
 * [ ] make draw application
 	+ [ ] no fill rectangle

@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Followbox.RunGtk where
+module Trial.Followbox.RunGtkField where
 
 import Control.Moffy
 import Control.Moffy.Event.CalcTextExtents
@@ -12,10 +12,14 @@ import Control.Concurrent.STM
 import Data.Type.Set ((:-), (:+:))
 import System.Random
 import Graphics.Gtk
+import Graphics.Gtk.Cairo
+
+import Control.Moffy.View.GtkField
+import Data.OneOfThem
 
 import Trial.Followbox.Event
 import Trial.Followbox.Handle
-import Trial.Followbox.GtkField
+import Trial.Followbox.ViewType
 import Trial.Followbox.TypeSynonym
 
 handleFollowbox ::
@@ -28,3 +32,14 @@ runFollowbox brs mgnt s = do
 	(cr, c, c') <- tryUseTChanGen drawFollowboxGtk
 	(r, _) <- interpretSt (handleFollowbox (cr, c) brs mgnt) (atomically . writeTChan c') s (initialFollowboxState $ mkStdGen 8)
 	r <$ gtkMainQuit
+
+drawFollowboxGtk :: GtkWidget -> CairoT -> View -> IO ()
+drawFollowboxGtk wdt cr (View v) = do
+		w <- gtkWidgetGetAllocatedWidth wdt
+		h <- gtkWidgetGetAllocatedHeight wdt
+		print (w, h)
+		cairoSetSourceRgb cr 0 0 0
+		cairoRectangle cr 0 0 (fromIntegral w) (fromIntegral h)
+		cairoStrokePreserve cr
+		cairoFill cr
+		((drawText wdt cr >-- drawLine wdt cr >-- SingletonFun (drawImage wdt cr)) `apply`) `mapM_` v
