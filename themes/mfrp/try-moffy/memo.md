@@ -333,6 +333,7 @@ todo
 	+ [ ] no fill rectangle
 	+ [ ] no fill lines and polygon
 	+ [ ] Bezier curve
+* [ ] pass argument to runGtkMain
 * [ ] refactoring
 * [ ] remake key event
 	+ [x] consider Pattern vs Value
