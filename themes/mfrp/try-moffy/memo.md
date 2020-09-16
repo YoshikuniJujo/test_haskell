@@ -308,6 +308,16 @@ todo
 	+ [x] more general Control.Moffy.Handle.GtkField.handle
 	+ [x] rename Control.Moffy.Handle.GtkField to Control.Moffy.Handle.TChan
 * [ ] refactor Control.Moffy.Run.GtkField some
+	+ [x] rename tryUseTChanGen to runGtkMain
+	+ [x] refactor some
+	+ [ ] refactor more
+	+ [ ] others
+* [ ] rename Trial.Boxes.Run to Trial.Boxes.RunXField
+* [ ] make Trial.Boxes.RunGtkField
+* [ ] make Control.Moffy.Run.TChan
+	+ define interpret, interpretSt
+	+ `interpret :: (...) => Handle m es' -> TChan a -> Sig s es a r -> m r`
+	+ `interpretSt :: (...) => HandleSt st m es' -> TChan a -> Sig s es a r -> St st m r`
 * [ ] make draw application
 	+ [ ] no fill rectangle
 	+ [ ] no fill lines and polygon

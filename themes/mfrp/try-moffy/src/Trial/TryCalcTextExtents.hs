@@ -40,7 +40,7 @@ runTryCalcTextExtents = do
 
 runTryCalcTextExtentsGtk :: IO ()
 runTryCalcTextExtentsGtk = do
-	(cr, c, _c' :: TChan [()]) <- tryUseTChanGen $ \_ _ _ -> pure ()
+	(cr, c, _c' :: TChan [()]) <- runGtkMain $ \_ _ _ -> pure ()
 --	fst <$> ((interpretSt (handleBoxesFoo 0.1 cr c) (atomically . writeTChan c') (tryCalcTextExtents "hello") . (InitialMode ,) . systemToTAITime =<< getSystemTime)
 --	fst <$> ((interpretSt (handleBoxesFoo 0.1 cr c) print (tryCalcTextExtents "hello") . (InitialMode ,) . systemToTAITime =<< getSystemTime)
 	fst <$> ((interpretSt (handleBoxesFoo 0.1 cr c) print (tryCalcTextExtents "Text, hello jj!") . (InitialMode ,) . systemToTAITime =<< getSystemTime)

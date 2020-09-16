@@ -22,7 +22,7 @@ import Trial.Followbox.Handle
 import Trial.Followbox.ViewType
 import Trial.Followbox.TypeSynonym
 
-import Control.Moffy.Run.GtkField (tryUseTChanGen)
+import Control.Moffy.Run.GtkField (runGtkMain)
 
 handleFollowbox ::
 	(TChan (EvReqs (CalcTextExtents :- GuiEv)), TChan (EvOccs (CalcTextExtents :- GuiEv))) -> Browser ->
@@ -31,7 +31,7 @@ handleFollowbox = handleFollowboxWith (uncurry . handle)
 
 runFollowbox :: Browser -> Maybe GithubNameToken -> SigF s View r -> IO r
 runFollowbox brs mgnt s = do
-	(cr, c, c') <- tryUseTChanGen drawFollowboxGtk
+	(cr, c, c') <- runGtkMain drawFollowboxGtk
 	(r, _) <- interpretSt (handleFollowbox (cr, c) brs mgnt) (atomically . writeTChan c') s (initialFollowboxState $ mkStdGen 8)
 	r <$ gtkMainQuit
 
@@ -39,7 +39,6 @@ drawFollowboxGtk :: GtkWidget -> CairoT -> View -> IO ()
 drawFollowboxGtk wdt cr (View v) = do
 		w <- gtkWidgetGetAllocatedWidth wdt
 		h <- gtkWidgetGetAllocatedHeight wdt
-		print (w, h)
 		cairoSetSourceRgb cr 0 0 0
 		cairoRectangle cr 0 0 (fromIntegral w) (fromIntegral h)
 		cairoStrokePreserve cr

@@ -31,7 +31,7 @@ import Control.Moffy.Run.GtkField
 
 runBoxes :: SigB s [Box] r -> IO r
 runBoxes s = do
-	(cr, c, c') <- tryUseTChanGen \w cr -> (drawBox w cr `mapM_`)
+	(cr, c, c') <- runGtkMain \w cr -> (drawBox w cr `mapM_`)
 	(r, _) <- interpretSt (handleBoxesFoo 0.1 cr c) (atomically . writeTChan c') s . (InitialMode ,) . systemToTAITime =<< getSystemTime
 	r <$ gtkMainQuit
 
