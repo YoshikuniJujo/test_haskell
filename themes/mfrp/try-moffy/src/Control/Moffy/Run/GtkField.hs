@@ -53,23 +53,8 @@ runGtkMain dr = do
 		tx <- atomically $ newTVar mempty
 		ftc <- newTChanIO
 		[] <- gtkInit []
-
-		-- make Window
-		w <- gtkWindowNew gtkWindowToplevel
-		gtkWidgetSetEvents w [gdkPointerMotionMask]
-		mapM_ ($ ()) [
-			gSignalConnect w Destroy gtkMainQuit,
-			gSignalConnect w DeleteEvent \_ _ _ -> deleteEvent c,
-			gSignalConnect w KeyPressEvent \_ ev _ -> keyDown c ev,
-			gSignalConnect w KeyReleaseEvent \_ ev _ -> keyUp c ev,
-			gSignalConnect w ButtonPressEvent \_ ev _ -> buttonDown c ev,
-			gSignalConnect w ButtonReleaseEvent \_ ev _ -> buttonUp c ev,
-			gSignalConnect w MotionNotifyEvent \_ ev _ -> mouseMove c ev ]
-
-		-- make Drawing Area
-		da <- gtkDrawingAreaNew
-		gtkContainerAdd (castWidgetToContainer w) da
-		gSignalConnect da DrawEvent (draw dr ftc c tx) ()
+		w <- createWindow c
+		da <- createDrawingArea dr ftc c tx w
 
 		-- recieve request to calcumlate text extents
 		void . flip (gTimeoutAdd 101) () $ const do
@@ -95,6 +80,26 @@ runGtkMain dr = do
 		gtkWidgetShowAll w
 		gtkMain
 	pure (cr, c, c')
+
+createWindow :: TChan (EvOccs GuiEv) -> IO GtkWidget
+createWindow c = do
+	w <- gtkWindowNew gtkWindowToplevel
+	gtkWidgetSetEvents w [gdkPointerMotionMask]
+	w <$ mapM_ ($ ()) [
+		gSignalConnect w Destroy gtkMainQuit,
+		gSignalConnect w DeleteEvent \_ _ _ -> deleteEvent c,
+		gSignalConnect w KeyPressEvent \_ ev _ -> keyDown c ev,
+		gSignalConnect w KeyReleaseEvent \_ ev _ -> keyUp c ev,
+		gSignalConnect w ButtonPressEvent \_ ev _ -> buttonDown c ev,
+		gSignalConnect w ButtonReleaseEvent \_ ev _ -> buttonUp c ev,
+		gSignalConnect w MotionNotifyEvent \_ ev _ -> mouseMove c ev ]
+
+createDrawingArea :: GtkDrawer a -> TChan (FontName, FontSize, T.Text) ->
+	TChan (EvOccs GuiEv) -> TVar a -> GtkWidget -> IO GtkWidget
+createDrawingArea dr ftc c tx w = do
+	da <- gtkDrawingAreaNew
+	gtkContainerAdd (castWidgetToContainer w) da
+	da <$ gSignalConnect da DrawEvent (draw dr ftc c tx) ()
 
 -- HANDLER OF GDK EVENT
 
