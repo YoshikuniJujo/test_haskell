@@ -53,6 +53,8 @@ runGtkMain dr = do
 		tx <- atomically $ newTVar mempty
 		ftc <- newTChanIO
 		[] <- gtkInit []
+
+		-- make Window
 		w <- gtkWindowNew gtkWindowToplevel
 		gtkWidgetSetEvents w [gdkPointerMotionMask]
 		mapM_ ($ ()) [
@@ -64,10 +66,12 @@ runGtkMain dr = do
 			gSignalConnect w ButtonReleaseEvent \_ ev _ -> buttonUp c ev,
 			gSignalConnect w MotionNotifyEvent \_ ev _ -> mouseMove c ev ]
 
+		-- make Drawing Area
 		da <- gtkDrawingAreaNew
 		gtkContainerAdd (castWidgetToContainer w) da
 		gSignalConnect da DrawEvent (draw dr ftc c tx) ()
 
+		-- recieve request to calcumlate text extents
 		void . flip (gTimeoutAdd 101) () $ const do
 			atomically (lastTChan cr) >>= \case
 				Nothing -> pure True
@@ -79,6 +83,7 @@ runGtkMain dr = do
 							gtkWidgetQueueDraw da
 							pure True
 
+		-- recieve viewable
 		void . flip (gTimeoutAdd 100) () $ const do
 			atomically (lastTChan c') >>= \case
 				Nothing -> pure True
