@@ -1,11 +1,11 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Boxes.View (
+module Trial.Boxes.XField (
 	-- * drawBoxes
 	Box, drawBoxes ) where
 
-import Trial.Boxes.Box (Box(..), Rect(..), Color(..))
+import Control.Moffy.Viewable.Shape (Box(..), Rect(..), BColor(..))
 import Field (Field, Pixel, flushField, clearField, fillRect)
 
 ---------------------------------------------------------------------------

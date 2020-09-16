@@ -288,7 +288,7 @@ todo
 	+ [x] remove instance Draw View
 		- [x] define drawFollowboxGtk
 		- [x] use tryUseTChanGen
-	* [ ] move Box to Control.Moffy.Viewable
+	* [x] move Box to Control.Moffy.Viewable
 	* [ ] use tryUseTChanGen about Box
 	* [ ] remove class Draw
 	+ [ ] others

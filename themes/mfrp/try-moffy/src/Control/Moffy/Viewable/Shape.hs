@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Viewable.Shape (Line(..)) where
+module Control.Moffy.Viewable.Shape (Line(..), Box(..), Rect(..), BColor(..)) where
 
 import Data.Type.Set
 
@@ -11,3 +11,7 @@ import Control.Moffy.Viewable.Basic
 
 data Line = Line' Color LineWidth Position Position
 numbered [t| Line |]
+
+data Box = Box Rect BColor deriving Show
+data Rect = Rect { leftup :: Position, rightdown :: Position  } deriving Show
+data BColor = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)

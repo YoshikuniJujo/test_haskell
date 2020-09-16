@@ -29,7 +29,7 @@ import Data.Or (Or(..))
 
 import qualified Control.Arrow as Arr (first)
 
-import Trial.Boxes.Box (Box(..), Rect(..), Color(..))
+import Control.Moffy.Viewable.Shape (Box(..), Rect(..), BColor(..))
 import Trial.Boxes.BoxEv (SigB)
 
 ---------------------------------------------------------------------------
@@ -84,7 +84,7 @@ wiggleRect (Rect lu rd) = (<$%> elapsed) \t -> let
 	dx = (sin (fromRational (toRational t) * 5) * 15 :: Double) in
 	Rect ((+ dx) `Arr.first` lu) ((+ dx) `Arr.first` rd)
 
-cycleColor :: Sig s (Singleton MouseDown) Color ()
+cycleColor :: Sig s (Singleton MouseDown) BColor ()
 cycleColor = go . cycle $ fromList [Red .. Magenta] where
 	go (h :~ t) = emit h >>
 		(bool (pure ()) (go t)

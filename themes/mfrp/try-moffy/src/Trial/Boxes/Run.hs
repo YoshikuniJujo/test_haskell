@@ -15,7 +15,7 @@ import Data.Time.Clock.TAI (AbsoluteTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 
 import Trial.Boxes.BoxEv (SigB, BoxEv)
-import Trial.Boxes.View (Box, drawBoxes)
+import Trial.Boxes.XField (Box, drawBoxes)
 import Field (
 	Field, openField, closeField,
 	exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask )

@@ -15,7 +15,7 @@ import Data.Time.Clock.System
 import Graphics.Gtk
 
 import Trial.Boxes.BoxEv
-import Trial.Boxes.View
+import Trial.Boxes.GtkField
 
 import Trial.Boxes
 
