@@ -11,6 +11,7 @@ module Control.Moffy.Run.GtkField (
 
 import Prelude hiding (repeat, break)
 
+import Control.Arrow
 import Control.Monad
 import Control.Moffy
 import Control.Moffy.Event.Delete as M (DeleteEvent, pattern OccDeleteEvent)
@@ -55,18 +56,8 @@ runGtkMain dr = do
 		[] <- gtkInit []
 		w <- createWindow c
 		da <- createDrawingArea dr ftc c tx w
-
-		-- recieve request to calcumlate text extents
-		void . flip (gTimeoutAdd 101) () $ const do
-			atomically (lastTChan cr) >>= \case
-				Nothing -> pure True
-				Just rqs -> do
-					case project rqs of
-						Nothing -> pure True
-						Just (CalcTextExtentsReq fn fs t) -> do
-							atomically $ writeTChan ftc (fn, fs, t)
-							gtkWidgetQueueDraw da
-							pure True
+		void $ gTimeoutAdd 100
+			(const $ recieveCalcTextExtentsRequest cr ftc da) ()
 
 		-- recieve viewable
 		void . flip (gTimeoutAdd 100) () $ const do
@@ -100,6 +91,12 @@ createDrawingArea dr ftc c tx w = do
 	da <- gtkDrawingAreaNew
 	gtkContainerAdd (castWidgetToContainer w) da
 	da <$ gSignalConnect da DrawEvent (draw dr ftc c tx) ()
+
+recieveCalcTextExtentsRequest ::
+	TChan (EvReqs GuiEv) -> TChan (FontName, FontSize, T.Text) -> GtkWidget -> IO Bool
+recieveCalcTextExtentsRequest cr ftc da = (True <$) $ atomically (lastTChan cr) >>=
+	maybe (pure ()) (project >>> maybe (pure ()) \(CalcTextExtentsReq fn fs t) ->
+		atomically (writeTChan ftc (fn, fs, t)) >> gtkWidgetQueueDraw da)
 
 -- HANDLER OF GDK EVENT
 

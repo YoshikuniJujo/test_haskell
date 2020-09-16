@@ -319,7 +319,7 @@ todo
 			* [ ] separate the function into 4 modules
 				+ [x] make window and signal connect
 				+ [x] make draw area and signal connect
-				+ [ ] run process to recieve viewable
+				+ [x] run process to recieve viewable
 				+ [ ] run process to recieve request to calculate text extents
 		- [ ] others
 	+ [ ] others
