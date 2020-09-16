@@ -315,6 +315,12 @@ todo
 		- [x] refactor function lastTChan
 		- [x] refactor function draw
 		- [ ] refactor function runGtkMain
+			* [x] define handler function of gdk event
+			* [ ] separate the function into 4 modules
+				+ [ ] make window and signal connect
+				+ [ ] make draw area and signal connect
+				+ [ ] run process to recieve viewable
+				+ [ ] run process to recieve request to calculate text extents
 		- [ ] others
 	+ [ ] others
 * [ ] rename Trial.Boxes.Run to Trial.Boxes.RunXField

@@ -13,9 +13,13 @@ import Prelude hiding (repeat, break)
 
 import Control.Monad
 import Control.Moffy
-import Control.Moffy.Event.Delete as M
-import Control.Moffy.Event.Key
-import Control.Moffy.Event.Mouse
+import Control.Moffy.Event.Delete as M (DeleteEvent, pattern OccDeleteEvent)
+import Control.Moffy.Event.Key (
+	KeyEv, pattern OccKeyDown, pattern OccKeyUp, Key(..) )
+import Control.Moffy.Event.Mouse (
+	MouseEv,
+	MouseDown, pattern OccMouseDown,  MouseUp, pattern OccMouseUp,
+	MouseMove, pattern OccMouseMove, MouseBtn(..) )
 import Control.Moffy.Event.CalcTextExtents
 import Control.Concurrent
 import Control.Concurrent.STM hiding (retry)
@@ -51,27 +55,19 @@ runGtkMain dr = do
 		[] <- gtkInit []
 		w <- gtkWindowNew gtkWindowToplevel
 		gtkWidgetSetEvents w [gdkPointerMotionMask]
-		gSignalConnect w DeleteEvent (\_ _ _ -> True <$
-			(atomically (writeTChan c . expand $ Singleton OccDeleteEvent))) ()
-		gSignalConnect w KeyPressEvent (\_ ev _ -> False <$ do
-			e <- gdkEventKeyToOccKeyDown ev
-			atomically (writeTChan c $ expand e)) ()
-		gSignalConnect w KeyReleaseEvent (\_ ev _ -> False <$ do
-			e <- gdkEventKeyToOccKeyUp ev
-			atomically (writeTChan c $ expand e)) ()
-		gSignalConnect w ButtonPressEvent (\_ ev _ -> True <$ do
-			e <- gdkEventButtonToOccMouseDown ev
-			atomically (writeTChan c $ expand e)) ()
-		gSignalConnect w ButtonReleaseEvent (\_ ev _ -> True <$ do
-			e <- gdkEventButtonToOccMouseUp ev
-			atomically (writeTChan c $ expand e)) ()
-		gSignalConnect w MotionNotifyEvent (\_ ev _ -> True <$ do
-			e <- gdkEventMotionToOccMouseMove ev
-			atomically (writeTChan c $ expand e)) ()
-		gSignalConnect w Destroy gtkMainQuit ()
+		mapM_ ($ ()) [
+			gSignalConnect w Destroy gtkMainQuit,
+			gSignalConnect w DeleteEvent \_ _ _ -> deleteEvent c,
+			gSignalConnect w KeyPressEvent \_ ev _ -> keyDown c ev,
+			gSignalConnect w KeyReleaseEvent \_ ev _ -> keyUp c ev,
+			gSignalConnect w ButtonPressEvent \_ ev _ -> buttonDown c ev,
+			gSignalConnect w ButtonReleaseEvent \_ ev _ -> buttonUp c ev,
+			gSignalConnect w MotionNotifyEvent \_ ev _ -> mouseMove c ev ]
+
 		da <- gtkDrawingAreaNew
 		gtkContainerAdd (castWidgetToContainer w) da
 		gSignalConnect da DrawEvent (draw dr ftc c tx) ()
+
 		void . flip (gTimeoutAdd 101) () $ const do
 			atomically (lastTChan cr) >>= \case
 				Nothing -> pure True
@@ -82,6 +78,7 @@ runGtkMain dr = do
 							atomically $ writeTChan ftc (fn, fs, t)
 							gtkWidgetQueueDraw da
 							pure True
+
 		void . flip (gTimeoutAdd 100) () $ const do
 			atomically (lastTChan c') >>= \case
 				Nothing -> pure True
@@ -89,38 +86,45 @@ runGtkMain dr = do
 					atomically $ writeTVar tx v
 					gtkWidgetQueueDraw da
 					pure True
+
 		gtkWidgetShowAll w
 		gtkMain
 	pure (cr, c, c')
 
--- GDK EVENT TO OCCURRED EVENT
+-- HANDLER OF GDK EVENT
 
-gdkEventKeyToOccKeyDown :: GdkEventKey -> IO (EvOccs (Singleton KeyDown))
-gdkEventKeyToOccKeyDown e =
-	Singleton . OccKeyDown . Key . fromIntegral <$> keyval e
+deleteEvent :: TChan (EvOccs GuiEv) -> IO Bool
+deleteEvent c = (True <$)
+	. atomically . writeTChan c . expand $ Singleton OccDeleteEvent
 
-gdkEventKeyToOccKeyUp :: GdkEventKey -> IO (EvOccs (Singleton KeyUp))
-gdkEventKeyToOccKeyUp e =
-	Singleton . OccKeyUp . Key . fromIntegral <$> keyval e
+keyDown, keyUp :: TChan (EvOccs GuiEv) -> GdkEventKey -> IO Bool
+keyDown c ev = (False <$) $ atomically . writeTChan c . expand
+	=<< Singleton . OccKeyDown . Key . fromIntegral <$> keyval ev
 
-gdkEventButtonToOccMouseDown ::
-	GdkEventButton -> IO (EvOccs (MouseDown :- MouseMove :- 'Nil))
-gdkEventButtonToOccMouseDown e = do
-	p <- (,) <$> gdkEventButtonX e <*> gdkEventButtonY e
-	b <- gdkEventButtonButton e
-	pure $ OccMouseDown (button b) >- Singleton (OccMouseMove p)
+keyUp c ev = (False <$) $ atomically . writeTChan c . expand
+	=<< Singleton . OccKeyUp . Key . fromIntegral <$> keyval ev
 
-gdkEventButtonToOccMouseUp ::
-	GdkEventButton -> IO (EvOccs (MouseUp :- MouseMove :- 'Nil))
-gdkEventButtonToOccMouseUp e = do
-	p <- (,) <$> gdkEventButtonX e <*> gdkEventButtonY e
-	b <- gdkEventButtonButton e
-	pure $ OccMouseUp (button b) >- Singleton (OccMouseMove p)
+buttonDown, buttonUp :: TChan (EvOccs GuiEv) -> GdkEventButton -> IO Bool
+buttonDown c ev = (True <$) $ atomically . writeTChan c . expand =<< occ
+	where
+	occ :: IO (EvOccs (MouseDown :- MouseMove :- 'Nil))
+	occ = do
+		(b, p) <- (,) <$> gdkEventButtonButton ev
+			<*> ((,) <$> gdkEventButtonX ev <*> gdkEventButtonY ev)
+		pure $ OccMouseDown (button b) >- Singleton (OccMouseMove p)
 
-gdkEventMotionToOccMouseMove ::
-	GdkEventMotion -> IO (EvOccs (Singleton MouseMove))
-gdkEventMotionToOccMouseMove e = Singleton . OccMouseMove
-	<$> ((,) <$> gdkEventMotionX e <*> gdkEventMotionY e)
+buttonUp c ev = (True <$) $ atomically . writeTChan c . expand =<< occ
+	where
+	occ :: IO (EvOccs (MouseUp :- MouseMove :- 'Nil))
+	occ = do
+		(b, p) <- (,) <$> gdkEventButtonButton ev
+			<*> ((,) <$> gdkEventButtonX ev <*> gdkEventButtonY ev)
+		pure $ OccMouseUp (button b) >- Singleton (OccMouseMove p)
+
+mouseMove :: TChan (EvOccs GuiEv) -> GdkEventMotion -> IO Bool
+mouseMove c ev = (True <$)
+	$ atomically . writeTChan c . expand . Singleton . OccMouseMove
+		=<< ((,) <$> gdkEventMotionX ev <*> gdkEventMotionY ev)
 
 button :: Word32 -> MouseBtn
 button = \case
