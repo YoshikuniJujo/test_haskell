@@ -302,9 +302,11 @@ todo
 * [x] remove Trial.Followbox.GtkField
 	+ [x] rename Trial.Followbox.RunGtk to Trial.Followbox.RunGtkField
 	+ [x] others
-* [ ] separate Control.Moffy.Handle.GtkField
+* [x] separate Control.Moffy.Handle.GtkField
 	+ [x] refactor Control.Moffy.Handle.GtkField some
-	+ [ ] move tryUseTChanGen to Control.Moffy.Run.GtkField
+	+ [x] move tryUseTChanGen to Control.Moffy.Run.GtkField
+	+ [x] more general Control.Moffy.Handle.GtkField.handle
+	+ [ ] rename Control.Moffy.Handle.GtkField to Control.Moffy.Handle.TChan
 	+ [ ] others
 * [ ] make draw application
 	+ [ ] no fill rectangle

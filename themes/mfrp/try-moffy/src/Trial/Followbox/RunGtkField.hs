@@ -6,7 +6,7 @@ module Trial.Followbox.RunGtkField where
 
 import Control.Moffy
 import Control.Moffy.Event.CalcTextExtents
-import Control.Moffy.Handle.GtkField hiding (GuiEv)
+import Control.Moffy.Handle.GtkField
 import Control.Moffy.Run
 import Control.Concurrent.STM
 import Data.Type.Set ((:-), (:+:))
@@ -21,6 +21,8 @@ import Trial.Followbox.Event
 import Trial.Followbox.Handle
 import Trial.Followbox.ViewType
 import Trial.Followbox.TypeSynonym
+
+import Control.Moffy.Run.GtkField (tryUseTChanGen)
 
 handleFollowbox ::
 	(TChan (EvReqs (CalcTextExtents :- GuiEv)), TChan (EvOccs (CalcTextExtents :- GuiEv))) -> Browser ->

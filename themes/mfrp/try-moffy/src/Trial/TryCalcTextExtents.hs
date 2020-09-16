@@ -26,6 +26,8 @@ import Data.Time
 import Data.Time.Clock.TAI
 import Control.Moffy.Event.Time
 
+import Control.Moffy.Run.GtkField as G
+
 tryCalcTextExtents :: T.Text -> Sig s (DeleteEvent :- CalcTextExtents :- 'Nil) (T.Text, TextExtents') ()
 tryCalcTextExtents txt =
 	(emit . (txt ,) =<< waitFor (adjust $ calcTextExtents' "Sans" 30 txt)) >> waitFor (adjust deleteEvent)

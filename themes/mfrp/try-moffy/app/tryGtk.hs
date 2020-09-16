@@ -27,6 +27,7 @@ import Trial.Boxes.BoxEv
 import Trial.Boxes
 
 import Control.Moffy.Handle
+import Control.Moffy.Run.GtkField
 
 runBoxes :: SigB s [Box] r -> IO r
 runBoxes s = do
