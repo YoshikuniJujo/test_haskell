@@ -9,13 +9,14 @@ import Control.Moffy.Handle (
 	HandleSt, retrySt, liftHandle', popInput, pushInput )
 import Control.Moffy.Handle.Time (Mode(..), handleTimeEvPlus)
 import Control.Moffy.Handle.XField (handle)
+import Control.Moffy.Viewable.Shape (Box)
+import Control.Moffy.View.XField (drawBoxes)
 import Control.Moffy.Run (interpretSt)
 import Data.Time (DiffTime)
 import Data.Time.Clock.TAI (AbsoluteTime)
 import Data.Time.Clock.System (getSystemTime, systemToTAITime)
 
 import Trial.Boxes.BoxEv (SigB, BoxEv)
-import Trial.Boxes.XField (Box, drawBoxes)
 import Field (
 	Field, openField, closeField,
 	exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask )

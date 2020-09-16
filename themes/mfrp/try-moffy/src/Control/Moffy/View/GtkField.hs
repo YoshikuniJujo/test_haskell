@@ -5,7 +5,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
 
-module Control.Moffy.View.GtkField (drawText, drawLine, drawImage) where
+module Control.Moffy.View.GtkField (drawText, drawLine, drawImage, drawBox) where
 
 import qualified Data.ByteString as BS
 import qualified Data.Text as T
@@ -37,9 +37,6 @@ drawText _ cr (Text' c fn fs (x, y) t) = do
 	cairoMoveTo cr x y
 	pangoCairoShowLayout cr l
 
-uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
-uncurry3 f (x, y, z) = f x y z
-
 -- LINE
 
 drawLine :: GtkWidget -> CairoT -> Line -> IO ()
@@ -68,3 +65,26 @@ bsToCairoReadFunc tbs () (fromIntegral -> n) = atomically $ readTVar tbs >>= \bs
 	_	| BS.length bs >= n -> (cairoStatusSuccess, Just t) <$ writeTVar tbs d
 		| otherwise -> pure (cairoStatusReadError, Nothing)
 		where (t, d) = BS.splitAt n bs
+
+drawBox :: GtkWidget -> CairoT -> Box -> IO ()
+drawBox _ cr (Box (Rect (l_, u_) (r, d)) c) = do
+	uncurry3 (cairoSetSourceRgb cr) $ bcolorToRgb c
+	cairoRectangle cr l u w h
+	cairoStrokePreserve cr
+	cairoFill cr
+	where
+	l = min l_ r
+	u = min u_ d
+	w = abs $ l_ - r
+	h = abs $ u_ - d
+
+uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
+uncurry3 f (x, y, z) = f x y z
+
+bcolorToRgb :: BColor -> (Double, Double, Double)
+bcolorToRgb Red = (1, 0, 0)
+bcolorToRgb Green = (0, 1, 0)
+bcolorToRgb Blue = (0, 0, 1)
+bcolorToRgb Yellow = (1, 1, 0)
+bcolorToRgb Cyan = (0, 1, 1)
+bcolorToRgb Magenta = (1, 0, 1)

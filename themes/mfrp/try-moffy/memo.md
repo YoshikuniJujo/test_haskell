@@ -283,7 +283,7 @@ todo
 		- [x] module Control.Moffy.View.XField
 		- [x] module Control.Moffy.View.GtkField
 	+ [x] move each modules under Control.Moffy.View
-* [ ] use OneOfThem in view of GTK
+* [x] use OneOfThem in view of GTK
 	+ [x] define tryUseTChanGen: `tryUseTChanGen :: (GtkWidget -> CairoT -> a -> IO ()) -> IO (...)`
 	+ [x] remove instance Draw View
 		- [x] define drawFollowboxGtk
@@ -292,13 +292,13 @@ todo
 	+ [x] define drawBox
 	+ [x] use tryUseTChanGen about Box
 	+ [x] remove class Drawable
-	+ [ ] move contents of Trial.Boxes.XField to Control.Moffy.View.XField
-	+ [ ] remove Trial.Boxes.XField
-	+ [ ] move contents of Trial.Boxes.GtkField to Control.Moffy.View.GtkField
-	+ [ ] remove Trial.Boxes.GtkField
-	+ [ ] others
+	+ [x] move contents of Trial.Boxes.XField to Control.Moffy.View.XField
+	+ [x] remove Trial.Boxes.XField
+	+ [x] move contents of Trial.Boxes.GtkField to Control.Moffy.View.GtkField
+	+ [x] remove Trial.Boxes.GtkField
 * [ ] remove Trial.Followbox.XField
 * [ ] remove Trial.Followbox.GtkField
+* [ ] separate Control.Moffy.Handle.XField
 * [ ] make draw application
 	+ [ ] no fill rectangle
 	+ [ ] no fill lines and polygon

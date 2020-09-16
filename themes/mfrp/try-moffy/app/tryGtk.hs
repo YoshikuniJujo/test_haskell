@@ -10,13 +10,14 @@ import Control.Moffy
 import Control.Moffy.Event.Delete
 import Control.Moffy.Handle.GtkField
 import Control.Moffy.Handle.Time
+import Control.Moffy.Viewable.Shape
+import Control.Moffy.View.GtkField
 import Control.Moffy.Run
 import Control.Concurrent.STM
 import Data.Time.Clock.System
 import Graphics.Gtk
 
 import Trial.Boxes.BoxEv
-import Trial.Boxes.GtkField
 
 import Trial.Boxes
 
