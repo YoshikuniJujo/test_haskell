@@ -311,6 +311,10 @@ todo
 	+ [x] rename tryUseTChanGen to runGtkMain
 	+ [x] refactor some
 	+ [ ] refactor more
+		- [x] refactor function lastTChan
+		- [ ] refactor function draw
+		- [ ] refactor function runGtkMain
+		- [ ] others
 	+ [ ] others
 * [ ] rename Trial.Boxes.Run to Trial.Boxes.RunXField
 * [ ] make Trial.Boxes.RunGtkField

@@ -1,7 +1,6 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
-{-# LANGUAGE FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Run.GtkField (GuiEv, runGtkMain) where
@@ -99,11 +98,6 @@ gdkEventKeyToOccKeyUp :: GdkEventKey -> IO (EvOccs (Singleton KeyUp))
 gdkEventKeyToOccKeyUp e =
 	SingletonApp . OccKeyUp . Key . fromIntegral <$> keyval e
 
-gdkEventMotionToOccMouseMove ::
-	GdkEventMotion -> IO (EvOccs (Singleton MouseMove))
-gdkEventMotionToOccMouseMove e = SingletonApp . OccMouseMove
-	<$> ((,) <$> gdkEventMotionX e <*> gdkEventMotionY e)
-
 gdkEventButtonToOccMouseDown ::
 	GdkEventButton -> IO (EvOccs (MouseDown :- MouseMove :- 'Nil))
 gdkEventButtonToOccMouseDown e = do
@@ -117,6 +111,11 @@ gdkEventButtonToOccMouseUp e = do
 	p <- (,) <$> gdkEventButtonX e <*> gdkEventButtonY e
 	b <- gdkEventButtonButton e
 	pure $ OccMouseUp (button b) >-^ SingletonApp (OccMouseMove p)
+
+gdkEventMotionToOccMouseMove ::
+	GdkEventMotion -> IO (EvOccs (Singleton MouseMove))
+gdkEventMotionToOccMouseMove e = SingletonApp . OccMouseMove
+	<$> ((,) <$> gdkEventMotionX e <*> gdkEventMotionY e)
 
 button :: Word32 -> MouseBtn
 button = \case
@@ -154,6 +153,5 @@ mkTextExtents ie le = TextExtents' <$> r2r ie <*> r2r le
 -- HELPER FUNCTION
 
 lastTChan :: TChan a -> STM (Maybe a)
-lastTChan c = tryReadTChan c >>= \case
-	Nothing -> pure Nothing
-	Just x -> bool (lastTChan c) (pure $ Just x) =<< isEmptyTChan c
+lastTChan c = tryReadTChan c >>= maybe (pure Nothing)
+	((isEmptyTChan c >>=) . bool (lastTChan c) . (pure . Just))
