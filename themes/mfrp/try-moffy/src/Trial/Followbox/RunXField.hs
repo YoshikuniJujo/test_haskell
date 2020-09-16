@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Followbox.Run (
+module Trial.Followbox.RunXField (
 	-- * Run Follow Box
 	runFollowbox, evalFollowbox ) where
 
@@ -14,13 +14,18 @@ import System.Random (mkStdGen)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 
+import Trial.Followbox.ViewType
+
 import Trial.Followbox.Event (SigF)
 import Trial.Followbox.XFieldHandle (
 	handleFollowbox, FollowboxState, initialFollowboxState )
-import Trial.Followbox.XField (View, view)
 import Trial.Followbox.TypeSynonym (
 	WindowTitle, Browser, GithubNameToken, GithubUserName )
-import Field (openField, closeField, exposureMask, buttonPressMask)
+import Field (
+	Field, openField, closeField, flushField, clearField, exposureMask, buttonPressMask )
+
+import Control.Moffy.View.XField
+import Data.OneOfThem
 
 ---------------------------------------------------------------------------
 
@@ -52,6 +57,12 @@ run ttl s FollowboxInfo { fiBrowser = brs, fiGithubUserNameToken = mgnt } =
 	openField ttl [exposureMask, buttonPressMask] >>= \f ->
 		interpretSt (handleFollowbox f brs mgnt) (view f) s
 			(initialFollowboxState $ mkStdGen 8) <* closeField f
+
+view :: Field -> View -> IO ()
+view f (View v) = clearField f >> view1 f `mapM` v >> flushField f
+
+view1 :: Field -> View1 -> IO ()
+view1 f = apply $ viewText f >-- viewLine f >-- SingletonFun (viewImage f)
 
 ---------------------------------------------------------------------------
 -- GET FOLLOWBOX INFO

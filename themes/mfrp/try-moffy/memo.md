@@ -296,7 +296,9 @@ todo
 	+ [x] remove Trial.Boxes.XField
 	+ [x] move contents of Trial.Boxes.GtkField to Control.Moffy.View.GtkField
 	+ [x] remove Trial.Boxes.GtkField
-* [ ] remove Trial.Followbox.XField
+* [x] remove Trial.Followbox.XField
+	+ [x] rename Trial.Followbox.Run to Trial.Followbox.RunXField
+	+ [x] others
 * [ ] remove Trial.Followbox.GtkField
 * [ ] separate Control.Moffy.Handle.XField
 * [ ] make draw application

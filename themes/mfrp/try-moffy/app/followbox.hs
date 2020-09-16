@@ -3,7 +3,7 @@
 module Main where
 
 import Trial.Followbox (followbox)
-import Trial.Followbox.Run (evalFollowbox)
+import Trial.Followbox.RunXField (evalFollowbox)
 
 main :: IO ()
 main = evalFollowbox "FOLLOW BOX" followbox
