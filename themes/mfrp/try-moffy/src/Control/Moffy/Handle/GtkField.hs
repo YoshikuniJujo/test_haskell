@@ -38,8 +38,6 @@ import Data.Word
 
 import Data.OneOrMoreApp as Oom
 
-import qualified Data.OneOfThem as Oot
-
 tryGtk :: IO ()
 tryGtk = do
 	[] <- gtkInit []
@@ -51,32 +49,7 @@ tryGtk = do
 print' :: a -> IO ()
 print' _ = pure ()
 
-class Drawable a where
-	draw :: GtkWidget -> CairoT -> a -> IO ()
-
-instance Drawable () where draw _ _ () = pure ()
-
-instance Drawable a => Drawable [a] where
-	draw w cr xs = draw w cr `mapM_` xs
-
-instance Drawable Double where
-	draw _ cr n = do
-		cairoMoveTo cr 200 100
-		cairoLineTo cr (210 + 10 * n) (110 + 10 * n)
-		cairoStroke cr
-
-{-
-instance Drawable a => Drawable (Oot.OneOfThem (Singleton a)) where
-	draw w cr = (Oot.SingletonFun (draw w cr) `Oot.apply`)
-
-instance (Drawable a, Drawable (Oot.OneOfThem as)) => Drawable (Oot.OneOfThem (a :- as)) where
-	draw w cr = ((draw w cr >- draw w cr) `Oot.apply`)
-	-}
-
 type GuiEv = CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv
-
-tryUseTChan :: (Drawable a, Monoid a) => IO (TChan (EvReqs GuiEv), TChan (EvOccs GuiEv), TChan a)
-tryUseTChan = tryUseTChanGen draw
 
 tryUseTChanGen :: Monoid a => (GtkWidget -> CairoT -> a -> IO ()) -> IO (TChan (EvReqs GuiEv), TChan (EvOccs GuiEv), TChan a)
 tryUseTChanGen dr = do
@@ -88,12 +61,10 @@ tryUseTChanGen dr = do
 		tx <- atomically $ newTVar mempty
 
 		ftc <- newTChanIO
---		pokeMutable m =<< newArr []
 		[] <- gtkInit []
 		w <- gtkWindowNew gtkWindowToplevel
 
 		gtkWidgetSetEvents w [gdkPointerMotionMask]
---		gtkWidgetSetEvents w [gdkButtonMotionMask]
 		gSignalConnect w DeleteEvent (\a b x' -> True <$ (print' (a, b, x') >>
 			atomically (writeTChan c . Oom.expandApp $ SingletonApp OccDeleteEvent))) ()
 		gSignalConnect w KeyPressEvent (\a b x' -> False <$ (print' (a, b, x') >> do
@@ -122,10 +93,8 @@ tryUseTChanGen dr = do
 			atomically (lastTChan cr) >>= \case
 				Nothing -> pure True
 				Just rqs -> do
---					putStrLn "here"
 					case project rqs of
 						Nothing -> pure True
---						Just (TextExtents xb yb tw th xa ya) -> do
 						Just (CalcTextExtentsReq fn fs t) -> do
 							putStrLn "CalcTextExtents"
 							print (fn, fs, t)
@@ -188,7 +157,6 @@ tryDraw dr ftc co tx w cr () = True <$ do
 				$ OccCalcTextExtents fn fs txt te
 		Nothing -> pure ()
 	dr w cr =<< readTVarIO tx
---	draw cr =<< peekArr =<< peekMutable x
 
 rectangle :: Int32 -> Int32 -> Int32 -> Int32 -> Rectangle
 rectangle (fromIntegral -> l) (fromIntegral -> t) (fromIntegral -> w) (fromIntegral -> h) =
@@ -241,13 +209,9 @@ gdkEventButtonToOccMouseUp e = do
 		n -> ButtonUnknown n
 
 handleDelete :: Maybe DiffTime -> TChan (EvReqs GuiEv) -> TChan (EvOccs GuiEv) -> Handle' IO GuiEv
--- handleDelete :: DiffTime -> TChan (EvOccs GuiEv) -> Handle' IO GuiEv
 handleDelete mt cr c rqs = maybe (Just <$>) (timeout . round . (* 1000000)) mt do
 	atomically $ writeTChan cr rqs
 	atomically $ readTChan c
-
--- uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
--- uncurry3 f (x, y, z) = f x y z
 
 curry3 :: ((a, b, c) -> d) -> a -> b -> c -> d
 curry3 f x y z = f (x, y, z)

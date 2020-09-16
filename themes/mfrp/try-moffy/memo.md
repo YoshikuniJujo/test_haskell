@@ -288,10 +288,17 @@ todo
 	+ [x] remove instance Draw View
 		- [x] define drawFollowboxGtk
 		- [x] use tryUseTChanGen
-	* [x] move Box to Control.Moffy.Viewable
-	* [ ] use tryUseTChanGen about Box
-	* [ ] remove class Draw
+	+ [x] move Box to Control.Moffy.Viewable
+	+ [x] define drawBox
+	+ [x] use tryUseTChanGen about Box
+	+ [x] remove class Drawable
+	+ [ ] move contents of Trial.Boxes.XField to Control.Moffy.View.XField
+	+ [ ] remove Trial.Boxes.XField
+	+ [ ] move contents of Trial.Boxes.GtkField to Control.Moffy.View.GtkField
+	+ [ ] remove Trial.Boxes.GtkField
 	+ [ ] others
+* [ ] remove Trial.Followbox.XField
+* [ ] remove Trial.Followbox.GtkField
 * [ ] make draw application
 	+ [ ] no fill rectangle
 	+ [ ] no fill lines and polygon

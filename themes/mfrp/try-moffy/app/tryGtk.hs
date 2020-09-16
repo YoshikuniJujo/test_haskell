@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -21,7 +22,7 @@ import Trial.Boxes
 
 runBoxes :: SigB s [Box] r -> IO r
 runBoxes s = do
-	(cr, c, c') <- tryUseTChan
+	(cr, c, c') <- tryUseTChanGen \w cr -> (drawBox w cr `mapM_`)
 	(r, _) <- interpretSt (handleBoxesFoo 0.1 cr c) (atomically . writeTChan c') s . (InitialMode ,) . systemToTAITime =<< getSystemTime
 	r <$ gtkMainQuit
 

@@ -3,24 +3,24 @@
 
 module Trial.Boxes.GtkField (
 	-- * Box
-	Box(..), Rect(..), BColor(..) ) where
+	Box(..), Rect(..), BColor(..), drawBox ) where
 
-import Control.Moffy.Handle.GtkField
 import Control.Moffy.Viewable.Shape
 
+import Graphics.Gtk
 import Graphics.Gtk.Cairo
 
-instance Drawable Box where
-	draw _ cr (Box (Rect (l_, u_) (r, d)) c) = do
-		uncurry3 (cairoSetSourceRgb cr) $ colorToRgb c
-		cairoRectangle cr l u w h
-		cairoStrokePreserve cr
-		cairoFill cr
-		where
-		l = min l_ r
-		u = min u_ d
-		w = abs $ l_ - r
-		h = abs $ u_ - d
+drawBox :: GtkWidget -> CairoT -> Box -> IO ()
+drawBox _ cr (Box (Rect (l_, u_) (r, d)) c) = do
+	uncurry3 (cairoSetSourceRgb cr) $ colorToRgb c
+	cairoRectangle cr l u w h
+	cairoStrokePreserve cr
+	cairoFill cr
+	where
+	l = min l_ r
+	u = min u_ d
+	w = abs $ l_ - r
+	h = abs $ u_ - d
 
 uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (x, y, z) = f x y z
