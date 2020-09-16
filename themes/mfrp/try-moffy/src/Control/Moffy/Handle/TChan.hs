@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Control.Moffy.Handle.GtkField (handle) where
+module Control.Moffy.Handle.TChan (handle) where
 
 import Control.Moffy
 import Control.Moffy.Handle

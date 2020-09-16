@@ -306,8 +306,8 @@ todo
 	+ [x] refactor Control.Moffy.Handle.GtkField some
 	+ [x] move tryUseTChanGen to Control.Moffy.Run.GtkField
 	+ [x] more general Control.Moffy.Handle.GtkField.handle
-	+ [ ] rename Control.Moffy.Handle.GtkField to Control.Moffy.Handle.TChan
-	+ [ ] others
+	+ [x] rename Control.Moffy.Handle.GtkField to Control.Moffy.Handle.TChan
+* [ ] refactor Control.Moffy.Run.GtkField some
 * [ ] make draw application
 	+ [ ] no fill rectangle
 	+ [ ] no fill lines and polygon

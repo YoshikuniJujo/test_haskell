@@ -11,7 +11,7 @@ import Control.Moffy.Event.CalcTextExtents
 import Control.Moffy.Handle
 import Control.Moffy.Handle.Time
 import Control.Moffy.Handle.XField as X
-import Control.Moffy.Handle.GtkField as G
+import Control.Moffy.Handle.TChan as T
 import Control.Moffy.Run
 import Control.Concurrent.STM hiding (retry)
 import Data.Type.Set
@@ -52,4 +52,4 @@ curry3 f x y z = f (x, y, z)
 handleBoxesFoo :: DiffTime -> TChan (EvReqs G.GuiEv) -> TChan (EvOccs G.GuiEv) ->
 	HandleSt (Mode, AbsoluteTime) IO (TimeEv :+: G.GuiEv)
 handleBoxesFoo dt cr co = retrySt
-	$ ((\f x y z -> f (x, (y, z))) . popInput . handleTimeEvPlus . pushInput) (\(x, (y, z)) -> (((liftHandle' .) .) . G.handle . Just) x y z) dt cr co
+	$ ((\f x y z -> f (x, (y, z))) . popInput . handleTimeEvPlus . pushInput) (\(x, (y, z)) -> (((liftHandle' .) .) . T.handle . Just) x y z) dt cr co

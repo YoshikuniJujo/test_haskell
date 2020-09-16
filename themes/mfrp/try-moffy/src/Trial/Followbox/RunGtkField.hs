@@ -6,7 +6,7 @@ module Trial.Followbox.RunGtkField where
 
 import Control.Moffy
 import Control.Moffy.Event.CalcTextExtents
-import Control.Moffy.Handle.GtkField
+import Control.Moffy.Handle.TChan
 import Control.Moffy.Run
 import Control.Concurrent.STM
 import Data.Type.Set ((:-), (:+:))

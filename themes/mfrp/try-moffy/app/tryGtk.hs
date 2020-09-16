@@ -8,7 +8,7 @@ import Prelude hiding (break)
 
 import Control.Moffy
 import Control.Moffy.Event.Delete
-import Control.Moffy.Handle.GtkField
+import Control.Moffy.Handle.TChan
 import Control.Moffy.Handle.Time
 import Control.Moffy.Viewable.Shape
 import Control.Moffy.View.GtkField
