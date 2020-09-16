@@ -133,19 +133,17 @@ draw :: GtkDrawer a -> TChan (FontName, FontSize, T.Text) ->
 	TChan (EvOccs GuiEv) -> TVar a -> GtkWidget -> CairoT -> () -> IO Bool
 draw dr ftc co tx wdgt cr () = True <$ do
 	atomically (lastTChan ftc) >>= maybe (pure ()) \(fn, fs, txt) -> do
-		l <- pangoCairoCreateLayout cr
-		d <- pangoFontDescriptionFromString $ T.pack fn
-		pangoLayoutSetText l txt
-		pangoFontDescriptionSetAbsoluteSize d fs
-		pangoLayoutSetFontDescription l d
-		te <- pangoLayoutWithPixelExtents l \ie le -> mkTextExtents ie le
+		(l, d) <- (,) <$> pangoCairoCreateLayout cr
+			<*> pangoFontDescriptionFromString (T.pack fn)
+		d `pangoFontDescriptionSetAbsoluteSize` fs
+		l `pangoLayoutSetFontDescription` d
+		l `pangoLayoutSetText` txt
 		atomically . writeTChan co . expand . Singleton
-			$ OccCalcTextExtents fn fs txt te
+				. OccCalcTextExtents fn fs txt
+			=<< pangoLayoutWithPixelExtents l \ie le -> mkte ie le
 	dr wdgt cr =<< readTVarIO tx
-
-mkTextExtents :: PangoRectangle -> PangoRectangle -> IO TextExtents'
-mkTextExtents ie le = TextExtents' <$> r2r ie <*> r2r le
 	where
+	mkte ie le = TextExtents' <$> r2r ie <*> r2r le
 	r2r r = rct
 		<$> pangoRectangleX r <*> pangoRectangleY r
 		<*> pangoRectangleWidth r <*> pangoRectangleHeight r

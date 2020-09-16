@@ -313,7 +313,7 @@ todo
 	+ [x] refactor some
 	+ [ ] refactor more
 		- [x] refactor function lastTChan
-		- [ ] refactor function draw
+		- [x] refactor function draw
 		- [ ] refactor function runGtkMain
 		- [ ] others
 	+ [ ] others
