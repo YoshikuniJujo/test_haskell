@@ -324,7 +324,7 @@ todo
 					- [x] define it
 					- [x] refector it
 * [x] rename Trial.Boxes.Run to Trial.Boxes.RunXField
-* [ ] make Trial.Boxes.RunGtkField
+* [x] make Trial.Boxes.RunGtkField
 * [ ] make Control.Moffy.Run.TChan
 	+ define interpret, interpretSt
 	+ `interpret :: (...) => Handle m es' -> TChan a -> Sig s es a r -> m r`
