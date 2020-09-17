@@ -7,7 +7,7 @@ module Trial.Followbox.RunGtkField where
 import Control.Moffy
 import Control.Moffy.Event.CalcTextExtents
 import Control.Moffy.Handle.TChan
-import Control.Moffy.Run
+import Control.Moffy.Run.TChan
 import Control.Concurrent.STM
 import Data.Type.Set ((:-), (:+:))
 import System.Random
@@ -32,7 +32,7 @@ handleFollowbox = handleFollowboxWith (uncurry . handle)
 runFollowbox :: Browser -> Maybe GithubNameToken -> SigF s View r -> IO r
 runFollowbox brs mgnt s = do
 	([], (cr, c, c')) <- runGtkMain drawFollowboxGtk []
-	(r, _) <- interpretSt (handleFollowbox (cr, c) brs mgnt) (atomically . writeTChan c') s (initialFollowboxState $ mkStdGen 8)
+	(r, _) <- interpretSt (handleFollowbox (cr, c) brs mgnt) c' s (initialFollowboxState $ mkStdGen 8)
 	r <$ gtkMainQuit
 
 drawFollowboxGtk :: GtkWidget -> CairoT -> View -> IO ()

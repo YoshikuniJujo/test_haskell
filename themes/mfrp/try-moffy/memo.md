@@ -325,10 +325,16 @@ todo
 					- [x] refector it
 * [x] rename Trial.Boxes.Run to Trial.Boxes.RunXField
 * [x] make Trial.Boxes.RunGtkField
-* [ ] make Control.Moffy.Run.TChan
+* [x] make Control.Moffy.Run.TChan
 	+ define interpret, interpretSt
 	+ `interpret :: (...) => Handle m es' -> TChan a -> Sig s es a r -> m r`
 	+ `interpretSt :: (...) => HandleSt st m es' -> TChan a -> Sig s es a r -> St st m r`
+	+ [x] define interpretSt' in Boxes
+	+ [x] move interpretSt' to Control.Moffy.Run.TChan
+	+ [x] rename interpretSt' to interpretSt
+	+ [x] define interpret
+* [x] use Control.Moffy.Run.TChan
+	+ [x] Followbox
 * [ ] make draw application
 	+ [ ] no fill rectangle
 	+ [ ] no fill lines and polygon
