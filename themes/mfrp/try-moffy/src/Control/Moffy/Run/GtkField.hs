@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -45,23 +45,22 @@ type GuiEv = CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv
 type GtkDrawer a = GtkWidget -> CairoT -> a -> IO ()
 
 runGtkMain :: Monoid a =>
-	GtkDrawer a -> IO (TChan (EvReqs GuiEv), TChan (EvOccs GuiEv), TChan a)
-runGtkMain dr = do
-	cr <- newTChanIO
-	c <- newTChanIO
-	c' <- newTChanIO
-	void . forkIO $ do
-		tx <- atomically $ newTVar mempty
-		ftc <- newTChanIO
-		[] <- gtkInit []
-		w <- createWindow c
-		da <- createDrawingArea dr ftc c tx w
-		void $ gTimeoutAdd 100
-			(const $ recieveCalcTextExtentsRequest cr ftc da) ()
-		void $ gTimeoutAdd 100 (const $ recieveViewable c' tx da) ()
-		gtkWidgetShowAll w
-		gtkMain
-	pure (cr, c, c')
+	GtkDrawer a -> [String] -> IO ([String], (TChan (EvReqs GuiEv), TChan (EvOccs GuiEv), TChan a))
+runGtkMain dr as = (,,) <$> newTChanIO <*> newTChanIO <*> newTChanIO >>=
+	\cs@(crq, cocc, cvw) -> (, cs) <$> do
+		cas <- newTChanIO
+		void $ forkIO do
+			vvw <- atomically $ newTVar mempty
+			cft <- newTChanIO
+			atomically . writeTChan cas =<< gtkInit as
+			w <- createWindow cocc
+			da <- createDrawingArea dr cft cocc vvw w
+			void $ gTimeoutAdd 100
+				(const $ recieveCalcTextExtentsRequest crq cft da) ()
+			void $ gTimeoutAdd 100 (const $ recieveViewable cvw vvw da) ()
+			gtkWidgetShowAll w
+			gtkMain
+		atomically $ readTChan cas
 
 createWindow :: TChan (EvOccs GuiEv) -> IO GtkWidget
 createWindow c = do
@@ -90,13 +89,8 @@ recieveCalcTextExtentsRequest cr ftc da = (True <$) $ atomically (lastTChan cr) 
 		atomically (writeTChan ftc (fn, fs, t)) >> gtkWidgetQueueDraw da)
 
 recieveViewable :: TChan a -> TVar a -> GtkWidget -> IO Bool
-recieveViewable c' tx da = do
-			atomically (lastTChan c') >>= \case
-				Nothing -> pure True
-				Just v -> do
-					atomically $ writeTVar tx v
-					gtkWidgetQueueDraw da
-					pure True
+recieveViewable c' tx da = (True <$) $ atomically (lastTChan c') >>= maybe (pure ()) \v ->
+	atomically (writeTVar tx v) >> gtkWidgetQueueDraw da
 
 -- HANDLER OF GDK EVENT
 

@@ -31,7 +31,7 @@ handleFollowbox = handleFollowboxWith (uncurry . handle)
 
 runFollowbox :: Browser -> Maybe GithubNameToken -> SigF s View r -> IO r
 runFollowbox brs mgnt s = do
-	(cr, c, c') <- runGtkMain drawFollowboxGtk
+	([], (cr, c, c')) <- runGtkMain drawFollowboxGtk []
 	(r, _) <- interpretSt (handleFollowbox (cr, c) brs mgnt) (atomically . writeTChan c') s (initialFollowboxState $ mkStdGen 8)
 	r <$ gtkMainQuit
 

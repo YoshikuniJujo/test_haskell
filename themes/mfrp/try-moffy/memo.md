@@ -320,9 +320,9 @@ todo
 				+ [x] make window and signal connect
 				+ [x] make draw area and signal connect
 				+ [x] run process to recieve viewable
-				+ [ ] run process to recieve request to calculate text extents
+				+ [x] run process to recieve request to calculate text extents
 					- [x] define it
-					- [ ] refector it
+					- [x] refector it
 			* [ ] others
 		- [ ] others
 	+ [ ] others
@@ -336,7 +336,7 @@ todo
 	+ [ ] no fill rectangle
 	+ [ ] no fill lines and polygon
 	+ [ ] Bezier curve
-* [ ] pass argument to runGtkMain
+* [x] pass argument to runGtkMain
 * [ ] refactoring
 * [ ] remake key event
 	+ [x] consider Pattern vs Value
