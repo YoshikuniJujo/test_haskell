@@ -336,6 +336,10 @@ todo
 * [x] use Control.Moffy.Run.TChan
 	+ [x] Followbox
 * [ ] make draw application
+	+ [x] make Trial.Draw
+	+ [x] make app/draw.hs
+	+ [x] sample one line
+	+ [ ] no fill lines
 	+ [ ] no fill rectangle
 	+ [ ] no fill lines and polygon
 	+ [ ] Bezier curve

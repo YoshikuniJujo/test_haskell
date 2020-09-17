@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 149312733e88f1d9173e3ee7ee38a3031c1b034fb43c702e6a76ab8c1328861f
+-- hash: c3271b9df39a12e11e149e77af63a72c1f295f7b1ab9532bf0f15f4bb62c055a
 
 name:           try-moffy
 version:        0.1.0.0
@@ -90,6 +90,7 @@ library
       Trial.Boxes.RunGtkField
       Trial.Boxes.RunXField
       Trial.Count
+      Trial.Draw
       Trial.Followbox
       Trial.Followbox.Clickable
       Trial.Followbox.Event
@@ -134,6 +135,39 @@ library
     , text
     , time
     , transformers
+    , type-flip
+    , unordered-containers
+    , vector
+  default-language: Haskell2010
+
+executable draw
+  main-is: draw.hs
+  other-modules:
+      Main
+      Paths_try_moffy
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyPixels
+    , JuicyPixels-extra
+    , X11
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , simple-field
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy
     , type-flip
     , unordered-containers
     , vector
