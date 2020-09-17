@@ -58,16 +58,7 @@ runGtkMain dr = do
 		da <- createDrawingArea dr ftc c tx w
 		void $ gTimeoutAdd 100
 			(const $ recieveCalcTextExtentsRequest cr ftc da) ()
-
-		-- recieve viewable
-		void . flip (gTimeoutAdd 100) () $ const do
-			atomically (lastTChan c') >>= \case
-				Nothing -> pure True
-				Just v -> do
-					atomically $ writeTVar tx v
-					gtkWidgetQueueDraw da
-					pure True
-
+		void $ gTimeoutAdd 100 (const $ recieveViewable c' tx da) ()
 		gtkWidgetShowAll w
 		gtkMain
 	pure (cr, c, c')
@@ -97,6 +88,15 @@ recieveCalcTextExtentsRequest ::
 recieveCalcTextExtentsRequest cr ftc da = (True <$) $ atomically (lastTChan cr) >>=
 	maybe (pure ()) (project >>> maybe (pure ()) \(CalcTextExtentsReq fn fs t) ->
 		atomically (writeTChan ftc (fn, fs, t)) >> gtkWidgetQueueDraw da)
+
+recieveViewable :: TChan a -> TVar a -> GtkWidget -> IO Bool
+recieveViewable c' tx da = do
+			atomically (lastTChan c') >>= \case
+				Nothing -> pure True
+				Just v -> do
+					atomically $ writeTVar tx v
+					gtkWidgetQueueDraw da
+					pure True
 
 -- HANDLER OF GDK EVENT
 
