@@ -308,13 +308,13 @@ todo
 	+ [x] more general Control.Moffy.Handle.GtkField.handle
 	+ [x] rename Control.Moffy.Handle.GtkField to Control.Moffy.Handle.TChan
 * [x] remove suffix App
-* [ ] refactor Control.Moffy.Run.GtkField some
+* [x] refactor Control.Moffy.Run.GtkField some
 	+ [x] rename tryUseTChanGen to runGtkMain
 	+ [x] refactor some
-	+ [ ] refactor more
+	+ [x] refactor more
 		- [x] refactor function lastTChan
 		- [x] refactor function draw
-		- [ ] refactor function runGtkMain
+		- [x] refactor function runGtkMain
 			* [x] define handler function of gdk event
 			* [x] separate the function into 4 modules
 				+ [x] make window and signal connect
@@ -323,10 +323,7 @@ todo
 				+ [x] run process to recieve request to calculate text extents
 					- [x] define it
 					- [x] refector it
-			* [ ] others
-		- [ ] others
-	+ [ ] others
-* [ ] rename Trial.Boxes.Run to Trial.Boxes.RunXField
+* [x] rename Trial.Boxes.Run to Trial.Boxes.RunXField
 * [ ] make Trial.Boxes.RunGtkField
 * [ ] make Control.Moffy.Run.TChan
 	+ define interpret, interpretSt

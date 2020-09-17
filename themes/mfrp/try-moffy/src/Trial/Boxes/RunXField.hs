@@ -1,7 +1,7 @@
 {-# LANGUAGE TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Boxes.Run (
+module Trial.Boxes.RunXField (
 	-- * runBoxes
 	runBoxes ) where
 

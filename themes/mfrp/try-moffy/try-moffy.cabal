@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d364c4d640e5687226f5967a98190bc5695f0427b6fecde9b0a42d92b46c5f4c
+-- hash: 15c12f0747e08f4bfd962a374fc3b3b9e39613b055cb3f5dd478d83d327d4448
 
 name:           try-moffy
 version:        0.1.0.0
@@ -86,7 +86,7 @@ library
       Graphics.Gtk.Values
       Trial.Boxes
       Trial.Boxes.BoxEv
-      Trial.Boxes.Run
+      Trial.Boxes.RunXField
       Trial.Count
       Trial.Followbox
       Trial.Followbox.Clickable
