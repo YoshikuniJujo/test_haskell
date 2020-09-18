@@ -15,3 +15,4 @@ numbered [t| Line |]
 data Box = Box Rect BColor deriving Show
 data Rect = Rect { leftup :: Position, rightdown :: Position  } deriving Show
 data BColor = Red | Green | Blue | Yellow | Cyan | Magenta deriving (Show, Enum)
+numbered [t| Box |]

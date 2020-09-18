@@ -342,9 +342,14 @@ todo
 	+ [x] sample one line
 	+ [x] no fill lines
 	+ [ ] roughly-click function
+		- [x] draw box
+		- [ ] get click inside the rectangle
+		- [ ] draw rectangle
+		- [ ] others
 	+ [ ] no fill rectangle
 	+ [ ] no fill lines and polygon
 	+ [ ] Bezier curve
+* [ ] consider whether or not to weeken cohesion
 * [x] pass argument to runGtkMain
 * [ ] refactoring
 * [ ] remake key event

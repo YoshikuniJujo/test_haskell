@@ -13,5 +13,5 @@ import Data.OneOfThem
 import Trial.Draw
 
 main :: IO ()
-main = void $ runDraw (\wdt cr x -> (SingletonFun (drawLine wdt cr) `apply`) `mapM_` x)
-	(sampleLine `break` deleteEvent)
+main = void $ runDraw (\wdt cr x -> ((drawBox wdt cr >-- SingletonFun (drawLine wdt cr)) `apply`) `mapM_` x)
+	(rectangleAndLines `break` deleteEvent)
