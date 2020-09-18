@@ -343,7 +343,11 @@ todo
 	+ [x] no fill lines
 	+ [ ] roughly-click function
 		- [x] draw box
-		- [ ] get click inside the rectangle
+		- [x] get click inside the rectangle
+		- [ ] draw box on line start and end points
+		- [ ] make react of above points
+		- [ ] save react status
+		- [ ] use react status
 		- [ ] draw rectangle
 		- [ ] others
 	+ [ ] no fill rectangle
