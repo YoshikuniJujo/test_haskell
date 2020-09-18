@@ -53,7 +53,7 @@ import Data.OneOrMore (Mergeable)
 
 -- INSTANCE APPLICATIVE
 
-instance ((es :+: es) ~ es, Mergeable es es es, Semigroup r) =>
+instance ((es :+: es) ~ es, Mergeable es es es, Monoid r) =>
 	Applicative (Flip (Sig s es) r) where
 	pure = Flip . Sig . pure . unflip . pure
 	mf <*> mx = Flip $ app_ forkThreadId (unflip mf) (unflip mx)
@@ -65,21 +65,21 @@ instance ((es :+: es) ~ es, Mergeable es es es, Semigroup r) =>
 
 -- APP AND IAPP
 
-app_ :: ((es :+: es) ~ es, Mergeable es es es, Semigroup r) =>
+app_ :: ((es :+: es) ~ es, Mergeable es es es, Monoid r) =>
 	React s es (ThreadId, ThreadId) ->
 	Sig s es (a -> b) r -> Sig s es a r -> Sig s es b r
-app_ ft mf mx = emitAll . uncurry (iapp_ ft) =<< waitFor (exposeBoth ft mf mx)
+app_ ft mf mx = emitAll . maybe (pure mempty) (uncurry $ iapp_ ft) =<< waitFor (exposeBoth ft mf mx)
 
 exposeBoth :: (
 	Updatable (ISig s es a r) (ISig s es b r'),
 	Updatable (ISig s es b r') (ISig s es a r), (es :+: es) ~ es, Mergeable es es es ) =>
 	React s es (ThreadId, ThreadId) -> Sig s es a r -> Sig s es b r' ->
-	React s es (ISig s es a r, ISig s es b r')
+	React s es (Maybe (ISig s es a r, ISig s es b r'))
 exposeBoth ft l (Sig r) = do
 	(Sig l', r') <- res $ pause ft l r
 	(Sig r'', l'') <- res $ pause ft (Sig r') l'
-	pure (ex l'', ex r'')
-	where ex = \case Pure x -> x; _ -> error "never occur"
+	pure $ (,) <$> ex l'' <*> ex r''
+	where ex = \case Pure x -> Just x; _ -> Nothing
 
 iapp_ :: ((es :+: es) ~ es, Mergeable es es es, Semigroup r) =>
 	React s es (ThreadId, ThreadId) ->

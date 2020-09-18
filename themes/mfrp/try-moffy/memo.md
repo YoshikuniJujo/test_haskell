@@ -335,6 +335,7 @@ todo
 	+ [x] define interpret
 * [x] use Control.Moffy.Run.TChan
 	+ [x] Followbox
+* [x] bug fix: exposeBoth
 * [ ] make draw application
 	+ [x] make Trial.Draw
 	+ [x] make app/draw.hs

@@ -33,7 +33,7 @@ import Data.Or (Or)
 
 infixl 4 `app'`, `iapp'`
 
-app' :: ((es :+: es) ~ es, Mergeable es es es, Semigroup r) =>
+app' :: ((es :+: es) ~ es, Mergeable es es es, Monoid r) =>
 	Sig s es (a -> b) r -> Sig s es a r -> Sig s es b r
 app' = app_ noThreadId
 
