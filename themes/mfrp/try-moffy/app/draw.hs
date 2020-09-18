@@ -5,6 +5,7 @@ module Main where
 import Prelude hiding (break)
 
 import Control.Monad
+import Control.Monad.State
 import Control.Moffy
 import Control.Moffy.Event.Delete
 import Control.Moffy.View.GtkField
@@ -14,4 +15,4 @@ import Trial.Draw
 
 main :: IO ()
 main = void $ runDraw (\wdt cr x -> ((drawBox wdt cr >-- SingletonFun (drawLine wdt cr)) `apply`) `mapM_` x)
-	(rectangleAndLines `break` deleteEvent)
+	((rectangleAndLines `runStateT` ((0, 0) <$ adjust deleteEvent)) `break` deleteEvent)

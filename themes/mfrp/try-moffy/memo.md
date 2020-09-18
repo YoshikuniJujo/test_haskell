@@ -344,7 +344,8 @@ todo
 	+ [ ] roughly-click function
 		- [x] draw box
 		- [x] get click inside the rectangle
-		- [ ] draw box on line start and end points
+		- [x] draw box on line start and end points
+		- **$Oops!!!$**
 		- [ ] make react of above points
 		- [ ] save react status
 		- [ ] use react status
@@ -424,6 +425,9 @@ todo
 	+ [ ] make multiple window
 	+ [ ] window move event
 	+ [ ] make tear-off sample
+* [ ] about cursor
+	+ [ ] change cursor picture
+	+ [ ] others
 * [ ] check module hierarchy
 	+ [ ] Moffy
 	+ [x] Moffy library

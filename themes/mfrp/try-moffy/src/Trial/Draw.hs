@@ -1,5 +1,7 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.Draw where
@@ -7,6 +9,7 @@ module Trial.Draw where
 import Prelude hiding (repeat, break)
 
 import Control.Monad
+import Control.Monad.State
 import Control.Moffy
 import Control.Moffy.Event.Delete
 import Control.Moffy.Event.Mouse
@@ -23,16 +26,35 @@ import Graphics.Gtk hiding (DeleteEvent)
 
 import Data.Type.Flip
 import Data.OneOfThem as Oot
+import Data.Or
+
+type DrawMonad s = StateT (React s (DeleteEvent :- MouseEv) Point)
+	(Sig s (DeleteEvent :- MouseEv) [OneOfThem (Box :- Line :- 'Nil)])
+
+leftClick' :: DrawMonad s Point
+leftClick' = do
+	p <- get
+	lift (waitFor $ p `first` (maybeEither (0, 0) <$> mousePos `at` leftClick)) >>= \case
+			L _ -> error "never occur"
+			LR l _ -> pure l
+			R r@(x, y) -> r <$ modify (
+				((x, y) <$ clickOnRect (Rect (x - 5, y - 5) (x + 5, y + 5))) `first'` )
+
+first' :: Firstable es es' a a => React s es a -> React s es' a -> React s (es :+: es') a
+first' l r = first l r >>= \case
+	L x -> pure x
+	R y -> pure y
+	LR x _ -> pure x
 
 maybeEither :: b -> Either a (Maybe b, ()) -> b
 maybeEither d (Left _) = d
 maybeEither d (Right (Nothing, ())) = d
 maybeEither _ (Right (Just x, ())) = x
 
-rectangleAndLines :: Sig s (DeleteEvent :- MouseEv) [OneOfThem (Box :- Line :- 'Nil)] ()
-rectangleAndLines = (\yr ls bx -> yr : ls ++ bx)
+rectangleAndLines :: DrawMonad s () -- Sig s (DeleteEvent :- MouseEv) [OneOfThem (Box :- Line :- 'Nil)] ()
+rectangleAndLines = lift $ (\yr ls bx -> yr : ls ++ bx)
 	<$%> (emit (Oot.expand . Singleton $ Box (Rect (50, 50) (100, 100)) Yellow) >> waitFor (adjust deleteEvent))
-	<*%> (map Oot.expand <$%> sampleLine)
+	<*%> sampleLine
 	<*%> do
 		emit []
 		waitFor (adjust clickOnBox)
@@ -42,16 +64,25 @@ rectangleAndLines = (\yr ls bx -> yr : ls ++ bx)
 clickOnBox :: React s MouseEv ()
 clickOnBox = void . adjust $ find (`insideRect` Rect (50, 50) (100, 100)) (mousePos `indexBy` repeat leftClick)
 
+clickOnRect :: Rect -> React s MouseEv ()
+clickOnRect r = void . adjust $ find (`insideRect` r) (mousePos `indexBy` repeat leftClick)
+
 insideRect :: Point -> Rect -> Bool
 insideRect (x, y) (Rect (l, t) (r, b)) = l <= x && x <= r && t <= y && y <= b
 
-sampleLine :: Sig s (DeleteEvent :- MouseEv) [OneOfThem (Singleton Line)] ()
+sampleLine :: Sig s (DeleteEvent :- MouseEv) [OneOfThem (Box :- Line :- 'Nil)] ()
 sampleLine = do
-	_ <- parList $ spawn do
+	_ <- (concat <$%>) .  parList $ spawn do
 		s <- waitFor . adjust $ maybeEither (0, 0) <$> mousePos `at` leftClick
-		_ <- Singleton . Line' (Color 0 0 0) 2 s <$%> adjustSig (mousePos `break` leftUp)
+		_ <- makeLine s <$%> adjustSig (mousePos `break` leftUp)
 		waitFor $ adjust deleteEvent
 	waitFor $ adjust deleteEvent
+
+makeLine :: Point -> Point -> [OneOfThem (Box :- Line :- 'Nil)]
+makeLine s@(xs, ys) e@(xe, ye) = [
+	Oot.expand . Singleton $ Box (Rect (xs - 5, ys - 5) (xs + 5, ys + 5)) Yellow,
+	Oot.expand . Singleton $ Box (Rect (xe - 5, ye - 5) (xe + 5, ye + 5)) Yellow,
+	Oot.expand . Singleton $ Line' (Color 0 0 0) 2 s e ]
 
 runDraw :: Monoid a => GtkDrawer a -> Sig s (DeleteEvent :- MouseEv) a r -> IO r
 runDraw dr s = do
