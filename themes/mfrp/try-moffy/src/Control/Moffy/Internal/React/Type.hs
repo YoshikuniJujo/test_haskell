@@ -47,7 +47,7 @@ import Data.OneOrMoreApp (
 
 -- TYPE
 
-type React s es r = Freer s FTCQueue TaggableFun (Rct es) r
+type React s es = Freer s FTCQueue TaggableFun (Rct es)
 
 data Rct es r where
 	Never :: Rct es r; GetThreadId :: Rct es ThreadId
