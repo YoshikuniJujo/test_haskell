@@ -1,9 +1,17 @@
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
 module Main where
 
+import Prelude hiding (break)
+
+import Control.Monad
+import Control.Moffy
+import Control.Moffy.Event.Delete
 import Control.Moffy.View.GtkField
 import Data.OneOfThem
 
 import Trial.Draw
 
 main :: IO ()
-main = runDraw (\wdt cr x -> (SingletonFun (drawLine wdt cr) `apply`) `mapM_` x) sampleLine
+main = void $ runDraw (\wdt cr x -> (SingletonFun (drawLine wdt cr) `apply`) `mapM_` x)
+	(sampleLine `break` deleteEvent)

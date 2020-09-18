@@ -340,7 +340,8 @@ todo
 	+ [x] make Trial.Draw
 	+ [x] make app/draw.hs
 	+ [x] sample one line
-	+ [ ] no fill lines
+	+ [x] no fill lines
+	+ [ ] roughly-click function
 	+ [ ] no fill rectangle
 	+ [ ] no fill lines and polygon
 	+ [ ] Bezier curve

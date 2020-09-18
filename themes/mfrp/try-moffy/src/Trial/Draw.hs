@@ -1,8 +1,12 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.Draw where
 
+import Prelude hiding (break)
+
+import Control.Monad
 import Control.Moffy
 import Control.Moffy.Event.Delete
 import Control.Moffy.Event.Mouse
@@ -17,6 +21,7 @@ import Control.Moffy.Run.GtkField
 
 import Graphics.Gtk hiding (DeleteEvent)
 
+import Data.Type.Flip
 import Data.OneOfThem
 
 maybeEither :: b -> Either a (Maybe b, ()) -> b
@@ -26,9 +31,10 @@ maybeEither _ (Right (Just x, ())) = x
 
 sampleLine :: Sig s (DeleteEvent :- MouseEv) [OneOfThem (Singleton Line)] ()
 sampleLine = do
-	(emit . (: []) . Singleton =<<) . waitFor $ Line' (Color 0 0 0) 2
-		<$> adjust (maybeEither (0, 0) <$> mousePos `at` leftClick)
-		<*> adjust (maybeEither (0, 0) <$> mousePos `at` leftUp)
+	_ <- parList $ spawn do
+		s <- waitFor . adjust $ maybeEither (0, 0) <$> mousePos `at` leftClick
+		Singleton . Line' (Color 0 0 0) 2 s <$%> adjustSig (mousePos `break` leftUp)
+		waitFor $ adjust deleteEvent
 	waitFor $ adjust deleteEvent
 
 runDraw :: Monoid a => GtkDrawer a -> Sig s (DeleteEvent :- MouseEv) a r -> IO r
