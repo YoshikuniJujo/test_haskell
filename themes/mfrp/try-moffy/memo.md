@@ -346,6 +346,8 @@ todo
 		- [x] get click inside the rectangle
 		- [x] draw box on line start and end points
 		- **$Oops!!!$**
+		- [x] remove StateT etc
+		- [ ] layer: line above box
 		- [ ] make StorePoints and LoadPoints
 		- [ ] make react to add point
 			* [ ] use Lock

@@ -9,7 +9,6 @@ module Trial.Draw where
 import Prelude hiding (repeat, break)
 
 import Control.Monad
-import Control.Monad.State
 import Control.Moffy
 import Control.Moffy.Event.Delete
 import Control.Moffy.Event.Mouse
@@ -28,18 +27,6 @@ import Data.Type.Flip
 import Data.OneOfThem as Oot
 import Data.Or
 
-type DrawMonad s = StateT (React s (DeleteEvent :- MouseEv) Point)
-	(Sig s (DeleteEvent :- MouseEv) [OneOfThem (Box :- Line :- 'Nil)])
-
-leftClick' :: DrawMonad s Point
-leftClick' = do
-	p <- get
-	lift (waitFor $ p `first` (maybeEither (0, 0) <$> mousePos `at` leftClick)) >>= \case
-			L _ -> error "never occur"
-			LR l _ -> pure l
-			R r@(x, y) -> r <$ modify (
-				((x, y) <$ clickOnRect (Rect (x - 5, y - 5) (x + 5, y + 5))) `first'` )
-
 first' :: Firstable es es' a a => React s es a -> React s es' a -> React s (es :+: es') a
 first' l r = first l r >>= \case
 	L x -> pure x
@@ -51,8 +38,8 @@ maybeEither d (Left _) = d
 maybeEither d (Right (Nothing, ())) = d
 maybeEither _ (Right (Just x, ())) = x
 
-rectangleAndLines :: DrawMonad s () -- Sig s (DeleteEvent :- MouseEv) [OneOfThem (Box :- Line :- 'Nil)] ()
-rectangleAndLines = lift $ (\yr ls bx -> yr : ls ++ bx)
+rectangleAndLines :: Sig s (DeleteEvent :- MouseEv) [OneOfThem (Box :- Line :- 'Nil)] ()
+rectangleAndLines = (\yr ls bx -> yr : ls ++ bx)
 	<$%> (emit (Oot.expand . Singleton $ Box (Rect (50, 50) (100, 100)) Yellow) >> waitFor (adjust deleteEvent))
 	<*%> sampleLine
 	<*%> do
