@@ -347,10 +347,10 @@ todo
 		- [x] draw box on line start and end points
 		- **$Oops!!!$**
 		- [x] remove StateT etc
-		- [ ] layer: line above box
+		- [x] layer: line above box
 			* [x] define sortType
 			* [x] try to use sortType
-			* [ ] use sortType
+			* [x] use sortType
 		- [ ] make StorePoints and LoadPoints
 		- [ ] make react to add point
 			* [ ] use Lock

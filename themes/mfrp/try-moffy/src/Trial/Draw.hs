@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,6 +28,8 @@ import Data.Type.Flip
 import Data.OneOfThem as Oot
 import Data.Or
 
+import Trial.Draw.OneOfThem
+
 first' :: Firstable es es' a a => React s es a -> React s es' a -> React s (es :+: es') a
 first' l r = first l r >>= \case
 	L x -> pure x
@@ -39,7 +42,7 @@ maybeEither d (Right (Nothing, ())) = d
 maybeEither _ (Right (Just x, ())) = x
 
 rectangleAndLines :: Sig s (DeleteEvent :- MouseEv) [OneOfThem (Box :- Line :- 'Nil)] ()
-rectangleAndLines = (\yr ls bx -> yr : ls ++ bx)
+rectangleAndLines = (sortType @('[Box, Line]) <$%>) $ (\yr ls bx -> yr : ls ++ bx)
 	<$%> (emit (Oot.expand . Singleton $ Box (Rect (50, 50) (100, 100)) Yellow) >> waitFor (adjust deleteEvent))
 	<*%> sampleLine
 	<*%> do
