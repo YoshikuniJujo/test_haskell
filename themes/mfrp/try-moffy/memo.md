@@ -354,7 +354,8 @@ todo
 		- [x] make StoreLines and LoadLines
 		- [x] add viewable message
 		- [ ] make react to add line
-			* [ ] use Lock
+			* [x] define addLine
+			* [ ] others
 		- [ ] make react of above points
 		- [ ] draw rectangle
 		- [ ] others
