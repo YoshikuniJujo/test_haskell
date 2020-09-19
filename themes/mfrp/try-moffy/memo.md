@@ -351,7 +351,7 @@ todo
 			* [x] define sortType
 			* [x] try to use sortType
 			* [x] use sortType
-		- [ ] make StorePoints and LoadPoints
+		- [x] make StoreLines and LoadLines
 		- [ ] make react to add point
 			* [ ] use Lock
 		- [ ] make react of above points

@@ -9,10 +9,14 @@ import Control.Moffy
 import Control.Moffy.Viewable.Basic
 import Data.Type.Set
 
-newtype StorePoints = StorePointsReq [Position] deriving (Show, Eq, Ord)
-numbered [t| StorePoints |]
-instance Request StorePoints where data Occurred StorePoints = OccStorePoints
+import qualified Data.Set as D
 
-data LoadPoints = LoadPointsReq deriving (Show, Eq, Ord)
-numbered [t| LoadPoints |]
-instance Request LoadPoints where data Occurred LoadPoints = OccLoadPoints [Position]
+type SimpleLine = (Position, Position)
+
+newtype StoreLines = StoreLinesReq (D.Set SimpleLine) deriving (Show, Eq, Ord)
+numbered [t| StoreLines |]
+instance Request StoreLines where data Occurred StoreLines = OccStoreLines
+
+data LoadLines = LoadLinesReq deriving (Show, Eq, Ord)
+numbered [t| LoadLines |]
+instance Request LoadLines where data Occurred LoadLines = OccLoadLines (D.Set SimpleLine)

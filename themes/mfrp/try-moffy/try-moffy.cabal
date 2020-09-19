@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b25251b2b777ddb3bbc3ddf87670fd182e5d78f349043eae264b9f57607aad25
+-- hash: 8a225e8151aa49ebd221e800ae1aec674869155b8181e7cb69ec251c86bf8fe2
 
 name:           try-moffy
 version:        0.1.0.0
@@ -126,6 +126,7 @@ library
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , containers
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -158,6 +159,7 @@ executable draw
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , containers
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -191,6 +193,7 @@ executable followbox
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , containers
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -224,6 +227,7 @@ executable followboxGtk
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , containers
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -256,6 +260,7 @@ executable try-moffy-exe
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , containers
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -289,6 +294,7 @@ executable tryCairo
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , containers
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -322,6 +328,7 @@ executable tryCairoText
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , containers
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -355,6 +362,7 @@ executable tryCairoTextExtents
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , containers
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -388,6 +396,7 @@ executable tryGtk
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , containers
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -421,6 +430,7 @@ executable tryPango
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , containers
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -454,6 +464,7 @@ test-suite try-moffy-test
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , containers
     , extra-data-yj
     , http-conduit
     , monads-tf

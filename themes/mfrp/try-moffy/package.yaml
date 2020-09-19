@@ -41,6 +41,7 @@ dependencies:
 - unordered-containers
 - X11
 - stm
+- containers
 
 library:
   source-dirs: src
