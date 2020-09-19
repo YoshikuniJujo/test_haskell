@@ -56,6 +56,15 @@ instance {-# OVERLAPPABLE #-} Expandable (a ':~ as) as' =>
 
 class Projectable (as :: Set Type) a where project :: OneOfThem as -> Maybe a
 
+instance Projectable 'Nil a where project _ = Nothing
+instance Projectable (a ':~ as) a where
+	project (JustIt x) = Just x
+	project (Wrap _) = Nothing
+instance {-# OVERLAPPABLE #-} Projectable as a =>
+	Projectable (a' ':~ as) a where
+	project (JustIt _) = Nothing
+	project (Wrap xs) = project xs
+
 class Collapsable (as :: Set Type) (as' :: Set Type) where
 	collapse :: OneOfThem as -> Maybe (OneOfThem as')
 

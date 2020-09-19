@@ -348,6 +348,9 @@ todo
 		- **$Oops!!!$**
 		- [x] remove StateT etc
 		- [ ] layer: line above box
+			* [x] define sortType
+			* [x] try to use sortType
+			* [ ] use sortType
 		- [ ] make StorePoints and LoadPoints
 		- [ ] make react to add point
 			* [ ] use Lock
