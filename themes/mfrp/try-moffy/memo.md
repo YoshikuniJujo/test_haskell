@@ -352,11 +352,10 @@ todo
 			* [x] try to use sortType
 			* [x] use sortType
 		- [x] make StoreLines and LoadLines
-		- [ ] make react to add point
+		- [x] add viewable message
+		- [ ] make react to add line
 			* [ ] use Lock
 		- [ ] make react of above points
-		- [ ] save react status
-		- [ ] use react status
 		- [ ] draw rectangle
 		- [ ] others
 	+ [ ] no fill rectangle

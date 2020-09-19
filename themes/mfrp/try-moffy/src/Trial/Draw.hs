@@ -29,6 +29,9 @@ import Data.OneOfThem as Oot
 import Data.Or
 
 import Trial.Draw.OneOfThem
+import Trial.Draw.Viewable
+
+type Viewable = OneOfThem (Box :- Line :- Message :- 'Nil)
 
 first' :: Firstable es es' a a => React s es a -> React s es' a -> React s (es :+: es') a
 first' l r = first l r >>= \case
@@ -41,14 +44,15 @@ maybeEither d (Left _) = d
 maybeEither d (Right (Nothing, ())) = d
 maybeEither _ (Right (Just x, ())) = x
 
-rectangleAndLines :: Sig s (DeleteEvent :- MouseEv) [OneOfThem (Box :- Line :- 'Nil)] ()
-rectangleAndLines = (sortType @('[Box, Line]) <$%>) $ (\yr ls bx -> yr : ls ++ bx)
+rectangleAndLines :: Sig s (DeleteEvent :- MouseEv) [Viewable] ()
+rectangleAndLines = (sortType @('[Box, Line, Message]) <$%>) $ (\yr ls bx -> yr : ls ++ bx)
 	<$%> (emit (Oot.expand . Singleton $ Box (Rect (50, 50) (100, 100)) Yellow) >> waitFor (adjust deleteEvent))
-	<*%> sampleLine
+	<*%> (emit [] >> sampleLine)
 	<*%> do
 		emit []
 		waitFor (adjust clickOnBox)
-		emit [Oot.expand . Singleton $ Box (Rect (200, 200) (250, 250)) Red]
+		emit [	Oot.expand . Singleton $ Message "Yellow Box have clicked",
+			Oot.expand . Singleton $ Box (Rect (200, 200) (250, 250)) Red]
 		waitFor (adjust deleteEvent)
 
 clickOnBox :: React s MouseEv ()
@@ -60,7 +64,7 @@ clickOnRect r = void . adjust $ find (`insideRect` r) (mousePos `indexBy` repeat
 insideRect :: Point -> Rect -> Bool
 insideRect (x, y) (Rect (l, t) (r, b)) = l <= x && x <= r && t <= y && y <= b
 
-sampleLine :: Sig s (DeleteEvent :- MouseEv) [OneOfThem (Box :- Line :- 'Nil)] ()
+sampleLine :: Sig s (DeleteEvent :- MouseEv) [Viewable] ()
 sampleLine = do
 	_ <- (concat <$%>) .  parList $ spawn do
 		s <- waitFor . adjust $ maybeEither (0, 0) <$> mousePos `at` leftClick
@@ -68,7 +72,7 @@ sampleLine = do
 		waitFor $ adjust deleteEvent
 	waitFor $ adjust deleteEvent
 
-makeLine :: Point -> Point -> [OneOfThem (Box :- Line :- 'Nil)]
+makeLine :: Point -> Point -> [Viewable]
 makeLine s@(xs, ys) e@(xe, ye) = [
 	Oot.expand . Singleton $ Box (Rect (xs - 5, ys - 5) (xs + 5, ys + 5)) Yellow,
 	Oot.expand . Singleton $ Box (Rect (xe - 5, ye - 5) (xe + 5, ye + 5)) Yellow,

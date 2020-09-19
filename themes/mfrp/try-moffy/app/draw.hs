@@ -11,7 +11,8 @@ import Control.Moffy.View.GtkField
 import Data.OneOfThem
 
 import Trial.Draw
+import Trial.Draw.Viewable
 
 main :: IO ()
-main = void $ runDraw (\wdt cr x -> ((drawBox wdt cr >-- SingletonFun (drawLine wdt cr)) `apply`) `mapM_` x)
+main = void $ runDraw (\wdt cr x -> ((drawBox wdt cr >-- drawLine wdt cr >-- SingletonFun putMessage) `apply`) `mapM_` x)
 	(rectangleAndLines `break` deleteEvent)
