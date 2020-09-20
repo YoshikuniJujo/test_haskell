@@ -13,7 +13,7 @@ module Control.Moffy (
 	Firstable, Adjustable,
 	-- * Combinator
 	-- ** Await and Adjust
-	await, adjust, adjustSig,
+	await, adjust, adjustSig, never,
 	-- ** Create Sig
 	emit, waitFor, repeat,
 	-- ** Traverse
@@ -31,7 +31,7 @@ import Control.Moffy.Internal.Sig.Type (
 	Sig, ISig, emit, waitFor, repeat, find, scanl )
 import Control.Moffy.Internal.React (Firstable, Adjustable, first_, adjust)
 import Control.Moffy.Internal.React.Type (
-	React, Rct, EvReqs, EvOccs, Request(..), await, forkThreadId )
+	React, Rct, EvReqs, EvOccs, Request(..), await, forkThreadId, never )
 import Data.Type.Set ((:+:))
 import Data.OneOrMore (Mergeable)
 import Data.Or (Or)

@@ -40,6 +40,8 @@ import Trial.Draw.Event
 import Trial.Draw.Handle
 import Trial.Draw.Viewable
 
+import Debug.Trace
+
 type Viewable = OneOfThem (Box :- Line :- Message :- 'Nil)
 type Events = GetThreadId :- DeleteEvent :- MouseEv :+: LockEv :+: LinesEv
 
@@ -55,15 +57,17 @@ maybeEither d (Right (Nothing, ())) = d
 maybeEither _ (Right (Just x, ())) = x
 
 rectangleAndLines :: Sig s Events [Viewable] ()
-rectangleAndLines = (sortType @('[Box, Line, Message]) <$%>) $ (\yr ls bx -> yr : ls ++ bx)
-	<$%> (emit (Oot.expand . Singleton $ Box (Rect (50, 50) (100, 100)) Yellow) >> waitFor (adjust deleteEvent))
-	<*%> (emit [] >> sampleLine)
-	<*%> do
-		emit []
-		waitFor (adjust clickOnBox)
-		emit [	Oot.expand . Singleton $ Message "Yellow Box have clicked",
-			Oot.expand . Singleton $ Box (Rect (200, 200) (250, 250)) Red]
-		waitFor (adjust deleteEvent)
+rectangleAndLines = do
+	li <- waitFor $ adjust newLockId
+	(sortType @('[Box, Line, Message]) <$%>) $ (\yr ls bx -> yr : ls ++ bx)
+		<$%> (emit (Oot.expand . Singleton $ Box (Rect (50, 50) (100, 100)) Yellow) >> waitFor (adjust deleteEvent))
+		<*%> (emit [] >> sampleLine li)
+		<*%> do
+			emit []
+			waitFor (adjust clickOnBox)
+			emit [	Oot.expand . Singleton $ Message "Yellow Box have clicked",
+				Oot.expand . Singleton $ Box (Rect (200, 200) (250, 250)) Red]
+			waitFor (adjust deleteEvent)
 
 clickOnBox :: React s MouseEv ()
 clickOnBox = void . adjust $ find (`insideRect` Rect (50, 50) (100, 100)) (mousePos `indexBy` repeat leftClick)
@@ -74,18 +78,27 @@ clickOnRect r = void . adjust $ find (`insideRect` r) (mousePos `indexBy` repeat
 insideRect :: Point -> Rect -> Bool
 insideRect (x, y) (Rect (l, t) (r, b)) = l <= x && x <= r && t <= y && y <= b
 
-sampleLine :: Sig s Events [Viewable] ()
-sampleLine = do
+sampleLine :: LockId -> Sig s Events [Viewable] ()
+sampleLine li = do
 	_ <- (concat <$%>) .  parList $ spawn do
+	{-
 		s <- waitFor . adjust $ maybeEither (0, 0) <$> mousePos `at` leftClick
 		e <- maybeEither undefined <$> (makeLine s <$%> adjustSig (mousePos `break` leftUp))
-		emit $ makeLine s e
+		-}
+		s <- waitFor clickPoint
+		e <- maybeEither undefined <$> (makeLine s <$%> adjustSig (mousePos `break` leftUp))
+		waitFor . adjust $ addLine li (s, e)
+		ls <- waitFor . adjust $ loadLines
+		emit $ Oot.expand (Singleton . Message $ show ls) : makeLine s e
 
-		waitFor do
-			li <- adjust newLockId
-			adjust $ addLine li (s, e)
 		waitFor $ adjust deleteEvent
 	waitFor $ adjust deleteEvent
+
+clickPoint :: React s Events Position
+clickPoint = do
+	ls <- adjust loadLines
+	let	r = trace ("clickPoint: " ++ show (linesToPoints ls) ++ "\n") $ linesToReact ls
+	r `first'` (maybeEither (0, 0) <$> mousePos `at` leftClick)
 
 makeLine :: Point -> Point -> [Viewable]
 makeLine s@(xs, ys) e@(xe, ye) = [
@@ -114,8 +127,19 @@ runDraw :: Monoid a => GtkDrawer a -> Sig s Events a r -> IO (r, DrawState)
 runDraw dr s = do
 	([], (cr, c, c')) <- runGtkMain dr []
 	interpretSt (retrySt $
-		liftHandle' handleGetThreadId `mergeSt`
+		(liftHandle' handleGetThreadId `mergeSt`
 		handleLock `mergeSt`
-		handleLines `beforeSt`
+		handleLines) `beforeSt`
 		liftHandle' (handle Nothing cr c)
 		) c' s (DrawState 0 [] D.empty) <* gtkMainQuit
+
+linesToPoints :: D.Set SimpleLine -> [Position]
+linesToPoints = concatMap (\(x, y) -> [x, y]) . D.toList
+
+pointToReact :: Position -> React s Events Position
+pointToReact (x, y) = do
+	adjust . clickOnRect $ Rect (x - 5, y - 5) (x + 5, y + 5)
+	pure (x, y)
+
+linesToReact :: D.Set SimpleLine -> React s Events Position
+linesToReact = foldr first' never . map pointToReact . linesToPoints

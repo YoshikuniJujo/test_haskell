@@ -4,7 +4,6 @@ module Main where
 
 import Prelude hiding (break)
 
-import Control.Monad
 import Control.Moffy
 import Control.Moffy.Event.Delete
 import Control.Moffy.View.GtkField

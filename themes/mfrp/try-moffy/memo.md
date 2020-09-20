@@ -336,6 +336,7 @@ todo
 * [x] use Control.Moffy.Run.TChan
 	+ [x] Followbox
 * [x] bug fix: exposeBoth
+* [ ] define withLockSig
 * [ ] make draw application
 	+ [x] make Trial.Draw
 	+ [x] make app/draw.hs
