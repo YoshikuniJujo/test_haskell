@@ -34,3 +34,5 @@ addLine :: LockId -> SimpleLine -> React s (StoreLines :- LoadLines :- GetThread
 addLine li ln = withLock li do
 	ls <- adjust loadLines
 	adjust . storeLines $ ln `D.insert` ls :: React s (StoreLines :- LoadLines :- 'Nil) ()
+
+type LinesEv = StoreLines :- LoadLines :- 'Nil

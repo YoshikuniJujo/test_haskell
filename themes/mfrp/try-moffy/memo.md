@@ -355,6 +355,9 @@ todo
 		- [x] add viewable message
 		- [ ] make react to add line
 			* [x] define addLine
+			* [x] define handle
+			* [ ] add LineEv to draw
+				- test with message
 			* [ ] others
 		- [ ] make react of above points
 		- [ ] draw rectangle
