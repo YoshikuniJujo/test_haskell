@@ -357,7 +357,8 @@ todo
 			* [x] define addLine
 			* [x] define handle
 			* [ ] add LineEv to draw
-				- test with message
+				- [x] use addLine
+				- [ ] test with message
 			* [ ] others
 		- [ ] make react of above points
 		- [ ] draw rectangle

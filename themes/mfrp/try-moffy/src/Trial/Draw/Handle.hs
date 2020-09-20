@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module Trial.Draw.Handle where
 
@@ -14,6 +15,10 @@ import Trial.Draw.Event
 class LinesState s where
 	getLines :: s -> D.Set SimpleLine
 	putLines :: s -> D.Set SimpleLine -> s
+
+instance LinesState (D.Set SimpleLine) where
+	getLines = id
+	putLines = flip const
 
 handleLines :: (LinesState s, Monad m) => HandleSt' s m LinesEv
 handleLines = handleStoreLines `mergeSt` handleLoadLines

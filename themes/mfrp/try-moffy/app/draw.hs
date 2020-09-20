@@ -14,5 +14,5 @@ import Trial.Draw
 import Trial.Draw.Viewable
 
 main :: IO ()
-main = void $ runDraw (\wdt cr x -> ((drawBox wdt cr >-- drawLine wdt cr >-- SingletonFun putMessage) `apply`) `mapM_` x)
+main = print . snd =<< runDraw (\wdt cr x -> ((drawBox wdt cr >-- drawLine wdt cr >-- SingletonFun putMessage) `apply`) `mapM_` x)
 	(rectangleAndLines `break` deleteEvent)
