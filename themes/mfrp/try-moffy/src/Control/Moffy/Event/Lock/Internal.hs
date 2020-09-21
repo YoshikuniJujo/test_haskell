@@ -13,9 +13,9 @@ module Control.Moffy.Event.Lock.Internal (
 	NewLockId(..), pattern OccNewLockId, GetLock(..), pattern OccGetLock,
 	Unlock(..), pattern OccUnlock, LockId(..),
 	-- * Event
-	newLockId, withLock ) where
+	newLockId, withLock, withLockSig ) where
 
-import Control.Moffy (React, Request(..), Adjustable, adjust, await)
+import Control.Moffy (Sig, React, Request(..), Adjustable, adjust, await, waitFor, adjustSig)
 import Control.Moffy.Event.ThreadId (GetThreadId, getThreadId, ThreadId)
 import Data.Type.Set (numbered, pattern Nil, Singleton, (:-), (:+:))
 import Data.OneOrMore (Selectable(..))
@@ -98,3 +98,13 @@ withLock :: (
 	Adjustable GetThreadIdGetLock es', Adjustable SingletonUnlock es' ) =>
 	LockId -> React s es a -> React s es' a
 withLock l act = adjust (getLock l 0) >> adjust act <* adjust (unlock l)
+
+withLockSig :: (
+	(es :+: es') ~ es',
+	(GetThreadIdGetLock :+: es') ~ es', (SingletonUnlock :+: es') ~ es',
+	Adjustable es es',
+	Adjustable GetThreadIdGetLock es', Adjustable SingletonUnlock es' ) =>
+	LockId -> Sig s es a r -> Sig s es' a r
+withLockSig l s = do
+	waitFor . adjust $ getLock l 0
+	adjustSig s <* waitFor (adjust $ unlock l)

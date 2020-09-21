@@ -354,15 +354,15 @@ todo
 			* [x] use sortType
 		- [x] make StoreLines and LoadLines
 		- [x] add viewable message
-		- [ ] make react to add line
+		- [x] make react to add line
 			* [x] define addLine
 			* [x] define handle
-			* [ ] add LineEv to draw
+			* [x] add LineEv to draw
 				- [x] use addLine
-				- [ ] test with message
-			* [ ] others
-		- [ ] make react of above points
-		- [ ] draw rectangle
+				- [x] test with message
+		- [ ] remove lock from addLine
+		- [ ] roughly-button-up function
+		- [x] draw rectangle
 		- [ ] others
 	+ [ ] no fill rectangle
 	+ [ ] no fill lines and polygon

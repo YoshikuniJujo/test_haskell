@@ -58,10 +58,11 @@ maybeEither _ (Right (Just x, ())) = x
 
 rectangleAndLines :: Sig s Events [Viewable] ()
 rectangleAndLines = do
+	li0 <- waitFor $ adjust newLockId
 	li <- waitFor $ adjust newLockId
 	(sortType @('[Box, Line, Message]) <$%>) $ (\yr ls bx -> yr : ls ++ bx)
 		<$%> (emit (Oot.expand . Singleton $ Box (Rect (50, 50) (100, 100)) Yellow) >> waitFor (adjust deleteEvent))
-		<*%> (emit [] >> sampleLine li)
+		<*%> (emit [] >> sampleLine li0 li)
 		<*%> do
 			emit []
 			waitFor (adjust clickOnBox)
@@ -78,18 +79,19 @@ clickOnRect r = void . adjust $ find (`insideRect` r) (mousePos `indexBy` repeat
 insideRect :: Point -> Rect -> Bool
 insideRect (x, y) (Rect (l, t) (r, b)) = l <= x && x <= r && t <= y && y <= b
 
-sampleLine :: LockId -> Sig s Events [Viewable] ()
-sampleLine li = do
+sampleLine :: LockId -> LockId -> Sig s Events [Viewable] ()
+sampleLine li0 li = do
 	_ <- (concat <$%>) .  parList $ spawn do
 	{-
 		s <- waitFor . adjust $ maybeEither (0, 0) <$> mousePos `at` leftClick
 		e <- maybeEither undefined <$> (makeLine s <$%> adjustSig (mousePos `break` leftUp))
 		-}
-		s <- waitFor clickPoint
-		e <- maybeEither undefined <$> (makeLine s <$%> adjustSig (mousePos `break` leftUp))
-		waitFor . adjust $ addLine li (s, e)
-		ls <- waitFor . adjust $ loadLines
-		emit $ Oot.expand (Singleton . Message $ show ls) : makeLine s e
+		withLockSig li0 do
+			s <- waitFor clickPoint
+			e <- maybeEither undefined <$> (makeLine s <$%> adjustSig (mousePos `break` leftUp))
+			waitFor . adjust $ addLine li (s, e)
+			ls <- waitFor . adjust $ loadLines
+			emit $ Oot.expand (Singleton . Message $ show ls) : makeLine s e
 
 		waitFor $ adjust deleteEvent
 	waitFor $ adjust deleteEvent
