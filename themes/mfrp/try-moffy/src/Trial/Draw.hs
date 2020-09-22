@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -75,9 +76,10 @@ rectangleAndLines = do
 clickOnBox :: React s MouseEv ()
 clickOnBox = void . adjust $ find (`insideRect` Rect (50, 50) (100, 100)) (mousePos `indexBy` repeat leftClick)
 
-clickOnRect, upOnRect :: Rect -> React s MouseEv ()
+clickOnRect, upOnRect, rightOnRect :: Rect -> React s MouseEv ()
 clickOnRect r = void . adjust $ find (`insideRect` r) (mousePos `indexBy` repeat leftClick)
 upOnRect r = void . adjust $ find (`insideRect` r) (mousePos `indexBy` repeat leftUp)
+rightOnRect r = void . adjust $ find (`insideRect` r) (mousePos `indexBy` repeat rightClick)
 
 insideRect :: Point -> Rect -> Bool
 insideRect (x, y) (Rect (l, t) (r, b)) = l <= x && x <= r && t <= y && y <= b
@@ -85,14 +87,25 @@ insideRect (x, y) (Rect (l, t) (r, b)) = l <= x && x <= r && t <= y && y <= b
 sampleLine :: LockId -> LockId -> Sig s Events [Viewable] ()
 sampleLine li0 li = do
 	_ <- (concat <$%>) .  parList $ spawn do
-		withLockSig li0 do
+		(s, e) <- withLockSig li0 do
 			s <- waitFor clickPoint
 			e <- maybeEither2 (0, 0) <$> (makeLineAndPoint s <$%> mousePos `break` upPoint)
 			waitFor . adjust $ addLine li (s, e)
-			ls <- waitFor . adjust $ loadLines
-			emit $ Oot.expand (Singleton . Message $ show ls) : makeLineAndPoint s e
-		waitFor never
+			pure (s, e)
+		(\l ss es -> l ++ ss ++ es)
+			<$%> (emit (makeLine s e) >> waitFor never)
+			<*%> do	emit $ makePoint Yellow s
+				void . waitFor $ pointToReactRight s
+				emit $ makePoint Red s
+				waitFor never'
+			<*%> do	emit $ makePoint Yellow e
+				void . waitFor $ pointToReactRight e
+				emit $ makePoint Red e
+				waitFor never'
 	waitFor never
+
+never' :: React s es ()
+never' = never
 
 clickPoint :: React s Events Position
 clickPoint = do
@@ -107,12 +120,12 @@ upPoint = do
 	r `first'` (maybeEither (0, 0) <$> mousePos `at` leftUp)
 
 makeLineAndPoint, makeLine :: Point -> Point -> [Viewable]
-makeLineAndPoint s@(xs, ys) e@(xe, ye) = [
-	Oot.expand . Singleton $ Box (Rect (xs - 5, ys - 5) (xs + 5, ys + 5)) Yellow,
-	Oot.expand . Singleton $ Box (Rect (xe - 5, ye - 5) (xe + 5, ye + 5)) Yellow ] ++
-	makeLine s e
-
+makeLineAndPoint s e = makePoint Yellow s ++ makePoint Yellow e ++ makeLine s e
 makeLine s e = [Oot.expand . Singleton $ Line' (Color 0 0 0) 2 s e]
+
+makePoint :: BColor -> Point -> [Viewable]
+makePoint c (x, y) = [
+	Oot.expand . Singleton $ Box (Rect (x - 5, y - 5) (x + 5, y + 5)) c ]
 
 data DrawState = DrawState {
 	dsNextLockId :: Int,
@@ -144,13 +157,17 @@ runDraw dr s = do
 linesToPoints :: D.Set SimpleLine -> [Position]
 linesToPoints = concatMap (\(x, y) -> [x, y]) . D.toList
 
-pointToReact, pointToReactUp :: Position -> React s Events Position
+pointToReact, pointToReactUp, pointToReactRight :: Position -> React s Events Position
 pointToReact (x, y) = do
 	adjust . clickOnRect $ Rect (x - 10, y - 10) (x + 10, y + 10)
 	pure (x, y)
 
 pointToReactUp (x, y) = do
 	adjust . upOnRect $ Rect (x - 10, y - 10) (x + 10, y + 10)
+	pure (x, y)
+
+pointToReactRight (x, y) = do
+	adjust . rightOnRect $ Rect (x - 10, y - 10) (x + 10, y + 10)
 	pure (x, y)
 
 linesToReact, linesToReactUp :: D.Set SimpleLine -> React s Events Position

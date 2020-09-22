@@ -366,8 +366,8 @@ todo
 		- [x] draw rectangle
 		- [ ] others
 	+ [ ] fill
-		- [ ] select point by right click
-			* [ ] change color of point square
+		- [x] select point by right click
+			* [x] change color of point square
 		- [ ] draw with gray
 		- [ ] select gray area with left click
 		- [ ] make rgb area
