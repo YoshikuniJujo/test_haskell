@@ -361,9 +361,18 @@ todo
 				- [x] use addLine
 				- [x] test with message
 		- [x] roughly-button-up function
+		- [x] more large point square
 		- [ ] remove lock from addLine
 		- [x] draw rectangle
 		- [ ] others
+	+ [ ] fill
+		- [ ] select point by right click
+			* [ ] change color of point square
+		- [ ] draw with gray
+		- [ ] select gray area with left click
+		- [ ] make rgb area
+			* [ ] each color plus or minus with wheele
+		- [ ] set fill color with left click
 	+ [ ] no fill rectangle
 	+ [ ] no fill lines and polygon
 	+ [ ] Bezier curve

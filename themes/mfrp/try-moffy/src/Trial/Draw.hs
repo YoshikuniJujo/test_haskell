@@ -147,11 +147,11 @@ linesToPoints = concatMap (\(x, y) -> [x, y]) . D.toList
 
 pointToReact, pointToReactUp :: Position -> React s Events Position
 pointToReact (x, y) = do
-	adjust . clickOnRect $ Rect (x - 5, y - 5) (x + 5, y + 5)
+	adjust . clickOnRect $ Rect (x - 10, y - 10) (x + 10, y + 10)
 	pure (x, y)
 
 pointToReactUp (x, y) = do
-	adjust . upOnRect $ Rect (x - 5, y - 5) (x + 5, y + 5)
+	adjust . upOnRect $ Rect (x - 10, y - 10) (x + 10, y + 10)
 	pure (x, y)
 
 linesToReact, linesToReactUp :: D.Set SimpleLine -> React s Events Position
