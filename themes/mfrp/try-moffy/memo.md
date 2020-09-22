@@ -360,8 +360,8 @@ todo
 			* [x] add LineEv to draw
 				- [x] use addLine
 				- [x] test with message
+		- [x] roughly-button-up function
 		- [ ] remove lock from addLine
-		- [ ] roughly-button-up function
 		- [x] draw rectangle
 		- [ ] others
 	+ [ ] no fill rectangle

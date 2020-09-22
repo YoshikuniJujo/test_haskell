@@ -56,6 +56,10 @@ maybeEither d (Left _) = d
 maybeEither d (Right (Nothing, ())) = d
 maybeEither _ (Right (Just x, ())) = x
 
+maybeEither2 :: r' -> Either r (Maybe a, r') -> r'
+maybeEither2 d (Left _) = d
+maybeEither2 _ (Right (_, x)) = x
+
 rectangleAndLines :: Sig s Events [Viewable] ()
 rectangleAndLines = do
 	li0 <- waitFor $ adjust newLockId
@@ -73,8 +77,9 @@ rectangleAndLines = do
 clickOnBox :: React s MouseEv ()
 clickOnBox = void . adjust $ find (`insideRect` Rect (50, 50) (100, 100)) (mousePos `indexBy` repeat leftClick)
 
-clickOnRect :: Rect -> React s MouseEv ()
+clickOnRect, upOnRect :: Rect -> React s MouseEv ()
 clickOnRect r = void . adjust $ find (`insideRect` r) (mousePos `indexBy` repeat leftClick)
+upOnRect r = void . adjust $ find (`insideRect` r) (mousePos `indexBy` repeat leftUp)
 
 insideRect :: Point -> Rect -> Bool
 insideRect (x, y) (Rect (l, t) (r, b)) = l <= x && x <= r && t <= y && y <= b
@@ -82,13 +87,9 @@ insideRect (x, y) (Rect (l, t) (r, b)) = l <= x && x <= r && t <= y && y <= b
 sampleLine :: LockId -> LockId -> Sig s Events [Viewable] ()
 sampleLine li0 li = do
 	_ <- (concat <$%>) .  parList $ spawn do
-	{-
-		s <- waitFor . adjust $ maybeEither (0, 0) <$> mousePos `at` leftClick
-		e <- maybeEither undefined <$> (makeLine s <$%> adjustSig (mousePos `break` leftUp))
-		-}
 		withLockSig li0 do
 			s <- waitFor clickPoint
-			e <- maybeEither undefined <$> (makeLine s <$%> adjustSig (mousePos `break` leftUp))
+			e <- maybeEither2 (0, 0) <$> (makeLine s <$%> mousePos `break` upPoint)
 			waitFor . adjust $ addLine li (s, e)
 			ls <- waitFor . adjust $ loadLines
 			emit $ Oot.expand (Singleton . Message $ show ls) : makeLine s e
@@ -101,6 +102,12 @@ clickPoint = do
 	ls <- adjust loadLines
 	let	r = trace ("clickPoint: " ++ show (linesToPoints ls) ++ "\n") $ linesToReact ls
 	r `first'` (maybeEither (0, 0) <$> mousePos `at` leftClick)
+
+upPoint :: React s Events Position
+upPoint = do
+	ls <- adjust loadLines
+	let	r = trace ("upPoint: " ++ show (linesToPoints ls) ++ "\n") $ linesToReactUp ls
+	r `first'` (maybeEither (0, 0) <$> mousePos `at` leftUp)
 
 makeLine :: Point -> Point -> [Viewable]
 makeLine s@(xs, ys) e@(xe, ye) = [
@@ -138,10 +145,15 @@ runDraw dr s = do
 linesToPoints :: D.Set SimpleLine -> [Position]
 linesToPoints = concatMap (\(x, y) -> [x, y]) . D.toList
 
-pointToReact :: Position -> React s Events Position
+pointToReact, pointToReactUp :: Position -> React s Events Position
 pointToReact (x, y) = do
 	adjust . clickOnRect $ Rect (x - 5, y - 5) (x + 5, y + 5)
 	pure (x, y)
 
-linesToReact :: D.Set SimpleLine -> React s Events Position
+pointToReactUp (x, y) = do
+	adjust . upOnRect $ Rect (x - 5, y - 5) (x + 5, y + 5)
+	pure (x, y)
+
+linesToReact, linesToReactUp :: D.Set SimpleLine -> React s Events Position
 linesToReact = foldr first' never . map pointToReact . linesToPoints
+linesToReactUp = foldr first' never . map pointToReactUp . linesToPoints
