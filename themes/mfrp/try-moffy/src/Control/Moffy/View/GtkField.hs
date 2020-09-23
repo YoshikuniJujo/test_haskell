@@ -5,7 +5,8 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
 
-module Control.Moffy.View.GtkField (drawText, drawLine, drawImage, drawBox) where
+module Control.Moffy.View.GtkField (
+	drawText, drawLine, drawImage, drawBox, fillPolygon ) where
 
 import qualified Data.ByteString as BS
 import qualified Data.Text as T
@@ -77,6 +78,13 @@ drawBox _ cr (Box (Rect (l_, u_) (r, d)) c) = do
 	u = min u_ d
 	w = abs $ l_ - r
 	h = abs $ u_ - d
+
+fillPolygon :: GtkWidget -> CairoT -> FillPolygon -> IO ()
+fillPolygon _ cr f@(FillPolygon c (p : ps)) = do
+	uncurry3 (cairoSetSourceRgb cr) $ colorToRgb c
+	uncurry (cairoMoveTo cr) p
+	uncurry (cairoLineTo cr) `mapM_` ps
+	cairoFill cr
 
 uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (x, y, z) = f x y z

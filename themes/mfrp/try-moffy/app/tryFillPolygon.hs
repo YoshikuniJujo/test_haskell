@@ -13,5 +13,5 @@ import Data.OneOfThem
 import Trial.TryFillPolygon
 
 main :: IO ()
-main = void $ runFillPolygon (\wdt cr x -> (SingletonFun (drawBox wdt cr) `apply`) `mapM_` x)
+main = void $ runFillPolygon (\wdt cr x -> ((drawBox wdt cr >-- SingletonFun (fillPolygon wdt cr)) `apply`) `mapM_` x)
 	(tryFillPolygon `break` deleteEvent)

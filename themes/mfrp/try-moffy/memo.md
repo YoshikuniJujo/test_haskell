@@ -368,10 +368,10 @@ todo
 	+ [ ] fill
 		- [x] select point by right click
 			* [x] change color of point square
-		- [ ] add FillPolygon
+		- [x] add FillPolygon
 			* [x] prepare tryFillPolygon
-			* [ ] add FillPolygon to Control.Moffy.Viewable.Shape
-			* [ ] add FillPolygon to Control.Moffy.View.GtkField
+			* [x] add FillPolygon to Control.Moffy.Viewable.Shape
+			* [x] add FillPolygon to Control.Moffy.View.GtkField
 		- [ ] draw with gray
 		- [ ] select gray area with left click
 		- [ ] make rgb area
