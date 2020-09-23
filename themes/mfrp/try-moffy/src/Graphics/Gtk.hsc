@@ -29,6 +29,8 @@ module Graphics.Gtk (
 	KeyEvent(..), GdkEventKey, keyval, hardwareKeycode,
 	-- ** ButtonEvent
 	ButtonEvent(..), GdkEventButton, gdkEventButtonButton, gdkEventButtonX, gdkEventButtonY,
+	-- ** ScrollEvent
+	ScrollEvent(..), GdkEventScroll,
 	-- ** MotionNotifyEvent
 	MotionNotifyEvent(..), GdkEventMotion, gdkEventMotionX, gdkEventMotionY,
 	-- ** DrawEvent
@@ -183,6 +185,15 @@ instance Event ButtonEvent where
 	handlerToCHandler = handlerToCHandlerButton
 	g_callback = g_callback_button
 
+data ScrollEvent = ScrollEvent deriving Show
+newtype GdkEventScroll = GdkEventScroll (Ptr GdkEventScroll) deriving Show
+instance Event ScrollEvent where
+	type Handler ScrollEvent a = GtkWidget -> GdkEventScroll -> a -> IO Bool
+	type CHandler ScrollEvent a = GtkWidget -> GdkEventScroll -> Ptr a -> IO #type gboolean
+	eventName ScrollEvent = "scroll-event"
+	handlerToCHandler = handlerToCHandlerEvent
+	g_callback = g_callback_scroll
+
 gdkEventButtonButton :: GdkEventButton -> IO #type guint
 gdkEventButtonButton (GdkEventButton e) = c_GdkEventButton_button e
 
@@ -199,6 +210,11 @@ c_GdkEventButton_y = #peek GdkEventButton, y
 
 handlerToCHandlerButton :: AsPointer a => Handler ButtonEvent a -> CHandler ButtonEvent a
 handlerToCHandlerButton h w e px = do
+	x <- asValue px
+	boolToGBoolean <$> h w e x
+
+handlerToCHandlerEvent :: AsPointer a => Handler ScrollEvent a -> CHandler ScrollEvent a
+handlerToCHandlerEvent h w e px = do
 	x <- asValue px
 	boolToGBoolean <$> h w e x
 
@@ -251,6 +267,8 @@ foreign import ccall "wrapper" g_callback_motion :: CHandler MotionNotifyEvent a
 foreign import ccall "wrapper" g_callback_draw :: CHandler DrawEvent a -> IO (FunPtr (CHandler DrawEvent a))
 foreign import ccall "wrapper" g_callback_timeout ::
 	(Ptr a -> IO #{type gboolean}) -> IO (FunPtr (Ptr a -> IO #{type gboolean}))
+foreign import ccall "wrapper" g_callback_scroll ::
+	(GtkWidget -> GdkEventScroll -> Ptr a -> IO #{type gboolean}) -> IO (FunPtr (GtkWidget -> GdkEventScroll -> Ptr a -> IO #{type gboolean}))
 
 -- foreign import ccall "hello_main" c_hello_main :: IO ()
 

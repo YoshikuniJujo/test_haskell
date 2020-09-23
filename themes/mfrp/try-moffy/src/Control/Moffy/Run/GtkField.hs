@@ -73,6 +73,7 @@ createWindow c = do
 		gSignalConnect w KeyReleaseEvent \_ ev _ -> keyUp c ev,
 		gSignalConnect w ButtonPressEvent \_ ev _ -> buttonDown c ev,
 		gSignalConnect w ButtonReleaseEvent \_ ev _ -> buttonUp c ev,
+		gSignalConnect w ScrollEvent \_ ev _ -> True <$ print ev,
 		gSignalConnect w MotionNotifyEvent \_ ev _ -> mouseMove c ev ]
 
 createDrawingArea :: GtkDrawer a -> TChan (FontName, FontSize, T.Text) ->
