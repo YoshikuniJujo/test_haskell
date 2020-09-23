@@ -65,7 +65,7 @@ runGtkMain dr as = (,,) <$> newTChanIO <*> newTChanIO <*> newTChanIO >>=
 createWindow :: TChan (EvOccs GuiEv) -> IO GtkWidget
 createWindow c = do
 	w <- gtkWindowNew gtkWindowToplevel
-	gtkWidgetSetEvents w [gdkPointerMotionMask]
+	gtkWidgetSetEvents w [gdkPointerMotionMask, gdkScrollMask]
 	w <$ mapM_ ($ ()) [
 		gSignalConnect w Destroy gtkMainQuit,
 		gSignalConnect w DeleteEvent \_ _ _ -> deleteEvent c,

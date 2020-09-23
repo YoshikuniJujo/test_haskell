@@ -66,7 +66,7 @@ rectangleAndLines = do
 	li0 <- waitFor $ adjust newLockId
 	li <- waitFor $ adjust newLockId
 	(sortType @('[FillPolygon, Box, Line, Message]) <$%>) $ (\yr ls bx gp -> yr : ls ++ bx ++ gp)
-		<$%> (emit (Oot.expand . Singleton $ Box (Rect (50, 50) (100, 100)) Yellow) >> waitFor never)
+		<$%> (emit (Oot.expand . Singleton $ Box (Rect (50, 50) (100, 100)) Red) >> waitFor never)
 		<*%> (emit [] >> sampleLine li0 li)
 		<*%> do	emit []
 			waitFor (adjust clickOnBox)

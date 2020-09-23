@@ -17,7 +17,7 @@ module Graphics.Gtk (
 	-- * Container
 	castWidgetToContainer, gtkContainerAdd,
 	-- * Gdk Event Mask
-	gdkPointerMotionMask,
+	gdkPointerMotionMask, gdkScrollMask,
 	-- * Event General
 	Event, Handler, AsPointer, gSignalConnect, gTimeoutAdd,
 	-- * Each Event

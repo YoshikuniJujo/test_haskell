@@ -336,7 +336,12 @@ todo
 * [x] use Control.Moffy.Run.TChan
 	+ [x] Followbox
 * [x] bug fix: exposeBoth
-* [ ] define withLockSig
+* [x] define withLockSig
+* [ ] scroll event
+	+ [ ] make Trial.TryScroll
+	+ [ ] make app/tryScroll.hs
+	+ [ ] make scroll event in Control.Moffy.Event.Mouse
+	+ [ ] use scroll event in Trial.TryScroll
 * [ ] make draw application
 	+ [x] make Trial.Draw
 	+ [x] make app/draw.hs
@@ -375,8 +380,8 @@ todo
 		- [x] draw with gray
 			* [x] add FillPolygon to types
 			* [x] emit polygon
-		- [ ] select gray area with left click
 		- [ ] make rgb area
+			* [ ] show box of red, green and blue
 			* [ ] each color plus or minus with wheele
 		- [ ] set fill color with left click
 	+ [ ] no fill rectangle
