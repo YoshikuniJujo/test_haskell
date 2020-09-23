@@ -368,6 +368,10 @@ todo
 	+ [ ] fill
 		- [x] select point by right click
 			* [x] change color of point square
+		- [ ] add FillPolygon
+			* [x] prepare tryFillPolygon
+			* [ ] add FillPolygon to Control.Moffy.Viewable.Shape
+			* [ ] add FillPolygon to Control.Moffy.View.GtkField
 		- [ ] draw with gray
 		- [ ] select gray area with left click
 		- [ ] make rgb area
@@ -377,7 +381,9 @@ todo
 	+ [ ] no fill lines and polygon
 	+ [ ] Bezier curve
 * [ ] consider whether or not to weeken cohesion
-* [x] pass argument to runGtkMain
+* [x] pass argument to `runGtkMain`
+* [ ] consider to move `gtkMainQuit` to GTK thread
+* [ ] consider to use `Sig s 'Nil a r` and `React s 'Nil r`
 * [ ] refactoring
 * [ ] remake key event
 	+ [x] consider Pattern vs Value
