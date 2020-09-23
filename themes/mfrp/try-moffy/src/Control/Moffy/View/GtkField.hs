@@ -80,7 +80,8 @@ drawBox _ cr (Box (Rect (l_, u_) (r, d)) c) = do
 	h = abs $ u_ - d
 
 fillPolygon :: GtkWidget -> CairoT -> FillPolygon -> IO ()
-fillPolygon _ cr f@(FillPolygon c (p : ps)) = do
+fillPolygon _ _ (FillPolygon _ []) = pure ()
+fillPolygon _ cr (FillPolygon c (p : ps)) = do
 	uncurry3 (cairoSetSourceRgb cr) $ colorToRgb c
 	uncurry (cairoMoveTo cr) p
 	uncurry (cairoLineTo cr) `mapM_` ps

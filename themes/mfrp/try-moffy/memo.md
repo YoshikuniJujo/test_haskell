@@ -372,7 +372,9 @@ todo
 			* [x] prepare tryFillPolygon
 			* [x] add FillPolygon to Control.Moffy.Viewable.Shape
 			* [x] add FillPolygon to Control.Moffy.View.GtkField
-		- [ ] draw with gray
+		- [x] draw with gray
+			* [x] add FillPolygon to types
+			* [x] emit polygon
 		- [ ] select gray area with left click
 		- [ ] make rgb area
 			* [ ] each color plus or minus with wheele

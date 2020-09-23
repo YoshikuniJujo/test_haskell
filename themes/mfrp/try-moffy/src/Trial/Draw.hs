@@ -18,6 +18,7 @@ import Control.Moffy.Event.Mouse
 import Control.Moffy.Viewable.Basic
 import Control.Moffy.Viewable.Shape
 import Data.Type.Set
+import Data.Maybe
 
 import Control.Moffy.Handle
 import Control.Moffy.Handle.ThreadId
@@ -42,7 +43,7 @@ import Trial.Draw.Viewable
 
 import Debug.Trace
 
-type Viewable = OneOfThem (Box :- Line :- Message :- 'Nil)
+type Viewable = OneOfThem (Box :- Line :- FillPolygon :- Message :- 'Nil)
 type Events = GetThreadId :- MouseEv :+: LockEv :+: LinesEv
 
 first' :: Firstable es es' a a => React s es a -> React s es' a -> React s (es :+: es') a
@@ -64,7 +65,7 @@ rectangleAndLines :: Sig s Events [Viewable] ()
 rectangleAndLines = do
 	li0 <- waitFor $ adjust newLockId
 	li <- waitFor $ adjust newLockId
-	(sortType @('[Box, Line, Message]) <$%>) $ (\yr ls bx -> yr : ls ++ bx)
+	(sortType @('[FillPolygon, Box, Line, Message]) <$%>) $ (\yr ls bx gp -> yr : ls ++ bx ++ gp)
 		<$%> (emit (Oot.expand . Singleton $ Box (Rect (50, 50) (100, 100)) Yellow) >> waitFor never)
 		<*%> (emit [] >> sampleLine li0 li)
 		<*%> do	emit []
@@ -72,6 +73,29 @@ rectangleAndLines = do
 			emit [	Oot.expand . Singleton $ Message "Yellow Box have clicked",
 				Oot.expand . Singleton $ Box (Rect (200, 200) (250, 250)) Red]
 			waitFor never
+		<*%> grayPolygon []
+
+adjustPoint1 :: Point -> Point -> Maybe Point
+adjustPoint1 (x0, y0) (x, y)
+	| x0 - 10 <= x && x <= x0 + 10 &&
+		y0 - 10 <= y && y <= y0 + 10 = Just (x0, y0)
+	| otherwise = Nothing
+
+adjustPoint :: [Point] -> Point -> Maybe Point
+adjustPoint ps0 p = listToMaybe $ mapMaybe (`adjustPoint1` p) ps0
+
+grayPolygon :: [Point] -> Sig s Events [Viewable] ()
+grayPolygon ps = do
+	emit [	Oot.expand . Singleton . Message $ "grayPolygon: ps: " ++ show ps,
+		Oot.expand . Singleton $ FillPolygon (Color 0x7f 0x7f 0x7f) ps ]
+	cp <- waitFor . adjust $ maybeEither (0, 0) <$> mousePos `at` rightClick
+	ls <- waitFor $ adjust loadLines
+	let	ps0 = linesToPoints ls
+--	emit [	Oot.expand . Singleton . Message $ "grayPolygon: ls: " ++ show ls,
+--		Oot.expand . Singleton $ FillPolygon (Color 0x7f 0x7f 0x7f) ps ]
+--	let	r = linesToReactRight ls
+--	p <- waitFor r
+	grayPolygon . maybe id (:) (adjustPoint ps0 cp) $ ps
 
 clickOnBox :: React s MouseEv ()
 clickOnBox = void . adjust $ find (`insideRect` Rect (50, 50) (100, 100)) (mousePos `indexBy` repeat leftClick)
@@ -170,6 +194,7 @@ pointToReactRight (x, y) = do
 	adjust . rightOnRect $ Rect (x - 10, y - 10) (x + 10, y + 10)
 	pure (x, y)
 
-linesToReact, linesToReactUp :: D.Set SimpleLine -> React s Events Position
+linesToReact, linesToReactUp, linesToReactRight :: D.Set SimpleLine -> React s Events Position
 linesToReact = foldr first' never . map pointToReact . linesToPoints
 linesToReactUp = foldr first' never . map pointToReactUp . linesToPoints
+linesToReactRight = foldr first' never . map pointToReactRight . linesToPoints
