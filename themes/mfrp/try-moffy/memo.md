@@ -394,6 +394,14 @@ todo
 	+ [ ] no fill rectangle
 	+ [ ] no fill lines and polygon
 	+ [ ] Bezier curve
+* [ ] about window
+	+ [ ] make window
+	+ [ ] add window id to mouse and key event
+	+ [ ] make multiple window
+	+ [ ] make tear-off sample
+* [ ] about cursor
+	+ [ ] change cursor picture
+	+ [ ] others
 * [ ] consider whether or not to weeken cohesion
 * [x] pass argument to `runGtkMain`
 * [ ] consider to move `gtkMainQuit` to GTK thread
@@ -462,14 +470,6 @@ todo
 	+ [ ] refactor GTK (7)
 	+ [ ] refactor Trial (23)
 	+ [ ] refactor app/foo.hs (8)
-* [ ] about window
-	+ [ ] make window
-	+ [ ] make multiple window
-	+ [ ] window move event
-	+ [ ] make tear-off sample
-* [ ] about cursor
-	+ [ ] change cursor picture
-	+ [ ] others
 * [ ] check module hierarchy
 	+ [ ] Moffy
 	+ [x] Moffy library
