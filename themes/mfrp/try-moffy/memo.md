@@ -387,8 +387,10 @@ todo
 			* [x] each color plus or minus with wheele
 		- [x] set fill shape and color with left click
 		- [x] more shape and color
-	+ [ ] save
-	+ [ ] load as background
+	+ [x] save
+		- [x] make save format
+			* [x] line and fill polygon
+		- [x] load as background
 	+ [ ] no fill rectangle
 	+ [ ] no fill lines and polygon
 	+ [ ] Bezier curve

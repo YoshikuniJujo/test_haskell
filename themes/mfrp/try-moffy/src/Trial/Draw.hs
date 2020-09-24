@@ -1,6 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
-
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeApplications, ViewPatterns #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -42,11 +41,28 @@ import Trial.Draw.OneOfThem
 import Trial.Draw.Event
 import Trial.Draw.Handle
 import Trial.Draw.Viewable
+import qualified Trial.Draw.Marshal as M
 
 import Debug.Trace
 
 type Viewable = OneOfThem (Box :- Line :- FillPolygon :- Message :- 'Nil)
 type Events = GetThreadId :- MouseEv :+: LockEv :+: LinesEv
+
+shapeToViewable :: M.Shape -> Viewable
+shapeToViewable (M.Line s e) = Oot.expand . Singleton $ Line' (Color 0 0 0) 2 s e
+shapeToViewable (M.FillPolygon c ps) = Oot.expand . Singleton $ FillPolygon (mcolorToColor c) ps
+
+viewableToShape :: Viewable -> Maybe M.Shape
+viewableToShape v = case (project v, project v) of
+	(Just (Line' (Color 0 0 0) 2 s e), _) -> Just $ M.Line s e
+	(_, Just (FillPolygon c ps)) -> Just $ M.FillPolygon (colorToMcolor c) ps
+	_ -> Nothing
+
+mcolorToColor :: M.Color -> Color
+mcolorToColor (M.Color r g b) = Color (round $ r * 0xff) (round $ g * 0xff) (round $ b * 0xff)
+
+colorToMcolor :: Color -> M.Color
+colorToMcolor (Color r g b) = M.Color (fromIntegral r / 0xff) (fromIntegral g / 0xff) (fromIntegral b / 0xff)
 
 first' :: Firstable es es' a a => React s es a -> React s es' a -> React s (es :+: es') a
 first' l r = first l r >>= \case
@@ -68,11 +84,11 @@ rectR = Rect (25, 25) (75, 75)
 rectG = Rect (100, 25) (150, 75)
 rectB = Rect (175, 25) (225, 75)
 
-rectangleAndLines :: Sig s Events [Viewable] ()
-rectangleAndLines = do
+rectangleAndLines :: [M.Shape] -> Sig s Events [Viewable] ()
+rectangleAndLines ((shapeToViewable <$>) -> v0) = do
 	li0 <- waitFor $ adjust newLockId
 	li <- waitFor $ adjust newLockId
-	(sortType @('[FillPolygon, Box, Line, Message]) <$%>) $ (\yr ls bx gp msg -> yr ++ ls ++ bx ++ gp ++ msg)
+	((v0 ++) . sortType @('[FillPolygon, Box, Line, Message]) <$%>) $ (\yr ls bx gp msg -> yr ++ ls ++ bx ++ gp ++ msg)
 		<$%> ((>> waitFor never)
 			$ emit [
 				Oot.expand . Singleton $ Box rectR Red,

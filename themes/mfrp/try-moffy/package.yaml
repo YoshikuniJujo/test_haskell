@@ -42,6 +42,7 @@ dependencies:
 - X11
 - stm
 - containers
+- serialise
 
 library:
   source-dirs: src

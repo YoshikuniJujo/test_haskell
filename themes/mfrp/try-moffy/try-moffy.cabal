@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 11574ffd951ebcf7642f9c141c016b341548def9cd7d8267251a88a88281e399
+-- hash: 8c949242f8f06d8ae4b27d1142a8de4f6d8845ce3c674ea5a84565dde0ea432c
 
 name:           try-moffy
 version:        0.1.0.0
@@ -93,6 +93,7 @@ library
       Trial.Draw
       Trial.Draw.Event
       Trial.Draw.Handle
+      Trial.Draw.Marshal
       Trial.Draw.OneOfThem
       Trial.Draw.Viewable
       Trial.Followbox
@@ -136,6 +137,7 @@ library
     , monads-tf
     , process
     , random
+    , serialise
     , simple-field
     , stm
     , template-haskell
@@ -169,6 +171,7 @@ executable draw
     , monads-tf
     , process
     , random
+    , serialise
     , simple-field
     , stm
     , template-haskell
@@ -203,6 +206,7 @@ executable followbox
     , monads-tf
     , process
     , random
+    , serialise
     , simple-field
     , stm
     , template-haskell
@@ -237,6 +241,7 @@ executable followboxGtk
     , monads-tf
     , process
     , random
+    , serialise
     , simple-field
     , stm
     , template-haskell
@@ -270,6 +275,7 @@ executable try-moffy-exe
     , monads-tf
     , process
     , random
+    , serialise
     , simple-field
     , stm
     , template-haskell
@@ -304,6 +310,7 @@ executable tryCairo
     , monads-tf
     , process
     , random
+    , serialise
     , simple-field
     , stm
     , template-haskell
@@ -338,6 +345,7 @@ executable tryCairoText
     , monads-tf
     , process
     , random
+    , serialise
     , simple-field
     , stm
     , template-haskell
@@ -372,6 +380,7 @@ executable tryCairoTextExtents
     , monads-tf
     , process
     , random
+    , serialise
     , simple-field
     , stm
     , template-haskell
@@ -406,6 +415,7 @@ executable tryFillPolygon
     , monads-tf
     , process
     , random
+    , serialise
     , simple-field
     , stm
     , template-haskell
@@ -440,6 +450,7 @@ executable tryGtk
     , monads-tf
     , process
     , random
+    , serialise
     , simple-field
     , stm
     , template-haskell
@@ -474,6 +485,7 @@ executable tryPango
     , monads-tf
     , process
     , random
+    , serialise
     , simple-field
     , stm
     , template-haskell
@@ -508,6 +520,7 @@ executable tryScroll
     , monads-tf
     , process
     , random
+    , serialise
     , simple-field
     , stm
     , template-haskell
@@ -542,6 +555,7 @@ test-suite try-moffy-test
     , monads-tf
     , process
     , random
+    , serialise
     , simple-field
     , stm
     , template-haskell
