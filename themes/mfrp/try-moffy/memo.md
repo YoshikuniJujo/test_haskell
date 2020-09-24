@@ -341,7 +341,7 @@ todo
 	+ [x] make Trial.TryScroll
 	+ [x] make app/tryScroll.hs
 	+ [x] add scroll event to gSignalConnect
-	+ [ ] add getter function of GdkEventScroll
+	+ [x] add getter function of GdkEventScroll
 	+ [ ] make scroll event in Control.Moffy.Event.Mouse
 	+ [ ] use scroll event in Trial.TryScroll
 * [ ] make draw application
