@@ -8,7 +8,7 @@
 
 module Trial.Draw where
 
-import Prelude hiding (repeat, break)
+import Prelude hiding (repeat, break, filter, scanl)
 
 import qualified Control.Arrow as A
 import Control.Monad
@@ -20,6 +20,7 @@ import Control.Moffy.Viewable.Basic
 import Control.Moffy.Viewable.Shape
 import Data.Type.Set
 import Data.Maybe
+import Data.Word
 
 import Control.Moffy.Handle
 import Control.Moffy.Handle.ThreadId
@@ -71,7 +72,7 @@ rectangleAndLines :: Sig s Events [Viewable] ()
 rectangleAndLines = do
 	li0 <- waitFor $ adjust newLockId
 	li <- waitFor $ adjust newLockId
-	(sortType @('[FillPolygon, Box, Line, Message]) <$%>) $ (\yr ls bx gp -> yr ++ ls ++ bx ++ gp)
+	(sortType @('[FillPolygon, Box, Line, Message]) <$%>) $ (\yr ls bx gp msg -> yr ++ ls ++ bx ++ gp ++ msg)
 		<$%> ((>> waitFor never)
 			$ emit [
 				Oot.expand . Singleton $ Box rectR Red,
@@ -84,10 +85,27 @@ rectangleAndLines = do
 			emit [	Oot.expand . Singleton $ Message "Yellow Box have clicked",
 				Oot.expand . Singleton $ Box (Rect (200, 200) (250, 250)) Red]
 			waitFor never
-		<*%> grayPolygon []
+		<*%> grayPolygon
+		<*%> ((: []) . Oot.expand . Singleton . Message . ("here " ++) . show <$%> adjustSig colorScroll)
 
-posAndDeltaY :: React s GuiEv (Point, Int)
-posAndDeltaY = adjust $ A.first fromJust . fromR <$> mousePos `at` (round . snd <$> mouseScroll)
+colorScroll :: Sig s MouseEv Color ()
+colorScroll = Color <$%> rectY rectR <*%> rectY rectG <*%> rectY rectB
+
+rectY :: Rect -> Sig s MouseEv Word8 ()
+rectY r = scanl add 0x7f . (snd <$%>) . filter ((`insideRect` r) . fst) $ repeat posAndDeltaY
+
+add :: Word8 -> Int -> Word8
+add n d
+	| 0 <= nd && nd <= 255 = fromIntegral nd
+	| otherwise = n
+	where
+	nd = fromIntegral n + d
+
+posAndDeltaY :: React s MouseEv (Point, Int)
+posAndDeltaY = adjust $ A.first fromJust . fromR <$> mousePos `at` (negate . round . snd <$> mouseScroll)
+
+filter :: (a -> Bool) -> Sig s es a r -> Sig s es a r
+filter p s = waitFor (find p s) >>= either ((>> filter p s) . emit) pure
 
 fromR :: Either l r -> r
 fromR (Right r) = r
@@ -102,18 +120,17 @@ adjustPoint1 (x0, y0) (x, y)
 adjustPoint :: [Point] -> Point -> Maybe Point
 adjustPoint ps0 p = listToMaybe $ mapMaybe (`adjustPoint1` p) ps0
 
-grayPolygon :: [Point] -> Sig s Events [Viewable] ()
-grayPolygon ps = do
-	emit [	Oot.expand . Singleton . Message $ "grayPolygon: ps: " ++ show ps,
-		Oot.expand . Singleton $ FillPolygon (Color 0x7f 0x7f 0x7f) ps ]
+grayPolygon :: Sig s Events [Viewable] ()
+-- grayPolygon = (: []) . Oot.expand . Singleton . FillPolygon (Color 0x7f 0x7f 0x7f) <$%> polygonPoints []
+grayPolygon = (((: []) . Oot.expand . Singleton) .) . FillPolygon <$%> adjustSig colorScroll <*%> polygonPoints []
+
+polygonPoints :: [Point] -> Sig s Events [Point] ()
+polygonPoints ps = do
+	emit ps
 	cp <- waitFor . adjust $ maybeEither (0, 0) <$> mousePos `at` rightClick
 	ls <- waitFor $ adjust loadLines
 	let	ps0 = linesToPoints ls
---	emit [	Oot.expand . Singleton . Message $ "grayPolygon: ls: " ++ show ls,
---		Oot.expand . Singleton $ FillPolygon (Color 0x7f 0x7f 0x7f) ps ]
---	let	r = linesToReactRight ls
---	p <- waitFor r
-	grayPolygon . maybe id (:) (adjustPoint ps0 cp) $ ps
+	polygonPoints . maybe id (:) (adjustPoint ps0 cp) $ ps
 
 clickOnBox :: React s MouseEv ()
 clickOnBox = void . adjust $ find (`insideRect` Rect (50, 50) (100, 100)) (mousePos `indexBy` repeat leftClick)

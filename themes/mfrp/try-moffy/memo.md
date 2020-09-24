@@ -382,9 +382,9 @@ todo
 		- [x] draw with gray
 			* [x] add FillPolygon to types
 			* [x] emit polygon
-		- [ ] make rgb area
-			* [ ] show box of red, green and blue
-			* [ ] each color plus or minus with wheele
+		- [x] make rgb area
+			* [x] show box of red, green and blue
+			* [x] each color plus or minus with wheele
 		- [ ] set fill color with left click
 	+ [ ] no fill rectangle
 	+ [ ] no fill lines and polygon

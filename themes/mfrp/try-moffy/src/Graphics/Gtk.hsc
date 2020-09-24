@@ -30,7 +30,8 @@ module Graphics.Gtk (
 	-- ** ButtonEvent
 	ButtonEvent(..), GdkEventButton, gdkEventButtonButton, gdkEventButtonX, gdkEventButtonY,
 	-- ** ScrollEvent
-	ScrollEvent(..), GdkEventScroll, gdkEventScrollDeltaX, gdkEventScrollDeltaY,
+	ScrollEvent(..), GdkEventScroll,
+	gdkEventScrollX, gdkEventScrollY, gdkEventScrollDeltaX, gdkEventScrollDeltaY,
 	-- ** MotionNotifyEvent
 	MotionNotifyEvent(..), GdkEventMotion, gdkEventMotionX, gdkEventMotionY,
 	-- ** DrawEvent
@@ -227,9 +228,17 @@ instance Event MotionNotifyEvent where
 	handlerToCHandler = handlerToCHandlerMotion
 	g_callback = g_callback_motion
 
+gdkEventScrollX :: GdkEventScroll -> IO #type gdouble
+gdkEventScrollX (GdkEventScroll p) = c_GdkEventScroll_x p
+gdkEventScrollY (GdkEventScroll p) = c_GdkEventScroll_y p
+
 gdkEventScrollDeltaX :: GdkEventScroll -> IO #type gdouble
 gdkEventScrollDeltaX (GdkEventScroll p) = c_GdkEventScroll_delta_x p
 gdkEventScrollDeltaY (GdkEventScroll p) = c_GdkEventScroll_delta_y p
+
+c_GdkEventScroll_x, c_GdkEventScroll_y :: Ptr GdkEventScroll -> IO #type gdouble
+c_GdkEventScroll_x = #peek GdkEventScroll, x
+c_GdkEventScroll_y = #peek GdkEventScroll, y
 
 c_GdkEventScroll_delta_x, c_GdkEventScroll_delta_y :: Ptr GdkEventScroll -> IO #type gdouble
 c_GdkEventScroll_delta_x = #peek GdkEventScroll, delta_x
