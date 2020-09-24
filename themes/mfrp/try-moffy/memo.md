@@ -372,7 +372,7 @@ todo
 		- [ ] remove lock from addLine
 		- [x] draw rectangle
 		- [ ] others
-	+ [ ] fill
+	+ [x] fill
 		- [x] select point by right click
 			* [x] change color of point square
 		- [x] add FillPolygon
@@ -385,7 +385,10 @@ todo
 		- [x] make rgb area
 			* [x] show box of red, green and blue
 			* [x] each color plus or minus with wheele
-		- [ ] set fill color with left click
+		- [x] set fill shape and color with left click
+		- [x] more shape and color
+	+ [ ] save
+	+ [ ] load as background
 	+ [ ] no fill rectangle
 	+ [ ] no fill lines and polygon
 	+ [ ] Bezier curve

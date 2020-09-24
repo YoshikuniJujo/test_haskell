@@ -8,7 +8,7 @@
 
 module Trial.Draw where
 
-import Prelude hiding (repeat, break, filter, scanl)
+import Prelude hiding (repeat, break, until, filter, scanl)
 
 import qualified Control.Arrow as A
 import Control.Monad
@@ -85,7 +85,7 @@ rectangleAndLines = do
 			emit [	Oot.expand . Singleton $ Message "Yellow Box have clicked",
 				Oot.expand . Singleton $ Box (Rect (200, 200) (250, 250)) Red]
 			waitFor never
-		<*%> grayPolygon
+		<*%> morePolygon
 		<*%> ((: []) . Oot.expand . Singleton . Message . ("here " ++) . show <$%> adjustSig colorScroll)
 
 colorScroll :: Sig s MouseEv Color ()
@@ -121,8 +121,15 @@ adjustPoint :: [Point] -> Point -> Maybe Point
 adjustPoint ps0 p = listToMaybe $ mapMaybe (`adjustPoint1` p) ps0
 
 grayPolygon :: Sig s Events [Viewable] ()
--- grayPolygon = (: []) . Oot.expand . Singleton . FillPolygon (Color 0x7f 0x7f 0x7f) <$%> polygonPoints []
 grayPolygon = (((: []) . Oot.expand . Singleton) .) . FillPolygon <$%> adjustSig colorScroll <*%> polygonPoints []
+
+stopPolygon :: Sig s Events [Viewable] [Viewable]
+stopPolygon = fst . fromR <$> grayPolygon `until` leftClick
+
+morePolygon :: Sig s Events [Viewable] ()
+morePolygon = do
+	p <- stopPolygon
+	(p ++) <$%> morePolygon
 
 polygonPoints :: [Point] -> Sig s Events [Point] ()
 polygonPoints ps = do
