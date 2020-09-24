@@ -20,7 +20,8 @@ import Control.Moffy.Event.Key (
 import Control.Moffy.Event.Mouse (
 	MouseEv,
 	MouseDown, pattern OccMouseDown,  MouseUp, pattern OccMouseUp,
-	MouseMove, pattern OccMouseMove, MouseBtn(..) )
+	MouseMove, pattern OccMouseMove, MouseBtn(..),
+	pattern OccMouseScroll )
 import Control.Moffy.Event.CalcTextExtents
 import Control.Concurrent
 import Control.Concurrent.STM hiding (retry)
@@ -74,9 +75,9 @@ createWindow c = do
 		gSignalConnect w ButtonPressEvent \_ ev _ -> buttonDown c ev,
 		gSignalConnect w ButtonReleaseEvent \_ ev _ -> buttonUp c ev,
 		gSignalConnect w ScrollEvent \_ ev _ -> True <$ do
-			print ev
-			print =<< gdkEventScrollDeltaX ev
-			print =<< gdkEventScrollDeltaY ev
+			dx <- gdkEventScrollDeltaX ev
+			dy <- gdkEventScrollDeltaY ev
+			atomically . writeTChan c . expand . Singleton $ OccMouseScroll dx dy
 			,
 		gSignalConnect w MotionNotifyEvent \_ ev _ -> mouseMove c ev ]
 

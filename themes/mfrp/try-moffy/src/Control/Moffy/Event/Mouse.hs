@@ -15,7 +15,9 @@ module Control.Moffy.Event.Mouse (
 	-- ** Mouse Up
 	MouseUp, pattern OccMouseUp, mouseUp, leftUp, middleUp, rightUp,
 	-- ** Mouse Move
-	MouseMove, pattern OccMouseMove, mouseMove, mousePos
+	MouseMove, pattern OccMouseMove, mouseMove, mousePos,
+	-- ** Mouse Scroll
+	MouseScroll, pattern OccMouseScroll, mouseScroll
 	) where
 
 import Prelude hiding (repeat)
@@ -95,7 +97,19 @@ mousePos :: Sig s (Singleton MouseMove) Point ()
 mousePos = repeat mouseMove
 
 ---------------------------------------------------------------------------
+-- MOUSE SCROLL
+---------------------------------------------------------------------------
+
+data MouseScroll = MouseScrollReq deriving (Show, Eq, Ord)
+numbered [t| MouseScroll |]
+instance Request MouseScroll where
+	data Occurred MouseScroll = OccMouseScroll Double Double deriving Show
+
+mouseScroll :: React s (Singleton MouseScroll) (Double, Double)
+mouseScroll = await MouseScrollReq \(OccMouseScroll dx dy) -> (dx, dy)
+
+---------------------------------------------------------------------------
 -- MOUSE EV
 ---------------------------------------------------------------------------
 
-type MouseEv = MouseDown :- MouseUp :- MouseMove :- 'Nil
+type MouseEv = MouseDown :- MouseUp :- MouseMove :- MouseScroll :- 'Nil

@@ -337,13 +337,13 @@ todo
 	+ [x] Followbox
 * [x] bug fix: exposeBoth
 * [x] define withLockSig
-* [ ] scroll event
+* [x] scroll event
 	+ [x] make Trial.TryScroll
 	+ [x] make app/tryScroll.hs
 	+ [x] add scroll event to gSignalConnect
 	+ [x] add getter function of GdkEventScroll
-	+ [ ] make scroll event in Control.Moffy.Event.Mouse
-	+ [ ] use scroll event in Trial.TryScroll
+	+ [x] make scroll event in Control.Moffy.Event.Mouse
+	+ [x] use scroll event in Trial.TryScroll
 * [ ] make draw application
 	+ [x] make Trial.Draw
 	+ [x] make app/draw.hs
