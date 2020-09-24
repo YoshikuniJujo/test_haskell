@@ -10,6 +10,7 @@ module Trial.Draw where
 
 import Prelude hiding (repeat, break)
 
+import qualified Control.Arrow as A
 import Control.Monad
 import Control.Moffy
 import Control.Moffy.Event.ThreadId
@@ -61,12 +62,22 @@ maybeEither2 :: r' -> Either r (Maybe a, r') -> r'
 maybeEither2 d (Left _) = d
 maybeEither2 _ (Right (_, x)) = x
 
+rectR, rectG, rectB :: Rect
+rectR = Rect (25, 25) (75, 75)
+rectG = Rect (100, 25) (150, 75)
+rectB = Rect (175, 25) (225, 75)
+
 rectangleAndLines :: Sig s Events [Viewable] ()
 rectangleAndLines = do
 	li0 <- waitFor $ adjust newLockId
 	li <- waitFor $ adjust newLockId
-	(sortType @('[FillPolygon, Box, Line, Message]) <$%>) $ (\yr ls bx gp -> yr : ls ++ bx ++ gp)
-		<$%> (emit (Oot.expand . Singleton $ Box (Rect (50, 50) (100, 100)) Red) >> waitFor never)
+	(sortType @('[FillPolygon, Box, Line, Message]) <$%>) $ (\yr ls bx gp -> yr ++ ls ++ bx ++ gp)
+		<$%> ((>> waitFor never)
+			$ emit [
+				Oot.expand . Singleton $ Box rectR Red,
+				Oot.expand . Singleton $ Box rectG Green,
+				Oot.expand . Singleton $ Box rectB Blue
+				])
 		<*%> (emit [] >> sampleLine li0 li)
 		<*%> do	emit []
 			waitFor (adjust clickOnBox)
@@ -74,6 +85,13 @@ rectangleAndLines = do
 				Oot.expand . Singleton $ Box (Rect (200, 200) (250, 250)) Red]
 			waitFor never
 		<*%> grayPolygon []
+
+posAndDeltaY :: React s GuiEv (Point, Int)
+posAndDeltaY = adjust $ A.first fromJust . fromR <$> mousePos `at` (round . snd <$> mouseScroll)
+
+fromR :: Either l r -> r
+fromR (Right r) = r
+fromR _ = error "bad"
 
 adjustPoint1 :: Point -> Point -> Maybe Point
 adjustPoint1 (x0, y0) (x, y)
