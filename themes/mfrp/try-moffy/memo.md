@@ -398,11 +398,11 @@ todo
 	+ [x] create window function
 	+ [x] add window identity
 	+ [x] use windowNew
-	+ [ ] make TVar WindowId
-	+ [ ] use different window id to each window
+	+ [x] make TVar WindowId
+	+ [x] use different window id to each window
 	+ [ ] change vda: Maybe GtkWidget ==> Map WindowId GtkWidget
 		- [x] use (WindowId 0) every time
-		- [ ] use different window id to each drawing area
+		- [x] use different window id to each drawing area
 		- [ ] draw to all drawing area
 		- [ ] add window id to calc text extents event
 		- [ ] prepare each font channels

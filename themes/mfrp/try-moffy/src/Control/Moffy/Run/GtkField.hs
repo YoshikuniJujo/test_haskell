@@ -54,19 +54,20 @@ runGtkMain dr as = (,,) <$> newTChanIO <*> newTChanIO <*> newTChanIO >>=
 	\cs@(crq, cocc, cvw) -> (, cs) <$> do
 		cas <- newTChanIO
 		void $ forkIO do
+			vwid <- atomically . newTVar $ WindowId 0
 			vda <- atomically $ newTVar empty
 			vvw <- atomically $ newTVar mempty
 			cft <- newTChanIO
 			atomically . writeTChan cas =<< gtkInit as
 			void $ gTimeoutAdd 100
-				(const $ True <$ recieveEvReqs dr crq cft cocc vvw vda) ()
+				(const $ True <$ recieveEvReqs dr vwid crq cft cocc vvw vda) ()
 			void $ gTimeoutAdd 100 (const $ recieveViewable cvw vvw vda) ()
 			gtkMain
 		atomically $ readTChan cas
 
-recieveEvReqs :: GtkDrawer a -> TChan (EvReqs GuiEv) -> TChan (FontName, FontSize, T.Text) ->
+recieveEvReqs :: GtkDrawer a -> TVar WindowId -> TChan (EvReqs GuiEv) -> TChan (FontName, FontSize, T.Text) ->
 	TChan (EvOccs GuiEv) -> TVar a -> TVar (Map WindowId GtkWidget) -> IO ()
-recieveEvReqs dr crq cft cocc vvw vda = atomically (lastTChan crq) >>= \case
+recieveEvReqs dr vwid crq cft cocc vvw vda = atomically (lastTChan crq) >>= \case
 	Nothing -> pure ()
 	Just rqs -> do
 		case project rqs of
@@ -83,23 +84,13 @@ recieveEvReqs dr crq cft cocc vvw vda = atomically (lastTChan crq) >>= \case
 				putStrLn "recieve WindowNewReq begin"
 				w <- createWindow cocc
 				da <- createDrawingArea dr cft cocc vvw w
-				atomically $ writeTVar vda (insert (WindowId 0) da empty)
 				gtkWidgetShowAll w
-				atomically . writeTChan cocc . expand . Singleton . OccWindowNew $ WindowId 0
+				atomically $ do
+					wid@(WindowId n) <- readTVar vwid
+					writeTVar vda (insert wid da empty)
+					writeTChan cocc . expand . Singleton $ OccWindowNew wid
+					writeTVar vwid $ WindowId (n + 1)
 				putStrLn "recieve WindowNewReq end"
-
-recieveWindowNew :: GtkDrawer a -> TChan (EvReqs GuiEv) -> TChan (FontName, FontSize, T.Text) ->
-	TChan (EvOccs GuiEv) -> TVar a -> IO ()
-recieveWindowNew dr crq cft cocc vvw = atomically (lastTChan crq) >>= \case
-	Nothing -> pure ()
-	Just rqs -> case project rqs of
-		Nothing -> pure ()
-		Just WindowNewReq -> do
---			w <- createWindow cocc
---			da <- createDrawingArea dr cft cocc vvw w
---			gtkWidgetShowAll w
-			atomically . writeTChan cocc . expand . Singleton . OccWindowNew $ WindowId 0
-	
 
 createWindow :: TChan (EvOccs GuiEv) -> IO GtkWidget
 createWindow c = do
@@ -129,12 +120,6 @@ createDrawingArea dr ftc c tx w = do
 	da <- gtkDrawingAreaNew
 	gtkContainerAdd (castWidgetToContainer w) da
 	da <$ gSignalConnect da DrawEvent (draw dr ftc c tx) ()
-
-recieveCalcTextExtentsRequest ::
-	TChan (EvReqs GuiEv) -> TChan (FontName, FontSize, T.Text) -> GtkWidget -> IO Bool
-recieveCalcTextExtentsRequest cr ftc da = (True <$) $ atomically (lastTChan cr) >>=
-	maybe (pure ()) (project >>> maybe (pure ()) \(CalcTextExtentsReq fn fs t) ->
-		atomically (writeTChan ftc (fn, fs, t)) >> gtkWidgetQueueDraw da)
 
 recieveViewable :: TChan a -> TVar a -> TVar (Map WindowId GtkWidget) -> IO Bool
 recieveViewable c' tx vda = atomically (readTVar vda) >>= \das -> case Data.Map.lookup (WindowId 0) das of
