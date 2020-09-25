@@ -66,18 +66,18 @@ runGtkMain dr as = (,,) <$> newTChanIO <*> newTChanIO <*> newTChanIO >>=
 			gtkMain
 		atomically $ readTChan cas
 
-recieveEvReqs :: Monoid a => GtkDrawer a -> TVar WindowId -> TVar (Map WindowId GtkWidget) -> TChan (EvReqs GuiEv) -> TChan (FontName, FontSize, T.Text) ->
+recieveEvReqs :: Monoid a => GtkDrawer a -> TVar WindowId -> TVar (Map WindowId GtkWidget) -> TChan (EvReqs GuiEv) -> TChan (WindowId, FontName, FontSize, T.Text) ->
 	TChan (EvOccs GuiEv) -> TVar (Map WindowId a) -> TVar (Map WindowId GtkWidget) -> IO ()
 recieveEvReqs dr vwid vw crq cft cocc vvw vda = atomically (lastTChan crq) >>= \case
 	Nothing -> pure ()
 	Just rqs -> do
 		case project rqs of
 			Nothing -> pure ()
-			Just (CalcTextExtentsReq fn fs t) -> do
-				atomically (readTVar vda) >>= \das -> case Map.lookup (WindowId 0) das of
+			Just (CalcTextExtentsReq wid fn fs t) -> do
+				atomically (readTVar vda) >>= \das -> case Map.lookup wid das of
 					Nothing -> pure ()
 					Just da -> do
-						atomically $ writeTChan cft (fn, fs, t)
+						atomically $ writeTChan cft (wid, fn, fs, t)
 						gtkWidgetQueueDraw da
 		case project rqs of
 			Nothing -> pure ()
@@ -131,7 +131,7 @@ createWindow wid c = do
 			,
 		gSignalConnect w MotionNotifyEvent \_ ev _ -> mouseMove c ev ]
 
-createDrawingArea :: Monoid a => WindowId -> GtkDrawer a -> TChan (FontName, FontSize, T.Text) ->
+createDrawingArea :: Monoid a => WindowId -> GtkDrawer a -> TChan (WindowId, FontName, FontSize, T.Text) ->
 	TChan (EvOccs GuiEv) -> TVar (Map WindowId a) -> GtkWidget -> IO GtkWidget
 createDrawingArea wid dr ftc c tx w = do
 	da <- gtkDrawingAreaNew
@@ -186,18 +186,20 @@ button = \case
 
 -- DRAW
 
-draw :: Monoid a => WindowId -> GtkDrawer a -> TChan (FontName, FontSize, T.Text) ->
+draw :: Monoid a => WindowId -> GtkDrawer a -> TChan (WindowId, FontName, FontSize, T.Text) ->
 	TChan (EvOccs GuiEv) -> TVar (Map WindowId a) -> GtkWidget -> CairoT -> () -> IO Bool
 draw wid dr ftc co tx wdgt cr () = True <$ do
-	atomically (lastTChan ftc) >>= maybe (pure ()) \(fn, fs, txt) -> do
-		(l, d) <- (,) <$> pangoCairoCreateLayout cr
-			<*> pangoFontDescriptionFromString (T.pack fn)
-		d `pangoFontDescriptionSetAbsoluteSize` fs
-		l `pangoLayoutSetFontDescription` d
-		l `pangoLayoutSetText` txt
-		atomically . writeTChan co . expand . Singleton
-				. OccCalcTextExtents fn fs txt
-			=<< pangoLayoutWithPixelExtents l \ie le -> mkte ie le
+	atomically (lastTChan ftc) >>= maybe (pure ()) \(wid', fn, fs, txt) -> case wid' == wid of
+		True -> do
+			(l, d) <- (,) <$> pangoCairoCreateLayout cr
+				<*> pangoFontDescriptionFromString (T.pack fn)
+			d `pangoFontDescriptionSetAbsoluteSize` fs
+			l `pangoLayoutSetFontDescription` d
+			l `pangoLayoutSetText` txt
+			atomically . writeTChan co . expand . Singleton
+					. OccCalcTextExtents wid fn fs txt
+				=<< pangoLayoutWithPixelExtents l \ie le -> mkte ie le
+		False -> atomically (writeTChan ftc (wid', fn, fs, txt))
 	readTVarIO tx >>= \mx -> case Map.lookup wid mx of
 		Nothing -> dr wdgt cr mempty
 		Just x -> dr wdgt cr x

@@ -37,7 +37,7 @@ tryCalcTextExtents :: T.Text -> Sig s (WindowNew :- DeleteEvent :- CalcTextExten
 tryCalcTextExtents txt = void do
 	i <- waitFor $ adjust windowNew
 	Map.singleton i <$%>
-		((emit . (txt ,) =<< waitFor (adjust $ calcTextExtents' "Sans" 30 txt)) >> waitFor (adjust $ deleteEvent i))
+		((emit . (txt ,) =<< waitFor (adjust $ calcTextExtents' i "Sans" 30 txt)) >> waitFor (adjust $ deleteEvent i))
 
 runTryCalcTextExtents :: IO ()
 runTryCalcTextExtents = do

@@ -11,6 +11,7 @@ module Control.Moffy.Event.CalcTextExtents (
 	) where
 
 import Control.Moffy
+import Control.Moffy.Event.Window
 import Data.Type.Set
 import Data.Bool
 
@@ -21,12 +22,12 @@ import qualified Data.Text as T
 type FontName = String
 type FontSize = Double
 
-data CalcTextExtents = CalcTextExtentsReq FontName FontSize T.Text
+data CalcTextExtents = CalcTextExtentsReq WindowId FontName FontSize T.Text
 	deriving (Show, Eq, Ord)
 numbered [t| CalcTextExtents |]
 instance Request CalcTextExtents where
 	data Occurred CalcTextExtents =
-		OccCalcTextExtents FontName FontSize T.Text TextExtents'
+		OccCalcTextExtents WindowId FontName FontSize T.Text TextExtents'
 
 data TextExtents' = TextExtents' {
 	textExtentsInkRect :: Rectangle,
@@ -39,7 +40,7 @@ data Rectangle = Rectangle {
 	rectangleHeight :: Double } deriving Show
 
 {-
-calcTextExtents :: FontName -> FontSize -> T.Text ->
+calcTextExtents :: WindowId -> FontName -> FontSize -> T.Text ->
 	React s (Singleton CalcTextExtents) TextExtents
 calcTextExtents fn fs t = maybe (calcTextExtents fn fs t) pure
 	=<< await (CalcTextExtentsReq fn fs t)
@@ -47,9 +48,9 @@ calcTextExtents fn fs t = maybe (calcTextExtents fn fs t) pure
 			bool Nothing (Just glp) $ (fn, fs, t) == (fn', fs', t')
 			-}
 
-calcTextExtents' :: FontName -> FontSize -> T.Text ->
+calcTextExtents' :: WindowId -> FontName -> FontSize -> T.Text ->
 	React s (Singleton CalcTextExtents) TextExtents'
-calcTextExtents' fn fs t = maybe (calcTextExtents' fn fs t) pure
-	=<< await (CalcTextExtentsReq fn fs t)
-		\(OccCalcTextExtents fn' fs' t' glp) ->
-			bool Nothing (Just glp) $ (fn, fs, t) == (fn', fs', t')
+calcTextExtents' wid fn fs t = maybe (calcTextExtents' wid fn fs t) pure
+	=<< await (CalcTextExtentsReq wid fn fs t)
+		\(OccCalcTextExtents wid' fn' fs' t' glp) ->
+			bool Nothing (Just glp) $ (wid, fn, fs, t) == (wid', fn', fs', t')

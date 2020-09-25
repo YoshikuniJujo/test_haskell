@@ -16,8 +16,8 @@ import Field
 import Data.OneOrMoreApp as Ooma (pattern Singleton)
 
 handleCalcTextExtents :: Field -> Handle IO (Singleton CalcTextExtents)
-handleCalcTextExtents f (Oom.Singleton (CalcTextExtentsReq fn fs t)) = Ooma.Singleton
-	. OccCalcTextExtents fn fs t . mkTextExtents' . xGlyphInfoToNew <$> textExtents f fn fs (T.unpack t)
+handleCalcTextExtents f (Oom.Singleton (CalcTextExtentsReq wid fn fs t)) = Ooma.Singleton
+	. OccCalcTextExtents wid fn fs t . mkTextExtents' . xGlyphInfoToNew <$> textExtents f fn fs (T.unpack t)
 
 xGlyphInfoToNew :: X.XGlyphInfo -> TextExtents
 xGlyphInfoToNew (X.XGlyphInfo w_ h_ x_ y_ xo_ yo_) = TextExtents x y w h xo yo

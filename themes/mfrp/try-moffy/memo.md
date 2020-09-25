@@ -400,14 +400,12 @@ todo
 	+ [x] use windowNew
 	+ [x] make TVar WindowId
 	+ [x] use different window id to each window
-	+ [ ] change vda: Maybe GtkWidget ==> Map WindowId GtkWidget
+	+ [x] change vda: Maybe GtkWidget ==> Map WindowId GtkWidget
 		- [x] use (WindowId 0) every time
 		- [x] use different window id to each drawing area
-		- [ ] draw to all drawing area
-		- [ ] add window id to calc text extents event
-		- [ ] prepare each font channels
-		- [ ] use window id to calc text extents
-	+ [ ] event from all window and draw to all window
+	* [x] multi window calc text extents
+		- [x] add window id to calc text extents event
+		- [x] use window id to calc text extents
 	+ [x] make multiple window trial
 		- [x] try drawing box
 		- [ ] others
@@ -418,7 +416,8 @@ todo
 		- [x] make destroy window request
 	+ [x] pass WindowId to deleteEvent
 	+ [x] viewable has window id
-	+ [ ] add window id to mouse and key event
+	+ [ ] add window id to mouse event
+	+ [ ] add window id to key event
 	+ [ ] event has window id
 	+ [ ] make tear-off sample
 	+ [ ] get window size or drawing area size

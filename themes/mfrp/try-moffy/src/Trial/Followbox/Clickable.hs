@@ -26,6 +26,8 @@ import Control.Moffy.Viewable.Basic (Position)
 
 import Data.OneOfThem
 
+import Control.Moffy.Event.Window
+
 ---------------------------------------------------------------------------
 
 -- * CLICKABLE
@@ -55,9 +57,9 @@ clickableText p@(x, y) (WithTextExtents fn fs txt xg) =
 	[gw, gh] = ($ xg) <$> [
 		rectangleWidth . textExtentsInkRect, rectangleHeight . textExtentsInkRect ]
 
-withTextExtents :: FontName -> FontSize -> T.Text ->
+withTextExtents :: WindowId -> FontName -> FontSize -> T.Text ->
 	React s (Singleton CalcTextExtents) WithTextExtents
-withTextExtents fn fs t = WithTextExtents fn fs t <$> calcTextExtents' fn fs t
+withTextExtents wid fn fs t = WithTextExtents fn fs t <$> calcTextExtents' wid fn fs t
 
 nextToText :: Position -> WithTextExtents -> Position
 nextToText (x, y) (WithTextExtents _ _ _ xg) = (x + xo, y) where
