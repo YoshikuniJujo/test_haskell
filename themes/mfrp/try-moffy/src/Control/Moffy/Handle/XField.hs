@@ -70,5 +70,5 @@ eventToEv etoe f _rqs = \case
 	(evEvent -> ev)
 		| ExposeEvent {} <- ev -> Nothing <$ flushField f
 		| isDeleteEvent f ev ->
-			pure . Just . expand $ Singleton OccDeleteEvent
+			pure . Just . expand . Singleton . OccDeleteEvent $ WindowId 0
 	ev -> pure $ etoe ev

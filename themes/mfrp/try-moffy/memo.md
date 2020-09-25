@@ -408,7 +408,10 @@ todo
 		- [ ] prepare each font channels
 		- [ ] use window id to calc text extents
 	+ [ ] event from all window and draw to all window
-	+ [ ] make multiple window trial
+	+ [x] make multiple window trial
+	+ [ ] destroy window with delete event
+		- [x] delete event has window id
+		- [ ] make destroy window request
 	+ [ ] add window id to mouse and key event
 	+ [ ] event has window id
 	+ [ ] viewable has window id
@@ -421,6 +424,7 @@ todo
 * [x] pass argument to `runGtkMain`
 * [ ] consider to move `gtkMainQuit` to GTK thread
 * [ ] consider to use `Sig s 'Nil a r` and `React s 'Nil r`
+* [ ] move deleteEvent to Control.Moffy.Event.Window
 * [ ] refactoring
 * [ ] remake key event
 	+ [x] consider Pattern vs Value

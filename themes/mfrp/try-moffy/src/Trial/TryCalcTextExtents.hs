@@ -5,6 +5,7 @@
 
 module Trial.TryCalcTextExtents where
 
+import Control.Monad
 import Control.Moffy
 import Control.Moffy.Event.Delete
 import Control.Moffy.Event.CalcTextExtents
@@ -29,7 +30,7 @@ import Control.Moffy.Event.Time
 import Control.Moffy.Run.GtkField as G
 
 tryCalcTextExtents :: T.Text -> Sig s (DeleteEvent :- CalcTextExtents :- 'Nil) (T.Text, TextExtents') ()
-tryCalcTextExtents txt =
+tryCalcTextExtents txt = void $
 	(emit . (txt ,) =<< waitFor (adjust $ calcTextExtents' "Sans" 30 txt)) >> waitFor (adjust deleteEvent)
 
 runTryCalcTextExtents :: IO ()

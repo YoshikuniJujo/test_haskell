@@ -82,23 +82,25 @@ recieveEvReqs dr vwid crq cft cocc vvw vda = atomically (lastTChan crq) >>= \cas
 			Nothing -> pure ()
 			Just WindowNewReq -> do
 				putStrLn "recieve WindowNewReq begin"
-				w <- createWindow cocc
+				i <- atomically $ do
+					wid@(WindowId n) <- readTVar vwid
+					writeTVar vwid $ WindowId (n + 1)
+					pure wid
+				w <- createWindow i cocc
 				da <- createDrawingArea dr cft cocc vvw w
 				gtkWidgetShowAll w
 				atomically $ do
-					wid@(WindowId n) <- readTVar vwid
-					writeTVar vda (insert wid da empty)
-					writeTChan cocc . expand . Singleton $ OccWindowNew wid
-					writeTVar vwid $ WindowId (n + 1)
+					writeTVar vda (insert i da empty)
+					writeTChan cocc . expand . Singleton $ OccWindowNew i
 				putStrLn "recieve WindowNewReq end"
 
-createWindow :: TChan (EvOccs GuiEv) -> IO GtkWidget
-createWindow c = do
+createWindow :: WindowId -> TChan (EvOccs GuiEv) -> IO GtkWidget
+createWindow wid c = do
 	w <- gtkWindowNew gtkWindowToplevel
 	gtkWidgetSetEvents w [gdkPointerMotionMask, gdkScrollMask]
 	w <$ mapM_ ($ ()) [
 		gSignalConnect w Destroy gtkMainQuit,
-		gSignalConnect w DeleteEvent \_ _ _ -> deleteEvent c,
+		gSignalConnect w DeleteEvent \_ _ _ -> deleteEvent wid c,
 		gSignalConnect w KeyPressEvent \_ ev _ -> keyDown c ev,
 		gSignalConnect w KeyReleaseEvent \_ ev _ -> keyUp c ev,
 		gSignalConnect w ButtonPressEvent \_ ev _ -> buttonDown c ev,
@@ -130,9 +132,9 @@ recieveViewable c' tx vda = atomically (readTVar vda) >>= \das -> case Data.Map.
 
 -- HANDLER OF GDK EVENT
 
-deleteEvent :: TChan (EvOccs GuiEv) -> IO Bool
-deleteEvent c = (True <$)
-	. atomically . writeTChan c . expand $ Singleton OccDeleteEvent
+deleteEvent :: WindowId -> TChan (EvOccs GuiEv) -> IO Bool
+deleteEvent wid c = (True <$)
+	. atomically . writeTChan c . expand . Singleton $ OccDeleteEvent wid
 
 keyDown, keyUp :: TChan (EvOccs GuiEv) -> GdkEventKey -> IO Bool
 keyDown c ev = (False <$) $ atomically . writeTChan c . expand
