@@ -38,6 +38,8 @@ import Data.Word
 
 import Data.OneOrMoreApp (pattern Singleton, expand, (>-))
 
+import Data.Map
+
 -- GUI EVENT
 
 type GuiEv = WindowNew :- CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv
@@ -52,7 +54,7 @@ runGtkMain dr as = (,,) <$> newTChanIO <*> newTChanIO <*> newTChanIO >>=
 	\cs@(crq, cocc, cvw) -> (, cs) <$> do
 		cas <- newTChanIO
 		void $ forkIO do
-			vda <- atomically $ newTVar Nothing
+			vda <- atomically $ newTVar empty
 			vvw <- atomically $ newTVar mempty
 			cft <- newTChanIO
 			atomically . writeTChan cas =<< gtkInit as
@@ -63,14 +65,14 @@ runGtkMain dr as = (,,) <$> newTChanIO <*> newTChanIO <*> newTChanIO >>=
 		atomically $ readTChan cas
 
 recieveEvReqs :: GtkDrawer a -> TChan (EvReqs GuiEv) -> TChan (FontName, FontSize, T.Text) ->
-	TChan (EvOccs GuiEv) -> TVar a -> TVar (Maybe GtkWidget) -> IO ()
+	TChan (EvOccs GuiEv) -> TVar a -> TVar (Map WindowId GtkWidget) -> IO ()
 recieveEvReqs dr crq cft cocc vvw vda = atomically (lastTChan crq) >>= \case
 	Nothing -> pure ()
 	Just rqs -> do
 		case project rqs of
 			Nothing -> pure ()
 			Just (CalcTextExtentsReq fn fs t) -> do
-				atomically (readTVar vda) >>= \case
+				atomically (readTVar vda) >>= \das -> case Data.Map.lookup (WindowId 0) das of
 					Nothing -> pure ()
 					Just da -> do
 						atomically $ writeTChan cft (fn, fs, t)
@@ -81,7 +83,7 @@ recieveEvReqs dr crq cft cocc vvw vda = atomically (lastTChan crq) >>= \case
 				putStrLn "recieve WindowNewReq begin"
 				w <- createWindow cocc
 				da <- createDrawingArea dr cft cocc vvw w
-				atomically $ writeTVar vda (Just da)
+				atomically $ writeTVar vda (insert (WindowId 0) da empty)
 				gtkWidgetShowAll w
 				atomically . writeTChan cocc . expand . Singleton . OccWindowNew $ WindowId 0
 				putStrLn "recieve WindowNewReq end"
@@ -134,8 +136,8 @@ recieveCalcTextExtentsRequest cr ftc da = (True <$) $ atomically (lastTChan cr) 
 	maybe (pure ()) (project >>> maybe (pure ()) \(CalcTextExtentsReq fn fs t) ->
 		atomically (writeTChan ftc (fn, fs, t)) >> gtkWidgetQueueDraw da)
 
-recieveViewable :: TChan a -> TVar a -> TVar (Maybe GtkWidget) -> IO Bool
-recieveViewable c' tx vda = atomically (readTVar vda) >>= \case
+recieveViewable :: TChan a -> TVar a -> TVar (Map WindowId GtkWidget) -> IO Bool
+recieveViewable c' tx vda = atomically (readTVar vda) >>= \das -> case Data.Map.lookup (WindowId 0) das of
 	Nothing -> pure True
 	Just da -> do
 		(True <$) $ atomically (lastTChan c') >>= maybe (pure ()) \v ->

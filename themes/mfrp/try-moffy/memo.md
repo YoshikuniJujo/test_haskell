@@ -398,8 +398,20 @@ todo
 	+ [x] create window function
 	+ [x] add window identity
 	+ [x] use windowNew
+	+ [ ] make TVar WindowId
+	+ [ ] use different window id to each window
+	+ [ ] change vda: Maybe GtkWidget ==> Map WindowId GtkWidget
+		- [x] use (WindowId 0) every time
+		- [ ] use different window id to each drawing area
+		- [ ] draw to all drawing area
+		- [ ] add window id to calc text extents event
+		- [ ] prepare each font channels
+		- [ ] use window id to calc text extents
+	+ [ ] event from all window and draw to all window
+	+ [ ] make multiple window trial
 	+ [ ] add window id to mouse and key event
-	+ [ ] make multiple window
+	+ [ ] event has window id
+	+ [ ] viewable has window id
 	+ [ ] make tear-off sample
 	+ [ ] get window size or drawing area size
 * [ ] about cursor

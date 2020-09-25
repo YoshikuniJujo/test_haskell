@@ -11,7 +11,7 @@ module Control.Moffy.Event.Window (
 import Control.Moffy
 import Data.Type.Set
 
-newtype WindowId = WindowId Integer deriving Show
+newtype WindowId = WindowId Integer deriving (Show, Eq, Ord)
 
 data WindowNew = WindowNewReq deriving (Show, Eq, Ord)
 numbered [t| WindowNew |]
