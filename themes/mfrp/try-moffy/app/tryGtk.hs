@@ -11,7 +11,10 @@ import Control.Moffy.Event.Window
 import Trial.Boxes
 import Trial.Boxes.RunGtkField
 
+import qualified Data.Map as Map
+import Data.Type.Flip
+
 main :: IO ()
 main = () <$ runBoxes do
 	i <- waitFor $ adjust windowNew
-	boxes `break` deleteEvent i
+	Map.singleton i <$%> (boxes `break` deleteEvent i)

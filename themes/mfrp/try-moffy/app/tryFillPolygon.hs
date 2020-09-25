@@ -14,7 +14,10 @@ import Data.OneOfThem
 
 import Trial.TryFillPolygon
 
+import qualified Data.Map as Map
+import Data.Type.Flip
+
 main :: IO ()
 main = void $ runFillPolygon (\wdt cr x -> ((drawBox wdt cr >-- SingletonFun (fillPolygon wdt cr)) `apply`) `mapM_` x) do
 	i <- waitFor $ adjust windowNew
-	tryFillPolygon `break` deleteEvent i
+	Map.singleton i <$%> (tryFillPolygon `break` deleteEvent i)

@@ -46,6 +46,8 @@ import qualified Trial.Draw.Marshal as M
 
 import Debug.Trace
 
+import qualified Data.Map as Map
+
 type Viewable = OneOfThem (Box :- Line :- FillPolygon :- Message :- 'Nil)
 type Events = WindowNew :- GetThreadId :- MouseEv :+: LockEv :+: LinesEv
 
@@ -227,7 +229,7 @@ instance LinesState DrawState where
 	getLines = dsLines
 	putLines s ls = s { dsLines = ls }
 
-runDraw :: (Monoid a, Adjustable es (Events :+: GuiEv)) => GtkDrawer a -> Sig s es a r -> IO (r, DrawState)
+runDraw :: (Monoid a, Adjustable es (Events :+: GuiEv)) => GtkDrawer a -> Sig s es (Map.Map WindowId a) r -> IO (r, DrawState)
 runDraw dr s = do
 	([], (cr, c, c')) <- runGtkMain dr []
 	interpretSt (retrySt $

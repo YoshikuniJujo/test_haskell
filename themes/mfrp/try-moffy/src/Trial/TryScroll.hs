@@ -17,13 +17,16 @@ import Data.Type.Flip
 import Control.Moffy.Run.GtkField
 import Graphics.Gtk
 
+import Data.Map
+import Control.Moffy.Event.Window
+
 tryScroll :: Sig s (Singleton MouseScroll) [Message] ()
 tryScroll = (: []) . Message . show <$%> scanl addPoints (0, 0) (repeat mouseScroll)
 
 addPoints :: Point -> Point -> Point
 addPoints (x1, y1) (x2, y2) = (x1 + x2, y1 + y2)
 
-runTryScroll :: (Monoid a, Adjustable es GuiEv) => GtkDrawer a -> Sig s es a r -> IO r
+runTryScroll :: (Monoid a, Adjustable es GuiEv) => GtkDrawer a -> Sig s es (Map WindowId a) r -> IO r
 runTryScroll dr s = do
 	([], (cr, c, c')) <- runGtkMain dr []
 	r <- interpret (retry $ handle Nothing cr c) c' s

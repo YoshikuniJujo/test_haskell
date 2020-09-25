@@ -7,6 +7,7 @@ module Trial.Boxes.RunGtkField (runBoxes) where
 import Prelude hiding (break)
 
 import Control.Moffy
+import Control.Moffy.Event.Window
 import Control.Moffy.Handle.TChan
 import Control.Moffy.Handle.Time
 import Control.Moffy.Viewable.Shape
@@ -26,7 +27,9 @@ import Trial.Boxes.BoxEv
 import Control.Moffy.Handle
 import Control.Moffy.Run.GtkField
 
-runBoxes :: SigB s [Box] r -> IO r
+import Data.Map
+
+runBoxes :: SigB s (Map WindowId [Box]) r -> IO r
 runBoxes s = do
 	([], (cr, c, c')) <- runGtkMain (\w cr -> (drawBox w cr `mapM_`)) []
 	(r, _) <- interpretSt (handleBoxesFoo 0.1 cr c) c' s . (InitialMode ,) . systemToTAITime =<< getSystemTime

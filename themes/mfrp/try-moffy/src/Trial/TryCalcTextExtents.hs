@@ -30,10 +30,14 @@ import Control.Moffy.Event.Time
 
 import Control.Moffy.Run.GtkField as G
 
-tryCalcTextExtents :: T.Text -> Sig s (WindowNew :- DeleteEvent :- CalcTextExtents :- 'Nil) (T.Text, TextExtents') ()
+import qualified Data.Map as Map
+import Data.Type.Flip
+
+tryCalcTextExtents :: T.Text -> Sig s (WindowNew :- DeleteEvent :- CalcTextExtents :- 'Nil) (Map.Map WindowId (T.Text, TextExtents')) ()
 tryCalcTextExtents txt = void do
 	i <- waitFor $ adjust windowNew
-	(emit . (txt ,) =<< waitFor (adjust $ calcTextExtents' "Sans" 30 txt)) >> waitFor (adjust $ deleteEvent i)
+	Map.singleton i <$%>
+		((emit . (txt ,) =<< waitFor (adjust $ calcTextExtents' "Sans" 30 txt)) >> waitFor (adjust $ deleteEvent i))
 
 runTryCalcTextExtents :: IO ()
 runTryCalcTextExtents = do
@@ -43,7 +47,7 @@ runTryCalcTextExtents = do
 
 runTryCalcTextExtentsGtk :: IO ()
 runTryCalcTextExtentsGtk = do
-	([], (cr, c, _c' :: TChan [()])) <- runGtkMain (\_ _ _ -> pure ()) []
+	([], (cr, c, _c' :: TChan (Map.Map WindowId [()]))) <- runGtkMain (\_ _ _ -> pure ()) []
 	fst <$> ((interpretSt (handleBoxesFoo 0.1 cr c) print (tryCalcTextExtents "Text, hello jj!") . (InitialMode ,) . systemToTAITime =<< getSystemTime)
 		<* gtkMainQuit)
 

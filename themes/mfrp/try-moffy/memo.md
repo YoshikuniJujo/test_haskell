@@ -409,15 +409,17 @@ todo
 		- [ ] use window id to calc text extents
 	+ [ ] event from all window and draw to all window
 	+ [x] make multiple window trial
+		- [x] try drawing box
+		- [ ] others
 	+ [x] destroy window with delete event
 		- [x] delete event has window id
 		- [x] add gtkWidgetDestroy to Graphics.Gtk
 		- [x] add TVar (Map WindowId GtkWidget) to save windows
 		- [x] make destroy window request
 	+ [x] pass WindowId to deleteEvent
+	+ [x] viewable has window id
 	+ [ ] add window id to mouse and key event
 	+ [ ] event has window id
-	+ [ ] viewable has window id
 	+ [ ] make tear-off sample
 	+ [ ] get window size or drawing area size
 * [ ] about cursor

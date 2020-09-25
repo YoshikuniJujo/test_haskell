@@ -16,6 +16,9 @@ import Data.Type.Set
 import Data.OneOfThem as Oot
 import Graphics.Gtk
 
+import Data.Map
+import Control.Moffy.Event.Window
+
 tryFillPolygon :: Sig s GuiEv [OneOfThem (Box :- FillPolygon :- 'Nil)] ()
 tryFillPolygon = do
 	emit [	Oot.expand . Singleton $ Box (Rect (50, 50) (100, 100)) Blue,
@@ -23,7 +26,7 @@ tryFillPolygon = do
 		]
 	waitFor never
 
-runFillPolygon :: (Monoid a, Adjustable es GuiEv) => GtkDrawer a -> Sig s es a r -> IO r
+runFillPolygon :: (Monoid a, Adjustable es GuiEv) => GtkDrawer a -> Sig s es (Map WindowId a) r -> IO r
 runFillPolygon dr s = do
 	([], (cr, c, c')) <- runGtkMain dr []
 	interpret (retry $ handle Nothing cr c) c' s <* gtkMainQuit

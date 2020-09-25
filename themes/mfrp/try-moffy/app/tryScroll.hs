@@ -15,8 +15,12 @@ import Trial.Draw.Viewable
 import Trial.TryScroll
 
 import Data.Type.Set
+import Data.Type.Flip
+
+import qualified Data.Map as Map
 
 main :: IO ()
 main = void $ runTryScroll (\_ _ -> mapM_ putMessage) do
 	i <- waitFor $ adjust windowNew
-	void . adjustSig $ tryScroll `break` deleteEvent i :: Sig s (WindowNew :- DeleteEvent :- MouseScroll :- 'Nil) [Message] ()
+	Map.singleton i <$%>
+		(void . adjustSig $ tryScroll `break` deleteEvent i :: Sig s (WindowNew :- DeleteEvent :- MouseScroll :- 'Nil) [Message] ())

@@ -38,7 +38,7 @@ import Data.Word
 
 import Data.OneOrMoreApp (pattern Singleton, expand, (>-))
 
-import Data.Map
+import Data.Map as Map
 
 -- GUI EVENT
 
@@ -49,7 +49,7 @@ type GuiEv = WindowEv :+: CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv
 type GtkDrawer a = GtkWidget -> CairoT -> a -> IO ()
 
 runGtkMain :: Monoid a =>
-	GtkDrawer a -> [String] -> IO ([String], (TChan (EvReqs GuiEv), TChan (EvOccs GuiEv), TChan a))
+	GtkDrawer a -> [String] -> IO ([String], (TChan (EvReqs GuiEv), TChan (EvOccs GuiEv), TChan (Map WindowId a)))
 runGtkMain dr as = (,,) <$> newTChanIO <*> newTChanIO <*> newTChanIO >>=
 	\cs@(crq, cocc, cvw) -> (, cs) <$> do
 		cas <- newTChanIO
@@ -57,7 +57,7 @@ runGtkMain dr as = (,,) <$> newTChanIO <*> newTChanIO <*> newTChanIO >>=
 			vwid <- atomically . newTVar $ WindowId 0
 			vw <- atomically $ newTVar empty
 			vda <- atomically $ newTVar empty
-			vvw <- atomically $ newTVar mempty
+			vvw <- atomically $ newTVar empty
 			cft <- newTChanIO
 			atomically . writeTChan cas =<< gtkInit as
 			void $ gTimeoutAdd 100
@@ -66,15 +66,15 @@ runGtkMain dr as = (,,) <$> newTChanIO <*> newTChanIO <*> newTChanIO >>=
 			gtkMain
 		atomically $ readTChan cas
 
-recieveEvReqs :: GtkDrawer a -> TVar WindowId -> TVar (Map WindowId GtkWidget) -> TChan (EvReqs GuiEv) -> TChan (FontName, FontSize, T.Text) ->
-	TChan (EvOccs GuiEv) -> TVar a -> TVar (Map WindowId GtkWidget) -> IO ()
+recieveEvReqs :: Monoid a => GtkDrawer a -> TVar WindowId -> TVar (Map WindowId GtkWidget) -> TChan (EvReqs GuiEv) -> TChan (FontName, FontSize, T.Text) ->
+	TChan (EvOccs GuiEv) -> TVar (Map WindowId a) -> TVar (Map WindowId GtkWidget) -> IO ()
 recieveEvReqs dr vwid vw crq cft cocc vvw vda = atomically (lastTChan crq) >>= \case
 	Nothing -> pure ()
 	Just rqs -> do
 		case project rqs of
 			Nothing -> pure ()
 			Just (CalcTextExtentsReq fn fs t) -> do
-				atomically (readTVar vda) >>= \das -> case Data.Map.lookup (WindowId 0) das of
+				atomically (readTVar vda) >>= \das -> case Map.lookup (WindowId 0) das of
 					Nothing -> pure ()
 					Just da -> do
 						atomically $ writeTChan cft (fn, fs, t)
@@ -91,17 +91,18 @@ recieveEvReqs dr vwid vw crq cft cocc vvw vda = atomically (lastTChan crq) >>= \
 				atomically $ do
 					ws <- readTVar vw
 					writeTVar vw $ insert i w ws
-				da <- createDrawingArea dr cft cocc vvw w
+				da <- createDrawingArea i dr cft cocc vvw w
 				gtkWidgetShowAll w
 				atomically $ do
-					writeTVar vda (insert i da empty)
+					das <- readTVar vda
+					writeTVar vda (insert i da das)
 					writeTChan cocc . expand . Singleton $ OccWindowNew i
 				putStrLn "recieve WindowNewReq end"
 		case project rqs of
 			Nothing -> pure ()
 			Just (WindowDestroyReq i) -> do
 				ws <- atomically $ readTVar vw
-				case Data.Map.lookup i ws of
+				case Map.lookup i ws of
 					Nothing -> putStrLn "no window to destroy" >> pure ()
 --					Just w -> putStrLn "not destroy"
 					Just w -> putStrLn "destroy window" >> gtkWidgetDestroy w >> putStrLn "window has been destroyed"
@@ -130,19 +131,17 @@ createWindow wid c = do
 			,
 		gSignalConnect w MotionNotifyEvent \_ ev _ -> mouseMove c ev ]
 
-createDrawingArea :: GtkDrawer a -> TChan (FontName, FontSize, T.Text) ->
-	TChan (EvOccs GuiEv) -> TVar a -> GtkWidget -> IO GtkWidget
-createDrawingArea dr ftc c tx w = do
+createDrawingArea :: Monoid a => WindowId -> GtkDrawer a -> TChan (FontName, FontSize, T.Text) ->
+	TChan (EvOccs GuiEv) -> TVar (Map WindowId a) -> GtkWidget -> IO GtkWidget
+createDrawingArea wid dr ftc c tx w = do
 	da <- gtkDrawingAreaNew
 	gtkContainerAdd (castWidgetToContainer w) da
-	da <$ gSignalConnect da DrawEvent (draw dr ftc c tx) ()
+	da <$ gSignalConnect da DrawEvent (draw wid dr ftc c tx) ()
 
-recieveViewable :: TChan a -> TVar a -> TVar (Map WindowId GtkWidget) -> IO Bool
-recieveViewable c' tx vda = atomically (readTVar vda) >>= \das -> case Data.Map.lookup (WindowId 0) das of
-	Nothing -> pure True
-	Just da -> do
-		(True <$) $ atomically (lastTChan c') >>= maybe (pure ()) \v ->
-			atomically (writeTVar tx v) >> gtkWidgetQueueDraw da
+recieveViewable :: TChan (Map WindowId a) -> TVar (Map WindowId a) -> TVar (Map WindowId GtkWidget) -> IO Bool
+recieveViewable c' tx vda = atomically (readTVar vda) >>= \das -> True <$ do
+		atomically (lastTChan c') >>= maybe (pure ()) \v ->
+			atomically (writeTVar tx v) >> (gtkWidgetQueueDraw . snd) `mapM_` Map.toList das
 
 -- HANDLER OF GDK EVENT
 
@@ -187,9 +186,9 @@ button = \case
 
 -- DRAW
 
-draw :: GtkDrawer a -> TChan (FontName, FontSize, T.Text) ->
-	TChan (EvOccs GuiEv) -> TVar a -> GtkWidget -> CairoT -> () -> IO Bool
-draw dr ftc co tx wdgt cr () = True <$ do
+draw :: Monoid a => WindowId -> GtkDrawer a -> TChan (FontName, FontSize, T.Text) ->
+	TChan (EvOccs GuiEv) -> TVar (Map WindowId a) -> GtkWidget -> CairoT -> () -> IO Bool
+draw wid dr ftc co tx wdgt cr () = True <$ do
 	atomically (lastTChan ftc) >>= maybe (pure ()) \(fn, fs, txt) -> do
 		(l, d) <- (,) <$> pangoCairoCreateLayout cr
 			<*> pangoFontDescriptionFromString (T.pack fn)
@@ -199,7 +198,9 @@ draw dr ftc co tx wdgt cr () = True <$ do
 		atomically . writeTChan co . expand . Singleton
 				. OccCalcTextExtents fn fs txt
 			=<< pangoLayoutWithPixelExtents l \ie le -> mkte ie le
-	dr wdgt cr =<< readTVarIO tx
+	readTVarIO tx >>= \mx -> case Map.lookup wid mx of
+		Nothing -> dr wdgt cr mempty
+		Just x -> dr wdgt cr x
 	where
 	mkte ie le = TextExtents' <$> r2r ie <*> r2r le
 	r2r r = rct

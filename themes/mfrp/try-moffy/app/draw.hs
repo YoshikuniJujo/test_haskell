@@ -19,6 +19,9 @@ import qualified Trial.Draw.Marshal as M
 
 import System.Environment
 
+import qualified Data.Map as Map
+import Data.Type.Flip
+
 main :: IO ()
 main = do
 	r : w : _ <- getArgs
@@ -28,5 +31,6 @@ main = do
 	s' <- either (error "bad") (maybe (error "bad") (mapMaybe viewableToShape) . fst) . fst <$> runDraw
 		(\wdt cr x -> ((drawBox wdt cr >-- drawLine wdt cr >-- fillPolygon wdt cr >-- SingletonFun putMessage) `apply`) `mapM_` x) do
 			i <- waitFor $ adjust windowNew
-			rectangleAndLines s `break` deleteEvent i
+			Map.singleton i <$%>
+				(rectangleAndLines s `break` deleteEvent i)
 	M.writeFile w s'
