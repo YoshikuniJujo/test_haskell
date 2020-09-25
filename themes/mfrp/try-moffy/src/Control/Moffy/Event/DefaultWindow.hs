@@ -28,9 +28,9 @@ storeDefaultWindow wid = bool (storeDefaultWindow wid) (pure ())
 data LoadDefaultWindow = LoadDefaultWindowReq deriving (Show, Eq, Ord)
 numbered [t| LoadDefaultWindow |]
 instance Request LoadDefaultWindow where
-	data Occurred LoadDefaultWindow = OccLoadDefaultWindow (Maybe WindowId) deriving Show
+	data Occurred LoadDefaultWindow = OccLoadDefaultWindow WindowId deriving Show
 
-loadDefaultWindow :: React s (Singleton LoadDefaultWindow) (Maybe WindowId)
+loadDefaultWindow :: React s (Singleton LoadDefaultWindow) WindowId
 loadDefaultWindow = await LoadDefaultWindowReq \(OccLoadDefaultWindow wid) -> wid
 
 type DefaultWindowEv = StoreDefaultWindow :- LoadDefaultWindow :- 'Nil

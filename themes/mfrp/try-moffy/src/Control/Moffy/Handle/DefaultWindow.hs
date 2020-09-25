@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -30,5 +31,6 @@ handleStoreDefaultWindow (Oom.Singleton (StoreDefaultWindowReq wid)) s =
 
 handleLoadDefaultWindow :: (DefaultWindowState s, Applicative m) =>
 	HandleSt' s m (Singleton LoadDefaultWindow)
-handleLoadDefaultWindow _rqs s =
-	pure (Just . Ooma.Singleton . OccLoadDefaultWindow $ getDefaultWindow s, s)
+handleLoadDefaultWindow _rqs s = ($ getDefaultWindow s) $ pure . \case
+	Nothing -> (Nothing, s)
+	Just wid -> (Just . Ooma.Singleton $ OccLoadDefaultWindow wid, s)

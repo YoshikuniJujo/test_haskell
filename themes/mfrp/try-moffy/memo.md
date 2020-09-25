@@ -421,6 +421,8 @@ todo
 		- [x] make Control.Moffy.Handle.DefaultWindow
 		- [x] make trial to try DefaultWindow (store and load)
 		- [ ] make Control.Moffy.Event.Mouse.DeafultWindow
+			* [x] mouseDown and so on
+			* [ ] others
 		- [ ] make Control.Moffy.Event.Key.DeafultWindow
 		- [ ] make Control.Moffy.Event.Delete.DefaultWindow
 		- [ ] make Control.Moffy.Event.CalcTextExtents.DefaultWindow

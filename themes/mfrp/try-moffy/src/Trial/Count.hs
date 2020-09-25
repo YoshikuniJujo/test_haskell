@@ -1,14 +1,18 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.Count (tryLeftCount, tryLeftCountSig, tryLeftRandomSig) where
 
 import Control.Moffy (Sig, React, adjust, first, waitFor, emit)
-import Control.Moffy.Event.Mouse (MouseEv, leftClick, rightClick)
-import Control.Moffy.Handle (retry)
+import Control.Moffy.Event.DefaultWindow
+import Control.Moffy.Event.Mouse.DefaultWindow (MouseEv, leftClick, rightClick)
+import Control.Moffy.Handle (retrySt, beforeSt, liftHandle')
+import Control.Moffy.Handle.DefaultWindow
 import Control.Moffy.Handle.XField (handle)
-import Control.Moffy.Run (interpret, interpretReact)
+import Control.Moffy.Run (interpretSt, interpretReactSt)
+import Data.Type.Set
 import Data.Or (Or(..))
 import System.Random (StdGen, mkStdGen, random)
 
@@ -26,13 +30,13 @@ import Control.Moffy.Event.Window
 -- TRIAL
 ---------------------------------------------------------------------------
 
-tryLeftCount :: IO Int
+tryLeftCount :: IO (Int, Maybe WindowId)
 tryLeftCount = runMouseReact $ leftCount 0
 
-tryLeftCountSig :: IO Int
+tryLeftCountSig :: IO (Int, Maybe WindowId)
 tryLeftCountSig = runMouse $ leftCountSig 0
 
-tryLeftRandomSig :: IO StdGen
+tryLeftRandomSig :: IO (StdGen, Maybe WindowId)
 tryLeftRandomSig = runMouse . leftRandomSig $ mkStdGen 8
 
 ---------------------------------------------------------------------------
@@ -42,17 +46,17 @@ tryLeftRandomSig = runMouse . leftRandomSig $ mkStdGen 8
 w0 :: WindowId
 w0 = WindowId 0
 
-leftCount :: Int -> React s MouseEv Int
+leftCount :: Int -> React s (WindowNew :- DefaultWindowEv :+: MouseEv) Int
 leftCount c = adjust (leftClick w0 `first` rightClick w0) >>= \case
 	L () -> leftCount $ c + 1; R () -> pure c; LR () () -> pure $ c + 1
 
-leftCountSig :: Int -> Sig s MouseEv Int Int
+leftCountSig :: Int -> Sig s (WindowNew :- DefaultWindowEv :+: MouseEv) Int Int
 leftCountSig c =
 	emit c >> waitFor (adjust $ leftClick w0 `first` rightClick w0) >>= \case
 		L () -> leftCountSig $ c + 1; R () -> pure c
 		LR () () -> pure $ c + 1
 
-leftRandomSig :: StdGen -> Sig s MouseEv Int StdGen
+leftRandomSig :: StdGen -> Sig s (WindowNew :- DefaultWindowEv :+: MouseEv) Int StdGen
 leftRandomSig (random -> (i, g')) =
 	emit i >> waitFor (adjust $ leftClick (WindowId 0) `first` rightClick (WindowId 0)) >>= \case
 		L () -> leftRandomSig g'; R () -> pure g'; LR () () -> pure g'
@@ -61,12 +65,16 @@ leftRandomSig (random -> (i, g')) =
 -- RUN
 ---------------------------------------------------------------------------
 
-runMouseReact :: React s MouseEv r -> IO r
+runMouseReact :: React s (WindowNew :- DefaultWindowEv :+: MouseEv) r -> IO (r, Maybe WindowId)
 runMouseReact r = do
 	f <- openField "RUN MOUSE REACT" [exposureMask, buttonPressMask]
-	interpretReact (retry $ handle Nothing f) r <* closeField f
+	interpretReactSt (retrySt $ handleDefaultWindow `beforeSt` liftHandle' (handle Nothing f))
+		(adjust windowNew >>= adjust . storeDefaultWindow >> r)
+		Nothing <* closeField f
 
-runMouse :: Show a => Sig s MouseEv a r -> IO r
+runMouse :: Show a => Sig s (WindowNew :- DefaultWindowEv :+: MouseEv) a r -> IO (r, Maybe WindowId)
 runMouse s = do
 	f <- openField "RUN MOUSE" [exposureMask, buttonPressMask]
-	interpret (retry $ handle Nothing f) print s <* closeField f
+	interpretSt (retrySt $ handleDefaultWindow `beforeSt` liftHandle' (handle Nothing f)) print
+		(waitFor (adjust windowNew >>= adjust . storeDefaultWindow) >> s)
+		Nothing <* closeField f
