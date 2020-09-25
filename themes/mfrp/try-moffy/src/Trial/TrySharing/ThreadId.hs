@@ -22,6 +22,8 @@ import System.IO.Unsafe (unsafePerformIO)
 
 import Field (openField, closeField, exposureMask, buttonPressMask)
 
+import Control.Moffy.Event.Window
+
 ---------------------------------------------------------------------------
 
 -- * TRIAL
@@ -61,7 +63,7 @@ heavyGetThreadId :: React s (GetThreadId :- MouseEv) ThreadId
 heavyGetThreadId = adjust $ heavyId "getThreadId" <$> getThreadId
 
 heavyMouseDown :: React s (GetThreadId :- MouseEv) MouseBtn
-heavyMouseDown = adjust $ heavyId "mouseDown" <$> mouseDown
+heavyMouseDown = adjust $ heavyId "mouseDown" <$> mouseDown (WindowId 0)
 
 heavyId :: String -> a -> a
 heavyId s x = unsafePerformIO $ x <$

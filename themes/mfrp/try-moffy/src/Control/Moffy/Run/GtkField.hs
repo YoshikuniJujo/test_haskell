@@ -118,8 +118,8 @@ createWindow wid c = do
 		gSignalConnect w DeleteEvent \_ _ _ -> deleteEvent wid c,
 		gSignalConnect w KeyPressEvent \_ ev _ -> keyDown c ev,
 		gSignalConnect w KeyReleaseEvent \_ ev _ -> keyUp c ev,
-		gSignalConnect w ButtonPressEvent \_ ev _ -> buttonDown c ev,
-		gSignalConnect w ButtonReleaseEvent \_ ev _ -> buttonUp c ev,
+		gSignalConnect w ButtonPressEvent \_ ev _ -> buttonDown wid c ev,
+		gSignalConnect w ButtonReleaseEvent \_ ev _ -> buttonUp wid c ev,
 		gSignalConnect w ScrollEvent \_ ev _ -> True <$ do
 			x <- gdkEventScrollX ev
 			y <- gdkEventScrollY ev
@@ -157,16 +157,16 @@ keyDown c ev = (False <$) $ atomically . writeTChan c . expand
 keyUp c ev = (False <$) $ atomically . writeTChan c . expand
 	=<< Singleton . OccKeyUp . Key . fromIntegral <$> keyval ev
 
-buttonDown, buttonUp :: TChan (EvOccs GuiEv) -> GdkEventButton -> IO Bool
-buttonDown c ev = (True <$) $ atomically . writeTChan c . expand =<< occ
+buttonDown, buttonUp :: WindowId -> TChan (EvOccs GuiEv) -> GdkEventButton -> IO Bool
+buttonDown wid c ev = (True <$) $ atomically . writeTChan c . expand =<< occ
 	where
 	occ :: IO (EvOccs (MouseDown :- MouseMove :- 'Nil))
 	occ = do
 		(b, p) <- (,) <$> gdkEventButtonButton ev
 			<*> ((,) <$> gdkEventButtonX ev <*> gdkEventButtonY ev)
-		pure $ OccMouseDown (button b) >- Singleton (OccMouseMove p)
+		pure $ OccMouseDown wid (button b) >- Singleton (OccMouseMove p)
 
-buttonUp c ev = (True <$) $ atomically . writeTChan c . expand =<< occ
+buttonUp wid c ev = (True <$) $ atomically . writeTChan c . expand =<< occ
 	where
 	occ :: IO (EvOccs (MouseUp :- MouseMove :- 'Nil))
 	occ = do

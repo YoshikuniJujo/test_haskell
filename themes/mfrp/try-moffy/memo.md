@@ -416,7 +416,10 @@ todo
 		- [x] make destroy window request
 	+ [x] pass WindowId to deleteEvent
 	+ [x] viewable has window id
+	+ [ ] consider about default WindowId
 	+ [ ] add window id to mouse event
+		- [x] MouseDown
+		- [ ] others
 	+ [ ] add window id to key event
 	+ [ ] event has window id
 	+ [ ] make tear-off sample

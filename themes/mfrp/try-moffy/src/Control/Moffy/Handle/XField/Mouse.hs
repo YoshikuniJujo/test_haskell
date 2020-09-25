@@ -17,6 +17,8 @@ import Field (Event', evEvent, Event(..))
 
 import Data.OneOrMoreApp
 
+import Control.Moffy.Event.Window
+
 ---------------------------------------------------------------------------
 
 pattern MouseEv :: EvOccs MouseEv -> Event'
@@ -33,7 +35,7 @@ mouseEv = (. evEvent) \case
 	MotionEvent { ev_x = x, ev_y = y } -> Just . expand $ move x y
 	_ -> Nothing
 	where
-	down x y b = OccMouseDown b >- move x y :: EvOccs (MoveAnd MouseDown)
+	down x y b = OccMouseDown (WindowId 0) b >- move x y :: EvOccs (MoveAnd MouseDown)
 	up x y b = OccMouseUp b >- move x y :: EvOccs (MoveAnd MouseUp)
 	move x y = Singleton $ OccMouseMove (fromIntegral x, fromIntegral y)
 	btn = \case

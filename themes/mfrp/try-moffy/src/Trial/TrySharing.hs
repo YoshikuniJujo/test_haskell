@@ -27,6 +27,8 @@ import System.IO.Unsafe (unsafePerformIO)
 
 import Field (openField, closeField, exposureMask, buttonPressMask)
 
+import Control.Moffy.Event.Window
+
 ---------------------------------------------------------------------------
 
 -- * NO SHARING
@@ -97,7 +99,7 @@ runMouseEv r = do
 -- SHOW BUTTON
 
 showButton :: React s MouseEv String
-showButton = adjust $ show' <$> mouseDown
+showButton = adjust $ show' <$> mouseDown (WindowId 0)
 
 show' :: Show a => a -> String
 show' x = unsafePerformIO

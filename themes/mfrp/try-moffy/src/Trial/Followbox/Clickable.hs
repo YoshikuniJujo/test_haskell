@@ -41,7 +41,7 @@ data Clickable s = Clickable { view :: View, click :: React s MouseEv () }
 
 clickable :: View -> Position -> Position -> Clickable s
 clickable v (l, t) (r, b) = Clickable v
-	. adjust $ () <$ find isd (repeat mouseMove `indexBy` repeat leftClick)
+	. adjust $ () <$ find isd (repeat mouseMove `indexBy` repeat (leftClick $ WindowId 0))
 	where isd (x, y) = l <= x && x <= r && t <= y && y <= b
 
 ---------------------------------------------------------------------------

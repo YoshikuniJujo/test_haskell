@@ -143,7 +143,7 @@ grayPolygon :: Sig s Events [Viewable] ()
 grayPolygon = (((: []) . Oot.expand . Singleton) .) . FillPolygon <$%> adjustSig colorScroll <*%> polygonPoints []
 
 stopPolygon :: Sig s Events [Viewable] [Viewable]
-stopPolygon = fst . fromR <$> grayPolygon `until` leftClick
+stopPolygon = fst . fromR <$> grayPolygon `until` leftClick (WindowId 0)
 
 morePolygon :: Sig s Events [Viewable] ()
 morePolygon = do
@@ -153,18 +153,18 @@ morePolygon = do
 polygonPoints :: [Point] -> Sig s Events [Point] ()
 polygonPoints ps = do
 	emit ps
-	cp <- waitFor . adjust $ maybeEither (0, 0) <$> mousePos `at` rightClick
+	cp <- waitFor . adjust $ maybeEither (0, 0) <$> mousePos `at` rightClick (WindowId 0)
 	ls <- waitFor $ adjust loadLines
 	let	ps0 = linesToPoints ls
 	polygonPoints . maybe id (:) (adjustPoint ps0 cp) $ ps
 
 clickOnBox :: React s MouseEv ()
-clickOnBox = void . adjust $ find (`insideRect` Rect (50, 50) (100, 100)) (mousePos `indexBy` repeat leftClick)
+clickOnBox = void . adjust $ find (`insideRect` Rect (50, 50) (100, 100)) (mousePos `indexBy` repeat (leftClick $ WindowId 0))
 
 clickOnRect, upOnRect, rightOnRect :: Rect -> React s MouseEv ()
-clickOnRect r = void . adjust $ find (`insideRect` r) (mousePos `indexBy` repeat leftClick)
+clickOnRect r = void . adjust $ find (`insideRect` r) (mousePos `indexBy` repeat (leftClick $ WindowId 0))
 upOnRect r = void . adjust $ find (`insideRect` r) (mousePos `indexBy` repeat leftUp)
-rightOnRect r = void . adjust $ find (`insideRect` r) (mousePos `indexBy` repeat rightClick)
+rightOnRect r = void . adjust $ find (`insideRect` r) (mousePos `indexBy` repeat (rightClick $ WindowId 0))
 
 insideRect :: Point -> Rect -> Bool
 insideRect (x, y) (Rect (l, t) (r, b)) = l <= x && x <= r && t <= y && y <= b
@@ -196,7 +196,7 @@ clickPoint :: React s Events Position
 clickPoint = do
 	ls <- adjust loadLines
 	let	r = trace ("clickPoint: " ++ show (linesToPoints ls) ++ "\n") $ linesToReact ls
-	r `first'` (maybeEither (0, 0) <$> mousePos `at` leftClick)
+	r `first'` (maybeEither (0, 0) <$> mousePos `at` leftClick (WindowId 0))
 
 upPoint :: React s Events Position
 upPoint = do

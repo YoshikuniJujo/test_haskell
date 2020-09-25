@@ -25,6 +25,8 @@ import Data.List (delete)
 
 import Field (openField, closeField, exposureMask, buttonPressMask)
 
+import Control.Moffy.Event.Window
+
 ---------------------------------------------------------------------------
 
 -- * LOCK ST
@@ -55,8 +57,11 @@ instance LockState LockSt where
 trySingleLeftCount :: IO Int
 trySingleLeftCount = runClick $ leftCount 0
 
+w0 :: WindowId
+w0 = WindowId 0
+
 leftCount :: Int -> Sig s (Singleton MouseDown) Int Int
-leftCount c = emit c >> waitFor (leftClick `first` rightClick) >>= \case
+leftCount c = emit c >> waitFor (leftClick w0 `first` rightClick w0) >>= \case
 	L () -> leftCount $ c + 1; R () -> pure c; LR () () -> pure $ c + 1
 
 -- NO LOCK
@@ -75,7 +80,7 @@ tryLockLeftCount2 = runClickLockSt  do
 lockLeftCount ::
 	LockId -> Int -> Sig s (MouseDown :- GetThreadId :- LockEv) Int Int
 lockLeftCount l c =
-	emit c >> waitFor (withLock l $ leftClick `first` rightClick) >>= \case
+	emit c >> waitFor (withLock l $ leftClick (WindowId 0) `first` rightClick (WindowId 0)) >>= \case
 		L () -> lockLeftCount l $ c + 1; R () -> pure c
 		LR () () -> pure $ c + 1
 

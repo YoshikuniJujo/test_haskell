@@ -32,6 +32,8 @@ import qualified Control.Arrow as Arr (first)
 import Control.Moffy.Viewable.Shape (Box(..), Rect(..), BColor(..))
 import Trial.Boxes.BoxEv (SigB)
 
+import Control.Moffy.Event.Window
+
 ---------------------------------------------------------------------------
 
 -- * BOXES
@@ -61,7 +63,7 @@ defineRect = either error pure <=< runExceptT
 		=<< ExceptT (waitFor $ adjust firstPoint)
 
 firstPoint :: React s (MouseDown :- MouseMove :- 'Nil) (Either String Point)
-firstPoint = (<$> mousePos `at` leftClick)
+firstPoint = (<$> mousePos `at` leftClick (WindowId 0))
 	$ const neverOccur `either` (maybe neverOccur Right . fst)
 
 completeRect ::
@@ -88,7 +90,7 @@ cycleColor :: Sig s (Singleton MouseDown) BColor ()
 cycleColor = go . cycle $ fromList [Red .. Magenta] where
 	go (h :~ t) = emit h >>
 		(bool (pure ()) (go t)
-			=<< waitFor (middleClick `before` rightClick))
+			=<< waitFor (middleClick (WindowId 0) `before` rightClick (WindowId 0)))
 
 ---------------------------------------------------------------------------
 -- DR CLICK ON
@@ -101,8 +103,8 @@ drClickOn rct = void . find (`inside` rct) $ mousePos `indexBy` repeat doubler
 		(u <= y && y <= d || d <= y && y <= u)
 
 doubler :: React s (MouseDown :- TryWait :- 'Nil) ()
-doubler = adjust rightClick
-	>> (bool doubler (pure ()) =<< rightClick `before` sleep 0.2)
+doubler = adjust (rightClick $ WindowId 0)
+	>> (bool doubler (pure ()) =<< rightClick (WindowId 0) `before` sleep 0.2)
 
 ---------------------------------------------------------------------------
 -- BEFORE

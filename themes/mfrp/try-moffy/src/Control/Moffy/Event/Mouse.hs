@@ -27,6 +27,8 @@ import Data.Type.Set (numbered, pattern Nil, Singleton, (:-))
 import Data.Bool (bool)
 import Data.Word (Word32)
 
+import Control.Moffy.Event.Window
+
 ---------------------------------------------------------------------------
 
 -- * MOUSE DOWN
@@ -41,7 +43,7 @@ import Data.Word (Word32)
 data MouseDown = MouseDownReq deriving (Show, Eq, Ord)
 numbered [t| MouseDown |]
 instance Request MouseDown where
-	data Occurred MouseDown = OccMouseDown MouseBtn deriving Show
+	data Occurred MouseDown = OccMouseDown WindowId MouseBtn deriving Show
 
 data MouseBtn
 	= ButtonLeft | ButtonMiddle | ButtonRight
@@ -50,15 +52,16 @@ data MouseBtn
 	| ButtonUnknown Word32
 	deriving (Show, Eq, Ord)
 
-mouseDown :: React s (Singleton MouseDown) MouseBtn
-mouseDown = await MouseDownReq \(OccMouseDown b) -> b
+mouseDown :: WindowId -> React s (Singleton MouseDown) MouseBtn
+mouseDown wid0 = maybe (mouseDown wid0) pure =<<
+	await MouseDownReq \(OccMouseDown wid b) -> bool Nothing (Just b) (wid == wid0)
 
-clickOn :: MouseBtn -> React s (Singleton MouseDown) ()
-clickOn b = bool (clickOn b) (pure ()) . (== b) =<< mouseDown
+clickOn :: WindowId -> MouseBtn -> React s (Singleton MouseDown) ()
+clickOn wid b = bool (clickOn wid b) (pure ()) . (== b) =<< mouseDown wid
 
-leftClick, middleClick, rightClick :: React s (Singleton MouseDown) ()
+leftClick, middleClick, rightClick :: WindowId -> React s (Singleton MouseDown) ()
 [leftClick, middleClick, rightClick] =
-	clickOn <$> [ButtonLeft, ButtonMiddle, ButtonRight]
+	flip clickOn <$> [ButtonLeft, ButtonMiddle, ButtonRight]
 
 ---------------------------------------------------------------------------
 -- MOUSE UP

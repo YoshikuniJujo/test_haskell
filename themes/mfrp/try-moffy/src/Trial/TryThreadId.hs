@@ -17,6 +17,8 @@ import Data.Or (Or)
 
 import Field (openField, closeField, exposureMask, buttonPressMask)
 
+import Control.Moffy.Event.Window
+
 ---------------------------------------------------------------------------
 
 trySingleThreadId :: IO ThreadId
@@ -30,13 +32,13 @@ runGetThreadId = interpretReact $ retry handleGetThreadId
 
 tryLeftRightThreadId :: IO (Or ThreadId ThreadId)
 tryLeftRightThreadId = runMouseGetThreadId $
-	clickThenGetThreadId (adjust leftClick) `first`
-	clickThenGetThreadId (adjust rightClick)
+	clickThenGetThreadId (adjust . leftClick $ WindowId 0) `first`
+	clickThenGetThreadId (adjust . rightClick $ WindowId 0)
 
 tryLeftRightThreadId' :: IO (Or ThreadId ThreadId)
 tryLeftRightThreadId' = runMouseGetThreadId $
-	clickThenGetThreadId (adjust leftClick) `first'`
-	clickThenGetThreadId (adjust rightClick)
+	clickThenGetThreadId (adjust $ leftClick $ WindowId 0) `first'`
+	clickThenGetThreadId (adjust $ rightClick$ WindowId 0)
 
 runMouseGetThreadId :: React s (GetThreadId :- MouseEv) a -> IO a
 runMouseGetThreadId r = do
