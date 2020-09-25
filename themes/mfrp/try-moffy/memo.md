@@ -417,6 +417,13 @@ todo
 	+ [x] pass WindowId to deleteEvent
 	+ [x] viewable has window id
 	+ [ ] consider about default WindowId
+		- [x] make Control.Moffy.Event.DefaultWindow
+		- [x] make Control.Moffy.Handle.DefaultWindow
+		- [x] make trial to try DefaultWindow (store and load)
+		- [ ] make Control.Moffy.Event.Mouse.DeafultWindow
+		- [ ] make Control.Moffy.Event.Key.DeafultWindow
+		- [ ] make Control.Moffy.Event.Delete.DefaultWindow
+		- [ ] make Control.Moffy.Event.CalcTextExtents.DefaultWindow
 	+ [ ] add window id to mouse event
 		- [x] MouseDown
 		- [ ] others

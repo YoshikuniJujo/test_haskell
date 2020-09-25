@@ -149,8 +149,17 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-moffy
-  tryMultiWindow :
+  tryMultiWindow:
     main:                tryMultiWindow.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy
+  tryDefaultWindow:
+    main:                tryDefaultWindow.hs
     source-dirs:         app
     ghc-options:
     - -threaded
