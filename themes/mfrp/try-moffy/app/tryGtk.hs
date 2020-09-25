@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -11,4 +12,6 @@ import Trial.Boxes
 import Trial.Boxes.RunGtkField
 
 main :: IO ()
-main = () <$ runBoxes (waitFor (adjust windowNew) >> boxes `break` deleteEvent)
+main = () <$ runBoxes do
+	i <- waitFor $ adjust windowNew
+	boxes `break` deleteEvent i

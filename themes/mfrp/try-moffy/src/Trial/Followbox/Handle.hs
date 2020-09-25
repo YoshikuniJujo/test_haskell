@@ -63,7 +63,7 @@ import Data.OneOrMoreApp as Ooma
 -- STATE
 ---------------------------------------------------------------------------
 
-type GuiEv = WindowNew :- DeleteEvent :- (KeyEv :+: MouseEv)
+type GuiEv = WindowEv :+: DeleteEvent :- (KeyEv :+: MouseEv)
 
 -- FOLLOWOBOX STATE
 
@@ -97,7 +97,7 @@ instance RandomState FollowboxState where
 -- FOLLOWBOX
 
 handleFollowboxWith ::
-	(Maybe DiffTime -> f -> Handle' IO (WindowNew :- CalcTextExtents :- GuiEv)) ->
+	(Maybe DiffTime -> f -> Handle' IO (WindowEv :+: CalcTextExtents :- GuiEv)) ->
 	f -> Browser -> Maybe GithubNameToken ->
 	HandleF IO (GuiEv :+: FollowboxEv)
 handleFollowboxWith h f brws mba = retrySt $

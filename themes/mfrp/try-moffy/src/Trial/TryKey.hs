@@ -7,8 +7,9 @@ module Trial.TryKey (tryKey) where
 
 import Prelude hiding (repeat, break)
 
-import Control.Moffy (Sig, React, adjust, first, repeat, break)
+import Control.Moffy (Sig, React, adjust, adjustSig, waitFor, first, repeat, break)
 import Control.Moffy.Event.Delete (DeleteEvent, deleteEvent)
+import Control.Moffy.Event.Window
 import Control.Moffy.Event.Key (
 	KeyEv, keyDown, keyUp, pattern AsciiKey, pattern XkReturn )
 import Control.Moffy.Handle (retry)
@@ -26,8 +27,10 @@ tryKey = do
 	f <- openField "TRY KEY" [exposureMask, keyPressMask, keyReleaseMask]
 	interpret (retry $ handle Nothing f) print keySig <* closeField f
 
-keySig :: Sig s (DeleteEvent :- KeyEv) (Or Char Char) ()
-keySig = () <$ repeat (asciiKey `first` asciiKeyUp) `break` deleteEvent
+keySig :: Sig s (WindowNew :- DeleteEvent :- KeyEv) (Or Char Char) ()
+keySig = () <$ do
+	i <- waitFor $ adjust windowNew
+	adjustSig $ repeat (asciiKey `first` asciiKeyUp) `break` deleteEvent i
 
 asciiKey :: React s KeyEv Char
 asciiKey = adjust keyDown >>= \case

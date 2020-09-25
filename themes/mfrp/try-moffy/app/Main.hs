@@ -1,3 +1,6 @@
+{-# LANGUAGE BlockArguments #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
 module Main where
 
 import Prelude hiding (break)
@@ -10,5 +13,6 @@ import Trial.Boxes (boxes)
 import Trial.Boxes.RunXField (runBoxes)
 
 main :: IO ()
--- main = () <$ runBoxes "TRY BOXES" (waitFor (adjust windowNew) >> boxes `break` deleteEvent)
-main = () <$ runBoxes "TRY BOXES" (boxes `break` deleteEvent)
+main = () <$ runBoxes "TRY BOXES" do
+	i <- waitFor $ adjust windowNew
+	boxes `break` deleteEvent i

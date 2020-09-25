@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -25,6 +26,7 @@ main = do
 		"-" -> pure $ Right []
 		_ -> M.readFile r
 	s' <- either (error "bad") (maybe (error "bad") (mapMaybe viewableToShape) . fst) . fst <$> runDraw
-		(\wdt cr x -> ((drawBox wdt cr >-- drawLine wdt cr >-- fillPolygon wdt cr >-- SingletonFun putMessage) `apply`) `mapM_` x)
-		(waitFor (adjust windowNew) >> rectangleAndLines s `break` deleteEvent)
+		(\wdt cr x -> ((drawBox wdt cr >-- drawLine wdt cr >-- fillPolygon wdt cr >-- SingletonFun putMessage) `apply`) `mapM_` x) do
+			i <- waitFor $ adjust windowNew
+			rectangleAndLines s `break` deleteEvent i
 	M.writeFile w s'

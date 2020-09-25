@@ -1,4 +1,4 @@
-{-# LANGUAGE TupleSections, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, TupleSections, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -8,6 +8,7 @@ module Trial.TryCalcTextExtents where
 import Control.Monad
 import Control.Moffy
 import Control.Moffy.Event.Delete
+import Control.Moffy.Event.Window
 import Control.Moffy.Event.CalcTextExtents
 import Control.Moffy.Handle
 import Control.Moffy.Handle.Time
@@ -29,9 +30,10 @@ import Control.Moffy.Event.Time
 
 import Control.Moffy.Run.GtkField as G
 
-tryCalcTextExtents :: T.Text -> Sig s (DeleteEvent :- CalcTextExtents :- 'Nil) (T.Text, TextExtents') ()
-tryCalcTextExtents txt = void $
-	(emit . (txt ,) =<< waitFor (adjust $ calcTextExtents' "Sans" 30 txt)) >> waitFor (adjust deleteEvent)
+tryCalcTextExtents :: T.Text -> Sig s (WindowNew :- DeleteEvent :- CalcTextExtents :- 'Nil) (T.Text, TextExtents') ()
+tryCalcTextExtents txt = void do
+	i <- waitFor $ adjust windowNew
+	(emit . (txt ,) =<< waitFor (adjust $ calcTextExtents' "Sans" 30 txt)) >> waitFor (adjust $ deleteEvent i)
 
 runTryCalcTextExtents :: IO ()
 runTryCalcTextExtents = do

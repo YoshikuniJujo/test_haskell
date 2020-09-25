@@ -14,6 +14,7 @@ module Control.Moffy.Event.Delete (
 import Control.Moffy (React, Request(..), await)
 import Control.Moffy.Event.Window
 import Data.Type.Set (numbered, Singleton)
+import Data.Bool
 
 ---------------------------------------------------------------------------
 -- DELETE EVENT
@@ -24,5 +25,5 @@ numbered [t| DeleteEvent |]
 instance Request DeleteEvent where
 	data Occurred DeleteEvent = OccDeleteEvent WindowId deriving Show
 
-deleteEvent :: React s (Singleton DeleteEvent) WindowId
-deleteEvent = await DeleteEventReq \(OccDeleteEvent wid) -> wid
+deleteEvent :: WindowId -> React s (Singleton DeleteEvent) ()
+deleteEvent i0 = bool (deleteEvent i0) (pure ()) =<< await DeleteEventReq \(OccDeleteEvent wid) -> wid == i0

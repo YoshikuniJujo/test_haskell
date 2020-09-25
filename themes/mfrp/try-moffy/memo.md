@@ -409,9 +409,12 @@ todo
 		- [ ] use window id to calc text extents
 	+ [ ] event from all window and draw to all window
 	+ [x] make multiple window trial
-	+ [ ] destroy window with delete event
+	+ [x] destroy window with delete event
 		- [x] delete event has window id
-		- [ ] make destroy window request
+		- [x] add gtkWidgetDestroy to Graphics.Gtk
+		- [x] add TVar (Map WindowId GtkWidget) to save windows
+		- [x] make destroy window request
+	+ [x] pass WindowId to deleteEvent
 	+ [ ] add window id to mouse and key event
 	+ [ ] event has window id
 	+ [ ] viewable has window id

@@ -10,6 +10,7 @@ module Graphics.Gtk (
 	-- * Basic
 	GtkWidget, gtkInit, gtkMain, gtkMainQuit,
 	gtkWidgetSetEvents, gtkWidgetShowAll,
+	gtkWidgetDestroy,
 	gtkWidgetQueueDraw,
 	-- * Widget
 	gtkWindowNew, gtkWindowToplevel, gtkWindowPopup,
@@ -93,6 +94,11 @@ foreign import ccall "gtk_widget_queue_draw" c_gtk_widget_queue_draw :: Ptr GtkW
 
 foreign import ccall "g_timeout_add" c_g_timeout_add ::
 	#{type guint} -> FunPtr (Ptr a -> IO #{type gboolean}) -> Ptr a -> IO #type guint
+
+foreign import ccall "gtk_widget_destroy" c_gtk_widget_destroy :: Ptr GtkWidget -> IO ()
+
+gtkWidgetDestroy :: GtkWidget -> IO ()
+gtkWidgetDestroy (GtkWidget p) = c_gtk_widget_destroy p
 
 gTimeoutAdd :: AsPointer a => #{type guint} -> (a -> IO Bool) -> a -> IO #type guint
 gTimeoutAdd t f x = do

@@ -4,4 +4,4 @@ import Control.Moffy
 import Trial.TryMultiWindow
 
 main :: IO ()
-main = print =<< runTryMultiWindow (waitFor threeWindows)
+main = print =<< runTryMultiWindow threeWindows

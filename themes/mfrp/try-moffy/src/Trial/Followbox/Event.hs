@@ -176,6 +176,6 @@ checkTerminate = catchError
 type SigF s = Sig s FollowboxEv
 type ReactF s r = React s FollowboxEv r
 
-type FollowboxEv = WindowNew :- GetThreadId :- LockEv :+: RandomEv :+: DeleteEvent :- MouseEv :+:
+type FollowboxEv = WindowEv :+: GetThreadId :- LockEv :+: RandomEv :+: DeleteEvent :- MouseEv :+:
 	StoreJsons :- LoadJsons :- HttpGet :- CalcTextExtents :- GetTimeZone :-
 	Browse :- BeginSleep :- EndSleep :- RaiseError :- 'Nil

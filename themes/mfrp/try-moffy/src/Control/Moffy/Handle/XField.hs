@@ -39,7 +39,7 @@ import qualified Control.Moffy.Handle as H
 -- GUI EV
 ---------------------------------------------------------------------------
 
-type GuiEv = WindowNew :- DeleteEvent :- KeyEv :+: MouseEv
+type GuiEv = WindowEv :+: DeleteEvent :- KeyEv :+: MouseEv
 
 ---------------------------------------------------------------------------
 -- HANDLE

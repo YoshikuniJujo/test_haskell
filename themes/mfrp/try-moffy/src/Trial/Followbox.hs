@@ -12,6 +12,7 @@ import Prelude hiding (break, until)
 import Control.Arrow ((>>>))
 import Control.Monad (void, forever, (<=<))
 import Control.Moffy (adjust, emit, waitFor, first, break, until)
+import Control.Moffy.Event.Window
 import Control.Moffy.Event.Lock (LockId, newLockId, withLock)
 import Control.Moffy.Event.Random (getRandomR)
 import Control.Moffy.Event.Delete (deleteEvent)
@@ -111,9 +112,9 @@ crossMergin = 4
 
 -- FOLLOWBOX
 
-followbox :: SigF s View ()
-followbox = () <$
-	fieldWithResetTime numOfUsers `break` deleteEvent `break` checkTerminate
+followbox :: WindowId -> SigF s View ()
+followbox i = () <$
+	fieldWithResetTime numOfUsers `break` deleteEvent i `break` checkTerminate
 
 fieldWithResetTime :: Integer -> SigF s View ()
 fieldWithResetTime n = (<>) <$%> field n <*%> resetTime

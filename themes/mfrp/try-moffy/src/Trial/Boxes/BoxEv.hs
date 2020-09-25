@@ -16,4 +16,4 @@ import Data.Type.Set ((:-), (:+:))
 type SigB s = Sig s BoxEv
 type ISigB s = ISig s BoxEv
 type ReactB s r = React s BoxEv r
-type BoxEv = WindowNew :- DeleteEvent :- KeyEv :+: MouseEv :+: TimeEv
+type BoxEv = WindowEv :+: DeleteEvent :- KeyEv :+: MouseEv :+: TimeEv
