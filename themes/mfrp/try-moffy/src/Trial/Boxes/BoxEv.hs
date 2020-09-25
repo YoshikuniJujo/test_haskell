@@ -8,6 +8,7 @@ module Trial.Boxes.BoxEv (
 import Control.Moffy (Sig, ISig, React)
 import Control.Moffy.Event.Time (TimeEv)
 import Control.Moffy.Event.Delete (DeleteEvent)
+import Control.Moffy.Event.Window
 import Control.Moffy.Event.Key (KeyEv)
 import Control.Moffy.Event.Mouse (MouseEv)
 import Data.Type.Set ((:-), (:+:))
@@ -15,4 +16,4 @@ import Data.Type.Set ((:-), (:+:))
 type SigB s = Sig s BoxEv
 type ISigB s = ISig s BoxEv
 type ReactB s r = React s BoxEv r
-type BoxEv = DeleteEvent :- KeyEv :+: MouseEv :+: TimeEv
+type BoxEv = WindowNew :- DeleteEvent :- KeyEv :+: MouseEv :+: TimeEv

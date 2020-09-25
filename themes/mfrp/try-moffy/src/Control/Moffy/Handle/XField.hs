@@ -12,6 +12,7 @@ module Control.Moffy.Handle.XField (
 
 import Control.Moffy (EvReqs, EvOccs)
 import Control.Moffy.Event.Delete (DeleteEvent, pattern OccDeleteEvent)
+import Control.Moffy.Event.Window
 import Control.Moffy.Event.Key (KeyEv)
 import Control.Moffy.Event.Mouse (MouseEv)
 import Control.Moffy.Event.CalcTextExtents
@@ -27,6 +28,8 @@ import Field (
 
 import Data.OneOrMoreApp
 
+import qualified Control.Moffy.Handle as H
+
 ---------------------------------------------------------------------------
 
 -- * GUI EV
@@ -36,14 +39,17 @@ import Data.OneOrMoreApp
 -- GUI EV
 ---------------------------------------------------------------------------
 
-type GuiEv = DeleteEvent :- KeyEv :+: MouseEv
+type GuiEv = WindowNew :- DeleteEvent :- KeyEv :+: MouseEv
 
 ---------------------------------------------------------------------------
 -- HANDLE
 ---------------------------------------------------------------------------
 
 handle' :: Maybe DiffTime -> Field -> Handle' IO (CalcTextExtents :- GuiEv)
-handle' mt f = (Just <$>) . handleCalcTextExtents f `before` handle mt f
+handle' mt f = (handleWindowNew `H.merge` ((Just <$>) . handleCalcTextExtents f)) `before` handle mt f
+
+handleWindowNew :: Applicative m => Handle' m (Singleton WindowNew)
+handleWindowNew _ = pure . Just . Singleton . OccWindowNew $ WindowId 0
 
 handle :: Maybe DiffTime -> Field -> Handle' IO GuiEv
 handle = handleWith \case

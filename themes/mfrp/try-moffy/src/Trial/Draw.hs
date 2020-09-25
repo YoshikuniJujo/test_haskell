@@ -12,6 +12,7 @@ import Prelude hiding (repeat, break, until, filter, scanl)
 import qualified Control.Arrow as A
 import Control.Monad
 import Control.Moffy
+import Control.Moffy.Event.Window
 import Control.Moffy.Event.ThreadId
 import Control.Moffy.Event.Lock
 import Control.Moffy.Event.Mouse
@@ -46,7 +47,7 @@ import qualified Trial.Draw.Marshal as M
 import Debug.Trace
 
 type Viewable = OneOfThem (Box :- Line :- FillPolygon :- Message :- 'Nil)
-type Events = GetThreadId :- MouseEv :+: LockEv :+: LinesEv
+type Events = WindowNew :- GetThreadId :- MouseEv :+: LockEv :+: LinesEv
 
 shapeToViewable :: M.Shape -> Viewable
 shapeToViewable (M.Line s e) = Oot.expand . Singleton $ Line' (Color 0 0 0) 2 s e

@@ -395,10 +395,13 @@ todo
 	+ [ ] no fill lines and polygon
 	+ [ ] Bezier curve
 * [ ] about window
-	+ [ ] make window
+	+ [x] create window function
+	+ [x] add window identity
+	+ [x] use windowNew
 	+ [ ] add window id to mouse and key event
 	+ [ ] make multiple window
 	+ [ ] make tear-off sample
+	+ [ ] get window size or drawing area size
 * [ ] about cursor
 	+ [ ] change cursor picture
 	+ [ ] others

@@ -15,6 +15,7 @@ import Control.Arrow
 import Control.Monad
 import Control.Moffy
 import Control.Moffy.Event.Delete as M (DeleteEvent, pattern OccDeleteEvent)
+import Control.Moffy.Event.Window
 import Control.Moffy.Event.Key (
 	KeyEv, pattern OccKeyDown, pattern OccKeyUp, Key(..) )
 import Control.Moffy.Event.Mouse (
@@ -39,7 +40,7 @@ import Data.OneOrMoreApp (pattern Singleton, expand, (>-))
 
 -- GUI EVENT
 
-type GuiEv = CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv
+type GuiEv = WindowNew :- CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv
 
 -- RUN GTK MAIN
 
@@ -51,17 +52,52 @@ runGtkMain dr as = (,,) <$> newTChanIO <*> newTChanIO <*> newTChanIO >>=
 	\cs@(crq, cocc, cvw) -> (, cs) <$> do
 		cas <- newTChanIO
 		void $ forkIO do
+			vda <- atomically $ newTVar Nothing
 			vvw <- atomically $ newTVar mempty
 			cft <- newTChanIO
 			atomically . writeTChan cas =<< gtkInit as
-			w <- createWindow cocc
-			da <- createDrawingArea dr cft cocc vvw w
 			void $ gTimeoutAdd 100
-				(const $ recieveCalcTextExtentsRequest crq cft da) ()
-			void $ gTimeoutAdd 100 (const $ recieveViewable cvw vvw da) ()
-			gtkWidgetShowAll w
+				(const $ True <$ recieveEvReqs dr crq cft cocc vvw vda) ()
+			void $ gTimeoutAdd 100 (const $ recieveViewable cvw vvw vda) ()
 			gtkMain
 		atomically $ readTChan cas
+
+recieveEvReqs :: GtkDrawer a -> TChan (EvReqs GuiEv) -> TChan (FontName, FontSize, T.Text) ->
+	TChan (EvOccs GuiEv) -> TVar a -> TVar (Maybe GtkWidget) -> IO ()
+recieveEvReqs dr crq cft cocc vvw vda = atomically (lastTChan crq) >>= \case
+	Nothing -> pure ()
+	Just rqs -> do
+		case project rqs of
+			Nothing -> pure ()
+			Just (CalcTextExtentsReq fn fs t) -> do
+				atomically (readTVar vda) >>= \case
+					Nothing -> pure ()
+					Just da -> do
+						atomically $ writeTChan cft (fn, fs, t)
+						gtkWidgetQueueDraw da
+		case project rqs of
+			Nothing -> pure ()
+			Just WindowNewReq -> do
+				putStrLn "recieve WindowNewReq begin"
+				w <- createWindow cocc
+				da <- createDrawingArea dr cft cocc vvw w
+				atomically $ writeTVar vda (Just da)
+				gtkWidgetShowAll w
+				atomically . writeTChan cocc . expand . Singleton . OccWindowNew $ WindowId 0
+				putStrLn "recieve WindowNewReq end"
+
+recieveWindowNew :: GtkDrawer a -> TChan (EvReqs GuiEv) -> TChan (FontName, FontSize, T.Text) ->
+	TChan (EvOccs GuiEv) -> TVar a -> IO ()
+recieveWindowNew dr crq cft cocc vvw = atomically (lastTChan crq) >>= \case
+	Nothing -> pure ()
+	Just rqs -> case project rqs of
+		Nothing -> pure ()
+		Just WindowNewReq -> do
+--			w <- createWindow cocc
+--			da <- createDrawingArea dr cft cocc vvw w
+--			gtkWidgetShowAll w
+			atomically . writeTChan cocc . expand . Singleton . OccWindowNew $ WindowId 0
+	
 
 createWindow :: TChan (EvOccs GuiEv) -> IO GtkWidget
 createWindow c = do
@@ -98,9 +134,12 @@ recieveCalcTextExtentsRequest cr ftc da = (True <$) $ atomically (lastTChan cr) 
 	maybe (pure ()) (project >>> maybe (pure ()) \(CalcTextExtentsReq fn fs t) ->
 		atomically (writeTChan ftc (fn, fs, t)) >> gtkWidgetQueueDraw da)
 
-recieveViewable :: TChan a -> TVar a -> GtkWidget -> IO Bool
-recieveViewable c' tx da = (True <$) $ atomically (lastTChan c') >>= maybe (pure ()) \v ->
-	atomically (writeTVar tx v) >> gtkWidgetQueueDraw da
+recieveViewable :: TChan a -> TVar a -> TVar (Maybe GtkWidget) -> IO Bool
+recieveViewable c' tx vda = atomically (readTVar vda) >>= \case
+	Nothing -> pure True
+	Just da -> do
+		(True <$) $ atomically (lastTChan c') >>= maybe (pure ()) \v ->
+			atomically (writeTVar tx v) >> gtkWidgetQueueDraw da
 
 -- HANDLER OF GDK EVENT
 

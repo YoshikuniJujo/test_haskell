@@ -11,6 +11,7 @@ module Trial.Followbox.Handle (
 	) where
 
 import Control.Moffy.Event.Delete
+import Control.Moffy.Event.Window
 import Control.Moffy.Event.Key
 import Control.Moffy.Event.Mouse
 import Control.Moffy.Event.CalcTextExtents (CalcTextExtents)
@@ -62,7 +63,7 @@ import Data.OneOrMoreApp as Ooma
 -- STATE
 ---------------------------------------------------------------------------
 
-type GuiEv = DeleteEvent :- (KeyEv :+: MouseEv)
+type GuiEv = WindowNew :- DeleteEvent :- (KeyEv :+: MouseEv)
 
 -- FOLLOWOBOX STATE
 
@@ -96,7 +97,7 @@ instance RandomState FollowboxState where
 -- FOLLOWBOX
 
 handleFollowboxWith ::
-	(Maybe DiffTime -> f -> Handle' IO (CalcTextExtents :- GuiEv)) ->
+	(Maybe DiffTime -> f -> Handle' IO (WindowNew :- CalcTextExtents :- GuiEv)) ->
 	f -> Browser -> Maybe GithubNameToken ->
 	HandleF IO (GuiEv :+: FollowboxEv)
 handleFollowboxWith h f brws mba = retrySt $

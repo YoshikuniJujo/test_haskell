@@ -6,6 +6,7 @@ import Prelude hiding (break)
 
 import Control.Moffy
 import Control.Moffy.Event.Delete
+import Control.Moffy.Event.Window
 import Control.Moffy.View.GtkField
 import Data.OneOfThem
 import Data.Maybe
@@ -25,5 +26,5 @@ main = do
 		_ -> M.readFile r
 	s' <- either (error "bad") (maybe (error "bad") (mapMaybe viewableToShape) . fst) . fst <$> runDraw
 		(\wdt cr x -> ((drawBox wdt cr >-- drawLine wdt cr >-- fillPolygon wdt cr >-- SingletonFun putMessage) `apply`) `mapM_` x)
-		(rectangleAndLines s `break` deleteEvent)
+		(waitFor (adjust windowNew) >> rectangleAndLines s `break` deleteEvent)
 	M.writeFile w s'
