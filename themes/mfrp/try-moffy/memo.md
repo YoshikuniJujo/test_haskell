@@ -423,6 +423,15 @@ todo
 		- [x] make trial to try DefaultWindow (store and load)
 		- [ ] make Control.Moffy.Event.Mouse.DeafultWindow
 			* [x] mouseDown and so on
+				+ [x] Trial.Count
+				+ [ ] Trial.TryLock
+				+ [ ] Trial.TrySharing
+				+ [ ] Trial.TryThreadId
+				+ [ ] Trial.TrySharing.ThreadId
+				+ [ ] Trial.Boxes
+				+ [ ] Trial.Draw
+				+ [ ] Trial.Followbox
+				+ [ ] Trial.Followbox.Clickable
 			* [ ] others
 		- [ ] make Control.Moffy.Event.Key.DeafultWindow
 		- [ ] make Control.Moffy.Event.Delete.DefaultWindow

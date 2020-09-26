@@ -43,22 +43,19 @@ tryLeftRandomSig = runMouse . leftRandomSig $ mkStdGen 8
 -- REACT AND SIG
 ---------------------------------------------------------------------------
 
-w0 :: WindowId
-w0 = WindowId 0
-
 leftCount :: Int -> React s (WindowNew :- DefaultWindowEv :+: MouseEv) Int
-leftCount c = adjust (leftClick w0 `first` rightClick w0) >>= \case
+leftCount c = adjust (leftClick `first` rightClick) >>= \case
 	L () -> leftCount $ c + 1; R () -> pure c; LR () () -> pure $ c + 1
 
 leftCountSig :: Int -> Sig s (WindowNew :- DefaultWindowEv :+: MouseEv) Int Int
 leftCountSig c =
-	emit c >> waitFor (adjust $ leftClick w0 `first` rightClick w0) >>= \case
+	emit c >> waitFor (adjust $ leftClick `first` rightClick) >>= \case
 		L () -> leftCountSig $ c + 1; R () -> pure c
 		LR () () -> pure $ c + 1
 
 leftRandomSig :: StdGen -> Sig s (WindowNew :- DefaultWindowEv :+: MouseEv) Int StdGen
 leftRandomSig (random -> (i, g')) =
-	emit i >> waitFor (adjust $ leftClick (WindowId 0) `first` rightClick (WindowId 0)) >>= \case
+	emit i >> waitFor (adjust $ leftClick `first` rightClick) >>= \case
 		L () -> leftRandomSig g'; R () -> pure g'; LR () () -> pure g'
 
 ---------------------------------------------------------------------------
