@@ -1,5 +1,6 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.TryLock (
@@ -12,13 +13,15 @@ import Control.Monad (void)
 import Control.Moffy (Sig, adjust, emit, waitFor, first)
 import Control.Moffy.Event.ThreadId (GetThreadId)
 import Control.Moffy.Event.Lock (LockEv, LockId, newLockId, withLock)
-import Control.Moffy.Event.Mouse (MouseDown, leftClick, rightClick)
-import Control.Moffy.Handle (retry, liftSt, retrySt, mergeSt)
+import Control.Moffy.Event.DefaultWindow
+import Control.Moffy.Event.Mouse.DefaultWindow (MouseDown, leftClick, rightClick)
+import Control.Moffy.Handle (retry, liftSt, retrySt, mergeSt, liftHandle')
 import Control.Moffy.Handle.ThreadId (handleGetThreadId)
+import Control.Moffy.Handle.DefaultWindow
 import Control.Moffy.Handle.Lock (LockState(..), handleLock)
 import Control.Moffy.Handle.XField (handle)
 import Control.Moffy.Run (interpret, interpretSt)
-import Data.Type.Set (Singleton, (:-))
+import Data.Type.Set (Singleton, (:-), pattern Nil)
 import Data.Type.Flip ((<$%>), (<*%>))
 import Data.Or (Or(..))
 import Data.List (delete)
@@ -40,7 +43,9 @@ import Control.Moffy.Event.Window
 -- LOCK ST
 ---------------------------------------------------------------------------
 
-data LockSt = LockSt { nextLockId :: Int, lockState :: [LockId] } deriving Show
+data LockSt = LockSt {
+	nextLockId :: Int, lockState :: [LockId], lsDefaultWindow :: Maybe WindowId }
+	deriving Show
 
 instance LockState LockSt where
 	getNextLockId = nextLockId; putNextLockId s li = s { nextLockId = li }
@@ -48,25 +53,26 @@ instance LockState LockSt where
 	lockIt s li = s { lockState = li : lockState s }
 	unlockIt s li = s { lockState = delete li $ lockState s }
 
+instance DefaultWindowState LockSt where
+	getDefaultWindow = lsDefaultWindow
+	putDefaultWindow s dw = s { lsDefaultWindow = Just dw }
+
 ---------------------------------------------------------------------------
 -- TRIAL
 ---------------------------------------------------------------------------
 
 -- SINGLE
 
-trySingleLeftCount :: IO Int
+trySingleLeftCount :: IO (Int, Maybe WindowId)
 trySingleLeftCount = runClick $ leftCount 0
 
-w0 :: WindowId
-w0 = WindowId 0
-
-leftCount :: Int -> Sig s (Singleton MouseDown) Int Int
-leftCount c = emit c >> waitFor (leftClick w0 `first` rightClick w0) >>= \case
+leftCount :: Int -> Sig s (LoadDefaultWindow :- MouseDown :- 'Nil) Int Int
+leftCount c = emit c >> waitFor (leftClick `first` rightClick) >>= \case
 	L () -> leftCount $ c + 1; R () -> pure c; LR () () -> pure $ c + 1
 
 -- NO LOCK
 
-tryNoLockLeftCount2 :: IO ()
+tryNoLockLeftCount2 :: IO ((), Maybe WindowId)
 tryNoLockLeftCount2 =
 	runClick $ (,) <$%> void (leftCount 0) <*%> void (leftCount 0)
 
@@ -78,9 +84,9 @@ tryLockLeftCount2 = runClickLockSt  do
 	(,) <$%> void (lockLeftCount l 0) <*%> void (lockLeftCount l 0)
 
 lockLeftCount ::
-	LockId -> Int -> Sig s (MouseDown :- GetThreadId :- LockEv) Int Int
+	LockId -> Int -> Sig s (LoadDefaultWindow :- MouseDown :- GetThreadId :- LockEv) Int Int
 lockLeftCount l c =
-	emit c >> waitFor (withLock l $ leftClick (WindowId 0) `first` rightClick (WindowId 0)) >>= \case
+	emit c >> waitFor (withLock l $ leftClick `first` rightClick) >>= \case
 		L () -> lockLeftCount l $ c + 1; R () -> pure c
 		LR () () -> pure $ c + 1
 
@@ -88,16 +94,19 @@ lockLeftCount l c =
 -- RUN
 ---------------------------------------------------------------------------
 
-runClick :: Show a => Sig s (Singleton MouseDown) a r -> IO r
+runClick :: Show a => Sig s (LoadDefaultWindow :- MouseDown :- 'Nil) a r -> IO (r, Maybe WindowId)
 runClick s = do
 	f <- openField "TRY LEFT COUNT" [buttonPressMask, exposureMask]
-	interpret (retry $ handle Nothing f) print s <* closeField f
+	interpretSt
+		(retrySt $ handleDefaultWindow `mergeSt` liftHandle' (handle Nothing f))
+		print s Nothing <* closeField f
 
 runClickLockSt :: Show a =>
-	Sig s (MouseDown :- GetThreadId :- LockEv) a r -> IO (r, LockSt)
+	Sig s (LoadDefaultWindow :- MouseDown :- GetThreadId :- LockEv) a r -> IO (r, LockSt)
 runClickLockSt s = do
 	f <- openField "TRY LOCK LEFT COUNT 2" [buttonPressMask, exposureMask]
-	interpretSt (hdl f) print s (LockSt 0 []) <* closeField f
+	interpretSt (hdl f) print s (LockSt 0 [] Nothing) <* closeField f
 	where hdl f = retrySt $
+		handleDefaultWindow `mergeSt`
 		liftSt . handleGetThreadId `mergeSt` handleLock `mergeSt`
 		liftSt . handle Nothing f

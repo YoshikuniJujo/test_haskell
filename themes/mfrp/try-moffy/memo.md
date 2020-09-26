@@ -424,10 +424,10 @@ todo
 		- [ ] make Control.Moffy.Event.Mouse.DeafultWindow
 			* [x] mouseDown and so on
 				+ [x] Trial.Count
-				+ [ ] Trial.TryLock
-				+ [ ] Trial.TrySharing
-				+ [ ] Trial.TryThreadId
-				+ [ ] Trial.TrySharing.ThreadId
+				+ [x] Trial.TryLock
+				+ [x] Trial.TrySharing
+				+ [x] Trial.TryThreadId
+				+ [x] Trial.TrySharing.ThreadId
 				+ [ ] Trial.Boxes
 				+ [ ] Trial.Draw
 				+ [ ] Trial.Followbox

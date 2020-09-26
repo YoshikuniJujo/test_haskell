@@ -10,11 +10,13 @@ import Control.Monad.Freer.Par (runTagged, tag)
 import Control.Moffy (React, adjust, first)
 import Control.Moffy.NoThreadId (first')
 import Control.Moffy.Event.ThreadId (GetThreadId, ThreadId, getThreadId)
-import Control.Moffy.Event.Mouse (MouseEv, MouseBtn, mouseDown)
-import Control.Moffy.Handle (retry, before)
+import Control.Moffy.Event.DefaultWindow
+import Control.Moffy.Event.Mouse.DefaultWindow (MouseEv, MouseBtn, mouseDown)
+import Control.Moffy.Handle (retry, before, liftHandle', retrySt, beforeSt, mergeSt)
+import Control.Moffy.Handle.DefaultWindow
 import Control.Moffy.Handle.ThreadId (handleGetThreadId)
 import Control.Moffy.Handle.XField (handle)
-import Control.Moffy.Run (interpretReact)
+import Control.Moffy.Run (interpretReact, interpretReactSt)
 import Control.Concurrent (threadDelay)
 import Data.Type.Set ((:-))
 import Data.Or (Or)
@@ -33,16 +35,16 @@ import Control.Moffy.Event.Window
 -- TRIAL
 ---------------------------------------------------------------------------
 
-runFirstGetThreadId :: IO (Or' (MouseBtn, ThreadId))
+runFirstGetThreadId :: IO (Or' (MouseBtn, ThreadId), Maybe WindowId)
 runFirstGetThreadId = runMouseThreadId $ r `first` r
 	where r = (,) <$> heavyMouseDown <*> heavyGetThreadId
 
-runSharingFirstGetThreadId :: IO (Or' (MouseBtn, ThreadId))
+runSharingFirstGetThreadId :: IO (Or' (MouseBtn, ThreadId), Maybe WindowId)
 runSharingFirstGetThreadId = runTagged do
 	r <- tag $ (,) <$> heavyMouseDown <*> heavyGetThreadId
 	pure $ runMouseThreadId $ r `first` r
 
-runSharingFirstGetThreadId' :: IO (Or' (MouseBtn, ThreadId))
+runSharingFirstGetThreadId' :: IO (Or' (MouseBtn, ThreadId), Maybe WindowId)
 runSharingFirstGetThreadId' = runTagged do
 	r <- tag $ (,) <$> heavyMouseDown <*> heavyGetThreadId
 	pure $ runMouseThreadId $ r `first'` r
@@ -53,17 +55,19 @@ runSharingFirstGetThreadId' = runTagged do
 
 type Or' a = Or a a
 
-runMouseThreadId :: React s (GetThreadId :- MouseEv) r -> IO r
+runMouseThreadId :: React s (LoadDefaultWindow :- GetThreadId :- MouseEv) r -> IO (r, Maybe WindowId)
 runMouseThreadId r = do
 	f <- openField "RUN MOUSE THREAD ID" [buttonPressMask, exposureMask]
-	(<* closeField f) $ interpretReact
-		(retry $ handleGetThreadId `before` handle (Just 0.05) f) r
+	(<* closeField f) $ interpretReactSt
+		(retrySt $
+			handleDefaultWindow `mergeSt`
+			liftHandle' handleGetThreadId `beforeSt` liftHandle' (handle (Just 0.05) f)) r Nothing
 
-heavyGetThreadId :: React s (GetThreadId :- MouseEv) ThreadId
+heavyGetThreadId :: React s (LoadDefaultWindow :- GetThreadId :- MouseEv) ThreadId
 heavyGetThreadId = adjust $ heavyId "getThreadId" <$> getThreadId
 
-heavyMouseDown :: React s (GetThreadId :- MouseEv) MouseBtn
-heavyMouseDown = adjust $ heavyId "mouseDown" <$> mouseDown (WindowId 0)
+heavyMouseDown :: React s (LoadDefaultWindow :- GetThreadId :- MouseEv) MouseBtn
+heavyMouseDown = adjust $ heavyId "mouseDown" <$> mouseDown
 
 heavyId :: String -> a -> a
 heavyId s x = unsafePerformIO $ x <$

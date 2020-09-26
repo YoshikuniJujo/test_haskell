@@ -26,21 +26,9 @@ import qualified Data.Map as Map
 
 threeWindows :: Sig s GuiEv (Map.Map WindowId [OneOfThem (Singleton Box)]) (WindowId, WindowId, WindowId)
 threeWindows = do
-	emit $ Map.fromList [
-		(WindowId 0, (: []) . Oot.expand . Singleton $ Box (Rect (50, 50) (100, 100)) Blue),
-		(WindowId 1, (: []) . Oot.expand . Singleton $ Box (Rect (50, 50) (100, 100)) Red),
-		(WindowId 2, (: []) . Oot.expand . Singleton $ Box (Rect (50, 50) (100, 100)) Cyan) ]
 	w0 <- waitFor $ adjust windowNew
-	emit $ Map.fromList [
-		(w0, (: []) . Oot.expand . Singleton $ Box (Rect (50, 50) (100, 100)) Green),
-		(WindowId 1, (: []) . Oot.expand . Singleton $ Box (Rect (50, 50) (100, 100)) Yellow),
-		(WindowId 2, (: []) . Oot.expand . Singleton $ Box (Rect (50, 50) (100, 100)) Magenta) ]
 	w1 <- waitFor $ adjust windowNew
-	emit $ Map.fromList [
-		(w0, (: []) . Oot.expand . Singleton $ Box (Rect (50, 50) (100, 100)) Green),
-		(w1, (: []) . Oot.expand . Singleton $ Box (Rect (50, 50) (100, 100)) Yellow) ]
 	w2 <- waitFor $ adjust windowNew
---	emit . Map.singleton w2 . (: []) . Oot.expand . Singleton $ Box (Rect (50, 50) (100, 100)) Cyan
 	emit $ Map.fromList [
 		(w0, (: []) . Oot.expand . Singleton $ Box (Rect (50, 50) (200, 200)) Green),
 		(w1, (: []) . Oot.expand . Singleton $ Box (Rect (50, 50) (200, 200)) Yellow),

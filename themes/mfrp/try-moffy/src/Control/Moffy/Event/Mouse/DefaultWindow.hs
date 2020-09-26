@@ -3,7 +3,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Event.Mouse.DefaultWindow (
-	M.MouseEv, leftClick, rightClick
+	M.MouseEv, M.MouseDown, M.MouseBtn, mouseDown, leftClick, rightClick
 	) where
 
 import GHC.Stack
