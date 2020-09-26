@@ -51,8 +51,9 @@ handle' mt f = (handleWindowNew `H.merge` ((Just <$>) . handleCalcTextExtents f)
 handleWindowNew :: Applicative m => Handle' m (Singleton WindowNew)
 handleWindowNew _ = pure . Just . Singleton . OccWindowNew $ WindowId 0
 
-handle :: Maybe DiffTime -> Field -> Handle' IO GuiEv
-handle = handleWith \case
+handle, handleGen :: Maybe DiffTime -> Field -> Handle' IO GuiEv
+handle mt f = handleWindowNew `before` handleGen mt f
+handleGen = handleWith \case
 	KeyEv kev -> Just $ expand kev; MouseEv mev -> Just $ expand mev
 	_ -> Nothing
 

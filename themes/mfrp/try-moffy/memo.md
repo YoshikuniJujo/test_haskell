@@ -394,6 +394,7 @@ todo
 	+ [ ] no fill rectangle
 	+ [ ] no fill lines and polygon
 	+ [ ] Bezier curve
+* [x] repair handle of Control.Moffy.Handle.XField
 * [ ] about window
 	+ [x] create window function
 	+ [x] add window identity
