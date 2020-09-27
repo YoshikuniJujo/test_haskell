@@ -444,7 +444,7 @@ todo
 	+ [ ] event has window id
 	+ [ ] make tear-off sample
 	+ [ ] get window size or drawing area size
-* [ ] repair text extents
+* [x] repair text extents
 * [ ] about cursor
 	+ [ ] change cursor picture
 	+ [ ] others

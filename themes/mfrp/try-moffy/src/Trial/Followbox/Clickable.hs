@@ -55,9 +55,9 @@ data WithTextExtents = WithTextExtents FontName FontSize T.Text TextExtents'
 clickableText :: Position -> WithTextExtents -> Clickable s
 clickableText p@(x, y) (WithTextExtents fn fs txt xg) =
 	clickable (View [expand . Singleton $ Text' blue fn fs p txt]) (l, t) (l + gw, t + gh) where
-	(l, t) = (x, y)
-	[gw, gh] = ($ xg) <$> [
-		rectangleWidth . textExtentsInkRect, rectangleHeight . textExtentsInkRect ]
+	(l, t) = (x + dx, y + dy)
+	[dx, dy, gw, gh] = ($ textExtentsInkRect xg) <$> [
+		rectangleLeft, rectangleTop, rectangleWidth, rectangleHeight ]
 
 withTextExtents :: WindowId -> FontName -> FontSize -> T.Text ->
 	React s (Singleton CalcTextExtents) WithTextExtents
