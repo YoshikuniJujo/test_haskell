@@ -37,7 +37,7 @@ mouseEv = (. evEvent) \case
 	where
 	down x y b = OccMouseDown (WindowId 0) b >- move x y :: EvOccs (MoveAnd MouseDown)
 	up x y b = OccMouseUp (WindowId 0) b >- move x y :: EvOccs (MoveAnd MouseUp)
-	move x y = Singleton $ OccMouseMove (fromIntegral x, fromIntegral y)
+	move x y = Singleton $ OccMouseMove (WindowId 0) (fromIntegral x, fromIntegral y)
 	btn = \case
 		1 -> ButtonLeft; 2 -> ButtonMiddle; 3 -> ButtonRight
 		4 -> ScrollUp; 5 -> ScrollDown; 6 -> ScrollLeft; 7 -> ScrollRight

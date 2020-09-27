@@ -11,7 +11,6 @@ module Control.Moffy.Run.GtkField (
 
 import Prelude hiding (repeat, break)
 
-import Control.Arrow
 import Control.Monad
 import Control.Moffy
 import Control.Moffy.Event.Delete as M (DeleteEvent, pattern OccDeleteEvent)
@@ -126,10 +125,10 @@ createWindow wid c = do
 			dx <- gdkEventScrollDeltaX ev
 			dy <- gdkEventScrollDeltaY ev
 			atomically . writeTChan c $ expand (
-				OccMouseMove (x, y) >- Singleton (OccMouseScroll dx dy) ::
+				OccMouseMove wid (x, y) >- Singleton (OccMouseScroll dx dy) ::
 					EvOccs (MouseMove :- MouseScroll :- 'Nil) )
 			,
-		gSignalConnect w MotionNotifyEvent \_ ev _ -> mouseMove c ev ]
+		gSignalConnect w MotionNotifyEvent \_ ev _ -> mouseMove wid c ev ]
 
 createDrawingArea :: Monoid a => WindowId -> GtkDrawer a -> TChan (WindowId, FontName, FontSize, T.Text) ->
 	TChan (EvOccs GuiEv) -> TVar (Map WindowId a) -> GtkWidget -> IO GtkWidget
@@ -164,7 +163,7 @@ buttonDown wid c ev = (True <$) $ atomically . writeTChan c . expand =<< occ
 	occ = do
 		(b, p) <- (,) <$> gdkEventButtonButton ev
 			<*> ((,) <$> gdkEventButtonX ev <*> gdkEventButtonY ev)
-		pure $ OccMouseDown wid (button b) >- Singleton (OccMouseMove p)
+		pure $ OccMouseDown wid (button b) >- Singleton (OccMouseMove wid p)
 
 buttonUp wid c ev = (True <$) $ atomically . writeTChan c . expand =<< occ
 	where
@@ -172,11 +171,11 @@ buttonUp wid c ev = (True <$) $ atomically . writeTChan c . expand =<< occ
 	occ = do
 		(b, p) <- (,) <$> gdkEventButtonButton ev
 			<*> ((,) <$> gdkEventButtonX ev <*> gdkEventButtonY ev)
-		pure $ OccMouseUp wid (button b) >- Singleton (OccMouseMove p)
+		pure $ OccMouseUp wid (button b) >- Singleton (OccMouseMove wid p)
 
-mouseMove :: TChan (EvOccs GuiEv) -> GdkEventMotion -> IO Bool
-mouseMove c ev = (True <$)
-	$ atomically . writeTChan c . expand . Singleton . OccMouseMove
+mouseMove :: WindowId -> TChan (EvOccs GuiEv) -> GdkEventMotion -> IO Bool
+mouseMove wid c ev = (True <$)
+	$ atomically . writeTChan c . expand . Singleton . OccMouseMove wid
 		=<< ((,) <$> gdkEventMotionX ev <*> gdkEventMotionY ev)
 
 button :: Word32 -> MouseBtn

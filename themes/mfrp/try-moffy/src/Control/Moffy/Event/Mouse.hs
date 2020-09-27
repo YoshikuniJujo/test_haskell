@@ -90,15 +90,16 @@ leftUp, middleUp, rightUp :: WindowId -> React s (Singleton MouseUp) ()
 data MouseMove = MouseMoveReq deriving (Show, Eq, Ord)
 numbered [t| MouseMove |]
 instance Request MouseMove where
-	data Occurred MouseMove = OccMouseMove Point deriving Show
+	data Occurred MouseMove = OccMouseMove WindowId Point deriving Show
 
 type Point = (Double, Double)
 
-mouseMove :: React s (Singleton MouseMove) Point
-mouseMove  = await MouseMoveReq \(OccMouseMove p) -> p
+mouseMove :: WindowId -> React s (Singleton MouseMove) Point
+mouseMove wid0 = maybe (mouseMove wid0) pure =<<
+	await MouseMoveReq \(OccMouseMove wid p) -> bool Nothing (Just p) (wid == wid0)
 
-mousePos :: Sig s (Singleton MouseMove) Point ()
-mousePos = repeat mouseMove
+mousePos :: WindowId -> Sig s (Singleton MouseMove) Point ()
+mousePos = repeat . mouseMove
 
 ---------------------------------------------------------------------------
 -- MOUSE SCROLL

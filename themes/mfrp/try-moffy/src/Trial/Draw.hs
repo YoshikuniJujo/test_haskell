@@ -109,10 +109,10 @@ rectangleAndLines ((shapeToViewable <$>) -> v0) = do
 		<*%> morePolygon
 		<*%> ((: []) . Oot.expand . Singleton . Message . ("here " ++) . show <$%> adjustSig colorScroll)
 
-colorScroll :: Sig s MouseEv Color ()
+colorScroll :: Sig s (LoadDefaultWindow :- MouseEv) Color ()
 colorScroll = Color <$%> rectY rectR <*%> rectY rectG <*%> rectY rectB
 
-rectY :: Rect -> Sig s MouseEv Word8 ()
+rectY :: Rect -> Sig s (LoadDefaultWindow :- MouseEv) Word8 ()
 rectY r = scanl add 0x7f . (snd <$%>) . filter ((`insideRect` r) . fst) $ repeat posAndDeltaY
 
 add :: Word8 -> Int -> Word8
@@ -122,7 +122,7 @@ add n d
 	where
 	nd = fromIntegral n + d
 
-posAndDeltaY :: React s MouseEv (Point, Int)
+posAndDeltaY :: React s (LoadDefaultWindow :- MouseEv) (Point, Int)
 posAndDeltaY = adjust $ A.first fromJust . fromR <$> mousePos `at` (negate . round . snd <$> mouseScroll)
 
 filter :: (a -> Bool) -> Sig s es a r -> Sig s es a r

@@ -6,10 +6,12 @@ module Control.Moffy.Event.Mouse.DefaultWindow (
 	M.MouseEv, M.MouseBtn, M.Point,
 	M.MouseDown, mouseDown, clickOn, leftClick, middleClick, rightClick,
 	M.MouseUp, mouseUp, releaseOn, leftUp, middleUp, rightUp,
+	M.MouseMove, mouseMove, mousePos,
 
-	M.MouseMove, M.mouseMove,
-	M.mousePos, M.MouseScroll, M.mouseScroll
+	M.MouseScroll, M.mouseScroll
 	) where
+
+import Prelude hiding (repeat)
 
 import Control.Moffy
 import Control.Moffy.Event.DefaultWindow
@@ -37,3 +39,9 @@ releaseOn b = bool (releaseOn b) (pure ()) . (== b) =<< mouseUp
 leftUp, middleUp, rightUp :: React s (LoadDefaultWindow :- M.MouseUp :- 'Nil) ()
 [leftUp, middleUp, rightUp] =
 	releaseOn <$> [M.ButtonLeft, M.ButtonMiddle, M.ButtonRight]
+
+mouseMove :: React s (LoadDefaultWindow :- M.MouseMove :- 'Nil) M.Point
+mouseMove = adjust . M.mouseMove =<< adjust loadDefaultWindow
+
+mousePos :: Sig s (LoadDefaultWindow :- M.MouseMove :- 'Nil) M.Point ()
+mousePos = repeat mouseMove

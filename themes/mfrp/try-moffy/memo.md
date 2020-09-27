@@ -420,7 +420,7 @@ todo
 	+ [ ] add window id to mouse event
 		- [x] mouseDown
 		- [x] mouseUp
-		- [ ] mouseMove
+		- [x] mouseMove
 		- [ ] mouseScroll
 		- [ ] others
 	+ [ ] add window id to key event
@@ -441,7 +441,7 @@ todo
 				+ [x] Trial.Draw
 				+ [x] Trial.Followbox.Clickable
 			* [x] mouseUp and so on
-			* [ ] mouseMove and so on
+			* [x] mouseMove and so on
 			* [ ] mouseScroll and so on
 		- [ ] make Control.Moffy.Event.Key.DeafultWindow
 		- [ ] make Control.Moffy.Event.Delete.DefaultWindow
@@ -515,6 +515,8 @@ todo
 	+ [x] remove old module
 	+ [ ] rename and arrange module hierarchy
 	+ [ ] others
+* [ ] consider whether or not to change return type of mousePos from () to a
+* [ ] consider whether or not to add Control.Moffy.Event.Mouse.DefaultWindow.MouseEv
 * [ ] refactoring
 	+ [ ] refactor Moffy (10)		<- now
 	+ [ ] refactor Moffy library (20)
