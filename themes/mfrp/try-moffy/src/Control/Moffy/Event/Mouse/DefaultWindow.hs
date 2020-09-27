@@ -3,23 +3,20 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Control.Moffy.Event.Mouse.DefaultWindow (
-	M.MouseEv, M.MouseDown, M.MouseBtn, mouseDown, leftClick, rightClick,
+	M.MouseEv, M.MouseBtn, M.Point,
+	M.MouseDown, mouseDown, clickOn, leftClick, middleClick, rightClick,
+	M.MouseUp, mouseUp, releaseOn, leftUp, middleUp, rightUp,
 
-	M.mousePos, M.leftUp, middleClick, M.Point, M.MouseUp, M.MouseMove, M.mouseMove,
-	M.MouseScroll, M.mouseScroll
+	M.MouseMove, M.mouseMove,
+	M.mousePos, M.MouseScroll, M.mouseScroll
 	) where
 
-import GHC.Stack
 import Control.Moffy
-import Control.Moffy.Event.Window
 import Control.Moffy.Event.DefaultWindow
 import Data.Type.Set
 import Data.Bool
 
 import qualified Control.Moffy.Event.Mouse as M
-
-checkNoDefault :: HasCallStack => Maybe WindowId -> WindowId
-checkNoDefault = \case Nothing -> error "No default window"; Just wid -> wid
 
 mouseDown :: React s (LoadDefaultWindow :- M.MouseDown :- 'Nil) M.MouseBtn
 mouseDown = adjust . M.mouseDown =<< adjust loadDefaultWindow
@@ -30,3 +27,13 @@ clickOn b = bool (clickOn b) (pure ()) . (== b) =<< mouseDown
 leftClick, middleClick, rightClick :: React s (LoadDefaultWindow :- M.MouseDown :- 'Nil) ()
 [leftClick, middleClick, rightClick] =
 	clickOn <$> [M.ButtonLeft, M.ButtonMiddle, M.ButtonRight]
+
+mouseUp :: React s (LoadDefaultWindow :- M.MouseUp :- 'Nil) M.MouseBtn
+mouseUp = adjust . M.mouseUp =<< adjust loadDefaultWindow
+
+releaseOn :: M.MouseBtn -> React s (LoadDefaultWindow :- M.MouseUp :- 'Nil) ()
+releaseOn b = bool (releaseOn b) (pure ()) . (== b) =<< mouseUp
+
+leftUp, middleUp, rightUp :: React s (LoadDefaultWindow :- M.MouseUp :- 'Nil) ()
+[leftUp, middleUp, rightUp] =
+	releaseOn <$> [M.ButtonLeft, M.ButtonMiddle, M.ButtonRight]

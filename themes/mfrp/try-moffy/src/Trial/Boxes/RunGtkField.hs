@@ -16,7 +16,6 @@ import Control.Moffy.Viewable.Shape
 import Control.Moffy.View.GtkField
 import Control.Moffy.Run.TChan
 import Control.Concurrent.STM
-import Data.Time.Clock.TAI
 import Data.Time.Clock.System
 import Graphics.Gtk
 

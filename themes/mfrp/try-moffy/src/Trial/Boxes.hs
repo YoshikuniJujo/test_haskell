@@ -33,8 +33,6 @@ import qualified Control.Arrow as Arr (first)
 import Control.Moffy.Viewable.Shape (Box(..), Rect(..), BColor(..))
 import Trial.Boxes.BoxEv (SigB)
 
-import Control.Moffy.Event.Window
-
 ---------------------------------------------------------------------------
 
 -- * BOXES
@@ -68,7 +66,7 @@ firstPoint = (<$> mousePos `at` leftClick)
 	$ const neverOccur `either` (maybe neverOccur Right . fst)
 
 completeRect ::
-	Point -> Sig s (MouseUp :- MouseMove :- 'Nil) Rect (Either String Rect)
+	Point -> Sig s (LoadDefaultWindow :- MouseUp :- MouseMove :- 'Nil) Rect (Either String Rect)
 completeRect p1 = (<$> (Rect p1 <$%> mousePos) `until` leftUp)
 	$ const neverOccur `either` (Right . fst)
 

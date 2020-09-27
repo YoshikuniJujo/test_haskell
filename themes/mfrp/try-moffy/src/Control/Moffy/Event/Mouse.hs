@@ -70,17 +70,18 @@ leftClick, middleClick, rightClick :: WindowId -> React s (Singleton MouseDown) 
 data MouseUp = MouseUpReq deriving (Show, Eq, Ord)
 numbered [t| MouseUp |]
 instance Request MouseUp where
-	data Occurred MouseUp = OccMouseUp MouseBtn deriving Show
+	data Occurred MouseUp = OccMouseUp WindowId MouseBtn deriving Show
 
-mouseUp :: React s (Singleton MouseUp) MouseBtn
-mouseUp = await MouseUpReq \(OccMouseUp b) -> b
+mouseUp :: WindowId -> React s (Singleton MouseUp) MouseBtn
+mouseUp wid0 = maybe (mouseUp wid0) pure =<<
+	await MouseUpReq \(OccMouseUp wid b) -> bool Nothing (Just b) (wid == wid0)
 
-releaseOn :: MouseBtn -> React s (Singleton MouseUp) ()
-releaseOn b = bool (releaseOn b) (pure ()) . (== b) =<< mouseUp
+releaseOn :: WindowId -> MouseBtn -> React s (Singleton MouseUp) ()
+releaseOn wid b = bool (releaseOn wid b) (pure ()) . (== b) =<< mouseUp wid
 
-leftUp, middleUp, rightUp :: React s (Singleton MouseUp) ()
+leftUp, middleUp, rightUp :: WindowId -> React s (Singleton MouseUp) ()
 [leftUp, middleUp, rightUp] =
-	releaseOn <$> [ButtonLeft, ButtonMiddle, ButtonRight]
+	flip releaseOn <$> [ButtonLeft, ButtonMiddle, ButtonRight]
 
 ---------------------------------------------------------------------------
 -- MOUSE MOVE

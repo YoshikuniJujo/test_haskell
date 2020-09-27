@@ -172,7 +172,7 @@ buttonUp wid c ev = (True <$) $ atomically . writeTChan c . expand =<< occ
 	occ = do
 		(b, p) <- (,) <$> gdkEventButtonButton ev
 			<*> ((,) <$> gdkEventButtonX ev <*> gdkEventButtonY ev)
-		pure $ OccMouseUp (button b) >- Singleton (OccMouseMove p)
+		pure $ OccMouseUp wid (button b) >- Singleton (OccMouseMove p)
 
 mouseMove :: TChan (EvOccs GuiEv) -> GdkEventMotion -> IO Bool
 mouseMove c ev = (True <$)

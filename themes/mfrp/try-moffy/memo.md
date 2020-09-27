@@ -417,6 +417,15 @@ todo
 		- [x] make destroy window request
 	+ [x] pass WindowId to deleteEvent
 	+ [x] viewable has window id
+	+ [ ] add window id to mouse event
+		- [x] mouseDown
+		- [x] mouseUp
+		- [ ] mouseMove
+		- [ ] mouseScroll
+		- [ ] others
+	+ [ ] add window id to key event
+	+ [x] add window id to delete event
+	+ [x] add window id to calcTextExtents
 	+ [ ] consider about default WindowId
 		- [x] make Control.Moffy.Event.DefaultWindow
 		- [x] make Control.Moffy.Handle.DefaultWindow
@@ -431,16 +440,12 @@ todo
 				+ [x] Trial.Boxes
 				+ [x] Trial.Draw
 				+ [x] Trial.Followbox.Clickable
-			* [ ] mouseUp and so on
+			* [x] mouseUp and so on
 			* [ ] mouseMove and so on
 			* [ ] mouseScroll and so on
 		- [ ] make Control.Moffy.Event.Key.DeafultWindow
 		- [ ] make Control.Moffy.Event.Delete.DefaultWindow
 		- [ ] make Control.Moffy.Event.CalcTextExtents.DefaultWindow
-	+ [ ] add window id to mouse event
-		- [x] MouseDown
-		- [ ] others
-	+ [ ] add window id to key event
 	+ [ ] event has window id
 	+ [ ] make tear-off sample
 	+ [ ] get window size or drawing area size
