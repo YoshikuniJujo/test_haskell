@@ -45,10 +45,10 @@ runTryCalcTextExtents = do
 	interpret (retry $ handle' Nothing f) print (tryCalcTextExtents "Hello, world!")
 		<* closeField f
 
-runTryCalcTextExtentsGtk :: IO ()
-runTryCalcTextExtentsGtk = do
+runTryCalcTextExtentsGtk :: T.Text -> IO ()
+runTryCalcTextExtentsGtk t = do
 	([], (cr, c, _c' :: TChan (Map.Map WindowId [()]))) <- runGtkMain (\_ _ _ -> pure ()) []
-	fst <$> ((interpretSt (handleBoxesFoo 0.1 cr c) print (tryCalcTextExtents "Text, hello jj!") . (InitialMode ,) . systemToTAITime =<< getSystemTime)
+	fst <$> ((interpretSt (handleBoxesFoo 0.1 cr c) print (tryCalcTextExtents t) . (InitialMode ,) . systemToTAITime =<< getSystemTime)
 		<* gtkMainQuit)
 
 curry3 :: ((a, b, c) -> d) -> a -> b -> c -> d
