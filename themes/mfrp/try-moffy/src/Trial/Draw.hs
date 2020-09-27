@@ -13,9 +13,10 @@ import qualified Control.Arrow as A
 import Control.Monad
 import Control.Moffy
 import Control.Moffy.Event.Window
+import Control.Moffy.Event.DefaultWindow
 import Control.Moffy.Event.ThreadId
 import Control.Moffy.Event.Lock
-import Control.Moffy.Event.Mouse
+import Control.Moffy.Event.Mouse.DefaultWindow
 import Control.Moffy.Viewable.Basic
 import Control.Moffy.Viewable.Shape
 import Data.Type.Set
@@ -26,6 +27,7 @@ import Control.Moffy.Handle
 import Control.Moffy.Handle.ThreadId
 import Control.Moffy.Handle.Lock
 import Control.Moffy.Handle.TChan
+import Control.Moffy.Handle.DefaultWindow
 import Control.Moffy.Run.TChan
 import Control.Moffy.Run.GtkField
 
@@ -49,7 +51,7 @@ import Debug.Trace
 import qualified Data.Map as Map
 
 type Viewable = OneOfThem (Box :- Line :- FillPolygon :- Message :- 'Nil)
-type Events = WindowNew :- GetThreadId :- MouseEv :+: LockEv :+: LinesEv
+type Events = LoadDefaultWindow :- WindowNew :- GetThreadId :- MouseEv :+: LockEv :+: LinesEv
 
 shapeToViewable :: M.Shape -> Viewable
 shapeToViewable (M.Line s e) = Oot.expand . Singleton $ Line' (Color 0 0 0) 2 s e
@@ -143,7 +145,7 @@ grayPolygon :: Sig s Events [Viewable] ()
 grayPolygon = (((: []) . Oot.expand . Singleton) .) . FillPolygon <$%> adjustSig colorScroll <*%> polygonPoints []
 
 stopPolygon :: Sig s Events [Viewable] [Viewable]
-stopPolygon = fst . fromR <$> grayPolygon `until` leftClick (WindowId 0)
+stopPolygon = fst . fromR <$> grayPolygon `until` leftClick
 
 morePolygon :: Sig s Events [Viewable] ()
 morePolygon = do
@@ -153,18 +155,18 @@ morePolygon = do
 polygonPoints :: [Point] -> Sig s Events [Point] ()
 polygonPoints ps = do
 	emit ps
-	cp <- waitFor . adjust $ maybeEither (0, 0) <$> mousePos `at` rightClick (WindowId 0)
+	cp <- waitFor . adjust $ maybeEither (0, 0) <$> mousePos `at` rightClick
 	ls <- waitFor $ adjust loadLines
 	let	ps0 = linesToPoints ls
 	polygonPoints . maybe id (:) (adjustPoint ps0 cp) $ ps
 
-clickOnBox :: React s MouseEv ()
-clickOnBox = void . adjust $ find (`insideRect` Rect (50, 50) (100, 100)) (mousePos `indexBy` repeat (leftClick $ WindowId 0))
+clickOnBox :: React s (LoadDefaultWindow :- MouseEv) ()
+clickOnBox = void . adjust $ find (`insideRect` Rect (50, 50) (100, 100)) (mousePos `indexBy` repeat leftClick)
 
-clickOnRect, upOnRect, rightOnRect :: Rect -> React s MouseEv ()
-clickOnRect r = void . adjust $ find (`insideRect` r) (mousePos `indexBy` repeat (leftClick $ WindowId 0))
+clickOnRect, upOnRect, rightOnRect :: Rect -> React s (LoadDefaultWindow :- MouseEv) ()
+clickOnRect r = void . adjust $ find (`insideRect` r) (mousePos `indexBy` repeat leftClick)
 upOnRect r = void . adjust $ find (`insideRect` r) (mousePos `indexBy` repeat leftUp)
-rightOnRect r = void . adjust $ find (`insideRect` r) (mousePos `indexBy` repeat (rightClick $ WindowId 0))
+rightOnRect r = void . adjust $ find (`insideRect` r) (mousePos `indexBy` repeat rightClick)
 
 insideRect :: Point -> Rect -> Bool
 insideRect (x, y) (Rect (l, t) (r, b)) = l <= x && x <= r && t <= y && y <= b
@@ -196,7 +198,7 @@ clickPoint :: React s Events Position
 clickPoint = do
 	ls <- adjust loadLines
 	let	r = trace ("clickPoint: " ++ show (linesToPoints ls) ++ "\n") $ linesToReact ls
-	r `first'` (maybeEither (0, 0) <$> mousePos `at` leftClick (WindowId 0))
+	r `first'` (maybeEither (0, 0) <$> mousePos `at` leftClick)
 
 upPoint :: React s Events Position
 upPoint = do
@@ -215,7 +217,8 @@ makePoint c (x, y) = [
 data DrawState = DrawState {
 	dsNextLockId :: Int,
 	dsLocks :: [LockId],
-	dsLines :: D.Set SimpleLine }
+	dsLines :: D.Set SimpleLine,
+	dsDefaultWindow :: Maybe WindowId }
 	deriving Show
 
 instance LockState DrawState where
@@ -229,15 +232,20 @@ instance LinesState DrawState where
 	getLines = dsLines
 	putLines s ls = s { dsLines = ls }
 
-runDraw :: (Monoid a, Adjustable es (Events :+: GuiEv)) => GtkDrawer a -> Sig s es (Map.Map WindowId a) r -> IO (r, DrawState)
+instance DefaultWindowState DrawState where
+	getDefaultWindow = dsDefaultWindow
+	putDefaultWindow s dw = s { dsDefaultWindow = Just dw }
+
+runDraw :: (Monoid a, Adjustable es (StoreDefaultWindow :- Events :+: GuiEv)) => GtkDrawer a -> Sig s es (Map.Map WindowId a) r -> IO (r, DrawState)
 runDraw dr s = do
 	([], (cr, c, c')) <- runGtkMain dr []
 	interpretSt (retrySt $
-		(liftHandle' handleGetThreadId `mergeSt`
+		(handleDefaultWindow `mergeSt`
+		liftHandle' handleGetThreadId `mergeSt`
 		handleLock `mergeSt`
 		handleLines) `beforeSt`
 		liftHandle' (handle Nothing cr c)
-		) c' s (DrawState 0 [] D.empty) <* gtkMainQuit
+		) c' s (DrawState 0 [] D.empty Nothing) <* gtkMainQuit
 
 linesToPoints :: D.Set SimpleLine -> [Position]
 linesToPoints = concatMap (\(x, y) -> [x, y]) . D.toList

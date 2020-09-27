@@ -5,7 +5,8 @@
 module Control.Moffy.Event.Mouse.DefaultWindow (
 	M.MouseEv, M.MouseDown, M.MouseBtn, mouseDown, leftClick, rightClick,
 
-	M.mousePos, M.leftUp, middleClick, M.Point, M.MouseUp, M.MouseMove
+	M.mousePos, M.leftUp, middleClick, M.Point, M.MouseUp, M.MouseMove,
+	M.MouseScroll, M.mouseScroll
 	) where
 
 import GHC.Stack

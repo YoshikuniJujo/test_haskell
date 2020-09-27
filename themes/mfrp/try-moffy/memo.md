@@ -429,7 +429,7 @@ todo
 				+ [x] Trial.TryThreadId
 				+ [x] Trial.TrySharing.ThreadId
 				+ [x] Trial.Boxes
-				+ [ ] Trial.Draw
+				+ [x] Trial.Draw
 				+ [ ] Trial.Followbox
 				+ [ ] Trial.Followbox.Clickable
 			* [ ] others
