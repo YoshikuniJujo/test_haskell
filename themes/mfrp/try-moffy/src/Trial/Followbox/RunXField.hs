@@ -1,9 +1,11 @@
+{-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.Followbox.RunXField (
 	-- * Run Follow Box
 	runFollowbox, evalFollowbox ) where
 
+import Control.Moffy
 import Control.Moffy.Run (interpretSt)
 import Data.List (sort)
 import System.Environment (getArgs)
@@ -16,7 +18,7 @@ import qualified Data.ByteString.Char8 as BSC
 
 import Trial.Followbox.ViewType
 
-import Trial.Followbox.Event (SigF)
+import Trial.Followbox.Event (SigF, FollowboxEv)
 import Trial.Followbox.XFieldHandle (
 	handleFollowbox, FollowboxState, initialFollowboxState )
 import Trial.Followbox.TypeSynonym (
@@ -25,6 +27,8 @@ import Field (
 	Field, openField, closeField, flushField, clearField, exposureMask, buttonPressMask )
 
 import Control.Moffy.View.XField
+import Control.Moffy.Event.DefaultWindow
+import Data.Type.Set
 import Data.OneOfThem
 
 ---------------------------------------------------------------------------
@@ -45,14 +49,14 @@ defaultBrowser = "firefox"
 -- RUN FOLLOWBOX
 ---------------------------------------------------------------------------
 
-runFollowbox :: WindowTitle -> SigF s View a -> IO (a, FollowboxState)
+runFollowbox :: WindowTitle -> Sig s (StoreDefaultWindow :- FollowboxEv) View a -> IO (a, FollowboxState)
 runFollowbox ttl s =
 	either ((>> exitFailure) . putStrLn) (run ttl s) =<< getFollowboxInfo
 
-evalFollowbox :: WindowTitle -> SigF s View a -> IO a
+evalFollowbox :: WindowTitle -> Sig s (StoreDefaultWindow :- FollowboxEv) View a -> IO a
 evalFollowbox = ((fst <$>) .) . runFollowbox
 
-run :: WindowTitle -> SigF s View a -> FollowboxInfo -> IO (a, FollowboxState)
+run :: WindowTitle -> Sig s (StoreDefaultWindow :- FollowboxEv) View a -> FollowboxInfo -> IO (a, FollowboxState)
 run ttl s FollowboxInfo { fiBrowser = brs, fiGithubUserNameToken = mgnt } =
 	openField ttl [exposureMask, buttonPressMask] >>= \f ->
 		interpretSt (handleFollowbox f brs mgnt) (view f) s

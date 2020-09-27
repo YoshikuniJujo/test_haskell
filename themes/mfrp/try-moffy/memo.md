@@ -430,9 +430,10 @@ todo
 				+ [x] Trial.TrySharing.ThreadId
 				+ [x] Trial.Boxes
 				+ [x] Trial.Draw
-				+ [ ] Trial.Followbox
-				+ [ ] Trial.Followbox.Clickable
-			* [ ] others
+				+ [x] Trial.Followbox.Clickable
+			* [ ] mouseUp and so on
+			* [ ] mouseMove and so on
+			* [ ] mouseScroll and so on
 		- [ ] make Control.Moffy.Event.Key.DeafultWindow
 		- [ ] make Control.Moffy.Event.Delete.DefaultWindow
 		- [ ] make Control.Moffy.Event.CalcTextExtents.DefaultWindow

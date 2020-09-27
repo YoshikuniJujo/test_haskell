@@ -5,6 +5,7 @@ module Main where
 
 import Control.Moffy
 import Control.Moffy.Event.Window
+import Control.Moffy.Event.DefaultWindow
 
 import Trial.Followbox
 import Trial.Followbox.RunGtkField
@@ -15,4 +16,5 @@ import Data.Type.Flip
 main :: IO ()
 main = runFollowbox "firefox" Nothing do
 	i <- waitFor $ adjust windowNew
-	Map.singleton i <$%> followbox i
+	waitFor . adjust $ storeDefaultWindow i
+	Map.singleton i <$%> adjustSig (followbox i)

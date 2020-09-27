@@ -1,4 +1,5 @@
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.Followbox.Clickable (
@@ -13,11 +14,12 @@ module Trial.Followbox.Clickable (
 import Prelude hiding (repeat)
 
 import Control.Moffy (React, adjust, repeat, find, indexBy)
-import Control.Moffy.Event.Mouse (MouseEv, leftClick, mouseMove)
+import Control.Moffy.Event.DefaultWindow
+import Control.Moffy.Event.Mouse.DefaultWindow (MouseEv, leftClick, mouseMove)
 import Control.Moffy.Event.CalcTextExtents (
 	TextExtents'(..), FontName, FontSize, Rectangle(..),
 	CalcTextExtents, calcTextExtents' )
-import Data.Type.Set (Singleton)
+import Data.Type.Set (Singleton, (:-))
 
 import qualified Data.Text as T
 
@@ -37,11 +39,11 @@ import Control.Moffy.Event.Window
 -- CLICKABLE
 ---------------------------------------------------------------------------
 
-data Clickable s = Clickable { view :: View, click :: React s MouseEv () }
+data Clickable s = Clickable { view :: View, click :: React s (LoadDefaultWindow :- MouseEv) () }
 
 clickable :: View -> Position -> Position -> Clickable s
 clickable v (l, t) (r, b) = Clickable v
-	. adjust $ () <$ find isd (repeat mouseMove `indexBy` repeat (leftClick $ WindowId 0))
+	. adjust $ () <$ find isd (repeat mouseMove `indexBy` repeat leftClick)
 	where isd (x, y) = l <= x && x <= r && t <= y && y <= b
 
 ---------------------------------------------------------------------------

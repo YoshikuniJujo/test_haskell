@@ -6,6 +6,7 @@ module Trial.Followbox.RunGtkField where
 
 import Control.Moffy
 import Control.Moffy.Event.CalcTextExtents
+import Control.Moffy.Event.DefaultWindow
 import Control.Moffy.Handle.TChan
 import Control.Moffy.Run.TChan
 import Control.Concurrent.STM
@@ -29,10 +30,10 @@ import Data.Map
 
 handleFollowbox ::
 	(TChan (EvReqs (CalcTextExtents :- GuiEv)), TChan (EvOccs (CalcTextExtents :- GuiEv))) -> Browser ->
-	Maybe GithubNameToken -> HandleF IO (CalcTextExtents :- GuiEv :+: FollowboxEv)
+	Maybe GithubNameToken -> HandleF IO (CalcTextExtents :- DefaultWindowEv :+: GuiEv :+: FollowboxEv)
 handleFollowbox = handleFollowboxWith (uncurry . handle)
 
-runFollowbox :: Browser -> Maybe GithubNameToken -> SigF s (Map WindowId View) r -> IO r
+runFollowbox :: Browser -> Maybe GithubNameToken -> Sig s (StoreDefaultWindow :- FollowboxEv) (Map WindowId View) r -> IO r
 runFollowbox brs mgnt s = do
 	([], (cr, c, c')) <- runGtkMain drawFollowboxGtk []
 	(r, _) <- interpretSt (handleFollowbox (cr, c) brs mgnt) c' s (initialFollowboxState $ mkStdGen 8)

@@ -33,6 +33,7 @@ import Control.Moffy.Event.Lock (LockEv)
 import Control.Moffy.Event.Random (RandomEv)
 import Control.Moffy.Event.Delete (DeleteEvent)
 import Control.Moffy.Event.Window
+import Control.Moffy.Event.DefaultWindow
 import Control.Moffy.Event.Mouse (MouseEv)
 import Control.Moffy.Event.CalcTextExtents
 import Data.Type.Set (Set(Nil), Singleton, numbered, (:-), (:+:))
@@ -176,6 +177,6 @@ checkTerminate = catchError
 type SigF s = Sig s FollowboxEv
 type ReactF s r = React s FollowboxEv r
 
-type FollowboxEv = WindowEv :+: GetThreadId :- LockEv :+: RandomEv :+: DeleteEvent :- MouseEv :+:
+type FollowboxEv = LoadDefaultWindow :- WindowEv :+: GetThreadId :- LockEv :+: RandomEv :+: DeleteEvent :- MouseEv :+:
 	StoreJsons :- LoadJsons :- HttpGet :- CalcTextExtents :- GetTimeZone :-
 	Browse :- BeginSleep :- EndSleep :- RaiseError :- 'Nil

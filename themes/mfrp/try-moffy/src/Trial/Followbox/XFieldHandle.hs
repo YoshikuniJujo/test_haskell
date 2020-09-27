@@ -8,6 +8,7 @@ module Trial.Followbox.XFieldHandle (
 	FollowboxState, initialFollowboxState ) where
 
 import Control.Moffy.Event.Window
+import Control.Moffy.Event.DefaultWindow
 import Control.Moffy.Handle.XField (GuiEv, handle')
 import Data.Type.Set ((:+:), (:-))
 
@@ -20,5 +21,5 @@ import Field (Field)
 ---------------------------------------------------------------------------
 
 handleFollowbox :: Field -> Browser -> Maybe GithubNameToken ->
-	HandleF IO (WindowNew :- GuiEv :+: FollowboxEv)
+	HandleF IO (WindowNew :- DefaultWindowEv :+: GuiEv :+: FollowboxEv)
 handleFollowbox = handleFollowboxWith handle'

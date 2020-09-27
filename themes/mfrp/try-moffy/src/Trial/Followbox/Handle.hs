@@ -12,6 +12,7 @@ module Trial.Followbox.Handle (
 
 import Control.Moffy.Event.Delete
 import Control.Moffy.Event.Window
+import Control.Moffy.Event.DefaultWindow
 import Control.Moffy.Event.Key
 import Control.Moffy.Event.Mouse
 import Control.Moffy.Event.CalcTextExtents (CalcTextExtents)
@@ -21,6 +22,7 @@ import Control.Moffy.Handle (
 import Control.Moffy.Handle.ThreadId (handleGetThreadId)
 import Control.Moffy.Handle.Lock (LockState(..), LockId, handleLock)
 import Control.Moffy.Handle.Random (RandomState(..), handleRandom)
+import Control.Moffy.Handle.DefaultWindow
 import Data.Type.Set (Singleton, (:-), (:+:))
 import Data.OneOrMore as Oom (pattern Singleton)
 import Data.Bool (bool)
@@ -69,12 +71,14 @@ type GuiEv = WindowEv :+: DeleteEvent :- (KeyEv :+: MouseEv)
 
 data FollowboxState = FollowboxState {
 	fsNextLockId :: Int, fsLockState :: [LockId], fsObjects :: [Object],
-	fsSleepUntil :: Maybe UTCTime, fsRandomGen :: StdGen } deriving Show
+	fsSleepUntil :: Maybe UTCTime, fsRandomGen :: StdGen,
+	fsDefaultWindow :: Maybe WindowId
+	} deriving Show
 
 initialFollowboxState :: StdGen -> FollowboxState
 initialFollowboxState g = FollowboxState {
 	fsNextLockId = 0, fsLockState = [], fsObjects = [],
-	fsSleepUntil = Nothing, fsRandomGen = g }
+	fsSleepUntil = Nothing, fsRandomGen = g, fsDefaultWindow = Nothing }
 
 type HandleF m es = HandleSt FollowboxState m es
 type HandleF' m es = HandleIo' FollowboxState FollowboxState m es
@@ -90,6 +94,10 @@ instance LockState FollowboxState where
 instance RandomState FollowboxState where
 	getRandomGen = fsRandomGen; putRandomGen s g = s { fsRandomGen = g }
 
+instance DefaultWindowState FollowboxState where
+	getDefaultWindow = fsDefaultWindow
+	putDefaultWindow s dw = s { fsDefaultWindow = Just dw }
+
 ---------------------------------------------------------------------------
 -- HANDLE
 ---------------------------------------------------------------------------
@@ -99,8 +107,9 @@ instance RandomState FollowboxState where
 handleFollowboxWith ::
 	(Maybe DiffTime -> f -> Handle' IO (WindowEv :+: CalcTextExtents :- GuiEv)) ->
 	f -> Browser -> Maybe GithubNameToken ->
-	HandleF IO (GuiEv :+: FollowboxEv)
+	HandleF IO (StoreDefaultWindow :- GuiEv :+: FollowboxEv)
 handleFollowboxWith h f brws mba = retrySt $
+	handleDefaultWindow `mergeSt`
 	liftHandle' handleGetThreadId `mergeSt` handleLock `mergeSt`
 	handleRandom `mergeSt`
 	handleStoreJsons `mergeSt` handleLoadJsons `mergeSt`
