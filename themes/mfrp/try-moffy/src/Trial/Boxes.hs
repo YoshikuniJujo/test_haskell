@@ -16,7 +16,8 @@ import Control.Monad.Trans.Except (pattern ExceptT, runExceptT)
 import Control.Moffy (
 	Sig, React, Firstable, adjust, adjustSig, emit, waitFor, repeat, find,
 	first, at, until, indexBy, spawn, parList )
-import Control.Moffy.Event.Mouse (
+import Control.Moffy.Event.DefaultWindow
+import Control.Moffy.Event.Mouse.DefaultWindow (
 	MouseDown, MouseUp, MouseMove, Point,
 	leftClick, middleClick, rightClick, leftUp, mousePos )
 import Control.Moffy.Event.Time (DeltaTime, TryWait, elapsed, sleep)
@@ -57,13 +58,13 @@ box = (`Box` Red) <$%> adjustSig defineRect
 -- DEFINE RECT
 ---------------------------------------------------------------------------
 
-defineRect :: Sig s (MouseDown :- MouseUp :- MouseMove :- 'Nil) Rect Rect
+defineRect :: Sig s (LoadDefaultWindow :- MouseDown :- MouseUp :- MouseMove :- 'Nil) Rect Rect
 defineRect = either error pure <=< runExceptT
 	$ ExceptT . adjustSig . completeRect
 		=<< ExceptT (waitFor $ adjust firstPoint)
 
-firstPoint :: React s (MouseDown :- MouseMove :- 'Nil) (Either String Point)
-firstPoint = (<$> mousePos `at` leftClick (WindowId 0))
+firstPoint :: React s (LoadDefaultWindow :- MouseDown :- MouseMove :- 'Nil) (Either String Point)
+firstPoint = (<$> mousePos `at` leftClick)
 	$ const neverOccur `either` (maybe neverOccur Right . fst)
 
 completeRect ::
@@ -78,7 +79,7 @@ neverOccur = Left "never occur"
 -- CHOOSE BOX COLOR
 ---------------------------------------------------------------------------
 
-chooseBoxColor :: Rect -> Sig s (MouseDown :- DeltaTime :- 'Nil) Box ()
+chooseBoxColor :: Rect -> Sig s (LoadDefaultWindow :- MouseDown :- DeltaTime :- 'Nil) Box ()
 chooseBoxColor r = Box <$%> adjustSig (wiggleRect r) <*%> adjustSig cycleColor
 
 wiggleRect :: Rect -> Sig s (Singleton DeltaTime) Rect ()
@@ -86,25 +87,25 @@ wiggleRect (Rect lu rd) = (<$%> elapsed) \t -> let
 	dx = (sin (fromRational (toRational t) * 5) * 15 :: Double) in
 	Rect ((+ dx) `Arr.first` lu) ((+ dx) `Arr.first` rd)
 
-cycleColor :: Sig s (Singleton MouseDown) BColor ()
+cycleColor :: Sig s (LoadDefaultWindow :- MouseDown :- 'Nil) BColor ()
 cycleColor = go . cycle $ fromList [Red .. Magenta] where
 	go (h :~ t) = emit h >>
 		(bool (pure ()) (go t)
-			=<< waitFor (middleClick (WindowId 0) `before` rightClick (WindowId 0)))
+			=<< waitFor (middleClick `before` rightClick))
 
 ---------------------------------------------------------------------------
 -- DR CLICK ON
 ---------------------------------------------------------------------------
 
-drClickOn :: Rect -> React s (MouseDown :- MouseMove :- TryWait :- 'Nil) ()
+drClickOn :: Rect -> React s (LoadDefaultWindow :- MouseDown :- MouseMove :- TryWait :- 'Nil) ()
 drClickOn rct = void . find (`inside` rct) $ mousePos `indexBy` repeat doubler
 	where (x, y) `inside` Rect (l, u) (r, d) =
 		(l <= x && x <= r || r <= x && x <= l) &&
 		(u <= y && y <= d || d <= y && y <= u)
 
-doubler :: React s (MouseDown :- TryWait :- 'Nil) ()
-doubler = adjust (rightClick $ WindowId 0)
-	>> (bool doubler (pure ()) =<< rightClick (WindowId 0) `before` sleep 0.2)
+doubler :: React s (LoadDefaultWindow :- MouseDown :- TryWait :- 'Nil) ()
+doubler = adjust rightClick
+	>> (bool doubler (pure ()) =<< rightClick `before` sleep 0.2)
 
 ---------------------------------------------------------------------------
 -- BEFORE
