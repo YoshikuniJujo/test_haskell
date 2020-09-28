@@ -430,7 +430,7 @@ todo
 		- [x] make Control.Moffy.Event.DefaultWindow
 		- [x] make Control.Moffy.Handle.DefaultWindow
 		- [x] make trial to try DefaultWindow (store and load)
-		- [ ] make Control.Moffy.Event.Mouse.DeafultWindow
+		- [x] make Control.Moffy.Event.Mouse.DeafultWindow
 			* [x] mouseDown and so on
 				+ [x] Trial.Count
 				+ [x] Trial.TryLock
@@ -442,7 +442,7 @@ todo
 				+ [x] Trial.Followbox.Clickable
 			* [x] mouseUp and so on
 			* [x] mouseMove and so on
-			* [ ] mouseScroll and so on
+			* [x] mouseScroll and so on
 		- [ ] make Control.Moffy.Event.Key.DeafultWindow
 		- [ ] make Control.Moffy.Event.Delete.DefaultWindow
 		- [ ] make Control.Moffy.Event.CalcTextExtents.DefaultWindow

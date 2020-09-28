@@ -8,7 +8,7 @@ module Control.Moffy.Event.Mouse.DefaultWindow (
 	M.MouseUp, mouseUp, releaseOn, leftUp, middleUp, rightUp,
 	M.MouseMove, mouseMove, mousePos,
 
-	M.MouseScroll, M.mouseScroll
+	M.MouseScroll, mouseScroll
 	) where
 
 import Prelude hiding (repeat)
@@ -45,3 +45,6 @@ mouseMove = adjust . M.mouseMove =<< adjust loadDefaultWindow
 
 mousePos :: Sig s (LoadDefaultWindow :- M.MouseMove :- 'Nil) M.Point ()
 mousePos = repeat mouseMove
+
+mouseScroll :: React s (LoadDefaultWindow :- M.MouseScroll :- 'Nil) (Double, Double)
+mouseScroll = adjust . M.mouseScroll =<< adjust loadDefaultWindow

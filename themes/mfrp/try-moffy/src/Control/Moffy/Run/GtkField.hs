@@ -125,7 +125,7 @@ createWindow wid c = do
 			dx <- gdkEventScrollDeltaX ev
 			dy <- gdkEventScrollDeltaY ev
 			atomically . writeTChan c $ expand (
-				OccMouseMove wid (x, y) >- Singleton (OccMouseScroll dx dy) ::
+				OccMouseMove wid (x, y) >- Singleton (OccMouseScroll wid dx dy) ::
 					EvOccs (MouseMove :- MouseScroll :- 'Nil) )
 			,
 		gSignalConnect w MotionNotifyEvent \_ ev _ -> mouseMove wid c ev ]

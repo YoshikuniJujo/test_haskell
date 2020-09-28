@@ -108,10 +108,11 @@ mousePos = repeat . mouseMove
 data MouseScroll = MouseScrollReq deriving (Show, Eq, Ord)
 numbered [t| MouseScroll |]
 instance Request MouseScroll where
-	data Occurred MouseScroll = OccMouseScroll Double Double deriving Show
+	data Occurred MouseScroll = OccMouseScroll WindowId Double Double deriving Show
 
-mouseScroll :: React s (Singleton MouseScroll) (Double, Double)
-mouseScroll = await MouseScrollReq \(OccMouseScroll dx dy) -> (dx, dy)
+mouseScroll :: WindowId -> React s (Singleton MouseScroll) (Double, Double)
+mouseScroll wid0 = maybe (mouseScroll wid0) pure =<<
+	await MouseScrollReq \(OccMouseScroll wid dx dy) -> bool Nothing (Just (dx, dy)) (wid == wid0)
 
 ---------------------------------------------------------------------------
 -- MOUSE EV
