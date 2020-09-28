@@ -154,7 +154,7 @@ keyDown wid c ev = (False <$) $ atomically . writeTChan c . expand
 	=<< Singleton . OccKeyDown wid . Key . fromIntegral <$> keyval ev
 
 keyUp wid c ev = (False <$) $ atomically . writeTChan c . expand
-	=<< Singleton . OccKeyUp . Key . fromIntegral <$> keyval ev
+	=<< Singleton . OccKeyUp wid . Key . fromIntegral <$> keyval ev
 
 buttonDown, buttonUp :: WindowId -> TChan (EvOccs GuiEv) -> GdkEventButton -> IO Bool
 buttonDown wid c ev = (True <$) $ atomically . writeTChan c . expand =<< occ

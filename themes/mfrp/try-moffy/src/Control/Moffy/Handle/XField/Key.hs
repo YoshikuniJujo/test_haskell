@@ -23,5 +23,5 @@ keyEv ev = case (evEvent ev, evKeySym ev) of
 	(KeyEvent { ev_event_type = 2 }, Just s) ->
 		Just . expand . Singleton . OccKeyDown (WindowId 0) $ Key s
 	(KeyEvent { ev_event_type = 3 }, Just s) ->
-		Just . expand . Singleton . OccKeyUp $ Key s
+		Just . expand . Singleton . OccKeyUp (WindowId 0) $ Key s
 	_ -> Nothing

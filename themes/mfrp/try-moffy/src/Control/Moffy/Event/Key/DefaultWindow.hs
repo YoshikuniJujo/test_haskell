@@ -5,7 +5,7 @@
 module Control.Moffy.Event.Key.DefaultWindow (
 	K.KeyEv,
 	K.KeyDown, keyDown,
-	K.KeyUp, K.keyUp,
+	K.KeyUp, keyUp,
 	K.Key(..), pattern K.AsciiKey,
 	module Control.Moffy.Event.Key.Internal.TryKeyValue ) where
 
@@ -19,3 +19,6 @@ import qualified Control.Moffy.Event.Key as K
 
 keyDown :: React s (LoadDefaultWindow :- K.KeyDown :- 'Nil) K.Key
 keyDown = adjust . K.keyDown =<< adjust loadDefaultWindow
+
+keyUp :: React s (LoadDefaultWindow :- K.KeyUp :- 'Nil) K.Key
+keyUp = adjust . K.keyUp =<< adjust loadDefaultWindow

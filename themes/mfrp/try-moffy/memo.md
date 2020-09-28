@@ -422,9 +422,9 @@ todo
 		- [x] mouseUp
 		- [x] mouseMove
 		- [x] mouseScroll
-	+ [ ] add window id to key event
+	+ [x] add window id to key event
 		- [x] keyDown
-		- [ ] keyUp
+		- [x] keyUp
 	+ [x] add window id to delete event
 	+ [x] add window id to calcTextExtents
 	+ [ ] consider about default WindowId
@@ -444,11 +444,10 @@ todo
 			* [x] mouseUp and so on
 			* [x] mouseMove and so on
 			* [x] mouseScroll and so on
-		- [ ] make Control.Moffy.Event.Key.DeafultWindow
+		- [x] make Control.Moffy.Event.Key.DeafultWindow
 			* [x] make empty module
 			* [x] keyDown
-			* [ ] keyUp
-			* [ ] others
+			* [x] keyUp
 		- [ ] make Control.Moffy.Event.Delete.DefaultWindow
 		- [ ] make Control.Moffy.Event.CalcTextExtents.DefaultWindow
 	+ [ ] event has window id

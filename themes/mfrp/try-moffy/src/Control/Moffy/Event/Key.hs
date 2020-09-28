@@ -52,10 +52,11 @@ keyDown wid0 = maybe (keyDown wid0) pure =<<
 
 data KeyUp = KeyUpReq deriving (Show, Eq, Ord)
 numbered [t| KeyUp |]
-instance Request KeyUp where data Occurred KeyUp = OccKeyUp Key deriving Show
+instance Request KeyUp where data Occurred KeyUp = OccKeyUp WindowId Key deriving Show
 
-keyUp :: React s (Singleton KeyUp) Key
-keyUp = await KeyUpReq \(OccKeyUp k) -> k
+keyUp :: WindowId -> React s (Singleton KeyUp) Key
+keyUp wid0 = maybe (keyUp wid0) pure =<<
+	await KeyUpReq \(OccKeyUp wid k) -> bool Nothing (Just k) $ wid == wid0
 
 -- KEY EVENT
 

@@ -38,6 +38,6 @@ asciiKey :: React s (LoadDefaultWindow :- KeyEv) Char
 asciiKey = adjust keyDown >>= \case
 	AsciiKey c -> pure c; XkReturn -> pure '\n'; _ -> asciiKey
 
-asciiKeyUp :: React s KeyEv Char
+asciiKeyUp :: React s (LoadDefaultWindow :- KeyEv) Char
 asciiKeyUp = adjust keyUp >>= \case
 	AsciiKey c -> pure c; XkReturn -> pure '\n'; _ -> asciiKeyUp
