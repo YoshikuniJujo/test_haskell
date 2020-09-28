@@ -417,12 +417,11 @@ todo
 		- [x] make destroy window request
 	+ [x] pass WindowId to deleteEvent
 	+ [x] viewable has window id
-	+ [ ] add window id to mouse event
+	+ [x] add window id to mouse event
 		- [x] mouseDown
 		- [x] mouseUp
 		- [x] mouseMove
-		- [ ] mouseScroll
-		- [ ] others
+		- [x] mouseScroll
 	+ [ ] add window id to key event
 	+ [x] add window id to delete event
 	+ [x] add window id to calcTextExtents
@@ -444,6 +443,8 @@ todo
 			* [x] mouseMove and so on
 			* [x] mouseScroll and so on
 		- [ ] make Control.Moffy.Event.Key.DeafultWindow
+			* [x] make empty module
+			* [ ] others
 		- [ ] make Control.Moffy.Event.Delete.DefaultWindow
 		- [ ] make Control.Moffy.Event.CalcTextExtents.DefaultWindow
 	+ [ ] event has window id
