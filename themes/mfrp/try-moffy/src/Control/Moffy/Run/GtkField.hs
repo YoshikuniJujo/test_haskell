@@ -115,8 +115,8 @@ createWindow wid c = do
 	w <$ mapM_ ($ ()) [
 --		gSignalConnect w Destroy gtkMainQuit,
 		gSignalConnect w DeleteEvent \_ _ _ -> deleteEvent wid c,
-		gSignalConnect w KeyPressEvent \_ ev _ -> keyDown c ev,
-		gSignalConnect w KeyReleaseEvent \_ ev _ -> keyUp c ev,
+		gSignalConnect w KeyPressEvent \_ ev _ -> keyDown wid c ev,
+		gSignalConnect w KeyReleaseEvent \_ ev _ -> keyUp wid c ev,
 		gSignalConnect w ButtonPressEvent \_ ev _ -> buttonDown wid c ev,
 		gSignalConnect w ButtonReleaseEvent \_ ev _ -> buttonUp wid c ev,
 		gSignalConnect w ScrollEvent \_ ev _ -> True <$ do
@@ -149,11 +149,11 @@ deleteEvent wid c = True <$ do
 	putStrLn $ "deleteEvent occur: " ++ show wid
 	atomically . writeTChan c . expand . Singleton $ OccDeleteEvent wid
 
-keyDown, keyUp :: TChan (EvOccs GuiEv) -> GdkEventKey -> IO Bool
-keyDown c ev = (False <$) $ atomically . writeTChan c . expand
-	=<< Singleton . OccKeyDown . Key . fromIntegral <$> keyval ev
+keyDown, keyUp :: WindowId -> TChan (EvOccs GuiEv) -> GdkEventKey -> IO Bool
+keyDown wid c ev = (False <$) $ atomically . writeTChan c . expand
+	=<< Singleton . OccKeyDown wid . Key . fromIntegral <$> keyval ev
 
-keyUp c ev = (False <$) $ atomically . writeTChan c . expand
+keyUp wid c ev = (False <$) $ atomically . writeTChan c . expand
 	=<< Singleton . OccKeyUp . Key . fromIntegral <$> keyval ev
 
 buttonDown, buttonUp :: WindowId -> TChan (EvOccs GuiEv) -> GdkEventButton -> IO Bool

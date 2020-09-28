@@ -6,9 +6,8 @@ module Trial.Boxes.RunXField (
 	runBoxes ) where
 
 import Control.Moffy.Event.Window
-import Control.Moffy.Event.DefaultWindow
 import Control.Moffy.Handle (
-	HandleSt, HandleSt', retrySt, liftHandle', popInput, pushInput, beforeSt )
+	HandleSt', retrySt, liftHandle', popInput, pushInput, beforeSt )
 import Control.Moffy.Handle.Time (Mode(..), handleTimeEvPlus, TimeState(..))
 import Control.Moffy.Handle.DefaultWindow
 import Control.Moffy.Handle.XField (handle)

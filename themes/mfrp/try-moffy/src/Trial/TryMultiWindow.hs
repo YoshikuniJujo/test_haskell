@@ -33,11 +33,12 @@ threeWindows = do
 		(w0, (: []) . Oot.expand . Singleton $ Box (Rect (50, 50) (200, 200)) Green),
 		(w1, (: []) . Oot.expand . Singleton $ Box (Rect (50, 50) (200, 200)) Yellow),
 		(w2, (: []) . Oot.expand . Singleton $ Box (Rect (50, 50) (200, 200)) Magenta) ]
-	(waitFor . find (\(x, y, z) -> not $ x || y || z) $ (,,) <$%> ddw w0 <*%> ddw w1 <*%> ddw w2) `break` pressQ
+	(waitFor . find (\(x, y, z) -> not $ x || y || z) $ (,,) <$%> ddw w0 <*%> ddw w1 <*%> ddw w2) `break`
+		(pressQ w0 `first` pressQ w1 `first` pressQ w2)
 	pure (w0, w1, w2)
 
-pressQ :: React s (Singleton KeyDown) ()
-pressQ = bool pressQ (pure ()) . isQ =<< keyDown
+pressQ :: WindowId -> React s (Singleton KeyDown) ()
+pressQ wid = bool (pressQ wid) (pure ()) . isQ =<< keyDown wid
 
 isQ :: Key -> Bool
 isQ (AsciiKey 'q') = True
