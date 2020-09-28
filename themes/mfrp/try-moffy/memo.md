@@ -448,10 +448,8 @@ todo
 			* [x] make empty module
 			* [x] keyDown
 			* [x] keyUp
-		- [ ] make Control.Moffy.Event.Delete.DefaultWindow
+		- [x] make Control.Moffy.Event.Delete.DefaultWindow
 		- [ ] make Control.Moffy.Event.CalcTextExtents.DefaultWindow
-	+ [ ] event has window id
-	+ [ ] make tear-off sample
 	+ [ ] get window size or drawing area size
 * [x] repair text extents
 * [ ] about cursor
@@ -562,6 +560,7 @@ todo
 		- [ ] Random
 		- [ ] Delete, Key and Mouse
 		- [ ] XField
+* [ ] make tear-off sample
 * [ ] make tetris like game
 	+ [ ] moffyris
 * [ ] consider whether to remove interpret and interpretReact
