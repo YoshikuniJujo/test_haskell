@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bfbe9929756e13babfd077febbb1368cd11ce5ecd7d0dd95933d914912978571
+-- hash: c16bbafc6fca3ea5da15b95e3dd3a8635ecd455736b5d598f217d8612319cd1e
 
 name:           try-moffy
 version:        0.1.0.0
@@ -113,6 +113,7 @@ library
       Trial.Followbox.ViewType
       Trial.Followbox.XFieldHandle
       Trial.TryCalcTextExtents
+      Trial.TryConfigureEvent
       Trial.TryDefaultWindow
       Trial.TryFillPolygon
       Trial.TryKey
@@ -369,6 +370,41 @@ executable tryCairoText
 
 executable tryCairoTextExtents
   main-is: tryCairoTextExtents.hs
+  other-modules:
+      Main
+      Paths_try_moffy
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyPixels
+    , JuicyPixels-extra
+    , X11
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-field
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy
+    , type-flip
+    , unordered-containers
+    , vector
+  default-language: Haskell2010
+
+executable tryConfigure
+  main-is: tryConfigure.hs
   other-modules:
       Main
       Paths_try_moffy
