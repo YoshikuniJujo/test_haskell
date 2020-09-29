@@ -12,6 +12,7 @@ module Graphics.Gtk (
 	gtkWidgetSetEvents, gtkWidgetShowAll,
 	gtkWidgetDestroy,
 	gtkWidgetQueueDraw,
+	gtkWidgetGetWindow,
 	-- * Widget
 	gtkWindowNew, gtkWindowToplevel, gtkWindowPopup,
 	gtkDrawingAreaNew,
@@ -375,3 +376,10 @@ foreign import ccall "gtk_widget_get_allocated_height" c_gtk_widget_get_allocate
 gtkWidgetGetAllocatedWidth, gtkWidgetGetAllocatedHeight :: GtkWidget -> IO #{type int}
 gtkWidgetGetAllocatedWidth (GtkWidget w) = c_gtk_widget_get_allocated_width w
 gtkWidgetGetAllocatedHeight (GtkWidget w) = c_gtk_widget_get_allocated_height w
+
+newtype GdkWindow = GdkWindow (Ptr GdkWindow) deriving Show
+
+gtkWidgetGetWindow :: GtkWidget -> IO GdkWindow
+gtkWidgetGetWindow (GtkWidget p) = GdkWindow <$> c_gtk_widget_get_window p
+
+foreign import ccall "gtk_widget_get_window" c_gtk_widget_get_window :: Ptr GtkWidget -> IO (Ptr GdkWindow)

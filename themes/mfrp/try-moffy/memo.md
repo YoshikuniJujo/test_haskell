@@ -456,10 +456,24 @@ todo
 		- [x] make handler in Control.Moffy.Run.GtkField
 		- [x] make trial Trial.TryConfigureEvent
 * [x] repair text extents
-* [ ] move DeleteEvent from Control.Moffy.Event.Delete to Control.Moffy.Event.Window
 * [ ] about cursor
-	+ [ ] change cursor picture
+	+ [x] define gtkWidgetGetWindow
+	+ [ ] define gdkWindowGetDisplay
+	+ [ ] define gdkCursorNewFromName
+	+ [ ] define gdkWindowSetCursor
+	+ [ ] define named cursor in Control.Moffy.Viewable.Cursor
+		- [ ] consider what should do when return value is NULL
+	+ [ ] change cursor to prepared cursor from name
+		- [ ] add drawer of cursor in Control.Moffy.Run.GtkField
+		- [ ] add Trial.TryCursor
+	+ [ ] define gdkCursorNewFromSurface
+	+ [ ] define PNG cursor in Control.Moffy.Viewable.Cursor
+	+ [ ] change cursor picture from PNG
+		- [ ] add drawer of cursor in Control.Moffy.Run.GtkField
+		- [ ] get sample PNG
+		- [ ] add to Trial.TryCursor
 	+ [ ] others
+* [ ] move DeleteEvent from Control.Moffy.Event.Delete to Control.Moffy.Event.Window
 * [ ] consider whether or not to weeken cohesion
 * [x] pass argument to `runGtkMain`
 * [ ] consider to move `gtkMainQuit` to GTK thread
