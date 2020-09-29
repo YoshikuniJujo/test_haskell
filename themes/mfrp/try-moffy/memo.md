@@ -451,10 +451,11 @@ todo
 		- [x] make Control.Moffy.Event.CalcTextExtents.DefaultWindow
 	+ [ ] get window size or drawing area size
 		- [x] make ConfigureEvent in Graphics.Gtk
-		- [ ] make ConfigureEvent in Control.Moffy.Event.Configure
+		- [x] make ConfigureEvent in Control.Moffy.Event.Window
 		- [ ] make handler in Control.Moffy.Run.GtkField
 		- [ ] make trial Trial.TryConfigureEvent
 * [x] repair text extents
+* [ ] move DeleteEvent from Control.Moffy.Event.Delete to Control.Moffy.Event.Window
 * [ ] about cursor
 	+ [ ] change cursor picture
 	+ [ ] others

@@ -8,7 +8,9 @@
 module Control.Moffy.Event.Window (
 	WindowEv, WindowId(..),
 	WindowNew(..), pattern OccWindowNew, windowNew,
-	WindowDestroy(..), pattern OccWindowDestroy, windowDestroy ) where
+	WindowDestroy(..), pattern OccWindowDestroy, windowDestroy,
+	WindowConfigure(..), pattern OccWindowConfigure, Configure(..),
+	windowConfigure ) where
 
 import Control.Moffy
 import Data.Type.Set
@@ -33,5 +35,17 @@ windowDestroy :: WindowId -> React s (Singleton WindowDestroy) ()
 windowDestroy i0 =
 	bool (windowDestroy i0) (pure ()) =<<
 		await (WindowDestroyReq i0) \(OccWindowDestroy i) -> i == i0
+
+data WindowConfigure = WindowConfigureReq deriving (Show, Eq, Ord)
+data Configure = Configure {
+	windowPosition :: (Integer, Integer),
+	windowSize :: (Integer, Integer) } deriving Show
+numbered [t| WindowConfigure |]
+instance Request WindowConfigure where
+	data Occurred WindowConfigure = OccWindowConfigure WindowId Configure
+
+windowConfigure :: WindowId -> React s (Singleton WindowConfigure) Configure
+windowConfigure wid0 = maybe (windowConfigure wid0) pure =<<
+	await WindowConfigureReq \(OccWindowConfigure wid c) -> bool Nothing (Just c) $ wid == wid0
 
 type WindowEv = WindowNew :- WindowDestroy :- 'Nil

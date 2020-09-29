@@ -28,8 +28,6 @@ import Control.Moffy.Viewable.Basic (Position)
 
 import Data.OneOfThem
 
-import Control.Moffy.Event.Window
-
 ---------------------------------------------------------------------------
 
 -- * CLICKABLE
