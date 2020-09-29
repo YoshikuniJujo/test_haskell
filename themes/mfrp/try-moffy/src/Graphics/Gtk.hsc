@@ -14,6 +14,7 @@ module Graphics.Gtk (
 	gtkWidgetQueueDraw,
 	gtkWidgetGetWindow,
 	gdkWindowGetDisplay,
+	gdkCursorNewFromName,
 	-- * Widget
 	gtkWindowNew, gtkWindowToplevel, gtkWindowPopup,
 	gtkDrawingAreaNew,
@@ -391,3 +392,11 @@ gdkWindowGetDisplay :: GdkWindow -> IO GdkDisplay
 gdkWindowGetDisplay (GdkWindow p) = GdkDisplay <$> c_gdk_window_get_display p
 
 foreign import ccall "gdk_window_get_display" c_gdk_window_get_display :: Ptr GdkWindow -> IO (Ptr GdkDisplay)
+
+newtype GdkCursor = GdkCursor (Ptr GdkCursor) deriving Show
+
+gdkCursorNewFromName :: GdkDisplay -> String -> IO GdkCursor
+gdkCursorNewFromName (GdkDisplay p) nm = withCString nm \cnm ->
+	GdkCursor <$> c_gdk_cursor_new_from_name p cnm
+
+foreign import ccall "gdk_cursor_new_from_name" c_gdk_cursor_new_from_name :: Ptr GdkDisplay -> CString -> IO (Ptr GdkCursor)

@@ -459,7 +459,7 @@ todo
 * [ ] about cursor
 	+ [x] define gtkWidgetGetWindow
 	+ [x] define gdkWindowGetDisplay
-	+ [ ] define gdkCursorNewFromName
+	+ [x] define gdkCursorNewFromName
 	+ [ ] define gdkWindowSetCursor
 	+ [ ] define named cursor in Control.Moffy.Viewable.Cursor
 		- [ ] consider what should do when return value is NULL
