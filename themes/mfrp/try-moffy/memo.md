@@ -450,6 +450,7 @@ todo
 		- [x] make Control.Moffy.Event.Delete.DefaultWindow
 		- [x] make Control.Moffy.Event.CalcTextExtents.DefaultWindow
 		- [ ] make Control.Moffy.Event.Window.DefaultWindow
+		- [ ] make Control.Moffy.Event.Cursor.DefaultWindow
 	+ [x] get window size or drawing area size
 		- [x] make ConfigureEvent in Graphics.Gtk
 		- [x] make ConfigureEvent in Control.Moffy.Event.Window
@@ -462,15 +463,15 @@ todo
 	+ [x] define gdkCursorNewFromName
 	+ [x] define gdkWindowSetCursor
 	+ [x] try use above functions
-	+ [ ] define named cursor in Control.Moffy.Viewable.Cursor
-		- [ ] consider what should do when return value is NULL
+	+ [x] define named cursor in Control.Moffy.Event.Cursor
+		- [x] consider what should do when return value is NULL
 	+ [ ] change cursor to prepared cursor from name
-		- [ ] add drawer of cursor in Control.Moffy.Run.GtkField
+		- [ ] add handler to Control.Moffy.Run.GtkField
 		- [ ] add Trial.TryCursor
 	+ [ ] define gdkCursorNewFromSurface
 	+ [ ] define PNG cursor in Control.Moffy.Viewable.Cursor
 	+ [ ] change cursor picture from PNG
-		- [ ] add drawer of cursor in Control.Moffy.Run.GtkField
+		- [ ] add handler to Control.Moffy.Run.GtkField
 		- [ ] get sample PNG
 		- [ ] add to Trial.TryCursor
 	+ [ ] others

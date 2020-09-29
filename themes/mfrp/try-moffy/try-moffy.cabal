@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c16bbafc6fca3ea5da15b95e3dd3a8635ecd455736b5d598f217d8612319cd1e
+-- hash: d504ae42de4999192337ccd3166f3955c31a3cdbf2ca28f6f40f4f898b2dedac
 
 name:           try-moffy
 version:        0.1.0.0
@@ -30,6 +30,7 @@ library
       Control.Moffy
       Control.Moffy.Event.CalcTextExtents
       Control.Moffy.Event.CalcTextExtents.DefaultWindow
+      Control.Moffy.Event.Cursor
       Control.Moffy.Event.DefaultWindow
       Control.Moffy.Event.Delete
       Control.Moffy.Event.Delete.DefaultWindow
