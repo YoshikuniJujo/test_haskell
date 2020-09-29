@@ -123,7 +123,7 @@ todo
 * [x] refactor Control.Moffy.Internal.React
 * [x] refactor Control.Moffy.Internal.React.Type
 * [x] refactor Control.Moffy.Handle
-* [ ] make handle using GTK
+* [x] make handle using GTK
 	+ [x] consider to use TChan in Handle.TChan
 	+ [x] handle Delete Event
 	+ [x] handle Mouse Event
@@ -145,7 +145,6 @@ todo
 		- [x] set color
 		- [x] fill rectangle
 	+ [x] free Mutable
-	+ [ ] arrange
 	+ [x] test followbox
 		- [x] draw character
 		- [x] draw image
@@ -218,13 +217,9 @@ todo
 					- [x] write PNG format to ByteString
 					- [x] use these
 		- [x] try followbox
-	+ [ ] refactoring
+	+ [x] refactoring
 		- [x] remove module Arr
 		- [x] view module hierarchy
-		- [ ] refactor module hierarchy
-		- [ ] refactor about GTK
-	+ [ ] consider whether or not to use ForeignPtr to free memory for cairo surface
-	+ [ ] others
 * [x] make newtype SetApp
 	+ [x] make module Data.Type.SetApp.Internal
 	+ [x] define `newtype SetApp a = SetApp (Type -> Type) (Set a)`
@@ -371,7 +366,6 @@ todo
 		- [x] more large point square
 		- [ ] remove lock from addLine
 		- [x] draw rectangle
-		- [ ] others
 	+ [x] fill
 		- [x] select point by right click
 			* [x] change color of point square
@@ -391,6 +385,7 @@ todo
 		- [x] make save format
 			* [x] line and fill polygon
 		- [x] load as background
+	+ [ ] make rectangle mode
 	+ [ ] no fill rectangle
 	+ [ ] no fill lines and polygon
 	+ [ ] Bezier curve
@@ -481,9 +476,7 @@ todo
 * [ ] consider to move `gtkMainQuit` to GTK thread
 * [ ] consider to use `Sig s 'Nil a r` and `React s 'Nil r`
 * [ ] move deleteEvent to Control.Moffy.Event.Window
-* [ ] refactoring
 * [ ] consider whether or not to weeken cohesion
-* [ ] move CairoSurfaceT to CairoType
 * [ ] remake key event
 	+ [x] consider Pattern vs Value
 	+ use #enum of hsc2hs
@@ -597,6 +590,50 @@ todo
 		to make SimpleHandle
 * [ ] consider whether or not to put `deriving Show' to Occurred Foo
 * [ ] define Data.Or.or
+
+Graphics.Gtk (7)
+----------------
+
+### modules
+
+```
+Graphics.Gtk
+  +- Graphics.Gtk
+  |    +- Graphics.Gtk.Values
+  +- Graphics.Gtk.Cairo
+  |    +- Graphics.Gtk.Cairo.Values
+  +- Graphics.Gtk.CairoType
+  +- Graphics.Gtk.Pango
+  +- Graphics.Gtk.AsPointer
+```
+
+### module hierarchy
+
+```
+Graphics.Gtk
+  +- Graphics.Gtk.Value
+  +- Graphics.Gtk.CairoType
+  +- Graphics.Gtk.AsPointer
+
+Graphics.Gtk.Cairo
+  +- Graphics.Gtk.Cairo.Value
+  +- Graphics.Gtk.CairoType
+  +- Graphics.Gtk.AsPointer
+
+Graphics.Gtk.Pango
+  +- Graphics.Gtk.CairoType
+```
+
+### refactoring
+
+* [ ] view module hierarchy
+* [ ] refactor module hierarchy
+	+ [x] move CairoSurfaceT to CairoType
+	+ [ ] consider whether or not to remove Graphics.Gtk.AsPointer
+	+ [ ] others
+* [ ] consider whether or not to use ForeignPtr to free memory for cairo surface
+
+### separate to independent package
 
 
 Moffy (10)

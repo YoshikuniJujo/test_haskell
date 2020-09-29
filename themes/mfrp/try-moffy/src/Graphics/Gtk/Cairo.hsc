@@ -93,12 +93,6 @@ cairoSelectFontFace :: CairoT -> String -> CairoFontSlantT -> CairoFontWeightT -
 cairoSelectFontFace (CairoT cr) fn (CairoFontSlantT sl) (CairoFontWeightT w) =
 	withCString fn \cfn -> c_cairo_select_font_face cr cfn sl w
 
-newtype CairoSurfaceT = CairoSurfaceT (Ptr CairoSurfaceT) deriving Show
-
-instance AsPointer CairoSurfaceT where
-	asPointer (CairoSurfaceT p) = ($ p)
-	asValue = pure . CairoSurfaceT
-
 foreign import ccall "cairo_image_surface_create_from_png" c_cairo_image_surface_create_from_png ::
 	CString -> IO (Ptr CairoSurfaceT)
 

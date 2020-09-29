@@ -26,14 +26,14 @@ main = do
 		gSignalConnect w Destroy gtkMainQuit ()
 
 		da <- gtkDrawingAreaNew
-		gSignalConnect da DrawEvent draw png
+		gSignalConnect da DrawEvent (draw png) ()
 		gtkContainerAdd (castWidgetToContainer w) da
 
 		gtkWidgetShowAll w
 		gtkMain
 
-draw :: GtkWidget -> CairoT -> CairoSurfaceT -> IO Bool
-draw _ cr s = True <$ do
+draw :: CairoSurfaceT -> GtkWidget -> CairoT -> () -> IO Bool
+draw s _ cr () = True <$ do
 	cairoScale cr (1 / 3) (1 / 3)
 	cairoSetSourceSurface cr s 50 150
 	cairoPaint cr

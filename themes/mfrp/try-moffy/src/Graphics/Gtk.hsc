@@ -67,8 +67,6 @@ import Graphics.Gtk.CairoType
 import Graphics.Gtk.Values
 import Graphics.Gtk.AsPointer
 
-import Graphics.Gtk.Cairo
-
 newtype GtkWidget = GtkWidget (Ptr GtkWidget) deriving Show
 newtype GtkContainer = GtkContainer (Ptr GtkContainer) deriving Show
 
