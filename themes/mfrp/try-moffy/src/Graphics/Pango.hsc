@@ -2,7 +2,25 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango where
+module Graphics.Pango (
+	-- * Fonts
+	PangoFontDescription,
+	pangoFontDescriptionNew,
+	pangoFontDescriptionFree,
+	pangoFontDescriptionFromString,
+	pangoFontDescriptionSetSize,
+	pangoFontDescriptionSetAbsoluteSize,
+
+	-- * Others
+	PangoLayout, PangoRectangle,
+	pangoLayoutSetFontDescription,
+	pangoLayoutSetText,
+	pangoCairoCreateLayout,
+	pangoCairoShowLayout,
+	pangoRectangleX, pangoRectangleY, pangoRectangleWidth, pangoRectangleHeight,
+	pangoLayoutWithPixelExtents,
+	pangoLayoutWithExtents
+	) where
 
 import Foreign.Ptr
 import Foreign.Marshal
@@ -16,6 +34,18 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 
 #include <pango/pango.h>
+
+pangoFontDescriptionNew :: IO PangoFontDescription
+pangoFontDescriptionNew = PangoFontDescription <$> c_pango_font_description_new
+
+foreign import ccall "pango_font_description_new" c_pango_font_description_new ::
+	IO (Ptr PangoFontDescription)
+
+pangoFontDescriptionFree :: PangoFontDescription -> IO ()
+pangoFontDescriptionFree (PangoFontDescription p) = c_pango_font_description_free p
+
+foreign import ccall "pango_font_description_free" c_pango_font_description_free ::
+	Ptr PangoFontDescription -> IO ()
 
 newtype PangoLayout = PangoLayout (Ptr PangoLayout) deriving Show
 
