@@ -33,11 +33,11 @@ import Control.Moffy.Run.GtkField as G
 import qualified Data.Map as Map
 import Data.Type.Flip
 
-tryCalcTextExtents :: T.Text -> Sig s (WindowNew :- DeleteEvent :- CalcTextExtents :- 'Nil) (Map.Map WindowId (T.Text, TextExtents')) ()
+tryCalcTextExtents :: T.Text -> Sig s (WindowNew :- DeleteEvent :- CalcTextExtents :- 'Nil) (Map.Map WindowId (T.Text, TextExtents)) ()
 tryCalcTextExtents txt = void do
 	i <- waitFor $ adjust windowNew
 	Map.singleton i <$%>
-		((emit . (txt ,) =<< waitFor (adjust $ calcTextExtents' i "Sans" 30 txt)) >> waitFor (adjust $ deleteEvent i))
+		((emit . (txt ,) =<< waitFor (adjust $ calcTextExtents i "Sans" 30 txt)) >> waitFor (adjust $ deleteEvent i))
 
 runTryCalcTextExtents :: IO ()
 runTryCalcTextExtents = do

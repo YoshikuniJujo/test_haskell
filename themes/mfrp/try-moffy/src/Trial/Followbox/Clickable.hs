@@ -1,5 +1,5 @@
-{-# LANGUAGE ViewPatterns #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE DataKinds, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.Followbox.Clickable (
@@ -16,10 +16,10 @@ import Prelude hiding (repeat)
 import Control.Moffy (React, adjust, repeat, find, indexBy)
 import Control.Moffy.Event.DefaultWindow
 import Control.Moffy.Event.Mouse.DefaultWindow (MouseEv, leftClick, mouseMove)
-import Control.Moffy.Event.CalcTextExtents (
-	TextExtents'(..), FontName, FontSize, Rectangle(..),
-	CalcTextExtents, calcTextExtents' )
-import Data.Type.Set (Singleton, (:-))
+import Control.Moffy.Event.CalcTextExtents.DefaultWindow (
+	TextExtents(..), FontName, FontSize, Rectangle(..),
+	CalcTextExtents, calcTextExtents )
+import Data.Type.Set (pattern Nil, (:-))
 
 import qualified Data.Text as T
 
@@ -50,7 +50,7 @@ clickable v (l, t) (r, b) = Clickable v
 -- WITH TEXT EXTENTS
 ---------------------------------------------------------------------------
 
-data WithTextExtents = WithTextExtents FontName FontSize T.Text TextExtents'
+data WithTextExtents = WithTextExtents FontName FontSize T.Text TextExtents
 
 clickableText :: Position -> WithTextExtents -> Clickable s
 clickableText p@(x, y) (WithTextExtents fn fs txt xg) =
@@ -59,9 +59,9 @@ clickableText p@(x, y) (WithTextExtents fn fs txt xg) =
 	[dx, dy, gw, gh] = ($ textExtentsInkRect xg) <$> [
 		rectangleLeft, rectangleTop, rectangleWidth, rectangleHeight ]
 
-withTextExtents :: WindowId -> FontName -> FontSize -> T.Text ->
-	React s (Singleton CalcTextExtents) WithTextExtents
-withTextExtents wid fn fs t = WithTextExtents fn fs t <$> calcTextExtents' wid fn fs t
+withTextExtents :: FontName -> FontSize -> T.Text ->
+	React s (LoadDefaultWindow :- CalcTextExtents :- 'Nil) WithTextExtents
+withTextExtents fn fs t = WithTextExtents fn fs t <$> calcTextExtents fn fs t
 
 nextToText :: Position -> WithTextExtents -> Position
 nextToText (x, y) (WithTextExtents _ _ _ xg) = (x + xo, y) where

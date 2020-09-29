@@ -7,7 +7,7 @@
 
 module Control.Moffy.Event.CalcTextExtents (
 	CalcTextExtents(..), pattern OccCalcTextExtents,
-	TextExtents'(..), Rectangle(..), FontName, FontSize, calcTextExtents'
+	TextExtents(..), Rectangle(..), FontName, FontSize, calcTextExtents
 	) where
 
 import Control.Moffy
@@ -27,9 +27,9 @@ data CalcTextExtents = CalcTextExtentsReq WindowId FontName FontSize T.Text
 numbered [t| CalcTextExtents |]
 instance Request CalcTextExtents where
 	data Occurred CalcTextExtents =
-		OccCalcTextExtents WindowId FontName FontSize T.Text TextExtents'
+		OccCalcTextExtents WindowId FontName FontSize T.Text TextExtents
 
-data TextExtents' = TextExtents' {
+data TextExtents = TextExtents {
 	textExtentsInkRect :: Rectangle,
 	textExtentsLogicalRect :: Rectangle } deriving Show
 
@@ -39,18 +39,9 @@ data Rectangle = Rectangle {
 	rectangleWidth :: Double,
 	rectangleHeight :: Double } deriving Show
 
-{-
 calcTextExtents :: WindowId -> FontName -> FontSize -> T.Text ->
 	React s (Singleton CalcTextExtents) TextExtents
-calcTextExtents fn fs t = maybe (calcTextExtents fn fs t) pure
-	=<< await (CalcTextExtentsReq fn fs t)
-		\(OccCalcTextExtents fn' fs' t' glp) ->
-			bool Nothing (Just glp) $ (fn, fs, t) == (fn', fs', t')
-			-}
-
-calcTextExtents' :: WindowId -> FontName -> FontSize -> T.Text ->
-	React s (Singleton CalcTextExtents) TextExtents'
-calcTextExtents' wid fn fs t = maybe (calcTextExtents' wid fn fs t) pure
+calcTextExtents wid fn fs t = maybe (calcTextExtents wid fn fs t) pure
 	=<< await (CalcTextExtentsReq wid fn fs t)
 		\(OccCalcTextExtents wid' fn' fs' t' glp) ->
 			bool Nothing (Just glp) $ (wid, fn, fs, t) == (wid', fn', fs', t')

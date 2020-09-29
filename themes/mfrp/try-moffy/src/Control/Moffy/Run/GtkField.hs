@@ -203,7 +203,7 @@ draw wid dr ftc co tx wdgt cr () = True <$ do
 		Nothing -> dr wdgt cr mempty
 		Just x -> dr wdgt cr x
 	where
-	mkte ie le = TextExtents' <$> r2r ie <*> r2r le
+	mkte ie le = TextExtents <$> r2r ie <*> r2r le
 	r2r r = rct
 		<$> pangoRectangleX r <*> pangoRectangleY r
 		<*> pangoRectangleWidth r <*> pangoRectangleHeight r

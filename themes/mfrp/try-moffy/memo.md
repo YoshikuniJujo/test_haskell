@@ -427,7 +427,7 @@ todo
 		- [x] keyUp
 	+ [x] add window id to delete event
 	+ [x] add window id to calcTextExtents
-	+ [ ] consider about default WindowId
+	+ [x] consider about default WindowId
 		- [x] make Control.Moffy.Event.DefaultWindow
 		- [x] make Control.Moffy.Handle.DefaultWindow
 		- [x] make trial to try DefaultWindow (store and load)
@@ -449,7 +449,7 @@ todo
 			* [x] keyDown
 			* [x] keyUp
 		- [x] make Control.Moffy.Event.Delete.DefaultWindow
-		- [ ] make Control.Moffy.Event.CalcTextExtents.DefaultWindow
+		- [x] make Control.Moffy.Event.CalcTextExtents.DefaultWindow
 	+ [ ] get window size or drawing area size
 * [x] repair text extents
 * [ ] about cursor

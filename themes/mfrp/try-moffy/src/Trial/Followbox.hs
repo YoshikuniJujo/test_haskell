@@ -134,7 +134,7 @@ field n = do
 	where
 	title = twhite largeSize titlePos "Who to follow"
 	link p t = clickableText p
-		<$> adjust (withTextExtents (WindowId 0) defaultFont middleSize t)
+		<$> adjust (withTextExtents defaultFont middleSize t)
 
 resetTime :: SigF s View ()
 resetTime = forever $ emit (View []) >> do
@@ -152,7 +152,7 @@ users lck n = mconcat <$%> (forever . user1 lck) `ftraverse` [0 .. n - 1]
 user1 :: LockId -> Integer -> SigF s View ()
 user1 lck n = do
 	(a, ln, u) <- waitFor $ getUser lck
-	wte <- waitFor . adjust $ withTextExtents (WindowId 0) defaultFont largeSize ln
+	wte <- waitFor . adjust $ withTextExtents defaultFont largeSize ln
 	let	nm = clickableText np wte; cr = cross $ crossPos np wte
 	emit $ View [expand . Singleton $ Image' (avatarPos $ fromIntegral n) a] <> view nm <> view cr
 	void . (`break` click cr) . waitFor $ forever
