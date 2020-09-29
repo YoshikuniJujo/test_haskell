@@ -3,7 +3,6 @@
 
 import Graphics.Gtk
 import Graphics.Gtk.Cairo
-import Graphics.Gtk.Cairo.Values
 
 import System.Environment
 

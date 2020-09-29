@@ -4,16 +4,12 @@
 
 module Graphics.Gtk.AsPointer (AsPointer(..)) where
 
-import Foreign.Ptr
-import Foreign.Marshal.Alloc
-import Foreign.Storable
+import Foreign.Ptr (Ptr)
+import Foreign.Marshal.Alloc (alloca)
+import Foreign.Storable (Storable, peek, poke)
 
 class AsPointer a where
-	asPointer :: a -> (Ptr a -> IO b) -> IO b
-	asValue :: Ptr a -> IO a
+	asPointer :: a -> (Ptr a -> IO b) -> IO b; asValue :: Ptr a -> IO a
 
 instance {-# OVERLAPPABLE #-} Storable a => AsPointer a where
-	asPointer x f = alloca \p -> do
-		poke p x
-		f p
-	asValue p = peek p
+	asPointer x f = alloca $ (>>) <$> (`poke` x) <*> f; asValue p = peek p

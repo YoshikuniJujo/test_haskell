@@ -45,8 +45,6 @@ module Graphics.Gtk (
 	-- ** ConfigureEvent
 	ConfigureEvent(..), GdkEventConfigure,
 	gdkEventConfigureX, gdkEventConfigureY, gdkEventConfigureWidth, gdkEventConfigureHeight,
-	-- * Mutable
-	Mutable, allocaMutable, peekMutable, pokeMutable,
 	-- * Others
 	gtkWidgetGetAllocatedWidth, gtkWidgetGetAllocatedHeight
 	) where
@@ -73,21 +71,6 @@ newtype GtkContainer = GtkContainer (Ptr GtkContainer) deriving Show
 instance AsPointer GtkWidget where
 	asPointer (GtkWidget p) f = f p
 	asValue = pure . GtkWidget
-
-newtype Mutable a = Mutable (Ptr a) deriving Show
-
-allocaMutable :: Storable a => (Mutable a -> IO b) -> IO b
-allocaMutable f = alloca $ f . Mutable
-
-peekMutable :: Storable a => Mutable a -> IO a
-peekMutable (Mutable p) = peek p
-
-pokeMutable :: Storable a => Mutable a -> a -> IO ()
-pokeMutable (Mutable p) = poke p
-
-instance AsPointer (Mutable a) where
-	asPointer (Mutable p) f = f $ castPtr p
-	asValue = pure . Mutable . castPtr
 
 foreign import ccall "gtk_init" c_gtk_init :: Ptr CInt -> Ptr (Ptr CString) -> IO ()
 foreign import ccall "gtk_widget_show_all" c_gtk_widget_show_all :: Ptr GtkWidget -> IO ()

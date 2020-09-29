@@ -629,8 +629,12 @@ Graphics.Gtk.Pango
 * [ ] view module hierarchy
 * [ ] refactor module hierarchy
 	+ [x] move CairoSurfaceT to CairoType
+	+ [ ] move Graphics.Gtk.Cairo to Graphics.Cairo
+	+ [ ] move Graphics.Gtk.CairoType to Graphics.CairoType
+	+ [ ] move Graphics.Gtk.Pango to Graphics.Pango
 	+ [ ] consider whether or not to remove Graphics.Gtk.AsPointer
 	+ [ ] others
+* [x] refactor Graphics.Gtk.AsPointer
 * [ ] consider whether or not to use ForeignPtr to free memory for cairo surface
 
 ### separate to independent package
