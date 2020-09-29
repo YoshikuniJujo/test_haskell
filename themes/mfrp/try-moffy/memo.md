@@ -468,7 +468,7 @@ todo
 	+ [x] change cursor to prepared cursor from name
 		- [x] add handler to Control.Moffy.Run.GtkField
 	+ [x] define gdkCursorNewFromSurface
-	+ [ ] try to change cursor from PNG
+	+ [x] try to change cursor from PNG
 	+ [ ] define PNG cursor in Control.Moffy.Viewable.Cursor
 	+ [ ] change cursor picture from PNG
 		- [ ] add handler to Control.Moffy.Run.GtkField
