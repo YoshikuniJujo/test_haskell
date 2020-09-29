@@ -458,7 +458,7 @@ todo
 * [x] repair text extents
 * [ ] about cursor
 	+ [x] define gtkWidgetGetWindow
-	+ [ ] define gdkWindowGetDisplay
+	+ [x] define gdkWindowGetDisplay
 	+ [ ] define gdkCursorNewFromName
 	+ [ ] define gdkWindowSetCursor
 	+ [ ] define named cursor in Control.Moffy.Viewable.Cursor
@@ -474,12 +474,14 @@ todo
 		- [ ] add to Trial.TryCursor
 	+ [ ] others
 * [ ] move DeleteEvent from Control.Moffy.Event.Delete to Control.Moffy.Event.Window
-* [ ] consider whether or not to weeken cohesion
 * [x] pass argument to `runGtkMain`
 * [ ] consider to move `gtkMainQuit` to GTK thread
 * [ ] consider to use `Sig s 'Nil a r` and `React s 'Nil r`
 * [ ] move deleteEvent to Control.Moffy.Event.Window
+* [ ] refactor Graphics.Gtk and Graphics.Gtk.\*
+* [ ] separate Graphics.Gtk and Graphics.Gtk.\* to independent package
 * [ ] refactoring
+* [ ] consider whether or not to weeken cohesion
 * [ ] remake key event
 	+ [x] consider Pattern vs Value
 	+ use #enum of hsc2hs

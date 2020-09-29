@@ -13,6 +13,7 @@ module Graphics.Gtk (
 	gtkWidgetDestroy,
 	gtkWidgetQueueDraw,
 	gtkWidgetGetWindow,
+	gdkWindowGetDisplay,
 	-- * Widget
 	gtkWindowNew, gtkWindowToplevel, gtkWindowPopup,
 	gtkDrawingAreaNew,
@@ -383,3 +384,10 @@ gtkWidgetGetWindow :: GtkWidget -> IO GdkWindow
 gtkWidgetGetWindow (GtkWidget p) = GdkWindow <$> c_gtk_widget_get_window p
 
 foreign import ccall "gtk_widget_get_window" c_gtk_widget_get_window :: Ptr GtkWidget -> IO (Ptr GdkWindow)
+
+newtype GdkDisplay = GdkDisplay (Ptr GdkDisplay) deriving Show
+
+gdkWindowGetDisplay :: GdkWindow -> IO GdkDisplay
+gdkWindowGetDisplay (GdkWindow p) = GdkDisplay <$> c_gdk_window_get_display p
+
+foreign import ccall "gdk_window_get_display" c_gdk_window_get_display :: Ptr GdkWindow -> IO (Ptr GdkDisplay)
