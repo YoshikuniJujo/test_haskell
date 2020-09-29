@@ -2,7 +2,7 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gtk.Cairo (
+module Graphics.Cairo (
 	cairoSetSourceRgb,
 	cairoStroke, cairoStrokePreserve, cairoFill,
 	cairoSetLineWidth, cairoMoveTo, cairoLineTo, cairoRectangle,
@@ -32,7 +32,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 
 import Graphics.Gtk.CairoType
-import Graphics.Gtk.Cairo.Values
+import Graphics.Cairo.Values
 import Graphics.Gtk.AsPointer
 
 #include <cairo.h>

@@ -597,14 +597,14 @@ Graphics.Gtk (7)
 ### modules
 
 ```
-Graphics.Gtk
+Graphics
   +- Graphics.Gtk
   |    +- Graphics.Gtk.Values
-  +- Graphics.Gtk.Cairo
-  |    +- Graphics.Gtk.Cairo.Values
-  +- Graphics.Gtk.CairoType
-  +- Graphics.Gtk.Pango
-  +- Graphics.Gtk.AsPointer
+  |    +- Graphics.Gtk.CairoType
+  |    +- Graphics.Gtk.Pango
+  |    +- Graphics.Gtk.AsPointer
+  +- Graphics.Cairo
+       +- Graphics.Gtk.Cairo.Values
 ```
 
 ### module hierarchy
@@ -615,7 +615,7 @@ Graphics.Gtk
   +- Graphics.Gtk.CairoType
   +- Graphics.Gtk.AsPointer
 
-Graphics.Gtk.Cairo
+Graphics.Cairo
   +- Graphics.Gtk.Cairo.Value
   +- Graphics.Gtk.CairoType
   +- Graphics.Gtk.AsPointer
@@ -629,7 +629,8 @@ Graphics.Gtk.Pango
 * [ ] view module hierarchy
 * [ ] refactor module hierarchy
 	+ [x] move CairoSurfaceT to CairoType
-	+ [ ] move Graphics.Gtk.Cairo to Graphics.Cairo
+	+ [x] move Graphics.Gtk.Cairo to Graphics.Cairo
+		- [x] move Graphics.Gtk.Cairo.Value to Graphics.Cairo.Value
 	+ [ ] move Graphics.Gtk.CairoType to Graphics.CairoType
 	+ [ ] move Graphics.Gtk.Pango to Graphics.Pango
 	+ [ ] consider whether or not to remove Graphics.Gtk.AsPointer

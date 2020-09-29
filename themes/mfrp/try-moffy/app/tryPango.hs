@@ -2,8 +2,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 import Graphics.Gtk
-import Graphics.Gtk.Cairo
-import Graphics.Gtk.Cairo.Values
+import Graphics.Cairo
+import Graphics.Cairo.Values
 import Graphics.Gtk.Pango
 
 main :: IO ()

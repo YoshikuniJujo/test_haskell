@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 import Graphics.Gtk
-import Graphics.Gtk.Cairo
+import Graphics.Cairo
 
 import System.Environment
 

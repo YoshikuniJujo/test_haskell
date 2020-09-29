@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gtk.Cairo.Values (
+module Graphics.Cairo.Values (
 	CairoFontSlantT(..),
 	cairoFontSlantNormal, cairoFontSlantItalic, cairoFontSlantOblique,
 	CairoFontWeightT(..),

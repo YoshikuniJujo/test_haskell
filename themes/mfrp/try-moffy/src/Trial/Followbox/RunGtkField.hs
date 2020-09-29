@@ -13,7 +13,7 @@ import Control.Concurrent.STM
 import Data.Type.Set ((:-), (:+:))
 import System.Random
 import Graphics.Gtk
-import Graphics.Gtk.Cairo
+import Graphics.Cairo
 
 import Control.Moffy.View.GtkField
 import Data.OneOfThem

@@ -10,8 +10,8 @@ import Network.HTTP.Simple
 import qualified Data.ByteString as BS
 
 import Graphics.Gtk
-import Graphics.Gtk.Cairo
-import Graphics.Gtk.Cairo.Values
+import Graphics.Cairo
+import Graphics.Cairo.Values
 
 main :: IO ()
 main = do

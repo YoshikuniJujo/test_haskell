@@ -14,8 +14,8 @@ import qualified Data.Text as T
 import Control.Concurrent.STM
 
 import Graphics.Gtk
-import Graphics.Gtk.Cairo
-import Graphics.Gtk.Cairo.Values
+import Graphics.Cairo
+import Graphics.Cairo.Values
 import Graphics.Gtk.Pango
 
 import Control.Moffy.Viewable.Basic
