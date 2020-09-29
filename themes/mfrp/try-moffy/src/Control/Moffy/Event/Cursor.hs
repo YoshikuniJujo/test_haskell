@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -10,6 +10,8 @@ import Control.Moffy
 import Control.Moffy.Event.Window
 import Data.Type.Set
 import Data.Bool
+
+import qualified Data.ByteString as BS
 
 data Result = Failure | Success deriving (Show, Eq, Ord)
 
@@ -47,3 +49,17 @@ cursorName = \case
 	EwResize -> "ew-resize"; NsResize -> "ns-resize"
 	NeswResize -> "nesw-resize"; NwseResize -> "nwse-resize"
 	ZoomIn -> "zoom-in"; ZoomOut -> "zoom-out"
+
+data PngCursor = PngCursor Double Double BS.ByteString deriving (Show, Eq, Ord)
+
+data SetCursorFromPng = SetCursorFromPngReq WindowId PngCursor deriving (Show, Eq, Ord)
+numbered [t| SetCursorFromPng |]
+instance Request SetCursorFromPng where
+	data Occurred SetCursorFromPng = OccSetCursorFromPng WindowId PngCursor Result deriving Show
+
+setCursorFromPng :: WindowId -> PngCursor -> React s (Singleton SetCursorFromPng) Result
+setCursorFromPng wid0 pc0 = maybe (setCursorFromPng wid0 pc0) pure =<<
+	await (SetCursorFromPngReq wid0 pc0)
+		\(OccSetCursorFromPng wid pc r) -> bool Nothing (Just r) $ wid == wid0 && pc == pc0
+
+type CursorEv = SetCursorFromName :- SetCursorFromPng :- 'Nil

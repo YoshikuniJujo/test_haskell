@@ -30,11 +30,11 @@ import Control.Moffy.Event.Cursor
 import Data.Map
 
 handleFollowbox ::
-	(TChan (EvReqs (SetCursorFromName :- CalcTextExtents :- GuiEv)), TChan (EvOccs (SetCursorFromName :- CalcTextExtents :- GuiEv))) -> Browser ->
-	Maybe GithubNameToken -> HandleF IO (SetCursorFromName :- CalcTextExtents :- DefaultWindowEv :+: GuiEv :+: FollowboxEv)
+	(TChan (EvReqs (CursorEv :+: CalcTextExtents :- GuiEv)), TChan (EvOccs (CursorEv :+: CalcTextExtents :- GuiEv))) -> Browser ->
+	Maybe GithubNameToken -> HandleF IO (CursorEv :+: CalcTextExtents :- DefaultWindowEv :+: GuiEv :+: FollowboxEv)
 handleFollowbox = handleFollowboxWith (uncurry . handle)
 
-runFollowbox :: Browser -> Maybe GithubNameToken -> Sig s (SetCursorFromName :- StoreDefaultWindow :- FollowboxEv) (Map WindowId View) r -> IO r
+runFollowbox :: Browser -> Maybe GithubNameToken -> Sig s (CursorEv :+: StoreDefaultWindow :- FollowboxEv) (Map WindowId View) r -> IO r
 runFollowbox brs mgnt s = do
 	([], (cr, c, c')) <- runGtkMain drawFollowboxGtk []
 	(r, _) <- interpretSt (handleFollowbox (cr, c) brs mgnt) c' s (initialFollowboxState $ mkStdGen 8)

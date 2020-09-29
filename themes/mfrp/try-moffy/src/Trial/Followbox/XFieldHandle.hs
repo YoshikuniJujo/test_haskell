@@ -23,5 +23,5 @@ import Control.Moffy.Event.Cursor
 ---------------------------------------------------------------------------
 
 handleFollowbox :: Field -> Browser -> Maybe GithubNameToken ->
-	HandleF IO (SetCursorFromName :- WindowNew :- DefaultWindowEv :+: GuiEv :+: FollowboxEv)
+	HandleF IO (CursorEv :+: WindowNew :- DefaultWindowEv :+: GuiEv :+: FollowboxEv)
 handleFollowbox = handleFollowboxWith handle'

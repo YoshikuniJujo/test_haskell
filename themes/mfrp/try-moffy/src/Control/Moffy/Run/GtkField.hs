@@ -29,9 +29,12 @@ import Control.Concurrent.STM hiding (retry)
 import Data.Type.Set
 import Data.OneOrMore (project)
 import Graphics.Gtk as Gtk
+import Graphics.Gtk.Cairo
+import Graphics.Gtk.Cairo.Values
 import Graphics.Gtk.Pango
 
 import qualified Data.Text as T
+import qualified Data.ByteString as BS
 
 import Data.Bool
 import Data.Word
@@ -42,7 +45,7 @@ import Data.Map as Map
 
 -- GUI EVENT
 
-type GuiEv = SetCursorFromName :- WindowEv :+: CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv
+type GuiEv = CursorEv :+: WindowEv :+: CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv
 
 -- RUN GTK MAIN
 
@@ -127,6 +130,21 @@ recieveEvReqs dr vwid vw crq cft cocc vvw vda = atomically (lastTChan crq) >>= \
 							Nothing -> atomically $ writeTChan cocc
 								. expand . Singleton $ OccSetCursorFromName wid nm Failure
 					Nothing -> atomically $ writeTChan cocc . expand . Singleton $ OccSetCursorFromName wid nm Failure
+		case project rqs of
+			Nothing -> pure ()
+			Just (SetCursorFromPngReq wid pc@(PngCursor x y bs)) -> do
+				print wid
+				ws <- atomically $ readTVar vw
+				vbs <- newTVarIO bs
+				case Map.lookup wid ws of
+					Nothing -> atomically $ writeTChan cocc . expand . Singleton $ OccSetCursorFromPng wid pc Failure
+					Just w -> cairoWithImageSurfaceFromPngStream (bsToCairoReadFunc vbs) () \s -> do
+						dw <- gtkWidgetGetWindow w
+						dd <- gdkWindowGetDisplay dw
+						csr <- gdkCursorNewFromSurface dd s x y
+						gdkWindowSetCursor dw csr
+						atomically $ writeTChan cocc
+							. expand . Singleton $ OccSetCursorFromPng wid pc Success
 
 createWindow :: WindowId -> TChan (EvOccs GuiEv) -> IO GtkWidget
 createWindow wid c = do
@@ -243,3 +261,9 @@ draw wid dr ftc co tx wdgt cr () = True <$ do
 lastTChan :: TChan a -> STM (Maybe a)
 lastTChan c = tryReadTChan c >>= maybe (pure Nothing)
 	((isEmptyTChan c >>=) . bool (lastTChan c) . (pure . Just))
+
+bsToCairoReadFunc :: TVar BS.ByteString -> CairoReadFunc ()
+bsToCairoReadFunc tbs () (fromIntegral -> n) = atomically $ readTVar tbs >>= \bs -> case () of
+	_	| BS.length bs >= n -> (cairoStatusSuccess, Just t) <$ writeTVar tbs d
+		| otherwise -> pure (cairoStatusReadError, Nothing)
+		where (t, d) = BS.splitAt n bs

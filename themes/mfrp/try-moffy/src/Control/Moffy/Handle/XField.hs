@@ -41,7 +41,7 @@ import Control.Moffy.Event.Cursor
 -- GUI EV
 ---------------------------------------------------------------------------
 
-type GuiEv = SetCursorFromName :- WindowEv :+: DeleteEvent :- KeyEv :+: MouseEv
+type GuiEv = CursorEv :+: WindowEv :+: DeleteEvent :- KeyEv :+: MouseEv
 
 ---------------------------------------------------------------------------
 -- HANDLE

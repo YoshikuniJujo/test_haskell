@@ -44,10 +44,10 @@ initialBoxesState t = BoxesState {
 	bsLatestTime = t,
 	bsDefaultWindow = Nothing }
 
-handleBoxes :: DiffTime -> Field -> HandleSt' BoxesState IO (SetCursorFromName :- BoxEv)
+handleBoxes :: DiffTime -> Field -> HandleSt' BoxesState IO (CursorEv :+: BoxEv)
 handleBoxes dt f = handleDefaultWindow `beforeSt` handleBoxesGen dt f
 
-handleBoxesGen :: DiffTime -> Field -> HandleSt' BoxesState IO (SetCursorFromName :- BoxEvGen)
+handleBoxesGen :: DiffTime -> Field -> HandleSt' BoxesState IO (CursorEv :+: BoxEvGen)
 handleBoxesGen = curry . popInput . handleTimeEvPlus
 	. pushInput . uncurry $ (liftHandle' .) . handle . Just
 

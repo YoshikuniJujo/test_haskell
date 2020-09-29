@@ -457,7 +457,7 @@ todo
 		- [x] make handler in Control.Moffy.Run.GtkField
 		- [x] make trial Trial.TryConfigureEvent
 * [x] repair text extents
-* [ ] about cursor
+* [x] about cursor
 	+ [x] define gtkWidgetGetWindow
 	+ [x] define gdkWindowGetDisplay
 	+ [x] define gdkCursorNewFromName
@@ -469,19 +469,18 @@ todo
 		- [x] add handler to Control.Moffy.Run.GtkField
 	+ [x] define gdkCursorNewFromSurface
 	+ [x] try to change cursor from PNG
-	+ [ ] define PNG cursor in Control.Moffy.Viewable.Cursor
-	+ [ ] change cursor picture from PNG
-		- [ ] add handler to Control.Moffy.Run.GtkField
-		- [ ] get sample PNG
-		- [ ] add to Trial.TryCursor
-	+ [ ] others
+	+ [x] define PNG cursor in Control.Moffy.Viewable.Cursor
+	+ [x] change cursor picture from PNG
+		- [x] add handler to Control.Moffy.Run.GtkField
+		- [x] get sample PNG
+		- [x] add to Trial.TryCursor
+* [ ] refactor Graphics.Gtk and Graphics.Gtk.\*
+* [ ] separate Graphics.Gtk and Graphics.Gtk.\* to independent package
 * [ ] move DeleteEvent from Control.Moffy.Event.Delete to Control.Moffy.Event.Window
 * [x] pass argument to `runGtkMain`
 * [ ] consider to move `gtkMainQuit` to GTK thread
 * [ ] consider to use `Sig s 'Nil a r` and `React s 'Nil r`
 * [ ] move deleteEvent to Control.Moffy.Event.Window
-* [ ] refactor Graphics.Gtk and Graphics.Gtk.\*
-* [ ] separate Graphics.Gtk and Graphics.Gtk.\* to independent package
 * [ ] refactoring
 * [ ] consider whether or not to weeken cohesion
 * [ ] move CairoSurfaceT to CairoType

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 65cd98f0da9fafbfe6cb0ba8a83bf7b40a88401ba1c7eba62cb0cc1887937e1c
+-- hash: 4c2f2a48c0faa417b846add53f385db8b478fec2c79f454083d3b6ec150b76a2
 
 name:           try-moffy
 version:        0.1.0.0
@@ -121,6 +121,7 @@ library
       Trial.TryLock
       Trial.TryMultiWindow
       Trial.TryOneOfThem
+      Trial.TryPngCursor
       Trial.TryRandom
       Trial.TryScroll
       Trial.TrySharing
@@ -651,6 +652,41 @@ executable tryPango
 
 executable tryPngCursor
   main-is: tryPngCursor.hs
+  other-modules:
+      Main
+      Paths_try_moffy
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyPixels
+    , JuicyPixels-extra
+    , X11
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-field
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy
+    , type-flip
+    , unordered-containers
+    , vector
+  default-language: Haskell2010
+
+executable tryPngCursorEvent
+  main-is: tryPngCursorEvent.hs
   other-modules:
       Main
       Paths_try_moffy
