@@ -7,6 +7,7 @@ module Graphics.Pango (
 	PangoFontDescription,
 	pangoFontDescriptionNew,
 	pangoFontDescriptionFree,
+	pangoWithFontDescription,
 	pangoFontDescriptionFromString,
 	pangoFontDescriptionSetSize,
 	pangoFontDescriptionSetAbsoluteSize,
@@ -26,6 +27,7 @@ import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C
+import Control.Exception
 import Data.Int
 import Graphics.CairoType
 
@@ -46,6 +48,10 @@ pangoFontDescriptionFree (PangoFontDescription p) = c_pango_font_description_fre
 
 foreign import ccall "pango_font_description_free" c_pango_font_description_free ::
 	Ptr PangoFontDescription -> IO ()
+
+pangoWithFontDescription :: (PangoFontDescription -> IO a) -> IO a
+pangoWithFontDescription =
+	bracket pangoFontDescriptionNew pangoFontDescriptionFree
 
 newtype PangoLayout = PangoLayout (Ptr PangoLayout) deriving Show
 

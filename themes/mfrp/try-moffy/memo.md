@@ -637,6 +637,8 @@ Graphics.Pango
 	+ [ ] others
 * [x] refactor Graphics.Gtk.AsPointer
 * [ ] check export list of Graphics.Pango
+	+ [ ] consider use ForeignPtr
+	+ [ ] others
 * [ ] check export list of Graphics.Cairo
 * [ ] check export list of Graphics.Gtk
 * [ ] consider whether or not to use ForeignPtr to free memory for cairo surface
