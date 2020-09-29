@@ -15,6 +15,7 @@ import Control.Monad
 import Control.Moffy
 import Control.Moffy.Event.Delete as M (DeleteEvent, pattern OccDeleteEvent)
 import Control.Moffy.Event.Window
+import Control.Moffy.Event.Cursor
 import Control.Moffy.Event.Key (
 	KeyEv, pattern OccKeyDown, pattern OccKeyUp, Key(..) )
 import Control.Moffy.Event.Mouse (
@@ -41,7 +42,7 @@ import Data.Map as Map
 
 -- GUI EVENT
 
-type GuiEv = WindowEv :+: CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv
+type GuiEv = SetCursorFromName :- WindowEv :+: CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv
 
 -- RUN GTK MAIN
 

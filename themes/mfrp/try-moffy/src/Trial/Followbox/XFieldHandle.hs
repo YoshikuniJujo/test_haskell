@@ -18,8 +18,10 @@ import Trial.Followbox.Handle (
 	HandleF, handleFollowboxWith, FollowboxState, initialFollowboxState )
 import Field (Field)
 
+import Control.Moffy.Event.Cursor
+
 ---------------------------------------------------------------------------
 
 handleFollowbox :: Field -> Browser -> Maybe GithubNameToken ->
-	HandleF IO (WindowNew :- DefaultWindowEv :+: GuiEv :+: FollowboxEv)
+	HandleF IO (SetCursorFromName :- WindowNew :- DefaultWindowEv :+: GuiEv :+: FollowboxEv)
 handleFollowbox = handleFollowboxWith handle'

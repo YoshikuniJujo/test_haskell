@@ -46,6 +46,8 @@ import Trial.Followbox.TypeSynonym (Browser, GithubNameToken)
 
 import Data.OneOrMoreApp as Ooma
 
+import Control.Moffy.Event.Cursor
+
 ---------------------------------------------------------------------------
 
 -- * STATE
@@ -105,9 +107,9 @@ instance DefaultWindowState FollowboxState where
 -- FOLLOWBOX
 
 handleFollowboxWith ::
-	(Maybe DiffTime -> f -> Handle' IO (WindowEv :+: CalcTextExtents :- GuiEv)) ->
+	(Maybe DiffTime -> f -> Handle' IO (SetCursorFromName :- WindowEv :+: CalcTextExtents :- GuiEv)) ->
 	f -> Browser -> Maybe GithubNameToken ->
-	HandleF IO (StoreDefaultWindow :- GuiEv :+: FollowboxEv)
+	HandleF IO (SetCursorFromName :- StoreDefaultWindow :- GuiEv :+: FollowboxEv)
 handleFollowboxWith h f brws mba = retrySt $
 	handleDefaultWindow `mergeSt`
 	liftHandle' handleGetThreadId `mergeSt` handleLock `mergeSt`
@@ -122,8 +124,8 @@ handleFollowboxWith h f brws mba = retrySt $
 -- MOUSE
 
 handleMouseWithSleep ::
-	(Maybe DiffTime -> f -> Handle' IO (CalcTextExtents :- GuiEv)) ->
-	f -> HandleF' IO (CalcTextExtents :- GuiEv)
+	(Maybe DiffTime -> f -> Handle' IO (SetCursorFromName :- CalcTextExtents :- GuiEv)) ->
+	f -> HandleF' IO (SetCursorFromName :- CalcTextExtents :- GuiEv)
 handleMouseWithSleep h f rqs s = (, s) <$> case fsSleepUntil s of
 	Nothing -> h Nothing f rqs
 	Just t -> getCurrentTime >>= \now ->

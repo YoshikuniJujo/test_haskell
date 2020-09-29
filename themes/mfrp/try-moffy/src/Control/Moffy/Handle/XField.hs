@@ -30,6 +30,8 @@ import Data.OneOrMoreApp
 
 import qualified Control.Moffy.Handle as H
 
+import Control.Moffy.Event.Cursor
+
 ---------------------------------------------------------------------------
 
 -- * GUI EV
@@ -39,7 +41,7 @@ import qualified Control.Moffy.Handle as H
 -- GUI EV
 ---------------------------------------------------------------------------
 
-type GuiEv = WindowEv :+: DeleteEvent :- KeyEv :+: MouseEv
+type GuiEv = SetCursorFromName :- WindowEv :+: DeleteEvent :- KeyEv :+: MouseEv
 
 ---------------------------------------------------------------------------
 -- HANDLE

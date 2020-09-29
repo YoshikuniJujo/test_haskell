@@ -1,4 +1,5 @@
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.Boxes.RunXField (
@@ -23,6 +24,9 @@ import Field (
 	Field, openField, closeField,
 	exposureMask, buttonPressMask, buttonReleaseMask, pointerMotionMask )
 
+import Control.Moffy.Event.Cursor
+import Data.Type.Set
+
 ---------------------------------------------------------------------------
 
 runBoxes :: String -> SigB s [Box] r -> IO r
@@ -40,10 +44,10 @@ initialBoxesState t = BoxesState {
 	bsLatestTime = t,
 	bsDefaultWindow = Nothing }
 
-handleBoxes :: DiffTime -> Field -> HandleSt' BoxesState IO BoxEv
+handleBoxes :: DiffTime -> Field -> HandleSt' BoxesState IO (SetCursorFromName :- BoxEv)
 handleBoxes dt f = handleDefaultWindow `beforeSt` handleBoxesGen dt f
 
-handleBoxesGen :: DiffTime -> Field -> HandleSt' BoxesState IO BoxEvGen
+handleBoxesGen :: DiffTime -> Field -> HandleSt' BoxesState IO (SetCursorFromName :- BoxEvGen)
 handleBoxesGen = curry . popInput . handleTimeEvPlus
 	. pushInput . uncurry $ (liftHandle' .) . handle . Just
 
