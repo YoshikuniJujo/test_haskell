@@ -37,6 +37,9 @@ module Graphics.Gtk (
 	MotionNotifyEvent(..), GdkEventMotion, gdkEventMotionX, gdkEventMotionY,
 	-- ** DrawEvent
 	DrawEvent(..), CairoT,
+	-- ** ConfigureEvent
+	ConfigureEvent(..), GdkEventConfigure,
+	gdkEventConfigureX, gdkEventConfigureY, gdkEventConfigureWidth, gdkEventConfigureHeight,
 	-- * Mutable
 	Mutable, allocaMutable, peekMutable, pokeMutable,
 	-- * Others
@@ -225,6 +228,35 @@ handlerToCHandlerEvent h w e px = do
 	x <- asValue px
 	boolToGBoolean <$> h w e x
 
+data ConfigureEvent = ConfigureEvent deriving Show
+newtype GdkEventConfigure = GdkEventConfigure (Ptr GdkEventConfigure) deriving Show
+instance Event ConfigureEvent where
+	type Handler ConfigureEvent a = GtkWidget -> GdkEventConfigure -> a -> IO Bool
+	type CHandler ConfigureEvent a = GtkWidget -> GdkEventConfigure -> Ptr a -> IO #type gboolean
+	eventName ConfigureEvent = "configure-event"
+	handlerToCHandler = handlerToCHandlerConfigure
+	g_callback = g_callback_configure
+
+handlerToCHandlerConfigure :: AsPointer a => Handler ConfigureEvent a -> CHandler ConfigureEvent a
+handlerToCHandlerConfigure h w e px = do
+	x <- asValue px
+	boolToGBoolean <$> h w e x
+
+gdkEventConfigureX, gdkEventConfigureY, gdkEventConfigureWidth, gdkEventConfigureHeight ::
+	GdkEventConfigure -> IO #type gint
+gdkEventConfigureX (GdkEventConfigure p) = c_GdkEventConfigure_x p
+gdkEventConfigureY (GdkEventConfigure p) = c_GdkEventConfigure_y p
+gdkEventConfigureWidth (GdkEventConfigure p) = c_GdkEventConfigure_width p
+gdkEventConfigureHeight (GdkEventConfigure p) = c_GdkEventConfigure_height p
+
+c_GdkEventConfigure_x, c_GdkEventConfigure_y :: Ptr GdkEventConfigure -> IO #type gint
+c_GdkEventConfigure_x = #peek GdkEventConfigure, x
+c_GdkEventConfigure_y = #peek GdkEventConfigure, y
+
+c_GdkEventConfigure_width, c_GdkEventConfigure_height :: Ptr GdkEventConfigure -> IO #type gint
+c_GdkEventConfigure_width = #peek GdkEventConfigure, width
+c_GdkEventConfigure_height = #peek GdkEventConfigure, height
+
 data MotionNotifyEvent = MotionNotifyEvent deriving Show
 newtype GdkEventMotion = GdkEventMotion (Ptr GdkEventMotion) deriving Show
 instance Event MotionNotifyEvent where
@@ -234,11 +266,11 @@ instance Event MotionNotifyEvent where
 	handlerToCHandler = handlerToCHandlerMotion
 	g_callback = g_callback_motion
 
-gdkEventScrollX :: GdkEventScroll -> IO #type gdouble
+gdkEventScrollX, gdkEventScrollY :: GdkEventScroll -> IO #type gdouble
 gdkEventScrollX (GdkEventScroll p) = c_GdkEventScroll_x p
 gdkEventScrollY (GdkEventScroll p) = c_GdkEventScroll_y p
 
-gdkEventScrollDeltaX :: GdkEventScroll -> IO #type gdouble
+gdkEventScrollDeltaX, gdkEventScrollDeltaY :: GdkEventScroll -> IO #type gdouble
 gdkEventScrollDeltaX (GdkEventScroll p) = c_GdkEventScroll_delta_x p
 gdkEventScrollDeltaY (GdkEventScroll p) = c_GdkEventScroll_delta_y p
 
@@ -250,8 +282,8 @@ c_GdkEventScroll_delta_x, c_GdkEventScroll_delta_y :: Ptr GdkEventScroll -> IO #
 c_GdkEventScroll_delta_x = #peek GdkEventScroll, delta_x
 c_GdkEventScroll_delta_y = #peek GdkEventScroll, delta_y
 
-c_GdkEventScroll_direction :: Ptr GdkEventScroll -> IO #type GdkScrollDirection
-c_GdkEventScroll_direction = #peek GdkEventScroll, direction
+-- c_GdkEventScroll_direction :: Ptr GdkEventScroll -> IO #type GdkScrollDirection
+-- c_GdkEventScroll_direction = #peek GdkEventScroll, direction
 
 gdkEventMotionX, gdkEventMotionY :: GdkEventMotion -> IO #type gdouble
 gdkEventMotionX (GdkEventMotion p) = c_GdkEventMotion_x p
@@ -295,6 +327,8 @@ foreign import ccall "wrapper" g_callback_timeout ::
 	(Ptr a -> IO #{type gboolean}) -> IO (FunPtr (Ptr a -> IO #{type gboolean}))
 foreign import ccall "wrapper" g_callback_scroll ::
 	(GtkWidget -> GdkEventScroll -> Ptr a -> IO #{type gboolean}) -> IO (FunPtr (GtkWidget -> GdkEventScroll -> Ptr a -> IO #{type gboolean}))
+foreign import ccall "wrapper" g_callback_configure ::
+	(GtkWidget -> GdkEventConfigure -> Ptr a -> IO #{type gboolean}) -> IO (FunPtr (GtkWidget -> GdkEventConfigure -> Ptr a -> IO #{type gboolean}))
 
 -- foreign import ccall "hello_main" c_hello_main :: IO ()
 

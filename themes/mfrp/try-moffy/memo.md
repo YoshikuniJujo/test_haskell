@@ -409,7 +409,6 @@ todo
 		- [x] use window id to calc text extents
 	+ [x] make multiple window trial
 		- [x] try drawing box
-		- [ ] others
 	+ [x] destroy window with delete event
 		- [x] delete event has window id
 		- [x] add gtkWidgetDestroy to Graphics.Gtk
@@ -451,6 +450,10 @@ todo
 		- [x] make Control.Moffy.Event.Delete.DefaultWindow
 		- [x] make Control.Moffy.Event.CalcTextExtents.DefaultWindow
 	+ [ ] get window size or drawing area size
+		- [x] make ConfigureEvent in Graphics.Gtk
+		- [ ] make ConfigureEvent in Control.Moffy.Event.Configure
+		- [ ] make handler in Control.Moffy.Run.GtkField
+		- [ ] make trial Trial.TryConfigureEvent
 * [x] repair text extents
 * [ ] about cursor
 	+ [ ] change cursor picture
