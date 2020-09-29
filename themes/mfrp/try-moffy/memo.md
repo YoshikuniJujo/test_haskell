@@ -465,9 +465,8 @@ todo
 	+ [x] try use above functions
 	+ [x] define named cursor in Control.Moffy.Event.Cursor
 		- [x] consider what should do when return value is NULL
-	+ [ ] change cursor to prepared cursor from name
-		- [ ] add handler to Control.Moffy.Run.GtkField
-		- [ ] add Trial.TryCursor
+	+ [x] change cursor to prepared cursor from name
+		- [x] add handler to Control.Moffy.Run.GtkField
 	+ [ ] define gdkCursorNewFromSurface
 	+ [ ] define PNG cursor in Control.Moffy.Viewable.Cursor
 	+ [ ] change cursor picture from PNG

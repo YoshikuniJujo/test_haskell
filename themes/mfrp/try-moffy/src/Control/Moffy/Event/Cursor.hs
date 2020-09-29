@@ -7,6 +7,7 @@
 module Control.Moffy.Event.Cursor where
 
 import Control.Moffy
+import Control.Moffy.Event.Window
 import Data.Type.Set
 import Data.Bool
 
@@ -20,15 +21,15 @@ data NamedCursor
 	| NwResize | SwResize | SeResize | EwResize | NsResize | NeswResize
 	| NwseResize | ZoomIn | ZoomOut deriving (Show, Eq, Ord)
 
-newtype SetCursorFromName = SetCursorFromNameReq NamedCursor deriving (Show, Eq, Ord)
+data SetCursorFromName = SetCursorFromNameReq WindowId NamedCursor deriving (Show, Eq, Ord)
 numbered [t| SetCursorFromName |]
 instance Request SetCursorFromName where
-	data Occurred SetCursorFromName = OccSetCursorFromName NamedCursor Result deriving Show
+	data Occurred SetCursorFromName = OccSetCursorFromName WindowId NamedCursor Result deriving Show
 
-setCursorFromName :: NamedCursor -> React s (Singleton SetCursorFromName) Result
-setCursorFromName nc0 = maybe (setCursorFromName nc0) pure =<<
-	await (SetCursorFromNameReq nc0)
-		\(OccSetCursorFromName nc r) -> bool Nothing (Just r) $ nc == nc0
+setCursorFromName :: WindowId -> NamedCursor -> React s (Singleton SetCursorFromName) Result
+setCursorFromName wid0 nc0 = maybe (setCursorFromName wid0 nc0) pure =<<
+	await (SetCursorFromNameReq wid0 nc0)
+		\(OccSetCursorFromName wid nc r) -> bool Nothing (Just r) $ wid == wid0 && nc == nc0
 
 cursorName :: NamedCursor -> String
 cursorName = \case

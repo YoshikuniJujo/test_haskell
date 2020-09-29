@@ -108,6 +108,25 @@ recieveEvReqs dr vwid vw crq cft cocc vvw vda = atomically (lastTChan crq) >>= \
 					Just w -> putStrLn "destroy window" >> gtkWidgetDestroy w >> putStrLn "window has been destroyed"
 				atomically $ writeTChan cocc . expand . Singleton $ OccWindowDestroy i
 				putStrLn $ "send OccWindowDestroy " ++ show i
+		case project rqs of
+			Nothing -> pure ()
+			Just (SetCursorFromNameReq wid nm) -> do
+				ws <- atomically $ readTVar vw
+				case Map.lookup wid ws of
+					Just w -> do
+						print w
+						putStrLn $ cursorName nm
+						dw <- gtkWidgetGetWindow w
+						dd <- gdkWindowGetDisplay dw
+						mcsr <- gdkCursorNewFromName dd $ cursorName nm
+						case mcsr of
+							Just csr -> do
+								gdkWindowSetCursor dw csr
+								atomically $ writeTChan cocc
+									. expand . Singleton $ OccSetCursorFromName wid nm Success
+							Nothing -> atomically $ writeTChan cocc
+								. expand . Singleton $ OccSetCursorFromName wid nm Failure
+					Nothing -> atomically $ writeTChan cocc . expand . Singleton $ OccSetCursorFromName wid nm Failure
 
 createWindow :: WindowId -> TChan (EvOccs GuiEv) -> IO GtkWidget
 createWindow wid c = do
