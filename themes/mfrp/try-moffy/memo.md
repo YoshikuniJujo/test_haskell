@@ -600,11 +600,11 @@ Graphics.Gtk (7)
 Graphics
   +- Graphics.Gtk
   |    +- Graphics.Gtk.Values
-  |    +- Graphics.Gtk.CairoType
-  |    +- Graphics.Gtk.Pango
   |    +- Graphics.Gtk.AsPointer
   +- Graphics.Cairo
-       +- Graphics.Gtk.Cairo.Values
+  |    +- Graphics.Gtk.Cairo.Values
+  +- Graphics.CairoType
+  +- Graphics.Pango
 ```
 
 ### module hierarchy
@@ -612,16 +612,16 @@ Graphics
 ```
 Graphics.Gtk
   +- Graphics.Gtk.Value
-  +- Graphics.Gtk.CairoType
   +- Graphics.Gtk.AsPointer
+  +- Graphics.CairoType
 
 Graphics.Cairo
-  +- Graphics.Gtk.Cairo.Value
-  +- Graphics.Gtk.CairoType
+  +- Graphics.Cairo.Value
+  +- Graphics.CairoType
   +- Graphics.Gtk.AsPointer
 
-Graphics.Gtk.Pango
-  +- Graphics.Gtk.CairoType
+Graphics.Pango
+  +- Graphics.CairoType
 ```
 
 ### refactoring
@@ -632,8 +632,8 @@ Graphics.Gtk.Pango
 	+ [x] move Graphics.Gtk.Cairo to Graphics.Cairo
 		- [x] move Graphics.Gtk.Cairo.Value to Graphics.Cairo.Value
 	+ [x] move Graphics.Gtk.CairoType to Graphics.CairoType
-	+ [ ] move Graphics.Gtk.Pango to Graphics.Pango
-	+ [ ] consider whether or not to remove Graphics.Gtk.AsPointer
+	+ [x] move Graphics.Gtk.Pango to Graphics.Pango
+	+ [x] consider whether or not to remove Graphics.Gtk.AsPointer
 	+ [ ] others
 * [x] refactor Graphics.Gtk.AsPointer
 * [ ] consider whether or not to use ForeignPtr to free memory for cairo surface

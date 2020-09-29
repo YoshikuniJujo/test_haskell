@@ -16,7 +16,7 @@ import Control.Concurrent.STM
 import Graphics.Gtk
 import Graphics.Cairo
 import Graphics.Cairo.Values
-import Graphics.Gtk.Pango
+import Graphics.Pango
 
 import Control.Moffy.Viewable.Basic
 import Control.Moffy.Viewable.Text

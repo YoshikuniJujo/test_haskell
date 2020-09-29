@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ea6e98478130b06ed06069bc1d51a702355fa75584db48aff2a58084e637f122
+-- hash: 06c3ba64e239b4c8d23bf81ca05552e5482dfcf9db24f9c9b8aa059909f2eb38
 
 name:           try-moffy
 version:        0.1.0.0
@@ -91,8 +91,8 @@ library
       Graphics.CairoType
       Graphics.Gtk
       Graphics.Gtk.AsPointer
-      Graphics.Gtk.Pango
       Graphics.Gtk.Values
+      Graphics.Pango
       Trial.Boxes
       Trial.Boxes.BoxEv
       Trial.Boxes.RunGtkField

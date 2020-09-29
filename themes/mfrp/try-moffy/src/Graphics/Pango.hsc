@@ -2,7 +2,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gtk.Pango where
+module Graphics.Pango where
 
 import Foreign.Ptr
 import Foreign.Marshal
