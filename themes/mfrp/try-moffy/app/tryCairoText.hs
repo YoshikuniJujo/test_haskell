@@ -19,7 +19,7 @@ main = do
 	dw <- gtkWidgetGetWindow w
 	dd <- gdkWindowGetDisplay dw
 	csr <- gdkCursorNewFromName dd "wait"
-	gdkWindowSetCursor dw csr
+	maybe (pure ()) (gdkWindowSetCursor dw) csr
 
 	gtkMain
 
