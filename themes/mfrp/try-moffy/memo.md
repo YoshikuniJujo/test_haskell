@@ -631,7 +631,7 @@ Graphics.Gtk.Pango
 	+ [x] move CairoSurfaceT to CairoType
 	+ [x] move Graphics.Gtk.Cairo to Graphics.Cairo
 		- [x] move Graphics.Gtk.Cairo.Value to Graphics.Cairo.Value
-	+ [ ] move Graphics.Gtk.CairoType to Graphics.CairoType
+	+ [x] move Graphics.Gtk.CairoType to Graphics.CairoType
 	+ [ ] move Graphics.Gtk.Pango to Graphics.Pango
 	+ [ ] consider whether or not to remove Graphics.Gtk.AsPointer
 	+ [ ] others

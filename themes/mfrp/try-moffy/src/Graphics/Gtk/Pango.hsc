@@ -9,7 +9,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C
 import Data.Int
-import Graphics.Gtk.CairoType
+import Graphics.CairoType
 
 import qualified Data.ByteString as BS
 import qualified Data.Text as T

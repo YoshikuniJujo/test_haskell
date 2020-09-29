@@ -31,7 +31,7 @@ import qualified Data.ByteString as BS
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 
-import Graphics.Gtk.CairoType
+import Graphics.CairoType
 import Graphics.Cairo.Values
 import Graphics.Gtk.AsPointer
 

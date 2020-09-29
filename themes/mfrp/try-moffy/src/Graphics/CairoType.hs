@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gtk.CairoType where
+module Graphics.CairoType where
 
 import Foreign.Ptr
 
