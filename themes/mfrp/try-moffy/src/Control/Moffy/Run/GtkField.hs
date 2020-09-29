@@ -181,7 +181,7 @@ mouseMove wid c ev = (True <$)
 		=<< ((,) <$> gdkEventMotionX ev <*> gdkEventMotionY ev)
 
 wConfigure :: WindowId -> TChan (EvOccs GuiEv) -> GdkEventConfigure -> IO Bool
-wConfigure wid c ev = (True <$)
+wConfigure wid c ev = (False <$)
 	$ atomically . writeTChan c . expand . Singleton . OccWindowConfigure wid
 		=<< Configure
 			<$> ((\x y -> (fromIntegral x, fromIntegral y)) <$> gdkEventConfigureX ev <*> gdkEventConfigureY ev)
