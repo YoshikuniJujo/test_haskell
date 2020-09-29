@@ -15,6 +15,12 @@ main = do
 	gtkContainerAdd (castWidgetToContainer w) da
 
 	gtkWidgetShowAll w
+
+	dw <- gtkWidgetGetWindow w
+	dd <- gdkWindowGetDisplay dw
+	csr <- gdkCursorNewFromName dd "wait"
+	gdkWindowSetCursor dw csr
+
 	gtkMain
 
 draw :: GtkWidget -> CairoT -> a -> IO Bool

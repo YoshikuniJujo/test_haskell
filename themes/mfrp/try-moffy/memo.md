@@ -460,7 +460,8 @@ todo
 	+ [x] define gtkWidgetGetWindow
 	+ [x] define gdkWindowGetDisplay
 	+ [x] define gdkCursorNewFromName
-	+ [ ] define gdkWindowSetCursor
+	+ [x] define gdkWindowSetCursor
+	+ [x] try use above functions
 	+ [ ] define named cursor in Control.Moffy.Viewable.Cursor
 		- [ ] consider what should do when return value is NULL
 	+ [ ] change cursor to prepared cursor from name
