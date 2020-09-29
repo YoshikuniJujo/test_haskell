@@ -467,7 +467,8 @@ todo
 		- [x] consider what should do when return value is NULL
 	+ [x] change cursor to prepared cursor from name
 		- [x] add handler to Control.Moffy.Run.GtkField
-	+ [ ] define gdkCursorNewFromSurface
+	+ [x] define gdkCursorNewFromSurface
+	+ [ ] try to change cursor from PNG
 	+ [ ] define PNG cursor in Control.Moffy.Viewable.Cursor
 	+ [ ] change cursor picture from PNG
 		- [ ] add handler to Control.Moffy.Run.GtkField
@@ -483,6 +484,7 @@ todo
 * [ ] separate Graphics.Gtk and Graphics.Gtk.\* to independent package
 * [ ] refactoring
 * [ ] consider whether or not to weeken cohesion
+* [ ] move CairoSurfaceT to CairoType
 * [ ] remake key event
 	+ [x] consider Pattern vs Value
 	+ use #enum of hsc2hs

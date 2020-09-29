@@ -6,7 +6,7 @@ module Graphics.Gtk.Cairo (
 	cairoStroke, cairoStrokePreserve, cairoFill,
 	cairoSetLineWidth, cairoMoveTo, cairoLineTo, cairoRectangle,
 	cairoShowText, cairoSetFontSize, cairoSelectFontFace,
-	CairoSurfaceT,
+	CairoSurfaceT(..),
 	cairoImageSurfaceCreateFromPng, cairoSurfaceDestroy, cairoWithImageSurfaceFromPng,
 	cairoSetSourceSurface, cairoPaint,
 	CairoReadFunc, cairoImageSurfaceCreateFromPngStream, cairoWithImageSurfaceFromPngStream,
