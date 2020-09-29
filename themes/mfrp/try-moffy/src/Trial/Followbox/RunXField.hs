@@ -18,7 +18,7 @@ import qualified Data.ByteString.Char8 as BSC
 
 import Trial.Followbox.ViewType
 
-import Trial.Followbox.Event (SigF, FollowboxEv)
+import Trial.Followbox.Event (FollowboxEv)
 import Trial.Followbox.XFieldHandle (
 	handleFollowbox, FollowboxState, initialFollowboxState )
 import Trial.Followbox.TypeSynonym (

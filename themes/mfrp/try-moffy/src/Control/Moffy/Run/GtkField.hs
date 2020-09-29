@@ -128,7 +128,8 @@ createWindow wid c = do
 				OccMouseMove wid (x, y) >- Singleton (OccMouseScroll wid dx dy) ::
 					EvOccs (MouseMove :- MouseScroll :- 'Nil) )
 			,
-		gSignalConnect w MotionNotifyEvent \_ ev _ -> mouseMove wid c ev ]
+		gSignalConnect w MotionNotifyEvent \_ ev _ -> mouseMove wid c ev,
+		gSignalConnect w ConfigureEvent \_ ev _ -> wConfigure wid c ev ]
 
 createDrawingArea :: Monoid a => WindowId -> GtkDrawer a -> TChan (WindowId, FontName, FontSize, T.Text) ->
 	TChan (EvOccs GuiEv) -> TVar (Map WindowId a) -> GtkWidget -> IO GtkWidget
@@ -177,6 +178,13 @@ mouseMove :: WindowId -> TChan (EvOccs GuiEv) -> GdkEventMotion -> IO Bool
 mouseMove wid c ev = (True <$)
 	$ atomically . writeTChan c . expand . Singleton . OccMouseMove wid
 		=<< ((,) <$> gdkEventMotionX ev <*> gdkEventMotionY ev)
+
+wConfigure :: WindowId -> TChan (EvOccs GuiEv) -> GdkEventConfigure -> IO Bool
+wConfigure wid c ev = (True <$)
+	$ atomically . writeTChan c . expand . Singleton . OccWindowConfigure wid
+		=<< Configure
+			<$> ((\x y -> (fromIntegral x, fromIntegral y)) <$> gdkEventConfigureX ev <*> gdkEventConfigureY ev)
+			<*> ((\w h -> (fromIntegral w, fromIntegral h)) <$> gdkEventConfigureWidth ev <*> gdkEventConfigureHeight ev)
 
 button :: Word32 -> MouseBtn
 button = \case

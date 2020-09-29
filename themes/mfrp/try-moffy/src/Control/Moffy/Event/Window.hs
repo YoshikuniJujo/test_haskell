@@ -48,4 +48,4 @@ windowConfigure :: WindowId -> React s (Singleton WindowConfigure) Configure
 windowConfigure wid0 = maybe (windowConfigure wid0) pure =<<
 	await WindowConfigureReq \(OccWindowConfigure wid c) -> bool Nothing (Just c) $ wid == wid0
 
-type WindowEv = WindowNew :- WindowDestroy :- 'Nil
+type WindowEv = WindowNew :- WindowDestroy :- WindowConfigure :- 'Nil

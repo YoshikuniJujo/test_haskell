@@ -452,7 +452,7 @@ todo
 	+ [ ] get window size or drawing area size
 		- [x] make ConfigureEvent in Graphics.Gtk
 		- [x] make ConfigureEvent in Control.Moffy.Event.Window
-		- [ ] make handler in Control.Moffy.Run.GtkField
+		- [x] make handler in Control.Moffy.Run.GtkField
 		- [ ] make trial Trial.TryConfigureEvent
 * [x] repair text extents
 * [ ] move DeleteEvent from Control.Moffy.Event.Delete to Control.Moffy.Event.Window
