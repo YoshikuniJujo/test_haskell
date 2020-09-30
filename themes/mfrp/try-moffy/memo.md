@@ -658,7 +658,7 @@ Graphics.Pango
 * [x] don\'t use pangoFontDescriptionFromString
 	+ [x] define `pangoFontDescriptionSetFamily`
 	+ [x] use `pangoFontDescriptionNew` and `pangoFontDescriptionSetFamily` instead of `pangoFontDescriptionFromString`
-* [ ] don\'t use Text in pangoFontDescriptionFromString
+* [x] don\'t use Text in pangoFontDescriptionFromString
 * [ ] separate Graphics.Pango
 	+ Graphics.Pango.Font
 	+ Graphics.Pango.Layout

@@ -99,11 +99,10 @@ pangoCairoShowLayout (CairoT cr) (PangoLayout l) = c_pango_cairo_show_layout cr 
 foreign import ccall "pango_font_description_from_string" c_pango_font_description_from_string ::
 	CString -> IO (Ptr PangoFontDescription)
 
-pangoFontDescriptionFromString :: T.Text -> IO PangoFontDescription
-pangoFontDescriptionFromString txt =
-	BS.useAsCString (T.encodeUtf8 txt) \cs -> do
-		p <- c_pango_font_description_from_string cs
-		PangoFontDescription . Right <$> newForeignPtr p (c_pango_font_description_free p)
+pangoFontDescriptionFromString :: String -> IO PangoFontDescription
+pangoFontDescriptionFromString str = withCString str \cs -> do
+	p <- c_pango_font_description_from_string cs
+	PangoFontDescription . Right <$> newForeignPtr p (c_pango_font_description_free p)
 
 foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font_description ::
 	Ptr PangoLayout -> Ptr PangoFontDescription -> IO ()

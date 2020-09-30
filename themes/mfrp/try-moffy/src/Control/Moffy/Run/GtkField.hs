@@ -237,7 +237,8 @@ draw wid dr ftc co tx wdgt cr () = True <$ do
 	atomically (lastTChan ftc) >>= maybe (pure ()) \(wid', fn, fs, txt) -> case wid' == wid of
 		True -> do
 			(l, d) <- (,) <$> pangoCairoCreateLayout cr
-				<*> pangoFontDescriptionFromString (T.pack fn)
+				<*> pangoFontDescriptionNew
+			d `pangoFontDescriptionSetFamily` fn
 			d `pangoFontDescriptionSetAbsoluteSize` fs
 			l `pangoLayoutSetFontDescription` d
 			l `pangoLayoutSetText` txt
