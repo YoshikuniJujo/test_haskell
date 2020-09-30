@@ -30,7 +30,6 @@ import Data.Type.Set
 import Data.OneOrMore (project)
 import Graphics.Gtk as Gtk
 import Graphics.Cairo
-import Graphics.Cairo.Values
 import Graphics.Pango
 
 import qualified Data.Text as T

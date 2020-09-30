@@ -3,7 +3,6 @@
 
 import Graphics.Gtk
 import Graphics.Cairo
-import Graphics.Cairo.Values
 import Graphics.Pango
 
 main :: IO ()

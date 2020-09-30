@@ -664,7 +664,11 @@ Graphics.Pango
 * [x] check export list of Graphics.Cairo
 	+ [x] classify text
 	+ [x] remove text
+* [x] check export list of Graphics.Cairo.Values
+	+ [x] remove text
+	+ [x] move Graphics.Cairo.Values into Graphics.Cairo
 * [ ] check export list of Graphics.Gtk
+* [ ] check export list of Graphics.Gtk.Values
 * [ ] check export list of Graphics.CairoType
 * [ ] check export list of Foreign.Tools
 * [ ] consider whether or not to use ForeignPtr to free memory for cairo surface

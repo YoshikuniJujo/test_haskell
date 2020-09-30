@@ -2,7 +2,6 @@
 
 import Graphics.Gtk
 import Graphics.Cairo
-import Graphics.Cairo.Values
 
 main :: IO ()
 main = do

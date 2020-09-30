@@ -22,9 +22,14 @@ module Graphics.Cairo (
 	-- ** Image Surfaces
 	cairoImageSurfaceGetWidth, cairoImageSurfaceGetHeight,
 	-- ** PNG Support
+	-- *** From File
 	cairoImageSurfaceCreateFromPng, cairoWithImageSurfaceFromPng,
+	-- *** From Stream
 	CairoReadFunc,
 	cairoImageSurfaceCreateFromPngStream, cairoWithImageSurfaceFromPngStream,
+
+	-- * Types
+	CairoStatusT, cairoStatusSuccess, cairoStatusReadError
 	) where
 
 import Foreign.Ptr
@@ -37,7 +42,6 @@ import Data.Int
 import qualified Data.ByteString as BS
 
 import Graphics.CairoType
-import Graphics.Cairo.Values
 import Graphics.Gtk.AsPointer
 
 import Foreign.Tools
@@ -157,3 +161,7 @@ foreign import ccall "cairo_identity_matrix" c_cairo_identity_matrix :: Ptr Cair
 
 cairoIdentityMatrix :: CairoT -> IO ()
 cairoIdentityMatrix (CairoT cr) = c_cairo_identity_matrix cr
+
+newtype CairoStatusT = CairoStatusT #{type cairo_status_t} deriving Show
+
+#enum CairoStatusT, CairoStatusT, CAIRO_STATUS_SUCCESS, CAIRO_STATUS_READ_ERROR
