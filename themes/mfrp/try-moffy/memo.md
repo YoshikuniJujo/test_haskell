@@ -658,7 +658,7 @@ Graphics.Pango
 	+ [x] define `pangoFontDescriptionSetFamily`
 	+ [x] use `pangoFontDescriptionNew` and `pangoFontDescriptionSetFamily` instead of `pangoFontDescriptionFromString`
 * [x] don\'t use Text in pangoFontDescriptionFromString
-* [ ] separate tools for FFI
+* [x] separate tools for FFI
 	+ `type PtrForeignPtr a = Either (Ptr a) (ForeignPtr a)`
 	+ `withPtrForeignPtr :: Either (Ptr a) (ForeignPtr a) -> (Ptr a -> IO b) -> IO b`
 * [x] check export list of Graphics.Cairo

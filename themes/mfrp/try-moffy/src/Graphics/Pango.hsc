@@ -38,8 +38,6 @@ module Graphics.Pango (
 	) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr (ForeignPtr, withForeignPtr)
-import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C
@@ -51,13 +49,9 @@ import qualified Data.ByteString as BS
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 
+import Foreign.Tools
+
 #include <pango/pango.h>
-
-withPtrForeignPtr :: PtrForeignPtr a -> (Ptr a -> IO b) -> IO b
-withPtrForeignPtr (Left p) f = f p
-withPtrForeignPtr (Right fp) f = withForeignPtr fp f
-
-type PtrForeignPtr a = Either (Ptr a) (ForeignPtr a)
 
 newtype PangoFontDescription = PangoFontDescription (PtrForeignPtr PangoFontDescription)
 	deriving Show
@@ -65,7 +59,7 @@ newtype PangoFontDescription = PangoFontDescription (PtrForeignPtr PangoFontDesc
 pangoFontDescriptionNew :: IO PangoFontDescription
 pangoFontDescriptionNew = do
 	p <- c_pango_font_description_new
-	PangoFontDescription . Right <$> newForeignPtr p (c_pango_font_description_free p)
+	PangoFontDescription <$> setFinalizer p (c_pango_font_description_free p)
 
 foreign import ccall "pango_font_description_new" c_pango_font_description_new ::
 	IO (Ptr PangoFontDescription)
@@ -75,7 +69,7 @@ foreign import ccall "pango_font_description_free" c_pango_font_description_free
 
 pangoWithFontDescription :: (PangoFontDescription -> IO a) -> IO a
 pangoWithFontDescription f =
-	bracket c_pango_font_description_new c_pango_font_description_free $ f . PangoFontDescription . Left
+	bracket c_pango_font_description_new c_pango_font_description_free $ f . PangoFontDescription . wrapPtr
 
 pangoFontDescriptionSetFamily :: PangoFontDescription -> String -> IO ()
 pangoFontDescriptionSetFamily (PangoFontDescription fd) ff = withPtrForeignPtr fd \p -> withCString ff \cs ->
@@ -94,11 +88,11 @@ foreign import ccall "g_object_unref" c_g_object_unref :: Ptr a -> IO ()
 pangoCairoCreateLayout :: CairoT -> IO PangoLayout
 pangoCairoCreateLayout (CairoT cr) = do
 	p <- c_pango_cairo_create_layout cr
-	PangoLayout . Right <$> newForeignPtr p (c_g_object_unref p)
+	PangoLayout <$> setFinalizer p (c_g_object_unref p)
 
 pangoCairoWithLayout :: CairoT -> (PangoLayout -> IO a) -> IO a
 pangoCairoWithLayout (CairoT cr) f = bracket
-	(c_pango_cairo_create_layout cr) c_g_object_unref (f . PangoLayout . Left)
+	(c_pango_cairo_create_layout cr) c_g_object_unref (f . PangoLayout . wrapPtr)
 
 foreign import ccall "pango_layout_set_text" c_pango_layout_set_text ::
 	Ptr PangoLayout -> CString -> #{type int} -> IO ()
@@ -119,7 +113,7 @@ foreign import ccall "pango_font_description_from_string" c_pango_font_descripti
 pangoFontDescriptionFromString :: String -> IO PangoFontDescription
 pangoFontDescriptionFromString str = withCString str \cs -> do
 	p <- c_pango_font_description_from_string cs
-	PangoFontDescription . Right <$> newForeignPtr p (c_pango_font_description_free p)
+	PangoFontDescription <$> setFinalizer p (c_pango_font_description_free p)
 
 foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font_description ::
 	Ptr PangoLayout -> Ptr PangoFontDescription -> IO ()

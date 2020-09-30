@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 06c3ba64e239b4c8d23bf81ca05552e5482dfcf9db24f9c9b8aa059909f2eb38
+-- hash: 2476d8f5d502b76dcd922080148933c7ca064b272dd888c6ce36f6d07608ac70
 
 name:           try-moffy
 version:        0.1.0.0
@@ -86,6 +86,7 @@ library
       Data.Type.Set.Internal
       Data.Type.SetApp
       Data.Type.SetApp.Internal
+      Foreign.Tools
       Graphics.Cairo
       Graphics.Cairo.Values
       Graphics.CairoType
