@@ -14,6 +14,7 @@ import Data.Type.Set ((:-), (:+:))
 import System.Random
 import Graphics.Gtk
 import Graphics.Cairo
+import Graphics.CairoType
 
 import Control.Moffy.View.GtkField
 import Data.OneOfThem

@@ -15,10 +15,15 @@ module Graphics.Gtk (
 	gtkDrawingAreaNew,
 	-- *** Abstract Base Classes
 	-- **** GtkWidget
+	-- ***** Type
 	GtkWidget,
+	-- ***** Functions
 	gtkWidgetDestroy, gtkWidgetShowAll, gtkWidgetQueueDraw,
 	gtkWidgetSetEvents, gtkWidgetGetWindow,
 	gtkWidgetGetAllocatedWidth, gtkWidgetGetAllocatedHeight,
+	-- ***** Signals
+	ButtonEvent(..), ConfigureEvent(..), DeleteEvent(..), Destroy(..),
+	DrawEvent(..), KeyEvent(..), MotionNotifyEvent(..), ScrollEvent(..),
 	-- **** GtkContainer
 	castWidgetToContainer, gtkContainerAdd,
 
@@ -34,30 +39,26 @@ module Graphics.Gtk (
 	-- ** Windows
 	gdkWindowGetDisplay, gdkWindowSetCursor,
 	-- ** Events
-	Event, Handler, gdkPointerMotionMask, gdkScrollMask,
+	gdkPointerMotionMask, gdkScrollMask,
 	-- ** Event Structures
 	-- *** GdkEventKey
-	KeyEvent(..), GdkEventKey, keyval, hardwareKeycode,
+	GdkEventKey, keyval, hardwareKeycode,
 	-- *** GdkEventButton
-	ButtonEvent(..), GdkEventButton, gdkEventButtonButton, gdkEventButtonX, gdkEventButtonY,
+	GdkEventButton, gdkEventButtonButton, gdkEventButtonX, gdkEventButtonY,
 	-- *** GdkEventScroll
-	ScrollEvent(..), GdkEventScroll,
+	GdkEventScroll,
 	gdkEventScrollX, gdkEventScrollY, gdkEventScrollDeltaX, gdkEventScrollDeltaY,
 	-- *** GdkEventMotion
-	MotionNotifyEvent(..), GdkEventMotion, gdkEventMotionX, gdkEventMotionY,
+	GdkEventMotion, gdkEventMotionX, gdkEventMotionY,
 	-- *** GdkEventConfigure
-	ConfigureEvent(..), GdkEventConfigure,
+	GdkEventConfigure,
 	gdkEventConfigureX, gdkEventConfigureY, gdkEventConfigureWidth, gdkEventConfigureHeight,
-	-- ** Other Events
-	-- *** DeleteEvent
-	DeleteEvent(..),
-	-- *** Destroy
-	Destroy(..),
-	-- *** DrawEvent
-	DrawEvent(..), CairoT,
 
-	-- * Othres
-	AsPointer, gSignalConnect, gTimeoutAdd
+	-- * GLib
+	gTimeoutAdd,
+
+	-- * GObject
+	gSignalConnect, Event, Handler
 	) where
 
 #include <gtk/gtk.h>

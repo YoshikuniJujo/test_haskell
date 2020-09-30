@@ -4,6 +4,7 @@
 import Graphics.Gtk
 import Graphics.Cairo
 import Graphics.Pango
+import Graphics.CairoType
 
 main :: IO ()
 main = do

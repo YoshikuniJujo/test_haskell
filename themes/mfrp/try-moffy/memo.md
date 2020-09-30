@@ -668,12 +668,16 @@ Graphics.Pango
 * [x] check export list of Graphics.Cairo.Values
 	+ [x] remove text
 	+ [x] move Graphics.Cairo.Values into Graphics.Cairo
-* [ ] check export list of Graphics.Gtk
-	+ [ ] classify with API reference
+* [x] check export list of Graphics.Gtk
+	+ [x] classify with API reference
 		- [x] on the way
-		- [ ] continue
-	+ [ ] where delete, destroy and draw event should be classified
-	+ [ ] others
+		- [x] continue
+	+ [x] where delete, destroy and draw event should be classified
+* [ ] separate Graphics.Gtk
+	+ Graphics.Gtk
+	+ Graphics.Gdk
+	+ System.GLib
+	+ System.GObject
 * [ ] check export list of Graphics.Gtk.Values
 * [ ] check export list of Graphics.CairoType
 * [ ] check export list of Foreign.Tools

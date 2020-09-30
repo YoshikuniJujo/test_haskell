@@ -31,6 +31,7 @@ import Data.OneOrMore (project)
 import Graphics.Gtk as Gtk
 import Graphics.Cairo
 import Graphics.Pango
+import Graphics.CairoType
 
 import qualified Data.Text as T
 import qualified Data.ByteString as BS
