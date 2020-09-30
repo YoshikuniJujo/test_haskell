@@ -28,6 +28,7 @@ import Control.Concurrent
 import Control.Concurrent.STM hiding (retry)
 import Data.Type.Set
 import Data.OneOrMore (project)
+import System.Glib
 import Graphics.Gtk as Gtk
 import Graphics.Cairo
 import Graphics.Pango

@@ -54,9 +54,6 @@ module Graphics.Gtk (
 	GdkEventConfigure,
 	gdkEventConfigureX, gdkEventConfigureY, gdkEventConfigureWidth, gdkEventConfigureHeight,
 
-	-- * GLib
-	gTimeoutAdd,
-
 	-- * GObject
 	gSignalConnect, Event, Handler
 	) where
@@ -97,18 +94,10 @@ foreign import ccall "gtk_drawing_area_new" c_gtk_drawing_area_new :: IO (Ptr Gt
 
 foreign import ccall "gtk_widget_queue_draw" c_gtk_widget_queue_draw :: Ptr GtkWidget -> IO ()
 
-foreign import ccall "g_timeout_add" c_g_timeout_add ::
-	#{type guint} -> FunPtr (Ptr a -> IO #{type gboolean}) -> Ptr a -> IO #type guint
-
 foreign import ccall "gtk_widget_destroy" c_gtk_widget_destroy :: Ptr GtkWidget -> IO ()
 
 gtkWidgetDestroy :: GtkWidget -> IO ()
 gtkWidgetDestroy (GtkWidget p) = c_gtk_widget_destroy p
-
-gTimeoutAdd :: AsPointer a => #{type guint} -> (a -> IO Bool) -> a -> IO #type guint
-gTimeoutAdd t f x = do
-	fp <- g_callback_timeout \x' -> (boolToGBoolean <$>) . f =<< asValue x'
-	asPointer x $ c_g_timeout_add t fp
 
 gtkWidgetQueueDraw :: GtkWidget -> IO ()
 gtkWidgetQueueDraw (GtkWidget w) = c_gtk_widget_queue_draw w
@@ -325,8 +314,6 @@ foreign import ccall "wrapper" g_callback_button ::
 foreign import ccall "wrapper" g_callback_delete :: CHandler DeleteEvent a -> IO (FunPtr (CHandler DeleteEvent a))
 foreign import ccall "wrapper" g_callback_motion :: CHandler MotionNotifyEvent a -> IO (FunPtr (CHandler MotionNotifyEvent a))
 foreign import ccall "wrapper" g_callback_draw :: CHandler DrawEvent a -> IO (FunPtr (CHandler DrawEvent a))
-foreign import ccall "wrapper" g_callback_timeout ::
-	(Ptr a -> IO #{type gboolean}) -> IO (FunPtr (Ptr a -> IO #{type gboolean}))
 foreign import ccall "wrapper" g_callback_scroll ::
 	(GtkWidget -> GdkEventScroll -> Ptr a -> IO #{type gboolean}) -> IO (FunPtr (GtkWidget -> GdkEventScroll -> Ptr a -> IO #{type gboolean}))
 foreign import ccall "wrapper" g_callback_configure ::

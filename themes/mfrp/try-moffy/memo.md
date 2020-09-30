@@ -677,13 +677,15 @@ Graphics.Pango
 * [ ] separate Graphics.Gtk
 	+ [ ] Graphics.Gtk
 	+ [ ] Graphics.Gdk
-	+ [ ] System.GLib
+	+ [x] System.GLib
 		- [x] create empty module
-		- [ ] move from Graphics.Gtk
+		- [x] move from Graphics.Gtk
 	+ [ ] System.GObject
 * [ ] check export list of Graphics.Gtk.Values
 * [ ] check export list of Graphics.CairoType
 * [ ] check export list of Foreign.Tools
+	+ [ ] consider whether or not to change name of AsPointer
+	+ [ ] others
 * [ ] consider whether or not to use ForeignPtr to free memory for cairo surface
 * [ ] separate Graphics.Pango
 	+ Graphics.Pango.Font
