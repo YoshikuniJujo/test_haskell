@@ -9,7 +9,6 @@ module Control.Moffy.View.GtkField (
 	drawText, drawLine, drawImage, drawBox, fillPolygon ) where
 
 import qualified Data.ByteString as BS
-import qualified Data.Text as T
 
 import Control.Concurrent.STM
 
@@ -30,7 +29,8 @@ import Control.Moffy.Viewable.Image
 drawText :: GtkWidget -> CairoT -> VText -> IO ()
 drawText _ cr (Text' c fn fs (x, y) t) = do
 	l <- pangoCairoCreateLayout cr
-	d <- pangoFontDescriptionFromString $ T.pack fn
+	d <- pangoFontDescriptionNew
+	pangoFontDescriptionSetFamily d fn
 	pangoFontDescriptionSetAbsoluteSize d fs
 	pangoLayoutSetFontDescription l d
 	pangoLayoutSetText l t

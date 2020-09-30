@@ -6,9 +6,10 @@ module Graphics.Pango (
 	-- * Fonts
 	PangoFontDescription,
 	pangoFontDescriptionNew, pangoWithFontDescription,
-	pangoFontDescriptionFromString,
+	pangoFontDescriptionSetFamily,
 	pangoFontDescriptionSetSize,
 	pangoFontDescriptionSetAbsoluteSize,
+	pangoFontDescriptionFromString,
 
 	-- * Layout Objects
 	PangoLayout,
@@ -60,17 +61,19 @@ pangoFontDescriptionNew = do
 foreign import ccall "pango_font_description_new" c_pango_font_description_new ::
 	IO (Ptr PangoFontDescription)
 
-{-
-pangoFontDescriptionFree :: PangoFontDescription -> IO ()
-pangoFontDescriptionFree (PangoFontDescription p) = c_pango_font_description_free p
--}
-
 foreign import ccall "pango_font_description_free" c_pango_font_description_free ::
 	Ptr PangoFontDescription -> IO ()
 
 pangoWithFontDescription :: (PangoFontDescription -> IO a) -> IO a
 pangoWithFontDescription f =
 	bracket c_pango_font_description_new c_pango_font_description_free $ f . PangoFontDescription . Left
+
+pangoFontDescriptionSetFamily :: PangoFontDescription -> String -> IO ()
+pangoFontDescriptionSetFamily (PangoFontDescription fd) ff = withPtrForeignPtr fd \p -> withCString ff \cs ->
+	c_pango_font_description_set_family p cs
+
+foreign import ccall "pango_font_description_set_family" c_pango_font_description_set_family ::
+	Ptr PangoFontDescription -> CString -> IO ()
 
 newtype PangoLayout = PangoLayout (Ptr PangoLayout) deriving Show
 
