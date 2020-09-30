@@ -673,11 +673,14 @@ Graphics.Pango
 		- [x] on the way
 		- [x] continue
 	+ [x] where delete, destroy and draw event should be classified
+* [x] move AsPointer to Foreitn.Tools
 * [ ] separate Graphics.Gtk
-	+ Graphics.Gtk
-	+ Graphics.Gdk
-	+ System.GLib
-	+ System.GObject
+	+ [ ] Graphics.Gtk
+	+ [ ] Graphics.Gdk
+	+ [ ] System.GLib
+		- [x] create empty module
+		- [ ] move from Graphics.Gtk
+	+ [ ] System.GObject
 * [ ] check export list of Graphics.Gtk.Values
 * [ ] check export list of Graphics.CairoType
 * [ ] check export list of Foreign.Tools

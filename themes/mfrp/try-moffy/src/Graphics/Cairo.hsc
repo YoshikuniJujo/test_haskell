@@ -42,8 +42,6 @@ import Data.Int
 import qualified Data.ByteString as BS
 
 import Graphics.CairoType
-import Graphics.Gtk.AsPointer
-
 import Foreign.Tools
 
 #include <cairo.h>

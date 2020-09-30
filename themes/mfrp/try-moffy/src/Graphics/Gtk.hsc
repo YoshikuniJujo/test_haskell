@@ -74,7 +74,6 @@ import Data.Word
 import Data.Int
 
 import Graphics.Gtk.Values
-import Graphics.Gtk.AsPointer
 import Graphics.CairoType
 
 import Foreign.Tools
