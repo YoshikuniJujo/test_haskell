@@ -663,9 +663,10 @@ Graphics.Pango
 	+ `withPtrForeignPtr :: Either (Ptr a) (ForeignPtr a) -> (Ptr a -> IO b) -> IO b`
 * [x] check export list of Graphics.Cairo
 	+ [x] classify text
-	+ [x] others
+	+ [x] remove text
 * [ ] check export list of Graphics.Gtk
 * [ ] check export list of Graphics.CairoType
+* [ ] check export list of Foreign.Tools
 * [ ] consider whether or not to use ForeignPtr to free memory for cairo surface
 * [ ] separate Graphics.Pango
 	+ Graphics.Pango.Font

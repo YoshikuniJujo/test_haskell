@@ -25,30 +25,16 @@ module Graphics.Cairo (
 	cairoImageSurfaceCreateFromPng, cairoWithImageSurfaceFromPng,
 	CairoReadFunc,
 	cairoImageSurfaceCreateFromPngStream, cairoWithImageSurfaceFromPngStream,
-
-	-- * Text
-	-- ** Font
-	cairoSelectFontFace, cairoSetFontSize,
-	-- ** Show
-	cairoShowText,
-	-- ** Text Extents
-	cairoWithTextExtents,
-	cairoTextExtentsXBearing, cairoTextExtentsYBearing,
-	cairoTextExtentsWidth, cairoTextExtentsHeight,
-	cairoTextExtentsXAdvance, cairoTextExtentsYAdvance
 	) where
 
 import Foreign.Ptr
 import Foreign.Marshal
-import Foreign.Storable
 import Foreign.C
 import Control.Exception
 import Data.Word
 import Data.Int
 
 import qualified Data.ByteString as BS
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as T
 
 import Graphics.CairoType
 import Graphics.Cairo.Values
@@ -95,25 +81,6 @@ foreign import ccall "cairo_fill" c_cairo_fill :: Ptr CairoT -> IO ()
 
 cairoFill :: CairoT -> IO ()
 cairoFill (CairoT cr) = c_cairo_fill cr
-
-foreign import ccall "cairo_show_text" c_cairo_show_text :: Ptr CairoT -> CString -> IO ()
-
-cairoShowText :: CairoT -> String -> IO ()
-cairoShowText (CairoT cr) s = withCString s $ c_cairo_show_text cr
-
-foreign import ccall "cairo_set_font_size" c_cairo_set_font_size ::
-	Ptr CairoT -> #{type double} -> IO ()
-
-
-cairoSetFontSize :: CairoT -> #{type double} -> IO ()
-cairoSetFontSize (CairoT cr) = c_cairo_set_font_size cr
-
-foreign import ccall "cairo_select_font_face" c_cairo_select_font_face ::
-	Ptr CairoT -> CString -> #{type cairo_font_slant_t} -> #{type cairo_font_weight_t} -> IO ()
-
-cairoSelectFontFace :: CairoT -> String -> CairoFontSlantT -> CairoFontWeightT -> IO ()
-cairoSelectFontFace (CairoT cr) fn (CairoFontSlantT sl) (CairoFontWeightT w) =
-	withCString fn \cfn -> c_cairo_select_font_face cr cfn sl w
 
 foreign import ccall "cairo_image_surface_create_from_png" c_cairo_image_surface_create_from_png ::
 	CString -> IO (Ptr CairoSurfaceT)
@@ -190,24 +157,3 @@ foreign import ccall "cairo_identity_matrix" c_cairo_identity_matrix :: Ptr Cair
 
 cairoIdentityMatrix :: CairoT -> IO ()
 cairoIdentityMatrix (CairoT cr) = c_cairo_identity_matrix cr
-
-newtype CairoTextExtentsT = CairoTextExtentsT (Ptr CairoTextExtentsT) deriving Show
-
-foreign import ccall "cairo_text_extents" c_cairo_text_extents :: Ptr CairoT -> CString -> (Ptr CairoTextExtentsT) -> IO ()
-
-cairoWithTextExtents :: CairoT -> T.Text -> (CairoTextExtentsT -> IO a) -> IO a
-cairoWithTextExtents (CairoT cr) txt f = BS.useAsCString (T.encodeUtf8 txt) \cs -> allocaBytes #{size cairo_text_extents_t} \p -> do
-	c_cairo_text_extents cr cs p
-	f (CairoTextExtentsT p)
-
-cairoTextExtentsXBearing, cairoTextExtentsYBearing :: CairoTextExtentsT -> IO #{type double}
-cairoTextExtentsXBearing (CairoTextExtentsT e) = #{peek cairo_text_extents_t, x_bearing} e
-cairoTextExtentsYBearing (CairoTextExtentsT e) = #{peek cairo_text_extents_t, y_bearing} e
-
-cairoTextExtentsWidth, cairoTextExtentsHeight :: CairoTextExtentsT -> IO #{type double}
-cairoTextExtentsWidth (CairoTextExtentsT e) = #{peek cairo_text_extents_t, width} e
-cairoTextExtentsHeight (CairoTextExtentsT e) = #{peek cairo_text_extents_t, height} e
-
-cairoTextExtentsXAdvance, cairoTextExtentsYAdvance :: CairoTextExtentsT -> IO #{type double}
-cairoTextExtentsXAdvance (CairoTextExtentsT e) = #{peek cairo_text_extents_t, x_advance} e
-cairoTextExtentsYAdvance (CairoTextExtentsT e) = #{peek cairo_text_extents_t, y_advance} e
