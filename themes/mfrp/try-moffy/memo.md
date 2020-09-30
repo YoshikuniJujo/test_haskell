@@ -590,6 +590,7 @@ todo
 		to make SimpleHandle
 * [ ] consider whether or not to put `deriving Show' to Occurred Foo
 * [ ] define Data.Or.or
+* [ ] use DrawingArea size instead of Window size
 
 Graphics.Gtk (7)
 ----------------
@@ -668,6 +669,11 @@ Graphics.Pango
 	+ [x] remove text
 	+ [x] move Graphics.Cairo.Values into Graphics.Cairo
 * [ ] check export list of Graphics.Gtk
+	+ [ ] classify with API reference
+		- [x] on the way
+		- [ ] continue
+	+ [ ] where delete, destroy and draw event should be classified
+	+ [ ] others
 * [ ] check export list of Graphics.Gtk.Values
 * [ ] check export list of Graphics.CairoType
 * [ ] check export list of Foreign.Tools

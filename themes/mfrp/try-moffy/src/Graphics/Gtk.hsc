@@ -7,46 +7,57 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gtk (
-	-- * Basic
-	GtkWidget, gtkInit, gtkMain, gtkMainQuit,
-	gtkWidgetSetEvents, gtkWidgetShowAll,
-	gtkWidgetDestroy,
-	gtkWidgetQueueDraw,
-	gtkWidgetGetWindow,
-	gdkWindowGetDisplay,
-	gdkCursorNewFromName,
-	gdkCursorNewFromSurface,
-	gdkWindowSetCursor,
-	-- * Widget
+	-- * GTK
+	-- ** II. GTK+ Widgets and Objects
+	-- *** Windows
 	gtkWindowNew, gtkWindowToplevel, gtkWindowPopup,
+	-- *** Micellaneous
 	gtkDrawingAreaNew,
-	-- * Container
+	-- *** Abstract Base Classes
+	-- **** GtkWidget
+	GtkWidget,
+	gtkWidgetDestroy, gtkWidgetShowAll, gtkWidgetQueueDraw,
+	gtkWidgetSetEvents, gtkWidgetGetWindow,
+	gtkWidgetGetAllocatedWidth, gtkWidgetGetAllocatedHeight,
+	-- **** GtkContainer
 	castWidgetToContainer, gtkContainerAdd,
-	-- * Gdk Event Mask
-	gdkPointerMotionMask, gdkScrollMask,
-	-- * Event General
-	Event, Handler, AsPointer, gSignalConnect, gTimeoutAdd,
-	-- * Each Event
-	-- ** Destroy
-	Destroy(..),
-	-- ** DeleteEvent
-	DeleteEvent(..),
-	-- ** KeyEvent
+
+	-- ** III. GTK+ Core Reference
+	-- *** Main loop and Events
+	gtkInit, gtkMain, gtkMainQuit,
+
+
+	-- * GDK
+	-- ** GdkDisplay
+	-- ** Cursors
+	gdkCursorNewFromSurface, gdkCursorNewFromName,
+	-- ** Windows
+	gdkWindowGetDisplay, gdkWindowSetCursor,
+	-- ** Events
+	Event, Handler, gdkPointerMotionMask, gdkScrollMask,
+	-- ** Event Structures
+	-- *** GdkEventKey
 	KeyEvent(..), GdkEventKey, keyval, hardwareKeycode,
-	-- ** ButtonEvent
+	-- *** GdkEventButton
 	ButtonEvent(..), GdkEventButton, gdkEventButtonButton, gdkEventButtonX, gdkEventButtonY,
-	-- ** ScrollEvent
+	-- *** GdkEventScroll
 	ScrollEvent(..), GdkEventScroll,
 	gdkEventScrollX, gdkEventScrollY, gdkEventScrollDeltaX, gdkEventScrollDeltaY,
-	-- ** MotionNotifyEvent
+	-- *** GdkEventMotion
 	MotionNotifyEvent(..), GdkEventMotion, gdkEventMotionX, gdkEventMotionY,
-	-- ** DrawEvent
-	DrawEvent(..), CairoT,
-	-- ** ConfigureEvent
+	-- *** GdkEventConfigure
 	ConfigureEvent(..), GdkEventConfigure,
 	gdkEventConfigureX, gdkEventConfigureY, gdkEventConfigureWidth, gdkEventConfigureHeight,
-	-- * Others
-	gtkWidgetGetAllocatedWidth, gtkWidgetGetAllocatedHeight
+	-- ** Other Events
+	-- *** DeleteEvent
+	DeleteEvent(..),
+	-- *** Destroy
+	Destroy(..),
+	-- *** DrawEvent
+	DrawEvent(..), CairoT,
+
+	-- * Othres
+	AsPointer, gSignalConnect, gTimeoutAdd
 	) where
 
 #include <gtk/gtk.h>
