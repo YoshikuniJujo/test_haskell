@@ -26,14 +26,15 @@ module Graphics.Pango (
 	pangoLayoutWithPixelExtents,
 	pangoLayoutWithExtents,
 
-	-- * Cairo Fonts and Rendering
-	pangoCairoCreateLayout, pangoCairoWithLayout,
-	pangoCairoShowLayout,
-
 	-- * Types
+	-- ** PangoRectangle
 	PangoRectangle,
 	pangoRectangleX, pangoRectangleY,
-	pangoRectangleWidth, pangoRectangleHeight
+	pangoRectangleWidth, pangoRectangleHeight,
+
+	-- * Cairo Fonts and Rendering
+	pangoCairoCreateLayout, pangoCairoWithLayout,
+	pangoCairoShowLayout
 	) where
 
 import Foreign.Ptr

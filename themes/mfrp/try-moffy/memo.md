@@ -636,40 +636,38 @@ Graphics.Pango
 	+ [x] consider whether or not to remove Graphics.Gtk.AsPointer
 	+ [ ] others
 * [x] refactor Graphics.Gtk.AsPointer
-* [ ] check export list of Graphics.Pango
+* [x] check export list of Graphics.Pango
 	+ [x] consider use ForeignPtr
 	+ [x] classify export list
 		- [x] Fonts
 		- [x] Layout Objects
 		- [x] Cairo Fonts and Rendering
 		- [x] Types
-	+ [ ] Basic Pango Interfaces
+	+ [x] Basic Pango Interfaces
 		- [x] Fonts
 		- [x] Layout Objects
-		- [ ] Types
-	+ [ ] Rendering with Pango
-		- [ ] Cairo Fonts and Rendering
-	+ [ ] others
-* [ ] use `PtrForienPtr` (= `Either (Ptr Foo) (ForeignPtr Foo)`)
+		- [x] Types
+	+ [x] Rendering with Pango
+		- [x] Cairo Fonts and Rendering
+* [x] use `PtrForienPtr` (= `Either (Ptr Foo) (ForeignPtr Foo)`)
 	+ [x] define `withPtrForeignPtr :: Either (Ptr a) (ForeignPtr a) -> (Ptr a -> IO b) -> IO b`
 	+ [x] PangoFontDescription
 	+ [x] PangoLayout
-	+ [ ] PangoRectangle
 * [x] don\'t use pangoFontDescriptionFromString
 	+ [x] define `pangoFontDescriptionSetFamily`
 	+ [x] use `pangoFontDescriptionNew` and `pangoFontDescriptionSetFamily` instead of `pangoFontDescriptionFromString`
 * [x] don\'t use Text in pangoFontDescriptionFromString
-* [ ] separate Graphics.Pango
-	+ Graphics.Pango.Font
-	+ Graphics.Pango.Layout
-	+ Graphics.Pango.Types
-	+ Graphics.Pango.Cairo
 * [ ] check export list of Graphics.Cairo
 * [ ] check export list of Graphics.Gtk
 * [ ] consider whether or not to use ForeignPtr to free memory for cairo surface
 * [ ] separate tools for FFI
 	+ `type PtrForeignPtr a = Either (Ptr a) (ForeignPtr a)`
 	+ `withPtrForeignPtr :: Either (Ptr a) (ForeignPtr a) -> (Ptr a -> IO b) -> IO b`
+* [ ] separate Graphics.Pango
+	+ Graphics.Pango.Font
+	+ Graphics.Pango.Layout
+	+ Graphics.Pango.Types
+	+ Graphics.Pango.Cairo
 
 ### memo
 
