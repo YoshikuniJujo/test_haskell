@@ -675,6 +675,8 @@ Graphics.Pango
 	+ [x] where delete, destroy and draw event should be classified
 * [x] move AsPointer to Foreitn.Tools
 * [ ] make gobject-hierarchy like exception-hierarchy
+	+ [ ] make life-hierarchy
+	+ [ ] others
 * [ ] separate Graphics.Gtk
 	+ [ ] Graphics.Gtk
 	+ [ ] Graphics.Gdk
