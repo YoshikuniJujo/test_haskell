@@ -645,7 +645,7 @@ Graphics.Pango
 		- [x] Types
 	+ [ ] Basic Pango Interfaces
 		- [x] Fonts
-		- [ ] Layout Objects
+		- [x] Layout Objects
 		- [ ] Types
 	+ [ ] Rendering with Pango
 		- [ ] Cairo Fonts and Rendering

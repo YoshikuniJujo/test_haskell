@@ -17,9 +17,12 @@ module Graphics.Pango (
 	pangoFontDescriptionFromString,
 
 	-- * Layout Objects
+	-- ** Type
 	PangoLayout,
-	pangoLayoutSetFontDescription,
+	-- ** Set Parameters
 	pangoLayoutSetText,
+	pangoLayoutSetFontDescription,
+	-- ** Get Parameters
 	pangoLayoutWithPixelExtents,
 	pangoLayoutWithExtents,
 
