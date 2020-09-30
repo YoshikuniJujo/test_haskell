@@ -32,7 +32,7 @@ instance Life Animal
 
 instance Show Animal where
 	showsPrec d (Animal a) = showParen (d > 10) $
-		showString "Animal" . showsPrec 11 a
+		showString "Animal " . showsPrec 11 a
 
 animalToLife :: Life a => a -> SomeLife
 animalToLife = toLife . Animal
