@@ -11,6 +11,7 @@ import qualified Data.ByteString as BS
 
 import Graphics.Gtk
 import Graphics.Cairo
+import Graphics.CairoType
 import Graphics.Cairo.Values
 
 main :: IO ()

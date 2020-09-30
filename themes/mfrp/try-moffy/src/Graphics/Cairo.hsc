@@ -3,16 +3,37 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Cairo (
+	-- * Cairo_t
+	-- ** Set Parameter
 	cairoSetSourceRgb,
-	cairoStroke, cairoStrokePreserve, cairoFill,
-	cairoSetLineWidth, cairoMoveTo, cairoLineTo, cairoRectangle,
-	cairoShowText, cairoSetFontSize, cairoSelectFontFace,
-	CairoSurfaceT(..),
-	cairoImageSurfaceCreateFromPng, cairoSurfaceDestroy, cairoWithImageSurfaceFromPng,
-	cairoSetSourceSurface, cairoPaint,
-	CairoReadFunc, cairoImageSurfaceCreateFromPngStream, cairoWithImageSurfaceFromPngStream,
-	cairoImageSurfaceGetWidth, cairoImageSurfaceGetHeight,
+	cairoSetSourceSurface,
+	cairoSetLineWidth,
+	-- ** Draw
+	cairoFill, cairoPaint,
+	cairoStroke, cairoStrokePreserve,
+
+	-- * Paths
+	cairoLineTo, cairoMoveTo, cairoRectangle,
+
+	-- * Transformations
 	cairoScale, cairoIdentityMatrix,
+
+	-- * Surfaces
+	-- ** Cairo_surface_t
+	cairoSurfaceDestroy,
+	-- ** Image Surfaces
+	cairoImageSurfaceGetWidth, cairoImageSurfaceGetHeight,
+	-- ** PNG Support
+	cairoImageSurfaceCreateFromPng, cairoWithImageSurfaceFromPng,
+	CairoReadFunc,
+	cairoImageSurfaceCreateFromPngStream, cairoWithImageSurfaceFromPngStream,
+
+	-- * Text
+	-- ** Font
+	cairoSelectFontFace, cairoSetFontSize,
+	-- ** Show
+	cairoShowText,
+	-- ** Text Extents
 	cairoWithTextExtents,
 	cairoTextExtentsXBearing, cairoTextExtentsYBearing,
 	cairoTextExtentsWidth, cairoTextExtentsHeight,
