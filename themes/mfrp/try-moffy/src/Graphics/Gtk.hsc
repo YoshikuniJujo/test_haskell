@@ -65,6 +65,8 @@ import Graphics.Gtk.Values
 import Graphics.Gtk.AsPointer
 import Graphics.CairoType
 
+import Foreign.Tools
+
 newtype GtkWidget = GtkWidget (Ptr GtkWidget) deriving Show
 newtype GtkContainer = GtkContainer (Ptr GtkContainer) deriving Show
 
@@ -393,7 +395,8 @@ gdkWindowSetCursor (GdkWindow w) (GdkCursor c) = c_gdk_window_set_cursor w c
 foreign import ccall "gdk_window_set_cursor" c_gdk_window_set_cursor :: Ptr GdkWindow -> Ptr GdkCursor -> IO ()
 
 gdkCursorNewFromSurface :: GdkDisplay -> CairoSurfaceT -> #{type gdouble} -> #{type gdouble} -> IO GdkCursor
-gdkCursorNewFromSurface (GdkDisplay d) (CairoSurfaceT s) x y = GdkCursor <$> c_gdk_cursor_new_from_surface d s x y
+gdkCursorNewFromSurface (GdkDisplay d) (CairoSurfaceT s_) x y = withPtrForeignPtr s_ \s ->
+	GdkCursor <$> c_gdk_cursor_new_from_surface d s x y
 
 foreign import ccall "gdk_cursor_new_from_surface" c_gdk_cursor_new_from_surface ::
 	Ptr GdkDisplay -> Ptr CairoSurfaceT -> #{type gdouble} -> #{type gdouble} -> IO (Ptr GdkCursor)

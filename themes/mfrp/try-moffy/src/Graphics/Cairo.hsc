@@ -19,8 +19,6 @@ module Graphics.Cairo (
 	cairoScale, cairoIdentityMatrix,
 
 	-- * Surfaces
-	-- ** Cairo_surface_t
-	cairoSurfaceDestroy,
 	-- ** Image Surfaces
 	cairoImageSurfaceGetWidth, cairoImageSurfaceGetHeight,
 	-- ** PNG Support
@@ -55,6 +53,8 @@ import qualified Data.Text.Encoding as T
 import Graphics.CairoType
 import Graphics.Cairo.Values
 import Graphics.Gtk.AsPointer
+
+import Foreign.Tools
 
 #include <cairo.h>
 
@@ -119,22 +119,19 @@ foreign import ccall "cairo_image_surface_create_from_png" c_cairo_image_surface
 	CString -> IO (Ptr CairoSurfaceT)
 
 cairoImageSurfaceCreateFromPng :: FilePath -> IO CairoSurfaceT
-cairoImageSurfaceCreateFromPng fp = withCString fp $ (CairoSurfaceT <$>) . c_cairo_image_surface_create_from_png
-
-foreign import ccall "cairo_surface_destroy" c_cairo_surface_destroy :: Ptr CairoSurfaceT -> IO ()
-
-cairoSurfaceDestroy :: CairoSurfaceT -> IO ()
-cairoSurfaceDestroy (CairoSurfaceT s) = c_cairo_surface_destroy s
+cairoImageSurfaceCreateFromPng fp = withCString fp \cfp -> do
+	p <- c_cairo_image_surface_create_from_png cfp
+	CairoSurfaceT <$> setFinalizer p (c_cairo_surface_destroy p)
 
 cairoWithImageSurfaceFromPng  :: FilePath -> (CairoSurfaceT -> IO a) -> IO a
-cairoWithImageSurfaceFromPng fp =
-	bracket (cairoImageSurfaceCreateFromPng fp) cairoSurfaceDestroy
+cairoWithImageSurfaceFromPng fp f = withCString fp \cfp ->
+	bracket (c_cairo_image_surface_create_from_png cfp) c_cairo_surface_destroy (f . CairoSurfaceT . wrapPtr)
 
 foreign import ccall "cairo_set_source_surface" c_cairo_set_source_surface ::
 	Ptr CairoT -> Ptr CairoSurfaceT -> #{type double} -> #{type double} -> IO ()
 
 cairoSetSourceSurface :: CairoT -> CairoSurfaceT -> #{type double} -> #{type double} -> IO ()
-cairoSetSourceSurface (CairoT cr) (CairoSurfaceT s) x y = c_cairo_set_source_surface cr s x y
+cairoSetSourceSurface (CairoT cr) (CairoSurfaceT s_) x y = withPtrForeignPtr s_ \s -> c_cairo_set_source_surface cr s x y
 
 foreign import ccall "cairo_paint" c_cairo_paint :: Ptr CairoT -> IO ()
 
@@ -163,20 +160,26 @@ foreign import ccall "wrapper" c_cairo_read_func_t :: CCairoReadFunc a -> IO (Fu
 cairoImageSurfaceCreateFromPngStream :: AsPointer a => CairoReadFunc a -> a -> IO CairoSurfaceT
 cairoImageSurfaceCreateFromPngStream f x = do
 	cf <- c_cairo_read_func_t $ cairoReadFuncToCCairoReadFunc f
-	asPointer x $
-		(CairoSurfaceT <$>) . c_cairo_image_surface_create_from_png_stream cf
+	asPointer x \px -> do
+		p <- c_cairo_image_surface_create_from_png_stream cf px
+		CairoSurfaceT <$> setFinalizer p (c_cairo_surface_destroy p)
+
+foreign import ccall "cairo_surface_destroy" c_cairo_surface_destroy :: Ptr CairoSurfaceT -> IO ()
 
 cairoWithImageSurfaceFromPngStream ::
 	AsPointer a => CairoReadFunc a -> a -> (CairoSurfaceT -> IO b) -> IO b
-cairoWithImageSurfaceFromPngStream rf x =
-	bracket (cairoImageSurfaceCreateFromPngStream rf x) cairoSurfaceDestroy
+cairoWithImageSurfaceFromPngStream rf x f = asPointer x \px -> bracket
+	do	cf <- c_cairo_read_func_t $ cairoReadFuncToCCairoReadFunc rf
+		c_cairo_image_surface_create_from_png_stream cf px
+	c_cairo_surface_destroy
+	(f . CairoSurfaceT . wrapPtr)
 
 foreign import ccall "cairo_image_surface_get_width" c_cairo_image_surface_get_width :: Ptr CairoSurfaceT -> IO #{type int}
 foreign import ccall "cairo_image_surface_get_height" c_cairo_image_surface_get_height :: Ptr CairoSurfaceT -> IO #{type int}
 
 cairoImageSurfaceGetWidth, cairoImageSurfaceGetHeight :: CairoSurfaceT -> IO #{type int}
-cairoImageSurfaceGetWidth (CairoSurfaceT s) = c_cairo_image_surface_get_width s
-cairoImageSurfaceGetHeight (CairoSurfaceT s) = c_cairo_image_surface_get_height s
+cairoImageSurfaceGetWidth (CairoSurfaceT s) = withPtrForeignPtr s c_cairo_image_surface_get_width
+cairoImageSurfaceGetHeight (CairoSurfaceT s) = withPtrForeignPtr s c_cairo_image_surface_get_height
 
 foreign import ccall "cairo_scale" c_cairo_scale :: Ptr CairoT -> #{type double} -> #{type double} -> IO ()
 

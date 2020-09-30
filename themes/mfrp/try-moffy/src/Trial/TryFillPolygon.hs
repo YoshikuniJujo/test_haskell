@@ -9,7 +9,6 @@ import Control.Moffy.Handle
 import Control.Moffy.Handle.TChan
 import Control.Moffy.Viewable.Basic
 import Control.Moffy.Viewable.Shape
-import Control.Moffy.View.GtkField
 import Control.Moffy.Run.TChan
 import Control.Moffy.Run.GtkField
 import Data.Type.Set

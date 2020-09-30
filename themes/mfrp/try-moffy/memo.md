@@ -649,11 +649,11 @@ Graphics.Pango
 		- [x] Types
 	+ [x] Rendering with Pango
 		- [x] Cairo Fonts and Rendering
-* [ ] use `PtrForienPtr` (= `Either (Ptr Foo) (ForeignPtr Foo)`)
+* [x] use `PtrForienPtr` (= `Either (Ptr Foo) (ForeignPtr Foo)`)
 	+ [x] define `withPtrForeignPtr :: Either (Ptr a) (ForeignPtr a) -> (Ptr a -> IO b) -> IO b`
 	+ [x] PangoFontDescription
 	+ [x] PangoLayout
-	+ [ ] CairoSurfaceT
+	+ [x] CairoSurfaceT
 * [x] don\'t use pangoFontDescriptionFromString
 	+ [x] define `pangoFontDescriptionSetFamily`
 	+ [x] use `pangoFontDescriptionNew` and `pangoFontDescriptionSetFamily` instead of `pangoFontDescriptionFromString`

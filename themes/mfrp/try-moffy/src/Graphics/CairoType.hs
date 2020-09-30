@@ -3,7 +3,8 @@
 module Graphics.CairoType where
 
 import Foreign.Ptr
+import Foreign.Tools
 
 newtype CairoT = CairoT (Ptr CairoT) deriving Show
 
-newtype CairoSurfaceT = CairoSurfaceT (Ptr CairoSurfaceT) deriving Show
+newtype CairoSurfaceT = CairoSurfaceT (PtrForeignPtr CairoSurfaceT) deriving Show
