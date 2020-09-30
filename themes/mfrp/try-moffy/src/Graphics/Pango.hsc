@@ -20,12 +20,12 @@ module Graphics.Pango (
 	PangoLayout,
 	pangoLayoutSetFontDescription,
 	pangoLayoutSetText,
-
-	-- * Cairo Fonts and Rendering
-	pangoCairoCreateLayout,
-	pangoCairoShowLayout,
 	pangoLayoutWithPixelExtents,
 	pangoLayoutWithExtents,
+
+	-- * Cairo Fonts and Rendering
+	pangoCairoCreateLayout, pangoCairoWithLayout,
+	pangoCairoShowLayout,
 
 	-- * Types
 	PangoRectangle,
@@ -80,26 +80,34 @@ pangoFontDescriptionSetFamily (PangoFontDescription fd) ff = withPtrForeignPtr f
 foreign import ccall "pango_font_description_set_family" c_pango_font_description_set_family ::
 	Ptr PangoFontDescription -> CString -> IO ()
 
-newtype PangoLayout = PangoLayout (Ptr PangoLayout) deriving Show
+newtype PangoLayout = PangoLayout (PtrForeignPtr PangoLayout) deriving Show
 
 foreign import ccall "pango_cairo_create_layout" c_pango_cairo_create_layout ::
 	Ptr CairoT -> IO (Ptr PangoLayout)
 
+foreign import ccall "g_object_unref" c_g_object_unref :: Ptr a -> IO ()
+
 pangoCairoCreateLayout :: CairoT -> IO PangoLayout
-pangoCairoCreateLayout (CairoT cr) = PangoLayout <$> c_pango_cairo_create_layout cr
+pangoCairoCreateLayout (CairoT cr) = do
+	p <- c_pango_cairo_create_layout cr
+	PangoLayout . Right <$> newForeignPtr p (c_g_object_unref p)
+
+pangoCairoWithLayout :: CairoT -> (PangoLayout -> IO a) -> IO a
+pangoCairoWithLayout (CairoT cr) f = bracket
+	(c_pango_cairo_create_layout cr) c_g_object_unref (f . PangoLayout . Left)
 
 foreign import ccall "pango_layout_set_text" c_pango_layout_set_text ::
 	Ptr PangoLayout -> CString -> #{type int} -> IO ()
 
 pangoLayoutSetText :: PangoLayout -> T.Text -> IO ()
-pangoLayoutSetText (PangoLayout l) txt =
+pangoLayoutSetText (PangoLayout l_) txt = withPtrForeignPtr l_ \l ->
 	BS.useAsCString (T.encodeUtf8 txt) \cs -> c_pango_layout_set_text l cs (- 1)
 
 foreign import ccall "pango_cairo_show_layout" c_pango_cairo_show_layout ::
 	Ptr CairoT -> Ptr PangoLayout -> IO ()
 
 pangoCairoShowLayout :: CairoT -> PangoLayout -> IO ()
-pangoCairoShowLayout (CairoT cr) (PangoLayout l) = c_pango_cairo_show_layout cr l
+pangoCairoShowLayout (CairoT cr) (PangoLayout l) = withPtrForeignPtr l $ c_pango_cairo_show_layout cr
 
 foreign import ccall "pango_font_description_from_string" c_pango_font_description_from_string ::
 	CString -> IO (Ptr PangoFontDescription)
@@ -113,8 +121,8 @@ foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font
 	Ptr PangoLayout -> Ptr PangoFontDescription -> IO ()
 
 pangoLayoutSetFontDescription :: PangoLayout -> PangoFontDescription -> IO ()
-pangoLayoutSetFontDescription (PangoLayout l) (PangoFontDescription d) = withPtrForeignPtr d
-	$ c_pango_layout_set_font_description l
+pangoLayoutSetFontDescription (PangoLayout l_) (PangoFontDescription d) = withPtrForeignPtr l_ \l ->
+	withPtrForeignPtr d $ c_pango_layout_set_font_description l
 
 foreign import ccall "pango_font_description_set_size" c_pango_font_description_set_size ::
 	Ptr PangoFontDescription -> #{type gint} -> IO ()
@@ -136,7 +144,7 @@ foreign import ccall "pango_layout_get_extents" c_pango_layout_get_extents ::
 	Ptr PangoLayout -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
 
 pangoLayoutWithExtents :: PangoLayout -> (PangoRectangle -> PangoRectangle -> IO a) -> IO a
-pangoLayoutWithExtents (PangoLayout l) f =
+pangoLayoutWithExtents (PangoLayout l_) f = withPtrForeignPtr l_ \l ->
 	allocaBytes #{size PangoRectangle} \pir ->
 		allocaBytes #{size PangoRectangle} \plr -> do
 			c_pango_layout_get_extents l pir plr
@@ -153,7 +161,7 @@ foreign import ccall "pango_layout_get_pixel_extents" c_pango_layout_get_pixel_e
 	Ptr PangoLayout -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
 
 pangoLayoutWithPixelExtents :: PangoLayout -> (PangoRectangle -> PangoRectangle -> IO a) -> IO a
-pangoLayoutWithPixelExtents (PangoLayout l) f =
+pangoLayoutWithPixelExtents (PangoLayout l_) f = withPtrForeignPtr l_ \l ->
 	allocaBytes #{size PangoRectangle} \pir ->
 		allocaBytes #{size PangoRectangle} \plr -> do
 			c_pango_layout_get_pixel_extents l pir plr

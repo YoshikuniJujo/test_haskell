@@ -638,11 +638,6 @@ Graphics.Pango
 * [x] refactor Graphics.Gtk.AsPointer
 * [ ] check export list of Graphics.Pango
 	+ [x] consider use ForeignPtr
-	+ [ ] use `PtrForienPtr` (= `Either (Ptr Foo) (ForeignPtr Foo)`)
-		- [x] define `withPtrForeignPtr :: Either (Ptr a) (ForeignPtr a) -> (Ptr a -> IO b) -> IO b`
-		- [x] PangoFontDescription
-		- [ ] PangoLayout
-		- [ ] PangoRectangle
 	+ [x] classify export list
 		- [x] Fonts
 		- [x] Layout Objects
@@ -650,11 +645,16 @@ Graphics.Pango
 		- [x] Types
 	+ [ ] Basic Pango Interfaces
 		- [x] Fonts
-		- [ ] Glyphs
 		- [ ] Layout Objects
+		- [ ] Types
 	+ [ ] Rendering with Pango
 		- [ ] Cairo Fonts and Rendering
 	+ [ ] others
+* [ ] use `PtrForienPtr` (= `Either (Ptr Foo) (ForeignPtr Foo)`)
+	+ [x] define `withPtrForeignPtr :: Either (Ptr a) (ForeignPtr a) -> (Ptr a -> IO b) -> IO b`
+	+ [x] PangoFontDescription
+	+ [x] PangoLayout
+	+ [ ] PangoRectangle
 * [x] don\'t use pangoFontDescriptionFromString
 	+ [x] define `pangoFontDescriptionSetFamily`
 	+ [x] use `pangoFontDescriptionNew` and `pangoFontDescriptionSetFamily` instead of `pangoFontDescriptionFromString`
