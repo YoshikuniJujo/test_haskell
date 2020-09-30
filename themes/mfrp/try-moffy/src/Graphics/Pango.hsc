@@ -4,11 +4,16 @@
 
 module Graphics.Pango (
 	-- * Fonts
+	-- ** PangoFontDescription
+	-- *** Type
 	PangoFontDescription,
+	-- *** Make PangoFontDescription
 	pangoFontDescriptionNew, pangoWithFontDescription,
+	-- *** Set Field
 	pangoFontDescriptionSetFamily,
 	pangoFontDescriptionSetSize,
 	pangoFontDescriptionSetAbsoluteSize,
+	-- *** String Representation
 	pangoFontDescriptionFromString,
 
 	-- * Layout Objects
