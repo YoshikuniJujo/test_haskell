@@ -5,9 +5,7 @@
 module Graphics.Pango (
 	-- * Fonts
 	PangoFontDescription,
-	pangoFontDescriptionNew,
-	pangoFontDescriptionFree,
-	pangoWithFontDescription,
+	pangoFontDescriptionNew, pangoWithFontDescription,
 	pangoFontDescriptionFromString,
 	pangoFontDescriptionSetSize,
 	pangoFontDescriptionSetAbsoluteSize,
@@ -24,6 +22,8 @@ module Graphics.Pango (
 	) where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr (ForeignPtr, withForeignPtr)
+import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C
@@ -37,21 +37,34 @@ import qualified Data.Text.Encoding as T
 
 #include <pango/pango.h>
 
+withPtrForeignPtr :: PtrForeignPtr a -> (Ptr a -> IO b) -> IO b
+withPtrForeignPtr (Left p) f = f p
+withPtrForeignPtr (Right fp) f = withForeignPtr fp f
+
+type PtrForeignPtr a = Either (Ptr a) (ForeignPtr a)
+
+newtype PangoFontDescription = PangoFontDescription (PtrForeignPtr PangoFontDescription)
+	deriving Show
+
 pangoFontDescriptionNew :: IO PangoFontDescription
-pangoFontDescriptionNew = PangoFontDescription <$> c_pango_font_description_new
+pangoFontDescriptionNew = do
+	p <- c_pango_font_description_new
+	PangoFontDescription . Right <$> newForeignPtr p (c_pango_font_description_free p)
 
 foreign import ccall "pango_font_description_new" c_pango_font_description_new ::
 	IO (Ptr PangoFontDescription)
 
+{-
 pangoFontDescriptionFree :: PangoFontDescription -> IO ()
 pangoFontDescriptionFree (PangoFontDescription p) = c_pango_font_description_free p
+-}
 
 foreign import ccall "pango_font_description_free" c_pango_font_description_free ::
 	Ptr PangoFontDescription -> IO ()
 
 pangoWithFontDescription :: (PangoFontDescription -> IO a) -> IO a
-pangoWithFontDescription =
-	bracket pangoFontDescriptionNew pangoFontDescriptionFree
+pangoWithFontDescription f =
+	bracket c_pango_font_description_new c_pango_font_description_free $ f . PangoFontDescription . Left
 
 newtype PangoLayout = PangoLayout (Ptr PangoLayout) deriving Show
 
@@ -74,37 +87,35 @@ foreign import ccall "pango_cairo_show_layout" c_pango_cairo_show_layout ::
 pangoCairoShowLayout :: CairoT -> PangoLayout -> IO ()
 pangoCairoShowLayout (CairoT cr) (PangoLayout l) = c_pango_cairo_show_layout cr l
 
-newtype PangoFontDescription = PangoFontDescription (Ptr PangoFontDescription)
-	deriving Show
-
 foreign import ccall "pango_font_description_from_string" c_pango_font_description_from_string ::
 	CString -> IO (Ptr PangoFontDescription)
 
 pangoFontDescriptionFromString :: T.Text -> IO PangoFontDescription
 pangoFontDescriptionFromString txt =
-	BS.useAsCString (T.encodeUtf8 txt) \cs ->
-		PangoFontDescription <$> c_pango_font_description_from_string cs
+	BS.useAsCString (T.encodeUtf8 txt) \cs -> do
+		p <- c_pango_font_description_from_string cs
+		PangoFontDescription . Right <$> newForeignPtr p (c_pango_font_description_free p)
 
 foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font_description ::
 	Ptr PangoLayout -> Ptr PangoFontDescription -> IO ()
 
 pangoLayoutSetFontDescription :: PangoLayout -> PangoFontDescription -> IO ()
-pangoLayoutSetFontDescription (PangoLayout l) (PangoFontDescription d) =
-	c_pango_layout_set_font_description l d
+pangoLayoutSetFontDescription (PangoLayout l) (PangoFontDescription d) = withPtrForeignPtr d
+	$ c_pango_layout_set_font_description l
 
 foreign import ccall "pango_font_description_set_size" c_pango_font_description_set_size ::
 	Ptr PangoFontDescription -> #{type gint} -> IO ()
 
 pangoFontDescriptionSetSize :: PangoFontDescription -> #{type gint} -> IO ()
-pangoFontDescriptionSetSize (PangoFontDescription d) =
-	c_pango_font_description_set_size d . (* #{const PANGO_SCALE})
+pangoFontDescriptionSetSize (PangoFontDescription d) sz = withPtrForeignPtr d \p ->
+	c_pango_font_description_set_size p $ sz * #{const PANGO_SCALE}
 
 foreign import ccall "pango_font_description_set_absolute_size" c_pango_font_description_set_absolute_size ::
 	Ptr PangoFontDescription -> #{type double} -> IO ()
 
 pangoFontDescriptionSetAbsoluteSize :: PangoFontDescription -> #{type double} -> IO ()
-pangoFontDescriptionSetAbsoluteSize (PangoFontDescription d) =
-	c_pango_font_description_set_absolute_size d . (* #{const PANGO_SCALE})
+pangoFontDescriptionSetAbsoluteSize (PangoFontDescription d) sz = withPtrForeignPtr d \p ->
+	c_pango_font_description_set_absolute_size p $ sz * #{const PANGO_SCALE}
 
 newtype PangoRectangle = PangoRectangle (Ptr PangoRectangle) deriving Show
 

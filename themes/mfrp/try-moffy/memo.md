@@ -637,11 +637,35 @@ Graphics.Pango
 	+ [ ] others
 * [x] refactor Graphics.Gtk.AsPointer
 * [ ] check export list of Graphics.Pango
-	+ [ ] consider use ForeignPtr
+	+ [x] consider use ForeignPtr
+	+ [ ] use `PtrForienPtr` (= `Either (Ptr Foo) (ForeignPtr Foo)`)
+		- [x] define `withPtrForeignPtr :: Either (Ptr a) (ForeignPtr a) -> (Ptr a -> IO b) -> IO b`
+		- [x] PangoFontDescription
+		- [ ] PangoLayout
+		- [ ] PangoRectangle
+	+ [ ] classify export list
+		- [x] Fonts
+		- [ ] Layout Objects
+		- [ ] Cairo Fonts and Rendering
+		- [ ] Types
+	+ [ ] Basic Pango Interfaces
+		- [ ] Fonts
+		- [ ] Glyphs
+		- [ ] Layout Objects
+	+ [ ] Rendering with Pango
+		- [ ] Cairo Fonts and Rendering
 	+ [ ] others
+* [ ] separate Graphics.Pango
+	+ Graphics.Pango.Font
+	+ Graphics.Pango.Layout
+	+ Graphics.Pango.Types
+	+ Graphics.Pango.Cairo
 * [ ] check export list of Graphics.Cairo
 * [ ] check export list of Graphics.Gtk
 * [ ] consider whether or not to use ForeignPtr to free memory for cairo surface
+* [ ] separate tools for FFI
+	+ `type PtrForeignPtr a = Either (Ptr a) (ForeignPtr a)`
+	+ `withPtrForeignPtr :: Either (Ptr a) (ForeignPtr a) -> (Ptr a -> IO b) -> IO b`
 
 ### separate to independent package
 
