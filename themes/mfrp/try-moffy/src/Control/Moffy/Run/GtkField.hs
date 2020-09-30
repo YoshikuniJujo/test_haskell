@@ -151,14 +151,15 @@ createWindow :: WindowId -> TChan (EvOccs GuiEv) -> IO GtkWidget
 createWindow wid c = do
 	w <- gtkWindowNew gtkWindowToplevel
 	gtkWidgetSetEvents w [gdkPointerMotionMask, gdkScrollMask]
+	let	w' = castGtkWidgetToGObject w
 	w <$ mapM_ ($ ()) [
 --		gSignalConnect w Destroy gtkMainQuit,
-		gSignalConnect w DeleteEvent \_ _ _ -> deleteEvent wid c,
-		gSignalConnect w KeyPressEvent \_ ev _ -> keyDown wid c ev,
-		gSignalConnect w KeyReleaseEvent \_ ev _ -> keyUp wid c ev,
-		gSignalConnect w ButtonPressEvent \_ ev _ -> buttonDown wid c ev,
-		gSignalConnect w ButtonReleaseEvent \_ ev _ -> buttonUp wid c ev,
-		gSignalConnect w ScrollEvent \_ ev _ -> True <$ do
+		gSignalConnect w' DeleteEvent \_ _ _ -> deleteEvent wid c,
+		gSignalConnect w' KeyPressEvent \_ ev _ -> keyDown wid c ev,
+		gSignalConnect w' KeyReleaseEvent \_ ev _ -> keyUp wid c ev,
+		gSignalConnect w' ButtonPressEvent \_ ev _ -> buttonDown wid c ev,
+		gSignalConnect w' ButtonReleaseEvent \_ ev _ -> buttonUp wid c ev,
+		gSignalConnect w' ScrollEvent \_ ev _ -> True <$ do
 			x <- gdkEventScrollX ev
 			y <- gdkEventScrollY ev
 			dx <- gdkEventScrollDeltaX ev
@@ -167,15 +168,15 @@ createWindow wid c = do
 				OccMouseMove wid (x, y) >- Singleton (OccMouseScroll wid dx dy) ::
 					EvOccs (MouseMove :- MouseScroll :- 'Nil) )
 			,
-		gSignalConnect w MotionNotifyEvent \_ ev _ -> mouseMove wid c ev,
-		gSignalConnect w ConfigureEvent \_ ev _ -> wConfigure wid c ev ]
+		gSignalConnect w' MotionNotifyEvent \_ ev _ -> mouseMove wid c ev,
+		gSignalConnect w' ConfigureEvent \_ ev _ -> wConfigure wid c ev ]
 
 createDrawingArea :: Monoid a => WindowId -> GtkDrawer a -> TChan (WindowId, FontName, FontSize, T.Text) ->
 	TChan (EvOccs GuiEv) -> TVar (Map WindowId a) -> GtkWidget -> IO GtkWidget
 createDrawingArea wid dr ftc c tx w = do
 	da <- gtkDrawingAreaNew
 	gtkContainerAdd (castWidgetToContainer w) da
-	da <$ gSignalConnect da DrawEvent (draw wid dr ftc c tx) ()
+	da <$ gSignalConnect (castGtkWidgetToGObject da) DrawEvent (draw wid dr ftc c tx) ()
 
 recieveViewable :: TChan (Map WindowId a) -> TVar (Map WindowId a) -> TVar (Map WindowId GtkWidget) -> IO Bool
 recieveViewable c' tx vda = atomically (readTVar vda) >>= \das -> True <$ do

@@ -11,7 +11,7 @@ main = do
 	fp : _ <- getArgs
 	gtkInit []
 	w <- gtkWindowNew gtkWindowToplevel
-	gSignalConnect w Destroy gtkMainQuit ()
+	gSignalConnect (castGtkWidgetToGObject w) Destroy gtkMainQuit ()
 
 	cairoWithImageSurfaceFromPng fp \s -> do
 		gtkWidgetShowAll w

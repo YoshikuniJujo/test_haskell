@@ -23,10 +23,10 @@ main = do
 --	cairoWithImageSurfaceFromPngStream (readPngFunc h) () \png -> do
 --	cairoWithImageSurfaceFromPng pngFile \png -> do
 		w <- gtkWindowNew gtkWindowToplevel
-		gSignalConnect w Destroy gtkMainQuit ()
+		gSignalConnect (castGtkWidgetToGObject w) Destroy gtkMainQuit ()
 
 		da <- gtkDrawingAreaNew
-		gSignalConnect da DrawEvent (draw png) ()
+		gSignalConnect (castGtkWidgetToGObject da) DrawEvent (draw png) ()
 		gtkContainerAdd (castWidgetToContainer w) da
 
 		gtkWidgetShowAll w

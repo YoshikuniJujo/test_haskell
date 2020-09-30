@@ -55,7 +55,7 @@ module Graphics.Gtk (
 	gdkEventConfigureX, gdkEventConfigureY, gdkEventConfigureWidth, gdkEventConfigureHeight,
 
 	-- * GObject
-	gSignalConnect, Event, Handler
+	gSignalConnect, Event, Handler, castGtkWidgetToGObject
 	) where
 
 #include <gtk/gtk.h>
@@ -75,6 +75,11 @@ import Graphics.CairoType
 
 import Foreign.Tools
 
+import System.Gobject
+
+castGtkWidgetToGObject :: GtkWidget -> GObject
+castGtkWidgetToGObject (GtkWidget p) = GObject $ castPtr p
+
 newtype GtkWidget = GtkWidget (Ptr GtkWidget) deriving Show
 newtype GtkContainer = GtkContainer (Ptr GtkContainer) deriving Show
 
@@ -87,7 +92,7 @@ foreign import ccall "gtk_widget_show_all" c_gtk_widget_show_all :: Ptr GtkWidge
 foreign import ccall "gtk_main" c_gtk_main :: IO ()
 foreign import ccall "gtk_main_quit" c_gtk_main_quit :: IO ()
 foreign import ccall "gtk_container_add" c_gtk_container_add :: Ptr GtkContainer -> Ptr GtkWidget -> IO ()
-foreign import capi "GTK_CONTAINER" c_GTK_CONTAINER :: Ptr GtkWidget -> Ptr GtkContainer
+foreign import capi "gtk/gtk.h GTK_CONTAINER" c_GTK_CONTAINER :: Ptr GtkWidget -> Ptr GtkContainer
 
 foreign import ccall "gtk_window_new" c_gtk_window_new :: #{type GtkWindowType} -> IO (Ptr GtkWidget)
 foreign import ccall "gtk_drawing_area_new" c_gtk_drawing_area_new :: IO (Ptr GtkWidget)
@@ -111,21 +116,9 @@ gtkContainerAdd (GtkContainer c) (GtkWidget w) = c_gtk_container_add c w
 gtkMainQuit :: IO ()
 gtkMainQuit = c_gtk_main_quit
 
-{-
-type Handler e a = Ptr GtkWidget -> Ptr e -> Ptr a -> IO ()
-data GdkEventKey = GdkEventKey (Ptr GdkEventKey)
--}
-
 boolToGBoolean :: Bool -> #type gboolean
 boolToGBoolean False = #const FALSE
 boolToGBoolean True = #const TRUE
-
-class Event e where
-	type Handler e a
-	type CHandler e a
-	eventName :: e -> String
-	handlerToCHandler :: AsPointer a => Handler e a -> CHandler e a
-	g_callback :: CHandler e a -> IO (FunPtr (CHandler e a))
 
 data Destroy = Destroy deriving Show
 instance Event Destroy where
@@ -289,9 +282,6 @@ handlerToCHandlerMotion h w e px = do
 	x <- asValue px
 	boolToGBoolean <$> h w e x
 
-foreign import capi "gtk/gtk.h g_signal_connect" c_g_signal_connect ::
-	Ptr GtkWidget -> CString -> FunPtr () -> Ptr a -> IO ()
-
 data DrawEvent = DrawEvent deriving Show
 instance Event DrawEvent where
 	type Handler DrawEvent a = GtkWidget -> CairoT -> a -> IO Bool
@@ -320,12 +310,6 @@ foreign import ccall "wrapper" g_callback_configure ::
 	(GtkWidget -> GdkEventConfigure -> Ptr a -> IO #{type gboolean}) -> IO (FunPtr (GtkWidget -> GdkEventConfigure -> Ptr a -> IO #{type gboolean}))
 
 -- foreign import ccall "hello_main" c_hello_main :: IO ()
-
-gSignalConnect :: forall e a . (Event e, AsPointer a) => GtkWidget -> e -> Handler e a -> a -> IO ()
-gSignalConnect (GtkWidget pw) e (handlerToCHandler @e @a -> h) x = do
-	cs <- newCString $ eventName e
-	cb <- castFunPtr <$> g_callback @e @a h
-	asPointer x $ c_g_signal_connect pw cs cb
 
 gtkInit :: [String] -> IO [String]
 gtkInit as = allocaArray (length as) \arr -> do

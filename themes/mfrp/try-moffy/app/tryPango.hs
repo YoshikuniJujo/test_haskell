@@ -10,10 +10,10 @@ main :: IO ()
 main = do
 	gtkInit []
 	w <- gtkWindowNew gtkWindowToplevel
-	gSignalConnect w Destroy gtkMainQuit ()
+	gSignalConnect (castGtkWidgetToGObject w) Destroy gtkMainQuit ()
 
 	da <- gtkDrawingAreaNew
-	gSignalConnect da DrawEvent draw ()
+	gSignalConnect (castGtkWidgetToGObject da) DrawEvent draw ()
 	gtkContainerAdd (castWidgetToContainer w) da
 
 	gtkWidgetShowAll w

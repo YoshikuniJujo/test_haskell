@@ -674,15 +674,18 @@ Graphics.Pango
 		- [x] continue
 	+ [x] where delete, destroy and draw event should be classified
 * [x] move AsPointer to Foreitn.Tools
+* [ ] make gobject-hierarchy like exception-hierarchy
 * [ ] separate Graphics.Gtk
 	+ [ ] Graphics.Gtk
 	+ [ ] Graphics.Gdk
 	+ [x] System.GLib
 		- [x] create empty module
 		- [x] move from Graphics.Gtk
-	+ [ ] System.GObject
+	+ [x] System.GObject
 * [ ] check export list of Graphics.Gtk.Values
 * [ ] check export list of Graphics.CairoType
+* [ ] check export list of System.Gobject
+	+ [ ] consider whether or not to change name of class Event
 * [ ] check export list of Foreign.Tools
 	+ [ ] consider whether or not to change name of AsPointer
 	+ [ ] others
