@@ -10,15 +10,21 @@ module Graphics.Pango (
 	pangoFontDescriptionSetSize,
 	pangoFontDescriptionSetAbsoluteSize,
 
-	-- * Others
-	PangoLayout, PangoRectangle,
+	-- * Layout Objects
+	PangoLayout,
 	pangoLayoutSetFontDescription,
 	pangoLayoutSetText,
+
+	-- * Cairo Fonts and Rendering
 	pangoCairoCreateLayout,
 	pangoCairoShowLayout,
-	pangoRectangleX, pangoRectangleY, pangoRectangleWidth, pangoRectangleHeight,
 	pangoLayoutWithPixelExtents,
-	pangoLayoutWithExtents
+	pangoLayoutWithExtents,
+
+	-- * Types
+	PangoRectangle,
+	pangoRectangleX, pangoRectangleY,
+	pangoRectangleWidth, pangoRectangleHeight
 	) where
 
 import Foreign.Ptr

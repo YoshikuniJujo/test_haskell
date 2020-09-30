@@ -643,11 +643,11 @@ Graphics.Pango
 		- [x] PangoFontDescription
 		- [ ] PangoLayout
 		- [ ] PangoRectangle
-	+ [ ] classify export list
+	+ [x] classify export list
 		- [x] Fonts
-		- [ ] Layout Objects
-		- [ ] Cairo Fonts and Rendering
-		- [ ] Types
+		- [x] Layout Objects
+		- [x] Cairo Fonts and Rendering
+		- [x] Types
 	+ [ ] Basic Pango Interfaces
 		- [ ] Fonts
 		- [ ] Glyphs
@@ -655,6 +655,9 @@ Graphics.Pango
 	+ [ ] Rendering with Pango
 		- [ ] Cairo Fonts and Rendering
 	+ [ ] others
+* [ ] don\'t use pangoFontDescriptionFromString
+	+ [ ] define `pangoFontDescriptionSetFamily`
+	+ [ ] use `pangoFontDescriptionNew` and `pangoFontDescriptionSetFamily` instead of `pangoFontDescriptionFromString`
 * [ ] separate Graphics.Pango
 	+ Graphics.Pango.Font
 	+ Graphics.Pango.Layout
@@ -666,6 +669,19 @@ Graphics.Pango
 * [ ] separate tools for FFI
 	+ `type PtrForeignPtr a = Either (Ptr a) (ForeignPtr a)`
 	+ `withPtrForeignPtr :: Either (Ptr a) (ForeignPtr a) -> (Ptr a -> IO b) -> IO b`
+
+### memo
+
+#### Font
+
+* family - ex) courier, serif, sans-serif, Arial, monospace, Sazanami Gothic, Sazanami Mincho
+* style - ex) none, normal, italic, oblique
+* variant - ex) none, normal, small-caps
+* weight - ex) none, normal, bold
+* stretch - ex) ultra-condensed, extra-condensed, semi-condensed, normal, semi-expanded
+* size
+* gravity
+* variations
 
 ### separate to independent package
 
