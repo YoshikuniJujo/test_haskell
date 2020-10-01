@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 23369b891a07b96a764f81204ff9291553902a4558d47c93ae652396a36c2c2f
+-- hash: 9098f76e2de646c771cd4ec5461b598bdbb5e53a9ed3cc3151de7c83e63a67d5
 
 name:           life-hierarchy
 version:        0.1.0.0
@@ -29,6 +29,7 @@ library
   exposed-modules:
       ExampleLifeHierarchy
       Lib
+      LifeHierarchy
       SomeLife
   other-modules:
       Paths_life_hierarchy
