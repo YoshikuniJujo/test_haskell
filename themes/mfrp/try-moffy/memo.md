@@ -625,6 +625,24 @@ Graphics.Pango
   +- Graphics.CairoType
 ```
 
+### todo
+
+* [ ] make type hierarchy of GObject
+	+ [x] make module System.Gobject.ObjectHierarchy
+	+ [x] define data SomeGObject and class GObject
+	+ [x] define `instance GObject SomeGObject`
+	+ [ ] define example GObject instance
+	+ [ ] define gobjectHierarchy
+	+ [ ] define `gSignalConnect' :: (GObject o => o -> ...`
+	+ [ ] define GInitialUnowned
+	+ [ ] define GtkWidget'
+	+ [ ] define GtkWidget
+	+ [ ] define GtkContainer
+	+ [ ] define GtkBin
+	+ [ ] define GtkWindow
+	+ [ ] use gSignalConnect' in GtkWindow
+	+ [ ] others
+
 ### refactoring
 
 * [ ] view module hierarchy
