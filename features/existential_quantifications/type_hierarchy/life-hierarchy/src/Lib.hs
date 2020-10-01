@@ -1,6 +1,5 @@
-module Lib
-    ( someFunc
-    ) where
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"
+module Lib where
+
+import Control.Exception.Hierarchy
