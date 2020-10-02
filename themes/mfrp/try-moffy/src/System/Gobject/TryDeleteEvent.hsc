@@ -27,6 +27,14 @@ gObjectHierarchy Nothing $ GObjectNode "GInitialUnowned" [
 		GObjectNode "GtkContainer" [
 			GObjectNode "GtkBin" [GObjectType ''GtkWindow] ] ] ]
 
+newtype GtkDrawingArea = GtkDrawingArea (Ptr GtkDrawingArea) deriving Show
+
+gObjectHierarchy (Just ''GtkWidget) $ GObjectType ''GtkDrawingArea
+
+instance Pointer GtkDrawingArea where
+	pointer (GtkDrawingArea p) = ($ p)
+	value = GtkDrawingArea
+
 gtkWindowNew :: GtkWindowType -> IO GtkWindow
 gtkWindowNew (GtkWindowType wt) = GtkWindow <$> c_gtk_window_new wt
 

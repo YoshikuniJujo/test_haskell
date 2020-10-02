@@ -47,6 +47,8 @@ extra-deps:
   commit: 23a243df2ca44306ca8cb8e93f286c524a77c332
 - git: https://github.com/YoshikuniJujo/type-flip
   commit: e725f7e5064c0543e024c0c29aaa91f21cc2a45f
+- git: https://github.com/YoshikuniJujo/exception-hierarchy.git
+  commit: 4b9f128109c28d8e49334d13902306c1537eb8eb
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

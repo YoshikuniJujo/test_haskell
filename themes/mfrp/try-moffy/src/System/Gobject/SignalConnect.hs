@@ -25,7 +25,8 @@ class Signal s where
 gSignalConnect :: forall o s a .
 	(GObject o, Signal s, GObject (Reciever s), AsPointer a) =>
 	o -> s -> (Reciever s -> Callback s a) -> a -> IO ()
-gSignalConnect o s ((callbackToCCallback @s @a .) -> c) x =
+gSignalConnect o s ((callbackToCCallback @s @a .) -> c) x = do
+	_ <- gCastObjectIo o :: IO (Reciever s)
 	withCString (signalName s) \cs -> asPointer x \px -> pointer o \po -> do
 		cb <- wrapCCallback @s @a (c . value)
 		c_g_signal_connect po cs cb px

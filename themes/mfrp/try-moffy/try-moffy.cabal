@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ec3e1e636b6ee0724b3bbadf15d58e72f3b65a95715392f5fff1135eb6288f7c
+-- hash: e21ff95a6342135c7a5faef0186e89e17ced6efcbd34c2c1f2d9c8549e16cac4
 
 name:           try-moffy
 version:        0.1.0.0
@@ -149,6 +149,7 @@ library
     , base >=4.7 && <5
     , bytestring
     , containers
+    , exception-hierarchy
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -183,6 +184,7 @@ executable draw
     , base >=4.7 && <5
     , bytestring
     , containers
+    , exception-hierarchy
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -218,6 +220,7 @@ executable followbox
     , base >=4.7 && <5
     , bytestring
     , containers
+    , exception-hierarchy
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -253,6 +256,7 @@ executable followboxGtk
     , base >=4.7 && <5
     , bytestring
     , containers
+    , exception-hierarchy
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -287,6 +291,7 @@ executable try-moffy-exe
     , base >=4.7 && <5
     , bytestring
     , containers
+    , exception-hierarchy
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -322,6 +327,7 @@ executable tryCairo
     , base >=4.7 && <5
     , bytestring
     , containers
+    , exception-hierarchy
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -357,6 +363,7 @@ executable tryCairoText
     , base >=4.7 && <5
     , bytestring
     , containers
+    , exception-hierarchy
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -392,6 +399,7 @@ executable tryCairoTextExtents
     , base >=4.7 && <5
     , bytestring
     , containers
+    , exception-hierarchy
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -427,6 +435,7 @@ executable tryConfigure
     , base >=4.7 && <5
     , bytestring
     , containers
+    , exception-hierarchy
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -462,6 +471,7 @@ executable tryCount
     , base >=4.7 && <5
     , bytestring
     , containers
+    , exception-hierarchy
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -497,6 +507,7 @@ executable tryDefaultWindow
     , base >=4.7 && <5
     , bytestring
     , containers
+    , exception-hierarchy
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -532,6 +543,7 @@ executable tryDeleteEvent
     , base >=4.7 && <5
     , bytestring
     , containers
+    , exception-hierarchy
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -567,6 +579,7 @@ executable tryFillPolygon
     , base >=4.7 && <5
     , bytestring
     , containers
+    , exception-hierarchy
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -602,6 +615,7 @@ executable tryGtk
     , base >=4.7 && <5
     , bytestring
     , containers
+    , exception-hierarchy
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -637,6 +651,7 @@ executable tryMultiWindow
     , base >=4.7 && <5
     , bytestring
     , containers
+    , exception-hierarchy
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -672,6 +687,7 @@ executable tryPango
     , base >=4.7 && <5
     , bytestring
     , containers
+    , exception-hierarchy
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -707,6 +723,7 @@ executable tryPngCursor
     , base >=4.7 && <5
     , bytestring
     , containers
+    , exception-hierarchy
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -742,6 +759,7 @@ executable tryPngCursorEvent
     , base >=4.7 && <5
     , bytestring
     , containers
+    , exception-hierarchy
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -777,6 +795,7 @@ executable tryScroll
     , base >=4.7 && <5
     , bytestring
     , containers
+    , exception-hierarchy
     , extra-data-yj
     , http-conduit
     , monads-tf
@@ -812,6 +831,7 @@ test-suite try-moffy-test
     , base >=4.7 && <5
     , bytestring
     , containers
+    , exception-hierarchy
     , extra-data-yj
     , http-conduit
     , monads-tf

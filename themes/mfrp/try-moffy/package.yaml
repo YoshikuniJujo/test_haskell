@@ -43,6 +43,7 @@ dependencies:
 - stm
 - containers
 - serialise
+- exception-hierarchy
 
 library:
   source-dirs: src

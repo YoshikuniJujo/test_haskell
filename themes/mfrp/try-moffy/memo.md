@@ -627,7 +627,7 @@ Graphics.Pango
 
 ### todo
 
-* [ ] make type hierarchy of GObject
+* [x] make type hierarchy of GObject
 	+ [x] make module System.Gobject.ObjectHierarchy
 	+ [x] define data SomeGObject and class GObject
 	+ [x] define `instance GObject SomeGObject`
@@ -649,12 +649,19 @@ Graphics.Pango
 		- [x] try to show window
 		- [x] define delete event for test
 		- [x] try new gSignalConnect
-	+ [ ] define gCastObject
-	+ [ ] define gCastObjectIo
-	+ [ ] make valid exception `FooException TypeRep TypeRep`
-		- [ ] use exceptionHierarchy
-	+ [ ] add gCastObject to gSignalConnect to check type
-	+ [ ] use gSignalConnect' in GtkWindow
+	+ [x] define gCastObject
+	+ [x] import Control.Exception.Hierarchy
+	+ [x] define exception for cast error
+		- `FooException TypeRep TypeRep`
+	+ [x] define gCastObjectIo
+		- [x] use exceptionHierarchy
+	+ [x] add gCastObject to gSignalConnect to check type
+* [ ] use gSignalConnect' in GtkWindow
+	+ [x] make DrawingArea
+	+ [ ] use new DrawingArea in Control.Moffy.Run.GtkField
+	+ [ ] use new Window in Control.Moffy.Run.GtkField
+	+ [ ] try to remove old gSignalConnect
+	+ [ ] try to remove old etc
 	+ [ ] others
 
 ### refactoring

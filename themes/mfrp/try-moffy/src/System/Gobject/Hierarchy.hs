@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskellQuotes #-}
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -7,6 +7,8 @@ module System.Gobject.Hierarchy where
 
 import Language.Haskell.TH
 import Foreign.Ptr
+import Control.Exception
+import Control.Exception.Hierarchy
 import Data.Typeable
 import Data.Char
 
@@ -36,6 +38,10 @@ instance Pointer SomeGObject where
 
 gCastObject :: (GObject o1, GObject o2) => o1 -> Maybe o2
 gCastObject = fromGObject . toGObject
+
+gCastObjectIo :: (GObject o1, GObject o2) => o1 -> IO o2
+gCastObjectIo o1 = maybe (throwIO $ GObjectCastError (typeOf o1) (typeRep o2)) pure o2
+	where o2 = gCastObject o1
 
 data GObjectHierarchy
 	= GObjectType Name
@@ -126,3 +132,7 @@ instGObject (appHead toLower . nameBase -> oc) o = instanceD (cxt [])
 appHead :: (a -> a) -> [a] -> [a]
 appHead _ [] = []
 appHead f (h : t) = f h : t
+
+data GObjectCastError = GObjectCastError TypeRep TypeRep deriving Show
+
+exceptionHierarchy Nothing $ ExType ''GObjectCastError
