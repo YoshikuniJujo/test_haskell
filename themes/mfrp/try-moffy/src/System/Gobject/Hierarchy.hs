@@ -22,7 +22,9 @@ class (Typeable o, Pointer o, Show o) => GObject o where
 	toGObject = SomeGObject
 	fromGObject (SomeGObject o) = cast o
 
-class Pointer a where pointer :: a -> (Ptr a -> IO b) -> IO b
+class Pointer a where
+	pointer :: a -> (Ptr a -> IO b) -> IO b
+	value :: Ptr a -> a
 
 instance GObject SomeGObject where
 	toGObject = id
@@ -30,6 +32,10 @@ instance GObject SomeGObject where
 
 instance Pointer SomeGObject where
 	pointer (SomeGObject o) f = pointer o $ f . castPtr
+	value = SomeGObject . value
+
+gCastObject :: (GObject o1, GObject o2) => o1 -> Maybe o2
+gCastObject = fromGObject . toGObject
 
 data GObjectHierarchy
 	= GObjectType Name
@@ -59,12 +65,17 @@ gObjectContainer oc = sequence [
 					(normalB $ varE 'showsPrec `appE` varE d `appE` varE o) []]],
 	do	o <- newName "o"
 		f <- newName "f"
-		instanceD (cxt []) (conT ''Pointer `appT` conT oc)
-			[funD 'pointer
+		instanceD (cxt []) (conT ''Pointer `appT` conT oc) [
+			funD 'pointer
 				[clause [conP oc [varP o], varP f]
 					(normalB $ varE 'pointer `appE` varE o `appE`
 						infixE (Just $ varE f) (varE  '(.)) (Just $ varE 'castPtr))
-					[]]],
+					[]],
+			valD (varP 'value)
+				(normalB $ infixE
+					(Just $ conE oc) (varE '(.)) (Just $ varE 'value))
+				[]
+			],
 	do	o <- newName "o"
 		sigD toGo . forallT [PlainTV o] (cxt [myClassP ''GObject [varT o]])
 			$ varT o `arrT` conT ''SomeGObject,

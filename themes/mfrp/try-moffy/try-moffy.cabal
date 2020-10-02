@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 80ff91e30910c54e57878ff5d9a0ac3f8229041184cd9edb30cae1959a49b537
+-- hash: ec3e1e636b6ee0724b3bbadf15d58e72f3b65a95715392f5fff1135eb6288f7c
 
 name:           try-moffy
 version:        0.1.0.0
@@ -95,6 +95,8 @@ library
       System.Glib
       System.Gobject
       System.Gobject.Hierarchy
+      System.Gobject.SignalConnect
+      System.Gobject.TryDeleteEvent
       System.Gobject.TryHierarchy
       Trial.Boxes
       Trial.Boxes.BoxEv
@@ -480,6 +482,41 @@ executable tryCount
 
 executable tryDefaultWindow
   main-is: tryDefaultWindow.hs
+  other-modules:
+      Main
+      Paths_try_moffy
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyPixels
+    , JuicyPixels-extra
+    , X11
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-field
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy
+    , type-flip
+    , unordered-containers
+    , vector
+  default-language: Haskell2010
+
+executable tryDeleteEvent
+  main-is: tryDeleteEvent.hs
   other-modules:
       Main
       Paths_try_moffy

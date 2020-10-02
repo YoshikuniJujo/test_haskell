@@ -634,16 +634,26 @@ Graphics.Pango
 	+ [x] define gobjectHierarchy
 	+ [x] try gobjectHierarchy
 	+ [x] change form `pointer :: a -> Ptr a` to `pointer :: a -> (Ptr a -> IO b) -> IO b`
-	+ [ ] make empty module System.Gobject.SignalConnect
-	+ [ ] define `gSignalConnect' :: (GObject o => o -> ...`
-		- [ ] define class Signal
+	+ [x] make empty module System.Gobject.SignalConnect
+	+ [x] define `gSignalConnect' :: (GObject o => o -> ...`
+		- [x] define class Signal
 			* `class Signal s where type Receiver s`
-	+ [ ] define GInitialUnowned
-	+ [ ] define GtkWidget'
-	+ [ ] define GtkWidget
-	+ [ ] define GtkContainer
-	+ [ ] define GtkBin
-	+ [ ] define GtkWindow
+	+ [x] try delete event
+		- [x] define GInitialUnowned
+		- [x] define GtkWidget
+		- [x] define GtkContainer
+		- [x] define GtkBin
+		- [x] define GtkWindow
+		- [x] define windowNew for test
+		- [x] define gtkWidgetShowAll for test
+		- [x] try to show window
+		- [x] define delete event for test
+		- [x] try new gSignalConnect
+	+ [ ] define gCastObject
+	+ [ ] define gCastObjectIo
+	+ [ ] make valid exception `FooException TypeRep TypeRep`
+		- [ ] use exceptionHierarchy
+	+ [ ] add gCastObject to gSignalConnect to check type
 	+ [ ] use gSignalConnect' in GtkWindow
 	+ [ ] others
 
