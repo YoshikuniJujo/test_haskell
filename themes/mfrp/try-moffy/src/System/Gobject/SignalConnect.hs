@@ -13,6 +13,8 @@ import Foreign.Tools
 
 import System.Gobject.Hierarchy
 
+import Data.Maybe
+
 class Signal s where
 	type Reciever s
 	type Callback s a
@@ -28,7 +30,8 @@ gSignalConnect :: forall o s a .
 gSignalConnect o s ((callbackToCCallback @s @a .) -> c) x = do
 	_ <- gCastObjectIo o :: IO (Reciever s)
 	withCString (signalName s) \cs -> asPointer x \px -> pointer o \po -> do
-		cb <- wrapCCallback @s @a (c . value)
+--		cb <- wrapCCallback @s @a (c . value)
+		cb <- wrapCCallback @s @a (c . fromJust . gCastObject @o @(Reciever s) . value . castPtr)
 		c_g_signal_connect po cs cb px
 
 foreign import capi "glib-object.h g_signal_connect" c_g_signal_connect ::

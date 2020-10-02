@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -51,6 +52,12 @@ tryDeleteEvent = do
 	[] <- gtkInit []
 	w <- gtkWindowNew gtkWindowToplevel
 	gSignalConnect w DeleteEvent (\_ _ () -> True <$ (putStrLn "delete-event" >> gtkMainQuit)) ()
+	da <- gtkDrawingAreaNew
+	gSignalConnect da DrawEvent (\w cr () -> False <$ print (w, cr)) ()
+--	gSignalConnect da DrawEvent (\w cr () -> False <$ putStrLn "foo") ()
+--	gSignalConnect da DrawEvent (\w cr () -> False <$ print w) ()
+--	gSignalConnect da DrawEvent (\w cr () -> False <$ print cr) ()
+	gtkContainerAdd w da
 	gtkWidgetShowAll w
 	gtkMain
 
@@ -100,3 +107,17 @@ callbackToCCallbackDrawEvent c pe px = do
 
 foreign import ccall "wrapper" c_wrapper_draw_event ::
 	(Ptr (Reciever DrawEvent) -> CCallback DrawEvent a) -> IO (FunPtr (Ptr (Reciever DrawEvent) -> CCallback DrawEvent a))
+
+foreign import ccall "gtk_drawing_area_new" c_gtk_drawing_area_new :: IO (Ptr GtkDrawingArea)
+
+foreign import ccall "gtk_container_add" c_gtk_container_add ::
+	Ptr GtkContainer -> Ptr GtkWidget -> IO ()
+
+gtkDrawingAreaNew :: IO GtkDrawingArea
+gtkDrawingAreaNew = GtkDrawingArea <$> c_gtk_drawing_area_new
+
+gtkContainerAdd :: (GObject c, GObject w) => c -> w -> IO ()
+gtkContainerAdd c w = do
+	c' <- gCastObjectIo c
+	w' <- gCastObjectIo w
+	pointer c' \pc -> pointer w' \pw -> c_gtk_container_add pc pw

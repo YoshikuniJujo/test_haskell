@@ -659,6 +659,10 @@ Graphics.Pango
 * [ ] use gSignalConnect' in GtkWindow
 	+ [x] make DrawingArea
 	+ [x] make Draw event
+	+ [x] define gtkDrawingAreaNew
+	+ [x] define gtkContainerAdd
+	+ [x] make test app to print Wigdet and CairoT
+	+ [ ] use gCastObjectIo instead of fromJust . gCastObject
 	+ [ ] make test app for DrawingArea and DrawEvent
 	+ [ ] use new DrawingArea in Control.Moffy.Run.GtkField
 	+ [ ] use new Window in Control.Moffy.Run.GtkField
