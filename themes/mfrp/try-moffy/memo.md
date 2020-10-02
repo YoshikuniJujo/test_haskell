@@ -631,8 +631,9 @@ Graphics.Pango
 	+ [x] make module System.Gobject.ObjectHierarchy
 	+ [x] define data SomeGObject and class GObject
 	+ [x] define `instance GObject SomeGObject`
-	+ [ ] define example GObject instance
-	+ [ ] define gobjectHierarchy
+	+ [x] define gobjectHierarchy
+	+ [x] try gobjectHierarchy
+	+ [ ] change form `pointer :: a -> Ptr a` to `pointer :: a -> (Ptr a -> IO b) -> IO b`
 	+ [ ] define `gSignalConnect' :: (GObject o => o -> ...`
 	+ [ ] define GInitialUnowned
 	+ [ ] define GtkWidget'

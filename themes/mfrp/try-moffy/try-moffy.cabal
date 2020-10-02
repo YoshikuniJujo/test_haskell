@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 494da7a92ec588c1c365972fc4526f13c2895680a6e7a60f192ba8774b83297f
+-- hash: 80ff91e30910c54e57878ff5d9a0ac3f8229041184cd9edb30cae1959a49b537
 
 name:           try-moffy
 version:        0.1.0.0
@@ -95,6 +95,7 @@ library
       System.Glib
       System.Gobject
       System.Gobject.Hierarchy
+      System.Gobject.TryHierarchy
       Trial.Boxes
       Trial.Boxes.BoxEv
       Trial.Boxes.RunGtkField
