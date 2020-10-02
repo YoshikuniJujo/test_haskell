@@ -633,8 +633,11 @@ Graphics.Pango
 	+ [x] define `instance GObject SomeGObject`
 	+ [x] define gobjectHierarchy
 	+ [x] try gobjectHierarchy
-	+ [ ] change form `pointer :: a -> Ptr a` to `pointer :: a -> (Ptr a -> IO b) -> IO b`
+	+ [x] change form `pointer :: a -> Ptr a` to `pointer :: a -> (Ptr a -> IO b) -> IO b`
+	+ [ ] make empty module System.Gobject.SignalConnect
 	+ [ ] define `gSignalConnect' :: (GObject o => o -> ...`
+		- [ ] define class Signal
+			* `class Signal s where type Receiver s`
 	+ [ ] define GInitialUnowned
 	+ [ ] define GtkWidget'
 	+ [ ] define GtkWidget

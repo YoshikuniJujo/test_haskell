@@ -8,11 +8,11 @@ import Foreign.Ptr
 import System.Gobject.Hierarchy
 
 data Foo = Foo (Ptr Foo) deriving Show
-instance Pointer Foo where pointer (Foo p) = p
+instance Pointer Foo where pointer (Foo p) = ($ p)
 gObjectHierarchy Nothing (GObjectType ''Foo)
 
 data Bar = Bar (Ptr Bar) deriving Show
-instance Pointer Bar where pointer (Bar p) = p
+instance Pointer Bar where pointer (Bar p) = ($ p)
 gObjectHierarchy Nothing $ GObjectNode "Baz" [GObjectType ''Bar]
 
 {-
