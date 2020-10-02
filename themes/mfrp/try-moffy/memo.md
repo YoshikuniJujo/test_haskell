@@ -658,6 +658,8 @@ Graphics.Pango
 	+ [x] add gCastObject to gSignalConnect to check type
 * [ ] use gSignalConnect' in GtkWindow
 	+ [x] make DrawingArea
+	+ [x] make Draw event
+	+ [ ] make test app for DrawingArea and DrawEvent
 	+ [ ] use new DrawingArea in Control.Moffy.Run.GtkField
 	+ [ ] use new Window in Control.Moffy.Run.GtkField
 	+ [ ] try to remove old gSignalConnect

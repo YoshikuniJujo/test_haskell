@@ -12,6 +12,8 @@ import Data.Int
 import System.Gobject.Hierarchy
 import System.Gobject.SignalConnect
 
+import Graphics.CairoType
+
 import Graphics.Gtk(gtkInit, gtkMain, gtkMainQuit)
 
 #include <gtk/gtk.h>
@@ -80,3 +82,21 @@ callbackToCCallbackDeleteEvent c pe px = do
 
 foreign import ccall "wrapper" c_wrapper_delete_event ::
 	(Ptr (Reciever DeleteEvent) -> CCallback DeleteEvent a) -> IO (FunPtr (Ptr (Reciever DeleteEvent) -> CCallback DeleteEvent a))
+
+data DrawEvent = DrawEvent deriving Show
+
+instance Signal DrawEvent where
+	type Reciever DrawEvent = GtkWidget
+	type Callback DrawEvent a = CairoT -> a -> IO Bool
+	type CCallback DrawEvent a = Ptr CairoT -> Ptr a -> IO #type gboolean
+	signalName DrawEvent = "draw"
+	callbackToCCallback = callbackToCCallbackDrawEvent
+	wrapCCallback = c_wrapper_draw_event
+
+callbackToCCallbackDrawEvent :: AsPointer a => Callback DrawEvent a -> CCallback DrawEvent a
+callbackToCCallbackDrawEvent c pe px = do
+	x <- asValue px
+	boolToGBoolean <$> c (CairoT pe) x
+
+foreign import ccall "wrapper" c_wrapper_draw_event ::
+	(Ptr (Reciever DrawEvent) -> CCallback DrawEvent a) -> IO (FunPtr (Ptr (Reciever DrawEvent) -> CCallback DrawEvent a))
