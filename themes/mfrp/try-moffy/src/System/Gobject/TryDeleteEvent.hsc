@@ -72,8 +72,8 @@ data DeleteEvent = DeleteEvent deriving Show
 
 instance Signal DeleteEvent where
 	type Reciever DeleteEvent = GtkWidget
-	type Callback DeleteEvent a = GtkWidget -> Ptr () -> a -> IO Bool
-	type CCallback DeleteEvent a = Ptr GtkWidget -> Ptr () -> Ptr a -> IO #type gboolean
+	type Callback DeleteEvent o a = GtkWidget -> Ptr () -> a -> IO Bool
+	type CCallback DeleteEvent o a = Ptr GtkWidget -> Ptr () -> Ptr a -> IO #type gboolean
 	signalName DeleteEvent = "delete-event"
 	callbackToCCallback = callbackToCCallbackDeleteEvent
 	wrapCCallback = c_wrapper_delete_event
@@ -82,31 +82,31 @@ boolToGBoolean :: Bool -> #type gboolean
 boolToGBoolean False = #const FALSE
 boolToGBoolean True = #const TRUE
 
-callbackToCCallbackDeleteEvent :: AsPointer a => o -> Callback DeleteEvent a -> CCallback DeleteEvent a
+callbackToCCallbackDeleteEvent :: AsPointer a => o -> Callback DeleteEvent o a -> CCallback DeleteEvent o a
 callbackToCCallbackDeleteEvent o c pw pe px = do
 	x <- asValue px
 	boolToGBoolean <$> c (value pw) pe x
 
 foreign import ccall "wrapper" c_wrapper_delete_event ::
-	(CCallback DeleteEvent a) -> IO (FunPtr (CCallback DeleteEvent a))
+	(CCallback DeleteEvent o a) -> IO (FunPtr (CCallback DeleteEvent o a))
 
 data DrawEvent = DrawEvent deriving Show
 
 instance Signal DrawEvent where
 	type Reciever DrawEvent = GtkWidget
-	type Callback DrawEvent a = GtkWidget -> CairoT -> a -> IO Bool
-	type CCallback DrawEvent a = Ptr GtkWidget -> Ptr CairoT -> Ptr a -> IO #type gboolean
+	type Callback DrawEvent o a = GtkWidget -> CairoT -> a -> IO Bool
+	type CCallback DrawEvent o a = Ptr GtkWidget -> Ptr CairoT -> Ptr a -> IO #type gboolean
 	signalName DrawEvent = "draw"
 	callbackToCCallback o = callbackToCCallbackDrawEvent
 	wrapCCallback = c_wrapper_draw_event
 
-callbackToCCallbackDrawEvent :: AsPointer a => Callback DrawEvent a -> CCallback DrawEvent a
+callbackToCCallbackDrawEvent :: AsPointer a => Callback DrawEvent o a -> CCallback DrawEvent o a
 callbackToCCallbackDrawEvent c pw pe px = do
 	x <- asValue px
 	boolToGBoolean <$> c (value pw) (CairoT pe) x
 
 foreign import ccall "wrapper" c_wrapper_draw_event ::
-	(CCallback DrawEvent a) -> IO (FunPtr (CCallback DrawEvent a))
+	(CCallback DrawEvent o a) -> IO (FunPtr (CCallback DrawEvent o a))
 
 foreign import ccall "gtk_drawing_area_new" c_gtk_drawing_area_new :: IO (Ptr GtkDrawingArea)
 
