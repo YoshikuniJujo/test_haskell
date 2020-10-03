@@ -72,11 +72,13 @@ data DeleteEvent = DeleteEvent deriving Show
 
 instance Signal DeleteEvent where
 	type Reciever DeleteEvent = GtkWidget
-	type Callback DeleteEvent o a = GtkWidget -> Ptr () -> a -> IO Bool
-	type CCallback DeleteEvent o a = Ptr GtkWidget -> Ptr () -> Ptr a -> IO #type gboolean
+	type Callback DeleteEvent o a = GtkWidget -> GdkEvent -> a -> IO Bool
+	type CCallback DeleteEvent o a = Ptr GtkWidget -> Ptr GdkEvent -> Ptr a -> IO #type gboolean
 	signalName DeleteEvent = "delete-event"
 	callbackToCCallback = callbackToCCallbackDeleteEvent
 	wrapCCallback = c_wrapper_delete_event
+
+newtype GdkEvent = GdkEvent (Ptr GdkEvent) deriving Show
 
 boolToGBoolean :: Bool -> #type gboolean
 boolToGBoolean False = #const FALSE
@@ -85,7 +87,7 @@ boolToGBoolean True = #const TRUE
 callbackToCCallbackDeleteEvent :: AsPointer a => o -> Callback DeleteEvent o a -> CCallback DeleteEvent o a
 callbackToCCallbackDeleteEvent o c pw pe px = do
 	x <- asValue px
-	boolToGBoolean <$> c (value pw) pe x
+	boolToGBoolean <$> c (value pw) (GdkEvent pe) x
 
 foreign import ccall "wrapper" c_wrapper_delete_event ::
 	(CCallback DeleteEvent o a) -> IO (FunPtr (CCallback DeleteEvent o a))
