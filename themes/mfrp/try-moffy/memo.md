@@ -656,7 +656,9 @@ Graphics.Pango
 	+ [x] define gCastObjectIo
 		- [x] use exceptionHierarchy
 	+ [x] add gCastObject to gSignalConnect to check type
-* [ ] use gSignalConnect' in GtkWindow
+	+ [x] move Reciever s into Callback
+	+ [ ] repair first argument of Callback
+* [ ] use gSignalConnect\' in GtkWindow
 	+ [x] make DrawingArea
 	+ [x] make Draw event
 	+ [x] define gtkDrawingAreaNew
@@ -669,6 +671,7 @@ Graphics.Pango
 	+ [ ] try to remove old gSignalConnect
 	+ [ ] try to remove old etc
 	+ [ ] others
+* [ ] make independent package gtk-stopgap
 
 ### refactoring
 
