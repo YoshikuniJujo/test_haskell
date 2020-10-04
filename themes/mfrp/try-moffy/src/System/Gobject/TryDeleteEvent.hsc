@@ -24,6 +24,7 @@ newtype GtkWindow = GtkWindow (Ptr GtkWindow) deriving Show
 instance Pointer GtkWindow where
 	pointer (GtkWindow p) = ($ p)
 	value = GtkWindow
+	modifyPointer (GtkWindow p) f = GtkWindow $ f p
 
 gObjectHierarchy Nothing $ GObjectNode "GInitialUnowned" [
 	GObjectNode "GtkWidget" [
@@ -37,6 +38,7 @@ gObjectHierarchy (Just ''GtkWidget) $ GObjectType ''GtkDrawingArea
 instance Pointer GtkDrawingArea where
 	pointer (GtkDrawingArea p) = ($ p)
 	value = GtkDrawingArea
+	modifyPointer (GtkDrawingArea p) f = GtkDrawingArea $ f p
 
 gtkWindowNew :: GtkWindowType -> IO GtkWindow
 gtkWindowNew (GtkWindowType wt) = GtkWindow <$> c_gtk_window_new wt
@@ -72,8 +74,8 @@ data DeleteEvent = DeleteEvent deriving Show
 
 instance Signal DeleteEvent where
 	type Reciever DeleteEvent = GtkWidget
-	type Callback DeleteEvent o a = GtkWidget -> GdkEvent -> a -> IO Bool
-	type CCallback DeleteEvent o a = Ptr GtkWidget -> Ptr GdkEvent -> Ptr a -> IO #type gboolean
+	type Callback DeleteEvent o a = o -> GdkEvent -> a -> IO Bool
+	type CCallback DeleteEvent o a = Ptr o -> Ptr GdkEvent -> Ptr a -> IO #type gboolean
 	signalName DeleteEvent = "delete-event"
 	callbackToCCallback = callbackToCCallbackDeleteEvent
 	wrapCCallback = c_wrapper_delete_event
@@ -84,10 +86,10 @@ boolToGBoolean :: Bool -> #type gboolean
 boolToGBoolean False = #const FALSE
 boolToGBoolean True = #const TRUE
 
-callbackToCCallbackDeleteEvent :: AsPointer a => o -> Callback DeleteEvent o a -> CCallback DeleteEvent o a
+callbackToCCallbackDeleteEvent :: (Pointer o, AsPointer a) => o -> Callback DeleteEvent o a -> CCallback DeleteEvent o a
 callbackToCCallbackDeleteEvent o c pw pe px = do
 	x <- asValue px
-	boolToGBoolean <$> c (value pw) (GdkEvent pe) x
+	boolToGBoolean <$> c (modifyPointer o $ const pw) (GdkEvent pe) x
 
 foreign import ccall "wrapper" c_wrapper_delete_event ::
 	(CCallback DeleteEvent o a) -> IO (FunPtr (CCallback DeleteEvent o a))

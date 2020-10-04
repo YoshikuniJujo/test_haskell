@@ -27,6 +27,7 @@ class (Typeable o, Pointer o, Show o) => GObject o where
 class Pointer a where
 	pointer :: a -> (Ptr a -> IO b) -> IO b
 	value :: Ptr a -> a
+	modifyPointer :: a -> (Ptr a -> Ptr a) -> a
 
 instance GObject SomeGObject where
 	toGObject = id
@@ -35,6 +36,7 @@ instance GObject SomeGObject where
 instance Pointer SomeGObject where
 	pointer (SomeGObject o) f = pointer o $ f . castPtr
 	value = SomeGObject . value
+	modifyPointer (SomeGObject o) f = SomeGObject $ modifyPointer o (castPtr . f . castPtr)
 
 gCastObject :: (GObject o1, GObject o2) => o1 -> Maybe o2
 gCastObject = fromGObject . toGObject
@@ -69,6 +71,7 @@ gObjectContainer oc = sequence [
 			[funD 'showsPrec
 				[clause [varP d, conP oc [varP o]]
 					(normalB $ varE 'showsPrec `appE` varE d `appE` varE o) []]],
+	-- modifyPointer (SomeGObject o) f = SomeGObject $ modifyPointer o (castPtr . f . castPtr)
 	do	o <- newName "o"
 		f <- newName "f"
 		instanceD (cxt []) (conT ''Pointer `appT` conT oc) [
@@ -80,7 +83,13 @@ gObjectContainer oc = sequence [
 			valD (varP 'value)
 				(normalB $ infixE
 					(Just $ conE oc) (varE '(.)) (Just $ varE 'value))
-				[]
+				[],
+			funD 'modifyPointer
+				[clause [conP oc [varP o], varP f]
+					(normalB $ conE oc `appE`
+						(varE 'modifyPointer `appE` varE o `appE`
+							(varE 'castPtr `dot` varE f `dot` varE 'castPtr)))
+					[]]
 			],
 	do	o <- newName "o"
 		sigD toGo . forallT [PlainTV o] (cxt [myClassP ''GObject [varT o]])
@@ -106,6 +115,14 @@ gObjectContainer oc = sequence [
 	oc' = toLower `appHead` nameBase oc
 	toGo = mkName $ oc' ++ "ToGObject"
 	fromGo = mkName $ oc' ++ "FromGObject"
+
+
+-- infixE (Just $ varE f) (varE  '(.)) (Just $ varE 'castPtr))
+
+infixr `dot`
+
+dot :: ExpQ -> ExpQ -> ExpQ
+dot f g = varE '(.) `appE` f `appE` g
 
 myNotStrict :: Q Strict
 myNotStrict = bang noSourceUnpackedness noSourceStrictness

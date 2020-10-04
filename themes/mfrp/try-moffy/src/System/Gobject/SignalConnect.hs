@@ -18,7 +18,7 @@ class Signal s where
 	type Callback s o a
 	type CCallback s o a
 	signalName :: s -> String
-	callbackToCCallback :: AsPointer a => o -> Callback s o a -> CCallback s o a
+	callbackToCCallback :: (GObject o, AsPointer a) => o -> Callback s o a -> CCallback s o a
 	wrapCCallback :: CCallback s o a -> IO (FunPtr (CCallback s o a))
 
 gSignalConnect :: forall o s a .
@@ -27,7 +27,7 @@ gSignalConnect :: forall o s a .
 gSignalConnect o s c x = do
 	_ <- gCastObjectIo o :: IO (Reciever s)
 	withCString (signalName s) \cs -> asPointer x \px -> pointer o \po -> do
-		cb <- wrapCCallback @s @o @a $ callbackToCCallback @s @a o c
+		cb <- wrapCCallback @s @o @a $ callbackToCCallback @s @o @a o c
 		c_g_signal_connect po cs cb px
 
 foreign import capi "glib-object.h g_signal_connect" c_g_signal_connect ::
