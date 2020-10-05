@@ -469,6 +469,9 @@ todo
 		- [x] add handler to Control.Moffy.Run.GtkField
 		- [x] get sample PNG
 		- [x] add to Trial.TryCursor
+* [ ] make Graphics.Gdk
+* [ ] make Control.Moffy.Handle.GdkField
+* [ ] make Control.Moffy.View.GdkField
 * [ ] refactor Graphics.Gtk and Graphics.Gtk.\*
 * [ ] separate Graphics.Gtk and Graphics.Gtk.\* to independent package
 * [ ] move DeleteEvent from Control.Moffy.Event.Delete to Control.Moffy.Event.Window
