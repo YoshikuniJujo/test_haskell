@@ -98,16 +98,16 @@ data DrawEvent = DrawEvent deriving Show
 
 instance Signal DrawEvent where
 	type Reciever DrawEvent = GtkWidget
-	type Callback DrawEvent o a = GtkWidget -> CairoT -> a -> IO Bool
-	type CCallback DrawEvent o a = Ptr GtkWidget -> Ptr CairoT -> Ptr a -> IO #type gboolean
+	type Callback DrawEvent o a = o -> CairoT -> a -> IO Bool
+	type CCallback DrawEvent o a = Ptr o -> Ptr CairoT -> Ptr a -> IO #type gboolean
 	signalName DrawEvent = "draw"
-	callbackToCCallback o = callbackToCCallbackDrawEvent
+	callbackToCCallback = callbackToCCallbackDrawEvent
 	wrapCCallback = c_wrapper_draw_event
 
-callbackToCCallbackDrawEvent :: AsPointer a => Callback DrawEvent o a -> CCallback DrawEvent o a
-callbackToCCallbackDrawEvent c pw pe px = do
+callbackToCCallbackDrawEvent :: (Pointer o, AsPointer a) => o ->Callback DrawEvent o a -> CCallback DrawEvent o a
+callbackToCCallbackDrawEvent o c pw pe px = do
 	x <- asValue px
-	boolToGBoolean <$> c (value pw) (CairoT pe) x
+	boolToGBoolean <$> c (modifyPointer o $ const pw) (CairoT pe) x
 
 foreign import ccall "wrapper" c_wrapper_draw_event ::
 	(CCallback DrawEvent o a) -> IO (FunPtr (CCallback DrawEvent o a))

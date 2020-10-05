@@ -659,8 +659,9 @@ Graphics.Pango
 	+ [x] move Reciever s into Callback
 	+ [ ] repair first argument of Callback
 		- [x] add type argument to Callback and CCallback
-		- [ ] add modifyPointer to class Pointer
-		- [ ] repair ...
+		- [x] add modifyPointer to class Pointer
+		- [x] repair DeleteEvent
+		- [x] repair DrawEvent
 		- [ ] remove value from class Pointer
 * [ ] use gSignalConnect\' in GtkWindow
 	+ [x] make DrawingArea
