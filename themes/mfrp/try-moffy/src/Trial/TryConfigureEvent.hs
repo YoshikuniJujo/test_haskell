@@ -6,6 +6,8 @@ module Trial.TryConfigureEvent where
 
 import Prelude hiding (repeat, break)
 
+import Control.Monad
+
 import Control.Moffy
 import Control.Moffy.Event.DefaultWindow
 import Control.Moffy.Event.Delete
@@ -32,6 +34,9 @@ runTryConfigure dr s = do
 	r <- interpretSt (retrySt $ handleDefaultWindow `mergeSt` liftHandle' (handle Nothing cr c)) c' s Nothing
 	gtkMainQuit
 	pure r
+
+tryConfigureMain :: IO ()
+tryConfigureMain = void $ runTryConfigure (\_ _ -> mapM_ putMessage) (prepare $ adjustSig tryConfigure)
 
 prepare :: Sig s (DefaultWindowEv :+: GuiEv) a r -> Sig s (DefaultWindowEv :+: GuiEv) (Map WindowId a) (Either r (Maybe a, ()))
 prepare s = do

@@ -683,6 +683,11 @@ Graphics.Pango
 		- [ ] MOtionNotifyEvent
 		- [ ] ConfigureEvent
 	+ [ ] use above new events
+		- [ ] KeyPressEvent and KeyReleaseEvent
+		- [ ] ButtonPressEvent and ButtonReleaseEvent
+		- [ ] ScrollEvent
+		- [ ] MOtionNotifyEvent
+		- [ ] ConfigureEvent
 	+ [ ] remove old GtkWindow and old GtkDrawingArea
 	+ [ ] make test app for DrawingArea and DrawEvent
 	+ [ ] use new DrawingArea in Control.Moffy.Run.GtkField
