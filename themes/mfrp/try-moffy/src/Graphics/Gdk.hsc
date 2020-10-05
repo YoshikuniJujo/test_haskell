@@ -85,3 +85,10 @@ instance Storable GdkWindowAttr where
 	alignment _ = #{alignment GdkWindowAttr}
 	peek = pure . GdkWindowAttr
 	poke _ _ = pure ()
+
+newtype GdkEvent = GdkEvent (Ptr GdkEvent) deriving Show
+
+foreign import ccall "gdk_event_get" c_gdk_event_get :: IO (Ptr GdkEvent)
+
+gdkEventGet :: IO GdkEvent
+gdkEventGet = GdkEvent <$> c_gdk_event_get

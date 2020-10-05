@@ -19,5 +19,10 @@ main = do
 		gdkWindowAttrSetHeight attr 400
 		gdkWindowAttrSetWClass attr gdkInputOutput
 		gdkWindowShow =<< gdkWindowNew Nothing attr [gdkWaWmclass]
+		print =<< gdkEventGet
+		print =<< gdkEventGet
+		print =<< gdkEventGet
+		print =<< gdkEventGet
+		print =<< gdkEventGet
 	getChar
 	pure ()
