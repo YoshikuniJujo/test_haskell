@@ -62,9 +62,9 @@ tryDeleteEvent = do
 	gtkMain
 
 gtkWidgetShowAll :: GObject o => o -> IO ()
-gtkWidgetShowAll o = case gCastObject o of
-	Nothing -> error "boooo"
-	Just o' -> pointer o' c_gtk_widget_show_all
+gtkWidgetShowAll o = do
+	o' <- gCastObjectIo o
+	pointer o' c_gtk_widget_show_all
 
 foreign import ccall "gtk_widget_show_all" c_gtk_widget_show_all :: Ptr GtkWidget -> IO ()
 
