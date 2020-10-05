@@ -49,10 +49,14 @@ import Data.Map as Map
 import qualified System.Gobject.Hierarchy as New (pointer)
 import qualified System.Gobject.SignalConnect as New (gSignalConnect)
 import qualified System.Gobject.TryDeleteEvent as New (
+	gtkWindowNew, GtkWindow, gtkWindowToplevel, DeleteEvent(..),
 	gtkDrawingAreaNew, GtkDrawingArea, DrawEvent(..) )
 
 newToOldDrawingArea :: New.GtkDrawingArea -> IO GtkWidget
 newToOldDrawingArea da = New.pointer da $ pure . GtkWidget . castPtr
+
+newToOldWindow :: New.GtkWindow -> IO GtkWidget
+newToOldWindow win = New.pointer win $ pure . GtkWidget . castPtr
 
 -- GUI EVENT
 
@@ -160,12 +164,14 @@ recieveEvReqs dr vwid vw crq cft cocc vvw vda = atomically (lastTChan crq) >>= \
 
 createWindow :: WindowId -> TChan (EvOccs GuiEv) -> IO GtkWidget
 createWindow wid c = do
-	w <- gtkWindowNew gtkWindowToplevel
+	w_ <- New.gtkWindowNew New.gtkWindowToplevel
+	w <- newToOldWindow w_
 	gtkWidgetSetEvents w [gdkPointerMotionMask, gdkScrollMask]
 	let	w' = castGtkWidgetToGObject w
+	New.gSignalConnect w_ New.DeleteEvent (\_ _ _ -> deleteEvent wid c) ()
 	w <$ mapM_ ($ ()) [
 --		gSignalConnect w Destroy gtkMainQuit,
-		gSignalConnect w' DeleteEvent \_ _ _ -> deleteEvent wid c,
+--		gSignalConnect w' DeleteEvent \_ _ _ -> deleteEvent wid c,
 		gSignalConnect w' KeyPressEvent \_ ev _ -> keyDown wid c ev,
 		gSignalConnect w' KeyReleaseEvent \_ ev _ -> keyUp wid c ev,
 		gSignalConnect w' ButtonPressEvent \_ ev _ -> buttonDown wid c ev,
@@ -188,7 +194,6 @@ createDrawingArea wid dr ftc c tx w = do
 	da_ <- New.gtkDrawingAreaNew
 	da <- newToOldDrawingArea da_
 	gtkContainerAdd (castWidgetToContainer w) da
---	da <$ gSignalConnect (castGtkWidgetToGObject da) DrawEvent (draw wid dr ftc c tx) ()
 	da <$ New.gSignalConnect da_ New.DrawEvent (draw wid dr ftc c tx) ()
 
 recieveViewable :: TChan (Map WindowId a) -> TVar (Map WindowId a) -> TVar (Map WindowId GtkWidget) -> IO Bool
