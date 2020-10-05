@@ -209,9 +209,7 @@ deleteEvent wid c = True <$ do
 	atomically . writeTChan c . expand . Singleton $ OccDeleteEvent wid
 
 keyDown, keyUp :: WindowId -> TChan (EvOccs GuiEv) -> GdkEventKey -> IO Bool
-keyDown wid c ev = do
-	putStrLn $ "keyDown event occur"
-	(False <$) $ atomically . writeTChan c . expand
+keyDown wid c ev = (False <$) $ atomically . writeTChan c . expand
 		=<< Singleton . OccKeyDown wid . Key . fromIntegral <$> keyval ev
 
 keyUp wid c ev = (False <$) $ atomically . writeTChan c . expand

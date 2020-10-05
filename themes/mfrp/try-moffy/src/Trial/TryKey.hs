@@ -44,8 +44,8 @@ tryKey = do
 runTryKey :: (Monoid a, Show a, Adjustable es (DefaultWindowEv :+: GuiEv)) =>
 	Sig s es (Map WindowId a) r -> IO (r, Maybe WindowId)
 runTryKey s = do
-	([], (cr, c, c')) <- runGtkMain (\_ _ -> print) []
-	r <- T.interpretSt (retrySt $ handleDefaultWindow `mergeSt` liftHandle' (T.handle Nothing cr c)) c' s Nothing
+	([], (cr, c, c')) <- runGtkMain (\_ _ x -> print x) []
+	r <- T.interpretSt (retrySt $ handleDefaultWindow `beforeSt` liftHandle' (T.handle Nothing cr c)) c' s Nothing
 --	r <- interpretSt (retrySt $ handleDefaultWindow `mergeSt` liftHandle' (T.handle Nothing cr c)) print s Nothing
 	gtkMainQuit
 	pure r
@@ -53,29 +53,16 @@ runTryKey s = do
 tryKeyMain :: IO ()
 tryKeyMain = void $ runTryKey keySig
 
-{-
-tryTryKeyMain :: IO ()
-tryTryKeyMain = do
-	([], (cr, c, c')) <- runGtkMain (\_ _ -> print :: (String -> IO ())) []
-	interpretReactSt (retrySt $ handleDefaultWindow `mergeSt` liftHandle' (T.handle Nothing cr c)) keyDown Nothing
-	gtkMainQuit
-	-}
-
-keySig :: Sig s (WindowNew :- LoadDefaultWindow :- DeleteEvent :- KeyEv) (Map WindowId [Or String String]) ()
+keySig :: Sig s (WindowNew :- DefaultWindowEv :+: DeleteEvent :- KeyEv) (Map WindowId [Or Char Char]) ()
 keySig = () <$ do
 	i <- waitFor $ adjust windowNew
+	waitFor . adjust $ storeDefaultWindow i
 	singleton i . (: []) <$%> adjustSig (repeat (asciiKey `first` asciiKeyUp) `break` deleteEvent i)
 
-asciiKey :: React s (LoadDefaultWindow :- KeyEv) String
+asciiKey :: React s (LoadDefaultWindow :- KeyEv) Char
 asciiKey = adjust keyDown >>= \case
-	AsciiKey c -> pure $ show c;
-	XkReturn -> pure $ show '\n';
-	o -> pure $ show o
-	_ -> asciiKey
+	AsciiKey c -> pure c; XkReturn -> pure '\n'; _ -> asciiKey
 
-asciiKeyUp :: React s (LoadDefaultWindow :- KeyEv) String
+asciiKeyUp :: React s (LoadDefaultWindow :- KeyEv) Char
 asciiKeyUp = adjust keyUp >>= \case
-	AsciiKey c -> pure $ show c;
-	XkReturn -> pure $ show '\n';
-	o -> pure $ show o
-	_ -> asciiKeyUp
+	AsciiKey c -> pure c; XkReturn -> pure '\n'; _ -> asciiKeyUp

@@ -46,8 +46,7 @@ instance Request KeyDown where
 
 keyDown :: WindowId -> React s (Singleton KeyDown) Key
 keyDown wid0 = maybe (keyDown wid0) pure =<<
---	await KeyDownReq \(OccKeyDown wid k) -> bool Nothing (Just k) $ wid == wid0
-	await KeyDownReq \(OccKeyDown wid k) -> bool Nothing (Just k) True
+	await KeyDownReq \(OccKeyDown wid k) -> bool Nothing (Just k) $ wid == wid0
 
 -- KEY UP
 
