@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e21ff95a6342135c7a5faef0186e89e17ced6efcbd34c2c1f2d9c8549e16cac4
+-- hash: ccbc22f2750a72d707f59a83376f86045e1b8d9c7dcc19c8ac6df0ea75c30707
 
 name:           try-moffy
 version:        0.1.0.0
@@ -600,6 +600,42 @@ executable tryFillPolygon
 
 executable tryGtk
   main-is: tryGtk.hs
+  other-modules:
+      Main
+      Paths_try_moffy
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyPixels
+    , JuicyPixels-extra
+    , X11
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-field
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy
+    , type-flip
+    , unordered-containers
+    , vector
+  default-language: Haskell2010
+
+executable tryKey
+  main-is: tryKey.hs
   other-modules:
       Main
       Paths_try_moffy

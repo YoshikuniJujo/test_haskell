@@ -684,6 +684,8 @@ Graphics.Pango
 		- [ ] ConfigureEvent
 	+ [ ] use above new events
 		- [ ] KeyPressEvent and KeyReleaseEvent
+			* [x] make tryKey
+			* [ ] use above to above
 		- [ ] ButtonPressEvent and ButtonReleaseEvent
 		- [ ] ScrollEvent
 		- [ ] MOtionNotifyEvent
