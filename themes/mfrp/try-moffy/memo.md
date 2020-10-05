@@ -677,6 +677,7 @@ Graphics.Pango
 		- [x] use new gtkWindowNew
 		- [x] use new gSignalConnect to DeleteEvent
 	+ [ ] make signals
+		- [x] make System.Gobject.TempEvents
 		- [ ] KeyPressEvent and KeyReleaseEvent
 		- [ ] ButtonPressEvent and ButtonReleaseEvent
 		- [ ] ScrollEvent

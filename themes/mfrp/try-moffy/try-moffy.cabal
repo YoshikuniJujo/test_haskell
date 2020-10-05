@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ccbc22f2750a72d707f59a83376f86045e1b8d9c7dcc19c8ac6df0ea75c30707
+-- hash: f63522d08d01e36b91f16a8fedd4c16ad746956d7351b5b7984f8477d3ed32c4
 
 name:           try-moffy
 version:        0.1.0.0
@@ -96,6 +96,7 @@ library
       System.Gobject
       System.Gobject.Hierarchy
       System.Gobject.SignalConnect
+      System.Gobject.TempEvents
       System.Gobject.TryDeleteEvent
       System.Gobject.TryHierarchy
       Trial.Boxes
