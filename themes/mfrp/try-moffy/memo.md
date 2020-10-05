@@ -657,12 +657,12 @@ Graphics.Pango
 		- [x] use exceptionHierarchy
 	+ [x] add gCastObject to gSignalConnect to check type
 	+ [x] move Reciever s into Callback
-	+ [ ] repair first argument of Callback
+	+ [x] repair first argument of Callback
 		- [x] add type argument to Callback and CCallback
 		- [x] add modifyPointer to class Pointer
 		- [x] repair DeleteEvent
 		- [x] repair DrawEvent
-		- [ ] remove value from class Pointer
+		- [x] remove value from class Pointer
 * [ ] use gSignalConnect\' in GtkWindow
 	+ [x] make DrawingArea
 	+ [x] make Draw event

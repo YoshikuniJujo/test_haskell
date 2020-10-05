@@ -10,13 +10,11 @@ import System.Gobject.Hierarchy
 data Foo = Foo (Ptr Foo) deriving Show
 instance Pointer Foo where
 	pointer (Foo p) = ($ p)
-	value = Foo
 gObjectHierarchy Nothing (GObjectType ''Foo)
 
 data Bar = Bar (Ptr Bar) deriving Show
 instance Pointer Bar where
 	pointer (Bar p) = ($ p)
-	value = Bar
 gObjectHierarchy Nothing $ GObjectNode "Baz" [GObjectType ''Bar]
 
 {-

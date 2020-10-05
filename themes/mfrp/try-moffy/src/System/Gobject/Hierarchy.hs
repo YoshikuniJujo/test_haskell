@@ -26,7 +26,6 @@ class (Typeable o, Pointer o, Show o) => GObject o where
 
 class Pointer a where
 	pointer :: a -> (Ptr a -> IO b) -> IO b
-	value :: Ptr a -> a
 	modifyPointer :: a -> (Ptr a -> Ptr a) -> a
 
 instance GObject SomeGObject where
@@ -35,7 +34,6 @@ instance GObject SomeGObject where
 
 instance Pointer SomeGObject where
 	pointer (SomeGObject o) f = pointer o $ f . castPtr
-	value = SomeGObject . value
 	modifyPointer (SomeGObject o) f = SomeGObject $ modifyPointer o (castPtr . f . castPtr)
 
 gCastObject :: (GObject o1, GObject o2) => o1 -> Maybe o2
@@ -80,10 +78,6 @@ gObjectContainer oc = sequence [
 					(normalB $ varE 'pointer `appE` varE o `appE`
 						infixE (Just $ varE f) (varE  '(.)) (Just $ varE 'castPtr))
 					[]],
-			valD (varP 'value)
-				(normalB $ infixE
-					(Just $ conE oc) (varE '(.)) (Just $ varE 'value))
-				[],
 			funD 'modifyPointer
 				[clause [conP oc [varP o], varP f]
 					(normalB $ conE oc `appE`

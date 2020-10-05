@@ -23,7 +23,6 @@ newtype GtkWindow = GtkWindow (Ptr GtkWindow) deriving Show
 
 instance Pointer GtkWindow where
 	pointer (GtkWindow p) = ($ p)
-	value = GtkWindow
 	modifyPointer (GtkWindow p) f = GtkWindow $ f p
 
 gObjectHierarchy Nothing $ GObjectNode "GInitialUnowned" [
@@ -37,7 +36,6 @@ gObjectHierarchy (Just ''GtkWidget) $ GObjectType ''GtkDrawingArea
 
 instance Pointer GtkDrawingArea where
 	pointer (GtkDrawingArea p) = ($ p)
-	value = GtkDrawingArea
 	modifyPointer (GtkDrawingArea p) f = GtkDrawingArea $ f p
 
 gtkWindowNew :: GtkWindowType -> IO GtkWindow
