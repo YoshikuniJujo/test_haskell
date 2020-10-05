@@ -30,7 +30,7 @@ tryScroll = (: []) . Message . show <$%> scanl addPoints (0, 0) (repeat mouseScr
 addPoints :: Point -> Point -> Point
 addPoints (x1, y1) (x2, y2) = (x1 + x2, y1 + y2)
 
-runTryScroll :: (Monoid a, Adjustable es (DefaultWindowEv :+: GuiEv)) => GtkDrawer a -> Sig s es (Map WindowId a) r -> IO (r, Maybe WindowId)
+runTryScroll :: (Monoid a, Adjustable es (DefaultWindowEv :+: GuiEv)) => GtkDrawer' a -> Sig s es (Map WindowId a) r -> IO (r, Maybe WindowId)
 runTryScroll dr s = do
 	([], (cr, c, c')) <- runGtkMain dr []
 	r <- interpretSt (retrySt $ handleDefaultWindow `mergeSt` liftHandle' (handle Nothing cr c)) c' do

@@ -670,6 +670,10 @@ Graphics.Pango
 	+ [x] define gtkContainerAdd
 	+ [x] make test app to print Wigdet and CairoT
 	+ [x] use gCastObjectIo instead of fromJust . gCastObject
+	+ [ ] try to use new drawing area
+		- [x] use new DrawingAreaNew
+		- [ ] use new gSignalConnect to DrawingArea
+	+ [ ] try to use new window
 	+ [ ] make test app for DrawingArea and DrawEvent
 	+ [ ] use new DrawingArea in Control.Moffy.Run.GtkField
 	+ [ ] use new Window in Control.Moffy.Run.GtkField

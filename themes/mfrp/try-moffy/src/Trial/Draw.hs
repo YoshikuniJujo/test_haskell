@@ -236,7 +236,7 @@ instance DefaultWindowState DrawState where
 	getDefaultWindow = dsDefaultWindow
 	putDefaultWindow s dw = s { dsDefaultWindow = Just dw }
 
-runDraw :: (Monoid a, Adjustable es (StoreDefaultWindow :- Events :+: GuiEv)) => GtkDrawer a -> Sig s es (Map.Map WindowId a) r -> IO (r, DrawState)
+runDraw :: (Monoid a, Adjustable es (StoreDefaultWindow :- Events :+: GuiEv)) => GtkDrawer' a -> Sig s es (Map.Map WindowId a) r -> IO (r, DrawState)
 runDraw dr s = do
 	([], (cr, c, c')) <- runGtkMain dr []
 	interpretSt (retrySt $

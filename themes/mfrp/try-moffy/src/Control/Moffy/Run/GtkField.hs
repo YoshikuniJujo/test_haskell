@@ -7,9 +7,11 @@ module Control.Moffy.Run.GtkField (
 	-- * Gui Event
 	GuiEv,
 	-- * Run Gtk Main
-	GtkDrawer, runGtkMain) where
+	GtkDrawer, GtkDrawer', runGtkMain) where
 
 import Prelude hiding (repeat, break)
+
+import Foreign.Ptr
 
 import Control.Monad
 import Control.Moffy
@@ -44,6 +46,14 @@ import Data.OneOrMoreApp (pattern Singleton, expand, (>-))
 
 import Data.Map as Map
 
+import qualified System.Gobject.Hierarchy as New (pointer)
+import qualified System.Gobject.SignalConnect as New (gSignalConnect)
+import qualified System.Gobject.TryDeleteEvent as New (
+	gtkDrawingAreaNew, GtkDrawingArea, DrawEvent(..) )
+
+newToOldDrawingArea :: New.GtkDrawingArea -> IO GtkWidget
+newToOldDrawingArea da = New.pointer da $ pure . GtkWidget . castPtr
+
 -- GUI EVENT
 
 type GuiEv = CursorEv :+: WindowEv :+: CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv
@@ -51,9 +61,10 @@ type GuiEv = CursorEv :+: WindowEv :+: CalcTextExtents :- M.DeleteEvent :- KeyEv
 -- RUN GTK MAIN
 
 type GtkDrawer a = GtkWidget -> CairoT -> a -> IO ()
+type GtkDrawer' a = New.GtkDrawingArea -> CairoT -> a -> IO ()
 
 runGtkMain :: Monoid a =>
-	GtkDrawer a -> [String] -> IO ([String], (TChan (EvReqs GuiEv), TChan (EvOccs GuiEv), TChan (Map WindowId a)))
+	GtkDrawer' a -> [String] -> IO ([String], (TChan (EvReqs GuiEv), TChan (EvOccs GuiEv), TChan (Map WindowId a)))
 runGtkMain dr as = (,,) <$> newTChanIO <*> newTChanIO <*> newTChanIO >>=
 	\cs@(crq, cocc, cvw) -> (, cs) <$> do
 		cas <- newTChanIO
@@ -70,7 +81,7 @@ runGtkMain dr as = (,,) <$> newTChanIO <*> newTChanIO <*> newTChanIO >>=
 			gtkMain
 		atomically $ readTChan cas
 
-recieveEvReqs :: Monoid a => GtkDrawer a -> TVar WindowId -> TVar (Map WindowId GtkWidget) -> TChan (EvReqs GuiEv) -> TChan (WindowId, FontName, FontSize, T.Text) ->
+recieveEvReqs :: Monoid a => GtkDrawer' a -> TVar WindowId -> TVar (Map WindowId GtkWidget) -> TChan (EvReqs GuiEv) -> TChan (WindowId, FontName, FontSize, T.Text) ->
 	TChan (EvOccs GuiEv) -> TVar (Map WindowId a) -> TVar (Map WindowId GtkWidget) -> IO ()
 recieveEvReqs dr vwid vw crq cft cocc vvw vda = atomically (lastTChan crq) >>= \case
 	Nothing -> pure ()
@@ -171,12 +182,14 @@ createWindow wid c = do
 		gSignalConnect w' MotionNotifyEvent \_ ev _ -> mouseMove wid c ev,
 		gSignalConnect w' ConfigureEvent \_ ev _ -> wConfigure wid c ev ]
 
-createDrawingArea :: Monoid a => WindowId -> GtkDrawer a -> TChan (WindowId, FontName, FontSize, T.Text) ->
+createDrawingArea :: Monoid a => WindowId -> GtkDrawer' a -> TChan (WindowId, FontName, FontSize, T.Text) ->
 	TChan (EvOccs GuiEv) -> TVar (Map WindowId a) -> GtkWidget -> IO GtkWidget
 createDrawingArea wid dr ftc c tx w = do
-	da <- gtkDrawingAreaNew
+	da_ <- New.gtkDrawingAreaNew
+	da <- newToOldDrawingArea da_
 	gtkContainerAdd (castWidgetToContainer w) da
-	da <$ gSignalConnect (castGtkWidgetToGObject da) DrawEvent (draw wid dr ftc c tx) ()
+--	da <$ gSignalConnect (castGtkWidgetToGObject da) DrawEvent (draw wid dr ftc c tx) ()
+	da <$ New.gSignalConnect da_ New.DrawEvent (draw wid dr ftc c tx) ()
 
 recieveViewable :: TChan (Map WindowId a) -> TVar (Map WindowId a) -> TVar (Map WindowId GtkWidget) -> IO Bool
 recieveViewable c' tx vda = atomically (readTVar vda) >>= \das -> True <$ do
@@ -233,8 +246,8 @@ button = \case
 
 -- DRAW
 
-draw :: Monoid a => WindowId -> GtkDrawer a -> TChan (WindowId, FontName, FontSize, T.Text) ->
-	TChan (EvOccs GuiEv) -> TVar (Map WindowId a) -> GtkWidget -> CairoT -> () -> IO Bool
+draw :: Monoid a => WindowId -> GtkDrawer' a -> TChan (WindowId, FontName, FontSize, T.Text) ->
+	TChan (EvOccs GuiEv) -> TVar (Map WindowId a) -> New.GtkDrawingArea -> CairoT -> () -> IO Bool
 draw wid dr ftc co tx wdgt cr () = True <$ do
 	atomically (lastTChan ftc) >>= maybe (pure ()) \(wid', fn, fs, txt) -> case wid' == wid of
 		True -> do

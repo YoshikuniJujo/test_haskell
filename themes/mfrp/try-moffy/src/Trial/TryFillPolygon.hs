@@ -25,7 +25,7 @@ tryFillPolygon = do
 		]
 	waitFor never
 
-runFillPolygon :: (Monoid a, Adjustable es GuiEv) => GtkDrawer a -> Sig s es (Map WindowId a) r -> IO r
+runFillPolygon :: (Monoid a, Adjustable es GuiEv) => GtkDrawer' a -> Sig s es (Map WindowId a) r -> IO r
 runFillPolygon dr s = do
 	([], (cr, c, c')) <- runGtkMain dr []
 	interpret (retry $ handle Nothing cr c) c' s <* gtkMainQuit

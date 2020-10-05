@@ -40,7 +40,7 @@ drawText _ cr (Text' c fn fs (x, y) t) = do
 
 -- LINE
 
-drawLine :: GtkWidget -> CairoT -> Line -> IO ()
+drawLine :: a -> CairoT -> Line -> IO ()
 drawLine _ cr (Line' c w (xb, yb) (xe, ye)) = do
 	uncurry3 (cairoSetSourceRgb cr) $ colorToRgb c
 	cairoSetLineWidth cr w
@@ -67,7 +67,7 @@ bsToCairoReadFunc tbs () (fromIntegral -> n) = atomically $ readTVar tbs >>= \bs
 		| otherwise -> pure (cairoStatusReadError, Nothing)
 		where (t, d) = BS.splitAt n bs
 
-drawBox :: GtkWidget -> CairoT -> Box -> IO ()
+drawBox :: a -> CairoT -> Box -> IO ()
 drawBox _ cr (Box (Rect (l_, u_) (r, d)) c) = do
 	uncurry3 (cairoSetSourceRgb cr) $ bcolorToRgb c
 	cairoRectangle cr l u w h
@@ -79,7 +79,7 @@ drawBox _ cr (Box (Rect (l_, u_) (r, d)) c) = do
 	w = abs $ l_ - r
 	h = abs $ u_ - d
 
-fillPolygon :: GtkWidget -> CairoT -> FillPolygon -> IO ()
+fillPolygon :: a -> CairoT -> FillPolygon -> IO ()
 fillPolygon _ _ (FillPolygon _ []) = pure ()
 fillPolygon _ cr (FillPolygon c (p : ps)) = do
 	uncurry3 (cairoSetSourceRgb cr) $ colorToRgb c

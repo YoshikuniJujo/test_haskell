@@ -16,7 +16,7 @@ module Graphics.Gtk (
 	-- *** Abstract Base Classes
 	-- **** GtkWidget
 	-- ***** Type
-	GtkWidget,
+	GtkWidget(..),
 	-- ***** Functions
 	gtkWidgetDestroy, gtkWidgetShowAll, gtkWidgetQueueDraw,
 	gtkWidgetSetEvents, gtkWidgetGetWindow,

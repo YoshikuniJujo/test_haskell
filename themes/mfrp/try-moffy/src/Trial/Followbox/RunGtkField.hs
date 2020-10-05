@@ -30,6 +30,10 @@ import Control.Moffy.Event.Window
 import Control.Moffy.Event.Cursor
 import Data.Map
 
+import Foreign.Ptr
+import qualified System.Gobject.Hierarchy as New
+import qualified System.Gobject.TryDeleteEvent as New
+
 handleFollowbox ::
 	(TChan (EvReqs (CursorEv :+: CalcTextExtents :- GuiEv)), TChan (EvOccs (CursorEv :+: CalcTextExtents :- GuiEv))) -> Browser ->
 	Maybe GithubNameToken -> HandleF IO (CursorEv :+: CalcTextExtents :- DefaultWindowEv :+: GuiEv :+: FollowboxEv)
@@ -41,8 +45,12 @@ runFollowbox brs mgnt s = do
 	(r, _) <- interpretSt (handleFollowbox (cr, c) brs mgnt) c' s (initialFollowboxState $ mkStdGen 8)
 	r <$ gtkMainQuit
 
-drawFollowboxGtk :: GtkWidget -> CairoT -> View -> IO ()
-drawFollowboxGtk wdt cr (View v) = do
+newToOldDrawingArea :: New.GtkDrawingArea -> IO GtkWidget
+newToOldDrawingArea da = New.pointer da $ pure . GtkWidget . castPtr
+
+drawFollowboxGtk :: New.GtkDrawingArea -> CairoT -> View -> IO ()
+drawFollowboxGtk wdt_ cr (View v) = do
+		wdt <- newToOldDrawingArea wdt_
 		w <- gtkWidgetGetAllocatedWidth wdt
 		h <- gtkWidgetGetAllocatedHeight wdt
 		cairoSetSourceRgb cr 0 0 0

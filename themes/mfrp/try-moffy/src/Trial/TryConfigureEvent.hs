@@ -26,7 +26,7 @@ tryConfigure :: Sig s (LoadDefaultWindow :- WindowConfigure :- 'Nil) [Message] (
 tryConfigure = (: []) . Message . show <$%> repeat (adjust . windowConfigure =<< adjust loadDefaultWindow)
 
 runTryConfigure :: (Monoid a, Adjustable es (DefaultWindowEv :+: GuiEv)) =>
-	GtkDrawer a -> Sig s es (Map WindowId a) r -> IO (r, Maybe WindowId)
+	GtkDrawer' a -> Sig s es (Map WindowId a) r -> IO (r, Maybe WindowId)
 runTryConfigure dr s = do
 	([], (cr, c, c')) <- runGtkMain dr []
 	r <- interpretSt (retrySt $ handleDefaultWindow `mergeSt` liftHandle' (handle Nothing cr c)) c' s Nothing
