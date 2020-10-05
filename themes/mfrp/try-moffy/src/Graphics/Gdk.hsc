@@ -47,6 +47,9 @@ gdkWindowAttrSetWidth, gdkWindowAttrSetHeight :: GdkWindowAttr -> #{type gint} -
 gdkWindowAttrSetWidth (GdkWindowAttr attr) = #{poke GdkWindowAttr, width} attr
 gdkWindowAttrSetHeight (GdkWindowAttr attr) = #{poke GdkWindowAttr, height} attr
 
+gdkWindowAttrSetWClass :: GdkWindowAttr -> GdkWindowWindowClass -> IO ()
+gdkWindowAttrSetWClass (GdkWindowAttr attr) (GdkWindowWindowClass c) = #{poke GdkWindowAttr, wclass} attr c
+
 newtype GdkWindowAttributesType = GdkWindowAttributesType #{type GdkWindowAttributesType} deriving Show
 #enum GdkWindowAttributesType, GdkWindowAttributesType, \
 	GDK_WA_TITLE, GDK_WA_X, GDK_WA_Y, GDK_WA_CURSOR, GDK_WA_VISUAL, \
@@ -76,3 +79,9 @@ boolToGBoolean :: Bool -> #{type gboolean}
 boolToGBoolean False = #{const FALSE}
 boolToGBoolean True = #{const TRUE}
 -}
+
+instance Storable GdkWindowAttr where
+	sizeOf _ = #{size GdkWindowAttr}
+	alignment _ = #{alignment GdkWindowAttr}
+	peek = pure . GdkWindowAttr
+	poke _ _ = pure ()
