@@ -3,7 +3,7 @@
 
 module Main where
 
-import Foreign.Marshal
+import Foreign.Marshal hiding (void)
 import Foreign.Storable
 
 import Control.Monad
@@ -24,18 +24,13 @@ main = do
 		gdkWindowAttrSetWClass attr gdkInputOutput
 		gdkWindowNew Nothing attr [gdkWaWmclass]
 	gdkWindowShow w
-	print =<< gdkEventGet
-	print =<< gdkEventGet
-	print =<< gdkEventGet
-	print =<< gdkEventGet
-	print =<< gdkEventGet
-	print =<< gdkEventGet
-	print =<< gdkEventGet
-	print =<< gdkEventGet
-	print =<< gdkEventGet
-	print =<< gdkEventGet
-	print =<< gdkEventGet
-	forever do
+	gdkWithEvent print
+	gdkWithEvent print
+	gdkWithEvent print
+	gdkWithEvent print
+	gdkWithEvent print
+	gdkWithEvent print
+	do
 		threadDelay 100000
 		cairoRegionWithRectangle (CairoRectangleIntT 50 50 100 100) \r ->
 			gdkWindowWithDrawFrame w r \cxt -> do
@@ -45,5 +40,6 @@ main = do
 				cairoMoveTo cr 10 10
 				cairoLineTo cr 90 90
 				cairoStroke cr
+		gdkWithEvent print
 	getChar
 	pure ()

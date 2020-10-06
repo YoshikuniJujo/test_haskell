@@ -472,10 +472,17 @@ todo
 * [ ] make Graphics.Gdk
 	+ [ ] make library
 		- [x] gdkWindowNew and so on
+		- [x] free GdkEvent
+		- [ ] match GdkEventFoo
+			* [ ] print Event type
+			* [ ] use pattern synonyms
+			* [ ] Foo EvType (Ptr GdkEvent) ==> Bar GdkEventBaz
 		- [ ] others
 	+ [ ] sample tryGdk
 		- [x] stroke line
+		- [x] no forever
 		- [ ] others
+	+ [ ] use PtrForeignPtr some object of Graphics.Gdk
 * [ ] make Control.Moffy.Handle.GdkField
 * [ ] make Control.Moffy.View.GdkField
 * [ ] refactor Graphics.Gtk and Graphics.Gtk.\*

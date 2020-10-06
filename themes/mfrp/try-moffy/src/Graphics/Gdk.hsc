@@ -10,6 +10,7 @@ import Foreign.Storable
 import Foreign.C
 import Control.Exception
 import Data.Bits
+import Data.Bool
 import Data.Word
 import Data.Int
 
@@ -92,9 +93,18 @@ instance Storable GdkWindowAttr where
 newtype GdkEvent = GdkEvent (Ptr GdkEvent) deriving Show
 
 foreign import ccall "gdk_event_get" c_gdk_event_get :: IO (Ptr GdkEvent)
+foreign import ccall "gdk_events_pending" c_gdk_event_pending :: IO #type gboolean
 
 gdkEventGet :: IO GdkEvent
 gdkEventGet = GdkEvent <$> c_gdk_event_get
+
+gdkWithEvent :: (Maybe GdkEvent -> IO a) -> IO a
+gdkWithEvent f = bracket
+	c_gdk_event_get
+	(\p -> bool (c_gdk_event_free p) (pure ()) $ p == nullPtr)
+	(\p -> f $ bool (Just $ GdkEvent p) Nothing $ p == nullPtr)
+
+foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
 newtype GdkDrawingContext = GdkDrawingContext (Ptr GdkDrawingContext) deriving Show
 
