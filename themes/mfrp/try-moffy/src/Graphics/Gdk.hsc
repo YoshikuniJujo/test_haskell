@@ -8,9 +8,12 @@ import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C
+import Control.Exception
 import Data.Bits
 import Data.Word
 import Data.Int
+
+import Graphics.CairoType
 
 #include <gdk/gdk.h>
 #include <glib.h>
@@ -92,3 +95,59 @@ foreign import ccall "gdk_event_get" c_gdk_event_get :: IO (Ptr GdkEvent)
 
 gdkEventGet :: IO GdkEvent
 gdkEventGet = GdkEvent <$> c_gdk_event_get
+
+newtype GdkDrawingContext = GdkDrawingContext (Ptr GdkDrawingContext) deriving Show
+
+data CairoRectangleIntT = CairoRectangleIntT {
+	cairoRectangleIntTX, cairoRectangleIntTY :: #{type int},
+	cairoRectangleIntTWidth, cairoRectangleIntTHeight :: #{type int} } deriving Show
+
+instance Storable CairoRectangleIntT where
+	sizeOf _ = #size cairo_rectangle_int_t
+	alignment _ = #alignment cairo_rectangle_int_t
+	peek pr = do
+		x <- #{peek cairo_rectangle_int_t, x} pr
+		y <- #{peek cairo_rectangle_int_t, y} pr
+		w <- #{peek cairo_rectangle_int_t, width} pr
+		h <- #{peek cairo_rectangle_int_t, height} pr
+		pure $ CairoRectangleIntT x y w h
+	poke pr (CairoRectangleIntT x y w h) = do
+		#{poke cairo_rectangle_int_t, x} pr x
+		#{poke cairo_rectangle_int_t, y} pr y
+		#{poke cairo_rectangle_int_t, width} pr w
+		#{poke cairo_rectangle_int_t, height} pr h
+
+foreign import ccall "cairo_region_create_rectangle" c_cairo_region_create_rectangle ::
+	Ptr CairoRectangleIntT -> IO (Ptr CairoRegionT)
+
+newtype CairoRegionT = CairoRegionT (Ptr CairoRegionT) deriving Show
+
+{-
+cairoRegionCreateRectangle :: CairoRectangleIntT -> IO CairoRegionT
+cairoRegionCreateRectangle r = (CairoRegionT <$>) $ alloca \p ->
+	poke p r *> c_cairo_region_create_rectangle p
+	-}
+
+foreign import ccall "cairo_region_destroy" c_cairo_region_destroy ::
+	Ptr CairoRegionT -> IO ()
+
+cairoRegionWithRectangle :: CairoRectangleIntT -> (CairoRegionT -> IO a) -> IO a
+cairoRegionWithRectangle r = bracket
+	(alloca \p -> poke p r *> c_cairo_region_create_rectangle p)
+	c_cairo_region_destroy . (. CairoRegionT)
+
+foreign import ccall "gdk_window_begin_draw_frame" c_gdk_window_begin_draw_frame ::
+	Ptr GdkWindow -> Ptr CairoRegionT -> IO (Ptr GdkDrawingContext)
+
+foreign import ccall "gdk_window_end_draw_frame" c_gdk_window_end_draw_frame ::
+	Ptr GdkWindow -> Ptr GdkDrawingContext -> IO ()
+
+foreign import ccall "gdk_drawing_context_get_cairo_context" c_gdk_drawing_context_get_cairo_context ::
+	Ptr GdkDrawingContext -> IO (Ptr CairoT)
+
+gdkWindowWithDrawFrame :: GdkWindow -> CairoRegionT -> (GdkDrawingContext -> IO a) -> IO a
+gdkWindowWithDrawFrame (GdkWindow w) (CairoRegionT r) = bracket
+	(c_gdk_window_begin_draw_frame w r) (c_gdk_window_end_draw_frame w) . (. GdkDrawingContext)
+
+gdkDrawingContextGetCairoContext :: GdkDrawingContext -> IO CairoT
+gdkDrawingContextGetCairoContext (GdkDrawingContext c) = CairoT <$> c_gdk_drawing_context_get_cairo_context c

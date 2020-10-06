@@ -470,6 +470,12 @@ todo
 		- [x] get sample PNG
 		- [x] add to Trial.TryCursor
 * [ ] make Graphics.Gdk
+	+ [ ] make library
+		- [x] gdkWindowNew and so on
+		- [ ] others
+	+ [ ] sample tryGdk
+		- [x] stroke line
+		- [ ] others
 * [ ] make Control.Moffy.Handle.GdkField
 * [ ] make Control.Moffy.View.GdkField
 * [ ] refactor Graphics.Gtk and Graphics.Gtk.\*
