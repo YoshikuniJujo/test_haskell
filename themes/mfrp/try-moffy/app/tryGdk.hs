@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -10,6 +10,7 @@ import Control.Monad
 import Control.Concurrent
 import System.Environment
 import Graphics.Gdk
+import Graphics.Gdk.Event
 import Graphics.Cairo
 
 main :: IO ()
@@ -24,12 +25,12 @@ main = do
 		gdkWindowAttrSetWClass attr gdkInputOutput
 		gdkWindowNew Nothing attr [gdkWaWmclass]
 	gdkWindowShow w
-	gdkWithEvent print
-	gdkWithEvent print
-	gdkWithEvent print
-	gdkWithEvent print
-	gdkWithEvent print
-	gdkWithEvent print
+	gdkWithEvent $ maybe (pure ()) checkEvent
+	gdkWithEvent $ maybe (pure ()) checkEvent
+	gdkWithEvent $ maybe (pure ()) checkEvent
+	gdkWithEvent $ maybe (pure ()) checkEvent
+	gdkWithEvent $ maybe (pure ()) checkEvent
+	gdkWithEvent $ maybe (pure ()) checkEvent
 	do
 		threadDelay 100000
 		cairoRegionWithRectangle (CairoRectangleIntT 50 50 100 100) \r ->
@@ -40,6 +41,14 @@ main = do
 				cairoMoveTo cr 10 10
 				cairoLineTo cr 90 90
 				cairoStroke cr
-		gdkWithEvent print
+		gdkWithEvent $ maybe (pure ()) checkEvent
 	getChar
 	pure ()
+
+checkEvent :: GdkEvent -> IO ()
+checkEvent = \case
+	GdkEventGdkEventConfigure c -> do
+		print c
+		print =<< gdkEventConfigureWidth c
+		print =<< gdkEventConfigureHeight c
+	e -> print e

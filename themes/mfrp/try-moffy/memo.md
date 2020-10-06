@@ -476,7 +476,10 @@ todo
 		- [ ] match GdkEventFoo
 			* [x] print Event type
 			* [x] GdkEvent GdkEventType (Ptr GdkEvent)
+			* [x] separate Graphics.Gdk.Event
 			* [ ] GdkEvent GdkEventType (Ptr GdkEvent) ==> GdkEventFoo GdkEventFoo
+				+ [x] GdkEventConfigure
+				+ [ ] GdkEventConfigure to Storable
 		- [ ] others
 	+ [ ] sample tryGdk
 		- [x] stroke line
