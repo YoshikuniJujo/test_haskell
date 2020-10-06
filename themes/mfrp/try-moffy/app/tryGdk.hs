@@ -24,12 +24,12 @@ main = do
 		gdkWindowAttrSetWClass attr gdkInputOutput
 		gdkWindowNew Nothing attr [gdkWaWmclass]
 	gdkWindowShow w
-	gdkWithEvent $ maybe (pure ()) (print <=< gdkEventType)
-	gdkWithEvent $ maybe (pure ()) (print <=< gdkEventType)
-	gdkWithEvent $ maybe (pure ()) (print <=< gdkEventType)
-	gdkWithEvent $ maybe (pure ()) (print <=< gdkEventType)
-	gdkWithEvent $ maybe (pure ()) (print <=< gdkEventType)
-	gdkWithEvent $ maybe (pure ()) (print <=< gdkEventType)
+	gdkWithEvent print
+	gdkWithEvent print
+	gdkWithEvent print
+	gdkWithEvent print
+	gdkWithEvent print
+	gdkWithEvent print
 	do
 		threadDelay 100000
 		cairoRegionWithRectangle (CairoRectangleIntT 50 50 100 100) \r ->
@@ -40,6 +40,6 @@ main = do
 				cairoMoveTo cr 10 10
 				cairoLineTo cr 90 90
 				cairoStroke cr
-		gdkWithEvent $ maybe (pure ()) (print <=< gdkEventType)
+		gdkWithEvent print
 	getChar
 	pure ()

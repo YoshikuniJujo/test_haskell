@@ -90,9 +90,14 @@ instance Storable GdkWindowAttr where
 	peek = pure . GdkWindowAttr
 	poke _ _ = pure ()
 
-newtype GdkEvent = GdkEvent (Ptr GdkEvent) deriving Show
+data GdkEvent = GdkEvent GdkEventType (Ptr GdkEvent) deriving Show
 
 newtype GdkEventType = GdkEventType #{type GdkEventType} deriving Show
+
+makeGdkEvent :: Ptr GdkEvent -> IO GdkEvent
+makeGdkEvent p = do
+	t <- GdkEventType <$> #{peek GdkEvent, type} p
+	pure $ GdkEvent t p
 
 #enum GdkEventType, GdkEventType, \
 	GDK_NOTHING, GDK_DELETE, GDK_DESTROY, GDK_EXPOSE, GDK_MOTION_NOTIFY, \
@@ -106,20 +111,14 @@ newtype GdkEventType = GdkEventType #{type GdkEventType} deriving Show
 	GDK_CLIENT_EVENT, GDK_VISIBILITY_NOTIFY, GDK_SCROLL, GDK_WINDOW_STATE, \
 	GDK_SETTING, GDK_OWNER_CHANGE, GDK_GRAB_BROKEN
 
-gdkEventType :: GdkEvent -> IO GdkEventType
-gdkEventType (GdkEvent p) = GdkEventType <$> #{peek GdkEvent, type} p
-
 foreign import ccall "gdk_event_get" c_gdk_event_get :: IO (Ptr GdkEvent)
 foreign import ccall "gdk_events_pending" c_gdk_event_pending :: IO #type gboolean
-
-gdkEventGet :: IO GdkEvent
-gdkEventGet = GdkEvent <$> c_gdk_event_get
 
 gdkWithEvent :: (Maybe GdkEvent -> IO a) -> IO a
 gdkWithEvent f = bracket
 	c_gdk_event_get
 	(\p -> bool (c_gdk_event_free p) (pure ()) $ p == nullPtr)
-	(\p -> f $ bool (Just $ GdkEvent p) Nothing $ p == nullPtr)
+	(\p -> f =<< bool (Just <$> makeGdkEvent p) (pure Nothing) (p == nullPtr))
 
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 

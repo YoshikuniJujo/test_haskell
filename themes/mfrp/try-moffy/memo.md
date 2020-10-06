@@ -475,12 +475,13 @@ todo
 		- [x] free GdkEvent
 		- [ ] match GdkEventFoo
 			* [x] print Event type
-			* [ ] Foo EvType (Ptr GdkEvent) ==> Bar GdkEventBaz
-			* [ ] use pattern synonyms
+			* [x] GdkEvent GdkEventType (Ptr GdkEvent)
+			* [ ] GdkEvent GdkEventType (Ptr GdkEvent) ==> GdkEventFoo GdkEventFoo
 		- [ ] others
 	+ [ ] sample tryGdk
 		- [x] stroke line
 		- [x] no forever
+		- [ ] try using pattern synonyms
 		- [ ] others
 	+ [ ] use PtrForeignPtr some object of Graphics.Gdk
 * [ ] make Control.Moffy.Handle.GdkField
