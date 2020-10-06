@@ -27,16 +27,42 @@ newtype GdkEventConfigure = GdkEventConfigure (Ptr GdkEventConfigure) deriving S
 {-
 data GdkEventConfigure = GdkEventConfigure {
 	gdkEventConfigureWindow :: GdkWindow,
-	gdkEventConfigureSenEvent :: Bool,
+	gdkEventConfigureSendEvent :: Bool,
 	gdkEventConfigureX, gdkEventConfigureY :: #{type gint},
 	gdkEventConfigureWidth, gdkEventConfigureHeight :: #{type gint} }
-	-}
 
+gint8ToBool :: #{type gint8} -> Bool
+gint8ToBool #{const TRUE} = True
+gint8ToBool _ = False
+
+boolToGint8 :: Bool -> #{type gint8}
+boolToGint8 True = #{const TRUE}
+boolToGint8 False = #{const FALSE}
+
+instance Storable GdkEventConfigure where
+	sizeOf _ = #size GdkEventConfigure
+	alignment _ = #alignment GdkEventConfigure
+	peek p = GdkEventConfigure
+		<$> (GdkWindow <$> #{peek GdkEventConfigure, window} p)
+		<*> (gint8ToBool <$> #{peek GdkEventConfigure, send_event} p)
+		<*> #{peek GdkEventConfigure, x} p <*> #{peek GdkEventConfigure, y} p
+		<*> #{peek GdkEventConfigure, width} p <*> #{peek GdkEventConfigure, height} p
+	poke p (GdkEventConfigure (GdkWindow win) se x y w h) = do
+		#{poke GdkEventConfigure, type} p (#{const GDK_CONFIGURE} :: #{type GdkEventType})
+		#{poke GdkEventConfigure, window} p win
+		#{poke GdkEventConfigure, send_event} p $ boolToGint8 se
+		#{poke GdkEventConfigure, x} p x
+		#{poke GdkEventConfigure, y} p y
+		#{poke GdkEventConfigure, width} p w
+		#{poke GdkEventConfigure, height} p h
+-}
+		
 gdkEventConfigureWidth, gdkEventConfigureHeight :: GdkEventConfigure -> IO #type gint
 gdkEventConfigureWidth (GdkEventConfigure p) = #{peek GdkEventConfigure, width} p
 gdkEventConfigureHeight (GdkEventConfigure p) = #{peek GdkEventConfigure, height} p
 
 pattern GdkEventGdkEventConfigure :: GdkEventConfigure -> GdkEvent
+-- pattern GdkEventGdkEventConfigure p <- GdkEvent (GdkEventType #{const GDK_CONFIGURE}) (peek . castPtr -> p)
 pattern GdkEventGdkEventConfigure p <- GdkEvent (GdkEventType #{const GDK_CONFIGURE}) (GdkEventConfigure . castPtr -> p)
 
 #enum GdkEventType, GdkEventType, \
