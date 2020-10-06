@@ -474,9 +474,9 @@ todo
 		- [x] gdkWindowNew and so on
 		- [x] free GdkEvent
 		- [ ] match GdkEventFoo
-			* [ ] print Event type
-			* [ ] use pattern synonyms
+			* [x] print Event type
 			* [ ] Foo EvType (Ptr GdkEvent) ==> Bar GdkEventBaz
+			* [ ] use pattern synonyms
 		- [ ] others
 	+ [ ] sample tryGdk
 		- [x] stroke line
