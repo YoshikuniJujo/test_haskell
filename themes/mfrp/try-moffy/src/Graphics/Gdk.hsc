@@ -39,13 +39,18 @@ gdkInit as = allocaArray (length as) \arr -> do
 	(peekCString `mapM`) =<< peekArray (fromIntegral n') arr'
 
 newtype GdkWindowType = GdkWindowType #{type GdkWindowType} deriving Show
-#enum GdkWindowType, GdkWindowType, GDK_WINDOW_TOPLEVEL
+#enum GdkWindowType, GdkWindowType, GDK_WINDOW_ROOT, GDK_WINDOW_TOPLEVEL, \
+	GDK_WINDOW_CHILD
 
 newtype GdkWindowWindowClass = GdkWindowWindowClass #{type GdkWindowWindowClass} deriving Show
 #enum GdkWindowWindowClass, GdkWindowWindowClass, GDK_INPUT_OUTPUT, GDK_INPUT_ONLY
 
 gdkWindowAttrSetWindowType :: GdkWindowAttr -> GdkWindowType -> IO ()
 gdkWindowAttrSetWindowType (GdkWindowAttr attr) (GdkWindowType wt) = #{poke GdkWindowAttr, window_type} attr wt
+
+gdkWindowAttrSetX, gdkWindowAttrSetY :: GdkWindowAttr -> #{type gint} -> IO ()
+gdkWindowAttrSetX (GdkWindowAttr attr) = #{poke GdkWindowAttr, x} attr
+gdkWindowAttrSetY (GdkWindowAttr attr) = #{poke GdkWindowAttr, y} attr
 
 gdkWindowAttrSetWidth, gdkWindowAttrSetHeight :: GdkWindowAttr -> #{type gint} -> IO ()
 gdkWindowAttrSetWidth (GdkWindowAttr attr) = #{poke GdkWindowAttr, width} attr
