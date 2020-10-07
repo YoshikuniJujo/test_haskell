@@ -501,7 +501,11 @@ todo
 	+ [ ] sample tryGdk
 		- [x] stroke line
 		- [x] no forever
-		- [ ] try using pattern synonyms
+		- [x] try using pattern synonyms
+		- [ ] draw if Visibility event occur
+			+ [x] get Window
+			+ [x] always
+			+ [ ] only visible
 		- [ ] others
 	+ [ ] use ForeignPtr some object of Graphics.Gdk
 	+ [ ] use Either FooValue FooForeignPtr as argument to pass event

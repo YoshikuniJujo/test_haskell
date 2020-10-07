@@ -19,7 +19,6 @@ main :: IO ()
 main = do
 	as <- getArgs
 	print =<< gdkInit as
---	w <- alloca $ \p -> do
 	w <- alloca $ \p -> do
 		attr <- peek p
 		gdkWindowAttrSetEventMask attr [gdkExposureMask, gdkButtonPressMask]
@@ -34,16 +33,6 @@ main = do
 	gdkWindowInvalidateRect w (50, 50) (100, 100) False
 	gdkWindowFreezeUpdates w
 	gdkWindowThawUpdates w
-	do
-		threadDelay 100000
-		cairoRegionWithRectangle (CairoRectangleIntT 50 50 100 100) \r ->
-			gdkWindowWithDrawFrame w r \cxt -> do
-				cr <- gdkDrawingContextGetCairoContext cxt
-				cairoSetSourceRgb cr 0.8 0.2 0.2
-				cairoSetLineWidth cr 5
-				cairoMoveTo cr 10 10
-				cairoLineTo cr 90 90
-				cairoStroke cr
 	doWhile_ do
 		threadDelay 100000
 		doWhile $ gdkEventGet >>= \case
@@ -51,9 +40,6 @@ main = do
 				b <- checkEvent e
 				pure if b then Nothing else Just False
 			Nothing -> pure $ Just True
-
-	{-
-	-}
 
 checkEvent :: GdkEvent -> IO Bool
 checkEvent = \case
@@ -87,7 +73,16 @@ checkEvent = \case
 		putStrLn $ "GDK_CONFIGURE: " ++ show c ++ ": " ++ show w ++ " " ++ show h
 		pure True
 	GdkEventGdkVisibilityNotify v -> do
+		w <- gdkEventVisibilityWindow v
 		vs <- gdkEventVisibilityState v
+		cairoRegionWithRectangle (CairoRectangleIntT 50 50 100 100) \r ->
+			gdkWindowWithDrawFrame w r \cxt -> do
+				cr <- gdkDrawingContextGetCairoContext cxt
+				cairoSetSourceRgb cr 0.8 0.2 0.2
+				cairoSetLineWidth cr 5
+				cairoMoveTo cr 10 10
+				cairoLineTo cr 90 90
+				cairoStroke cr
 		putStrLn $ "GDK_VISIBILITY_NOTIFY: " ++ show v ++ ": " ++ show vs
 		pure True
 	GdkEventGdkWindowState s -> do

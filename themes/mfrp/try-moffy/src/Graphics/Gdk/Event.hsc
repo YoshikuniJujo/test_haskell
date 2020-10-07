@@ -91,6 +91,9 @@ newtype GdkVisibilityState = GdkVisibilityState #{type GdkVisibilityState} deriv
 #enum GdkVisibilityState, GdkVisibilityState, GDK_VISIBILITY_UNOBSCURED, \
 	GDK_VISIBILITY_PARTIAL, GDK_VISIBILITY_FULLY_OBSCURED
 
+gdkEventVisibilityWindow :: GdkEventVisibility -> IO GdkWindow
+gdkEventVisibilityWindow (GdkEventVisibility p) = GdkWindow <$> withForeignPtr p #peek GdkEventVisibility, window
+
 gdkEventVisibilityState :: GdkEventVisibility -> IO GdkVisibilityState
 gdkEventVisibilityState (GdkEventVisibility p) = GdkVisibilityState <$> withForeignPtr p #peek GdkEventVisibility, state
 
