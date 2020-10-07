@@ -29,15 +29,9 @@ main = do
 	gdkWindowShow w
 	doWhile do
 		threadDelay 100000
-		gdkWithEvent $ maybe (pure True) checkEvent
+		maybe (pure True) checkEvent =<< gdkEventGet
 
 	{-
-	gdkWithEvent $ maybe (pure ()) checkEvent
-	gdkWithEvent $ maybe (pure ()) checkEvent
-	gdkWithEvent $ maybe (pure ()) checkEvent
-	gdkWithEvent $ maybe (pure ()) checkEvent
-	gdkWithEvent $ maybe (pure ()) checkEvent
-	gdkWithEvent $ maybe (pure ()) checkEvent
 	do
 		threadDelay 100000
 		cairoRegionWithRectangle (CairoRectangleIntT 50 50 100 100) \r ->
@@ -48,9 +42,6 @@ main = do
 				cairoMoveTo cr 10 10
 				cairoLineTo cr 90 90
 				cairoStroke cr
-		gdkWithEvent $ maybe (pure ()) checkEvent
-	getChar
-	pure ()
 	-}
 
 checkEvent :: GdkEvent -> IO Bool

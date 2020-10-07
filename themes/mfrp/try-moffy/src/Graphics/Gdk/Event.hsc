@@ -5,9 +5,9 @@
 module Graphics.Gdk.Event where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.Concurrent
 import Foreign.Storable
-import Control.Exception
-import Data.Bool
 import Data.Word
 import Data.Int
 
@@ -15,14 +15,14 @@ import Graphics.Gdk
 
 #include <gdk/gdk.h>
 
-data GdkEvent = GdkEvent GdkEventType (Ptr GdkEvent) deriving Show
+data GdkEvent = GdkEvent GdkEventType (ForeignPtr GdkEvent) deriving Show
 
 newtype GdkEventType = GdkEventType #{type GdkEventType} deriving Show
 
 makeGdkEvent :: Ptr GdkEvent -> IO GdkEvent
 makeGdkEvent p = do
 	t <- GdkEventType <$> #{peek GdkEvent, type} p
-	pure $ GdkEvent t p
+	GdkEvent t <$> newForeignPtr p (c_gdk_event_free p)
 
 #enum GdkEventType, GdkEventType, \
 	GDK_NOTHING, GDK_DELETE, GDK_DESTROY, GDK_EXPOSE, GDK_MOTION_NOTIFY, \
@@ -39,27 +39,28 @@ makeGdkEvent p = do
 foreign import ccall "gdk_event_get" c_gdk_event_get :: IO (Ptr GdkEvent)
 foreign import ccall "gdk_events_pending" c_gdk_event_pending :: IO #type gboolean
 
-gdkWithEvent :: (Maybe GdkEvent -> IO a) -> IO a
-gdkWithEvent f = bracket
-	c_gdk_event_get
-	(\p -> bool (c_gdk_event_free p) (pure ()) $ p == nullPtr)
-	(\p -> f =<< bool (Just <$> makeGdkEvent p) (pure Nothing) (p == nullPtr))
+gdkEventGet :: IO (Maybe GdkEvent)
+gdkEventGet = do
+	p <- c_gdk_event_get
+	if p == nullPtr
+		then pure Nothing
+		else Just <$> makeGdkEvent p
 
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
-newtype GdkEventConfigure = GdkEventConfigure (Ptr GdkEventConfigure) deriving Show
+newtype GdkEventConfigure = GdkEventConfigure (ForeignPtr GdkEventConfigure) deriving Show
 		
 gdkEventConfigureWidth, gdkEventConfigureHeight :: GdkEventConfigure -> IO #type gint
-gdkEventConfigureWidth (GdkEventConfigure p) = #{peek GdkEventConfigure, width} p
-gdkEventConfigureHeight (GdkEventConfigure p) = #{peek GdkEventConfigure, height} p
+gdkEventConfigureWidth (GdkEventConfigure p) = withForeignPtr p #peek GdkEventConfigure, width
+gdkEventConfigureHeight (GdkEventConfigure p) = withForeignPtr p #peek GdkEventConfigure, height
 
 pattern GdkEventGdkConfigure :: GdkEventConfigure -> GdkEvent
-pattern GdkEventGdkConfigure p <- GdkEvent (GdkEventType #{const GDK_CONFIGURE}) (GdkEventConfigure . castPtr -> p)
+pattern GdkEventGdkConfigure p <- GdkEvent (GdkEventType #{const GDK_CONFIGURE}) (GdkEventConfigure . castForeignPtr -> p)
 
-newtype GdkEventWindowState = GdkEventWindowState (Ptr GdkEventWindowState) deriving Show
+newtype GdkEventWindowState = GdkEventWindowState (ForeignPtr GdkEventWindowState) deriving Show
 
 pattern GdkEventGdkWindowState :: GdkEventWindowState -> GdkEvent
-pattern GdkEventGdkWindowState p <- GdkEvent (GdkEventType #{const GDK_WINDOW_STATE}) (GdkEventWindowState . castPtr -> p)
+pattern GdkEventGdkWindowState p <- GdkEvent (GdkEventType #{const GDK_WINDOW_STATE}) (GdkEventWindowState . castForeignPtr -> p)
 
 newtype GdkWindowState = GdkWindowState #{type GdkWindowState} deriving Show
 
@@ -68,18 +69,18 @@ newtype GdkWindowState = GdkWindowState #{type GdkWindowState} deriving Show
 
 gdkEventWindowStateNewWindowState :: GdkEventWindowState -> IO GdkWindowState
 gdkEventWindowStateNewWindowState (GdkEventWindowState p) =
-	GdkWindowState <$> #{peek GdkEventWindowState, new_window_state} p
+	GdkWindowState <$> withForeignPtr p #peek GdkEventWindowState, new_window_state
 
-newtype GdkEventAny = GdkEventAny (Ptr GdkEventAny) deriving Show
+newtype GdkEventAny = GdkEventAny (ForeignPtr GdkEventAny) deriving Show
 
 pattern GdkEventGdkMap :: GdkEventAny -> GdkEvent
-pattern GdkEventGdkMap p <- GdkEvent (GdkEventType #const GDK_MAP) (GdkEventAny . castPtr -> p)
+pattern GdkEventGdkMap p <- GdkEvent (GdkEventType #const GDK_MAP) (GdkEventAny . castForeignPtr -> p)
 
-newtype GdkEventVisibility = GdkEventVisibility (Ptr GdkEventVisibility) deriving Show
+newtype GdkEventVisibility = GdkEventVisibility (ForeignPtr GdkEventVisibility) deriving Show
 
 pattern GdkEventGdkVisibilityNotify :: GdkEventVisibility -> GdkEvent
 pattern GdkEventGdkVisibilityNotify p <-
-	GdkEvent (GdkEventType #const GDK_VISIBILITY_NOTIFY) (GdkEventVisibility . castPtr -> p)
+	GdkEvent (GdkEventType #const GDK_VISIBILITY_NOTIFY) (GdkEventVisibility . castForeignPtr -> p)
 
 newtype GdkVisibilityState = GdkVisibilityState #{type GdkVisibilityState} deriving Show
 
@@ -87,18 +88,18 @@ newtype GdkVisibilityState = GdkVisibilityState #{type GdkVisibilityState} deriv
 	GDK_VISIBILITY_PARTIAL, GDK_VISIBILITY_FULLY_OBSCURED
 
 gdkEventVisibilityState :: GdkEventVisibility -> IO GdkVisibilityState
-gdkEventVisibilityState (GdkEventVisibility p) = GdkVisibilityState <$> #{peek GdkEventVisibility, state} p
+gdkEventVisibilityState (GdkEventVisibility p) = GdkVisibilityState <$> withForeignPtr p #peek GdkEventVisibility, state
 
 pattern GdkEventGdkDelete :: GdkEventAny -> GdkEvent
-pattern GdkEventGdkDelete p <- GdkEvent (GdkEventType #const GDK_DELETE) (GdkEventAny . castPtr -> p)
+pattern GdkEventGdkDelete p <- GdkEvent (GdkEventType #const GDK_DELETE) (GdkEventAny . castForeignPtr -> p)
 
 pattern GdkEventGdkNothing :: GdkEventAny -> GdkEvent
-pattern GdkEventGdkNothing p <- GdkEvent (GdkEventType (#const GDK_NOTHING)) (GdkEventAny . castPtr -> p)
+pattern GdkEventGdkNothing p <- GdkEvent (GdkEventType (#const GDK_NOTHING)) (GdkEventAny . castForeignPtr -> p)
 
-newtype GdkEventKey = GdkEventKey (Ptr GdkEventKey) deriving Show
+newtype GdkEventKey = GdkEventKey (ForeignPtr GdkEventKey) deriving Show
 
 pattern GdkEventGdkKeyPress :: GdkEventKey -> GdkEvent
-pattern GdkEventGdkKeyPress p <- GdkEvent (GdkEventType #const GDK_KEY_PRESS) (GdkEventKey . castPtr -> p)
+pattern GdkEventGdkKeyPress p <- GdkEvent (GdkEventType #const GDK_KEY_PRESS) (GdkEventKey . castForeignPtr -> p)
 
 gdkEventKeyKeyval :: GdkEventKey -> IO #type guint
-gdkEventKeyKeyval (GdkEventKey p) = #{peek GdkEventKey, keyval} p
+gdkEventKeyKeyval (GdkEventKey p) = withForeignPtr p #peek GdkEventKey, keyval

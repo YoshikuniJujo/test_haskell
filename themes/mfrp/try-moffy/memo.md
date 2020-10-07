@@ -487,7 +487,7 @@ todo
 				+ [x] GDK_KEY_PRESS
 				+ [ ] GDK_KEY_RELEASE
 				+ [ ] others
-			* [ ] use ForeignPtr to GdkEvent and so on
+			* [x] use ForeignPtr to GdkEvent and so on
 		- [ ] others
 	+ [ ] sample tryGdk
 		- [x] stroke line
