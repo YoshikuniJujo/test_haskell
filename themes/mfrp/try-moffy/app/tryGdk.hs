@@ -56,6 +56,10 @@ checkEvent = \case
 		kv <- gdkEventKeyKeyval k
 		putStrLn $ "GDK_KEY_PRESS: " ++ show k ++ ": " ++ show kv
 		pure True
+	GdkEventGdkKeyRelease k -> do
+		kv <- gdkEventKeyKeyval k
+		putStrLn $ "GDK_KEY_RELEASE: " ++ show k ++ ": " ++ show kv
+		pure True
 	GdkEventGdkMap m -> do
 		putStrLn $ "GDK_MAP: " ++ show m
 		pure True

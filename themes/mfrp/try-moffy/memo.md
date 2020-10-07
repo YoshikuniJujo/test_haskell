@@ -485,7 +485,7 @@ todo
 				+ [x] GDK_DELETE
 				+ [x] GDK_NOTHING
 				+ [x] GDK_KEY_PRESS
-				+ [ ] GDK_KEY_RELEASE
+				+ [x] GDK_KEY_RELEASE
 				+ [ ] others
 			* [x] use ForeignPtr to GdkEvent and so on
 		- [ ] others

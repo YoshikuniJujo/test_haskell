@@ -103,3 +103,6 @@ pattern GdkEventGdkKeyPress p <- GdkEvent (GdkEventType #const GDK_KEY_PRESS) (G
 
 gdkEventKeyKeyval :: GdkEventKey -> IO #type guint
 gdkEventKeyKeyval (GdkEventKey p) = withForeignPtr p #peek GdkEventKey, keyval
+
+pattern GdkEventGdkKeyRelease :: GdkEventKey -> GdkEvent
+pattern GdkEventGdkKeyRelease p <- GdkEvent (GdkEventType #const GDK_KEY_RELEASE) (GdkEventKey . castForeignPtr -> p)
