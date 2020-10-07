@@ -88,3 +88,17 @@ newtype GdkVisibilityState = GdkVisibilityState #{type GdkVisibilityState} deriv
 
 gdkEventVisibilityState :: GdkEventVisibility -> IO GdkVisibilityState
 gdkEventVisibilityState (GdkEventVisibility p) = GdkVisibilityState <$> #{peek GdkEventVisibility, state} p
+
+pattern GdkEventGdkDelete :: GdkEventAny -> GdkEvent
+pattern GdkEventGdkDelete p <- GdkEvent (GdkEventType #const GDK_DELETE) (GdkEventAny . castPtr -> p)
+
+pattern GdkEventGdkNothing :: GdkEventAny -> GdkEvent
+pattern GdkEventGdkNothing p <- GdkEvent (GdkEventType (#const GDK_NOTHING)) (GdkEventAny . castPtr -> p)
+
+newtype GdkEventKey = GdkEventKey (Ptr GdkEventKey) deriving Show
+
+pattern GdkEventGdkKeyPress :: GdkEventKey -> GdkEvent
+pattern GdkEventGdkKeyPress p <- GdkEvent (GdkEventType #const GDK_KEY_PRESS) (GdkEventKey . castPtr -> p)
+
+gdkEventKeyKeyval :: GdkEventKey -> IO #type guint
+gdkEventKeyKeyval (GdkEventKey p) = #{peek GdkEventKey, keyval} p

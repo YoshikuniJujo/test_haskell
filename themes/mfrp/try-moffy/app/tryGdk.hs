@@ -13,6 +13,8 @@ import Graphics.Gdk
 import Graphics.Gdk.Event
 import Graphics.Cairo
 
+import Data.Bool
+
 main :: IO ()
 main = do
 	as <- getArgs
@@ -25,6 +27,11 @@ main = do
 		gdkWindowAttrSetWClass attr gdkInputOutput
 		gdkWindowNew Nothing attr [gdkWaWmclass]
 	gdkWindowShow w
+	doWhile do
+		threadDelay 100000
+		gdkWithEvent $ maybe (pure True) checkEvent
+
+	{-
 	gdkWithEvent $ maybe (pure ()) checkEvent
 	gdkWithEvent $ maybe (pure ()) checkEvent
 	gdkWithEvent $ maybe (pure ()) checkEvent
@@ -44,18 +51,38 @@ main = do
 		gdkWithEvent $ maybe (pure ()) checkEvent
 	getChar
 	pure ()
+	-}
 
-checkEvent :: GdkEvent -> IO ()
+checkEvent :: GdkEvent -> IO Bool
 checkEvent = \case
-	GdkEventGdkMap m -> putStrLn $ "GDK_MAP: " ++ show m
+	GdkEventGdkNothing n -> do
+		putStrLn $ "GDK_NOTHING: " ++ show n
+		pure True
+	GdkEventGdkDelete d -> do
+		putStrLn $ "GDK_DELETE: " ++ show d
+		pure False
+	GdkEventGdkKeyPress k -> do
+		kv <- gdkEventKeyKeyval k
+		putStrLn $ "GDK_KEY_PRESS: " ++ show k ++ ": " ++ show kv
+		pure True
+	GdkEventGdkMap m -> do
+		putStrLn $ "GDK_MAP: " ++ show m
+		pure True
 	GdkEventGdkConfigure c -> do
 		w <- gdkEventConfigureWidth c
 		h <- gdkEventConfigureHeight c
 		putStrLn $ "GDK_CONFIGURE: " ++ show c ++ ": " ++ show w ++ " " ++ show h
+		pure True
 	GdkEventGdkVisibilityNotify v -> do
 		vs <- gdkEventVisibilityState v
 		putStrLn $ "GDK_VISIBILITY_NOTIFY: " ++ show v ++ ": " ++ show vs
+		pure True
 	GdkEventGdkWindowState s -> do
 		ns <- gdkEventWindowStateNewWindowState s
 		putStrLn $ "GDK_WINDOW_STATE: " ++ show s ++ ": " ++ show ns
-	e -> print e
+		pure True
+	e -> do	print e
+		pure True
+
+doWhile :: Monad m => m Bool -> m ()
+doWhile act = bool (pure ()) (doWhile act) =<< act

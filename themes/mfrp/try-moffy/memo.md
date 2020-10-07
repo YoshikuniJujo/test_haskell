@@ -482,7 +482,12 @@ todo
 				+ [x] GDK_WINDOW_STATE
 				+ [x] GDK_MAP
 				+ [x] GDK_VISIBILITY_NOTIFY
+				+ [x] GDK_DELETE
+				+ [x] GDK_NOTHING
+				+ [x] GDK_KEY_PRESS
+				+ [ ] GDK_KEY_RELEASE
 				+ [ ] others
+			* [ ] use ForeignPtr to GdkEvent and so on
 		- [ ] others
 	+ [ ] sample tryGdk
 		- [x] stroke line
