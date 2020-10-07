@@ -492,7 +492,8 @@ todo
 			* [x] use ForeignPtr to GdkEvent and so on
 		- [ ] others
 	+ [ ] FooMask
-		+ [ ] ExposureMask
+		+ [x] ExposureMask
+			- GDK_EXPOSE_EVENT may be legacy
 		+ [ ] FooMask about mouse button click
 			- [x] GDK_BUTTON_PRESS_MASK
 			- [ ] others

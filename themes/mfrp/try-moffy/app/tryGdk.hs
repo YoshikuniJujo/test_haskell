@@ -30,15 +30,10 @@ main = do
 		gdkWindowNew Nothing attr [gdkWaWmclass]
 	gdkWindowShow w
 	gdkWindowSetEvents w [gdkExposureMask, gdkButtonPressMask]
-	doWhile_ do
-		threadDelay 100000
-		doWhile $ gdkEventGet >>= \case
-			Just e -> do
-				b <- checkEvent e
-				pure if b then Nothing else Just False
-			Nothing -> pure $ Just True
-
-	{-
+	print gdkExposureMask
+	gdkWindowInvalidateRect w (50, 50) (100, 100) False
+	gdkWindowFreezeUpdates w
+	gdkWindowThawUpdates w
 	do
 		threadDelay 100000
 		cairoRegionWithRectangle (CairoRectangleIntT 50 50 100 100) \r ->
@@ -49,6 +44,15 @@ main = do
 				cairoMoveTo cr 10 10
 				cairoLineTo cr 90 90
 				cairoStroke cr
+	doWhile_ do
+		threadDelay 100000
+		doWhile $ gdkEventGet >>= \case
+			Just e -> do
+				b <- checkEvent e
+				pure if b then Nothing else Just False
+			Nothing -> pure $ Just True
+
+	{-
 	-}
 
 checkEvent :: GdkEvent -> IO Bool

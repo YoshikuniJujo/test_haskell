@@ -168,3 +168,38 @@ foreign import ccall "gdk_window_set_events" c_gdk_window_set_events :: Ptr GdkW
 
 gdkWindowSetEvents :: GdkWindow -> [GdkEventMask] -> IO ()
 gdkWindowSetEvents (GdkWindow p) = c_gdk_window_set_events p . mergeGdkEventMask
+
+foreign import ccall "gdk_window_invalidate_rect" c_gdk_window_invalidate_rect ::
+	Ptr GdkWindow -> Ptr GdkRectangle -> #{type gboolean} -> IO ()
+
+gdkWindowInvalidateRect :: GdkWindow -> (#{type int}, #{type int}) -> (#{type int}, #{type int}) -> Bool -> IO ()
+gdkWindowInvalidateRect (GdkWindow win) (x, y) (w, h) b = allocaBytes #{size GdkRectangle} \p -> do
+	#{poke GdkRectangle, x} p x
+	#{poke GdkRectangle, y} p y
+	#{poke GdkRectangle, width} p w
+	#{poke GdkRectangle, height} p h
+	c_gdk_window_invalidate_rect win p $ boolToGboolean b
+
+boolToGboolean :: Bool -> #type gboolean
+boolToGboolean False = #const FALSE
+boolToGboolean True = #const TRUE
+
+newtype GdkRectangle = GdkRectangle (Ptr GdkRectangle) deriving Show
+
+gdkRectangleSetX, gdkRectangleSetY :: GdkRectangle -> #{type int} -> IO ()
+gdkRectangleSetX (GdkRectangle p) = #{poke GdkRectangle, x} p
+gdkRectangleSetY (GdkRectangle p) = #{poke GdkRectangle, y} p
+
+gdkRectangleSetWidth, gdkRectangleSetHeight :: GdkRectangle -> #{type int} -> IO ()
+gdkRectangleSetWidth (GdkRectangle p) = #{poke GdkRectangle, width} p
+gdkRectangleSetHeight (GdkRectangle p) = #{poke GdkRectangle, height} p
+
+foreign import ccall "gdk_window_thaw_updates" c_gdk_window_thaw_updates :: Ptr GdkWindow -> IO ()
+
+gdkWindowThawUpdates :: GdkWindow -> IO ()
+gdkWindowThawUpdates (GdkWindow p) = c_gdk_window_thaw_updates p
+
+foreign import ccall "gdk_window_freeze_updates" c_gdk_window_freeze_updates :: Ptr GdkWindow -> IO ()
+
+gdkWindowFreezeUpdates :: GdkWindow -> IO ()
+gdkWindowFreezeUpdates (GdkWindow p) = c_gdk_window_freeze_updates p
