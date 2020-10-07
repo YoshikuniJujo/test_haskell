@@ -64,8 +64,15 @@ checkEvent = \case
 		kv <- gdkEventKeyKeyval k
 		putStrLn $ "GDK_KEY_RELEASE: " ++ show k ++ ": " ++ show kv
 		pure True
+	GdkEventGdkFocusChange f -> do
+		i <- gdkEventFocusIn f
+		putStrLn $ "GDK_FOCUS_CHANGE: " ++ show f ++ ": " ++ show i
+		pure True
 	GdkEventGdkMap m -> do
 		putStrLn $ "GDK_MAP: " ++ show m
+		pure True
+	GdkEventGdkUnmap m -> do
+		putStrLn $ "GDK_UNMAP: " ++ show m
 		pure True
 	GdkEventGdkConfigure c -> do
 		w <- gdkEventConfigureWidth c
