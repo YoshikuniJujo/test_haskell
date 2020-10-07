@@ -19,14 +19,17 @@ main :: IO ()
 main = do
 	as <- getArgs
 	print =<< gdkInit as
+--	w <- alloca $ \p -> do
 	w <- alloca $ \p -> do
 		attr <- peek p
+		gdkWindowAttrSetEventMask attr [gdkExposureMask, gdkButtonPressMask]
 		gdkWindowAttrSetWindowType attr gdkWindowToplevel
 		gdkWindowAttrSetWidth attr 400
 		gdkWindowAttrSetHeight attr 400
 		gdkWindowAttrSetWClass attr gdkInputOutput
 		gdkWindowNew Nothing attr [gdkWaWmclass]
 	gdkWindowShow w
+	gdkWindowSetEvents w [gdkExposureMask, gdkButtonPressMask]
 	doWhile_ do
 		threadDelay 100000
 		doWhile $ gdkEventGet >>= \case

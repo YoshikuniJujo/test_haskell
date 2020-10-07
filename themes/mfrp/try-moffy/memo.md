@@ -491,6 +491,12 @@ todo
 				+ [ ] others
 			* [x] use ForeignPtr to GdkEvent and so on
 		- [ ] others
+	+ [ ] FooMask
+		+ [ ] ExposureMask
+		+ [ ] FooMask about mouse button click
+			- [x] GDK_BUTTON_PRESS_MASK
+			- [ ] others
+		+ [ ] FooMask about mouse motion
 	+ [ ] sample tryGdk
 		- [x] stroke line
 		- [x] no forever

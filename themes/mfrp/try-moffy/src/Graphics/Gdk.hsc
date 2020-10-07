@@ -45,6 +45,10 @@ newtype GdkWindowType = GdkWindowType #{type GdkWindowType} deriving Show
 newtype GdkWindowWindowClass = GdkWindowWindowClass #{type GdkWindowWindowClass} deriving Show
 #enum GdkWindowWindowClass, GdkWindowWindowClass, GDK_INPUT_OUTPUT, GDK_INPUT_ONLY
 
+gdkWindowAttrSetEventMask :: GdkWindowAttr -> [GdkEventMask] -> IO ()
+gdkWindowAttrSetEventMask (GdkWindowAttr attr) ems =
+	#{poke GdkWindowAttr, event_mask} attr $ mergeGdkEventMask ems
+
 gdkWindowAttrSetWindowType :: GdkWindowAttr -> GdkWindowType -> IO ()
 gdkWindowAttrSetWindowType (GdkWindowAttr attr) (GdkWindowType wt) = #{poke GdkWindowAttr, window_type} attr wt
 
@@ -150,3 +154,17 @@ gdkWindowWithDrawFrame (GdkWindow w) (CairoRegionT r) = bracket
 
 gdkDrawingContextGetCairoContext :: GdkDrawingContext -> IO CairoT
 gdkDrawingContextGetCairoContext (GdkDrawingContext c) = CairoT <$> c_gdk_drawing_context_get_cairo_context c
+
+newtype GdkEventMask = GdkEventMask #{type GdkEventMask} deriving Show
+
+#enum GdkEventMask, GdkEventMask, GDK_EXPOSURE_MASK, \
+	GDK_BUTTON_PRESS_MASK
+
+mergeGdkEventMask :: [GdkEventMask] -> #{type GdkEventMask}
+mergeGdkEventMask [] = 0
+mergeGdkEventMask (GdkEventMask em : ems) = em .|. mergeGdkEventMask ems
+
+foreign import ccall "gdk_window_set_events" c_gdk_window_set_events :: Ptr GdkWindow -> #{type GdkEventMask} -> IO ()
+
+gdkWindowSetEvents :: GdkWindow -> [GdkEventMask] -> IO ()
+gdkWindowSetEvents (GdkWindow p) = c_gdk_window_set_events p . mergeGdkEventMask
