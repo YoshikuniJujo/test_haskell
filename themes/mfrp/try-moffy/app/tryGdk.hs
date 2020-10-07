@@ -27,9 +27,13 @@ main = do
 		gdkWindowAttrSetWClass attr gdkInputOutput
 		gdkWindowNew Nothing attr [gdkWaWmclass]
 	gdkWindowShow w
-	doWhile do
+	doWhile_ do
 		threadDelay 100000
-		maybe (pure True) checkEvent =<< gdkEventGet
+		doWhile $ gdkEventGet >>= \case
+			Just e -> do
+				b <- checkEvent e
+				pure if b then Nothing else Just False
+			Nothing -> pure $ Just True
 
 	{-
 	do
@@ -79,5 +83,8 @@ checkEvent = \case
 	e -> do	print e
 		pure True
 
-doWhile :: Monad m => m Bool -> m ()
-doWhile act = bool (pure ()) (doWhile act) =<< act
+doWhile_ :: Monad m => m Bool -> m ()
+doWhile_ act = bool (pure ()) (doWhile_ act) =<< act
+
+doWhile :: Monad m => m (Maybe a) -> m a
+doWhile act = maybe (doWhile act) pure =<< act
