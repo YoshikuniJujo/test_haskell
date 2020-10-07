@@ -25,22 +25,6 @@ main = do
 		gdkWindowAttrSetWClass attr gdkInputOutput
 		gdkWindowNew Nothing attr [gdkWaWmclass]
 	gdkWindowShow w
-	c <- alloca $ \p -> do
-		attr <- peek p
-		gdkWindowAttrSetWindowType attr gdkWindowToplevel
---		gdkWindowAttrSetWindowType attr gdkWindowChild
-		gdkWindowAttrSetX attr 100
-		gdkWindowAttrSetY attr 100
-		gdkWindowAttrSetWidth attr 200
-		gdkWindowAttrSetHeight attr 200
-		gdkWindowAttrSetWClass attr gdkInputOutput
---		gdkWindowNew Nothing attr [gdkWaWmclass]
-		gdkWindowNew (Just w) attr [gdkWaWmclass, gdkWaX, gdkWaY]
-	gdkWindowShow c
-	gdkWithEvent $ maybe (pure ()) checkEvent
-	gdkWithEvent $ maybe (pure ()) checkEvent
-	gdkWithEvent $ maybe (pure ()) checkEvent
-	gdkWithEvent $ maybe (pure ()) checkEvent
 	gdkWithEvent $ maybe (pure ()) checkEvent
 	gdkWithEvent $ maybe (pure ()) checkEvent
 	gdkWithEvent $ maybe (pure ()) checkEvent
@@ -58,24 +42,20 @@ main = do
 				cairoLineTo cr 90 90
 				cairoStroke cr
 		gdkWithEvent $ maybe (pure ()) checkEvent
-	do
-		threadDelay 100000
-		cairoRegionWithRectangle (CairoRectangleIntT 50 50 100 100) \r ->
-			gdkWindowWithDrawFrame c r \cxt -> do
-				cr <- gdkDrawingContextGetCairoContext cxt
-				cairoSetSourceRgb cr 0.2 0.8 0.2
-				cairoSetLineWidth cr 5
-				cairoMoveTo cr 10 90
-				cairoLineTo cr 90 10
-				cairoStroke cr
-		gdkWithEvent $ maybe (pure ()) checkEvent
 	getChar
 	pure ()
 
 checkEvent :: GdkEvent -> IO ()
 checkEvent = \case
-	GdkEventGdkEventConfigure c -> do
-		print c
-		print =<< gdkEventConfigureWidth c
-		print =<< gdkEventConfigureHeight c
+	GdkEventGdkMap m -> putStrLn $ "GDK_MAP: " ++ show m
+	GdkEventGdkConfigure c -> do
+		w <- gdkEventConfigureWidth c
+		h <- gdkEventConfigureHeight c
+		putStrLn $ "GDK_CONFIGURE: " ++ show c ++ ": " ++ show w ++ " " ++ show h
+	GdkEventGdkVisibilityNotify v -> do
+		vs <- gdkEventVisibilityState v
+		putStrLn $ "GDK_VISIBILITY_NOTIFY: " ++ show v ++ ": " ++ show vs
+	GdkEventGdkWindowState s -> do
+		ns <- gdkEventWindowStateNewWindowState s
+		putStrLn $ "GDK_WINDOW_STATE: " ++ show s ++ ": " ++ show ns
 	e -> print e

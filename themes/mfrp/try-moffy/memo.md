@@ -479,14 +479,18 @@ todo
 			* [x] separate Graphics.Gdk.Event
 			* [ ] GdkEvent GdkEventType (Ptr GdkEvent) ==> GdkEventFoo GdkEventFoo
 				+ [x] GdkEventConfigure
-				+ [ ] GdkEventConfigure to Storable
+				+ [x] GDK_WINDOW_STATE
+				+ [x] GDK_MAP
+				+ [x] GDK_VISIBILITY_NOTIFY
+				+ [ ] others
 		- [ ] others
 	+ [ ] sample tryGdk
 		- [x] stroke line
 		- [x] no forever
 		- [ ] try using pattern synonyms
 		- [ ] others
-	+ [ ] use PtrForeignPtr some object of Graphics.Gdk
+	+ [ ] use ForeignPtr some object of Graphics.Gdk
+	+ [ ] use Either FooValue FooForeignPtr as argument to pass event
 * [ ] make Control.Moffy.Handle.GdkField
 * [ ] make Control.Moffy.View.GdkField
 * [ ] refactor Graphics.Gtk and Graphics.Gtk.\*
