@@ -69,3 +69,8 @@ foreign import ccall "cairo_stroke" c_cairo_stroke :: Ptr CairoT -> IO ()
 
 cairoStroke :: CairoT -> IO ()
 cairoStroke (CairoT cr) = withForeignPtr cr c_cairo_stroke
+
+foreign import ccall "cairo_fill" c_cairo_fill :: Ptr CairoT -> IO ()
+
+cairoFill :: CairoT -> IO ()
+cairoFill (CairoT cr) = withForeignPtr cr c_cairo_fill
