@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bded6d1aa5991a090c9bd2b207b12fa83bab431dfdcade39be212e7c10004127
+-- hash: a3ef0e3e22ad39d0cf2bd322b4944272ca38e63638cf14ee7bca02008e464b1e
 
 name:           try-cairo
 version:        0.1.0.0
@@ -29,6 +29,7 @@ library
   exposed-modules:
       Graphics.Cairo
       Graphics.Cairo.Png
+      Graphics.Cairo.Text
   other-modules:
       Paths_try_cairo
   hs-source-dirs:
