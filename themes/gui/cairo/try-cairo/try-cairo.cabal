@@ -1,0 +1,65 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: bded6d1aa5991a090c9bd2b207b12fa83bab431dfdcade39be212e7c10004127
+
+name:           try-cairo
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-cairo#readme>
+homepage:       https://github.com/YoshikuniJujo/try-cairo#readme
+bug-reports:    https://github.com/YoshikuniJujo/try-cairo/issues
+author:         Yoshikuni Jujo
+maintainer:     PAF01143@nifty.ne.jp
+copyright:      Yoshikuni Jujo
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/YoshikuniJujo/try-cairo
+
+library
+  exposed-modules:
+      Graphics.Cairo
+      Graphics.Cairo.Png
+  other-modules:
+      Paths_try_cairo
+  hs-source-dirs:
+      src
+  pkgconfig-depends:
+      cairo
+  build-depends:
+      base >=4.7 && <5
+  default-language: Haskell2010
+
+executable try-cairo-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_try_cairo
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , try-cairo
+  default-language: Haskell2010
+
+test-suite try-cairo-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_try_cairo
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , try-cairo
+  default-language: Haskell2010
