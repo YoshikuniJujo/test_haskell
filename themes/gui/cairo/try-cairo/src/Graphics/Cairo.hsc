@@ -74,3 +74,9 @@ foreign import ccall "cairo_fill" c_cairo_fill :: Ptr CairoT -> IO ()
 
 cairoFill :: CairoT -> IO ()
 cairoFill (CairoT cr) = withForeignPtr cr c_cairo_fill
+
+foreign import ccall "cairo_paint_with_alpha" c_cairo_paint_with_alpha ::
+	Ptr CairoT -> #{type double} -> IO ()
+
+cairoPaintWithAlpha :: CairoT -> #{type double} -> IO ()
+cairoPaintWithAlpha (CairoT fcr) a = withForeignPtr fcr \cr -> c_cairo_paint_with_alpha cr a

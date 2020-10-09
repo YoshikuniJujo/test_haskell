@@ -20,7 +20,7 @@ main = do
 	cairoRectangle cr 50 30 250 150
 	cairoStroke cr
 
-	cairoSetSourceRgb cr 0.2 0.5 0.2
+	cairoSetSourceRgb cr 0.2 0.2 0.5
 	cairoRectangle cr 350 30 250 150
 	cairoFill cr
 
@@ -35,5 +35,8 @@ main = do
 		h = cairoTextExtentsTHeight te
 	cairoMoveTo cr (400 - w / 2 - xb) (250 - h / 2 - yb)
 	cairoShowText cr "Hello, world!"
+
+	cairoSetSourceRgb cr 0 1 0
+	cairoPaintWithAlpha cr 0.2
 
 	print =<< cairoSurfaceWriteToPng sr "tmp.png"
