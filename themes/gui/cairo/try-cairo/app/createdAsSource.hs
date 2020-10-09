@@ -4,7 +4,7 @@ module Main where
 
 import Graphics.Cairo
 import Graphics.Cairo.CairoT
-import Graphics.Cairo.Path
+import Graphics.Cairo.Paths
 import Graphics.Cairo.Png
 
 main :: IO ()
