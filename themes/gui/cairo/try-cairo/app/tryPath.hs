@@ -17,6 +17,8 @@ main = do
 	cairoLineTo cr 250 187.5
 	cairoRelLineTo cr 125 (- 62.5)
 	cairoArc cr 250 250 (125 * sqrt 2) (- 0.25 * pi) (0.25 * pi)
+	cairoRelCurveTo cr (- 125) (- 62.5) (- 125) 62.5 (- 250) 0
+	cairoClosePath cr
 
 	cairoStroke cr
 

@@ -32,3 +32,20 @@ cairoArc (CairoT fcr) xc yc r a1 a2 =
 foreign import ccall "cairo_arc" c_cairo_arc ::
 	Ptr CairoT -> #{type double} -> #{type double} ->
 	#{type double} -> #{type double} -> #{type double} -> IO ()
+
+cairoRelCurveTo :: CairoT -> #{type double} -> #{type double} ->
+	#{type double} -> #{type double} ->
+	#{type double} -> #{type double} -> IO ()
+cairoRelCurveTo (CairoT fcr) dx1 dy1 dx2 dy2 dx3 dy3 = withForeignPtr fcr \cr ->
+	c_cairo_rel_curve_to cr dx1 dy1 dx2 dy2 dx3 dy3
+
+foreign import ccall "cairo_rel_curve_to" c_cairo_rel_curve_to ::
+	Ptr CairoT -> #{type double} -> #{type double} ->
+		#{type double} -> #{type double} ->
+		#{type double} -> #{type double} -> IO ()
+
+cairoClosePath :: CairoT -> IO ()
+cairoClosePath (CairoT fcr) = withForeignPtr fcr c_cairo_close_path
+
+foreign import ccall "cairo_close_path" c_cairo_close_path ::
+	Ptr CairoT -> IO ()
