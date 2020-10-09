@@ -1,7 +1,10 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Cairo.Path where
+module Graphics.Cairo.Path (
+	cairoClosePath, cairoArc, cairoLineTo, cairoMoveTo, cairoRectangle,
+	cairoRelCurveTo, cairoRelLineTo
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
