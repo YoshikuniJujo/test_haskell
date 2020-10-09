@@ -4,6 +4,7 @@
 module Main where
 
 import Graphics.Cairo
+import Graphics.Cairo.Pattern
 import Graphics.Cairo.Text
 import Graphics.Cairo.Png
 
@@ -38,5 +39,16 @@ main = do
 
 	cairoSetSourceRgb cr 0 1 0
 	cairoPaintWithAlpha cr 0.2
+
+	linpat <- cairoPatternCreateLinear 200 200 600 300
+	cairoPatternAddColorStopRgb linpat 0 0 0.3 0.8
+	cairoPatternAddColorStopRgb linpat 1 0 0.8 0.3
+
+	radpat <- cairoPatternCreateRadial 400 250 50 400 250 150
+	cairoPatternAddColorStopRgba radpat 0 0 0 0 1
+	cairoPatternAddColorStopRgba radpat 0.5 0 0 0 0
+
+	cairoSetSource cr linpat
+	cairoMask cr radpat
 
 	print =<< cairoSurfaceWriteToPng sr "tmp.png"
