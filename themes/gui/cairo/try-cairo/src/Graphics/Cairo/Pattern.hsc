@@ -72,3 +72,21 @@ cairoMask :: CairoT -> CairoPatternT -> IO ()
 cairoMask (CairoT fcr) (CairoPatternT fpt) =
 	withForeignPtr fcr \cr -> withForeignPtr fpt \pt ->
 		c_cairo_mask cr pt
+
+foreign import ccall "cairo_push_group" c_cairo_push_group ::
+	Ptr CairoT -> IO ()
+
+cairoPushGroup :: CairoT -> IO ()
+cairoPushGroup (CairoT fcr) = withForeignPtr fcr c_cairo_push_group
+
+foreign import ccall "cairo_pop_group_to_source" c_cairo_pop_group_to_source ::
+	Ptr CairoT -> IO ()
+
+cairoPopGroupToSource :: CairoT -> IO ()
+cairoPopGroupToSource (CairoT fcr) = withForeignPtr fcr c_cairo_pop_group_to_source
+
+foreign import ccall "cairo_pop_group" c_cairo_pop_group ::
+	Ptr CairoT -> IO (Ptr CairoPatternT)
+
+cairoPopGroup :: CairoT -> IO CairoPatternT
+cairoPopGroup (CairoT fcr) = makeCairoPatternT =<< withForeignPtr fcr c_cairo_pop_group
