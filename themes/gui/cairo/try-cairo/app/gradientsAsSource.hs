@@ -7,7 +7,7 @@ import Data.Foldable
 
 import Graphics.Cairo
 import Graphics.Cairo.CairoT
-import Graphics.Cairo.Pattern
+import Graphics.Cairo.CairoPatternT
 import Graphics.Cairo.Png
 
 main :: IO ()

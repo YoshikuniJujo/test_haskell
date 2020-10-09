@@ -1,7 +1,10 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Cairo.Pattern where
+module Graphics.Cairo.CairoPatternT (
+	cairoPatternAddColorStopRgb, cairoPatternAddColorStopRgba,
+	cairoPatternCreateLinear, cairoPatternCreateRadial
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
