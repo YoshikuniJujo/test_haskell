@@ -87,9 +87,3 @@ foreign import ccall "cairo_show_text" c_cairo_show_text ::
 cairoShowText :: CairoT -> T.Text -> IO ()
 cairoShowText (CairoT fcr) t = withForeignPtr fcr \cr -> encode t \cs ->
 	c_cairo_show_text cr cs
-
-foreign import ccall "cairo_move_to" c_cairo_move_to ::
-	Ptr CairoT -> #{type double} -> #{type double} -> IO ()
-
-cairoMoveTo :: CairoT -> #{type double} -> #{type double} -> IO ()
-cairoMoveTo (CairoT fcr) x y = withForeignPtr fcr \cr -> c_cairo_move_to cr x y

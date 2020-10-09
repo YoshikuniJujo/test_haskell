@@ -38,6 +38,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-cairo
+  colorsAsSource:
+    main:                colorsAsSource.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-cairo
 
 tests:
   try-cairo-test:

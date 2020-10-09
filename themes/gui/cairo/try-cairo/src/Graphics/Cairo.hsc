@@ -59,6 +59,12 @@ foreign import ccall "cairo_set_source_rgb" c_cairo_set_source_rgb ::
 cairoSetSourceRgb :: CairoT -> #{type double} -> #{type double} -> #{type double} -> IO ()
 cairoSetSourceRgb (CairoT cr) r g b = withForeignPtr cr \p -> c_cairo_set_source_rgb p r g b
 
+foreign import ccall "cairo_set_source_rgba" c_cairo_set_source_rgba ::
+	Ptr CairoT -> #{type double} -> #{type double} -> #{type double} -> #{type double} -> IO ()
+
+cairoSetSourceRgba :: CairoT -> #{type double} -> #{type double} -> #{type double} -> #{type double} -> IO ()
+cairoSetSourceRgba (CairoT cr) r g b a = withForeignPtr cr \p -> c_cairo_set_source_rgba p r g b a
+
 foreign import ccall "cairo_rectangle" c_cairo_rectangle ::
 	Ptr CairoT -> #{type double} -> #{type double} -> #{type double} -> #{type double} -> IO ()
 
