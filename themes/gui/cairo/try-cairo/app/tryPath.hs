@@ -16,6 +16,7 @@ main = do
 	cairoMoveTo cr 125 125
 	cairoLineTo cr 250 187.5
 	cairoRelLineTo cr 125 (- 62.5)
+	cairoArc cr 250 250 (125 * sqrt 2) (- 0.25 * pi) (0.25 * pi)
 
 	cairoStroke cr
 

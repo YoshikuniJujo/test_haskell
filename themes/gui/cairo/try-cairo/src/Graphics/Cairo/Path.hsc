@@ -23,3 +23,12 @@ foreign import ccall "cairo_line_to" c_cairo_line_to ::
 
 foreign import ccall "cairo_rel_line_to" c_cairo_rel_line_to ::
 	Ptr CairoT -> #{type double} -> #{type double} -> IO ()
+
+cairoArc :: CairoT -> #{type double} -> #{type double} ->
+	#{type double} -> #{type double} -> #{type double} -> IO ()
+cairoArc (CairoT fcr) xc yc r a1 a2 =
+	withForeignPtr fcr \cr -> c_cairo_arc cr xc yc r a1 a2
+
+foreign import ccall "cairo_arc" c_cairo_arc ::
+	Ptr CairoT -> #{type double} -> #{type double} ->
+	#{type double} -> #{type double} -> #{type double} -> IO ()
