@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4301494ad60878a8d9aac3d92a241126a1ee9e99beda7befd5f04b9ac7f653f8
+-- hash: 3153dd8657679fb5ff330a9aa376712e7f826d57a8abf980aaa42fac52b0a53b
 
 name:           try-cairo
 version:        0.1.0.0
@@ -92,6 +92,21 @@ executable gradientsAsSource
 executable try-cairo-exe
   main-is: Main.hs
   other-modules:
+      Paths_try_cairo
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , text
+    , try-cairo
+  default-language: Haskell2010
+
+executable tryPath
+  main-is: tryPath.hs
+  other-modules:
+      Main
       Paths_try_cairo
   hs-source-dirs:
       app
