@@ -1,7 +1,9 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Cairo.Png where
+module Graphics.Cairo.PngSupport (
+	cairoSurfaceCreateFromPng, cairoSurfaceWriteToPng
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr

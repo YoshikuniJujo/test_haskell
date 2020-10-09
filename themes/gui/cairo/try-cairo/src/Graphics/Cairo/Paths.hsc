@@ -9,7 +9,6 @@ module Graphics.Cairo.Paths (
 import Foreign.Ptr
 import Foreign.ForeignPtr
 
-import Graphics.Cairo
 import Graphics.Cairo.Types
 
 #include <cairo.h>
@@ -53,3 +52,9 @@ cairoClosePath (CairoT fcr) = withForeignPtr fcr c_cairo_close_path
 
 foreign import ccall "cairo_close_path" c_cairo_close_path ::
 	Ptr CairoT -> IO ()
+
+foreign import ccall "cairo_rectangle" c_cairo_rectangle ::
+	Ptr CairoT -> #{type double} -> #{type double} -> #{type double} -> #{type double} -> IO ()
+
+cairoRectangle :: CairoT -> #{type double} -> #{type double} -> #{type double} -> #{type double} -> IO ()
+cairoRectangle (CairoT cr) x y w h = withForeignPtr cr \p -> c_cairo_rectangle p x y w h

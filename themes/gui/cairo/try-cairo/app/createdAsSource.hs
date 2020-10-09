@@ -5,7 +5,7 @@ module Main where
 import Graphics.Cairo
 import Graphics.Cairo.CairoT
 import Graphics.Cairo.Paths
-import Graphics.Cairo.Png
+import Graphics.Cairo.PngSupport
 
 main :: IO ()
 main = do

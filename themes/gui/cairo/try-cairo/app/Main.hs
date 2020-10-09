@@ -8,7 +8,9 @@ import Graphics.Cairo.CairoT
 import Graphics.Cairo.Paths
 import Graphics.Cairo.CairoPatternT
 import Graphics.Cairo.Text
-import Graphics.Cairo.Png
+import Graphics.Cairo.PngSupport
+import Graphics.Cairo.Types
+import Graphics.Cairo.Values
 
 surface :: IO CairoSurfaceT
 surface = cairoImageSurfaceCreate cairoFormatArgb32 800 500
