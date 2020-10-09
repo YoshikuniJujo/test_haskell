@@ -15,6 +15,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 
 import Graphics.Cairo
+import Graphics.Cairo.Types
 
 #include <cairo.h>
 

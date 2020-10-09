@@ -6,6 +6,7 @@ module Main where
 import Data.Foldable
 
 import Graphics.Cairo
+import Graphics.Cairo.CairoT
 import Graphics.Cairo.Pattern
 import Graphics.Cairo.Png
 

@@ -9,6 +9,7 @@ import Foreign.C
 import Data.Word
 
 import Graphics.Cairo
+import Graphics.Cairo.Types
 
 #include <cairo.h>
 

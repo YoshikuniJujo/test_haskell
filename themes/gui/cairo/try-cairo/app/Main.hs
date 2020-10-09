@@ -4,6 +4,7 @@
 module Main where
 
 import Graphics.Cairo
+import Graphics.Cairo.CairoT
 import Graphics.Cairo.Path
 import Graphics.Cairo.Pattern
 import Graphics.Cairo.Text

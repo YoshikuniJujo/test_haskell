@@ -7,6 +7,7 @@ import Foreign.Ptr
 import Foreign.ForeignPtr
 
 import Graphics.Cairo
+import Graphics.Cairo.Types
 
 #include <cairo.h>
 
