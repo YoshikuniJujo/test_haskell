@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5d710db1268da81361d4a89faa53a46f54e635bd806039d6a7814a3129bfc26d
+-- hash: 6aa53f2895408946a6b9e298979df3cafc2c9750b9384302902d6a7b8d12c204
 
 name:           try-cairo
 version:        0.1.0.0
@@ -26,16 +26,6 @@ source-repository head
   location: https://github.com/YoshikuniJujo/try-cairo
 
 library
-  exposed-modules:
-      Graphics.Cairo
-      Graphics.Cairo.CairoPatternT
-      Graphics.Cairo.CairoT
-      Graphics.Cairo.ImageSurfaces
-      Graphics.Cairo.Paths
-      Graphics.Cairo.PngSupport
-      Graphics.Cairo.Text
-      Graphics.Cairo.Types
-      Graphics.Cairo.Values
   other-modules:
       Paths_try_cairo
   hs-source-dirs:
@@ -44,8 +34,7 @@ library
       cairo
   build-depends:
       base >=4.7 && <5
-    , bytestring
-    , text
+    , simple-cairo
   default-language: Haskell2010
 
 executable colorsAsSource
@@ -58,8 +47,7 @@ executable colorsAsSource
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , bytestring
-    , text
+    , simple-cairo
     , try-cairo
   default-language: Haskell2010
 
@@ -73,8 +61,7 @@ executable createdAsSource
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , bytestring
-    , text
+    , simple-cairo
     , try-cairo
   default-language: Haskell2010
 
@@ -88,8 +75,7 @@ executable gradientsAsSource
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , bytestring
-    , text
+    , simple-cairo
     , try-cairo
   default-language: Haskell2010
 
@@ -102,8 +88,7 @@ executable try-cairo-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , bytestring
-    , text
+    , simple-cairo
     , try-cairo
   default-language: Haskell2010
 
@@ -117,8 +102,7 @@ executable tryPath
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , bytestring
-    , text
+    , simple-cairo
     , try-cairo
   default-language: Haskell2010
 
@@ -132,7 +116,6 @@ test-suite try-cairo-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , bytestring
-    , text
+    , simple-cairo
     , try-cairo
   default-language: Haskell2010
