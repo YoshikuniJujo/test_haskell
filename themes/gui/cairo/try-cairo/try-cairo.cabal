@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6aa53f2895408946a6b9e298979df3cafc2c9750b9384302902d6a7b8d12c204
+-- hash: af58dca5e28421d7f810f7b68f05bed587fb199eab7479d4c876e61b6edb04d9
 
 name:           try-cairo
 version:        0.1.0.0
@@ -26,6 +26,8 @@ source-repository head
   location: https://github.com/YoshikuniJujo/try-cairo
 
 library
+  exposed-modules:
+      MakeSampleImage
   other-modules:
       Paths_try_cairo
   hs-source-dirs:
@@ -33,7 +35,8 @@ library
   pkgconfig-depends:
       cairo
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , base >=4.7 && <5
     , simple-cairo
   default-language: Haskell2010
 
@@ -46,7 +49,8 @@ executable colorsAsSource
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , base >=4.7 && <5
     , simple-cairo
     , try-cairo
   default-language: Haskell2010
@@ -60,7 +64,8 @@ executable createdAsSource
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , base >=4.7 && <5
     , simple-cairo
     , try-cairo
   default-language: Haskell2010
@@ -74,7 +79,8 @@ executable gradientsAsSource
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , base >=4.7 && <5
     , simple-cairo
     , try-cairo
   default-language: Haskell2010
@@ -87,7 +93,8 @@ executable try-cairo-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , base >=4.7 && <5
     , simple-cairo
     , try-cairo
   default-language: Haskell2010
@@ -101,7 +108,8 @@ executable tryPath
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , base >=4.7 && <5
     , simple-cairo
     , try-cairo
   default-language: Haskell2010
@@ -115,7 +123,8 @@ test-suite try-cairo-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      JuicyPixels
+    , base >=4.7 && <5
     , simple-cairo
     , try-cairo
   default-language: Haskell2010
