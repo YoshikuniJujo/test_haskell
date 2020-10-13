@@ -9,12 +9,12 @@ packages:
     version: 0.1.0.0
     git: https://github.com/YoshikuniJujo/simple-cairo
     pantry-tree:
-      size: 1146
-      sha256: 344828e7e0e680d53f8a9e4f0a1c35fb835a4062d8785406dff89a58ad5d5fce
-    commit: f829a7904879e96f1e8561e57a19f67cd239ac3b
+      size: 1216
+      sha256: bdf7ffb46ab1e7b25196fe9dbfe31e91c816ece2b3a50550a114b07f194cd8ed
+    commit: 494e3d3f914dcd9bcc8b46fd4d2c8858fcac9c63
   original:
     git: https://github.com/YoshikuniJujo/simple-cairo
-    commit: f829a7904879e96f1e8561e57a19f67cd239ac3b
+    commit: 494e3d3f914dcd9bcc8b46fd4d2c8858fcac9c63
 snapshots:
 - completed:
     size: 532386

@@ -12,7 +12,7 @@ import Graphics.Cairo.PngSupport
 import Graphics.Cairo.Types
 import Graphics.Cairo.Values
 
-surface :: IO CairoSurfaceT
+surface :: IO (CairoSurfaceT s)
 surface = cairoImageSurfaceCreate cairoFormatArgb32 800 500
 
 main :: IO ()
