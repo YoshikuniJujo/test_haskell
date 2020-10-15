@@ -1,8 +1,8 @@
 memo
 ====
 
-* [ ] make red 100% image in PNG
-* [ ] make alpha chanel sample in PNG
+* [x] make red 100% image in PNG
+* [x] make alpha chanel sample in PNG
 * [ ] make Black White pattern
 * [ ] make converter from R, G, B, A to ARGB
 * [ ] make function to pre multiply
