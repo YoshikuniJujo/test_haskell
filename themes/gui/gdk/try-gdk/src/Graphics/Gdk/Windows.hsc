@@ -14,6 +14,7 @@ import Data.Int
 
 import Graphics.Gdk.Types
 import Graphics.Gdk.Values
+import Graphics.Cairo.Types
 
 #include <gdk/gdk.h>
 
@@ -36,13 +37,13 @@ gdkWindowShow :: GdkWindow -> IO ()
 gdkWindowShow (GdkWindow w) = withForeignPtr w c_gdk_window_show
 
 foreign import ccall "gdk_window_begin_draw_frame" c_gdk_window_begin_draw_frame ::
-	Ptr GdkWindow -> Ptr CairoRegionT -> IO (Ptr GdkDrawingContext)
+	Ptr GdkWindow -> Ptr (CairoRegionT s) -> IO (Ptr GdkDrawingContext)
 
 foreign import ccall "gdk_window_end_draw_frame" c_gdk_window_end_draw_frame ::
 	Ptr GdkWindow -> Ptr GdkDrawingContext -> IO ()
 
-gdkWindowWithDrawFrame :: GdkWindow -> CairoRegionT -> (GdkDrawingContext -> IO a) -> IO a
-gdkWindowWithDrawFrame (GdkWindow fw) (CairoRegionT r) act = withForeignPtr fw \w -> bracket
+gdkWindowWithDrawFrame :: GdkWindow -> CairoRegionT s -> (GdkDrawingContext -> IO a) -> IO a
+gdkWindowWithDrawFrame (GdkWindow fw) (CairoRegionT fr) act = withForeignPtr fw \w -> withForeignPtr fr \r -> bracket
 	(c_gdk_window_begin_draw_frame w r) (c_gdk_window_end_draw_frame w) $ (. GdkDrawingContext) act
 
 foreign import ccall "gdk_window_invalidate_rect" c_gdk_window_invalidate_rect ::

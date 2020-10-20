@@ -4,5 +4,5 @@ memo
 todo
 ----
 
-* [ ] move cairoRegionWithRectangle to simple-cairo
-	+ [ ] consider to use ForeignPtr to it
+* [x] move cairoRegionWithRectangle to simple-cairo
+	+ [x] consider to use ForeignPtr to it

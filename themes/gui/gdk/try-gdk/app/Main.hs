@@ -15,7 +15,9 @@ import Graphics.Gdk.Event
 import Graphics.Gdk.Types
 import Graphics.Gdk.Values
 import Graphics.Cairo.Drawing.CairoT
+import Graphics.Cairo.Drawing.Regions
 import Graphics.Cairo.Paths
+import Graphics.Cairo.Types
 
 import Data.Bool
 
@@ -79,7 +81,8 @@ checkEvent = \case
 	GdkEventGdkVisibilityNotify v -> do
 		w <- gdkEventVisibilityWindow v
 		vs <- gdkEventVisibilityState v
-		cairoRegionWithRectangle (CairoRectangleIntT 50 50 100 100) \r ->
+		r <- cairoRegionCreateRectangle $ CairoRectangleIntT 50 50 100 100
+		do
 			gdkWindowWithDrawFrame w r \cxt -> do
 				cr <- gdkDrawingContextGetCairoContext cxt
 				cairoSetSourceRgb cr 0.8 0.2 0.2
