@@ -4,7 +4,7 @@
 module Main where
 
 import Graphics.Cairo
-import Graphics.Cairo.CairoT
+import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Paths
 import Graphics.Cairo.CairoPatternT
 import Graphics.Cairo.Text
@@ -12,7 +12,9 @@ import Graphics.Cairo.PngSupport
 import Graphics.Cairo.Types
 import Graphics.Cairo.Values
 
-surface :: IO (CairoSurfaceT s)
+import Control.Monad.ST
+
+surface :: IO (CairoSurfaceT RealWorld)
 surface = cairoImageSurfaceCreate cairoFormatArgb32 800 500
 
 main :: IO ()

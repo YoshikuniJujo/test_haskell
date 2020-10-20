@@ -3,7 +3,7 @@
 module Main where
 
 import Graphics.Cairo
-import Graphics.Cairo.CairoT
+import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Paths
 import Graphics.Cairo.PngSupport
 
