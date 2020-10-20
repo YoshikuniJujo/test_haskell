@@ -9,6 +9,7 @@ import Foreign.Storable
 import Control.Concurrent
 import System.Environment
 import Graphics.Gdk
+import Graphics.Gdk.General
 import Graphics.Gdk.Event
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Paths

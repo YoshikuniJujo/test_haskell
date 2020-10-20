@@ -23,21 +23,6 @@ newtype GdkWindow = GdkWindow (Ptr GdkWindow) deriving Show
 newtype GdkWindowAttr = GdkWindowAttr (Ptr GdkWindowAttr) deriving Show
 newtype GMainLoop = GMainLoop (Ptr GMainLoop) deriving Show
 
-foreign import ccall "gdk_init" c_gdk_init :: Ptr CInt -> Ptr (Ptr CString) -> IO ()
-
-gdkInit :: [String] -> IO [String]
-gdkInit as = allocaArray (length as) \arr -> do
-	cas <- newCString `mapM` as
-	pokeArray arr cas
-	(n', arr') <- alloca \pn -> do
-		poke pn . fromIntegral $ length as
-		arr' <- alloca \parr -> do
-			poke parr arr
-			c_gdk_init pn parr
-			peek parr
-		(, arr') <$> peek pn
-	(peekCString `mapM`) =<< peekArray (fromIntegral n') arr'
-
 newtype GdkWindowType = GdkWindowType #{type GdkWindowType} deriving Show
 #enum GdkWindowType, GdkWindowType, GDK_WINDOW_ROOT, GDK_WINDOW_TOPLEVEL, \
 	GDK_WINDOW_CHILD
