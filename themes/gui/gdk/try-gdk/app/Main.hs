@@ -23,8 +23,9 @@ import Data.Bool
 
 main :: IO ()
 main = do
+	pn <- getProgName
 	as <- getArgs
-	print =<< gdkInit as
+	print =<< gdkInit pn as
 	w <- alloca $ \p -> do
 		attr <- peek p
 		gdkWindowAttrSetEventMask attr [gdkExposureMask, gdkButtonPressMask]
