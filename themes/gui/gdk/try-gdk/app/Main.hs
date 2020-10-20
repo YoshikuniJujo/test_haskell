@@ -8,9 +8,9 @@ import Foreign.Storable
 
 import Control.Concurrent
 import System.Environment
-import Graphics.Gdk
 import Graphics.Gdk.General
 import Graphics.Gdk.Windows
+import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.Event
 import Graphics.Gdk.Types
 import Graphics.Gdk.Values
