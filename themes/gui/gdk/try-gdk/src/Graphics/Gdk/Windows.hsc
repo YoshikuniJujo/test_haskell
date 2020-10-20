@@ -1,8 +1,10 @@
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.Windows where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr
 import Data.Bits
 import Data.Word
 
@@ -20,5 +22,6 @@ foreign import ccall "gdk_window_new" c_gdk_window_new ::
 	Ptr GdkWindow -> Ptr GdkWindowAttr -> #{type GdkWindowAttributesType} -> IO (Ptr GdkWindow)
 
 gdkWindowNew :: Maybe GdkWindow -> GdkWindowAttr -> [GdkWindowAttributesType] -> IO GdkWindow
-gdkWindowNew mp (GdkWindowAttr attr) am = GdkWindow <$> c_gdk_window_new
-	(maybe nullPtr (\(GdkWindow p) -> p) mp) attr (mergeGdkWindowAttributesType am)
+gdkWindowNew mp (GdkWindowAttr attr) am =
+	maybe ($ nullPtr) (\(GdkWindow fp) -> withForeignPtr fp) mp \p ->
+	makeGdkWindow =<< c_gdk_window_new p attr (mergeGdkWindowAttributesType am)

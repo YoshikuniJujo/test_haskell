@@ -3,6 +3,15 @@
 module Graphics.Gdk.Types where
 
 import Foreign.Ptr
+import Foreign.Marshal
+import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.Concurrent
 
-newtype GdkWindow = GdkWindow (Ptr GdkWindow) deriving Show
+newtype GdkWindow = GdkWindow (ForeignPtr GdkWindow) deriving Show
 newtype GdkWindowAttr = GdkWindowAttr (Ptr GdkWindowAttr) deriving Show
+
+foreign import ccall "gdk_window_destroy" c_gdk_window_destroy ::
+	Ptr GdkWindow -> IO ()
+
+makeGdkWindow :: Ptr GdkWindow -> IO GdkWindow
+makeGdkWindow p = GdkWindow <$> newForeignPtr p (free p)

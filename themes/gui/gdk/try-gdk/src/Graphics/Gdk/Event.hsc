@@ -12,7 +12,6 @@ import Foreign.Storable
 import Data.Word
 import Data.Int
 
-import Graphics.Gdk
 import Graphics.Gdk.Types
 
 #include <gdk/gdk.h>
@@ -93,7 +92,10 @@ newtype GdkVisibilityState = GdkVisibilityState #{type GdkVisibilityState} deriv
 	GDK_VISIBILITY_PARTIAL, GDK_VISIBILITY_FULLY_OBSCURED
 
 gdkEventVisibilityWindow :: GdkEventVisibility -> IO GdkWindow
-gdkEventVisibilityWindow (GdkEventVisibility p) = GdkWindow <$> withForeignPtr p #peek GdkEventVisibility, window
+gdkEventVisibilityWindow (GdkEventVisibility p) =
+	makeGdkWindow =<< c_g_object_ref =<< withForeignPtr p #peek GdkEventVisibility, window
+
+foreign import ccall "g_object_ref" c_g_object_ref :: Ptr a -> IO (Ptr a)
 
 gdkEventVisibilityState :: GdkEventVisibility -> IO GdkVisibilityState
 gdkEventVisibilityState (GdkEventVisibility p) = GdkVisibilityState <$> withForeignPtr p #peek GdkEventVisibility, state

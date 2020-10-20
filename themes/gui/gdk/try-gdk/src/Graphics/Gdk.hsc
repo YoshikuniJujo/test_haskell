@@ -5,9 +5,9 @@
 module Graphics.Gdk where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
-import Foreign.C
 import Control.Exception
 import Data.Bits
 import Data.Word
@@ -51,7 +51,7 @@ gdkWindowAttrSetWClass (GdkWindowAttr attr) (GdkWindowWindowClass c) = #{poke Gd
 foreign import ccall "gdk_window_show" c_gdk_window_show :: Ptr GdkWindow -> IO ()
 
 gdkWindowShow :: GdkWindow -> IO ()
-gdkWindowShow (GdkWindow w) = c_gdk_window_show w
+gdkWindowShow (GdkWindow w) = withForeignPtr w c_gdk_window_show
 
 {-
 foreign import capi "g_main_new" c_g_main_new :: #{type gboolean} -> IO (Ptr GMainLoop)
@@ -117,8 +117,8 @@ foreign import ccall "gdk_drawing_context_get_cairo_context" c_gdk_drawing_conte
 	Ptr GdkDrawingContext -> IO (Ptr (CairoT s))
 
 gdkWindowWithDrawFrame :: GdkWindow -> CairoRegionT -> (GdkDrawingContext -> IO a) -> IO a
-gdkWindowWithDrawFrame (GdkWindow w) (CairoRegionT r) = bracket
-	(c_gdk_window_begin_draw_frame w r) (c_gdk_window_end_draw_frame w) . (. GdkDrawingContext)
+gdkWindowWithDrawFrame (GdkWindow fw) (CairoRegionT r) act = withForeignPtr fw \w -> bracket
+	(c_gdk_window_begin_draw_frame w r) (c_gdk_window_end_draw_frame w) $ (. GdkDrawingContext) act
 
 gdkDrawingContextGetCairoContext :: GdkDrawingContext -> IO (CairoT s)
 gdkDrawingContextGetCairoContext (GdkDrawingContext c) = makeCairoT =<< c_gdk_drawing_context_get_cairo_context c
@@ -135,18 +135,19 @@ mergeGdkEventMask (GdkEventMask em : ems) = em .|. mergeGdkEventMask ems
 foreign import ccall "gdk_window_set_events" c_gdk_window_set_events :: Ptr GdkWindow -> #{type GdkEventMask} -> IO ()
 
 gdkWindowSetEvents :: GdkWindow -> [GdkEventMask] -> IO ()
-gdkWindowSetEvents (GdkWindow p) = c_gdk_window_set_events p . mergeGdkEventMask
+gdkWindowSetEvents (GdkWindow fp) m = withForeignPtr fp \p -> c_gdk_window_set_events p (mergeGdkEventMask m)
 
 foreign import ccall "gdk_window_invalidate_rect" c_gdk_window_invalidate_rect ::
 	Ptr GdkWindow -> Ptr GdkRectangle -> #{type gboolean} -> IO ()
 
 gdkWindowInvalidateRect :: GdkWindow -> (#{type int}, #{type int}) -> (#{type int}, #{type int}) -> Bool -> IO ()
-gdkWindowInvalidateRect (GdkWindow win) (x, y) (w, h) b = allocaBytes #{size GdkRectangle} \p -> do
+gdkWindowInvalidateRect (GdkWindow fwin) (x, y) (w, h) b = allocaBytes #{size GdkRectangle} \p -> do
 	#{poke GdkRectangle, x} p x
 	#{poke GdkRectangle, y} p y
 	#{poke GdkRectangle, width} p w
 	#{poke GdkRectangle, height} p h
-	c_gdk_window_invalidate_rect win p $ boolToGboolean b
+	withForeignPtr fwin \win ->
+		c_gdk_window_invalidate_rect win p $ boolToGboolean b
 
 boolToGboolean :: Bool -> #type gboolean
 boolToGboolean False = #const FALSE
@@ -165,9 +166,9 @@ gdkRectangleSetHeight (GdkRectangle p) = #{poke GdkRectangle, height} p
 foreign import ccall "gdk_window_thaw_updates" c_gdk_window_thaw_updates :: Ptr GdkWindow -> IO ()
 
 gdkWindowThawUpdates :: GdkWindow -> IO ()
-gdkWindowThawUpdates (GdkWindow p) = c_gdk_window_thaw_updates p
+gdkWindowThawUpdates (GdkWindow fp) = withForeignPtr fp c_gdk_window_thaw_updates
 
 foreign import ccall "gdk_window_freeze_updates" c_gdk_window_freeze_updates :: Ptr GdkWindow -> IO ()
 
 gdkWindowFreezeUpdates :: GdkWindow -> IO ()
-gdkWindowFreezeUpdates (GdkWindow p) = c_gdk_window_freeze_updates p
+gdkWindowFreezeUpdates (GdkWindow fp) = withForeignPtr fp c_gdk_window_freeze_updates
