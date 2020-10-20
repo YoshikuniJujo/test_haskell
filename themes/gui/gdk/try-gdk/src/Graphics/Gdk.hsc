@@ -13,14 +13,14 @@ import Data.Bits
 import Data.Word
 import Data.Int
 
+import Graphics.Gdk.Types
+
 import Graphics.Cairo.Types
 -- import Graphics.Gdk.Event
 
 #include <gdk/gdk.h>
 #include <glib.h>
 
-newtype GdkWindow = GdkWindow (Ptr GdkWindow) deriving Show
-newtype GdkWindowAttr = GdkWindowAttr (Ptr GdkWindowAttr) deriving Show
 newtype GMainLoop = GMainLoop (Ptr GMainLoop) deriving Show
 
 newtype GdkWindowType = GdkWindowType #{type GdkWindowType} deriving Show
@@ -47,23 +47,6 @@ gdkWindowAttrSetHeight (GdkWindowAttr attr) = #{poke GdkWindowAttr, height} attr
 
 gdkWindowAttrSetWClass :: GdkWindowAttr -> GdkWindowWindowClass -> IO ()
 gdkWindowAttrSetWClass (GdkWindowAttr attr) (GdkWindowWindowClass c) = #{poke GdkWindowAttr, wclass} attr c
-
-newtype GdkWindowAttributesType = GdkWindowAttributesType #{type GdkWindowAttributesType} deriving Show
-#enum GdkWindowAttributesType, GdkWindowAttributesType, \
-	GDK_WA_TITLE, GDK_WA_X, GDK_WA_Y, GDK_WA_CURSOR, GDK_WA_VISUAL, \
-	GDK_WA_WMCLASS, GDK_WA_NOREDIR, GDK_WA_TYPE_HINT
-
-foreign import ccall "gdk_window_new" c_gdk_window_new ::
-	Ptr GdkWindow -> Ptr GdkWindowAttr -> #{type GdkWindowAttributesType} -> IO (Ptr GdkWindow)
-
-mergeGdkWindowAttributesType :: [GdkWindowAttributesType] -> #{type GdkWindowAttributesType}
-mergeGdkWindowAttributesType [] = 0
-mergeGdkWindowAttributesType (GdkWindowAttributesType at : ats) =
-	at .|. mergeGdkWindowAttributesType ats
-
-gdkWindowNew :: Maybe GdkWindow -> GdkWindowAttr -> [GdkWindowAttributesType] -> IO GdkWindow
-gdkWindowNew mp (GdkWindowAttr attr) am = GdkWindow <$> c_gdk_window_new
-	(maybe nullPtr (\(GdkWindow p) -> p) mp) attr (mergeGdkWindowAttributesType am)
 
 foreign import ccall "gdk_window_show" c_gdk_window_show :: Ptr GdkWindow -> IO ()
 

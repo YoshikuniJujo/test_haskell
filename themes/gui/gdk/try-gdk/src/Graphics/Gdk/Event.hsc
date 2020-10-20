@@ -13,6 +13,7 @@ import Data.Word
 import Data.Int
 
 import Graphics.Gdk
+import Graphics.Gdk.Types
 
 #include <gdk/gdk.h>
 

@@ -10,7 +10,9 @@ import Control.Concurrent
 import System.Environment
 import Graphics.Gdk
 import Graphics.Gdk.General
+import Graphics.Gdk.Windows
 import Graphics.Gdk.Event
+import Graphics.Gdk.Values
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Paths
 
