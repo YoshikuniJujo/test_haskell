@@ -2,7 +2,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.General (
-	gdkInit
+	gdkInit,
+	gdkGetDisplayArgName
 	) where
 
 import Foreign.Ptr
@@ -36,3 +37,10 @@ gdkInit prn as = allocaArray (length (prn : as)) \arr -> withCStrings (prn : as)
 withCStrings :: [String] -> ([CString] -> IO a) -> IO a
 withCStrings [] f = f []
 withCStrings (s : ss) f = withCString s \cs -> withCStrings ss \css -> f $ cs : css
+
+foreign import ccall "gdk_get_display_arg_name" c_gdk_get_display_arg_name :: IO CString
+
+gdkGetDisplayArgName :: IO (Maybe String)
+gdkGetDisplayArgName = c_gdk_get_display_arg_name >>= \case
+	p	| p == nullPtr -> pure Nothing
+		| otherwise -> Just <$> peekCString p

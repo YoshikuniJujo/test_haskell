@@ -7,8 +7,15 @@ todo
 * [x] move cairoRegionWithRectangle to simple-cairo
 	+ [x] consider to use ForeignPtr to it
 * [x] remove module Graphics.Gdk
-* [ ] repair gdkInit
+* [x] repair gdkInit
 	+ [x] define exception
-	+ [ ] free multiple CStrings
+	+ [x] free multiple CStrings
 	+ use gtk\_init\_check
 	+ throw exception if gdk\_init\_check return FALSE
+* [ ] functions of General
+	+ [x] gdk\_get\_display\_arg\_name
+	+ [ ] gdk\_notify\_startup\_complete
+	+ [ ] gdk\_notify\_startup\_complete\_with\_id
+	+ [ ] gdk\_set\_allowed\_backends
+	+ [ ] gdk\_get\_program\_class
+	+ [ ] gdk\_set\_program\_class

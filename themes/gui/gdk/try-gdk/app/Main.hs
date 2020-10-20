@@ -26,6 +26,7 @@ main = do
 	pn <- getProgName
 	as <- getArgs
 	print =<< gdkInit pn as
+	print =<< gdkGetDisplayArgName
 	w <- alloca $ \p -> do
 		attr <- peek p
 		gdkWindowAttrSetEventMask attr [gdkExposureMask, gdkButtonPressMask]
