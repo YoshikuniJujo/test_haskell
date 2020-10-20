@@ -15,3 +15,7 @@ foreign import ccall "gdk_window_destroy" c_gdk_window_destroy ::
 
 makeGdkWindow :: Ptr GdkWindow -> IO GdkWindow
 makeGdkWindow p = GdkWindow <$> newForeignPtr p (free p)
+
+newtype CairoRegionT = CairoRegionT (Ptr CairoRegionT) deriving Show
+
+newtype GdkDrawingContext = GdkDrawingContext (Ptr GdkDrawingContext) deriving Show

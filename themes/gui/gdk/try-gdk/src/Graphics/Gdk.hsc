@@ -48,11 +48,6 @@ gdkWindowAttrSetHeight (GdkWindowAttr attr) = #{poke GdkWindowAttr, height} attr
 gdkWindowAttrSetWClass :: GdkWindowAttr -> GdkWindowWindowClass -> IO ()
 gdkWindowAttrSetWClass (GdkWindowAttr attr) (GdkWindowWindowClass c) = #{poke GdkWindowAttr, wclass} attr c
 
-foreign import ccall "gdk_window_show" c_gdk_window_show :: Ptr GdkWindow -> IO ()
-
-gdkWindowShow :: GdkWindow -> IO ()
-gdkWindowShow (GdkWindow w) = withForeignPtr w c_gdk_window_show
-
 {-
 foreign import capi "g_main_new" c_g_main_new :: #{type gboolean} -> IO (Ptr GMainLoop)
 
@@ -66,8 +61,6 @@ instance Storable GdkWindowAttr where
 	alignment _ = #{alignment GdkWindowAttr}
 	peek = pure . GdkWindowAttr
 	poke _ _ = pure ()
-
-newtype GdkDrawingContext = GdkDrawingContext (Ptr GdkDrawingContext) deriving Show
 
 data CairoRectangleIntT = CairoRectangleIntT {
 	cairoRectangleIntTX, cairoRectangleIntTY :: #{type int},
@@ -91,8 +84,6 @@ instance Storable CairoRectangleIntT where
 foreign import ccall "cairo_region_create_rectangle" c_cairo_region_create_rectangle ::
 	Ptr CairoRectangleIntT -> IO (Ptr CairoRegionT)
 
-newtype CairoRegionT = CairoRegionT (Ptr CairoRegionT) deriving Show
-
 {-
 cairoRegionCreateRectangle :: CairoRectangleIntT -> IO CairoRegionT
 cairoRegionCreateRectangle r = (CairoRegionT <$>) $ alloca \p ->
@@ -107,18 +98,8 @@ cairoRegionWithRectangle r = bracket
 	(alloca \p -> poke p r *> c_cairo_region_create_rectangle p)
 	c_cairo_region_destroy . (. CairoRegionT)
 
-foreign import ccall "gdk_window_begin_draw_frame" c_gdk_window_begin_draw_frame ::
-	Ptr GdkWindow -> Ptr CairoRegionT -> IO (Ptr GdkDrawingContext)
-
-foreign import ccall "gdk_window_end_draw_frame" c_gdk_window_end_draw_frame ::
-	Ptr GdkWindow -> Ptr GdkDrawingContext -> IO ()
-
 foreign import ccall "gdk_drawing_context_get_cairo_context" c_gdk_drawing_context_get_cairo_context ::
 	Ptr GdkDrawingContext -> IO (Ptr (CairoT s))
-
-gdkWindowWithDrawFrame :: GdkWindow -> CairoRegionT -> (GdkDrawingContext -> IO a) -> IO a
-gdkWindowWithDrawFrame (GdkWindow fw) (CairoRegionT r) act = withForeignPtr fw \w -> bracket
-	(c_gdk_window_begin_draw_frame w r) (c_gdk_window_end_draw_frame w) $ (. GdkDrawingContext) act
 
 gdkDrawingContextGetCairoContext :: GdkDrawingContext -> IO (CairoT s)
 gdkDrawingContextGetCairoContext (GdkDrawingContext c) = makeCairoT =<< c_gdk_drawing_context_get_cairo_context c
