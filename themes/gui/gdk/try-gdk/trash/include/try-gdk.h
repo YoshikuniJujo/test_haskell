@@ -1,0 +1,6 @@
+typedef struct _GdkWindowAttrWindowAttributesType GdkWindowAttrWindowAttributesType;
+
+struct _GdkWindowAttrWindowAttributesType {
+	GdkWindowAttr gdk_window_attr;
+	GdkWindowAttributesType gdk_window_attributes_type;
+};
