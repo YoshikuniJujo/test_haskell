@@ -7,6 +7,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
+import Data.Word
 import Data.Int
 
 import Graphics.Gdk.Values
@@ -49,3 +50,20 @@ makeGdkWindow p = GdkWindow <$> newForeignPtr p (free p)
 newtype GdkDrawingContext = GdkDrawingContext (Ptr GdkDrawingContext) deriving Show
 
 newtype GdkRectangle = GdkRectangle (Ptr GdkRectangle) deriving Show
+
+data GdkWindowAttr' = GdkWindowAttr' {
+	gdkWindowAttrTitle :: Maybe String,
+	gdkWindowAttrEventMask :: GdkEventMask,
+	gdkWindowAttrX, gdkWindowAttrY :: Maybe #{type gint},
+	gdkWindowAttrWidth, gdkWindowAttrHeight :: #{type gint},
+	gdkWindowAttrWclass :: GdkWindowWindowClass,
+	gdkWindowAttrVisual :: Maybe GdkVisual,
+	gdkWindowAttrWindowType :: GdkWindowType,
+	gdkWindowAttrCursor :: Maybe GdkCursor,
+	gdkWindowAttrOverrideRedirect :: Bool,
+	gdkWindowAttrTypeHing :: Maybe GdkWindowTypeHint } deriving Show
+
+newtype GdkVisual = GdkVisual (ForeignPtr GdkVisual) deriving Show
+newtype GdkCursor = GdkCursor (ForeignPtr GdkCursor) deriving Show
+
+newtype GdkWindowTypeHint = GdkWindowTypeHint #{type GdkWindowTypeHint} deriving Show

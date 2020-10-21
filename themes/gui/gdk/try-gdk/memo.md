@@ -20,4 +20,7 @@ todo
 * [ ] functions of Windows
 	+ [ ] gdk\_window\_new
 		- [ ] correct structure of GdkWindowAttr
+			* [x] define GdkWindowAttr' data type
+			* [ ] instance Storable GdkWindowAttr'
+			* [ ] others
 	+ [ ] others
