@@ -20,31 +20,6 @@ import Graphics.Gdk.Values
 #include <gdk/gdk.h>
 
 newtype GdkWindow = GdkWindow (ForeignPtr GdkWindow) deriving Show
-newtype GdkWindowAttr = GdkWindowAttr (Ptr GdkWindowAttr) deriving Show
-
-gdkWindowAttrSetEventMask :: GdkWindowAttr -> [GdkEventMask] -> IO ()
-gdkWindowAttrSetEventMask (GdkWindowAttr attr) ems =
-	#{poke GdkWindowAttr, event_mask} attr $ mergeGdkEventMask ems
-
-gdkWindowAttrSetWindowType :: GdkWindowAttr -> GdkWindowType -> IO ()
-gdkWindowAttrSetWindowType (GdkWindowAttr attr) (GdkWindowType wt) = #{poke GdkWindowAttr, window_type} attr wt
-
-gdkWindowAttrSetX, gdkWindowAttrSetY :: GdkWindowAttr -> #{type gint} -> IO ()
-gdkWindowAttrSetX (GdkWindowAttr attr) = #{poke GdkWindowAttr, x} attr
-gdkWindowAttrSetY (GdkWindowAttr attr) = #{poke GdkWindowAttr, y} attr
-
-gdkWindowAttrSetWidth, gdkWindowAttrSetHeight :: GdkWindowAttr -> #{type gint} -> IO ()
-gdkWindowAttrSetWidth (GdkWindowAttr attr) = #{poke GdkWindowAttr, width} attr
-gdkWindowAttrSetHeight (GdkWindowAttr attr) = #{poke GdkWindowAttr, height} attr
-
-gdkWindowAttrSetWClass :: GdkWindowAttr -> GdkWindowWindowClass -> IO ()
-gdkWindowAttrSetWClass (GdkWindowAttr attr) (GdkWindowWindowClass c) = #{poke GdkWindowAttr, wclass} attr c
-
-instance Storable GdkWindowAttr where
-	sizeOf _ = #{size GdkWindowAttr}
-	alignment _ = #{alignment GdkWindowAttr}
-	peek = pure . GdkWindowAttr
-	poke _ _ = pure ()
 
 foreign import ccall "gdk_window_destroy" c_gdk_window_destroy ::
 	Ptr GdkWindow -> IO ()
@@ -56,7 +31,7 @@ newtype GdkDrawingContext = GdkDrawingContext (Ptr GdkDrawingContext) deriving S
 
 newtype GdkRectangle = GdkRectangle (Ptr GdkRectangle) deriving Show
 
-data GdkWindowAttr' = GdkWindowAttr' {
+data GdkWindowAttr = GdkWindowAttr {
 	gdkWindowAttrTitle :: Maybe String,
 	gdkWindowAttrEventMask :: [GdkEventMask],
 	gdkWindowAttrX, gdkWindowAttrY :: Maybe #{type gint},
@@ -73,7 +48,7 @@ newtype GdkCursor = GdkCursor (ForeignPtr GdkCursor) deriving Show
 
 newtype GdkWindowTypeHint = GdkWindowTypeHint #{type GdkWindowTypeHint} deriving Show
 
-newGdkWindowAttr :: GdkWindowAttr' -> IO (ForeignPtr GdkWindowAttr, #{type GdkWindowAttributesType})
+newGdkWindowAttr :: GdkWindowAttr -> IO (ForeignPtr GdkWindowAttr, #{type GdkWindowAttributesType})
 newGdkWindowAttr wattr = do
 	p <- mallocBytes #{size GdkWindowAttr}
 	fp <- newForeignPtr p (free p)
@@ -112,11 +87,11 @@ newGdkWindowAttr wattr = do
 			(#{poke GdkWindowAttr, type_hint} pa . (\(GdkWindowTypeHint th) -> th))
 			(gdkWindowAttrTypeHint a)
 
-gdkWindowAttributesTypeMerged :: GdkWindowAttr' -> #type GdkWindowAttributesType
+gdkWindowAttributesTypeMerged :: GdkWindowAttr -> #type GdkWindowAttributesType
 gdkWindowAttributesTypeMerged = merge . gdkWindowAttributesTypeList
 	where merge [] = 0; merge (at : ats) = at .|. merge ats
 
-gdkWindowAttributesTypeList :: GdkWindowAttr' -> [#type GdkWindowAttributesType]
+gdkWindowAttributesTypeList :: GdkWindowAttr -> [#type GdkWindowAttributesType]
 gdkWindowAttributesTypeList a = catMaybes [
 	bool Nothing (Just #const GDK_WA_TITLE) . isJust $ gdkWindowAttrTitle a,
 	bool Nothing (Just #const GDK_WA_X) . isJust $ gdkWindowAttrX a,

@@ -3,9 +3,6 @@
 
 module Main where
 
--- import Foreign.Marshal hiding (void)
--- import Foreign.Storable
-
 import Control.Concurrent
 import System.Environment
 import Graphics.Gdk.General
@@ -30,17 +27,7 @@ main = do
 	print =<< gdkGetDisplayArgName
 	gdkSetProgramClass "Foo"
 	print =<< gdkGetProgramClass
-	{-
-	w <- alloca $ \p -> do
-		attr <- peek p
-		gdkWindowAttrSetEventMask attr [gdkExposureMask, gdkButtonPressMask]
-		gdkWindowAttrSetWindowType attr gdkWindowToplevel
-		gdkWindowAttrSetWidth attr 400
-		gdkWindowAttrSetHeight attr 400
-		gdkWindowAttrSetWClass attr gdkInputOutput
-		gdkWindowNew Nothing attr [gdkWaWmclass]
-		-}
-	w <- gdkWindowNew' Nothing $ GdkWindowAttr'
+	w <- gdkWindowNew Nothing $ GdkWindowAttr
 		(Just "あいうえお") [gdkExposureMask, gdkButtonPressMask] Nothing Nothing
 		400 400 gdkInputOutput Nothing gdkWindowToplevel Nothing Nothing Nothing
 	gdkWindowShow w
