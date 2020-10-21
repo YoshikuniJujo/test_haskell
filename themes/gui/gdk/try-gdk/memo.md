@@ -18,8 +18,10 @@ todo
 	+ [x] gdk\_get\_program\_class
 	+ [x] gdk\_set\_program\_class
 * [ ] functions of Windows
-	+ [ ] gdk\_window\_new
-		- [ ] correct structure of GdkWindowAttr
+	+ [x] gdk\_window\_new
+		- [x] correct structure of GdkWindowAttr
 			* [x] define mkGdkWindowAttr
-			* [ ] others
+		- [x] use Ptr instead of ForeignPtr
+	+ [x] gdk\_window\_destroy
+	+ [ ] gdk\_window\_get\_window\_type
 	+ [ ] others

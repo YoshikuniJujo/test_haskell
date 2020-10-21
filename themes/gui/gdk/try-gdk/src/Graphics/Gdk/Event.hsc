@@ -93,7 +93,8 @@ newtype GdkVisibilityState = GdkVisibilityState #{type GdkVisibilityState} deriv
 
 gdkEventVisibilityWindow :: GdkEventVisibility -> IO GdkWindow
 gdkEventVisibilityWindow (GdkEventVisibility p) =
-	makeGdkWindow =<< c_g_object_ref =<< withForeignPtr p #peek GdkEventVisibility, window
+--	GdkWindow <$> (c_g_object_ref =<< withForeignPtr p #peek GdkEventVisibility, window)
+	GdkWindow <$> withForeignPtr p #peek GdkEventVisibility, window
 
 foreign import ccall "g_object_ref" c_g_object_ref :: Ptr a -> IO (Ptr a)
 

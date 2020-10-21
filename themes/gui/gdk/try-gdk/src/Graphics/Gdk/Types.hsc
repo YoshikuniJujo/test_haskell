@@ -19,13 +19,7 @@ import Graphics.Gdk.Values
 
 #include <gdk/gdk.h>
 
-newtype GdkWindow = GdkWindow (ForeignPtr GdkWindow) deriving Show
-
-foreign import ccall "gdk_window_destroy" c_gdk_window_destroy ::
-	Ptr GdkWindow -> IO ()
-
-makeGdkWindow :: Ptr GdkWindow -> IO GdkWindow
-makeGdkWindow p = GdkWindow <$> newForeignPtr p (free p)
+newtype GdkWindow = GdkWindow (Ptr GdkWindow) deriving Show
 
 newtype GdkDrawingContext = GdkDrawingContext (Ptr GdkDrawingContext) deriving Show
 
