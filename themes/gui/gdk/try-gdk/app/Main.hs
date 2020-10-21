@@ -27,9 +27,10 @@ main = do
 	print =<< gdkGetDisplayArgName
 	gdkSetProgramClass "Foo"
 	print =<< gdkGetProgramClass
-	w <- gdkWindowNew Nothing $ GdkWindowAttr
-		(Just "あいうえお") [gdkExposureMask, gdkButtonPressMask] Nothing Nothing
-		400 400 gdkInputOutput Nothing gdkWindowToplevel Nothing Nothing Nothing
+	let wattr = mkGdkWindowAttr
+			[gdkExposureMask, gdkButtonPressMask] 400 400
+			gdkInputOutput gdkWindowToplevel
+	w <- gdkWindowNew Nothing wattr { gdkWindowAttrTitle = Just "試験窓" }
 	gdkWindowShow w
 	gdkWindowSetEvents w [gdkExposureMask, gdkButtonPressMask]
 	print gdkExposureMask

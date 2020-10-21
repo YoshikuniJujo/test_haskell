@@ -43,6 +43,12 @@ data GdkWindowAttr = GdkWindowAttr {
 	gdkWindowAttrOverrideRedirect :: Maybe Bool,
 	gdkWindowAttrTypeHint :: Maybe GdkWindowTypeHint } deriving Show
 
+mkGdkWindowAttr ::
+	[GdkEventMask] -> #{type gint} -> #{type gint} ->
+	GdkWindowWindowClass -> GdkWindowType -> GdkWindowAttr
+mkGdkWindowAttr em w h wc wt = GdkWindowAttr
+	Nothing em Nothing Nothing w h wc Nothing wt Nothing Nothing Nothing
+
 newtype GdkVisual = GdkVisual (Ptr GdkVisual) deriving Show
 newtype GdkCursor = GdkCursor (ForeignPtr GdkCursor) deriving Show
 
