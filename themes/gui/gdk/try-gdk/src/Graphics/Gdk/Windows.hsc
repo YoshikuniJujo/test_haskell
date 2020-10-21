@@ -31,6 +31,11 @@ gdkWindowNew mp (GdkWindowAttr attr) am =
 	maybe ($ nullPtr) (\(GdkWindow fp) -> withForeignPtr fp) mp \p ->
 	makeGdkWindow =<< c_gdk_window_new p attr (mergeGdkWindowAttributesType am)
 
+gdkWindowNew' :: Maybe GdkWindow -> GdkWindowAttr' -> IO GdkWindow
+gdkWindowNew' mp wattr = maybe ($ nullPtr) (\(GdkWindow fp) -> withForeignPtr fp) mp \p -> do
+	(fwa, wam) <- newGdkWindowAttr wattr
+	withForeignPtr fwa \wa -> makeGdkWindow =<< c_gdk_window_new p wa wam
+
 foreign import ccall "gdk_window_show" c_gdk_window_show :: Ptr GdkWindow -> IO ()
 
 gdkWindowShow :: GdkWindow -> IO ()
