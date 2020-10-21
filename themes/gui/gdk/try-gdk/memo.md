@@ -12,8 +12,12 @@ todo
 	+ [x] free multiple CStrings
 	+ use gtk\_init\_check
 	+ throw exception if gdk\_init\_check return FALSE
-* [ ] functions of General
+* [x] functions of General
 	+ [x] gdk\_get\_display\_arg\_name
 	+ [x] gdk\_set\_allowed\_backends
-	+ [ ] gdk\_get\_program\_class
-	+ [ ] gdk\_set\_program\_class
+	+ [x] gdk\_get\_program\_class
+	+ [x] gdk\_set\_program\_class
+* [ ] functions of Windows
+	+ [ ] gdk\_window\_new
+		- [ ] correct structure of GdkWindowAttr
+	+ [ ] others

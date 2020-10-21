@@ -4,7 +4,8 @@
 module Graphics.Gdk.General (
 	gdkInit,
 	gdkGetDisplayArgName,
-	gdkSetAllowedBackends
+	gdkSetAllowedBackends,
+	gdkGetProgramClass, gdkSetProgramClass
 	) where
 
 import Foreign.Ptr
@@ -51,3 +52,15 @@ foreign import ccall "gdk_set_allowed_backends" c_gdk_set_allowed_backends ::
 
 gdkSetAllowedBackends :: String -> IO ()
 gdkSetAllowedBackends be = withCString be c_gdk_set_allowed_backends
+
+foreign import ccall "gdk_get_program_class" c_gdk_get_program_class :: IO CString
+
+gdkGetProgramClass :: IO (Maybe String)
+gdkGetProgramClass = c_gdk_get_program_class >>= \case
+	p	| p == nullPtr -> pure Nothing
+		| otherwise -> Just <$> peekCString p
+
+foreign import ccall "gdk_set_program_class" c_gdk_set_program_class :: CString -> IO ()
+
+gdkSetProgramClass :: String -> IO ()
+gdkSetProgramClass c = withCString c c_gdk_set_program_class

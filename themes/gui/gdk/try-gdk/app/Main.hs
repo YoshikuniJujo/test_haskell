@@ -28,6 +28,8 @@ main = do
 	gdkSetAllowedBackends "win32,x11,*"
 	print =<< gdkInit pn as
 	print =<< gdkGetDisplayArgName
+	gdkSetProgramClass "Foo"
+	print =<< gdkGetProgramClass
 	w <- alloca $ \p -> do
 		attr <- peek p
 		gdkWindowAttrSetEventMask attr [gdkExposureMask, gdkButtonPressMask]
