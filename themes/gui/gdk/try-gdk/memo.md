@@ -14,6 +14,6 @@ todo
 	+ throw exception if gdk\_init\_check return FALSE
 * [ ] functions of General
 	+ [x] gdk\_get\_display\_arg\_name
-	+ [ ] gdk\_set\_allowed\_backends
+	+ [x] gdk\_set\_allowed\_backends
 	+ [ ] gdk\_get\_program\_class
 	+ [ ] gdk\_set\_program\_class

@@ -25,6 +25,7 @@ main :: IO ()
 main = do
 	pn <- getProgName
 	as <- getArgs
+	gdkSetAllowedBackends "win32,x11,*"
 	print =<< gdkInit pn as
 	print =<< gdkGetDisplayArgName
 	w <- alloca $ \p -> do

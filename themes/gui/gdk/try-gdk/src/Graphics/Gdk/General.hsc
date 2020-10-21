@@ -3,7 +3,8 @@
 
 module Graphics.Gdk.General (
 	gdkInit,
-	gdkGetDisplayArgName
+	gdkGetDisplayArgName,
+	gdkSetAllowedBackends
 	) where
 
 import Foreign.Ptr
@@ -44,3 +45,9 @@ gdkGetDisplayArgName :: IO (Maybe String)
 gdkGetDisplayArgName = c_gdk_get_display_arg_name >>= \case
 	p	| p == nullPtr -> pure Nothing
 		| otherwise -> Just <$> peekCString p
+
+foreign import ccall "gdk_set_allowed_backends" c_gdk_set_allowed_backends ::
+	CString -> IO ()
+
+gdkSetAllowedBackends :: String -> IO ()
+gdkSetAllowedBackends be = withCString be c_gdk_set_allowed_backends
