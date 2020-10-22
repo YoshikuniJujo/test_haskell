@@ -6,6 +6,7 @@ module Main where
 import Control.Concurrent
 import System.Environment
 import Graphics.Gdk.General
+import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.Windows
 import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.Event
@@ -33,6 +34,7 @@ main = do
 	w <- gdkWindowNew Nothing wattr { gdkWindowAttrTitle = Just "試験窓" }
 	print =<< gdkWindowGetWindowType w
 	print gdkWindowToplevel
+	putStrLn =<< gdkDisplayGetName =<< gdkWindowGetDisplay w
 	gdkWindowShow w
 	gdkWindowSetEvents w [gdkExposureMask, gdkButtonPressMask]
 	print gdkExposureMask

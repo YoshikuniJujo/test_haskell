@@ -24,7 +24,7 @@ todo
 		- [x] use Ptr instead of ForeignPtr
 	+ [x] gdk\_window\_destroy
 	+ [x] gdk\_window\_get\_window\_type
-	+ [ ] gdk\_window\_get\_display
+	+ [x] gdk\_window\_get\_display
 	+ [ ] gdk\_window\_get\_screen
 	+ [ ] gdk\_window\_get\_visual
 	+ [ ] others

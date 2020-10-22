@@ -3,7 +3,7 @@
 
 module Graphics.Gdk.Windows (
 	-- * Checked
-	gdkWindowNew, gdkWindowDestroy, gdkWindowGetWindowType,
+	gdkWindowNew, gdkWindowDestroy, gdkWindowGetWindowType, gdkWindowGetDisplay,
 
 	-- * Not Checked
 	gdkWindowFreezeUpdates, gdkWindowThawUpdates,
@@ -43,6 +43,12 @@ foreign import ccall "gdk_window_get_window_type" c_gdk_window_get_window_type :
 
 gdkWindowGetWindowType :: GdkWindow -> IO GdkWindowType
 gdkWindowGetWindowType (GdkWindow p) = GdkWindowType <$> c_gdk_window_get_window_type p
+
+foreign import ccall "gdk_window_get_display" c_gdk_window_get_display ::
+	Ptr GdkWindow -> IO (Ptr GdkDisplay)
+
+gdkWindowGetDisplay :: GdkWindow -> IO GdkDisplay
+gdkWindowGetDisplay (GdkWindow p) = GdkDisplay <$> c_gdk_window_get_display p
 
 foreign import ccall "gdk_window_show" c_gdk_window_show :: Ptr GdkWindow -> IO ()
 
