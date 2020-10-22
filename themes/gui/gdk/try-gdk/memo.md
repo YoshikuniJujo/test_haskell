@@ -23,5 +23,8 @@ todo
 			* [x] define mkGdkWindowAttr
 		- [x] use Ptr instead of ForeignPtr
 	+ [x] gdk\_window\_destroy
-	+ [ ] gdk\_window\_get\_window\_type
+	+ [x] gdk\_window\_get\_window\_type
+	+ [ ] gdk\_window\_get\_display
+	+ [ ] gdk\_window\_get\_screen
+	+ [ ] gdk\_window\_get\_visual
 	+ [ ] others

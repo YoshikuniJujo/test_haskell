@@ -31,6 +31,8 @@ main = do
 			[gdkExposureMask, gdkButtonPressMask] 400 400
 			gdkInputOutput gdkWindowToplevel
 	w <- gdkWindowNew Nothing wattr { gdkWindowAttrTitle = Just "試験窓" }
+	print =<< gdkWindowGetWindowType w
+	print gdkWindowToplevel
 	gdkWindowShow w
 	gdkWindowSetEvents w [gdkExposureMask, gdkButtonPressMask]
 	print gdkExposureMask
