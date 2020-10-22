@@ -3,7 +3,18 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    name: simple-cairo
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/simple-cairo.git
+    pantry-tree:
+      size: 1608
+      sha256: aeb06e8767c054f49e5be59975642ad3c7efe805c21bd9e3ba07c0c83b6df684
+    commit: 06a7a410d3f1b2ee7840eca5fa8e53aa0e0cfffc
+  original:
+    git: https://github.com/YoshikuniJujo/simple-cairo.git
+    commit: 06a7a410d3f1b2ee7840eca5fa8e53aa0e0cfffc
 snapshots:
 - completed:
     size: 532177

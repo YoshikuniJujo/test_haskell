@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fe5955ddaac78b1f8a7db8f43e2afdab9af7076e4aa8689fbbe204e91737cd4a
+-- hash: 0e4017b598dd7ff87f36100da916483b077ff899b9817a8c91ee4467062204f4
 
 name:           try-trochoid
 version:        0.1.0.0
@@ -36,6 +36,7 @@ library
       JuicyPixels
     , base >=4.7 && <5
     , containers
+    , simple-cairo
   default-language: Haskell2010
 
 executable try-trochoid-exe
@@ -49,6 +50,7 @@ executable try-trochoid-exe
       JuicyPixels
     , base >=4.7 && <5
     , containers
+    , simple-cairo
     , try-trochoid
   default-language: Haskell2010
 
@@ -64,5 +66,6 @@ test-suite try-trochoid-test
       JuicyPixels
     , base >=4.7 && <5
     , containers
+    , simple-cairo
     , try-trochoid
   default-language: Haskell2010
