@@ -75,3 +75,6 @@ pat1 = do
 	cairoPatternAddColorStopRgb p 0.5 1.0 1.0 0
 	cairoPatternAddColorStopRgb p 0.0 1.0 0.0 0.2
 	pure p
+
+sample1 :: FilePath -> IO ()
+sample1 fp = writeWithCairo fp 50 (10 / 8)
