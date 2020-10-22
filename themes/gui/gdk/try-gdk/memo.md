@@ -28,3 +28,6 @@ todo
 	+ [ ] gdk\_window\_get\_screen
 	+ [ ] gdk\_window\_get\_visual
 	+ [ ] others
+* [ ] functions of GdkDisplay
+	+ [x] gdk\_display\_get\_name
+	+ [ ] others
