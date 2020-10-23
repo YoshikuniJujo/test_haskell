@@ -79,6 +79,13 @@ gdkDisplayGetEvent (GdkDisplay d) = c_gdk_display_get_event d >>= \case
 	p	| p == nullPtr -> pure Nothing
 		| otherwise -> Just <$> mkGdkEvent p
 
+foreign import ccall "gdk_display_peek_event" c_gdk_display_peek_event ::
+	Ptr GdkDisplay -> IO (Ptr GdkEvent)
+
+gdkDisplayPeekEvent :: GdkDisplay -> IO (Maybe GdkEvent)
+gdkDisplayPeekEvent (GdkDisplay d) = c_gdk_display_peek_event d >>= \case
+	p	| p == nullPtr -> pure Nothing
+		| otherwise -> Just <$> mkGdkEvent p
 
 foreign import ccall "gdk_display_get_default_seat" c_gdk_display_get_default_seat ::
 	Ptr GdkDisplay -> IO (Ptr GdkSeat)

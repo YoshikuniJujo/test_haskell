@@ -35,7 +35,7 @@ todo
 	+ [x] gdk\_display\_close
 	+ [x] gdk\_display\_is\_closed
 	+ [x] gdk\_display\_get\_event
-	+ [ ] gdk\_display\_peek\_event
+	+ [x] gdk\_display\_peek\_event
 	+ [ ] gdk\_display\_put\_event
 	+ [ ] gdk\_display\_has\_pending
 	+ no gdk\_display\_set\_double\_click\_time
