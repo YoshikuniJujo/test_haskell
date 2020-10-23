@@ -9,6 +9,18 @@ import Graphics.Gdk.Types
 
 #include <gdk/gdk.h>
 
+foreign import ccall "gdk_display_open" c_gdk_display_open ::
+	IO (Ptr GdkDisplay)
+
+gdkDisplayOpen :: IO GdkDisplay
+gdkDisplayOpen = GdkDisplay <$> c_gdk_display_open
+
+foreign import ccall "gdk_display_get_default" c_gdk_display_get_default ::
+	IO (Ptr GdkDisplay)
+
+gdkDisplayGetDefault :: IO GdkDisplay
+gdkDisplayGetDefault = GdkDisplay <$> c_gdk_display_get_default
+
 foreign import ccall "gdk_display_get_name" c_gdk_display_get_name ::
 	Ptr GdkDisplay -> IO CString
 
