@@ -41,6 +41,7 @@ main = do
 	putStrLn =<< gdkDisplayGetName =<< gdkWindowGetDisplay w
 	print =<< gdkScreenGetResolution =<< gdkWindowGetScreen w
 	print =<< gdkVisualGetDepth =<< gdkWindowGetVisual w
+	putStrLn . ("Window is destroyed: " ++) . show =<< gdkWindowIsDestroyed w
 	gdkWindowShow w
 	gdkWindowSetEvents w [gdkExposureMask, gdkButtonPressMask]
 	print gdkExposureMask
@@ -54,6 +55,8 @@ main = do
 				b <- checkEvent e
 				pure if b then Nothing else Just False
 			Nothing -> pure $ Just True
+	gdkWindowDestroy w
+	putStrLn . ("Window is destroyed: " ++) . show =<< gdkWindowIsDestroyed w
 
 checkEvent :: GdkEvent -> IO Bool
 checkEvent = \case

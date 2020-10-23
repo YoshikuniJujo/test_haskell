@@ -6,6 +6,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowNew, gdkWindowDestroy, gdkWindowGetWindowType,
 	gdkWindowGetDisplay, gdkWindowGetScreen, gdkWindowGetVisual,
 	gdkWindowShow, gdkWindowShowUnraised, gdkWindowHide,
+	gdkWindowIsDestroyed,
 
 	-- * Not Checked
 	gdkWindowFreezeUpdates, gdkWindowThawUpdates,
@@ -78,6 +79,15 @@ foreign import ccall "gdk_window_hide" c_gdk_window_hide :: Ptr GdkWindow -> IO 
 
 gdkWindowHide :: GdkWindow -> IO ()
 gdkWindowHide (GdkWindow w) = c_gdk_window_hide w
+
+foreign import ccall "gdk_window_is_destroyed" c_gdk_window_is_destroyed :: Ptr GdkWindow -> IO #type gboolean
+
+gbooleanToBool :: #{type gboolean} -> Bool
+gbooleanToBool #{const FALSE} = False
+gbooleanToBool _ = True
+
+gdkWindowIsDestroyed :: GdkWindow -> IO Bool
+gdkWindowIsDestroyed (GdkWindow p) = gbooleanToBool <$> c_gdk_window_is_destroyed p
 
 foreign import ccall "gdk_window_begin_draw_frame" c_gdk_window_begin_draw_frame ::
 	Ptr GdkWindow -> Ptr (CairoRegionT s) -> IO (Ptr GdkDrawingContext)
