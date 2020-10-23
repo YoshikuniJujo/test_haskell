@@ -1,9 +1,10 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkDisplay where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr
 import Foreign.C
 import Data.Int
 
@@ -86,6 +87,19 @@ gdkDisplayPeekEvent :: GdkDisplay -> IO (Maybe GdkEvent)
 gdkDisplayPeekEvent (GdkDisplay d) = c_gdk_display_peek_event d >>= \case
 	p	| p == nullPtr -> pure Nothing
 		| otherwise -> Just <$> mkGdkEvent p
+
+foreign import ccall "gdk_display_put_event" c_gdk_display_put_event ::
+	Ptr GdkDisplay -> Ptr GdkEvent -> IO ()
+
+gdkDisplayPutEvent :: GdkDisplay -> GdkEvent -> IO ()
+gdkDisplayPutEvent (GdkDisplay d) (GdkEvent _ fe) = withForeignPtr fe \e ->
+	c_gdk_display_put_event d e
+
+foreign import ccall "gdk_display_has_pending" c_gdk_display_has_pending ::
+	Ptr GdkDisplay -> IO #type gboolean
+
+gdkDisplayHasPending :: GdkDisplay -> IO Bool
+gdkDisplayHasPending (GdkDisplay p) = gbooleanToBool <$> c_gdk_display_has_pending p
 
 foreign import ccall "gdk_display_get_default_seat" c_gdk_display_get_default_seat ::
 	Ptr GdkDisplay -> IO (Ptr GdkSeat)
