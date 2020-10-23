@@ -113,3 +113,7 @@ newtype GdkDisplay = GdkDisplay (Ptr GdkDisplay) deriving Show
 newtype GdkScreen = GdkScreen (Ptr GdkScreen) deriving Show
 
 newtype GdkDisplayManager = GdkDisplayManager (Ptr GdkDisplayManager) deriving Show
+
+newtype GdkSeat = GdkSeat (Ptr GdkSeat) deriving Show
+
+newtype GdkDevice = GdkDevice (Ptr GdkDevice) deriving Show

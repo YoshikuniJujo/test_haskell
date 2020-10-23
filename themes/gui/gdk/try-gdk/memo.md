@@ -28,7 +28,7 @@ todo
 	+ [x] gdk\_display\_get\_default
 	+ [x] gdk\_display\_get\_name
 	+ [x] gdk\_display\_get\_default\_screen
-	+ [ ] gdk\_display\_get\_default\_seat
+	+ [x] gdk\_display\_get\_default\_seat
 	+ [ ] gdk\_display\_list\_seats
 	+ [ ] gdk\_display\_device\_is\_grabbed
 	+ [ ] gdk\_display\_beep
@@ -61,8 +61,8 @@ todo
 	+ [ ] gdk\_display\_get\_monitor\_at\_point
 	+ [ ] gdk\_display\_get\_monitor\_at\_window
 * [ ] functions of GdkSeat
-	+ [ ] gdk\_seat\_get\_pointer
-	+ [ ] gdk\_seat\_get\_keyboard
+	+ [x] gdk\_seat\_get\_pointer
+	+ [x] gdk\_seat\_get\_keyboard
 	+ [ ] others
 * [ ] functions fo GdkDevice
 	+ [ ] gdk\_device\_get\_name

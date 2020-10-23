@@ -33,3 +33,9 @@ foreign import ccall "gdk_display_get_default_screen" c_gdk_display_get_default_
 gdkDisplayGetDefaultScreen :: GdkDisplay -> IO GdkScreen
 gdkDisplayGetDefaultScreen (GdkDisplay p) =
 	GdkScreen <$> c_gdk_display_get_default_screen p
+
+foreign import ccall "gdk_display_get_default_seat" c_gdk_display_get_default_seat ::
+	Ptr GdkDisplay -> IO (Ptr GdkSeat)
+
+gdkDisplayGetDefaultSeat :: GdkDisplay -> IO GdkSeat
+gdkDisplayGetDefaultSeat (GdkDisplay p) = GdkSeat <$> c_gdk_display_get_default_seat p
