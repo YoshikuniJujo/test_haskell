@@ -17,12 +17,12 @@ todo
 	+ [x] gdk\_set\_allowed\_backends
 	+ [x] gdk\_get\_program\_class
 	+ [x] gdk\_set\_program\_class
-* [ ] functions of GdkDisplayManager
+* [x] functions of GdkDisplayManager
 	+ [x] gdk\_display\_manager\_get
 	+ [x] gdk\_display\_manager\_get\_default\_display
 	+ [x] gdk\_display\_manager\_set\_default\_display
-	+ [ ] gdk\_display\_manager\_list\_display
-	+ [ ] gdk\_display\_manager\_open\_display
+	+ [x] gdk\_display\_manager\_list\_display
+	+ [x] gdk\_display\_manager\_open\_display
 * [ ] functions of Windows
 	+ [x] gdk\_window\_new
 		- [x] correct structure of GdkWindowAttr

@@ -34,6 +34,7 @@ main = do
 	gdkSetProgramClass "Foo"
 	print =<< gdkGetProgramClass
 	putStrLn =<< gdkDisplayGetName =<< gdkDisplayManagerGetDefaultDisplay =<< gdkDisplayManagerGet
+	print =<< mapM gdkDisplayGetName =<< gdkDisplayManagerListDisplays =<< gdkDisplayManagerGet
 	let wattr = mkGdkWindowAttr [
 				gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkFocusChangeMask,
 				gdkEnterNotifyMask, gdkLeaveNotifyMask, gdkPointerMotionMask,
