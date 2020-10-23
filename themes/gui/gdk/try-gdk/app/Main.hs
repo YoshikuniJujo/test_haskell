@@ -39,8 +39,13 @@ main = do
 	print =<< mapM gdkDisplayGetName =<< gdkDisplayManagerListDisplays =<< gdkDisplayManagerGet
 	d <- gdkDisplayGetDefault
 	print =<< gdkScreenGetResolution =<< gdkDisplayGetDefaultScreen d
-	putStrLn =<< gdkDeviceGetName =<< gdkSeatGetPointer =<< gdkDisplayGetDefaultSeat d
-	putStrLn =<< gdkDeviceGetName =<< gdkSeatGetKeyboard =<< gdkDisplayGetDefaultSeat d
+	st <- gdkDisplayGetDefaultSeat d
+	pnt <- gdkSeatGetPointer st
+	kbd <- gdkSeatGetKeyboard st
+	putStrLn =<< gdkDeviceGetName pnt
+	print =<< gdkDisplayDeviceIsGrabbed d pnt
+	putStrLn =<< gdkDeviceGetName kbd
+	print =<< gdkDisplayDeviceIsGrabbed d kbd
 	let wattr = mkGdkWindowAttr [
 				gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkFocusChangeMask,
 				gdkEnterNotifyMask, gdkLeaveNotifyMask, gdkPointerMotionMask,

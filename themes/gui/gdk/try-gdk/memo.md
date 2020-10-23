@@ -28,9 +28,7 @@ todo
 	+ [x] gdk\_display\_get\_default
 	+ [x] gdk\_display\_get\_name
 	+ [x] gdk\_display\_get\_default\_screen
-	+ [x] gdk\_display\_get\_default\_seat
-	+ [ ] gdk\_display\_list\_seats
-	+ [ ] gdk\_display\_device\_is\_grabbed
+	+ [x] gdk\_display\_device\_is\_grabbed
 	+ [ ] gdk\_display\_beep
 	+ [ ] gdk\_display\_sync
 	+ [ ] gdk\_display\_flush
@@ -55,6 +53,8 @@ todo
 	+ [ ] gdk\_display\_supports\_input\_shapes
 	+ [ ] gdk\_display\_get\_app\_launch\_contexts
 	+ [ ] gdk\_display\_notify\_startup\_complete
+	+ [x] gdk\_display\_get\_default\_seat
+	+ [ ] gdk\_display\_list\_seats
 	+ [ ] gdk\_display\_get\_n\_monitors
 	+ [ ] gdk\_display\_get\_monitor
 	+ [ ] gdk\_display\_get\_primary\_monitor

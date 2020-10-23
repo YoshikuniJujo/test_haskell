@@ -4,6 +4,7 @@ module Graphics.Gdk.GdkDisplay where
 
 import Foreign.Ptr
 import Foreign.C
+import Data.Int
 
 import Graphics.Gdk.Types
 
@@ -33,6 +34,16 @@ foreign import ccall "gdk_display_get_default_screen" c_gdk_display_get_default_
 gdkDisplayGetDefaultScreen :: GdkDisplay -> IO GdkScreen
 gdkDisplayGetDefaultScreen (GdkDisplay p) =
 	GdkScreen <$> c_gdk_display_get_default_screen p
+
+foreign import ccall "gdk_display_device_is_grabbed" c_gdk_display_device_is_grabbed ::
+	Ptr GdkDisplay -> Ptr GdkDevice -> IO #type gboolean
+
+gbooleanToBool :: #{type gboolean} -> Bool
+gbooleanToBool #{const FALSE} = False
+gbooleanToBool _ = True
+
+gdkDisplayDeviceIsGrabbed :: GdkDisplay -> GdkDevice -> IO Bool
+gdkDisplayDeviceIsGrabbed (GdkDisplay dpy) (GdkDevice dvc) = gbooleanToBool <$> c_gdk_display_device_is_grabbed dpy dvc
 
 foreign import ccall "gdk_display_get_default_seat" c_gdk_display_get_default_seat ::
 	Ptr GdkDisplay -> IO (Ptr GdkSeat)
