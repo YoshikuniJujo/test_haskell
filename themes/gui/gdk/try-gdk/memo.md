@@ -31,3 +31,6 @@ todo
 * [ ] functions of GdkDisplay
 	+ [x] gdk\_display\_get\_name
 	+ [ ] others
+* [ ] functions of GdkScreen
+	+ [x] gdk\_screen\_get\_resolution
+	+ [ ] others

@@ -7,6 +7,7 @@ import Control.Concurrent
 import System.Environment
 import Graphics.Gdk.General
 import Graphics.Gdk.GdkDisplay
+import Graphics.Gdk.GdkScreen
 import Graphics.Gdk.Windows
 import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.Event
@@ -35,6 +36,7 @@ main = do
 	print =<< gdkWindowGetWindowType w
 	print gdkWindowToplevel
 	putStrLn =<< gdkDisplayGetName =<< gdkWindowGetDisplay w
+	print =<< gdkScreenGetResolution =<< gdkWindowGetScreen w
 	gdkWindowShow w
 	gdkWindowSetEvents w [gdkExposureMask, gdkButtonPressMask]
 	print gdkExposureMask
