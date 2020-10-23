@@ -3,7 +3,9 @@
 
 module Main where
 
+import Control.Monad
 import Control.Concurrent
+import Data.Char
 import System.Environment
 import Graphics.Gdk.General
 import Graphics.Gdk.GdkDisplay
@@ -62,9 +64,17 @@ checkEvent = \case
 		putStrLn $ "GDK_DELETE: " ++ show d
 		pure False
 	GdkEventGdkKeyPress k -> do
+		w <- gdkEventKeyWindow k
 		kv <- gdkEventKeyKeyval k
 		putStrLn $ "GDK_KEY_PRESS: " ++ show k ++ ": " ++ show kv
-		pure True
+		when (kv == fromIntegral (ord 'h')) $ do
+			putStrLn "`h' pressed"
+			gdkWindowHide w
+--			threadDelay 1000000
+			threadDelay 300000
+			gdkWindowShow w
+--			void getChar
+		pure $ kv /= fromIntegral (ord 'q')
 	GdkEventGdkKeyRelease k -> do
 		kv <- gdkEventKeyKeyval k
 		putStrLn $ "GDK_KEY_RELEASE: " ++ show k ++ ": " ++ show kv

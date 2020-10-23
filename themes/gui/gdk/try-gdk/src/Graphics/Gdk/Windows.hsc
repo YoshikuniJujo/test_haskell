@@ -5,7 +5,7 @@ module Graphics.Gdk.Windows (
 	-- * Checked
 	gdkWindowNew, gdkWindowDestroy, gdkWindowGetWindowType,
 	gdkWindowGetDisplay, gdkWindowGetScreen, gdkWindowGetVisual,
-	gdkWindowShow, gdkWindowShowUnraised,
+	gdkWindowShow, gdkWindowShowUnraised, gdkWindowHide,
 
 	-- * Not Checked
 	gdkWindowFreezeUpdates, gdkWindowThawUpdates,
@@ -73,6 +73,11 @@ foreign import ccall "gdk_window_show_unraised" c_gdk_window_show_unraised :: Pt
 
 gdkWindowShowUnraised :: GdkWindow -> IO ()
 gdkWindowShowUnraised (GdkWindow w) = c_gdk_window_show_unraised w
+
+foreign import ccall "gdk_window_hide" c_gdk_window_hide :: Ptr GdkWindow -> IO ()
+
+gdkWindowHide :: GdkWindow -> IO ()
+gdkWindowHide (GdkWindow w) = c_gdk_window_hide w
 
 foreign import ccall "gdk_window_begin_draw_frame" c_gdk_window_begin_draw_frame ::
 	Ptr GdkWindow -> Ptr (CairoRegionT s) -> IO (Ptr GdkDrawingContext)

@@ -29,7 +29,7 @@ todo
 	+ [x] gdk\_window\_get\_visual
 	+ [x] gdk\_window\_show
 	+ [x] gdk\_window\_show\_unraised
-	+ [ ] gdk\_window\_hide
+	+ [x] gdk\_window\_hide
 	+ [ ] gdk\_window\_is\_destroyed
 	+ [ ] gdk\_window\_is\_visible
 	+ [ ] gdk\_window\_is\_viewable
