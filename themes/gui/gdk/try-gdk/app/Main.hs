@@ -35,6 +35,7 @@ main = do
 	print =<< gdkGetProgramClass
 	putStrLn =<< gdkDisplayGetName =<< gdkDisplayManagerGetDefaultDisplay =<< gdkDisplayManagerGet
 	print =<< mapM gdkDisplayGetName =<< gdkDisplayManagerListDisplays =<< gdkDisplayManagerGet
+	print =<< gdkScreenGetResolution =<< gdkDisplayGetDefaultScreen =<< gdkDisplayGetDefault
 	let wattr = mkGdkWindowAttr [
 				gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkFocusChangeMask,
 				gdkEnterNotifyMask, gdkLeaveNotifyMask, gdkPointerMotionMask,

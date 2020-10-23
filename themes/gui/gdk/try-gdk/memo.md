@@ -27,7 +27,7 @@ todo
 	+ [x] gdk\_display\_open
 	+ [x] gdk\_display\_get\_default
 	+ [x] gdk\_display\_get\_name
-	+ [ ] gdk\_display\_get\_default\_screen
+	+ [x] gdk\_display\_get\_default\_screen
 	+ [ ] gdk\_display\_get\_default\_seat
 	+ [ ] gdk\_display\_list\_seats
 	+ [ ] gdk\_display\_device\_is\_grabbed

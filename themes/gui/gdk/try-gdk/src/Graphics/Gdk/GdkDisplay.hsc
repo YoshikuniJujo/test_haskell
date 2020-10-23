@@ -26,3 +26,10 @@ foreign import ccall "gdk_display_get_name" c_gdk_display_get_name ::
 
 gdkDisplayGetName :: GdkDisplay -> IO String
 gdkDisplayGetName (GdkDisplay p) = peekCString =<< c_gdk_display_get_name p
+
+foreign import ccall "gdk_display_get_default_screen" c_gdk_display_get_default_screen ::
+	Ptr GdkDisplay -> IO (Ptr GdkScreen)
+
+gdkDisplayGetDefaultScreen :: GdkDisplay -> IO GdkScreen
+gdkDisplayGetDefaultScreen (GdkDisplay p) =
+	GdkScreen <$> c_gdk_display_get_default_screen p
