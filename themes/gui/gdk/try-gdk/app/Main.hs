@@ -11,6 +11,8 @@ import Graphics.Gdk.General
 import Graphics.Gdk.GdkDisplayManager
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkScreen
+import Graphics.Gdk.GdkSeat
+import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.Visuals
 import Graphics.Gdk.Windows
 import Graphics.Gdk.GdkDrawingContext
@@ -35,7 +37,10 @@ main = do
 	print =<< gdkGetProgramClass
 	putStrLn =<< gdkDisplayGetName =<< gdkDisplayManagerGetDefaultDisplay =<< gdkDisplayManagerGet
 	print =<< mapM gdkDisplayGetName =<< gdkDisplayManagerListDisplays =<< gdkDisplayManagerGet
-	print =<< gdkScreenGetResolution =<< gdkDisplayGetDefaultScreen =<< gdkDisplayGetDefault
+	d <- gdkDisplayGetDefault
+	print =<< gdkScreenGetResolution =<< gdkDisplayGetDefaultScreen d
+	putStrLn =<< gdkDeviceGetName =<< gdkSeatGetPointer =<< gdkDisplayGetDefaultSeat d
+	putStrLn =<< gdkDeviceGetName =<< gdkSeatGetKeyboard =<< gdkDisplayGetDefaultSeat d
 	let wattr = mkGdkWindowAttr [
 				gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkFocusChangeMask,
 				gdkEnterNotifyMask, gdkLeaveNotifyMask, gdkPointerMotionMask,

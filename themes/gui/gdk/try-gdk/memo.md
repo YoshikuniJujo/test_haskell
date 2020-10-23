@@ -65,7 +65,7 @@ todo
 	+ [x] gdk\_seat\_get\_keyboard
 	+ [ ] others
 * [ ] functions fo GdkDevice
-	+ [ ] gdk\_device\_get\_name
+	+ [x] gdk\_device\_get\_name
 	+ [ ] others
 * [ ] functions of Windows
 	+ [x] gdk\_window\_new
