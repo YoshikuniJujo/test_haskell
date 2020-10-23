@@ -33,9 +33,9 @@ todo
 	+ [x] gdk\_window\_is\_destroyed
 	+ [x] gdk\_window\_is\_visible
 	+ [x] gdk\_window\_is\_viewable
-	+ [ ] gdk\_window\_is\_input\_only
-	+ [ ] gdk\_window\_is\_shaped
-	+ [ ] gdk\_window\_get\_state
+	+ [x] gdk\_window\_is\_input\_only
+	+ [x] gdk\_window\_is\_shaped
+	+ [x] gdk\_window\_get\_state
 	+ [ ] gdk\_window\_withdraw
 	+ [ ] gdk\_window\_iconify
 	+ [ ] gdk\_window\_deiconify

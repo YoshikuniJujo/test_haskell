@@ -7,7 +7,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowGetDisplay, gdkWindowGetScreen, gdkWindowGetVisual,
 	gdkWindowShow, gdkWindowShowUnraised, gdkWindowHide,
 	gdkWindowIsDestroyed, gdkWindowIsVisible, gdkWindowIsViewable,
-	gdkWindowIsInputOnly, gdkWindowIsShaped,
+	gdkWindowIsInputOnly, gdkWindowIsShaped, gdkWindowGetState,
 
 	-- * Not Checked
 	gdkWindowFreezeUpdates, gdkWindowThawUpdates,
@@ -109,6 +109,11 @@ foreign import ccall "gdk_window_is_shaped" c_gdk_window_is_shaped :: Ptr GdkWin
 
 gdkWindowIsShaped :: GdkWindow -> IO Bool
 gdkWindowIsShaped (GdkWindow p) = gbooleanToBool <$> c_gdk_window_is_shaped p
+
+foreign import ccall "gdk_window_get_state" c_gdk_window_get_state :: Ptr GdkWindow -> IO #type GdkWindowState
+
+gdkWindowGetState :: GdkWindow -> IO [GdkWindowState]
+gdkWindowGetState (GdkWindow p) = gdkWindowStateList <$> c_gdk_window_get_state p
 
 foreign import ccall "gdk_window_begin_draw_frame" c_gdk_window_begin_draw_frame ::
 	Ptr GdkWindow -> Ptr (CairoRegionT s) -> IO (Ptr GdkDrawingContext)
