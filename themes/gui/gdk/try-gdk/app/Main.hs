@@ -42,7 +42,11 @@ main = do
 	print =<< gdkScreenGetResolution =<< gdkWindowGetScreen w
 	print =<< gdkVisualGetDepth =<< gdkWindowGetVisual w
 	putStrLn . ("Window is destroyed: " ++) . show =<< gdkWindowIsDestroyed w
+	putStrLn . ("Window is visible: " ++) . show =<< gdkWindowIsVisible w
+	putStrLn . ("Window is viewable: " ++) . show =<< gdkWindowIsViewable w
 	gdkWindowShow w
+	putStrLn . ("Window is visible: " ++) . show =<< gdkWindowIsVisible w
+	putStrLn . ("Window is viewable: " ++) . show =<< gdkWindowIsViewable w
 	gdkWindowSetEvents w [gdkExposureMask, gdkButtonPressMask]
 	print gdkExposureMask
 	gdkWindowInvalidateRect w (50, 50) (100, 100) False
@@ -57,6 +61,8 @@ main = do
 			Nothing -> pure $ Just True
 	gdkWindowDestroy w
 	putStrLn . ("Window is destroyed: " ++) . show =<< gdkWindowIsDestroyed w
+	putStrLn . ("Window is visible: " ++) . show =<< gdkWindowIsVisible w
+	putStrLn . ("Window is viewable: " ++) . show =<< gdkWindowIsViewable w
 
 checkEvent :: GdkEvent -> IO Bool
 checkEvent = \case

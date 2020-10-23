@@ -30,9 +30,9 @@ todo
 	+ [x] gdk\_window\_show
 	+ [x] gdk\_window\_show\_unraised
 	+ [x] gdk\_window\_hide
-	+ [ ] gdk\_window\_is\_destroyed
-	+ [ ] gdk\_window\_is\_visible
-	+ [ ] gdk\_window\_is\_viewable
+	+ [x] gdk\_window\_is\_destroyed
+	+ [x] gdk\_window\_is\_visible
+	+ [x] gdk\_window\_is\_viewable
 	+ [ ] gdk\_window\_is\_input\_only
 	+ [ ] gdk\_window\_is\_shaped
 	+ [ ] gdk\_window\_get\_state
