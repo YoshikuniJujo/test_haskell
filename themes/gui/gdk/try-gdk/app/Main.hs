@@ -44,6 +44,8 @@ main = do
 	putStrLn . ("Window is destroyed: " ++) . show =<< gdkWindowIsDestroyed w
 	putStrLn . ("Window is visible: " ++) . show =<< gdkWindowIsVisible w
 	putStrLn . ("Window is viewable: " ++) . show =<< gdkWindowIsViewable w
+	putStrLn . ("Window is input only: " ++) . show =<< gdkWindowIsInputOnly w
+	putStrLn . ("Window is shaped: " ++) . show =<< gdkWindowIsShaped w
 	gdkWindowShow w
 	putStrLn . ("Window is visible: " ++) . show =<< gdkWindowIsVisible w
 	putStrLn . ("Window is viewable: " ++) . show =<< gdkWindowIsViewable w
