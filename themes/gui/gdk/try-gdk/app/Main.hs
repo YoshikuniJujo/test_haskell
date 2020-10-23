@@ -32,8 +32,12 @@ main = do
 	print =<< gdkGetDisplayArgName
 	gdkSetProgramClass "Foo"
 	print =<< gdkGetProgramClass
-	let wattr = mkGdkWindowAttr
-			[gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask] 400 400
+	let wattr = mkGdkWindowAttr [
+				gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkFocusChangeMask,
+				gdkEnterNotifyMask, gdkLeaveNotifyMask, gdkPointerMotionMask,
+				gdkAllEventsMask
+				]
+			400 400
 			gdkInputOutput gdkWindowToplevel
 	w <- gdkWindowNew Nothing wattr { gdkWindowAttrTitle = Just "試験窓" }
 	print =<< gdkWindowGetWindowType w
@@ -51,7 +55,7 @@ main = do
 	putStrLn . ("Window is visible: " ++) . show =<< gdkWindowIsVisible w
 	putStrLn . ("Window is viewable: " ++) . show =<< gdkWindowIsViewable w
 	putStrLn . ("Window state: " ++) . show =<< gdkWindowGetState w
-	gdkWindowSetEvents w [gdkExposureMask, gdkButtonPressMask]
+	gdkWindowSetEvents w [gdkExposureMask, gdkButtonPressMask, gdkFocusChangeMask, gdkKeyPressMask]
 	print gdkExposureMask
 	gdkWindowInvalidateRect w (50, 50) (100, 100) False
 	gdkWindowFreezeUpdates w

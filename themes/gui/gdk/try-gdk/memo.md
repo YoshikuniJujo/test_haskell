@@ -71,3 +71,5 @@ todo
 * [ ] function of GdkVisual
 	+ [x] gdk\_visual\_get\_depth
 	+ [ ] others
+* [ ] repair gdkDrawingContextGetCairoContext
+	+ no GC
