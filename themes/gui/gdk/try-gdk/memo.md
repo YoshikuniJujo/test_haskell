@@ -34,12 +34,12 @@ todo
 	+ [x] gdk\_display\_flush
 	+ [x] gdk\_display\_close
 	+ [x] gdk\_display\_is\_closed
-	+ [ ] gdk\_display\_get\_event
+	+ [x] gdk\_display\_get\_event
 	+ [ ] gdk\_display\_peek\_event
 	+ [ ] gdk\_display\_put\_event
 	+ [ ] gdk\_display\_has\_pending
-	+ [ ] gdk\_display\_set\_double\_click\_time
-	+ [ ] gdk\_display\_set\_double\_click\_distance
+	+ no gdk\_display\_set\_double\_click\_time
+	+ no gdk\_display\_set\_double\_click\_distance
 	+ [ ] gdk\_display\_supports\_cursor\_color
 	+ [ ] gdk\_display\_supports\_cursor\_alpha
 	+ [ ] gdk\_display\_get\_default\_cursor\_size

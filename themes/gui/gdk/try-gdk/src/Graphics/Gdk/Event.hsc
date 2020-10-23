@@ -20,8 +20,8 @@ data GdkEvent = GdkEvent GdkEventType (ForeignPtr GdkEvent) deriving Show
 
 newtype GdkEventType = GdkEventType #{type GdkEventType} deriving Show
 
-makeGdkEvent :: Ptr GdkEvent -> IO GdkEvent
-makeGdkEvent p = do
+mkGdkEvent :: Ptr GdkEvent -> IO GdkEvent
+mkGdkEvent p = do
 	t <- GdkEventType <$> #{peek GdkEvent, type} p
 	GdkEvent t <$> newForeignPtr p (c_gdk_event_free p)
 
@@ -45,7 +45,7 @@ gdkEventGet = do
 	p <- c_gdk_event_get
 	if p == nullPtr
 		then pure Nothing
-		else Just <$> makeGdkEvent p
+		else Just <$> mkGdkEvent p
 
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 

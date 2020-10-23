@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkDisplay where
@@ -7,6 +8,7 @@ import Foreign.C
 import Data.Int
 
 import Graphics.Gdk.Types
+import Graphics.Gdk.Event
 
 #include <gdk/gdk.h>
 
@@ -67,7 +69,16 @@ foreign import ccall "gdk_display_is_closed" c_gdk_display_is_closed ::
 	Ptr GdkDisplay -> IO #type gboolean
 
 gdkDisplayIsClosed :: GdkDisplay -> IO Bool
-gdkDisplayIsClosed (GdkDisplay p) = gbooleanToBool <$> c_gdk_display_closed p
+gdkDisplayIsClosed (GdkDisplay p) = gbooleanToBool <$> c_gdk_display_is_closed p
+
+foreign import ccall "gdk_display_get_event" c_gdk_display_get_event ::
+	Ptr GdkDisplay -> IO (Ptr GdkEvent)
+
+gdkDisplayGetEvent :: GdkDisplay -> IO (Maybe GdkEvent)
+gdkDisplayGetEvent (GdkDisplay d) = c_gdk_display_get_event d >>= \case
+	p	| p == nullPtr -> pure Nothing
+		| otherwise -> Just <$> mkGdkEvent p
+
 
 foreign import ccall "gdk_display_get_default_seat" c_gdk_display_get_default_seat ::
 	Ptr GdkDisplay -> IO (Ptr GdkSeat)
