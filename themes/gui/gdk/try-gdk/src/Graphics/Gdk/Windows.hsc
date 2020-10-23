@@ -8,6 +8,10 @@ module Graphics.Gdk.Windows (
 	gdkWindowShow, gdkWindowShowUnraised, gdkWindowHide,
 	gdkWindowIsDestroyed, gdkWindowIsVisible, gdkWindowIsViewable,
 	gdkWindowIsInputOnly, gdkWindowIsShaped, gdkWindowGetState,
+	gdkWindowWithdraw, gdkWindowIconify,
+	gdkWindowMaximize,
+	gdkWindowFullscreen,
+	gdkWindowSetOpacity,
 
 	-- * Not Checked
 	gdkWindowFreezeUpdates, gdkWindowThawUpdates,
@@ -114,6 +118,32 @@ foreign import ccall "gdk_window_get_state" c_gdk_window_get_state :: Ptr GdkWin
 
 gdkWindowGetState :: GdkWindow -> IO [GdkWindowState]
 gdkWindowGetState (GdkWindow p) = gdkWindowStateList <$> c_gdk_window_get_state p
+
+foreign import ccall "gdk_window_withdraw" c_gdk_window_withdraw :: Ptr GdkWindow -> IO ()
+
+gdkWindowWithdraw :: GdkWindow -> IO ()
+gdkWindowWithdraw (GdkWindow p) = c_gdk_window_withdraw p
+
+foreign import ccall "gdk_window_iconify" c_gdk_window_iconify :: Ptr GdkWindow -> IO ()
+
+gdkWindowIconify :: GdkWindow -> IO ()
+gdkWindowIconify (GdkWindow p) = c_gdk_window_iconify p
+
+foreign import ccall "gdk_window_maximize" c_gdk_window_maximize :: Ptr GdkWindow -> IO ()
+
+gdkWindowMaximize :: GdkWindow -> IO ()
+gdkWindowMaximize (GdkWindow p) = c_gdk_window_maximize p
+
+foreign import ccall "gdk_window_fullscreen" c_gdk_window_fullscreen :: Ptr GdkWindow -> IO ()
+
+gdkWindowFullscreen :: GdkWindow -> IO ()
+gdkWindowFullscreen (GdkWindow p) = c_gdk_window_fullscreen p
+
+foreign import ccall "gdk_window_set_opacity" c_gdk_window_set_opacity ::
+	Ptr GdkWindow -> #{type gdouble} -> IO ()
+
+gdkWindowSetOpacity :: GdkWindow -> #{type gdouble} -> IO ()
+gdkWindowSetOpacity (GdkWindow p) o = c_gdk_window_set_opacity p o
 
 foreign import ccall "gdk_window_begin_draw_frame" c_gdk_window_begin_draw_frame ::
 	Ptr GdkWindow -> Ptr (CairoRegionT s) -> IO (Ptr GdkDrawingContext)

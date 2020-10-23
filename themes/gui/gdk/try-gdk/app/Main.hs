@@ -52,6 +52,7 @@ main = do
 	putStrLn . ("Window is shaped: " ++) . show =<< gdkWindowIsShaped w
 	putStrLn . ("Window state: " ++) . show =<< gdkWindowGetState w
 	gdkWindowShow w
+	gdkWindowSetOpacity w 0.5
 	putStrLn . ("Window is visible: " ++) . show =<< gdkWindowIsVisible w
 	putStrLn . ("Window is viewable: " ++) . show =<< gdkWindowIsViewable w
 	putStrLn . ("Window state: " ++) . show =<< gdkWindowGetState w
@@ -91,6 +92,15 @@ checkEvent = \case
 			threadDelay 300000
 			gdkWindowShow w
 --			void getChar
+		when (kv == fromIntegral (ord 'i')) $ do
+			putStrLn "`i' pressed"
+			gdkWindowIconify w
+		when (kv == fromIntegral (ord 'm')) $ do
+			putStrLn "`m' pressed"
+			gdkWindowMaximize w
+		when (kv == fromIntegral (ord 'f')) $ do
+			putStrLn "`f' pressed"
+			gdkWindowFullscreen w
 		pure $ kv /= fromIntegral (ord 'q')
 	GdkEventGdkKeyRelease k -> do
 		kv <- gdkEventKeyKeyval k
