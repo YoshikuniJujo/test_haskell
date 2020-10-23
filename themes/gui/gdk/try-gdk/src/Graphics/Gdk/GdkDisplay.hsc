@@ -145,3 +145,9 @@ foreign import ccall "gdk_display_list_seats" c_gdk_display_list_seats ::
 
 gdkDisplayListSeats :: GdkDisplay -> IO ([GdkSeat], [GdkSeat])
 gdkDisplayListSeats (GdkDisplay p) = (map GdkSeat *** map GdkSeat) <$> (gListListPtr =<< GListRef <$> c_gdk_display_list_seats p)
+
+foreign import ccall "gdk_display_get_n_monitors" c_gdk_display_get_n_monitors ::
+	Ptr GdkDisplay -> IO #type int
+
+gdkDisplayGetNMonitors :: GdkDisplay -> IO #type int
+gdkDisplayGetNMonitors (GdkDisplay p) = c_gdk_display_get_n_monitors p

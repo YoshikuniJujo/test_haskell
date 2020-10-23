@@ -55,7 +55,7 @@ todo
 	+ no gdk\_display\_notify\_startup\_complete
 	+ [x] gdk\_display\_get\_default\_seat
 	+ [x] gdk\_display\_list\_seats
-	+ [ ] gdk\_display\_get\_n\_monitors
+	+ [x] gdk\_display\_get\_n\_monitors
 	+ [ ] gdk\_display\_get\_monitor
 	+ [ ] gdk\_display\_get\_primary\_monitor
 	+ [ ] gdk\_display\_get\_monitor\_at\_point
