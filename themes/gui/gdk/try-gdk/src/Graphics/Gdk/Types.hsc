@@ -111,3 +111,5 @@ type ForeignCString = ForeignPtr CChar
 newtype GdkDisplay = GdkDisplay (Ptr GdkDisplay) deriving Show
 
 newtype GdkScreen = GdkScreen (Ptr GdkScreen) deriving Show
+
+newtype GdkDisplayManager = GdkDisplayManager (Ptr GdkDisplayManager) deriving Show

@@ -8,6 +8,7 @@ import Control.Concurrent
 import Data.Char
 import System.Environment
 import Graphics.Gdk.General
+import Graphics.Gdk.GdkDisplayManager
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkScreen
 import Graphics.Gdk.Visuals
@@ -32,6 +33,7 @@ main = do
 	print =<< gdkGetDisplayArgName
 	gdkSetProgramClass "Foo"
 	print =<< gdkGetProgramClass
+	putStrLn =<< gdkDisplayGetName =<< gdkDisplayManagerGetDefaultDisplay =<< gdkDisplayManagerGet
 	let wattr = mkGdkWindowAttr [
 				gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkFocusChangeMask,
 				gdkEnterNotifyMask, gdkLeaveNotifyMask, gdkPointerMotionMask,

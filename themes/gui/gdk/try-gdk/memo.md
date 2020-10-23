@@ -17,6 +17,12 @@ todo
 	+ [x] gdk\_set\_allowed\_backends
 	+ [x] gdk\_get\_program\_class
 	+ [x] gdk\_set\_program\_class
+* [ ] functions of GdkDisplayManager
+	+ [x] gdk\_display\_manager\_get
+	+ [x] gdk\_display\_manager\_get\_default\_display
+	+ [x] gdk\_display\_manager\_set\_default\_display
+	+ [ ] gdk\_display\_manager\_list\_display
+	+ [ ] gdk\_display\_manager\_open\_display
 * [ ] functions of Windows
 	+ [x] gdk\_window\_new
 		- [x] correct structure of GdkWindowAttr
@@ -62,6 +68,7 @@ todo
 	+ [ ] gdk\_widnow\_move\_to\_rect
 	+ [ ] gdk\_widnow\_move\_region
 	+ [ ] others
+* [ ] remove or check unusable or having unknown usability functions
 * [ ] functions of GdkDisplay
 	+ [x] gdk\_display\_get\_name
 	+ [ ] others
