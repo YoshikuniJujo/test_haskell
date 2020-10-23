@@ -28,7 +28,7 @@ todo
 	+ [x] gdk\_window\_get\_screen
 	+ [x] gdk\_window\_get\_visual
 	+ [x] gdk\_window\_show
-	+ [ ] gdk\_window\_show\_unraised
+	+ [x] gdk\_window\_show\_unraised
 	+ [ ] gdk\_window\_hide
 	+ [ ] gdk\_window\_is\_destroyed
 	+ [ ] gdk\_window\_is\_visible
