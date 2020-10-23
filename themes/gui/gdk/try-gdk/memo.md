@@ -40,21 +40,21 @@ todo
 	+ [x] gdk\_display\_has\_pending
 	+ no gdk\_display\_set\_double\_click\_time
 	+ no gdk\_display\_set\_double\_click\_distance
-	+ [ ] gdk\_display\_supports\_cursor\_color
-	+ [ ] gdk\_display\_supports\_cursor\_alpha
-	+ [ ] gdk\_display\_get\_default\_cursor\_size
-	+ [ ] gdk\_display\_get\_maximal\_cursor\_size
-	+ [ ] gdk\_display\_get\_default\_group
-	+ [ ] gdk\_display\_supports\_selection\_notification
-	+ [ ] gdk\_display\_request\_selection\_notification
-	+ [ ] gdk\_display\_supports\_clipboard\_persistence
-	+ [ ] gdk\_display\_store\_clipboard
-	+ [ ] gdk\_display\_supports\_shapes
-	+ [ ] gdk\_display\_supports\_input\_shapes
-	+ [ ] gdk\_display\_get\_app\_launch\_contexts
-	+ [ ] gdk\_display\_notify\_startup\_complete
+	+ [x] gdk\_display\_supports\_cursor\_color
+	+ [x] gdk\_display\_supports\_cursor\_alpha
+	+ [x] gdk\_display\_get\_default\_cursor\_size
+	+ [x] gdk\_display\_get\_maximal\_cursor\_size
+	+ no gdk\_display\_get\_default\_group
+	+ no gdk\_display\_supports\_selection\_notification
+	+ no gdk\_display\_request\_selection\_notification
+	+ no gdk\_display\_supports\_clipboard\_persistence
+	+ no gdk\_display\_store\_clipboard
+	+ no gdk\_display\_supports\_shapes
+	+ no gdk\_display\_supports\_input\_shapes
+	+ no gdk\_display\_get\_app\_launch\_contexts
+	+ no gdk\_display\_notify\_startup\_complete
 	+ [x] gdk\_display\_get\_default\_seat
-	+ [ ] gdk\_display\_list\_seats
+	+ [x] gdk\_display\_list\_seats
 	+ [ ] gdk\_display\_get\_n\_monitors
 	+ [ ] gdk\_display\_get\_monitor
 	+ [ ] gdk\_display\_get\_primary\_monitor

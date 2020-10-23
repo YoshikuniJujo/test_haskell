@@ -39,7 +39,8 @@ main = do
 	print =<< mapM gdkDisplayGetName =<< gdkDisplayManagerListDisplays =<< gdkDisplayManagerGet
 	d <- gdkDisplayGetDefault
 	print =<< gdkScreenGetResolution =<< gdkDisplayGetDefaultScreen d
-	st <- gdkDisplayGetDefaultSeat d
+--	st <- gdkDisplayGetDefaultSeat d
+	([], [st]) <- gdkDisplayListSeats d
 	pnt <- gdkSeatGetPointer st
 	kbd <- gdkSeatGetKeyboard st
 	putStrLn =<< gdkDeviceGetName pnt

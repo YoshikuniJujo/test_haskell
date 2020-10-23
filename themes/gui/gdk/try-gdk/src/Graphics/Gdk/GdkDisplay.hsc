@@ -8,11 +8,13 @@ import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C
+import Control.Arrow
 import Data.Word
 import Data.Int
 
 import Graphics.Gdk.Types
 import Graphics.Gdk.Event
+import System.Glib.DoublyLinkedLists
 
 #include <gdk/gdk.h>
 
@@ -137,3 +139,9 @@ foreign import ccall "gdk_display_get_default_seat" c_gdk_display_get_default_se
 
 gdkDisplayGetDefaultSeat :: GdkDisplay -> IO GdkSeat
 gdkDisplayGetDefaultSeat (GdkDisplay p) = GdkSeat <$> c_gdk_display_get_default_seat p
+
+foreign import ccall "gdk_display_list_seats" c_gdk_display_list_seats ::
+	Ptr GdkDisplay -> IO (Ptr (GList GdkSeat))
+
+gdkDisplayListSeats :: GdkDisplay -> IO ([GdkSeat], [GdkSeat])
+gdkDisplayListSeats (GdkDisplay p) = (map GdkSeat *** map GdkSeat) <$> (gListListPtr =<< GListRef <$> c_gdk_display_list_seats p)
