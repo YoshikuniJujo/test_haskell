@@ -45,6 +45,30 @@ gbooleanToBool _ = True
 gdkDisplayDeviceIsGrabbed :: GdkDisplay -> GdkDevice -> IO Bool
 gdkDisplayDeviceIsGrabbed (GdkDisplay dpy) (GdkDevice dvc) = gbooleanToBool <$> c_gdk_display_device_is_grabbed dpy dvc
 
+foreign import ccall "gdk_display_sync" c_gdk_display_sync ::
+	Ptr GdkDisplay -> IO ()
+
+gdkDisplaySync :: GdkDisplay -> IO ()
+gdkDisplaySync (GdkDisplay p) = c_gdk_display_sync p
+
+foreign import ccall "gdk_display_flush" c_gdk_display_flush ::
+	Ptr GdkDisplay -> IO ()
+
+gdkDisplayFlush :: GdkDisplay -> IO ()
+gdkDisplayFlush (GdkDisplay p) = c_gdk_display_flush p
+
+foreign import ccall "gdk_display_close" c_gdk_display_close ::
+	Ptr GdkDisplay -> IO ()
+
+gdkDisplayClose :: GdkDisplay -> IO ()
+gdkDisplayClose (GdkDisplay p) = c_gdk_display_close p
+
+foreign import ccall "gdk_display_is_closed" c_gdk_display_is_closed ::
+	Ptr GdkDisplay -> IO #type gboolean
+
+gdkDisplayIsClosed :: GdkDisplay -> IO Bool
+gdkDisplayIsClosed (GdkDisplay p) = gbooleanToBool <$> c_gdk_display_closed p
+
 foreign import ccall "gdk_display_get_default_seat" c_gdk_display_get_default_seat ::
 	Ptr GdkDisplay -> IO (Ptr GdkSeat)
 

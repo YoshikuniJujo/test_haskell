@@ -29,11 +29,11 @@ todo
 	+ [x] gdk\_display\_get\_name
 	+ [x] gdk\_display\_get\_default\_screen
 	+ [x] gdk\_display\_device\_is\_grabbed
-	+ [ ] gdk\_display\_beep
-	+ [ ] gdk\_display\_sync
-	+ [ ] gdk\_display\_flush
-	+ [ ] gdk\_display\_close
-	+ [ ] gdk\_display\_is\_closed
+	+ no gdk\_display\_beep
+	+ [x] gdk\_display\_sync
+	+ [x] gdk\_display\_flush
+	+ [x] gdk\_display\_close
+	+ [x] gdk\_display\_is\_closed
 	+ [ ] gdk\_display\_get\_event
 	+ [ ] gdk\_display\_peek\_event
 	+ [ ] gdk\_display\_put\_event
