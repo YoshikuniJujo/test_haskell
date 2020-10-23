@@ -46,6 +46,10 @@ main = do
 	print =<< gdkDisplayDeviceIsGrabbed d pnt
 	putStrLn =<< gdkDeviceGetName kbd
 	print =<< gdkDisplayDeviceIsGrabbed d kbd
+	putStrLn . ("Supports cursor color: " ++) . show =<< gdkDisplaySupportsCursorColor d
+	putStrLn . ("Supports cursor alpha: " ++) . show =<< gdkDisplaySupportsCursorAlpha d
+	putStrLn . ("Default cursor size: " ++) . show =<< gdkDisplayGetDefaultCursorSize d
+	putStrLn . ("Maximal cursor size: " ++) . show =<< gdkDisplayGetMaximalCursorSize d
 	let wattr = mkGdkWindowAttr [
 				gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkFocusChangeMask,
 				gdkEnterNotifyMask, gdkLeaveNotifyMask, gdkPointerMotionMask,

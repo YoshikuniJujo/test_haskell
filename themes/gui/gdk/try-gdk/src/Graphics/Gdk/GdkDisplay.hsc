@@ -5,7 +5,10 @@ module Graphics.Gdk.GdkDisplay where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
+import Foreign.Marshal
+import Foreign.Storable
 import Foreign.C
+import Data.Word
 import Data.Int
 
 import Graphics.Gdk.Types
@@ -100,6 +103,34 @@ foreign import ccall "gdk_display_has_pending" c_gdk_display_has_pending ::
 
 gdkDisplayHasPending :: GdkDisplay -> IO Bool
 gdkDisplayHasPending (GdkDisplay p) = gbooleanToBool <$> c_gdk_display_has_pending p
+
+foreign import ccall "gdk_display_supports_cursor_color" c_gdk_display_supports_cursor_color ::
+	Ptr GdkDisplay -> IO #type gboolean
+
+gdkDisplaySupportsCursorColor :: GdkDisplay -> IO Bool
+gdkDisplaySupportsCursorColor (GdkDisplay p) =
+	gbooleanToBool <$> c_gdk_display_supports_cursor_color p
+
+foreign import ccall "gdk_display_supports_cursor_alpha" c_gdk_display_supports_cursor_alpha ::
+	Ptr GdkDisplay -> IO #type gboolean
+
+gdkDisplaySupportsCursorAlpha :: GdkDisplay -> IO Bool
+gdkDisplaySupportsCursorAlpha (GdkDisplay p) =
+	gbooleanToBool <$> c_gdk_display_supports_cursor_alpha p
+
+foreign import ccall "gdk_display_get_default_cursor_size" c_gdk_display_get_default_cursor_size ::
+	Ptr GdkDisplay -> IO #type guint
+
+gdkDisplayGetDefaultCursorSize :: GdkDisplay -> IO #type guint
+gdkDisplayGetDefaultCursorSize (GdkDisplay p) = c_gdk_display_get_default_cursor_size p
+
+foreign import ccall "gdk_display_get_maximal_cursor_size" c_gdk_display_get_maximal_cursor_size ::
+	Ptr GdkDisplay -> Ptr #{type guint} -> Ptr #{type guint} -> IO ()
+
+gdkDisplayGetMaximalCursorSize :: GdkDisplay -> IO (#{type guint}, #type guint)
+gdkDisplayGetMaximalCursorSize (GdkDisplay d) = alloca \x -> alloca \y -> do
+	c_gdk_display_get_maximal_cursor_size d x y
+	(,) <$> peek x <*> peek y
 
 foreign import ccall "gdk_display_get_default_seat" c_gdk_display_get_default_seat ::
 	Ptr GdkDisplay -> IO (Ptr GdkSeat)
