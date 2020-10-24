@@ -124,3 +124,7 @@ todo
 	+ [ ] others
 * [ ] repair gdkDrawingContextGetCairoContext
 	+ no GC
+* [ ] repair gdkMonitorGetManufacturer
+	+ process NULL pointer
+* [ ] repair gdkMOnitorGetMonitor
+	+ process NULL pointer

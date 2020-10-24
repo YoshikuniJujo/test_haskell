@@ -151,3 +151,11 @@ foreign import ccall "gdk_display_get_n_monitors" c_gdk_display_get_n_monitors :
 
 gdkDisplayGetNMonitors :: GdkDisplay -> IO #type int
 gdkDisplayGetNMonitors (GdkDisplay p) = c_gdk_display_get_n_monitors p
+
+foreign import ccall "gdk_display_get_primary_monitor" c_gdk_display_get_primary_monitor ::
+	Ptr GdkDisplay -> IO (Ptr GdkMonitor)
+
+gdkDisplayGetPrimaryMonitor :: GdkDisplay -> IO (Maybe GdkMonitor)
+gdkDisplayGetPrimaryMonitor (GdkDisplay p)
+	| p == nullPtr = pure Nothing
+	| otherwise = Just . GdkMonitor <$> c_gdk_display_get_primary_monitor p

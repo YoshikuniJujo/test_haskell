@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 944cdcea51e7b83d8a3cd6d5dd45af1b520efa1fbf0ca7f8f0dd4ab3f761d9b4
+-- hash: d2b0b957fbb13f88c7517ceae1ff2032327c666df0e5e34d142f81e78abea36b
 
 name:           try-gdk
 version:        0.1.0.0
@@ -33,6 +33,7 @@ library
       Graphics.Gdk.GdkDisplay
       Graphics.Gdk.GdkDisplayManager
       Graphics.Gdk.GdkDrawingContext
+      Graphics.Gdk.GdkMonitor
       Graphics.Gdk.GdkScreen
       Graphics.Gdk.GdkSeat
       Graphics.Gdk.General

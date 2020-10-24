@@ -12,6 +12,7 @@ import Graphics.Gdk.GdkDisplayManager
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkScreen
 import Graphics.Gdk.GdkSeat
+import Graphics.Gdk.GdkMonitor
 import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.Visuals
 import Graphics.Gdk.Windows
@@ -47,6 +48,12 @@ main = do
 	print =<< gdkDisplayDeviceIsGrabbed d pnt
 	putStrLn =<< gdkDeviceGetName kbd
 	print =<< gdkDisplayDeviceIsGrabbed d kbd
+	gdkDisplayGetPrimaryMonitor d >>= \case
+		Nothing -> putStrLn "no primary monitor"
+		Just mntr -> do
+			print mntr
+--			print =<< gdkMonitorGetManufacturer mntr
+			print =<< gdkMonitorGetModel mntr
 	putStrLn . ("Supports cursor color: " ++) . show =<< gdkDisplaySupportsCursorColor d
 	putStrLn . ("Supports cursor alpha: " ++) . show =<< gdkDisplaySupportsCursorAlpha d
 	putStrLn . ("Default cursor size: " ++) . show =<< gdkDisplayGetDefaultCursorSize d
