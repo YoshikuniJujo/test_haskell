@@ -28,6 +28,7 @@ readPngImageRGB8 fp = readPng fp >>= \case
 
 addAlpha :: PixelRGB8 -> PixelRGBA8
 addAlpha (PixelRGB8 r g b)
+--	| b > 0x8f = PixelRGBA8 r g b 0xff
 	| r > 0x6f && g > 0x6f && b > 0x6f = PixelRGBA8 r g b 0x00
 	| otherwise = PixelRGBA8 r g b 0xff
 
