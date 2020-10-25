@@ -56,7 +56,7 @@ todo
 	+ [x] gdk\_display\_get\_default\_seat
 	+ [x] gdk\_display\_list\_seats
 	+ [x] gdk\_display\_get\_n\_monitors
-	+ [ ] gdk\_display\_get\_monitor
+	+ [x] gdk\_display\_get\_monitor
 	+ [x] gdk\_display\_get\_primary\_monitor
 	+ [ ] gdk\_display\_get\_monitor\_at\_point
 	+ [ ] gdk\_display\_get\_monitor\_at\_window
