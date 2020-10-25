@@ -23,7 +23,7 @@ todo
 	+ [x] gdk\_display\_manager\_set\_default\_display
 	+ [x] gdk\_display\_manager\_list\_display
 	+ [x] gdk\_display\_manager\_open\_display
-* [ ] functions of GdkDisplay
+* [x] functions of GdkDisplay
 	+ [x] gdk\_display\_open
 	+ [x] gdk\_display\_get\_default
 	+ [x] gdk\_display\_get\_name
@@ -58,8 +58,8 @@ todo
 	+ [x] gdk\_display\_get\_n\_monitors
 	+ [x] gdk\_display\_get\_monitor
 	+ [x] gdk\_display\_get\_primary\_monitor
-	+ [ ] gdk\_display\_get\_monitor\_at\_point
-	+ [ ] gdk\_display\_get\_monitor\_at\_window
+	+ [x] gdk\_display\_get\_monitor\_at\_point
+	+ [x] gdk\_display\_get\_monitor\_at\_window
 * [ ] functions of GdkSeat
 	+ [x] gdk\_seat\_get\_pointer
 	+ [x] gdk\_seat\_get\_keyboard

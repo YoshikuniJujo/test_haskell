@@ -165,3 +165,15 @@ gdkDisplayGetPrimaryMonitor :: GdkDisplay -> IO (Maybe GdkMonitor)
 gdkDisplayGetPrimaryMonitor (GdkDisplay p)
 	| p == nullPtr = pure Nothing
 	| otherwise = Just . GdkMonitor <$> c_gdk_display_get_primary_monitor p
+
+foreign import ccall "gdk_display_get_monitor_at_point" c_gdk_display_get_monitor_at_point ::
+	Ptr GdkDisplay -> #{type int} -> #{type int} -> IO (Ptr GdkMonitor)
+
+gdkDisplayGetMonitorAtPoint :: GdkDisplay -> #{type int} -> #{type int} -> IO GdkMonitor
+gdkDisplayGetMonitorAtPoint (GdkDisplay p) x y = GdkMonitor <$> c_gdk_display_get_monitor_at_point p x y
+
+foreign import ccall "gdk_display_get_monitor_at_window" c_gdk_display_get_monitor_at_window ::
+	Ptr GdkDisplay -> Ptr GdkWindow -> IO (Ptr GdkMonitor)
+
+gdkDisplayGetMonitorAtWindow :: GdkDisplay -> GdkWindow -> IO GdkMonitor
+gdkDisplayGetMonitorAtWindow (GdkDisplay d) (GdkWindow w) = GdkMonitor <$> c_gdk_display_get_monitor_at_window d w
