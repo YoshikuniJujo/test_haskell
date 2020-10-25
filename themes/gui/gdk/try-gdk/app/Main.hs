@@ -52,7 +52,7 @@ main = do
 		Nothing -> putStrLn "no primary monitor"
 		Just mntr -> do
 			print mntr
---			print =<< gdkMonitorGetManufacturer mntr
+			print =<< gdkMonitorGetManufacturer mntr
 			print =<< gdkMonitorGetModel mntr
 	putStrLn . ("Supports cursor color: " ++) . show =<< gdkDisplaySupportsCursorColor d
 	putStrLn . ("Supports cursor alpha: " ++) . show =<< gdkDisplaySupportsCursorAlpha d

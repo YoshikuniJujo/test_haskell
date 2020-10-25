@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkMonitor where
@@ -12,8 +13,10 @@ import Graphics.Gdk.Types
 foreign import ccall "gdk_monitor_get_manufacturer" c_gdk_monitor_get_manufacturer ::
 	Ptr GdkMonitor -> IO CString
 
-gdkMonitorGetManufacturer :: GdkMonitor -> IO String
-gdkMonitorGetManufacturer (GdkMonitor p) = peekCString =<< c_gdk_monitor_get_manufacturer p
+gdkMonitorGetManufacturer :: GdkMonitor -> IO (Maybe String)
+gdkMonitorGetManufacturer (GdkMonitor p) = c_gdk_monitor_get_manufacturer p >>= \case
+	cs	| cs == nullPtr -> pure Nothing
+		| otherwise -> Just <$> peekCString cs
 
 foreign import ccall "gdk_monitor_get_model" c_gdk_monitor_get_model ::
 	Ptr GdkMonitor -> IO CString
