@@ -14,6 +14,12 @@ foreign import ccall "gdk_screen_get_default" c_gdk_screen_get_default ::
 gdkScreenGetDefault :: IO GdkScreen
 gdkScreenGetDefault = GdkScreen <$> c_gdk_screen_get_default
 
+foreign import ccall "gdk_screen_get_system_visual" c_gdk_screen_get_system_visual ::
+	Ptr GdkScreen -> IO (Ptr GdkVisual)
+
+gdkScreenGetSystemVisual :: GdkScreen -> IO GdkVisual
+gdkScreenGetSystemVisual (GdkScreen p) = GdkVisual <$> c_gdk_screen_get_system_visual p
+
 foreign import ccall "gdk_screen_get_resolution" c_gdk_screen_get_resolution ::
 	Ptr GdkScreen -> IO #type gdouble
 
