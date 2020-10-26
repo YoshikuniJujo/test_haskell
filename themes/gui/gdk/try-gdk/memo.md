@@ -73,7 +73,7 @@ todo
 	+ [x] gdk\_seat\_get\_display
 	+ [ ] gdk\_seat\_grab
 	+ [ ] gdk\_seat\_ungrab
-	+ [ ] gdk\_seat\_get\_capabilities
+	+ [x] gdk\_seat\_get\_capabilities
 	+ [x] gdk\_seat\_get\_pointer
 	+ [x] gdk\_seat\_get\_keyboard
 	+ [ ] gdk\_seat\_get\_slaves

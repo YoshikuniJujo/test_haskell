@@ -54,3 +54,10 @@ newtype GdkVisualType = GdkVisualType #{type GdkVisualType} deriving (Show, Eq)
 #enum GdkVisualType, GdkVisualType, GDK_VISUAL_STATIC_GRAY, \
 	GDK_VISUAL_GRAYSCALE, GDK_VISUAL_STATIC_COLOR, GDK_VISUAL_PSEUDO_COLOR, \
 	GDK_VISUAL_TRUE_COLOR, GDK_VISUAL_DIRECT_COLOR
+
+newtype GdkSeatCapabilities = GdkSeatCapabilities #{type GdkSeatCapabilities} deriving Show
+
+#enum GdkSeatCapabilities, GdkSeatCapabilities, GDK_SEAT_CAPABILITY_NONE, \
+	GDK_SEAT_CAPABILITY_POINTER, GDK_SEAT_CAPABILITY_TOUCH, \
+	GDK_SEAT_CAPABILITY_TABLET_STYLUS, GDK_SEAT_CAPABILITY_KEYBOARD, \
+	GDK_SEAT_CAPABILITY_ALL_POINTING, GDK_SEAT_CAPABILITY_ALL

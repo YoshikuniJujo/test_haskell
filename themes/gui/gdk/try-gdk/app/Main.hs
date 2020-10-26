@@ -109,6 +109,7 @@ main = do
 			putStrLn "no pre windows"
 			for_ tws \tw -> print =<< gdkWindowGetWindowType tw
 		(_, _) -> putStrLn "pre and post windows"
+	print =<< gdkSeatGetCapabilities st
 	let wattr = mkGdkWindowAttr [
 				gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkFocusChangeMask,
 				gdkEnterNotifyMask, gdkLeaveNotifyMask, gdkPointerMotionMask,
