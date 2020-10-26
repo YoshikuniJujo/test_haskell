@@ -64,6 +64,7 @@ main = do
 		=<< gdkScreenGetSystemVisual scrn
 	maybe (putStrLn "No rgba visual") (\v -> putStrLn . ("Depth of rgba visual: " ++) . show =<< gdkVisualGetDepth v)
 		=<< gdkScreenGetRgbaVisual scrn
+	putStrLn . ("Screen is composited: " ++) . show =<< gdkScreenIsComposited scrn
 	let wattr = mkGdkWindowAttr [
 				gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkFocusChangeMask,
 				gdkEnterNotifyMask, gdkLeaveNotifyMask, gdkPointerMotionMask,

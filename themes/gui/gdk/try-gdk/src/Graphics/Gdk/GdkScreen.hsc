@@ -33,8 +33,8 @@ gdkScreenGetRgbaVisual (GdkScreen s) = (<$> c_gdk_screen_get_system_visual s) \c
 foreign import ccall "gdk_screen_is_composited" c_gdk_screen_is_composited ::
 	Ptr GdkScreen -> IO #type gboolean
 
-gdkScreenIsComposited :: GdkScreen -> IO #type gboolean
-gdkScreenIsComposited (GdkScreen s) = c_gdk_screen_is_composited s
+gdkScreenIsComposited :: GdkScreen -> IO Bool
+gdkScreenIsComposited (GdkScreen s) = gbooleanToBool <$> c_gdk_screen_is_composited s
 
 gbooleanToBool :: #{type gboolean} -> Bool
 gbooleanToBool #{const FALSE} = False
