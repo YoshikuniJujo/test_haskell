@@ -4,6 +4,7 @@
 module Graphics.Gdk.GdkScreen where
 
 import Foreign.Ptr
+import Data.Int
 
 import Graphics.Gdk.Types
 
@@ -29,8 +30,18 @@ gdkScreenGetRgbaVisual (GdkScreen s) = (<$> c_gdk_screen_get_system_visual s) \c
 	v	| v == nullPtr -> Nothing
 		| otherwise -> Just $ GdkVisual v
 
+foreign import ccall "gdk_screen_is_composited" c_gdk_screen_is_composited ::
+	Ptr GdkScreen -> IO #type gboolean
+
+gdkScreenIsComposited :: GdkScreen -> IO #type gboolean
+gdkScreenIsComposited (GdkScreen s) = c_gdk_screen_is_composited s
+
+gbooleanToBool :: #{type gboolean} -> Bool
+gbooleanToBool #{const FALSE} = False
+gbooleanToBool _ = True
+
 foreign import ccall "gdk_screen_get_resolution" c_gdk_screen_get_resolution ::
 	Ptr GdkScreen -> IO #type gdouble
 
-gdkScreenGetResolution :: GdkScreen -> IO #type gdouble
+gdkScreenGetResolution :: GdkScreen -> IO Double
 gdkScreenGetResolution (GdkScreen p) = c_gdk_screen_get_resolution p
