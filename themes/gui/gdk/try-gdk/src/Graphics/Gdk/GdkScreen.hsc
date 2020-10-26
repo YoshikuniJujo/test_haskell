@@ -40,6 +40,12 @@ gbooleanToBool :: #{type gboolean} -> Bool
 gbooleanToBool #{const FALSE} = False
 gbooleanToBool _ = True
 
+foreign import ccall "gdk_screen_get_root_window" c_gdk_screen_get_root_window ::
+	Ptr GdkScreen -> IO (Ptr GdkWindow)
+
+gdkScreenGetRootWindow :: GdkScreen -> IO GdkWindow
+gdkScreenGetRootWindow (GdkScreen p) = GdkWindow <$> c_gdk_screen_get_root_window p
+
 foreign import ccall "gdk_screen_get_resolution" c_gdk_screen_get_resolution ::
 	Ptr GdkScreen -> IO #type gdouble
 
