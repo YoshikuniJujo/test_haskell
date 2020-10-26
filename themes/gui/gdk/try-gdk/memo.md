@@ -125,12 +125,12 @@ todo
 * [ ] function of GdkVisual
 	+ [x] gdk\_visual\_get\_depth
 	+ [x] gdk\_visual\_get\_visual\_type
-	+ [ ] gdk\_visual\_get\_red\_pixel\_details
-	+ [ ] gdk\_visual\_get\_green\_pixel\_details
-	+ [ ] gdk\_visual\_get\_blue\_pixel\_details
+	+ [x] gdk\_visual\_get\_red\_pixel\_details
+	+ [x] gdk\_visual\_get\_green\_pixel\_details
+	+ [x] gdk\_visual\_get\_blue\_pixel\_details
 	+ [ ] gdk\_visual\_get\_screen
 	+ [ ] others
-* [ ] repair gdkDrawingContextGetCairoContext
+* [x] repair gdkDrawingContextGetCairoContext
 	+ no GC
 * [ ] repair gdkMonitorGetManufacturer
 	+ process NULL pointer

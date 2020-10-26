@@ -1,8 +1,11 @@
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.Visuals where
 
 import Foreign.Ptr
+import Foreign.Marshal
+import Foreign.Storable
 import Data.Int
 import Data.Word
 
@@ -22,3 +25,27 @@ foreign import ccall "gdk_visual_get_visual_type" c_gdk_visual_get_visual_type :
 
 gdkVisualGetVisualType :: GdkVisual -> IO GdkVisualType
 gdkVisualGetVisualType (GdkVisual p) = GdkVisualType <$> c_gdk_visual_get_visual_type p
+
+foreign import ccall "gdk_visual_get_red_pixel_details" c_gdk_visual_get_red_pixel_details ::
+	Ptr GdkVisual -> Ptr #{type guint32} -> Ptr #{type gint} -> Ptr #{type gint} -> IO ()
+
+gdkVisualGetRedPixelDetails :: GdkVisual -> IO (#{type guint32}, #{type gint}, #{type gint})
+gdkVisualGetRedPixelDetails (GdkVisual v) = alloca \m -> alloca \s -> alloca \p -> do
+	c_gdk_visual_get_red_pixel_details v m s p
+	(,,) <$> peek m <*> peek s <*> peek p
+
+foreign import ccall "gdk_visual_get_green_pixel_details" c_gdk_visual_get_green_pixel_details ::
+	Ptr GdkVisual -> Ptr #{type guint32} -> Ptr #{type gint} -> Ptr #{type gint} -> IO ()
+
+gdkVisualGetGreenPixelDetails :: GdkVisual -> IO (#{type guint32}, #{type gint}, #{type gint})
+gdkVisualGetGreenPixelDetails (GdkVisual v) = alloca \m -> alloca \s -> alloca \p -> do
+	c_gdk_visual_get_green_pixel_details v m s p
+	(,,) <$> peek m <*> peek s <*> peek p
+
+foreign import ccall "gdk_visual_get_blue_pixel_details" c_gdk_visual_get_blue_pixel_details ::
+	Ptr GdkVisual -> Ptr #{type guint32} -> Ptr #{type gint} -> Ptr #{type gint} -> IO ()
+
+gdkVisualGetBluePixelDetails :: GdkVisual -> IO (#{type guint32}, #{type gint}, #{type gint})
+gdkVisualGetBluePixelDetails (GdkVisual v) = alloca \m -> alloca \s -> alloca \p -> do
+	c_gdk_visual_get_blue_pixel_details v m s p
+	(,,) <$> peek m <*> peek s <*> peek p

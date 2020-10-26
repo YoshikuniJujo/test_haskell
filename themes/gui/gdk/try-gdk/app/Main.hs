@@ -81,6 +81,10 @@ main = do
 			putStrLn $ "Depth of visuals: " ++ show ((head &&& length) <$> group ds)
 			ts <- for vs gdkVisualGetVisualType
 			putStrLn $ "Types of visuals: " ++ show ((head &&& length) <$> group ts)
+			for_ vs \v -> do
+				putStrLn . ("Red pixel details of visual: " ++) . show =<< gdkVisualGetRedPixelDetails v
+				putStrLn . ("Green pixel details of visual: " ++) . show =<< gdkVisualGetGreenPixelDetails v
+				putStrLn . ("Blue pixel details of visual: " ++) . show =<< gdkVisualGetBluePixelDetails v
 		(_, _) -> putStrLn "pre and post visuals"
 	let wattr = mkGdkWindowAttr [
 				gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkFocusChangeMask,

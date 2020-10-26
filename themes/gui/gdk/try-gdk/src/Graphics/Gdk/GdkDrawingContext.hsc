@@ -5,6 +5,7 @@
 module Graphics.Gdk.GdkDrawingContext where
 
 import Foreign.Ptr
+import Foreign.Concurrent
 
 import Graphics.Gdk.Types
 
@@ -16,4 +17,7 @@ foreign import ccall "gdk_drawing_context_get_cairo_context" c_gdk_drawing_conte
 	Ptr GdkDrawingContext -> IO (Ptr (CairoT s))
 
 gdkDrawingContextGetCairoContext :: GdkDrawingContext -> IO (CairoT s)
-gdkDrawingContextGetCairoContext (GdkDrawingContext c) = makeCairoT =<< c_gdk_drawing_context_get_cairo_context c
+gdkDrawingContextGetCairoContext (GdkDrawingContext c) = do
+	p <- c_gdk_drawing_context_get_cairo_context c
+	fp <- newForeignPtr p $ pure ()
+	pure $ CairoT fp
