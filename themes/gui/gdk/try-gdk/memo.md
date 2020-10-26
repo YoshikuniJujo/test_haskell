@@ -63,12 +63,12 @@ todo
 * [ ] functions of GdkScreen
 	+ [x] gdk\_screen\_get\_resolution
 	+ [x] gdk\_screen\_list\_visuals
-	+ [ ] gdk\_screen\_get\_toplevel\_windows
-	+ [ ] gdk\_screen\_get\_setting
+	+ [x] gdk\_screen\_get\_toplevel\_windows
+	+ no gdk\_screen\_get\_setting
 	+ [ ] gdk\_screen\_get\_font\_options
 	+ [ ] gdk\_screen\_set\_font\_options
 	+ [ ] gdk\_screen\_set\_resolution
-	+ [ ] gdk\_screen\_get\_window\_stack
+	+ [x] gdk\_screen\_get\_window\_stack
 * [ ] functions of GdkSeat
 	+ [x] gdk\_seat\_get\_pointer
 	+ [x] gdk\_seat\_get\_keyboard

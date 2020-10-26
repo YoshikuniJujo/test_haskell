@@ -102,6 +102,13 @@ main = do
 			putStrLn "no pre toplevel windows"
 			for_ tws \tw -> print =<< gdkWindowGetWindowType tw
 		(_, _) -> putStrLn "pre and post toplevel windows"
+	gdkScreenGetWindowStack scrn >>= \case
+		([], []) -> putStrLn "no windows"
+		(_, []) -> putStrLn "no post windows"
+		([], tws) -> do
+			putStrLn "no pre windows"
+			for_ tws \tw -> print =<< gdkWindowGetWindowType tw
+		(_, _) -> putStrLn "pre and post windows"
 	let wattr = mkGdkWindowAttr [
 				gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkFocusChangeMask,
 				gdkEnterNotifyMask, gdkLeaveNotifyMask, gdkPointerMotionMask,
@@ -131,6 +138,20 @@ main = do
 	gdkWindowInvalidateRect w (50, 50) (100, 100) False
 	gdkWindowFreezeUpdates w
 	gdkWindowThawUpdates w
+	gdkScreenGetToplevelWindows scrn >>= \case
+		([], []) -> putStrLn "no toplevel windows"
+		(_, []) -> putStrLn "no post toplevel windows"
+		([], tws) -> do
+			putStrLn "no pre toplevel windows"
+			for_ tws \tw -> print =<< gdkWindowGetWindowType tw
+		(_, _) -> putStrLn "pre and post toplevel windows"
+	gdkScreenGetWindowStack scrn >>= \case
+		([], []) -> putStrLn "no windows"
+		(_, []) -> putStrLn "no post windows"
+		([], tws) -> do
+			putStrLn "no pre windows"
+			for_ tws \tw -> print =<< gdkWindowGetWindowType tw
+		(_, _) -> putStrLn "pre and post windows"
 	doWhile_ do
 		threadDelay 100000
 		doWhile $ gdkEventGet >>= \case
