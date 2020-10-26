@@ -62,7 +62,7 @@ todo
 	+ [x] gdk\_display\_get\_monitor\_at\_window
 * [ ] functions of GdkScreen
 	+ [x] gdk\_screen\_get\_resolution
-	+ [ ] gdk\_screen\_list\_visuals
+	+ [x] gdk\_screen\_list\_visuals
 	+ [ ] gdk\_screen\_get\_toplevel\_windows
 	+ [ ] gdk\_screen\_get\_setting
 	+ [ ] gdk\_screen\_get\_font\_options
@@ -124,6 +124,7 @@ todo
 * [ ] remove or check unusable or having unknown usability functions
 * [ ] function of GdkVisual
 	+ [x] gdk\_visual\_get\_depth
+	+ [ ] gdk\_visual\_get\_visual\_type
 	+ [ ] others
 * [ ] repair gdkDrawingContextGetCairoContext
 	+ no GC

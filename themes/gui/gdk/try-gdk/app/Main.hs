@@ -3,8 +3,11 @@
 
 module Main where
 
+import Control.Arrow
 import Control.Monad
 import Control.Concurrent
+import Data.Traversable
+import Data.List
 import Data.Char
 import System.Environment
 import Graphics.Gdk.General
@@ -60,14 +63,22 @@ main = do
 	putStrLn . ("Maximal cursor size: " ++) . show =<< gdkDisplayGetMaximalCursorSize d
 	putStrLn . ("Number of monitors: " ++) . show =<< gdkDisplayGetNMonitors d
 	scrn <- gdkScreenGetDefault
-	putStrLn . ("Depth of system visual: " ++) . show =<< gdkVisualGetDepth
-		=<< gdkScreenGetSystemVisual scrn
+	vsl <- gdkScreenGetSystemVisual scrn
+	putStrLn . ("Depth of system visual: " ++) . show =<< gdkVisualGetDepth vsl
 	maybe (putStrLn "No rgba visual") (\v -> putStrLn . ("Depth of rgba visual: " ++) . show =<< gdkVisualGetDepth v)
 		=<< gdkScreenGetRgbaVisual scrn
 	putStrLn . ("Screen is composited: " ++) . show =<< gdkScreenIsComposited scrn
 	rtwn <- gdkScreenGetRootWindow scrn
 	putStrLn . ("Window type of root window: " ++) . show =<< gdkWindowGetWindowType rtwn
 	putStrLn . ("State of root window: " ++) . show =<< gdkWindowGetState rtwn
+	gdkScreenListVisuals scrn >>= \case
+		([], []) -> putStrLn "no visuals"
+		(_, []) -> putStrLn "no post visuals"
+		([], vs) -> do
+			putStrLn "no pre visuals"
+			ds <- for vs gdkVisualGetDepth
+			putStrLn $ "Depth of visuals: " ++ show ((head &&& length) <$> group ds)
+		(_, _) -> putStrLn "pre and post visuals"
 	let wattr = mkGdkWindowAttr [
 				gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkFocusChangeMask,
 				gdkEnterNotifyMask, gdkLeaveNotifyMask, gdkPointerMotionMask,

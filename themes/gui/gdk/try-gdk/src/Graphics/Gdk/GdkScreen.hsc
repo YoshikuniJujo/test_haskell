@@ -4,9 +4,11 @@
 module Graphics.Gdk.GdkScreen where
 
 import Foreign.Ptr
+import Control.Arrow
 import Data.Int
 
 import Graphics.Gdk.Types
+import System.Glib.DoublyLinkedLists
 
 #include <gdk/gdk.h>
 
@@ -52,8 +54,19 @@ foreign import ccall "gdk_screen_get_display" c_gdk_screen_get_display ::
 gdkScreenGetDisplay :: GdkScreen -> IO GdkDisplay
 gdkScreenGetDisplay (GdkScreen p) = GdkDisplay <$> c_gdk_screen_get_display p
 
+foreign import ccall "gdk_screen_list_visuals" c_gdk_screen_list_visuals ::
+	Ptr GdkScreen -> IO (Ptr (GList GdkVisual))
+
+gdkScreenListVisuals :: GdkScreen -> IO ([GdkVisual], [GdkVisual])
+gdkScreenListVisuals (GdkScreen p) = do
+	gl <- c_gdk_screen_list_visuals p
+	(map GdkVisual *** map GdkVisual) <$> gListListPtr (GListRef gl)
+		<* c_g_list_free gl
+
 foreign import ccall "gdk_screen_get_resolution" c_gdk_screen_get_resolution ::
 	Ptr GdkScreen -> IO #type gdouble
 
 gdkScreenGetResolution :: GdkScreen -> IO Double
 gdkScreenGetResolution (GdkScreen p) = c_gdk_screen_get_resolution p
+
+foreign import ccall "g_list_free" c_g_list_free :: Ptr (GList a) -> IO ()
