@@ -23,7 +23,7 @@ newtype GdkWindow = GdkWindow (Ptr GdkWindow) deriving Show
 
 newtype GdkDrawingContext = GdkDrawingContext (Ptr GdkDrawingContext) deriving Show
 
-newtype GdkRectangle = GdkRectangle (Ptr GdkRectangle) deriving Show
+-- newtype GdkRectangle = GdkRectangle (Ptr GdkRectangle) deriving Show
 
 data GdkWindowAttr = GdkWindowAttr {
 	gdkWindowAttrTitle :: Maybe String,
@@ -119,3 +119,20 @@ newtype GdkSeat = GdkSeat (Ptr GdkSeat) deriving Show
 newtype GdkDevice = GdkDevice (Ptr GdkDevice) deriving Show
 
 newtype GdkMonitor = GdkMonitor (Ptr GdkMonitor) deriving Show
+
+data GdkRectangle = GdkRectangle {
+	gdkRectangleX, gdkRectangleY :: #{type int},
+	gdkRectangleWidth, gdkRectangleHeight :: #{type int}
+	} deriving Show
+
+instance Storable GdkRectangle where
+	sizeOf _ = #{size GdkRectangle}
+	alignment _ = #{alignment GdkRectangle}
+	peek p = GdkRectangle
+		<$> #{peek GdkRectangle, x} p <*> #{peek GdkRectangle, y} p
+		<*> #{peek GdkRectangle, width} p <*> #{peek GdkRectangle, height} p
+	poke p gp = do
+		#{poke GdkRectangle, x} p $ gdkRectangleX gp
+		#{poke GdkRectangle, y} p $ gdkRectangleY gp
+		#{poke GdkRectangle, width} p $ gdkRectangleWidth gp
+		#{poke GdkRectangle, height} p $ gdkRectangleHeight gp

@@ -1,9 +1,11 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkMonitor where
 
 import Foreign.Ptr
+import Foreign.Marshal
+import Foreign.Storable
 import Foreign.C
 
 import Graphics.Gdk.Types
@@ -15,6 +17,14 @@ foreign import ccall "gdk_monitor_get_display" c_gdk_monitor_get_display ::
 
 gdkMonitorGetDisplay :: GdkMonitor -> IO GdkDisplay
 gdkMonitorGetDisplay (GdkMonitor p) = GdkDisplay <$> c_gdk_monitor_get_display p
+
+foreign import ccall "gdk_monitor_get_geometry" c_gdk_monitor_get_geometry ::
+	Ptr GdkMonitor -> Ptr GdkRectangle -> IO ()
+
+gdkMonitorGetGeometry :: GdkMonitor -> IO GdkRectangle
+gdkMonitorGetGeometry (GdkMonitor m) = alloca \r -> do
+	c_gdk_monitor_get_geometry m r
+	peek r
 
 foreign import ccall "gdk_monitor_get_manufacturer" c_gdk_monitor_get_manufacturer ::
 	Ptr GdkMonitor -> IO CString
