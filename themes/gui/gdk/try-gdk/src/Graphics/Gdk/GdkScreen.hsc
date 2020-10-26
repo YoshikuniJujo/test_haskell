@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkScreen where
@@ -19,6 +20,14 @@ foreign import ccall "gdk_screen_get_system_visual" c_gdk_screen_get_system_visu
 
 gdkScreenGetSystemVisual :: GdkScreen -> IO GdkVisual
 gdkScreenGetSystemVisual (GdkScreen p) = GdkVisual <$> c_gdk_screen_get_system_visual p
+
+foreign import ccall "gdk_screen_get_rgba_visual" c_gdk_screen_get_rgba_visual ::
+	Ptr GdkScreen -> IO (Ptr GdkVisual)
+
+gdkScreenGetRgbaVisual :: GdkScreen -> IO (Maybe GdkVisual)
+gdkScreenGetRgbaVisual (GdkScreen s) = (<$> c_gdk_screen_get_system_visual s) \case
+	v	| v == nullPtr -> Nothing
+		| otherwise -> Just $ GdkVisual v
 
 foreign import ccall "gdk_screen_get_resolution" c_gdk_screen_get_resolution ::
 	Ptr GdkScreen -> IO #type gdouble

@@ -59,8 +59,11 @@ main = do
 	putStrLn . ("Default cursor size: " ++) . show =<< gdkDisplayGetDefaultCursorSize d
 	putStrLn . ("Maximal cursor size: " ++) . show =<< gdkDisplayGetMaximalCursorSize d
 	putStrLn . ("Number of monitors: " ++) . show =<< gdkDisplayGetNMonitors d
-	putStrLn . ("Depth of system visual: " ++) . show =<< gdkVisualGetDepth =<< gdkScreenGetSystemVisual
-		=<< gdkScreenGetDefault
+	scrn <- gdkScreenGetDefault
+	putStrLn . ("Depth of system visual: " ++) . show =<< gdkVisualGetDepth
+		=<< gdkScreenGetSystemVisual scrn
+	maybe (putStrLn "No rgba visual") (\v -> putStrLn . ("Depth of rgba visual: " ++) . show =<< gdkVisualGetDepth v)
+		=<< gdkScreenGetRgbaVisual scrn
 	let wattr = mkGdkWindowAttr [
 				gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkFocusChangeMask,
 				gdkEnterNotifyMask, gdkLeaveNotifyMask, gdkPointerMotionMask,
