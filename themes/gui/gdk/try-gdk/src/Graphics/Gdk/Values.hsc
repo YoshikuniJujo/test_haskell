@@ -48,3 +48,9 @@ separateBits c n = filter (/= zeroBits) $ (\i -> n .&. bit i) <$> [0 .. c - 1]
 
 gdkWindowStateList :: #{type GdkWindowState} -> [GdkWindowState]
 gdkWindowStateList = (GdkWindowState <$>) . separateBits 32
+
+newtype GdkVisualType = GdkVisualType #{type GdkVisualType} deriving (Show, Eq)
+
+#enum GdkVisualType, GdkVisualType, GDK_VISUAL_STATIC_GRAY, \
+	GDK_VISUAL_GRAYSCALE, GDK_VISUAL_STATIC_COLOR, GDK_VISUAL_PSEUDO_COLOR, \
+	GDK_VISUAL_TRUE_COLOR, GDK_VISUAL_DIRECT_COLOR

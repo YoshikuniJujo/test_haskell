@@ -6,6 +6,7 @@ module Main where
 import Control.Arrow
 import Control.Monad
 import Control.Concurrent
+import Data.Foldable
 import Data.Traversable
 import Data.List
 import Data.Char
@@ -78,6 +79,8 @@ main = do
 			putStrLn "no pre visuals"
 			ds <- for vs gdkVisualGetDepth
 			putStrLn $ "Depth of visuals: " ++ show ((head &&& length) <$> group ds)
+			ts <- for vs gdkVisualGetVisualType
+			putStrLn $ "Types of visuals: " ++ show ((head &&& length) <$> group ts)
 		(_, _) -> putStrLn "pre and post visuals"
 	let wattr = mkGdkWindowAttr [
 				gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkFocusChangeMask,

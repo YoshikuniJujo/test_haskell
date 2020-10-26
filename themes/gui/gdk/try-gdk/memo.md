@@ -124,7 +124,11 @@ todo
 * [ ] remove or check unusable or having unknown usability functions
 * [ ] function of GdkVisual
 	+ [x] gdk\_visual\_get\_depth
-	+ [ ] gdk\_visual\_get\_visual\_type
+	+ [x] gdk\_visual\_get\_visual\_type
+	+ [ ] gdk\_visual\_get\_red\_pixel\_details
+	+ [ ] gdk\_visual\_get\_green\_pixel\_details
+	+ [ ] gdk\_visual\_get\_blue\_pixel\_details
+	+ [ ] gdk\_visual\_get\_screen
 	+ [ ] others
 * [ ] repair gdkDrawingContextGetCairoContext
 	+ no GC
