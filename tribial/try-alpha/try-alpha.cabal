@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3dd38524355a8a8fbc01091f6b2d55a71b3150c60f0ff77c22ed1ea2a9c22a4c
+-- hash: c6e3ddcdd4fdafe4ca4e0f0d77602334ca166af3b385c7deaeff020cfd8cd628
 
 name:           try-alpha
 version:        0.1.0.0
@@ -35,6 +35,7 @@ library
   build-depends:
       JuicyPixels
     , base >=4.7 && <5
+    , simple-cairo
   default-language: Haskell2010
 
 executable try-alpha-exe
@@ -47,6 +48,7 @@ executable try-alpha-exe
   build-depends:
       JuicyPixels
     , base >=4.7 && <5
+    , simple-cairo
     , try-alpha
   default-language: Haskell2010
 
@@ -61,5 +63,6 @@ test-suite try-alpha-test
   build-depends:
       JuicyPixels
     , base >=4.7 && <5
+    , simple-cairo
     , try-alpha
   default-language: Haskell2010
