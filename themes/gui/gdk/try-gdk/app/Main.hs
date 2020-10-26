@@ -76,16 +76,32 @@ main = do
 		([], []) -> putStrLn "no visuals"
 		(_, []) -> putStrLn "no post visuals"
 		([], vs) -> do
+			print vs
 			putStrLn "no pre visuals"
 			ds <- for vs gdkVisualGetDepth
 			putStrLn $ "Depth of visuals: " ++ show ((head &&& length) <$> group ds)
 			ts <- for vs gdkVisualGetVisualType
 			putStrLn $ "Types of visuals: " ++ show ((head &&& length) <$> group ts)
+			rds <- for vs gdkVisualGetRedPixelDetails
+			putStrLn $ "Red pixel details of visuals: " ++ show ((head &&& length) <$> group rds)
+			grs <- for vs gdkVisualGetGreenPixelDetails
+			putStrLn $ "Green pixel details of visuals: " ++ show ((head &&& length) <$> group grs)
+			bls <- for vs gdkVisualGetBluePixelDetails
+			putStrLn $ "Blue pixel details of visuals: " ++ show ((head &&& length) <$> group bls)
+			{-
 			for_ vs \v -> do
 				putStrLn . ("Red pixel details of visual: " ++) . show =<< gdkVisualGetRedPixelDetails v
 				putStrLn . ("Green pixel details of visual: " ++) . show =<< gdkVisualGetGreenPixelDetails v
 				putStrLn . ("Blue pixel details of visual: " ++) . show =<< gdkVisualGetBluePixelDetails v
+				-}
 		(_, _) -> putStrLn "pre and post visuals"
+	gdkScreenGetToplevelWindows scrn >>= \case
+		([], []) -> putStrLn "no toplevel windows"
+		(_, []) -> putStrLn "no post toplevel windows"
+		([], tws) -> do
+			putStrLn "no pre toplevel windows"
+			for_ tws \tw -> print =<< gdkWindowGetWindowType tw
+		(_, _) -> putStrLn "pre and post toplevel windows"
 	let wattr = mkGdkWindowAttr [
 				gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkFocusChangeMask,
 				gdkEnterNotifyMask, gdkLeaveNotifyMask, gdkPointerMotionMask,
