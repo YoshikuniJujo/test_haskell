@@ -46,6 +46,12 @@ foreign import ccall "gdk_screen_get_root_window" c_gdk_screen_get_root_window :
 gdkScreenGetRootWindow :: GdkScreen -> IO GdkWindow
 gdkScreenGetRootWindow (GdkScreen p) = GdkWindow <$> c_gdk_screen_get_root_window p
 
+foreign import ccall "gdk_screen_get_display" c_gdk_screen_get_display ::
+	Ptr GdkScreen -> IO (Ptr GdkDisplay)
+
+gdkScreenGetDisplay :: GdkScreen -> IO GdkDisplay
+gdkScreenGetDisplay (GdkScreen p) = GdkDisplay <$> c_gdk_screen_get_display p
+
 foreign import ccall "gdk_screen_get_resolution" c_gdk_screen_get_resolution ::
 	Ptr GdkScreen -> IO #type gdouble
 

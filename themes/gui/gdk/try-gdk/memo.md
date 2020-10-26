@@ -60,6 +60,15 @@ todo
 	+ [x] gdk\_display\_get\_primary\_monitor
 	+ [x] gdk\_display\_get\_monitor\_at\_point
 	+ [x] gdk\_display\_get\_monitor\_at\_window
+* [ ] functions of GdkScreen
+	+ [x] gdk\_screen\_get\_resolution
+	+ [ ] gdk\_screen\_list\_visuals
+	+ [ ] gdk\_screen\_get\_toplevel\_windows
+	+ [ ] gdk\_screen\_get\_setting
+	+ [ ] gdk\_screen\_get\_font\_options
+	+ [ ] gdk\_screen\_set\_font\_options
+	+ [ ] gdk\_screen\_set\_resolution
+	+ [ ] gdk\_screen\_get\_window\_stack
 * [ ] functions of GdkSeat
 	+ [x] gdk\_seat\_get\_pointer
 	+ [x] gdk\_seat\_get\_keyboard
@@ -113,12 +122,6 @@ todo
 	+ [ ] gdk\_widnow\_move\_region
 	+ [ ] others
 * [ ] remove or check unusable or having unknown usability functions
-* [ ] functions of GdkDisplay
-	+ [x] gdk\_display\_get\_name
-	+ [ ] others
-* [ ] functions of GdkScreen
-	+ [x] gdk\_screen\_get\_resolution
-	+ [ ] others
 * [ ] function of GdkVisual
 	+ [x] gdk\_visual\_get\_depth
 	+ [ ] others
