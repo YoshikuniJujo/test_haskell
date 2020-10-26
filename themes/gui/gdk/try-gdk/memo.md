@@ -70,9 +70,13 @@ todo
 	+ [ ] gdk\_screen\_set\_resolution
 	+ [x] gdk\_screen\_get\_window\_stack
 * [ ] functions of GdkSeat
+	+ [x] gdk\_seat\_get\_display
+	+ [ ] gdk\_seat\_grab
+	+ [ ] gdk\_seat\_ungrab
+	+ [ ] gdk\_seat\_get\_capabilities
 	+ [x] gdk\_seat\_get\_pointer
 	+ [x] gdk\_seat\_get\_keyboard
-	+ [ ] others
+	+ [ ] gdk\_seat\_get\_slaves
 * [ ] functions fo GdkDevice
 	+ [x] gdk\_device\_get\_name
 	+ [ ] others

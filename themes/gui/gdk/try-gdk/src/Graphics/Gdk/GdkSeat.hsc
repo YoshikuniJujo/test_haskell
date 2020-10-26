@@ -8,6 +8,12 @@ import Graphics.Gdk.Types
 
 #include <gdk/gdk.h>
 
+foreign import ccall "gdk_seat_get_display" c_gdk_seat_get_display ::
+	Ptr GdkSeat -> IO (Ptr GdkDisplay)
+
+gdkSeatGetDisplay :: GdkSeat -> IO GdkDisplay
+gdkSeatGetDisplay (GdkSeat p) = GdkDisplay <$> c_gdk_seat_get_display p
+
 foreign import ccall "gdk_seat_get_pointer" c_gdk_seat_get_pointer ::
 	Ptr GdkSeat -> IO (Ptr GdkDevice)
 
