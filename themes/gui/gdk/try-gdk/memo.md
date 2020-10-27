@@ -77,7 +77,7 @@ todo
 	+ [x] gdk\_seat\_get\_pointer
 	+ [x] gdk\_seat\_get\_keyboard
 	+ [ ] gdk\_seat\_get\_slaves
-* [ ] functions of GdkMonitor
+* [x] functions of GdkMonitor
 	+ [x] gdk\_monitor\_get\_display
 	+ [x] gdk\_monitor\_get\_geometry
 	+ [x] gdk\_monitor\_get\_workarea
@@ -87,10 +87,19 @@ todo
 	+ [x] gdk\_monitor\_get\_model
 	+ [x] gdk\_monitor\_get\_scale\_factor
 	+ [x] gdk\_monitor\_get\_refresh\_rate
-	+ [ ] gdk\_monitor\_get\_subpixel\_layout
-	+ [ ] gdk\_monitor\_is\_primary
+	+ [x] gdk\_monitor\_get\_subpixel\_layout
+	+ [x] gdk\_monitor\_is\_primary
 * [ ] functions of GdkDevice
 	+ [x] gdk\_device\_get\_name
+	+ [ ] gdk\_device\_get\_vendor\_id
+	+ [ ] gdk\_device\_get\_product\_id
+	+ [ ] gdk\_device\_get\_source
+	+ [ ] gdk\_device\_set\_mode
+	+ [ ] gdk\_device\_get\_mode
+	+ [ ] gdk\_device\_set\_key
+	+ [ ] gdk\_device\_get\_key
+	+ [ ] gdk\_device\_set\_axis\_use
+	+ [ ] gdk\_device\_get\_axis\_use
 	+ [ ] others
 * [ ] functions of Windows
 	+ [x] gdk\_window\_new

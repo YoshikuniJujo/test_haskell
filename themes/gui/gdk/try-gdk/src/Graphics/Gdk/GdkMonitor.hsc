@@ -7,9 +7,11 @@ import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C
+import Data.Word
 import Data.Int
 
 import Graphics.Gdk.Types
+import Graphics.Gdk.Values
 
 #include <gdk/gdk.h>
 
@@ -68,3 +70,19 @@ foreign import ccall "gdk_monitor_get_refresh_rate" c_gdk_monitor_get_refresh_ra
 
 gdkMonitorGetRefreshRate :: GdkMonitor -> IO #type int
 gdkMonitorGetRefreshRate (GdkMonitor p) = c_gdk_monitor_get_refresh_rate p
+
+foreign import ccall "gdk_monitor_get_subpixel_layout" c_gdk_monitor_get_subpixel_layout ::
+	Ptr GdkMonitor -> IO #type GdkSubpixelLayout
+
+gdkMonitorGetSubpixelLayout :: GdkMonitor -> IO GdkSubpixelLayout
+gdkMonitorGetSubpixelLayout (GdkMonitor p) = GdkSubpixelLayout <$> c_gdk_monitor_get_subpixel_layout p
+
+foreign import ccall "gdk_monitor_is_primary" c_gdk_monitor_is_primary ::
+	Ptr GdkMonitor -> IO #type gboolean
+
+gbooleanToBool :: #{type gboolean} -> Bool
+gbooleanToBool #{const FALSE} = False
+gbooleanToBool _ = True
+
+gdkMonitorIsPrimary :: GdkMonitor -> IO Bool
+gdkMonitorIsPrimary (GdkMonitor p) = gbooleanToBool <$> c_gdk_monitor_is_primary p
