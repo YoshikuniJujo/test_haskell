@@ -85,8 +85,8 @@ todo
 	+ [x] gdk\_monitor\_get\_height\_mm
 	+ [x] gdk\_monitor\_get\_manufacturer
 	+ [x] gdk\_monitor\_get\_model
-	+ [ ] gdk\_monitor\_get\_scale\_factor
-	+ [ ] gdk\_monitor\_get\_refresh\_rate
+	+ [x] gdk\_monitor\_get\_scale\_factor
+	+ [x] gdk\_monitor\_get\_refresh\_rate
 	+ [ ] gdk\_monitor\_get\_subpixel\_layout
 	+ [ ] gdk\_monitor\_is\_primary
 * [ ] functions of GdkDevice

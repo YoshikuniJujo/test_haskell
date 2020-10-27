@@ -56,3 +56,15 @@ foreign import ccall "gdk_monitor_get_model" c_gdk_monitor_get_model ::
 
 gdkMonitorGetModel :: GdkMonitor -> IO String
 gdkMonitorGetModel (GdkMonitor p) = peekCString =<< c_gdk_monitor_get_model p
+
+foreign import ccall "gdk_monitor_get_scale_factor" c_gdk_monitor_get_scale_factor ::
+	Ptr GdkMonitor -> IO #type int
+
+gdkMonitorGetScaleFactor :: GdkMonitor -> IO #type int
+gdkMonitorGetScaleFactor (GdkMonitor p) = c_gdk_monitor_get_scale_factor p
+
+foreign import ccall "gdk_monitor_get_refresh_rate" c_gdk_monitor_get_refresh_rate ::
+	Ptr GdkMonitor -> IO #type int
+
+gdkMonitorGetRefreshRate :: GdkMonitor -> IO #type int
+gdkMonitorGetRefreshRate (GdkMonitor p) = c_gdk_monitor_get_refresh_rate p
