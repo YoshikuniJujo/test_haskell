@@ -105,6 +105,13 @@ todo
 	+ [x] gdk\_rectangle\_intersect
 	+ [x] gdk\_rectangle\_union
 	+ [x] gdk\_rectangle\_equal
+* [x] function of GdkVisual
+	+ [x] gdk\_visual\_get\_depth
+	+ [x] gdk\_visual\_get\_visual\_type
+	+ [x] gdk\_visual\_get\_red\_pixel\_details
+	+ [x] gdk\_visual\_get\_green\_pixel\_details
+	+ [x] gdk\_visual\_get\_blue\_pixel\_details
+	+ [x] gdk\_visual\_get\_screen
 * [ ] functions of Windows
 	+ [x] gdk\_window\_new
 		- [x] correct structure of GdkWindowAttr
@@ -151,14 +158,6 @@ todo
 	+ [ ] gdk\_widnow\_move\_region
 	+ [ ] others
 * [ ] remove or check unusable or having unknown usability functions
-* [ ] function of GdkVisual
-	+ [x] gdk\_visual\_get\_depth
-	+ [x] gdk\_visual\_get\_visual\_type
-	+ [x] gdk\_visual\_get\_red\_pixel\_details
-	+ [x] gdk\_visual\_get\_green\_pixel\_details
-	+ [x] gdk\_visual\_get\_blue\_pixel\_details
-	+ [ ] gdk\_visual\_get\_screen
-	+ [ ] others
 * [x] repair gdkDrawingContextGetCairoContext
 	+ no GC
 * [ ] repair gdkMonitorGetManufacturer

@@ -49,3 +49,9 @@ gdkVisualGetBluePixelDetails :: GdkVisual -> IO (#{type guint32}, #{type gint}, 
 gdkVisualGetBluePixelDetails (GdkVisual v) = alloca \m -> alloca \s -> alloca \p -> do
 	c_gdk_visual_get_blue_pixel_details v m s p
 	(,,) <$> peek m <*> peek s <*> peek p
+
+foreign import ccall "gdk_visual_get_screen" c_gdk_visual_get_screen ::
+	Ptr GdkVisual -> IO (Ptr GdkScreen)
+
+gdkVisualGetScreen :: GdkVisual -> IO GdkScreen
+gdkVisualGetScreen (GdkVisual p) = GdkScreen <$> c_gdk_visual_get_screen p
