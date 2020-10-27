@@ -101,6 +101,10 @@ todo
 	+ [ ] gdk\_device\_set\_axis\_use
 	+ [ ] gdk\_device\_get\_axis\_use
 	+ [ ] others
+* [x] functions of Points and Rectangles
+	+ [x] gdk\_rectangle\_intersect
+	+ [x] gdk\_rectangle\_union
+	+ [x] gdk\_rectangle\_equal
 * [ ] functions of Windows
 	+ [x] gdk\_window\_new
 		- [x] correct structure of GdkWindowAttr
