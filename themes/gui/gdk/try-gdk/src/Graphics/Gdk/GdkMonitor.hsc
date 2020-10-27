@@ -7,6 +7,7 @@ import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C
+import Data.Int
 
 import Graphics.Gdk.Types
 
@@ -31,6 +32,16 @@ foreign import ccall "gdk_monitor_get_workarea" c_gdk_monitor_get_workarea ::
 gdkMonitorGetWorkarea :: GdkMonitor -> IO GdkRectangle
 gdkMonitorGetWorkarea (GdkMonitor m) = alloca \r ->
 	c_gdk_monitor_get_workarea m r >> peek r
+
+foreign import ccall "gdk_monitor_get_width_mm" c_gdk_monitor_get_width_mm ::
+	Ptr GdkMonitor -> IO #type int
+
+foreign import ccall "gdk_monitor_get_height_mm" c_gdk_monitor_get_height_mm ::
+	Ptr GdkMonitor -> IO #type int
+
+gdkMonitorGetWidthMm, gdkMonitorGetHeightMm :: GdkMonitor -> IO #type int
+gdkMonitorGetWidthMm (GdkMonitor p) = c_gdk_monitor_get_width_mm p
+gdkMonitorGetHeightMm (GdkMonitor p) = c_gdk_monitor_get_height_mm p
 
 foreign import ccall "gdk_monitor_get_manufacturer" c_gdk_monitor_get_manufacturer ::
 	Ptr GdkMonitor -> IO CString

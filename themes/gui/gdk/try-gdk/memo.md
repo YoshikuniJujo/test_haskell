@@ -81,8 +81,8 @@ todo
 	+ [x] gdk\_monitor\_get\_display
 	+ [x] gdk\_monitor\_get\_geometry
 	+ [x] gdk\_monitor\_get\_workarea
-	+ [ ] gdk\_monitor\_get\_width\_mm
-	+ [ ] gdk\_monitor\_get\_height\_mm
+	+ [x] gdk\_monitor\_get\_width\_mm
+	+ [x] gdk\_monitor\_get\_height\_mm
 	+ [x] gdk\_monitor\_get\_manufacturer
 	+ [x] gdk\_monitor\_get\_model
 	+ [ ] gdk\_monitor\_get\_scale\_factor
