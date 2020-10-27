@@ -17,13 +17,14 @@ module Graphics.Gdk.Windows (
 	gdkWindowFreezeUpdates, gdkWindowThawUpdates,
 	gdkWindowWithDrawFrame, gdkWindowInvalidateRect, gdkWindowSetEvents,
 
-	gdkWindowSetCursor
+	gdkWindowSetCursor, gdkWindowSetTitle
 	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
+import Foreign.C
 import Control.Exception
 import Data.Word
 import Data.Int
@@ -192,3 +193,9 @@ foreign import ccall "gdk_window_set_cursor" c_gdk_window_set_cursor :: Ptr GdkW
 gdkWindowSetCursor :: GdkWindow -> GdkCursor -> IO ()
 gdkWindowSetCursor (GdkWindow w) (GdkCursor fc) = withForeignPtr fc \c ->
 	c_gdk_window_set_cursor w c
+
+foreign import ccall "gdk_window_set_title" c_gdk_window_set_title :: Ptr GdkWindow -> CString -> IO ()
+
+gdkWindowSetTitle :: GdkWindow -> String -> IO ()
+gdkWindowSetTitle (GdkWindow p) ttl = withCString ttl \cttl ->
+	c_gdk_window_set_title p cttl

@@ -165,6 +165,54 @@ todo
 	+ [ ] gdk\_window\_scroll
 	+ [ ] gdk\_widnow\_move\_to\_rect
 	+ [ ] gdk\_widnow\_move\_region
+	+ [ ] gdk\_window\_has\_native
+	+ [ ] gdk\_window\_ensure\_native
+	+ [ ] gdk\_window\_reparent
+	+ [ ] gdk\_window\_raise
+	+ [ ] gdk\_window\_lower
+	+ [ ] gdk\_window\_focus
+	+ [ ] gdk\_window\_register\_dnd
+	+ [ ] ...
+	+ [x] gdk\_window\_begin\_draw\_frame
+	+ [x] gdk\_window\_end\_draw\_frame
+	+ [ ] ...
+	+ [x] gdk\_window\_set\_title
+	+ [x] gdk\_window\_set\_cursor
+	+ [ ] gdk\_window\_get\_cursor
+	+ [ ] gdk\_window\_get\_geometry
+	+ [ ] ...
+	+ [ ] gdk\_window\_get\_width
+	+ [ ] gdk\_window\_get\_height
+	+ [ ] ...
+	+ [ ] gdk\_window\_get\_position
+	+ [ ] gdk\_window\_get\_root\_origin
+	+ [ ] gdk\_window\_get\_frame\_extents
+	+ [ ] gdk\_window\_get\_origin
+	+ [ ] gdk\_window\_get\_root\_coords
+	+ [ ] gdk\_window\_get\_device\_position
+	+ [ ] gdk\_window\_get\_device\_position\_double
+	+ [ ] gdk\_window\_get\_parent
+	+ [ ] gdk\_window\_get\_toplevel
+	+ [ ] gdk\_window\_get\_children
+	+ [ ] ...
+	+ [ ] gdk\_window\_get\_events
+	+ [ ] gdk\_window\_set\_events
+	+ [ ] ...
+	+ [ ] gdk\_window\_set\_decorations
+	+ [ ] gdk\_window\_get\_decorations
+	+ [ ] ...
+	+ [ ] gdk\_get\_default\_root\_window
+	+ [ ] ...
+	+ [ ] gdk\_window\_get\_device\_cursor
+	+ [ ] gdk\_window\_set\_device\_cursor
+	+ [ ] gdk\_window\_get\_device\_events
+	+ [ ] gdk\_window\_set\_device\_events
+	+ [ ] gdk\_window\_get\_source\_events
+	+ [ ] gdk\_window\_set\_source\_events
+	+ [ ] ...
+	+ [ ] gdk\_window\_coords\_from\_parent
+	+ [ ] gdk\_window\_coords\_to\_parent
+	+ [ ] ...
 	+ [ ] others
 * [ ] remove or check unusable or having unknown usability functions
 * [x] repair gdkDrawingContextGetCairoContext

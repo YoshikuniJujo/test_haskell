@@ -16,6 +16,7 @@ main :: IO ()
 main = do
 	print =<< join (gdkInit <$> getProgName <*> getArgs)
 	w <- gdkWindowNew Nothing defaultGdkWindowAttr
+	gdkWindowSetTitle w "あいうえお"
 	gdkWindowShow w
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
