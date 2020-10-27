@@ -79,8 +79,8 @@ todo
 	+ [ ] gdk\_seat\_get\_slaves
 * [ ] functions of GdkMonitor
 	+ [x] gdk\_monitor\_get\_display
-	+ [ ] gdk\_monitor\_get\_geometry
-	+ [ ] gdk\_monitor\_get\_workarea
+	+ [x] gdk\_monitor\_get\_geometry
+	+ [x] gdk\_monitor\_get\_workarea
 	+ [ ] gdk\_monitor\_get\_width\_mm
 	+ [ ] gdk\_monitor\_get\_height\_mm
 	+ [x] gdk\_monitor\_get\_manufacturer

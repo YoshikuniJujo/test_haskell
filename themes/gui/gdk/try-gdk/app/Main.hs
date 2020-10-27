@@ -59,6 +59,7 @@ main = do
 			print =<< gdkMonitorGetManufacturer mntr
 			print =<< gdkMonitorGetModel mntr
 			putStrLn . ("Monitor geometry: " ++) . show =<< gdkMonitorGetGeometry mntr
+			putStrLn . ("Monitor workarea: " ++) . show =<< gdkMonitorGetWorkarea mntr
 	putStrLn . ("Supports cursor color: " ++) . show =<< gdkDisplaySupportsCursorColor d
 	putStrLn . ("Supports cursor alpha: " ++) . show =<< gdkDisplaySupportsCursorAlpha d
 	putStrLn . ("Default cursor size: " ++) . show =<< gdkDisplayGetDefaultCursorSize d
