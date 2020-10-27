@@ -3,10 +3,13 @@
 module Graphics.Gdk.GdkSeat where
 
 import Foreign.Ptr
+import Control.Arrow
 import Data.Word
 
 import Graphics.Gdk.Types
 import Graphics.Gdk.Values
+
+import System.Glib.DoublyLinkedLists
 
 #include <gdk/gdk.h>
 
@@ -33,3 +36,14 @@ foreign import ccall "gdk_seat_get_capabilities" c_gdk_seat_get_capabilities ::
 
 gdkSeatGetCapabilities :: GdkSeat -> IO GdkSeatCapabilities
 gdkSeatGetCapabilities (GdkSeat p) = GdkSeatCapabilities <$> c_gdk_seat_get_capabilities p
+
+foreign import ccall "gdk_seat_get_slaves" c_gdk_seat_get_slaves ::
+	Ptr GdkSeat -> #{type GdkSeatCapabilities} -> IO (Ptr (GList GdkDevice))
+
+gdkSeatGetSlaves :: GdkSeat -> GdkSeatCapabilities -> IO ([GdkDevice], [GdkDevice])
+gdkSeatGetSlaves (GdkSeat p) (GdkSeatCapabilities cps) = do
+	gl <- c_gdk_seat_get_slaves p cps
+	(map GdkDevice *** map GdkDevice) <$> gListListPtr (GListRef gl)
+		<* c_g_list_free gl
+
+foreign import ccall "g_list_free" c_g_list_free :: Ptr (GList a) -> IO ()

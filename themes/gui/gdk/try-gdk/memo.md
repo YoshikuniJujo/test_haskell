@@ -76,7 +76,7 @@ todo
 	+ [x] gdk\_seat\_get\_capabilities
 	+ [x] gdk\_seat\_get\_pointer
 	+ [x] gdk\_seat\_get\_keyboard
-	+ [ ] gdk\_seat\_get\_slaves
+	+ [x] gdk\_seat\_get\_slaves
 * [x] functions of GdkMonitor
 	+ [x] gdk\_monitor\_get\_display
 	+ [x] gdk\_monitor\_get\_geometry
