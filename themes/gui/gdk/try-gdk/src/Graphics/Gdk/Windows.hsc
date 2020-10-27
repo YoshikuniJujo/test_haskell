@@ -188,14 +188,19 @@ foreign import ccall "gdk_window_set_events" c_gdk_window_set_events :: Ptr GdkW
 gdkWindowSetEvents :: GdkWindow -> [GdkEventMask] -> IO ()
 gdkWindowSetEvents (GdkWindow p) m = c_gdk_window_set_events p (mergeGdkEventMask m)
 
+foreign import ccall "gdk_window_set_title" c_gdk_window_set_title :: Ptr GdkWindow -> CString -> IO ()
+
+gdkWindowSetTitle :: GdkWindow -> String -> IO ()
+gdkWindowSetTitle (GdkWindow p) ttl = withCString ttl \cttl ->
+	c_gdk_window_set_title p cttl
+
 foreign import ccall "gdk_window_set_cursor" c_gdk_window_set_cursor :: Ptr GdkWindow -> Ptr GdkCursor -> IO ()
 
 gdkWindowSetCursor :: GdkWindow -> GdkCursor -> IO ()
 gdkWindowSetCursor (GdkWindow w) (GdkCursor fc) = withForeignPtr fc \c ->
 	c_gdk_window_set_cursor w c
 
-foreign import ccall "gdk_window_set_title" c_gdk_window_set_title :: Ptr GdkWindow -> CString -> IO ()
+foreign import ccall "gdk_window_get_cursor" c_gdk_window_get_cursor :: Ptr GdkWindow -> IO (Ptr GdkCursor)
 
-gdkWindowSetTitle :: GdkWindow -> String -> IO ()
-gdkWindowSetTitle (GdkWindow p) ttl = withCString ttl \cttl ->
-	c_gdk_window_set_title p cttl
+gdkWindowGetCursor :: GdkWindow -> IO GdkCursorRef
+gdkWindowGetCursor (GdkWindow w) = GdkCursorRef <$> c_gdk_window_get_cursor w
