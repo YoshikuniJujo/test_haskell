@@ -4,6 +4,7 @@ module Graphics.Gdk.Values where
 
 import Data.Bits
 import Data.Word
+import Data.Int
 
 #include <gdk/gdk.h>
 
@@ -75,3 +76,8 @@ newtype GdkInputSource = GdkInputSource #{type GdkInputSource} deriving Show
 	GDK_SOURCE_PEN, GDK_SOURCE_ERASER, GDK_SOURCE_CURSOR, \
 	GDK_SOURCE_KEYBOARD, GDK_SOURCE_TOUCHSCREEN, GDK_SOURCE_TOUCHPAD, \
 	GDK_SOURCE_TRACKPOINT, GDK_SOURCE_TABLET_PAD
+
+newtype GdkCursorType = GdkCursorType #{type GdkCursorType} deriving Show
+
+#enum GdkCursorType, GdkCursorType, GDK_X_CURSOR, GDK_ARROW, \
+	GDK_BASED_ARROW_DOWN, GDK_BASED_ARROW_UP, GDK_BOAT, GDK_BOGOSITY
