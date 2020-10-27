@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkDevice where
@@ -14,3 +15,19 @@ foreign import ccall "gdk_device_get_name" c_gdk_device_get_name ::
 
 gdkDeviceGetName :: GdkDevice -> IO String
 gdkDeviceGetName (GdkDevice p) = peekCString =<< c_gdk_device_get_name p
+
+foreign import ccall "gdk_device_get_vendor_id" c_gdk_device_get_vendor_id ::
+	Ptr GdkDevice -> IO CString
+
+gdkDeviceGetVendorId :: GdkDevice -> IO (Maybe String)
+gdkDeviceGetVendorId (GdkDevice p) = c_gdk_device_get_vendor_id p >>= \case
+	cs	| cs == nullPtr -> pure Nothing
+		| otherwise -> Just <$> peekCString cs
+
+foreign import ccall "gdk_device_get_product_id" c_gdk_device_get_product_id ::
+	Ptr GdkDevice -> IO CString
+
+gdkDeviceGetProductId :: GdkDevice -> IO (Maybe String)
+gdkDeviceGetProductId (GdkDevice p) = c_gdk_device_get_product_id p >>= \case
+	cs	| cs == nullPtr -> pure Nothing
+		| otherwise -> Just <$> peekCString cs

@@ -91,8 +91,8 @@ todo
 	+ [x] gdk\_monitor\_is\_primary
 * [ ] functions of GdkDevice
 	+ [x] gdk\_device\_get\_name
-	+ [ ] gdk\_device\_get\_vendor\_id
-	+ [ ] gdk\_device\_get\_product\_id
+	+ [x] gdk\_device\_get\_vendor\_id
+	+ [x] gdk\_device\_get\_product\_id
 	+ [ ] gdk\_device\_get\_source
 	+ [ ] gdk\_device\_set\_mode
 	+ [ ] gdk\_device\_get\_mode

@@ -54,7 +54,10 @@ main = do
 	print =<< gdkDisplayDeviceIsGrabbed d kbd
 	([], slvs) <- gdkSeatGetSlaves st gdkSeatCapabilityAll
 	putStrLn "Slave devices:"
-	for_ slvs \slv -> putStrLn . ("\t" ++) =<< gdkDeviceGetName slv
+	for_ slvs \slv -> do
+		putStrLn . ("\t" ++) =<< gdkDeviceGetName slv
+		putStrLn . ("\t\t" ++) . show =<< gdkDeviceGetVendorId slv
+		putStrLn . ("\t\t" ++) . show =<< gdkDeviceGetProductId slv
 	gdkDisplayGetPrimaryMonitor d >>= \case
 		Nothing -> putStrLn "no primary monitor"
 		Just mntr -> do
