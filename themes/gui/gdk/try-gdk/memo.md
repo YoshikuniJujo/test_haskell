@@ -93,7 +93,7 @@ todo
 	+ [x] gdk\_device\_get\_name
 	+ [x] gdk\_device\_get\_vendor\_id
 	+ [x] gdk\_device\_get\_product\_id
-	+ [ ] gdk\_device\_get\_source
+	+ [x] gdk\_device\_get\_source
 	+ [ ] gdk\_device\_set\_mode
 	+ [ ] gdk\_device\_get\_mode
 	+ [ ] gdk\_device\_set\_key

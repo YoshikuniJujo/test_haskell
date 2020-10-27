@@ -5,8 +5,10 @@ module Graphics.Gdk.GdkDevice where
 
 import Foreign.Ptr
 import Foreign.C
+import Data.Word
 
 import Graphics.Gdk.Types
+import Graphics.Gdk.Values
 
 #include <gdk/gdk.h>
 
@@ -31,3 +33,9 @@ gdkDeviceGetProductId :: GdkDevice -> IO (Maybe String)
 gdkDeviceGetProductId (GdkDevice p) = c_gdk_device_get_product_id p >>= \case
 	cs	| cs == nullPtr -> pure Nothing
 		| otherwise -> Just <$> peekCString cs
+
+foreign import ccall "gdk_device_get_source" c_gdk_device_get_source ::
+	Ptr GdkDevice -> IO #type GdkInputSource
+
+gdkDeviceGetSource :: GdkDevice -> IO GdkInputSource
+gdkDeviceGetSource (GdkDevice p) = GdkInputSource <$> c_gdk_device_get_source p

@@ -58,6 +58,7 @@ main = do
 		putStrLn . ("\t" ++) =<< gdkDeviceGetName slv
 		putStrLn . ("\t\t" ++) . show =<< gdkDeviceGetVendorId slv
 		putStrLn . ("\t\t" ++) . show =<< gdkDeviceGetProductId slv
+		putStrLn . ("\t\t" ++) . show =<< gdkDeviceGetSource slv
 	gdkDisplayGetPrimaryMonitor d >>= \case
 		Nothing -> putStrLn "no primary monitor"
 		Just mntr -> do
