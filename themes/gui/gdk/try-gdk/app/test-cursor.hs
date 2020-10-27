@@ -10,13 +10,16 @@ import System.Environment
 import Graphics.Gdk.General
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Event
+import Graphics.Gdk.Cursors
 import Try.Tools
 
 main :: IO ()
 main = do
 	print =<< join (gdkInit <$> getProgName <*> getArgs)
 	w <- gdkWindowNew Nothing defaultGdkWindowAttr
+	d <- gdkWindowGetDisplay w
 	gdkWindowShow w
+	gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
 		GdkEventGdkKeyPress k -> do

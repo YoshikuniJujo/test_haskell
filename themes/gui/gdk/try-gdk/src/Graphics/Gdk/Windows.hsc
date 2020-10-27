@@ -16,6 +16,8 @@ module Graphics.Gdk.Windows (
 	-- * Not Checked
 	gdkWindowFreezeUpdates, gdkWindowThawUpdates,
 	gdkWindowWithDrawFrame, gdkWindowInvalidateRect, gdkWindowSetEvents,
+
+	gdkWindowSetCursor
 	) where
 
 import Foreign.Ptr
@@ -184,3 +186,9 @@ foreign import ccall "gdk_window_set_events" c_gdk_window_set_events :: Ptr GdkW
 
 gdkWindowSetEvents :: GdkWindow -> [GdkEventMask] -> IO ()
 gdkWindowSetEvents (GdkWindow p) m = c_gdk_window_set_events p (mergeGdkEventMask m)
+
+foreign import ccall "gdk_window_set_cursor" c_gdk_window_set_cursor :: Ptr GdkWindow -> Ptr GdkCursor -> IO ()
+
+gdkWindowSetCursor :: GdkWindow -> GdkCursor -> IO ()
+gdkWindowSetCursor (GdkWindow w) (GdkCursor fc) = withForeignPtr fc \c ->
+	c_gdk_window_set_cursor w c

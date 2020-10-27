@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2f8be399d7065a9184e3085c20ce92aef7b8c7931a083fe94680d155b5fb26f8
+-- hash: 5c2b6ab8ee109e914688f975b73e2b8ff7a2d62f978ba5ae022a40e78c539908
 
 name:           try-gdk
 version:        0.1.0.0
@@ -27,6 +27,7 @@ source-repository head
 
 library
   exposed-modules:
+      Graphics.Gdk.Cursors
       Graphics.Gdk.Event
       Graphics.Gdk.Exception
       Graphics.Gdk.GdkDevice
@@ -44,6 +45,7 @@ library
       Graphics.Gdk.Windows
       System.Glib.DoublyLinkedLists
       System.Glib.SinglyLinkedLists
+      Try.Tools
   other-modules:
       Paths_try_gdk
   hs-source-dirs:
@@ -58,6 +60,21 @@ library
 
 executable simple
   main-is: simple.hs
+  other-modules:
+      Main
+      Paths_try_gdk
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , exception-hierarchy
+    , simple-cairo
+    , try-gdk
+  default-language: Haskell2010
+
+executable test-cursor
+  main-is: test-cursor.hs
   other-modules:
       Main
       Paths_try_gdk

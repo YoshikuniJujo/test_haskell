@@ -112,6 +112,15 @@ todo
 	+ [x] gdk\_visual\_get\_green\_pixel\_details
 	+ [x] gdk\_visual\_get\_blue\_pixel\_details
 	+ [x] gdk\_visual\_get\_screen
+* [ ] functions of Cursors
+	+ no gdk\_cursor\_new\_from\_pixbuf
+	+ [x] gdk\_cursor\_new\_from\_surface
+	+ [x] gdk\_cursor\_new\_from\_name
+	+ [ ] gdk\_cursor\_new\_for\_display
+	+ [ ] gdk\_cursor\_get\_display
+	+ no gdk\_cursor\_get\_image
+	+ [ ] gdk\_cursor\_get\_surface
+	+ [ ] gdk\_cursor\_get\_cursor\_type
 * [ ] functions of Windows
 	+ [x] gdk\_window\_new
 		- [x] correct structure of GdkWindowAttr

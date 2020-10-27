@@ -46,6 +46,11 @@ mkGdkWindowAttr em w h wc wt = GdkWindowAttr
 newtype GdkVisual = GdkVisual (Ptr GdkVisual) deriving Show
 newtype GdkCursor = GdkCursor (ForeignPtr GdkCursor) deriving Show
 
+mkGdkCursor :: Ptr GdkCursor -> IO GdkCursor
+mkGdkCursor p = GdkCursor <$> newForeignPtr p (c_g_object_unref p)
+
+foreign import ccall "g_object_unref" c_g_object_unref :: Ptr a -> IO ()
+
 newtype GdkWindowTypeHint = GdkWindowTypeHint #{type GdkWindowTypeHint} deriving Show
 
 newGdkWindowAttr :: GdkWindowAttr -> IO (ForeignPtr GdkWindowAttr, #{type GdkWindowAttributesType})
