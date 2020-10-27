@@ -184,8 +184,8 @@ todo
 		- [ ] repair to get NULL: convert to Nothing
 	+ [ ] gdk\_window\_get\_geometry
 	+ ...
-	+ [ ] gdk\_window\_get\_width
-	+ [ ] gdk\_window\_get\_height
+	+ [x] gdk\_window\_get\_width
+	+ [x] gdk\_window\_get\_height
 	+ ...
 	+ [ ] gdk\_window\_get\_position
 	+ [ ] gdk\_window\_get\_root\_origin

@@ -17,7 +17,8 @@ module Graphics.Gdk.Windows (
 	gdkWindowFreezeUpdates, gdkWindowThawUpdates,
 	gdkWindowWithDrawFrame, gdkWindowInvalidateRect, gdkWindowSetEvents,
 
-	gdkWindowSetCursor, gdkWindowSetTitle
+	gdkWindowSetTitle, gdkWindowSetCursor, gdkWindowGetCursor,
+	gdkWindowGetWidth, gdkWindowGetHeight
 	) where
 
 import Foreign.Ptr
@@ -204,3 +205,13 @@ foreign import ccall "gdk_window_get_cursor" c_gdk_window_get_cursor :: Ptr GdkW
 
 gdkWindowGetCursor :: GdkWindow -> IO GdkCursorRef
 gdkWindowGetCursor (GdkWindow w) = GdkCursorRef <$> c_gdk_window_get_cursor w
+
+foreign import ccall "gdk_window_get_width" c_gdk_window_get_width :: Ptr GdkWindow -> IO #type int
+
+gdkWindowGetWidth :: GdkWindow -> IO #type int
+gdkWindowGetWidth (GdkWindow w) = c_gdk_window_get_width w
+
+foreign import ccall "gdk_window_get_height" c_gdk_window_get_height :: Ptr GdkWindow -> IO #type int
+
+gdkWindowGetHeight :: GdkWindow -> IO #type int
+gdkWindowGetHeight (GdkWindow w) = c_gdk_window_get_height w

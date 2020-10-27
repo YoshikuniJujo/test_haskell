@@ -208,6 +208,8 @@ checkEvent = \case
 		when (kv == fromIntegral (ord 'f')) $ do
 			putStrLn "`f' pressed"
 			gdkWindowFullscreen w
+		when (kv == fromIntegral (ord 's')) $ do
+			putStrLn . ("Window size: " ++) . show =<< (,) <$> gdkWindowGetWidth w <*> gdkWindowGetHeight w
 		pure $ kv /= fromIntegral (ord 'q')
 	GdkEventGdkKeyRelease k -> do
 		kv <- gdkEventKeyKeyval k
