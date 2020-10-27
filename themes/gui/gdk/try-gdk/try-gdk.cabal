@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5c2b6ab8ee109e914688f975b73e2b8ff7a2d62f978ba5ae022a40e78c539908
+-- hash: 799f3e90bd04b07a9fd8b9220257b0aeabfbcb0800e3cd484eb3bf65056c79db
 
 name:           try-gdk
 version:        0.1.0.0
@@ -55,6 +55,7 @@ library
   build-depends:
       base >=4.7 && <5
     , exception-hierarchy
+    , primitive
     , simple-cairo
   default-language: Haskell2010
 
@@ -69,6 +70,7 @@ executable simple
   build-depends:
       base >=4.7 && <5
     , exception-hierarchy
+    , primitive
     , simple-cairo
     , try-gdk
   default-language: Haskell2010
@@ -84,6 +86,7 @@ executable test-cursor
   build-depends:
       base >=4.7 && <5
     , exception-hierarchy
+    , primitive
     , simple-cairo
     , try-gdk
   default-language: Haskell2010
@@ -98,6 +101,7 @@ executable try-gdk-exe
   build-depends:
       base >=4.7 && <5
     , exception-hierarchy
+    , primitive
     , simple-cairo
     , try-gdk
   default-language: Haskell2010
@@ -113,6 +117,7 @@ test-suite try-gdk-test
   build-depends:
       base >=4.7 && <5
     , exception-hierarchy
+    , primitive
     , simple-cairo
     , try-gdk
   default-language: Haskell2010
