@@ -208,6 +208,8 @@ checkEvent = \case
 		when (kv == fromIntegral (ord 'f')) $ do
 			putStrLn "`f' pressed"
 			gdkWindowFullscreen w
+		when (kv == fromIntegral (ord 'p')) $ do
+			putStrLn . ("Window size: " ++) . show =<< gdkWindowGetPosition w
 		when (kv == fromIntegral (ord 's')) $ do
 			putStrLn . ("Window size: " ++) . show =<< (,) <$> gdkWindowGetWidth w <*> gdkWindowGetHeight w
 		pure $ kv /= fromIntegral (ord 'q')
@@ -226,9 +228,13 @@ checkEvent = \case
 		putStrLn $ "GDK_UNMAP: " ++ show m
 		pure True
 	GdkEventGdkConfigure c -> do
+		x <- gdkEventConfigureX c
+		y <- gdkEventConfigureY c
 		w <- gdkEventConfigureWidth c
 		h <- gdkEventConfigureHeight c
-		putStrLn $ "GDK_CONFIGURE: " ++ show c ++ ": " ++ show w ++ " " ++ show h
+		putStrLn $ "GDK_CONFIGURE: " ++ show c ++ ": (" ++
+			show x ++ ", " ++ show y ++ ") (" ++
+			show w ++ ", " ++ show h ++ ")"
 		pure True
 	GdkEventGdkVisibilityNotify v -> do
 		w <- gdkEventVisibilityWindow v

@@ -187,7 +187,7 @@ todo
 	+ [x] gdk\_window\_get\_width
 	+ [x] gdk\_window\_get\_height
 	+ ...
-	+ [ ] gdk\_window\_get\_position
+	+ [x] gdk\_window\_get\_position
 	+ [ ] gdk\_window\_get\_root\_origin
 	+ [ ] gdk\_window\_get\_frame\_extents
 	+ [ ] gdk\_window\_get\_origin

@@ -55,6 +55,10 @@ gdkEventConfigureWidth, gdkEventConfigureHeight :: GdkEventConfigure -> IO #type
 gdkEventConfigureWidth (GdkEventConfigure p) = withForeignPtr p #peek GdkEventConfigure, width
 gdkEventConfigureHeight (GdkEventConfigure p) = withForeignPtr p #peek GdkEventConfigure, height
 
+gdkEventConfigureX, gdkEventConfigureY :: GdkEventConfigure -> IO #type gint
+gdkEventConfigureX (GdkEventConfigure p) = withForeignPtr p #peek GdkEventConfigure, x
+gdkEventConfigureY (GdkEventConfigure p) = withForeignPtr p #peek GdkEventConfigure, y
+
 pattern GdkEventGdkConfigure :: GdkEventConfigure -> GdkEvent
 pattern GdkEventGdkConfigure p <- GdkEvent (GdkEventType #{const GDK_CONFIGURE}) (GdkEventConfigure . castForeignPtr -> p)
 
