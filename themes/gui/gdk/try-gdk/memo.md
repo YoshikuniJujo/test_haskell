@@ -220,11 +220,14 @@ todo
 	+ [ ] gdk\_window\_coords\_to\_parent
 	+ ...
 	+ [ ] others
-* [ ] functions of GdkDrawingContext
+* [x] functions of GdkDrawingContext
 	+ [x] gdk\_draiwng\_context\_get\_window
 	+ [x] gdk\_drawing\_context\_get\_clip
 	+ [x] gdk\_drawing\_context\_get\_cairo\_context
-	+ [ ] gdk\_drawing\_context\_is\_valid
+	+ [x] gdk\_drawing\_context\_is\_valid
+* [ ] functions of Events
+	+ [ ] gdk\_events\_pending
+	+ [ ] others
 * [ ] remove or check unusable or having unknown usability functions
 * [x] repair gdkDrawingContextGetCairoContext
 	+ no GC

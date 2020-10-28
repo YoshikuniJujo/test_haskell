@@ -1,11 +1,12 @@
 {-# LANGUAGE CApiFFI #-}
-{-# LANGUAGE BlockArguments, TupleSections #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkDrawingContext where
 
 import Foreign.Ptr
 import Foreign.Concurrent
+import Data.Int
 
 import Graphics.Gdk.Types
 
@@ -33,3 +34,12 @@ gdkDrawingContextGetCairoContext (GdkDrawingContext c) = do
 	p <- c_gdk_drawing_context_get_cairo_context c
 	fp <- newForeignPtr p $ pure ()
 	pure $ CairoT fp
+
+foreign import ccall "gdk_drawing_context_is_valid" c_gdk_drawing_context_is_valid ::
+	Ptr GdkDrawingContext -> IO #type gboolean
+
+gbooleanToBool :: #{type gboolean} -> Bool
+gbooleanToBool = \case #{const FALSE} -> False; _ -> True
+
+gdkDrawingContextIsValid :: GdkDrawingContext -> IO Bool
+gdkDrawingContextIsValid (GdkDrawingContext p) = gbooleanToBool <$> c_gdk_drawing_context_is_valid p
