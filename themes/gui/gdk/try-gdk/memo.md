@@ -204,7 +204,7 @@ todo
 	+ [ ] gdk\_window\_set\_decorations
 	+ [x] gdk\_window\_get\_decorations
 	+ ...
-	+ [ ] gdk\_get\_default\_root\_window
+	+ [x] gdk\_get\_default\_root\_window
 	+ ...
 	+ [ ] gdk\_window\_get\_device\_cursor
 	+ [ ] gdk\_window\_set\_device\_cursor
