@@ -5,6 +5,7 @@ module Main where
 
 import Control.Monad
 import Control.Monad.Primitive
+import Data.Foldable
 import Data.Char
 import System.Environment
 
@@ -12,6 +13,7 @@ import Graphics.Gdk.General
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkDevice
+import Graphics.Gdk.Cursors
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Event
 import Graphics.Gdk.Cursors
@@ -31,6 +33,8 @@ main = do
 	st <- gdkDisplayGetDefaultSeat d
 	pnt <- gdkSeatGetPointer st
 	([], pds) <- gdkDeviceListSlaveDevices pnt
+	for_ (zip pds ["wait", "cell", "crosshair", "text", "vertical-text"]) \(pd, nm) ->
+		gdkWindowSetDeviceCursor w pd =<< gdkCursorNewFromName d nm
 	gdkWindowShow w
 	gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
 	mainLoop \case
