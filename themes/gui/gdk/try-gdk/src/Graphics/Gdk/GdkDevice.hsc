@@ -5,10 +5,13 @@ module Graphics.Gdk.GdkDevice where
 
 import Foreign.Ptr
 import Foreign.C
+import Control.Arrow
 import Data.Word
 
 import Graphics.Gdk.Types
 import Graphics.Gdk.Values
+
+import System.Glib.DoublyLinkedLists
 
 #include <gdk/gdk.h>
 
@@ -39,3 +42,15 @@ foreign import ccall "gdk_device_get_source" c_gdk_device_get_source ::
 
 gdkDeviceGetSource :: GdkDevice -> IO GdkInputSource
 gdkDeviceGetSource (GdkDevice p) = GdkInputSource <$> c_gdk_device_get_source p
+
+foreign import ccall "gdk_device_list_slave_devices" c_gdk_device_list_slave_devices ::
+	Ptr GdkDevice -> IO (Ptr (GList GdkDevice))
+
+gdkDeviceListSlaveDevices :: GdkDevice -> IO ([GdkDevice], [GdkDevice])
+gdkDeviceListSlaveDevices (GdkDevice p) = do
+	gl <- c_gdk_device_list_slave_devices p
+	(map GdkDevice *** map GdkDevice) <$> gListListPtr (GListRef gl)
+		<* c_g_list_free gl
+
+foreign import ccall "g_list_free" c_g_list_free ::
+	Ptr (GList a) -> IO ()

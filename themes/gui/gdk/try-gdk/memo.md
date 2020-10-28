@@ -100,6 +100,9 @@ todo
 	+ [ ] gdk\_device\_get\_key
 	+ [ ] gdk\_device\_set\_axis\_use
 	+ [ ] gdk\_device\_get\_axis\_use
+	+ ...
+	+ [x] gdk\_device\_list\_slave\_devices
+	+ ...
 	+ [ ] others
 * [x] functions of Points and Rectangles
 	+ [x] gdk\_rectangle\_intersect

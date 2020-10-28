@@ -9,6 +9,9 @@ import Data.Char
 import System.Environment
 
 import Graphics.Gdk.General
+import Graphics.Gdk.GdkDisplay
+import Graphics.Gdk.GdkSeat
+import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Event
 import Graphics.Gdk.Cursors
@@ -25,6 +28,9 @@ main = do
 	print =<< join (gdkInit <$> getProgName <*> getArgs)
 	w <- gdkWindowNew Nothing defaultGdkWindowAttr
 	d <- gdkWindowGetDisplay w
+	st <- gdkDisplayGetDefaultSeat d
+	pnt <- gdkSeatGetPointer st
+	([], pds) <- gdkDeviceListSlaveDevices pnt
 	gdkWindowShow w
 	gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
 	mainLoop \case
