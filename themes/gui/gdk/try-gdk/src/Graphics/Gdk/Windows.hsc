@@ -21,7 +21,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowGetWidth, gdkWindowGetHeight, gdkWindowGetPosition,
 
 	gdkWindowGetParent, gdkWindowGetDecorations, gdkGetDefaultRootWindow,
-	gdkWindowSetDeviceCursor
+	gdkWindowSetDeviceCursor, gdkWindowSetDeviceEvents, gdkWindowSetSourceEvents
 	) where
 
 import Foreign.Ptr
@@ -251,3 +251,17 @@ foreign import ccall "gdk_window_set_device_cursor" c_gdk_window_set_device_curs
 gdkWindowSetDeviceCursor :: GdkWindow -> GdkDevice -> GdkCursor -> IO ()
 gdkWindowSetDeviceCursor (GdkWindow w) (GdkDevice d) (GdkCursor fc) = withForeignPtr fc \c ->
 	c_gdk_window_set_device_cursor w d c
+
+foreign import ccall "gdk_window_set_device_events" c_gdk_window_set_device_events ::
+	Ptr GdkWindow -> Ptr GdkDevice -> #{type GdkEventMask} -> IO ()
+
+gdkWindowSetDeviceEvents :: GdkWindow -> GdkDevice -> [GdkEventMask] -> IO ()
+gdkWindowSetDeviceEvents (GdkWindow w) (GdkDevice d) ems =
+	c_gdk_window_set_device_events w d $ mergeGdkEventMask ems
+
+foreign import ccall "gdk_window_set_source_events" c_gdk_window_set_source_events ::
+	Ptr GdkWindow -> #{type GdkInputSource} -> #{type GdkEventMask} -> IO ()
+
+gdkWindowSetSourceEvents :: GdkWindow -> GdkInputSource -> [GdkEventMask] -> IO ()
+gdkWindowSetSourceEvents (GdkWindow w) (GdkInputSource is) ems =
+	c_gdk_window_set_source_events w is $ mergeGdkEventMask ems

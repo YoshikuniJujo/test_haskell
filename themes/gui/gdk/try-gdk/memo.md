@@ -212,9 +212,9 @@ todo
 	+ [ ] gdk\_window\_get\_device\_cursor
 	+ [x] gdk\_window\_set\_device\_cursor
 	+ [ ] gdk\_window\_get\_device\_events
-	+ [ ] gdk\_window\_set\_device\_events
+	+ [x] gdk\_window\_set\_device\_events
 	+ [ ] gdk\_window\_get\_source\_events
-	+ [ ] gdk\_window\_set\_source\_events
+	+ [x] gdk\_window\_set\_source\_events
 	+ ...
 	+ [ ] gdk\_window\_coords\_from\_parent
 	+ [ ] gdk\_window\_coords\_to\_parent
@@ -222,7 +222,9 @@ todo
 	+ [ ] others
 * [ ] functions of GdkDrawingContext
 	+ [ ] gdk\_draiwng\_context\_get\_window
-	+ [ ] others
+	+ [ ] gdk\_drawing\_context\_get\_clip
+	+ [ ] gdk\_drawing\_context\_get\_cairo\_context
+	+ [ ] gdk\_drawing\_context\_is\_valid
 * [ ] remove or check unusable or having unknown usability functions
 * [x] repair gdkDrawingContextGetCairoContext
 	+ no GC
