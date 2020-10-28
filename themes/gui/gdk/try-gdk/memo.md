@@ -220,6 +220,9 @@ todo
 	+ [ ] gdk\_window\_coords\_to\_parent
 	+ ...
 	+ [ ] others
+* [ ] functions of GdkDrawingContext
+	+ [ ] gdk\_draiwng\_context\_get\_window
+	+ [ ] others
 * [ ] remove or check unusable or having unknown usability functions
 * [x] repair gdkDrawingContextGetCairoContext
 	+ no GC
