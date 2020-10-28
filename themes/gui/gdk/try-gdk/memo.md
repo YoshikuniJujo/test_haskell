@@ -222,7 +222,7 @@ todo
 	+ [ ] others
 * [ ] functions of GdkDrawingContext
 	+ [x] gdk\_draiwng\_context\_get\_window
-	+ [ ] gdk\_drawing\_context\_get\_clip
+	+ [x] gdk\_drawing\_context\_get\_clip
 	+ [x] gdk\_drawing\_context\_get\_cairo\_context
 	+ [ ] gdk\_drawing\_context\_is\_valid
 * [ ] remove or check unusable or having unknown usability functions
