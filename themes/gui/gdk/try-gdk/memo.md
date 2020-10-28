@@ -194,11 +194,11 @@ todo
 	+ [ ] gdk\_window\_get\_root\_coords
 	+ [ ] gdk\_window\_get\_device\_position
 	+ [ ] gdk\_window\_get\_device\_position\_double
-	+ [ ] gdk\_window\_get\_parent
+	+ [x] gdk\_window\_get\_parent
 	+ [ ] gdk\_window\_get\_toplevel
 	+ [ ] gdk\_window\_get\_children
 	+ ...
-	+ [ ] gdk\_window\_get\_events
+	+ [x] gdk\_window\_get\_events
 	+ [ ] gdk\_window\_set\_events
 	+ ...
 	+ [ ] gdk\_window\_set\_decorations

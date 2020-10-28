@@ -18,7 +18,9 @@ module Graphics.Gdk.Windows (
 	gdkWindowWithDrawFrame, gdkWindowInvalidateRect, gdkWindowSetEvents,
 
 	gdkWindowSetTitle, gdkWindowSetCursor, gdkWindowGetCursor,
-	gdkWindowGetWidth, gdkWindowGetHeight, gdkWindowGetPosition
+	gdkWindowGetWidth, gdkWindowGetHeight, gdkWindowGetPosition,
+
+	gdkWindowGetParent
 	) where
 
 import Foreign.Ptr
@@ -223,3 +225,9 @@ gdkWindowGetPosition :: GdkWindow -> IO (#{type gint}, #{type gint})
 gdkWindowGetPosition (GdkWindow p) = alloca \x -> alloca \y -> do
 	c_gdk_window_get_position p x y
 	(,) <$> peek x <*> peek y
+
+foreign import ccall "gdk_window_get_parent" c_gdk_window_get_parent ::
+	Ptr GdkWindow -> IO (Ptr GdkWindow)
+
+gdkWindowGetParent :: GdkWindow -> IO GdkWindow
+gdkWindowGetParent (GdkWindow p) = GdkWindow <$> c_gdk_window_get_parent p

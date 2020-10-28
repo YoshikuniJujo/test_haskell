@@ -134,7 +134,9 @@ main = do
 			gdkInputOutput gdkWindowToplevel
 	w <- gdkWindowNew Nothing wattr { gdkWindowAttrTitle = Just "試験窓" }
 	print =<< gdkWindowGetWindowType w
+	print =<< gdkWindowGetWindowType =<< gdkWindowGetParent w
 	print gdkWindowToplevel
+	print gdkWindowRoot
 	putStrLn =<< gdkDisplayGetName =<< gdkWindowGetDisplay w
 	print =<< gdkScreenGetResolution =<< gdkWindowGetScreen w
 	print =<< gdkVisualGetDepth =<< gdkWindowGetVisual w
