@@ -221,9 +221,9 @@ todo
 	+ ...
 	+ [ ] others
 * [ ] functions of GdkDrawingContext
-	+ [ ] gdk\_draiwng\_context\_get\_window
+	+ [x] gdk\_draiwng\_context\_get\_window
 	+ [ ] gdk\_drawing\_context\_get\_clip
-	+ [ ] gdk\_drawing\_context\_get\_cairo\_context
+	+ [x] gdk\_drawing\_context\_get\_cairo\_context
 	+ [ ] gdk\_drawing\_context\_is\_valid
 * [ ] remove or check unusable or having unknown usability functions
 * [x] repair gdkDrawingContextGetCairoContext

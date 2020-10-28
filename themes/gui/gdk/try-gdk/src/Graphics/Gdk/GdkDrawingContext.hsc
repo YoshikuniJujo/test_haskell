@@ -13,6 +13,12 @@ import Graphics.Cairo.Types
 
 #include <gdk/gdk.h>
 
+foreign import ccall "gdk_drawing_context_get_window" c_gdk_drawing_context_get_window ::
+	Ptr GdkDrawingContext -> IO (Ptr GdkWindow)
+
+gdkDrawingContextGetWindow :: GdkDrawingContext -> IO GdkWindow
+gdkDrawingContextGetWindow (GdkDrawingContext p) = GdkWindow <$> c_gdk_drawing_context_get_window p
+
 foreign import ccall "gdk_drawing_context_get_cairo_context" c_gdk_drawing_context_get_cairo_context ::
 	Ptr GdkDrawingContext -> IO (Ptr (CairoT s))
 
