@@ -20,7 +20,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowSetTitle, gdkWindowSetCursor, gdkWindowGetCursor,
 	gdkWindowGetWidth, gdkWindowGetHeight, gdkWindowGetPosition,
 
-	gdkWindowGetParent
+	gdkWindowGetParent, gdkWindowGetDecorations
 	) where
 
 import Foreign.Ptr
@@ -231,3 +231,9 @@ foreign import ccall "gdk_window_get_parent" c_gdk_window_get_parent ::
 
 gdkWindowGetParent :: GdkWindow -> IO GdkWindow
 gdkWindowGetParent (GdkWindow p) = GdkWindow <$> c_gdk_window_get_parent p
+
+foreign import ccall "gdk_window_get_decorations" c_gdk_window_get_decorations ::
+	Ptr GdkWindow -> IO #type GdkWMDecoration
+
+gdkWindowGetDecorations :: GdkWindow -> IO GdkWMDecoration
+gdkWindowGetDecorations (GdkWindow p) = GdkWMDecoration <$> c_gdk_window_get_decorations p

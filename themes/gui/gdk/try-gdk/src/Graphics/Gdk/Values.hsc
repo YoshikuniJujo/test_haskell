@@ -81,3 +81,9 @@ newtype GdkCursorType = GdkCursorType #{type GdkCursorType} deriving Show
 
 #enum GdkCursorType, GdkCursorType, GDK_X_CURSOR, GDK_ARROW, \
 	GDK_BASED_ARROW_DOWN, GDK_BASED_ARROW_UP, GDK_BOAT, GDK_BOGOSITY
+
+newtype GdkWMDecoration = GdkWMDecoration #{type GdkWMDecoration} deriving Show
+
+#enum GdkWMDecoration, GdkWMDecoration, GDK_DECOR_ALL, GDK_DECOR_BORDER, \
+	GDK_DECOR_RESIZEH, GDK_DECOR_TITLE, GDK_DECOR_MENU, \
+	GDK_DECOR_MINIMIZE, GDK_DECOR_MAXIMIZE
