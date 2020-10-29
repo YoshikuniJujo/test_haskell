@@ -125,6 +125,14 @@ gdkEventGetKeyval (GdkEvent _ fe) = withForeignPtr fe \e -> alloca \kv ->
 	c_gdk_event_get_keyval e kv
 		>>= bool (pure Nothing) (Just <$> peek kv) . gbooleanToBool
 
+foreign import ccall "gdk_event_get_root_coords" c_gdk_event_get_root_coords ::
+	Ptr GdkEvent -> Ptr #{type gdouble} -> Ptr #{type gdouble} -> IO #type gboolean
+
+gdkEventGetRootCoords :: GdkEvent -> IO (Maybe (#{type gdouble}, #type gdouble))
+gdkEventGetRootCoords (GdkEvent _ fe) = withForeignPtr fe \e -> alloca \xr -> alloca \yr ->
+	c_gdk_event_get_root_coords e xr yr
+		>>= bool (pure Nothing) ((\x y -> Just (x, y)) <$> peek xr <*> peek yr) . gbooleanToBool
+
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
 newtype GdkEventConfigure = GdkEventConfigure (ForeignPtr GdkEventConfigure) deriving Show
