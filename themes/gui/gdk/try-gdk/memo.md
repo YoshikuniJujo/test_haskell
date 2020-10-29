@@ -241,7 +241,7 @@ todo
 	+ [x] gdk\_event\_get\_keyval
 	+ [x] gdk\_event\_get\_root\_coords
 	+ [x] gdk\_event\_get\_scroll\_direction
-	+ [ ] gdk\_event\_get\_scroll\_deltas
+	+ [x] gdk\_event\_get\_scroll\_deltas
 	+ [ ] gdk\_event\_get\_scroll\_stop\_event
 	+ [ ] gdk\_event\_get\_state
 	+ [ ] gdk\_event\_get\_time
@@ -254,6 +254,20 @@ todo
 	+ [ ] gdk\_event\_get\_distance
 	+ [ ] gdk\_event\_triggers\_context\_menu
 	+ [ ] gdk\_event\_get\_seat
+	+ [ ] gdk\_event\_get\_scancode
+	+ [ ] gdk\_event\_get\_pointer\_emulated
+	+ [ ] gdk\_event\_handler\_set
+	+ [ ] gdk\_get\_show\_events
+	+ [ ] gdk\_set\_show\_events
+	+ [ ] gdk\_event\_get\_screen
+	+ [ ] gdk\_event\_set\_screen
+	+ [ ] gdk\_event\_set\_device
+	+ [ ] gdk\_event\_get\_device
+	+ [ ] gdk\_event\_get\_source\_device
+	+ [ ] gdk\_event\_set\_source\_device
+	+ [ ] gdk\_event\_get\_device\_tool
+	+ [ ] gdk\_event\_set\_device\_tool
+	+ [ ] gdk\_setting\_get
 	+ [ ] others
 * [ ] remove or check unusable or having unknown usability functions
 * [x] repair gdkDrawingContextGetCairoContext
