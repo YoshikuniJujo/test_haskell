@@ -8,11 +8,14 @@ import GHC.Stack
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
+import Foreign.Marshal
 import Foreign.Storable
+import Data.Bool
 import Data.Word
 import Data.Int
 
 import Graphics.Gdk.Types
+import Graphics.Gdk.Values
 
 #include <gdk/gdk.h>
 
@@ -70,6 +73,19 @@ foreign import ccall "gdk_event_new" c_gdk_event_new :: IO (Ptr GdkEvent)
 gdkEventNew :: IO GdkEvent
 gdkEventNew = mkGdkEvent =<< c_gdk_event_new
 
+foreign import ccall "gdk_event_copy" c_gdk_event_copy :: Ptr GdkEvent -> IO (Ptr GdkEvent)
+
+gdkEventCopy :: GdkEvent -> IO GdkEvent
+gdkEventCopy (GdkEvent _ fe) = withForeignPtr fe \e -> mkGdkEvent =<< c_gdk_event_copy e
+
+foreign import ccall "gdk_event_get_axis" c_gdk_event_get_axis ::
+	Ptr GdkEvent -> #{type GdkAxisUse} -> Ptr #{type gdouble} -> IO #type gboolean
+
+gdkEventGetAxis :: GdkEvent -> GdkAxisUse -> IO (Maybe #type gdouble)
+gdkEventGetAxis (GdkEvent _ fe) (GdkAxisUse ax) =
+	withForeignPtr fe \e -> alloca \v -> c_gdk_event_get_axis e ax v >>=
+		bool (pure Nothing) (Just <$> peek v) . gbooleanToBool
+
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
 newtype GdkEventConfigure = GdkEventConfigure (ForeignPtr GdkEventConfigure) deriving Show
@@ -89,11 +105,6 @@ newtype GdkEventWindowState = GdkEventWindowState (ForeignPtr GdkEventWindowStat
 
 pattern GdkEventGdkWindowState :: GdkEventWindowState -> GdkEvent
 pattern GdkEventGdkWindowState p <- GdkEvent (GdkEventType #{const GDK_WINDOW_STATE}) (GdkEventWindowState . castForeignPtr -> p)
-
-newtype GdkWindowState = GdkWindowState #{type GdkWindowState} deriving Show
-
-#enum GdkWindowState, GdkWindowState, GDK_WINDOW_STATE_WITHDRAWN, \
-	GDK_WINDOW_STATE_ICONIFIED
 
 gdkEventWindowStateNewWindowState :: GdkEventWindowState -> IO GdkWindowState
 gdkEventWindowStateNewWindowState (GdkEventWindowState p) =

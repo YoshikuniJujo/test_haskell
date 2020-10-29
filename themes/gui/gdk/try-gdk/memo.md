@@ -231,8 +231,29 @@ todo
 	+ [x] gdk\_event\_get
 	+ [x] gdk\_event\_put
 	+ [x] gdk\_event\_new
-	+ [ ] gdk\_event\_copy
-	+ [ ] gdk\_event\_free
+	+ [x] gdk\_event\_copy
+	+ [x] gdk\_event\_free
+	+ [x] gdk\_event\_get\_axis
+	+ [ ] gdk\_event\_get\_button
+	+ [ ] gdk\_event\_get\_click\_count
+	+ [ ] gdk\_event\_get\_coords
+	+ [ ] gdk\_event\_get\_keycode
+	+ [ ] gdk\_event\_get\_keyval
+	+ [ ] gdk\_event\_get\_root\_coords
+	+ [ ] gdk\_event\_get\_scroll\_direction
+	+ [ ] gdk\_event\_get\_scroll\_deltas
+	+ [ ] gdk\_event\_get\_scroll\_stop\_event
+	+ [ ] gdk\_event\_get\_state
+	+ [ ] gdk\_event\_get\_time
+	+ [ ] gdk\_event\_get\_window
+	+ [ ] gdk\_event\_get\_event\_type
+	+ [ ] gdk\_event\_get\_event\_sequence
+	+ [ ] gdk\_event\_request\_motions
+	+ [ ] gdk\_event\_get\_angle
+	+ [ ] gdk\_event\_get\_center
+	+ [ ] gdk\_event\_get\_distance
+	+ [ ] gdk\_event\_triggers\_context\_menu
+	+ [ ] gdk\_event\_get\_seat
 	+ [ ] others
 * [ ] remove or check unusable or having unknown usability functions
 * [x] repair gdkDrawingContextGetCairoContext

@@ -87,3 +87,10 @@ newtype GdkWMDecoration = GdkWMDecoration #{type GdkWMDecoration} deriving Show
 #enum GdkWMDecoration, GdkWMDecoration, GDK_DECOR_ALL, GDK_DECOR_BORDER, \
 	GDK_DECOR_RESIZEH, GDK_DECOR_TITLE, GDK_DECOR_MENU, \
 	GDK_DECOR_MINIMIZE, GDK_DECOR_MAXIMIZE
+
+newtype GdkAxisUse = GdkAxisUse #{type GdkAxisUse} deriving Show
+
+#enum GdkAxisUse, GdkAxisUse, GDK_AXIS_IGNORE, \
+	GDK_AXIS_X, GDK_AXIS_Y, GDK_AXIS_PRESSURE, GDK_AXIS_XTILT, \
+	GDK_AXIS_YTILT, GDK_AXIS_WHEEL, GDK_AXIS_DISTANCE, GDK_AXIS_ROTATION, \
+	GDK_AXIS_SLIDER, GDK_AXIS_LAST
