@@ -86,6 +86,13 @@ gdkEventGetAxis (GdkEvent _ fe) (GdkAxisUse ax) =
 	withForeignPtr fe \e -> alloca \v -> c_gdk_event_get_axis e ax v >>=
 		bool (pure Nothing) (Just <$> peek v) . gbooleanToBool
 
+foreign import ccall "gdk_event_get_button" c_gdk_event_get_button ::
+	Ptr GdkEvent -> Ptr #{type guint} -> IO #type gboolean
+
+gdkEventGetButton :: GdkEvent -> IO (Maybe #type guint)
+gdkEventGetButton (GdkEvent _ fe) = withForeignPtr fe \e -> alloca \b ->
+	c_gdk_event_get_button e b >>= bool (pure Nothing) (Just <$> peek b) . gbooleanToBool
+
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
 newtype GdkEventConfigure = GdkEventConfigure (ForeignPtr GdkEventConfigure) deriving Show

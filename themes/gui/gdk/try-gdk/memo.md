@@ -234,7 +234,7 @@ todo
 	+ [x] gdk\_event\_copy
 	+ [x] gdk\_event\_free
 	+ [x] gdk\_event\_get\_axis
-	+ [ ] gdk\_event\_get\_button
+	+ [x] gdk\_event\_get\_button
 	+ [ ] gdk\_event\_get\_click\_count
 	+ [ ] gdk\_event\_get\_coords
 	+ [ ] gdk\_event\_get\_keycode
