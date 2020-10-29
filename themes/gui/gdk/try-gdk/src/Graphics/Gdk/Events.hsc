@@ -60,6 +60,11 @@ gdkEventGet = do
 		then pure Nothing
 		else Just <$> mkGdkEvent p
 
+foreign import ccall "gdk_event_put" c_gdk_event_put :: Ptr GdkEvent -> IO ()
+
+gdkEventPut :: GdkEvent -> IO ()
+gdkEventPut (GdkEvent _ fe) = withForeignPtr fe c_gdk_event_put
+
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
 newtype GdkEventConfigure = GdkEventConfigure (ForeignPtr GdkEventConfigure) deriving Show
