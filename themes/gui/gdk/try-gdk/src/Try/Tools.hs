@@ -6,7 +6,7 @@ module Try.Tools where
 import Control.Concurrent
 import Data.Bool
 
-import Graphics.Gdk.Event
+import Graphics.Gdk.Events
 import Graphics.Gdk.Types
 import Graphics.Gdk.Values
 

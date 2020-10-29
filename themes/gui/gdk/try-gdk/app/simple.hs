@@ -9,7 +9,7 @@ import System.Environment
 
 import Graphics.Gdk.General
 import Graphics.Gdk.Windows
-import Graphics.Gdk.Event
+import Graphics.Gdk.Events
 import Try.Tools
 
 main :: IO ()

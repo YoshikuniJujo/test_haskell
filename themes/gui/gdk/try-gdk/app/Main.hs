@@ -21,7 +21,7 @@ import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.Visuals
 import Graphics.Gdk.Windows
 import Graphics.Gdk.GdkDrawingContext
-import Graphics.Gdk.Event
+import Graphics.Gdk.Events
 import Graphics.Gdk.Types
 import Graphics.Gdk.Values
 import Graphics.Cairo.Drawing.CairoT

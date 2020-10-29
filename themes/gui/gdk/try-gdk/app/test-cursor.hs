@@ -15,7 +15,7 @@ import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.Cursors
 import Graphics.Gdk.Windows
-import Graphics.Gdk.Event
+import Graphics.Gdk.Events
 import Graphics.Gdk.Cursors
 import Try.Tools
 

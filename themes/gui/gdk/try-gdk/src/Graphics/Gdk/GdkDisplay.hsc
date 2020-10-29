@@ -13,7 +13,7 @@ import Data.Word
 import Data.Int
 
 import Graphics.Gdk.Types
-import Graphics.Gdk.Event
+import Graphics.Gdk.Events
 import System.Glib.DoublyLinkedLists
 
 #include <gdk/gdk.h>
