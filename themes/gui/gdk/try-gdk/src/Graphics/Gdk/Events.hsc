@@ -109,6 +109,14 @@ gdkEventGetCoords (GdkEvent _ fe) = withForeignPtr fe \e -> alloca \xw -> alloca
 	c_gdk_event_get_coords e xw yw
 		>>= bool (pure Nothing) ((\x y -> Just (x, y)) <$> peek xw <*> peek yw) . gbooleanToBool
 
+foreign import ccall "gdk_event_get_keycode" c_gdk_event_get_keycode ::
+	Ptr GdkEvent -> Ptr #{type guint16} -> IO #type gboolean
+
+gdkEventGetKeycode :: GdkEvent -> IO (Maybe #type guint16)
+gdkEventGetKeycode (GdkEvent _ fe) = withForeignPtr fe \e -> alloca \kc ->
+	c_gdk_event_get_keycode e kc
+		>>= bool (pure Nothing) (Just <$> peek kc) . gbooleanToBool
+
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
 newtype GdkEventConfigure = GdkEventConfigure (ForeignPtr GdkEventConfigure) deriving Show

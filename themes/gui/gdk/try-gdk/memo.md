@@ -237,7 +237,7 @@ todo
 	+ [x] gdk\_event\_get\_button
 	+ [x] gdk\_event\_get\_click\_count
 	+ [x] gdk\_event\_get\_coords
-	+ [ ] gdk\_event\_get\_keycode
+	+ [x] gdk\_event\_get\_keycode
 	+ [ ] gdk\_event\_get\_keyval
 	+ [ ] gdk\_event\_get\_root\_coords
 	+ [ ] gdk\_event\_get\_scroll\_direction
