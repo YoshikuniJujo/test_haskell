@@ -230,7 +230,7 @@ todo
 	+ [x] gdk\_event\_peek
 	+ [x] gdk\_event\_get
 	+ [x] gdk\_event\_put
-	+ [ ] gdk\_event\_new
+	+ [x] gdk\_event\_new
 	+ [ ] gdk\_event\_copy
 	+ [ ] gdk\_event\_free
 	+ [ ] others
