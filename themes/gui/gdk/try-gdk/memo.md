@@ -236,7 +236,7 @@ todo
 	+ [x] gdk\_event\_get\_axis
 	+ [x] gdk\_event\_get\_button
 	+ [x] gdk\_event\_get\_click\_count
-	+ [ ] gdk\_event\_get\_coords
+	+ [x] gdk\_event\_get\_coords
 	+ [ ] gdk\_event\_get\_keycode
 	+ [ ] gdk\_event\_get\_keyval
 	+ [ ] gdk\_event\_get\_root\_coords
