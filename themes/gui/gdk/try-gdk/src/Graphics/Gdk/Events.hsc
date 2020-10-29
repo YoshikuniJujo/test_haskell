@@ -93,6 +93,14 @@ gdkEventGetButton :: GdkEvent -> IO (Maybe #type guint)
 gdkEventGetButton (GdkEvent _ fe) = withForeignPtr fe \e -> alloca \b ->
 	c_gdk_event_get_button e b >>= bool (pure Nothing) (Just <$> peek b) . gbooleanToBool
 
+foreign import ccall "gdk_event_get_click_count" c_gdk_event_get_click_count ::
+	Ptr GdkEvent -> Ptr #{type guint} -> IO #type gboolean
+
+gdkEventGetClickCount :: GdkEvent -> IO (Maybe #type guint)
+gdkEventGetClickCount (GdkEvent _ fe) = withForeignPtr fe \e -> alloca \cc ->
+	c_gdk_event_get_click_count e cc
+		>>= bool (pure Nothing) (Just <$> peek cc) . gbooleanToBool
+
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
 newtype GdkEventConfigure = GdkEventConfigure (ForeignPtr GdkEventConfigure) deriving Show
