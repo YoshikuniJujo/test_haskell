@@ -240,7 +240,7 @@ todo
 	+ [x] gdk\_event\_get\_keycode
 	+ [x] gdk\_event\_get\_keyval
 	+ [x] gdk\_event\_get\_root\_coords
-	+ [ ] gdk\_event\_get\_scroll\_direction
+	+ [x] gdk\_event\_get\_scroll\_direction
 	+ [ ] gdk\_event\_get\_scroll\_deltas
 	+ [ ] gdk\_event\_get\_scroll\_stop\_event
 	+ [ ] gdk\_event\_get\_state

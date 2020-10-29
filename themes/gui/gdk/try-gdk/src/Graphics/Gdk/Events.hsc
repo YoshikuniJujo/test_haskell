@@ -133,6 +133,14 @@ gdkEventGetRootCoords (GdkEvent _ fe) = withForeignPtr fe \e -> alloca \xr -> al
 	c_gdk_event_get_root_coords e xr yr
 		>>= bool (pure Nothing) ((\x y -> Just (x, y)) <$> peek xr <*> peek yr) . gbooleanToBool
 
+foreign import ccall "gdk_event_get_scroll_direction" c_gdk_event_get_scroll_direction ::
+	Ptr GdkEvent -> Ptr #{type GdkScrollDirection} -> IO #type gboolean
+
+gdkEventGetScrollDirection :: GdkEvent -> IO (Maybe GdkScrollDirection)
+gdkEventGetScrollDirection (GdkEvent _ fe) = withForeignPtr fe \e -> alloca \sd ->
+	c_gdk_event_get_scroll_direction e sd
+		>>= bool (pure Nothing) (Just . GdkScrollDirection <$> peek sd) . gbooleanToBool
+
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
 newtype GdkEventConfigure = GdkEventConfigure (ForeignPtr GdkEventConfigure) deriving Show
