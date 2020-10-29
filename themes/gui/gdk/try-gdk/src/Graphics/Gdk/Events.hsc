@@ -117,6 +117,14 @@ gdkEventGetKeycode (GdkEvent _ fe) = withForeignPtr fe \e -> alloca \kc ->
 	c_gdk_event_get_keycode e kc
 		>>= bool (pure Nothing) (Just <$> peek kc) . gbooleanToBool
 
+foreign import ccall "gdk_event_get_keyval" c_gdk_event_get_keyval ::
+	Ptr GdkEvent -> Ptr #{type guint} -> IO #type gboolean
+
+gdkEventGetKeyval :: GdkEvent -> IO (Maybe #type guint)
+gdkEventGetKeyval (GdkEvent _ fe) = withForeignPtr fe \e -> alloca \kv ->
+	c_gdk_event_get_keyval e kv
+		>>= bool (pure Nothing) (Just <$> peek kv) . gbooleanToBool
+
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
 newtype GdkEventConfigure = GdkEventConfigure (ForeignPtr GdkEventConfigure) deriving Show
