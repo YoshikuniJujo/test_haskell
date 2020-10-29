@@ -37,8 +37,16 @@ mkGdkEvent p = do
 	GDK_CLIENT_EVENT, GDK_VISIBILITY_NOTIFY, GDK_SCROLL, GDK_WINDOW_STATE, \
 	GDK_SETTING, GDK_OWNER_CHANGE, GDK_GRAB_BROKEN
 
+foreign import ccall "gdk_events_pending" c_gdk_events_pending :: IO #type gboolean
+
+gbooleanToBool :: #{type gboolean} -> Bool
+gbooleanToBool #{const FALSE} = False
+gbooleanToBool _ = True
+
+gdkEventsPending :: IO Bool
+gdkEventsPending = gbooleanToBool <$> c_gdk_events_pending
+
 foreign import ccall "gdk_event_get" c_gdk_event_get :: IO (Ptr GdkEvent)
-foreign import ccall "gdk_events_pending" c_gdk_event_pending :: IO #type gboolean
 
 gdkEventGet :: IO (Maybe GdkEvent)
 gdkEventGet = do

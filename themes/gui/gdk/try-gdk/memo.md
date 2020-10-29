@@ -226,7 +226,13 @@ todo
 	+ [x] gdk\_drawing\_context\_get\_cairo\_context
 	+ [x] gdk\_drawing\_context\_is\_valid
 * [ ] functions of Events
-	+ [ ] gdk\_events\_pending
+	+ [x] gdk\_events\_pending
+	+ [ ] gdk\_event\_peek
+	+ [ ] gdk\_event\_get
+	+ [ ] gdk\_event\_put
+	+ [ ] gdk\_event\_new
+	+ [ ] gdk\_event\_copy
+	+ [ ] gdk\_event\_free
 	+ [ ] others
 * [ ] remove or check unusable or having unknown usability functions
 * [x] repair gdkDrawingContextGetCairoContext

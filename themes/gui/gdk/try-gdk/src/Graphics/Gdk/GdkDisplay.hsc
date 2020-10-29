@@ -46,10 +46,6 @@ gdkDisplayGetDefaultScreen (GdkDisplay p) =
 foreign import ccall "gdk_display_device_is_grabbed" c_gdk_display_device_is_grabbed ::
 	Ptr GdkDisplay -> Ptr GdkDevice -> IO #type gboolean
 
-gbooleanToBool :: #{type gboolean} -> Bool
-gbooleanToBool #{const FALSE} = False
-gbooleanToBool _ = True
-
 gdkDisplayDeviceIsGrabbed :: GdkDisplay -> GdkDevice -> IO Bool
 gdkDisplayDeviceIsGrabbed (GdkDisplay dpy) (GdkDevice dvc) = gbooleanToBool <$> c_gdk_display_device_is_grabbed dpy dvc
 
