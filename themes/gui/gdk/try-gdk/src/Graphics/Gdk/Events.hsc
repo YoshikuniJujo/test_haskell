@@ -46,6 +46,11 @@ gbooleanToBool _ = True
 gdkEventsPending :: IO Bool
 gdkEventsPending = gbooleanToBool <$> c_gdk_events_pending
 
+foreign import ccall "gdk_event_peek" c_gdk_event_peek :: IO (Ptr GdkEvent)
+
+gdkEventPeek :: IO GdkEvent
+gdkEventPeek = mkGdkEvent =<< c_gdk_event_peek
+
 foreign import ccall "gdk_event_get" c_gdk_event_get :: IO (Ptr GdkEvent)
 
 gdkEventGet :: IO (Maybe GdkEvent)

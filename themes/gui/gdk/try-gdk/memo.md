@@ -227,8 +227,8 @@ todo
 	+ [x] gdk\_drawing\_context\_is\_valid
 * [ ] functions of Events
 	+ [x] gdk\_events\_pending
-	+ [ ] gdk\_event\_peek
-	+ [ ] gdk\_event\_get
+	+ [x] gdk\_event\_peek
+	+ [x] gdk\_event\_get
 	+ [ ] gdk\_event\_put
 	+ [ ] gdk\_event\_new
 	+ [ ] gdk\_event\_copy
