@@ -155,7 +155,7 @@ main = do
 	putStrLn . ("Window state: " ++) . show =<< gdkWindowGetState w
 	gdkWindowSetEvents w [
 		gdkExposureMask, gdkButtonPressMask, gdkFocusChangeMask, gdkKeyPressMask,
-		gdkPointerMotionMask ]
+		gdkPointerMotionMask, gdkAllEventsMask ]
 	print gdkExposureMask
 	print gdkPointerMotionMask
 	gdkWindowInvalidateRect w (50, 50) (100, 100) False
