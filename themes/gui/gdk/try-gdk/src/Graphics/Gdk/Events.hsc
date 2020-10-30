@@ -180,11 +180,18 @@ gdkEventGetWindow (GdkEvent _ fe) = withForeignPtr fe \e ->
 	GdkWindow <$> c_gdk_event_get_window e
 
 foreign import ccall "gdk_event_get_event_type" c_gdk_event_get_event_type ::
-	Ptr GdkEvent -> IO (Ptr GdkEventType)
+	Ptr GdkEvent -> IO #type GdkEventType
 
 gdkEventGetEventType :: GdkEvent -> IO GdkEventType
 gdkEventGetEventType (GdkEvent _ fe) = withForeignPtr fe \e ->
 	GdkEventType <$> c_gdk_event_get_event_type e
+
+foreign import ccall "gdk_event_get_seat" c_gdk_event_get_seat ::
+	Ptr GdkEvent -> IO (Ptr GdkSeat)
+
+gdkEventGetSeat :: GdkEvent -> IO GdkSeat
+gdkEventGetSeat (GdkEvent _ fe) = withForeignPtr fe \e ->
+	GdkSeat <$> c_gdk_event_get_seat e
 
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 

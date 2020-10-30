@@ -247,13 +247,14 @@ todo
 	+ [x] gdk\_event\_get\_time
 	+ [x] gdk\_event\_get\_window
 	+ [x] gdk\_event\_get\_event\_type
+		- [x] repair gdk\_event\_get_event\_type
 	+ [ ] gdk\_event\_get\_event\_sequence
-	+ [ ] gdk\_event\_request\_motions
+	+ no gdk\_event\_request\_motions
 	+ [ ] gdk\_event\_get\_angle
 	+ [ ] gdk\_event\_get\_center
 	+ [ ] gdk\_event\_get\_distance
 	+ [ ] gdk\_event\_triggers\_context\_menu
-	+ [ ] gdk\_event\_get\_seat
+	+ [x] gdk\_event\_get\_seat
 	+ [ ] gdk\_event\_get\_scancode
 	+ [ ] gdk\_event\_get\_pointer\_emulated
 	+ [ ] gdk\_event\_handler\_set
