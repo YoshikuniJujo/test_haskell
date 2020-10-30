@@ -255,7 +255,7 @@ todo
 	+ [ ] gdk\_event\_get\_distance
 	+ [ ] gdk\_event\_triggers\_context\_menu
 	+ [x] gdk\_event\_get\_seat
-	+ [ ] gdk\_event\_get\_scancode
+	+ [x] gdk\_event\_get\_scancode
 	+ [ ] gdk\_event\_get\_pointer\_emulated
 	+ [ ] gdk\_event\_handler\_set
 	+ [ ] gdk\_get\_show\_events

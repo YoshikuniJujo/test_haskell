@@ -193,6 +193,12 @@ gdkEventGetSeat :: GdkEvent -> IO GdkSeat
 gdkEventGetSeat (GdkEvent _ fe) = withForeignPtr fe \e ->
 	GdkSeat <$> c_gdk_event_get_seat e
 
+foreign import ccall "gdk_event_get_scancode" c_gdk_event_get_scancode ::
+	Ptr GdkEvent -> IO #type int
+
+gdkEventGetScancode :: GdkEvent -> IO #type int
+gdkEventGetScancode (GdkEvent _ fe) = withForeignPtr fe c_gdk_event_get_scancode
+
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
 newtype GdkEventConfigure = GdkEventConfigure (ForeignPtr GdkEventConfigure) deriving Show
