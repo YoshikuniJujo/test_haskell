@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments, TupleSections #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -163,6 +163,14 @@ gdkEventGetState :: GdkEvent -> IO (Maybe [GdkModifierType])
 gdkEventGetState (GdkEvent _ fe) = withForeignPtr fe \e -> alloca \mt -> do
 	c_gdk_event_get_state e mt
 		>>= bool (pure Nothing) (Just . toGdkModifierType <$> peek mt) . gbooleanToBool
+
+foreign import ccall "gdk_event_get_time" c_gdk_event_get_time ::
+	Ptr GdkEvent -> IO #type guint32
+
+gdkEventGetTime :: GdkEvent -> IO (Maybe #type guint32)
+gdkEventGetTime (GdkEvent _ fe) = withForeignPtr fe \e -> (<$> c_gdk_event_get_time e) \case
+	t	| t == #{const GDK_CURRENT_TIME} -> Nothing
+		| otherwise -> Just t
 
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 

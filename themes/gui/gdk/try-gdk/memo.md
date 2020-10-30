@@ -244,7 +244,7 @@ todo
 	+ [x] gdk\_event\_get\_scroll\_deltas
 	+ [x] gdk\_event\_get\_scroll\_stop\_event
 	+ [x] gdk\_event\_get\_state
-	+ [ ] gdk\_event\_get\_time
+	+ [x] gdk\_event\_get\_time
 	+ [ ] gdk\_event\_get\_window
 	+ [ ] gdk\_event\_get\_event\_type
 	+ [ ] gdk\_event\_get\_event\_sequence
