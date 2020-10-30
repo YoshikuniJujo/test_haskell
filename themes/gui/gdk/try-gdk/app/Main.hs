@@ -37,6 +37,7 @@ main = do
 	as <- getArgs
 	gdkSetAllowedBackends "win32,x11,*"
 	print =<< gdkInit pn as
+	print =<< gdkGetShowEvents
 	print =<< gdkGetDisplayArgName
 	gdkSetProgramClass "Foo"
 	print =<< gdkGetProgramClass

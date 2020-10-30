@@ -258,7 +258,7 @@ todo
 	+ [x] gdk\_event\_get\_scancode
 	+ [ ] gdk\_event\_get\_pointer\_emulated
 	+ [ ] gdk\_event\_handler\_set
-	+ [ ] gdk\_get\_show\_events
+	+ [x] gdk\_get\_show\_events
 	+ [ ] gdk\_set\_show\_events
 	+ [ ] gdk\_event\_get\_screen
 	+ [ ] gdk\_event\_set\_screen

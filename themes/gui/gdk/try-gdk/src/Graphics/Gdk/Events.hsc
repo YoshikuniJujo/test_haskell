@@ -199,6 +199,12 @@ foreign import ccall "gdk_event_get_scancode" c_gdk_event_get_scancode ::
 gdkEventGetScancode :: GdkEvent -> IO #type int
 gdkEventGetScancode (GdkEvent _ fe) = withForeignPtr fe c_gdk_event_get_scancode
 
+foreign import ccall "gdk_get_show_events" c_gdk_get_show_events ::
+	IO #type gboolean
+
+gdkGetShowEvents :: IO Bool
+gdkGetShowEvents = gbooleanToBool <$> c_gdk_get_show_events
+
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
 newtype GdkEventConfigure = GdkEventConfigure (ForeignPtr GdkEventConfigure) deriving Show
