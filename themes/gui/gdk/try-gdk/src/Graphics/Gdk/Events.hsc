@@ -149,6 +149,12 @@ gdkEventGetScrollDeltas (GdkEvent _ fe) = withForeignPtr fe \e -> alloca \dx -> 
 	c_gdk_event_get_scroll_deltas e dx dy
 		>>= bool (pure Nothing) ((\x y -> Just (x, y)) <$> peek dy <*> peek dy) . gbooleanToBool
 
+foreign import ccall "gdk_event_is_scroll_stop_event" c_gdk_event_is_scroll_stop_event ::
+	Ptr GdkEvent -> IO #type gboolean
+
+gdkEventIsScrollStopEvent :: GdkEvent -> IO Bool
+gdkEventIsScrollStopEvent (GdkEvent _ fe) = withForeignPtr fe \e -> gbooleanToBool <$> c_gdk_event_is_scroll_stop_event e
+
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
 newtype GdkEventConfigure = GdkEventConfigure (ForeignPtr GdkEventConfigure) deriving Show

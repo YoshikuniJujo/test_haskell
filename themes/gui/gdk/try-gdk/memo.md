@@ -242,7 +242,7 @@ todo
 	+ [x] gdk\_event\_get\_root\_coords
 	+ [x] gdk\_event\_get\_scroll\_direction
 	+ [x] gdk\_event\_get\_scroll\_deltas
-	+ [ ] gdk\_event\_get\_scroll\_stop\_event
+	+ [x] gdk\_event\_get\_scroll\_stop\_event
 	+ [ ] gdk\_event\_get\_state
 	+ [ ] gdk\_event\_get\_time
 	+ [ ] gdk\_event\_get\_window
