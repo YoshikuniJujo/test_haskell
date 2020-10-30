@@ -153,7 +153,16 @@ foreign import ccall "gdk_event_is_scroll_stop_event" c_gdk_event_is_scroll_stop
 	Ptr GdkEvent -> IO #type gboolean
 
 gdkEventIsScrollStopEvent :: GdkEvent -> IO Bool
-gdkEventIsScrollStopEvent (GdkEvent _ fe) = withForeignPtr fe \e -> gbooleanToBool <$> c_gdk_event_is_scroll_stop_event e
+gdkEventIsScrollStopEvent (GdkEvent _ fe) = withForeignPtr fe \e ->
+	gbooleanToBool <$> c_gdk_event_is_scroll_stop_event e
+
+foreign import ccall "gdk_event_get_state" c_gdk_event_get_state ::
+	Ptr GdkEvent -> Ptr #{type GdkModifierType} -> IO #type gboolean
+
+gdkEventGetState :: GdkEvent -> IO (Maybe [GdkModifierType])
+gdkEventGetState (GdkEvent _ fe) = withForeignPtr fe \e -> alloca \mt -> do
+	c_gdk_event_get_state e mt
+		>>= bool (pure Nothing) (Just . toGdkModifierType <$> peek mt) . gbooleanToBool
 
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
