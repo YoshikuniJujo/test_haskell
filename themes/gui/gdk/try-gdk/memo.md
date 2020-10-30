@@ -264,7 +264,7 @@ todo
 	+ [x] gdk\_event\_set\_screen
 	+ [x] gdk\_event\_get\_device
 	+ [x] gdk\_event\_set\_device
-	+ [ ] gdk\_event\_get\_source\_device
+	+ [x] gdk\_event\_get\_source\_device
 	+ [ ] gdk\_event\_set\_source\_device
 	+ [ ] gdk\_event\_get\_device\_tool
 	+ [ ] gdk\_event\_set\_device\_tool

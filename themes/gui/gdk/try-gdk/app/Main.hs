@@ -129,7 +129,7 @@ main = do
 	let wattr = mkGdkWindowAttr [
 				gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkFocusChangeMask,
 				gdkEnterNotifyMask, gdkLeaveNotifyMask, gdkPointerMotionMask,
-				gdkAllEventsMask
+				gdkAllEventsMask, gdkPointerMotionMask
 				]
 			400 400
 			gdkInputOutput gdkWindowToplevel
@@ -153,11 +153,14 @@ main = do
 	putStrLn . ("Window is visible: " ++) . show =<< gdkWindowIsVisible w
 	putStrLn . ("Window is viewable: " ++) . show =<< gdkWindowIsViewable w
 	putStrLn . ("Window state: " ++) . show =<< gdkWindowGetState w
-	gdkWindowSetEvents w [gdkExposureMask, gdkButtonPressMask, gdkFocusChangeMask, gdkKeyPressMask]
+	gdkWindowSetEvents w [
+		gdkExposureMask, gdkButtonPressMask, gdkFocusChangeMask, gdkKeyPressMask,
+		gdkPointerMotionMask ]
 	print gdkExposureMask
+	print gdkPointerMotionMask
 	gdkWindowInvalidateRect w (50, 50) (100, 100) False
-	gdkWindowFreezeUpdates w
-	gdkWindowThawUpdates w
+--	gdkWindowFreezeUpdates w
+--	gdkWindowThawUpdates w
 	gdkScreenGetToplevelWindows scrn >>= \case
 		([], []) -> putStrLn "no toplevel windows"
 		(_, []) -> putStrLn "no post toplevel windows"
@@ -258,7 +261,8 @@ checkEvent = \case
 		ns <- gdkEventWindowStateNewWindowState s
 		putStrLn $ "GDK_WINDOW_STATE: " ++ show s ++ ": " ++ show ns
 		pure True
-	e -> do	print e
+	GdkEvent et p -> do	
+		putStrLn $ show et ++ " " ++ show p
 		pure True
 
 doWhile_ :: Monad m => m Bool -> m ()
