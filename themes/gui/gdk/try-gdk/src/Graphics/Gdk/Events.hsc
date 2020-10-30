@@ -172,6 +172,20 @@ gdkEventGetTime (GdkEvent _ fe) = withForeignPtr fe \e -> (<$> c_gdk_event_get_t
 	t	| t == #{const GDK_CURRENT_TIME} -> Nothing
 		| otherwise -> Just t
 
+foreign import ccall "gdk_event_get_window" c_gdk_event_get_window ::
+	Ptr GdkEvent -> IO (Ptr GdkWindow)
+
+gdkEventGetWindow :: GdkEvent -> IO GdkWindow
+gdkEventGetWindow (GdkEvent _ fe) = withForeignPtr fe \e ->
+	GdkWindow <$> c_gdk_event_get_window e
+
+foreign import ccall "gdk_event_get_event_type" c_gdk_event_get_event_type ::
+	Ptr GdkEvent -> IO (Ptr GdkEventType)
+
+gdkEventGetEventType :: GdkEvent -> IO GdkEventType
+gdkEventGetEventType (GdkEvent _ fe) = withForeignPtr fe \e ->
+	GdkEventType <$> c_gdk_event_get_event_type e
+
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
 newtype GdkEventConfigure = GdkEventConfigure (ForeignPtr GdkEventConfigure) deriving Show

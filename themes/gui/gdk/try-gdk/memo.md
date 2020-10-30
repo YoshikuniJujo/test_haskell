@@ -245,8 +245,8 @@ todo
 	+ [x] gdk\_event\_get\_scroll\_stop\_event
 	+ [x] gdk\_event\_get\_state
 	+ [x] gdk\_event\_get\_time
-	+ [ ] gdk\_event\_get\_window
-	+ [ ] gdk\_event\_get\_event\_type
+	+ [x] gdk\_event\_get\_window
+	+ [x] gdk\_event\_get\_event\_type
 	+ [ ] gdk\_event\_get\_event\_sequence
 	+ [ ] gdk\_event\_request\_motions
 	+ [ ] gdk\_event\_get\_angle
