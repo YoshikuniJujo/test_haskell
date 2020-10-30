@@ -205,6 +205,20 @@ foreign import ccall "gdk_get_show_events" c_gdk_get_show_events ::
 gdkGetShowEvents :: IO Bool
 gdkGetShowEvents = gbooleanToBool <$> c_gdk_get_show_events
 
+foreign import ccall "gdk_event_set_screen" c_gdk_event_set_screen ::
+	Ptr GdkEvent -> Ptr GdkScreen -> IO ()
+
+gdkEventSetScreen :: GdkEvent -> GdkScreen -> IO ()
+gdkEventSetScreen (GdkEvent _ fe) (GdkScreen s) = withForeignPtr fe \e ->
+	c_gdk_event_set_screen e s
+
+foreign import ccall "gdk_event_get_screen" c_gdk_event_get_screen ::
+	Ptr GdkEvent -> IO (Ptr GdkScreen)
+
+gdkEventGetScreen :: GdkEvent -> IO GdkScreen
+gdkEventGetScreen (GdkEvent _ fe) = withForeignPtr fe \e ->
+	GdkScreen <$> c_gdk_event_get_screen e
+
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
 newtype GdkEventConfigure = GdkEventConfigure (ForeignPtr GdkEventConfigure) deriving Show

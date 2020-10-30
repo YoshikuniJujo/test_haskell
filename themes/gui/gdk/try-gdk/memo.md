@@ -260,8 +260,8 @@ todo
 	+ [ ] gdk\_event\_handler\_set
 	+ [x] gdk\_get\_show\_events
 	+ [ ] gdk\_set\_show\_events
-	+ [ ] gdk\_event\_get\_screen
-	+ [ ] gdk\_event\_set\_screen
+	+ [x] gdk\_event\_get\_screen
+	+ [x] gdk\_event\_set\_screen
 	+ [ ] gdk\_event\_set\_device
 	+ [ ] gdk\_event\_get\_device
 	+ [ ] gdk\_event\_get\_source\_device
