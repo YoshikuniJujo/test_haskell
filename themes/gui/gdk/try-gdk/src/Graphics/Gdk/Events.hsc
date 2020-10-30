@@ -219,6 +219,13 @@ gdkEventGetScreen :: GdkEvent -> IO GdkScreen
 gdkEventGetScreen (GdkEvent _ fe) = withForeignPtr fe \e ->
 	GdkScreen <$> c_gdk_event_get_screen e
 
+foreign import ccall "gdk_event_get_device" c_gdk_event_get_device ::
+	Ptr GdkEvent -> IO (Ptr GdkDevice)
+
+gdkEventGetDevice :: GdkEvent -> IO GdkDevice
+gdkEventGetDevice (GdkEvent _ fe) = withForeignPtr fe \e ->
+	GdkDevice <$> c_gdk_event_get_device e
+
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
 newtype GdkEventConfigure = GdkEventConfigure (ForeignPtr GdkEventConfigure) deriving Show
