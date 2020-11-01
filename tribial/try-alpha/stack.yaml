@@ -41,7 +41,7 @@ packages:
 #
 extra-deps:
 - git: https://github.com/YoshikuniJujo/simple-cairo
-  commit: 29f0a11c02a46d2fee86e4c33186d6d5578b4c52
+  commit: e618d8177b94d51ab8fdbf2525ae36e34922b721
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
