@@ -49,6 +49,16 @@ convertPngFile src dst = writePng dst . pixelMap addAlpha =<< readPngImageRGB8 s
 convertPngFileWith :: (PixelRGB8 -> PixelRGBA8) -> FilePath -> FilePath -> IO ()
 convertPngFileWith aa src dst = writePng dst . pixelMap aa =<< readPngImageRGB8 src
 
+addAlphaR :: PixelRGB8 -> PixelRGBA8
+addAlphaR (PixelRGB8 r g b)
+	| r_ > 0x6f && g_ > 0x6f && b_ > 0x6f = PixelRGBA8 r g b 0xff
+	| 0.7 < g' / r' && g' / r' < 1.3 && 0.7 < b' / r' && b' / r' < 1.3 = PixelRGBA8 r g b 0xff
+	| r_ > g_ && r_ > b_ = PixelRGBA8 r g b 0x00
+	| otherwise = PixelRGBA8 r g b 0xff
+	where
+	[r_, g_, b_] = fromIntegral <$> [r, g, b] :: [Integer]
+	[r', g', b'] = fromIntegral <$> [r, g, b] :: [Double]
+
 addAlphaG2 :: PixelRGB8 -> PixelRGBA8
 addAlphaG2 (PixelRGB8 r g b)
 	| g_ > (r_ * 10 `div` 9) && g_ > (b_ * 10 `div` 9) = PixelRGBA8 r g b 0x00
