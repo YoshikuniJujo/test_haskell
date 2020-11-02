@@ -5,7 +5,9 @@ module Graphics.Gdk.GdkSeat where
 import Foreign.Ptr
 import Control.Arrow
 import Data.Word
+import Data.Int
 
+import Graphics.Gdk.Events
 import Graphics.Gdk.Types
 import Graphics.Gdk.Values
 
@@ -47,3 +49,12 @@ gdkSeatGetSlaves (GdkSeat p) (GdkSeatCapabilities cps) = do
 		<* c_g_list_free gl
 
 foreign import ccall "g_list_free" c_g_list_free :: Ptr (GList a) -> IO ()
+
+foreign import ccall "gdk_seat_grab" c_gdk_seat_grab ::
+	Ptr GdkSeat -> Ptr GdkWindow -> #{type GdkSeatCapabilities} -> #{type gboolean} ->
+	Ptr GdkCursor -> Ptr GdkEvent -> Ptr () -> Ptr a -> IO #{type GdkGrabStatus}
+
+gdkSeatGrabSimple :: GdkSeat -> GdkWindow -> IO #{type GdkGrabStatus}
+gdkSeatGrabSimple (GdkSeat st) (GdkWindow wn) =
+--	c_gdk_seat_grab st wn #{const GDK_SEAT_CAPABILITY_ALL_POINTING} #{const TRUE} nullPtr nullPtr nullPtr nullPtr
+	c_gdk_seat_grab st wn #{const GDK_SEAT_CAPABILITY_ALL_POINTING} #{const FALSE} nullPtr nullPtr nullPtr nullPtr

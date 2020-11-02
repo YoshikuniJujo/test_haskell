@@ -16,6 +16,7 @@ import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Events
 import Graphics.Gdk.Cursors
+import Graphics.Gdk.Values
 import Try.Tools
 
 import Graphics.Cairo.Drawing.CairoT
@@ -26,6 +27,9 @@ import Graphics.Cairo.Values
 
 main :: IO ()
 main = do
+	print gdkKeyPress
+	print gdkEnterNotify
+	print gdkLeaveNotify
 	print =<< join (gdkInit <$> getProgName <*> getArgs)
 	w <- gdkWindowNew Nothing defaultGdkWindowAttr
 	d <- gdkWindowGetDisplay w
@@ -35,6 +39,8 @@ main = do
 	for_ (zip pds ["wait", "cell", "crosshair", "text", "vertical-text"]) \(pd, nm) ->
 		gdkWindowSetDeviceCursor w pd =<< gdkCursorNewFromName d nm
 	gdkWindowShow w
+	gdkWindowSetEventCompression w False
+	gdkWindowSetEvents w [gdkPointerMotionMask, gdkKeyPressMask, gdkAllEventsMask]
 	gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
@@ -44,6 +50,8 @@ main = do
 				$ gdkWindowSetCursor w =<< (\s -> gdkCursorNewFromSurface d s 15 15) =<< drawCursor
 			when (kv == fromIntegral (ord 'd'))
 				$ gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
+			when (kv == fromIntegral (ord 'g'))
+				$ print =<< gdkSeatGrabSimple st w
 			pure $ kv /= fromIntegral (ord 'q')
 		e -> True <$ print e
 

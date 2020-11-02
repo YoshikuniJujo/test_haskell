@@ -21,7 +21,9 @@ module Graphics.Gdk.Windows (
 	gdkWindowGetWidth, gdkWindowGetHeight, gdkWindowGetPosition,
 
 	gdkWindowGetParent, gdkWindowGetDecorations, gdkGetDefaultRootWindow,
-	gdkWindowSetDeviceCursor, gdkWindowSetDeviceEvents, gdkWindowSetSourceEvents
+	gdkWindowSetDeviceCursor, gdkWindowSetDeviceEvents, gdkWindowSetSourceEvents,
+
+	gdkWindowSetEventCompression
 	) where
 
 import Foreign.Ptr
@@ -265,3 +267,13 @@ foreign import ccall "gdk_window_set_source_events" c_gdk_window_set_source_even
 gdkWindowSetSourceEvents :: GdkWindow -> GdkInputSource -> [GdkEventMask] -> IO ()
 gdkWindowSetSourceEvents (GdkWindow w) (GdkInputSource is) ems =
 	c_gdk_window_set_source_events w is $ mergeGdkEventMask ems
+
+foreign import ccall "gdk_window_set_event_compression" c_gdk_window_set_event_compression ::
+	Ptr GdkWindow -> #{type gboolean} -> IO ()
+
+bToGboolean :: Bool -> #{type gboolean}
+bToGboolean False = #const FALSE
+bToGboolean True = #const TRUE
+
+gdkWindowSetEventCompression :: GdkWindow -> Bool -> IO ()
+gdkWindowSetEventCompression (GdkWindow w) = c_gdk_window_set_event_compression w . bToGboolean
