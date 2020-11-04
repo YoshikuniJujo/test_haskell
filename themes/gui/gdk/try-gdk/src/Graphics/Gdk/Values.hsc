@@ -113,3 +113,9 @@ newtype GdkModifierType = GdkModifierType #{type GdkModifierType} deriving Show
 	GDK_BUTTON2_MASK, GDK_BUTTON3_MASK, GDK_BUTTON4_MASK, \
 	GDK_BUTTON5_MASK, GDK_SUPER_MASK, GDK_HYPER_MASK, GDK_META_MASK, \
 	GDK_MODIFIER_MASK
+
+newtype GdkGrabStatus = GdkGrabStatus #{type GdkGrabStatus} deriving Show
+
+#enum GdkGrabStatus, GdkGrabStatus, GDK_GRAB_SUCCESS, \
+	GDK_GRAB_ALREADY_GRABBED, GDK_GRAB_INVALID_TIME, GDK_GRAB_NOT_VIEWABLE, \
+	GDK_GRAB_FROZEN, GDK_GRAB_FAILED

@@ -1,8 +1,14 @@
+{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkSeat where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr
+import Foreign.Marshal
+import Foreign.Storable
 import Control.Arrow
 import Data.Word
 import Data.Int
@@ -52,9 +58,61 @@ foreign import ccall "g_list_free" c_g_list_free :: Ptr (GList a) -> IO ()
 
 foreign import ccall "gdk_seat_grab" c_gdk_seat_grab ::
 	Ptr GdkSeat -> Ptr GdkWindow -> #{type GdkSeatCapabilities} -> #{type gboolean} ->
-	Ptr GdkCursor -> Ptr GdkEvent -> Ptr () -> Ptr a -> IO #{type GdkGrabStatus}
+	Ptr GdkCursor -> Ptr GdkEvent ->
+	FunPtr (C_GdkSeatGrabPrepareFunc a) -> Ptr a -> IO #{type GdkGrabStatus}
 
-gdkSeatGrabSimple :: GdkSeat -> GdkWindow -> IO #{type GdkGrabStatus}
-gdkSeatGrabSimple (GdkSeat st) (GdkWindow wn) =
+type C_GdkSeatGrabPrepareFunc a = Ptr GdkSeat -> Ptr GdkWindow -> Ptr a -> IO ()
+
+class Pointerable a where toPtr :: a -> IO (Ptr a); fromPtr :: Ptr a -> IO a
+
+instance {-# OVERLAPPABLE #-} Storable a => Pointerable a where
+	toPtr x = alloca \p -> p <$ poke p x
+	fromPtr = peek
+
+type GdkSeatGrabPrepareFunc a = GdkSeat -> GdkWindow -> a -> IO ()
+
+convertGdkSeatGrabPrepareFunc ::
+	Pointerable a => GdkSeatGrabPrepareFunc a -> C_GdkSeatGrabPrepareFunc a
+convertGdkSeatGrabPrepareFunc f st wn x = f (GdkSeat st) (GdkWindow wn) =<< fromPtr x
+
+foreign import ccall "wrapper" wrap_GdkSeatGrabPrepareFunc :: C_GdkSeatGrabPrepareFunc a -> IO (FunPtr (C_GdkSeatGrabPrepareFunc a))
+
+gdkSeatGrabSimple :: GdkSeat -> GdkWindow -> IO GdkGrabStatus
+gdkSeatGrabSimple st wn =
+-- gdkSeatGrabSimple (GdkSeat st) (GdkWindow wn) =
+	gdkSeatGrab st wn gdkSeatCapabilityAllPointing False Nothing Nothing (Nothing :: Maybe (GdkSeatGrabPrepareFunc (), ()))
 --	c_gdk_seat_grab st wn #{const GDK_SEAT_CAPABILITY_ALL_POINTING} #{const TRUE} nullPtr nullPtr nullPtr nullPtr
-	c_gdk_seat_grab st wn #{const GDK_SEAT_CAPABILITY_ALL_POINTING} #{const FALSE} nullPtr nullPtr nullPtr nullPtr
+--	c_gdk_seat_grab st wn #{const GDK_SEAT_CAPABILITY_ALL_POINTING} #{const FALSE} nullPtr nullPtr nullFunPtr nullPtr
+
+withGdkCursor :: Maybe GdkCursor -> (Ptr GdkCursor -> IO a) -> IO a
+withGdkCursor mc f = case mc of
+	Nothing -> f nullPtr
+	Just (GdkCursor fc) -> withForeignPtr fc f
+
+withGdkEvent :: Maybe GdkEvent -> (Ptr GdkEvent -> IO a) -> IO a
+withGdkEvent me f = case me of
+	Nothing -> f nullPtr
+	Just (GdkEvent _ fev) -> withForeignPtr fev f
+
+maybeGdkSeatGrabPrepareFunc ::
+	Pointerable a =>
+	Maybe (GdkSeatGrabPrepareFunc a, a) -> IO (FunPtr (C_GdkSeatGrabPrepareFunc a), Ptr a)
+maybeGdkSeatGrabPrepareFunc = \case
+	Nothing -> pure (nullFunPtr, nullPtr)
+	Just (f, x) -> do
+		fp <- wrap_GdkSeatGrabPrepareFunc $ convertGdkSeatGrabPrepareFunc f
+		px <- toPtr x
+		pure (fp, px)
+
+gdkSeatGrab ::
+	Pointerable a =>
+	GdkSeat -> GdkWindow -> GdkSeatCapabilities -> Bool -> Maybe GdkCursor ->
+	Maybe GdkEvent -> Maybe (GdkSeatGrabPrepareFunc a, a) -> IO GdkGrabStatus
+gdkSeatGrab (GdkSeat st) (GdkWindow wn) (GdkSeatCapabilities cp) oe
+	crs ev fx = withGdkCursor crs \pcrs -> withGdkEvent ev \pev -> do
+	(fp, px) <- maybeGdkSeatGrabPrepareFunc fx
+	GdkGrabStatus <$> c_gdk_seat_grab st wn cp (boolToGboolean oe) pcrs pev fp px
+
+boolToGboolean :: Bool -> #{type gboolean}
+boolToGboolean False = #const FALSE
+boolToGboolean True = #const TRUE
