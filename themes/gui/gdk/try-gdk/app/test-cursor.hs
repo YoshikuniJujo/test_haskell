@@ -55,7 +55,7 @@ main = do
 			case mis of
 				Nothing -> pure ()
 				Just is	| is == gdkSourceMouse -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "wait"
-					| is == gdkSourcePen -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "cell"
+					| is == gdkSourcePen -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "text"
 					| is == gdkSourceTouchpad -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
 					| otherwise -> pure ()
 		GdkEventGdkKeyPress k -> do
