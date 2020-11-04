@@ -270,6 +270,13 @@ todo
 	+ [ ] gdk\_event\_set\_device\_tool
 	+ [ ] gdk\_setting\_get
 	+ [ ] others
+* [ ] repair gdkEventGetSourceDevice
+	+ [ ] check problem
+	+ [ ] change GdkDevice: use ForeignPtr instead of Ptr
+	+ [ ] gdkEventGetSourceDevice: add touchForeignPtr to finalizer of GdkDevice
+	+ [ ] check problem
+	+ [ ] git pull; stack build
+	+ [ ] check no problem
 * [ ] remove or check unusable or having unknown usability functions
 * [x] repair gdkDrawingContextGetCairoContext
 	+ no GC
