@@ -51,7 +51,13 @@ main = do
 			print sd
 			putStrLn =<< maybe (pure "No source device") gdkDeviceGetName sd
 --			putStrLn =<< maybe (pure "No source device") ((show <$>) . gdkDeviceGetToolType)  sd
-			putStrLn =<< maybe (pure "No source device") ((show <$>) . gdkDeviceGetSource)  sd
+			mis <- maybe (pure Nothing) ((Just <$>) . gdkDeviceGetSource)  sd
+			case mis of
+				Nothing -> pure ()
+				Just is	| is == gdkSourceMouse -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "wait"
+					| is == gdkSourcePen -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "cell"
+					| is == gdkSourceTouchpad -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
+					| otherwise -> pure ()
 		GdkEventGdkKeyPress k -> do
 			kv <- gdkEventKeyKeyval k
 			when (kv == fromIntegral (ord 'c'))

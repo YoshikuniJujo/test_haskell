@@ -71,7 +71,7 @@ newtype GdkSubpixelLayout = GdkSubpixelLayout #{type GdkSubpixelLayout} deriving
 	GDK_SUBPIXEL_LAYOUT_HORIZONTAL_BGR, GDK_SUBPIXEL_LAYOUT_VERTICAL_RGB, \
 	GDK_SUBPIXEL_LAYOUT_VERTICAL_BGR
 
-newtype GdkInputSource = GdkInputSource #{type GdkInputSource} deriving Show
+newtype GdkInputSource = GdkInputSource #{type GdkInputSource} deriving (Show, Eq)
 
 #enum GdkInputSource, GdkInputSource, GDK_SOURCE_MOUSE, \
 	GDK_SOURCE_PEN, GDK_SOURCE_ERASER, GDK_SOURCE_CURSOR, \
