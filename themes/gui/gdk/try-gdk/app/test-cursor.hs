@@ -49,7 +49,9 @@ main = do
 			print =<< gdkEventMotionPos m
 			sd <- gdkEventGetSourceDevice e
 			print sd
-			print =<< maybe (pure "No source device") gdkDeviceGetName sd
+			putStrLn =<< maybe (pure "No source device") gdkDeviceGetName sd
+--			putStrLn =<< maybe (pure "No source device") ((show <$>) . gdkDeviceGetToolType)  sd
+			putStrLn =<< maybe (pure "No source device") ((show <$>) . gdkDeviceGetSource)  sd
 		GdkEventGdkKeyPress k -> do
 			kv <- gdkEventKeyKeyval k
 			when (kv == fromIntegral (ord 'c'))

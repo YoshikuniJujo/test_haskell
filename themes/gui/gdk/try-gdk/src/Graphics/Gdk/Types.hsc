@@ -142,3 +142,5 @@ instance Storable GdkRectangle where
 		#{poke GdkRectangle, y} p $ gdkRectangleY gp
 		#{poke GdkRectangle, width} p $ gdkRectangleWidth gp
 		#{poke GdkRectangle, height} p $ gdkRectangleHeight gp
+
+newtype GdkDeviceTool = GdkDeviceTool (Ptr GdkDeviceTool) deriving Show
