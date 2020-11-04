@@ -47,7 +47,7 @@ main = do
 		e@(GdkEventGdkMotionNotify m) -> True <$ do
 			putStr "GDK_MOTION_NOTIFY: "
 			print =<< gdkEventMotionPos m
-			print =<< gdkEventGetSourceDevice e
+			print =<< gdkDeviceGetName =<< gdkEventGetSourceDevice e
 		GdkEventGdkKeyPress k -> do
 			kv <- gdkEventKeyKeyval k
 			when (kv == fromIntegral (ord 'c'))
