@@ -329,3 +329,12 @@ gint16ToBool _ = error "something wrong"
 
 gdkEventFocusIn :: GdkEventFocus -> IO Bool
 gdkEventFocusIn (GdkEventFocus p) = gint16ToBool <$> withForeignPtr p #peek GdkEventFocus, in
+
+newtype GdkEventMotion = GdkEventMotion (ForeignPtr GdkEventMotion) deriving Show
+
+pattern GdkEventGdkMotionNotify :: GdkEventMotion -> GdkEvent
+pattern GdkEventGdkMotionNotify p <- GdkEvent (GdkEventType #const GDK_MOTION_NOTIFY) (GdkEventMotion . castForeignPtr -> p)
+
+gdkEventMotionX, gdkEventMotionY :: GdkEventMotion -> IO #type gdouble
+gdkEventMotionX (GdkEventMotion fm) = withForeignPtr fm #peek GdkEventMotion, x
+gdkEventMotionY (GdkEventMotion fm) = withForeignPtr fm #peek GdkEventMotion, y

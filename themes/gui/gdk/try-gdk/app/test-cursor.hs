@@ -40,10 +40,13 @@ main = do
 		gdkWindowSetDeviceCursor w pd =<< gdkCursorNewFromName d nm
 	gdkWindowShow w
 	gdkWindowSetEventCompression w False
-	gdkWindowSetEvents w [gdkPointerMotionMask, gdkKeyPressMask, gdkAllEventsMask]
+	gdkWindowSetEvents w [gdkPointerMotionMask, gdkKeyPressMask] -- , gdkAllEventsMask]
 	gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
+		GdkEventGdkMotionNotify m -> True <$ do
+			putStr "GDK_MOTION_NOTIFY: "
+			print =<< gdkEventMotionPos m
 		GdkEventGdkKeyPress k -> do
 			kv <- gdkEventKeyKeyval k
 			when (kv == fromIntegral (ord 'c'))
@@ -51,7 +54,11 @@ main = do
 			when (kv == fromIntegral (ord 'd'))
 				$ gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
 			when (kv == fromIntegral (ord 'g'))
-				$ print =<< gdkSeatGrabSimple st w
+				$ print =<< gdkSeatGrab st w gdkSeatCapabilityAllPointing False Nothing Nothing
+						(Nothing :: Maybe (GdkSeatGrabPrepareFunc (), ()))
+			when (kv == fromIntegral (ord 'h'))
+				$ print =<< gdkSeatGrab st w gdkSeatCapabilityAllPointing True Nothing Nothing
+						(Nothing :: Maybe (GdkSeatGrabPrepareFunc (), ()))
 			pure $ kv /= fromIntegral (ord 'q')
 		e -> True <$ print e
 
@@ -71,3 +78,6 @@ drawCursor = do
 	cairoLineTo cr 35 35
 	cairoStroke cr
 	pure s
+
+gdkEventMotionPos :: GdkEventMotion -> IO (Double, Double)
+gdkEventMotionPos m = (,) <$> gdkEventMotionX m <*> gdkEventMotionY m
