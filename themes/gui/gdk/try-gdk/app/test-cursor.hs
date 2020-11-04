@@ -40,13 +40,14 @@ main = do
 		gdkWindowSetDeviceCursor w pd =<< gdkCursorNewFromName d nm
 	gdkWindowShow w
 	gdkWindowSetEventCompression w False
-	gdkWindowSetEvents w [gdkPointerMotionMask, gdkKeyPressMask] -- , gdkAllEventsMask]
+	gdkWindowSetEvents w [gdkPointerMotionMask, gdkButtonPressMask, gdkButtonReleaseMask, gdkKeyPressMask] -- , gdkAllEventsMask]
 	gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
-		GdkEventGdkMotionNotify m -> True <$ do
+		e@(GdkEventGdkMotionNotify m) -> True <$ do
 			putStr "GDK_MOTION_NOTIFY: "
 			print =<< gdkEventMotionPos m
+			print =<< gdkEventGetSourceDevice e
 		GdkEventGdkKeyPress k -> do
 			kv <- gdkEventKeyKeyval k
 			when (kv == fromIntegral (ord 'c'))
