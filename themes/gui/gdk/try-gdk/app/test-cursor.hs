@@ -36,8 +36,10 @@ main = do
 	st <- gdkDisplayGetDefaultSeat d
 	pnt <- gdkSeatGetPointer st
 	([], pds) <- gdkDeviceListSlaveDevices pnt
+	{-
 	for_ (zip pds ["wait", "cell", "crosshair", "text", "vertical-text"]) \(pd, nm) ->
 		gdkWindowSetDeviceCursor w pd =<< gdkCursorNewFromName d nm
+		-}
 	gdkWindowShow w
 	gdkWindowSetEventCompression w False
 	gdkWindowSetEvents w [gdkPointerMotionMask, gdkButtonPressMask, gdkButtonReleaseMask, gdkKeyPressMask] -- , gdkAllEventsMask]
