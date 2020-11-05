@@ -224,13 +224,13 @@ foreign import ccall "gdk_event_get_device" c_gdk_event_get_device ::
 
 gdkEventGetDevice :: GdkEvent -> IO GdkDevice
 gdkEventGetDevice (GdkEvent _ fe) = withForeignPtr fe \e ->
-	GdkDevice <$> c_gdk_event_get_device e
+	GdkDevice <$> (flip newForeignPtr (touchForeignPtr fe) =<< c_gdk_event_get_device e)
 
 foreign import ccall "gdk_event_set_device" c_gdk_event_set_device ::
 	Ptr GdkEvent -> Ptr GdkDevice -> IO ()
 
 gdkEventSetDevice :: GdkEvent -> GdkDevice -> IO ()
-gdkEventSetDevice (GdkEvent _ fe) (GdkDevice d) = withForeignPtr fe \e ->
+gdkEventSetDevice (GdkEvent _ fe) (GdkDevice fd) = withForeignPtr fe \e -> withForeignPtr fd \d ->
 	c_gdk_event_set_device e d
 
 foreign import ccall "gdk_event_get_source_device" c_gdk_event_get_source_device ::
@@ -238,9 +238,9 @@ foreign import ccall "gdk_event_get_source_device" c_gdk_event_get_source_device
 
 gdkEventGetSourceDevice :: GdkEvent -> IO (Maybe GdkDevice)
 gdkEventGetSourceDevice (GdkEvent _ fe) = withForeignPtr fe \e ->
-	(<$> c_gdk_event_get_source_device e) \case
-		p	| p == nullPtr -> Nothing
-			| otherwise -> Just $ GdkDevice p
+	c_gdk_event_get_source_device e >>= \case
+		p	| p == nullPtr -> pure Nothing
+			| otherwise -> Just . GdkDevice <$> newForeignPtr p (touchForeignPtr fe)
 
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 

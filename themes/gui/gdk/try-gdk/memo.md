@@ -271,10 +271,10 @@ todo
 	+ [ ] gdk\_setting\_get
 	+ [ ] others
 * [ ] repair gdkEventGetSourceDevice
-	+ [ ] check problem
-	+ [ ] change GdkDevice: use ForeignPtr instead of Ptr
-	+ [ ] gdkEventGetSourceDevice: add touchForeignPtr to finalizer of GdkDevice
-	+ [ ] check problem
+	+ [x] check problem
+	+ [x] change GdkDevice: use ForeignPtr instead of Ptr
+	+ [x] gdkEventGetSourceDevice: add touchForeignPtr to finalizer of GdkDevice
+	+ [x] check problem
 	+ [ ] git pull; stack build
 	+ [ ] check no problem
 * [ ] remove or check unusable or having unknown usability functions

@@ -6,7 +6,8 @@
 module Graphics.Gdk.GdkSeat where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
+import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
 import Control.Arrow
@@ -31,13 +32,14 @@ foreign import ccall "gdk_seat_get_pointer" c_gdk_seat_get_pointer ::
 	Ptr GdkSeat -> IO (Ptr GdkDevice)
 
 gdkSeatGetPointer :: GdkSeat -> IO GdkDevice
-gdkSeatGetPointer (GdkSeat p) = GdkDevice <$> c_gdk_seat_get_pointer p
+gdkSeatGetPointer (GdkSeat p) = GdkDevice
+	<$> (flip newForeignPtr (pure ()) =<< c_gdk_seat_get_pointer p)
 
 foreign import ccall "gdk_seat_get_keyboard" c_gdk_seat_get_keyboard ::
 	Ptr GdkSeat -> IO (Ptr GdkDevice)
 
 gdkSeatGetKeyboard :: GdkSeat -> IO GdkDevice
-gdkSeatGetKeyboard (GdkSeat p) = GdkDevice <$> c_gdk_seat_get_keyboard p
+gdkSeatGetKeyboard (GdkSeat p) = GdkDevice <$> (flip newForeignPtr (pure ()) =<< c_gdk_seat_get_keyboard p)
 
 foreign import ccall "gdk_seat_get_capabilities" c_gdk_seat_get_capabilities ::
 	Ptr GdkSeat -> IO #type GdkSeatCapabilities
@@ -48,10 +50,13 @@ gdkSeatGetCapabilities (GdkSeat p) = GdkSeatCapabilities <$> c_gdk_seat_get_capa
 foreign import ccall "gdk_seat_get_slaves" c_gdk_seat_get_slaves ::
 	Ptr GdkSeat -> #{type GdkSeatCapabilities} -> IO (Ptr (GList GdkDevice))
 
+mkGdkDevice :: Ptr GdkDevice -> IO GdkDevice
+mkGdkDevice p = GdkDevice <$> newForeignPtr p (pure ())
+
 gdkSeatGetSlaves :: GdkSeat -> GdkSeatCapabilities -> IO ([GdkDevice], [GdkDevice])
 gdkSeatGetSlaves (GdkSeat p) (GdkSeatCapabilities cps) = do
 	gl <- c_gdk_seat_get_slaves p cps
-	(map GdkDevice *** map GdkDevice) <$> gListListPtr (GListRef gl)
+	(\(x, y) -> (,) <$> mapM mkGdkDevice x <*> mapM mkGdkDevice y) =<< gListListPtr (GListRef gl)
 		<* c_g_list_free gl
 
 foreign import ccall "g_list_free" c_g_list_free :: Ptr (GList a) -> IO ()
