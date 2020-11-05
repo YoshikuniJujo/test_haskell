@@ -340,3 +340,11 @@ pattern GdkEventGdkMotionNotify p <- GdkEvent (GdkEventType #const GDK_MOTION_NO
 gdkEventMotionX, gdkEventMotionY :: GdkEventMotion -> IO #type gdouble
 gdkEventMotionX (GdkEventMotion fm) = withForeignPtr fm #peek GdkEventMotion, x
 gdkEventMotionY (GdkEventMotion fm) = withForeignPtr fm #peek GdkEventMotion, y
+
+foreign import ccall "gdk_event_set_source_device" c_gdk_event_set_source_device ::
+	Ptr GdkEvent -> Ptr GdkDevice -> IO ()
+
+gdkEventSetSourceDevice :: GdkEvent -> GdkDevice -> IO ()
+gdkEventSetSourceDevice (GdkEvent _ fe) (GdkDevice fd) =
+	withForeignPtr fe \e -> withForeignPtr fd \d ->
+		c_gdk_event_set_source_device e d
