@@ -63,10 +63,11 @@ foreign import ccall "g_list_free" c_g_list_free ::
 {-
 foreign import ccall "gdk_device_get_device_tool" c_gdk_device_get_device_tool ::
 	Ptr GdkDevice -> IO (Ptr GdkDeviceTool)
+	-}
 
-foreign import ccall "gdk_device_get_tool_type" c_gdk_device_get_tool_type ::
-	Ptr GdkDevice -> IO #type GdkDeviceToolType
+foreign import ccall "gdk_device_tool_get_tool_type" c_gdk_device_get_tool_type ::
+	Ptr GdkDeviceTool -> IO #type GdkDeviceToolType
 
-gdkDeviceGetToolType :: GdkDevice -> IO GdkDeviceToolType
-gdkDeviceGetToolType (GdkDevice d) = GdkDeviceToolType <$> c_gdk_device_get_tool_type d
--}
+gdkDeviceToolGetToolType :: GdkDeviceTool -> IO GdkDeviceToolType
+gdkDeviceToolGetToolType (GdkDeviceTool fdt) = withForeignPtr fdt \dt ->
+	GdkDeviceToolType <$> c_gdk_device_get_tool_type dt

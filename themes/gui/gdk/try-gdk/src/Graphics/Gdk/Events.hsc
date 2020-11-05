@@ -348,3 +348,12 @@ gdkEventSetSourceDevice :: GdkEvent -> GdkDevice -> IO ()
 gdkEventSetSourceDevice (GdkEvent _ fe) (GdkDevice fd) =
 	withForeignPtr fe \e -> withForeignPtr fd \d ->
 		c_gdk_event_set_source_device e d
+
+foreign import ccall "gdk_event_get_device_tool" c_gdk_event_get_device_tool ::
+	Ptr GdkEvent -> IO (Ptr GdkDeviceTool)
+
+gdkEventGetDeviceTool :: GdkEvent -> IO (Maybe GdkDeviceTool)
+gdkEventGetDeviceTool (GdkEvent _ fe) = withForeignPtr fe \e -> do
+	c_gdk_event_get_device_tool e >>= \case
+		p	| p == nullPtr -> pure Nothing
+			| otherwise -> Just . GdkDeviceTool <$> newForeignPtr p (touchForeignPtr fe)
