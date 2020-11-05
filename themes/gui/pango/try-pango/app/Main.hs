@@ -16,7 +16,7 @@ main = do
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 100
 	cr <- cairoCreate s
 	pl <- pangoCairoCreateLayout cr
-	pangoLayoutSetText pl "Hello, world!" 15
+	pangoLayoutSetText pl "Hello, world!\nこんにちは世界!" 40
 	pangoCairoShowLayout cr pl
 	writeDynamicPng "tmp.png" =<< cairoImageSurfaceGetImage s
 	pure ()
