@@ -22,11 +22,12 @@ description:         Please see the README on GitHub at <https://github.com/gith
 dependencies:
 - base >= 4.7 && < 5
 - primitive
+- JuicyPixels
 - simple-cairo
 
 library:
   source-dirs: src
-  pkg-config-dependencies: pango
+  pkg-config-dependencies: pangocairo
 
 executables:
   try-pango-exe:
