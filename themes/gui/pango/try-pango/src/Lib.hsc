@@ -17,4 +17,13 @@ foreign import ccall "pango_cairo_create_layout" c_pango_cairo_create_layout ::
 	Ptr (CairoT s) -> IO (Ptr (PangoLayout s))
 
 pangoCairoCreateLayout :: PrimMonad m => CairoT (PrimState m) -> m (PangoLayout (PrimState m))
-pangoCairoCreateLayout (CairoT fcr) = unPrimIo $ withForeignPtr fcr \cr -> makePangoLayout =<< c_pango_cairo_create_layout cr
+pangoCairoCreateLayout (CairoT fcr) = unPrimIo
+	$ withForeignPtr fcr \cr -> makePangoLayout =<< c_pango_cairo_create_layout cr
+
+foreign import ccall "pango_cairo_show_layout" c_pango_cairo_show_layout ::
+	Ptr (CairoT s) -> Ptr (PangoLayout s) -> IO ()
+
+pangoCairoShowLayout :: PrimMonad m => CairoT (PrimState m) -> PangoLayout (PrimState m) -> m ()
+pangoCairoShowLayout (CairoT fcr) (PangoLayout fpl) = unPrimIo
+	$ withForeignPtr fcr \cr -> withForeignPtr fpl \pl ->
+		c_pango_cairo_show_layout cr pl
