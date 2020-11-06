@@ -39,13 +39,6 @@ pangoLayoutSetText (PangoLayout fpl) s n = unPrimIo
 	$ withForeignPtr fpl \pl -> withCString s \cs ->
 		c_pango_layout_set_text pl cs n
 
-foreign import ccall "pango_font_description_new" c_pango_font_description_new ::
-	IO (Ptr (PangoFontDescription s))
-
-pangoFontDescriptionNew :: PrimMonad m => m (PangoFontDescription (PrimState m))
-pangoFontDescriptionNew = unPrimIo
-	$ makePangoFontDescription =<< c_pango_font_description_new
-
 foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font_description ::
 	Ptr (PangoLayout s) -> Ptr (PangoFontDescription s) -> IO ()
 
