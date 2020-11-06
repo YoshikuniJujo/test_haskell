@@ -9,10 +9,12 @@ import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.C
 import Control.Monad.Primitive
+import Data.Word
 import Data.Int
 
 import Graphics.Pango.Monad
 import Graphics.Pango.Types
+import Graphics.Pango.Values
 
 #include <pango/pango.h>
 
@@ -88,3 +90,11 @@ pangoFontDescriptionGetFamily :: PrimMonad m =>
 pangoFontDescriptionGetFamily (PangoFontDescription fpfd) = unPrimIo
 	$ withForeignPtr fpfd \pfd ->
 		peekCString =<< c_pango_font_description_get_family pfd
+
+foreign import ccall "pango_font_description_set_style" c_pango_font_description_set_style ::
+	Ptr (PangoFontDescription s) -> #{type PangoStyle} -> IO ()
+
+pangoFontDescriptionSetStyle :: PrimMonad m =>
+	PangoFontDescription (PrimState m) -> PangoStyle -> m ()
+pangoFontDescriptionSetStyle (PangoFontDescription fpfd) (PangoStyle s) = unPrimIo
+	$ withForeignPtr fpfd \pfd -> c_pango_font_description_set_style pfd s

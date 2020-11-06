@@ -3,11 +3,13 @@
 module Main where
 
 import Control.Monad
+import Control.Monad.Primitive
 import Codec.Picture
 
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.ImageSurfaces
+import Graphics.Cairo.Types
 import Graphics.Cairo.Values
 
 import Graphics.Pango.Basic.Fonts
@@ -16,27 +18,30 @@ import Lib
 
 main :: IO ()
 main = do
-	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 200
+	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
 	cr <- cairoCreate s
 
-	pl <- pangoCairoCreateLayout cr
-	pfd <- pangoFontDescriptionNew
-	pangoFontDescriptionSetFamily pfd "sans-serif"
-	pangoFontDescriptionSetSize pfd (30 * pangoScale)
-	pangoLayoutSetFontDescription pl pfd
-	pangoLayoutSetText pl "Hello, world!\nこんにちは世界!" 40
-	cairoSetSourceRgb cr 0 0.5 0
-	pangoCairoShowLayout cr pl
-
-	pl <- pangoCairoCreateLayout cr
-	pfd <- pangoFontDescriptionNew
-	pangoFontDescriptionSetFamily pfd "serif"
-	pangoFontDescriptionSetSize pfd (30 * pangoScale)
-	pangoLayoutSetFontDescription pl pfd
-	pangoLayoutSetText pl "Hello, world!\nこんにちは世界!" 40
-	cairoSetSourceRgb cr 0.3 0.25 0
-	cairoTranslate cr 0 100
-	pangoCairoShowLayout cr pl
+	helloWorld cr (0, 0.5, 0) "sans-serif" pangoStyleNormal (0, 0)
+	helloWorld cr (0.3, 0.25, 0) "serif"  pangoStyleNormal (0, 100)
+	helloWorld cr (0.3, 0.25, 0) "serif"  pangoStyleOblique (0, 200)
+	helloWorld cr (0.3, 0.25, 0) "serif"  pangoStyleItalic (0, 300)
 
 	void $ writeDynamicPng "tmp.png" =<< cairoImageSurfaceGetImage s
 	pure ()
+
+helloWorld :: PrimMonad m => CairoT (PrimState m) ->
+	(Double, Double, Double) ->
+	String -> PangoStyle ->
+	(Double, Double) -> m ()
+helloWorld cr (r, g, b) ff stl (x, y) = do
+	pl <- pangoCairoCreateLayout cr
+	pfd <- pangoFontDescriptionNew
+	pangoFontDescriptionSetFamily pfd ff
+	pangoFontDescriptionSetSize pfd (30 * pangoScale)
+	pangoFontDescriptionSetStyle pfd stl
+	pangoLayoutSetFontDescription pl pfd
+	pangoLayoutSetText pl "Hello, world!\nこんにちは世界!" 40
+	cairoSetSourceRgb cr r g b
+	cairoIdentityMatrix cr
+	cairoTranslate cr x y
+	pangoCairoShowLayout cr pl
