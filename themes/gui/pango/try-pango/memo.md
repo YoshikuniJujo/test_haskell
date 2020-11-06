@@ -19,7 +19,7 @@ todo
 	+ [x] pango\_font\_description\_set\_style
 	+ [x] pango\_font\_description\_get\_style
 	+ [x] pango\_font\_description\_set\_variant
-	+ [ ] pango\_font\_description\_get\_variant
+	+ [x] pango\_font\_description\_get\_variant
 	+ [ ] pango\_font\_description\_set\_weight
 	+ [ ] pango\_font\_description\_get\_weight
 	+ [ ] pango\_font\_description\_set\_stretch
