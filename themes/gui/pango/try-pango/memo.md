@@ -5,9 +5,9 @@ todo
 ----
 
 * [ ] define functions of Fonts
-	+ [ ] pango\_font\_description\_new
-	+ [ ] pango\_font\_description\_copy
-	+ no pango\_font\_description\_copy\_static
+	+ [x] pango\_font\_description\_new
+	+ [x] pango\_font\_description\_copy
+	+ [ ] pango\_font\_description\_copy\_static
 	+ no pango\_font\_description\_hash
 	+ [ ] pango\_font\_description\_equal
 	+ [ ] pango\_font\_description\_free
