@@ -54,3 +54,67 @@ font description
 * size
 * gravity
 * variations
+
+### family
+
+* sans, sans serif, sans-serif
+* serif
+* monospace
+* cursive
+* fantasy
+* Liberation Sans
+* LIberation Serif
+* Liberation Mono
+* Sazanami Mincho
+* Sazanami Gothic
+* etc
+
+### size
+
+* thousandths of a point
+* xx-small
+* x-small
+* small
+* medium
+* large
+* x-large
+* xx-large
+* smaller
+* larger
+
+### style
+
+* normal
+* italic
+* oblique
+
+### weight
+
+* ultralight
+* light
+* normal
+* bold
+* ultrabold
+* heavy
+* or numeric
+
+### variant
+
+* normal
+* smallcaps
+
+### stretch
+
+* ultracondensed
+* extracondensed
+* condensed
+* semicondensed
+* normaal
+* semiexpanded
+* expanded
+* extraexpanded
+* ultraexpanded
+
+### gravity
+
+### variations
