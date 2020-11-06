@@ -9,7 +9,6 @@ dist/
 /tools/slide/yjslide/svgs/
 tmp/
 *.prof
-*.png
 /tools/slide/yjslide/examples/unboxed/old/unboxed
 /tools/slide/yjslide/examples/unboxed/old/small
 /tools/slide/yjslide/examples/unboxed/new/boxedPi
