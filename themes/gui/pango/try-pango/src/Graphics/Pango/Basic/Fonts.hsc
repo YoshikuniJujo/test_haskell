@@ -6,6 +6,7 @@ module Graphics.Pango.Basic.Fonts where
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
+import Foreign.C
 import Control.Monad.Primitive
 import Data.Int
 
@@ -52,3 +53,12 @@ pangoFontDescriptionEqual :: PrimMonad m =>
 pangoFontDescriptionEqual (PangoFontDescription fpfd1) (PangoFontDescription fpfd2) = unPrimIo
 	$ withForeignPtr fpfd1 \pfd1 -> withForeignPtr fpfd2 \pfd2 ->
 		gbooleanToBool <$> c_pango_font_description_equal pfd1 pfd2
+
+foreign import ccall "pango_font_description_set_family" c_pango_font_description_set_family ::
+	Ptr (PangoFontDescription s) -> CString -> IO ()
+
+pangoFontDescriptionSetFamily :: PrimMonad m =>
+	PangoFontDescription (PrimState m) -> String -> m ()
+pangoFontDescriptionSetFamily (PangoFontDescription fpfd) f = unPrimIo
+	$ withForeignPtr fpfd \pfd -> withCString f \cf ->
+		c_pango_font_description_set_family pfd cf
