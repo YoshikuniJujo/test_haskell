@@ -13,3 +13,7 @@ newtype PangoStyle = PangoStyle #{type PangoStyle} deriving Show
 
 #enum PangoStyle, PangoStyle, PANGO_STYLE_NORMAL, PANGO_STYLE_OBLIQUE, \
 	PANGO_STYLE_ITALIC
+
+newtype PangoVariant = PangoVariant #{type PangoVariant} deriving Show
+
+#enum PangoVariant, PangoVariant, PANGO_VARIANT_NORMAL, PANGO_VARIANT_SMALL_CAPS
