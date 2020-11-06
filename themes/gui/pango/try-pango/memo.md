@@ -21,7 +21,7 @@ todo
 	+ [x] pango\_font\_description\_set\_variant
 	+ [x] pango\_font\_description\_get\_variant
 	+ [x] pango\_font\_description\_set\_weight
-	+ [ ] pango\_font\_description\_get\_weight
+	+ [x] pango\_font\_description\_get\_weight
 	+ [ ] pango\_font\_description\_set\_stretch
 	+ [ ] pango\_font\_description\_get\_stretch
 	+ [ ] pango\_font\_description\_set\_size
@@ -30,9 +30,9 @@ todo
 	+ [ ] pango\_font\_description\_get\_size\_is\_absolute
 	+ [ ] pango\_font\_description\_set\_gravity
 	+ [ ] pango\_font\_description\_get\_gravity
-	+ [ ] pango\_font\_description\_set\_variations
-	+ [ ] pango\_font\_description\_set\_variations\_static
-	+ [ ] pango\_font\_description\_get\_variations
+	+ no pango\_font\_description\_set\_variations
+	+ no pango\_font\_description\_set\_variations\_static
+	+ no pango\_font\_description\_get\_variations
 	+ [ ] pango\_font\_description\_get\_set\_fields
 	+ [ ] pango\_font\_description\_unset\_fields
 	+ [ ] pango\_font\_description\_merge
