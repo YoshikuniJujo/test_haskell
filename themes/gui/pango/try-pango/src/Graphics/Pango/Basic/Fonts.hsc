@@ -4,7 +4,8 @@
 module Graphics.Pango.Basic.Fonts where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
+import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.Concurrent
 import Control.Monad.Primitive
 
 import Graphics.Pango.Monad
@@ -25,3 +26,13 @@ pangoFontDescriptionCopy :: PrimMonad m =>
 pangoFontDescriptionCopy (PangoFontDescription fpfd) = unPrimIo
 	$ withForeignPtr fpfd \pfd ->
 		makePangoFontDescription =<< c_pango_font_description_copy pfd
+
+foreign import ccall "pango_font_description_copy_static" c_pango_font_description_copy_static ::
+	Ptr (PangoFontDescription s) -> IO (Ptr (PangoFontDescription s))
+
+pangoFontDescriptionCopyStatic :: PrimMonad m =>
+	PangoFontDescription (PrimState m) -> m (PangoFontDescription (PrimState m))
+pangoFontDescriptionCopyStatic (PangoFontDescription fpfd) = unPrimIo
+	$ withForeignPtr fpfd \pfd -> do
+		p <- c_pango_font_description_copy_static pfd
+		PangoFontDescription <$> newForeignPtr p (touchForeignPtr fpfd >> c_pango_font_description_free p)
