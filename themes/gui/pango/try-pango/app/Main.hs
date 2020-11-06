@@ -21,25 +21,38 @@ main = do
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
 	cr <- cairoCreate s
 
-	helloWorld cr (0, 0.5, 0) "sans-serif" pangoStyleNormal pangoVariantNormal (0, 0)
-	helloWorld cr (0.3, 0.25, 0) "serif"  pangoStyleNormal pangoVariantNormal (0, 100)
-	helloWorld cr (0.3, 0.25, 0) "serif"  pangoStyleOblique pangoVariantNormal (0, 200)
-	helloWorld cr (0.3, 0.25, 0) "serif"  pangoStyleItalic pangoVariantSmallCaps (0, 300)
+	helloWorld cr (0, 0.5, 0)
+		"sans-serif"
+		pangoStyleNormal pangoVariantNormal pangoWeightThin
+		(0, 0)
+	helloWorld cr (0.3, 0.25, 0)
+		"serif"
+		pangoStyleNormal pangoVariantNormal pangoWeightUltraheavy
+		(0, 100)
+	helloWorld cr (0.3, 0.25, 0)
+		"serif"
+		pangoStyleOblique pangoVariantNormal pangoWeightNormal
+		(0, 200)
+	helloWorld cr (0.3, 0.25, 0)
+		"serif"
+		pangoStyleItalic pangoVariantSmallCaps pangoWeightNormal
+		(0, 300)
 
 	void $ writeDynamicPng "tmp.png" =<< cairoImageSurfaceGetImage s
 	pure ()
 
 helloWorld :: PrimMonad m => CairoT (PrimState m) ->
 	(Double, Double, Double) ->
-	String -> PangoStyle -> PangoVariant ->
+	String -> PangoStyle -> PangoVariant -> PangoWeight ->
 	(Double, Double) -> m ()
-helloWorld cr (r, g, b) ff stl vr (x, y) = do
+helloWorld cr (r, g, b) ff stl vr wt (x, y) = do
 	pl <- pangoCairoCreateLayout cr
 	pfd <- pangoFontDescriptionNew
 	pangoFontDescriptionSetFamily pfd ff
 	pangoFontDescriptionSetSize pfd (30 * pangoScale)
 	pangoFontDescriptionSetStyle pfd stl
 	pangoFontDescriptionSetVariant pfd vr
+	pangoFontDescriptionSetWeight pfd wt
 	pangoLayoutSetFontDescription pl pfd
 	pangoLayoutSetText pl "Hello, world!\nこんにちは世界!" 40
 	cairoSetSourceRgb cr r g b

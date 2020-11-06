@@ -17,3 +17,11 @@ newtype PangoStyle = PangoStyle #{type PangoStyle} deriving Show
 newtype PangoVariant = PangoVariant #{type PangoVariant} deriving Show
 
 #enum PangoVariant, PangoVariant, PANGO_VARIANT_NORMAL, PANGO_VARIANT_SMALL_CAPS
+
+newtype PangoWeight = PangoWeight #{type PangoWeight} deriving Show
+
+#enum PangoWeight, PangoWeight, PANGO_WEIGHT_THIN, PANGO_WEIGHT_ULTRALIGHT, \
+	PANGO_WEIGHT_LIGHT, PANGO_WEIGHT_SEMILIGHT, PANGO_WEIGHT_BOOK, \
+	PANGO_WEIGHT_NORMAL, PANGO_WEIGHT_MEDIUM, PANGO_WEIGHT_SEMIBOLD, \
+	PANGO_WEIGHT_BOLD, PANGO_WEIGHT_ULTRABOLD, PANGO_WEIGHT_HEAVY, \
+	PANGO_WEIGHT_ULTRAHEAVY
