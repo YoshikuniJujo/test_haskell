@@ -9,8 +9,8 @@ todo
 	+ [x] pango\_font\_description\_copy
 	+ [x] pango\_font\_description\_copy\_static
 	+ no pango\_font\_description\_hash
-	+ [ ] pango\_font\_description\_equal
-	+ [ ] pango\_font\_description\_free
+	+ [x] pango\_font\_description\_equal
+	+ [x] pango\_font\_description\_free
 		- use in newForeignPtr
 	+ no pango\_font\_descriptions\_free
 	+ [ ] pango\_font\_description\_set\_family
@@ -42,3 +42,15 @@ todo
 	+ [ ] pango\_font\_description\_to\_string
 	+ [ ] pango\_font\_description\_to\_filename
 	+ [ ] others
+
+font description
+----------------
+
+* family
+* style
+* variant
+* weight
+* stretch
+* size
+* gravity
+* variations
