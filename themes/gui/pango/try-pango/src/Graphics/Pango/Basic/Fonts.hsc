@@ -4,8 +4,9 @@
 module Graphics.Pango.Basic.Fonts where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.ForeignPtr hiding (newForeignPtr, addForeignPtrFinalizer)
 import Foreign.Concurrent
+import Foreign.Marshal
 import Foreign.C
 import Control.Monad.Primitive
 import Data.Int
@@ -62,3 +63,19 @@ pangoFontDescriptionSetFamily :: PrimMonad m =>
 pangoFontDescriptionSetFamily (PangoFontDescription fpfd) f = unPrimIo
 	$ withForeignPtr fpfd \pfd -> withCString f \cf ->
 		c_pango_font_description_set_family pfd cf
+
+foreign import ccall "pango_font_description_set_family_static" c_pango_font_description_set_family_static ::
+	Ptr (PangoFontDescription s) -> CString -> IO ()
+
+newForeignCString :: String -> IO (ForeignPtr CChar)
+newForeignCString s = do
+	p <- newCString s
+	newForeignPtr p (free p)
+
+pangoFontDescriptionSetFamilyStatic :: PrimMonad m =>
+	PangoFontDescription (PrimState m) -> String -> m ()
+pangoFontDescriptionSetFamilyStatic (PangoFontDescription fpfd) f = unPrimIo do
+	fcf <- newForeignCString f
+	addForeignPtrFinalizer fpfd $ touchForeignPtr fcf
+	withForeignPtr fpfd \pfd -> withForeignPtr fcf \cf ->
+		c_pango_font_description_set_family_static pfd cf
