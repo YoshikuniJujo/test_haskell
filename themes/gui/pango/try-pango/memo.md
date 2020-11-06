@@ -15,7 +15,7 @@ todo
 	+ no pango\_font\_descriptions\_free
 	+ [x] pango\_font\_description\_set\_family
 	+ [x] pango\_font\_description\_set\_family\_static
-	+ [ ] pango\_font\_description\_get\_family
+	+ [x] pango\_font\_description\_get\_family
 	+ [ ] pango\_font\_description\_set\_style
 	+ [ ] pango\_font\_description\_get\_style
 	+ [ ] pango\_font\_description\_set\_variant

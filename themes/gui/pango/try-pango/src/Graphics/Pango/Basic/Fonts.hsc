@@ -79,3 +79,12 @@ pangoFontDescriptionSetFamilyStatic (PangoFontDescription fpfd) f = unPrimIo do
 	addForeignPtrFinalizer fpfd $ touchForeignPtr fcf
 	withForeignPtr fpfd \pfd -> withForeignPtr fcf \cf ->
 		c_pango_font_description_set_family_static pfd cf
+
+foreign import ccall "pango_font_description_get_family" c_pango_font_description_get_family ::
+	Ptr (PangoFontDescription s) -> IO CString
+
+pangoFontDescriptionGetFamily :: PrimMonad m =>
+	PangoFontDescription (PrimState m) -> m String
+pangoFontDescriptionGetFamily (PangoFontDescription fpfd) = unPrimIo
+	$ withForeignPtr fpfd \pfd ->
+		peekCString =<< c_pango_font_description_get_family pfd
