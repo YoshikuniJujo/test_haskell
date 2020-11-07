@@ -148,3 +148,11 @@ pangoFontDescriptionSetStretch :: PrimMonad m =>
 	PangoFontDescription (PrimState m) -> PangoStretch -> m ()
 pangoFontDescriptionSetStretch (PangoFontDescription fpfd) (PangoStretch ps) = unPrimIo
 	$ withForeignPtr fpfd \pfd -> c_pango_font_description_set_stretch pfd ps
+
+foreign import ccall "pango_font_description_get_stretch" c_pango_font_description_get_stretch ::
+	Ptr (PangoFontDescription s) -> IO #type PangoStretch
+
+pangoFontDescriptionGetStretch :: PrimMonad m =>
+	PangoFontDescription (PrimState m) -> m PangoStretch
+pangoFontDescriptionGetStretch (PangoFontDescription fpfd) = unPrimIo
+	$ withForeignPtr fpfd \pfd -> PangoStretch <$> c_pango_font_description_get_stretch pfd
