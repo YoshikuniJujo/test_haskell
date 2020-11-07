@@ -4,6 +4,7 @@ memo
 todo
 ----
 
+* [ ] use IO instead of PrimMonad m => m
 * [ ] define functions of Fonts
 	+ [x] pango\_font\_description\_new
 	+ [x] pango\_font\_description\_copy
