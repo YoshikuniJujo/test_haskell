@@ -25,7 +25,7 @@ todo
 	+ [x] pango\_font\_description\_set\_stretch
 	+ [x] pango\_font\_description\_get\_stretch
 	+ [x] pango\_font\_description\_set\_size
-	+ [ ] pango\_font\_description\_get\_size
+	+ [x] pango\_font\_description\_get\_size
 	+ [ ] pango\_font\_description\_set\_absolute\_size
 	+ [ ] pango\_font\_description\_get\_size\_is\_absolute
 	+ [ ] pango\_font\_description\_set\_gravity

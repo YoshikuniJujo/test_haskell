@@ -165,3 +165,11 @@ pangoFontDescriptionSetSize :: PrimMonad m =>
 pangoFontDescriptionSetSize (PangoFontDescription fpfd) n = unPrimIo
 	$ withForeignPtr fpfd \pfd ->
 		c_pango_font_description_set_size pfd n
+
+foreign import ccall "pango_font_description_get_size" c_pango_font_description_get_size ::
+	Ptr (PangoFontDescription s) -> IO #type gint
+
+pangoFontDescriptionGetSize :: PrimMonad m =>
+	PangoFontDescription (PrimState m) -> m #type gint
+pangoFontDescriptionGetSize (PangoFontDescription fpfd) = unPrimIo
+	$ withForeignPtr fpfd c_pango_font_description_get_size
