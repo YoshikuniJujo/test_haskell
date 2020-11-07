@@ -22,7 +22,7 @@ todo
 	+ [x] pango\_font\_description\_get\_variant
 	+ [x] pango\_font\_description\_set\_weight
 	+ [x] pango\_font\_description\_get\_weight
-	+ [ ] pango\_font\_description\_set\_stretch
+	+ [x] pango\_font\_description\_set\_stretch
 	+ [ ] pango\_font\_description\_get\_stretch
 	+ [ ] pango\_font\_description\_set\_size
 	+ [ ] pango\_font\_description\_get\_size
