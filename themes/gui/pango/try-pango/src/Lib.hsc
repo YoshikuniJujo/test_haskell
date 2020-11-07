@@ -47,12 +47,3 @@ pangoLayoutSetFontDescription :: PrimMonad m =>
 pangoLayoutSetFontDescription (PangoLayout fpl) (PangoFontDescription fpfd) = unPrimIo
 	$ withForeignPtr fpl \pl -> withForeignPtr fpfd \pfd ->
 		c_pango_layout_set_font_description pl pfd
-
-foreign import ccall "pango_font_description_set_size" c_pango_font_description_set_size ::
-	Ptr (PangoFontDescription s) -> #{type gint} -> IO ()
-
-pangoFontDescriptionSetSize :: PrimMonad m =>
-	PangoFontDescription (PrimState m) -> #{type gint} -> m ()
-pangoFontDescriptionSetSize (PangoFontDescription fpfd) n = unPrimIo
-	$ withForeignPtr fpfd \pfd ->
-		c_pango_font_description_set_size pfd n
