@@ -37,14 +37,19 @@ todo
 	+ no pango\_font\_description\_set\_variations
 	+ no pango\_font\_description\_set\_variations\_static
 	+ no pango\_font\_description\_get\_variations
-	+ [ ] pango\_font\_description\_get\_set\_fields
+	+ [x] pango\_font\_description\_get\_set\_fields
 	+ [ ] pango\_font\_description\_unset\_fields
-	+ [ ] pango\_font\_description\_merge
-	+ [ ] pango\_font\_description\_merge\_static
-	+ [ ] pango\_font\_description\_better\_match
+	+ no pango\_font\_description\_merge
+	+ no pango\_font\_description\_merge\_static
+	+ no pango\_font\_description\_better\_match
 	+ [ ] pango\_font\_description\_from\_string
 	+ [ ] pango\_font\_description\_to\_string
 	+ [ ] pango\_font\_description\_to\_filename
+	+ pango\_font\_metrics\_ref
+	+ pango\_font\_metrics\_unref
+	+ pango\_font\_metrics\_get\_ascent
+	+ pango\_font\_metrics\_get\_descent
+	+ pango\_font\_metrics\_get\_height
 	+ [ ] others
 
 font description

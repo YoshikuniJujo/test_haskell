@@ -190,3 +190,12 @@ pangoFontDescriptionGetGravity :: PangoFontDescription -> IO PangoGravity
 pangoFontDescriptionGetGravity (PangoFontDescription fpfd) =
 	withForeignPtr fpfd \pfd ->
 		PangoGravity <$> c_pango_font_description_get_gravity pfd
+
+foreign import ccall "pango_font_description_get_set_fields"
+	c_pango_font_description_get_set_fields ::
+	Ptr PangoFontDescription -> IO #type PangoFontMask
+
+pangoFontDescriptionGetSetFields :: PangoFontDescription -> IO PangoFontMask
+pangoFontDescriptionGetSetFields (PangoFontDescription fpfd) =
+	withForeignPtr fpfd \pfd ->
+		PangoFontMask <$> c_pango_font_description_get_set_fields pfd

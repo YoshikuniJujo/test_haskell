@@ -38,3 +38,11 @@ newtype PangoGravity = PangoGravity #{type PangoGravity} deriving Show
 
 #enum PangoGravity, PangoGravity, PANGO_GRAVITY_SOUTH, PANGO_GRAVITY_EAST, \
 	PANGO_GRAVITY_NORTH, PANGO_GRAVITY_WEST, PANGO_GRAVITY_AUTO
+
+newtype PangoFontMask = PangoFontMask #{type PangoFontMask} deriving Show
+
+#enum PangoFontMask, PangoFontMask, PANGO_FONT_MASK_FAMILY, \
+	PANGO_FONT_MASK_STYLE, PANGO_FONT_MASK_VARIANT, \
+	PANGO_FONT_MASK_WEIGHT, PANGO_FONT_MASK_STRETCH, \
+	PANGO_FONT_MASK_SIZE, PANGO_FONT_MASK_GRAVITY, \
+	PANGO_FONT_MASK_VARIATIONS
