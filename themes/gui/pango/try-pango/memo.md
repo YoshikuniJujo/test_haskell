@@ -4,8 +4,7 @@ memo
 todo
 ----
 
-* [ ] use IO instead of PrimMonad m => m
-* [ ] define functions of Fonts
+* [x] use IO instead of PrimMonad m => m
 	+ [x] pango\_font\_description\_new
 	+ [x] pango\_font\_description\_copy
 	+ [x] pango\_font\_description\_copy\_static
@@ -28,6 +27,8 @@ todo
 	+ [x] pango\_font\_description\_set\_size
 	+ [x] pango\_font\_description\_get\_size
 	+ [x] pango\_font\_description\_set\_absolute\_size
+* [ ] change PangoFontDescription: from * -> * to *
+* [ ] define functions of Fonts
 	+ [ ] pango\_font\_description\_get\_size\_is\_absolute
 	+ [ ] pango\_font\_description\_set\_gravity
 	+ [ ] pango\_font\_description\_get\_gravity

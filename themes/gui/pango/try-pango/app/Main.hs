@@ -41,10 +41,10 @@ main = do
 	void $ writeDynamicPng "tmp.png" =<< cairoImageSurfaceGetImage s
 	pure ()
 
-helloWorld :: PrimMonad m => CairoT (PrimState m) ->
+helloWorld :: CairoT RealWorld ->
 	(Double, Double, Double) ->
 	String -> PangoStyle -> PangoVariant -> PangoWeight -> PangoStretch ->
-	(Double, Double) -> m ()
+	(Double, Double) -> IO ()
 helloWorld cr (r, g, b) ff stl vr wt strc (x, y) = do
 	pl <- pangoCairoCreateLayout cr
 	pfd <- pangoFontDescriptionNew
