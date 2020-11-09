@@ -27,7 +27,8 @@ todo
 	+ [x] pango\_font\_description\_set\_size
 	+ [x] pango\_font\_description\_get\_size
 	+ [x] pango\_font\_description\_set\_absolute\_size
-* [ ] change PangoFontDescription: from * -> * to *
+* [x] change PangoFontDescription: from * -> * to *
+* [ ] change PangoLayout: from * -> * to *
 * [ ] define functions of Fonts
 	+ [ ] pango\_font\_description\_get\_size\_is\_absolute
 	+ [ ] pango\_font\_description\_set\_gravity

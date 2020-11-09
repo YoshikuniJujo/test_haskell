@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
 module Graphics.Pango.Types where
 
 import Foreign.Ptr
@@ -11,10 +13,10 @@ makePangoLayout p = PangoLayout <$> newForeignPtr p (c_g_object_unref p)
 
 foreign import ccall "g_object_unref" c_g_object_unref :: Ptr a -> IO ()
 
-newtype PangoFontDescription s = PangoFontDescription (ForeignPtr (PangoFontDescription s)) deriving Show
+newtype PangoFontDescription = PangoFontDescription (ForeignPtr PangoFontDescription ) deriving Show
 
-makePangoFontDescription :: Ptr (PangoFontDescription s) -> IO (PangoFontDescription s)
+makePangoFontDescription :: Ptr PangoFontDescription -> IO PangoFontDescription
 makePangoFontDescription p = PangoFontDescription <$> newForeignPtr p (c_pango_font_description_free p)
 
 foreign import ccall "pango_font_description_free" c_pango_font_description_free ::
-	Ptr (PangoFontDescription s) -> IO ()
+	Ptr PangoFontDescription -> IO ()
