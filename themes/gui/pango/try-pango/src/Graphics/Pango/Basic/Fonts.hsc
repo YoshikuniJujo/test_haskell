@@ -11,7 +11,6 @@ import Foreign.C
 import Data.Word
 import Data.Int
 
-import Graphics.Pango.Monad
 import Graphics.Pango.Types
 import Graphics.Pango.Values
 
@@ -36,8 +35,8 @@ foreign import ccall "pango_font_description_copy_static" c_pango_font_descripti
 	Ptr PangoFontDescription -> IO (Ptr PangoFontDescription)
 
 pangoFontDescriptionCopyStatic :: PangoFontDescription -> IO PangoFontDescription
-pangoFontDescriptionCopyStatic (PangoFontDescription fpfd) = unPrimIo
-	$ withForeignPtr fpfd \pfd -> do
+pangoFontDescriptionCopyStatic (PangoFontDescription fpfd) =
+	withForeignPtr fpfd \pfd -> do
 		p <- c_pango_font_description_copy_static pfd
 		PangoFontDescription <$> newForeignPtr p (touchForeignPtr fpfd >> c_pango_font_description_free p)
 
@@ -49,16 +48,16 @@ gbooleanToBool #{const FALSE} = False
 gbooleanToBool _ = True
 
 pangoFontDescriptionEqual :: PangoFontDescription -> PangoFontDescription -> IO Bool
-pangoFontDescriptionEqual (PangoFontDescription fpfd1) (PangoFontDescription fpfd2) = unPrimIo
-	$ withForeignPtr fpfd1 \pfd1 -> withForeignPtr fpfd2 \pfd2 ->
+pangoFontDescriptionEqual (PangoFontDescription fpfd1) (PangoFontDescription fpfd2) =
+	withForeignPtr fpfd1 \pfd1 -> withForeignPtr fpfd2 \pfd2 ->
 		gbooleanToBool <$> c_pango_font_description_equal pfd1 pfd2
 
 foreign import ccall "pango_font_description_set_family" c_pango_font_description_set_family ::
 	Ptr PangoFontDescription -> CString -> IO ()
 
 pangoFontDescriptionSetFamily :: PangoFontDescription -> String -> IO ()
-pangoFontDescriptionSetFamily (PangoFontDescription fpfd) f = unPrimIo
-	$ withForeignPtr fpfd \pfd -> withCString f \cf ->
+pangoFontDescriptionSetFamily (PangoFontDescription fpfd) f =
+	withForeignPtr fpfd \pfd -> withCString f \cf ->
 		c_pango_font_description_set_family pfd cf
 
 foreign import ccall "pango_font_description_set_family_static" c_pango_font_description_set_family_static ::
@@ -70,7 +69,7 @@ newForeignCString s = do
 	newForeignPtr p (free p)
 
 pangoFontDescriptionSetFamilyStatic :: PangoFontDescription -> String -> IO ()
-pangoFontDescriptionSetFamilyStatic (PangoFontDescription fpfd) f = unPrimIo do
+pangoFontDescriptionSetFamilyStatic (PangoFontDescription fpfd) f = do
 	fcf <- newForeignCString f
 	addForeignPtrFinalizer fpfd $ touchForeignPtr fcf
 	withForeignPtr fpfd \pfd -> withForeignPtr fcf \cf ->
@@ -132,8 +131,8 @@ foreign import ccall "pango_font_description_set_stretch" c_pango_font_descripti
 	Ptr PangoFontDescription -> #{type PangoStretch} -> IO ()
 
 pangoFontDescriptionSetStretch :: PangoFontDescription -> PangoStretch -> IO ()
-pangoFontDescriptionSetStretch (PangoFontDescription fpfd) (PangoStretch ps) = unPrimIo
-	$ withForeignPtr fpfd \pfd -> c_pango_font_description_set_stretch pfd ps
+pangoFontDescriptionSetStretch (PangoFontDescription fpfd) (PangoStretch ps) =
+	withForeignPtr fpfd \pfd -> c_pango_font_description_set_stretch pfd ps
 
 foreign import ccall "pango_font_description_get_stretch" c_pango_font_description_get_stretch ::
 	Ptr PangoFontDescription -> IO #type PangoStretch
