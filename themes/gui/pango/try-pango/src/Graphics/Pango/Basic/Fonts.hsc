@@ -199,3 +199,12 @@ pangoFontDescriptionGetSetFields :: PangoFontDescription -> IO PangoFontMask
 pangoFontDescriptionGetSetFields (PangoFontDescription fpfd) =
 	withForeignPtr fpfd \pfd ->
 		PangoFontMask <$> c_pango_font_description_get_set_fields pfd
+
+foreign import ccall "pango_font_description_unset_fields"
+	c_pango_font_description_unset_fields ::
+	Ptr PangoFontDescription -> #{type PangoFontMask} -> IO ()
+
+pangoFontDescriptionUnsetFields :: PangoFontDescription -> PangoFontMask -> IO ()
+pangoFontDescriptionUnsetFields (PangoFontDescription fpfd) (PangoFontMask msk) =
+	withForeignPtr fpfd \pfd ->
+		c_pango_font_description_unset_fields pfd msk

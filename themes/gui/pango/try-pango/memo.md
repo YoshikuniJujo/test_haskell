@@ -38,11 +38,11 @@ todo
 	+ no pango\_font\_description\_set\_variations\_static
 	+ no pango\_font\_description\_get\_variations
 	+ [x] pango\_font\_description\_get\_set\_fields
-	+ [ ] pango\_font\_description\_unset\_fields
+	+ [x] pango\_font\_description\_unset\_fields
 	+ no pango\_font\_description\_merge
 	+ no pango\_font\_description\_merge\_static
 	+ no pango\_font\_description\_better\_match
-	+ [ ] pango\_font\_description\_from\_string
+	+ no pango\_font\_description\_from\_string
 	+ [ ] pango\_font\_description\_to\_string
 	+ [ ] pango\_font\_description\_to\_filename
 	+ pango\_font\_metrics\_ref
@@ -50,7 +50,21 @@ todo
 	+ pango\_font\_metrics\_get\_ascent
 	+ pango\_font\_metrics\_get\_descent
 	+ pango\_font\_metrics\_get\_height
-	+ [ ] others
+	+ ...
+	+ no pango\_font\_find\_shaper
+	+ no pango\_font\_describe
+	+ ...
+	+ no pango\_font\_family\_get\_name
+	+ ...
+	+ no pango\_font\_face\_get\_face\_name
+	+ ...
+	+ pango\_font\_map\_create\_context
+	+ no pango\_font\_map\_load\_font
+	+ ...
+	+ pango\_font\_map\_changed
+	+ no pango\_fontset\_get\_font
+	+ pango\_font\_set\_get\_metrics
+	+ no pango\_font\_set\_foreach
 
 font description
 ----------------
