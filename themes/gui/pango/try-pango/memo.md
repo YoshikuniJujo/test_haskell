@@ -33,7 +33,7 @@ todo
 * [ ] define functions of Fonts
 	+ [x] pango\_font\_description\_get\_size\_is\_absolute
 	+ [x] pango\_font\_description\_set\_gravity
-	+ [ ] pango\_font\_description\_get\_gravity
+	+ [x] pango\_font\_description\_get\_gravity
 	+ no pango\_font\_description\_set\_variations
 	+ no pango\_font\_description\_set\_variations\_static
 	+ no pango\_font\_description\_get\_variations
