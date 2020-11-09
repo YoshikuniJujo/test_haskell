@@ -172,3 +172,12 @@ pangoFontDescriptionGetSizeIsAbsolute :: PangoFontDescription -> IO Bool
 pangoFontDescriptionGetSizeIsAbsolute (PangoFontDescription fpfd) =
 	withForeignPtr fpfd \pfd ->
 		gbooleanToBool <$> c_pango_font_description_get_size_is_absolute pfd
+
+foreign import ccall "pango_font_description_set_gravity"
+	c_pango_font_description_set_gravity ::
+	Ptr PangoFontDescription -> #{type PangoGravity} -> IO ()
+
+pangoFontDescriptionSetGravity :: PangoFontDescription -> PangoGravity -> IO ()
+pangoFontDescriptionSetGravity (PangoFontDescription fpfd) (PangoGravity gr) =
+	withForeignPtr fpfd \pfd ->
+		c_pango_font_description_set_gravity pfd gr

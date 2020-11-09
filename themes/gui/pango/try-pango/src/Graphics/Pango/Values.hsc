@@ -33,3 +33,8 @@ newtype PangoStretch = PangoStretch #{type PangoStretch} deriving Show
 	PANGO_STRETCH_SEMI_CONDENSED, PANGO_STRETCH_NORMAL, \
 	PANGO_STRETCH_SEMI_EXPANDED, PANGO_STRETCH_EXTRA_EXPANDED, \
 	PANGO_STRETCH_ULTRA_EXPANDED
+
+newtype PangoGravity = PangoGravity #{type PangoGravity} deriving Show
+
+#enum PangoGravity, PangoGravity, PANGO_GRAVITY_SOUTH, PANGO_GRAVITY_EAST, \
+	PANGO_GRAVITY_NORTH, PANGO_GRAVITY_WEST, PANGO_GRAVITY_AUTO
