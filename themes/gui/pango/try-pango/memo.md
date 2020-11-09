@@ -31,7 +31,7 @@ todo
 * [x] change PangoLayout: from * -> * to *
 * [x] remove Graphics.Pango.Monad
 * [ ] define functions of Fonts
-	+ [ ] pango\_font\_description\_get\_size\_is\_absolute
+	+ [x] pango\_font\_description\_get\_size\_is\_absolute
 	+ [ ] pango\_font\_description\_set\_gravity
 	+ [ ] pango\_font\_description\_get\_gravity
 	+ no pango\_font\_description\_set\_variations

@@ -163,3 +163,12 @@ pangoFontDescriptionSetAbsoluteSize :: PangoFontDescription -> #{type double} ->
 pangoFontDescriptionSetAbsoluteSize (PangoFontDescription fpfd) sz =
 	withForeignPtr fpfd \pfd ->
 		c_pango_font_description_set_absolute_size pfd sz
+
+foreign import ccall "pango_font_description_get_size_is_absolute"
+	c_pango_font_description_get_size_is_absolute ::
+	Ptr PangoFontDescription -> IO #type gboolean
+
+pangoFontDescriptionGetSizeIsAbsolute :: PangoFontDescription -> IO Bool
+pangoFontDescriptionGetSizeIsAbsolute (PangoFontDescription fpfd) =
+	withForeignPtr fpfd \pfd ->
+		gbooleanToBool <$> c_pango_font_description_get_size_is_absolute pfd
