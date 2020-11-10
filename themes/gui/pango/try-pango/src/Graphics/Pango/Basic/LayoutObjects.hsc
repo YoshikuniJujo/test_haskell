@@ -6,9 +6,13 @@ module Graphics.Pango.Basic.LayoutObjects where
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.C
+import Data.Word
 import Data.Int
 
 import Graphics.Pango.Types
+import Graphics.Pango.Values
+
+#include <pango/pango.h>
 
 foreign import ccall "pango_layout_new" c_pango_layout_new ::
 	Ptr PangoContext -> IO (Ptr PangoLayout)
@@ -60,3 +64,10 @@ foreign import ccall "pango_layout_get_width" c_pango_layout_get_width ::
 pangoLayoutGetWidth :: PangoLayout -> IO #type int
 pangoLayoutGetWidth (PangoLayout fpl) =
 	withForeignPtr fpl c_pango_layout_get_width
+
+foreign import ccall "pango_layout_set_ellipsize" c_pango_layout_set_ellipsize ::
+	Ptr PangoLayout -> #{type PangoEllipsizeMode} -> IO ()
+
+pangoLayoutSetEllipsize :: PangoLayout -> PangoEllipsizeMode -> IO ()
+pangoLayoutSetEllipsize (PangoLayout fpl) (PangoEllipsizeMode pem) = withForeignPtr fpl \pl ->
+	c_pango_layout_set_ellipsize pl pem

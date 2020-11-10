@@ -46,3 +46,8 @@ newtype PangoFontMask = PangoFontMask #{type PangoFontMask} deriving Show
 	PANGO_FONT_MASK_WEIGHT, PANGO_FONT_MASK_STRETCH, \
 	PANGO_FONT_MASK_SIZE, PANGO_FONT_MASK_GRAVITY, \
 	PANGO_FONT_MASK_VARIATIONS
+
+newtype PangoEllipsizeMode = PangoEllipsizeMode #{type PangoEllipsizeMode} deriving Show
+
+#enum PangoEllipsizeMode, PangoEllipsizeMode, PANGO_ELLIPSIZE_NONE, \
+	PANGO_ELLIPSIZE_START, PANGO_ELLIPSIZE_MIDDLE, PANGO_ELLIPSIZE_END
