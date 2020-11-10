@@ -71,3 +71,10 @@ foreign import ccall "pango_layout_set_ellipsize" c_pango_layout_set_ellipsize :
 pangoLayoutSetEllipsize :: PangoLayout -> PangoEllipsizeMode -> IO ()
 pangoLayoutSetEllipsize (PangoLayout fpl) (PangoEllipsizeMode pem) = withForeignPtr fpl \pl ->
 	c_pango_layout_set_ellipsize pl pem
+
+foreign import ccall "pango_layout_set_indent" c_pango_layout_set_indent ::
+	Ptr PangoLayout -> #{type int} -> IO ()
+
+pangoLayoutSetIndent :: PangoLayout -> #{type int} -> IO ()
+pangoLayoutSetIndent (PangoLayout fpl) idt = withForeignPtr fpl \pl ->
+	c_pango_layout_set_indent pl idt

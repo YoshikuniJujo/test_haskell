@@ -88,10 +88,11 @@ todo
 	* [ ] pango\_layout\_get\_height
 	* [ ] pango\_layout\_set\_wrap
 	* [ ] pango\_layout\_get\_wrap
+	* [ ] pango\_layout\_is\_wrapped
 	* [x] pango\_layout\_set\_ellipsize
 	* [ ] pango\_layout\_get\_ellipsize
 	* [ ] pango\_layout\_is\_ellipsized
-	* [ ] pango\_layout\_set\_indent
+	* [x] pango\_layout\_set\_indent
 	* [ ] pango\_layout\_get\_indent
 	* [ ] pango\_layout\_set\_spacing
 	* [ ] pango\_layout\_get\_spacing

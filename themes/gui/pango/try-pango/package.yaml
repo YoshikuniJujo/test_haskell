@@ -24,6 +24,7 @@ dependencies:
 - primitive
 - JuicyPixels
 - simple-cairo
+- nowdoc
 
 library:
   source-dirs: src
