@@ -34,9 +34,9 @@ todo
 	+ [x] pango\_font\_description\_get\_size\_is\_absolute
 	+ [x] pango\_font\_description\_set\_gravity
 	+ [x] pango\_font\_description\_get\_gravity
-	+ no pango\_font\_description\_set\_variations
-	+ no pango\_font\_description\_set\_variations\_static
-	+ no pango\_font\_description\_get\_variations
+	+ [ ] pango\_font\_description\_set\_variations
+	+ [ ] pango\_font\_description\_set\_variations\_static
+	+ [ ] pango\_font\_description\_get\_variations
 	+ [x] pango\_font\_description\_get\_set\_fields
 	+ [x] pango\_font\_description\_unset\_fields
 	+ no pango\_font\_description\_merge
@@ -65,6 +65,86 @@ todo
 	+ no pango\_fontset\_get\_font
 	+ pango\_font\_set\_get\_metrics
 	+ no pango\_font\_set\_foreach
+* [ ] define function of pango layout objects
+	+ [x] pango\_layout\_new
+	+ [ ] pango\_layout\_copy
+	+ [ ] pango\_layout\_get\_context
+	+ [ ] pango\_layout\_context\_changed
+	+ [ ] pango\_layout\_get\_serial
+	+ [ ] pango\_layout\_set\_text
+	+ [ ] pango\_layout\_get\_text
+	+ [ ] pango\_layout\_get\_character\_count
+	+ no pango\_layout\_set\_markup
+	+ no pango\_layout\_set\_markup\_with\_accell
+	* no pango\_layout\_set\_attributes
+	* no pango\_layout\_get\_attributes
+	* [ ] pango\_layout\_set\_font\_description
+	* [ ] pango\_layout\_get\_font\_description
+	* [ ] pango\_layout\_set\_width
+	* [ ] pango\_layout\_set\_width
+	* [ ] pango\_layout\_set\_height
+	* [ ] pango\_layout\_get\_height
+	* [ ] pango\_layout\_set\_spacing
+	* [ ] pango\_layout\_get\_spacing
+	* [ ] pango\_layout\_set\_line\_spacing
+	* [ ] pango\_layout\_get\_line\_spacing
+	* [ ] pango\_layout\_set\_justify
+	* [ ] pango\_layout\_get\_justify
+	* [ ] pango\_layout\_set\_auto\_dir
+	* [ ] pango\_layout\_get\_auto\_dir
+	* [ ] pango\_layout\_get\_direction
+	* [ ] pango\_layout\_set\_alignment
+	* [ ] pango\_layout\_get\_alignment
+	* [ ] pango\_layout\_set\_tabs
+	* [ ] pango\_layout\_get\_tabs
+	* [ ] pango\_layout\_set\_single\_paragraph\_mode
+	* [ ] pango\_layout\_get\_single\_paragraph\_mode
+	* [ ] pango\_layout\_get\_unknown\_glyph\_count
+	* no pango\_layout\_get\_log\_attrs
+	* no pango\_layout\_get\_log\_attrs
+	* [ ] pango\_layout\_index\_to\_pos
+	* [ ] pango\_layout\_index\_to\_line\_x
+	* [ ] pango\_layout\_xy\_to\_index
+	* [ ] pango\_layout\_get\_cursor\_pos
+	* no pango\_layout\_move\_cursor\_visually
+	* [ ] pango\_layout\_get\_extents
+	* [ ] pango\_layout\_get\_pixel\_extents
+	* [ ] pango\_extents\_to\_pixels
+	* [ ] pango\_layout\_get\_size
+	* [ ] pango\_layout\_get\_pixel\_size
+	* [ ] pango\_layout\_get\_baseline
+	* [ ] pango\_layout\_get\_line\_count
+	* [ ] pango\_layout\_get\_line
+	* [ ] pango\_layout\_get\_line\_readonly
+	* [ ] pango\_layout\_get\_lines
+	* [ ] pango\_layout\_get\_lines\_readonly
+	* no pango\_layout\_get\_iter
+	* no pango\_layout\_iter\_copy
+	* no pango\_layout\_iter\_free
+	* ...
+	* no pango\_layout\_iter\_get\_layout\_extents
+	* [ ] pango\_layout\_line\_ref
+	* [ ] pango\_layout\_line\_unref
+	* [ ] pango\_layout\_line\_get\_extents
+	* [ ] pango\_layout\_line\_get\_pixel\_extents
+	* [ ] pango\_layout\_line\_index\_to\_x
+	* [ ] pango\_layout\_line\_x\_to\_index
+	* [ ] pango\_layout\_line\_get\_x\_ranges
+	* [ ] pango\_layout\_line\_get\_height
+* [ ] define functions of pango cairo
+	+ no pango\_cairo\_font\_map\_get\_default
+	+ ...
+	+ no pango\_cairo\_font\_map\_create\_context
+	+ no pango\_cairo\_font\_get\_scaled\_font
+	+ [ ] pango\_cairo\_context\_set\_resolution
+	+ [ ] pango\_cairo\_context\_get\_resolution
+	+ no pango\_cairo\_context\_set\_font\_options
+	+ no pango\_cairo\_context\_get\_font\_options
+	+ no pango\_cairo\_context\_set\_shape\_renderer
+	+ no pango\_cairo\_context\_get\_shape\_renderer
+	+ [x] pango\_cairo\_create\_context
+	+ [ ] pango\_cairo\_update\_context
+	+ ...
 
 font description
 ----------------
@@ -141,3 +221,11 @@ font description
 ### gravity
 
 ### variations
+
+packages
+--------
+
+* simple-pango-font-description
+* simple-pango-layout
+* simple-pango-cairo
+* simple-pango-types
