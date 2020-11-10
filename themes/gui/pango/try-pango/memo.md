@@ -71,8 +71,8 @@ todo
 	+ [ ] pango\_layout\_get\_context
 	+ [ ] pango\_layout\_context\_changed
 	+ [ ] pango\_layout\_get\_serial
-	+ [ ] pango\_layout\_set\_text
-	+ [ ] pango\_layout\_get\_text
+	+ [x] pango\_layout\_set\_text
+	+ [x] pango\_layout\_get\_text
 	+ [ ] pango\_layout\_get\_character\_count
 	+ no pango\_layout\_set\_markup
 	+ no pango\_layout\_set\_markup\_with\_accell

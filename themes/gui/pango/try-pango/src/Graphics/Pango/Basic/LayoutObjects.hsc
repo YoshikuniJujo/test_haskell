@@ -5,6 +5,8 @@ module Graphics.Pango.Basic.LayoutObjects where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
+import Foreign.C
+import Data.Int
 
 import Graphics.Pango.Types
 
@@ -21,3 +23,18 @@ foreign import ccall "pango_layout_copy" c_pango_layout_copy ::
 pangoLayoutCopy :: PangoLayout -> IO PangoLayout
 pangoLayoutCopy (PangoLayout fpl) = withForeignPtr fpl \pl ->
 	makePangoLayout =<< c_pango_layout_copy pl
+
+foreign import ccall "pango_layout_set_text" c_pango_layout_set_text ::
+	Ptr PangoLayout -> CString -> #{type int} -> IO ()
+
+pangoLayoutSetText :: PangoLayout -> String -> #{type int} -> IO ()
+pangoLayoutSetText (PangoLayout fpl) s n =
+	withForeignPtr fpl \pl -> withCString s \cs ->
+		c_pango_layout_set_text pl cs n
+
+foreign import ccall "pango_layout_get_text" c_pango_layout_get_text ::
+	Ptr PangoLayout -> IO CString
+
+pangoLayoutGetText :: PangoLayout -> IO String
+pangoLayoutGetText (PangoLayout fpl) = withForeignPtr fpl \pl ->
+	peekCString =<< c_pango_layout_get_text pl
