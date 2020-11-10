@@ -46,3 +46,17 @@ pangoLayoutSetFontDescription :: PangoLayout -> PangoFontDescription -> IO ()
 pangoLayoutSetFontDescription (PangoLayout fpl) (PangoFontDescription fpfd) =
 	withForeignPtr fpl \pl -> withForeignPtr fpfd \pfd ->
 		c_pango_layout_set_font_description pl pfd
+
+foreign import ccall "pango_layout_set_width" c_pango_layout_set_width ::
+	Ptr PangoLayout -> #{type int} -> IO ()
+
+pangoLayoutSetWidth :: PangoLayout -> #{type int} -> IO ()
+pangoLayoutSetWidth (PangoLayout fpl) w = withForeignPtr fpl \pl ->
+	c_pango_layout_set_width pl w
+
+foreign import ccall "pango_layout_get_width" c_pango_layout_get_width ::
+	Ptr PangoLayout -> IO #type int
+
+pangoLayoutGetWidth :: PangoLayout -> IO #type int
+pangoLayoutGetWidth (PangoLayout fpl) =
+	withForeignPtr fpl c_pango_layout_get_width

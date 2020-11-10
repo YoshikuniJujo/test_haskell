@@ -82,8 +82,8 @@ todo
 	* [x] pango\_layout\_set\_font\_description
 	* [ ] pango\_layout\_get\_font\_description
 		+ make PangoFontDescriptionRef
-	* [ ] pango\_layout\_set\_width
-	* [ ] pango\_layout\_set\_width
+	* [x] pango\_layout\_set\_width
+	* [x] pango\_layout\_get\_width
 	* [ ] pango\_layout\_set\_height
 	* [ ] pango\_layout\_get\_height
 	* [ ] pango\_layout\_set\_spacing
