@@ -67,7 +67,7 @@ todo
 	+ no pango\_font\_set\_foreach
 * [ ] define function of pango layout objects
 	+ [x] pango\_layout\_new
-	+ [ ] pango\_layout\_copy
+	+ [x] pango\_layout\_copy
 	+ [ ] pango\_layout\_get\_context
 	+ [ ] pango\_layout\_context\_changed
 	+ [ ] pango\_layout\_get\_serial

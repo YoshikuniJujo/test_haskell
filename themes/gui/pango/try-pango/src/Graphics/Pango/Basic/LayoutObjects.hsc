@@ -14,3 +14,10 @@ foreign import ccall "pango_layout_new" c_pango_layout_new ::
 pangoLayoutNew :: PangoContext -> IO PangoLayout
 pangoLayoutNew (PangoContext fpc) = withForeignPtr fpc \pc ->
 	makePangoLayout =<< c_pango_layout_new pc
+
+foreign import ccall "pango_layout_copy" c_pango_layout_copy ::
+	Ptr PangoLayout -> IO (Ptr PangoLayout)
+
+pangoLayoutCopy :: PangoLayout -> IO PangoLayout
+pangoLayoutCopy (PangoLayout fpl) = withForeignPtr fpl \pl ->
+	makePangoLayout =<< c_pango_layout_copy pl
