@@ -69,6 +69,7 @@ todo
 	+ [x] pango\_layout\_new
 	+ [x] pango\_layout\_copy
 	+ [ ] pango\_layout\_get\_context
+		- use g_object_ref
 	+ [ ] pango\_layout\_context\_changed
 	+ [ ] pango\_layout\_get\_serial
 	+ [x] pango\_layout\_set\_text
@@ -78,8 +79,9 @@ todo
 	+ no pango\_layout\_set\_markup\_with\_accell
 	* no pango\_layout\_set\_attributes
 	* no pango\_layout\_get\_attributes
-	* [ ] pango\_layout\_set\_font\_description
+	* [x] pango\_layout\_set\_font\_description
 	* [ ] pango\_layout\_get\_font\_description
+		+ make PangoFontDescriptionRef
 	* [ ] pango\_layout\_set\_width
 	* [ ] pango\_layout\_set\_width
 	* [ ] pango\_layout\_set\_height

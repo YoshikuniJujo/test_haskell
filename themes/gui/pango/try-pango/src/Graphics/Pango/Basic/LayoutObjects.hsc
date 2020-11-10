@@ -38,3 +38,11 @@ foreign import ccall "pango_layout_get_text" c_pango_layout_get_text ::
 pangoLayoutGetText :: PangoLayout -> IO String
 pangoLayoutGetText (PangoLayout fpl) = withForeignPtr fpl \pl ->
 	peekCString =<< c_pango_layout_get_text pl
+
+foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font_description ::
+	Ptr PangoLayout -> Ptr PangoFontDescription -> IO ()
+
+pangoLayoutSetFontDescription :: PangoLayout -> PangoFontDescription -> IO ()
+pangoLayoutSetFontDescription (PangoLayout fpl) (PangoFontDescription fpfd) =
+	withForeignPtr fpl \pl -> withForeignPtr fpfd \pfd ->
+		c_pango_layout_set_font_description pl pfd
