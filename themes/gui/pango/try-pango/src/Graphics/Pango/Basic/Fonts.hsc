@@ -208,3 +208,21 @@ pangoFontDescriptionUnsetFields :: PangoFontDescription -> PangoFontMask -> IO (
 pangoFontDescriptionUnsetFields (PangoFontDescription fpfd) (PangoFontMask msk) =
 	withForeignPtr fpfd \pfd ->
 		c_pango_font_description_unset_fields pfd msk
+
+foreign import ccall "pango_font_description_to_string"
+	c_pango_font_description_to_string ::
+	Ptr PangoFontDescription -> IO CString
+
+pangoFontDescriptionToString :: PangoFontDescription -> IO String
+pangoFontDescriptionToString (PangoFontDescription fpfd) =
+	withForeignPtr fpfd \pfd ->
+		peekCString =<< c_pango_font_description_to_string pfd
+
+foreign import ccall "pango_font_description_to_filename"
+	c_pango_font_description_to_filename ::
+	Ptr PangoFontDescription -> IO CString
+
+pangoFontDescriptionToFilename :: PangoFontDescription -> IO String
+pangoFontDescriptionToFilename (PangoFontDescription fpfd) =
+	withForeignPtr fpfd \pfd ->
+		peekCString =<< c_pango_font_description_to_filename pfd

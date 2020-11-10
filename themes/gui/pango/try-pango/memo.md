@@ -43,8 +43,8 @@ todo
 	+ no pango\_font\_description\_merge\_static
 	+ no pango\_font\_description\_better\_match
 	+ no pango\_font\_description\_from\_string
-	+ [ ] pango\_font\_description\_to\_string
-	+ [ ] pango\_font\_description\_to\_filename
+	+ [x] pango\_font\_description\_to\_string
+	+ [x] pango\_font\_description\_to\_filename
 	+ pango\_font\_metrics\_ref
 	+ pango\_font\_metrics\_unref
 	+ pango\_font\_metrics\_get\_ascent
