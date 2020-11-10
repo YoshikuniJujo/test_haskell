@@ -94,8 +94,8 @@ todo
 	* [ ] pango\_layout\_is\_ellipsized
 	* [x] pango\_layout\_set\_indent
 	* [ ] pango\_layout\_get\_indent
-	* [ ] pango\_layout\_set\_spacing
-	* [ ] pango\_layout\_get\_spacing
+	* no pango\_layout\_set\_spacing
+	* no pango\_layout\_get\_spacing
 	* [ ] pango\_layout\_set\_line\_spacing
 	* [ ] pango\_layout\_get\_line\_spacing
 	* [ ] pango\_layout\_set\_justify
