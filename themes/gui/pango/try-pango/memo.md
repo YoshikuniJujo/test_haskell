@@ -44,18 +44,8 @@ todo
 	+ [x] make pangoLayoutFreeze
 	+ [x] make pangoLayoutThaw
 	+ [x] remove PangoLayoutOld and so on
-* [ ] make PangoContextPrim and PangoContext
-	+ [x] rename PangoContext to PangoContextOld
-	+ [ ] make PangoContextPrim
-		- [ ] make PangoContextPrim
-		- [ ] use PangoContextPrim
-	+ [ ] make PangoContext
-		- [ ] make PangoContext
-		- [ ] use PangoContext
-	+ [ ] make pangoContextFreeze
-	+ [ ] make pangoContextThaw
-	+ [ ] pangoCairoCreateContext: use PrimMonad m => m instead of IO
 * [ ] make PangoFontDescriptionPrim and PangoFontDescription
+* [ ] make PangoContextPrim and PangoContext
 * [ ] define functions of Fonts
 	+ [x] pango\_font\_description\_get\_size\_is\_absolute
 	+ [x] pango\_font\_description\_set\_gravity
