@@ -45,7 +45,15 @@ todo
 	+ [x] make pangoLayoutThaw
 	+ [x] remove PangoLayoutOld and so on
 * [ ] make PangoFontDescriptionPrim and PangoFontDescription
-* [ ] make PangoContextPrim and PangoContext
+	+ [x] rename PangoFontDescription to PangoFontDescriptionOld
+	+ [ ] make PangoFontDescriptionPrim
+		- [ ] make PangoFontDescriptionPrim
+		- [ ] use PangoFontDescriptionPrim
+	+ [ ] make PangoFontDescription
+		- [ ] make PangoFontDescription
+		- [ ] use PangoFontDescription
+	+ [ ] make pangoFontDescriptionFreeze
+	+ [ ] make pangoFontDescriptionThaw
 * [ ] define functions of Fonts
 	+ [x] pango\_font\_description\_get\_size\_is\_absolute
 	+ [x] pango\_font\_description\_set\_gravity

@@ -44,10 +44,10 @@ pangoLayoutGetText (PangoLayout fpl) = withForeignPtr fpl \pl ->
 	peekCString =<< c_pango_layout_get_text pl
 
 foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font_description ::
-	Ptr PangoLayoutIo -> Ptr PangoFontDescription -> IO ()
+	Ptr PangoLayoutIo -> Ptr PangoFontDescriptionOld -> IO ()
 
-pangoLayoutSetFontDescription :: PangoLayoutIo -> PangoFontDescription -> IO ()
-pangoLayoutSetFontDescription (PangoLayoutIo fpl) (PangoFontDescription fpfd) =
+pangoLayoutSetFontDescription :: PangoLayoutIo -> PangoFontDescriptionOld -> IO ()
+pangoLayoutSetFontDescription (PangoLayoutIo fpl) (PangoFontDescriptionOld fpfd) =
 	withForeignPtr fpl \pl -> withForeignPtr fpfd \pfd ->
 		c_pango_layout_set_font_description pl pfd
 

@@ -33,13 +33,13 @@ pangoLayoutThaw (PangoLayout fpl) =
 
 foreign import ccall "g_object_unref" c_g_object_unref :: Ptr a -> IO ()
 
-newtype PangoFontDescription = PangoFontDescription (ForeignPtr PangoFontDescription) deriving Show
+newtype PangoFontDescriptionOld = PangoFontDescriptionOld (ForeignPtr PangoFontDescriptionOld) deriving Show
 
-makePangoFontDescription :: Ptr PangoFontDescription -> IO PangoFontDescription
-makePangoFontDescription p = PangoFontDescription <$> newForeignPtr p (c_pango_font_description_free p)
+makePangoFontDescriptionOld :: Ptr PangoFontDescriptionOld -> IO PangoFontDescriptionOld
+makePangoFontDescriptionOld p = PangoFontDescriptionOld <$> newForeignPtr p (c_pango_font_description_free p)
 
 foreign import ccall "pango_font_description_free" c_pango_font_description_free ::
-	Ptr PangoFontDescription -> IO ()
+	Ptr PangoFontDescriptionOld -> IO ()
 
 newtype PangoContext = PangoContext (ForeignPtr PangoContext) deriving Show
 
