@@ -38,7 +38,7 @@ main = do
 --	pangoLayoutSetText pl "Hello, world!\x2026\x22ef\nこんにちは世界!\x2026\x22ef" 100
 --	pangoLayoutSetText pl "Hello, world!\x22ef\x2026\x22ef" 100
 	cairoMoveTo cr 100 100
-	pangoCairoShowLayout cr $ pangoLayoutIoToOld pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	pl2 <- pangoCairoCreateLayout cr
 	pfd2 <- pangoFontDescriptionNew
@@ -49,7 +49,7 @@ main = do
 	pangoLayoutSetIndent pl2 (30 * pangoScale)
 	pangoLayoutSetText pl2 someText 1600
 	cairoMoveTo cr 100 200
-	pangoCairoShowLayout cr $ pangoLayoutIoToOld pl2
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl2
 
 	void $ writeDynamicPng "tmp3.png" =<< cairoImageSurfaceGetImage s
 

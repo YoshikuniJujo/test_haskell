@@ -63,4 +63,4 @@ helloWorld cr (r, g, b) ff stl vr wt strc (x, y) = do
 	cairoSetSourceRgb cr r g b
 	cairoIdentityMatrix cr
 	cairoTranslate cr x y
-	pangoCairoShowLayout cr $ pangoLayoutIoToOld pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl

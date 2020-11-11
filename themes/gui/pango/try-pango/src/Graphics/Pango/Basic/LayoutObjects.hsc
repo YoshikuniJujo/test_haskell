@@ -37,10 +37,10 @@ pangoLayoutSetText (PangoLayoutIo fpl) s n =
 		c_pango_layout_set_text pl cs n
 
 foreign import ccall "pango_layout_get_text" c_pango_layout_get_text ::
-	Ptr PangoLayoutOld -> IO CString
+	Ptr PangoLayout -> IO CString
 
-pangoLayoutGetText :: PangoLayoutOld -> IO String
-pangoLayoutGetText (PangoLayoutOld fpl) = withForeignPtr fpl \pl ->
+pangoLayoutGetText :: PangoLayout -> IO String
+pangoLayoutGetText (PangoLayout fpl) = withForeignPtr fpl \pl ->
 	peekCString =<< c_pango_layout_get_text pl
 
 foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font_description ::
@@ -59,10 +59,10 @@ pangoLayoutSetWidth (PangoLayoutIo fpl) w = withForeignPtr fpl \pl ->
 	c_pango_layout_set_width pl w
 
 foreign import ccall "pango_layout_get_width" c_pango_layout_get_width ::
-	Ptr PangoLayoutOld -> IO #type int
+	Ptr PangoLayout -> IO #type int
 
-pangoLayoutGetWidth :: PangoLayoutOld -> IO #type int
-pangoLayoutGetWidth (PangoLayoutOld fpl) =
+pangoLayoutGetWidth :: PangoLayout -> IO #type int
+pangoLayoutGetWidth (PangoLayout fpl) =
 	withForeignPtr fpl c_pango_layout_get_width
 
 foreign import ccall "pango_layout_set_ellipsize" c_pango_layout_set_ellipsize ::

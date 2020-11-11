@@ -26,5 +26,5 @@ main = do
 	pangoFontDescriptionSetSize pfd (30 * pangoScale)
 	pangoLayoutSetFontDescription pl pfd
 	pangoLayoutSetText pl "こんにちは世界!" 30
-	pangoCairoShowLayout cr $ pangoLayoutIoToOld pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 	void $ writeDynamicPng "tmp2.png" =<< cairoImageSurfaceGetImage s
