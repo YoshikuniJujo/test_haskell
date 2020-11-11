@@ -11,8 +11,8 @@ import Graphics.Cairo.Types
 import Graphics.Pango.Types
 
 foreign import ccall "pango_cairo_create_context"
-	c_pango_cairo_create_context :: Ptr (CairoT s) -> IO (Ptr PangoContext)
+	c_pango_cairo_create_context :: Ptr (CairoT s) -> IO (Ptr PangoContextOld)
 
-pangoCairoCreateContext :: CairoT RealWorld -> IO PangoContext
+pangoCairoCreateContext :: CairoT RealWorld -> IO PangoContextOld
 pangoCairoCreateContext (CairoT fcr) = withForeignPtr fcr \cr ->
-	makePangoContext =<< c_pango_cairo_create_context cr
+	makePangoContextOld =<< c_pango_cairo_create_context cr

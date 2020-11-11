@@ -41,7 +41,7 @@ makePangoFontDescription p = PangoFontDescription <$> newForeignPtr p (c_pango_f
 foreign import ccall "pango_font_description_free" c_pango_font_description_free ::
 	Ptr PangoFontDescription -> IO ()
 
-newtype PangoContext = PangoContext (ForeignPtr PangoContext) deriving Show
+newtype PangoContextOld = PangoContextOld (ForeignPtr PangoContextOld) deriving Show
 
-makePangoContext :: Ptr PangoContext -> IO PangoContext
-makePangoContext p = PangoContext <$> newForeignPtr p (c_g_object_unref p)
+makePangoContextOld :: Ptr PangoContextOld -> IO PangoContextOld
+makePangoContextOld p = PangoContextOld <$> newForeignPtr p (c_g_object_unref p)
