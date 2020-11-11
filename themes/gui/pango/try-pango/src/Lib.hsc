@@ -12,11 +12,11 @@ import Graphics.Pango.Types
 #include <pango/pango.h>
 
 foreign import ccall "pango_cairo_create_layout" c_pango_cairo_create_layout ::
-	Ptr (CairoT s) -> IO (Ptr PangoLayoutOld)
+	Ptr (CairoT s) -> IO (Ptr PangoLayoutIo)
 
-pangoCairoCreateLayout :: CairoT s -> IO PangoLayoutOld
+pangoCairoCreateLayout :: CairoT s -> IO PangoLayoutIo
 pangoCairoCreateLayout (CairoT fcr) =
-	withForeignPtr fcr \cr -> makePangoLayoutOld =<< c_pango_cairo_create_layout cr
+	withForeignPtr fcr \cr -> makePangoLayoutIo =<< c_pango_cairo_create_layout cr
 
 foreign import ccall "pango_cairo_show_layout" c_pango_cairo_show_layout ::
 	Ptr (CairoT s) -> Ptr PangoLayoutOld -> IO ()

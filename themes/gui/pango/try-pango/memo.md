@@ -30,16 +30,21 @@ todo
 * [x] change PangoFontDescription: from * -> * to *
 * [x] change PangoLayout: from * -> * to *
 * [x] remove Graphics.Pango.Monad
+* [ ] make Graphics.Pango.Monad
 * [ ] make PangoLayoutIo and PangoLayout
 	+ [x] rename PangoLayout to PangoLayoutOld
 	+ [x] rename makePangoLayout to makePangoLayoutOld
-	+ [ ] make PangoLayoutIo
+	+ [x] make PangoLayoutIo
+		- [x] make PangoLayoutIo
+		- [x] use PangoLayoutIo
 	+ [ ] make PangoLayout
+		- [ ] make PangoLayout
+		- [ ] use PangoLayout
+		- [ ] pangoCairoShowLayout: from IO to PrimMonad m => m
 	+ [ ] from PangoLayoutOld to PangoLayoutIo
 	+ [ ] from PangoLayoutOld to PangoLayout
 	+ [ ] make pangoLayoutFreeze
 	+ [ ] make pangoLayoutThaw
-* [ ] make Graphics.Pango.Monad
 * [ ] make PangoFontDescriptionPrim and PangoFontDescription
 * [ ] make PangoContextPrim and PangoContext
 * [ ] define functions of Fonts

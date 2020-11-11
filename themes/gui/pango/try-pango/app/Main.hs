@@ -14,6 +14,7 @@ import Graphics.Cairo.Values
 
 import Graphics.Pango.Basic.Fonts
 import Graphics.Pango.Basic.LayoutObjects
+import Graphics.Pango.Types
 import Graphics.Pango.Values
 import Lib
 
@@ -62,4 +63,4 @@ helloWorld cr (r, g, b) ff stl vr wt strc (x, y) = do
 	cairoSetSourceRgb cr r g b
 	cairoIdentityMatrix cr
 	cairoTranslate cr x y
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr $ pangoLayoutIoToOld pl
