@@ -22,7 +22,7 @@ main = do
 	cr <- cairoCreate s
 	pc <- pangoCairoCreateContext cr
 	pl <- pangoLayoutNew pc
-	pfd <- pangoFontDescriptionNew
+	pfd <- pangoFontDescriptionPrimToOld <$> pangoFontDescriptionNew
 	pangoFontDescriptionSetSize pfd (30 * pangoScale)
 	pangoLayoutSetFontDescription pl pfd
 	pangoLayoutSetText pl "こんにちは世界!" 30

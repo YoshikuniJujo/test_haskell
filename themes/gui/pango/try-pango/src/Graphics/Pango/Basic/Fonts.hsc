@@ -8,20 +8,22 @@ import Foreign.ForeignPtr hiding (newForeignPtr, addForeignPtrFinalizer)
 import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.C
+import Control.Monad.Primitive
 import Data.Word
 import Data.Int
 
+import Graphics.Pango.Monad
 import Graphics.Pango.Types
 import Graphics.Pango.Values
 
 #include <pango/pango.h>
 
 foreign import ccall "pango_font_description_new" c_pango_font_description_new ::
-	IO (Ptr PangoFontDescriptionOld)
+	IO (Ptr (PangoFontDescriptionPrim s))
 
-pangoFontDescriptionNew :: IO PangoFontDescriptionOld
-pangoFontDescriptionNew =
-	makePangoFontDescriptionOld =<< c_pango_font_description_new
+pangoFontDescriptionNew :: PrimMonad m => m (PangoFontDescriptionPrim (PrimState m))
+pangoFontDescriptionNew = unPrimIo
+	$ makePangoFontDescriptionPrim =<< c_pango_font_description_new
 
 foreign import ccall "pango_font_description_copy" c_pango_font_description_copy ::
 	Ptr PangoFontDescriptionOld -> IO (Ptr PangoFontDescriptionOld)

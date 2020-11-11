@@ -49,7 +49,7 @@ helloWorld :: CairoT RealWorld ->
 	(Double, Double) -> IO ()
 helloWorld cr (r, g, b) ff stl vr wt strc (x, y) = do
 	pl <- pangoCairoCreateLayout cr
-	pfd <- pangoFontDescriptionNew
+	pfd <- pangoFontDescriptionPrimToOld <$> pangoFontDescriptionNew
 	pangoFontDescriptionSetFamily pfd ff
 	pangoFontDescriptionSetSize pfd (30 * pangoScale)
 	pangoFontDescriptionSetStyle pfd stl

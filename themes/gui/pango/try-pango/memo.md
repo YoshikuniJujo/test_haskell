@@ -49,7 +49,7 @@ todo
 	+ [ ] make PangoFontDescriptionPrim
 		- [x] make PangoFontDescriptionPrim
 		- [ ] use PangoFontDescriptionPrim
-			* [ ] pangoFontDescriptionNew
+			* [x] pangoFontDescriptionNew
 			* [ ] pangoFontDescriptionCopy
 			* [ ] pangoFontDescriptionCopyStatic
 			* [ ] pangoFontDescriptionSetFamily

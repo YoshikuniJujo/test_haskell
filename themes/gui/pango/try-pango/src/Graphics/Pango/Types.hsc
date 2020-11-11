@@ -6,6 +6,7 @@ module Graphics.Pango.Types where
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
+import Control.Monad.ST
 
 newtype PangoLayoutIo = PangoLayoutIo (ForeignPtr PangoLayoutIo) deriving Show
 
@@ -42,6 +43,9 @@ newtype PangoFontDescriptionOld = PangoFontDescriptionOld (ForeignPtr PangoFontD
 
 makePangoFontDescriptionOld :: Ptr PangoFontDescriptionOld -> IO PangoFontDescriptionOld
 makePangoFontDescriptionOld p = PangoFontDescriptionOld <$> newForeignPtr p (c_pango_font_description_old_free p)
+
+pangoFontDescriptionPrimToOld :: PangoFontDescriptionPrim RealWorld -> PangoFontDescriptionOld
+pangoFontDescriptionPrimToOld (PangoFontDescriptionPrim fpfd) = PangoFontDescriptionOld $ castForeignPtr fpfd
 
 foreign import ccall "pango_font_description_free" c_pango_font_description_prim_free ::
 	Ptr (PangoFontDescriptionPrim s) -> IO ()
