@@ -31,17 +31,6 @@ pangoLayoutThaw :: PangoLayout -> IO PangoLayoutIo
 pangoLayoutThaw (PangoLayout fpl) =
 	withForeignPtr fpl \pl -> makePangoLayoutIo =<< c_pango_layout_thaw pl
 
-newtype PangoLayoutOld = PangoLayoutOld (ForeignPtr PangoLayoutOld) deriving Show
-
-makePangoLayoutOld :: Ptr PangoLayoutOld -> IO PangoLayoutOld
-makePangoLayoutOld p = PangoLayoutOld <$> newForeignPtr p (c_g_object_unref p)
-
-pangoLayoutIoToOld :: PangoLayoutIo -> PangoLayoutOld
-pangoLayoutIoToOld (PangoLayoutIo fp) = PangoLayoutOld $ castForeignPtr fp
-
-pangoLayoutOldToIo :: PangoLayoutOld -> PangoLayoutIo
-pangoLayoutOldToIo (PangoLayoutOld fp) = PangoLayoutIo $ castForeignPtr fp
-
 foreign import ccall "g_object_unref" c_g_object_unref :: Ptr a -> IO ()
 
 newtype PangoFontDescription = PangoFontDescription (ForeignPtr PangoFontDescription) deriving Show
