@@ -15,66 +15,66 @@ import Graphics.Pango.Values
 #include <pango/pango.h>
 
 foreign import ccall "pango_layout_new" c_pango_layout_new ::
-	Ptr PangoContext -> IO (Ptr PangoLayout)
+	Ptr PangoContext -> IO (Ptr PangoLayoutOld)
 
-pangoLayoutNew :: PangoContext -> IO PangoLayout
+pangoLayoutNew :: PangoContext -> IO PangoLayoutOld
 pangoLayoutNew (PangoContext fpc) = withForeignPtr fpc \pc ->
-	makePangoLayout =<< c_pango_layout_new pc
+	makePangoLayoutOld =<< c_pango_layout_new pc
 
 foreign import ccall "pango_layout_copy" c_pango_layout_copy ::
-	Ptr PangoLayout -> IO (Ptr PangoLayout)
+	Ptr PangoLayoutOld -> IO (Ptr PangoLayoutOld)
 
-pangoLayoutCopy :: PangoLayout -> IO PangoLayout
-pangoLayoutCopy (PangoLayout fpl) = withForeignPtr fpl \pl ->
-	makePangoLayout =<< c_pango_layout_copy pl
+pangoLayoutCopy :: PangoLayoutOld -> IO PangoLayoutOld
+pangoLayoutCopy (PangoLayoutOld fpl) = withForeignPtr fpl \pl ->
+	makePangoLayoutOld =<< c_pango_layout_copy pl
 
 foreign import ccall "pango_layout_set_text" c_pango_layout_set_text ::
-	Ptr PangoLayout -> CString -> #{type int} -> IO ()
+	Ptr PangoLayoutOld -> CString -> #{type int} -> IO ()
 
-pangoLayoutSetText :: PangoLayout -> String -> #{type int} -> IO ()
-pangoLayoutSetText (PangoLayout fpl) s n =
+pangoLayoutSetText :: PangoLayoutOld -> String -> #{type int} -> IO ()
+pangoLayoutSetText (PangoLayoutOld fpl) s n =
 	withForeignPtr fpl \pl -> withCString s \cs ->
 		c_pango_layout_set_text pl cs n
 
 foreign import ccall "pango_layout_get_text" c_pango_layout_get_text ::
-	Ptr PangoLayout -> IO CString
+	Ptr PangoLayoutOld -> IO CString
 
-pangoLayoutGetText :: PangoLayout -> IO String
-pangoLayoutGetText (PangoLayout fpl) = withForeignPtr fpl \pl ->
+pangoLayoutGetText :: PangoLayoutOld -> IO String
+pangoLayoutGetText (PangoLayoutOld fpl) = withForeignPtr fpl \pl ->
 	peekCString =<< c_pango_layout_get_text pl
 
 foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font_description ::
-	Ptr PangoLayout -> Ptr PangoFontDescription -> IO ()
+	Ptr PangoLayoutOld -> Ptr PangoFontDescription -> IO ()
 
-pangoLayoutSetFontDescription :: PangoLayout -> PangoFontDescription -> IO ()
-pangoLayoutSetFontDescription (PangoLayout fpl) (PangoFontDescription fpfd) =
+pangoLayoutSetFontDescription :: PangoLayoutOld -> PangoFontDescription -> IO ()
+pangoLayoutSetFontDescription (PangoLayoutOld fpl) (PangoFontDescription fpfd) =
 	withForeignPtr fpl \pl -> withForeignPtr fpfd \pfd ->
 		c_pango_layout_set_font_description pl pfd
 
 foreign import ccall "pango_layout_set_width" c_pango_layout_set_width ::
-	Ptr PangoLayout -> #{type int} -> IO ()
+	Ptr PangoLayoutOld -> #{type int} -> IO ()
 
-pangoLayoutSetWidth :: PangoLayout -> #{type int} -> IO ()
-pangoLayoutSetWidth (PangoLayout fpl) w = withForeignPtr fpl \pl ->
+pangoLayoutSetWidth :: PangoLayoutOld -> #{type int} -> IO ()
+pangoLayoutSetWidth (PangoLayoutOld fpl) w = withForeignPtr fpl \pl ->
 	c_pango_layout_set_width pl w
 
 foreign import ccall "pango_layout_get_width" c_pango_layout_get_width ::
-	Ptr PangoLayout -> IO #type int
+	Ptr PangoLayoutOld -> IO #type int
 
-pangoLayoutGetWidth :: PangoLayout -> IO #type int
-pangoLayoutGetWidth (PangoLayout fpl) =
+pangoLayoutGetWidth :: PangoLayoutOld -> IO #type int
+pangoLayoutGetWidth (PangoLayoutOld fpl) =
 	withForeignPtr fpl c_pango_layout_get_width
 
 foreign import ccall "pango_layout_set_ellipsize" c_pango_layout_set_ellipsize ::
-	Ptr PangoLayout -> #{type PangoEllipsizeMode} -> IO ()
+	Ptr PangoLayoutOld -> #{type PangoEllipsizeMode} -> IO ()
 
-pangoLayoutSetEllipsize :: PangoLayout -> PangoEllipsizeMode -> IO ()
-pangoLayoutSetEllipsize (PangoLayout fpl) (PangoEllipsizeMode pem) = withForeignPtr fpl \pl ->
+pangoLayoutSetEllipsize :: PangoLayoutOld -> PangoEllipsizeMode -> IO ()
+pangoLayoutSetEllipsize (PangoLayoutOld fpl) (PangoEllipsizeMode pem) = withForeignPtr fpl \pl ->
 	c_pango_layout_set_ellipsize pl pem
 
 foreign import ccall "pango_layout_set_indent" c_pango_layout_set_indent ::
-	Ptr PangoLayout -> #{type int} -> IO ()
+	Ptr PangoLayoutOld -> #{type int} -> IO ()
 
-pangoLayoutSetIndent :: PangoLayout -> #{type int} -> IO ()
-pangoLayoutSetIndent (PangoLayout fpl) idt = withForeignPtr fpl \pl ->
+pangoLayoutSetIndent :: PangoLayoutOld -> #{type int} -> IO ()
+pangoLayoutSetIndent (PangoLayoutOld fpl) idt = withForeignPtr fpl \pl ->
 	c_pango_layout_set_indent pl idt

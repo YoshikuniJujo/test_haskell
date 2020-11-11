@@ -6,10 +6,10 @@ import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 
-newtype PangoLayout = PangoLayout (ForeignPtr PangoLayout) deriving Show
+newtype PangoLayoutOld = PangoLayoutOld (ForeignPtr PangoLayoutOld) deriving Show
 
-makePangoLayout :: Ptr PangoLayout -> IO PangoLayout
-makePangoLayout p = PangoLayout <$> newForeignPtr p (c_g_object_unref p)
+makePangoLayoutOld :: Ptr PangoLayoutOld -> IO PangoLayoutOld
+makePangoLayoutOld p = PangoLayoutOld <$> newForeignPtr p (c_g_object_unref p)
 
 foreign import ccall "g_object_unref" c_g_object_unref :: Ptr a -> IO ()
 

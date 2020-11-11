@@ -30,6 +30,18 @@ todo
 * [x] change PangoFontDescription: from * -> * to *
 * [x] change PangoLayout: from * -> * to *
 * [x] remove Graphics.Pango.Monad
+* [ ] make PangoLayoutIo and PangoLayout
+	+ [x] rename PangoLayout to PangoLayoutOld
+	+ [x] rename makePangoLayout to makePangoLayoutOld
+	+ [ ] make PangoLayoutIo
+	+ [ ] make PangoLayout
+	+ [ ] from PangoLayoutOld to PangoLayoutIo
+	+ [ ] from PangoLayoutOld to PangoLayout
+	+ [ ] make pangoLayoutFreeze
+	+ [ ] make pangoLayoutThaw
+* [ ] make Graphics.Pango.Monad
+* [ ] make PangoFontDescriptionPrim and PangoFontDescription
+* [ ] make PangoContextPrim and PangoContext
 * [ ] define functions of Fonts
 	+ [x] pango\_font\_description\_get\_size\_is\_absolute
 	+ [x] pango\_font\_description\_set\_gravity
