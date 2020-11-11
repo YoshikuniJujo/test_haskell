@@ -47,11 +47,36 @@ todo
 * [ ] make PangoFontDescriptionPrim and PangoFontDescription
 	+ [x] rename PangoFontDescription to PangoFontDescriptionOld
 	+ [ ] make PangoFontDescriptionPrim
-		- [ ] make PangoFontDescriptionPrim
+		- [x] make PangoFontDescriptionPrim
 		- [ ] use PangoFontDescriptionPrim
+			* [ ] pangoFontDescriptionNew
+			* [ ] pangoFontDescriptionCopy
+			* [ ] pangoFontDescriptionCopyStatic
+			* [ ] pangoFontDescriptionSetFamily
+			* [ ] pangoFontDescriptionSetFamilyStatic
+			* [ ] pangoFontDescriptionSetStyle
+			* [ ] pangoFontDescriptionSetVariant
+			* [ ] pangoFontDescriptionSetWeight
+			* [ ] pangoFontDescriptionSetStretch
+			* [ ] pangoFontDescriptionSetSize
+			* [ ] pangoFontDescriptionSetAbsoluteSize
+			* [ ] pangoFontDescriptionSetGravity
+			* [ ] pangoFontDescriptionUnsetFields
 	+ [ ] make PangoFontDescription
 		- [ ] make PangoFontDescription
 		- [ ] use PangoFontDescription
+			* [ ] pangoFontDescriptionEqual
+			* [ ] pangoFontDescriptionGetFamily
+			* [ ] pangoFontDescriptionGetStyle
+			* [ ] pangoFontDescriptionGetVariant
+			* [ ] pangoFontDescriptionGetWeight
+			* [ ] pangoFontDescriptionGetStretch
+			* [ ] pangoFontDescriptionGetSize
+			* [ ] pangoFontDescriptionGetSizeIsAbsollute
+			* [ ] pangoFontDescriptionGetGravity
+			* [ ] pangoFontDescriptionGetSetFields
+			* [ ] pangoFontDescriptionToString
+			* [ ] pangoFontDescriptionToFilename
 	+ [ ] make pangoFontDescriptionFreeze
 	+ [ ] make pangoFontDescriptionThaw
 * [ ] define functions of Fonts

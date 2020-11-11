@@ -38,7 +38,7 @@ pangoFontDescriptionCopyStatic :: PangoFontDescriptionOld -> IO PangoFontDescrip
 pangoFontDescriptionCopyStatic (PangoFontDescriptionOld fpfd) =
 	withForeignPtr fpfd \pfd -> do
 		p <- c_pango_font_description_copy_static pfd
-		PangoFontDescriptionOld <$> newForeignPtr p (touchForeignPtr fpfd >> c_pango_font_description_free p)
+		PangoFontDescriptionOld <$> newForeignPtr p (touchForeignPtr fpfd >> c_pango_font_description_old_free p)
 
 foreign import ccall "pango_font_description_equal" c_pango_font_description_equal ::
 	Ptr PangoFontDescriptionOld -> Ptr PangoFontDescriptionOld -> IO #type gboolean
