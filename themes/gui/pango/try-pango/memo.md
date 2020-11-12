@@ -62,24 +62,25 @@ todo
 			* [x] pangoFontDescriptionSetAbsoluteSize
 			* [x] pangoFontDescriptionSetGravity
 			* [x] pangoFontDescriptionUnsetFields
-	+ [ ] make PangoFontDescription
+	+ [x] make PangoFontDescription
 		- [x] make PangoFontDescription
-		- [ ] use PangoFontDescription
-			* [ ] pangoFontDescriptionEqual
-			* [ ] pangoFontDescriptionGetFamily
-			* [ ] pangoFontDescriptionGetStyle
-			* [ ] pangoFontDescriptionGetVariant
-			* [ ] pangoFontDescriptionGetWeight
-			* [ ] pangoFontDescriptionGetStretch
-			* [ ] pangoFontDescriptionGetSize
-			* [ ] pangoFontDescriptionGetSizeIsAbsollute
-			* [ ] pangoFontDescriptionGetGravity
-			* [ ] pangoFontDescriptionGetSetFields
-			* [ ] pangoFontDescriptionToString
-			* [ ] pangoFontDescriptionToFilename
-	+ [ ] make pangoFontDescriptionFreeze
+		- [x] use PangoFontDescription
+			* [x] pangoFontDescriptionEqual
+			* [x] pangoFontDescriptionGetFamily
+			* [x] pangoFontDescriptionGetStyle
+			* [x] pangoFontDescriptionGetVariant
+			* [x] pangoFontDescriptionGetWeight
+			* [x] pangoFontDescriptionGetStretch
+			* [x] pangoFontDescriptionGetSize
+			* [x] pangoFontDescriptionGetSizeIsAbsollute
+			* [x] pangoFontDescriptionGetGravity
+			* [x] pangoFontDescriptionGetSetFields
+			* [x] pangoFontDescriptionToString
+			* [x] pangoFontDescriptionToFilename
+	+ [x] make pangoFontDescriptionFreeze
 	+ [ ] pangoLayoutSetFontDescription: use PangoFontDescription
 	+ [ ] make pangoFontDescriptionThaw
+	+ [ ] remove PangoFontDescriptionOld and so on
 * [ ] define functions of Fonts
 	+ [x] pango\_font\_description\_get\_size\_is\_absolute
 	+ [x] pango\_font\_description\_set\_gravity

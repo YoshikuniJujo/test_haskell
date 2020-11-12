@@ -6,7 +6,9 @@ module Graphics.Pango.Types where
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
-import Control.Monad.ST
+import Control.Monad.Primitive
+
+import Graphics.Pango.Monad
 
 newtype PangoLayoutIo = PangoLayoutIo (ForeignPtr PangoLayoutIo) deriving Show
 
@@ -44,6 +46,11 @@ newtype PangoFontDescription = PangoFontDescription (ForeignPtr PangoFontDescrip
 makePangoFontDescription :: Ptr PangoFontDescription -> IO PangoFontDescription
 makePangoFontDescription p = PangoFontDescription <$> newForeignPtr p (c_pango_font_description_free p)
 
+pangoFontDescriptionFreeze :: PrimMonad m =>
+	PangoFontDescriptionPrim (PrimState m) -> m PangoFontDescription
+pangoFontDescriptionFreeze (PangoFontDescriptionPrim fpfd) = unPrimIo
+	$ makePangoFontDescription =<< withForeignPtr fpfd c_pango_font_description_freeze
+
 newtype PangoFontDescriptionOld = PangoFontDescriptionOld (ForeignPtr PangoFontDescriptionOld) deriving Show
 
 makePangoFontDescriptionOld :: Ptr PangoFontDescriptionOld -> IO PangoFontDescriptionOld
@@ -60,6 +67,9 @@ foreign import ccall "pango_font_description_free" c_pango_font_description_free
 
 foreign import ccall "pango_font_description_free" c_pango_font_description_old_free ::
 	Ptr PangoFontDescriptionOld -> IO ()
+
+foreign import ccall "pango_font_description_copy" c_pango_font_description_freeze ::
+	Ptr (PangoFontDescriptionPrim s) -> IO (Ptr PangoFontDescription)
 
 newtype PangoContext = PangoContext (ForeignPtr PangoContext) deriving Show
 
