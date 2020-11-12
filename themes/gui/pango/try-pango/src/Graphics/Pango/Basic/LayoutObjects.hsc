@@ -78,3 +78,19 @@ foreign import ccall "pango_layout_set_indent" c_pango_layout_set_indent ::
 pangoLayoutSetIndent :: PangoLayoutIo -> #{type int} -> IO ()
 pangoLayoutSetIndent (PangoLayoutIo fpl) idt = withForeignPtr fpl \pl ->
 	c_pango_layout_set_indent pl idt
+
+{-
+foreign import ccall "pango_layout_set_line_spacing" c_pango_layout_set_line_spacing ::
+	Ptr PangoLayoutIo -> #{type float} -> IO ()
+
+pangoLayoutSetLineSpacing :: PangoLayoutIo -> #{type float} -> IO ()
+pangoLayoutSetLineSpacing (PangoLayoutIo fpl) fct = withForeignPtr fpl \pl ->
+	c_pango_layout_set_line_spacing pl fct
+	-}
+
+foreign import ccall "pango_layout_set_alignment" c_pango_layout_set_alignment ::
+	Ptr PangoLayoutIo -> #{type PangoAlignment} -> IO ()
+
+pangoLayoutSetAlignment :: PangoLayoutIo -> PangoAlignment -> IO ()
+pangoLayoutSetAlignment (PangoLayoutIo fpl) (PangoAlignment pa) = withForeignPtr fpl \pl ->
+	c_pango_layout_set_alignment pl pa

@@ -51,3 +51,8 @@ newtype PangoEllipsizeMode = PangoEllipsizeMode #{type PangoEllipsizeMode} deriv
 
 #enum PangoEllipsizeMode, PangoEllipsizeMode, PANGO_ELLIPSIZE_NONE, \
 	PANGO_ELLIPSIZE_START, PANGO_ELLIPSIZE_MIDDLE, PANGO_ELLIPSIZE_END
+
+newtype PangoAlignment = PangoAlignment #{type PangoAlignment} deriving Show
+
+#enum PangoAlignment, PangoAlignment, PANGO_ALIGN_LEFT, PANGO_ALIGN_CENTER, \
+	PANGO_ALIGN_RIGHT

@@ -147,14 +147,14 @@ todo
 	* [ ] pango\_layout\_get\_indent
 	* no pango\_layout\_set\_spacing
 	* no pango\_layout\_get\_spacing
-	* [ ] pango\_layout\_set\_line\_spacing
-	* [ ] pango\_layout\_get\_line\_spacing
+	* [ ] wait until 1.44: pango\_layout\_set\_line\_spacing
+	* [ ] wait until 1.44: pango\_layout\_get\_line\_spacing
 	* [ ] pango\_layout\_set\_justify
 	* [ ] pango\_layout\_get\_justify
 	* [ ] pango\_layout\_set\_auto\_dir
 	* [ ] pango\_layout\_get\_auto\_dir
 	* [ ] pango\_layout\_get\_direction
-	* [ ] pango\_layout\_set\_alignment
+	* [x] pango\_layout\_set\_alignment
 	* [ ] pango\_layout\_get\_alignment
 	* [ ] pango\_layout\_set\_tabs
 	* [ ] pango\_layout\_get\_tabs

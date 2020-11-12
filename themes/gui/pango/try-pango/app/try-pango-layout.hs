@@ -48,9 +48,19 @@ main = do
 	pangoLayoutSetFontDescription pl2 =<< pangoFontDescriptionFreeze pfd2
 	pangoLayoutSetWidth pl2 (400 * pangoScale)
 	pangoLayoutSetIndent pl2 (30 * pangoScale)
+--	pangoLayoutSetLineSpacing pl2 2
+	pangoLayoutSetAlignment pl2 pangoAlignCenter
 	pangoLayoutSetText pl2 someText 1600
 	cairoMoveTo cr 100 200
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl2
+
+{-
+	pl3 <- pangoCairoCreateLayout cr
+	pfd3 <- pangoFontDescriptionNew
+	pangoLayoutSetAlignment pl pangoAlignCenter
+	cairoMoveTo cr 100 400
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
+	-}
 
 	void $ writeDynamicPng "tmp3.png" =<< cairoImageSurfaceGetImage s
 
