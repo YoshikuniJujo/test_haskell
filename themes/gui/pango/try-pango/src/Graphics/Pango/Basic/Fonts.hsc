@@ -67,15 +67,16 @@ pangoFontDescriptionSetFamily (PangoFontDescriptionPrim fpfd) f = unPrimIo
 		c_pango_font_description_set_family pfd cf
 
 foreign import ccall "pango_font_description_set_family_static" c_pango_font_description_set_family_static ::
-	Ptr PangoFontDescriptionOld -> CString -> IO ()
+	Ptr (PangoFontDescriptionPrim s) -> CString -> IO ()
 
 newForeignCString :: String -> IO (ForeignPtr CChar)
 newForeignCString s = do
 	p <- newCString s
 	newForeignPtr p (free p)
 
-pangoFontDescriptionSetFamilyStatic :: PangoFontDescriptionOld -> String -> IO ()
-pangoFontDescriptionSetFamilyStatic (PangoFontDescriptionOld fpfd) f = do
+pangoFontDescriptionSetFamilyStatic :: PrimMonad m =>
+	PangoFontDescriptionPrim (PrimState m) -> String -> m ()
+pangoFontDescriptionSetFamilyStatic (PangoFontDescriptionPrim fpfd) f = unPrimIo do
 	fcf <- newForeignCString f
 	addForeignPtrFinalizer fpfd $ touchForeignPtr fcf
 	withForeignPtr fpfd \pfd -> withForeignPtr fcf \cf ->
