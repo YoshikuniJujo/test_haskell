@@ -57,7 +57,7 @@ todo
 			* [x] pangoFontDescriptionSetStyle
 			* [x] pangoFontDescriptionSetVariant
 			* [x] pangoFontDescriptionSetWeight
-			* [ ] pangoFontDescriptionSetStretch
+			* [x] pangoFontDescriptionSetStretch
 			* [ ] pangoFontDescriptionSetSize
 			* [ ] pangoFontDescriptionSetAbsoluteSize
 			* [ ] pangoFontDescriptionSetGravity
@@ -78,6 +78,7 @@ todo
 			* [ ] pangoFontDescriptionToString
 			* [ ] pangoFontDescriptionToFilename
 	+ [ ] make pangoFontDescriptionFreeze
+	+ [ ] pangoLayoutSetFontDescription: use PangoFontDescription
 	+ [ ] make pangoFontDescriptionThaw
 * [ ] define functions of Fonts
 	+ [x] pango\_font\_description\_get\_size\_is\_absolute

@@ -56,7 +56,7 @@ helloWorld cr (r, g, b) ff stl vr wt strc (x, y) = do
 	pangoFontDescriptionSetStyle pfd stl
 	pangoFontDescriptionSetVariant pfd vr
 	pangoFontDescriptionSetWeight pfd wt
-	pangoFontDescriptionSetStretch pfdo strc
+	pangoFontDescriptionSetStretch pfd strc
 	putStrLn =<< pangoFontDescriptionToString pfdo
 	putStrLn =<< pangoFontDescriptionToFilename pfdo
 	pangoLayoutSetFontDescription pl pfdo
