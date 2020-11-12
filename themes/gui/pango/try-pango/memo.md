@@ -52,7 +52,7 @@ todo
 			* [x] pangoFontDescriptionNew
 			* [x] pangoFontDescriptionCopy
 			* [x] pangoFontDescriptionCopyStatic
-			* [ ] pangoFontDescriptionSetFamily
+			* [x] pangoFontDescriptionSetFamily
 			* [ ] pangoFontDescriptionSetFamilyStatic
 			* [ ] pangoFontDescriptionSetStyle
 			* [ ] pangoFontDescriptionSetVariant

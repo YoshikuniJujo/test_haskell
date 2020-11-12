@@ -49,16 +49,17 @@ helloWorld :: CairoT RealWorld ->
 	(Double, Double) -> IO ()
 helloWorld cr (r, g, b) ff stl vr wt strc (x, y) = do
 	pl <- pangoCairoCreateLayout cr
-	pfd <- pangoFontDescriptionPrimToOld <$> pangoFontDescriptionNew
+	pfd <- pangoFontDescriptionNew
+	let	pfdo = pangoFontDescriptionPrimToOld pfd
 	pangoFontDescriptionSetFamily pfd ff
-	pangoFontDescriptionSetSize pfd (30 * pangoScale)
-	pangoFontDescriptionSetStyle pfd stl
-	pangoFontDescriptionSetVariant pfd vr
-	pangoFontDescriptionSetWeight pfd wt
-	pangoFontDescriptionSetStretch pfd strc
-	putStrLn =<< pangoFontDescriptionToString pfd
-	putStrLn =<< pangoFontDescriptionToFilename pfd
-	pangoLayoutSetFontDescription pl pfd
+	pangoFontDescriptionSetSize pfdo (30 * pangoScale)
+	pangoFontDescriptionSetStyle pfdo stl
+	pangoFontDescriptionSetVariant pfdo vr
+	pangoFontDescriptionSetWeight pfdo wt
+	pangoFontDescriptionSetStretch pfdo strc
+	putStrLn =<< pangoFontDescriptionToString pfdo
+	putStrLn =<< pangoFontDescriptionToFilename pfdo
+	pangoLayoutSetFontDescription pl pfdo
 	pangoLayoutSetText pl "Hello, world!\nこんにちは世界!" 40
 	cairoSetSourceRgb cr r g b
 	cairoIdentityMatrix cr

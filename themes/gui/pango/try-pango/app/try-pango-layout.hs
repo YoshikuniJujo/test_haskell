@@ -26,11 +26,12 @@ main = do
 	cr <- cairoCreate s
 
 	pl <- pangoCairoCreateLayout cr
-	pfd <- pangoFontDescriptionPrimToOld <$> pangoFontDescriptionNew
+	pfd <- pangoFontDescriptionNew
+	let	pfdo = pangoFontDescriptionPrimToOld pfd
 --	pangoFontDescriptionSetFamily pfd "sans-serif"
 	pangoFontDescriptionSetFamily pfd "sans-serif"
-	pangoFontDescriptionSetSize pfd (30 * pangoScale)
-	pangoLayoutSetFontDescription pl pfd
+	pangoFontDescriptionSetSize pfdo (30 * pangoScale)
+	pangoLayoutSetFontDescription pl pfdo
 	pangoLayoutSetWidth pl (200 * pangoScale)
 	pangoLayoutSetEllipsize pl pangoEllipsizeMiddle
 --	pangoLayoutSetText pl "こんにちは世界!" 100
@@ -41,10 +42,11 @@ main = do
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	pl2 <- pangoCairoCreateLayout cr
-	pfd2 <- pangoFontDescriptionPrimToOld <$> pangoFontDescriptionNew
+	pfd2 <- pangoFontDescriptionNew
+	let	pfd2o = pangoFontDescriptionPrimToOld pfd2
 	pangoFontDescriptionSetFamily pfd2 "serif"
-	pangoFontDescriptionSetSize pfd2 (15 * pangoScale)
-	pangoLayoutSetFontDescription pl2 pfd2
+	pangoFontDescriptionSetSize pfd2o (15 * pangoScale)
+	pangoLayoutSetFontDescription pl2 pfd2o
 	pangoLayoutSetWidth pl2 (400 * pangoScale)
 	pangoLayoutSetIndent pl2 (30 * pangoScale)
 	pangoLayoutSetText pl2 someText 1600

@@ -58,11 +58,12 @@ pangoFontDescriptionEqual (PangoFontDescriptionOld fpfd1) (PangoFontDescriptionO
 		gbooleanToBool <$> c_pango_font_description_equal pfd1 pfd2
 
 foreign import ccall "pango_font_description_set_family" c_pango_font_description_set_family ::
-	Ptr PangoFontDescriptionOld -> CString -> IO ()
+	Ptr (PangoFontDescriptionPrim s) -> CString -> IO ()
 
-pangoFontDescriptionSetFamily :: PangoFontDescriptionOld -> String -> IO ()
-pangoFontDescriptionSetFamily (PangoFontDescriptionOld fpfd) f =
-	withForeignPtr fpfd \pfd -> withCString f \cf ->
+pangoFontDescriptionSetFamily :: PrimMonad m =>
+	PangoFontDescriptionPrim (PrimState m) -> String -> m ()
+pangoFontDescriptionSetFamily (PangoFontDescriptionPrim fpfd) f = unPrimIo
+	$ withForeignPtr fpfd \pfd -> withCString f \cf ->
 		c_pango_font_description_set_family pfd cf
 
 foreign import ccall "pango_font_description_set_family_static" c_pango_font_description_set_family_static ::
