@@ -52,7 +52,7 @@ helloWorld cr (r, g, b) ff stl vr wt strc (x, y) = do
 	pfd <- pangoFontDescriptionNew
 	let	pfdo = pangoFontDescriptionPrimToOld pfd
 	pangoFontDescriptionSetFamily pfd ff
-	pangoFontDescriptionSetSize pfdo (30 * pangoScale)
+	pangoFontDescriptionSetSize pfd (30 * pangoScale)
 	pangoFontDescriptionSetStyle pfd stl
 	pangoFontDescriptionSetVariant pfd vr
 	pangoFontDescriptionSetWeight pfd wt

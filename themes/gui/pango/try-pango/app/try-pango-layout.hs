@@ -30,7 +30,7 @@ main = do
 	let	pfdo = pangoFontDescriptionPrimToOld pfd
 --	pangoFontDescriptionSetFamily pfd "sans-serif"
 	pangoFontDescriptionSetFamily pfd "sans-serif"
-	pangoFontDescriptionSetSize pfdo (30 * pangoScale)
+	pangoFontDescriptionSetSize pfd (30 * pangoScale)
 	pangoLayoutSetFontDescription pl pfdo
 	pangoLayoutSetWidth pl (200 * pangoScale)
 	pangoLayoutSetEllipsize pl pangoEllipsizeMiddle
@@ -45,7 +45,7 @@ main = do
 	pfd2 <- pangoFontDescriptionNew
 	let	pfd2o = pangoFontDescriptionPrimToOld pfd2
 	pangoFontDescriptionSetFamily pfd2 "serif"
-	pangoFontDescriptionSetSize pfd2o (15 * pangoScale)
+	pangoFontDescriptionSetSize pfd2 (15 * pangoScale)
 	pangoLayoutSetFontDescription pl2 pfd2o
 	pangoLayoutSetWidth pl2 (400 * pangoScale)
 	pangoLayoutSetIndent pl2 (30 * pangoScale)

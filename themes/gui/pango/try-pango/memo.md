@@ -58,7 +58,7 @@ todo
 			* [x] pangoFontDescriptionSetVariant
 			* [x] pangoFontDescriptionSetWeight
 			* [x] pangoFontDescriptionSetStretch
-			* [ ] pangoFontDescriptionSetSize
+			* [x] pangoFontDescriptionSetSize
 			* [ ] pangoFontDescriptionSetAbsoluteSize
 			* [ ] pangoFontDescriptionSetGravity
 			* [ ] pangoFontDescriptionUnsetFields
