@@ -188,11 +188,12 @@ pangoFontDescriptionGetSizeIsAbsolute (PangoFontDescriptionOld fpfd) =
 
 foreign import ccall "pango_font_description_set_gravity"
 	c_pango_font_description_set_gravity ::
-	Ptr PangoFontDescriptionOld -> #{type PangoGravity} -> IO ()
+	Ptr (PangoFontDescriptionPrim s) -> #{type PangoGravity} -> IO ()
 
-pangoFontDescriptionSetGravity :: PangoFontDescriptionOld -> PangoGravity -> IO ()
-pangoFontDescriptionSetGravity (PangoFontDescriptionOld fpfd) (PangoGravity gr) =
-	withForeignPtr fpfd \pfd ->
+pangoFontDescriptionSetGravity :: PrimMonad m =>
+	PangoFontDescriptionPrim (PrimState m) -> PangoGravity -> m ()
+pangoFontDescriptionSetGravity (PangoFontDescriptionPrim fpfd) (PangoGravity gr) = unPrimIo
+	$ withForeignPtr fpfd \pfd ->
 		c_pango_font_description_set_gravity pfd gr
 
 foreign import ccall "pango_font_description_get_gravity"
