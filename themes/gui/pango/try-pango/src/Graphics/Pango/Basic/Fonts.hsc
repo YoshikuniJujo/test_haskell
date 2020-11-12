@@ -35,13 +35,15 @@ pangoFontDescriptionCopy (PangoFontDescriptionPrim fpfd) = unPrimIo
 		makePangoFontDescriptionPrim =<< c_pango_font_description_copy pfd
 
 foreign import ccall "pango_font_description_copy_static" c_pango_font_description_copy_static ::
-	Ptr PangoFontDescriptionOld -> IO (Ptr PangoFontDescriptionOld)
+	Ptr (PangoFontDescriptionPrim s) -> IO (Ptr (PangoFontDescriptionPrim s))
 
-pangoFontDescriptionCopyStatic :: PangoFontDescriptionOld -> IO PangoFontDescriptionOld
-pangoFontDescriptionCopyStatic (PangoFontDescriptionOld fpfd) =
-	withForeignPtr fpfd \pfd -> do
+pangoFontDescriptionCopyStatic :: PrimMonad m =>
+	PangoFontDescriptionPrim (PrimState m) -> m (PangoFontDescriptionPrim (PrimState m))
+pangoFontDescriptionCopyStatic (PangoFontDescriptionPrim fpfd) = unPrimIo
+	$ withForeignPtr fpfd \pfd -> do
 		p <- c_pango_font_description_copy_static pfd
-		PangoFontDescriptionOld <$> newForeignPtr p (touchForeignPtr fpfd >> c_pango_font_description_old_free p)
+		PangoFontDescriptionPrim <$> newForeignPtr p
+			(touchForeignPtr fpfd >> c_pango_font_description_prim_free p)
 
 foreign import ccall "pango_font_description_equal" c_pango_font_description_equal ::
 	Ptr PangoFontDescriptionOld -> Ptr PangoFontDescriptionOld -> IO #type gboolean

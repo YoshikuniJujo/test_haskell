@@ -51,7 +51,7 @@ todo
 		- [ ] use PangoFontDescriptionPrim
 			* [x] pangoFontDescriptionNew
 			* [x] pangoFontDescriptionCopy
-			* [ ] pangoFontDescriptionCopyStatic
+			* [x] pangoFontDescriptionCopyStatic
 			* [ ] pangoFontDescriptionSetFamily
 			* [ ] pangoFontDescriptionSetFamilyStatic
 			* [ ] pangoFontDescriptionSetStyle
