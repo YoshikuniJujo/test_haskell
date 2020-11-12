@@ -78,7 +78,7 @@ todo
 			* [x] pangoFontDescriptionToString
 			* [x] pangoFontDescriptionToFilename
 	+ [x] make pangoFontDescriptionFreeze
-	+ [ ] pangoLayoutSetFontDescription: use PangoFontDescription
+	+ [x] pangoLayoutSetFontDescription: use PangoFontDescription
 	+ [ ] make pangoFontDescriptionThaw
 	+ [ ] remove PangoFontDescriptionOld and so on
 * [ ] define functions of Fonts
