@@ -216,11 +216,12 @@ pangoFontDescriptionGetSetFields (PangoFontDescriptionOld fpfd) =
 
 foreign import ccall "pango_font_description_unset_fields"
 	c_pango_font_description_unset_fields ::
-	Ptr PangoFontDescriptionOld -> #{type PangoFontMask} -> IO ()
+	Ptr (PangoFontDescriptionPrim s) -> #{type PangoFontMask} -> IO ()
 
-pangoFontDescriptionUnsetFields :: PangoFontDescriptionOld -> PangoFontMask -> IO ()
-pangoFontDescriptionUnsetFields (PangoFontDescriptionOld fpfd) (PangoFontMask msk) =
-	withForeignPtr fpfd \pfd ->
+pangoFontDescriptionUnsetFields :: PrimMonad m =>
+	PangoFontDescriptionPrim (PrimState m) -> PangoFontMask -> m ()
+pangoFontDescriptionUnsetFields (PangoFontDescriptionPrim fpfd) (PangoFontMask msk) = unPrimIo
+	$ withForeignPtr fpfd \pfd ->
 		c_pango_font_description_unset_fields pfd msk
 
 foreign import ccall "pango_font_description_to_string"

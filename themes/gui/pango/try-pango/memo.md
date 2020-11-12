@@ -46,9 +46,9 @@ todo
 	+ [x] remove PangoLayoutOld and so on
 * [ ] make PangoFontDescriptionPrim and PangoFontDescription
 	+ [x] rename PangoFontDescription to PangoFontDescriptionOld
-	+ [ ] make PangoFontDescriptionPrim
+	+ [x] make PangoFontDescriptionPrim
 		- [x] make PangoFontDescriptionPrim
-		- [ ] use PangoFontDescriptionPrim
+		- [x] use PangoFontDescriptionPrim
 			* [x] pangoFontDescriptionNew
 			* [x] pangoFontDescriptionCopy
 			* [x] pangoFontDescriptionCopyStatic
@@ -61,7 +61,7 @@ todo
 			* [x] pangoFontDescriptionSetSize
 			* [x] pangoFontDescriptionSetAbsoluteSize
 			* [x] pangoFontDescriptionSetGravity
-			* [ ] pangoFontDescriptionUnsetFields
+			* [x] pangoFontDescriptionUnsetFields
 	+ [ ] make PangoFontDescription
 		- [ ] make PangoFontDescription
 		- [ ] use PangoFontDescription
