@@ -91,11 +91,12 @@ pangoFontDescriptionGetFamily (PangoFontDescriptionOld fpfd) =
 		peekCString =<< c_pango_font_description_get_family pfd
 
 foreign import ccall "pango_font_description_set_style" c_pango_font_description_set_style ::
-	Ptr PangoFontDescriptionOld -> #{type PangoStyle} -> IO ()
+	Ptr (PangoFontDescriptionPrim s) -> #{type PangoStyle} -> IO ()
 
-pangoFontDescriptionSetStyle :: PangoFontDescriptionOld -> PangoStyle -> IO ()
-pangoFontDescriptionSetStyle (PangoFontDescriptionOld fpfd) (PangoStyle s) =
-	withForeignPtr fpfd \pfd -> c_pango_font_description_set_style pfd s
+pangoFontDescriptionSetStyle :: PrimMonad m =>
+	PangoFontDescriptionPrim (PrimState m) -> PangoStyle -> m ()
+pangoFontDescriptionSetStyle (PangoFontDescriptionPrim fpfd) (PangoStyle s) = unPrimIo
+	$ withForeignPtr fpfd \pfd -> c_pango_font_description_set_style pfd s
 
 foreign import ccall "pango_font_description_get_style" c_pango_font_description_get_style ::
 	Ptr PangoFontDescriptionOld -> IO #type PangoStyle

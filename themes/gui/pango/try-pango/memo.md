@@ -54,7 +54,7 @@ todo
 			* [x] pangoFontDescriptionCopyStatic
 			* [x] pangoFontDescriptionSetFamily
 			* [x] pangoFontDescriptionSetFamilyStatic
-			* [ ] pangoFontDescriptionSetStyle
+			* [x] pangoFontDescriptionSetStyle
 			* [ ] pangoFontDescriptionSetVariant
 			* [ ] pangoFontDescriptionSetWeight
 			* [ ] pangoFontDescriptionSetStretch
