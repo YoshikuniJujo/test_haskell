@@ -122,11 +122,12 @@ pangoFontDescriptionGetVariant (PangoFontDescriptionOld fpfd) =
 		PangoVariant <$> c_pango_font_description_get_variant pfd
 
 foreign import ccall "pango_font_description_set_weight" c_pango_font_description_set_weight ::
-	Ptr PangoFontDescriptionOld -> #{type PangoWeight} -> IO ()
+	Ptr (PangoFontDescriptionPrim s) -> #{type PangoWeight} -> IO ()
 
-pangoFontDescriptionSetWeight :: PangoFontDescriptionOld -> PangoWeight -> IO ()
-pangoFontDescriptionSetWeight (PangoFontDescriptionOld fpfd) (PangoWeight wt) =
-	withForeignPtr fpfd \pfd -> c_pango_font_description_set_weight pfd wt
+pangoFontDescriptionSetWeight :: PrimMonad m =>
+	PangoFontDescriptionPrim (PrimState m) -> PangoWeight -> m ()
+pangoFontDescriptionSetWeight (PangoFontDescriptionPrim fpfd) (PangoWeight wt) = unPrimIo
+	$ withForeignPtr fpfd \pfd -> c_pango_font_description_set_weight pfd wt
 
 foreign import ccall "pango_font_description_get_weight" c_pango_font_description_get_weight ::
 	Ptr PangoFontDescriptionOld -> IO #type PangoWeight
