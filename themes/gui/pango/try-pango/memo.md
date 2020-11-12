@@ -63,7 +63,7 @@ todo
 			* [x] pangoFontDescriptionSetGravity
 			* [x] pangoFontDescriptionUnsetFields
 	+ [ ] make PangoFontDescription
-		- [ ] make PangoFontDescription
+		- [x] make PangoFontDescription
 		- [ ] use PangoFontDescription
 			* [ ] pangoFontDescriptionEqual
 			* [ ] pangoFontDescriptionGetFamily

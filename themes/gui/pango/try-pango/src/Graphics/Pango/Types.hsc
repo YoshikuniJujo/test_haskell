@@ -39,6 +39,11 @@ newtype PangoFontDescriptionPrim s = PangoFontDescriptionPrim (ForeignPtr (Pango
 makePangoFontDescriptionPrim :: Ptr (PangoFontDescriptionPrim s) -> IO (PangoFontDescriptionPrim s)
 makePangoFontDescriptionPrim p = PangoFontDescriptionPrim <$> newForeignPtr p (c_pango_font_description_prim_free p)
 
+newtype PangoFontDescription = PangoFontDescription (ForeignPtr PangoFontDescription) deriving Show
+
+makePangoFontDescription :: Ptr PangoFontDescription -> IO PangoFontDescription
+makePangoFontDescription p = PangoFontDescription <$> newForeignPtr p (c_pango_font_description_free p)
+
 newtype PangoFontDescriptionOld = PangoFontDescriptionOld (ForeignPtr PangoFontDescriptionOld) deriving Show
 
 makePangoFontDescriptionOld :: Ptr PangoFontDescriptionOld -> IO PangoFontDescriptionOld
@@ -49,6 +54,9 @@ pangoFontDescriptionPrimToOld (PangoFontDescriptionPrim fpfd) = PangoFontDescrip
 
 foreign import ccall "pango_font_description_free" c_pango_font_description_prim_free ::
 	Ptr (PangoFontDescriptionPrim s) -> IO ()
+
+foreign import ccall "pango_font_description_free" c_pango_font_description_free ::
+	Ptr PangoFontDescription -> IO ()
 
 foreign import ccall "pango_font_description_free" c_pango_font_description_old_free ::
 	Ptr PangoFontDescriptionOld -> IO ()
