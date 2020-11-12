@@ -51,6 +51,11 @@ pangoFontDescriptionFreeze :: PrimMonad m =>
 pangoFontDescriptionFreeze (PangoFontDescriptionPrim fpfd) = unPrimIo
 	$ makePangoFontDescription =<< withForeignPtr fpfd c_pango_font_description_freeze
 
+pangoFontDescriptionThaw :: PrimMonad m =>
+	PangoFontDescription -> m (PangoFontDescriptionPrim (PrimState m))
+pangoFontDescriptionThaw (PangoFontDescription fpfd) = unPrimIo
+	$ makePangoFontDescriptionPrim =<< withForeignPtr fpfd c_pango_font_description_thaw
+
 newtype PangoFontDescriptionOld = PangoFontDescriptionOld (ForeignPtr PangoFontDescriptionOld) deriving Show
 
 makePangoFontDescriptionOld :: Ptr PangoFontDescriptionOld -> IO PangoFontDescriptionOld
@@ -70,6 +75,9 @@ foreign import ccall "pango_font_description_free" c_pango_font_description_old_
 
 foreign import ccall "pango_font_description_copy" c_pango_font_description_freeze ::
 	Ptr (PangoFontDescriptionPrim s) -> IO (Ptr PangoFontDescription)
+
+foreign import ccall "pango_font_description_copy" c_pango_font_description_thaw ::
+	Ptr PangoFontDescription -> IO (Ptr (PangoFontDescriptionPrim s))
 
 newtype PangoContext = PangoContext (ForeignPtr PangoContext) deriving Show
 

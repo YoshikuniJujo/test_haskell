@@ -79,7 +79,7 @@ todo
 			* [x] pangoFontDescriptionToFilename
 	+ [x] make pangoFontDescriptionFreeze
 	+ [x] pangoLayoutSetFontDescription: use PangoFontDescription
-	+ [ ] make pangoFontDescriptionThaw
+	+ [x] make pangoFontDescriptionThaw
 	+ [ ] remove PangoFontDescriptionOld and so on
 * [ ] define functions of Fonts
 	+ [x] pango\_font\_description\_get\_size\_is\_absolute
