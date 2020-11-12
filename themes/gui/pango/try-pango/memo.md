@@ -50,7 +50,7 @@ todo
 		- [x] make PangoFontDescriptionPrim
 		- [ ] use PangoFontDescriptionPrim
 			* [x] pangoFontDescriptionNew
-			* [ ] pangoFontDescriptionCopy
+			* [x] pangoFontDescriptionCopy
 			* [ ] pangoFontDescriptionCopyStatic
 			* [ ] pangoFontDescriptionSetFamily
 			* [ ] pangoFontDescriptionSetFamilyStatic

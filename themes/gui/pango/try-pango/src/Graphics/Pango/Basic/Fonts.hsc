@@ -26,12 +26,13 @@ pangoFontDescriptionNew = unPrimIo
 	$ makePangoFontDescriptionPrim =<< c_pango_font_description_new
 
 foreign import ccall "pango_font_description_copy" c_pango_font_description_copy ::
-	Ptr PangoFontDescriptionOld -> IO (Ptr PangoFontDescriptionOld)
+	Ptr (PangoFontDescriptionPrim s) -> IO (Ptr (PangoFontDescriptionPrim s))
 
-pangoFontDescriptionCopy :: PangoFontDescriptionOld -> IO PangoFontDescriptionOld
-pangoFontDescriptionCopy (PangoFontDescriptionOld fpfd) =
-	withForeignPtr fpfd \pfd ->
-		makePangoFontDescriptionOld =<< c_pango_font_description_copy pfd
+pangoFontDescriptionCopy :: PrimMonad m =>
+	PangoFontDescriptionPrim (PrimState m) -> m (PangoFontDescriptionPrim (PrimState m))
+pangoFontDescriptionCopy (PangoFontDescriptionPrim fpfd) = unPrimIo
+	$ withForeignPtr fpfd \pfd ->
+		makePangoFontDescriptionPrim =<< c_pango_font_description_copy pfd
 
 foreign import ccall "pango_font_description_copy_static" c_pango_font_description_copy_static ::
 	Ptr PangoFontDescriptionOld -> IO (Ptr PangoFontDescriptionOld)
