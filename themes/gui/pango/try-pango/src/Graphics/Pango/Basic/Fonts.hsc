@@ -106,11 +106,12 @@ pangoFontDescriptionGetStyle (PangoFontDescriptionOld fpfd) =
 	withForeignPtr fpfd \pfd -> PangoStyle <$> c_pango_font_description_get_style pfd
 
 foreign import ccall "pango_font_description_set_variant" c_pango_font_description_set_variant ::
-	Ptr PangoFontDescriptionOld -> #{type PangoVariant} -> IO ()
+	Ptr (PangoFontDescriptionPrim s) -> #{type PangoVariant} -> IO ()
 
-pangoFontDescriptionSetVariant :: PangoFontDescriptionOld -> PangoVariant -> IO ()
-pangoFontDescriptionSetVariant (PangoFontDescriptionOld fpfd) (PangoVariant pv) =
-	withForeignPtr fpfd \pfd -> c_pango_font_description_set_variant pfd pv
+pangoFontDescriptionSetVariant :: PrimMonad m =>
+	PangoFontDescriptionPrim (PrimState m) -> PangoVariant -> m ()
+pangoFontDescriptionSetVariant (PangoFontDescriptionPrim fpfd) (PangoVariant pv) = unPrimIo
+	$ withForeignPtr fpfd \pfd -> c_pango_font_description_set_variant pfd pv
 
 foreign import ccall "pango_font_description_get_variant" c_pango_font_description_get_variant ::
 	Ptr PangoFontDescriptionOld -> IO #type PangoVariant

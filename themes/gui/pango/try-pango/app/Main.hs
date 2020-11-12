@@ -54,7 +54,7 @@ helloWorld cr (r, g, b) ff stl vr wt strc (x, y) = do
 	pangoFontDescriptionSetFamily pfd ff
 	pangoFontDescriptionSetSize pfdo (30 * pangoScale)
 	pangoFontDescriptionSetStyle pfd stl
-	pangoFontDescriptionSetVariant pfdo vr
+	pangoFontDescriptionSetVariant pfd vr
 	pangoFontDescriptionSetWeight pfdo wt
 	pangoFontDescriptionSetStretch pfdo strc
 	putStrLn =<< pangoFontDescriptionToString pfdo
