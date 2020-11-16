@@ -73,10 +73,10 @@ newtype PangoContext = PangoContext (ForeignPtr PangoContext) deriving Show
 makePangoContext :: Ptr PangoContext -> IO PangoContext
 makePangoContext p = PangoContext <$> newForeignPtr p (c_g_object_unref p)
 
-newtype PangoTabArray = PangoTabArray (ForeignPtr PangoTabArray) deriving Show
+newtype PangoTabArray s = PangoTabArray (ForeignPtr (PangoTabArray s)) deriving Show
 
-makePangoTabArray :: Ptr PangoTabArray -> IO PangoTabArray
+makePangoTabArray :: Ptr (PangoTabArray s) -> IO (PangoTabArray s)
 makePangoTabArray p = PangoTabArray <$> newForeignPtr p (c_pango_tab_array_free p)
 
 foreign import ccall "pango_tab_array_free" c_pango_tab_array_free ::
-	Ptr PangoTabArray -> IO ()
+	Ptr (PangoTabArray s) -> IO ()

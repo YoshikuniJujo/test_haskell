@@ -3,19 +3,22 @@
 module Graphics.Pango.LowLevel.TabStops where
 
 import Foreign.Ptr
+import Control.Monad.Primitive
 import Data.Int
 
+import Graphics.Pango.Monad
 import Graphics.Pango.Types
 
 #include <pango/pango.h>
 
 foreign import ccall "pango_tab_array_new" c_pango_tab_array_new ::
-	#{type gint} -> #{type gboolean} -> IO (Ptr PangoTabArray)
+	#{type gint} -> #{type gboolean} -> IO (Ptr (PangoTabArray s))
 
 boolToGboolean :: Bool -> #{type gboolean}
 boolToGboolean False = #const FALSE
 boolToGboolean True = #const TRUE
 
-pangoTabArrayNew :: #{type gint} -> Bool -> IO PangoTabArray
-pangoTabArrayNew sz px =
-	makePangoTabArray =<< c_pango_tab_array_new sz (boolToGboolean px)
+pangoTabArrayNew :: PrimMonad m =>
+	#{type gint} -> Bool -> m (PangoTabArray (PrimState m))
+pangoTabArrayNew sz px = unPrimIo
+	$ makePangoTabArray =<< c_pango_tab_array_new sz (boolToGboolean px)

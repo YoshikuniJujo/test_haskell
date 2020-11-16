@@ -128,70 +128,82 @@ todo
 	+ [ ] pango\_layout\_get\_character\_count
 	+ no pango\_layout\_set\_markup
 	+ no pango\_layout\_set\_markup\_with\_accell
-	* no pango\_layout\_set\_attributes
-	* no pango\_layout\_get\_attributes
-	* [x] pango\_layout\_set\_font\_description
-	* [ ] pango\_layout\_get\_font\_description
+	+ no pango\_layout\_set\_attributes
+	+ no pango\_layout\_get\_attributes
+	+ [x] pango\_layout\_set\_font\_description
+	+ [ ] pango\_layout\_get\_font\_description
 		+ make PangoFontDescriptionRef
-	* [x] pango\_layout\_set\_width
-	* [x] pango\_layout\_get\_width
-	* [ ] pango\_layout\_set\_height
-	* [ ] pango\_layout\_get\_height
-	* [ ] pango\_layout\_set\_wrap
-	* [ ] pango\_layout\_get\_wrap
-	* [ ] pango\_layout\_is\_wrapped
-	* [x] pango\_layout\_set\_ellipsize
-	* [ ] pango\_layout\_get\_ellipsize
-	* [ ] pango\_layout\_is\_ellipsized
-	* [x] pango\_layout\_set\_indent
-	* [ ] pango\_layout\_get\_indent
-	* no pango\_layout\_set\_spacing
-	* no pango\_layout\_get\_spacing
-	* [ ] wait until 1.44: pango\_layout\_set\_line\_spacing
-	* [ ] wait until 1.44: pango\_layout\_get\_line\_spacing
-	* [ ] pango\_layout\_set\_justify
-	* [ ] pango\_layout\_get\_justify
-	* [ ] pango\_layout\_set\_auto\_dir
-	* [ ] pango\_layout\_get\_auto\_dir
-	* [ ] pango\_layout\_get\_direction
-	* [x] pango\_layout\_set\_alignment
-	* [ ] pango\_layout\_get\_alignment
-	* [ ] pango\_layout\_set\_tabs
-	* [ ] pango\_layout\_get\_tabs
-	* [ ] pango\_layout\_set\_single\_paragraph\_mode
-	* [ ] pango\_layout\_get\_single\_paragraph\_mode
-	* [ ] pango\_layout\_get\_unknown\_glyph\_count
-	* no pango\_layout\_get\_log\_attrs
-	* no pango\_layout\_get\_log\_attrs
-	* [ ] pango\_layout\_index\_to\_pos
-	* [ ] pango\_layout\_index\_to\_line\_x
-	* [ ] pango\_layout\_xy\_to\_index
-	* [ ] pango\_layout\_get\_cursor\_pos
-	* no pango\_layout\_move\_cursor\_visually
-	* [ ] pango\_layout\_get\_extents
-	* [ ] pango\_layout\_get\_pixel\_extents
-	* [ ] pango\_extents\_to\_pixels
-	* [ ] pango\_layout\_get\_size
-	* [ ] pango\_layout\_get\_pixel\_size
-	* [ ] pango\_layout\_get\_baseline
-	* [ ] pango\_layout\_get\_line\_count
-	* [ ] pango\_layout\_get\_line
-	* [ ] pango\_layout\_get\_line\_readonly
-	* [ ] pango\_layout\_get\_lines
-	* [ ] pango\_layout\_get\_lines\_readonly
-	* no pango\_layout\_get\_iter
-	* no pango\_layout\_iter\_copy
-	* no pango\_layout\_iter\_free
-	* ...
-	* no pango\_layout\_iter\_get\_layout\_extents
-	* [ ] pango\_layout\_line\_ref
-	* [ ] pango\_layout\_line\_unref
-	* [ ] pango\_layout\_line\_get\_extents
-	* [ ] pango\_layout\_line\_get\_pixel\_extents
-	* [ ] pango\_layout\_line\_index\_to\_x
-	* [ ] pango\_layout\_line\_x\_to\_index
-	* [ ] pango\_layout\_line\_get\_x\_ranges
-	* [ ] pango\_layout\_line\_get\_height
+	+ [x] pango\_layout\_set\_width
+	+ [x] pango\_layout\_get\_width
+	+ [ ] pango\_layout\_set\_height
+	+ [ ] pango\_layout\_get\_height
+	+ [ ] pango\_layout\_set\_wrap
+	+ [ ] pango\_layout\_get\_wrap
+	+ [ ] pango\_layout\_is\_wrapped
+	+ [x] pango\_layout\_set\_ellipsize
+	+ [ ] pango\_layout\_get\_ellipsize
+	+ [ ] pango\_layout\_is\_ellipsized
+	+ [x] pango\_layout\_set\_indent
+	+ [ ] pango\_layout\_get\_indent
+	+ no pango\_layout\_set\_spacing
+	+ no pango\_layout\_get\_spacing
+	+ [ ] wait until 1.44: pango\_layout\_set\_line\_spacing
+	+ [ ] wait until 1.44: pango\_layout\_get\_line\_spacing
+	+ [ ] pango\_layout\_set\_justify
+	+ [ ] pango\_layout\_get\_justify
+	+ [ ] pango\_layout\_set\_auto\_dir
+	+ [ ] pango\_layout\_get\_auto\_dir
+	+ [ ] pango\_layout\_get\_direction
+	+ [x] pango\_layout\_set\_alignment
+	+ [ ] pango\_layout\_get\_alignment
+	+ [ ] pango\_layout\_set\_tabs
+	+ [ ] pango\_layout\_get\_tabs
+	+ [ ] pango\_layout\_set\_single\_paragraph\_mode
+	+ [ ] pango\_layout\_get\_single\_paragraph\_mode
+	+ [ ] pango\_layout\_get\_unknown\_glyph\_count
+	+ no pango\_layout\_get\_log\_attrs
+	+ no pango\_layout\_get\_log\_attrs\_readonly
+	+ [ ] pango\_layout\_index\_to\_pos
+	+ [ ] pango\_layout\_index\_to\_line\_x
+	+ [ ] pango\_layout\_xy\_to\_index
+	+ [ ] pango\_layout\_get\_cursor\_pos
+	+ no pango\_layout\_move\_cursor\_visually
+	+ [ ] pango\_layout\_get\_extents
+	+ [ ] pango\_layout\_get\_pixel\_extents
+	+ [ ] pango\_extents\_to\_pixels
+	+ [ ] pango\_layout\_get\_size
+	+ [ ] pango\_layout\_get\_pixel\_size
+	+ [ ] pango\_layout\_get\_baseline
+	+ [ ] pango\_layout\_get\_line\_count
+	+ [ ] pango\_layout\_get\_line
+	+ [ ] pango\_layout\_get\_line\_readonly
+	+ [ ] pango\_layout\_get\_lines
+	+ [ ] pango\_layout\_get\_lines\_readonly
+	+ no pango\_layout\_get\_iter
+	+ no pango\_layout\_iter\_copy
+	+ no pango\_layout\_iter\_free
+	+ ...
+	+ no pango\_layout\_iter\_get\_layout\_extents
+	+ [ ] pango\_layout\_line\_ref
+	+ [ ] pango\_layout\_line\_unref
+	+ [ ] pango\_layout\_line\_get\_extents
+	+ [ ] pango\_layout\_line\_get\_pixel\_extents
+	+ [ ] pango\_layout\_line\_index\_to\_x
+	+ [ ] pango\_layout\_line\_x\_to\_index
+	+ [ ] pango\_layout\_line\_get\_x\_ranges
+	+ [ ] pango\_layout\_line\_get\_height
+* [ ] define function of Tab Stops
+	+ [x] pango\_tab\_array\_new
+	+ [ ] pango\_tab\_array\_new\_with\_potisions
+	+ [ ] pango\_tab\_array\_copy
+		- use from freeze, thaw and so on
+	+ [x] pango\_tab\_array\_free
+	+ [ ] pango\_tab\_array\_get\_size
+	+ [ ] pango\_tab\_array\_resize
+	+ [ ] pango\_tab\_array\_set\_tab
+	+ [ ] pango\_tab\_array\_get\_tab
+	+ [ ] pango\_tab\_array\_get\_tabs
+	+ [ ] pango\_tab\_array\_get\_positions\_in\_pixels
 * [ ] define functions of pango cairo
 	+ no pango\_cairo\_font\_map\_get\_default
 	+ ...
