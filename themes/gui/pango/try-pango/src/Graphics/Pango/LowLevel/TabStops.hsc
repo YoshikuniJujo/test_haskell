@@ -5,6 +5,8 @@ module Graphics.Pango.LowLevel.TabStops where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
+import Foreign.Marshal
+import Foreign.Storable
 import Control.Monad.Primitive
 import Data.Word
 import Data.Int
@@ -50,3 +52,13 @@ pangoTabArraySetTab :: PrimMonad m =>
 	PangoTabArray (PrimState m) -> #{type gint} -> PangoTabAlign -> #{type gint} -> m ()
 pangoTabArraySetTab (PangoTabArray fpta) idx (PangoTabAlign algn) loc = unPrimIo
 	$ withForeignPtr fpta \pta -> c_pango_tab_array_set_tab pta idx algn loc
+
+foreign import ccall "pango_tab_array_get_tab" c_pango_tab_array_get_tab ::
+	Ptr (PangoTabArray s) -> #{type gint} -> Ptr #{type PangoTabAlign} -> Ptr #{type gint} -> IO ()
+
+pangoTabArrayGetTab :: PrimMonad m =>
+	PangoTabArray (PrimState m) -> #{type gint} -> m (PangoTabAlign, #type gint)
+pangoTabArrayGetTab (PangoTabArray fpta) idx = unPrimIo
+	$ withForeignPtr fpta \pta -> alloca \aln -> alloca \loc -> do
+		c_pango_tab_array_get_tab pta idx aln loc
+		(,) <$> (PangoTabAlign <$> peek aln) <*> peek loc

@@ -201,7 +201,7 @@ todo
 	+ [x] pango\_tab\_array\_get\_size
 	+ [x] pango\_tab\_array\_resize
 	+ [x] pango\_tab\_array\_set\_tab
-	+ [ ] pango\_tab\_array\_get\_tab
+	+ [x] pango\_tab\_array\_get\_tab
 	+ [ ] pango\_tab\_array\_get\_tabs
 	+ [ ] pango\_tab\_array\_get\_positions\_in\_pixels
 * [ ] define functions of pango cairo
