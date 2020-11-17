@@ -56,3 +56,8 @@ newtype PangoAlignment = PangoAlignment #{type PangoAlignment} deriving Show
 
 #enum PangoAlignment, PangoAlignment, PANGO_ALIGN_LEFT, PANGO_ALIGN_CENTER, \
 	PANGO_ALIGN_RIGHT
+
+newtype PangoTabAlign = PangoTabAlign #{type PangoTabAlign} deriving Show
+
+
+#enum PangoTabAlign, PangoTabAlign, PANGO_TAB_LEFT

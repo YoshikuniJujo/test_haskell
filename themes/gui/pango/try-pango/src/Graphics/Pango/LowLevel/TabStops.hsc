@@ -6,10 +6,12 @@ module Graphics.Pango.LowLevel.TabStops where
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Control.Monad.Primitive
+import Data.Word
 import Data.Int
 
 import Graphics.Pango.Monad
 import Graphics.Pango.Types
+import Graphics.Pango.Values
 
 #include <pango/pango.h>
 
@@ -40,3 +42,11 @@ pangoTabArrayResize :: PrimMonad m =>
 	PangoTabArray (PrimState m) -> #{type gint} -> m ()
 pangoTabArrayResize (PangoTabArray fpta) sz = unPrimIo
 	$ withForeignPtr fpta \pta -> c_pango_tab_array_resize pta sz
+
+foreign import ccall "pango_tab_array_set_tab" c_pango_tab_array_set_tab ::
+	Ptr (PangoTabArray s) -> #{type gint} -> #{type PangoTabAlign} -> #{type gint} -> IO ()
+
+pangoTabArraySetTab :: PrimMonad m =>
+	PangoTabArray (PrimState m) -> #{type gint} -> PangoTabAlign -> #{type gint} -> m ()
+pangoTabArraySetTab (PangoTabArray fpta) idx (PangoTabAlign algn) loc = unPrimIo
+	$ withForeignPtr fpta \pta -> c_pango_tab_array_set_tab pta idx algn loc
