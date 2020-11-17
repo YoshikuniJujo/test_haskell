@@ -57,7 +57,41 @@ main = do
 	pangoLayoutSetAlignment pl2 pangoAlignCenter
 	pangoLayoutSetText pl2 someText 1600
 	cairoMoveTo cr 100 150
-	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl2
+	fpl2 <- pangoLayoutFreeze pl2
+	putStrLn "0, 1, 5, 6"
+	print $ pangoLayoutIndexToPos fpl2 0
+	print $ pangoLayoutIndexToPos fpl2 1
+	print $ pangoLayoutIndexToPos fpl2 5
+	print $ pangoLayoutIndexToPos fpl2 6
+	putStrLn "7, 8, 9, 10, 11, ..., 16"
+	print $ pangoLayoutIndexToPos fpl2 7
+	print $ pangoLayoutIndexToPos fpl2 8
+	print $ pangoLayoutIndexToPos fpl2 9
+	print $ pangoLayoutIndexToPos fpl2 10
+	print $ pangoLayoutIndexToPos fpl2 11
+	print $ pangoLayoutIndexToPos fpl2 12
+	print $ pangoLayoutIndexToPos fpl2 13
+	print $ pangoLayoutIndexToPos fpl2 14
+	print $ pangoLayoutIndexToPos fpl2 15
+	print $ pangoLayoutIndexToPos fpl2 16
+	putStrLn "20, 21, 22, 23, ..., 30"
+	print $ pangoLayoutIndexToPos fpl2 20
+	print $ pangoLayoutIndexToPos fpl2 21
+	print $ pangoLayoutIndexToPos fpl2 22
+	print $ pangoLayoutIndexToPos fpl2 23
+	print $ pangoLayoutIndexToPos fpl2 24
+	print $ pangoLayoutIndexToPos fpl2 25
+	print $ pangoLayoutIndexToPos fpl2 26
+	print $ pangoLayoutIndexToPos fpl2 27
+	print $ pangoLayoutIndexToPos fpl2 28
+	print $ pangoLayoutIndexToPos fpl2 29
+	print $ pangoLayoutIndexToPos fpl2 30
+	putStrLn "100, 101, 102, 103"
+	print $ pangoLayoutIndexToPos fpl2 100
+	print $ pangoLayoutIndexToPos fpl2 101
+	print $ pangoLayoutIndexToPos fpl2 102
+	print $ pangoLayoutIndexToPos fpl2 103
+	pangoCairoShowLayout cr fpl2
 
 	pl3 <- pangoCairoCreateLayout cr
 --	pfd3 <- pangoFontDescriptionNew

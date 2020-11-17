@@ -163,7 +163,8 @@ todo
 	+ [x] pango\_layout\_get\_unknown\_glyph\_count
 	+ no pango\_layout\_get\_log\_attrs
 	+ no pango\_layout\_get\_log\_attrs\_readonly
-	+ [ ] pango\_layout\_index\_to\_pos
+	+ [x] pango\_layout\_index\_to\_pos
+		- [x] define PangoRectangle
 	+ [ ] pango\_layout\_index\_to\_line\_x
 	+ [ ] pango\_layout\_xy\_to\_index
 	+ [ ] pango\_layout\_get\_cursor\_pos

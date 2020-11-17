@@ -5,6 +5,8 @@ module Graphics.Pango.Basic.LayoutObjects where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
+import Foreign.Marshal
+import Foreign.Storable
 import Foreign.C
 import Data.Word
 import Data.Int
@@ -123,3 +125,12 @@ foreign import ccall "pango_layout_get_unknown_glyphs_count"
 pangoLayoutGetUnknownGlyphsCount :: PangoLayout -> #type int
 pangoLayoutGetUnknownGlyphsCount (PangoLayout fpl) = unsafePerformIO
 	$ withForeignPtr fpl c_pango_layout_get_unknown_glyphs_count
+
+foreign import ccall "pango_layout_index_to_pos" c_pango_layout_index_to_pos ::
+	Ptr PangoLayout -> #{type int} -> Ptr PangoRectangle -> IO ()
+
+pangoLayoutIndexToPos :: PangoLayout -> #{type int} -> PangoRectangle
+pangoLayoutIndexToPos (PangoLayout fpl) idx = unsafePerformIO
+	$ withForeignPtr fpl \pl -> alloca \pos -> do
+		c_pango_layout_index_to_pos pl idx pos
+		peek pos

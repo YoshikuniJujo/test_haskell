@@ -6,9 +6,13 @@ module Graphics.Pango.Types where
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
+import Foreign.Storable
 import Control.Monad.Primitive
+import Data.Int
 
 import Graphics.Pango.Monad
+
+#include <pango/pango.h>
 
 newtype PangoLayoutIo = PangoLayoutIo (ForeignPtr PangoLayoutIo) deriving Show
 
@@ -88,3 +92,21 @@ makePangoTabArray p = PangoTabArray <$> newForeignPtr p (c_pango_tab_array_free 
 
 foreign import ccall "pango_tab_array_free" c_pango_tab_array_free ::
 	Ptr PangoTabArray -> IO ()
+
+data PangoRectangle = PangoRectangle {
+	pangoRectangleX, pangoRectangleY :: #{type int},
+	pangoRectangleWidth, pangoRectangleHeight :: #{type int} } deriving Show
+
+instance Storable PangoRectangle where
+	sizeOf _ = #size PangoRectangle
+	alignment _ = #alignment PangoRectangle
+	peek p = PangoRectangle
+		<$> #{peek PangoRectangle, x} p
+		<*> #{peek PangoRectangle, y} p
+		<*> #{peek PangoRectangle, width} p
+		<*> #{peek PangoRectangle, height} p
+	poke p (PangoRectangle x y w h) = do
+		#{poke PangoRectangle, x} p x
+		#{poke PangoRectangle, y} p y
+		#{poke PangoRectangle, width} p w
+		#{poke PangoRectangle, height} p h
