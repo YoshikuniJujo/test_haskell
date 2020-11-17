@@ -84,7 +84,9 @@ main = do
 		) 100
 	cairoSetSourceRgb cr 0 0 1
 	cairoMoveTo cr 100 680
-	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl5
+	fpl5 <- pangoLayoutFreeze pl5
+	print $ pangoLayoutGetUnknownGlyphsCount fpl5
+	pangoCairoShowLayout cr fpl5
 
 	void $ writeDynamicPng "tmp3.png" =<< cairoImageSurfaceGetImage s
 

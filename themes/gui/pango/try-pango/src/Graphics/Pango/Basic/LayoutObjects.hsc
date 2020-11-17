@@ -116,3 +116,10 @@ pangoLayoutSetSingleParagraphMode (PangoLayoutIo fpl) spm =
 boolToGboolean :: Bool -> #type gboolean
 boolToGboolean False = #const FALSE
 boolToGboolean True = #const TRUE
+
+foreign import ccall "pango_layout_get_unknown_glyphs_count"
+	c_pango_layout_get_unknown_glyphs_count :: Ptr PangoLayout -> IO #type int
+
+pangoLayoutGetUnknownGlyphsCount :: PangoLayout -> #type int
+pangoLayoutGetUnknownGlyphsCount (PangoLayout fpl) = unsafePerformIO
+	$ withForeignPtr fpl c_pango_layout_get_unknown_glyphs_count

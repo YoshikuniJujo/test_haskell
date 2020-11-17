@@ -160,7 +160,7 @@ todo
 	+ [ ] pango\_layout\_get\_tabs
 	+ [x] pango\_layout\_set\_single\_paragraph\_mode
 	+ [ ] pango\_layout\_get\_single\_paragraph\_mode
-	+ [ ] pango\_layout\_get\_unknown\_glyph\_count
+	+ [x] pango\_layout\_get\_unknown\_glyph\_count
 	+ no pango\_layout\_get\_log\_attrs
 	+ no pango\_layout\_get\_log\_attrs\_readonly
 	+ [ ] pango\_layout\_index\_to\_pos
