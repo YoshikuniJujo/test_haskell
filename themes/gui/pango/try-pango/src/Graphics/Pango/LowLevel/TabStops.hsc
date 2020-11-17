@@ -24,6 +24,10 @@ boolToGboolean :: Bool -> #{type gboolean}
 boolToGboolean False = #const FALSE
 boolToGboolean True = #const TRUE
 
+gbooleanToBool :: #{type gboolean} -> Bool
+gbooleanToBool #{const FALSE} = False
+gbooleanToBool _ = True
+
 pangoTabArrayNew :: PrimMonad m =>
 	#{type gint} -> Bool -> m (PangoTabArray (PrimState m))
 pangoTabArrayNew sz px = unPrimIo
@@ -77,3 +81,13 @@ pangoTabArrayGetTabs (PangoTabArray fpta) = unPrimIo
 
 peekArrayAndFree :: Storable a => #{type gint} -> Ptr a -> IO [a]
 peekArrayAndFree n p = peekArray (fromIntegral n) p <* free p
+
+foreign import ccall "pango_tab_array_get_positions_in_pixels"
+	c_pango_tab_array_get_positions_in_pixels ::
+	Ptr (PangoTabArray s) -> IO #type gboolean
+
+pangoTabArrayGetPositionsInPixels :: PrimMonad m =>
+	PangoTabArray (PrimState m) -> m Bool
+pangoTabArrayGetPositionsInPixels (PangoTabArray fpta) = unPrimIo
+	$ withForeignPtr fpta \pta ->
+		gbooleanToBool <$> c_pango_tab_array_get_positions_in_pixels pta

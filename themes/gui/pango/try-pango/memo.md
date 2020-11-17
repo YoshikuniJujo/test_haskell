@@ -203,7 +203,11 @@ todo
 	+ [x] pango\_tab\_array\_set\_tab
 	+ [x] pango\_tab\_array\_get\_tab
 	+ [x] pango\_tab\_array\_get\_tabs
-	+ [ ] pango\_tab\_array\_get\_positions\_in\_pixels
+	+ [x] pango\_tab\_array\_get\_positions\_in\_pixels
+	+ [ ] rename PangoTabArray to PangoTabArrayPrim
+	+ [ ] define new PangoTabArray
+	+ [ ] pangoTabArrayFreeze
+	+ [ ] pangoTabArrayThaw
 * [ ] define functions of pango cairo
 	+ no pango\_cairo\_font\_map\_get\_default
 	+ ...
