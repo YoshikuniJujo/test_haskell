@@ -95,3 +95,11 @@ foreign import ccall "pango_layout_set_alignment" c_pango_layout_set_alignment :
 pangoLayoutSetAlignment :: PangoLayoutIo -> PangoAlignment -> IO ()
 pangoLayoutSetAlignment (PangoLayoutIo fpl) (PangoAlignment pa) = withForeignPtr fpl \pl ->
 	c_pango_layout_set_alignment pl pa
+
+foreign import ccall "pango_layout_set_tabs" c_pango_layout_set_tabs ::
+	Ptr PangoLayoutIo -> Ptr PangoTabArray -> IO ()
+
+pangoLayoutSetTabs :: PangoLayoutIo -> PangoTabArray -> IO ()
+pangoLayoutSetTabs (PangoLayoutIo fpl) (PangoTabArray fpta) =
+	withForeignPtr fpl \pl ->
+		withForeignPtr fpta \pta -> c_pango_layout_set_tabs pl pta

@@ -1,9 +1,13 @@
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
 import Control.Monad
+import Control.Monad.ST
+import Data.Foldable
+import Data.Int
 import Text.Nowdoc
 import Codec.Picture
 
@@ -14,6 +18,7 @@ import Graphics.Cairo.Values
 
 import Graphics.Pango.Basic.Fonts
 import Graphics.Pango.Basic.LayoutObjects
+import Graphics.Pango.LowLevel.TabStops
 -- import Graphics.Pango.Rendering.Cairo
 import Graphics.Pango.Types
 import Graphics.Pango.Values
@@ -54,13 +59,17 @@ main = do
 	cairoMoveTo cr 100 200
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl2
 
-{-
 	pl3 <- pangoCairoCreateLayout cr
 	pfd3 <- pangoFontDescriptionNew
-	pangoLayoutSetAlignment pl pangoAlignCenter
-	cairoMoveTo cr 100 400
+	pangoLayoutSetAlignment pl3 pangoAlignCenter
+	pangoLayoutSetTabs pl3 $ tabArray True [100, 200, 300, 400, 500, 600]
+	pangoLayoutSetText pl3 "タブの\tテスト\tだよ\tHello,\tworld\t!" 100
+	cairoMoveTo cr 100 650
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
-	-}
+
+	pangoLayoutSetTabs pl3 $ tabArray False $ (* pangoScale) <$> [100, 200, 300, 350, 450, 550]
+	cairoMoveTo cr 100 700
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
 	void $ writeDynamicPng "tmp3.png" =<< cairoImageSurfaceGetImage s
 
@@ -81,3 +90,9 @@ Haskellとの出会いは、
 それらに感じていた不満が、ことごとく解消されていくのを感じました。
 |]
 	]
+
+tabArray :: Bool -> [Int32] -> PangoTabArray
+tabArray pip ps = runST do
+	pta <- pangoTabArrayNew (fromIntegral $ length ps) pip
+	for_ (zip [0 ..] ps) \(i, p) -> pangoTabArraySetTab pta i pangoTabLeft p
+	pangoTabArrayFreeze pta

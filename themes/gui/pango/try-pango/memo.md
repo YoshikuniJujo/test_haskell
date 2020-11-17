@@ -156,7 +156,7 @@ todo
 	+ [ ] pango\_layout\_get\_direction
 	+ [x] pango\_layout\_set\_alignment
 	+ [ ] pango\_layout\_get\_alignment
-	+ [ ] pango\_layout\_set\_tabs
+	+ [x] pango\_layout\_set\_tabs
 	+ [ ] pango\_layout\_get\_tabs
 	+ [ ] pango\_layout\_set\_single\_paragraph\_mode
 	+ [ ] pango\_layout\_get\_single\_paragraph\_mode
