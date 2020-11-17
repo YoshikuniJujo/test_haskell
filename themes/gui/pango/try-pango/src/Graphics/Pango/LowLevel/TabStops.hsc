@@ -62,3 +62,18 @@ pangoTabArrayGetTab (PangoTabArray fpta) idx = unPrimIo
 	$ withForeignPtr fpta \pta -> alloca \aln -> alloca \loc -> do
 		c_pango_tab_array_get_tab pta idx aln loc
 		(,) <$> (PangoTabAlign <$> peek aln) <*> peek loc
+
+foreign import ccall "pango_tab_array_get_tabs" c_pango_tab_array_get_tabs ::
+	Ptr (PangoTabArray s) -> Ptr (Ptr #type PangoTabAlign) -> Ptr (Ptr #type gint) -> IO ()
+
+pangoTabArrayGetTabs :: PrimMonad m =>
+	PangoTabArray (PrimState m) -> m [(PangoTabAlign, #type gint)]
+pangoTabArrayGetTabs (PangoTabArray fpta) = unPrimIo
+	$ withForeignPtr fpta \pta -> alloca \algn -> alloca \loc -> do
+		n <- c_pango_tab_array_get_size pta
+		c_pango_tab_array_get_tabs pta algn loc
+		zip	<$> (map PangoTabAlign <$> (peekArrayAndFree n =<< peek algn))
+			<*> (peekArrayAndFree n =<< peek loc)
+
+peekArrayAndFree :: Storable a => #{type gint} -> Ptr a -> IO [a]
+peekArrayAndFree n p = peekArray (fromIntegral n) p <* free p

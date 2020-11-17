@@ -202,7 +202,7 @@ todo
 	+ [x] pango\_tab\_array\_resize
 	+ [x] pango\_tab\_array\_set\_tab
 	+ [x] pango\_tab\_array\_get\_tab
-	+ [ ] pango\_tab\_array\_get\_tabs
+	+ [x] pango\_tab\_array\_get\_tabs
 	+ [ ] pango\_tab\_array\_get\_positions\_in\_pixels
 * [ ] define functions of pango cairo
 	+ no pango\_cairo\_font\_map\_get\_default
