@@ -32,3 +32,11 @@ pangoTabArrayGetSize :: PrimMonad m =>
 	PangoTabArray (PrimState m) -> m #type gint
 pangoTabArrayGetSize (PangoTabArray fpta) = unPrimIo
 	$ withForeignPtr fpta \pta -> c_pango_tab_array_get_size pta
+
+foreign import ccall "pango_tab_array_resize" c_pango_tab_array_resize ::
+	Ptr (PangoTabArray s) -> #{type gint} -> IO ()
+
+pangoTabArrayResize :: PrimMonad m =>
+	PangoTabArray (PrimState m) -> #{type gint} -> m ()
+pangoTabArrayResize (PangoTabArray fpta) sz = unPrimIo
+	$ withForeignPtr fpta \pta -> c_pango_tab_array_resize pta sz

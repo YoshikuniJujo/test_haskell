@@ -199,7 +199,7 @@ todo
 		- use from freeze, thaw and so on
 	+ [x] pango\_tab\_array\_free
 	+ [x] pango\_tab\_array\_get\_size
-	+ [ ] pango\_tab\_array\_resize
+	+ [x] pango\_tab\_array\_resize
 	+ [ ] pango\_tab\_array\_set\_tab
 	+ [ ] pango\_tab\_array\_get\_tab
 	+ [ ] pango\_tab\_array\_get\_tabs
