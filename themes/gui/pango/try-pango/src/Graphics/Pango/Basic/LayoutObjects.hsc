@@ -166,3 +166,14 @@ pangoLayoutGetCursorPos (PangoLayout fpl) idx = unsafePerformIO
 	$ withForeignPtr fpl \pl -> alloca \spos -> alloca \wpos -> do
 		c_pango_layout_get_cursor_pos pl idx spos wpos
 		(,) <$> peek spos <*> peek wpos
+
+foreign import ccall "pango_layout_move_cursor_visually" c_pango_layout_move_cursor_visually ::
+	Ptr PangoLayout -> #{type gboolean} -> #{type int} -> #{type int} -> #{type int} ->
+	Ptr #{type int} -> Ptr #{type int} -> IO ()
+
+pangoLayoutMoveCursorVisually ::
+	PangoLayout -> Bool -> #{type int} -> #{type int} -> #{type int} -> (#{type int}, #{type int})
+pangoLayoutMoveCursorVisually (PangoLayout fpl) str oidx otr dir = unsafePerformIO
+	$ withForeignPtr fpl \pl -> alloca \nidx -> alloca \ntr -> do
+		c_pango_layout_move_cursor_visually pl (boolToGboolean str) oidx otr dir nidx ntr
+		(,) <$> peek nidx <*> peek ntr

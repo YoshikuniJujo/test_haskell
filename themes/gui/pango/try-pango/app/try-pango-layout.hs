@@ -110,6 +110,29 @@ main = do
 	print $ pangoLayoutXyToIndex fpl2 (100 * pangoScale) (100 * pangoScale)
 	print $ pangoLayoutXyToIndex fpl2 (500 * pangoScale) (500 * pangoScale)
 	print $ pangoLayoutXyToIndex fpl2 345088 25600
+	putStrLn "move cursor"
+	print $ pangoLayoutMoveCursorVisually fpl2 True 0 0 0
+	print $ pangoLayoutMoveCursorVisually fpl2 True 1 0 0
+	print $ pangoLayoutMoveCursorVisually fpl2 True 2 0 0
+	print $ pangoLayoutMoveCursorVisually fpl2 True 3 0 0
+	print $ pangoLayoutMoveCursorVisually fpl2 True 6 0 0
+	print $ pangoLayoutMoveCursorVisually fpl2 True 7 0 0
+	print $ pangoLayoutMoveCursorVisually fpl2 True 8 0 0
+	print $ pangoLayoutMoveCursorVisually fpl2 True 9 0 0
+	print $ pangoLayoutMoveCursorVisually fpl2 True 10 0 0
+	print $ pangoLayoutMoveCursorVisually fpl2 True 11 0 0
+	print $ pangoLayoutMoveCursorVisually fpl2 True 12 0 0
+	print $ pangoLayoutMoveCursorVisually fpl2 True 13 0 0
+	print $ pangoLayoutMoveCursorVisually fpl2 True 100 0 0
+	print $ pangoLayoutMoveCursorVisually fpl2 True 101 0 0
+	print $ pangoLayoutMoveCursorVisually fpl2 True 102 0 0
+	print $ pangoLayoutMoveCursorVisually fpl2 True 103 0 0
+	print $ pangoLayoutMoveCursorVisually fpl2 True 104 0 0
+	print $ pangoLayoutMoveCursorVisually fpl2 True 105 0 0
+	print $ pangoLayoutMoveCursorVisually fpl2 True 106 0 0
+	print $ pangoLayoutMoveCursorVisually fpl2 True 107 0 0
+	print $ pangoLayoutMoveCursorVisually fpl2 True 108 0 0
+	print $ pangoLayoutMoveCursorVisually fpl2 True 109 0 0
 	pangoCairoShowLayout cr fpl2
 
 	pl3 <- pangoCairoCreateLayout cr
