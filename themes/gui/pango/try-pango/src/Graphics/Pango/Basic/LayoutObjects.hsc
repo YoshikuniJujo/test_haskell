@@ -103,3 +103,16 @@ pangoLayoutSetTabs :: PangoLayoutIo -> PangoTabArray -> IO ()
 pangoLayoutSetTabs (PangoLayoutIo fpl) (PangoTabArray fpta) =
 	withForeignPtr fpl \pl ->
 		withForeignPtr fpta \pta -> c_pango_layout_set_tabs pl pta
+
+foreign import ccall "pango_layout_set_single_paragraph_mode"
+	c_pango_layout_set_single_paragraph_mode ::
+	Ptr PangoLayoutIo -> #{type gboolean} -> IO ()
+
+pangoLayoutSetSingleParagraphMode :: PangoLayoutIo -> Bool -> IO ()
+pangoLayoutSetSingleParagraphMode (PangoLayoutIo fpl) spm =
+	withForeignPtr fpl \pl ->
+		c_pango_layout_set_single_paragraph_mode pl (boolToGboolean spm)
+
+boolToGboolean :: Bool -> #type gboolean
+boolToGboolean False = #const FALSE
+boolToGboolean True = #const TRUE

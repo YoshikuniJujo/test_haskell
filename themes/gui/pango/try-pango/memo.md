@@ -158,7 +158,7 @@ todo
 	+ [ ] pango\_layout\_get\_alignment
 	+ [x] pango\_layout\_set\_tabs
 	+ [ ] pango\_layout\_get\_tabs
-	+ [ ] pango\_layout\_set\_single\_paragraph\_mode
+	+ [x] pango\_layout\_set\_single\_paragraph\_mode
 	+ [ ] pango\_layout\_get\_single\_paragraph\_mode
 	+ [ ] pango\_layout\_get\_unknown\_glyph\_count
 	+ no pango\_layout\_get\_log\_attrs

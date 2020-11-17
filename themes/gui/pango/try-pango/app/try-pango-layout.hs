@@ -60,7 +60,7 @@ main = do
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl2
 
 	pl3 <- pangoCairoCreateLayout cr
-	pfd3 <- pangoFontDescriptionNew
+--	pfd3 <- pangoFontDescriptionNew
 	pangoLayoutSetAlignment pl3 pangoAlignCenter
 	pangoLayoutSetTabs pl3 $ tabArray True [100, 200, 300, 400, 500, 600]
 	pangoLayoutSetText pl3 "タブの\tテスト\tだよ\tHello,\tworld\t!" 100
@@ -70,6 +70,12 @@ main = do
 	pangoLayoutSetTabs pl3 $ tabArray False $ (* pangoScale) <$> [100, 200, 300, 350, 450, 550]
 	cairoMoveTo cr 100 700
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
+
+	pl4 <- pangoCairoCreateLayout cr
+	pangoLayoutSetText pl4 "try\nsingle\tparagraph\nmode" 100
+	pangoLayoutSetSingleParagraphMode pl4 True
+	cairoMoveTo cr 100 725
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl4
 
 	void $ writeDynamicPng "tmp3.png" =<< cairoImageSurfaceGetImage s
 
