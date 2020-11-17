@@ -64,19 +64,19 @@ todo
 			* [x] pangoFontDescriptionUnsetFields
 	+ [x] make PangoFontDescription
 		- [x] make PangoFontDescription
-		- [ ] repair about PangoFontDescription: not IO
-			* [ ] pangoFontDescriptionEqual
-			* [ ] pangoFontDescriptionGetFamily
-			* [ ] pangoFontDescriptionGetStyle
-			* [ ] pangoFontDescriptionGetVariant
-			* [ ] pangoFontDescriptionGetWeight
-			* [ ] pangoFontDescriptionGetStretch
-			* [ ] pangoFontDescriptionGetSize
-			* [ ] pangoFontDescriptionGetSizeIsAbsollute
-			* [ ] pangoFontDescriptionGetGravity
-			* [ ] pangoFontDescriptionGetSetFields
-			* [ ] pangoFontDescriptionToString
-			* [ ] pangoFontDescriptionToFilename
+		- [x] repair about PangoFontDescription: not IO
+			* [x] pangoFontDescriptionEqual
+			* [x] pangoFontDescriptionGetFamily
+			* [x] pangoFontDescriptionGetStyle
+			* [x] pangoFontDescriptionGetVariant
+			* [x] pangoFontDescriptionGetWeight
+			* [x] pangoFontDescriptionGetStretch
+			* [x] pangoFontDescriptionGetSize
+			* [x] pangoFontDescriptionGetSizeIsAbsollute
+			* [x] pangoFontDescriptionGetGravity
+			* [x] pangoFontDescriptionGetSetFields
+			* [x] pangoFontDescriptionToString
+			* [x] pangoFontDescriptionToFilename
 	+ [x] make pangoFontDescriptionFreeze
 	+ [x] pangoLayoutSetFontDescription: use PangoFontDescription
 	+ [x] make pangoFontDescriptionThaw
