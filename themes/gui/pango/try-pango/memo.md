@@ -64,19 +64,19 @@ todo
 			* [x] pangoFontDescriptionUnsetFields
 	+ [x] make PangoFontDescription
 		- [x] make PangoFontDescription
-		- [x] use PangoFontDescription
-			* [x] pangoFontDescriptionEqual
-			* [x] pangoFontDescriptionGetFamily
-			* [x] pangoFontDescriptionGetStyle
-			* [x] pangoFontDescriptionGetVariant
-			* [x] pangoFontDescriptionGetWeight
-			* [x] pangoFontDescriptionGetStretch
-			* [x] pangoFontDescriptionGetSize
-			* [x] pangoFontDescriptionGetSizeIsAbsollute
-			* [x] pangoFontDescriptionGetGravity
-			* [x] pangoFontDescriptionGetSetFields
-			* [x] pangoFontDescriptionToString
-			* [x] pangoFontDescriptionToFilename
+		- [ ] repair about PangoFontDescription: not IO
+			* [ ] pangoFontDescriptionEqual
+			* [ ] pangoFontDescriptionGetFamily
+			* [ ] pangoFontDescriptionGetStyle
+			* [ ] pangoFontDescriptionGetVariant
+			* [ ] pangoFontDescriptionGetWeight
+			* [ ] pangoFontDescriptionGetStretch
+			* [ ] pangoFontDescriptionGetSize
+			* [ ] pangoFontDescriptionGetSizeIsAbsollute
+			* [ ] pangoFontDescriptionGetGravity
+			* [ ] pangoFontDescriptionGetSetFields
+			* [ ] pangoFontDescriptionToString
+			* [ ] pangoFontDescriptionToFilename
 	+ [x] make pangoFontDescriptionFreeze
 	+ [x] pangoLayoutSetFontDescription: use PangoFontDescription
 	+ [x] make pangoFontDescriptionThaw
@@ -204,8 +204,13 @@ todo
 	+ [x] pango\_tab\_array\_get\_tab
 	+ [x] pango\_tab\_array\_get\_tabs
 	+ [x] pango\_tab\_array\_get\_positions\_in\_pixels
-	+ [ ] rename PangoTabArray to PangoTabArrayPrim
-	+ [ ] define new PangoTabArray
+	+ [x] rename PangoTabArray to PangoTabArrayPrim
+	+ [x] define new PangoTabArray
+	+ [x] use new PangoTabArray
+		- [x] pango\_tab\_array\_get\_size
+		- [x] pango\_tab\_array\_get\_tab
+		- [x] pango\_tab\_array\_get\_tabs
+		- [x] pango\_tab\_array\_get\_positions\_in\_pixels
 	+ [ ] pangoTabArrayFreeze
 	+ [ ] pangoTabArrayThaw
 * [ ] define functions of pango cairo
