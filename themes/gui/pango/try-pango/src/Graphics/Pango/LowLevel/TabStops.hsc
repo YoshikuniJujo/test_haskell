@@ -89,3 +89,19 @@ pangoTabArrayGetPositionsInPixels :: PangoTabArray -> Bool
 pangoTabArrayGetPositionsInPixels (PangoTabArray fpta) = unsafePerformIO
 	$ withForeignPtr fpta \pta ->
 		gbooleanToBool <$> c_pango_tab_array_get_positions_in_pixels pta
+
+foreign import ccall "pango_tab_array_copy" c_pango_tab_array_freeze ::
+	Ptr (PangoTabArrayPrim s) -> IO (Ptr PangoTabArray)
+
+foreign import ccall "pango_tab_array_copy" c_pango_tab_array_thaw ::
+	Ptr PangoTabArray -> IO (Ptr (PangoTabArrayPrim s))
+
+pangoTabArrayFreeze :: PrimMonad m =>
+	PangoTabArrayPrim (PrimState m) -> m PangoTabArray
+pangoTabArrayFreeze (PangoTabArrayPrim fpta) = unPrimIo
+	$ withForeignPtr fpta \pta -> makePangoTabArray =<< c_pango_tab_array_freeze pta
+
+pangoTabArrayThaw :: PrimMonad m =>
+	PangoTabArray -> m (PangoTabArrayPrim (PrimState m))
+pangoTabArrayThaw (PangoTabArray fpta) = unPrimIo
+	$ withForeignPtr fpta \pta -> makePangoTabArrayPrim =<< c_pango_tab_array_thaw pta

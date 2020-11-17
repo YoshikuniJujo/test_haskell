@@ -192,10 +192,10 @@ todo
 	+ [ ] pango\_layout\_line\_x\_to\_index
 	+ [ ] pango\_layout\_line\_get\_x\_ranges
 	+ [ ] pango\_layout\_line\_get\_height
-* [ ] define function of Tab Stops
+* [x] define function of Tab Stops
 	+ [x] pango\_tab\_array\_new
 	+ no pango\_tab\_array\_new\_with\_potisions
-	+ [ ] pango\_tab\_array\_copy
+	+ [x] pango\_tab\_array\_copy
 		- use from freeze, thaw and so on
 	+ [x] pango\_tab\_array\_free
 	+ [x] pango\_tab\_array\_get\_size
@@ -211,8 +211,8 @@ todo
 		- [x] pango\_tab\_array\_get\_tab
 		- [x] pango\_tab\_array\_get\_tabs
 		- [x] pango\_tab\_array\_get\_positions\_in\_pixels
-	+ [ ] pangoTabArrayFreeze
-	+ [ ] pangoTabArrayThaw
+	+ [x] pangoTabArrayFreeze
+	+ [x] pangoTabArrayThaw
 * [ ] define functions of pango cairo
 	+ no pango\_cairo\_font\_map\_get\_default
 	+ ...
