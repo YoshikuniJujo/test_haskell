@@ -194,11 +194,11 @@ todo
 	+ [ ] pango\_layout\_line\_get\_height
 * [ ] define function of Tab Stops
 	+ [x] pango\_tab\_array\_new
-	+ [ ] pango\_tab\_array\_new\_with\_potisions
+	+ no pango\_tab\_array\_new\_with\_potisions
 	+ [ ] pango\_tab\_array\_copy
 		- use from freeze, thaw and so on
 	+ [x] pango\_tab\_array\_free
-	+ [ ] pango\_tab\_array\_get\_size
+	+ [x] pango\_tab\_array\_get\_size
 	+ [ ] pango\_tab\_array\_resize
 	+ [ ] pango\_tab\_array\_set\_tab
 	+ [ ] pango\_tab\_array\_get\_tab

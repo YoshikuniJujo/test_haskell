@@ -1,8 +1,10 @@
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.LowLevel.TabStops where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr
 import Control.Monad.Primitive
 import Data.Int
 
@@ -22,3 +24,11 @@ pangoTabArrayNew :: PrimMonad m =>
 	#{type gint} -> Bool -> m (PangoTabArray (PrimState m))
 pangoTabArrayNew sz px = unPrimIo
 	$ makePangoTabArray =<< c_pango_tab_array_new sz (boolToGboolean px)
+
+foreign import ccall "pango_tab_array_get_size" c_pango_tab_array_get_size ::
+	Ptr (PangoTabArray s) -> IO #type gint
+
+pangoTabArrayGetSize :: PrimMonad m =>
+	PangoTabArray (PrimState m) -> m #type gint
+pangoTabArrayGetSize (PangoTabArray fpta) = unPrimIo
+	$ withForeignPtr fpta \pta -> c_pango_tab_array_get_size pta
