@@ -8,6 +8,7 @@ import Foreign.ForeignPtr
 import Foreign.C
 import Data.Word
 import Data.Int
+import System.IO.Unsafe
 
 import Graphics.Pango.Types
 import Graphics.Pango.Values
@@ -39,9 +40,9 @@ pangoLayoutSetText (PangoLayoutIo fpl) s n =
 foreign import ccall "pango_layout_get_text" c_pango_layout_get_text ::
 	Ptr PangoLayout -> IO CString
 
-pangoLayoutGetText :: PangoLayout -> IO String
-pangoLayoutGetText (PangoLayout fpl) = withForeignPtr fpl \pl ->
-	peekCString =<< c_pango_layout_get_text pl
+pangoLayoutGetText :: PangoLayout -> String
+pangoLayoutGetText (PangoLayout fpl) = unsafePerformIO
+	$ withForeignPtr fpl \pl -> peekCString =<< c_pango_layout_get_text pl
 
 foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font_description ::
 	Ptr PangoLayoutIo -> Ptr PangoFontDescription -> IO ()
@@ -61,9 +62,9 @@ pangoLayoutSetWidth (PangoLayoutIo fpl) w = withForeignPtr fpl \pl ->
 foreign import ccall "pango_layout_get_width" c_pango_layout_get_width ::
 	Ptr PangoLayout -> IO #type int
 
-pangoLayoutGetWidth :: PangoLayout -> IO #type int
-pangoLayoutGetWidth (PangoLayout fpl) =
-	withForeignPtr fpl c_pango_layout_get_width
+pangoLayoutGetWidth :: PangoLayout -> #type int
+pangoLayoutGetWidth (PangoLayout fpl) = unsafePerformIO
+	$ withForeignPtr fpl c_pango_layout_get_width
 
 foreign import ccall "pango_layout_set_ellipsize" c_pango_layout_set_ellipsize ::
 	Ptr PangoLayoutIo -> #{type PangoEllipsizeMode} -> IO ()
