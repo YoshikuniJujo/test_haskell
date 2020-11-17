@@ -169,8 +169,8 @@ todo
 	+ [x] pango\_layout\_xy\_to\_index
 	+ [x] pango\_layout\_get\_cursor\_pos
 	+ [x] pango\_layout\_move\_cursor\_visually
-	+ [ ] pango\_layout\_get\_extents
-	+ [ ] pango\_layout\_get\_pixel\_extents
+	+ [x] pango\_layout\_get\_extents
+	+ [x] pango\_layout\_get\_pixel\_extents
 	+ [ ] pango\_extents\_to\_pixels
 	+ [ ] pango\_layout\_get\_size
 	+ [ ] pango\_layout\_get\_pixel\_size

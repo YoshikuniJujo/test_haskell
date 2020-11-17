@@ -177,3 +177,21 @@ pangoLayoutMoveCursorVisually (PangoLayout fpl) str oidx otr dir = unsafePerform
 	$ withForeignPtr fpl \pl -> alloca \nidx -> alloca \ntr -> do
 		c_pango_layout_move_cursor_visually pl (boolToGboolean str) oidx otr dir nidx ntr
 		(,) <$> peek nidx <*> peek ntr
+
+foreign import ccall "pango_layout_get_extents" c_pango_layout_get_extents ::
+	Ptr PangoLayout -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+
+pangoLayoutGetExtents :: PangoLayout -> (PangoRectangle, PangoRectangle)
+pangoLayoutGetExtents (PangoLayout fpl) = unsafePerformIO
+	$ withForeignPtr fpl \pl -> alloca \irct -> alloca \lrct -> do
+		c_pango_layout_get_extents pl irct lrct
+		(,) <$> peek irct <*> peek lrct
+
+foreign import ccall "pango_layout_get_pixel_extents" c_pango_layout_get_pixel_extents ::
+	Ptr PangoLayout -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+
+pangoLayoutGetPixelExtents :: PangoLayout -> (PangoRectangle, PangoRectangle)
+pangoLayoutGetPixelExtents (PangoLayout fpl) = unsafePerformIO
+	$ withForeignPtr fpl \pl -> alloca \irct -> alloca \lrct -> do
+		c_pango_layout_get_pixel_extents pl irct lrct
+		(,) <$> peek irct <*> peek lrct

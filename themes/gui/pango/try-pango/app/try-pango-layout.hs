@@ -133,6 +133,9 @@ main = do
 	print $ pangoLayoutMoveCursorVisually fpl2 True 107 0 0
 	print $ pangoLayoutMoveCursorVisually fpl2 True 108 0 0
 	print $ pangoLayoutMoveCursorVisually fpl2 True 109 0 0
+	putStrLn "extents"
+	print $ pangoLayoutGetExtents fpl2
+	print $ pangoLayoutGetPixelExtents fpl2
 	pangoCairoShowLayout cr fpl2
 
 	pl3 <- pangoCairoCreateLayout cr
