@@ -27,7 +27,7 @@ import Lib
 
 main :: IO ()
 main = do
-	s <- cairoImageSurfaceCreate cairoFormatArgb32 700 800
+	s <- cairoImageSurfaceCreate cairoFormatArgb32 900 900
 	cr <- cairoCreate s
 
 	pl <- pangoCairoCreateLayout cr
@@ -43,7 +43,7 @@ main = do
 	pangoLayoutSetText pl "Hello, world!\nこんにちは世界!" 100
 --	pangoLayoutSetText pl "Hello, world!\x2026\x22ef\nこんにちは世界!\x2026\x22ef" 100
 --	pangoLayoutSetText pl "Hello, world!\x22ef\x2026\x22ef" 100
-	cairoMoveTo cr 100 100
+	cairoMoveTo cr 100 50
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	pl2 <- pangoCairoCreateLayout cr
@@ -56,7 +56,7 @@ main = do
 --	pangoLayoutSetLineSpacing pl2 2
 	pangoLayoutSetAlignment pl2 pangoAlignCenter
 	pangoLayoutSetText pl2 someText 1600
-	cairoMoveTo cr 100 200
+	cairoMoveTo cr 100 150
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl2
 
 	pl3 <- pangoCairoCreateLayout cr
@@ -64,18 +64,27 @@ main = do
 	pangoLayoutSetAlignment pl3 pangoAlignCenter
 	pangoLayoutSetTabs pl3 $ tabArray True [100, 200, 300, 400, 500, 600]
 	pangoLayoutSetText pl3 "タブの\tテスト\tだよ\tHello,\tworld\t!" 100
-	cairoMoveTo cr 100 650
+	cairoMoveTo cr 100 580
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
 	pangoLayoutSetTabs pl3 $ tabArray False $ (* pangoScale) <$> [100, 200, 300, 350, 450, 550]
-	cairoMoveTo cr 100 700
+	cairoMoveTo cr 100 630
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
 	pl4 <- pangoCairoCreateLayout cr
 	pangoLayoutSetText pl4 "try\nsingle\tparagraph\nmode" 100
 	pangoLayoutSetSingleParagraphMode pl4 True
-	cairoMoveTo cr 100 725
+	cairoMoveTo cr 100 655
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl4
+
+	pl5 <- pangoCairoCreateLayout cr
+	pangoLayoutSetText pl5 (
+		"Watch \x231a Sloth \x1f9a5 Otter \x1f9a6 Secret \x3299 A \x1f170 " ++
+		"Bad1 \x1f16f Bad2 \x1f16e"
+		) 100
+	cairoSetSourceRgb cr 0 0 1
+	cairoMoveTo cr 100 680
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl5
 
 	void $ writeDynamicPng "tmp3.png" =<< cairoImageSurfaceGetImage s
 
