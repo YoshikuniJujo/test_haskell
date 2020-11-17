@@ -101,6 +101,11 @@ main = do
 	print $ pangoLayoutIndexToLineX fpl2 101 False
 	print $ pangoLayoutIndexToLineX fpl2 102 False
 	print $ pangoLayoutIndexToLineX fpl2 103 False
+	putStrLn "(50, 50), (100, 100), (500, 500)"
+	print $ pangoLayoutXyToIndex fpl2 (50 * pangoScale) (50 * pangoScale)
+	print $ pangoLayoutXyToIndex fpl2 (100 * pangoScale) (100 * pangoScale)
+	print $ pangoLayoutXyToIndex fpl2 (500 * pangoScale) (500 * pangoScale)
+	print $ pangoLayoutXyToIndex fpl2 345088 25600
 	pangoCairoShowLayout cr fpl2
 
 	pl3 <- pangoCairoCreateLayout cr
@@ -124,7 +129,7 @@ main = do
 	pl5 <- pangoCairoCreateLayout cr
 	pangoLayoutSetText pl5 (
 		"Watch \x231a Sloth \x1f9a5 Otter \x1f9a6 Secret \x3299 A \x1f170 " ++
-		"Bad1 \x1f16f Bad2 \x1f16e"
+		"Bad1 \x1f16f Bad2 \x1f16e fffi"
 		) 100
 	cairoSetSourceRgb cr 0 0 1
 	cairoMoveTo cr 100 680
