@@ -157,3 +157,12 @@ pangoLayoutXyToIndex (PangoLayout fpl) x y = unsafePerformIO
 gbooleanToBool :: #{type gboolean} -> Bool
 gbooleanToBool #{const FALSE} = False
 gbooleanToBool _ = True
+
+foreign import ccall "pango_layout_get_cursor_pos" c_pango_layout_get_cursor_pos ::
+	Ptr PangoLayout -> #{type int} -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+
+pangoLayoutGetCursorPos :: PangoLayout -> #{type int} -> (PangoRectangle, PangoRectangle)
+pangoLayoutGetCursorPos (PangoLayout fpl) idx = unsafePerformIO
+	$ withForeignPtr fpl \pl -> alloca \spos -> alloca \wpos -> do
+		c_pango_layout_get_cursor_pos pl idx spos wpos
+		(,) <$> peek spos <*> peek wpos

@@ -88,9 +88,13 @@ main = do
 	print $ pangoLayoutIndexToPos fpl2 30
 	putStrLn "100, 101, 102, 103"
 	print $ pangoLayoutIndexToPos fpl2 100
+	print $ pangoLayoutGetCursorPos fpl2 100
 	print $ pangoLayoutIndexToPos fpl2 101
+	print $ pangoLayoutGetCursorPos fpl2 101
 	print $ pangoLayoutIndexToPos fpl2 102
+	print $ pangoLayoutGetCursorPos fpl2 102
 	print $ pangoLayoutIndexToPos fpl2 103
+	print $ pangoLayoutGetCursorPos fpl2 103
 	putStrLn "0, 1, 2"
 	print $ pangoLayoutIndexToLineX fpl2 0 False
 	print $ pangoLayoutIndexToLineX fpl2 1 False
