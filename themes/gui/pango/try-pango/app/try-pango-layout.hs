@@ -91,6 +91,16 @@ main = do
 	print $ pangoLayoutIndexToPos fpl2 101
 	print $ pangoLayoutIndexToPos fpl2 102
 	print $ pangoLayoutIndexToPos fpl2 103
+	putStrLn "0, 1, 2"
+	print $ pangoLayoutIndexToLineX fpl2 0 False
+	print $ pangoLayoutIndexToLineX fpl2 1 False
+	print $ pangoLayoutIndexToLineX fpl2 1 True
+	print $ pangoLayoutIndexToLineX fpl2 2 False
+	putStrLn "100, 101, 102, 103"
+	print $ pangoLayoutIndexToLineX fpl2 100 False
+	print $ pangoLayoutIndexToLineX fpl2 101 False
+	print $ pangoLayoutIndexToLineX fpl2 102 False
+	print $ pangoLayoutIndexToLineX fpl2 103 False
 	pangoCairoShowLayout cr fpl2
 
 	pl3 <- pangoCairoCreateLayout cr

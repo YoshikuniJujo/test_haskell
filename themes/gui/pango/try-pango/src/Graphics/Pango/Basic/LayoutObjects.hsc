@@ -134,3 +134,13 @@ pangoLayoutIndexToPos (PangoLayout fpl) idx = unsafePerformIO
 	$ withForeignPtr fpl \pl -> alloca \pos -> do
 		c_pango_layout_index_to_pos pl idx pos
 		peek pos
+
+foreign import ccall "pango_layout_index_to_line_x"
+	c_pango_layout_index_to_line_x ::
+	Ptr PangoLayout -> #{type int} -> #{type gboolean} -> Ptr #{type int} -> Ptr #{type int} -> IO ()
+
+pangoLayoutIndexToLineX :: PangoLayout -> #{type int} -> Bool -> (#{type int}, #{type int})
+pangoLayoutIndexToLineX (PangoLayout fpl) idx tr = unsafePerformIO
+	$ withForeignPtr fpl \pl -> alloca \ln -> alloca \xpos -> do
+		c_pango_layout_index_to_line_x pl idx (boolToGboolean tr) ln xpos
+		(,) <$> peek ln <*> peek xpos

@@ -165,7 +165,7 @@ todo
 	+ no pango\_layout\_get\_log\_attrs\_readonly
 	+ [x] pango\_layout\_index\_to\_pos
 		- [x] define PangoRectangle
-	+ [ ] pango\_layout\_index\_to\_line\_x
+	+ [x] pango\_layout\_index\_to\_line\_x
 	+ [ ] pango\_layout\_xy\_to\_index
 	+ [ ] pango\_layout\_get\_cursor\_pos
 	+ no pango\_layout\_move\_cursor\_visually
