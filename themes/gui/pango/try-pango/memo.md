@@ -189,9 +189,9 @@ todo
 	+ [ ] pango\_layout\_iter\_copy
 	+ [ ] pango\_layout\_iter\_free
 	+ ...
-	+ [ ] pango\_layout\_iter\_get\_run\_readonly
-		- [ ] define PangoGlyphItem
-		- [ ] define type synonym PangoLayoutRun
+	+ [x] pango\_layout\_iter\_get\_run\_readonly
+		- [x] define PangoGlyphItem
+		- [x] define type synonym PangoLayoutRun
 		- next define pango\_cairo\_show\_glyph\_item
 	+ ...
 	+ [ ] pango\_layout\_iter\_get\_layout\_extents

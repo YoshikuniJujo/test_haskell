@@ -129,3 +129,14 @@ makePangoLayoutIter p = PangoLayoutIter <$> newForeignPtr p (c_pango_layout_iter
 
 foreign import ccall "pango_layout_iter_free" c_pango_layout_iter_free ::
 	Ptr (PangoLayoutIter s) -> IO ()
+
+newtype PangoGlyphItem = PangoGlyphItem (ForeignPtr PangoGlyphItem) deriving Show
+
+makePangoGlyphItem0, makePangoGlyphItem :: Ptr PangoGlyphItem -> IO PangoGlyphItem
+makePangoGlyphItem0 p = PangoGlyphItem <$> newForeignPtr p (pure ())
+makePangoGlyphItem p = PangoGlyphItem <$> newForeignPtr p (c_pango_glyph_item_free p)
+
+foreign import ccall "pango_glyph_item_free" c_pango_glyph_item_free ::
+	Ptr PangoGlyphItem -> IO ()
+
+type PangoLayoutRun = PangoGlyphItem
