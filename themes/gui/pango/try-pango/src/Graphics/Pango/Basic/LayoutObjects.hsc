@@ -230,3 +230,10 @@ pangoLayoutGetPixelSize (PangoLayout fpl) = unsafePerformIO
 	$ withForeignPtr fpl \pl -> alloca \w -> alloca \h -> do
 		c_pango_layout_get_pixel_size pl w h
 		(,) <$> peek w <*> peek h
+
+foreign import ccall "pango_layout_get_baseline" c_pango_layout_get_baseline ::
+	Ptr PangoLayout -> IO #type int
+
+pangoLayoutGetBaseline :: PangoLayout -> #type int
+pangoLayoutGetBaseline (PangoLayout fpl) = unsafePerformIO
+	$ withForeignPtr fpl c_pango_layout_get_baseline
