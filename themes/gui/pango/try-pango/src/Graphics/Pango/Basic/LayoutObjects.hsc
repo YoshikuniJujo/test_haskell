@@ -195,3 +195,20 @@ pangoLayoutGetPixelExtents (PangoLayout fpl) = unsafePerformIO
 	$ withForeignPtr fpl \pl -> alloca \irct -> alloca \lrct -> do
 		c_pango_layout_get_pixel_extents pl irct lrct
 		(,) <$> peek irct <*> peek lrct
+
+foreign import ccall "pango_extents_to_pixels" c_pango_extents_to_pixels ::
+	Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+
+pangoExtentsToPixelsInclusive :: PangoRectangle -> PangoRectangle
+pangoExtentsToPixelsInclusive src = unsafePerformIO
+	$ alloca \dst -> do
+		poke dst src
+		c_pango_extents_to_pixels dst nullPtr
+		peek dst
+
+pangoExtentsToPixelsNearest :: PangoRectangle -> PangoRectangle
+pangoExtentsToPixelsNearest src = unsafePerformIO
+	$ alloca \dst -> do
+		poke dst src
+		c_pango_extents_to_pixels nullPtr dst
+		peek dst
