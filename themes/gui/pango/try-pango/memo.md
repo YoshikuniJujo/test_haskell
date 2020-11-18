@@ -238,7 +238,7 @@ todo
 	+ [x] pango\_cairo\_create\_context
 	+ [ ] pango\_cairo\_update\_context
 	+ ...
-	+ [ ] pango\_cairo\_show\_glyph\_item
+	+ [x] pango\_cairo\_show\_glyph\_item
 	+ ...
 
 font description

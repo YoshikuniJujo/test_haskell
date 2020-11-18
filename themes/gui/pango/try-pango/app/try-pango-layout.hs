@@ -19,7 +19,7 @@ import Graphics.Cairo.Values
 import Graphics.Pango.Basic.Fonts
 import Graphics.Pango.Basic.LayoutObjects
 import Graphics.Pango.LowLevel.TabStops
--- import Graphics.Pango.Rendering.Cairo
+import Graphics.Pango.Rendering.Cairo
 import Graphics.Pango.Types
 import Graphics.Pango.Values
 
@@ -172,6 +172,11 @@ main = do
 	fpl5 <- pangoLayoutFreeze pl5
 	print $ pangoLayoutGetUnknownGlyphsCount fpl5
 	pangoCairoShowLayout cr fpl5
+
+	itr <- pangoLayoutGetIter fpl2
+	run <- pangoLayoutIterGetRun itr
+	cairoMoveTo cr 100 740
+	pangoCairoShowGlyphItem cr someText run
 
 	void $ writeDynamicPng "tmp3.png" =<< cairoImageSurfaceGetImage s
 

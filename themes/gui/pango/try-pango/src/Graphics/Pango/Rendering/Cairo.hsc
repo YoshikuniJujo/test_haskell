@@ -5,9 +5,12 @@ module Graphics.Pango.Rendering.Cairo where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
+import Foreign.C
+import Control.Monad.Primitive
 import Control.Monad.ST
 import Graphics.Cairo.Types
 
+import Graphics.Pango.Monad
 import Graphics.Pango.Types
 
 foreign import ccall "pango_cairo_create_context"
@@ -16,3 +19,13 @@ foreign import ccall "pango_cairo_create_context"
 pangoCairoCreateContext :: CairoT RealWorld -> IO PangoContext
 pangoCairoCreateContext (CairoT fcr) = withForeignPtr fcr \cr ->
 	makePangoContext =<< c_pango_cairo_create_context cr
+
+foreign import ccall "pango_cairo_show_glyph_item"
+	c_pango_cairo_show_glyph_item ::
+	Ptr (CairoT s) -> CString -> Ptr PangoGlyphItem -> IO ()
+
+pangoCairoShowGlyphItem :: PrimMonad m =>
+	CairoT (PrimState m) -> String -> PangoGlyphItem -> m ()
+pangoCairoShowGlyphItem (CairoT fcr) txt (PangoGlyphItem fpgi) = unPrimIo
+	$ withForeignPtr fcr \cr -> withCString txt \ctxt -> withForeignPtr fpgi \pgi ->
+		c_pango_cairo_show_glyph_item cr ctxt pgi
