@@ -189,15 +189,26 @@ todo
 	+ [ ] pango\_layout\_iter\_copy
 	+ [x] pango\_layout\_iter\_free
 	+ [x] pango\_layout\_iter\_next\_run
-	+ [ ] pango\_layout\_iter\_next\_char
-	+ ...
+	+ [x] pango\_layout\_iter\_next\_char
+		- next pango\_layout\_iter\_get\_char\_extents
+	+ [ ] pango\_layout\_iter\_next\_cluster
+	+ [ ] pango\_layout\_iter\_next\_line
+	+ [ ] pango\_layout\_iter\_at\_last\_line
+	+ [ ] pango\_layout\_iter\_get\_index
+	+ [ ] pango\_layout\_iter\_get\_baseline
+	+ no pango\_layout\_iter\_get\_run
 	+ [x] pango\_layout\_iter\_get\_run\_readonly
 		- [x] define PangoGlyphItem
 		- [x] define type synonym PangoLayoutRun
 		- next define pango\_cairo\_show\_glyph\_item
-	+ ...
+	+ no pango\_layout\_iter\_get\_line
+	+ [ ] pango\_layout\_iter\_get\_line\_readonly
+	+ [ ] pango\_layout\_iter\_get\_layout
 	+ [ ] pango\_layout\_iter\_get\_char\_extents
-	+ ...
+	+ [ ] pango\_layout\_iter\_get\_cluster\_extents
+	+ [ ] pango\_layout\_iter\_get\_run\_extents
+	+ [ ] pango\_layout\_iter\_get\_line\_yrange
+	+ [ ] pango\_layout\_iter\_get\_line\_extents
 	+ [ ] pango\_layout\_iter\_get\_layout\_extents
 	+ [ ] pango\_layout\_line\_ref
 	+ [ ] pango\_layout\_line\_unref

@@ -177,6 +177,8 @@ main = do
 	cairoMoveTo cr 100 740
 	pangoCairoShowGlyphItem cr someText =<< pangoLayoutIterGetRun itr
 	pangoLayoutIterNextRun itr
+	pangoLayoutIterNextChar itr
+	pangoLayoutIterNextChar itr
 	cairoMoveTo cr 200 740
 	pangoCairoShowGlyphItem cr someText =<< pangoLayoutIterGetRun itr
 	pangoLayoutIterNextRun itr
