@@ -174,9 +174,14 @@ main = do
 	pangoCairoShowLayout cr fpl5
 
 	itr <- pangoLayoutGetIter fpl2
-	run <- pangoLayoutIterGetRun itr
 	cairoMoveTo cr 100 740
-	pangoCairoShowGlyphItem cr someText run
+	pangoCairoShowGlyphItem cr someText =<< pangoLayoutIterGetRun itr
+	pangoLayoutIterNextRun itr
+	cairoMoveTo cr 200 740
+	pangoCairoShowGlyphItem cr someText =<< pangoLayoutIterGetRun itr
+	pangoLayoutIterNextRun itr
+	cairoMoveTo cr 300 740
+	pangoCairoShowGlyphItem cr someText =<< pangoLayoutIterGetRun itr
 
 	void $ writeDynamicPng "tmp3.png" =<< cairoImageSurfaceGetImage s
 

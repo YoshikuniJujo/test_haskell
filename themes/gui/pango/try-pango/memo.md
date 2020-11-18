@@ -187,12 +187,16 @@ todo
 		- [x] define PangoLayoutIter s
 		- next define pango\_layout\_iter\_get\_run\_readonly
 	+ [ ] pango\_layout\_iter\_copy
-	+ [ ] pango\_layout\_iter\_free
+	+ [x] pango\_layout\_iter\_free
+	+ [x] pango\_layout\_iter\_next\_run
+	+ [ ] pango\_layout\_iter\_next\_char
 	+ ...
 	+ [x] pango\_layout\_iter\_get\_run\_readonly
 		- [x] define PangoGlyphItem
 		- [x] define type synonym PangoLayoutRun
 		- next define pango\_cairo\_show\_glyph\_item
+	+ ...
+	+ [ ] pango\_layout\_iter\_get\_char\_extents
 	+ ...
 	+ [ ] pango\_layout\_iter\_get\_layout\_extents
 	+ [ ] pango\_layout\_line\_ref

@@ -288,6 +288,13 @@ pangoLayoutGetIter :: PrimMonad m => PangoLayout -> m (PangoLayoutIter (PrimStat
 pangoLayoutGetIter (PangoLayout fpl) = unPrimIo
 	$ makePangoLayoutIter =<< withForeignPtr fpl c_pango_layout_get_iter
 
+foreign import ccall "pango_layout_iter_next_run" c_pango_layout_iter_next_run ::
+	Ptr (PangoLayoutIter s) -> IO #type gboolean
+
+pangoLayoutIterNextRun :: PrimMonad m => PangoLayoutIter (PrimState m) -> m Bool
+pangoLayoutIterNextRun (PangoLayoutIter fpli) = unPrimIo
+	$ gbooleanToBool <$> withForeignPtr fpli c_pango_layout_iter_next_run
+
 foreign import ccall "pango_layout_iter_get_run_readonly" c_pango_layout_iter_get_run_readonly ::
 	Ptr (PangoLayoutIter s) -> IO (Ptr PangoLayoutRun)
 
