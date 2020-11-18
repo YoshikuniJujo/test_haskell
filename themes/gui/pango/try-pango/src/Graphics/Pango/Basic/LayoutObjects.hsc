@@ -237,3 +237,10 @@ foreign import ccall "pango_layout_get_baseline" c_pango_layout_get_baseline ::
 pangoLayoutGetBaseline :: PangoLayout -> #type int
 pangoLayoutGetBaseline (PangoLayout fpl) = unsafePerformIO
 	$ withForeignPtr fpl c_pango_layout_get_baseline
+
+foreign import ccall "pango_layout_get_line_count" c_pango_layout_get_line_count ::
+	Ptr PangoLayout -> IO #type int
+
+pangoLayoutGetLineCount :: PangoLayout -> #type int
+pangoLayoutGetLineCount (PangoLayout fpl) = unsafePerformIO
+	$ withForeignPtr fpl c_pango_layout_get_line_count
