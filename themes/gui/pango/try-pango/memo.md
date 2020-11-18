@@ -181,7 +181,7 @@ todo
 		- [x] define PangoLayoutLine: this is readonly
 			* [x] whether or not to make PangoLayoutLine instance of Storable
 	+ no pango\_layout\_get\_lines
-	+ [ ] pango\_layout\_get\_lines\_readonly
+	+ [x] pango\_layout\_get\_lines\_readonly
 		- [x] define module to process GSList
 	+ no pango\_layout\_get\_iter
 	+ no pango\_layout\_iter\_copy

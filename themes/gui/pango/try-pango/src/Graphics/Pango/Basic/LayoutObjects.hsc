@@ -14,6 +14,7 @@ import System.IO.Unsafe
 
 import Graphics.Pango.Types
 import Graphics.Pango.Values
+import System.Glib.SinglyLinkedLists
 
 #include <pango/pango.h>
 
@@ -269,3 +270,11 @@ pangoLayoutLineGetPixelExtents (PangoLayoutLine fpll) = unsafePerformIO
 	$ withForeignPtr fpll \pll -> alloca \irct -> alloca \lrct -> do
 		c_pango_layout_line_get_pixel_extents pll irct lrct
 		(,) <$> peek irct <*> peek lrct
+
+foreign import ccall "pango_layout_get_lines_readonly" c_pango_layout_get_lines_readonly ::
+	Ptr PangoLayout -> IO (Ptr (GSList PangoLayoutLine))
+
+pangoLayoutGetLines :: PangoLayout -> [PangoLayoutLine]
+pangoLayoutGetLines (PangoLayout fpl) = unsafePerformIO
+	$ withForeignPtr fpl \pl ->
+		mapM makePangoLayoutLine0 =<< g_slist_to_list =<< c_pango_layout_get_lines_readonly pl
