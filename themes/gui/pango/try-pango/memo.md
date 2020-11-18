@@ -176,8 +176,10 @@ todo
 	+ [x] pango\_layout\_get\_pixel\_size
 	+ [x] pango\_layout\_get\_baseline
 	+ [x] pango\_layout\_get\_line\_count
-	+ [ ] pango\_layout\_get\_line
-	+ [ ] pango\_layout\_get\_line\_readonly
+	+ no pango\_layout\_get\_line
+	+ [x] pango\_layout\_get\_line\_readonly
+		- [x] define PangoLayoutLine: this is readonly
+			* [x] whether or not to make PangoLayoutLine instance of Storable
 	+ [ ] pango\_layout\_get\_lines
 	+ [ ] pango\_layout\_get\_lines\_readonly
 	+ no pango\_layout\_get\_iter
@@ -187,8 +189,8 @@ todo
 	+ no pango\_layout\_iter\_get\_layout\_extents
 	+ [ ] pango\_layout\_line\_ref
 	+ [ ] pango\_layout\_line\_unref
-	+ [ ] pango\_layout\_line\_get\_extents
-	+ [ ] pango\_layout\_line\_get\_pixel\_extents
+	+ [x] pango\_layout\_line\_get\_extents
+	+ [x] pango\_layout\_line\_get\_pixel\_extents
 	+ [ ] pango\_layout\_line\_index\_to\_x
 	+ [ ] pango\_layout\_line\_x\_to\_index
 	+ [ ] pango\_layout\_line\_get\_x\_ranges

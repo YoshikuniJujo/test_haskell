@@ -139,6 +139,8 @@ main = do
 	print $ pangoLayoutGetPixelSize fpl2
 	print $ pangoLayoutGetBaseline fpl2
 	print $ pangoLayoutGetLineCount fpl2
+	print . pangoLayoutLineGetExtents $ pangoLayoutGetLine fpl2 2
+	print . pangoLayoutLineGetPixelExtents $ pangoLayoutGetLine fpl2 2
 	pangoCairoShowLayout cr fpl2
 
 	pl3 <- pangoCairoCreateLayout cr

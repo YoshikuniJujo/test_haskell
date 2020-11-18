@@ -110,3 +110,14 @@ instance Storable PangoRectangle where
 		#{poke PangoRectangle, y} p y
 		#{poke PangoRectangle, width} p w
 		#{poke PangoRectangle, height} p h
+
+newtype PangoLayoutLine = PangoLayoutLine (ForeignPtr PangoLayoutLine) deriving Show
+
+makePangoLayoutLine0 :: Ptr PangoLayoutLine -> IO PangoLayoutLine
+makePangoLayoutLine0 p = PangoLayoutLine <$> newForeignPtr p (pure ())
+
+makePangoLayoutLine :: Ptr PangoLayoutLine -> IO PangoLayoutLine
+makePangoLayoutLine p = PangoLayoutLine <$> newForeignPtr p (c_pango_layout_line_unref p)
+
+foreign import ccall "pango_layout_line_unref" c_pango_layout_line_unref ::
+	Ptr PangoLayoutLine -> IO ()
