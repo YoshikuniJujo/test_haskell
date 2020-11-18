@@ -212,3 +212,21 @@ pangoExtentsToPixelsNearest src = unsafePerformIO
 		poke dst src
 		c_pango_extents_to_pixels nullPtr dst
 		peek dst
+
+foreign import ccall "pango_layout_get_size" c_pango_layout_get_size ::
+	Ptr PangoLayout -> Ptr #{type int} -> Ptr #{type int} -> IO ()
+
+pangoLayoutGetSize :: PangoLayout -> (#{type int}, #{type int})
+pangoLayoutGetSize (PangoLayout fpl) = unsafePerformIO
+	$ withForeignPtr fpl \pl -> alloca \w -> alloca \h -> do
+		c_pango_layout_get_size pl w h
+		(,) <$> peek w <*> peek h
+
+foreign import ccall "pango_layout_get_pixel_size" c_pango_layout_get_pixel_size ::
+	Ptr PangoLayout -> Ptr #{type int} -> Ptr #{type int} -> IO ()
+
+pangoLayoutGetPixelSize :: PangoLayout -> (#{type int}, #{type int})
+pangoLayoutGetPixelSize (PangoLayout fpl) = unsafePerformIO
+	$ withForeignPtr fpl \pl -> alloca \w -> alloca \h -> do
+		c_pango_layout_get_pixel_size pl w h
+		(,) <$> peek w <*> peek h

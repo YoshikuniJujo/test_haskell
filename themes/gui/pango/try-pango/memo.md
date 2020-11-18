@@ -172,8 +172,8 @@ todo
 	+ [x] pango\_layout\_get\_extents
 	+ [x] pango\_layout\_get\_pixel\_extents
 	+ [x] pango\_extents\_to\_pixels
-	+ [ ] pango\_layout\_get\_size
-	+ [ ] pango\_layout\_get\_pixel\_size
+	+ [x] pango\_layout\_get\_size
+	+ [x] pango\_layout\_get\_pixel\_size
 	+ [ ] pango\_layout\_get\_baseline
 	+ [ ] pango\_layout\_get\_line\_count
 	+ [ ] pango\_layout\_get\_line
