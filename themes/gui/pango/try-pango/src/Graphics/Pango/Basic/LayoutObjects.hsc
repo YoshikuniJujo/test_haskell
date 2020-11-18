@@ -309,3 +309,11 @@ pangoLayoutIterGetRun :: PrimMonad m =>
 	PangoLayoutIter (PrimState m) -> m PangoLayoutRun
 pangoLayoutIterGetRun (PangoLayoutIter fpli) = unPrimIo
 	$ makePangoGlyphItem0 =<< withForeignPtr fpli c_pango_layout_iter_get_run_readonly
+
+foreign import ccall "pango_layout_iter_get_index" c_pango_layout_iter_get_index ::
+	Ptr (PangoLayoutIter s) -> IO #type int
+
+pangoLayoutIterGetIndex :: PrimMonad m =>
+	PangoLayoutIter (PrimState m) -> m #type int
+pangoLayoutIterGetIndex (PangoLayoutIter fpli) = unPrimIo
+	$ withForeignPtr fpli c_pango_layout_iter_get_index

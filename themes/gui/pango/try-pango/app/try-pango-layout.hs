@@ -178,7 +178,9 @@ main = do
 	pangoCairoShowGlyphItem cr someText =<< pangoLayoutIterGetRun itr
 	pangoLayoutIterNextRun itr
 	pangoLayoutIterNextChar itr
+	print =<< pangoLayoutIterGetIndex itr
 	pangoLayoutIterNextChar itr
+	print =<< pangoLayoutIterGetIndex itr
 	cairoMoveTo cr 200 740
 	pangoCairoShowGlyphItem cr someText =<< pangoLayoutIterGetRun itr
 	pangoLayoutIterNextRun itr
