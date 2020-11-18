@@ -8,10 +8,12 @@ import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C
+import Control.Monad.Primitive
 import Data.Word
 import Data.Int
 import System.IO.Unsafe
 
+import Graphics.Pango.Monad
 import Graphics.Pango.Types
 import Graphics.Pango.Values
 import System.Glib.SinglyLinkedLists
@@ -278,3 +280,10 @@ pangoLayoutGetLines :: PangoLayout -> [PangoLayoutLine]
 pangoLayoutGetLines (PangoLayout fpl) = unsafePerformIO
 	$ withForeignPtr fpl \pl ->
 		mapM makePangoLayoutLine0 =<< g_slist_to_list =<< c_pango_layout_get_lines_readonly pl
+
+foreign import ccall "pango_layout_get_iter" c_pango_layout_get_iter ::
+	Ptr PangoLayout -> IO (Ptr (PangoLayoutIter s))
+
+pangoLayoutGetIter :: PrimMonad m => PangoLayout -> m (PangoLayoutIter (PrimState m))
+pangoLayoutGetIter (PangoLayout fpl) = unPrimIo
+	$ makePangoLayoutIter =<< withForeignPtr fpl c_pango_layout_get_iter

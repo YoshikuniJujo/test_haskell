@@ -183,11 +183,18 @@ todo
 	+ no pango\_layout\_get\_lines
 	+ [x] pango\_layout\_get\_lines\_readonly
 		- [x] define module to process GSList
-	+ no pango\_layout\_get\_iter
-	+ no pango\_layout\_iter\_copy
-	+ no pango\_layout\_iter\_free
+	+ [x] pango\_layout\_get\_iter
+		- [x] define PangoLayoutIter s
+		- next define pango\_layout\_iter\_get\_run\_readonly
+	+ [ ] pango\_layout\_iter\_copy
+	+ [ ] pango\_layout\_iter\_free
 	+ ...
-	+ no pango\_layout\_iter\_get\_layout\_extents
+	+ [ ] pango\_layout\_iter\_get\_run\_readonly
+		- [ ] define PangoGlyphItem
+		- [ ] define type synonym PangoLayoutRun
+		- next define pango\_cairo\_show\_glyph\_item
+	+ ...
+	+ [ ] pango\_layout\_iter\_get\_layout\_extents
 	+ [ ] pango\_layout\_line\_ref
 	+ [ ] pango\_layout\_line\_unref
 	+ [x] pango\_layout\_line\_get\_extents
@@ -230,6 +237,8 @@ todo
 	+ no pango\_cairo\_context\_get\_shape\_renderer
 	+ [x] pango\_cairo\_create\_context
 	+ [ ] pango\_cairo\_update\_context
+	+ ...
+	+ [ ] pango\_cairo\_show\_glyph\_item
 	+ ...
 
 font description
