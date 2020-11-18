@@ -180,8 +180,9 @@ todo
 	+ [x] pango\_layout\_get\_line\_readonly
 		- [x] define PangoLayoutLine: this is readonly
 			* [x] whether or not to make PangoLayoutLine instance of Storable
-	+ [ ] pango\_layout\_get\_lines
+	+ no pango\_layout\_get\_lines
 	+ [ ] pango\_layout\_get\_lines\_readonly
+		- [x] define module to process GSList
 	+ no pango\_layout\_get\_iter
 	+ no pango\_layout\_iter\_copy
 	+ no pango\_layout\_iter\_free
@@ -314,3 +315,8 @@ packages
 * simple-pango-layout
 * simple-pango-cairo
 * simple-pango-types
+
+consider
+--------
+
+* to separate System.Glib.SinglyLinkedLists as simple-glib-linked-lists with System.Glib.DoublyLinkedLists

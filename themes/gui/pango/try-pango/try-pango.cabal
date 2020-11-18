@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7cf1f5196b63365fb4cf3209e707b114a573f065d93ab19de89c2457c62146d8
+-- hash: 99b93e27990801d21593886fc5c2420febf210f2b7a4b23bec4f147bd0cb22fb
 
 name:           try-pango
 version:        0.1.0.0
@@ -35,6 +35,7 @@ library
       Graphics.Pango.Types
       Graphics.Pango.Values
       Lib
+      System.Glib.SinglyLinkedLists
   other-modules:
       Paths_try_pango
   hs-source-dirs:
