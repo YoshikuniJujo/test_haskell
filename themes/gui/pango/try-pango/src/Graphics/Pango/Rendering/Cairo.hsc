@@ -29,3 +29,13 @@ pangoCairoShowGlyphItem :: PrimMonad m =>
 pangoCairoShowGlyphItem (CairoT fcr) txt (PangoGlyphItem fpgi) = unPrimIo
 	$ withForeignPtr fcr \cr -> withCString txt \ctxt -> withForeignPtr fpgi \pgi ->
 		c_pango_cairo_show_glyph_item cr ctxt pgi
+
+foreign import ccall "pango_cairo_show_layout_line"
+	c_pango_cairo_show_layout_line ::
+	Ptr (CairoT s) -> Ptr PangoLayoutLine -> IO()
+
+pangoCairoShowLayoutLine :: PrimMonad m =>
+	CairoT (PrimState m) -> PangoLayoutLine -> m ()
+pangoCairoShowLayoutLine (CairoT fcr) (PangoLayoutLine fpll) = unPrimIo
+	$ withForeignPtr fcr \cr -> withForeignPtr fpll \pll ->
+		c_pango_cairo_show_layout_line cr pll

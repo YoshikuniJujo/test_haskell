@@ -202,7 +202,8 @@ todo
 		- [x] define type synonym PangoLayoutRun
 		- next define pango\_cairo\_show\_glyph\_item
 	+ no pango\_layout\_iter\_get\_line
-	+ [ ] pango\_layout\_iter\_get\_line\_readonly
+	+ [x] pango\_layout\_iter\_get\_line\_readonly
+		- next pango\_cairo\_show\_layout\_line
 	+ [ ] pango\_layout\_iter\_get\_layout
 	+ [ ] pango\_layout\_iter\_get\_char\_extents
 	+ [ ] pango\_layout\_iter\_get\_cluster\_extents
@@ -254,6 +255,7 @@ todo
 	+ [ ] pango\_cairo\_update\_context
 	+ ...
 	+ [x] pango\_cairo\_show\_glyph\_item
+	+ [x] pango\_cairo\_show\_layout\_line
 	+ ...
 
 font description
