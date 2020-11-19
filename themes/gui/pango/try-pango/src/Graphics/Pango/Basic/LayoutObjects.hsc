@@ -309,6 +309,13 @@ pangoLayoutIterNextCluster :: PrimMonad m => PangoLayoutIter (PrimState m) -> m 
 pangoLayoutIterNextCluster (PangoLayoutIter fpli) = unPrimIo
 	$ gbooleanToBool <$> withForeignPtr fpli c_pango_layout_iter_next_cluster
 
+foreign import ccall "pango_layout_iter_next_line" c_pango_layout_iter_next_line ::
+	Ptr (PangoLayoutIter s) -> IO #type gboolean
+
+pangoLayoutIterNextLine :: PrimMonad m => PangoLayoutIter (PrimState m) -> m Bool
+pangoLayoutIterNextLine (PangoLayoutIter fpli) = unPrimIo
+	$ gbooleanToBool <$> withForeignPtr fpli c_pango_layout_iter_next_line
+
 foreign import ccall "pango_layout_iter_get_run_readonly" c_pango_layout_iter_get_run_readonly ::
 	Ptr (PangoLayoutIter s) -> IO (Ptr PangoLayoutRun)
 

@@ -191,6 +191,7 @@ main = do
 	print =<< pangoLayoutIterGetIndex itr2
 	pangoLayoutIterNextCluster itr2
 	print =<< pangoLayoutIterGetIndex itr2
+	pangoLayoutIterNextLine itr2
 	cairoMoveTo cr 100 770
 	pangoCairoShowGlyphItem cr someText =<< pangoLayoutIterGetRun itr2
 
