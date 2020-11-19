@@ -21,7 +21,8 @@ makePangoLayoutIo p = PangoLayoutIo <$> newForeignPtr p (c_g_object_unref p)
 
 newtype PangoLayout = PangoLayout (ForeignPtr PangoLayout) deriving Show
 
-makePangoLayout :: Ptr PangoLayout -> IO PangoLayout
+makePangoLayout0, makePangoLayout :: Ptr PangoLayout -> IO PangoLayout
+makePangoLayout0 p = PangoLayout <$> newForeignPtr p (pure ())
 makePangoLayout p = PangoLayout <$> newForeignPtr p (c_g_object_unref p)
 
 foreign import ccall "pango_layout_copy" c_pango_layout_freeze ::

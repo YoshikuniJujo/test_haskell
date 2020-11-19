@@ -324,6 +324,14 @@ pangoLayoutIterAtLastLine :: PrimMonad m =>
 pangoLayoutIterAtLastLine (PangoLayoutIter fpli) = unPrimIo
 	$ gbooleanToBool <$> withForeignPtr fpli c_pango_layout_iter_at_last_line
 
+foreign import ccall "pango_layout_iter_get_index" c_pango_layout_iter_get_index ::
+	Ptr (PangoLayoutIter s) -> IO #type int
+
+pangoLayoutIterGetIndex :: PrimMonad m =>
+	PangoLayoutIter (PrimState m) -> m #type int
+pangoLayoutIterGetIndex (PangoLayoutIter fpli) = unPrimIo
+	$ withForeignPtr fpli c_pango_layout_iter_get_index
+
 foreign import ccall "pango_layout_iter_get_baseline" c_pango_layout_iter_get_baseline ::
 	Ptr (PangoLayoutIter s) -> IO #type int
 
@@ -348,10 +356,10 @@ pangoLayoutIterGetLine :: PrimMonad m =>
 pangoLayoutIterGetLine (PangoLayoutIter fpli) = unPrimIo
 	$ makePangoLayoutLine0 =<< withForeignPtr fpli c_pango_layout_iter_get_line_readonly
 
-foreign import ccall "pango_layout_iter_get_index" c_pango_layout_iter_get_index ::
-	Ptr (PangoLayoutIter s) -> IO #type int
+foreign import ccall "pango_layout_iter_get_layout" c_pango_layout_iter_get_layout ::
+	Ptr (PangoLayoutIter s) -> IO (Ptr PangoLayout)
 
-pangoLayoutIterGetIndex :: PrimMonad m =>
-	PangoLayoutIter (PrimState m) -> m #type int
-pangoLayoutIterGetIndex (PangoLayoutIter fpli) = unPrimIo
-	$ withForeignPtr fpli c_pango_layout_iter_get_index
+pangoLayoutIterGetLayout :: PrimMonad m =>
+	PangoLayoutIter (PrimState m) -> m PangoLayout
+pangoLayoutIterGetLayout (PangoLayoutIter fpli) = unPrimIo
+	$ makePangoLayout0 =<< withForeignPtr fpli c_pango_layout_iter_get_layout
