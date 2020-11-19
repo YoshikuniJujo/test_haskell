@@ -403,3 +403,23 @@ pangoLayoutIterGetLineYrange (PangoLayoutIter fpli) = unPrimIo
 	$ withForeignPtr fpli \pli -> alloca \y0 -> alloca \y1 -> do
 		c_pango_layout_iter_get_line_yrange pli y0 y1
 		(,) <$> peek y0 <*> peek y1
+
+foreign import ccall "pango_layout_iter_get_line_extents" c_pango_layout_iter_get_line_extents ::
+	Ptr (PangoLayoutIter s) -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+
+pangoLayoutIterGetLineExtents :: PrimMonad m =>
+	PangoLayoutIter (PrimState m) -> m (PangoRectangle, PangoRectangle)
+pangoLayoutIterGetLineExtents (PangoLayoutIter fpli) = unPrimIo
+	$ withForeignPtr fpli \pli -> alloca \irct -> alloca \lrct -> do
+		c_pango_layout_iter_get_line_extents pli irct lrct
+		(,) <$> peek irct <*> peek lrct
+
+foreign import ccall "pango_layout_iter_get_layout_extents" c_pango_layout_iter_get_layout_extents ::
+	Ptr (PangoLayoutIter s) -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+
+pangoLayoutIterGetLayoutExtents :: PrimMonad m =>
+	PangoLayoutIter (PrimState m) -> m (PangoRectangle, PangoRectangle)
+pangoLayoutIterGetLayoutExtents (PangoLayoutIter fpli) = unPrimIo
+	$ withForeignPtr fpli \pli -> alloca \irct -> alloca \lrct -> do
+		c_pango_layout_iter_get_layout_extents pli irct lrct
+		(,) <$> peek irct <*> peek lrct
