@@ -320,9 +320,9 @@ foreign import ccall "pango_layout_iter_get_run_readonly" c_pango_layout_iter_ge
 	Ptr (PangoLayoutIter s) -> IO (Ptr PangoLayoutRun)
 
 pangoLayoutIterGetRun :: PrimMonad m =>
-	PangoLayoutIter (PrimState m) -> m PangoLayoutRun
+	PangoLayoutIter (PrimState m) -> m (Maybe PangoLayoutRun)
 pangoLayoutIterGetRun (PangoLayoutIter fpli) = unPrimIo
-	$ makePangoGlyphItem0 =<< withForeignPtr fpli c_pango_layout_iter_get_run_readonly
+	$ makePangoGlyphItemMaybe0 =<< withForeignPtr fpli c_pango_layout_iter_get_run_readonly
 
 foreign import ccall "pango_layout_iter_get_index" c_pango_layout_iter_get_index ::
 	Ptr (PangoLayoutIter s) -> IO #type int

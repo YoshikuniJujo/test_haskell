@@ -7,6 +7,7 @@ module Main where
 import Control.Monad
 import Control.Monad.ST
 import Data.Foldable
+import Data.Maybe
 import Data.Int
 import Text.Nowdoc
 import Codec.Picture
@@ -175,17 +176,17 @@ main = do
 
 	itr <- pangoLayoutGetIter fpl2
 	cairoMoveTo cr 100 740
-	pangoCairoShowGlyphItem cr someText =<< pangoLayoutIterGetRun itr
+	pangoCairoShowGlyphItem cr someText . fromJust =<< pangoLayoutIterGetRun itr
 	pangoLayoutIterNextRun itr
 	pangoLayoutIterNextChar itr
 	print =<< pangoLayoutIterGetIndex itr
 	pangoLayoutIterNextChar itr
 	print =<< pangoLayoutIterGetIndex itr
 	cairoMoveTo cr 200 740
-	pangoCairoShowGlyphItem cr someText =<< pangoLayoutIterGetRun itr
+	pangoCairoShowGlyphItem cr someText . fromJust =<< pangoLayoutIterGetRun itr
 	pangoLayoutIterNextRun itr
 	cairoMoveTo cr 300 740
-	pangoCairoShowGlyphItem cr someText =<< pangoLayoutIterGetRun itr
+	pangoCairoShowGlyphItem cr someText . fromJust =<< pangoLayoutIterGetRun itr
 
 	itr2 <- pangoLayoutGetIter fpl2
 	print =<< pangoLayoutIterGetIndex itr2
@@ -193,7 +194,7 @@ main = do
 	print =<< pangoLayoutIterGetIndex itr2
 	pangoLayoutIterNextLine itr2
 	cairoMoveTo cr 100 770
-	pangoCairoShowGlyphItem cr someText =<< pangoLayoutIterGetRun itr2
+	pangoCairoShowGlyphItem cr someText . fromJust =<< pangoLayoutIterGetRun itr2
 
 	void $ writeDynamicPng "tmp3.png" =<< cairoImageSurfaceGetImage s
 
