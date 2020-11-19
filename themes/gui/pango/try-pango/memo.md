@@ -263,7 +263,7 @@ todo
 	+ no pango\_cairo\_glyph\_string\_path
 	+ [x] pango\_cairo\_layout\_line\_path
 	+ [x] pango\_cairo\_layout\_path
-	+ [ ] pango\_cairo\_error\_underline\_path
+	+ [x] pango\_cairo\_error\_underline\_path
 
 font description
 ----------------
