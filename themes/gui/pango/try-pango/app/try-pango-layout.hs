@@ -24,8 +24,6 @@ import Graphics.Pango.Rendering.Cairo
 import Graphics.Pango.Types
 import Graphics.Pango.Values
 
-import Lib
-
 main :: IO ()
 main = do
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 900 900

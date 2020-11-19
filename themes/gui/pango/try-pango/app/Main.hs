@@ -16,7 +16,7 @@ import Graphics.Pango.Basic.Fonts
 import Graphics.Pango.Basic.LayoutObjects
 import Graphics.Pango.Types
 import Graphics.Pango.Values
-import Lib
+import Graphics.Pango.Rendering.Cairo
 
 main :: IO ()
 main = do
