@@ -393,3 +393,13 @@ pangoLayoutIterGetRunExtents (PangoLayoutIter fpli) = unPrimIo
 	$ withForeignPtr fpli \pli -> alloca \irct -> alloca \lrct -> do
 		c_pango_layout_iter_get_run_extents pli irct lrct
 		(,) <$> peek irct <*> peek lrct
+
+foreign import ccall "pango_layout_iter_get_line_yrange" c_pango_layout_iter_get_line_yrange ::
+	Ptr (PangoLayoutIter s) -> Ptr #{type int} -> Ptr #{type int} -> IO ()
+
+pangoLayoutIterGetLineYrange :: PrimMonad m =>
+	PangoLayoutIter (PrimState m) -> m (#{type int}, #{type int})
+pangoLayoutIterGetLineYrange (PangoLayoutIter fpli) = unPrimIo
+	$ withForeignPtr fpli \pli -> alloca \y0 -> alloca \y1 -> do
+		c_pango_layout_iter_get_line_yrange pli y0 y1
+		(,) <$> peek y0 <*> peek y1

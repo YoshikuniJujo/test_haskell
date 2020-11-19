@@ -208,7 +208,7 @@ todo
 	+ [x] pango\_layout\_iter\_get\_char\_extents
 	+ [x] pango\_layout\_iter\_get\_cluster\_extents
 	+ [x] pango\_layout\_iter\_get\_run\_extents
-	+ [ ] pango\_layout\_iter\_get\_line\_yrange
+	+ [x] pango\_layout\_iter\_get\_line\_yrange
 	+ [ ] pango\_layout\_iter\_get\_line\_extents
 	+ [ ] pango\_layout\_iter\_get\_layout\_extents
 	+ [ ] pango\_layout\_line\_ref
