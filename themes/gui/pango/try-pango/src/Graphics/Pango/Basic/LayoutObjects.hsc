@@ -383,3 +383,13 @@ pangoLayoutIterGetClusterExtents (PangoLayoutIter fpli) = unPrimIo
 	$ withForeignPtr fpli \pli -> alloca \irct -> alloca \lrct -> do
 		c_pango_layout_iter_get_cluster_extents pli irct lrct
 		(,) <$> peek irct <*> peek lrct
+
+foreign import ccall "pango_layout_iter_get_run_extents" c_pango_layout_iter_get_run_extents ::
+	Ptr (PangoLayoutIter s) -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+
+pangoLayoutIterGetRunExtents :: PrimMonad m =>
+	PangoLayoutIter (PrimState m) -> m (PangoRectangle, PangoRectangle)
+pangoLayoutIterGetRunExtents (PangoLayoutIter fpli) = unPrimIo
+	$ withForeignPtr fpli \pli -> alloca \irct -> alloca \lrct -> do
+		c_pango_layout_iter_get_run_extents pli irct lrct
+		(,) <$> peek irct <*> peek lrct

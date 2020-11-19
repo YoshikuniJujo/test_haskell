@@ -199,6 +199,7 @@ main = do
 	pangoCairoShowLayoutLine cr =<< pangoLayoutIterGetLine itr2
 	print =<< pangoLayoutIterGetCharExtents itr2
 	print =<< pangoLayoutIterGetClusterExtents itr2
+	print =<< pangoLayoutIterGetRunExtents itr2
 
 	void $ writeDynamicPng "tmp3.png" =<< cairoImageSurfaceGetImage s
 
