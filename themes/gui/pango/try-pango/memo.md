@@ -215,7 +215,7 @@ todo
 	+ [ ] pango\_layout\_line\_unref
 	+ [x] pango\_layout\_line\_get\_extents
 	+ [x] pango\_layout\_line\_get\_pixel\_extents
-	+ [ ] pango\_layout\_line\_index\_to\_x
+	+ [x] pango\_layout\_line\_index\_to\_x
 	+ [ ] pango\_layout\_line\_x\_to\_index
 	+ [ ] pango\_layout\_line\_get\_x\_ranges
 	+ [ ] pango\_layout\_line\_get\_height
