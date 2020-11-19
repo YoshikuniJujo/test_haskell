@@ -252,9 +252,9 @@ todo
 	+ no pango\_cairo\_context\_set\_shape\_renderer
 	+ no pango\_cairo\_context\_get\_shape\_renderer
 	+ [x] pango\_cairo\_create\_context
-	+ [ ] pango\_cairo\_update\_context
+	+ [x] pango\_cairo\_update\_context
 	+ [x] pango\_cairo\_create\_layout
-	+ [ ] pango\_cairo\_update\_layout
+	+ [x] pango\_cairo\_update\_layout
 	+ no pango\_cairo\_show\_glyph\_string
 	+ [x] pango\_cairo\_show\_glyph\_item
 	+ [x] pango\_cairo\_show\_layout\_line

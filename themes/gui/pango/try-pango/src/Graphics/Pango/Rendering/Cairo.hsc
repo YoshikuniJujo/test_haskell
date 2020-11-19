@@ -20,12 +20,28 @@ pangoCairoCreateContext :: CairoT RealWorld -> IO PangoContext
 pangoCairoCreateContext (CairoT fcr) = withForeignPtr fcr \cr ->
 	makePangoContext =<< c_pango_cairo_create_context cr
 
+foreign import ccall "pango_cairo_update_context"
+	c_pango_cairo_update_context :: Ptr (CairoT s) -> Ptr PangoContext -> IO ()
+
+pangoCairoUpdateContext :: CairoT s -> PangoContext -> IO ()
+pangoCairoUpdateContext (CairoT fcr) (PangoContext fpc) =
+	withForeignPtr fcr \cr -> withForeignPtr fpc \pc ->
+		c_pango_cairo_update_context cr pc
+
 foreign import ccall "pango_cairo_create_layout" c_pango_cairo_create_layout ::
 	Ptr (CairoT s) -> IO (Ptr PangoLayoutIo)
 
 pangoCairoCreateLayout :: CairoT s -> IO PangoLayoutIo
 pangoCairoCreateLayout (CairoT fcr) =
 	withForeignPtr fcr \cr -> makePangoLayoutIo =<< c_pango_cairo_create_layout cr
+
+foreign import ccall "pango_cairo_update_layout" c_pango_cairo_update_layout ::
+	Ptr (CairoT s) -> Ptr PangoLayoutIo -> IO ()
+
+pangoCairoUpdateLayout :: CairoT s -> PangoLayoutIo -> IO ()
+pangoCairoUpdateLayout (CairoT fcr) (PangoLayoutIo fpl) =
+	withForeignPtr fcr \cr -> withForeignPtr fpl \pl ->
+		c_pango_cairo_update_layout cr pl
 
 foreign import ccall "pango_cairo_show_glyph_item"
 	c_pango_cairo_show_glyph_item ::
