@@ -187,6 +187,13 @@ main = do
 	cairoMoveTo cr 300 740
 	pangoCairoShowGlyphItem cr someText =<< pangoLayoutIterGetRun itr
 
+	itr2 <- pangoLayoutGetIter fpl2
+	print =<< pangoLayoutIterGetIndex itr2
+	pangoLayoutIterNextCluster itr2
+	print =<< pangoLayoutIterGetIndex itr2
+	cairoMoveTo cr 100 770
+	pangoCairoShowGlyphItem cr someText =<< pangoLayoutIterGetRun itr2
+
 	void $ writeDynamicPng "tmp3.png" =<< cairoImageSurfaceGetImage s
 
 someText :: String

@@ -191,7 +191,7 @@ todo
 	+ [x] pango\_layout\_iter\_next\_run
 	+ [x] pango\_layout\_iter\_next\_char
 		- next pango\_layout\_iter\_get\_char\_extents
-	+ [ ] pango\_layout\_iter\_next\_cluster
+	+ [x] pango\_layout\_iter\_next\_cluster
 	+ [ ] pango\_layout\_iter\_next\_line
 	+ [ ] pango\_layout\_iter\_at\_last\_line
 	+ [x] pango\_layout\_iter\_get\_index
