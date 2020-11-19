@@ -87,3 +87,12 @@ pangoCairoLayoutLinePath :: PrimMonad m =>
 pangoCairoLayoutLinePath (CairoT fcr) (PangoLayoutLine fpll) = unPrimIo
 	$ withForeignPtr fcr \cr -> withForeignPtr fpll \pll ->
 		c_pango_cairo_layout_line_path cr pll
+
+foreign import ccall "pango_cairo_layout_path" c_pango_cairo_layout_path ::
+	Ptr (CairoT s) -> Ptr PangoLayout -> IO ()
+
+pangoCairoLayoutPath :: PrimMonad m =>
+	CairoT (PrimState m) -> PangoLayout -> m ()
+pangoCairoLayoutPath (CairoT fcr) (PangoLayout fpl) = unPrimIo
+	$ withForeignPtr fcr \cr -> withForeignPtr fpl \pl ->
+		c_pango_cairo_layout_path cr pl
