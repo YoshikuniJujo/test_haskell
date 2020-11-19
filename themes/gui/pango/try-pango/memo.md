@@ -195,7 +195,7 @@ todo
 	+ [x] pango\_layout\_iter\_next\_line
 	+ [x] pango\_layout\_iter\_at\_last\_line
 	+ [x] pango\_layout\_iter\_get\_index
-	+ [ ] pango\_layout\_iter\_get\_baseline
+	+ [x] pango\_layout\_iter\_get\_baseline
 	+ no pango\_layout\_iter\_get\_run
 	+ [x] pango\_layout\_iter\_get\_run\_readonly
 		- [x] define PangoGlyphItem

@@ -324,6 +324,14 @@ pangoLayoutIterAtLastLine :: PrimMonad m =>
 pangoLayoutIterAtLastLine (PangoLayoutIter fpli) = unPrimIo
 	$ gbooleanToBool <$> withForeignPtr fpli c_pango_layout_iter_at_last_line
 
+foreign import ccall "pango_layout_iter_get_baseline" c_pango_layout_iter_get_baseline ::
+	Ptr (PangoLayoutIter s) -> IO #type int
+
+pangoLayoutIterGetBaseline :: PrimMonad m =>
+	PangoLayoutIter (PrimState m) -> m #type int
+pangoLayoutIterGetBaseline (PangoLayoutIter fpli) = unPrimIo
+	$ withForeignPtr fpli c_pango_layout_iter_get_baseline
+
 foreign import ccall "pango_layout_iter_get_run_readonly" c_pango_layout_iter_get_run_readonly ::
 	Ptr (PangoLayoutIter s) -> IO (Ptr PangoLayoutRun)
 
