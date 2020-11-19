@@ -259,7 +259,7 @@ todo
 	+ [x] pango\_cairo\_show\_glyph\_item
 	+ [x] pango\_cairo\_show\_layout\_line
 	+ [x] pango\_cairo\_show\_layout
-	+ [ ] pango\_cairo\_show\_error\_underline
+	+ [x] pango\_cairo\_show\_error\_underline
 	+ no pango\_cairo\_glyph\_string\_path
 	+ [ ] pango\_cairo\_layout\_line\_path
 	+ [ ] pango\_cairo\_layout\_path

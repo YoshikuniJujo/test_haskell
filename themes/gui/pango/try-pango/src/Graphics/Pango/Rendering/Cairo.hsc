@@ -70,3 +70,11 @@ pangoCairoShowLayout :: PrimMonad m => CairoT (PrimState m) -> PangoLayout -> m 
 pangoCairoShowLayout (CairoT fcr) (PangoLayout fpl) = unPrimIo
 	$ withForeignPtr fcr \cr -> withForeignPtr fpl \pl ->
 		c_pango_cairo_show_layout cr pl
+
+foreign import ccall "pango_cairo_show_error_underline" c_pango_cairo_show_error_underline ::
+	Ptr (CairoT s) -> #{type double} -> #{type double} -> #{type double} -> #{type double} -> IO ()
+
+pangoCairoShowErrorUnderline :: PrimMonad m =>
+	CairoT (PrimState m) -> #{type double} -> #{type double} -> #{type double} -> #{type double} -> m ()
+pangoCairoShowErrorUnderline (CairoT fcr) x y w h = unPrimIo
+	$ withForeignPtr fcr \cr -> c_pango_cairo_show_error_underline cr x y w h
