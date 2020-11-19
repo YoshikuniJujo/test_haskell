@@ -363,3 +363,23 @@ pangoLayoutIterGetLayout :: PrimMonad m =>
 	PangoLayoutIter (PrimState m) -> m PangoLayout
 pangoLayoutIterGetLayout (PangoLayoutIter fpli) = unPrimIo
 	$ makePangoLayout0 =<< withForeignPtr fpli c_pango_layout_iter_get_layout
+
+foreign import ccall "pango_layout_iter_get_char_extents" c_pango_layout_iter_get_char_extents ::
+	Ptr (PangoLayoutIter s) -> Ptr PangoRectangle -> IO ()
+
+pangoLayoutIterGetCharExtents :: PrimMonad m =>
+	PangoLayoutIter (PrimState m) -> m PangoRectangle
+pangoLayoutIterGetCharExtents (PangoLayoutIter fpli) = unPrimIo
+	$ withForeignPtr fpli \pli -> alloca \rct -> do
+		c_pango_layout_iter_get_char_extents pli rct
+		peek rct
+
+foreign import ccall "pango_layout_iter_get_cluster_extents" c_pango_layout_iter_get_cluster_extents ::
+	Ptr (PangoLayoutIter s) -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+
+pangoLayoutIterGetClusterExtents :: PrimMonad m =>
+	PangoLayoutIter (PrimState m) -> m (PangoRectangle, PangoRectangle)
+pangoLayoutIterGetClusterExtents (PangoLayoutIter fpli) = unPrimIo
+	$ withForeignPtr fpli \pli -> alloca \irct -> alloca \lrct -> do
+		c_pango_layout_iter_get_cluster_extents pli irct lrct
+		(,) <$> peek irct <*> peek lrct
