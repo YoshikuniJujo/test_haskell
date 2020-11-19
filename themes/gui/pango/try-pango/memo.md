@@ -218,7 +218,7 @@ todo
 	+ [x] pango\_layout\_line\_index\_to\_x
 	+ [x] pango\_layout\_line\_x\_to\_index
 	+ [x] pango\_layout\_line\_get\_x\_ranges
-	+ [ ] pango\_layout\_line\_get\_height
+	+ [ ] wait until 1.44: pango\_layout\_line\_get\_height
 * [x] define function of Tab Stops
 	+ [x] pango\_tab\_array\_new
 	+ no pango\_tab\_array\_new\_with\_potisions

@@ -454,3 +454,14 @@ pangoLayoutLineGetXRanges (PangoLayoutLine fpll) st ed = unsafePerformIO
 		rngs <- peek prngs
 		n <- peek pn
 		peekArray (fromIntegral $ 2 * n) rngs <* c_g_free rngs
+
+{-
+foreign import ccall "pango_layout_line_get_height" c_pango_layout_line_get_height ::
+	Ptr PangoLayoutLine -> Ptr #{type int} -> IO ()
+
+pangoLayoutLineGetHeight :: PangoLayoutLine -> #{type int}
+pangoLayoutLineGetHeight (PangoLayoutLine fpll) = unsafePerformIO
+	$ withForeignPtr fpll \pll -> alloca \h -> do
+		c_pango_layout_line_get_height pll h
+		peek h
+		-}
