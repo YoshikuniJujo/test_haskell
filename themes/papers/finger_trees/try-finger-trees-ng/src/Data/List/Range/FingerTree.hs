@@ -100,3 +100,9 @@ deepL NilL m sf = case viewL m of
 	ConsL a m' -> Deep (nodeToDigitL a) m' sf
 deepL (a :.. pr) m sf = Deep (loosenL $ a :. pr) m sf
 deepL _ _ _ = error "never occur"
+
+isEmpty :: FingerTree a -> Bool
+isEmpty x = case viewL x of NL -> True; ConsL _ _ -> False
+
+uncons :: FingerTree a -> Maybe (a, FingerTree a)
+uncons x = case viewL x of NL -> Nothing; ConsL a x' -> Just (a, x')
