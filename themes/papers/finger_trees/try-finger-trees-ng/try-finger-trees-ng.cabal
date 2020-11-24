@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1a85820b4bcad7215e5eefb3853508c327bf02ff5650462ed4c83465847a89db
+-- hash: 506ca13c124754065448969a54222067eb9dde897d98d6768045637d8da4f0da
 
 name:           try-finger-trees-ng
 version:        0.1.0.0
@@ -28,7 +28,10 @@ source-repository head
 library
   exposed-modules:
       Data.List.Range
+      Data.List.Range.FingerTree
       Data.List.Range.SimpleSequence
+      Data.List.RangeL
+      Data.List.RangeR
       Lib
   other-modules:
       Paths_try_finger_trees_ng
