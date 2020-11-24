@@ -106,3 +106,7 @@ isEmpty x = case viewL x of NL -> True; ConsL _ _ -> False
 
 uncons :: FingerTree a -> Maybe (a, FingerTree a)
 uncons x = case viewL x of NL -> Nothing; ConsL a x' -> Just (a, x')
+
+-- data ViewR s a = NR | ConsR (s a) a deriving Show
+
+-- viewR :: FingerTree a -> ViewR FingerTree a
