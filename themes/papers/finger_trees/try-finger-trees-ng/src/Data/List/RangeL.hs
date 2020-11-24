@@ -1,7 +1,8 @@
 {-# LANGUAGE DataKinds, KindSignatures, TypeOperators #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances,
+	UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.List.RangeL where
@@ -38,3 +39,40 @@ instance {-# OVERLAPPABLE #-}
 	foldr _ _ _ = error "never occur"
 	foldl (>-) z (x :. xs) = foldl (>-) (z >- x) xs
 	foldl _ _ _ = error "never occur"
+
+class LoosenLMin n m n' where loosenLMin :: RangeL n m a -> RangeL n' m a
+
+instance LoosenLMin 0 m 0 where
+	loosenLMin NilL = NilL
+	loosenLMin xa@(_ :.. _) = xa
+	loosenLMin _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	(1 <= m, LoosenLMin (n - 1) (m - 1) 0) => LoosenLMin n m 0 where
+	loosenLMin (x :. xs) = x :.. loosenLMin xs
+	loosenLMin _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	LoosenLMin (n - 1) (m - 1) (n' - 1) => LoosenLMin n m n' where
+	loosenLMin (x :. xs) = x :. loosenLMin xs
+	loosenLMin _ = error "never occur"
+
+class LoosenLMax n m m' where loosenLMax :: RangeL n m a -> RangeL n m' a
+
+instance LoosenLMax 0 0 m where
+	loosenLMax NilL = NilL
+	loosenLMax _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	(1 <= m', LoosenLMax 0 (m - 1) (m' - 1)) => LoosenLMax 0 m m' where
+	loosenLMax NilL = NilL
+	loosenLMax (x :.. xs) = x :.. loosenLMax xs
+	loosenLMax _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	LoosenLMax (n - 1) (m - 1) (m' - 1) => LoosenLMax n m m' where
+	loosenLMax (x :. xs) = x :. loosenLMax xs
+	loosenLMax _ = error "never occur"
+
+loosenL :: (LoosenLMin n m n', LoosenLMax n' m m') => RangeL n m a -> RangeL n' m' a
+loosenL = loosenLMax . loosenLMin
