@@ -83,3 +83,20 @@ Deep pr m sf |> a = case sf ||> a of
 
 toTree :: Foldable t => t a -> FingerTree a
 toTree = (<|. Empty)
+
+data ViewL s a = NL | ConsL a (s a) deriving Show
+
+viewL :: FingerTree a -> ViewL FingerTree a
+viewL Empty = NL
+viewL (Single x) = ConsL x Empty
+viewL (Deep (a :. pr') m sf) = ConsL a $ deepL pr' m sf
+
+nodeToDigitL :: Node a -> DigitL a
+nodeToDigitL = loosenL
+
+deepL :: RangeL 0 3 a -> FingerTree (Node a) -> DigitR a -> FingerTree a
+deepL NilL m sf = case viewL m of
+	NL -> toTree sf
+	ConsL a m' -> Deep (nodeToDigitL a) m' sf
+deepL (a :.. pr) m sf = Deep (loosenL $ a :. pr) m sf
+deepL _ _ _ = error "never occur"
