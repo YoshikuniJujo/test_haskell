@@ -61,3 +61,25 @@ a <| Deep pr m sf = case a <|| pr of
 
 (<|.) :: Foldable t => t a -> FingerTree a -> FingerTree a
 (<|.) = reducer (<|)
+
+infixl 5 ||>, |>, |>.
+
+(||>) :: DigitR a -> a -> Either (DigitR a) (Node a, DigitR a)
+NilR :+ a ||> b = Left $ NilR :++ a :+ b
+NilR :++ a :+ b ||> c = Left $ NilR :++ a :++ b :+ c
+NilR :++ a :++ b :+ c ||> d = Left $ NilR :++ a :++ b :++ c :+ d
+NilR :++ a :++ b :++ c :+ d ||> e = Right (a :. b :. c :.. NilL, NilR :++ d :+ e)
+_ ||> _ = error "never occur"
+
+(|>) :: FingerTree a -> a -> FingerTree a
+Empty |> a = Single a
+Single a |> b = Deep (a :. NilL) Empty (NilR :+ b)
+Deep pr m sf |> a = case sf ||> a of
+	Left sf' -> Deep pr m sf'
+	Right (n3, sf') -> Deep pr (m |> n3) sf'
+
+(|>.) :: Foldable t => FingerTree a -> t a -> FingerTree a
+(|>.) = reducel (|>)
+
+toTree :: Foldable t => t a -> FingerTree a
+toTree = (<|. Empty)
