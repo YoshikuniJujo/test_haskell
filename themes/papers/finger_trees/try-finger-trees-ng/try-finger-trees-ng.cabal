@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 110a402d5a3ceec65221a789b573ebb1e204315871dbdc744e170ba092db90fd
+-- hash: c4ef3b45287519dd1be840392dd0a8a8a78b5acee4e6aa798083d1c8464882c1
 
 name:           try-finger-trees-ng
 version:        0.1.0.0
@@ -38,6 +38,8 @@ library
       Expression
       Geq
       Given
+      New.Expression
+      New.TypeCheck.Nat.Decode
       TypeCheck.Nat
       TypeCheck.Nat.CanDeriveCt2
       TypeCheck.Nat.Common
