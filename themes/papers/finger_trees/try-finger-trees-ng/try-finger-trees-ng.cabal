@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c0fe63aed0a0b02f9511c02e7795bb1d404c55fff35b765518637f0784b7997d
+-- hash: 5d7757c8072680567e5a784322c589f17f0ef4892c97473f3a05f429cbd687fa
 
 name:           try-finger-trees-ng
 version:        0.1.0.0
@@ -38,7 +38,6 @@ library
       Expression
       Geq
       Given
-      Lib
       TypeCheck.Nat
       TypeCheck.Nat.Orphans
   other-modules:
