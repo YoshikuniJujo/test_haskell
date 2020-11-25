@@ -3,7 +3,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances,
 	UndecidableInstances #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=TypeCheck.Nat #-}
 
 module Data.List.Range (
 	module Data.List.RangeL,
@@ -24,7 +24,6 @@ instance LeftToRight 0 m 0 0 where
 instance {-# OVERLAPPABLE #-} LeftToRight n m 0 0 where
 	leftToRightGen r _ = r
 
-{-
 instance {-# OVERLAPPABLE #-}
 	(1 <= m + 1, 1 <= m + m', LoosenRMax 0 m (m + m'), LeftToRight 0 (m + 1) 0 (m' - 1)) =>
 	LeftToRight 0 m 0 m' where
@@ -32,4 +31,3 @@ instance {-# OVERLAPPABLE #-}
 	leftToRightGen r NilL = loosenRMax r :: RangeR 0 (m + m') a
 	leftToRightGen r (x :.. xs) = leftToRightGen (r :++ x :: RangeR 0 (m + 1) a) xs
 	leftToRightGen _ _ = error "never occur"
-	-}
