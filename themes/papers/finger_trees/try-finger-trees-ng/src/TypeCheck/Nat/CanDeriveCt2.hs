@@ -91,7 +91,6 @@ typesToGeq t1 t2 | isTrue t2 = do
 	isTrue (TyConApp tc []) = tc == promotedTrueDataCon
 	isTrue _ = False
 typesToGeq _ _ = Left "typesToGeq: not true"
-
 	
 getLeq :: Type -> Either String (Expression Integer Var, Expression Integer Var)
 getLeq (TyConApp tc [t1, t2])
