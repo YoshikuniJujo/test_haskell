@@ -8,6 +8,7 @@ module New.Trial.Hello where
 import GHC.TypeLits
 import Data.Proxy
 
+{-
 some :: Proxy (m + 1) -> Proxy (n - 1)
 some = id
 
@@ -19,3 +20,4 @@ boo = Proxy
 
 foo :: Proxy (n :: Nat)
 foo = boo
+-}
