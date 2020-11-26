@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b3815f3da822205c4e3d529f646f0e34a110db15fb1ecc8d7aa30ef0ce88bab3
+-- hash: 7fc7fa22a058bb626c3fa5a17583f047db37668d3da6ca6401e018ef9e1267c0
 
 name:           try-finger-trees-ng
 version:        0.1.0.0
@@ -39,6 +39,7 @@ library
       Geq
       Given
       New.Expression
+      New.Polynominal
       New.Trial.ExpParser
       New.Trial.Hello
       New.TypeCheck.Nat
@@ -53,6 +54,7 @@ library
       src
   build-depends:
       base >=4.7 && <5
+    , containers
     , ghc
   default-language: Haskell2010
 
@@ -65,6 +67,7 @@ executable try-finger-trees-ng-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , containers
     , ghc
     , try-finger-trees-ng
   default-language: Haskell2010
@@ -79,6 +82,7 @@ test-suite try-finger-trees-ng-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , containers
     , ghc
     , try-finger-trees-ng
   default-language: Haskell2010
