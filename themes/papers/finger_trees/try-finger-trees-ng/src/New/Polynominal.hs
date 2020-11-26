@@ -34,20 +34,20 @@ data Zero v
 
 type VarBool v = Map v Bool
 
-termToVarBoolInit :: Ord v => [Exp v Bool] -> ([(v, v)], VarBool v)
-termToVarBoolInit [] = ([], empty)
-termToVarBoolInit (Var v1 :== Var v2 : es) = ((v1, v2) :) `first` termToVarBoolInit es
-termToVarBoolInit (Var v1 :== Bool b2 : es) = insert v1 b2 `second` termToVarBoolInit es
-termToVarBoolInit (Bool b1 :== Var v2 : es) = insert v2 b1 `second` termToVarBoolInit es
-termToVarBoolInit (_ : es) = termToVarBoolInit es
+expToVarBoolInit :: Ord v => [Exp v Bool] -> ([(v, v)], VarBool v)
+expToVarBoolInit [] = ([], empty)
+expToVarBoolInit (Var v1 :== Var v2 : es) = ((v1, v2) :) `first` expToVarBoolInit es
+expToVarBoolInit (Var v1 :== Bool b2 : es) = insert v1 b2 `second` expToVarBoolInit es
+expToVarBoolInit (Bool b1 :== Var v2 : es) = insert v2 b1 `second` expToVarBoolInit es
+expToVarBoolInit (_ : es) = expToVarBoolInit es
 
-termToVarBoolStep :: Ord v => [(v, v)] -> VarBool v -> ([(v, v)], VarBool v)
-termToVarBoolStep [] vb = ([], vb)
-termToVarBoolStep ((v1, v2) : vs) vb = case vb !? v1 of
-	Just b -> termToVarBoolStep vs (insert v2 b vb)
+expToVarBoolStep :: Ord v => [(v, v)] -> VarBool v -> ([(v, v)], VarBool v)
+expToVarBoolStep [] vb = ([], vb)
+expToVarBoolStep ((v1, v2) : vs) vb = case vb !? v1 of
+	Just b -> expToVarBoolStep vs (insert v2 b vb)
 	Nothing -> case vb !? v2 of
-		Just b -> termToVarBoolStep vs (insert v1 b vb)
-		Nothing -> ((v1, v2) :) `first` termToVarBoolStep vs vb
+		Just b -> expToVarBoolStep vs (insert v1 b vb)
+		Nothing -> ((v1, v2) :) `first` expToVarBoolStep vs vb
 
 untilFixed :: Eq a => (a -> a) -> a -> a
 untilFixed f x = fst . fromJust . find (uncurry (==)) $ zip xs (tail xs)
@@ -62,5 +62,5 @@ sampleExpVarBool = [
 	Bool True :== Var "piyo"
 	]
 
-termToVarBool :: Ord v => [Exp v Bool] -> VarBool v
-termToVarBool = snd . untilFixed (uncurry termToVarBoolStep) . termToVarBoolInit
+expToVarBool :: Ord v => [Exp v Bool] -> VarBool v
+expToVarBool = snd . untilFixed (uncurry expToVarBoolStep) . expToVarBoolInit
