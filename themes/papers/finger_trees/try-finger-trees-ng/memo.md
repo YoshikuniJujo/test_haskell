@@ -18,3 +18,8 @@ make new TypeCheck
 	+ [x] make smart constructor of Zero
 	+ [x] export only smart constructor
 	+ [x] use smart constructor
+* [x] define removeVar
+	+ `removeVar :: Zero v -> Zero v -> v -> [Zero v]`
+* [x] define containVar
+* [ ] make module Given
+* [ ] make module Derive
