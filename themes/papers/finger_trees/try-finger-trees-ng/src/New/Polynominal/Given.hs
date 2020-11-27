@@ -6,6 +6,8 @@ import Control.Arrow
 import Data.Either
 import Data.List
 
+import New.Expression
+import New.Polynominal
 import New.Polynominal.Zero hiding (removeVar)
 import qualified New.Polynominal.Zero as Z
 
@@ -13,6 +15,11 @@ newtype Given v = Given [Zero v] deriving Show
 
 given :: Ord v => [Zero v] -> Given v
 given = Given . nub . sort
+
+expsToGiven :: Ord v => [Exp v Bool] -> Maybe (Given v)
+expsToGiven es = do
+	given <$> (\e -> eqToZero e True vb) `mapM` es
+	where vb = expToVarBool es
 
 removeVarInit :: Ord v => Given v -> v -> ([Zero v], [Zero v])
 removeVarInit (Given zs) v = partition (`doesContainVar` v) zs
