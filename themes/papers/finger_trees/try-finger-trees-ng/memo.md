@@ -31,13 +31,15 @@ make new TypeCheck
 		- [x] define removeVarStep
 		- [x] define removeVar
 	+ [x] define removeVars
-	+ [ ] define `containVars :: Given v -> [v]`
+	+ [x] define `containVars :: Given v -> [v]`
 	+ [x] define `expsToGiven :: [Exp v Bool] -> Given v`
 		- use expToVarBool
 	+ [x] define `givenToZeros :: Given v -> [Zero v]`
+	+ [ ] make export list
 * [ ] make module Wanted
 	+ [x] define `expToWanted :: Exp v Bool -> Wanted v`
 	+ [x] define `wantedToZero :: Wanted v -> Zero v`
-	+ [ ] define `containVars :: Wanted v -> [v]`
+	+ [x] define `containVars :: Wanted v -> [v]`
+	+ [ ] make export list
 * [ ] make module Derive
 	+ [ ] define `canDerive :: Given v -> Wanted v -> Bool`

@@ -8,7 +8,7 @@ import Data.List
 
 import New.Expression
 import New.Polynominal
-import New.Polynominal.Zero hiding (removeVar)
+import New.Polynominal.Zero hiding (removeVar, containVars)
 import qualified New.Polynominal.Zero as Z
 
 newtype Given v = Given [Zero v] deriving Show
@@ -23,6 +23,9 @@ expsToGiven es = do
 
 givenToZeros :: Given v -> [Zero v]
 givenToZeros (Given zs) = zs
+
+containVars :: Ord v => Given v -> [v]
+containVars = nub . sort . concat . (Z.containVars <$>) . givenToZeros
 
 removeVarInit :: Ord v => Given v -> v -> ([Zero v], [Zero v])
 removeVarInit (Given zs) v = partition (`doesContainVar` v) zs
