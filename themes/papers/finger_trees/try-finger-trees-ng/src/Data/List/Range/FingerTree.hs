@@ -107,9 +107,19 @@ isEmpty x = case viewL x of NL -> True; ConsL _ _ -> False
 uncons :: FingerTree a -> Maybe (a, FingerTree a)
 uncons x = case viewL x of NL -> Nothing; ConsL a x' -> Just (a, x')
 
--- data ViewR s a = NR | ConsR (s a) a deriving Show
+data ViewR s a = NR | ConsR (s a) a deriving Show
 
--- viewR :: FingerTree a -> ViewR FingerTree a
+viewR :: FingerTree a -> ViewR FingerTree a
+viewR Empty = NR
+viewR (Single x) = ConsR Empty x
+viewR (Deep pr m (sf' :+ a)) = ConsR (deepR pr m sf') a
+
+deepR :: DigitL a -> FingerTree (Node a) -> RangeR 0 3 a -> FingerTree a
+deepR pr m NilR = case viewR m of
+	NR -> toTree pr
+	ConsR m' a -> Deep pr m' (nodeToDigitR a)
+deepR pr m (sf :++ a) = Deep pr m (loosenR $ sf :+ a)
+deepR _ _ _ = error "never occur"
 
 nodeToDigitR :: Node a -> DigitR a
 nodeToDigitR = loosenR . leftToRight
