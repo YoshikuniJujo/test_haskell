@@ -21,5 +21,9 @@ make new TypeCheck
 * [x] define removeVar
 	+ `removeVar :: Zero v -> Zero v -> v -> [Zero v]`
 * [x] define containVar
+	+ [ ] rename to doesContainVar
+* [ ] define containVars
 * [ ] make module Given
+	+ [x] make empty module
+	+ [ ] others
 * [ ] make module Derive
