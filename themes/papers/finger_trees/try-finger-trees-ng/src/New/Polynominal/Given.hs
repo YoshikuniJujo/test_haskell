@@ -3,6 +3,7 @@
 module New.Polynominal.Given where
 
 import Control.Arrow
+import Data.Maybe
 import Data.Either
 import Data.List
 
@@ -16,9 +17,8 @@ newtype Given v = Given [Zero v] deriving Show
 given :: Ord v => [Zero v] -> Given v
 given = Given . nub . sort
 
-expsToGiven :: Ord v => [Exp v Bool] -> Maybe (Given v)
-expsToGiven es = do
-	given <$> (\e -> eqToZero e True vb) `mapM` es
+expsToGiven :: Ord v => [Exp v Bool] -> Given v
+expsToGiven es = given . catMaybes $ (\e -> eqToZero e True vb) <$> es
 	where vb = expToVarBool es
 
 givenToZeros :: Given v -> [Zero v]

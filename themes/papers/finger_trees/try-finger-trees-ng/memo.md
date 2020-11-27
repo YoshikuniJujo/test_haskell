@@ -34,6 +34,7 @@ make new TypeCheck
 	+ [x] define `containVars :: Given v -> [v]`
 	+ [x] define `expsToGiven :: [Exp v Bool] -> Given v`
 		- use expToVarBool
+		- [x] no Maybe
 	+ [x] define `givenToZeros :: Given v -> [Zero v]`
 	+ [ ] make export list
 * [ ] make module Wanted
