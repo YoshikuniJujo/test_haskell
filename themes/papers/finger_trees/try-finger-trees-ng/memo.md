@@ -23,7 +23,7 @@ make new TypeCheck
 * [x] define containVar
 	+ [x] rename to doesContainVar
 * [x] define containVars
-* [x] make module Given
+* [ ] make module Given
 	+ [x] make empty module
 	+ [x] smart constructor remove equal Zero
 	+ [x] define removeVar
@@ -31,5 +31,13 @@ make new TypeCheck
 		- [x] define removeVarStep
 		- [x] define removeVar
 	+ [x] define removeVars
+	+ [ ] define `containVars :: Given v -> [v]`
+		- use expToVarBool
+	+ [ ] define `expsToGiven :: [Exp v Bool] -> Given v`
+	+ [ ] define `givenToZeros :: Given v -> [Zero v]`
 * [ ] make module Wanted
+	+ [x] define `expToWanted :: Exp v Bool -> Wanted v`
+	+ [ ] define `wantedToZero :: Wanted v -> Zero v`
+	+ [ ] define `containVArs :: Wanted v -> [v]`
 * [ ] make module Derive
+	+ [ ] define `canDerive :: Given v -> Wanted v -> Bool`

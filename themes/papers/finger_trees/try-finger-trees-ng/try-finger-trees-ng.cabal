@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c1077676c857c32f1a8ba4d398ce342b9e3d4d6a4e776f3aa7639650de5a1895
+-- hash: ec219bf989272f75acd3375278e00057d3b5ce5714c98c8877ad944ffcc1735a
 
 name:           try-finger-trees-ng
 version:        0.1.0.0
@@ -42,6 +42,7 @@ library
       New.Polynominal
       New.Polynominal.Given
       New.Polynominal.Type
+      New.Polynominal.Wanted
       New.Polynominal.Zero
       New.Trial.ExpParser
       New.Trial.Hello

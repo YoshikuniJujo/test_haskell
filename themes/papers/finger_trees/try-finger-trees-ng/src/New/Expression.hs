@@ -23,6 +23,3 @@ deriving instance Show v => Show (Exp v t)
 
 instance Show v => Outputable (Exp v t) where
 	ppr = text . show
-
-type Given v = [(Exp v Bool, Bool)]
-type Wanted v = (Exp v Bool, Bool)
