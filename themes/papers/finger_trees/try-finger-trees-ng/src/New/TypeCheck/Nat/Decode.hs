@@ -9,8 +9,8 @@ import TyCoRep
 
 import New.Expression
 
-decode :: Ct -> Either String (Exp Var Bool, Bool)
-decode = undefined
+decode :: Ct -> Either String (Exp Var Bool)
+decode = ctToExpEq
 
 ctToExpEq :: Ct -> Either String (Exp Var Bool)
 ctToExpEq ct = do
@@ -20,6 +20,10 @@ ctToExpEq ct = do
 unNomEq :: Ct -> Either String (Type, Type)
 unNomEq ct = case classifyPredType . ctEvPred $ ctEvidence ct of
 	EqPred NomEq t1 t2 -> Right (t1, t2)
+	EqPred foo t1 t2 -> Left $
+		showSDocUnsafe (ppr foo) ++ " " ++
+		showSDocUnsafe (ppr t1) ++ " " ++
+		showSDocUnsafe (ppr t2) ++ " Cannot unNOmEq"
 	_ -> Left "Cannot unNomEq"
 
 typeToExpEq :: Type -> Type -> Either String (Exp Var Bool)
@@ -45,7 +49,7 @@ typeToExpTerm (TyConApp tc [a, b])
 		(:+) <$> typeToExpTerm a <*> typeToExpTerm b
 	| tc == typeNatSubTyCon =
 		(:-) <$> typeToExpTerm a <*> typeToExpTerm b
-typeToExpTerm _ = Left "typeToExpTerm: fail"
+typeToExpTerm t = Left $ "typeToExpTerm: fail: " ++ showSDocUnsafe (ppr t)
 
 typeToExpBool :: Type -> Either String (Exp Var Bool)
 typeToExpBool (TyVarTy v) = Right $ Var v

@@ -2,11 +2,11 @@
 
 module New.Polynominal.Zero (
 	Zero, equal, greatEqualThan, greatThan,
-	containVars, doesContainVar, removeVar ) where
+	containVars, doesContainVar, removeVar, identity ) where
 
 import Data.Foldable
 import Data.Maybe
-import Data.Map.Strict hiding (foldr, toList)
+import Data.Map.Strict hiding (foldr, toList, null)
 import qualified Data.Map.Strict as M
 
 import New.Polynominal.Type
@@ -48,12 +48,12 @@ greatThan :: Ord v => Polynominal v -> Polynominal v -> Zero v
 p1 `greatThan` p2 = Grt . regularizeG $ p1 .- p2
 
 removeVar :: Ord v => Zero v -> Zero v -> v -> Maybe (Zero v)
-removeVar (Eq p1) (Eq p2) v = Eq . uncurry (.+) <$> alignVarEqEq p1 p2 v
-removeVar (Eq p1) (Geq p2) v = Geq . uncurry (.+) <$> alignVarEqG p1 p2 v
-removeVar (Eq p1) (Grt p2) v = Grt . uncurry (.+) <$> alignVarEqG p1 p2 v
-removeVar (Geq p1) (Geq p2) v = Geq . uncurry (.+) <$> alignVarGG p1 p2 v
-removeVar (Geq p1) (Grt p2) v = Grt . uncurry (.+) <$> alignVarGG p1 p2 v
-removeVar (Grt p1) (Grt p2) v = Grt . uncurry (.+) <$> alignVarGG p1 p2 v
+removeVar (Eq p1) (Eq p2) v = Eq . regularizeEq . uncurry (.+) <$> alignVarEqEq p1 p2 v
+removeVar (Eq p1) (Geq p2) v = Geq . regularizeG . uncurry (.+) <$> alignVarEqG p1 p2 v
+removeVar (Eq p1) (Grt p2) v = Grt . regularizeG . uncurry (.+) <$> alignVarEqG p1 p2 v
+removeVar (Geq p1) (Geq p2) v = Geq . regularizeG . uncurry (.+) <$> alignVarGG p1 p2 v
+removeVar (Geq p1) (Grt p2) v = Grt . regularizeG . uncurry (.+) <$> alignVarGG p1 p2 v
+removeVar (Grt p1) (Grt p2) v = Grt . regularizeG . uncurry (.+) <$> alignVarGG p1 p2 v
 removeVar z1 z2 v = removeVar z2 z1 v
 
 doesContainVar :: Ord v => Zero v -> v -> Bool
@@ -83,3 +83,8 @@ alignVarGG p1 p2 v = case (p1 !? Just v, p2 !? Just v) of
 		| signum n1 * signum n2 == - 1 -> Just (
 			p1 `multiple` abs n2, p2 `multiple` abs n1 )
 	_ -> Nothing
+
+identity :: Zero v -> Bool
+identity (Eq p) = M.null p
+identity (Geq p) = M.null p
+identity (Grt p) = M.null p

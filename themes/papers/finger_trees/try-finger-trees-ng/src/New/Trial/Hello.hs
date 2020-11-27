@@ -1,12 +1,24 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE GADTs #-}
+-- {-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=New.TypeCheck.Nat #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=New.TypeCheck.Nat #-}
 
 module New.Trial.Hello where
 
 import GHC.TypeLits
 import Data.Proxy
+
+plusOne :: (m + 1) ~ (n + 1) => Proxy m -> Proxy n
+plusOne = id
+
+{-
+ohmygosh :: ((m + 1) + (m' - 1)) ~ (m + m') => a -> a
+ohmygosh = id
+-}
+
+-- plusOneBad :: (m + 1) ~ (n + 1) => Proxy (m - 1) -> Proxy n
+-- plusOneBad = id
 
 {-
 some :: Proxy (m + 1) -> Proxy (n - 1)

@@ -2,6 +2,8 @@
 
 module New.Polynominal.Wanted where
 
+import Outputable hiding (empty)
+
 import Data.Map.Strict
 
 import New.Polynominal
@@ -20,3 +22,9 @@ wantedToZero (Wanted z) = z
 
 containVars :: Ord v => Wanted v -> [v]
 containVars = Z.containVars . wantedToZero
+
+selfContained :: Wanted v -> Bool
+selfContained (Wanted z) = identity z
+
+instance Show v => Outputable (Wanted v) where
+	ppr = text . show

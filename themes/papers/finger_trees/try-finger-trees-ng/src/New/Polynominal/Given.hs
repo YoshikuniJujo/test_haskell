@@ -2,6 +2,8 @@
 
 module New.Polynominal.Given where
 
+import Outputable
+
 import Control.Arrow
 import Data.Maybe
 import Data.Either
@@ -49,3 +51,6 @@ removeVar g v = Given $ r ++ concat (fst $ unfoldUntil null (removeVarStep v) z)
 
 removeVars :: Ord v => Given v -> [v] -> Given v
 removeVars = foldl removeVar
+
+instance Show v => Outputable (Given v) where
+	ppr = text . show
