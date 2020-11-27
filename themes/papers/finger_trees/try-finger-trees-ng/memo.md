@@ -26,6 +26,10 @@ make new TypeCheck
 * [ ] make module Given
 	+ [x] make empty module
 	+ [x] smart constructor remove equal Zero
-	+ [ ] define removeVar
+	+ [x] define removeVar
+		- [x] define removeVarInit
+		- [x] define removeVarStep
+		- [x] define removeVar
+	+ [ ] define removeVars
 	+ [ ] others
 * [ ] make module Derive
