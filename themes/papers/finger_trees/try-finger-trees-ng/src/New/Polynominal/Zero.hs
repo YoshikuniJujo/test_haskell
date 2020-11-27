@@ -13,7 +13,7 @@ import New.Polynominal.Type
 
 data Zero v
 	= Eq (Polynominal v) | Geq (Polynominal v) | Grt (Polynominal v)
-	deriving (Show, Eq)
+	deriving (Show, Eq, Ord)
 
 gcdAll :: Integral n => [n] -> Maybe n
 gcdAll [] = Nothing

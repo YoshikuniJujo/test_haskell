@@ -25,5 +25,7 @@ make new TypeCheck
 * [x] define containVars
 * [ ] make module Given
 	+ [x] make empty module
+	+ [x] smart constructor remove equal Zero
+	+ [ ] define removeVar
 	+ [ ] others
 * [ ] make module Derive
