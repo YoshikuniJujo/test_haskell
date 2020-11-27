@@ -9,11 +9,10 @@ import Control.Arrow
 import Data.Maybe
 import Data.List hiding (insert)
 import Data.Map.Strict
-import Data.Map.Merge.Strict
 
 import New.Expression
-
-type Polynominal v = Map (Maybe v) Integer
+import New.Polynominal.Type
+import New.Polynominal.Zero
 
 termToPolynominal :: Ord v => Exp v Term -> Polynominal v
 termToPolynominal (Const n) = singleton Nothing n
@@ -21,23 +20,11 @@ termToPolynominal (Var v) = singleton (Just v) 1
 termToPolynominal (t1 :+ t2) = termToPolynominal t1 .+ termToPolynominal t2
 termToPolynominal (t1 :- t2) = termToPolynominal t1 .- termToPolynominal t2
 
-(.+), (.-) :: Ord v => Polynominal v -> Polynominal v -> Polynominal v
-(.+) = merge preserveMissing preserveMissing (zipWithMaybeMatched \_ a b -> removeZero $ a + b)
-(.-) = merge preserveMissing (mapMissing \_ b -> negate b) (zipWithMaybeMatched \_ a b -> removeZero $ a - b)
-
-removeZero :: (Eq n, Num n) => n -> Maybe n
-removeZero 0 = Nothing
-removeZero n = Just n
-
-data Zero v
-	= Eq (Polynominal v) | Geq (Polynominal v) | Grt (Polynominal v)
-	deriving Show
-
 eqToZero :: Ord v => Exp v Bool -> Bool -> VarBool v -> Maybe (Zero v)
 eqToZero (Bool _) _ _ = Nothing
 eqToZero (Var _) _ _ = Nothing
-eqToZero (t1 :<= t2) False _ = Just . Grt $ termToPolynominal t1 .- termToPolynominal t2
-eqToZero (t1 :<= t2) True _ = Just . Geq $ termToPolynominal t2 .- termToPolynominal t1
+eqToZero (t1 :<= t2) False _ = Just $ termToPolynominal t1 `greatThan` termToPolynominal t2
+eqToZero (t1 :<= t2) True _ = Just $ termToPolynominal t2 `greatEqualThan` termToPolynominal t1
 eqToZero (b1 :== Bool b2) b vb = eqToZero b1 (b2 == b) vb
 eqToZero (Bool b1 :== b2) b vb = eqToZero b2 (b1 == b) vb
 eqToZero (b1 :== Var v2) b vb | Just b2 <- vb !? v2 = case b1 of
@@ -49,13 +36,13 @@ eqToZero (Var v1 :== b2) b vb | Just b1 <- vb !? v1 = case b2 of
 	_ :== _ -> eqToZero b2 (b1 == b) vb
 	_ -> Nothing
 eqToZero (t1 :== t2) True _ = case (t1, t2) of
-	 (Const _, _) -> Just . Eq $ termToPolynominal t1 .- termToPolynominal t2
-	 (_ :+ _, _) -> Just . Eq $ termToPolynominal t1 .- termToPolynominal t2
-	 (_ :- _, _) -> Just . Eq $ termToPolynominal t1 .- termToPolynominal t2
-	 (_, Const _) -> Just . Eq $ termToPolynominal t1 .- termToPolynominal t2
-	 (_, _ :+ _) -> Just . Eq $ termToPolynominal t1 .- termToPolynominal t2
-	 (_, _ :- _) -> Just . Eq $ termToPolynominal t1 .- termToPolynominal t2
-	 (Var v1, Var v2) -> Just . Eq $ termToPolynominal (Var v1) .- termToPolynominal (Var v2)
+	 (Const _, _) -> Just $ termToPolynominal t1 `equal` termToPolynominal t2
+	 (_ :+ _, _) -> Just $ termToPolynominal t1 `equal` termToPolynominal t2
+	 (_ :- _, _) -> Just $ termToPolynominal t1 `equal` termToPolynominal t2
+	 (_, Const _) -> Just $ termToPolynominal t1 `equal` termToPolynominal t2
+	 (_, _ :+ _) -> Just $ termToPolynominal t1 `equal` termToPolynominal t2
+	 (_, _ :- _) -> Just $ termToPolynominal t1 `equal` termToPolynominal t2
+	 (Var v1, Var v2) -> Just $ termToPolynominal (Var v1) `equal` termToPolynominal (Var v2)
 	 _ -> Nothing
 eqToZero _ False _ = Nothing
 
