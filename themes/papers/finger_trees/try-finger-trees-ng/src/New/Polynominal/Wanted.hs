@@ -12,3 +12,6 @@ newtype Wanted v = Wanted (Zero v) deriving Show
 
 expToWanted :: Ord v => Exp v Bool -> Maybe (Wanted v)
 expToWanted = (Wanted <$>) . \e -> eqToZero e True empty
+
+wantedToZero :: Wanted v -> Zero v
+wantedToZero (Wanted z) = z

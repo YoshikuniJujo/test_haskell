@@ -21,6 +21,9 @@ expsToGiven es = do
 	given <$> (\e -> eqToZero e True vb) `mapM` es
 	where vb = expToVarBool es
 
+givenToZeros :: Given v -> [Zero v]
+givenToZeros (Given zs) = zs
+
 removeVarInit :: Ord v => Given v -> v -> ([Zero v], [Zero v])
 removeVarInit (Given zs) v = partition (`doesContainVar` v) zs
 

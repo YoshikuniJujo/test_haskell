@@ -34,10 +34,10 @@ make new TypeCheck
 	+ [ ] define `containVars :: Given v -> [v]`
 	+ [x] define `expsToGiven :: [Exp v Bool] -> Given v`
 		- use expToVarBool
-	+ [ ] define `givenToZeros :: Given v -> [Zero v]`
+	+ [x] define `givenToZeros :: Given v -> [Zero v]`
 * [ ] make module Wanted
 	+ [x] define `expToWanted :: Exp v Bool -> Wanted v`
-	+ [ ] define `wantedToZero :: Wanted v -> Zero v`
+	+ [x] define `wantedToZero :: Wanted v -> Zero v`
 	+ [ ] define `containVars :: Wanted v -> [v]`
 * [ ] make module Derive
 	+ [ ] define `canDerive :: Given v -> Wanted v -> Bool`
