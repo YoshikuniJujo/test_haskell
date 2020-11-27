@@ -1,11 +1,13 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module New.Polynominal.Zero (
-	Zero, equal, greatEqualThan, greatThan, containVar, removeVar ) where
+	Zero, equal, greatEqualThan, greatThan,
+	containVars, doesContainVar, removeVar ) where
 
 import Data.Foldable
 import Data.Maybe
 import Data.Map.Strict hiding (foldr, toList)
+import qualified Data.Map.Strict as M
 
 import New.Polynominal.Type
 
@@ -54,10 +56,15 @@ removeVar (Geq p1) (Grt p2) v = Grt . uncurry (.+) <$> alignVarGG p1 p2 v
 removeVar (Grt p1) (Grt p2) v = Grt . uncurry (.+) <$> alignVarGG p1 p2 v
 removeVar z1 z2 v = removeVar z2 z1 v
 
-containVar :: Ord v => Zero v -> v -> Bool
-containVar (Eq p) v = isJust $ p !? Just v
-containVar (Geq p) v = isJust $ p !? Just v
-containVar (Grt p) v = isJust $ p !? Just v
+doesContainVar :: Ord v => Zero v -> v -> Bool
+doesContainVar (Eq p) v = isJust $ p !? Just v
+doesContainVar (Geq p) v = isJust $ p !? Just v
+doesContainVar (Grt p) v = isJust $ p !? Just v
+
+containVars :: Ord v => Zero v -> [v]
+containVars (Eq p) = catMaybes . (fst <$>) $ M.toList p
+containVars (Geq p) = catMaybes . (fst <$>) $ M.toList p
+containVars (Grt p) = catMaybes . (fst <$>) $ M.toList p
 
 alignVarEqEq :: Ord v => Polynominal v -> Polynominal v -> v -> Maybe (Polynominal v, Polynominal v)
 alignVarEqEq p1 p2 v = case (p1 !? Just v, p2 !? Just v) of
