@@ -42,4 +42,6 @@ make new TypeCheck
 	+ [x] define `containVars :: Wanted v -> [v]`
 	+ [ ] make export list
 * [ ] make module Derive
-	+ [ ] define `canDerive :: Given v -> Wanted v -> Bool`
+	+ [x] define `canDerive :: Given v -> Wanted v -> Bool`
+	+ [ ] make export list
+* [ ] make New.TypeCheck.Nat.solveNat
