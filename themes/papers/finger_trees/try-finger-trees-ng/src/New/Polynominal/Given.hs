@@ -33,3 +33,6 @@ unfoldUntil p f s0
 removeVar :: Ord v => Given v -> v -> Given v
 removeVar g v = Given $ r ++ concat (fst $ unfoldUntil null (removeVarStep v) z)
 	where (z, r) = removeVarInit g v
+
+removeVars :: Ord v => Given v -> [v] -> Given v
+removeVars = foldl removeVar

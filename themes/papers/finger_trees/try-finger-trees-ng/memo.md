@@ -23,13 +23,13 @@ make new TypeCheck
 * [x] define containVar
 	+ [x] rename to doesContainVar
 * [x] define containVars
-* [ ] make module Given
+* [x] make module Given
 	+ [x] make empty module
 	+ [x] smart constructor remove equal Zero
 	+ [x] define removeVar
 		- [x] define removeVarInit
 		- [x] define removeVarStep
 		- [x] define removeVar
-	+ [ ] define removeVars
-	+ [ ] others
+	+ [x] define removeVars
+* [ ] make module Wanted
 * [ ] make module Derive
