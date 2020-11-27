@@ -47,7 +47,7 @@ p1 `greatEqualThan` p2 = Geq . regularizeG $ p1 .- p2
 greatThan :: Ord v => Polynominal v -> Polynominal v -> Zero v
 p1 `greatThan` p2 = Grt . regularizeG $ p1 .- p2
 
-removeVar :: Ord v => Zero v -> Zero v -> v -> Maybe (Zero v)
+removeVar :: Ord v => Zero v -> Zero v -> Maybe v -> Maybe (Zero v)
 removeVar (Eq p1) (Eq p2) v = Eq . regularizeEq . uncurry (.+) <$> alignVarEqEq p1 p2 v
 removeVar (Eq p1) (Geq p2) v = Geq . regularizeG . uncurry (.+) <$> alignVarEqG p1 p2 v
 removeVar (Eq p1) (Grt p2) v = Grt . regularizeG . uncurry (.+) <$> alignVarEqG p1 p2 v
@@ -56,29 +56,29 @@ removeVar (Geq p1) (Grt p2) v = Grt . regularizeG . uncurry (.+) <$> alignVarGG 
 removeVar (Grt p1) (Grt p2) v = Grt . regularizeG . uncurry (.+) <$> alignVarGG p1 p2 v
 removeVar z1 z2 v = removeVar z2 z1 v
 
-doesContainVar :: Ord v => Zero v -> v -> Bool
-doesContainVar (Eq p) v = isJust $ p !? Just v
-doesContainVar (Geq p) v = isJust $ p !? Just v
-doesContainVar (Grt p) v = isJust $ p !? Just v
+doesContainVar :: Ord v => Zero v -> Maybe v -> Bool
+doesContainVar (Eq p) v = isJust $ p !? v
+doesContainVar (Geq p) v = isJust $ p !? v
+doesContainVar (Grt p) v = isJust $ p !? v
 
-containVars :: Ord v => Zero v -> [v]
-containVars (Eq p) = catMaybes . (fst <$>) $ M.toList p
-containVars (Geq p) = catMaybes . (fst <$>) $ M.toList p
-containVars (Grt p) = catMaybes . (fst <$>) $ M.toList p
+containVars :: Ord v => Zero v -> [Maybe v]
+containVars (Eq p) = (fst <$>) $ M.toList p
+containVars (Geq p) = (fst <$>) $ M.toList p
+containVars (Grt p) = (fst <$>) $ M.toList p
 
-alignVarEqEq :: Ord v => Polynominal v -> Polynominal v -> v -> Maybe (Polynominal v, Polynominal v)
-alignVarEqEq p1 p2 v = case (p1 !? Just v, p2 !? Just v) of
+alignVarEqEq :: Ord v => Polynominal v -> Polynominal v -> Maybe v -> Maybe (Polynominal v, Polynominal v)
+alignVarEqEq p1 p2 v = case (p1 !? v, p2 !? v) of
 	(Just n1, Just n2) -> Just (p1 `multiple` n2, p2 `multiple` (- n1))
 	_ -> Nothing
 
-alignVarEqG :: Ord v => Polynominal v -> Polynominal v -> v -> Maybe (Polynominal v, Polynominal v)
-alignVarEqG p1 p2 v = case (p1 !? Just v, p2 !? Just v) of
+alignVarEqG :: Ord v => Polynominal v -> Polynominal v -> Maybe v -> Maybe (Polynominal v, Polynominal v)
+alignVarEqG p1 p2 v = case (p1 !? v, p2 !? v) of
 	(Just n1, Just n2) -> Just (
 		p1 `multiple` (- signum n1 * n2), p2 `multiple` abs n1 )
 	_ -> Nothing
 
-alignVarGG :: Ord v => Polynominal v -> Polynominal v -> v -> Maybe (Polynominal v, Polynominal v)
-alignVarGG p1 p2 v = case (p1 !? Just v, p2 !? Just v) of
+alignVarGG :: Ord v => Polynominal v -> Polynominal v -> Maybe v -> Maybe (Polynominal v, Polynominal v)
+alignVarGG p1 p2 v = case (p1 !? v, p2 !? v) of
 	(Just n1, Just n2)
 		| signum n1 * signum n2 == - 1 -> Just (
 			p1 `multiple` abs n2, p2 `multiple` abs n1 )

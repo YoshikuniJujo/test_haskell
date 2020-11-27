@@ -7,7 +7,8 @@
 
 module Data.List.Range (
 	module Data.List.RangeL,
-	module Data.List.RangeR
+	module Data.List.RangeR,
+	leftToRight
 	) where
 
 import GHC.TypeLits
@@ -31,3 +32,30 @@ instance {-# OVERLAPPABLE #-}
 	leftToRightGen r NilL = loosenRMax r :: RangeR 0 (m + m') a
 	leftToRightGen r (x :.. xs) = leftToRightGen (r :++ x :: RangeR 0 (m + 1) a) xs
 	leftToRightGen _ _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	(1 <= m + 1, 1 <= m + m', LoosenRMax n m (m + m'), PushR (n - 1) (m - 1), LeftToRight n (m + 1) 0 (m' - 1)) =>
+	LeftToRight n m 0 m' where
+	leftToRightGen :: forall a . RangeR n m a -> RangeL 0 m' a -> RangeR n (m + m') a
+	leftToRightGen r NilL = loosenRMax r :: RangeR n (m + m') a
+	leftToRightGen r (x :.. xs) = leftToRightGen (r .:++ x :: RangeR n (m + 1) a) xs
+	leftToRightGen _ _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	LeftToRight (n + 1) (m + 1) (n' - 1) (m' - 1) => LeftToRight n m n' m' where
+	leftToRightGen :: forall a . RangeR n m a -> RangeL n' m' a -> RangeR (n + n') (m + m') a
+	leftToRightGen r (x :. xs) = leftToRightGen (r :+ x :: RangeR (n + 1) (m + 1) a) xs
+	leftToRightGen _ _ = error "never occur"
+
+leftToRight :: forall n m a . LeftToRight 0 0 n m => RangeL n m a -> RangeR n m a
+leftToRight = leftToRightGen (NilR :: RangeR 0 0 a)
+
+infixl 5 .:++
+
+class PushR n m where (.:++) :: RangeR n m a -> a -> RangeR n (m + 1) a
+
+instance 1 <= m + 1 => PushR 0 m where (.:++) = (:++)
+
+instance {-# OVERLAPPABLE #-} (1 <= m + 1, PushR (n - 1) (m - 1)) => PushR n m where
+	(xs :+ x) .:++ y = (xs .:++ x) :+ y
+	_ .:++ _ = error "never occur"

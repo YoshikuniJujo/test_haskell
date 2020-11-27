@@ -20,7 +20,7 @@ expToWanted = (Wanted <$>) . \e -> eqToZero e True empty
 wantedToZero :: Wanted v -> Zero v
 wantedToZero (Wanted z) = z
 
-containVars :: Ord v => Wanted v -> [v]
+containVars :: Ord v => Wanted v -> [Maybe v]
 containVars = Z.containVars . wantedToZero
 
 selfContained :: Wanted v -> Bool

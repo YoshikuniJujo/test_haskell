@@ -26,17 +26,17 @@ expsToGiven es = given . catMaybes $ (\e -> eqToZero e True vb) <$> es
 givenToZeros :: Given v -> [Zero v]
 givenToZeros (Given zs) = zs
 
-containVars :: Ord v => Given v -> [v]
+containVars :: Ord v => Given v -> [Maybe v]
 containVars = nub . sort . concat . (Z.containVars <$>) . givenToZeros
 
-removeVarInit :: Ord v => Given v -> v -> ([Zero v], [Zero v])
+removeVarInit :: Ord v => Given v -> Maybe v -> ([Zero v], [Zero v])
 removeVarInit (Given zs) v = partition (`doesContainVar` v) zs
 
-removeVar1 :: Ord v => Zero v -> v -> Zero v -> Either (Zero v) (Zero v)
+removeVar1 :: Ord v => Zero v -> Maybe v -> Zero v -> Either (Zero v) (Zero v)
 removeVar1 z0 v z = case Z.removeVar z0 z v of
 	Just z' -> Left z'; Nothing -> Right z
 
-removeVarStep :: Ord v => v -> [Zero v] -> ([Zero v], [Zero v])
+removeVarStep :: Ord v => Maybe v -> [Zero v] -> ([Zero v], [Zero v])
 removeVarStep _ [] = ([], [])
 removeVarStep v (z : zs) = partitionEithers $ removeVar1 z v <$> zs
 
@@ -45,11 +45,11 @@ unfoldUntil p f s0
 	| p s0 = ([], s0)
 	| otherwise = let (r, s') = f s0 in (r :) `first` unfoldUntil p f s'
 
-removeVar :: Ord v => Given v -> v -> Given v
+removeVar :: Ord v => Given v -> Maybe v -> Given v
 removeVar g v = Given $ r ++ concat (fst $ unfoldUntil null (removeVarStep v) z)
 	where (z, r) = removeVarInit g v
 
-removeVars :: Ord v => Given v -> [v] -> Given v
+removeVars :: Ord v => Given v -> [Maybe v] -> Given v
 removeVars = foldl removeVar
 
 instance Show v => Outputable (Given v) where

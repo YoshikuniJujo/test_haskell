@@ -110,3 +110,6 @@ uncons x = case viewL x of NL -> Nothing; ConsL a x' -> Just (a, x')
 -- data ViewR s a = NR | ConsR (s a) a deriving Show
 
 -- viewR :: FingerTree a -> ViewR FingerTree a
+
+nodeToDigitR :: Node a -> DigitR a
+nodeToDigitR = loosenR . leftToRight
