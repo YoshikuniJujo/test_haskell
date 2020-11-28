@@ -1,9 +1,13 @@
 {-# LANGUAGE ScopedTypeVariables, InstanceSigs #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE GADTs #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances,
+	UndecidableInstances #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=New.TypeCheck.Nat #-}
 
 module Data.List.Range.FingerTree where
+
+import GHC.TypeNats
 
 import Data.List.Range
 
@@ -126,3 +130,22 @@ deepR _ _ _ = error "never occur"
 
 nodeToDigitR :: Node a -> DigitR a
 nodeToDigitR = loosenR . leftToRight
+
+class Nodes m m' where nodes :: RangeL 2 m a -> RangeL 1 m' (Node a)
+
+instance Nodes 3 1 where nodes = (:. NilL)
+
+{-
+instance {-# OVERLAPPABLE #-}
+	(1 <= (mmmmm' - 1), Nodes (m - 3) (mmmmm' - 1)) => Nodes m mmmmm' where
+	nodes :: forall a . RangeL 2 m a -> RangeL 1 mmmmm' (Node a)
+	nodes (a :. b :. NilL) = (a :. b :. NilL) :. NilL
+	nodes (a :. b :. c :.. NilL) = (a :. b :. c :.. NilL) :. NilL
+	nodes (a :. b :. c :.. d :.. NilL) =
+		(a :. b :. NilL) :. (c :. d :. NilL) :.. NilL
+	nodes (a :. b :. c :.. d :.. e :.. xs) =
+		(a :. b :. c :.. NilL) .:..
+			(nodes (d :. e :. xs :: RangeL 2 (m - 3) a)
+				:: RangeL 1 (mmmmm' - 1) (Node a))
+	nodes _ = error "never occur"
+	-}

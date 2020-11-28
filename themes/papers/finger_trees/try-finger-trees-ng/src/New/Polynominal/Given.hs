@@ -17,7 +17,7 @@ import qualified New.Polynominal.Zero as Z
 newtype Given v = Given [Zero v] deriving Show
 
 given :: Ord v => [Zero v] -> Given v
-given = Given . nub . sort
+given zs = Given . nub . sort $ zs ++ (noNegativeFromG <$> zs)
 
 expsToGiven :: Ord v => [Exp v Bool] -> Given v
 expsToGiven es = given . catMaybes $ (\e -> eqToZero e True vb) <$> es

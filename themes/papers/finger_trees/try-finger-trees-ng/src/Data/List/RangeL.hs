@@ -3,7 +3,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances,
 	UndecidableInstances #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=New.TypeCheck.Nat #-}
 
 module Data.List.RangeL where
 
@@ -39,6 +39,17 @@ instance {-# OVERLAPPABLE #-}
 	foldr _ _ _ = error "never occur"
 	foldl (>-) z (x :. xs) = foldl (>-) (z >- x) xs
 	foldl _ _ _ = error "never occur"
+
+infixr 5 .:..
+
+class PushL n m where
+	(.:..) :: a -> RangeL n m a -> RangeL n (m + 1) a
+
+instance 1 <= m + 1 => PushL 0 m where (.:..) = (:..)
+
+instance {-# OVERLAPPABLE #-} (1 <= m + 1, PushL (n - 1) (m - 1)) => PushL n m where
+	x .:.. (y :. ys) = x :. (y .:.. ys)
+	_ .:.. _ = error "never occur"
 
 class LoosenLMin n m n' where loosenLMin :: RangeL n m a -> RangeL n' m a
 

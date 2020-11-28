@@ -34,10 +34,10 @@ instance {-# OVERLAPPABLE #-}
 	leftToRightGen _ _ = error "never occur"
 
 instance {-# OVERLAPPABLE #-}
-	(1 <= m + 1, 1 <= m + m', LoosenRMax n m (m + m'), PushR (n - 1) (m - 1), LeftToRight n (m + 1) 0 (m' - 1)) =>
-	LeftToRight n m 0 m' where
-	leftToRightGen :: forall a . RangeR n m a -> RangeL 0 m' a -> RangeR n (m + m') a
-	leftToRightGen r NilL = loosenRMax r :: RangeR n (m + m') a
+	(1 <= m + 1, 1 <= m + moops', LoosenRMax n m (m + moops'), PushR (n - 1) (m - 1), LeftToRight n (m + 1) 0 (moops' - 1)) =>
+	LeftToRight n m 0 moops' where
+	leftToRightGen :: forall a . RangeR n m a -> RangeL 0 moops' a -> RangeR n (m + moops') a
+	leftToRightGen r NilL = loosenRMax r :: RangeR n (m + moops') a
 	leftToRightGen r (x :.. xs) = leftToRightGen (r .:++ x :: RangeR n (m + 1) a) xs
 	leftToRightGen _ _ = error "never occur"
 
