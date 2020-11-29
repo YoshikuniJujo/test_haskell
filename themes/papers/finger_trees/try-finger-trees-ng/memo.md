@@ -4,6 +4,7 @@ memo
 * [ ] refactor about TypeCheck.Nat
 	+ [ ] separate typecheck and expression judgement
 	+ [ ] rename and organize modules
+* [ ] consider whether or not to rename Range to Ranged
 
 make new TypeCheck
 ------------------

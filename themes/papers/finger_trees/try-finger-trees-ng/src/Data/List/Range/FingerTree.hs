@@ -10,6 +10,7 @@ module Data.List.Range.FingerTree where
 import GHC.TypeNats
 
 import Data.List.Range
+import Internal.Tools
 
 data FingerTree a
 	= Empty
@@ -20,12 +21,6 @@ data FingerTree a
 type DigitL = RangeL 1 4
 type DigitR = RangeR 1 4
 type Node = RangeL 2 3
-
-reducer :: Foldable t => (a -> b -> b) -> t a -> b -> b
-reducer = flip . foldr
-
-reducel :: Foldable t => (b -> a -> b) -> b -> t a -> b
-reducel = foldl
 
 instance Foldable FingerTree where
 	foldr :: forall a b . (a -> b -> b) -> b -> FingerTree a -> b
