@@ -28,3 +28,5 @@ selfContained (Wanted z) = identity z
 
 instance Show v => Outputable (Wanted v) where
 	ppr = text . show
+
+debugWanted = Wanted debugZeroWanted

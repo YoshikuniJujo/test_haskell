@@ -3,10 +3,13 @@
 module New.Trial.TryTypeCheck where
 
 import Data.Maybe
+import Data.List
 
 import New.Trial.ExpParser
 import New.Polynominal.Wanted
 import New.Polynominal.Given
+import New.Polynominal.Derive
+import New.Polynominal.Zero
 
 wanted :: Wanted String
 Just wanted = expToWanted . fst =<< parseBool (tokens "((p + d) == u)")
@@ -17,4 +20,30 @@ Just wanted2 = expToWanted . fst =<< parseBool (tokens "((n + nn) == (b + f))")
 given2 :: Given String
 given2 = expsToGiven . (fst <$>) . catMaybes $ (parseBool . tokens) <$> [
 	"((1 + n) == b)", "((1 + m) == d)", "(nn == (1 + f))", "(mm == (1 + h))"
+	]
+
+wanted3 :: Wanted String
+Just wanted3 = expToWanted . fst =<< parseBool (tokens "((u + lm) == z)")
+
+given3 :: Given String
+given3 = expsToGiven . (fst <$>) . catMaybes $ (parseBool . tokens) <$> [
+	"(k == (m - 1))", "(u == (m + 1))", "(lm == (mm - 1))", "(li == (n - 1))",
+	"(u == (m + 1))", "(z == (m + mm))", "(1 <= mm)", "(1 <= u)", "(1 <= z)"
+--	"(0 <= mm)", "(0 <= u)", "(0 <= z)"
+	]
+
+debugIt :: Bool
+debugIt = canDerive debugGiven debugWanted
+
+debugRemoveVar :: [Maybe String]
+debugRemoveVar = New.Polynominal.Given.containVars debugGiven \\ New.Polynominal.Wanted.containVars debugWanted
+
+debugCheck :: Given String
+debugCheck = removeVars debugGiven [
+	Nothing,
+	Just "m"
+--	Just "moops'"
+--	Just "n"
+--	Just "zfsk_aOHZ",
+--	Just "zfsk_aOI1"
 	]

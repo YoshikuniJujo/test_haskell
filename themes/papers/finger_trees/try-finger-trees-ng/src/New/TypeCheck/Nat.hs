@@ -17,6 +17,8 @@ import New.Polynominal.Given
 import New.Polynominal.Wanted
 import New.Polynominal.Derive
 
+import qualified Data.Text as T
+
 plugin :: Plugin
 plugin = defaultPlugin { tcPlugin = const . Just $ TcPlugin {
 	tcPluginInit = pure (),
@@ -46,12 +48,12 @@ solveNat gs ds ws = do
 
 instance Show Var where show = showSDocUnsafe . ppr
 
-canDeriveCt :: [Ct] -> Ct -> Either String (EvTerm, Ct)
+canDeriveCt :: [Ct] -> Ct -> Either T.Text (EvTerm, Ct)
 canDeriveCt gs w = do
 	(t1, t2) <- unNomEq w
 	let	gs' = expsToGiven . catMaybes $ either (const Nothing) Just . decode <$> gs
-	w' <- maybe (Left "foo") Right . expToWanted =<< decode w
-	bool (Left "foo") (pure (makeEvTerm t1 t2, w)) (canDerive gs' w')
+	w' <- maybe (Left $ T.pack "foo") Right . expToWanted =<< decode w
+	bool (Left . T.pack $ "foo: " ++ show gs') (pure (makeEvTerm t1 t2, w)) (canDerive gs' w')
 
 makeEvTerm :: Type -> Type -> EvTerm
 makeEvTerm t1 t2 = EvExpr . Coercion
