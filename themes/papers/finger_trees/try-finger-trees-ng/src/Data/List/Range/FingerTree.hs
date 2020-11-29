@@ -135,7 +135,6 @@ class Nodes m m' where nodes :: RangeL 2 m a -> RangeL 1 m' (Node a)
 
 instance Nodes 3 1 where nodes = (:. NilL)
 
-{-
 instance {-# OVERLAPPABLE #-}
 	(1 <= (mmmmm' - 1), Nodes (m - 3) (mmmmm' - 1)) => Nodes m mmmmm' where
 	nodes :: forall a . RangeL 2 m a -> RangeL 1 mmmmm' (Node a)
@@ -148,4 +147,3 @@ instance {-# OVERLAPPABLE #-}
 			(nodes (d :. e :. xs :: RangeL 2 (m - 3) a)
 				:: RangeL 1 (mmmmm' - 1) (Node a))
 	nodes _ = error "never occur"
-	-}

@@ -46,7 +46,7 @@ unfoldUntil p f s0
 	| otherwise = let (r, s') = f s0 in (r :) `first` unfoldUntil p f s'
 
 removeVar :: Ord v => Given v -> Maybe v -> Given v
-removeVar g v = Given $ r ++ concat (fst $ unfoldUntil null (removeVarStep v) z)
+removeVar g v = Given . sort $ r ++ concat (fst $ unfoldUntil null (removeVarStep v) z)
 	where (z, r) = removeVarInit g v
 
 removeVars :: Ord v => Given v -> [Maybe v] -> Given v
