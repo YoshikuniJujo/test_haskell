@@ -45,4 +45,16 @@ make new TypeCheck
 * [ ] make module Derive
 	+ [x] define `canDerive :: Given v -> Wanted v -> Bool`
 	+ [ ] make export list
-* [ ] make New.TypeCheck.Nat.solveNat
+* [x] make New.TypeCheck.Nat.solveNat
+* [ ] make Annotated fingertree
+	+ [x] make empty module
+	+ [ ] others
+* [ ] remove Grt
+	+ [ ] use Geq (foo + 1) instead of Grt foo
+	+ [ ] remove Grt
+* [ ] no negative Nat
+	+ [ ] eqToZero: return list of Zero
+	+ [ ] termToPolynominal: return ([Zero v], Polynominal v)
+
+refactor new TypeCheck
+-----------------------
