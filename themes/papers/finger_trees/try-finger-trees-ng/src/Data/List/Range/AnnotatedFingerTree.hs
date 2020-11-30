@@ -257,3 +257,5 @@ split p xs
 takeUntil, dropUntil :: Measured a v => (v -> Bool) -> FingerTree v a -> FingerTree v a
 takeUntil p = fst . split p
 dropUntil p = snd . split p
+
+newtype Elem a = Elem { getElem :: a } deriving Show
