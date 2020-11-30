@@ -1,7 +1,7 @@
 {-# LANGUAGE ScopedTypeVariables, InstanceSigs #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE GADTs #-}
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.List.Range.AnnotatedFingerTree where
@@ -9,7 +9,7 @@ module Data.List.Range.AnnotatedFingerTree where
 -- import GHC.TypeNats
 
 import Data.List.Range
--- import Internal.Tools
+import Internal.Tools
 
 class Monoid v => Measured a v where measure :: a -> v
 
@@ -26,10 +26,8 @@ instance Monoid v => Measured (Node v a) v where measure (Node v _) = v
 type DigitL = RangeL 1 4
 type DigitR = RangeR 1 4
 
-{-
-instance Measured a v => Measured (RangeL n m a) v where
-	measure :: RangeL n m a -> v
-	measure xs = rl (\i a -> i <> measure a) mempty xs
-		where
-		rl = reducel :: (v -> a -> v) -> v -> RangeL n m a -> v
-		-}
+instance (Foldable (RangeL n m), Measured a v) => Measured (RangeL n m a) v where
+	measure xs = reducel (\i a -> i <> measure a) mempty xs
+
+instance (Foldable (RangeR n m), Measured a v) => Measured (RangeR n m a) v where
+	measure xs = reducer (\a i -> measure a <> i) xs mempty
