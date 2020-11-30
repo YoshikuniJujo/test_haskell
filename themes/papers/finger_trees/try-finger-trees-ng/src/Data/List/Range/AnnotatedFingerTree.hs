@@ -110,4 +110,11 @@ deepL :: Measured a v =>
 deepL NilL m sf = case viewL m of
 	NL -> toTree sf
 	ConsL a m' -> deep (nodeToDigitL a) m' sf
+deepL (a :.. pr) m sf = deep (loosenL $ a :. pr) m sf
 deepL _ _ _ = error "never occur"
+
+isEmpty :: Measured a v => FingerTree v a -> Bool
+isEmpty x = case viewL x of NL -> True; ConsL _ _ -> False
+
+uncons :: Measured a v => FingerTree v a -> Maybe (a, FingerTree v a)
+uncons x = case viewL x of NL -> Nothing; ConsL a x' -> Just (a, x')
