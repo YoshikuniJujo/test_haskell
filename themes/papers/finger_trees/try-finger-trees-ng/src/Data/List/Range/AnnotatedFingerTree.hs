@@ -31,3 +31,17 @@ instance (Foldable (RangeL n m), Measured a v) => Measured (RangeL n m a) v wher
 
 instance (Foldable (RangeR n m), Measured a v) => Measured (RangeR n m a) v where
 	measure xs = reducer (\a i -> measure a <> i) xs mempty
+
+data FingerTree v a
+	= Empty | Single a
+	| Deep v (DigitL a) (FingerTree v (Node v a)) (DigitR a)
+	deriving Show
+
+deep :: Measured a v =>
+	DigitL a -> FingerTree v (Node v a) -> DigitR a -> FingerTree v a
+deep pr m sf = Deep (measure pr <> measure m <> measure sf) pr m sf
+
+instance Measured a v => Measured (FingerTree v a) v where
+	measure Empty = mempty
+	measure (Single x) = measure x
+	measure (Deep v _ _ _) = v
