@@ -1,12 +1,13 @@
 {-# LANGUAGE ScopedTypeVariables, InstanceSigs #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE GADTs #-}
-{-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances,
+	UndecidableInstances #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=New.TypeCheck.Nat #-}
 
 module Data.List.Range.AnnotatedFingerTree where
 
--- import GHC.TypeNats
+import GHC.TypeNats
 
 import Data.List.Range
 import Data.View
@@ -137,3 +138,35 @@ deepR _ _ _ = error "never occur"
 
 unsnoc :: Measured a v => FingerTree v a -> Maybe (FingerTree v a, a)
 unsnoc x = case viewR x of NR -> Nothing; ConsR x' a -> Just (x', a)
+
+app3 :: forall v a . Measured a v => FingerTree v a -> RangeL 0 4 a -> FingerTree v a -> FingerTree v a
+app3 Empty ts xs = ts <|. xs
+app3 xs ts Empty = xs |>. ts
+app3 (Single x) ts xs = x <| ts <|. xs
+app3 xs ts (Single x) = xs |>. ts |> x
+app3 (Deep _ pr1 m1 sf1) ts (Deep _ pr2 m2 sf2) =
+	deep pr1 (app3 m1 (loosenL (nodes (rightToLeft sf1 ++. ts ++. pr2) :: RangeL 1 4 (Node v a))) m2) sf2
+
+class Nodes m m' where
+	nodes :: Measured a v => RangeL 2 m a -> RangeL 1 m' (Node v a)
+
+instance Nodes 3 1 where
+	nodes (a :. b :. NilL) = node2 a b :. NilL
+	nodes (a :. b :. c :.. NilL) = node3 a b c :. NilL
+	nodes _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	(1 <= m' - 1, Nodes (m - 3) (m' - 1)) => Nodes m m' where
+	nodes :: forall a v . Measured a v => RangeL 2 m a -> RangeL 1 m' (Node v a)
+	nodes (a :. b :. NilL) = node2 a b :. NilL
+	nodes (a :. b :. c :.. NilL) = node3 a b c :. NilL
+	nodes (a :. b :. c :.. d :.. NilL) = node2 a b :. node2 c d :.. NilL
+	nodes (a :. b :. c :.. d :.. e :.. xs) = node3 a b c .:.. (nodes (d :. e :. xs :: RangeL 2 (m - 3) a) :: RangeL 1 (m' - 1) (Node v a))
+	nodes _ = error "never occur"
+
+(><) :: Measured a v => FingerTree v a -> FingerTree v a -> FingerTree v a
+xs >< ys = app3 xs NilL ys
+
+sampleAnn1, sampleAnn2 :: FingerTree Size (Elem Int)
+sampleAnn1 = toTree $ Elem <$> [1 .. 100]
+sampleAnn2 = toTree $ Elem <$> [123 .. 200]
