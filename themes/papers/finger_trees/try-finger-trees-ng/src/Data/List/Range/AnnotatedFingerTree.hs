@@ -70,15 +70,6 @@ a <| Deep _ pr m sf = case a <|| pr of
 toTree :: (Measured a v, Foldable t) => t a -> FingerTree v a
 toTree = (<|. Empty)
 
-newtype Size = Size { getSize :: Int } deriving (Show, Eq, Ord)
-
-instance Semigroup Size where Size m <> Size n = Size $ m + n
-instance Monoid Size where mempty = Size 0
-
-newtype Elem a = Elem { getElem :: a } deriving Show
-
-instance Measured (Elem a) Size where measure _ = Size 1
-
 infixl 5 ||>, |>, |>.
 
 (||>) :: Measured a v => DigitR a -> a -> Either (DigitR a) (Node v a, DigitR a)
@@ -166,10 +157,6 @@ instance {-# OVERLAPPABLE #-}
 
 (><) :: Measured a v => FingerTree v a -> FingerTree v a -> FingerTree v a
 xs >< ys = app3 xs NilL ys
-
-sampleAnn1, sampleAnn2 :: FingerTree Size (Elem Int)
-sampleAnn1 = toTree $ Elem <$> [1 .. 100]
-sampleAnn2 = toTree $ Elem <$> [123 .. 200]
 
 class SplitDigitL m where
 	splitDigitL :: Measured a v => (v -> Bool) -> v -> RangeL 1 m a -> Split (RangeL 0 (m - 1)) a
