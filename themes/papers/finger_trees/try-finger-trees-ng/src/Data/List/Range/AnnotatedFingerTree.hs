@@ -76,3 +76,22 @@ instance Monoid Size where mempty = Size 0
 newtype Elem a = Elem { getElem :: a } deriving Show
 
 instance Measured (Elem a) Size where measure _ = Size 1
+
+infixl 5 ||>, |>, |>.
+
+(||>) :: Measured a v => DigitR a -> a -> Either (DigitR a) (Node v a, DigitR a)
+NilR :+ a ||> b = Left $ NilR :++ a :+ b
+NilR :++ a :+ b ||> c = Left $ NilR :++ a :++ b :+ c
+NilR :++ a :++ b :+ c ||> d = Left $ NilR :++ a :++ b :++ c :+ d
+NilR :++ a :++ b :++ c :+ d ||> e = Right (node3 a b c, NilR :++ d :+ e)
+_ ||> _ = error "never occur"
+
+(|>) :: Measured a v => FingerTree v a -> a -> FingerTree v a
+Empty |> a = Single a
+Single a |> b = deep (a :. NilL) Empty (NilR :+ b)
+Deep _ pr m sf |> a = case sf ||> a of
+	Left sf' -> deep pr m sf'
+	Right (n3, sf') -> deep pr (m |> n3) sf'
+
+(|>.) :: (Measured a v, Foldable t) => FingerTree v a -> t a -> FingerTree v a
+(|>.) = reducel (|>)
