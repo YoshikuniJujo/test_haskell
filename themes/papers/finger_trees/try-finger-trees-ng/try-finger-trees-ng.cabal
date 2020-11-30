@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2ba6d8f113ab6a32dbe5d9111305f1be048ddb8c8e4d3a3f627e256c4b79f864
+-- hash: 05f3fed0ede62c71600d49003f6f57965d41a7666bc2482840597d3f10384157
 
 name:           try-finger-trees-ng
 version:        0.1.0.0
@@ -34,6 +34,7 @@ library
       Data.List.Range.SimpleSequence
       Data.List.RangeL
       Data.List.RangeR
+      Data.View
       Derive
       Equal
       Expression

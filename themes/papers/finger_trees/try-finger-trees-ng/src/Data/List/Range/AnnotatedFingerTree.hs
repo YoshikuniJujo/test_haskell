@@ -9,6 +9,7 @@ module Data.List.Range.AnnotatedFingerTree where
 -- import GHC.TypeNats
 
 import Data.List.Range
+import Data.View
 import Internal.Tools
 
 class Monoid v => Measured a v where measure :: a -> v
@@ -95,3 +96,18 @@ Deep _ pr m sf |> a = case sf ||> a of
 
 (|>.) :: (Measured a v, Foldable t) => FingerTree v a -> t a -> FingerTree v a
 (|>.) = reducel (|>)
+
+viewL  :: Measured a v => FingerTree v a -> ViewL (FingerTree v) a
+viewL Empty = NL
+viewL (Single x) = ConsL x Empty
+viewL (Deep _ (a :. pr') m sf) = ConsL a $ deepL pr' m sf
+
+nodeToDigitL :: Node v a -> DigitL a
+nodeToDigitL (Node _ xs) = loosenL xs
+
+deepL :: Measured a v =>
+	RangeL 0 3 a -> FingerTree v (Node v a) -> DigitR a -> FingerTree v a
+deepL NilL m sf = case viewL m of
+	NL -> toTree sf
+	ConsL a m' -> deep (nodeToDigitL a) m' sf
+deepL _ _ _ = error "never occur"

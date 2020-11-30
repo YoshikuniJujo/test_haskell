@@ -10,6 +10,7 @@ module Data.List.Range.FingerTree where
 import GHC.TypeNats
 
 import Data.List.Range
+import Data.View
 import Internal.Tools
 
 data FingerTree a
@@ -83,8 +84,6 @@ Deep pr m sf |> a = case sf ||> a of
 toTree :: Foldable t => t a -> FingerTree a
 toTree = (<|. Empty)
 
-data ViewL s a = NL | ConsL a (s a) deriving Show
-
 viewL :: FingerTree a -> ViewL FingerTree a
 viewL Empty = NL
 viewL (Single x) = ConsL x Empty
@@ -108,8 +107,6 @@ uncons x = case viewL x of NL -> Nothing; ConsL a x' -> Just (a, x')
 
 unsnoc :: FingerTree a -> Maybe (FingerTree a, a)
 unsnoc x = case viewR x of NR -> Nothing; ConsR x' a -> Just (x', a)
-
-data ViewR s a = NR | ConsR (s a) a deriving Show
 
 viewR :: FingerTree a -> ViewR FingerTree a
 viewR Empty = NR
