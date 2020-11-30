@@ -118,3 +118,22 @@ isEmpty x = case viewL x of NL -> True; ConsL _ _ -> False
 
 uncons :: Measured a v => FingerTree v a -> Maybe (a, FingerTree v a)
 uncons x = case viewL x of NL -> Nothing; ConsL a x' -> Just (a, x')
+
+viewR :: Measured a v => FingerTree v a -> ViewR (FingerTree v) a
+viewR Empty = NR
+viewR (Single x) = ConsR Empty x
+viewR (Deep _ pr m (sf' :+ a)) = ConsR (deepR pr m sf') a
+
+nodeToDigitR :: Node v a -> DigitR a
+nodeToDigitR (Node _ xs) = loosenR $ leftToRight xs
+
+deepR :: Measured a v =>
+	DigitL a -> FingerTree v (Node v a) -> RangeR 0 3 a -> FingerTree v a
+deepR pr m NilR = case viewR m of
+	NR -> toTree pr
+	ConsR m' a -> deep pr m' (nodeToDigitR a)
+deepR pr m (sf :++ a) = deep pr m (loosenR $ sf :+ a)
+deepR _ _ _ = error "never occur"
+
+unsnoc :: Measured a v => FingerTree v a -> Maybe (FingerTree v a, a)
+unsnoc x = case viewR x of NR -> Nothing; ConsR x' a -> Just (x', a)
