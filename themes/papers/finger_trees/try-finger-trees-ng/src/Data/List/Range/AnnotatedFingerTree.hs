@@ -45,3 +45,34 @@ instance Measured a v => Measured (FingerTree v a) v where
 	measure Empty = mempty
 	measure (Single x) = measure x
 	measure (Deep v _ _ _) = v
+
+infixr 5 <||, <|, <|.
+
+(<||) :: Measured a v => a -> DigitL a -> Either (DigitL a) (DigitL a, Node v a)
+a <|| b :. NilL = Left $ a :. b :.. NilL
+a <|| b :. c :.. NilL = Left $ a :. b :.. c :.. NilL
+a <|| b :. c :.. d :.. NilL = Left $ a :. b :.. c :.. d :.. NilL
+a <|| b :. c :.. d :.. e :.. NilL = Right (a :. b :.. NilL, node3 c d e)
+_ <|| _ = error "never occur"
+
+(<|) :: Measured a v => a -> FingerTree v a -> FingerTree v a
+a <| Empty = Single a
+a <| Single b = deep (a :. NilL) Empty (NilR :+ b)
+a <| Deep _ pr m sf = case a <|| pr of
+	Left pr' -> deep pr' m sf
+	Right (pr', n3) -> deep pr' (n3 <| m) sf
+
+(<|.) :: (Measured a v, Foldable t) => t a -> FingerTree v a -> FingerTree v a
+(<|.) = reducer (<|)
+
+toTree :: (Measured a v, Foldable t) => t a -> FingerTree v a
+toTree = (<|. Empty)
+
+newtype Size = Size { getSize :: Int } deriving (Show, Eq, Ord)
+
+instance Semigroup Size where Size m <> Size n = Size $ m + n
+instance Monoid Size where mempty = Size 0
+
+newtype Elem a = Elem { getElem :: a } deriving Show
+
+instance Measured (Elem a) Size where measure _ = Size 1
