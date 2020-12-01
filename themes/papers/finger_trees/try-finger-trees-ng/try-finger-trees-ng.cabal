@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bff191497107a894caa3711f687e8caf59b32db71af7580f22c363f7ee357139
+-- hash: 15f866d9b5b1f8927d3ea5e8cac2a146c735725cd435ad06fcc39470c690aa9d
 
 name:           try-finger-trees-ng
 version:        0.1.0.0
@@ -44,7 +44,7 @@ library
       Derivation.Polynominal.AvoidNegative
       Derivation.Polynominal.Derive
       Derivation.Polynominal.Given
-      Derivation.Polynominal.Type
+      Derivation.Polynominal.Polynominal
       Derivation.Polynominal.Wanted
       Derivation.Polynominal.Zero
       Internal.Tools

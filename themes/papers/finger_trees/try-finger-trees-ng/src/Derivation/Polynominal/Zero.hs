@@ -13,7 +13,7 @@ import Data.Map.Strict hiding (foldr, toList, null)
 import Data.Map.Merge.Strict
 import qualified Data.Map.Strict as M
 
-import Derivation.Polynominal.Type
+import Derivation.Polynominal.Polynominal
 
 data Zero v
 	= Eq (Polynominal v) | Geq (Polynominal v)

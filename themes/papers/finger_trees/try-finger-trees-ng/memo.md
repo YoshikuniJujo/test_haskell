@@ -61,16 +61,18 @@ refactor new TypeCheck
 -----------------------
 
 * [x] remove old typecheck
-* [x] remove 'New' from module hierarchy
+* [x] remove 'New' from module name hierarchy
 * [x] try removing Polynominal
-* [x] check module hierarchy
-* [ ] refactor module hierarchy
+* [x] check module name hierarchy
+* [ ] refactor module name hierarchy
 	+ [x] add top level name Derivation
 	+ [x] consider whether or not to rename TypeCheck.Nat to Plugin.TypeCheck.Nat.Simple
+	+ [x] rename Polynominal.Type to Polynominal.Polynominal
+	+ [ ] remove middle name 'Polynominal' from module name
 	+ [ ] consider whether or not to rename Expression
 	+ [ ] others
 
-### module hierarchy
+### module name hierarchy
 
 ```
 Derivation

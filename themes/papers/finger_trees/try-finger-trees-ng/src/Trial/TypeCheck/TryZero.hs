@@ -6,7 +6,7 @@ import Data.Maybe
 import Derivation.Polynominal.Zero
 import Trial.TypeCheck.ExpParser
 import Derivation.Polynominal.AvoidNegative
-import Derivation.Polynominal.Type
+import Derivation.Polynominal.Polynominal
 
 samplePolynominal :: Writer [Zero String] (Polynominal String)
 samplePolynominal = termToPolynominal . fst . fromJust . parseTerm $ tokens "((m + m) - 2)"
