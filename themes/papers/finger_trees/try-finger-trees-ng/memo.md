@@ -62,5 +62,22 @@ refactor new TypeCheck
 
 * [x] remove old typecheck
 * [x] remove 'New' from module hierarchy
+* [x] try removing Polynominal
 * [ ] check module hierarchy
 * [ ] refactor module hierarchy
+
+### module hierarchy
+
+```
+Expression
+Polynominal
+  + Derive
+  + Given
+  + Wanted
+  + AvoidNegative
+  + Zero
+  + Type
+TypeCheck
+  + Nat
+      + Decode
+```

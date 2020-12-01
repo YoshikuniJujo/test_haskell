@@ -5,7 +5,7 @@ module Trial.TypeCheck.TryGiven where
 import Data.Map.Strict
 
 import Trial.TypeCheck.ExpParser
-import Polynominal
+import Polynominal.AvoidNegative
 import Polynominal.Zero
 import Polynominal.Given
 
@@ -17,7 +17,7 @@ createGiven ss = do
 createZero :: String -> Maybe (Zero String)
 createZero s = do
 	(e, _) <- parseBool $ tokens s
-	eqToZero e True empty
+	fst $ eqToZero' e True empty
 
 sampleExps1 :: [String]
 sampleExps1 = [
