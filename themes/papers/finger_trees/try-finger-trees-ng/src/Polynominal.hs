@@ -3,16 +3,16 @@
 {-# LANGUAGE GADTs #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module New.Polynominal where
+module Polynominal where
 
 import Control.Arrow
 import Data.Maybe
 import Data.List hiding (insert)
 import Data.Map.Strict
 
-import New.Expression
-import New.Polynominal.Type
-import New.Polynominal.Zero
+import Expression
+import Polynominal.Type
+import Polynominal.Zero
 
 termToPolynominal :: Ord v => Exp v Term -> Polynominal v
 termToPolynominal (Const n) = singleton Nothing n

@@ -1,15 +1,15 @@
 {-# OPTIOnS_GHC -Wall -fno-warn-tabs #-}
 
-module New.Trial.TryTypeCheck where
+module Trial.TypeCheck.TryTypeCheck where
 
 import Data.Maybe
 import Data.List
 
-import New.Trial.ExpParser
-import New.Polynominal.Wanted
-import New.Polynominal.Given
-import New.Polynominal.Derive
-import New.Polynominal.Zero
+import Trial.TypeCheck.ExpParser
+import Polynominal.Wanted
+import Polynominal.Given
+import Polynominal.Derive
+import Polynominal.Zero
 
 wanted :: Wanted String
 Just (Just wanted, _) = expToWanted . fst <$> parseBool (tokens "((p + d) == u)")
@@ -36,7 +36,7 @@ debugIt :: Bool
 debugIt = canDerive debugGiven debugWanted
 
 debugRemoveVar :: [Maybe String]
-debugRemoveVar = New.Polynominal.Given.containVars debugGiven \\ New.Polynominal.Wanted.containVars debugWanted
+debugRemoveVar = Polynominal.Given.containVars debugGiven \\ Polynominal.Wanted.containVars debugWanted
 
 debugCheck :: Given String
 debugCheck = removeVars debugGiven [

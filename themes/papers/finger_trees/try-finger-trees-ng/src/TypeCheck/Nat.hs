@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module New.TypeCheck.Nat (plugin) where
+module TypeCheck.Nat (plugin) where
 
 import GhcPlugins hiding ((<>))
 import TcPluginM
@@ -12,10 +12,10 @@ import Data.Bool
 import Data.Maybe
 import Data.Either
 
-import New.TypeCheck.Nat.Decode
-import New.Polynominal.Given
-import New.Polynominal.Wanted
-import New.Polynominal.Derive
+import TypeCheck.Nat.Decode
+import Polynominal.Given
+import Polynominal.Wanted
+import Polynominal.Derive
 
 import qualified Data.Text as T
 
@@ -27,10 +27,10 @@ plugin = defaultPlugin { tcPlugin = const . Just $ TcPlugin {
 
 solveNat :: [Ct] -> [Ct] -> [Ct] -> TcPluginM TcPluginResult
 solveNat _ _ [] = do
-	tcPluginTrace "!New.TypeCheck.Nat.plugin" ""
+	tcPluginTrace "!TypeCheck.Nat.plugin" ""
 	pure $ TcPluginOk [] []
 solveNat gs ds ws = do
-	tcPluginTrace "!New.TypeCheck.Nat.Plugin" ""
+	tcPluginTrace "!TypeCheck.Nat.Plugin" ""
 --	tcPluginTrace "Given: " $ ppr gs
 --	tcPluginTrace "Derived: " $ ppr ds
 	tcPluginTrace "Wanted: " $ ppr ws
@@ -58,4 +58,4 @@ canDeriveCt gs w = do
 
 makeEvTerm :: Type -> Type -> EvTerm
 makeEvTerm t1 t2 = EvExpr . Coercion
-	$ mkUnivCo (PluginProv "New.TypeCheck.Nat") Nominal t1 t2
+	$ mkUnivCo (PluginProv "TypeCheck.Nat") Nominal t1 t2

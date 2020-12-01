@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module New.TypeCheck.Nat.Decode where
+module TypeCheck.Nat.Decode where
 
 import GhcPlugins hiding (Expr(Var), (<>))
 import TcRnTypes
@@ -9,7 +9,7 @@ import TyCoRep
 
 import Outputable hiding ((<>))
 
-import New.Expression
+import Expression
 
 import qualified Data.Text as T
 

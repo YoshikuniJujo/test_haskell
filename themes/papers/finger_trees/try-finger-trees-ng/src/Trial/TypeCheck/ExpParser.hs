@@ -1,12 +1,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module New.Trial.ExpParser where
+module Trial.TypeCheck.ExpParser where
 
 import Data.Maybe
 import Data.List
 import Data.Char
 
-import New.Expression
+import Expression
 
 parseBool :: [String] -> Maybe (Exp String Bool, [String])
 parseBool ("F" : ts) = Just (Bool False, ts)

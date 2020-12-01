@@ -2,7 +2,7 @@
 {-# LANGUAGE StandaloneDeriving, DeriveAnyClass #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module New.Expression where
+module Expression where
 
 import Outputable
 

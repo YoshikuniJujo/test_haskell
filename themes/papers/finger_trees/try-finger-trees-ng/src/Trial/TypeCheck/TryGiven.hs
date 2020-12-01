@@ -1,13 +1,13 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module New.Trial.TryGiven where
+module Trial.TypeCheck.TryGiven where
 
 import Data.Map.Strict
 
-import New.Trial.ExpParser
-import New.Polynominal
-import New.Polynominal.Zero
-import New.Polynominal.Given
+import Trial.TypeCheck.ExpParser
+import Polynominal
+import Polynominal.Zero
+import Polynominal.Given
 
 createGiven :: [String] -> Maybe (Given String)
 createGiven ss = do

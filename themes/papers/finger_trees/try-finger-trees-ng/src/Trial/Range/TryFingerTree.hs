@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.TryFingerTree where
+module Trial.Range.TryFingerTree where
 
 import Data.List.Range.FingerTree
 

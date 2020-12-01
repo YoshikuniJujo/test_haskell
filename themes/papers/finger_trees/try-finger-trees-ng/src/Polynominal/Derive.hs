@@ -1,12 +1,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module New.Polynominal.Derive where
+module Polynominal.Derive where
 
 import Data.List
 
-import New.Polynominal.Zero
-import New.Polynominal.Given as G
-import New.Polynominal.Wanted as W
+import Polynominal.Zero
+import Polynominal.Given as G
+import Polynominal.Wanted as W
 
 canDerive :: Ord v => Given v -> Wanted v -> Bool
 canDerive g w =

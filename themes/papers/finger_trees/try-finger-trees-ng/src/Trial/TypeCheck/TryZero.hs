@@ -1,11 +1,11 @@
-module New.Trial.TryZero where
+module Trial.TypeCheck.TryZero where
 
 import Data.Maybe
 
-import New.Polynominal.Zero
-import New.Trial.ExpParser
-import New.Polynominal
-import New.Polynominal.Type
+import Polynominal.Zero
+import Trial.TypeCheck.ExpParser
+import Polynominal
+import Polynominal.Type
 
 samplePolynominal :: Polynominal String
 samplePolynominal = termToPolynominal . fst . fromJust . parseTerm $ tokens "((m + m) - 2)"

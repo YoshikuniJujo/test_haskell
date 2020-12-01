@@ -1,10 +1,9 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE GADTs #-}
--- {-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=New.TypeCheck.Nat #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=New.TypeCheck.Nat #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=TypeCheck.Nat #-}
 
-module New.Trial.Hello where
+module Trial.TypeCheck.Hello where
 
 import GHC.TypeLits
 import Data.Proxy

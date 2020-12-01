@@ -1,7 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.TryRange where
+module Trial.Range.TryRange where
 
 import Data.List.Range
 

@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module New.Polynominal.Type where
+module Polynominal.Type where
 
 import Data.Map.Strict
 import Data.Map.Merge.Strict
