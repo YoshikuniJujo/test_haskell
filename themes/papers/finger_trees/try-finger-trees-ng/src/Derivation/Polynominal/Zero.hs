@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Polynominal.Zero (
+module Derivation.Polynominal.Zero (
 	Zero, equal, greatEqualThan, greatThan,
 	containVars, doesContainVar, removeVar, identity,
 	isDerivableFrom,
@@ -13,7 +13,7 @@ import Data.Map.Strict hiding (foldr, toList, null)
 import Data.Map.Merge.Strict
 import qualified Data.Map.Strict as M
 
-import Polynominal.Type
+import Derivation.Polynominal.Type
 
 data Zero v
 	= Eq (Polynominal v) | Geq (Polynominal v)

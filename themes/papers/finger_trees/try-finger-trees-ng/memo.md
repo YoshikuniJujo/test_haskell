@@ -63,20 +63,24 @@ refactor new TypeCheck
 * [x] remove old typecheck
 * [x] remove 'New' from module hierarchy
 * [x] try removing Polynominal
-* [ ] check module hierarchy
+* [x] check module hierarchy
 * [ ] refactor module hierarchy
+	+ [x] add top level name Derivation
+	+ [ ] module Expression to Some.Expression
+	+ [ ] consider whether or not to rename Expression
 
 ### module hierarchy
 
 ```
-Expression
-Polynominal
-  + Derive
-  + Given
-  + Wanted
-  + AvoidNegative
-  + Zero
-  + Type
+Derivation
+  + Expression
+  + Polynominal
+      + Derive
+      + Given
+      + Wanted
+      + AvoidNegative
+      + Zero
+      + Type
 TypeCheck
   + Nat
       + Decode

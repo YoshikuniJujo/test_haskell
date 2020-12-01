@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 10ddee4e82438cf51ed9ebd8f439da7009956f7b92a34821014c6f20e4ff4677
+-- hash: 8720bd2de5ef6ecee9b4989e5996e229c99c9ad9585c6185676b99dad5200a7a
 
 name:           try-finger-trees-ng
 version:        0.1.0.0
@@ -40,14 +40,14 @@ library
       Data.List.RangeL
       Data.List.RangeR
       Data.View
-      Expression
+      Derivation.Expression
+      Derivation.Polynominal.AvoidNegative
+      Derivation.Polynominal.Derive
+      Derivation.Polynominal.Given
+      Derivation.Polynominal.Type
+      Derivation.Polynominal.Wanted
+      Derivation.Polynominal.Zero
       Internal.Tools
-      Polynominal.AvoidNegative
-      Polynominal.Derive
-      Polynominal.Given
-      Polynominal.Type
-      Polynominal.Wanted
-      Polynominal.Zero
       Trial.Range.TryFingerTree
       Trial.Range.TryRange
       Trial.TypeCheck.ExpParser

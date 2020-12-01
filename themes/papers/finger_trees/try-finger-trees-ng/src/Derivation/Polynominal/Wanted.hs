@@ -1,17 +1,17 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Polynominal.Wanted where
+module Derivation.Polynominal.Wanted where
 
 import Outputable hiding (empty)
 
 import Control.Arrow
 import Data.Map.Strict
 
-import Polynominal.AvoidNegative
-import Polynominal.Zero hiding (containVars)
-import Expression
+import Derivation.Polynominal.AvoidNegative
+import Derivation.Polynominal.Zero hiding (containVars)
+import Derivation.Expression
 
-import qualified Polynominal.Zero as Z
+import qualified Derivation.Polynominal.Zero as Z
 
 newtype Wanted v = Wanted (Zero v) deriving Show
 
