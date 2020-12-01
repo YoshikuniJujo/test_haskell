@@ -69,7 +69,7 @@ refactor new TypeCheck
 	+ [x] consider whether or not to rename TypeCheck.Nat to Plugin.TypeCheck.Nat.Simple
 	+ [x] rename Polynominal.Type to Polynominal.Polynominal
 	+ [x] remove middle name 'Polynominal' from module name
-	+ [ ] add top name Data to Derivation
+	+ [x] add top name Data to Derivation
 	+ [ ] rename AvoidNegative
 	+ [ ] consider whether or not to rename Expression
 	+ [ ] others
