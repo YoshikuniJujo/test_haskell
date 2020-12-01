@@ -66,8 +66,9 @@ refactor new TypeCheck
 * [x] check module hierarchy
 * [ ] refactor module hierarchy
 	+ [x] add top level name Derivation
-	+ [ ] module Expression to Some.Expression
+	+ [x] consider whether or not to rename TypeCheck.Nat to Plugin.TypeCheck.Nat.Simple
 	+ [ ] consider whether or not to rename Expression
+	+ [ ] others
 
 ### module hierarchy
 
@@ -81,7 +82,9 @@ Derivation
       + AvoidNegative
       + Zero
       + Type
-TypeCheck
-  + Nat
-      + Decode
+Plugin
+  + TypeCheck
+      + Nat
+          + Simple
+              + Decode
 ```

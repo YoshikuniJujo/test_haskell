@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module TypeCheck.Nat (plugin) where
+module Plugin.TypeCheck.Nat.Simple (plugin) where
 
 import GhcPlugins hiding ((<>))
 import TcPluginM
@@ -12,7 +12,7 @@ import Data.Bool
 import Data.Maybe
 import Data.Either
 
-import TypeCheck.Nat.Decode
+import Plugin.TypeCheck.Nat.Simple.Decode
 import Derivation.Polynominal.Given
 import Derivation.Polynominal.Wanted
 import Derivation.Polynominal.Derive
