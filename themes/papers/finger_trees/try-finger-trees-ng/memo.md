@@ -59,3 +59,7 @@ make new TypeCheck
 
 refactor new TypeCheck
 -----------------------
+
+* [x] remove old typecheck
+* [ ] check module hierarchy
+* [ ] refactor module hierarchy
