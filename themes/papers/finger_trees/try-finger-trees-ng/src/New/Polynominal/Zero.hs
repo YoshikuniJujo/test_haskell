@@ -16,7 +16,7 @@ import qualified Data.Map.Strict as M
 import New.Polynominal.Type
 
 data Zero v
-	= Eq (Polynominal v) | Geq (Polynominal v) | Grt (Polynominal v)
+	= Eq (Polynominal v) | Geq (Polynominal v)
 	deriving (Show, Eq, Ord)
 
 isEq :: Zero v -> Bool
@@ -53,26 +53,21 @@ greatEqualThan :: Ord v => Polynominal v -> Polynominal v -> Zero v
 p1 `greatEqualThan` p2 = Geq . regularizeG $ p1 .- p2
 
 greatThan :: Ord v => Polynominal v -> Polynominal v -> Zero v
-p1 `greatThan` p2 = Grt . regularizeG $ p1 .- p2
+p1 `greatThan` p2 = Geq . regularizeG $ p1 .- p2 .- one
 
 removeVar :: Ord v => Zero v -> Zero v -> Maybe v -> Maybe (Zero v)
 removeVar (Eq p1) (Eq p2) v = Eq . regularizeEq . uncurry (.+) <$> alignVarEqEq p1 p2 v
 removeVar (Eq p1) (Geq p2) v = Geq . regularizeG . uncurry (.+) <$> alignVarEqG p1 p2 v
-removeVar (Eq p1) (Grt p2) v = Grt . regularizeG . uncurry (.+) <$> alignVarEqG p1 p2 v
 removeVar (Geq p1) (Geq p2) v = Geq . regularizeG . uncurry (.+) <$> alignVarGG p1 p2 v
-removeVar (Geq p1) (Grt p2) v = Grt . regularizeG . uncurry (.+) <$> alignVarGG p1 p2 v
-removeVar (Grt p1) (Grt p2) v = Grt . regularizeG . uncurry (.+) <$> alignVarGG p1 p2 v
 removeVar z1 z2 v = removeVar z2 z1 v
 
 doesContainVar :: Ord v => Zero v -> Maybe v -> Bool
 doesContainVar (Eq p) v = isJust $ p !? v
 doesContainVar (Geq p) v = isJust $ p !? v
-doesContainVar (Grt p) v = isJust $ p !? v
 
 containVars :: Ord v => Zero v -> [Maybe v]
 containVars (Eq p) = (fst <$>) $ M.toList p
 containVars (Geq p) = (fst <$>) $ M.toList p
-containVars (Grt p) = (fst <$>) $ M.toList p
 
 alignVarEqEq :: Ord v => Polynominal v -> Polynominal v -> Maybe v -> Maybe (Polynominal v, Polynominal v)
 alignVarEqEq p1 p2 v = case (p1 !? v, p2 !? v) of
@@ -98,7 +93,6 @@ alignVarGG p1 p2 v = case (p1 !? v, p2 !? v) of
 identity :: Zero v -> Bool
 identity (Eq p) = M.null p
 identity (Geq p) = M.null p
-identity (Grt p) = M.null p
 
 zipAll :: Ord k => (v -> v -> Bool) -> Map k v -> Map k v -> Bool
 zipAll p m1 m2 = foldr (&&) True $ merge (mapMissing \_ _ -> False) (mapMissing \_ _ -> False) (zipWithMatched \_ -> p) m1 m2
@@ -110,13 +104,11 @@ p1 `isEqLargerThan` p2 = foldr (&&) True $ merge (mapMissing \_ n -> True) (mapM
 isDerivableFrom :: Ord v => Zero v -> Zero v -> Bool
 isDerivableFrom (Eq pw) (Eq pg) = pw == pg
 isDerivableFrom (Geq pw) (Geq pg) = pw `isEqLargerThan` pg
-isDerivableFrom (Grt pw) (Grt pg) = pw `isEqLargerThan` pg
 isDerivableFrom _ _ = False
 
 noNegativeFromG :: Zero v -> Zero v
 noNegativeFromG eq@(Eq _) = eq
 noNegativeFromG (Geq p) = Geq $ M.filter (> 0) p
-noNegativeFromG (Grt p) = Grt $ M.filter (> 0) p
 
 debugZeros, debugZeros1, debugZeros2 :: [Zero String]
 debugZeros = debugZeros1 ++ debugZeros2

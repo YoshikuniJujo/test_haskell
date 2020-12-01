@@ -50,9 +50,9 @@ make new TypeCheck
 * [ ] make Annotated fingertree
 	+ [x] make empty module
 	+ [ ] others
-* [ ] remove Grt
-	+ [ ] use Geq (foo + 1) instead of Grt foo
-	+ [ ] remove Grt
+* [x] remove Grt
+	+ [x] use Geq (foo - bar - 1) instead of Grt (foo - bar) foo
+	+ [x] remove Grt
 * [ ] no negative Nat
 	+ [ ] eqToZero: return list of Zero
 	+ [ ] termToPolynominal: return ([Zero v], Polynominal v)

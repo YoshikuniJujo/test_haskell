@@ -15,3 +15,6 @@ type Polynominal v = Map (Maybe v) Integer
 removeZero :: (Eq n, Num n) => n -> Maybe n
 removeZero 0 = Nothing
 removeZero n = Just n
+
+one :: Polynominal v
+one = singleton Nothing 1
