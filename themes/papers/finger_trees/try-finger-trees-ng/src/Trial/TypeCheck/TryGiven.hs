@@ -5,9 +5,9 @@ module Trial.TypeCheck.TryGiven where
 import Data.Map.Strict
 
 import Trial.TypeCheck.ExpParser
-import Derivation.Polynominal.AvoidNegative
-import Derivation.Polynominal.Zero
-import Derivation.Polynominal.Given
+import Derivation.AvoidNegative
+import Derivation.Zero
+import Derivation.Given
 
 createGiven :: [String] -> Maybe (Given String)
 createGiven ss = do

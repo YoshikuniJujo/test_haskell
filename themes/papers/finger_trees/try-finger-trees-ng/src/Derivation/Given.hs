@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Derivation.Polynominal.Given where
+module Derivation.Given where
 
 import Outputable
 
@@ -10,9 +10,9 @@ import Data.Either
 import Data.List
 
 import Derivation.Expression
-import Derivation.Polynominal.AvoidNegative
-import Derivation.Polynominal.Zero hiding (removeVar, containVars)
-import qualified Derivation.Polynominal.Zero as Z
+import Derivation.AvoidNegative
+import Derivation.Zero hiding (removeVar, containVars)
+import qualified Derivation.Zero as Z
 
 newtype Given v = Given [Zero v] deriving Show
 

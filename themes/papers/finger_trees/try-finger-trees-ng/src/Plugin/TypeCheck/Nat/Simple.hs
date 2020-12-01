@@ -13,9 +13,9 @@ import Data.Maybe
 import Data.Either
 
 import Plugin.TypeCheck.Nat.Simple.Decode
-import Derivation.Polynominal.Given
-import Derivation.Polynominal.Wanted
-import Derivation.Polynominal.Derive
+import Derivation.Given
+import Derivation.Wanted
+import Derivation.Derive
 
 import qualified Data.Text as T
 

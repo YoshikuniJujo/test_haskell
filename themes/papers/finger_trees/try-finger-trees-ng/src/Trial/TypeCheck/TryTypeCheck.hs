@@ -6,10 +6,10 @@ import Data.Maybe
 import Data.List
 
 import Trial.TypeCheck.ExpParser
-import Derivation.Polynominal.Wanted
-import Derivation.Polynominal.Given
-import Derivation.Polynominal.Derive
-import Derivation.Polynominal.Zero
+import Derivation.Wanted
+import Derivation.Given
+import Derivation.Derive
+import Derivation.Zero
 
 wanted :: Wanted String
 Just (Just wanted, _) = expToWanted . fst <$> parseBool (tokens "((p + d) == u)")
@@ -36,7 +36,7 @@ debugIt :: Bool
 debugIt = canDerive debugGiven debugWanted
 
 debugRemoveVar :: [Maybe String]
-debugRemoveVar = Derivation.Polynominal.Given.containVars debugGiven \\ Derivation.Polynominal.Wanted.containVars debugWanted
+debugRemoveVar = Derivation.Given.containVars debugGiven \\ Derivation.Wanted.containVars debugWanted
 
 debugCheck :: Given String
 debugCheck = removeVars debugGiven [
