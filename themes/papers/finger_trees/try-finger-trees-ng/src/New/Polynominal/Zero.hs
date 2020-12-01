@@ -92,7 +92,10 @@ alignVarGG p1 p2 v = case (p1 !? v, p2 !? v) of
 
 identity :: Zero v -> Bool
 identity (Eq p) = M.null p
-identity (Geq p) = M.null p
+identity (Geq p) = checkAll (>= 0) p -- M.null p
+
+checkAll :: (v -> Bool) -> Map k v -> Bool
+checkAll p = and . (p <$>)
 
 zipAll :: Ord k => (v -> v -> Bool) -> Map k v -> Map k v -> Bool
 zipAll p m1 m2 = foldr (&&) True $ merge (mapMissing \_ _ -> False) (mapMissing \_ _ -> False) (zipWithMatched \_ -> p) m1 m2

@@ -10,7 +10,7 @@ import Data.Either
 import Data.List
 
 import New.Expression
-import New.Polynominal
+import New.Polynominal.AvoidNegative
 import New.Polynominal.Zero hiding (removeVar, containVars)
 import qualified New.Polynominal.Zero as Z
 
@@ -20,7 +20,7 @@ given :: Ord v => [Zero v] -> Given v
 given zs = Given . nub . sort $ zs ++ take 8 (noNegativeFromG <$> zs)
 
 expsToGiven :: Ord v => [Exp v Bool] -> Given v
-expsToGiven es = given . catMaybes $ (\e -> eqToZero e True vb) <$> es
+expsToGiven es = given . concat $ (\e -> uncurry (maybe id (:)) $ eqToZero' e True vb) <$> es
 	where vb = expToVarBool es
 
 givenToZeros :: Given v -> [Zero v]

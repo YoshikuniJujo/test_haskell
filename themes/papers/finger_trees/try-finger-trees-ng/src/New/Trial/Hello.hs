@@ -12,6 +12,12 @@ import Data.Proxy
 plusOne :: (m + 1) ~ (n + 1) => Proxy m -> Proxy n
 plusOne = id
 
+foo :: (moocho - 1) ~ (noocho - 1) => Proxy moocho -> Proxy noocho
+foo = id
+
+bar :: Proxy 0 -> Proxy 0
+bar = foo
+
 {-
 ohmygosh :: ((m + 1) + (m' - 1)) ~ (m + m') => a -> a
 ohmygosh = id

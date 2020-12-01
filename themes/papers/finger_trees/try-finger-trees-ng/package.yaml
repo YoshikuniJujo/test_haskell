@@ -24,6 +24,7 @@ dependencies:
 - ghc
 - containers
 - text
+- monads-tf
 
 library:
   source-dirs: src

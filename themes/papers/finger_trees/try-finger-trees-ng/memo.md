@@ -53,9 +53,9 @@ make new TypeCheck
 * [x] remove Grt
 	+ [x] use Geq (foo - bar - 1) instead of Grt (foo - bar) foo
 	+ [x] remove Grt
-* [ ] no negative Nat
-	+ [ ] eqToZero: return list of Zero
-	+ [ ] termToPolynominal: return ([Zero v], Polynominal v)
+* [x] no negative Nat
+	+ [x] eqToZero: return list of Zero
+	+ [x] termToPolynominal: return ([Zero v], Polynominal v)
 
 refactor new TypeCheck
 -----------------------

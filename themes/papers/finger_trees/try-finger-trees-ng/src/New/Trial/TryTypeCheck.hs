@@ -12,10 +12,10 @@ import New.Polynominal.Derive
 import New.Polynominal.Zero
 
 wanted :: Wanted String
-Just wanted = expToWanted . fst =<< parseBool (tokens "((p + d) == u)")
+Just (Just wanted, _) = expToWanted . fst <$> parseBool (tokens "((p + d) == u)")
 
 wanted2 :: Wanted String
-Just wanted2 = expToWanted . fst =<< parseBool (tokens "((n + nn) == (b + f))")
+Just (Just wanted2, _) = expToWanted . fst <$> parseBool (tokens "((n + nn) == (b + f))")
 
 given2 :: Given String
 given2 = expsToGiven . (fst <$>) . catMaybes $ (parseBool . tokens) <$> [
@@ -23,7 +23,7 @@ given2 = expsToGiven . (fst <$>) . catMaybes $ (parseBool . tokens) <$> [
 	]
 
 wanted3 :: Wanted String
-Just wanted3 = expToWanted . fst =<< parseBool (tokens "((u + lm) == z)")
+Just (Just wanted3, _) = expToWanted . fst <$> parseBool (tokens "((u + lm) == z)")
 
 given3 :: Given String
 given3 = expsToGiven . (fst <$>) . catMaybes $ (parseBool . tokens) <$> [
