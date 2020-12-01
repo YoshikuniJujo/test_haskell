@@ -6,7 +6,7 @@ import Data.Maybe
 import Data.List
 import Data.Char
 
-import Derivation.Expression
+import Data.Derivation.Expression
 
 parseBool :: [String] -> Maybe (Exp String Bool, [String])
 parseBool ("F" : ts) = Just (Bool False, ts)

@@ -1,17 +1,17 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Derivation.Wanted where
+module Data.Derivation.Wanted where
 
 import Outputable hiding (empty)
 
 import Control.Arrow
 import Data.Map.Strict
 
-import Derivation.AvoidNegative
-import Derivation.Zero hiding (containVars)
-import Derivation.Expression
+import Data.Derivation.AvoidNegative
+import Data.Derivation.Zero hiding (containVars)
+import Data.Derivation.Expression
 
-import qualified Derivation.Zero as Z
+import qualified Data.Derivation.Zero as Z
 
 newtype Wanted v = Wanted (Zero v) deriving Show
 

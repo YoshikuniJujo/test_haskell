@@ -13,9 +13,9 @@ import Data.Maybe
 import Data.Either
 
 import Plugin.TypeCheck.Nat.Simple.Decode
-import Derivation.Given
-import Derivation.Wanted
-import Derivation.Derive
+import Data.Derivation.Given
+import Data.Derivation.Wanted
+import Data.Derivation.Derive
 
 import qualified Data.Text as T
 

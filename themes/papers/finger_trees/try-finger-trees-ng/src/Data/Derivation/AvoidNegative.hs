@@ -3,7 +3,7 @@
 {-# LANGUAGE GADTs #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Derivation.AvoidNegative where
+module Data.Derivation.AvoidNegative where
 
 import Control.Arrow
 import Control.Monad.Writer
@@ -11,9 +11,9 @@ import Data.Maybe
 import Data.List hiding (insert)
 import Data.Map.Strict
 
-import Derivation.Expression
-import Derivation.Polynominal
-import Derivation.Zero
+import Data.Derivation.Expression
+import Data.Derivation.Polynominal
+import Data.Derivation.Zero
 
 termToPolynominal :: Ord v => Exp v Term -> Writer [Zero v] (Polynominal v)
 termToPolynominal (Const n) = pure $ singleton Nothing n

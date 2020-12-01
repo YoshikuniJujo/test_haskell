@@ -9,7 +9,7 @@ import TyCoRep
 
 import Outputable hiding ((<>))
 
-import Derivation.Expression
+import Data.Derivation.Expression
 
 import qualified Data.Text as T
 
