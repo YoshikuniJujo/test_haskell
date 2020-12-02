@@ -5,15 +5,14 @@ module Data.Derivation.Zero (
 	Zero, equal, greatEqualThan, greatThan,
 	containVars, doesContainVar, removeVar, identity,
 	isDerivableFrom,
-	noNegativeFromG, isEq, debugZeros, debugZeroWanted ) where
+	noNegativeFromG, isEq, debugZeros, debugZeroWanted,
+	Polynominal, (.+), (.-) ) where
 
 import Data.Foldable
 import Data.Maybe
 import Data.Map.Strict hiding (foldr, toList, null)
 import Data.Map.Merge.Strict
 import qualified Data.Map.Strict as M
-
-import Data.Derivation.Polynominal
 
 data Zero v
 	= Eq (Polynominal v) | Geq (Polynominal v)
@@ -134,3 +133,16 @@ debugZeros2 = Geq . fromList <$> [
 	]
 
 debugZeroWanted = Eq $ fromList [(Just "zfsk_aOHL", 1), (Just "zfsk_aOHQ", -1), (Just "zfsk_aOI3", 1)]
+
+type Polynominal v = Map (Maybe v) Integer
+
+(.+), (.-) :: Ord v => Polynominal v -> Polynominal v -> Polynominal v
+(.+) = merge preserveMissing preserveMissing (zipWithMaybeMatched \_ a b -> removeZero $ a + b)
+(.-) = merge preserveMissing (mapMissing \_ b -> negate b) (zipWithMaybeMatched \_ a b -> removeZero $ a - b)
+
+removeZero :: (Eq n, Num n) => n -> Maybe n
+removeZero 0 = Nothing
+removeZero n = Just n
+
+one :: Polynominal v
+one = singleton Nothing 1

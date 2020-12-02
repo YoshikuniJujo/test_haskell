@@ -72,9 +72,8 @@ refactor new TypeCheck
 	+ [x] add top name Data to Derivation
 	+ [x] rename module from Derive to CanDerive
 	+ [x] consider whether or not to put module CanDerive, Given and Wanted in module CanDerive
-	+ [ ] consider whether or not to put module Zero and Polynominal in Zero
-	+ [ ] rename AvoidNegative
-	+ [ ] consider whether or not to rename Expression
+	+ [x] consider whether or not to put module Zero and Polynominal in module Zero
+	+ [ ] consider whether or not to put module Expression and AvoidNegative in module Expression
 	+ [ ] others
 
 ### module name hierarchy

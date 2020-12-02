@@ -12,7 +12,6 @@ import Data.List hiding (insert)
 import Data.Map.Strict
 
 import Data.Derivation.Expression
-import Data.Derivation.Polynominal
 import Data.Derivation.Zero
 
 termToPolynominal :: Ord v => Exp v Term -> Writer [Zero v] (Polynominal v)
