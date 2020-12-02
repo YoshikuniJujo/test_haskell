@@ -13,6 +13,9 @@ import Internal.Tools.Parse
 
 type Op = Exp String Term -> Exp String Term -> Exp String Term
 
+leq :: Parse String (Exp String Bool)
+leq = (:<=) <$> (term <* token "<=") <*> term
+
 term :: Parse String (Exp String Term)
 term = (\x oys -> foldl (&) x oys) <$> num <*> many opNum
 
