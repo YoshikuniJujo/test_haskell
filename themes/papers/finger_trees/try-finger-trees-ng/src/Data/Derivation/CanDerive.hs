@@ -10,7 +10,6 @@ import Data.Map.Strict hiding ((\\), foldl, null, partition, take)
 
 import Data.Derivation.Zero
 import Data.Derivation.Expression
-import Data.Derivation.AvoidNegative
 
 import qualified Data.Derivation.Zero as Z
 

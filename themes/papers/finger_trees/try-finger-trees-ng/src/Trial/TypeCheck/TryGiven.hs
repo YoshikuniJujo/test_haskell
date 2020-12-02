@@ -5,7 +5,7 @@ module Trial.TypeCheck.TryGiven where
 import Data.Map.Strict
 
 import Trial.TypeCheck.ExpParser
-import Data.Derivation.AvoidNegative
+import Data.Derivation.Expression
 import Data.Derivation.Zero
 import Data.Derivation.CanDerive
 
