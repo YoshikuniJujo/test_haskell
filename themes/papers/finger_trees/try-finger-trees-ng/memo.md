@@ -65,6 +65,8 @@ make new TypeCheck
 		- [x] define `term :: Parse String (Exp String Term)`
 		- [x] define leq
 		- [ ] define bool
+			* [x] F, T, (<=)
+			* [ ] (==)
 		- [ ] define var
 		- [ ] define eq
 		- [ ] define `parseWanted :: String -> [Wanted String]`
