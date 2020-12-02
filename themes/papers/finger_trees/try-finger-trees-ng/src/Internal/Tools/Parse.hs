@@ -1,12 +1,10 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Internal.Tools.Parse (
-	Parse, parse, check, char, eof, (>*>) ) where
+module Internal.Tools.Parse (Parse, parse, check, char, eof, (>*>)) where
 
 import Control.Applicative (Alternative(..))
-import Data.Maybe (listToMaybe, fromJust)
-import Data.Char (isDigit, isSpace, digitToInt)
+import Data.Maybe (listToMaybe)
 
 newtype Parse a = Parse { runParse :: String -> [(a, String)] }
 
