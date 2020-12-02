@@ -8,27 +8,27 @@ import Data.Char
 
 import Internal.Tools.Parse
 
-number :: Parse Integer
+number :: Parse Char Integer
 number = read <$> some (check isDigit)
 
-spaces1 :: Parse ()
+spaces1 :: Parse Char ()
 spaces1 = () <$ some (check isSpace)
 
-spaces :: Parse ()
+spaces :: Parse Char ()
 spaces = () <$ many (check isSpace)
 
-comma :: Parse ()
+comma :: Parse Char ()
 comma = () <$ (spaces >*> char ',' >*> spaces)
 
-sep :: Parse ()
+sep :: Parse Char ()
 sep = spaces1 <|> comma
 
-numbers :: Parse [Integer]
+numbers :: Parse Char [Integer]
 numbers = uncurry (:) <$> (number >*> many (sep *> number))
 
 type Op = Integer -> Integer -> Integer
 
-op, adsb, mldv, ad, sb, ml, dv :: Parse Op
+op, adsb, mldv, ad, sb, ml, dv :: Parse Char Op
 op = ad <|> sb <|> ml <|> dv
 adsb = ad <|> sb
 mldv = ml <|> dv
@@ -37,26 +37,26 @@ sb = (-) <$ char '-'
 ml = (*) <$ char '*'
 dv = div <$ char '/'
 
-expr :: Parse Integer
+expr :: Parse Char Integer
 expr = (\x o y -> x `o` y) <$> term <*> op <*> term
 
-term :: Parse Integer
+term :: Parse Char Integer
 term = number <|> (char '(' *> expr <* char ')')
 
 calc :: String -> Maybe Integer
 calc = parse expr
 
-expr' :: Parse Integer
+expr' :: Parse Char Integer
 expr' = (\x oys -> foldl (&) x oys) <$> term' <*> many adsbExpr'
 
-adsbExpr' :: Parse (Integer -> Integer)
+adsbExpr' :: Parse Char (Integer -> Integer)
 adsbExpr' = (\o y -> (`o` y)) <$> adsb <*> term'
 
-term' :: Parse Integer
+term' :: Parse Char Integer
 term' =	((\x oys -> foldl (&) x oys) <$> number <*> many mldvTerm') <|>
 	(char '(' *> expr' <* char ')')
 
-mldvTerm' :: Parse (Integer -> Integer)
+mldvTerm' :: Parse Char (Integer -> Integer)
 mldvTerm' = (\o y -> (`o` y)) <$> mldv <*> number
 
 calc' :: String -> Maybe Integer
