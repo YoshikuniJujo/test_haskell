@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cccc1f465f366ca3b83f7da0845d9a1d6d8366a69615ef30c9053b6c0a12a72e
+-- hash: d8226495224cb0c89a3e2fe19fbea98f984b466f84d0c153881cfb508a851907
 
 name:           try-finger-trees-ng
 version:        0.1.0.0
@@ -28,11 +28,9 @@ source-repository head
 library
   exposed-modules:
       Data.Derivation.AvoidNegative
-      Data.Derivation.Derive
+      Data.Derivation.CanDerive
       Data.Derivation.Expression
-      Data.Derivation.Given
       Data.Derivation.Polynominal
-      Data.Derivation.Wanted
       Data.Derivation.Zero
       Data.List.Range
       Data.List.Range.AnnotatedFingerTree

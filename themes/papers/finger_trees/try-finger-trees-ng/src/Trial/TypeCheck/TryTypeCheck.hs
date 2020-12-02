@@ -6,9 +6,7 @@ import Data.Maybe
 import Data.List
 
 import Trial.TypeCheck.ExpParser
-import Data.Derivation.Wanted
-import Data.Derivation.Given
-import Data.Derivation.Derive
+import Data.Derivation.CanDerive
 
 wanted :: Wanted String
 Just (Just wanted, _) = expToWanted . fst <$> parseBool (tokens "((p + d) == u)")
@@ -35,7 +33,7 @@ debugIt :: Bool
 debugIt = canDerive debugGiven debugWanted
 
 debugRemoveVar :: [Maybe String]
-debugRemoveVar = Data.Derivation.Given.containVars debugGiven \\ Data.Derivation.Wanted.containVars debugWanted
+debugRemoveVar = Data.Derivation.CanDerive.containVarsG debugGiven \\ Data.Derivation.CanDerive.containVarsW debugWanted
 
 debugCheck :: Given String
 debugCheck = removeVars debugGiven [

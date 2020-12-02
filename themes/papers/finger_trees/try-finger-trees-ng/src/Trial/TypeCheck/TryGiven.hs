@@ -7,7 +7,7 @@ import Data.Map.Strict
 import Trial.TypeCheck.ExpParser
 import Data.Derivation.AvoidNegative
 import Data.Derivation.Zero
-import Data.Derivation.Given
+import Data.Derivation.CanDerive
 
 createGiven :: [String] -> Maybe (Given String)
 createGiven ss = do

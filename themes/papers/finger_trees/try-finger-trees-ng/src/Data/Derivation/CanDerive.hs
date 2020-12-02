@@ -1,18 +1,48 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Derivation.Given where
+module Data.Derivation.CanDerive where
 
-import Outputable
-
+import Outputable hiding (empty)
 import Control.Arrow
-import Data.Maybe
 import Data.Either
 import Data.List
+import Data.Map.Strict hiding ((\\), foldl, null, partition, take)
 
+import Data.Derivation.Zero
 import Data.Derivation.Expression
 import Data.Derivation.AvoidNegative
-import Data.Derivation.Zero hiding (removeVar, containVars)
+
 import qualified Data.Derivation.Zero as Z
+
+canDerive :: Ord v => Given v -> Wanted v -> Bool
+canDerive g w =
+	selfContained w ||
+	elemBy isDerivableFrom (wantedToZero w) (givenToZeros $ removeVars g rv)
+--	wantedToZero w `elem` givenToZeros (removeVars g rv)
+	where rv = containVarsG g \\ containVarsW w
+
+elemBy :: (a -> a -> Bool) -> a -> [a] -> Bool
+elemBy eq = any . eq
+
+newtype Wanted v = Wanted (Zero v) deriving Show
+
+expToWanted :: Ord v => Exp v Bool -> (Maybe (Wanted v), [Wanted v])
+expToWanted = ((Wanted <$>) *** (Wanted <$>)) . \e -> eqToZero' e True empty
+
+wantedToZero :: Wanted v -> Zero v
+wantedToZero (Wanted z) = z
+
+containVarsW :: Ord v => Wanted v -> [Maybe v]
+containVarsW = Z.containVars . wantedToZero
+
+selfContained :: Wanted v -> Bool
+selfContained (Wanted z) = identity z
+
+instance Show v => Outputable (Wanted v) where
+	ppr = text . show
+
+debugWanted :: Wanted String
+debugWanted = Wanted debugZeroWanted
 
 newtype Given v = Given [Zero v] deriving Show
 
@@ -26,8 +56,8 @@ expsToGiven es = given . concat $ (\e -> uncurry (maybe id (:)) $ eqToZero' e Tr
 givenToZeros :: Given v -> [Zero v]
 givenToZeros (Given zs) = zs
 
-containVars :: Ord v => Given v -> [Maybe v]
-containVars = nub . sort . concat . (Z.containVars <$>) . givenToZeros
+containVarsG :: Ord v => Given v -> [Maybe v]
+containVarsG = nub . sort . concat . (Z.containVars <$>) . givenToZeros
 
 removeVarInit :: Ord v => Given v -> Maybe v -> ([Zero v], [Zero v])
 removeVarInit (Given zs) v = partition (`doesContainVar` v) zs
@@ -45,12 +75,12 @@ unfoldUntil p f s0
 	| p s0 = ([], s0)
 	| otherwise = let (r, s') = f s0 in (r :) `first` unfoldUntil p f s'
 
-removeVar :: Ord v => Given v -> Maybe v -> Given v
-removeVar g v = Given . sort $ r ++ concat (fst $ unfoldUntil null (removeVarStep v) z)
+removeVarG :: Ord v => Given v -> Maybe v -> Given v
+removeVarG g v = Given . sort $ r ++ concat (fst $ unfoldUntil null (removeVarStep v) z)
 	where (z, r) = removeVarInit g v
 
 removeVars :: Ord v => Given v -> [Maybe v] -> Given v
-removeVars = foldl removeVar
+removeVars = foldl removeVarG
 
 instance Show v => Outputable (Given v) where
 	ppr = text . show

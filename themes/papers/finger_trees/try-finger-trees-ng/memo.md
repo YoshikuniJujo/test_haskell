@@ -70,6 +70,9 @@ refactor new TypeCheck
 	+ [x] rename Polynominal.Type to Polynominal.Polynominal
 	+ [x] remove middle name 'Polynominal' from module name
 	+ [x] add top name Data to Derivation
+	+ [x] rename module from Derive to CanDerive
+	+ [x] consider whether or not to put module CanDerive, Given and Wanted in module CanDerive
+	+ [ ] consider whether or not to put module Zero and Polynominal in Zero
 	+ [ ] rename AvoidNegative
 	+ [ ] consider whether or not to rename Expression
 	+ [ ] others
