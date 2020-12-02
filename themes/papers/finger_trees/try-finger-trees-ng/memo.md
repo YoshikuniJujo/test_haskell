@@ -56,6 +56,13 @@ make new TypeCheck
 * [x] no negative Nat
 	+ [x] eqToZero: return list of Zero
 	+ [x] termToPolynominal: return ([Zero v], Polynominal v)
+* [ ] make Data.Derivation.Test.Parse
+	+ [ ] make Internal.Tools.Parse
+		- [x] until parse number
+		- [ ] rest
+	+ [ ] make Data.Derivation.Parse
+		- [ ] define `parseWanted :: String -> [Wanted String]`
+		- [ ] define `parseGiven :: [String] -> [Given String]`
 
 refactor new TypeCheck
 -----------------------
