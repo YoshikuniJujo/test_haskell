@@ -62,6 +62,7 @@ make new TypeCheck
 		- [x] rest
 		- [x] not only Char but more general type as token
 	+ [ ] make Data.Derivation.Parse
+		- [x] define `term :: Parse String (Exp String Term)`
 		- [ ] define `parseWanted :: String -> [Wanted String]`
 		- [ ] define `parseGiven :: [String] -> [Given String]`
 

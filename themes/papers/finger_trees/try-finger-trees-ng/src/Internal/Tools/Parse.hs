@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Internal.Tools.Parse (Parse, parse, check, char, eof, (>*>)) where
+module Internal.Tools.Parse (Parse, parse, check, token, eof, (>*>)) where
 
 import Control.Applicative (Alternative(..))
 import Data.Maybe (listToMaybe)
@@ -14,8 +14,8 @@ succeed v = Parse \inp -> [(v, inp)]
 check :: (t -> Bool) -> Parse t t
 check p = Parse \case c : cs | p c -> [(c, cs)]; _ -> []
 
-char :: Eq t => t -> Parse t t
-char = check . (==)
+token :: Eq t => t -> Parse t t
+token = check . (==)
 
 instance Functor (Parse t) where
 	f `fmap` Parse p = Parse \inp -> [ (f x, r) | (x, r) <- p inp ]

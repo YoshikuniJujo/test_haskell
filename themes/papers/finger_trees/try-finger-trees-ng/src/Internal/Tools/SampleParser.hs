@@ -18,7 +18,7 @@ spaces :: Parse Char ()
 spaces = () <$ many (check isSpace)
 
 comma :: Parse Char ()
-comma = () <$ (spaces >*> char ',' >*> spaces)
+comma = () <$ (spaces >*> token ',' >*> spaces)
 
 sep :: Parse Char ()
 sep = spaces1 <|> comma
@@ -32,16 +32,16 @@ op, adsb, mldv, ad, sb, ml, dv :: Parse Char Op
 op = ad <|> sb <|> ml <|> dv
 adsb = ad <|> sb
 mldv = ml <|> dv
-ad = (+) <$ char '+'
-sb = (-) <$ char '-'
-ml = (*) <$ char '*'
-dv = div <$ char '/'
+ad = (+) <$ token '+'
+sb = (-) <$ token '-'
+ml = (*) <$ token '*'
+dv = div <$ token '/'
 
 expr :: Parse Char Integer
 expr = (\x o y -> x `o` y) <$> term <*> op <*> term
 
 term :: Parse Char Integer
-term = number <|> (char '(' *> expr <* char ')')
+term = number <|> (token '(' *> expr <* token ')')
 
 calc :: String -> Maybe Integer
 calc = parse expr
@@ -54,7 +54,7 @@ adsbExpr' = (\o y -> (`o` y)) <$> adsb <*> term'
 
 term' :: Parse Char Integer
 term' =	((\x oys -> foldl (&) x oys) <$> number <*> many mldvTerm') <|>
-	(char '(' *> expr' <* char ')')
+	(token '(' *> expr' <* token ')')
 
 mldvTerm' :: Parse Char (Integer -> Integer)
 mldvTerm' = (\o y -> (`o` y)) <$> mldv <*> number
