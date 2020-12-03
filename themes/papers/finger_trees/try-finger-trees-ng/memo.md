@@ -71,6 +71,14 @@ make new TypeCheck
 		- [ ] define eq
 		- [ ] define `parseWanted :: String -> [Wanted String]`
 		- [ ] define `parseGiven :: [String] -> [Given String]`
+	+ [ ] make Data.Derivation.Parse.Packrat
+		- [x] copy Data.Parse from try-packrat
+		- [x] define expression parser
+		- [ ] define lesserEqual parser
+		- [ ] define equal parser
+		- [ ] define parseWanted
+		- [ ] define parseGiven
+		- [ ] others
 
 refactor new TypeCheck
 -----------------------

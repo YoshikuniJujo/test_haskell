@@ -1,0 +1,53 @@
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module Data.Derivation.Parse.Packrat where
+
+import Control.Applicative hiding (Const)
+import Data.Function
+import Data.Bool
+import Data.Maybe
+import Data.List
+import Data.Char
+
+import Data.Parse
+import Data.Derivation.Expression
+
+data Derivs = Derivs {
+	expression :: Maybe (Exp String Term, Derivs),
+	number :: Maybe (Exp String Term, Derivs),
+	token :: Maybe (String, Derivs) }
+
+parse :: (Derivs -> Maybe (a, Derivs)) -> String -> Maybe a
+parse t str = fst <$> t (derivs $ tokens str)
+
+tokens :: String -> [String]
+tokens = unfoldr (listToMaybe . lex)
+
+derivs :: [String] -> Derivs
+derivs ts = d where
+	d = Derivs ex nm tk
+	ex = pExpression d
+	nm = pNumber d
+	tk = case ts of
+		t : ts' -> Just (t, derivs ts')
+		_ -> Nothing
+
+check :: (String -> Bool) -> Parse Derivs String
+check p = do
+	t <- Parse token
+	bool (fail "parse fail") (pure t) (p t)
+
+pick :: String -> Parse Derivs String
+pick = check . (==)
+
+pExpression :: Derivs -> Maybe (Exp String Term, Derivs)
+Parse pExpression = (\t ts -> foldl (&) t ts) <$> Parse number
+	<*> many (
+		(flip (:+) <$> (pick "+" *> Parse number)) <|>
+		(flip (:-) <$> (pick "-" *> Parse number)) )
+
+pNumber :: Derivs -> Maybe (Exp String Term, Derivs)
+Parse pNumber =
+	(Const . read <$> check (all isDigit)) <|>
+	(Var <$> check (all isLower)) <|>
+	(pick "(" *> Parse expression <* pick ")")
