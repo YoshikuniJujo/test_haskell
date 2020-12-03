@@ -53,9 +53,7 @@ derivs ts = d where
 		_ -> Nothing
 
 check :: (String -> Bool) -> Parse Derivs String
-check p = do
-	t <- Parse token
-	B.bool (fail "parse fail") (pure t) (p t)
+check p = Parse token >>= \t -> B.bool empty (pure t) (p t)
 
 pick :: String -> Parse Derivs String
 pick = check . (==)

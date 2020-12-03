@@ -1,33 +1,28 @@
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Parse where
+module Data.Parse (Parse(..), (>>!)) where
 
-import Control.Arrow
-import Control.Applicative
+import Control.Arrow (first)
+import Control.Applicative (Alternative(..))
 
 newtype Parse d a = Parse { runParse :: d -> Maybe (a, d) }
 
-instance Functor (Parse t) where
-	f `fmap` Parse p = Parse \ts -> (f `first`) <$> p ts
+instance Functor (Parse d) where
+	f `fmap` Parse p = Parse \d -> (f `first`) <$> p d
 
 instance Applicative (Parse t) where
-	pure x = Parse \ts -> Just (x, ts)
-	Parse mf <*> mx =
-		Parse \ts -> mf ts >>= \(f, ts') -> (f <$> mx) `runParse` ts'
+	pure x = Parse \d -> Just (x, d)
+	Parse pf <*> mx =
+		Parse \d -> pf d >>= \(f, d') -> (f <$> mx) `runParse` d'
 
 instance Monad (Parse t) where
-	Parse p >>= f = Parse \ts -> p ts >>= \(x, ts') -> f x `runParse` ts'
-
-instance MonadFail (Parse t) where fail _ = Parse \_ -> Nothing
+	Parse p >>= f = Parse \d -> p d >>= \(x, d') -> f x `runParse` d'
 
 instance Alternative (Parse t) where
 	empty = Parse \_ -> Nothing
-	Parse p1 <|> Parse p2 = Parse \ts -> p1 ts <|> p2 ts
+	Parse l <|> Parse r = Parse \d -> l d <|> r d
 
 (>>!) :: Parse d a -> Parse d b -> Parse d a
-Parse p1 >>! Parse p2 = Parse \ts -> do
-	(x, ts') <- p1 ts
-	case p2 ts' of
-		Nothing -> pure (x, ts')
-		Just _ -> fail "parse fail"
+Parse p >>! Parse nla =
+	Parse \d -> p d >>= \r@(_, d') -> maybe (pure r) (const empty) $ nla d'
