@@ -13,6 +13,7 @@ import Data.Parse
 import Data.Derivation.Expression
 
 data Derivs = Derivs {
+	lesserEqual :: Maybe (Exp String Bool, Derivs),
 	expression :: Maybe (Exp String Term, Derivs),
 	number :: Maybe (Exp String Term, Derivs),
 	token :: Maybe (String, Derivs) }
@@ -25,7 +26,8 @@ tokens = unfoldr (listToMaybe . lex)
 
 derivs :: [String] -> Derivs
 derivs ts = d where
-	d = Derivs ex nm tk
+	d = Derivs le ex nm tk
+	le = pLesserEqual d
 	ex = pExpression d
 	nm = pNumber d
 	tk = case ts of
@@ -39,6 +41,9 @@ check p = do
 
 pick :: String -> Parse Derivs String
 pick = check . (==)
+
+pLesserEqual :: Derivs -> Maybe (Exp String Bool, Derivs)
+Parse pLesserEqual = (:<=) <$> (Parse expression <* pick "<=") <*> Parse expression
 
 pExpression :: Derivs -> Maybe (Exp String Term, Derivs)
 Parse pExpression = (\t ts -> foldl (&) t ts) <$> Parse number

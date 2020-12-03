@@ -74,7 +74,7 @@ make new TypeCheck
 	+ [ ] make Data.Derivation.Parse.Packrat
 		- [x] copy Data.Parse from try-packrat
 		- [x] define expression parser
-		- [ ] define lesserEqual parser
+		- [x] define lesserEqual parser
 		- [ ] define equal parser
 		- [ ] define parseWanted
 		- [ ] define parseGiven
