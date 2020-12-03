@@ -75,7 +75,13 @@ make new TypeCheck
 		- [x] copy Data.Parse from try-packrat
 		- [x] define expression parser
 		- [x] define lesserEqual parser
+		- [x] define variable parser
 		- [ ] define equal parser
+			* [ ] except bool
+			* [ ] bool
+		- [ ] define bool parser
+			* [ ] qualify Data.Bool
+			* [ ] define bool parser
 		- [ ] define parseWanted
 		- [ ] define parseGiven
 		- [ ] others

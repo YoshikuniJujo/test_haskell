@@ -16,6 +16,7 @@ data Derivs = Derivs {
 	lesserEqual :: Maybe (Exp String Bool, Derivs),
 	expression :: Maybe (Exp String Term, Derivs),
 	number :: Maybe (Exp String Term, Derivs),
+	variable :: Maybe (String, Derivs),
 	token :: Maybe (String, Derivs) }
 
 parse :: (Derivs -> Maybe (a, Derivs)) -> String -> Maybe a
@@ -26,10 +27,11 @@ tokens = unfoldr (listToMaybe . lex)
 
 derivs :: [String] -> Derivs
 derivs ts = d where
-	d = Derivs le ex nm tk
+	d = Derivs le ex nm vr tk
 	le = pLesserEqual d
 	ex = pExpression d
 	nm = pNumber d
+	vr = pVariable d
 	tk = case ts of
 		t : ts' -> Just (t, derivs ts')
 		_ -> Nothing
@@ -54,5 +56,8 @@ Parse pExpression = (\t ts -> foldl (&) t ts) <$> Parse number
 pNumber :: Derivs -> Maybe (Exp String Term, Derivs)
 Parse pNumber =
 	(Const . read <$> check (all isDigit)) <|>
-	(Var <$> check (all isLower)) <|>
+	(Var <$> Parse variable) <|>
 	(pick "(" *> Parse expression <* pick ")")
+
+pVariable :: Derivs -> Maybe (String, Derivs)
+Parse pVariable = check (all isLower)
