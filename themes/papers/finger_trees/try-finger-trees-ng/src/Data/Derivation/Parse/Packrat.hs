@@ -4,7 +4,6 @@ module Data.Derivation.Parse.Packrat where
 
 import Control.Applicative hiding (Const)
 import Data.Function
-import Data.Bool
 import Data.Maybe
 import Data.List
 import Data.Char
@@ -12,7 +11,10 @@ import Data.Char
 import Data.Parse
 import Data.Derivation.Expression
 
+import qualified Data.Bool as B
+
 data Derivs = Derivs {
+	bool :: Maybe (Exp String Bool, Derivs),
 	lesserEqual :: Maybe (Exp String Bool, Derivs),
 	expression :: Maybe (Exp String Term, Derivs),
 	number :: Maybe (Exp String Term, Derivs),
@@ -27,7 +29,8 @@ tokens = unfoldr (listToMaybe . lex)
 
 derivs :: [String] -> Derivs
 derivs ts = d where
-	d = Derivs le ex nm vr tk
+	d = Derivs bl le ex nm vr tk
+	bl = pBool d
 	le = pLesserEqual d
 	ex = pExpression d
 	nm = pNumber d
@@ -39,10 +42,16 @@ derivs ts = d where
 check :: (String -> Bool) -> Parse Derivs String
 check p = do
 	t <- Parse token
-	bool (fail "parse fail") (pure t) (p t)
+	B.bool (fail "parse fail") (pure t) (p t)
 
 pick :: String -> Parse Derivs String
 pick = check . (==)
+
+pBool :: Derivs -> Maybe (Exp String Bool, Derivs)
+Parse pBool =
+	(Bool False <$ pick "F") <|>
+	(Bool True <$ pick "T") <|>
+	Parse lesserEqual -- <|> Parse equal
 
 pLesserEqual :: Derivs -> Maybe (Exp String Bool, Derivs)
 Parse pLesserEqual = (:<=) <$> (Parse expression <* pick "<=") <*> Parse expression

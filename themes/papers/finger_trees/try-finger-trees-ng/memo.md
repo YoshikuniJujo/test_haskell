@@ -76,12 +76,11 @@ make new TypeCheck
 		- [x] define expression parser
 		- [x] define lesserEqual parser
 		- [x] define variable parser
-		- [ ] define equal parser
-			* [ ] except bool
-			* [ ] bool
 		- [ ] define bool parser
-			* [ ] qualify Data.Bool
-			* [ ] define bool parser
+			* [x] qualify Data.Bool
+			* [x] except equal
+			* [ ] equal
+		- [ ] define equal parser
 		- [ ] define parseWanted
 		- [ ] define parseGiven
 		- [ ] others
