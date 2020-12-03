@@ -85,6 +85,26 @@ make new TypeCheck
 		- [x] define Given parser
 		- [x] define test data parser
 
+refactor parser of derivation
+-----------------------------
+
+* [x] check module name hierarchy
+* [x] remove Data.Derivation.Parse
+* [x] remove Internal.Tools.Parse
+* [x] remove Internal.Tools.SampleParser
+* [ ] rename module Data.Derivation.Parse.Packrat to Data.Derivation.Parse
+* [ ] refactor module name hierarchy
+
+### module name hierarchy
+
+```
+Data
+  + Parser
+  + Derivation
+      + Parser
+          + Packrat
+```
+
 refactor new TypeCheck
 -----------------------
 
