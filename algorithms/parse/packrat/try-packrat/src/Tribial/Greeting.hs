@@ -1,6 +1,9 @@
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Tribial.Greeting where
+
+import Data.Parse
 
 data Token = Hello | GoodBye | World | Yoshikuni deriving Show
 
@@ -24,23 +27,14 @@ derivs ts = d where
 		_ -> Nothing
 
 pMessage :: Derivs -> Maybe ((Token, Token), Derivs)
-pMessage d = do
-	(g, d') <- greeting d
-	(n, d'') <- name d'
-	pure ((g, n), d'')
+Parse pMessage = (,) <$> Parse pGreeting <*> Parse pName
 
 pGreeting :: Derivs -> Maybe (Token, Derivs)
-pGreeting d = do
-	(t, d') <- token d
-	case t of
-		Hello -> pure (t, d')
-		GoodBye -> pure (t, d')
-		_ -> Nothing
+Parse pGreeting = do
+	t <- Parse token
+	case t of Hello -> pure t; GoodBye -> pure t; _ -> fail "parse fail"
 
 pName :: Derivs -> Maybe (Token, Derivs)
-pName d = do
-	(t, d') <- token d
-	case t of
-		World -> pure (t, d')
-		Yoshikuni -> pure (t, d')
-		_ -> Nothing
+Parse pName = do
+	t <- Parse token
+	case t of World -> pure t; Yoshikuni -> pure t; _ -> fail "parse fail"
