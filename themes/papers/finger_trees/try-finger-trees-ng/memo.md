@@ -92,17 +92,20 @@ refactor parser of derivation
 * [x] remove Data.Derivation.Parse
 * [x] remove Internal.Tools.Parse
 * [x] remove Internal.Tools.SampleParser
-* [ ] rename module Data.Derivation.Parse.Packrat to Data.Derivation.Parse
+* [x] rename module Data.Derivation.Parse.Packrat to Data.Derivation.Parse
 * [ ] refactor module name hierarchy
+	+ Data.Parse
+	+ Data.Derivation.Parse
+* [ ] refactor Data.Parse
+* [ ] refactor DAta.Derivation.Parse
 
 ### module name hierarchy
 
 ```
 Data
-  + Parser
+  + Parse
   + Derivation
-      + Parser
-          + Packrat
+      + Parse
 ```
 
 refactor new TypeCheck

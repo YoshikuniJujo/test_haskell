@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Derivation.Parse.Packrat where
+module Data.Derivation.Parse where
 
 import Control.Applicative hiding (Const)
 import Data.Function
