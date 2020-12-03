@@ -1,0 +1,5 @@
+given: {
+	m + n == 5 + x
+	m - n == x - 9 }
+
+wanted: m == x - 2

@@ -76,14 +76,14 @@ make new TypeCheck
 		- [x] define expression parser
 		- [x] define lesserEqual parser
 		- [x] define variable parser
-		- [ ] define bool parser
+		- [x] define bool parser
 			* [x] qualify Data.Bool
 			* [x] except equal
-			* [ ] equal
-		- [ ] define equal parser
-		- [ ] define parseWanted
-		- [ ] define parseGiven
-		- [ ] others
+			* [x] equal
+		- [x] define equal parser
+		- [x] define Wanted parser
+		- [x] define Given parser
+		- [x] define test data parser
 
 refactor new TypeCheck
 -----------------------

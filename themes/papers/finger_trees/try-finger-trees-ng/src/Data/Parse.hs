@@ -24,3 +24,10 @@ instance MonadFail (Parse t) where fail _ = Parse \_ -> Nothing
 instance Alternative (Parse t) where
 	empty = Parse \_ -> Nothing
 	Parse p1 <|> Parse p2 = Parse \ts -> p1 ts <|> p2 ts
+
+(>>!) :: Parse d a -> Parse d b -> Parse d a
+Parse p1 >>! Parse p2 = Parse \ts -> do
+	(x, ts') <- p1 ts
+	case p2 ts' of
+		Nothing -> pure (x, ts')
+		Just _ -> fail "parse fail"
