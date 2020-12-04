@@ -23,6 +23,8 @@ canDerive g w =
 elemBy :: (a -> a -> Bool) -> a -> [a] -> Bool
 elemBy eq = any . eq
 
+type WantedSet v = (Maybe (Wanted v), [Wanted v])
+
 newtype Wanted v = Wanted (Zero v) deriving Show
 
 expToWanted :: Ord v => Exp v Bool -> (Maybe (Wanted v), [Wanted v])

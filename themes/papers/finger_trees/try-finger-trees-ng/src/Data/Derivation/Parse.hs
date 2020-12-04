@@ -10,14 +10,12 @@ import Data.List (unfoldr)
 import Data.Char (isLower, isDigit)
 import Data.Parse (Parse(..), (>>!))
 
-import Data.Derivation.CanDerive (Given, Wanted, expsToGiven, expToWanted)
+import Data.Derivation.CanDerive (Given, WantedSet, expsToGiven, expToWanted)
 import Data.Derivation.Expression (Exp(..), Term)
 
 import qualified Data.Bool as B (bool)
 
 ---------------------------------------------------------------------------
-
-type WantedSet v = (Maybe (Wanted v), [Wanted v])
 
 data Derivs = Derivs {
 	testData :: Maybe ((Given String, WantedSet String), Derivs),
