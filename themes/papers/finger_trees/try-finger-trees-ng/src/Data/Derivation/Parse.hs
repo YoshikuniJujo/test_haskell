@@ -16,6 +16,26 @@ import Data.Derivation.Expression (Exp(..), Term)
 import qualified Data.Bool as B (bool)
 
 ---------------------------------------------------------------------------
+--
+-- * PARSE
+-- * DERIVS
+-- * GRAMMAR
+--	+ TEST DATA, GIVEN AND WANTED
+--	+ CONSTRAINT
+--	+ POLYNOMIAL
+--
+---------------------------------------------------------------------------
+
+---------------------------------------------------------------------------
+-- PARSE
+---------------------------------------------------------------------------
+
+parse :: (Derivs -> Maybe (a, Derivs)) -> String -> Maybe a
+parse n = (fst <$>) . n . derivs . unfoldr (listToMaybe . lex)
+
+---------------------------------------------------------------------------
+-- DERIVS
+---------------------------------------------------------------------------
 
 data Derivs = Derivs {
 	testData :: Maybe ((Given String, WantedSet String), Derivs),
@@ -29,12 +49,6 @@ data Derivs = Derivs {
 	number :: Maybe (Exp String Term, Derivs),
 	variable :: Maybe (String, Derivs),
 	token :: Maybe (String, Derivs) }
-
-parse :: (Derivs -> Maybe (a, Derivs)) -> String -> Maybe a
-parse t str = fst <$> t (derivs $ tokens str)
-
-tokens :: String -> [String]
-tokens = unfoldr (listToMaybe . lex)
 
 derivs :: [String] -> Derivs
 derivs ts = d where
@@ -59,6 +73,12 @@ check p = Parse token >>= \t -> B.bool empty (pure t) (p t)
 pick :: String -> Parse Derivs String
 pick = check . (==)
 
+---------------------------------------------------------------------------
+-- GRAMMAR
+---------------------------------------------------------------------------
+
+-- TEST DATA, GIVEN AND WANTED
+
 pTestData :: Derivs -> Maybe ((Given String, WantedSet String), Derivs)
 Parse pTestData = (,) <$> Parse pGiven <*> Parse pWanted
 
@@ -67,6 +87,8 @@ Parse pGiven = expsToGiven <$> (pick "given" *> pick ":" *> pick "{" *> many (Pa
 
 pWanted :: Derivs -> Maybe (WantedSet String, Derivs)
 Parse pWanted = expToWanted <$> (pick "wanted" *> pick ":" *> Parse constraint)
+
+-- CONSTRAINT
 
 pConstraint :: Derivs -> Maybe (Exp String Bool, Derivs)
 Parse pConstraint =
@@ -88,6 +110,8 @@ Parse pEqual =
 
 pLesserEqual :: Derivs -> Maybe (Exp String Bool, Derivs)
 Parse pLesserEqual = (:<=) <$> (Parse expression <* pick "<=") <*> Parse expression
+
+-- POLYNOMIAL
 
 pExpression :: Derivs -> Maybe (Exp String Term, Derivs)
 Parse pExpression = (\t ts -> foldl (&) t ts) <$> Parse number

@@ -102,8 +102,14 @@ refactor parser of derivation
 * [ ] refactor Data.Derivation.Parse
 	+ [x] make export list
 	+ [x] add import list
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] PARSE
+		- [ ] DERIVS
+		- [ ] GRAMMAR
+			* [ ] TEST DATA, GIVEN AND WANTED
+			* [ ] CONSTRAINT
+			* [ ] POLYNOMIAL
 * [x] remove Trial.TypeCheck.ExpParser
 
 ### module name hierarchy
