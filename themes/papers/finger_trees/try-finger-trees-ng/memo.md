@@ -104,7 +104,7 @@ refactor parser of derivation
 	+ [x] add import list
 	+ [ ] structure
 	+ [ ] body
-* [ ] remove Trial.TypeCheck.ExpParser
+* [x] remove Trial.TypeCheck.ExpParser
 
 ### module name hierarchy
 

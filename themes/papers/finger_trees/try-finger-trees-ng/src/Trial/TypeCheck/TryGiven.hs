@@ -4,10 +4,10 @@ module Trial.TypeCheck.TryGiven where
 
 import Data.Map.Strict
 
-import Trial.TypeCheck.ExpParser
-import Data.Derivation.Expression
-import Data.Derivation.Zero
 import Data.Derivation.CanDerive
+import Data.Derivation.Zero
+import Data.Derivation.Parse hiding (given)
+import Data.Derivation.Expression
 
 createGiven :: [String] -> Maybe (Given String)
 createGiven ss = do
@@ -16,7 +16,7 @@ createGiven ss = do
 
 createZero :: String -> Maybe (Zero String)
 createZero s = do
-	(e, _) <- parseBool $ tokens s
+	e <- parse bool s
 	fst $ eqToZero' e True empty
 
 sampleExps1 :: [String]
