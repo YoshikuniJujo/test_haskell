@@ -99,7 +99,12 @@ refactor parser of derivation
 * [x] refactor Data.Parse
 	+ [x] make export list
 	+ [x] others
-* [ ] refactor DAta.Derivation.Parse
+* [ ] refactor Data.Derivation.Parse
+	+ [ ] make export list
+	+ [x] add import list
+	+ [ ] structure
+	+ [ ] body
+* [ ] remove Trial.TypeCheck.ExpParser
 
 ### module name hierarchy
 

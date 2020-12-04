@@ -2,17 +2,19 @@
 
 module Data.Derivation.Parse where
 
-import Control.Applicative hiding (Const)
-import Data.Function
-import Data.Maybe
-import Data.List
-import Data.Char
+import Control.Applicative (empty, many, (<|>))
+import Data.Function ((&))
+import Data.Maybe (listToMaybe)
+import Data.List (unfoldr)
+import Data.Char (isLower, isDigit)
+import Data.Parse (Parse(..), (>>!))
 
-import Data.Parse
-import Data.Derivation.CanDerive
-import Data.Derivation.Expression
+import Data.Derivation.CanDerive (Given, Wanted, expsToGiven, expToWanted)
+import Data.Derivation.Expression (Exp(..), Term)
 
-import qualified Data.Bool as B
+import qualified Data.Bool as B (bool)
+
+---------------------------------------------------------------------------
 
 type WantedSet v = (Maybe (Wanted v), [Wanted v])
 
