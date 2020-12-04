@@ -100,7 +100,7 @@ refactor parser of derivation
 	+ [x] make export list
 	+ [x] others
 * [ ] refactor Data.Derivation.Parse
-	+ [ ] make export list
+	+ [x] make export list
 	+ [x] add import list
 	+ [ ] structure
 	+ [ ] body

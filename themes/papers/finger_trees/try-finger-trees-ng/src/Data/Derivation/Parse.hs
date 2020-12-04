@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Derivation.Parse where
+module Data.Derivation.Parse (
+	Derivs, parse, testData, given, wanted, bool, expression ) where
 
 import Control.Applicative (empty, many, (<|>))
 import Data.Function ((&))
