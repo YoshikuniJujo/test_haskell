@@ -9,10 +9,10 @@ import Data.Derivation.CanDerive
 import Data.Derivation.Parse
 
 wanted :: Wanted String
-Just (Just wanted, _) = expToWanted <$> parse bool "((p + d) == u)"
+Just (WantedSet (Just wanted)  _) = expToWanted <$> parse bool "((p + d) == u)"
 
 wanted2 :: Wanted String
-Just (Just wanted2, _) = expToWanted <$> parse bool "((n + nn) == (b + f))"
+Just (WantedSet (Just wanted2) _) = expToWanted <$> parse bool "((n + nn) == (b + f))"
 
 given2 :: Given String
 given2 = expsToGiven . catMaybes $ parse bool <$> [
@@ -20,7 +20,7 @@ given2 = expsToGiven . catMaybes $ parse bool <$> [
 	]
 
 wanted3 :: Wanted String
-Just (Just wanted3, _) = expToWanted <$> parse bool "((u + lm) == z)"
+Just (WantedSet (Just wanted3) _) = expToWanted <$> parse bool "((u + lm) == z)"
 
 given3 :: Given String
 given3 = expsToGiven . catMaybes $ parse bool <$> [

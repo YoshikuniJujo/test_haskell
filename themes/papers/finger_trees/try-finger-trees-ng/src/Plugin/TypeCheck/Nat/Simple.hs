@@ -37,10 +37,10 @@ solveNat gs ds ws = do
 --		. ctToExpEq $ head ws
 	let	gs' = expsToGiven . catMaybes $ either (const Nothing) Just . decode <$> gs
 	tcPluginTrace "Given: " $ ppr gs'
-	tcPluginTrace "Wanted Expression2: " . ppr
-		$ either (const (Nothing, [])) expToWanted . decode <$> ws
-	tcPluginTrace "Wanted Expression2: " . ppr . ((canDeriveGen (expsToGiven []) <$>) <$>)
-		$ either (const Nothing) (fst . expToWanted) . decode <$> ws
+--	tcPluginTrace "Wanted Expression2: " . ppr
+--		$ either (const (Nothing, [])) expToWanted . decode <$> ws
+--	tcPluginTrace "Wanted Expression2: " . ppr . ((canDeriveGen (expsToGiven []) <$>) <$>)
+--		$ either (const Nothing) (fst . expToWanted) . decode <$> ws
 	tcPluginTrace "Oh Gosh!: " . ppr $ canDeriveCt gs <$> ws
 	pure $ TcPluginOk (rights $ canDeriveCt gs <$> ws) []
 

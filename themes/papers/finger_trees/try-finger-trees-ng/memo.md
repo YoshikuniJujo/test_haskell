@@ -89,7 +89,7 @@ make new TypeCheck
 	+ [x] use canDerivs'
 	+ [x] rename canDerivs to canDerivsGen or so
 	+ [x] rename canDerivs' to canDerivs
-	+ [ ] make type WantedSet ADT
+	+ [x] make type WantedSet ADT
 	+ [ ] rename data type Wanted to Wanted1
 	+ [ ] rename data type WantedSet to Wanted
 	+ [ ] make ADT Wanted1 to type synonym
@@ -108,6 +108,7 @@ refactor parser of derivation
 * [x] refactor Data.Parse
 	+ [x] make export list
 	+ [x] others
+* [ ] consider whether or not to rename Derivs and derivs
 * [ ] refactor Data.Derivation.Parse
 	+ [x] make export list
 	+ [x] add import list
