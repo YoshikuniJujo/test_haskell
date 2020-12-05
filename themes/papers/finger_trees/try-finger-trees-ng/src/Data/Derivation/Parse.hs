@@ -10,7 +10,7 @@ import Data.List (unfoldr)
 import Data.Char (isLower, isDigit)
 import Data.Parse (Parse(..), (>>!))
 
-import Data.Derivation.CanDerive (Given, WantedSet, expsToGiven, expToWanted)
+import Data.Derivation.CanDerive (Given, Wanted, expsToGiven, expToWanted)
 import Data.Derivation.Expression (Exp(..), Term)
 
 import qualified Data.Bool as B (bool)
@@ -38,9 +38,9 @@ parse n = (fst <$>) . n . derivs . unfoldr (listToMaybe . lex)
 ---------------------------------------------------------------------------
 
 data Derivs = Derivs {
-	givenWanted :: Maybe ((Given String, WantedSet String), Derivs),
+	givenWanted :: Maybe ((Given String, Wanted String), Derivs),
 	given :: Maybe (Given String, Derivs),
-	wanted :: Maybe (WantedSet String, Derivs),
+	wanted :: Maybe (Wanted String, Derivs),
 	constraint :: Maybe (Exp String Bool, Derivs),
 	bool :: Maybe (Exp String Bool, Derivs),
 	equal :: Maybe (Exp String Bool, Derivs),
@@ -79,13 +79,13 @@ pick = check . (==)
 
 -- TEST DATA, GIVEN AND WANTED
 
-pGivenWanted :: Derivs -> Maybe ((Given String, WantedSet String), Derivs)
+pGivenWanted :: Derivs -> Maybe ((Given String, Wanted String), Derivs)
 Parse pGivenWanted = (,) <$> Parse pGiven <*> Parse pWanted
 
 pGiven :: Derivs -> Maybe (Given String, Derivs)
 Parse pGiven = expsToGiven <$> (pick "given" *> pick ":" *> pick "{" *> many (Parse constraint) <* pick "}")
 
-pWanted :: Derivs -> Maybe (WantedSet String, Derivs)
+pWanted :: Derivs -> Maybe (Wanted String, Derivs)
 Parse pWanted = expToWanted <$> (pick "wanted" *> pick ":" *> Parse constraint)
 
 -- CONSTRAINT

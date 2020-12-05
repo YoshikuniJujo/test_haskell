@@ -91,7 +91,7 @@ make new TypeCheck
 	+ [x] rename canDerivs' to canDerivs
 	+ [x] make type WantedSet ADT
 	+ [x] rename data type Wanted to Wanted1
-	+ [ ] rename data type WantedSet to Wanted
+	+ [x] rename data type WantedSet to Wanted
 	+ [ ] make ADT Wanted1 to type synonym
 
 refactor parser of derivation
