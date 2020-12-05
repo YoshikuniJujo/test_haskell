@@ -13,8 +13,8 @@ import Data.Derivation.Expression
 
 import qualified Data.Derivation.Zero as Z
 
-canDerive' :: Ord v => Given v -> WantedSet v -> Bool
-canDerive' g (mw, ws) = (&&) (canDeriveMaybe g mw) (canDeriveAll g ws)
+canDerive :: Ord v => Given v -> WantedSet v -> Bool
+canDerive g (mw, ws) = (&&) (canDeriveMaybe g mw) (canDeriveAll g ws)
 
 canDeriveMaybe :: Ord v => Given v -> Maybe (Wanted v) -> Bool
 canDeriveMaybe g mw = maybe False (canDeriveGen g) mw

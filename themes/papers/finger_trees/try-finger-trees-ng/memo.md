@@ -88,10 +88,11 @@ make new TypeCheck
 	+ [x] make `canDerivs' :: Given -> WantedSet -> Bool`
 	+ [x] use canDerivs'
 	+ [x] rename canDerivs to canDerivsGen or so
-	+ [ ] rename canDerivs' to canDerivs
+	+ [x] rename canDerivs' to canDerivs
 	+ [ ] make type WantedSet ADT
 	+ [ ] rename data type Wanted to Wanted1
 	+ [ ] rename data type WantedSet to Wanted
+	+ [ ] make ADT Wanted1 to type synonym
 
 refactor parser of derivation
 -----------------------------
