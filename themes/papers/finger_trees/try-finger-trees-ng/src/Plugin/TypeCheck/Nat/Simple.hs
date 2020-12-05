@@ -39,7 +39,7 @@ solveNat gs ds ws = do
 	tcPluginTrace "Given: " $ ppr gs'
 	tcPluginTrace "Wanted Expression2: " . ppr
 		$ either (const (Nothing, [])) expToWanted . decode <$> ws
-	tcPluginTrace "Wanted Expression2: " . ppr . ((canDerive (expsToGiven []) <$>) <$>)
+	tcPluginTrace "Wanted Expression2: " . ppr . ((canDeriveGen (expsToGiven []) <$>) <$>)
 		$ either (const Nothing) (fst . expToWanted) . decode <$> ws
 	tcPluginTrace "Oh Gosh!: " . ppr $ canDeriveCt gs <$> ws
 	pure $ TcPluginOk (rights $ canDeriveCt gs <$> ws) []
@@ -50,9 +50,7 @@ canDeriveCt :: [Ct] -> Ct -> Either T.Text (EvTerm, Ct)
 canDeriveCt gs w = do
 	(t1, t2) <- unNomEq w
 	let	gs' = expsToGiven . catMaybes $ either (const Nothing) Just . decode <$> gs
-	(mw, ws) <- expToWanted <$> decode w
-	w' <- maybe (Left $ T.pack "foo") Right mw
-	bool (Left . T.pack $ "foo: " ++ show gs') (pure (makeEvTerm t1 t2, w)) (all (canDerive gs') $ w' : ws)
+	bool (Left . T.pack $ "foo: " ++ show gs') (pure (makeEvTerm t1 t2, w)) . canDerive' gs' . expToWanted =<< decode w
 
 makeEvTerm :: Type -> Type -> EvTerm
 makeEvTerm t1 t2 = EvExpr . Coercion

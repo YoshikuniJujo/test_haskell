@@ -17,16 +17,15 @@ canDerive' :: Ord v => Given v -> WantedSet v -> Bool
 canDerive' g (mw, ws) = (&&) (canDeriveMaybe g mw) (canDeriveAll g ws)
 
 canDeriveMaybe :: Ord v => Given v -> Maybe (Wanted v) -> Bool
-canDeriveMaybe g mw = maybe False (canDerive g) mw
+canDeriveMaybe g mw = maybe False (canDeriveGen g) mw
 
 canDeriveAll :: Ord v => Given v -> [Wanted v] -> Bool
-canDeriveAll g ws = all (canDerive g) ws
+canDeriveAll g ws = all (canDeriveGen g) ws
 
-canDerive :: Ord v => Given v -> Wanted v -> Bool
-canDerive g w =
+canDeriveGen :: Ord v => Given v -> Wanted v -> Bool
+canDeriveGen g w =
 	selfContained w ||
 	elemBy isDerivableFrom (wantedToZero w) (givenToZeros $ removeVars g rv)
---	wantedToZero w `elem` givenToZeros (removeVars g rv)
 	where rv = containVarsG g \\ containVarsW w
 
 elemBy :: (a -> a -> Bool) -> a -> [a] -> Bool

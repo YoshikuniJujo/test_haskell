@@ -30,7 +30,7 @@ given3 = expsToGiven . catMaybes $ parse bool <$> [
 	]
 
 debugIt :: Bool
-debugIt = canDerive debugGiven debugWanted
+debugIt = canDeriveGen debugGiven debugWanted
 
 debugRemoveVar :: [Maybe String]
 debugRemoveVar = Data.Derivation.CanDerive.containVarsG debugGiven \\ Data.Derivation.CanDerive.containVarsW debugWanted

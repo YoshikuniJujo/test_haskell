@@ -86,8 +86,8 @@ make new TypeCheck
 		- [x] define test data parser
 * [ ] make type WantedSet ADT
 	+ [x] make `canDerivs' :: Given -> WantedSet -> Bool`
-	+ [ ] use canDerivs'
-	+ [ ] rename canDerivs to canDerivsGen or so
+	+ [x] use canDerivs'
+	+ [x] rename canDerivs to canDerivsGen or so
 	+ [ ] rename canDerivs' to canDerivs
 	+ [ ] make type WantedSet ADT
 	+ [ ] rename data type Wanted to Wanted1
