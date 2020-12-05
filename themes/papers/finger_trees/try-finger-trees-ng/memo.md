@@ -90,7 +90,7 @@ make new TypeCheck
 	+ [x] rename canDerivs to canDerivsGen or so
 	+ [x] rename canDerivs' to canDerivs
 	+ [x] make type WantedSet ADT
-	+ [ ] rename data type Wanted to Wanted1
+	+ [x] rename data type Wanted to Wanted1
 	+ [ ] rename data type WantedSet to Wanted
 	+ [ ] make ADT Wanted1 to type synonym
 

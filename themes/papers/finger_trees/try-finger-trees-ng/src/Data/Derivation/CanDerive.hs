@@ -16,13 +16,13 @@ import qualified Data.Derivation.Zero as Z
 canDerive :: Ord v => Given v -> WantedSet v -> Bool
 canDerive g (WantedSet mw ws) = (&&) (canDeriveMaybe g mw) (canDeriveAll g ws)
 
-canDeriveMaybe :: Ord v => Given v -> Maybe (Wanted v) -> Bool
+canDeriveMaybe :: Ord v => Given v -> Maybe (Wanted1 v) -> Bool
 canDeriveMaybe g mw = maybe False (canDeriveGen g) mw
 
-canDeriveAll :: Ord v => Given v -> [Wanted v] -> Bool
+canDeriveAll :: Ord v => Given v -> [Wanted1 v] -> Bool
 canDeriveAll g ws = all (canDeriveGen g) ws
 
-canDeriveGen :: Ord v => Given v -> Wanted v -> Bool
+canDeriveGen :: Ord v => Given v -> Wanted1 v -> Bool
 canDeriveGen g w =
 	selfContained w ||
 	elemBy isDerivableFrom (wantedToZero w) (givenToZeros $ removeVars g rv)
@@ -31,27 +31,27 @@ canDeriveGen g w =
 elemBy :: (a -> a -> Bool) -> a -> [a] -> Bool
 elemBy eq = any . eq
 
-data WantedSet v = WantedSet (Maybe (Wanted v)) [Wanted v]
+data WantedSet v = WantedSet (Maybe (Wanted1 v)) [Wanted1 v]
 
-newtype Wanted v = Wanted (Zero v) deriving Show
+newtype Wanted1 v = Wanted1 (Zero v) deriving Show
 
 expToWanted :: Ord v => Exp v Bool -> WantedSet v
-expToWanted = uncurry WantedSet . ((Wanted <$>) *** (Wanted <$>)) . \e -> eqToZero' e True empty
+expToWanted = uncurry WantedSet . ((Wanted1 <$>) *** (Wanted1 <$>)) . \e -> eqToZero' e True empty
 
-wantedToZero :: Wanted v -> Zero v
-wantedToZero (Wanted z) = z
+wantedToZero :: Wanted1 v -> Zero v
+wantedToZero (Wanted1 z) = z
 
-containVarsW :: Ord v => Wanted v -> [Maybe v]
+containVarsW :: Ord v => Wanted1 v -> [Maybe v]
 containVarsW = Z.containVars . wantedToZero
 
-selfContained :: Wanted v -> Bool
-selfContained (Wanted z) = identity z
+selfContained :: Wanted1 v -> Bool
+selfContained (Wanted1 z) = identity z
 
-instance Show v => Outputable (Wanted v) where
+instance Show v => Outputable (Wanted1 v) where
 	ppr = text . show
 
-debugWanted :: Wanted String
-debugWanted = Wanted debugZeroWanted
+debugWanted :: Wanted1 String
+debugWanted = Wanted1 debugZeroWanted
 
 newtype Given v = Given [Zero v] deriving Show
 

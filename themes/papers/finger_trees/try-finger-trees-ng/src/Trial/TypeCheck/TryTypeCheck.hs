@@ -8,10 +8,10 @@ import Data.List
 import Data.Derivation.CanDerive
 import Data.Derivation.Parse
 
-wanted :: Wanted String
+wanted :: Wanted1 String
 Just (WantedSet (Just wanted)  _) = expToWanted <$> parse bool "((p + d) == u)"
 
-wanted2 :: Wanted String
+wanted2 :: Wanted1 String
 Just (WantedSet (Just wanted2) _) = expToWanted <$> parse bool "((n + nn) == (b + f))"
 
 given2 :: Given String
@@ -19,7 +19,7 @@ given2 = expsToGiven . catMaybes $ parse bool <$> [
 	"((1 + n) == b)", "((1 + m) == d)", "(nn == (1 + f))", "(mm == (1 + h))"
 	]
 
-wanted3 :: Wanted String
+wanted3 :: Wanted1 String
 Just (WantedSet (Just wanted3) _) = expToWanted <$> parse bool "((u + lm) == z)"
 
 given3 :: Given String
