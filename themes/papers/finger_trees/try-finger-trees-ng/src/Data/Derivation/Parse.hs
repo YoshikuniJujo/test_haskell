@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Derivation.Parse (
-	Derivs, parse, testData, given, wanted, bool, expression ) where
+	Derivs, parse, givenWanted, given, wanted, bool, expression ) where
 
 import Control.Applicative (empty, many, (<|>))
 import Data.Function ((&))
@@ -38,7 +38,7 @@ parse n = (fst <$>) . n . derivs . unfoldr (listToMaybe . lex)
 ---------------------------------------------------------------------------
 
 data Derivs = Derivs {
-	testData :: Maybe ((Given String, WantedSet String), Derivs),
+	givenWanted :: Maybe ((Given String, WantedSet String), Derivs),
 	given :: Maybe (Given String, Derivs),
 	wanted :: Maybe (WantedSet String, Derivs),
 	constraint :: Maybe (Exp String Bool, Derivs),
@@ -53,7 +53,7 @@ data Derivs = Derivs {
 derivs :: [String] -> Derivs
 derivs ts = d where
 	d = Derivs td gv wt ct bl eq le ex nm vr tk
-	td = pTestData d
+	td = pGivenWanted d
 	gv = pGiven d
 	wt = pWanted d
 	ct = pConstraint d
@@ -79,8 +79,8 @@ pick = check . (==)
 
 -- TEST DATA, GIVEN AND WANTED
 
-pTestData :: Derivs -> Maybe ((Given String, WantedSet String), Derivs)
-Parse pTestData = (,) <$> Parse pGiven <*> Parse pWanted
+pGivenWanted :: Derivs -> Maybe ((Given String, WantedSet String), Derivs)
+Parse pGivenWanted = (,) <$> Parse pGiven <*> Parse pWanted
 
 pGiven :: Derivs -> Maybe (Given String, Derivs)
 Parse pGiven = expsToGiven <$> (pick "given" *> pick ":" *> pick "{" *> many (Parse constraint) <* pick "}")
