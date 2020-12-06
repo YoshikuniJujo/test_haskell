@@ -3,10 +3,11 @@
 module Data.Derivation.Parse (
 	Memo, parse, givenWanted, given, wanted, bool, expression ) where
 
+import Control.Arrow (second)
 import Control.Applicative (empty, many, (<|>))
 import Data.Function ((&))
 import Data.Maybe (listToMaybe)
-import Data.List (unfoldr)
+import Data.List (uncons, unfoldr)
 import Data.Char (isLower, isDigit)
 import Data.Parse (Parse(..), (>>!), maybeToParse)
 
@@ -52,20 +53,11 @@ data Memo = Memo {
 
 memo :: [String] -> Memo
 memo ts = m where
-	m = Memo td gv wt ct bl eq le ex nm vr tk
-	td = pGivenWanted m
-	gv = pGiven m
-	wt = pWanted m
-	ct = pConstraint m
-	bl = pBool m
-	eq = pEqual m
-	le = pLesserEqual m
-	ex = pExpression m
-	nm = pNumber m
-	vr = pVariable m
-	tk = case ts of
-		t : ts' -> Just (t, memo ts')
-		_ -> Nothing
+	m = Memo gw gv wt ct bl eq le ex nm vr tk
+	gw = pGivenWanted m; gv = pGiven m; wt = pWanted m
+	ct = pConstraint m; bl = pBool m; eq = pEqual m; le = pLesserEqual m
+	ex = pExpression m; nm = pNumber m; vr = pVariable m
+	tk = (memo `second`) <$> uncons ts
 
 check :: (String -> Bool) -> Parse Memo String
 check p = Parse token >>= \t -> B.bool empty (pure t) (p t)

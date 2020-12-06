@@ -119,12 +119,12 @@ refactor parser of derivation
 	+ [x] structure
 	+ [ ] body
 		- [x] PARSE
-		- [ ] MEMO
+		- [x] MEMO
 			* [x] rename Derivs to Memo
-			* [ ] data Derivs
-			* [ ] function derivs
-			* [ ] function check
-			* [ ] function pick
+			* [x] data Memo	
+			* [x] function memo
+			* [x] function check
+			* [x] function pick
 		- [ ] GRAMMAR
 			* [ ] TEST DATA, GIVEN AND WANTED
 			* [ ] CONSTRAINT
