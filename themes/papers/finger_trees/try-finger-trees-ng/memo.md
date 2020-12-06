@@ -127,9 +127,10 @@ refactor parser of derivation
 			* [x] function check
 			* [x] function pick
 		- [ ] GRAMMAR
-			* [ ] GIVEN WANTED, GIVEN AND WANTED
+			* [x] GIVEN WANTED, GIVEN AND WANTED
 			* [ ] CONSTRAINT
 			* [ ] POLYNOMIAL
+		- [ ] VAR
 * [x] remove Trial.TypeCheck.ExpParser
 
 ### module name hierarchy

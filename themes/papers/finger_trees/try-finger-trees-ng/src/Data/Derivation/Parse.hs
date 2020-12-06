@@ -76,10 +76,13 @@ pGivenWanted :: Memo -> Maybe ((Given Var, Wanted Var), Memo)
 Parse pGivenWanted = (,) <$> Parse pGiven <*> Parse pWanted
 
 pGiven :: Memo -> Maybe (Given Var, Memo)
-Parse pGiven = expsToGiven <$> (pick "given" *> pick ":" *> pick "{" *> many (Parse constraint) <* pick "}")
+Parse pGiven = expsToGiven <$> (
+	pick "given" *> pick ":" *>
+	pick "{" *> many (Parse constraint) <* pick "}" )
 
 pWanted :: Memo -> Maybe (Wanted Var, Memo)
-Parse pWanted = maybeToParse . expToWanted =<< (pick "wanted" *> pick ":" *> Parse constraint)
+Parse pWanted = maybeToParse . expToWanted
+	=<< pick "wanted" *> pick ":" *> Parse constraint
 
 -- CONSTRAINT
 
