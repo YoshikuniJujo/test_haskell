@@ -92,6 +92,9 @@ make new TypeCheck
 	+ [x] make type WantedSet ADT
 	+ [x] rename data type Wanted to Wanted1
 	+ [x] rename data type WantedSet to Wanted
+	+ [x] change to `data Wanted = Wanted [Zero]`
+		- (Nothing, _) -> Nothing
+		- (Just w, ws) -> Just (w : ws)
 	+ [ ] make ADT Wanted1 to type synonym
 
 refactor parser of derivation

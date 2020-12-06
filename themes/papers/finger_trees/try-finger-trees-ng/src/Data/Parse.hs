@@ -1,7 +1,7 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Parse (Parse(..), (>>!)) where
+module Data.Parse (Parse(..), (>>!), maybeToParse) where
 
 import Control.Arrow (first)
 import Control.Applicative (Alternative(..))
@@ -26,3 +26,6 @@ instance Alternative (Parse t) where
 (>>!) :: Parse d a -> Parse d b -> Parse d a
 Parse p >>! Parse nla =
 	Parse \d -> p d >>= \r@(_, d') -> maybe (pure r) (const empty) $ nla d'
+
+maybeToParse :: Maybe a -> Parse d a
+maybeToParse mx = Parse \d -> (, d) <$> mx

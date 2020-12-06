@@ -8,7 +8,7 @@ import Data.Function ((&))
 import Data.Maybe (listToMaybe)
 import Data.List (unfoldr)
 import Data.Char (isLower, isDigit)
-import Data.Parse (Parse(..), (>>!))
+import Data.Parse (Parse(..), (>>!), maybeToParse)
 
 import Data.Derivation.CanDerive (Given, Wanted, expsToGiven, expToWanted)
 import Data.Derivation.Expression (Exp(..), Term)
@@ -86,7 +86,7 @@ pGiven :: Derivs -> Maybe (Given String, Derivs)
 Parse pGiven = expsToGiven <$> (pick "given" *> pick ":" *> pick "{" *> many (Parse constraint) <* pick "}")
 
 pWanted :: Derivs -> Maybe (Wanted String, Derivs)
-Parse pWanted = expToWanted <$> (pick "wanted" *> pick ":" *> Parse constraint)
+Parse pWanted = maybeToParse . expToWanted =<< (pick "wanted" *> pick ":" *> Parse constraint)
 
 -- CONSTRAINT
 

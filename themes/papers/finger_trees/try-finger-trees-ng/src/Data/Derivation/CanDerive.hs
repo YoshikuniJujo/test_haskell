@@ -14,7 +14,7 @@ import Data.Derivation.Expression
 import qualified Data.Derivation.Zero as Z
 
 canDerive :: Ord v => Given v -> Wanted v -> Bool
-canDerive g (Wanted mw ws) = (&&) (canDeriveMaybe g mw) (canDeriveAll g ws)
+canDerive g (Wanted ws) = canDeriveAll g ws
 
 canDeriveMaybe :: Ord v => Given v -> Maybe (Wanted1 v) -> Bool
 canDeriveMaybe g mw = maybe False (canDeriveGen g) mw
@@ -31,12 +31,15 @@ canDeriveGen g w =
 elemBy :: (a -> a -> Bool) -> a -> [a] -> Bool
 elemBy eq = any . eq
 
-data Wanted v = Wanted (Maybe (Wanted1 v)) [Wanted1 v]
+data Wanted v = Wanted [Wanted1 v]
+
+wanted :: Maybe (Wanted1 v) -> [Wanted1 v] -> Maybe (Wanted v)
+wanted mw ws = Wanted . (: ws) <$> mw
 
 newtype Wanted1 v = Wanted1 (Zero v) deriving Show
 
-expToWanted :: Ord v => Exp v Bool -> Wanted v
-expToWanted = uncurry Wanted . ((Wanted1 <$>) *** (Wanted1 <$>)) . \e -> eqToZero' e True empty
+expToWanted :: Ord v => Exp v Bool -> Maybe (Wanted v)
+expToWanted = uncurry wanted . ((Wanted1 <$>) *** (Wanted1 <$>)) . \e -> eqToZero' e True empty
 
 wantedToZero :: Wanted1 v -> Zero v
 wantedToZero (Wanted1 z) = z

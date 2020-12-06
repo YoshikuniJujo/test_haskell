@@ -50,7 +50,8 @@ canDeriveCt :: [Ct] -> Ct -> Either T.Text (EvTerm, Ct)
 canDeriveCt gs w = do
 	(t1, t2) <- unNomEq w
 	let	gs' = expsToGiven . catMaybes $ either (const Nothing) Just . decode <$> gs
-	bool (Left . T.pack $ "foo: " ++ show gs') (pure (makeEvTerm t1 t2, w)) . canDerive gs' . expToWanted =<< decode w
+	bool (Left . T.pack $ "foo: " ++ show gs') (pure (makeEvTerm t1 t2, w)) . canDerive gs'
+		=<< maybe (Left $ T.pack "bar") Right . expToWanted =<< decode w
 
 makeEvTerm :: Type -> Type -> EvTerm
 makeEvTerm t1 t2 = EvExpr . Coercion
