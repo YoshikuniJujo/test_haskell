@@ -118,6 +118,7 @@ refactor parser of derivation
 	+ [x] add import list
 	+ [x] structure
 	+ [ ] body
+		- [x] define and use type synonym Var
 		- [x] PARSE
 		- [x] MEMO
 			* [x] rename Derivs to Memo
@@ -126,7 +127,7 @@ refactor parser of derivation
 			* [x] function check
 			* [x] function pick
 		- [ ] GRAMMAR
-			* [ ] TEST DATA, GIVEN AND WANTED
+			* [ ] GIVEN WANTED, GIVEN AND WANTED
 			* [ ] CONSTRAINT
 			* [ ] POLYNOMIAL
 * [x] remove Trial.TypeCheck.ExpParser

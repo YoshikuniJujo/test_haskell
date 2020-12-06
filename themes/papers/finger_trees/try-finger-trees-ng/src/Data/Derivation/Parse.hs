@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Derivation.Parse (
-	Memo, parse, givenWanted, given, wanted, bool, expression ) where
+	Memo, Var, parse, givenWanted, given, wanted, bool, expression ) where
 
 import Control.Arrow (second)
 import Control.Applicative (empty, many, (<|>))
@@ -21,9 +21,10 @@ import qualified Data.Bool as B (bool)
 -- * PARSE
 -- * MEMO
 -- * GRAMMAR
---	+ TEST DATA, GIVEN AND WANTED
+--	+ GIVEN WANTED, GIVEN AND WANTED
 --	+ CONSTRAINT
 --	+ POLYNOMIAL
+-- * VAR
 --
 ---------------------------------------------------------------------------
 
@@ -39,16 +40,16 @@ parse n = (fst <$>) . n . memo . unfoldr (listToMaybe . lex)
 ---------------------------------------------------------------------------
 
 data Memo = Memo {
-	givenWanted :: Maybe ((Given String, Wanted String), Memo),
-	given :: Maybe (Given String, Memo),
-	wanted :: Maybe (Wanted String, Memo),
-	constraint :: Maybe (Exp String Bool, Memo),
-	bool :: Maybe (Exp String Bool, Memo),
-	equal :: Maybe (Exp String Bool, Memo),
-	lesserEqual :: Maybe (Exp String Bool, Memo),
-	expression :: Maybe (Exp String Term, Memo),
-	number :: Maybe (Exp String Term, Memo),
-	variable :: Maybe (String, Memo),
+	givenWanted :: Maybe ((Given Var, Wanted Var), Memo),
+	given :: Maybe (Given Var, Memo),
+	wanted :: Maybe (Wanted Var, Memo),
+	constraint :: Maybe (Exp Var Bool, Memo),
+	bool :: Maybe (Exp Var Bool, Memo),
+	equal :: Maybe (Exp Var Bool, Memo),
+	lesserEqual :: Maybe (Exp Var Bool, Memo),
+	expression :: Maybe (Exp Var Term, Memo),
+	number :: Maybe (Exp Var Term, Memo),
+	variable :: Maybe (Var, Memo),
 	token :: Maybe (String, Memo) }
 
 memo :: [String] -> Memo
@@ -69,30 +70,30 @@ pick = check . (==)
 -- GRAMMAR
 ---------------------------------------------------------------------------
 
--- TEST DATA, GIVEN AND WANTED
+-- GIVEN WANTED, GIVEN AND WANTED
 
-pGivenWanted :: Memo -> Maybe ((Given String, Wanted String), Memo)
+pGivenWanted :: Memo -> Maybe ((Given Var, Wanted Var), Memo)
 Parse pGivenWanted = (,) <$> Parse pGiven <*> Parse pWanted
 
-pGiven :: Memo -> Maybe (Given String, Memo)
+pGiven :: Memo -> Maybe (Given Var, Memo)
 Parse pGiven = expsToGiven <$> (pick "given" *> pick ":" *> pick "{" *> many (Parse constraint) <* pick "}")
 
-pWanted :: Memo -> Maybe (Wanted String, Memo)
+pWanted :: Memo -> Maybe (Wanted Var, Memo)
 Parse pWanted = maybeToParse . expToWanted =<< (pick "wanted" *> pick ":" *> Parse constraint)
 
 -- CONSTRAINT
 
-pConstraint :: Memo -> Maybe (Exp String Bool, Memo)
+pConstraint :: Memo -> Maybe (Exp Var Bool, Memo)
 Parse pConstraint =
 	Parse equal <|> Parse lesserEqual <|>
 	(Bool False <$ pick "F") <|> (Bool True <$ pick "T")
 
-pBool :: Memo -> Maybe (Exp String Bool, Memo)
+pBool :: Memo -> Maybe (Exp Var Bool, Memo)
 Parse pBool =
 	Parse lesserEqual <|> (pick "(" *> Parse equal <* pick ")") <|>
 	(Bool False <$ pick "F") <|> (Bool True <$ pick "T")
 
-pEqual :: Memo -> Maybe (Exp String Bool, Memo)
+pEqual :: Memo -> Maybe (Exp Var Bool, Memo)
 Parse pEqual =
 	((:==) . Var <$> Parse variable <*> (pick "==" *> (Var <$> Parse variable) >>! (pick "+" <|> pick "-"))) <|>
 	((:==) . Var <$> Parse variable <*> (pick "==" *> Parse expression)) <|>
@@ -100,22 +101,28 @@ Parse pEqual =
 	((:==) <$> Parse expression <*> (pick "==" *> Parse expression)) <|>
 	((:==) <$> Parse bool <*> (pick "==" *> Parse bool))
 
-pLesserEqual :: Memo -> Maybe (Exp String Bool, Memo)
+pLesserEqual :: Memo -> Maybe (Exp Var Bool, Memo)
 Parse pLesserEqual = (:<=) <$> (Parse expression <* pick "<=") <*> Parse expression
 
 -- POLYNOMIAL
 
-pExpression :: Memo -> Maybe (Exp String Term, Memo)
+pExpression :: Memo -> Maybe (Exp Var Term, Memo)
 Parse pExpression = (\t ts -> foldl (&) t ts) <$> Parse number
 	<*> many (
 		(flip (:+) <$> (pick "+" *> Parse number)) <|>
 		(flip (:-) <$> (pick "-" *> Parse number)) )
 
-pNumber :: Memo -> Maybe (Exp String Term, Memo)
+pNumber :: Memo -> Maybe (Exp Var Term, Memo)
 Parse pNumber =
 	(Const . read <$> check (all isDigit)) <|>
 	(Var <$> Parse variable) <|>
 	(pick "(" *> Parse expression <* pick ")")
 
-pVariable :: Memo -> Maybe (String, Memo)
+pVariable :: Memo -> Maybe (Var, Memo)
 Parse pVariable = check (all isLower)
+
+---------------------------------------------------------------------------
+-- VAR
+---------------------------------------------------------------------------
+
+type Var = String
