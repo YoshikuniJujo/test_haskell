@@ -84,7 +84,7 @@ make new TypeCheck
 		- [x] define Wanted parser
 		- [x] define Given parser
 		- [x] define test data parser
-* [ ] make type WantedSet ADT
+* [x] make type WantedSet ADT
 	+ [x] make `canDerivs' :: Given -> WantedSet -> Bool`
 	+ [x] use canDerivs'
 	+ [x] rename canDerivs to canDerivsGen or so
@@ -95,7 +95,7 @@ make new TypeCheck
 	+ [x] change to `data Wanted = Wanted [Zero]`
 		- (Nothing, _) -> Nothing
 		- (Just w, ws) -> Just (w : ws)
-	+ [ ] make ADT Wanted1 to type synonym
+	+ [x] make ADT Wanted1 to type synonym
 
 refactor parser of derivation
 -----------------------------

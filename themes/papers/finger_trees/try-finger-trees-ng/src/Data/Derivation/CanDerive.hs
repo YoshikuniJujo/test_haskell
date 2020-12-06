@@ -31,30 +31,30 @@ canDeriveGen g w =
 elemBy :: (a -> a -> Bool) -> a -> [a] -> Bool
 elemBy eq = any . eq
 
-data Wanted v = Wanted [Wanted1 v]
+newtype Wanted v = Wanted [Wanted1 v]
 
 wanted :: Maybe (Wanted1 v) -> [Wanted1 v] -> Maybe (Wanted v)
 wanted mw ws = Wanted . (: ws) <$> mw
 
-newtype Wanted1 v = Wanted1 (Zero v) deriving Show
+type Wanted1 v = Zero v
 
 expToWanted :: Ord v => Exp v Bool -> Maybe (Wanted v)
-expToWanted = uncurry wanted . ((Wanted1 <$>) *** (Wanted1 <$>)) . \e -> eqToZero' e True empty
+expToWanted = uncurry wanted . \e -> eqToZero' e True empty
 
 wantedToZero :: Wanted1 v -> Zero v
-wantedToZero (Wanted1 z) = z
+wantedToZero z = z
 
 containVarsW :: Ord v => Wanted1 v -> [Maybe v]
 containVarsW = Z.containVars . wantedToZero
 
 selfContained :: Wanted1 v -> Bool
-selfContained (Wanted1 z) = identity z
+selfContained z = identity z
 
-instance Show v => Outputable (Wanted1 v) where
+instance Show v => Outputable (Zero v) where
 	ppr = text . show
 
 debugWanted :: Wanted1 String
-debugWanted = Wanted1 debugZeroWanted
+debugWanted = debugZeroWanted
 
 newtype Given v = Given [Zero v] deriving Show
 
