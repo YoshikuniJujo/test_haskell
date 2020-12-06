@@ -6,26 +6,26 @@ module Data.Parse (Parse(..), (>>!), maybeToParse) where
 import Control.Arrow (first)
 import Control.Applicative (Alternative(..))
 
-newtype Parse d a = Parse { runParse :: d -> Maybe (a, d) }
+newtype Parse s a = Parse { runParse :: s -> Maybe (a, s) }
 
-instance Functor (Parse d) where
-	f `fmap` Parse p = Parse \d -> (f `first`) <$> p d
+instance Functor (Parse s) where
+	f `fmap` Parse p = Parse \s -> (f `first`) <$> p s
 
 instance Applicative (Parse t) where
-	pure x = Parse \d -> Just (x, d)
+	pure x = Parse \s -> Just (x, s)
 	Parse pf <*> mx =
-		Parse \d -> pf d >>= \(f, d') -> (f <$> mx) `runParse` d'
+		Parse \s -> pf s >>= \(f, s') -> (f <$> mx) `runParse` s'
 
 instance Monad (Parse t) where
-	Parse p >>= f = Parse \d -> p d >>= \(x, d') -> f x `runParse` d'
+	Parse p >>= f = Parse \s -> p s >>= \(x, s') -> f x `runParse` s'
 
 instance Alternative (Parse t) where
 	empty = Parse \_ -> Nothing
-	Parse l <|> Parse r = Parse \d -> l d <|> r d
+	Parse l <|> Parse r = Parse \s -> l s <|> r s
 
-(>>!) :: Parse d a -> Parse d b -> Parse d a
+(>>!) :: Parse s a -> Parse s b -> Parse s a
 Parse p >>! Parse nla =
-	Parse \d -> p d >>= \r@(_, d') -> maybe (pure r) (const empty) $ nla d'
+	Parse \s -> p s >>= \r@(_, s') -> maybe (pure r) (const empty) $ nla s'
 
-maybeToParse :: Maybe a -> Parse d a
-maybeToParse mx = Parse \d -> (, d) <$> mx
+maybeToParse :: Maybe a -> Parse s a
+maybeToParse mx = Parse \s -> (, s) <$> mx

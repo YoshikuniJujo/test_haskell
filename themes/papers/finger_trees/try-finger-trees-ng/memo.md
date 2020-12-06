@@ -85,10 +85,10 @@ make new TypeCheck
 		- [x] define Given parser
 		- [x] define test data parser
 * [x] make type WantedSet ADT
-	+ [x] make `canDerivs' :: Given -> WantedSet -> Bool`
-	+ [x] use canDerivs'
-	+ [x] rename canDerivs to canDerivsGen or so
-	+ [x] rename canDerivs' to canDerivs
+	+ [x] make `canDerive' :: Given -> WantedSet -> Bool`
+	+ [x] use canDerive'
+	+ [x] rename canDerive to canDerive or so
+	+ [x] rename canDerive' to canDerive
 	+ [x] make type WantedSet ADT
 	+ [x] rename data type Wanted to Wanted1
 	+ [x] rename data type WantedSet to Wanted
@@ -111,6 +111,7 @@ refactor parser of derivation
 * [x] refactor Data.Parse
 	+ [x] make export list
 	+ [x] others
+	+ [x] rename d to s
 * [ ] consider whether or not to rename Derivs and derivs
 * [ ] refactor Data.Derivation.Parse
 	+ [x] make export list
@@ -119,6 +120,7 @@ refactor parser of derivation
 	+ [ ] body
 		- [x] PARSE
 		- [ ] DERIVS
+			* [ ] rename Derivs to Memo
 			* [ ] data Derivs
 			* [ ] function derivs
 			* [ ] function check
