@@ -31,7 +31,7 @@ canDeriveGen g w =
 elemBy :: (a -> a -> Bool) -> a -> [a] -> Bool
 elemBy eq = any . eq
 
-newtype Wanted v = Wanted [Wanted1 v]
+newtype Wanted v = Wanted [Wanted1 v] deriving Show
 
 wanted :: Maybe (Wanted1 v) -> [Wanted1 v] -> Maybe (Wanted v)
 wanted mw ws = Wanted . (: ws) <$> mw

@@ -46,7 +46,7 @@ data Memo = Memo {
 	constraint :: Maybe (Exp Var Bool, Memo),
 	bool :: Maybe (Exp Var Bool, Memo),
 	equal :: Maybe (Exp Var Bool, Memo),
-	lesserEqual :: Maybe (Exp Var Bool, Memo),
+	lessEqual :: Maybe (Exp Var Bool, Memo),
 	expression :: Maybe (Exp Var Term, Memo),
 	number :: Maybe (Exp Var Term, Memo),
 	variable :: Maybe (Var, Memo),
@@ -56,7 +56,7 @@ memo :: [String] -> Memo
 memo ts = m where
 	m = Memo gw gv wt ct bl eq le ex nm vr tk
 	gw = pGivenWanted m; gv = pGiven m; wt = pWanted m
-	ct = pConstraint m; bl = pBool m; eq = pEqual m; le = pLesserEqual m
+	ct = pConstraint m; bl = pBool m; eq = pEqual m; le = pLessEqual m
 	ex = pExpression m; nm = pNumber m; vr = pVariable m
 	tk = (memo `second`) <$> uncons ts
 
@@ -88,24 +88,25 @@ Parse pWanted = maybeToParse . expToWanted
 
 pConstraint :: Memo -> Maybe (Exp Var Bool, Memo)
 Parse pConstraint =
-	Parse equal <|> Parse lesserEqual <|>
-	(Bool False <$ pick "F") <|> (Bool True <$ pick "T")
+	Parse equal <|> Parse lessEqual <|>
+	Bool False <$ pick "F" <|> Bool True <$ pick "T"
 
 pBool :: Memo -> Maybe (Exp Var Bool, Memo)
 Parse pBool =
-	Parse lesserEqual <|> (pick "(" *> Parse equal <* pick ")") <|>
-	(Bool False <$ pick "F") <|> (Bool True <$ pick "T")
+	pick "(" *> Parse equal <* pick ")" <|> Parse lessEqual <|>
+	Bool False <$ pick "F" <|> Bool True <$ pick "T"
 
 pEqual :: Memo -> Maybe (Exp Var Bool, Memo)
 Parse pEqual =
-	((:==) . Var <$> Parse variable <*> (pick "==" *> (Var <$> Parse variable) >>! (pick "+" <|> pick "-"))) <|>
-	((:==) . Var <$> Parse variable <*> (pick "==" *> Parse expression)) <|>
-	((:==) . Var <$> Parse variable <*> (pick "==" *> Parse bool)) <|>
-	((:==) <$> Parse expression <*> (pick "==" *> Parse expression)) <|>
-	((:==) <$> Parse bool <*> (pick "==" *> Parse bool))
+	(:==) <$> var <* pick "==" <*> var >>! (pick "+" <|> pick "-") <|>
+	(:==) <$> var <* pick "==" <*> Parse expression <|>
+	(:==) <$> var <* pick "==" <*> Parse bool <|>
+	(:==) <$> Parse expression <* pick "==" <*> Parse expression <|>
+	(:==) <$> Parse bool <* pick "==" <*> Parse bool
+	where var = Var <$> Parse variable
 
-pLesserEqual :: Memo -> Maybe (Exp Var Bool, Memo)
-Parse pLesserEqual = (:<=) <$> (Parse expression <* pick "<=") <*> Parse expression
+pLessEqual :: Memo -> Maybe (Exp Var Bool, Memo)
+Parse pLessEqual = (:<=) <$> Parse expression <* pick "<=" <*> Parse expression
 
 -- POLYNOMIAL
 

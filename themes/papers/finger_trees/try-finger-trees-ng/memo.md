@@ -128,7 +128,7 @@ refactor parser of derivation
 			* [x] function pick
 		- [ ] GRAMMAR
 			* [x] GIVEN WANTED, GIVEN AND WANTED
-			* [ ] CONSTRAINT
+			* [x] CONSTRAINT
 			* [ ] POLYNOMIAL
 		- [ ] VAR
 * [x] remove Trial.TypeCheck.ExpParser
