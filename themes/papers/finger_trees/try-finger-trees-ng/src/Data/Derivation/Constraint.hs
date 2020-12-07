@@ -123,9 +123,10 @@ selfContained = \case Eq p -> null p; Geq p -> and $ (>= 0) <$> p
 type Polynomial v = Map (Maybe v) Integer
 
 (.+), (.-) :: Ord v => Polynomial v -> Polynomial v -> Polynomial v
-(.+) = merge preserveMissing preserveMissing (zipWithMaybeMatched \_ a b -> removeZero $ a + b)
-(.-) = merge preserveMissing (mapMissing \_ b -> negate b) (zipWithMaybeMatched \_ a b -> removeZero $ a - b)
+(.+) = merge preserveMissing preserveMissing
+	(zipWithMaybeMatched \_ a b -> removeZero $ a + b)
+(.-) = merge preserveMissing (mapMissing \_ -> negate)
+	(zipWithMaybeMatched \_ a b -> removeZero $ a - b)
 
 removeZero :: (Eq n, Num n) => n -> Maybe n
-removeZero 0 = Nothing
-removeZero n = Just n
+removeZero = \case 0 -> Nothing; n -> Just n

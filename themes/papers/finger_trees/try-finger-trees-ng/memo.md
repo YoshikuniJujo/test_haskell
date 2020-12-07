@@ -163,14 +163,14 @@ refactor new TypeCheck
 	+ [x] rename Zero to Constraint
 		- [x] rename module
 		- [x] rename data type
-* [ ] refactor Data.Derivation.Constraint
+* [x] refactor Data.Derivation.Constraint
 	+ [x] remove debugFoo
 	+ [x] export list
 		- [x] rename identity
 		- [x] others
 	+ [x] import list
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] CONSTRAINT
 			* [x] DATA TYPE
 			* [x] CONSTRUCTOR
@@ -194,7 +194,7 @@ refactor new TypeCheck
 				+ [x] removeNegative
 				+ [x] isDerivableFrom
 				+ [x] selfContained
-		- [ ] POLYNOMIAL
+		- [x] POLYNOMIAL
 * [ ] refactor Data.Derivation.Expression
 * [ ] refactor Data.Derivation.CanDerivs
 
