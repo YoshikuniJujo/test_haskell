@@ -112,12 +112,12 @@ refactor parser of derivation
 	+ [x] make export list
 	+ [x] others
 	+ [x] rename d to s
-* [ ] consider whether or not to rename Derivs and derivs
-* [ ] refactor Data.Derivation.Parse
+* [x] consider whether or not to rename Derivs and derivs
+* [x] refactor Data.Derivation.Parse
 	+ [x] make export list
 	+ [x] add import list
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] define and use type synonym Var
 		- [x] PARSE
 		- [x] MEMO
@@ -126,11 +126,11 @@ refactor parser of derivation
 			* [x] function memo
 			* [x] function check
 			* [x] function pick
-		- [ ] GRAMMAR
+		- [x] GRAMMAR
 			* [x] GIVEN WANTED, GIVEN AND WANTED
 			* [x] CONSTRAINT
-			* [ ] POLYNOMIAL
-		- [ ] VAR
+			* [x] POLYNOMIAL
+		- [x] VAR
 * [x] remove Trial.TypeCheck.ExpParser
 
 ### module name hierarchy

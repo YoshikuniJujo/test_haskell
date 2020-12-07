@@ -8,4 +8,4 @@ import Data.Derivation.Expression
 import Data.Derivation.Parse
 
 samplePolynominal :: Writer [Zero String] (Polynominal String)
-samplePolynominal = termToPolynominal . fromJust $ parse expression "((m + m) - 2)"
+samplePolynominal = termToPolynominal . fromJust $ parse polynomial "((m + m) - 2)"
