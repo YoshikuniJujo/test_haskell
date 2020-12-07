@@ -101,23 +101,20 @@ alignGG l r v = (,) <$> l !? v <*> r !? v >>= \(nl, nr) -> do
 -- REMOVE NEGATIVE, IS DERIVABLE FROM AND SELF CONTAINED
 
 removeNegative :: Constraint v -> Constraint v
-removeNegative eq@(Eq _) = eq
-removeNegative (Geq p) = Geq $ filter (> 0) p
+removeNegative = \case eq@(Eq _) -> eq; Geq p -> Geq $ filter (>= 0) p
 
 isDerivableFrom :: Ord v => Constraint v -> Constraint v -> Bool
-Eq pw `isDerivableFrom` Eq pg = pw == pg
-Geq pw `isDerivableFrom` Geq pg = pw `isEqLargerThan` pg
-isDerivableFrom _ _ = False
+Eq w `isDerivableFrom` Eq g = w == g
+Geq w `isDerivableFrom` Geq g = w `isGeqThan` g
+_ `isDerivableFrom` _ = False
 
-isEqLargerThan :: Ord v => Polynomial v -> Polynomial v -> Bool
-p1 `isEqLargerThan` p2 = foldr (&&) True $ merge (mapMissing \_ n -> True) (mapMissing \_ n -> True) (zipWithMatched \_ -> (>=)) p1 p2
+isGeqThan :: Ord v => Polynomial v -> Polynomial v -> Bool
+l `isGeqThan` r = and $ merge
+	(mapMissing \_ nl -> (nl >= 0))
+	(mapMissing \_ nr -> (nr <= 0)) (zipWithMatched \_ -> (>=)) l r
 
 selfContained :: Constraint v -> Bool
-selfContained (Eq p) = null p
-selfContained (Geq p) = checkAll (>= 0) p
-
-checkAll :: (v -> Bool) -> Map k v -> Bool
-checkAll p = and . (p <$>)
+selfContained = \case Eq p -> null p; Geq p -> and $ (>= 0) <$> p
 
 ---------------------------------------------------------------------------
 -- POLYNOMIAL

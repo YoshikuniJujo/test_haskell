@@ -171,7 +171,7 @@ refactor new TypeCheck
 	+ [x] import list
 	+ [x] structure
 	+ [ ] body
-		- [ ] CONSTRAINT
+		- [x] CONSTRAINT
 			* [x] DATA TYPE
 			* [x] CONSTRUCTOR
 				+ [x] equal
@@ -190,11 +190,10 @@ refactor new TypeCheck
 				+ [x] alignEE
 				+ [x] alignEG
 				+ [x] alignGG
-			* [ ] REMOVE NEGATIVE, IS DERIVABLE AND SELF CONTAINED
-				+ [ ] removeNegative
-				+ [ ] isDerivableFrom
-				+ [ ] selfContained
-				+ [ ] checkAll
+			* [x] REMOVE NEGATIVE, IS DERIVABLE AND SELF CONTAINED
+				+ [x] removeNegative
+				+ [x] isDerivableFrom
+				+ [x] selfContained
 		- [ ] POLYNOMIAL
 * [ ] refactor Data.Derivation.Expression
 * [ ] refactor Data.Derivation.CanDerivs
