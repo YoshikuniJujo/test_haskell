@@ -196,6 +196,12 @@ refactor new TypeCheck
 				+ [x] selfContained
 		- [x] POLYNOMIAL
 * [ ] refactor Data.Derivation.Expression
+	+ [ ] export list
+		- [x] add export list
+		- [ ] refactor export list
+	+ [ ] import list
+	+ [ ] structure
+	+ [ ] body
 * [ ] refactor Data.Derivation.CanDerivs
 
 

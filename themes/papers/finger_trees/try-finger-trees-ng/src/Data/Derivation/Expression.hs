@@ -4,7 +4,8 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Derivation.Expression where
+module Data.Derivation.Expression (
+	Exp(..), eqToZero', expToVarBool, Term, termToPolynomial ) where
 
 import Outputable hiding (empty)
 import Control.Arrow
@@ -94,15 +95,6 @@ expToVarBoolStep ((v1, v2) : vs) vb = case vb !? v1 of
 untilFixed :: Eq a => (a -> a) -> a -> a
 untilFixed f x = fst . fromJust . find (uncurry (==)) $ zip xs (tail xs)
 	where xs = iterate f x
-
-sampleExpVarBool :: [Exp String Bool]
-sampleExpVarBool = [
-	Var "bar" :== Var "aaaaa",
-	Var "foo" :== Const 8,
-	Var "bar" :== Var "hoge",
-	Var "hoge" :== Bool False,
-	Bool True :== Var "piyo"
-	]
 
 expToVarBool :: Ord v => [Exp v Bool] -> VarBool v
 expToVarBool = snd . untilFixed (uncurry expToVarBoolStep) . expToVarBoolInit
