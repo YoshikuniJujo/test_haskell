@@ -8,6 +8,7 @@ module Data.Derivation.Constraint (
 
 import Prelude hiding (null, filter)
 
+import Control.Monad (guard)
 import Data.Foldable (toList)
 import Data.Maybe (isJust)
 import Data.Map.Strict (Map, null, singleton, (!?), filter, lookupMin)
@@ -41,23 +42,23 @@ data Constraint v = Eq (Polynomial v) | Geq (Polynomial v)
 -- CONSTRUCTOR
 
 equal :: Ord v => Polynomial v -> Polynomial v -> Constraint v
-l `equal` r = Eq . regularizeEq $ l .- r
+l `equal` r = Eq . formatEq $ l .- r
 
 greatEqualThan :: Ord v => Polynomial v -> Polynomial v -> Constraint v
-l `greatEqualThan` r = Geq . regularizeGeq $ l .- r
+l `greatEqualThan` r = Geq . formatGeq $ l .- r
 
 greatThan :: Ord v => Polynomial v -> Polynomial v -> Constraint v
-l `greatThan` r = Geq . regularizeGeq $ l .- r .- singleton Nothing 1
+l `greatThan` r = Geq . formatGeq $ l .- r .- singleton Nothing 1
 
-regularizeEq :: Polynomial v -> Polynomial v
-regularizeEq p =
-	maybe p ((p `divide` divisor p `multiple`) . signum . snd) $ lookupMin p
+formatEq :: Polynomial v -> Polynomial v
+formatEq p =
+	maybe p ((p `divide` divisor p `times`) . signum . snd) $ lookupMin p
 
-regularizeGeq :: Polynomial v -> Polynomial v
-regularizeGeq p = p `divide` divisor p
+formatGeq :: Polynomial v -> Polynomial v
+formatGeq p = p `divide` divisor p
 
-multiple, divide :: Polynomial v -> Integer -> Polynomial v
-p `multiple` n = (* n) <$> p
+times, divide :: Polynomial v -> Integer -> Polynomial v
+p `times` n = (* n) <$> p
 p `divide` n = (`div` n) <$> p
 
 divisor :: Polynomial v -> Integer
@@ -75,29 +76,27 @@ hasVar (Geq p) v = isJust $ p !? v
 
 -- REMOVE VAR
 
-removeVar :: Ord v => Constraint v -> Constraint v -> Maybe v -> Maybe (Constraint v)
-removeVar (Eq p1) (Eq p2) v = Eq . regularizeEq . uncurry (.+) <$> alignVarEqEq p1 p2 v
-removeVar (Eq p1) (Geq p2) v = Geq . regularizeGeq . uncurry (.+) <$> alignVarEqG p1 p2 v
-removeVar (Geq p1) (Geq p2) v = Geq . regularizeGeq . uncurry (.+) <$> alignVarGG p1 p2 v
-removeVar z1 z2 v = removeVar z2 z1 v
+removeVar ::
+	Ord v => Constraint v -> Constraint v -> Maybe v -> Maybe (Constraint v)
+removeVar (Eq l) (Eq r) v = Eq . formatEq . uncurry (.+) <$> alignEE l r v
+removeVar (Eq l) (Geq r) v = Geq . formatGeq . uncurry (.+) <$> alignEG l r v
+removeVar (Geq l) (Geq r) v = Geq . formatGeq . uncurry (.+) <$> alignGG l r v
+removeVar l r v = removeVar r l v
 
-alignVarEqEq :: Ord v => Polynomial v -> Polynomial v -> Maybe v -> Maybe (Polynomial v, Polynomial v)
-alignVarEqEq p1 p2 v = case (p1 !? v, p2 !? v) of
-	(Just n1, Just n2) -> Just (p1 `multiple` n2, p2 `multiple` (- n1))
-	_ -> Nothing
+type Aligned v = Maybe (Polynomial v, Polynomial v)
 
-alignVarEqG :: Ord v => Polynomial v -> Polynomial v -> Maybe v -> Maybe (Polynomial v, Polynomial v)
-alignVarEqG p1 p2 v = case (p1 !? v, p2 !? v) of
-	(Just n1, Just n2) -> Just (
-		p1 `multiple` (- signum n1 * n2), p2 `multiple` abs n1 )
-	_ -> Nothing
+alignEE :: Ord v => Polynomial v -> Polynomial v -> Maybe v -> Aligned v
+alignEE l r v = (<$> ((,) <$> l !? v <*> r !? v)) \(nl, nr) ->
+	(l `times` nr, r `times` (- nl))
 
-alignVarGG :: Ord v => Polynomial v -> Polynomial v -> Maybe v -> Maybe (Polynomial v, Polynomial v)
-alignVarGG p1 p2 v = case (p1 !? v, p2 !? v) of
-	(Just n1, Just n2)
-		| signum n1 * signum n2 == - 1 -> Just (
-			p1 `multiple` abs n2, p2 `multiple` abs n1 )
-	_ -> Nothing
+alignEG :: Ord v => Polynomial v -> Polynomial v -> Maybe v -> Aligned v
+alignEG l r v = (<$> ((,) <$> l !? v <*> r !? v)) \(nl, nr) ->
+	(l `times` (- signum nl * nr), r `times` abs nl)
+
+alignGG :: Ord v => Polynomial v -> Polynomial v -> Maybe v -> Aligned v
+alignGG l r v = (,) <$> l !? v <*> r !? v >>= \(nl, nr) -> do
+	guard $ nl * nr < 0
+	pure (l `times` abs nr, r `times` abs nl)
 
 -- REMOVE NEGATIVE, IS DERIVABLE FROM AND SELF CONTAINED
 

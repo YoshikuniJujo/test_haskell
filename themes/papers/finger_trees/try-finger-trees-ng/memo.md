@@ -182,9 +182,19 @@ refactor new TypeCheck
 				+ [x] multiple
 				+ [x] divide
 				+ [x] divisor
-			* [ ] VARIABLE
-			* [ ] REMOVE VAR
+			* [x] VARIABLE
+				+ [x] getVars
+				+ [x] hasVar
+			* [x] REMOVE VAR
+				+ [x] removeVar
+				+ [x] alignEE
+				+ [x] alignEG
+				+ [x] alignGG
 			* [ ] REMOVE NEGATIVE, IS DERIVABLE AND SELF CONTAINED
+				+ [ ] removeNegative
+				+ [ ] isDerivableFrom
+				+ [ ] selfContained
+				+ [ ] checkAll
 		- [ ] POLYNOMIAL
 * [ ] refactor Data.Derivation.Expression
 * [ ] refactor Data.Derivation.CanDerivs
