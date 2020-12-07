@@ -169,8 +169,15 @@ refactor new TypeCheck
 		- [x] rename identity
 		- [x] others
 	+ [x] import list
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] CONSTRAINT
+			* [ ] DATA TYPE
+			* [ ] CONSTRUCTOR
+			* [ ] VARIABLE
+			* [ ] REMOVE VAR
+			* [ ] REMOVE NEGATIVE, IS DERIVABLE AND SELF CONTAINED
+		- [ ] POLYNOMIAL
 * [ ] refactor Data.Derivation.Expression
 * [ ] refactor Data.Derivation.CanDerivs
 
