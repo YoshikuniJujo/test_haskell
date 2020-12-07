@@ -5,8 +5,8 @@ module Data.Derivation.Constraint (
 	Constraint, equal, greatEqualThan, greatThan,
 	containVars, doesContainVar, removeVar, identity,
 	isDerivableFrom,
-	noNegativeFromG, isEq,
-	Polynominal, (.+), (.-) ) where
+	rmNegativeTerm,
+	Polynomial, (.+), (.-) ) where
 
 import Data.Foldable
 import Data.Maybe
@@ -15,43 +15,39 @@ import Data.Map.Merge.Strict
 import qualified Data.Map.Strict as M
 
 data Constraint v
-	= Eq (Polynominal v) | Geq (Polynominal v)
+	= Eq (Polynomial v) | Geq (Polynomial v)
 	deriving (Show, Eq, Ord)
-
-isEq :: Constraint v -> Bool
-isEq (Eq _) = True
-isEq _ = False
 
 gcdAll :: Integral n => [n] -> Maybe n
 gcdAll [] = Nothing
 gcdAll (n : ns) = Just $ foldr gcd n ns
 
-divisor :: Polynominal v -> Maybe Integer
+divisor :: Polynomial v -> Maybe Integer
 divisor = gcdAll . toList
 
-divide :: Polynominal v -> Integer -> Polynominal v
+divide :: Polynomial v -> Integer -> Polynomial v
 p `divide` n = (`div` n) <$> p
 
-multiple :: Polynominal v -> Integer -> Polynominal v
+multiple :: Polynomial v -> Integer -> Polynomial v
 p `multiple` n = (* n) <$> p
 
-regularizeEq :: Polynominal v -> Polynominal v
+regularizeEq :: Polynomial v -> Polynomial v
 regularizeEq p = case (lookupMin p, divisor p) of
 	(Just (_, mn), Just d) -> p `multiple` signum mn `divide` d
 	_ -> p
 
-regularizeG :: Polynominal v -> Polynominal v
+regularizeG :: Polynomial v -> Polynomial v
 regularizeG p = case divisor p of
 	Just d -> p `divide` d
 	Nothing -> p
 
-equal :: Ord v => Polynominal v -> Polynominal v -> Constraint v
+equal :: Ord v => Polynomial v -> Polynomial v -> Constraint v
 p1 `equal` p2 = Eq . regularizeEq $ p1 .- p2
 
-greatEqualThan :: Ord v => Polynominal v -> Polynominal v -> Constraint v
+greatEqualThan :: Ord v => Polynomial v -> Polynomial v -> Constraint v
 p1 `greatEqualThan` p2 = Geq . regularizeG $ p1 .- p2
 
-greatThan :: Ord v => Polynominal v -> Polynominal v -> Constraint v
+greatThan :: Ord v => Polynomial v -> Polynomial v -> Constraint v
 p1 `greatThan` p2 = Geq . regularizeG $ p1 .- p2 .- one
 
 removeVar :: Ord v => Constraint v -> Constraint v -> Maybe v -> Maybe (Constraint v)
@@ -68,19 +64,19 @@ containVars :: Ord v => Constraint v -> [Maybe v]
 containVars (Eq p) = (fst <$>) $ M.toList p
 containVars (Geq p) = (fst <$>) $ M.toList p
 
-alignVarEqEq :: Ord v => Polynominal v -> Polynominal v -> Maybe v -> Maybe (Polynominal v, Polynominal v)
+alignVarEqEq :: Ord v => Polynomial v -> Polynomial v -> Maybe v -> Maybe (Polynomial v, Polynomial v)
 alignVarEqEq p1 p2 v = case (p1 !? v, p2 !? v) of
 	(Just n1, Just n2) -> Just (p1 `multiple` n2, p2 `multiple` (- n1))
 	_ -> Nothing
 
-alignVarEqG :: Ord v => Polynominal v -> Polynominal v -> Maybe v -> Maybe (Polynominal v, Polynominal v)
+alignVarEqG :: Ord v => Polynomial v -> Polynomial v -> Maybe v -> Maybe (Polynomial v, Polynomial v)
 alignVarEqG p1 p2 v = case (p1 !? v, p2 !? v) of
 	(Just n1, Just n2) -> Just (
 		p1 `multiple` (- signum n1 * n2), p2 `multiple` abs n1 )
 --	(_, Just n2) | n2 <= 0 -> Just (empty, p2)
 	_ -> Nothing
 
-alignVarGG :: Ord v => Polynominal v -> Polynominal v -> Maybe v -> Maybe (Polynominal v, Polynominal v)
+alignVarGG :: Ord v => Polynomial v -> Polynomial v -> Maybe v -> Maybe (Polynomial v, Polynomial v)
 alignVarGG p1 p2 v = case (p1 !? v, p2 !? v) of
 	(Just n1, Just n2)
 		| signum n1 * signum n2 == - 1 -> Just (
@@ -99,7 +95,7 @@ checkAll p = and . (p <$>)
 zipAll :: Ord k => (v -> v -> Bool) -> Map k v -> Map k v -> Bool
 zipAll p m1 m2 = foldr (&&) True $ merge (mapMissing \_ _ -> False) (mapMissing \_ _ -> False) (zipWithMatched \_ -> p) m1 m2
 
-isEqLargerThan :: Ord v => Polynominal v -> Polynominal v -> Bool
+isEqLargerThan :: Ord v => Polynomial v -> Polynomial v -> Bool
 -- p1 `isEqLargerThan` p2 = foldr (&&) True $ merge (mapMissing \_ n -> (n >= 0)) (mapMissing \_ n -> (n <= 0)) (zipWithMatched \_ -> (>=)) p1 p2
 p1 `isEqLargerThan` p2 = foldr (&&) True $ merge (mapMissing \_ n -> True) (mapMissing \_ n -> True) (zipWithMatched \_ -> (>=)) p1 p2
 
@@ -108,13 +104,13 @@ isDerivableFrom (Eq pw) (Eq pg) = pw == pg
 isDerivableFrom (Geq pw) (Geq pg) = pw `isEqLargerThan` pg
 isDerivableFrom _ _ = False
 
-noNegativeFromG :: Constraint v -> Constraint v
-noNegativeFromG eq@(Eq _) = eq
-noNegativeFromG (Geq p) = Geq $ M.filter (> 0) p
+rmNegativeTerm :: Constraint v -> Constraint v
+rmNegativeTerm eq@(Eq _) = eq
+rmNegativeTerm (Geq p) = Geq $ M.filter (> 0) p
 
-type Polynominal v = Map (Maybe v) Integer
+type Polynomial v = Map (Maybe v) Integer
 
-(.+), (.-) :: Ord v => Polynominal v -> Polynominal v -> Polynominal v
+(.+), (.-) :: Ord v => Polynomial v -> Polynomial v -> Polynomial v
 (.+) = merge preserveMissing preserveMissing (zipWithMaybeMatched \_ a b -> removeZero $ a + b)
 (.-) = merge preserveMissing (mapMissing \_ b -> negate b) (zipWithMaybeMatched \_ a b -> removeZero $ a - b)
 
@@ -122,5 +118,5 @@ removeZero :: (Eq n, Num n) => n -> Maybe n
 removeZero 0 = Nothing
 removeZero n = Just n
 
-one :: Polynominal v
+one :: Polynomial v
 one = singleton Nothing 1

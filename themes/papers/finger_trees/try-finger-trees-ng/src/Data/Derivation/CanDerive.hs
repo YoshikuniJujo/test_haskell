@@ -56,7 +56,7 @@ instance Show v => Outputable (Constraint v) where
 newtype Given v = Given [Constraint v] deriving Show
 
 given :: Ord v => [Constraint v] -> Given v
-given zs = Given . nub . sort $ zs ++ take 8 (noNegativeFromG <$> zs)
+given zs = Given . nub . sort $ zs ++ (rmNegativeTerm <$> zs)
 
 expsToGiven :: Ord v => [Exp v Bool] -> Given v
 expsToGiven es = given . concat $ (\e -> uncurry (maybe id (:)) $ eqToZero' e True vb) <$> es
