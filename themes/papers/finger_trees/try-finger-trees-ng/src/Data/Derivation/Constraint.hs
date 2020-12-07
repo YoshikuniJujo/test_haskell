@@ -5,7 +5,7 @@ module Data.Derivation.Constraint (
 	Constraint, equal, greatEqualThan, greatThan,
 	containVars, doesContainVar, removeVar, identity,
 	isDerivableFrom,
-	noNegativeFromG, isEq, debugZeros, debugZeroWanted,
+	noNegativeFromG, isEq,
 	Polynominal, (.+), (.-) ) where
 
 import Data.Foldable
@@ -111,28 +111,6 @@ isDerivableFrom _ _ = False
 noNegativeFromG :: Constraint v -> Constraint v
 noNegativeFromG eq@(Eq _) = eq
 noNegativeFromG (Geq p) = Geq $ M.filter (> 0) p
-
-debugZeros, debugZeros1, debugZeros2 :: [Constraint String]
-debugZeros = debugZeros1 ++ debugZeros2
-
-debugZeros1 = Eq . fromList <$> [
-	[(Nothing, 1), (Just "m", - 1), (Just "zfsk_aOI1", 1)],
-	[(Nothing, 1), (Just "m", 1), (Just "zfsk_aOHL", -1)],
-	[(Nothing, 1), (Just "moops'", -1), (Just "zfsk_aOI3", 1)],
-	[(Nothing, 1), (Just "n", -1), (Just "zfsk_aOHZ", 1)],
-	[(Just "m", 1), (Just "moops'", 1), (Just "zfsk_aOHQ", -1)]
-	]
-
-debugZeros2 = Geq . fromList <$> [
-	[(Nothing, -1), (Just "moops'", 1)],
-	[(Nothing, -1), (Just "zfsk_aOHL", 1)],
-	[(Nothing, -1), (Just "zfsk_aOHQ", 1)],
-	[(Just "moops'", 1)],
-	[(Just "zfsk_aOHL", 1)],
-	[(Just "zfsk_aOHQ", 1)]
-	]
-
-debugZeroWanted = Eq $ fromList [(Just "zfsk_aOHL", 1), (Just "zfsk_aOHQ", -1), (Just "zfsk_aOI3", 1)]
 
 type Polynominal v = Map (Maybe v) Integer
 

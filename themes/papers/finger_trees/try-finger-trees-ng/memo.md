@@ -149,7 +149,7 @@ refactor new TypeCheck
 * [x] remove 'New' from module name hierarchy
 * [x] try removing Polynominal
 * [x] check module name hierarchy
-* [ ] refactor module name hierarchy
+* [x] refactor module name hierarchy
 	+ [x] add top level name Derivation
 	+ [x] consider whether or not to rename TypeCheck.Nat to Plugin.TypeCheck.Nat.Simple
 	+ [x] rename Polynominal.Type to Polynominal.Polynominal
@@ -163,8 +163,15 @@ refactor new TypeCheck
 	+ [x] rename Zero to Constraint
 		- [x] rename module
 		- [x] rename data type
-	+ [ ] consider whether or not to rename Expression
-	+ [ ] others
+* [ ] refactor Data.Derivation.Constraint
+	+ [x] remove debugFoo
+	+ [ ] export list
+	+ [ ] import list
+	+ [ ] structure
+	+ [ ] body
+* [ ] refactor Data.Derivation.Expression
+* [ ] refactor Data.Derivation.CanDerivs
+
 
 ### module name hierarchy
 
@@ -172,8 +179,8 @@ refactor new TypeCheck
 Data
   + Derivation
       + CanDerive
-      + Polynomial
-      + Zero
+      + Expression
+      + Constraint
 Plugin
   + TypeCheck
       + Nat

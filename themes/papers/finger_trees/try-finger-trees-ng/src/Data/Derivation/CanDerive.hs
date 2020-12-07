@@ -53,9 +53,6 @@ selfContained z = identity z
 instance Show v => Outputable (Constraint v) where
 	ppr = text . show
 
-debugWanted :: Wanted1 String
-debugWanted = debugZeroWanted
-
 newtype Given v = Given [Constraint v] deriving Show
 
 given :: Ord v => [Constraint v] -> Given v
@@ -96,5 +93,3 @@ removeVars = foldl removeVarG
 
 instance Show v => Outputable (Given v) where
 	ppr = text . show
-
-debugGiven = Given debugZeros
