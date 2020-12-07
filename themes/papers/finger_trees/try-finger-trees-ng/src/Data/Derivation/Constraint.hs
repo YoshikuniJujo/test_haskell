@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Derivation.Constraint (
@@ -41,36 +41,27 @@ data Constraint v = Eq (Polynomial v) | Geq (Polynomial v)
 -- CONSTRUCTOR
 
 equal :: Ord v => Polynomial v -> Polynomial v -> Constraint v
-p1 `equal` p2 = Eq . regularizeEq $ p1 .- p2
+l `equal` r = Eq . regularizeEq $ l .- r
 
 greatEqualThan :: Ord v => Polynomial v -> Polynomial v -> Constraint v
-p1 `greatEqualThan` p2 = Geq . regularizeG $ p1 .- p2
+l `greatEqualThan` r = Geq . regularizeGeq $ l .- r
 
 greatThan :: Ord v => Polynomial v -> Polynomial v -> Constraint v
-p1 `greatThan` p2 = Geq . regularizeG $ p1 .- p2 .- one
-
-gcdAll :: Integral n => [n] -> Maybe n
-gcdAll [] = Nothing
-gcdAll (n : ns) = Just $ foldr gcd n ns
-
-divisor :: Polynomial v -> Maybe Integer
-divisor = gcdAll . toList
-
-divide :: Polynomial v -> Integer -> Polynomial v
-p `divide` n = (`div` n) <$> p
-
-multiple :: Polynomial v -> Integer -> Polynomial v
-p `multiple` n = (* n) <$> p
+l `greatThan` r = Geq . regularizeGeq $ l .- r .- singleton Nothing 1
 
 regularizeEq :: Polynomial v -> Polynomial v
-regularizeEq p = case (lookupMin p, divisor p) of
-	(Just (_, mn), Just d) -> p `multiple` signum mn `divide` d
-	_ -> p
+regularizeEq p =
+	maybe p ((p `divide` divisor p `multiple`) . signum . snd) $ lookupMin p
 
-regularizeG :: Polynomial v -> Polynomial v
-regularizeG p = case divisor p of
-	Just d -> p `divide` d
-	Nothing -> p
+regularizeGeq :: Polynomial v -> Polynomial v
+regularizeGeq p = p `divide` divisor p
+
+multiple, divide :: Polynomial v -> Integer -> Polynomial v
+p `multiple` n = (* n) <$> p
+p `divide` n = (`div` n) <$> p
+
+divisor :: Polynomial v -> Integer
+divisor = gcdAll . toList where gcdAll = \case [] -> 1; n : ns -> foldr gcd n ns
 
 -- VARIABLE
 
@@ -86,8 +77,8 @@ hasVar (Geq p) v = isJust $ p !? v
 
 removeVar :: Ord v => Constraint v -> Constraint v -> Maybe v -> Maybe (Constraint v)
 removeVar (Eq p1) (Eq p2) v = Eq . regularizeEq . uncurry (.+) <$> alignVarEqEq p1 p2 v
-removeVar (Eq p1) (Geq p2) v = Geq . regularizeG . uncurry (.+) <$> alignVarEqG p1 p2 v
-removeVar (Geq p1) (Geq p2) v = Geq . regularizeG . uncurry (.+) <$> alignVarGG p1 p2 v
+removeVar (Eq p1) (Geq p2) v = Geq . regularizeGeq . uncurry (.+) <$> alignVarEqG p1 p2 v
+removeVar (Geq p1) (Geq p2) v = Geq . regularizeGeq . uncurry (.+) <$> alignVarGG p1 p2 v
 removeVar z1 z2 v = removeVar z2 z1 v
 
 alignVarEqEq :: Ord v => Polynomial v -> Polynomial v -> Maybe v -> Maybe (Polynomial v, Polynomial v)
@@ -142,6 +133,3 @@ type Polynomial v = Map (Maybe v) Integer
 removeZero :: (Eq n, Num n) => n -> Maybe n
 removeZero 0 = Nothing
 removeZero n = Just n
-
-one :: Polynomial v
-one = singleton Nothing 1

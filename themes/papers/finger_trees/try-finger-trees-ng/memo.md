@@ -172,8 +172,16 @@ refactor new TypeCheck
 	+ [x] structure
 	+ [ ] body
 		- [ ] CONSTRAINT
-			* [ ] DATA TYPE
-			* [ ] CONSTRUCTOR
+			* [x] DATA TYPE
+			* [x] CONSTRUCTOR
+				+ [x] equal
+				+ [x] greatEqualThan
+				+ [x] greatThan
+				+ [x] regularizeEq
+				+ [x] regularizeGeq
+				+ [x] multiple
+				+ [x] divide
+				+ [x] divisor
 			* [ ] VARIABLE
 			* [ ] REMOVE VAR
 			* [ ] REMOVE NEGATIVE, IS DERIVABLE AND SELF CONTAINED
