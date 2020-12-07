@@ -160,6 +160,10 @@ refactor new TypeCheck
 	+ [x] consider whether or not to put module Zero and Polynominal in module Zero
 	+ [x] consider whether or not to put module Expression and AvoidNegative in module AvoidNegative
 	+ [x] rename module from AvoidNegative to Expression
+	+ [x] rename Zero to Constraint
+		- [x] rename module
+		- [x] rename data type
+	+ [ ] consider whether or not to rename Expression
 	+ [ ] others
 
 ### module name hierarchy
@@ -167,13 +171,9 @@ refactor new TypeCheck
 ```
 Data
   + Derivation
-      + AvoidNegative
-      + Expression
-      + Derive
-      + Given
-      + Wanted
+      + CanDerive
+      + Polynomial
       + Zero
-      + Polynominal
 Plugin
   + TypeCheck
       + Nat

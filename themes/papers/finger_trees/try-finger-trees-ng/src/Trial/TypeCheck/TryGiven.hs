@@ -5,7 +5,7 @@ module Trial.TypeCheck.TryGiven where
 import Data.Map.Strict
 
 import Data.Derivation.CanDerive
-import Data.Derivation.Zero
+import Data.Derivation.Constraint
 import Data.Derivation.Parse hiding (given)
 import Data.Derivation.Expression
 
@@ -14,7 +14,7 @@ createGiven ss = do
 	zs <- createZero `mapM` ss
 	pure $ given zs
 
-createZero :: String -> Maybe (Zero String)
+createZero :: String -> Maybe (Constraint String)
 createZero s = do
 	e <- parse bool s
 	fst $ eqToZero' e True empty

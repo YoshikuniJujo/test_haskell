@@ -8,10 +8,10 @@ import Data.Either
 import Data.List
 import Data.Map.Strict hiding ((\\), foldl, null, partition, take)
 
-import Data.Derivation.Zero
+import Data.Derivation.Constraint
 import Data.Derivation.Expression
 
-import qualified Data.Derivation.Zero as Z
+import qualified Data.Derivation.Constraint as Z
 
 canDerive :: Ord v => Given v -> Wanted v -> Bool
 canDerive g (Wanted ws) = canDeriveAll g ws
@@ -36,12 +36,12 @@ newtype Wanted v = Wanted [Wanted1 v] deriving Show
 wanted :: Maybe (Wanted1 v) -> [Wanted1 v] -> Maybe (Wanted v)
 wanted mw ws = Wanted . (: ws) <$> mw
 
-type Wanted1 v = Zero v
+type Wanted1 v = Constraint v
 
 expToWanted :: Ord v => Exp v Bool -> Maybe (Wanted v)
 expToWanted = uncurry wanted . \e -> eqToZero' e True empty
 
-wantedToZero :: Wanted1 v -> Zero v
+wantedToZero :: Wanted1 v -> Constraint v
 wantedToZero z = z
 
 containVarsW :: Ord v => Wanted1 v -> [Maybe v]
@@ -50,35 +50,35 @@ containVarsW = Z.containVars . wantedToZero
 selfContained :: Wanted1 v -> Bool
 selfContained z = identity z
 
-instance Show v => Outputable (Zero v) where
+instance Show v => Outputable (Constraint v) where
 	ppr = text . show
 
 debugWanted :: Wanted1 String
 debugWanted = debugZeroWanted
 
-newtype Given v = Given [Zero v] deriving Show
+newtype Given v = Given [Constraint v] deriving Show
 
-given :: Ord v => [Zero v] -> Given v
+given :: Ord v => [Constraint v] -> Given v
 given zs = Given . nub . sort $ zs ++ take 8 (noNegativeFromG <$> zs)
 
 expsToGiven :: Ord v => [Exp v Bool] -> Given v
 expsToGiven es = given . concat $ (\e -> uncurry (maybe id (:)) $ eqToZero' e True vb) <$> es
 	where vb = expToVarBool es
 
-givenToZeros :: Given v -> [Zero v]
+givenToZeros :: Given v -> [Constraint v]
 givenToZeros (Given zs) = zs
 
 containVarsG :: Ord v => Given v -> [Maybe v]
 containVarsG = nub . sort . concat . (Z.containVars <$>) . givenToZeros
 
-removeVarInit :: Ord v => Given v -> Maybe v -> ([Zero v], [Zero v])
+removeVarInit :: Ord v => Given v -> Maybe v -> ([Constraint v], [Constraint v])
 removeVarInit (Given zs) v = partition (`doesContainVar` v) zs
 
-removeVar1 :: Ord v => Zero v -> Maybe v -> Zero v -> Either (Zero v) (Zero v)
+removeVar1 :: Ord v => Constraint v -> Maybe v -> Constraint v -> Either (Constraint v) (Constraint v)
 removeVar1 z0 v z = case Z.removeVar z0 z v of
 	Just z' -> Left z'; Nothing -> Right z
 
-removeVarStep :: Ord v => Maybe v -> [Zero v] -> ([Zero v], [Zero v])
+removeVarStep :: Ord v => Maybe v -> [Constraint v] -> ([Constraint v], [Constraint v])
 removeVarStep _ [] = ([], [])
 removeVarStep v (z : zs) = partitionEithers $ removeVar1 z v <$> zs
 

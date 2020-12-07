@@ -13,7 +13,7 @@ import Data.Maybe
 import Data.List hiding (insert)
 import Data.Map.Strict
 
-import Data.Derivation.Zero
+import Data.Derivation.Constraint
 
 data Term
 
@@ -31,7 +31,7 @@ deriving instance Show v => Show (Exp v t)
 instance Show v => Outputable (Exp v t) where
 	ppr = text . show
 
-termToPolynominal :: Ord v => Exp v Term -> Writer [Zero v] (Polynominal v)
+termToPolynominal :: Ord v => Exp v Term -> Writer [Constraint v] (Polynominal v)
 termToPolynominal (Const n) = pure $ singleton Nothing n
 termToPolynominal (Var v) = do
 	let	v' = singleton (Just v) 1
@@ -44,11 +44,11 @@ termToPolynominal (t1 :- t2) = do
 	tell [t1' `greatEqualThan` t2']
 	pure $ t1' .- t2'
 
-eqToZero' :: Ord v => Exp v Bool -> Bool -> VarBool v -> (Maybe (Zero v), [Zero v])
+eqToZero' :: Ord v => Exp v Bool -> Bool -> VarBool v -> (Maybe (Constraint v), [Constraint v])
 -- eqToZero' e b vb = uncurry (maybe id (:)) $ runWriter (eqToZero e b vb)
 eqToZero' e b vb = runWriter (eqToZero e b vb)
 
-eqToZero :: Ord v => Exp v Bool -> Bool -> VarBool v -> Writer [Zero v] (Maybe (Zero v))
+eqToZero :: Ord v => Exp v Bool -> Bool -> VarBool v -> Writer [Constraint v] (Maybe (Constraint v))
 eqToZero (Bool _) _ _ = pure Nothing
 eqToZero (Var _) _ _ = pure Nothing
 eqToZero (t1 :<= t2) False _ = Just <$> (greatThan <$> termToPolynominal t1 <*> termToPolynominal t2)
