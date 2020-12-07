@@ -168,7 +168,7 @@ refactor new TypeCheck
 	+ [x] export list
 		- [x] rename identity
 		- [x] others
-	+ [ ] import list
+	+ [x] import list
 	+ [ ] structure
 	+ [ ] body
 * [ ] refactor Data.Derivation.Expression

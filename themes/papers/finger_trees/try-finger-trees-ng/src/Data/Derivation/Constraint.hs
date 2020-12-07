@@ -6,11 +6,18 @@ module Data.Derivation.Constraint (
 	removeVar, removeNegative, isDerivableFrom, selfContained,
 	Polynomial, (.+), (.-) ) where
 
-import Data.Foldable
-import Data.Maybe
-import Data.Map.Strict hiding (foldr, toList, null)
-import Data.Map.Merge.Strict
-import qualified Data.Map.Strict as M
+import Prelude hiding (null, filter)
+
+import Data.Foldable (toList)
+import Data.Maybe (isJust)
+import Data.Map.Strict (Map, null, singleton, (!?), filter, lookupMin)
+import Data.Map.Merge.Strict (
+	merge,
+	mapMissing, preserveMissing, zipWithMatched, zipWithMaybeMatched )
+
+import qualified Data.Map.Strict as M (toList)
+
+---------------------------------------------------------------------------
 
 data Constraint v = Eq (Polynomial v) | Geq (Polynomial v)
 	deriving (Show, Eq, Ord)
@@ -83,14 +90,11 @@ alignVarGG p1 p2 v = case (p1 !? v, p2 !? v) of
 	_ -> Nothing
 
 selfContained :: Constraint v -> Bool
-selfContained (Eq p) = M.null p
+selfContained (Eq p) = null p
 selfContained (Geq p) = checkAll (>= 0) p -- M.null p
 
 checkAll :: (v -> Bool) -> Map k v -> Bool
 checkAll p = and . (p <$>)
-
-zipAll :: Ord k => (v -> v -> Bool) -> Map k v -> Map k v -> Bool
-zipAll p m1 m2 = foldr (&&) True $ merge (mapMissing \_ _ -> False) (mapMissing \_ _ -> False) (zipWithMatched \_ -> p) m1 m2
 
 isEqLargerThan :: Ord v => Polynomial v -> Polynomial v -> Bool
 -- p1 `isEqLargerThan` p2 = foldr (&&) True $ merge (mapMissing \_ n -> (n >= 0)) (mapMissing \_ n -> (n <= 0)) (zipWithMatched \_ -> (>=)) p1 p2
@@ -103,7 +107,7 @@ isDerivableFrom _ _ = False
 
 removeNegative :: Constraint v -> Constraint v
 removeNegative eq@(Eq _) = eq
-removeNegative (Geq p) = Geq $ M.filter (> 0) p
+removeNegative (Geq p) = Geq $ filter (> 0) p
 
 type Polynomial v = Map (Maybe v) Integer
 
