@@ -45,10 +45,7 @@ wantedToZero :: Wanted1 v -> Constraint v
 wantedToZero z = z
 
 containVarsW :: Ord v => Wanted1 v -> [Maybe v]
-containVarsW = Z.containVars . wantedToZero
-
-selfContained :: Wanted1 v -> Bool
-selfContained z = identity z
+containVarsW = Z.getVars . wantedToZero
 
 instance Show v => Outputable (Constraint v) where
 	ppr = text . show
@@ -56,7 +53,7 @@ instance Show v => Outputable (Constraint v) where
 newtype Given v = Given [Constraint v] deriving Show
 
 given :: Ord v => [Constraint v] -> Given v
-given zs = Given . nub . sort $ zs ++ (rmNegativeTerm <$> zs)
+given zs = Given . nub . sort $ zs ++ (removeNegative <$> zs)
 
 expsToGiven :: Ord v => [Exp v Bool] -> Given v
 expsToGiven es = given . concat $ (\e -> uncurry (maybe id (:)) $ eqToZero' e True vb) <$> es
@@ -66,10 +63,10 @@ givenToZeros :: Given v -> [Constraint v]
 givenToZeros (Given zs) = zs
 
 containVarsG :: Ord v => Given v -> [Maybe v]
-containVarsG = nub . sort . concat . (Z.containVars <$>) . givenToZeros
+containVarsG = nub . sort . concat . (Z.getVars <$>) . givenToZeros
 
 removeVarInit :: Ord v => Given v -> Maybe v -> ([Constraint v], [Constraint v])
-removeVarInit (Given zs) v = partition (`doesContainVar` v) zs
+removeVarInit (Given zs) v = partition (`hasVar` v) zs
 
 removeVar1 :: Ord v => Constraint v -> Maybe v -> Constraint v -> Either (Constraint v) (Constraint v)
 removeVar1 z0 v z = case Z.removeVar z0 z v of

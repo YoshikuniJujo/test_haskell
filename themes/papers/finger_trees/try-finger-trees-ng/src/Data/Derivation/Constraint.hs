@@ -2,10 +2,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Derivation.Constraint (
-	Constraint, equal, greatEqualThan, greatThan,
-	containVars, doesContainVar, removeVar, identity,
-	isDerivableFrom,
-	rmNegativeTerm,
+	Constraint, equal, greatEqualThan, greatThan, getVars, hasVar,
+	removeVar, removeNegative, isDerivableFrom, selfContained,
 	Polynomial, (.+), (.-) ) where
 
 import Data.Foldable
@@ -14,8 +12,7 @@ import Data.Map.Strict hiding (foldr, toList, null)
 import Data.Map.Merge.Strict
 import qualified Data.Map.Strict as M
 
-data Constraint v
-	= Eq (Polynomial v) | Geq (Polynomial v)
+data Constraint v = Eq (Polynomial v) | Geq (Polynomial v)
 	deriving (Show, Eq, Ord)
 
 gcdAll :: Integral n => [n] -> Maybe n
@@ -56,13 +53,13 @@ removeVar (Eq p1) (Geq p2) v = Geq . regularizeG . uncurry (.+) <$> alignVarEqG 
 removeVar (Geq p1) (Geq p2) v = Geq . regularizeG . uncurry (.+) <$> alignVarGG p1 p2 v
 removeVar z1 z2 v = removeVar z2 z1 v
 
-doesContainVar :: Ord v => Constraint v -> Maybe v -> Bool
-doesContainVar (Eq p) v = isJust $ p !? v
-doesContainVar (Geq p) v = isJust $ p !? v
+hasVar :: Ord v => Constraint v -> Maybe v -> Bool
+hasVar (Eq p) v = isJust $ p !? v
+hasVar (Geq p) v = isJust $ p !? v
 
-containVars :: Ord v => Constraint v -> [Maybe v]
-containVars (Eq p) = (fst <$>) $ M.toList p
-containVars (Geq p) = (fst <$>) $ M.toList p
+getVars :: Ord v => Constraint v -> [Maybe v]
+getVars (Eq p) = (fst <$>) $ M.toList p
+getVars (Geq p) = (fst <$>) $ M.toList p
 
 alignVarEqEq :: Ord v => Polynomial v -> Polynomial v -> Maybe v -> Maybe (Polynomial v, Polynomial v)
 alignVarEqEq p1 p2 v = case (p1 !? v, p2 !? v) of
@@ -85,9 +82,9 @@ alignVarGG p1 p2 v = case (p1 !? v, p2 !? v) of
 --	(_, Just n2) | n2 <= 0 -> Just (empty, p2)
 	_ -> Nothing
 
-identity :: Constraint v -> Bool
-identity (Eq p) = M.null p
-identity (Geq p) = checkAll (>= 0) p -- M.null p
+selfContained :: Constraint v -> Bool
+selfContained (Eq p) = M.null p
+selfContained (Geq p) = checkAll (>= 0) p -- M.null p
 
 checkAll :: (v -> Bool) -> Map k v -> Bool
 checkAll p = and . (p <$>)
@@ -100,13 +97,13 @@ isEqLargerThan :: Ord v => Polynomial v -> Polynomial v -> Bool
 p1 `isEqLargerThan` p2 = foldr (&&) True $ merge (mapMissing \_ n -> True) (mapMissing \_ n -> True) (zipWithMatched \_ -> (>=)) p1 p2
 
 isDerivableFrom :: Ord v => Constraint v -> Constraint v -> Bool
-isDerivableFrom (Eq pw) (Eq pg) = pw == pg
-isDerivableFrom (Geq pw) (Geq pg) = pw `isEqLargerThan` pg
+Eq pw `isDerivableFrom` Eq pg = pw == pg
+Geq pw `isDerivableFrom` Geq pg = pw `isEqLargerThan` pg
 isDerivableFrom _ _ = False
 
-rmNegativeTerm :: Constraint v -> Constraint v
-rmNegativeTerm eq@(Eq _) = eq
-rmNegativeTerm (Geq p) = Geq $ M.filter (> 0) p
+removeNegative :: Constraint v -> Constraint v
+removeNegative eq@(Eq _) = eq
+removeNegative (Geq p) = Geq $ M.filter (> 0) p
 
 type Polynomial v = Map (Maybe v) Integer
 

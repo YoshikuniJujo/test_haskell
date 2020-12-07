@@ -165,7 +165,9 @@ refactor new TypeCheck
 		- [x] rename data type
 * [ ] refactor Data.Derivation.Constraint
 	+ [x] remove debugFoo
-	+ [ ] export list
+	+ [x] export list
+		- [x] rename identity
+		- [x] others
 	+ [ ] import list
 	+ [ ] structure
 	+ [ ] body
