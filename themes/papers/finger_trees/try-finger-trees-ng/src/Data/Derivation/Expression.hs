@@ -91,24 +91,22 @@ poly (l :- r) = (,) <$> poly l <*> poly r >>= \(pl, pr) ->
 
 type VarBool v = Map v Bool
 
-makeVarBool, expToVarBool :: Ord v => [Exp v Bool] -> VarBool v
-makeVarBool = expToVarBool
-expToVarBool = snd . untilFixed (uncurry expToVarBoolStep) . expToVarBoolInit
+makeVarBool :: Ord v => [Exp v Bool] -> VarBool v
+makeVarBool = snd . untilFixed (uncurry vbStep) . vbInit
 
-expToVarBoolInit :: Ord v => [Exp v Bool] -> ([(v, v)], VarBool v)
-expToVarBoolInit [] = ([], empty)
-expToVarBoolInit (Var v1 :== Var v2 : es) = ((v1, v2) :) `first` expToVarBoolInit es
-expToVarBoolInit (Var v1 :== Bool b2 : es) = insert v1 b2 `second` expToVarBoolInit es
-expToVarBoolInit (Bool b1 :== Var v2 : es) = insert v2 b1 `second` expToVarBoolInit es
-expToVarBoolInit (_ : es) = expToVarBoolInit es
+vbInit :: Ord v => [Exp v Bool] -> ([(v, v)], VarBool v)
+vbInit [] = ([], empty)
+vbInit (Var l :== Var r : es) = ((l, r) :) `first` vbInit es
+vbInit (Var l :== Bool r : es) = insert l r `second` vbInit es
+vbInit (Bool l :== Var r : es) = insert r l `second` vbInit es
+vbInit (_ : es) = vbInit es
 
-expToVarBoolStep :: Ord v => [(v, v)] -> VarBool v -> ([(v, v)], VarBool v)
-expToVarBoolStep [] vb = ([], vb)
-expToVarBoolStep ((v1, v2) : vs) vb = case vb !? v1 of
-	Just b -> expToVarBoolStep vs (insert v2 b vb)
-	Nothing -> case vb !? v2 of
-		Just b -> expToVarBoolStep vs (insert v1 b vb)
-		Nothing -> ((v1, v2) :) `first` expToVarBoolStep vs vb
+vbStep :: Ord v => [(v, v)] -> VarBool v -> ([(v, v)], VarBool v)
+vbStep [] vb = ([], vb)
+vbStep ((l, r) : vs) vb = case (vb !? l, vb !? r) of
+	(Just bl, _) -> vbStep vs $ insert r bl vb
+	(Nothing, Just br) -> vbStep vs $ insert l br vb
+	(Nothing, Nothing) -> ((l, r) :) `first` vbStep vs vb
 
 untilFixed :: Eq a => (a -> a) -> a -> a
 untilFixed f x = fst . fromJust . find (uncurry (==)) $ zip xs (tail xs)

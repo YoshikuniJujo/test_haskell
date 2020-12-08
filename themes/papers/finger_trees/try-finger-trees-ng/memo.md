@@ -199,13 +199,13 @@ refactor new TypeCheck
 	+ [x] make Message Outputtable
 	+ [x] use Message instead of Text
 	+ [x] remove text from dependent package
-* [ ] refactor Data.Derivation.Expression
+* [x] refactor Data.Derivation.Expression
 	+ [x] export list
 		- [x] add export list
 		- [x] refactor export list
 	+ [x] import list
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] DATA EXP
 		- [x] MAKE CONSTRAINT
 			* [x] makeConstraint
@@ -219,7 +219,12 @@ refactor new TypeCheck
 				+ [x] (_ :== _)
 				+ [x] others
 		- [x] MAKE POLYNOMIAL
-		- [ ] MAKE VAR BOOL
+		- [x] MAKE VAR BOOL
+			* [x] type VarBool
+			* [x] makeVarBool
+			* [x] vbInit
+			* [x] vbStep
+			* [x] untilFixes
 * [ ] refactor Data.Derivation.CanDerivs
 * [ ] refactor Plugin.TypeCheck.Nat.Simple.Decode
 * [ ] refactor Plugin.TypeCheck.Nat.Simple
