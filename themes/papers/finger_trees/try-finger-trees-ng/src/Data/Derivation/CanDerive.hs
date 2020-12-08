@@ -3,22 +3,21 @@
 module Data.Derivation.CanDerive (
 	canDerive, Given, makeGiven, Wanted, makeWanted ) where
 
-import Outputable hiding (empty)
-import Control.Arrow
-import Data.Either
-import Data.List
-import Data.Map.Strict hiding ((\\), foldl, null, partition, take)
+import Outputable (Outputable(..), text)
+import Control.Arrow (first)
+import Data.Either (partitionEithers)
+import Data.List ((\\), nub, partition, sort)
+import Data.Map.Strict (empty)
 
-import Data.Derivation.Constraint
-import Data.Derivation.Expression
+import Data.Derivation.Constraint (
+	Constraint, getVars, hasVar, removeVar,
+	removeNegative, isDerivableFrom, selfContained )
+import Data.Derivation.Expression (Exp, makeConstraint, makeVarBool)
 
-import qualified Data.Derivation.Constraint as Z
+---------------------------------------------------------------------------
 
 canDerive :: Ord v => Given v -> Wanted v -> Bool
 canDerive g (Wanted ws) = canDeriveAll g ws
-
-canDeriveMaybe :: Ord v => Given v -> Maybe (Wanted1 v) -> Bool
-canDeriveMaybe g mw = maybe False (canDeriveGen g) mw
 
 canDeriveAll :: Ord v => Given v -> [Wanted1 v] -> Bool
 canDeriveAll g ws = all (canDeriveGen g) ws
@@ -47,10 +46,7 @@ wantedToZero :: Wanted1 v -> Constraint v
 wantedToZero z = z
 
 containVarsW :: Ord v => Wanted1 v -> [Maybe v]
-containVarsW = Z.getVars . wantedToZero
-
-instance Show v => Outputable (Constraint v) where
-	ppr = text . show
+containVarsW = getVars . wantedToZero
 
 newtype Given v = Given [Constraint v] deriving Show
 
@@ -66,13 +62,13 @@ givenToZeros :: Given v -> [Constraint v]
 givenToZeros (Given zs) = zs
 
 containVarsG :: Ord v => Given v -> [Maybe v]
-containVarsG = nub . sort . concat . (Z.getVars <$>) . givenToZeros
+containVarsG = nub . sort . concat . (getVars <$>) . givenToZeros
 
 removeVarInit :: Ord v => Given v -> Maybe v -> ([Constraint v], [Constraint v])
 removeVarInit (Given zs) v = partition (`hasVar` v) zs
 
 removeVar1 :: Ord v => Constraint v -> Maybe v -> Constraint v -> Either (Constraint v) (Constraint v)
-removeVar1 z0 v z = case Z.removeVar z0 z v of
+removeVar1 z0 v z = case removeVar z0 z v of
 	Just z' -> Left z'; Nothing -> Right z
 
 removeVarStep :: Ord v => Maybe v -> [Constraint v] -> ([Constraint v], [Constraint v])
@@ -91,5 +87,5 @@ removeVarG g v = Given . sort $ r ++ concat (fst $ unfoldUntil null (removeVarSt
 removeVars :: Ord v => Given v -> [Maybe v] -> Given v
 removeVars = foldl removeVarG
 
-instance Show v => Outputable (Given v) where
-	ppr = text . show
+instance Show v => Outputable (Given v) where ppr = text . show
+instance Show v => Outputable (Wanted v) where ppr = text . show

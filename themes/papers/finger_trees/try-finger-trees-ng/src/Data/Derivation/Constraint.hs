@@ -8,6 +8,7 @@ module Data.Derivation.Constraint (
 
 import Prelude hiding (null, filter)
 
+import Outputable (Outputable(..), text)
 import Control.Monad (guard)
 import Data.Foldable (toList)
 import Data.Maybe (isJust)
@@ -38,6 +39,8 @@ import qualified Data.Map.Strict as M (toList)
 
 data Constraint v = Eq (Polynomial v) | Geq (Polynomial v)
 	deriving (Show, Eq, Ord)
+
+instance Show v => Outputable (Constraint v) where ppr = text . show
 
 -- CONSTRUCTOR
 

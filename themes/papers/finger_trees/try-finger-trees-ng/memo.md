@@ -231,7 +231,7 @@ refactor new TypeCheck
 		- [x] refactor export list
 			* [x] rename expsToGiven to makeGiven
 			* [x] rename expToWanted to makeWanted
-	+ [ ] import list
+	+ [x] import list
 	+ [ ] structure
 	+ [ ] body
 * [ ] refactor Plugin.TypeCheck.Nat.Simple.Decode
