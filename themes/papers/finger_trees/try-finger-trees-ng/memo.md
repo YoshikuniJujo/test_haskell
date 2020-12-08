@@ -218,7 +218,7 @@ refactor new TypeCheck
 				+ [x] (Var :== _)
 				+ [x] (_ :== _)
 				+ [x] others
-		- [ ] MAKE POLYNOMIAL
+		- [x] MAKE POLYNOMIAL
 		- [ ] MAKE VAR BOOL
 * [ ] refactor Data.Derivation.CanDerivs
 * [ ] refactor Plugin.TypeCheck.Nat.Simple.Decode

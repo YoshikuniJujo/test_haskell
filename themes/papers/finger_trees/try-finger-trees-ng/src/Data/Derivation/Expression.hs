@@ -79,16 +79,11 @@ procProp _ (_ :== _) False = pure Nothing
 
 poly :: Ord v => Exp v Number -> Writer [Constraint v] (Polynomial v)
 poly (Const n) = pure $ singleton Nothing n
-poly (Var v) = do
-	let	v' = singleton (Just v) 1
-	tell [v' `greatEqualThan` empty]
-	pure v'
-poly (t1 :+ t2) = (.+)  <$> poly t1 <*> poly t2
-poly (t1 :- t2) = do
-	t1' <- poly t1
-	t2' <- poly t2
-	tell [t1' `greatEqualThan` t2']
-	pure $ t1' .- t2'
+poly (Var v) = p <$ tell [p `greatEqualThan` empty]
+	where p = singleton (Just v) 1
+poly (l :+ r) = (.+) <$> poly l <*> poly r
+poly (l :- r) = (,) <$> poly l <*> poly r >>= \(pl, pr) ->
+	pl .- pr <$ tell [pl `greatEqualThan` pr]
 
 ---------------------------------------------------------------------------
 -- MAKE VAR BOOL
