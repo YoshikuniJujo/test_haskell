@@ -207,7 +207,17 @@ refactor new TypeCheck
 	+ [x] structure
 	+ [ ] body
 		- [x] DATA EXP
-		- [ ] MAKE CONSTRAINT
+		- [x] MAKE CONSTRAINT
+			* [x] makeConstraint
+			* [x] procPred
+				+ [x] Bool and Var
+				+ [x] :<=
+				+ [x] (_ :== Bool)
+				+ [x] (Bool :== _)
+				+ [x] (_ :== Var)
+				+ [x] (Var :== _)
+				+ [x] (_ :== _)
+				+ [x] others
 		- [ ] MAKE POLYNOMIAL
 		- [ ] MAKE VAR BOOL
 * [ ] refactor Data.Derivation.CanDerivs

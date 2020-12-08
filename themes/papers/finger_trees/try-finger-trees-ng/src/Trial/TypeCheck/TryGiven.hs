@@ -17,7 +17,7 @@ createGiven ss = do
 createZero :: String -> Maybe (Constraint String)
 createZero s = do
 	e <- parse bool s
-	fst $ makeConstraint e empty
+	fst $ makeConstraint empty e
 
 sampleExps1 :: [String]
 sampleExps1 = [

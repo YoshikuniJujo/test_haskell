@@ -45,52 +45,48 @@ instance Show v => Outputable (Exp v t) where ppr = text . show
 -- MAKE CONSTRAINT
 ---------------------------------------------------------------------------
 
-makeConstraint :: Ord v => Exp v Bool -> VarBool v -> (Maybe (Constraint v), [Constraint v])
-makeConstraint e = eqToZero' e True
+makeConstraint :: Ord v =>
+	VarBool v -> Exp v Bool -> (Maybe (Constraint v), [Constraint v])
+makeConstraint vb e = runWriter $ procProp vb e True
 
-eqToZero' :: Ord v => Exp v Bool -> Bool -> VarBool v -> (Maybe (Constraint v), [Constraint v])
-eqToZero' e b vb = runWriter (eqToZero e b vb)
-
-eqToZero :: Ord v => Exp v Bool -> Bool -> VarBool v -> Writer [Constraint v] (Maybe (Constraint v))
-eqToZero (Bool _) _ _ = pure Nothing
-eqToZero (Var _) _ _ = pure Nothing
-eqToZero (t1 :<= t2) False _ = Just <$> (greatThan <$> termToPolynomial t1 <*> termToPolynomial t2)
-eqToZero (t1 :<= t2) True _ = Just <$> (greatEqualThan <$> termToPolynomial t2 <*> termToPolynomial t1)
-eqToZero (b1 :== Bool b2) b vb = eqToZero b1 (b2 == b) vb
-eqToZero (Bool b1 :== b2) b vb = eqToZero b2 (b1 == b) vb
-eqToZero (b1 :== Var v2) b vb | Just b2 <- vb !? v2 = case b1 of
-	_ :<= _ -> eqToZero b1 (b2 == b) vb
-	_ :== _ -> eqToZero b1 (b2 == b) vb
+procProp :: Ord v => VarBool v ->
+	Exp v Bool -> Bool -> Writer [Constraint v] (Maybe (Constraint v))
+procProp _ (Bool _) _ = pure Nothing; procProp _ (Var _) _ = pure Nothing
+procProp _ (l :<= r) False = Just <$> (greatThan <$> poly l <*> poly r)
+procProp _ (l :<= r) True = Just <$> (greatEqualThan <$> poly r <*> poly l)
+procProp vb (l :== Bool r) b = procProp vb l (r == b)
+procProp vb (Bool l :== r) b = procProp vb r (l == b)
+procProp vb (l :== Var r) b | Just br <- vb !? r = case l of
+	_ :== _ -> procProp vb l (br == b); _ :<= _ -> procProp vb l (br == b)
 	_ -> pure Nothing
-eqToZero (Var v1 :== b2) b vb | Just b1 <- vb !? v1 = case b2 of
-	_ :<= _ -> eqToZero b2 (b1 == b) vb
-	_ :== _ -> eqToZero b2 (b1 == b) vb
+procProp vb (Var l :== r) b | Just bl <- vb !? l = case r of
+	_ :== _ -> procProp vb r (bl == b); _ :<= _ -> procProp vb r (bl == b)
 	_ -> pure Nothing
-eqToZero (t1 :== t2) True _ = case (t1, t2) of
-	 (Const _, _) -> Just <$> (equal <$> termToPolynomial t1 <*> termToPolynomial t2)
-	 (_ :+ _, _) -> Just <$> (equal <$> termToPolynomial t1 <*> termToPolynomial t2)
-	 (_ :- _, _) -> Just <$> (equal <$> termToPolynomial t1 <*> termToPolynomial t2)
-	 (_, Const _) -> Just <$> (equal <$> termToPolynomial t1 <*> termToPolynomial t2)
-	 (_, _ :+ _) -> Just <$> (equal <$> termToPolynomial t1 <*> termToPolynomial t2)
-	 (_, _ :- _) -> Just <$> (equal <$> termToPolynomial t1 <*> termToPolynomial t2)
-	 (Var v1, Var v2) -> Just <$> (equal <$> termToPolynomial (Var v1) <*> termToPolynomial (Var v2))
+procProp _ (l :== r) True = case (l, r) of
+	 (Const _, _) -> Just <$> (equal <$> poly l <*> poly r)
+	 (_ :+ _, _) -> Just <$> (equal <$> poly l <*> poly r)
+	 (_ :- _, _) -> Just <$> (equal <$> poly l <*> poly r)
+	 (_, Const _) -> Just <$> (equal <$> poly l <*> poly r)
+	 (_, _ :+ _) -> Just <$> (equal <$> poly l <*> poly r)
+	 (_, _ :- _) -> Just <$> (equal <$> poly l <*> poly r)
+	 (Var v, Var w) -> Just <$> (equal <$> poly (Var v) <*> poly (Var w))
 	 _ -> pure Nothing
-eqToZero _ False _ = pure Nothing
+procProp _ (_ :== _) False = pure Nothing
 
 ---------------------------------------------------------------------------
 -- MAKE POLYNOMIAL
 ---------------------------------------------------------------------------
 
-termToPolynomial :: Ord v => Exp v Number -> Writer [Constraint v] (Polynomial v)
-termToPolynomial (Const n) = pure $ singleton Nothing n
-termToPolynomial (Var v) = do
+poly :: Ord v => Exp v Number -> Writer [Constraint v] (Polynomial v)
+poly (Const n) = pure $ singleton Nothing n
+poly (Var v) = do
 	let	v' = singleton (Just v) 1
 	tell [v' `greatEqualThan` empty]
 	pure v'
-termToPolynomial (t1 :+ t2) = (.+)  <$> termToPolynomial t1 <*> termToPolynomial t2
-termToPolynomial (t1 :- t2) = do
-	t1' <- termToPolynomial t1
-	t2' <- termToPolynomial t2
+poly (t1 :+ t2) = (.+)  <$> poly t1 <*> poly t2
+poly (t1 :- t2) = do
+	t1' <- poly t1
+	t2' <- poly t2
 	tell [t1' `greatEqualThan` t2']
 	pure $ t1' .- t2'
 

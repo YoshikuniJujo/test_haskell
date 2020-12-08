@@ -39,7 +39,7 @@ wanted mw ws = Wanted . (: ws) <$> mw
 type Wanted1 v = Constraint v
 
 expToWanted :: Ord v => Exp v Bool -> Maybe (Wanted v)
-expToWanted = uncurry wanted . \e -> makeConstraint e empty
+expToWanted = uncurry wanted . makeConstraint empty
 
 wantedToZero :: Wanted1 v -> Constraint v
 wantedToZero z = z
@@ -56,7 +56,7 @@ given :: Ord v => [Constraint v] -> Given v
 given zs = Given . nub . sort $ zs ++ (removeNegative <$> zs)
 
 expsToGiven :: Ord v => [Exp v Bool] -> Given v
-expsToGiven es = given . concat $ (\e -> uncurry (maybe id (:)) $ makeConstraint e vb) <$> es
+expsToGiven es = given . concat $ (\e -> uncurry (maybe id (:)) $ makeConstraint vb e) <$> es
 	where vb = makeVarBool es
 
 givenToZeros :: Given v -> [Constraint v]
