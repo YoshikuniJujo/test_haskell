@@ -6,14 +6,17 @@
 module Data.Derivation.Expression (
 	Exp(..), Number, makeConstraint, makeVarBool ) where
 
-import Outputable hiding (empty)
-import Control.Arrow
-import Control.Monad.Writer
-import Data.Maybe
-import Data.List hiding (insert)
-import Data.Map.Strict
+import Outputable (Outputable(..), text)
+import Control.Arrow (first, second)
+import Control.Monad.Writer (Writer, runWriter, tell)
+import Data.Maybe (fromJust)
+import Data.List (find)
+import Data.Map.Strict (Map, (!?), empty, singleton, insert)
 
-import Data.Derivation.Constraint
+import Data.Derivation.Constraint (
+	Constraint, equal, greatEqualThan, greatThan, Polynomial, (.+), (.-) )
+
+---------------------------------------------------------------------------
 
 data Number
 

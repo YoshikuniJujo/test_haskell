@@ -195,11 +195,15 @@ refactor new TypeCheck
 				+ [x] isDerivableFrom
 				+ [x] selfContained
 		- [x] POLYNOMIAL
+* [ ] make data type Message
+	+ [ ] make Message Outputtable
+	+ [ ] use Message instead of Text
+	+ [ ] remove text from dependent package
 * [ ] refactor Data.Derivation.Expression
 	+ [x] export list
 		- [x] add export list
 		- [x] refactor export list
-	+ [ ] import list
+	+ [x] import list
 	+ [ ] structure
 	+ [ ] body
 * [ ] refactor Data.Derivation.CanDerivs
