@@ -1,11 +1,10 @@
 {-# LANGUAGE BlockArguments #-}
--- {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Derivation.Expression (
-	Exp(..), eqToZero', expToVarBool, Term, termToPolynomial ) where
+	Exp(..), Number, makeConstraint, makeVarBool ) where
 
 import Outputable hiding (empty)
 import Control.Arrow
@@ -16,15 +15,15 @@ import Data.Map.Strict
 
 import Data.Derivation.Constraint
 
-data Term
+data Number
 
 data Exp v t where
 	Bool :: Bool -> Exp v Bool
-	Const :: Integer -> Exp v Term
+	Const :: Integer -> Exp v Number
 	Var :: v -> Exp v a
-	(:+) :: Exp v Term -> Exp v Term -> Exp v Term
-	(:-) :: Exp v Term -> Exp v Term -> Exp v Term
-	(:<=) :: Exp v Term -> Exp v Term -> Exp v Bool
+	(:+) :: Exp v Number -> Exp v Number -> Exp v Number
+	(:-) :: Exp v Number -> Exp v Number -> Exp v Number
+	(:<=) :: Exp v Number -> Exp v Number -> Exp v Bool
 	(:==) :: Exp v a -> Exp v a -> Exp v Bool
 
 deriving instance Show v => Show (Exp v t)
@@ -32,7 +31,7 @@ deriving instance Show v => Show (Exp v t)
 instance Show v => Outputable (Exp v t) where
 	ppr = text . show
 
-termToPolynomial :: Ord v => Exp v Term -> Writer [Constraint v] (Polynomial v)
+termToPolynomial :: Ord v => Exp v Number -> Writer [Constraint v] (Polynomial v)
 termToPolynomial (Const n) = pure $ singleton Nothing n
 termToPolynomial (Var v) = do
 	let	v' = singleton (Just v) 1
@@ -44,6 +43,9 @@ termToPolynomial (t1 :- t2) = do
 	t2' <- termToPolynomial t2
 	tell [t1' `greatEqualThan` t2']
 	pure $ t1' .- t2'
+
+makeConstraint :: Ord v => Exp v Bool -> VarBool v -> (Maybe (Constraint v), [Constraint v])
+makeConstraint e = eqToZero' e True
 
 eqToZero' :: Ord v => Exp v Bool -> Bool -> VarBool v -> (Maybe (Constraint v), [Constraint v])
 -- eqToZero' e b vb = uncurry (maybe id (:)) $ runWriter (eqToZero e b vb)
@@ -77,6 +79,10 @@ eqToZero _ False _ = pure Nothing
 
 type VarBool v = Map v Bool
 
+makeVarBool, expToVarBool :: Ord v => [Exp v Bool] -> VarBool v
+makeVarBool = expToVarBool
+expToVarBool = snd . untilFixed (uncurry expToVarBoolStep) . expToVarBoolInit
+
 expToVarBoolInit :: Ord v => [Exp v Bool] -> ([(v, v)], VarBool v)
 expToVarBoolInit [] = ([], empty)
 expToVarBoolInit (Var v1 :== Var v2 : es) = ((v1, v2) :) `first` expToVarBoolInit es
@@ -95,6 +101,3 @@ expToVarBoolStep ((v1, v2) : vs) vb = case vb !? v1 of
 untilFixed :: Eq a => (a -> a) -> a -> a
 untilFixed f x = fst . fromJust . find (uncurry (==)) $ zip xs (tail xs)
 	where xs = iterate f x
-
-expToVarBool :: Ord v => [Exp v Bool] -> VarBool v
-expToVarBool = snd . untilFixed (uncurry expToVarBoolStep) . expToVarBoolInit

@@ -12,7 +12,7 @@ import Data.Char (isLower, isDigit)
 import Data.Parse (Parse(..), (>>!), maybeToParse)
 
 import Data.Derivation.CanDerive (Given, Wanted, expsToGiven, expToWanted)
-import Data.Derivation.Expression (Exp(..), Term)
+import Data.Derivation.Expression (Exp(..), Number)
 
 import qualified Data.Bool as B (bool)
 
@@ -47,8 +47,8 @@ data Memo = Memo {
 	bool :: Maybe (Exp Var Bool, Memo),
 	equal :: Maybe (Exp Var Bool, Memo),
 	lessEqual :: Maybe (Exp Var Bool, Memo),
-	polynomial :: Maybe (Exp Var Term, Memo),
-	number :: Maybe (Exp Var Term, Memo),
+	polynomial :: Maybe (Exp Var Number, Memo),
+	number :: Maybe (Exp Var Number, Memo),
 	variable :: Maybe (Var, Memo),
 	token :: Maybe (String, Memo) }
 
@@ -110,12 +110,12 @@ Parse pLessEqual = (:<=) <$> Parse polynomial <* pick "<=" <*> Parse polynomial
 
 -- POLYNOMIAL
 
-pPolynomial :: Memo -> Maybe (Exp Var Term, Memo)
+pPolynomial :: Memo -> Maybe (Exp Var Number, Memo)
 Parse pPolynomial = foldl (&) <$> Parse number <*> many (
 	(flip (:+) <$> (pick "+" *> Parse number)) <|>
 	(flip (:-) <$> (pick "-" *> Parse number)) )
 
-pNumber :: Memo -> Maybe (Exp Var Term, Memo)
+pNumber :: Memo -> Maybe (Exp Var Number, Memo)
 Parse pNumber =
 	Const . read <$> check (all isDigit) <|> Var <$> Parse variable <|>
 	pick "(" *> Parse polynomial <* pick ")"

@@ -45,7 +45,7 @@ typeToExpVar :: Type -> Either T.Text (Exp Var a)
 typeToExpVar (TyVarTy v) = Right $ Var v
 typeToExpVar _ = Left $ T.pack "typeToExpVar: fail"
 
-typeToExpTerm :: Type -> Either T.Text (Exp Var Term)
+typeToExpTerm :: Type -> Either T.Text (Exp Var Number)
 typeToExpTerm (TyVarTy v) = Right $ Var v
 typeToExpTerm (LitTy (NumTyLit n)) = Right $ Const n
 typeToExpTerm (TyConApp tc [a, b])
