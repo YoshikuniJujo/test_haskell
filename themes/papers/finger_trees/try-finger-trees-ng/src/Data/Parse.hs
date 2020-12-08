@@ -14,7 +14,7 @@ instance Functor (Parse s) where
 
 instance Applicative (Parse t) where
 	pure x = Parse \s -> Just (x, s)
-	Parse pf <*> mx = Parse $ pf  >=> \(f, s') -> (f <$> mx) `runParse` s'
+	Parse pf <*> mx = Parse $ pf >=> \(f, s') -> (f <$> mx) `runParse` s'
 
 instance Monad (Parse t) where
 	Parse p >>= f = Parse $ p >=> \(x, s') -> f x `runParse` s'
