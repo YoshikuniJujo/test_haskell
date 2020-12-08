@@ -3,7 +3,7 @@
 
 module Data.Derivation.Constraint (
 	Constraint, equal, greatEqualThan, greatThan, getVars, hasVar,
-	remVar, remNegative, isDerivableFrom, selfContained,
+	rmVar, rmNegative, isDerivFrom, selfContained,
 	Polynomial, (.+), (.-) ) where
 
 import Prelude hiding (null, filter)
@@ -79,12 +79,12 @@ hasVar (Geq p) v = isJust $ p !? v
 
 -- REMOVE VAR
 
-remVar ::
+rmVar ::
 	Ord v => Constraint v -> Constraint v -> Maybe v -> Maybe (Constraint v)
-remVar (Eq l) (Eq r) v = Eq . formatEq . uncurry (.+) <$> alignEE l r v
-remVar (Eq l) (Geq r) v = Geq . formatGeq . uncurry (.+) <$> alignEG l r v
-remVar (Geq l) (Geq r) v = Geq . formatGeq . uncurry (.+) <$> alignGG l r v
-remVar l r v = remVar r l v
+rmVar (Eq l) (Eq r) v = Eq . formatEq . uncurry (.+) <$> alignEE l r v
+rmVar (Eq l) (Geq r) v = Geq . formatGeq . uncurry (.+) <$> alignEG l r v
+rmVar (Geq l) (Geq r) v = Geq . formatGeq . uncurry (.+) <$> alignGG l r v
+rmVar l r v = rmVar r l v
 
 type Aligned v = Maybe (Polynomial v, Polynomial v)
 
@@ -103,13 +103,13 @@ alignGG l r v = (,) <$> l !? v <*> r !? v >>= \(nl, nr) -> do
 
 -- REMOVE NEGATIVE, IS DERIVABLE FROM AND SELF CONTAINED
 
-remNegative :: Constraint v -> Constraint v
-remNegative = \case eq@(Eq _) -> eq; Geq p -> Geq $ filter (>= 0) p
+rmNegative :: Constraint v -> Constraint v
+rmNegative = \case eq@(Eq _) -> eq; Geq p -> Geq $ filter (>= 0) p
 
-isDerivableFrom :: Ord v => Constraint v -> Constraint v -> Bool
-Eq w `isDerivableFrom` Eq g = w == g
-Geq w `isDerivableFrom` Geq g = w `isGeqThan` g
-_ `isDerivableFrom` _ = False
+isDerivFrom :: Ord v => Constraint v -> Constraint v -> Bool
+Eq w `isDerivFrom` Eq g = w == g
+Geq w `isDerivFrom` Geq g = w `isGeqThan` g
+_ `isDerivFrom` _ = False
 
 isGeqThan :: Ord v => Polynomial v -> Polynomial v -> Bool
 l `isGeqThan` r = and $ merge
@@ -127,9 +127,9 @@ type Polynomial v = Map (Maybe v) Integer
 
 (.+), (.-) :: Ord v => Polynomial v -> Polynomial v -> Polynomial v
 (.+) = merge preserveMissing preserveMissing
-	(zipWithMaybeMatched \_ a b -> removeZero $ a + b)
+	(zipWithMaybeMatched \_ a b -> rmZero $ a + b)
 (.-) = merge preserveMissing (mapMissing \_ -> negate)
-	(zipWithMaybeMatched \_ a b -> removeZero $ a - b)
+	(zipWithMaybeMatched \_ a b -> rmZero $ a - b)
 
-removeZero :: (Eq n, Num n) => n -> Maybe n
-removeZero = \case 0 -> Nothing; n -> Just n
+rmZero :: (Eq n, Num n) => n -> Maybe n
+rmZero = \case 0 -> Nothing; n -> Just n

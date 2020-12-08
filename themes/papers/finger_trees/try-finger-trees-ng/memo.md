@@ -235,7 +235,11 @@ refactor new TypeCheck
 	+ [x] structure
 	+ [ ] body
 		- [x] CAN DERIVE
-		- [ ] REMOVE VARS
+		- [x] REMOVE VARS
+			* [x] rmVar
+			* [x] rvStep
+			* [x] rmVar1
+			* [x] unfoldUntil
 		- [ ] GIVEN
 		- [ ] WANTED
 * [ ] refactor Plugin.TypeCheck.Nat.Simple.Decode

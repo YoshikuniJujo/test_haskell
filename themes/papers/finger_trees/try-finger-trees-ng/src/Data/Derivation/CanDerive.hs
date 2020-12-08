@@ -10,9 +10,11 @@ import Data.List ((\\), nub, partition, sort)
 import Data.Map.Strict (empty)
 
 import Data.Derivation.Constraint (
-	Constraint, getVars, hasVar, remVar,
-	remNegative, isDerivableFrom, selfContained )
+	Constraint, getVars, hasVar,
+	rmNegative, isDerivFrom, selfContained )
 import Data.Derivation.Expression (Exp, makeConstraint, makeVarBool)
+
+import qualified Data.Derivation.Constraint as C (rmVar)
 
 ---------------------------------------------------------------------------
 
@@ -30,34 +32,29 @@ canDerive g = all (canDerive1 g) . unWanted
 
 canDerive1 :: Ord v => Given v -> Wanted1 v -> Bool
 canDerive1 g w = selfContained w ||
-	any (isDerivableFrom w) (unGiven . remVars g $ givenVars g \\ getVars w)
+	any (isDerivFrom w) (unGiven . foldl rmVar g $ givenVars g \\ getVars w)
 
 ---------------------------------------------------------------------------
 -- REMOVE VARS
 ---------------------------------------------------------------------------
 
-remVars :: Ord v => Given v -> [Maybe v] -> Given v
-remVars = foldl removeVarG
+rmVar :: Ord v => Given v -> Maybe v -> Given v
+rmVar (Given g) v =
+	Given . sort $ r ++ concat (fst $ unfoldUntil null (`rvStep` v) g')
+	where (g', r) = partition (`hasVar` v) g
 
-removeVarInit :: Ord v => Given v -> Maybe v -> ([Constraint v], [Constraint v])
-removeVarInit (Given zs) v = partition (`hasVar` v) zs
+rvStep :: Ord v => [Constraint v] -> Maybe v -> ([Constraint v], [Constraint v])
+rvStep [] _ = ([], [])
+rvStep (c : cs) v = partitionEithers $ flip (rmVar1 c) v <$> cs
 
-removeVar1 :: Ord v => Constraint v -> Maybe v -> Constraint v -> Either (Constraint v) (Constraint v)
-removeVar1 z0 v z = case remVar z0 z v of
-	Just z' -> Left z'; Nothing -> Right z
-
-removeVarStep :: Ord v => Maybe v -> [Constraint v] -> ([Constraint v], [Constraint v])
-removeVarStep _ [] = ([], [])
-removeVarStep v (z : zs) = partitionEithers $ removeVar1 z v <$> zs
+rmVar1 :: Ord v => Constraint v ->
+	Constraint v -> Maybe v -> Either (Constraint v) (Constraint v)
+rmVar1 c0 c v = maybe (Right c) Left $ C.rmVar c0 c v
 
 unfoldUntil :: (s -> Bool) -> (s -> (r, s)) -> s -> ([r], s)
 unfoldUntil p f s0
 	| p s0 = ([], s0)
 	| otherwise = let (r, s') = f s0 in (r :) `first` unfoldUntil p f s'
-
-removeVarG :: Ord v => Given v -> Maybe v -> Given v
-removeVarG g v = Given . sort $ r ++ concat (fst $ unfoldUntil null (removeVarStep v) z)
-	where (z, r) = removeVarInit g v
 
 ---------------------------------------------------------------------------
 -- GIVEN
@@ -68,7 +65,7 @@ newtype Given v = Given { unGiven :: [Constraint v] } deriving Show
 instance Show v => Outputable (Given v) where ppr = text . show
 
 given :: Ord v => [Constraint v] -> Given v
-given zs = Given . nub . sort $ zs ++ (remNegative <$> zs)
+given zs = Given . nub . sort $ zs ++ (rmNegative <$> zs)
 
 makeGiven, expsToGiven :: Ord v => [Exp v Bool] -> Given v
 makeGiven = expsToGiven
