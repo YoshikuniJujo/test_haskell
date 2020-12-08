@@ -206,7 +206,7 @@ refactor new TypeCheck
 	+ [x] import list
 	+ [x] structure
 	+ [ ] body
-		- [ ] DATA EXP
+		- [x] DATA EXP
 		- [ ] MAKE CONSTRAINT
 		- [ ] MAKE POLYNOMIAL
 		- [ ] MAKE VAR BOOL

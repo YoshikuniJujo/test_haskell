@@ -29,12 +29,12 @@ import Data.Derivation.Constraint (
 
 data Exp v t where
 	Bool :: Bool -> Exp v Bool
-	Const :: Integer -> Exp v Number
 	Var :: v -> Exp v a
+	Const :: Integer -> Exp v Number
+	(:==) :: Exp v a -> Exp v a -> Exp v Bool
+	(:<=) :: Exp v Number -> Exp v Number -> Exp v Bool
 	(:+) :: Exp v Number -> Exp v Number -> Exp v Number
 	(:-) :: Exp v Number -> Exp v Number -> Exp v Number
-	(:<=) :: Exp v Number -> Exp v Number -> Exp v Bool
-	(:==) :: Exp v a -> Exp v a -> Exp v Bool
 
 data Number
 
