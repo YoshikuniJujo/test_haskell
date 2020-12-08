@@ -234,7 +234,7 @@ refactor new TypeCheck
 	+ [x] import list
 	+ [x] structure
 	+ [ ] body
-		- [ ] CAN DERIVE
+		- [x] CAN DERIVE
 		- [ ] REMOVE VARS
 		- [ ] GIVEN
 		- [ ] WANTED

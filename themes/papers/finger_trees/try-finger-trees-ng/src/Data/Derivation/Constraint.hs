@@ -3,7 +3,7 @@
 
 module Data.Derivation.Constraint (
 	Constraint, equal, greatEqualThan, greatThan, getVars, hasVar,
-	removeVar, removeNegative, isDerivableFrom, selfContained,
+	remVar, remNegative, isDerivableFrom, selfContained,
 	Polynomial, (.+), (.-) ) where
 
 import Prelude hiding (null, filter)
@@ -79,12 +79,12 @@ hasVar (Geq p) v = isJust $ p !? v
 
 -- REMOVE VAR
 
-removeVar ::
+remVar ::
 	Ord v => Constraint v -> Constraint v -> Maybe v -> Maybe (Constraint v)
-removeVar (Eq l) (Eq r) v = Eq . formatEq . uncurry (.+) <$> alignEE l r v
-removeVar (Eq l) (Geq r) v = Geq . formatGeq . uncurry (.+) <$> alignEG l r v
-removeVar (Geq l) (Geq r) v = Geq . formatGeq . uncurry (.+) <$> alignGG l r v
-removeVar l r v = removeVar r l v
+remVar (Eq l) (Eq r) v = Eq . formatEq . uncurry (.+) <$> alignEE l r v
+remVar (Eq l) (Geq r) v = Geq . formatGeq . uncurry (.+) <$> alignEG l r v
+remVar (Geq l) (Geq r) v = Geq . formatGeq . uncurry (.+) <$> alignGG l r v
+remVar l r v = remVar r l v
 
 type Aligned v = Maybe (Polynomial v, Polynomial v)
 
@@ -103,8 +103,8 @@ alignGG l r v = (,) <$> l !? v <*> r !? v >>= \(nl, nr) -> do
 
 -- REMOVE NEGATIVE, IS DERIVABLE FROM AND SELF CONTAINED
 
-removeNegative :: Constraint v -> Constraint v
-removeNegative = \case eq@(Eq _) -> eq; Geq p -> Geq $ filter (>= 0) p
+remNegative :: Constraint v -> Constraint v
+remNegative = \case eq@(Eq _) -> eq; Geq p -> Geq $ filter (>= 0) p
 
 isDerivableFrom :: Ord v => Constraint v -> Constraint v -> Bool
 Eq w `isDerivableFrom` Eq g = w == g

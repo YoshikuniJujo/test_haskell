@@ -10,8 +10,8 @@ import Data.List ((\\), nub, partition, sort)
 import Data.Map.Strict (empty)
 
 import Data.Derivation.Constraint (
-	Constraint, getVars, hasVar, removeVar,
-	removeNegative, isDerivableFrom, selfContained )
+	Constraint, getVars, hasVar, remVar,
+	remNegative, isDerivableFrom, selfContained )
 import Data.Derivation.Expression (Exp, makeConstraint, makeVarBool)
 
 ---------------------------------------------------------------------------
@@ -26,32 +26,24 @@ import Data.Derivation.Expression (Exp, makeConstraint, makeVarBool)
 ---------------------------------------------------------------------------
 
 canDerive :: Ord v => Given v -> Wanted v -> Bool
-canDerive g (Wanted ws) = canDeriveAll g ws
+canDerive g = all (canDerive1 g) . unWanted
 
-canDeriveAll :: Ord v => Given v -> [Wanted1 v] -> Bool
-canDeriveAll g ws = all (canDeriveGen g) ws
-
-canDeriveGen :: Ord v => Given v -> Wanted1 v -> Bool
-canDeriveGen g w =
-	selfContained w ||
-	elemBy isDerivableFrom (wantedToZero w) (givenToZeros $ removeVars g rv)
-	where rv = containVarsG g \\ containVarsW w
-
-elemBy :: (a -> a -> Bool) -> a -> [a] -> Bool
-elemBy eq = any . eq
+canDerive1 :: Ord v => Given v -> Wanted1 v -> Bool
+canDerive1 g w = selfContained w ||
+	any (isDerivableFrom w) (unGiven . remVars g $ givenVars g \\ getVars w)
 
 ---------------------------------------------------------------------------
 -- REMOVE VARS
 ---------------------------------------------------------------------------
 
-removeVars :: Ord v => Given v -> [Maybe v] -> Given v
-removeVars = foldl removeVarG
+remVars :: Ord v => Given v -> [Maybe v] -> Given v
+remVars = foldl removeVarG
 
 removeVarInit :: Ord v => Given v -> Maybe v -> ([Constraint v], [Constraint v])
 removeVarInit (Given zs) v = partition (`hasVar` v) zs
 
 removeVar1 :: Ord v => Constraint v -> Maybe v -> Constraint v -> Either (Constraint v) (Constraint v)
-removeVar1 z0 v z = case removeVar z0 z v of
+removeVar1 z0 v z = case remVar z0 z v of
 	Just z' -> Left z'; Nothing -> Right z
 
 removeVarStep :: Ord v => Maybe v -> [Constraint v] -> ([Constraint v], [Constraint v])
@@ -71,29 +63,26 @@ removeVarG g v = Given . sort $ r ++ concat (fst $ unfoldUntil null (removeVarSt
 -- GIVEN
 ---------------------------------------------------------------------------
 
-newtype Given v = Given [Constraint v] deriving Show
+newtype Given v = Given { unGiven :: [Constraint v] } deriving Show
 
 instance Show v => Outputable (Given v) where ppr = text . show
 
 given :: Ord v => [Constraint v] -> Given v
-given zs = Given . nub . sort $ zs ++ (removeNegative <$> zs)
+given zs = Given . nub . sort $ zs ++ (remNegative <$> zs)
 
 makeGiven, expsToGiven :: Ord v => [Exp v Bool] -> Given v
 makeGiven = expsToGiven
 expsToGiven es = given . concat $ (\e -> uncurry (maybe id (:)) $ makeConstraint vb e) <$> es
 	where vb = makeVarBool es
 
-givenToZeros :: Given v -> [Constraint v]
-givenToZeros (Given zs) = zs
-
-containVarsG :: Ord v => Given v -> [Maybe v]
-containVarsG = nub . sort . concat . (getVars <$>) . givenToZeros
+givenVars :: Ord v => Given v -> [Maybe v]
+givenVars = nub . sort . concat . (getVars <$>) . unGiven
 
 ---------------------------------------------------------------------------
 -- WANTED
 ---------------------------------------------------------------------------
 
-newtype Wanted v = Wanted [Wanted1 v] deriving Show
+newtype Wanted v = Wanted { unWanted :: [Wanted1 v] } deriving Show
 
 instance Show v => Outputable (Wanted v) where ppr = text . show
 
@@ -105,9 +94,3 @@ type Wanted1 v = Constraint v
 makeWanted, expToWanted :: Ord v => Exp v Bool -> Maybe (Wanted v)
 makeWanted = expToWanted
 expToWanted = uncurry wanted . makeConstraint empty
-
-wantedToZero :: Wanted1 v -> Constraint v
-wantedToZero z = z
-
-containVarsW :: Ord v => Wanted1 v -> [Maybe v]
-containVarsW = getVars . wantedToZero
