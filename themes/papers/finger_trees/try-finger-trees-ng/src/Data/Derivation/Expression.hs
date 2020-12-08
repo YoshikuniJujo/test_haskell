@@ -4,7 +4,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Derivation.Expression (
-	Exp(..), Number, makeConstraint, makeVarBool ) where
+	Exp(..), Number, mkConstraint, mkVarBool ) where
 
 import Outputable (Outputable(..), text)
 import Control.Arrow (first, second)
@@ -45,9 +45,9 @@ instance Show v => Outputable (Exp v t) where ppr = text . show
 -- MAKE CONSTRAINT
 ---------------------------------------------------------------------------
 
-makeConstraint :: Ord v =>
+mkConstraint :: Ord v =>
 	VarBool v -> Exp v Bool -> (Maybe (Constraint v), [Constraint v])
-makeConstraint vb e = runWriter $ procProp vb e True
+mkConstraint vb e = runWriter $ procProp vb e True
 
 procProp :: Ord v => VarBool v ->
 	Exp v Bool -> Bool -> Writer [Constraint v] (Maybe (Constraint v))
@@ -91,8 +91,8 @@ poly (l :- r) = (,) <$> poly l <*> poly r >>= \(pl, pr) ->
 
 type VarBool v = Map v Bool
 
-makeVarBool :: Ord v => [Exp v Bool] -> VarBool v
-makeVarBool = snd . untilFixed (uncurry vbStep) . vbInit
+mkVarBool :: Ord v => [Exp v Bool] -> VarBool v
+mkVarBool = snd . untilFixed (uncurry vbStep) . vbInit
 
 vbInit :: Ord v => [Exp v Bool] -> ([(v, v)], VarBool v)
 vbInit [] = ([], empty)

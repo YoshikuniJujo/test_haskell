@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Derivation.CanDerive (
-	canDerive, Given, makeGiven, Wanted, makeWanted ) where
+	canDerive, Given, mkGiven, Wanted, mkWanted ) where
 
 import Outputable (Outputable(..), text)
 import Control.Arrow (first)
@@ -12,7 +12,7 @@ import Data.Map.Strict (empty)
 import Data.Derivation.Constraint (
 	Constraint, getVars, hasVar,
 	rmNegative, isDerivFrom, selfContained )
-import Data.Derivation.Expression (Exp, makeConstraint, makeVarBool)
+import Data.Derivation.Expression (Exp, mkConstraint, mkVarBool)
 
 import qualified Data.Derivation.Constraint as C (rmVar)
 
@@ -64,13 +64,12 @@ newtype Given v = Given { unGiven :: [Constraint v] } deriving Show
 
 instance Show v => Outputable (Given v) where ppr = text . show
 
+mkGiven :: Ord v => [Exp v Bool] -> Given v
+mkGiven es = given . concat
+	$ (uncurry (maybe id (:)) . mkConstraint (mkVarBool es) <$>) es
+
 given :: Ord v => [Constraint v] -> Given v
 given zs = Given . nub . sort $ zs ++ (rmNegative <$> zs)
-
-makeGiven, expsToGiven :: Ord v => [Exp v Bool] -> Given v
-makeGiven = expsToGiven
-expsToGiven es = given . concat $ (\e -> uncurry (maybe id (:)) $ makeConstraint vb e) <$> es
-	where vb = makeVarBool es
 
 givenVars :: Ord v => Given v -> [Maybe v]
 givenVars = nub . sort . concat . (getVars <$>) . unGiven
@@ -88,6 +87,6 @@ wanted mw ws = Wanted . (: ws) <$> mw
 
 type Wanted1 v = Constraint v
 
-makeWanted, expToWanted :: Ord v => Exp v Bool -> Maybe (Wanted v)
-makeWanted = expToWanted
-expToWanted = uncurry wanted . makeConstraint empty
+mkWanted, expToWanted :: Ord v => Exp v Bool -> Maybe (Wanted v)
+mkWanted = expToWanted
+expToWanted = uncurry wanted . mkConstraint empty
