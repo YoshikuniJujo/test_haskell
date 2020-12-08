@@ -11,7 +11,7 @@ import Data.List (uncons, unfoldr)
 import Data.Char (isLower, isDigit)
 import Data.Parse (Parse(..), (>>!), maybeToParse)
 
-import Data.Derivation.CanDerive (Given, Wanted, expsToGiven, expToWanted)
+import Data.Derivation.CanDerive (Given, Wanted, makeGiven, makeWanted)
 import Data.Derivation.Expression (Exp(..), Number)
 
 import qualified Data.Bool as B (bool)
@@ -76,12 +76,12 @@ pGivenWanted :: Memo -> Maybe ((Given Var, Wanted Var), Memo)
 Parse pGivenWanted = (,) <$> Parse pGiven <*> Parse pWanted
 
 pGiven :: Memo -> Maybe (Given Var, Memo)
-Parse pGiven = expsToGiven <$> (
+Parse pGiven = makeGiven <$> (
 	pick "given" *> pick ":" *>
 	pick "{" *> many (Parse constraint) <* pick "}" )
 
 pWanted :: Memo -> Maybe (Wanted Var, Memo)
-Parse pWanted = maybeToParse . expToWanted
+Parse pWanted = maybeToParse . makeWanted
 	=<< pick "wanted" *> pick ":" *> Parse constraint
 
 -- CONSTRAINT

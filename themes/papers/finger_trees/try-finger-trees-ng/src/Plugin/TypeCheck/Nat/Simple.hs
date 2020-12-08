@@ -33,11 +33,11 @@ solveNat gs ds ws = do
 	tcPluginTrace "Wanted Expression: " . ppr
 		. foldr (<>) (Left "") $ ctToExpEq <$> ws
 --		. ctToExpEq $ head ws
-	let	gs' = expsToGiven . catMaybes $ either (const Nothing) Just . decode <$> gs
+	let	gs' = makeGiven . catMaybes $ either (const Nothing) Just . decode <$> gs
 	tcPluginTrace "Given: " $ ppr gs'
 --	tcPluginTrace "Wanted Expression2: " . ppr
 --		$ either (const (Nothing, [])) expToWanted . decode <$> ws
---	tcPluginTrace "Wanted Expression2: " . ppr . ((canDeriveGen (expsToGiven []) <$>) <$>)
+--	tcPluginTrace "Wanted Expression2: " . ppr . ((canDeriveGen (makeGiven []) <$>) <$>)
 --		$ either (const Nothing) (fst . expToWanted) . decode <$> ws
 	tcPluginTrace "Oh Gosh!: " . ppr $ canDeriveCt gs <$> ws
 	pure $ TcPluginOk (rights $ canDeriveCt gs <$> ws) []
@@ -47,9 +47,9 @@ instance Show Var where show = showSDocUnsafe . ppr
 canDeriveCt :: [Ct] -> Ct -> Either Message (EvTerm, Ct)
 canDeriveCt gs w = do
 	(t1, t2) <- unNomEq w
-	let	gs' = expsToGiven . catMaybes $ either (const Nothing) Just . decode <$> gs
+	let	gs' = makeGiven . catMaybes $ either (const Nothing) Just . decode <$> gs
 	bool (Left $ "foo: " <> Message (show gs')) (pure (makeEvTerm t1 t2, w)) . canDerive gs'
-		=<< maybe (Left "bar") Right . expToWanted =<< decode w
+		=<< maybe (Left "bar") Right . makeWanted =<< decode w
 
 makeEvTerm :: Type -> Type -> EvTerm
 makeEvTerm t1 t2 = EvExpr . Coercion

@@ -7,6 +7,7 @@ import Data.Maybe
 import Data.Derivation.CanDerive
 import Data.Derivation.Parse
 
+{-
 wanted :: Wanted1 String
 Just (Wanted (wanted :  _)) = expToWanted =<< parse bool "((p + d) == u)"
 
@@ -20,8 +21,9 @@ given2 = expsToGiven . catMaybes $ parse bool <$> [
 
 wanted3 :: Wanted1 String
 Just (Wanted (wanted3 : _)) = expToWanted =<< parse bool "((u + lm) == z)"
+-}
 
 given3 :: Given String
-given3 = expsToGiven . catMaybes $ parse bool <$> [
+given3 = makeGiven . catMaybes $ parse bool <$> [
 	"(k == (m - 1))", "(u == (m + 1))", "(lm == (mm - 1))", "(li == (n - 1))",
 	"(u == (m + 1))", "(z == (m + mm))", "(1 <= mm)", "(1 <= u)", "(1 <= z)" ]

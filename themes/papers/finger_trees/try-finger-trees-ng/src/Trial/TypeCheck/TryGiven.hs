@@ -9,10 +9,12 @@ import Data.Derivation.Constraint
 import Data.Derivation.Parse hiding (given)
 import Data.Derivation.Expression
 
+{-
 createGiven :: [String] -> Maybe (Given String)
 createGiven ss = do
 	zs <- createZero `mapM` ss
 	pure $ given zs
+	-}
 
 createZero :: String -> Maybe (Constraint String)
 createZero s = do
@@ -26,6 +28,7 @@ sampleExps1 = [
 	"(((m + n) + n) <= 5)"
 	]
 
+{-
 sampleGiven1 :: Given String
 Just sampleGiven1 = createGiven sampleExps1
 
@@ -34,3 +37,4 @@ Just sampleGiven2 = createGiven [
 	"(((m + n) <= 8) == F)",
 	"(((m + n) + n) <= 15)"
 	]
+-}

@@ -226,6 +226,14 @@ refactor new TypeCheck
 			* [x] vbStep
 			* [x] untilFixes
 * [ ] refactor Data.Derivation.CanDerivs
+	+ [x] export list
+		- [x] add export list
+		- [x] refactor export list
+			* [x] rename expsToGiven to makeGiven
+			* [x] rename expToWanted to makeWanted
+	+ [ ] import list
+	+ [ ] structure
+	+ [ ] body
 * [ ] refactor Plugin.TypeCheck.Nat.Simple.Decode
 * [ ] refactor Plugin.TypeCheck.Nat.Simple
 

@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Derivation.CanDerive where
+module Data.Derivation.CanDerive (
+	canDerive, Given, makeGiven, Wanted, makeWanted ) where
 
 import Outputable hiding (empty)
 import Control.Arrow
@@ -38,7 +39,8 @@ wanted mw ws = Wanted . (: ws) <$> mw
 
 type Wanted1 v = Constraint v
 
-expToWanted :: Ord v => Exp v Bool -> Maybe (Wanted v)
+makeWanted, expToWanted :: Ord v => Exp v Bool -> Maybe (Wanted v)
+makeWanted = expToWanted
 expToWanted = uncurry wanted . makeConstraint empty
 
 wantedToZero :: Wanted1 v -> Constraint v
@@ -55,7 +57,8 @@ newtype Given v = Given [Constraint v] deriving Show
 given :: Ord v => [Constraint v] -> Given v
 given zs = Given . nub . sort $ zs ++ (removeNegative <$> zs)
 
-expsToGiven :: Ord v => [Exp v Bool] -> Given v
+makeGiven, expsToGiven :: Ord v => [Exp v Bool] -> Given v
+makeGiven = expsToGiven
 expsToGiven es = given . concat $ (\e -> uncurry (maybe id (:)) $ makeConstraint vb e) <$> es
 	where vb = makeVarBool es
 
