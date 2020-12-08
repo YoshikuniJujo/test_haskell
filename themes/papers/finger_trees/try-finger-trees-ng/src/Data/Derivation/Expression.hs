@@ -18,7 +18,14 @@ import Data.Derivation.Constraint (
 
 ---------------------------------------------------------------------------
 
-data Number
+-- * DATA EXP
+-- * MAKE CONSTRAInT
+-- * MAKE POLYNOMIAL
+-- * MAKE VAR BOOL
+
+---------------------------------------------------------------------------
+-- DATA EXP
+---------------------------------------------------------------------------
 
 data Exp v t where
 	Bool :: Bool -> Exp v Bool
@@ -29,28 +36,19 @@ data Exp v t where
 	(:<=) :: Exp v Number -> Exp v Number -> Exp v Bool
 	(:==) :: Exp v a -> Exp v a -> Exp v Bool
 
-deriving instance Show v => Show (Exp v t)
+data Number
 
+deriving instance Show v => Show (Exp v t)
 instance Show v => Outputable (Exp v t) where ppr = text . show
 
-termToPolynomial :: Ord v => Exp v Number -> Writer [Constraint v] (Polynomial v)
-termToPolynomial (Const n) = pure $ singleton Nothing n
-termToPolynomial (Var v) = do
-	let	v' = singleton (Just v) 1
-	tell [v' `greatEqualThan` empty]
-	pure v'
-termToPolynomial (t1 :+ t2) = (.+)  <$> termToPolynomial t1 <*> termToPolynomial t2
-termToPolynomial (t1 :- t2) = do
-	t1' <- termToPolynomial t1
-	t2' <- termToPolynomial t2
-	tell [t1' `greatEqualThan` t2']
-	pure $ t1' .- t2'
+---------------------------------------------------------------------------
+-- MAKE CONSTRAINT
+---------------------------------------------------------------------------
 
 makeConstraint :: Ord v => Exp v Bool -> VarBool v -> (Maybe (Constraint v), [Constraint v])
 makeConstraint e = eqToZero' e True
 
 eqToZero' :: Ord v => Exp v Bool -> Bool -> VarBool v -> (Maybe (Constraint v), [Constraint v])
--- eqToZero' e b vb = uncurry (maybe id (:)) $ runWriter (eqToZero e b vb)
 eqToZero' e b vb = runWriter (eqToZero e b vb)
 
 eqToZero :: Ord v => Exp v Bool -> Bool -> VarBool v -> Writer [Constraint v] (Maybe (Constraint v))
@@ -78,6 +76,27 @@ eqToZero (t1 :== t2) True _ = case (t1, t2) of
 	 (Var v1, Var v2) -> Just <$> (equal <$> termToPolynomial (Var v1) <*> termToPolynomial (Var v2))
 	 _ -> pure Nothing
 eqToZero _ False _ = pure Nothing
+
+---------------------------------------------------------------------------
+-- MAKE POLYNOMIAL
+---------------------------------------------------------------------------
+
+termToPolynomial :: Ord v => Exp v Number -> Writer [Constraint v] (Polynomial v)
+termToPolynomial (Const n) = pure $ singleton Nothing n
+termToPolynomial (Var v) = do
+	let	v' = singleton (Just v) 1
+	tell [v' `greatEqualThan` empty]
+	pure v'
+termToPolynomial (t1 :+ t2) = (.+)  <$> termToPolynomial t1 <*> termToPolynomial t2
+termToPolynomial (t1 :- t2) = do
+	t1' <- termToPolynomial t1
+	t2' <- termToPolynomial t2
+	tell [t1' `greatEqualThan` t2']
+	pure $ t1' .- t2'
+
+---------------------------------------------------------------------------
+-- MAKE VAR BOOL
+---------------------------------------------------------------------------
 
 type VarBool v = Map v Bool
 

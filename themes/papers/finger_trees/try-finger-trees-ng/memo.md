@@ -204,10 +204,15 @@ refactor new TypeCheck
 		- [x] add export list
 		- [x] refactor export list
 	+ [x] import list
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] DATA EXP
+		- [ ] MAKE CONSTRAINT
+		- [ ] MAKE POLYNOMIAL
+		- [ ] MAKE VAR BOOL
 * [ ] refactor Data.Derivation.CanDerivs
-
+* [ ] refactor Plugin.TypeCheck.Nat.Simple.Decode
+* [ ] refactor Plugin.TypeCheck.Nat.Simple
 
 ### module name hierarchy
 
