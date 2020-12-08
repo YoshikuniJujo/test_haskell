@@ -16,6 +16,15 @@ import Data.Derivation.Expression (Exp, makeConstraint, makeVarBool)
 
 ---------------------------------------------------------------------------
 
+-- * CAN DERIVE
+-- * REMOVE VARS
+-- * GIVEN
+-- * WANTED
+
+---------------------------------------------------------------------------
+-- CAN DERIVE
+---------------------------------------------------------------------------
+
 canDerive :: Ord v => Given v -> Wanted v -> Bool
 canDerive g (Wanted ws) = canDeriveAll g ws
 
@@ -31,38 +40,12 @@ canDeriveGen g w =
 elemBy :: (a -> a -> Bool) -> a -> [a] -> Bool
 elemBy eq = any . eq
 
-newtype Wanted v = Wanted [Wanted1 v] deriving Show
+---------------------------------------------------------------------------
+-- REMOVE VARS
+---------------------------------------------------------------------------
 
-wanted :: Maybe (Wanted1 v) -> [Wanted1 v] -> Maybe (Wanted v)
-wanted mw ws = Wanted . (: ws) <$> mw
-
-type Wanted1 v = Constraint v
-
-makeWanted, expToWanted :: Ord v => Exp v Bool -> Maybe (Wanted v)
-makeWanted = expToWanted
-expToWanted = uncurry wanted . makeConstraint empty
-
-wantedToZero :: Wanted1 v -> Constraint v
-wantedToZero z = z
-
-containVarsW :: Ord v => Wanted1 v -> [Maybe v]
-containVarsW = getVars . wantedToZero
-
-newtype Given v = Given [Constraint v] deriving Show
-
-given :: Ord v => [Constraint v] -> Given v
-given zs = Given . nub . sort $ zs ++ (removeNegative <$> zs)
-
-makeGiven, expsToGiven :: Ord v => [Exp v Bool] -> Given v
-makeGiven = expsToGiven
-expsToGiven es = given . concat $ (\e -> uncurry (maybe id (:)) $ makeConstraint vb e) <$> es
-	where vb = makeVarBool es
-
-givenToZeros :: Given v -> [Constraint v]
-givenToZeros (Given zs) = zs
-
-containVarsG :: Ord v => Given v -> [Maybe v]
-containVarsG = nub . sort . concat . (getVars <$>) . givenToZeros
+removeVars :: Ord v => Given v -> [Maybe v] -> Given v
+removeVars = foldl removeVarG
 
 removeVarInit :: Ord v => Given v -> Maybe v -> ([Constraint v], [Constraint v])
 removeVarInit (Given zs) v = partition (`hasVar` v) zs
@@ -84,8 +67,47 @@ removeVarG :: Ord v => Given v -> Maybe v -> Given v
 removeVarG g v = Given . sort $ r ++ concat (fst $ unfoldUntil null (removeVarStep v) z)
 	where (z, r) = removeVarInit g v
 
-removeVars :: Ord v => Given v -> [Maybe v] -> Given v
-removeVars = foldl removeVarG
+---------------------------------------------------------------------------
+-- GIVEN
+---------------------------------------------------------------------------
+
+newtype Given v = Given [Constraint v] deriving Show
 
 instance Show v => Outputable (Given v) where ppr = text . show
+
+given :: Ord v => [Constraint v] -> Given v
+given zs = Given . nub . sort $ zs ++ (removeNegative <$> zs)
+
+makeGiven, expsToGiven :: Ord v => [Exp v Bool] -> Given v
+makeGiven = expsToGiven
+expsToGiven es = given . concat $ (\e -> uncurry (maybe id (:)) $ makeConstraint vb e) <$> es
+	where vb = makeVarBool es
+
+givenToZeros :: Given v -> [Constraint v]
+givenToZeros (Given zs) = zs
+
+containVarsG :: Ord v => Given v -> [Maybe v]
+containVarsG = nub . sort . concat . (getVars <$>) . givenToZeros
+
+---------------------------------------------------------------------------
+-- WANTED
+---------------------------------------------------------------------------
+
+newtype Wanted v = Wanted [Wanted1 v] deriving Show
+
 instance Show v => Outputable (Wanted v) where ppr = text . show
+
+wanted :: Maybe (Wanted1 v) -> [Wanted1 v] -> Maybe (Wanted v)
+wanted mw ws = Wanted . (: ws) <$> mw
+
+type Wanted1 v = Constraint v
+
+makeWanted, expToWanted :: Ord v => Exp v Bool -> Maybe (Wanted v)
+makeWanted = expToWanted
+expToWanted = uncurry wanted . makeConstraint empty
+
+wantedToZero :: Wanted1 v -> Constraint v
+wantedToZero z = z
+
+containVarsW :: Ord v => Wanted1 v -> [Maybe v]
+containVarsW = getVars . wantedToZero

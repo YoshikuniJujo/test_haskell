@@ -232,8 +232,12 @@ refactor new TypeCheck
 			* [x] rename expsToGiven to makeGiven
 			* [x] rename expToWanted to makeWanted
 	+ [x] import list
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] CAN DERIVE
+		- [ ] REMOVE VARS
+		- [ ] GIVEN
+		- [ ] WANTED
 * [ ] refactor Plugin.TypeCheck.Nat.Simple.Decode
 * [ ] refactor Plugin.TypeCheck.Nat.Simple
 
