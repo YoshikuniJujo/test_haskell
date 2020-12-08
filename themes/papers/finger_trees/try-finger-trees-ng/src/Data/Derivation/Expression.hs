@@ -31,8 +31,7 @@ data Exp v t where
 
 deriving instance Show v => Show (Exp v t)
 
-instance Show v => Outputable (Exp v t) where
-	ppr = text . show
+instance Show v => Outputable (Exp v t) where ppr = text . show
 
 termToPolynomial :: Ord v => Exp v Number -> Writer [Constraint v] (Polynomial v)
 termToPolynomial (Const n) = pure $ singleton Nothing n

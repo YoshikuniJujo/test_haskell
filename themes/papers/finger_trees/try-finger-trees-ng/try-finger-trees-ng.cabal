@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fe52cfd36e2497926c2d4cf7e994e7d6055f6d73ad358079a75611fca3417e4f
+-- hash: 98fc5b5ecd1f6ce8d419a62e3976af21beef0f0856389ae48e19804c0a61f1b7
 
 name:           try-finger-trees-ng
 version:        0.1.0.0
@@ -63,7 +63,6 @@ library
     , containers
     , ghc
     , monads-tf
-    , text
   default-language: Haskell2010
 
 executable try-finger-trees-ng-exe
@@ -78,7 +77,6 @@ executable try-finger-trees-ng-exe
     , containers
     , ghc
     , monads-tf
-    , text
     , try-finger-trees-ng
   default-language: Haskell2010
 
@@ -95,6 +93,5 @@ test-suite try-finger-trees-ng-test
     , containers
     , ghc
     , monads-tf
-    , text
     , try-finger-trees-ng
   default-language: Haskell2010
