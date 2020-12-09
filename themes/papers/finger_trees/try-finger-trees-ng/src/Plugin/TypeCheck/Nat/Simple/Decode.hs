@@ -1,13 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Plugin.TypeCheck.Nat.Simple.Decode where
+module Plugin.TypeCheck.Nat.Simple.Decode (
+	decode, ctToExpEq, unNomEq,
+	Message(..)
+	) where
 
 import GhcPlugins hiding (Expr(Var), (<>))
 import TcRnTypes
 import TcTypeNats
 import TyCoRep
-import Outputable hiding ((<>))
 import Data.String
 
 import Data.Derivation.Expression
