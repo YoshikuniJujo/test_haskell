@@ -256,9 +256,9 @@ refactor new TypeCheck
 			* [x] exNum
 			* [x] exVar
 		- [x] MESSAGE
-* [ ] refactor Plugin.TypeCheck.Nat.Simple
+* [x] refactor Plugin.TypeCheck.Nat.Simple
 	+ [x] export list
-	+ [ ] import list
+	+ [x] import list
 		+ [x] GhcPlugins
 			- [x] Plugins: Plugin, defaultPlugin
 			- [x] Var: Var
@@ -269,11 +269,11 @@ refactor new TypeCheck
 		+ [x] others
 	+ [x] use Except monad
 	+ [x] structure
-	+ [ ] body
-		- [ ] plugin
-		- [ ] solve
-		- [ ] result
-		- [ ] unNomEq
+	+ [x] body
+		- [x] plugin
+		- [x] solve
+		- [x] result
+		- [x] unNomEq
 
 ### module name hierarchy
 
