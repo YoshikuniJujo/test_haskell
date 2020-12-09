@@ -1,13 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Plugin.TypeCheck.Nat.Simple.Decode (
-	decode, unNomEq,
-	Message(..)
-	) where
+module Plugin.TypeCheck.Nat.Simple.Decode (decode, Message(..)) where
 
 import GhcPlugins hiding (Expr(Var), (<>))
-import TcRnTypes
 import TcTypeNats
 import TyCoRep
 import Data.String
@@ -16,22 +12,8 @@ import Data.Derivation.Expression
 
 newtype Message = Message String deriving Show
 
-decode :: Ct -> Either Message (Exp Var Bool)
-decode = ctToExpEq
-
-ctToExpEq :: Ct -> Either Message (Exp Var Bool)
-ctToExpEq ct = do
-	(t1, t2) <- unNomEq ct
-	typeToExpEq t1 t2
-
-unNomEq :: Ct -> Either Message (Type, Type)
-unNomEq ct = case classifyPredType . ctEvPred $ ctEvidence ct of
-	EqPred NomEq t1 t2 -> Right (t1, t2)
-	EqPred foo t1 t2 -> Left $
-		Message (showSDocUnsafe $ ppr foo) <> " " <>
-		Message (showSDocUnsafe $ ppr t1) <> " " <>
-		Message (showSDocUnsafe $ ppr t2) <> " Cannot unNOmEq"
-	_ -> Left $ "Cannot unNomEq"
+decode :: Type -> Type -> Either Message (Exp Var Bool)
+decode = typeToExpEq
 
 typeToExpEq :: Type -> Type -> Either Message (Exp Var Bool)
 typeToExpEq (TyVarTy v) tp2 =
