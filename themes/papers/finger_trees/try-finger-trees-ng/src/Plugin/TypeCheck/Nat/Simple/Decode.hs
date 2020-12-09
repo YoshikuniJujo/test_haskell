@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Plugin.TypeCheck.Nat.Simple.Decode (decode, Message(..)) where
@@ -29,8 +29,7 @@ decode (TyVarTy l) r = le <$> exVar r <|> le <$> exTerm r <|> le <$> exBool r
 decode l r = (:==) <$> exTerm l <*> exTerm r <|> (:==) <$> exBool l <*> exBool r
 
 exVar :: Type -> Except Message (Exp Var a)
-exVar (TyVarTy v) = pure $ Var v
-exVar _ = throwE $ Message "exVar: fail"
+exVar = \case TyVarTy v -> pure $ Var v; _ -> throwE $ Message "exVar: fail"
 
 exTerm :: Type -> Except Message (Exp Var Number)
 exTerm (TyVarTy v) = pure $ Var v

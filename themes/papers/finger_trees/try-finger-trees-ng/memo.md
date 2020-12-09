@@ -252,7 +252,7 @@ refactor new TypeCheck
 	+ [ ] body
 		- [ ] DECODE
 			* [x] decode
-			* [ ] expVar
+			* [x] expVar
 			* [ ] expTerm
 			* [ ] expBool
 		- [ ] MESSAGE
