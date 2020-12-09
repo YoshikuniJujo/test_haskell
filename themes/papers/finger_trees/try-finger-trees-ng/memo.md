@@ -225,7 +225,7 @@ refactor new TypeCheck
 			* [x] vbInit
 			* [x] vbStep
 			* [x] untilFixes
-* [ ] refactor Data.Derivation.CanDerive
+* [x] refactor Data.Derivation.CanDerive
 	+ [x] export list
 		- [x] add export list
 		- [x] refactor export list
@@ -233,7 +233,7 @@ refactor new TypeCheck
 			* [x] rename expToWanted to makeWanted
 	+ [x] import list
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] CAN DERIVE
 		- [x] REMOVE VARS
 			* [x] rmVar
@@ -241,7 +241,7 @@ refactor new TypeCheck
 			* [x] rmVar1
 			* [x] unfoldUntil
 		- [x] GIVEN
-		- [ ] WANTED
+		- [x] WANTED
 * [ ] refactor Plugin.TypeCheck.Nat.Simple.Decode
 * [ ] refactor Plugin.TypeCheck.Nat.Simple
 

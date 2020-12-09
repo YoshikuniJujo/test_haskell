@@ -80,13 +80,12 @@ givenVars = nub . sort . concat . (getVars <$>) . unGiven
 
 newtype Wanted v = Wanted { unWanted :: [Wanted1 v] } deriving Show
 
+type Wanted1 v = Constraint v
+
 instance Show v => Outputable (Wanted v) where ppr = text . show
+
+mkWanted :: Ord v => Exp v Bool -> Maybe (Wanted v)
+mkWanted = uncurry wanted . mkConstraint empty
 
 wanted :: Maybe (Wanted1 v) -> [Wanted1 v] -> Maybe (Wanted v)
 wanted mw ws = Wanted . (: ws) <$> mw
-
-type Wanted1 v = Constraint v
-
-mkWanted, expToWanted :: Ord v => Exp v Bool -> Maybe (Wanted v)
-mkWanted = expToWanted
-expToWanted = uncurry wanted . mkConstraint empty
