@@ -4,7 +4,7 @@
 module Data.FingerTree.Annotated.MaxPriorityQueue where
 
 import Data.FingerTree.Annotated
-import Data.List.Range.Annotation.Prio
+import Data.FingerTree.Annotation.Prio
 import Data.View
 
 newtype PQueue a = PQueue (FingerTree (Prio a) (Elem a)) deriving Show

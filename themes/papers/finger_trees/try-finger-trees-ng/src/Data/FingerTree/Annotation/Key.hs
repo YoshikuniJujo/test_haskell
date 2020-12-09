@@ -1,7 +1,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.List.Range.Annotation.Key where
+module Data.FingerTree.Annotation.Key where
 
 import Data.FingerTree.Annotated
 

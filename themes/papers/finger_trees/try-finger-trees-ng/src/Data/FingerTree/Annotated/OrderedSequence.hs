@@ -6,7 +6,7 @@ module Data.FingerTree.Annotated.OrderedSequence where
 import Data.Foldable
 
 import Data.FingerTree.Annotated
-import Data.List.Range.Annotation.Key
+import Data.FingerTree.Annotation.Key
 import Data.View
 
 newtype OrdSeq a = OrdSeq (FingerTree (Key a) (Elem a))

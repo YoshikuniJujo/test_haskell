@@ -310,20 +310,19 @@ refactor Fingertree
 -------------------
 
 * [x] check module name hierarchy
-* [ ] refactor module name hierarchy
+* [x] refactor module name hierarchy
 	+ [x] move Data.List.Range.FingerTree to Data.FingerTree
 	+ [x] move Data.List.Range.AnnotatedFingerTree to Data.FingerTree.Annotated
 	+ [x] move IntervalTree to Data.FingerTree.Annotated.IntervalTree
 	+ [x] move MaxPriorityQueue to ...
 	+ [x] move OrderedSequence to ...
-	+ [ ] move RandomAccessSequence to ...
-	+ [ ] move Annotation to Data.FingerTree
-	+ [ ] move others
+	+ [x] move RandomAccessSequence to ...
+	+ [x] move Annotation to Data.FingerTree
 
 ### module name hierarchy
 
 ```
 Data
   + View
-  + List.Range.FingerTree
+  + FingerTree
 ```

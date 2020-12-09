@@ -6,8 +6,8 @@ module Data.FingerTree.Annotated.IntervalTree where
 import qualified Data.Foldable as F
 
 import Data.FingerTree.Annotated
-import Data.List.Range.Annotation.Key
-import Data.List.Range.Annotation.Prio
+import Data.FingerTree.Annotation.Key
+import Data.FingerTree.Annotation.Prio
 import Data.View
 
 data Interval = Interval { low :: Double, high :: Double } deriving Show

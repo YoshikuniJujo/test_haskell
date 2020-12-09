@@ -2,7 +2,7 @@
 {-# LANGUAGE DeriveFoldable #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.List.Range.RandomAccessSequence where
+module Data.FingerTree.Annotated.RandomAccessSequence where
 
 import Prelude hiding (splitAt)
 
