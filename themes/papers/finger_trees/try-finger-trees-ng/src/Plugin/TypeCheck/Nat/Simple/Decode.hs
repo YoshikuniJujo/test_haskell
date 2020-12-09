@@ -5,7 +5,7 @@ module Plugin.TypeCheck.Nat.Simple.Decode (decode, Message(..)) where
 
 import GhcPlugins (
 	Var, promotedFalseDataCon, promotedTrueDataCon,
-	Outputable(..), showSDocUnsafe, text )
+	Outputable(..), SDoc, (<+>), text )
 import TyCoRep (Type(..), TyLit(..))
 import TcTypeNats (typeNatLeqTyCon, typeNatAddTyCon, typeNatSubTyCon)
 import Control.Applicative ((<|>))
@@ -35,7 +35,7 @@ exBool (TyConApp tc [])
 	| tc == promotedTrueDataCon = pure $ Bool True
 exBool (TyConApp tc [t1, t2])
 	| tc == typeNatLeqTyCon = (:<=) <$> exNum t1 <*> exNum t2
-exBool t = throwE $ "exBool: fail: " <> Message (showSDocUnsafe $ ppr t)
+exBool t = throwE $ "exBool: fail:" <> Message (ppr t)
 
 exNum :: Type -> Except Message (Exp Var Number)
 exNum (TyVarTy v) = pure $ Var v
@@ -43,7 +43,7 @@ exNum (LitTy (NumTyLit n)) = pure $ Const n
 exNum (TyConApp tc [a, b])
 	| tc == typeNatAddTyCon = (:+) <$> exNum a <*> exNum b
 	| tc == typeNatSubTyCon = (:-) <$> exNum a <*> exNum b
-exNum t = throwE $ "exNum: fail: " <> Message (showSDocUnsafe $ ppr t)
+exNum t = throwE $ "exNum: fail:" <> Message (ppr t)
 
 exVar :: Type -> Except Message (Exp Var a)
 exVar = \case TyVarTy v -> pure $ Var v; _ -> throwE $ Message "exVar: fail"
@@ -52,8 +52,8 @@ exVar = \case TyVarTy v -> pure $ Var v; _ -> throwE $ Message "exVar: fail"
 -- MESSAGE
 ---------------------------------------------------------------------------
 
-newtype Message = Message String deriving Show
-instance Semigroup Message where Message l <> Message r = Message $ l ++ r
+newtype Message = Message SDoc
+instance Semigroup Message where Message l <> Message r = Message $ l <+> r
 instance Monoid Message where mempty = Message ""
-instance IsString Message where fromString = Message
-instance Outputable Message where ppr (Message msg) = text msg
+instance IsString Message where fromString = Message . text
+instance Outputable Message where ppr (Message msg) = msg

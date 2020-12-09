@@ -55,17 +55,15 @@ ctToExpEq ct = do
 unNomEq :: Ct -> Either Message (Type, Type)
 unNomEq ct = case classifyPredType . ctEvPred $ ctEvidence ct of
 	EqPred NomEq t1 t2 -> Right (t1, t2)
-	EqPred foo t1 t2 -> Left $
-		Message (showSDocUnsafe $ ppr foo) <> " " <>
-		Message (showSDocUnsafe $ ppr t1) <> " " <>
-		Message (showSDocUnsafe $ ppr t2) <> " Cannot unNOmEq"
+	EqPred foo t1 t2 -> Left $ Message (ppr foo) <> " " <>
+		Message (ppr t1) <> " " <> Message (ppr t2) <> " Cannot unNOmEq"
 	_ -> Left $ "Cannot unNomEq"
 
 canDeriveCt :: [Ct] -> Ct -> Either Message (EvTerm, Ct)
 canDeriveCt gs w = do
 	(t1, t2) <- unNomEq w
 	let	gs' = mkGiven . catMaybes $ either (const Nothing) Just . decodeCt <$> gs
-	bool (Left $ "foo: " <> Message (showSDocUnsafe $ ppr gs')) (pure (mkEvTerm t1 t2, w)) . canDerive gs'
+	bool (Left $ "foo: " <> Message (ppr gs')) (pure (mkEvTerm t1 t2, w)) . canDerive gs'
 		=<< maybe (Left "bar") Right . mkWanted =<< runExcept (decode t1 t2)
 
 evTerm :: Ct -> Either Message EvTerm
