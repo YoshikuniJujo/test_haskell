@@ -250,10 +250,10 @@ refactor new TypeCheck
 	+ [x] import list
 	+ [x] structure
 	+ [ ] body
-		- [ ] DECODE
+		- [x] DECODE
 			* [x] decode
-			* [ ] exBool
-			* [ ] exNum
+			* [x] exBool
+			* [x] exNum
 			* [x] exVar
 		- [ ] MESSAGE
 * [ ] refactor Plugin.TypeCheck.Nat.Simple

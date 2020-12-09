@@ -33,20 +33,20 @@ exBool (TyVarTy v) = pure $ Var v
 exBool (TyConApp tc [])
 	| tc == promotedFalseDataCon = pure $ Bool False
 	| tc == promotedTrueDataCon = pure $ Bool True
-exBool (TyConApp tc [t1, t2])
-	| tc == typeNatLeqTyCon = (:<=) <$> exNum t1 <*> exNum t2
+exBool (TyConApp tc [l, r])
+	| tc == typeNatLeqTyCon = (:<=) <$> exNum l <*> exNum r
 exBool t = throwE $ "exBool: fail:" <> Message (ppr t)
 
 exNum :: Type -> Except Message (Exp Var Number)
 exNum (TyVarTy v) = pure $ Var v
 exNum (LitTy (NumTyLit n)) = pure $ Const n
-exNum (TyConApp tc [a, b])
-	| tc == typeNatAddTyCon = (:+) <$> exNum a <*> exNum b
-	| tc == typeNatSubTyCon = (:-) <$> exNum a <*> exNum b
+exNum (TyConApp tc [l, r])
+	| tc == typeNatAddTyCon = (:+) <$> exNum l <*> exNum r
+	| tc == typeNatSubTyCon = (:-) <$> exNum l <*> exNum r
 exNum t = throwE $ "exNum: fail:" <> Message (ppr t)
 
 exVar :: Type -> Except Message (Exp Var a)
-exVar = \case TyVarTy v -> pure $ Var v; _ -> throwE $ Message "exVar: fail"
+exVar = \case TyVarTy v -> pure $ Var v; _ -> throwE "exVar: fail"
 
 ---------------------------------------------------------------------------
 -- MESSAGE
