@@ -3,12 +3,16 @@
 
 module Plugin.TypeCheck.Nat.Simple.Decode (decode, Message(..)) where
 
-import GhcPlugins hiding (Expr(Var), (<>))
-import TcTypeNats
-import TyCoRep
-import Data.String
+import GhcPlugins (
+	Var, promotedFalseDataCon, promotedTrueDataCon,
+	Outputable(..), showSDocUnsafe, text )
+import TyCoRep (Type(..), TyLit(..))
+import TcTypeNats (typeNatLeqTyCon, typeNatAddTyCon, typeNatSubTyCon)
+import Data.String (IsString(..))
 
-import Data.Derivation.Expression
+import Data.Derivation.Expression (Exp(..), Number)
+
+---------------------------------------------------------------------------
 
 newtype Message = Message String deriving Show
 

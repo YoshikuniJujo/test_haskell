@@ -247,7 +247,7 @@ refactor new TypeCheck
 		- [x] add export list
 		- [x] refactor export list
 			* [x] rename decode'
-	+ [ ] import list
+	+ [x] import list
 	+ [ ] structure
 	+ [ ] body
 * [ ] refactor Plugin.TypeCheck.Nat.Simple
