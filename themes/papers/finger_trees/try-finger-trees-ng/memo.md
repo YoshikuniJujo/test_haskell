@@ -243,6 +243,12 @@ refactor new TypeCheck
 		- [x] GIVEN
 		- [x] WANTED
 * [ ] refactor Plugin.TypeCheck.Nat.Simple.Decode
+	+ [ ] export list
+		- [ ] add export list
+		- [ ] refactor export list
+	+ [ ] import list
+	+ [ ] structure
+	+ [ ] body
 * [ ] refactor Plugin.TypeCheck.Nat.Simple
 
 ### module name hierarchy

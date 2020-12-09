@@ -66,7 +66,7 @@ instance Show v => Outputable (Given v) where ppr = text . show
 
 mkGiven :: Ord v => [Exp v Bool] -> Given v
 mkGiven es = given . concat
-	$ (uncurry (maybe id (:)) . mkConstraint (mkVarBool es) <$>) es
+	$ uncurry (maybe id (:)) . mkConstraint (mkVarBool es) <$> es
 
 given :: Ord v => [Constraint v] -> Given v
 given zs = Given . nub . sort $ zs ++ (rmNegative <$> zs)

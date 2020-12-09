@@ -113,8 +113,8 @@ _ `isDerivFrom` _ = False
 
 isGeqThan :: Ord v => Polynomial v -> Polynomial v -> Bool
 l `isGeqThan` r = and $ merge
-	(mapMissing \_ nl -> (nl >= 0))
-	(mapMissing \_ nr -> (nr <= 0)) (zipWithMatched \_ -> (>=)) l r
+	(mapMissing \_ nl -> nl >= 0)
+	(mapMissing \_ nr -> nr <= 0) (zipWithMatched $ const (>=)) l r
 
 selfContained :: Constraint v -> Bool
 selfContained = \case Eq p -> null p; Geq p -> and $ (>= 0) <$> p
@@ -128,7 +128,7 @@ type Polynomial v = Map (Maybe v) Integer
 (.+), (.-) :: Ord v => Polynomial v -> Polynomial v -> Polynomial v
 (.+) = merge preserveMissing preserveMissing
 	(zipWithMaybeMatched \_ a b -> rmZero $ a + b)
-(.-) = merge preserveMissing (mapMissing \_ -> negate)
+(.-) = merge preserveMissing (mapMissing $ const negate)
 	(zipWithMaybeMatched \_ a b -> rmZero $ a - b)
 
 rmZero :: (Eq n, Num n) => n -> Maybe n
