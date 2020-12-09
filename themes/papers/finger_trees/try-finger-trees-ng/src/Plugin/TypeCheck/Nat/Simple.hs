@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Plugin.TypeCheck.Nat.Simple (plugin) where
@@ -10,7 +10,7 @@ import TcPluginM (TcPluginM, tcPluginTrace)
 import TcRnTypes (TcPlugin(..), TcPluginResult(..), Ct, ctEvPred, ctEvidence)
 import TcEvidence (EvTerm(..), Role(..))
 import TyCoRep (Type, UnivCoProvenance(..))
-import Control.Monad.Trans.Except (runExcept)
+import Control.Monad.Trans.Except (Except, runExcept, throwE)
 import Data.Bool (bool)
 import Data.Maybe (catMaybes)
 import Data.Either (rights)
@@ -33,47 +33,35 @@ solveNat _ _ [] = do
 	pure $ TcPluginOk [] []
 solveNat gs ds ws = do
 	tcPluginTrace "!TypeCheck.Nat.Plugin" ""
---	tcPluginTrace "Given: " $ ppr gs
---	tcPluginTrace "Derived: " $ ppr ds
+	tcPluginTrace "Given: " $ ppr gs
+	tcPluginTrace "Derived: " $ ppr ds
 	tcPluginTrace "Wanted: " $ ppr ws
 	tcPluginTrace "Wanted Expression: " . ppr
-		. foldr (<>) (Left "") $ decodeCt <$> ws
---		. ctToExpEq $ head ws
-	let	gs' = mkGiven . catMaybes $ either (const Nothing) Just . decodeCt <$> gs
+		. foldr (<>) (Left "") $ runExcept . decodeCt <$> ws
+	let	gs' = mkGiven . catMaybes $ either (const Nothing) Just . runExcept . decodeCt <$> gs
 	tcPluginTrace "Given: " $ ppr gs'
---	tcPluginTrace "Wanted Expression2: " . ppr
---		$ either (const (Nothing, [])) expToWanted . decode <$> ws
---	tcPluginTrace "Wanted Expression2: " . ppr . ((canDeriveGen (mkGiven []) <$>) <$>)
---		$ either (const Nothing) (fst . expToWanted) . decode <$> ws
-	tcPluginTrace "Oh Gosh!: " . ppr $ canDeriveCt gs <$> ws
-	pure $ TcPluginOk (rights $ canDeriveCt gs <$> ws) []
+	tcPluginTrace "Oh Gosh!: " . ppr $ runExcept . canDeriveCt gs <$> ws
+	pure $ TcPluginOk (rights $ runExcept . canDeriveCt gs <$> ws) []
 
-decodeCt :: Ct -> Either Message (Exp Var Bool)
+decodeCt :: Ct -> Except Message (Exp Var Bool)
 decodeCt = ctToExpEq
 
-ctToExpEq :: Ct -> Either Message (Exp Var Bool)
-ctToExpEq ct = do
-	(t1, t2) <- unNomEq ct
-	runExcept $ decode t1 t2
+ctToExpEq :: Ct -> Except Message (Exp Var Bool)
+ctToExpEq ct = uncurry decode =<< unNomEq ct
 
-unNomEq :: Ct -> Either Message (Type, Type)
+unNomEq :: Ct -> Except Message (Type, Type)
 unNomEq ct = case classifyPredType . ctEvPred $ ctEvidence ct of
-	EqPred NomEq t1 t2 -> Right (t1, t2)
-	EqPred foo t1 t2 -> Left $ Message (ppr foo) <> " " <>
+	EqPred NomEq t1 t2 -> pure (t1, t2)
+	EqPred foo t1 t2 -> throwE $ Message (ppr foo) <> " " <>
 		Message (ppr t1) <> " " <> Message (ppr t2) <> " Cannot unNOmEq"
-	_ -> Left $ "Cannot unNomEq"
+	_ -> throwE $ "Cannot unNomEq"
 
-canDeriveCt :: [Ct] -> Ct -> Either Message (EvTerm, Ct)
+canDeriveCt :: [Ct] -> Ct -> Except Message (EvTerm, Ct)
 canDeriveCt gs w = do
 	(t1, t2) <- unNomEq w
-	let	gs' = mkGiven . catMaybes $ either (const Nothing) Just . decodeCt <$> gs
-	bool (Left $ "foo: " <> Message (ppr gs')) (pure (mkEvTerm t1 t2, w)) . canDerive gs'
-		=<< maybe (Left "bar") Right . mkWanted =<< runExcept (decode t1 t2)
-
-evTerm :: Ct -> Either Message EvTerm
-evTerm w = do
-	(t1, t2) <- unNomEq w
-	pure $ mkEvTerm t1 t2
+	let	gs' = mkGiven . catMaybes $ either (const Nothing) Just . runExcept . decodeCt <$> gs
+	bool (throwE $ "foo: " <> Message (ppr gs')) (pure (mkEvTerm t1 t2, w)) . canDerive gs'
+		=<< maybe (throwE "bar") pure . mkWanted =<< decode t1 t2
 
 mkEvTerm :: Type -> Type -> EvTerm
 mkEvTerm t1 t2 = EvExpr . Coercion

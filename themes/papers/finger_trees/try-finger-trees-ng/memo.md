@@ -267,7 +267,7 @@ refactor new TypeCheck
 			- [x] Coercion: mkUnivCo
 			- [x] Outputable: ppr
 		+ [x] others
-	+ [ ] use Except monad
+	+ [x] use Except monad
 	+ [ ] structure
 	+ [ ] body
 
