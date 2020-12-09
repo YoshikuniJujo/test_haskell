@@ -5,7 +5,7 @@ module Data.List.Range.OrderedSequence where
 
 import Data.Foldable
 
-import Data.List.Range.AnnotatedFingerTree
+import Data.FingerTree.Annotated
 import Data.List.Range.Annotation.Key
 import Data.View
 

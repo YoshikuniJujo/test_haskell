@@ -5,7 +5,7 @@
 	UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=Plugin.TypeCheck.Nat.Simple #-}
 
-module Data.List.Range.AnnotatedFingerTree where
+module Data.FingerTree.Annotated where
 
 import GHC.TypeNats
 

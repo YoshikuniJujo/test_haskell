@@ -5,7 +5,7 @@ module Data.List.Range.IntervalTree where
 
 import qualified Data.Foldable as F
 
-import Data.List.Range.AnnotatedFingerTree
+import Data.FingerTree.Annotated
 import Data.List.Range.Annotation.Key
 import Data.List.Range.Annotation.Prio
 import Data.View

@@ -312,6 +312,7 @@ refactor Fingertree
 * [x] check module name hierarchy
 * [ ] refactor module name hierarchy
 	+ [x] move Data.List.Range.FingerTree to Data.FingerTree
+	+ [x] move Data.List.Range.AnnotatedFingerTree to Data.FingerTree.Annotated
 	+ [ ] move others
 
 ### module name hierarchy

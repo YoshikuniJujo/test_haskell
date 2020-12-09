@@ -3,7 +3,7 @@
 
 module Data.List.Range.MaxPriorityQueue where
 
-import Data.List.Range.AnnotatedFingerTree
+import Data.FingerTree.Annotated
 import Data.List.Range.Annotation.Prio
 import Data.View
 

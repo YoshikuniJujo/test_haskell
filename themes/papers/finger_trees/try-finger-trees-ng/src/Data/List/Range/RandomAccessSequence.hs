@@ -8,7 +8,7 @@ import Prelude hiding (splitAt)
 
 import Data.Foldable
 
-import Data.List.Range.AnnotatedFingerTree
+import Data.FingerTree.Annotated
 import Data.View
 
 newtype Size = Size { getSize :: Int } deriving (Show, Eq, Ord)

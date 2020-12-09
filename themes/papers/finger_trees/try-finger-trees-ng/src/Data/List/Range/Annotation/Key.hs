@@ -3,7 +3,7 @@
 
 module Data.List.Range.Annotation.Key where
 
-import Data.List.Range.AnnotatedFingerTree
+import Data.FingerTree.Annotated
 
 data Key a = NoKey | Key a deriving (Show, Eq, Ord)
 

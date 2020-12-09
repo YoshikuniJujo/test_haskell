@@ -3,7 +3,7 @@
 
 module Data.List.Range.Annotation.Prio where
 
-import Data.List.Range.AnnotatedFingerTree
+import Data.FingerTree.Annotated
 
 data Prio a = MInfty | Prio a deriving (Show, Eq, Ord)
 
