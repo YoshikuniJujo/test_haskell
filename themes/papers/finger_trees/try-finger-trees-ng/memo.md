@@ -268,8 +268,12 @@ refactor new TypeCheck
 			- [x] Outputable: ppr
 		+ [x] others
 	+ [x] use Except monad
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] plugin
+		- [ ] solve
+		- [ ] result
+		- [ ] unNomEq
 
 ### module name hierarchy
 
