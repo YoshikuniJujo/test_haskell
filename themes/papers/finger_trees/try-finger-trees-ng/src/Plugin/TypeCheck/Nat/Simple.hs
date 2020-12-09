@@ -8,6 +8,7 @@ import TcPluginM
 import TcRnTypes
 import TcEvidence
 import TyCoRep
+import Control.Monad.Trans.Except
 import Data.Bool
 import Data.Maybe
 import Data.Either
@@ -49,7 +50,7 @@ decodeCt = ctToExpEq
 ctToExpEq :: Ct -> Either Message (Exp Var Bool)
 ctToExpEq ct = do
 	(t1, t2) <- unNomEq ct
-	decode t1 t2
+	runExcept $ decode t1 t2
 
 unNomEq :: Ct -> Either Message (Type, Type)
 unNomEq ct = case classifyPredType . ctEvPred $ ctEvidence ct of
@@ -65,7 +66,7 @@ canDeriveCt gs w = do
 	(t1, t2) <- unNomEq w
 	let	gs' = mkGiven . catMaybes $ either (const Nothing) Just . decodeCt <$> gs
 	bool (Left $ "foo: " <> Message (showSDocUnsafe $ ppr gs')) (pure (mkEvTerm t1 t2, w)) . canDerive gs'
-		=<< maybe (Left "bar") Right . mkWanted =<< decode t1 t2
+		=<< maybe (Left "bar") Right . mkWanted =<< runExcept (decode t1 t2)
 
 evTerm :: Ct -> Either Message EvTerm
 evTerm w = do

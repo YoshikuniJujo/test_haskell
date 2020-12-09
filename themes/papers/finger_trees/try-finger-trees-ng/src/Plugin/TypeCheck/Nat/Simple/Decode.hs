@@ -23,36 +23,31 @@ import Data.Derivation.Expression (Exp(..), Number)
 -- DECODE
 ---------------------------------------------------------------------------
 
-decode :: Type -> Type -> Either Message (Exp Var Bool)
-decode = (runExcept .) . expEq
-
-expEq :: Type -> Type -> Except Message (Exp Var Bool)
-expEq (TyVarTy l) r = le <$> expVar r <|> le <$> expTerm r <|> le <$> expBool r
+decode :: Type -> Type -> Except Message (Exp Var Bool)
+decode (TyVarTy l) r = le <$> exVar r <|> le <$> exTerm r <|> le <$> exBool r
 	where le = (Var l :==)
-expEq l r =
-	((:==) <$> expTerm l <*> expTerm r) `catchE` const
-	((:==) <$> expBool l <*> expBool r)
+decode l r = (:==) <$> exTerm l <*> exTerm r <|> (:==) <$> exBool l <*> exBool r
 
-expVar :: Type -> Except Message (Exp Var a)
-expVar (TyVarTy v) = pure $ Var v
-expVar _ = throwE $ Message "expVar: fail"
+exVar :: Type -> Except Message (Exp Var a)
+exVar (TyVarTy v) = pure $ Var v
+exVar _ = throwE $ Message "exVar: fail"
 
-expTerm :: Type -> Except Message (Exp Var Number)
-expTerm (TyVarTy v) = pure $ Var v
-expTerm (LitTy (NumTyLit n)) = pure $ Const n
-expTerm (TyConApp tc [a, b])
-	| tc == typeNatAddTyCon = (:+) <$> expTerm a <*> expTerm b
-	| tc == typeNatSubTyCon = (:-) <$> expTerm a <*> expTerm b
-expTerm t = throwE $ "expTerm: fail: " <> Message (showSDocUnsafe $ ppr t)
+exTerm :: Type -> Except Message (Exp Var Number)
+exTerm (TyVarTy v) = pure $ Var v
+exTerm (LitTy (NumTyLit n)) = pure $ Const n
+exTerm (TyConApp tc [a, b])
+	| tc == typeNatAddTyCon = (:+) <$> exTerm a <*> exTerm b
+	| tc == typeNatSubTyCon = (:-) <$> exTerm a <*> exTerm b
+exTerm t = throwE $ "exTerm: fail: " <> Message (showSDocUnsafe $ ppr t)
 
-expBool :: Type -> Except Message (Exp Var Bool)
-expBool (TyVarTy v) = pure $ Var v
-expBool (TyConApp tc [])
+exBool :: Type -> Except Message (Exp Var Bool)
+exBool (TyVarTy v) = pure $ Var v
+exBool (TyConApp tc [])
 	| tc == promotedFalseDataCon = pure $ Bool False
 	| tc == promotedTrueDataCon = pure $ Bool True
-expBool (TyConApp tc [t1, t2])
-	| tc == typeNatLeqTyCon = (:<=) <$> expTerm t1 <*> expTerm t2
-expBool t = throwE $ "expBool: fail: " <> Message (showSDocUnsafe $ ppr t)
+exBool (TyConApp tc [t1, t2])
+	| tc == typeNatLeqTyCon = (:<=) <$> exTerm t1 <*> exTerm t2
+exBool t = throwE $ "exBool: fail: " <> Message (showSDocUnsafe $ ppr t)
 
 ---------------------------------------------------------------------------
 -- MESSAGE

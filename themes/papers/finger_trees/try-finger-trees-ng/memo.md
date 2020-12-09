@@ -251,8 +251,7 @@ refactor new TypeCheck
 	+ [x] structure
 	+ [ ] body
 		- [ ] DECODE
-			* [ ] decode
-			* [ ] expEq
+			* [x] decode
 			* [ ] expVar
 			* [ ] expTerm
 			* [ ] expBool
