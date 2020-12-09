@@ -296,7 +296,6 @@ refactor Range
 * [x] check module name hierarchy
 * [x] refactor module name hierarchy
 	+ [x] move RangeL and RangeR under Range
-	+ [ ] others
 
 ### module name hierarchy
 
@@ -312,6 +311,8 @@ refactor Fingertree
 
 * [x] check module name hierarchy
 * [ ] refactor module name hierarchy
+	+ [x] move Data.List.Range.FingerTree to Data.FingerTree
+	+ [ ] move others
 
 ### module name hierarchy
 

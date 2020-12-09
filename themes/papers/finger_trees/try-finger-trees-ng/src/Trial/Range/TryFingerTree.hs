@@ -2,7 +2,7 @@
 
 module Trial.Range.TryFingerTree where
 
-import Data.List.Range.FingerTree
+import Data.FingerTree
 
 sampleFingerTree :: FingerTree Int
 sampleFingerTree = toTree [100 .. 150]
