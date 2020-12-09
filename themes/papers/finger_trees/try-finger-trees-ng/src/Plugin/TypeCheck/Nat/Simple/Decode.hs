@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Plugin.TypeCheck.Nat.Simple.Decode (decode, Message(..)) where
@@ -8,52 +8,62 @@ import GhcPlugins (
 	Outputable(..), showSDocUnsafe, text )
 import TyCoRep (Type(..), TyLit(..))
 import TcTypeNats (typeNatLeqTyCon, typeNatAddTyCon, typeNatSubTyCon)
+import Control.Applicative ((<|>))
+import Control.Monad.Trans.Except
 import Data.String (IsString(..))
 
 import Data.Derivation.Expression (Exp(..), Number)
 
 ---------------------------------------------------------------------------
 
-newtype Message = Message String deriving Show
+---------------------------------------------------------------------------
+-- DECODE
+---------------------------------------------------------------------------
 
 decode :: Type -> Type -> Either Message (Exp Var Bool)
-decode = typeToExpEq
+decode t1 t2 = runExcept $ decode' t1 t2
 
-typeToExpEq :: Type -> Type -> Either Message (Exp Var Bool)
-typeToExpEq (TyVarTy v) tp2 =
-	((Var v :==) <$> typeToExpVar tp2) <>
-	((Var v :==) <$> typeToExpTerm tp2) <>
-	((Var v :==) <$> typeToExpBool tp2)
-typeToExpEq tp1 tp2 = case typeToExpTerm tp1 of
-	Right tm1 -> (tm1 :==) <$> typeToExpTerm tp2
-	Left _ -> case typeToExpBool tp1 of
-		Right b1 -> (b1 :==) <$> typeToExpBool tp2
-		Left em -> Left em
+decode' :: Type -> Type -> Except Message (Exp Var Bool)
+decode' (TyVarTy v) tp2 =
+	veq <$> expVar tp2 <|> veq <$> expTerm tp2 <|> veq <$> expBool tp2
+	where veq = (Var v :==)
+decode' tp1 tp2 = do
+		tm1 <- expTerm tp1
+		(tm1 :==) <$> expTerm tp2
+	`catchE` \_ -> do
+		b1 <- expBool tp1
+		(b1 :==) <$> expBool tp2
 
-typeToExpVar :: Type -> Either Message (Exp Var a)
-typeToExpVar (TyVarTy v) = Right $ Var v
-typeToExpVar _ = Left $ Message "typeToExpVar: fail"
+expVar :: Type -> Except Message (Exp Var a)
+expVar (TyVarTy v) = pure $ Var v
+expVar _ = throwE $ Message "expVar: fail"
 
-typeToExpTerm :: Type -> Either Message (Exp Var Number)
-typeToExpTerm (TyVarTy v) = Right $ Var v
-typeToExpTerm (LitTy (NumTyLit n)) = Right $ Const n
-typeToExpTerm (TyConApp tc [a, b])
+expTerm :: Type -> Except Message (Exp Var Number)
+expTerm (TyVarTy v) = pure $ Var v
+expTerm (LitTy (NumTyLit n)) = pure $ Const n
+expTerm (TyConApp tc [a, b])
 	| tc == typeNatAddTyCon =
-		(:+) <$> typeToExpTerm a <*> typeToExpTerm b
+		(:+) <$> expTerm a <*> expTerm b
 	| tc == typeNatSubTyCon =
-		(:-) <$> typeToExpTerm a <*> typeToExpTerm b
-typeToExpTerm t = Left $ "typeToExpTerm: fail: " <> Message (showSDocUnsafe $ ppr t)
+		(:-) <$> expTerm a <*> expTerm b
+expTerm t = throwE $ "expTerm: fail: " <> Message (showSDocUnsafe $ ppr t)
 
-typeToExpBool :: Type -> Either Message (Exp Var Bool)
-typeToExpBool (TyVarTy v) = Right $ Var v
-typeToExpBool (TyConApp tc [])
-	| tc == promotedFalseDataCon = Right $ Bool False
-	| tc == promotedTrueDataCon = Right $ Bool True
-typeToExpBool (TyConApp tc [t1, t2])
+expBool :: Type -> Except Message (Exp Var Bool)
+expBool (TyVarTy v) = pure $ Var v
+expBool (TyConApp tc [])
+	| tc == promotedFalseDataCon = pure $ Bool False
+	| tc == promotedTrueDataCon = pure $ Bool True
+expBool (TyConApp tc [t1, t2])
 	| tc == typeNatLeqTyCon =
-		(:<=) <$> typeToExpTerm t1 <*> typeToExpTerm t2
-typeToExpBool t = Left $ "typeToExpBool: fail: " <> Message (showSDocUnsafe $ ppr t)
+		(:<=) <$> expTerm t1 <*> expTerm t2
+expBool t = throwE $ "expBool: fail: " <> Message (showSDocUnsafe $ ppr t)
 
+---------------------------------------------------------------------------
+-- MESSAGE
+---------------------------------------------------------------------------
+
+newtype Message = Message String deriving Show
 instance Semigroup Message where Message l <> Message r = Message $ l ++ r
+instance Monoid Message where mempty = Message ""
 instance IsString Message where fromString = Message
 instance Outputable Message where ppr (Message msg) = text msg
