@@ -296,14 +296,23 @@ refactor Range
 * [x] check module name hierarchy
 * [x] refactor module name hierarchy
 	+ [x] move RangeL and RangeR under Range
+* [ ] refactor Data.List.Range.RangeL
+	+ [ ] export list
+		- [x] add export list
+		- [ ] refactor export list
+	+ [ ] import list
+	+ [ ] structure
+	+ [ ] body
+* [ ] refactor Data.List.Range.RangeR
+* [ ] refactor Data.List.Range
 
 ### module name hierarchy
 
 ```
 Data.List
   + Range
-  + RangeL
-  + RangeR
+      + RangeL
+      + RangeR
 ```
 
 refactor Fingertree

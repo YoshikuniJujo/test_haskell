@@ -6,7 +6,8 @@
 	UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=Plugin.TypeCheck.Nat.Simple #-}
 
-module Data.List.Range.RangeL where
+module Data.List.Range.RangeL (
+	RangeL(..), PushL, LoosenLMax, loosenLMax, (.:..), (++.), loosenL ) where
 
 import GHC.TypeLits
 
