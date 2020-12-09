@@ -24,20 +24,9 @@ import Data.Derivation.Expression (Exp(..), Number)
 ---------------------------------------------------------------------------
 
 decode :: Type -> Type -> Except Message (Exp Var Bool)
-decode (TyVarTy l) r = le <$> exVar r <|> le <$> exTerm r <|> le <$> exBool r
+decode (TyVarTy l) r = le <$> exVar r <|> le <$> exNum r <|> le <$> exBool r
 	where le = (Var l :==)
-decode l r = (:==) <$> exTerm l <*> exTerm r <|> (:==) <$> exBool l <*> exBool r
-
-exVar :: Type -> Except Message (Exp Var a)
-exVar = \case TyVarTy v -> pure $ Var v; _ -> throwE $ Message "exVar: fail"
-
-exTerm :: Type -> Except Message (Exp Var Number)
-exTerm (TyVarTy v) = pure $ Var v
-exTerm (LitTy (NumTyLit n)) = pure $ Const n
-exTerm (TyConApp tc [a, b])
-	| tc == typeNatAddTyCon = (:+) <$> exTerm a <*> exTerm b
-	| tc == typeNatSubTyCon = (:-) <$> exTerm a <*> exTerm b
-exTerm t = throwE $ "exTerm: fail: " <> Message (showSDocUnsafe $ ppr t)
+decode l r = (:==) <$> exNum l <*> exNum r <|> (:==) <$> exBool l <*> exBool r
 
 exBool :: Type -> Except Message (Exp Var Bool)
 exBool (TyVarTy v) = pure $ Var v
@@ -45,8 +34,19 @@ exBool (TyConApp tc [])
 	| tc == promotedFalseDataCon = pure $ Bool False
 	| tc == promotedTrueDataCon = pure $ Bool True
 exBool (TyConApp tc [t1, t2])
-	| tc == typeNatLeqTyCon = (:<=) <$> exTerm t1 <*> exTerm t2
+	| tc == typeNatLeqTyCon = (:<=) <$> exNum t1 <*> exNum t2
 exBool t = throwE $ "exBool: fail: " <> Message (showSDocUnsafe $ ppr t)
+
+exNum :: Type -> Except Message (Exp Var Number)
+exNum (TyVarTy v) = pure $ Var v
+exNum (LitTy (NumTyLit n)) = pure $ Const n
+exNum (TyConApp tc [a, b])
+	| tc == typeNatAddTyCon = (:+) <$> exNum a <*> exNum b
+	| tc == typeNatSubTyCon = (:-) <$> exNum a <*> exNum b
+exNum t = throwE $ "exNum: fail: " <> Message (showSDocUnsafe $ ppr t)
+
+exVar :: Type -> Except Message (Exp Var a)
+exVar = \case TyVarTy v -> pure $ Var v; _ -> throwE $ Message "exVar: fail"
 
 ---------------------------------------------------------------------------
 -- MESSAGE

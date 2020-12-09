@@ -252,9 +252,9 @@ refactor new TypeCheck
 	+ [ ] body
 		- [ ] DECODE
 			* [x] decode
-			* [x] expVar
-			* [ ] expTerm
-			* [ ] expBool
+			* [ ] exBool
+			* [ ] exNum
+			* [x] exVar
 		- [ ] MESSAGE
 * [ ] refactor Plugin.TypeCheck.Nat.Simple
 
