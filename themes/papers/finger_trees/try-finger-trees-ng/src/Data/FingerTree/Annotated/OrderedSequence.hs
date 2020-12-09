@@ -1,7 +1,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.List.Range.OrderedSequence where
+module Data.FingerTree.Annotated.OrderedSequence where
 
 import Data.Foldable
 

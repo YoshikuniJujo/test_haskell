@@ -1,7 +1,7 @@
 {-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.List.Range.IntervalTree where
+module Data.FingerTree.Annotated.IntervalTree where
 
 import qualified Data.Foldable as F
 

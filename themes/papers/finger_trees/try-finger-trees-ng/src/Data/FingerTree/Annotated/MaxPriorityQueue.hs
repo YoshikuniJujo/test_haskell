@@ -1,7 +1,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.List.Range.MaxPriorityQueue where
+module Data.FingerTree.Annotated.MaxPriorityQueue where
 
 import Data.FingerTree.Annotated
 import Data.List.Range.Annotation.Prio
