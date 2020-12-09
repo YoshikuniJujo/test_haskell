@@ -5,7 +5,7 @@
 	UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.List.RangeR where
+module Data.List.Range.RangeR where
 
 import GHC.TypeLits
 

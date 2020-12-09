@@ -1,9 +1,9 @@
 memo
 ====
 
-* [ ] refactor about TypeCheck.Nat
-	+ [ ] separate typecheck and expression judgement
-	+ [ ] rename and organize modules
+* [x] refactor about TypeCheck.Nat
+	+ [x] separate typecheck and expression judgement
+	+ [x] rename and organize modules
 * [ ] consider whether or not to rename Range to Ranged
 
 make new TypeCheck
@@ -288,4 +288,35 @@ Plugin
       + Nat
           + Simple
               + Decode
+```
+
+refactor Range
+--------------
+
+* [x] check module name hierarchy
+* [x] refactor module name hierarchy
+	+ [x] move RangeL and RangeR under Range
+	+ [ ] others
+
+### module name hierarchy
+
+```
+Data.List
+  + Range
+  + RangeL
+  + RangeR
+```
+
+refactor Fingertree
+-------------------
+
+* [x] check module name hierarchy
+* [ ] refactor module name hierarchy
+
+### module name hierarchy
+
+```
+Data
+  + View
+  + List.Range.FingerTree
 ```

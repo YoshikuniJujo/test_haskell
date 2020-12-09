@@ -6,15 +6,15 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=Plugin.TypeCheck.Nat.Simple #-}
 
 module Data.List.Range (
-	module Data.List.RangeL,
-	module Data.List.RangeR,
+	module Data.List.Range.RangeL,
+	module Data.List.Range.RangeR,
 	leftToRight, rightToLeft
 	) where
 
 import GHC.TypeLits
 
-import Data.List.RangeL
-import Data.List.RangeR
+import Data.List.Range.RangeL
+import Data.List.Range.RangeR
 
 class LeftToRight n m n' m' where
 	leftToRightGen :: RangeR n m a -> RangeL n' m' a -> RangeR (n + n') (m + m') a
