@@ -242,21 +242,34 @@ refactor new TypeCheck
 			* [x] unfoldUntil
 		- [x] GIVEN
 		- [x] WANTED
-* [ ] refactor Plugin.TypeCheck.Nat.Simple.Decode
+* [x] refactor Plugin.TypeCheck.Nat.Simple.Decode
 	+ [x] export list
 		- [x] add export list
 		- [x] refactor export list
 			* [x] rename decode'
 	+ [x] import list
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] DECODE
 			* [x] decode
 			* [x] exBool
 			* [x] exNum
 			* [x] exVar
-		- [ ] MESSAGE
+		- [x] MESSAGE
 * [ ] refactor Plugin.TypeCheck.Nat.Simple
+	+ [x] export list
+	+ [ ] import list
+		+ [x] GhcPlugins
+			- [x] Plugins: Plugin, defaultPlugin
+			- [x] Var: Var
+			- [x] CoreSyn: Expr
+			- [x] Type: PredTree, EqRel, classifyPredType
+			- [x] Coercion: mkUnivCo
+			- [x] Outputable: ppr
+		+ [x] others
+	+ [ ] use Except monad
+	+ [ ] structure
+	+ [ ] body
 
 ### module name hierarchy
 

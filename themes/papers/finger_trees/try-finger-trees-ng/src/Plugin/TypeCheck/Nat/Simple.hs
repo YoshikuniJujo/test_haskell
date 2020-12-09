@@ -3,19 +3,23 @@
 
 module Plugin.TypeCheck.Nat.Simple (plugin) where
 
-import GhcPlugins hiding ((<>))
-import TcPluginM
-import TcRnTypes
-import TcEvidence
-import TyCoRep
-import Control.Monad.Trans.Except
-import Data.Bool
-import Data.Maybe
-import Data.Either
+import GhcPlugins (
+	Plugin(..), defaultPlugin, Var, Expr(..),
+	PredTree(..), EqRel(..), classifyPredType, mkUnivCo, ppr )
+import TcPluginM (TcPluginM, tcPluginTrace)
+import TcRnTypes (TcPlugin(..), TcPluginResult(..), Ct, ctEvPred, ctEvidence)
+import TcEvidence (EvTerm(..), Role(..))
+import TyCoRep (Type, UnivCoProvenance(..))
+import Control.Monad.Trans.Except (runExcept)
+import Data.Bool (bool)
+import Data.Maybe (catMaybes)
+import Data.Either (rights)
 
-import Plugin.TypeCheck.Nat.Simple.Decode
-import Data.Derivation.CanDerive
-import Data.Derivation.Expression
+import Plugin.TypeCheck.Nat.Simple.Decode (decode, Message(..))
+import Data.Derivation.CanDerive (canDerive, mkGiven, mkWanted)
+import Data.Derivation.Expression (Exp)
+
+---------------------------------------------------------------------------
 
 plugin :: Plugin
 plugin = defaultPlugin { tcPlugin = const . Just $ TcPlugin {
