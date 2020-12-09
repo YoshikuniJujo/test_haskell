@@ -6,9 +6,9 @@ module Data.Derivation.Constraint (
 	rmVar, rmNegative, isDerivFrom, selfContained,
 	Polynomial, (.+), (.-) ) where
 
-import Prelude hiding (null, filter)
+import Prelude hiding (null, filter, (<>))
 
-import Outputable (Outputable(..), text)
+import Outputable (Outputable(..), (<>), (<+>), text)
 import Control.Monad (guard)
 import Data.Foldable (toList)
 import Data.Maybe (isJust)
@@ -40,7 +40,11 @@ import qualified Data.Map.Strict as M (toList)
 data Constraint v = Eq (Polynomial v) | Geq (Polynomial v)
 	deriving (Show, Eq, Ord)
 
-instance Show v => Outputable (Constraint v) where ppr = text . show
+instance Outputable v => Outputable (Constraint v) where
+	ppr (Eq p) =
+		text "(Eq" <+> text "(fromList" <+> ppr (toList p) <> text "))"
+	ppr (Geq p) =
+		text "(Geq" <+> text "(fromList" <+> ppr (toList p) <> text "))"
 
 -- CONSTRUCTOR
 

@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Plugin.TypeCheck.Nat.Simple.Decode (
-	decode, ctToExpEq, unNomEq,
+	decode, unNomEq,
 	Message(..)
 	) where
 

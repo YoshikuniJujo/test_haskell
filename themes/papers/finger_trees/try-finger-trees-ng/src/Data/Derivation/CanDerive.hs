@@ -3,7 +3,9 @@
 module Data.Derivation.CanDerive (
 	canDerive, Given, mkGiven, Wanted, mkWanted ) where
 
-import Outputable (Outputable(..), text)
+import Prelude hiding ((<>))
+
+import Outputable (Outputable(..), (<>), (<+>), text)
 import Control.Arrow (first)
 import Data.Either (partitionEithers)
 import Data.List ((\\), nub, partition, sort)
@@ -62,7 +64,8 @@ unfoldUntil p f s0
 
 newtype Given v = Given { unGiven :: [Constraint v] } deriving Show
 
-instance Show v => Outputable (Given v) where ppr = text . show
+instance Outputable v => Outputable (Given v) where
+	ppr (Given cs) = text "(Given" <+> ppr cs <> text ")"
 
 mkGiven :: Ord v => [Exp v Bool] -> Given v
 mkGiven es = given . concat
@@ -82,7 +85,8 @@ newtype Wanted v = Wanted { unWanted :: [Wanted1 v] } deriving Show
 
 type Wanted1 v = Constraint v
 
-instance Show v => Outputable (Wanted v) where ppr = text . show
+instance Outputable v => Outputable (Wanted v) where
+	ppr (Wanted w) = text "(Wanted" <+> ppr w <> text ")"
 
 mkWanted :: Ord v => Exp v Bool -> Maybe (Wanted v)
 mkWanted = uncurry wanted . mkConstraint empty

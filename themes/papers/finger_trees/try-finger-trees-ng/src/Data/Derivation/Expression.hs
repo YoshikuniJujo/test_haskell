@@ -6,7 +6,9 @@
 module Data.Derivation.Expression (
 	Exp(..), Number, mkConstraint, mkVarBool ) where
 
-import Outputable (Outputable(..), text)
+import Prelude hiding ((<>))
+
+import Outputable (Outputable(..), (<>), (<+>), text)
 import Control.Arrow (first, second)
 import Control.Monad.Writer (Writer, runWriter, tell)
 import Data.Maybe (fromJust)
@@ -39,7 +41,14 @@ data Exp v t where
 data Number
 
 deriving instance Show v => Show (Exp v t)
-instance Show v => Outputable (Exp v t) where ppr = text . show
+instance Outputable v => Outputable (Exp v t) where
+	ppr (Bool b) = text "(Bool" <+> ppr b <> text ")"
+	ppr (Var v) = text "(Var" <+> ppr v <> text ")"
+	ppr (Const n) = text "(Const" <+> ppr n <> text ")"
+	ppr (l :== r) = text "(" <> ppr l <+> text ":==" <+> ppr r <> text ")"
+	ppr (l :<= r) = text "(" <> ppr l <+> text ":<=" <+> ppr r <> text ")"
+	ppr (l :+ r) = text "(" <> ppr l <+> text ":+" <+> ppr r <> text ")"
+	ppr (l :- r) = text "(" <> ppr l <+> text ":-" <+> ppr r <> text ")"
 
 ---------------------------------------------------------------------------
 -- MAKE CONSTRAINT
