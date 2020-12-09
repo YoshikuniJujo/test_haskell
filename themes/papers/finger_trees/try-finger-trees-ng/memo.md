@@ -248,8 +248,15 @@ refactor new TypeCheck
 		- [x] refactor export list
 			* [x] rename decode'
 	+ [x] import list
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] DECODE
+			* [ ] decode
+			* [ ] expEq
+			* [ ] expVar
+			* [ ] expTerm
+			* [ ] expBool
+		- [ ] MESSAGE
 * [ ] refactor Plugin.TypeCheck.Nat.Simple
 
 ### module name hierarchy
