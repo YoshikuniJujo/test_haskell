@@ -301,8 +301,17 @@ refactor Range
 		- [x] add export list
 		- [x] refactor export list
 	+ [x] import list
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] RANGE L
+		- [ ] FUNCTOR
+		- [ ] FOLDABLE
+		- [ ] PUSH L
+		- [ ] ADD L
+		- [ ] LOOSEN L
+			* [ ] LOOSEN L MIN
+			* [ ] LOOSEN L MAX
+			* [ ] FUNCTION LOOSEN L
 * [ ] refactor Data.List.Range.RangeR
 * [ ] refactor Data.List.Range
 

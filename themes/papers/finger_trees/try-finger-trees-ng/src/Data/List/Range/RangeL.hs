@@ -14,6 +14,20 @@ import GHC.TypeLits (Nat, type (+), type (-), type (<=))
 
 ---------------------------------------------------------------------------
 
+-- * RANGE L
+-- * FUNCTOR
+-- * FOLDABLE
+-- * PUSH L
+-- * ADD L
+-- * LOOSEN L
+--	+ LOOSEN L MIN
+--	+ LOOSEN L MAX
+--	+ FUNCTION LOOSEN L
+
+---------------------------------------------------------------------------
+-- RANGE L
+---------------------------------------------------------------------------
+
 infixr 6 :., :..
 
 data RangeL :: Nat -> Nat -> * -> * where
@@ -22,6 +36,10 @@ data RangeL :: Nat -> Nat -> * -> * where
 	(:.) :: a -> RangeL (n - 1) (m - 1) a -> RangeL n m a
 
 deriving instance Show a => Show (RangeL n m a)
+
+---------------------------------------------------------------------------
+-- FUNCTOR
+---------------------------------------------------------------------------
 
 instance Functor (RangeL 0 0) where
 	_ `fmap` NilL = NilL
@@ -37,6 +55,10 @@ instance {-# OVERLAPPABLE #-}
 	Functor (RangeL (n - 1) (m - 1)) => Functor (RangeL n m) where
 	f `fmap` (x :. xs) = f x :. f `fmap` xs
 	_ `fmap` _ = error "never occur"
+
+---------------------------------------------------------------------------
+-- FOLDABLE
+---------------------------------------------------------------------------
 
 instance Foldable (RangeL 0 0) where
 	foldr _ z NilL = z
@@ -60,6 +82,10 @@ instance {-# OVERLAPPABLE #-}
 	foldl (>-) z (x :. xs) = foldl (>-) (z >- x) xs
 	foldl _ _ _ = error "never occur"
 
+---------------------------------------------------------------------------
+-- PUSH L
+---------------------------------------------------------------------------
+
 infixr 5 .:..
 
 class PushL n m where
@@ -70,6 +96,33 @@ instance 1 <= m + 1 => PushL 0 m where (.:..) = (:..)
 instance {-# OVERLAPPABLE #-} (1 <= m + 1, PushL (n - 1) (m - 1)) => PushL n m where
 	x .:.. (y :. ys) = x :. (y .:.. ys)
 	_ .:.. _ = error "never occur"
+
+---------------------------------------------------------------------------
+-- ADD L
+---------------------------------------------------------------------------
+
+class AddL n m n' m' where
+	(++.) :: RangeL n m a -> RangeL n' m' a -> RangeL (n + n') (m + m') a
+
+instance AddL 0 0 n' m' where
+	NilL ++. ys = ys
+	_ ++. _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-} (1 <= m + m', LoosenLMax n' m' (m + m'), PushL n' (m + m' - 1), AddL 0 (m - 1) n' m') => AddL 0 m n' m' where
+	(++.) :: forall a . RangeL 0 m a -> RangeL n' m' a -> RangeL n' (m + m') a
+	NilL ++. ys = loosenLMax ys
+	(x :.. xs) ++. ys = x .:.. (xs ++. ys :: RangeL n' (m + m' - 1) a)
+	_ ++. _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-} (AddL (n - 1) (m - 1) n' m') => AddL n m n' m' where
+	(x :. xs) ++. ys = x :. (xs ++. ys)
+	_ ++. _ = error "never occur"
+
+---------------------------------------------------------------------------
+-- LOOSEN L
+---------------------------------------------------------------------------
+
+-- LOOSEN L MIN
 
 class LoosenLMin n m n' where loosenLMin :: RangeL n m a -> RangeL n' m a
 
@@ -88,6 +141,8 @@ instance {-# OVERLAPPABLE #-}
 	loosenLMin (x :. xs) = x :. loosenLMin xs
 	loosenLMin _ = error "never occur"
 
+-- LOOSEN L MAX
+
 class LoosenLMax n m m' where loosenLMax :: RangeL n m a -> RangeL n m' a
 
 instance LoosenLMax 0 0 m where
@@ -105,22 +160,7 @@ instance {-# OVERLAPPABLE #-}
 	loosenLMax (x :. xs) = x :. loosenLMax xs
 	loosenLMax _ = error "never occur"
 
+-- FUNCTION LOOSEN L
+
 loosenL :: (LoosenLMin n m n', LoosenLMax n' m m') => RangeL n m a -> RangeL n' m' a
 loosenL = loosenLMax . loosenLMin
-
-class AddL n m n' m' where
-	(++.) :: RangeL n m a -> RangeL n' m' a -> RangeL (n + n') (m + m') a
-
-instance AddL 0 0 n' m' where
-	NilL ++. ys = ys
-	_ ++. _ = error "never occur"
-
-instance {-# OVERLAPPABLE #-} (1 <= m + m', LoosenLMax n' m' (m + m'), PushL n' (m + m' - 1), AddL 0 (m - 1) n' m') => AddL 0 m n' m' where
-	(++.) :: forall a . RangeL 0 m a -> RangeL n' m' a -> RangeL n' (m + m') a
-	NilL ++. ys = loosenLMax ys
-	(x :.. xs) ++. ys = x .:.. (xs ++. ys :: RangeL n' (m + m' - 1) a)
-	_ ++. _ = error "never occur"
-
-instance {-# OVERLAPPABLE #-} (AddL (n - 1) (m - 1) n' m') => AddL n m n' m' where
-	(x :. xs) ++. ys = x :. (xs ++. ys)
-	_ ++. _ = error "never occur"
