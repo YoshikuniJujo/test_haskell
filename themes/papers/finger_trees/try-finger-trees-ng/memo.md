@@ -374,8 +374,8 @@ refactor Fingertree
 	+ [ ] body
 		- [x] FINGER TREE
 		- [x] FOLDABLE
-		- [ ] PUSH LEFT
-		- [ ] PUSH RIGHT
+		- [x] PUSH LEFT
+		- [x] PUSH RIGHT
 		- [ ] VIEW LEFT
 		- [ ] VIEW RIGHT
 		- [ ] CONCATENATE

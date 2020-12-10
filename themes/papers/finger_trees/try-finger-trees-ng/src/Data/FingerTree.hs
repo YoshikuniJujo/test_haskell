@@ -73,7 +73,8 @@ infixr 5 <||, <|, <|.
 a <|| b :. NilL = Left $ a :. b :.. NilL
 a <|| b :. c :.. NilL = Left $ a :. b :.. c :.. NilL
 a <|| b :. c :.. d :.. NilL = Left $ a :. b :.. c :.. d :.. NilL
-a <|| b :. c :.. d :.. e :.. NilL = Right (a :. b :.. NilL, c :. d :. e :.. NilL)
+a <|| b :. c :.. d :.. e :.. NilL =
+	Right (a :. b :.. NilL, c :. d :. e :.. NilL)
 _ <|| _ = error "never occur"
 
 (<|) :: a -> FingerTree a -> FingerTree a
@@ -86,9 +87,8 @@ a <| Deep pr m sf = case a <|| pr of
 (<|.) :: Foldable t => t a -> FingerTree a -> FingerTree a
 (<|.) = reducer (<|)
 
-mkFingerTree, toTree :: Foldable t => t a -> FingerTree a
-mkFingerTree = toTree
-toTree = (<|. Empty)
+mkFingerTree :: Foldable t => t a -> FingerTree a
+mkFingerTree = (<|. Empty)
 
 ---------------------------------------------------------------------------
 -- PUSH RIGHT
@@ -100,7 +100,8 @@ infixl 5 ||>, |>, |>.
 NilR :+ a ||> b = Left $ NilR :++ a :+ b
 NilR :++ a :+ b ||> c = Left $ NilR :++ a :++ b :+ c
 NilR :++ a :++ b :+ c ||> d = Left $ NilR :++ a :++ b :++ c :+ d
-NilR :++ a :++ b :++ c :+ d ||> e = Right (a :. b :. c :.. NilL, NilR :++ d :+ e)
+NilR :++ a :++ b :++ c :+ d ||> e =
+	Right (a :. b :. c :.. NilL, NilR :++ d :+ e)
 _ ||> _ = error "never occur"
 
 (|>) :: FingerTree a -> a -> FingerTree a
@@ -127,7 +128,7 @@ nodeToDigitL = loosenL
 
 deepL :: RangeL 0 3 a -> FingerTree (Node a) -> DigitR a -> FingerTree a
 deepL NilL m sf = case viewL m of
-	NL -> toTree sf
+	NL -> mkFingerTree sf
 	ConsL a m' -> Deep (nodeToDigitL a) m' sf
 deepL (a :.. pr) m sf = Deep (loosenL $ a :. pr) m sf
 deepL _ _ _ = error "never occur"
@@ -149,7 +150,7 @@ viewR (Deep pr m (sf' :+ a)) = ConsR (deepR pr m sf') a
 
 deepR :: DigitL a -> FingerTree (Node a) -> RangeR 0 3 a -> FingerTree a
 deepR pr m NilR = case viewR m of
-	NR -> toTree pr
+	NR -> mkFingerTree pr
 	ConsR m' a -> Deep pr m' (nodeToDigitR a)
 deepR pr m (sf :++ a) = Deep pr m (loosenR $ sf :+ a)
 deepR _ _ _ = error "never occur"
