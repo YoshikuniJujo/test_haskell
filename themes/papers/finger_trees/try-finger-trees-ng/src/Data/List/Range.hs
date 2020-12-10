@@ -17,8 +17,15 @@ import Data.List.Range.RangeL (
 	RangeL(..), PushL, AddL, LoosenLMin, LoosenLMax,
 	(.:..), (++.), loosenLMax, loosenL )
 import Data.List.Range.RangeR (
-	RangeR(..), LoosenRMin, LoosenRMax, loosenRMax, loosenR )
+	RangeR(..), PushR, LoosenRMin, LoosenRMax,
+	(.:++), loosenRMax, loosenR )
 
+---------------------------------------------------------------------------
+
+--
+
+---------------------------------------------------------------------------
+-- LEFT TO RIGHT
 ---------------------------------------------------------------------------
 
 class LeftToRight n m n' m' where
@@ -55,6 +62,10 @@ instance {-# OVERLAPPABLE #-}
 leftToRight :: forall n m a . LeftToRight 0 0 n m => RangeL n m a -> RangeR n m a
 leftToRight = leftToRightGen (NilR :: RangeR 0 0 a)
 
+---------------------------------------------------------------------------
+-- RIGHT TO LEFT
+---------------------------------------------------------------------------
+
 class RightToLeft n m n' m' where
 	rightToLeftGen :: RangeL n m a -> RangeR n' m' a -> RangeL (n + n') (m + m') a
 
@@ -83,13 +94,3 @@ instance {-# OVERLAPPABLE #-}
 
 rightToLeft :: forall n m a . RightToLeft 0 0 n m => RangeR n m a -> RangeL n m a
 rightToLeft = rightToLeftGen (NilL :: RangeL 0 0 a)
-
-infixl 5 .:++
-
-class PushR n m where (.:++) :: RangeR n m a -> a -> RangeR n (m + 1) a
-
-instance 1 <= m + 1 => PushR 0 m where (.:++) = (:++)
-
-instance {-# OVERLAPPABLE #-} (1 <= m + 1, PushR (n - 1) (m - 1)) => PushR n m where
-	(xs :+ x) .:++ y = (xs .:++ x) :+ y
-	_ .:++ _ = error "never occur"
