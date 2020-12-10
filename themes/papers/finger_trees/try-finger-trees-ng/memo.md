@@ -318,10 +318,10 @@ refactor Range
 		- [x] refactor export list
 	+ [x] import list
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] RANGE R
 		- [x] FOLDABLE
-		- [ ] PUSH R
+		- [x] PUSH R
 		- [x] LOOSEN R
 			* [x] LOOSEN R MIN
 			* [x] LOOSEN R MAX

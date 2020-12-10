@@ -68,10 +68,10 @@ infixl 5 .:++
 
 class PushR n m where (.:++) :: RangeR n m a -> a -> RangeR n (m + 1) a
 
-instance 1 <= m + 1 => PushR 0 m where (.:++) = (:++)
+instance PushR 0 m where (.:++) = (:++)
 
-instance {-# OVERLAPPABLE #-} (1 <= m + 1, PushR (n - 1) (m - 1)) => PushR n m where
-	(xs :+ x) .:++ y = (xs .:++ x) :+ y
+instance {-# OVERLAPPABLE #-} PushR (n - 1) (m - 1) => PushR n m where
+	xs :+ x .:++ y = (xs .:++ x) :+ y
 	_ .:++ _ = error "never occur"
 
 ---------------------------------------------------------------------------
@@ -88,7 +88,7 @@ instance LoosenRMin 0 m 0 where
 	loosenRMin _ = error "never occur"
 
 instance {-# OVERLAPPABLE #-}
-	(1 <= m, LoosenRMin (n - 1) (m - 1) 0) => LoosenRMin n m 0 where
+	LoosenRMin (n - 1) (m - 1) 0 => LoosenRMin n m 0 where
 	loosenRMin (xs :+ x) = loosenRMin xs :++ x
 	loosenRMin _ = error "never occur"
 
@@ -106,7 +106,7 @@ instance LoosenRMax 0 0 m where
 	loosenRMax _ = error "never occur"
 
 instance {-# OVERLAPPABLE #-}
-	(1 <= m', LoosenRMax 0 (m - 1) (m' - 1)) => LoosenRMax 0 m m' where
+	LoosenRMax 0 (m - 1) (m' - 1) => LoosenRMax 0 m m' where
 	loosenRMax NilR = NilR
 	loosenRMax (xs :++ x) = loosenRMax xs :++ x
 	loosenRMax _ = error "never occur"
