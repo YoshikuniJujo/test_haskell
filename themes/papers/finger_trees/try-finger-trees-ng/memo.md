@@ -309,7 +309,7 @@ refactor Range
 		- [x] PUSH L
 		- [x] ADD L
 		- [ ] LOOSEN L
-			* [ ] LOOSEN L MIN
+			* [x] LOOSEN L MIN
 			* [ ] LOOSEN L MAX
 			* [ ] FUNCTION LOOSEN L
 * [ ] refactor Data.List.Range.RangeR

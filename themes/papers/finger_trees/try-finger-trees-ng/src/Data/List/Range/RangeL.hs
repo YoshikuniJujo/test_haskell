@@ -135,7 +135,7 @@ instance LoosenLMin 0 m 0 where
 	loosenLMin _ = error "never occur"
 
 instance {-# OVERLAPPABLE #-}
-	(1 <= m, LoosenLMin (n - 1) (m - 1) 0) => LoosenLMin n m 0 where
+	LoosenLMin (n - 1) (m - 1) 0 => LoosenLMin n m 0 where
 	loosenLMin (x :. xs) = x :.. loosenLMin xs
 	loosenLMin _ = error "never occur"
 
@@ -153,7 +153,7 @@ instance LoosenLMax 0 0 m where
 	loosenLMax _ = error "never occur"
 
 instance {-# OVERLAPPABLE #-}
-	(1 <= m', LoosenLMax 0 (m - 1) (m' - 1)) => LoosenLMax 0 m m' where
+	LoosenLMax 0 (m - 1) (m' - 1) => LoosenLMax 0 m m' where
 	loosenLMax NilL = NilL
 	loosenLMax (x :.. xs) = x :.. loosenLMax xs
 	loosenLMax _ = error "never occur"
@@ -165,5 +165,6 @@ instance {-# OVERLAPPABLE #-}
 
 -- FUNCTION LOOSEN L
 
-loosenL :: (LoosenLMin n m n', LoosenLMax n' m m') => RangeL n m a -> RangeL n' m' a
+loosenL :: (LoosenLMin n m n', LoosenLMax n' m m') =>
+	RangeL n m a -> RangeL n' m' a
 loosenL = loosenLMax . loosenLMin
