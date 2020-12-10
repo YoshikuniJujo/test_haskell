@@ -334,10 +334,10 @@ refactor Range
 	+ [x] import list
 	+ [x] structure
 	+ [ ] body
-		- [ ] LEFT TO RIGHT
+		- [x] LEFT TO RIGHT
 			* [x] CLASS
-			* [ ] INSTANCE
-			* [ ] FUNCTION
+			* [x] INSTANCE
+			* [x] FUNCTION
 		- [ ] RIGHT TO LEFT
 			* [ ] CLASS
 			* [ ] INSTANCE

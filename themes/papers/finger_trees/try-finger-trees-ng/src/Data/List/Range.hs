@@ -47,30 +47,39 @@ instance LeftToRight 0 m 0 0 where leftToRightGen r _ =  r
 instance {-# OVERLAPPABLE #-} LeftToRight n m 0 0 where leftToRightGen r _ = r
 
 instance {-# OVERLAPPABLE #-}
-	(1 <= m + 1, 1 <= m + m', LoosenRMax 0 m (m + m'), LeftToRight 0 (m + 1) 0 (m' - 1)) =>
+	(LoosenRMax 0 m (m + m'), LeftToRight 0 (m + 1) 0 (m' - 1)) =>
 	LeftToRight 0 m 0 m' where
-	leftToRightGen :: forall a . RangeR 0 m a -> RangeL 0 m' a -> RangeR 0 (m + m') a
+	leftToRightGen ::
+		forall a . RangeR 0 m a -> RangeL 0 m' a -> RangeR 0 (m + m') a
 	leftToRightGen r NilL = loosenRMax r :: RangeR 0 (m + m') a
-	leftToRightGen r (x :.. xs) = leftToRightGen (r :++ x :: RangeR 0 (m + 1) a) xs
+	leftToRightGen r (x :.. xs) =
+		leftToRightGen (r :++ x :: RangeR 0 (m + 1) a) xs
+	leftToRightGen _ _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-} (
+	LoosenRMax n m (m + m'), PushR (n - 1) (m - 1),
+	LeftToRight n (m + 1) 0 (m' - 1) ) =>
+	LeftToRight n m 0 m' where
+	leftToRightGen ::
+		forall a . RangeR n m a -> RangeL 0 m' a -> RangeR n (m + m') a
+	leftToRightGen r NilL = loosenRMax r :: RangeR n (m + m') a
+	leftToRightGen r (x :.. xs) =
+		leftToRightGen (r .:++ x :: RangeR n (m + 1) a) xs
 	leftToRightGen _ _ = error "never occur"
 
 instance {-# OVERLAPPABLE #-}
-	(1 <= m + 1, 1 <= m + moops', LoosenRMax n m (m + moops'), PushR (n - 1) (m - 1), LeftToRight n (m + 1) 0 (moops' - 1)) =>
-	LeftToRight n m 0 moops' where
-	leftToRightGen :: forall a . RangeR n m a -> RangeL 0 moops' a -> RangeR n (m + moops') a
-	leftToRightGen r NilL = loosenRMax r :: RangeR n (m + moops') a
-	leftToRightGen r (x :.. xs) = leftToRightGen (r .:++ x :: RangeR n (m + 1) a) xs
-	leftToRightGen _ _ = error "never occur"
-
-instance {-# OVERLAPPABLE #-}
-	LeftToRight (n + 1) (m + 1) (n' - 1) (m' - 1) => LeftToRight n m n' m' where
-	leftToRightGen :: forall a . RangeR n m a -> RangeL n' m' a -> RangeR (n + n') (m + m') a
-	leftToRightGen r (x :. xs) = leftToRightGen (r :+ x :: RangeR (n + 1) (m + 1) a) xs
+	LeftToRight (n + 1) (m + 1) (n' - 1) (m' - 1) =>
+	LeftToRight n m n' m' where
+	leftToRightGen :: forall a .
+		RangeR n m a -> RangeL n' m' a -> RangeR (n + n') (m + m') a
+	leftToRightGen r (x :. xs) =
+		leftToRightGen (r :+ x :: RangeR (n + 1) (m + 1) a) xs
 	leftToRightGen _ _ = error "never occur"
 
 -- FUNCTION
 
-leftToRight :: forall n m a . LeftToRight 0 0 n m => RangeL n m a -> RangeR n m a
+leftToRight ::
+	forall n m a . LeftToRight 0 0 n m => RangeL n m a -> RangeR n m a
 leftToRight = leftToRightGen (NilR :: RangeR 0 0 a)
 
 ---------------------------------------------------------------------------
