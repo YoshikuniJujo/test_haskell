@@ -302,17 +302,23 @@ refactor Range
 		- [x] refactor export list
 	+ [x] import list
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] RANGE L
 		- [x] FUNCTOR
 		- [x] FOLDABLE
 		- [x] PUSH L
 		- [x] ADD L
-		- [ ] LOOSEN L
+		- [x] LOOSEN L
 			* [x] LOOSEN L MIN
-			* [ ] LOOSEN L MAX
-			* [ ] FUNCTION LOOSEN L
+			* [x] LOOSEN L MAX
+			* [x] FUNCTION LOOSEN L
 * [ ] refactor Data.List.Range.RangeR
+	+ [x] export list
+		- [x] add export list
+		- [x] refactor export list
+	+ [x] import list
+	+ [ ] structure
+	+ [ ] body
 * [ ] refactor Data.List.Range
 
 ### module name hierarchy

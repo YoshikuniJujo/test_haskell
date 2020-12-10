@@ -5,9 +5,12 @@
 	UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.List.Range.RangeR where
+module Data.List.Range.RangeR (
+	RangeR(..), LoosenRMax, loosenRMax, loosenR ) where
 
-import GHC.TypeLits
+import GHC.TypeLits (Nat, type (-), type (<=))
+
+---------------------------------------------------------------------------
 
 infixl 6 :+, :++
 
