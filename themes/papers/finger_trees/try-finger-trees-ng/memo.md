@@ -297,9 +297,9 @@ refactor Range
 * [x] refactor module name hierarchy
 	+ [x] move RangeL and RangeR under Range
 * [ ] refactor Data.List.Range.RangeL
-	+ [ ] export list
+	+ [x] export list
 		- [x] add export list
-		- [ ] refactor export list
+		- [x] refactor export list
 	+ [ ] import list
 	+ [ ] structure
 	+ [ ] body
