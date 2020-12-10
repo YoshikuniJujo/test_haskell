@@ -312,19 +312,19 @@ refactor Range
 			* [x] LOOSEN L MIN
 			* [x] LOOSEN L MAX
 			* [x] FUNCTION LOOSEN L
-* [ ] refactor Data.List.Range.RangeR
+* [x] refactor Data.List.Range.RangeR
 	+ [x] export list
 		- [x] add export list
 		- [x] refactor export list
 	+ [x] import list
 	+ [x] structure
-	+ [ ] body
-		- [ ] RANGE R
-		- [ ] FOLDABLE
-		- [ ] LOOSEN R
-			* [ ] LOOSEN R MIN
-			* [ ] LOOSEN R MAX
-			* [ ] FUNCTION LOOSEN R
+	+ [x] body
+		- [x] RANGE R
+		- [x] FOLDABLE
+		- [x] LOOSEN R
+			* [x] LOOSEN R MIN
+			* [x] LOOSEN R MAX
+			* [x] FUNCTION LOOSEN R
 * [ ] refactor Data.List.Range
 
 ### module name hierarchy

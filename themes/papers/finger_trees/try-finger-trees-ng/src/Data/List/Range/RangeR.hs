@@ -102,5 +102,6 @@ instance {-# OVERLAPPABLE #-}
 
 -- FUNCTION LOOSEN R
 
-loosenR :: (LoosenRMin n m n', LoosenRMax n' m m') => RangeR n m a -> RangeR n' m' a
+loosenR :: (LoosenRMin n m n', LoosenRMax n' m m') =>
+	RangeR n m a -> RangeR n' m' a
 loosenR = loosenRMax . loosenRMin
