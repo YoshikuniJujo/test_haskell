@@ -25,6 +25,7 @@ plugin = defaultPlugin { tcPlugin = const $ Just TcPlugin {
 	tcPluginStop = const $ pure () } }
 
 solve :: [Ct] -> [Ct] -> [Ct] -> TcPluginM TcPluginResult
+solve _ _ [] = pure $ TcPluginOk [] []
 solve gs ds ws = do
 	tcPluginTrace "!Plugin.TypeCheck.Nat.Simple" ""
 	tcPluginTrace "Given: " $ ppr gs
