@@ -376,8 +376,8 @@ refactor Fingertree
 		- [x] FOLDABLE
 		- [x] PUSH LEFT
 		- [x] PUSH RIGHT
-		- [ ] VIEW LEFT
-		- [ ] VIEW RIGHT
+		- [x] VIEW LEFT
+		- [x] VIEW RIGHT
 		- [ ] CONCATENATE
 
 ### module name hierarchy
