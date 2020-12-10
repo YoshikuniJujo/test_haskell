@@ -331,9 +331,17 @@ refactor Range
 		- [x] remove Data.List.Range.RangeL
 		- [x] remove Data.List.Range.RangeR
 		- [x] refactor export list
-	+ [ ] import list
-	+ [ ] structure
+	+ [x] import list
+	+ [x] structure
 	+ [ ] body
+		- [ ] LEFT TO RIGHT
+			* [ ] CLASS
+			* [ ] INSTANCE
+			* [ ] FUNCTION
+		- [ ] RIGHT TO LEFT
+			* [ ] CLASS
+			* [ ] INSTANCE
+			* [ ] FUNCTION
 
 ### module name hierarchy
 
