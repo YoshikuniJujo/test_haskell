@@ -91,9 +91,9 @@ infixr 5 .:..
 class PushL n m where
 	(.:..) :: a -> RangeL n m a -> RangeL n (m + 1) a
 
-instance 1 <= m + 1 => PushL 0 m where (.:..) = (:..)
+instance PushL 0 m where (.:..) = (:..)
 
-instance {-# OVERLAPPABLE #-} (1 <= m + 1, PushL (n - 1) (m - 1)) => PushL n m where
+instance {-# OVERLAPPABLE #-} PushL (n - 1) (m - 1) => PushL n m where
 	x .:.. (y :. ys) = x :. (y .:.. ys)
 	_ .:.. _ = error "never occur"
 
