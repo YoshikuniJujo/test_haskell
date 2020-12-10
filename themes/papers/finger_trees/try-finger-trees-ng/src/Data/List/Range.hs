@@ -89,7 +89,8 @@ leftToRight = leftToRightGen (NilR :: RangeR 0 0 a)
 -- CLASS
 
 class RightToLeft n m n' m' where
-	rightToLeftGen :: RangeL n m a -> RangeR n' m' a -> RangeL (n + n') (m + m') a
+	rightToLeftGen ::
+		RangeL n m a -> RangeR n' m' a -> RangeL (n + n') (m + m') a
 
 -- INSTANCE
 

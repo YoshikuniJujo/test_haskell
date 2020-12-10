@@ -339,7 +339,7 @@ refactor Range
 			* [x] INSTANCE
 			* [x] FUNCTION
 		- [ ] RIGHT TO LEFT
-			* [ ] CLASS
+			* [x] CLASS
 			* [ ] INSTANCE
 			* [ ] FUNCTION
 
