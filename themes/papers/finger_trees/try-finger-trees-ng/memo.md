@@ -305,8 +305,8 @@ refactor Range
 	+ [ ] body
 		- [x] RANGE L
 		- [x] FUNCTOR
-		- [ ] FOLDABLE
-		- [ ] PUSH L
+		- [x] FOLDABLE
+		- [x] PUSH L
 		- [ ] ADD L
 		- [ ] LOOSEN L
 			* [ ] LOOSEN L MIN

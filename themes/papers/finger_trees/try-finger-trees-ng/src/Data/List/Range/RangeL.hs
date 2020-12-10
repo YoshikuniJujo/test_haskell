@@ -88,8 +88,7 @@ instance {-# OVERLAPPABLE #-}
 
 infixr 5 .:..
 
-class PushL n m where
-	(.:..) :: a -> RangeL n m a -> RangeL n (m + 1) a
+class PushL n m where (.:..) :: a -> RangeL n m a -> RangeL n (m + 1) a
 
 instance PushL 0 m where (.:..) = (:..)
 
