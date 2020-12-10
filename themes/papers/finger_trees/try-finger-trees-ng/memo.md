@@ -303,8 +303,8 @@ refactor Range
 	+ [x] import list
 	+ [x] structure
 	+ [ ] body
-		- [ ] RANGE L
-		- [ ] FUNCTOR
+		- [x] RANGE L
+		- [x] FUNCTOR
 		- [ ] FOLDABLE
 		- [ ] PUSH L
 		- [ ] ADD L

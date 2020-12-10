@@ -48,12 +48,12 @@ instance Functor (RangeL 0 0) where
 instance {-# OVERLAPPABLE #-}
 	Functor (RangeL 0 (m - 1)) => Functor (RangeL 0 m) where
 	_ `fmap` NilL = NilL
-	f `fmap` (x :.. xs) = f x :.. f `fmap` xs
+	f `fmap` (x :.. xs) = f x :.. (f <$> xs)
 	_ `fmap` _ = error "never occur"
 
 instance {-# OVERLAPPABLE #-}
 	Functor (RangeL (n - 1) (m - 1)) => Functor (RangeL n m) where
-	f `fmap` (x :. xs) = f x :. f `fmap` xs
+	f `fmap` (x :. xs) = f x :. (f <$> xs)
 	_ `fmap` _ = error "never occur"
 
 ---------------------------------------------------------------------------
