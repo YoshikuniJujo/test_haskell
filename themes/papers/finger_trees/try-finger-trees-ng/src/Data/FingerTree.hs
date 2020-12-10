@@ -49,16 +49,18 @@ instance Foldable FingerTree where
 		where
 		(-<.) :: forall t . Foldable t => t a -> b -> b
 		(-<.) = reducer (-<)
-		(-<..) :: forall t t' . (Foldable t, Foldable t') => t (t' a) -> b -> b
+		(-<..) :: forall t t' .
+			(Foldable t, Foldable t') => t (t' a) -> b -> b
 		(-<..) = reducer (-<.)
 	foldl :: forall a b . (b -> a -> b) -> b -> FingerTree a -> b
 	foldl _ z Empty = z
 	foldl (>-) z (Single x) = z >- x
-	foldl (>-) z (Deep pr m sf) = ((z >-. pr) >-.. m) >-. sf
+	foldl (>-) z (Deep pr m sf) = z >-. pr >-.. m >-. sf
 		where
 		(>-.) :: forall t . Foldable t => b -> t a -> b
 		(>-.) = reducel (>-)
-		(>-..) :: forall t t' . (Foldable t, Foldable t') => b -> t (t' a) -> b
+		(>-..) :: forall t t' .
+			(Foldable t, Foldable t') => b -> t (t' a) -> b
 		(>-..) = reducel (>-.)
 
 ---------------------------------------------------------------------------

@@ -372,8 +372,8 @@ refactor Fingertree
 	+ [x] import list
 	+ [x] structure
 	+ [ ] body
-		- [ ] FINGER TREE
-		- [ ] FOLDABLE
+		- [x] FINGER TREE
+		- [x] FOLDABLE
 		- [ ] PUSH LEFT
 		- [ ] PUSH RIGHT
 		- [ ] VIEW LEFT
