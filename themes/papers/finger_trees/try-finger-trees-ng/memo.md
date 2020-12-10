@@ -307,7 +307,7 @@ refactor Range
 		- [x] FUNCTOR
 		- [x] FOLDABLE
 		- [x] PUSH L
-		- [ ] ADD L
+		- [x] ADD L
 		- [ ] LOOSEN L
 			* [ ] LOOSEN L MIN
 			* [ ] LOOSEN L MAX
