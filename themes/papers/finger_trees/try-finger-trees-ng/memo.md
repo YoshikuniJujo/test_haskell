@@ -370,8 +370,15 @@ refactor Fingertree
 		- [x] add export list
 		- [x] refactor export list
 	+ [x] import list
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] FINGER TREE
+		- [ ] FOLDABLE
+		- [ ] PUSH LEFT
+		- [ ] PUSH RIGHT
+		- [ ] VIEW LEFT
+		- [ ] VIEW RIGHT
+		- [ ] CONCATENATE
 
 ### module name hierarchy
 

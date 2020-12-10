@@ -19,15 +19,27 @@ import Internal.Tools (reducer, reducel)
 
 ---------------------------------------------------------------------------
 
+-- * FINGER TREE
+-- * FOLDABLE
+-- * PUSH LEFT
+-- * PUSH RIGHT
+-- * VIEW LEFT
+-- * VIEW RIGHT
+-- * CONCATENATE
+
+---------------------------------------------------------------------------
+-- FINGER TREE
+---------------------------------------------------------------------------
+
 data FingerTree a
-	= Empty
-	| Single a
-	| Deep (DigitL a) (FingerTree (Node a)) (DigitR a)
+	= Empty | Single a | Deep (DigitL a) (FingerTree (Node a)) (DigitR a)
 	deriving Show
 
-type DigitL = RangeL 1 4
-type DigitR = RangeR 1 4
-type Node = RangeL 2 3
+type Node = RangeL 2 3; type DigitL = RangeL 1 4; type DigitR = RangeR 1 4
+
+---------------------------------------------------------------------------
+-- FOLDABLE
+---------------------------------------------------------------------------
 
 instance Foldable FingerTree where
 	foldr :: forall a b . (a -> b -> b) -> b -> FingerTree a -> b
@@ -49,6 +61,10 @@ instance Foldable FingerTree where
 		(>-..) :: forall t t' . (Foldable t, Foldable t') => b -> t (t' a) -> b
 		(>-..) = reducel (>-.)
 
+---------------------------------------------------------------------------
+-- PUSH LEFT
+---------------------------------------------------------------------------
+
 infixr 5 <||, <|, <|.
 
 (<||) :: a -> DigitL a -> Either (DigitL a) (DigitL a, Node a)
@@ -67,6 +83,14 @@ a <| Deep pr m sf = case a <|| pr of
 
 (<|.) :: Foldable t => t a -> FingerTree a -> FingerTree a
 (<|.) = reducer (<|)
+
+mkFingerTree, toTree :: Foldable t => t a -> FingerTree a
+mkFingerTree = toTree
+toTree = (<|. Empty)
+
+---------------------------------------------------------------------------
+-- PUSH RIGHT
+---------------------------------------------------------------------------
 
 infixl 5 ||>, |>, |>.
 
@@ -87,9 +111,9 @@ Deep pr m sf |> a = case sf ||> a of
 (|>.) :: Foldable t => FingerTree a -> t a -> FingerTree a
 (|>.) = reducel (|>)
 
-mkFingerTree, toTree :: Foldable t => t a -> FingerTree a
-mkFingerTree = toTree
-toTree = (<|. Empty)
+---------------------------------------------------------------------------
+-- VIEW LEFT
+---------------------------------------------------------------------------
 
 viewL :: FingerTree a -> ViewL FingerTree a
 viewL Empty = NL
@@ -112,8 +136,9 @@ isEmpty x = case viewL x of NL -> True; ConsL _ _ -> False
 uncons :: FingerTree a -> Maybe (a, FingerTree a)
 uncons x = case viewL x of NL -> Nothing; ConsL a x' -> Just (a, x')
 
-unsnoc :: FingerTree a -> Maybe (FingerTree a, a)
-unsnoc x = case viewR x of NR -> Nothing; ConsR x' a -> Just (x', a)
+---------------------------------------------------------------------------
+-- VIEW RIGHT
+---------------------------------------------------------------------------
 
 viewR :: FingerTree a -> ViewR FingerTree a
 viewR Empty = NR
@@ -129,6 +154,13 @@ deepR _ _ _ = error "never occur"
 
 nodeToDigitR :: Node a -> DigitR a
 nodeToDigitR = loosenR . leftToRight
+
+unsnoc :: FingerTree a -> Maybe (FingerTree a, a)
+unsnoc x = case viewR x of NR -> Nothing; ConsR x' a -> Just (x', a)
+
+---------------------------------------------------------------------------
+-- CONCATENATE
+---------------------------------------------------------------------------
 
 class Nodes m m' where nodes :: RangeL 2 m a -> RangeL 1 m' (Node a)
 
