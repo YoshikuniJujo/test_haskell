@@ -1,8 +1,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.Range.TryFingerTree where
+module Trial.FingerTree.TryFingerTree where
 
 import Data.FingerTree
 
 sampleFingerTree :: FingerTree Int
-sampleFingerTree = toTree [100 .. 150]
+sampleFingerTree = mkFingerTree [100 .. 150]

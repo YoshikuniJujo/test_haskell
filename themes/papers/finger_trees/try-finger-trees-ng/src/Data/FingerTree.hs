@@ -5,13 +5,19 @@
 	UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=Plugin.TypeCheck.Nat.Simple #-}
 
-module Data.FingerTree where
+module Data.FingerTree (
+	FingerTree, mkFingerTree, isEmpty, uncons, unsnoc,
+	(<|), (<|.), (|>), (|>.), (><) ) where
 
-import GHC.TypeNats
+import GHC.TypeNats (type (-), type (<=))
 
-import Data.List.Range
-import Data.View
-import Internal.Tools
+import Data.List.Range (
+	RangeL(..), (.:..), (++.), loosenL, RangeR(..), loosenR,
+	leftToRight, rightToLeft )
+import Data.View (ViewL(..), ViewR(..))
+import Internal.Tools (reducer, reducel)
+
+---------------------------------------------------------------------------
 
 data FingerTree a
 	= Empty
@@ -81,7 +87,8 @@ Deep pr m sf |> a = case sf ||> a of
 (|>.) :: Foldable t => FingerTree a -> t a -> FingerTree a
 (|>.) = reducel (|>)
 
-toTree :: Foldable t => t a -> FingerTree a
+mkFingerTree, toTree :: Foldable t => t a -> FingerTree a
+mkFingerTree = toTree
 toTree = (<|. Empty)
 
 viewL :: FingerTree a -> ViewL FingerTree a

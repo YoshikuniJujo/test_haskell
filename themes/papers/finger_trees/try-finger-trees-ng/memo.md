@@ -366,6 +366,12 @@ refactor Fingertree
 	+ [x] move Annotation to Data.FingerTree
 * [x] refactor Data.View
 * [ ] refactor Data.FingerTree
+	+ [x] export list
+		- [x] add export list
+		- [x] refactor export list
+	+ [x] import list
+	+ [ ] structure
+	+ [ ] body
 
 ### module name hierarchy
 
