@@ -365,20 +365,20 @@ refactor Fingertree
 	+ [x] move RandomAccessSequence to ...
 	+ [x] move Annotation to Data.FingerTree
 * [x] refactor Data.View
-* [ ] refactor Data.FingerTree
+* [x] refactor Data.FingerTree
 	+ [x] export list
 		- [x] add export list
 		- [x] refactor export list
 	+ [x] import list
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] FINGER TREE
 		- [x] FOLDABLE
 		- [x] PUSH LEFT
 		- [x] PUSH RIGHT
 		- [x] VIEW LEFT
 		- [x] VIEW RIGHT
-		- [ ] CONCATENATE
+		- [x] CONCATENATE
 
 ### module name hierarchy
 
