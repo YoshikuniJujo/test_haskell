@@ -335,7 +335,7 @@ refactor Range
 	+ [x] structure
 	+ [ ] body
 		- [ ] LEFT TO RIGHT
-			* [ ] CLASS
+			* [x] CLASS
 			* [ ] INSTANCE
 			* [ ] FUNCTION
 		- [ ] RIGHT TO LEFT

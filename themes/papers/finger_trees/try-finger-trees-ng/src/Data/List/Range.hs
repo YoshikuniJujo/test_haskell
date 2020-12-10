@@ -37,7 +37,8 @@ import Data.List.Range.RangeR (
 -- CLASS
 
 class LeftToRight n m n' m' where
-	leftToRightGen :: RangeR n m a -> RangeL n' m' a -> RangeR (n + n') (m + m') a
+	leftToRightGen ::
+		RangeR n m a -> RangeL n' m' a -> RangeR (n + n') (m + m') a
 
 -- INSTANCE
 
