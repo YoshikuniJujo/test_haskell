@@ -12,6 +12,17 @@ import GHC.TypeLits (Nat, type (-), type (<=))
 
 ---------------------------------------------------------------------------
 
+-- * RANGE R
+-- * FOLDABLE
+-- * LOOSEN R
+--	+ LOOSEN R MIN
+--	+ LOOSEN R MAX
+--	+ FUNCTION LOOSEN R
+
+---------------------------------------------------------------------------
+-- RANGE R
+---------------------------------------------------------------------------
+
 infixl 6 :+, :++
 
 data RangeR :: Nat -> Nat -> * -> * where
@@ -20,6 +31,10 @@ data RangeR :: Nat -> Nat -> * -> * where
 	(:+) :: RangeR (n - 1) (m - 1) a -> a -> RangeR n m a
 
 deriving instance Show a => Show (RangeR n m a)
+
+---------------------------------------------------------------------------
+-- FOLDABLE
+---------------------------------------------------------------------------
 
 instance Foldable (RangeR 0 0) where
 	foldr _ z NilR = z
@@ -43,6 +58,12 @@ instance {-# OVERLAPPABLE #-}
 	foldl (>-) z (xs :+ x) = foldl (>-) z xs >- x
 	foldl _ _ _ = error "never occur"
 
+---------------------------------------------------------------------------
+-- LOOSEN R
+---------------------------------------------------------------------------
+
+-- LOOSEN R MIN
+
 class LoosenRMin n m n' where loosenRMin :: RangeR n m a -> RangeR n' m a
 
 instance LoosenRMin 0 m 0 where
@@ -60,6 +81,8 @@ instance {-# OVERLAPPABLE #-}
 	loosenRMin (xs :+ x) = loosenRMin xs :+ x
 	loosenRMin _ = error "never occur"
 
+-- LOOSEN R MAX
+
 class LoosenRMax n m m' where loosenRMax :: RangeR n m a -> RangeR n m' a
 
 instance LoosenRMax 0 0 m where
@@ -76,6 +99,8 @@ instance {-# OVERLAPPABLE #-}
 	LoosenRMax (n - 1) (m - 1) (m' - 1) => LoosenRMax n m m' where
 	loosenRMax (xs :+ x) = loosenRMax xs :+ x
 	loosenRMax _ = error "never occur"
+
+-- FUNCTION LOOSEN R
 
 loosenR :: (LoosenRMin n m n', LoosenRMax n' m m') => RangeR n m a -> RangeR n' m' a
 loosenR = loosenRMax . loosenRMin
