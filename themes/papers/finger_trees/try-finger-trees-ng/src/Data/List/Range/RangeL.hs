@@ -10,7 +10,9 @@ module Data.List.Range.RangeL (
 	RangeL(..), PushL, LoosenLMin, LoosenLMax,
 	(.:..), (++.), loosenLMax, loosenL ) where
 
-import GHC.TypeLits
+import GHC.TypeLits (Nat, type (+), type (-), type (<=))
+
+---------------------------------------------------------------------------
 
 infixr 6 :., :..
 

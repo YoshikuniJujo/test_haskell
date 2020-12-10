@@ -300,7 +300,7 @@ refactor Range
 	+ [x] export list
 		- [x] add export list
 		- [x] refactor export list
-	+ [ ] import list
+	+ [x] import list
 	+ [ ] structure
 	+ [ ] body
 * [ ] refactor Data.List.Range.RangeR
