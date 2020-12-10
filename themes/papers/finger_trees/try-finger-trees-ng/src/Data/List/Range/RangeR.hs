@@ -15,6 +15,7 @@ import GHC.TypeLits (Nat, type (+), type (-), type (<=))
 
 -- * RANGE R
 -- * FOLDABLE
+-- * PUSH R
 -- * LOOSEN R
 --	+ LOOSEN R MIN
 --	+ LOOSEN R MAX
@@ -58,6 +59,20 @@ instance {-# OVERLAPPABLE #-}
 	foldr _ _ _ = error "never occur"
 	foldl (>-) z (xs :+ x) = foldl (>-) z xs >- x
 	foldl _ _ _ = error "never occur"
+
+---------------------------------------------------------------------------
+-- PUSH R
+---------------------------------------------------------------------------
+
+infixl 5 .:++
+
+class PushR n m where (.:++) :: RangeR n m a -> a -> RangeR n (m + 1) a
+
+instance 1 <= m + 1 => PushR 0 m where (.:++) = (:++)
+
+instance {-# OVERLAPPABLE #-} (1 <= m + 1, PushR (n - 1) (m - 1)) => PushR n m where
+	(xs :+ x) .:++ y = (xs .:++ x) :+ y
+	_ .:++ _ = error "never occur"
 
 ---------------------------------------------------------------------------
 -- LOOSEN R
@@ -106,13 +121,3 @@ instance {-# OVERLAPPABLE #-}
 loosenR :: (LoosenRMin n m n', LoosenRMax n' m m') =>
 	RangeR n m a -> RangeR n' m' a
 loosenR = loosenRMax . loosenRMin
-
-infixl 5 .:++
-
-class PushR n m where (.:++) :: RangeR n m a -> a -> RangeR n (m + 1) a
-
-instance 1 <= m + 1 => PushR 0 m where (.:++) = (:++)
-
-instance {-# OVERLAPPABLE #-} (1 <= m + 1, PushR (n - 1) (m - 1)) => PushR n m where
-	(xs :+ x) .:++ y = (xs .:++ x) :+ y
-	_ .:++ _ = error "never occur"

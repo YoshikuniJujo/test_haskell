@@ -313,14 +313,15 @@ refactor Range
 			* [x] LOOSEN L MAX
 			* [x] FUNCTION LOOSEN L
 * [x] refactor Data.List.Range.RangeR
-	+ [ ] export list
+	+ [x] export list
 		- [x] add export list
-		- [ ] refactor export list
-	+ [ ] import list
-	+ [ ] structure
+		- [x] refactor export list
+	+ [x] import list
+	+ [x] structure
 	+ [ ] body
 		- [x] RANGE R
 		- [x] FOLDABLE
+		- [ ] PUSH R
 		- [x] LOOSEN R
 			* [x] LOOSEN R MIN
 			* [x] LOOSEN R MAX
