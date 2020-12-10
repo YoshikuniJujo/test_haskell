@@ -326,6 +326,13 @@ refactor Range
 			* [x] LOOSEN R MAX
 			* [x] FUNCTION LOOSEN R
 * [ ] refactor Data.List.Range
+	+ [x] export list
+		- [x] remove Data.List.Range.RangeL
+		- [x] remove Data.List.Range.RangeR
+		- [x] refactor export list
+	+ [x] import list
+	+ [ ] structure
+	+ [ ] body
 
 ### module name hierarchy
 

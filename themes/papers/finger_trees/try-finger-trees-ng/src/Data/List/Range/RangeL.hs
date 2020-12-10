@@ -7,7 +7,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=Plugin.TypeCheck.Nat.Simple #-}
 
 module Data.List.Range.RangeL (
-	RangeL(..), PushL, LoosenLMin, LoosenLMax,
+	RangeL(..), PushL, AddL, LoosenLMin, LoosenLMax,
 	(.:..), (++.), loosenLMax, loosenL ) where
 
 import GHC.TypeLits (Nat, type (+), type (-), type (<=))

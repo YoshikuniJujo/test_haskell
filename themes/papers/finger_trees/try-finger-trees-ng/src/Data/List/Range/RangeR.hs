@@ -6,7 +6,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.List.Range.RangeR (
-	RangeR(..), LoosenRMax, loosenRMax, loosenR ) where
+	RangeR(..), LoosenRMin, LoosenRMax, loosenRMax, loosenR ) where
 
 import GHC.TypeLits (Nat, type (-), type (<=))
 
