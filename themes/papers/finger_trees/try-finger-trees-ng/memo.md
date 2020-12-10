@@ -364,6 +364,8 @@ refactor Fingertree
 	+ [x] move OrderedSequence to ...
 	+ [x] move RandomAccessSequence to ...
 	+ [x] move Annotation to Data.FingerTree
+* [x] refactor Data.View
+* [ ] refactor Data.FingerTree
 
 ### module name hierarchy
 
