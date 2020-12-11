@@ -18,3 +18,30 @@ data RangeL :: Nat -> Nat -> * -> * where
 	(:.) :: a -> RangeL (n - 1) (m - 1) a -> RangeL n m a
 
 deriving instance Show a => Show (RangeL n m a)
+
+instance Foldable (RangeL 0 0) where
+	foldr _ z NilL = z
+	foldr _ _ _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	Foldable (RangeL 0 (m - 1)) => Foldable (RangeL 0 m ) where
+	foldr _ z NilL = z
+	foldr (-<) z (x :.. xs) = x -< foldr (-<) z xs
+	foldr _ _ _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	Foldable (RangeL (n - 1) (m - 1)) => Foldable (RangeL n m) where
+	foldr (-<) z (x :. xs) = x -< foldr (-<) z xs
+	foldr _ _ _ = error "never occur"
+
+infixr 5 .:..
+
+class PushL n m where (.:..) :: a -> RangeL n m a -> RangeL n (m + 1) a
+
+{-
+instance PushL 0 m where (.:..) = (:..)
+
+instance {-# OVERLAPPABLE #-} PushL (n - 1) (m - 1) => PushL n m where
+	x .:.. (y :. ys) = x :. (y .:.. ys)
+	_ .:.. _ = error "never occur"
+	-}
