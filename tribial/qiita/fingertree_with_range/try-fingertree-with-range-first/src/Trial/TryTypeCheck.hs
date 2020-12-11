@@ -10,5 +10,5 @@ import Data.Proxy
 -- foo :: Proxy hoge -> Proxy piyo
 -- foo = id
 
--- bar :: (a + 1) ~ (b + 1) => Proxy a -> Proxy b
--- bar = id
+bar :: (a + 1) ~ (b + 1) => Proxy a -> Proxy b
+bar = id

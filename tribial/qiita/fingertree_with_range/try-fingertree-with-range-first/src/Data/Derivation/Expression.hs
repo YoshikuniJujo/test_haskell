@@ -5,6 +5,10 @@
 
 module Data.Derivation.Expression where
 
+import Prelude hiding ((<>))
+
+import Outputable (Outputable(..), (<>), (<+>), text)
+
 data Exp v t where
 	Bool :: Bool -> Exp v Bool
 	Var :: v -> Exp v a
@@ -17,3 +21,12 @@ data Exp v t where
 data Number
 
 deriving instance Show v => Show (Exp v t)
+
+instance Outputable v => Outputable (Exp v t) where
+	ppr (Bool b) = text "(Bool" <+> ppr b <> text ")"
+	ppr (Var v) = text "(Var" <+> ppr v <> text ")"
+	ppr (Const n) = text "(Const" <+> ppr n <> text ")"
+	ppr (l :== r) = text "(" <> ppr l <+> text ":==" <+> ppr r <> text ")"
+	ppr (l :<= r) = text "(" <> ppr l <+> text ":<=" <+> ppr r <> text ")"
+	ppr (l :+ r) = text "(" <> ppr l <+> text ":+" <+> ppr r <> text ")"
+	ppr (l :- r) = text "(" <> ppr l <+> text ":-" <+> ppr r <> text ")"

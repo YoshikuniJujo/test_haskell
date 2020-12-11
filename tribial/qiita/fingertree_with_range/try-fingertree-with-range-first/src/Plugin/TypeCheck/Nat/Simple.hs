@@ -6,6 +6,9 @@ module Plugin.TypeCheck.Nat.Simple where
 import GhcPlugins
 import TcPluginM
 import TcRnTypes
+import Control.Monad.Trans.Except
+
+import Plugin.TypeCheck.Nat.Simple.Decode
 
 plugin :: Plugin
 plugin = defaultPlugin { tcPlugin = const $ Just TcPlugin {
@@ -17,7 +20,12 @@ solve :: [Ct] -> [Ct] -> [Ct] -> TcPluginM TcPluginResult
 solve _ _ [] = pure $ TcPluginOk [] []
 solve gs ds ws = do
 	tcPluginTrace "!Plugin.TypeCheck.Nat.Simple" ""
-	tcPluginTrace "Given: " $ ppr gs
-	tcPluginTrace "Derived: " $ ppr ds
-	tcPluginTrace "Wanted: " $ ppr ws
+	tcPluginTrace "Given: " . ppr $ runExcept . unNomEq <$> gs
+	tcPluginTrace "Derived: " . ppr $ runExcept . unNomEq <$> ds
+	tcPluginTrace "Wanted: " . ppr $ runExcept . unNomEq <$> ws
 	pure $ TcPluginOk [] []
+
+unNomEq :: Ct -> Except Message (Type, Type)
+unNomEq ct = case classifyPredType . ctEvPred $ ctEvidence ct of
+	EqPred NomEq l r -> pure (l, r)
+	_ -> throwE "Cannot unNomEq"
