@@ -35,25 +35,25 @@ derivs ts = d where
 
 check :: (String -> Bool) -> Parse Derivs String
 check p = do
-	t <- Parse token
+	t <- parse token
 	bool empty (pure t) (p t)
 
 tkn :: String -> Parse Derivs String
 tkn s = do
-	t <- Parse token
+	t <- parse token
 	bool empty (pure t) (s == t)
 
 pExp :: Derivs -> Maybe (Integer, Derivs)
-Parse pExp = (\i is -> foldl (&) i is) <$> Parse term
+pExp = unparse $ (\i is -> foldl (&) i is) <$> parse term
 	<*> many (
-		((+) <$> (tkn "+" *> Parse term)) <|>
-		(subtract <$> (tkn "-" *> Parse term)) )
+		((+) <$> (tkn "+" *> parse term)) <|>
+		(subtract <$> (tkn "-" *> parse term)) )
 
 pTerm :: Derivs -> Maybe (Integer, Derivs)
-Parse pTerm = (\i is -> foldl (&) i is) <$> Parse num
+pTerm = unparse $ (\i is -> foldl (&) i is) <$> parse num
 	<*> many (
-		((*) <$> (tkn "*" *> Parse num)) <|>
-		(flip div <$> (tkn "/" *> Parse num)) )
+		((*) <$> (tkn "*" *> parse num)) <|>
+		(flip div <$> (tkn "/" *> parse num)) )
 
 pNum :: Derivs -> Maybe (Integer, Derivs)
-Parse pNum = read <$> check (all isDigit)
+pNum = unparse $ read <$> check (all isDigit)

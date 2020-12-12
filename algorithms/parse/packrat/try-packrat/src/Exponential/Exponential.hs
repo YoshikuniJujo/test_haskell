@@ -34,10 +34,10 @@ pOne :: Parse String Expression
 pOne = One <$ pick '1'
 
 pChar :: Parse String Char
-pChar = Parse \case "" -> Nothing; (c : cs) -> Just (c, cs)
+pChar = parse \case "" -> Nothing; (c : cs) -> Just (c, cs)
 
 succeed :: Parse String ()
-succeed = Parse \s -> Just ((), s)
+succeed = parse \s -> Just ((), s)
 
 pick :: Char -> Parse String Char
 pick = check . (==)

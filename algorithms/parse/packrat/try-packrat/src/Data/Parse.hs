@@ -1,27 +1,14 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Parse where
+module Data.Parse (Parse, parse, unparse) where
 
-import Control.Arrow
-import Control.Applicative
+import Control.Monad.State
 
-newtype Parse d a = Parse { unparse :: d -> Maybe (a, d) }
+type Parse d a = StateT d Maybe a
 
 parse :: (d -> Maybe (a, d)) -> Parse d a
-parse = Parse
+parse = StateT
 
-instance Functor (Parse t) where
-	f `fmap` Parse p = Parse \ts -> (f `first`) <$> p ts
-
-instance Applicative (Parse t) where
-	pure x = Parse \ts -> Just (x, ts)
-	Parse mf <*> mx =
-		Parse \ts -> mf ts >>= \(f, ts') -> (f <$> mx) `unparse` ts'
-
-instance Monad (Parse t) where
-	Parse p >>= f = Parse \ts -> p ts >>= \(x, ts') -> f x `unparse` ts'
-
-instance Alternative (Parse t) where
-	empty = Parse \_ -> Nothing
-	Parse p1 <|> Parse p2 = Parse \ts -> p1 ts <|> p2 ts
+unparse :: Parse d a -> d -> Maybe (a, d)
+unparse = runStateT

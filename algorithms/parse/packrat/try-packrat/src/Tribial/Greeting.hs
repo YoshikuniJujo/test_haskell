@@ -14,8 +14,8 @@ data Derivs = Derivs {
 	name :: Maybe (Token, Derivs),
 	token :: Maybe (Token, Derivs) }
 
-parse :: [Token] -> Maybe (Token, Token)
-parse ts = fst <$> message (derivs ts)
+parseIt :: [Token] -> Maybe (Token, Token)
+parseIt ts = fst <$> message (derivs ts)
 
 derivs :: [Token] -> Derivs
 derivs ts = d where
@@ -28,14 +28,14 @@ derivs ts = d where
 		_ -> Nothing
 
 pMessage :: Derivs -> Maybe ((Token, Token), Derivs)
-Parse pMessage = (,) <$> Parse pGreeting <*> Parse pName
+pMessage = unparse $ (,) <$> parse pGreeting <*> parse pName
 
 pGreeting :: Derivs -> Maybe (Token, Derivs)
-Parse pGreeting = do
-	t <- Parse token
+pGreeting = unparse do
+	t <- parse token
 	case t of Hello -> pure t; GoodBye -> pure t; _ -> empty
 
 pName :: Derivs -> Maybe (Token, Derivs)
-Parse pName = do
-	t <- Parse token
+pName = unparse do
+	t <- parse token
 	case t of World -> pure t; Yoshikuni -> pure t; _ -> empty
