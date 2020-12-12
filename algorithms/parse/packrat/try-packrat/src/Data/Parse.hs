@@ -8,6 +8,9 @@ import Control.Applicative
 
 newtype Parse d a = Parse { runParse :: d -> Maybe (a, d) }
 
+parse :: (d -> Maybe (a, d)) -> Parse d a
+parse = Parse
+
 instance Functor (Parse t) where
 	f `fmap` Parse p = Parse \ts -> (f `first`) <$> p ts
 
