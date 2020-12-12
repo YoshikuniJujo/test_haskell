@@ -16,35 +16,25 @@ type Op = Expression -> Expression -> Expression
 data Memo = Memo {
 	expr :: Maybe (Expression, Memo),
 	term :: Maybe (Expression, Memo),
-	open :: Maybe ((), Memo),
-	close :: Maybe ((), Memo),
-	add :: Maybe (Op, Memo),
-	sub :: Maybe (Op, Memo),
-	one :: Maybe (Expression, Memo),
 	char :: Maybe (Char, Memo) }
 
 memo :: String -> Memo
 memo cs = m where
-	m = Memo ex tm op cl ad sb on ch
+	m = Memo ex tm ch
 	ex = unparse pExpr m
 	tm = unparse pTerm m
-	op = unparse pOpen m
-	cl = unparse pClose m
-	ad = unparse pAdd m
-	sb = unparse pSub m
-	on = unparse pOne m
 	ch = (memo `second`) <$> uncons cs
 
 parseIt :: (Memo -> Maybe (a, Memo)) -> String -> Maybe a
 parseIt nts src = fst <$> nts (memo src)
 
 pExpr :: Parse Memo Expression
-pExpr =	(:+) <$> parse term <* parse add <*> parse expr <|>
-	(:-) <$> parse term <* parse sub <*> parse expr <|>
+pExpr =	(:+) <$> parse term <* pAdd <*> parse expr <|>
+	(:-) <$> parse term <* pAdd <*> parse expr <|>
 	parse term
 
 pTerm :: Parse Memo Expression
-pTerm = parse open *> parse expr <* parse close <|> parse one
+pTerm = pOpen *> parse expr <* pClose <|> pOne
 
 pOpen :: Parse Memo ()
 pOpen = () <$ pick '('
