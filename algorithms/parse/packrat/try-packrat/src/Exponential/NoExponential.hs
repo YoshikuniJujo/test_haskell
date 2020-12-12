@@ -3,54 +3,48 @@
 module Exponential.NoExponential where
 
 import Control.Applicative
+import Control.Arrow
 import Data.Bool
+import Data.List
 import Data.Parse
 
-data Expression
-	= One
-	| Expression :+ Expression
-	| Expression :- Expression
+data Expression = One | Expression :+ Expression | Expression :- Expression
 	deriving Show
 
 type Op = Expression -> Expression -> Expression
 
 data Memo = Memo {
-	aa :: Maybe (Expression, Memo),
-	pp :: Maybe (Expression, Memo),
+	expr :: Maybe (Expression, Memo),
+	term :: Maybe (Expression, Memo),
 	open :: Maybe ((), Memo),
 	close :: Maybe ((), Memo),
-	one :: Maybe (Expression, Memo),
 	add :: Maybe (Op, Memo),
 	sub :: Maybe (Op, Memo),
+	one :: Maybe (Expression, Memo),
 	char :: Maybe (Char, Memo) }
 
 memo :: String -> Memo
 memo cs = m where
-	m = Memo a p op cl on ad sb ch
-	a = runParse pA m
-	p = runParse pP m
-	op = runParse pOpen m
-	cl = runParse pClose m
-	on = runParse pOne m
-	ad = runParse pAdd m
-	sb = runParse pSub m
-	ch = case cs of
-		c : cs' -> Just (c, memo cs')
-		_ -> Nothing
+	m = Memo ex tm op cl ad sb on ch
+	ex = unparse pExpr m
+	tm = unparse pTerm m
+	op = unparse pOpen m
+	cl = unparse pClose m
+	ad = unparse pAdd m
+	sb = unparse pSub m
+	on = unparse pOne m
+	ch = (memo `second`) <$> uncons cs
 
-check :: (Char -> Bool) -> Parse Memo Char
-check p = parse char >>= \c -> bool empty (pure c) (p c)
+parseIt :: (Memo -> Maybe (a, Memo)) -> String -> Maybe a
+parseIt nts src = fst <$> nts (memo src)
 
-pick :: Char -> Parse Memo Char
-pick = check . (==)
+pExpr :: Parse Memo Expression
+pExpr =	(:+) <$> parse term <* parse add <*> parse expr <|>
+	(:-) <$> parse term <* parse sub <*> parse expr <|>
+	parse term
 
-pA :: Parse Memo Expression
-pA =	(:+) <$> parse pp <* parse add <*> parse aa <|>
-	(:-) <$> parse pp <* parse sub <*> parse aa <|>
-	parse pp
-
-pP :: Parse Memo Expression
-pP = parse open *> parse aa <* parse close <|> parse one
+pTerm :: Parse Memo Expression
+pTerm = parse open *> parse expr <* parse close <|> parse one
 
 pOpen :: Parse Memo ()
 pOpen = () <$ pick '('
@@ -64,6 +58,12 @@ pSub = (:-) <$ pick '-'
 
 pOne :: Parse Memo Expression
 pOne = One <$ pick '1'
+
+pick :: Char -> Parse Memo Char
+pick = check . (==)
+
+check :: (Char -> Bool) -> Parse Memo Char
+check p = parse char >>= \c -> bool empty (pure c) (p c)
 
 sampleSrc' :: String
 sampleSrc' = "((((((((((((1))))))))))))"

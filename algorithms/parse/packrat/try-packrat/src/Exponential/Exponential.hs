@@ -7,50 +7,43 @@ import Control.Applicative
 import Data.Bool
 import Data.Parse
 
-parseChar :: Parse String Char
-parseChar = Parse \case "" -> Nothing; (c : cs) -> Just (c, cs)
-
-parseEnd :: Parse String ()
-parseEnd = Parse \case "" -> Just ((), ""); _ -> Nothing
-
-succeed :: Parse String ()
-succeed = Parse \s -> Just ((), s)
-
-check :: (Char -> Bool) -> Parse String Char
-check p = parseChar >>= \c -> bool empty (pure c) (p c)
-
-pick :: Char -> Parse String Char
-pick = check . (==)
-
-data Expression
-	= One
-	| Expression :+ Expression
-	| Expression :- Expression
+data Expression = One | Expression :+ Expression | Expression :- Expression
 	deriving Show
 
 type Op = Expression -> Expression -> Expression
 
-parseOpen :: Parse String ()
-parseOpen = () <$ pick '('
+pExpr :: Parse String Expression
+pExpr =	(:+) <$> pTerm <* pAdd <*> pExpr <|>
+	(:-) <$> pTerm <* pSub <*> pExpr <|>
+	pTerm
 
-parseClose :: Parse String ()
-parseClose = () <$ pick ')'
+pTerm :: Parse String Expression
+pTerm = pOpen *> pExpr <* pClose <|> pOne
 
-parseAdd, parseSub :: Parse String Op
-parseAdd = (:+) <$ pick '+'
-parseSub = (:-) <$ pick '-'
+pOpen :: Parse String ()
+pOpen = () <$ pick '('
 
-parseOne :: Parse String Expression
-parseOne = One <$ pick '1'
+pClose :: Parse String ()
+pClose = () <$ pick ')'
 
-parseA :: Parse String Expression
-parseA =
-	(:+) <$> parseP <* parseAdd <*> parseA <|>
-	(:-) <$> parseP <* parseSub <*> parseA <|>
-	parseP
+pAdd, pSub :: Parse String Op
+pAdd = (:+) <$ pick '+'
+pSub = (:-) <$ pick '-'
 
-parseP :: Parse String Expression
-parseP = parseOpen *> parseA <* parseClose <|> parseOne
+pOne :: Parse String Expression
+pOne = One <$ pick '1'
+
+pChar :: Parse String Char
+pChar = Parse \case "" -> Nothing; (c : cs) -> Just (c, cs)
+
+succeed :: Parse String ()
+succeed = Parse \s -> Just ((), s)
+
+pick :: Char -> Parse String Char
+pick = check . (==)
+
+check :: (Char -> Bool) -> Parse String Char
+check p = pChar >>= \c -> bool empty (pure c) (p c)
 
 sampleSrc :: String
 sampleSrc = "((((((((((((1))))))))))))"
