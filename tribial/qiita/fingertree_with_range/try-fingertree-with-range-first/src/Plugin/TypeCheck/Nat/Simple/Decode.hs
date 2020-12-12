@@ -3,14 +3,29 @@
 
 module Plugin.TypeCheck.Nat.Simple.Decode where
 
-import GhcPlugins (Var)
+import GhcPlugins (Var, promotedFalseDataCon, promotedTrueDataCon)
 import TyCoRep
 import TcTypeNats
 import Outputable (Outputable(..), SDoc, (<+>), text)
+import Control.Applicative ((<|>))
 import Control.Monad.Trans.Except
 import Data.String
 
 import Data.Derivation.Expression
+
+decode :: Type -> Type -> Except Message (Exp Var Bool)
+decode (TyVarTy l) r = le <$> exVar r <|> le <$> exNum r <|> le <$> exBool r
+	where le = (Var l :==)
+decode l r = (:==) <$> exNum l <*> exNum r <|> (:==) <$> exBool l <*> exBool r
+
+exBool :: Type -> Except Message (Exp Var Bool)
+exBool (TyVarTy v) = pure $ Var v
+exBool (TyConApp tc [])
+	| tc == promotedFalseDataCon = pure $ Bool False
+	| tc == promotedTrueDataCon = pure $ Bool True
+exBool (TyConApp tc [l, r])
+	| tc == typeNatLeqTyCon = (:<=) <$> exNum l <*> exNum r
+exBool _ = throwE "exBool: fail"
 
 exNum :: Type -> Except Message (Exp Var Number)
 exNum (TyVarTy v) = pure $ Var v
