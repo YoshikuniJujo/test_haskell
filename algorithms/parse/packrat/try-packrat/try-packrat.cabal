@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2177728c06c0a6f8b1ff2ff23357f4fded01aa58be8b73db643d043a05ab737a
+-- hash: 6fa5a12b4159c9a1ff00c09182ae5190e38c3dda6b1db0b452633c8b9c29aecf
 
 name:           try-packrat
 version:        0.1.0.0
@@ -28,6 +28,8 @@ source-repository head
 library
   exposed-modules:
       Data.Parse
+      Exponential.Exponential
+      Exponential.NoExponential
       Lib
       Tribial.Calc
       Tribial.Greeting
