@@ -36,12 +36,12 @@ derivs ts = d where
 check :: (String -> Bool) -> Parse Derivs String
 check p = do
 	t <- Parse token
-	bool (fail "parse fail") (pure t) (p t)
+	bool empty (pure t) (p t)
 
 tkn :: String -> Parse Derivs String
 tkn s = do
 	t <- Parse token
-	bool (fail "parse fail") (pure t) (s == t)
+	bool empty (pure t) (s == t)
 
 pExp :: Derivs -> Maybe (Integer, Derivs)
 Parse pExp = (\i is -> foldl (&) i is) <$> Parse term

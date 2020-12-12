@@ -3,6 +3,7 @@
 
 module Tribial.Greeting where
 
+import Control.Applicative
 import Data.Parse
 
 data Token = Hello | GoodBye | World | Yoshikuni deriving Show
@@ -32,9 +33,9 @@ Parse pMessage = (,) <$> Parse pGreeting <*> Parse pName
 pGreeting :: Derivs -> Maybe (Token, Derivs)
 Parse pGreeting = do
 	t <- Parse token
-	case t of Hello -> pure t; GoodBye -> pure t; _ -> fail "parse fail"
+	case t of Hello -> pure t; GoodBye -> pure t; _ -> empty
 
 pName :: Derivs -> Maybe (Token, Derivs)
 Parse pName = do
 	t <- Parse token
-	case t of World -> pure t; Yoshikuni -> pure t; _ -> fail "parse fail"
+	case t of World -> pure t; Yoshikuni -> pure t; _ -> empty

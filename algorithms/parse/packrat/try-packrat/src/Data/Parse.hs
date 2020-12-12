@@ -19,8 +19,6 @@ instance Applicative (Parse t) where
 instance Monad (Parse t) where
 	Parse p >>= f = Parse \ts -> p ts >>= \(x, ts') -> f x `runParse` ts'
 
-instance MonadFail (Parse t) where fail _ = Parse \_ -> Nothing
-
 instance Alternative (Parse t) where
 	empty = Parse \_ -> Nothing
 	Parse p1 <|> Parse p2 = Parse \ts -> p1 ts <|> p2 ts
