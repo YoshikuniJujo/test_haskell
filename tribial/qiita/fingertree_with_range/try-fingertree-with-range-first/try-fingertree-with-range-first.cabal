@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 197cd66887765f78a8e206bcbc3e7ba03da14774ffa628e389ff2e1c5a19bef5
+-- hash: 36fbd93cedc3bad1a41359bda503f7ef96daf3f9e46a17c425933b3c6e9d7477
 
 name:           try-fingertree-with-range-first
 version:        0.1.0.0
@@ -30,6 +30,7 @@ library
       Data.Derivation.Expression
       Data.FingerTree.NoRange
       Data.List.Range.RangeL
+      Data.Parse
       Lib
       Plugin.TypeCheck.Nat.Simple
       Plugin.TypeCheck.Nat.Simple.Decode
@@ -41,6 +42,7 @@ library
   build-depends:
       base >=4.7 && <5
     , ghc
+    , monads-tf
     , transformers
   default-language: Haskell2010
 
@@ -54,6 +56,7 @@ executable try-fingertree-with-range-first-exe
   build-depends:
       base >=4.7 && <5
     , ghc
+    , monads-tf
     , transformers
     , try-fingertree-with-range-first
   default-language: Haskell2010
@@ -69,6 +72,7 @@ test-suite try-fingertree-with-range-first-test
   build-depends:
       base >=4.7 && <5
     , ghc
+    , monads-tf
     , transformers
     , try-fingertree-with-range-first
   default-language: Haskell2010
