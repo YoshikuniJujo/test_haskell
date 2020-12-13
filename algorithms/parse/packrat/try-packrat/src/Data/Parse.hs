@@ -1,4 +1,3 @@
-{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Parse (Parse, parse, unparse) where
