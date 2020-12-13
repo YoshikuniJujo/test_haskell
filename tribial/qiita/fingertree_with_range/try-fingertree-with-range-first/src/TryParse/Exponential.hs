@@ -8,21 +8,13 @@ import Data.Bool
 import Data.List
 import Data.Parse
 
-data Expression = One | Expression :+ Expression | Expression :- Expression
-	deriving Show
+data Expression = One | Expression :+ Expression deriving Show
 
 type Op = Expression -> Expression -> Expression
 
-pOpen, pClose :: Parse String ()
-pOpen = () <$ pick '('
-pClose = () <$ pick ')'
-
-pAdd, pSub :: Parse String Op
-pAdd = (:+) <$ pick '+'
-pSub = (:-) <$ pick '-'
-
-pOne :: Parse String Expression
-pOne = One <$ pick '1'
+pExpr, pTerm :: Parse String Expression
+pExpr =	(:+) <$> pTerm <* pick '+' <*> pExpr <|> pTerm
+pTerm = pick '(' *> pExpr <* pick ')' <|> One <$ pick '1'
 
 pChar :: Parse String Char
 pChar = parse uncons
