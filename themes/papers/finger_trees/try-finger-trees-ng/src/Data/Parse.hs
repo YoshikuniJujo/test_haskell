@@ -3,32 +3,21 @@
 
 module Data.Parse (Parse, parse, unparse, (>>!), maybeToParse) where
 
-import Control.Arrow (first)
-import Control.Applicative (Alternative(..))
+import Control.Applicative (empty)
 import Control.Monad ((>=>))
+import Control.Monad.State (StateT(..))
+
+type Parse s a = StateT s Maybe a
 
 parse :: (s -> Maybe (a, s)) -> Parse s a
-parse = Parse
+parse = StateT
 
-newtype Parse s a = Parse { unparse :: s -> Maybe (a, s) }
-
-instance Functor (Parse s) where
-	f `fmap` Parse p = Parse $ ((f `first`) <$>) . p
-
-instance Applicative (Parse t) where
-	pure x = Parse \s -> Just (x, s)
-	Parse pf <*> mx = Parse $ pf >=> \(f, s') -> (f <$> mx) `unparse` s'
-
-instance Monad (Parse t) where
-	Parse p >>= f = Parse $ p >=> \(x, s') -> f x `unparse` s'
-
-instance Alternative (Parse t) where
-	empty = Parse $ const Nothing
-	Parse l <|> Parse r = Parse \s -> l s <|> r s
+unparse :: Parse s a -> s -> Maybe (a, s)
+unparse = runStateT
 
 (>>!) :: Parse s a -> Parse s b -> Parse s a
-Parse p >>! Parse nla =
-	Parse $ p >=> \r@(_, s') -> maybe (pure r) (const empty) $ nla s'
+p >>! nla =
+	parse $ unparse p >=> \r@(_, s') -> maybe (pure r) (const empty) $ unparse nla s'
 
 maybeToParse :: Maybe a -> Parse s a
-maybeToParse mx = Parse \s -> (, s) <$> mx
+maybeToParse mx = parse \s -> (, s) <$> mx
