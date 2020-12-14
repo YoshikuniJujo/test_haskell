@@ -407,7 +407,7 @@ refactor Derivation Parser
 	+ [x] structure
 	+ [ ] body
 		- [x] PARSE
-		- [ ] MEMO
+		- [x] MEMO
 		- [ ] GRAMMER
 			* [ ] CHECKEE, GIVEN AND WANTED
 			* [ ] CONSTRAINT

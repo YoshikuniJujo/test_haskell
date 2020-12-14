@@ -1,4 +1,8 @@
 given: {
+	b == T
+	b == x <= 4
+	F == bb
+	y <= 4 == bb
 	m + n <= 3
 	m - n <= 4 == F }
 

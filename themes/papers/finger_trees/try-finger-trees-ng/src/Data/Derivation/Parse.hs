@@ -42,8 +42,8 @@ data Memo = Memo {
 	given :: Maybe (Given Var, Memo),
 	wanted :: Maybe (Wanted Var, Memo),
 	constraint :: Maybe (Exp Var Bool, Memo),
-	bool :: Maybe (Exp Var Bool, Memo),
 	equal :: Maybe (Exp Var Bool, Memo),
+	bool :: Maybe (Exp Var Bool, Memo),
 	lessEqual :: Maybe (Exp Var Bool, Memo),
 	polynomial :: Maybe (Exp Var Number, Memo),
 	number :: Maybe (Exp Var Number, Memo),
@@ -53,13 +53,13 @@ type Var = String
 
 memo :: [String] -> Memo
 memo ts = m where
-	m = Memo ck gv wt ct bl eq le pl nm tk
+	m = Memo ck gv wt ct eq bl le pl nm tk
 	ck = unparse pCheckee m
 	gv = unparse pGiven m
 	wt = unparse pWanted m
 	ct = unparse pConstraint m
-	bl = unparse pBool m
 	eq = unparse pEqual m
+	bl = unparse pBool m
 	le = unparse pLessEqual m
 	pl = unparse pPolynomial m
 	nm = unparse pNumber m
@@ -96,15 +96,15 @@ pConstraint = parse equal <|> parse lessEqual
 
 pEqual :: Parse Memo (Exp Var Bool)
 pEqual =
-	(:==) <$> var <* pick "==" <*> var >>! (pick "+" <|> pick "-") <|>
-	(:==) <$> var <* pick "==" <*> parse polynomial <|>
+	(:==) <$> var <* pick "==" <*> var >>! (pick "+" <|> pick "-" <|> pick "<=") <|>
+	(:==) <$> var <* pick "==" <*> parse polynomial >>! pick "<=" <|>
 	(:==) <$> var <* pick "==" <*> parse bool <|>
 	(:==) <$> parse polynomial <* pick "==" <*> parse polynomial <|>
 	(:==) <$> parse bool <* pick "==" <*> parse bool
 	where var = Var <$> check (all isLower)
 
 pBool :: Parse Memo (Exp Var Bool)
-pBool = parse lessEqual <|> Bool False <$ pick "F" <|> Bool True <$ pick "T"
+pBool = parse lessEqual <|> Bool False <$ pick "F" <|> Bool True <$ pick "T" <|> Var <$> check (all isLower)
 
 pLessEqual :: Parse Memo (Exp Var Bool)
 pLessEqual = (:<=) <$> parse polynomial <* pick "<=" <*> parse polynomial
