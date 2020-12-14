@@ -42,4 +42,15 @@ pNumber =
 	pick "(" *> parse polynomial <* pick ")"
 
 memo :: [String] -> Memo
-memo ts = undefined
+memo ts = m where
+	m = Memo ct eq bl le pl nm tk
+	ct = undefined
+	eq = undefined
+	bl = undefined
+	le = undefined
+	pl = unparse pPolynomial m
+	nm = unparse pNumber m
+	tk = (memo `second`) <$> uncons ts
+
+tokens :: String -> [String]
+tokens = unfoldr (listToMaybe . lex)
