@@ -1,0 +1,5 @@
+given: {
+	m + n <= 3
+	m - n <= 4 == F }
+
+wanted: m + n == m - n

@@ -31,7 +31,7 @@ import qualified Data.Bool as B (bool)
 ---------------------------------------------------------------------------
 
 parseIt :: (Memo -> Maybe (a, Memo)) -> String -> Maybe a
-parseIt n = (fst <$>) . n . memo . unfoldr (listToMaybe . lex)
+parseIt nts = (fst <$>) . nts . memo . unfoldr (listToMaybe . lex)
 
 ---------------------------------------------------------------------------
 -- MEMO
@@ -53,10 +53,16 @@ type Var = String
 
 memo :: [String] -> Memo
 memo ts = m where
-	m = Memo gw gv wt ct bl eq le ex nm tk
-	gw = unparse pCheckee m; gv = unparse pGiven m; wt = unparse pWanted m
-	ct = unparse pConstraint m; bl = unparse pBool m; eq = unparse pEqual m; le = unparse pLessEqual m
-	ex = unparse pPolynomial m; nm = unparse pNumber m
+	m = Memo ck gv wt ct bl eq le pl nm tk
+	ck = unparse pCheckee m
+	gv = unparse pGiven m
+	wt = unparse pWanted m
+	ct = unparse pConstraint m
+	bl = unparse pBool m
+	eq = unparse pEqual m
+	le = unparse pLessEqual m
+	pl = unparse pPolynomial m
+	nm = unparse pNumber m
 	tk = (memo `second`) <$> uncons ts
 
 check :: (String -> Bool) -> Parse Memo String
@@ -86,14 +92,7 @@ pWanted = maybeToParse . mkWanted
 -- CONSTRAINT
 
 pConstraint :: Parse Memo (Exp Var Bool)
-pConstraint =
-	parse equal <|> parse lessEqual <|>
-	Bool False <$ pick "F" <|> Bool True <$ pick "T"
-
-pBool :: Parse Memo (Exp Var Bool)
-pBool =
-	pick "(" *> parse equal <* pick ")" <|> parse lessEqual <|>
-	Bool False <$ pick "F" <|> Bool True <$ pick "T"
+pConstraint = parse equal <|> parse lessEqual
 
 pEqual :: Parse Memo (Exp Var Bool)
 pEqual =
@@ -103,6 +102,9 @@ pEqual =
 	(:==) <$> parse polynomial <* pick "==" <*> parse polynomial <|>
 	(:==) <$> parse bool <* pick "==" <*> parse bool
 	where var = Var <$> check (all isLower)
+
+pBool :: Parse Memo (Exp Var Bool)
+pBool = parse lessEqual <|> Bool False <$ pick "F" <|> Bool True <$ pick "T"
 
 pLessEqual :: Parse Memo (Exp Var Bool)
 pLessEqual = (:<=) <$> parse polynomial <* pick "<=" <*> parse polynomial
