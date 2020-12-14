@@ -2,8 +2,6 @@
 
 module Trial.TypeCheck.TryTypeCheck where
 
-import Data.Maybe
-
 import Data.Derivation.CanDerive
 import Data.Derivation.Parse
 
@@ -24,6 +22,6 @@ Just (Wanted (wanted3 : _)) = expToWanted =<< parse bool "((u + lm) == z)"
 -}
 
 given3 :: Given String
-given3 = mkGiven . catMaybes $ parseIt bool <$> [
-	"(k == (m - 1))", "(u == (m + 1))", "(lm == (mm - 1))", "(li == (n - 1))",
-	"(u == (m + 1))", "(z == (m + mm))", "(1 <= mm)", "(1 <= u)", "(1 <= z)" ]
+Just given3 = parseIt given . ("given: {" ++) . (++ "}") $ unwords [
+	"k == m - 1", "u == m + 1", "lm == mm - 1", "li == n - 1",
+	"u == m + 1", "z == m + mm", "1 <= mm", "1 <= u", "1 <= z" ]

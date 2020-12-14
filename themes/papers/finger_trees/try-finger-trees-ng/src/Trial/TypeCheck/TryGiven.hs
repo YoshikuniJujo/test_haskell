@@ -2,31 +2,21 @@
 
 module Trial.TypeCheck.TryGiven where
 
-import Data.Map.Strict
-
 import Data.Derivation.CanDerive
-import Data.Derivation.Constraint
-import Data.Derivation.Parse hiding (given)
-import Data.Derivation.Expression
+import Data.Derivation.Parse
 
-{-
-createGiven :: [String] -> Maybe (Given String)
-createGiven ss = do
-	zs <- createZero `mapM` ss
-	pure $ given zs
-	-}
+createGiven :: String -> Maybe (Given String)
+createGiven = parseIt given
 
-createZero :: String -> Maybe (Constraint String)
-createZero s = do
-	e <- parseIt bool s
-	fst $ mkConstraint empty e
+sampleGiven :: Given String
+Just sampleGiven =
+	createGiven . ("given: {" ++) . (++ "}") $ unwords sampleExps1
 
 sampleExps1 :: [String]
 sampleExps1 = [
-	"((m + n) == 1)",
-	"(((m + m) + n) == 2)",
-	"(((m + n) + n) <= 5)"
-	]
+	"m + n == 1",
+	"m + m + n == 2",
+	"m + n + n <= 5" ]
 
 {-
 sampleGiven1 :: Given String
