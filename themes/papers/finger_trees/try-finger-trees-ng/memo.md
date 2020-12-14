@@ -404,5 +404,11 @@ refactor Derivation Parser
 * [ ] refactor Data.Derivation.Parse
 	+ [x] export list
 	+ [x] import list
-	+ [ ] structure
+	+ [x] structure
 	+ [ ] body
+		- [ ] PARSE
+		- [ ] MEMO
+		- [ ] GRAMMER
+			* [ ] CHECKEE, GIVEN AND WANTED
+			* [ ] CONSTRAINT
+			* [ ] POLYNOMIAL

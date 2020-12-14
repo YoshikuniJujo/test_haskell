@@ -20,7 +20,7 @@ import qualified Data.Bool as B (bool)
 -- * PARSE
 -- * MEMO
 -- * GRAMMAR
---	+ GIVEN WANTED, GIVEN AND WANTED
+--	+ CHECKEE, GIVEN AND WANTED
 --	+ CONSTRAINT
 --	+ POLYNOMIAL
 --
@@ -69,7 +69,7 @@ pick = check . (==)
 -- GRAMMAR
 ---------------------------------------------------------------------------
 
--- GIVEN WANTED, GIVEN AND WANTED
+-- CHECKEE, GIVEN AND WANTED
 
 pCheckee :: Parse Memo (Given Var, Wanted Var)
 pCheckee = (,) <$> parse given <*> parse wanted
