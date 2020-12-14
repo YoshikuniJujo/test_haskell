@@ -96,7 +96,8 @@ pConstraint = parse equal <|> parse lessEqual
 
 pEqual :: Parse Memo (Exp Var Bool)
 pEqual =
-	(:==) <$> var <* pick "==" <*> var >>! (pick "+" <|> pick "-" <|> pick "<=") <|>
+	(:==) <$> var <* pick "==" <*> var
+		>>! (pick "+" <|> pick "-" <|> pick "<=") <|>
 	(:==) <$> var <* pick "==" <*> parse polynomial >>! pick "<=" <|>
 	(:==) <$> var <* pick "==" <*> parse bool <|>
 	(:==) <$> parse polynomial <* pick "==" <*> parse polynomial <|>
@@ -104,7 +105,9 @@ pEqual =
 	where var = Var <$> check (all isLower)
 
 pBool :: Parse Memo (Exp Var Bool)
-pBool = parse lessEqual <|> Bool False <$ pick "F" <|> Bool True <$ pick "T" <|> Var <$> check (all isLower)
+pBool =	parse lessEqual <|>
+	Bool False <$ pick "F" <|> Bool True <$ pick "T" <|>
+	Var <$> check (all isLower)
 
 pLessEqual :: Parse Memo (Exp Var Bool)
 pLessEqual = (:<=) <$> parse polynomial <* pick "<=" <*> parse polynomial
@@ -113,8 +116,8 @@ pLessEqual = (:<=) <$> parse polynomial <* pick "<=" <*> parse polynomial
 
 pPolynomial :: Parse Memo (Exp Var Number)
 pPolynomial = foldl (&) <$> parse number <*> many (
-	(flip (:+) <$> (pick "+" *> parse number)) <|>
-	(flip (:-) <$> (pick "-" *> parse number)) )
+	flip (:+) <$> (pick "+" *> parse number) <|>
+	flip (:-) <$> (pick "-" *> parse number) )
 
 pNumber :: Parse Memo (Exp Var Number)
 pNumber =

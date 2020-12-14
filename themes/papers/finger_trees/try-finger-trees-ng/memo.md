@@ -401,14 +401,14 @@ refactor Derivation Parser
 * [x] use parse instead of data constructor Parse
 * [x] remove variable
 * [x] refactor Data.Parse
-* [ ] refactor Data.Derivation.Parse
+* [x] refactor Data.Derivation.Parse
 	+ [x] export list
 	+ [x] import list
 	+ [x] structure
-	+ [ ] body
+	+ [x] body
 		- [x] PARSE
 		- [x] MEMO
-		- [ ] GRAMMER
-			* [ ] CHECKEE, GIVEN AND WANTED
-			* [ ] CONSTRAINT
-			* [ ] POLYNOMIAL
+		- [x] GRAMMER
+			* [x] CHECKEE, GIVEN AND WANTED
+			* [x] CONSTRAINT
+			* [x] POLYNOMIAL
