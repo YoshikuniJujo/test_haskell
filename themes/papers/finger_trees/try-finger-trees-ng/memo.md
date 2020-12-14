@@ -400,5 +400,9 @@ refactor Derivation Parser
 * [x] use unparse instead of Parse pattern
 * [x] use parse instead of data constructor Parse
 * [x] remove variable
-* [ ] refactor Data.Parse
+* [x] refactor Data.Parse
 * [ ] refactor Data.Derivation.Parse
+	+ [ ] export list
+	+ [ ] import list
+	+ [ ] structure
+	+ [ ] body
