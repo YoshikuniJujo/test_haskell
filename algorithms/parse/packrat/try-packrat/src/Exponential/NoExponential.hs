@@ -8,10 +8,10 @@ import Data.Bool
 import Data.List
 import Data.Parse
 
-data Expression = One | Expression :+ Expression | Expression :- Expression
-	deriving Show
+parseExpr :: String -> Maybe Expression
+parseExpr src = fst <$> expr (memo src)
 
-type Op = Expression -> Expression -> Expression
+data Expression = One | Expression :+ Expression deriving Show
 
 data Memo = Memo {
 	expr :: Maybe (Expression, Memo),
@@ -25,29 +25,11 @@ memo cs = m where
 	tm = unparse pTerm m
 	ch = (memo `second`) <$> uncons cs
 
-parseIt :: (Memo -> Maybe (a, Memo)) -> String -> Maybe a
-parseIt nts src = fst <$> nts (memo src)
-
 pExpr :: Parse Memo Expression
-pExpr =	(:+) <$> parse term <* pAdd <*> parse expr <|>
-	(:-) <$> parse term <* pAdd <*> parse expr <|>
-	parse term
+pExpr =	(:+) <$> parse term <* pick '+' <*> parse expr <|> parse term
 
 pTerm :: Parse Memo Expression
-pTerm = pOpen *> parse expr <* pClose <|> pOne
-
-pOpen :: Parse Memo ()
-pOpen = () <$ pick '('
-
-pClose :: Parse Memo ()
-pClose = () <$ pick ')'
-
-pAdd, pSub :: Parse Memo Op
-pAdd = (:+) <$ pick '+'
-pSub = (:-) <$ pick '-'
-
-pOne :: Parse Memo Expression
-pOne = One <$ pick '1'
+pTerm = pick '(' *> parse expr <* pick ')' <|> One <$ pick '1'
 
 pick :: Char -> Parse Memo Char
 pick = check . (==)

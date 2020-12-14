@@ -9,11 +9,8 @@ import Data.Parse
 
 data Expression = One | Expression :+ Expression deriving Show
 
-type Op = Expression -> Expression -> Expression
-
 pExpr :: Parse String Expression
-pExpr =	(:+) <$> pTerm <* pick '+' <*> pExpr <|>
-	pTerm
+pExpr =	(:+) <$> pTerm <* pick '+' <*> pExpr <|> pTerm
 
 pTerm :: Parse String Expression
 pTerm = pick '(' *> pExpr <* pick ')' <|> One <$ pick '1'
