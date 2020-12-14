@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Parse (Parse(..), parse, unparse, (>>!), maybeToParse) where
+module Data.Parse (Parse, parse, unparse, (>>!), maybeToParse) where
 
 import Control.Arrow (first)
 import Control.Applicative (Alternative(..))

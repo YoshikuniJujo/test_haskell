@@ -393,10 +393,10 @@ refactor Derivation Parser
 
 * [ ] refactor Data.Parse
 	+ [x] make unparse and parse
-	+ [ ] export list
+	+ [x] export list
 		- [x] add parse and unparse
-		- [ ] remove Parse(..)
+		- [x] remove Parse(..)
 	+ [ ] use StateT
 * [x] use unparse instead of Parse pattern
-* [ ] use parse instead of data constructor Parse
+* [x] use parse instead of data constructor Parse
 * [ ] remove variable
