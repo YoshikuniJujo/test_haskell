@@ -23,3 +23,9 @@ data Memo = Memo {
 	token :: Maybe (String, Memo) }
 
 type Var = String
+
+check :: (String -> Bool) -> Parse Memo String
+check p = parse token >>= \t -> B.bool empty (pure t) (p t)
+
+pick :: String -> Parse Memo String
+pick = check . (==)
