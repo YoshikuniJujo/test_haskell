@@ -100,7 +100,7 @@ equal <-
 	var '==' polynomial !'<=' /
 	var '==' bool /
 	polynomial '==' polynomial /
-	bool '==' bool'
+	bool '==' bool
 
 bool <-	lessEqual / 'F' / 'T' / var
 
