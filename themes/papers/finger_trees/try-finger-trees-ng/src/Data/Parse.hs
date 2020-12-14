@@ -1,23 +1,26 @@
 {-# LANGUAGE BlockArguments, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Parse (Parse(..), (>>!), maybeToParse) where
+module Data.Parse (Parse(..), parse, unparse, (>>!), maybeToParse) where
 
 import Control.Arrow (first)
 import Control.Applicative (Alternative(..))
 import Control.Monad ((>=>))
 
-newtype Parse s a = Parse { runParse :: s -> Maybe (a, s) }
+parse :: (s -> Maybe (a, s)) -> Parse s a
+parse = Parse
+
+newtype Parse s a = Parse { unparse :: s -> Maybe (a, s) }
 
 instance Functor (Parse s) where
 	f `fmap` Parse p = Parse $ ((f `first`) <$>) . p
 
 instance Applicative (Parse t) where
 	pure x = Parse \s -> Just (x, s)
-	Parse pf <*> mx = Parse $ pf >=> \(f, s') -> (f <$> mx) `runParse` s'
+	Parse pf <*> mx = Parse $ pf >=> \(f, s') -> (f <$> mx) `unparse` s'
 
 instance Monad (Parse t) where
-	Parse p >>= f = Parse $ p >=> \(x, s') -> f x `runParse` s'
+	Parse p >>= f = Parse $ p >=> \(x, s') -> f x `unparse` s'
 
 instance Alternative (Parse t) where
 	empty = Parse $ const Nothing
