@@ -91,6 +91,23 @@ pWanted = maybeToParse . mkWanted
 
 -- CONSTRAINT
 
+{-
+
+constraint <- equal / lessEqual
+
+equal <-
+	var '==' var !'+' !'-' !'<=' /
+	var '==' polynomial !'<=' /
+	var '==' bool /
+	polynomial '==' polynomial /
+	bool '==' bool'
+
+bool <-	lessEqual / 'F' / 'T' / var
+
+lessEqual <- polynomial '<=' polynomial
+
+-}
+
 pConstraint :: Parse Memo (Exp Var Bool)
 pConstraint = parse equal <|> parse lessEqual
 
