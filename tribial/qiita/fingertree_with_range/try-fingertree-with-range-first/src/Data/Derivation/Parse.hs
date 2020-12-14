@@ -41,13 +41,34 @@ pNumber =
 	Const . read <$> check (all isDigit) <|> Var <$> check (all isLower) <|>
 	pick "(" *> parse polynomial <* pick ")"
 
+pConstraint :: Parse Memo (Exp Var Bool)
+pConstraint = parse equal <|> parse lessEqual
+
+pEqual :: Parse Memo (Exp Var Bool)
+pEqual =
+	(:==) <$> var <* pick "==" <*> var
+		>>! (pick "+" <|> pick "-" <|> pick "<=") <|>
+	(:==) <$> var <* pick "==" <*> parse polynomial >>! pick "<=" <|>
+	(:==) <$> var <* pick "==" <*> parse bool <|>
+	(:==) <$> parse polynomial <* pick "==" <*> parse polynomial <|>
+	(:==) <$> parse bool <* pick "==" <*> parse bool
+	where var = Var <$> check (all isLower)
+
+pBool :: Parse Memo (Exp Var Bool)
+pBool =	parse lessEqual <|>
+	Bool False <$ pick "F" <|> Bool True <$ pick "T" <|>
+	Var <$> check (all isLower)
+
+pLessEqual :: Parse Memo (Exp Var Bool)
+pLessEqual = (:<=) <$> parse polynomial <* pick "<=" <*> parse polynomial
+
 memo :: [String] -> Memo
 memo ts = m where
 	m = Memo ct eq bl le pl nm tk
-	ct = undefined
-	eq = undefined
-	bl = undefined
-	le = undefined
+	ct = unparse pConstraint m
+	eq = unparse pEqual m
+	bl = unparse pBool m
+	le = unparse pLessEqual m
 	pl = unparse pPolynomial m
 	nm = unparse pNumber m
 	tk = (memo `second`) <$> uncons ts
