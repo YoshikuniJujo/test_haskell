@@ -49,15 +49,16 @@ data Memo = Memo {
 	lessEqual :: Maybe (Exp Var Bool, Memo),
 	polynomial :: Maybe (Exp Var Number, Memo),
 	number :: Maybe (Exp Var Number, Memo),
-	variable :: Maybe (Var, Memo),
 	token :: Maybe (String, Memo) }
+
+type Var = String
 
 memo :: [String] -> Memo
 memo ts = m where
-	m = Memo gw gv wt ct bl eq le ex nm vr tk
+	m = Memo gw gv wt ct bl eq le ex nm tk
 	gw = unparse pGivenWanted m; gv = unparse pGiven m; wt = unparse pWanted m
 	ct = unparse pConstraint m; bl = unparse pBool m; eq = unparse pEqual m; le = unparse pLessEqual m
-	ex = unparse pPolynomial m; nm = unparse pNumber m; vr = unparse pVariable m
+	ex = unparse pPolynomial m; nm = unparse pNumber m
 	tk = (memo `second`) <$> uncons ts
 
 check :: (String -> Bool) -> Parse Memo String
@@ -103,7 +104,7 @@ pEqual =
 	(:==) <$> var <* pick "==" <*> parse bool <|>
 	(:==) <$> parse polynomial <* pick "==" <*> parse polynomial <|>
 	(:==) <$> parse bool <* pick "==" <*> parse bool
-	where var = Var <$> parse variable
+	where var = Var <$> check (all isLower)
 
 pLessEqual :: Parse Memo (Exp Var Bool)
 pLessEqual = (:<=) <$> parse polynomial <* pick "<=" <*> parse polynomial
@@ -117,14 +118,5 @@ pPolynomial = foldl (&) <$> parse number <*> many (
 
 pNumber :: Parse Memo (Exp Var Number)
 pNumber =
-	Const . read <$> check (all isDigit) <|> Var <$> parse variable <|>
+	Const . read <$> check (all isDigit) <|> Var <$> check (all isLower) <|>
 	pick "(" *> parse polynomial <* pick ")"
-
-pVariable :: Parse Memo (Var)
-pVariable = check $ all isLower
-
----------------------------------------------------------------------------
--- VAR
----------------------------------------------------------------------------
-
-type Var = String

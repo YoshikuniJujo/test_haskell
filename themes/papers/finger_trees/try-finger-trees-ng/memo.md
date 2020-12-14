@@ -399,4 +399,6 @@ refactor Derivation Parser
 	+ [x] use StateT
 * [x] use unparse instead of Parse pattern
 * [x] use parse instead of data constructor Parse
-* [ ] remove variable
+* [x] remove variable
+* [ ] refactor Data.Parse
+* [ ] refactor Data.Derivation.Parse
