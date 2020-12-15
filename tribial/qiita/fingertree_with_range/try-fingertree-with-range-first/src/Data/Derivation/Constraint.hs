@@ -7,7 +7,7 @@ import Prelude hiding (null, filter, (<>))
 
 import Outputable (Outputable(..), (<>), (<+>), text)
 import Control.Monad
-import Data.Foldable
+import Data.Foldable (toList)
 import Data.Maybe
 import Data.Map.Strict (Map, null, singleton, (!?), filter, lookupMin)
 import Data.Map.Merge.Strict
@@ -50,3 +50,49 @@ p `divide` n = (`div` n) <$> p
 
 divisor :: Polynomial v -> Integer
 divisor = gcdAll . toList where gcdAll = \case [] -> 1; n : ns -> foldr gcd n ns
+
+getVars :: Ord v => Constraint v -> [Maybe v]
+getVars (Eq p) = (fst <$>) $ M.toList p
+getVars (Geq p) = (fst <$>) $ M.toList p
+
+hasVar :: Ord v => Constraint v -> Maybe v -> Bool
+hasVar (Eq p) v = isJust $ p !? v
+hasVar (Geq p) v = isJust $ p !? v
+
+rmNegative :: Constraint v -> Constraint v
+rmNegative = \case eq@(Eq _) -> eq; Geq p -> Geq $ filter (>= 0) p
+
+isDerivFrom :: Ord v => Constraint v -> Constraint v -> Bool
+Eq w `isDerivFrom` Eq g = w == g
+Geq w `isDerivFrom` Geq g = w `isGeqThan` g
+_ `isDerivFrom` _ = False
+
+isGeqThan :: Ord v => Polynomial v -> Polynomial v -> Bool
+l `isGeqThan` r = and $ merge
+	(mapMissing \_ nl -> nl >= 0)
+	(mapMissing \_ nr -> nr <= 0) (zipWithMatched $ const (>=)) l r
+
+selfContained :: Constraint v -> Bool
+selfContained = \case Eq p -> null p; Geq p -> and $ (>= 0) <$> p
+
+rmVar ::
+	Ord v => Constraint v -> Constraint v -> Maybe v -> Maybe (Constraint v)
+rmVar (Eq l) (Eq r) v = Eq . formatEq . uncurry (.+) <$> alignEE l r v
+rmVar (Eq l) (Geq r) v = Geq . formatGeq . uncurry (.+) <$> alignEG l r v
+rmVar (Geq l) (Geq r) v = Geq . formatGeq . uncurry (.+) <$> alignGG l r v
+rmVar l r v = rmVar r l v
+
+type Aligned v = Maybe (Polynomial v, Polynomial v)
+
+alignEE :: Ord v => Polynomial v -> Polynomial v -> Maybe v -> Aligned v
+alignEE l r v = (<$> ((,) <$> l !? v <*> r !? v)) \(nl, nr) ->
+	(l `times` nr, r `times` (- nl))
+
+alignEG :: Ord v => Polynomial v -> Polynomial v -> Maybe v -> Aligned v
+alignEG l r v = (<$> ((,) <$> l !? v <*> r !? v)) \(nl, nr) ->
+	(l `times` (- signum nl * nr), r `times` abs nl)
+
+alignGG :: Ord v => Polynomial v -> Polynomial v -> Maybe v -> Aligned v
+alignGG l r v = (,) <$> l !? v <*> r !? v >>= \(nl, nr) -> do
+	guard $ nl * nr < 0
+	pure (l `times` abs nr, r `times` abs nl)
