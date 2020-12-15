@@ -43,3 +43,20 @@ instance PushL 0 m where (.:..) = (:..)
 instance {-# OVERLAPPABLE #-} PushL (n - 1) (m - 1) => PushL n m where
 	x .:.. (y :. ys) = x :. (y .:.. ys)
 	_ .:.. _ = error "never occur"
+
+class LoosenLMin n m n' where loosenLMin :: RangeL n m a -> RangeL n' m a
+
+instance LoosenLMin 0 m 0 where
+	loosenLMin NilL = NilL
+	loosenLMin xa@(_ :.. _) = xa
+	loosenLMin _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	LoosenLMin (n - 1) (m - 1) 0 => LoosenLMin n m 0 where
+	loosenLMin (x :. xs) = x :.. loosenLMin xs
+	loosenLMin _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	LoosenLMin (n - 1) (m - 1) (n' - 1) => LoosenLMin n m n' where
+	loosenLMin (x :. xs) = x :. loosenLMin xs
+	loosenLMin _ = error "never occur"
