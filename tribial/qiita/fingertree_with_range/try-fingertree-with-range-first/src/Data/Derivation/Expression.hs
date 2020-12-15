@@ -49,6 +49,9 @@ poly (l :- r) = (,) <$> poly l <*> poly r >>= \(pl, pr) ->
 
 type VarBool v = Map v Bool
 
+mkVarBool :: Ord v => [Exp v Bool] -> VarBool v
+mkVarBool = snd . untilFixed (uncurry vbStep) . vbInit
+
 vbInit :: Ord v => [Exp v Bool] -> ([(v, v)], VarBool v)
 vbInit [] = ([], empty)
 vbInit (Var l :== Var r : es) = ((l, r) :) `first` vbInit es
