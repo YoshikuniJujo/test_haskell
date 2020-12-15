@@ -25,3 +25,31 @@ given zs = Given . nub . sort $ zs ++ (rmNegative <$> zs)
 
 givenVars :: Ord v => Given v -> [Maybe v]
 givenVars = nub . sort . concat . (getVars <$>) . unGiven
+
+newtype Wanted v = Wanted { unWanted :: [Wanted1 v] } deriving Show
+
+type Wanted1 v = Constraint v
+
+mkWanted :: Ord v => Exp v Bool -> Maybe (Wanted v)
+mkWanted = uncurry wanted . mkConstraint empty
+
+wanted :: Maybe (Wanted1 v) -> [Wanted1 v] -> Maybe (Wanted v)
+wanted mw ws = Wanted . (: ws) <$> mw
+
+rmVar :: Ord v => Given v -> Maybe v -> Given v
+rmVar (Given g) v =
+	Given . sort $ r ++ concat (fst $ unfoldUntil null (`rvStep` v) g')
+	where (g', r) = partition (`hasVar` v) g
+
+rvStep :: Ord v => [Constraint v] -> Maybe v -> ([Constraint v], [Constraint v])
+rvStep [] _ = ([], [])
+rvStep (c : cs) v = partitionEithers $ flip (rmVar1 c) v <$> cs
+
+rmVar1 :: Ord v => Constraint v ->
+	Constraint v -> Maybe v -> Either (Constraint v) (Constraint v)
+rmVar1 c0 c v = maybe (Right c) Left $ C.rmVar c0 c v
+
+unfoldUntil :: (s -> Bool) -> (s -> (r, s)) -> s -> ([r], s)
+unfoldUntil p f s0
+	| p s0 = ([], s0)
+	| otherwise = let (r, s') = f s0 in (r :) `first` unfoldUntil p f s'
