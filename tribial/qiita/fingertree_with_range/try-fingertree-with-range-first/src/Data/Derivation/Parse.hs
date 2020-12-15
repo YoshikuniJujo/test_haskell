@@ -75,3 +75,6 @@ memo ts = m where
 
 tokens :: String -> [String]
 tokens = unfoldr (listToMaybe . lex)
+
+parseConstraint :: String -> Maybe (Exp Var Bool)
+parseConstraint src = fst <$> constraint (memo $ tokens src)
