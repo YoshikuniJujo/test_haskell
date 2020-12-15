@@ -53,3 +53,10 @@ unfoldUntil :: (s -> Bool) -> (s -> (r, s)) -> s -> ([r], s)
 unfoldUntil p f s0
 	| p s0 = ([], s0)
 	| otherwise = let (r, s') = f s0 in (r :) `first` unfoldUntil p f s'
+
+canDerive :: Ord v => Given v -> Wanted v -> Bool
+canDerive g = all (canDerive1 g) . unWanted
+
+canDerive1 :: Ord v => Given v -> Wanted1 v -> Bool
+canDerive1 g w = selfContained w ||
+	any (isDerivFrom w) (unGiven . foldl rmVar g $ givenVars g \\ getVars w)
