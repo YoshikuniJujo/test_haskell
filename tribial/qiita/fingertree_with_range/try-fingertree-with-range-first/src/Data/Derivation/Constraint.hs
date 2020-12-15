@@ -15,3 +15,6 @@ import Data.Map.Merge.Strict
 import qualified Data.Map.Strict as M
 
 type Polynomial v = Map (Maybe v) Integer
+
+data Constraint v = Eq (Polynomial v) | Geq (Polynomial v)
+	deriving (Show, Eq, Ord)
