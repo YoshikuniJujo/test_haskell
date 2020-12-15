@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b7b778f076234a43886421042c5d4b27057bc1f30d27d3b084712e8c166342a2
+-- hash: ffc195e9027bd41354b368c297ea50d406744ecf63dd47b51fe4900fd8ed853f
 
 name:           try-fingertree-with-range-first
 version:        0.1.0.0
@@ -27,6 +27,7 @@ source-repository head
 
 library
   exposed-modules:
+      Data.Derivation.Constraint
       Data.Derivation.Expression
       Data.Derivation.Parse
       Data.FingerTree.NoRange
@@ -44,6 +45,7 @@ library
       src
   build-depends:
       base >=4.7 && <5
+    , containers
     , ghc
     , monads-tf
     , transformers
@@ -58,6 +60,7 @@ executable try-fingertree-with-range-first-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , containers
     , ghc
     , monads-tf
     , transformers
@@ -74,6 +77,7 @@ test-suite try-fingertree-with-range-first-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , containers
     , ghc
     , monads-tf
     , transformers
