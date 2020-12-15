@@ -93,3 +93,7 @@ procProp _ (l :== r) True = case (l, r) of
 	(Var v, Var w) -> Just <$> (equal <$> poly (Var v) <*> poly (Var w))
 	_ -> pure Nothing
 procProp _ (_ :== _) False = pure Nothing
+
+mkConstraint :: Ord v =>
+	VarBool v -> Exp v Bool -> (Maybe (Constraint v), [Constraint v])
+mkConstraint vb e = runWriter $ procProp vb e True
