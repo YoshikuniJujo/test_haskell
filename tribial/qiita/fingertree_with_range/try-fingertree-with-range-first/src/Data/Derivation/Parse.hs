@@ -78,3 +78,6 @@ tokens = unfoldr (listToMaybe . lex)
 
 parseConstraint :: String -> Maybe (Exp Var Bool)
 parseConstraint src = fst <$> constraint (memo $ tokens src)
+
+parsePolynomial :: String -> Maybe (Exp Var Number)
+parsePolynomial src = fst <$> polynomial (memo $ tokens src)
