@@ -13,7 +13,7 @@ import GHC.TypeNats (type (-), type (<=))
 
 import Data.List.Range (
 	RangeL(..), (.:..), (++.), loosenL, RangeR(..), loosenR,
-	leftToRight, rightToLeft )
+	leftToRight, (++..) )
 import Data.View (ViewL(..), ViewR(..))
 import Internal.Tools (reducer, reducel)
 
@@ -189,7 +189,7 @@ app3 (Single x) m xs = x <| m <|. xs
 app3 xs m (Single x) = xs |>. m |> x
 app3 (Deep pr1 m1 sf1) m (Deep pr2 m2 sf2) = Deep pr1 (app3
 	m1
-	(loosenL (nodes (rightToLeft sf1 ++. m ++. pr2) :: RangeL 1 4 (Node a)))
+	(loosenL (nodes (sf1 ++.. m ++. pr2) :: RangeL 1 4 (Node a)))
 	m2) sf2
 
 (><) :: FingerTree a -> FingerTree a -> FingerTree a
