@@ -44,16 +44,16 @@ class LeftToRight n m v w where
 
 -- INSTANCE
 
-instance LeftToRight 0 m 0 0 where r ++.+ _ =  r
+instance LeftToRight 0 m 0 0 where n ++.+ _ =  n
 
-instance {-# OVERLAPPABLE #-} LeftToRight n m 0 0 where r ++.+ _ = r
+instance {-# OVERLAPPABLE #-} LeftToRight n m 0 0 where n ++.+ _ = n
 
 instance {-# OVERLAPPABLE #-}
 	(LoosenRMax 0 m (m + w), LeftToRight 0 (m + 1) 0 (w - 1)) =>
 	LeftToRight 0 m 0 w where
 	(++.+) :: forall a . RangeR 0 m a -> RangeL 0 w a -> RangeR 0 (m + w) a
-	r ++.+ NilL = loosenRMax r :: RangeR 0 (m + w) a
-	r ++.+ x :.. xs = (r :++ x :: RangeR 0 (m + 1) a) ++.+ xs
+	n ++.+ NilL = loosenRMax n :: RangeR 0 (m + w) a
+	n ++.+ x :.. v = (n :++ x :: RangeR 0 (m + 1) a) ++.+ v
 	_ ++.+ _ = error "never occur"
 
 instance {-# OVERLAPPABLE #-} (
@@ -61,8 +61,8 @@ instance {-# OVERLAPPABLE #-} (
 	LeftToRight n (m + 1) 0 (w - 1) ) =>
 	LeftToRight n m 0 w where
 	(++.+) :: forall a . RangeR n m a -> RangeL 0 w a -> RangeR n (m + w) a
-	r ++.+ NilL = loosenRMax r :: RangeR n (m + w) a
-	r ++.+ x :.. xs = (r .:++ x :: RangeR n (m + 1) a) ++.+ xs
+	n ++.+ NilL = loosenRMax n :: RangeR n (m + w) a
+	n ++.+ x :.. v = (n .:++ x :: RangeR n (m + 1) a) ++.+ v
 	_ ++.+ _ = error "never occur"
 
 instance {-# OVERLAPPABLE #-}
@@ -70,8 +70,7 @@ instance {-# OVERLAPPABLE #-}
 	LeftToRight n m v w where
 	(++.+) :: forall a .
 		RangeR n m a -> RangeL v w a -> RangeR (n + v) (m + w) a
-	r ++.+ x :. xs =
-		(r :+ x :: RangeR (n + 1) (m + 1) a) ++.+ xs
+	n ++.+ x :. v = (n :+ x :: RangeR (n + 1) (m + 1) a) ++.+ v
 	_ ++.+ _ = error "never occur"
 
 -- FUNCTION
@@ -93,16 +92,16 @@ class RightToLeft n m v w where
 
 -- INSTANCE
 
-instance RightToLeft 0 0 0 w where _ ++.. l =  l
+instance RightToLeft 0 0 0 w where _ ++.. v =  v
 
-instance {-# OVERLAPPABLE #-} RightToLeft 0 0 v w where _ ++.. l = l
+instance {-# OVERLAPPABLE #-} RightToLeft 0 0 v w where _ ++.. v = v
 
 instance {-# OVERLAPPABLE #-}
 	(LoosenLMax 0 w (m + w), RightToLeft 0 (m - 1) 0 (w + 1)) =>
 	RightToLeft 0 m 0 w where
 	(++..) :: forall a . RangeR 0 m a -> RangeL 0 w a -> RangeL 0 (m + w) a
-	NilR ++.. l = loosenLMax l :: RangeL 0 (m + w) a
-	xs :++ x ++.. l = xs ++.. (x :.. l :: RangeL 0 (w + 1) a)
+	NilR ++.. v = loosenLMax v :: RangeL 0 (m + w) a
+	n :++ x ++.. v = n ++.. (x :.. v :: RangeL 0 (w + 1) a)
 	_ ++.. _ = error "never occur"
 
 
@@ -111,8 +110,8 @@ instance {-# OVERLAPPABLE #-} (
 	RightToLeft 0 (m - 1) v (w + 1)) =>
 	RightToLeft 0 m v w where
 	(++..) :: forall a . RangeR 0 m a -> RangeL v w a -> RangeL v (m + w) a
-	NilR ++.. l = loosenLMax l :: RangeL v (m + w) a
-	xs :++ x ++.. l = xs ++.. (x .:.. l :: RangeL v (w + 1) a)
+	NilR ++.. v = loosenLMax v :: RangeL v (m + w) a
+	n :++ x ++.. v = n ++.. (x .:.. v :: RangeL v (w + 1) a)
 	_ ++.. _ = error "never occur"
 
 instance {-# OVERLAPPABLE #-}
@@ -120,7 +119,7 @@ instance {-# OVERLAPPABLE #-}
 	RightToLeft n m v w where
 	(++..) :: forall a .
 		RangeR n m a -> RangeL v w a -> RangeL (n + v) (m + w) a
-	xs :+ x ++.. l = xs ++.. (x :. l :: RangeL (v + 1) (w + 1) a)
+	n :+ x ++.. v = n ++.. (x :. v :: RangeL (v + 1) (w + 1) a)
 	_ ++.. _ = error "never occur"
 
 -- FUNCTION
