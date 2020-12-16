@@ -32,3 +32,30 @@ instance {-# OVERLAPPABLE #-}
 	Foldable (RangeR (n - 1) (m - 1)) => Foldable (RangeR n m) where
 	foldr (-<) z (xs :+ x) = foldr (-<) (x -< z) xs
 	foldr _ _ _ = error "never occur"
+
+infixl 5 .:++
+
+class PushR n m where (.:++) :: RangeR n m a -> a -> RangeR n (m + 1) a
+
+instance PushR 0 m where (.:++) = (:++)
+
+instance {-# OVERLAPPABLE #-} PushR (n - 1) (m - 1) => PushR n m where
+	xs :+ x .:++ y = (xs .:++ x) :+ y
+	_ .:++ _ = error "never occur"
+
+class LoosenRMin n m n' where loosenRMin :: RangeR n m a -> RangeR n' m a
+
+instance LoosenRMin 0 m 0 where
+	loosenRMin NilR = NilR
+	loosenRMin xa@(_ :++ _) = xa
+	loosenRMin _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	LoosenRMin (n - 1) (m - 1) 0 => LoosenRMin n m 0 where
+	loosenRMin (xs :+ x) = loosenRMin xs :++ x
+	loosenRMin _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	LoosenRMin (n - 1) (m - 1) (n' - 1) => LoosenRMin n m n' where
+	loosenRMin (xs :+ x) = loosenRMin xs :+ x
+	loosenRMin _ = error "never occur"
