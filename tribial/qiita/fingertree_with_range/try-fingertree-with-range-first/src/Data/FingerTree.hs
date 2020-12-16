@@ -38,3 +38,30 @@ instance Foldable FingerTree where
 		(-<..) :: forall t t' .
 			(Foldable t, Foldable t') => t (t' a) -> b -> b
 		(-<..) = reducer (-<.)
+
+infixr 5 <||
+
+(<||) :: a -> DigitL a -> Either (DigitL a) (DigitL a, Node a)
+a <|| b :. NilL = Left $ a :. b :.. NilL
+a <|| b :. c :.. NilL = Left $ a :. b :.. c :.. NilL
+a <|| b :. c :.. d :.. NilL = Left $ a :. b :.. c :.. d :.. NilL
+a <|| b :. c :.. d :.. e :.. NilL =
+	Right (a :. b :.. NilL, c :. d :. e :.. NilL)
+_ <|| _ = error "never occur"
+
+infixr 5 <|
+
+(<|) :: a -> FingerTree a -> FingerTree a
+a <| Empty = Single a
+a <| Single b = Deep (a :. NilL) Empty (NilR :+ b)
+a <| Deep pr m sf = case a <|| pr of
+	Left pr' -> Deep pr' m sf
+	Right (pr', n3) -> Deep pr' (n3 <| m) sf
+
+infixr 5 <|.
+
+(<|.) :: Foldable t => t a -> FingerTree a -> FingerTree a
+(<|.) = reducer (<|)
+
+mkFingerTree :: Foldable t => t a -> FingerTree a
+mkFingerTree = (<|. Empty)
