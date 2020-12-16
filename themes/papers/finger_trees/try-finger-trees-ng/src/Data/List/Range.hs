@@ -90,46 +90,47 @@ leftToRight = leftToRightGen (NilR :: RangeR 0 0 a)
 
 class RightToLeft n m n' m' where
 	rightToLeftGen ::
-		RangeL n m a -> RangeR n' m' a -> RangeL (n + n') (m + m') a
+		RangeR n m a -> RangeL n' m' a -> RangeL (n + n') (m + m') a
 
 -- INSTANCE
 
-instance RightToLeft 0 m 0 0 where rightToLeftGen l _ =  l
+instance RightToLeft 0 0 0 m' where rightToLeftGen _ l =  l
 
-instance {-# OVERLAPPABLE #-} RightToLeft n m 0 0 where rightToLeftGen l _ = l
+instance {-# OVERLAPPABLE #-} RightToLeft 0 0 n' m' where rightToLeftGen _ l = l
 
 instance {-# OVERLAPPABLE #-}
-	(LoosenLMax 0 m (m + m'), RightToLeft 0 (m + 1) 0 (m' - 1)) =>
+	(LoosenLMax 0 m' (m + m'), RightToLeft 0 (m - 1) 0 (m' + 1)) =>
 	RightToLeft 0 m 0 m' where
 	rightToLeftGen ::
-		forall a . RangeL 0 m a -> RangeR 0 m' a -> RangeL 0 (m + m') a
-	rightToLeftGen l NilR = loosenLMax l :: RangeL 0 (m + m') a
-	rightToLeftGen l (xs :++ x) =
-		rightToLeftGen (x :.. l :: RangeL 0 (m + 1) a) xs
+		forall a . RangeR 0 m a -> RangeL 0 m' a -> RangeL 0 (m + m') a
+	rightToLeftGen NilR l = loosenLMax l :: RangeL 0 (m + m') a
+	rightToLeftGen (xs :++ x) l =
+		rightToLeftGen xs (x :.. l :: RangeL 0 (m' + 1) a)
 	rightToLeftGen _ _ = error "never occur"
 
+
 instance {-# OVERLAPPABLE #-} (
-	LoosenLMax n m (m + m'), PushL (n - 1) (m - 1),
-	RightToLeft n (m + 1) 0 (m' - 1)) =>
-	RightToLeft n m 0 m' where
+	LoosenLMax n' m' (m + m'), PushL (n' - 1) (m' - 1),
+	RightToLeft 0 (m - 1) n' (m' + 1)) =>
+	RightToLeft 0 m n' m' where
 	rightToLeftGen ::
-		forall a . RangeL n m a -> RangeR 0 m' a -> RangeL n (m + m') a
-	rightToLeftGen l NilR = loosenLMax l :: RangeL n (m + m') a
-	rightToLeftGen l (xs :++ x) =
-		rightToLeftGen (x .:.. l :: RangeL n (m + 1) a) xs
+		forall a . RangeR 0 m a -> RangeL n' m' a -> RangeL n' (m + m') a
+	rightToLeftGen NilR l = loosenLMax l :: RangeL n' (m + m') a
+	rightToLeftGen (xs :++ x) l =
+		rightToLeftGen xs (x .:.. l :: RangeL n' (m' + 1) a)
 	rightToLeftGen _ _ = error "never occur"
 
 instance {-# OVERLAPPABLE #-}
-	RightToLeft (n + 1) (m + 1) (n' - 1) (m' - 1) =>
+	RightToLeft (n - 1) (m - 1) (n' + 1) (m' + 1) =>
 	RightToLeft n m n' m' where
 	rightToLeftGen :: forall a .
-		RangeL n m a -> RangeR n' m' a -> RangeL (n + n') (m + m') a
-	rightToLeftGen l (xs :+ x) =
-		rightToLeftGen (x :. l :: RangeL (n + 1) (m + 1) a) xs
+		RangeR n m a -> RangeL n' m' a -> RangeL (n + n') (m + m') a
+	rightToLeftGen (xs :+ x) l =
+		rightToLeftGen xs (x :. l :: RangeL (n' + 1) (m' + 1) a)
 	rightToLeftGen _ _ = error "never occur"
 
 -- FUNCTION
 
 rightToLeft ::
-	forall n m a . RightToLeft 0 0 n m => RangeR n m a -> RangeL n m a
-rightToLeft = rightToLeftGen (NilL :: RangeL 0 0 a)
+	forall n m a . RightToLeft n m 0 0 => RangeR n m a -> RangeL n m a
+rightToLeft = flip rightToLeftGen (NilL :: RangeL 0 0 a)
