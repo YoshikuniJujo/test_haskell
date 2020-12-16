@@ -6,7 +6,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=Plugin.TypeCheck.Nat.Simple #-}
 
 module Data.FingerTree (
-	FingerTree, mkFingerTree, isEmpty, uncons, unsnoc,
+	FingerTree, mkFingerTree, uncons, unsnoc,
 	(<|), (<|.), (|>), (|>.), (><) ) where
 
 import GHC.TypeNats (type (-), type (<=))
@@ -118,6 +118,7 @@ Deep pr m sf |> a = case sf ||> a of
 -- VIEW LEFT
 ---------------------------------------------------------------------------
 
+{-
 viewL :: FingerTree a -> ViewL FingerTree a
 viewL Empty = NL
 viewL (Single x) = ConsL x Empty
@@ -129,15 +130,31 @@ deepL NilL m sf = case viewL m of
 	ConsL n m' -> Deep (nodeToDigitL n) m' sf
 deepL (a :.. pr) m sf = Deep (loosenL $ a :. pr) m sf
 deepL _ _ _ = error "never occur"
+-}
 
 nodeToDigitL :: Node a -> DigitL a
 nodeToDigitL = loosenL
 
+{-
 isEmpty :: FingerTree a -> Bool
 isEmpty t = case viewL t of NL -> True; ConsL _ _ -> False
+-}
 
 uncons :: FingerTree a -> Maybe (a, FingerTree a)
-uncons t = case viewL t of NL -> Nothing; ConsL a t' -> Just (a, t')
+uncons = viewL'
+-- uncons t = case viewL t of NL -> Nothing; ConsL a t' -> Just (a, t')
+
+viewL' :: FingerTree a -> Maybe (a, FingerTree a)
+viewL' Empty = Nothing
+viewL' (Single x) = Just (x, Empty)
+viewL' (Deep (a :. pr') m sf) = Just (a, deepL' pr' m sf)
+
+deepL' :: RangeL 0 3 a -> FingerTree (Node a) -> DigitR a -> FingerTree a
+deepL' NilL m sf = case viewL' m of
+	Nothing -> mkFingerTree sf
+	Just (n, m') -> Deep (nodeToDigitL n) m' sf
+deepL' (a :.. pr) m sf = Deep (loosenL $ a :. pr) m sf
+deepL' _ _ _ = error "never occur"
 
 ---------------------------------------------------------------------------
 -- VIEW RIGHT
