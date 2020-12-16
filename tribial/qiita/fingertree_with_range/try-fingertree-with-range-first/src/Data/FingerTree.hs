@@ -116,3 +116,20 @@ deepR _ _ _ = error "never occur"
 
 nodeToDigitR :: Node a -> DigitR a
 nodeToDigitR = loosenR . leftToRight
+
+class Nodes m m' where nodes :: RangeL 2 m a -> RangeL 1 m' (Node a)
+
+instance Nodes 3 1 where nodes = (:. NilL)
+
+instance {-# OVERLAPPABLE #-} (2 <= m', Nodes (m - 3) (m' - 1)) =>
+	Nodes m m' where
+	nodes :: forall a . RangeL 2 m a -> RangeL 1 m' (Node a)
+	nodes (a :. b :. NilL) = (a :. b :. NilL) :. NilL
+	nodes (a :. b :. c :.. NilL) = (a :. b :. c :.. NilL) :. NilL
+	nodes (a :. b :. c :.. d :.. NilL) =
+		(a :. b :. NilL) :. (c :. d :. NilL) :.. NilL
+	nodes (a :. b :. c :.. d :.. e :.. xs) =
+		(a :. b :. c :.. NilL) .:..
+			(nodes (d :. e :. xs :: RangeL 2 (m - 3) a)
+				:: RangeL 1 (m' - 1) (Node a))
+	nodes _ = error "never occur"
