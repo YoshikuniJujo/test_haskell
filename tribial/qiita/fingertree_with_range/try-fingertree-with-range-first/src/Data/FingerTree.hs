@@ -133,3 +133,16 @@ instance {-# OVERLAPPABLE #-} (2 <= m', Nodes (m - 3) (m' - 1)) =>
 			(nodes (d :. e :. xs :: RangeL 2 (m - 3) a)
 				:: RangeL 1 (m' - 1) (Node a))
 	nodes _ = error "never occur"
+
+app3 :: forall a . FingerTree a -> RangeL 0 4 a -> FingerTree a -> FingerTree a
+app3 Empty m xs = m <|. xs
+app3 xs m Empty = xs |>. m
+app3 (Single x) m xs = x <| m <|. xs
+app3 xs m (Single x) = xs |>. m |> x
+app3 (Deep pr1 m1 sf1) m (Deep pr2 m2 sf2) = Deep pr1 (app3
+	m1
+	(loosenL (nodes (sf1 ++.. m ++. pr2) :: RangeL 1 4 (Node a)))
+	m2) sf2
+
+(><) :: FingerTree a -> FingerTree a -> FingerTree a
+l >< r = app3 l NilL r
