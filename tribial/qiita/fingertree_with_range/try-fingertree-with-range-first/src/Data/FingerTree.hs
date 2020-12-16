@@ -65,3 +65,19 @@ infixr 5 <|.
 
 mkFingerTree :: Foldable t => t a -> FingerTree a
 mkFingerTree = (<|. Empty)
+
+
+uncons :: FingerTree a -> Maybe (a, FingerTree a)
+uncons Empty = Nothing
+uncons (Single x) = Just (x, Empty)
+uncons (Deep (a :. pr') m sf) = Just (a, deepL pr' m sf)
+
+deepL :: RangeL 0 3 a -> FingerTree (Node a) -> DigitR a -> FingerTree a
+deepL NilL m sf = case uncons m of
+	Nothing -> mkFingerTree sf
+	Just (n, m') -> Deep (nodeToDigitL n) m' sf
+deepL (a :.. pr) m sf = Deep (loosenL $ a :. pr) m sf
+deepL _ _ _ = error "never occur"
+
+nodeToDigitL :: Node a -> DigitL a
+nodeToDigitL = loosenL
