@@ -14,7 +14,7 @@ import GHC.TypeNats (type (-), type (<=))
 import Data.List.Range (
 	RangeL(..), (.:..), (++.), loosenL, RangeR(..), loosenR,
 	leftToRight, (++..) )
-import Data.View (ViewL(..), ViewR(..))
+-- import Data.View (ViewL(..), ViewR(..))
 import Internal.Tools (reducer, reducel)
 
 ---------------------------------------------------------------------------
@@ -160,6 +160,7 @@ deepL' _ _ _ = error "never occur"
 -- VIEW RIGHT
 ---------------------------------------------------------------------------
 
+{-
 viewR :: FingerTree a -> ViewR FingerTree a
 viewR Empty = NR
 viewR (Single x) = ConsR Empty x
@@ -171,12 +172,23 @@ deepR pr m NilR = case viewR m of
 	ConsR m' a -> Deep pr m' (nodeToDigitR a)
 deepR pr m (sf :++ a) = Deep pr m (loosenR $ sf :+ a)
 deepR _ _ _ = error "never occur"
+-}
 
 nodeToDigitR :: Node a -> DigitR a
 nodeToDigitR = loosenR . leftToRight
 
 unsnoc :: FingerTree a -> Maybe (FingerTree a, a)
-unsnoc t = case viewR t of NR -> Nothing; ConsR t' a -> Just (t', a)
+-- unsnoc t = case viewR t of NR -> Nothing; ConsR t' a -> Just (t', a)
+unsnoc Empty = Nothing
+unsnoc (Single x) = Just (Empty, x)
+unsnoc (Deep pr m (sf' :+ a)) = Just (deepR' pr m sf', a)
+
+deepR' :: DigitL a -> FingerTree (Node a) -> RangeR 0 3 a -> FingerTree a
+deepR' pr m NilR = case unsnoc m of
+	Nothing -> mkFingerTree pr
+	Just (m', a) -> Deep pr m' (nodeToDigitR a)
+deepR' pr m (sf :++ a) = Deep pr m (loosenR $ sf :+ a)
+deepR' _ _ _ = error "never occur"
 
 ---------------------------------------------------------------------------
 -- CONCATENATE
