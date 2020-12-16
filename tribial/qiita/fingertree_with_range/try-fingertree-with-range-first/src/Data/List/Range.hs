@@ -11,3 +11,20 @@ import GHC.TypeNats
 
 import Data.List.Range.RangeL
 import Data.List.Range.RangeR
+
+infixl 5 ++.+
+
+class LeftToRight n m v w where
+	(++.+) :: RangeR n m a -> RangeL v w a -> RangeR (n + v) (m + w) a
+
+instance LeftToRight 0 m 0 0 where n ++.+ _ = n
+
+instance {-# OVERLAPPABLE #-} LeftToRight n m 0 0 where n ++.+ _ = n
+
+instance {-# OVERLAPPABLE #-}
+	(LoosenRMax 0 m (m + w), LeftToRight 0 (m + 1) 0 (w - 1)) =>
+	LeftToRight 0 m 0 w where
+	(++.+) :: forall a . RangeR 0 m a -> RangeL 0 w a -> RangeR 0 (m + w) a
+	n ++.+ NilL = loosenRMax n :: RangeR 0 (m + w) a
+	n ++.+ x :.. v = (n :++ x :: RangeR 0 (m + 1) a) ++.+ v
+	_ ++.+ _ = error "never occur"
