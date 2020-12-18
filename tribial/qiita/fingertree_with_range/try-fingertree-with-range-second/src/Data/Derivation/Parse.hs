@@ -74,7 +74,7 @@ pBool =	parse lessEqual <|>
 	Var <$> check (all isLower)
 
 pLessEqual :: Parse Memo (Exp Var Bool)
-pLessEqual = (:==) <$> parse polynomial <* pick "<=" <*> parse polynomial
+pLessEqual = (:<=) <$> parse polynomial <* pick "<=" <*> parse polynomial
 
 parseConstraint :: String -> Maybe (Exp Var Bool)
 parseConstraint src = fst <$> constraint (memo $ tokens src)
