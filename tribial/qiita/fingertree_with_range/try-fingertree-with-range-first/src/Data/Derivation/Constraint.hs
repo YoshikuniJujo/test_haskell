@@ -5,7 +5,6 @@ module Data.Derivation.Constraint where
 
 import Prelude hiding (null, filter, (<>))
 
-import Outputable (Outputable(..), (<>), (<+>), text)
 import Control.Monad
 import Data.Foldable (toList)
 import Data.Maybe
