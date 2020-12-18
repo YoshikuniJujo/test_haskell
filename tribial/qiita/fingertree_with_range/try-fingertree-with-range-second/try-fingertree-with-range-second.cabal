@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8d40bf48f40fb3d74081983244143e7adc188ca8afa29be38ee7ec7b4f7604da
+-- hash: e1a45f2045a6b986a747e459034adada15c8138fdcdee95a7b35fe03da18d946
 
 name:           try-fingertree-with-range-second
 version:        0.1.0.0
@@ -36,6 +36,7 @@ library
       Plugin.TypeCheck.Nat.Simple.Decode
       Trial.TryTypeCheck
       TryParse.Exponential
+      TryParse.NoExponential
   other-modules:
       Paths_try_fingertree_with_range_second
   hs-source-dirs:
