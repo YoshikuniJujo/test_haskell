@@ -49,3 +49,27 @@ p `divide` n = (`div` n) <$> p
 
 divisor :: Polynomial v -> Integer
 divisor = gcdAll . toList where gcdAll = \case [] -> 1; n : ns -> foldr gcd n ns
+
+getVars :: Ord v => Constraint v -> [Maybe v]
+getVars (Eq p) = (fst <$>) $ M.toList p
+getVars (Geq p) = (fst <$>) $ M.toList p
+
+hasVar :: Ord v => Constraint v -> Maybe v -> Bool
+hasVar (Eq p) v = isJust $ p !? v
+hasVar (Geq p) v = isJust $ p !? v
+
+rmNegative :: Constraint v -> Constraint v
+rmNegative = \case eq@(Eq _) -> eq; Geq p -> Geq $ filter (>= 0) p
+
+isDerivFrom :: Ord v => Constraint v -> Constraint v -> Bool
+Eq w `isDerivFrom` Eq g = w == g
+Geq w `isDerivFrom` Geq g = w `isGeqThan` g
+_ `isDerivFrom` _ = False
+
+isGeqThan :: Ord v => Polynomial v -> Polynomial v -> Bool
+l `isGeqThan` r = and $ merge
+	(mapMissing \_ nl -> nl >= 0)
+	(mapMissing \_ nr -> nr <= 0) (zipWithMatched $ const (>=)) l r
+
+selfContained :: Constraint v -> Bool
+selfContained = \case Eq p -> null p; Geq p -> and $ (>= 0) <$> p
