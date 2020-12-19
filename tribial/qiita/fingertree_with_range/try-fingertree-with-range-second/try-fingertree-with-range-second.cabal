@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f3aced1be1fa186c1b95be5987c695ffed297d934bc34867074939b1addd0959
+-- hash: 77a3de4dc44387eb0c50eba361a3a81c7083eb3f6a5471a0f9d6586dad553d65
 
 name:           try-fingertree-with-range-second
 version:        0.1.0.0
@@ -33,6 +33,7 @@ library
       Data.Derivation.Parse
       Data.FingerTree.NoRange
       Data.List.Range.RangeL
+      Data.List.Range.RangeR
       Data.Parse
       Lib
       Plugin.TypeCheck.Nat.Simple
