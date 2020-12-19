@@ -59,3 +59,24 @@ instance {-# OVERLAPPABLE #-}
 	LoosenRMin (n - 1) (m - 1) (n' - 1) => LoosenRMin n m n' where
 	loosenRMin (xs :+ x) = loosenRMin xs :+ x
 	loosenRMin _ = error "never occur"
+
+class LoosenRMax n m m' where loosenRMax :: RangeR n m a -> RangeR n m' a
+
+instance LoosenRMax 0 0 m where
+	loosenRMax NilR = NilR
+	loosenRMax _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	LoosenRMax 0 (m - 1) (m' - 1) => LoosenRMax 0 m m' where
+	loosenRMax NilR = NilR
+	loosenRMax (xs :++ x) = loosenRMax xs :++ x
+	loosenRMax _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	LoosenRMax (n - 1) (m - 1) (m' - 1) => LoosenRMax n m m' where
+	loosenRMax (xs :+ x) = loosenRMax xs :+ x
+	loosenRMax _ = error "never occur"
+
+loosenR :: (LoosenRMin n m n', LoosenRMax n' m m') =>
+	RangeR n m a -> RangeR n' m' a
+loosenR = loosenRMax . loosenRMin
