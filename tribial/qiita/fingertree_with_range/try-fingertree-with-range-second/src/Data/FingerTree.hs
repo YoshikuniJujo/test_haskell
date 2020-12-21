@@ -115,3 +115,31 @@ deepR _ _ _ = error "never occur"
 
 nodeToDigitR :: Node a -> DigitR a
 nodeToDigitR = loosenR . leftToRight
+
+class Nodes m w where nodes :: RangeL 3 m a -> RangeL 1 w (Node a)
+
+instance Nodes 3 1 where nodes = (:. NilL) . loosenL
+
+instance {-# OVERLAPPABLE #-} (2 <= w, Nodes (m - 3) (w - 1)) => Nodes m w where
+	nodes :: forall a . RangeL 3 m a -> RangeL 1 w (Node a)
+	nodes (a :. b :. c :. NilL) = (a :. b :. c :.. NilL) :. NilL
+	nodes (a :. b :. c :. d :.. NilL) =
+		(a :. b :. NilL) :. (c :. d :. NilL) :.. NilL
+	nodes (a :. b :. c :. d :.. e :.. NilL) =
+		(a :. b :. c :.. NilL) :. (d :. e :. NilL) :.. NilL
+	nodes (a :. b :. c :. d :.. e :.. f :.. xs) =
+		(a :. b :. c :.. NilL) .:..
+			(nodes (d :. e :. f :. xs :: RangeL 3 (m - 3) a)
+				:: RangeL 1 (w - 1) (Node a))
+	nodes _ = error "never occur"
+
+app3 :: forall a . FingerTree a -> RangeL 1 4 a -> FingerTree a -> FingerTree a
+app3 Empty m xs = m <|. xs
+app3 xs m Empty = xs |>. m
+app3 (Single x) m xs = x <| m <|. xs
+app3 xs m (Single x) = xs |>. m |> x
+app3 (Deep pr1 m1 sf1) m (Deep pr2 m2 sf2) =
+	Deep pr1 (app3 m1 (nodes $ sf1 ++.. m ++. pr2) m2) sf2
+
+(><) :: FingerTree a -> FingerTree a -> FingerTree a
+l >< r = case uncons r of Nothing -> l; Just (x, r') -> app3 l (x :. NilL) r'
