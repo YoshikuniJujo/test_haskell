@@ -33,9 +33,13 @@ fromWord8 = fromBits
 fromWord8' :: Word8 -> LengthL 8 Bit
 fromWord8' = unfoldr \n -> (bool O I $ testBit n 0, n `shiftR` 1)
 
+fromWord8BigE :: Word8 -> LengthR 8 Bit
+fromWord8BigE = unfoldl \n -> (bool O I $ testBit n 0, n `shiftR` 1)
+
 main :: IO ()
 main = do
 	print . toWord8 $ O :. I :. I :. O :. O :. I :. O :. O :. NilL
 	print $ fromWord8 38
 	print $ fromWord8' 38
+	print $ fromWord8BigE 38
 	print (fromBits (256 :: Word) :: LengthL 8 Bit) `catch` \(e :: ErrorCall) -> print e

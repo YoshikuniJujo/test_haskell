@@ -8,6 +8,7 @@
 
 module Data.List.Range.RangeR (
 	RangeR(..), PushR, (.:++), AddR, (+++),
+	UnfoldlMin, unfoldlMin, UnfoldlMax, unfoldlMax,
 	LoosenRMin, loosenRMin, LoosenRMax, loosenRMax, loosenR ) where
 
 import GHC.TypeLits
@@ -117,3 +118,25 @@ instance {-# OVERLAPPABLE #-} (
 instance {-# OVERLAPPABLE #-} AddR n m (v - 1) (w - 1) => AddR n m v w where
 	xs +++ ys :+ y = (xs +++ ys) :+ y
 	_ +++ _ = error "never occur"
+
+class UnfoldlMin n m where
+	unfoldlMin :: (s -> (a, s)) -> s -> RangeR n m a
+
+instance UnfoldlMin 0 m where unfoldlMin _ _ = NilR
+
+instance {-# OVERLAPPABLE #-}
+	UnfoldlMin (n - 1) (m - 1) => UnfoldlMin n m where
+	unfoldlMin f s = let (x, s') = f s in unfoldlMin f s' :+ x
+
+class UnfoldlMax n m where
+	unfoldlMax :: (s -> (a, s)) -> s -> RangeR n m a
+
+instance UnfoldlMax 0 0 where unfoldlMax _ _ = NilR
+
+instance {-# OVERLAPPABLE #-}
+	UnfoldlMax 0 (m - 1) => UnfoldlMax 0 m where
+	unfoldlMax f s = let (x, s') = f s in unfoldlMax f s' :++ x
+
+instance {-# OVERLAPPABLE #-}
+	UnfoldlMax (n - 1) (m - 1) => UnfoldlMax n m where
+	unfoldlMax f s = let (x, s') = f s in unfoldlMax f s' :+ x
