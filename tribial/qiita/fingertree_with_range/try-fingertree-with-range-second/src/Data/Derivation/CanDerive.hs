@@ -1,11 +1,12 @@
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Derivation.CanDerive where
 
-import Control.Arrow (first)
 import Data.Either
-import Data.List ((\\), nub, partition, sort)
+import Data.List ((\\), nub, partition, sort, unfoldr)
 import Data.Map.Strict (empty)
+import Data.Bool
 
 import Data.Derivation.Constraint (
 	Constraint, getVars, hasVar,
@@ -38,7 +39,7 @@ wanted mw ws = Wanted . (: ws) <$> mw
 
 rmVar :: Ord v => Given v -> Maybe v -> Given v
 rmVar (Given g) v =
-	Given . sort $ r ++ concat (fst $ unfoldUntil null (`rvStep` v) g')
+	Given . sort $ r ++ concat (unfoldUntil null (`rvStep` v) g')
 	where (g', r) = partition (`hasVar` v) g
 
 rvStep :: Ord v => [Constraint v] -> Maybe v -> ([Constraint v], [Constraint v])
@@ -49,10 +50,8 @@ rmVar1 :: Ord v => Constraint v ->
 	Constraint v -> Maybe v -> Either (Constraint v) (Constraint v)
 rmVar1 c0 c v = maybe (Right c) Left $ C.rmVar c0 c v
 
-unfoldUntil :: (s -> Bool) -> (s -> (r, s)) -> s -> ([r], s)
-unfoldUntil p f s0
-	| p s0 = ([], s0)
-	| otherwise = let (r, s') = f s0 in (r :) `first` unfoldUntil p f s'
+unfoldUntil :: (s -> Bool) -> (s -> (r, s)) -> s -> [r]
+unfoldUntil p f = unfoldr \s -> bool (Just $ f s) Nothing (p s)
 
 canDerive :: Ord v => Given v -> Wanted v -> Bool
 canDerive g = all (canDerive1 g) . unWanted
