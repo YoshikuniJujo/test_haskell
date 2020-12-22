@@ -1,0 +1,40 @@
+name:                try-ranged-list
+version:             0.1.0.0
+github:              "YoshikuniJujo/try-ranged-list"
+license:             BSD3
+author:              "Yoshikuni Jujo"
+maintainer:          "PAF01143@nifty.ne.jp"
+copyright:           "Yoshikuni Jujo"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-ranged-list#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- typecheck-plugin-nat-simple
+
+library:
+  source-dirs: src
+  exposed-modules:
+  - Data.List.Range
+
+tests:
+  try-ranged-list-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-ranged-list
