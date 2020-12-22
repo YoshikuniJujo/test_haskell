@@ -21,6 +21,21 @@ data RangeR :: Nat -> Nat -> * -> * where
 
 deriving instance Show a => Show (RangeR n m a)
 
+instance Functor (RangeR 0 0) where
+	_ `fmap` NilR = NilR
+	_ `fmap` _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	Functor (RangeR 0 (m - 1)) => Functor (RangeR 0 m) where
+	_ `fmap` NilR = NilR
+	f `fmap` (xs :++ x) = (f <$> xs) :++ f x
+	_ `fmap` _ = error "never occur"
+
+instance {-# OVERLAPPABLE #-}
+	Functor (RangeR (n - 1) (m - 1)) => Functor (RangeR n m) where
+	f `fmap` (xs :+ x) = (f <$> xs) :+ f x
+	_ `fmap` _ = error "never occur"
+
 instance Foldable (RangeR 0 0) where
 	foldr _ z NilR = z
 	foldr _ _ _ = error "never occur"
