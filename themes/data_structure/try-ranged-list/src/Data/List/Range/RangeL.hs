@@ -8,6 +8,7 @@
 
 module Data.List.Range.RangeL (
 	RangeL(..), PushL, (.:..), AddL, (++.),
+	UnfoldrMin, unfoldrMin, UnfoldrMax, unfoldrMax,
 	LoosenLMin, loosenLMin, LoosenLMax, loosenLMax, loosenL ) where
 
 import GHC.TypeNats (Nat, type (+), type (-), type (<=))
@@ -119,3 +120,25 @@ instance {-# OVERLAPPABLE #-}
 	AddL (n - 1) (m - 1) n' m' => AddL n m n' m' where
 	x :. xs ++. ys = x :. (xs ++. ys)
 	_ ++. _ = error "never occur"
+
+class UnfoldrMin n m where
+	unfoldrMin :: (s -> (a, s)) -> s -> RangeL n m a
+
+instance UnfoldrMin 0 m where unfoldrMin _ _ = NilL
+
+instance {-# OVERLAPPABLE #-}
+	UnfoldrMin (n - 1) (m - 1) => UnfoldrMin n m where
+	unfoldrMin f s = let (x, s') = f s in x :. unfoldrMin f s'
+
+class UnfoldrMax n m where
+	unfoldrMax :: (s -> (a, s)) -> s -> RangeL n m a
+
+instance UnfoldrMax 0 0 where unfoldrMax _ _ = NilL
+
+instance {-# OVERLAPPABLE #-}
+	UnfoldrMax 0 (m - 1) => UnfoldrMax 0 m where
+	unfoldrMax f s = let (x, s') = f s in x :.. unfoldrMax f s'
+
+instance {-# OVERLAPPABLE #-}
+	UnfoldrMax (n - 1) (m - 1) => UnfoldrMax n m where
+	unfoldrMax f s = let (x, s') = f s in x :. unfoldrMax f s'

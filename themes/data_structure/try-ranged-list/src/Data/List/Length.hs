@@ -2,7 +2,7 @@
 
 module Data.List.Length (
 	-- * LENGTHED LIST LEFT
-	LengthL, RangeL(NilL, (:.)), AddL, (++.),
+	LengthL, RangeL(NilL, (:.)), AddL, (++.), unfoldr,
 	-- * LENGTHED LIST RIGHT
 	LengthR, RangeR(NilR, (:+)), AddR, (+++),
 	-- * LEFT TO RIGHT
@@ -14,5 +14,8 @@ module Data.List.Length (
 import Data.List.Range
 
 type LengthL n = RangeL n n
+
+unfoldr :: UnfoldrMin n n => (s -> (a, s)) -> s -> LengthL n a
+unfoldr = unfoldrMin
 
 type LengthR n = RangeR n n

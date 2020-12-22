@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds, TypeOperators, GADTs #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
@@ -29,8 +30,12 @@ instance {-# OVERLAPPABLE #-} FromBits (n - 1) => FromBits n where
 fromWord8 :: Word8 -> LengthL 8 Bit
 fromWord8 = fromBits
 
+fromWord8' :: Word8 -> LengthL 8 Bit
+fromWord8' = unfoldr \n -> (bool O I $ testBit n 0, n `shiftR` 1)
+
 main :: IO ()
 main = do
-	print . toWord8 $ O :. I :. I :. O :. O :. O :. O :. O :. NilL
-	print $ fromWord8 6
+	print . toWord8 $ O :. I :. I :. O :. O :. I :. O :. O :. NilL
+	print $ fromWord8 38
+	print $ fromWord8' 38
 	print (fromBits (256 :: Word) :: LengthL 8 Bit) `catch` \(e :: ErrorCall) -> print e
