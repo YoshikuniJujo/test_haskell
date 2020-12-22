@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1a6c6dffbe81132c24f3161a4af529119a92b0ea16c9463eb6604641b194679d
+-- hash: 9ec3d1c202a394c69442cbac66972460ceb1c6befe1fb3c0acac4656874a2ca3
 
 name:           try-ranged-list
 version:        0.1.0.0
@@ -28,10 +28,10 @@ source-repository head
 library
   exposed-modules:
       Data.List.Range
+      Data.List.Length
   other-modules:
       Data.List.Range.RangeL
       Data.List.Range.RangeR
-      Lib
       Paths_try_ranged_list
   hs-source-dirs:
       src

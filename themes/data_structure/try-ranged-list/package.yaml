@@ -27,6 +27,7 @@ library:
   source-dirs: src
   exposed-modules:
   - Data.List.Range
+  - Data.List.Length
 
 tests:
   try-ranged-list-test:
