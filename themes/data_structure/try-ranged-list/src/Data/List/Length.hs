@@ -2,9 +2,9 @@
 
 module Data.List.Length (
 	-- * LENGTHED LIST LEFT
-	LengthL, AddL, (++.),
+	LengthL, RangeL(NilL, (:.)), AddL, (++.),
 	-- * LENGTHED LIST RIGHT
-	LengthR, AddR, (+++),
+	LengthR, RangeR(NilR, (:+)), AddR, (+++),
 	-- * LEFT TO RIGHT
 	LeftToRight, (++.+), leftToRight,
 	-- * RIGHT TO LEFT
