@@ -3,7 +3,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module BitsAndWord32 where
+module BitsAndWord32 (bitsToWord32, word32ToBits) where
 
 import Language.Haskell.TH
 import Data.List.Length
@@ -45,11 +45,6 @@ bitsToWord32BigE = foldl (\w b -> w `shift` 1 .|. fromIntegral (fromEnum b)) 0
 
 bitsToWord32BigE' :: LengthL 32 Bit -> Word32
 bitsToWord32BigE' = bitsToWord32BigE . leftToRight
-
-exampleBitsR :: LengthR 32 Bit
-exampleBitsR =
-	(repeatR I :: LengthR 8 Bit) +++ (repeatR O :: LengthR 8 Bit) +++
-	(repeatR I :: LengthR 8 Bit) +++ (repeatR O :: LengthR 8 Bit)
 
 word32ToBitsBigE :: Word32 -> LengthR 32 Bit
 word32ToBitsBigE = unfoldl \w -> (bool O I (w `testBit` 0), w `shiftR` 1)

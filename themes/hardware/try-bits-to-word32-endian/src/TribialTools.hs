@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
 module TribialTools where
 
 mkTitle :: String -> String
