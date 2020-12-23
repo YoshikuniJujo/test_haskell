@@ -1,0 +1,66 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 0059a09ef72dda81650b4b48ae5923272db68513d67bf8b9b3c765d710e04f52
+
+name:           try-bits-to-word32-endian
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-bits-to-word32-endian#readme>
+homepage:       https://github.com/YoshikuniJujo/try-bits-to-word32-endian#readme
+bug-reports:    https://github.com/YoshikuniJujo/try-bits-to-word32-endian/issues
+author:         Yoshikuni Jujo
+maintainer:     PAF01143@nifty.ne.jp
+copyright:      Yoshikuni Jujo
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/YoshikuniJujo/try-bits-to-word32-endian
+
+library
+  exposed-modules:
+      Lib
+      TribialTools
+  other-modules:
+      Paths_try_bits_to_word32_endian
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+    , template-haskell
+  default-language: Haskell2010
+
+executable try-bits-to-word32-endian-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_try_bits_to_word32_endian
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , template-haskell
+    , try-bits-to-word32-endian
+  default-language: Haskell2010
+
+test-suite try-bits-to-word32-endian-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_try_bits_to_word32_endian
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , template-haskell
+    , try-bits-to-word32-endian
+  default-language: Haskell2010
