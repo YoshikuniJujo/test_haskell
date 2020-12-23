@@ -6,7 +6,7 @@ todo
 
 * [x] get environment variables in template haskell
 * [x] check endian
-* [ ] encode bits to Word32 in little endian
+* [x] encode bits to Word32 in little endian
 * [ ] decode bits from Word32 in little endian
 * [ ] encode bits to Word32 in big endian
 * [ ] decode bits from Word32 in big endian

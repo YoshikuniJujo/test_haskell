@@ -3,7 +3,29 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    name: ranged-list
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/ranged-list
+    pantry-tree:
+      size: 778
+      sha256: db2cebbe2234c6c7cc4e54aa2d9045b90cc5e3dca4bace72199326f5a30c8fd3
+    commit: 3627e19229c84c3cc8e55254b04b58ecc27680fa
+  original:
+    git: https://github.com/YoshikuniJujo/ranged-list
+    commit: 3627e19229c84c3cc8e55254b04b58ecc27680fa
+- completed:
+    name: typecheck-plugin-nat-simple
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/typecheck-plugin-nat-simple
+    pantry-tree:
+      size: 1114
+      sha256: 4b627c41c180d13ba79d39af438f906e0a57fd4f1ab20bc55be69658dc649111
+    commit: 9066190addfed1eb5b4b08769787e914cc5b309a
+  original:
+    git: https://github.com/YoshikuniJujo/typecheck-plugin-nat-simple
+    commit: 9066190addfed1eb5b4b08769787e914cc5b309a
 snapshots:
 - completed:
     size: 533252
