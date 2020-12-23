@@ -25,6 +25,9 @@ word32ToBitsLittleE = unfoldr \w -> (bool O I (w `testBit` 0), w `shiftR` 1)
 bitsToWord32BigE :: LengthR 32 Bit -> Word32
 bitsToWord32BigE = foldl (\w b -> w `shift` 1 .|. fromIntegral (fromEnum b)) 0
 
+bitsToWord32BigE' :: LengthL 32 Bit -> Word32
+bitsToWord32BigE' = bitsToWord32BigE . leftToRight
+
 exampleBitsR :: LengthR 32 Bit
 exampleBitsR =
 	(repeatR I :: LengthR 8 Bit) +++ (repeatR O :: LengthR 8 Bit) +++
@@ -32,3 +35,6 @@ exampleBitsR =
 
 word32ToBitsBigE :: Word32 -> LengthR 32 Bit
 word32ToBitsBigE = unfoldl \w -> (bool O I (w `testBit` 0), w `shiftR` 1)
+
+word32ToBitsBigE' :: Word32 -> LengthL 32 Bit
+word32ToBitsBigE' = rightToLeft . word32ToBitsBigE
