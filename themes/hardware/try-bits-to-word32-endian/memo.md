@@ -10,4 +10,4 @@ todo
 * [x] decode bits from Word32 in little endian
 * [x] encode bits to Word32 in big endian
 * [x] decode bits from Word32 in big endian
-* [ ] switch between the endians by environment variable or result of endian check
+* [x] switch between the endians by environment variable or result of endian check

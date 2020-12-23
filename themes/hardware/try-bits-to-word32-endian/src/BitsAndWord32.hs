@@ -16,11 +16,16 @@ import CheckEndian
 data Bit = O | I deriving (Show, Enum)
 
 bitsToWord32 :: LengthL 32 Bit -> Word32
-bitsToWord32 = $(do
+word32ToBits :: Word32 -> LengthL 32 Bit
+(bitsToWord32, word32ToBits) = $(do
 	e <- runIO targetEndian
 	case e of
-		Right LittleEndian -> varE $ mkName "bitsToWord32LittleE"
-		Right BigEndian -> varE $ mkName "bitsToWord32BigE'"
+		Right LittleEndian -> tupE [
+			varE $ mkName "bitsToWord32LittleE",
+			varE $ mkName "word32ToBitsLittleE" ]
+		Right BigEndian -> tupE [
+			varE $ mkName "bitsToWord32BigE'",
+			varE $ mkName "word32ToBitsBigE'" ]
 		Right UnknownEndian -> fail "unknown endian"
 		Left msg -> fail msg)
 
