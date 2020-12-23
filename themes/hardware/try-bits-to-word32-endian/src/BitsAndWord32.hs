@@ -1,15 +1,28 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module BitsAndWord32 where
 
+import Language.Haskell.TH
 import Data.List.Length
 import Data.Bits
 import Data.Bool
 import Data.Word
 
+import CheckEndian
+
 data Bit = O | I deriving (Show, Enum)
+
+bitsToWord32 :: LengthL 32 Bit -> Word32
+bitsToWord32 = $(do
+	e <- runIO targetEndian
+	case e of
+		Right LittleEndian -> varE $ mkName "bitsToWord32LittleE"
+		Right BigEndian -> varE $ mkName "bitsToWord32BigE'"
+		Right UnknownEndian -> fail "unknown endian"
+		Left msg -> fail msg)
 
 bitsToWord32LittleE :: LengthL 32 Bit -> Word32
 bitsToWord32LittleE = foldr (\b w -> w `shift` 1 .|. fromIntegral (fromEnum b)) 0

@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module CheckEndian (targetEndian) where
+module CheckEndian (Endian(..), targetEndian) where
 
 import Foreign.Ptr
 import Foreign.Marshal
@@ -27,5 +27,5 @@ targetEndian = lookupEnv "GHC_TARGET_ENDIAN" >>= \case
 	Just "little-endian" -> pure $ Right LittleEndian
 	Just "big-endian" -> pure $ Right BigEndian
 	Just edn -> pure . Left $ "no such endian: " ++ edn ++ "\n" ++
-		"GHC_TARGET_ENDIAN: little-endian or big-endian"
+		"\tGHC_TARGET_ENDIAN: little-endian or big-endian"
 	Nothing -> Right <$> checkEndian
