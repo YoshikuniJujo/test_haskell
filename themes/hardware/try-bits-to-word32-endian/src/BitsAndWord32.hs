@@ -3,7 +3,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module BitsAndWord32 (bitsToWord32, word32ToBits) where
+module BitsAndWord32 (Bit(..), bitsToWord32, word32ToBits) where
 
 import Language.Haskell.TH
 import Data.List.Length
