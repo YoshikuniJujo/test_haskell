@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0059a09ef72dda81650b4b48ae5923272db68513d67bf8b9b3c765d710e04f52
+-- hash: 66f66920b250612765484d273d830dbca539ed61bd2da736821b12b925a8a89f
 
 name:           try-bits-to-word32-endian
 version:        0.1.0.0
@@ -27,6 +27,7 @@ source-repository head
 
 library
   exposed-modules:
+      CheckEndian
       Lib
       TribialTools
   other-modules:
