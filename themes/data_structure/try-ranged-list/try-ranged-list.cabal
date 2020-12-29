@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9ec3d1c202a394c69442cbac66972460ceb1c6befe1fb3c0acac4656874a2ca3
+-- hash: 0557e81575e02a012ea181340b2a4a06f313cf3778a8f576c291bcd257db90b7
 
 name:           try-ranged-list
 version:        0.1.0.0
@@ -26,18 +26,14 @@ source-repository head
   location: https://github.com/YoshikuniJujo/try-ranged-list
 
 library
-  exposed-modules:
-      Data.List.Range
-      Data.List.Length
   other-modules:
-      Data.List.Range.RangeL
-      Data.List.Range.RangeR
       Paths_try_ranged_list
   hs-source-dirs:
       src
   build-depends:
       base >=4.7 && <5
-    , typecheck-plugin-nat-simple
+    , ranged-list
+    , time
   default-language: Haskell2010
 
 test-suite try-ranged-list-test
@@ -50,6 +46,7 @@ test-suite try-ranged-list-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , ranged-list
+    , time
     , try-ranged-list
-    , typecheck-plugin-nat-simple
   default-language: Haskell2010

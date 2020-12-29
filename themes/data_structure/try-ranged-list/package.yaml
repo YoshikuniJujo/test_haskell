@@ -21,13 +21,11 @@ description:         Please see the README on GitHub at <https://github.com/Yosh
 
 dependencies:
 - base >= 4.7 && < 5
-- typecheck-plugin-nat-simple
+- ranged-list
+- time
 
 library:
   source-dirs: src
-  exposed-modules:
-  - Data.List.Range
-  - Data.List.Length
 
 tests:
   try-ranged-list-test:

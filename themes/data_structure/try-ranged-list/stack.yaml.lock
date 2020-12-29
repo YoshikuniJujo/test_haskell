@@ -15,6 +15,17 @@ packages:
   original:
     git: https://github.com/YoshikuniJujo/typecheck-plugin-nat-simple
     commit: 9066190addfed1eb5b4b08769787e914cc5b309a
+- completed:
+    name: ranged-list
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/ranged-list
+    pantry-tree:
+      size: 1297
+      sha256: 9064efd5398b15598ec417c105fd1e0ac3c598d4afae4a6555801563e6df1366
+    commit: 6617771f308ac032e214328f20f8d720bba5b96b
+  original:
+    git: https://github.com/YoshikuniJujo/ranged-list
+    commit: 6617771f308ac032e214328f20f8d720bba5b96b
 snapshots:
 - completed:
     size: 533252

@@ -42,6 +42,8 @@ packages:
 extra-deps:
 - git: https://github.com/YoshikuniJujo/typecheck-plugin-nat-simple
   commit: 9066190addfed1eb5b4b08769787e914cc5b309a
+- git: https://github.com/YoshikuniJujo/ranged-list
+  commit: 6617771f308ac032e214328f20f8d720bba5b96b
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
