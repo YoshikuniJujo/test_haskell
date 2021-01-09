@@ -25,6 +25,7 @@ dependencies:
 - containers
 - transformers
 - monads-tf
+- typecheck-plugin-nat-simple
 
 library:
   source-dirs: src

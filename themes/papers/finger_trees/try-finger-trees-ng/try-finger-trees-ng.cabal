@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6fdacd2828bd88452dcbdbb60f38888e97aa70d8a3311e7c208b1af45140874d
+-- hash: 866a4be6a7dd47c36d445b01059c8daa59b096e2e6e13e92dccbdc8904b96c3c
 
 name:           try-finger-trees-ng
 version:        0.1.0.0
@@ -45,8 +45,6 @@ library
       Data.Parse
       Data.View
       Internal.Tools
-      Plugin.TypeCheck.Nat.Simple
-      Plugin.TypeCheck.Nat.Simple.Decode
       Trial.FingerTree.TryFingerTree
       Trial.Range.TryRange
       Trial.TypeCheck.Hello
@@ -63,6 +61,7 @@ library
     , ghc
     , monads-tf
     , transformers
+    , typecheck-plugin-nat-simple
   default-language: Haskell2010
 
 executable try-finger-trees-ng-exe
@@ -79,6 +78,7 @@ executable try-finger-trees-ng-exe
     , monads-tf
     , transformers
     , try-finger-trees-ng
+    , typecheck-plugin-nat-simple
   default-language: Haskell2010
 
 test-suite try-finger-trees-ng-test
@@ -96,4 +96,5 @@ test-suite try-finger-trees-ng-test
     , monads-tf
     , transformers
     , try-finger-trees-ng
+    , typecheck-plugin-nat-simple
   default-language: Haskell2010
