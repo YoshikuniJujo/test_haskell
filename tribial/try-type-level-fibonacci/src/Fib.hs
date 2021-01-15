@@ -58,6 +58,11 @@ fib'' i f = fib'' (i - 2) \p -> fib'' (i - 1) \p' -> f $ p .+ p'
 
 -- > toNatural $ fib'' 20 fibNatVal ===> 6765
 
+-- fib'' i f =
+--	fib'' (i - 2) \p ->
+--	fib'' (i - 1) \p' ->
+--	f $ p .+ p'
+
 ---------------------------------------------------------------------------
 
 data FibNat = Zero | One | FibNat :+ FibNat deriving Show
