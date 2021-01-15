@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f6c05d47743ece08f9ed5a279f14a464e8293bb0d18e19b6ae8d88ba83dd783d
+-- hash: 04394a682364ae04296298c14a1a5ab2bc345ab25860f78de3246757f31935cf
 
 name:           try-type-level-fibonacci
 version:        0.1.0.0
@@ -27,6 +27,7 @@ source-repository head
 
 library
   exposed-modules:
+      Fib
       Simple
       TypeCheck
   other-modules:
