@@ -7,6 +7,9 @@
 	AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
+-- % stack ghci --ghci-options '-XTypeApplications -XDataKinds'
+-- > :module Fib Data.Proxy
+
 module Fib where
 
 import GHC.TypeNats
@@ -15,7 +18,7 @@ import Data.Proxy
 
 -- VALUE -> VALUE
 
-fib :: Int -> FibNat
+fib :: Natural -> FibNat
 fib 0 = Zero
 fib 1 = One
 fib n = fib (n - 2) :+ fib (n - 1)
@@ -45,7 +48,7 @@ type family Fib n where
 
 -- VALUE -> TYPE
 
-fib'' :: Int -> (forall (n :: FibNat) . KnownFibNat n => Proxy n -> x) -> x
+fib'' :: Natural -> (forall (n :: FibNat) . KnownFibNat n => Proxy n -> x) -> x
 fib'' 0 f = f $ Proxy @'Zero
 fib'' 1 f = f $ Proxy @'One
 fib'' i f = fib'' (i - 2) \p -> fib'' (i - 1) \p' -> f $ p .+ p'
