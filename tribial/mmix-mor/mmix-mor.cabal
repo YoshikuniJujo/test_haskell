@@ -1,0 +1,62 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: c9c98af563b273764beb31ba0551cbbd05656b02ae6824f37fd23cfe96e7f297
+
+name:           mmix-mor
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/mmix-mor#readme>
+homepage:       https://github.com/githubuser/mmix-mor#readme
+bug-reports:    https://github.com/githubuser/mmix-mor/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2021 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/mmix-mor
+
+library
+  exposed-modules:
+      Lib
+  other-modules:
+      Paths_mmix_mor
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+  default-language: Haskell2010
+
+executable mmix-mor-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_mmix_mor
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , mmix-mor
+  default-language: Haskell2010
+
+test-suite mmix-mor-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_mmix_mor
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , mmix-mor
+  default-language: Haskell2010
