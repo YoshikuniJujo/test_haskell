@@ -12,3 +12,10 @@ sample :: DiGraph Edge Vertex
 sample = DiGraph {
 	start = \case Ea -> A; Eb -> B; Ec -> C,
 	end = \case Ea -> B; Eb -> C; Ec -> D }
+
+type DiGraph' e v = (e -> v, e -> v)
+
+sample' :: DiGraph' Edge VErtex
+sample' = (
+	\case Ea -> A; Eb -> B; Ec -> C,
+	\case Ea -> B; Eb -> C; Ec -> D )
