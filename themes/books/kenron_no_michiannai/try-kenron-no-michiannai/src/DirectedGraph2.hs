@@ -15,7 +15,7 @@ sample = DiGraph {
 
 type DiGraph' e v = (e -> v, e -> v)
 
-sample' :: DiGraph' Edge VErtex
+sample' :: DiGraph' Edge Vertex
 sample' = (
 	\case Ea -> A; Eb -> B; Ec -> C,
 	\case Ea -> B; Eb -> C; Ec -> D )
