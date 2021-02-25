@@ -5,10 +5,12 @@ module Main where
 
 import Data.Foldable
 
-import Graphics.Cairo
 import Graphics.Cairo.Drawing.CairoT
-import Graphics.Cairo.CairoPatternT
-import Graphics.Cairo.PngSupport
+import Graphics.Cairo.Drawing.Paths
+import Graphics.Cairo.Drawing.CairoPatternT
+import Graphics.Cairo.Surfaces.ImageSurfaces
+import Graphics.Cairo.Surfaces.PngSupport
+import Graphics.Cairo.Values
 
 main :: IO ()
 main = do

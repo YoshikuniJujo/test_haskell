@@ -3,12 +3,12 @@
 
 module Main where
 
-import Graphics.Cairo
 import Graphics.Cairo.Drawing.CairoT
-import Graphics.Cairo.Paths
-import Graphics.Cairo.CairoPatternT
-import Graphics.Cairo.Text
-import Graphics.Cairo.PngSupport
+import Graphics.Cairo.Drawing.Paths
+import Graphics.Cairo.Drawing.CairoPatternT
+import Graphics.Cairo.Drawing.Text
+import Graphics.Cairo.Surfaces.ImageSurfaces
+import Graphics.Cairo.Surfaces.PngSupport
 import Graphics.Cairo.Types
 import Graphics.Cairo.Values
 

@@ -9,15 +9,15 @@ packages:
     version: 0.1.0.0
     git: https://github.com/YoshikuniJujo/simple-cairo
     pantry-tree:
-      size: 1608
-      sha256: aeb06e8767c054f49e5be59975642ad3c7efe805c21bd9e3ba07c0c83b6df684
-    commit: 06a7a410d3f1b2ee7840eca5fa8e53aa0e0cfffc
+      size: 2117
+      sha256: a79750d3f644aa45da186d0ba7ee61330c54cfc913752340c56c5b83c62ddb4c
+    commit: 88566f6cf9e4e4ef22b60d60d7dde76dfb9947a1
   original:
     git: https://github.com/YoshikuniJujo/simple-cairo
-    commit: 06a7a410d3f1b2ee7840eca5fa8e53aa0e0cfffc
+    commit: 88566f6cf9e4e4ef22b60d60d7dde76dfb9947a1
 snapshots:
 - completed:
-    size: 532386
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/16/17.yaml
-    sha256: d3ee1ae797cf63189c95cf27f00700304946c5cb3c1e6a82001cd6584a221e1b
-  original: lts-16.17
+    size: 568887
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2021/2/25.yaml
+    sha256: ece4fbc22b6e3dcc608f68447eccb00f9c114b8b1fbaf55ff607ecf7a56e8eeb
+  original: nightly-2021-02-25
