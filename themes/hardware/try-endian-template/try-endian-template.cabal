@@ -1,0 +1,66 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 32a83faa23346d49ab88417265bc59153f1d2d39bdf35a2104303318d172ae7b
+
+name:           try-endian-template
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/try-endian-template#readme>
+homepage:       https://github.com/githubuser/try-endian-template#readme
+bug-reports:    https://github.com/githubuser/try-endian-template/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2021 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/try-endian-template
+
+library
+  exposed-modules:
+      Lib
+      Template
+  other-modules:
+      Paths_try_endian_template
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+    , template-haskell
+  default-language: Haskell2010
+
+executable try-endian-template-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_try_endian_template
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , template-haskell
+    , try-endian-template
+  default-language: Haskell2010
+
+test-suite try-endian-template-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_try_endian_template
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , template-haskell
+    , try-endian-template
+  default-language: Haskell2010
