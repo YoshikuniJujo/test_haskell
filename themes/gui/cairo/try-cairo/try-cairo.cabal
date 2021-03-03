@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 483fa913056185b361a2beb135d183c6083800a0de0c7c89465bd33464d0278d
+-- hash: a7c6d01f4c9ce8756bba7c2adf43beaada89642cd65a65bb6868d9c57a1efbbb
 
 name:           try-cairo
 version:        0.1.0.0
@@ -37,7 +37,8 @@ library
   pkgconfig-depends:
       cairo
   build-depends:
-      JuicyPixels
+      JuicyCairo
+    , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
     , primitive
@@ -53,7 +54,8 @@ executable colorsAsSource
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      JuicyCairo
+    , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
     , primitive
@@ -70,7 +72,8 @@ executable createdAsSource
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      JuicyCairo
+    , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
     , primitive
@@ -87,7 +90,8 @@ executable gradientsAsSource
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      JuicyCairo
+    , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
     , primitive
@@ -104,7 +108,8 @@ executable spec
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      JuicyCairo
+    , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
     , primitive
@@ -121,7 +126,8 @@ executable testA1
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      JuicyCairo
+    , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
     , primitive
@@ -138,7 +144,8 @@ executable testA8
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      JuicyCairo
+    , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
     , primitive
@@ -154,7 +161,8 @@ executable try-cairo-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      JuicyCairo
+    , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
     , primitive
@@ -171,7 +179,8 @@ executable tryPath
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      JuicyCairo
+    , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
     , primitive
@@ -188,7 +197,8 @@ test-suite try-cairo-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      JuicyCairo
+    , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
     , primitive

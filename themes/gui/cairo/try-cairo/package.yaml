@@ -24,6 +24,7 @@ dependencies:
 - primitive
 - simple-cairo
 - cairo-image
+- JuicyCairo
 - JuicyPixels
 
 library:

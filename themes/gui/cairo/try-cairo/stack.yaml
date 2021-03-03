@@ -41,7 +41,9 @@ packages:
 #
 extra-deps:
 - git: https://github.com/YoshikuniJujo/simple-cairo
-  commit: a3c87721a2c47ac10d1366f3215c760f1f6b6051
+  commit: f64864aa1625e43091b3209873680752a4572f00
+- git: https://github.com/YoshikuniJujo/JuicyCairo
+  commit: 782936f154da8cbfb9c9d43b9c023d5ac44b76b4
 - git: https://github.com/YoshikuniJujo/cairo-image.git
   commit: 0510d9085669f8cc558a17969d1c670f0a5c75be
 
