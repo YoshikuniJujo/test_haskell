@@ -7,16 +7,16 @@ import Control.Monad.Primitive
 import Control.Monad.ST
 import Data.Foldable
 import Data.Int
+import Data.CairoImage.Internal
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Surfaces.ImageSurfaces
-import Graphics.Cairo.Surfaces.ImageSurfaces.Juicy
 import Graphics.Cairo.Types
 import Graphics.Cairo.Values
 
 import Codec.Picture hiding (pixelAt, generateImage)
 
-import Data.CairoImage.Internal
+import Juicy
 
 main :: IO ()
 main = do

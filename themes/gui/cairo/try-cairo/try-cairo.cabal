@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a05509c4aebec446c60ca27a15aaad4c6690fecc0b8137b7ad034f2000817422
+-- hash: 483fa913056185b361a2beb135d183c6083800a0de0c7c89465bd33464d0278d
 
 name:           try-cairo
 version:        0.1.0.0
@@ -27,6 +27,7 @@ source-repository head
 
 library
   exposed-modules:
+      Juicy
       MakeSampleImage
       Title
   other-modules:
