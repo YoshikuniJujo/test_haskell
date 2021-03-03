@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: af58dca5e28421d7f810f7b68f05bed587fb199eab7479d4c876e61b6edb04d9
+-- hash: a05509c4aebec446c60ca27a15aaad4c6690fecc0b8137b7ad034f2000817422
 
 name:           try-cairo
 version:        0.1.0.0
@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       MakeSampleImage
+      Title
   other-modules:
       Paths_try_cairo
   hs-source-dirs:
@@ -37,6 +38,8 @@ library
   build-depends:
       JuicyPixels
     , base >=4.7 && <5
+    , cairo-image
+    , primitive
     , simple-cairo
   default-language: Haskell2010
 
@@ -51,6 +54,8 @@ executable colorsAsSource
   build-depends:
       JuicyPixels
     , base >=4.7 && <5
+    , cairo-image
+    , primitive
     , simple-cairo
     , try-cairo
   default-language: Haskell2010
@@ -66,6 +71,8 @@ executable createdAsSource
   build-depends:
       JuicyPixels
     , base >=4.7 && <5
+    , cairo-image
+    , primitive
     , simple-cairo
     , try-cairo
   default-language: Haskell2010
@@ -81,6 +88,59 @@ executable gradientsAsSource
   build-depends:
       JuicyPixels
     , base >=4.7 && <5
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , try-cairo
+  default-language: Haskell2010
+
+executable spec
+  main-is: spec.hs
+  other-modules:
+      Main
+      Paths_try_cairo
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , try-cairo
+  default-language: Haskell2010
+
+executable testA1
+  main-is: testA1.hs
+  other-modules:
+      Main
+      Paths_try_cairo
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , try-cairo
+  default-language: Haskell2010
+
+executable testA8
+  main-is: testA8.hs
+  other-modules:
+      Main
+      Paths_try_cairo
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , primitive
     , simple-cairo
     , try-cairo
   default-language: Haskell2010
@@ -95,6 +155,8 @@ executable try-cairo-exe
   build-depends:
       JuicyPixels
     , base >=4.7 && <5
+    , cairo-image
+    , primitive
     , simple-cairo
     , try-cairo
   default-language: Haskell2010
@@ -110,6 +172,8 @@ executable tryPath
   build-depends:
       JuicyPixels
     , base >=4.7 && <5
+    , cairo-image
+    , primitive
     , simple-cairo
     , try-cairo
   default-language: Haskell2010
@@ -125,6 +189,8 @@ test-suite try-cairo-test
   build-depends:
       JuicyPixels
     , base >=4.7 && <5
+    , cairo-image
+    , primitive
     , simple-cairo
     , try-cairo
   default-language: Haskell2010
