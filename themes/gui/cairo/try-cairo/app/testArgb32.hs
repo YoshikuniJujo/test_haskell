@@ -11,12 +11,14 @@ import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Surfaces.ImageSurfaces
 
 import Paths_try_cairo
+import Parts (checkPattern)
 
 main :: IO ()
 main = do
 	putStrLn "*** TEST ARGB 32 BEGIN ***"
 	sfc0 <- cairoImageSurfaceCreate cairoFormatArgb32 256 256
 	cr <- cairoCreate sfc0
+	checkPattern cr 256 256
 	sfc <- cairoImageSurfaceCreateForCairoImage . CairoImageArgb32
 		=<< readArgb32 =<< getDataFileName "HaskellLogo.png"
 	ptn <- cairoPatternCreateForSurface sfc
