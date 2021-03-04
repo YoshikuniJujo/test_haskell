@@ -41,11 +41,11 @@ packages:
 #
 extra-deps:
 - git: https://github.com/YoshikuniJujo/simple-cairo
-  commit: f64864aa1625e43091b3209873680752a4572f00
+  commit: 5fc37bcf00721fdfafda3c987cd8fa93998de91f
 - git: https://github.com/YoshikuniJujo/JuicyCairo
-  commit: 782936f154da8cbfb9c9d43b9c023d5ac44b76b4
+  commit: 3cb8315ef57cb51dd1f6dee43c0e69a46b9773e4
 - git: https://github.com/YoshikuniJujo/cairo-image.git
-  commit: 0510d9085669f8cc558a17969d1c670f0a5c75be
+  commit: 9ed8924eb7437c153297083dc2b33cf7b080e34f
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
