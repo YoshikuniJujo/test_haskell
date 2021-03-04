@@ -6,6 +6,8 @@ memo
 * [x] define cairoRotate
 * [ ] to try to read and write .png file
 	+ [ ] read -> convert -> paint -> convert -> write
+		- [x] RGBA8 -> Argb32 -> rotate -> Argb32 -> RGBA8
+		- [ ] others
 
 backup
 ------
