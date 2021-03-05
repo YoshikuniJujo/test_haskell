@@ -122,6 +122,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-cairo
+  removeAlpha:
+    main:                removeAlpha.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-cairo
 
 tests:
   try-cairo-test:
