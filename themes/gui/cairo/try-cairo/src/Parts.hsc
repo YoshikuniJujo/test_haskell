@@ -40,7 +40,11 @@ redSquare cr = do
 
 checkPattern :: PrimMonad m => CairoT (PrimState m) -> #{type int} -> #{type int} -> m ()
 checkPattern cr w h = do
-	cairoSetSourceRgb cr 0x77 0x77 0x77
+	cairoSetSourceRgb cr 1 1 1
+	for_ [0 .. (w - 1) `div` 25] \y -> for_ [0 .. (h - 1) `div` 25] \x ->
+		when ((x + y) `mod` 2 == 0) $ box cr x y
+	cairoFill cr
+	cairoSetSourceRgb cr 0.8 0.8 0.8
 	for_ [0 .. (w - 1) `div` 25] \y -> for_ [0 .. (h - 1) `div` 25] \x ->
 		when ((x + y) `mod` 2 == 1) $ box cr x y
 	cairoFill cr
