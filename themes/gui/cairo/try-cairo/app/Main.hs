@@ -3,6 +3,9 @@
 
 module Main where
 
+import Data.Maybe
+import Data.Color
+
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Drawing.CairoPatternT
@@ -23,15 +26,15 @@ main = do
 	cr <- cairoCreate sr
 
 	cairoSetLineWidth cr 2
-	cairoSetSourceRgb cr 0.5 0.2 0.2
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.5 0.2 0.2
 	cairoRectangle cr 50 30 250 150
 	cairoStroke cr
 
-	cairoSetSourceRgb cr 0.2 0.2 0.5
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.2 0.5
 	cairoRectangle cr 350 30 250 150
 	cairoFill cr
 
-	cairoSetSourceRgb cr 0 0 0
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0 0
 	cairoSelectFontFace cr "Georgia"
 		cairoFontSlantNormal cairoFontWeightBold
 	cairoSetFontSize cr 48
@@ -43,7 +46,7 @@ main = do
 	cairoMoveTo cr (400 - w / 2 - xb) (250 - h / 2 - yb)
 	cairoShowText cr "Hello, world!"
 
-	cairoSetSourceRgb cr 0 1 0
+	cairoSetSourceRgb cr .fromJust $ rgbDouble 0 1 0
 	cairoPaintWithAlpha cr 0.2
 
 	linpat <- cairoPatternCreateLinear 200 200 600 300

@@ -2,6 +2,9 @@
 
 module Main where
 
+import Data.Maybe
+import Data.Color
+
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Surfaces.ImageSurfaces
@@ -13,7 +16,7 @@ main = do
 	sr <- cairoImageSurfaceCreate cairoFormatArgb32 500 500
 	cr <- cairoCreate sr
 
-	cairoSetSourceRgb cr 0 0 0
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0 0
 	cairoMoveTo cr 0 0
 	cairoLineTo cr 500 500
 	cairoMoveTo cr 500 0

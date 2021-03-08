@@ -6,8 +6,10 @@ import Title
 import Control.Monad
 import Control.Monad.ST
 import Data.Foldable
+import Data.Maybe
 import Data.Word
 import Data.Int
+import Data.Color
 import Data.CairoImage.Internal
 import Codec.Picture hiding (pixelAt, generateImage)
 import Graphics.Cairo.Drawing.CairoT
@@ -41,8 +43,8 @@ testPattern :: Color -> FilePath -> CairoPatternT RealWorld -> IO ()
 testPattern (r, g, b) fp p = do
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 33 33
 	cr <- cairoCreate s
-	cairoSetSourceRgb cr 0 0 0
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0 0
 	cairoPaint cr
-	cairoSetSourceRgb cr r g b
+	cairoSetSourceRgb cr . fromJust $ rgbDouble r g b
 	cairoMask cr p
 	void $ writeDynamicPng fp =<< cairoImageSurfaceGetJuicyImage s

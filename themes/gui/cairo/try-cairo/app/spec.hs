@@ -6,7 +6,9 @@ import Control.Monad
 import Control.Monad.Primitive
 import Control.Monad.ST
 import Data.Foldable
+import Data.Maybe
 import Data.Int
+import Data.Color
 import Data.CairoImage.Internal
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
@@ -32,7 +34,7 @@ makeRed :: PrimMonad m => m (CairoSurfaceT (PrimState m), CairoT (PrimState m))
 makeRed = do
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 50 50
 	cr <- cairoCreate s
-	cairoSetSourceRgb cr 1 0 0
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 1 0 0
 	pure (s, cr)
 
 red :: forall s . ST s (DynamicImage, CairoFormatT, Int32) -- (Vector Word8, CairoFormatT, Int32)
@@ -46,14 +48,14 @@ redIo = do
 	(s, cr) <- makeRed
 	cairoRectangle cr 0 0 25 25
 	cairoFill cr
-	cairoSetSourceRgb cr 0 1 0
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 1 0
 	cairoRectangle cr 25 0 25 25
 	cairoFill cr
-	cairoSetSourceRgb cr 0.5 0.5 1
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.5 0.5 1
 --	cairoSetSourceRgb cr 1 0 0
 	cairoRectangle cr 0 25 25 25
 	cairoFill cr
-	cairoSetSourceRgb cr 1 1 0
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 1 1 0
 --	cairoSetSourceRgb cr 1 0 0
 	cairoRectangle cr 25 25 25 25
 	cairoFill cr
@@ -65,7 +67,7 @@ green :: forall s . ST s (
 green = do
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 50 50
 	cr <- cairoCreate s
-	cairoSetSourceRgb cr 0 1 0
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 1 0
 	cairoPaint cr
 	r1 <- (<$> cairoImageSurfaceGetCairoImage s) \case
 		CairoImageArgb32 a -> Left (a, pixelAt a 0 0, pixelAt a 30 30, pixelAt a 49 49)

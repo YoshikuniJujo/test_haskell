@@ -6,7 +6,9 @@ module Parts where
 import Control.Monad
 import Control.Monad.Primitive
 import Data.Foldable
+import Data.Maybe
 import Data.Int
+import Data.Color
 import Data.CairoImage.Internal
 import Data.JuicyCairo
 import Codec.Picture
@@ -34,17 +36,17 @@ writeArgb32 fp = writePng fp . cairoArgb32ToJuicyRGBA8
 
 redSquare :: PrimMonad m => CairoT (PrimState m) -> m ()
 redSquare cr = do
-	cairoSetSourceRgb cr 1 0 0
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 1 0 0
 	cairoRectangle cr 25 25 50 50
 	cairoFill cr
 
 checkPattern :: PrimMonad m => CairoT (PrimState m) -> #{type int} -> #{type int} -> m ()
 checkPattern cr w h = do
-	cairoSetSourceRgb cr 1 1 1
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 1 1 1
 	for_ [0 .. (w - 1) `div` 25] \y -> for_ [0 .. (h - 1) `div` 25] \x ->
 		when ((x + y) `mod` 2 == 0) $ box cr x y
 	cairoFill cr
-	cairoSetSourceRgb cr 0.8 0.8 0.8
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.8 0.8
 	for_ [0 .. (w - 1) `div` 25] \y -> for_ [0 .. (h - 1) `div` 25] \x ->
 		when ((x + y) `mod` 2 == 1) $ box cr x y
 	cairoFill cr
