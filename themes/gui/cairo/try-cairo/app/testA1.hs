@@ -3,6 +3,8 @@
 
 import Title
 
+import Foreign.C.Types
+
 import Control.Monad
 import Control.Monad.ST
 import Data.Foldable
@@ -37,7 +39,7 @@ circle x_ y_ = bool O I . (< 256) $ sqrt (x ^ (2 :: Int) + y ^ (2 :: Int))
 	x = (fromIntegral x_ - 16) * 0x100 / 16 :: Double
 	y = (fromIntegral y_ - 16) * 0x100 / 16 :: Double
 
-type Color = (Double, Double, Double)
+type Color = (CDouble, CDouble, CDouble)
 
 testPattern :: Color -> FilePath -> CairoPatternT RealWorld -> IO ()
 testPattern (r, g, b) fp p = do
