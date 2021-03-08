@@ -25,15 +25,15 @@ main = do
 	cairoStroke cr
 
 	cairoRectangle cr 0 0 250 250
-	cairoSetSourceRgba cr 1 0 0 0.8
+	cairoSetSourceRgba cr . fromJust $ rgbaDouble 1 0 0 0.8
 	cairoFill cr
 
 	cairoRectangle cr 0 250 250 250
-	cairoSetSourceRgba cr 0 1 0 0.6
+	cairoSetSourceRgba cr . fromJust $ rgbaDouble 0 1 0 0.6
 	cairoFill cr
 
 	cairoRectangle cr 250 0 250 250
-	cairoSetSourceRgba cr 0 0 1 0.4
+	cairoSetSourceRgba cr . fromJust $ rgbaDouble 0 0 1 0.4
 	cairoFill cr
 
 	print =<< cairoSurfaceWriteToPng sr "colorsAsSource.png"
