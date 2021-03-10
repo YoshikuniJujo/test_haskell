@@ -1,7 +1,8 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Parts where
+module Parts (
+	testDraw, redSquare, checkPattern, readArgb32, writeArgb32 ) where
 
 import Control.Monad
 import Control.Monad.Primitive

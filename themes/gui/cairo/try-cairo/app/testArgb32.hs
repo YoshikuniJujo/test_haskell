@@ -2,8 +2,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 import Data.CairoImage
-import Data.JuicyCairo
-import Codec.Picture
 import Graphics.Cairo.Values
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.CairoPatternT
@@ -11,7 +9,7 @@ import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Surfaces.ImageSurfaces
 
 import Paths_try_cairo
-import Parts (checkPattern, readArgb32)
+import Parts (checkPattern, readArgb32, writeArgb32)
 
 main :: IO ()
 main = do
@@ -30,6 +28,3 @@ main = do
 		CairoImageArgb32 i -> writeArgb32 "HaskellLogoRotated.png" i
 		_ -> error "image format error"
 	putStrLn "*** TEST ARGB 32 END ***"
-
-writeArgb32 :: FilePath -> Argb32 -> IO ()
-writeArgb32 fp = writePng fp . cairoArgb32ToJuicyRGBA8
