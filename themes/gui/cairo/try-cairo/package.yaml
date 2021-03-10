@@ -113,6 +113,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-cairo
+  testA8asDest:
+    main:                testA8asDest.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-cairo
   testArgb32:
     main:                testArgb32.hs
     source-dirs:         app
