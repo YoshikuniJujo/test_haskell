@@ -11,7 +11,7 @@ import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Surfaces.ImageSurfaces
 
 import Paths_try_cairo
-import Parts (checkPattern)
+import Parts (checkPattern, readArgb32)
 
 main :: IO ()
 main = do
@@ -30,12 +30,6 @@ main = do
 		CairoImageArgb32 i -> writeArgb32 "HaskellLogoRotated.png" i
 		_ -> error "image format error"
 	putStrLn "*** TEST ARGB 32 END ***"
-
-readArgb32 :: FilePath -> IO Argb32
-readArgb32 fp = readImage fp >>= \case
-	Left emsg -> error emsg
-	Right (ImageRGBA8 i) -> pure $ juicyRGBA8ToCairoArgb32 i
-	_ -> error "image format error"
 
 writeArgb32 :: FilePath -> Argb32 -> IO ()
 writeArgb32 fp = writePng fp . cairoArgb32ToJuicyRGBA8

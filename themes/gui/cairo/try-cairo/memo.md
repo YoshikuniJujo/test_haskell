@@ -7,7 +7,10 @@ memo
 * [ ] to try to read and write .png file
 	+ [ ] read -> convert -> paint -> convert -> write
 		- [x] RGBA8 -> Argb32 -> rotate -> Argb32 -> RGBA8
+		- [x] Y8 -> A8
 		- [ ] others
+* [x] move readArgb32 to Parts
+* [ ] try to use surface of A8 as destination
 
 backup
 ------

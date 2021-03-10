@@ -53,3 +53,9 @@ checkPattern cr w h = do
 
 box :: PrimMonad m => CairoT (PrimState m) -> #{type int} -> #{type int} -> m ()
 box cr x y = cairoRectangle cr (fromIntegral x * 25) (fromIntegral y * 25) 25 25
+
+readArgb32 :: FilePath -> IO Argb32
+readArgb32 fp = readImage fp >>= \case
+	Left emsg -> error emsg
+	Right (ImageRGBA8 i) -> pure $ juicyRGBA8ToCairoArgb32 i
+	_ -> error "image format error"
