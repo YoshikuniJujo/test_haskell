@@ -11,7 +11,8 @@ memo
 		- [ ] others
 * [x] move readArgb32 to Parts
 * [x] move writeArgb32 to Parts
-* [ ] try to use surface of A8 as destination
+* [x] try to use surface of A8 as destination
+* [x] try to use surface of A1 as destination
 
 backup
 ------
