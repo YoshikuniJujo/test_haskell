@@ -30,7 +30,7 @@ main = do
 readA8 :: FilePath -> IO A8
 readA8 fp = readImage fp >>= \case
 	Left emsg -> error emsg
-	Right (ImageY8 i) -> pure $ juicy8ToCairoA8 i
+	Right (ImageY8 i) -> pure $ juicyY8ToCairoA8 i
 	_ -> error "image format error"
 
 type Color = (CDouble, CDouble, CDouble)
