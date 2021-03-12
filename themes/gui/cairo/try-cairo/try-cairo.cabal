@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ab114865f82300f95ce1b5c5856ef35db801fb9d80ff497bf7d00e45121677c0
+-- hash: ecb249cbd2399b1d8fb71c62cd65d56e2838cc6a5780d6f0212306d4daaa5434
 
 name:           try-cairo
 version:        0.1.0.0
@@ -23,6 +23,7 @@ extra-source-files:
 data-files:
     HaskellLogo.png
     HaskellLogoNoAlpha.png
+    HaskellLogoNoAlpha16.png
 data-dir:       data
 
 source-repository head
@@ -107,6 +108,24 @@ executable gradientsAsSource
 
 executable grayscale
   main-is: grayscale.hs
+  other-modules:
+      Main
+      Paths_try_cairo
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , try-cairo
+  default-language: Haskell2010
+
+executable picture8To16
+  main-is: picture8To16.hs
   other-modules:
       Main
       Paths_try_cairo
@@ -323,6 +342,24 @@ executable testRgb16_565
 
 executable testRgb24
   main-is: testRgb24.hs
+  other-modules:
+      Main
+      Paths_try_cairo
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , try-cairo
+  default-language: Haskell2010
+
+executable testRgb30
+  main-is: testRgb30.hs
   other-modules:
       Main
       Paths_try_cairo

@@ -167,6 +167,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-cairo
+  testRgb30:
+    main:                testRgb30.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-cairo
   testParts:
     main:                testParts.hs
     source-dirs:         app
@@ -178,6 +187,15 @@ executables:
     - try-cairo
   removeAlpha:
     main:                removeAlpha.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-cairo
+  picture8To16:
+    main:                picture8To16.hs
     source-dirs:         app
     ghc-options:
     - -threaded
@@ -211,3 +229,4 @@ data-dir: data
 data-files:
 - HaskellLogo.png
 - HaskellLogoNoAlpha.png
+- HaskellLogoNoAlpha16.png
