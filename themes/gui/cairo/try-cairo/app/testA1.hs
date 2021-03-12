@@ -10,7 +10,6 @@ import Control.Monad.ST
 import Data.Foldable
 import Data.Bool
 import Data.Maybe
-import Data.Int
 import Data.Color
 import Data.CairoImage.Internal
 import Codec.Picture hiding (pixelAt, generateImage)
@@ -33,7 +32,7 @@ main = do
 	pm <- cairoPatternCreateForSurface =<< cairoImageSurfaceCreateForCairoImageMut (CairoImageMutA1 a1m)
 	testPattern (1, 1, 0) "testA1Mut.png" pm
 
-circle :: Int32 -> Int32 -> Bit
+circle :: CInt -> CInt -> Bit
 circle x_ y_ = bool O I . (< 256) $ sqrt (x ^ (2 :: Int) + y ^ (2 :: Int))
 	where
 	x = (fromIntegral x_ - 16) * 0x100 / 16 :: Double
