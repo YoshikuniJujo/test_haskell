@@ -45,7 +45,7 @@ extra-deps:
 - git: https://github.com/YoshikuniJujo/JuicyCairo
   commit: 7971ea1a0fd0a17091cfdb7a979ee4256fca71c9
 - git: https://github.com/YoshikuniJujo/cairo-image.git
-  commit: 6bac9520ffe609331ad6198b9bc126d2e83426d2
+  commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
