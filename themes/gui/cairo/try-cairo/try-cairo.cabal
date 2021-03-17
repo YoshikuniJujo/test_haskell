@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ecb249cbd2399b1d8fb71c62cd65d56e2838cc6a5780d6f0212306d4daaa5434
+-- hash: 5fa0ffd345a4e6be11b9e93a1d113244d92895fa8b6b1024cf3b334bb21ebe5d
 
 name:           try-cairo
 version:        0.1.0.0
@@ -288,6 +288,24 @@ executable testA8hs
 
 executable testArgb32
   main-is: testArgb32.hs
+  other-modules:
+      Main
+      Paths_try_cairo
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , try-cairo
+  default-language: Haskell2010
+
+executable testArgb32Mut
+  main-is: testArgb32Mut.hs
   other-modules:
       Main
       Paths_try_cairo

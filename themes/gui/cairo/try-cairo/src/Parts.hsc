@@ -2,7 +2,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Parts (
-	testDraw, redSquare, checkPattern, readArgb32, writeArgb32 ) where
+	testDraw, redSquare, checkPattern, readArgb32, writeArgb32,
+	readArgb32Mut, writeArgb32Mut ) where
 
 import Control.Monad
 import Control.Monad.Primitive
@@ -35,6 +36,9 @@ testDraw fp w h f = do
 writeArgb32 :: FilePath -> Argb32 -> IO ()
 writeArgb32 fp = writePng fp . cairoArgb32ToJuicyRGBA8
 
+writeArgb32Mut :: FilePath -> Argb32Mut RealWorld -> IO ()
+writeArgb32Mut fp = (writePng fp =<<) . cairoArgb32MutToJuicyRGBA8
+
 redSquare :: PrimMonad m => CairoT (PrimState m) -> m ()
 redSquare cr = do
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 1 0 0
@@ -59,4 +63,10 @@ readArgb32 :: FilePath -> IO Argb32
 readArgb32 fp = readImage fp >>= \case
 	Left emsg -> error emsg
 	Right (ImageRGBA8 i) -> pure $ juicyRGBA8ToCairoArgb32 i
+	_ -> error "image format error"
+
+readArgb32Mut :: FilePath -> IO (Argb32Mut RealWorld)
+readArgb32Mut fp = readImage fp >>= \case
+	Left emsg -> error emsg
+	Right (ImageRGBA8 i) -> juicyRGBA8ToCairoArgb32Mut i
 	_ -> error "image format error"
