@@ -67,6 +67,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-simple-cairo
+  try-cairo-set-source-surface:
+    main:                try-cairo-set-source-surface.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-simple-cairo
 
 tests:
   try-simple-cairo-test:

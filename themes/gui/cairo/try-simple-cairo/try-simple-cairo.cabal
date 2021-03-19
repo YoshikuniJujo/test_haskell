@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c397427404e51de03ce32272ef6a5138adeffca8cfdab6b9dd283893ded65d6c
+-- hash: f672c9ea75ba5ea0816d12dd8f4f94460d67fcfee2f48fa6dd6572338fc68e88
 
 name:           try-simple-cairo
 version:        0.1.0.0
@@ -43,6 +43,24 @@ library
 
 executable try-cairo-set-source
   main-is: try-cairo-set-source.hs
+  other-modules:
+      Main
+      Paths_try_simple_cairo
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , simple-cairo
+    , text
+    , try-simple-cairo
+  default-language: Haskell2010
+
+executable try-cairo-set-source-surface
+  main-is: try-cairo-set-source-surface.hs
   other-modules:
       Main
       Paths_try_simple_cairo
