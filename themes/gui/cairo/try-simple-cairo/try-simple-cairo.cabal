@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3d111721796cc0050f7fccbb671f186b956e9d23a1a5edc4b80d4cad3055e1bc
+-- hash: 2a4167192114b0eca469580ffb6bdb370e7d28d0d86646e8d33ac0c663654c53
 
 name:           try-simple-cairo
 version:        0.1.0.0
@@ -38,6 +38,7 @@ library
     , base >=4.7 && <5
     , cairo-image
     , simple-cairo
+    , text
   default-language: Haskell2010
 
 executable try-simple-cairo-exe
@@ -53,6 +54,7 @@ executable try-simple-cairo-exe
     , base >=4.7 && <5
     , cairo-image
     , simple-cairo
+    , text
     , try-simple-cairo
   default-language: Haskell2010
 
@@ -70,6 +72,25 @@ executable try-svg
     , base >=4.7 && <5
     , cairo-image
     , simple-cairo
+    , text
+    , try-simple-cairo
+  default-language: Haskell2010
+
+executable try-svg-stream
+  main-is: try-svg-stream.hs
+  other-modules:
+      Main
+      Paths_try_simple_cairo
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , simple-cairo
+    , text
     , try-simple-cairo
   default-language: Haskell2010
 
@@ -87,5 +108,6 @@ test-suite try-simple-cairo-test
     , base >=4.7 && <5
     , cairo-image
     , simple-cairo
+    , text
     , try-simple-cairo
   default-language: Haskell2010
