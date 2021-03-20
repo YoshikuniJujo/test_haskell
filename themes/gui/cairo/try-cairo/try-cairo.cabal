@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5fa0ffd345a4e6be11b9e93a1d113244d92895fa8b6b1024cf3b334bb21ebe5d
+-- hash: c2320c08b0f9a28941c7fef30a10dea3ff101f77e04c4619369e44b59a34d05f
 
 name:           try-cairo
 version:        0.1.0.0
@@ -108,6 +108,24 @@ executable gradientsAsSource
 
 executable grayscale
   main-is: grayscale.hs
+  other-modules:
+      Main
+      Paths_try_cairo
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , try-cairo
+  default-language: Haskell2010
+
+executable grayscale-with-alpha
+  main-is: grayscale-with-alpha.hs
   other-modules:
       Main
       Paths_try_cairo

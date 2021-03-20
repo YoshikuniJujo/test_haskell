@@ -13,6 +13,7 @@ memo
 * [x] move writeArgb32 to Parts
 * [x] try to use surface of A8 as destination
 * [x] try to use surface of A1 as destination
+* [x] make HaskellLogoYA8.png
 
 backup
 ------
