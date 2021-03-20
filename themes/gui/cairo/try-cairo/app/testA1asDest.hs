@@ -29,6 +29,6 @@ main = do
 	cairoImageSurfaceGetCairoImage sfc0 >>= \case
 		CairoImageA1 i -> do
 			print $ imageSize i
-			writePng "HaskellLogoRotatedA1.png" $ cairoA1ToJuicyY8 i
+			writePng "HaskellLogoRotatedA1.png" $ cairoA1ToJuicyYA8 0x77 i
 		_ -> error "image format error"
 	putStrLn "*** TEST ARGB 32 END ***"
