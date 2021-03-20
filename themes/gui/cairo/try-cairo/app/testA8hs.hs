@@ -23,14 +23,14 @@ import Juicy
 main :: IO ()
 main = do
 	putStrLn $ mkTitle "test a8 hs"
-	a8 <- readA8 "data/HaskellLogoGrayscale.png"
+	a8 <- readA8 "data/HaskellLogoGrayscaleWithAlpha.png"
 	p <- cairoPatternCreateForSurface =<< cairoImageSurfaceCreateForCairoImage (CairoImageA8 a8)
 	testPattern (0, 1, 0) "testA8hs.png" p
 
 readA8 :: FilePath -> IO A8
 readA8 fp = readImage fp >>= \case
 	Left emsg -> error emsg
-	Right (ImageY8 i) -> pure $ juicyY8ToCairoA8 i
+	Right (ImageYA8 i) -> pure $ juicyYA8ToCairoA8 i
 	_ -> error "image format error"
 
 type Color = (CDouble, CDouble, CDouble)
