@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e2c869ad2fc12f86d370709227fc5ab598253af3ca850bb39d160302d0336217
+-- hash: c7bae02e7d09ffddec829d090c1cbf8a4831cd0b6216a8ebc7deabc73c4af1cf
 
 name:           try-cairo
 version:        0.1.0.0
@@ -270,6 +270,24 @@ executable testA8
 
 executable testA8asDest
   main-is: testA8asDest.hs
+  other-modules:
+      Main
+      Paths_try_cairo
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , try-cairo
+  default-language: Haskell2010
+
+executable testA8asDestRGBA
+  main-is: testA8asDestRGBA.hs
   other-modules:
       Main
       Paths_try_cairo
