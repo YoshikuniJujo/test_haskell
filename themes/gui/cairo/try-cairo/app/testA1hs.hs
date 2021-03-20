@@ -27,14 +27,14 @@ main :: IO ()
 main = do
 	t : _ <- getArgs
 	putStrLn $ mkTitle "test a1 hs"
-	a1 <- readA1 (read t) "data/HaskellLogoGrayscale.png"
+	a1 <- readA1 (read t) "data/HaskellLogoGrayscaleWithAlpha.png"
 	p <- cairoPatternCreateForSurface =<< cairoImageSurfaceCreateForCairoImage (CairoImageA1 a1)
 	testPattern (0, 1, 0) "testA1hs.png" p
 
 readA1 :: Word8 -> FilePath -> IO A1
 readA1 t fp = readImage fp >>= \case
 	Left emsg -> error emsg
-	Right (ImageY8 i) -> pure $ juicyY8ToCairoA1 t i
+	Right (ImageYA8 i) -> pure $ juicyYA8ToCairoA1 t i
 	_ -> error "image format error"
 
 type Color = (CDouble, CDouble, CDouble)
