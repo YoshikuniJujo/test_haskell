@@ -104,6 +104,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-cairo
+  testA1hsRGBA:
+    main:                testA1hsRGBA.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-cairo
   testA1asDest:
     main:                testA1asDest.hs
     source-dirs:         app
