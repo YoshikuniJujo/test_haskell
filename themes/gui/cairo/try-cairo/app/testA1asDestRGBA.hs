@@ -16,8 +16,8 @@ import Data.JuicyCairo
 
 main :: IO ()
 main = do
-	putStrLn "*** TEST A 8 BEGIN ***"
-	sfc0 <- cairoImageSurfaceCreate cairoFormatA8 256 256
+	putStrLn "*** TEST A 1 BEGIN ***"
+	sfc0 <- cairoImageSurfaceCreate cairoFormatA1 256 256
 	cr <- cairoCreate sfc0
 	sfc <- cairoImageSurfaceCreateForCairoImage . CairoImageArgb32
 		=<< readArgb32 =<< getDataFileName "HaskellLogo.png"
@@ -27,8 +27,8 @@ main = do
 	cairoSetSource cr ptn
 	cairoPaint cr
 	cairoImageSurfaceGetCairoImage sfc0 >>= \case
-		CairoImageA8 i -> do
+		CairoImageA1 i -> do
 			print $ imageSize i
-			writePng "HaskellLogoRotatedA8RGBA.png" $ cairoA8ToJuicyRGBA8 0x00 0x77 0x00 i
+			writePng "HaskellLogoRotatedA1RGBA.png" $ cairoA1ToJuicyRGBA8 0x00 0x77 0x00 i
 		_ -> error "image format error"
-	putStrLn "*** TEST A 8 END ***"
+	putStrLn "*** TEST A 1 END ***"

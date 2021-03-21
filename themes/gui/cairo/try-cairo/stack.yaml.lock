@@ -21,11 +21,11 @@ packages:
     git: https://github.com/YoshikuniJujo/JuicyCairo
     pantry-tree:
       size: 622
-      sha256: cacaf4cde0b1e6c7c6ea9bb3130697ad95a693e4dbc129072cca2fa8389ccc77
-    commit: 4fc1f4d083b0794f1c2239104ea3e1d57927c246
+      sha256: 1af567d27aaaa9c561b2200fd323b3cd4f5b686a75d059c17090d35d6f17efdf
+    commit: de96c5bcc0ce097556cf1bb4b3143ba061cf6427
   original:
     git: https://github.com/YoshikuniJujo/JuicyCairo
-    commit: 4fc1f4d083b0794f1c2239104ea3e1d57927c246
+    commit: de96c5bcc0ce097556cf1bb4b3143ba061cf6427
 - completed:
     name: cairo-image
     version: 0.1.0.0
