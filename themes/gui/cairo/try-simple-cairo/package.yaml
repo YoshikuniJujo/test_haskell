@@ -121,6 +121,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-simple-cairo
+  try-cairo-clip:
+    main:                try-cairo-clip.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-simple-cairo
 
 tests:
   try-simple-cairo-test:
