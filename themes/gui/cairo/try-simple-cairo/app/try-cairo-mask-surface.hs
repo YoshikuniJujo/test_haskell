@@ -1,0 +1,28 @@
+{-# LANGUAGE LambdaCase #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module Main where
+
+import Data.Maybe
+import Data.CairoImage
+import Data.JuicyCairo
+import Data.Color
+import Codec.Picture
+import Graphics.Cairo.Drawing.CairoT.Basic
+import Graphics.Cairo.Surfaces.ImageSurfaces
+import Graphics.Cairo.Values
+
+main :: IO ()
+main = readImage "data/HaskellLogo.png" >>= \case
+	Right (ImageRGBA8 i) -> do
+		let i' = juicyRGBA8ToCairoArgb32 i
+		sr <- cairoImageSurfaceCreate cairoFormatArgb32 256 256
+		cr <- cairoCreate sr
+		cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.6 0.1
+		sr' <- cairoImageSurfaceCreateForCairoImage $ CairoImageArgb32 i'
+		cairoMaskSurface cr sr' 64 64
+		cairoImageSurfaceGetCairoImage sr >>= \case
+			CairoImageArgb32 ci ->
+				writePng "try-cairo-mask-surface.png" $ cairoArgb32ToJuicyRGBA8 ci
+			_ -> error "never occur"
+	_ -> error "bad"
