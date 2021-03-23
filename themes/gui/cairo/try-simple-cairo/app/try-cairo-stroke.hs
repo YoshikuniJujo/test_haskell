@@ -18,7 +18,8 @@ main :: IO ()
 main = do
 	sr <- cairoImageSurfaceCreate cairoFormatArgb32 128 128
 	cr <- cairoCreate sr
-	cairoSetLineWidth cr 8
+	cairoSetLineWidth cr 3
+	cairoSetDash cr [8, 32, 7] 3
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.6 0.1
 	cairoRectangle cr 32 32 64 64
 	print =<< cairoStrokeExtents cr
