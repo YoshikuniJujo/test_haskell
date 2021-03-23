@@ -23,6 +23,9 @@ main = do
 	CairoExtentsLeftTopWidthHeight {
 		cairoExtentsLeft = l, cairoExtentsTop = t, cairoExtentsWidth = w, cairoExtentsHeight = h } <- cairoStrokeExtents cr
 	print (l, t, w, h)
+	print =<< cairoInStroke cr 32 48
+	print =<< cairoInStroke cr 58 96
+	print =<< cairoInStroke cr 47 59
 	cairoStroke cr
 	cairoImageSurfaceGetCairoImage sr >>= \case
 		CairoImageArgb32 ci ->
