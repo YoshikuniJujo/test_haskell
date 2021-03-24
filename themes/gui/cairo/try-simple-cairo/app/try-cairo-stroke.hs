@@ -1,4 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -18,7 +19,9 @@ main :: IO ()
 main = do
 	sr <- cairoImageSurfaceCreate cairoFormatArgb32 128 128
 	cr <- cairoCreate sr
-	cairoSetLineWidth cr 3
+	print =<< cairoGet @LineWidth cr
+	cairoSet cr $ LineWidth 3
+	print =<< cairoGet @LineWidth cr
 	cairoSetDash cr [8, 32, 7] 3
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.6 0.1
 	cairoRectangle cr 32 32 64 64
