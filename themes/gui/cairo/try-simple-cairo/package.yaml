@@ -21,6 +21,7 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- primitive
 - text
 - simple-cairo
 - cairo-image
@@ -123,6 +124,15 @@ executables:
     - try-simple-cairo
   try-cairo-clip:
     main:                try-cairo-clip.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-simple-cairo
+  try-cairo-fill-rule:
+    main:                try-cairo-fill-rule.hs
     source-dirs:         app
     ghc-options:
     - -threaded
