@@ -22,7 +22,9 @@ main = do
 	print =<< cairoGet @LineWidth cr
 	cairoSet cr $ LineWidth 3
 	print =<< cairoGet @LineWidth cr
-	cairoSetDash cr [8, 32, 7] 3
+	print =<< cairoGet @Dash cr
+	cairoSet cr $ Dash [8, 32, 7] 3
+	print =<< cairoGet @Dash cr
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.6 0.1
 	cairoRectangle cr 32 32 64 64
 	print =<< cairoStrokeExtents cr
@@ -33,6 +35,7 @@ main = do
 	print =<< cairoInStroke cr 58 96
 	print =<< cairoInStroke cr 47 59
 	cairoStroke cr
+	print =<< cairoGet @Dash cr
 	cairoImageSurfaceGetCairoImage sr >>= \case
 		CairoImageArgb32 ci ->
 			writePng "try-cairo-stroke.png" $ cairoArgb32ToJuicyRGBA8 ci
