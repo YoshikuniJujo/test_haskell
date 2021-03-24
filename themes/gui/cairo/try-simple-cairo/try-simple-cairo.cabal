@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8750b5dd4f05d988465ddb0ea28add1fbbcfdd35e2e4b28705297592382f8584
+-- hash: 68bbeff81d9e1c820e2d6aafd91cf0a206579121ec04f82035aa830835bbb7fc
 
 name:           try-simple-cairo
 version:        0.1.0.0
@@ -63,6 +63,25 @@ executable try-cairo-clip
 
 executable try-cairo-fill-rule
   main-is: try-cairo-fill-rule.hs
+  other-modules:
+      Main
+      Paths_try_simple_cairo
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , text
+    , try-simple-cairo
+  default-language: Haskell2010
+
+executable try-cairo-line-cap
+  main-is: try-cairo-line-cap.hs
   other-modules:
       Main
       Paths_try_simple_cairo
