@@ -39,8 +39,7 @@ main = do
 		OperatorMultiply, OperatorScreen, OperatorOverlay, OperatorDarken, OperatorLighten,
 		OperatorColorDodge, OperatorColorBurn, OperatorHardLight, OperatorSoftLight,
 		OperatorDifference, OperatorExclusion,
-		OperatorHslHue
-		]
+		OperatorHslHue, OperatorHslSaturation, OperatorHslColor, OperatorHslLuminosity ]
 
 	cairoImageSurfaceGetCairoImage sr >>= \case
 		CairoImageArgb32 ci ->

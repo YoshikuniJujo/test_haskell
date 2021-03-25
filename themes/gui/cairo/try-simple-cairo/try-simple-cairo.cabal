@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8ed3eee1711ec89531a339d84f1d971365dda5e65a7fb302ab8708cfba2bc170
+-- hash: 7d143dde9724363b828d9cef85b8093755cd8b7e4349b920e24553350345991d
 
 name:           try-simple-cairo
 version:        0.1.0.0
@@ -158,6 +158,25 @@ executable try-cairo-mask-surface
 
 executable try-cairo-miter-limit
   main-is: try-cairo-miter-limit.hs
+  other-modules:
+      Main
+      Paths_try_simple_cairo
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , text
+    , try-simple-cairo
+  default-language: Haskell2010
+
+executable try-cairo-new-path
+  main-is: try-cairo-new-path.hs
   other-modules:
       Main
       Paths_try_simple_cairo
