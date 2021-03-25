@@ -11,6 +11,7 @@ import Data.JuicyCairo
 import Data.Color
 import Codec.Picture
 import Graphics.Cairo.Drawing.CairoT
+import Graphics.Cairo.Drawing.CairoT.Clip
 import Graphics.Cairo.Drawing.CairoT.Setting
 import Graphics.Cairo.Drawing.CairoT.CairoOperatorT
 import Graphics.Cairo.Drawing.Paths
@@ -20,7 +21,7 @@ import Graphics.Cairo.Values
 
 main :: IO ()
 main = do
-	sr <- cairoImageSurfaceCreate cairoFormatArgb32 256 512
+	sr <- cairoImageSurfaceCreate cairoFormatArgb32 256 1024
 	cr <- cairoCreate sr
 
 	cairoTranslate cr 16 16
@@ -28,6 +29,15 @@ main = do
 
 	cairoTranslate cr 0 128
 	sample cr OperatorSource
+
+	cairoTranslate cr 0 128
+	sample cr OperatorOver
+
+	cairoTranslate cr 0 128
+	cairoRectangle cr 0 0 128 128
+	cairoClip cr
+	sample cr OperatorIn
+	cairoResetClip cr
 
 	cairoTranslate cr 0 128
 	sample cr OperatorOver
