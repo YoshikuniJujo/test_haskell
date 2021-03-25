@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 369f92c33bb7880867e272dcd52e71f9f8a2a13a5cc6c491f3e95b61947eb086
+-- hash: e05b2a86d4b83670e38f0f5e4806fc199393a33696c47a32c4d73380b3ae61b2
 
 name:           try-simple-cairo
 version:        0.1.0.0
@@ -44,6 +44,25 @@ library
 
 executable try-cairo-clip
   main-is: try-cairo-clip.hs
+  other-modules:
+      Main
+      Paths_try_simple_cairo
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , text
+    , try-simple-cairo
+  default-language: Haskell2010
+
+executable try-cairo-curve-to
+  main-is: try-cairo-curve-to.hs
   other-modules:
       Main
       Paths_try_simple_cairo
