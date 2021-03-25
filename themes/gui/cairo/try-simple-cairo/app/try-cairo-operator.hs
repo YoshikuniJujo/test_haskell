@@ -11,6 +11,7 @@ import Data.JuicyCairo
 import Data.Color
 import Codec.Picture
 import Graphics.Cairo.Drawing.CairoT
+import Graphics.Cairo.Drawing.CairoT.SaveAndRestore
 import Graphics.Cairo.Drawing.CairoT.Clip
 import Graphics.Cairo.Drawing.CairoT.Setting
 import Graphics.Cairo.Drawing.CairoT.CairoOperatorT
@@ -21,7 +22,7 @@ import Graphics.Cairo.Values
 
 main :: IO ()
 main = do
-	sr <- cairoImageSurfaceCreate cairoFormatArgb32 256 1024
+	sr <- cairoImageSurfaceCreate cairoFormatArgb32 256 2048
 	cr <- cairoCreate sr
 
 	cairoTranslate cr 16 16
@@ -34,13 +35,19 @@ main = do
 	sample cr OperatorOver
 
 	cairoTranslate cr 0 128
-	cairoRectangle cr 0 0 128 128
-	cairoClip cr
 	sample cr OperatorIn
-	cairoResetClip cr
 
 	cairoTranslate cr 0 128
-	sample cr OperatorOver
+	sample cr OperatorOut
+
+	cairoTranslate cr 0 128
+	sample cr OperatorAtop
+
+	cairoTranslate cr 0 128
+	sample cr OperatorDest
+
+	cairoTranslate cr 0 128
+	sample cr OperatorDestOver
 
 	cairoImageSurfaceGetCairoImage sr >>= \case
 		CairoImageArgb32 ci ->
@@ -49,6 +56,10 @@ main = do
 
 sample :: PrimMonad m => CairoT (PrimState m) -> Operator -> m ()
 sample cr o = do
+	cairoSave cr
+	cairoRectangle cr 0 0 256 128
+	cairoClip cr
+
 	cairoSet cr OperatorOver
 	cairoRectangle cr 0 0 120 90
 	cairoSetSourceRgba cr . fromJust $ rgbaDouble 0.7 0 0 0.8
@@ -59,3 +70,5 @@ sample cr o = do
 	cairoRectangle cr 40 30 120 90
 	cairoSetSourceRgba cr . fromJust $ rgbaDouble 0 0 0.9 0.4
 	cairoFill cr
+
+	cairoRestore cr
