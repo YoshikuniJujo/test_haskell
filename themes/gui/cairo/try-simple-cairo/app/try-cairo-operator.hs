@@ -36,7 +36,7 @@ main = do
 	cairoIdentityMatrix cr
 	cairoTranslate cr 272 16
 	traverse_ (\o -> sample cr o >> cairoTranslate cr 0 128)  [
-		OperatorClear
+		OperatorMultiply, OperatorScreen, OperatorOverlay
 		]
 
 	cairoImageSurfaceGetCairoImage sr >>= \case
