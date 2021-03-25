@@ -37,7 +37,9 @@ main = do
 	cairoTranslate cr 272 16
 	traverse_ (\o -> sample cr o >> cairoTranslate cr 0 128)  [
 		OperatorMultiply, OperatorScreen, OperatorOverlay, OperatorDarken, OperatorLighten,
-		OperatorColorDodge
+		OperatorColorDodge, OperatorColorBurn, OperatorHardLight, OperatorSoftLight,
+		OperatorDifference, OperatorExclusion,
+		OperatorHslHue
 		]
 
 	cairoImageSurfaceGetCairoImage sr >>= \case
