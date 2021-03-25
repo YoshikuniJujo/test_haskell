@@ -1,9 +1,10 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
 import Control.Monad.Primitive
+import Data.Foldable
 import Data.Maybe
 import Data.CairoContext
 import Data.CairoImage
@@ -22,32 +23,21 @@ import Graphics.Cairo.Values
 
 main :: IO ()
 main = do
-	sr <- cairoImageSurfaceCreate cairoFormatArgb32 256 2048
+	sr <- cairoImageSurfaceCreate cairoFormatArgb32 512 1936
 	cr <- cairoCreate sr
 
 	cairoTranslate cr 16 16
-	sample cr OperatorClear
+	traverse_ (\o -> sample cr o >> cairoTranslate cr 0 128)  [
+		OperatorClear,
+		OperatorSource, OperatorOver, OperatorIn, OperatorOut, OperatorAtop,
+		OperatorDest, OperatorDestOver, OperatorDestIn, OperatorDestOut, OperatorDestAtop,
+		OperatorXor, OperatorAdd, OperatorSaturate ]
 
-	cairoTranslate cr 0 128
-	sample cr OperatorSource
-
-	cairoTranslate cr 0 128
-	sample cr OperatorOver
-
-	cairoTranslate cr 0 128
-	sample cr OperatorIn
-
-	cairoTranslate cr 0 128
-	sample cr OperatorOut
-
-	cairoTranslate cr 0 128
-	sample cr OperatorAtop
-
-	cairoTranslate cr 0 128
-	sample cr OperatorDest
-
-	cairoTranslate cr 0 128
-	sample cr OperatorDestOver
+	cairoIdentityMatrix cr
+	cairoTranslate cr 272 16
+	traverse_ (\o -> sample cr o >> cairoTranslate cr 0 128)  [
+		OperatorClear
+		]
 
 	cairoImageSurfaceGetCairoImage sr >>= \case
 		CairoImageArgb32 ci ->
