@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 41265a9cd5660888c3311da5abf98a7857bebc7126fd4bb7b5596f1822b4a26d
+-- hash: cf5f96b16abb413ff59cdec9555e458e0baa64772a28182035b2bff997a3dcbc
 
 name:           try-simple-cairo
 version:        0.1.0.0
@@ -310,6 +310,25 @@ executable try-cairo-path-extents
 
 executable try-cairo-rel-move-error
   main-is: try-cairo-rel-move-error.hs
+  other-modules:
+      Main
+      Paths_try_simple_cairo
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , text
+    , try-simple-cairo
+  default-language: Haskell2010
+
+executable try-cairo-relative
+  main-is: try-cairo-relative.hs
   other-modules:
       Main
       Paths_try_simple_cairo
