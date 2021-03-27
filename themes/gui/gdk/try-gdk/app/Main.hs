@@ -8,6 +8,7 @@ import Control.Monad
 import Control.Concurrent
 import Data.Foldable
 import Data.Traversable
+import Data.Maybe
 import Data.List
 import Data.Char
 import System.Environment
@@ -26,10 +27,12 @@ import Graphics.Gdk.Types
 import Graphics.Gdk.Values
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Regions
-import Graphics.Cairo.Paths
+import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Types
 
 import Data.Bool
+
+import Data.Color
 
 main :: IO ()
 main = do
@@ -250,7 +253,7 @@ checkEvent = \case
 		do
 			gdkWindowWithDrawFrame w r \cxt -> do
 				cr <- gdkDrawingContextGetCairoContext cxt
-				cairoSetSourceRgb cr 0.8 0.2 0.2
+				cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.2 0.2
 				cairoSetLineWidth cr 5
 				cairoMoveTo cr 10 10
 				cairoLineTo cr 90 90

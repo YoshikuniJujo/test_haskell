@@ -8,6 +8,7 @@ import Foreign.Ptr
 import Foreign.Concurrent
 import Data.Int
 
+import Data.CairoContext
 import Graphics.Gdk.Types
 
 import Graphics.Cairo.Types

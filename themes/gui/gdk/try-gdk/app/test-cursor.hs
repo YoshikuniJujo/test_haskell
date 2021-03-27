@@ -20,10 +20,14 @@ import Graphics.Gdk.Values
 import Try.Tools
 
 import Graphics.Cairo.Drawing.CairoT
-import Graphics.Cairo.Paths
-import Graphics.Cairo.ImageSurfaces
+import Graphics.Cairo.Drawing.Paths
+import Graphics.Cairo.Surfaces.CairoSurfaceT
+import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Types
 import Graphics.Cairo.Values
+
+import Data.Color
+import Data.Maybe
 
 main :: IO ()
 main = do
@@ -80,7 +84,7 @@ drawCursor :: PrimMonad m => m (CairoSurfaceT (PrimState m))
 drawCursor = do
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 50 50
 	cr <- cairoCreate s
-	cairoSetSourceRgb cr 0 1 0
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 1 0
 	cairoSetLineWidth cr 3
 	cairoMoveTo cr 15 15
 	cairoLineTo cr 15 30

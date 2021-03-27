@@ -12,6 +12,8 @@ import Graphics.Gdk.Types
 import Graphics.Gdk.Values
 import Graphics.Cairo.Types
 
+import Graphics.Cairo.Surfaces.CairoSurfaceT
+
 #include <gdk/gdk.h>
 
 foreign import ccall "gdk_cursor_new_from_surface" c_gdk_cursor_new_from_surface ::
