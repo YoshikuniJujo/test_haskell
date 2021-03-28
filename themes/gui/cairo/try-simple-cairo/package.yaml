@@ -248,6 +248,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-simple-cairo
+  try-cairo-pattern-create-rgb:
+    main:                try-cairo-pattern-create-rgb.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-simple-cairo
 
 
 tests:
