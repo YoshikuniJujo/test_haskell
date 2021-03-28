@@ -18,8 +18,14 @@ main :: IO ()
 main = do
 	sr <- cairoImageSurfaceCreate cairoFormatArgb32 128 128
 	cr <- cairoCreate sr
-	p <- cairoPatternCreateRgb . fromJust $ rgbDouble 0.2 0.4 0.1
-	cairoSetSource cr p
+	pt <- cairoPatternCreateRgb . fromJust $ rgbDouble 0.2 0.4 0.1
+	ptt <- cairoPatternGetType pt
+	print ptt
+	print CairoPatternTypeSolid
+	case ptt of
+		CairoPatternTypeSolid -> putStrLn "CairoPatternTypeSolid"
+		_ -> putStrLn "other"
+	cairoSetSource cr pt
 	cairoPaint cr
 	cairoImageSurfaceGetCairoImage sr >>= \case
 		CairoImageArgb32 ci ->
