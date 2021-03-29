@@ -27,6 +27,7 @@ main = do
 	case ptt of
 		CairoPatternTypeSolid -> putStrLn "CairoPatternTypeSolid"
 		_ -> putStrLn "other"
+	print =<< cairoPatternGetRgba pts
 	cairoSetSource cr pt
 	cairoRectangle cr 32 32 64 64
 	cairoFill cr
