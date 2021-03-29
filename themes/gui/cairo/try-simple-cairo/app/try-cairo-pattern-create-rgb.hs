@@ -19,8 +19,9 @@ main :: IO ()
 main = do
 	sr <- cairoImageSurfaceCreate cairoFormatArgb32 128 128
 	cr <- cairoCreate sr
-	pt <- cairoPatternCreateRgb . fromJust $ rgbDouble 0.2 0.8 0.1
-	let	ptt = cairoPatternGetType pt
+	pts <- cairoPatternCreateRgb . fromJust $ rgbDouble 0.2 0.8 0.1
+	let	pt = CairoPatternTSolid pts
+		ptt = cairoPatternGetType pt
 	print ptt
 	print CairoPatternTypeSolid
 	case ptt of
@@ -29,7 +30,8 @@ main = do
 	cairoSetSource cr pt
 	cairoRectangle cr 32 32 64 64
 	cairoFill cr
-	pt' <- cairoPatternCreateRgba . fromJust $ rgbaDouble 0.0 0.0 0.8 0.4
+	pts' <- cairoPatternCreateRgba . fromJust $ rgbaDouble 0.0 0.0 0.8 0.4
+	let	pt' = CairoPatternTSolid pts'
 	cairoSetSource cr pt'
 	cairoPaint cr
 	cairoImageSurfaceGetCairoImage sr >>= \case
