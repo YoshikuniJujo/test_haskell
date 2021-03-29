@@ -20,7 +20,7 @@ main = do
 	sr <- cairoImageSurfaceCreate cairoFormatArgb32 128 128
 	cr <- cairoCreate sr
 	pt <- cairoPatternCreateRgb . fromJust $ rgbDouble 0.2 0.8 0.1
-	ptt <- cairoPatternGetType pt
+	let	ptt = cairoPatternGetType pt
 	print ptt
 	print CairoPatternTypeSolid
 	case ptt of
