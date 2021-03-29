@@ -17,8 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver:
-  url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/17/6.yaml
+resolver: lts-17.8
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,7 +41,7 @@ packages:
 #
 extra-deps:
 - git: https://github.com/YoshikuniJujo/simple-cairo
-  commit: 71fac75888615f8cf803de55954d5790f3aa8d70
+  commit: 8188435689e791d719de7b315713bbc9a8cd0256
 - git: https://github.com/YoshikuniJujo/cairo-image
   commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
 - git: https://github.com/YoshikuniJujo/JuicyCairo
