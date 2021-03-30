@@ -41,6 +41,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-cairo-mesh-pattern
+  try-partially-defined-patch:
+    main:                try-partially-defined-patch.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-cairo-mesh-pattern
 
 tests:
   try-cairo-mesh-pattern-test:
