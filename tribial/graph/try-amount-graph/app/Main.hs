@@ -27,18 +27,30 @@ main = do
 	print ps
 	sr <- cairoImageSurfaceCreate cairoFormatArgb32 768 512
 	cr <- cairoCreate sr
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 1.0 1.0 1.0
+	cairoPaint cr
+	[a1, a1_5, a2, a2_3, a2_5, a3, a4] <- map read . words <$> readFile "amounts.txt"
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.7 0.7 0.7
-	[a1, a2, a3, a4] <- map read . words <$> readFile "amounts.txt"
-	cairoMoveTo cr (dayToX $ fromGregorian 2017 12 24) (amountToY a1)
-	cairoLineTo cr (dayToX $ fromGregorian 2020 12 31) (amountToY a1)
-	cairoMoveTo cr (dayToX $ fromGregorian 2017 12 24) (amountToY a2)
-	cairoLineTo cr (dayToX $ fromGregorian 2020 12 31) (amountToY a2)
+	cairoMoveTo cr (dayToX $ fromGregorian 2017 12 24) (amountToY a1_5)
+	cairoLineTo cr (dayToX $ fromGregorian 2021  4 30) (amountToY a1_5)
+	cairoMoveTo cr (dayToX $ fromGregorian 2017 12 24) (amountToY a2_3)
+	cairoLineTo cr (dayToX $ fromGregorian 2021  4 30) (amountToY a2_3)
 	cairoMoveTo cr (dayToX $ fromGregorian 2018  1  1) (amountToY a3)
 	cairoLineTo cr (dayToX $ fromGregorian 2018  1  1) (amountToY a4)
 	cairoMoveTo cr (dayToX $ fromGregorian 2019  1  1) (amountToY a3)
 	cairoLineTo cr (dayToX $ fromGregorian 2019  1  1) (amountToY a4)
 	cairoMoveTo cr (dayToX $ fromGregorian 2020  1  1) (amountToY a3)
 	cairoLineTo cr (dayToX $ fromGregorian 2020  1  1) (amountToY a4)
+	cairoMoveTo cr (dayToX $ fromGregorian 2021  1  1) (amountToY a3)
+	cairoLineTo cr (dayToX $ fromGregorian 2021  1  1) (amountToY a4)
+	cairoStroke cr
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.9 0.9 0.9
+	cairoMoveTo cr (dayToX $ fromGregorian 2017 12 24) (amountToY a1)
+	cairoLineTo cr (dayToX $ fromGregorian 2021  4 30) (amountToY a1)
+	cairoMoveTo cr (dayToX $ fromGregorian 2017 12 24) (amountToY a2)
+	cairoLineTo cr (dayToX $ fromGregorian 2021  4 30) (amountToY a2)
+	cairoMoveTo cr (dayToX $ fromGregorian 2017 12 24) (amountToY a2_5)
+	cairoLineTo cr (dayToX $ fromGregorian 2021  4 30) (amountToY a2_5)
 	cairoStroke cr
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.6 0.1
 	graph cr ps
@@ -56,7 +68,7 @@ dayToX :: Day -> CDouble
 dayToX d = fromIntegral (d `diffDays` fromGregorian 2017 12 24) / 2 + 32
 
 amountToY :: Int -> CDouble
-amountToY a = 512 - fromIntegral (a - 20000000) / 40000
+amountToY a = 512 - fromIntegral (a - 20000000) / 50000 + 16
 
 graph :: PrimMonad m => CairoT (PrimState m) -> [(CDouble, CDouble)] -> m ()
 graph _ [] = pure ()
