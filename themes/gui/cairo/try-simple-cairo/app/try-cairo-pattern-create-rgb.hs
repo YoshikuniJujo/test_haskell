@@ -28,12 +28,11 @@ main = do
 		CairoPatternTypeSolid -> putStrLn "CairoPatternTypeSolid"
 		_ -> putStrLn "other"
 	print =<< cairoPatternGetRgba pts
-	cairoSetSource cr pt
+	cairoSetSource cr pts
 	cairoRectangle cr 32 32 64 64
 	cairoFill cr
 	pts' <- cairoPatternCreateRgba . fromJust $ rgbaDouble 0.0 0.0 0.8 0.4
-	let	pt' = CairoPatternTSolid pts'
-	cairoSetSource cr pt'
+	cairoSetSource cr pts'
 	cairoPaint cr
 	cairoImageSurfaceGetCairoImage sr >>= \case
 		CairoImageArgb32 ci ->
