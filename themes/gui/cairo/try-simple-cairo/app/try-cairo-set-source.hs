@@ -3,8 +3,10 @@
 
 module Main where
 
+import Data.Maybe
 import Data.CairoImage
 import Data.JuicyCairo
+import Data.Color
 import Codec.Picture
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Surfaces.ImageSurfaces
@@ -17,13 +19,13 @@ main = do
 	sr <- cairoImageSurfaceCreate cairoFormatArgb32 128 128
 	cr <- cairoCreate sr
 	pt <- cairoPatternCreateLinear 96 32 32 96
-	cairoPatternAddColorStopRgb pt 0.2 1.0 0.0 0.0
-	cairoPatternAddColorStopRgb pt 0.8 0.0 0.5 0.5
+	cairoPatternAddColorStopRgb pt 0.2 . fromJust $ rgbDouble 1.0 0.0 0.0
+	cairoPatternAddColorStopRgb pt 0.8 . fromJust $ rgbDouble 0.0 0.5 0.5
 	cairoSetSource cr pt
 	cairoPaint cr
 	pt' <- cairoPatternCreateLinear 32 32 96 96
-	cairoPatternAddColorStopRgb pt' 0.2 0.5 0.5 0.0
-	cairoPatternAddColorStopRgb pt' 0.8 0.0 0.0 1.0
+	cairoPatternAddColorStopRgb pt' 0.2 . fromJust $ rgbDouble 0.5 0.5 0.0
+	cairoPatternAddColorStopRgb pt' 0.8 . fromJust $ rgbDouble 0.0 0.0 1.0
 	cairoSetSource cr pt'
 	cairoPaintWithAlpha cr 0.5
 	cairoImageSurfaceGetCairoImage sr >>= \case

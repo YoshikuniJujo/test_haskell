@@ -19,8 +19,8 @@ main = do
 	cr <- cairoCreate sr
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.6 0.1
 	pt <- cairoPatternCreateLinear 96 32 32 96
-	cairoPatternAddColorStopRgba pt 0.2 0 0 0 0
-	cairoPatternAddColorStopRgba pt 0.8 0 0 0 1
+	cairoPatternAddColorStopRgba pt 0.2 . fromJust $ rgbaDouble 0 0 0 0
+	cairoPatternAddColorStopRgba pt 0.8 . fromJust $ rgbaDouble 0 0 0 1
 	print =<< cairoPatternGetLinearPoints pt
 	cairoMask cr pt
 	cairoImageSurfaceGetCairoImage sr >>= \case
