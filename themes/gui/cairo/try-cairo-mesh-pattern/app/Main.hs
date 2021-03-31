@@ -10,7 +10,7 @@ import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
 
-import CairoMeshPattern
+import Graphics.Cairo.Drawing.CairoPatternT.Mesh
 
 import Data.Maybe
 import Data.Color
@@ -22,6 +22,7 @@ main = do
 
 	pt <- cairoPatternCreateMesh
 
+{-
 	cairoMeshPatternBeginPatch pt
 	cairoMeshPatternMoveTo pt 64 128
 	cairoMeshPatternLineTo pt 64 64
@@ -41,6 +42,7 @@ main = do
 	cairoMeshPatternSetCornerColorRgb pt 1 1 0 1
 	cairoMeshPatternSetCornerColorRgb pt 2 1 1 0
 	cairoMeshPatternEndPatch pt
+	-}
 
 	cairoMeshPatternAddPatch pt
 		(MoveTo 128 128) (LineTo 128 64) (LineTo 192 64) (LineTo 192 128) CloseLineTo
@@ -48,6 +50,18 @@ main = do
 		(ColorRgb . fromJust $ rgbDouble 0 0 1)
 		(ColorRgb . fromJust $ rgbDouble 0 1 0)
 		(ColorRgb . fromJust $ rgbDouble 1 0 0)
+		Nothing Nothing Nothing Nothing
+
+	cairoMeshPatternAddPatch pt
+		(MoveTo 256 128)
+		(CurveTo 224 106.6 224 85.3 256 64)
+		(LineTo 320 64)
+		(LineTo 320 128)
+		CloseLineTo
+		(ColorRgb . fromJust $ rgbDouble 0 1 1)
+		(ColorRgb . fromJust $ rgbDouble 1 0 1)
+		(ColorRgb . fromJust $ rgbDouble 1 1 0)
+		(ColorRgb . fromJust $ rgbDouble 1 1 1)
 		Nothing Nothing Nothing Nothing
 
 	cairoSetSource cr pt
