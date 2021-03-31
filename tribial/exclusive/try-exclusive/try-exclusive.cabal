@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7e1e18bc70894cf248371f2d6cbf54081319fe8c226be7c023c3d9055a7390e8
+-- hash: 4f40ca12767e5e02c6d1ef61501bfaf8086113d69cb26576ed5998f315156942
 
 name:           try-exclusive
 version:        0.1.0.0
@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       Lib
+      UseDefaultSignatures
   other-modules:
       Paths_try_exclusive
   hs-source-dirs:
