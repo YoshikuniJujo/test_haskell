@@ -31,7 +31,10 @@ main = do
 	cairoMoveTo cr 16 16
 	cairoCurveTo cr 112 16 16 112 112 112
 	CairoPathT pth' <- cairoCopyPath cr
+	CairoPathT pth'' <- cairoCopyPathFlat cr
 	print pth'
+	print $ length pth''
+	print pth''
 	cairoStroke cr
 	cairoImageSurfaceGetCairoImage sr >>= \case
 		CairoImageArgb32 ci ->
