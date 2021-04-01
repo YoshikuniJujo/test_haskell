@@ -18,6 +18,9 @@ import Graphics.Cairo.Exception
 
 newtype CairoPathT = CairoPathT (ForeignPtr CairoPathT) deriving Show
 
+withCairoPathT :: CairoPathT -> (Ptr CairoPathT -> IO a) -> IO a
+withCairoPathT (CairoPathT fpth) = withForeignPtr fpth
+
 cairoCopyPath :: PrimMonad m => CairoT (PrimState m) -> m CairoPathT
 cairoCopyPath (CairoT fcr) = unsafeIOToPrim
 	$ CairoPathT <$> withForeignPtr fcr \pcr -> do
@@ -48,8 +51,18 @@ nextPtr p sz al = alignPtr (plusPtr p sz) al
 nextCairoPathDataT :: Ptr CairoPathDataT -> Ptr CairoPathDataT
 nextCairoPathDataT p = nextPtr p #{size cairo_path_data_t} #{alignment cairo_path_data_t}
 
-{-
+nextByLength :: Ptr CairoPathDataT -> CInt -> Ptr CairoPathDataT
+nextByLength p n | n < 1 = p
+nextByLength p n = nextCairoPathDataT $ nextByLength p (n - 1)
+
+cairoPathDataTHeaderType :: Ptr CairoPathDataT -> IO #{type cairo_path_data_type_t}
+cairoPathDataTHeaderType = #{peek cairo_path_data_t, header.type}
+
 cairoPathDataTHeaderLength :: Ptr CairoPathDataT -> IO CInt
-cairoPathDataTHeaderLength = #{peek cairo_path_data_t
--}
+cairoPathDataTHeaderLength = #{peek cairo_path_data_t, header.length}
+
+cairoPathDataTPointX, cairoPathDataTPointY :: Ptr CairoPathDataT -> IO CDouble
+cairoPathDataTPointX = #{peek cairo_path_data_t, point.x}
+cairoPathDataTPointY = #{peek cairo_path_data_t, point.y}
+
 -- cairoPathTGetPathList :: Ptr CairoPathT ->
