@@ -64,6 +64,7 @@ main = do
 		(ColorRgb . fromJust $ rgbDouble 1 1 1)
 		Nothing Nothing Nothing Nothing
 
+	print =<< cairoMeshPatternGetPatchList pt
 	cairoSetSource cr pt
 	cairoPaint cr
 
