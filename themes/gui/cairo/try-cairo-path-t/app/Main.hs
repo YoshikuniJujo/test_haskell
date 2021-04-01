@@ -23,7 +23,7 @@ main = do
 	cairoRectangle cr 32 32 64 64
 	pth <- cairoCopyPath cr
 	print pth
-	print =<< withCairoPathT pth cairoPathTPathList
+	print =<< cairoPathTPathList pth
 	cairoFill cr
 	cairoImageSurfaceGetCairoImage sr >>= \case
 		CairoImageArgb32 ci ->

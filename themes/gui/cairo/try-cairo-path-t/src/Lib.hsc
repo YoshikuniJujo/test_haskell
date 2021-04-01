@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Lib where
@@ -18,14 +19,17 @@ import System.IO.Unsafe
 
 #include <cairo.h>
 
-newtype CairoPathT = CairoPathT (ForeignPtr CairoPathT) deriving Show
+newtype CairoPathT = CairoPathT_ (ForeignPtr CairoPathT) deriving Show
+
+pattern CairoPathT :: [Path] -> CairoPathT
+pattern CairoPathT ps <- (unsafePerformIO . cairoPathTPathList -> ps)
 
 withCairoPathT :: CairoPathT -> (Ptr CairoPathT -> IO a) -> IO a
-withCairoPathT (CairoPathT fpth) = withForeignPtr fpth
+withCairoPathT (CairoPathT_ fpth) = withForeignPtr fpth
 
 cairoCopyPath :: PrimMonad m => CairoT (PrimState m) -> m CairoPathT
 cairoCopyPath (CairoT fcr) = unsafeIOToPrim
-	$ CairoPathT <$> withForeignPtr fcr \pcr -> do
+	$ CairoPathT_ <$> withForeignPtr fcr \pcr -> do
 		p <- c_cairo_copy_path pcr
 		newForeignPtr p (c_cairo_path_destroy p) <*
 			(cairoStatusToThrowError =<< cairoPathTStatus p)
@@ -74,8 +78,8 @@ data Path
 	| ClosePath
 	deriving Show
 
-cairoPathTPathList :: Ptr CairoPathT -> IO [Path]
-cairoPathTPathList p = do
+cairoPathTPathList :: CairoPathT -> IO [Path]
+cairoPathTPathList (CairoPathT_ fp) = withForeignPtr fp \p -> do
 	d <- cairoPathTData p
 	n <- cairoPathTNumData p
 	cairoPathDataTPathList d n
