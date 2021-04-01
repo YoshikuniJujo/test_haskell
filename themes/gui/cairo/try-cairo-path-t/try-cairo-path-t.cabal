@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a12c5f3e4195b9c91b4e141bd466e883547a161ed8e0f99e74b930a90e0e2605
+-- hash: 0b938b2ef581a3f7eae46faba66759d70734ca34cecb60e24d43da956ecce266
 
 name:           try-cairo-path-t
 version:        0.1.0.0
@@ -27,6 +27,7 @@ source-repository head
 
 library
   exposed-modules:
+      CairoPathT
       Lib
   other-modules:
       Paths_try_cairo_path_t

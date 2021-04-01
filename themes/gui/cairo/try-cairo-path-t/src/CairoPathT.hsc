@@ -2,7 +2,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Lib where
+module CairoPathT (Path(..), CairoPathT, pattern CairoPathT, mkCairoPathT) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
@@ -10,9 +10,7 @@ import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
-import Control.Monad.Primitive
 import Data.Word
-import Data.CairoContext
 
 import Graphics.Cairo.Exception
 
@@ -26,18 +24,10 @@ pattern CairoPathT :: [Path] -> CairoPathT
 pattern CairoPathT ps <- (unsafePerformIO . cairoPathTPathList -> ps) where
 	CairoPathT = unsafePerformIO . pathListToCairoPathT
 
-withCairoPathT :: CairoPathT -> (Ptr CairoPathT -> IO a) -> IO a
-withCairoPathT (CairoPathT_ fpth) = withForeignPtr fpth
-
-cairoCopyPath :: PrimMonad m => CairoT (PrimState m) -> m CairoPathT
-cairoCopyPath (CairoT fcr) = unsafeIOToPrim
-	$ CairoPathT_ <$> withForeignPtr fcr \pcr -> do
-		p <- c_cairo_copy_path pcr
-		newForeignPtr p (c_cairo_path_destroy p) <*
-			(cairoStatusToThrowError =<< cairoPathTStatus p)
-
-foreign import ccall "cairo_copy_path" c_cairo_copy_path ::
-	Ptr (CairoT s) -> IO (Ptr CairoPathT)
+mkCairoPathT :: Ptr CairoPathT -> IO CairoPathT
+mkCairoPathT p =
+	CairoPathT_ <$> newForeignPtr p (c_cairo_path_destroy p)
+		<* (cairoStatusToThrowError =<< cairoPathTStatus p)
 
 foreign import ccall "cairo_path_destroy" c_cairo_path_destroy ::
 	Ptr CairoPathT -> IO ()
@@ -160,3 +150,4 @@ pathListToCairoPathDataT :: Ptr CairoPathDataT -> [Path] -> IO ()
 pathListToCairoPathDataT pd = \case
 	[] -> pure ()
 	pth : pths -> pathToCairoPathData pd pth >> pathListToCairoPathDataT (pd `plusPtr` (cairoPathDataTSize * pathToNumData pth)) pths
+

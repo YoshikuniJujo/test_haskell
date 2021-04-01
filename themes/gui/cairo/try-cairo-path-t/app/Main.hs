@@ -14,6 +14,7 @@ import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
 
 import Lib
+import CairoPathT
 
 main :: IO ()
 main = do
@@ -21,9 +22,8 @@ main = do
 	cr <- cairoCreate sr
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.6 0.1
 	cairoRectangle cr 32 32 64 64
-	pth <- cairoCopyPath cr
+	CairoPathT pth <- cairoCopyPath cr
 	print pth
-	print =<< cairoPathTPathList pth
 	cairoFill cr
 	cairoImageSurfaceGetCairoImage sr >>= \case
 		CairoImageArgb32 ci ->
