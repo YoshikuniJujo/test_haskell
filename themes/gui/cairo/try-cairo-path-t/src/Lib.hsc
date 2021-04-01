@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Lib where
@@ -13,6 +13,8 @@ import Data.Word
 import Data.CairoContext
 
 import Graphics.Cairo.Exception
+
+import System.IO.Unsafe
 
 #include <cairo.h>
 
@@ -65,4 +67,36 @@ cairoPathDataTPointX, cairoPathDataTPointY :: Ptr CairoPathDataT -> IO CDouble
 cairoPathDataTPointX = #{peek cairo_path_data_t, point.x}
 cairoPathDataTPointY = #{peek cairo_path_data_t, point.y}
 
--- cairoPathTGetPathList :: Ptr CairoPathT ->
+data Path
+	= MoveTo CDouble CDouble
+	| LineTo CDouble CDouble
+	| CurveTo CDouble CDouble CDouble CDouble CDouble CDouble
+	| ClosePath
+	deriving Show
+
+cairoPathTPathList :: Ptr CairoPathT -> IO [Path]
+cairoPathTPathList p = do
+	d <- cairoPathTData p
+	n <- cairoPathTNumData p
+	cairoPathDataTPathList d n
+
+cairoPathDataTPathList :: Ptr CairoPathDataT -> CInt -> IO [Path]
+cairoPathDataTPathList _ n | n < 1 = pure []
+cairoPathDataTPathList p n = unsafeInterleaveIO do
+	pth <- cairoPathDataTHeaderType p >>= \case
+		#{const CAIRO_PATH_MOVE_TO} -> MoveTo
+			<$> cairoPathDataTPointX p1 <*> cairoPathDataTPointY p1
+		#{const CAIRO_PATH_LINE_TO} -> LineTo
+			<$> cairoPathDataTPointX p1 <*> cairoPathDataTPointY p1
+		#{const CAIRO_PATH_CURVE_TO} -> CurveTo
+			<$> cairoPathDataTPointX p1 <*> cairoPathDataTPointY p1
+			<*> cairoPathDataTPointX p2 <*> cairoPathDataTPointY p2
+			<*> cairoPathDataTPointX p3 <*> cairoPathDataTPointY p3
+		#{const CAIRO_PATH_CLOSE_PATH} -> pure ClosePath
+		_ -> error "no such path"
+	ln <- cairoPathDataTHeaderLength p
+	(pth :) <$> cairoPathDataTPathList (nextByLength p ln) (n - ln)
+	where
+	p1 = nextByLength p 1
+	p2 = nextByLength p 2
+	p3 = nextByLength p 3
