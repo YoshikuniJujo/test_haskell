@@ -20,6 +20,9 @@ main :: IO ()
 main = do
 	sr <- cairoImageSurfaceCreate cairoFormatArgb32 128 128
 	cr <- cairoCreate sr
+	cairoSet cr $ LineWidth 8
+	cairoSet cr LineCapRound
+	cairoSet cr LineJoinRound
 
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.6 0.1
 	cairoRectangle cr 32 32 64 64
@@ -28,8 +31,6 @@ main = do
 	cairoFill cr
 
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.1 0.3 0.05
-	cairoSet cr $ LineWidth 8
-	cairoSet cr LineCapRound
 	cairoMoveTo cr 16 16
 	cairoCurveTo cr 112 16 16 112 112 112
 	CairoPathT pth' <- cairoCopyPath cr
@@ -44,6 +45,11 @@ main = do
 	CairoPathT pth4 <- cairoCopyPath cr
 	print $ length pth4
 	print pth4
+	cairoStroke cr
+
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.7 0.9 0.4
+	cairoAppendPath cr $ CairoPathT
+		[MoveTo 16 112, LineTo 32 96, LineTo 48 112, LineTo 64 96]
 	cairoStroke cr
 
 	cairoImageSurfaceGetCairoImage sr >>= \case
