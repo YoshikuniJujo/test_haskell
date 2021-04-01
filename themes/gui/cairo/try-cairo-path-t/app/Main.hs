@@ -20,11 +20,13 @@ main :: IO ()
 main = do
 	sr <- cairoImageSurfaceCreate cairoFormatArgb32 128 128
 	cr <- cairoCreate sr
+
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.6 0.1
 	cairoRectangle cr 32 32 64 64
 	CairoPathT pth <- cairoCopyPath cr
 	print pth
 	cairoFill cr
+
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.1 0.3 0.05
 	cairoSet cr $ LineWidth 8
 	cairoSet cr LineCapRound
@@ -36,6 +38,14 @@ main = do
 	print $ length pth''
 	print pth''
 	cairoStroke cr
+
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.3 0.1 0.05
+	cairoArc cr 64 64 32 pi (- pi * 1 / 3)
+	CairoPathT pth4 <- cairoCopyPath cr
+	print $ length pth4
+	print pth4
+	cairoStroke cr
+
 	cairoImageSurfaceGetCairoImage sr >>= \case
 		CairoImageArgb32 ci ->
 			writePng "try-cairo-path-t-exe.png" $ cairoArgb32ToJuicyRGBA8 ci
