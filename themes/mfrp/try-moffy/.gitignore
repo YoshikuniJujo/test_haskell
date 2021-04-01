@@ -1,3 +1,6 @@
 .stack-work/
 *~
 github_token.txt
+/foo.sp
+/foo.sp.new
+/tmp.sp
