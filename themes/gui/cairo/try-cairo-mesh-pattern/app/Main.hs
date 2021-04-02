@@ -8,7 +8,7 @@ import Data.CairoImage
 import Data.JuicyCairo
 import Codec.Picture
 import Graphics.Cairo.Drawing.CairoT
-import Graphics.Cairo.Drawing.Paths.CairoPathT (pattern CairoPathT, pattern CairoPathTPatch)
+import Graphics.Cairo.Drawing.Paths.CairoPathT
 import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
@@ -90,6 +90,7 @@ main = do
 	putStrLn ""
 	print pth
 	print ptht
+	let CairoPatchPathT mt clt1 clt2 clt3 cls = ppth in print (mt, clt1, clt2, clt3, cls)
 	
 	let	CairoPathTPatch ppth' = ptht
 	print ppth'
