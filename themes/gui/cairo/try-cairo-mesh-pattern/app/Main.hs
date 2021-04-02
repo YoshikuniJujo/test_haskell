@@ -95,6 +95,14 @@ main = do
 	let	CairoPathTPatch ppth' = ptht
 	print ppth'
 
+	let	CairoPatchPathT m c1 c2 c3 cl = CairoPatchPathT
+			(MoveTo 3 15)
+			(LineTo 3 5)
+			(CurveTo 4 7 5 7 6 5)
+			(LineTo 6 15)
+			CloseLineTo
+	print (m, c1, c2, c3, cl)
+
 strokeControlPoints :: PrimBase m =>
 	CairoT (PrimState m) -> CairoPatternMeshT (PrimState m) -> m ()
 strokeControlPoints cr pm = do
