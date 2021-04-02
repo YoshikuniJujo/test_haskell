@@ -84,7 +84,7 @@ main = do
 			writePng "mesh.png" $ cairoArgb32ToJuicyRGBA8 ci
 		_ -> error "never occur"
 
-strokeControlPoints :: PrimMonad m =>
+strokeControlPoints :: PrimBase m =>
 	CairoT (PrimState m) -> CairoPatternMeshT (PrimState m) -> m ()
 strokeControlPoints cr pm = do
 	mapM_ (drawLines cr . getPointsFromMesh) =<< cairoMeshPatternGetPatchList pm
