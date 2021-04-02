@@ -8,7 +8,7 @@ import Data.CairoImage
 import Data.JuicyCairo
 import Codec.Picture
 import Graphics.Cairo.Drawing.CairoT
-import Graphics.Cairo.Drawing.Paths.CairoPathT (pattern CairoPathT)
+import Graphics.Cairo.Drawing.Paths.CairoPathT (pattern CairoPathT, pattern CairoPathTPatch)
 import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
@@ -83,6 +83,16 @@ main = do
 		CairoImageArgb32 ci ->
 			writePng "mesh.png" $ cairoArgb32ToJuicyRGBA8 ci
 		_ -> error "never occur"
+
+
+	let	(ppth, _, _) = head ps
+		ptht@(CairoPathT pth) = CairoPathTPatch ppth
+	putStrLn ""
+	print pth
+	print ptht
+	
+	let	CairoPathTPatch ppth' = ptht
+	print ppth'
 
 strokeControlPoints :: PrimBase m =>
 	CairoT (PrimState m) -> CairoPatternMeshT (PrimState m) -> m ()
