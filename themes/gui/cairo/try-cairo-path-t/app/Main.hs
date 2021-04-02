@@ -49,7 +49,7 @@ main = do
 
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.7 0.9 0.4
 	cairoAppendPath cr $ CairoPathT
-		[MoveTo 16 112, LineTo 32 96, LineTo 48 112, LineTo 64 96]
+		[PathMoveTo 16 112, PathLineTo 32 96, PathLineTo 48 112, PathLineTo 64 96]
 	cairoStroke cr
 
 	cairoImageSurfaceGetCairoImage sr >>= \case
