@@ -6,7 +6,7 @@ import Data.JuicyCairo
 import Codec.Picture
 import Graphics.Cairo.Values
 import Graphics.Cairo.Drawing.CairoT
-import Graphics.Cairo.Drawing.CairoPatternT
+import Graphics.Cairo.Drawing.CairoPatternT.Basic
 import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Surfaces.ImageSurfaces
 
@@ -19,6 +19,10 @@ main = readImage "data/HaskellLogo.png" >>= \case
 		sr1 <- cairoImageSurfaceCreateForCairoImage $ CairoImageArgb32 i'
 		cr <- cairoCreate sr0
 		pt <- cairoPatternCreateForSurface sr1
+
+		print sr1
+		print =<< cairoPatternGetSurface pt
+
 		cairoTranslate cr 64 64
 		cairoSetSource cr pt
 		cairoPaint cr
