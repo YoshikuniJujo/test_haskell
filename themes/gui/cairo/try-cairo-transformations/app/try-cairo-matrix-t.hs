@@ -9,10 +9,10 @@ import Graphics.Cairo.Utilities.CairoMatrixT
 main :: IO ()
 main = print `mapM_` [
 	sampleMatrix1, sampleMatrix2, sampleMatrix3, sampleMatrix4,
-	sampleMatrix5, sampleMatrix6 ]
+	sampleMatrix5, sampleMatrix6, sampleMatrix7 ]
 
 sampleMatrix1, sampleMatrix2, sampleMatrix3, sampleMatrix4, sampleMatrix5,
-	sampleMatrix6 :: Matrix
+	sampleMatrix6, sampleMatrix7 :: Matrix
 sampleMatrix1 = runST $ cairoMatrixNew >>= \m ->
 	cairoMatrixInit m 5 8 10 18 3 2 >> cairoMatrixGet m
 
@@ -30,3 +30,6 @@ sampleMatrix5 = runST $ cairoMatrixNew >>= \m ->
 
 sampleMatrix6 = runST $ cairoMatrixNew >>= \m ->
 	cairoMatrixInitRotate m (pi / 4) >> cairoMatrixGet m
+
+sampleMatrix7 = runST $ cairoMatrixNew >>= \m -> do
+	cairoMatrixInit m 5 8 10 18 3 2 >> cairoMatrixTranslate m 100 200 >> cairoMatrixGet m
