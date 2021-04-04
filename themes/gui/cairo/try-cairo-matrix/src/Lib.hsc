@@ -31,8 +31,10 @@ instance IsCairoMatrixT CairoMatrixRegularT where toCairoMatrixT (CairoMatrixReg
 cairoMatrixNew :: PrimMonad m =>
 	CDouble -> CDouble -> CDouble -> CDouble -> CDouble -> CDouble -> 
 	m (CairoMatrixT (PrimState m))
-cairoMatrixNew xx yx xy yy x0 y0 =
-	either toCairoMatrixT toCairoMatrixT <$> cairoMatrixRegularNew xx yx xy yy x0 y0
+cairoMatrixNew xx yx xy yy x0 y0 = unsafeIOToPrim $ CairoMatrixT <$> do
+	p <- mallocBytes #{size cairo_matrix_t}
+	c_cairo_matrix_init p xx yx xy yy x0 y0
+	($) <$> newForeignPtr <*> free $ p
 
 cairoMatrixRegularNew :: PrimMonad m =>
 	CDouble -> CDouble -> CDouble -> CDouble -> CDouble -> CDouble -> 
