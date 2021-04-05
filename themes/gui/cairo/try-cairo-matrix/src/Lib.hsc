@@ -10,6 +10,7 @@ import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
+import Control.Monad
 import Control.Monad.Primitive
 import Data.Word
 
@@ -140,3 +141,16 @@ cairoMatrixMultiply
 
 foreign import ccall "cairo_matrix_multiply" c_cairo_matrix_multiply ::
 	Ptr (CairoMatrixT s) -> Ptr (CairoMatrixT s) -> Ptr (CairoMatrixT s) -> IO ()
+
+data Distance = Distance CDouble CDouble deriving Show
+
+cairoMatrixTransformDistance :: (PrimMonad m, IsCairoMatrixT mtx) =>
+	mtx (PrimState m) -> Distance -> m Distance
+cairoMatrixTransformDistance mtx (Distance dx dy) =
+	withCairoMatrixT mtx \pmtx -> alloca \pdx -> alloca \pdy -> do
+		zipWithM_ poke [pdx, pdy] [dx, dy]
+		c_cairo_matrix_transform_distance pmtx pdx pdy
+		Distance <$> peek pdx <*> peek pdy
+
+foreign import ccall "cairo_matrix_transform_distance" c_cairo_matrix_transform_distance ::
+	Ptr (CairoMatrixT s) -> Ptr CDouble -> Ptr CDouble -> IO ()

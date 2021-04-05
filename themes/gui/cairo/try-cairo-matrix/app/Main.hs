@@ -15,6 +15,7 @@ main = do
 		sampleMatrix9 ]
 	print =<< cairoMatrixRegularNew 3 5 8 13 2 9
 	print =<< cairoMatrixRegularNew 3 6 4 8 2 9
+	print $ transformDistance $ Distance 10 500
 
 sampleMatrix1, sampleMatrix2, sampleMatrix3, sampleMatrix4,
 	sampleMatrix5, sampleMatrix6, sampleMatrix7, sampleMatrix8,
@@ -41,3 +42,8 @@ sampleMatrix9 = runST do
 	b <- cairoMatrixNewRotate (pi / 6)
 	cairoMatrixMultiply a a b
 	cairoMatrixGet a
+
+transformDistance :: Distance -> Distance
+transformDistance d = runST do
+	m <- cairoMatrixNew 3 5 8 13 2 9
+	cairoMatrixTransformDistance m d
