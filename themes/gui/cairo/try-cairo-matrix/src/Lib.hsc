@@ -128,3 +128,15 @@ cairoMatrixInvert (CairoMatrixRegularT fmtx) =
 
 foreign import ccall "cairo_matrix_invert" c_cairo_matrix_invert ::
 	Ptr (CairoMatrixT s) -> IO #{type cairo_status_t}
+
+cairoMatrixMultiply :: (PrimMonad m, IsCairoMatrixT mtx) =>
+	mtx (PrimState m) -> mtx (PrimState m) -> mtx (PrimState m) -> m ()
+cairoMatrixMultiply
+	(toCairoMatrixT -> CairoMatrixT fr)
+	(toCairoMatrixT -> CairoMatrixT fa)
+	(toCairoMatrixT -> CairoMatrixT fb) = unsafeIOToPrim
+	$ withForeignPtr fr \pr -> withForeignPtr fa \pa -> withForeignPtr fb \pb ->
+		c_cairo_matrix_multiply pr pa pb
+
+foreign import ccall "cairo_matrix_multiply" c_cairo_matrix_multiply ::
+	Ptr (CairoMatrixT s) -> Ptr (CairoMatrixT s) -> Ptr (CairoMatrixT s) -> IO ()

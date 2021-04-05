@@ -11,12 +11,14 @@ main :: IO ()
 main = do
 	print `mapM_` [
 		sampleMatrix1, sampleMatrix2, sampleMatrix3, sampleMatrix4,
-		sampleMatrix5, sampleMatrix6, sampleMatrix7, sampleMatrix8 ]
+		sampleMatrix5, sampleMatrix6, sampleMatrix7, sampleMatrix8,
+		sampleMatrix9 ]
 	print =<< cairoMatrixRegularNew 3 5 8 13 2 9
 	print =<< cairoMatrixRegularNew 3 6 4 8 2 9
 
 sampleMatrix1, sampleMatrix2, sampleMatrix3, sampleMatrix4,
-	sampleMatrix5, sampleMatrix6, sampleMatrix7, sampleMatrix8 :: Matrix
+	sampleMatrix5, sampleMatrix6, sampleMatrix7, sampleMatrix8,
+	sampleMatrix9 :: Matrix
 sampleMatrix1 = runST $ cairoMatrixGet =<< cairoMatrixNew 3 5 8 13 2 9
 sampleMatrix2 = runST $ cairoMatrixGet =<< cairoMatrixNewIdentity
 sampleMatrix3 = runST $ cairoMatrixGet =<< cairoMatrixNewTranslate 5 15
@@ -34,3 +36,8 @@ sampleMatrix8 = runST do
 	mtx <- cairoMatrixNewRotate (pi / 6)
 	cairoMatrixInvert mtx
 	cairoMatrixGet mtx
+sampleMatrix9 = runST do
+	a <- cairoMatrixNewTranslate 5 15
+	b <- cairoMatrixNewRotate (pi / 6)
+	cairoMatrixMultiply a a b
+	cairoMatrixGet a
