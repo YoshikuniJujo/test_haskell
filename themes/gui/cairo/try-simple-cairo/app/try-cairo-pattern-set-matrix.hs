@@ -25,6 +25,8 @@ main = readImage "data/HaskellLogo.png" >>= \case
 		cairoMatrixTranslate mtx (- 64) (- 64)
 		cairoPatternSetMatrix pt mtx
 
+		print =<< cairoMatrixGet =<< cairoPatternGetMatrix pt
+
 		sr <- cairoImageSurfaceCreate cairoFormatArgb32 256 256
 		cr <- cairoCreate sr
 		cairoSetSource cr pt
