@@ -22,6 +22,9 @@ description:         Please see the README on GitHub at <https://github.com/gith
 dependencies:
 - base >= 4.7 && < 5
 - simple-cairo
+- cairo-image
+- JuicyPixels
+- JuicyCairo
 
 library:
   source-dirs: src
@@ -38,6 +41,15 @@ executables:
     - try-cairo-transformations
   try-cairo-matrix-t:
     main:                try-cairo-matrix-t.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-cairo-transformations
+  try-cairo-transform:
+    main:                try-cairo-transform.hs
     source-dirs:         app
     ghc-options:
     - -threaded
