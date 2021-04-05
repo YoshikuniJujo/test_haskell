@@ -2,7 +2,16 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Lib where
+module Lib (
+	Matrix(..), IsCairoMatrixT, CairoMatrixT, CairoMatrixRegularT,
+	cairoMatrixGet,
+	cairoMatrixNew, cairoMatrixRegularNew, cairoMatrixNewIdentity,
+	cairoMatrixNewTranslate,
+	cairoMatrixNewScale, cairoMatrixRegularNewScale, cairoMatrixNewRotate,
+	cairoMatrixTranslate, cairoMatrixRotate, cairoMatrixInvert,
+	cairoMatrixMultiply,
+	Distance(..), cairoMatrixTransformDistance,
+	Point(..), cairoMatrixTransformPoint ) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
