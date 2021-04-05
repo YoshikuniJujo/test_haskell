@@ -11,6 +11,9 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
 import Control.Monad.Primitive
+import Data.Word
+
+import Graphics.Cairo.Exception
 
 #include <cairo.h>
 
@@ -116,3 +119,12 @@ cairoMatrixRotate mtx rad =
 
 foreign import ccall "cairo_matrix_rotate" c_cairo_matrix_rotate ::
 	Ptr (CairoMatrixT s) -> CDouble -> IO ()
+
+cairoMatrixInvert :: PrimMonad m =>
+	CairoMatrixRegularT (PrimState m) -> m ()
+cairoMatrixInvert (CairoMatrixRegularT fmtx) =
+	unsafeIOToPrim $ withForeignPtr fmtx \pmtx ->
+		cairoStatusToThrowError =<< c_cairo_matrix_invert pmtx
+
+foreign import ccall "cairo_matrix_invert" c_cairo_matrix_invert ::
+	Ptr (CairoMatrixT s) -> IO #{type cairo_status_t}
