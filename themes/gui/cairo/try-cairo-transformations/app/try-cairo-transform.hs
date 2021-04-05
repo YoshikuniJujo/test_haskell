@@ -26,7 +26,7 @@ main = do
 	cairoSet cr LineJoinRound
 
 	mt <- cairoMatrixNewTranslate 64 64
---	cairoMatrixScale mt (1 / 2) 1
+	cairoMatrixScale mt (1 / 2) 1
 	cairoMatrixRotate mt (pi / 4)
 	cairoMatrixTranslate mt (- 64) (- 64)
 	cairoTransform cr mt
