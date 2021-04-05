@@ -154,3 +154,16 @@ cairoMatrixTransformDistance mtx (Distance dx dy) =
 
 foreign import ccall "cairo_matrix_transform_distance" c_cairo_matrix_transform_distance ::
 	Ptr (CairoMatrixT s) -> Ptr CDouble -> Ptr CDouble -> IO ()
+
+data Point = Point CDouble CDouble deriving Show
+
+cairoMatrixTransformPoint :: (PrimMonad m, IsCairoMatrixT mtx) =>
+	mtx (PrimState m) -> Point -> m Point
+cairoMatrixTransformPoint mtx (Point x y) =
+	withCairoMatrixT mtx \pmtx -> alloca \px -> alloca \py -> do
+		zipWithM_ poke [px, py] [x, y]
+		c_cairo_matrix_transform_point pmtx px py
+		Point <$> peek px <*> peek py
+
+foreign import ccall "cairo_matrix_transform_point" c_cairo_matrix_transform_point ::
+	Ptr (CairoMatrixT s) -> Ptr CDouble -> Ptr CDouble -> IO ()

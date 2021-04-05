@@ -16,6 +16,7 @@ main = do
 	print =<< cairoMatrixRegularNew 3 5 8 13 2 9
 	print =<< cairoMatrixRegularNew 3 6 4 8 2 9
 	print $ transformDistance $ Distance 10 500
+	print $ transformPoint $ Point 10 500
 
 sampleMatrix1, sampleMatrix2, sampleMatrix3, sampleMatrix4,
 	sampleMatrix5, sampleMatrix6, sampleMatrix7, sampleMatrix8,
@@ -47,3 +48,8 @@ transformDistance :: Distance -> Distance
 transformDistance d = runST do
 	m <- cairoMatrixNew 3 5 8 13 2 9
 	cairoMatrixTransformDistance m d
+
+transformPoint :: Point -> Point
+transformPoint p = runST do
+	m <- cairoMatrixNew 3 5 8 13 2 9
+	cairoMatrixTransformPoint m p
