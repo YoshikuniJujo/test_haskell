@@ -30,6 +30,7 @@ main = do
 	cairoMatrixRotate mt (pi / 4)
 	cairoMatrixTranslate mt (- 64) (- 64)
 	cairoTransform cr mt
+	print =<< cairoMatrixGet =<< cairoGetMatrix cr
 
 	cairoRectangle cr 32 32 64 64
 	cairoStroke cr
