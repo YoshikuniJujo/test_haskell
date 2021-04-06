@@ -12,7 +12,7 @@ import Graphics.Cairo.Surfaces.SvgSurfaces
 
 main :: IO ()
 main = cairoSvgSurfaceWith "try-svg.svg" 128 128 \sr -> do
-	cairoSurfaceGetType sr >>= \case
+	pure (cairoSurfaceGetType sr) >>= \case
 		CairoSurfaceTypeSvg -> putStrLn "CairoSurfaceTypeSvg"
 		_ -> putStrLn "other type"
 	cr <- cairoCreate sr

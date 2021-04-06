@@ -24,14 +24,14 @@ main = readImage "data/HaskellLogo.png" >>= \case
 		sr' <- cairoImageSurfaceCreateForCairoImage $ CairoImageArgb32 i'
 		cairoMaskSurface cr sr' 64 64
 
-		print =<< cairoSurfaceGetType sr
-		print =<< cairoSurfaceGetType sr'
-		cairoSurfaceGetType sr >>= \case
+		print $ cairoSurfaceGetType sr
+		print $ cairoSurfaceGetType sr'
+		pure (cairoSurfaceGetType sr) >>= \case
 			CairoSurfaceTypeImage -> putStrLn "CairoSurfaceTypeImage"
 			_ -> putStrLn "other type"
-		print =<< cairoSurfaceGetContent sr
-		print =<< cairoSurfaceGetContent sr'
-		cairoSurfaceGetContent sr >>= \case
+		print $ cairoSurfaceGetContent sr
+		print $ cairoSurfaceGetContent sr'
+		pure (cairoSurfaceGetContent sr) >>= \case
 			CairoContentColorAlpha -> putStrLn "CairoSurfaceColorAlpha"
 			_ -> putStrLn "other content"
 
