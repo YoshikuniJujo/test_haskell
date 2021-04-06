@@ -9,6 +9,8 @@ import Data.JuicyCairo
 import Data.Color
 import Codec.Picture
 import Graphics.Cairo.Drawing.CairoT.Basic
+import Graphics.Cairo.Surfaces.CairoSurfaceT.Internal
+import Graphics.Cairo.Surfaces.CairoSurfaceTypeT
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
 
@@ -21,6 +23,13 @@ main = readImage "data/HaskellLogo.png" >>= \case
 		cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.6 0.1
 		sr' <- cairoImageSurfaceCreateForCairoImage $ CairoImageArgb32 i'
 		cairoMaskSurface cr sr' 64 64
+
+		print =<< cairoSurfaceGetType sr
+		print =<< cairoSurfaceGetType sr'
+		cairoSurfaceGetType sr >>= \case
+			CairoSurfaceTypeImage -> putStrLn "CairoSurfaceTypeImage"
+			_ -> putStrLn "other type"
+
 		cairoImageSurfaceGetCairoImage sr >>= \case
 			CairoImageArgb32 ci ->
 				writePng "try-cairo-mask-surface.png" $ cairoArgb32ToJuicyRGBA8 ci

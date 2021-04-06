@@ -1,4 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -19,7 +20,7 @@ main = readImage "data/HaskellLogo.png" >>= \case
 		sr1 <- cairoImageSurfaceCreateForCairoImage . CairoImageArgb32
 			$ juicyRGBA8ToCairoArgb32 i
 		pt <- cairoPatternCreateForSurface sr1
-		mtx <- cairoMatrixNewTranslate 64 64
+		mtx <- cairoMatrixNewTranslate @_ @CairoMatrixT 64 64
 		cairoMatrixRotate mtx (pi / 4)
 		cairoMatrixTranslate mtx (- 64) (- 64)
 		cairoMatrixTranslate mtx (- 64) (- 64)

@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -6,14 +6,17 @@ module Main where
 import Data.Maybe
 import Data.Color
 import Graphics.Cairo.Drawing.CairoT
-import Graphics.Cairo.Surfaces.CairoSurfaceT
+import Graphics.Cairo.Surfaces.CairoSurfaceT.Internal
+import Graphics.Cairo.Surfaces.CairoSurfaceTypeT
 import Graphics.Cairo.Surfaces.SvgSurfaces
 
 main :: IO ()
-main = do
-	sr <- cairoSvgSurfaceCreate "try-svg.svg" 128 128
+main = cairoSvgSurfaceWith "try-svg.svg" 128 128 \sr -> do
+	cairoSurfaceGetType sr >>= \case
+		CairoSurfaceTypeSvg -> putStrLn "CairoSurfaceTypeSvg"
+		_ -> putStrLn "other type"
 	cr <- cairoCreate sr
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.6 0.1
 	cairoPaint cr
 --	cairoSurfaceFlush sr
-	cairoSurfaceFinish sr
+--	cairoSurfaceFinish sr

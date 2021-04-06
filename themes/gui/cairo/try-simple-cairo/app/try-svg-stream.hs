@@ -9,7 +9,6 @@ import Data.STRef
 import Data.Maybe
 import Data.Color
 import Graphics.Cairo.Drawing.CairoT
-import Graphics.Cairo.Surfaces.CairoSurfaceT
 import Graphics.Cairo.Surfaces.SvgSurfaces
 
 import qualified Data.Text as T
@@ -22,7 +21,7 @@ main = do
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.6 0.1
 	cairoPaint cr
 --	cairoSurfaceFlush sr
-	cairoSurfaceFinish sr
+--	cairoSurfaceFinish sr
 	putStrLn "=== ST ==="
 	T.putStr $ runST st
 
@@ -33,5 +32,5 @@ st = do
 	cr <- cairoCreate sr
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.6 0.1
 	cairoPaint cr
-	cairoSurfaceFinish sr
+--	cairoSurfaceFinish sr
 	readSTRef v
