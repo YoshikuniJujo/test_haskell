@@ -31,6 +31,10 @@ main = do
 	cairoMatrixTranslate mt (- 64) (- 64)
 	cairoTransform cr mt
 	print =<< cairoMatrixGet =<< cairoGetMatrix cr
+	print =<< cairoUserToDevice cr 10 100
+	print =<< cairoDeviceToUser cr 32.1801 51.2720
+	print =<< cairoUserToDeviceDistance cr 10 100
+	print =<< cairoDeviceToUserDistance cr (- 31.8198) 77.7817
 
 	cairoRectangle cr 32 32 64 64
 	cairoStroke cr
