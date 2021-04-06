@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6cbec27ffbe69d39fe1f651204d625a65622931fef06f2a84b181704de53cbe3
+-- hash: ba5219fac48d763c502c1caa3377811dc2a772399bda9bc9cc9d7185be018513
 
 name:           try-with-file
 version:        0.1.0.0
@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       Lib
+      SafeHandle
   other-modules:
       Paths_try_with_file
   hs-source-dirs:
