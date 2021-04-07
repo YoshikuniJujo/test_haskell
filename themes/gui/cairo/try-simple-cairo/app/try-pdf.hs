@@ -6,12 +6,24 @@ module Main where
 import Data.Maybe
 import Data.Color
 import Graphics.Cairo.Drawing.CairoT
+import Graphics.Cairo.Drawing.CairoT.Page
+import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Surfaces.CairoSurfaceT.Internal
 import Graphics.Cairo.Surfaces.CairoSurfaceTypeT
 import Graphics.Cairo.Surfaces.PdfSurfaces
 
 main :: IO ()
-main = cairoPdfSurfaceWith "try-pdf.pdf" 128 128 \sr -> do
+main = cairoPdfSurfaceWith "try-pdf.pdf" 595 842 \sr -> do
 	cr <- cairoCreate sr
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.6 0.1
 	cairoPaint cr
+	cairoCopyPage cr
+
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.5 0.2 0.1
+	cairoRectangle cr 198.33 280.67 198.33 280.67
+	cairoFill cr
+	cairoShowPage cr
+
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.1 0.2 0.5
+	cairoRectangle cr 198.33 280.67 198.33 280.67
+	cairoFill cr
