@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b952363d7af453bcd2494b75152921d92c3e43dec1a89c5b4b295e7ac3f5d2db
+-- hash: 332996127fa3bebfac8c10261f58f69ba46010ac9cebf53934d14da2faf9057c
 
 name:           try-simple-cairo
 version:        0.1.0.0
@@ -36,6 +36,7 @@ library
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -54,6 +55,7 @@ executable try-cairo-arc
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -73,6 +75,7 @@ executable try-cairo-clip
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -92,6 +95,7 @@ executable try-cairo-close-path
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -111,6 +115,7 @@ executable try-cairo-curve-to
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -130,6 +135,7 @@ executable try-cairo-fill-rule
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -149,6 +155,7 @@ executable try-cairo-line-cap
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -168,6 +175,7 @@ executable try-cairo-line-join
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -187,6 +195,7 @@ executable try-cairo-mask
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -206,6 +215,7 @@ executable try-cairo-mask-surface
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -225,6 +235,7 @@ executable try-cairo-miter-limit
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -244,6 +255,7 @@ executable try-cairo-new-path
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -263,6 +275,7 @@ executable try-cairo-new-sub-path
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -282,6 +295,7 @@ executable try-cairo-operator
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -301,6 +315,7 @@ executable try-cairo-path-extents
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -320,6 +335,7 @@ executable try-cairo-pattern-create-radial
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -339,6 +355,7 @@ executable try-cairo-pattern-create-rgb
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -358,6 +375,7 @@ executable try-cairo-pattern-create-surface
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -377,6 +395,7 @@ executable try-cairo-pattern-set-matrix
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -396,6 +415,7 @@ executable try-cairo-rel-move-error
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -415,6 +435,7 @@ executable try-cairo-relative
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -434,6 +455,7 @@ executable try-cairo-save-restore
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -453,6 +475,7 @@ executable try-cairo-set-source
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -472,6 +495,7 @@ executable try-cairo-set-source-surface
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -491,6 +515,7 @@ executable try-cairo-stroke
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -510,6 +535,7 @@ executable try-cairo-stroke-preserve
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -529,6 +555,27 @@ executable try-pdf
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , text
+    , try-simple-cairo
+  default-language: Haskell2010
+
+executable try-pdf-stream
+  main-is: try-pdf-stream.hs
+  other-modules:
+      Main
+      Paths_try_simple_cairo
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -547,6 +594,7 @@ executable try-simple-cairo-exe
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -566,6 +614,7 @@ executable try-svg
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -585,6 +634,7 @@ executable try-svg-stream
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
@@ -604,6 +654,7 @@ test-suite try-simple-cairo-test
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
     , primitive
     , simple-cairo
