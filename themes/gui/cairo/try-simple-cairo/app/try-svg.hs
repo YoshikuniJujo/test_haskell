@@ -12,7 +12,7 @@ import Graphics.Cairo.Surfaces.SvgSurfaces
 
 main :: IO ()
 main = do
-	print =<< cairoSvgGetVersions
+	((putStrLn . cairoSvgVersionToString) `mapM_`) =<< cairoSvgGetVersions
 	cairoSvgSurfaceWith "try-svg.svg" 128 128 \sr -> do
 		pure (cairoSurfaceGetType sr) >>= \case
 			CairoSurfaceTypeSvg -> putStrLn "CairoSurfaceTypeSvg"
