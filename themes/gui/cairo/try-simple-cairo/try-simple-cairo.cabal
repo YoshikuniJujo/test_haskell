@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1e9e14824bb9b1f44283991e040815e2615b6905c1e403e5445126e41be33eaa
+-- hash: b952363d7af453bcd2494b75152921d92c3e43dec1a89c5b4b295e7ac3f5d2db
 
 name:           try-simple-cairo
 version:        0.1.0.0
@@ -500,6 +500,25 @@ executable try-cairo-stroke
 
 executable try-cairo-stroke-preserve
   main-is: try-cairo-stroke-preserve.hs
+  other-modules:
+      Main
+      Paths_try_simple_cairo
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , text
+    , try-simple-cairo
+  default-language: Haskell2010
+
+executable try-pdf
+  main-is: try-pdf.hs
   other-modules:
       Main
       Paths_try_simple_cairo
