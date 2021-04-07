@@ -18,6 +18,7 @@ main = cairoSvgSurfaceWith "try-svg.svg" 128 128 \sr -> do
 	cairoSvgSurfaceGetDocumentUnit sr >>= \case
 		CairoSvgUnitPt -> putStrLn "CairoSvgUnitPt"
 		_ -> putStrLn "other unit"
+	cairoSvgSurfaceSetDocumentUnit sr CairoSvgUnitMm
 	cr <- cairoCreate sr
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.6 0.1
 	cairoPaint cr
