@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3aa9c385aee04462f15827a8f00061a6a6c408c2f00898703f76749be6b1d6c8
+-- hash: 5564fa2b3941a46d03ff9d7f4e79e7cfad964b6326862eb867980118d930198c
 
 name:           try-cairo-pdf
 version:        0.1.0.0
@@ -35,8 +35,10 @@ library
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , directory
     , primitive
     , simple-cairo
+    , template-haskell
   default-language: Haskell2010
 
 executable try-cairo-pdf-exe
@@ -49,8 +51,28 @@ executable try-cairo-pdf-exe
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , directory
     , primitive
     , simple-cairo
+    , template-haskell
+    , try-cairo-pdf
+  default-language: Haskell2010
+
+executable try-link-file
+  main-is: try-link-file.hs
+  other-modules:
+      Main
+      Paths_try_cairo_pdf
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , directory
+    , primitive
+    , simple-cairo
+    , template-haskell
     , try-cairo-pdf
   default-language: Haskell2010
 
@@ -65,8 +87,10 @@ executable try-pdf
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , directory
     , primitive
     , simple-cairo
+    , template-haskell
     , try-cairo-pdf
   default-language: Haskell2010
 
@@ -81,8 +105,10 @@ executable try-pdf-bak
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , directory
     , primitive
     , simple-cairo
+    , template-haskell
     , try-cairo-pdf
   default-language: Haskell2010
 
@@ -97,8 +123,10 @@ executable try-pdf-stream
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , directory
     , primitive
     , simple-cairo
+    , template-haskell
     , try-cairo-pdf
   default-language: Haskell2010
 
@@ -113,7 +141,9 @@ test-suite try-cairo-pdf-test
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , directory
     , primitive
     , simple-cairo
+    , template-haskell
     , try-cairo-pdf
   default-language: Haskell2010

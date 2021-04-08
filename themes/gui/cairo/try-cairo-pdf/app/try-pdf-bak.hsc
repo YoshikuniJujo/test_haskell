@@ -19,16 +19,20 @@ import Lib
 #include <cairo.h>
 
 main :: IO ()
-main = cairoPdfSurfaceWith "try-pdf.pdf" 595 842 \sr -> do
-	p_ : _ <- getArgs
+main = cairoPdfSurfaceWith "try-pdf-bak.pdf" 595 842 \sr -> do
+	p_ : f_ : _ <- getArgs
 	let	p = read p_ :: Int
+		f = read f_ :: Int
 	cr <- cairoCreate sr
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.6 0.1
 	cairoPaint cr
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.1 0.2 0.1
 	cairoRectangle cr 50 50 50 50
 --	cairoTagLinkInternal cr (Left "here") $ cairoFill cr
-	cairoTagBegin cr #{const_str CAIRO_TAG_LINK} "dest='here'"
+--	if f == 1 then cairoTagBegin cr #{const_str CAIRO_TAG_LINK} "file='trypdfbak.pdf' page=1 pos=[25 40]"
+	if f == 1 then cairoTagBegin cr #{const_str CAIRO_TAG_LINK} "uri='file:///home/tatsuya/projects/test_haskell/themes/gui/cairo/try-cairo-pdf/try-pdf-bak.pdf'"
+--	else cairoTagBegin cr #{const_str CAIRO_TAG_LINK} "page=1 pos=[25 40]"
+	else cairoTagBegin cr #{const_str CAIRO_TAG_LINK} "uri='https://google.com'"
 	cairoFill cr
 	cairoTagEnd cr #{const_str CAIRO_TAG_LINK}
 --	cairoTagLinkInternal cr (Right (2, (50, 100))) $ cairoFill cr
