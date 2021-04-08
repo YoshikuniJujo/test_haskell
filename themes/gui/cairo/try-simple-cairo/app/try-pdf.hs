@@ -20,9 +20,10 @@ main = cairoPdfSurfaceWith "try-pdf.pdf" 595 842 \sr -> do
 	cairoPaint cr
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.1 0.2 0.1
 	cairoRectangle cr 50 50 50 50
-	cairoTagLinkInternal cr (Left "here") $ cairoFill cr
+	cairoTagLinkInternal cr "here" $ cairoFill cr
 	cairoRectangle cr 400 50 50 50
-	cairoTagLinkInternal cr (Right (2, (50, 100))) $ cairoFill cr
+	cairoFill cr
+--	cairoTagLinkInternal cr (Right (2, (50, 100))) $ cairoFill cr
 	cairoCopyPage cr
 
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.5 0.2 0.1
