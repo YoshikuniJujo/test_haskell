@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9abe7cafe9aaf878926c8c7874890de03b34c0971b58bf69375f9c82a8e6913b
+-- hash: 3aa9c385aee04462f15827a8f00061a6a6c408c2f00898703f76749be6b1d6c8
 
 name:           try-cairo-pdf
 version:        0.1.0.0
@@ -34,6 +34,7 @@ library
       src
   build-depends:
       base >=4.7 && <5
+    , bytestring
     , primitive
     , simple-cairo
   default-language: Haskell2010
@@ -47,6 +48,7 @@ executable try-cairo-pdf-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bytestring
     , primitive
     , simple-cairo
     , try-cairo-pdf
@@ -62,6 +64,39 @@ executable try-pdf
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bytestring
+    , primitive
+    , simple-cairo
+    , try-cairo-pdf
+  default-language: Haskell2010
+
+executable try-pdf-bak
+  main-is: try-pdf-bak.hs
+  other-modules:
+      Main
+      Paths_try_cairo_pdf
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , primitive
+    , simple-cairo
+    , try-cairo-pdf
+  default-language: Haskell2010
+
+executable try-pdf-stream
+  main-is: try-pdf-stream.hs
+  other-modules:
+      Main
+      Paths_try_cairo_pdf
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
     , primitive
     , simple-cairo
     , try-cairo-pdf
@@ -77,6 +112,7 @@ test-suite try-cairo-pdf-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bytestring
     , primitive
     , simple-cairo
     , try-cairo-pdf
