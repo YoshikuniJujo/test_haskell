@@ -12,14 +12,14 @@ import Graphics.Gdk.Types
 import Graphics.Gdk.Values
 import Graphics.Cairo.Types
 
-import Graphics.Cairo.Surfaces.CairoSurfaceT
+import Graphics.Cairo.Surfaces.CairoSurfaceT.Internal
 
 #include <gdk/gdk.h>
 
 foreign import ccall "gdk_cursor_new_from_surface" c_gdk_cursor_new_from_surface ::
-	Ptr GdkDisplay -> Ptr (CairoSurfaceT s) -> #{type gdouble} -> #{type gdouble} -> IO (Ptr GdkCursor)
+	Ptr GdkDisplay -> Ptr (CairoSurfaceT s ps) -> #{type gdouble} -> #{type gdouble} -> IO (Ptr GdkCursor)
 
-gdkCursorNewFromSurface :: GdkDisplay -> CairoSurfaceT s -> #{type gdouble} -> #{type gdouble} -> IO GdkCursor
+gdkCursorNewFromSurface :: GdkDisplay -> CairoSurfaceT s ps -> #{type gdouble} -> #{type gdouble} -> IO GdkCursor
 gdkCursorNewFromSurface (GdkDisplay d) (CairoSurfaceT fs) x y = withForeignPtr fs \s ->
 	mkGdkCursor =<< c_gdk_cursor_new_from_surface d s x y
 
@@ -38,11 +38,11 @@ gdkCursorGetDisplay (GdkCursor fc) = withForeignPtr fc \c ->
 	GdkDisplay <$> c_gdk_cursor_get_display c
 
 foreign import ccall "gdk_cursor_get_surface" c_gdk_cursor_get_surface ::
-	Ptr GdkCursor -> IO (Ptr (CairoSurfaceT s))
+	Ptr GdkCursor -> IO (Ptr (CairoSurfaceT s ps))
 
-gdkCursorGetSurface :: GdkCursor -> IO (CairoSurfaceT s)
+gdkCursorGetSurface :: GdkCursor -> IO (CairoSurfaceT s ps)
 gdkCursorGetSurface (GdkCursor fc) = withForeignPtr fc \c ->
-	makeCairoSurfaceT =<< c_gdk_cursor_get_surface c
+	mkCairoSurfaceT =<< c_gdk_cursor_get_surface c
 
 foreign import ccall "gdk_cursor_get_cursor_type" c_gdk_cursor_get_cursor_type ::
 	Ptr GdkCursor -> IO #{type GdkCursorType}

@@ -21,7 +21,7 @@ import Try.Tools
 
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
-import Graphics.Cairo.Surfaces.CairoSurfaceT
+import Graphics.Cairo.Surfaces.CairoSurfaceT.Internal
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Types
 import Graphics.Cairo.Values
@@ -80,7 +80,7 @@ main = do
 			pure $ kv /= fromIntegral (ord 'q')
 		e -> True <$ print e
 
-drawCursor :: PrimMonad m => m (CairoSurfaceT (PrimState m))
+drawCursor :: PrimMonad m => m (CairoSurfaceT s (PrimState m))
 drawCursor = do
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 50 50
 	cr <- cairoCreate s
@@ -95,7 +95,7 @@ drawCursor = do
 	cairoMoveTo cr 15 15
 	cairoLineTo cr 35 35
 	cairoStroke cr
-	pure s
+	pure $ toCairoSurfaceT s
 
 gdkEventMotionPos :: GdkEventMotion -> IO (Double, Double)
 gdkEventMotionPos m = (,) <$> gdkEventMotionX m <*> gdkEventMotionY m
