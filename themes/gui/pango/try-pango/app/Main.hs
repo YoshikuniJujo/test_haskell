@@ -1,14 +1,18 @@
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
+import Foreign.C.Types
+
 import Control.Monad
 import Control.Monad.Primitive
 import Codec.Picture
+import Data.Maybe
 
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Transformations
-import Graphics.Cairo.ImageSurfaces
+import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Types
 import Graphics.Cairo.Values
 
@@ -17,6 +21,11 @@ import Graphics.Pango.Basic.LayoutObjects
 import Graphics.Pango.Types
 import Graphics.Pango.Values
 import Graphics.Pango.Rendering.Cairo
+
+import Data.Color
+import Data.CairoContext
+import Data.CairoImage
+import Data.JuicyCairo
 
 main :: IO ()
 main = do
@@ -40,13 +49,15 @@ main = do
 		pangoStyleItalic pangoVariantSmallCaps pangoWeightNormal pangoStretchUltraExpanded
 		(0, 300)
 
-	void $ writeDynamicPng "tmp.png" =<< cairoImageSurfaceGetImage s
-	pure ()
+--	void $ writeDynamicPng "tmp.png" =<< cairoImageSurfaceGetImage s
+	cairoImageSurfaceGetCairoImage s >>= \case
+		CairoImageArgb32 a -> writePng "tmp.png" $ cairoArgb32ToJuicyRGBA8 a
+		_ -> error "never occur"
 
 helloWorld :: CairoT RealWorld ->
-	(Double, Double, Double) ->
+	(CDouble, CDouble, CDouble) ->
 	String -> PangoStyle -> PangoVariant -> PangoWeight -> PangoStretch ->
-	(Double, Double) -> IO ()
+	(CDouble, CDouble) -> IO ()
 helloWorld cr (r, g, b) ff stl vr wt strc (x, y) = do
 	pl <- pangoCairoCreateLayout cr
 	pfd <- pangoFontDescriptionNew
@@ -61,7 +72,7 @@ helloWorld cr (r, g, b) ff stl vr wt strc (x, y) = do
 	putStrLn $ pangoFontDescriptionToFilename pfd'
 	pangoLayoutSetFontDescription pl pfd'
 	pangoLayoutSetText pl "Hello, world!\nこんにちは世界!" 40
-	cairoSetSourceRgb cr r g b
+	cairoSetSourceRgb cr . fromJust $ rgbDouble r g b
 	cairoIdentityMatrix cr
 	cairoTranslate cr x y
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl

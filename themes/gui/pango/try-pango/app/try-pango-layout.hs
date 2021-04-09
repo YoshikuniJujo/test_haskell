@@ -1,5 +1,5 @@
 {-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -13,8 +13,8 @@ import Text.Nowdoc
 import Codec.Picture
 
 import Graphics.Cairo.Drawing.CairoT
-import Graphics.Cairo.Paths
-import Graphics.Cairo.ImageSurfaces
+import Graphics.Cairo.Drawing.Paths
+import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
 
 import Graphics.Pango.Basic.Fonts
@@ -23,6 +23,10 @@ import Graphics.Pango.LowLevel.TabStops
 import Graphics.Pango.Rendering.Cairo
 import Graphics.Pango.Types
 import Graphics.Pango.Values
+
+import Data.Color
+import Data.CairoImage
+import Data.JuicyCairo
 
 main :: IO ()
 main = do
@@ -166,7 +170,7 @@ main = do
 		"Watch \x231a Sloth \x1f9a5 Otter \x1f9a6 Secret \x3299 A \x1f170 " ++
 		"Bad1 \x1f16f Bad2 \x1f16e fffi"
 		) 100
-	cairoSetSourceRgb cr 0 0 1
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0 1
 	cairoMoveTo cr 100 680
 	fpl5 <- pangoLayoutFreeze pl5
 	print $ pangoLayoutGetUnknownGlyphsCount fpl5
@@ -203,7 +207,10 @@ main = do
 	print =<< pangoLayoutIterGetLineExtents itr2
 	print $ pangoLayoutLineGetXRanges pll 10 100
 
-	void $ writeDynamicPng "tmp3.png" =<< cairoImageSurfaceGetImage s
+--	void $ writeDynamicPng "tmp3.png" =<< cairoImageSurfaceGetImage s
+	cairoImageSurfaceGetCairoImage s >>= \case
+		CairoImageArgb32 a -> writePng "tmp3.png" $ cairoArgb32ToJuicyRGBA8 a
+		_ -> error "never occur"
 
 someText :: String
 someText = unlines [

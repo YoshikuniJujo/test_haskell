@@ -9,15 +9,37 @@ packages:
     version: 0.1.0.0
     git: https://github.com/YoshikuniJujo/simple-cairo
     pantry-tree:
-      size: 1695
-      sha256: a08291181209b313ffd858ce862fcbcf521232f3d24b6191ab2e51e5f6f00c2d
-    commit: 1a6e2170cee3c44c3dcc354b473754d100cfe064
+      size: 4744
+      sha256: 6cc7ab2beb4f3d399db2b8c15901795b8261e5f617a3876c91816ec62280b8f3
+    commit: 02f2ee2f5f888d5378e93ec3ba52e2b78bce0d44
   original:
     git: https://github.com/YoshikuniJujo/simple-cairo
-    commit: 1a6e2170cee3c44c3dcc354b473754d100cfe064
+    commit: 02f2ee2f5f888d5378e93ec3ba52e2b78bce0d44
+- completed:
+    name: cairo-image
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/cairo-image
+    pantry-tree:
+      size: 887
+      sha256: 46d3b277fcd23a824bc7d035f7288a16db7a211cef6fa858e85c24f079d1cf8a
+    commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
+  original:
+    git: https://github.com/YoshikuniJujo/cairo-image
+    commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
+- completed:
+    name: JuicyCairo
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/JuicyCairo
+    pantry-tree:
+      size: 622
+      sha256: 7af8d7bb8915566ab63cb40ccde07361e8282f3784ac7b9a4c571dfb945deee6
+    commit: 67aceebb48e90e72a2e60c095b91bc6e56b0ca19
+  original:
+    git: https://github.com/YoshikuniJujo/JuicyCairo
+    commit: 67aceebb48e90e72a2e60c095b91bc6e56b0ca19
 snapshots:
 - completed:
-    size: 532177
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/16/20.yaml
-    sha256: 0e14ba5603f01e8496e8984fd84b545a012ca723f51a098c6c9d3694e404dc6d
-  original: lts-16.20
+    size: 567037
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/17/9.yaml
+    sha256: d7d8d5106e53d1669964bd8bd2b0f88a5ad192d772f5376384b76738fd992311
+  original: lts-17.9

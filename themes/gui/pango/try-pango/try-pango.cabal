@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6c002df91514c6d716152ddae574e30d79f6d21756697584976aeb76df5c42bd
+-- hash: 8ce68339bc70db0327eea0cfd607505911530aeb1feab3d0d518fa545f771c83
 
 name:           try-pango
 version:        0.1.0.0
@@ -42,8 +42,10 @@ library
   pkgconfig-depends:
       pangocairo
   build-depends:
-      JuicyPixels
+      JuicyCairo
+    , JuicyPixels
     , base >=4.7 && <5
+    , cairo-image
     , nowdoc
     , primitive
     , simple-cairo
@@ -58,8 +60,10 @@ executable try-pango-context
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      JuicyCairo
+    , JuicyPixels
     , base >=4.7 && <5
+    , cairo-image
     , nowdoc
     , primitive
     , simple-cairo
@@ -74,8 +78,10 @@ executable try-pango-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      JuicyCairo
+    , JuicyPixels
     , base >=4.7 && <5
+    , cairo-image
     , nowdoc
     , primitive
     , simple-cairo
@@ -91,8 +97,10 @@ executable try-pango-layout
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      JuicyCairo
+    , JuicyPixels
     , base >=4.7 && <5
+    , cairo-image
     , nowdoc
     , primitive
     , simple-cairo
@@ -108,8 +116,10 @@ test-suite try-pango-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      JuicyPixels
+      JuicyCairo
+    , JuicyPixels
     , base >=4.7 && <5
+    , cairo-image
     , nowdoc
     , primitive
     , simple-cairo

@@ -13,6 +13,8 @@ import Graphics.Cairo.Types
 import Graphics.Pango.Monad
 import Graphics.Pango.Types
 
+import Data.CairoContext
+
 foreign import ccall "pango_cairo_create_context"
 	c_pango_cairo_create_context :: Ptr (CairoT s) -> IO (Ptr PangoContext)
 
