@@ -40,4 +40,11 @@ main = cairoPdfSurfaceWith "try-pdf.pdf" 595 842 \sr -> do
 	cairoRectangle cr 400 600 50 50
 	cairoTagDestination cr "here" $ cairoFill cr
 
-	void $ cairoPdfSurfaceAddOutline sr CairoPdfOutlineRoot "foo" (Left "here") []
+	foo <- cairoPdfSurfaceAddOutline sr CairoPdfOutlineRoot "foo" (Left "here")
+		[CairoPdfOutlineFlagOpen]
+	bar <- cairoPdfSurfaceAddOutline sr foo "bar" (Right (2, (50, 500)))
+		[CairoPdfOutlineFlagBold]
+	baz <- cairoPdfSurfaceAddOutline sr bar "baz" (Right (3, (10, 20)))
+		[CairoPdfOutlineFlagItalic]
+	void $ cairoPdfSurfaceAddOutline sr baz "hoge" (Right (1, (10, 15)))
+		[CairoPdfOutlineFlagOpen]
