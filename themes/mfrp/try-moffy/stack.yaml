@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: lts-16.9
+resolver: lts-17.9
 #resolver: nightly-2020-08-03
 
 # User packages to be built.
@@ -47,8 +47,6 @@ extra-deps:
   commit: 23a243df2ca44306ca8cb8e93f286c524a77c332
 - git: https://github.com/YoshikuniJujo/type-flip
   commit: e725f7e5064c0543e024c0c29aaa91f21cc2a45f
-- git: https://github.com/YoshikuniJujo/exception-hierarchy.git
-  commit: 4b9f128109c28d8e49334d13902306c1537eb8eb
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

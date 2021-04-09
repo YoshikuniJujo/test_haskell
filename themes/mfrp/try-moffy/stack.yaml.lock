@@ -37,20 +37,9 @@ packages:
   original:
     git: https://github.com/YoshikuniJujo/type-flip
     commit: e725f7e5064c0543e024c0c29aaa91f21cc2a45f
-- completed:
-    name: exception-hierarchy
-    version: 0.1.0.5
-    git: https://github.com/YoshikuniJujo/exception-hierarchy.git
-    pantry-tree:
-      size: 454
-      sha256: 325d5d802ccc5376c2016a9d49ebb5eb4f83e218241d3eb51261fb08858810de
-    commit: 4b9f128109c28d8e49334d13902306c1537eb8eb
-  original:
-    git: https://github.com/YoshikuniJujo/exception-hierarchy.git
-    commit: 4b9f128109c28d8e49334d13902306c1537eb8eb
 snapshots:
 - completed:
-    size: 532380
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/16/9.yaml
-    sha256: 14a7cec114424e4286adde73364438927a553ed248cc50f069a30a67e3ee1e69
-  original: lts-16.9
+    size: 567037
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/17/9.yaml
+    sha256: d7d8d5106e53d1669964bd8bd2b0f88a5ad192d772f5376384b76738fd992311
+  original: lts-17.9
