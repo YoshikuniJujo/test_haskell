@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1f1bec99b369efde15790ec797dc1714a830ac8ab5081805834be1af5f6b51c9
+-- hash: aa323924fddf1a3f35e24a92e057e66ab458e4bd59942bf8959947e2235c6bb2
 
 name:           try-cairo-pdf
 version:        0.1.0.0
@@ -60,6 +60,24 @@ executable try-cairo-pdf-exe
 
 executable try-cairo-pdf-surface-set-size
   main-is: try-cairo-pdf-surface-set-size.hs
+  other-modules:
+      Main
+      Paths_try_cairo_pdf
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , directory
+    , primitive
+    , simple-cairo
+    , template-haskell
+    , try-cairo-pdf
+  default-language: Haskell2010
+
+executable try-cairo-pdf-surface-set-thumbnail-size
+  main-is: try-cairo-pdf-surface-set-thumbnail-size.hs
   other-modules:
       Main
       Paths_try_cairo_pdf

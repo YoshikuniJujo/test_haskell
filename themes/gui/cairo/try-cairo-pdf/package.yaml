@@ -85,6 +85,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-cairo-pdf
+  try-cairo-pdf-surface-set-thumbnail-size:
+    main:                try-cairo-pdf-surface-set-thumbnail-size.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-cairo-pdf
 
 tests:
   try-cairo-pdf-test:
