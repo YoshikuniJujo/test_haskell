@@ -15,7 +15,7 @@ structure
 	+ Scripts and Languages
 	+ Bidirectional Text
 	+ Vertical Text
-* Rendering withPango
+* Rendering with Pango
 	+ Win32 Fonts and Rendering
 	+ FreeType Fonts and Rendering
 	+ Xft Fonts and Rendering
@@ -35,6 +35,21 @@ structure
 	+ Miscellaneous Utilities
 	+ Version Checking
 
+todo
+----
+
+* [ ] Basic Pango Interfaces
+	+ [ ] Fonts
+	+ [ ] LayoutObjects
+	+ [ ] Text Attributes
+	+ [ ] Tab Stops
+	+ [ ] Bidirectional Text
+	+ [ ] Vertical Text
+	+ [ ] Scripts and Languages
+* [ ] Rendering with Pango
+	+ [ ] Cairo Rendering
+* [ ] Low Level Functionality
+
 simple usage
 ------------
 
@@ -49,6 +64,20 @@ foo = do
 	pangoLayoutSetText pl "Foo Bar"
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 ```
+
+* Basic Pango Interfaces
+	+ Fonts
+		- [ ] pangoFontDescriptionNew
+		- [ ] pangoFontDescriptionSetFoo
+		- [ ] pangoFontDescriptionFreeze
+	+ Layout Objects
+		- [ ] pangoLayoutSetFontDescription
+		- [ ] pangoLayoutSetText
+		- [ ] pangoLayoutFreeze
+* Rendering with Pango
+	+ Cairo Rendering
+		- [ ] pangoCairoCreateLayout
+		- [ ] pangoCairoShowLayout
 
 old
 ---
