@@ -25,6 +25,8 @@ main = cairoPdfSurfaceWith "try-pdf.pdf" 595 842 \sr -> do
 	cairoPdfSurfaceSetMetadata sr CairoPdfMetadataModDate "1980-02-26T09:15:15Z"
 
 	cr <- cairoCreate sr
+
+	cairoPdfSurfaceSetPageLabel sr "Hello, Page Label!"
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.6 0.1
 	cairoPaint cr
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.1 0.2 0.1
@@ -36,6 +38,7 @@ main = cairoPdfSurfaceWith "try-pdf.pdf" 595 842 \sr -> do
 
 	cairoCopyPage cr
 
+	cairoPdfSurfaceSetPageLabel sr "良国"
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.5 0.2 0.1
 	cairoRectangle cr 198.33 280.67 198.33 280.67
 	cairoTagLinkUri cr "https://google.com" $ cairoFill cr
