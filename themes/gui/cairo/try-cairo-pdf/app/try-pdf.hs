@@ -16,6 +16,14 @@ import Graphics.Cairo.Surfaces.PdfSurfaces
 
 main :: IO ()
 main = cairoPdfSurfaceWith "try-pdf.pdf" 595 842 \sr -> do
+	cairoPdfSurfaceSetMetadata sr CairoPdfMetadataTitle "FOO"
+	cairoPdfSurfaceSetMetadata sr CairoPdfMetadataAuthor "Yosh"
+	cairoPdfSurfaceSetMetadata sr CairoPdfMetadataSubject "PDF sample"
+	cairoPdfSurfaceSetMetadata sr CairoPdfMetadataKeywords "foo, bar, baz"
+	cairoPdfSurfaceSetMetadata sr CairoPdfMetadataCreator "Human"
+	cairoPdfSurfaceSetMetadata sr CairoPdfMetadataCreateDate "2021-04-09T14:50:50Z"
+	cairoPdfSurfaceSetMetadata sr CairoPdfMetadataModDate "1980-02-26T09:15:15Z"
+
 	cr <- cairoCreate sr
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.6 0.1
 	cairoPaint cr
