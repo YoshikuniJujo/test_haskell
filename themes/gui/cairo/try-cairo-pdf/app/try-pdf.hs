@@ -24,6 +24,8 @@ main = cairoPdfSurfaceWith "try-pdf.pdf" 595 842 \sr -> do
 	cairoPdfSurfaceSetMetadata sr CairoPdfMetadataCreateDate "2021-04-09T14:50:50Z"
 	cairoPdfSurfaceSetMetadata sr CairoPdfMetadataModDate "1980-02-26T09:15:15Z"
 
+	cairoPdfSurfaceRestrictToVersion sr CairoPdfVersion1_4
+
 	cr <- cairoCreate sr
 
 	cairoPdfSurfaceSetPageLabel sr "Hello, Page Label!"
