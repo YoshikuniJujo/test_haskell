@@ -1,8 +1,44 @@
 memo
 ====
 
-todo
-----
+structure
+---------
+
+* Basic Pango Interfaces
+	+ Rendering
+	+ Glyph Storage
+	+ Fonts
+	+ Text Attributes
+	+ Tab Stops
+	+ Text Attribute Markup
+	+ Layout Objects
+	+ Scripts and Languages
+	+ Bidirectional Text
+	+ Vertical Text
+* Rendering withPango
+	+ Win32 Fonts and Rendering
+	+ FreeType Fonts and Rendering
+	+ Xft Fonts and Rendering
+	+ Cairo Rendering
+	+ CoreText Fonts
+* Low Level Functionality
+	+ PangoRenderer
+	+ PangoFcFontMap
+	+ PangoFcFont
+	+ PangoFcDecoder
+	+ OpenType Font Handling
+	+ Coverage Maps
+	+ Engines
+	+ PangoEngineLang
+	+ PangoEngineShape
+	+ Modules
+	+ Miscellaneous Utilities
+	+ Version Checking
+
+old
+---
+
+### todo
 
 * [x] use IO instead of PrimMonad m => m
 	+ [x] pango\_font\_description\_new
@@ -265,8 +301,7 @@ todo
 	+ [x] pango\_cairo\_layout\_path
 	+ [x] pango\_cairo\_error\_underline\_path
 
-font description
-----------------
+### font description
 
 * family
 * style
@@ -277,7 +312,7 @@ font description
 * gravity
 * variations
 
-### family
+#### family
 
 * sans, sans serif, sans-serif
 * serif
@@ -291,7 +326,7 @@ font description
 * Sazanami Gothic
 * etc
 
-### size
+#### size
 
 * thousandths of a point
 * xx-small
@@ -304,13 +339,13 @@ font description
 * smaller
 * larger
 
-### style
+#### style
 
 * normal
 * italic
 * oblique
 
-### weight
+#### weight
 
 * ultralight
 * light
@@ -320,12 +355,12 @@ font description
 * heavy
 * or numeric
 
-### variant
+#### variant
 
 * normal
 * smallcaps
 
-### stretch
+#### stretch
 
 * ultracondensed
 * extracondensed
@@ -337,19 +372,17 @@ font description
 * extraexpanded
 * ultraexpanded
 
-### gravity
+#### gravity
 
-### variations
+#### variations
 
-packages
---------
+### packages
 
 * simple-pango-font-description
 * simple-pango-layout
 * simple-pango-cairo
 * simple-pango-types
 
-consider
---------
+### consider
 
 * to separate System.Glib.SinglyLinkedLists as simple-glib-linked-lists with System.Glib.DoublyLinkedLists

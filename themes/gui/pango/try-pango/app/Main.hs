@@ -5,7 +5,6 @@ module Main where
 
 import Foreign.C.Types
 
-import Control.Monad
 import Control.Monad.Primitive
 import Codec.Picture
 import Data.Maybe
@@ -13,7 +12,6 @@ import Data.Maybe
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Surfaces.ImageSurfaces
-import Graphics.Cairo.Types
 import Graphics.Cairo.Values
 
 import Graphics.Pango.Basic.Fonts
@@ -49,7 +47,6 @@ main = do
 		pangoStyleItalic pangoVariantSmallCaps pangoWeightNormal pangoStretchUltraExpanded
 		(0, 300)
 
---	void $ writeDynamicPng "tmp.png" =<< cairoImageSurfaceGetImage s
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "tmp.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
