@@ -35,6 +35,21 @@ structure
 	+ Miscellaneous Utilities
 	+ Version Checking
 
+simple usage
+------------
+
+```haskell
+foo = do
+	pl <- pangoCairoCreateLayout cr
+	pfd <- pangoFontDescriptionNew
+	pangoFontDescriptionSetFoo ...
+	...
+	pfd' <- pangoFontDescriptionFreeze pfd
+	pangoLayoutSetFontDescription pl pfd'
+	pangoLayoutSetText pl "Foo Bar"
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
+```
+
 old
 ---
 
