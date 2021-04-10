@@ -42,13 +42,26 @@ todo
 	+ [ ] Fonts
 	+ [ ] LayoutObjects
 	+ [ ] Text Attributes
+	+ [ ] Text Attribute Markup
 	+ [ ] Tab Stops
 	+ [ ] Bidirectional Text
 	+ [ ] Vertical Text
 	+ [ ] Scripts and Languages
 * [ ] Rendering with Pango
 	+ [ ] Cairo Rendering
-* [ ] Low Level Functionality
+
+not do it yet
+-------------
+
+* Basic Pango Interfaces
+	+ Rendering
+	+ Glyph Storage
+* Rendering with Pango
+	+ Win32 Fonts and Rendering
+	+ FreeType Fonts and Rendering
+	+ Xft Fonts and Rendering
+	+ CoreText Fonts
+* Low Level Functionality
 
 simple usage
 ------------
