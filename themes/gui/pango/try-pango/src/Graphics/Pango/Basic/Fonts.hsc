@@ -19,12 +19,12 @@ import Graphics.Pango.Values
 
 #include <pango/pango.h>
 
-foreign import ccall "pango_font_description_new" c_pango_font_description_new ::
-	IO (Ptr (PangoFontDescriptionPrim s))
-
 pangoFontDescriptionNew :: PrimMonad m => m (PangoFontDescriptionPrim (PrimState m))
 pangoFontDescriptionNew = unPrimIo
 	$ makePangoFontDescriptionPrim =<< c_pango_font_description_new
+
+foreign import ccall "pango_font_description_new" c_pango_font_description_new ::
+	IO (Ptr (PangoFontDescriptionPrim s))
 
 foreign import ccall "pango_font_description_copy" c_pango_font_description_copy ::
 	Ptr (PangoFontDescriptionPrim s) -> IO (Ptr (PangoFontDescriptionPrim s))
