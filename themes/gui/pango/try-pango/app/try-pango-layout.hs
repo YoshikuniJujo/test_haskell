@@ -40,8 +40,7 @@ main = do
 --	pangoFontDescriptionSetFamily pfd "sans-serif"
 	pangoFontDescriptionSetFamily pfd "sans-serif"
 	pangoFontDescriptionSetSize pfd (30 * pangoScale)
-	pfd' <- pangoFontDescriptionFreeze pfd
-	pangoLayoutSetFontDescription pl pfd'
+	pangoLayoutSetFontDescription pl pfd
 	pangoLayoutSetWidth pl (200 * pangoScale)
 	pangoLayoutSetEllipsize pl pangoEllipsizeMiddle
 --	pangoLayoutSetText pl "こんにちは世界!" 100
@@ -55,7 +54,7 @@ main = do
 	pfd2 <- pangoFontDescriptionNew
 	pangoFontDescriptionSetFamily pfd2 "serif"
 	pangoFontDescriptionSetSize pfd2 (15 * pangoScale)
-	pangoLayoutSetFontDescription pl2 =<< pangoFontDescriptionFreeze pfd2
+	pangoLayoutSetFontDescription pl2 pfd2
 	pangoLayoutSetWidth pl2 (400 * pangoScale)
 	pangoLayoutSetIndent pl2 (30 * pangoScale)
 --	pangoLayoutSetLineSpacing pl2 2
