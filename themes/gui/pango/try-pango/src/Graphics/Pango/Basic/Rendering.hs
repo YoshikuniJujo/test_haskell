@@ -1,0 +1,14 @@
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module Graphics.Pango.Basic.Rendering where
+
+import Foreign.Ptr
+import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.Concurrent
+
+import Graphics.Pango.Types (c_g_object_unref)
+
+newtype PangoContext s = PangoContext (ForeignPtr (PangoContext s)) deriving Show
+
+mkPangoContext :: Ptr (PangoContext s) -> IO (PangoContext s)
+mkPangoContext p = PangoContext <$> newForeignPtr p (c_g_object_unref p)

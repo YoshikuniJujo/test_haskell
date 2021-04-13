@@ -43,6 +43,7 @@ todo
 	+ [x] make branch: prim-and-io
 	+ [ ] others
 * [ ] Basic Pango Interfaces
+	+ [ ] Rendering
 	+ [ ] Fonts
 	+ [ ] LayoutObjects
 	+ [ ] Text Attributes
@@ -53,6 +54,8 @@ todo
 	+ [ ] Scripts and Languages
 * [ ] Rendering with Pango
 	+ [ ] Cairo Rendering
+* [ ] think about package name
+	+ simple-cairo-pango ?
 
 not do it yet
 -------------

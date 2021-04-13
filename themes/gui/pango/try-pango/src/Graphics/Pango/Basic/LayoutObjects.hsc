@@ -19,6 +19,7 @@ import Graphics.Pango.Values
 import System.Glib.SinglyLinkedLists
 
 import Graphics.Pango.Basic.LayoutObjects.PangoLayoutIo
+import Graphics.Pango.Basic.LayoutObjects.PangoLayoutPrim
 
 #include <pango/pango.h>
 
