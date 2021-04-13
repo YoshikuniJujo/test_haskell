@@ -54,10 +54,10 @@ foreign import ccall "pango_font_description_copy" c_pango_font_description_free
 foreign import ccall "pango_font_description_copy" c_pango_font_description_thaw ::
 	Ptr PangoFontDescription -> IO (Ptr (PangoFontDescriptionPrim s))
 
-newtype PangoContext = PangoContext (ForeignPtr PangoContext) deriving Show
+newtype PangoContextOld = PangoContextOld (ForeignPtr PangoContextOld) deriving Show
 
-makePangoContext :: Ptr PangoContext -> IO PangoContext
-makePangoContext p = PangoContext <$> newForeignPtr p (c_g_object_unref p)
+makePangoContext :: Ptr PangoContextOld -> IO PangoContextOld
+makePangoContext p = PangoContextOld <$> newForeignPtr p (c_g_object_unref p)
 
 newtype PangoTabArrayPrim s = PangoTabArrayPrim (ForeignPtr (PangoTabArrayPrim s)) deriving Show
 

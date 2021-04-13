@@ -16,17 +16,17 @@ import Data.CairoContext
 import Graphics.Pango.Basic.LayoutObjects.PangoLayoutIo
 
 foreign import ccall "pango_cairo_create_context"
-	c_pango_cairo_create_context :: Ptr (CairoT s) -> IO (Ptr PangoContext)
+	c_pango_cairo_create_context :: Ptr (CairoT s) -> IO (Ptr PangoContextOld)
 
-pangoCairoCreateContext :: CairoT RealWorld -> IO PangoContext
+pangoCairoCreateContext :: CairoT RealWorld -> IO PangoContextOld
 pangoCairoCreateContext (CairoT fcr) = withForeignPtr fcr \cr ->
 	makePangoContext =<< c_pango_cairo_create_context cr
 
 foreign import ccall "pango_cairo_update_context"
-	c_pango_cairo_update_context :: Ptr (CairoT s) -> Ptr PangoContext -> IO ()
+	c_pango_cairo_update_context :: Ptr (CairoT s) -> Ptr PangoContextOld -> IO ()
 
-pangoCairoUpdateContext :: CairoT s -> PangoContext -> IO ()
-pangoCairoUpdateContext (CairoT fcr) (PangoContext fpc) =
+pangoCairoUpdateContext :: CairoT s -> PangoContextOld -> IO ()
+pangoCairoUpdateContext (CairoT fcr) (PangoContextOld fpc) =
 	withForeignPtr fcr \cr -> withForeignPtr fpc \pc ->
 		c_pango_cairo_update_context cr pc
 
