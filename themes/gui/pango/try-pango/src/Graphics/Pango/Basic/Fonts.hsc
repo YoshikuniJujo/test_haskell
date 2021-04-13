@@ -85,13 +85,13 @@ pangoFontDescriptionSetFamilyStatic (PangoFontDescriptionPrim fpfd) f = unPrimIo
 	withForeignPtr fpfd \pfd -> withForeignPtr fcf \cf ->
 		c_pango_font_description_set_family_static pfd cf
 
-foreign import ccall "pango_font_description_get_family" c_pango_font_description_get_family ::
-	Ptr PangoFontDescription -> IO CString
-
-pangoFontDescriptionGetFamily :: PangoFontDescription -> String
-pangoFontDescriptionGetFamily (PangoFontDescription fpfd) = unsafePerformIO
+pangoFontDescriptionGetFamily :: PrimMonad m => PangoFontDescriptionPrim (PrimState m) -> m String
+pangoFontDescriptionGetFamily (PangoFontDescriptionPrim fpfd) = unsafeIOToPrim
 	$ withForeignPtr fpfd \pfd ->
 		peekCString =<< c_pango_font_description_get_family pfd
+
+foreign import ccall "pango_font_description_get_family" c_pango_font_description_get_family ::
+	Ptr (PangoFontDescriptionPrim s) -> IO CString
 
 foreign import ccall "pango_font_description_set_style" c_pango_font_description_set_style ::
 	Ptr (PangoFontDescriptionPrim s) -> #{type PangoStyle} -> IO ()
