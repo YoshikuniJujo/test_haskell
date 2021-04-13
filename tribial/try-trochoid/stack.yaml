@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: lts-16.19
+resolver: lts-17.9
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -41,7 +41,9 @@ packages:
 #
 extra-deps:
 - git: https://github.com/YoshikuniJujo/simple-cairo.git
-  commit: 06a7a410d3f1b2ee7840eca5fa8e53aa0e0cfffc
+  commit: 02f2ee2f5f888d5378e93ec3ba52e2b78bce0d44
+- git: https://github.com/YoshikuniJujo/cairo-image.git
+  commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

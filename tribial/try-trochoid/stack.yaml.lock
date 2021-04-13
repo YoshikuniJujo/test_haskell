@@ -9,15 +9,26 @@ packages:
     version: 0.1.0.0
     git: https://github.com/YoshikuniJujo/simple-cairo.git
     pantry-tree:
-      size: 1608
-      sha256: aeb06e8767c054f49e5be59975642ad3c7efe805c21bd9e3ba07c0c83b6df684
-    commit: 06a7a410d3f1b2ee7840eca5fa8e53aa0e0cfffc
+      size: 4744
+      sha256: 6cc7ab2beb4f3d399db2b8c15901795b8261e5f617a3876c91816ec62280b8f3
+    commit: 02f2ee2f5f888d5378e93ec3ba52e2b78bce0d44
   original:
     git: https://github.com/YoshikuniJujo/simple-cairo.git
-    commit: 06a7a410d3f1b2ee7840eca5fa8e53aa0e0cfffc
+    commit: 02f2ee2f5f888d5378e93ec3ba52e2b78bce0d44
+- completed:
+    name: cairo-image
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/cairo-image.git
+    pantry-tree:
+      size: 887
+      sha256: 46d3b277fcd23a824bc7d035f7288a16db7a211cef6fa858e85c24f079d1cf8a
+    commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
+  original:
+    git: https://github.com/YoshikuniJujo/cairo-image.git
+    commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
 snapshots:
 - completed:
-    size: 532177
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/16/19.yaml
-    sha256: d2b828ecf50386841d0c5700b58d38566992e10d63a062af497ab29ab031faa1
-  original: lts-16.19
+    size: 567037
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/17/9.yaml
+    sha256: d7d8d5106e53d1669964bd8bd2b0f88a5ad192d772f5376384b76738fd992311
+  original: lts-17.9
