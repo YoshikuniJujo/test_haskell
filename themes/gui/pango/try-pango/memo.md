@@ -38,6 +38,10 @@ structure
 todo
 ----
 
+* [ ] organize about PrimMonad, IO and freeze
+	+ [x] remove branch tmp
+	+ [x] make branch: prim-and-io
+	+ [ ] others
 * [ ] Basic Pango Interfaces
 	+ [ ] Fonts
 	+ [ ] LayoutObjects

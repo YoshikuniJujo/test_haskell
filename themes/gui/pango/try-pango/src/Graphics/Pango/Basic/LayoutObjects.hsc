@@ -18,6 +18,8 @@ import Graphics.Pango.Types
 import Graphics.Pango.Values
 import System.Glib.SinglyLinkedLists
 
+import Graphics.Pango.Basic.LayoutObjects.PangoLayoutIo
+
 #include <pango/pango.h>
 
 foreign import ccall "pango_layout_new" c_pango_layout_new ::

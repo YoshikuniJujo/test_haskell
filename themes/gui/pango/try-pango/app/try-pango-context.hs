@@ -18,6 +18,8 @@ import Graphics.Pango.Values
 import Data.CairoImage
 import Data.JuicyCairo
 
+import Graphics.Pango.Basic.LayoutObjects.PangoLayoutIo
+
 main :: IO ()
 main = do
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
