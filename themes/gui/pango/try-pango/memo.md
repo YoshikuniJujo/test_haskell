@@ -43,7 +43,6 @@ todo
 	+ [x] make branch: prim-and-io
 	+ [ ] others
 * [ ] Basic Pango Interfaces
-	+ [ ] Rendering
 	+ [ ] Fonts
 	+ [ ] LayoutObjects
 	+ [ ] Text Attributes

@@ -90,6 +90,12 @@ functions
 todo
 ----
 
+* [ ] use `PangoDescriptionPrim (PrimState m)`
+	+ [x] comment out `pangoFontDescriptionEqual`
+	+ [ ] `pangoFontDescriptionGetFamily`
+	+ [ ] `pangoFontDescriptionGetStyle`
+* [ ] remove `PangoDescription`
+* [ ] rename `PangoDescriptionPrim (PrimState m)` to `PangoDescription (PrimState m)`
 * [ ] `pango_font_description_new`
 * [ ] `pango_font_description_copy`
 * [ ] `pango_font_description_equal`

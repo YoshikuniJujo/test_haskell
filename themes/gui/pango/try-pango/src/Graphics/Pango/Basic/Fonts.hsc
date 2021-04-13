@@ -46,17 +46,19 @@ pangoFontDescriptionCopyStatic (PangoFontDescriptionPrim fpfd) = unPrimIo
 		PangoFontDescriptionPrim <$> newForeignPtr p
 			(touchForeignPtr fpfd >> c_pango_font_description_prim_free p)
 
-foreign import ccall "pango_font_description_equal" c_pango_font_description_equal ::
-	Ptr PangoFontDescription -> Ptr PangoFontDescription -> IO #type gboolean
-
-gbooleanToBool :: #{type gboolean} -> Bool
-gbooleanToBool #{const FALSE} = False
-gbooleanToBool _ = True
-
+{-
 pangoFontDescriptionEqual :: PangoFontDescription -> PangoFontDescription -> Bool
 pangoFontDescriptionEqual (PangoFontDescription fpfd1) (PangoFontDescription fpfd2) = unsafePerformIO
 	$ withForeignPtr fpfd1 \pfd1 -> withForeignPtr fpfd2 \pfd2 ->
 		gbooleanToBool <$> c_pango_font_description_equal pfd1 pfd2
+
+foreign import ccall "pango_font_description_equal" c_pango_font_description_equal ::
+	Ptr PangoFontDescription -> Ptr PangoFontDescription -> IO #type gboolean
+-}
+
+gbooleanToBool :: #{type gboolean} -> Bool
+gbooleanToBool #{const FALSE} = False
+gbooleanToBool _ = True
 
 foreign import ccall "pango_font_description_set_family" c_pango_font_description_set_family ::
 	Ptr (PangoFontDescriptionPrim s) -> CString -> IO ()
