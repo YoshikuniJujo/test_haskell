@@ -8,4 +8,4 @@ todo
 * [x] move `PangoLayoutIo` to it
 * [x] make module `Graphics.Pango.Basic.LayoutObjects.PangoLayoutPrim`
 * [x] define `PangoLayoutPrim s`
-* [ ] make `pangoLayoutNew` to return `PangoLayoutPrim (PrimState m)`
+* [x] make `pangoLayoutNew` to return `PangoLayoutPrim (PrimState m)`

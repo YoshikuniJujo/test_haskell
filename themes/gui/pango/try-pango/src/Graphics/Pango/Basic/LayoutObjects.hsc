@@ -26,11 +26,12 @@ import Graphics.Pango.Basic.Rendering
 #include <pango/pango.h>
 
 foreign import ccall "pango_layout_new" c_pango_layout_new ::
-	Ptr (PangoContext s) -> IO (Ptr PangoLayoutIo)
+	Ptr (PangoContext s) -> IO (Ptr (PangoLayoutPrim s))
 
-pangoLayoutNew :: PangoContext RealWorld -> IO PangoLayoutIo
-pangoLayoutNew (PangoContext fpc) = withForeignPtr fpc \pc ->
-	makePangoLayoutIo =<< c_pango_layout_new pc
+pangoLayoutNew :: PrimMonad m =>
+	PangoContext (PrimState m) -> m (PangoLayoutPrim (PrimState m))
+pangoLayoutNew (PangoContext fpc) = unsafeIOToPrim $ withForeignPtr fpc \pc ->
+	mkPangoLayoutPrim =<< c_pango_layout_new pc
 
 foreign import ccall "pango_layout_copy" c_pango_layout_copy ::
 	Ptr PangoLayoutIo -> IO (Ptr PangoLayoutIo)
@@ -39,13 +40,21 @@ pangoLayoutCopy :: PangoLayoutIo -> IO PangoLayoutIo
 pangoLayoutCopy (PangoLayoutIo fpl) = withForeignPtr fpl \pl ->
 	makePangoLayoutIo =<< c_pango_layout_copy pl
 
-foreign import ccall "pango_layout_set_text" c_pango_layout_set_text ::
-	Ptr PangoLayoutIo -> CString -> #{type int} -> IO ()
-
 pangoLayoutSetText :: PangoLayoutIo -> String -> #{type int} -> IO ()
 pangoLayoutSetText (PangoLayoutIo fpl) s n =
 	withForeignPtr fpl \pl -> withCString s \cs ->
 		c_pango_layout_set_text pl cs n
+
+foreign import ccall "pango_layout_set_text" c_pango_layout_set_text ::
+	Ptr PangoLayoutIo -> CString -> #{type int} -> IO ()
+
+pangoLayoutSetTextNew :: PrimMonad m => PangoLayoutPrim (PrimState m) -> String -> #{type int} -> m ()
+pangoLayoutSetTextNew (PangoLayoutPrim fpl) s n = unsafeIOToPrim
+	$ withForeignPtr fpl \pl -> withCString s \cs ->
+		c_pango_layout_set_text_new pl cs n
+
+foreign import ccall "pango_layout_set_text" c_pango_layout_set_text_new ::
+	Ptr (PangoLayoutPrim s) -> CString -> #{type int} -> IO ()
 
 foreign import ccall "pango_layout_get_text" c_pango_layout_get_text ::
 	Ptr PangoLayout -> IO CString
@@ -54,13 +63,21 @@ pangoLayoutGetText :: PangoLayout -> String
 pangoLayoutGetText (PangoLayout fpl) = unsafePerformIO
 	$ withForeignPtr fpl \pl -> peekCString =<< c_pango_layout_get_text pl
 
-foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font_description ::
-	Ptr PangoLayoutIo -> Ptr PangoFontDescription -> IO ()
-
 pangoLayoutSetFontDescription :: PangoLayoutIo -> PangoFontDescription -> IO ()
 pangoLayoutSetFontDescription (PangoLayoutIo fpl) (PangoFontDescription fpfd) =
 	withForeignPtr fpl \pl -> withForeignPtr fpfd \pfd ->
 		c_pango_layout_set_font_description pl pfd
+
+foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font_description ::
+	Ptr PangoLayoutIo -> Ptr PangoFontDescription -> IO ()
+
+pangoLayoutSetFontDescriptionNew :: PrimMonad m => PangoLayoutPrim (PrimState m) -> PangoFontDescription -> m ()
+pangoLayoutSetFontDescriptionNew (PangoLayoutPrim fpl) (PangoFontDescription fpfd) = unsafeIOToPrim
+	$ withForeignPtr fpl \pl -> withForeignPtr fpfd \pfd ->
+		c_pango_layout_set_font_description_new pl pfd
+
+foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font_description_new ::
+	Ptr (PangoLayoutPrim s) -> Ptr PangoFontDescription -> IO ()
 
 foreign import ccall "pango_layout_set_width" c_pango_layout_set_width ::
 	Ptr PangoLayoutIo -> #{type int} -> IO ()
