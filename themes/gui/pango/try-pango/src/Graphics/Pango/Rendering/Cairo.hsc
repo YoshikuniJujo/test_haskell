@@ -14,7 +14,7 @@ import Graphics.Pango.Types
 import Data.CairoContext
 
 import Graphics.Pango.Basic.Rendering
-import Graphics.Pango.Basic.LayoutObjects.PangoLayoutIo
+import Graphics.Pango.Basic.LayoutObjects.PangoLayoutPrim
 
 pangoCairoCreateContext :: PrimMonad m => CairoT (PrimState m) -> m (PangoContext (PrimState m))
 pangoCairoCreateContext (CairoT fcr) = unsafeIOToPrim $ withForeignPtr fcr \cr ->
@@ -31,19 +31,19 @@ pangoCairoUpdateContext (CairoT fcr) (PangoContextOld fpc) =
 	withForeignPtr fcr \cr -> withForeignPtr fpc \pc ->
 		c_pango_cairo_update_context cr pc
 
-foreign import ccall "pango_cairo_create_layout" c_pango_cairo_create_layout ::
-	Ptr (CairoT s) -> IO (Ptr PangoLayoutIo)
+pangoCairoCreateLayout :: PrimMonad m => CairoT (PrimState m) -> m (PangoLayoutPrim (PrimState m))
+pangoCairoCreateLayout (CairoT fcr) = unsafeIOToPrim
+	$ withForeignPtr fcr \cr -> mkPangoLayoutPrim =<< c_pango_cairo_create_layout cr
 
-pangoCairoCreateLayout :: CairoT s -> IO PangoLayoutIo
-pangoCairoCreateLayout (CairoT fcr) =
-	withForeignPtr fcr \cr -> makePangoLayoutIo =<< c_pango_cairo_create_layout cr
+foreign import ccall "pango_cairo_create_layout" c_pango_cairo_create_layout ::
+	Ptr (CairoT s) -> IO (Ptr (PangoLayoutPrim s))
 
 foreign import ccall "pango_cairo_update_layout" c_pango_cairo_update_layout ::
-	Ptr (CairoT s) -> Ptr PangoLayoutIo -> IO ()
+	Ptr (CairoT s) -> Ptr (PangoLayoutPrim s) -> IO ()
 
-pangoCairoUpdateLayout :: CairoT s -> PangoLayoutIo -> IO ()
-pangoCairoUpdateLayout (CairoT fcr) (PangoLayoutIo fpl) =
-	withForeignPtr fcr \cr -> withForeignPtr fpl \pl ->
+pangoCairoUpdateLayout :: PrimMonad m => CairoT (PrimState m) -> PangoLayoutPrim (PrimState m) -> m ()
+pangoCairoUpdateLayout (CairoT fcr) (PangoLayoutPrim fpl) = unsafeIOToPrim
+	$ withForeignPtr fcr \cr -> withForeignPtr fpl \pl ->
 		c_pango_cairo_update_layout cr pl
 
 foreign import ccall "pango_cairo_show_glyph_item"

@@ -18,7 +18,6 @@ import Graphics.Pango.Types
 import Graphics.Pango.Values
 import System.Glib.SinglyLinkedLists
 
-import Graphics.Pango.Basic.LayoutObjects.PangoLayoutIo
 import Graphics.Pango.Basic.LayoutObjects.PangoLayoutPrim
 
 import Graphics.Pango.Basic.Rendering
@@ -33,27 +32,12 @@ pangoLayoutNew :: PrimMonad m =>
 pangoLayoutNew (PangoContext fpc) = unsafeIOToPrim $ withForeignPtr fpc \pc ->
 	mkPangoLayoutPrim =<< c_pango_layout_new pc
 
-foreign import ccall "pango_layout_copy" c_pango_layout_copy ::
-	Ptr PangoLayoutIo -> IO (Ptr PangoLayoutIo)
-
-pangoLayoutCopy :: PangoLayoutIo -> IO PangoLayoutIo
-pangoLayoutCopy (PangoLayoutIo fpl) = withForeignPtr fpl \pl ->
-	makePangoLayoutIo =<< c_pango_layout_copy pl
-
-pangoLayoutSetText :: PangoLayoutIo -> String -> #{type int} -> IO ()
-pangoLayoutSetText (PangoLayoutIo fpl) s n =
-	withForeignPtr fpl \pl -> withCString s \cs ->
+pangoLayoutSetText :: PrimMonad m => PangoLayoutPrim (PrimState m) -> String -> #{type int} -> m ()
+pangoLayoutSetText (PangoLayoutPrim fpl) s n = unsafeIOToPrim
+	$ withForeignPtr fpl \pl -> withCString s \cs ->
 		c_pango_layout_set_text pl cs n
 
 foreign import ccall "pango_layout_set_text" c_pango_layout_set_text ::
-	Ptr PangoLayoutIo -> CString -> #{type int} -> IO ()
-
-pangoLayoutSetTextNew :: PrimMonad m => PangoLayoutPrim (PrimState m) -> String -> #{type int} -> m ()
-pangoLayoutSetTextNew (PangoLayoutPrim fpl) s n = unsafeIOToPrim
-	$ withForeignPtr fpl \pl -> withCString s \cs ->
-		c_pango_layout_set_text_new pl cs n
-
-foreign import ccall "pango_layout_set_text" c_pango_layout_set_text_new ::
 	Ptr (PangoLayoutPrim s) -> CString -> #{type int} -> IO ()
 
 foreign import ccall "pango_layout_get_text" c_pango_layout_get_text ::
@@ -63,28 +47,20 @@ pangoLayoutGetText :: PangoLayout -> String
 pangoLayoutGetText (PangoLayout fpl) = unsafePerformIO
 	$ withForeignPtr fpl \pl -> peekCString =<< c_pango_layout_get_text pl
 
-pangoLayoutSetFontDescription :: PangoLayoutIo -> PangoFontDescription -> IO ()
-pangoLayoutSetFontDescription (PangoLayoutIo fpl) (PangoFontDescription fpfd) =
-	withForeignPtr fpl \pl -> withForeignPtr fpfd \pfd ->
+pangoLayoutSetFontDescription :: PrimMonad m => PangoLayoutPrim (PrimState m) -> PangoFontDescription -> m ()
+pangoLayoutSetFontDescription (PangoLayoutPrim fpl) (PangoFontDescription fpfd) = unsafeIOToPrim
+	$ withForeignPtr fpl \pl -> withForeignPtr fpfd \pfd ->
 		c_pango_layout_set_font_description pl pfd
 
 foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font_description ::
-	Ptr PangoLayoutIo -> Ptr PangoFontDescription -> IO ()
-
-pangoLayoutSetFontDescriptionNew :: PrimMonad m => PangoLayoutPrim (PrimState m) -> PangoFontDescription -> m ()
-pangoLayoutSetFontDescriptionNew (PangoLayoutPrim fpl) (PangoFontDescription fpfd) = unsafeIOToPrim
-	$ withForeignPtr fpl \pl -> withForeignPtr fpfd \pfd ->
-		c_pango_layout_set_font_description_new pl pfd
-
-foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font_description_new ::
 	Ptr (PangoLayoutPrim s) -> Ptr PangoFontDescription -> IO ()
 
-foreign import ccall "pango_layout_set_width" c_pango_layout_set_width ::
-	Ptr PangoLayoutIo -> #{type int} -> IO ()
+pangoLayoutSetWidth :: PrimMonad m => PangoLayoutPrim (PrimState m) -> #{type int} -> m ()
+pangoLayoutSetWidth (PangoLayoutPrim fpl) w = unsafeIOToPrim
+	$ withForeignPtr fpl \pl -> c_pango_layout_set_width pl w
 
-pangoLayoutSetWidth :: PangoLayoutIo -> #{type int} -> IO ()
-pangoLayoutSetWidth (PangoLayoutIo fpl) w = withForeignPtr fpl \pl ->
-	c_pango_layout_set_width pl w
+foreign import ccall "pango_layout_set_width" c_pango_layout_set_width ::
+	Ptr (PangoLayoutPrim s) -> #{type int} -> IO ()
 
 foreign import ccall "pango_layout_get_width" c_pango_layout_get_width ::
 	Ptr PangoLayout -> IO #type int
@@ -93,19 +69,19 @@ pangoLayoutGetWidth :: PangoLayout -> #type int
 pangoLayoutGetWidth (PangoLayout fpl) = unsafePerformIO
 	$ withForeignPtr fpl c_pango_layout_get_width
 
-foreign import ccall "pango_layout_set_ellipsize" c_pango_layout_set_ellipsize ::
-	Ptr PangoLayoutIo -> #{type PangoEllipsizeMode} -> IO ()
+pangoLayoutSetEllipsize :: PrimMonad m => PangoLayoutPrim (PrimState m) -> PangoEllipsizeMode -> m ()
+pangoLayoutSetEllipsize (PangoLayoutPrim fpl) (PangoEllipsizeMode pem) = unsafeIOToPrim
+	$ withForeignPtr fpl \pl -> c_pango_layout_set_ellipsize pl pem
 
-pangoLayoutSetEllipsize :: PangoLayoutIo -> PangoEllipsizeMode -> IO ()
-pangoLayoutSetEllipsize (PangoLayoutIo fpl) (PangoEllipsizeMode pem) = withForeignPtr fpl \pl ->
-	c_pango_layout_set_ellipsize pl pem
+foreign import ccall "pango_layout_set_ellipsize" c_pango_layout_set_ellipsize ::
+	Ptr (PangoLayoutPrim s) -> #{type PangoEllipsizeMode} -> IO ()
+
+pangoLayoutSetIndent :: PrimMonad m => PangoLayoutPrim (PrimState m) -> #{type int} -> m ()
+pangoLayoutSetIndent (PangoLayoutPrim fpl) idt = unsafeIOToPrim
+	$ withForeignPtr fpl \pl -> c_pango_layout_set_indent pl idt
 
 foreign import ccall "pango_layout_set_indent" c_pango_layout_set_indent ::
-	Ptr PangoLayoutIo -> #{type int} -> IO ()
-
-pangoLayoutSetIndent :: PangoLayoutIo -> #{type int} -> IO ()
-pangoLayoutSetIndent (PangoLayoutIo fpl) idt = withForeignPtr fpl \pl ->
-	c_pango_layout_set_indent pl idt
+	Ptr (PangoLayoutPrim s) -> #{type int} -> IO ()
 
 {-
 foreign import ccall "pango_layout_set_line_spacing" c_pango_layout_set_line_spacing ::
@@ -116,29 +92,29 @@ pangoLayoutSetLineSpacing (PangoLayoutIo fpl) fct = withForeignPtr fpl \pl ->
 	c_pango_layout_set_line_spacing pl fct
 	-}
 
-foreign import ccall "pango_layout_set_alignment" c_pango_layout_set_alignment ::
-	Ptr PangoLayoutIo -> #{type PangoAlignment} -> IO ()
+pangoLayoutSetAlignment :: PrimMonad m => PangoLayoutPrim (PrimState m) -> PangoAlignment -> m ()
+pangoLayoutSetAlignment (PangoLayoutPrim fpl) (PangoAlignment pa) = unsafeIOToPrim
+	$ withForeignPtr fpl \pl -> c_pango_layout_set_alignment pl pa
 
-pangoLayoutSetAlignment :: PangoLayoutIo -> PangoAlignment -> IO ()
-pangoLayoutSetAlignment (PangoLayoutIo fpl) (PangoAlignment pa) = withForeignPtr fpl \pl ->
-	c_pango_layout_set_alignment pl pa
+foreign import ccall "pango_layout_set_alignment" c_pango_layout_set_alignment ::
+	Ptr (PangoLayoutPrim s) -> #{type PangoAlignment} -> IO ()
+
+pangoLayoutSetTabs :: PrimMonad m => PangoLayoutPrim (PrimState m) -> PangoTabArray -> m ()
+pangoLayoutSetTabs (PangoLayoutPrim fpl) (PangoTabArray fpta) = unsafeIOToPrim
+	$ withForeignPtr fpl \pl ->
+		withForeignPtr fpta \pta -> c_pango_layout_set_tabs pl pta
 
 foreign import ccall "pango_layout_set_tabs" c_pango_layout_set_tabs ::
-	Ptr PangoLayoutIo -> Ptr PangoTabArray -> IO ()
+	Ptr (PangoLayoutPrim s) -> Ptr PangoTabArray -> IO ()
 
-pangoLayoutSetTabs :: PangoLayoutIo -> PangoTabArray -> IO ()
-pangoLayoutSetTabs (PangoLayoutIo fpl) (PangoTabArray fpta) =
-	withForeignPtr fpl \pl ->
-		withForeignPtr fpta \pta -> c_pango_layout_set_tabs pl pta
+pangoLayoutSetSingleParagraphMode :: PrimMonad m => PangoLayoutPrim (PrimState m) -> Bool -> m ()
+pangoLayoutSetSingleParagraphMode (PangoLayoutPrim fpl) spm = unsafeIOToPrim
+	$ withForeignPtr fpl \pl ->
+		c_pango_layout_set_single_paragraph_mode pl (boolToGboolean spm)
 
 foreign import ccall "pango_layout_set_single_paragraph_mode"
 	c_pango_layout_set_single_paragraph_mode ::
-	Ptr PangoLayoutIo -> #{type gboolean} -> IO ()
-
-pangoLayoutSetSingleParagraphMode :: PangoLayoutIo -> Bool -> IO ()
-pangoLayoutSetSingleParagraphMode (PangoLayoutIo fpl) spm =
-	withForeignPtr fpl \pl ->
-		c_pango_layout_set_single_paragraph_mode pl (boolToGboolean spm)
+	Ptr (PangoLayoutPrim s) -> #{type gboolean} -> IO ()
 
 boolToGboolean :: Bool -> #type gboolean
 boolToGboolean False = #const FALSE

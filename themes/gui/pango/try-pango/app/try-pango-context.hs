@@ -29,8 +29,8 @@ main = do
 	pfd <- pangoFontDescriptionNew
 	pangoFontDescriptionSetSize pfd (30 * pangoScale)
 	pfd' <- pangoFontDescriptionFreeze pfd
-	pangoLayoutSetFontDescriptionNew pl pfd'
-	pangoLayoutSetTextNew pl "こんにちは世界!" 30
+	pangoLayoutSetFontDescription pl pfd'
+	pangoLayoutSetText pl "こんにちは世界!" 30
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 --	void $ writeDynamicPng "tmp2.png" =<< cairoImageSurfaceGetImage s
 	cairoImageSurfaceGetCairoImage s >>= \case

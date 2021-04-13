@@ -25,7 +25,7 @@ import Data.CairoContext
 import Data.CairoImage
 import Data.JuicyCairo
 
-import Graphics.Pango.Basic.LayoutObjects.PangoLayoutIo
+import Graphics.Pango.Basic.LayoutObjects.PangoLayoutPrim
 
 main :: IO ()
 main = do
