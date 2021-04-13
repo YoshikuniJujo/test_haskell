@@ -21,13 +21,15 @@ import System.Glib.SinglyLinkedLists
 import Graphics.Pango.Basic.LayoutObjects.PangoLayoutIo
 import Graphics.Pango.Basic.LayoutObjects.PangoLayoutPrim
 
+import Graphics.Pango.Basic.Rendering
+
 #include <pango/pango.h>
 
 foreign import ccall "pango_layout_new" c_pango_layout_new ::
-	Ptr PangoContextOld -> IO (Ptr PangoLayoutIo)
+	Ptr (PangoContext s) -> IO (Ptr PangoLayoutIo)
 
-pangoLayoutNew :: PangoContextOld -> IO PangoLayoutIo
-pangoLayoutNew (PangoContextOld fpc) = withForeignPtr fpc \pc ->
+pangoLayoutNew :: PangoContext RealWorld -> IO PangoLayoutIo
+pangoLayoutNew (PangoContext fpc) = withForeignPtr fpc \pc ->
 	makePangoLayoutIo =<< c_pango_layout_new pc
 
 foreign import ccall "pango_layout_copy" c_pango_layout_copy ::
