@@ -124,8 +124,8 @@ todo
 	+ [x] family
 		- [x] pangoFontDescriptionGet: check `set_fields`
 	+ [x] style
-	+ [ ] variant
-	+ [ ] weight
+	+ [x] variant
+	+ [x] weight
 	+ [ ] stretch
 	+ [ ] size
 	+ [ ] gravity

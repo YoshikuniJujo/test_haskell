@@ -4,6 +4,7 @@
 
 module Main where
 
+import Data.Char
 import Data.CairoImage
 import Data.JuicyCairo
 import System.Environment
@@ -20,7 +21,7 @@ import Graphics.Pango.Values
 
 main :: IO ()
 main = getArgs >>= \case
-	f : st : v : _ -> do
+	f : st : v : w : _ -> do
 		s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
 		cr <- cairoCreate s
 		pl <- pangoCairoCreateLayout cr
@@ -32,6 +33,8 @@ main = getArgs >>= \case
 		print =<< pangoFontDescriptionGet @PangoStyle fd
 		case v of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readVariant v
 		print =<< pangoFontDescriptionGet @PangoVariant fd
+		case w of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readWeight w
+		print =<< pangoFontDescriptionGet @PangoWeight fd
 
 		pangoLayoutSetFontDescription pl fd
 		pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!\n\x1f9a5" 45
@@ -53,3 +56,20 @@ readVariant :: String -> PangoVariant
 readVariant "normal" = pangoVariantNormal
 readVariant "small-caps" = pangoVariantSmallCaps
 readVariant _ = pangoVariantNormal
+
+readWeight :: String -> PangoWeight
+readWeight "thin" = pangoWeightThin
+readWeight "ultralight" = pangoWeightUltralight
+readWeight "light" = pangoWeightLight
+readWeight "semilight" = pangoWeightSemilight
+readWeight "book" = pangoWeightBook
+readWeight "normal" = pangoWeightNormal
+readWeight "medium" = pangoWeightMedium
+readWeight "semibold" = pangoWeightSemibold
+readWeight "bold" = pangoWeightBold
+readWeight "ultrabold" = pangoWeightUltrabold
+readWeight "heavy" = pangoWeightHeavy
+readWeight "ultraheavy" = pangoWeightUltraheavy
+readWeight s
+	| all isDigit s = PangoWeight $ read s
+	| otherwise = pangoWeightNormal
