@@ -19,6 +19,13 @@ import Graphics.Pango.Values
 newtype PangoFontDescription s =
 	PangoFontDescription (ForeignPtr (PangoFontDescription s)) deriving Show
 
+pangoFontDescriptionNew :: PrimMonad m => m (PangoFontDescription (PrimState m))
+pangoFontDescriptionNew = unsafeIOToPrim
+	$ mkPangoFontDescription =<< c_pango_font_description_new
+
+foreign import ccall "pango_font_description_new"
+	c_pango_font_description_new :: IO (Ptr (PangoFontDescription s))
+
 mkPangoFontDescription ::
 	Ptr (PangoFontDescription s) -> IO (PangoFontDescription s)
 mkPangoFontDescription p = PangoFontDescription
@@ -27,21 +34,26 @@ mkPangoFontDescription p = PangoFontDescription
 foreign import ccall "pango_font_description_free"
 	c_pango_font_description_free :: Ptr (PangoFontDescription s) -> IO ()
 
-pangoFontDescriptionNew :: PrimMonad m => m (PangoFontDescription (PrimState m))
-pangoFontDescriptionNew = unsafeIOToPrim
-	$ mkPangoFontDescription =<< c_pango_font_description_new
+class PangoFontDescriptionSetting s where
+	pangoFontDescriptionSet :: PrimMonad m =>
+		PangoFontDescription (PrimState m) -> s -> m ()
+	pangoFontDescriptionGet :: PrimMonad m =>
+		PangoFontDescription (PrimState m) -> m s
 
-foreign import ccall "pango_font_description_new"
-	c_pango_font_description_new :: IO (Ptr (PangoFontDescription s))
+newtype Family = Family String deriving Show
 
-foreign import ccall "pango_font_description_set_family" c_pango_font_description_set_family ::
-	Ptr (PangoFontDescription s) -> CString -> IO ()
+instance PangoFontDescriptionSetting Family where
+	pangoFontDescriptionSet fd (Family f) = pangoFontDescriptionSetFamily fd f
+	pangoFontDescriptionGet fd = Family <$> pangoFontDescriptionGetFamily fd
 
 pangoFontDescriptionSetFamily :: PrimMonad m =>
 	PangoFontDescription (PrimState m) -> String -> m ()
 pangoFontDescriptionSetFamily (PangoFontDescription fpfd) f = unsafeIOToPrim
 	$ withForeignPtr fpfd \pfd -> withCString f \cf ->
 		c_pango_font_description_set_family pfd cf
+
+foreign import ccall "pango_font_description_set_family" c_pango_font_description_set_family ::
+	Ptr (PangoFontDescription s) -> CString -> IO ()
 
 foreign import ccall "pango_font_description_set_family_static" c_pango_font_description_set_family_static ::
 	Ptr (PangoFontDescription s) -> CString -> IO ()
