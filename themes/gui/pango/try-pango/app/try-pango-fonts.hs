@@ -21,7 +21,7 @@ import Graphics.Pango.Values
 
 main :: IO ()
 main = getArgs >>= \case
-	f : stl : v : w : str : sz : _ -> do
+	f : stl : v : w : str : sz : gr : _ -> do
 		s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
 		cr <- cairoCreate s
 		pl <- pangoCairoCreateLayout cr
@@ -39,6 +39,8 @@ main = getArgs >>= \case
 		print =<< pangoFontDescriptionGet @PangoStretch fd
 		case sz of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readSize sz
 		print =<< pangoFontDescriptionGet @Size fd
+		case gr of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readGravity gr
+		print =<< pangoFontDescriptionGet @PangoGravity fd
 
 		pangoLayoutSetFontDescription pl fd
 		pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!\n\x1f9a5" 45
@@ -96,3 +98,12 @@ readSize = \case
 	'a' : sz | all isDigit sz -> AbsoluteSize $ read sz
 	sz | all isDigit sz -> Size $ read sz
 	_ -> Size 20
+
+readGravity :: String -> PangoGravity
+readGravity = \case
+	"south" -> pangoGravitySouth
+	"east" -> pangoGravityEast
+	"north" -> pangoGravityNorth
+	"west" -> pangoGravityWest
+	"auto" -> pangoGravityAuto
+	_ -> pangoGravityAuto

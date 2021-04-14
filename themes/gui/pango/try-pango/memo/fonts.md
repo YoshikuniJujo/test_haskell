@@ -128,10 +128,8 @@ todo
 	+ [x] weight
 	+ [x] stretch
 	+ [x] size
-	+ [ ] gravity
+	+ [x] gravity
 	+ [ ] variations
-* [ ] `pango_font_description_set_absolute_size`
-* [ ] `pango_font_description_get_size_is_absolute`
 * [ ] `pango_font_description_merge`
 * [ ] `pango_font_description_better_match`
 * [ ] `pango_font_description_from_string`

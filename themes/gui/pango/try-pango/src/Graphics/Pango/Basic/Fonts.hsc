@@ -234,15 +234,20 @@ foreign import ccall "pango_font_description_get_size_is_absolute"
 	c_pango_font_description_get_size_is_absolute ::
 	Ptr (PangoFontDescription s) -> IO #type gboolean
 
-foreign import ccall "pango_font_description_set_gravity"
-	c_pango_font_description_set_gravity ::
-	Ptr (PangoFontDescription s) -> #{type PangoGravity} -> IO ()
+instance PangoFontDescriptionSetting PangoGravity where
+	pangoFontDescriptionSet = pangoFontDescriptionSetGravity
+	pangoFontDescriptionGetUnsafe = pangoFontDescriptionGetGravity
+	pangoFontDescriptionMaskBit = pangoFontMaskGravity
 
 pangoFontDescriptionSetGravity :: PrimMonad m =>
 	PangoFontDescription (PrimState m) -> PangoGravity -> m ()
 pangoFontDescriptionSetGravity (PangoFontDescription fpfd) (PangoGravity gr) = unsafeIOToPrim
 	$ withForeignPtr fpfd \pfd ->
 		c_pango_font_description_set_gravity pfd gr
+
+foreign import ccall "pango_font_description_set_gravity"
+	c_pango_font_description_set_gravity ::
+	Ptr (PangoFontDescription s) -> #{type PangoGravity} -> IO ()
 
 pangoFontDescriptionGetGravity :: PrimMonad m =>
 	PangoFontDescription (PrimState m) -> m PangoGravity
