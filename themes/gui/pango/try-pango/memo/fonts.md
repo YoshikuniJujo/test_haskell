@@ -90,7 +90,7 @@ functions
 todo
 ----
 
-* [ ] use `PangoDescriptionPrim (PrimState m)`
+* [x] use `PangoDescriptionPrim (PrimState m)`
 	+ [x] comment out `pangoFontDescriptionEqual`
 	+ [x] `pangoFontDescriptionGetFamily`
 	+ [x] `pangoFontDescriptionGetStyle`
@@ -98,11 +98,11 @@ todo
 	+ [x] `pangoFontDescriptionGetWeight`
 	+ [x] `pangoFontDescriptionGetStretch`
 	+ [x] `pangoFontDescriptionGetSize`
-	+ [ ] `pangoFontDescriptionGetSizeAbsolute`
-	+ [ ] `pangoFontDescriptionGetGravity`
-	+ [ ] `pangoFontDescriptionGetSetField`
-	+ [ ] `pangoFontDescriptionToString`
-	+ [ ] `pangoFontDescriptionToFilename`
+	+ [x] `pangoFontDescriptionGetSizeIsAbsolute`
+	+ [x] `pangoFontDescriptionGetGravity`
+	+ [x] `pangoFontDescriptionGetSetField`
+	+ [x] `pangoFontDescriptionToString`
+	+ [x] `pangoFontDescriptionToFilename`
 * [ ] remove `PangoDescription`
 * [ ] rename `PangoDescriptionPrim (PrimState m)` to `PangoDescription (PrimState m)`
 * [ ] `pango_font_description_new`
