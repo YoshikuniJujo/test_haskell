@@ -97,12 +97,12 @@ todo
 	+ [x] `pangoFontDescriptionGetVariant`
 	+ [x] `pangoFontDescriptionGetWeight`
 	+ [x] `pangoFontDescriptionGetStretch`
-	+ [ ] `pangoFontDescriptionGetSize`
+	+ [x] `pangoFontDescriptionGetSize`
 	+ [ ] `pangoFontDescriptionGetSizeAbsolute`
 	+ [ ] `pangoFontDescriptionGetGravity`
 	+ [ ] `pangoFontDescriptionGetSetField`
 	+ [ ] `pangoFontDescriptionToString`
-	+ [ ] others
+	+ [ ] `pangoFontDescriptionToFilename`
 * [ ] remove `PangoDescription`
 * [ ] rename `PangoDescriptionPrim (PrimState m)` to `PangoDescription (PrimState m)`
 * [ ] `pango_font_description_new`
