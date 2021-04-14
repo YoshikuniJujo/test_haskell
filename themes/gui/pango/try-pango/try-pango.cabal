@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bcdf6b807d943a94a82ab83e50e16dcfa50a11894b8f4ec1bf4b6ebbeb23b52a
+-- hash: 88ec84b5d57e78b20d93742a9ec2765c55d5b24b3a48450a6c8626b6411393d1
 
 name:           try-pango
 version:        0.1.0.0
@@ -91,6 +91,25 @@ executable try-pango-exe
 
 executable try-pango-fonts
   main-is: try-pango-fonts.hs
+  other-modules:
+      Main
+      Paths_try_pango
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , nowdoc
+    , primitive
+    , simple-cairo
+    , try-pango
+  default-language: Haskell2010
+
+executable try-pango-fonts-unset
+  main-is: try-pango-fonts-unset.hs
   other-modules:
       Main
       Paths_try_pango

@@ -52,6 +52,10 @@ pangoFontDescriptionGet fd = do
 	let	PangoFontMask mb = pangoFontDescriptionMaskBit @s
 	bool (pure Nothing) (Just <$> pangoFontDescriptionGetUnsafe fd) $ fm .&. mb /= zeroBits
 
+pangoFontDescriptionUnset :: forall s m . (PangoFontDescriptionSetting s, PrimMonad m) =>
+	PangoFontDescription (PrimState m) -> m ()
+pangoFontDescriptionUnset fd = pangoFontDescriptionUnsetFields fd (pangoFontDescriptionMaskBit @s)
+
 newtype Family = Family String deriving Show
 
 instance PangoFontDescriptionSetting Family where
