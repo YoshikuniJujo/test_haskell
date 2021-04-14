@@ -1,4 +1,6 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.Fonts where
@@ -9,6 +11,7 @@ import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.C
 import Control.Monad.Primitive
+import Data.Bits
 import Data.Bool
 import Data.Word
 import Data.Int
@@ -38,14 +41,23 @@ foreign import ccall "pango_font_description_free"
 class PangoFontDescriptionSetting s where
 	pangoFontDescriptionSet :: PrimMonad m =>
 		PangoFontDescription (PrimState m) -> s -> m ()
-	pangoFontDescriptionGet :: PrimMonad m =>
-		PangoFontDescription (PrimState m) -> m (Maybe s)
+	pangoFontDescriptionGetUnsafe :: PrimMonad m =>
+		PangoFontDescription (PrimState m) -> m s
+	pangoFontDescriptionMaskBit :: PangoFontMask
+
+pangoFontDescriptionGet :: forall s m . (PangoFontDescriptionSetting s, PrimMonad m) =>
+	PangoFontDescription (PrimState m) -> m (Maybe s)
+pangoFontDescriptionGet fd = do
+	PangoFontMask fm <- pangoFontDescriptionGetSetFields fd
+	let	PangoFontMask mb = pangoFontDescriptionMaskBit @s
+	bool (pure Nothing) (Just <$> pangoFontDescriptionGetUnsafe fd) $ fm .&. mb /= zeroBits
 
 newtype Family = Family String deriving Show
 
 instance PangoFontDescriptionSetting Family where
 	pangoFontDescriptionSet fd (Family f) = pangoFontDescriptionSetFamily fd f
-	pangoFontDescriptionGet fd = (Family <$>) <$> pangoFontDescriptionGetFamily fd
+	pangoFontDescriptionGetUnsafe fd = Family <$> pangoFontDescriptionGetFamily fd
+	pangoFontDescriptionMaskBit = pangoFontMaskFamily
 
 pangoFontDescriptionSetFamily :: PrimMonad m =>
 	PangoFontDescription (PrimState m) -> String -> m ()
@@ -72,11 +84,10 @@ pangoFontDescriptionSetFamilyStatic (PangoFontDescription fpfd) f = unsafeIOToPr
 	withForeignPtr fpfd \pfd -> withForeignPtr fcf \cf ->
 		c_pango_font_description_set_family_static pfd cf
 
-pangoFontDescriptionGetFamily :: PrimMonad m => PangoFontDescription (PrimState m) -> m (Maybe String)
+pangoFontDescriptionGetFamily :: PrimMonad m => PangoFontDescription (PrimState m) -> m String
 pangoFontDescriptionGetFamily (PangoFontDescription fpfd) = unsafeIOToPrim
-	$ withForeignPtr fpfd \pfd -> do
-		cf <- c_pango_font_description_get_family pfd
-		bool (pure Nothing) (Just <$> peekCString cf) $ cf /= nullPtr
+	$ withForeignPtr fpfd \pfd ->
+		peekCString =<< c_pango_font_description_get_family pfd
 
 foreign import ccall "pango_font_description_get_family" c_pango_font_description_get_family ::
 	Ptr (PangoFontDescription s) -> IO CString

@@ -114,9 +114,15 @@ todo
 * [x] `pango_font_description_new`
 * [x] move the description of the ADT `PangoFontDescription` to `Graphics.Pango.Basic.Fonts`
 * [x] `pango_font_description_free`
-* [x] define a type class `FontDescriptionSetting`
+* [x] define a type class `PangoFontDescriptionSetting`
+	+ [x] change to `pangoFontDescriptionGetUnsafe`
+	+ [x] add `pangoFontDescriptionMaskBit`
+* [x] define `pangoFontDescriptionGet`
+* [x] `pango_font_description_get_set_fields`
+* [ ] define `pangoFontDescriptionUnset`
 * [ ] `pango_font_description_set_foo and pango_font_description_get_foo`
 	+ [x] family
+		- [x] pangoFontDescriptionGet: check `set_fields`
 	+ [ ] style
 	+ [ ] variant
 	+ [ ] weight
@@ -126,8 +132,6 @@ todo
 	+ [ ] variations
 * [ ] `pango_font_description_set_absolute_size`
 * [ ] `pango_font_description_get_size_is_absolute`
-* [ ] `pango_font_description_get_set_fields`
-* [ ] `pango_font_description_unset_fields`
 * [ ] `pango_font_description_merge`
 * [ ] `pango_font_description_better_match`
 * [ ] `pango_font_description_from_string`
