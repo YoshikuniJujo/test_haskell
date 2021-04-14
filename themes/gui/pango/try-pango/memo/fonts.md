@@ -119,11 +119,11 @@ todo
 	+ [x] add `pangoFontDescriptionMaskBit`
 * [x] define `pangoFontDescriptionGet`
 * [x] `pango_font_description_get_set_fields`
-* [ ] define `pangoFontDescriptionUnset`
+* [x] define `pangoFontDescriptionUnset`
 * [ ] `pango_font_description_set_foo and pango_font_description_get_foo`
 	+ [x] family
 		- [x] pangoFontDescriptionGet: check `set_fields`
-	+ [ ] style
+	+ [x] style
 	+ [ ] variant
 	+ [ ] weight
 	+ [ ] stretch

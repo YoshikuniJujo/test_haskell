@@ -16,9 +16,11 @@ import Graphics.Pango.Basic.LayoutObjects
 import Graphics.Pango.Basic.LayoutObjects.PangoLayoutPrim
 import Graphics.Pango.Rendering.Cairo
 
+import Graphics.Pango.Values
+
 main :: IO ()
 main = getArgs >>= \case
-	f : _ -> do
+	f : st : _ -> do
 		s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
 		cr <- cairoCreate s
 		pl <- pangoCairoCreateLayout cr
@@ -26,6 +28,8 @@ main = getArgs >>= \case
 		fd <- pangoFontDescriptionNew
 		case f of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ Family f
 		print =<< pangoFontDescriptionGet @Family fd
+		case st of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readStyle st
+		print =<< pangoFontDescriptionGet @PangoStyle fd
 
 		pangoLayoutSetFontDescription pl fd
 		pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!" 40
@@ -36,3 +40,9 @@ main = getArgs >>= \case
 			CairoImageArgb32 a -> writePng "try-pango-fonts.png" $ cairoArgb32ToJuicyRGBA8 a
 			_ -> error "never occur"
 	_ -> error "no family"
+
+readStyle :: String -> PangoStyle
+readStyle "normal" = pangoStyleNormal
+readStyle "oblique" = pangoStyleOblique
+readStyle "italic" = pangoStyleItalic
+readStyle _ = pangoStyleNormal

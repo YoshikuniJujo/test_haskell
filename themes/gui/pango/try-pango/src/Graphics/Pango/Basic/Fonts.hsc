@@ -96,13 +96,18 @@ pangoFontDescriptionGetFamily (PangoFontDescription fpfd) = unsafeIOToPrim
 foreign import ccall "pango_font_description_get_family" c_pango_font_description_get_family ::
 	Ptr (PangoFontDescription s) -> IO CString
 
-foreign import ccall "pango_font_description_set_style" c_pango_font_description_set_style ::
-	Ptr (PangoFontDescription s) -> #{type PangoStyle} -> IO ()
+instance PangoFontDescriptionSetting PangoStyle where
+	pangoFontDescriptionSet = pangoFontDescriptionSetStyle
+	pangoFontDescriptionGetUnsafe = pangoFontDescriptionGetStyle
+	pangoFontDescriptionMaskBit = pangoFontMaskStyle
 
 pangoFontDescriptionSetStyle :: PrimMonad m =>
 	PangoFontDescription (PrimState m) -> PangoStyle -> m ()
 pangoFontDescriptionSetStyle (PangoFontDescription fpfd) (PangoStyle s) = unsafeIOToPrim
 	$ withForeignPtr fpfd \pfd -> c_pango_font_description_set_style pfd s
+
+foreign import ccall "pango_font_description_set_style" c_pango_font_description_set_style ::
+	Ptr (PangoFontDescription s) -> #{type PangoStyle} -> IO ()
 
 pangoFontDescriptionGetStyle :: PrimMonad m => PangoFontDescription (PrimState m) -> m PangoStyle
 pangoFontDescriptionGetStyle (PangoFontDescription fpfd) = unsafeIOToPrim
