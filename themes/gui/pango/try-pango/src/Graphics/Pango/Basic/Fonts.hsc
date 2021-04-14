@@ -160,13 +160,18 @@ pangoFontDescriptionGetWeight (PangoFontDescription fpfd) = unsafeIOToPrim
 foreign import ccall "pango_font_description_get_weight" c_pango_font_description_get_weight ::
 	Ptr (PangoFontDescription s) -> IO #type PangoWeight
 
-foreign import ccall "pango_font_description_set_stretch" c_pango_font_description_set_stretch ::
-	Ptr (PangoFontDescription s) -> #{type PangoStretch} -> IO ()
+instance PangoFontDescriptionSetting PangoStretch where
+	pangoFontDescriptionSet = pangoFontDescriptionSetStretch
+	pangoFontDescriptionGetUnsafe = pangoFontDescriptionGetStretch
+	pangoFontDescriptionMaskBit = pangoFontMaskStretch
 
 pangoFontDescriptionSetStretch :: PrimMonad m =>
 	PangoFontDescription (PrimState m) -> PangoStretch -> m ()
 pangoFontDescriptionSetStretch (PangoFontDescription fpfd) (PangoStretch ps) = unsafeIOToPrim
 	$ withForeignPtr fpfd \pfd -> c_pango_font_description_set_stretch pfd ps
+
+foreign import ccall "pango_font_description_set_stretch" c_pango_font_description_set_stretch ::
+	Ptr (PangoFontDescription s) -> #{type PangoStretch} -> IO ()
 
 pangoFontDescriptionGetStretch :: PrimMonad m =>
 	PangoFontDescription (PrimState m) -> m PangoStretch

@@ -126,7 +126,7 @@ todo
 	+ [x] style
 	+ [x] variant
 	+ [x] weight
-	+ [ ] stretch
+	+ [x] stretch
 	+ [ ] size
 	+ [ ] gravity
 	+ [ ] variations

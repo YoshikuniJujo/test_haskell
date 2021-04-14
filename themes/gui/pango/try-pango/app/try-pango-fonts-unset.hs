@@ -21,7 +21,7 @@ import Graphics.Pango.Values
 
 main :: IO ()
 main = getArgs >>= \case
-	f : st : v : w : _ -> do
+	f : stl : v : w : str : _ -> do
 		s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
 		cr <- cairoCreate s
 		pl <- pangoCairoCreateLayout cr
@@ -30,7 +30,7 @@ main = getArgs >>= \case
 		case f of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ Family f
 		pangoFontDescriptionUnset @Family fd
 		print =<< pangoFontDescriptionGet @Family fd
-		case st of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readStyle st
+		case stl of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readStyle stl
 		pangoFontDescriptionUnset @PangoStyle fd
 		print =<< pangoFontDescriptionGet @PangoStyle fd
 		case v of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readVariant v
@@ -39,6 +39,9 @@ main = getArgs >>= \case
 		case w of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readWeight w
 		pangoFontDescriptionUnset @PangoWeight fd
 		print =<< pangoFontDescriptionGet @PangoWeight fd
+		case str of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readStretch str
+		pangoFontDescriptionUnset @PangoStretch fd
+		print =<< pangoFontDescriptionGet @PangoStretch fd
 
 		pangoLayoutSetFontDescription pl fd
 		pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!\x1f9a5" 45
@@ -77,3 +80,16 @@ readWeight "ultraheavy" = pangoWeightUltraheavy
 readWeight s
 	| all isDigit s = PangoWeight $ read s
 	| otherwise = pangoWeightNormal
+
+readStretch :: String -> PangoStretch
+readStretch = \case
+	"ultra-condensed" -> pangoStretchUltraCondensed
+	"extra-condensed" -> pangoStretchExtraCondensed
+	"condensed" -> pangoStretchCondensed
+	"semi-condensed" -> pangoStretchSemiCondensed
+	"normal" -> pangoStretchNormal
+	"semi-expanded" -> pangoStretchSemiExpanded
+	"expanded" -> pangoStretchExpanded
+	"extra-expanded" -> pangoStretchExtraExpanded
+	"ultra-expanded" -> pangoStretchUltraExpanded
+	_ -> pangoStretchNormal
