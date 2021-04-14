@@ -34,40 +34,6 @@ pangoFontDescriptionNew = unsafeIOToPrim
 foreign import ccall "pango_font_description_new"
 	c_pango_font_description_new :: IO (Ptr (PangoFontDescription s))
 
-foreign import ccall "pango_font_description_copy" c_pango_font_description_copy ::
-	Ptr (PangoFontDescription s) -> IO (Ptr (PangoFontDescription s))
-
-pangoFontDescriptionCopy :: PrimMonad m =>
-	PangoFontDescription (PrimState m) -> m (PangoFontDescription (PrimState m))
-pangoFontDescriptionCopy (PangoFontDescription fpfd) = unsafeIOToPrim
-	$ withForeignPtr fpfd \pfd ->
-		mkPangoFontDescription =<< c_pango_font_description_copy pfd
-
-foreign import ccall "pango_font_description_copy_static" c_pango_font_description_copy_static ::
-	Ptr (PangoFontDescription s) -> IO (Ptr (PangoFontDescription s))
-
-pangoFontDescriptionCopyStatic :: PrimMonad m =>
-	PangoFontDescription (PrimState m) -> m (PangoFontDescription (PrimState m))
-pangoFontDescriptionCopyStatic (PangoFontDescription fpfd) = unsafeIOToPrim
-	$ withForeignPtr fpfd \pfd -> do
-		p <- c_pango_font_description_copy_static pfd
-		PangoFontDescription <$> newForeignPtr p
-			(touchForeignPtr fpfd >> c_pango_font_description_free p)
-
-{-
-pangoFontDescriptionEqual :: PangoFontDescription -> PangoFontDescription -> Bool
-pangoFontDescriptionEqual (PangoFontDescription fpfd1) (PangoFontDescription fpfd2) = unsafePerformIO
-	$ withForeignPtr fpfd1 \pfd1 -> withForeignPtr fpfd2 \pfd2 ->
-		gbooleanToBool <$> c_pango_font_description_equal pfd1 pfd2
-
-foreign import ccall "pango_font_description_equal" c_pango_font_description_equal ::
-	Ptr PangoFontDescription -> Ptr PangoFontDescription -> IO #type gboolean
--}
-
-gbooleanToBool :: #{type gboolean} -> Bool
-gbooleanToBool #{const FALSE} = False
-gbooleanToBool _ = True
-
 foreign import ccall "pango_font_description_set_family" c_pango_font_description_set_family ::
 	Ptr (PangoFontDescription s) -> CString -> IO ()
 
@@ -197,6 +163,10 @@ pangoFontDescriptionGetSizeIsAbsolute :: PrimMonad m =>
 pangoFontDescriptionGetSizeIsAbsolute (PangoFontDescription fpfd) = unsafeIOToPrim
 	$ withForeignPtr fpfd \pfd ->
 		gbooleanToBool <$> c_pango_font_description_get_size_is_absolute pfd
+
+gbooleanToBool :: #{type gboolean} -> Bool
+gbooleanToBool #{const FALSE} = False
+gbooleanToBool _ = True
 
 foreign import ccall "pango_font_description_get_size_is_absolute"
 	c_pango_font_description_get_size_is_absolute ::

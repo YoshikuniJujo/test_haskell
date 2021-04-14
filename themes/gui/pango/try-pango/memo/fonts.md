@@ -114,6 +114,7 @@ todo
 * [x] `pango_font_description_new`
 * [x] move the description of the ADT `PangoFontDescription` to `Graphics.Pango.Basic.Fonts`
 * [x] `pango_font_description_free`
+* [ ] define a type class `FontDescriptionSetting`
 * [ ] `pango_font_description_set_foo and pango_font_description_get_foo`
 	+ [ ] family
 	+ [ ] style
