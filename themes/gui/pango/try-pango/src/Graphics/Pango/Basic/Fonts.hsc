@@ -12,17 +12,27 @@ import Control.Monad.Primitive
 import Data.Word
 import Data.Int
 
-import Graphics.Pango.Types
 import Graphics.Pango.Values
 
 #include <pango/pango.h>
 
+newtype PangoFontDescription s =
+	PangoFontDescription (ForeignPtr (PangoFontDescription s)) deriving Show
+
+mkPangoFontDescription ::
+	Ptr (PangoFontDescription s) -> IO (PangoFontDescription s)
+mkPangoFontDescription p = PangoFontDescription
+	<$> newForeignPtr p (c_pango_font_description_free p)
+
+foreign import ccall "pango_font_description_free"
+	c_pango_font_description_free :: Ptr (PangoFontDescription s) -> IO ()
+
 pangoFontDescriptionNew :: PrimMonad m => m (PangoFontDescription (PrimState m))
 pangoFontDescriptionNew = unsafeIOToPrim
-	$ makePangoFontDescription =<< c_pango_font_description_new
+	$ mkPangoFontDescription =<< c_pango_font_description_new
 
-foreign import ccall "pango_font_description_new" c_pango_font_description_new ::
-	IO (Ptr (PangoFontDescription s))
+foreign import ccall "pango_font_description_new"
+	c_pango_font_description_new :: IO (Ptr (PangoFontDescription s))
 
 foreign import ccall "pango_font_description_copy" c_pango_font_description_copy ::
 	Ptr (PangoFontDescription s) -> IO (Ptr (PangoFontDescription s))
@@ -31,7 +41,7 @@ pangoFontDescriptionCopy :: PrimMonad m =>
 	PangoFontDescription (PrimState m) -> m (PangoFontDescription (PrimState m))
 pangoFontDescriptionCopy (PangoFontDescription fpfd) = unsafeIOToPrim
 	$ withForeignPtr fpfd \pfd ->
-		makePangoFontDescription =<< c_pango_font_description_copy pfd
+		mkPangoFontDescription =<< c_pango_font_description_copy pfd
 
 foreign import ccall "pango_font_description_copy_static" c_pango_font_description_copy_static ::
 	Ptr (PangoFontDescription s) -> IO (Ptr (PangoFontDescription s))
@@ -42,7 +52,7 @@ pangoFontDescriptionCopyStatic (PangoFontDescription fpfd) = unsafeIOToPrim
 	$ withForeignPtr fpfd \pfd -> do
 		p <- c_pango_font_description_copy_static pfd
 		PangoFontDescription <$> newForeignPtr p
-			(touchForeignPtr fpfd >> c_pango_font_description_prim_free p)
+			(touchForeignPtr fpfd >> c_pango_font_description_free p)
 
 {-
 pangoFontDescriptionEqual :: PangoFontDescription -> PangoFontDescription -> Bool

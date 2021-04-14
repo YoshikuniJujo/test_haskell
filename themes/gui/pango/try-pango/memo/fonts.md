@@ -111,10 +111,9 @@ todo
 	+ [x] `pangoFontDescriptionCopy`
 	+ [x] others
 * [x] remove `unprimIo`
-* [ ] `pango_font_description_new`
-* [ ] `pango_font_description_copy`
-* [ ] `pango_font_description_equal`
-* [ ] `pango_font_description_free`
+* [x] `pango_font_description_new`
+* [x] move the description of the ADT `PangoFontDescription` to `Graphics.Pango.Basic.Fonts`
+* [x] `pango_font_description_free`
 * [ ] `pango_font_description_set_foo and pango_font_description_get_foo`
 	+ [ ] family
 	+ [ ] style
@@ -159,6 +158,8 @@ todo
 not todo yet
 ------------
 
+* `pango_font_description_copy`
+* `pango_font_description_equal`
 * `pango_font_description_copy_static`
 * `pango_font_description_hash`
 * `pango_font_descriptions_free`

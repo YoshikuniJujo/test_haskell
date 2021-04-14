@@ -21,6 +21,8 @@ import Graphics.Pango.Basic.LayoutObjects.PangoLayoutPrim
 
 import Graphics.Pango.Basic.Rendering
 
+import Graphics.Pango.Basic.Fonts
+
 #include <pango/pango.h>
 
 foreign import ccall "pango_layout_new" c_pango_layout_new ::
@@ -153,10 +155,6 @@ pangoLayoutXyToIndex (PangoLayout fpl) x y = unsafePerformIO
 	$ withForeignPtr fpl \pl -> alloca \idx -> alloca \tr -> do
 		isd <- c_pango_layout_xy_to_index pl x y idx tr
 		(,,) <$> peek idx <*> peek tr <*> pure (gbooleanToBool isd)
-
-gbooleanToBool :: #{type gboolean} -> Bool
-gbooleanToBool #{const FALSE} = False
-gbooleanToBool _ = True
 
 foreign import ccall "pango_layout_get_cursor_pos" c_pango_layout_get_cursor_pos ::
 	Ptr PangoLayout -> #{type int} -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
