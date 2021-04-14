@@ -87,6 +87,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-pango
+  try-pango-fonts-variations:
+    main:                try-pango-fonts-variations.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-pango
 
 tests:
   try-pango-test:
