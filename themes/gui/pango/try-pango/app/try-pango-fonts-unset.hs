@@ -20,7 +20,7 @@ import Graphics.Pango.Values
 
 main :: IO ()
 main = getArgs >>= \case
-	f : st : _ -> do
+	f : st : v : _ -> do
 		s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
 		cr <- cairoCreate s
 		pl <- pangoCairoCreateLayout cr
@@ -32,6 +32,9 @@ main = getArgs >>= \case
 		case st of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readStyle st
 		pangoFontDescriptionUnset @PangoStyle fd
 		print =<< pangoFontDescriptionGet @PangoStyle fd
+		case v of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readVariant v
+		pangoFontDescriptionUnset @PangoVariant fd
+		print =<< pangoFontDescriptionGet @PangoVariant fd
 
 		pangoLayoutSetFontDescription pl fd
 		pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!" 40
@@ -48,3 +51,8 @@ readStyle "normal" = pangoStyleNormal
 readStyle "oblique" = pangoStyleOblique
 readStyle "italic" = pangoStyleItalic
 readStyle _ = pangoStyleNormal
+
+readVariant :: String -> PangoVariant
+readVariant "normal" = pangoVariantNormal
+readVariant "small-caps" = pangoVariantSmallCaps
+readVariant _ = pangoVariantNormal

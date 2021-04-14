@@ -116,13 +116,18 @@ pangoFontDescriptionGetStyle (PangoFontDescription fpfd) = unsafeIOToPrim
 foreign import ccall "pango_font_description_get_style" c_pango_font_description_get_style ::
 	Ptr (PangoFontDescription s) -> IO #type PangoStyle
 
-foreign import ccall "pango_font_description_set_variant" c_pango_font_description_set_variant ::
-	Ptr (PangoFontDescription s) -> #{type PangoVariant} -> IO ()
+instance PangoFontDescriptionSetting PangoVariant where
+	pangoFontDescriptionSet = pangoFontDescriptionSetVariant
+	pangoFontDescriptionGetUnsafe = pangoFontDescriptionGetVariant
+	pangoFontDescriptionMaskBit = pangoFontMaskVariant
 
 pangoFontDescriptionSetVariant :: PrimMonad m =>
 	PangoFontDescription (PrimState m) -> PangoVariant -> m ()
 pangoFontDescriptionSetVariant (PangoFontDescription fpfd) (PangoVariant pv) = unsafeIOToPrim
 	$ withForeignPtr fpfd \pfd -> c_pango_font_description_set_variant pfd pv
+
+foreign import ccall "pango_font_description_set_variant" c_pango_font_description_set_variant ::
+	Ptr (PangoFontDescription s) -> #{type PangoVariant} -> IO ()
 
 pangoFontDescriptionGetVariant :: PrimMonad m =>
 	PangoFontDescription (PrimState m) -> m PangoVariant
