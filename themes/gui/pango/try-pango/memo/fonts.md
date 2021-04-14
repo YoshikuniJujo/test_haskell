@@ -95,9 +95,11 @@ todo
 	+ [x] `pangoFontDescriptionGetFamily`
 	+ [x] `pangoFontDescriptionGetStyle`
 	+ [x] `pangoFontDescriptionGetVariant`
-	+ [ ] `pangoFontDescriptionGetWeight`
+	+ [x] `pangoFontDescriptionGetWeight`
 	+ [ ] `pangoFontDescriptionGetStretch`
 	+ [ ] `pangoFontDescriptionGetSize`
+	+ [ ] `pangoFontDescriptionGetSizeAbsolute`
+	+ [ ] `pangoFontDescriptionGetGravity`
 	+ [ ] others
 * [ ] remove `PangoDescription`
 * [ ] rename `PangoDescriptionPrim (PrimState m)` to `PangoDescription (PrimState m)`
