@@ -12,7 +12,6 @@ import Data.Word
 import Data.Int
 import System.IO.Unsafe
 
-import Graphics.Pango.Monad
 import Graphics.Pango.Types
 import Graphics.Pango.Values
 
@@ -31,7 +30,7 @@ gbooleanToBool _ = True
 
 pangoTabArrayNew :: PrimMonad m =>
 	#{type gint} -> Bool -> m (PangoTabArrayPrim (PrimState m))
-pangoTabArrayNew sz px = unPrimIo
+pangoTabArrayNew sz px = unsafeIOToPrim
 	$ makePangoTabArrayPrim =<< c_pango_tab_array_new sz (boolToGboolean px)
 
 foreign import ccall "pango_tab_array_get_size" c_pango_tab_array_get_size ::
@@ -46,7 +45,7 @@ foreign import ccall "pango_tab_array_resize" c_pango_tab_array_resize ::
 
 pangoTabArrayResize :: PrimMonad m =>
 	PangoTabArrayPrim (PrimState m) -> #{type gint} -> m ()
-pangoTabArrayResize (PangoTabArrayPrim fpta) sz = unPrimIo
+pangoTabArrayResize (PangoTabArrayPrim fpta) sz = unsafeIOToPrim
 	$ withForeignPtr fpta \pta -> c_pango_tab_array_resize pta sz
 
 foreign import ccall "pango_tab_array_set_tab" c_pango_tab_array_set_tab ::
@@ -54,7 +53,7 @@ foreign import ccall "pango_tab_array_set_tab" c_pango_tab_array_set_tab ::
 
 pangoTabArraySetTab :: PrimMonad m =>
 	PangoTabArrayPrim (PrimState m) -> #{type gint} -> PangoTabAlign -> #{type gint} -> m ()
-pangoTabArraySetTab (PangoTabArrayPrim fpta) idx (PangoTabAlign algn) loc = unPrimIo
+pangoTabArraySetTab (PangoTabArrayPrim fpta) idx (PangoTabAlign algn) loc = unsafeIOToPrim
 	$ withForeignPtr fpta \pta -> c_pango_tab_array_set_tab pta idx algn loc
 
 foreign import ccall "pango_tab_array_get_tab" c_pango_tab_array_get_tab ::
@@ -98,10 +97,10 @@ foreign import ccall "pango_tab_array_copy" c_pango_tab_array_thaw ::
 
 pangoTabArrayFreeze :: PrimMonad m =>
 	PangoTabArrayPrim (PrimState m) -> m PangoTabArray
-pangoTabArrayFreeze (PangoTabArrayPrim fpta) = unPrimIo
+pangoTabArrayFreeze (PangoTabArrayPrim fpta) = unsafeIOToPrim
 	$ withForeignPtr fpta \pta -> makePangoTabArray =<< c_pango_tab_array_freeze pta
 
 pangoTabArrayThaw :: PrimMonad m =>
 	PangoTabArray -> m (PangoTabArrayPrim (PrimState m))
-pangoTabArrayThaw (PangoTabArray fpta) = unPrimIo
+pangoTabArrayThaw (PangoTabArray fpta) = unsafeIOToPrim
 	$ withForeignPtr fpta \pta -> makePangoTabArrayPrim =<< c_pango_tab_array_thaw pta

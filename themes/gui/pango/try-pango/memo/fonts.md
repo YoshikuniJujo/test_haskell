@@ -106,11 +106,11 @@ todo
 * [x] remove `PangoDescription`
 * [x] try to remove `PangoContextOld`
 * [x] rename `PangoDescriptionPrim (PrimState m)` to `PangoDescription (PrimState m)`
-* [ ] use `unsafeIOToPrim` instead of `unprimIo`
+* [x] use `unsafeIOToPrim` instead of `unprimIo`
 	+ [x] `pangoFontDescriptionNew`
-	+ [ ] `pangoFontDescriptionCopy`
-	+ [ ] others
-* [ ] remove `unprimIo`
+	+ [x] `pangoFontDescriptionCopy`
+	+ [x] others
+* [x] remove `unprimIo`
 * [ ] `pango_font_description_new`
 * [ ] `pango_font_description_copy`
 * [ ] `pango_font_description_equal`

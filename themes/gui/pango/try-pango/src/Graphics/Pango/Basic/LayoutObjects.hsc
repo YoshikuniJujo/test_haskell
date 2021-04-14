@@ -13,7 +13,6 @@ import Data.Word
 import Data.Int
 import System.IO.Unsafe
 
-import Graphics.Pango.Monad
 import Graphics.Pango.Types
 import Graphics.Pango.Values
 import System.Glib.SinglyLinkedLists
@@ -265,35 +264,35 @@ foreign import ccall "pango_layout_get_iter" c_pango_layout_get_iter ::
 	Ptr PangoLayout -> IO (Ptr (PangoLayoutIter s))
 
 pangoLayoutGetIter :: PrimMonad m => PangoLayout -> m (PangoLayoutIter (PrimState m))
-pangoLayoutGetIter (PangoLayout fpl) = unPrimIo
+pangoLayoutGetIter (PangoLayout fpl) = unsafeIOToPrim
 	$ makePangoLayoutIter =<< withForeignPtr fpl c_pango_layout_get_iter
 
 foreign import ccall "pango_layout_iter_next_run" c_pango_layout_iter_next_run ::
 	Ptr (PangoLayoutIter s) -> IO #type gboolean
 
 pangoLayoutIterNextRun :: PrimMonad m => PangoLayoutIter (PrimState m) -> m Bool
-pangoLayoutIterNextRun (PangoLayoutIter fpli) = unPrimIo
+pangoLayoutIterNextRun (PangoLayoutIter fpli) = unsafeIOToPrim
 	$ gbooleanToBool <$> withForeignPtr fpli c_pango_layout_iter_next_run
 
 foreign import ccall "pango_layout_iter_next_char" c_pango_layout_iter_next_char ::
 	Ptr (PangoLayoutIter s) -> IO #type gboolean
 
 pangoLayoutIterNextChar :: PrimMonad m => PangoLayoutIter (PrimState m) -> m Bool
-pangoLayoutIterNextChar (PangoLayoutIter fpli) = unPrimIo
+pangoLayoutIterNextChar (PangoLayoutIter fpli) = unsafeIOToPrim
 	$ gbooleanToBool <$> withForeignPtr fpli c_pango_layout_iter_next_char
 
 foreign import ccall "pango_layout_iter_next_cluster" c_pango_layout_iter_next_cluster ::
 	Ptr (PangoLayoutIter s) -> IO #type gboolean
 
 pangoLayoutIterNextCluster :: PrimMonad m => PangoLayoutIter (PrimState m) -> m Bool
-pangoLayoutIterNextCluster (PangoLayoutIter fpli) = unPrimIo
+pangoLayoutIterNextCluster (PangoLayoutIter fpli) = unsafeIOToPrim
 	$ gbooleanToBool <$> withForeignPtr fpli c_pango_layout_iter_next_cluster
 
 foreign import ccall "pango_layout_iter_next_line" c_pango_layout_iter_next_line ::
 	Ptr (PangoLayoutIter s) -> IO #type gboolean
 
 pangoLayoutIterNextLine :: PrimMonad m => PangoLayoutIter (PrimState m) -> m Bool
-pangoLayoutIterNextLine (PangoLayoutIter fpli) = unPrimIo
+pangoLayoutIterNextLine (PangoLayoutIter fpli) = unsafeIOToPrim
 	$ gbooleanToBool <$> withForeignPtr fpli c_pango_layout_iter_next_line
 
 foreign import ccall "pango_layout_iter_at_last_line" c_pango_layout_iter_at_last_line ::
@@ -301,7 +300,7 @@ foreign import ccall "pango_layout_iter_at_last_line" c_pango_layout_iter_at_las
 
 pangoLayoutIterAtLastLine :: PrimMonad m =>
 	PangoLayoutIter (PrimState m) -> m Bool
-pangoLayoutIterAtLastLine (PangoLayoutIter fpli) = unPrimIo
+pangoLayoutIterAtLastLine (PangoLayoutIter fpli) = unsafeIOToPrim
 	$ gbooleanToBool <$> withForeignPtr fpli c_pango_layout_iter_at_last_line
 
 foreign import ccall "pango_layout_iter_get_index" c_pango_layout_iter_get_index ::
@@ -309,7 +308,7 @@ foreign import ccall "pango_layout_iter_get_index" c_pango_layout_iter_get_index
 
 pangoLayoutIterGetIndex :: PrimMonad m =>
 	PangoLayoutIter (PrimState m) -> m #type int
-pangoLayoutIterGetIndex (PangoLayoutIter fpli) = unPrimIo
+pangoLayoutIterGetIndex (PangoLayoutIter fpli) = unsafeIOToPrim
 	$ withForeignPtr fpli c_pango_layout_iter_get_index
 
 foreign import ccall "pango_layout_iter_get_baseline" c_pango_layout_iter_get_baseline ::
@@ -317,7 +316,7 @@ foreign import ccall "pango_layout_iter_get_baseline" c_pango_layout_iter_get_ba
 
 pangoLayoutIterGetBaseline :: PrimMonad m =>
 	PangoLayoutIter (PrimState m) -> m #type int
-pangoLayoutIterGetBaseline (PangoLayoutIter fpli) = unPrimIo
+pangoLayoutIterGetBaseline (PangoLayoutIter fpli) = unsafeIOToPrim
 	$ withForeignPtr fpli c_pango_layout_iter_get_baseline
 
 foreign import ccall "pango_layout_iter_get_run_readonly" c_pango_layout_iter_get_run_readonly ::
@@ -325,7 +324,7 @@ foreign import ccall "pango_layout_iter_get_run_readonly" c_pango_layout_iter_ge
 
 pangoLayoutIterGetRun :: PrimMonad m =>
 	PangoLayoutIter (PrimState m) -> m (Maybe PangoLayoutRun)
-pangoLayoutIterGetRun (PangoLayoutIter fpli) = unPrimIo
+pangoLayoutIterGetRun (PangoLayoutIter fpli) = unsafeIOToPrim
 	$ makePangoGlyphItemMaybe0 =<< withForeignPtr fpli c_pango_layout_iter_get_run_readonly
 
 foreign import ccall "pango_layout_iter_get_line_readonly" c_pango_layout_iter_get_line_readonly ::
@@ -333,7 +332,7 @@ foreign import ccall "pango_layout_iter_get_line_readonly" c_pango_layout_iter_g
 
 pangoLayoutIterGetLine :: PrimMonad m =>
 	PangoLayoutIter (PrimState m) -> m PangoLayoutLine
-pangoLayoutIterGetLine (PangoLayoutIter fpli) = unPrimIo
+pangoLayoutIterGetLine (PangoLayoutIter fpli) = unsafeIOToPrim
 	$ makePangoLayoutLine0 =<< withForeignPtr fpli c_pango_layout_iter_get_line_readonly
 
 foreign import ccall "pango_layout_iter_get_layout" c_pango_layout_iter_get_layout ::
@@ -341,7 +340,7 @@ foreign import ccall "pango_layout_iter_get_layout" c_pango_layout_iter_get_layo
 
 pangoLayoutIterGetLayout :: PrimMonad m =>
 	PangoLayoutIter (PrimState m) -> m PangoLayout
-pangoLayoutIterGetLayout (PangoLayoutIter fpli) = unPrimIo
+pangoLayoutIterGetLayout (PangoLayoutIter fpli) = unsafeIOToPrim
 	$ makePangoLayout0 =<< withForeignPtr fpli c_pango_layout_iter_get_layout
 
 foreign import ccall "pango_layout_iter_get_char_extents" c_pango_layout_iter_get_char_extents ::
@@ -349,7 +348,7 @@ foreign import ccall "pango_layout_iter_get_char_extents" c_pango_layout_iter_ge
 
 pangoLayoutIterGetCharExtents :: PrimMonad m =>
 	PangoLayoutIter (PrimState m) -> m PangoRectangle
-pangoLayoutIterGetCharExtents (PangoLayoutIter fpli) = unPrimIo
+pangoLayoutIterGetCharExtents (PangoLayoutIter fpli) = unsafeIOToPrim
 	$ withForeignPtr fpli \pli -> alloca \rct -> do
 		c_pango_layout_iter_get_char_extents pli rct
 		peek rct
@@ -359,7 +358,7 @@ foreign import ccall "pango_layout_iter_get_cluster_extents" c_pango_layout_iter
 
 pangoLayoutIterGetClusterExtents :: PrimMonad m =>
 	PangoLayoutIter (PrimState m) -> m (PangoRectangle, PangoRectangle)
-pangoLayoutIterGetClusterExtents (PangoLayoutIter fpli) = unPrimIo
+pangoLayoutIterGetClusterExtents (PangoLayoutIter fpli) = unsafeIOToPrim
 	$ withForeignPtr fpli \pli -> alloca \irct -> alloca \lrct -> do
 		c_pango_layout_iter_get_cluster_extents pli irct lrct
 		(,) <$> peek irct <*> peek lrct
@@ -369,7 +368,7 @@ foreign import ccall "pango_layout_iter_get_run_extents" c_pango_layout_iter_get
 
 pangoLayoutIterGetRunExtents :: PrimMonad m =>
 	PangoLayoutIter (PrimState m) -> m (PangoRectangle, PangoRectangle)
-pangoLayoutIterGetRunExtents (PangoLayoutIter fpli) = unPrimIo
+pangoLayoutIterGetRunExtents (PangoLayoutIter fpli) = unsafeIOToPrim
 	$ withForeignPtr fpli \pli -> alloca \irct -> alloca \lrct -> do
 		c_pango_layout_iter_get_run_extents pli irct lrct
 		(,) <$> peek irct <*> peek lrct
@@ -379,7 +378,7 @@ foreign import ccall "pango_layout_iter_get_line_yrange" c_pango_layout_iter_get
 
 pangoLayoutIterGetLineYrange :: PrimMonad m =>
 	PangoLayoutIter (PrimState m) -> m (#{type int}, #{type int})
-pangoLayoutIterGetLineYrange (PangoLayoutIter fpli) = unPrimIo
+pangoLayoutIterGetLineYrange (PangoLayoutIter fpli) = unsafeIOToPrim
 	$ withForeignPtr fpli \pli -> alloca \y0 -> alloca \y1 -> do
 		c_pango_layout_iter_get_line_yrange pli y0 y1
 		(,) <$> peek y0 <*> peek y1
@@ -389,7 +388,7 @@ foreign import ccall "pango_layout_iter_get_line_extents" c_pango_layout_iter_ge
 
 pangoLayoutIterGetLineExtents :: PrimMonad m =>
 	PangoLayoutIter (PrimState m) -> m (PangoRectangle, PangoRectangle)
-pangoLayoutIterGetLineExtents (PangoLayoutIter fpli) = unPrimIo
+pangoLayoutIterGetLineExtents (PangoLayoutIter fpli) = unsafeIOToPrim
 	$ withForeignPtr fpli \pli -> alloca \irct -> alloca \lrct -> do
 		c_pango_layout_iter_get_line_extents pli irct lrct
 		(,) <$> peek irct <*> peek lrct
@@ -399,7 +398,7 @@ foreign import ccall "pango_layout_iter_get_layout_extents" c_pango_layout_iter_
 
 pangoLayoutIterGetLayoutExtents :: PrimMonad m =>
 	PangoLayoutIter (PrimState m) -> m (PangoRectangle, PangoRectangle)
-pangoLayoutIterGetLayoutExtents (PangoLayoutIter fpli) = unPrimIo
+pangoLayoutIterGetLayoutExtents (PangoLayoutIter fpli) = unsafeIOToPrim
 	$ withForeignPtr fpli \pli -> alloca \irct -> alloca \lrct -> do
 		c_pango_layout_iter_get_layout_extents pli irct lrct
 		(,) <$> peek irct <*> peek lrct
