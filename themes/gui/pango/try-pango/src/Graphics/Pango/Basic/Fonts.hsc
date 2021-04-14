@@ -19,7 +19,7 @@ import Graphics.Pango.Values
 #include <pango/pango.h>
 
 pangoFontDescriptionNew :: PrimMonad m => m (PangoFontDescription (PrimState m))
-pangoFontDescriptionNew = unPrimIo
+pangoFontDescriptionNew = unsafeIOToPrim
 	$ makePangoFontDescription =<< c_pango_font_description_new
 
 foreign import ccall "pango_font_description_new" c_pango_font_description_new ::
