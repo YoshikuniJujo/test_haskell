@@ -127,7 +127,7 @@ todo
 	+ [x] variant
 	+ [x] weight
 	+ [x] stretch
-	+ [ ] size
+	+ [x] size
 	+ [ ] gravity
 	+ [ ] variations
 * [ ] `pango_font_description_set_absolute_size`

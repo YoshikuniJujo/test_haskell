@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -9,7 +9,8 @@ import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr, addForeignPtrFinalizer)
 import Foreign.Concurrent
 import Foreign.Marshal
-import Foreign.C
+import Foreign.C.Types
+import Foreign.C.String
 import Control.Monad.Primitive
 import Data.Bits
 import Data.Bool
@@ -181,31 +182,43 @@ pangoFontDescriptionGetStretch (PangoFontDescription fpfd) = unsafeIOToPrim
 foreign import ccall "pango_font_description_get_stretch" c_pango_font_description_get_stretch ::
 	Ptr (PangoFontDescription s) -> IO #type PangoStretch
 
-foreign import ccall "pango_font_description_set_size" c_pango_font_description_set_size ::
-	Ptr (PangoFontDescription s) -> #{type gint} -> IO ()
+data Size = Size CDouble | AbsoluteSize CDouble deriving Show
+
+instance PangoFontDescriptionSetting Size where
+	pangoFontDescriptionSet fd = \case
+		Size s -> pangoFontDescriptionSetSize fd . round $ s * #{const PANGO_SCALE}
+		AbsoluteSize as -> pangoFontDescriptionSetAbsoluteSize fd $ as * #{const PANGO_SCALE}
+	pangoFontDescriptionGetUnsafe fd = do
+		a <- pangoFontDescriptionGetSizeIsAbsolute fd
+		s <- pangoFontDescriptionGetSize fd
+		pure $ bool (Size $ fromIntegral s / #{const PANGO_SCALE}) (AbsoluteSize $ fromIntegral s / #{const PANGO_SCALE}) a
+	pangoFontDescriptionMaskBit = pangoFontMaskSize
 
 pangoFontDescriptionSetSize :: PrimMonad m =>
-	PangoFontDescription (PrimState m) -> #{type gint} -> m ()
+	PangoFontDescription (PrimState m) -> CInt -> m ()
 pangoFontDescriptionSetSize (PangoFontDescription fpfd) n = unsafeIOToPrim
 	$ withForeignPtr fpfd \pfd ->
 		c_pango_font_description_set_size pfd n
 
+foreign import ccall "pango_font_description_set_size" c_pango_font_description_set_size ::
+	Ptr (PangoFontDescription s) -> CInt -> IO ()
+
 pangoFontDescriptionGetSize :: PrimMonad m =>
-	PangoFontDescription (PrimState m) -> m #type gint
+	PangoFontDescription (PrimState m) -> m CInt
 pangoFontDescriptionGetSize (PangoFontDescription fpfd) = unsafeIOToPrim
 	$ withForeignPtr fpfd c_pango_font_description_get_size
 
 foreign import ccall "pango_font_description_get_size" c_pango_font_description_get_size ::
-	Ptr (PangoFontDescription s) -> IO #type gint
-
-foreign import ccall "pango_font_description_set_absolute_size" c_pango_font_description_set_absolute_size ::
-	Ptr (PangoFontDescription s) -> #{type double} -> IO ()
+	Ptr (PangoFontDescription s) -> IO CInt
 
 pangoFontDescriptionSetAbsoluteSize :: PrimMonad m =>
-	PangoFontDescription (PrimState m) -> #{type double} -> m ()
+	PangoFontDescription (PrimState m) -> CDouble -> m ()
 pangoFontDescriptionSetAbsoluteSize (PangoFontDescription fpfd) sz = unsafeIOToPrim
 	$ withForeignPtr fpfd \pfd ->
 		c_pango_font_description_set_absolute_size pfd sz
+
+foreign import ccall "pango_font_description_set_absolute_size" c_pango_font_description_set_absolute_size ::
+	Ptr (PangoFontDescription s) -> CDouble -> IO ()
 
 pangoFontDescriptionGetSizeIsAbsolute :: PrimMonad m =>
 	PangoFontDescription (PrimState m) -> m Bool
