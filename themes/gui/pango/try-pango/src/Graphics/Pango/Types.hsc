@@ -19,13 +19,13 @@ makePangoLayout p = PangoLayout <$> newForeignPtr p (c_g_object_unref p)
 
 foreign import ccall "g_object_unref" c_g_object_unref :: Ptr a -> IO ()
 
-newtype PangoFontDescriptionPrim s = PangoFontDescriptionPrim (ForeignPtr (PangoFontDescriptionPrim s)) deriving Show
+newtype PangoFontDescription s = PangoFontDescription (ForeignPtr (PangoFontDescription s)) deriving Show
 
-makePangoFontDescriptionPrim :: Ptr (PangoFontDescriptionPrim s) -> IO (PangoFontDescriptionPrim s)
-makePangoFontDescriptionPrim p = PangoFontDescriptionPrim <$> newForeignPtr p (c_pango_font_description_prim_free p)
+makePangoFontDescription :: Ptr (PangoFontDescription s) -> IO (PangoFontDescription s)
+makePangoFontDescription p = PangoFontDescription <$> newForeignPtr p (c_pango_font_description_prim_free p)
 
 foreign import ccall "pango_font_description_free" c_pango_font_description_prim_free ::
-	Ptr (PangoFontDescriptionPrim s) -> IO ()
+	Ptr (PangoFontDescription s) -> IO ()
 
 newtype PangoTabArrayPrim s = PangoTabArrayPrim (ForeignPtr (PangoTabArrayPrim s)) deriving Show
 

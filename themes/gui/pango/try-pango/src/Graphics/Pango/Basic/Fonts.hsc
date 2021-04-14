@@ -18,31 +18,31 @@ import Graphics.Pango.Values
 
 #include <pango/pango.h>
 
-pangoFontDescriptionNew :: PrimMonad m => m (PangoFontDescriptionPrim (PrimState m))
+pangoFontDescriptionNew :: PrimMonad m => m (PangoFontDescription (PrimState m))
 pangoFontDescriptionNew = unPrimIo
-	$ makePangoFontDescriptionPrim =<< c_pango_font_description_new
+	$ makePangoFontDescription =<< c_pango_font_description_new
 
 foreign import ccall "pango_font_description_new" c_pango_font_description_new ::
-	IO (Ptr (PangoFontDescriptionPrim s))
+	IO (Ptr (PangoFontDescription s))
 
 foreign import ccall "pango_font_description_copy" c_pango_font_description_copy ::
-	Ptr (PangoFontDescriptionPrim s) -> IO (Ptr (PangoFontDescriptionPrim s))
+	Ptr (PangoFontDescription s) -> IO (Ptr (PangoFontDescription s))
 
 pangoFontDescriptionCopy :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> m (PangoFontDescriptionPrim (PrimState m))
-pangoFontDescriptionCopy (PangoFontDescriptionPrim fpfd) = unPrimIo
+	PangoFontDescription (PrimState m) -> m (PangoFontDescription (PrimState m))
+pangoFontDescriptionCopy (PangoFontDescription fpfd) = unPrimIo
 	$ withForeignPtr fpfd \pfd ->
-		makePangoFontDescriptionPrim =<< c_pango_font_description_copy pfd
+		makePangoFontDescription =<< c_pango_font_description_copy pfd
 
 foreign import ccall "pango_font_description_copy_static" c_pango_font_description_copy_static ::
-	Ptr (PangoFontDescriptionPrim s) -> IO (Ptr (PangoFontDescriptionPrim s))
+	Ptr (PangoFontDescription s) -> IO (Ptr (PangoFontDescription s))
 
 pangoFontDescriptionCopyStatic :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> m (PangoFontDescriptionPrim (PrimState m))
-pangoFontDescriptionCopyStatic (PangoFontDescriptionPrim fpfd) = unPrimIo
+	PangoFontDescription (PrimState m) -> m (PangoFontDescription (PrimState m))
+pangoFontDescriptionCopyStatic (PangoFontDescription fpfd) = unPrimIo
 	$ withForeignPtr fpfd \pfd -> do
 		p <- c_pango_font_description_copy_static pfd
-		PangoFontDescriptionPrim <$> newForeignPtr p
+		PangoFontDescription <$> newForeignPtr p
 			(touchForeignPtr fpfd >> c_pango_font_description_prim_free p)
 
 {-
@@ -60,16 +60,16 @@ gbooleanToBool #{const FALSE} = False
 gbooleanToBool _ = True
 
 foreign import ccall "pango_font_description_set_family" c_pango_font_description_set_family ::
-	Ptr (PangoFontDescriptionPrim s) -> CString -> IO ()
+	Ptr (PangoFontDescription s) -> CString -> IO ()
 
 pangoFontDescriptionSetFamily :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> String -> m ()
-pangoFontDescriptionSetFamily (PangoFontDescriptionPrim fpfd) f = unPrimIo
+	PangoFontDescription (PrimState m) -> String -> m ()
+pangoFontDescriptionSetFamily (PangoFontDescription fpfd) f = unPrimIo
 	$ withForeignPtr fpfd \pfd -> withCString f \cf ->
 		c_pango_font_description_set_family pfd cf
 
 foreign import ccall "pango_font_description_set_family_static" c_pango_font_description_set_family_static ::
-	Ptr (PangoFontDescriptionPrim s) -> CString -> IO ()
+	Ptr (PangoFontDescription s) -> CString -> IO ()
 
 newForeignCString :: String -> IO (ForeignPtr CChar)
 newForeignCString s = do
@@ -77,178 +77,178 @@ newForeignCString s = do
 	newForeignPtr p (free p)
 
 pangoFontDescriptionSetFamilyStatic :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> String -> m ()
-pangoFontDescriptionSetFamilyStatic (PangoFontDescriptionPrim fpfd) f = unPrimIo do
+	PangoFontDescription (PrimState m) -> String -> m ()
+pangoFontDescriptionSetFamilyStatic (PangoFontDescription fpfd) f = unPrimIo do
 	fcf <- newForeignCString f
 	addForeignPtrFinalizer fpfd $ touchForeignPtr fcf
 	withForeignPtr fpfd \pfd -> withForeignPtr fcf \cf ->
 		c_pango_font_description_set_family_static pfd cf
 
-pangoFontDescriptionGetFamily :: PrimMonad m => PangoFontDescriptionPrim (PrimState m) -> m String
-pangoFontDescriptionGetFamily (PangoFontDescriptionPrim fpfd) = unsafeIOToPrim
+pangoFontDescriptionGetFamily :: PrimMonad m => PangoFontDescription (PrimState m) -> m String
+pangoFontDescriptionGetFamily (PangoFontDescription fpfd) = unsafeIOToPrim
 	$ withForeignPtr fpfd \pfd ->
 		peekCString =<< c_pango_font_description_get_family pfd
 
 foreign import ccall "pango_font_description_get_family" c_pango_font_description_get_family ::
-	Ptr (PangoFontDescriptionPrim s) -> IO CString
+	Ptr (PangoFontDescription s) -> IO CString
 
 foreign import ccall "pango_font_description_set_style" c_pango_font_description_set_style ::
-	Ptr (PangoFontDescriptionPrim s) -> #{type PangoStyle} -> IO ()
+	Ptr (PangoFontDescription s) -> #{type PangoStyle} -> IO ()
 
 pangoFontDescriptionSetStyle :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> PangoStyle -> m ()
-pangoFontDescriptionSetStyle (PangoFontDescriptionPrim fpfd) (PangoStyle s) = unPrimIo
+	PangoFontDescription (PrimState m) -> PangoStyle -> m ()
+pangoFontDescriptionSetStyle (PangoFontDescription fpfd) (PangoStyle s) = unPrimIo
 	$ withForeignPtr fpfd \pfd -> c_pango_font_description_set_style pfd s
 
-pangoFontDescriptionGetStyle :: PrimMonad m => PangoFontDescriptionPrim (PrimState m) -> m PangoStyle
-pangoFontDescriptionGetStyle (PangoFontDescriptionPrim fpfd) = unsafeIOToPrim
+pangoFontDescriptionGetStyle :: PrimMonad m => PangoFontDescription (PrimState m) -> m PangoStyle
+pangoFontDescriptionGetStyle (PangoFontDescription fpfd) = unsafeIOToPrim
 	$ withForeignPtr fpfd \pfd -> PangoStyle <$> c_pango_font_description_get_style pfd
 
 foreign import ccall "pango_font_description_get_style" c_pango_font_description_get_style ::
-	Ptr (PangoFontDescriptionPrim s) -> IO #type PangoStyle
+	Ptr (PangoFontDescription s) -> IO #type PangoStyle
 
 foreign import ccall "pango_font_description_set_variant" c_pango_font_description_set_variant ::
-	Ptr (PangoFontDescriptionPrim s) -> #{type PangoVariant} -> IO ()
+	Ptr (PangoFontDescription s) -> #{type PangoVariant} -> IO ()
 
 pangoFontDescriptionSetVariant :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> PangoVariant -> m ()
-pangoFontDescriptionSetVariant (PangoFontDescriptionPrim fpfd) (PangoVariant pv) = unPrimIo
+	PangoFontDescription (PrimState m) -> PangoVariant -> m ()
+pangoFontDescriptionSetVariant (PangoFontDescription fpfd) (PangoVariant pv) = unPrimIo
 	$ withForeignPtr fpfd \pfd -> c_pango_font_description_set_variant pfd pv
 
 pangoFontDescriptionGetVariant :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> m PangoVariant
-pangoFontDescriptionGetVariant (PangoFontDescriptionPrim fpfd) = unsafeIOToPrim
+	PangoFontDescription (PrimState m) -> m PangoVariant
+pangoFontDescriptionGetVariant (PangoFontDescription fpfd) = unsafeIOToPrim
 	$ withForeignPtr fpfd \pfd ->
 		PangoVariant <$> c_pango_font_description_get_variant pfd
 
 foreign import ccall "pango_font_description_get_variant" c_pango_font_description_get_variant ::
-	Ptr (PangoFontDescriptionPrim s) -> IO #type PangoVariant
+	Ptr (PangoFontDescription s) -> IO #type PangoVariant
 
 foreign import ccall "pango_font_description_set_weight" c_pango_font_description_set_weight ::
-	Ptr (PangoFontDescriptionPrim s) -> #{type PangoWeight} -> IO ()
+	Ptr (PangoFontDescription s) -> #{type PangoWeight} -> IO ()
 
 pangoFontDescriptionSetWeight :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> PangoWeight -> m ()
-pangoFontDescriptionSetWeight (PangoFontDescriptionPrim fpfd) (PangoWeight wt) = unPrimIo
+	PangoFontDescription (PrimState m) -> PangoWeight -> m ()
+pangoFontDescriptionSetWeight (PangoFontDescription fpfd) (PangoWeight wt) = unPrimIo
 	$ withForeignPtr fpfd \pfd -> c_pango_font_description_set_weight pfd wt
 
 pangoFontDescriptionGetWeight :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> m PangoWeight
-pangoFontDescriptionGetWeight (PangoFontDescriptionPrim fpfd) = unsafeIOToPrim
+	PangoFontDescription (PrimState m) -> m PangoWeight
+pangoFontDescriptionGetWeight (PangoFontDescription fpfd) = unsafeIOToPrim
 	$ withForeignPtr fpfd \pfd ->
 		PangoWeight <$> c_pango_font_description_get_weight pfd
 
 foreign import ccall "pango_font_description_get_weight" c_pango_font_description_get_weight ::
-	Ptr (PangoFontDescriptionPrim s) -> IO #type PangoWeight
+	Ptr (PangoFontDescription s) -> IO #type PangoWeight
 
 foreign import ccall "pango_font_description_set_stretch" c_pango_font_description_set_stretch ::
-	Ptr (PangoFontDescriptionPrim s) -> #{type PangoStretch} -> IO ()
+	Ptr (PangoFontDescription s) -> #{type PangoStretch} -> IO ()
 
 pangoFontDescriptionSetStretch :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> PangoStretch -> m ()
-pangoFontDescriptionSetStretch (PangoFontDescriptionPrim fpfd) (PangoStretch ps) = unPrimIo
+	PangoFontDescription (PrimState m) -> PangoStretch -> m ()
+pangoFontDescriptionSetStretch (PangoFontDescription fpfd) (PangoStretch ps) = unPrimIo
 	$ withForeignPtr fpfd \pfd -> c_pango_font_description_set_stretch pfd ps
 
 pangoFontDescriptionGetStretch :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> m PangoStretch
-pangoFontDescriptionGetStretch (PangoFontDescriptionPrim fpfd) = unsafeIOToPrim
+	PangoFontDescription (PrimState m) -> m PangoStretch
+pangoFontDescriptionGetStretch (PangoFontDescription fpfd) = unsafeIOToPrim
 	$ withForeignPtr fpfd \pfd -> PangoStretch <$> c_pango_font_description_get_stretch pfd
 
 foreign import ccall "pango_font_description_get_stretch" c_pango_font_description_get_stretch ::
-	Ptr (PangoFontDescriptionPrim s) -> IO #type PangoStretch
+	Ptr (PangoFontDescription s) -> IO #type PangoStretch
 
 foreign import ccall "pango_font_description_set_size" c_pango_font_description_set_size ::
-	Ptr (PangoFontDescriptionPrim s) -> #{type gint} -> IO ()
+	Ptr (PangoFontDescription s) -> #{type gint} -> IO ()
 
 pangoFontDescriptionSetSize :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> #{type gint} -> m ()
-pangoFontDescriptionSetSize (PangoFontDescriptionPrim fpfd) n = unPrimIo
+	PangoFontDescription (PrimState m) -> #{type gint} -> m ()
+pangoFontDescriptionSetSize (PangoFontDescription fpfd) n = unPrimIo
 	$ withForeignPtr fpfd \pfd ->
 		c_pango_font_description_set_size pfd n
 
 pangoFontDescriptionGetSize :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> m #type gint
-pangoFontDescriptionGetSize (PangoFontDescriptionPrim fpfd) = unsafeIOToPrim
+	PangoFontDescription (PrimState m) -> m #type gint
+pangoFontDescriptionGetSize (PangoFontDescription fpfd) = unsafeIOToPrim
 	$ withForeignPtr fpfd c_pango_font_description_get_size
 
 foreign import ccall "pango_font_description_get_size" c_pango_font_description_get_size ::
-	Ptr (PangoFontDescriptionPrim s) -> IO #type gint
+	Ptr (PangoFontDescription s) -> IO #type gint
 
 foreign import ccall "pango_font_description_set_absolute_size" c_pango_font_description_set_absolute_size ::
-	Ptr (PangoFontDescriptionPrim s) -> #{type double} -> IO ()
+	Ptr (PangoFontDescription s) -> #{type double} -> IO ()
 
 pangoFontDescriptionSetAbsoluteSize :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> #{type double} -> m ()
-pangoFontDescriptionSetAbsoluteSize (PangoFontDescriptionPrim fpfd) sz = unPrimIo
+	PangoFontDescription (PrimState m) -> #{type double} -> m ()
+pangoFontDescriptionSetAbsoluteSize (PangoFontDescription fpfd) sz = unPrimIo
 	$ withForeignPtr fpfd \pfd ->
 		c_pango_font_description_set_absolute_size pfd sz
 
 pangoFontDescriptionGetSizeIsAbsolute :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> m Bool
-pangoFontDescriptionGetSizeIsAbsolute (PangoFontDescriptionPrim fpfd) = unsafeIOToPrim
+	PangoFontDescription (PrimState m) -> m Bool
+pangoFontDescriptionGetSizeIsAbsolute (PangoFontDescription fpfd) = unsafeIOToPrim
 	$ withForeignPtr fpfd \pfd ->
 		gbooleanToBool <$> c_pango_font_description_get_size_is_absolute pfd
 
 foreign import ccall "pango_font_description_get_size_is_absolute"
 	c_pango_font_description_get_size_is_absolute ::
-	Ptr (PangoFontDescriptionPrim s) -> IO #type gboolean
+	Ptr (PangoFontDescription s) -> IO #type gboolean
 
 foreign import ccall "pango_font_description_set_gravity"
 	c_pango_font_description_set_gravity ::
-	Ptr (PangoFontDescriptionPrim s) -> #{type PangoGravity} -> IO ()
+	Ptr (PangoFontDescription s) -> #{type PangoGravity} -> IO ()
 
 pangoFontDescriptionSetGravity :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> PangoGravity -> m ()
-pangoFontDescriptionSetGravity (PangoFontDescriptionPrim fpfd) (PangoGravity gr) = unPrimIo
+	PangoFontDescription (PrimState m) -> PangoGravity -> m ()
+pangoFontDescriptionSetGravity (PangoFontDescription fpfd) (PangoGravity gr) = unPrimIo
 	$ withForeignPtr fpfd \pfd ->
 		c_pango_font_description_set_gravity pfd gr
 
 pangoFontDescriptionGetGravity :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> m PangoGravity
-pangoFontDescriptionGetGravity (PangoFontDescriptionPrim fpfd) = unsafeIOToPrim
+	PangoFontDescription (PrimState m) -> m PangoGravity
+pangoFontDescriptionGetGravity (PangoFontDescription fpfd) = unsafeIOToPrim
 	$ withForeignPtr fpfd \pfd ->
 		PangoGravity <$> c_pango_font_description_get_gravity pfd
 
 foreign import ccall "pango_font_description_get_gravity"
 	c_pango_font_description_get_gravity ::
-	Ptr (PangoFontDescriptionPrim s) -> IO #type PangoGravity
+	Ptr (PangoFontDescription s) -> IO #type PangoGravity
 
 pangoFontDescriptionGetSetFields :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> m PangoFontMask
-pangoFontDescriptionGetSetFields (PangoFontDescriptionPrim fpfd) = unsafeIOToPrim
+	PangoFontDescription (PrimState m) -> m PangoFontMask
+pangoFontDescriptionGetSetFields (PangoFontDescription fpfd) = unsafeIOToPrim
 	$ withForeignPtr fpfd \pfd ->
 		PangoFontMask <$> c_pango_font_description_get_set_fields pfd
 
 foreign import ccall "pango_font_description_get_set_fields"
 	c_pango_font_description_get_set_fields ::
-	Ptr (PangoFontDescriptionPrim s) -> IO #type PangoFontMask
+	Ptr (PangoFontDescription s) -> IO #type PangoFontMask
 
 foreign import ccall "pango_font_description_unset_fields"
 	c_pango_font_description_unset_fields ::
-	Ptr (PangoFontDescriptionPrim s) -> #{type PangoFontMask} -> IO ()
+	Ptr (PangoFontDescription s) -> #{type PangoFontMask} -> IO ()
 
 pangoFontDescriptionUnsetFields :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> PangoFontMask -> m ()
-pangoFontDescriptionUnsetFields (PangoFontDescriptionPrim fpfd) (PangoFontMask msk) = unPrimIo
+	PangoFontDescription (PrimState m) -> PangoFontMask -> m ()
+pangoFontDescriptionUnsetFields (PangoFontDescription fpfd) (PangoFontMask msk) = unPrimIo
 	$ withForeignPtr fpfd \pfd ->
 		c_pango_font_description_unset_fields pfd msk
 
 pangoFontDescriptionToString :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> m String
-pangoFontDescriptionToString (PangoFontDescriptionPrim fpfd) = unsafeIOToPrim
+	PangoFontDescription (PrimState m) -> m String
+pangoFontDescriptionToString (PangoFontDescription fpfd) = unsafeIOToPrim
 	$ withForeignPtr fpfd \pfd ->
 		peekCString =<< c_pango_font_description_to_string pfd
 
 foreign import ccall "pango_font_description_to_string"
 	c_pango_font_description_to_string ::
-	Ptr (PangoFontDescriptionPrim s) -> IO CString
+	Ptr (PangoFontDescription s) -> IO CString
 
 pangoFontDescriptionToFilename :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> m String
-pangoFontDescriptionToFilename (PangoFontDescriptionPrim fpfd) = unsafeIOToPrim
+	PangoFontDescription (PrimState m) -> m String
+pangoFontDescriptionToFilename (PangoFontDescription fpfd) = unsafeIOToPrim
 	$ withForeignPtr fpfd \pfd ->
 		peekCString =<< c_pango_font_description_to_filename pfd
 
 foreign import ccall "pango_font_description_to_filename"
 	c_pango_font_description_to_filename ::
-	Ptr (PangoFontDescriptionPrim s) -> IO CString
+	Ptr (PangoFontDescription s) -> IO CString
