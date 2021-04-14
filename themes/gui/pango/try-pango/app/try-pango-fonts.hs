@@ -24,7 +24,7 @@ main = getArgs >>= \case
 		pl <- pangoCairoCreateLayout cr
 
 		fd <- pangoFontDescriptionNew
-		pangoFontDescriptionSet fd $ Family f
+		case f of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ Family f
 		print =<< pangoFontDescriptionGet @Family fd
 
 		pangoLayoutSetFontDescription pl fd

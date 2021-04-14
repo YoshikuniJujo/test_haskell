@@ -9,6 +9,7 @@ import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.C
 import Control.Monad.Primitive
+import Data.Bool
 import Data.Word
 import Data.Int
 
@@ -38,13 +39,13 @@ class PangoFontDescriptionSetting s where
 	pangoFontDescriptionSet :: PrimMonad m =>
 		PangoFontDescription (PrimState m) -> s -> m ()
 	pangoFontDescriptionGet :: PrimMonad m =>
-		PangoFontDescription (PrimState m) -> m s
+		PangoFontDescription (PrimState m) -> m (Maybe s)
 
 newtype Family = Family String deriving Show
 
 instance PangoFontDescriptionSetting Family where
 	pangoFontDescriptionSet fd (Family f) = pangoFontDescriptionSetFamily fd f
-	pangoFontDescriptionGet fd = Family <$> pangoFontDescriptionGetFamily fd
+	pangoFontDescriptionGet fd = (Family <$>) <$> pangoFontDescriptionGetFamily fd
 
 pangoFontDescriptionSetFamily :: PrimMonad m =>
 	PangoFontDescription (PrimState m) -> String -> m ()
@@ -71,10 +72,11 @@ pangoFontDescriptionSetFamilyStatic (PangoFontDescription fpfd) f = unsafeIOToPr
 	withForeignPtr fpfd \pfd -> withForeignPtr fcf \cf ->
 		c_pango_font_description_set_family_static pfd cf
 
-pangoFontDescriptionGetFamily :: PrimMonad m => PangoFontDescription (PrimState m) -> m String
+pangoFontDescriptionGetFamily :: PrimMonad m => PangoFontDescription (PrimState m) -> m (Maybe String)
 pangoFontDescriptionGetFamily (PangoFontDescription fpfd) = unsafeIOToPrim
-	$ withForeignPtr fpfd \pfd ->
-		peekCString =<< c_pango_font_description_get_family pfd
+	$ withForeignPtr fpfd \pfd -> do
+		cf <- c_pango_font_description_get_family pfd
+		bool (pure Nothing) (Just <$> peekCString cf) $ cf /= nullPtr
 
 foreign import ccall "pango_font_description_get_family" c_pango_font_description_get_family ::
 	Ptr (PangoFontDescription s) -> IO CString
