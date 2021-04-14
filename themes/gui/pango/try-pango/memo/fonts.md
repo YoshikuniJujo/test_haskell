@@ -103,7 +103,8 @@ todo
 	+ [x] `pangoFontDescriptionGetSetField`
 	+ [x] `pangoFontDescriptionToString`
 	+ [x] `pangoFontDescriptionToFilename`
-* [ ] remove `PangoDescription`
+* [x] remove `PangoDescription`
+* [ ] try to remove `pangoContextOld`
 * [ ] rename `PangoDescriptionPrim (PrimState m)` to `PangoDescription (PrimState m)`
 * [ ] `pango_font_description_new`
 * [ ] `pango_font_description_copy`

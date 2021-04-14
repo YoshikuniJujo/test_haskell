@@ -7,10 +7,7 @@ import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Storable
-import Control.Monad.Primitive
 import Data.Int
-
-import Graphics.Pango.Monad
 
 #include <pango/pango.h>
 
@@ -27,32 +24,8 @@ newtype PangoFontDescriptionPrim s = PangoFontDescriptionPrim (ForeignPtr (Pango
 makePangoFontDescriptionPrim :: Ptr (PangoFontDescriptionPrim s) -> IO (PangoFontDescriptionPrim s)
 makePangoFontDescriptionPrim p = PangoFontDescriptionPrim <$> newForeignPtr p (c_pango_font_description_prim_free p)
 
-newtype PangoFontDescription = PangoFontDescription (ForeignPtr PangoFontDescription) deriving Show
-
-makePangoFontDescription :: Ptr PangoFontDescription -> IO PangoFontDescription
-makePangoFontDescription p = PangoFontDescription <$> newForeignPtr p (c_pango_font_description_free p)
-
-pangoFontDescriptionFreeze :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> m PangoFontDescription
-pangoFontDescriptionFreeze (PangoFontDescriptionPrim fpfd) = unPrimIo
-	$ makePangoFontDescription =<< withForeignPtr fpfd c_pango_font_description_freeze
-
-pangoFontDescriptionThaw :: PrimMonad m =>
-	PangoFontDescription -> m (PangoFontDescriptionPrim (PrimState m))
-pangoFontDescriptionThaw (PangoFontDescription fpfd) = unPrimIo
-	$ makePangoFontDescriptionPrim =<< withForeignPtr fpfd c_pango_font_description_thaw
-
 foreign import ccall "pango_font_description_free" c_pango_font_description_prim_free ::
 	Ptr (PangoFontDescriptionPrim s) -> IO ()
-
-foreign import ccall "pango_font_description_free" c_pango_font_description_free ::
-	Ptr PangoFontDescription -> IO ()
-
-foreign import ccall "pango_font_description_copy" c_pango_font_description_freeze ::
-	Ptr (PangoFontDescriptionPrim s) -> IO (Ptr PangoFontDescription)
-
-foreign import ccall "pango_font_description_copy" c_pango_font_description_thaw ::
-	Ptr PangoFontDescription -> IO (Ptr (PangoFontDescriptionPrim s))
 
 newtype PangoContextOld = PangoContextOld (ForeignPtr PangoContextOld) deriving Show
 
