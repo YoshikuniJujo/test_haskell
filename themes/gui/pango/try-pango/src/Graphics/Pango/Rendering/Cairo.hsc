@@ -24,11 +24,11 @@ foreign import ccall "pango_cairo_create_context"
 	c_pango_cairo_create_context :: Ptr (CairoT s) -> IO (Ptr (PangoContext s))
 
 foreign import ccall "pango_cairo_update_context"
-	c_pango_cairo_update_context :: Ptr (CairoT s) -> Ptr PangoContextOld -> IO ()
+	c_pango_cairo_update_context :: Ptr (CairoT s) -> Ptr (PangoContext s) -> IO ()
 
-pangoCairoUpdateContext :: CairoT s -> PangoContextOld -> IO ()
-pangoCairoUpdateContext (CairoT fcr) (PangoContextOld fpc) =
-	withForeignPtr fcr \cr -> withForeignPtr fpc \pc ->
+pangoCairoUpdateContext :: PrimMonad m => CairoT (PrimState m) -> PangoContext (PrimState m) -> m ()
+pangoCairoUpdateContext (CairoT fcr) (PangoContext fpc) = unsafeIOToPrim
+	$ withForeignPtr fcr \cr -> withForeignPtr fpc \pc ->
 		c_pango_cairo_update_context cr pc
 
 pangoCairoCreateLayout :: PrimMonad m => CairoT (PrimState m) -> m (PangoLayoutPrim (PrimState m))

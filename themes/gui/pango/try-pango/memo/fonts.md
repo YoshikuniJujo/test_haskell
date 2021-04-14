@@ -104,7 +104,7 @@ todo
 	+ [x] `pangoFontDescriptionToString`
 	+ [x] `pangoFontDescriptionToFilename`
 * [x] remove `PangoDescription`
-* [ ] try to remove `pangoContextOld`
+* [x] try to remove `pangoContextOld`
 * [ ] rename `PangoDescriptionPrim (PrimState m)` to `PangoDescription (PrimState m)`
 * [ ] `pango_font_description_new`
 * [ ] `pango_font_description_copy`
