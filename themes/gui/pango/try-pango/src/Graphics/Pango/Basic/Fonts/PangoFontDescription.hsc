@@ -242,16 +242,6 @@ foreign import ccall "pango_font_description_get_gravity"
 	c_pango_font_description_get_gravity ::
 	Ptr (PangoFontDescription s) -> IO #type PangoGravity
 
-pangoFontDescriptionSetVariation :: PrimMonad m =>
-	PangoFontDescription (PrimState m) -> String -> m ()
-pangoFontDescriptionSetVariation (PangoFontDescription fpfd) f = unsafeIOToPrim
-	$ withForeignPtr fpfd \pfd -> withCString f \cf ->
-		c_pango_font_description_set_variations pfd cf
-
-foreign import ccall "pango_font_description_set_variations"
-	c_pango_font_description_set_variations ::
-	Ptr (PangoFontDescription s) -> CString -> IO ()
-
 pangoFontDescriptionGetSetFields :: PrimMonad m =>
 	PangoFontDescription (PrimState m) -> m PangoFontMask
 pangoFontDescriptionGetSetFields (PangoFontDescription fpfd) = unsafeIOToPrim
