@@ -22,7 +22,8 @@ import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 
 main :: IO ()
 main = getArgs >>= \case
-	wdth : _	| all ((||) <$> isDigit <*> (== '.')) wdth -> do
+	wdth : slnt : _	| all ((||) <$> isDigit <*> (== '.')) wdth &&
+			all ((||) <$> ((||) <$> isDigit <*> (== '.')) <*> (== '-')) slnt -> do
 		s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
 		cr <- cairoCreate s
 
@@ -30,9 +31,11 @@ main = getArgs >>= \case
 
 		pangoFontDescriptionSetFamily fd "Soulcraft"
 		pangoFontDescriptionSet fd $ Size 20
-		pangoFontDescriptionSetVariation fd "wght=500,slnt=40"
+		pangoFontDescriptionSetVariation fd "wght=500"
 		pangoFontDescriptionSetAxis fd . Width $ read wdth
 		print =<< pangoFontDescriptionGetAxis @Width fd
+		pangoFontDescriptionSetAxis fd . Slant $ read slnt
+		print =<< pangoFontDescriptionGetAxis @Slant fd
 
 		pl <- pangoCairoCreateLayout cr
 		pangoLayoutSetFontDescription pl fd
@@ -42,4 +45,4 @@ main = getArgs >>= \case
 		cairoImageSurfaceGetCairoImage s >>= \case
 			CairoImageArgb32 a -> writePng "try-pango-fonts-soulcraft.png" $ cairoArgb32ToJuicyRGBA8 a
 			_ -> error "never occur"
-	_ -> error "need width (100 - ?00)"
+	_ -> error "need width (0 - 100) and need slant (-90 - 90)"

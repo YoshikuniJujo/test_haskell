@@ -143,13 +143,13 @@ todo
 	+ [x] define `class PangoFontDescriptionAxis a`
 		- pangoFontDescriptionSetAxis
 		- pangoFontDescriptionGetAxis
-	+ [ ] define axes
+	+ [x] define axes
 		- [x] `Weight`
 		- [x] `Width`
 		- [x] `Italic`
-		- [ ] `Slant`
+		- [x] `Slant`
 		- [x] `OpticalSize`
-	+ [ ] others
+	+ [ ] test customs
 * [ ] `pango_font_description_merge`
 * [ ] `pango_font_description_better_match`
 * [ ] `pango_font_description_from_string`

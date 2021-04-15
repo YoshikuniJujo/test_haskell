@@ -67,6 +67,13 @@ instance PangoFontDescriptionAxis OpticalSize where
 	pangoFontDescriptionAxisToDouble = getOpticalSize
 	pangoFontDescriptionAxisFromDouble = OpticalSize
 
+newtype Slant = Slant { getSlant :: Double } deriving Show
+
+instance PangoFontDescriptionAxis Slant where
+	pangoFontDescriptionAxisTag = "slnt"
+	pangoFontDescriptionAxisToDouble = getSlant
+	pangoFontDescriptionAxisFromDouble = Slant
+
 type Variations = M.Map BS.ByteString Double
 
 showVariations :: Variations -> BS.ByteString
