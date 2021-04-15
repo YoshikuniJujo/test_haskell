@@ -129,7 +129,23 @@ todo
 	+ [x] stretch
 	+ [x] size
 	+ [x] gravity
-	+ [ ] variations
+* [ ] `pango_font_description_set_variations` and `pango_font_description_get_variations`
+	+ [ ] define `readVariation :: BS.ByteString -> Map BS.ByteString Double`
+	+ [ ] define `showVariation :: Map BS.ByteString Double -> BS.ByteString`
+	+ [ ] define `pangoFontDescriptionSetVariationsMap`
+		- `PangoFontDescription (PrimState m) -> Map BS.ByteString Double -> m ()`
+	+ [ ] define `pangoFontDescriptionGetVariationsMap`
+		- `pangoFontDescription (PrimState m) -> m (Map BS.ByteString Double)`
+	+ [ ] define `class PangoFontDescriptionAxis a`
+		- pangoFontDescriptionSetAxis
+		- pangoFontDescriptionGetAxis
+	+ [ ] define axes
+		- [ ] `Weight`
+		- [ ] `Width`
+		- [ ] `Italic`
+		- [ ] `Slant`
+		- [ ] `OpticalSize`
+	+ [ ] others
 * [ ] `pango_font_description_merge`
 * [ ] `pango_font_description_better_match`
 * [ ] `pango_font_description_from_string`
@@ -199,3 +215,12 @@ for GC
 
 * `pango_font_metrics_ref`
 * `pango_font_metrics_unref`
+
+five registered axes
+--------------------
+
+* Weight (wght): 100 is thin, 400 is extra bold
+* Width (wdth): 100 is normal width, 200 is double-width, 50 is half-width
+* Italic (ital): 0 means roman letters and 1 means italic forms
+* Slant (slnt): value sets the slant angle in degrees (from -90 to 90)
+* Optical Size (opsz): a point size that the design can respond to

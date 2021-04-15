@@ -15,24 +15,26 @@ import Graphics.Pango.Rendering.Cairo
 
 import Graphics.Pango.Basic.Fonts
 
+import System.Environment
+
 main :: IO ()
-main = do
-	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
-	cr <- cairoCreate s
+main = getArgs >>= \case
+	opsz : _ -> do
+		s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
+		cr <- cairoCreate s
 
-	fd <- pangoFontDescriptionNew
+		fd <- pangoFontDescriptionNew
 
-	pangoFontDescriptionSetFamily fd "Literata"
-	pangoFontDescriptionSet fd $ Size 20
---	pangoFontDescriptionSetVariation fd "SKLA=1000,TRMG=750,WGHT=100"
---	pangoFontDescriptionSetVariation fd "TRMG=750"
-	pangoFontDescriptionSetVariation fd "opsz=72"
+		pangoFontDescriptionSetFamily fd "Literata"
+		pangoFontDescriptionSet fd $ Size 20
+		pangoFontDescriptionSetVariation fd $ "opsz=" ++ (show (read opsz :: Double))
 
-	pl <- pangoCairoCreateLayout cr
-	pangoLayoutSetFontDescription pl fd
-	pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!" 40
-	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
+		pl <- pangoCairoCreateLayout cr
+		pangoLayoutSetFontDescription pl fd
+		pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!" 40
+		pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
-	cairoImageSurfaceGetCairoImage s >>= \case
-		CairoImageArgb32 a -> writePng "try-pango-fonts-literata.png" $ cairoArgb32ToJuicyRGBA8 a
-		_ -> error "never occur"
+		cairoImageSurfaceGetCairoImage s >>= \case
+			CairoImageArgb32 a -> writePng "try-pango-fonts-literata.png" $ cairoArgb32ToJuicyRGBA8 a
+			_ -> error "never occur"
+	_ -> error "need optical size (7 - 72)"
