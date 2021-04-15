@@ -53,6 +53,13 @@ instance PangoFontDescriptionAxis Width where
 	pangoFontDescriptionAxisToDouble = getWidth
 	pangoFontDescriptionAxisFromDouble = Width
 
+newtype Italic = Italic { getItalic :: Double } deriving Show
+
+instance PangoFontDescriptionAxis Italic where
+	pangoFontDescriptionAxisTag = "ital"
+	pangoFontDescriptionAxisToDouble = getItalic
+	pangoFontDescriptionAxisFromDouble = Italic
+
 type Variations = M.Map BS.ByteString Double
 
 showVariations :: Variations -> BS.ByteString

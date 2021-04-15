@@ -146,7 +146,7 @@ todo
 	+ [ ] define axes
 		- [x] `Weight`
 		- [x] `Width`
-		- [ ] `Italic`
+		- [x] `Italic`
 		- [ ] `Slant`
 		- [ ] `OpticalSize`
 	+ [ ] others
