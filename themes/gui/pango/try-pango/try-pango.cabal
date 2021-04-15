@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 347343d54c7e8b1f9fa70760582e22fa117ba2848badd987be864d944bb4db15
+-- hash: 94f259639eb8b3687cb349411b306ee887d860a00cb952a238c6aa3b998cc9f7
 
 name:           try-pango
 version:        0.1.0.0
@@ -48,7 +48,9 @@ library
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
+    , containers
     , nowdoc
     , primitive
     , simple-cairo
@@ -66,7 +68,9 @@ executable try-pango-context
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
+    , containers
     , nowdoc
     , primitive
     , simple-cairo
@@ -84,7 +88,9 @@ executable try-pango-exe
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
+    , containers
     , nowdoc
     , primitive
     , simple-cairo
@@ -103,7 +109,9 @@ executable try-pango-fonts
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
+    , containers
     , nowdoc
     , primitive
     , simple-cairo
@@ -122,7 +130,9 @@ executable try-pango-fonts-literata
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
+    , containers
     , nowdoc
     , primitive
     , simple-cairo
@@ -141,7 +151,9 @@ executable try-pango-fonts-montserrat
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
+    , containers
     , nowdoc
     , primitive
     , simple-cairo
@@ -160,7 +172,9 @@ executable try-pango-fonts-soulcraft
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
+    , containers
     , nowdoc
     , primitive
     , simple-cairo
@@ -179,7 +193,9 @@ executable try-pango-fonts-unset
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
+    , containers
     , nowdoc
     , primitive
     , simple-cairo
@@ -198,7 +214,9 @@ executable try-pango-fonts-variations
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
+    , containers
     , nowdoc
     , primitive
     , simple-cairo
@@ -217,7 +235,9 @@ executable try-pango-layout
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
+    , containers
     , nowdoc
     , primitive
     , simple-cairo
@@ -236,7 +256,30 @@ executable try-pango-simple
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
+    , containers
+    , nowdoc
+    , primitive
+    , simple-cairo
+    , try-pango
+  default-language: Haskell2010
+
+executable try-variations
+  main-is: try-variations.hs
+  other-modules:
+      Main
+      Paths_try_pango
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , bytestring
+    , cairo-image
+    , containers
     , nowdoc
     , primitive
     , simple-cairo
@@ -255,7 +298,9 @@ test-suite try-pango-test
       JuicyCairo
     , JuicyPixels
     , base >=4.7 && <5
+    , bytestring
     , cairo-image
+    , containers
     , nowdoc
     , primitive
     , simple-cairo

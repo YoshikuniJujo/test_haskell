@@ -133,8 +133,8 @@ todo
 * [x] make a module `Graphics.Pango.Basic.Fonts.PangoFontDescription.Type`
 * [x] make a module `Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations`
 * [ ] `pango_font_description_set_variations` and `pango_font_description_get_variations`
-	+ [ ] define `readVariation :: BS.ByteString -> Map BS.ByteString Double`
-	+ [ ] define `showVariation :: Map BS.ByteString Double -> BS.ByteString`
+	+ [x] define `readVariation :: BS.ByteString -> Map BS.ByteString Double`
+	+ [x] define `showVariation :: Map BS.ByteString Double -> BS.ByteString`
 	+ [ ] define `pangoFontDescriptionSetVariationsMap`
 		- `PangoFontDescription (PrimState m) -> Map BS.ByteString Double -> m ()`
 	+ [ ] define `pangoFontDescriptionGetVariationsMap`

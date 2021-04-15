@@ -21,6 +21,8 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- containers
+- bytestring
 - primitive
 - simple-cairo
 - cairo-image
@@ -116,6 +118,15 @@ executables:
     - try-pango
   try-pango-fonts-literata:
     main:                try-pango-fonts-literata.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-pango
+  try-variations:
+    main:                try-variations.hs
     source-dirs:         app
     ghc-options:
     - -threaded
