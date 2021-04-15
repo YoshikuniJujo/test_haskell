@@ -6,6 +6,7 @@ module Graphics.Pango.Basic.LayoutObjects.PangoLayoutPrim where
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
+import Control.Monad
 import Control.Monad.Primitive
 
 import Graphics.Pango.Types
@@ -18,7 +19,7 @@ mkPangoLayoutPrim p = PangoLayoutPrim <$> newForeignPtr p (c_g_object_unref p)
 pangoLayoutFreeze ::
 	PrimMonad m => PangoLayoutPrim (PrimState m) -> m PangoLayout
 pangoLayoutFreeze (PangoLayoutPrim fpl) = unsafeIOToPrim
-	$ withForeignPtr fpl \ppl -> makePangoLayout =<< c_pango_layout_freeze ppl
+	. withForeignPtr fpl $ makePangoLayout <=< c_pango_layout_freeze
 
 foreign import ccall "pango_layout_copy" c_pango_layout_freeze ::
 	Ptr (PangoLayoutPrim s) -> IO (Ptr PangoLayout)
@@ -26,7 +27,7 @@ foreign import ccall "pango_layout_copy" c_pango_layout_freeze ::
 pangoLayoutThaw ::
 	PrimMonad m => PangoLayout -> m (PangoLayoutPrim (PrimState m))
 pangoLayoutThaw (PangoLayout fpl) = unsafeIOToPrim
-	$ withForeignPtr fpl \ppl -> mkPangoLayoutPrim =<< c_pango_layout_thaw ppl
+	. withForeignPtr fpl $ mkPangoLayoutPrim <=< c_pango_layout_thaw
 
 foreign import ccall "pango_layout_copy" c_pango_layout_thaw ::
 	Ptr PangoLayout -> IO (Ptr (PangoLayoutPrim s))

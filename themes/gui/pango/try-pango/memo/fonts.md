@@ -130,7 +130,7 @@ todo
 	+ [x] size
 	+ [x] gravity
 * [x] make a module `Graphics.Pango.Basic.Fonts.PangoFontDescription`
-* [ ] make a module `Graphics.Pango.Basic.Fonts.PangoFontDescription.Type`
+* [x] make a module `Graphics.Pango.Basic.Fonts.PangoFontDescription.Type`
 * [ ] make a module `Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations`
 * [ ] `pango_font_description_set_variations` and `pango_font_description_get_variations`
 	+ [ ] define `readVariation :: BS.ByteString -> Map BS.ByteString Double`

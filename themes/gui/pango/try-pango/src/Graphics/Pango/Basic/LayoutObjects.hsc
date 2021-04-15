@@ -22,6 +22,7 @@ import Graphics.Pango.Basic.LayoutObjects.PangoLayoutPrim
 import Graphics.Pango.Basic.Rendering
 
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
+import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 
 #include <pango/pango.h>
 

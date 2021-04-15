@@ -10,6 +10,7 @@ import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
 
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
+import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.LayoutObjects
 import Graphics.Pango.Rendering.Cairo
 import Graphics.Pango.Values

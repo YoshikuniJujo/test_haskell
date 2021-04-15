@@ -14,6 +14,7 @@ import Graphics.Pango.Basic.LayoutObjects.PangoLayoutPrim
 import Graphics.Pango.Rendering.Cairo
 
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
+import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 
 import System.Environment
 

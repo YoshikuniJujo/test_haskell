@@ -18,26 +18,9 @@ import Data.Word
 import Data.Int
 
 import Graphics.Pango.Values
+import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 
 #include <pango/pango.h>
-
-newtype PangoFontDescription s =
-	PangoFontDescription (ForeignPtr (PangoFontDescription s)) deriving Show
-
-pangoFontDescriptionNew :: PrimMonad m => m (PangoFontDescription (PrimState m))
-pangoFontDescriptionNew = unsafeIOToPrim
-	$ mkPangoFontDescription =<< c_pango_font_description_new
-
-foreign import ccall "pango_font_description_new"
-	c_pango_font_description_new :: IO (Ptr (PangoFontDescription s))
-
-mkPangoFontDescription ::
-	Ptr (PangoFontDescription s) -> IO (PangoFontDescription s)
-mkPangoFontDescription p = PangoFontDescription
-	<$> newForeignPtr p (c_pango_font_description_free p)
-
-foreign import ccall "pango_font_description_free"
-	c_pango_font_description_free :: Ptr (PangoFontDescription s) -> IO ()
 
 class PangoFontDescriptionSetting s where
 	pangoFontDescriptionSet :: PrimMonad m =>
