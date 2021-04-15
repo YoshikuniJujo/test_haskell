@@ -39,6 +39,13 @@ pangoFontDescriptionGetAxis fd = do
 	pure $ pangoFontDescriptionAxisFromDouble
 		<$> M.lookup (pangoFontDescriptionAxisTag @a) as
 
+newtype Weight = Weight { getWeight :: Double } deriving Show
+
+instance PangoFontDescriptionAxis Weight where
+	pangoFontDescriptionAxisTag = "wght"
+	pangoFontDescriptionAxisToDouble = getWeight
+	pangoFontDescriptionAxisFromDouble = Weight
+
 type Variations = M.Map BS.ByteString Double
 
 showVariations :: Variations -> BS.ByteString
@@ -67,7 +74,10 @@ pangoFontDescriptionGetVariationsMap :: PrimMonad m =>
 	PangoFontDescription (PrimState m) -> m Variations
 pangoFontDescriptionGetVariationsMap (PangoFontDescription ffd) = unsafeIOToPrim
 	$ withForeignPtr ffd \pfd -> readVariations <$>
-		(BS.packCString =<< c_pango_font_description_get_variations pfd)
+		(myPackCString =<< c_pango_font_description_get_variations pfd)
+
+myPackCString :: CString -> IO BS.ByteString
+myPackCString cs | cs == nullPtr = pure "" | otherwise = BS.packCString cs
 
 foreign import ccall "pango_font_description_get_variations"
 	c_pango_font_description_get_variations ::

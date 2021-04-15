@@ -144,7 +144,7 @@ todo
 		- pangoFontDescriptionSetAxis
 		- pangoFontDescriptionGetAxis
 	+ [ ] define axes
-		- [ ] `Weight`
+		- [x] `Weight`
 		- [ ] `Width`
 		- [ ] `Italic`
 		- [ ] `Slant`
