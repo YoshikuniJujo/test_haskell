@@ -148,7 +148,7 @@ todo
 		- [x] `Width`
 		- [x] `Italic`
 		- [ ] `Slant`
-		- [ ] `OpticalSize`
+		- [x] `OpticalSize`
 	+ [ ] others
 * [ ] `pango_font_description_merge`
 * [ ] `pango_font_description_better_match`

@@ -1,8 +1,10 @@
 {-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
+import Data.Char
 import Data.CairoImage
 import Data.JuicyCairo
 import Codec.Picture
@@ -23,7 +25,7 @@ import qualified Data.Map as M
 
 main :: IO ()
 main = getArgs >>= \case
-	opsz : _ -> do
+	opsz : _	| all ((||) <$> isDigit <*> (== '.')) opsz -> do
 		s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
 		cr <- cairoCreate s
 
@@ -31,8 +33,9 @@ main = getArgs >>= \case
 
 		pangoFontDescriptionSetFamily fd "Literata"
 		pangoFontDescriptionSet fd $ Size 20
-		pangoFontDescriptionSetVariationsMap fd $ M.singleton "opsz" (read opsz)
-		print =<< pangoFontDescriptionGetVariationsMap fd
+		pangoFontDescriptionSetAxis fd . OpticalSize $ read opsz
+		print =<< pangoFontDescriptionGetAxis @OpticalSize fd
+
 
 		pl <- pangoCairoCreateLayout cr
 		pangoLayoutSetFontDescription pl fd

@@ -60,6 +60,13 @@ instance PangoFontDescriptionAxis Italic where
 	pangoFontDescriptionAxisToDouble = getItalic
 	pangoFontDescriptionAxisFromDouble = Italic
 
+newtype OpticalSize = OpticalSize { getOpticalSize :: Double } deriving Show
+
+instance PangoFontDescriptionAxis OpticalSize where
+	pangoFontDescriptionAxisTag = "opsz"
+	pangoFontDescriptionAxisToDouble = getOpticalSize
+	pangoFontDescriptionAxisFromDouble = OpticalSize
+
 type Variations = M.Map BS.ByteString Double
 
 showVariations :: Variations -> BS.ByteString
