@@ -32,6 +32,7 @@ main = getArgs >>= \case
 		pangoFontDescriptionSetFamily fd "Literata"
 		pangoFontDescriptionSet fd $ Size 20
 		pangoFontDescriptionSetVariationsMap fd $ M.singleton "opsz" (read opsz)
+		print =<< pangoFontDescriptionGetVariationsMap fd
 
 		pl <- pangoCairoCreateLayout cr
 		pangoLayoutSetFontDescription pl fd
