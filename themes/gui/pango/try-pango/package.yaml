@@ -96,6 +96,33 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-pango
+  try-pango-fonts-montserrat:
+    main:                try-pango-fonts-montserrat.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-pango
+  try-pango-fonts-soulcraft:
+    main:                try-pango-fonts-soulcraft.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-pango
+  try-pango-fonts-literata:
+    main:                try-pango-fonts-literata.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-pango
 
 tests:
   try-pango-test:
