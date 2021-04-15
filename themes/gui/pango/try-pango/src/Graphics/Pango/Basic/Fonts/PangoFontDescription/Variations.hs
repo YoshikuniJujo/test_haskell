@@ -46,6 +46,13 @@ instance PangoFontDescriptionAxis Weight where
 	pangoFontDescriptionAxisToDouble = getWeight
 	pangoFontDescriptionAxisFromDouble = Weight
 
+newtype Width = Width { getWidth :: Double } deriving Show
+
+instance PangoFontDescriptionAxis Width where
+	pangoFontDescriptionAxisTag = "wdth"
+	pangoFontDescriptionAxisToDouble = getWidth
+	pangoFontDescriptionAxisFromDouble = Width
+
 type Variations = M.Map BS.ByteString Double
 
 showVariations :: Variations -> BS.ByteString
