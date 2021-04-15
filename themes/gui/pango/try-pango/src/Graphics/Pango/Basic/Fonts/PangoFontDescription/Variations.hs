@@ -17,6 +17,28 @@ import qualified Data.Map as M
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 
+class PangoFontDescriptionAxis a where
+	pangoFontDescriptionAxisTag :: BS.ByteString
+	pangoFontDescriptionAxisToDouble :: a -> Double
+	pangoFontDescriptionAxisFromDouble :: Double -> a
+
+pangoFontDescriptionSetAxis :: forall a m .
+	(PangoFontDescriptionAxis a, PrimMonad m) =>
+	PangoFontDescription (PrimState m) -> a -> m ()
+pangoFontDescriptionSetAxis fd a = do
+	as <- pangoFontDescriptionGetVariationsMap fd
+	pangoFontDescriptionSetVariationsMap fd $ M.insert
+		(pangoFontDescriptionAxisTag @a)
+		(pangoFontDescriptionAxisToDouble a) as
+
+pangoFontDescriptionGetAxis :: forall a m .
+	(PangoFontDescriptionAxis a, PrimMonad m) =>
+	PangoFontDescription (PrimState m) -> m (Maybe a)
+pangoFontDescriptionGetAxis fd = do
+	as <- pangoFontDescriptionGetVariationsMap fd
+	pure $ pangoFontDescriptionAxisFromDouble
+		<$> M.lookup (pangoFontDescriptionAxisTag @a) as
+
 type Variations = M.Map BS.ByteString Double
 
 showVariations :: Variations -> BS.ByteString

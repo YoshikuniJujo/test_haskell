@@ -140,7 +140,7 @@ todo
 	+ [x] define `c_pango_font_description_get_variations`
 	+ [x] define `pangoFontDescriptionGetVariationsMap`
 		- `pangoFontDescription (PrimState m) -> m (Map BS.ByteString Double)`
-	+ [ ] define `class PangoFontDescriptionAxis a`
+	+ [x] define `class PangoFontDescriptionAxis a`
 		- pangoFontDescriptionSetAxis
 		- pangoFontDescriptionGetAxis
 	+ [ ] define axes
