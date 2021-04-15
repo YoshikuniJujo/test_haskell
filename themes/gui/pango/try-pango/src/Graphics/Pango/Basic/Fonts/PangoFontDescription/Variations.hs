@@ -17,6 +17,12 @@ import qualified Data.Map as M
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 
+pangoFontDescriptionSetVariationsMap :: PrimMonad m =>
+	PangoFontDescription (PrimState m) -> Variations -> m ()
+pangoFontDescriptionSetVariationsMap (PangoFontDescription ffd) v = unsafeIOToPrim
+	$ withForeignPtr ffd \pfd -> BS.useAsCString (showVariations v) \cv ->
+		c_pango_font_description_set_variations pfd cv
+
 type Variations = M.Map BS.ByteString Double
 
 showVariations :: Variations -> BS.ByteString

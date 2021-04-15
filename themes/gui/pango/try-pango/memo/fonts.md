@@ -135,7 +135,7 @@ todo
 * [ ] `pango_font_description_set_variations` and `pango_font_description_get_variations`
 	+ [x] define `readVariation :: BS.ByteString -> Map BS.ByteString Double`
 	+ [x] define `showVariation :: Map BS.ByteString Double -> BS.ByteString`
-	+ [ ] define `pangoFontDescriptionSetVariationsMap`
+	+ [x] define `pangoFontDescriptionSetVariationsMap`
 		- `PangoFontDescription (PrimState m) -> Map BS.ByteString Double -> m ()`
 	+ [ ] define `pangoFontDescriptionGetVariationsMap`
 		- `pangoFontDescription (PrimState m) -> m (Map BS.ByteString Double)`

@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -19,6 +19,8 @@ import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 
 import System.Environment
 
+import qualified Data.Map as M
+
 main :: IO ()
 main = getArgs >>= \case
 	opsz : _ -> do
@@ -29,7 +31,7 @@ main = getArgs >>= \case
 
 		pangoFontDescriptionSetFamily fd "Literata"
 		pangoFontDescriptionSet fd $ Size 20
-		pangoFontDescriptionSetVariation fd $ "opsz=" ++ (show (read opsz :: Double))
+		pangoFontDescriptionSetVariationsMap fd $ M.singleton "opsz" (read opsz)
 
 		pl <- pangoCairoCreateLayout cr
 		pangoLayoutSetFontDescription pl fd
