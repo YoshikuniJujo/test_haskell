@@ -13,7 +13,7 @@ import Graphics.Pango.Basic.LayoutObjects
 import Graphics.Pango.Basic.LayoutObjects.PangoLayoutPrim
 import Graphics.Pango.Rendering.Cairo
 
-import Graphics.Pango.Basic.Fonts
+import Graphics.Pango.Basic.Fonts.PangoFontDescription
 
 import System.Environment
 

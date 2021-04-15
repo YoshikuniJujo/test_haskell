@@ -120,7 +120,7 @@ todo
 * [x] define `pangoFontDescriptionGet`
 * [x] `pango_font_description_get_set_fields`
 * [x] define `pangoFontDescriptionUnset`
-* [ ] `pango_font_description_set_foo and pango_font_description_get_foo`
+* [x] `pango_font_description_set_foo and pango_font_description_get_foo`
 	+ [x] family
 		- [x] pangoFontDescriptionGet: check `set_fields`
 	+ [x] style
@@ -129,6 +129,9 @@ todo
 	+ [x] stretch
 	+ [x] size
 	+ [x] gravity
+* [x] make a module `Graphics.Pango.Basic.Fonts.PangoFontDescription`
+* [ ] make a module `Graphics.Pango.Basic.Fonts.PangoFontDescription.Type`
+* [ ] make a module `Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations`
 * [ ] `pango_font_description_set_variations` and `pango_font_description_get_variations`
 	+ [ ] define `readVariation :: BS.ByteString -> Map BS.ByteString Double`
 	+ [ ] define `showVariation :: Map BS.ByteString Double -> BS.ByteString`
