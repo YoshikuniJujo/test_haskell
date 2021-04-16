@@ -105,9 +105,8 @@ todo
 	+ [x] test customs
 * [x] `pango_font_description_merge`
 * [x] `pango_font_description_better_match`
-* [ ] `pango_font_description_from_string`
-* [ ] `pango_font_description_to_string`
-* [ ] `pango_font_description_to_filename`
+* [x] `pango_font_description_to_string`
+* [x] `pango_font_description_to_filename`
 
 not todo yet
 ------------
@@ -120,6 +119,7 @@ not todo yet
 * `pango_font_description_set_family_static`
 * `pango_font_description_set_variations_static`
 * `pango_font_description_merge_static`
+* `pango_font_description_from_string`
 
 five registered axes
 --------------------

@@ -43,6 +43,9 @@ main = getArgs >>= \case
 		case gr of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readGravity gr
 		print =<< pangoFontDescriptionGet @PangoGravity fd
 
+		putStrLn =<< pangoFontDescriptionToString fd
+		putStrLn =<< pangoFontDescriptionToFilename fd
+
 		pangoLayoutSetFontDescription pl fd
 		pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!\n\x1f9a5" 45
 

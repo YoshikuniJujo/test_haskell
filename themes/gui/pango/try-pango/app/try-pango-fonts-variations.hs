@@ -64,6 +64,8 @@ main = getArgs >>= \case
 		setAxisFromString fd Slab trmg
 		setAxisFromString fd InlineTerminal trmk
 		setAxisFromString fd WormTerminal trml
+		putStrLn =<< pangoFontDescriptionToString fd
+		putStrLn =<< pangoFontDescriptionToFilename fd
 
 		pl <- pangoCairoCreateLayout cr
 		pangoLayoutSetFontDescription pl fd
