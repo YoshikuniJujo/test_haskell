@@ -17,6 +17,8 @@ import qualified Data.Map as M
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 
+import Language.Haskell.TH
+
 class PangoFontDescriptionAxis a where
 	pangoFontDescriptionAxisTag :: BS.ByteString
 	pangoFontDescriptionAxisToDouble :: a -> Double
@@ -110,3 +112,7 @@ myPackCString cs | cs == nullPtr = pure "" | otherwise = BS.packCString cs
 foreign import ccall "pango_font_description_get_variations"
 	c_pango_font_description_get_variations ::
 	Ptr (PangoFontDescription s) -> IO CString
+
+pangoFontDescriptionAddAxisNewtype :: String -> DecQ
+pangoFontDescriptionAddAxisNewtype a =
+	newtypeD (cxt []) (mkName a) [] Nothing (recC (mkName a) []) []

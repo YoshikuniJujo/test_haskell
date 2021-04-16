@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b2fbf17bdb3d50b13bebf82b8b30e172942f4225d13642937638ec0c18d06e59
+-- hash: b40c2f8aa9593242efb1f8ac976eca73d3e338386d20e8a84b79d0441ace53ba
 
 name:           try-pango
 version:        0.1.0.0
@@ -54,6 +54,7 @@ library
     , nowdoc
     , primitive
     , simple-cairo
+    , template-haskell
   default-language: Haskell2010
 
 executable try-pango-context
@@ -74,6 +75,7 @@ executable try-pango-context
     , nowdoc
     , primitive
     , simple-cairo
+    , template-haskell
     , try-pango
   default-language: Haskell2010
 
@@ -94,6 +96,29 @@ executable try-pango-exe
     , nowdoc
     , primitive
     , simple-cairo
+    , template-haskell
+    , try-pango
+  default-language: Haskell2010
+
+executable try-pango-font-description-add-axis
+  main-is: try-pango-font-description-add-axis.hs
+  other-modules:
+      Main
+      Paths_try_pango
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , bytestring
+    , cairo-image
+    , containers
+    , nowdoc
+    , primitive
+    , simple-cairo
+    , template-haskell
     , try-pango
   default-language: Haskell2010
 
@@ -115,6 +140,7 @@ executable try-pango-fonts
     , nowdoc
     , primitive
     , simple-cairo
+    , template-haskell
     , try-pango
   default-language: Haskell2010
 
@@ -136,6 +162,7 @@ executable try-pango-fonts-literata
     , nowdoc
     , primitive
     , simple-cairo
+    , template-haskell
     , try-pango
   default-language: Haskell2010
 
@@ -157,6 +184,7 @@ executable try-pango-fonts-montserrat
     , nowdoc
     , primitive
     , simple-cairo
+    , template-haskell
     , try-pango
   default-language: Haskell2010
 
@@ -178,6 +206,7 @@ executable try-pango-fonts-soulcraft
     , nowdoc
     , primitive
     , simple-cairo
+    , template-haskell
     , try-pango
   default-language: Haskell2010
 
@@ -199,6 +228,7 @@ executable try-pango-fonts-source-han-sans-vf
     , nowdoc
     , primitive
     , simple-cairo
+    , template-haskell
     , try-pango
   default-language: Haskell2010
 
@@ -220,6 +250,7 @@ executable try-pango-fonts-unset
     , nowdoc
     , primitive
     , simple-cairo
+    , template-haskell
     , try-pango
   default-language: Haskell2010
 
@@ -241,6 +272,7 @@ executable try-pango-fonts-variations
     , nowdoc
     , primitive
     , simple-cairo
+    , template-haskell
     , try-pango
   default-language: Haskell2010
 
@@ -262,6 +294,7 @@ executable try-pango-layout
     , nowdoc
     , primitive
     , simple-cairo
+    , template-haskell
     , try-pango
   default-language: Haskell2010
 
@@ -283,6 +316,7 @@ executable try-pango-simple
     , nowdoc
     , primitive
     , simple-cairo
+    , template-haskell
     , try-pango
   default-language: Haskell2010
 
@@ -304,6 +338,7 @@ executable try-variations
     , nowdoc
     , primitive
     , simple-cairo
+    , template-haskell
     , try-pango
   default-language: Haskell2010
 
@@ -325,5 +360,6 @@ test-suite try-pango-test
     , nowdoc
     , primitive
     , simple-cairo
+    , template-haskell
     , try-pango
   default-language: Haskell2010
