@@ -149,6 +149,7 @@ todo
 		- [x] `Italic`
 		- [x] `Slant`
 		- [x] `OpticalSize`
+	+ [ ] define template `pangoFontDescriptionAddAxis`
 	+ [ ] test customs
 * [ ] `pango_font_description_merge`
 * [ ] `pango_font_description_better_match`
@@ -228,3 +229,24 @@ five registered axes
 * Italic (ital): 0 means roman letters and 1 means italic forms
 * Slant (slnt): value sets the slant angle in degrees (from -90 to 90)
 * Optical Size (opsz): a point size that the design can respond to
+
+Decovar font axes
+-----------------
+
+| tag  | name                 | default | min | max  |
+|------|----------------------|---------|-----|------|
+| BLDA | Inline               | 0       | 0   | 1000 |
+| BLDB | Worm                 | 0       | 0   | 1000 |
+| WMX2 | Weight               | 0       | 0   | 1000 |
+| SKLA | Inline Skeleton      | 0       | 0   | 1000 |
+| SKLB | Worm Skeleton        | 0       | 0   | 1000 |
+| SKLD | Stripes              | 0       | 0   | 1000 |
+| TRMA | Rounded              | 0       | 0   | 1000 |
+| TRMB | Flared               | 0       | 0   | 1000 |
+| TRMC | Rounded Slab         | 0       | 0   | 1000 |
+| TRMD | Sheared              | 0       | 0   | 1000 |
+| TRME | Bifurcated           | 0       | 0   | 1000 |
+| TRMF | Open Inline Terminal | 0       | 0   | 1000 |
+| TRMG | Slab                 | 0       | 0   | 1000 |
+| TRMK | Inline Terminal      | 0       | 0   | 1000 |
+| TRML | Worm Terminal        | 0       | 0   | 1000 |

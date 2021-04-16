@@ -20,28 +20,47 @@ import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 
 main :: IO ()
 main = getArgs >>= \case
-	skla : _ -> do
-		s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
+	blda : bldb : skla : _ -> do
+		s <- cairoImageSurfaceCreate cairoFormatArgb32 800 400
 		cr <- cairoCreate s
 
 		fd <- pangoFontDescriptionNew
 
 		pangoFontDescriptionSetFamily fd "Decovar Alpha"
-		pangoFontDescriptionSet fd $ Size 20
---	pangoFontDescriptionSetVariation fd "SKLA=1000,TRMG=750,WGHT=100"
---	pangoFontDescriptionSetVariation fd "TRMG=750"
---	pangoFontDescriptionSetVariation fd "TRMG=1000"
-		pangoFontDescriptionSetAxis fd . InlineSkeleton $ read skla
+		pangoFontDescriptionSet fd $ Size 80
+		case blda of
+			"-" -> pure ()
+			_ -> pangoFontDescriptionSetAxis fd . Inline $ read blda
+		case bldb of
+			"-" -> pure ()
+			_ -> pangoFontDescriptionSetAxis fd . Worm $ read bldb
+		case skla of
+			"-" -> pure ()
+			_ -> pangoFontDescriptionSetAxis fd . InlineSkeleton $ read skla
 
 		pl <- pangoCairoCreateLayout cr
 		pangoLayoutSetFontDescription pl fd
-		pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!" 40
+		pangoLayoutSetText pl "Hello, world!\nこんにちは世界!" 40
 		pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 		cairoImageSurfaceGetCairoImage s >>= \case
 			CairoImageArgb32 a -> writePng "try-pango-fonts-variations.png" $ cairoArgb32ToJuicyRGBA8 a
 			_ -> error "never occur"
-	_ -> error "need skla"
+	_ -> error "need blda and skla"
+
+newtype Inline = Inline { getInline :: Double } deriving Show
+
+instance PangoFontDescriptionAxis Inline where
+	pangoFontDescriptionAxisTag = "BLDA"
+	pangoFontDescriptionAxisToDouble = getInline
+	pangoFontDescriptionAxisFromDouble = Inline
+
+newtype Worm = Worm { getWorm :: Double } deriving Show
+
+instance PangoFontDescriptionAxis Worm where
+	pangoFontDescriptionAxisTag = "BLDB"
+	pangoFontDescriptionAxisToDouble = getWorm
+	pangoFontDescriptionAxisFromDouble = Worm
 
 newtype InlineSkeleton = InlineSkeleton { getInlineSkeleton :: Double } deriving Show
 
