@@ -51,8 +51,8 @@ todo
 		- [ ] change from `PangoLayout s` to `pangoLayout`
 	+ [ ] others
 * [ ] Basic Pango Interfaces
-	+ [x] Fonts
-		- [x] PangoFontDescription
+	+ [ ] Fonts
+		- [ ] PangoFontDescription
 	+ [ ] LayoutObjects
 	+ [ ] Text Attributes
 	+ [ ] Text Attribute Markup

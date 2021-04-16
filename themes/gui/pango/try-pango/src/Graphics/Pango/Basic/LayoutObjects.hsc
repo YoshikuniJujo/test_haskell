@@ -117,10 +117,6 @@ foreign import ccall "pango_layout_set_single_paragraph_mode"
 	c_pango_layout_set_single_paragraph_mode ::
 	Ptr (PangoLayoutPrim s) -> #{type gboolean} -> IO ()
 
-boolToGboolean :: Bool -> #type gboolean
-boolToGboolean False = #const FALSE
-boolToGboolean True = #const TRUE
-
 foreign import ccall "pango_layout_get_unknown_glyphs_count"
 	c_pango_layout_get_unknown_glyphs_count :: Ptr PangoLayout -> IO #type int
 

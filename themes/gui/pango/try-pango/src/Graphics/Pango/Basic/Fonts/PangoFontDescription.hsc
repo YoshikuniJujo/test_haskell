@@ -213,6 +213,10 @@ gbooleanToBool :: #{type gboolean} -> Bool
 gbooleanToBool #{const FALSE} = False
 gbooleanToBool _ = True
 
+boolToGboolean :: Bool -> #{type gboolean}
+boolToGboolean False = #{const FALSE}
+boolToGboolean True = #{const TRUE}
+
 foreign import ccall "pango_font_description_get_size_is_absolute"
 	c_pango_font_description_get_size_is_absolute ::
 	Ptr (PangoFontDescription s) -> IO #type gboolean
@@ -252,15 +256,27 @@ foreign import ccall "pango_font_description_get_set_fields"
 	c_pango_font_description_get_set_fields ::
 	Ptr (PangoFontDescription s) -> IO #type PangoFontMask
 
-foreign import ccall "pango_font_description_unset_fields"
-	c_pango_font_description_unset_fields ::
-	Ptr (PangoFontDescription s) -> #{type PangoFontMask} -> IO ()
-
 pangoFontDescriptionUnsetFields :: PrimMonad m =>
 	PangoFontDescription (PrimState m) -> PangoFontMask -> m ()
 pangoFontDescriptionUnsetFields (PangoFontDescription fpfd) (PangoFontMask msk) = unsafeIOToPrim
 	$ withForeignPtr fpfd \pfd ->
 		c_pango_font_description_unset_fields pfd msk
+
+foreign import ccall "pango_font_description_unset_fields"
+	c_pango_font_description_unset_fields ::
+	Ptr (PangoFontDescription s) -> #{type PangoFontMask} -> IO ()
+
+pangoFontDescriptionMerge :: PrimMonad m =>
+	PangoFontDescription (PrimState m) ->
+	PangoFontDescription (PrimState m) -> Bool -> m ()
+pangoFontDescriptionMerge (PangoFontDescription fdsc)
+	(PangoFontDescription fdsctm) re = unsafeIOToPrim
+	$ withForeignPtr fdsc \pdsc -> withForeignPtr fdsctm \pdsctm ->
+		c_pango_font_description_merge pdsc pdsctm $ boolToGboolean re
+
+foreign import ccall "pango_font_description_merge"
+	c_pango_font_description_merge ::
+	Ptr (PangoFontDescription s) -> Ptr (PangoFontDescription s) -> #{type gboolean} -> IO ()
 
 pangoFontDescriptionToString :: PrimMonad m =>
 	PangoFontDescription (PrimState m) -> m String

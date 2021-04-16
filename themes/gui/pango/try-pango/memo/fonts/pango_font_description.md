@@ -103,7 +103,7 @@ todo
 		- [x] `OpticalSize`
 	+ [x] define template `pangoFontDescriptionAddAxis`
 	+ [x] test customs
-* [ ] `pango_font_description_merge`
+* [x] `pango_font_description_merge`
 * [ ] `pango_font_description_better_match`
 * [ ] `pango_font_description_from_string`
 * [ ] `pango_font_description_to_string`
