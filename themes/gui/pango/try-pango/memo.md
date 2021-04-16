@@ -50,6 +50,8 @@ todo
 		- [x] pangoCairoShowLayout should use `IO`
 		- [ ] change from `PangoLayout s` to `pangoLayout`
 	+ [ ] others
+* [ ] rename `PangoFontDescription` to `PangoFontDescriptionPrim`
+* [ ] define `PangoFontDescription` and freezer
 * [ ] Basic Pango Interfaces
 	+ [x] Fonts
 		- [x] PangoFontDescription
