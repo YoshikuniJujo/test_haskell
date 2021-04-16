@@ -8,7 +8,7 @@ import Foreign.Concurrent
 
 import Graphics.Pango.Types (c_g_object_unref)
 
-newtype PangoContext s = PangoContext (ForeignPtr (PangoContext s)) deriving Show
+newtype PangoContext = PangoContext (ForeignPtr PangoContext) deriving Show
 
-mkPangoContext :: Ptr (PangoContext s) -> IO (PangoContext s)
+mkPangoContext :: Ptr PangoContext -> IO PangoContext
 mkPangoContext p = PangoContext <$> newForeignPtr p (c_g_object_unref p)

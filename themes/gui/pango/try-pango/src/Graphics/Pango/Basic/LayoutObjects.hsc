@@ -27,10 +27,9 @@ import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 #include <pango/pango.h>
 
 foreign import ccall "pango_layout_new" c_pango_layout_new ::
-	Ptr (PangoContext s) -> IO (Ptr (PangoLayoutPrim s))
+	Ptr PangoContext -> IO (Ptr (PangoLayoutPrim s))
 
-pangoLayoutNew :: PrimMonad m =>
-	PangoContext (PrimState m) -> m (PangoLayoutPrim (PrimState m))
+pangoLayoutNew :: PangoContext -> IO (PangoLayoutPrim RealWorld)
 pangoLayoutNew (PangoContext fpc) = unsafeIOToPrim $ withForeignPtr fpc \pc ->
 	mkPangoLayoutPrim =<< c_pango_layout_new pc
 

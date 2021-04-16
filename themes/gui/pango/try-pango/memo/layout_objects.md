@@ -10,5 +10,5 @@ todo
 * [x] define `PangoLayoutPrim s`
 * [x] make `pangoLayoutNew` to return `PangoLayoutPrim (PrimState m)`
 * [x] make `pangoLayoutSetFontDescription` to use `PangoFontDescriptionPrim (PrimState m)` as argument
-* [ ] remove `PangoFontDescription`
-* [ ] rename `PangoFontDescriptionPrim (PrimState m)` to `PangoFontDescription (PrimState m)`
+* [x] remove `PangoFontDescription`
+* [x] rename `PangoFontDescriptionPrim (PrimState m)` to `PangoFontDescription (PrimState m)`

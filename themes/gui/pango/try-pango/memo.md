@@ -8,6 +8,8 @@ structure
 	+ Rendering
 	+ Glyph Storage
 	+ Fonts
+		- PangoFontDescription
+		- others
 	+ Text Attributes
 	+ Tab Stops
 	+ Text Attribute Markup
@@ -41,9 +43,16 @@ todo
 * [ ] organize about PrimMonad, IO and freeze
 	+ [x] remove branch tmp
 	+ [x] make branch: prim-and-io
+	+ [ ] PangoContext and PangoLayout should use `IO` instead of `PrimMonad m => m`
+		- [x] pangoCairoCreateContext should use `IO`
+		- [x] change from `PangoContext s` to `PangoContext`
+		- [ ] pangoCairoCreateLayout should use `IO`
+		- [ ] pangoCairoShowLayout should use `IO`
+		- [ ] change from `PangoLayout s` to `pangoLayout`
 	+ [ ] others
 * [ ] Basic Pango Interfaces
 	+ [ ] Fonts
+		- [ ] PangoFontDescription
 	+ [ ] LayoutObjects
 	+ [ ] Text Attributes
 	+ [ ] Text Attribute Markup
@@ -61,6 +70,8 @@ not do it yet
 
 * Basic Pango Interfaces
 	+ Rendering
+	+ Fonts
+		- others
 	+ Glyph Storage
 * Rendering with Pango
 	+ Win32 Fonts and Rendering

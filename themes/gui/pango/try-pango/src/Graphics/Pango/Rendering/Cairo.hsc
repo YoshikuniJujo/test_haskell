@@ -15,19 +15,19 @@ import Data.CairoContext
 import Graphics.Pango.Basic.Rendering
 import Graphics.Pango.Basic.LayoutObjects.PangoLayoutPrim
 
-pangoCairoCreateContext :: PrimMonad m => CairoT (PrimState m) -> m (PangoContext (PrimState m))
-pangoCairoCreateContext (CairoT fcr) = unsafeIOToPrim $ withForeignPtr fcr \cr ->
+pangoCairoCreateContext :: CairoT RealWorld -> IO PangoContext
+pangoCairoCreateContext (CairoT fcr) = withForeignPtr fcr \cr ->
 	mkPangoContext =<< c_pango_cairo_create_context cr
 
 foreign import ccall "pango_cairo_create_context"
-	c_pango_cairo_create_context :: Ptr (CairoT s) -> IO (Ptr (PangoContext s))
+	c_pango_cairo_create_context :: Ptr (CairoT s) -> IO (Ptr PangoContext)
 
 foreign import ccall "pango_cairo_update_context"
-	c_pango_cairo_update_context :: Ptr (CairoT s) -> Ptr (PangoContext s) -> IO ()
+	c_pango_cairo_update_context :: Ptr (CairoT s) -> Ptr PangoContext -> IO ()
 
-pangoCairoUpdateContext :: PrimMonad m => CairoT (PrimState m) -> PangoContext (PrimState m) -> m ()
-pangoCairoUpdateContext (CairoT fcr) (PangoContext fpc) = unsafeIOToPrim
-	$ withForeignPtr fcr \cr -> withForeignPtr fpc \pc ->
+pangoCairoUpdateContext :: CairoT RealWorld -> PangoContext -> IO ()
+pangoCairoUpdateContext (CairoT fcr) (PangoContext fpc) =
+	withForeignPtr fcr \cr -> withForeignPtr fpc \pc ->
 		c_pango_cairo_update_context cr pc
 
 pangoCairoCreateLayout :: PrimMonad m => CairoT (PrimState m) -> m (PangoLayoutPrim (PrimState m))
