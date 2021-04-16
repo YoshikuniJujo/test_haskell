@@ -46,13 +46,13 @@ todo
 	+ [ ] PangoContext and PangoLayout should use `IO` instead of `PrimMonad m => m`
 		- [x] pangoCairoCreateContext should use `IO`
 		- [x] change from `PangoContext s` to `PangoContext`
-		- [ ] pangoCairoCreateLayout should use `IO`
-		- [ ] pangoCairoShowLayout should use `IO`
+		- [x] pangoCairoCreateLayout should use `IO`
+		- [x] pangoCairoShowLayout should use `IO`
 		- [ ] change from `PangoLayout s` to `pangoLayout`
 	+ [ ] others
 * [ ] Basic Pango Interfaces
-	+ [ ] Fonts
-		- [ ] PangoFontDescription
+	+ [x] Fonts
+		- [x] PangoFontDescription
 	+ [ ] LayoutObjects
 	+ [ ] Text Attributes
 	+ [ ] Text Attribute Markup
