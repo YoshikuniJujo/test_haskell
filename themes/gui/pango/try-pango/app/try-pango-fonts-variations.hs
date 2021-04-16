@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE LambdaCase, OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -17,6 +18,10 @@ import Graphics.Pango.Rendering.Cairo
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
+
+pangoFontDescriptionAddAxis "Inline" "BLDA"
+pangoFontDescriptionAddAxis "Worm" "BLDB"
+pangoFontDescriptionAddAxis "InlineSkeleton" "SKLA"
 
 main :: IO ()
 main = getArgs >>= \case
@@ -47,24 +52,3 @@ main = getArgs >>= \case
 			CairoImageArgb32 a -> writePng "try-pango-fonts-variations.png" $ cairoArgb32ToJuicyRGBA8 a
 			_ -> error "never occur"
 	_ -> error "need blda and skla"
-
-newtype Inline = Inline { getInline :: Double } deriving Show
-
-instance PangoFontDescriptionAxis Inline where
-	pangoFontDescriptionAxisTag = "BLDA"
-	pangoFontDescriptionAxisToDouble = getInline
-	pangoFontDescriptionAxisFromDouble = Inline
-
-newtype Worm = Worm { getWorm :: Double } deriving Show
-
-instance PangoFontDescriptionAxis Worm where
-	pangoFontDescriptionAxisTag = "BLDB"
-	pangoFontDescriptionAxisToDouble = getWorm
-	pangoFontDescriptionAxisFromDouble = Worm
-
-newtype InlineSkeleton = InlineSkeleton { getInlineSkeleton :: Double } deriving Show
-
-instance PangoFontDescriptionAxis InlineSkeleton where
-	pangoFontDescriptionAxisTag = "SKLA"
-	pangoFontDescriptionAxisToDouble = getInlineSkeleton
-	pangoFontDescriptionAxisFromDouble = InlineSkeleton

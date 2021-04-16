@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
@@ -113,6 +114,22 @@ foreign import ccall "pango_font_description_get_variations"
 	c_pango_font_description_get_variations ::
 	Ptr (PangoFontDescription s) -> IO CString
 
+pangoFontDescriptionAddAxis :: String -> String -> DecsQ
+pangoFontDescriptionAddAxis a t = (\n i -> [n, i])
+	<$> pangoFontDescriptionAddAxisNewtype a
+	<*> pangoFontDescriptionAddAxisInstance a t
+
 pangoFontDescriptionAddAxisNewtype :: String -> DecQ
 pangoFontDescriptionAddAxisNewtype a =
-	newtypeD (cxt []) (mkName a) [] Nothing (recC (mkName a) []) []
+	newtypeD (cxt [])
+		(mkName a) [] Nothing (recC (mkName a) [
+			varBangType (mkName $ "get" ++ a)
+				$ bangType (bang noSourceUnpackedness noSourceStrictness) (conT ''Double) ])
+		[derivClause Nothing [conT ''Show]]
+
+pangoFontDescriptionAddAxisInstance :: String -> String -> DecQ
+pangoFontDescriptionAddAxisInstance a t = instanceD (cxt []) (conT ''PangoFontDescriptionAxis `appT` conT (mkName a)) [
+	valD (varP 'pangoFontDescriptionAxisTag) (normalB . litE $ StringL t) [],
+	valD (varP 'pangoFontDescriptionAxisToDouble) (normalB . varE . mkName $ "get" ++ a) [],
+	valD (varP 'pangoFontDescriptionAxisFromDouble) (normalB . conE $ mkName a) []
+	]
