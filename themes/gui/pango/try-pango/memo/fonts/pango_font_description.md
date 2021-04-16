@@ -108,7 +108,7 @@ todo
 * [x] `pango_font_description_to_string`
 * [x] `pango_font_description_to_filename`
 * [x] rename `PangoFontDescription` to `PangoFontDescriptionPrim`
-* [ ] define `PangoFontDescription`
+* [x] define `PangoFontDescription`
 * [ ] define `pangoFontDescriptionFreeze`
 * [ ] define `pangoFontDescriptionThaw`
 
