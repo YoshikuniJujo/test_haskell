@@ -33,9 +33,9 @@ pangoLayoutNew :: PangoContext -> IO (PangoLayoutPrim RealWorld)
 pangoLayoutNew (PangoContext fpc) = unsafeIOToPrim $ withForeignPtr fpc \pc ->
 	mkPangoLayoutPrim =<< c_pango_layout_new pc
 
-pangoLayoutSetText :: PrimMonad m => PangoLayoutPrim (PrimState m) -> String -> #{type int} -> m ()
-pangoLayoutSetText (PangoLayoutPrim fpl) s n = unsafeIOToPrim
-	$ withForeignPtr fpl \pl -> withCString s \cs ->
+pangoLayoutSetText :: PangoLayoutPrim RealWorld -> String -> #{type int} -> IO ()
+pangoLayoutSetText (PangoLayoutPrim fpl) s n =
+	withForeignPtr fpl \pl -> withCString s \cs ->
 		c_pango_layout_set_text pl cs n
 
 foreign import ccall "pango_layout_set_text" c_pango_layout_set_text ::
