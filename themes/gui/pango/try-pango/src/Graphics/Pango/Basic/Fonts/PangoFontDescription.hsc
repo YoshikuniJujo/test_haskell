@@ -278,6 +278,26 @@ foreign import ccall "pango_font_description_merge"
 	c_pango_font_description_merge ::
 	Ptr (PangoFontDescription s) -> Ptr (PangoFontDescription s) -> #{type gboolean} -> IO ()
 
+pangoFontDescriptionBetterMatch :: PrimMonad m =>
+	PangoFontDescription (PrimState m) ->
+	Maybe (PangoFontDescription (PrimState m)) ->
+	PangoFontDescription (PrimState m) -> m Bool
+pangoFontDescriptionBetterMatch
+	(PangoFontDescription fdsc) mom (PangoFontDescription fnm) = unsafeIOToPrim
+	$ gbooleanToBool <$> withForeignPtr fdsc \pdsc -> withMaybePangoFontDescription mom \pom -> withForeignPtr fnm \pnm ->
+		c_pango_font_description_better_match pdsc pom pnm
+
+withMaybePangoFontDescription ::
+	Maybe (PangoFontDescription s) -> (Ptr (PangoFontDescription s) -> IO a) -> IO a
+withMaybePangoFontDescription = \case
+	Nothing -> ($ nullPtr)
+	Just (PangoFontDescription ffd) -> withForeignPtr ffd
+
+foreign import ccall "pango_font_description_better_match"
+	c_pango_font_description_better_match ::
+	Ptr (PangoFontDescription s) -> Ptr (PangoFontDescription s) ->
+	Ptr (PangoFontDescription s) -> IO #{type gboolean}
+
 pangoFontDescriptionToString :: PrimMonad m =>
 	PangoFontDescription (PrimState m) -> m String
 pangoFontDescriptionToString (PangoFontDescription fpfd) = unsafeIOToPrim

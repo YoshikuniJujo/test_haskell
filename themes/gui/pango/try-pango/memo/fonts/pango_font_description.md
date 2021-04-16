@@ -104,7 +104,7 @@ todo
 	+ [x] define template `pangoFontDescriptionAddAxis`
 	+ [x] test customs
 * [x] `pango_font_description_merge`
-* [ ] `pango_font_description_better_match`
+* [x] `pango_font_description_better_match`
 * [ ] `pango_font_description_from_string`
 * [ ] `pango_font_description_to_string`
 * [ ] `pango_font_description_to_filename`
