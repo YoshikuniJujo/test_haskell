@@ -132,7 +132,7 @@ todo
 * [x] make a module `Graphics.Pango.Basic.Fonts.PangoFontDescription`
 * [x] make a module `Graphics.Pango.Basic.Fonts.PangoFontDescription.Type`
 * [x] make a module `Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations`
-* [ ] `pango_font_description_set_variations` and `pango_font_description_get_variations`
+* [x] `pango_font_description_set_variations` and `pango_font_description_get_variations`
 	+ [x] define `readVariation :: BS.ByteString -> Map BS.ByteString Double`
 	+ [x] define `showVariation :: Map BS.ByteString Double -> BS.ByteString`
 	+ [x] define `pangoFontDescriptionSetVariationsMap`
@@ -149,8 +149,8 @@ todo
 		- [x] `Italic`
 		- [x] `Slant`
 		- [x] `OpticalSize`
-	+ [ ] define template `pangoFontDescriptionAddAxis`
-	+ [ ] test customs
+	+ [x] define template `pangoFontDescriptionAddAxis`
+	+ [x] test customs
 * [ ] `pango_font_description_merge`
 * [ ] `pango_font_description_better_match`
 * [ ] `pango_font_description_from_string`
