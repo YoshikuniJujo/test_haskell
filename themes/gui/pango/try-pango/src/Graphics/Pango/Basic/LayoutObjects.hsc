@@ -56,9 +56,9 @@ pangoLayoutSetFontDescription (PangoLayoutPrim fpl) (PangoFontDescription fpfd) 
 foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font_description ::
 	Ptr (PangoLayoutPrim s) -> Ptr (PangoFontDescription s) -> IO ()
 
-pangoLayoutSetWidth :: PrimMonad m => PangoLayoutPrim (PrimState m) -> #{type int} -> m ()
-pangoLayoutSetWidth (PangoLayoutPrim fpl) w = unsafeIOToPrim
-	$ withForeignPtr fpl \pl -> c_pango_layout_set_width pl w
+pangoLayoutSetWidth :: PangoLayoutPrim RealWorld -> #{type int} -> IO ()
+pangoLayoutSetWidth (PangoLayoutPrim fpl) w =
+	withForeignPtr fpl \pl -> c_pango_layout_set_width pl w
 
 foreign import ccall "pango_layout_set_width" c_pango_layout_set_width ::
 	Ptr (PangoLayoutPrim s) -> #{type int} -> IO ()
