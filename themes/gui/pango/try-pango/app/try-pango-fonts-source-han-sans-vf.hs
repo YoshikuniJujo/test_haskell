@@ -5,6 +5,8 @@
 module Main where
 
 import Data.Foldable
+import Data.Maybe
+import Data.Color
 import Data.CairoImage
 import Data.JuicyCairo
 import Codec.Picture
@@ -23,13 +25,15 @@ import Graphics.Cairo.Drawing.Paths
 
 main :: IO ()
 main = do
-	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 1120
-	cr <- cairoCreate s
-
 	fd <- pangoFontDescriptionNew
 	pangoFontDescriptionSetFamily fd "Source Han Sans VF"
 	pangoFontDescriptionSet fd $ Size 20
 
+	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 1120
+	cr <- cairoCreate s
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 1 1 1
+	cairoPaint cr
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0 0
 	pl <- pangoCairoCreateLayout cr
 	pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!\n" 40
 	for_ (zip [0, 80 ..] [250, 300 .. 900]) \(y, w) -> do
