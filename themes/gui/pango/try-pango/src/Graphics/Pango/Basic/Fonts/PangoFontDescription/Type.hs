@@ -10,20 +10,22 @@ import Foreign.ForeignPtr hiding (newForeignPtr, addForeignPtrFinalizer)
 import Foreign.Concurrent
 import Control.Monad.Primitive
 
-newtype PangoFontDescription s =
-	PangoFontDescription (ForeignPtr (PangoFontDescription s)) deriving Show
+newtype PangoFontDescriptionPrim s =
+	PangoFontDescriptionPrim (ForeignPtr (PangoFontDescriptionPrim s))
+	deriving Show
 
-pangoFontDescriptionNew :: PrimMonad m => m (PangoFontDescription (PrimState m))
+pangoFontDescriptionNew ::
+	PrimMonad m => m (PangoFontDescriptionPrim (PrimState m))
 pangoFontDescriptionNew = unsafeIOToPrim
-	$ mkPangoFontDescription =<< c_pango_font_description_new
+	$ mkPangoFontDescriptionPrim =<< c_pango_font_description_new
 
 foreign import ccall "pango_font_description_new"
-	c_pango_font_description_new :: IO (Ptr (PangoFontDescription s))
+	c_pango_font_description_new :: IO (Ptr (PangoFontDescriptionPrim s))
 
-mkPangoFontDescription ::
-	Ptr (PangoFontDescription s) -> IO (PangoFontDescription s)
-mkPangoFontDescription p = PangoFontDescription
+mkPangoFontDescriptionPrim ::
+	Ptr (PangoFontDescriptionPrim s) -> IO (PangoFontDescriptionPrim s)
+mkPangoFontDescriptionPrim p = PangoFontDescriptionPrim
 	<$> newForeignPtr p (c_pango_font_description_free p)
 
 foreign import ccall "pango_font_description_free"
-	c_pango_font_description_free :: Ptr (PangoFontDescription s) -> IO ()
+	c_pango_font_description_free :: Ptr (PangoFontDescriptionPrim s) -> IO ()

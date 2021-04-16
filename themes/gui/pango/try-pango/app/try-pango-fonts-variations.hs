@@ -78,7 +78,7 @@ main = getArgs >>= \case
 	_ -> error "need blda and skla"
 
 setAxisFromString :: (PangoFontDescriptionAxis a, PrimMonad m) =>
-	PangoFontDescription (PrimState m) -> (Double -> a) -> String -> m ()
+	PangoFontDescriptionPrim (PrimState m) -> (Double -> a) -> String -> m ()
 setAxisFromString fd mk = \case
 	a | all ((||) <$> isDigit <*> (== '.')) a -> pangoFontDescriptionSetAxis fd . mk $ read a
 	_ -> pure ()

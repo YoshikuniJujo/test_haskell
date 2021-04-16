@@ -48,13 +48,13 @@ pangoLayoutGetText :: PangoLayout -> String
 pangoLayoutGetText (PangoLayout fpl) = unsafePerformIO
 	$ withForeignPtr fpl \pl -> peekCString =<< c_pango_layout_get_text pl
 
-pangoLayoutSetFontDescription :: PrimMonad m => PangoLayoutPrim (PrimState m) -> PangoFontDescription (PrimState m) -> m ()
-pangoLayoutSetFontDescription (PangoLayoutPrim fpl) (PangoFontDescription fpfd) = unsafeIOToPrim
+pangoLayoutSetFontDescription :: PrimMonad m => PangoLayoutPrim (PrimState m) -> PangoFontDescriptionPrim (PrimState m) -> m ()
+pangoLayoutSetFontDescription (PangoLayoutPrim fpl) (PangoFontDescriptionPrim fpfd) = unsafeIOToPrim
 	$ withForeignPtr fpl \pl -> withForeignPtr fpfd \pfd ->
 		c_pango_layout_set_font_description pl pfd
 
 foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font_description ::
-	Ptr (PangoLayoutPrim s) -> Ptr (PangoFontDescription s) -> IO ()
+	Ptr (PangoLayoutPrim s) -> Ptr (PangoFontDescriptionPrim s) -> IO ()
 
 pangoLayoutSetWidth :: PangoLayoutPrim RealWorld -> #{type int} -> IO ()
 pangoLayoutSetWidth (PangoLayoutPrim fpl) w =

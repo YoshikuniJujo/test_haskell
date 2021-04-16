@@ -107,6 +107,10 @@ todo
 * [x] `pango_font_description_better_match`
 * [x] `pango_font_description_to_string`
 * [x] `pango_font_description_to_filename`
+* [x] rename `PangoFontDescription` to `PangoFontDescriptionPrim`
+* [ ] define `PangoFontDescription`
+* [ ] define `pangoFontDescriptionFreeze`
+* [ ] define `pangoFontDescriptionThaw`
 
 not todo yet
 ------------

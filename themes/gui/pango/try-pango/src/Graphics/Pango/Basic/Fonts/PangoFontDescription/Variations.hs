@@ -27,7 +27,7 @@ class PangoFontDescriptionAxis a where
 
 pangoFontDescriptionSetAxis :: forall a m .
 	(PangoFontDescriptionAxis a, PrimMonad m) =>
-	PangoFontDescription (PrimState m) -> a -> m ()
+	PangoFontDescriptionPrim (PrimState m) -> a -> m ()
 pangoFontDescriptionSetAxis fd a = do
 	as <- pangoFontDescriptionGetVariationsMap fd
 	pangoFontDescriptionSetVariationsMap fd $ M.insert
@@ -36,7 +36,7 @@ pangoFontDescriptionSetAxis fd a = do
 
 pangoFontDescriptionGetAxis :: forall a m .
 	(PangoFontDescriptionAxis a, PrimMonad m) =>
-	PangoFontDescription (PrimState m) -> m (Maybe a)
+	PangoFontDescriptionPrim (PrimState m) -> m (Maybe a)
 pangoFontDescriptionGetAxis fd = do
 	as <- pangoFontDescriptionGetVariationsMap fd
 	pure $ pangoFontDescriptionAxisFromDouble
@@ -86,24 +86,24 @@ readVariations :: BS.ByteString -> Variations
 readVariations = M.fromList . ((\[a, v] -> (a, read $ BSC.unpack v)) . BSC.split '=' <$>) . BSC.split ','
 
 pangoFontDescriptionSetVariationsMap :: PrimMonad m =>
-	PangoFontDescription (PrimState m) -> Variations -> m ()
-pangoFontDescriptionSetVariationsMap (PangoFontDescription ffd) v = unsafeIOToPrim
+	PangoFontDescriptionPrim (PrimState m) -> Variations -> m ()
+pangoFontDescriptionSetVariationsMap (PangoFontDescriptionPrim ffd) v = unsafeIOToPrim
 	$ withForeignPtr ffd \pfd -> BS.useAsCString (showVariations v) \cv ->
 		c_pango_font_description_set_variations pfd cv
 
 pangoFontDescriptionSetVariation :: PrimMonad m =>
-	PangoFontDescription (PrimState m) -> String -> m ()
-pangoFontDescriptionSetVariation (PangoFontDescription fpfd) f = unsafeIOToPrim
+	PangoFontDescriptionPrim (PrimState m) -> String -> m ()
+pangoFontDescriptionSetVariation (PangoFontDescriptionPrim fpfd) f = unsafeIOToPrim
 	$ withForeignPtr fpfd \pfd -> withCString f \cf ->
 		c_pango_font_description_set_variations pfd cf
 
 foreign import ccall "pango_font_description_set_variations"
 	c_pango_font_description_set_variations ::
-	Ptr (PangoFontDescription s) -> CString -> IO ()
+	Ptr (PangoFontDescriptionPrim s) -> CString -> IO ()
 
 pangoFontDescriptionGetVariationsMap :: PrimMonad m =>
-	PangoFontDescription (PrimState m) -> m Variations
-pangoFontDescriptionGetVariationsMap (PangoFontDescription ffd) = unsafeIOToPrim
+	PangoFontDescriptionPrim (PrimState m) -> m Variations
+pangoFontDescriptionGetVariationsMap (PangoFontDescriptionPrim ffd) = unsafeIOToPrim
 	$ withForeignPtr ffd \pfd -> readVariations <$>
 		(myPackCString =<< c_pango_font_description_get_variations pfd)
 
@@ -112,7 +112,7 @@ myPackCString cs | cs == nullPtr = pure "" | otherwise = BS.packCString cs
 
 foreign import ccall "pango_font_description_get_variations"
 	c_pango_font_description_get_variations ::
-	Ptr (PangoFontDescription s) -> IO CString
+	Ptr (PangoFontDescriptionPrim s) -> IO CString
 
 pangoFontDescriptionAddAxis :: String -> String -> DecsQ
 pangoFontDescriptionAddAxis a t = (\n i -> [n, i])
