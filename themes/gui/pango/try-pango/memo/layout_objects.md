@@ -13,6 +13,8 @@ todo
 * [x] remove `PangoFontDescription`
 * [x] rename `PangoFontDescriptionPrim (PrimState m)` to `PangoFontDescription (PrimState m)`
 * [ ] use `IO` instead of `PrimMonad m => m`
+	+ [ ] pangoLayoutSetIndent
+	+ [ ] pangoLayoutSetAlignment
 * [ ] change from `PangoLayoutPrim s` to `PangoLayoutPrim`
 * [ ] remove `PangoLayout`
 * [ ] rename `PangoLayoutPrim` to `PangoLayout`

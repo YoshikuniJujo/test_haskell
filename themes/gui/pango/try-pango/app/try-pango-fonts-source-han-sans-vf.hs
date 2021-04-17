@@ -38,8 +38,9 @@ main = do
 	pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!\n" 40
 	for_ (zip [0, 80 ..] [250, 300 .. 900]) \(y, w) -> do
 		pangoFontDescriptionSetAxis fd $ Weight w
-		print =<< pangoFontDescriptionGetAxis @Weight fd
-		pangoLayoutSetFontDescription pl =<< pangoFontDescriptionFreeze fd
+		fd' <- pangoFontDescriptionFreeze fd
+		print $ pangoFontDescriptionGetAxis @Weight fd'
+		pangoLayoutSetFontDescription pl fd'
 		cairoMoveTo cr 0 y
 		pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 

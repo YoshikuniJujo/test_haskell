@@ -33,12 +33,15 @@ main = getArgs >>= \case
 		pangoFontDescriptionSet fd $ Size 20
 		pangoFontDescriptionSetVariation fd "wght=500"
 		pangoFontDescriptionSetAxis fd . Width $ read wdth
-		print =<< pangoFontDescriptionGetAxis @Width fd
 		pangoFontDescriptionSetAxis fd . Slant $ read slnt
-		print =<< pangoFontDescriptionGetAxis @Slant fd
+
+		fd' <- pangoFontDescriptionFreeze fd
+
+		print $ pangoFontDescriptionGetAxis @Width fd'
+		print $ pangoFontDescriptionGetAxis @Slant fd'
 
 		pl <- pangoCairoCreateLayout cr
-		pangoLayoutSetFontDescription pl =<< pangoFontDescriptionFreeze fd
+		pangoLayoutSetFontDescription pl fd'
 		pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!" 40
 		pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 

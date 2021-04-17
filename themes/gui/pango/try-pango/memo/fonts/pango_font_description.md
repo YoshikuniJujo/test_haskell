@@ -111,6 +111,9 @@ todo
 * [x] define `PangoFontDescription`
 * [x] define `pangoFontDescriptionFreeze`
 * [x] define `pangoFontDescriptionThaw`
+* [ ] use `PangoFontDescription`
+	+ [ ] pangoFontDescriptionGet
+	+ [x] pangoFontDescriptionGetAxis
 
 not todo yet
 ------------

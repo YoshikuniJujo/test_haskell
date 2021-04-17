@@ -20,6 +20,8 @@ import qualified Data.ByteString.Char8 as BSC
 
 import Language.Haskell.TH
 
+import System.IO.Unsafe
+
 class PangoFontDescriptionAxis a where
 	pangoFontDescriptionAxisTag :: BS.ByteString
 	pangoFontDescriptionAxisToDouble :: a -> Double
@@ -34,11 +36,10 @@ pangoFontDescriptionSetAxis fd a = do
 		(pangoFontDescriptionAxisTag @a)
 		(pangoFontDescriptionAxisToDouble a) as
 
-pangoFontDescriptionGetAxis :: forall a m .
-	(PangoFontDescriptionAxis a, PrimMonad m) =>
-	PangoFontDescriptionPrim (PrimState m) -> m (Maybe a)
-pangoFontDescriptionGetAxis fd = do
-	as <- pangoFontDescriptionGetVariationsMap fd
+pangoFontDescriptionGetAxis ::
+	forall a . PangoFontDescriptionAxis a => PangoFontDescription -> Maybe a
+pangoFontDescriptionGetAxis fd = unsafePerformIO do
+	as <- pangoFontDescriptionGetVariationsMap =<< pangoFontDescriptionThaw fd
 	pure $ pangoFontDescriptionAxisFromDouble
 		<$> M.lookup (pangoFontDescriptionAxisTag @a) as
 

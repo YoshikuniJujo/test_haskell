@@ -31,10 +31,12 @@ main = getArgs >>= \case
 		pangoFontDescriptionSetFamily fd "Montserrat"
 		pangoFontDescriptionSet fd $ Size 20
 		pangoFontDescriptionSetAxis fd . Weight $ read wght
-		print =<< pangoFontDescriptionGetAxis @Weight fd
+
+		fd' <- pangoFontDescriptionFreeze fd
+		print $ pangoFontDescriptionGetAxis @Weight fd'
 
 		pl <- pangoCairoCreateLayout cr
-		pangoLayoutSetFontDescription pl =<< pangoFontDescriptionFreeze fd
+		pangoLayoutSetFontDescription pl fd'
 		pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!" 40
 		pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
