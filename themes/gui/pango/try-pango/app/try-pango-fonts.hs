@@ -46,7 +46,7 @@ main = getArgs >>= \case
 		putStrLn =<< pangoFontDescriptionToString fd
 		putStrLn =<< pangoFontDescriptionToFilename fd
 
-		pangoLayoutSetFontDescription pl fd
+		pangoLayoutSetFontDescription pl =<< pangoFontDescriptionFreeze fd
 		pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!\n\x1f9a5" 45
 
 		pangoCairoShowLayout cr =<< pangoLayoutFreeze pl

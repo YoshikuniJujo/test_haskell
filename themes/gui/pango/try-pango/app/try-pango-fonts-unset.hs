@@ -44,7 +44,7 @@ main = getArgs >>= \case
 		pangoFontDescriptionUnset @PangoStretch fd
 		print =<< pangoFontDescriptionGet @PangoStretch fd
 
-		pangoLayoutSetFontDescription pl fd
+		pangoLayoutSetFontDescription pl =<< pangoFontDescriptionFreeze fd
 		pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!\x1f9a5" 45
 
 		pangoCairoShowLayout cr =<< pangoLayoutFreeze pl

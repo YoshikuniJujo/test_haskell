@@ -38,7 +38,7 @@ main = getArgs >>= \case
 		print =<< pangoFontDescriptionGetAxis @Slant fd
 
 		pl <- pangoCairoCreateLayout cr
-		pangoLayoutSetFontDescription pl fd
+		pangoLayoutSetFontDescription pl =<< pangoFontDescriptionFreeze fd
 		pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!" 40
 		pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
