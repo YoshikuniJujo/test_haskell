@@ -41,3 +41,23 @@ mkPangoFontDescription p = PangoFontDescription
 
 foreign import ccall "pango_font_description_free"
 	c_pango_font_description_free :: Ptr PangoFontDescription -> IO ()
+
+pangoFontDescriptionFreeze :: PrimMonad m =>
+	PangoFontDescriptionPrim (PrimState m) -> m PangoFontDescription
+pangoFontDescriptionFreeze (PangoFontDescriptionPrim ffd) =
+	unsafeIOToPrim $ mkPangoFontDescription
+		=<< withForeignPtr ffd c_pango_font_description_freeze
+
+foreign import ccall "pango_font_description_copy"
+	c_pango_font_description_freeze ::
+	Ptr (PangoFontDescriptionPrim s) -> IO (Ptr PangoFontDescription)
+
+pangoFontDescriptionThaw :: PrimMonad m =>
+	PangoFontDescription -> m (PangoFontDescriptionPrim (PrimState m))
+pangoFontDescriptionThaw (PangoFontDescription ffd) =
+	unsafeIOToPrim $ mkPangoFontDescriptionPrim
+		=<< withForeignPtr ffd c_pango_font_description_thaw
+
+foreign import ccall "pango_font_description_copy"
+	c_pango_font_description_thaw ::
+	Ptr PangoFontDescription -> IO (Ptr (PangoFontDescriptionPrim s))
