@@ -71,9 +71,9 @@ pangoLayoutGetWidth :: PangoLayout -> #type int
 pangoLayoutGetWidth (PangoLayout fpl) = unsafePerformIO
 	$ withForeignPtr fpl c_pango_layout_get_width
 
-pangoLayoutSetEllipsize :: PrimMonad m => PangoLayoutPrim (PrimState m) -> PangoEllipsizeMode -> m ()
-pangoLayoutSetEllipsize (PangoLayoutPrim fpl) (PangoEllipsizeMode pem) = unsafeIOToPrim
-	$ withForeignPtr fpl \pl -> c_pango_layout_set_ellipsize pl pem
+pangoLayoutSetEllipsize :: PangoLayoutPrim RealWorld -> PangoEllipsizeMode -> IO ()
+pangoLayoutSetEllipsize (PangoLayoutPrim fpl) (PangoEllipsizeMode pem) =
+	withForeignPtr fpl \pl -> c_pango_layout_set_ellipsize pl pem
 
 foreign import ccall "pango_layout_set_ellipsize" c_pango_layout_set_ellipsize ::
 	Ptr (PangoLayoutPrim s) -> #{type PangoEllipsizeMode} -> IO ()
