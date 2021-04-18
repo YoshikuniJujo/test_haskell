@@ -1,5 +1,8 @@
-Layout Objects memo
-===================
+PangoLayout memo
+================
+
+function
+--------
 
 todo
 ----
