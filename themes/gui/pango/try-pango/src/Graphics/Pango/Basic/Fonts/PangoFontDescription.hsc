@@ -292,22 +292,20 @@ foreign import ccall "pango_font_description_better_match"
 	Ptr (PangoFontDescriptionPrim s) -> Ptr (PangoFontDescriptionPrim s) ->
 	Ptr (PangoFontDescriptionPrim s) -> IO #{type gboolean}
 
-pangoFontDescriptionToString :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> m String
-pangoFontDescriptionToString (PangoFontDescriptionPrim fpfd) = unsafeIOToPrim
+pangoFontDescriptionToString :: PangoFontDescription -> String
+pangoFontDescriptionToString (PangoFontDescription fpfd) = unsafePerformIO
 	$ withForeignPtr fpfd \pfd ->
 		peekCString =<< c_pango_font_description_to_string pfd
 
 foreign import ccall "pango_font_description_to_string"
 	c_pango_font_description_to_string ::
-	Ptr (PangoFontDescriptionPrim s) -> IO CString
+	Ptr PangoFontDescription -> IO CString
 
-pangoFontDescriptionToFilename :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> m String
-pangoFontDescriptionToFilename (PangoFontDescriptionPrim fpfd) = unsafeIOToPrim
+pangoFontDescriptionToFilename :: PangoFontDescription -> String
+pangoFontDescriptionToFilename (PangoFontDescription fpfd) = unsafePerformIO
 	$ withForeignPtr fpfd \pfd ->
 		peekCString =<< c_pango_font_description_to_filename pfd
 
 foreign import ccall "pango_font_description_to_filename"
 	c_pango_font_description_to_filename ::
-	Ptr (PangoFontDescriptionPrim s) -> IO CString
+	Ptr PangoFontDescription -> IO CString

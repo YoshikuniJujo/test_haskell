@@ -111,11 +111,11 @@ todo
 * [x] define `PangoFontDescription`
 * [x] define `pangoFontDescriptionFreeze`
 * [x] define `pangoFontDescriptionThaw`
-* [ ] use `PangoFontDescription`
+* [x] use `PangoFontDescription`
 	+ [x] pangoFontDescriptionGet
 	+ [x] pangoFontDescriptionGetAxis
-	+ [ ] pangoFontDescriptionToString
-	+ [ ] pangoFontDescriptionToFilename
+	+ [x] pangoFontDescriptionToString
+	+ [x] pangoFontDescriptionToFilename
 
 not todo yet
 ------------
