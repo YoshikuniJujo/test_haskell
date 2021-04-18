@@ -20,5 +20,5 @@ todo
 * [x] change from `PangoLayoutPrim s` to `PangoLayoutPrim`
 * [x] remove `PangoLayout`
 * [x] rename `PangoLayoutPrim` to `PangoLayout`
-* [ ] use `IO` instead of pure: pangoLayoutGetFoo
+* [x] use `IO` instead of pure: pangoLayoutGetFoo
 * [ ] repair about `PangoLayoutIter`

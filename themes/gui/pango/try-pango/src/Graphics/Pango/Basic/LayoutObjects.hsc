@@ -11,7 +11,6 @@ import Foreign.C
 import Control.Monad.Primitive
 import Data.Word
 import Data.Int
-import System.IO.Unsafe
 
 import Graphics.Pango.Types
 import Graphics.Pango.Values
@@ -44,9 +43,9 @@ foreign import ccall "pango_layout_set_text" c_pango_layout_set_text ::
 foreign import ccall "pango_layout_get_text" c_pango_layout_get_text ::
 	Ptr PangoLayout -> IO CString
 
-pangoLayoutGetText :: PangoLayout -> String
-pangoLayoutGetText (PangoLayout fpl) = unsafePerformIO
-	$ withForeignPtr fpl \pl -> peekCString =<< c_pango_layout_get_text pl
+pangoLayoutGetText :: PangoLayout -> IO String
+pangoLayoutGetText (PangoLayout fpl) =
+	withForeignPtr fpl \pl -> peekCString =<< c_pango_layout_get_text pl
 
 pangoLayoutSetFontDescription :: PangoLayout -> PangoFontDescription -> IO ()
 pangoLayoutSetFontDescription (PangoLayout fpl) (PangoFontDescription fpfd) =
@@ -66,9 +65,9 @@ foreign import ccall "pango_layout_set_width" c_pango_layout_set_width ::
 foreign import ccall "pango_layout_get_width" c_pango_layout_get_width ::
 	Ptr PangoLayout -> IO #type int
 
-pangoLayoutGetWidth :: PangoLayout -> #type int
-pangoLayoutGetWidth (PangoLayout fpl) = unsafePerformIO
-	$ withForeignPtr fpl c_pango_layout_get_width
+pangoLayoutGetWidth :: PangoLayout -> IO #type int
+pangoLayoutGetWidth (PangoLayout fpl) =
+	withForeignPtr fpl c_pango_layout_get_width
 
 pangoLayoutSetEllipsize :: PangoLayout -> PangoEllipsizeMode -> IO ()
 pangoLayoutSetEllipsize (PangoLayout fpl) (PangoEllipsizeMode pem) =
@@ -120,16 +119,16 @@ foreign import ccall "pango_layout_set_single_paragraph_mode"
 foreign import ccall "pango_layout_get_unknown_glyphs_count"
 	c_pango_layout_get_unknown_glyphs_count :: Ptr PangoLayout -> IO #type int
 
-pangoLayoutGetUnknownGlyphsCount :: PangoLayout -> #type int
-pangoLayoutGetUnknownGlyphsCount (PangoLayout fpl) = unsafePerformIO
-	$ withForeignPtr fpl c_pango_layout_get_unknown_glyphs_count
+pangoLayoutGetUnknownGlyphsCount :: PangoLayout -> IO #type int
+pangoLayoutGetUnknownGlyphsCount (PangoLayout fpl) =
+	withForeignPtr fpl c_pango_layout_get_unknown_glyphs_count
 
 foreign import ccall "pango_layout_index_to_pos" c_pango_layout_index_to_pos ::
 	Ptr PangoLayout -> #{type int} -> Ptr PangoRectangle -> IO ()
 
-pangoLayoutIndexToPos :: PangoLayout -> #{type int} -> PangoRectangle
-pangoLayoutIndexToPos (PangoLayout fpl) idx = unsafePerformIO
-	$ withForeignPtr fpl \pl -> alloca \pos -> do
+pangoLayoutIndexToPos :: PangoLayout -> #{type int} -> IO PangoRectangle
+pangoLayoutIndexToPos (PangoLayout fpl) idx =
+	withForeignPtr fpl \pl -> alloca \pos -> do
 		c_pango_layout_index_to_pos pl idx pos
 		peek pos
 
@@ -137,27 +136,27 @@ foreign import ccall "pango_layout_index_to_line_x"
 	c_pango_layout_index_to_line_x ::
 	Ptr PangoLayout -> #{type int} -> #{type gboolean} -> Ptr #{type int} -> Ptr #{type int} -> IO ()
 
-pangoLayoutIndexToLineX :: PangoLayout -> #{type int} -> Bool -> (#{type int}, #{type int})
-pangoLayoutIndexToLineX (PangoLayout fpl) idx tr = unsafePerformIO
-	$ withForeignPtr fpl \pl -> alloca \ln -> alloca \xpos -> do
+pangoLayoutIndexToLineX :: PangoLayout -> #{type int} -> Bool -> IO (#{type int}, #{type int})
+pangoLayoutIndexToLineX (PangoLayout fpl) idx tr =
+	withForeignPtr fpl \pl -> alloca \ln -> alloca \xpos -> do
 		c_pango_layout_index_to_line_x pl idx (boolToGboolean tr) ln xpos
 		(,) <$> peek ln <*> peek xpos
 
 foreign import ccall "pango_layout_xy_to_index" c_pango_layout_xy_to_index ::
 	Ptr PangoLayout -> #{type int} -> #{type int} -> Ptr #{type int} -> Ptr #{type int} -> IO #type gboolean
 
-pangoLayoutXyToIndex :: PangoLayout -> #{type int} -> #{type int} -> (#{type int}, #{type int}, Bool)
-pangoLayoutXyToIndex (PangoLayout fpl) x y = unsafePerformIO
-	$ withForeignPtr fpl \pl -> alloca \idx -> alloca \tr -> do
+pangoLayoutXyToIndex :: PangoLayout -> #{type int} -> #{type int} -> IO (#{type int}, #{type int}, Bool)
+pangoLayoutXyToIndex (PangoLayout fpl) x y =
+	withForeignPtr fpl \pl -> alloca \idx -> alloca \tr -> do
 		isd <- c_pango_layout_xy_to_index pl x y idx tr
 		(,,) <$> peek idx <*> peek tr <*> pure (gbooleanToBool isd)
 
 foreign import ccall "pango_layout_get_cursor_pos" c_pango_layout_get_cursor_pos ::
 	Ptr PangoLayout -> #{type int} -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
 
-pangoLayoutGetCursorPos :: PangoLayout -> #{type int} -> (PangoRectangle, PangoRectangle)
-pangoLayoutGetCursorPos (PangoLayout fpl) idx = unsafePerformIO
-	$ withForeignPtr fpl \pl -> alloca \spos -> alloca \wpos -> do
+pangoLayoutGetCursorPos :: PangoLayout -> #{type int} -> IO (PangoRectangle, PangoRectangle)
+pangoLayoutGetCursorPos (PangoLayout fpl) idx =
+	withForeignPtr fpl \pl -> alloca \spos -> alloca \wpos -> do
 		c_pango_layout_get_cursor_pos pl idx spos wpos
 		(,) <$> peek spos <*> peek wpos
 
@@ -166,43 +165,43 @@ foreign import ccall "pango_layout_move_cursor_visually" c_pango_layout_move_cur
 	Ptr #{type int} -> Ptr #{type int} -> IO ()
 
 pangoLayoutMoveCursorVisually ::
-	PangoLayout -> Bool -> #{type int} -> #{type int} -> #{type int} -> (#{type int}, #{type int})
-pangoLayoutMoveCursorVisually (PangoLayout fpl) str oidx otr dir = unsafePerformIO
-	$ withForeignPtr fpl \pl -> alloca \nidx -> alloca \ntr -> do
+	PangoLayout -> Bool -> #{type int} -> #{type int} -> #{type int} -> IO (#{type int}, #{type int})
+pangoLayoutMoveCursorVisually (PangoLayout fpl) str oidx otr dir =
+	withForeignPtr fpl \pl -> alloca \nidx -> alloca \ntr -> do
 		c_pango_layout_move_cursor_visually pl (boolToGboolean str) oidx otr dir nidx ntr
 		(,) <$> peek nidx <*> peek ntr
 
 foreign import ccall "pango_layout_get_extents" c_pango_layout_get_extents ::
 	Ptr PangoLayout -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
 
-pangoLayoutGetExtents :: PangoLayout -> (PangoRectangle, PangoRectangle)
-pangoLayoutGetExtents (PangoLayout fpl) = unsafePerformIO
-	$ withForeignPtr fpl \pl -> alloca \irct -> alloca \lrct -> do
+pangoLayoutGetExtents :: PangoLayout -> IO (PangoRectangle, PangoRectangle)
+pangoLayoutGetExtents (PangoLayout fpl) =
+	withForeignPtr fpl \pl -> alloca \irct -> alloca \lrct -> do
 		c_pango_layout_get_extents pl irct lrct
 		(,) <$> peek irct <*> peek lrct
 
 foreign import ccall "pango_layout_get_pixel_extents" c_pango_layout_get_pixel_extents ::
 	Ptr PangoLayout -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
 
-pangoLayoutGetPixelExtents :: PangoLayout -> (PangoRectangle, PangoRectangle)
-pangoLayoutGetPixelExtents (PangoLayout fpl) = unsafePerformIO
-	$ withForeignPtr fpl \pl -> alloca \irct -> alloca \lrct -> do
+pangoLayoutGetPixelExtents :: PangoLayout -> IO (PangoRectangle, PangoRectangle)
+pangoLayoutGetPixelExtents (PangoLayout fpl) =
+	withForeignPtr fpl \pl -> alloca \irct -> alloca \lrct -> do
 		c_pango_layout_get_pixel_extents pl irct lrct
 		(,) <$> peek irct <*> peek lrct
 
 foreign import ccall "pango_extents_to_pixels" c_pango_extents_to_pixels ::
 	Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
 
-pangoExtentsToPixelsInclusive :: PangoRectangle -> PangoRectangle
-pangoExtentsToPixelsInclusive src = unsafePerformIO
-	$ alloca \dst -> do
+pangoExtentsToPixelsInclusive :: PangoRectangle -> IO PangoRectangle
+pangoExtentsToPixelsInclusive src =
+	alloca \dst -> do
 		poke dst src
 		c_pango_extents_to_pixels dst nullPtr
 		peek dst
 
-pangoExtentsToPixelsNearest :: PangoRectangle -> PangoRectangle
-pangoExtentsToPixelsNearest src = unsafePerformIO
-	$ alloca \dst -> do
+pangoExtentsToPixelsNearest :: PangoRectangle -> IO PangoRectangle
+pangoExtentsToPixelsNearest src =
+	alloca \dst -> do
 		poke dst src
 		c_pango_extents_to_pixels nullPtr dst
 		peek dst
@@ -210,48 +209,48 @@ pangoExtentsToPixelsNearest src = unsafePerformIO
 foreign import ccall "pango_layout_get_size" c_pango_layout_get_size ::
 	Ptr PangoLayout -> Ptr #{type int} -> Ptr #{type int} -> IO ()
 
-pangoLayoutGetSize :: PangoLayout -> (#{type int}, #{type int})
-pangoLayoutGetSize (PangoLayout fpl) = unsafePerformIO
-	$ withForeignPtr fpl \pl -> alloca \w -> alloca \h -> do
+pangoLayoutGetSize :: PangoLayout -> IO (#{type int}, #{type int})
+pangoLayoutGetSize (PangoLayout fpl) =
+	withForeignPtr fpl \pl -> alloca \w -> alloca \h -> do
 		c_pango_layout_get_size pl w h
 		(,) <$> peek w <*> peek h
 
 foreign import ccall "pango_layout_get_pixel_size" c_pango_layout_get_pixel_size ::
 	Ptr PangoLayout -> Ptr #{type int} -> Ptr #{type int} -> IO ()
 
-pangoLayoutGetPixelSize :: PangoLayout -> (#{type int}, #{type int})
-pangoLayoutGetPixelSize (PangoLayout fpl) = unsafePerformIO
-	$ withForeignPtr fpl \pl -> alloca \w -> alloca \h -> do
+pangoLayoutGetPixelSize :: PangoLayout -> IO (#{type int}, #{type int})
+pangoLayoutGetPixelSize (PangoLayout fpl) =
+	withForeignPtr fpl \pl -> alloca \w -> alloca \h -> do
 		c_pango_layout_get_pixel_size pl w h
 		(,) <$> peek w <*> peek h
 
 foreign import ccall "pango_layout_get_baseline" c_pango_layout_get_baseline ::
 	Ptr PangoLayout -> IO #type int
 
-pangoLayoutGetBaseline :: PangoLayout -> #type int
-pangoLayoutGetBaseline (PangoLayout fpl) = unsafePerformIO
-	$ withForeignPtr fpl c_pango_layout_get_baseline
+pangoLayoutGetBaseline :: PangoLayout -> IO #type int
+pangoLayoutGetBaseline (PangoLayout fpl) =
+	withForeignPtr fpl c_pango_layout_get_baseline
 
 foreign import ccall "pango_layout_get_line_count" c_pango_layout_get_line_count ::
 	Ptr PangoLayout -> IO #type int
 
-pangoLayoutGetLineCount :: PangoLayout -> #type int
-pangoLayoutGetLineCount (PangoLayout fpl) = unsafePerformIO
-	$ withForeignPtr fpl c_pango_layout_get_line_count
+pangoLayoutGetLineCount :: PangoLayout -> IO #type int
+pangoLayoutGetLineCount (PangoLayout fpl) =
+	withForeignPtr fpl c_pango_layout_get_line_count
 
 foreign import ccall "pango_layout_get_line_readonly" c_pango_layout_get_line_readonly ::
 	Ptr PangoLayout -> #{type int} -> IO (Ptr PangoLayoutLine)
 
-pangoLayoutGetLine :: PangoLayout -> #{type int} -> PangoLayoutLine
-pangoLayoutGetLine (PangoLayout fpl) ln = unsafePerformIO
-	$ makePangoLayoutLine0 =<< withForeignPtr fpl \pl -> c_pango_layout_get_line_readonly pl ln
+pangoLayoutGetLine :: PangoLayout -> #{type int} -> IO PangoLayoutLine
+pangoLayoutGetLine (PangoLayout fpl) ln =
+	makePangoLayoutLine0 =<< withForeignPtr fpl \pl -> c_pango_layout_get_line_readonly pl ln
 
 foreign import ccall "pango_layout_get_lines_readonly" c_pango_layout_get_lines_readonly ::
 	Ptr PangoLayout -> IO (Ptr (GSList PangoLayoutLine))
 
-pangoLayoutGetLines :: PangoLayout -> [PangoLayoutLine]
-pangoLayoutGetLines (PangoLayout fpl) = unsafePerformIO
-	$ withForeignPtr fpl \pl ->
+pangoLayoutGetLines :: PangoLayout -> IO [PangoLayoutLine]
+pangoLayoutGetLines (PangoLayout fpl) =
+	withForeignPtr fpl \pl ->
 		mapM makePangoLayoutLine0 =<< g_slist_to_list =<< c_pango_layout_get_lines_readonly pl
 
 foreign import ccall "pango_layout_get_iter" c_pango_layout_get_iter ::
@@ -400,36 +399,36 @@ pangoLayoutIterGetLayoutExtents (PangoLayoutIter fpli) = unsafeIOToPrim
 foreign import ccall "pango_layout_line_get_extents" c_pango_layout_line_get_extents ::
 	Ptr PangoLayoutLine -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
 
-pangoLayoutLineGetExtents :: PangoLayoutLine -> (PangoRectangle, PangoRectangle)
-pangoLayoutLineGetExtents (PangoLayoutLine fpll) = unsafePerformIO
-	$ withForeignPtr fpll \pll -> alloca \irct -> alloca \lrct -> do
+pangoLayoutLineGetExtents :: PangoLayoutLine -> IO (PangoRectangle, PangoRectangle)
+pangoLayoutLineGetExtents (PangoLayoutLine fpll) =
+	withForeignPtr fpll \pll -> alloca \irct -> alloca \lrct -> do
 		c_pango_layout_line_get_extents pll irct lrct
 		(,) <$> peek irct <*> peek lrct
 
 foreign import ccall "pango_layout_line_get_pixel_extents" c_pango_layout_line_get_pixel_extents ::
 	Ptr PangoLayoutLine -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
 
-pangoLayoutLineGetPixelExtents :: PangoLayoutLine -> (PangoRectangle, PangoRectangle)
-pangoLayoutLineGetPixelExtents (PangoLayoutLine fpll) = unsafePerformIO
-	$ withForeignPtr fpll \pll -> alloca \irct -> alloca \lrct -> do
+pangoLayoutLineGetPixelExtents :: PangoLayoutLine -> IO (PangoRectangle, PangoRectangle)
+pangoLayoutLineGetPixelExtents (PangoLayoutLine fpll) =
+	withForeignPtr fpll \pll -> alloca \irct -> alloca \lrct -> do
 		c_pango_layout_line_get_pixel_extents pll irct lrct
 		(,) <$> peek irct <*> peek lrct
 
 foreign import ccall "pango_layout_line_index_to_x" c_pango_layout_line_index_to_x ::
 	Ptr PangoLayoutLine -> #{type int} -> #{type gboolean} -> Ptr #{type int} -> IO ()
 
-pangoLayoutLineIndexToX :: PangoLayoutLine -> #{type int} -> Bool -> #type int
-pangoLayoutLineIndexToX (PangoLayoutLine fpll) idx trl = unsafePerformIO
-	$ withForeignPtr fpll \pll -> alloca \xpos -> do
+pangoLayoutLineIndexToX :: PangoLayoutLine -> #{type int} -> Bool -> IO #type int
+pangoLayoutLineIndexToX (PangoLayoutLine fpll) idx trl =
+	withForeignPtr fpll \pll -> alloca \xpos -> do
 		c_pango_layout_line_index_to_x pll idx (boolToGboolean trl) xpos
 		peek xpos
 
 foreign import ccall "pango_layout_line_x_to_index" c_pango_layout_line_x_to_index ::
 	Ptr PangoLayoutLine -> #{type int} -> Ptr #{type int} -> Ptr #{type int} -> IO #type gboolean
 
-pangoLayoutLineXToIndex :: PangoLayoutLine -> #{type int} -> (#{type int}, #{type int}, Bool)
-pangoLayoutLineXToIndex (PangoLayoutLine fpll) xpos = unsafePerformIO
-	$ withForeignPtr fpll \pll -> alloca \idx -> alloca \trl -> do
+pangoLayoutLineXToIndex :: PangoLayoutLine -> #{type int} -> IO (#{type int}, #{type int}, Bool)
+pangoLayoutLineXToIndex (PangoLayoutLine fpll) xpos =
+	withForeignPtr fpll \pll -> alloca \idx -> alloca \trl -> do
 		isd <- c_pango_layout_line_x_to_index pll xpos idx trl
 		(,,) <$> peek idx <*> peek trl <*> pure (gbooleanToBool isd)
 
@@ -438,9 +437,9 @@ foreign import ccall "pango_layout_line_get_x_ranges" c_pango_layout_line_get_x_
 
 foreign import ccall "g_free" c_g_free :: Ptr a -> IO ()
 
-pangoLayoutLineGetXRanges :: PangoLayoutLine -> #{type int} -> #{type int} -> [#type int]
-pangoLayoutLineGetXRanges (PangoLayoutLine fpll) st ed = unsafePerformIO
-	$ withForeignPtr fpll \pll -> alloca \prngs -> alloca \pn -> do
+pangoLayoutLineGetXRanges :: PangoLayoutLine -> #{type int} -> #{type int} -> IO [#type int]
+pangoLayoutLineGetXRanges (PangoLayoutLine fpll) st ed =
+	withForeignPtr fpll \pll -> alloca \prngs -> alloca \pn -> do
 		c_pango_layout_line_get_x_ranges pll st ed prngs pn
 		rngs <- peek prngs
 		n <- peek pn
@@ -451,8 +450,8 @@ foreign import ccall "pango_layout_line_get_height" c_pango_layout_line_get_heig
 	Ptr PangoLayoutLine -> Ptr #{type int} -> IO ()
 
 pangoLayoutLineGetHeight :: PangoLayoutLine -> #{type int}
-pangoLayoutLineGetHeight (PangoLayoutLine fpll) = unsafePerformIO
-	$ withForeignPtr fpll \pll -> alloca \h -> do
+pangoLayoutLineGetHeight (PangoLayoutLine fpll) =
+	withForeignPtr fpll \pll -> alloca \h -> do
 		c_pango_layout_line_get_height pll h
 		peek h
 		-}
