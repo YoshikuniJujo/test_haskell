@@ -112,8 +112,10 @@ todo
 * [x] define `pangoFontDescriptionFreeze`
 * [x] define `pangoFontDescriptionThaw`
 * [ ] use `PangoFontDescription`
-	+ [ ] pangoFontDescriptionGet
+	+ [x] pangoFontDescriptionGet
 	+ [x] pangoFontDescriptionGetAxis
+	+ [ ] pangoFontDescriptionToString
+	+ [ ] pangoFontDescriptionToFilename
 
 not todo yet
 ------------

@@ -29,24 +29,27 @@ main = getArgs >>= \case
 
 		fd <- pangoFontDescriptionNew
 		case f of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ Family f
-		print =<< pangoFontDescriptionGet @Family fd
 		case stl of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readStyle stl
-		print =<< pangoFontDescriptionGet @PangoStyle fd
 		case v of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readVariant v
-		print =<< pangoFontDescriptionGet @PangoVariant fd
 		case w of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readWeight w
-		print =<< pangoFontDescriptionGet @PangoWeight fd
 		case str of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readStretch str
-		print =<< pangoFontDescriptionGet @PangoStretch fd
 		case sz of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readSize sz
-		print =<< pangoFontDescriptionGet @Size fd
 		case gr of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readGravity gr
-		print =<< pangoFontDescriptionGet @PangoGravity fd
+
+		fd' <- pangoFontDescriptionFreeze fd
+
+		print $ pangoFontDescriptionGet @Family fd'
+		print $ pangoFontDescriptionGet @PangoStyle fd'
+		print $ pangoFontDescriptionGet @PangoVariant fd'
+		print $ pangoFontDescriptionGet @PangoWeight fd'
+		print $ pangoFontDescriptionGet @PangoStretch fd'
+		print $ pangoFontDescriptionGet @Size fd'
+		print $ pangoFontDescriptionGet @PangoGravity fd'
 
 		putStrLn =<< pangoFontDescriptionToString fd
 		putStrLn =<< pangoFontDescriptionToFilename fd
 
-		pangoLayoutSetFontDescription pl =<< pangoFontDescriptionFreeze fd
+		pangoLayoutSetFontDescription pl fd'
 		pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!\n\x1f9a5" 45
 
 		pangoCairoShowLayout cr =<< pangoLayoutFreeze pl

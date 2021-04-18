@@ -30,19 +30,22 @@ main = getArgs >>= \case
 		fd <- pangoFontDescriptionNew
 		case f of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ Family f
 		pangoFontDescriptionUnset @Family fd
-		print =<< pangoFontDescriptionGet @Family fd
 		case stl of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readStyle stl
 		pangoFontDescriptionUnset @PangoStyle fd
-		print =<< pangoFontDescriptionGet @PangoStyle fd
 		case v of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readVariant v
 		pangoFontDescriptionUnset @PangoVariant fd
-		print =<< pangoFontDescriptionGet @PangoVariant fd
 		case w of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readWeight w
 		pangoFontDescriptionUnset @PangoWeight fd
-		print =<< pangoFontDescriptionGet @PangoWeight fd
 		case str of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readStretch str
 		pangoFontDescriptionUnset @PangoStretch fd
-		print =<< pangoFontDescriptionGet @PangoStretch fd
+
+		fd' <- pangoFontDescriptionFreeze fd
+
+		print $ pangoFontDescriptionGet @Family fd'
+		print $ pangoFontDescriptionGet @PangoStyle fd'
+		print $ pangoFontDescriptionGet @PangoVariant fd'
+		print $ pangoFontDescriptionGet @PangoWeight fd'
+		print $ pangoFontDescriptionGet @PangoStretch fd'
 
 		pangoLayoutSetFontDescription pl =<< pangoFontDescriptionFreeze fd
 		pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!\x1f9a5" 45
