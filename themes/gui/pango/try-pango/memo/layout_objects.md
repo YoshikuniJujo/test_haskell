@@ -19,6 +19,6 @@ todo
 	+ [x] pangoLayoutSetSingleParagraphMode
 * [x] change from `PangoLayoutPrim s` to `PangoLayoutPrim`
 * [x] remove `PangoLayout`
-* [ ] rename `PangoLayoutPrim` to `PangoLayout`
+* [x] rename `PangoLayoutPrim` to `PangoLayout`
 * [ ] use `IO` instead of pure: pangoLayoutGetFoo
 * [ ] repair about `PangoLayoutIter`

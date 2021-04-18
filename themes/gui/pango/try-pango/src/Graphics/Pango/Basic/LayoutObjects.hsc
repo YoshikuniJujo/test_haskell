@@ -17,7 +17,7 @@ import Graphics.Pango.Types
 import Graphics.Pango.Values
 import System.Glib.SinglyLinkedLists
 
-import Graphics.Pango.Basic.LayoutObjects.PangoLayoutPrim
+import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 
 import Graphics.Pango.Basic.Rendering
 
@@ -27,62 +27,62 @@ import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 #include <pango/pango.h>
 
 foreign import ccall "pango_layout_new" c_pango_layout_new ::
-	Ptr PangoContext -> IO (Ptr PangoLayoutPrim)
+	Ptr PangoContext -> IO (Ptr PangoLayout)
 
-pangoLayoutNew :: PangoContext -> IO PangoLayoutPrim
+pangoLayoutNew :: PangoContext -> IO PangoLayout
 pangoLayoutNew (PangoContext fpc) = unsafeIOToPrim $ withForeignPtr fpc \pc ->
-	mkPangoLayoutPrim =<< c_pango_layout_new pc
+	mkPangoLayout =<< c_pango_layout_new pc
 
-pangoLayoutSetText :: PangoLayoutPrim -> String -> #{type int} -> IO ()
-pangoLayoutSetText (PangoLayoutPrim fpl) s n =
+pangoLayoutSetText :: PangoLayout -> String -> #{type int} -> IO ()
+pangoLayoutSetText (PangoLayout fpl) s n =
 	withForeignPtr fpl \pl -> withCString s \cs ->
 		c_pango_layout_set_text pl cs n
 
 foreign import ccall "pango_layout_set_text" c_pango_layout_set_text ::
-	Ptr PangoLayoutPrim -> CString -> #{type int} -> IO ()
+	Ptr PangoLayout -> CString -> #{type int} -> IO ()
 
 foreign import ccall "pango_layout_get_text" c_pango_layout_get_text ::
-	Ptr PangoLayoutPrim -> IO CString
+	Ptr PangoLayout -> IO CString
 
-pangoLayoutGetText :: PangoLayoutPrim -> String
-pangoLayoutGetText (PangoLayoutPrim fpl) = unsafePerformIO
+pangoLayoutGetText :: PangoLayout -> String
+pangoLayoutGetText (PangoLayout fpl) = unsafePerformIO
 	$ withForeignPtr fpl \pl -> peekCString =<< c_pango_layout_get_text pl
 
-pangoLayoutSetFontDescription :: PangoLayoutPrim -> PangoFontDescription -> IO ()
-pangoLayoutSetFontDescription (PangoLayoutPrim fpl) (PangoFontDescription fpfd) =
+pangoLayoutSetFontDescription :: PangoLayout -> PangoFontDescription -> IO ()
+pangoLayoutSetFontDescription (PangoLayout fpl) (PangoFontDescription fpfd) =
 	withForeignPtr fpl \pl -> withForeignPtr fpfd \pfd ->
 		c_pango_layout_set_font_description pl pfd
 
 foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font_description ::
-	Ptr PangoLayoutPrim -> Ptr PangoFontDescription -> IO ()
+	Ptr PangoLayout -> Ptr PangoFontDescription -> IO ()
 
-pangoLayoutSetWidth :: PangoLayoutPrim -> #{type int} -> IO ()
-pangoLayoutSetWidth (PangoLayoutPrim fpl) w =
+pangoLayoutSetWidth :: PangoLayout -> #{type int} -> IO ()
+pangoLayoutSetWidth (PangoLayout fpl) w =
 	withForeignPtr fpl \pl -> c_pango_layout_set_width pl w
 
 foreign import ccall "pango_layout_set_width" c_pango_layout_set_width ::
-	Ptr PangoLayoutPrim -> #{type int} -> IO ()
+	Ptr PangoLayout -> #{type int} -> IO ()
 
 foreign import ccall "pango_layout_get_width" c_pango_layout_get_width ::
-	Ptr PangoLayoutPrim -> IO #type int
+	Ptr PangoLayout -> IO #type int
 
-pangoLayoutGetWidth :: PangoLayoutPrim -> #type int
-pangoLayoutGetWidth (PangoLayoutPrim fpl) = unsafePerformIO
+pangoLayoutGetWidth :: PangoLayout -> #type int
+pangoLayoutGetWidth (PangoLayout fpl) = unsafePerformIO
 	$ withForeignPtr fpl c_pango_layout_get_width
 
-pangoLayoutSetEllipsize :: PangoLayoutPrim -> PangoEllipsizeMode -> IO ()
-pangoLayoutSetEllipsize (PangoLayoutPrim fpl) (PangoEllipsizeMode pem) =
+pangoLayoutSetEllipsize :: PangoLayout -> PangoEllipsizeMode -> IO ()
+pangoLayoutSetEllipsize (PangoLayout fpl) (PangoEllipsizeMode pem) =
 	withForeignPtr fpl \pl -> c_pango_layout_set_ellipsize pl pem
 
 foreign import ccall "pango_layout_set_ellipsize" c_pango_layout_set_ellipsize ::
-	Ptr PangoLayoutPrim -> #{type PangoEllipsizeMode} -> IO ()
+	Ptr PangoLayout -> #{type PangoEllipsizeMode} -> IO ()
 
-pangoLayoutSetIndent :: PangoLayoutPrim -> #{type int} -> IO ()
-pangoLayoutSetIndent (PangoLayoutPrim fpl) idt = unsafeIOToPrim
+pangoLayoutSetIndent :: PangoLayout -> #{type int} -> IO ()
+pangoLayoutSetIndent (PangoLayout fpl) idt = unsafeIOToPrim
 	$ withForeignPtr fpl \pl -> c_pango_layout_set_indent pl idt
 
 foreign import ccall "pango_layout_set_indent" c_pango_layout_set_indent ::
-	Ptr PangoLayoutPrim -> #{type int} -> IO ()
+	Ptr PangoLayout -> #{type int} -> IO ()
 
 {-
 foreign import ccall "pango_layout_set_line_spacing" c_pango_layout_set_line_spacing ::
@@ -93,99 +93,99 @@ pangoLayoutSetLineSpacing (PangoLayoutIo fpl) fct = withForeignPtr fpl \pl ->
 	c_pango_layout_set_line_spacing pl fct
 	-}
 
-pangoLayoutSetAlignment :: PangoLayoutPrim -> PangoAlignment -> IO ()
-pangoLayoutSetAlignment (PangoLayoutPrim fpl) (PangoAlignment pa) = unsafeIOToPrim
+pangoLayoutSetAlignment :: PangoLayout -> PangoAlignment -> IO ()
+pangoLayoutSetAlignment (PangoLayout fpl) (PangoAlignment pa) = unsafeIOToPrim
 	$ withForeignPtr fpl \pl -> c_pango_layout_set_alignment pl pa
 
 foreign import ccall "pango_layout_set_alignment" c_pango_layout_set_alignment ::
-	Ptr PangoLayoutPrim -> #{type PangoAlignment} -> IO ()
+	Ptr PangoLayout -> #{type PangoAlignment} -> IO ()
 
-pangoLayoutSetTabs :: PangoLayoutPrim -> PangoTabArray -> IO ()
-pangoLayoutSetTabs (PangoLayoutPrim fpl) (PangoTabArray fpta) = unsafeIOToPrim
+pangoLayoutSetTabs :: PangoLayout -> PangoTabArray -> IO ()
+pangoLayoutSetTabs (PangoLayout fpl) (PangoTabArray fpta) = unsafeIOToPrim
 	$ withForeignPtr fpl \pl ->
 		withForeignPtr fpta \pta -> c_pango_layout_set_tabs pl pta
 
 foreign import ccall "pango_layout_set_tabs" c_pango_layout_set_tabs ::
-	Ptr PangoLayoutPrim -> Ptr PangoTabArray -> IO ()
+	Ptr PangoLayout -> Ptr PangoTabArray -> IO ()
 
-pangoLayoutSetSingleParagraphMode :: PangoLayoutPrim -> Bool -> IO ()
-pangoLayoutSetSingleParagraphMode (PangoLayoutPrim fpl) spm = unsafeIOToPrim
+pangoLayoutSetSingleParagraphMode :: PangoLayout -> Bool -> IO ()
+pangoLayoutSetSingleParagraphMode (PangoLayout fpl) spm = unsafeIOToPrim
 	$ withForeignPtr fpl \pl ->
 		c_pango_layout_set_single_paragraph_mode pl (boolToGboolean spm)
 
 foreign import ccall "pango_layout_set_single_paragraph_mode"
 	c_pango_layout_set_single_paragraph_mode ::
-	Ptr PangoLayoutPrim -> #{type gboolean} -> IO ()
+	Ptr PangoLayout -> #{type gboolean} -> IO ()
 
 foreign import ccall "pango_layout_get_unknown_glyphs_count"
-	c_pango_layout_get_unknown_glyphs_count :: Ptr PangoLayoutPrim -> IO #type int
+	c_pango_layout_get_unknown_glyphs_count :: Ptr PangoLayout -> IO #type int
 
-pangoLayoutGetUnknownGlyphsCount :: PangoLayoutPrim -> #type int
-pangoLayoutGetUnknownGlyphsCount (PangoLayoutPrim fpl) = unsafePerformIO
+pangoLayoutGetUnknownGlyphsCount :: PangoLayout -> #type int
+pangoLayoutGetUnknownGlyphsCount (PangoLayout fpl) = unsafePerformIO
 	$ withForeignPtr fpl c_pango_layout_get_unknown_glyphs_count
 
 foreign import ccall "pango_layout_index_to_pos" c_pango_layout_index_to_pos ::
-	Ptr PangoLayoutPrim -> #{type int} -> Ptr PangoRectangle -> IO ()
+	Ptr PangoLayout -> #{type int} -> Ptr PangoRectangle -> IO ()
 
-pangoLayoutIndexToPos :: PangoLayoutPrim -> #{type int} -> PangoRectangle
-pangoLayoutIndexToPos (PangoLayoutPrim fpl) idx = unsafePerformIO
+pangoLayoutIndexToPos :: PangoLayout -> #{type int} -> PangoRectangle
+pangoLayoutIndexToPos (PangoLayout fpl) idx = unsafePerformIO
 	$ withForeignPtr fpl \pl -> alloca \pos -> do
 		c_pango_layout_index_to_pos pl idx pos
 		peek pos
 
 foreign import ccall "pango_layout_index_to_line_x"
 	c_pango_layout_index_to_line_x ::
-	Ptr PangoLayoutPrim -> #{type int} -> #{type gboolean} -> Ptr #{type int} -> Ptr #{type int} -> IO ()
+	Ptr PangoLayout -> #{type int} -> #{type gboolean} -> Ptr #{type int} -> Ptr #{type int} -> IO ()
 
-pangoLayoutIndexToLineX :: PangoLayoutPrim -> #{type int} -> Bool -> (#{type int}, #{type int})
-pangoLayoutIndexToLineX (PangoLayoutPrim fpl) idx tr = unsafePerformIO
+pangoLayoutIndexToLineX :: PangoLayout -> #{type int} -> Bool -> (#{type int}, #{type int})
+pangoLayoutIndexToLineX (PangoLayout fpl) idx tr = unsafePerformIO
 	$ withForeignPtr fpl \pl -> alloca \ln -> alloca \xpos -> do
 		c_pango_layout_index_to_line_x pl idx (boolToGboolean tr) ln xpos
 		(,) <$> peek ln <*> peek xpos
 
 foreign import ccall "pango_layout_xy_to_index" c_pango_layout_xy_to_index ::
-	Ptr PangoLayoutPrim -> #{type int} -> #{type int} -> Ptr #{type int} -> Ptr #{type int} -> IO #type gboolean
+	Ptr PangoLayout -> #{type int} -> #{type int} -> Ptr #{type int} -> Ptr #{type int} -> IO #type gboolean
 
-pangoLayoutXyToIndex :: PangoLayoutPrim -> #{type int} -> #{type int} -> (#{type int}, #{type int}, Bool)
-pangoLayoutXyToIndex (PangoLayoutPrim fpl) x y = unsafePerformIO
+pangoLayoutXyToIndex :: PangoLayout -> #{type int} -> #{type int} -> (#{type int}, #{type int}, Bool)
+pangoLayoutXyToIndex (PangoLayout fpl) x y = unsafePerformIO
 	$ withForeignPtr fpl \pl -> alloca \idx -> alloca \tr -> do
 		isd <- c_pango_layout_xy_to_index pl x y idx tr
 		(,,) <$> peek idx <*> peek tr <*> pure (gbooleanToBool isd)
 
 foreign import ccall "pango_layout_get_cursor_pos" c_pango_layout_get_cursor_pos ::
-	Ptr PangoLayoutPrim -> #{type int} -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+	Ptr PangoLayout -> #{type int} -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
 
-pangoLayoutGetCursorPos :: PangoLayoutPrim -> #{type int} -> (PangoRectangle, PangoRectangle)
-pangoLayoutGetCursorPos (PangoLayoutPrim fpl) idx = unsafePerformIO
+pangoLayoutGetCursorPos :: PangoLayout -> #{type int} -> (PangoRectangle, PangoRectangle)
+pangoLayoutGetCursorPos (PangoLayout fpl) idx = unsafePerformIO
 	$ withForeignPtr fpl \pl -> alloca \spos -> alloca \wpos -> do
 		c_pango_layout_get_cursor_pos pl idx spos wpos
 		(,) <$> peek spos <*> peek wpos
 
 foreign import ccall "pango_layout_move_cursor_visually" c_pango_layout_move_cursor_visually ::
-	Ptr PangoLayoutPrim -> #{type gboolean} -> #{type int} -> #{type int} -> #{type int} ->
+	Ptr PangoLayout -> #{type gboolean} -> #{type int} -> #{type int} -> #{type int} ->
 	Ptr #{type int} -> Ptr #{type int} -> IO ()
 
 pangoLayoutMoveCursorVisually ::
-	PangoLayoutPrim -> Bool -> #{type int} -> #{type int} -> #{type int} -> (#{type int}, #{type int})
-pangoLayoutMoveCursorVisually (PangoLayoutPrim fpl) str oidx otr dir = unsafePerformIO
+	PangoLayout -> Bool -> #{type int} -> #{type int} -> #{type int} -> (#{type int}, #{type int})
+pangoLayoutMoveCursorVisually (PangoLayout fpl) str oidx otr dir = unsafePerformIO
 	$ withForeignPtr fpl \pl -> alloca \nidx -> alloca \ntr -> do
 		c_pango_layout_move_cursor_visually pl (boolToGboolean str) oidx otr dir nidx ntr
 		(,) <$> peek nidx <*> peek ntr
 
 foreign import ccall "pango_layout_get_extents" c_pango_layout_get_extents ::
-	Ptr PangoLayoutPrim -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+	Ptr PangoLayout -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
 
-pangoLayoutGetExtents :: PangoLayoutPrim -> (PangoRectangle, PangoRectangle)
-pangoLayoutGetExtents (PangoLayoutPrim fpl) = unsafePerformIO
+pangoLayoutGetExtents :: PangoLayout -> (PangoRectangle, PangoRectangle)
+pangoLayoutGetExtents (PangoLayout fpl) = unsafePerformIO
 	$ withForeignPtr fpl \pl -> alloca \irct -> alloca \lrct -> do
 		c_pango_layout_get_extents pl irct lrct
 		(,) <$> peek irct <*> peek lrct
 
 foreign import ccall "pango_layout_get_pixel_extents" c_pango_layout_get_pixel_extents ::
-	Ptr PangoLayoutPrim -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+	Ptr PangoLayout -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
 
-pangoLayoutGetPixelExtents :: PangoLayoutPrim -> (PangoRectangle, PangoRectangle)
-pangoLayoutGetPixelExtents (PangoLayoutPrim fpl) = unsafePerformIO
+pangoLayoutGetPixelExtents :: PangoLayout -> (PangoRectangle, PangoRectangle)
+pangoLayoutGetPixelExtents (PangoLayout fpl) = unsafePerformIO
 	$ withForeignPtr fpl \pl -> alloca \irct -> alloca \lrct -> do
 		c_pango_layout_get_pixel_extents pl irct lrct
 		(,) <$> peek irct <*> peek lrct
@@ -208,57 +208,57 @@ pangoExtentsToPixelsNearest src = unsafePerformIO
 		peek dst
 
 foreign import ccall "pango_layout_get_size" c_pango_layout_get_size ::
-	Ptr PangoLayoutPrim -> Ptr #{type int} -> Ptr #{type int} -> IO ()
+	Ptr PangoLayout -> Ptr #{type int} -> Ptr #{type int} -> IO ()
 
-pangoLayoutGetSize :: PangoLayoutPrim -> (#{type int}, #{type int})
-pangoLayoutGetSize (PangoLayoutPrim fpl) = unsafePerformIO
+pangoLayoutGetSize :: PangoLayout -> (#{type int}, #{type int})
+pangoLayoutGetSize (PangoLayout fpl) = unsafePerformIO
 	$ withForeignPtr fpl \pl -> alloca \w -> alloca \h -> do
 		c_pango_layout_get_size pl w h
 		(,) <$> peek w <*> peek h
 
 foreign import ccall "pango_layout_get_pixel_size" c_pango_layout_get_pixel_size ::
-	Ptr PangoLayoutPrim -> Ptr #{type int} -> Ptr #{type int} -> IO ()
+	Ptr PangoLayout -> Ptr #{type int} -> Ptr #{type int} -> IO ()
 
-pangoLayoutGetPixelSize :: PangoLayoutPrim -> (#{type int}, #{type int})
-pangoLayoutGetPixelSize (PangoLayoutPrim fpl) = unsafePerformIO
+pangoLayoutGetPixelSize :: PangoLayout -> (#{type int}, #{type int})
+pangoLayoutGetPixelSize (PangoLayout fpl) = unsafePerformIO
 	$ withForeignPtr fpl \pl -> alloca \w -> alloca \h -> do
 		c_pango_layout_get_pixel_size pl w h
 		(,) <$> peek w <*> peek h
 
 foreign import ccall "pango_layout_get_baseline" c_pango_layout_get_baseline ::
-	Ptr PangoLayoutPrim -> IO #type int
+	Ptr PangoLayout -> IO #type int
 
-pangoLayoutGetBaseline :: PangoLayoutPrim -> #type int
-pangoLayoutGetBaseline (PangoLayoutPrim fpl) = unsafePerformIO
+pangoLayoutGetBaseline :: PangoLayout -> #type int
+pangoLayoutGetBaseline (PangoLayout fpl) = unsafePerformIO
 	$ withForeignPtr fpl c_pango_layout_get_baseline
 
 foreign import ccall "pango_layout_get_line_count" c_pango_layout_get_line_count ::
-	Ptr PangoLayoutPrim -> IO #type int
+	Ptr PangoLayout -> IO #type int
 
-pangoLayoutGetLineCount :: PangoLayoutPrim -> #type int
-pangoLayoutGetLineCount (PangoLayoutPrim fpl) = unsafePerformIO
+pangoLayoutGetLineCount :: PangoLayout -> #type int
+pangoLayoutGetLineCount (PangoLayout fpl) = unsafePerformIO
 	$ withForeignPtr fpl c_pango_layout_get_line_count
 
 foreign import ccall "pango_layout_get_line_readonly" c_pango_layout_get_line_readonly ::
-	Ptr PangoLayoutPrim -> #{type int} -> IO (Ptr PangoLayoutLine)
+	Ptr PangoLayout -> #{type int} -> IO (Ptr PangoLayoutLine)
 
-pangoLayoutGetLine :: PangoLayoutPrim -> #{type int} -> PangoLayoutLine
-pangoLayoutGetLine (PangoLayoutPrim fpl) ln = unsafePerformIO
+pangoLayoutGetLine :: PangoLayout -> #{type int} -> PangoLayoutLine
+pangoLayoutGetLine (PangoLayout fpl) ln = unsafePerformIO
 	$ makePangoLayoutLine0 =<< withForeignPtr fpl \pl -> c_pango_layout_get_line_readonly pl ln
 
 foreign import ccall "pango_layout_get_lines_readonly" c_pango_layout_get_lines_readonly ::
-	Ptr PangoLayoutPrim -> IO (Ptr (GSList PangoLayoutLine))
+	Ptr PangoLayout -> IO (Ptr (GSList PangoLayoutLine))
 
-pangoLayoutGetLines :: PangoLayoutPrim -> [PangoLayoutLine]
-pangoLayoutGetLines (PangoLayoutPrim fpl) = unsafePerformIO
+pangoLayoutGetLines :: PangoLayout -> [PangoLayoutLine]
+pangoLayoutGetLines (PangoLayout fpl) = unsafePerformIO
 	$ withForeignPtr fpl \pl ->
 		mapM makePangoLayoutLine0 =<< g_slist_to_list =<< c_pango_layout_get_lines_readonly pl
 
 foreign import ccall "pango_layout_get_iter" c_pango_layout_get_iter ::
-	Ptr PangoLayoutPrim -> IO (Ptr (PangoLayoutIter s))
+	Ptr PangoLayout -> IO (Ptr (PangoLayoutIter s))
 
-pangoLayoutGetIter :: PrimMonad m => PangoLayoutPrim -> m (PangoLayoutIter (PrimState m))
-pangoLayoutGetIter (PangoLayoutPrim fpl) = unsafeIOToPrim
+pangoLayoutGetIter :: PrimMonad m => PangoLayout -> m (PangoLayoutIter (PrimState m))
+pangoLayoutGetIter (PangoLayout fpl) = unsafeIOToPrim
 	$ makePangoLayoutIter =<< withForeignPtr fpl c_pango_layout_get_iter
 
 foreign import ccall "pango_layout_iter_next_run" c_pango_layout_iter_next_run ::
@@ -330,12 +330,12 @@ pangoLayoutIterGetLine (PangoLayoutIter fpli) = unsafeIOToPrim
 	$ makePangoLayoutLine0 =<< withForeignPtr fpli c_pango_layout_iter_get_line_readonly
 
 foreign import ccall "pango_layout_iter_get_layout" c_pango_layout_iter_get_layout ::
-	Ptr (PangoLayoutIter s) -> IO (Ptr PangoLayoutPrim)
+	Ptr (PangoLayoutIter s) -> IO (Ptr PangoLayout)
 
 pangoLayoutIterGetLayout :: PrimMonad m =>
-	PangoLayoutIter (PrimState m) -> m PangoLayoutPrim
+	PangoLayoutIter (PrimState m) -> m PangoLayout
 pangoLayoutIterGetLayout (PangoLayoutIter fpli) = unsafeIOToPrim
-	$ mkPangoLayoutPrim =<< withForeignPtr fpli c_pango_layout_iter_get_layout
+	$ mkPangoLayout =<< withForeignPtr fpli c_pango_layout_iter_get_layout
 
 foreign import ccall "pango_layout_iter_get_char_extents" c_pango_layout_iter_get_char_extents ::
 	Ptr (PangoLayoutIter s) -> Ptr PangoRectangle -> IO ()
