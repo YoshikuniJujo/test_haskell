@@ -94,14 +94,14 @@ pangoLayoutSetLineSpacing (PangoLayoutIo fpl) fct = withForeignPtr fpl \pl ->
 	c_pango_layout_set_line_spacing pl fct
 	-}
 
-pangoLayoutSetAlignment :: PrimMonad m => PangoLayoutPrim (PrimState m) -> PangoAlignment -> m ()
+pangoLayoutSetAlignment :: PangoLayoutPrim RealWorld -> PangoAlignment -> IO ()
 pangoLayoutSetAlignment (PangoLayoutPrim fpl) (PangoAlignment pa) = unsafeIOToPrim
 	$ withForeignPtr fpl \pl -> c_pango_layout_set_alignment pl pa
 
 foreign import ccall "pango_layout_set_alignment" c_pango_layout_set_alignment ::
 	Ptr (PangoLayoutPrim s) -> #{type PangoAlignment} -> IO ()
 
-pangoLayoutSetTabs :: PrimMonad m => PangoLayoutPrim (PrimState m) -> PangoTabArray -> m ()
+pangoLayoutSetTabs :: PangoLayoutPrim RealWorld -> PangoTabArray -> IO ()
 pangoLayoutSetTabs (PangoLayoutPrim fpl) (PangoTabArray fpta) = unsafeIOToPrim
 	$ withForeignPtr fpl \pl ->
 		withForeignPtr fpta \pta -> c_pango_layout_set_tabs pl pta
@@ -109,7 +109,7 @@ pangoLayoutSetTabs (PangoLayoutPrim fpl) (PangoTabArray fpta) = unsafeIOToPrim
 foreign import ccall "pango_layout_set_tabs" c_pango_layout_set_tabs ::
 	Ptr (PangoLayoutPrim s) -> Ptr PangoTabArray -> IO ()
 
-pangoLayoutSetSingleParagraphMode :: PrimMonad m => PangoLayoutPrim (PrimState m) -> Bool -> m ()
+pangoLayoutSetSingleParagraphMode :: PangoLayoutPrim RealWorld -> Bool -> IO ()
 pangoLayoutSetSingleParagraphMode (PangoLayoutPrim fpl) spm = unsafeIOToPrim
 	$ withForeignPtr fpl \pl ->
 		c_pango_layout_set_single_paragraph_mode pl (boolToGboolean spm)
