@@ -11,23 +11,7 @@ import Control.Monad.Primitive
 
 import Graphics.Pango.Types
 
-newtype PangoLayoutPrim s = PangoLayoutPrim (ForeignPtr (PangoLayoutPrim s)) deriving Show
+newtype PangoLayoutPrim = PangoLayoutPrim (ForeignPtr PangoLayoutPrim) deriving Show
 
-mkPangoLayoutPrim :: Ptr (PangoLayoutPrim s) -> IO (PangoLayoutPrim s)
+mkPangoLayoutPrim :: Ptr PangoLayoutPrim -> IO PangoLayoutPrim
 mkPangoLayoutPrim p = PangoLayoutPrim <$> newForeignPtr p (c_g_object_unref p)
-
-pangoLayoutFreeze ::
-	PrimMonad m => PangoLayoutPrim (PrimState m) -> m PangoLayout
-pangoLayoutFreeze (PangoLayoutPrim fpl) = unsafeIOToPrim
-	. withForeignPtr fpl $ makePangoLayout <=< c_pango_layout_freeze
-
-foreign import ccall "pango_layout_copy" c_pango_layout_freeze ::
-	Ptr (PangoLayoutPrim s) -> IO (Ptr PangoLayout)
-
-pangoLayoutThaw ::
-	PrimMonad m => PangoLayout -> m (PangoLayoutPrim (PrimState m))
-pangoLayoutThaw (PangoLayout fpl) = unsafeIOToPrim
-	. withForeignPtr fpl $ mkPangoLayoutPrim <=< c_pango_layout_thaw
-
-foreign import ccall "pango_layout_copy" c_pango_layout_thaw ::
-	Ptr PangoLayout -> IO (Ptr (PangoLayoutPrim s))

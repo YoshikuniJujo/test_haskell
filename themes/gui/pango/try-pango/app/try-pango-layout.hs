@@ -29,8 +29,6 @@ import Data.Color
 import Data.CairoImage
 import Data.JuicyCairo
 
-import Graphics.Pango.Basic.LayoutObjects.PangoLayoutPrim
-
 main :: IO ()
 main = do
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 900 900
@@ -49,7 +47,7 @@ main = do
 --	pangoLayoutSetText pl "Hello, world!\x2026\x22ef\nこんにちは世界!\x2026\x22ef" 100
 --	pangoLayoutSetText pl "Hello, world!\x22ef\x2026\x22ef" 100
 	cairoMoveTo cr 100 50
-	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
+	pangoCairoShowLayout cr pl
 
 	pl2 <- pangoCairoCreateLayout cr
 	pfd2 <- pangoFontDescriptionNew
@@ -62,7 +60,7 @@ main = do
 	pangoLayoutSetAlignment pl2 pangoAlignCenter
 	pangoLayoutSetText pl2 someText 1600
 	cairoMoveTo cr 100 150
-	fpl2 <- pangoLayoutFreeze pl2
+	let	fpl2 = pl2
 	putStrLn "0, 1, 5, 6"
 	print $ pangoLayoutIndexToPos fpl2 0
 	print $ pangoLayoutIndexToPos fpl2 1
@@ -155,17 +153,17 @@ main = do
 	pangoLayoutSetTabs pl3 $ tabArray True [100, 200, 300, 400, 500, 600]
 	pangoLayoutSetText pl3 "タブの\tテスト\tだよ\tHello,\tworld\t!" 100
 	cairoMoveTo cr 100 580
-	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
+	pangoCairoShowLayout cr pl3
 
 	pangoLayoutSetTabs pl3 $ tabArray False $ (* pangoScale) <$> [100, 200, 300, 350, 450, 550]
 	cairoMoveTo cr 100 630
-	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
+	pangoCairoShowLayout cr pl3
 
 	pl4 <- pangoCairoCreateLayout cr
 	pangoLayoutSetText pl4 "try\nsingle\tparagraph\nmode" 100
 	pangoLayoutSetSingleParagraphMode pl4 True
 	cairoMoveTo cr 100 655
-	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl4
+	pangoCairoShowLayout cr pl4
 
 	pl5 <- pangoCairoCreateLayout cr
 	pangoLayoutSetText pl5 (
@@ -174,7 +172,7 @@ main = do
 		) 100
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0 1
 	cairoMoveTo cr 100 680
-	fpl5 <- pangoLayoutFreeze pl5
+	let	fpl5 = pl5
 	print $ pangoLayoutGetUnknownGlyphsCount fpl5
 	pangoCairoShowLayout cr fpl5
 

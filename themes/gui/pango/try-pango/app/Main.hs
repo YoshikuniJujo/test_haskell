@@ -25,8 +25,6 @@ import Data.CairoContext
 import Data.CairoImage
 import Data.JuicyCairo
 
-import Graphics.Pango.Basic.LayoutObjects.PangoLayoutPrim
-
 main :: IO ()
 main = do
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
@@ -76,4 +74,4 @@ helloWorld cr (r, g, b) ff stl vr wt strc (x, y) = do
 	cairoSetSourceRgb cr . fromJust $ rgbDouble r g b
 	cairoIdentityMatrix cr
 	cairoTranslate cr x y
-	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
+	pangoCairoShowLayout cr pl

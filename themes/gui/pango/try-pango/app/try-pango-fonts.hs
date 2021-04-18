@@ -15,7 +15,6 @@ import Graphics.Cairo.Values
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.LayoutObjects
-import Graphics.Pango.Basic.LayoutObjects.PangoLayoutPrim
 import Graphics.Pango.Rendering.Cairo
 
 import Graphics.Pango.Values
@@ -52,7 +51,7 @@ main = getArgs >>= \case
 		pangoLayoutSetFontDescription pl fd'
 		pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!\n\x1f9a5" 45
 
-		pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
+		pangoCairoShowLayout cr pl
 
 		cairoImageSurfaceGetCairoImage s >>= \case
 			CairoImageArgb32 a -> writePng "try-pango-fonts.png" $ cairoArgb32ToJuicyRGBA8 a

@@ -18,8 +18,6 @@ import Graphics.Pango.Values
 import Data.CairoImage
 import Data.JuicyCairo
 
-import Graphics.Pango.Basic.LayoutObjects.PangoLayoutPrim
-
 main :: IO ()
 main = do
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
@@ -30,7 +28,7 @@ main = do
 	pangoFontDescriptionSetSize pfd (30 * pangoScale)
 	pangoLayoutSetFontDescription pl =<< pangoFontDescriptionFreeze pfd
 	pangoLayoutSetText pl "こんにちは世界!" 30
-	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
+	pangoCairoShowLayout cr pl
 --	void $ writeDynamicPng "tmp2.png" =<< cairoImageSurfaceGetImage s
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "tmp2.png" $ cairoArgb32ToJuicyRGBA8 a

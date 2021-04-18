@@ -10,7 +10,6 @@ import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
 import Graphics.Pango.Basic.LayoutObjects
-import Graphics.Pango.Basic.LayoutObjects.PangoLayoutPrim
 import Graphics.Pango.Rendering.Cairo
 
 main :: IO ()
@@ -20,7 +19,7 @@ main = do
 
 	pl <- pangoCairoCreateLayout cr
 	pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!" 40
-	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
+	pangoCairoShowLayout cr pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-simple.png" $ cairoArgb32ToJuicyRGBA8 a

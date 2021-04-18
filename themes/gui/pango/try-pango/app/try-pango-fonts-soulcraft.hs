@@ -13,7 +13,6 @@ import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
 import Graphics.Pango.Basic.LayoutObjects
-import Graphics.Pango.Basic.LayoutObjects.PangoLayoutPrim
 import Graphics.Pango.Rendering.Cairo
 
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
@@ -43,7 +42,7 @@ main = getArgs >>= \case
 		pl <- pangoCairoCreateLayout cr
 		pangoLayoutSetFontDescription pl fd'
 		pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!" 40
-		pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
+		pangoCairoShowLayout cr pl
 
 		cairoImageSurfaceGetCairoImage s >>= \case
 			CairoImageArgb32 a -> writePng "try-pango-fonts-soulcraft.png" $ cairoArgb32ToJuicyRGBA8 a

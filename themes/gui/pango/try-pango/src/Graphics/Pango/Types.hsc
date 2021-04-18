@@ -11,12 +11,6 @@ import Data.Int
 
 #include <pango/pango.h>
 
-newtype PangoLayout = PangoLayout (ForeignPtr PangoLayout) deriving Show
-
-makePangoLayout0, makePangoLayout :: Ptr PangoLayout -> IO PangoLayout
-makePangoLayout0 p = PangoLayout <$> newForeignPtr p (pure ())
-makePangoLayout p = PangoLayout <$> newForeignPtr p (c_g_object_unref p)
-
 foreign import ccall "g_object_unref" c_g_object_unref :: Ptr a -> IO ()
 
 newtype PangoTabArrayPrim s = PangoTabArrayPrim (ForeignPtr (PangoTabArrayPrim s)) deriving Show

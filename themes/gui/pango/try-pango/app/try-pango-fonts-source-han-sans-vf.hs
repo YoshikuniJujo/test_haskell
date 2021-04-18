@@ -14,7 +14,6 @@ import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
 import Graphics.Pango.Basic.LayoutObjects
-import Graphics.Pango.Basic.LayoutObjects.PangoLayoutPrim
 import Graphics.Pango.Rendering.Cairo
 
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
@@ -42,7 +41,7 @@ main = do
 		print $ pangoFontDescriptionGetAxis @Weight fd'
 		pangoLayoutSetFontDescription pl fd'
 		cairoMoveTo cr 0 y
-		pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
+		pangoCairoShowLayout cr pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-fonts-source-han-sans.png" $ cairoArgb32ToJuicyRGBA8 a
