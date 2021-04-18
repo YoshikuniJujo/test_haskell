@@ -78,7 +78,7 @@ pangoLayoutSetEllipsize (PangoLayoutPrim fpl) (PangoEllipsizeMode pem) =
 foreign import ccall "pango_layout_set_ellipsize" c_pango_layout_set_ellipsize ::
 	Ptr (PangoLayoutPrim s) -> #{type PangoEllipsizeMode} -> IO ()
 
-pangoLayoutSetIndent :: PrimMonad m => PangoLayoutPrim (PrimState m) -> #{type int} -> m ()
+pangoLayoutSetIndent :: PangoLayoutPrim RealWorld -> #{type int} -> IO ()
 pangoLayoutSetIndent (PangoLayoutPrim fpl) idt = unsafeIOToPrim
 	$ withForeignPtr fpl \pl -> c_pango_layout_set_indent pl idt
 
