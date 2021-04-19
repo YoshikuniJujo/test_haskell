@@ -70,6 +70,14 @@ pangoLayoutGetCharacterCount (PangoLayout fpl) =
 foreign import ccall "pango_layout_get_character_count"
 	c_pango_layout_get_character_count :: Ptr PangoLayout -> IO CInt
 
+pangoLayoutSetMarkup :: PangoLayout -> T.Text -> IO ()
+pangoLayoutSetMarkup (PangoLayout fpl) mu =
+	withForeignPtr fpl \ppl -> T.withCStringLen mu \(cs, cl) ->
+		c_pango_layout_set_markup ppl cs $ fromIntegral cl
+
+foreign import ccall "pango_layout_set_markup"
+	c_pango_layout_set_markup :: Ptr PangoLayout -> CString -> CInt -> IO ()
+
 pangoLayoutSetFontDescription :: PangoLayout -> PangoFontDescription -> IO ()
 pangoLayoutSetFontDescription (PangoLayout fpl) (PangoFontDescription fpfd) =
 	withForeignPtr fpl \pl -> withForeignPtr fpfd \pfd ->
