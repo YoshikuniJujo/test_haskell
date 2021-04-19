@@ -4,6 +4,7 @@ PangoLayoutIter memo
 function
 --------
 
+* `pango_layout_get_iter`
 * `pango_layout_iter_copy`
 * `pango_layout_iter_free`
 * `pango_layout_iter_next_run`

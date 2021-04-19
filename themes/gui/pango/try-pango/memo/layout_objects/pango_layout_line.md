@@ -4,6 +4,16 @@ PangoLayoutLine memo
 function
 --------
 
+### get line
+
+* `pango_layout_get_line_count`
+* `pango_layout_get_line`
+* `pango_layout_get_line_readonly`
+* `pango_layout_get_lines`
+* `pango_layout_get_lines_readonly`
+
+### process line
+
 * `pango_layout_line_ref`
 * `pango_layout_line_unref`
 * `pango_layout_line_get_extents`

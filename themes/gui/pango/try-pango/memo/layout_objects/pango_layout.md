@@ -52,12 +52,6 @@ function
 * `pango_layout_get_size`
 * `pango_layout_get_pixel_size`
 * `pango_layout_get_baseline`
-* `pango_layout_get_line_count`
-* `pango_layout_get_line`
-* `pango_layout_get_line_readonly`
-* `pango_layout_get_lines`
-* `pango_layout_get_lines_readonly`
-* `pango_layout_get_iter`
 
 todo
 ----
@@ -80,6 +74,37 @@ todo
 * [x] rename `PangoLayoutPrim` to `PangoLayout`
 * [x] use `IO` instead of pure: pangoLayoutGetFoo
 * [x] move functions to `Graphics.Pango.Basic.LayoutObjects.PangoLayout`
+* [ ] `pangoLayoutSet` and `pangoLayoutGet`
+	+ [ ] `Text`
+	+ [ ] `PangoAttrList`
+	+ [ ] `PangoFontDescription`
+	+ [ ] `Width`
+	+ [ ] `Height`
+	+ [ ] `PangoWrapMode`
+	+ [ ] `PangoEllipsizeMode`
+	+ [ ] `Indent`
+	+ [ ] `Spacing`
+	+ [ ] `Justify`
+	+ [ ] `AutoDir`
+	+ [ ] `PangoAlignment`
+	+ [ ] `pangoTabArray`
+	+ [ ] `SingleParagraphMode`
+* [ ] `pango_layout_get_character_count`
+* [ ] `pango_layout_set_markup`
+* [ ] `pango_layout_set_markup_with_accel`
+* [ ] `pango_layout_is_wrapped`
+* [ ] `pango_layout_get_unknown_glyphs_count`
+* [ ] `pango_layout_get_log_attrs`
+* [ ] `pango_layout_index_to_pos`
+* [ ] `pango_layout_index_to_line_x`
+* [ ] `pango_layout_xy_to_index`
+* [ ] `pango_layout_get_cursor_pos`
+* [ ] `pango_layout_move_cursor_visually`
+* [ ] `pango_layout_get_extents`
+* [ ] `pango_layout_get_pixel_extents`
+* [ ] `pango_layout_get_size`
+* [ ] `pango_layout_get_pixel_size`
+* [ ] `pango_layout_get_baseline`
 
 not todo yet
 ------------
@@ -87,3 +112,6 @@ not todo yet
 * `pango_layout_new`
 * `pango_layout_copy`
 * `pango_layout_get_context`
+* `pango_layout_context_changed`
+* `pango_layout_get_serial`
+* `pango_layout_get_log_attrs_readonly`
