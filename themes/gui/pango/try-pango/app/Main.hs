@@ -74,6 +74,7 @@ helloWorld cr (r, g, b) ff stl vr wt strc (x, y) = do
 
 	pangoLayoutSetFontDescription pl pfd'
 	pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは世界!"
+	print =<< pangoLayoutGetCharacterCount pl
 	cairoSetSourceRgb cr . fromJust $ rgbDouble r g b
 	cairoIdentityMatrix cr
 	cairoTranslate cr x y

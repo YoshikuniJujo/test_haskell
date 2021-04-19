@@ -63,6 +63,13 @@ clength :: CString -> IO Int
 clength p = (0 /=) <$> peek p >>=
 	\case False -> pure 0; True -> (1 +) <$> clength (p `plusPtr` 1)
 
+pangoLayoutGetCharacterCount :: PangoLayout -> IO CInt
+pangoLayoutGetCharacterCount (PangoLayout fpl) =
+	withForeignPtr fpl c_pango_layout_get_character_count
+
+foreign import ccall "pango_layout_get_character_count"
+	c_pango_layout_get_character_count :: Ptr PangoLayout -> IO CInt
+
 pangoLayoutSetFontDescription :: PangoLayout -> PangoFontDescription -> IO ()
 pangoLayoutSetFontDescription (PangoLayout fpl) (PangoFontDescription fpfd) =
 	withForeignPtr fpl \pl -> withForeignPtr fpfd \pfd ->

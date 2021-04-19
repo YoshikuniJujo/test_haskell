@@ -92,7 +92,7 @@ todo
 	+ [ ] `PangoAlignment`
 	+ [ ] `pangoTabArray`
 	+ [ ] `SingleParagraphMode`
-* [ ] `pango_layout_get_character_count`
+* [x] `pango_layout_get_character_count`
 * [ ] `pango_layout_set_markup`
 * [ ] `pango_layout_set_markup_with_accel`
 * [ ] `pango_layout_is_wrapped`
