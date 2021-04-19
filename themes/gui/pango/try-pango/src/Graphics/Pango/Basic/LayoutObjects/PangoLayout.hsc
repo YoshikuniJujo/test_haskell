@@ -26,6 +26,10 @@ newtype PangoLayout = PangoLayout (ForeignPtr PangoLayout) deriving Show
 mkPangoLayout :: Ptr PangoLayout -> IO PangoLayout
 mkPangoLayout p = PangoLayout <$> newForeignPtr p (c_g_object_unref p)
 
+class PangoLayoutSetting s where
+	pangoLayoutSet :: PangoLayout -> s -> IO ()
+	pangoLayoutGet :: PangoLayout -> IO s
+
 pangoLayoutSetText :: PangoLayout -> String -> CInt -> IO ()
 pangoLayoutSetText (PangoLayout fpl) s n =
 	withForeignPtr fpl \pl -> withCString s \cs ->
@@ -34,12 +38,12 @@ pangoLayoutSetText (PangoLayout fpl) s n =
 foreign import ccall "pango_layout_set_text" c_pango_layout_set_text ::
 	Ptr PangoLayout -> CString -> CInt -> IO ()
 
-foreign import ccall "pango_layout_get_text" c_pango_layout_get_text ::
-	Ptr PangoLayout -> IO CString
-
 pangoLayoutGetText :: PangoLayout -> IO String
 pangoLayoutGetText (PangoLayout fpl) =
 	withForeignPtr fpl \pl -> peekCString =<< c_pango_layout_get_text pl
+
+foreign import ccall "pango_layout_get_text" c_pango_layout_get_text ::
+	Ptr PangoLayout -> IO CString
 
 pangoLayoutSetFontDescription :: PangoLayout -> PangoFontDescription -> IO ()
 pangoLayoutSetFontDescription (PangoLayout fpl) (PangoFontDescription fpfd) =

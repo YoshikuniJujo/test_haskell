@@ -74,8 +74,11 @@ todo
 * [x] rename `PangoLayoutPrim` to `PangoLayout`
 * [x] use `IO` instead of pure: pangoLayoutGetFoo
 * [x] move functions to `Graphics.Pango.Basic.LayoutObjects.PangoLayout`
+* [x] define `class PangoLayoutSetting`
 * [ ] `pangoLayoutSet` and `pangoLayoutGet`
 	+ [ ] `Text`
+		- [ ] use `Text` instead of `String`
+		- [ ] others
 	+ [ ] `PangoAttrList`
 	+ [ ] `PangoFontDescription`
 	+ [ ] `Width`

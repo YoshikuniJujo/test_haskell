@@ -24,6 +24,7 @@ dependencies:
 - template-haskell
 - containers
 - bytestring
+- text
 - primitive
 - simple-cairo
 - cairo-image
