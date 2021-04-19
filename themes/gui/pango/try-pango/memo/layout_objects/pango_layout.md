@@ -79,3 +79,5 @@ todo
 * [x] remove `PangoLayout`
 * [x] rename `PangoLayoutPrim` to `PangoLayout`
 * [x] use `IO` instead of pure: pangoLayoutGetFoo
+* [x] move functions to `Graphics.Pango.Basic.LayoutObjects.PangoLayout`
+* [ ] PangoLayoutNew

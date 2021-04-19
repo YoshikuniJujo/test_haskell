@@ -20,6 +20,7 @@ import Graphics.Cairo.Values
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.LayoutObjects
+import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.LowLevel.TabStops
 import Graphics.Pango.Rendering.Cairo
 import Graphics.Pango.Types

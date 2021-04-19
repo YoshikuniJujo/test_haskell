@@ -14,6 +14,9 @@ structure
 	+ Tab Stops
 	+ Text Attribute Markup
 	+ Layout Objects
+		- PangoLayout
+		- PangoLayoutIter
+		- PangoLayoutLine
 	+ Scripts and Languages
 	+ Bidirectional Text
 	+ Vertical Text
@@ -40,22 +43,24 @@ structure
 todo
 ----
 
-* [ ] organize about PrimMonad, IO and freeze
+* [x] organize about PrimMonad, IO and freeze
 	+ [x] remove branch tmp
 	+ [x] make branch: prim-and-io
-	+ [ ] PangoContext and PangoLayout should use `IO` instead of `PrimMonad m => m`
+	+ [x] PangoContext and PangoLayout should use `IO` instead of `PrimMonad m => m`
 		- [x] pangoCairoCreateContext should use `IO`
 		- [x] change from `PangoContext s` to `PangoContext`
 		- [x] pangoCairoCreateLayout should use `IO`
 		- [x] pangoCairoShowLayout should use `IO`
-		- [ ] change from `PangoLayout s` to `pangoLayout`
-	+ [ ] others
-* [ ] rename `PangoFontDescription` to `PangoFontDescriptionPrim`
-* [ ] define `PangoFontDescription` and freezer
+		- [x] change from `PangoLayout s` to `pangoLayout`
+* [x] rename `PangoFontDescription` to `PangoFontDescriptionPrim`
+* [x] define `PangoFontDescription` and freezer
 * [ ] Basic Pango Interfaces
 	+ [x] Fonts
 		- [x] PangoFontDescription
 	+ [ ] LayoutObjects
+		- [ ] PangoLayout
+		- [ ] PangoLayoutIter
+		- [ ] PangoLayoutLine
 	+ [ ] Text Attributes
 	+ [ ] Text Attribute Markup
 	+ [ ] Tab Stops
