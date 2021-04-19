@@ -16,7 +16,6 @@ import Data.Int
 
 import Graphics.Pango.Types
 import Graphics.Pango.Values
-import Graphics.Pango.Basic.Rendering
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 
@@ -26,13 +25,6 @@ newtype PangoLayout = PangoLayout (ForeignPtr PangoLayout) deriving Show
 
 mkPangoLayout :: Ptr PangoLayout -> IO PangoLayout
 mkPangoLayout p = PangoLayout <$> newForeignPtr p (c_g_object_unref p)
-
-foreign import ccall "pango_layout_new" c_pango_layout_new ::
-	Ptr PangoContext -> IO (Ptr PangoLayout)
-
-pangoLayoutNew :: PangoContext -> IO PangoLayout
-pangoLayoutNew (PangoContext fpc) = unsafeIOToPrim $ withForeignPtr fpc \pc ->
-	mkPangoLayout =<< c_pango_layout_new pc
 
 pangoLayoutSetText :: PangoLayout -> String -> CInt -> IO ()
 pangoLayoutSetText (PangoLayout fpl) s n =

@@ -80,4 +80,10 @@ todo
 * [x] rename `PangoLayoutPrim` to `PangoLayout`
 * [x] use `IO` instead of pure: pangoLayoutGetFoo
 * [x] move functions to `Graphics.Pango.Basic.LayoutObjects.PangoLayout`
-* [ ] PangoLayoutNew
+
+not todo yet
+------------
+
+* `pango_layout_new`
+* `pango_layout_copy`
+* `pango_layout_get_context`

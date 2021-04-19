@@ -22,8 +22,8 @@ main :: IO ()
 main = do
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
 	cr <- cairoCreate s
-	pc <- pangoCairoCreateContext cr
-	pl <- pangoLayoutNew pc
+--	pc <- pangoCairoCreateContext cr
+	pl <- pangoCairoCreateLayout cr
 	pfd <- pangoFontDescriptionNew
 	pangoFontDescriptionSetSize pfd (30 * pangoScale)
 	pangoLayoutSetFontDescription pl =<< pangoFontDescriptionFreeze pfd
