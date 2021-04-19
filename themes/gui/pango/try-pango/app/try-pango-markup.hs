@@ -16,7 +16,7 @@ import Graphics.Pango.Rendering.Cairo
 
 main :: IO ()
 main = do
-	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
+	s <- cairoImageSurfaceCreate cairoFormatArgb32 500 400
 	cr <- cairoCreate s
 
 	pl <- pangoCairoCreateLayout cr
@@ -77,6 +77,28 @@ main = do
 		"<span weight=\"bold\">hello</span> " <>
 		"<span weight=\"ultrabold\">hello</span> " <>
 		"<span weight=\"heavy\">hello</span>" <>
+		"</span>"
+	pangoCairoShowLayout cr pl
+
+	cairoMoveTo cr 0 290
+	pangoLayoutSetMarkup pl $
+		"<span face=\"Alegreya Sans SC\">" <>
+		"<span variant=\"normal\">Hello</span> <span variant=\"smallcaps\">Hello</span>" <>
+		"</span>"
+	pangoCairoShowLayout cr pl
+
+	cairoMoveTo cr 0 310
+	pangoLayoutSetMarkup pl $
+		"<span face=\"Soulcraft\">" <>
+		"<span stretch=\"ultracondensed\">hello</span> " <>
+		"<span stretch=\"extracondensed\">hello</span> " <>
+		"<span stretch=\"condensed\">hello</span> " <>
+		"<span stretch=\"semicondensed\">hello</span> " <>
+		"<span stretch=\"normal\">hello</span> " <>
+		"<span stretch=\"semiexpanded\">hello</span> " <>
+		"<span stretch=\"expanded\">hello</span> " <>
+		"<span stretch=\"extraexpanded\">hello</span> " <>
+		"<span stretch=\"ultraexpanded\">hello</span>" <>
 		"</span>"
 	pangoCairoShowLayout cr pl
 
