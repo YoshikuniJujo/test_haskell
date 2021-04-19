@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.LayoutObjects.PangoLayout where
@@ -10,6 +10,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
+import Control.Monad
 import Control.Monad.Primitive
 import Data.Word
 import Data.Int
@@ -18,6 +19,9 @@ import Graphics.Pango.Types
 import Graphics.Pango.Values
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
+
+import qualified Data.Text as T
+import qualified Data.Text.Foreign as T
 
 #include <pango/pango.h>
 
@@ -30,20 +34,34 @@ class PangoLayoutSetting s where
 	pangoLayoutSet :: PangoLayout -> s -> IO ()
 	pangoLayoutGet :: PangoLayout -> IO s
 
-pangoLayoutSetText :: PangoLayout -> String -> CInt -> IO ()
-pangoLayoutSetText (PangoLayout fpl) s n =
-	withForeignPtr fpl \pl -> withCString s \cs ->
-		c_pango_layout_set_text pl cs n
+instance PangoLayoutSetting T.Text where
+	pangoLayoutSet = pangoLayoutSetText
+	pangoLayoutGet = pangoLayoutGetText
+
+pangoLayoutSetText :: PangoLayout -> T.Text -> IO ()
+pangoLayoutSetText (PangoLayout fpl) s =
+	withForeignPtr fpl \pl -> T.withCStringLen s \(cs, n) ->
+		c_pango_layout_set_text pl cs $ fromIntegral n
 
 foreign import ccall "pango_layout_set_text" c_pango_layout_set_text ::
 	Ptr PangoLayout -> CString -> CInt -> IO ()
 
-pangoLayoutGetText :: PangoLayout -> IO String
+pangoLayoutGetText :: PangoLayout -> IO T.Text
 pangoLayoutGetText (PangoLayout fpl) =
-	withForeignPtr fpl \pl -> peekCString =<< c_pango_layout_get_text pl
+	withForeignPtr fpl \pl -> peekCStringText =<< c_pango_layout_get_text pl
 
 foreign import ccall "pango_layout_get_text" c_pango_layout_get_text ::
 	Ptr PangoLayout -> IO CString
+
+peekCStringText :: CString -> IO T.Text
+peekCStringText = T.peekCStringLen <=< cStringToCStringLen
+
+cStringToCStringLen :: CString -> IO CStringLen
+cStringToCStringLen cs = (cs ,) <$> clength cs
+
+clength :: CString -> IO Int
+clength p = (0 /=) <$> peek p >>=
+	\case False -> pure 0; True -> (1 +) <$> clength (p `plusPtr` 1)
 
 pangoLayoutSetFontDescription :: PangoLayout -> PangoFontDescription -> IO ()
 pangoLayoutSetFontDescription (PangoLayout fpl) (PangoFontDescription fpfd) =

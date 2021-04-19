@@ -1,4 +1,5 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -25,6 +26,8 @@ import Data.CairoContext
 import Data.CairoImage
 import Data.JuicyCairo
 
+import qualified Data.Text as T
+
 main :: IO ()
 main = do
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
@@ -48,7 +51,7 @@ main = do
 		(0, 300)
 
 	cairoImageSurfaceGetCairoImage s >>= \case
-		CairoImageArgb32 a -> writePng "tmp.png" $ cairoArgb32ToJuicyRGBA8 a
+		CairoImageArgb32 a -> writePng "try-pango-exe.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
 
 helloWorld :: CairoT RealWorld ->
@@ -70,7 +73,7 @@ helloWorld cr (r, g, b) ff stl vr wt strc (x, y) = do
 	putStrLn $ pangoFontDescriptionToFilename pfd'
 
 	pangoLayoutSetFontDescription pl pfd'
-	pangoLayoutSetText pl "Hello, world!\nこんにちは世界!" 40
+	pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは世界!"
 	cairoSetSourceRgb cr . fromJust $ rgbDouble r g b
 	cairoIdentityMatrix cr
 	cairoTranslate cr x y

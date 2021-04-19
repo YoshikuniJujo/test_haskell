@@ -1,4 +1,5 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -12,13 +13,15 @@ import Graphics.Cairo.Values
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Rendering.Cairo
 
+import qualified Data.Text as T
+
 main :: IO ()
 main = do
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
 	cr <- cairoCreate s
 
 	pl <- pangoCairoCreateLayout cr
-	pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!" 40
+	pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは、世界!"
 	pangoCairoShowLayout cr pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case

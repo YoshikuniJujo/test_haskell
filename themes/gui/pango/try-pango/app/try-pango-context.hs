@@ -1,4 +1,5 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -18,6 +19,8 @@ import Graphics.Pango.Values
 import Data.CairoImage
 import Data.JuicyCairo
 
+import qualified Data.Text as T
+
 main :: IO ()
 main = do
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
@@ -27,7 +30,7 @@ main = do
 	pfd <- pangoFontDescriptionNew
 	pangoFontDescriptionSetSize pfd (30 * pangoScale)
 	pangoLayoutSetFontDescription pl =<< pangoFontDescriptionFreeze pfd
-	pangoLayoutSetText pl "こんにちは世界!" 30
+	pangoLayoutSet @T.Text pl "こんにちは世界!"
 	pangoCairoShowLayout cr pl
 --	void $ writeDynamicPng "tmp2.png" =<< cairoImageSurfaceGetImage s
 	cairoImageSurfaceGetCairoImage s >>= \case

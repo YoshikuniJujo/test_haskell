@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -18,6 +18,8 @@ import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Rendering.Cairo
 
 import Graphics.Pango.Values
+
+import qualified Data.Text as T
 
 main :: IO ()
 main = getArgs >>= \case
@@ -49,7 +51,7 @@ main = getArgs >>= \case
 		putStrLn $ pangoFontDescriptionToFilename fd'
 
 		pangoLayoutSetFontDescription pl fd'
-		pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!\n\x1f9a5" 45
+		pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは、世界!\n\x1f9a5"
 
 		pangoCairoShowLayout cr pl
 

@@ -76,9 +76,9 @@ todo
 * [x] move functions to `Graphics.Pango.Basic.LayoutObjects.PangoLayout`
 * [x] define `class PangoLayoutSetting`
 * [ ] `pangoLayoutSet` and `pangoLayoutGet`
-	+ [ ] `Text`
-		- [ ] use `Text` instead of `String`
-		- [ ] others
+	+ [x] `Text`
+		- [x] use `Text` instead of `String`
+		- [x] others
 	+ [ ] `PangoAttrList`
 	+ [ ] `PangoFontDescription`
 	+ [ ] `Width`

@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -22,6 +22,8 @@ import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 
 import Graphics.Cairo.Drawing.Paths
 
+import qualified Data.Text as T
+
 main :: IO ()
 main = do
 	fd <- pangoFontDescriptionNew
@@ -34,7 +36,7 @@ main = do
 	cairoPaint cr
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0 0
 	pl <- pangoCairoCreateLayout cr
-	pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!\n" 40
+	pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは、世界!\n"
 	for_ (zip [0, 80 ..] [250, 300 .. 900]) \(y, w) -> do
 		pangoFontDescriptionSetAxis fd $ Weight w
 		fd' <- pangoFontDescriptionFreeze fd

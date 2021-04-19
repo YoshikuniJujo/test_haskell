@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -19,6 +19,8 @@ import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 
+import qualified Data.Text as T
+
 main :: IO ()
 main = getArgs >>= \case
 	wght : _	| all ((||) <$> isDigit <*> (== '.')) wght -> do
@@ -36,7 +38,7 @@ main = getArgs >>= \case
 
 		pl <- pangoCairoCreateLayout cr
 		pangoLayoutSetFontDescription pl fd'
-		pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!" 40
+		pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは、世界!"
 		pangoCairoShowLayout cr pl
 
 		cairoImageSurfaceGetCairoImage s >>= \case

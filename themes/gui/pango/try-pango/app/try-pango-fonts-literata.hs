@@ -20,6 +20,8 @@ import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 
 import System.Environment
 
+import qualified Data.Text as T
+
 main :: IO ()
 main = getArgs >>= \case
 	opsz : _	| all ((||) <$> isDigit <*> (== '.')) opsz -> do
@@ -38,7 +40,7 @@ main = getArgs >>= \case
 
 		pl <- pangoCairoCreateLayout cr
 		pangoLayoutSetFontDescription pl fd'
-		pangoLayoutSetText pl "Hello, world!\nこんにちは、世界!" 40
+		pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは、世界!"
 		pangoCairoShowLayout cr pl
 
 		cairoImageSurfaceGetCairoImage s >>= \case

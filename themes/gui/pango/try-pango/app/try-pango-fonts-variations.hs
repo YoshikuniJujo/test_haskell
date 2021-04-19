@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -19,6 +20,8 @@ import Graphics.Pango.Rendering.Cairo
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations hiding (Weight(..))
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
+
+import qualified Data.Text as T
 
 pangoFontDescriptionAddAxis "Inline" "BLDA"
 pangoFontDescriptionAddAxis "Worm" "BLDB"
@@ -70,7 +73,7 @@ main = getArgs >>= \case
 
 		pl <- pangoCairoCreateLayout cr
 		pangoLayoutSetFontDescription pl fd'
-		pangoLayoutSetText pl "Hello, world!\nこんにちは世界!" 40
+		pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは世界!"
 		pangoCairoShowLayout cr pl
 
 		cairoImageSurfaceGetCairoImage s >>= \case

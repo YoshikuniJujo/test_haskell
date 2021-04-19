@@ -1,5 +1,6 @@
 {-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -30,6 +31,8 @@ import Data.Color
 import Data.CairoImage
 import Data.JuicyCairo
 
+import qualified Data.Text as T
+
 main :: IO ()
 main = do
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 900 900
@@ -43,10 +46,7 @@ main = do
 	pangoLayoutSetFontDescription pl =<< pangoFontDescriptionFreeze pfd
 	pangoLayoutSetWidth pl (200 * pangoScale)
 	pangoLayoutSetEllipsize pl pangoEllipsizeMiddle
---	pangoLayoutSetText pl "こんにちは世界!" 100
-	pangoLayoutSetText pl "Hello, world!\nこんにちは世界!" 100
---	pangoLayoutSetText pl "Hello, world!\x2026\x22ef\nこんにちは世界!\x2026\x22ef" 100
---	pangoLayoutSetText pl "Hello, world!\x22ef\x2026\x22ef" 100
+	pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは世界!"
 	cairoMoveTo cr 100 50
 	pangoCairoShowLayout cr pl
 
@@ -59,7 +59,7 @@ main = do
 	pangoLayoutSetIndent pl2 (30 * pangoScale)
 --	pangoLayoutSetLineSpacing pl2 2
 	pangoLayoutSetAlignment pl2 pangoAlignCenter
-	pangoLayoutSetText pl2 someText 1600
+	pangoLayoutSet pl2 $ T.pack someText
 	cairoMoveTo cr 100 150
 	let	fpl2 = pl2
 	putStrLn "0, 1, 5, 6"
@@ -152,7 +152,7 @@ main = do
 --	pfd3 <- pangoFontDescriptionNew
 	pangoLayoutSetAlignment pl3 pangoAlignCenter
 	pangoLayoutSetTabs pl3 $ tabArray True [100, 200, 300, 400, 500, 600]
-	pangoLayoutSetText pl3 "タブの\tテスト\tだよ\tHello,\tworld\t!" 100
+	pangoLayoutSet @T.Text pl3 "タブの\tテスト\tだよ\tHello,\tworld\t!"
 	cairoMoveTo cr 100 580
 	pangoCairoShowLayout cr pl3
 
@@ -161,16 +161,15 @@ main = do
 	pangoCairoShowLayout cr pl3
 
 	pl4 <- pangoCairoCreateLayout cr
-	pangoLayoutSetText pl4 "try\nsingle\tparagraph\nmode" 100
+	pangoLayoutSet @T.Text pl4 "try\nsingle\tparagraph\nmode"
 	pangoLayoutSetSingleParagraphMode pl4 True
 	cairoMoveTo cr 100 655
 	pangoCairoShowLayout cr pl4
 
 	pl5 <- pangoCairoCreateLayout cr
-	pangoLayoutSetText pl5 (
-		"Watch \x231a Sloth \x1f9a5 Otter \x1f9a6 Secret \x3299 A \x1f170 " ++
+	pangoLayoutSet @T.Text pl5 $
+		"Watch \x231a Sloth \x1f9a5 Otter \x1f9a6 Secret \x3299 A \x1f170 " <>
 		"Bad1 \x1f16f Bad2 \x1f16e fffi"
-		) 100
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0 1
 	cairoMoveTo cr 100 680
 	let	fpl5 = pl5
