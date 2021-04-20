@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 282a6e964fa58ce7639f9e164809c30369c573e2dc6501b29f09395ec2167332
+-- hash: 61b3b3438be32bcaa72a71a583792b4bee5a8bf311ad84a991fb55635798c289
 
 name:           try-pango
 version:        0.1.0.0
@@ -86,8 +86,8 @@ executable try-glib-quark
     , try-pango
   default-language: Haskell2010
 
-executable try-pango-attrs
-  main-is: try-pango-attrs.hs
+executable try-pango-attrs-markup
+  main-is: try-pango-attrs-markup.hs
   other-modules:
       Main
       Paths_try_pango

@@ -172,8 +172,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-pango
-  try-pango-attrs:
-    main:                try-pango-attrs.hs
+  try-pango-attrs-markup:
+    main:                try-pango-attrs-markup.hs
     source-dirs:         app
     ghc-options:
     - -threaded

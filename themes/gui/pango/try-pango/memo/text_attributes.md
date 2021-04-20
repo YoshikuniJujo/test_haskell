@@ -64,7 +64,11 @@ function
 todo
 ----
 
-* [x] `pango_parse_markup`
+* [ ] `pango_parse_markup`
+	+ [x] use `Maybe Char`
+	+ [x] rename `try-pango-attrs` to `try-pango-attrs-markup`
+	+ [x] `try-pango-attrs-markup` use a command line argument
+	+ [ ] use `pattern GErrorMarkup`
 * [ ] `pango_markup_parser_new`
 * [ ] `pango_markup_parser_finish`
 * [ ] `g_markup_parse_context_free`

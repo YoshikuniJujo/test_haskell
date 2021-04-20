@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.TextAttributes where
@@ -32,17 +32,23 @@ mkPangoAttrList p = PangoAttrList <$> newForeignPtr p (c_pango_attr_list_unref p
 foreign import ccall "pango_attr_list_unref" c_pango_attr_list_unref ::
 	Ptr PangoAttrList -> IO ()
 
-pangoParseMarkup :: T.Text -> Char -> Either GError (PangoAttrList, T.Text, Char)
+pangoParseMarkup :: T.Text -> Maybe Char -> Either GError (PangoAttrList, T.Text, Maybe Char)
 pangoParseMarkup mt am = unsafePerformIO
 	$ T.withCStringLen mt \(cmt, cmtl) -> alloca \ppal -> alloca \pt -> alloca \pac -> alloca \pge -> do
-		r <- c_pango_parse_markup cmt (fromIntegral cmtl) (fromIntegral $ ord am) ppal pt pac pge
+		r <- c_pango_parse_markup cmt (fromIntegral cmtl) (toGunichar am) ppal pt pac pge
 		case r of
 			#{const FALSE} -> Left <$> (mkGError =<< peek pge)
 			#{const TRUE} -> (Right <$>) $ (,,)
 				<$> (mkPangoAttrList =<< peek ppal)
 				<*> (peekCStringText =<< peek pt)
-				<*> (chr . fromIntegral <$> peek pac)
+				<*> (fromGunichar <$> peek pac)
 			_ -> error "never occur"
+
+toGunichar :: Maybe Char -> #{type gunichar}
+toGunichar = \case Nothing -> 0; Just c -> fromIntegral $ ord c
+
+fromGunichar :: #{type gunichar} -> Maybe Char
+fromGunichar = \case 0 -> Nothing; uc -> Just . chr $ fromIntegral uc
 
 foreign import ccall "pango_parse_markup" c_pango_parse_markup ::
 	CString -> CInt -> #{type gunichar} ->
