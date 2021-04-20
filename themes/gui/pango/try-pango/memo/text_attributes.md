@@ -64,7 +64,7 @@ function
 todo
 ----
 
-* [ ] `pango_parse_markup`
+* [x] `pango_parse_markup`
 * [ ] `pango_markup_parser_new`
 * [ ] `pango_markup_parser_finish`
 * [ ] `g_markup_parse_context_free`

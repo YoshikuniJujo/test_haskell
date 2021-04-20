@@ -1,14 +1,16 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module System.Glib.Quarks where
 
+import Foreign.Storable
 import Foreign.C.String
 import Data.Word
 
 #include <gmodule.h>
 
-newtype GQuark = GQuark #{type GQuark} deriving (Show, Eq)
+newtype GQuark = GQuark #{type GQuark} deriving (Show, Eq, Storable)
 
 gQuarkFromString :: String -> IO GQuark
 gQuarkFromString s = GQuark <$> withCString s c_g_quark_from_string

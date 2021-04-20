@@ -10,16 +10,18 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
-import Control.Monad
 import Control.Monad.Primitive
 import Data.Word
 import Data.Int
 import Data.Char
 
+import Data.Text.CString
+
 import Graphics.Pango.Types
 import Graphics.Pango.Values
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
+import Graphics.Pango.Basic.TextAttributes
 
 import qualified Data.Text as T
 import qualified Data.Text.Foreign as T
@@ -54,16 +56,6 @@ pangoLayoutGetText (PangoLayout fpl) =
 foreign import ccall "pango_layout_get_text" c_pango_layout_get_text ::
 	Ptr PangoLayout -> IO CString
 
-peekCStringText :: CString -> IO T.Text
-peekCStringText = T.peekCStringLen <=< cStringToCStringLen
-
-cStringToCStringLen :: CString -> IO CStringLen
-cStringToCStringLen cs = (cs ,) <$> clength cs
-
-clength :: CString -> IO Int
-clength p = (0 /=) <$> peek p >>=
-	\case False -> pure 0; True -> (1 +) <$> clength (p `plusPtr` 1)
-
 pangoLayoutGetCharacterCount :: PangoLayout -> IO CInt
 pangoLayoutGetCharacterCount (PangoLayout fpl) =
 	withForeignPtr fpl c_pango_layout_get_character_count
@@ -90,6 +82,15 @@ foreign import ccall "pango_layout_set_markup_with_accel"
 	c_pango_layout_set_markup_with_accel ::
 	Ptr PangoLayout -> CString -> CInt ->
 	#{type gunichar} -> Ptr #{type gunichar} -> IO ()
+
+pangoLayoutSetAttributes :: PangoLayout -> PangoAttrList -> IO ()
+pangoLayoutSetAttributes (PangoLayout fpl) (PangoAttrList fpal) =
+	withForeignPtr fpl \ppl -> withForeignPtr fpal \ppal ->
+		c_pango_layout_set_attributes ppl ppal
+
+foreign import ccall "pango_layout_set_attributes"
+	c_pango_layout_set_attributes ::
+	Ptr PangoLayout -> Ptr PangoAttrList -> IO ()
 
 pangoLayoutSetFontDescription :: PangoLayout -> PangoFontDescription -> IO ()
 pangoLayoutSetFontDescription (PangoLayout fpl) (PangoFontDescription fpfd) =

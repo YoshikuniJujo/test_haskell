@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bc02851a07cdf8f992bcb4f5e488e32733f6ea9dbfbe2db0367a8dd384747663
+-- hash: 282a6e964fa58ce7639f9e164809c30369c573e2dc6501b29f09395ec2167332
 
 name:           try-pango
 version:        0.1.0.0
@@ -27,6 +27,7 @@ source-repository head
 
 library
   exposed-modules:
+      Data.Text.CString
       Data.Text.Gunichar
       Graphics.Pango.Basic.Fonts.PangoFontDescription
       Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
@@ -64,6 +65,29 @@ library
 
 executable try-glib-quark
   main-is: try-glib-quark.hs
+  other-modules:
+      Main
+      Paths_try_pango
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , bytestring
+    , cairo-image
+    , containers
+    , nowdoc
+    , primitive
+    , simple-cairo
+    , template-haskell
+    , text
+    , try-pango
+  default-language: Haskell2010
+
+executable try-pango-attrs
+  main-is: try-pango-attrs.hs
   other-modules:
       Main
       Paths_try_pango
