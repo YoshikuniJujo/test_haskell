@@ -93,8 +93,10 @@ todo
 	+ [ ] `pangoTabArray`
 	+ [ ] `SingleParagraphMode`
 * [x] `pango_layout_get_character_count`
-* [ ] `pango_layout_set_markup`
+* [x] `pango_layout_set_markup`
 * [ ] `pango_layout_set_markup_with_accel`
+	+ [ ] convert `gunichar` to `UTF-8`
+	+ [ ] others
 * [ ] `pango_layout_is_wrapped`
 * [ ] `pango_layout_get_unknown_glyphs_count`
 * [ ] `pango_layout_get_log_attrs`
