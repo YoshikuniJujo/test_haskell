@@ -62,7 +62,6 @@ todo
 		- [ ] PangoLayoutIter
 		- [ ] PangoLayoutLine
 	+ [ ] Text Attributes
-	+ [ ] Text Attribute Markup
 	+ [ ] Tab Stops
 	+ [ ] Bidirectional Text
 	+ [ ] Vertical Text
