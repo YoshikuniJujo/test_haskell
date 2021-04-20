@@ -163,6 +163,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-pango
+  try-glib-quark:
+    main:                try-glib-quark.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-pango
 
 tests:
   try-pango-test:
