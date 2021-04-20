@@ -14,6 +14,7 @@ import Control.Monad
 import Control.Monad.Primitive
 import Data.Word
 import Data.Int
+import Data.Char
 
 import Graphics.Pango.Types
 import Graphics.Pango.Values
@@ -77,6 +78,18 @@ pangoLayoutSetMarkup (PangoLayout fpl) mu =
 
 foreign import ccall "pango_layout_set_markup"
 	c_pango_layout_set_markup :: Ptr PangoLayout -> CString -> CInt -> IO ()
+
+pangoLayoutSetMarkupWithAccel :: PangoLayout -> T.Text -> Char -> IO Char
+pangoLayoutSetMarkupWithAccel (PangoLayout fpl) mu am =
+	withForeignPtr fpl \ppl ->
+		T.withCStringLen mu \(cs, cl) -> alloca \pa -> do
+			c_pango_layout_set_markup_with_accel ppl cs (fromIntegral cl) (fromIntegral $ ord am) pa
+			chr . fromIntegral <$> peek pa
+
+foreign import ccall "pango_layout_set_markup_with_accel"
+	c_pango_layout_set_markup_with_accel ::
+	Ptr PangoLayout -> CString -> CInt ->
+	#{type gunichar} -> Ptr #{type gunichar} -> IO ()
 
 pangoLayoutSetFontDescription :: PangoLayout -> PangoFontDescription -> IO ()
 pangoLayoutSetFontDescription (PangoLayout fpl) (PangoFontDescription fpfd) =

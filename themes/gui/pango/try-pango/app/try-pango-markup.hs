@@ -240,6 +240,10 @@ main = do
 		"</span>"
 	pangoCairoShowLayout cr pl
 
+	cairoMoveTo cr 0 830
+	print =<< pangoLayoutSetMarkupWithAccel pl "foo bar _baz __baz" '_'
+	pangoCairoShowLayout cr pl
+
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-markup.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
