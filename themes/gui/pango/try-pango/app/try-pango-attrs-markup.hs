@@ -16,6 +16,8 @@ import Graphics.Pango.Basic.TextAttributes
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Rendering.Cairo
 
+import System.Glib.SimpleXmlSubsetParser
+
 import qualified Data.Text as T
 
 sample :: T.Text
@@ -28,7 +30,22 @@ main = do
 		[arg] -> T.pack arg
 		_ -> error "bad"
 	case pangoParseMarkup mu Nothing of
-		Left e -> putStrLn $ gErrorReport e
+		Left e -> do
+			putStrLn $ gErrorReport e
+			case e of
+				GErrorMarkup c m -> do
+					print c
+					putStrLn case c of
+						GMarkupErrorBadUtf8 -> "GMarkupErrorBadUtf8"
+						GMarkupErrorEmpty -> "GMarkupErrorEmpty"
+						GMarkupErrorParse -> "GMarkupErrorParse"
+						GMarkupErrorUnknownElement -> "GMarkupErrorUnknownElement"
+						GMarkupErrorUnknownAttribute -> "GMarkupErrorUnknownAttribute"
+						GMarkupErrorInvalidContent -> "GMarkupErrorInvalidContent"
+						GMarkupErrorMissingAttribute -> "GMarkupErrorMissingAttribute"
+						_ -> show c
+					putStrLn m
+				_ -> putStrLn "No GMarkupError"
 		Right (pal, t, _) -> do
 			s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
 			cr <- cairoCreate s
@@ -39,5 +56,5 @@ main = do
 			pangoCairoShowLayout cr pl
 
 			cairoImageSurfaceGetCairoImage s >>= \case
-				CairoImageArgb32 a -> writePng "try-pango-attrs.png" $ cairoArgb32ToJuicyRGBA8 a
+				CairoImageArgb32 a -> writePng "try-pango-attrs-markup.png" $ cairoArgb32ToJuicyRGBA8 a
 				_ -> error "never occur"

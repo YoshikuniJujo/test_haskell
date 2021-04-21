@@ -7,12 +7,12 @@ Simple XML Subset Parser memo
 todo
 ----
 
-* [ ] `newtype GMarkupError`
-	+ [ ] `pattern GMarkupErrorBadUtf8`
-	+ [ ] `pattern GMarkupErrorEmpty`
-	+ [ ] `pattern GMarkupErrorParse`
-	+ [ ] `pattern GMarkupErrorUnknownElement`
-	+ [ ] `pattern GMarkupErrorUnknownAttribute`
-	+ [ ] `pattern GMarkupErrorInvalidContent`
-	+ [ ] `pattern GMarkupErrorMissingAttribute`
-* [ ] `pattern GErrorMarkup :: GMarkupError -> String -> GError`
+* [x] `newtype GMarkupError`
+	+ [x] `pattern GMarkupErrorBadUtf8`
+	+ [x] `pattern GMarkupErrorEmpty`
+	+ [x] `pattern GMarkupErrorParse`
+	+ [x] `pattern GMarkupErrorUnknownElement`
+	+ [x] `pattern GMarkupErrorUnknownAttribute`
+	+ [x] `pattern GMarkupErrorInvalidContent`
+	+ [x] `pattern GMarkupErrorMissingAttribute`
+* [x] `pattern GErrorMarkup :: GMarkupError -> String -> GError`
