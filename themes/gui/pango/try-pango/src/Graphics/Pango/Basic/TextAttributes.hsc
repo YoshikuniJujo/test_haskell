@@ -112,6 +112,18 @@ pangoAttributeSetEndIndex (PangoAttribute fa) ei = unsafeIOToPrim
 class PangoAttributeValue v where
 	pangoAttrNew :: PrimMonad m => v -> m (PangoAttribute (PrimState m))
 
+data Family = Family String deriving Show
+
+instance PangoAttributeValue Family where
+	pangoAttrNew (Family f) = pangoAttrFamilyNew f
+
+pangoAttrFamilyNew :: PrimMonad m => String -> m (PangoAttribute (PrimState m))
+pangoAttrFamilyNew f =
+	unsafeIOToPrim $ mkPangoAttribute =<< withCString f c_pango_attr_family_new
+
+foreign import ccall "pango_attr_family_new" c_pango_attr_family_new ::
+	CString -> IO (Ptr (PangoAttribute s))
+
 data Size = Size Double | AbsoluteSize Double deriving Show
 
 instance PangoAttributeValue Size where

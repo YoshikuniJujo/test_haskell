@@ -8,6 +8,7 @@ import Data.CairoImage
 import Data.JuicyCairo
 import Codec.Picture
 import Graphics.Cairo.Drawing.CairoT
+import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
@@ -36,6 +37,15 @@ main = do
 	pl <- pangoCairoCreateLayout cr
 	pangoLayoutSetAttributes pl al'
 	pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは、世界!"
+	pangoCairoShowLayout cr pl
+
+	al2 <- pangoAttrListNew
+	at2 <- pangoAttrNew $ Family "Source Han Sans VF"
+	pangoAttrListInsert al2 at2
+	al2' <- pangoAttrListFreeze al2
+
+	cairoMoveTo cr 0 70
+	pangoLayoutSetAttributes pl al2'
 	pangoCairoShowLayout cr pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case

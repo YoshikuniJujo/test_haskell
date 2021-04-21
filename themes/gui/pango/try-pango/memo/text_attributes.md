@@ -83,10 +83,10 @@ todo
 	+ `:: PrimMonad m => PangoAttribhute (PrimState m) -> CUInt -> m ()`
 * [x] `pangoAttributeSetEndIndex`
 	+ `:: PrimMonad m => PangoAttribhute (PrimState m) -> CUInt -> m ()`
-* [ ] `pango_attribute_copy`
+* [x] `pango_attribute_copy`
 * [ ] `pango_attr_foo_new`
 	+ [ ] language
-	+ [ ] family
+	+ [x] family
 	+ [ ] style
 	+ [ ] variant
 	+ [ ] stretch
