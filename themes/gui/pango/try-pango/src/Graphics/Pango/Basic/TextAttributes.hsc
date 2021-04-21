@@ -1,4 +1,6 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.TextAttributes where
@@ -23,6 +25,8 @@ import System.Glib.SimpleXmlSubsetParser
 
 import qualified Data.Text as T
 import qualified Data.Text.Foreign as T
+
+import Graphics.Pango.Basic.TextAttributes.Template
 
 #include <pango/pango.h>
 
@@ -81,3 +85,8 @@ foreign import ccall "pango_markup_parser_finish"
 	c_pango_markup_parser_finish ::
 	Ptr (GMarkupParseContext s) -> Ptr (Ptr PangoAttrList) -> Ptr CString ->
 	Ptr #{type gunichar} -> Ptr (Ptr GError) -> IO #{type gboolean}
+
+mkMemberAttrType "PangoAttrInvalid" #{const PANGO_ATTR_INVALID}
+mkMemberAttrType "PangoAttrLanguage" #{const PANGO_ATTR_LANGUAGE}
+mkMemberAttrType "PangoAttrFamily" #{const PANGO_ATTR_FAMILY}
+mkMemberAttrType "PangoAttrStyle" #{const PANGO_ATTR_STYLE}

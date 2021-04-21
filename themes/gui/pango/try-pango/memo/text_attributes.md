@@ -75,7 +75,6 @@ todo
 	+ use `[T.Text]` instead of `T.Text`
 * [x] `g_markup_parse_context_free`
 * [x] `g_markup_parse_context_parse`
-* [ ] `pango_attr_type_get_name`
 * [ ] `pango_attribute_copy`
 * [ ] `pango_attribute_destroy`
 * [ ] `pango_attr_foo_new`
@@ -118,6 +117,7 @@ not todo yet
 ------------
 
 * `pango_attr_type_register`
+* `pango_attr_type_get_name`
 * `pango_attribute_init`
 * `pango_attribute_equal`
 * `pango_color_parse`

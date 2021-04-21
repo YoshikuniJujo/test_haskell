@@ -52,7 +52,6 @@ main = do
 	mu <- (<$> getArgs) \case
 		[] -> [sample]
 		args -> T.pack <$> args
-		_ -> error "bad"
 	case pangoParseMarkup' mu Nothing of
 		Left e -> do
 			putStrLn $ gErrorReport e
