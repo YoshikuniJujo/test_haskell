@@ -83,6 +83,7 @@ todo
 	+ `:: PrimMonad m => PangoAttribhute (PrimState m) -> CUInt -> m ()`
 * [x] `pangoAttributeSetEndIndex`
 	+ `:: PrimMonad m => PangoAttribhute (PrimState m) -> CUInt -> m ()`
+* [ ] `pango_attribute_copy`
 * [ ] `pango_attr_foo_new`
 	+ [ ] language
 	+ [ ] family
@@ -117,7 +118,7 @@ todo
 * [x] `pango_attr_list_copy`
 	+ [x] as `pangoAttrListFreeze`
 	+ [x] as `pangoAttrListThaw`
-* [ ] `pango_attr_list_insert`
+* [x] `pango_attr_list_insert`
 * [ ] `pango_attr_list_insert_before`
 * [ ] `pango_attr_list_change`
 
@@ -127,7 +128,6 @@ not todo yet
 * `pango_attr_type_register`
 * `pango_attr_type_get_name`
 * `pango_attribute_init`
-* `pango_attribute_copy`
 * `pango_attribute_equal`
 * `pango_color_parse`
 * `pango_color_free`

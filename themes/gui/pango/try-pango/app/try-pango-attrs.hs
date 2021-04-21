@@ -19,10 +19,22 @@ import qualified Data.Text as T
 
 main :: IO ()
 main = do
-	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
+	s <- cairoImageSurfaceCreate cairoFormatArgb32 400 400
 	cr <- cairoCreate s
 
+	at <- pangoAttrNew $ Size 20
+	at' <- pangoAttrNew $ Size 25
+	al <- pangoAttrListNew
+	print at
+	print al
+	pangoAttributeSetEndIndex at 10
+	pangoAttributeSetStartIndex at' 15
+	pangoAttrListInsert al at
+	pangoAttrListInsert al at'
+	al' <- pangoAttrListFreeze al
+
 	pl <- pangoCairoCreateLayout cr
+	pangoLayoutSetAttributes pl al'
 	pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは、世界!"
 	pangoCairoShowLayout cr pl
 

@@ -157,3 +157,16 @@ pangoAttrListThaw (PangoAttrList fal) = unsafeIOToPrim
 
 foreign import ccall "pango_attr_list_copy" c_pango_attr_list_thaw ::
 	Ptr PangoAttrList -> IO (Ptr (PangoAttrListPrim s))
+
+pangoAttrListInsert :: PrimMonad m =>
+	PangoAttrListPrim (PrimState m) -> PangoAttribute (PrimState m) -> m ()
+pangoAttrListInsert (PangoAttrListPrim fal) (PangoAttribute fa) = unsafeIOToPrim
+	$ withForeignPtr fal \pal -> withForeignPtr fa \pa -> do
+		pa' <- c_pango_attribute_copy pa
+		c_pango_attr_list_insert pal pa'
+
+foreign import ccall "pango_attr_list_insert" c_pango_attr_list_insert ::
+	Ptr (PangoAttrListPrim s) -> Ptr (PangoAttribute s) -> IO ()
+
+foreign import ccall "pango_attribute_copy" c_pango_attribute_copy ::
+	Ptr (PangoAttribute s) -> IO (Ptr (PangoAttribute s))
