@@ -26,7 +26,5 @@ mkGError p = do
 
 foreign import ccall "g_error_free" c_g_error_free :: Ptr GError -> IO ()
 
-gErrorReport :: GError -> IO String
-gErrorReport (GError d c m) = do
-	ds <- gQuarkToString d
-	pure $ ds ++ ": " ++ show c ++ ": " ++ m
+gErrorReport :: GError -> String
+gErrorReport (GError d c m) = gQuarkToString d ++ ": " ++ show c ++ ": " ++ m

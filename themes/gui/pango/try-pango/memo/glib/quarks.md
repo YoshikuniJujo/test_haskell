@@ -19,6 +19,9 @@ todo
 * [x] `g_quark_to_string`
 * [x] `g_quark_try_string`
 * [x] `g_intern_string`
+* [x] move to `System.Glib.Quarks.Internal`
+* [x] define `System.Glib.Quarks`
+* [x] make it pure
 
 not todo yet
 ------------

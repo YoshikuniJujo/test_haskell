@@ -2,17 +2,21 @@
 
 module Main where
 
-import System.Glib.Quarks
+import System.Glib.Quarks.Internal
 
 main :: IO ()
 main = do
-	f <- gQuarkFromString "foo"
-	b <- gQuarkFromString "bar"
-	f' <- gQuarkFromString "foo"
+	let	f = gQuarkFromString "foo"
+		b = gQuarkFromString "bar"
+		f' = gQuarkFromString "foo"
 	print $ f == f'
-	putStrLn =<< gQuarkToString b
+	putStrLn $ gQuarkToString b
 	print =<< gQuarkTryString "bar"
 	print =<< gQuarkTryString "baz"
-	print =<< gInternString "Hello, world!"
-	print =<< gInternString "Good-morning!"
-	print =<< gInternString "Hello, world!"
+	let	ih = gInternString "Hello, world!"
+		ig = gInternString "Good-morning!"
+		ih' = gInternString "Hello, world!"
+	print $ ih == ig
+	print $ ih == ih'
+	putStrLn $ gUninternString ih
+	putStrLn $ gUninternString ig

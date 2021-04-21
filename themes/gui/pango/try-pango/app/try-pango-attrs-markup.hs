@@ -28,7 +28,7 @@ main = do
 		[arg] -> T.pack arg
 		_ -> error "bad"
 	case pangoParseMarkup mu Nothing of
-		Left e -> putStrLn =<< gErrorReport e
+		Left e -> putStrLn $ gErrorReport e
 		Right (pal, t, _) -> do
 			s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
 			cr <- cairoCreate s
