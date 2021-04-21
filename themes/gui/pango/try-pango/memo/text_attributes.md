@@ -75,8 +75,14 @@ todo
 	+ use `[T.Text]` instead of `T.Text`
 * [x] `g_markup_parse_context_free`
 * [x] `g_markup_parse_context_parse`
-* [ ] `pango_attribute_copy`
-* [ ] `pango_attribute_destroy`
+* [x] define `PangoAttribute s`
+	+ [x] define type
+	+ [x] define `mkPangoAttributePrim`
+		- [x] `pango_attribute_destroy`
+* [ ] `pangoAttributeSetStartIndex`
+	+ `:: PrimMonad m => PangoAttribhute (PrimState m) -> CUInt -> m ()`
+* [ ] `pangoAttributeSetEndIndex`
+	+ `:: PrimMonad m => PangoAttribhute (PrimState m) -> CUInt -> m ()`
 * [ ] `pango_attr_foo_new`
 	+ [ ] language
 	+ [ ] family
@@ -119,6 +125,7 @@ not todo yet
 * `pango_attr_type_register`
 * `pango_attr_type_get_name`
 * `pango_attribute_init`
+* `pango_attribute_copy`
 * `pango_attribute_equal`
 * `pango_color_parse`
 * `pango_color_free`

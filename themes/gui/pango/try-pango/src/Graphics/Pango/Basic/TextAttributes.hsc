@@ -90,3 +90,13 @@ mkMemberAttrType "PangoAttrInvalid" #{const PANGO_ATTR_INVALID}
 mkMemberAttrType "PangoAttrLanguage" #{const PANGO_ATTR_LANGUAGE}
 mkMemberAttrType "PangoAttrFamily" #{const PANGO_ATTR_FAMILY}
 mkMemberAttrType "PangoAttrStyle" #{const PANGO_ATTR_STYLE}
+
+newtype PangoAttribute s = PangoAttribute (ForeignPtr (PangoAttribute s))
+	deriving Show
+
+mkPangoAttribute :: Ptr (PangoAttribute s) -> IO (PangoAttribute s)
+mkPangoAttribute p =
+	PangoAttribute <$> newForeignPtr p (c_pango_attribute_destroy p)
+
+foreign import ccall "pango_attribute_destroy" c_pango_attribute_destroy ::
+	Ptr (PangoAttribute s) -> IO ()
