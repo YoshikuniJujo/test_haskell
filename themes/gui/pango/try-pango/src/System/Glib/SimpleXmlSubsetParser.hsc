@@ -1,15 +1,52 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module System.Glib.SimpleXmlSubsetParser where
 
+import Foreign.Ptr
+import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.Concurrent
+import Foreign.Marshal
+import Foreign.Storable
+import Foreign.C.String
+import Control.Monad.Primitive
 import Data.Word
+import Data.Int
 import System.Glib.ErrorReporting
 import System.Glib.Quarks.Internal
 
 import System.IO.Unsafe
 
+import qualified Data.Text as T
+import qualified Data.Text.Foreign as T
+
 #include <glib.h>
+
+newtype GMarkupParseContext s =
+	GMarkupParseContext (ForeignPtr (GMarkupParseContext s)) deriving Show
+
+mkGMarkupParseContext :: Ptr (GMarkupParseContext s) -> IO (GMarkupParseContext s)
+mkGMarkupParseContext p = GMarkupParseContext
+	<$> newForeignPtr p (c_g_markup_parse_context_free p)
+
+foreign import ccall "g_markup_parse_context_free"
+	c_g_markup_parse_context_free :: Ptr (GMarkupParseContext s) -> IO ()
+
+gMarkupParseContextParse :: PrimMonad m =>
+	GMarkupParseContext (PrimState m) -> T.Text -> m (Either GError ())
+gMarkupParseContextParse (GMarkupParseContext fpc) t = unsafeIOToPrim
+	$ withForeignPtr fpc \ppc -> T.withCStringLen t \(ct, ctl) -> alloca \pge -> do
+		r <- c_g_markup_parse_context_parse ppc ct (fromIntegral ctl) pge
+		case r of
+			#{const FALSE} -> Left <$> (mkGError =<< peek pge)
+			#{const TRUE} -> pure $ Right ()
+			_ -> error "never occur"
+
+foreign import ccall "g_markup_parse_context_parse"
+	c_g_markup_parse_context_parse ::
+	Ptr (GMarkupParseContext s) -> CString -> #{type gssize} ->
+	Ptr (Ptr GError) -> IO #{type gboolean}
 
 pattern GErrorMarkup :: GMarkupError -> String -> GError
 pattern GErrorMarkup c m <- (gErrorMarkup -> Just (c, m)) where

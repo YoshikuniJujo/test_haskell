@@ -64,12 +64,14 @@ function
 todo
 ----
 
-* [ ] `pango_parse_markup`
+* [x] `pango_parse_markup`
 	+ [x] use `Maybe Char`
 	+ [x] rename `try-pango-attrs` to `try-pango-attrs-markup`
 	+ [x] `try-pango-attrs-markup` use a command line argument
-	+ [ ] use `pattern GErrorMarkup`
-* [ ] `pango_markup_parser_new`
-* [ ] `pango_markup_parser_finish`
+	+ [x] use `pattern GErrorMarkup`
+* [x] `pango_markup_parser_new`
+* [x] `pango_markup_parser_finish`
+* [ ] edit `app/try-pango-attrs-markup-stream`
+	+ use `[T.Text]` instead of `T.Text`
 * [ ] `g_markup_parse_context_free`
 * [ ] `g_markup_parse_context_parse`

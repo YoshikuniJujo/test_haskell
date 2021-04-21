@@ -10,6 +10,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
+import Control.Monad.Primitive
 import Data.Word
 import Data.Int
 import Data.Char
@@ -18,6 +19,7 @@ import System.IO.Unsafe
 import Data.Text.CString
 
 import System.Glib.ErrorReporting
+import System.Glib.SimpleXmlSubsetParser
 
 import qualified Data.Text as T
 import qualified Data.Text.Foreign as T
@@ -54,3 +56,28 @@ foreign import ccall "pango_parse_markup" c_pango_parse_markup ::
 	CString -> CInt -> #{type gunichar} ->
 		Ptr (Ptr PangoAttrList) -> Ptr CString -> Ptr #{type gunichar} ->
 		Ptr (Ptr GError) -> IO #{type gboolean}
+
+pangoMarkupParserNew :: PrimMonad m => Maybe Char -> m (GMarkupParseContext (PrimState m))
+pangoMarkupParserNew am = unsafeIOToPrim
+	$ mkGMarkupParseContext =<< c_pango_markup_parser_new (toGunichar am)
+
+foreign import ccall "pango_markup_parser_new" c_pango_markup_parser_new ::
+	#{type gunichar} -> IO (Ptr (GMarkupParseContext s))
+
+pangoMarkupParserFinish :: PrimMonad m => GMarkupParseContext (PrimState m) ->
+	m (Either GError (PangoAttrList, T.Text, Maybe Char))
+pangoMarkupParserFinish (GMarkupParseContext fpc) = unsafeIOToPrim
+	$ withForeignPtr fpc \ppc -> alloca \ppal -> alloca \pt -> alloca \pac -> alloca \pge -> do
+		r <- c_pango_markup_parser_finish ppc ppal pt pac pge
+		case r of
+			#{const FALSE} -> Left <$> (mkGError =<< peek pge)
+			#{const TRUE} -> (Right <$>) $ (,,)
+				<$> (mkPangoAttrList =<< peek ppal)
+				<*> (peekCStringText =<< peek pt)
+				<*> (fromGunichar <$> peek pac)
+			_ -> error "never occur"
+
+foreign import ccall "pango_markup_parser_finish"
+	c_pango_markup_parser_finish ::
+	Ptr (GMarkupParseContext s) -> Ptr (Ptr PangoAttrList) -> Ptr CString ->
+	Ptr #{type gunichar} -> Ptr (Ptr GError) -> IO #{type gboolean}
