@@ -25,19 +25,33 @@ sample :: T.Text
 sample = "<big><i>Hello</i>, <b>world</b>!</big>"
 
 pangoParseMarkup' ::
-	T.Text -> Maybe Char -> Either GError (PangoAttrList, T.Text, Maybe Char)
-pangoParseMarkup' t mc = runST do
+	[T.Text] -> Maybe Char -> Either GError (PangoAttrList, T.Text, Maybe Char)
+pangoParseMarkup' ts mc = runST do
 	pc <- pangoMarkupParserNew mc
-	r <- gMarkupParseContextParse pc t
+	r <- gMarkupParseContextParse pc `eitherMapM_` ts
 	case r of
 		Left e -> pure $ Left e
 		Right () -> pangoMarkupParserFinish pc
 
+eitherMapM :: Monad m => (a -> m (Either b c)) -> [a] -> m (Either b [c])
+eitherMapM f = \case
+	[] -> pure $ Right []
+	x : xs -> f x >>= \case
+		Left e -> pure $ Left e
+		Right r -> ((r :) <$>) <$> eitherMapM f xs
+
+eitherMapM_ :: Monad m => (a -> m (Either b c)) -> [a] -> m (Either b ())
+eitherMapM_ f = \case
+	[] -> pure $ Right ()
+	x : xs -> f x >>= \case
+		Left e -> pure $ Left e;
+		Right _ -> eitherMapM_ f xs
+
 main :: IO ()
 main = do
 	mu <- (<$> getArgs) \case
-		[] -> sample
-		[arg] -> T.pack arg
+		[] -> [sample]
+		args -> T.pack <$> args
 		_ -> error "bad"
 	case pangoParseMarkup' mu Nothing of
 		Left e -> do

@@ -71,7 +71,65 @@ todo
 	+ [x] use `pattern GErrorMarkup`
 * [x] `pango_markup_parser_new`
 * [x] `pango_markup_parser_finish`
-* [ ] edit `app/try-pango-attrs-markup-stream`
+* [x] edit `app/try-pango-attrs-markup-stream`
 	+ use `[T.Text]` instead of `T.Text`
-* [ ] `g_markup_parse_context_free`
-* [ ] `g_markup_parse_context_parse`
+* [x] `g_markup_parse_context_free`
+* [x] `g_markup_parse_context_parse`
+* [ ] `pango_attr_type_get_name`
+* [ ] `pango_attribute_copy`
+* [ ] `pango_attribute_destroy`
+* [ ] `pango_attr_foo_new`
+	+ [ ] language
+	+ [ ] family
+	+ [ ] style
+	+ [ ] variant
+	+ [ ] stretch
+	+ [ ] weight
+	+ [ ] size
+	+ [ ] size absolute
+	+ [ ] font description
+	+ [ ] foreground
+	+ [ ] background
+	+ [ ] strikethrough
+	+ [ ] strikethrough color
+	+ [ ] underline
+	+ [ ] underline color
+	+ [ ] shape
+	+ [ ] shape with data
+	+ [ ] scale
+	+ [ ] rise
+	+ [ ] letter spacing
+	+ [ ] fallback
+	+ [ ] gravity
+	+ [ ] gravity hint
+	+ [ ] font features
+	+ [ ] foreground alpha
+	+ [ ] background alpha
+* [ ] `pango_color_parse`
+* [ ] `pango_color_to_string`
+* [ ] `pango_attr_list_new`
+* [ ] `pango_attr_list_unref`
+* [ ] `pango_attr_list_copy`
+* [ ] `pango_attr_list_insert`
+* [ ] `pango_attr_list_insert_before`
+* [ ] `pango_attr_list_change`
+
+not todo yet
+------------
+
+* `pango_attr_type_register`
+* `pango_attribute_init`
+* `pango_attribute_equal`
+* `pango_color_parse`
+* `pango_color_free`
+* `pango_attr_list_ref`
+* `pango_attr_list_splice`
+* `pango_attr_list_filter`
+* `pango_attr_list_get_iterator`
+* `pango_attr_iterator_copy`
+* `pango_attr_iterator_next`
+* `pango_attr_iterator_range`
+* `pango_attr_iterator_get`
+* `pango_attr_iterator_get_font`
+* `pango_attr_iterator_get_attrs`
+* `pango_attr_iterator_destroy`
