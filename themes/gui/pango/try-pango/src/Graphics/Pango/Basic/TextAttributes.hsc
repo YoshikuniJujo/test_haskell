@@ -100,3 +100,11 @@ mkPangoAttribute p =
 
 foreign import ccall "pango_attribute_destroy" c_pango_attribute_destroy ::
 	Ptr (PangoAttribute s) -> IO ()
+
+pangoAttributeSetStartIndex, pangoAttributeSetEndIndex :: PrimMonad m =>
+	PangoAttribute (PrimState m) -> CUInt -> m ()
+pangoAttributeSetStartIndex (PangoAttribute fa) si = unsafeIOToPrim
+	$ withForeignPtr fa \pa -> #{poke PangoAttribute, start_index} pa si
+
+pangoAttributeSetEndIndex (PangoAttribute fa) ei = unsafeIOToPrim
+	$ withForeignPtr fa \pa -> #{poke PangoAttribute, end_index} pa ei

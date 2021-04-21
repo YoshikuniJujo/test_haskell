@@ -79,9 +79,9 @@ todo
 	+ [x] define type
 	+ [x] define `mkPangoAttributePrim`
 		- [x] `pango_attribute_destroy`
-* [ ] `pangoAttributeSetStartIndex`
+* [x] `pangoAttributeSetStartIndex`
 	+ `:: PrimMonad m => PangoAttribhute (PrimState m) -> CUInt -> m ()`
-* [ ] `pangoAttributeSetEndIndex`
+* [x] `pangoAttributeSetEndIndex`
 	+ `:: PrimMonad m => PangoAttribhute (PrimState m) -> CUInt -> m ()`
 * [ ] `pango_attr_foo_new`
 	+ [ ] language
