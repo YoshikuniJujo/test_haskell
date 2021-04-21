@@ -90,8 +90,8 @@ todo
 	+ [ ] variant
 	+ [ ] stretch
 	+ [ ] weight
-	+ [ ] size
-	+ [ ] size absolute
+	+ [x] size
+	+ [x] size absolute
 	+ [ ] font description
 	+ [ ] foreground
 	+ [ ] background

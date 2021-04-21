@@ -108,3 +108,22 @@ pangoAttributeSetStartIndex (PangoAttribute fa) si = unsafeIOToPrim
 
 pangoAttributeSetEndIndex (PangoAttribute fa) ei = unsafeIOToPrim
 	$ withForeignPtr fa \pa -> #{poke PangoAttribute, end_index} pa ei
+
+class PangoAttributeValue v where
+	pangoAttrNew :: PrimMonad m => v -> m (PangoAttribute (PrimState m))
+
+data Size = Size Double | AbsoluteSize Double deriving Show
+
+instance PangoAttributeValue Size where
+	pangoAttrNew = pangoAttrSizeNew
+
+pangoAttrSizeNew :: PrimMonad m => Size -> m (PangoAttribute (PrimState m))
+pangoAttrSizeNew = unsafeIOToPrim . (mkPangoAttribute =<<) . \case
+	Size s -> c_pango_attr_size_new . round $ s * #{const PANGO_SCALE}
+	AbsoluteSize a -> c_pango_attr_size_new_absolute . round $ a * #{const PANGO_SCALE}
+
+foreign import ccall "pango_attr_size_new" c_pango_attr_size_new ::
+	CInt -> IO (Ptr (PangoAttribute s))
+
+foreign import ccall "pango_attr_size_new_absolute" c_pango_attr_size_new_absolute ::
+	CInt -> IO (Ptr (PangoAttribute s))
