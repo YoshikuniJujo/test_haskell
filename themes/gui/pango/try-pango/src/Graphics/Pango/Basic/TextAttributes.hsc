@@ -127,3 +127,33 @@ foreign import ccall "pango_attr_size_new" c_pango_attr_size_new ::
 
 foreign import ccall "pango_attr_size_new_absolute" c_pango_attr_size_new_absolute ::
 	CInt -> IO (Ptr (PangoAttribute s))
+
+newtype PangoAttrListPrim s = PangoAttrListPrim (ForeignPtr (PangoAttrListPrim s)) deriving Show
+
+mkPangoAttrListPrim :: Ptr (PangoAttrListPrim s) -> IO (PangoAttrListPrim s)
+mkPangoAttrListPrim p = PangoAttrListPrim <$> newForeignPtr p (c_pango_attr_list_prim_unref p)
+
+foreign import ccall "pango_attr_list_unref" c_pango_attr_list_prim_unref ::
+	Ptr (PangoAttrListPrim s) -> IO ()
+
+pangoAttrListNew :: PrimMonad m => m (PangoAttrListPrim (PrimState m))
+pangoAttrListNew = unsafeIOToPrim $ mkPangoAttrListPrim =<< c_pango_attr_list_new
+
+foreign import ccall "pango_attr_list_new" c_pango_attr_list_new ::
+	IO (Ptr (PangoAttrListPrim s))
+
+pangoAttrListFreeze ::
+	PrimMonad m => PangoAttrListPrim (PrimState m) -> m PangoAttrList
+pangoAttrListFreeze (PangoAttrListPrim fal) = unsafeIOToPrim
+	$ mkPangoAttrList =<< withForeignPtr fal c_pango_attr_list_freeze
+
+foreign import ccall "pango_attr_list_copy" c_pango_attr_list_freeze ::
+	Ptr (PangoAttrListPrim s) -> IO (Ptr PangoAttrList)
+
+pangoAttrListThaw ::
+	PrimMonad m => PangoAttrList -> m (PangoAttrListPrim (PrimState m))
+pangoAttrListThaw (PangoAttrList fal) = unsafeIOToPrim
+	$ mkPangoAttrListPrim =<< withForeignPtr fal c_pango_attr_list_thaw
+
+foreign import ccall "pango_attr_list_copy" c_pango_attr_list_thaw ::
+	Ptr PangoAttrList -> IO (Ptr (PangoAttrListPrim s))

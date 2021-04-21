@@ -112,9 +112,11 @@ todo
 	+ [ ] background alpha
 * [ ] `pango_color_parse`
 * [ ] `pango_color_to_string`
-* [ ] `pango_attr_list_new`
-* [ ] `pango_attr_list_unref`
-* [ ] `pango_attr_list_copy`
+* [x] `pango_attr_list_new`
+* [x] `pango_attr_list_unref`
+* [x] `pango_attr_list_copy`
+	+ [x] as `pangoAttrListFreeze`
+	+ [x] as `pangoAttrListThaw`
 * [ ] `pango_attr_list_insert`
 * [ ] `pango_attr_list_insert_before`
 * [ ] `pango_attr_list_change`
