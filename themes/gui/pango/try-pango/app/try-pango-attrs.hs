@@ -107,8 +107,11 @@ main = do
 
 	al6 <- pangoAttrListNew
 	at9 <- pangoAttrNew $ ForegroundColor 0 (maxBound `div` 2) 0
-	pangoAttributeSetEndIndex at9 (10 * 3)
+	pangoAttributeSetEndIndex at9 (15 * 3)
+	at10 <- pangoAttrNew $ BackgroundColor 0 0 maxBound
+	pangoAttributeSetStartIndex at10 (10 * 3)
 	pangoAttrListInsert al6 at9
+	pangoAttrListInsert al6 at10
 
 	cairoMoveTo cr 0 170
 	pangoLayoutSet pl =<< pangoAttrListFreeze al6

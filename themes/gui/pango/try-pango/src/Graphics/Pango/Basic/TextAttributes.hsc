@@ -218,6 +218,19 @@ pangoAttrForegroundNew (ForegroundColor r g b) = unsafeIOToPrim
 foreign import ccall "pango_attr_foreground_new" c_pango_attr_foreground_new ::
 	Word16 -> Word16 -> Word16 -> IO (Ptr (PangoAttribute s))
 
+data BackgroundColor = BackgroundColor Word16 Word16 Word16 deriving Show
+
+instance PangoAttributeValue BackgroundColor where
+	pangoAttrNew = pangoAttrBackgroundNew
+
+pangoAttrBackgroundNew :: PrimMonad m =>
+	BackgroundColor -> m (PangoAttribute (PrimState m))
+pangoAttrBackgroundNew (BackgroundColor r g b) = unsafeIOToPrim
+	$ mkPangoAttribute =<< c_pango_attr_background_new r g b
+
+foreign import ccall "pango_attr_background_new" c_pango_attr_background_new ::
+	Word16 -> Word16 -> Word16 -> IO (Ptr (PangoAttribute s))
+
 newtype PangoAttrListPrim s = PangoAttrListPrim (ForeignPtr (PangoAttrListPrim s)) deriving Show
 
 mkPangoAttrListPrim :: Ptr (PangoAttrListPrim s) -> IO (PangoAttrListPrim s)
