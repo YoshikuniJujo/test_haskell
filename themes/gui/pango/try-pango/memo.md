@@ -57,12 +57,15 @@ todo
 * [ ] Basic Pango Interfaces
 	+ [x] Fonts
 		- [x] PangoFontDescription
+	+ [ ] Text Attributes
+	+ [ ] Tab Stops
 	+ [ ] LayoutObjects
 		- [ ] PangoLayout
 		- [ ] PangoLayoutIter
 		- [ ] PangoLayoutLine
-	+ [ ] Text Attributes
-	+ [ ] Tab Stops
+	+ [ ] Scripts and Languages
+		- [ ] PangoScript
+		- [ ] PangoLanguage
 	+ [ ] Bidirectional Text
 	+ [ ] Vertical Text
 	+ [ ] Scripts and Languages
@@ -70,6 +73,7 @@ todo
 	+ [ ] Cairo Rendering
 * [ ] think about package name
 	+ simple-cairo-pango ?
+* [ ] consider to remove `deriving Show` of many types
 
 not do it yet
 -------------
