@@ -79,7 +79,7 @@ todo
 	+ [x] `Text`
 		- [x] use `Text` instead of `String`
 		- [x] others
-	+ [ ] `PangoAttrList`
+	+ [x] `PangoAttrList`
 	+ [ ] `PangoFontDescription`
 	+ [ ] `Width`
 	+ [ ] `Height`

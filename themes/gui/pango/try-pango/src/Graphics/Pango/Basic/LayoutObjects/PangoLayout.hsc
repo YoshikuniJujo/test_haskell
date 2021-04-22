@@ -83,6 +83,10 @@ foreign import ccall "pango_layout_set_markup_with_accel"
 	Ptr PangoLayout -> CString -> CInt ->
 	#{type gunichar} -> Ptr #{type gunichar} -> IO ()
 
+instance PangoLayoutSetting PangoAttrList where
+	pangoLayoutSet = pangoLayoutSetAttributes
+	pangoLayoutGet = pangoLayoutGetAttributes
+
 pangoLayoutSetAttributes :: PangoLayout -> PangoAttrList -> IO ()
 pangoLayoutSetAttributes (PangoLayout fpl) (PangoAttrList fpal) =
 	withForeignPtr fpl \ppl -> withForeignPtr fpal \ppal ->
@@ -91,6 +95,19 @@ pangoLayoutSetAttributes (PangoLayout fpl) (PangoAttrList fpal) =
 foreign import ccall "pango_layout_set_attributes"
 	c_pango_layout_set_attributes ::
 	Ptr PangoLayout -> Ptr PangoAttrList -> IO ()
+
+pangoLayoutGetAttributes :: PangoLayout -> IO PangoAttrList
+pangoLayoutGetAttributes (PangoLayout fpl) =
+	mkPangoAttrList =<< do
+		p <- withForeignPtr fpl c_pango_layout_get_attributes
+		p <$ c_pango_attr_list_ref p
+
+foreign import ccall "pango_layout_get_attributes"
+	c_pango_layout_get_attributes ::
+	Ptr PangoLayout -> IO (Ptr PangoAttrList)
+
+foreign import ccall "pango_attr_list_ref" c_pango_attr_list_ref ::
+	Ptr PangoAttrList -> IO (Ptr PangoAttrList)
 
 pangoLayoutSetFontDescription :: PangoLayout -> PangoFontDescription -> IO ()
 pangoLayoutSetFontDescription (PangoLayout fpl) (PangoFontDescription fpfd) =

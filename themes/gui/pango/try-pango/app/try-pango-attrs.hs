@@ -40,7 +40,7 @@ main = do
 	al' <- pangoAttrListFreeze al
 
 	pl <- pangoCairoCreateLayout cr
-	pangoLayoutSetAttributes pl al'
+	pangoLayoutSet pl al'
 	pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは、世界!"
 	pangoCairoShowLayout cr pl
 
@@ -52,7 +52,7 @@ main = do
 	al2' <- pangoAttrListFreeze al2
 
 	cairoMoveTo cr 0 70
-	pangoLayoutSetAttributes pl al2'
+	pangoLayoutSet pl al2'
 	pangoLayoutSet @T.Text pl "源ノ角ゴシック 思源黑體 思源黑体"
 	pangoCairoShowLayout cr pl
 
@@ -60,7 +60,7 @@ main = do
 	pangoAttrListInsert al2 at4
 
 	cairoMoveTo cr 0 90
-	pangoLayoutSetAttributes pl =<< pangoAttrListFreeze al2
+	pangoLayoutSet pl =<< pangoAttrListFreeze al2
 	pangoCairoShowLayout cr pl
 
 	al3 <- pangoAttrListNew
@@ -72,7 +72,7 @@ main = do
 	pangoAttrListInsert al3 at6
 
 	cairoMoveTo cr 0 110
-	pangoLayoutSetAttributes pl =<< pangoAttrListFreeze al3
+	pangoLayoutSet pl =<< pangoAttrListFreeze al3
 	pangoLayoutSet @T.Text pl "Hello, world! こんにちは、世界!"
 	pangoCairoShowLayout cr pl
 
@@ -90,7 +90,7 @@ main = do
 		pangoAttrListInsertBefore al4 lat
 
 	cairoMoveTo cr 0 130
-	pangoLayoutSetAttributes pl =<< pangoAttrListFreeze al4
+	pangoLayoutSet pl =<< pangoAttrListFreeze al4
 	pangoLayoutSet @T.Text pl "華華華華華華華華華華華華! こんにちは、世界!"
 	pangoCairoShowLayout cr pl
 
@@ -102,7 +102,7 @@ main = do
 	pangoAttrListInsert al5 at8
 
 	cairoMoveTo cr 0 150
-	pangoLayoutSetAttributes pl =<< pangoAttrListFreeze al5
+	pangoLayoutSet pl =<< pangoAttrListFreeze al5
 	pangoCairoShowLayout cr pl
 
 	al6 <- pangoAttrListNew
@@ -111,7 +111,7 @@ main = do
 	pangoAttrListInsert al6 at9
 
 	cairoMoveTo cr 0 170
-	pangoLayoutSetAttributes pl =<< pangoAttrListFreeze al6
+	pangoLayoutSet pl =<< pangoAttrListFreeze al6
 	pangoLayoutSet pl . T.pack . pangoLanguageGetSampleString =<< pangoLanguageGetDefault
 	pangoCairoShowLayout cr pl
 
