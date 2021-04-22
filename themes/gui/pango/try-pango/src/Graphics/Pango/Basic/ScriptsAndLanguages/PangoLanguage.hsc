@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage where
@@ -11,6 +12,10 @@ import System.IO.Unsafe
 newtype PangoLanguage = PangoLanguage (Ptr PangoLanguage)
 
 instance Show PangoLanguage where show _ = "PangoLanguage"
+
+pangoLanguageFromString :: String -> PangoLanguage
+pangoLanguageFromString l = unsafePerformIO $ withCString l \cl ->
+	PangoLanguage <$> c_pango_language_from_string cl
 
 
 foreign import ccall "pango_language_from_string"
