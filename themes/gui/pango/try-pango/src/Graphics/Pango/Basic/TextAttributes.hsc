@@ -146,6 +146,16 @@ pangoAttrStyleNew (PangoStyle s) =
 foreign import ccall "pango_attr_style_new" c_pango_attr_style_new ::
 	#{type PangoStyle} -> IO (Ptr (PangoAttribute s))
 
+instance PangoAttributeValue PangoVariant where
+	pangoAttrNew = pangoAttrVariantNew
+
+pangoAttrVariantNew :: PrimMonad m => PangoVariant -> m (PangoAttribute (PrimState m))
+pangoAttrVariantNew (PangoVariant v) =
+	unsafeIOToPrim $ mkPangoAttribute =<< c_pango_attr_variant_new v
+
+foreign import ccall "pango_attr_variant_new" c_pango_attr_variant_new ::
+	#{type PangoVariant} -> IO (Ptr (PangoAttribute s))
+
 data Size = Size Double | AbsoluteSize Double deriving Show
 
 instance PangoAttributeValue Size where

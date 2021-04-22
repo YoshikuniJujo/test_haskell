@@ -88,7 +88,7 @@ todo
 	+ [x] language
 	+ [x] family
 	+ [x] style
-	+ [ ] variant
+	+ [x] variant
 	+ [ ] stretch
 	+ [ ] weight
 	+ [x] size
