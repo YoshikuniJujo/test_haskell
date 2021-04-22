@@ -231,6 +231,20 @@ pangoAttrBackgroundNew (BackgroundColor r g b) = unsafeIOToPrim
 foreign import ccall "pango_attr_background_new" c_pango_attr_background_new ::
 	Word16 -> Word16 -> Word16 -> IO (Ptr (PangoAttribute s))
 
+newtype Strikethrough = Strikethrough Bool deriving Show
+
+instance PangoAttributeValue Strikethrough where
+	pangoAttrNew (Strikethrough b) = pangoAttrStrikethroughNew b
+
+pangoAttrStrikethroughNew :: PrimMonad m =>
+	Bool -> m (PangoAttribute (PrimState m))
+pangoAttrStrikethroughNew b = unsafeIOToPrim
+	$ mkPangoAttribute =<< c_pango_attr_strikethrough_new case b of
+		False -> #{const FALSE}; True -> #{const TRUE}
+
+foreign import ccall "pango_attr_strikethrough_new" c_pango_attr_strikethrough_new ::
+	#{type gboolean} -> IO (Ptr (PangoAttribute s))
+
 newtype PangoAttrListPrim s = PangoAttrListPrim (ForeignPtr (PangoAttrListPrim s)) deriving Show
 
 mkPangoAttrListPrim :: Ptr (PangoAttrListPrim s) -> IO (PangoAttrListPrim s)

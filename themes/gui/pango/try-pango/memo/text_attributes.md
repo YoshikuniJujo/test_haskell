@@ -96,7 +96,7 @@ todo
 	+ [x] font description
 	+ [x] foreground
 	+ [x] background
-	+ [ ] strikethrough
+	+ [x] strikethrough
 	+ [ ] strikethrough color
 	+ [ ] underline
 	+ [ ] underline color
