@@ -89,7 +89,7 @@ todo
 	+ [x] family
 	+ [x] style
 	+ [x] variant
-	+ [ ] stretch
+	+ [x] stretch
 	+ [ ] weight
 	+ [x] size
 	+ [x] size absolute

@@ -156,6 +156,16 @@ pangoAttrVariantNew (PangoVariant v) =
 foreign import ccall "pango_attr_variant_new" c_pango_attr_variant_new ::
 	#{type PangoVariant} -> IO (Ptr (PangoAttribute s))
 
+instance PangoAttributeValue PangoStretch where
+	pangoAttrNew = pangoAttrStretchNew
+
+pangoAttrStretchNew :: PrimMonad m => PangoStretch -> m (PangoAttribute (PrimState m))
+pangoAttrStretchNew (PangoStretch s) =
+	unsafeIOToPrim $ mkPangoAttribute =<< c_pango_attr_stretch_new s
+
+foreign import ccall "pango_attr_stretch_new" c_pango_attr_stretch_new ::
+	#{type PangoStretch} -> IO (Ptr (PangoAttribute s))
+
 data Size = Size Double | AbsoluteSize Double deriving Show
 
 instance PangoAttributeValue Size where
