@@ -166,6 +166,16 @@ pangoAttrStretchNew (PangoStretch s) =
 foreign import ccall "pango_attr_stretch_new" c_pango_attr_stretch_new ::
 	#{type PangoStretch} -> IO (Ptr (PangoAttribute s))
 
+instance PangoAttributeValue PangoWeight where
+	pangoAttrNew = pangoAttrWeightNew
+
+pangoAttrWeightNew :: PrimMonad m => PangoWeight -> m (PangoAttribute (PrimState m))
+pangoAttrWeightNew (PangoWeight w) =
+	unsafeIOToPrim $ mkPangoAttribute =<< c_pango_attr_weight_new w
+
+foreign import ccall "pango_attr_weight_new" c_pango_attr_weight_new ::
+	#{type PangoWeight} -> IO (Ptr (PangoAttribute s))
+
 data Size = Size Double | AbsoluteSize Double deriving Show
 
 instance PangoAttributeValue Size where
@@ -212,14 +222,22 @@ pangoAttrListThaw (PangoAttrList fal) = unsafeIOToPrim
 foreign import ccall "pango_attr_list_copy" c_pango_attr_list_thaw ::
 	Ptr PangoAttrList -> IO (Ptr (PangoAttrListPrim s))
 
-pangoAttrListInsert :: PrimMonad m =>
+pangoAttrListInsert, pangoAttrListInsertBefore :: PrimMonad m =>
 	PangoAttrListPrim (PrimState m) -> PangoAttribute (PrimState m) -> m ()
 pangoAttrListInsert (PangoAttrListPrim fal) (PangoAttribute fa) = unsafeIOToPrim
 	$ withForeignPtr fal \pal -> withForeignPtr fa \pa -> do
 		pa' <- c_pango_attribute_copy pa
 		c_pango_attr_list_insert pal pa'
 
+pangoAttrListInsertBefore (PangoAttrListPrim fal) (PangoAttribute fa) = unsafeIOToPrim
+	$ withForeignPtr fal \pal -> withForeignPtr fa \pa -> do
+		pa' <- c_pango_attribute_copy pa
+		c_pango_attr_list_insert_before pal pa'
+
 foreign import ccall "pango_attr_list_insert" c_pango_attr_list_insert ::
+	Ptr (PangoAttrListPrim s) -> Ptr (PangoAttribute s) -> IO ()
+
+foreign import ccall "pango_attr_list_insert_before" c_pango_attr_list_insert_before ::
 	Ptr (PangoAttrListPrim s) -> Ptr (PangoAttribute s) -> IO ()
 
 foreign import ccall "pango_attribute_copy" c_pango_attribute_copy ::

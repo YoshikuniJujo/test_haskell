@@ -90,7 +90,7 @@ todo
 	+ [x] style
 	+ [x] variant
 	+ [x] stretch
-	+ [ ] weight
+	+ [x] weight
 	+ [x] size
 	+ [x] size absolute
 	+ [ ] font description
@@ -119,7 +119,7 @@ todo
 	+ [x] as `pangoAttrListFreeze`
 	+ [x] as `pangoAttrListThaw`
 * [x] `pango_attr_list_insert`
-* [ ] `pango_attr_list_insert_before`
+* [x] `pango_attr_list_insert_before`
 * [ ] `pango_attr_list_change`
 
 not todo yet

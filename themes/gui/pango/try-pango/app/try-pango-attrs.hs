@@ -1,9 +1,10 @@
-{-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
+import Data.Foldable
 import Data.CairoImage
 import Data.JuicyCairo
 import Codec.Picture
@@ -71,6 +72,24 @@ main = do
 	cairoMoveTo cr 0 110
 	pangoLayoutSetAttributes pl =<< pangoAttrListFreeze al3
 	pangoLayoutSet @T.Text pl "Hello, world! こんにちは、世界!"
+	pangoCairoShowLayout cr pl
+
+	al4 <- pangoAttrListNew
+	at7 <- pangoAttrNew $ Family "Source Han Sans VF"
+	pangoAttrListInsert al4 at7
+	for_ (zip [
+		pangoWeightThin, pangoWeightUltralight, pangoWeightLight,
+		pangoWeightSemilight, pangoWeightBook, pangoWeightNormal,
+		pangoWeightMedium, pangoWeightSemibold, pangoWeightBold,
+		pangoWeightUltrabold, pangoWeightHeavy, pangoWeightUltraheavy
+		] [3, 6 .. ]) \(w, i) -> do
+		lat <- pangoAttrNew w
+		pangoAttributeSetEndIndex lat i
+		pangoAttrListInsertBefore al4 lat
+
+	cairoMoveTo cr 0 130
+	pangoLayoutSetAttributes pl =<< pangoAttrListFreeze al4
+	pangoLayoutSet @T.Text pl "華華華華華華華華華華華華! こんにちは、世界!"
 	pangoCairoShowLayout cr pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case
