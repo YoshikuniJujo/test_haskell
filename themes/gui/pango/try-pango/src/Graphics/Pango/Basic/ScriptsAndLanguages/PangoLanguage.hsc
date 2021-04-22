@@ -33,3 +33,10 @@ pangoLanguageGetDefault = PangoLanguage <$> c_pango_language_get_default
 
 foreign import ccall "pango_language_get_default"
 	c_pango_language_get_default :: IO (Ptr PangoLanguage)
+
+pangoLanguageGetSampleString :: PangoLanguage -> String
+pangoLanguageGetSampleString (PangoLanguage pl) = unsafePerformIO
+	$ peekCString =<< c_pango_language_get_sample_string pl
+
+foreign import ccall "pango_language_get_sample_string"
+	c_pango_language_get_sample_string :: Ptr PangoLanguage -> IO CString

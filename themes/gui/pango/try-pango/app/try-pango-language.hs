@@ -11,5 +11,7 @@ main = do
 	putStrLn . pangoLanguageToString =<< pangoLanguageGetDefault
 	let	l = case args of
 			l' : _ -> l'
-			_ -> "ch-zw"
+			_ -> "zh-tw"
 	putStrLn . pangoLanguageToString $ pangoLanguageFromString l
+	putStrLn . pangoLanguageGetSampleString =<< pangoLanguageGetDefault
+	putStrLn . pangoLanguageGetSampleString $ pangoLanguageFromString l
