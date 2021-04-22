@@ -15,6 +15,7 @@ import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Rendering.Cairo
 
 import Graphics.Pango.Basic.TextAttributes
+import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage
 
 import qualified Data.Text as T
 
@@ -40,12 +41,22 @@ main = do
 	pangoCairoShowLayout cr pl
 
 	al2 <- pangoAttrListNew
-	at2 <- pangoAttrNew $ Family "Source Han Sans VF"
-	pangoAttrListInsert al2 at2
+--	at2 <- pangoAttrNew $ Family "Source Han Sans VF"
+	at3 <- pangoAttrNew $ pangoLanguageFromString "ja-jp"
+--	pangoAttrListInsert al2 at2
+	pangoAttrListInsert al2 at3
 	al2' <- pangoAttrListFreeze al2
 
 	cairoMoveTo cr 0 70
 	pangoLayoutSetAttributes pl al2'
+	pangoLayoutSet @T.Text pl "源ノ角ゴシック 思源黑體 思源黑体"
+	pangoCairoShowLayout cr pl
+
+	at4 <- pangoAttrNew $ pangoLanguageFromString "zh-tw"
+	pangoAttrListInsert al2 at4
+
+	cairoMoveTo cr 0 90
+	pangoLayoutSetAttributes pl =<< pangoAttrListFreeze al2
 	pangoCairoShowLayout cr pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case

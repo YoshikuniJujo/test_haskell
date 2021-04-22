@@ -27,6 +27,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Foreign as T
 
 import Graphics.Pango.Basic.TextAttributes.Template
+import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage
 
 #include <pango/pango.h>
 
@@ -111,6 +112,17 @@ pangoAttributeSetEndIndex (PangoAttribute fa) ei = unsafeIOToPrim
 
 class PangoAttributeValue v where
 	pangoAttrNew :: PrimMonad m => v -> m (PangoAttribute (PrimState m))
+
+instance PangoAttributeValue PangoLanguage where
+	pangoAttrNew = pangoAttrLanguageNew
+
+pangoAttrLanguageNew :: PrimMonad m =>
+	PangoLanguage -> m (PangoAttribute (PrimState m))
+pangoAttrLanguageNew (PangoLanguage l) =
+	unsafeIOToPrim $ mkPangoAttribute =<< c_pango_attr_language_new l
+
+foreign import ccall "pango_attr_language_new" c_pango_attr_language_new ::
+	Ptr PangoLanguage -> IO (Ptr (PangoAttribute s))
 
 data Family = Family String deriving Show
 

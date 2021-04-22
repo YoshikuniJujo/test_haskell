@@ -85,7 +85,7 @@ todo
 	+ `:: PrimMonad m => PangoAttribhute (PrimState m) -> CUInt -> m ()`
 * [x] `pango_attribute_copy`
 * [ ] `pango_attr_foo_new`
-	+ [ ] language
+	+ [x] language
 	+ [x] family
 	+ [ ] style
 	+ [ ] variant
