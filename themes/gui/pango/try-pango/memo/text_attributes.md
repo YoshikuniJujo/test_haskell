@@ -93,7 +93,7 @@ todo
 	+ [x] weight
 	+ [x] size
 	+ [x] size absolute
-	+ [ ] font description
+	+ [x] font description
 	+ [ ] foreground
 	+ [ ] background
 	+ [ ] strikethrough

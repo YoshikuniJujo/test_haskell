@@ -97,7 +97,7 @@ main = do
 	fd <- pangoFontDescriptionNew
 	pangoFontDescriptionSet fd $ Family "Source Han Sans VF"
 	al5 <- pangoAttrListNew
-	at8 <- pangoAttrFontDescNew fd
+	at8 <- pangoAttrNew =<< pangoFontDescriptionFreeze fd
 	pangoAttributeSetEndIndex at8 9
 	pangoAttrListInsert al5 at8
 
