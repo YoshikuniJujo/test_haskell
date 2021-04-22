@@ -28,6 +28,7 @@ import qualified Data.Text.Foreign as T
 
 import Graphics.Pango.Basic.TextAttributes.Template
 import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage
+import Graphics.Pango.Values
 
 #include <pango/pango.h>
 
@@ -135,6 +136,15 @@ pangoAttrFamilyNew f =
 
 foreign import ccall "pango_attr_family_new" c_pango_attr_family_new ::
 	CString -> IO (Ptr (PangoAttribute s))
+
+instance PangoAttributeValue PangoStyle where pangoAttrNew = pangoAttrStyleNew
+
+pangoAttrStyleNew :: PrimMonad m => PangoStyle -> m (PangoAttribute (PrimState m))
+pangoAttrStyleNew (PangoStyle s) =
+	unsafeIOToPrim $ mkPangoAttribute =<< c_pango_attr_style_new s
+
+foreign import ccall "pango_attr_style_new" c_pango_attr_style_new ::
+	#{type PangoStyle} -> IO (Ptr (PangoAttribute s))
 
 data Size = Size Double | AbsoluteSize Double deriving Show
 

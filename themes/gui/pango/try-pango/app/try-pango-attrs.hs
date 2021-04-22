@@ -14,6 +14,7 @@ import Graphics.Cairo.Values
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Rendering.Cairo
 
+import Graphics.Pango.Values
 import Graphics.Pango.Basic.TextAttributes
 import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage
 
@@ -57,6 +58,19 @@ main = do
 
 	cairoMoveTo cr 0 90
 	pangoLayoutSetAttributes pl =<< pangoAttrListFreeze al2
+	pangoCairoShowLayout cr pl
+
+	al3 <- pangoAttrListNew
+	at5 <- pangoAttrNew pangoStyleOblique
+	at6 <- pangoAttrNew pangoStyleItalic
+	pangoAttributeSetEndIndex at5 5
+	pangoAttributeSetStartIndex at6 10
+	pangoAttrListInsert al3 at5
+	pangoAttrListInsert al3 at6
+
+	cairoMoveTo cr 0 110
+	pangoLayoutSetAttributes pl =<< pangoAttrListFreeze al3
+	pangoLayoutSet @T.Text pl "Hello, world! こんにちは、世界!"
 	pangoCairoShowLayout cr pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case

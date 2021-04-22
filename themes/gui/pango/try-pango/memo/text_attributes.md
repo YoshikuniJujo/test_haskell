@@ -87,7 +87,7 @@ todo
 * [ ] `pango_attr_foo_new`
 	+ [x] language
 	+ [x] family
-	+ [ ] style
+	+ [x] style
 	+ [ ] variant
 	+ [ ] stretch
 	+ [ ] weight
