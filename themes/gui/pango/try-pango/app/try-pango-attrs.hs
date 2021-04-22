@@ -105,6 +105,16 @@ main = do
 	pangoLayoutSetAttributes pl =<< pangoAttrListFreeze al5
 	pangoCairoShowLayout cr pl
 
+	al6 <- pangoAttrListNew
+	at9 <- pangoAttrNew $ ForegroundColor 0 (maxBound `div` 2) 0
+	pangoAttributeSetEndIndex at9 (10 * 3)
+	pangoAttrListInsert al6 at9
+
+	cairoMoveTo cr 0 170
+	pangoLayoutSetAttributes pl =<< pangoAttrListFreeze al6
+	pangoLayoutSet pl . T.pack . pangoLanguageGetSampleString =<< pangoLanguageGetDefault
+	pangoCairoShowLayout cr pl
+
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-attrs.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"

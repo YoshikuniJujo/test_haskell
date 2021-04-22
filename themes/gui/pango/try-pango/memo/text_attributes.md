@@ -94,14 +94,13 @@ todo
 	+ [x] size
 	+ [x] size absolute
 	+ [x] font description
-	+ [ ] foreground
+	+ [x] foreground
 	+ [ ] background
 	+ [ ] strikethrough
 	+ [ ] strikethrough color
 	+ [ ] underline
 	+ [ ] underline color
 	+ [ ] shape
-	+ [ ] shape with data
 	+ [ ] scale
 	+ [ ] rise
 	+ [ ] letter spacing
@@ -129,6 +128,7 @@ not todo yet
 * `pango_attr_type_get_name`
 * `pango_attribute_init`
 * `pango_attribute_equal`
+* `pango_attr_shape_new_with_data`
 * `pango_color_parse`
 * `pango_color_free`
 * `pango_attr_list_ref`

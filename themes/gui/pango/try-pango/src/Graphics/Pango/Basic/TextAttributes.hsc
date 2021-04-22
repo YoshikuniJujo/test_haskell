@@ -205,6 +205,19 @@ pangoAttrFontDescNew (PangoFontDescription ffd) = unsafeIOToPrim
 foreign import ccall "pango_attr_font_desc_new" c_pango_attr_font_desc_new ::
 	Ptr PangoFontDescription -> IO (Ptr (PangoAttribute s))
 
+data ForegroundColor = ForegroundColor Word16 Word16 Word16 deriving Show
+
+instance PangoAttributeValue ForegroundColor where
+	pangoAttrNew = pangoAttrForegroundNew
+
+pangoAttrForegroundNew :: PrimMonad m =>
+	ForegroundColor -> m (PangoAttribute (PrimState m))
+pangoAttrForegroundNew (ForegroundColor r g b) = unsafeIOToPrim
+	$ mkPangoAttribute =<< c_pango_attr_foreground_new r g b
+
+foreign import ccall "pango_attr_foreground_new" c_pango_attr_foreground_new ::
+	Word16 -> Word16 -> Word16 -> IO (Ptr (PangoAttribute s))
+
 newtype PangoAttrListPrim s = PangoAttrListPrim (ForeignPtr (PangoAttrListPrim s)) deriving Show
 
 mkPangoAttrListPrim :: Ptr (PangoAttrListPrim s) -> IO (PangoAttrListPrim s)
