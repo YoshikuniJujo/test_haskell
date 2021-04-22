@@ -245,6 +245,19 @@ pangoAttrStrikethroughNew b = unsafeIOToPrim
 foreign import ccall "pango_attr_strikethrough_new" c_pango_attr_strikethrough_new ::
 	#{type gboolean} -> IO (Ptr (PangoAttribute s))
 
+data StrikethroughColor = StrikethroughColor Word16 Word16 Word16 deriving Show
+
+instance PangoAttributeValue StrikethroughColor where
+	pangoAttrNew = pangoAttrStrikethroughColorNew
+
+pangoAttrStrikethroughColorNew :: PrimMonad m =>
+	StrikethroughColor -> m (PangoAttribute (PrimState m))
+pangoAttrStrikethroughColorNew (StrikethroughColor r g b) = unsafeIOToPrim
+	$ mkPangoAttribute =<< c_pango_attr_strikethrough_color_new r g b
+
+foreign import ccall "pango_attr_strikethrough_color_new" c_pango_attr_strikethrough_color_new ::
+	Word16 -> Word16 -> Word16 -> IO (Ptr (PangoAttribute s))
+
 newtype PangoAttrListPrim s = PangoAttrListPrim (ForeignPtr (PangoAttrListPrim s)) deriving Show
 
 mkPangoAttrListPrim :: Ptr (PangoAttrListPrim s) -> IO (PangoAttrListPrim s)

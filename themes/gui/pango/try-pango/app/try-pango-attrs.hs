@@ -120,7 +120,9 @@ main = do
 
 	al7 <- pangoAttrListNew
 	at11 <- pangoAttrNew $ Strikethrough True
+	at12 <- pangoAttrNew $ StrikethroughColor maxBound 0 0
 	pangoAttrListInsert al7 at11
+	pangoAttrListInsert al7 at12
 
 	cairoMoveTo cr 0 190
 	pangoLayoutSet pl =<< pangoAttrListFreeze al7
