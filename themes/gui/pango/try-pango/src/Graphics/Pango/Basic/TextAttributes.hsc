@@ -26,6 +26,8 @@ import System.Glib.SimpleXmlSubsetParser
 import qualified Data.Text as T
 import qualified Data.Text.Foreign as T
 
+import Graphics.Pango.Basic.Fonts.PangoFontDescription
+import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.TextAttributes.Template
 import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage
 import Graphics.Pango.Values
@@ -125,7 +127,7 @@ pangoAttrLanguageNew (PangoLanguage l) =
 foreign import ccall "pango_attr_language_new" c_pango_attr_language_new ::
 	Ptr PangoLanguage -> IO (Ptr (PangoAttribute s))
 
-data Family = Family String deriving Show
+-- data Family = Family String deriving Show
 
 instance PangoAttributeValue Family where
 	pangoAttrNew (Family f) = pangoAttrFamilyNew f
@@ -176,7 +178,7 @@ pangoAttrWeightNew (PangoWeight w) =
 foreign import ccall "pango_attr_weight_new" c_pango_attr_weight_new ::
 	#{type PangoWeight} -> IO (Ptr (PangoAttribute s))
 
-data Size = Size Double | AbsoluteSize Double deriving Show
+-- data Size = Size Double | AbsoluteSize Double deriving Show
 
 instance PangoAttributeValue Size where
 	pangoAttrNew = pangoAttrSizeNew
@@ -191,6 +193,14 @@ foreign import ccall "pango_attr_size_new" c_pango_attr_size_new ::
 
 foreign import ccall "pango_attr_size_new_absolute" c_pango_attr_size_new_absolute ::
 	CInt -> IO (Ptr (PangoAttribute s))
+
+pangoAttrFontDescNew :: PrimMonad m =>
+	PangoFontDescriptionPrim (PrimState m) -> m (PangoAttribute (PrimState m))
+pangoAttrFontDescNew (PangoFontDescriptionPrim ffd) = unsafeIOToPrim
+	$ mkPangoAttribute =<< withForeignPtr ffd c_pango_attr_font_desc_new
+
+foreign import ccall "pango_attr_font_desc_new" c_pango_attr_font_desc_new ::
+	Ptr (PangoFontDescriptionPrim s) -> IO (Ptr (PangoAttribute s))
 
 newtype PangoAttrListPrim s = PangoAttrListPrim (ForeignPtr (PangoAttrListPrim s)) deriving Show
 

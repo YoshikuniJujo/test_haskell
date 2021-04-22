@@ -18,6 +18,8 @@ import Graphics.Pango.Rendering.Cairo
 import Graphics.Pango.Values
 import Graphics.Pango.Basic.TextAttributes
 import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage
+import Graphics.Pango.Basic.Fonts.PangoFontDescription
+import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 
 import qualified Data.Text as T
 
@@ -90,6 +92,17 @@ main = do
 	cairoMoveTo cr 0 130
 	pangoLayoutSetAttributes pl =<< pangoAttrListFreeze al4
 	pangoLayoutSet @T.Text pl "華華華華華華華華華華華華! こんにちは、世界!"
+	pangoCairoShowLayout cr pl
+
+	fd <- pangoFontDescriptionNew
+	pangoFontDescriptionSet fd $ Family "Source Han Sans VF"
+	al5 <- pangoAttrListNew
+	at8 <- pangoAttrFontDescNew fd
+	pangoAttributeSetEndIndex at8 9
+	pangoAttrListInsert al5 at8
+
+	cairoMoveTo cr 0 150
+	pangoLayoutSetAttributes pl =<< pangoAttrListFreeze al5
 	pangoCairoShowLayout cr pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case
