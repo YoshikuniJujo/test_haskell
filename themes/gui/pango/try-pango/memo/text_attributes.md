@@ -100,7 +100,7 @@ todo
 	+ [x] strikethrough color
 	+ [x] underline
 	+ [x] underline color
-	+ [ ] shape
+	+ [x] shape
 	+ [ ] scale
 	+ [ ] rise
 	+ [ ] letter spacing

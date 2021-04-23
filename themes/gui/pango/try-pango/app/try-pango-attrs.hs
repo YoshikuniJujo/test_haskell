@@ -17,6 +17,7 @@ import Graphics.Cairo.Values
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Rendering.Cairo
 
+import Graphics.Pango.Types
 import Graphics.Pango.Values
 import Graphics.Pango.Basic.TextAttributes
 import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage
@@ -137,6 +138,20 @@ main = do
 	cairoMoveTo cr 0 210
 	pangoLayoutSet pl =<< pangoAttrListFreeze al8
 	pangoLayoutSet pl . T.pack . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
+	pangoCairoShowLayout cr pl
+
+	al9 <- pangoAttrListNew
+	at13 <- pangoAttrNew $ Shape
+		(PangoRectangle 5 3072 16384 16384)
+		(PangoRectangle 0 0 19456 19456)
+--	at13 <- pangoAttrNew $ Shape (PangoRectangle 5 0 30 30) (PangoRectangle 5 0 35 35)
+	pangoAttributeSetStartIndex at13 5
+	pangoAttributeSetEndIndex at13 8
+	pangoAttrListInsert al9 at13
+
+	cairoMoveTo cr 0 230
+	pangoLayoutSet pl =<< pangoAttrListFreeze al9
+	print =<< pangoLayoutGetExtents pl
 	pangoCairoShowLayout cr pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case

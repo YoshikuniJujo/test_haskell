@@ -30,6 +30,7 @@ import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.TextAttributes.Template
 import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage
+import Graphics.Pango.Types
 import Graphics.Pango.Values
 
 #include <pango/pango.h>
@@ -287,6 +288,20 @@ pangoAttrUnderlineColorNew (UnderlineColor r g b) = unsafeIOToPrim
 
 foreign import ccall "pango_attr_underline_color_new" c_pango_attr_underline_color_new ::
 	Word16 -> Word16 -> Word16 -> IO (Ptr (PangoAttribute s))
+
+data Shape = Shape PangoRectangle PangoRectangle deriving Show
+
+instance PangoAttributeValue Shape where
+	pangoAttrNew (Shape ir lr) = pangoAttrShapeNew ir lr
+
+pangoAttrShapeNew :: PrimMonad m =>
+	PangoRectangle -> PangoRectangle -> m (PangoAttribute (PrimState m))
+pangoAttrShapeNew ir lr = unsafeIOToPrim $ alloca \pir -> alloca \plr ->
+	mkPangoAttribute
+		=<< (poke pir ir >> poke plr lr >> c_pango_attr_shape_new pir plr)
+
+foreign import ccall "pango_attr_shape_new" c_pango_attr_shape_new ::
+	Ptr PangoRectangle -> Ptr PangoRectangle -> IO (Ptr (PangoAttribute s))
 
 newtype PangoAttrListPrim s = PangoAttrListPrim (ForeignPtr (PangoAttrListPrim s)) deriving Show
 
