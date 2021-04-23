@@ -378,6 +378,18 @@ pangoAttrGravityNew (PangoGravity g) = unsafeIOToPrim
 foreign import ccall "pango_attr_gravity_new" c_pango_attr_gravity_new ::
 	#{type PangoGravity} -> IO (Ptr (PangoAttribute s))
 
+instance PangoAttributeValue PangoGravityHint where
+	pangoAttrNew = pangoAttrGravityHintNew
+
+pangoAttrGravityHintNew ::
+	PrimMonad m => PangoGravityHint -> m (PangoAttribute (PrimState m))
+pangoAttrGravityHintNew (PangoGravityHint gh) = unsafeIOToPrim
+	$ mkPangoAttribute =<< c_pango_attr_gravity_new gh
+
+foreign import ccall "pango_attr_gravity_hint_new"
+	c_pango_attr_gravity_hint_new ::
+	#{type PangoGravityHint} -> IO (Ptr (PangoAttribute s))
+
 newtype PangoAttrListPrim s = PangoAttrListPrim (ForeignPtr (PangoAttrListPrim s)) deriving Show
 
 mkPangoAttrListPrim :: Ptr (PangoAttrListPrim s) -> IO (PangoAttrListPrim s)

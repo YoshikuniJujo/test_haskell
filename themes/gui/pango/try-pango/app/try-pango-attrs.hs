@@ -94,14 +94,20 @@ main = do
 	pangoCairoShowLayout cr pl
 
 	fd <- pangoFontDescriptionNew
-	pangoFontDescriptionSet fd $ Family "Source Han Sans VF"
+--	pangoFontDescriptionSet fd $ Family "Source Han Sans VF"
+	pangoFontDescriptionSet fd $ pangoGravityEast
 	al5 <- pangoAttrListNew
 	at8 <- pangoAttrNew =<< pangoFontDescriptionFreeze fd
-	pangoAttributeSetEndIndex at8 9
+	pangoAttributeSetEndIndex at8 18
 	pangoAttrListInsert al5 at8
+
+	pangoAttrListInsert al5 =<< do
+		a <- pangoAttrNew pangoGravityNorth
+		a <$ pangoAttributeSetStartIndex a 15
 
 	cairoMoveTo cr 0 150
 	pangoLayoutSet pl =<< pangoAttrListFreeze al5
+	pangoLayoutSet @T.Text pl "あいうえおabcdefg"
 	pangoCairoShowLayout cr pl
 
 	al6 <- pangoAttrListNew
@@ -182,6 +188,54 @@ main = do
 
 	cairoMoveTo cr 0 330
 	pangoLayoutSet pl =<< pangoAttrListFreeze al13
+	pangoCairoShowLayout cr pl
+
+--	al14 <- pangoAttrListThaw =<< pangoAttrListFreeze al13
+--	pangoAttrListInsert al14 =<< pangoAttrNew pangoGravityHintNatural
+--	pangoAttrListInsert al14 =<< pangoAttrNew pangoGravityHintLine
+--	pangoAttrListInsertBefore al14 =<< pangoAttrNew pangoGravityHintStrong
+
+	al14 <- pangoAttrListNew
+	pangoAttrListInsert al14 =<< pangoAttrNew (Family "Source Han Sans VF")
+	pangoAttrListInsert al14 =<< do
+		a <- pangoAttrNew pangoGravityEast
+		a <$ pangoAttributeSetStartIndex a 3
+	{-
+	applyInOrder al14 $ (`zip` [6, 12 ..]) [
+		pangoGravitySouth, pangoGravityEast, pangoGravityNorth,
+		pangoGravityWest ] -- pangoGravityAuto ]
+		-}
+	{-
+	pangoAttrListInsert al14 =<< pangoAttrNew pangoGravityHintLine
+	pangoAttrListInsert al14 =<< do
+		a <- pangoAttrNew pangoGravitySouth
+		a <$ do	pangoAttributeSetStartIndex a 0
+			pangoAttributeSetEndIndex a 5
+	pangoAttrListInsert al14 =<< pangoAttrNew pangoGravityHintLine
+	pangoAttrListInsert al14 =<< do
+		a <- pangoAttrNew pangoGravityEast
+		a <$ do	pangoAttributeSetStartIndex a 5
+			pangoAttributeSetEndIndex a 10
+	pangoAttrListInsert al14 =<< pangoAttrNew pangoGravityHintLine
+	pangoAttrListInsert al14 =<< do
+		a <- pangoAttrNew pangoGravityNorth
+		a <$ do	pangoAttributeSetStartIndex a 10
+			pangoAttributeSetEndIndex a 15
+	pangoAttrListInsert al14 =<< do
+		a <- pangoAttrNew pangoGravityHintStrong
+		pure a
+--		a <$ do	pangoAttributeSetStartIndex a 15
+	pangoAttrListInsert al14 =<< do
+		a <- pangoAttrNew pangoGravityNorth
+		pure a
+		a <$ do	pangoAttributeSetStartIndex a 1
+--			pangoAttributeSetEndIndex a 20
+	pangoAttrListInsert al14 =<< pangoAttrNew pangoGravityHintNatural
+			-}
+
+	cairoMoveTo cr 0 370
+	pangoLayoutSet pl =<< pangoAttrListFreeze al14
+	pangoLayoutSet @T.Text pl "あいうえおかきくけこabcdefg"
 	pangoCairoShowLayout cr pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case
