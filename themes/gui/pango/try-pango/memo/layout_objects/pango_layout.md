@@ -61,6 +61,7 @@ todo
 * [x] make module `Graphics.Pango.Basic.LayoutObjects.PangoLayoutPrim`
 * [x] define `PangoLayoutPrim s`
 * [x] make `pangoLayoutNew` to return `PangoLayoutPrim (PrimState m)`
+* [ ] `pango_layout_new`
 * [x] make `pangoLayoutSetFontDescription` to use `PangoFontDescriptionPrim (PrimState m)` as argument
 * [x] remove `PangoFontDescription`
 * [x] rename `PangoFontDescriptionPrim (PrimState m)` to `PangoFontDescription (PrimState m)`
@@ -112,7 +113,6 @@ todo
 not todo yet
 ------------
 
-* `pango_layout_new`
 * `pango_layout_copy`
 * `pango_layout_get_context`
 * `pango_layout_context_changed`

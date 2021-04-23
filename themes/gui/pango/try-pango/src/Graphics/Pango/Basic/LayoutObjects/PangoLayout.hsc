@@ -19,6 +19,7 @@ import Data.Text.CString
 
 import Graphics.Pango.Types
 import Graphics.Pango.Values
+import Graphics.Pango.Basic.Rendering
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.TextAttributes
@@ -32,6 +33,13 @@ newtype PangoLayout = PangoLayout (ForeignPtr PangoLayout) deriving Show
 
 mkPangoLayout :: Ptr PangoLayout -> IO PangoLayout
 mkPangoLayout p = PangoLayout <$> newForeignPtr p (c_g_object_unref p)
+
+pangoLayoutNew :: PangoContext -> IO PangoLayout
+pangoLayoutNew (PangoContext fc) =
+	mkPangoLayout =<< withForeignPtr fc c_pango_layout_new
+
+foreign import ccall "pango_layout_new" c_pango_layout_new ::
+	Ptr PangoContext -> IO (Ptr PangoLayout)
 
 class PangoLayoutSetting s where
 	pangoLayoutSet :: PangoLayout -> s -> IO ()
