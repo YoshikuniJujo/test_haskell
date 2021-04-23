@@ -390,6 +390,20 @@ foreign import ccall "pango_attr_gravity_hint_new"
 	c_pango_attr_gravity_hint_new ::
 	#{type PangoGravityHint} -> IO (Ptr (PangoAttribute s))
 
+newtype FontFeatures = FontFeatures { getFontFeatures :: String } deriving Show
+
+instance PangoAttributeValue FontFeatures where
+	pangoAttrNew = pangoAttrFontFeaturesNew . getFontFeatures
+
+pangoAttrFontFeaturesNew ::
+	PrimMonad m => String -> m (PangoAttribute (PrimState m))
+pangoAttrFontFeaturesNew f = unsafeIOToPrim
+	$ mkPangoAttribute =<< withCString f c_pango_attr_font_features_new
+
+foreign import ccall "pango_attr_font_features_new"
+	c_pango_attr_font_features_new ::
+	CString -> IO (Ptr (PangoAttribute s))
+
 newtype PangoAttrListPrim s = PangoAttrListPrim (ForeignPtr (PangoAttrListPrim s)) deriving Show
 
 mkPangoAttrListPrim :: Ptr (PangoAttrListPrim s) -> IO (PangoAttrListPrim s)
