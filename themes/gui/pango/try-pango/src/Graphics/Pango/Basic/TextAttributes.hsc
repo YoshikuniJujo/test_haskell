@@ -258,6 +258,23 @@ pangoAttrStrikethroughColorNew (StrikethroughColor r g b) = unsafeIOToPrim
 foreign import ccall "pango_attr_strikethrough_color_new" c_pango_attr_strikethrough_color_new ::
 	Word16 -> Word16 -> Word16 -> IO (Ptr (PangoAttribute s))
 
+mkMemberPangoUnderline "PangoUnderlineNone" #{const PANGO_UNDERLINE_NONE}
+mkMemberPangoUnderline "PangoUnderlineSingle" #{const PANGO_UNDERLINE_SINGLE}
+mkMemberPangoUnderline "PangoUnderlineDouble" #{const PANGO_UNDERLINE_DOUBLE}
+mkMemberPangoUnderline "PangoUnderlineLow" #{const PANGO_UNDERLINE_LOW}
+mkMemberPangoUnderline "PangoUnderlineError" #{const PANGO_UNDERLINE_ERROR}
+
+instance PangoAttributeValue PangoUnderline where
+	pangoAttrNew = pangoAttrUnderlineNew
+
+pangoAttrUnderlineNew :: PrimMonad m =>
+	PangoUnderline -> m (PangoAttribute (PrimState m))
+pangoAttrUnderlineNew (PangoUnderline ul) = unsafeIOToPrim
+	$ mkPangoAttribute =<< c_pango_attr_underline_new ul
+
+foreign import ccall "pango_attr_underline_new" c_pango_attr_underline_new ::
+	#{type PangoUnderline} -> IO (Ptr (PangoAttribute s))
+
 newtype PangoAttrListPrim s = PangoAttrListPrim (ForeignPtr (PangoAttrListPrim s)) deriving Show
 
 mkPangoAttrListPrim :: Ptr (PangoAttrListPrim s) -> IO (PangoAttrListPrim s)

@@ -4,6 +4,8 @@
 
 module Main where
 
+import Foreign.C.Types
+import Control.Monad.Primitive
 import Data.Foldable
 import Data.CairoImage
 import Data.JuicyCairo
@@ -79,15 +81,11 @@ main = do
 	al4 <- pangoAttrListNew
 	at7 <- pangoAttrNew $ Family "Source Han Sans VF"
 	pangoAttrListInsert al4 at7
-	for_ (zip [
+	applyInOrder al4 $ (`zip` [3, 6 .. ]) [
 		pangoWeightThin, pangoWeightUltralight, pangoWeightLight,
 		pangoWeightSemilight, pangoWeightBook, pangoWeightNormal,
 		pangoWeightMedium, pangoWeightSemibold, pangoWeightBold,
-		pangoWeightUltrabold, pangoWeightHeavy, pangoWeightUltraheavy
-		] [3, 6 .. ]) \(w, i) -> do
-		lat <- pangoAttrNew w
-		pangoAttributeSetEndIndex lat i
-		pangoAttrListInsertBefore al4 lat
+		pangoWeightUltrabold, pangoWeightHeavy, pangoWeightUltraheavy ]
 
 	cairoMoveTo cr 0 130
 	pangoLayoutSet pl =<< pangoAttrListFreeze al4
@@ -128,6 +126,24 @@ main = do
 	pangoLayoutSet pl =<< pangoAttrListFreeze al7
 	pangoCairoShowLayout cr pl
 
+	al8 <- pangoAttrListNew
+	applyInOrder al8 $ (`zip` [6, 12 .. ]) [
+		PangoUnderlineNone, PangoUnderlineSingle, PangoUnderlineDouble,
+		PangoUnderlineLow, PangoUnderlineError ]
+
+	cairoMoveTo cr 0 210
+	pangoLayoutSet pl =<< pangoAttrListFreeze al8
+	pangoLayoutSet pl . T.pack . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
+	pangoCairoShowLayout cr pl
+
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-attrs.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
+
+
+applyInOrder :: (PangoAttributeValue v, PrimMonad m) =>
+	PangoAttrListPrim (PrimState m) -> [(v, CUInt)] -> m ()
+applyInOrder al vs = for_ vs \(w, i) -> do
+	lat <- pangoAttrNew w
+	pangoAttributeSetEndIndex lat i
+	pangoAttrListInsertBefore al lat

@@ -98,7 +98,7 @@ todo
 	+ [x] background
 	+ [x] strikethrough
 	+ [x] strikethrough color
-	+ [ ] underline
+	+ [x] underline
 	+ [ ] underline color
 	+ [ ] shape
 	+ [ ] scale

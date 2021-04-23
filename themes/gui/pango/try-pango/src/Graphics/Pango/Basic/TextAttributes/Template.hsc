@@ -13,3 +13,8 @@ newtype PangoAttrType = PangoAttrType #{type PangoAttrType} deriving Show
 
 mkMemberAttrType :: String -> Integer -> DecsQ
 mkMemberAttrType = mkMemberGen ''PangoAttrType 'PangoAttrType
+
+newtype PangoUnderline = PangoUnderline #{type PangoUnderline} deriving Show
+
+mkMemberPangoUnderline :: String -> Integer -> DecsQ
+mkMemberPangoUnderline = mkMemberGen ''PangoUnderline 'PangoUnderline
