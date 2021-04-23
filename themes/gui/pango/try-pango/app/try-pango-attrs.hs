@@ -28,6 +28,11 @@ import qualified Data.Text as T
 
 main :: IO ()
 main = do
+	print $ pangoColorParse "chocolate"
+	print $ pangoColorParse "#0f0"
+	print $ pangoColorParse "#00ff00"
+	print $ pangoColorParse "#000fff000"
+	print $ pangoColorParse "#0000ffff0000"
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 400 600
 	cr <- cairoCreate s
 

@@ -432,6 +432,33 @@ foreign import ccall "pango_attr_background_alpha_new"
 	c_pango_attr_background_alpha_new ::
 	Word16 -> IO (Ptr (PangoAttribute s))
 
+data PangoColor = PangoColor {
+	pangoColorRed :: Word16,
+	pangoColorGreen :: Word16,
+	pangoColorBlue :: Word16 } deriving Show
+
+instance Storable PangoColor where
+	sizeOf _ = #{size PangoColor}
+	alignment _ = #{alignment PangoColor}
+	peek p = PangoColor
+		<$> #{peek PangoColor, red} p
+		<*> #{peek PangoColor, green} p
+		<*> #{peek PangoColor, blue} p
+	poke p (PangoColor r g b) = do
+		#{poke PangoColor, red} p r
+		#{poke PangoColor, green} p g
+		#{poke PangoColor, blue} p b
+
+pangoColorParse :: String -> Maybe PangoColor
+pangoColorParse s = unsafePerformIO $ withCString s \cs -> alloca \pc ->
+	c_pango_color_parse pc cs >>= \case
+		#{const FALSE} -> pure Nothing
+		#{const TRUE} -> Just <$> peek pc
+		_ -> error "never occur"
+
+foreign import ccall "pango_color_parse" c_pango_color_parse ::
+	Ptr PangoColor -> CString -> IO #{type gboolean}
+
 newtype PangoAttrListPrim s = PangoAttrListPrim (ForeignPtr (PangoAttrListPrim s)) deriving Show
 
 mkPangoAttrListPrim :: Ptr (PangoAttrListPrim s) -> IO (PangoAttrListPrim s)
