@@ -13,6 +13,7 @@ import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
 import Control.Monad.Primitive
+import Data.Bool
 import Data.Word
 import Data.Int
 import Data.Char
@@ -353,6 +354,18 @@ pangoAttrLetterSpacingNew s =
 foreign import ccall "pango_attr_letter_spacing_new"
 	c_pango_attr_letter_spacing_new ::
 	CInt -> IO (Ptr (PangoAttribute s))
+
+newtype Fallback = Fallback Bool deriving Show
+
+instance PangoAttributeValue Fallback where
+	pangoAttrNew (Fallback b) = pangoAttrFallbackNew b
+
+pangoAttrFallbackNew :: PrimMonad m => Bool -> m (PangoAttribute (PrimState m))
+pangoAttrFallbackNew b = unsafeIOToPrim $ mkPangoAttribute
+	=<< c_pango_attr_fallback_new (bool #{const FALSE} #{const TRUE} b)
+
+foreign import ccall "pango_attr_fallback_new" c_pango_attr_fallback_new ::
+	#{type gboolean} -> IO (Ptr (PangoAttribute s))
 
 newtype PangoAttrListPrim s = PangoAttrListPrim (ForeignPtr (PangoAttrListPrim s)) deriving Show
 

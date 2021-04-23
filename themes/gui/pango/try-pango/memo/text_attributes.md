@@ -104,7 +104,7 @@ todo
 	+ [x] scale
 	+ [x] rise
 	+ [x] letter spacing
-	+ [ ] fallback
+	+ [x] fallback
 	+ [ ] gravity
 	+ [ ] gravity hint
 	+ [ ] font features
