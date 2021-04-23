@@ -239,11 +239,19 @@ main = do
 	pangoCairoShowLayout cr pl
 
 	al15 <- pangoAttrListNew
-	applyInOrder al15 $ zip (ForegroundAlpha <$> [maxBound `div` 30, maxBound `div` 15 .. ]) [1 .. 42]
+	applyInOrder al15 $ zip (ForegroundAlpha <$> [maxBound `div` 42, maxBound `div` 21 .. ]) [1 .. 42]
 
 	cairoMoveTo cr 0 400
 	pangoLayoutSet pl =<< pangoAttrListFreeze al15
 	pangoLayoutSet pl . T.pack . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
+	pangoCairoShowLayout cr pl
+
+	al16 <- pangoAttrListNew
+	pangoAttrListInsert al16 =<< pangoAttrNew (BackgroundColor 0 (maxBound `div` 2) 0)
+	applyInOrder al16 $ zip (BackgroundAlpha <$> [maxBound `div` 42, maxBound `div` 21 .. ]) [1 .. 42]
+
+	cairoMoveTo cr 0 430
+	pangoLayoutSet pl =<< pangoAttrListFreeze al16
 	pangoCairoShowLayout cr pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case

@@ -410,13 +410,26 @@ newtype ForegroundAlpha = ForegroundAlpha { getForegroundAlpha :: Word16 }
 instance PangoAttributeValue ForegroundAlpha where
 	pangoAttrNew = pangoAttrForegroundAlphaNew . getForegroundAlpha
 
-pangoAttrForegroundAlphaNew ::
+newtype BackgroundAlpha = BackgroundAlpha { getBackgroundAlpha :: Word16 }
+	deriving Show
+
+instance PangoAttributeValue BackgroundAlpha where
+	pangoAttrNew = pangoAttrBackgroundAlphaNew . getBackgroundAlpha
+
+pangoAttrForegroundAlphaNew, pangoAttrBackgroundAlphaNew ::
 	PrimMonad m => Word16 -> m (PangoAttribute (PrimState m))
 pangoAttrForegroundAlphaNew a = unsafeIOToPrim
 	$ mkPangoAttribute =<< c_pango_attr_foreground_alpha_new a
 
+pangoAttrBackgroundAlphaNew a = unsafeIOToPrim
+	$ mkPangoAttribute =<< c_pango_attr_background_alpha_new a
+
 foreign import ccall "pango_attr_foreground_alpha_new"
 	c_pango_attr_foreground_alpha_new ::
+	Word16 -> IO (Ptr (PangoAttribute s))
+
+foreign import ccall "pango_attr_background_alpha_new"
+	c_pango_attr_background_alpha_new ::
 	Word16 -> IO (Ptr (PangoAttribute s))
 
 newtype PangoAttrListPrim s = PangoAttrListPrim (ForeignPtr (PangoAttrListPrim s)) deriving Show

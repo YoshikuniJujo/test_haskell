@@ -110,7 +110,7 @@ todo
 	+ [x] gravity hint
 	+ [x] font features
 	+ [x] foreground alpha
-	+ [ ] background alpha
+	+ [x] background alpha
 * [ ] `pango_color_parse`
 * [ ] `pango_color_to_string`
 * [x] `pango_attr_list_new`
