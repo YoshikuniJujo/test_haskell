@@ -303,6 +303,19 @@ pangoAttrShapeNew ir lr = unsafeIOToPrim $ alloca \pir -> alloca \plr ->
 foreign import ccall "pango_attr_shape_new" c_pango_attr_shape_new ::
 	Ptr PangoRectangle -> Ptr PangoRectangle -> IO (Ptr (PangoAttribute s))
 
+newtype Scale = Scale CDouble deriving Show
+
+instance PangoAttributeValue Scale where
+	pangoAttrNew (Scale s) = pangoAttrScaleNew s
+
+pangoAttrScaleNew :: PrimMonad m =>
+	CDouble -> m (PangoAttribute (PrimState m))
+pangoAttrScaleNew s =
+	unsafeIOToPrim $ mkPangoAttribute =<< c_pango_attr_scale_new s
+
+foreign import ccall "pango_attr_scale_new" c_pango_attr_scale_new ::
+	CDouble -> IO (Ptr (PangoAttribute s))
+
 newtype PangoAttrListPrim s = PangoAttrListPrim (ForeignPtr (PangoAttrListPrim s)) deriving Show
 
 mkPangoAttrListPrim :: Ptr (PangoAttrListPrim s) -> IO (PangoAttrListPrim s)

@@ -154,10 +154,16 @@ main = do
 	print =<< pangoLayoutGetExtents pl
 	pangoCairoShowLayout cr pl
 
+	al10 <- pangoAttrListNew
+	applyInOrder al10 $ zip (Scale <$> [0.7, 0.8 .. 2.4] <> [2.3, 2.2 ..]) [1, 2 .. 42]
+
+	cairoMoveTo cr 0 240
+	pangoLayoutSet pl =<< pangoAttrListFreeze al10
+	pangoCairoShowLayout cr pl
+
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-attrs.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
-
 
 applyInOrder :: (PangoAttributeValue v, PrimMonad m) =>
 	PangoAttrListPrim (PrimState m) -> [(v, CUInt)] -> m ()

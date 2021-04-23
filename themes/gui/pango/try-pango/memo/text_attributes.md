@@ -101,7 +101,7 @@ todo
 	+ [x] underline
 	+ [x] underline color
 	+ [x] shape
-	+ [ ] scale
+	+ [x] scale
 	+ [ ] rise
 	+ [ ] letter spacing
 	+ [ ] fallback
