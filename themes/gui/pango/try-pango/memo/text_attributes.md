@@ -106,6 +106,7 @@ todo
 	+ [x] letter spacing
 	+ [x] fallback
 	+ [ ] gravity
+		- [ ] process about `PANGO_GRAVITY_AUTO`
 	+ [ ] gravity hint
 	+ [ ] font features
 	+ [ ] foreground alpha

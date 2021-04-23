@@ -28,7 +28,7 @@ import qualified Data.Text as T
 
 main :: IO ()
 main = do
-	s <- cairoImageSurfaceCreate cairoFormatArgb32 400 400
+	s <- cairoImageSurfaceCreate cairoFormatArgb32 400 600
 	cr <- cairoCreate s
 
 	at <- pangoAttrNew $ Size 20
@@ -173,6 +173,15 @@ main = do
 
 	cairoMoveTo cr 0 310
 	pangoLayoutSet pl =<< pangoAttrListFreeze al12
+	pangoCairoShowLayout cr pl
+
+	al13 <- pangoAttrListNew
+	applyInOrder al13 $ (`zip` [5, 10 .. 42]) [
+		pangoGravitySouth, pangoGravityEast, pangoGravityNorth,
+		pangoGravityWest ] -- pangoGravityAuto ]
+
+	cairoMoveTo cr 0 330
+	pangoLayoutSet pl =<< pangoAttrListFreeze al13
 	pangoCairoShowLayout cr pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case
