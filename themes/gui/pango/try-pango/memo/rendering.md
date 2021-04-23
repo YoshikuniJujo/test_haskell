@@ -46,6 +46,7 @@ todo
 * [x] define `PangoContext s`
 * [x] rename `pangoContext` to `PangoContextOld`
 * [x] use `PangoContext s` from `pangoCairoCreateContext`
-* [ ] define `class PangoContextSetting`
-* [ ] `pango_context_set_base_gravity`
-* [ ] `pango_context_get_base_gravity`
+* [x] define `class PangoContextSetting`
+* [x] `pango_context_set_base_gravity`
+* [x] `pango_context_get_base_gravity`
+* [ ] `pango_context_get_gravity`

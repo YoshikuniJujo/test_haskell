@@ -12,6 +12,8 @@ import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
+import Graphics.Pango.Values
+import Graphics.Pango.Basic.Rendering
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Rendering.Cairo
 
@@ -25,10 +27,11 @@ main = do
 	cairoRotate cr (pi / 2)
 
 	ctx <- pangoCairoCreateContext cr
+	pangoContextSet ctx $ BaseGravity pangoGravityEast
 	pl <- pangoLayoutNew ctx
---	cairoMoveTo cr 100 100
+	cairoMoveTo cr 0 10
 --	pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは、世界!"
-	pangoLayoutSet @T.Text pl "こんにちは、世界!"
+	pangoLayoutSet @T.Text pl "Hello, world! こんにちは、世界!"
 	pangoCairoShowLayout cr pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case
