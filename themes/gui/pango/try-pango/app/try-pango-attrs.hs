@@ -161,6 +161,13 @@ main = do
 	pangoLayoutSet pl =<< pangoAttrListFreeze al10
 	pangoCairoShowLayout cr pl
 
+	al11 <- pangoAttrListNew
+	applyInOrder al11 $ zip (Rise <$> [0, 0.5 .. 7.5] <> [7.0, 6.5 .. ]) [1 .. 42]
+
+	cairoMoveTo cr 0 280
+	pangoLayoutSet pl =<< pangoAttrListFreeze al11
+	pangoCairoShowLayout cr pl
+
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-attrs.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"

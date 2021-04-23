@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.TextAttributes where
@@ -308,13 +308,28 @@ newtype Scale = Scale CDouble deriving Show
 instance PangoAttributeValue Scale where
 	pangoAttrNew (Scale s) = pangoAttrScaleNew s
 
-pangoAttrScaleNew :: PrimMonad m =>
-	CDouble -> m (PangoAttribute (PrimState m))
+pangoAttrScaleNew :: PrimMonad m => CDouble -> m (PangoAttribute (PrimState m))
 pangoAttrScaleNew s =
 	unsafeIOToPrim $ mkPangoAttribute =<< c_pango_attr_scale_new s
 
 foreign import ccall "pango_attr_scale_new" c_pango_attr_scale_new ::
 	CDouble -> IO (Ptr (PangoAttribute s))
+
+newtype Rise = RiseInPangoUnit { getRiseInPangoUnit :: CInt } deriving Show
+
+pattern Rise :: Double -> Rise
+pattern Rise r <- ((/ #{const PANGO_SCALE}) . fromIntegral . getRiseInPangoUnit -> r) where
+	Rise r = RiseInPangoUnit . round $ r * #{const PANGO_SCALE}
+
+instance PangoAttributeValue Rise where
+	pangoAttrNew = pangoAttrRiseNew . getRiseInPangoUnit
+
+pangoAttrRiseNew :: PrimMonad m => CInt -> m (PangoAttribute (PrimState m))
+pangoAttrRiseNew r =
+	unsafeIOToPrim $ mkPangoAttribute =<< c_pango_attr_rise_new r
+
+foreign import ccall "pango_attr_rise_new" c_pango_attr_rise_new ::
+	CInt -> IO (Ptr (PangoAttribute s))
 
 newtype PangoAttrListPrim s = PangoAttrListPrim (ForeignPtr (PangoAttrListPrim s)) deriving Show
 
