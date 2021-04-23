@@ -109,7 +109,7 @@ todo
 		- [ ] process about `PANGO_GRAVITY_AUTO`
 	+ [x] gravity hint
 	+ [x] font features
-	+ [ ] foreground alpha
+	+ [x] foreground alpha
 	+ [ ] background alpha
 * [ ] `pango_color_parse`
 * [ ] `pango_color_to_string`

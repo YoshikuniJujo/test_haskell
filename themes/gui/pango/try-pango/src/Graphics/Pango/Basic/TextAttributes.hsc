@@ -404,6 +404,21 @@ foreign import ccall "pango_attr_font_features_new"
 	c_pango_attr_font_features_new ::
 	CString -> IO (Ptr (PangoAttribute s))
 
+newtype ForegroundAlpha = ForegroundAlpha { getForegroundAlpha :: Word16 }
+	deriving Show
+
+instance PangoAttributeValue ForegroundAlpha where
+	pangoAttrNew = pangoAttrForegroundAlphaNew . getForegroundAlpha
+
+pangoAttrForegroundAlphaNew ::
+	PrimMonad m => Word16 -> m (PangoAttribute (PrimState m))
+pangoAttrForegroundAlphaNew a = unsafeIOToPrim
+	$ mkPangoAttribute =<< c_pango_attr_foreground_alpha_new a
+
+foreign import ccall "pango_attr_foreground_alpha_new"
+	c_pango_attr_foreground_alpha_new ::
+	Word16 -> IO (Ptr (PangoAttribute s))
+
 newtype PangoAttrListPrim s = PangoAttrListPrim (ForeignPtr (PangoAttrListPrim s)) deriving Show
 
 mkPangoAttrListPrim :: Ptr (PangoAttrListPrim s) -> IO (PangoAttrListPrim s)

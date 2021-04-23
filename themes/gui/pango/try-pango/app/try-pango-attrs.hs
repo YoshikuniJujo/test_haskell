@@ -238,6 +238,14 @@ main = do
 	pangoLayoutSet @T.Text pl "あいうえおかきくけこabcdefg"
 	pangoCairoShowLayout cr pl
 
+	al15 <- pangoAttrListNew
+	applyInOrder al15 $ zip (ForegroundAlpha <$> [maxBound `div` 30, maxBound `div` 15 .. ]) [1 .. 42]
+
+	cairoMoveTo cr 0 400
+	pangoLayoutSet pl =<< pangoAttrListFreeze al15
+	pangoLayoutSet pl . T.pack . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
+	pangoCairoShowLayout cr pl
+
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-attrs.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
