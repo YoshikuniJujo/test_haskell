@@ -275,6 +275,19 @@ pangoAttrUnderlineNew (PangoUnderline ul) = unsafeIOToPrim
 foreign import ccall "pango_attr_underline_new" c_pango_attr_underline_new ::
 	#{type PangoUnderline} -> IO (Ptr (PangoAttribute s))
 
+data UnderlineColor = UnderlineColor Word16 Word16 Word16 deriving Show
+
+instance PangoAttributeValue UnderlineColor where
+	pangoAttrNew = pangoAttrUnderlineColorNew
+
+pangoAttrUnderlineColorNew :: PrimMonad m =>
+	UnderlineColor -> m (PangoAttribute (PrimState m))
+pangoAttrUnderlineColorNew (UnderlineColor r g b) = unsafeIOToPrim
+	$ mkPangoAttribute =<< c_pango_attr_underline_color_new r g b
+
+foreign import ccall "pango_attr_underline_color_new" c_pango_attr_underline_color_new ::
+	Word16 -> Word16 -> Word16 -> IO (Ptr (PangoAttribute s))
+
 newtype PangoAttrListPrim s = PangoAttrListPrim (ForeignPtr (PangoAttrListPrim s)) deriving Show
 
 mkPangoAttrListPrim :: Ptr (PangoAttrListPrim s) -> IO (PangoAttrListPrim s)
