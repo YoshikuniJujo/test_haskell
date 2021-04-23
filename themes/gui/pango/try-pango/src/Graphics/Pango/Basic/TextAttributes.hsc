@@ -331,6 +331,29 @@ pangoAttrRiseNew r =
 foreign import ccall "pango_attr_rise_new" c_pango_attr_rise_new ::
 	CInt -> IO (Ptr (PangoAttribute s))
 
+newtype LetterSpacing =
+	LetterSpacingInPangoUnit { getLetterSpacingInPangoUnit :: CInt }
+	deriving Show
+
+instance PangoAttributeValue LetterSpacing where
+	pangoAttrNew = pangoAttrLetterSpacingNew . getLetterSpacingInPangoUnit
+
+pattern LetterSpacing :: Double -> LetterSpacing
+pattern LetterSpacing s <-
+	((/ #{const PANGO_SCALE}) . fromIntegral . getLetterSpacingInPangoUnit
+		-> s) where
+	LetterSpacing s =
+		LetterSpacingInPangoUnit . round $ s * #{const PANGO_SCALE}
+
+pangoAttrLetterSpacingNew ::
+	PrimMonad m => CInt -> m (PangoAttribute (PrimState m))
+pangoAttrLetterSpacingNew s =
+	unsafeIOToPrim $ mkPangoAttribute =<< c_pango_attr_letter_spacing_new s
+
+foreign import ccall "pango_attr_letter_spacing_new"
+	c_pango_attr_letter_spacing_new ::
+	CInt -> IO (Ptr (PangoAttribute s))
+
 newtype PangoAttrListPrim s = PangoAttrListPrim (ForeignPtr (PangoAttrListPrim s)) deriving Show
 
 mkPangoAttrListPrim :: Ptr (PangoAttrListPrim s) -> IO (PangoAttrListPrim s)

@@ -103,7 +103,7 @@ todo
 	+ [x] shape
 	+ [x] scale
 	+ [x] rise
-	+ [ ] letter spacing
+	+ [x] letter spacing
 	+ [ ] fallback
 	+ [ ] gravity
 	+ [ ] gravity hint
