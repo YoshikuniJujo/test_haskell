@@ -112,7 +112,7 @@ todo
 	+ [x] foreground alpha
 	+ [x] background alpha
 * [x] `pango_color_parse`
-* [ ] `pango_color_to_string`
+* [x] `pango_color_to_string`
 * [x] `pango_attr_list_new`
 * [x] `pango_attr_list_unref`
 * [x] `pango_attr_list_copy`

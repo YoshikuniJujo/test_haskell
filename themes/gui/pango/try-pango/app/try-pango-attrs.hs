@@ -33,6 +33,7 @@ main = do
 	print $ pangoColorParse "#00ff00"
 	print $ pangoColorParse "#000fff000"
 	print $ pangoColorParse "#0000ffff0000"
+	putStrLn . maybe "bad color" pangoColorToString $ pangoColorParse "ivory"
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 400 600
 	cr <- cairoCreate s
 

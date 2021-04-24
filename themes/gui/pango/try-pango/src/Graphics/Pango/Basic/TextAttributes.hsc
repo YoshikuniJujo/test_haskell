@@ -459,6 +459,13 @@ pangoColorParse s = unsafePerformIO $ withCString s \cs -> alloca \pc ->
 foreign import ccall "pango_color_parse" c_pango_color_parse ::
 	Ptr PangoColor -> CString -> IO #{type gboolean}
 
+pangoColorToString :: PangoColor -> String
+pangoColorToString c = unsafePerformIO $ peekCString =<< alloca \cc ->
+	poke cc c >> c_pango_color_to_string cc
+
+foreign import ccall "pango_color_to_string" c_pango_color_to_string ::
+	Ptr PangoColor -> IO CString
+
 newtype PangoAttrListPrim s = PangoAttrListPrim (ForeignPtr (PangoAttrListPrim s)) deriving Show
 
 mkPangoAttrListPrim :: Ptr (PangoAttrListPrim s) -> IO (PangoAttrListPrim s)
