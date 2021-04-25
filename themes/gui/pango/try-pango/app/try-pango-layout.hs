@@ -40,10 +40,11 @@ main = do
 
 	pl <- pangoCairoCreateLayout cr
 	pfd <- pangoFontDescriptionNew
---	pangoFontDescriptionSetFamily pfd "sans-serif"
-	pangoFontDescriptionSetFamily pfd "sans-serif"
-	pangoFontDescriptionSetSize pfd (30 * pangoScale)
-	pangoLayoutSetFontDescription pl =<< pangoFontDescriptionFreeze pfd
+	pangoFontDescriptionSet pfd $ Family "sans-serif"
+	pangoFontDescriptionSet pfd $ Size 30
+	pangoLayoutSet pl =<< pangoFontDescriptionFreeze pfd
+	print @(Maybe Family) . pangoFontDescriptionGet =<< pangoLayoutGet pl
+
 	pangoLayoutSetWidth pl (200 * pangoScale)
 	pangoLayoutSetEllipsize pl pangoEllipsizeMiddle
 	pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは世界!"
@@ -52,9 +53,9 @@ main = do
 
 	pl2 <- pangoCairoCreateLayout cr
 	pfd2 <- pangoFontDescriptionNew
-	pangoFontDescriptionSetFamily pfd2 "serif"
-	pangoFontDescriptionSetSize pfd2 (15 * pangoScale)
-	pangoLayoutSetFontDescription pl2 =<< pangoFontDescriptionFreeze pfd2
+	pangoFontDescriptionSet pfd2 $ Family "serif"
+	pangoFontDescriptionSet pfd2 $ Size 15
+	pangoLayoutSet pl2 =<< pangoFontDescriptionFreeze pfd2
 	pangoLayoutSetWidth pl2 (400 * pangoScale)
 	pangoLayoutSetIndent pl2 (30 * pangoScale)
 --	pangoLayoutSetLineSpacing pl2 2
@@ -149,7 +150,6 @@ main = do
 	pangoCairoShowLayout cr fpl2
 
 	pl3 <- pangoCairoCreateLayout cr
---	pfd3 <- pangoFontDescriptionNew
 	pangoLayoutSetAlignment pl3 pangoAlignCenter
 	pangoLayoutSetTabs pl3 $ tabArray True [100, 200, 300, 400, 500, 600]
 	pangoLayoutSet @T.Text pl3 "タブの\tテスト\tだよ\tHello,\tworld\t!"
@@ -209,7 +209,7 @@ main = do
 
 --	void $ writeDynamicPng "tmp3.png" =<< cairoImageSurfaceGetImage s
 	cairoImageSurfaceGetCairoImage s >>= \case
-		CairoImageArgb32 a -> writePng "tmp3.png" $ cairoArgb32ToJuicyRGBA8 a
+		CairoImageArgb32 a -> writePng "try-pango-layout.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
 
 someText :: String

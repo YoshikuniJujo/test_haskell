@@ -81,7 +81,7 @@ todo
 		- [x] use `Text` instead of `String`
 		- [x] others
 	+ [x] `PangoAttrList`
-	+ [ ] `PangoFontDescription`
+	+ [x] `PangoFontDescription`
 	+ [ ] `Width`
 	+ [ ] `Height`
 	+ [ ] `PangoWrapMode`

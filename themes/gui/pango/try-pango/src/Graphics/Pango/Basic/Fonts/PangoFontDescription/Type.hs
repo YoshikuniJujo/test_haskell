@@ -12,7 +12,9 @@ import Control.Monad.Primitive
 
 newtype PangoFontDescriptionPrim s =
 	PangoFontDescriptionPrim (ForeignPtr (PangoFontDescriptionPrim s))
-	deriving Show
+	
+instance Show (PangoFontDescriptionPrim s) where
+	show _ = "PangoFontDescription"
 
 pangoFontDescriptionNew ::
 	PrimMonad m => m (PangoFontDescriptionPrim (PrimState m))

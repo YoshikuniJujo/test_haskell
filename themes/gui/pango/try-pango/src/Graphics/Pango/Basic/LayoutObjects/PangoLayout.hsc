@@ -117,6 +117,10 @@ foreign import ccall "pango_layout_get_attributes"
 foreign import ccall "pango_attr_list_ref" c_pango_attr_list_ref ::
 	Ptr PangoAttrList -> IO (Ptr PangoAttrList)
 
+instance PangoLayoutSetting PangoFontDescription where
+	pangoLayoutSet = pangoLayoutSetFontDescription
+	pangoLayoutGet = pangoLayoutGetFontDescription
+
 pangoLayoutSetFontDescription :: PangoLayout -> PangoFontDescription -> IO ()
 pangoLayoutSetFontDescription (PangoLayout fpl) (PangoFontDescription fpfd) =
 	withForeignPtr fpl \pl -> withForeignPtr fpfd \pfd ->
@@ -124,6 +128,18 @@ pangoLayoutSetFontDescription (PangoLayout fpl) (PangoFontDescription fpfd) =
 
 foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font_description ::
 	Ptr PangoLayout -> Ptr PangoFontDescription -> IO ()
+
+pangoLayoutGetFontDescription :: PangoLayout -> IO PangoFontDescription
+pangoLayoutGetFontDescription (PangoLayout fpl) =
+	mkPangoFontDescription =<< withForeignPtr fpl \ppl ->
+		c_pango_font_description_copy
+			=<< c_pango_layout_get_font_description ppl
+
+foreign import ccall "pango_layout_get_font_description" c_pango_layout_get_font_description ::
+	Ptr PangoLayout -> IO (Ptr PangoFontDescription)
+
+foreign import ccall "pango_font_description_copy" c_pango_font_description_copy ::
+	Ptr PangoFontDescription -> IO (Ptr PangoFontDescription)
 
 pangoLayoutSetWidth :: PangoLayout -> CInt -> IO ()
 pangoLayoutSetWidth (PangoLayout fpl) w =
