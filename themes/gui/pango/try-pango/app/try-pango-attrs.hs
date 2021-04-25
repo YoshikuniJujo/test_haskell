@@ -253,7 +253,7 @@ main = do
 	pangoCairoShowLayout cr pl
 
 	al16 <- pangoAttrListNew
-	pangoAttrListInsert al16 =<< pangoAttrNew (BackgroundColor 0 (maxBound `div` 2) 0)
+	pangoAttrListChange al16 =<< pangoAttrNew (BackgroundColor 0 (maxBound `div` 2) 0)
 	applyInOrder al16 $ zip (BackgroundAlpha <$> [maxBound `div` 42, maxBound `div` 21 .. ]) [1 .. 42]
 
 	cairoMoveTo cr 0 430

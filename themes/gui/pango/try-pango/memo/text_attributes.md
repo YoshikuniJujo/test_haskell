@@ -120,7 +120,7 @@ todo
 	+ [x] as `pangoAttrListThaw`
 * [x] `pango_attr_list_insert`
 * [x] `pango_attr_list_insert_before`
-* [ ] `pango_attr_list_change`
+* [x] `pango_attr_list_change`
 * [ ] define `pangoAttributeCopy`
 	+ [ ] define
 	+ [ ] use in `app/try-pango-attrs.hs`
