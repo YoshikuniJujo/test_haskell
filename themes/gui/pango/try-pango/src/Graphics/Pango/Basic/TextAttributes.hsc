@@ -480,6 +480,14 @@ pangoAttrListNew = unsafeIOToPrim $ mkPangoAttrListPrim =<< c_pango_attr_list_ne
 foreign import ccall "pango_attr_list_new" c_pango_attr_list_new ::
 	IO (Ptr (PangoAttrListPrim s))
 
+pangoAttrListCopy :: PrimMonad m =>
+	PangoAttrListPrim (PrimState m) -> m (PangoAttrListPrim (PrimState m))
+pangoAttrListCopy (PangoAttrListPrim fal) = unsafeIOToPrim
+	$ mkPangoAttrListPrim =<< withForeignPtr fal c_pango_attr_list_copy
+
+foreign import ccall "pango_attr_list_copy" c_pango_attr_list_copy ::
+	Ptr (PangoAttrListPrim s) -> IO (Ptr (PangoAttrListPrim s))
+
 pangoAttrListFreeze ::
 	PrimMonad m => PangoAttrListPrim (PrimState m) -> m PangoAttrList
 pangoAttrListFreeze (PangoAttrListPrim fal) = unsafeIOToPrim

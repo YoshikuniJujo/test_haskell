@@ -121,9 +121,7 @@ todo
 * [x] `pango_attr_list_insert`
 * [x] `pango_attr_list_insert_before`
 * [x] `pango_attr_list_change`
-* [ ] define `pangoAttributeCopy`
-	+ [ ] define
-	+ [ ] use in `app/try-pango-attrs.hs`
+* [x] define `pangoAttributeCopy`
 
 not todo yet
 ------------
