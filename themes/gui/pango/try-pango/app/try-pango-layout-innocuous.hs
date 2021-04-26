@@ -9,6 +9,7 @@ import Data.CairoImage
 import Data.JuicyCairo
 import Codec.Picture
 import Graphics.Cairo.Drawing.CairoT
+import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
 import Graphics.Pango.Values
@@ -20,7 +21,7 @@ import qualified Data.Text as T
 
 main :: IO ()
 main = do
-	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
+	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 800
 	cr <- cairoCreate s
 
 	putStrLn . pangoLanguageGetSampleString =<< pangoLanguageGetDefault
@@ -31,11 +32,28 @@ main = do
 
 	pl <- pangoCairoCreateLayout cr
 	pangoLayoutSet pl $ pangoEllipsizeMiddle
-	pangoLayoutSet pl $ Width 200
+	pangoLayoutSet pl $ Width 180
 	pangoLayoutSet pl $ LinesPerParagraph 3
 	print =<< pangoLayoutGet @Width pl
 	print =<< pangoLayoutGet @Height pl
 	pangoLayoutSet pl . T.pack $ sampleText ++ "\n" ++ sampleText2
+	pangoCairoShowLayout cr pl
+
+	cairoMoveTo cr 0 150
+	pangoLayoutSet pl PangoWrapChar
+	pangoCairoShowLayout cr pl
+
+	cairoMoveTo cr 0 300
+	pangoLayoutSet pl PangoWrapWordChar
+	pangoCairoShowLayout cr pl
+
+	cairoMoveTo cr 0 450
+	pangoLayoutSet pl $ Width 30
+	pangoLayoutSet pl PangoWrapWord
+	pangoCairoShowLayout cr pl
+
+	cairoMoveTo cr 0 600
+	pangoLayoutSet pl PangoWrapWordChar
 	pangoCairoShowLayout cr pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case

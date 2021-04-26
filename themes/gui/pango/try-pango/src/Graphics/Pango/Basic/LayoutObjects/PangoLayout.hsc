@@ -1,4 +1,6 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.LayoutObjects.PangoLayout where
@@ -23,6 +25,7 @@ import Graphics.Pango.Basic.Rendering
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.TextAttributes
+import Graphics.Pango.Basic.LayoutObjects.PangoLayout.Template
 
 import qualified Data.Text as T
 import qualified Data.Text.Foreign as T
@@ -190,6 +193,28 @@ foreign import ccall "pango_layout_set_height" c_pango_layout_set_height ::
 
 foreign import ccall "pango_layout_get_height" c_pango_layout_get_height ::
 	Ptr PangoLayout -> IO CInt
+
+mkMemberPangoWrapMode "PangoWrapWord" #{const PANGO_WRAP_WORD}
+mkMemberPangoWrapMode "PangoWrapChar" #{const PANGO_WRAP_CHAR}
+mkMemberPangoWrapMode "PangoWrapWordChar" #{const PANGO_WRAP_WORD_CHAR}
+
+instance PangoLayoutSetting PangoWrapMode where
+	pangoLayoutSet = pangoLayoutSetWrap
+	pangoLayoutGet = pangoLayoutGetWrap
+
+pangoLayoutSetWrap :: PangoLayout -> PangoWrapMode -> IO ()
+pangoLayoutSetWrap (PangoLayout fl) (PangoWrapMode wm) =
+	withForeignPtr fl \pl -> c_pango_layout_set_wrap pl wm
+
+pangoLayoutGetWrap :: PangoLayout -> IO PangoWrapMode
+pangoLayoutGetWrap (PangoLayout fl) = PangoWrapMode
+	<$> withForeignPtr fl c_pango_layout_get_wrap
+
+foreign import ccall "pango_layout_set_wrap" c_pango_layout_set_wrap ::
+	Ptr PangoLayout -> #{type PangoWrapMode} -> IO ()
+
+foreign import ccall "pango_layout_get_wrap" c_pango_layout_get_wrap ::
+	Ptr PangoLayout -> IO #{type PangoWrapMode}
 
 instance PangoLayoutSetting PangoEllipsizeMode where
 	pangoLayoutSet = pangoLayoutSetEllipsize
