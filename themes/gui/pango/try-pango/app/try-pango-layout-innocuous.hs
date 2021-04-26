@@ -10,6 +10,7 @@ import Codec.Picture
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
+import Graphics.Pango.Values
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage
 import Graphics.Pango.Rendering.Cairo
@@ -27,6 +28,7 @@ main = do
 	putStrLn sampleText
 
 	pl <- pangoCairoCreateLayout cr
+	pangoLayoutSet pl $ pangoEllipsizeMiddle
 	pangoLayoutSet pl $ Width 200
 	pangoLayoutSet pl $ T.pack sampleText
 	pangoCairoShowLayout cr pl

@@ -24,7 +24,7 @@ function
 * `pango_layout_get_height`
 * `pango_layout_set_ellipsize`
 * `pango_layout_get_ellipsize`
-* `pango_layout_is_ellisize`
+* `pango_layout_is_ellipsize`
 * `pango_layout_set_indent`
 * `pango_layout_get_indent`
 * `pango_layout_get_spacing`
@@ -85,7 +85,7 @@ todo
 	+ [x] `Width`
 	+ [ ] `Height`
 	+ [ ] `PangoWrapMode`
-	+ [ ] `PangoEllipsizeMode`
+	+ [x] `PangoEllipsizeMode`
 	+ [ ] `Indent`
 	+ [ ] `Spacing`
 	+ [ ] `Justify`
@@ -96,6 +96,7 @@ todo
 * [x] `pango_layout_get_character_count`
 * [x] `pango_layout_set_markup`
 * [x] `pango_layout_set_markup_with_accel`
+* [ ] `pango_layout_is_ellipsize`
 * [ ] `pango_layout_is_wrapped`
 * [ ] `pango_layout_get_unknown_glyphs_count`
 * [ ] `pango_layout_get_log_attrs`

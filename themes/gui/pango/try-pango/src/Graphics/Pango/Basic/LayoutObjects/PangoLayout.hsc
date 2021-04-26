@@ -163,12 +163,23 @@ foreign import ccall "pango_layout_set_width" c_pango_layout_set_width ::
 foreign import ccall "pango_layout_get_width" c_pango_layout_get_width ::
 	Ptr PangoLayout -> IO CInt
 
+instance PangoLayoutSetting PangoEllipsizeMode where
+	pangoLayoutSet = pangoLayoutSetEllipsize
+	pangoLayoutGet = pangoLayoutGetEllipsize
+
 pangoLayoutSetEllipsize :: PangoLayout -> PangoEllipsizeMode -> IO ()
 pangoLayoutSetEllipsize (PangoLayout fpl) (PangoEllipsizeMode pem) =
 	withForeignPtr fpl \pl -> c_pango_layout_set_ellipsize pl pem
 
+pangoLayoutGetEllipsize :: PangoLayout -> IO PangoEllipsizeMode
+pangoLayoutGetEllipsize (PangoLayout fl) = PangoEllipsizeMode
+	<$> withForeignPtr fl c_pango_layout_get_ellipsize
+
 foreign import ccall "pango_layout_set_ellipsize" c_pango_layout_set_ellipsize ::
 	Ptr PangoLayout -> #{type PangoEllipsizeMode} -> IO ()
+
+foreign import ccall "pango_layout_get_ellipsize" c_pango_layout_get_ellipsize ::
+	Ptr PangoLayout -> IO #{type PangoEllipsizeMode}
 
 pangoLayoutSetIndent :: PangoLayout -> CInt -> IO ()
 pangoLayoutSetIndent (PangoLayout fpl) idt = unsafeIOToPrim
