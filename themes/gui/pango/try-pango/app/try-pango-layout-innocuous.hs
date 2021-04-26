@@ -21,7 +21,7 @@ import qualified Data.Text as T
 
 main :: IO ()
 main = do
-	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 800
+	s <- cairoImageSurfaceCreate cairoFormatArgb32 600 800
 	cr <- cairoCreate s
 
 	putStrLn . pangoLanguageGetSampleString =<< pangoLanguageGetDefault
@@ -56,6 +56,15 @@ main = do
 	pangoLayoutSet pl PangoWrapWordChar
 	pangoCairoShowLayout cr pl
 
+	cairoMoveTo cr 300 0
+	pangoLayoutSet pl $ Width 200
+	pangoLayoutSet pl $ Indent 50
+	pangoCairoShowLayout cr pl
+
+	cairoMoveTo cr 300 150
+	pangoLayoutSet pl . Indent $ - 50
+	pangoCairoShowLayout cr pl
+
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-layout-innocuous.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
@@ -63,7 +72,7 @@ main = do
 sampleText, sampleText2 :: String
 sampleText = unwords $
 	pangoLanguageGetSampleString . pangoLanguageFromString <$> [
-		"is-is", "is", "ga-ie", "ga", "en", "ja-jp", "zh-tw"
+		"is-is", "ga-ie", "ga", "en", "ja-jp", "zh-tw"
 		]
 
 sampleText2 = unwords $

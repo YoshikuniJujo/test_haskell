@@ -87,7 +87,7 @@ todo
 	+ [x] `Height`
 	+ [x] `PangoWrapMode`
 	+ [x] `PangoEllipsizeMode`
-	+ [ ] `Indent`
+	+ [x] `Indent`
 	+ [ ] `Spacing`
 	+ [ ] `Justify`
 	+ [ ] `AutoDir`

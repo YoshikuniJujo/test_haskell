@@ -234,12 +234,27 @@ foreign import ccall "pango_layout_set_ellipsize" c_pango_layout_set_ellipsize :
 foreign import ccall "pango_layout_get_ellipsize" c_pango_layout_get_ellipsize ::
 	Ptr PangoLayout -> IO #{type PangoEllipsizeMode}
 
+newtype Indent = Indent { getIndent :: Double } deriving Show
+
+instance PangoLayoutSetting Indent where
+	pangoLayoutSet l =
+		pangoLayoutSetIndent l . round . (* #{const PANGO_SCALE}) . getIndent
+	pangoLayoutGet l =
+		Indent . (/ #{const PANGO_SCALE}) . fromIntegral <$> pangoLayoutGetIndent l
+
 pangoLayoutSetIndent :: PangoLayout -> CInt -> IO ()
-pangoLayoutSetIndent (PangoLayout fpl) idt = unsafeIOToPrim
-	$ withForeignPtr fpl \pl -> c_pango_layout_set_indent pl idt
+pangoLayoutSetIndent (PangoLayout fl) idt =
+	withForeignPtr fl \pl -> c_pango_layout_set_indent pl idt
+
+pangoLayoutGetIndent :: PangoLayout -> IO CInt
+pangoLayoutGetIndent (PangoLayout fl) =
+	withForeignPtr fl c_pango_layout_get_indent
 
 foreign import ccall "pango_layout_set_indent" c_pango_layout_set_indent ::
 	Ptr PangoLayout -> CInt -> IO ()
+
+foreign import ccall "pango_layout_get_indent" c_pango_layout_get_indent ::
+	Ptr PangoLayout -> IO CInt
 
 {-
 foreign import ccall "pango_layout_set_line_spacing" c_pango_layout_set_line_spacing ::
