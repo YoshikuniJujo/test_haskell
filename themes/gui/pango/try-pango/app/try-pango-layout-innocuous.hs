@@ -65,6 +65,11 @@ main = do
 	pangoLayoutSet pl . Indent $ - 50
 	pangoCairoShowLayout cr pl
 
+	cairoMoveTo cr 300 300
+	pangoLayoutSet pl $ Indent 0
+	pangoLayoutSet pl $ Spacing 10
+	pangoCairoShowLayout cr pl
+
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-layout-innocuous.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"

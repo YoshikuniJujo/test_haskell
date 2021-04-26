@@ -256,6 +256,28 @@ foreign import ccall "pango_layout_set_indent" c_pango_layout_set_indent ::
 foreign import ccall "pango_layout_get_indent" c_pango_layout_get_indent ::
 	Ptr PangoLayout -> IO CInt
 
+newtype Spacing = Spacing { getSpacing :: Double } deriving Show
+
+instance PangoLayoutSetting Spacing where
+	pangoLayoutSet l = pangoLayoutSetSpacing l
+		. round . (* #{const PANGO_SCALE}) . getSpacing
+	pangoLayoutGet l = Spacing . (/ #{const PANGO_SCALE})
+		. fromIntegral <$> pangoLayoutGetSpacing l
+
+pangoLayoutSetSpacing :: PangoLayout -> CInt -> IO ()
+pangoLayoutSetSpacing (PangoLayout fl) sp =
+	withForeignPtr fl \pl -> c_pango_layout_set_spacing pl sp
+
+pangoLayoutGetSpacing :: PangoLayout -> IO CInt
+pangoLayoutGetSpacing (PangoLayout fl) =
+	withForeignPtr fl c_pango_layout_get_spacing
+
+foreign import ccall "pango_layout_set_spacing" c_pango_layout_set_spacing ::
+	Ptr PangoLayout -> CInt -> IO ()
+
+foreign import ccall "pango_layout_get_spacing" c_pango_layout_get_spacing ::
+	Ptr PangoLayout -> IO CInt
+
 {-
 foreign import ccall "pango_layout_set_line_spacing" c_pango_layout_set_line_spacing ::
 	Ptr PangoLayoutIo -> #{type float} -> IO ()
