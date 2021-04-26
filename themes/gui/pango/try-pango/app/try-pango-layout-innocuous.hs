@@ -1,5 +1,6 @@
 {-# LANGUAGE LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -26,19 +27,28 @@ main = do
 	putStrLn . pangoLanguageGetSampleString $ pangoLanguageFromString "is-is"
 	putStrLn . pangoLanguageGetSampleString $ pangoLanguageFromString "zh-tw"
 	putStrLn sampleText
+	putStrLn sampleText2
 
 	pl <- pangoCairoCreateLayout cr
 	pangoLayoutSet pl $ pangoEllipsizeMiddle
 	pangoLayoutSet pl $ Width 200
-	pangoLayoutSet pl $ T.pack sampleText
+	pangoLayoutSet pl $ LinesPerParagraph 3
+	print =<< pangoLayoutGet @Width pl
+	print =<< pangoLayoutGet @Height pl
+	pangoLayoutSet pl . T.pack $ sampleText ++ "\n" ++ sampleText2
 	pangoCairoShowLayout cr pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-layout-innocuous.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
 
-sampleText :: String
+sampleText, sampleText2 :: String
 sampleText = unwords $
 	pangoLanguageGetSampleString . pangoLanguageFromString <$> [
 		"is-is", "is", "ga-ie", "ga", "en", "ja-jp", "zh-tw"
+		]
+
+sampleText2 = unwords $
+	pangoLanguageGetSampleString . pangoLanguageFromString <$> [
+		"af", "ar", "sq"
 		]

@@ -149,18 +149,46 @@ instance PangoLayoutSetting Width where
 	pangoLayoutGet l =
 		Width . (/ #{const PANGO_SCALE}) . fromIntegral <$> pangoLayoutGetWidth l
 
-pangoLayoutSetWidth :: PangoLayout -> CInt -> IO ()
-pangoLayoutSetWidth (PangoLayout fpl) w =
-	withForeignPtr fpl \pl -> c_pango_layout_set_width pl w
+data Height = Height Double | LinesPerParagraph CInt deriving Show
 
-pangoLayoutGetWidth :: PangoLayout -> IO CInt
-pangoLayoutGetWidth (PangoLayout fpl) =
-	withForeignPtr fpl c_pango_layout_get_width
+toHeight :: CInt -> Height
+toHeight n
+	| n < 0 = LinesPerParagraph $ - n
+	| otherwise = Height $ fromIntegral n / #{const PANGO_SCALE}
+
+fromHeight :: Height -> CInt
+fromHeight = \case
+	Height d -> round $ d * #{const PANGO_SCALE}
+	LinesPerParagraph n -> - n
+
+instance PangoLayoutSetting Height where
+	pangoLayoutSet l = pangoLayoutSetHeight l . fromHeight
+	pangoLayoutGet l = toHeight <$> pangoLayoutGetHeight l
+
+pangoLayoutSetWidth, pangoLayoutSetHeight :: PangoLayout -> CInt -> IO ()
+pangoLayoutSetWidth (PangoLayout fl) w =
+	withForeignPtr fl \pl -> c_pango_layout_set_width pl w
+
+pangoLayoutSetHeight (PangoLayout fl) h =
+	withForeignPtr fl \pl -> c_pango_layout_set_height pl h
+
+pangoLayoutGetWidth, pangoLayoutGetHeight :: PangoLayout -> IO CInt
+pangoLayoutGetWidth (PangoLayout fl) =
+	withForeignPtr fl c_pango_layout_get_width
+
+pangoLayoutGetHeight (PangoLayout fl) =
+	withForeignPtr fl c_pango_layout_get_height
 
 foreign import ccall "pango_layout_set_width" c_pango_layout_set_width ::
 	Ptr PangoLayout -> CInt -> IO ()
 
 foreign import ccall "pango_layout_get_width" c_pango_layout_get_width ::
+	Ptr PangoLayout -> IO CInt
+
+foreign import ccall "pango_layout_set_height" c_pango_layout_set_height ::
+	Ptr PangoLayout -> CInt -> IO ()
+
+foreign import ccall "pango_layout_get_height" c_pango_layout_get_height ::
 	Ptr PangoLayout -> IO CInt
 
 instance PangoLayoutSetting PangoEllipsizeMode where

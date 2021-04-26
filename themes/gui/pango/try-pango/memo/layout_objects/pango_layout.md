@@ -83,7 +83,7 @@ todo
 	+ [x] `PangoAttrList`
 	+ [x] `PangoFontDescription`
 	+ [x] `Width`
-	+ [ ] `Height`
+	+ [x] `Height`
 	+ [ ] `PangoWrapMode`
 	+ [x] `PangoEllipsizeMode`
 	+ [ ] `Indent`
