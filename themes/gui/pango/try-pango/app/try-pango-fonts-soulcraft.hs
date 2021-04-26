@@ -16,7 +16,7 @@ import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Rendering.Cairo
 
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
-import Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations
+import Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations as V
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 
 import qualified Data.Text as T
@@ -33,12 +33,12 @@ main = getArgs >>= \case
 		pangoFontDescriptionSetFamily fd "Soulcraft"
 		pangoFontDescriptionSet fd $ Size 20
 		pangoFontDescriptionSetVariation fd "wght=500"
-		pangoFontDescriptionSetAxis fd . Width $ read wdth
+		pangoFontDescriptionSetAxis fd . V.Width $ read wdth
 		pangoFontDescriptionSetAxis fd . Slant $ read slnt
 
 		fd' <- pangoFontDescriptionFreeze fd
 
-		print $ pangoFontDescriptionGetAxis @Width fd'
+		print $ pangoFontDescriptionGetAxis @V.Width fd'
 		print $ pangoFontDescriptionGetAxis @Slant fd'
 
 		pl <- pangoCairoCreateLayout cr

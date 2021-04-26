@@ -141,19 +141,27 @@ foreign import ccall "pango_layout_get_font_description" c_pango_layout_get_font
 foreign import ccall "pango_font_description_copy" c_pango_font_description_copy ::
 	Ptr PangoFontDescription -> IO (Ptr PangoFontDescription)
 
+newtype Width = Width { getWidth :: Double } deriving Show
+
+instance PangoLayoutSetting Width where
+	pangoLayoutSet l =
+		pangoLayoutSetWidth l . round . (* #{const PANGO_SCALE}) . getWidth
+	pangoLayoutGet l =
+		Width . (/ #{const PANGO_SCALE}) . fromIntegral <$> pangoLayoutGetWidth l
+
 pangoLayoutSetWidth :: PangoLayout -> CInt -> IO ()
 pangoLayoutSetWidth (PangoLayout fpl) w =
 	withForeignPtr fpl \pl -> c_pango_layout_set_width pl w
+
+pangoLayoutGetWidth :: PangoLayout -> IO CInt
+pangoLayoutGetWidth (PangoLayout fpl) =
+	withForeignPtr fpl c_pango_layout_get_width
 
 foreign import ccall "pango_layout_set_width" c_pango_layout_set_width ::
 	Ptr PangoLayout -> CInt -> IO ()
 
 foreign import ccall "pango_layout_get_width" c_pango_layout_get_width ::
 	Ptr PangoLayout -> IO CInt
-
-pangoLayoutGetWidth :: PangoLayout -> IO CInt
-pangoLayoutGetWidth (PangoLayout fpl) =
-	withForeignPtr fpl c_pango_layout_get_width
 
 pangoLayoutSetEllipsize :: PangoLayout -> PangoEllipsizeMode -> IO ()
 pangoLayoutSetEllipsize (PangoLayout fpl) (PangoEllipsizeMode pem) =

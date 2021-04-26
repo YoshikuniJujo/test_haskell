@@ -217,6 +217,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-pango
+  try-pango-layout-innocuous:
+    main:                try-pango-layout-innocuous.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-pango
 
 tests:
   try-pango-test:

@@ -82,7 +82,7 @@ todo
 		- [x] others
 	+ [x] `PangoAttrList`
 	+ [x] `PangoFontDescription`
-	+ [ ] `Width`
+	+ [x] `Width`
 	+ [ ] `Height`
 	+ [ ] `PangoWrapMode`
 	+ [ ] `PangoEllipsizeMode`

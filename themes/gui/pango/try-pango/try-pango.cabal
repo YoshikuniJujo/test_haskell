@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2371053b4dc90c2736f13515bb0bab4dd7432c9277291d6cc447bb32e07e442c
+-- hash: 5dbde3d6216bacc25fa8b312ed62eeb3439161983c7f6bbea9755d225ee2c947
 
 name:           try-pango
 version:        0.1.0.0
@@ -437,6 +437,29 @@ executable try-pango-language
 
 executable try-pango-layout
   main-is: try-pango-layout.hs
+  other-modules:
+      Main
+      Paths_try_pango
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , bytestring
+    , cairo-image
+    , containers
+    , nowdoc
+    , primitive
+    , simple-cairo
+    , template-haskell
+    , text
+    , try-pango
+  default-language: Haskell2010
+
+executable try-pango-layout-innocuous
+  main-is: try-pango-layout-innocuous.hs
   other-modules:
       Main
       Paths_try_pango
