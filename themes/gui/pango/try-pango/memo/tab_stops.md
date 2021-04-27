@@ -18,7 +18,7 @@ function
 todo
 ----
 
-* [ ] `pango_tab_array_new`
+* [x] `pango_tab_array_new`
 * [ ] `pango_tab_array_get_size`
 * [ ] `pango_tab_array_resize`
 * [ ] `pango_tab_array_set_tab`

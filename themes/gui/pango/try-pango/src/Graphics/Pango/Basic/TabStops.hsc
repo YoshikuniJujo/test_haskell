@@ -28,6 +28,16 @@ gbooleanToBool :: #{type gboolean} -> Bool
 gbooleanToBool #{const FALSE} = False
 gbooleanToBool _ = True
 
+pangoTabArrayPangoUnitNew ::
+	PrimMonad m => m (PangoTabArrayPangoUnit (PrimState m))
+pangoTabArrayPangoUnitNew = unsafeIOToPrim
+	$ mkPangoTabArrayPangoUnit =<< c_pango_tab_array_new 1 #{const FALSE}
+
+pangoTabArrayPixelUnitNew ::
+	PrimMonad m => m (PangoTabArrayPixelUnit (PrimState m))
+pangoTabArrayPixelUnitNew = unsafeIOToPrim
+	$ mkPangoTabArrayPixelUnit =<< c_pango_tab_array_new 1 #{const TRUE}
+
 pangoTabArrayNew :: PrimMonad m =>
 	#{type gint} -> Bool -> m (PangoTabArrayPrim (PrimState m))
 pangoTabArrayNew sz px = unsafeIOToPrim
