@@ -18,21 +18,21 @@ newtype PangoTabArrayPrim s = PangoTabArrayPrim (ForeignPtr (PangoTabArrayPrim s
 makePangoTabArrayPrim :: Ptr (PangoTabArrayPrim s) -> IO (PangoTabArrayPrim s)
 makePangoTabArrayPrim p = PangoTabArrayPrim <$> newForeignPtr p (c_pango_tab_array_prim_free p)
 
-newtype PangoTabArrayPangoUnit s =
-	PangoTabArrayPangoUnit (ForeignPtr (PangoTabArrayPrim s)) deriving Show
+newtype PangoTabArrayDouble s =
+	PangoTabArrayDouble (ForeignPtr (PangoTabArrayPrim s)) deriving Show
 
-mkPangoTabArrayPangoUnit ::
-	Ptr (PangoTabArrayPrim s) -> IO (PangoTabArrayPangoUnit s)
-mkPangoTabArrayPangoUnit p =
-	PangoTabArrayPangoUnit <$> newForeignPtr p (c_pango_tab_array_prim_free p)
+mkPangoTabArrayDouble ::
+	Ptr (PangoTabArrayPrim s) -> IO (PangoTabArrayDouble s)
+mkPangoTabArrayDouble p =
+	PangoTabArrayDouble <$> newForeignPtr p (c_pango_tab_array_prim_free p)
 
-newtype PangoTabArrayPixelUnit s =
-	PangoTabArrayPixelUnit (ForeignPtr (PangoTabArrayPrim s)) deriving Show
+newtype PangoTabArrayInt s =
+	PangoTabArrayInt (ForeignPtr (PangoTabArrayPrim s)) deriving Show
 
-mkPangoTabArrayPixelUnit ::
-	Ptr (PangoTabArrayPrim s) -> IO (PangoTabArrayPixelUnit s)
-mkPangoTabArrayPixelUnit p =
-	PangoTabArrayPixelUnit <$> newForeignPtr p (c_pango_tab_array_prim_free p)
+mkPangoTabArrayInt ::
+	Ptr (PangoTabArrayPrim s) -> IO (PangoTabArrayInt s)
+mkPangoTabArrayInt p =
+	PangoTabArrayInt <$> newForeignPtr p (c_pango_tab_array_prim_free p)
 
 foreign import ccall "pango_tab_array_free" c_pango_tab_array_prim_free ::
 	Ptr (PangoTabArrayPrim s) -> IO ()

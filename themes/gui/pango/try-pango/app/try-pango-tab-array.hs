@@ -6,5 +6,5 @@ import Graphics.Pango.Basic.TabStops
 
 main :: IO ()
 main = do
-	print =<< pangoTabArrayPixelUnitNew
-	print =<< pangoTabArrayPangoUnitNew
+	print =<< pangoTabArrayDoubleNew
+	print =<< pangoTabArrayIntNew

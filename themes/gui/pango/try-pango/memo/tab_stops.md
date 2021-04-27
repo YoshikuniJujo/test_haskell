@@ -19,6 +19,8 @@ todo
 ----
 
 * [x] `pango_tab_array_new`
+* [x] rename `...PangoUnit` to `...Double`
+* [x] rename `...PixelUnit` to `...Int`
 * [ ] `pango_tab_array_get_size`
 * [ ] `pango_tab_array_resize`
 * [ ] `pango_tab_array_set_tab`

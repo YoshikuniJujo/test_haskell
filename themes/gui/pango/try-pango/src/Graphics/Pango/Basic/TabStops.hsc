@@ -28,15 +28,15 @@ gbooleanToBool :: #{type gboolean} -> Bool
 gbooleanToBool #{const FALSE} = False
 gbooleanToBool _ = True
 
-pangoTabArrayPangoUnitNew ::
-	PrimMonad m => m (PangoTabArrayPangoUnit (PrimState m))
-pangoTabArrayPangoUnitNew = unsafeIOToPrim
-	$ mkPangoTabArrayPangoUnit =<< c_pango_tab_array_new 1 #{const FALSE}
+pangoTabArrayDoubleNew ::
+	PrimMonad m => m (PangoTabArrayDouble (PrimState m))
+pangoTabArrayDoubleNew = unsafeIOToPrim
+	$ mkPangoTabArrayDouble =<< c_pango_tab_array_new 1 #{const FALSE}
 
-pangoTabArrayPixelUnitNew ::
-	PrimMonad m => m (PangoTabArrayPixelUnit (PrimState m))
-pangoTabArrayPixelUnitNew = unsafeIOToPrim
-	$ mkPangoTabArrayPixelUnit =<< c_pango_tab_array_new 1 #{const TRUE}
+pangoTabArrayIntNew ::
+	PrimMonad m => m (PangoTabArrayInt (PrimState m))
+pangoTabArrayIntNew = unsafeIOToPrim
+	$ mkPangoTabArrayInt =<< c_pango_tab_array_new 1 #{const TRUE}
 
 pangoTabArrayNew :: PrimMonad m =>
 	#{type gint} -> Bool -> m (PangoTabArrayPrim (PrimState m))
@@ -44,9 +44,9 @@ pangoTabArrayNew sz px = unsafeIOToPrim
 	$ makePangoTabArrayPrim =<< c_pango_tab_array_new sz (boolToGboolean px)
 
 {-
-pangoTabArrayPangoUnitSetTab :: PrimMonad m =>
-	PangoTabArrayPangoUnit (PrimState m) -> CInt -> TabInPangoUnit -> m ()
-pangoTabArrayPangoUnitSetTab
+pangoTabArrayDoubleSetTab :: PrimMonad m =>
+	PangoTabArrayDouble (PrimState m) -> CInt -> TabInDouble -> m ()
+pangoTabArrayDoubleSetTab
 -}
 
 foreign import ccall "pango_tab_array_get_size" c_pango_tab_array_get_size ::
