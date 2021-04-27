@@ -10,7 +10,6 @@ import Control.Monad
 import Control.Monad.ST
 import Data.Foldable
 import Data.Maybe
-import Data.Int
 import Text.Nowdoc
 import Codec.Picture
 
@@ -154,21 +153,39 @@ main = do
 	pangoLayoutSetAlignment pl3 pangoAlignCenter
 	pangoLayoutSetTabs pl3 $ tabArray True [100, 200, 300, 400, 500, 600]
 	pangoLayoutSet @T.Text pl3 "タブの\tテスト\tだよ\tHello,\tworld\t!"
+	cairoMoveTo cr 100 540
+	pangoCairoShowLayout cr pl3
+
+	cairoMoveTo cr 100 560
+	pangoLayoutSetTabs pl3 . tabArray False $ (* 1024) <$> [100, 210, 300, 400, 500, 600]
+	pangoCairoShowLayout cr pl3
+
+	pangoLayoutSetTabs pl3 $ tabArray False $ (* pangoScale) <$> [100, 200, 300, 350, 450, 490, 490, 490, 490]
 	cairoMoveTo cr 100 580
 	pangoCairoShowLayout cr pl3
 
 	cairoMoveTo cr 100 600
-	pangoLayoutSetTabs pl3 . tabArray False $ (* 1024) <$> [100, 210, 300, 400, 500, 600]
+	pangoLayoutSet @T.Text pl3
+		"タブのテストテストテストテスト\tテスト\tだよ\tHello,\tworld\t!\t!\t!\t!\t!"
 	pangoCairoShowLayout cr pl3
 
-	pangoLayoutSetTabs pl3 $ tabArray False $ (* pangoScale) <$> [100, 200, 300, 350, 450, 550]
-	cairoMoveTo cr 100 630
+	cairoMoveTo cr 100 620
+	pangoLayoutSetTabs pl3 $ tabArray True [100, 200, 0, 0]
+	pangoLayoutSet @T.Text pl3 "a\tb\tc\td\te\tf\tg"
+	pangoCairoShowLayout cr pl3
+
+	cairoMoveTo cr 100 640
+	pangoLayoutSetTabs pl3 $ tabArray True [100, 200, 300, 400]
+	pangoCairoShowLayout cr pl3
+
+	cairoMoveTo cr 100 660
+	pangoLayoutSetTabs pl3 $ tabArray True [100, 200]
 	pangoCairoShowLayout cr pl3
 
 	pl4 <- pangoCairoCreateLayout cr
 	pangoLayoutSet @T.Text pl4 "try\nsingle\tparagraph\nmode"
 	pangoLayoutSetSingleParagraphMode pl4 True
-	cairoMoveTo cr 100 655
+	cairoMoveTo cr 100 675
 	pangoCairoShowLayout cr pl4
 
 	pl5 <- pangoCairoCreateLayout cr
@@ -176,7 +193,7 @@ main = do
 		"Watch \x231a Sloth \x1f9a5 Otter \x1f9a6 Secret \x3299 A \x1f170 " <>
 		"Bad1 \x1f16f Bad2 \x1f16e fffi"
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0 1
-	cairoMoveTo cr 100 680
+	cairoMoveTo cr 100 700
 	let	fpl5 = pl5
 	print =<< pangoLayoutGetUnknownGlyphsCount fpl5
 	pangoCairoShowLayout cr fpl5
