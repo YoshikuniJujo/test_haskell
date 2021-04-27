@@ -334,12 +334,23 @@ foreign import ccall "pango_layout_set_auto_dir" c_pango_layout_set_auto_dir ::
 foreign import ccall "pango_layout_get_auto_dir" c_pango_layout_get_auto_dir ::
 	Ptr PangoLayout -> IO #{type gboolean}
 
+instance PangoLayoutSetting PangoAlignment where
+	pangoLayoutSet = pangoLayoutSetAlignment
+	pangoLayoutGet = pangoLayoutGetAlignment
+
 pangoLayoutSetAlignment :: PangoLayout -> PangoAlignment -> IO ()
-pangoLayoutSetAlignment (PangoLayout fpl) (PangoAlignment pa) = unsafeIOToPrim
-	$ withForeignPtr fpl \pl -> c_pango_layout_set_alignment pl pa
+pangoLayoutSetAlignment (PangoLayout fpl) (PangoAlignment pa) =
+	withForeignPtr fpl \pl -> c_pango_layout_set_alignment pl pa
+
+pangoLayoutGetAlignment :: PangoLayout -> IO PangoAlignment
+pangoLayoutGetAlignment (PangoLayout fl) =
+	PangoAlignment <$> withForeignPtr fl c_pango_layout_get_alignment
 
 foreign import ccall "pango_layout_set_alignment" c_pango_layout_set_alignment ::
 	Ptr PangoLayout -> #{type PangoAlignment} -> IO ()
+
+foreign import ccall "pango_layout_get_alignment" c_pango_layout_get_alignment ::
+	Ptr PangoLayout -> IO #{type PangoAlignment}
 
 pangoLayoutSetTabs :: PangoLayout -> PangoTabArray -> IO ()
 pangoLayoutSetTabs (PangoLayout fpl) (PangoTabArray fpta) = unsafeIOToPrim

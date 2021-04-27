@@ -91,7 +91,7 @@ todo
 	+ [x] `Spacing`
 	+ [x] `Justify`
 	+ [x] `AutoDir`
-	+ [ ] `PangoAlignment`
+	+ [x] `PangoAlignment`
 	+ [ ] `pangoTabArray`
 	+ [ ] `SingleParagraphMode`
 * [x] `pango_layout_get_character_count`

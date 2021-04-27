@@ -85,6 +85,16 @@ main = do
 	pangoLayoutSet pl $ AutoDir False
 	pangoCairoShowLayout cr pl
 
+	cairoMoveTo cr 0 750
+	pangoLayoutSet pl $ Justify False
+	pangoLayoutSet pl . T.pack $ sampleText ++ "\n" ++ sampleText2
+	pangoLayoutSet pl pangoAlignCenter
+	pangoCairoShowLayout cr pl
+
+	cairoMoveTo cr 0 900
+	pangoLayoutSet pl pangoAlignRight
+	pangoCairoShowLayout cr pl
+
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-layout-innocuous.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
