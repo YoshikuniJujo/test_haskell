@@ -156,6 +156,10 @@ main = do
 	cairoMoveTo cr 100 580
 	pangoCairoShowLayout cr pl3
 
+	cairoMoveTo cr 100 600
+	pangoLayoutSetTabs pl3 . tabArray False $ (* 1024) <$> [100, 210, 300, 400, 500, 600]
+	pangoCairoShowLayout cr pl3
+
 	pangoLayoutSetTabs pl3 $ tabArray False $ (* pangoScale) <$> [100, 200, 300, 350, 450, 550]
 	cairoMoveTo cr 100 630
 	pangoCairoShowLayout cr pl3

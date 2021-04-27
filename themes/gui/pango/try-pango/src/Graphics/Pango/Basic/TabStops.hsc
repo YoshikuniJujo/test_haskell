@@ -43,6 +43,12 @@ pangoTabArrayNew :: PrimMonad m =>
 pangoTabArrayNew sz px = unsafeIOToPrim
 	$ makePangoTabArrayPrim =<< c_pango_tab_array_new sz (boolToGboolean px)
 
+{-
+pangoTabArrayPangoUnitSetTab :: PrimMonad m =>
+	PangoTabArrayPangoUnit (PrimState m) -> CInt -> TabInPangoUnit -> m ()
+pangoTabArrayPangoUnitSetTab
+-}
+
 foreign import ccall "pango_tab_array_get_size" c_pango_tab_array_get_size ::
 	Ptr PangoTabArray -> IO #type gint
 
