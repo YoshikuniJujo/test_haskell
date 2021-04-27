@@ -89,7 +89,7 @@ todo
 	+ [x] `PangoEllipsizeMode`
 	+ [x] `Indent`
 	+ [x] `Spacing`
-	+ [ ] `Justify`
+	+ [x] `Justify`
 	+ [ ] `AutoDir`
 	+ [ ] `PangoAlignment`
 	+ [ ] `pangoTabArray`

@@ -13,6 +13,7 @@ import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
 import Control.Monad.Primitive
+import Data.Bool
 import Data.Word
 import Data.Int
 import Data.Char
@@ -286,6 +287,29 @@ pangoLayoutSetLineSpacing :: PangoLayoutIo -> #{type float} -> IO ()
 pangoLayoutSetLineSpacing (PangoLayoutIo fpl) fct = withForeignPtr fpl \pl ->
 	c_pango_layout_set_line_spacing pl fct
 	-}
+
+newtype Justify = Justify { getJustify :: Bool } deriving Show
+
+instance PangoLayoutSetting Justify where
+	pangoLayoutSet l = pangoLayoutSetJustify l . getJustify
+	pangoLayoutGet l = Justify <$> pangoLayoutGetJustify l
+
+pangoLayoutSetJustify :: PangoLayout -> Bool -> IO ()
+pangoLayoutSetJustify (PangoLayout fl) b = withForeignPtr fl \pl ->
+	c_pango_layout_set_justify pl $ bool #{const FALSE} #{const TRUE} b
+
+pangoLayoutGetJustify :: PangoLayout -> IO Bool
+pangoLayoutGetJustify (PangoLayout fl) =
+	(<$> withForeignPtr fl c_pango_layout_get_justify) \case
+		#{const FALSE} -> False
+		#{const TRUE} -> True
+		_ -> error "never occur"
+
+foreign import ccall "pango_layout_set_justify" c_pango_layout_set_justify ::
+	Ptr PangoLayout -> #{type gboolean} -> IO ()
+
+foreign import ccall "pango_layout_get_justify" c_pango_layout_get_justify ::
+	Ptr PangoLayout -> IO #{type gboolean}
 
 pangoLayoutSetAlignment :: PangoLayout -> PangoAlignment -> IO ()
 pangoLayoutSetAlignment (PangoLayout fpl) (PangoAlignment pa) = unsafeIOToPrim
