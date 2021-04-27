@@ -54,6 +54,7 @@ todo
 		- [x] change from `PangoLayout s` to `pangoLayout`
 * [x] rename `PangoFontDescription` to `PangoFontDescriptionPrim`
 * [x] define `PangoFontDescription` and freezer
+* [x] move `Graphics.Pango.LowLevel.TabStops` to `Graphics.Pango.Basic.TabStops`
 * [ ] Basic Pango Interfaces
 	+ [x] Fonts
 		- [x] PangoFontDescription

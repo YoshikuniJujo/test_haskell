@@ -92,7 +92,7 @@ todo
 	+ [x] `Justify`
 	+ [x] `AutoDir`
 	+ [x] `PangoAlignment`
-	+ [ ] `pangoTabArray`
+	+ [ ] `PangoTabArray`
 	+ [ ] `SingleParagraphMode`
 * [x] `pango_layout_get_character_count`
 * [x] `pango_layout_set_markup`

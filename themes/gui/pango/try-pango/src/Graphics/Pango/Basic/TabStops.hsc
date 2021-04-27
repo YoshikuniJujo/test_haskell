@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.LowLevel.TabStops where
+module Graphics.Pango.Basic.TabStops where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
