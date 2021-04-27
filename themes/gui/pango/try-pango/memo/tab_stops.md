@@ -21,11 +21,19 @@ todo
 * [x] `pango_tab_array_new`
 * [x] rename `...PangoUnit` to `...Double`
 * [x] rename `...PixelUnit` to `...Int`
-* [ ] `pango_tab_array_get_size`
-* [ ] `pango_tab_array_resize`
-* [ ] `pango_tab_array_set_tab`
-* [ ] `pango_tab_array_get_tab`
-* [ ] `pango_tab_array_get_tabs`
+* [x] `pango_tab_array_get_size`
+* [x] `pango_tab_array_resize`
+* [x] `pango_tab_array_set_tab`
+* [ ] `pangoTabArrayDoubleFreeze`
+	+ `:: PangoTabArrayDouble -> m PangoTabArray`
+* [ ] `pangoTabArrayIntFreeze`
+	+ `:: PangoTabArrayInt -> m PangoTabArray`
+* [ ] `pangoTabArrayThaw`
+	+ `:: PangoTabArray -> m (Either PangoTabArrayDouble PangoTabArrayInt)`
+* [ ] `pangoTabArrayGetTab`
+	+ `:: PangoTabArray -> CInt -> Maybe (Either Double Int)`
+* [ ] `pangoTabArrayGetTabs`
+	+ `:: PangoTabArray -> Either [Double] [Int]`
 * [ ] `pango_tab_array_get_positions_in_pixels`
 
 about memory

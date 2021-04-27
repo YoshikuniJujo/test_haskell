@@ -7,7 +7,9 @@ import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
+import Foreign.C.Types
 import Control.Monad.Primitive
+import Data.Foldable
 import Data.Word
 import Data.Int
 import System.IO.Unsafe
@@ -43,11 +45,44 @@ pangoTabArrayNew :: PrimMonad m =>
 pangoTabArrayNew sz px = unsafeIOToPrim
 	$ makePangoTabArrayPrim =<< c_pango_tab_array_new sz (boolToGboolean px)
 
-{-
 pangoTabArrayDoubleSetTab :: PrimMonad m =>
-	PangoTabArrayDouble (PrimState m) -> CInt -> TabInDouble -> m ()
-pangoTabArrayDoubleSetTab
--}
+	PangoTabArrayDouble (PrimState m) -> CInt -> Double -> m ()
+pangoTabArrayDoubleSetTab (PangoTabArrayDouble fta) idx x = unsafeIOToPrim
+	$ withForeignPtr fta \pta -> do
+		sz <- c_pango_tab_array_get_size_prim pta
+		if idx < sz
+		then c_pango_tab_array_set_tab pta idx #{const PANGO_TAB_LEFT}
+			. round $ x * #{const PANGO_SCALE}
+		else do	c_pango_tab_array_resize pta (sz * 2)
+			for_ [sz .. sz * 2 - 1] \i ->
+				c_pango_tab_array_set_tab pta i #{const PANGO_TAB_LEFT}
+					. round $ x * #{const PANGO_SCALE}
+			pangoTabArrayDoubleSetTab (PangoTabArrayDouble $ castForeignPtr fta) idx x
+
+pangoTabArrayIntSetTab :: PrimMonad m =>
+	PangoTabArrayInt (PrimState m) -> CInt -> CInt -> m ()
+pangoTabArrayIntSetTab (PangoTabArrayInt fta) idx x = unsafeIOToPrim
+	$ withForeignPtr fta \pta -> do
+		sz <- c_pango_tab_array_get_size_prim pta
+		if idx < sz
+		then c_pango_tab_array_set_tab pta idx #{const PANGO_TAB_LEFT} x
+		else do	c_pango_tab_array_resize pta (sz * 2)
+			for_ [sz .. sz * 2 - 1] \i ->
+				c_pango_tab_array_set_tab pta i #{const PANGO_TAB_LEFT} x
+			pangoTabArrayIntSetTab (PangoTabArrayInt $ castForeignPtr fta) idx x
+
+unsafeTryTabArrayDoubleGetTabs ::
+	PangoTabArrayDouble s -> [(PangoTabAlign, #{type gint})]
+unsafeTryTabArrayDoubleGetTabs (PangoTabArrayDouble f) =
+	pangoTabArrayGetTabs (PangoTabArray $ castForeignPtr f)
+
+unsafeTryTabArrayIntGetTabs ::
+	PangoTabArrayInt s -> [(PangoTabAlign, #{type gint})]
+unsafeTryTabArrayIntGetTabs (PangoTabArrayInt f) =
+	pangoTabArrayGetTabs (PangoTabArray $ castForeignPtr f)
+
+foreign import ccall "pango_tab_array_get_size" c_pango_tab_array_get_size_prim ::
+	Ptr (PangoTabArrayPrim s) -> IO CInt
 
 foreign import ccall "pango_tab_array_get_size" c_pango_tab_array_get_size ::
 	Ptr PangoTabArray -> IO #type gint
@@ -57,18 +92,18 @@ pangoTabArrayGetSize (PangoTabArray fpta) = unsafePerformIO
 	$ withForeignPtr fpta \pta -> c_pango_tab_array_get_size pta
 
 foreign import ccall "pango_tab_array_resize" c_pango_tab_array_resize ::
-	Ptr (PangoTabArrayPrim s) -> #{type gint} -> IO ()
+	Ptr (PangoTabArrayPrim s) -> CInt -> IO ()
 
 pangoTabArrayResize :: PrimMonad m =>
-	PangoTabArrayPrim (PrimState m) -> #{type gint} -> m ()
+	PangoTabArrayPrim (PrimState m) -> CInt -> m ()
 pangoTabArrayResize (PangoTabArrayPrim fpta) sz = unsafeIOToPrim
 	$ withForeignPtr fpta \pta -> c_pango_tab_array_resize pta sz
 
 foreign import ccall "pango_tab_array_set_tab" c_pango_tab_array_set_tab ::
-	Ptr (PangoTabArrayPrim s) -> #{type gint} -> #{type PangoTabAlign} -> #{type gint} -> IO ()
+	Ptr (PangoTabArrayPrim s) -> CInt -> #{type PangoTabAlign} -> CInt -> IO ()
 
 pangoTabArraySetTab :: PrimMonad m =>
-	PangoTabArrayPrim (PrimState m) -> #{type gint} -> PangoTabAlign -> #{type gint} -> m ()
+	PangoTabArrayPrim (PrimState m) -> CInt -> PangoTabAlign -> CInt -> m ()
 pangoTabArraySetTab (PangoTabArrayPrim fpta) idx (PangoTabAlign algn) loc = unsafeIOToPrim
 	$ withForeignPtr fpta \pta -> c_pango_tab_array_set_tab pta idx algn loc
 

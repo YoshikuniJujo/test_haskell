@@ -5,6 +5,7 @@
 
 module Main where
 
+import Foreign.C.Types
 import Control.Monad
 import Control.Monad.ST
 import Data.Foldable
@@ -234,7 +235,7 @@ Haskellとの出会いは、
 |]
 	]
 
-tabArray :: Bool -> [Int32] -> PangoTabArray
+tabArray :: Bool -> [CInt] -> PangoTabArray
 tabArray pip ps = runST do
 	pta <- pangoTabArrayNew (fromIntegral $ length ps) pip
 	for_ (zip [0 ..] ps) \(i, p) -> pangoTabArraySetTab pta i pangoTabLeft p
