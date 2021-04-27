@@ -27,9 +27,9 @@ todo
 * [x] repair `pangoTabArrayDoubleSetTab` and `pangoTabArrayIntSetTab`
 	+ [50, 150, 200, 250] and set 6 to 550 then you should get
 		[50, 150, 200, 250, 350, 450, 550, 600]
-* [ ] `pangoTabArrayDoubleFreeze`
+* [x] `pangoTabArrayDoubleFreeze`
 	+ `:: PangoTabArrayDouble -> m PangoTabArray`
-* [ ] `pangoTabArrayIntFreeze`
+* [x] `pangoTabArrayIntFreeze`
 	+ `:: PangoTabArrayInt -> m PangoTabArray`
 * [ ] `pangoTabArrayThaw`
 	+ `:: PangoTabArray -> m (Either PangoTabArrayDouble PangoTabArrayInt)`

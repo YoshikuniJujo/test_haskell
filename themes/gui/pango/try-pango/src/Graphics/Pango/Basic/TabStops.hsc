@@ -157,20 +157,26 @@ pangoTabArrayGetTabs (PangoTabArray fpta) = unsafePerformIO
 peekArrayAndFree :: Storable a => #{type gint} -> Ptr a -> IO [a]
 peekArrayAndFree n p = peekArray (fromIntegral n) p <* free p
 
-foreign import ccall "pango_tab_array_get_positions_in_pixels"
-	c_pango_tab_array_get_positions_in_pixels ::
-	Ptr PangoTabArray -> IO #type gboolean
-
 pangoTabArrayGetPositionsInPixels :: PangoTabArray -> Bool
 pangoTabArrayGetPositionsInPixels (PangoTabArray fpta) = unsafePerformIO
 	$ withForeignPtr fpta \pta ->
 		gbooleanToBool <$> c_pango_tab_array_get_positions_in_pixels pta
 
-foreign import ccall "pango_tab_array_copy" c_pango_tab_array_freeze ::
-	Ptr (PangoTabArrayPrim s) -> IO (Ptr PangoTabArray)
+foreign import ccall "pango_tab_array_get_positions_in_pixels"
+	c_pango_tab_array_get_positions_in_pixels ::
+	Ptr PangoTabArray -> IO #type gboolean
 
-foreign import ccall "pango_tab_array_copy" c_pango_tab_array_thaw ::
-	Ptr PangoTabArray -> IO (Ptr (PangoTabArrayPrim s))
+pangoTabArrayDoubleFreeze :: PrimMonad m =>
+	PangoTabArrayDouble (PrimState m) -> m PangoTabArray
+pangoTabArrayDoubleFreeze (PangoTabArrayDouble fta) =
+	unsafeIOToPrim $ withForeignPtr fta \pta ->
+		makePangoTabArray =<< c_pango_tab_array_freeze pta
+
+pangoTabArrayIntFreeze :: PrimMonad m =>
+	PangoTabArrayInt (PrimState m) -> m PangoTabArray
+pangoTabArrayIntFreeze (PangoTabArrayInt fta) =
+	unsafeIOToPrim $ withForeignPtr fta \pta ->
+		makePangoTabArray =<< c_pango_tab_array_freeze pta
 
 pangoTabArrayFreeze :: PrimMonad m =>
 	PangoTabArrayPrim (PrimState m) -> m PangoTabArray
@@ -181,3 +187,9 @@ pangoTabArrayThaw :: PrimMonad m =>
 	PangoTabArray -> m (PangoTabArrayPrim (PrimState m))
 pangoTabArrayThaw (PangoTabArray fpta) = unsafeIOToPrim
 	$ withForeignPtr fpta \pta -> makePangoTabArrayPrim =<< c_pango_tab_array_thaw pta
+
+foreign import ccall "pango_tab_array_copy" c_pango_tab_array_freeze ::
+	Ptr (PangoTabArrayPrim s) -> IO (Ptr PangoTabArray)
+
+foreign import ccall "pango_tab_array_copy" c_pango_tab_array_thaw ::
+	Ptr PangoTabArray -> IO (Ptr (PangoTabArrayPrim s))
