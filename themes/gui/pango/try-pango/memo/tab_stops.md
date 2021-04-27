@@ -24,7 +24,7 @@ todo
 * [x] `pango_tab_array_get_size`
 * [x] `pango_tab_array_resize`
 * [x] `pango_tab_array_set_tab`
-* [ ] repair `pangoTabArrayDoubleSetTab` and `pangoTabArrayIntSetTab`
+* [x] repair `pangoTabArrayDoubleSetTab` and `pangoTabArrayIntSetTab`
 	+ [50, 150, 200, 250] and set 6 to 550 then you should get
 		[50, 150, 200, 250, 350, 450, 550, 600]
 * [ ] `pangoTabArrayDoubleFreeze`

@@ -8,6 +8,7 @@ import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
+import Control.Arrow
 import Control.Monad.Primitive
 import Data.Foldable
 import Data.Word
@@ -53,11 +54,23 @@ pangoTabArrayDoubleSetTab (PangoTabArrayDouble fta) idx x = unsafeIOToPrim
 		if idx < sz
 		then c_pango_tab_array_set_tab pta idx #{const PANGO_TAB_LEFT}
 			. round $ x * #{const PANGO_SCALE}
-		else do	c_pango_tab_array_resize pta (sz * 2)
-			for_ [sz .. sz * 2 - 1] \i ->
+		else do	lst <- tempPangoTabArrayGetTab pta (sz - 1)
+			let	Just (sz', tss) = calculateDouble sz idx (fromIntegral lst / #{const PANGO_SCALE}) x
+			c_pango_tab_array_resize pta sz'
+			for_ (zip [sz .. sz' - 1] tss) \(i, xx) ->
 				c_pango_tab_array_set_tab pta i #{const PANGO_TAB_LEFT}
-					. round $ x * #{const PANGO_SCALE}
-			pangoTabArrayDoubleSetTab (PangoTabArrayDouble $ castForeignPtr fta) idx x
+					. round $ xx * #{const PANGO_SCALE}
+
+calculateDouble :: CInt -> CInt -> Double -> Double -> Maybe (CInt, [Double])
+calculateDouble sz idx lst x
+	| idx < sz = Nothing
+	| otherwise = Just (sz', take (fromIntegral $ sz' - sz) [lst + dx, lst + 2 * dx ..])
+	where
+	sz' = nextPow2 $ idx + 1
+	dx = (x - lst) / fromIntegral (idx - sz + 1)
+
+nextPow2 :: (Ord n, Num n) => n -> n
+nextPow2 k = head . dropWhile (< k) $ (2 ^) <$> [0 :: Int ..]
 
 pangoTabArrayIntSetTab :: PrimMonad m =>
 	PangoTabArrayInt (PrimState m) -> CInt -> CInt -> m ()
@@ -66,10 +79,15 @@ pangoTabArrayIntSetTab (PangoTabArrayInt fta) idx x = unsafeIOToPrim
 		sz <- c_pango_tab_array_get_size_prim pta
 		if idx < sz
 		then c_pango_tab_array_set_tab pta idx #{const PANGO_TAB_LEFT} x
-		else do	c_pango_tab_array_resize pta (sz * 2)
-			for_ [sz .. sz * 2 - 1] \i ->
-				c_pango_tab_array_set_tab pta i #{const PANGO_TAB_LEFT} x
-			pangoTabArrayIntSetTab (PangoTabArrayInt $ castForeignPtr fta) idx x
+		else do	lst <- tempPangoTabArrayGetTab pta (sz - 1)
+			let	Just (sz', tss) = calculateCInt sz idx lst x
+			c_pango_tab_array_resize pta sz'
+			for_ (zip [sz .. sz' - 1] tss) \(i, xx) ->
+				c_pango_tab_array_set_tab pta i #{const PANGO_TAB_LEFT} xx
+
+calculateCInt :: CInt -> CInt -> CInt -> CInt -> Maybe (CInt, [CInt])
+calculateCInt sz idx lst x =
+	second (round <$>) <$> calculateDouble sz idx (fromIntegral lst) (fromIntegral x)
 
 unsafeTryTabArrayDoubleGetTabs ::
 	PangoTabArrayDouble s -> [(PangoTabAlign, #{type gint})]
@@ -106,6 +124,14 @@ pangoTabArraySetTab :: PrimMonad m =>
 	PangoTabArrayPrim (PrimState m) -> CInt -> PangoTabAlign -> CInt -> m ()
 pangoTabArraySetTab (PangoTabArrayPrim fpta) idx (PangoTabAlign algn) loc = unsafeIOToPrim
 	$ withForeignPtr fpta \pta -> c_pango_tab_array_set_tab pta idx algn loc
+
+tempPangoTabArrayGetTab :: Ptr (PangoTabArrayPrim s) -> CInt -> IO CInt
+tempPangoTabArrayGetTab pta idx = alloca \px -> do
+	c_pango_tab_array_get_tab_prim pta idx nullPtr px
+	peek px
+
+foreign import ccall "pango_tab_array_get_tab" c_pango_tab_array_get_tab_prim ::
+	Ptr (PangoTabArrayPrim s) -> CInt -> Ptr #{type PangoTabAlign} -> Ptr CInt -> IO ()
 
 foreign import ccall "pango_tab_array_get_tab" c_pango_tab_array_get_tab ::
 	Ptr PangoTabArray -> #{type gint} -> Ptr #{type PangoTabAlign} -> Ptr #{type gint} -> IO ()
