@@ -21,7 +21,7 @@ import qualified Data.Text as T
 
 main :: IO ()
 main = do
-	s <- cairoImageSurfaceCreate cairoFormatArgb32 600 800
+	s <- cairoImageSurfaceCreate cairoFormatArgb32 600 1100
 	cr <- cairoCreate s
 
 	putStrLn . pangoLanguageGetSampleString =<< pangoLanguageGetDefault
@@ -76,11 +76,20 @@ main = do
 	pangoLayoutSet pl $ Justify True
 	pangoCairoShowLayout cr pl
 
+	cairoMoveTo cr 300 630
+	pangoLayoutSet pl . T.pack $ "I love sloth. " ++ arabic
+	pangoLayoutSet pl $ AutoDir True
+	pangoCairoShowLayout cr pl
+
+	cairoMoveTo cr 300 710
+	pangoLayoutSet pl $ AutoDir False
+	pangoCairoShowLayout cr pl
+
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-layout-innocuous.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
 
-sampleText, sampleText2 :: String
+sampleText, sampleText2, arabic :: String
 sampleText = unwords $
 	pangoLanguageGetSampleString . pangoLanguageFromString <$> [
 		"is-is", "ga-ie", "ga", "en", "ja-jp", "zh-tw"
@@ -90,3 +99,5 @@ sampleText2 = unwords $
 	pangoLanguageGetSampleString . pangoLanguageFromString <$> [
 		"af", "ar", "sq"
 		]
+
+arabic = pangoLanguageGetSampleString $ pangoLanguageFromString "ar"

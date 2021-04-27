@@ -311,6 +311,29 @@ foreign import ccall "pango_layout_set_justify" c_pango_layout_set_justify ::
 foreign import ccall "pango_layout_get_justify" c_pango_layout_get_justify ::
 	Ptr PangoLayout -> IO #{type gboolean}
 
+newtype AutoDir = AutoDir { getAutoDir :: Bool } deriving Show
+
+instance PangoLayoutSetting AutoDir where
+	pangoLayoutSet l = pangoLayoutSetAutoDir l . getAutoDir
+	pangoLayoutGet l = AutoDir <$> pangoLayoutGetAutoDir l
+
+pangoLayoutSetAutoDir :: PangoLayout -> Bool -> IO ()
+pangoLayoutSetAutoDir (PangoLayout fl) b = withForeignPtr fl \pl ->
+	c_pango_layout_set_auto_dir pl $ bool #{const FALSE} #{const TRUE} b
+
+pangoLayoutGetAutoDir :: PangoLayout -> IO Bool
+pangoLayoutGetAutoDir (PangoLayout fl) =
+	(<$> withForeignPtr fl c_pango_layout_get_auto_dir) \case
+		#{const FALSE} -> False
+		#{const TRUE} -> True
+		_ -> error "never occur"
+
+foreign import ccall "pango_layout_set_auto_dir" c_pango_layout_set_auto_dir ::
+	Ptr PangoLayout -> #{type gboolean} -> IO ()
+
+foreign import ccall "pango_layout_get_auto_dir" c_pango_layout_get_auto_dir ::
+	Ptr PangoLayout -> IO #{type gboolean}
+
 pangoLayoutSetAlignment :: PangoLayout -> PangoAlignment -> IO ()
 pangoLayoutSetAlignment (PangoLayout fpl) (PangoAlignment pa) = unsafeIOToPrim
 	$ withForeignPtr fpl \pl -> c_pango_layout_set_alignment pl pa

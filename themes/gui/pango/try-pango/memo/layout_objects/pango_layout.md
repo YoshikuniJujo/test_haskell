@@ -90,7 +90,7 @@ todo
 	+ [x] `Indent`
 	+ [x] `Spacing`
 	+ [x] `Justify`
-	+ [ ] `AutoDir`
+	+ [x] `AutoDir`
 	+ [ ] `PangoAlignment`
 	+ [ ] `pangoTabArray`
 	+ [ ] `SingleParagraphMode`
