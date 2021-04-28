@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.LayoutObjects.PangoLayout where
@@ -460,30 +460,61 @@ pangoLayoutGetUnknownGlyphsCount (PangoLayout fpl) =
 foreign import ccall "pango_layout_get_unknown_glyphs_count"
 	c_pango_layout_get_unknown_glyphs_count :: Ptr PangoLayout -> IO CInt
 
-newtype PangoLogAttrBitField = PangoLogAttrBitField (Ptr PangoLogAttrBitField) deriving Show
-newtype PangoLogAttrStruct = PangoLogAttrStruct (Ptr PangoLogAttrStruct) deriving Show
+newtype PangoLogAttr = PangoLogAttr_ (Ptr PangoLogAttr) deriving Show
+data PangoLogAttrStruct
 
-data PangoLogAttr = PangoLogAttr {
-	pangoLogAttrIsLineBreak :: Bool,
-	pangoLogAttrIsMandatoryBreak :: Bool,
-	pangoLogAttrIsCharBreak :: Bool,
-	pangoLogAttrIsWhite :: Bool,
-	pangoLogAttrIsCursorPosition :: Bool,
-	pangoLogAttrIsWordStart :: Bool,
-	pangoLogAttrIsWordEnd :: Bool,
-	pangoLogAttrIsSentenceBoundary :: Bool,
-	pangoLogAttrIsSentenceStart :: Bool,
-	pangoLogAttrIsSentenceEnd :: Bool,
-	pangoLogAttrBackspaceDeletesCharacter :: Bool,
-	pangoLogAttrIsExpandableSpace :: Bool,
-	pangoLogAttrIsWordBoundary :: Bool
+pattern PangoLogAttr ::
+	Bool -> Bool -> Bool -> Bool -> Bool -> Bool -> Bool -> Bool -> Bool ->
+	Bool -> Bool -> Bool -> Bool -> PangoLogAttr
+pattern PangoLogAttr { 
+	pangoLogAttrIsLineBreak,
+	pangoLogAttrIsMandatoryBreak,
+	pangoLogAttrIsCharBreak,
+	pangoLogAttrIsWhite,
+	pangoLogAttrIsCursorPosition,
+	pangoLogAttrIsWordStart,
+	pangoLogAttrIsWordEnd,
+	pangoLogAttrIsSentenceBoundary,
+	pangoLogAttrIsSentenceStart,
+	pangoLogAttrIsSentenceEnd,
+	pangoLogAttrBackspaceDeleteCharacter,
+	pangoLogAttrIsExpandableSpace,
+	pangoLogAttrIsWordBoundary } <- (pangoLogAttrExpand -> PangoLogAttrExpand
+		pangoLogAttrIsLineBreak
+		pangoLogAttrIsMandatoryBreak
+		pangoLogAttrIsCharBreak
+		pangoLogAttrIsWhite
+		pangoLogAttrIsCursorPosition
+		pangoLogAttrIsWordStart
+		pangoLogAttrIsWordEnd
+		pangoLogAttrIsSentenceBoundary
+		pangoLogAttrIsSentenceStart
+		pangoLogAttrIsSentenceEnd
+		pangoLogAttrBackspaceDeleteCharacter
+		pangoLogAttrIsExpandableSpace
+		pangoLogAttrIsWordBoundary)
+
+data PangoLogAttrExpand = PangoLogAttrExpand {
+	pangoLogAttrExpandIsLineBreak :: Bool,
+	pangoLogAttrExpandIsMandatoryBreak :: Bool,
+	pangoLogAttrExpandIsCharBreak :: Bool,
+	pangoLogAttrExpandIsWhite :: Bool,
+	pangoLogAttrExpandIsCursorPosition :: Bool,
+	pangoLogAttrExpandIsWordStart :: Bool,
+	pangoLogAttrExpandIsWordEnd :: Bool,
+	pangoLogAttrExpandIsSentenceBoundary :: Bool,
+	pangoLogAttrExpandIsSentenceStart :: Bool,
+	pangoLogAttrExpandIsSentenceEnd :: Bool,
+	pangoLogAttrExpandBackspaceDeletesCharacter :: Bool,
+	pangoLogAttrExpandIsExpandableSpace :: Bool,
+	pangoLogAttrExpandIsWordBoundary :: Bool
 	} deriving Show
 
-pangoLogAttrExpand :: PangoLogAttrBitField -> PangoLogAttr
-pangoLogAttrExpand (PangoLogAttrBitField pb) = unsafePerformIO
+pangoLogAttrExpand :: PangoLogAttr -> PangoLogAttrExpand
+pangoLogAttrExpand (PangoLogAttr_ pb) = unsafePerformIO
 	$ allocaBytes #{size PangoLogAttrStr} \ps -> do
 		c_pango_log_attr_to_struct pb ps
-		PangoLogAttr
+		PangoLogAttrExpand
 			<$> #{peek PangoLogAttrStr, is_line_break} ps
 			<*> #{peek PangoLogAttrStr, is_mandatory_break} ps
 			<*> #{peek PangoLogAttrStr, is_char_break} ps
@@ -499,7 +530,25 @@ pangoLogAttrExpand (PangoLogAttrBitField pb) = unsafePerformIO
 			<*> #{peek PangoLogAttrStr, is_word_boundary} ps
 
 foreign import ccall "pango_log_attr_to_struct" c_pango_log_attr_to_struct ::
-	Ptr PangoLogAttrBitField -> Ptr PangoLogAttrStruct -> IO ()
+	Ptr PangoLogAttr -> Ptr PangoLogAttrStruct -> IO ()
+
+data PangoLogAttrs = PangoLogAttrs (ForeignPtr PangoLogAttr) CInt deriving Show
+
+mkPangoLogAttrs :: Ptr PangoLogAttr -> CInt -> IO PangoLogAttrs
+mkPangoLogAttrs p n =
+	(`PangoLogAttrs` n) <$> newForeignPtr p (c_g_free_pango_log_attr p)
+
+foreign import ccall "g_free" c_g_free_pango_log_attr ::
+	Ptr PangoLogAttr -> IO ()
+
+pangoLayoutGetLogAttrs :: PangoLayout -> IO PangoLogAttrs
+pangoLayoutGetLogAttrs (PangoLayout fl) =
+	withForeignPtr fl \pl -> alloca \plas -> alloca \pn -> do
+		c_pango_layout_get_log_attrs pl plas pn
+		uncurry mkPangoLogAttrs =<< (,) <$> peek plas <*> peek pn
+
+foreign import ccall "pango_layout_get_log_attrs" c_pango_layout_get_log_attrs ::
+	Ptr PangoLayout -> Ptr (Ptr PangoLogAttr) -> Ptr CInt -> IO ()
 
 foreign import ccall "pango_layout_index_to_pos" c_pango_layout_index_to_pos ::
 	Ptr PangoLayout -> CInt -> Ptr PangoRectangle -> IO ()

@@ -135,6 +135,7 @@ main = do
 	pangoCairoShowLayout cr pl
 
 	print =<< pangoLayoutInfo @UnknownGlyphsCount pl
+	print =<< pangoLayoutGetLogAttrs pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-layout-innocuous.png" $ cairoArgb32ToJuicyRGBA8 a
