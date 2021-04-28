@@ -5,6 +5,8 @@
 
 module Main where
 
+import Control.Arrow
+import Data.Maybe
 import Data.CairoImage
 import Data.JuicyCairo
 import Codec.Picture
@@ -123,7 +125,8 @@ main = do
 
 	pangoLayoutSet pl pangoAlignLeft
 	pangoLayoutSet pl pangoEllipsizeNone
-	pangoLayoutSet pl . T.pack $ take 60 sampleText' ++ "\n" ++ take 60 sampleText2
+	let	txt =  take 60 sampleText' ++ "\n" ++ take 60 sampleText2
+	pangoLayoutSet pl $ T.pack txt
 
 	cairoMoveTo cr 300 780
 	pangoCairoShowLayout cr pl
@@ -135,7 +138,8 @@ main = do
 	pangoCairoShowLayout cr pl
 
 	print =<< pangoLayoutInfo @UnknownGlyphsCount pl
-	print =<< pangoLayoutGetLogAttrs pl
+	las <- pangoLayoutGetLogAttrs pl
+	(putStrLn . (\(c, la) -> c ++ "\n" ++ la) . (show *** showPangoLogAttr)) `mapM_` zip (txt ++ "\x00") (pangoLogAttrsToList las)
 
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-layout-innocuous.png" $ cairoArgb32ToJuicyRGBA8 a
@@ -158,3 +162,18 @@ sampleText2 = unwords $
 		]
 
 arabic = pangoLanguageGetSampleString $ pangoLanguageFromString "ar"
+
+pangoLogAttrsToList :: PangoLogAttrs -> [PangoLogAttr]
+pangoLogAttrsToList las = fromJust . pangoLogAttrsGetLogAttr las <$> [0 .. pangoLogAttrsGetSize las - 1]
+
+showPangoLogAttr :: PangoLogAttr -> String
+showPangoLogAttr la = let PangoLogAttr {
+	pangoLogAttrIsLineBreak = lb,
+	pangoLogAttrIsMandatoryBreak = mb,
+	pangoLogAttrIsCharBreak = cb,
+	pangoLogAttrIsWhite = w
+	} = la in
+	"is_line_break:      " ++ show lb ++ "\n" ++
+	"is_mandatory_break: " ++ show mb ++ "\n" ++
+	"is_char_break:      " ++ show cb ++ "\n" ++
+	"is_white:           " ++ show w ++ "\n"

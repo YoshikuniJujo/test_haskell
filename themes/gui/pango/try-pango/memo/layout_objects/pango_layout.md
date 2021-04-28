@@ -109,7 +109,8 @@ todo
 	+ [x] `pango_layout_get_unknown_glyphs_count`
 	+ [ ] `pango_layout_get_log_attrs`
 		- [x] `pangoLayoutGetLogAttrs`
-		- [ ] `pangoLogAttrsGetLogAttr :: PangoLogAttrs -> Int -> PangoLogAttr`
+		- [x] `pangoLogAttrsGetLogAttr :: PangoLogAttrs -> Int -> PangoLogAttr`
+		- [ ] more infomations in a trial
 		- [ ] `instance PangoLayoutInfo`
 	+ [ ] `pango_layout_get_extents`
 	+ [ ] `pango_layout_get_pixel_extents`

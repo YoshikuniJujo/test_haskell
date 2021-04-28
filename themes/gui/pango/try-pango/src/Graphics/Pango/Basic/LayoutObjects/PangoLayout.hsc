@@ -460,7 +460,7 @@ pangoLayoutGetUnknownGlyphsCount (PangoLayout fpl) =
 foreign import ccall "pango_layout_get_unknown_glyphs_count"
 	c_pango_layout_get_unknown_glyphs_count :: Ptr PangoLayout -> IO CInt
 
-newtype PangoLogAttr = PangoLogAttr_ (Ptr PangoLogAttr) deriving Show
+data PangoLogAttr = PangoLogAttr_ (ForeignPtr PangoLogAttr) Int deriving Show
 data PangoLogAttrStruct
 
 pattern PangoLogAttr ::
@@ -511,23 +511,24 @@ data PangoLogAttrExpand = PangoLogAttrExpand {
 	} deriving Show
 
 pangoLogAttrExpand :: PangoLogAttr -> PangoLogAttrExpand
-pangoLogAttrExpand (PangoLogAttr_ pb) = unsafePerformIO
-	$ allocaBytes #{size PangoLogAttrStr} \ps -> do
-		c_pango_log_attr_to_struct pb ps
-		PangoLogAttrExpand
-			<$> #{peek PangoLogAttrStr, is_line_break} ps
-			<*> #{peek PangoLogAttrStr, is_mandatory_break} ps
-			<*> #{peek PangoLogAttrStr, is_char_break} ps
-			<*> #{peek PangoLogAttrStr, is_white} ps
-			<*> #{peek PangoLogAttrStr, is_cursor_position} ps
-			<*> #{peek PangoLogAttrStr, is_word_start} ps
-			<*> #{peek PangoLogAttrStr, is_word_end} ps
-			<*> #{peek PangoLogAttrStr, is_sentence_boundary} ps
-			<*> #{peek PangoLogAttrStr, is_sentence_start} ps
-			<*> #{peek PangoLogAttrStr, is_sentence_end} ps
-			<*> #{peek PangoLogAttrStr, backspace_deletes_character} ps
-			<*> #{peek PangoLogAttrStr, is_expandable_space} ps
-			<*> #{peek PangoLogAttrStr, is_word_boundary} ps
+pangoLogAttrExpand (PangoLogAttr_ fb i) = unsafePerformIO
+	$ withForeignPtr fb \pb_ -> let pb = pb_ `plusPtr` (i * #{size PangoLogAttr}) in
+		allocaBytes #{size PangoLogAttrStr} \ps -> do
+			c_pango_log_attr_to_struct pb ps
+			PangoLogAttrExpand
+				<$> #{peek PangoLogAttrStr, is_line_break} ps
+				<*> #{peek PangoLogAttrStr, is_mandatory_break} ps
+				<*> #{peek PangoLogAttrStr, is_char_break} ps
+				<*> #{peek PangoLogAttrStr, is_white} ps
+				<*> #{peek PangoLogAttrStr, is_cursor_position} ps
+				<*> #{peek PangoLogAttrStr, is_word_start} ps
+				<*> #{peek PangoLogAttrStr, is_word_end} ps
+				<*> #{peek PangoLogAttrStr, is_sentence_boundary} ps
+				<*> #{peek PangoLogAttrStr, is_sentence_start} ps
+				<*> #{peek PangoLogAttrStr, is_sentence_end} ps
+				<*> #{peek PangoLogAttrStr, backspace_deletes_character} ps
+				<*> #{peek PangoLogAttrStr, is_expandable_space} ps
+				<*> #{peek PangoLogAttrStr, is_word_boundary} ps
 
 foreign import ccall "pango_log_attr_to_struct" c_pango_log_attr_to_struct ::
 	Ptr PangoLogAttr -> Ptr PangoLogAttrStruct -> IO ()
@@ -549,6 +550,14 @@ pangoLayoutGetLogAttrs (PangoLayout fl) =
 
 foreign import ccall "pango_layout_get_log_attrs" c_pango_layout_get_log_attrs ::
 	Ptr PangoLayout -> Ptr (Ptr PangoLogAttr) -> Ptr CInt -> IO ()
+
+pangoLogAttrsGetSize :: PangoLogAttrs -> Int
+pangoLogAttrsGetSize (PangoLogAttrs _ sz) = fromIntegral sz
+
+pangoLogAttrsGetLogAttr :: PangoLogAttrs -> Int -> Maybe PangoLogAttr
+pangoLogAttrsGetLogAttr (PangoLogAttrs fla sz) i
+	| 0 <= i && i < fromIntegral sz = Just $ PangoLogAttr_ fla i
+	| otherwise = Nothing
 
 foreign import ccall "pango_layout_index_to_pos" c_pango_layout_index_to_pos ::
 	Ptr PangoLayout -> CInt -> Ptr PangoRectangle -> IO ()
