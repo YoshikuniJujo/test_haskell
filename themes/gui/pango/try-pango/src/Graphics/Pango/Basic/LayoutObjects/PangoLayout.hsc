@@ -415,6 +415,21 @@ pangoLayoutGetCharacterCount (PangoLayout fpl) =
 foreign import ccall "pango_layout_get_character_count"
 	c_pango_layout_get_character_count :: Ptr PangoLayout -> IO CInt
 
+newtype IsEllipsized = IsEllipsized Bool deriving Show
+
+instance PangoLayoutInfo IsEllipsized where
+	pangoLayoutInfo = (IsEllipsized <$>) . pangoLayoutIsEllipsized
+
+pangoLayoutIsEllipsized :: PangoLayout -> IO Bool
+pangoLayoutIsEllipsized (PangoLayout fl) =
+	(<$> withForeignPtr fl c_pango_layout_is_ellipsized) \case
+		#{const FALSE} -> False
+		#{const TRUE} -> True
+		_ -> error "never occur"
+
+foreign import ccall "pango_layout_is_ellipsized"
+	c_pango_layout_is_ellipsized :: Ptr PangoLayout -> IO #{type gboolean}
+
 foreign import ccall "pango_layout_get_unknown_glyphs_count"
 	c_pango_layout_get_unknown_glyphs_count :: Ptr PangoLayout -> IO CInt
 

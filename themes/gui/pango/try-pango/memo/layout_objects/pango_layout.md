@@ -104,7 +104,7 @@ todo
 * [x] try to define `class PangoLayoutInfo i where pangoLayoutInfo :: PangoLayout -> IO i`
 	+ [x] try to define about `CharacterCount`
 	+ [x] `pango_layout_get_character_count`
-	+ [ ] `pango_layout_is_ellipsize`
+	+ [x] `pango_layout_is_ellipsize`
 	+ [ ] `pango_layout_is_wrapped`
 	+ [ ] `pango_layout_get_unknown_glyphs_count`
 	+ [ ] `pango_layout_get_log_attrs`

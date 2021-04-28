@@ -50,9 +50,13 @@ main = do
 	pangoLayoutSet pl $ pangoEllipsizeMiddle
 	pangoLayoutSet pl $ Width 180
 	pangoLayoutSet pl $ LinesPerParagraph 3
+	print =<< pangoLayoutInfo @IsEllipsized pl
+
 	print =<< pangoLayoutGet @Width pl
 	print =<< pangoLayoutGet @Height pl
 	pangoLayoutSet pl . T.pack $ sampleText ++ "\n" ++ sampleText2
+
+	print =<< pangoLayoutInfo @IsEllipsized pl
 
 	print . length $ sampleText ++ "\n" ++ sampleText2
 	print =<< pangoLayoutInfo @CharacterCount pl
