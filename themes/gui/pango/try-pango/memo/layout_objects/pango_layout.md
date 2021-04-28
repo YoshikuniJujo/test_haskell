@@ -84,11 +84,12 @@ todo
 		- [x] check Null
 	+ [x] `PangoFontDescription`
 		- [x] check Null
-	+ [ ] `Width`
-		- [ ] check Null
-		- [ ] to reset
-	+ [ ] `Height`
-		- [ ] check Null
+	+ [x] `Width`
+		- [x] check Null
+		- [x] to reset
+	+ [x] `Height`
+		- [x] check Null
+		- [x] to reset
 	+ [ ] `PangoWrapMode`
 		- [ ] check Null
 	+ [ ] `PangoEllipsizeMode`

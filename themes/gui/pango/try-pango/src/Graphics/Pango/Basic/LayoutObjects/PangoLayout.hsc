@@ -147,15 +147,20 @@ foreign import ccall "pango_layout_get_font_description" c_pango_layout_get_font
 foreign import ccall "pango_font_description_copy" c_pango_font_description_copy ::
 	Ptr PangoFontDescription -> IO (Ptr PangoFontDescription)
 
-newtype Width = Width { getWidth :: Double } deriving Show
+data Width = WidthDefault | Width Double deriving Show
+
+getWidth :: Width -> CInt
+getWidth = \case WidthDefault -> - 1; Width w -> round $ w * #{const PANGO_SCALE}
+
+width :: CInt -> Width
+width = \case - 1 -> WidthDefault; w -> Width $ fromIntegral w / #{const PANGO_SCALE}
 
 instance PangoLayoutSetting Width where
-	pangoLayoutSet l =
-		pangoLayoutSetWidth l . round . (* #{const PANGO_SCALE}) . getWidth
-	pangoLayoutGet l =
-		Width . (/ #{const PANGO_SCALE}) . fromIntegral <$> pangoLayoutGetWidth l
+	pangoLayoutSet l = pangoLayoutSetWidth l . getWidth
+	pangoLayoutGet l = width <$> pangoLayoutGetWidth l
 
-data Height = Height Double | LinesPerParagraph CInt deriving Show
+data Height = HeightDefault | Height Double | LinesPerParagraph CInt
+	deriving Show
 
 toHeight :: CInt -> Height
 toHeight n
@@ -164,6 +169,7 @@ toHeight n
 
 fromHeight :: Height -> CInt
 fromHeight = \case
+	HeightDefault -> - 1
 	Height d -> round $ d * #{const PANGO_SCALE}
 	LinesPerParagraph n -> - n
 
