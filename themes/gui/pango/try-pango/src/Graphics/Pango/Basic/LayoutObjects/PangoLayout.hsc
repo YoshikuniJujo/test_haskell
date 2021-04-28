@@ -430,6 +430,21 @@ pangoLayoutIsEllipsized (PangoLayout fl) =
 foreign import ccall "pango_layout_is_ellipsized"
 	c_pango_layout_is_ellipsized :: Ptr PangoLayout -> IO #{type gboolean}
 
+newtype IsWrapped = IsWrapped Bool deriving Show
+
+instance PangoLayoutInfo IsWrapped where
+	pangoLayoutInfo = (IsWrapped <$>) . pangoLayoutIsWrapped
+
+pangoLayoutIsWrapped :: PangoLayout -> IO Bool
+pangoLayoutIsWrapped (PangoLayout fl) =
+	(<$> withForeignPtr fl c_pango_layout_is_wrapped) \case
+		#{const FALSE} -> False
+		#{const TRUE} -> True
+		_ -> error "never occur"
+
+foreign import ccall "pango_layout_is_wrapped" c_pango_layout_is_wrapped ::
+	Ptr PangoLayout -> IO #{type gboolean}
+
 foreign import ccall "pango_layout_get_unknown_glyphs_count"
 	c_pango_layout_get_unknown_glyphs_count :: Ptr PangoLayout -> IO CInt
 
