@@ -23,11 +23,13 @@ main = do
 	tad <- pangoTabArrayDoubleNew
 	pangoTabArrayDoubleSetTab tad 3 100
 	pangoTabArrayDoubleSetTab tad 5 250
-	print $ unsafeTryTabArrayDoubleGetTabs tad
+	tad' <- pangoTabArrayDoubleFreeze tad
+	print $ pangoTabArrayGetTabs tad'
 
 	tai <- pangoTabArrayIntNew
 	pangoTabArrayIntSetTab tai 10 100
-	print $ unsafeTryTabArrayIntGetTabs tai
+	tai' <- pangoTabArrayIntFreeze tai
+	print $ pangoTabArrayGetTabs tai'
 
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 600 400
 	cr <- cairoCreate s
@@ -41,11 +43,11 @@ main = do
 	pangoCairoShowLayout cr pl
 
 	cairoMoveTo cr 0 70
-	pangoLayoutSetTabs pl =<< pangoTabArrayDoubleFreeze tad
+	pangoLayoutSetTabs pl tad'
 	pangoCairoShowLayout cr pl
 
 	cairoMoveTo cr 0 90
-	pangoLayoutSetTabs pl =<< pangoTabArrayIntFreeze tai
+	pangoLayoutSetTabs pl tai'
 	pangoCairoShowLayout cr pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case

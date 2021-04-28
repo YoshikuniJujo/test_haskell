@@ -31,13 +31,13 @@ todo
 	+ `:: PangoTabArrayDouble -> m PangoTabArray`
 * [x] `pangoTabArrayIntFreeze`
 	+ `:: PangoTabArrayInt -> m PangoTabArray`
-* [ ] `pangoTabArrayThaw`
+* [x] `pangoTabArrayThaw`
 	+ `:: PangoTabArray -> m (Either PangoTabArrayDouble PangoTabArrayInt)`
-* [ ] `pangoTabArrayGetTab`
+* [x] `pangoTabArrayGetTab`
 	+ `:: PangoTabArray -> CInt -> Maybe (Either Double Int)`
-* [ ] `pangoTabArrayGetTabs`
+* [x] `pangoTabArrayGetTabs`
 	+ `:: PangoTabArray -> Either [Double] [Int]`
-* [ ] `pango_tab_array_get_positions_in_pixels`
+* [x] `pango_tab_array_get_positions_in_pixels`
 
 about memory
 ------------

@@ -59,7 +59,7 @@ todo
 	+ [x] Fonts
 		- [x] PangoFontDescription
 	+ [ ] Text Attributes
-	+ [ ] Tab Stops
+	+ [x] Tab Stops
 	+ [ ] LayoutObjects
 		- [ ] PangoLayout
 		- [ ] PangoLayoutIter
