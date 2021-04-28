@@ -68,13 +68,6 @@ pangoLayoutGetText (PangoLayout fpl) =
 foreign import ccall "pango_layout_get_text" c_pango_layout_get_text ::
 	Ptr PangoLayout -> IO CString
 
-pangoLayoutGetCharacterCount :: PangoLayout -> IO CInt
-pangoLayoutGetCharacterCount (PangoLayout fpl) =
-	withForeignPtr fpl c_pango_layout_get_character_count
-
-foreign import ccall "pango_layout_get_character_count"
-	c_pango_layout_get_character_count :: Ptr PangoLayout -> IO CInt
-
 pangoLayoutSetMarkup :: PangoLayout -> T.Text -> IO ()
 pangoLayoutSetMarkup (PangoLayout fpl) mu =
 	withForeignPtr fpl \ppl -> T.withCStringLen mu \(cs, cl) ->
@@ -407,6 +400,20 @@ foreign import ccall "pango_layout_set_single_paragraph_mode"
 foreign import ccall "pango_layout_get_single_paragraph_mode"
 	c_pango_layout_get_single_paragraph_mode ::
 	Ptr PangoLayout -> IO #{type gboolean}
+
+class PangoLayoutInfo i where pangoLayoutInfo :: PangoLayout -> IO i
+
+newtype CharacterCount = CharacterCount CInt deriving Show
+
+instance PangoLayoutInfo CharacterCount where
+	pangoLayoutInfo = (CharacterCount <$>) . pangoLayoutGetCharacterCount
+
+pangoLayoutGetCharacterCount :: PangoLayout -> IO CInt
+pangoLayoutGetCharacterCount (PangoLayout fpl) =
+	withForeignPtr fpl c_pango_layout_get_character_count
+
+foreign import ccall "pango_layout_get_character_count"
+	c_pango_layout_get_character_count :: Ptr PangoLayout -> IO CInt
 
 foreign import ccall "pango_layout_get_unknown_glyphs_count"
 	c_pango_layout_get_unknown_glyphs_count :: Ptr PangoLayout -> IO CInt

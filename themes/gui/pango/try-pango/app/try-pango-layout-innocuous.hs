@@ -44,12 +44,8 @@ main = do
 		Just attr0' -> pangoAttrListInsert attr0' =<< pangoAttrNew (Size 20)
 	fd0 <- pangoLayoutGet @PangoFontDescription pl
 	print fd0
---	attrfd0 <- pangoAttrNew fd0
---	print attrfd0
 
---	attrs <- pangoAttrListNew
---	pangoAttrListInsert attrs attrfd0
---	pangoLayoutSet pl =<< pangoAttrListFreeze attrs
+	print =<< pangoLayoutInfo @CharacterCount pl
 
 	pangoLayoutSet pl $ pangoEllipsizeMiddle
 	pangoLayoutSet pl $ Width 180
@@ -57,6 +53,10 @@ main = do
 	print =<< pangoLayoutGet @Width pl
 	print =<< pangoLayoutGet @Height pl
 	pangoLayoutSet pl . T.pack $ sampleText ++ "\n" ++ sampleText2
+
+	print . length $ sampleText ++ "\n" ++ sampleText2
+	print =<< pangoLayoutInfo @CharacterCount pl
+
 	pangoCairoShowLayout cr pl
 
 	cairoMoveTo cr 0 150

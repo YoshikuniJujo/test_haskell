@@ -101,26 +101,25 @@ todo
 		- [x] define
 		- [x] check Null
 	+ [x] `SingleParagraphMode`
-* [ ] try to define `class PangoLayoutInfo i`
-	+ `pangoLayoutInfo :: IO i`
-	+ [ ] try to define about `CharacterCount`
-* [x] `pango_layout_get_character_count`
-* [x] `pango_layout_set_markup`
-* [x] `pango_layout_set_markup_with_accel`
-* [ ] `pango_layout_is_ellipsize`
-* [ ] `pango_layout_is_wrapped`
-* [ ] `pango_layout_get_unknown_glyphs_count`
-* [ ] `pango_layout_get_log_attrs`
+* [x] try to define `class PangoLayoutInfo i where pangoLayoutInfo :: PangoLayout -> IO i`
+	+ [x] try to define about `CharacterCount`
+	+ [x] `pango_layout_get_character_count`
+	+ [ ] `pango_layout_is_ellipsize`
+	+ [ ] `pango_layout_is_wrapped`
+	+ [ ] `pango_layout_get_unknown_glyphs_count`
+	+ [ ] `pango_layout_get_log_attrs`
+	+ [ ] `pango_layout_get_extents`
+	+ [ ] `pango_layout_get_pixel_extents`
+	+ [ ] `pango_layout_get_size`
+	+ [ ] `pango_layout_get_pixel_size`
+	+ [ ] `pango_layout_get_baseline`
 * [ ] `pango_layout_index_to_pos`
 * [ ] `pango_layout_index_to_line_x`
 * [ ] `pango_layout_xy_to_index`
 * [ ] `pango_layout_get_cursor_pos`
 * [ ] `pango_layout_move_cursor_visually`
-* [ ] `pango_layout_get_extents`
-* [ ] `pango_layout_get_pixel_extents`
-* [ ] `pango_layout_get_size`
-* [ ] `pango_layout_get_pixel_size`
-* [ ] `pango_layout_get_baseline`
+* [x] `pango_layout_set_markup`
+* [x] `pango_layout_set_markup_with_accel`
 
 not todo yet
 ------------
