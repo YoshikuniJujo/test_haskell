@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b9067bbca83e9c17e402dfd13a2a5f75ab7dc2dc43e2943cf6381e4a5cd8d992
+-- hash: f61a118e70d2324dffe238490d70d7527365f8fc5244652210067ba363d975d3
 
 name:           try-pango
 version:        0.1.0.0
@@ -53,6 +53,10 @@ library
       Paths_try_pango
   hs-source-dirs:
       src
+  include-dirs:
+      include
+  c-sources:
+      csrc/pango_log_attr.c
   pkgconfig-depends:
       pangocairo
   build-depends:

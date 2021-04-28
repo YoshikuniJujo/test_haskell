@@ -34,6 +34,9 @@ dependencies:
 
 library:
   source-dirs: src
+  c-sources:
+  - csrc/pango_log_attr.c
+  include-dirs: include
   pkg-config-dependencies: pangocairo
 
 executables:

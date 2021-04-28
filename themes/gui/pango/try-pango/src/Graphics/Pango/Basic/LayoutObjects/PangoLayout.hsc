@@ -20,6 +20,8 @@ import Data.Char
 
 import Data.Text.CString
 
+import System.IO.Unsafe
+
 import Graphics.Pango.Types
 import Graphics.Pango.Values
 import Graphics.Pango.Basic.Rendering
@@ -32,6 +34,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Foreign as T
 
 #include <pango/pango.h>
+#include "pango_log_attr.h"
 
 newtype PangoLayout = PangoLayout (ForeignPtr PangoLayout) deriving Show
 
@@ -456,6 +459,47 @@ pangoLayoutGetUnknownGlyphsCount (PangoLayout fpl) =
 
 foreign import ccall "pango_layout_get_unknown_glyphs_count"
 	c_pango_layout_get_unknown_glyphs_count :: Ptr PangoLayout -> IO CInt
+
+newtype PangoLogAttrBitField = PangoLogAttrBitField (Ptr PangoLogAttrBitField) deriving Show
+newtype PangoLogAttrStruct = PangoLogAttrStruct (Ptr PangoLogAttrStruct) deriving Show
+
+data PangoLogAttr = PangoLogAttr {
+	pangoLogAttrIsLineBreak :: Bool,
+	pangoLogAttrIsMandatoryBreak :: Bool,
+	pangoLogAttrIsCharBreak :: Bool,
+	pangoLogAttrIsWhite :: Bool,
+	pangoLogAttrIsCursorPosition :: Bool,
+	pangoLogAttrIsWordStart :: Bool,
+	pangoLogAttrIsWordEnd :: Bool,
+	pangoLogAttrIsSentenceBoundary :: Bool,
+	pangoLogAttrIsSentenceStart :: Bool,
+	pangoLogAttrIsSentenceEnd :: Bool,
+	pangoLogAttrBackspaceDeletesCharacter :: Bool,
+	pangoLogAttrIsExpandableSpace :: Bool,
+	pangoLogAttrIsWordBoundary :: Bool
+	} deriving Show
+
+pangoLogAttrExpand :: PangoLogAttrBitField -> PangoLogAttr
+pangoLogAttrExpand (PangoLogAttrBitField pb) = unsafePerformIO
+	$ allocaBytes #{size PangoLogAttrStr} \ps -> do
+		c_pango_log_attr_to_struct pb ps
+		PangoLogAttr
+			<$> #{peek PangoLogAttrStr, is_line_break} ps
+			<*> #{peek PangoLogAttrStr, is_mandatory_break} ps
+			<*> #{peek PangoLogAttrStr, is_char_break} ps
+			<*> #{peek PangoLogAttrStr, is_white} ps
+			<*> #{peek PangoLogAttrStr, is_cursor_position} ps
+			<*> #{peek PangoLogAttrStr, is_word_start} ps
+			<*> #{peek PangoLogAttrStr, is_word_end} ps
+			<*> #{peek PangoLogAttrStr, is_sentence_boundary} ps
+			<*> #{peek PangoLogAttrStr, is_sentence_start} ps
+			<*> #{peek PangoLogAttrStr, is_sentence_end} ps
+			<*> #{peek PangoLogAttrStr, backspace_deletes_character} ps
+			<*> #{peek PangoLogAttrStr, is_expandable_space} ps
+			<*> #{peek PangoLogAttrStr, is_word_boundary} ps
+
+foreign import ccall "pango_log_attr_to_struct" c_pango_log_attr_to_struct ::
+	Ptr PangoLogAttrBitField -> Ptr PangoLogAttrStruct -> IO ()
 
 foreign import ccall "pango_layout_index_to_pos" c_pango_layout_index_to_pos ::
 	Ptr PangoLayout -> CInt -> Ptr PangoRectangle -> IO ()
