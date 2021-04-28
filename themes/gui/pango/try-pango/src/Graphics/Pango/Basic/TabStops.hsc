@@ -116,9 +116,10 @@ tempPangoTabArrayGetTab pta idx = alloca \px -> do
 	c_pango_tab_array_get_tab_prim pta idx nullPtr px
 	peek px
 
-pangoTabArrayGetTab :: PangoTabArray -> CInt -> Either Double CInt
+pangoTabArrayGetTab :: PangoTabArray -> CInt -> Maybe (Either Double CInt)
+pangoTabArrayGetTab PangoTabArrayNull _ = Nothing
 pangoTabArrayGetTab (PangoTabArray fta) idx = unsafePerformIO
-	$ withForeignPtr fta \pta -> alloca \loc -> do
+	$ Just <$> withForeignPtr fta \pta -> alloca \loc -> do
 		px <- c_pango_tab_array_get_positions_in_pixels pta
 		c_pango_tab_array_get_tab pta idx nullPtr loc
 		(<$> peek loc) case px of
@@ -133,9 +134,10 @@ foreign import ccall "pango_tab_array_get_tab" c_pango_tab_array_get_tab_prim ::
 foreign import ccall "pango_tab_array_get_tab" c_pango_tab_array_get_tab ::
 	Ptr PangoTabArray -> CInt -> Ptr #{type PangoTabAlign} -> Ptr CInt -> IO ()
 
-pangoTabArrayGetTabs :: PangoTabArray -> Either [Double] [CInt]
+pangoTabArrayGetTabs :: PangoTabArray -> Maybe (Either [Double] [CInt])
+pangoTabArrayGetTabs PangoTabArrayNull = Nothing
 pangoTabArrayGetTabs (PangoTabArray fta) = unsafePerformIO
-	$ withForeignPtr fta \pta -> alloca \locs -> do
+	$ Just <$> withForeignPtr fta \pta -> alloca \locs -> do
 		n <- c_pango_tab_array_get_size pta
 		px <- c_pango_tab_array_get_positions_in_pixels pta
 		c_pango_tab_array_get_tabs pta nullPtr locs
@@ -150,11 +152,6 @@ foreign import ccall "pango_tab_array_get_tabs" c_pango_tab_array_get_tabs ::
 
 peekArrayAndFree :: Storable a => CInt -> Ptr a -> IO [a]
 peekArrayAndFree n p = peekArray (fromIntegral n) p <* free p
-
-pangoTabArrayGetPositionsInPixels :: PangoTabArray -> Bool
-pangoTabArrayGetPositionsInPixels (PangoTabArray fpta) = unsafePerformIO
-	$ withForeignPtr fpta \pta ->
-		gbooleanToBool <$> c_pango_tab_array_get_positions_in_pixels pta
 
 foreign import ccall "pango_tab_array_get_positions_in_pixels"
 	c_pango_tab_array_get_positions_in_pixels ::
@@ -177,11 +174,12 @@ pangoTabArrayFreeze :: PrimMonad m =>
 pangoTabArrayFreeze (PangoTabArrayPrim fpta) = unsafeIOToPrim
 	$ withForeignPtr fpta \pta -> makePangoTabArray =<< c_pango_tab_array_freeze pta
 
-pangoTabArrayThaw :: PrimMonad m => PangoTabArray -> m (Either
+pangoTabArrayThaw :: PrimMonad m => PangoTabArray -> m (Maybe (Either
 	(PangoTabArrayDouble (PrimState m))
-	(PangoTabArrayInt (PrimState m)))
+	(PangoTabArrayInt (PrimState m))))
+pangoTabArrayThaw PangoTabArrayNull = pure Nothing
 pangoTabArrayThaw (PangoTabArray fta) =
-	unsafeIOToPrim $ withForeignPtr fta \pta -> do
+	unsafeIOToPrim $ Just <$> withForeignPtr fta \pta -> do
 		px <- c_pango_tab_array_get_positions_in_pixels pta
 		c_pango_tab_array_thaw pta >>= case px of
 			#{const FALSE} -> (Left <$>) . mkPangoTabArrayDouble

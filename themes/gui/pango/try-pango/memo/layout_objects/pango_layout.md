@@ -90,23 +90,16 @@ todo
 	+ [x] `Height`
 		- [x] check Null
 		- [x] to reset
-	+ [ ] `PangoWrapMode`
-		- [ ] check Null
-	+ [ ] `PangoEllipsizeMode`
-		- [ ] check Null
-	+ [ ] `Indent`
-		- [ ] check Null
-	+ [ ] `Spacing`
-		- [ ] check Null
-	+ [ ] `Justify`
-		- [ ] check Null
-	+ [ ] `AutoDir`
-		- [ ] check Null
-	+ [ ] `PangoAlignment`
-		- [ ] check Null
+	+ [x] `PangoWrapMode`
+	+ [x] `PangoEllipsizeMode`
+	+ [x] `Indent`
+	+ [x] `Spacing`
+	+ [x] `Justify`
+	+ [x] `AutoDir`
+	+ [x] `PangoAlignment`
 	+ [ ] `PangoTabArray`
 		- [ ] define
-		- [ ] check Null
+		- [x] check Null
 	+ [ ] `SingleParagraphMode`
 		- [ ] define
 		- [ ] check Null
