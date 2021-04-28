@@ -43,11 +43,11 @@ main = do
 	pangoCairoShowLayout cr pl
 
 	cairoMoveTo cr 0 70
-	pangoLayoutSetTabs pl tad'
+	pangoLayoutSet pl tad'
 	pangoCairoShowLayout cr pl
 
 	cairoMoveTo cr 0 90
-	pangoLayoutSetTabs pl tai'
+	pangoLayoutSet pl tai'
 	pangoCairoShowLayout cr pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case

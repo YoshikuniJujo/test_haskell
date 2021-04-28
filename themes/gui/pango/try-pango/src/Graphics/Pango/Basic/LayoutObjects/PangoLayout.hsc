@@ -360,14 +360,25 @@ foreign import ccall "pango_layout_set_alignment" c_pango_layout_set_alignment :
 foreign import ccall "pango_layout_get_alignment" c_pango_layout_get_alignment ::
 	Ptr PangoLayout -> IO #{type PangoAlignment}
 
+instance PangoLayoutSetting PangoTabArray where
+	pangoLayoutSet = pangoLayoutSetTabs
+	pangoLayoutGet = pangoLayoutGetTabs
+
 pangoLayoutSetTabs :: PangoLayout -> PangoTabArray -> IO ()
 pangoLayoutSetTabs (PangoLayout fl) ta = unsafeIOToPrim
 	$ withForeignPtr fl \pl -> ($ c_pango_layout_set_tabs pl) case ta of
 		PangoTabArrayNull -> ($ nullPtr)
 		PangoTabArray fta -> withForeignPtr fta
 
+pangoLayoutGetTabs :: PangoLayout -> IO PangoTabArray
+pangoLayoutGetTabs (PangoLayout fl) = unsafeIOToPrim
+	$ makePangoTabArray =<< withForeignPtr fl c_pango_layout_get_tabs
+
 foreign import ccall "pango_layout_set_tabs" c_pango_layout_set_tabs ::
 	Ptr PangoLayout -> Ptr PangoTabArray -> IO ()
+
+foreign import ccall "pango_layout_get_tabs" c_pango_layout_get_tabs ::
+	Ptr PangoLayout -> IO (Ptr PangoTabArray)
 
 pangoLayoutSetSingleParagraphMode :: PangoLayout -> Bool -> IO ()
 pangoLayoutSetSingleParagraphMode (PangoLayout fpl) spm = unsafeIOToPrim

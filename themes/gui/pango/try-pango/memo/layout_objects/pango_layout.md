@@ -97,8 +97,8 @@ todo
 	+ [x] `Justify`
 	+ [x] `AutoDir`
 	+ [x] `PangoAlignment`
-	+ [ ] `PangoTabArray`
-		- [ ] define
+	+ [x] `PangoTabArray`
+		- [x] define
 		- [x] check Null
 	+ [ ] `SingleParagraphMode`
 		- [ ] define
