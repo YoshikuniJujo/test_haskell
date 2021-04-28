@@ -79,21 +79,36 @@ todo
 * [ ] `pangoLayoutSet` and `pangoLayoutGet`
 	+ [x] `Text`
 		- [x] use `Text` instead of `String`
-		- [x] others
+		- [x] check Null
 	+ [x] `PangoAttrList`
-	+ [x] `PangoFontDescription`
+		- [x] check Null
+	+ [ ] `PangoFontDescription`
+		- [ ] check Null
 	+ [ ] `Width`
+		- [ ] check Null
 		- [ ] to reset
-	+ [x] `Height`
-	+ [x] `PangoWrapMode`
-	+ [x] `PangoEllipsizeMode`
-	+ [x] `Indent`
-	+ [x] `Spacing`
-	+ [x] `Justify`
-	+ [x] `AutoDir`
-	+ [x] `PangoAlignment`
+	+ [ ] `Height`
+		- [ ] check Null
+	+ [ ] `PangoWrapMode`
+		- [ ] check Null
+	+ [ ] `PangoEllipsizeMode`
+		- [ ] check Null
+	+ [ ] `Indent`
+		- [ ] check Null
+	+ [ ] `Spacing`
+		- [ ] check Null
+	+ [ ] `Justify`
+		- [ ] check Null
+	+ [ ] `AutoDir`
+		- [ ] check Null
+	+ [ ] `PangoAlignment`
+		- [ ] check Null
 	+ [ ] `PangoTabArray`
+		- [ ] define
+		- [ ] check Null
 	+ [ ] `SingleParagraphMode`
+		- [ ] define
+		- [ ] check Null
 * [x] `pango_layout_get_character_count`
 * [x] `pango_layout_set_markup`
 * [x] `pango_layout_set_markup_with_accel`

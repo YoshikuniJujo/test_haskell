@@ -38,6 +38,8 @@ todo
 * [x] `pangoTabArrayGetTabs`
 	+ `:: PangoTabArray -> Either [Double] [Int]`
 * [x] `pango_tab_array_get_positions_in_pixels`
+* [ ] add `pattern PangoTabArrayDefault`
+	+ but ...
 
 about memory
 ------------

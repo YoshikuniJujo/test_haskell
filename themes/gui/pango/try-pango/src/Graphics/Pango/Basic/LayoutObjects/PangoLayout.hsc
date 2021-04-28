@@ -100,9 +100,10 @@ instance PangoLayoutSetting PangoAttrList where
 	pangoLayoutGet = pangoLayoutGetAttributes
 
 pangoLayoutSetAttributes :: PangoLayout -> PangoAttrList -> IO ()
-pangoLayoutSetAttributes (PangoLayout fpl) (PangoAttrList fpal) =
-	withForeignPtr fpl \ppl -> withForeignPtr fpal \ppal ->
-		c_pango_layout_set_attributes ppl ppal
+pangoLayoutSetAttributes (PangoLayout fl) al = -- (PangoAttrList fal) =
+	withForeignPtr fl \pl -> ($ c_pango_layout_set_attributes pl) case al of
+		PangoAttrListNull -> ($ nullPtr)
+		PangoAttrList fal -> withForeignPtr fal
 
 foreign import ccall "pango_layout_set_attributes"
 	c_pango_layout_set_attributes ::

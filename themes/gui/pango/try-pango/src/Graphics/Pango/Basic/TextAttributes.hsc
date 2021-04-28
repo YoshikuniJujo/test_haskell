@@ -36,10 +36,15 @@ import Graphics.Pango.Values
 
 #include <pango/pango.h>
 
-newtype PangoAttrList = PangoAttrList (ForeignPtr PangoAttrList) deriving Show
+data PangoAttrList
+	= PangoAttrListNull
+	| PangoAttrList (ForeignPtr PangoAttrList)
+	deriving Show
 
 mkPangoAttrList :: Ptr PangoAttrList -> IO PangoAttrList
-mkPangoAttrList p = PangoAttrList <$> newForeignPtr p (c_pango_attr_list_unref p)
+mkPangoAttrList p
+	| p == nullPtr = pure PangoAttrListNull
+	| otherwise = PangoAttrList <$> newForeignPtr p (c_pango_attr_list_unref p)
 
 foreign import ccall "pango_attr_list_unref" c_pango_attr_list_unref ::
 	Ptr PangoAttrList -> IO ()
@@ -496,10 +501,12 @@ pangoAttrListFreeze (PangoAttrListPrim fal) = unsafeIOToPrim
 foreign import ccall "pango_attr_list_copy" c_pango_attr_list_freeze ::
 	Ptr (PangoAttrListPrim s) -> IO (Ptr PangoAttrList)
 
-pangoAttrListThaw ::
-	PrimMonad m => PangoAttrList -> m (PangoAttrListPrim (PrimState m))
-pangoAttrListThaw (PangoAttrList fal) = unsafeIOToPrim
-	$ mkPangoAttrListPrim =<< withForeignPtr fal c_pango_attr_list_thaw
+pangoAttrListThaw :: PrimMonad m =>
+	PangoAttrList -> m (Maybe (PangoAttrListPrim (PrimState m)))
+pangoAttrListThaw = \case
+	PangoAttrListNull -> pure Nothing
+	PangoAttrList fal -> unsafeIOToPrim $ (Just <$>) . mkPangoAttrListPrim
+		=<< withForeignPtr fal c_pango_attr_list_thaw
 
 foreign import ccall "pango_attr_list_copy" c_pango_attr_list_thaw ::
 	Ptr PangoAttrList -> IO (Ptr (PangoAttrListPrim s))

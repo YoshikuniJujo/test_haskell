@@ -17,6 +17,9 @@ import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage
 import Graphics.Pango.Rendering.Cairo
 
+import Graphics.Pango.Basic.TextAttributes
+import Graphics.Pango.Basic.Fonts.PangoFontDescription
+
 import qualified Data.Text as T
 
 main :: IO ()
@@ -31,6 +34,14 @@ main = do
 	putStrLn sampleText2
 
 	pl <- pangoCairoCreateLayout cr
+	print =<< pangoLayoutGet @T.Text pl
+	attr0 <- pangoLayoutGet @PangoAttrList pl
+	print attr0
+	mattr0' <- pangoAttrListThaw attr0
+	case mattr0' of
+		Nothing -> putStrLn "mattr0' is Nothing"
+		Just attr0' -> pangoAttrListInsert attr0' =<< pangoAttrNew (Size 20)
+
 	pangoLayoutSet pl $ pangoEllipsizeMiddle
 	pangoLayoutSet pl $ Width 180
 	pangoLayoutSet pl $ LinesPerParagraph 3
