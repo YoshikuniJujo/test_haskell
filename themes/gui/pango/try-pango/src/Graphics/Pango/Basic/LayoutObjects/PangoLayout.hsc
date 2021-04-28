@@ -380,14 +380,33 @@ foreign import ccall "pango_layout_set_tabs" c_pango_layout_set_tabs ::
 foreign import ccall "pango_layout_get_tabs" c_pango_layout_get_tabs ::
 	Ptr PangoLayout -> IO (Ptr PangoTabArray)
 
+newtype SingleParagraphMode =
+	SingleParagraphMode { getSingleParagraphMode :: Bool } deriving Show
+
+instance PangoLayoutSetting SingleParagraphMode where
+	pangoLayoutSet l =
+		pangoLayoutSetSingleParagraphMode l . getSingleParagraphMode
+	pangoLayoutGet l =
+		SingleParagraphMode <$> pangoLayoutGetSingleParagraphMode l
+
 pangoLayoutSetSingleParagraphMode :: PangoLayout -> Bool -> IO ()
-pangoLayoutSetSingleParagraphMode (PangoLayout fpl) spm = unsafeIOToPrim
-	$ withForeignPtr fpl \pl ->
+pangoLayoutSetSingleParagraphMode (PangoLayout fl) spm = unsafeIOToPrim
+	$ withForeignPtr fl \pl ->
 		c_pango_layout_set_single_paragraph_mode pl (boolToGboolean spm)
+
+pangoLayoutGetSingleParagraphMode :: PangoLayout -> IO Bool
+pangoLayoutGetSingleParagraphMode (PangoLayout fl) = unsafeIOToPrim
+	$ (<$> withForeignPtr fl c_pango_layout_get_single_paragraph_mode) \case
+		#{const FALSE} -> False; #{const TRUE} -> True
+		_ -> error "never occur"
 
 foreign import ccall "pango_layout_set_single_paragraph_mode"
 	c_pango_layout_set_single_paragraph_mode ::
 	Ptr PangoLayout -> #{type gboolean} -> IO ()
+
+foreign import ccall "pango_layout_get_single_paragraph_mode"
+	c_pango_layout_get_single_paragraph_mode ::
+	Ptr PangoLayout -> IO #{type gboolean}
 
 foreign import ccall "pango_layout_get_unknown_glyphs_count"
 	c_pango_layout_get_unknown_glyphs_count :: Ptr PangoLayout -> IO CInt

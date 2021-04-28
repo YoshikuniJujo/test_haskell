@@ -115,6 +115,17 @@ main = do
 	pangoLayoutSet pl pangoAlignRight
 	pangoCairoShowLayout cr pl
 
+	pangoLayoutSet pl pangoAlignLeft
+	pangoLayoutSet pl pangoEllipsizeNone
+	pangoLayoutSet pl . T.pack $ take 60 sampleText ++ "\n" ++ take 60 sampleText2
+
+	cairoMoveTo cr 300 780
+	pangoCairoShowLayout cr pl
+
+	cairoMoveTo cr 300 930
+	pangoLayoutSet pl $ SingleParagraphMode True
+	pangoCairoShowLayout cr pl
+
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-layout-innocuous.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"

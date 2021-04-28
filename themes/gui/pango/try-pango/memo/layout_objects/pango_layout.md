@@ -76,7 +76,7 @@ todo
 * [x] use `IO` instead of pure: pangoLayoutGetFoo
 * [x] move functions to `Graphics.Pango.Basic.LayoutObjects.PangoLayout`
 * [x] define `class PangoLayoutSetting`
-* [ ] `pangoLayoutSet` and `pangoLayoutGet`
+* [x] `pangoLayoutSet` and `pangoLayoutGet`
 	+ [x] `Text`
 		- [x] use `Text` instead of `String`
 		- [x] check Null
@@ -100,9 +100,10 @@ todo
 	+ [x] `PangoTabArray`
 		- [x] define
 		- [x] check Null
-	+ [ ] `SingleParagraphMode`
-		- [ ] define
-		- [ ] check Null
+	+ [x] `SingleParagraphMode`
+* [ ] try to define `class PangoLayoutInfo i`
+	+ `pangoLayoutInfo :: IO i`
+	+ [ ] try to define about `CharacterCount`
 * [x] `pango_layout_get_character_count`
 * [x] `pango_layout_set_markup`
 * [x] `pango_layout_set_markup_with_accel`
