@@ -445,12 +445,17 @@ pangoLayoutIsWrapped (PangoLayout fl) =
 foreign import ccall "pango_layout_is_wrapped" c_pango_layout_is_wrapped ::
 	Ptr PangoLayout -> IO #{type gboolean}
 
-foreign import ccall "pango_layout_get_unknown_glyphs_count"
-	c_pango_layout_get_unknown_glyphs_count :: Ptr PangoLayout -> IO CInt
+newtype UnknownGlyphsCount = UnknownGlyphsCount CInt deriving Show
+
+instance PangoLayoutInfo UnknownGlyphsCount where
+	pangoLayoutInfo = (UnknownGlyphsCount <$>) . pangoLayoutGetUnknownGlyphsCount
 
 pangoLayoutGetUnknownGlyphsCount :: PangoLayout -> IO CInt
 pangoLayoutGetUnknownGlyphsCount (PangoLayout fpl) =
 	withForeignPtr fpl c_pango_layout_get_unknown_glyphs_count
+
+foreign import ccall "pango_layout_get_unknown_glyphs_count"
+	c_pango_layout_get_unknown_glyphs_count :: Ptr PangoLayout -> IO CInt
 
 foreign import ccall "pango_layout_index_to_pos" c_pango_layout_index_to_pos ::
 	Ptr PangoLayout -> CInt -> Ptr PangoRectangle -> IO ()

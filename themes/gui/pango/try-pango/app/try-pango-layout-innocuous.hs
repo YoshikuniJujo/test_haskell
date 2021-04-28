@@ -123,21 +123,30 @@ main = do
 
 	pangoLayoutSet pl pangoAlignLeft
 	pangoLayoutSet pl pangoEllipsizeNone
-	pangoLayoutSet pl . T.pack $ take 60 sampleText ++ "\n" ++ take 60 sampleText2
+	pangoLayoutSet pl . T.pack $ take 60 sampleText' ++ "\n" ++ take 60 sampleText2
 
 	cairoMoveTo cr 300 780
 	pangoCairoShowLayout cr pl
+
+	print =<< pangoLayoutInfo @UnknownGlyphsCount pl
 
 	cairoMoveTo cr 300 930
 	pangoLayoutSet pl $ SingleParagraphMode True
 	pangoCairoShowLayout cr pl
 
+	print =<< pangoLayoutInfo @UnknownGlyphsCount pl
+
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-layout-innocuous.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
 
-sampleText, sampleText2, arabic :: String
+sampleText, sampleText', sampleText2, arabic :: String
 sampleText = unwords $
+	pangoLanguageGetSampleString . pangoLanguageFromString <$> [
+		"is-is", "ga-ie", "ga", "en", "ja-jp", "zh-tw"
+		]
+
+sampleText' = ("\x1f9a5\x1f16f\x1f16e" ++) . unwords $
 	pangoLanguageGetSampleString . pangoLanguageFromString <$> [
 		"is-is", "ga-ie", "ga", "en", "ja-jp", "zh-tw"
 		]

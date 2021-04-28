@@ -101,12 +101,12 @@ todo
 		- [x] define
 		- [x] check Null
 	+ [x] `SingleParagraphMode`
-* [x] try to define `class PangoLayoutInfo i where pangoLayoutInfo :: PangoLayout -> IO i`
+* [ ] instances of `class PangoLayoutInfo`
 	+ [x] try to define about `CharacterCount`
 	+ [x] `pango_layout_get_character_count`
 	+ [x] `pango_layout_is_ellipsize`
 	+ [x] `pango_layout_is_wrapped`
-	+ [ ] `pango_layout_get_unknown_glyphs_count`
+	+ [x] `pango_layout_get_unknown_glyphs_count`
 	+ [ ] `pango_layout_get_log_attrs`
 	+ [ ] `pango_layout_get_extents`
 	+ [ ] `pango_layout_get_pixel_extents`
