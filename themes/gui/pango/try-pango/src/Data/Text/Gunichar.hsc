@@ -2,7 +2,6 @@
 
 module Data.Text.Gunichar where
 
-import Data.Maybe
 import Data.Bits
 import Data.Word
 import Data.Char

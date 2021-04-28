@@ -50,6 +50,11 @@ instance PangoContextSetting PangoFontDescription where
 	pangoContextGet = pangoContextGetFontDescription
 
 pangoContextSetFontDescription :: PangoContext -> PangoFontDescription -> IO ()
+pangoContextSetFontDescription cxt PangoFontDescriptionNull = do
+	fd <- pangoFontDescriptionFreeze =<< pangoFontDescriptionNew
+	case fd of
+		PangoFontDescriptionNull -> error "pangoFontDescriptionNew return NULL"
+		_ -> pangoContextSetFontDescription cxt fd
 pangoContextSetFontDescription (PangoContext fc) (PangoFontDescription ffd) =
 	withForeignPtr fc \pc -> withForeignPtr ffd \pfd ->
 		c_pango_context_set_font_description pc pfd

@@ -82,8 +82,8 @@ todo
 		- [x] check Null
 	+ [x] `PangoAttrList`
 		- [x] check Null
-	+ [ ] `PangoFontDescription`
-		- [ ] check Null
+	+ [x] `PangoFontDescription`
+		- [x] check Null
 	+ [ ] `Width`
 		- [ ] check Null
 		- [ ] to reset

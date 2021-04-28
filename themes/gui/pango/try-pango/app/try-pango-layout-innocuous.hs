@@ -19,6 +19,7 @@ import Graphics.Pango.Rendering.Cairo
 
 import Graphics.Pango.Basic.TextAttributes
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
+import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 
 import qualified Data.Text as T
 
@@ -41,6 +42,14 @@ main = do
 	case mattr0' of
 		Nothing -> putStrLn "mattr0' is Nothing"
 		Just attr0' -> pangoAttrListInsert attr0' =<< pangoAttrNew (Size 20)
+	fd0 <- pangoLayoutGet @PangoFontDescription pl
+	print fd0
+--	attrfd0 <- pangoAttrNew fd0
+--	print attrfd0
+
+--	attrs <- pangoAttrListNew
+--	pangoAttrListInsert attrs attrfd0
+--	pangoLayoutSet pl =<< pangoAttrListFreeze attrs
 
 	pangoLayoutSet pl $ pangoEllipsizeMiddle
 	pangoLayoutSet pl $ Width 180

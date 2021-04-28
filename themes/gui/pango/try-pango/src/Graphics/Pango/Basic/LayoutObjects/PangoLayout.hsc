@@ -127,9 +127,10 @@ instance PangoLayoutSetting PangoFontDescription where
 	pangoLayoutGet = pangoLayoutGetFontDescription
 
 pangoLayoutSetFontDescription :: PangoLayout -> PangoFontDescription -> IO ()
-pangoLayoutSetFontDescription (PangoLayout fpl) (PangoFontDescription fpfd) =
-	withForeignPtr fpl \pl -> withForeignPtr fpfd \pfd ->
-		c_pango_layout_set_font_description pl pfd
+pangoLayoutSetFontDescription (PangoLayout fpl) fd =
+	withForeignPtr fpl \pl -> ($ c_pango_layout_set_font_description pl) case fd of
+		PangoFontDescriptionNull -> ($ nullPtr)
+		PangoFontDescription ffd -> withForeignPtr ffd
 
 foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font_description ::
 	Ptr PangoLayout -> Ptr PangoFontDescription -> IO ()

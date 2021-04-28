@@ -47,8 +47,8 @@ main = getArgs >>= \case
 		print $ pangoFontDescriptionGet @Size fd'
 		print $ pangoFontDescriptionGet @PangoGravity fd'
 
-		putStrLn $ pangoFontDescriptionToString fd'
-		putStrLn $ pangoFontDescriptionToFilename fd'
+		print $ pangoFontDescriptionToString fd'
+		print $ pangoFontDescriptionToFilename fd'
 
 		pangoLayoutSetFontDescription pl fd'
 		pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは、世界!\n\x1f9a5"

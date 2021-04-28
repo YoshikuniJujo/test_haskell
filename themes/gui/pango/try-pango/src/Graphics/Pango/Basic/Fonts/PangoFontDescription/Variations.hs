@@ -39,9 +39,12 @@ pangoFontDescriptionSetAxis fd a = do
 pangoFontDescriptionGetAxis ::
 	forall a . PangoFontDescriptionAxis a => PangoFontDescription -> Maybe a
 pangoFontDescriptionGetAxis fd = unsafePerformIO do
-	as <- pangoFontDescriptionGetVariationsMap =<< pangoFontDescriptionThaw fd
-	pure $ pangoFontDescriptionAxisFromDouble
-		<$> M.lookup (pangoFontDescriptionAxisTag @a) as
+	pangoFontDescriptionThaw fd >>= \case
+		Nothing -> pure Nothing
+		Just fd' -> do
+			as <- pangoFontDescriptionGetVariationsMap fd'
+			pure $ pangoFontDescriptionAxisFromDouble
+				<$> M.lookup (pangoFontDescriptionAxisTag @a) as
 
 newtype Weight = Weight { getWeight :: Double } deriving Show
 

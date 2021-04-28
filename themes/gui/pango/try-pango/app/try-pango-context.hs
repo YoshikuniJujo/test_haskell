@@ -10,6 +10,7 @@ import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
 
+import Graphics.Pango.Basic.Rendering
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
@@ -25,14 +26,19 @@ main :: IO ()
 main = do
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
 	cr <- cairoCreate s
---	pc <- pangoCairoCreateContext cr
-	pl <- pangoCairoCreateLayout cr
+	cxt <- pangoCairoCreateContext cr
+
+	pangoContextSetFontDescription cxt PangoFontDescriptionNull
+
+	pl <- pangoLayoutNew cxt
+
 	pfd <- pangoFontDescriptionNew
 	pangoFontDescriptionSetSize pfd (30 * pangoScale)
 	pangoLayoutSetFontDescription pl =<< pangoFontDescriptionFreeze pfd
+
 	pangoLayoutSet @T.Text pl "こんにちは世界!"
 	pangoCairoShowLayout cr pl
 --	void $ writeDynamicPng "tmp2.png" =<< cairoImageSurfaceGetImage s
 	cairoImageSurfaceGetCairoImage s >>= \case
-		CairoImageArgb32 a -> writePng "tmp2.png" $ cairoArgb32ToJuicyRGBA8 a
+		CairoImageArgb32 a -> writePng "try-pango-context.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"

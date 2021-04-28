@@ -33,13 +33,16 @@ foreign import ccall "pango_font_description_free"
 	c_pango_font_description_free_prim ::
 	Ptr (PangoFontDescriptionPrim s) -> IO ()
 
-newtype PangoFontDescription =
-	PangoFontDescription (ForeignPtr PangoFontDescription)
+data PangoFontDescription
+	= PangoFontDescriptionNull
+	| PangoFontDescription (ForeignPtr PangoFontDescription)
 	deriving Show
 
 mkPangoFontDescription :: Ptr PangoFontDescription -> IO PangoFontDescription
-mkPangoFontDescription p = PangoFontDescription
-	<$> newForeignPtr p (c_pango_font_description_free p)
+mkPangoFontDescription p
+	| p == nullPtr = pure PangoFontDescriptionNull
+	| otherwise = PangoFontDescription
+		<$> newForeignPtr p (c_pango_font_description_free p)
 
 foreign import ccall "pango_font_description_free"
 	c_pango_font_description_free :: Ptr PangoFontDescription -> IO ()
@@ -55,9 +58,10 @@ foreign import ccall "pango_font_description_copy"
 	Ptr (PangoFontDescriptionPrim s) -> IO (Ptr PangoFontDescription)
 
 pangoFontDescriptionThaw :: PrimMonad m =>
-	PangoFontDescription -> m (PangoFontDescriptionPrim (PrimState m))
+	PangoFontDescription -> m (Maybe (PangoFontDescriptionPrim (PrimState m)))
+pangoFontDescriptionThaw PangoFontDescriptionNull = pure Nothing
 pangoFontDescriptionThaw (PangoFontDescription ffd) =
-	unsafeIOToPrim $ mkPangoFontDescriptionPrim
+	unsafeIOToPrim $ (Just <$>) . mkPangoFontDescriptionPrim
 		=<< withForeignPtr ffd c_pango_font_description_thaw
 
 foreign import ccall "pango_font_description_copy"

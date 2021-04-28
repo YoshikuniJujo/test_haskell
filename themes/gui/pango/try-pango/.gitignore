@@ -1,7 +1,6 @@
 .stack-work/
 *~
 /try-pango-exe.png
-/tmp2.png
 /try-pango-simple.png
 /try-pango-fonts.png
 /try-pango-fonts-unset.png
@@ -18,3 +17,4 @@
 /try-pango-layout.png
 /try-pango-layout-innocuous.png
 /try-pango-tab-array.png
+/try-pango-context.png

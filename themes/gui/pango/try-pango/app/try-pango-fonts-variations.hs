@@ -68,8 +68,8 @@ main = getArgs >>= \case
 		setAxisFromString fd WormTerminal trml
 
 		fd' <- pangoFontDescriptionFreeze fd
-		putStrLn $ pangoFontDescriptionToString fd'
-		putStrLn $ pangoFontDescriptionToFilename fd'
+		print $ pangoFontDescriptionToString fd'
+		print $ pangoFontDescriptionToFilename fd'
 
 		pl <- pangoCairoCreateLayout cr
 		pangoLayoutSetFontDescription pl fd'

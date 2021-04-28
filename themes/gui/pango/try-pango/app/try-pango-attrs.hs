@@ -103,7 +103,7 @@ main = do
 --	pangoFontDescriptionSet fd $ Family "Source Han Sans VF"
 	pangoFontDescriptionSet fd $ pangoGravityEast
 	al5 <- pangoAttrListNew
-	at8 <- pangoAttrNew =<< pangoFontDescriptionFreeze fd
+	at8 <- pangoAttrFontDescNew fd
 	pangoAttributeSetEndIndex at8 18
 	pangoAttrListInsert al5 at8
 

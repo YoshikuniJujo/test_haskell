@@ -69,8 +69,8 @@ helloWorld cr (r, g, b) ff stl vr wt strc (x, y) = do
 	pangoFontDescriptionSetStretch pfd strc
 
 	pfd' <- pangoFontDescriptionFreeze pfd
-	putStrLn $ pangoFontDescriptionToString pfd'
-	putStrLn $ pangoFontDescriptionToFilename pfd'
+	print $ pangoFontDescriptionToString pfd'
+	print $ pangoFontDescriptionToFilename pfd'
 
 	pangoLayoutSetFontDescription pl pfd'
 	pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは世界!"
