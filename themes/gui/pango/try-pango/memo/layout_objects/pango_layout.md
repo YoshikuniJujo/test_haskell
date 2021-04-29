@@ -113,6 +113,7 @@ todo
 		- [x] more infomations in a trial
 		- [x] `instance PangoLayoutInfo`
 	+ [ ] `pango_layout_get_extents`
+		- [ ] covert from pango unit
 	+ [ ] `pango_layout_get_pixel_extents`
 	+ [ ] `pango_layout_get_size`
 	+ [ ] `pango_layout_get_pixel_size`

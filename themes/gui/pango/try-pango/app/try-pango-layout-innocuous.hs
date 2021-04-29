@@ -141,6 +141,8 @@ main = do
 	las <- pangoLayoutInfo pl
 	(putStrLn . (\(c, la) -> c ++ "\n" ++ la) . (show *** showPangoLogAttr)) `mapM_` zip (txt ++ "\x00") (pangoLogAttrsToList las)
 
+	print =<< pangoLayoutInfo @Extents pl
+
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-layout-innocuous.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
