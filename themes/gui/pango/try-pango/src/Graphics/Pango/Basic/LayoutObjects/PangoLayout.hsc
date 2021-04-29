@@ -563,20 +563,21 @@ pangoLogAttrsGetLogAttr (PangoLogAttrs fla sz) i
 	| otherwise = Nothing
 
 data Extents = Extents {
-	extentsInkRect :: PangoRectangle,
-	extentsLogicalRect :: PangoRectangle } deriving Show
+	extentsInkRect :: PangoRectangleFixed,
+	extentsLogicalRect :: PangoRectangleFixed } deriving Show
 
 instance PangoLayoutInfo Extents where
 	pangoLayoutInfo = (uncurry Extents <$>) . pangoLayoutGetExtents
 
-pangoLayoutGetExtents :: PangoLayout -> IO (PangoRectangle, PangoRectangle)
+pangoLayoutGetExtents ::
+	PangoLayout -> IO (PangoRectangleFixed, PangoRectangleFixed)
 pangoLayoutGetExtents (PangoLayout fpl) =
 	withForeignPtr fpl \pl -> alloca \irct -> alloca \lrct -> do
 		c_pango_layout_get_extents pl irct lrct
 		(,) <$> peek irct <*> peek lrct
 
 foreign import ccall "pango_layout_get_extents" c_pango_layout_get_extents ::
-	Ptr PangoLayout -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+	Ptr PangoLayout -> Ptr PangoRectangleFixed -> Ptr PangoRectangleFixed -> IO ()
 
 foreign import ccall "pango_layout_index_to_pos" c_pango_layout_index_to_pos ::
 	Ptr PangoLayout -> CInt -> Ptr PangoRectangle -> IO ()

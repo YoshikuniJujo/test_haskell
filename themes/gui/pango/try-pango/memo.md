@@ -55,6 +55,7 @@ todo
 * [x] rename `PangoFontDescription` to `PangoFontDescriptionPrim`
 * [x] define `PangoFontDescription` and freezer
 * [x] move `Graphics.Pango.LowLevel.TabStops` to `Graphics.Pango.Basic.TabStops`
+* [ ] use `Fixed` instead of `Double`
 * [ ] Basic Pango Interfaces
 	+ [x] Fonts
 		- [x] PangoFontDescription
