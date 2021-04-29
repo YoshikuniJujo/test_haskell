@@ -116,7 +116,7 @@ todo
 		- [x] covert from pango unit
 	+ [x] `pango_layout_get_pixel_extents`
 	+ [x] `pango_layout_get_size`
-	+ [ ] `pango_layout_get_pixel_size`
+	+ [x] `pango_layout_get_pixel_size`
 	+ [ ] `pango_layout_get_baseline`
 * [ ] `pango_layout_index_to_pos`
 * [ ] `pango_layout_index_to_line_x`

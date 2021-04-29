@@ -611,6 +611,22 @@ pangoLayoutGetSize (PangoLayout fpl) =
 foreign import ccall "pango_layout_get_size" c_pango_layout_get_size ::
 	Ptr PangoLayout -> Ptr CInt -> Ptr CInt -> IO ()
 
+data LayoutPixelSize = LayoutPixelSize {
+	layoutPixelSizeWidth :: CInt, layoutPixelSizeHeight :: CInt }
+	deriving Show
+
+instance PangoLayoutInfo LayoutPixelSize where
+	pangoLayoutInfo = (uncurry LayoutPixelSize <$>) . pangoLayoutGetPixelSize
+
+pangoLayoutGetPixelSize :: PangoLayout -> IO (CInt, CInt)
+pangoLayoutGetPixelSize (PangoLayout fpl) =
+	withForeignPtr fpl \pl -> alloca \w -> alloca \h -> do
+		c_pango_layout_get_pixel_size pl w h
+		(,) <$> peek w <*> peek h
+
+foreign import ccall "pango_layout_get_pixel_size" c_pango_layout_get_pixel_size ::
+	Ptr PangoLayout -> Ptr CInt -> Ptr CInt -> IO ()
+
 foreign import ccall "pango_layout_index_to_pos" c_pango_layout_index_to_pos ::
 	Ptr PangoLayout -> CInt -> Ptr PangoRectangle -> IO ()
 
@@ -675,14 +691,6 @@ pangoExtentsToPixelsNearest src =
 		poke dst src
 		c_pango_extents_to_pixels nullPtr dst
 		peek dst
-foreign import ccall "pango_layout_get_pixel_size" c_pango_layout_get_pixel_size ::
-	Ptr PangoLayout -> Ptr CInt -> Ptr CInt -> IO ()
-
-pangoLayoutGetPixelSize :: PangoLayout -> IO (CInt, CInt)
-pangoLayoutGetPixelSize (PangoLayout fpl) =
-	withForeignPtr fpl \pl -> alloca \w -> alloca \h -> do
-		c_pango_layout_get_pixel_size pl w h
-		(,) <$> peek w <*> peek h
 
 foreign import ccall "pango_layout_get_baseline" c_pango_layout_get_baseline ::
 	Ptr PangoLayout -> IO CInt
