@@ -651,14 +651,14 @@ pangoLayoutGetLineCount (PangoLayout fpl) =
 foreign import ccall "pango_layout_get_line_count" c_pango_layout_get_line_count ::
 	Ptr PangoLayout -> IO CInt
 
-foreign import ccall "pango_layout_index_to_pos" c_pango_layout_index_to_pos ::
-	Ptr PangoLayout -> CInt -> Ptr PangoRectangle -> IO ()
-
-pangoLayoutIndexToPos :: PangoLayout -> CInt -> IO PangoRectangle
+pangoLayoutIndexToPos :: PangoLayout -> CInt -> IO PangoRectangleFixed
 pangoLayoutIndexToPos (PangoLayout fpl) idx =
 	withForeignPtr fpl \pl -> alloca \pos -> do
 		c_pango_layout_index_to_pos pl idx pos
 		peek pos
+
+foreign import ccall "pango_layout_index_to_pos" c_pango_layout_index_to_pos ::
+	Ptr PangoLayout -> CInt -> Ptr PangoRectangleFixed -> IO ()
 
 foreign import ccall "pango_layout_index_to_line_x"
 	c_pango_layout_index_to_line_x ::

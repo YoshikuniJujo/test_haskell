@@ -148,6 +148,22 @@ main = do
 	print =<< pangoLayoutInfo @Baseline pl
 	print =<< pangoLayoutInfo @LineCount pl
 
+	print =<< pangoLayoutIndexToPos pl 0
+	print =<< pangoLayoutIndexToPos pl 1
+	print =<< pangoLayoutIndexToPos pl 2
+	print =<< pangoLayoutIndexToPos pl 3
+	print =<< pangoLayoutIndexToPos pl 4
+	print =<< pangoLayoutIndexToPos pl 5
+	print =<< pangoLayoutIndexToPos pl 6
+	print =<< pangoLayoutIndexToPos pl 7
+	print =<< pangoLayoutIndexToPos pl 8
+	print =<< pangoLayoutIndexToPos pl 9
+	print =<< pangoLayoutIndexToPos pl 10
+	print =<< pangoLayoutIndexToPos pl 11
+	print =<< pangoLayoutIndexToPos pl 12
+	print =<< pangoLayoutIndexToPos pl 13
+	print =<< pangoLayoutIndexToPos pl 14
+
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-layout-innocuous.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
