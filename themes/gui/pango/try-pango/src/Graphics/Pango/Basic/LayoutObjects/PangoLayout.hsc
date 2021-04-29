@@ -627,6 +627,18 @@ pangoLayoutGetPixelSize (PangoLayout fpl) =
 foreign import ccall "pango_layout_get_pixel_size" c_pango_layout_get_pixel_size ::
 	Ptr PangoLayout -> Ptr CInt -> Ptr CInt -> IO ()
 
+newtype Baseline = Baseline CInt deriving Show
+
+instance PangoLayoutInfo Baseline where
+	pangoLayoutInfo = (Baseline <$>) . pangoLayoutGetBaseline
+
+pangoLayoutGetBaseline :: PangoLayout -> IO CInt
+pangoLayoutGetBaseline (PangoLayout fpl) =
+	withForeignPtr fpl c_pango_layout_get_baseline
+
+foreign import ccall "pango_layout_get_baseline" c_pango_layout_get_baseline ::
+	Ptr PangoLayout -> IO CInt
+
 foreign import ccall "pango_layout_index_to_pos" c_pango_layout_index_to_pos ::
 	Ptr PangoLayout -> CInt -> Ptr PangoRectangle -> IO ()
 
@@ -691,13 +703,6 @@ pangoExtentsToPixelsNearest src =
 		poke dst src
 		c_pango_extents_to_pixels nullPtr dst
 		peek dst
-
-foreign import ccall "pango_layout_get_baseline" c_pango_layout_get_baseline ::
-	Ptr PangoLayout -> IO CInt
-
-pangoLayoutGetBaseline :: PangoLayout -> IO CInt
-pangoLayoutGetBaseline (PangoLayout fpl) =
-	withForeignPtr fpl c_pango_layout_get_baseline
 
 foreign import ccall "pango_layout_get_line_count" c_pango_layout_get_line_count ::
 	Ptr PangoLayout -> IO CInt

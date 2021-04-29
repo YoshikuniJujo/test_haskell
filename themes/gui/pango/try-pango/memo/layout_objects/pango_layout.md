@@ -101,7 +101,7 @@ todo
 		- [x] define
 		- [x] check Null
 	+ [x] `SingleParagraphMode`
-* [ ] instances of `class PangoLayoutInfo`
+* [x] instances of `class PangoLayoutInfo`
 	+ [x] try to define about `CharacterCount`
 	+ [x] `pango_layout_get_character_count`
 	+ [x] `pango_layout_is_ellipsize`
@@ -117,7 +117,7 @@ todo
 	+ [x] `pango_layout_get_pixel_extents`
 	+ [x] `pango_layout_get_size`
 	+ [x] `pango_layout_get_pixel_size`
-	+ [ ] `pango_layout_get_baseline`
+	+ [x] `pango_layout_get_baseline`
 * [ ] `pango_layout_index_to_pos`
 * [ ] `pango_layout_index_to_line_x`
 * [ ] `pango_layout_xy_to_index`
