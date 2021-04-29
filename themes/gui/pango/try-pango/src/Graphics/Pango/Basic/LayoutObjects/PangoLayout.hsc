@@ -579,6 +579,22 @@ pangoLayoutGetExtents (PangoLayout fpl) =
 foreign import ccall "pango_layout_get_extents" c_pango_layout_get_extents ::
 	Ptr PangoLayout -> Ptr PangoRectangleFixed -> Ptr PangoRectangleFixed -> IO ()
 
+data PixelExtents = PixelExtents {
+	pixelExtentsInkRect :: PangoRectangle,
+	pixelExtentsLogicalRect :: PangoRectangle } deriving Show
+
+instance PangoLayoutInfo PixelExtents where
+	pangoLayoutInfo = (uncurry PixelExtents <$>) . pangoLayoutGetPixelExtents
+
+pangoLayoutGetPixelExtents :: PangoLayout -> IO (PangoRectangle, PangoRectangle)
+pangoLayoutGetPixelExtents (PangoLayout fpl) =
+	withForeignPtr fpl \pl -> alloca \irct -> alloca \lrct -> do
+		c_pango_layout_get_pixel_extents pl irct lrct
+		(,) <$> peek irct <*> peek lrct
+
+foreign import ccall "pango_layout_get_pixel_extents" c_pango_layout_get_pixel_extents ::
+	Ptr PangoLayout -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+
 foreign import ccall "pango_layout_index_to_pos" c_pango_layout_index_to_pos ::
 	Ptr PangoLayout -> CInt -> Ptr PangoRectangle -> IO ()
 
@@ -626,15 +642,6 @@ pangoLayoutMoveCursorVisually (PangoLayout fpl) str oidx otr dir =
 	withForeignPtr fpl \pl -> alloca \nidx -> alloca \ntr -> do
 		c_pango_layout_move_cursor_visually pl (boolToGboolean str) oidx otr dir nidx ntr
 		(,) <$> peek nidx <*> peek ntr
-
-foreign import ccall "pango_layout_get_pixel_extents" c_pango_layout_get_pixel_extents ::
-	Ptr PangoLayout -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
-
-pangoLayoutGetPixelExtents :: PangoLayout -> IO (PangoRectangle, PangoRectangle)
-pangoLayoutGetPixelExtents (PangoLayout fpl) =
-	withForeignPtr fpl \pl -> alloca \irct -> alloca \lrct -> do
-		c_pango_layout_get_pixel_extents pl irct lrct
-		(,) <$> peek irct <*> peek lrct
 
 foreign import ccall "pango_extents_to_pixels" c_pango_extents_to_pixels ::
 	Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()

@@ -114,7 +114,7 @@ todo
 		- [x] `instance PangoLayoutInfo`
 	+ [x] `pango_layout_get_extents`
 		- [x] covert from pango unit
-	+ [ ] `pango_layout_get_pixel_extents`
+	+ [x] `pango_layout_get_pixel_extents`
 	+ [ ] `pango_layout_get_size`
 	+ [ ] `pango_layout_get_pixel_size`
 	+ [ ] `pango_layout_get_baseline`
