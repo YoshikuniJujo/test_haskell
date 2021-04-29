@@ -6,7 +6,6 @@ function
 
 ### get line
 
-* `pango_layout_get_line_count`
 * `pango_layout_get_line`
 * `pango_layout_get_line_readonly`
 * `pango_layout_get_lines`
