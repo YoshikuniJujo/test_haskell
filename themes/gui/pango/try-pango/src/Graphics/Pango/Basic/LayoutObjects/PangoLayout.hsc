@@ -533,6 +533,9 @@ pangoLogAttrExpand (PangoLogAttr_ fb i) = unsafePerformIO
 foreign import ccall "pango_log_attr_to_struct" c_pango_log_attr_to_struct ::
 	Ptr PangoLogAttr -> Ptr PangoLogAttrStruct -> IO ()
 
+instance PangoLayoutInfo PangoLogAttrs where
+	pangoLayoutInfo = pangoLayoutGetLogAttrs
+
 data PangoLogAttrs = PangoLogAttrs (ForeignPtr PangoLogAttr) CInt deriving Show
 
 mkPangoLogAttrs :: Ptr PangoLogAttr -> CInt -> IO PangoLogAttrs

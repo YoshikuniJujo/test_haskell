@@ -138,7 +138,7 @@ main = do
 	pangoCairoShowLayout cr pl
 
 	print =<< pangoLayoutInfo @UnknownGlyphsCount pl
-	las <- pangoLayoutGetLogAttrs pl
+	las <- pangoLayoutInfo pl
 	(putStrLn . (\(c, la) -> c ++ "\n" ++ la) . (show *** showPangoLogAttr)) `mapM_` zip (txt ++ "\x00") (pangoLogAttrsToList las)
 
 	cairoImageSurfaceGetCairoImage s >>= \case
@@ -171,9 +171,27 @@ showPangoLogAttr la = let PangoLogAttr {
 	pangoLogAttrIsLineBreak = lb,
 	pangoLogAttrIsMandatoryBreak = mb,
 	pangoLogAttrIsCharBreak = cb,
-	pangoLogAttrIsWhite = w
+	pangoLogAttrIsWhite = w,
+	pangoLogAttrIsCursorPosition = cp,
+	pangoLogAttrIsWordStart = ws,
+	pangoLogAttrIsWordEnd = we,
+	pangoLogAttrIsSentenceBoundary = sb,
+	pangoLogAttrIsSentenceStart = ss,
+	pangoLogAttrIsSentenceEnd = se,
+	pangoLogAttrBackspaceDeleteCharacter = bdc,
+	pangoLogAttrIsExpandableSpace = es,
+	pangoLogAttrIsWordBoundary = wb
 	} = la in
-	"is_line_break:      " ++ show lb ++ "\n" ++
-	"is_mandatory_break: " ++ show mb ++ "\n" ++
-	"is_char_break:      " ++ show cb ++ "\n" ++
-	"is_white:           " ++ show w ++ "\n"
+	"is_line_break:              " ++ show lb ++ "\n" ++
+	"is_mandatory_break:         " ++ show mb ++ "\n" ++
+	"is_char_break:              " ++ show cb ++ "\n" ++
+	"is_white:                   " ++ show w ++ "\n" ++
+	"is_cursor_posiotn:          " ++ show cp ++ "\n" ++
+	"is_word_start:              " ++ show ws ++ "\n" ++
+	"is_word_end:                " ++ show we ++ "\n" ++
+	"is_sentence_boundary:       " ++ show sb ++ "\n" ++
+	"is_sentence_start:          " ++ show ss ++ "\n" ++
+	"is_sentence_end:            " ++ show se ++ "\n" ++
+	"backspace_delete_character: " ++ show bdc ++ "\n" ++
+	"is_expandable_space:        " ++ show es ++ "\n" ++
+	"is_word_boundary:           " ++ show wb ++ "\n"

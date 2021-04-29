@@ -107,11 +107,11 @@ todo
 	+ [x] `pango_layout_is_ellipsize`
 	+ [x] `pango_layout_is_wrapped`
 	+ [x] `pango_layout_get_unknown_glyphs_count`
-	+ [ ] `pango_layout_get_log_attrs`
+	+ [x] `pango_layout_get_log_attrs`
 		- [x] `pangoLayoutGetLogAttrs`
 		- [x] `pangoLogAttrsGetLogAttr :: PangoLogAttrs -> Int -> PangoLogAttr`
-		- [ ] more infomations in a trial
-		- [ ] `instance PangoLayoutInfo`
+		- [x] more infomations in a trial
+		- [x] `instance PangoLayoutInfo`
 	+ [ ] `pango_layout_get_extents`
 	+ [ ] `pango_layout_get_pixel_extents`
 	+ [ ] `pango_layout_get_size`
