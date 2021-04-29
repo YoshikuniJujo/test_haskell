@@ -143,6 +143,7 @@ main = do
 
 	print =<< pangoLayoutInfo @Extents pl
 	print =<< pangoLayoutInfo @PixelExtents pl
+	print =<< pangoLayoutInfo @LayoutSize pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-layout-innocuous.png" $ cairoArgb32ToJuicyRGBA8 a
