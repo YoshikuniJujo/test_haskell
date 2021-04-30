@@ -684,15 +684,20 @@ maybeIndex (_ : xs) i = maybeIndex xs (i - 1)
 foreign import ccall "pango_layout_index_to_pos" c_pango_layout_index_to_pos ::
 	Ptr PangoLayout -> CInt -> Ptr PangoRectangleFixed -> IO ()
 
+pangoLayoutIndexToLineX :: PangoLayout -> Int -> Bool -> IO (Maybe (CInt, PangoFixed))
+pangoLayoutIndexToLineX (PangoLayout fpl) idx tr =
+	withForeignPtr fpl \pl -> alloca \ln -> alloca \xpos -> do
+		t <- c_pango_layout_get_text pl
+		is <- byteIndices =<< toCStringLen t
+		case is `maybeIndex` idx of
+			Nothing -> pure Nothing
+			Just i -> do
+				c_pango_layout_index_to_line_x pl (fromIntegral i) (boolToGboolean tr) ln xpos
+				Just <$> ((,) <$> peek ln <*> (toPangoFixed <$> peek xpos))
+
 foreign import ccall "pango_layout_index_to_line_x"
 	c_pango_layout_index_to_line_x ::
 	Ptr PangoLayout -> CInt -> #{type gboolean} -> Ptr CInt -> Ptr CInt -> IO ()
-
-pangoLayoutIndexToLineX :: PangoLayout -> CInt -> Bool -> IO (CInt, CInt)
-pangoLayoutIndexToLineX (PangoLayout fpl) idx tr =
-	withForeignPtr fpl \pl -> alloca \ln -> alloca \xpos -> do
-		c_pango_layout_index_to_line_x pl idx (boolToGboolean tr) ln xpos
-		(,) <$> peek ln <*> peek xpos
 
 foreign import ccall "pango_layout_xy_to_index" c_pango_layout_xy_to_index ::
 	Ptr PangoLayout -> CInt -> CInt -> Ptr CInt -> Ptr CInt -> IO #type gboolean
