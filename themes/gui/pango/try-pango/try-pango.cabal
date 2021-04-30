@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f61a118e70d2324dffe238490d70d7527365f8fc5244652210067ba363d975d3
+-- hash: b8fe55e5fd39cb437bea177f9798f486d47dace5c77cf9bc05f19b356c3fef65
 
 name:           try-pango
 version:        0.1.0.0
@@ -29,6 +29,7 @@ library
   exposed-modules:
       Data.Text.CString
       Data.Text.Gunichar
+      Foreign.C.String.Utf8
       Graphics.Pango.Basic.Fonts.PangoFontDescription
       Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
       Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations
@@ -62,6 +63,7 @@ library
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image
@@ -84,6 +86,7 @@ executable try-glib-quark
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image
@@ -107,6 +110,7 @@ executable try-pango-attrs
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image
@@ -130,6 +134,7 @@ executable try-pango-attrs-markup
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image
@@ -153,6 +158,7 @@ executable try-pango-attrs-markup-stream
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image
@@ -176,6 +182,7 @@ executable try-pango-context
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image
@@ -198,6 +205,7 @@ executable try-pango-exe
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image
@@ -221,6 +229,7 @@ executable try-pango-font-description-add-axis
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image
@@ -244,6 +253,7 @@ executable try-pango-fonts
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image
@@ -267,6 +277,7 @@ executable try-pango-fonts-literata
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image
@@ -290,6 +301,7 @@ executable try-pango-fonts-montserrat
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image
@@ -313,6 +325,7 @@ executable try-pango-fonts-soulcraft
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image
@@ -336,6 +349,7 @@ executable try-pango-fonts-source-han-sans-vf
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image
@@ -359,6 +373,7 @@ executable try-pango-fonts-unset
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image
@@ -382,6 +397,7 @@ executable try-pango-fonts-variations
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image
@@ -405,6 +421,7 @@ executable try-pango-gravity
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image
@@ -428,6 +445,7 @@ executable try-pango-language
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image
@@ -451,6 +469,7 @@ executable try-pango-layout
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image
@@ -474,6 +493,7 @@ executable try-pango-layout-innocuous
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image
@@ -497,6 +517,7 @@ executable try-pango-markup
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image
@@ -520,6 +541,7 @@ executable try-pango-simple
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image
@@ -543,6 +565,7 @@ executable try-pango-tab-array
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image
@@ -566,6 +589,7 @@ executable try-variations
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image
@@ -589,6 +613,7 @@ test-suite try-pango-test
   build-depends:
       JuicyCairo
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , cairo-image

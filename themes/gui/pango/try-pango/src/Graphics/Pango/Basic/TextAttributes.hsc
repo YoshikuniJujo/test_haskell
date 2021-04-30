@@ -12,7 +12,9 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
+import Foreign.C.String.Utf8
 import Control.Monad.Primitive
+import Data.Array
 import Data.Bool
 import Data.Word
 import Data.Int
@@ -468,11 +470,62 @@ pangoColorToString c = unsafePerformIO $ peekCString =<< alloca \cc ->
 foreign import ccall "pango_color_to_string" c_pango_color_to_string ::
 	Ptr PangoColor -> IO CString
 
-data PangoTextAttrList s = PangoTextAttrList {
-	pangoTextAttrListText :: CString,
-	pangoTextAttrListUtf8Indices :: [CInt],
-	pangoTextAttrListAttrList :: PangoAttrListPrim s
+data PangoTextAttrList = PangoTextAttrList {
+	pangoTextAttrListText :: CStringLen,
+	pangoTextAttrListAttrList :: PangoAttrList
 	} deriving Show
+
+pangoTextAttrListFreeze :: PrimMonad m =>
+	PangoTextAttrListPrim (PrimState m) -> m PangoTextAttrList
+pangoTextAttrListFreeze (PangoTextAttrListPrim csl _ al) =
+	PangoTextAttrList csl <$> pangoAttrListFreeze al
+
+pangoTextAttrListThaw :: PrimMonad m =>
+	PangoTextAttrList -> m (Maybe (PangoTextAttrListPrim (PrimState m)))
+pangoTextAttrListThaw (PangoTextAttrList csl al) = unsafeIOToPrim do
+	ids <- ((\is -> listArray (0, length is) is) . (fromIntegral <$>) <$> byteIndices csl)
+	mal <- pangoAttrListThawIo al
+	pure $ PangoTextAttrListPrim csl ids <$> mal
+
+data PangoTextAttrListPrim s = PangoTextAttrListPrim {
+	pangoTextAttrListPrimText :: CStringLen,
+	pangoTextAttrListPrimUtf8Indices :: Array Int CUInt,
+	pangoTextAttrListPrimAttrList :: PangoAttrListPrim s
+	} deriving Show
+
+pangoTextAttrListNew ::
+	PrimMonad m => T.Text -> m (PangoTextAttrListPrim (PrimState m))
+pangoTextAttrListNew t = unsafeIOToPrim $ T.withCStringLen t \csl ->
+	PangoTextAttrListPrim csl
+		<$> ((\is -> listArray (0, length is) is) . (fromIntegral <$>)
+			<$> byteIndices csl)
+		<*> (mkPangoAttrListPrim =<< c_pango_attr_list_new)
+
+toUtf8Index :: Array Int CUInt -> Int -> CUInt
+toUtf8Index t i | i < mn = 0 | i > mx = maxBound | otherwise = t ! i
+	where (mn, mx) = bounds t
+
+pangoTextAttrListInsert, pangoTextAttrListInsertBefore,
+	pangoTextAttrListChange :: PrimMonad m =>
+	PangoTextAttrListPrim (PrimState m) ->
+	PangoAttribute (PrimState m) -> Int -> Int -> m ()
+pangoTextAttrListInsert = pangoTextAttrListInsertGen pangoAttrListInsert
+
+pangoTextAttrListInsertBefore =
+	pangoTextAttrListInsertGen pangoAttrListInsertBefore
+
+pangoTextAttrListChange = pangoTextAttrListInsertGen pangoAttrListChange
+
+pangoTextAttrListInsertGen :: PrimMonad m =>
+	(PangoAttrListPrim (PrimState m) ->
+		PangoAttribute (PrimState m) -> m ()) ->
+	PangoTextAttrListPrim (PrimState m) -> PangoAttribute (PrimState m) ->
+	Int -> Int -> m ()
+pangoTextAttrListInsertGen pali (PangoTextAttrListPrim _ t al) a s e = do
+	pangoAttributeSetStartIndex a (toUtf8Index t s)
+	pangoAttributeSetEndIndex a (toUtf8Index t e)
+	pali al a
+	
 
 newtype PangoAttrListPrim s = PangoAttrListPrim (ForeignPtr (PangoAttrListPrim s)) deriving Show
 
@@ -509,6 +562,12 @@ pangoAttrListThaw :: PrimMonad m =>
 pangoAttrListThaw = \case
 	PangoAttrListNull -> pure Nothing
 	PangoAttrList fal -> unsafeIOToPrim $ (Just <$>) . mkPangoAttrListPrim
+		=<< withForeignPtr fal c_pango_attr_list_thaw
+
+pangoAttrListThawIo :: PangoAttrList -> IO (Maybe (PangoAttrListPrim s))
+pangoAttrListThawIo = \case
+	PangoAttrListNull -> pure Nothing
+	PangoAttrList fal -> (Just <$>) . mkPangoAttrListPrim
 		=<< withForeignPtr fal c_pango_attr_list_thaw
 
 foreign import ccall "pango_attr_list_copy" c_pango_attr_list_thaw ::
