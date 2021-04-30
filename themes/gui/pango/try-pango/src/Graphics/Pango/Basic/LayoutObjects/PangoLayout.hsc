@@ -107,10 +107,6 @@ pangoLayoutGetTextAttributes l@(PangoLayout fl) = PangoTextAttrList
 	<$> (copyToForeignCStringLen =<< toCStringLen =<< withForeignPtr fl c_pango_layout_get_text)
 	<*> pangoLayoutGetAttributes l
 
-instance PangoLayoutSetting PangoAttrList where
-	pangoLayoutSet = pangoLayoutSetAttributes
-	pangoLayoutGet = pangoLayoutGetAttributes
-
 pangoLayoutSetAttributes :: PangoLayout -> PangoAttrList -> IO ()
 pangoLayoutSetAttributes (PangoLayout fl) al = -- (PangoAttrList fal) =
 	withForeignPtr fl \pl -> ($ c_pango_layout_set_attributes pl) case al of

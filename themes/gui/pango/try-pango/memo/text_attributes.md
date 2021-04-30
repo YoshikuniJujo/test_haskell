@@ -131,10 +131,10 @@ todo
 * [x] `PangoTextAttrList`: use `ForeignPtr CChar` instead of `Ptr CChar`
 * [x] pangoMarkupParserFinish should return PangoTextAttrList
 * [x] move to `Graphics.Pango.Basic.TextAttributes.Internal`
-* [ ] make module `Graphics.Pango.Basic.TextAttributes`
+* [x] make module `Graphics.Pango.Basic.TextAttributes`
 	+ [x] make module
-	+ [ ] make pangoAttrListNew private
-	+ [ ] others
+	+ [x] make pangoAttrListNew private
+	+ [x] others
 
 not todo yet
 ------------

@@ -4,7 +4,6 @@
 
 module Main where
 
-import Foreign.C.Types
 import Control.Monad.Primitive
 import Data.Foldable
 import Data.CairoImage
@@ -264,13 +263,6 @@ main = do
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-attrs.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
-
-applyInOrder :: (PangoAttributeValue v, PrimMonad m) =>
-	PangoAttrListPrim (PrimState m) -> [(v, CUInt)] -> m ()
-applyInOrder al vs = for_ vs \(w, i) -> do
-	lat <- pangoAttrNew w
-	pangoAttributeSetEndIndex lat i
-	pangoAttrListInsertBefore al lat
 
 applyInOrder' :: (PangoAttributeValue v, PrimMonad m) =>
 	PangoTextAttrListPrim (PrimState m) -> [(v, Int)] -> m ()

@@ -3,7 +3,30 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Basic.TextAttributes.Internal where
+module Graphics.Pango.Basic.TextAttributes.Internal (
+	PangoTextAttrList(..), PangoTextAttrListPrim,
+	pangoTextAttrListNew, pangoTextAttrListCopy,
+	pangoTextAttrListFreeze, pangoTextAttrListThaw,
+
+	pangoParseMarkup, pangoMarkupParserNew, pangoMarkupParserFinish,
+	pangoTextAttrListInsert, pangoTextAttrListInsertBefore,
+	pangoTextAttrListChange,
+
+	PangoAttributeValue, pangoAttrNew, pangoAttrFontDescNew,
+	Strikethrough(..), StrikethroughColor(..),
+	PangoUnderline, pattern PangoUnderlineNone,
+	pattern PangoUnderlineSingle, pattern PangoUnderlineDouble,
+	pattern PangoUnderlineLow, pattern PangoUnderlineError,
+	UnderlineColor(..), Shape(..), Scale(..),
+	Rise, pattern Rise, LetterSpacing, pattern LetterSpacing,
+	ForegroundColor(..), BackgroundColor(..),
+	ForegroundAlpha(..), BackgroundAlpha(..),
+	PangoGravity(..), PangoGravityHint(..),
+
+	pangoColorParse, pangoColorToString,
+
+	PangoAttrList(..), mkPangoAttrList,
+	) where
 
 import GHC.Stack
 import Foreign.Ptr
@@ -106,10 +129,12 @@ foreign import ccall "pango_markup_parser_finish"
 	Ptr (GMarkupParseContext s) -> Ptr (Ptr PangoAttrList) -> Ptr CString ->
 	Ptr #{type gunichar} -> Ptr (Ptr GError) -> IO #{type gboolean}
 
+{-
 mkMemberAttrType "PangoAttrInvalid" #{const PANGO_ATTR_INVALID}
 mkMemberAttrType "PangoAttrLanguage" #{const PANGO_ATTR_LANGUAGE}
 mkMemberAttrType "PangoAttrFamily" #{const PANGO_ATTR_FAMILY}
 mkMemberAttrType "PangoAttrStyle" #{const PANGO_ATTR_STYLE}
+-}
 
 newtype PangoAttribute s = PangoAttribute (ForeignPtr (PangoAttribute s))
 	deriving Show
@@ -395,7 +420,7 @@ instance PangoAttributeValue PangoGravityHint where
 pangoAttrGravityHintNew ::
 	PrimMonad m => PangoGravityHint -> m (PangoAttribute (PrimState m))
 pangoAttrGravityHintNew (PangoGravityHint gh) = unsafeIOToPrim
-	$ mkPangoAttribute =<< c_pango_attr_gravity_new gh
+	$ mkPangoAttribute =<< c_pango_attr_gravity_hint_new gh
 
 foreign import ccall "pango_attr_gravity_hint_new"
 	c_pango_attr_gravity_hint_new ::
@@ -504,6 +529,11 @@ pangoTextAttrListNew t = unsafeIOToPrim $ T.withCStringLen t \csl -> do
 			<$> byteIndices csl)
 		<*> (mkPangoAttrListPrim =<< c_pango_attr_list_new)
 
+pangoTextAttrListCopy :: PrimMonad m =>
+	PangoTextAttrListPrim (PrimState m) -> m (PangoTextAttrListPrim (PrimState m))
+pangoTextAttrListCopy (PangoTextAttrListPrim t is al) =
+	PangoTextAttrListPrim t is <$> pangoAttrListCopy al
+
 toUtf8Index :: HasCallStack => Array Int CUInt -> Int -> CUInt
 toUtf8Index t i | i < mn = 0 | i > mx = maxBound | otherwise = t ! i
 	where (mn, mx) = bounds t
@@ -538,9 +568,6 @@ mkPangoAttrListPrim p = PangoAttrListPrim <$> newForeignPtr p (c_pango_attr_list
 foreign import ccall "pango_attr_list_unref" c_pango_attr_list_prim_unref ::
 	Ptr (PangoAttrListPrim s) -> IO ()
 
-pangoAttrListNew :: PrimMonad m => m (PangoAttrListPrim (PrimState m))
-pangoAttrListNew = unsafeIOToPrim $ mkPangoAttrListPrim =<< c_pango_attr_list_new
-
 foreign import ccall "pango_attr_list_new" c_pango_attr_list_new ::
 	IO (Ptr (PangoAttrListPrim s))
 
@@ -559,13 +586,6 @@ pangoAttrListFreeze (PangoAttrListPrim fal) = unsafeIOToPrim
 
 foreign import ccall "pango_attr_list_copy" c_pango_attr_list_freeze ::
 	Ptr (PangoAttrListPrim s) -> IO (Ptr PangoAttrList)
-
-pangoAttrListThaw :: PrimMonad m =>
-	PangoAttrList -> m (Maybe (PangoAttrListPrim (PrimState m)))
-pangoAttrListThaw = \case
-	PangoAttrListNull -> pure Nothing
-	PangoAttrList fal -> unsafeIOToPrim $ (Just <$>) . mkPangoAttrListPrim
-		=<< withForeignPtr fal c_pango_attr_list_thaw
 
 pangoAttrListThawIo :: PangoAttrList -> IO (Maybe (PangoAttrListPrim s))
 pangoAttrListThawIo = \case

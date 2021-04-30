@@ -20,7 +20,7 @@ import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage
 import Graphics.Pango.Rendering.Cairo
 
 import Graphics.Pango.Basic.TextAttributes
-import Graphics.Pango.Basic.Fonts.PangoFontDescription
+-- import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 
 import qualified Data.Text as T
@@ -38,12 +38,14 @@ main = do
 
 	pl <- pangoCairoCreateLayout cr
 	print =<< pangoLayoutGet @T.Text pl
-	attr0 <- pangoLayoutGet @PangoAttrList pl
+	attr0 <- pangoLayoutGet @PangoTextAttrList pl
 	print attr0
-	mattr0' <- pangoAttrListThaw attr0
+	{-
+	mattr0' <- pangoTextAttrListThaw attr0
 	case mattr0' of
 		Nothing -> putStrLn "mattr0' is Nothing"
 		Just attr0' -> pangoAttrListInsert attr0' =<< pangoAttrNew (Size 20)
+		-}
 	fd0 <- pangoLayoutGet @PangoFontDescription pl
 	print fd0
 
