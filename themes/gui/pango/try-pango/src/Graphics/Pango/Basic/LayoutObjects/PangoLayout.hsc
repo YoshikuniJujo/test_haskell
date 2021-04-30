@@ -12,6 +12,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
+import Foreign.C.String.Utf8
 import Foreign.C.String.Tools
 import Control.Monad.Primitive
 import Data.Bool
@@ -663,11 +664,22 @@ pangoLayoutGetLineCount (PangoLayout fpl) =
 foreign import ccall "pango_layout_get_line_count" c_pango_layout_get_line_count ::
 	Ptr PangoLayout -> IO CInt
 
-pangoLayoutIndexToPos :: PangoLayout -> CInt -> IO PangoRectangleFixed
-pangoLayoutIndexToPos (PangoLayout fpl) idx =
-	withForeignPtr fpl \pl -> alloca \pos -> do
-		c_pango_layout_index_to_pos pl idx pos
-		peek pos
+pangoLayoutIndexToPos :: PangoLayout -> Int -> IO (Maybe PangoRectangleFixed)
+pangoLayoutIndexToPos (PangoLayout fl) idx =
+	withForeignPtr fl \pl -> alloca \pos -> do
+		t <- c_pango_layout_get_text pl
+		is <- byteIndices =<< toCStringLen t
+		case is `maybeIndex` idx of
+			Nothing -> pure Nothing
+			Just i -> do
+				c_pango_layout_index_to_pos pl (fromIntegral i) pos
+				Just <$> peek pos
+
+maybeIndex :: [a] -> Int -> Maybe a
+maybeIndex _ i | i < 0 = Nothing
+maybeIndex [] _ = Nothing
+maybeIndex (x : _) 0 = Just x
+maybeIndex (_ : xs) i = maybeIndex xs (i - 1)
 
 foreign import ccall "pango_layout_index_to_pos" c_pango_layout_index_to_pos ::
 	Ptr PangoLayout -> CInt -> Ptr PangoRectangleFixed -> IO ()
