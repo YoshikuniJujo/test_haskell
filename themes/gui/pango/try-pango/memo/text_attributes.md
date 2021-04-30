@@ -127,7 +127,7 @@ todo
 	+ [x] make module `Foreign.C.String.Utf8`
 	+ [x] others
 * [x] use pangoTextAttrListNew instead of pangoAttrListNew in app/try-pango-attrs.hs
-* [ ] pangoParseMarkup should return PangoTextAttrList
+* [x] pangoParseMarkup should return PangoTextAttrList
 * [ ] pangoMarkupParserFinish should return PangoTextAttrList
 * [x] move to `Graphics.Pango.Basic.TextAttributes.Internal`
 * [ ] make module `Graphics.Pango.Basic.TextAttributes`

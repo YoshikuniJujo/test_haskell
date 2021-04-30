@@ -14,6 +14,7 @@ import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
 import Foreign.C.String.Utf8
+import Foreign.C.String.Tools
 import Control.Monad.Primitive
 import Data.Array
 import Data.Bool
@@ -39,6 +40,11 @@ import Graphics.Pango.Values
 
 #include <pango/pango.h>
 
+data PangoTextAttrList = PangoTextAttrList {
+	pangoTextAttrListText :: CStringLen,
+	pangoTextAttrListAttrList :: PangoAttrList
+	} deriving Show
+
 data PangoAttrList
 	= PangoAttrListNull
 	| PangoAttrList (ForeignPtr PangoAttrList)
@@ -52,15 +58,15 @@ mkPangoAttrList p
 foreign import ccall "pango_attr_list_unref" c_pango_attr_list_unref ::
 	Ptr PangoAttrList -> IO ()
 
-pangoParseMarkup :: T.Text -> Maybe Char -> Either GError (PangoAttrList, T.Text, Maybe Char)
+pangoParseMarkup :: T.Text -> Maybe Char -> Either GError (PangoTextAttrList, Maybe Char)
 pangoParseMarkup mt am = unsafePerformIO
 	$ T.withCStringLen mt \(cmt, cmtl) -> alloca \ppal -> alloca \pt -> alloca \pac -> alloca \pge -> do
 		r <- c_pango_parse_markup cmt (fromIntegral cmtl) (toGunichar am) ppal pt pac pge
+		pt' <- toCStringLen =<< peek pt
 		case r of
 			#{const FALSE} -> Left <$> (mkGError =<< peek pge)
-			#{const TRUE} -> (Right <$>) $ (,,)
-				<$> (mkPangoAttrList =<< peek ppal)
-				<*> (peekCStringText =<< peek pt)
+			#{const TRUE} -> (Right <$>) $ (,)
+				<$> (PangoTextAttrList pt' <$> (mkPangoAttrList =<< peek ppal))
 				<*> (fromGunichar <$> peek pac)
 			_ -> error "never occur"
 
@@ -470,11 +476,6 @@ pangoColorToString c = unsafePerformIO $ peekCString =<< alloca \cc ->
 
 foreign import ccall "pango_color_to_string" c_pango_color_to_string ::
 	Ptr PangoColor -> IO CString
-
-data PangoTextAttrList = PangoTextAttrList {
-	pangoTextAttrListText :: CStringLen,
-	pangoTextAttrListAttrList :: PangoAttrList
-	} deriving Show
 
 pangoTextAttrListFreeze :: PrimMonad m =>
 	PangoTextAttrListPrim (PrimState m) -> m PangoTextAttrList
