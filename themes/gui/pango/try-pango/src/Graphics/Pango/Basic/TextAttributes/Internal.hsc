@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Basic.TextAttributes where
+module Graphics.Pango.Basic.TextAttributes.Internal where
 
 import GHC.Stack
 import Foreign.Ptr

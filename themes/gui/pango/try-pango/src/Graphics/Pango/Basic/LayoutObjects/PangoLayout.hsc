@@ -28,7 +28,7 @@ import Graphics.Pango.Values
 import Graphics.Pango.Basic.Rendering
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
-import Graphics.Pango.Basic.TextAttributes
+import Graphics.Pango.Basic.TextAttributes.Internal
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout.Template
 
 import qualified Data.Text as T
