@@ -714,14 +714,19 @@ pangoLayoutXyToIndex (PangoLayout fpl) x_ y_ =
 foreign import ccall "pango_layout_xy_to_index" c_pango_layout_xy_to_index ::
 	Ptr PangoLayout -> CInt -> CInt -> Ptr CInt -> Ptr CInt -> IO #type gboolean
 
-foreign import ccall "pango_layout_get_cursor_pos" c_pango_layout_get_cursor_pos ::
-	Ptr PangoLayout -> CInt -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
-
-pangoLayoutGetCursorPos :: PangoLayout -> CInt -> IO (PangoRectangle, PangoRectangle)
+pangoLayoutGetCursorPos :: PangoLayout -> Int -> IO (Maybe (PangoRectangleFixed, PangoRectangleFixed))
 pangoLayoutGetCursorPos (PangoLayout fpl) idx =
 	withForeignPtr fpl \pl -> alloca \spos -> alloca \wpos -> do
-		c_pango_layout_get_cursor_pos pl idx spos wpos
-		(,) <$> peek spos <*> peek wpos
+		t <- c_pango_layout_get_text pl
+		is <- byteIndices =<< toCStringLen t
+		case is `maybeIndex` idx of
+			Nothing -> pure Nothing
+			Just i -> do
+				c_pango_layout_get_cursor_pos pl (fromIntegral i) spos wpos
+				Just <$> ((,) <$> peek spos <*> peek wpos)
+
+foreign import ccall "pango_layout_get_cursor_pos" c_pango_layout_get_cursor_pos ::
+	Ptr PangoLayout -> CInt -> Ptr PangoRectangleFixed -> Ptr PangoRectangleFixed -> IO ()
 
 foreign import ccall "pango_layout_move_cursor_visually" c_pango_layout_move_cursor_visually ::
 	Ptr PangoLayout -> #{type gboolean} -> CInt -> CInt -> CInt ->

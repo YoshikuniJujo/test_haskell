@@ -190,6 +190,23 @@ main = do
 	print =<< pangoLayoutXyToIndex pl 20 98
 	print =<< pangoLayoutXyToIndex pl 30 98
 
+	print =<< pangoLayoutGetCursorPos pl 0
+	print =<< pangoLayoutGetCursorPos pl 1
+	print =<< pangoLayoutGetCursorPos pl 108
+	print =<< pangoLayoutGetCursorPos pl 109
+	print =<< pangoLayoutGetCursorPos pl 110
+	print =<< pangoLayoutGetCursorPos pl 111
+	print =<< pangoLayoutGetCursorPos pl 112
+	print =<< pangoLayoutGetCursorPos pl 113
+	print =<< pangoLayoutGetCursorPos pl 114
+	print =<< pangoLayoutGetCursorPos pl 115
+	print =<< pangoLayoutGetCursorPos pl 116
+	print =<< pangoLayoutGetCursorPos pl 117
+	print =<< pangoLayoutGetCursorPos pl 118
+	print =<< pangoLayoutGetCursorPos pl 119
+	print =<< pangoLayoutGetCursorPos pl 120
+	print =<< pangoLayoutGetCursorPos pl 121
+
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-layout-innocuous.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
