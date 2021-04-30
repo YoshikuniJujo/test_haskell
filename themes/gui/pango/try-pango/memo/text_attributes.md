@@ -128,6 +128,7 @@ todo
 	+ [x] others
 * [x] use pangoTextAttrListNew instead of pangoAttrListNew in app/try-pango-attrs.hs
 * [x] pangoParseMarkup should return PangoTextAttrList
+* [x] `PangoTextAttrList`: use `ForeignPtr CChar` instead of `Ptr CChar`
 * [ ] pangoMarkupParserFinish should return PangoTextAttrList
 * [x] move to `Graphics.Pango.Basic.TextAttributes.Internal`
 * [ ] make module `Graphics.Pango.Basic.TextAttributes`

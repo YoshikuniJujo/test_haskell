@@ -41,7 +41,7 @@ import Graphics.Pango.Values
 #include <pango/pango.h>
 
 data PangoTextAttrList = PangoTextAttrList {
-	pangoTextAttrListText :: CStringLen,
+	pangoTextAttrListText :: ForeignCStringLen,
 	pangoTextAttrListAttrList :: PangoAttrList
 	} deriving Show
 
@@ -63,10 +63,11 @@ pangoParseMarkup mt am = unsafePerformIO
 	$ T.withCStringLen mt \(cmt, cmtl) -> alloca \ppal -> alloca \pt -> alloca \pac -> alloca \pge -> do
 		r <- c_pango_parse_markup cmt (fromIntegral cmtl) (toGunichar am) ppal pt pac pge
 		pt' <- toCStringLen =<< peek pt
+		pt'' <- copyToForeignCStringLen pt'
 		case r of
 			#{const FALSE} -> Left <$> (mkGError =<< peek pge)
 			#{const TRUE} -> (Right <$>) $ (,)
-				<$> (PangoTextAttrList pt' <$> (mkPangoAttrList =<< peek ppal))
+				<$> (PangoTextAttrList pt'' <$> (mkPangoAttrList =<< peek ppal))
 				<*> (fromGunichar <$> peek pac)
 			_ -> error "never occur"
 
@@ -485,20 +486,21 @@ pangoTextAttrListFreeze (PangoTextAttrListPrim csl _ al) =
 pangoTextAttrListThaw :: PrimMonad m =>
 	PangoTextAttrList -> m (Maybe (PangoTextAttrListPrim (PrimState m)))
 pangoTextAttrListThaw (PangoTextAttrList csl al) = unsafeIOToPrim do
-	ids <- ((\is -> listArray (0, length is - 1) is) . (fromIntegral <$>) <$> byteIndices csl)
+	ids <- ((\is -> listArray (0, length is - 1) is) . (fromIntegral <$>) <$> withForeignCStringLen csl byteIndices)
 	mal <- pangoAttrListThawIo al
 	pure $ PangoTextAttrListPrim csl ids <$> mal
 
 data PangoTextAttrListPrim s = PangoTextAttrListPrim {
-	pangoTextAttrListPrimText :: CStringLen,
+	pangoTextAttrListPrimText :: ForeignCStringLen,
 	pangoTextAttrListPrimUtf8Indices :: Array Int CUInt,
 	pangoTextAttrListPrimAttrList :: PangoAttrListPrim s
 	} deriving Show
 
 pangoTextAttrListNew ::
 	PrimMonad m => T.Text -> m (PangoTextAttrListPrim (PrimState m))
-pangoTextAttrListNew t = unsafeIOToPrim $ T.withCStringLen t \csl ->
-	PangoTextAttrListPrim csl
+pangoTextAttrListNew t = unsafeIOToPrim $ T.withCStringLen t \csl -> do
+	csl' <- copyToForeignCStringLen csl
+	PangoTextAttrListPrim csl'
 		<$> ((\is -> listArray (0, length is - 1) is) . (fromIntegral <$>)
 			<$> byteIndices csl)
 		<*> (mkPangoAttrListPrim =<< c_pango_attr_list_new)

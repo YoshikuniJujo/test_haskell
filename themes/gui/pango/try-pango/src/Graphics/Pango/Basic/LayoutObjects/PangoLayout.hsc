@@ -99,12 +99,12 @@ instance PangoLayoutSetting PangoTextAttrList where
 pangoLayoutSetTextAttributes :: PangoLayout -> PangoTextAttrList -> IO ()
 pangoLayoutSetTextAttributes
 	l@(PangoLayout fl) (PangoTextAttrList (cs, ln) al) = do
-	withForeignPtr fl \pl -> c_pango_layout_set_text pl cs $ fromIntegral ln
+	withForeignPtr fl \pl -> withForeignPtr cs \cs' ->  c_pango_layout_set_text pl cs' $ fromIntegral ln
 	pangoLayoutSetAttributes l al
 
 pangoLayoutGetTextAttributes :: PangoLayout -> IO PangoTextAttrList
 pangoLayoutGetTextAttributes l@(PangoLayout fl) = PangoTextAttrList
-	<$> (toCStringLen =<< withForeignPtr fl c_pango_layout_get_text)
+	<$> (copyToForeignCStringLen =<< toCStringLen =<< withForeignPtr fl c_pango_layout_get_text)
 	<*> pangoLayoutGetAttributes l
 
 instance PangoLayoutSetting PangoAttrList where
