@@ -15,6 +15,8 @@ import Foreign.C.String
 import Foreign.C.String.Utf8
 import Foreign.C.String.Tools
 import Control.Monad.Primitive
+import Data.Maybe
+import Data.List
 import Data.Bool
 import Data.Word
 import Data.Int
@@ -699,14 +701,18 @@ foreign import ccall "pango_layout_index_to_line_x"
 	c_pango_layout_index_to_line_x ::
 	Ptr PangoLayout -> CInt -> #{type gboolean} -> Ptr CInt -> Ptr CInt -> IO ()
 
+pangoLayoutXyToIndex :: PangoLayout -> PangoFixed -> PangoFixed -> IO (Int, CInt, Bool)
+pangoLayoutXyToIndex (PangoLayout fpl) x_ y_ =
+	withForeignPtr fpl \pl -> alloca \idx -> alloca \tr -> do
+		t <- c_pango_layout_get_text pl
+		is <- byteIndices =<< toCStringLen t
+		isd <- c_pango_layout_xy_to_index pl x y idx tr
+		(,,) <$> (fromJust . (`elemIndex` is) . fromIntegral <$> peek idx) <*> peek tr <*> pure (gbooleanToBool isd)
+	where
+	[x, y] = fromPangoFixed <$> [x_, y_]
+
 foreign import ccall "pango_layout_xy_to_index" c_pango_layout_xy_to_index ::
 	Ptr PangoLayout -> CInt -> CInt -> Ptr CInt -> Ptr CInt -> IO #type gboolean
-
-pangoLayoutXyToIndex :: PangoLayout -> CInt -> CInt -> IO (CInt, CInt, Bool)
-pangoLayoutXyToIndex (PangoLayout fpl) x y =
-	withForeignPtr fpl \pl -> alloca \idx -> alloca \tr -> do
-		isd <- c_pango_layout_xy_to_index pl x y idx tr
-		(,,) <$> peek idx <*> peek tr <*> pure (gbooleanToBool isd)
 
 foreign import ccall "pango_layout_get_cursor_pos" c_pango_layout_get_cursor_pos ::
 	Ptr PangoLayout -> CInt -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()

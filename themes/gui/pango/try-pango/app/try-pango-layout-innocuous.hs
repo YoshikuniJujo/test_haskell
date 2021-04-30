@@ -181,6 +181,15 @@ main = do
 	print =<< pangoLayoutIndexToLineX pl 60 False
 	print =<< pangoLayoutIndexToLineX pl 60 True
 
+	print =<< pangoLayoutXyToIndex pl 10 10
+	print =<< pangoLayoutXyToIndex pl 100 10
+	print =<< pangoLayoutXyToIndex pl 160 10
+	print =<< pangoLayoutXyToIndex pl 180 10
+	print =<< pangoLayoutXyToIndex pl 200 10
+	print =<< pangoLayoutXyToIndex pl 10 98
+	print =<< pangoLayoutXyToIndex pl 20 98
+	print =<< pangoLayoutXyToIndex pl 30 98
+
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-layout-innocuous.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
