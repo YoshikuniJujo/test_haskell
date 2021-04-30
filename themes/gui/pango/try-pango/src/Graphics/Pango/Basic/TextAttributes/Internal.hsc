@@ -23,8 +23,6 @@ import Data.Int
 import Data.Char
 import System.IO.Unsafe
 
-import Data.Text.CString
-
 import System.Glib.ErrorReporting
 import System.Glib.SimpleXmlSubsetParser
 
@@ -90,15 +88,16 @@ foreign import ccall "pango_markup_parser_new" c_pango_markup_parser_new ::
 	#{type gunichar} -> IO (Ptr (GMarkupParseContext s))
 
 pangoMarkupParserFinish :: PrimMonad m => GMarkupParseContext (PrimState m) ->
-	m (Either GError (PangoAttrList, T.Text, Maybe Char))
+	m (Either GError (PangoTextAttrList, Maybe Char))
 pangoMarkupParserFinish (GMarkupParseContext fpc) = unsafeIOToPrim
 	$ withForeignPtr fpc \ppc -> alloca \ppal -> alloca \pt -> alloca \pac -> alloca \pge -> do
 		r <- c_pango_markup_parser_finish ppc ppal pt pac pge
+		pt' <- toCStringLen =<< peek pt
+		pt'' <- copyToForeignCStringLen pt'
 		case r of
 			#{const FALSE} -> Left <$> (mkGError =<< peek pge)
-			#{const TRUE} -> (Right <$>) $ (,,)
-				<$> (mkPangoAttrList =<< peek ppal)
-				<*> (peekCStringText =<< peek pt)
+			#{const TRUE} -> (Right <$>) $ (,)
+				<$> (PangoTextAttrList pt'' <$> (mkPangoAttrList =<< peek ppal))
 				<*> (fromGunichar <$> peek pac)
 			_ -> error "never occur"
 

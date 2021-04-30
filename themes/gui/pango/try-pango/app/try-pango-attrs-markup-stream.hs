@@ -25,7 +25,7 @@ sample :: T.Text
 sample = "<big><i>Hello</i>, <b>world</b>!</big>"
 
 pangoParseMarkup' ::
-	[T.Text] -> Maybe Char -> Either GError (PangoAttrList, T.Text, Maybe Char)
+	[T.Text] -> Maybe Char -> Either GError (PangoTextAttrList, Maybe Char)
 pangoParseMarkup' ts mc = runST do
 	pc <- pangoMarkupParserNew mc
 	r <- gMarkupParseContextParse pc `eitherMapM_` ts
@@ -69,13 +69,12 @@ main = do
 						_ -> show c
 					putStrLn m
 				_ -> putStrLn "No GMarkupError"
-		Right (pal, t, _) -> do
+		Right (tpal, _) -> do
 			s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
 			cr <- cairoCreate s
 
 			pl <- pangoCairoCreateLayout cr
-			pangoLayoutSetAttributes pl pal
-			pangoLayoutSet pl t
+			pangoLayoutSet pl tpal
 			pangoCairoShowLayout cr pl
 
 			cairoImageSurfaceGetCairoImage s >>= \case
