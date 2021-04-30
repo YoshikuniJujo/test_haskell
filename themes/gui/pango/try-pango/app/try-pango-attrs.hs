@@ -39,18 +39,18 @@ main = do
 
 	at <- pangoAttrNew $ Size 20
 	at' <- pangoAttrNew $ Size 25
-	al <- pangoAttrListNew
+
+	al <- pangoTextAttrListNew "Hello, world!\nこんにちは、世界!"
 	print at
 	print al
-	pangoAttributeSetEndIndex at 10
-	pangoAttributeSetStartIndex at' 15
-	pangoAttrListInsert al at
-	pangoAttrListInsert al at'
-	al' <- pangoAttrListFreeze al
+	pangoTextAttrListInsert al at 0 10
+	pangoTextAttrListInsert al at' 15 maxBound
+	al' <- pangoTextAttrListFreeze al
 
 	pl <- pangoCairoCreateLayout cr
+
+--	pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは、世界!"
 	pangoLayoutSet pl al'
-	pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは、世界!"
 	pangoCairoShowLayout cr pl
 
 	al2 <- pangoAttrListNew

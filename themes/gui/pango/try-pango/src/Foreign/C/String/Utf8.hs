@@ -17,7 +17,9 @@ byteToLen c
 	| otherwise = error "Invalid UTF-8"
 
 byteIndices :: CStringLen -> IO [Int]
-byteIndices (_, n) | n <= 0 = pure []
-byteIndices (p, n) = do
-	d <- byteToLen <$> peek p
-	(d :) . ((+ d) <$>) <$> byteIndices (p `plusPtr` d, n - d)
+byteIndices = ((0 :) <$>) . go
+	where
+	go (_, n) | n <= 0 = pure []
+	go (p, n) = do
+		d <- byteToLen <$> peek p
+		(d :) . ((+ d) <$>) <$> go (p `plusPtr` d, n - d)

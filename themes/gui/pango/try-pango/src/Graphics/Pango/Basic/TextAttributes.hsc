@@ -5,6 +5,7 @@
 
 module Graphics.Pango.Basic.TextAttributes where
 
+import GHC.Stack
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
@@ -483,7 +484,7 @@ pangoTextAttrListFreeze (PangoTextAttrListPrim csl _ al) =
 pangoTextAttrListThaw :: PrimMonad m =>
 	PangoTextAttrList -> m (Maybe (PangoTextAttrListPrim (PrimState m)))
 pangoTextAttrListThaw (PangoTextAttrList csl al) = unsafeIOToPrim do
-	ids <- ((\is -> listArray (0, length is) is) . (fromIntegral <$>) <$> byteIndices csl)
+	ids <- ((\is -> listArray (0, length is - 1) is) . (fromIntegral <$>) <$> byteIndices csl)
 	mal <- pangoAttrListThawIo al
 	pure $ PangoTextAttrListPrim csl ids <$> mal
 
@@ -497,11 +498,11 @@ pangoTextAttrListNew ::
 	PrimMonad m => T.Text -> m (PangoTextAttrListPrim (PrimState m))
 pangoTextAttrListNew t = unsafeIOToPrim $ T.withCStringLen t \csl ->
 	PangoTextAttrListPrim csl
-		<$> ((\is -> listArray (0, length is) is) . (fromIntegral <$>)
+		<$> ((\is -> listArray (0, length is - 1) is) . (fromIntegral <$>)
 			<$> byteIndices csl)
 		<*> (mkPangoAttrListPrim =<< c_pango_attr_list_new)
 
-toUtf8Index :: Array Int CUInt -> Int -> CUInt
+toUtf8Index :: HasCallStack => Array Int CUInt -> Int -> CUInt
 toUtf8Index t i | i < mn = 0 | i > mx = maxBound | otherwise = t ! i
 	where (mn, mx) = bounds t
 

@@ -12,6 +12,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
+import Foreign.C.String.Tools
 import Control.Monad.Primitive
 import Data.Bool
 import Data.Word
@@ -90,6 +91,21 @@ foreign import ccall "pango_layout_set_markup_with_accel"
 	c_pango_layout_set_markup_with_accel ::
 	Ptr PangoLayout -> CString -> CInt ->
 	#{type gunichar} -> Ptr #{type gunichar} -> IO ()
+
+instance PangoLayoutSetting PangoTextAttrList where
+	pangoLayoutSet = pangoLayoutSetTextAttributes
+	pangoLayoutGet = pangoLayoutGetTextAttributes
+
+pangoLayoutSetTextAttributes :: PangoLayout -> PangoTextAttrList -> IO ()
+pangoLayoutSetTextAttributes
+	l@(PangoLayout fl) (PangoTextAttrList (cs, ln) al) = do
+	withForeignPtr fl \pl -> c_pango_layout_set_text pl cs $ fromIntegral ln
+	pangoLayoutSetAttributes l al
+
+pangoLayoutGetTextAttributes :: PangoLayout -> IO PangoTextAttrList
+pangoLayoutGetTextAttributes l@(PangoLayout fl) = PangoTextAttrList
+	<$> (toCStringLen =<< withForeignPtr fl c_pango_layout_get_text)
+	<*> pangoLayoutGetAttributes l
 
 instance PangoLayoutSetting PangoAttrList where
 	pangoLayoutSet = pangoLayoutSetAttributes

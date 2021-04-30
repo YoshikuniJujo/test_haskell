@@ -126,8 +126,11 @@ todo
 	+ [x] define ADT
 	+ [x] make module `Foreign.C.String.Utf8`
 	+ [x] others
+* [ ] use pangoTextAttrListNew instead of pangoAttrListNew in app/try-pango-attrs.hs
 * [ ] move to `Graphics.Pango.Basic.TextAttributes.Internal`
 * [ ] make module `Graphics.Pango.Basic.TextAttributes`
+	+ [ ] make pangoAttrListNew private
+	+ [ ] others
 
 not todo yet
 ------------

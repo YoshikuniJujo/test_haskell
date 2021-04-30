@@ -101,7 +101,7 @@ todo
 		- [x] define
 		- [x] check Null
 	+ [x] `SingleParagraphMode`
-	+ [ ] `PangoTextAttrList`
+	+ [x] `PangoTextAttrList`
 * [x] instances of `class PangoLayoutInfo`
 	+ [x] try to define about `CharacterCount`
 	+ [x] `pango_layout_get_character_count`
