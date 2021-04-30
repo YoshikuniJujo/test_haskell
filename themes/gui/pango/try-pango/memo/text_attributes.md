@@ -122,6 +122,12 @@ todo
 * [x] `pango_attr_list_insert_before`
 * [x] `pango_attr_list_change`
 * [x] define `pangoAttributeCopy`
+* [ ] make `PangoTextAttrList`
+	+ [x] define ADT
+	+ [ ] make module `Data.Foreign.C.String.Utf8`
+	+ [ ] others
+* [ ] move to `Graphics.Pango.Basic.TextAttributes.Internal`
+* [ ] make module `Graphics.Pango.Basic.TextAttributes`
 
 not todo yet
 ------------

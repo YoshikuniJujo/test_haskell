@@ -468,6 +468,12 @@ pangoColorToString c = unsafePerformIO $ peekCString =<< alloca \cc ->
 foreign import ccall "pango_color_to_string" c_pango_color_to_string ::
 	Ptr PangoColor -> IO CString
 
+data PangoTextAttrList s = PangoTextAttrList {
+	pangoTextAttrListText :: CString,
+	pangoTextAttrListUtf8Indices :: [CInt],
+	pangoTextAttrListAttrList :: PangoAttrListPrim s
+	} deriving Show
+
 newtype PangoAttrListPrim s = PangoAttrListPrim (ForeignPtr (PangoAttrListPrim s)) deriving Show
 
 mkPangoAttrListPrim :: Ptr (PangoAttrListPrim s) -> IO (PangoAttrListPrim s)
