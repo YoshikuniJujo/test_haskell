@@ -3,6 +3,7 @@
 module Main where
 
 import System.Environment
+import Graphics.Pango.Basic.ScriptsAndLanguages.PangoScript
 import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage
 
 main :: IO ()
@@ -15,3 +16,4 @@ main = do
 	putStrLn . pangoLanguageToString $ pangoLanguageFromString l
 	putStrLn . pangoLanguageGetSampleString =<< pangoLanguageGetDefault
 	putStrLn . pangoLanguageGetSampleString $ pangoLanguageFromString l
+	print $ pangoScriptForUnichar '愛'

@@ -70,7 +70,6 @@ todo
 		- [ ] PangoLanguage
 	+ [ ] Bidirectional Text
 	+ [ ] Vertical Text
-	+ [ ] Scripts and Languages
 * [ ] Rendering with Pango
 	+ [ ] Cairo Rendering
 * [ ] think about package name
