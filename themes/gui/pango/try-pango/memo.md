@@ -59,10 +59,10 @@ todo
 * [ ] Basic Pango Interfaces
 	+ [x] Fonts
 		- [x] PangoFontDescription
-	+ [ ] Text Attributes
+	+ [x] Text Attributes
 	+ [x] Tab Stops
 	+ [ ] LayoutObjects
-		- [ ] PangoLayout
+		- [x] PangoLayout
 		- [ ] PangoLayoutIter
 		- [ ] PangoLayoutLine
 	+ [ ] Scripts and Languages
