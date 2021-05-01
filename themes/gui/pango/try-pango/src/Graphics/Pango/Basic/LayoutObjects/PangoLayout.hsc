@@ -728,16 +728,32 @@ pangoLayoutGetCursorPos (PangoLayout fpl) idx =
 foreign import ccall "pango_layout_get_cursor_pos" c_pango_layout_get_cursor_pos ::
 	Ptr PangoLayout -> CInt -> Ptr PangoRectangleFixed -> Ptr PangoRectangleFixed -> IO ()
 
+data MinMax a = Min | Jst a | Max deriving Show
+data Dir = L | R deriving Show
+
+pangoLayoutMoveCursorVisually ::
+	PangoLayout -> Bool -> Int -> Bool -> Dir -> IO (Maybe (MinMax Int, CInt))
+pangoLayoutMoveCursorVisually (PangoLayout fpl) str oidx otr dir =
+	withForeignPtr fpl \pl -> alloca \nidx -> alloca \ntr -> do
+		t <- c_pango_layout_get_text pl
+		is <- byteIndices =<< toCStringLen t
+		case is `maybeIndex` oidx of
+			Nothing -> pure Nothing
+			Just i -> do
+				c_pango_layout_move_cursor_visually pl
+					(boolToGboolean str) (fromIntegral i) (bool 0 1 otr)
+					(case dir of L -> - 1; R -> 1) nidx ntr
+				nidx' <- peek nidx
+				let	mnidx = case nidx of
+						_	| nidx' < 0 -> Min
+							| nidx' < maxBound -> Jst . fromJust . (`elemIndex` is) $ fromIntegral nidx'
+							| otherwise -> Max
+				ntr' <- peek ntr
+				pure . Just $ (mnidx, ntr')
+
 foreign import ccall "pango_layout_move_cursor_visually" c_pango_layout_move_cursor_visually ::
 	Ptr PangoLayout -> #{type gboolean} -> CInt -> CInt -> CInt ->
 	Ptr CInt -> Ptr CInt -> IO ()
-
-pangoLayoutMoveCursorVisually ::
-	PangoLayout -> Bool -> CInt -> CInt -> CInt -> IO (CInt, CInt)
-pangoLayoutMoveCursorVisually (PangoLayout fpl) str oidx otr dir =
-	withForeignPtr fpl \pl -> alloca \nidx -> alloca \ntr -> do
-		c_pango_layout_move_cursor_visually pl (boolToGboolean str) oidx otr dir nidx ntr
-		(,) <$> peek nidx <*> peek ntr
 
 foreign import ccall "pango_extents_to_pixels" c_pango_extents_to_pixels ::
 	Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()

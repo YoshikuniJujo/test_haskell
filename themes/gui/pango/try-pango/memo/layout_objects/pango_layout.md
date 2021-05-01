@@ -125,7 +125,7 @@ todo
 * [x] `pango_layout_index_to_line_x`
 * [x] `pango_layout_xy_to_index`
 * [x] `pango_layout_get_cursor_pos`
-* [ ] `pango_layout_move_cursor_visually`
+* [x] `pango_layout_move_cursor_visually`
 * [x] `pango_layout_set_markup`
 * [x] `pango_layout_set_markup_with_accel`
 
