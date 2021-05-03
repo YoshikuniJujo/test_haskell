@@ -5,7 +5,9 @@ module Graphics.Pango.Basic.ScriptsAndLanguages.Types where
 
 import Language.Haskell.TH
 import Foreign.Ptr
+import Foreign.C.String
 import Data.Int
+import System.IO.Unsafe
 import Graphics.Pango.Template
 
 #include <pango/pango.h>
@@ -17,4 +19,13 @@ mkMemberPangoScript = mkMemberGen ''PangoScript 'PangoScript
 
 newtype PangoLanguage = PangoLanguage (Ptr PangoLanguage)
 
-instance Show PangoLanguage where show _ = "PangoLanguage"
+instance Show PangoLanguage where
+	showsPrec d l = showParen (d > 10)
+		$ ("PangoLanguage " ++) . (pangoLanguageToString l ++)
+
+pangoLanguageToString :: PangoLanguage -> String
+pangoLanguageToString (PangoLanguage pl) =
+	unsafePerformIO $ peekCString =<< c_pango_language_to_string pl
+
+foreign import ccall "pango_language_to_string"
+	c_pango_language_to_string :: Ptr PangoLanguage -> IO CString
