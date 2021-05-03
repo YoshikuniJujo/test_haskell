@@ -84,3 +84,10 @@ mkMemberPangoScript "PangoScriptTifinagh" #{const PANGO_SCRIPT_TIFINAGH}
 mkMemberPangoScript "PangoScriptSylotiNagri" #{const PANGO_SCRIPT_SYLOTI_NAGRI}
 mkMemberPangoScript "PangoScriptOldPersian" #{const PANGO_SCRIPT_OLD_PERSIAN}
 mkMemberPangoScript "PangoScriptKharoshthi" #{const PANGO_SCRIPT_KHAROSHTHI}
+
+mkMemberPangoScript "PangoScriptUnknown" #{const PANGO_SCRIPT_UNKNOWN}
+mkMemberPangoScript "PangoScriptBalinese" #{const PANGO_SCRIPT_BALINESE}
+mkMemberPangoScript "PangoScriptCuneiform" #{const PANGO_SCRIPT_CUNEIFORM}
+mkMemberPangoScript "PangoScriptPhoenician" #{const PANGO_SCRIPT_PHOENICIAN}
+mkMemberPangoScript "PangoScriptPhagsPa" #{const PANGO_SCRIPT_PHAGS_PA}
+mkMemberPangoScript "PangoScriptNko" #{const PANGO_SCRIPT_NKO}
