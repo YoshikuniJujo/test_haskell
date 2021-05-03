@@ -116,3 +116,36 @@ mkMemberPangoScript "PangoScriptMiao" #{const PANGO_SCRIPT_MIAO}
 mkMemberPangoScript "PangoScriptSharada" #{const PANGO_SCRIPT_SHARADA}
 mkMemberPangoScript "PangoScriptSoraSompeng" #{const PANGO_SCRIPT_SORA_SOMPENG}
 mkMemberPangoScript "PangoScriptTakri" #{const PANGO_SCRIPT_TAKRI}
+
+mkMemberPangoScript "PangoScriptBassaVah" #{const PANGO_SCRIPT_BASSA_VAH}
+mkMemberPangoScript "PangoScriptCaucasianAlbanian"
+	#{const PANGO_SCRIPT_CAUCASIAN_ALBANIAN}
+mkMemberPangoScript "PangoScriptDuployan" #{const PANGO_SCRIPT_DUPLOYAN}
+mkMemberPangoScript "PangoScriptElbasan" #{const PANGO_SCRIPT_ELBASAN}
+mkMemberPangoScript "PangoScriptGrantha" #{const PANGO_SCRIPT_GRANTHA}
+mkMemberPangoScript "PangoScriptKhojki" #{const PANGO_SCRIPT_KHOJKI}
+mkMemberPangoScript "PangoScriptKhudawadi" #{const PANGO_SCRIPT_KHUDAWADI}
+mkMemberPangoScript "PangoScriptLinearA" #{const PANGO_SCRIPT_LINEAR_A}
+mkMemberPangoScript "PangoScriptMahajani" #{const PANGO_SCRIPT_MAHAJANI}
+mkMemberPangoScript "PangoScriptManichaean" #{const PANGO_SCRIPT_MANICHAEAN}
+mkMemberPangoScript "PangoScriptMendeKikakui"
+	#{const PANGO_SCRIPT_MENDE_KIKAKUI}
+mkMemberPangoScript "PangoScriptModi" #{const PANGO_SCRIPT_MODI}
+mkMemberPangoScript "PangoScriptMro" #{const PANGO_SCRIPT_MRO}
+mkMemberPangoScript "PangoScriptNabataean" #{const PANGO_SCRIPT_NABATAEAN}
+mkMemberPangoScript "PangoScriptOldNorthArabian" #{const PANGO_SCRIPT_OLD_NORTH_ARABIAN}
+mkMemberPangoScript "PangoScriptOldPermic" #{const PANGO_SCRIPT_OLD_PERMIC}
+mkMemberPangoScript "PangoScriptPahawhHmong" #{const PANGO_SCRIPT_PAHAWH_HMONG}
+mkMemberPangoScript "PangoScriptPalmyrene" #{const PANGO_SCRIPT_PALMYRENE}
+mkMemberPangoScript "PangoScriptPauCinHau" #{const PANGO_SCRIPT_PAU_CIN_HAU}
+mkMemberPangoScript "PangoScriptPsalterPahlavi" #{const PANGO_SCRIPT_PSALTER_PAHLAVI}
+mkMemberPangoScript "PangoScriptSiddham" #{const PANGO_SCRIPT_SIDDHAM}
+mkMemberPangoScript "PangoScriptTirhuta" #{const PANGO_SCRIPT_TIRHUTA}
+mkMemberPangoScript "PangoScriptWarangCiti" #{const PANGO_SCRIPT_WARANG_CITI}
+mkMemberPangoScript "PangoScriptAhom" #{const PANGO_SCRIPT_AHOM}
+mkMemberPangoScript "PangoScriptAnatolianHieroglyphs"
+	#{const PANGO_SCRIPT_ANATOLIAN_HIEROGLYPHS}
+mkMemberPangoScript "PangoScriptHatran" #{const PANGO_SCRIPT_HATRAN}
+mkMemberPangoScript "PangoScriptMultani" #{const PANGO_SCRIPT_MULTANI}
+mkMemberPangoScript "PangoScriptOldHungarian" #{const PANGO_SCRIPT_OLD_HUNGARIAN}
+mkMemberPangoScript "PangoScriptSignwriting" #{const PANGO_SCRIPT_SIGNWRITING}
