@@ -76,3 +76,11 @@ mkMemberPangoScript "PangoscriptShavian" #{const PANGO_SCRIPT_SHAVIAN}
 mkMemberPangoScript "PangoScriptLinearB" #{const PANGO_SCRIPT_LINEAR_B}
 mkMemberPangoScript "PangoScriptTaiLe" #{const PANGO_SCRIPT_TAI_LE}
 mkMemberPangoScript "PangoScriptUgaritic" #{const PANGO_SCRIPT_UGARITIC}
+
+mkMemberPangoScript "PangoScriptNewTaiLue" #{const PANGO_SCRIPT_NEW_TAI_LUE}
+mkMemberPangoScript "PangoScriptBuginese" #{const PANGO_SCRIPT_BUGINESE}
+mkMemberPangoScript "PangoScriptGlagolitic" #{const PANGO_SCRIPT_GLAGOLITIC}
+mkMemberPangoScript "PangoScriptTifinagh" #{const PANGO_SCRIPT_TIFINAGH}
+mkMemberPangoScript "PangoScriptSylotiNagri" #{const PANGO_SCRIPT_SYLOTI_NAGRI}
+mkMemberPangoScript "PangoScriptOldPersian" #{const PANGO_SCRIPT_OLD_PERSIAN}
+mkMemberPangoScript "PangoScriptKharoshthi" #{const PANGO_SCRIPT_KHAROSHTHI}
