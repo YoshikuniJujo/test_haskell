@@ -91,3 +91,15 @@ mkMemberPangoScript "PangoScriptCuneiform" #{const PANGO_SCRIPT_CUNEIFORM}
 mkMemberPangoScript "PangoScriptPhoenician" #{const PANGO_SCRIPT_PHOENICIAN}
 mkMemberPangoScript "PangoScriptPhagsPa" #{const PANGO_SCRIPT_PHAGS_PA}
 mkMemberPangoScript "PangoScriptNko" #{const PANGO_SCRIPT_NKO}
+
+mkMemberPangoScript "PangoScriptKyahLi" #{const PANGO_SCRIPT_KAYAH_LI}
+mkMemberPangoScript "PangoScriptLepcha" #{const PANGO_SCRIPT_LEPCHA}
+mkMemberPangoScript "PangoScriptRejang" #{const PANGO_SCRIPT_REJANG}
+mkMemberPangoScript "PangoScriptSundanese" #{const PANGO_SCRIPT_SUNDANESE}
+mkMemberPangoScript "PangoScriptSaurashtra" #{const PANGO_SCRIPT_SAURASHTRA}
+mkMemberPangoScript "PangoScriptCham" #{const PANGO_SCRIPT_CHAM}
+mkMemberPangoScript "PangoScriptOlChiki" #{const PANGO_SCRIPT_OL_CHIKI}
+mkMemberPangoScript "PangoScriptVai" #{const PANGO_SCRIPT_VAI}
+mkMemberPangoScript "PangoScriptCarian" #{const PANGO_SCRIPT_CARIAN}
+mkMemberPangoScript "PangoScriptLycian" #{const PANGO_SCRIPT_LYCIAN}
+mkMemberPangoScript "PangoScriptLydian" #{const PANGO_SCRIPT_LYDIAN}
