@@ -8,7 +8,7 @@ import Data.Word
 import Data.Int
 import Data.Char
 import System.IO.Unsafe
-import Graphics.Pango.Basic.ScriptsAndLanguages.Template
+import Graphics.Pango.Basic.ScriptsAndLanguages.Types
 
 #include <pango/pango.h>
 

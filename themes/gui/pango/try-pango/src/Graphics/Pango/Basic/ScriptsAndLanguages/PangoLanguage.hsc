@@ -7,11 +7,9 @@ import Foreign.Ptr
 import Foreign.C.String
 import System.IO.Unsafe
 
+import Graphics.Pango.Basic.ScriptsAndLanguages.Types
+
 #include <pango/pango.h>
-
-newtype PangoLanguage = PangoLanguage (Ptr PangoLanguage)
-
-instance Show PangoLanguage where show _ = "PangoLanguage"
 
 pangoLanguageFromString :: String -> PangoLanguage
 pangoLanguageFromString l = unsafePerformIO $ withCString l \cl ->
