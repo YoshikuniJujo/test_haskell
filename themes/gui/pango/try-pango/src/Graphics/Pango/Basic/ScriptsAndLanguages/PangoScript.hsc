@@ -103,3 +103,16 @@ mkMemberPangoScript "PangoScriptVai" #{const PANGO_SCRIPT_VAI}
 mkMemberPangoScript "PangoScriptCarian" #{const PANGO_SCRIPT_CARIAN}
 mkMemberPangoScript "PangoScriptLycian" #{const PANGO_SCRIPT_LYCIAN}
 mkMemberPangoScript "PangoScriptLydian" #{const PANGO_SCRIPT_LYDIAN}
+
+mkMemberPangoScript "PangoScriptBatak" #{const PANGO_SCRIPT_BATAK}
+mkMemberPangoScript "PangoScriptBraham" #{const PANGO_SCRIPT_BRAHMI}
+mkMemberPangoScript "PangoScriptMandaic" #{const PANGO_SCRIPT_MANDAIC}
+mkMemberPangoScript "PangoScriptChakma" #{const PANGO_SCRIPT_CHAKMA}
+mkMemberPangoScript "PangoScriptMeroiticCursive"
+	#{const PANGO_SCRIPT_MEROITIC_CURSIVE}
+mkMemberPangoScript "PangoScriptMeroiticHieroglyphs"
+	#{const PANGO_SCRIPT_MEROITIC_HIEROGLYPHS}
+mkMemberPangoScript "PangoScriptMiao" #{const PANGO_SCRIPT_MIAO}
+mkMemberPangoScript "PangoScriptSharada" #{const PANGO_SCRIPT_SHARADA}
+mkMemberPangoScript "PangoScriptSoraSompeng" #{const PANGO_SCRIPT_SORA_SOMPENG}
+mkMemberPangoScript "PangoScriptTakri" #{const PANGO_SCRIPT_TAKRI}
