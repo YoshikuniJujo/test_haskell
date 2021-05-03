@@ -56,3 +56,23 @@ mkMemberPangoScript "PangoScriptOriya" #{const PANGO_SCRIPT_ORIYA}
 mkMemberPangoScript "PangoScriptRunic" #{const PANGO_SCRIPT_RUNIC}
 mkMemberPangoScript "PangoScriptSinhala" #{const PANGO_SCRIPT_SINHALA}
 mkMemberPangoScript "PangoScriptSyriac" #{const PANGO_SCRIPT_SYRIAC}
+mkMemberPangoScript "PangoScriptTamil" #{const PANGO_SCRIPT_TAMIL}
+mkMemberPangoScript "PangoScriptTelugu" #{const PANGO_SCRIPT_TELUGU}
+mkMemberPangoScript "PangoScriptThaana" #{const PANGO_SCRIPT_THAANA}
+mkMemberPangoScript "PangoScriptThai" #{const PANGO_SCRIPT_THAI}
+mkMemberPangoScript "PangoScriptTibetan" #{const PANGO_SCRIPT_TIBETAN}
+mkMemberPangoScript "PangoScriptCanadianAboriginal"
+	#{const PANGO_SCRIPT_CANADIAN_ABORIGINAL}
+mkMemberPangoScript "PangoScriptYi" #{const PANGO_SCRIPT_YI}
+mkMemberPangoScript "PangoScriptTagalog" #{const PANGO_SCRIPT_TAGALOG}
+mkMemberPangoScript "PangoScriptHanunoo" #{const PANGO_SCRIPT_HANUNOO}
+mkMemberPangoScript "PangoScriptBuhid" #{const PANGO_SCRIPT_BUHID}
+mkMemberPangoScript "PangoScriptTagbanwa" #{const PANGO_SCRIPT_TAGBANWA}
+mkMemberPangoScript "PangoScriptBraille" #{const PANGO_SCRIPT_BRAILLE}
+mkMemberPangoScript "PangoScriptCypriot" #{const PANGO_SCRIPT_CYPRIOT}
+mkMemberPangoScript "PangoScriptLimbu" #{const PANGO_SCRIPT_LIMBU}
+mkMemberPangoScript "PangoScriptOsmanya" #{const PANGO_SCRIPT_OSMANYA}
+mkMemberPangoScript "PangoscriptShavian" #{const PANGO_SCRIPT_SHAVIAN}
+mkMemberPangoScript "PangoScriptLinearB" #{const PANGO_SCRIPT_LINEAR_B}
+mkMemberPangoScript "PangoScriptTaiLe" #{const PANGO_SCRIPT_TAI_LE}
+mkMemberPangoScript "PangoScriptUgaritic" #{const PANGO_SCRIPT_UGARITIC}
