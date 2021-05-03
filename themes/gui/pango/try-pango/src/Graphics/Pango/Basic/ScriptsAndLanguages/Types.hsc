@@ -1,4 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.ScriptsAndLanguages.Types where
@@ -17,15 +19,29 @@ newtype PangoScript = PangoScript #{type PangoScript} deriving Show
 mkMemberPangoScript :: String -> Integer -> DecsQ
 mkMemberPangoScript = mkMemberGen ''PangoScript 'PangoScript
 
-newtype PangoLanguage = PangoLanguage (Ptr PangoLanguage)
+newtype PangoLanguage = PangoLanguage_ (Ptr PangoLanguage)
 
 instance Show PangoLanguage where
 	showsPrec d l = showParen (d > 10)
 		$ ("PangoLanguage " ++) . (pangoLanguageToString l ++)
 
+{-# COMPLETE PangoLanguage #-}
+
+pattern PangoLanguage :: String -> PangoLanguage
+pattern PangoLanguage { getPangoLanguage }
+		<- (pangoLanguageToString -> getPangoLanguage) where
+	PangoLanguage s = pangoLanguageFromString s
+
 pangoLanguageToString :: PangoLanguage -> String
-pangoLanguageToString (PangoLanguage pl) =
+pangoLanguageToString (PangoLanguage_ pl) =
 	unsafePerformIO $ peekCString =<< c_pango_language_to_string pl
 
 foreign import ccall "pango_language_to_string"
 	c_pango_language_to_string :: Ptr PangoLanguage -> IO CString
+
+pangoLanguageFromString :: String -> PangoLanguage
+pangoLanguageFromString l = unsafePerformIO $ withCString l \cl ->
+	PangoLanguage_ <$> c_pango_language_from_string cl
+
+foreign import ccall "pango_language_from_string"
+	c_pango_language_from_string :: CString -> IO (Ptr PangoLanguage)

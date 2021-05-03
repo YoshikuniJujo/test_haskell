@@ -17,6 +17,7 @@ import Graphics.Cairo.Values
 import Graphics.Pango.Values
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage
+import Graphics.Pango.Basic.ScriptsAndLanguages.Types
 import Graphics.Pango.Rendering.Cairo
 
 import Graphics.Pango.Basic.TextAttributes

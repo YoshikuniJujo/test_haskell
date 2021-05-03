@@ -11,21 +11,14 @@ import Graphics.Pango.Basic.ScriptsAndLanguages.Types
 
 #include <pango/pango.h>
 
-pangoLanguageFromString :: String -> PangoLanguage
-pangoLanguageFromString l = unsafePerformIO $ withCString l \cl ->
-	PangoLanguage <$> c_pango_language_from_string cl
-
-foreign import ccall "pango_language_from_string"
-	c_pango_language_from_string :: CString -> IO (Ptr PangoLanguage)
-
 pangoLanguageGetDefault :: IO PangoLanguage
-pangoLanguageGetDefault = PangoLanguage <$> c_pango_language_get_default
+pangoLanguageGetDefault = PangoLanguage_ <$> c_pango_language_get_default
 
 foreign import ccall "pango_language_get_default"
 	c_pango_language_get_default :: IO (Ptr PangoLanguage)
 
 pangoLanguageGetSampleString :: PangoLanguage -> String
-pangoLanguageGetSampleString (PangoLanguage pl) = unsafePerformIO
+pangoLanguageGetSampleString (PangoLanguage_ pl) = unsafePerformIO
 	$ peekCString =<< c_pango_language_get_sample_string pl
 
 foreign import ccall "pango_language_get_sample_string"

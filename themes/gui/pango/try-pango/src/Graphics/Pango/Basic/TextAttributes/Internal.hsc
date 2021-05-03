@@ -162,7 +162,7 @@ instance PangoAttributeValue PangoLanguage where
 
 pangoAttrLanguageNew :: PrimMonad m =>
 	PangoLanguage -> m (PangoAttribute (PrimState m))
-pangoAttrLanguageNew (PangoLanguage l) =
+pangoAttrLanguageNew (PangoLanguage_ l) =
 	unsafeIOToPrim $ mkPangoAttribute =<< c_pango_attr_language_new l
 
 foreign import ccall "pango_attr_language_new" c_pango_attr_language_new ::
