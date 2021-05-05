@@ -5,10 +5,12 @@
 
 module Graphics.Pango.Basic.ScriptsAndLanguages.Types where
 
+import GHC.Read
 import Language.Haskell.TH
 import Foreign.Ptr
 import Foreign.C.String
 import Data.Int
+import Text.Read
 import System.IO.Unsafe
 import Graphics.Pango.Template
 
@@ -24,6 +26,13 @@ newtype PangoLanguage = PangoLanguage_ (Ptr PangoLanguage)
 instance Show PangoLanguage where
 	showsPrec d l = showParen (d > 10)
 		$ ("PangoLanguage " ++) . (pangoLanguageToString l ++)
+
+instance Read PangoLanguage where
+	readPrec = parens $ prec appPrec do
+		Ident "PangoLanguage" <- lexP
+		s <- step readPrec
+		pure $ PangoLanguage s
+		where appPrec = 10
 
 {-# COMPLETE PangoLanguage #-}
 
