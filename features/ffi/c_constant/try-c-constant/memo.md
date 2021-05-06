@@ -9,7 +9,9 @@ todo
 * [x] define `mkMembers`
 * [ ] define `mkShow`
 	+ [x] define `instance Show Foo`
-	+ [ ] define empty `mkShow`
+	+ [x] define empty `mkShow`
 	+ [ ] define body of `mkShow`
+		- [x] define a normal part
+		- [ ] define the part which use pattern synonym
 * [ ] define `mkRead`
 * [ ] define `mkAll`

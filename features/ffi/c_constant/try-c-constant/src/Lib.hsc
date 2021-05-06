@@ -20,7 +20,4 @@ mkMembers "Foo" [
 	("FooTwo", #{const FOO_TWO}),
 	("FooThree", #{const FOO_THREE}) ]
 
-instance Show Foo where
-	showsPrec d = \case
-		FooError -> ("FooError" ++)
-		Foo n -> showParen (d > 10) $ ("Foo " ++) . showsPrec 11 n
+(: []) <$> mkShow "Foo" []
