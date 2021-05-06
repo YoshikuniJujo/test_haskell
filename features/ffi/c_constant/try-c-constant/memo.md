@@ -5,7 +5,8 @@ todo
 ----
 
 * [x] define `mkMember`
-* [x] define `mkNewtype`
+* [ ] define `mkNewtype`
+	+ [ ] add deriving arguments
 * [x] define `mkMembers`
 * [x] define `mkShow`
 	+ [x] define `instance Show Foo`
