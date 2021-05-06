@@ -8,7 +8,7 @@ import Language.Haskell.TH
 mkNewtype :: String -> Name -> DecQ
 mkNewtype nt t = newtypeD (cxt []) (mkName nt) [] Nothing
 	(normalC (mkName nt) [bangType (bang noSourceUnpackedness noSourceStrictness) (conT t)])
-	[derivClause Nothing [conT ''Show]]
+	[]
 
 mkMembers :: String -> [(String, Integer)] -> DecsQ
 mkMembers t nvs = concat <$> uncurry (mkMemberGen (mkName t) (mkName t)) `mapM` nvs

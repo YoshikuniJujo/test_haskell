@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -18,3 +19,8 @@ mkMembers "Foo" [
 	("FooOne", #{const FOO_ONE}),
 	("FooTwo", #{const FOO_TWO}),
 	("FooThree", #{const FOO_THREE}) ]
+
+instance Show Foo where
+	showsPrec d = \case
+		FooError -> ("FooError" ++)
+		Foo n -> showParen (d > 10) $ ("Foo " ++) . showsPrec 11 n
