@@ -12,8 +12,9 @@ import Template
 
 (: []) <$> mkNewtype "Foo" ''#{type Foo}
 
-mkMemberGen ''Foo 'Foo "FooError" (#{const FOO_ERROR})
-mkMemberGen ''Foo 'Foo "FooZero" #{const FOO_ZERO}
-mkMemberGen ''Foo 'Foo "FooOne" #{const FOO_ONE}
-mkMemberGen ''Foo 'Foo  "FooTwo" #{const FOO_TWO}
-mkMemberGen ''Foo 'Foo  "FooThree" #{const FOO_THREE}
+mkMembers "Foo" [
+	("FooError", #{const FOO_ERROR}),
+	("FooZero", #{const FOO_ZERO}),
+	("FooOne", #{const FOO_ONE}),
+	("FooTwo", #{const FOO_TWO}),
+	("FooThree", #{const FOO_THREE}) ]
