@@ -4,7 +4,8 @@ memo
 todo
 ----
 
-* [ ] define `mkMember`
+* [x] define `mkMember`
+* [x] define `mkNewtype`
 * [ ] define `mkMembers`
 * [ ] define `mkShow`
 * [ ] define `mkRead`
