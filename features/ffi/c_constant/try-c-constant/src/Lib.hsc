@@ -20,4 +20,9 @@ mkMembers "Foo" [
 	("FooTwo", #{const FOO_TWO}),
 	("FooThree", #{const FOO_THREE}) ]
 
-(: []) <$> mkShow "Foo" []
+(: []) <$> mkShow "Foo" [
+	"FooError",
+	"FooZero",
+	"FooOne",
+	"FooTwo",
+	"FooThree" ]

@@ -30,15 +30,18 @@ defineShowsPrec t ns = do
 	d <- newName "d"
 	n <- newName "n"
 	funD 'showsPrec [
-		clause [varP d] (normalB (lamCaseE [
-			match (conP (mkName t) [varP n]) (normalB
-				$ foo d n) []
-			])) []
+		clause [varP d] (normalB (lamCaseE
+			((matchFoo <$> ns) ++
+			[match (conP (mkName t) [varP n]) (normalB $ foo d n) []])
+			)) []
 		]
 	where
 	foo d n = varE 'showParen `appE` (varE d `gt` litE (IntegerL 10))
 		`dl` ((litE (StringL (t ++ " ")) `p` varE '(++))
 			`dt` (varE 'showsPrec `appE` litE (IntegerL 11) `appE` varE n))
+
+matchFoo :: String -> MatchQ
+matchFoo f = match (conP (mkName f) []) (normalB $ litE (StringL f) `p` (varE '(++))) []
 
 gt :: Q Exp -> Q Exp -> Q Exp
 e1 `gt` e2 = infixE (Just e1) (varE '(>)) (Just e2)
