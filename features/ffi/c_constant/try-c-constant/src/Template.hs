@@ -4,6 +4,10 @@
 module Template where
 
 import Language.Haskell.TH
+import Control.Arrow
+import Data.Bool
+import Data.Maybe
+import Data.List
 import Text.Read
 
 mkNewtype :: String -> Name -> [Name] -> DecQ
@@ -71,3 +75,25 @@ readFoo n = doE [
 	bindS (conP 'Ident [litP $ StringL n]) $ varE 'lexP,
 	noBindS $ varE 'pure `appE` conE (mkName n)
 	]
+
+data ShowReadClasses = ShowReadClasses {
+	showReadClassesShow :: Bool,
+	showReadClassesRead :: Bool,
+	showReadClassesClasses :: [Name] } deriving Show
+
+popIt :: Eq a => a -> [a] -> (Maybe a, [a])
+popIt x = (listToMaybe `first`) . partition (== x)
+
+showReadClasses :: [Name] -> ShowReadClasses
+showReadClasses ns = ShowReadClasses (isJust s) (isJust r) ns''
+	where (s, ns') = popIt ''Show ns; (r, ns'') = popIt ''Read ns'
+
+mkAll :: String -> Name -> [(String, Integer)] -> [Name] -> DecsQ
+mkAll nt t nvs ds = (\n s r ms -> n : s (r ms))
+	<$> mkNewtype nt t ds'
+	<*> bool (pure id) ((:) <$> mkShow nt ns) bs
+	<*> bool (pure id) ((:) <$> mkRead nt ns) br
+	<*> mkMembers nt nvs
+	where
+	ShowReadClasses bs br ds' = showReadClasses ds
+	ns = fst <$> nvs

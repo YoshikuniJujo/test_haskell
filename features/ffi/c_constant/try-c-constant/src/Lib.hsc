@@ -11,25 +11,10 @@ import Template
 
 #include "foo.h"
 
-(: []) <$> mkNewtype "Foo" ''#{type Foo} [''Eq]
-
-mkMembers "Foo" [
-	("FooError", #{const FOO_ERROR}),
-	("FooZero", #{const FOO_ZERO}),
-	("FooOne", #{const FOO_ONE}),
-	("FooTwo", #{const FOO_TWO}),
-	("FooThree", #{const FOO_THREE}) ]
-
-(: []) <$> mkShow "Foo" [
-	"FooError",
-	"FooZero",
-	"FooOne",
-	"FooTwo",
-	"FooThree" ]
-
-(: []) <$> mkRead "Foo" [
-	"FooError",
-	"FooZero",
-	"FooOne",
-	"FooTwo",
-	"FooThree" ]
+mkAll "Foo" ''#{type Foo}
+	[	("FooError", #{const FOO_ERROR}),
+		("FooZero", #{const FOO_ZERO}),
+		("FooOne", #{const FOO_ONE}),
+		("FooTwo", #{const FOO_TWO}),
+		("FooThree", #{const FOO_THREE}) ]
+	[''Show, ''Read, ''Eq]
