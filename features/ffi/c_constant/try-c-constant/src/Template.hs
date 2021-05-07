@@ -6,10 +6,10 @@ module Template where
 import Language.Haskell.TH
 import Text.Read
 
-mkNewtype :: String -> Name -> DecQ
-mkNewtype nt t = newtypeD (cxt []) (mkName nt) [] Nothing
+mkNewtype :: String -> Name -> [Name] -> DecQ
+mkNewtype nt t ds = newtypeD (cxt []) (mkName nt) [] Nothing
 	(normalC (mkName nt) [bangType (bang noSourceUnpackedness noSourceStrictness) (conT t)])
-	[]
+	$ (derivClause Nothing . (: []) . conT) <$> ds
 
 mkMembers :: String -> [(String, Integer)] -> DecsQ
 mkMembers t nvs = concat <$> uncurry (mkMemberGen (mkName t) (mkName t)) `mapM` nvs

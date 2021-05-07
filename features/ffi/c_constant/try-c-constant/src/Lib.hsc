@@ -11,7 +11,7 @@ import Template
 
 #include "foo.h"
 
-(: []) <$> mkNewtype "Foo" ''#{type Foo}
+(: []) <$> mkNewtype "Foo" ''#{type Foo} [''Eq]
 
 mkMembers "Foo" [
 	("FooError", #{const FOO_ERROR}),

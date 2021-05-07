@@ -6,7 +6,7 @@ todo
 
 * [x] define `mkMember`
 * [ ] define `mkNewtype`
-	+ [ ] add deriving arguments
+	+ [x] add deriving arguments
 	+ [ ] control with `Show` and `Read`
 * [x] define `mkMembers`
 * [x] define `mkShow`
