@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a9fb98c6778e2580487b1970b82a875b86361abea00dc2d3f0bf172c51a6f1ad
+-- hash: 5b20626cc76308be672f54d876ddb5d6d6b07c015ce7add1ce357a03bd8a05bd
 
 name:           try-c-constant
 version:        0.1.0.0
@@ -29,7 +29,6 @@ library
   exposed-modules:
       Lib
       Template
-      TemplateFoo
   other-modules:
       Paths_try_c_constant
   hs-source-dirs:

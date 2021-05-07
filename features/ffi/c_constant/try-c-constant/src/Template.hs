@@ -88,8 +88,8 @@ showReadClasses :: [Name] -> ShowReadClasses
 showReadClasses ns = ShowReadClasses (isJust s) (isJust r) ns''
 	where (s, ns') = popIt ''Show ns; (r, ns'') = popIt ''Read ns'
 
-mkAll :: String -> Name -> [(String, Integer)] -> [Name] -> DecsQ
-mkAll nt t nvs ds = (\n s r ms -> n : s (r ms))
+mkAll :: String -> Name -> [Name] -> [(String, Integer)] -> DecsQ
+mkAll nt t ds nvs = (\n s r ms -> n : s (r ms))
 	<$> mkNewtype nt t ds'
 	<*> bool (pure id) ((:) <$> mkShow nt ns) bs
 	<*> bool (pure id) ((:) <$> mkRead nt ns) br

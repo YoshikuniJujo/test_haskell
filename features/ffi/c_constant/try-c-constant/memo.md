@@ -21,6 +21,7 @@ todo
 	+ [x] define body of `mkRead`
 		- [x] define a nowmrl part
 		- [x] define the part which use pattern synonym
-* [ ] define `mkAll`
+* [x] define `mkAll`
 	+ [x] define
-	+ [ ] flip last two arguments
+	+ [x] flip last two arguments
+* [ ] make independent package c-constant

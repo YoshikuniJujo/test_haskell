@@ -11,10 +11,9 @@ import Template
 
 #include "foo.h"
 
-mkAll "Foo" ''#{type Foo}
-	[	("FooError", #{const FOO_ERROR}),
-		("FooZero", #{const FOO_ZERO}),
-		("FooOne", #{const FOO_ONE}),
-		("FooTwo", #{const FOO_TWO}),
-		("FooThree", #{const FOO_THREE}) ]
-	[''Show, ''Read, ''Eq]
+mkAll "Foo" ''#{type Foo} [''Show, ''Read, ''Eq] [
+	("FooError", #{const FOO_ERROR}),
+	("FooZero", #{const FOO_ZERO}),
+	("FooOne", #{const FOO_ONE}),
+	("FooTwo", #{const FOO_TWO}),
+	("FooThree", #{const FOO_THREE}) ]
