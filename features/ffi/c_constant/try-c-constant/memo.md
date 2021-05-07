@@ -15,7 +15,7 @@ todo
 		- [x] define a normal part
 		- [x] define the part which use pattern synonym
 * [ ] define `mkRead`
-	+ [ ] define `instance Read Foo`
+	+ [x] define `instance Read Foo`
 	+ [ ] define empty `mkRead`
 	+ [ ] define body of `mkRead`
 		- [ ] define a nowmrl part

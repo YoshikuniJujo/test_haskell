@@ -1,11 +1,13 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Lib where
 
 import Data.Int
+import Text.Read
+-- import Text.ParserCombinators.ReadPrec
 
 import Template
 
@@ -26,3 +28,8 @@ mkMembers "Foo" [
 	"FooOne",
 	"FooTwo",
 	"FooThree" ]
+
+instance Read Foo where
+	readPrec = parens $ choice [
+		do Ident "FooError" <- lexP; pure FooError,
+		prec 10 do Ident "Foo" <- lexP; Foo <$> step readPrec ]
