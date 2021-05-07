@@ -24,4 +24,6 @@ todo
 * [x] define `mkAll`
 	+ [x] define
 	+ [x] flip last two arguments
-* [ ] make independent package c-constant
+* [x] rename `mkAll` to `enum`
+* [x] module `Foreign.C.Enum`
+* [ ] make independent package c-enum

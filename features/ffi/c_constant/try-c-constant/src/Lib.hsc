@@ -7,11 +7,11 @@ module Lib where
 
 import Data.Int
 
-import Template
+import Foreign.C.Enum
 
 #include "foo.h"
 
-mkAll "Foo" ''#{type Foo} [''Show, ''Read, ''Eq] [
+enum "Foo" ''#{type Foo} [''Show, ''Read, ''Eq] [
 	("FooError", #{const FOO_ERROR}),
 	("FooZero", #{const FOO_ZERO}),
 	("FooOne", #{const FOO_ONE}),

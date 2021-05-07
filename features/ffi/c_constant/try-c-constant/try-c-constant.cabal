@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5b20626cc76308be672f54d876ddb5d6d6b07c015ce7add1ce357a03bd8a05bd
+-- hash: 3d3e13d469b68a958fcff4a73b6b2ddc2a4760db30370b227ad66cc10376df16
 
 name:           try-c-constant
 version:        0.1.0.0
@@ -27,8 +27,8 @@ source-repository head
 
 library
   exposed-modules:
+      Foreign.C.Enum
       Lib
-      Template
   other-modules:
       Paths_try_c_constant
   hs-source-dirs:

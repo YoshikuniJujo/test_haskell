@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Template where
+module Foreign.C.Enum (enum) where
 
 import Language.Haskell.TH
 import Control.Arrow
@@ -88,8 +88,8 @@ showReadClasses :: [Name] -> ShowReadClasses
 showReadClasses ns = ShowReadClasses (isJust s) (isJust r) ns''
 	where (s, ns') = popIt ''Show ns; (r, ns'') = popIt ''Read ns'
 
-mkAll :: String -> Name -> [Name] -> [(String, Integer)] -> DecsQ
-mkAll nt t ds nvs = (\n s r ms -> n : s (r ms))
+enum :: String -> Name -> [Name] -> [(String, Integer)] -> DecsQ
+enum nt t ds nvs = (\n s r ms -> n : s (r ms))
 	<$> mkNewtype nt t ds'
 	<*> bool (pure id) ((:) <$> mkShow nt ns) bs
 	<*> bool (pure id) ((:) <$> mkRead nt ns) br
