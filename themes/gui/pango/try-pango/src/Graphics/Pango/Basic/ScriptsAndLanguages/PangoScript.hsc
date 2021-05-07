@@ -4,13 +4,143 @@
 
 module Graphics.Pango.Basic.ScriptsAndLanguages.PangoScript where
 
+import Foreign.C.Enum
 import Data.Word
 import Data.Int
 import Data.Char
 import System.IO.Unsafe
-import Graphics.Pango.Basic.ScriptsAndLanguages.Template
 
 #include <pango/pango.h>
+
+enum "PangoScript" ''#{type PangoScript} [''Show, ''Read] [
+	("PangoScriptInvaludCode", #{const PANGO_SCRIPT_INVALID_CODE}),
+	("PangoScriptCommon", #{const PANGO_SCRIPT_COMMON}),
+	("PangoScriptInherited", #{const PANGO_SCRIPT_INHERITED}),
+
+	("PangoScriptArabic", #{const PANGO_SCRIPT_ARABIC}),
+	("PangoScriptArmenian", #{const PANGO_SCRIPT_ARMENIAN}),
+	("PangoScriptBengali", #{const PANGO_SCRIPT_BENGALI}),
+	("PangoScriptBopomofo", #{const PANGO_SCRIPT_BOPOMOFO}),
+	("PangoScriptCherokee", #{const PANGO_SCRIPT_CHEROKEE}),
+	("PangoScriptCoptic", #{const PANGO_SCRIPT_COPTIC}),
+	("PangoScriptCyrillic", #{const PANGO_SCRIPT_CYRILLIC}),
+	("PangoScriptDeseret", #{const PANGO_SCRIPT_DESERET}),
+	("PangoScriptDevanagari", #{const PANGO_SCRIPT_DEVANAGARI}),
+	("PangoScriptEthiopic", #{const PANGO_SCRIPT_ETHIOPIC}),
+	("PangoScriptGeorgian", #{const PANGO_SCRIPT_GEORGIAN}),
+	("PangoScriptGothic", #{const PANGO_SCRIPT_GOTHIC}),
+	("PangoScriptGreek", #{const PANGO_SCRIPT_GREEK}),
+	("PangoScriptGujarati", #{const PANGO_SCRIPT_GUJARATI}),
+	("PangoScriptGurmukhi", #{const PANGO_SCRIPT_GURMUKHI}),
+	("PangoScriptHan", #{const PANGO_SCRIPT_HAN}),
+	("PangoScriptHangul", #{const PANGO_SCRIPT_HANGUL}),
+	("PangoScriptHebrew", #{const PANGO_SCRIPT_HEBREW}),
+	("PangoScriptHiragana", #{const PANGO_SCRIPT_HIRAGANA}),
+	("PangoScriptKannada", #{const PANGO_SCRIPT_KANNADA}),
+	("PangoScriptKatakana", #{const PANGO_SCRIPT_KATAKANA}),
+	("PangoScriptKhmer", #{const PANGO_SCRIPT_KHMER}),
+	("PangoScriptLao", #{const PANGO_SCRIPT_LAO}),
+	("PangoScriptLatin", #{const PANGO_SCRIPT_LATIN}),
+	("PangoScriptMalaylam", #{const PANGO_SCRIPT_MALAYALAM}),
+	("PangoScriptMongolian", #{const PANGO_SCRIPT_MONGOLIAN}),
+	("PangoScriptMyanmar", #{const PANGO_SCRIPT_MYANMAR}),
+	("PangoScriptOgham", #{const PANGO_SCRIPT_OGHAM}),
+	("PangoScriptOldItalic", #{const PANGO_SCRIPT_OLD_ITALIC}),
+	("PangoScriptOriya", #{const PANGO_SCRIPT_ORIYA}),
+	("PangoScriptRunic", #{const PANGO_SCRIPT_RUNIC}),
+	("PangoScriptSinhala", #{const PANGO_SCRIPT_SINHALA}),
+	("PangoScriptSyriac", #{const PANGO_SCRIPT_SYRIAC}),
+	("PangoScriptTamil", #{const PANGO_SCRIPT_TAMIL}),
+	("PangoScriptTelugu", #{const PANGO_SCRIPT_TELUGU}),
+	("PangoScriptThaana", #{const PANGO_SCRIPT_THAANA}),
+	("PangoScriptThai", #{const PANGO_SCRIPT_THAI}),
+	("PangoScriptTibetan", #{const PANGO_SCRIPT_TIBETAN}),
+	("PangoScriptCanadianAboriginal",
+		#{const PANGO_SCRIPT_CANADIAN_ABORIGINAL}),
+	("PangoScriptYi", #{const PANGO_SCRIPT_YI}),
+	("PangoScriptTagalog", #{const PANGO_SCRIPT_TAGALOG}),
+	("PangoScriptHanunoo", #{const PANGO_SCRIPT_HANUNOO}),
+	("PangoScriptBuhid", #{const PANGO_SCRIPT_BUHID}),
+	("PangoScriptTagbanwa", #{const PANGO_SCRIPT_TAGBANWA}),
+	("PangoScriptBraille", #{const PANGO_SCRIPT_BRAILLE}),
+	("PangoScriptCypriot", #{const PANGO_SCRIPT_CYPRIOT}),
+	("PangoScriptLimbu", #{const PANGO_SCRIPT_LIMBU}),
+	("PangoScriptOsmanya", #{const PANGO_SCRIPT_OSMANYA}),
+	("PangoscriptShavian", #{const PANGO_SCRIPT_SHAVIAN}),
+	("PangoScriptLinearB", #{const PANGO_SCRIPT_LINEAR_B}),
+	("PangoScriptTaiLe", #{const PANGO_SCRIPT_TAI_LE}),
+	("PangoScriptUgaritic", #{const PANGO_SCRIPT_UGARITIC}),
+
+	("PangoScriptNewTaiLue", #{const PANGO_SCRIPT_NEW_TAI_LUE}),
+	("PangoScriptBuginese", #{const PANGO_SCRIPT_BUGINESE}),
+	("PangoScriptGlagolitic", #{const PANGO_SCRIPT_GLAGOLITIC}),
+	("PangoScriptTifinagh", #{const PANGO_SCRIPT_TIFINAGH}),
+	("PangoScriptSylotiNagri", #{const PANGO_SCRIPT_SYLOTI_NAGRI}),
+	("PangoScriptOldPersian", #{const PANGO_SCRIPT_OLD_PERSIAN}),
+	("PangoScriptKharoshthi", #{const PANGO_SCRIPT_KHAROSHTHI}),
+
+	("PangoScriptUnknown", #{const PANGO_SCRIPT_UNKNOWN}),
+	("PangoScriptBalinese", #{const PANGO_SCRIPT_BALINESE}),
+	("PangoScriptCuneiform", #{const PANGO_SCRIPT_CUNEIFORM}),
+	("PangoScriptPhoenician", #{const PANGO_SCRIPT_PHOENICIAN}),
+	("PangoScriptPhagsPa", #{const PANGO_SCRIPT_PHAGS_PA}),
+	("PangoScriptNko", #{const PANGO_SCRIPT_NKO}),
+
+	("PangoScriptKyahLi", #{const PANGO_SCRIPT_KAYAH_LI}),
+	("PangoScriptLepcha", #{const PANGO_SCRIPT_LEPCHA}),
+	("PangoScriptRejang", #{const PANGO_SCRIPT_REJANG}),
+	("PangoScriptSundanese", #{const PANGO_SCRIPT_SUNDANESE}),
+	("PangoScriptSaurashtra", #{const PANGO_SCRIPT_SAURASHTRA}),
+	("PangoScriptCham", #{const PANGO_SCRIPT_CHAM}),
+	("PangoScriptOlChiki", #{const PANGO_SCRIPT_OL_CHIKI}),
+	("PangoScriptVai", #{const PANGO_SCRIPT_VAI}),
+	("PangoScriptCarian", #{const PANGO_SCRIPT_CARIAN}),
+	("PangoScriptLycian", #{const PANGO_SCRIPT_LYCIAN}),
+	("PangoScriptLydian", #{const PANGO_SCRIPT_LYDIAN}),
+
+	("PangoScriptBatak", #{const PANGO_SCRIPT_BATAK}),
+	("PangoScriptBraham", #{const PANGO_SCRIPT_BRAHMI}),
+	("PangoScriptMandaic", #{const PANGO_SCRIPT_MANDAIC}),
+	("PangoScriptChakma", #{const PANGO_SCRIPT_CHAKMA}),
+	("PangoScriptMeroiticCursive", #{const PANGO_SCRIPT_MEROITIC_CURSIVE}),
+	("PangoScriptMeroiticHieroglyphs",
+		#{const PANGO_SCRIPT_MEROITIC_HIEROGLYPHS}),
+	("PangoScriptMiao", #{const PANGO_SCRIPT_MIAO}),
+	("PangoScriptSharada", #{const PANGO_SCRIPT_SHARADA}),
+	("PangoScriptSoraSompeng", #{const PANGO_SCRIPT_SORA_SOMPENG}),
+	("PangoScriptTakri", #{const PANGO_SCRIPT_TAKRI}),
+
+	("PangoScriptBassaVah", #{const PANGO_SCRIPT_BASSA_VAH}),
+	("PangoScriptCaucasianAlbanian",
+		#{const PANGO_SCRIPT_CAUCASIAN_ALBANIAN}),
+	("PangoScriptDuployan", #{const PANGO_SCRIPT_DUPLOYAN}),
+	("PangoScriptElbasan", #{const PANGO_SCRIPT_ELBASAN}),
+	("PangoScriptGrantha", #{const PANGO_SCRIPT_GRANTHA}),
+	("PangoScriptKhojki", #{const PANGO_SCRIPT_KHOJKI}),
+	("PangoScriptKhudawadi", #{const PANGO_SCRIPT_KHUDAWADI}),
+	("PangoScriptLinearA", #{const PANGO_SCRIPT_LINEAR_A}),
+	("PangoScriptMahajani", #{const PANGO_SCRIPT_MAHAJANI}),
+	("PangoScriptManichaean", #{const PANGO_SCRIPT_MANICHAEAN}),
+	("PangoScriptMendeKikakui", #{const PANGO_SCRIPT_MENDE_KIKAKUI}),
+	("PangoScriptModi", #{const PANGO_SCRIPT_MODI}),
+	("PangoScriptMro", #{const PANGO_SCRIPT_MRO}),
+	("PangoScriptNabataean", #{const PANGO_SCRIPT_NABATAEAN}),
+	("PangoScriptOldNorthArabian", #{const PANGO_SCRIPT_OLD_NORTH_ARABIAN}),
+	("PangoScriptOldPermic", #{const PANGO_SCRIPT_OLD_PERMIC}),
+	("PangoScriptPahawhHmong", #{const PANGO_SCRIPT_PAHAWH_HMONG}),
+	("PangoScriptPalmyrene", #{const PANGO_SCRIPT_PALMYRENE}),
+	("PangoScriptPauCinHau", #{const PANGO_SCRIPT_PAU_CIN_HAU}),
+	("PangoScriptPsalterPahlavi", #{const PANGO_SCRIPT_PSALTER_PAHLAVI}),
+	("PangoScriptSiddham", #{const PANGO_SCRIPT_SIDDHAM}),
+	("PangoScriptTirhuta", #{const PANGO_SCRIPT_TIRHUTA}),
+	("PangoScriptWarangCiti", #{const PANGO_SCRIPT_WARANG_CITI}),
+	("PangoScriptAhom", #{const PANGO_SCRIPT_AHOM}),
+	("PangoScriptAnatolianHieroglyphs",
+		#{const PANGO_SCRIPT_ANATOLIAN_HIEROGLYPHS}),
+	("PangoScriptHatran", #{const PANGO_SCRIPT_HATRAN}),
+	("PangoScriptMultani", #{const PANGO_SCRIPT_MULTANI}),
+	("PangoScriptOldHungarian", #{const PANGO_SCRIPT_OLD_HUNGARIAN}),
+	("PangoScriptSignwriting", #{const PANGO_SCRIPT_SIGNWRITING}) ]
 
 pangoScriptForUnichar :: Char -> PangoScript
 pangoScriptForUnichar c = unsafePerformIO
@@ -18,134 +148,3 @@ pangoScriptForUnichar c = unsafePerformIO
 
 foreign import ccall "pango_script_for_unichar" c_pango_script_for_unichar ::
 	#{type gunichar} -> IO #{type PangoScript}
-
-mkMemberPangoScript "PangoScriptInvaludCode" (#{const PANGO_SCRIPT_INVALID_CODE})
-mkMemberPangoScript "PangoScriptCommon" #{const PANGO_SCRIPT_COMMON}
-mkMemberPangoScript "PangoScriptInherited" #{const PANGO_SCRIPT_INHERITED}
-
-mkMemberPangoScript "PangoScriptArabic" #{const PANGO_SCRIPT_ARABIC}
-mkMemberPangoScript "PangoScriptArmenian" #{const PANGO_SCRIPT_ARMENIAN}
-mkMemberPangoScript "PangoScriptBengali" #{const PANGO_SCRIPT_BENGALI}
-mkMemberPangoScript "PangoScriptBopomofo" #{const PANGO_SCRIPT_BOPOMOFO}
-mkMemberPangoScript "PangoScriptCherokee" #{const PANGO_SCRIPT_CHEROKEE}
-mkMemberPangoScript "PangoScriptCoptic" #{const PANGO_SCRIPT_COPTIC}
-mkMemberPangoScript "PangoScriptCyrillic" #{const PANGO_SCRIPT_CYRILLIC}
-mkMemberPangoScript "PangoScriptDeseret" #{const PANGO_SCRIPT_DESERET}
-mkMemberPangoScript "PangoScriptDevanagari" #{const PANGO_SCRIPT_DEVANAGARI}
-mkMemberPangoScript "PangoScriptEthiopic" #{const PANGO_SCRIPT_ETHIOPIC}
-mkMemberPangoScript "PangoScriptGeorgian" #{const PANGO_SCRIPT_GEORGIAN}
-mkMemberPangoScript "PangoScriptGothic" #{const PANGO_SCRIPT_GOTHIC}
-mkMemberPangoScript "PangoScriptGreek" #{const PANGO_SCRIPT_GREEK}
-mkMemberPangoScript "PangoScriptGujarati" #{const PANGO_SCRIPT_GUJARATI}
-mkMemberPangoScript "PangoScriptGurmukhi" #{const PANGO_SCRIPT_GURMUKHI}
-mkMemberPangoScript "PangoScriptHan" #{const PANGO_SCRIPT_HAN}
-mkMemberPangoScript "PangoScriptHangul" #{const PANGO_SCRIPT_HANGUL}
-mkMemberPangoScript "PangoScriptHebrew" #{const PANGO_SCRIPT_HEBREW}
-mkMemberPangoScript "PangoScriptHiragana" #{const PANGO_SCRIPT_HIRAGANA}
-mkMemberPangoScript "PangoScriptKannada" #{const PANGO_SCRIPT_KANNADA}
-mkMemberPangoScript "PangoScriptKatakana" #{const PANGO_SCRIPT_KATAKANA}
-mkMemberPangoScript "PangoScriptKhmer" #{const PANGO_SCRIPT_KHMER}
-mkMemberPangoScript "PangoScriptLao" #{const PANGO_SCRIPT_LAO}
-mkMemberPangoScript "PangoScriptLatin" #{const PANGO_SCRIPT_LATIN}
-mkMemberPangoScript "PangoScriptMalaylam" #{const PANGO_SCRIPT_MALAYALAM}
-mkMemberPangoScript "PangoScriptMongolian" #{const PANGO_SCRIPT_MONGOLIAN}
-mkMemberPangoScript "PangoScriptMyanmar" #{const PANGO_SCRIPT_MYANMAR}
-mkMemberPangoScript "PangoScriptOgham" #{const PANGO_SCRIPT_OGHAM}
-mkMemberPangoScript "PangoScriptOldItalic" #{const PANGO_SCRIPT_OLD_ITALIC}
-mkMemberPangoScript "PangoScriptOriya" #{const PANGO_SCRIPT_ORIYA}
-mkMemberPangoScript "PangoScriptRunic" #{const PANGO_SCRIPT_RUNIC}
-mkMemberPangoScript "PangoScriptSinhala" #{const PANGO_SCRIPT_SINHALA}
-mkMemberPangoScript "PangoScriptSyriac" #{const PANGO_SCRIPT_SYRIAC}
-mkMemberPangoScript "PangoScriptTamil" #{const PANGO_SCRIPT_TAMIL}
-mkMemberPangoScript "PangoScriptTelugu" #{const PANGO_SCRIPT_TELUGU}
-mkMemberPangoScript "PangoScriptThaana" #{const PANGO_SCRIPT_THAANA}
-mkMemberPangoScript "PangoScriptThai" #{const PANGO_SCRIPT_THAI}
-mkMemberPangoScript "PangoScriptTibetan" #{const PANGO_SCRIPT_TIBETAN}
-mkMemberPangoScript "PangoScriptCanadianAboriginal"
-	#{const PANGO_SCRIPT_CANADIAN_ABORIGINAL}
-mkMemberPangoScript "PangoScriptYi" #{const PANGO_SCRIPT_YI}
-mkMemberPangoScript "PangoScriptTagalog" #{const PANGO_SCRIPT_TAGALOG}
-mkMemberPangoScript "PangoScriptHanunoo" #{const PANGO_SCRIPT_HANUNOO}
-mkMemberPangoScript "PangoScriptBuhid" #{const PANGO_SCRIPT_BUHID}
-mkMemberPangoScript "PangoScriptTagbanwa" #{const PANGO_SCRIPT_TAGBANWA}
-mkMemberPangoScript "PangoScriptBraille" #{const PANGO_SCRIPT_BRAILLE}
-mkMemberPangoScript "PangoScriptCypriot" #{const PANGO_SCRIPT_CYPRIOT}
-mkMemberPangoScript "PangoScriptLimbu" #{const PANGO_SCRIPT_LIMBU}
-mkMemberPangoScript "PangoScriptOsmanya" #{const PANGO_SCRIPT_OSMANYA}
-mkMemberPangoScript "PangoscriptShavian" #{const PANGO_SCRIPT_SHAVIAN}
-mkMemberPangoScript "PangoScriptLinearB" #{const PANGO_SCRIPT_LINEAR_B}
-mkMemberPangoScript "PangoScriptTaiLe" #{const PANGO_SCRIPT_TAI_LE}
-mkMemberPangoScript "PangoScriptUgaritic" #{const PANGO_SCRIPT_UGARITIC}
-
-mkMemberPangoScript "PangoScriptNewTaiLue" #{const PANGO_SCRIPT_NEW_TAI_LUE}
-mkMemberPangoScript "PangoScriptBuginese" #{const PANGO_SCRIPT_BUGINESE}
-mkMemberPangoScript "PangoScriptGlagolitic" #{const PANGO_SCRIPT_GLAGOLITIC}
-mkMemberPangoScript "PangoScriptTifinagh" #{const PANGO_SCRIPT_TIFINAGH}
-mkMemberPangoScript "PangoScriptSylotiNagri" #{const PANGO_SCRIPT_SYLOTI_NAGRI}
-mkMemberPangoScript "PangoScriptOldPersian" #{const PANGO_SCRIPT_OLD_PERSIAN}
-mkMemberPangoScript "PangoScriptKharoshthi" #{const PANGO_SCRIPT_KHAROSHTHI}
-
-mkMemberPangoScript "PangoScriptUnknown" #{const PANGO_SCRIPT_UNKNOWN}
-mkMemberPangoScript "PangoScriptBalinese" #{const PANGO_SCRIPT_BALINESE}
-mkMemberPangoScript "PangoScriptCuneiform" #{const PANGO_SCRIPT_CUNEIFORM}
-mkMemberPangoScript "PangoScriptPhoenician" #{const PANGO_SCRIPT_PHOENICIAN}
-mkMemberPangoScript "PangoScriptPhagsPa" #{const PANGO_SCRIPT_PHAGS_PA}
-mkMemberPangoScript "PangoScriptNko" #{const PANGO_SCRIPT_NKO}
-
-mkMemberPangoScript "PangoScriptKyahLi" #{const PANGO_SCRIPT_KAYAH_LI}
-mkMemberPangoScript "PangoScriptLepcha" #{const PANGO_SCRIPT_LEPCHA}
-mkMemberPangoScript "PangoScriptRejang" #{const PANGO_SCRIPT_REJANG}
-mkMemberPangoScript "PangoScriptSundanese" #{const PANGO_SCRIPT_SUNDANESE}
-mkMemberPangoScript "PangoScriptSaurashtra" #{const PANGO_SCRIPT_SAURASHTRA}
-mkMemberPangoScript "PangoScriptCham" #{const PANGO_SCRIPT_CHAM}
-mkMemberPangoScript "PangoScriptOlChiki" #{const PANGO_SCRIPT_OL_CHIKI}
-mkMemberPangoScript "PangoScriptVai" #{const PANGO_SCRIPT_VAI}
-mkMemberPangoScript "PangoScriptCarian" #{const PANGO_SCRIPT_CARIAN}
-mkMemberPangoScript "PangoScriptLycian" #{const PANGO_SCRIPT_LYCIAN}
-mkMemberPangoScript "PangoScriptLydian" #{const PANGO_SCRIPT_LYDIAN}
-
-mkMemberPangoScript "PangoScriptBatak" #{const PANGO_SCRIPT_BATAK}
-mkMemberPangoScript "PangoScriptBraham" #{const PANGO_SCRIPT_BRAHMI}
-mkMemberPangoScript "PangoScriptMandaic" #{const PANGO_SCRIPT_MANDAIC}
-mkMemberPangoScript "PangoScriptChakma" #{const PANGO_SCRIPT_CHAKMA}
-mkMemberPangoScript "PangoScriptMeroiticCursive"
-	#{const PANGO_SCRIPT_MEROITIC_CURSIVE}
-mkMemberPangoScript "PangoScriptMeroiticHieroglyphs"
-	#{const PANGO_SCRIPT_MEROITIC_HIEROGLYPHS}
-mkMemberPangoScript "PangoScriptMiao" #{const PANGO_SCRIPT_MIAO}
-mkMemberPangoScript "PangoScriptSharada" #{const PANGO_SCRIPT_SHARADA}
-mkMemberPangoScript "PangoScriptSoraSompeng" #{const PANGO_SCRIPT_SORA_SOMPENG}
-mkMemberPangoScript "PangoScriptTakri" #{const PANGO_SCRIPT_TAKRI}
-
-mkMemberPangoScript "PangoScriptBassaVah" #{const PANGO_SCRIPT_BASSA_VAH}
-mkMemberPangoScript "PangoScriptCaucasianAlbanian"
-	#{const PANGO_SCRIPT_CAUCASIAN_ALBANIAN}
-mkMemberPangoScript "PangoScriptDuployan" #{const PANGO_SCRIPT_DUPLOYAN}
-mkMemberPangoScript "PangoScriptElbasan" #{const PANGO_SCRIPT_ELBASAN}
-mkMemberPangoScript "PangoScriptGrantha" #{const PANGO_SCRIPT_GRANTHA}
-mkMemberPangoScript "PangoScriptKhojki" #{const PANGO_SCRIPT_KHOJKI}
-mkMemberPangoScript "PangoScriptKhudawadi" #{const PANGO_SCRIPT_KHUDAWADI}
-mkMemberPangoScript "PangoScriptLinearA" #{const PANGO_SCRIPT_LINEAR_A}
-mkMemberPangoScript "PangoScriptMahajani" #{const PANGO_SCRIPT_MAHAJANI}
-mkMemberPangoScript "PangoScriptManichaean" #{const PANGO_SCRIPT_MANICHAEAN}
-mkMemberPangoScript "PangoScriptMendeKikakui"
-	#{const PANGO_SCRIPT_MENDE_KIKAKUI}
-mkMemberPangoScript "PangoScriptModi" #{const PANGO_SCRIPT_MODI}
-mkMemberPangoScript "PangoScriptMro" #{const PANGO_SCRIPT_MRO}
-mkMemberPangoScript "PangoScriptNabataean" #{const PANGO_SCRIPT_NABATAEAN}
-mkMemberPangoScript "PangoScriptOldNorthArabian" #{const PANGO_SCRIPT_OLD_NORTH_ARABIAN}
-mkMemberPangoScript "PangoScriptOldPermic" #{const PANGO_SCRIPT_OLD_PERMIC}
-mkMemberPangoScript "PangoScriptPahawhHmong" #{const PANGO_SCRIPT_PAHAWH_HMONG}
-mkMemberPangoScript "PangoScriptPalmyrene" #{const PANGO_SCRIPT_PALMYRENE}
-mkMemberPangoScript "PangoScriptPauCinHau" #{const PANGO_SCRIPT_PAU_CIN_HAU}
-mkMemberPangoScript "PangoScriptPsalterPahlavi" #{const PANGO_SCRIPT_PSALTER_PAHLAVI}
-mkMemberPangoScript "PangoScriptSiddham" #{const PANGO_SCRIPT_SIDDHAM}
-mkMemberPangoScript "PangoScriptTirhuta" #{const PANGO_SCRIPT_TIRHUTA}
-mkMemberPangoScript "PangoScriptWarangCiti" #{const PANGO_SCRIPT_WARANG_CITI}
-mkMemberPangoScript "PangoScriptAhom" #{const PANGO_SCRIPT_AHOM}
-mkMemberPangoScript "PangoScriptAnatolianHieroglyphs"
-	#{const PANGO_SCRIPT_ANATOLIAN_HIEROGLYPHS}
-mkMemberPangoScript "PangoScriptHatran" #{const PANGO_SCRIPT_HATRAN}
-mkMemberPangoScript "PangoScriptMultani" #{const PANGO_SCRIPT_MULTANI}
-mkMemberPangoScript "PangoScriptOldHungarian" #{const PANGO_SCRIPT_OLD_HUNGARIAN}
-mkMemberPangoScript "PangoScriptSignwriting" #{const PANGO_SCRIPT_SIGNWRITING}

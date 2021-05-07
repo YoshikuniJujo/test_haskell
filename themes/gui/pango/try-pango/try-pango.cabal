@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b920d29bbf42f5bac41b60357e9fd2e09894d1bc3060012d3f338cad9a98f67e
+-- hash: ec11215203b76874d48b44b9e7543901d0b9604dc3a4c3521e9a0c693b19b819
 
 name:           try-pango
 version:        0.1.0.0
@@ -40,7 +40,6 @@ library
       Graphics.Pango.Basic.Rendering
       Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage
       Graphics.Pango.Basic.ScriptsAndLanguages.PangoScript
-      Graphics.Pango.Basic.ScriptsAndLanguages.Template
       Graphics.Pango.Basic.ScriptsAndLanguages.Types
       Graphics.Pango.Basic.TabStops
       Graphics.Pango.Basic.TextAttributes
@@ -71,6 +70,7 @@ library
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc
@@ -94,6 +94,7 @@ executable try-glib-quark
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc
@@ -118,6 +119,7 @@ executable try-pango-attrs
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc
@@ -142,6 +144,7 @@ executable try-pango-attrs-markup
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc
@@ -166,6 +169,7 @@ executable try-pango-attrs-markup-stream
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc
@@ -190,6 +194,7 @@ executable try-pango-context
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc
@@ -213,6 +218,7 @@ executable try-pango-exe
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc
@@ -237,6 +243,7 @@ executable try-pango-font-description-add-axis
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc
@@ -261,6 +268,7 @@ executable try-pango-fonts
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc
@@ -285,6 +293,7 @@ executable try-pango-fonts-literata
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc
@@ -309,6 +318,7 @@ executable try-pango-fonts-montserrat
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc
@@ -333,6 +343,7 @@ executable try-pango-fonts-soulcraft
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc
@@ -357,6 +368,7 @@ executable try-pango-fonts-source-han-sans-vf
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc
@@ -381,6 +393,7 @@ executable try-pango-fonts-unset
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc
@@ -405,6 +418,7 @@ executable try-pango-fonts-variations
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc
@@ -429,6 +443,7 @@ executable try-pango-gravity
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc
@@ -453,6 +468,7 @@ executable try-pango-language
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc
@@ -477,6 +493,7 @@ executable try-pango-layout
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc
@@ -501,6 +518,7 @@ executable try-pango-layout-innocuous
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc
@@ -525,6 +543,7 @@ executable try-pango-markup
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc
@@ -549,6 +568,7 @@ executable try-pango-simple
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc
@@ -573,6 +593,7 @@ executable try-pango-tab-array
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc
@@ -597,6 +618,7 @@ executable try-variations
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc
@@ -621,6 +643,7 @@ test-suite try-pango-test
     , array
     , base >=4.7 && <5
     , bytestring
+    , c-enum
     , cairo-image
     , containers
     , nowdoc

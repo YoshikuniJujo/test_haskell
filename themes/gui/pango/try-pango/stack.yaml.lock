@@ -37,6 +37,17 @@ packages:
   original:
     git: https://github.com/YoshikuniJujo/JuicyCairo
     commit: 67aceebb48e90e72a2e60c095b91bc6e56b0ca19
+- completed:
+    name: c-enum
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/c-enum
+    pantry-tree:
+      size: 612
+      sha256: a0180f06eaefb02701d91794226aad2c1b8b150cb930c24e4994e12e3b80df8a
+    commit: f9c258df12b3e344b21b6959f3f68cef0fe59518
+  original:
+    git: https://github.com/YoshikuniJujo/c-enum
+    commit: f9c258df12b3e344b21b6959f3f68cef0fe59518
 snapshots:
 - completed:
     size: 567241

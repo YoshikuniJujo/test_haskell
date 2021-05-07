@@ -32,6 +32,7 @@ dependencies:
 - JuicyCairo
 - JuicyPixels
 - nowdoc
+- c-enum
 
 library:
   source-dirs: src
