@@ -40,14 +40,13 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
 extra-deps:
+- c-enum-0.1.0.1
 - git: https://github.com/YoshikuniJujo/simple-cairo
   commit: 02f2ee2f5f888d5378e93ec3ba52e2b78bce0d44
 - git: https://github.com/YoshikuniJujo/cairo-image
   commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
 - git: https://github.com/YoshikuniJujo/JuicyCairo
   commit: 67aceebb48e90e72a2e60c095b91bc6e56b0ca19
-- git: https://github.com/YoshikuniJujo/c-enum
-  commit: f9c258df12b3e344b21b6959f3f68cef0fe59518
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
