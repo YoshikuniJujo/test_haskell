@@ -6,8 +6,6 @@
 module Lib where
 
 import Data.Int
-import Text.Read
--- import Text.ParserCombinators.ReadPrec
 
 import Template
 
@@ -29,7 +27,9 @@ mkMembers "Foo" [
 	"FooTwo",
 	"FooThree" ]
 
-instance Read Foo where
-	readPrec = parens $ choice [
-		do Ident "FooError" <- lexP; pure FooError,
-		prec 10 do Ident "Foo" <- lexP; Foo <$> step readPrec ]
+(: []) <$> mkRead "Foo" [
+	"FooError",
+	"FooZero",
+	"FooOne",
+	"FooTwo",
+	"FooThree" ]

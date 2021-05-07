@@ -7,6 +7,7 @@ todo
 * [x] define `mkMember`
 * [ ] define `mkNewtype`
 	+ [ ] add deriving arguments
+	+ [ ] control with `Show` and `Read`
 * [x] define `mkMembers`
 * [x] define `mkShow`
 	+ [x] define `instance Show Foo`
@@ -14,10 +15,10 @@ todo
 	+ [x] define body of `mkShow`
 		- [x] define a normal part
 		- [x] define the part which use pattern synonym
-* [ ] define `mkRead`
+* [x] define `mkRead`
 	+ [x] define `instance Read Foo`
-	+ [ ] define empty `mkRead`
-	+ [ ] define body of `mkRead`
-		- [ ] define a nowmrl part
-		- [ ] define the part which use pattern synonym
+	+ [x] define empty `mkRead`
+	+ [x] define body of `mkRead`
+		- [x] define a nowmrl part
+		- [x] define the part which use pattern synonym
 * [ ] define `mkAll`

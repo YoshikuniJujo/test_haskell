@@ -4,6 +4,7 @@
 module Template where
 
 import Language.Haskell.TH
+import Text.Read
 
 mkNewtype :: String -> Name -> DecQ
 mkNewtype nt t = newtypeD (cxt []) (mkName nt) [] Nothing
@@ -46,11 +47,27 @@ matchFoo f = match (conP (mkName f) []) (normalB $ litE (StringL f) `p` (varE '(
 gt :: Q Exp -> Q Exp -> Q Exp
 e1 `gt` e2 = infixE (Just e1) (varE '(>)) (Just e2)
 
-dl :: Q Exp -> Q Exp -> Q Exp
+dl, fdl :: Q Exp -> Q Exp -> Q Exp
 e1 `dl` e2 = infixE (Just e1) (varE '($)) (Just e2)
+e1 `fdl` e2 = infixE (Just e1) (varE '(<$>)) (Just e2)
 
 dt :: Q Exp -> Q Exp -> Q Exp
 e1 `dt` e2 = infixE (Just e1) (varE '(.)) (Just e2)
 
 p :: Q Exp -> Q Exp -> Q Exp
 ex `p` op = infixE (Just ex) op Nothing
+
+mkRead :: String -> [String] -> DecQ
+mkRead t ns = instanceD (cxt []) (conT ''Read `appT` conT (mkName t)) . (: [])
+	$ valD (varP 'readPrec) (normalB $ varE 'parens `dl` (varE 'choice `appE` listE (
+		(readFoo <$> ns) ++
+		[varE 'prec `appE` litE (IntegerL 10) `appE` doE [
+			bindS (conP 'Ident [litP $ StringL t]) $ varE 'lexP,
+			noBindS $ conE (mkName t) `fdl` (varE 'step `appE` varE 'readPrec) ]]
+		))) []
+
+readFoo :: String -> ExpQ
+readFoo n = doE [
+	bindS (conP 'Ident [litP $ StringL n]) $ varE 'lexP,
+	noBindS $ varE 'pure `appE` conE (mkName n)
+	]
