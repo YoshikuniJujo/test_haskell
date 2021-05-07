@@ -1,25 +1,18 @@
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Basic.ScriptsAndLanguages.Types where
+module Graphics.Pango.Basic.ScriptsAndLanguages.Types (
+	PangoLanguage(..), pattern PangoLanguage, getPangoLanguage, pangoLanguageFromString,
+	) where
 
 import GHC.Read
-import Language.Haskell.TH
 import Foreign.Ptr
 import Foreign.C.String
-import Data.Int
 import Text.Read
 import System.IO.Unsafe
-import Graphics.Pango.Template
 
 #include <pango/pango.h>
-
-newtype PangoScript = PangoScript #{type PangoScript} deriving Show
-
-mkMemberPangoScript :: String -> Integer -> DecsQ
-mkMemberPangoScript = mkMemberGen ''PangoScript 'PangoScript
 
 newtype PangoLanguage = PangoLanguage_ (Ptr PangoLanguage)
 
