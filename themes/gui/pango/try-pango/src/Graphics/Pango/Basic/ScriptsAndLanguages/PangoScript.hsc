@@ -1,14 +1,18 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.ScriptsAndLanguages.PangoScript where
 
+import Foreign.Ptr
 import Foreign.C.Enum
 import Data.Word
 import Data.Int
 import Data.Char
 import System.IO.Unsafe
+
+import Graphics.Pango.Basic.ScriptsAndLanguages.Types
 
 #include <pango/pango.h>
 
@@ -148,3 +152,18 @@ pangoScriptForUnichar c = unsafePerformIO
 
 foreign import ccall "pango_script_for_unichar" c_pango_script_for_unichar ::
 	#{type gunichar} -> IO #{type PangoScript}
+
+pangoScriptGetSampleLanguage :: PangoScript -> IO (Maybe PangoLanguage)
+pangoScriptGetSampleLanguage (PangoScript s) =
+	nullable Nothing (Just . PangoLanguage_)
+		<$> c_pango_script_get_sample_language s
+
+foreign import ccall "pango_script_get_sample_language"
+	c_pango_script_get_sample_language ::
+	#{type PangoScript} -> IO (Ptr PangoLanguage)
+
+pattern NullPtr :: Ptr a
+pattern NullPtr <- ((== nullPtr) -> True) where NullPtr = nullPtr
+
+nullable :: b -> (Ptr a -> b) -> Ptr a -> b
+nullable d f = \case NullPtr -> d; p -> f p

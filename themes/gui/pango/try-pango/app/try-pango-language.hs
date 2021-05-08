@@ -22,4 +22,9 @@ main = do
 	putStrLn . getPangoLanguage $ PangoLanguage l
 	putStrLn . getPangoLanguage =<< pangoLanguageGetDefault
 	putStrLn . getPangoLanguage $ PangoLanguage l
-	print $ pangoScriptForUnichar '愛'
+	let	s = pangoScriptForUnichar '愛'
+		s' = pangoScriptForUnichar 'あ'
+	print s
+	print s'
+	print =<< pangoScriptGetSampleLanguage s
+	print =<< pangoScriptGetSampleLanguage s'
