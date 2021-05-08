@@ -18,7 +18,7 @@ newtype PangoLanguage = PangoLanguage_ (Ptr PangoLanguage)
 
 instance Show PangoLanguage where
 	showsPrec d l = showParen (d > 10)
-		$ ("PangoLanguage " ++) . (pangoLanguageToString l ++)
+		$ ("PangoLanguage " ++) . (show (pangoLanguageToString l) ++)
 
 instance Read PangoLanguage where
 	readPrec = parens $ prec appPrec do

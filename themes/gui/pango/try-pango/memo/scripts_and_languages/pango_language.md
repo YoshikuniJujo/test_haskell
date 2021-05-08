@@ -9,4 +9,4 @@ todo
 * [x] `pango_language_get_default`
 * [x] repair show function of `PangoLanguage`
 * [ ] define `instance Read PangoLanguage`
-* [ ] repair show function of `PangoLanguage`
+* [x] repair show function of `PangoLanguage`
