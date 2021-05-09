@@ -11,5 +11,6 @@ memo
 		- [x] use `bracket`
 	+ [x] define `pangoScriptIterGetRange`
 	+ [x] define `pangoScriptIterNext`
+	+ [x] define `nullableCStringPart`
 	+ [ ] define `pangoScriptIterGetRanges`
 	+ [ ] define `pangoScriptForText`

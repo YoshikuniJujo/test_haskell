@@ -179,6 +179,19 @@ nullable d f = \case NullPtr -> d; p -> f p
 
 data PangoScriptIter
 
+withPangoScriptIter :: T.Text -> (Ptr PangoScriptIter -> IO a) -> IO a
+withPangoScriptIter t f = T.withCStringLen t \(cs, l) -> bracket
+	(c_pango_script_iter_new cs $ fromIntegral l) c_pango_script_iter_free f
+
+foreign import ccall "pango_script_iter_new" c_pango_script_iter_new ::
+	CString -> CInt -> IO (Ptr PangoScriptIter)
+
+foreign import ccall "pango_script_iter_free" c_pango_script_iter_free ::
+	Ptr PangoScriptIter -> IO ()
+
+-- pangoScriptIterGetRanges :: Ptr PangoScriptIter -> IO [(T.CStringPart, PangoScript)]
+-- pangoScriptIterGetRanges i
+
 pangoScriptIterGetRange :: Ptr PangoScriptIter -> IO (T.CStringPart, PangoScript)
 pangoScriptIterGetRange i = alloca \st -> alloca \ed -> alloca \s -> do
 	c_pango_script_iter_get_range i st ed s
@@ -194,13 +207,3 @@ pangoScriptIterNext i = (<$> c_pango_script_iter_next i) \case
 
 foreign import ccall "pango_script_iter_next" c_pango_script_iter_next ::
 	Ptr PangoScriptIter -> IO #{type gboolean}
-
-withPangoScriptIter :: T.Text -> (Ptr PangoScriptIter -> IO a) -> IO a
-withPangoScriptIter t f = T.withCStringLen t \(cs, l) -> bracket
-	(c_pango_script_iter_new cs $ fromIntegral l) c_pango_script_iter_free f
-
-foreign import ccall "pango_script_iter_new" c_pango_script_iter_new ::
-	CString -> CInt -> IO (Ptr PangoScriptIter)
-
-foreign import ccall "pango_script_iter_free" c_pango_script_iter_free ::
-	Ptr PangoScriptIter -> IO ()
