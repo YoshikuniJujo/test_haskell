@@ -12,5 +12,5 @@ memo
 	+ [x] define `pangoScriptIterGetRange`
 	+ [x] define `pangoScriptIterNext`
 	+ [x] define `nullableCStringPart`
-	+ [ ] define `pangoScriptIterGetRanges`
+	+ [x] define `pangoScriptIterGetRanges`
 	+ [ ] define `pangoScriptForText`

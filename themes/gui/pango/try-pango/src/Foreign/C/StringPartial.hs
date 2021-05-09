@@ -3,7 +3,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Foreign.C.StringPartial (
-	CStringPart, withCStringPart, peekCStringPart, nullableCStringPart ) where
+	CStringPart, withCStringPart, peekCStringPart,
+	emptyOrCStringPart ) where
 
 import Foreign.Ptr
 import Foreign.C.Types
@@ -17,5 +18,5 @@ withCStringPart str f = withCStringLen str \(p, l) -> f (p, p `plusPtr` l)
 peekCStringPart :: CStringPart -> IO String
 peekCStringPart (s, e) = peekCStringLen (s, e `minusPtr` s)
 
-nullableCStringPart :: a -> (CStringPart -> a) -> CStringPart -> a
-nullableCStringPart d f cs@(s, e) | s == e = d | otherwise = f cs
+emptyOrCStringPart :: a -> a -> CStringPart -> a
+emptyOrCStringPart d f (s, e) | s == e = d | otherwise = f

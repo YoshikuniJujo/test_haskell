@@ -10,8 +10,10 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
+import Foreign.C.StringPartial
 import Foreign.C.Enum
 import Control.Exception
+import Data.Bool
 import Data.Word
 import Data.Int
 import Data.Char
@@ -189,8 +191,12 @@ foreign import ccall "pango_script_iter_new" c_pango_script_iter_new ::
 foreign import ccall "pango_script_iter_free" c_pango_script_iter_free ::
 	Ptr PangoScriptIter -> IO ()
 
--- pangoScriptIterGetRanges :: Ptr PangoScriptIter -> IO [(T.CStringPart, PangoScript)]
--- pangoScriptIterGetRanges i
+pangoScriptIterGetRanges :: Ptr PangoScriptIter -> IO [(T.CStringPart, PangoScript)]
+pangoScriptIterGetRanges i = do
+	rs@(r, _) <- pangoScriptIterGetRange i
+	(\r' e f -> emptyOrCStringPart e f r') r (pure [])
+		$ pangoScriptIterNext i
+			>>= bool (pure [rs]) ((rs :) <$> pangoScriptIterGetRanges i)
 
 pangoScriptIterGetRange :: Ptr PangoScriptIter -> IO (T.CStringPart, PangoScript)
 pangoScriptIterGetRange i = alloca \st -> alloca \ed -> alloca \s -> do
