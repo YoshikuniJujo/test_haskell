@@ -1,7 +1,8 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Lib where
+module Foreign.C.StringPartial (
+	CStringPart, withCStringPart, peekCStringPart ) where
 
 import Foreign.Ptr
 import Foreign.C.Types
