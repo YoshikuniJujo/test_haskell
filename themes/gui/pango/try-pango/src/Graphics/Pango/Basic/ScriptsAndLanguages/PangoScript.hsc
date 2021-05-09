@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -182,8 +182,8 @@ foreign import ccall "pango_script_iter_next" c_pango_script_iter_next ::
 	Ptr PangoScriptIter -> IO #{type gboolean}
 
 withPangoScriptIter :: T.Text -> (Ptr PangoScriptIter -> IO a) -> IO a
-withPangoScriptIter t f = do
-	i <- T.withCStringLen t $ \(cs, l) -> c_pango_script_iter_new cs $ fromIntegral l
+withPangoScriptIter t f = T.withCStringLen t \(cs, l) -> do
+	i <-  c_pango_script_iter_new cs $ fromIntegral l
 	f i <* c_pango_script_iter_free i
 
 foreign import ccall "pango_script_iter_new" c_pango_script_iter_new ::
