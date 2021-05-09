@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -13,6 +13,7 @@ import Foreign.C.String
 import Foreign.C.StringPartial
 import Foreign.C.Enum
 import Control.Exception
+import Data.Traversable
 import Data.Bool
 import Data.Word
 import Data.Int
@@ -178,6 +179,11 @@ pattern NullPtr <- ((== nullPtr) -> True) where NullPtr = nullPtr
 
 nullable :: b -> (Ptr a -> b) -> Ptr a -> b
 nullable d f = \case NullPtr -> d; p -> f p
+
+pangoScriptForText :: T.Text -> [(T.Text, PangoScript)]
+pangoScriptForText t = unsafePerformIO $ withPangoScriptIter t \i -> do
+	rss <- pangoScriptIterGetRanges i
+	for rss \(r, s) -> (, s) <$> T.peekCStringPart r
 
 data PangoScriptIter
 

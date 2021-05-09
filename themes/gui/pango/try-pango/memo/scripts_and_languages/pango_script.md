@@ -14,3 +14,5 @@ memo
 	+ [x] define `nullableCStringPart`
 	+ [x] define `pangoScriptIterGetRanges`
 	+ [ ] define `pangoScriptForText`
+		- [x] define
+		- [ ] use unsafeInterleaveIO

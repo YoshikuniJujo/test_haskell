@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -28,3 +29,4 @@ main = do
 	print s'
 	print =<< pangoScriptGetSampleLanguage s
 	print =<< pangoScriptGetSampleLanguage s'
+	print $ pangoScriptForText "愛 love 友"
