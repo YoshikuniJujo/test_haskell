@@ -9,6 +9,7 @@ import Foreign.Ptr
 import Foreign.C.Types
 import Foreign.C.String
 import Foreign.C.Enum
+import Control.Exception
 import Data.Word
 import Data.Int
 import Data.Char
@@ -182,9 +183,8 @@ foreign import ccall "pango_script_iter_next" c_pango_script_iter_next ::
 	Ptr PangoScriptIter -> IO #{type gboolean}
 
 withPangoScriptIter :: T.Text -> (Ptr PangoScriptIter -> IO a) -> IO a
-withPangoScriptIter t f = T.withCStringLen t \(cs, l) -> do
-	i <-  c_pango_script_iter_new cs $ fromIntegral l
-	f i <* c_pango_script_iter_free i
+withPangoScriptIter t f = T.withCStringLen t \(cs, l) -> bracket
+	(c_pango_script_iter_new cs $ fromIntegral l) c_pango_script_iter_free f
 
 foreign import ccall "pango_script_iter_new" c_pango_script_iter_new ::
 	CString -> CInt -> IO (Ptr PangoScriptIter)

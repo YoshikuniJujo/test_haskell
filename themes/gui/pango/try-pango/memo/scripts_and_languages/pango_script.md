@@ -6,7 +6,7 @@ memo
 	+ [x] `pango_script_iter_get_range`
 	+ [x] `pango_script_iter_next`
 	+ [x] `pango_script_iter_free`
-	+ [ ] `withPangoScriptIter`
+	+ [x] `withPangoScriptIter`
 		- [x] define
-		- [ ] use `bracket`
+		- [x] use `bracket`
 	+ [ ] define `pangoScriptForText`
