@@ -187,6 +187,11 @@ pangoScriptIterGetRange i = alloca \st -> alloca \ed -> alloca \s -> do
 foreign import ccall "pango_script_iter_get_range" c_pango_script_iter_get_range ::
 	Ptr PangoScriptIter -> Ptr CString -> Ptr CString -> Ptr #{type PangoScript} -> IO ()
 
+pangoScriptIterNext :: Ptr PangoScriptIter -> IO Bool
+pangoScriptIterNext i = (<$> c_pango_script_iter_next i) \case
+	#{const FALSE} -> False; #{const TRUE} -> True
+	_ -> error "never occur"
+
 foreign import ccall "pango_script_iter_next" c_pango_script_iter_next ::
 	Ptr PangoScriptIter -> IO #{type gboolean}
 

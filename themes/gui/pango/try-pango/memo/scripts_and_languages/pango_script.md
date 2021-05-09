@@ -10,4 +10,6 @@ memo
 		- [x] define
 		- [x] use `bracket`
 	+ [x] define `pangoScriptIterGetRange`
+	+ [x] define `pangoScriptIterNext`
+	+ [ ] define `pangoScriptIterGetRanges`
 	+ [ ] define `pangoScriptForText`
