@@ -6,6 +6,8 @@
 module Graphics.Pango.Basic.ScriptsAndLanguages.PangoScript where
 
 import Foreign.Ptr
+import Foreign.C.Types
+import Foreign.C.String
 import Foreign.C.Enum
 import Data.Word
 import Data.Int
@@ -167,3 +169,17 @@ pattern NullPtr <- ((== nullPtr) -> True) where NullPtr = nullPtr
 
 nullable :: b -> (Ptr a -> b) -> Ptr a -> b
 nullable d f = \case NullPtr -> d; p -> f p
+
+data PangoScriptIter
+
+foreign import ccall "pango_script_iter_new" c_pango_script_iter_new ::
+	CString -> CInt -> IO (Ptr PangoScriptIter)
+
+foreign import ccall "pango_script_iter_get_range" c_pango_script_iter_get_range ::
+	Ptr PangoScriptIter -> Ptr CString -> Ptr CString -> Ptr #{type PangoScript} -> IO ()
+
+foreign import ccall "pango_script_iter_next" c_pango_script_iter_next ::
+	Ptr PangoScriptIter -> IO #{type gboolean}
+
+foreign import ccall "pango_script_iter_free" c_pango_script_iter_free ::
+	Ptr PangoScriptIter -> IO ()
