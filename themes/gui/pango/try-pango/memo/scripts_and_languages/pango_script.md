@@ -9,4 +9,5 @@ memo
 	+ [x] `withPangoScriptIter`
 		- [x] define
 		- [x] use `bracket`
+	+ [x] define `pangoScriptIterGetRange`
 	+ [ ] define `pangoScriptForText`

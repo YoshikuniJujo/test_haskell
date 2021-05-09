@@ -6,6 +6,8 @@
 module Graphics.Pango.Basic.ScriptsAndLanguages.PangoScript where
 
 import Foreign.Ptr
+import Foreign.Marshal
+import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
 import Foreign.C.Enum
@@ -19,6 +21,7 @@ import Graphics.Pango.Basic.ScriptsAndLanguages.Types
 
 import qualified Data.Text as T
 import qualified Data.Text.Foreign as T
+import qualified Data.Text.Foreign.StringPartial as T
 
 #include <pango/pango.h>
 
@@ -175,6 +178,11 @@ nullable :: b -> (Ptr a -> b) -> Ptr a -> b
 nullable d f = \case NullPtr -> d; p -> f p
 
 data PangoScriptIter
+
+pangoScriptIterGetRange :: Ptr PangoScriptIter -> IO (T.CStringPart, PangoScript)
+pangoScriptIterGetRange i = alloca \st -> alloca \ed -> alloca \s -> do
+	c_pango_script_iter_get_range i st ed s
+	(,) <$> ((,) <$> peek st <*> peek ed) <*> (PangoScript <$> peek s)
 
 foreign import ccall "pango_script_iter_get_range" c_pango_script_iter_get_range ::
 	Ptr PangoScriptIter -> Ptr CString -> Ptr CString -> Ptr #{type PangoScript} -> IO ()
