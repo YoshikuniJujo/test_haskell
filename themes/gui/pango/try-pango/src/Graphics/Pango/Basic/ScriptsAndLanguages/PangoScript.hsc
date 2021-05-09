@@ -16,6 +16,9 @@ import System.IO.Unsafe
 
 import Graphics.Pango.Basic.ScriptsAndLanguages.Types
 
+import qualified Data.Text as T
+import qualified Data.Text.Foreign as T
+
 #include <pango/pango.h>
 
 enum "PangoScript" ''#{type PangoScript} [''Show, ''Read] [
@@ -172,14 +175,19 @@ nullable d f = \case NullPtr -> d; p -> f p
 
 data PangoScriptIter
 
-foreign import ccall "pango_script_iter_new" c_pango_script_iter_new ::
-	CString -> CInt -> IO (Ptr PangoScriptIter)
-
 foreign import ccall "pango_script_iter_get_range" c_pango_script_iter_get_range ::
 	Ptr PangoScriptIter -> Ptr CString -> Ptr CString -> Ptr #{type PangoScript} -> IO ()
 
 foreign import ccall "pango_script_iter_next" c_pango_script_iter_next ::
 	Ptr PangoScriptIter -> IO #{type gboolean}
+
+withPangoScriptIter :: T.Text -> (Ptr PangoScriptIter -> IO a) -> IO a
+withPangoScriptIter t f = do
+	i <- T.withCStringLen t $ \(cs, l) -> c_pango_script_iter_new cs $ fromIntegral l
+	f i <* c_pango_script_iter_free i
+
+foreign import ccall "pango_script_iter_new" c_pango_script_iter_new ::
+	CString -> CInt -> IO (Ptr PangoScriptIter)
 
 foreign import ccall "pango_script_iter_free" c_pango_script_iter_free ::
 	Ptr PangoScriptIter -> IO ()
