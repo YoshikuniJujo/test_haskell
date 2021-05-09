@@ -1,0 +1,62 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: bc7318f513124e5607b30b9943c115a0052ab23c3429af7ad64d7f96d57bba5d
+
+name:           try-cstring-partial
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/try-cstring-partial#readme>
+homepage:       https://github.com/githubuser/try-cstring-partial#readme
+bug-reports:    https://github.com/githubuser/try-cstring-partial/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2021 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/try-cstring-partial
+
+library
+  exposed-modules:
+      Lib
+  other-modules:
+      Paths_try_cstring_partial
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+  default-language: Haskell2010
+
+executable try-cstring-partial-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_try_cstring_partial
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , try-cstring-partial
+  default-language: Haskell2010
+
+test-suite try-cstring-partial-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_try_cstring_partial
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , try-cstring-partial
+  default-language: Haskell2010
