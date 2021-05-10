@@ -1,7 +1,7 @@
 memo
 ====
 
-* [ ] define `pangoScriptForText :: Text -> [(Text, PangoScript)]`
+* [x] define `pangoScriptForText :: Text -> [(Text, PangoScript)]`
 	+ [x] `pango_script_iter_new`
 	+ [x] `pango_script_iter_get_range`
 	+ [x] `pango_script_iter_next`
@@ -13,6 +13,6 @@ memo
 	+ [x] define `pangoScriptIterNext`
 	+ [x] define `nullableCStringPart`
 	+ [x] define `pangoScriptIterGetRanges`
-	+ [ ] define `pangoScriptForText`
+	+ [x] define `pangoScriptForText`
 		- [x] define
-		- [ ] use unsafeInterleaveIO
+		- [x] use unsafeInterleaveIO

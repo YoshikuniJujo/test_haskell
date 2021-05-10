@@ -198,7 +198,7 @@ foreign import ccall "pango_script_iter_free" c_pango_script_iter_free ::
 	Ptr PangoScriptIter -> IO ()
 
 pangoScriptIterGetRanges :: Ptr PangoScriptIter -> IO [(T.CStringPart, PangoScript)]
-pangoScriptIterGetRanges i = do
+pangoScriptIterGetRanges i = unsafeInterleaveIO do
 	rs@(r, _) <- pangoScriptIterGetRange i
 	(\r' e f -> emptyOrCStringPart e f r') r (pure [])
 		$ pangoScriptIterNext i
