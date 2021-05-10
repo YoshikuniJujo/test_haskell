@@ -55,6 +55,7 @@ todo
 * [x] rename `PangoFontDescription` to `PangoFontDescriptionPrim`
 * [x] define `PangoFontDescription` and freezer
 * [x] move `Graphics.Pango.LowLevel.TabStops` to `Graphics.Pango.Basic.TabStops`
+* [ ] use newtype type for ffi
 * [ ] use `Fixed` instead of `Double`
 * [ ] Basic Pango Interfaces
 	+ [x] Fonts
@@ -65,9 +66,9 @@ todo
 		- [x] PangoLayout
 		- [ ] PangoLayoutIter
 		- [ ] PangoLayoutLine
-	+ [ ] Scripts and Languages
-		- [ ] PangoScript
-		- [ ] PangoLanguage
+	+ [x] Scripts and Languages
+		- [x] PangoScript
+		- [x] PangoLanguage
 	+ [ ] Bidirectional Text
 	+ [ ] Vertical Text
 * [ ] Rendering with Pango
