@@ -1,10 +1,11 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage where
 
 import Foreign.Ptr
 import Foreign.C.String
+import Data.Int
 import Data.Text.CString
 import System.IO.Unsafe
 
@@ -26,3 +27,12 @@ pangoLanguageGetSampleString (PangoLanguage_ pl) = unsafePerformIO
 
 foreign import ccall "pango_language_get_sample_string"
 	c_pango_language_get_sample_string :: Ptr PangoLanguage -> IO CString
+
+pangoLanguageMatches :: PangoLanguage -> String -> Bool
+pangoLanguageMatches (PangoLanguage_ l) rl = unsafePerformIO
+	$ withCString rl \crl -> (<$> c_pango_language_matches l crl) \case
+		#{const FALSE} -> False; #{const TRUE} -> True
+		_ -> error "never occur"
+
+foreign import ccall "pango_language_matches" c_pango_language_matches ::
+	Ptr PangoLanguage -> CString -> IO #{type gboolean}

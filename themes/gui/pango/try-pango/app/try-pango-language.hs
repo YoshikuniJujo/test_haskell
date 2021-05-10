@@ -23,7 +23,9 @@ main = do
 	putStrLn . getPangoLanguage $ PangoLanguage l
 	putStrLn . getPangoLanguage =<< pangoLanguageGetDefault
 	putStrLn . getPangoLanguage $ PangoLanguage l
-	let	s = pangoScriptForUnichar '愛'
+	let	
+		pl = PangoLanguage l
+		s = pangoScriptForUnichar '愛'
 		s' = pangoScriptForUnichar 'あ'
 	print s
 	print s'
@@ -32,3 +34,4 @@ main = do
 	print $ pangoScriptForText "愛 love 友"
 	print @PangoLanguage $ read "PangoLanguage \"ja-JP\""
 	print @(Maybe PangoLanguage) $ read "Just (PangoLanguage \"zh-TW\")"
+	print $ pangoLanguageMatches pl "en;ja-jp"
