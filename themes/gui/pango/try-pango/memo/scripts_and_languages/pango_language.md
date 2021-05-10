@@ -13,5 +13,5 @@ todo
 * [x] `pango_language_get_sample_string`
 	+ [x] use Text instead of String
 * [x] `pango_language_matches`
-* [ ] `pango_language_includes_script`
+* [x] `pango_language_includes_script`
 * [ ] `pango_language_get_scripts`

@@ -9,6 +9,7 @@ import Data.Int
 import Data.Text.CString
 import System.IO.Unsafe
 
+import Graphics.Pango.Basic.ScriptsAndLanguages.PangoScript
 import Graphics.Pango.Basic.ScriptsAndLanguages.Types
 
 import qualified Data.Text as T
@@ -36,3 +37,12 @@ pangoLanguageMatches (PangoLanguage_ l) rl = unsafePerformIO
 
 foreign import ccall "pango_language_matches" c_pango_language_matches ::
 	Ptr PangoLanguage -> CString -> IO #{type gboolean}
+
+pangoLanguageIncludesScript :: PangoLanguage -> PangoScript -> Bool
+pangoLanguageIncludesScript (PangoLanguage_ l) (PangoScript s) = unsafePerformIO
+	$ (<$> c_pango_language_includes_script l s) \case
+		#{const FALSE} -> False; #{const TRUE} -> True
+		_ -> error "never occur"
+
+foreign import ccall "pango_language_includes_script" c_pango_language_includes_script ::
+	Ptr PangoLanguage -> #{type PangoScript} -> IO #{type gboolean}

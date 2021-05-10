@@ -35,3 +35,4 @@ main = do
 	print @PangoLanguage $ read "PangoLanguage \"ja-JP\""
 	print @(Maybe PangoLanguage) $ read "Just (PangoLanguage \"zh-TW\")"
 	print $ pangoLanguageMatches pl "en;ja-jp"
+	print $ pangoLanguageIncludesScript pl PangoScriptHan
