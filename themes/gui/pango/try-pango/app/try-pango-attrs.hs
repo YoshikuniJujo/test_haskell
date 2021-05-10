@@ -108,7 +108,7 @@ main = do
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al5
 	pangoCairoShowLayout cr pl
 
-	al6 <- pangoTextAttrListNew . T.pack . pangoLanguageGetSampleString =<< pangoLanguageGetDefault
+	al6 <- pangoTextAttrListNew . pangoLanguageGetSampleString =<< pangoLanguageGetDefault
 	at9 <- pangoAttrNew $ ForegroundColor 0 (maxBound `div` 2) 0
 	at10 <- pangoAttrNew $ BackgroundColor 0 0 maxBound
 	pangoTextAttrListInsert al6 at9 0 15
@@ -118,7 +118,7 @@ main = do
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al6
 	pangoCairoShowLayout cr pl
 
-	al7 <- pangoTextAttrListNew . T.pack . pangoLanguageGetSampleString =<< pangoLanguageGetDefault
+	al7 <- pangoTextAttrListNew . pangoLanguageGetSampleString =<< pangoLanguageGetDefault
 	at11 <- pangoAttrNew $ Strikethrough True
 	at12 <- pangoAttrNew $ StrikethroughColor maxBound 0 0
 	pangoTextAttrListInsert al7 at11 0 maxBound
@@ -128,7 +128,7 @@ main = do
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al7
 	pangoCairoShowLayout cr pl
 
-	al8 <- pangoTextAttrListNew . T.pack . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
+	al8 <- pangoTextAttrListNew . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
 	applyInOrder' al8 $ (`zip` [6, 12 .. ]) [
 		PangoUnderlineNone, PangoUnderlineSingle, PangoUnderlineDouble,
 		PangoUnderlineLow, PangoUnderlineError ]
@@ -140,7 +140,7 @@ main = do
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al8
 	pangoCairoShowLayout cr pl
 
-	al9 <- pangoTextAttrListNew . T.pack . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
+	al9 <- pangoTextAttrListNew . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
 	at13 <- pangoAttrNew $ Shape
 		(PangoRectangle 5 3072 16384 16384)
 		(PangoRectangle 0 0 19456 19456)
@@ -152,28 +152,28 @@ main = do
 	print =<< pangoLayoutGetExtents pl
 	pangoCairoShowLayout cr pl
 
-	al10 <- pangoTextAttrListNew . T.pack . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
+	al10 <- pangoTextAttrListNew . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
 	applyInOrder' al10 $ zip (Scale <$> [0.7, 0.8 .. 2.4] <> [2.3, 2.2 ..]) [1, 2 .. 42]
 
 	cairoMoveTo cr 0 240
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al10
 	pangoCairoShowLayout cr pl
 
-	al11 <- pangoTextAttrListNew . T.pack . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
+	al11 <- pangoTextAttrListNew . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
 	applyInOrder' al11 $ zip (Rise <$> [0, 0.5 .. 7.5] <> [7.0, 6.5 .. ]) [1 .. 42]
 
 	cairoMoveTo cr 0 280
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al11
 	pangoCairoShowLayout cr pl
 
-	al12 <- pangoTextAttrListNew . T.pack . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
+	al12 <- pangoTextAttrListNew . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
 	applyInOrder' al12 $ zip (LetterSpacing <$> [0, 0.5 .. 7.5] <> [7.0, 6.5 .. ]) [1 .. 42]
 
 	cairoMoveTo cr 0 310
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al12
 	pangoCairoShowLayout cr pl
 
-	al13 <- pangoTextAttrListNew . T.pack . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
+	al13 <- pangoTextAttrListNew . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
 	applyInOrder' al13 $ (`zip` [5, 10 .. 42]) [
 		pangoGravitySouth, pangoGravityEast, pangoGravityNorth,
 		pangoGravityWest ] -- pangoGravityAuto ]
@@ -187,7 +187,7 @@ main = do
 --	pangoAttrListInsert al14 =<< pangoAttrNew pangoGravityHintLine
 --	pangoAttrListInsertBefore al14 =<< pangoAttrNew pangoGravityHintStrong
 
-	al14 <- pangoTextAttrListNew . T.pack . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
+	al14 <- pangoTextAttrListNew . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
 	(\a -> pangoTextAttrListInsert al14 a 0 maxBound) =<< pangoAttrNew (Family "Source Han Sans VF")
 	(\a -> pangoTextAttrListInsert al14 a 3 maxBound) =<< pangoAttrNew pangoGravityEast
 
@@ -229,15 +229,15 @@ main = do
 	pangoLayoutSet @T.Text pl "あいうえおかきくけこabcdefg"
 	pangoCairoShowLayout cr pl
 
-	al15 <- pangoTextAttrListNew . T.pack . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
+	al15 <- pangoTextAttrListNew . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
 	applyInOrder' al15 $ zip (ForegroundAlpha <$> [maxBound `div` 42, maxBound `div` 21 .. ]) [1 .. 42]
 
 	cairoMoveTo cr 0 400
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al15
-	pangoLayoutSet pl . T.pack . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
+	pangoLayoutSet pl . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
 	pangoCairoShowLayout cr pl
 
-	al16 <- pangoTextAttrListNew . T.pack . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
+	al16 <- pangoTextAttrListNew . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
 	(\a -> pangoTextAttrListChange al16 a 0 maxBound) =<< pangoAttrNew (BackgroundColor 0 (maxBound `div` 2) 0)
 	applyInOrder' al16 $ zip (BackgroundAlpha <$> [maxBound `div` 42, maxBound `div` 21 .. ]) [1 .. 42]
 

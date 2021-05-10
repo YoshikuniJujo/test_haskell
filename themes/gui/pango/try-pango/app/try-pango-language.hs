@@ -1,5 +1,5 @@
-{-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -30,3 +30,5 @@ main = do
 	print =<< pangoScriptGetSampleLanguage s
 	print =<< pangoScriptGetSampleLanguage s'
 	print $ pangoScriptForText "愛 love 友"
+	print @PangoLanguage $ read "PangoLanguage \"ja-JP\""
+	print @(Maybe PangoLanguage) $ read "Just (PangoLanguage \"zh-TW\")"

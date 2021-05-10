@@ -25,17 +25,18 @@ import Graphics.Pango.Basic.TextAttributes
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 
 import qualified Data.Text as T
+import qualified Data.Text.IO as T
 
 main :: IO ()
 main = do
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 600 1100
 	cr <- cairoCreate s
 
-	putStrLn . pangoLanguageGetSampleString =<< pangoLanguageGetDefault
-	putStrLn . pangoLanguageGetSampleString $ pangoLanguageFromString "is-is"
-	putStrLn . pangoLanguageGetSampleString $ pangoLanguageFromString "zh-tw"
-	putStrLn sampleText
-	putStrLn sampleText2
+	T.putStrLn . pangoLanguageGetSampleString =<< pangoLanguageGetDefault
+	T.putStrLn . pangoLanguageGetSampleString $ pangoLanguageFromString "is-is"
+	T.putStrLn . pangoLanguageGetSampleString $ pangoLanguageFromString "zh-tw"
+	T.putStrLn sampleText
+	T.putStrLn sampleText2
 
 	pl <- pangoCairoCreateLayout cr
 	print =<< pangoLayoutGet @T.Text pl
@@ -60,12 +61,12 @@ main = do
 
 	print =<< pangoLayoutGet @Width pl
 	print =<< pangoLayoutGet @Height pl
-	pangoLayoutSet pl . T.pack $ sampleText ++ "\n" ++ sampleText2
+	pangoLayoutSet pl $ sampleText <> "\n" <> sampleText2
 
 	print =<< pangoLayoutInfo @IsEllipsized pl
 	print =<< pangoLayoutInfo @IsWrapped pl
 
-	print . length $ sampleText ++ "\n" ++ sampleText2
+	print . T.length $ sampleText <> "\n" <> sampleText2
 	print =<< pangoLayoutInfo @CharacterCount pl
 
 	pangoCairoShowLayout cr pl
@@ -108,7 +109,7 @@ main = do
 	pangoCairoShowLayout cr pl
 
 	cairoMoveTo cr 300 630
-	pangoLayoutSet pl . T.pack $ "I love sloth. " ++ arabic
+	pangoLayoutSet pl $ "I love sloth. " <> arabic
 	pangoLayoutSet pl $ AutoDir True
 	pangoCairoShowLayout cr pl
 
@@ -118,7 +119,7 @@ main = do
 
 	cairoMoveTo cr 0 750
 	pangoLayoutSet pl $ Justify False
-	pangoLayoutSet pl . T.pack $ sampleText ++ "\n" ++ sampleText2
+	pangoLayoutSet pl $ sampleText <> "\n" <> sampleText2
 	pangoLayoutSet pl pangoAlignCenter
 	pangoCairoShowLayout cr pl
 
@@ -128,8 +129,8 @@ main = do
 
 	pangoLayoutSet pl pangoAlignLeft
 	pangoLayoutSet pl pangoEllipsizeNone
-	let	txt =  take 60 sampleText' ++ "\n" ++ take 60 sampleText2
-	pangoLayoutSet pl $ T.pack txt
+	let	txt =  T.take 60 sampleText' <> "\n" <> T.take 60 sampleText2
+	pangoLayoutSet pl txt
 
 	cairoMoveTo cr 300 780
 	pangoCairoShowLayout cr pl
@@ -142,7 +143,7 @@ main = do
 
 	print =<< pangoLayoutInfo @UnknownGlyphsCount pl
 	las <- pangoLayoutInfo pl
-	(putStrLn . (\(c, la) -> c ++ "\n" ++ la) . (show *** showPangoLogAttr)) `mapM_` zip (txt ++ "\x00") (pangoLogAttrsToList las)
+	(putStrLn . (\(c, la) -> c ++ "\n" ++ la) . (show *** showPangoLogAttr)) `mapM_` zip (T.unpack $ txt <> "\x00") (pangoLogAttrsToList las)
 
 	print =<< pangoLayoutInfo @Extents pl
 	print =<< pangoLayoutInfo @PixelExtents pl
@@ -224,18 +225,18 @@ main = do
 		CairoImageArgb32 a -> writePng "try-pango-layout-innocuous.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
 
-sampleText, sampleText', sampleText2, arabic :: String
-sampleText = unwords $
+sampleText, sampleText', sampleText2, arabic :: T.Text
+sampleText = T.unwords $
 	pangoLanguageGetSampleString . pangoLanguageFromString <$> [
 		"is-is", "ga-ie", "ga", "en", "ja-jp", "zh-tw"
 		]
 
-sampleText' = ("\x1f9a5\x1f16f\x1f16e" ++) . unwords $
+sampleText' = ("\x1f9a5\x1f16f\x1f16e" <>) . T.unwords $
 	pangoLanguageGetSampleString . pangoLanguageFromString <$> [
 		"is-is", "ga-ie", "ga", "en", "ja-jp", "zh-tw"
 		]
 
-sampleText2 = unwords $
+sampleText2 = T.unwords $
 	pangoLanguageGetSampleString . pangoLanguageFromString <$> [
 		"af", "ar", "sq"
 		]
