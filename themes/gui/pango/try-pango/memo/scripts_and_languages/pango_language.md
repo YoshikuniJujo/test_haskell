@@ -14,4 +14,4 @@ todo
 	+ [x] use Text instead of String
 * [x] `pango_language_matches`
 * [x] `pango_language_includes_script`
-* [ ] `pango_language_get_scripts`
+* [x] `pango_language_get_scripts`

@@ -4,6 +4,9 @@
 module Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage where
 
 import Foreign.Ptr
+import Foreign.Marshal
+import Foreign.Storable
+import Foreign.C.Types
 import Foreign.C.String
 import Data.Int
 import Data.Text.CString
@@ -46,3 +49,13 @@ pangoLanguageIncludesScript (PangoLanguage_ l) (PangoScript s) = unsafePerformIO
 
 foreign import ccall "pango_language_includes_script" c_pango_language_includes_script ::
 	Ptr PangoLanguage -> #{type PangoScript} -> IO #{type gboolean}
+
+pangoLanguageGetScripts :: PangoLanguage -> [PangoScript]
+pangoLanguageGetScripts (PangoLanguage_ l) = unsafePerformIO
+	$ (PangoScript <$>) <$> alloca \pn -> do
+		ss <- c_pango_language_get_scripts l pn
+		n <- peek pn
+		peekArray (fromIntegral n) ss
+
+foreign import ccall "pango_language_get_scripts" c_pango_language_get_scripts ::
+	Ptr PangoLanguage -> Ptr CInt -> IO (Ptr #{type PangoScript})
