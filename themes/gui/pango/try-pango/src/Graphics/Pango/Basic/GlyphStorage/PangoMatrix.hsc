@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -105,9 +105,27 @@ pangoMatrixScale (PangoMatrixPrim fm) sx sy = unsafeIOToPrim
 foreign import ccall "pango_matrix_scale" c_pango_matrix_scale ::
 	Ptr (PangoMatrixPrim s) -> CDouble -> CDouble -> IO ()
 
+data Angle = Radian_ CDouble | Degree_ CDouble deriving Show
+
+{-# COMPLETE Radian #-}
+
+pattern Radian :: CDouble -> Angle
+pattern Radian r <- (radian -> r) where Radian = Radian_
+
+radian :: Angle -> CDouble
+radian = \case Radian_ r -> r; Degree_ d -> d / 360 * 2 * pi
+
+{-# COMPLETE Degree #-}
+
+pattern Degree :: CDouble -> Angle
+pattern Degree d <- (degree -> d) where Degree = Degree_
+
+degree :: Angle -> CDouble
+degree = \case Radian_ r -> r / (2 * pi) * 360; Degree_ d -> d
+
 pangoMatrixRotate :: PrimMonad m =>
-	PangoMatrixPrim (PrimState m) -> CDouble -> m ()
-pangoMatrixRotate (PangoMatrixPrim fm) dgr = unsafeIOToPrim
+	PangoMatrixPrim (PrimState m) -> Angle -> m ()
+pangoMatrixRotate (PangoMatrixPrim fm) (Degree dgr) = unsafeIOToPrim
 	$ withForeignPtr fm \pm -> c_pango_matrix_rotate pm dgr
 
 foreign import ccall "pango_matrix_rotate" c_pango_matrix_rotate ::
