@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0f035040d9ea6534ec0b5e3bb89fafa51be7b508a828c0a92c649b770f0b85a0
+-- hash: 0513a38d0b707325b4dcf9260f38e992a3ab9eb993b77221c85dd8c93a3af166
 
 name:           try-pango
 version:        0.1.0.0
@@ -37,6 +37,7 @@ library
       Graphics.Pango.Basic.Fonts.PangoFontDescription
       Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
       Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations
+      Graphics.Pango.Basic.GlyphStorage.PangoMatrix
       Graphics.Pango.Basic.LayoutObjects
       Graphics.Pango.Basic.LayoutObjects.PangoLayout
       Graphics.Pango.Basic.LayoutObjects.PangoLayout.Template

@@ -70,6 +70,12 @@ todo
 		- [x] PangoScript
 		- [x] PangoLanguage
 	+ [x] Bidirectional Text
+	+ [ ] Glyph Storage
+		- [ ] PangoMatrix
+		- no other
+	+ [ ] Rendering
+		- [ ] `pango_context_get_matrix`
+		- [ ] `pango_context_set_matrix`
 	+ [ ] Vertical Text
 * [ ] Rendering with Pango
 	+ [ ] Cairo Rendering
