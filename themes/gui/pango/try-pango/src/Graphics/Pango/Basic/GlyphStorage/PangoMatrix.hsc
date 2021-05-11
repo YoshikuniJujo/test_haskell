@@ -62,14 +62,29 @@ pangoMatrixFreeze (PangoMatrixPrim fm) = unsafeIOToPrim . (PangoMatrix_ <$>)
 	$ withForeignPtr fm c_pango_matrix_freeze >>=
 		newForeignPtr <$> id <*> c_pango_matrix_free
 
-foreign import ccall "pango_matrix_freeze" c_pango_matrix_freeze ::
+foreign import ccall "pango_matrix_copy" c_pango_matrix_freeze ::
 	Ptr (PangoMatrixPrim s) -> IO (Ptr PangoMatrix)
-
-foreign import ccall "pango_matrix_copy" c_pango_matrix_copy ::
-	Ptr (PangoMatrixPrim s) -> IO (Ptr (PangoMatrixPrim s))
 
 foreign import ccall "pango_matrix_free" c_pango_matrix_free ::
 	Ptr PangoMatrix -> IO ()
+
+pangoMatrixThaw ::
+	PrimMonad m => PangoMatrix -> m (PangoMatrixPrim (PrimState m))
+pangoMatrixThaw (PangoMatrix_ fm) = unsafeIOToPrim . (PangoMatrixPrim <$>)
+	$ withForeignPtr fm c_pango_matrix_thaw >>=
+		newForeignPtr <$> id <*> c_pango_matrix_prim_free
+
+foreign import ccall "pango_matrix_copy" c_pango_matrix_thaw ::
+	Ptr PangoMatrix -> IO (Ptr (PangoMatrixPrim s))
+
+pangoMatrixCopy :: PrimMonad m =>
+	PangoMatrixPrim (PrimState m) -> m (PangoMatrixPrim (PrimState m))
+pangoMatrixCopy (PangoMatrixPrim fm) = unsafeIOToPrim . (PangoMatrixPrim <$>)
+	$ withForeignPtr fm c_pango_matrix_copy >>=
+		newForeignPtr <$> id <*> c_pango_matrix_prim_free
+
+foreign import ccall "pango_matrix_copy" c_pango_matrix_copy ::
+	Ptr (PangoMatrixPrim s) -> IO (Ptr (PangoMatrixPrim s))
 
 foreign import ccall "pango_matrix_free" c_pango_matrix_prim_free ::
 	Ptr (PangoMatrixPrim s) -> IO ()
