@@ -33,7 +33,7 @@ todo
 * [x] `pango_matrix_rotate`
 	+ [x] define Angle which has Degree and Radian
 	+ [x] use Angle
-* [ ] `pango_matrix_concat`
+* [x] `pango_matrix_concat`
 * [ ] `pango_matrix_transform_point`
 * [ ] `pango_matrix_transform_distance`
 * [ ] `pango_matrix_transform_rectangle`

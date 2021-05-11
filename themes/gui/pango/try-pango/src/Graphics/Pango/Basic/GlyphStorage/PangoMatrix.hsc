@@ -130,3 +130,12 @@ pangoMatrixRotate (PangoMatrixPrim fm) (Degree dgr) = unsafeIOToPrim
 
 foreign import ccall "pango_matrix_rotate" c_pango_matrix_rotate ::
 	Ptr (PangoMatrixPrim s) -> CDouble -> IO ()
+
+pangoMatrixConcat :: PrimMonad m =>
+	PangoMatrixPrim (PrimState m) -> PangoMatrix -> m ()
+pangoMatrixConcat (PangoMatrixPrim fm) (PangoMatrix_ fnm) = unsafeIOToPrim
+	$ withForeignPtr fm \pm -> withForeignPtr fnm \pnm ->
+		c_pango_matrix_concat pm pnm
+
+foreign import ccall "pango_matrix_concat" c_pango_matrix_concat ::
+	Ptr (PangoMatrixPrim s) -> Ptr PangoMatrix -> IO ()
