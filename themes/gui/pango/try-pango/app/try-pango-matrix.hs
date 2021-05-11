@@ -10,12 +10,15 @@ import Graphics.Pango.Basic.GlyphStorage.PangoMatrix
 
 main :: IO ()
 main = do
-	let	m0 = PangoMatrix 1 2 3 4 5 6
+	let	u = PangoMatrix 1 0 0 1 0 0
+		m0 = PangoMatrix 1 2 3 4 5 6
 	print m0
 	print $ pangoMatrixTranslatePure m0 100 200
 	print $ pangoMatrixScalePure m0 10 100
 	print $ pangoMatrixRotatePure m0 (Radian pi)
 	print $ pangoMatrixConcatPure m0 $ PangoMatrix 1 0 0 1 10 20
+	let	m1 = pangoMatrixTranslatePure (pangoMatrixRotatePure u (Radian $ pi / 2) ) 10 100
+	print $ pangoMatrixTransformPoint m1 15 200
 
 pangoMatrixTranslatePure :: PangoMatrix -> CDouble -> CDouble -> PangoMatrix
 pangoMatrixTranslatePure m tx ty = runST do

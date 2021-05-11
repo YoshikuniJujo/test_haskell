@@ -139,3 +139,14 @@ pangoMatrixConcat (PangoMatrixPrim fm) (PangoMatrix_ fnm) = unsafeIOToPrim
 
 foreign import ccall "pango_matrix_concat" c_pango_matrix_concat ::
 	Ptr (PangoMatrixPrim s) -> Ptr PangoMatrix -> IO ()
+
+pangoMatrixTransformPoint ::
+	PangoMatrix -> CDouble -> CDouble -> (CDouble, CDouble)
+pangoMatrixTransformPoint (PangoMatrix_ fm) x y = unsafePerformIO
+	$ withForeignPtr fm \pm -> alloca \px -> alloca \py -> do
+		poke px x; poke py y
+		c_pango_matrix_transform_point pm px py
+		(,) <$> peek px <*> peek py
+
+foreign import ccall "pango_matrix_transform_point" c_pango_matrix_transform_point ::
+	Ptr PangoMatrix -> Ptr CDouble -> Ptr CDouble -> IO ()
