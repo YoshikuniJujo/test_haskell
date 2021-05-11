@@ -88,3 +88,11 @@ foreign import ccall "pango_matrix_copy" c_pango_matrix_copy ::
 
 foreign import ccall "pango_matrix_free" c_pango_matrix_prim_free ::
 	Ptr (PangoMatrixPrim s) -> IO ()
+
+pangoMatrixTranslate :: PrimMonad m =>
+	PangoMatrixPrim (PrimState m) -> CDouble -> CDouble -> m ()
+pangoMatrixTranslate (PangoMatrixPrim fm) tx ty = unsafeIOToPrim
+	$ withForeignPtr fm \pm -> c_pango_matrix_translate pm tx ty
+
+foreign import ccall "pango_matrix_translate" c_pango_matrix_translate ::
+	Ptr (PangoMatrixPrim s) -> CDouble -> CDouble -> IO ()

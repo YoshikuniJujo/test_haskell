@@ -28,7 +28,7 @@ todo
 	+ [x] `pangoMatrixFreeze`
 	+ [x] `pangoMatrixThaw`
 	+ [x] `pangoMatrixCopy`
-* [ ] `pango_matrix_translate`
+* [x] `pango_matrix_translate`
 * [ ] `pango_matrix_scale`
 * [ ] `pango_matrix_rotate`
 * [ ] `pango_matrix_concat`

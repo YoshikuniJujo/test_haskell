@@ -12,5 +12,6 @@ main = do
 	print m1
 	m2 <- pangoMatrixCopy m1
 	print m2
+	pangoMatrixTranslate m2 100 200
 	m3 <- pangoMatrixFreeze m2
 	print m3
