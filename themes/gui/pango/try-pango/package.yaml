@@ -240,6 +240,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-pango
+  try-pango-bidirectional-text:
+    main:                try-pango-bidirectional-text.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-pango
 
 tests:
   try-pango-test:

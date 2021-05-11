@@ -1,11 +1,19 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.BidirectionalText where
 
+import Foreign.C.Types
+import Foreign.C.String
 import Foreign.C.Enum
 import Data.Word
+import Data.Char
+import System.IO.Unsafe
+
+import qualified Data.Text as T
+import qualified Data.Text.Foreign as T
 
 #include <pango/pango.h>
 
@@ -38,3 +46,24 @@ enum "PangoBidiType" ''#{type PangoBidiType} [''Show, ''Read] [
 	("PangoBidiTypeS", #{const PANGO_BIDI_TYPE_S}),
 	("PangoBidiTypeWs", #{const PANGO_BIDI_TYPE_WS}),
 	("PangoBidiTypeOn", #{const PANGO_BIDI_TYPE_ON}) ]
+
+pangoUnicharDirection :: Char -> PangoDirection
+pangoUnicharDirection =
+	unsafePerformIO . c_pango_unichar_direction . fromIntegral . ord
+
+foreign import ccall "pango_unichar_direction" c_pango_unichar_direction ::
+	#{type gunichar} -> IO PangoDirection
+
+pangoFindBaseDir :: T.Text -> PangoDirection
+pangoFindBaseDir t = unsafePerformIO
+	$ T.withCStringLen t \(cs, l) -> c_pango_find_base_dir cs $ fromIntegral l
+
+foreign import ccall "pango_find_base_dir" c_pango_find_base_dir ::
+	CString -> CInt -> IO PangoDirection
+
+pangoBidiTypeForUnichar :: Char -> PangoBidiType
+pangoBidiTypeForUnichar =
+	unsafePerformIO . c_pango_bidi_type_for_unichar . fromIntegral . ord
+
+foreign import ccall "pango_bidi_type_for_unichar"
+	c_pango_bidi_type_for_unichar :: #{type gunichar} -> IO PangoBidiType

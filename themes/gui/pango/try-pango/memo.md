@@ -69,7 +69,7 @@ todo
 	+ [x] Scripts and Languages
 		- [x] PangoScript
 		- [x] PangoLanguage
-	+ [ ] Bidirectional Text
+	+ [x] Bidirectional Text
 	+ [ ] Vertical Text
 * [ ] Rendering with Pango
 	+ [ ] Cairo Rendering
