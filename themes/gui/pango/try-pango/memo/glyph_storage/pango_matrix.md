@@ -29,7 +29,7 @@ todo
 	+ [x] `pangoMatrixThaw`
 	+ [x] `pangoMatrixCopy`
 * [x] `pango_matrix_translate`
-* [ ] `pango_matrix_scale`
+* [x] `pango_matrix_scale`
 * [ ] `pango_matrix_rotate`
 * [ ] `pango_matrix_concat`
 * [ ] `pango_matrix_transform_point`
