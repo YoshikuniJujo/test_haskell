@@ -35,7 +35,7 @@ todo
 	+ [x] use Angle
 * [x] `pango_matrix_concat`
 * [x] `pango_matrix_transform_point`
-* [ ] `pango_matrix_transform_distance`
+* [x] `pango_matrix_transform_distance`
 * [ ] `pango_matrix_transform_rectangle`
 * [ ] `pango_matrix_transform_pixel_rectangle`
 * [ ] `pango_matrix_get_font_scale_factor`

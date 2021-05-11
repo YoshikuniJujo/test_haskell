@@ -148,5 +148,18 @@ pangoMatrixTransformPoint (PangoMatrix_ fm) x y = unsafePerformIO
 		c_pango_matrix_transform_point pm px py
 		(,) <$> peek px <*> peek py
 
-foreign import ccall "pango_matrix_transform_point" c_pango_matrix_transform_point ::
+foreign import ccall "pango_matrix_transform_point"
+	c_pango_matrix_transform_point ::
+	Ptr PangoMatrix -> Ptr CDouble -> Ptr CDouble -> IO ()
+
+pangoMatrixTransformDistance ::
+	PangoMatrix -> CDouble -> CDouble -> (CDouble, CDouble)
+pangoMatrixTransformDistance (PangoMatrix_ fm) dx dy = unsafePerformIO
+	$ withForeignPtr fm \pm -> alloca \pdx -> alloca \pdy -> do
+		poke pdx dx; poke pdy dy
+		c_pango_matrix_transform_distance pm pdx pdy
+		(,) <$> peek pdx <*> peek pdy
+
+foreign import ccall "pango_matrix_transform_distance"
+	c_pango_matrix_transform_distance ::
 	Ptr PangoMatrix -> Ptr CDouble -> Ptr CDouble -> IO ()

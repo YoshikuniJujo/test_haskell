@@ -19,6 +19,7 @@ main = do
 	print $ pangoMatrixConcatPure m0 $ PangoMatrix 1 0 0 1 10 20
 	let	m1 = pangoMatrixTranslatePure (pangoMatrixRotatePure u (Radian $ pi / 2) ) 10 100
 	print $ pangoMatrixTransformPoint m1 15 200
+	print $ pangoMatrixTransformDistance m1 15 200
 
 pangoMatrixTranslatePure :: PangoMatrix -> CDouble -> CDouble -> PangoMatrix
 pangoMatrixTranslatePure m tx ty = runST do
