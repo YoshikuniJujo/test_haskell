@@ -104,3 +104,11 @@ pangoMatrixScale (PangoMatrixPrim fm) sx sy = unsafeIOToPrim
 
 foreign import ccall "pango_matrix_scale" c_pango_matrix_scale ::
 	Ptr (PangoMatrixPrim s) -> CDouble -> CDouble -> IO ()
+
+pangoMatrixRotate :: PrimMonad m =>
+	PangoMatrixPrim (PrimState m) -> CDouble -> m ()
+pangoMatrixRotate (PangoMatrixPrim fm) dgr = unsafeIOToPrim
+	$ withForeignPtr fm \pm -> c_pango_matrix_rotate pm dgr
+
+foreign import ccall "pango_matrix_rotate" c_pango_matrix_rotate ::
+	Ptr (PangoMatrixPrim s) -> CDouble -> IO ()
