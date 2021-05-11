@@ -24,7 +24,10 @@ todo
 * [x] `pattern PangoMatrix`
 * [x] `instance Show PangoMatrix`
 * [ ] `pango_matrix_copy`
-* [ ] `pango_matrix_free`
+	+ [x] `pango_matrix_free`
+	+ [x] `pangoMatrixFreeze`
+	+ [ ] `pangoMatrixThaw`
+	+ [ ] `pangoMatrixCopy`
 * [ ] `pango_matrix_translate`
 * [ ] `pango_matrix_scale`
 * [ ] `pango_matrix_rotate`

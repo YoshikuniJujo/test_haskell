@@ -4,11 +4,13 @@
 
 module Graphics.Pango.Basic.GlyphStorage.PangoMatrix where
 
+import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
+import Control.Monad.Primitive
 import System.IO.Unsafe
 
 #include <pango/pango.h>
@@ -51,3 +53,23 @@ pangoMatrix (PangoMatrix_ fm) = unsafePerformIO $ withForeignPtr fm \pm -> (,,,,
 	<*> #{peek PangoMatrix, yy} pm
 	<*> #{peek PangoMatrix, x0} pm
 	<*> #{peek PangoMatrix, y0} pm
+
+newtype PangoMatrixPrim s = PangoMatrixPrim (ForeignPtr (PangoMatrixPrim s)) deriving Show
+
+pangoMatrixFreeze ::
+	PrimMonad m => PangoMatrixPrim (PrimState m) -> m PangoMatrix
+pangoMatrixFreeze (PangoMatrixPrim fm) = unsafeIOToPrim . (PangoMatrix_ <$>)
+	$ withForeignPtr fm c_pango_matrix_freeze >>=
+		newForeignPtr <$> id <*> c_pango_matrix_free
+
+foreign import ccall "pango_matrix_freeze" c_pango_matrix_freeze ::
+	Ptr (PangoMatrixPrim s) -> IO (Ptr PangoMatrix)
+
+foreign import ccall "pango_matrix_copy" c_pango_matrix_copy ::
+	Ptr (PangoMatrixPrim s) -> IO (Ptr (PangoMatrixPrim s))
+
+foreign import ccall "pango_matrix_free" c_pango_matrix_free ::
+	Ptr PangoMatrix -> IO ()
+
+foreign import ccall "pango_matrix_free" c_pango_matrix_prim_free ::
+	Ptr (PangoMatrixPrim s) -> IO ()
