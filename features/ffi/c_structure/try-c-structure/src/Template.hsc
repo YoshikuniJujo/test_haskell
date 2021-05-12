@@ -57,3 +57,7 @@ e1 .$ e2 = infixE (Just e1) (varE '($)) (Just e2)
 lcfirst :: String -> String
 lcfirst "" = ""
 lcfirst (c : cs) = toLower c : cs
+
+mkPatternSig :: String -> [Name] -> DecQ
+mkPatternSig nt ts =
+	patSynSigD (mkName nt) $ foldr arrT (conT $ mkName nt) (conT <$> ts)

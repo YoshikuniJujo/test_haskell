@@ -9,7 +9,10 @@ todo
 	+ [x] function foo
 		- [x] for single field
 		- [x] for multiple field
-	+ [ ] others
+	+ [x] pattern signature
+	+ [ ] pattern body
+		- [ ] pattern match
+		- [ ] construct
 * [ ] `instance Show Foo`
 * [ ] `instance Read Foo`
 * [ ] `newtype FooPrim`
