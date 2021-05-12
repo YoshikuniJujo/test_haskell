@@ -5,14 +5,14 @@ todo
 ----
 
 * [x] `newtype Foo`
-* [ ] `pattern Foo`
+* [x] `pattern Foo`
 	+ [x] function foo
 		- [x] for single field
 		- [x] for multiple field
 	+ [x] pattern signature
-	+ [ ] pattern body
-		- [ ] pattern match
-		- [ ] construct
+	+ [x] pattern body
+		- [x] pattern match
+		- [x] construct
 * [ ] `instance Show Foo`
 * [ ] `instance Read Foo`
 * [ ] `newtype FooPrim`

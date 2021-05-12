@@ -1,11 +1,13 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Template where
 
 import Language.Haskell.TH
-import Foreign.ForeignPtr
+import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.Concurrent
+import Foreign.Marshal
 import Control.Monad
 import Data.Bool
 import Data.Char
@@ -54,10 +56,35 @@ infixr 8 .$
 (.$) :: ExpQ -> ExpQ -> ExpQ
 e1 .$ e2 = infixE (Just e1) (varE '($)) (Just e2)
 
-lcfirst :: String -> String
-lcfirst "" = ""
-lcfirst (c : cs) = toLower c : cs
+(.<$>) :: ExpQ -> ExpQ -> ExpQ
+e1 .<$> e2 = infixE (Just e1) (varE '(<$>)) (Just e2)
+
+lcfirst, ucfirst :: String -> String
+lcfirst = \case "" -> ""; c : cs -> toLower c : cs
+ucfirst = \case "" -> ""; c : cs -> toUpper c : cs
 
 mkPatternSig :: String -> [Name] -> DecQ
 mkPatternSig nt ts =
 	patSynSigD (mkName nt) $ foldr arrT (conT $ mkName nt) (conT <$> ts)
+
+mkPatternBody :: String -> Integer -> [String] -> [ExpQ] -> DecQ
+mkPatternBody nt sz fs poks =
+	patSynD (mkName nt) (recordPatSyn fs')
+		(explBidir [mkPatternBodyClause nt sz poks])
+		(viewP (varE . mkName $ lcfirst nt) (tupP $ varP <$> fs'))
+	where
+	fs' = mkName . (lcfirst nt ++) . ucfirst <$> fs
+
+mkPatternBodyClause :: String -> Integer -> [ExpQ] -> ClauseQ
+mkPatternBodyClause nt sz pks = do
+	vs <- replicateM (length pks) $ newName "v"
+	p <- newName "p"
+	clause (varP <$> vs) (
+		normalB $ varE 'unsafePerformIO .$ conE (mkName nt_) .<$> doE (
+			bindS (varP p) (varE 'mallocBytes `appE` litE (IntegerL sz)) :
+			((<$> zip pks vs) \(pk, v) -> noBindS $ pk `appE` varE p `appE` varE v) ++
+			[noBindS $ varE 'newForeignPtr `appE` varE p `appE` (varE 'free `appE` varE p)]
+			)
+		) []
+	where
+	nt_ = nt ++ "_"

@@ -30,13 +30,9 @@ mkPatternFun "Foo" [
 	(''CInt, [e| #{peek Foo, x} |]),
 	(''CInt, [e| #{peek Foo, y} |]) ]
 
-(: []) <$> mkPatternSig "Foo" [''CInt, ''CInt]
-pattern Foo { fooX, fooY } <- (foo -> (fooX, fooY)) where
-	Foo x y = unsafePerformIO $ Foo_ <$> do
-		p <- mallocBytes #{size Foo}
-		#{poke Foo, x} p x
-		#{poke Foo, y} p y
-		newForeignPtr p (free p)
+(\s b -> [s, b])
+	<$> mkPatternSig "Foo" [''CInt, ''CInt]
+	<*> mkPatternBody "Foo" #{size Foo} ["x", "y"] [[e| #{poke Foo, x} |], [e| #{poke Foo, y} |]]
 
 sampleFoo :: Foo
 sampleFoo = unsafePerformIO $ Foo_ <$> do
