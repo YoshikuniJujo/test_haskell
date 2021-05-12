@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -13,9 +14,11 @@ import Foreign.C.Types
 import Control.Monad.Primitive
 import System.IO.Unsafe
 
+import Graphics.Pango.Basic.GlyphStorage.Template
+
 #include <pango/pango.h>
 
-newtype PangoMatrix = PangoMatrix_ (ForeignPtr PangoMatrix)
+(: []) <$> mkNewtype "PangoMatrix"
 
 instance Show PangoMatrix where
 	showsPrec d m = showParen (d > 10) $ ("PangoMatrix {" ++) .

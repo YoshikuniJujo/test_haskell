@@ -40,4 +40,15 @@ todo
 * [ ] `pango_matrix_transform_pixel_rectangle`
 * [ ] `pango_matrix_get_font_scale_factor`
 * [ ] `pango_matrix_get_font_scale_factors`
-* [ ] add unit matrix
+* [ ] use template for `PangoMatrix`
+	+ [x] `newtype PangoMatrix`
+	+ [ ] `pattern PangoMatrix`
+		- [ ] function `pangoMatrix`
+		- [ ] others
+	+ [ ] `instance Show`
+	+ [ ] `instance Read`
+* [ ] use template for `PangoMatrixPrim`
+	+ [ ] `newtype PangoMatrixPrim s`
+	+ [ ] function `pangoMatrixFreeze`
+	+ [ ] function `pangoMatrixThaw`
+	+ [ ] function `pangoMatrixCopy`
