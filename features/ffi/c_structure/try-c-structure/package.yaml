@@ -1,0 +1,52 @@
+name:                try-c-structure
+version:             0.1.0.0
+github:              "githubuser/try-c-structure"
+license:             BSD3
+author:              "Author name here"
+maintainer:          "example@example.com"
+copyright:           "2021 Author name here"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/githubuser/try-c-structure#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- template-haskell
+
+library:
+  source-dirs: src
+  c-sources:
+  - csrc/foo.c
+  include-dirs: include
+
+executables:
+  try-c-structure-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-c-structure
+
+tests:
+  try-c-structure-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-c-structure
