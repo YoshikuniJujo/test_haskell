@@ -2,6 +2,7 @@
 #define _FOO_H
 
 typedef struct {
-	int x; } Foo;
+	int x;
+	int y; } Foo;
 
 #endif

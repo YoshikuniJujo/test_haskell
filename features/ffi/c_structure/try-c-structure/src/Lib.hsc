@@ -24,12 +24,15 @@ some = #{peek Foo, x}
 bar :: ExpQ
 bar = [e| #{peek Foo, x} |]
 
-mkPatternFun "Foo" ''CInt [e| #{peek Foo, x} |]
+mkPatternFun "Foo" [
+	(''CInt, [e| #{peek Foo, x} |]),
+	(''CInt, [e| #{peek Foo, y} |]) ]
 
-{-
-foo :: Foo -> CInt
-foo (Foo_ ff) = unsafePerformIO $ withForeignPtr ff \pf -> #{peek Foo, x} pf
--}
+foo' :: Foo -> (CInt, CInt)
+foo' (Foo_ ff) = unsafePerformIO $ withForeignPtr ff \pf -> do
+	f0 <- #{peek Foo, x} pf
+	f1 <- #{peek Foo, y} pf
+	pure (f0, f1)
 
 sampleFoo :: Foo
 sampleFoo = unsafePerformIO $ Foo_ <$> do

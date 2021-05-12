@@ -6,9 +6,9 @@ todo
 
 * [x] `newtype Foo`
 * [ ] `pattern Foo`
-	+ [ ] function foo
+	+ [x] function foo
 		- [x] for single field
-		- [ ] for multiple field
+		- [x] for multiple field
 	+ [ ] others
 * [ ] `instance Show Foo`
 * [ ] `instance Read Foo`
