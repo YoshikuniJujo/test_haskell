@@ -34,6 +34,8 @@ mkPatternFun "Foo" [
 	<$> mkPatternSig "Foo" [''CInt, ''CInt]
 	<*> mkPatternBody "Foo" #{size Foo} ["x", "y"] [[e| #{poke Foo, x} |], [e| #{poke Foo, y} |]]
 
+(: []) <$> mkInstanceShow "Foo" ["x", "y"]
+
 sampleFoo :: Foo
 sampleFoo = unsafePerformIO $ Foo_ <$> do
 	p <- c_sample_foo

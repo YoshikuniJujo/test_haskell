@@ -13,7 +13,7 @@ todo
 	+ [x] pattern body
 		- [x] pattern match
 		- [x] construct
-* [ ] `instance Show Foo`
+* [x] `instance Show Foo`
 * [ ] `instance Read Foo`
 * [ ] `newtype FooPrim`
 * [ ] `function fooFreeze`

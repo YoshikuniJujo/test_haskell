@@ -10,6 +10,7 @@ import Foreign.Concurrent
 import Foreign.Marshal
 import Control.Monad
 import Data.Bool
+import Data.List
 import Data.Char
 import System.IO.Unsafe
 
@@ -53,11 +54,16 @@ tupT ts = foldl appT (tupleT $ length ts) ts
 
 infixr 8 .$
 
-(.$) :: ExpQ -> ExpQ -> ExpQ
+(.$), (...), (.<$>) :: ExpQ -> ExpQ -> ExpQ
 e1 .$ e2 = infixE (Just e1) (varE '($)) (Just e2)
-
-(.<$>) :: ExpQ -> ExpQ -> ExpQ
+e1 ... e2 = infixE (Just e1) (varE '(.)) (Just e2)
 e1 .<$> e2 = infixE (Just e1) (varE '(<$>)) (Just e2)
+
+pt :: ExpQ -> ExpQ -> ExpQ
+e `pt` op = infixE (Just e) op Nothing
+
+pp :: String -> ExpQ
+pp s = litE (StringL s) `pt` varE '(++)
 
 lcfirst, ucfirst :: String -> String
 lcfirst = \case "" -> ""; c : cs -> toLower c : cs
@@ -88,3 +94,22 @@ mkPatternBodyClause nt sz pks = do
 		) []
 	where
 	nt_ = nt ++ "_"
+
+mkInstanceShow :: String -> [String] -> DecQ
+mkInstanceShow nt fs = do
+	f <- newName "f"
+	vs <- replicateM (length fs) $ newName "v"
+	instanceD (cxt []) (conT ''Show `appT` conT (mkName nt)) [
+		funD 'showsPrec [
+			clause [wildP, varP f] (
+				normalB $ pp (nt ++ " {") ...
+					mkShowFields nt fs vs ...
+					pp "}"
+				) [valD (conP (mkName nt) $ varP <$> vs) (normalB $ varE f) []] ] ]
+
+litI :: Integer -> ExpQ
+litI = litE . IntegerL
+
+mkShowFields :: String -> [String] -> [Name] -> ExpQ
+mkShowFields nt fs ns = foldr (...) (varE 'id) . intersperse (pp ", ")
+	$ (<$> zip fs ns) \(f, n) -> pp (lcfirst nt ++ ucfirst f ++ " = ") ... (varE 'showsPrec `appE` litI 11 `appE` varE n)
