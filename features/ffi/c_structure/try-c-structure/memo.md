@@ -15,6 +15,8 @@ todo
 		- [x] construct
 * [x] `instance Show Foo`
 * [ ] `instance Read Foo`
+	- [ ] no template
+	- [ ] template
 * [ ] `newtype FooPrim`
 * [ ] `function fooFreeze`
 * [ ] `function fooThaw`

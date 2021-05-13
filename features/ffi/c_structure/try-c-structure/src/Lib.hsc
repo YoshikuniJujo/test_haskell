@@ -13,6 +13,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
 import System.IO.Unsafe
+import Text.Read
 
 import Template
 
@@ -35,6 +36,21 @@ mkPatternFun "Foo" [
 	<*> mkPatternBody "Foo" #{size Foo} ["x", "y"] [[e| #{poke Foo, x} |], [e| #{poke Foo, y} |]]
 
 (: []) <$> mkInstanceShow "Foo" ["x", "y"]
+
+instance Read Foo where
+	readPrec = parens $ prec appPrec do
+		Ident "Foo" <- lexP
+		Punc "{" <- lexP
+		Ident "fooX" <- lexP
+		Punc "=" <- lexP
+		x <- step readPrec
+		Punc "," <- lexP
+		Ident "fooY" <- lexP
+		Punc "=" <- lexP
+		y <- step readPrec
+		Punc "}" <- lexP
+		pure $ Foo x y
+		where appPrec = 10
 
 sampleFoo :: Foo
 sampleFoo = unsafePerformIO $ Foo_ <$> do
