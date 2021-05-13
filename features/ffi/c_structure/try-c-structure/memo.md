@@ -14,9 +14,9 @@ todo
 		- [x] pattern match
 		- [x] construct
 * [x] `instance Show Foo`
-* [ ] `instance Read Foo`
-	- [ ] no template
-	- [ ] template
+* [x] `instance Read Foo`
+	- [x] no template
+	- [x] template
 * [ ] `newtype FooPrim`
 * [ ] `function fooFreeze`
 * [ ] `function fooThaw`

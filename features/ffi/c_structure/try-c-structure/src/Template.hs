@@ -13,6 +13,7 @@ import Data.Bool
 import Data.List
 import Data.Char
 import System.IO.Unsafe
+import Text.Read
 
 mkNewtype :: String -> DecQ
 mkNewtype nt = newtypeD (cxt []) (mkName nt) [] Nothing (normalC (mkName $ nt ++ "_") [
@@ -113,3 +114,22 @@ litI = litE . IntegerL
 mkShowFields :: String -> [String] -> [Name] -> ExpQ
 mkShowFields nt fs ns = foldr (...) (varE 'id) . intersperse (pp ", ")
 	$ (<$> zip fs ns) \(f, n) -> pp (lcfirst nt ++ ucfirst f ++ " = ") ... (varE 'showsPrec `appE` litI 11 `appE` varE n)
+
+mkInstanceRead :: String -> [String] -> DecQ
+mkInstanceRead nt fs = do
+	vs <- replicateM (length fs) $ newName "v"
+	instanceD (cxt []) (conT ''Read `appT` conT (mkName nt)) [
+		valD (varP 'readPrec) (normalB $ varE 'parens .$ varE 'prec `appE` litI 10 `appE` doE ([
+			bindS (conP 'Ident [litP $ StringL "Foo"]) $ varE 'lexP,
+			bindS (conP 'Punc [litP $ StringL "{"]) $ varE 'lexP] ++
+			mkReadFields nt fs vs ++
+			[bindS (conP 'Punc [litP $ StringL "}"]) $ varE 'lexP,
+			noBindS $ varE 'pure .$ foldl appE (conE $ mkName nt) (varE <$> vs)
+			])) []
+		]
+
+mkReadFields :: String -> [String] -> [Name] -> [StmtQ]
+mkReadFields nt fs vs = intercalate [bindS (conP 'Punc $ [litP $ StringL ","]) $ varE 'lexP] $ (<$> zip fs vs) \(f, v) -> [
+	bindS (conP 'Ident [litP . StringL $ lcfirst nt ++ ucfirst f]) $ varE 'lexP,
+	bindS (conP 'Punc [litP $ StringL "="]) $ varE 'lexP,
+	bindS (varP v) $ varE 'step `appE` varE 'readPrec ]
