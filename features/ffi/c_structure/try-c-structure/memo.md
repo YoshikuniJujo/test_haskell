@@ -17,7 +17,7 @@ todo
 * [x] `instance Read Foo`
 	- [x] no template
 	- [x] template
-* [ ] `newtype FooPrim`
+* [x] `newtype FooPrim`
 * [ ] `function fooFreeze`
 * [ ] `function fooThaw`
 * [ ] `function fooCopy`
