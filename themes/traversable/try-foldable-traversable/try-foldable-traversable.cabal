@@ -26,6 +26,8 @@ source-repository head
 library
   exposed-modules:
       Lib
+      Lib2
+      TryFix
   other-modules:
       Paths_try_foldable_traversable
   hs-source-dirs:
