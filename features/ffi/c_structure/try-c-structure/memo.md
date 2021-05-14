@@ -22,5 +22,14 @@ todo
 * [x] `function fooFreeze`
 * [x] `function fooThaw`
 * [x] `function fooCopy`
+* [ ] make derivings
+	+ [ ] Eq
+		- [x] no template
+		- [ ] template
+	+ [ ] Ord
+	+ [ ] Enum
+	+ [ ] Bounded
+	+ [ ] Ix
+* [ ] make `ShowReadDerivs`
 * [ ] `struct`
 * [ ] `structPrim`

@@ -30,6 +30,9 @@ mkPatternFun "Foo" [
 (: []) <$> mkInstanceShow "Foo" ["x", "y"]
 (: []) <$> mkInstanceRead "Foo" ["x", "y"]
 
+instance Eq Foo where
+	f1 == f2 = fooX f1 == fooX f2 && fooY f1 == fooY f2
+
 (: []) <$> mkNewtypePrim "Foo" [''Show]
 
 foreign import ccall "foo_copy" c_foo_freeze :: Ptr (FooPrim s) -> IO (Ptr Foo)
