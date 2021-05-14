@@ -34,6 +34,7 @@ mkPatternFun "Foo" [
 
 foreign import ccall "foo_copy" c_foo_freeze :: Ptr (FooPrim s) -> IO (Ptr Foo)
 foreign import ccall "foo_copy" c_foo_thaw :: Ptr Foo -> IO (Ptr (FooPrim s))
+foreign import ccall "foo_copy" c_foo_copy :: Ptr (FooPrim s) -> IO (Ptr (FooPrim s))
 foreign import ccall "foo_free" c_foo_free :: Ptr Foo -> IO ()
 foreign import ccall "foo_free" c_foo_prim_free :: Ptr (FooPrim s) -> IO ()
 
@@ -44,6 +45,10 @@ foreign import ccall "foo_free" c_foo_prim_free :: Ptr (FooPrim s) -> IO ()
 (\s b -> [s, b])
 	<$> mkThawSig "Foo"
 	<*> mkThawFun "Foo" 'c_foo_thaw 'c_foo_prim_free
+
+(\s b -> [s, b])
+	<$> mkCopySig "Foo"
+	<*> mkCopyFun "Foo" 'c_foo_copy 'c_foo_prim_free
 
 sampleFoo :: Foo
 sampleFoo = unsafePerformIO $ Foo_ <$> do

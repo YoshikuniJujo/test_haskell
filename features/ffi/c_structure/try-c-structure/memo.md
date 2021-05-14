@@ -21,6 +21,6 @@ todo
 	+ [x] repair
 * [x] `function fooFreeze`
 * [x] `function fooThaw`
-* [ ] `function fooCopy`
+* [x] `function fooCopy`
 * [ ] `struct`
 * [ ] `structPrim`
