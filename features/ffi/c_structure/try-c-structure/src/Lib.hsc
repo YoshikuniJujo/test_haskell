@@ -15,7 +15,7 @@ import Template
 
 #include "foo.h"
 
-(: []) <$> mkNewtype "Foo" "Foo_"
+(: []) <$> mkNewtype "Foo"
 
 mkPatternFun "Foo" [
 	(''CInt, [e| #{peek Foo, x} |]),
@@ -35,4 +35,4 @@ sampleFoo = unsafePerformIO $ Foo_ <$> do
 
 foreign import ccall "sample_foo" c_sample_foo :: IO (Ptr Foo)
 
-(: []) <$> mkNewtypePrim "Foo"
+(: []) <$> mkNewtypePrim "Foo" [''Show]

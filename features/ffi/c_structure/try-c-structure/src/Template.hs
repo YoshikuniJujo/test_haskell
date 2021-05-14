@@ -15,8 +15,8 @@ import Data.Char
 import System.IO.Unsafe
 import Text.Read
 
-mkNewtype :: String -> String -> DecQ
-mkNewtype nt nc = newtypeD (cxt []) (mkName nt) [] Nothing (normalC (mkName nc) [
+mkNewtype :: String -> DecQ
+mkNewtype nt = newtypeD (cxt []) (mkName nt) [] Nothing (normalC (mkName $ nt ++ "_") [
 	bangType
 		(bang noSourceUnpackedness noSourceStrictness)
 		(conT ''ForeignPtr `appT` conT (mkName nt))
@@ -134,5 +134,11 @@ mkReadFields nt fs vs = intercalate [bindS (conP 'Punc $ [litP $ StringL ","]) $
 	bindS (conP 'Punc [litP $ StringL "="]) $ varE 'lexP,
 	bindS (varP v) $ varE 'step `appE` varE 'readPrec ]
 
-mkNewtypePrim :: String -> DecQ
-mkNewtypePrim nt = mkNewtype (nt ++ "Prim") (nt ++ "Prim")
+mkNewtypePrim :: String -> [Name] -> DecQ
+mkNewtypePrim nt ds = do
+	s <- newName "s"
+	newtypeD (cxt []) (mkName $ nt ++ "Prim") [plainTV s] Nothing (normalC (mkName $ nt ++ "Prim") [
+		bangType
+			(bang noSourceUnpackedness noSourceStrictness)
+			(conT ''ForeignPtr `appT` (conT (mkName $ nt ++ "Prim") `appT` varT s))
+		]) [derivClause Nothing $ conT <$> ds]

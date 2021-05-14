@@ -18,6 +18,7 @@ todo
 	- [x] no template
 	- [x] template
 * [x] `newtype FooPrim`
+	+ [x] repair
 * [ ] `function fooFreeze`
 * [ ] `function fooThaw`
 * [ ] `function fooCopy`
