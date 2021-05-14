@@ -164,3 +164,22 @@ mkFreezeFun nt frz fr = do
 mkFreezeBody :: String -> Name -> Name -> Name -> ExpQ
 mkFreezeBody nt frz fr ff = (varE 'unsafeIOToPrim ... (conE (mkName $ nt ++ "_") `pt` varE '(<$>)))
 	.$ (varE 'withForeignPtr `appE` varE ff `appE` varE frz) .>>= (varE 'newForeignPtr .<$> varE 'id .<*> varE fr)
+
+mkThawSig :: String -> DecQ
+mkThawSig nt = do
+	m <- newName "m"
+	sigD (mkName $ lcfirst nt ++ "Thaw") . forallT [] (cxt [conT ''PrimMonad `appT` varT m])
+		$ conT (mkName nt) .-> (varT m `appT` (conT (mkName $ nt ++ "Prim") `appT` (conT ''PrimState `appT` varT m)))
+
+mkThawFun :: String -> Name -> Name -> DecQ
+mkThawFun nt frz fr = do
+	ff <- newName "ff"
+	funD (mkName $ lcfirst nt ++ "Thaw") [
+		clause [conP (mkName $ nt ++ "_") [varP ff]] (
+			normalB (mkThawBody nt frz fr ff)
+			) []
+		]
+
+mkThawBody :: String -> Name -> Name -> Name -> ExpQ
+mkThawBody nt frz fr ff = (varE 'unsafeIOToPrim ... (conE (mkName $ nt ++ "Prim") `pt` varE '(<$>)))
+	.$ (varE 'withForeignPtr `appE` varE ff `appE` varE frz) .>>= (varE 'newForeignPtr .<$> varE 'id .<*> varE fr)

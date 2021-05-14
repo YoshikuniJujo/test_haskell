@@ -6,7 +6,7 @@
 module Lib where
 
 import Foreign.Ptr
--- import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Storable
 import Foreign.C.Types
@@ -33,11 +33,17 @@ mkPatternFun "Foo" [
 (: []) <$> mkNewtypePrim "Foo" [''Show]
 
 foreign import ccall "foo_copy" c_foo_freeze :: Ptr (FooPrim s) -> IO (Ptr Foo)
+foreign import ccall "foo_copy" c_foo_thaw :: Ptr Foo -> IO (Ptr (FooPrim s))
 foreign import ccall "foo_free" c_foo_free :: Ptr Foo -> IO ()
+foreign import ccall "foo_free" c_foo_prim_free :: Ptr (FooPrim s) -> IO ()
 
 (\s f -> [s, f])
 	<$> mkFreezeSig "Foo"
 	<*> mkFreezeFun "Foo" 'c_foo_freeze 'c_foo_free
+
+(\s b -> [s, b])
+	<$> mkThawSig "Foo"
+	<*> mkThawFun "Foo" 'c_foo_thaw 'c_foo_prim_free
 
 sampleFoo :: Foo
 sampleFoo = unsafePerformIO $ Foo_ <$> do
@@ -51,3 +57,8 @@ sampleFooPrim = unsafeIOToPrim $ FooPrim <$> do
 
 foreign import ccall "sample_foo" c_sample_foo :: IO (Ptr Foo)
 foreign import ccall "sample_foo" c_sample_foo_prim :: IO (Ptr (FooPrim s))
+
+fooScale :: PrimMonad m => FooPrim (PrimState m) -> CInt -> m ()
+fooScale (FooPrim ff) s = unsafeIOToPrim $ withForeignPtr ff (`c_foo_scale` s)
+
+foreign import ccall "foo_scale" c_foo_scale :: Ptr (FooPrim s) -> CInt -> IO ()

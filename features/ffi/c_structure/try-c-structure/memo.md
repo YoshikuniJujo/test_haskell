@@ -20,5 +20,7 @@ todo
 * [x] `newtype FooPrim`
 	+ [x] repair
 * [x] `function fooFreeze`
-* [ ] `function fooThaw`
+* [x] `function fooThaw`
 * [ ] `function fooCopy`
+* [ ] `struct`
+* [ ] `structPrim`
