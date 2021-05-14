@@ -9,6 +9,7 @@ import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Marshal
 import Control.Monad
+import Control.Monad.Primitive
 import Data.Bool
 import Data.List
 import Data.Char
@@ -24,7 +25,7 @@ mkNewtype nt = newtypeD (cxt []) (mkName nt) [] Nothing (normalC (mkName $ nt ++
 
 mkPatternFun :: String -> [(Name, ExpQ)] -> DecsQ
 mkPatternFun nt tpks = sequence [
-	sigD (mkName $ lcfirst nt) $ conT (mkName nt) `arrT` tupT (conT <$> ts),
+	sigD (mkName $ lcfirst nt) $ conT (mkName nt) .-> tupT (conT <$> ts),
 	funD (mkName $ lcfirst nt) [do
 		ff <- newName "ff"
 		pf <- newName . bool "pf" "_" $ null tpks
@@ -42,8 +43,8 @@ mkPatternFunDo pf pks = do
 	doE . (++ [noBindS $ varE 'pure `appE` tupE' (varE <$> fs)]) $ (<$> (fs `zip` pks)) \(f', pk') ->
 		bindS (varP f') $ pk' `appE` varE pf
 
-arrT :: TypeQ -> TypeQ -> TypeQ
-arrT t1 t2 = arrowT `appT` t1 `appT` t2
+(.->) :: TypeQ -> TypeQ -> TypeQ
+t1 .-> t2 = arrowT `appT` t1 `appT` t2
 
 tupE' :: [ExpQ] -> ExpQ
 tupE' [e] = e
@@ -55,10 +56,12 @@ tupT ts = foldl appT (tupleT $ length ts) ts
 
 infixr 8 .$
 
-(.$), (...), (.<$>) :: ExpQ -> ExpQ -> ExpQ
+(.$), (...), (.<$>), (.<*>), (.>>=) :: ExpQ -> ExpQ -> ExpQ
 e1 .$ e2 = infixE (Just e1) (varE '($)) (Just e2)
 e1 ... e2 = infixE (Just e1) (varE '(.)) (Just e2)
 e1 .<$> e2 = infixE (Just e1) (varE '(<$>)) (Just e2)
+e1 .<*> e2 = infixE (Just e1) (varE '(<*>)) (Just e2)
+e1 .>>= e2 = infixE (Just e1) (varE '(>>=)) (Just e2)
 
 pt :: ExpQ -> ExpQ -> ExpQ
 e `pt` op = infixE (Just e) op Nothing
@@ -72,7 +75,7 @@ ucfirst = \case "" -> ""; c : cs -> toUpper c : cs
 
 mkPatternSig :: String -> [Name] -> DecQ
 mkPatternSig nt ts =
-	patSynSigD (mkName nt) $ foldr arrT (conT $ mkName nt) (conT <$> ts)
+	patSynSigD (mkName nt) $ foldr (.->) (conT $ mkName nt) (conT <$> ts)
 
 mkPatternBody :: String -> Integer -> [String] -> [ExpQ] -> DecQ
 mkPatternBody nt sz fs poks =
@@ -142,3 +145,22 @@ mkNewtypePrim nt ds = do
 			(bang noSourceUnpackedness noSourceStrictness)
 			(conT ''ForeignPtr `appT` (conT (mkName $ nt ++ "Prim") `appT` varT s))
 		]) [derivClause Nothing $ conT <$> ds]
+
+mkFreezeSig :: String -> DecQ
+mkFreezeSig nt = do
+	m <- newName "m"
+	sigD (mkName $ lcfirst nt ++ "Freeze") . forallT [] (cxt [conT ''PrimMonad `appT` varT m])
+		$ conT (mkName $ nt ++ "Prim") `appT` (conT ''PrimState `appT` varT m) .-> (varT m `appT` conT (mkName nt))
+
+mkFreezeFun :: String -> Name -> Name -> DecQ
+mkFreezeFun nt frz fr = do
+	ff <- newName "ff"
+	funD (mkName $ lcfirst nt ++ "Freeze") [
+		clause [conP (mkName $ nt ++ "Prim") [varP ff]] (
+			normalB (mkFreezeBody nt frz fr ff)
+			) []
+		]
+
+mkFreezeBody :: String -> Name -> Name -> Name -> ExpQ
+mkFreezeBody nt frz fr ff = (varE 'unsafeIOToPrim ... (conE (mkName $ nt ++ "_") `pt` varE '(<$>)))
+	.$ (varE 'withForeignPtr `appE` varE ff `appE` varE frz) .>>= (varE 'newForeignPtr .<$> varE 'id .<*> varE fr)
