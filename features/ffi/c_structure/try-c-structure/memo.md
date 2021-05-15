@@ -27,7 +27,7 @@ todo
 		- [x] no template
 		- [x] template
 	+ [ ] Ord
-		- [ ] no template
+		- [x] no template
 		- [ ] template
 	+ [ ] Enum
 	+ [ ] Bounded

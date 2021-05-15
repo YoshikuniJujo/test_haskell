@@ -31,6 +31,9 @@ mkPatternFun "Foo" [
 (: []) <$> mkInstanceRead "Foo" ["x", "y"]
 (: []) <$> mkInstanceEq "Foo" ["x", "y"]
 
+instance Ord Foo where
+	f <= g = foldr (\x v -> x f < x g || x f == x g && v) True [fooX, fooY]
+
 (: []) <$> mkNewtypePrim "Foo" [''Show]
 
 foreign import ccall "foo_copy" c_foo_freeze :: Ptr (FooPrim s) -> IO (Ptr Foo)
