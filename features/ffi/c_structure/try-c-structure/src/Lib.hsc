@@ -30,9 +30,7 @@ mkPatternFun "Foo" [
 (: []) <$> mkInstanceShow "Foo" ["x", "y"]
 (: []) <$> mkInstanceRead "Foo" ["x", "y"]
 (: []) <$> mkInstanceEq "Foo" ["x", "y"]
-
-instance Ord Foo where
-	f <= g = foldr (\x v -> x f < x g || x f == x g && v) True [fooX, fooY]
+(: []) <$> mkInstanceOrd "Foo" ["x", "y"]
 
 (: []) <$> mkNewtypePrim "Foo" [''Show]
 

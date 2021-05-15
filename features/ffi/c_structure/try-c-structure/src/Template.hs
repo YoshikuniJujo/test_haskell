@@ -56,14 +56,17 @@ tupT ts = foldl appT (tupleT $ length ts) ts
 
 infixr 8 .$
 
-(.$), (...), (.<$>), (.<*>), (.>>=), (.&&), (.==) :: ExpQ -> ExpQ -> ExpQ
+(.$), (...), (.<$>), (.<*>), (.>>=), (.&&), (.||), (.==), (.<=), (.<) :: ExpQ -> ExpQ -> ExpQ
 e1 .$ e2 = infixE (Just e1) (varE '($)) (Just e2)
 e1 ... e2 = infixE (Just e1) (varE '(.)) (Just e2)
 e1 .<$> e2 = infixE (Just e1) (varE '(<$>)) (Just e2)
 e1 .<*> e2 = infixE (Just e1) (varE '(<*>)) (Just e2)
 e1 .>>= e2 = infixE (Just e1) (varE '(>>=)) (Just e2)
 e1 .&& e2 = infixE (Just e1) (varE '(&&)) (Just e2)
+e1 .|| e2 = infixE (Just e1) (varE '(||)) (Just e2)
 e1 .== e2 = infixE (Just e1) (varE '(==)) (Just e2)
+e1 .<= e2 = infixE (Just e1) (varE '(<=)) (Just e2)
+e1 .< e2 = infixE (Just e1) (varE '(<)) (Just e2)
 
 pt :: ExpQ -> ExpQ -> ExpQ
 e `pt` op = infixE (Just e) op Nothing
@@ -155,6 +158,27 @@ fieldEqual :: Name -> Name -> String -> String -> ExpQ
 fieldEqual s1 s2 nt f_ = (f `appE` varE s1) .== (f `appE` varE s2)
 	where
 	f = varE . mkName $ lcfirst nt ++ ucfirst f_
+
+mkInstanceOrd :: String -> [String] -> DecQ
+mkInstanceOrd nt fs_ = do
+	s1 <- newName "s1"
+	s2 <- newName "s2"
+	instanceD (cxt []) (conT ''Ord `appT` conT (mkName nt)) [
+		funD '(<=) [
+			clause [varP s1, varP s2] (normalB
+				$ varE 'foldr `appE` lamOrd s1 s2 `appE`
+					conE 'True `appE` listE fs
+				) []
+			]
+		]
+	where fs = varE . mkName . (lcfirst nt ++) . ucfirst <$> fs_
+
+lamOrd :: Name -> Name -> ExpQ
+lamOrd s1 s2 = do
+	x <- newName "x"
+	v <- newName "v"
+	lamE [varP x, varP v] $ (varE x `appE` varE s1) .< (varE x `appE` varE s2) .||
+		(((varE x `appE` varE s1) .== (varE x `appE` varE s2)) .&& varE v)
 
 mkNewtypePrim :: String -> [Name] -> DecQ
 mkNewtypePrim nt ds = do

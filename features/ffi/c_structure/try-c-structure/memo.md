@@ -26,10 +26,12 @@ todo
 	+ [x] Eq
 		- [x] no template
 		- [x] template
-	+ [ ] Ord
+	+ [x] Ord
 		- [x] no template
-		- [ ] template
+		- [x] template
 	+ [ ] Enum
+		- [ ] no template
+		- [ ] template
 	+ [ ] Bounded
 	+ [ ] Ix
 * [ ] make `ShowReadDerivs`
