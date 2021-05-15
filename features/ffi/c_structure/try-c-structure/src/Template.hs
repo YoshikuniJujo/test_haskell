@@ -56,12 +56,14 @@ tupT ts = foldl appT (tupleT $ length ts) ts
 
 infixr 8 .$
 
-(.$), (...), (.<$>), (.<*>), (.>>=) :: ExpQ -> ExpQ -> ExpQ
+(.$), (...), (.<$>), (.<*>), (.>>=), (.&&), (.==) :: ExpQ -> ExpQ -> ExpQ
 e1 .$ e2 = infixE (Just e1) (varE '($)) (Just e2)
 e1 ... e2 = infixE (Just e1) (varE '(.)) (Just e2)
 e1 .<$> e2 = infixE (Just e1) (varE '(<$>)) (Just e2)
 e1 .<*> e2 = infixE (Just e1) (varE '(<*>)) (Just e2)
 e1 .>>= e2 = infixE (Just e1) (varE '(>>=)) (Just e2)
+e1 .&& e2 = infixE (Just e1) (varE '(&&)) (Just e2)
+e1 .== e2 = infixE (Just e1) (varE '(==)) (Just e2)
 
 pt :: ExpQ -> ExpQ -> ExpQ
 e `pt` op = infixE (Just e) op Nothing
@@ -136,6 +138,23 @@ mkReadFields nt fs vs = intercalate [bindS (conP 'Punc $ [litP $ StringL ","]) $
 	bindS (conP 'Ident [litP . StringL $ lcfirst nt ++ ucfirst f]) $ varE 'lexP,
 	bindS (conP 'Punc [litP $ StringL "="]) $ varE 'lexP,
 	bindS (varP v) $ varE 'step `appE` varE 'readPrec ]
+
+mkInstanceEq :: String -> [String] -> DecQ
+mkInstanceEq nt fs = do
+	s1 <- newName "s1"
+	s2 <- newName "s2"
+	instanceD (cxt []) (conT ''Eq `appT` conT (mkName nt)) [
+		funD '(==) [
+			clause [varP s1, varP s2] (normalB
+				$ foldl (.&&) (conE 'True) $ fieldEqual s1 s2 nt <$> fs
+				) []
+			]
+		]
+
+fieldEqual :: Name -> Name -> String -> String -> ExpQ
+fieldEqual s1 s2 nt f_ = (f `appE` varE s1) .== (f `appE` varE s2)
+	where
+	f = varE . mkName $ lcfirst nt ++ ucfirst f_
 
 mkNewtypePrim :: String -> [Name] -> DecQ
 mkNewtypePrim nt ds = do

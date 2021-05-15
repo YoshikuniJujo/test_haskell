@@ -23,10 +23,12 @@ todo
 * [x] `function fooThaw`
 * [x] `function fooCopy`
 * [ ] make derivings
-	+ [ ] Eq
+	+ [x] Eq
 		- [x] no template
-		- [ ] template
+		- [x] template
 	+ [ ] Ord
+		- [ ] no template
+		- [ ] template
 	+ [ ] Enum
 	+ [ ] Bounded
 	+ [ ] Ix
