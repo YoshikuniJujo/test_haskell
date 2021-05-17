@@ -32,6 +32,10 @@ mkPatternFun "Foo" [
 (: []) <$> mkInstanceEq "Foo" ["x", "y"]
 (: []) <$> mkInstanceOrd "Foo" ["x", "y"]
 
+instance Bounded Foo where
+	minBound = Foo minBound minBound
+	maxBound = Foo maxBound maxBound
+
 (: []) <$> mkNewtypePrim "Foo" [''Show]
 
 foreign import ccall "foo_copy" c_foo_freeze :: Ptr (FooPrim s) -> IO (Ptr Foo)
