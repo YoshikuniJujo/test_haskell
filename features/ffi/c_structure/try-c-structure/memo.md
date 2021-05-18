@@ -29,13 +29,15 @@ todo
 	+ [x] Ord
 		- [x] no template
 		- [x] template
-	+ [ ] Bounded
+	+ [x] Bounded
 		- [x] no template
-		- [ ] template
+		- [x] template
 	+ [ ] Enum
 		- [ ] no template
 		- [ ] template
 	+ [ ] Ix
+		- [ ] no template
+		- [ ] template
 * [ ] make `ShowReadDerivs`
 * [ ] `struct`
 * [ ] `structPrim`

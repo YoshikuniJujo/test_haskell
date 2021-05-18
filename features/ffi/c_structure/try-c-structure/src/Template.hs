@@ -180,6 +180,14 @@ lamOrd s1 s2 = do
 	lamE [varP x, varP v] $ (varE x `appE` varE s1) .< (varE x `appE` varE s2) .||
 		(((varE x `appE` varE s1) .== (varE x `appE` varE s2)) .&& varE v)
 
+mkInstanceBounded :: String -> [String] -> DecQ
+mkInstanceBounded nt fs =
+	instanceD (cxt []) (conT ''Bounded `appT` conT (mkName nt)) [
+		valD (varP 'minBound) (normalB $ foldl appE (conE $ mkName nt)
+			(replicate (length fs) (varE 'minBound))) [],
+		valD (varP 'maxBound) (normalB $ foldl appE (conE $ mkName nt)
+			(replicate (length fs) (varE 'maxBound))) [] ]
+
 mkNewtypePrim :: String -> [Name] -> DecQ
 mkNewtypePrim nt ds = do
 	s <- newName "s"

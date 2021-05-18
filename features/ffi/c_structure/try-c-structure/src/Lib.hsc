@@ -27,14 +27,12 @@ mkPatternFun "Foo" [
 	<$> mkPatternSig "Foo" [''CInt, ''CInt]
 	<*> mkPatternBody "Foo" #{size Foo} ["x", "y"] [[e| #{poke Foo, x} |], [e| #{poke Foo, y} |]]
 
-(: []) <$> mkInstanceShow "Foo" ["x", "y"]
-(: []) <$> mkInstanceRead "Foo" ["x", "y"]
-(: []) <$> mkInstanceEq "Foo" ["x", "y"]
-(: []) <$> mkInstanceOrd "Foo" ["x", "y"]
-
-instance Bounded Foo where
-	minBound = Foo minBound minBound
-	maxBound = Foo maxBound maxBound
+sequence [
+	mkInstanceShow "Foo" ["x", "y"],
+	mkInstanceRead "Foo" ["x", "y"],
+	mkInstanceEq "Foo" ["x", "y"],
+	mkInstanceOrd "Foo" ["x", "y"],
+	mkInstanceBounded "Foo" ["x", "y"] ]
 
 (: []) <$> mkNewtypePrim "Foo" [''Show]
 
