@@ -35,7 +35,7 @@ todo
 	+ [ ] Ix
 		- [x] no template
 		- [ ] template
-			* [ ] `range`
+			* [x] `range`
 			* [ ] `index`
 			* [ ] `inRange`
 			* [ ] whole

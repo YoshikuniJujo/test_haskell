@@ -12,6 +12,7 @@ import Control.Monad
 import Control.Monad.Primitive
 import Data.Bool
 import Data.List
+import Data.Array
 import Data.Char
 import System.IO.Unsafe
 import Text.Read
@@ -187,6 +188,18 @@ mkInstanceBounded nt fs =
 			(replicate (length fs) (varE 'minBound))) [],
 		valD (varP 'maxBound) (normalB $ foldl appE (conE $ mkName nt)
 			(replicate (length fs) (varE 'maxBound))) [] ]
+
+mkIxRange :: Name -> String -> [String] -> DecQ
+mkIxRange fn nt fs = do
+	vs <- replicateM (length fs) $ newName "v"
+	ws <- replicateM (length fs) $ newName "w"
+	is <- replicateM (length fs) $ newName "i"
+	funD fn [clause [tupP [conP (mkName nt) $ varP <$> vs, conP (mkName nt) $ varP <$> ws]] (normalB
+			. compE $ (++ [noBindS . foldl appE (conE $ mkName nt) $ varE <$> is])
+				$ (\(i, (v, w)) -> bindS (varP i) $ varE 'range `appE` tupE [varE v, varE w])
+					<$> is `zip` (vs `zip` ws)
+			) []
+		]
 
 mkNewtypePrim :: String -> [Name] -> DecQ
 mkNewtypePrim nt ds = do
