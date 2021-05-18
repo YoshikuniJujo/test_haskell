@@ -43,11 +43,11 @@ sequence [
 	mkInstanceBounded "Foo" ["x", "y"] ]
 
 (: []) <$> mkIxRange (mkName "rangeFoo") "Foo" ["x", "y"]
+(: []) <$> mkIxIndex (mkName "indexFoo") "Foo" ["x", "y"]
 
 instance Ix Foo where
 	range = rangeFoo
-	index (Foo x y, Foo x' y') (Foo i j) =
-		index (x, x') i * rangeSize (x, x') + index (y, y') j
+	index = indexFoo
 	inRange (Foo x y, Foo x' y') (Foo i j) =
 		inRange (x, x') i && inRange (y, y') j
 

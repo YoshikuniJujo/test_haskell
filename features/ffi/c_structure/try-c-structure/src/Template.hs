@@ -69,6 +69,11 @@ e1 .== e2 = infixE (Just e1) (varE '(==)) (Just e2)
 e1 .<= e2 = infixE (Just e1) (varE '(<=)) (Just e2)
 e1 .< e2 = infixE (Just e1) (varE '(<)) (Just e2)
 
+(.+), (.*), zp :: ExpQ -> ExpQ -> ExpQ
+e1 .+ e2 = infixE (Just e1) (varE '(+)) (Just e2)
+e1 .* e2 = infixE (Just e1) (varE '(*)) (Just e2)
+e1 `zp` e2 = infixE (Just e1) (varE 'zip) (Just e2)
+
 pt :: ExpQ -> ExpQ -> ExpQ
 e `pt` op = infixE (Just e) op Nothing
 
@@ -200,6 +205,28 @@ mkIxRange fn nt fs = do
 					<$> is `zip` (vs `zip` ws)
 			) []
 		]
+
+mkIxIndex :: Name -> String -> [String] -> DecQ
+mkIxIndex fn nt fs = do
+	vs <- replicateM (length fs) $ newName "v"
+	ws <- replicateM (length fs) $ newName "w"
+	is <- replicateM (length fs) $ newName "i"
+	funD fn [clause
+		[	tupP [conP (mkName nt) $ varP <$> vs, conP (mkName nt) $ varP <$> ws],
+			conP (mkName nt) $ varP <$> is ]
+		(normalB
+			$ varE 'foldl `appE` mkIxIndexLam `appE` litE (integerL 0)
+				.$ (listE $ varE <$> vs) `zp` (listE $ varE <$> ws) `zp` (listE $ varE <$> is)
+			)
+		[]]
+
+mkIxIndexLam :: ExpQ
+mkIxIndexLam = do
+	v <- newName "v"
+	z <- newName "z"
+	k <- newName "k"
+	lamE [varP v, tupP [varP z, varP k]]
+		$ (varE 'index `appE` varE z `appE` varE k) .+ (varE 'rangeSize `appE` varE z .* varE v)
 
 mkNewtypePrim :: String -> [Name] -> DecQ
 mkNewtypePrim nt ds = do

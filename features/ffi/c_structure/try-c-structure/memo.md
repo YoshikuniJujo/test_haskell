@@ -36,7 +36,7 @@ todo
 		- [x] no template
 		- [ ] template
 			* [x] `range`
-			* [ ] `index`
+			* [x] `index`
 			* [ ] `inRange`
 			* [ ] whole
 * [ ] make `ShowReadDerivs`
