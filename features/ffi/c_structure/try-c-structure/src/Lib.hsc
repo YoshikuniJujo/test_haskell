@@ -5,12 +5,14 @@
 
 module Lib where
 
+import Language.Haskell.TH
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Storable
 import Foreign.C.Types
 import Control.Monad.Primitive
+import Data.Array
 import System.IO.Unsafe
 
 import Template
@@ -23,8 +25,14 @@ mkPatternFun "Foo" [
 	(''CInt, [e| #{peek Foo, x} |]),
 	(''CInt, [e| #{peek Foo, y} |]) ]
 
-(\s b -> [s, b])
-	<$> mkPatternSig "Foo" [''CInt, ''CInt]
+instance Ix CInt where
+	range (i, j) = [i .. j]
+	index (i, _j) i' = fromIntegral $ i' - i
+	inRange (i, j) i' = i <= i' && i' <= j
+
+(\p s b -> [p, s, b])
+	<$> pure (PragmaD $ CompleteP [mkName "Foo"] Nothing)
+	<*> mkPatternSig "Foo" [''CInt, ''CInt]
 	<*> mkPatternBody "Foo" #{size Foo} ["x", "y"] [[e| #{poke Foo, x} |], [e| #{poke Foo, y} |]]
 
 sequence [
@@ -33,6 +41,15 @@ sequence [
 	mkInstanceEq "Foo" ["x", "y"],
 	mkInstanceOrd "Foo" ["x", "y"],
 	mkInstanceBounded "Foo" ["x", "y"] ]
+
+instance Ix Foo where
+	range (Foo x y, Foo x' y') =
+		[ Foo i j | i <- range (x, x'), j <- range (y, y') ]
+	index (Foo x y, Foo x' y') (Foo i j) =
+		index (x, x') i * rangeSize (x, x') + index (x', y') j
+	inRange (Foo x y, Foo x' y') (Foo i j) =
+		inRange (x, x') i && inRange (y, y') j
+
 
 (: []) <$> mkNewtypePrim "Foo" [''Show]
 

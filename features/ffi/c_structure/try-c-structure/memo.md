@@ -32,11 +32,8 @@ todo
 	+ [x] Bounded
 		- [x] no template
 		- [x] template
-	+ [ ] Enum
-		- [ ] no template
-		- [ ] template
 	+ [ ] Ix
-		- [ ] no template
+		- [x] no template
 		- [ ] template
 * [ ] make `ShowReadDerivs`
 * [ ] `struct`
