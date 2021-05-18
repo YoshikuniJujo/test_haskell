@@ -35,6 +35,10 @@ todo
 	+ [ ] Ix
 		- [x] no template
 		- [ ] template
+			* [ ] `range`
+			* [ ] `index`
+			* [ ] `inRange`
+			* [ ] whole
 * [ ] make `ShowReadDerivs`
 * [ ] `struct`
 * [ ] `structPrim`
