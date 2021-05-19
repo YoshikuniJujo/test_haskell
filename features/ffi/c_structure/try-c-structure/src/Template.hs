@@ -5,19 +5,31 @@
 
 module Template (struct, structPrim) where
 
-import Language.Haskell.TH
-import Foreign.ForeignPtr hiding (newForeignPtr)
-import Foreign.Concurrent
-import Foreign.Marshal
-import Control.Monad
-import Control.Monad.Primitive
-import Data.Bool
-import Data.Maybe
-import Data.List
-import Data.Array
-import Data.Char
-import System.IO.Unsafe
-import Text.Read
+import Language.Haskell.TH (
+	DecsQ, DecQ, Dec(PragmaD), Pragma(CompleteP), sigD, valD, funD, tySynD,
+	newtypeD, plainTV, normalC, derivClause,
+		bangType, bang, noSourceUnpackedness, noSourceStrictness,
+	instanceD, cxt,
+	patSynSigD, patSynD, recordPatSyn, explBidir,
+	ExpQ, varE, conE, litE, appE, infixE, lamE, tupE, listE,
+	TypeQ, forallT, varT, conT, appT, tupleT, arrowT,
+	varP, wildP, conP, litP, tupP, viewP, integerL, stringL,
+	Name, mkName, newName,
+	ClauseQ, clause, normalB, StmtQ, doE, compE, bindS, noBindS )
+import Foreign.ForeignPtr (ForeignPtr, withForeignPtr)
+import Foreign.Concurrent (newForeignPtr)
+import Foreign.Marshal (mallocBytes, free)
+import Control.Monad (replicateM)
+import Control.Monad.Primitive (PrimMonad(..), RealWorld, unsafeIOToPrim)
+import Data.Bool (bool)
+import Data.Maybe (mapMaybe)
+import Data.List (unzip4, intersperse, intercalate)
+import Data.Array (Ix(..))
+import Data.Char (toLower, toUpper)
+import System.IO.Unsafe (unsafePerformIO)
+import Text.Read (Lexeme(..), readPrec, step, lexP, parens, prec)
+
+---------------------------------------------------------------------------
 
 struct :: String -> Integer -> [(String, Name, ExpQ, ExpQ)] -> [Name] -> DecsQ
 struct nt sz fs ds_ = do
@@ -94,7 +106,7 @@ pt :: ExpQ -> ExpQ -> ExpQ
 e `pt` op = infixE (Just e) op Nothing
 
 pp :: String -> ExpQ
-pp s = litE (StringL s) `pt` varE '(++)
+pp s = litE (stringL s) `pt` varE '(++)
 
 lcfirst, ucfirst :: String -> String
 lcfirst = \case "" -> ""; c : cs -> toLower c : cs
@@ -118,7 +130,7 @@ mkPatternBodyClause nt sz pks = do
 	p <- newName "p"
 	clause (varP <$> vs) (
 		normalB $ varE 'unsafePerformIO .$ conE (mkName nt_) .<$> doE (
-			bindS (varP p) (varE 'mallocBytes `appE` litE (IntegerL sz)) :
+			bindS (varP p) (varE 'mallocBytes `appE` litE (integerL sz)) :
 			((<$> zip pks vs) \(pk, v) -> noBindS $ pk `appE` varE p `appE` varE v) ++
 			[noBindS $ varE 'newForeignPtr `appE` varE p `appE` (varE 'free `appE` varE p)]
 			)
@@ -171,7 +183,7 @@ mkInstanceShow nt fs = do
 				) [valD (conP (mkName nt) $ varP <$> vs) (normalB $ varE f) []] ] ]
 
 litI :: Integer -> ExpQ
-litI = litE . IntegerL
+litI = litE . integerL
 
 mkShowFields :: String -> [String] -> [Name] -> ExpQ
 mkShowFields nt fs ns = foldr (...) (varE 'id) . intersperse (pp ", ")
@@ -182,18 +194,18 @@ mkInstanceRead nt fs = do
 	vs <- replicateM (length fs) $ newName "v"
 	instanceD (cxt []) (conT ''Read `appT` conT (mkName nt)) [
 		valD (varP 'readPrec) (normalB $ varE 'parens .$ varE 'prec `appE` litI 10 `appE` doE ([
-			bindS (conP 'Ident [litP $ StringL "Foo"]) $ varE 'lexP,
-			bindS (conP 'Punc [litP $ StringL "{"]) $ varE 'lexP] ++
+			bindS (conP 'Ident [litP $ stringL "Foo"]) $ varE 'lexP,
+			bindS (conP 'Punc [litP $ stringL "{"]) $ varE 'lexP] ++
 			mkReadFields nt fs vs ++
-			[bindS (conP 'Punc [litP $ StringL "}"]) $ varE 'lexP,
+			[bindS (conP 'Punc [litP $ stringL "}"]) $ varE 'lexP,
 			noBindS $ varE 'pure .$ foldl appE (conE $ mkName nt) (varE <$> vs)
 			])) []
 		]
 
 mkReadFields :: String -> [String] -> [Name] -> [StmtQ]
-mkReadFields nt fs vs = intercalate [bindS (conP 'Punc [litP $ StringL ","]) $ varE 'lexP] $ (<$> zip fs vs) \(f, v) -> [
-	bindS (conP 'Ident [litP . StringL $ lcfirst nt ++ ucfirst f]) $ varE 'lexP,
-	bindS (conP 'Punc [litP $ StringL "="]) $ varE 'lexP,
+mkReadFields nt fs vs = intercalate [bindS (conP 'Punc [litP $ stringL ","]) $ varE 'lexP] $ (<$> zip fs vs) \(f, v) -> [
+	bindS (conP 'Ident [litP . stringL $ lcfirst nt ++ ucfirst f]) $ varE 'lexP,
+	bindS (conP 'Punc [litP $ stringL "="]) $ varE 'lexP,
 	bindS (varP v) $ varE 'step `appE` varE 'readPrec ]
 
 mkInstanceEq :: String -> [String] -> DecQ
