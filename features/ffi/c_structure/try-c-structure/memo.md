@@ -43,4 +43,7 @@ todo
 	+ [x] define type `Deriving`
 	+ [x] others
 * [x] `struct`
-* [ ] `structPrim`
+* [x] `structPrim`
+	+ [x] change to `newtype FooPrim s = FooPrim (Ptr Foo)`
+	+ [x] others
+* [ ] export only `struct` and `structPrim`
