@@ -56,11 +56,14 @@ todo
 	+ [x] add to `structPrim`
 * [x] export only `struct` and `structPrim`
 * [ ] refactoring
-	+ [ ] Lib
-		- [ ] header
-		- [ ] import list
-		- [ ] structure
-		- [ ] body
+	+ [x] Lib
+		- [x] header
+		- [x] import list
+		- [x] structure
+		- [x] body
+			* [x] DEFINITION
+			* [x] SAMPLE
+			* [x] INSTANCE IX CINT
 	+ [ ] Template
 		- [x] hlint
 		- [ ] export list
