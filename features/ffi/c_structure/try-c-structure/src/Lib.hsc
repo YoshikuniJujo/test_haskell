@@ -44,12 +44,12 @@ sequence [
 
 (: []) <$> mkIxRange (mkName "rangeFoo") "Foo" ["x", "y"]
 (: []) <$> mkIxIndex (mkName "indexFoo") "Foo" ["x", "y"]
+(: []) <$> mkIxInRange (mkName "inRangeFoo") "Foo" ["x", "y"]
 
 instance Ix Foo where
 	range = rangeFoo
 	index = indexFoo
-	inRange (Foo x y, Foo x' y') (Foo i j) =
-		inRange (x, x') i && inRange (y, y') j
+	inRange = inRangeFoo
 
 
 (: []) <$> mkNewtypePrim "Foo" [''Show]
