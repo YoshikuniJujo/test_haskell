@@ -28,6 +28,9 @@ foreign import ccall "foo_free" c_foo_free :: Ptr Foo -> IO ()
 
 structPrim "Foo" 'c_foo_copy 'c_foo_free [''Show]
 
+type FooIO = FooPrim RealWorld
+type FooST = FooPrim
+
 sampleFoo :: Foo
 sampleFoo = unsafePerformIO $ Foo_ <$> do
 	p <- c_sample_foo
