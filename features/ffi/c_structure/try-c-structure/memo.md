@@ -54,4 +54,8 @@ todo
 	+ [x] no template
 	+ [x] template
 	+ [x] add to `structPrim`
-* [ ] export only `struct` and `structPrim`
+* [x] export only `struct` and `structPrim`
+* [ ] refactoring
+* [ ] independence
+* [ ] documentation
+* [ ] publish

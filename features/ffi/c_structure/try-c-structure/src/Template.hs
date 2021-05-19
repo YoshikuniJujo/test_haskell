@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Template where
+module Template (struct, structPrim) where
 
 import Language.Haskell.TH
 import Foreign.ForeignPtr hiding (newForeignPtr)
