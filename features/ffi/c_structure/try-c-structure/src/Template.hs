@@ -300,6 +300,7 @@ mkIxInRange fn nt fs = do
 structPrim :: String -> Name -> Name -> [Name] -> DecsQ
 structPrim nt cp fr ds = sequence [
 	mkNewtypePrim nt ds,
+	mkTypeST nt, mkTypeIO nt,
 	mkFreezeSig nt, mkFreezeFun nt cp fr,
 	mkThawSig nt, mkThawFun nt cp fr,
 	mkCopySig nt, mkCopyFun nt cp fr ]
@@ -312,6 +313,12 @@ mkNewtypePrim nt ds = do
 			(bang noSourceUnpackedness noSourceStrictness)
 			(conT ''ForeignPtr `appT` conT (mkName nt)) -- (conT (mkName $ nt ++ "Prim") `appT` varT s))
 		]) [derivClause Nothing $ conT <$> ds]
+
+mkTypeIO :: String -> DecQ
+mkTypeIO nt = tySynD (mkName $ nt ++ "IO") [] $ conT (mkName $ nt ++ "Prim") `appT` conT ''RealWorld
+
+mkTypeST :: String -> DecQ
+mkTypeST nt = tySynD (mkName $ nt ++ "ST") [] . conT . mkName $ nt ++ "Prim"
 
 mkFreezeSig :: String -> DecQ
 mkFreezeSig nt = do

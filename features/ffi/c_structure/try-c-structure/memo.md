@@ -46,12 +46,12 @@ todo
 * [x] `structPrim`
 	+ [x] change to `newtype FooPrim s = FooPrim (Ptr Foo)`
 	+ [x] others
-* [ ] add `type FooIO = FooPrim RealWorld`
+* [x] add `type FooIO = FooPrim RealWorld`
 	+ [x] no template
-	+ [ ] template
-	+ [ ] add to `structPrim`
-* [ ] add `type FooST = FooPrim`
+	+ [x] template
+	+ [x] add to `structPrim`
+* [x] add `type FooST = FooPrim`
 	+ [x] no template
-	+ [ ] template
-	+ [ ] add to `structPrim`
+	+ [x] template
+	+ [x] add to `structPrim`
 * [ ] export only `struct` and `structPrim`
