@@ -74,7 +74,7 @@ tupT ts = foldl appT (tupleT $ length ts) ts
 
 infixr 8 .$
 
-(.$), (...), (.<$>), (.<*>), (.>>=), (.&&), (.||), (.==), (.<=), (.<) :: ExpQ -> ExpQ -> ExpQ
+(.$), (...), (.<$>), (.<*>), (.>>=), (.&&), (.||), (.==), (.<) :: ExpQ -> ExpQ -> ExpQ
 e1 .$ e2 = infixE (Just e1) (varE '($)) (Just e2)
 e1 ... e2 = infixE (Just e1) (varE '(.)) (Just e2)
 e1 .<$> e2 = infixE (Just e1) (varE '(<$>)) (Just e2)
@@ -83,7 +83,6 @@ e1 .>>= e2 = infixE (Just e1) (varE '(>>=)) (Just e2)
 e1 .&& e2 = infixE (Just e1) (varE '(&&)) (Just e2)
 e1 .|| e2 = infixE (Just e1) (varE '(||)) (Just e2)
 e1 .== e2 = infixE (Just e1) (varE '(==)) (Just e2)
-e1 .<= e2 = infixE (Just e1) (varE '(<=)) (Just e2)
 e1 .< e2 = infixE (Just e1) (varE '(<)) (Just e2)
 
 (.+), (.*), zp :: ExpQ -> ExpQ -> ExpQ
@@ -192,7 +191,7 @@ mkInstanceRead nt fs = do
 		]
 
 mkReadFields :: String -> [String] -> [Name] -> [StmtQ]
-mkReadFields nt fs vs = intercalate [bindS (conP 'Punc $ [litP $ StringL ","]) $ varE 'lexP] $ (<$> zip fs vs) \(f, v) -> [
+mkReadFields nt fs vs = intercalate [bindS (conP 'Punc [litP $ StringL ","]) $ varE 'lexP] $ (<$> zip fs vs) \(f, v) -> [
 	bindS (conP 'Ident [litP . StringL $ lcfirst nt ++ ucfirst f]) $ varE 'lexP,
 	bindS (conP 'Punc [litP $ StringL "="]) $ varE 'lexP,
 	bindS (varP v) $ varE 'step `appE` varE 'readPrec ]
@@ -251,9 +250,8 @@ mkInstanceIx nt fs = instanceD (cxt []) (conT ''Ix `appT` conT (mkName nt)) [
 
 mkIxRange :: Name -> String -> [String] -> DecQ
 mkIxRange fn nt fs = do
-	vs <- replicateM (length fs) $ newName "v"
-	ws <- replicateM (length fs) $ newName "w"
-	is <- replicateM (length fs) $ newName "i"
+	(vs, ws, is) <- unzip3
+		<$> replicateM (length fs) ((,,) <$> newName "v" <*> newName "w" <*> newName "i")
 	funD fn [clause [tupP [conP (mkName nt) $ varP <$> vs, conP (mkName nt) $ varP <$> ws]] (normalB
 			. compE $ (++ [noBindS . foldl appE (conE $ mkName nt) $ varE <$> is])
 				$ (\(i, (v, w)) -> bindS (varP i) $ varE 'range `appE` tupE [varE v, varE w])
@@ -263,15 +261,14 @@ mkIxRange fn nt fs = do
 
 mkIxIndex :: Name -> String -> [String] -> DecQ
 mkIxIndex fn nt fs = do
-	vs <- replicateM (length fs) $ newName "v"
-	ws <- replicateM (length fs) $ newName "w"
-	is <- replicateM (length fs) $ newName "i"
+	(vs, ws, is) <- unzip3
+		<$> replicateM (length fs) ((,,) <$> newName "v" <*> newName "w" <*> newName "i")
 	funD fn [clause
 		[	tupP [conP (mkName nt) $ varP <$> vs, conP (mkName nt) $ varP <$> ws],
 			conP (mkName nt) $ varP <$> is ]
 		(normalB
 			$ varE 'foldl `appE` mkIxIndexLam `appE` litE (integerL 0)
-				.$ (listE $ varE <$> vs) `zp` (listE $ varE <$> ws) `zp` (listE $ varE <$> is)
+				.$ listE (varE <$> vs) `zp` listE (varE <$> ws) `zp` listE (varE <$> is)
 			)
 		[]]
 
