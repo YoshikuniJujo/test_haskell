@@ -5,7 +5,6 @@
 
 module Lib where
 
-import Language.Haskell.TH
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
@@ -19,29 +18,15 @@ import Template
 
 #include "foo.h"
 
-(: []) <$> mkNewtype "Foo"
-
-mkPatternFun "Foo" [
-	(''CInt, [e| #{peek Foo, x} |]),
-	(''CInt, [e| #{peek Foo, y} |]) ]
+struct "Foo" #{size Foo}
+	[	("x", ''CInt, [| #{peek Foo, x} |], [| #{poke Foo, x} |]),
+		("y", ''CInt, [| #{peek Foo, y} |], [| #{poke Foo, y} |]) ]
+	[''Show, ''Read, ''Eq, ''Ord, ''Bounded, ''Ix]
 
 instance Ix CInt where
 	range (i, j) = [i .. j]
 	index (i, _j) i' = fromIntegral $ i' - i
 	inRange (i, j) i' = i <= i' && i' <= j
-
-(\p s b -> [p, s, b])
-	<$> pure (PragmaD $ CompleteP [mkName "Foo"] Nothing)
-	<*> mkPatternSig "Foo" [''CInt, ''CInt]
-	<*> mkPatternBody "Foo" #{size Foo} ["x", "y"] [[e| #{poke Foo, x} |], [e| #{poke Foo, y} |]]
-
-sequence [
-	mkInstanceShow "Foo" ["x", "y"],
-	mkInstanceRead "Foo" ["x", "y"],
-	mkInstanceEq "Foo" ["x", "y"],
-	mkInstanceOrd "Foo" ["x", "y"],
-	mkInstanceBounded "Foo" ["x", "y"],
-	mkInstanceIx "Foo" ["x", "y"] ]
 
 (: []) <$> mkNewtypePrim "Foo" [''Show]
 

@@ -39,6 +39,8 @@ todo
 			* [x] `index`
 			* [x] `inRange`
 			* [x] whole
-* [ ] add deriving argument
-* [ ] `struct`
+* [x] add deriving argument
+	+ [x] define type `Deriving`
+	+ [x] others
+* [x] `struct`
 * [ ] `structPrim`

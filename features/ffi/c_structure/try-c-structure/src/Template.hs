@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Template where
@@ -11,11 +12,27 @@ import Foreign.Marshal
 import Control.Monad
 import Control.Monad.Primitive
 import Data.Bool
+import Data.Maybe
 import Data.List
 import Data.Array
 import Data.Char
 import System.IO.Unsafe
 import Text.Read
+
+struct :: String -> Integer -> [(String, Name, ExpQ, ExpQ)] -> [Name] -> DecsQ
+struct nt sz fs ds_ = do
+	ntp <- mkNewtype nt
+	let	cmp = PragmaD $ CompleteP [mkName nt] Nothing
+	pf <- mkPatternFun nt $ zip fts fpes
+	pts <- mkPatternSig nt fts
+	ptb <- mkPatternBody nt sz fns fpos
+	dvs <- mkInstances nt fns ds
+	pure $ ntp : cmp : pf ++ pts : ptb : dvs
+	where
+	(fns, fts, fpes, fpos) = unzip4 fs
+	ds = case toDeriving ds_ of
+		(d, []) -> d
+		(_, os) -> error $ "Can't deriving: " ++ show os
 
 mkNewtype :: String -> DecQ
 mkNewtype nt = newtypeD (cxt []) (mkName nt) [] Nothing (normalC (mkName $ nt ++ "_") [
@@ -109,6 +126,38 @@ mkPatternBodyClause nt sz pks = do
 		) []
 	where
 	nt_ = nt ++ "_"
+
+mkInstances :: String -> [String] -> Deriving -> DecsQ
+mkInstances nt fs d = sequence $ (\(t, b) -> bool Nothing (Just t) b) `mapMaybe` zip [
+	mkInstanceShow nt fs, mkInstanceRead nt fs, mkInstanceEq nt fs,
+	mkInstanceOrd nt fs, mkInstanceBounded nt fs, mkInstanceIx nt fs ] [
+	derivingShow d, derivingRead d, derivingEq d,
+	derivingOrd d, derivingBounded d, derivingIx d ]
+
+data Deriving = Deriving {
+	derivingShow :: Bool, derivingRead :: Bool,
+	derivingEq :: Bool, derivingOrd :: Bool,
+	derivingBounded :: Bool, derivingIx :: Bool } deriving Show
+
+toDeriving :: [Name] -> (Deriving, [Name])
+toDeriving [] = (Deriving False False False False False False, [])
+toDeriving (n : ns) = case n of
+	NameShow -> (d { derivingShow = True }, ns')
+	NameRead -> (d { derivingRead = True }, ns')
+	NameEq -> (d { derivingEq = True }, ns')
+	NameOrd -> (d { derivingOrd = True }, ns')
+	NameBounded -> (d { derivingBounded = True }, ns')
+	NameIx -> (d {derivingIx = True }, ns')
+	_ -> (d, n : ns')
+	where (d, ns') = toDeriving ns
+
+pattern NameShow, NameRead, NameEq, NameOrd, NameBounded, NameIx :: Name
+pattern NameShow <- ((== ''Show) -> True)
+pattern NameRead <- ((== ''Read) -> True)
+pattern NameEq <- ((== ''Eq) -> True)
+pattern NameOrd <- ((== ''Ord) -> True)
+pattern NameBounded <- ((== ''Bounded) -> True)
+pattern NameIx <- ((== ''Ix) -> True)
 
 mkInstanceShow :: String -> [String] -> DecQ
 mkInstanceShow nt fs = do
