@@ -11,8 +11,8 @@ import Language.Haskell.TH (
 		bangType, bang, noSourceUnpackedness, noSourceStrictness,
 	instanceD, cxt,
 	patSynSigD, patSynD, recordPatSyn, explBidir,
-	ExpQ, varE, conE, litE, appE, infixE, lamE, tupE, listE,
-	TypeQ, forallT, varT, conT, appT, tupleT, arrowT,
+	ExpQ, varE, conE, litE, appE, lamE, tupE, listE,
+	forallT, varT, conT, appT,
 	varP, wildP, conP, litP, tupP, viewP, integerL, stringL,
 	Name, mkName, newName,
 	ClauseQ, clause, normalB, StmtQ, doE, compE, bindS, noBindS )
@@ -25,9 +25,13 @@ import Data.Bool (bool)
 import Data.Maybe (mapMaybe)
 import Data.List (unzip4, intersperse, intercalate)
 import Data.Array (Ix(..))
-import Data.Char (toLower, toUpper)
 import System.IO.Unsafe (unsafePerformIO)
 import Text.Read (Lexeme(..), readPrec, step, lexP, parens, prec)
+
+import Template.Parts (
+	(.->), (.$), (...), (.<$>), (.<*>), (.>>=),
+	(.&&), (.||), (.==), (.<), (.+), (.*),
+	tupE', tupT, litI, pt, zp, pp, lcfirst, ucfirst )
 
 ---------------------------------------------------------------------------
 
@@ -35,6 +39,8 @@ import Text.Read (Lexeme(..), readPrec, step, lexP, parens, prec)
 --	+ FUNCTION STRUCT
 --	+ NEWTYPE
 --	+ PATTERN
+--		- Function Mk Pattern
+--		- Function Mk Pattern Fun
 --	+ DERIVING
 --		- Function Mk Deriving
 --		- Show
@@ -82,64 +88,7 @@ mkNewtype nt = newtypeD (cxt []) (mkName nt) [] Nothing (normalC (mkName $ nt ++
 
 -- PATTERN
 
-mkPatternFun :: String -> [(Name, ExpQ)] -> DecsQ
-mkPatternFun nt tpks = sequence [
-	sigD (mkName $ lcfirst nt) $ conT (mkName nt) .-> tupT (conT <$> ts),
-	funD (mkName $ lcfirst nt) [do
-		ff <- newName "ff"
-		pf <- newName . bool "pf" "_" $ null tpks
-		clause [conP (mkName $ nt ++ "_") [varP ff]] (
-			normalB $ varE 'unsafePerformIO .$
-				varE 'withForeignPtr `appE` varE ff
-					`appE` lamE [varP pf] (mkPatternFunDo pf pks)
-			) []
-		] ]
-	where (ts, pks) = unzip tpks
-
-mkPatternFunDo :: Name -> [ExpQ] -> ExpQ
-mkPatternFunDo pf pks = do
-	fs <- replicateM (length pks) $ newName "f"
-	doE . (++ [noBindS $ varE 'pure `appE` tupE' (varE <$> fs)]) $ (<$> (fs `zip` pks)) \(f', pk') ->
-		bindS (varP f') $ pk' `appE` varE pf
-
-(.->) :: TypeQ -> TypeQ -> TypeQ
-t1 .-> t2 = arrowT `appT` t1 `appT` t2
-
-tupE' :: [ExpQ] -> ExpQ
-tupE' [e] = e
-tupE' es = tupE es
-
-tupT :: [TypeQ] -> TypeQ
-tupT [t] = t
-tupT ts = foldl appT (tupleT $ length ts) ts
-
-infixr 8 .$
-
-(.$), (...), (.<$>), (.<*>), (.>>=), (.&&), (.||), (.==), (.<) :: ExpQ -> ExpQ -> ExpQ
-e1 .$ e2 = infixE (Just e1) (varE '($)) (Just e2)
-e1 ... e2 = infixE (Just e1) (varE '(.)) (Just e2)
-e1 .<$> e2 = infixE (Just e1) (varE '(<$>)) (Just e2)
-e1 .<*> e2 = infixE (Just e1) (varE '(<*>)) (Just e2)
-e1 .>>= e2 = infixE (Just e1) (varE '(>>=)) (Just e2)
-e1 .&& e2 = infixE (Just e1) (varE '(&&)) (Just e2)
-e1 .|| e2 = infixE (Just e1) (varE '(||)) (Just e2)
-e1 .== e2 = infixE (Just e1) (varE '(==)) (Just e2)
-e1 .< e2 = infixE (Just e1) (varE '(<)) (Just e2)
-
-(.+), (.*), zp :: ExpQ -> ExpQ -> ExpQ
-e1 .+ e2 = infixE (Just e1) (varE '(+)) (Just e2)
-e1 .* e2 = infixE (Just e1) (varE '(*)) (Just e2)
-e1 `zp` e2 = infixE (Just e1) (varE 'zip) (Just e2)
-
-pt :: ExpQ -> ExpQ -> ExpQ
-e `pt` op = infixE (Just e) op Nothing
-
-pp :: String -> ExpQ
-pp s = litE (stringL s) `pt` varE '(++)
-
-lcfirst, ucfirst :: String -> String
-lcfirst = \case "" -> ""; c : cs -> toLower c : cs
-ucfirst = \case "" -> ""; c : cs -> toUpper c : cs
+-- Function Mk Pattern
 
 mkPatternSig :: String -> [Name] -> DecQ
 mkPatternSig nt ts =
@@ -166,6 +115,28 @@ mkPatternBodyClause nt sz pks = do
 		) []
 	where
 	nt_ = nt ++ "_"
+
+-- Function Mk Pattern Fun
+
+mkPatternFun :: String -> [(Name, ExpQ)] -> DecsQ
+mkPatternFun nt tpks = sequence [
+	sigD (mkName $ lcfirst nt) $ conT (mkName nt) .-> tupT (conT <$> ts),
+	funD (mkName $ lcfirst nt) [do
+		ff <- newName "ff"
+		pf <- newName . bool "pf" "_" $ null tpks
+		clause [conP (mkName $ nt ++ "_") [varP ff]] (
+			normalB $ varE 'unsafePerformIO .$
+				varE 'withForeignPtr `appE` varE ff
+					`appE` lamE [varP pf] (mkPatternFunDo pf pks)
+			) []
+		] ]
+	where (ts, pks) = unzip tpks
+
+mkPatternFunDo :: Name -> [ExpQ] -> ExpQ
+mkPatternFunDo pf pks = do
+	fs <- replicateM (length pks) $ newName "f"
+	doE . (++ [noBindS $ varE 'pure `appE` tupE' (varE <$> fs)]) $ (<$> (fs `zip` pks)) \(f', pk') ->
+		bindS (varP f') $ pk' `appE` varE pf
 
 -- DERIVING
 
@@ -216,9 +187,6 @@ mkInstanceShow nt fs = do
 					mkShowFields nt fs vs ...
 					pp "}"
 				) [valD (conP (mkName nt) $ varP <$> vs) (normalB $ varE f) []] ] ]
-
-litI :: Integer -> ExpQ
-litI = litE . integerL
 
 mkShowFields :: String -> [String] -> [Name] -> ExpQ
 mkShowFields nt fs ns = foldr (...) (varE 'id) . intersperse (pp ", ")

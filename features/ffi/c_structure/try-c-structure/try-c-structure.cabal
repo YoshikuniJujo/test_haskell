@@ -27,6 +27,7 @@ library
   exposed-modules:
       Lib
       Template
+      Template.Parts
   other-modules:
       Paths_try_c_structure
   hs-source-dirs:

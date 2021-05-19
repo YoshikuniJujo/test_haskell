@@ -55,7 +55,7 @@ todo
 	+ [x] template
 	+ [x] add to `structPrim`
 * [x] export only `struct` and `structPrim`
-* [ ] separate `Template.Tools` from `Template`
+* [x] separate `Template.Parts` from `Template`
 * [ ] refactoring
 	+ [x] Lib
 		- [x] header
@@ -75,6 +75,8 @@ todo
 				+ [ ] FUNCTION STRUCT
 				+ [ ] NEWTYPE
 				+ [ ] PATTERN
+					- [ ] Function Mk Pattern
+					- [ ] Function Mk Pattern Fun
 				+ [ ] DERIVING
 					- [ ] Function Mk Deriving
 					- [ ] Show
@@ -89,6 +91,7 @@ todo
 				+ [ ] FREEZE
 				+ [ ] THAW
 				+ [ ] COPY
+	+ [ ] Template.Parts
 * [ ] independence
 * [ ] documentation
 * [ ] publish
