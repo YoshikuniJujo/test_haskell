@@ -55,6 +55,7 @@ todo
 	+ [x] template
 	+ [x] add to `structPrim`
 * [x] export only `struct` and `structPrim`
+* [ ] separate `Template.Tools` from `Template`
 * [ ] refactoring
 	+ [x] Lib
 		- [x] header
@@ -67,9 +68,27 @@ todo
 	+ [ ] Template
 		- [x] hlint
 		- [x] export list
-		- [ ] import list
-		- [ ] structure
+		- [x] import list
+		- [x] structure
 		- [ ] body
+			* [ ] STRUCT
+				+ [ ] FUNCTION STRUCT
+				+ [ ] NEWTYPE
+				+ [ ] PATTERN
+				+ [ ] DERIVING
+					- [ ] Function Mk Deriving
+					- [ ] Show
+					- [ ] Read
+					- [ ] Eq
+					- [ ] Ord
+					- [ ] Bounded
+					- [ ] Ix
+			* [ ] STRUCT WITH PRIMITIVE MONAD
+				+ [ ] FUNCTION STRUCT PRIM
+				+ [ ] NEWTYPE
+				+ [ ] FREEZE
+				+ [ ] THAW
+				+ [ ] COPY
 * [ ] independence
 * [ ] documentation
 * [ ] publish

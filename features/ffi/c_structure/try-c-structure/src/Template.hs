@@ -31,6 +31,31 @@ import Text.Read (Lexeme(..), readPrec, step, lexP, parens, prec)
 
 ---------------------------------------------------------------------------
 
+-- * STRUCT
+--	+ FUNCTION STRUCT
+--	+ NEWTYPE
+--	+ PATTERN
+--	+ DERIVING
+--		- Function Mk Deriving
+--		- Show
+--		- Read
+--		- Eq
+--		- Ord
+--		- Bounded
+--		- Ix
+-- * STRUCT WITH PRIMITIVE MONAD
+-- 	+ FUNCTION STRUCT PRIM
+-- 	+ NEWTYPE
+-- 	+ FREEZE
+-- 	+ THAW
+-- 	+ COPY
+
+---------------------------------------------------------------------------
+-- STRUCT
+---------------------------------------------------------------------------
+
+-- FUNCTION STRUCT
+
 struct :: String -> Integer -> [(String, Name, ExpQ, ExpQ)] -> [Name] -> DecsQ
 struct nt sz fs ds_ = do
 	ntp <- mkNewtype nt
@@ -46,12 +71,16 @@ struct nt sz fs ds_ = do
 		(d, []) -> d
 		(_, os) -> error $ "Can't deriving: " ++ show os
 
+-- NEWTYPE
+
 mkNewtype :: String -> DecQ
 mkNewtype nt = newtypeD (cxt []) (mkName nt) [] Nothing (normalC (mkName $ nt ++ "_") [
 	bangType
 		(bang noSourceUnpackedness noSourceStrictness)
 		(conT ''ForeignPtr `appT` conT (mkName nt))
 	]) []
+
+-- PATTERN
 
 mkPatternFun :: String -> [(Name, ExpQ)] -> DecsQ
 mkPatternFun nt tpks = sequence [
@@ -138,6 +167,10 @@ mkPatternBodyClause nt sz pks = do
 	where
 	nt_ = nt ++ "_"
 
+-- DERIVING
+
+-- Function Mk Deriving
+
 mkInstances :: String -> [String] -> Deriving -> DecsQ
 mkInstances nt fs d = sequence $ (\(t, b) -> bool Nothing (Just t) b) `mapMaybe` zip [
 	mkInstanceShow nt fs, mkInstanceRead nt fs, mkInstanceEq nt fs,
@@ -170,6 +203,8 @@ pattern NameOrd <- ((== ''Ord) -> True)
 pattern NameBounded <- ((== ''Bounded) -> True)
 pattern NameIx <- ((== ''Ix) -> True)
 
+-- Show
+
 mkInstanceShow :: String -> [String] -> DecQ
 mkInstanceShow nt fs = do
 	f <- newName "f"
@@ -188,6 +223,8 @@ litI = litE . integerL
 mkShowFields :: String -> [String] -> [Name] -> ExpQ
 mkShowFields nt fs ns = foldr (...) (varE 'id) . intersperse (pp ", ")
 	$ (<$> zip fs ns) \(f, n) -> pp (lcfirst nt ++ ucfirst f ++ " = ") ... (varE 'showsPrec `appE` litI 11 `appE` varE n)
+
+-- Read
 
 mkInstanceRead :: String -> [String] -> DecQ
 mkInstanceRead nt fs = do
@@ -208,6 +245,8 @@ mkReadFields nt fs vs = intercalate [bindS (conP 'Punc [litP $ stringL ","]) $ v
 	bindS (conP 'Punc [litP $ stringL "="]) $ varE 'lexP,
 	bindS (varP v) $ varE 'step `appE` varE 'readPrec ]
 
+-- Eq
+
 mkInstanceEq :: String -> [String] -> DecQ
 mkInstanceEq nt fs = do
 	s1 <- newName "s1"
@@ -224,6 +263,8 @@ fieldEqual :: Name -> Name -> String -> String -> ExpQ
 fieldEqual s1 s2 nt f_ = (f `appE` varE s1) .== (f `appE` varE s2)
 	where
 	f = varE . mkName $ lcfirst nt ++ ucfirst f_
+
+-- Ord
 
 mkInstanceOrd :: String -> [String] -> DecQ
 mkInstanceOrd nt fs_ = do
@@ -245,6 +286,8 @@ lamOrd s1 s2 = do
 	v <- newName "v"
 	lamE [varP x, varP v] $ (varE x `appE` varE s1) .< (varE x `appE` varE s2) .||
 		(((varE x `appE` varE s1) .== (varE x `appE` varE s2)) .&& varE v)
+
+-- Bounded
 
 mkInstanceBounded :: String -> [String] -> DecQ
 mkInstanceBounded nt fs =
@@ -270,6 +313,8 @@ mkIxRange fn nt fs = do
 					<$> is `zip` (vs `zip` ws)
 			) []
 		]
+
+-- Ix
 
 mkIxIndex :: Name -> String -> [String] -> DecQ
 mkIxIndex fn nt fs = do
@@ -306,6 +351,12 @@ mkIxInRange fn nt fs = do
 			)
 		[]]
 
+---------------------------------------------------------------------------
+-- STRUCT WITH PRIMITIVE MONAD
+---------------------------------------------------------------------------
+
+-- FUNCTION STRUCT PRIM
+
 structPrim :: String -> Name -> Name -> [Name] -> DecsQ
 structPrim nt cp fr ds = sequence [
 	mkNewtypePrim nt ds,
@@ -313,6 +364,8 @@ structPrim nt cp fr ds = sequence [
 	mkFreezeSig nt, mkFreezeFun nt cp fr,
 	mkThawSig nt, mkThawFun nt cp fr,
 	mkCopySig nt, mkCopyFun nt cp fr ]
+
+-- NEWTYPE AND TYPE SYNONYM
 
 mkNewtypePrim :: String -> [Name] -> DecQ
 mkNewtypePrim nt ds = do
@@ -328,6 +381,8 @@ mkTypeIO nt = tySynD (mkName $ nt ++ "IO") [] $ conT (mkName $ nt ++ "Prim") `ap
 
 mkTypeST :: String -> DecQ
 mkTypeST nt = tySynD (mkName $ nt ++ "ST") [] . conT . mkName $ nt ++ "Prim"
+
+-- FREEZE
 
 mkFreezeSig :: String -> DecQ
 mkFreezeSig nt = do
@@ -348,6 +403,8 @@ mkFreezeBody :: String -> Name -> Name -> Name -> ExpQ
 mkFreezeBody nt frz fr ff = (varE 'unsafeIOToPrim ... (conE (mkName $ nt ++ "_") `pt` varE '(<$>)))
 	.$ (varE 'withForeignPtr `appE` varE ff `appE` varE frz) .>>= (varE 'newForeignPtr .<$> varE 'id .<*> varE fr)
 
+-- THAW
+
 mkThawSig :: String -> DecQ
 mkThawSig nt = do
 	m <- newName "m"
@@ -366,6 +423,8 @@ mkThawFun nt frz fr = do
 mkThawBody :: String -> Name -> Name -> Name -> ExpQ
 mkThawBody nt frz fr ff = (varE 'unsafeIOToPrim ... (conE (mkName $ nt ++ "Prim") `pt` varE '(<$>)))
 	.$ (varE 'withForeignPtr `appE` varE ff `appE` varE frz) .>>= (varE 'newForeignPtr .<$> varE 'id .<*> varE fr)
+
+-- COPY
 
 mkCopySig :: String -> DecQ
 mkCopySig nt = do
