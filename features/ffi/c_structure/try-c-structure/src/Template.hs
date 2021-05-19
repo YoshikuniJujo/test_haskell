@@ -194,6 +194,12 @@ mkInstanceBounded nt fs =
 		valD (varP 'maxBound) (normalB $ foldl appE (conE $ mkName nt)
 			(replicate (length fs) (varE 'maxBound))) [] ]
 
+mkInstanceIx :: String -> [String] -> DecQ
+mkInstanceIx nt fs = instanceD (cxt []) (conT ''Ix `appT` conT (mkName nt)) [
+	mkIxRange 'range nt fs,
+	mkIxIndex 'index nt fs,
+	mkIxInRange 'inRange nt fs ]
+
 mkIxRange :: Name -> String -> [String] -> DecQ
 mkIxRange fn nt fs = do
 	vs <- replicateM (length fs) $ newName "v"

@@ -22,7 +22,7 @@ todo
 * [x] `function fooFreeze`
 * [x] `function fooThaw`
 * [x] `function fooCopy`
-* [ ] make derivings
+* [x] make derivings
 	+ [x] Eq
 		- [x] no template
 		- [x] template
@@ -32,13 +32,13 @@ todo
 	+ [x] Bounded
 		- [x] no template
 		- [x] template
-	+ [ ] Ix
+	+ [x] Ix
 		- [x] no template
-		- [ ] template
+		- [x] template
 			* [x] `range`
 			* [x] `index`
 			* [x] `inRange`
-			* [ ] whole
-* [ ] make `ShowReadDerivs`
+			* [x] whole
+* [ ] add deriving argument
 * [ ] `struct`
 * [ ] `structPrim`

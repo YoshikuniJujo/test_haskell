@@ -40,17 +40,8 @@ sequence [
 	mkInstanceRead "Foo" ["x", "y"],
 	mkInstanceEq "Foo" ["x", "y"],
 	mkInstanceOrd "Foo" ["x", "y"],
-	mkInstanceBounded "Foo" ["x", "y"] ]
-
-(: []) <$> mkIxRange (mkName "rangeFoo") "Foo" ["x", "y"]
-(: []) <$> mkIxIndex (mkName "indexFoo") "Foo" ["x", "y"]
-(: []) <$> mkIxInRange (mkName "inRangeFoo") "Foo" ["x", "y"]
-
-instance Ix Foo where
-	range = rangeFoo
-	index = indexFoo
-	inRange = inRangeFoo
-
+	mkInstanceBounded "Foo" ["x", "y"],
+	mkInstanceIx "Foo" ["x", "y"] ]
 
 (: []) <$> mkNewtypePrim "Foo" [''Show]
 
