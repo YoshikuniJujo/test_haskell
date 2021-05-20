@@ -72,9 +72,9 @@ todo
 		- [x] structure
 		- [ ] body
 			* [ ] STRUCT
-				+ [ ] FUNCTION STRUCT
+				+ [x] FUNCTION STRUCT
 					- [x] define type for document
-					- [ ] others
+					- [x] others
 				+ [ ] NEWTYPE
 				+ [ ] PATTERN
 					- [ ] Function Mk Pattern

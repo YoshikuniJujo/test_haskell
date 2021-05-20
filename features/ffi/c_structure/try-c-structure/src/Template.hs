@@ -67,28 +67,22 @@ import Template.Parts (
 
 -- FUNCTION STRUCT
 
--- struct :: String -> Integer -> [(String, Name, ExpQ, ExpQ)] -> [Name] -> DecsQ
-struct :: StructName -> StructSize -> [(MemberName, MemberType, MemberPeek, MemberPoke)] -> [DerivingClass] -> DecsQ
-struct nt sz fs ds_ = do
-	ntp <- mkNewtype nt
-	let	cmp = PragmaD $ CompleteP [mkName nt] Nothing
-	pf <- mkPatternFun nt $ zip fts fpes
-	pts <- mkPatternSig nt fts
-	ptb <- mkPatternBody nt sz fns fpos
-	dvs <- mkInstances nt fns ds
-	pure $ ntp : cmp : pf ++ pts : ptb : dvs
-	where
-	(fns, fts, fpes, fpos) = unzip4 fs
-	ds = case toDeriving ds_ of
-		(d, []) -> d
-		(_, os) -> error $ "Can't deriving: " ++ show os
+struct :: StructName -> StructSize ->
+	[(MemberName, MemberType, MemberPeek, MemberPoke)] -> [DerivingClass] ->
+	DecsQ
+struct sn sz (unzip4 -> (mns, mts, mpes, mpos)) dcs_ = (++)
+	<$> sequence [
+		mkNewtype sn,
+		pure . PragmaD $ CompleteP [mkName sn] Nothing,
+		mkPatternSig sn mts, mkPatternBody sn sz mns mpos,
+		mkPatternFunSig sn mts, mkPatternFunBody sn mpes ]
+	<*> mkInstances sn mns dcs
+	where dcs = case toDeriving dcs_ of
+		(d, []) -> d; (_, os) -> error $ "Can't derive: " ++ show os
 
-type StructName = String
-type StructSize = Integer
-type MemberName = String
-type MemberType = Name
-type MemberPeek = ExpQ
-type MemberPoke = ExpQ
+type StructName = String; type StructSize = Integer
+type MemberName = String; type MemberType = Name;
+type MemberPeek = ExpQ; type MemberPoke = ExpQ
 type DerivingClass = Name
 
 -- NEWTYPE
@@ -132,19 +126,19 @@ mkPatternBodyClause nt sz pks = do
 
 -- Function Mk Pattern Fun
 
-mkPatternFun :: String -> [(Name, ExpQ)] -> DecsQ
-mkPatternFun nt tpks = sequence [
-	sigD (mkName $ lcfirst nt) $ conT (mkName nt) .-> tupT (conT <$> ts),
-	funD (mkName $ lcfirst nt) [do
-		ff <- newName "ff"
-		pf <- newName . bool "pf" "_" $ null tpks
-		clause [conP (mkName $ nt ++ "_") [varP ff]] (
-			normalB $ varE 'unsafePerformIO .$
-				varE 'withForeignPtr `appE` varE ff
-					`appE` lamE [varP pf] (mkPatternFunDo pf pks)
-			) []
-		] ]
-	where (ts, pks) = unzip tpks
+mkPatternFunSig :: StructName -> [MemberType] -> DecQ
+mkPatternFunSig sn ts =
+	sigD (mkName $ lcfirst sn) $ conT (mkName sn) .-> tupT (conT <$> ts)
+
+mkPatternFunBody :: String -> [ExpQ] -> DecQ
+mkPatternFunBody nt pks = funD (mkName $ lcfirst nt) [do
+	ff <- newName "ff"
+	pf <- newName "pf"
+	clause [conP (mkName $ nt ++ "_") [varP ff]] (
+		normalB $ varE 'unsafePerformIO .$
+			varE 'withForeignPtr `appE` varE ff
+				`appE` lamE [bool (varP pf) wildP $ null pks] (mkPatternFunDo pf pks)
+		) []]
 
 mkPatternFunDo :: Name -> [ExpQ] -> ExpQ
 mkPatternFunDo pf pks = do
