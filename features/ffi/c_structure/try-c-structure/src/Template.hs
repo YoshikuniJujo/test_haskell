@@ -3,7 +3,12 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Template (struct, structPrim) where
+module Template (
+	-- * STRUCT
+	struct, StructName, StructSize,
+	MemberName, MemberType, MemberPeek, MemberPoke, DerivingClass,
+	-- * STRUCT WITH PRIMITIVE MONAD
+	structPrim) where
 
 import Language.Haskell.TH (
 	DecsQ, DecQ, Dec(PragmaD), Pragma(CompleteP), sigD, valD, funD, tySynD,
@@ -62,7 +67,8 @@ import Template.Parts (
 
 -- FUNCTION STRUCT
 
-struct :: String -> Integer -> [(String, Name, ExpQ, ExpQ)] -> [Name] -> DecsQ
+-- struct :: String -> Integer -> [(String, Name, ExpQ, ExpQ)] -> [Name] -> DecsQ
+struct :: StructName -> StructSize -> [(MemberName, MemberType, MemberPeek, MemberPoke)] -> [DerivingClass] -> DecsQ
 struct nt sz fs ds_ = do
 	ntp <- mkNewtype nt
 	let	cmp = PragmaD $ CompleteP [mkName nt] Nothing
@@ -76,6 +82,14 @@ struct nt sz fs ds_ = do
 	ds = case toDeriving ds_ of
 		(d, []) -> d
 		(_, os) -> error $ "Can't deriving: " ++ show os
+
+type StructName = String
+type StructSize = Integer
+type MemberName = String
+type MemberType = Name
+type MemberPeek = ExpQ
+type MemberPoke = ExpQ
+type DerivingClass = Name
 
 -- NEWTYPE
 
