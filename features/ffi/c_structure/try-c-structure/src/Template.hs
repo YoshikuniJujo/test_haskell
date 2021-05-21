@@ -88,11 +88,11 @@ type DerivingClass = Name
 -- NEWTYPE
 
 mkNewtype :: String -> DecQ
-mkNewtype nt = newtypeD (cxt []) (mkName nt) [] Nothing (normalC (mkName $ nt ++ "_") [
-	bangType
-		(bang noSourceUnpackedness noSourceStrictness)
-		(conT ''ForeignPtr `appT` conT (mkName nt))
-	]) []
+mkNewtype sn =
+	newtypeD (cxt []) (mkName sn) [] Nothing (normalC (mkName $ sn ++ "_") [
+		bangType
+			(bang noSourceUnpackedness noSourceStrictness)
+			(conT ''ForeignPtr `appT` conT (mkName sn)) ]) []
 
 -- PATTERN
 

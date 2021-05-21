@@ -75,7 +75,7 @@ todo
 				+ [x] FUNCTION STRUCT
 					- [x] define type for document
 					- [x] others
-				+ [ ] NEWTYPE
+				+ [x] NEWTYPE
 				+ [ ] PATTERN
 					- [ ] Function Mk Pattern
 					- [ ] Function Mk Pattern Fun
