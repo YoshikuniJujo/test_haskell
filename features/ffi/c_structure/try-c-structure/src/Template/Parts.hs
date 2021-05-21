@@ -24,7 +24,7 @@ tupT [t] = t
 tupT ts = foldl appT (tupleT $ length ts) ts
 
 infixr 7 .$
-infixr 8 ...
+infixr 8 ..., .==
 
 (.$), (...), (.<$>), (.<*>), (.>>=), (.&&), (.||), (.==), (.<) :: ExpQ -> ExpQ -> ExpQ
 e1 .$ e2 = infixE (Just e1) (varE '($)) (Just e2)

@@ -213,22 +213,15 @@ mkReadMems sn ms vs =
 
 -- Eq
 
-mkInstanceEq :: String -> [String] -> DecQ
-mkInstanceEq nt fs = do
-	s1 <- newName "s1"
-	s2 <- newName "s2"
-	instanceD (cxt []) (conT ''Eq `appT` conT (mkName nt)) [
-		funD '(==) [
-			clause [varP s1, varP s2] (normalB
-				$ foldl (.&&) (conE 'True) $ fieldEqual s1 s2 nt <$> fs
-				) []
-			]
-		]
+mkInstanceEq :: StrName -> [MemName] -> DecQ
+mkInstanceEq sn ms = (,) <$> newName "s" <*> newName "t" >>= \(s, t) ->
+	instanceD (cxt []) (conT ''Eq `appT` conT (mkName sn)) . (: [])
+		. funD '(==) . (: []) $ clause [varP s, varP t] (normalB
+			$ foldl (.&&) (conE 'True) $ mkMemEq sn s t <$> ms) []
 
-fieldEqual :: Name -> Name -> String -> String -> ExpQ
-fieldEqual s1 s2 nt f_ = (f `appE` varE s1) .== (f `appE` varE s2)
-	where
-	f = varE . mkName $ toLabel nt f_
+mkMemEq :: StrName -> Name -> Name -> MemName -> ExpQ
+mkMemEq sn (varE -> s) (varE -> t) m = let l = varE . mkName $ toLabel sn m in
+	l `appE` s .== l `appE` t
 
 -- Ord
 
@@ -263,6 +256,8 @@ mkInstanceBounded nt fs =
 		valD (varP 'maxBound) (normalB $ foldl appE (conE $ mkName nt)
 			(replicate (length fs) (varE 'maxBound))) [] ]
 
+-- Ix
+
 mkInstanceIx :: String -> [String] -> DecQ
 mkInstanceIx nt fs = instanceD (cxt []) (conT ''Ix `appT` conT (mkName nt)) [
 	mkIxRange 'range nt fs,
@@ -279,8 +274,6 @@ mkIxRange fn nt fs = do
 					<$> is `zip` (vs `zip` ws)
 			) []
 		]
-
--- Ix
 
 mkIxIndex :: Name -> String -> [String] -> DecQ
 mkIxIndex fn nt fs = do

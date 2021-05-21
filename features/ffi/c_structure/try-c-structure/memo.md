@@ -97,8 +97,12 @@ todo
 					- [x] Read
 						* [x] function `mkInstanceRead`
 						* [x] function `mkReadMems`
-					- [ ] Eq
+					- [x] Eq
+						* [x] function `mkInstanceEq`
+						* [x] function `fieldEqual`
 					- [ ] Ord
+						* [ ] function `mkInstanceOrd`
+						* [ ] function `lamOrd`
 					- [ ] Bounded
 					- [ ] Ix
 			* [ ] STRUCT WITH PRIMITIVE MONAD
