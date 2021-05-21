@@ -86,7 +86,11 @@ todo
 						* [x] function `mkPatternFunBody`
 						* [x] function `mkPatternFunDo`
 				+ [ ] DERIVING
-					- [ ] Function Mk Deriving
+					- [x] Function Mk Deriving
+						* [x] function `mkInstances`
+						* [x] `data Deriving`
+						* [x] function `toDeriving`
+						* [x] `pattern NameFoo`
 					- [ ] Show
 					- [ ] Read
 					- [ ] Eq

@@ -77,7 +77,7 @@ struct sn sz (unzip4 -> (mns, mts, mpes, mpos)) dcs_ = (++)
 		mkPatternSig sn mts, mkPatternBody sn sz mns mpos,
 		mkPatternFunSig sn mts, mkPatternFunBody sn mpes ]
 	<*> mkInstances sn mns dcs
-	where dcs = case toDeriving dcs_ of
+	where dcs = case toDerivCollection dcs_ of
 		(d, []) -> d; (_, os) -> error $ "Can't derive: " ++ show os
 
 type StrName = String; type StrSize = Integer
@@ -139,29 +139,30 @@ mkPatternFunPeeks (varE -> p) (length &&& id -> (n, pes)) =
 
 -- Function Mk Deriving
 
-mkInstances :: String -> [String] -> Deriving -> DecsQ
-mkInstances nt fs d = sequence $ (\(t, b) -> bool Nothing (Just t) b) `mapMaybe` zip [
-	mkInstanceShow nt fs, mkInstanceRead nt fs, mkInstanceEq nt fs,
-	mkInstanceOrd nt fs, mkInstanceBounded nt fs, mkInstanceIx nt fs ] [
-	derivingShow d, derivingRead d, derivingEq d,
-	derivingOrd d, derivingBounded d, derivingIx d ]
+mkInstances :: StrName -> [MemName] -> DerivCollection -> DecsQ
+mkInstances sn ms dc =
+	sequence $ (\(t, b) -> bool Nothing (Just t) b) `mapMaybe` zip [
+		mkInstanceShow sn ms, mkInstanceRead sn ms, mkInstanceEq sn ms,
+		mkInstanceOrd sn ms, mkInstanceBounded sn ms, mkInstanceIx sn ms
+		] [	derivingShow dc, derivingRead dc, derivingEq dc,
+			derivingOrd dc, derivingBounded dc, derivingIx dc ]
 
-data Deriving = Deriving {
+data DerivCollection = DerivCollection {
 	derivingShow :: Bool, derivingRead :: Bool,
 	derivingEq :: Bool, derivingOrd :: Bool,
 	derivingBounded :: Bool, derivingIx :: Bool } deriving Show
 
-toDeriving :: [Name] -> (Deriving, [Name])
-toDeriving [] = (Deriving False False False False False False, [])
-toDeriving (n : ns) = case n of
-	NameShow -> (d { derivingShow = True }, ns')
-	NameRead -> (d { derivingRead = True }, ns')
-	NameEq -> (d { derivingEq = True }, ns')
-	NameOrd -> (d { derivingOrd = True }, ns')
-	NameBounded -> (d { derivingBounded = True }, ns')
-	NameIx -> (d {derivingIx = True }, ns')
-	_ -> (d, n : ns')
-	where (d, ns') = toDeriving ns
+toDerivCollection :: [DerivClass] -> (DerivCollection, [DerivClass])
+toDerivCollection [] = (DerivCollection False False False False False False, [])
+toDerivCollection (d : ds) = case d of
+	NameShow -> (dc { derivingShow = True }, ds')
+	NameRead -> (dc { derivingRead = True }, ds')
+	NameEq -> (dc { derivingEq = True }, ds')
+	NameOrd -> (dc { derivingOrd = True }, ds')
+	NameBounded -> (dc { derivingBounded = True }, ds')
+	NameIx -> (dc {derivingIx = True }, ds')
+	_ -> (dc, d : ds')
+	where (dc, ds') = toDerivCollection ds
 
 pattern NameShow, NameRead, NameEq, NameOrd, NameBounded, NameIx :: Name
 pattern NameShow <- ((== ''Show) -> True)
