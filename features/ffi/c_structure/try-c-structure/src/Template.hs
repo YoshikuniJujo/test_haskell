@@ -225,26 +225,20 @@ mkMemEq sn (varE -> s) (varE -> t) m = let l = varE . mkName $ toLabel sn m in
 
 -- Ord
 
-mkInstanceOrd :: String -> [String] -> DecQ
-mkInstanceOrd nt fs_ = do
-	s1 <- newName "s1"
-	s2 <- newName "s2"
-	instanceD (cxt []) (conT ''Ord `appT` conT (mkName nt)) [
-		funD '(<=) [
-			clause [varP s1, varP s2] (normalB
-				$ varE 'foldr `appE` lamOrd s1 s2 `appE`
-					conE 'True `appE` listE fs
-				) []
-			]
-		]
-	where fs = varE . mkName . toLabel nt <$> fs_
+mkInstanceOrd :: StrName -> [MemName] -> DecQ
+mkInstanceOrd sn ms = (,) <$> newName "s" <*> newName "t" >>= \(s, t) ->
+	instanceD (cxt []) (conT ''Ord `appT` conT (mkName sn)) . (: [])
+		. funD '(<=) . (: []) $ clause [varP s, varP t] (normalB
+			$ varE 'foldr `appE` lamOrd s t `appE`
+				conE 'True `appE` listE ln) []
+	where ln = varE . mkName . toLabel sn <$> ms
 
 lamOrd :: Name -> Name -> ExpQ
-lamOrd s1 s2 = do
+lamOrd s t = do
 	x <- newName "x"
 	v <- newName "v"
-	lamE [varP x, varP v] $ (varE x `appE` varE s1) .< (varE x `appE` varE s2) .||
-		(((varE x `appE` varE s1) .== (varE x `appE` varE s2)) .&& varE v)
+	lamE [varP x, varP v] $ (varE x `appE` varE s) .< (varE x `appE` varE t) .||
+		(((varE x `appE` varE s) .== (varE x `appE` varE t)) .&& varE v)
 
 -- Bounded
 
