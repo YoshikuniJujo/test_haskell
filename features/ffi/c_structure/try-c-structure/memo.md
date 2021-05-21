@@ -94,7 +94,9 @@ todo
 					- [x] Show
 						* [x] function `mkInstanceShow`
 						* [x] function `mkShowFields`
-					- [ ] Read
+					- [x] Read
+						* [x] function `mkInstanceRead`
+						* [x] function `mkReadMems`
 					- [ ] Eq
 					- [ ] Ord
 					- [ ] Bounded
@@ -107,6 +109,7 @@ todo
 				+ [ ] COPY
 	+ [ ] Template.Parts
 * [x] change from `bar :: Bar -> Unit CInt` to `bar :: Bar -> CInt`
+* [ ] rename from `litI` to `intE`
 * [ ] independence
 * [ ] documentation
 * [ ] publish

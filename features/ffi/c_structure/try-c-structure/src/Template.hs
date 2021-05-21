@@ -18,7 +18,7 @@ import Language.Haskell.TH (
 	patSynSigD, patSynD, recordPatSyn, explBidir,
 	ExpQ, varE, conE, litE, appE, lamE, tupE, listE,
 	forallT, varT, conT, appT,
-	varP, wildP, conP, litP, tupP, viewP, integerL, stringL,
+	varP, wildP, conP, tupP, viewP, integerL,
 	Name, mkName, newName,
 	ClauseQ, clause, normalB, StmtQ, doE, compE, bindS, noBindS )
 import Foreign.ForeignPtr (ForeignPtr, withForeignPtr)
@@ -37,7 +37,7 @@ import Text.Read (Lexeme(..), readPrec, step, lexP, parens, prec)
 import Template.Parts (
 	(.->), (.$), (...), (.<$>), (.<*>), (.>>=),
 	(.&&), (.||), (.==), (.<), (.+), (.*),
-	tupleE, tupT, tupP', litI, pt, zp, ss, (..+), toLabel, lcfirst )
+	tupleE, tupT, tupP', litI, strP, pt, zp, ss, (..+), toLabel, lcfirst )
 
 ---------------------------------------------------------------------------
 
@@ -112,7 +112,7 @@ mkPatternBodyClause (mkName . (++ "_") -> sn) sz pos = do
 	(vs, p) <- (,) <$> length pos `replicateM` newName "v" <*> newName "p"
 	let	vps = varP <$> vs; pe = varE p; fr = varE 'free `appE` pe
 	clause vps (normalB $ varE 'unsafePerformIO .$ conE sn .<$> doE (
-		bindS (varP p) (varE 'mallocBytes `appE` litI sz) :
+		(varP p `bindS` (varE 'mallocBytes `appE` litI sz)) :
 		((<$> zip pos vs) \(po, v) ->
 			noBindS $ po `appE` pe `appE` varE v) ++
 		[noBindS $ varE 'newForeignPtr `appE` pe `appE` fr] )) []
@@ -190,24 +190,26 @@ mkShowMems (toLabel -> l) ms vs = foldr (...) (varE 'id) . intersperse (ss ", ")
 
 -- Read
 
-mkInstanceRead :: String -> [String] -> DecQ
-mkInstanceRead nt fs = do
-	vs <- replicateM (length fs) $ newName "v"
-	instanceD (cxt []) (conT ''Read `appT` conT (mkName nt)) [
-		valD (varP 'readPrec) (normalB $ varE 'parens .$ varE 'prec `appE` litI 10 `appE` doE ([
-			bindS (conP 'Ident [litP $ stringL "Foo"]) $ varE 'lexP,
-			bindS (conP 'Punc [litP $ stringL "{"]) $ varE 'lexP] ++
-			mkReadFields nt fs vs ++
-			[bindS (conP 'Punc [litP $ stringL "}"]) $ varE 'lexP,
-			noBindS $ varE 'pure .$ foldl appE (conE $ mkName nt) (varE <$> vs)
-			])) []
-		]
+mkInstanceRead :: StrName -> [MemName] -> DecQ
+mkInstanceRead sn ms = length ms `replicateM` newName "v" >>= \vs ->
+	instanceD (cxt []) (conT ''Read `appT` t) . (: [])
+		$ valD (varP 'readPrec) (normalB $ varE 'parens
+			.$ varE 'prec `appE` litI 10 `appE` doE ([
+				conP 'Ident [strP sn] `bindS` varE 'lexP,
+				conP 'Punc [strP "{"] `bindS` varE 'lexP ] ++
+				mkReadMems sn ms vs ++ [
+				conP 'Punc [strP "}"] `bindS` varE 'lexP,
+				noBindS $ varE 'pure
+					.$ foldl appE c (varE <$> vs) ])) []
+	where t = conT $ mkName sn; c = conE $ mkName sn
 
-mkReadFields :: String -> [String] -> [Name] -> [StmtQ]
-mkReadFields nt fs vs = intercalate [bindS (conP 'Punc [litP $ stringL ","]) $ varE 'lexP] $ (<$> zip fs vs) \(f, v) -> [
-	bindS (conP 'Ident [litP . stringL $ toLabel nt f]) $ varE 'lexP,
-	bindS (conP 'Punc [litP $ stringL "="]) $ varE 'lexP,
-	bindS (varP v) $ varE 'step `appE` varE 'readPrec ]
+mkReadMems :: StrName -> [MemName] -> [Name] -> [StmtQ]
+mkReadMems sn ms vs =
+	intercalate [conP 'Punc [strP ","] `bindS` varE 'lexP]
+		$ (<$> zip ms vs) \(m, v) -> [
+			conP 'Ident [strP $ toLabel sn m] `bindS` varE 'lexP,
+			conP 'Punc [strP "="] `bindS` varE 'lexP,
+			varP v `bindS` (varE 'step `appE` varE 'readPrec) ]
 
 -- Eq
 

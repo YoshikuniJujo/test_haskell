@@ -6,7 +6,7 @@
 module Template.Parts where
 
 import Language.Haskell.TH (
-	ExpQ, Exp(TupE), varE, litE, infixE, TypeQ, appT, tupleT, arrowT, PatQ, tupP,
+	ExpQ, Exp(TupE), varE, litE, infixE, TypeQ, appT, tupleT, arrowT, PatQ, litP, tupP,
 	integerL, stringL )
 import Data.Char (toLower, toUpper)
 
@@ -53,6 +53,9 @@ s1 ..+ s2 = ss $ s1 ++ s2
 
 litI :: Integer -> ExpQ
 litI = litE . integerL
+
+strP :: String -> PatQ
+strP = litP . stringL
 
 toLabel :: String -> String -> String
 toLabel sn = (lcfirst sn ++) . ucfirst
