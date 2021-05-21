@@ -5,8 +5,8 @@
 
 module Template (
 	-- * STRUCT
-	struct, StructName, StructSize,
-	MemberName, MemberType, MemberPeek, MemberPoke, DerivingClass,
+	struct, StrName, StrSize,
+	MemName, MemType, MemPeek, MemPoke, DerivClass,
 	-- * STRUCT WITH PRIMITIVE MONAD
 	structPrim) where
 
@@ -67,9 +67,8 @@ import Template.Parts (
 
 -- FUNCTION STRUCT
 
-struct :: StructName -> StructSize ->
-	[(MemberName, MemberType, MemberPeek, MemberPoke)] -> [DerivingClass] ->
-	DecsQ
+struct :: StrName -> StrSize ->
+	[(MemName, MemType, MemPeek, MemPoke)] -> [DerivClass] -> DecsQ
 struct sn sz (unzip4 -> (mns, mts, mpes, mpos)) dcs_ = (++)
 	<$> sequence [
 		mkNewtype sn,
@@ -80,14 +79,14 @@ struct sn sz (unzip4 -> (mns, mts, mpes, mpos)) dcs_ = (++)
 	where dcs = case toDeriving dcs_ of
 		(d, []) -> d; (_, os) -> error $ "Can't derive: " ++ show os
 
-type StructName = String; type StructSize = Integer
-type MemberName = String; type MemberType = Name;
-type MemberPeek = ExpQ; type MemberPoke = ExpQ
-type DerivingClass = Name
+type StrName = String; type StrSize = Integer
+type MemName = String; type MemType = Name
+type MemPeek = ExpQ; type MemPoke = ExpQ
+type DerivClass = Name
 
 -- NEWTYPE
 
-mkNewtype :: String -> DecQ
+mkNewtype :: StrName -> DecQ
 mkNewtype sn =
 	newtypeD (cxt []) (mkName sn) [] Nothing (normalC (mkName $ sn ++ "_") [
 		bangType
@@ -98,35 +97,28 @@ mkNewtype sn =
 
 -- Function Mk Pattern
 
-mkPatternSig :: String -> [Name] -> DecQ
-mkPatternSig nt ts =
-	patSynSigD (mkName nt) $ foldr (.->) (conT $ mkName nt) (conT <$> ts)
+mkPatternSig :: StrName -> [MemType] -> DecQ
+mkPatternSig (mkName -> sn) = patSynSigD sn . foldr (.->) (conT sn) . (conT <$>)
 
-mkPatternBody :: String -> Integer -> [String] -> [ExpQ] -> DecQ
-mkPatternBody nt sz fs poks =
-	patSynD (mkName nt) (recordPatSyn fs')
-		(explBidir [mkPatternBodyClause nt sz poks])
-		(viewP (varE . mkName $ lcfirst nt) (tupP $ varP <$> fs'))
-	where
-	fs' = mkName . (lcfirst nt ++) . ucfirst <$> fs
+mkPatternBody :: StrName -> StrSize -> [MemName] -> [MemPoke] -> DecQ
+mkPatternBody sn sz ms_ pos = patSynD (mkName sn) (recordPatSyn ms)
+	(explBidir [mkPatternBodyClause sn sz pos])
+	(viewP (varE . mkName $ lcfirst sn) (tupP $ varP <$> ms))
+	where ms = mkName . (lcfirst sn ++) . ucfirst <$> ms_
 
-mkPatternBodyClause :: String -> Integer -> [ExpQ] -> ClauseQ
-mkPatternBodyClause nt sz pks = do
-	vs <- replicateM (length pks) $ newName "v"
-	p <- newName "p"
-	clause (varP <$> vs) (
-		normalB $ varE 'unsafePerformIO .$ conE (mkName nt_) .<$> doE (
-			bindS (varP p) (varE 'mallocBytes `appE` litE (integerL sz)) :
-			((<$> zip pks vs) \(pk, v) -> noBindS $ pk `appE` varE p `appE` varE v) ++
-			[noBindS $ varE 'newForeignPtr `appE` varE p `appE` (varE 'free `appE` varE p)]
-			)
-		) []
-	where
-	nt_ = nt ++ "_"
+mkPatternBodyClause :: StrName -> StrSize -> [MemPoke] -> ClauseQ
+mkPatternBodyClause (mkName . (++ "_") -> sn) sz pos = do
+	(vs, p) <- (,) <$> length pos `replicateM` newName "v" <*> newName "p"
+	let	vps = varP <$> vs; pe = varE p; fr = varE 'free `appE` pe
+	clause vps (normalB $ varE 'unsafePerformIO .$ conE sn .<$> doE (
+		bindS (varP p) (varE 'mallocBytes `appE` litI sz) :
+		((<$> zip pos vs) \(po, v) ->
+			noBindS $ po `appE` pe `appE` varE v) ++
+		[noBindS $ varE 'newForeignPtr `appE` pe `appE` fr] )) []
 
 -- Function Mk Pattern Fun
 
-mkPatternFunSig :: StructName -> [MemberType] -> DecQ
+mkPatternFunSig :: StrName -> [MemType] -> DecQ
 mkPatternFunSig sn ts =
 	sigD (mkName $ lcfirst sn) $ conT (mkName sn) .-> tupT (conT <$> ts)
 

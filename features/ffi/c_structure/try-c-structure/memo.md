@@ -77,7 +77,10 @@ todo
 					- [x] others
 				+ [x] NEWTYPE
 				+ [ ] PATTERN
-					- [ ] Function Mk Pattern
+					- [x] Function Mk Pattern
+						* [x] function `mkPatternSig`
+						* [x] function `mkPatternBody`
+						* [x] function `mkPatternBodyClause`
 					- [ ] Function Mk Pattern Fun
 				+ [ ] DERIVING
 					- [ ] Function Mk Deriving
