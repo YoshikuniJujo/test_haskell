@@ -6,16 +6,18 @@
 module Template.Parts where
 
 import Language.Haskell.TH (
-	ExpQ, varE, litE, infixE, tupE, TypeQ, appT, tupleT, arrowT,
+	ExpQ, Exp(TupE), varE, litE, infixE, TypeQ, appT, tupleT, arrowT, PatQ, tupP,
 	integerL, stringL )
 import Data.Char (toLower, toUpper)
 
 (.->) :: TypeQ -> TypeQ -> TypeQ
 t1 .-> t2 = arrowT `appT` t1 `appT` t2
 
-tupE' :: [ExpQ] -> ExpQ
-tupE' [e] = e
-tupE' es = tupE es
+tupleE :: Int -> ExpQ
+tupleE = \case 1 -> varE 'id; n -> pure . TupE $ n `replicate` Nothing
+
+tupP' :: [PatQ] -> PatQ
+tupP' = \case [p] -> p; ps -> tupP ps
 
 tupT :: [TypeQ] -> TypeQ
 tupT [t] = t

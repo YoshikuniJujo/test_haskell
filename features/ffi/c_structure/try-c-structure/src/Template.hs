@@ -24,6 +24,7 @@ import Language.Haskell.TH (
 import Foreign.ForeignPtr (ForeignPtr, withForeignPtr)
 import Foreign.Concurrent (newForeignPtr)
 import Foreign.Marshal (mallocBytes, free)
+import Control.Arrow ((&&&))
 import Control.Monad (replicateM)
 import Control.Monad.Primitive (PrimMonad(..), RealWorld, unsafeIOToPrim)
 import Data.Bool (bool)
@@ -36,7 +37,7 @@ import Text.Read (Lexeme(..), readPrec, step, lexP, parens, prec)
 import Template.Parts (
 	(.->), (.$), (...), (.<$>), (.<*>), (.>>=),
 	(.&&), (.||), (.==), (.<), (.+), (.*),
-	tupE', tupT, litI, pt, zp, pp, lcfirst, ucfirst )
+	tupleE, tupT, tupP', litI, pt, zp, pp, lcfirst, ucfirst )
 
 ---------------------------------------------------------------------------
 
@@ -103,7 +104,7 @@ mkPatternSig (mkName -> sn) = patSynSigD sn . foldr (.->) (conT sn) . (conT <$>)
 mkPatternBody :: StrName -> StrSize -> [MemName] -> [MemPoke] -> DecQ
 mkPatternBody sn sz ms_ pos = patSynD (mkName sn) (recordPatSyn ms)
 	(explBidir [mkPatternBodyClause sn sz pos])
-	(viewP (varE . mkName $ lcfirst sn) (tupP $ varP <$> ms))
+	(viewP (varE . mkName $ lcfirst sn) (tupP' $ varP <$> ms))
 	where ms = mkName . (lcfirst sn ++) . ucfirst <$> ms_
 
 mkPatternBodyClause :: StrName -> StrSize -> [MemPoke] -> ClauseQ
@@ -119,24 +120,20 @@ mkPatternBodyClause (mkName . (++ "_") -> sn) sz pos = do
 -- Function Mk Pattern Fun
 
 mkPatternFunSig :: StrName -> [MemType] -> DecQ
-mkPatternFunSig sn ts =
-	sigD (mkName $ lcfirst sn) $ conT (mkName sn) .-> tupT (conT <$> ts)
+mkPatternFunSig (mkName . lcfirst &&& conT . mkName -> (fn, st)) =
+	sigD fn . (st .->) . tupT . (conT <$>)
 
-mkPatternFunBody :: String -> [ExpQ] -> DecQ
-mkPatternFunBody nt pks = funD (mkName $ lcfirst nt) [do
-	ff <- newName "ff"
-	pf <- newName "pf"
-	clause [conP (mkName $ nt ++ "_") [varP ff]] (
-		normalB $ varE 'unsafePerformIO .$
-			varE 'withForeignPtr `appE` varE ff
-				`appE` lamE [bool (varP pf) wildP $ null pks] (mkPatternFunDo pf pks)
-		) []]
+mkPatternFunBody :: StrName -> [MemPeek] -> DecQ
+mkPatternFunBody (mkName . lcfirst &&& mkName . (++ "_") -> (fn, cn)) pes =
+	funD fn . (: []) $ (,) <$> newName "f" <*> newName "p" >>= \(f, p) ->
+		clause [conP cn [varP f]] (normalB $ varE 'unsafePerformIO
+			.$ varE 'withForeignPtr `appE` varE f
+				`appE` lamE [bool (varP p) wildP $ null pes]
+					(mkPatternFunPeeks p pes)) []
 
-mkPatternFunDo :: Name -> [ExpQ] -> ExpQ
-mkPatternFunDo pf pks = do
-	fs <- replicateM (length pks) $ newName "f"
-	doE . (++ [noBindS $ varE 'pure `appE` tupE' (varE <$> fs)]) $ (<$> (fs `zip` pks)) \(f', pk') ->
-		bindS (varP f') $ pk' `appE` varE pf
+mkPatternFunPeeks :: Name -> [MemPeek] -> ExpQ
+mkPatternFunPeeks (varE -> p) (length &&& id -> (n, pes)) =
+	foldl (.<*>) (varE 'pure .$ tupleE n) $ (`appE` p) <$> pes
 
 -- DERIVING
 

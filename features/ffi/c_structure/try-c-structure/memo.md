@@ -76,12 +76,15 @@ todo
 					- [x] define type for document
 					- [x] others
 				+ [x] NEWTYPE
-				+ [ ] PATTERN
+				+ [x] PATTERN
 					- [x] Function Mk Pattern
 						* [x] function `mkPatternSig`
 						* [x] function `mkPatternBody`
 						* [x] function `mkPatternBodyClause`
-					- [ ] Function Mk Pattern Fun
+					- [x] Function Mk Pattern Fun
+						* [x] function `mkPatternFunSig`
+						* [x] function `mkPatternFunBody`
+						* [x] function `mkPatternFunDo`
 				+ [ ] DERIVING
 					- [ ] Function Mk Deriving
 					- [ ] Show
@@ -97,6 +100,7 @@ todo
 				+ [ ] THAW
 				+ [ ] COPY
 	+ [ ] Template.Parts
+* [x] change from `bar :: Bar -> Unit CInt` to `bar :: Bar -> CInt`
 * [ ] independence
 * [ ] documentation
 * [ ] publish
