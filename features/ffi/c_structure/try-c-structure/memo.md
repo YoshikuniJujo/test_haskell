@@ -91,7 +91,9 @@ todo
 						* [x] `data Deriving`
 						* [x] function `toDeriving`
 						* [x] `pattern NameFoo`
-					- [ ] Show
+					- [x] Show
+						* [x] function `mkInstanceShow`
+						* [x] function `mkShowFields`
 					- [ ] Read
 					- [ ] Eq
 					- [ ] Ord

@@ -23,7 +23,8 @@ tupT :: [TypeQ] -> TypeQ
 tupT [t] = t
 tupT ts = foldl appT (tupleT $ length ts) ts
 
-infixr 8 .$
+infixr 7 .$
+infixr 8 ...
 
 (.$), (...), (.<$>), (.<*>), (.>>=), (.&&), (.||), (.==), (.<) :: ExpQ -> ExpQ -> ExpQ
 e1 .$ e2 = infixE (Just e1) (varE '($)) (Just e2)
@@ -44,12 +45,18 @@ e1 `zp` e2 = infixE (Just e1) (varE 'zip) (Just e2)
 pt :: ExpQ -> ExpQ -> ExpQ
 e `pt` op = infixE (Just e) op Nothing
 
-pp :: String -> ExpQ
-pp s = litE (stringL s) `pt` varE '(++)
+ss :: String -> ExpQ
+ss s = litE (stringL s) `pt` varE '(++)
+
+(..+) :: String -> String -> ExpQ
+s1 ..+ s2 = ss $ s1 ++ s2
+
+litI :: Integer -> ExpQ
+litI = litE . integerL
+
+toLabel :: String -> String -> String
+toLabel sn = (lcfirst sn ++) . ucfirst
 
 lcfirst, ucfirst :: String -> String
 lcfirst = \case "" -> ""; c : cs -> toLower c : cs
 ucfirst = \case "" -> ""; c : cs -> toUpper c : cs
-
-litI :: Integer -> ExpQ
-litI = litE . integerL

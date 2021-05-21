@@ -37,7 +37,7 @@ import Text.Read (Lexeme(..), readPrec, step, lexP, parens, prec)
 import Template.Parts (
 	(.->), (.$), (...), (.<$>), (.<*>), (.>>=),
 	(.&&), (.||), (.==), (.<), (.+), (.*),
-	tupleE, tupT, tupP', litI, pt, zp, pp, lcfirst, ucfirst )
+	tupleE, tupT, tupP', litI, pt, zp, ss, (..+), toLabel, lcfirst )
 
 ---------------------------------------------------------------------------
 
@@ -105,7 +105,7 @@ mkPatternBody :: StrName -> StrSize -> [MemName] -> [MemPoke] -> DecQ
 mkPatternBody sn sz ms_ pos = patSynD (mkName sn) (recordPatSyn ms)
 	(explBidir [mkPatternBodyClause sn sz pos])
 	(viewP (varE . mkName $ lcfirst sn) (tupP' $ varP <$> ms))
-	where ms = mkName . (lcfirst sn ++) . ucfirst <$> ms_
+	where ms = mkName . toLabel sn <$> ms_
 
 mkPatternBodyClause :: StrName -> StrSize -> [MemPoke] -> ClauseQ
 mkPatternBodyClause (mkName . (++ "_") -> sn) sz pos = do
@@ -174,21 +174,19 @@ pattern NameIx <- ((== ''Ix) -> True)
 
 -- Show
 
-mkInstanceShow :: String -> [String] -> DecQ
-mkInstanceShow nt fs = do
-	f <- newName "f"
-	vs <- replicateM (length fs) $ newName "v"
-	instanceD (cxt []) (conT ''Show `appT` conT (mkName nt)) [
-		funD 'showsPrec [
-			clause [wildP, varP f] (
-				normalB $ pp (nt ++ " {") ...
-					mkShowFields nt fs vs ...
-					pp "}"
-				) [valD (conP (mkName nt) $ varP <$> vs) (normalB $ varE f) []] ] ]
+mkInstanceShow :: StrName -> [MemName] -> DecQ
+mkInstanceShow (mkName &&& id -> (sn, ssn)) ms = do
+	(s, vs) <- (,) <$> newName "s" <*> length ms `replicateM` newName "v"
+	instanceD (cxt []) (conT ''Show `appT` conT sn) . (: [])
+		$ funD 'showsPrec [clause [wildP, varP s]
+			(normalB $ ss (ssn ++ " {") ...
+				mkShowMems ssn ms vs ... ss "}")
+			[valD (conP sn $ varP <$> vs) (normalB $ varE s) []]]
 
-mkShowFields :: String -> [String] -> [Name] -> ExpQ
-mkShowFields nt fs ns = foldr (...) (varE 'id) . intersperse (pp ", ")
-	$ (<$> zip fs ns) \(f, n) -> pp (lcfirst nt ++ ucfirst f ++ " = ") ... (varE 'showsPrec `appE` litI 11 `appE` varE n)
+mkShowMems :: StrName -> [MemName] -> [Name] -> ExpQ
+mkShowMems (toLabel -> l) ms vs = foldr (...) (varE 'id) . intersperse (ss ", ")
+	$ (<$> zip ms vs) \(m, v) ->
+		l m ..+ " = " ... varE 'showsPrec `appE` litI 11 `appE` varE v
 
 -- Read
 
@@ -207,7 +205,7 @@ mkInstanceRead nt fs = do
 
 mkReadFields :: String -> [String] -> [Name] -> [StmtQ]
 mkReadFields nt fs vs = intercalate [bindS (conP 'Punc [litP $ stringL ","]) $ varE 'lexP] $ (<$> zip fs vs) \(f, v) -> [
-	bindS (conP 'Ident [litP . stringL $ lcfirst nt ++ ucfirst f]) $ varE 'lexP,
+	bindS (conP 'Ident [litP . stringL $ toLabel nt f]) $ varE 'lexP,
 	bindS (conP 'Punc [litP $ stringL "="]) $ varE 'lexP,
 	bindS (varP v) $ varE 'step `appE` varE 'readPrec ]
 
@@ -228,7 +226,7 @@ mkInstanceEq nt fs = do
 fieldEqual :: Name -> Name -> String -> String -> ExpQ
 fieldEqual s1 s2 nt f_ = (f `appE` varE s1) .== (f `appE` varE s2)
 	where
-	f = varE . mkName $ lcfirst nt ++ ucfirst f_
+	f = varE . mkName $ toLabel nt f_
 
 -- Ord
 
@@ -244,7 +242,7 @@ mkInstanceOrd nt fs_ = do
 				) []
 			]
 		]
-	where fs = varE . mkName . (lcfirst nt ++) . ucfirst <$> fs_
+	where fs = varE . mkName . toLabel nt <$> fs_
 
 lamOrd :: Name -> Name -> ExpQ
 lamOrd s1 s2 = do
