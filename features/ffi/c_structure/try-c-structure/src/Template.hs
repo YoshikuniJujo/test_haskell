@@ -228,17 +228,16 @@ mkMemEq sn (varE -> s) (varE -> t) m = let l = varE . mkName $ toLabel sn m in
 mkInstanceOrd :: StrName -> [MemName] -> DecQ
 mkInstanceOrd sn ms = (,) <$> newName "s" <*> newName "t" >>= \(s, t) ->
 	instanceD (cxt []) (conT ''Ord `appT` conT (mkName sn)) . (: [])
-		. funD '(<=) . (: []) $ clause [varP s, varP t] (normalB
-			$ varE 'foldr `appE` lamOrd s t `appE`
-				conE 'True `appE` listE ln) []
+		. funD '(<=) . (: []) $ clause [varP s, varP t] (
+			normalB $ varE 'foldr `appE` lamOrd s t `appE`
+				conE 'True `appE` listE ln ) []
 	where ln = varE . mkName . toLabel sn <$> ms
 
 lamOrd :: Name -> Name -> ExpQ
-lamOrd s t = do
-	x <- newName "x"
-	v <- newName "v"
-	lamE [varP x, varP v] $ (varE x `appE` varE s) .< (varE x `appE` varE t) .||
-		(((varE x `appE` varE s) .== (varE x `appE` varE t)) .&& varE v)
+lamOrd (varE -> s) (varE -> t) =
+	(,) <$> newName "x" <*> newName "v" >>= \(x, v) -> let xe = varE x in
+		lamE [varP x, varP v] $ xe `appE` s .< xe `appE` t .||
+			xe `appE` s .== xe `appE` t .&& varE v
 
 -- Bounded
 

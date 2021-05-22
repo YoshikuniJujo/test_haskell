@@ -100,9 +100,9 @@ todo
 					- [x] Eq
 						* [x] function `mkInstanceEq`
 						* [x] function `fieldEqual`
-					- [ ] Ord
-						* [ ] function `mkInstanceOrd`
-						* [ ] function `lamOrd`
+					- [x] Ord
+						* [x] function `mkInstanceOrd`
+						* [x] function `lamOrd`
 					- [ ] Bounded
 					- [ ] Ix
 			* [ ] STRUCT WITH PRIMITIVE MONAD
