@@ -105,7 +105,7 @@ todo
 						* [x] function `lamOrd`
 					- [x] Bounded
 					- [ ] Ix
-						* [ ] mkInstanceIx
+						* [x] mkInstanceIx
 						* [ ] mkIxRange
 						* [ ] mkIxIndex
 						* [ ] mkIxIndexLam

@@ -251,52 +251,50 @@ mkInstanceBounded (mkName -> sn) (length -> n) =
 
 -- Ix
 
-mkInstanceIx :: String -> [String] -> DecQ
-mkInstanceIx nt fs = instanceD (cxt []) (conT ''Ix `appT` conT (mkName nt)) [
-	mkIxRange 'range nt fs,
-	mkIxIndex 'index nt fs,
-	mkIxInRange 'inRange nt fs ]
+mkInstanceIx :: StrName -> [MemName] -> DecQ
+mkInstanceIx (mkName -> sn) ms = instanceD (cxt []) (conT ''Ix `appT` conT sn) [
+	mkRange 'range sn ms, mkIndex 'index sn ms, mkInRange 'inRange sn ms ]
 
-mkIxRange :: Name -> String -> [String] -> DecQ
-mkIxRange fn nt fs = do
+mkRange :: Name -> Name -> [MemName] -> DecQ
+mkRange fn nt fs = do
 	(vs, ws, is) <- unzip3
 		<$> replicateM (length fs) ((,,) <$> newName "v" <*> newName "w" <*> newName "i")
-	funD fn [clause [tupP [conP (mkName nt) $ varP <$> vs, conP (mkName nt) $ varP <$> ws]] (normalB
-			. compE $ (++ [noBindS . foldl appE (conE $ mkName nt) $ varE <$> is])
+	funD fn [clause [tupP [conP nt $ varP <$> vs, conP nt $ varP <$> ws]] (normalB
+			. compE $ (++ [noBindS . foldl appE (conE nt) $ varE <$> is])
 				$ (\(i, (v, w)) -> bindS (varP i) $ varE 'range `appE` tupE [varE v, varE w])
 					<$> is `zip` (vs `zip` ws)
 			) []
 		]
 
-mkIxIndex :: Name -> String -> [String] -> DecQ
-mkIxIndex fn nt fs = do
+mkIndex :: Name -> Name -> [MemName] -> DecQ
+mkIndex fn nt fs = do
 	(vs, ws, is) <- unzip3
 		<$> replicateM (length fs) ((,,) <$> newName "v" <*> newName "w" <*> newName "i")
 	funD fn [clause
-		[	tupP [conP (mkName nt) $ varP <$> vs, conP (mkName nt) $ varP <$> ws],
-			conP (mkName nt) $ varP <$> is ]
+		[	tupP [conP nt $ varP <$> vs, conP nt $ varP <$> ws],
+			conP nt $ varP <$> is ]
 		(normalB
-			$ varE 'foldl `appE` mkIxIndexLam `appE` litE (integerL 0)
+			$ varE 'foldl `appE` mkIndexLam `appE` litE (integerL 0)
 				.$ listE (varE <$> vs) `zp` listE (varE <$> ws) `zp` listE (varE <$> is)
 			)
 		[]]
 
-mkIxIndexLam :: ExpQ
-mkIxIndexLam = do
+mkIndexLam :: ExpQ
+mkIndexLam = do
 	v <- newName "v"
 	z <- newName "z"
 	k <- newName "k"
 	lamE [varP v, tupP [varP z, varP k]]
 		$ (varE 'index `appE` varE z `appE` varE k) .+ (varE 'rangeSize `appE` varE z .* varE v)
 
-mkIxInRange :: Name -> String -> [String] -> DecQ
-mkIxInRange fn nt fs = do
+mkInRange :: Name -> Name -> [MemName] -> DecQ
+mkInRange fn nt fs = do
 	vs <- replicateM (length fs) $ newName "v"
 	ws <- replicateM (length fs) $ newName "w"
 	is <- replicateM (length fs) $ newName "i"
 	funD fn [clause
-		[	tupP [conP (mkName nt) $ varP <$> vs, conP (mkName nt) $ varP <$> ws],
-			conP (mkName nt) $ varP <$> is ]
+		[	tupP [conP nt $ varP <$> vs, conP nt $ varP <$> ws],
+			conP nt $ varP <$> is ]
 		(normalB . foldr (.&&) (conE 'True)
 			$ (\((v, w), i) -> varE 'inRange `appE` tupE [varE v, varE w] `appE` varE i)
 				<$> vs `zip` ws `zip` is
