@@ -108,7 +108,7 @@ todo
 						* [x] mkInstanceIx
 						* [x] mkRange
 						* [x] mkIndex
-						* [ ] mkIndexLam
+						* [x] mkIndexLam
 						* [ ] mkInRange
 			* [ ] STRUCT WITH PRIMITIVE MONAD
 				+ [ ] FUNCTION STRUCT PRIM

@@ -273,16 +273,15 @@ mkIndex fn (conP -> sn) (length -> n) = do
 	funD fn . (: []) $ clause
 		[tupP [sn $ varP <$> vs, sn $ varP <$> ws], sn $ varP <$> is]
 		(normalB $ varE 'foldl `appE` mkIndexLam `appE` litI 0
-			.$ listE (varE <$> vs) `zp`
-				listE (varE <$> ws) `zp` listE (varE <$> is)) []
+			.$ listE (varE <$> vs) `zp` listE (varE <$> ws) `zp`
+				listE (varE <$> is)) []
 
 mkIndexLam :: ExpQ
-mkIndexLam = do
-	v <- newName "v"
-	z <- newName "z"
-	k <- newName "k"
-	lamE [varP v, tupP [varP z, varP k]]
-		$ (varE 'index `appE` varE z `appE` varE k) .+ (varE 'rangeSize `appE` varE z .* varE v)
+mkIndexLam =
+	(,,) <$> newName "v" <*> newName "z" <*> newName "k" >>= \(v, z, k) ->
+		lamE [varP v, tupP [varP z, varP k]]
+			$ (varE 'index `appE` varE z `appE` varE k) .+
+				(varE 'rangeSize `appE` varE z .* varE v)
 
 mkInRange :: Name -> Name -> [MemName] -> DecQ
 mkInRange fn nt fs = do
