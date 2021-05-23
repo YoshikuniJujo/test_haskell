@@ -71,7 +71,7 @@ todo
 		- [x] import list
 		- [x] structure
 		- [ ] body
-			* [ ] STRUCT
+			* [x] STRUCT
 				+ [x] FUNCTION STRUCT
 					- [x] define type for document
 					- [x] others
@@ -85,7 +85,7 @@ todo
 						* [x] function `mkPatternFunSig`
 						* [x] function `mkPatternFunBody`
 						* [x] function `mkPatternFunDo`
-				+ [ ] DERIVING
+				+ [x] DERIVING
 					- [x] Function Mk Deriving
 						* [x] function `mkInstances`
 						* [x] `data Deriving`
@@ -104,12 +104,12 @@ todo
 						* [x] function `mkInstanceOrd`
 						* [x] function `lamOrd`
 					- [x] Bounded
-					- [ ] Ix
+					- [x] Ix
 						* [x] mkInstanceIx
 						* [x] mkRange
 						* [x] mkIndex
 						* [x] mkIndexLam
-						* [ ] mkInRange
+						* [x] mkInRange
 			* [ ] STRUCT WITH PRIMITIVE MONAD
 				+ [ ] FUNCTION STRUCT PRIM
 				+ [ ] NEWTYPE

@@ -284,18 +284,16 @@ mkIndexLam =
 				(varE 'rangeSize `appE` varE z .* varE v)
 
 mkInRange :: Name -> Name -> [MemName] -> DecQ
-mkInRange fn nt fs = do
-	vs <- replicateM (length fs) $ newName "v"
-	ws <- replicateM (length fs) $ newName "w"
-	is <- replicateM (length fs) $ newName "i"
-	funD fn [clause
-		[	tupP [conP nt $ varP <$> vs, conP nt $ varP <$> ws],
-			conP nt $ varP <$> is ]
-		(normalB . foldr (.&&) (conE 'True)
-			$ (\((v, w), i) -> varE 'inRange `appE` tupE [varE v, varE w] `appE` varE i)
-				<$> vs `zip` ws `zip` is
-			)
-		[]]
+mkInRange fn (conP -> sn) (length -> n) = do
+	(vs, ws, is) <- unzip3 <$> n `replicateM`
+		((,,) <$> newName "v" <*> newName "w" <*> newName "i")
+	funD fn . (: []) $ clause
+		[tupP [sn $ varP <$> vs, sn $ varP <$> ws], sn $ varP <$> is]
+		(normalB . foldr (.&&) (conE 'True) $
+			(<$> vs `zip` ws `zip` is) \((v, w), i) ->
+				ir `appE` tupE [varE v, varE w] `appE` varE i
+			) []
+	where ir = varE 'inRange
 
 ---------------------------------------------------------------------------
 -- STRUCT WITH PRIMITIVE MONAD
