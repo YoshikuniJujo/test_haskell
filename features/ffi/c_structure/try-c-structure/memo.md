@@ -103,8 +103,13 @@ todo
 					- [x] Ord
 						* [x] function `mkInstanceOrd`
 						* [x] function `lamOrd`
-					- [ ] Bounded
+					- [x] Bounded
 					- [ ] Ix
+						* [ ] mkInstanceIx
+						* [ ] mkIxRange
+						* [ ] mkIxIndex
+						* [ ] mkIxIndexLam
+						* [ ] mkIxInRange
 			* [ ] STRUCT WITH PRIMITIVE MONAD
 				+ [ ] FUNCTION STRUCT PRIM
 				+ [ ] NEWTYPE

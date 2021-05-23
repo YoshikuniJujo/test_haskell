@@ -241,13 +241,13 @@ lamOrd (varE -> s) (varE -> t) =
 
 -- Bounded
 
-mkInstanceBounded :: String -> [String] -> DecQ
-mkInstanceBounded nt fs =
-	instanceD (cxt []) (conT ''Bounded `appT` conT (mkName nt)) [
-		valD (varP 'minBound) (normalB $ foldl appE (conE $ mkName nt)
-			(replicate (length fs) (varE 'minBound))) [],
-		valD (varP 'maxBound) (normalB $ foldl appE (conE $ mkName nt)
-			(replicate (length fs) (varE 'maxBound))) [] ]
+mkInstanceBounded :: StrName -> [MemName] -> DecQ
+mkInstanceBounded (mkName -> sn) (length -> n) =
+	instanceD (cxt []) (conT ''Bounded `appT` conT sn) [
+		valD (varP 'minBound) (normalB $ foldl appE (conE sn)
+			(replicate n $ varE 'minBound)) [],
+		valD (varP 'maxBound) (normalB $ foldl appE (conE sn)
+			(replicate n $ varE 'maxBound)) [] ]
 
 -- Ix
 
