@@ -106,10 +106,10 @@ todo
 					- [x] Bounded
 					- [ ] Ix
 						* [x] mkInstanceIx
-						* [ ] mkIxRange
-						* [ ] mkIxIndex
-						* [ ] mkIxIndexLam
-						* [ ] mkIxInRange
+						* [x] mkRange
+						* [ ] mkIndex
+						* [ ] mkIndexLam
+						* [ ] mkInRange
 			* [ ] STRUCT WITH PRIMITIVE MONAD
 				+ [ ] FUNCTION STRUCT PRIM
 				+ [ ] NEWTYPE

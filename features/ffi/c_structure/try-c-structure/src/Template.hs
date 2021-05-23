@@ -256,15 +256,16 @@ mkInstanceIx (mkName -> sn) ms = instanceD (cxt []) (conT ''Ix `appT` conT sn) [
 	mkRange 'range sn ms, mkIndex 'index sn ms, mkInRange 'inRange sn ms ]
 
 mkRange :: Name -> Name -> [MemName] -> DecQ
-mkRange fn nt fs = do
-	(vs, ws, is) <- unzip3
-		<$> replicateM (length fs) ((,,) <$> newName "v" <*> newName "w" <*> newName "i")
-	funD fn [clause [tupP [conP nt $ varP <$> vs, conP nt $ varP <$> ws]] (normalB
-			. compE $ (++ [noBindS . foldl appE (conE nt) $ varE <$> is])
-				$ (\(i, (v, w)) -> bindS (varP i) $ varE 'range `appE` tupE [varE v, varE w])
-					<$> is `zip` (vs `zip` ws)
+mkRange fn sn (length -> n) = do
+	(vs, ws, is) <- unzip3 <$> n `replicateM`
+		((,,) <$> newName "v" <*> newName "w" <*> newName "i")
+	funD fn . (: []) $ clause
+		[tupP [conP sn $ varP <$> vs, conP sn $ varP <$> ws]]
+		(normalB . compE . (++ [noBindS . foldl appE sne $ varE <$> is])
+			$ (<$> is `zip` (vs `zip` ws)) \(i, (v, w)) ->
+				bindS (varP i) $ rg `appE` tupE [varE v, varE w]
 			) []
-		]
+	where rg = varE 'range; sne = conE sn
 
 mkIndex :: Name -> Name -> [MemName] -> DecQ
 mkIndex fn nt fs = do
