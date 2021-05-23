@@ -301,12 +301,10 @@ mkInRange fn (conP -> sn) (length -> n) = do
 
 -- FUNCTION STRUCT PRIM
 
-structPrim :: String -> Name -> Name -> [Name] -> DecsQ
+structPrim :: StrName -> Name -> Name -> [DerivClass] -> DecsQ
 structPrim nt cp fr ds = sequence [
-	mkNewtypePrim nt ds,
-	mkTypeST nt, mkTypeIO nt,
-	mkFreezeSig nt, mkFreezeFun nt cp fr,
-	mkThawSig nt, mkThawFun nt cp fr,
+	mkNewtypePrim nt ds, mkTypeST nt, mkTypeIO nt,
+	mkFreezeSig nt, mkFreezeFun nt cp fr, mkThawSig nt, mkThawFun nt cp fr,
 	mkCopySig nt, mkCopyFun nt cp fr ]
 
 -- NEWTYPE AND TYPE SYNONYM
@@ -317,7 +315,7 @@ mkNewtypePrim nt ds = do
 	newtypeD (cxt []) (mkName $ nt ++ "Prim") [plainTV s] Nothing (normalC (mkName $ nt ++ "Prim") [
 		bangType
 			(bang noSourceUnpackedness noSourceStrictness)
-			(conT ''ForeignPtr `appT` conT (mkName nt)) -- (conT (mkName $ nt ++ "Prim") `appT` varT s))
+			(conT ''ForeignPtr `appT` conT (mkName nt))
 		]) [derivClause Nothing $ conT <$> ds]
 
 mkTypeIO :: String -> DecQ

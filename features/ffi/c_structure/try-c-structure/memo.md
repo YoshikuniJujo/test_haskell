@@ -111,8 +111,8 @@ todo
 						* [x] mkIndexLam
 						* [x] mkInRange
 			* [ ] STRUCT WITH PRIMITIVE MONAD
-				+ [ ] FUNCTION STRUCT PRIM
-				+ [ ] NEWTYPE
+				+ [x] FUNCTION STRUCT PRIM
+				+ [ ] NEWTYPE AND TYPE SYNONYM
 				+ [ ] FREEZE
 				+ [ ] THAW
 				+ [ ] COPY
