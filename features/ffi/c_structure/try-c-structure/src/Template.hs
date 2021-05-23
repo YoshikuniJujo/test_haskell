@@ -16,9 +16,8 @@ import Language.Haskell.TH (
 		bangType, bang, noSourceUnpackedness, noSourceStrictness,
 	instanceD, cxt,
 	patSynSigD, patSynD, recordPatSyn, explBidir,
-	ExpQ, varE, conE, litE, appE, lamE, tupE, listE,
-	forallT, varT, conT, appT,
-	varP, wildP, conP, tupP, viewP, integerL,
+	ExpQ, varE, conE, appE, lamE, tupE, listE,
+	forallT, varT, conT, appT, varP, wildP, conP, tupP, viewP,
 	Name, mkName, newName,
 	ClauseQ, clause, normalB, StmtQ, doE, compE, bindS, noBindS )
 import Foreign.ForeignPtr (ForeignPtr, withForeignPtr)
@@ -268,17 +267,14 @@ mkRange fn sn (length -> n) = do
 	where rg = varE 'range; sne = conE sn
 
 mkIndex :: Name -> Name -> [MemName] -> DecQ
-mkIndex fn nt fs = do
-	(vs, ws, is) <- unzip3
-		<$> replicateM (length fs) ((,,) <$> newName "v" <*> newName "w" <*> newName "i")
-	funD fn [clause
-		[	tupP [conP nt $ varP <$> vs, conP nt $ varP <$> ws],
-			conP nt $ varP <$> is ]
-		(normalB
-			$ varE 'foldl `appE` mkIndexLam `appE` litE (integerL 0)
-				.$ listE (varE <$> vs) `zp` listE (varE <$> ws) `zp` listE (varE <$> is)
-			)
-		[]]
+mkIndex fn (conP -> sn) (length -> n) = do
+	(vs, ws, is) <- unzip3 <$> n `replicateM`
+		((,,) <$> newName "v" <*> newName "w" <*> newName "i")
+	funD fn . (: []) $ clause
+		[tupP [sn $ varP <$> vs, sn $ varP <$> ws], sn $ varP <$> is]
+		(normalB $ varE 'foldl `appE` mkIndexLam `appE` litI 0
+			.$ listE (varE <$> vs) `zp`
+				listE (varE <$> ws) `zp` listE (varE <$> is)) []
 
 mkIndexLam :: ExpQ
 mkIndexLam = do
