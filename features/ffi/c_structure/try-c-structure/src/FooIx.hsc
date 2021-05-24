@@ -26,7 +26,7 @@ import Data.Array (Ix(..))
 newtype CIntIx = CIntIx CInt
 	deriving (Show, Eq, Ord, Enum, Num, Real, Integral, Storable)
 
-struct "Foo" #{size Foo}
+struct "FooIx" #{size Foo}
 	[	("x", ''CIntIx, [| #{peek Foo, x} |], [| #{poke Foo, x} |]),
 		("y", ''CIntIx, [| #{peek Foo, y} |], [| #{poke Foo, y} |]) ]
 	[''Show, ''Eq, ''Ord, ''Ix]

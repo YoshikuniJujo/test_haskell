@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "foo.h"
 
 Foo *
@@ -14,6 +15,12 @@ void
 foo_free(Foo *p)
 {
 	free(p);
+}
+
+void
+foo_print(Foo *f)
+{
+	printf("Foo: x = %d, y = %d\n", f -> x, f -> y);
 }
 
 void

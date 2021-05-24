@@ -34,6 +34,15 @@ foreign import ccall "foo_free" c_foo_free :: Ptr Foo -> IO ()
 structPrim "Foo" 'c_foo_copy 'c_foo_free [''Show]
 
 ---------------------------------------------------------------------------
+-- FOO PRINT
+---------------------------------------------------------------------------
+
+fooPrint :: Foo -> IO ()
+fooPrint (Foo_ f) = withForeignPtr f c_foo_print
+
+foreign import ccall "foo_print" c_foo_print :: Ptr Foo -> IO ()
+
+---------------------------------------------------------------------------
 -- FOO SCALE
 ---------------------------------------------------------------------------
 
