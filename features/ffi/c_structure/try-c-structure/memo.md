@@ -134,7 +134,7 @@ todo
 		- [ ] structure
 		- [ ] body
 * [x] change from `bar :: Bar -> Unit CInt` to `bar :: Bar -> CInt`
-* [ ] rename from `litI` to `intE`
+* [x] rename from `litI` to `intE`
 * [ ] independence
 * [ ] documentation
 * [ ] publish

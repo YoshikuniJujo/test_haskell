@@ -3,7 +3,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Template.Parts (
-	tupleE, tupT, tupP', litI, strP, pt, zp, ss,
+	tupleE, tupT, tupP', intE, strP, pt, zp, ss,
 	(.->), (.$), (...), (.<$>), (.<*>), (.>>=),
 	(.&&), (.||), (.==), (.<), (.+), (.*), (..+),
 	toLabel, lcfirst ) where
@@ -60,8 +60,8 @@ ss s = litE (stringL s) `pt` varE '(++)
 (..+) :: String -> String -> ExpQ
 s1 ..+ s2 = ss $ s1 ++ s2
 
-litI :: Integer -> ExpQ
-litI = litE . integerL
+intE :: Integer -> ExpQ
+intE = litE . integerL
 
 strP :: String -> PatQ
 strP = litP . stringL

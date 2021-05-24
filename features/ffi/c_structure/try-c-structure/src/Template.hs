@@ -36,7 +36,7 @@ import Text.Read (Lexeme(..), readPrec, step, lexP, parens, prec)
 import Template.Parts (
 	(.->), (.$), (...), (.<$>), (.<*>), (.>>=),
 	(.&&), (.||), (.==), (.<), (.+), (.*),
-	tupleE, tupT, tupP', litI, strP, pt, zp, ss, (..+), toLabel, lcfirst )
+	tupleE, tupT, tupP', intE, strP, pt, zp, ss, (..+), toLabel, lcfirst )
 
 ---------------------------------------------------------------------------
 
@@ -111,7 +111,7 @@ mkPatternBodyClause (mkName . (++ "_") -> sn) sz pos = do
 	(vs, p) <- (,) <$> length pos `replicateM` newName "v" <*> newName "p"
 	let	vps = varP <$> vs; pe = varE p; fr = varE 'free `appE` pe
 	clause vps (normalB $ varE 'unsafePerformIO .$ conE sn .<$> doE (
-		(varP p `bindS` (varE 'mallocBytes `appE` litI sz)) :
+		(varP p `bindS` (varE 'mallocBytes `appE` intE sz)) :
 		((<$> zip pos vs) \(po, v) ->
 			noBindS $ po `appE` pe `appE` varE v) ++
 		[noBindS $ varE 'newForeignPtr `appE` pe `appE` fr] )) []
@@ -185,7 +185,7 @@ mkInstanceShow (mkName &&& id -> (sn, ssn)) ms = do
 mkShowMems :: StrName -> [MemName] -> [Name] -> ExpQ
 mkShowMems (toLabel -> l) ms vs = foldr (...) (varE 'id) . intersperse (ss ", ")
 	$ (<$> zip ms vs) \(m, v) ->
-		l m ..+ " = " ... varE 'showsPrec `appE` litI 11 `appE` varE v
+		l m ..+ " = " ... varE 'showsPrec `appE` intE 11 `appE` varE v
 
 -- Read
 
@@ -193,7 +193,7 @@ mkInstanceRead :: StrName -> [MemName] -> DecQ
 mkInstanceRead sn ms = length ms `replicateM` newName "v" >>= \vs ->
 	instanceD (cxt []) (conT ''Read `appT` t) . (: [])
 		$ valD (varP 'readPrec) (normalB $ varE 'parens
-			.$ varE 'prec `appE` litI 10 `appE` doE ([
+			.$ varE 'prec `appE` intE 10 `appE` doE ([
 				conP 'Ident [strP sn] `bindS` varE 'lexP,
 				conP 'Punc [strP "{"] `bindS` varE 'lexP ] ++
 				mkReadMems sn ms vs ++ [
@@ -272,7 +272,7 @@ mkIndex fn (conP -> sn) (length -> n) = do
 		((,,) <$> newName "v" <*> newName "w" <*> newName "i")
 	funD fn . (: []) $ clause
 		[tupP [sn $ varP <$> vs, sn $ varP <$> ws], sn $ varP <$> is]
-		(normalB $ varE 'foldl `appE` mkIndexLam `appE` litI 0
+		(normalB $ varE 'foldl `appE` mkIndexLam `appE` intE 0
 			.$ listE (varE <$> vs) `zp` listE (varE <$> ws) `zp`
 				listE (varE <$> is)) []
 
