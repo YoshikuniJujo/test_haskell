@@ -56,7 +56,7 @@ todo
 	+ [x] add to `structPrim`
 * [x] export only `struct` and `structPrim`
 * [x] separate `Template.Parts` from `Template`
-* [ ] refactoring
+* [x] refactoring
 	+ [x] Lib
 		- [x] header
 		- [x] import list
@@ -128,25 +128,26 @@ todo
 					- [x] mkCopySig
 					- [x] mkCopyFun
 					- [x] mkCopyBody
-	+ [ ] Template.Parts
+	+ [x] Template.Parts
 		- [x] export list
 		- [x] import list
 		- [x] structure
-		- [ ] body
-			* [ ] TEMPLATE
+		- [x] body
+			* [x] TEMPLATE
 				+ [x] TUPLE AND LITERAL
 					- [x] tupleE
 					- [x] tupT
 					- [x] tupP'
 					- [x] intE
 					- [x] strP
-				+ [ ] OPERATOR
-					- [x] TYPE ARROW
-					- [ ] FUNCTIONAL APPLICATION
-					- [ ] NORMAL OPERATOR
-					- [ ] PARTIAL AND ZIP
-				+ [ ] SHOW S
-			* [ ] CHARACTER
+				+ [x] OPERATOR
+					- [x] Make Operator
+					- [x] Type Arrow And Partial
+					- [x] Functional Application
+					- [x] Normal Operator
+					- [x] Partial And Zip
+				+ [x] SHOW S
+			* [x] CHARACTER
 * [x] change from `bar :: Bar -> Unit CInt` to `bar :: Bar -> CInt`
 * [x] rename from `litI` to `intE`
 * [ ] independence

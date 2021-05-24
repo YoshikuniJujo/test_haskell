@@ -4,13 +4,13 @@
 
 module Template.Parts (
 	tupleE, tupT, tupP', intE, strP,
-	(.->), (.$), (...), (.<$>), (.<*>), (.>>=),
-	(.&&), (.||), (.==), (.<), (.+), (.*), pt, zp, ss, (..+),
+	(.->), pt, (.$), (...), (.<$>), (.<*>), (.>>=),
+	(.&&), (.||), (.==), (.<), (.+), (.*), zp, ss, (..+),
 	toLabel, lcfirst ) where
 
 import Language.Haskell.TH (
 	ExpQ, Exp(TupE), varE, litE, infixE, TypeQ, appT, arrowT, tupleT,
-	PatQ, litP, tupP, integerL, stringL )
+	PatQ, litP, tupP, Name, integerL, stringL )
 import Data.Char (toLower, toUpper)
 
 ---------------------------------------------------------------------------
@@ -18,6 +18,7 @@ import Data.Char (toLower, toUpper)
 -- * TEMPLATE
 --	+ TUPLE AND LITERAL
 --	+ OPERATOR
+--		- Make Operator
 --		- TYPE ARROW
 --		- FUNCTION APPLICATION
 --		- NORMAL OPERATOR
@@ -48,14 +49,22 @@ strP = litP . stringL
 
 -- OPERATOR
 
--- TYPE ARROW
+-- Make Operator
+
+mkop :: Name -> ExpQ -> ExpQ -> ExpQ
+mkop op e f = infixE (Just e) (varE op) (Just f)
+
+-- Type Arrow And Partial
 
 infixr 0 .->
 
 (.->) :: TypeQ -> TypeQ -> TypeQ
 t .-> u = arrowT `appT` t `appT` u
 
--- FUNCTION APPLICATION
+pt :: ExpQ -> ExpQ -> ExpQ
+e `pt` op = infixE (Just e) op Nothing
+
+-- Function Application
 
 infixr 0 .$
 infixl 1 .>>=
@@ -63,32 +72,18 @@ infixl 4 .<$>, .<*>
 infixr 8 ...
 
 (.$), (...), (.<$>), (.<*>), (.>>=) :: ExpQ -> ExpQ -> ExpQ
-e1 .$ e2 = infixE (Just e1) (varE '($)) (Just e2)
-e1 ... e2 = infixE (Just e1) (varE '(.)) (Just e2)
-e1 .<$> e2 = infixE (Just e1) (varE '(<$>)) (Just e2)
-e1 .<*> e2 = infixE (Just e1) (varE '(<*>)) (Just e2)
-e1 .>>= e2 = infixE (Just e1) (varE '(>>=)) (Just e2)
+[(.$), (...), (.<$>), (.<*>), (.>>=)] =
+	mkop <$> ['($), '(.), '(<$>), '(<*>), '(>>=)]
 
--- NORMAL OPERATOR
+-- Normal Operator
 
 infixr 2 .||
 infixr 3 .&&
 infix 4 .==, .<
 
-(.&&), (.||), (.==), (.<) :: ExpQ -> ExpQ -> ExpQ
-e1 .&& e2 = infixE (Just e1) (varE '(&&)) (Just e2)
-e1 .|| e2 = infixE (Just e1) (varE '(||)) (Just e2)
-e1 .== e2 = infixE (Just e1) (varE '(==)) (Just e2)
-e1 .< e2 = infixE (Just e1) (varE '(<)) (Just e2)
-(.+), (.*) :: ExpQ -> ExpQ -> ExpQ
-e1 .+ e2 = infixE (Just e1) (varE '(+)) (Just e2)
-e1 .* e2 = infixE (Just e1) (varE '(*)) (Just e2)
-
--- PARTIAL AND ZIP
-
-pt, zp :: ExpQ -> ExpQ -> ExpQ
-e `pt` op = infixE (Just e) op Nothing
-e1 `zp` e2 = infixE (Just e1) (varE 'zip) (Just e2)
+(.&&), (.||), (.==), (.<), (.+), (.*), zp :: ExpQ -> ExpQ -> ExpQ
+[(.&&), (.||), (.==), (.<), (.+), (.*), zp] =
+	mkop <$> ['(&&), '(||), '(==), '(<), '(+), '(*), 'zip]
 
 -- SHOW S
 
