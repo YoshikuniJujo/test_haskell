@@ -27,6 +27,7 @@ library
   exposed-modules:
       Bar
       Foo
+      Foo0
       FooIx
   other-modules:
       Paths_try_c_structure
