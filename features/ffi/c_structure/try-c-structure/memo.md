@@ -65,12 +65,12 @@ todo
 			* [x] DEFINITION
 			* [x] SAMPLE
 			* [x] INSTANCE IX CINT
-	+ [ ] Template
+	+ [x] Template
 		- [x] hlint
 		- [x] export list
 		- [x] import list
 		- [x] structure
-		- [ ] body
+		- [x] body
 			* [x] STRUCT
 				+ [x] FUNCTION STRUCT
 					- [x] define type for document
@@ -110,7 +110,7 @@ todo
 						* [x] mkIndex
 						* [x] mkIndexLam
 						* [x] mkInRange
-			* [ ] STRUCT WITH PRIMITIVE MONAD
+			* [x] STRUCT WITH PRIMITIVE MONAD
 				+ [x] FUNCTION STRUCT PRIM
 				+ [x] NEWTYPE AND TYPE SYNONYM
 					- [x] mkNewtypePrim
@@ -124,10 +124,10 @@ todo
 					- [x] mkThawSig
 					- [x] mkThawFun
 					- [x] mkThawBody
-				+ [ ] COPY
-					- [ ] mkCopySig
-					- [ ] mkCopyFun
-					- [ ] mkCopyBody
+				+ [x] COPY
+					- [x] mkCopySig
+					- [x] mkCopyFun
+					- [x] mkCopyBody
 	+ [ ] Template.Parts
 * [x] change from `bar :: Bar -> Unit CInt` to `bar :: Bar -> CInt`
 * [ ] rename from `litI` to `intE`

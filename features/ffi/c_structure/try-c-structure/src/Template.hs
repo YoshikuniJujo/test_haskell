@@ -371,22 +371,22 @@ mkThawBody sn cp fr fp =
 
 -- COPY
 
-mkCopySig :: String -> DecQ
-mkCopySig nt = do
-	m <- newName "m"
-	sigD (mkName $ lcfirst nt ++ "Copy") . forallT [] (cxt [conT ''PrimMonad `appT` varT m])
-		$ conT (mkName $ nt ++ "Prim") `appT` (conT ''PrimState `appT` varT m) .->
-			(varT m `appT` (conT (mkName $ nt ++ "Prim") `appT` (conT ''PrimState `appT` varT m)))
+mkCopySig :: StrName -> DecQ
+mkCopySig sn = newName "m" >>= \m ->
+	sigD fn . forallT [] (cxt [conT ''PrimMonad `appT` varT m])
+		$ conT snp `appT` (conT ''PrimState `appT` varT m) .->
+			varT m `appT` (conT snp `appT`
+				(conT ''PrimState `appT` varT m))
+	where fn = mkName $ lcfirst sn ++ "Copy"; snp = mkName $ sn ++ "Prim"
 
-mkCopyFun :: String -> Name -> Name -> DecQ
-mkCopyFun nt frz fr = do
-	ff <- newName "ff"
-	funD (mkName $ lcfirst nt ++ "Copy") [
-		clause [conP (mkName $ nt ++ "Prim") [varP ff]] (
-			normalB (mkCopyBody nt frz fr ff)
-			) []
-		]
+mkCopyFun :: StrName -> FunCopy -> FunFree -> DecQ
+mkCopyFun sn cp fr = newName "fp" >>= \fp ->
+	funD (mkName $ lcfirst sn ++ "Copy") . (: [])
+		$ clause [conP (mkName $ sn ++ "Prim") [varP fp]] (normalB
+			$ mkCopyBody sn cp fr fp) []
 
-mkCopyBody :: String -> Name -> Name -> Name -> ExpQ
-mkCopyBody nt frz fr ff = (varE 'unsafeIOToPrim ... (conE (mkName $ nt ++ "Prim") `pt` varE '(<$>)))
-	.$ (varE 'withForeignPtr `appE` varE ff `appE` varE frz) .>>= (varE 'newForeignPtr .<$> varE 'id .<*> varE fr)
+mkCopyBody :: StrName -> FunCopy -> FunFree -> Name -> ExpQ
+mkCopyBody sn cp fr fp =
+	varE 'unsafeIOToPrim ... conE (mkName $ sn ++ "Prim") `pt` varE '(<$>)
+		.$ varE 'withForeignPtr `appE` varE fp `appE` varE cp
+			.>>= varE 'newForeignPtr .<$> varE 'id .<*> varE fr
