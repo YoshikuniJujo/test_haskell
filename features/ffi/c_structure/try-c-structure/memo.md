@@ -130,7 +130,7 @@ todo
 					- [x] mkCopyBody
 	+ [ ] Template.Parts
 		- [x] export list
-		- [ ] import list
+		- [x] import list
 		- [ ] structure
 		- [ ] body
 * [x] change from `bar :: Bar -> Unit CInt` to `bar :: Bar -> CInt`

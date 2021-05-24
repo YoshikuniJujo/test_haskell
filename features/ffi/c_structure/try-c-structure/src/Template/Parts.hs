@@ -9,9 +9,15 @@ module Template.Parts (
 	toLabel, lcfirst ) where
 
 import Language.Haskell.TH (
-	ExpQ, Exp(TupE), varE, litE, infixE, TypeQ, appT, tupleT, arrowT, PatQ, litP, tupP,
-	integerL, stringL )
+	ExpQ, Exp(TupE), varE, litE, infixE, TypeQ, appT, arrowT, tupleT,
+	PatQ, litP, tupP, integerL, stringL )
 import Data.Char (toLower, toUpper)
+
+---------------------------------------------------------------------------
+
+-- *
+
+---------------------------------------------------------------------------
 
 (.->) :: TypeQ -> TypeQ -> TypeQ
 t1 .-> t2 = arrowT `appT` t1 `appT` t2
