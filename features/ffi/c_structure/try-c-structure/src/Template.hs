@@ -309,20 +309,21 @@ structPrim nt cp fr ds = sequence [
 
 -- NEWTYPE AND TYPE SYNONYM
 
-mkNewtypePrim :: String -> [Name] -> DecQ
-mkNewtypePrim nt ds = do
-	s <- newName "s"
-	newtypeD (cxt []) (mkName $ nt ++ "Prim") [plainTV s] Nothing (normalC (mkName $ nt ++ "Prim") [
-		bangType
+mkNewtypePrim :: StrName -> [DerivClass] -> DecQ
+mkNewtypePrim sn ds = newName "s" >>= \s ->
+	newtypeD (cxt []) snp [plainTV s] Nothing
+		(normalC snp . (: []) $ bangType
 			(bang noSourceUnpackedness noSourceStrictness)
-			(conT ''ForeignPtr `appT` conT (mkName nt))
-		]) [derivClause Nothing $ conT <$> ds]
+			(conT ''ForeignPtr `appT` conT (mkName sn)))
+		[derivClause Nothing $ conT <$> ds]
+	where snp = mkName $ sn ++ "Prim"
 
-mkTypeIO :: String -> DecQ
-mkTypeIO nt = tySynD (mkName $ nt ++ "IO") [] $ conT (mkName $ nt ++ "Prim") `appT` conT ''RealWorld
+mkTypeIO :: StrName -> DecQ
+mkTypeIO sn = tySynD (mkName $ sn ++ "IO") []
+	$ conT (mkName $ sn ++ "Prim") `appT` conT ''RealWorld
 
-mkTypeST :: String -> DecQ
-mkTypeST nt = tySynD (mkName $ nt ++ "ST") [] . conT . mkName $ nt ++ "Prim"
+mkTypeST :: StrName -> DecQ
+mkTypeST sn = tySynD (mkName $ sn ++ "ST") [] . conT . mkName $ sn ++ "Prim"
 
 -- FREEZE
 

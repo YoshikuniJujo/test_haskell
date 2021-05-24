@@ -112,7 +112,10 @@ todo
 						* [x] mkInRange
 			* [ ] STRUCT WITH PRIMITIVE MONAD
 				+ [x] FUNCTION STRUCT PRIM
-				+ [ ] NEWTYPE AND TYPE SYNONYM
+				+ [x] NEWTYPE AND TYPE SYNONYM
+					- [x] mkNewtypePrim
+					- [x] mkTypeIO
+					- [x] mkTypeST
 				+ [ ] FREEZE
 				+ [ ] THAW
 				+ [ ] COPY
