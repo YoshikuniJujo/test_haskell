@@ -141,7 +141,7 @@ todo
 					- [x] intE
 					- [x] strP
 				+ [ ] OPERATOR
-					- [ ] TYPE ARROW
+					- [x] TYPE ARROW
 					- [ ] FUNCTIONAL APPLICATION
 					- [ ] NORMAL OPERATOR
 					- [ ] PARTIAL AND ZIP

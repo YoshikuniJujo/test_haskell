@@ -53,7 +53,7 @@ strP = litP . stringL
 infixr 0 .->
 
 (.->) :: TypeQ -> TypeQ -> TypeQ
-t1 .-> t2 = arrowT `appT` t1 `appT` t2
+t .-> u = arrowT `appT` t `appT` u
 
 -- FUNCTION APPLICATION
 
