@@ -153,7 +153,16 @@ todo
 * [x] independence
 * [ ] make samples
 	+ [x] add `FooIx`
+	+ [ ] refactor `include/foo.h`
+		- [x] separate `bar.h`
+		- [ ] others
+	+ [ ] refactor `csrc/foo.c`
 	+ [ ] refactor `Foo`
+		- [x] remove samples
+		- [ ] others
+	+ [ ] refactor `FooIx`
+		- [x] remove samples
+		- [ ] others
 	+ [ ] refactor `Bar`
 * [ ] documentation
 * [ ] publish
