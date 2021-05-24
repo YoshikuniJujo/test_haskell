@@ -129,6 +129,10 @@ todo
 					- [x] mkCopyFun
 					- [x] mkCopyBody
 	+ [ ] Template.Parts
+		- [x] export list
+		- [ ] import list
+		- [ ] structure
+		- [ ] body
 * [x] change from `bar :: Bar -> Unit CInt` to `bar :: Bar -> CInt`
 * [ ] rename from `litI` to `intE`
 * [ ] independence

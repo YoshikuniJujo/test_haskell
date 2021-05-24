@@ -1,9 +1,12 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Template.Parts where
+module Template.Parts (
+	tupleE, tupT, tupP', litI, strP, pt, zp, ss,
+	(.->), (.$), (...), (.<$>), (.<*>), (.>>=),
+	(.&&), (.||), (.==), (.<), (.+), (.*), (..+),
+	toLabel, lcfirst ) where
 
 import Language.Haskell.TH (
 	ExpQ, Exp(TupE), varE, litE, infixE, TypeQ, appT, tupleT, arrowT, PatQ, litP, tupP,
