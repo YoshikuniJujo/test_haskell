@@ -34,12 +34,11 @@ import Data.Char (toLower, toUpper)
 tupleE :: Int -> ExpQ
 tupleE = \case 1 -> varE 'id; n -> pure . TupE $ n `replicate` Nothing
 
+tupT :: [TypeQ] -> TypeQ
+tupT = \case [t] -> t; ts -> foldl appT (tupleT $ length ts) ts
+
 tupP' :: [PatQ] -> PatQ
 tupP' = \case [p] -> p; ps -> tupP ps
-
-tupT :: [TypeQ] -> TypeQ
-tupT [t] = t
-tupT ts = foldl appT (tupleT $ length ts) ts
 
 intE :: Integer -> ExpQ
 intE = litE . integerL

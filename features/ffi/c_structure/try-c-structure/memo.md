@@ -134,7 +134,12 @@ todo
 		- [x] structure
 		- [ ] body
 			* [ ] TEMPLATE
-				+ [ ] TUPLE AND LITERAL
+				+ [x] TUPLE AND LITERAL
+					- [x] tupleE
+					- [x] tupT
+					- [x] tupP'
+					- [x] intE
+					- [x] strP
 				+ [ ] OPERATOR
 					- [ ] TYPE ARROW
 					- [ ] FUNCTIONAL APPLICATION
