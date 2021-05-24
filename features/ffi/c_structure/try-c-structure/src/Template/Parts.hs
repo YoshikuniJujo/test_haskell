@@ -23,10 +23,13 @@ tupT :: [TypeQ] -> TypeQ
 tupT [t] = t
 tupT ts = foldl appT (tupleT $ length ts) ts
 
-infixr 5 .$
-infixl 6 .||
-infixl 7 .&&
-infixl 8 .==, .<
+infixr 0 .->
+infixr 0 .$
+infixl 1 .>>=
+infixr 2 .||
+infixr 3 .&&
+infix 4 .==, .<
+infixl 4 .<$>, .<*>
 infixr 8 ...
 
 (.$), (...), (.<$>), (.<*>), (.>>=), (.&&), (.||), (.==), (.<) :: ExpQ -> ExpQ -> ExpQ

@@ -116,9 +116,18 @@ todo
 					- [x] mkNewtypePrim
 					- [x] mkTypeIO
 					- [x] mkTypeST
-				+ [ ] FREEZE
-				+ [ ] THAW
+				+ [x] FREEZE
+					- [x] mkFreezeSig
+					- [x] mkFreezeFun
+					- [x] mkFreezeBody
+				+ [x] THAW
+					- [x] mkThawSig
+					- [x] mkThawFun
+					- [x] mkThawBody
 				+ [ ] COPY
+					- [ ] mkCopySig
+					- [ ] mkCopyFun
+					- [ ] mkCopyBody
 	+ [ ] Template.Parts
 * [x] change from `bar :: Bar -> Unit CInt` to `bar :: Bar -> CInt`
 * [ ] rename from `litI` to `intE`

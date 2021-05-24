@@ -301,11 +301,13 @@ mkInRange fn (conP -> sn) (length -> n) = do
 
 -- FUNCTION STRUCT PRIM
 
-structPrim :: StrName -> Name -> Name -> [DerivClass] -> DecsQ
+structPrim :: StrName -> FunCopy -> FunFree -> [DerivClass] -> DecsQ
 structPrim nt cp fr ds = sequence [
 	mkNewtypePrim nt ds, mkTypeST nt, mkTypeIO nt,
 	mkFreezeSig nt, mkFreezeFun nt cp fr, mkThawSig nt, mkThawFun nt cp fr,
 	mkCopySig nt, mkCopyFun nt cp fr ]
+
+type FunCopy = Name; type FunFree = Name
 
 -- NEWTYPE AND TYPE SYNONYM
 
@@ -327,45 +329,45 @@ mkTypeST sn = tySynD (mkName $ sn ++ "ST") [] . conT . mkName $ sn ++ "Prim"
 
 -- FREEZE
 
-mkFreezeSig :: String -> DecQ
-mkFreezeSig nt = do
-	m <- newName "m"
-	sigD (mkName $ lcfirst nt ++ "Freeze") . forallT [] (cxt [conT ''PrimMonad `appT` varT m])
-		$ conT (mkName $ nt ++ "Prim") `appT` (conT ''PrimState `appT` varT m) .-> (varT m `appT` conT (mkName nt))
+mkFreezeSig :: StrName -> DecQ
+mkFreezeSig sn = newName "m" >>= \m ->
+	sigD fn . forallT [] (cxt [conT ''PrimMonad `appT` varT m])
+		$ conT snp `appT` (conT ''PrimState `appT` varT m) .->
+			varT m `appT` conT (mkName sn)
+	where fn = mkName $ lcfirst sn ++ "Freeze"; snp = mkName $ sn ++ "Prim"
 
-mkFreezeFun :: String -> Name -> Name -> DecQ
-mkFreezeFun nt frz fr = do
-	ff <- newName "ff"
-	funD (mkName $ lcfirst nt ++ "Freeze") [
-		clause [conP (mkName $ nt ++ "Prim") [varP ff]] (
-			normalB (mkFreezeBody nt frz fr ff)
-			) []
-		]
+mkFreezeFun :: StrName -> FunCopy -> FunFree -> DecQ
+mkFreezeFun sn cp fr = newName "fp" >>= \fp ->
+	funD (mkName $ lcfirst sn ++ "Freeze") . (: []) $
+		clause [conP (mkName $ sn ++ "Prim") [varP fp]] (normalB
+			$ mkFreezeBody sn cp fr fp) []
 
-mkFreezeBody :: String -> Name -> Name -> Name -> ExpQ
-mkFreezeBody nt frz fr ff = (varE 'unsafeIOToPrim ... (conE (mkName $ nt ++ "_") `pt` varE '(<$>)))
-	.$ (varE 'withForeignPtr `appE` varE ff `appE` varE frz) .>>= (varE 'newForeignPtr .<$> varE 'id .<*> varE fr)
+mkFreezeBody :: StrName -> FunCopy -> FunFree -> Name -> ExpQ
+mkFreezeBody sn cp fr fp =
+	varE 'unsafeIOToPrim ... conE (mkName $ sn ++ "_") `pt` varE '(<$>)
+		.$ varE 'withForeignPtr `appE` varE fp `appE` varE cp
+			.>>= varE 'newForeignPtr .<$> varE 'id .<*> varE fr
 
 -- THAW
 
-mkThawSig :: String -> DecQ
-mkThawSig nt = do
-	m <- newName "m"
-	sigD (mkName $ lcfirst nt ++ "Thaw") . forallT [] (cxt [conT ''PrimMonad `appT` varT m])
-		$ conT (mkName nt) .-> (varT m `appT` (conT (mkName $ nt ++ "Prim") `appT` (conT ''PrimState `appT` varT m)))
+mkThawSig :: StrName -> DecQ
+mkThawSig sn = newName "m" >>= \m ->
+	sigD fn . forallT [] (cxt [conT ''PrimMonad `appT` varT m])
+		$ conT (mkName sn) .-> varT m `appT`
+			(conT snp `appT` (conT ''PrimState `appT` varT m))
+	where fn = mkName $ lcfirst sn ++ "Thaw"; snp = mkName $ sn ++ "Prim"
 
-mkThawFun :: String -> Name -> Name -> DecQ
-mkThawFun nt frz fr = do
-	ff <- newName "ff"
-	funD (mkName $ lcfirst nt ++ "Thaw") [
-		clause [conP (mkName $ nt ++ "_") [varP ff]] (
-			normalB (mkThawBody nt frz fr ff)
-			) []
-		]
+mkThawFun :: StrName -> FunCopy -> FunFree -> DecQ
+mkThawFun sn cp fr = newName "fp" >>= \fp ->
+	funD (mkName $ lcfirst sn ++ "Thaw") . (: [])
+		$ clause [conP (mkName $ sn ++ "_") [varP fp]] (
+			normalB $ mkThawBody sn cp fr fp) []
 
-mkThawBody :: String -> Name -> Name -> Name -> ExpQ
-mkThawBody nt frz fr ff = (varE 'unsafeIOToPrim ... (conE (mkName $ nt ++ "Prim") `pt` varE '(<$>)))
-	.$ (varE 'withForeignPtr `appE` varE ff `appE` varE frz) .>>= (varE 'newForeignPtr .<$> varE 'id .<*> varE fr)
+mkThawBody :: StrName -> FunCopy -> FunFree -> Name -> ExpQ
+mkThawBody sn cp fr fp =
+	varE 'unsafeIOToPrim ... conE (mkName $ sn ++ "Prim") `pt` varE '(<$>)
+		.$ varE 'withForeignPtr `appE` varE fp `appE` varE cp
+			.>>= varE 'newForeignPtr .<$> varE 'id .<*> varE fr
 
 -- COPY
 
