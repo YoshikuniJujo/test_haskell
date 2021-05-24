@@ -27,8 +27,6 @@ library
   exposed-modules:
       Bar
       Lib
-      Template
-      Template.Parts
   other-modules:
       Paths_try_c_structure
   hs-source-dirs:
@@ -40,6 +38,7 @@ library
   build-depends:
       array
     , base >=4.7 && <5
+    , c-struct
     , primitive
     , template-haskell
   default-language: Haskell2010
@@ -54,6 +53,7 @@ executable try-c-structure-exe
   build-depends:
       array
     , base >=4.7 && <5
+    , c-struct
     , primitive
     , template-haskell
     , try-c-structure
@@ -70,6 +70,7 @@ test-suite try-c-structure-test
   build-depends:
       array
     , base >=4.7 && <5
+    , c-struct
     , primitive
     , template-haskell
     , try-c-structure

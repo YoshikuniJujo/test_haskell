@@ -24,6 +24,7 @@ dependencies:
 - template-haskell
 - primitive
 - array
+- c-struct
 
 library:
   source-dirs: src

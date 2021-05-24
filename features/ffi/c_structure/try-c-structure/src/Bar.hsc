@@ -9,7 +9,7 @@ import Foreign.Storable
 import Foreign.C.Types
 import Data.Array
 
-import Template
+import Foreign.C.Struct
 
 #include "foo.h"
 

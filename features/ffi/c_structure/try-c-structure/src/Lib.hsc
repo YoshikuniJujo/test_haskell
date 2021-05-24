@@ -14,7 +14,7 @@ import Control.Monad.Primitive (PrimMonad(..), unsafeIOToPrim)
 import Data.Array (Ix(..))
 import System.IO.Unsafe (unsafePerformIO)
 
-import Template (struct, structPrim)
+import Foreign.C.Struct (struct, structPrim)
 
 #include "foo.h"
 
