@@ -44,6 +44,17 @@ packages:
   original:
     git: https://github.com/YoshikuniJujo/JuicyCairo
     commit: 67aceebb48e90e72a2e60c095b91bc6e56b0ca19
+- completed:
+    name: c-struct
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/c-struct
+    pantry-tree:
+      size: 689
+      sha256: 80e135e0dbefca92ef70173978bf34e93fc752961f4ed12b1ffe454e0430cf22
+    commit: 29c295982b3fa1824b3aceb4a0a636051fb3a0a6
+  original:
+    git: https://github.com/YoshikuniJujo/c-struct
+    commit: 29c295982b3fa1824b3aceb4a0a636051fb3a0a6
 snapshots:
 - completed:
     size: 567672

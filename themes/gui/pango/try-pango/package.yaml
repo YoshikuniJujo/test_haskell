@@ -33,6 +33,7 @@ dependencies:
 - JuicyPixels
 - nowdoc
 - c-enum
+- c-struct
 
 library:
   source-dirs: src
