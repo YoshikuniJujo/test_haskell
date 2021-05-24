@@ -150,6 +150,10 @@ todo
 			* [x] CHARACTER
 * [x] change from `bar :: Bar -> Unit CInt` to `bar :: Bar -> CInt`
 * [x] rename from `litI` to `intE`
-* [ ] independence
+* [x] independence
+* [ ] make samples
+	+ [x] add `FooIx`
+	+ [ ] refactor `Foo`
+	+ [ ] refactor `Bar`
 * [ ] documentation
 * [ ] publish

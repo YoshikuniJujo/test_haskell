@@ -1,20 +1,20 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments, TupleSections #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Lib where
+module FooIx where
 
 import Foreign.Ptr (Ptr)
 import Foreign.ForeignPtr (ForeignPtr, withForeignPtr)
 import Foreign.Concurrent (newForeignPtr)
-import Foreign.Storable (peekByteOff, pokeByteOff)
+import Foreign.Storable (Storable, peekByteOff, pokeByteOff)
 import Foreign.C.Types (CInt(..))
+import Foreign.C.Struct (struct, structPrim)
 import Control.Monad.Primitive (PrimMonad(..), unsafeIOToPrim)
 import Data.Array (Ix(..))
 import System.IO.Unsafe (unsafePerformIO)
-
-import Foreign.C.Struct (struct, structPrim)
 
 #include "foo.h"
 
@@ -28,9 +28,11 @@ import Foreign.C.Struct (struct, structPrim)
 -- DEFINITION
 ---------------------------------------------------------------------------
 
+newtype CIntIx = CIntIx CInt deriving (Show, Read, Eq, Ord, Bounded, Enum, Num, Integral, Real, Storable)
+
 struct "Foo" #{size Foo}
-	[	("x", ''CInt, [| #{peek Foo, x} |], [| #{poke Foo, x} |]),
-		("y", ''CInt, [| #{peek Foo, y} |], [| #{poke Foo, y} |]) ]
+	[	("x", ''CIntIx, [| #{peek Foo, x} |], [| #{poke Foo, x} |]),
+		("y", ''CIntIx, [| #{peek Foo, y} |], [| #{poke Foo, y} |]) ]
 	[''Show, ''Read, ''Eq, ''Ord, ''Bounded, ''Ix]
 
 foreign import ccall "foo_copy" c_foo_copy :: Ptr Foo -> IO (Ptr Foo)
@@ -59,10 +61,10 @@ fooScale (FooPrim ff) s = unsafeIOToPrim $ withForeignPtr ff (`c_foo_scale` s)
 foreign import ccall "foo_scale" c_foo_scale :: Ptr Foo -> CInt -> IO ()
 
 ---------------------------------------------------------------------------
--- INSTANCE IX CINT
+-- INSTANCE IX CINTIX
 ---------------------------------------------------------------------------
 
-instance Ix CInt where
+instance Ix CIntIx where
 	range (l, u) = [l .. u]
 	index (l, _) i = fromIntegral $ i - l
 	inRange (l, u) i = l <= i && i <= u

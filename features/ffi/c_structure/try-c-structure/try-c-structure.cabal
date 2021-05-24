@@ -26,7 +26,8 @@ source-repository head
 library
   exposed-modules:
       Bar
-      Lib
+      Foo
+      FooIx
   other-modules:
       Paths_try_c_structure
   hs-source-dirs:

@@ -9,12 +9,12 @@ packages:
     version: 0.1.0.0
     git: https://github.com/YoshikuniJujo/c-struct
     pantry-tree:
-      size: 689
-      sha256: a4c7b18cbc7c2f55b6ed532646f5923b54b1409e979470e3d423a0199eba98f5
-    commit: 79bebb63e43177f32528b51fcc67709df67494d7
+      size: 690
+      sha256: 66287e18da9772598d2609d3d03a73c18bf21729b29fde1ec72fd47e466e455f
+    commit: fb648ce6923c7054f45157183d583ab28ffbf65f
   original:
     git: https://github.com/YoshikuniJujo/c-struct
-    commit: 79bebb63e43177f32528b51fcc67709df67494d7
+    commit: fb648ce6923c7054f45157183d583ab28ffbf65f
 snapshots:
 - completed:
     size: 567669

@@ -41,7 +41,7 @@ packages:
 #
 extra-deps:
 - git: https://github.com/YoshikuniJujo/c-struct
-  commit: 79bebb63e43177f32528b51fcc67709df67494d7
+  commit: fb648ce6923c7054f45157183d583ab28ffbf65f
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
