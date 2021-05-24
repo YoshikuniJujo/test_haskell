@@ -3,9 +3,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Template.Parts (
-	tupleE, tupT, tupP', intE, strP, pt, zp, ss,
+	tupleE, tupT, tupP', intE, strP,
 	(.->), (.$), (...), (.<$>), (.<*>), (.>>=),
-	(.&&), (.||), (.==), (.<), (.+), (.*), (..+),
+	(.&&), (.||), (.==), (.<), (.+), (.*), pt, zp, ss, (..+),
 	toLabel, lcfirst ) where
 
 import Language.Haskell.TH (
@@ -15,12 +15,21 @@ import Data.Char (toLower, toUpper)
 
 ---------------------------------------------------------------------------
 
--- *
+-- * TEMPLATE
+--	+ TUPLE AND LITERAL
+--	+ OPERATOR
+--		- TYPE ARROW
+--		- FUNCTION APPLICATION
+--		- NORMAL OPERATOR
+--		- PARTIAL AND ZIP
+--	+ SHOW S
+-- * CHARACTER
 
 ---------------------------------------------------------------------------
+-- TEMPLATE
+---------------------------------------------------------------------------
 
-(.->) :: TypeQ -> TypeQ -> TypeQ
-t1 .-> t2 = arrowT `appT` t1 `appT` t2
+-- TUPLE AND LITERAL
 
 tupleE :: Int -> ExpQ
 tupleE = \case 1 -> varE 'id; n -> pure . TupE $ n `replicate` Nothing
@@ -32,33 +41,57 @@ tupT :: [TypeQ] -> TypeQ
 tupT [t] = t
 tupT ts = foldl appT (tupleT $ length ts) ts
 
+intE :: Integer -> ExpQ
+intE = litE . integerL
+
+strP :: String -> PatQ
+strP = litP . stringL
+
+-- OPERATOR
+
+-- TYPE ARROW
+
 infixr 0 .->
+
+(.->) :: TypeQ -> TypeQ -> TypeQ
+t1 .-> t2 = arrowT `appT` t1 `appT` t2
+
+-- FUNCTION APPLICATION
+
 infixr 0 .$
 infixl 1 .>>=
-infixr 2 .||
-infixr 3 .&&
-infix 4 .==, .<
 infixl 4 .<$>, .<*>
 infixr 8 ...
 
-(.$), (...), (.<$>), (.<*>), (.>>=), (.&&), (.||), (.==), (.<) :: ExpQ -> ExpQ -> ExpQ
+(.$), (...), (.<$>), (.<*>), (.>>=) :: ExpQ -> ExpQ -> ExpQ
 e1 .$ e2 = infixE (Just e1) (varE '($)) (Just e2)
 e1 ... e2 = infixE (Just e1) (varE '(.)) (Just e2)
 e1 .<$> e2 = infixE (Just e1) (varE '(<$>)) (Just e2)
 e1 .<*> e2 = infixE (Just e1) (varE '(<*>)) (Just e2)
 e1 .>>= e2 = infixE (Just e1) (varE '(>>=)) (Just e2)
+
+-- NORMAL OPERATOR
+
+infixr 2 .||
+infixr 3 .&&
+infix 4 .==, .<
+
+(.&&), (.||), (.==), (.<) :: ExpQ -> ExpQ -> ExpQ
 e1 .&& e2 = infixE (Just e1) (varE '(&&)) (Just e2)
 e1 .|| e2 = infixE (Just e1) (varE '(||)) (Just e2)
 e1 .== e2 = infixE (Just e1) (varE '(==)) (Just e2)
 e1 .< e2 = infixE (Just e1) (varE '(<)) (Just e2)
-
-(.+), (.*), zp :: ExpQ -> ExpQ -> ExpQ
+(.+), (.*) :: ExpQ -> ExpQ -> ExpQ
 e1 .+ e2 = infixE (Just e1) (varE '(+)) (Just e2)
 e1 .* e2 = infixE (Just e1) (varE '(*)) (Just e2)
+
+-- PARTIAL AND ZIP
+
+pt, zp :: ExpQ -> ExpQ -> ExpQ
+e `pt` op = infixE (Just e) op Nothing
 e1 `zp` e2 = infixE (Just e1) (varE 'zip) (Just e2)
 
-pt :: ExpQ -> ExpQ -> ExpQ
-e `pt` op = infixE (Just e) op Nothing
+-- SHOW S
 
 ss :: String -> ExpQ
 ss s = litE (stringL s) `pt` varE '(++)
@@ -66,11 +99,9 @@ ss s = litE (stringL s) `pt` varE '(++)
 (..+) :: String -> String -> ExpQ
 s1 ..+ s2 = ss $ s1 ++ s2
 
-intE :: Integer -> ExpQ
-intE = litE . integerL
-
-strP :: String -> PatQ
-strP = litP . stringL
+---------------------------------------------------------------------------
+-- CHARACTER
+---------------------------------------------------------------------------
 
 toLabel :: String -> String -> String
 toLabel sn = (lcfirst sn ++) . ucfirst

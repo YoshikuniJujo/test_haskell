@@ -131,8 +131,17 @@ todo
 	+ [ ] Template.Parts
 		- [x] export list
 		- [x] import list
-		- [ ] structure
+		- [x] structure
 		- [ ] body
+			* [ ] TEMPLATE
+				+ [ ] TUPLE AND LITERAL
+				+ [ ] OPERATOR
+					- [ ] TYPE ARROW
+					- [ ] FUNCTIONAL APPLICATION
+					- [ ] NORMAL OPERATOR
+					- [ ] PARTIAL AND ZIP
+				+ [ ] SHOW S
+			* [ ] CHARACTER
 * [x] change from `bar :: Bar -> Unit CInt` to `bar :: Bar -> CInt`
 * [x] rename from `litI` to `intE`
 * [ ] independence
