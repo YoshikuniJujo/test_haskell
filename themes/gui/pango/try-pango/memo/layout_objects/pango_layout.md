@@ -128,6 +128,8 @@ todo
 * [x] `pango_layout_move_cursor_visually`
 * [x] `pango_layout_set_markup`
 * [x] `pango_layout_set_markup_with_accel`
+* [x] use `PangoRectanglePixel`
+	+ [x] `data PixelExtents`
 
 not todo yet
 ------------

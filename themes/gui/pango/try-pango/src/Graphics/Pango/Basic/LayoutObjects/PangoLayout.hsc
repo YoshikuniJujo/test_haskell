@@ -599,23 +599,23 @@ foreign import ccall "pango_layout_get_extents" c_pango_layout_get_extents ::
 	Ptr PangoLayout -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
 
 data PixelExtents = PixelExtents {
-	pixelExtentsInkRect :: PangoRectangle,
-	pixelExtentsLogicalRect :: PangoRectangle } deriving Show
+	pixelExtentsInkRect :: PangoRectanglePixel,
+	pixelExtentsLogicalRect :: PangoRectanglePixel } deriving Show
 
 instance PangoLayoutInfo PixelExtents where
 	pangoLayoutInfo = (uncurry PixelExtents <$>) . pangoLayoutGetPixelExtents
 
-pangoLayoutGetPixelExtents :: PangoLayout -> IO (PangoRectangle, PangoRectangle)
+pangoLayoutGetPixelExtents :: PangoLayout -> IO (PangoRectanglePixel, PangoRectanglePixel)
 pangoLayoutGetPixelExtents (PangoLayout fpl) =
 	withForeignPtr fpl \pl -> do
 		irct <- mallocBytes #{size PangoRectangle}
 		lrct <- mallocBytes #{size PangoRectangle}
 		c_pango_layout_get_pixel_extents pl irct lrct
-		(,)	<$> (PangoRectangle_ <$> newForeignPtr irct (free irct))
-			<*> (PangoRectangle_ <$> newForeignPtr lrct (free lrct))
+		(,)	<$> (PangoRectanglePixel_ <$> newForeignPtr irct (free irct))
+			<*> (PangoRectanglePixel_ <$> newForeignPtr lrct (free lrct))
 
 foreign import ccall "pango_layout_get_pixel_extents" c_pango_layout_get_pixel_extents ::
-	Ptr PangoLayout -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+	Ptr PangoLayout -> Ptr PangoRectanglePixel -> Ptr PangoRectanglePixel -> IO ()
 
 data LayoutSize = LayoutSize {
 	layoutSizeWidth :: PangoFixed, layoutSizeHeight :: PangoFixed }

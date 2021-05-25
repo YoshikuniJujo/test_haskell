@@ -55,13 +55,11 @@ todo
 * [x] rename `PangoFontDescription` to `PangoFontDescriptionPrim`
 * [x] define `PangoFontDescription` and freezer
 * [x] move `Graphics.Pango.LowLevel.TabStops` to `Graphics.Pango.Basic.TabStops`
-* [ ] change `PangoRectangle` to `PangoRectanglePixel`
-* [ ] use newtype type for ffi
+* [x] change `PangoRectangle` to `PangoRectanglePixel`
 	+ [x] `Graphics.Pango.Basic.LayoutObjects`
 		- [x] `pangoLayoutLineGetPixelExtents`
-	+ [ ] `Graphics.Pango.Basic.LayoutObjects.PangoLayout`
-	+ [ ] `Graphics.Pango.Basic.TextAttributes.Internal`
-	+ [ ] `Graphics.Pango.Basic.GlyphStorage.PangoMatrix`
+	+ [x] `Graphics.Pango.Basic.LayoutObjects.PangoLayout`
+* [ ] use newtype type for ffi
 * [ ] use `Fixed` instead of `Double`
 * [ ] Basic Pango Interfaces
 	+ [x] Fonts
