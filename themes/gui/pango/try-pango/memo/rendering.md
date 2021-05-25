@@ -54,5 +54,5 @@ todo
 * [x] `pango_context_get_font_description`
 * [x] `pango_context_get_matrix`
 * [x] `pango_context_set_matrix`
-* [ ] define `PangoMatrixNullable`
-* [ ] use `PangoMatrixNullable`
+* [x] define `PangoMatrixNullable`
+* [x] use `PangoMatrixNullable`
