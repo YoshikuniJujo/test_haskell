@@ -15,6 +15,8 @@ import System.IO.Unsafe
 
 import Foreign.C.Struct
 
+import Graphics.Pango.PangoRectangle
+
 #include <pango/pango.h>
 
 struct "PangoMatrix" #{size PangoMatrix}
@@ -114,3 +116,13 @@ pangoMatrixTransformDistance (PangoMatrix_ fm) dx dy = unsafePerformIO
 foreign import ccall "pango_matrix_transform_distance"
 	c_pango_matrix_transform_distance ::
 	Ptr PangoMatrix -> Ptr CDouble -> Ptr CDouble -> IO ()
+
+pangoMatrixTransformRectangle ::
+	PrimMonad m => PangoMatrix -> PangoRectanglePrim (PrimState m) -> m ()
+pangoMatrixTransformRectangle (PangoMatrix_ fm) (PangoRectanglePrim fr) =
+	unsafeIOToPrim $ withForeignPtr fm \pm -> withForeignPtr fr \pr ->
+		c_pango_matrix_transform_rectangle pm pr
+
+foreign import ccall "pango_matrix_transform_rectangle"
+	c_pango_matrix_transform_rectangle ::
+	Ptr PangoMatrix -> Ptr PangoRectangle -> IO ()

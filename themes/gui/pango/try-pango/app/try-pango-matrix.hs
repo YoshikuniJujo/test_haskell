@@ -7,6 +7,7 @@ import Foreign.C.Types
 import Control.Monad.ST
 
 import Graphics.Pango.Basic.GlyphStorage.PangoMatrix
+import Graphics.Pango.PangoRectangle
 
 main :: IO ()
 main = do
@@ -20,6 +21,7 @@ main = do
 	let	m1 = pangoMatrixTranslatePure (pangoMatrixRotatePure u (Radian $ pi / 2) ) 10 100
 	print $ pangoMatrixTransformPoint m1 15 200
 	print $ pangoMatrixTransformDistance m1 15 200
+	print . pangoMatrixTransformRectanglePure m1 $ PangoRectangleFixed 15 123 300 500
 
 pangoMatrixTranslatePure :: PangoMatrix -> CDouble -> CDouble -> PangoMatrix
 pangoMatrixTranslatePure m tx ty = runST do
@@ -44,3 +46,10 @@ pangoMatrixConcatPure m1 m2 = runST do
 	m1' <- pangoMatrixThaw m1
 	pangoMatrixConcat m1' m2
 	pangoMatrixFreeze m1'
+
+pangoMatrixTransformRectanglePure ::
+	PangoMatrix -> PangoRectangle -> PangoRectangle
+pangoMatrixTransformRectanglePure m r = runST do
+	rp <- pangoRectangleThaw r
+	pangoMatrixTransformRectangle m rp
+	pangoRectangleFreeze rp
