@@ -23,7 +23,7 @@ struct "PangoRectangle" #{size PangoRectangle}
 		("width", ''CInt, [| #{peek PangoRectangle, width} |],
 			[| #{poke PangoRectangle, width} |]),
 		("height", ''CInt, [| #{peek PangoRectangle, height} |],
-			[| #{poke PangoRectangle, height} |])	]
+			[| #{poke PangoRectangle, height} |]) ]
 	[''Show]
 
 c_pango_rectangle_copy :: Ptr PangoRectangle -> IO (Ptr PangoRectangle)
@@ -60,3 +60,23 @@ pangoRectangleFixed ::
 pangoRectangleFixed (PangoRectangle
 	(toPangoFixed -> x) (toPangoFixed -> y)
 	(toPangoFixed -> w) (toPangoFixed -> h)) = (x, y, w, h)
+
+struct "PangoRectanglePixel" #{size PangoRectangle}
+	[	("x", ''CInt, [| #{peek PangoRectangle, x} |],
+			[| #{poke PangoRectangle, x} |]),
+		("y", ''CInt, [| #{peek PangoRectangle, y} |],
+			[| #{poke PangoRectangle, y} |]),
+		("width", ''CInt, [| #{peek PangoRectangle, width} |],
+			[| #{poke PangoRectangle, width} |]),
+		("height", ''CInt, [| #{peek PangoRectangle, height} |],
+			[| #{poke PangoRectangle, height} |]) ]
+	[''Show]
+
+c_pango_rectangle_pixel_copy :: Ptr PangoRectanglePixel -> IO (Ptr PangoRectanglePixel)
+c_pango_rectangle_pixel_copy s = castPtr <$> c_pango_rectangle_copy (castPtr s)
+
+c_pango_rectangle_pixel_free :: Ptr PangoRectanglePixel -> IO ()
+c_pango_rectangle_pixel_free = c_pango_rectangle_free . castPtr
+
+structPrim "PangoRectanglePixel" 'c_pango_rectangle_pixel_copy
+	'c_pango_rectangle_pixel_free [''Show]

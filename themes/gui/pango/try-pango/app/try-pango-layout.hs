@@ -140,6 +140,7 @@ main = do
 	print =<< pangoLayoutMoveCursorVisually fpl2 True 109 False R
 	putStrLn "extents"
 	print =<< pangoLayoutGetExtents fpl2
+	putStrLn "pangoLayoutGetPixelExtents:"
 	print =<< pangoLayoutGetPixelExtents fpl2
 	print =<< pangoLayoutGetPixelSize fpl2
 	print =<< pangoLayoutGetBaseline fpl2
@@ -222,6 +223,7 @@ main = do
 	cairoMoveTo cr 100 820
 	pll <- pangoLayoutIterGetLine itr2
 	pangoCairoShowLayoutLine cr pll
+	putStrLn "pangoLayoutIterGetCharExtents:"
 	print =<< pangoLayoutIterGetCharExtents itr2
 	print =<< pangoLayoutIterGetClusterExtents itr2
 	print =<< pangoLayoutIterGetRunExtents itr2
