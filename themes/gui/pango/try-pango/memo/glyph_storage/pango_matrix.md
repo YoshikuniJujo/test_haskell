@@ -36,8 +36,8 @@ todo
 * [x] `pango_matrix_concat`
 * [x] `pango_matrix_transform_point`
 * [x] `pango_matrix_transform_distance`
-* [ ] `pango_matrix_transform_rectangle`
-* [ ] `pango_matrix_transform_pixel_rectangle`
+* [x] `pango_matrix_transform_rectangle`
+* [x] `pango_matrix_transform_pixel_rectangle`
 * [ ] `pango_matrix_get_font_scale_factor`
 * [ ] `pango_matrix_get_font_scale_factors`
 * [ ] use template for `PangoMatrix`

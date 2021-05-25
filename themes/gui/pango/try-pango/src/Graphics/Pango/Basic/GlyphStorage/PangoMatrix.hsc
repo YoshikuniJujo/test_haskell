@@ -126,3 +126,14 @@ pangoMatrixTransformRectangle (PangoMatrix_ fm) (PangoRectanglePrim fr) =
 foreign import ccall "pango_matrix_transform_rectangle"
 	c_pango_matrix_transform_rectangle ::
 	Ptr PangoMatrix -> Ptr PangoRectangle -> IO ()
+
+pangoMatrixTransformPixelRectangle :: PrimMonad m =>
+	PangoMatrix -> PangoRectanglePixelPrim (PrimState m) -> m ()
+pangoMatrixTransformPixelRectangle
+	(PangoMatrix_ fm) (PangoRectanglePixelPrim fr) =
+	unsafeIOToPrim $ withForeignPtr fm \pm -> withForeignPtr fr \pr ->
+		c_pango_matrix_transform_pixel_rectangle pm pr
+
+foreign import ccall "pango_matrix_transform_pixel_rectangle"
+	c_pango_matrix_transform_pixel_rectangle ::
+	Ptr PangoMatrix -> Ptr PangoRectanglePixel -> IO ()

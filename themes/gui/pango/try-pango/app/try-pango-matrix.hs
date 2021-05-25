@@ -22,6 +22,7 @@ main = do
 	print $ pangoMatrixTransformPoint m1 15 200
 	print $ pangoMatrixTransformDistance m1 15 200
 	print . pangoMatrixTransformRectanglePure m1 $ PangoRectangleFixed 15 123 300 500
+	print . pangoMatrixTransformPixelRectanglePure m1 $ PangoRectanglePixel 15 123 300 500
 
 pangoMatrixTranslatePure :: PangoMatrix -> CDouble -> CDouble -> PangoMatrix
 pangoMatrixTranslatePure m tx ty = runST do
@@ -53,3 +54,10 @@ pangoMatrixTransformRectanglePure m r = runST do
 	rp <- pangoRectangleThaw r
 	pangoMatrixTransformRectangle m rp
 	pangoRectangleFreeze rp
+
+pangoMatrixTransformPixelRectanglePure ::
+	PangoMatrix -> PangoRectanglePixel -> PangoRectanglePixel
+pangoMatrixTransformPixelRectanglePure m r = runST do
+	rp <- pangoRectanglePixelThaw r
+	pangoMatrixTransformPixelRectangle m rp
+	pangoRectanglePixelFreeze rp
