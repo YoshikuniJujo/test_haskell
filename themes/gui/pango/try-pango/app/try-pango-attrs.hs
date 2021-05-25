@@ -16,7 +16,6 @@ import Graphics.Cairo.Values
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Rendering.Cairo
 
-import Graphics.Pango.Types
 import Graphics.Pango.Values
 import Graphics.Pango.Basic.TextAttributes
 import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage
@@ -25,6 +24,8 @@ import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 
 import qualified Data.Text as T
+
+import Graphics.Pango.PangoRectangle
 
 main :: IO ()
 main = do

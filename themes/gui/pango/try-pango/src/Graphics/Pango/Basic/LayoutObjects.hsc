@@ -4,7 +4,8 @@
 module Graphics.Pango.Basic.LayoutObjects where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
+import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C
@@ -17,6 +18,8 @@ import System.Glib.SinglyLinkedLists
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
+
+import Graphics.Pango.PangoRectangle
 
 #include <pango/pango.h>
 
@@ -122,9 +125,11 @@ foreign import ccall "pango_layout_iter_get_char_extents" c_pango_layout_iter_ge
 pangoLayoutIterGetCharExtents :: PrimMonad m =>
 	PangoLayoutIter (PrimState m) -> m PangoRectangle
 pangoLayoutIterGetCharExtents (PangoLayoutIter fpli) = unsafeIOToPrim
-	$ withForeignPtr fpli \pli -> alloca \rct -> do
+	$ withForeignPtr fpli \pli -> do
+		rct <- mallocBytes #{size PangoRectangle}
 		c_pango_layout_iter_get_char_extents pli rct
-		peek rct
+		PangoRectangle_ <$> newForeignPtr rct (free rct)
+
 
 foreign import ccall "pango_layout_iter_get_cluster_extents" c_pango_layout_iter_get_cluster_extents ::
 	Ptr (PangoLayoutIter s) -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
@@ -132,9 +137,12 @@ foreign import ccall "pango_layout_iter_get_cluster_extents" c_pango_layout_iter
 pangoLayoutIterGetClusterExtents :: PrimMonad m =>
 	PangoLayoutIter (PrimState m) -> m (PangoRectangle, PangoRectangle)
 pangoLayoutIterGetClusterExtents (PangoLayoutIter fpli) = unsafeIOToPrim
-	$ withForeignPtr fpli \pli -> alloca \irct -> alloca \lrct -> do
+	$ withForeignPtr fpli \pli -> do
+		irct <- mallocBytes #{size PangoRectangle}
+		lrct <- mallocBytes #{size PangoRectangle}
 		c_pango_layout_iter_get_cluster_extents pli irct lrct
-		(,) <$> peek irct <*> peek lrct
+		(,)	<$> (PangoRectangle_ <$> newForeignPtr irct (free irct))
+			<*> (PangoRectangle_ <$> newForeignPtr lrct (free lrct))
 
 foreign import ccall "pango_layout_iter_get_run_extents" c_pango_layout_iter_get_run_extents ::
 	Ptr (PangoLayoutIter s) -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
@@ -142,9 +150,12 @@ foreign import ccall "pango_layout_iter_get_run_extents" c_pango_layout_iter_get
 pangoLayoutIterGetRunExtents :: PrimMonad m =>
 	PangoLayoutIter (PrimState m) -> m (PangoRectangle, PangoRectangle)
 pangoLayoutIterGetRunExtents (PangoLayoutIter fpli) = unsafeIOToPrim
-	$ withForeignPtr fpli \pli -> alloca \irct -> alloca \lrct -> do
+	$ withForeignPtr fpli \pli -> do
+		irct <- mallocBytes #{size PangoRectangle}
+		lrct <- mallocBytes #{size PangoRectangle}
 		c_pango_layout_iter_get_run_extents pli irct lrct
-		(,) <$> peek irct <*> peek lrct
+		(,)	<$> (PangoRectangle_ <$> newForeignPtr irct (free irct))
+			<*> (PangoRectangle_ <$> newForeignPtr lrct (free lrct))
 
 foreign import ccall "pango_layout_iter_get_line_yrange" c_pango_layout_iter_get_line_yrange ::
 	Ptr (PangoLayoutIter s) -> Ptr #{type int} -> Ptr #{type int} -> IO ()
@@ -162,9 +173,12 @@ foreign import ccall "pango_layout_iter_get_line_extents" c_pango_layout_iter_ge
 pangoLayoutIterGetLineExtents :: PrimMonad m =>
 	PangoLayoutIter (PrimState m) -> m (PangoRectangle, PangoRectangle)
 pangoLayoutIterGetLineExtents (PangoLayoutIter fpli) = unsafeIOToPrim
-	$ withForeignPtr fpli \pli -> alloca \irct -> alloca \lrct -> do
+	$ withForeignPtr fpli \pli -> do
+		irct <- mallocBytes #{size PangoRectangle}
+		lrct <- mallocBytes #{size PangoRectangle}
 		c_pango_layout_iter_get_line_extents pli irct lrct
-		(,) <$> peek irct <*> peek lrct
+		(,)	<$> (PangoRectangle_ <$> newForeignPtr irct (free irct))
+			<*> (PangoRectangle_ <$> newForeignPtr lrct (free lrct))
 
 foreign import ccall "pango_layout_iter_get_layout_extents" c_pango_layout_iter_get_layout_extents ::
 	Ptr (PangoLayoutIter s) -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
@@ -172,27 +186,36 @@ foreign import ccall "pango_layout_iter_get_layout_extents" c_pango_layout_iter_
 pangoLayoutIterGetLayoutExtents :: PrimMonad m =>
 	PangoLayoutIter (PrimState m) -> m (PangoRectangle, PangoRectangle)
 pangoLayoutIterGetLayoutExtents (PangoLayoutIter fpli) = unsafeIOToPrim
-	$ withForeignPtr fpli \pli -> alloca \irct -> alloca \lrct -> do
+	$ withForeignPtr fpli \pli -> do
+		irct <- mallocBytes #{size PangoRectangle}
+		lrct <- mallocBytes #{size PangoRectangle}
 		c_pango_layout_iter_get_layout_extents pli irct lrct
-		(,) <$> peek irct <*> peek lrct
+		(,)	<$> (PangoRectangle_ <$> newForeignPtr irct (free irct))
+			<*> (PangoRectangle_ <$> newForeignPtr lrct (free lrct))
 
 foreign import ccall "pango_layout_line_get_extents" c_pango_layout_line_get_extents ::
 	Ptr PangoLayoutLine -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
 
 pangoLayoutLineGetExtents :: PangoLayoutLine -> IO (PangoRectangle, PangoRectangle)
 pangoLayoutLineGetExtents (PangoLayoutLine fpll) =
-	withForeignPtr fpll \pll -> alloca \irct -> alloca \lrct -> do
+	withForeignPtr fpll \pll -> do
+		irct <- mallocBytes #{size PangoRectangle}
+		lrct <- mallocBytes #{size PangoRectangle}
 		c_pango_layout_line_get_extents pll irct lrct
-		(,) <$> peek irct <*> peek lrct
+		(,)	<$> (PangoRectangle_ <$> newForeignPtr irct (free irct))
+			<*> (PangoRectangle_ <$> newForeignPtr lrct (free lrct))
 
 foreign import ccall "pango_layout_line_get_pixel_extents" c_pango_layout_line_get_pixel_extents ::
 	Ptr PangoLayoutLine -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
 
 pangoLayoutLineGetPixelExtents :: PangoLayoutLine -> IO (PangoRectangle, PangoRectangle)
 pangoLayoutLineGetPixelExtents (PangoLayoutLine fpll) =
-	withForeignPtr fpll \pll -> alloca \irct -> alloca \lrct -> do
+	withForeignPtr fpll \pll -> do
+		irct <- mallocBytes #{size PangoRectangle}
+		lrct <- mallocBytes #{size PangoRectangle}
 		c_pango_layout_line_get_pixel_extents pll irct lrct
-		(,) <$> peek irct <*> peek lrct
+		(,)	<$> (PangoRectangle_ <$> newForeignPtr irct (free irct))
+			<*> (PangoRectangle_ <$> newForeignPtr lrct (free lrct))
 
 foreign import ccall "pango_layout_line_index_to_x" c_pango_layout_line_index_to_x ::
 	Ptr PangoLayoutLine -> #{type int} -> #{type gboolean} -> Ptr #{type int} -> IO ()

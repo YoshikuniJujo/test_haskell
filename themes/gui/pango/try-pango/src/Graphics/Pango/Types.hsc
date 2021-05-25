@@ -6,10 +6,6 @@ module Graphics.Pango.Types where
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
-import Foreign.Storable
-import Foreign.C.Types
-
-import Data.Fixed
 
 #include <pango/pango.h>
 
@@ -52,43 +48,6 @@ makePangoTabArray p
 foreign import ccall "pango_tab_array_free" c_pango_tab_array_free ::
 	Ptr PangoTabArray -> IO ()
 
-data PangoRectangle = PangoRectangle {
-	pangoRectangleX, pangoRectangleY :: CInt,
-	pangoRectangleWidth, pangoRectangleHeight :: CInt } deriving Show
-
-instance Storable PangoRectangle where
-	sizeOf _ = #size PangoRectangle
-	alignment _ = #alignment PangoRectangle
-	peek p = PangoRectangle
-		<$> #{peek PangoRectangle, x} p
-		<*> #{peek PangoRectangle, y} p
-		<*> #{peek PangoRectangle, width} p
-		<*> #{peek PangoRectangle, height} p
-	poke p (PangoRectangle x y w h) = do
-		#{poke PangoRectangle, x} p x
-		#{poke PangoRectangle, y} p y
-		#{poke PangoRectangle, width} p w
-		#{poke PangoRectangle, height} p h
-
-data PangoRectangleFixed = PangoRectangleFixed {
-	pangoRectangleFixedX, pangoRectangleFixedY :: PangoFixed,
-	pangoRectangleFixedWidth, pangoRectangleFixedHeight :: PangoFixed }
-	deriving Show
-
-instance Storable PangoRectangleFixed where
-	sizeOf _ = #size PangoRectangle
-	alignment _ = #alignment PangoRectangle
-	peek p = PangoRectangleFixed
-		<$> (toPangoFixed <$> #{peek PangoRectangle, x} p)
-		<*> (toPangoFixed <$> #{peek PangoRectangle, y} p)
-		<*> (toPangoFixed <$> #{peek PangoRectangle, width} p)
-		<*> (toPangoFixed <$> #{peek PangoRectangle, height} p)
-	poke p (PangoRectangleFixed x y w h) = do
-		#{poke PangoRectangle, x} p $ fromPangoFixed x
-		#{poke PangoRectangle, y} p $ fromPangoFixed y
-		#{poke PangoRectangle, width} p $ fromPangoFixed w
-		#{poke PangoRectangle, height} p $ fromPangoFixed h
-
 newtype PangoLayoutLine = PangoLayoutLine (ForeignPtr PangoLayoutLine) deriving Show
 
 makePangoLayoutLine0 :: Ptr PangoLayoutLine -> IO PangoLayoutLine
@@ -123,15 +82,3 @@ foreign import ccall "pango_glyph_item_free" c_pango_glyph_item_free ::
 	Ptr PangoGlyphItem -> IO ()
 
 type PangoLayoutRun = PangoGlyphItem
-
-data PU
-
-instance HasResolution PU where resolution _ = #{const PANGO_SCALE}
-
-type PangoFixed = Fixed PU
-
-toPangoFixed :: CInt -> PangoFixed
-toPangoFixed = MkFixed . fromIntegral
-
-fromPangoFixed :: PangoFixed -> CInt
-fromPangoFixed (MkFixed i) = fromIntegral i

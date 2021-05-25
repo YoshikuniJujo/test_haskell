@@ -56,8 +56,9 @@ import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.TextAttributes.Template
 import Graphics.Pango.Basic.ScriptsAndLanguages.Types
-import Graphics.Pango.Types
 import Graphics.Pango.Values
+
+import Graphics.Pango.PangoRectangle
 
 #include <pango/pango.h>
 
@@ -333,9 +334,9 @@ instance PangoAttributeValue Shape where
 
 pangoAttrShapeNew :: PrimMonad m =>
 	PangoRectangle -> PangoRectangle -> m (PangoAttribute (PrimState m))
-pangoAttrShapeNew ir lr = unsafeIOToPrim $ alloca \pir -> alloca \plr ->
-	mkPangoAttribute
-		=<< (poke pir ir >> poke plr lr >> c_pango_attr_shape_new pir plr)
+pangoAttrShapeNew (PangoRectangle_ fir) (PangoRectangle_ flr) = unsafeIOToPrim
+	$ withForeignPtr fir \pir -> withForeignPtr flr \plr ->
+		mkPangoAttribute =<< c_pango_attr_shape_new pir plr
 
 foreign import ccall "pango_attr_shape_new" c_pango_attr_shape_new ::
 	Ptr PangoRectangle -> Ptr PangoRectangle -> IO (Ptr (PangoAttribute s))
