@@ -52,5 +52,7 @@ todo
 * [ ] `pango_context_get_gravity`
 * [x] `pango_context_set_font_description`
 * [x] `pango_context_get_font_description`
-* [ ] `pango_context_get_matrix`
-* [ ] `pango_context_set_matrix`
+* [x] `pango_context_get_matrix`
+* [x] `pango_context_set_matrix`
+* [ ] define `PangoMatrixNullable`
+* [ ] use `PangoMatrixNullable`

@@ -74,8 +74,8 @@ todo
 		- [x] PangoScript
 		- [x] PangoLanguage
 	+ [x] Bidirectional Text
-	+ [ ] Glyph Storage
-		- [ ] PangoMatrix
+	+ [x] Glyph Storage
+		- [x] PangoMatrix
 		- no other
 	+ [ ] Rendering
 		- [ ] `pango_context_get_matrix`

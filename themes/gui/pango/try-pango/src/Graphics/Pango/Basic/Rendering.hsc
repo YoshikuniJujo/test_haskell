@@ -12,6 +12,8 @@ import Graphics.Pango.Types
 import Graphics.Pango.Values
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 
+import Graphics.Pango.Basic.GlyphStorage.PangoMatrix
+
 #include <pango/pango.h>
 
 newtype PangoContext = PangoContext (ForeignPtr PangoContext) deriving Show
@@ -70,3 +72,25 @@ foreign import ccall "pango_context_set_font_description"
 foreign import ccall "pango_context_get_font_description"
 	c_pango_context_get_font_description ::
 	Ptr PangoContext -> IO (Ptr PangoFontDescription)
+
+instance PangoContextSetting PangoMatrix where
+	pangoContextSet = pangoContextSetMatrix
+	pangoContextGet = pangoContextGetMatrix
+
+pangoContextGetMatrix :: PangoContext -> IO PangoMatrix
+pangoContextGetMatrix (PangoContext fc) =
+	PangoMatrix_ <$> do
+		p <- withForeignPtr fc c_pango_context_get_matrix
+		p' <- c_pango_matrix_copy p
+		newForeignPtr p' $ c_pango_matrix_free p'
+
+foreign import ccall "pango_context_get_matrix" c_pango_context_get_matrix ::
+	Ptr PangoContext -> IO (Ptr PangoMatrix)
+
+pangoContextSetMatrix :: PangoContext -> PangoMatrix -> IO ()
+pangoContextSetMatrix (PangoContext fc) (PangoMatrix_ fm) =
+	withForeignPtr fc \pc -> withForeignPtr fm \pm ->
+		c_pango_context_set_matrix pc pm
+
+foreign import ccall "pango_context_set_matrix" c_pango_context_set_matrix ::
+	Ptr PangoContext -> Ptr PangoMatrix -> IO ()
