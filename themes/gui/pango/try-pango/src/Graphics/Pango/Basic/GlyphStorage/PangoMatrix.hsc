@@ -137,3 +137,11 @@ pangoMatrixTransformPixelRectangle
 foreign import ccall "pango_matrix_transform_pixel_rectangle"
 	c_pango_matrix_transform_pixel_rectangle ::
 	Ptr PangoMatrix -> Ptr PangoRectanglePixel -> IO ()
+
+pangoMatrixGetFontScaleFactor :: PangoMatrix -> CDouble
+pangoMatrixGetFontScaleFactor (PangoMatrix_ fm) = unsafePerformIO
+	$ withForeignPtr fm c_pango_matrix_get_font_scale_factor
+
+foreign import ccall "pango_matrix_get_font_scale_factor"
+	c_pango_matrix_get_font_scale_factor ::
+	Ptr PangoMatrix -> IO CDouble
