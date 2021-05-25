@@ -39,16 +39,6 @@ todo
 * [x] `pango_matrix_transform_rectangle`
 * [x] `pango_matrix_transform_pixel_rectangle`
 * [x] `pango_matrix_get_font_scale_factor`
-* [ ] `pango_matrix_get_font_scale_factors`
-* [ ] use template for `PangoMatrix`
-	+ [x] `newtype PangoMatrix`
-	+ [ ] `pattern PangoMatrix`
-		- [ ] function `pangoMatrix`
-		- [ ] others
-	+ [ ] `instance Show`
-	+ [ ] `instance Read`
-* [ ] use template for `PangoMatrixPrim`
-	+ [ ] `newtype PangoMatrixPrim s`
-	+ [ ] function `pangoMatrixFreeze`
-	+ [ ] function `pangoMatrixThaw`
-	+ [ ] function `pangoMatrixCopy`
+* [x] `pango_matrix_get_font_scale_factors`
+* [x] use template for `PangoMatrix`
+* [x] use template for `PangoMatrixPrim`

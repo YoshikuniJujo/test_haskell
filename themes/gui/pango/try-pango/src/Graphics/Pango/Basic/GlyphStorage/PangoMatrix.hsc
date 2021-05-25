@@ -145,3 +145,13 @@ pangoMatrixGetFontScaleFactor (PangoMatrix_ fm) = unsafePerformIO
 foreign import ccall "pango_matrix_get_font_scale_factor"
 	c_pango_matrix_get_font_scale_factor ::
 	Ptr PangoMatrix -> IO CDouble
+
+pangoMatrixGetFontScaleFactors :: PangoMatrix -> (CDouble, CDouble)
+pangoMatrixGetFontScaleFactors (PangoMatrix_ fm) = unsafePerformIO
+	$ withForeignPtr fm \pm -> alloca \xs -> alloca \ys -> do
+		c_pango_matrix_get_font_scale_factors pm xs ys
+		(,) <$> peek xs <*> peek ys
+
+foreign import ccall "pango_matrix_get_font_scale_factors"
+	c_pango_matrix_get_font_scale_factors ::
+	Ptr PangoMatrix -> Ptr CDouble -> Ptr CDouble -> IO ()

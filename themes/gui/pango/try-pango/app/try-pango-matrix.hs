@@ -25,6 +25,7 @@ main = do
 	print . pangoMatrixTransformRectanglePure m1 $ PangoRectangleFixed 15 123 300 500
 	print . pangoMatrixTransformPixelRectanglePure m1 $ PangoRectanglePixel 15 123 300 500
 	print $ pangoMatrixGetFontScaleFactor m2
+	print $ pangoMatrixGetFontScaleFactors m2
 
 pangoMatrixTranslatePure :: PangoMatrix -> CDouble -> CDouble -> PangoMatrix
 pangoMatrixTranslatePure m tx ty = runST do
