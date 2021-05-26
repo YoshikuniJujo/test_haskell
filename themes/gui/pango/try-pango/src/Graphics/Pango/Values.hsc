@@ -44,10 +44,10 @@ enum "PangoGravity" ''#{type PangoGravity} [''Show] [
 	("PangoGravityWest", #{const PANGO_GRAVITY_WEST}),
 	("PangoGravityAuto", #{const PANGO_GRAVITY_AUTO}) ]
 
-newtype PangoGravityHint = PangoGravityHint #{type PangoGravityHint} deriving Show
-
-#enum PangoGravityHint, PangoGravityHint, PANGO_GRAVITY_HINT_NATURAL, \
-	PANGO_GRAVITY_HINT_STRONG, PANGO_GRAVITY_HINT_LINE
+enum "PangoGravityHint" ''#{type PangoGravityHint} [''Show] [
+	("PangoGravityHintNatural", #{const PANGO_GRAVITY_HINT_NATURAL}),
+	("PangoGravityHintStrong", #{const PANGO_GRAVITY_HINT_STRONG}),
+	("PangoGravityHintLine", #{const PANGO_GRAVITY_HINT_LINE}) ]
 
 newtype PangoFontMask = PangoFontMask #{type PangoFontMask} deriving Show
 
