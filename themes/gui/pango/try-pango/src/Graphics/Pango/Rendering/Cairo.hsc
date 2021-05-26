@@ -23,30 +23,33 @@ pangoCairoCreateContext (CairoT fcr) = unsafeIOToPrim
 foreign import ccall "pango_cairo_create_context"
 	c_pango_cairo_create_context :: Ptr (CairoT s) -> IO (Ptr PangoContext)
 
-pangoCairoUpdateContext :: PrimMonad m => CairoT (PrimState m) -> PangoContext -> m ()
+pangoCairoUpdateContext ::
+	PrimMonad m => CairoT (PrimState m) -> PangoContext -> m ()
 pangoCairoUpdateContext (CairoT fcr) (PangoContext fc) = unsafeIOToPrim
 	$ withForeignPtr fcr \pcr -> withForeignPtr fc \pc ->
 		c_pango_cairo_update_context pcr pc
 
 foreign import ccall "pango_cairo_update_context"
-	c_pango_cairo_update_context :: Ptr (CairoT s) -> Ptr PangoContext -> IO ()
+	c_pango_cairo_update_context ::
+	Ptr (CairoT s) -> Ptr PangoContext -> IO ()
 
 pangoCairoCreateLayout ::
 	PrimMonad m => CairoT (PrimState m) -> m (PangoLayoutPrim (PrimState m))
 pangoCairoCreateLayout (CairoT fcr) = unsafeIOToPrim
-	$ withForeignPtr fcr \cr -> mkPangoLayoutPrim =<< c_pango_cairo_create_layout cr
+	$ withForeignPtr fcr \pcr ->
+		mkPangoLayoutPrim =<< c_pango_cairo_create_layout pcr
 
 foreign import ccall "pango_cairo_create_layout" c_pango_cairo_create_layout ::
 	Ptr (CairoT s) -> IO (Ptr PangoLayout)
 
-foreign import ccall "pango_cairo_update_layout" c_pango_cairo_update_layout ::
-	Ptr (CairoT s) -> Ptr PangoLayout -> IO ()
-
 pangoCairoUpdateLayout :: PrimMonad m =>
 	CairoT (PrimState m) -> PangoLayoutPrim (PrimState m) -> m ()
-pangoCairoUpdateLayout (CairoT fcr) (PangoLayoutPrim fpl) = unsafeIOToPrim
-	$ withForeignPtr fcr \cr -> withForeignPtr fpl \pl ->
-		c_pango_cairo_update_layout cr pl
+pangoCairoUpdateLayout (CairoT fcr) (PangoLayoutPrim fl) = unsafeIOToPrim
+	$ withForeignPtr fcr \pcr -> withForeignPtr fl \pl ->
+		c_pango_cairo_update_layout pcr pl
+
+foreign import ccall "pango_cairo_update_layout" c_pango_cairo_update_layout ::
+	Ptr (CairoT s) -> Ptr PangoLayout -> IO ()
 
 foreign import ccall "pango_cairo_show_glyph_item"
 	c_pango_cairo_show_glyph_item ::

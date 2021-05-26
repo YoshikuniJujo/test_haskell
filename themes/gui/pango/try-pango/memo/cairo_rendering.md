@@ -13,8 +13,8 @@ review
 
 * [x] pangoCairoCreateContext
 * [x] pangoCairoUpdateContext
-* [ ] pangoCairoCreateLayout
-* [ ] pangoCairoUpdateLayout
+* [x] pangoCairoCreateLayout
+* [x] pangoCairoUpdateLayout
 * [ ] pangoCairoShowGlyphItem
 * [ ] pangoCairoShowLayoutLine
 * [ ] pangoCairoShowLayout
