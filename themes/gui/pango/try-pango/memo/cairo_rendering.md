@@ -12,7 +12,7 @@ review
 ------
 
 * [x] pangoCairoCreateContext
-* [ ] pangoCairoUpdateContext
+* [x] pangoCairoUpdateContext
 * [ ] pangoCairoCreateLayout
 * [ ] pangoCairoUpdateLayout
 * [ ] pangoCairoShowGlyphItem
