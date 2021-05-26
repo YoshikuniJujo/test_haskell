@@ -22,6 +22,7 @@ import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.LayoutObjects
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
+import Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter
 import Graphics.Pango.Basic.TabStops
 import Graphics.Pango.Rendering.Cairo
 import Graphics.Pango.Types

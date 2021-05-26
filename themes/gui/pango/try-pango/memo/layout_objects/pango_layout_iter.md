@@ -31,4 +31,11 @@ todo
 
 * [x] make module `Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter`
 * [x] repair about `PangoLayoutIter`
+* [ ] move functions to this module
+	+ [x] pangoLayoutGetIter
+	+ [ ] pangoLayoutIterNextRun
+	+ [ ] pangoLayoutIterNextChar
+	+ [ ] pangoLayoutIterNextCluster
+	+ [ ] pangoLayoutIterNextLine
+	+ [ ] others
 * [ ] others
