@@ -5,6 +5,7 @@ module Graphics.Pango.Basic.VerticalText where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
+import Foreign.C.Types
 import Data.Bool
 import Data.Word
 import Data.Int
@@ -45,3 +46,10 @@ foreign import ccall "pango_gravity_get_for_script_and_width"
 	c_pango_gravity_get_for_script_and_width ::
 	#{type PangoScript} -> #{type gboolean} -> #{type PangoGravity} ->
 	#{type PangoGravityHint} -> IO #{type PangoGravity}
+
+pangoGravityToRotation :: PangoGravity -> CDouble
+pangoGravityToRotation (PangoGravity g) =
+	unsafePerformIO $ c_pango_gravity_to_rotation g
+
+foreign import ccall "pango_gravity_to_rotation" c_pango_gravity_to_rotation ::
+	#{type PangoGravity} -> IO CDouble

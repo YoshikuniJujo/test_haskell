@@ -35,6 +35,12 @@ main = do
 	print $ pangoGravityGetForScriptAndWidth
 		PangoScriptKatakana False PangoGravityEast PangoGravityHintNatural
 
+	print $ pangoGravityToRotation PangoGravityAuto
+	print $ pangoGravityToRotation PangoGravitySouth
+	print $ pangoGravityToRotation PangoGravityEast
+	print $ pangoGravityToRotation PangoGravityNorth
+	print $ pangoGravityToRotation PangoGravityWest
+
 pangoMatrixRotatePure :: PangoMatrix -> Angle -> PangoMatrix
 pangoMatrixRotatePure m a = runST do
 	mp <- pangoMatrixThaw m
