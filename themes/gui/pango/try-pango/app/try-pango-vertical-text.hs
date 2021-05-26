@@ -28,7 +28,12 @@ main = do
 	print $ pangoGravityGetForScript
 		PangoScriptHan PangoGravitySouth PangoGravityHintNatural
 	print $ pangoGravityGetForScript
-		PangoScriptHan PangoGravityWest PangoGravityHintNatural
+		PangoScriptHan PangoGravityEast PangoGravityHintNatural
+
+	print $ pangoGravityGetForScriptAndWidth
+		PangoScriptKatakana False PangoGravitySouth PangoGravityHintNatural
+	print $ pangoGravityGetForScriptAndWidth
+		PangoScriptKatakana False PangoGravityEast PangoGravityHintNatural
 
 pangoMatrixRotatePure :: PangoMatrix -> Angle -> PangoMatrix
 pangoMatrixRotatePure m a = runST do

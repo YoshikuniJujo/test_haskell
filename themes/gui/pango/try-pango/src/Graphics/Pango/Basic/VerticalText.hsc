@@ -5,6 +5,7 @@ module Graphics.Pango.Basic.VerticalText where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
+import Data.Bool
 import Data.Word
 import Data.Int
 import System.IO.Unsafe
@@ -30,4 +31,17 @@ pangoGravityGetForScript (PangoScript s) (PangoGravity b) (PangoGravityHint h) =
 foreign import ccall "pango_gravity_get_for_script"
 	c_pango_gravity_get_for_script ::
 	#{type PangoScript} -> #{type PangoGravity} ->
+	#{type PangoGravityHint} -> IO #{type PangoGravity}
+
+pangoGravityGetForScriptAndWidth ::
+	PangoScript -> Bool -> PangoGravity -> PangoGravityHint -> PangoGravity
+pangoGravityGetForScriptAndWidth
+	(PangoScript s) w (PangoGravity b) (PangoGravityHint h) =
+	unsafePerformIO $ PangoGravity <$>
+		c_pango_gravity_get_for_script_and_width
+			s (bool #{const FALSE} #{const TRUE} w) b h
+
+foreign import ccall "pango_gravity_get_for_script_and_width"
+	c_pango_gravity_get_for_script_and_width ::
+	#{type PangoScript} -> #{type gboolean} -> #{type PangoGravity} ->
 	#{type PangoGravityHint} -> IO #{type PangoGravity}
