@@ -10,6 +10,7 @@ import Data.Bool
 import Data.Word
 import Data.Int
 import System.IO.Unsafe
+import Graphics.Pango.Angle
 import Graphics.Pango.Values
 import Graphics.Pango.Basic.GlyphStorage.PangoMatrix
 import Graphics.Pango.Basic.ScriptsAndLanguages.PangoScript
@@ -47,9 +48,9 @@ foreign import ccall "pango_gravity_get_for_script_and_width"
 	#{type PangoScript} -> #{type gboolean} -> #{type PangoGravity} ->
 	#{type PangoGravityHint} -> IO #{type PangoGravity}
 
-pangoGravityToRotation :: PangoGravity -> CDouble
+pangoGravityToRotation :: PangoGravity -> Angle
 pangoGravityToRotation (PangoGravity g) =
-	unsafePerformIO $ c_pango_gravity_to_rotation g
+	unsafePerformIO $ Radian <$> c_pango_gravity_to_rotation g
 
 foreign import ccall "pango_gravity_to_rotation" c_pango_gravity_to_rotation ::
 	#{type PangoGravity} -> IO CDouble

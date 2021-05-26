@@ -80,7 +80,7 @@ todo
 	+ [x] Rendering
 		- [x] `pango_context_get_matrix`
 		- [x] `pango_context_set_matrix`
-	+ [ ] Vertical Text
+	+ [x] Vertical Text
 * [ ] Rendering with Pango
 	+ [ ] Cairo Rendering
 * [ ] think about package name

@@ -18,6 +18,7 @@ import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Rendering.Cairo
+import Graphics.Pango.Angle
 import Graphics.Pango.Values
 
 import Data.CairoImage
