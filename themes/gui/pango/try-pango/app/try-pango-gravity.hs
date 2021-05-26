@@ -35,7 +35,7 @@ main = do
 	pl <- pangoLayoutNew ctx
 	cairoMoveTo cr 5 50
 	pangoLayoutSet @T.Text pl "Hello, world! こんにちは、世界! あいう愛愛愛"
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-gravity.png" $ cairoArgb32ToJuicyRGBA8 a

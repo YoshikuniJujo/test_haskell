@@ -15,6 +15,7 @@ import Foreign.C.String
 import Foreign.C.String.Utf8
 import Foreign.C.String.Tools
 import Foreign.C.Enum
+import Foreign.C.Struct
 import Control.Monad.Primitive
 import Data.Maybe
 import Data.List
@@ -43,52 +44,66 @@ import Graphics.Pango.PangoRectangle
 #include <pango/pango.h>
 #include "pango_log_attr.h"
 
-newtype PangoLayout = PangoLayout (ForeignPtr PangoLayout) deriving Show
+newtype PangoLayout = PangoLayout_ (ForeignPtr PangoLayout) deriving Show
+
+foreign import ccall "pango_layout_copy" c_pango_layout_copy ::
+	Ptr PangoLayout -> IO (Ptr PangoLayout)
+
+foreign import ccall "g_object_unref" c_pango_layout_free ::
+	Ptr PangoLayout -> IO ()
+
+structPrim "PangoLayout" 'c_pango_layout_copy 'c_pango_layout_free [''Show]
 
 mkPangoLayout :: Ptr PangoLayout -> IO PangoLayout
-mkPangoLayout p = PangoLayout <$> newForeignPtr p (c_g_object_unref p)
+mkPangoLayout p = PangoLayout_ <$> newForeignPtr p (c_g_object_unref p)
 
-pangoLayoutNew :: PangoContext -> IO PangoLayout
-pangoLayoutNew (PangoContext fc) =
-	mkPangoLayout =<< withForeignPtr fc c_pango_layout_new
+mkPangoLayoutPrim :: Ptr PangoLayout -> IO (PangoLayoutPrim s)
+mkPangoLayoutPrim p = PangoLayoutPrim <$> newForeignPtr p (c_g_object_unref p)
+
+pangoLayoutNew :: PrimMonad m => PangoContext -> m (PangoLayoutPrim (PrimState m))
+pangoLayoutNew (PangoContext fc) = unsafeIOToPrim
+	$ mkPangoLayoutPrim =<< withForeignPtr fc c_pango_layout_new
 
 foreign import ccall "pango_layout_new" c_pango_layout_new ::
 	Ptr PangoContext -> IO (Ptr PangoLayout)
 
 class PangoLayoutSetting s where
-	pangoLayoutSet :: PangoLayout -> s -> IO ()
-	pangoLayoutGet :: PangoLayout -> IO s
+	pangoLayoutSet ::
+		PrimMonad m => PangoLayoutPrim (PrimState m) -> s -> m ()
+	pangoLayoutGet :: PangoLayout -> s
 
 instance PangoLayoutSetting T.Text where
-	pangoLayoutSet = pangoLayoutSetText
+	pangoLayoutSet = (unsafeIOToPrim .) . pangoLayoutSetText
 	pangoLayoutGet = pangoLayoutGetText
 
-pangoLayoutSetText :: PangoLayout -> T.Text -> IO ()
-pangoLayoutSetText (PangoLayout fpl) s =
+pangoLayoutSetText :: PangoLayoutPrim s -> T.Text -> IO ()
+pangoLayoutSetText (PangoLayoutPrim fpl) s =
 	withForeignPtr fpl \pl -> T.withCStringLen s \(cs, n) ->
 		c_pango_layout_set_text pl cs $ fromIntegral n
 
 foreign import ccall "pango_layout_set_text" c_pango_layout_set_text ::
 	Ptr PangoLayout -> CString -> CInt -> IO ()
 
-pangoLayoutGetText :: PangoLayout -> IO T.Text
-pangoLayoutGetText (PangoLayout fpl) =
-	withForeignPtr fpl \pl -> peekCStringText =<< c_pango_layout_get_text pl
+pangoLayoutGetText :: PangoLayout -> T.Text
+pangoLayoutGetText (PangoLayout_ fpl) = unsafePerformIO
+	$ withForeignPtr fpl \pl -> peekCStringText =<< c_pango_layout_get_text pl
 
 foreign import ccall "pango_layout_get_text" c_pango_layout_get_text ::
 	Ptr PangoLayout -> IO CString
 
-pangoLayoutSetMarkup :: PangoLayout -> T.Text -> IO ()
-pangoLayoutSetMarkup (PangoLayout fpl) mu =
-	withForeignPtr fpl \ppl -> T.withCStringLen mu \(cs, cl) ->
+pangoLayoutSetMarkup ::
+	PrimMonad m => PangoLayoutPrim (PrimState m) -> T.Text -> m ()
+pangoLayoutSetMarkup (PangoLayoutPrim fpl) mu = unsafeIOToPrim
+	$ withForeignPtr fpl \ppl -> T.withCStringLen mu \(cs, cl) ->
 		c_pango_layout_set_markup ppl cs $ fromIntegral cl
 
 foreign import ccall "pango_layout_set_markup"
 	c_pango_layout_set_markup :: Ptr PangoLayout -> CString -> CInt -> IO ()
 
-pangoLayoutSetMarkupWithAccel :: PangoLayout -> T.Text -> Char -> IO Char
-pangoLayoutSetMarkupWithAccel (PangoLayout fpl) mu am =
-	withForeignPtr fpl \ppl ->
+pangoLayoutSetMarkupWithAccel ::
+	PrimMonad m => PangoLayoutPrim (PrimState m) -> T.Text -> Char -> m Char
+pangoLayoutSetMarkupWithAccel (PangoLayoutPrim fpl) mu am = unsafeIOToPrim
+	$ withForeignPtr fpl \ppl ->
 		T.withCStringLen mu \(cs, cl) -> alloca \pa -> do
 			c_pango_layout_set_markup_with_accel ppl cs (fromIntegral cl) (fromIntegral $ ord am) pa
 			chr . fromIntegral <$> peek pa
@@ -102,19 +117,20 @@ instance PangoLayoutSetting PangoTextAttrList where
 	pangoLayoutSet = pangoLayoutSetTextAttributes
 	pangoLayoutGet = pangoLayoutGetTextAttributes
 
-pangoLayoutSetTextAttributes :: PangoLayout -> PangoTextAttrList -> IO ()
+pangoLayoutSetTextAttributes :: PrimMonad m =>
+	PangoLayoutPrim (PrimState m) -> PangoTextAttrList -> m ()
 pangoLayoutSetTextAttributes
-	l@(PangoLayout fl) (PangoTextAttrList (cs, ln) al) = do
+	l@(PangoLayoutPrim fl) (PangoTextAttrList (cs, ln) al) = unsafeIOToPrim do
 	withForeignPtr fl \pl -> withForeignPtr cs \cs' ->  c_pango_layout_set_text pl cs' $ fromIntegral ln
 	pangoLayoutSetAttributes l al
 
-pangoLayoutGetTextAttributes :: PangoLayout -> IO PangoTextAttrList
-pangoLayoutGetTextAttributes l@(PangoLayout fl) = PangoTextAttrList
+pangoLayoutGetTextAttributes :: PangoLayout -> PangoTextAttrList
+pangoLayoutGetTextAttributes l@(PangoLayout_ fl) = unsafePerformIO $ PangoTextAttrList
 	<$> (copyToForeignCStringLen =<< toCStringLen =<< withForeignPtr fl c_pango_layout_get_text)
 	<*> pangoLayoutGetAttributes l
 
-pangoLayoutSetAttributes :: PangoLayout -> PangoAttrList -> IO ()
-pangoLayoutSetAttributes (PangoLayout fl) al = -- (PangoAttrList fal) =
+pangoLayoutSetAttributes :: PangoLayoutPrim s -> PangoAttrList -> IO ()
+pangoLayoutSetAttributes (PangoLayoutPrim fl) al =
 	withForeignPtr fl \pl -> ($ c_pango_layout_set_attributes pl) case al of
 		PangoAttrListNull -> ($ nullPtr)
 		PangoAttrList fal -> withForeignPtr fal
@@ -124,7 +140,7 @@ foreign import ccall "pango_layout_set_attributes"
 	Ptr PangoLayout -> Ptr PangoAttrList -> IO ()
 
 pangoLayoutGetAttributes :: PangoLayout -> IO PangoAttrList
-pangoLayoutGetAttributes (PangoLayout fpl) =
+pangoLayoutGetAttributes (PangoLayout_ fpl) =
 	mkPangoAttrList =<< do
 		p <- withForeignPtr fpl c_pango_layout_get_attributes
 		p <$ c_pango_attr_list_ref p
@@ -140,18 +156,19 @@ instance PangoLayoutSetting PangoFontDescription where
 	pangoLayoutSet = pangoLayoutSetFontDescription
 	pangoLayoutGet = pangoLayoutGetFontDescription
 
-pangoLayoutSetFontDescription :: PangoLayout -> PangoFontDescription -> IO ()
-pangoLayoutSetFontDescription (PangoLayout fpl) fd =
-	withForeignPtr fpl \pl -> ($ c_pango_layout_set_font_description pl) case fd of
+pangoLayoutSetFontDescription :: PrimMonad m =>
+	PangoLayoutPrim (PrimState m) -> PangoFontDescription -> m ()
+pangoLayoutSetFontDescription (PangoLayoutPrim fpl) fd = unsafeIOToPrim
+	$ withForeignPtr fpl \pl -> ($ c_pango_layout_set_font_description pl) case fd of
 		PangoFontDescriptionNull -> ($ nullPtr)
 		PangoFontDescription ffd -> withForeignPtr ffd
 
 foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font_description ::
 	Ptr PangoLayout -> Ptr PangoFontDescription -> IO ()
 
-pangoLayoutGetFontDescription :: PangoLayout -> IO PangoFontDescription
-pangoLayoutGetFontDescription (PangoLayout fpl) =
-	mkPangoFontDescription =<< withForeignPtr fpl \ppl ->
+pangoLayoutGetFontDescription :: PangoLayout -> PangoFontDescription
+pangoLayoutGetFontDescription (PangoLayout_ fpl) = unsafePerformIO
+	$ mkPangoFontDescription =<< withForeignPtr fpl \ppl ->
 		c_pango_font_description_copy
 			=<< c_pango_layout_get_font_description ppl
 
@@ -171,7 +188,7 @@ width = \case - 1 -> WidthDefault; w -> Width $ fromIntegral w / #{const PANGO_S
 
 instance PangoLayoutSetting Width where
 	pangoLayoutSet l = pangoLayoutSetWidth l . getWidth
-	pangoLayoutGet l = width <$> pangoLayoutGetWidth l
+	pangoLayoutGet l = width $ pangoLayoutGetWidth l
 
 data Height = HeightDefault | Height Double | LinesPerParagraph CInt
 	deriving Show
@@ -189,21 +206,22 @@ fromHeight = \case
 
 instance PangoLayoutSetting Height where
 	pangoLayoutSet l = pangoLayoutSetHeight l . fromHeight
-	pangoLayoutGet l = toHeight <$> pangoLayoutGetHeight l
+	pangoLayoutGet l = toHeight $ pangoLayoutGetHeight l
 
-pangoLayoutSetWidth, pangoLayoutSetHeight :: PangoLayout -> CInt -> IO ()
-pangoLayoutSetWidth (PangoLayout fl) w =
-	withForeignPtr fl \pl -> c_pango_layout_set_width pl w
+pangoLayoutSetWidth, pangoLayoutSetHeight ::
+	PrimMonad m => PangoLayoutPrim (PrimState m) -> CInt -> m ()
+pangoLayoutSetWidth (PangoLayoutPrim fl) w = unsafeIOToPrim
+	$ withForeignPtr fl \pl -> c_pango_layout_set_width pl w
 
-pangoLayoutSetHeight (PangoLayout fl) h =
-	withForeignPtr fl \pl -> c_pango_layout_set_height pl h
+pangoLayoutSetHeight (PangoLayoutPrim fl) h = unsafeIOToPrim
+	$ withForeignPtr fl \pl -> c_pango_layout_set_height pl h
 
-pangoLayoutGetWidth, pangoLayoutGetHeight :: PangoLayout -> IO CInt
-pangoLayoutGetWidth (PangoLayout fl) =
-	withForeignPtr fl c_pango_layout_get_width
+pangoLayoutGetWidth, pangoLayoutGetHeight :: PangoLayout -> CInt
+pangoLayoutGetWidth (PangoLayout_ fl) = unsafePerformIO
+	$ withForeignPtr fl c_pango_layout_get_width
 
-pangoLayoutGetHeight (PangoLayout fl) =
-	withForeignPtr fl c_pango_layout_get_height
+pangoLayoutGetHeight (PangoLayout_ fl) = unsafePerformIO
+	$ withForeignPtr fl c_pango_layout_get_height
 
 foreign import ccall "pango_layout_set_width" c_pango_layout_set_width ::
 	Ptr PangoLayout -> CInt -> IO ()
@@ -226,12 +244,13 @@ instance PangoLayoutSetting PangoWrapMode where
 	pangoLayoutSet = pangoLayoutSetWrap
 	pangoLayoutGet = pangoLayoutGetWrap
 
-pangoLayoutSetWrap :: PangoLayout -> PangoWrapMode -> IO ()
-pangoLayoutSetWrap (PangoLayout fl) (PangoWrapMode wm) =
-	withForeignPtr fl \pl -> c_pango_layout_set_wrap pl wm
+pangoLayoutSetWrap ::
+	PrimMonad m => PangoLayoutPrim (PrimState m) -> PangoWrapMode -> m ()
+pangoLayoutSetWrap (PangoLayoutPrim fl) (PangoWrapMode wm) = unsafeIOToPrim
+	$ withForeignPtr fl \pl -> c_pango_layout_set_wrap pl wm
 
-pangoLayoutGetWrap :: PangoLayout -> IO PangoWrapMode
-pangoLayoutGetWrap (PangoLayout fl) = PangoWrapMode
+pangoLayoutGetWrap :: PangoLayout -> PangoWrapMode
+pangoLayoutGetWrap (PangoLayout_ fl) = unsafePerformIO $ PangoWrapMode
 	<$> withForeignPtr fl c_pango_layout_get_wrap
 
 foreign import ccall "pango_layout_set_wrap" c_pango_layout_set_wrap ::
@@ -244,12 +263,13 @@ instance PangoLayoutSetting PangoEllipsizeMode where
 	pangoLayoutSet = pangoLayoutSetEllipsize
 	pangoLayoutGet = pangoLayoutGetEllipsize
 
-pangoLayoutSetEllipsize :: PangoLayout -> PangoEllipsizeMode -> IO ()
-pangoLayoutSetEllipsize (PangoLayout fpl) (PangoEllipsizeMode pem) =
-	withForeignPtr fpl \pl -> c_pango_layout_set_ellipsize pl pem
+pangoLayoutSetEllipsize :: PrimMonad m =>
+	PangoLayoutPrim (PrimState m) -> PangoEllipsizeMode -> m ()
+pangoLayoutSetEllipsize (PangoLayoutPrim fpl) (PangoEllipsizeMode pem) = unsafeIOToPrim
+	$ withForeignPtr fpl \pl -> c_pango_layout_set_ellipsize pl pem
 
-pangoLayoutGetEllipsize :: PangoLayout -> IO PangoEllipsizeMode
-pangoLayoutGetEllipsize (PangoLayout fl) = PangoEllipsizeMode
+pangoLayoutGetEllipsize :: PangoLayout -> PangoEllipsizeMode
+pangoLayoutGetEllipsize (PangoLayout_ fl) = unsafePerformIO $ PangoEllipsizeMode
 	<$> withForeignPtr fl c_pango_layout_get_ellipsize
 
 foreign import ccall "pango_layout_set_ellipsize" c_pango_layout_set_ellipsize ::
@@ -264,15 +284,16 @@ instance PangoLayoutSetting Indent where
 	pangoLayoutSet l =
 		pangoLayoutSetIndent l . round . (* #{const PANGO_SCALE}) . getIndent
 	pangoLayoutGet l =
-		Indent . (/ #{const PANGO_SCALE}) . fromIntegral <$> pangoLayoutGetIndent l
+		Indent . (/ #{const PANGO_SCALE}) . fromIntegral $ pangoLayoutGetIndent l
 
-pangoLayoutSetIndent :: PangoLayout -> CInt -> IO ()
-pangoLayoutSetIndent (PangoLayout fl) idt =
-	withForeignPtr fl \pl -> c_pango_layout_set_indent pl idt
+pangoLayoutSetIndent ::
+	PrimMonad m => PangoLayoutPrim (PrimState m) -> CInt -> m ()
+pangoLayoutSetIndent (PangoLayoutPrim fl) idt = unsafeIOToPrim
+	$ withForeignPtr fl \pl -> c_pango_layout_set_indent pl idt
 
-pangoLayoutGetIndent :: PangoLayout -> IO CInt
-pangoLayoutGetIndent (PangoLayout fl) =
-	withForeignPtr fl c_pango_layout_get_indent
+pangoLayoutGetIndent :: PangoLayout -> CInt
+pangoLayoutGetIndent (PangoLayout_ fl) = unsafePerformIO
+	$ withForeignPtr fl c_pango_layout_get_indent
 
 foreign import ccall "pango_layout_set_indent" c_pango_layout_set_indent ::
 	Ptr PangoLayout -> CInt -> IO ()
@@ -286,15 +307,16 @@ instance PangoLayoutSetting Spacing where
 	pangoLayoutSet l = pangoLayoutSetSpacing l
 		. round . (* #{const PANGO_SCALE}) . getSpacing
 	pangoLayoutGet l = Spacing . (/ #{const PANGO_SCALE})
-		. fromIntegral <$> pangoLayoutGetSpacing l
+		. fromIntegral $ pangoLayoutGetSpacing l
 
-pangoLayoutSetSpacing :: PangoLayout -> CInt -> IO ()
-pangoLayoutSetSpacing (PangoLayout fl) sp =
-	withForeignPtr fl \pl -> c_pango_layout_set_spacing pl sp
+pangoLayoutSetSpacing ::
+	PrimMonad m => PangoLayoutPrim (PrimState m) -> CInt -> m ()
+pangoLayoutSetSpacing (PangoLayoutPrim fl) sp = unsafeIOToPrim
+	$ withForeignPtr fl \pl -> c_pango_layout_set_spacing pl sp
 
-pangoLayoutGetSpacing :: PangoLayout -> IO CInt
-pangoLayoutGetSpacing (PangoLayout fl) =
-	withForeignPtr fl c_pango_layout_get_spacing
+pangoLayoutGetSpacing :: PangoLayout -> CInt
+pangoLayoutGetSpacing (PangoLayout_ fl) = unsafePerformIO
+	$ withForeignPtr fl c_pango_layout_get_spacing
 
 foreign import ccall "pango_layout_set_spacing" c_pango_layout_set_spacing ::
 	Ptr PangoLayout -> CInt -> IO ()
@@ -315,15 +337,16 @@ newtype Justify = Justify { getJustify :: Bool } deriving Show
 
 instance PangoLayoutSetting Justify where
 	pangoLayoutSet l = pangoLayoutSetJustify l . getJustify
-	pangoLayoutGet l = Justify <$> pangoLayoutGetJustify l
+	pangoLayoutGet l = Justify $ pangoLayoutGetJustify l
 
-pangoLayoutSetJustify :: PangoLayout -> Bool -> IO ()
-pangoLayoutSetJustify (PangoLayout fl) b = withForeignPtr fl \pl ->
+pangoLayoutSetJustify ::
+	PrimMonad m => PangoLayoutPrim (PrimState m) -> Bool -> m ()
+pangoLayoutSetJustify (PangoLayoutPrim fl) b = unsafeIOToPrim $ withForeignPtr fl \pl ->
 	c_pango_layout_set_justify pl $ bool #{const FALSE} #{const TRUE} b
 
-pangoLayoutGetJustify :: PangoLayout -> IO Bool
-pangoLayoutGetJustify (PangoLayout fl) =
-	(<$> withForeignPtr fl c_pango_layout_get_justify) \case
+pangoLayoutGetJustify :: PangoLayout -> Bool
+pangoLayoutGetJustify (PangoLayout_ fl) = unsafePerformIO
+	$ (<$> withForeignPtr fl c_pango_layout_get_justify) \case
 		#{const FALSE} -> False
 		#{const TRUE} -> True
 		_ -> error "never occur"
@@ -338,15 +361,16 @@ newtype AutoDir = AutoDir { getAutoDir :: Bool } deriving Show
 
 instance PangoLayoutSetting AutoDir where
 	pangoLayoutSet l = pangoLayoutSetAutoDir l . getAutoDir
-	pangoLayoutGet l = AutoDir <$> pangoLayoutGetAutoDir l
+	pangoLayoutGet l = AutoDir $ pangoLayoutGetAutoDir l
 
-pangoLayoutSetAutoDir :: PangoLayout -> Bool -> IO ()
-pangoLayoutSetAutoDir (PangoLayout fl) b = withForeignPtr fl \pl ->
+pangoLayoutSetAutoDir ::
+	PrimMonad m => PangoLayoutPrim (PrimState m) -> Bool -> m ()
+pangoLayoutSetAutoDir (PangoLayoutPrim fl) b = unsafeIOToPrim $ withForeignPtr fl \pl ->
 	c_pango_layout_set_auto_dir pl $ bool #{const FALSE} #{const TRUE} b
 
-pangoLayoutGetAutoDir :: PangoLayout -> IO Bool
-pangoLayoutGetAutoDir (PangoLayout fl) =
-	(<$> withForeignPtr fl c_pango_layout_get_auto_dir) \case
+pangoLayoutGetAutoDir :: PangoLayout -> Bool
+pangoLayoutGetAutoDir (PangoLayout_ fl) = unsafePerformIO
+	$ (<$> withForeignPtr fl c_pango_layout_get_auto_dir) \case
 		#{const FALSE} -> False
 		#{const TRUE} -> True
 		_ -> error "never occur"
@@ -361,13 +385,14 @@ instance PangoLayoutSetting PangoAlignment where
 	pangoLayoutSet = pangoLayoutSetAlignment
 	pangoLayoutGet = pangoLayoutGetAlignment
 
-pangoLayoutSetAlignment :: PangoLayout -> PangoAlignment -> IO ()
-pangoLayoutSetAlignment (PangoLayout fpl) (PangoAlignment pa) =
-	withForeignPtr fpl \pl -> c_pango_layout_set_alignment pl pa
+pangoLayoutSetAlignment ::
+	PrimMonad m => PangoLayoutPrim (PrimState m) -> PangoAlignment -> m ()
+pangoLayoutSetAlignment (PangoLayoutPrim fpl) (PangoAlignment pa) = unsafeIOToPrim
+	$ withForeignPtr fpl \pl -> c_pango_layout_set_alignment pl pa
 
-pangoLayoutGetAlignment :: PangoLayout -> IO PangoAlignment
-pangoLayoutGetAlignment (PangoLayout fl) =
-	PangoAlignment <$> withForeignPtr fl c_pango_layout_get_alignment
+pangoLayoutGetAlignment :: PangoLayout -> PangoAlignment
+pangoLayoutGetAlignment (PangoLayout_ fl) = unsafePerformIO
+	$ PangoAlignment <$> withForeignPtr fl c_pango_layout_get_alignment
 
 foreign import ccall "pango_layout_set_alignment" c_pango_layout_set_alignment ::
 	Ptr PangoLayout -> #{type PangoAlignment} -> IO ()
@@ -379,14 +404,15 @@ instance PangoLayoutSetting PangoTabArray where
 	pangoLayoutSet = pangoLayoutSetTabs
 	pangoLayoutGet = pangoLayoutGetTabs
 
-pangoLayoutSetTabs :: PangoLayout -> PangoTabArray -> IO ()
-pangoLayoutSetTabs (PangoLayout fl) ta = unsafeIOToPrim
+pangoLayoutSetTabs ::
+	PrimMonad m => PangoLayoutPrim (PrimState m) -> PangoTabArray -> m ()
+pangoLayoutSetTabs (PangoLayoutPrim fl) ta = unsafeIOToPrim
 	$ withForeignPtr fl \pl -> ($ c_pango_layout_set_tabs pl) case ta of
 		PangoTabArrayNull -> ($ nullPtr)
 		PangoTabArray fta -> withForeignPtr fta
 
-pangoLayoutGetTabs :: PangoLayout -> IO PangoTabArray
-pangoLayoutGetTabs (PangoLayout fl) = unsafeIOToPrim
+pangoLayoutGetTabs :: PangoLayout -> PangoTabArray
+pangoLayoutGetTabs (PangoLayout_ fl) = unsafePerformIO
 	$ makePangoTabArray =<< withForeignPtr fl c_pango_layout_get_tabs
 
 foreign import ccall "pango_layout_set_tabs" c_pango_layout_set_tabs ::
@@ -402,15 +428,16 @@ instance PangoLayoutSetting SingleParagraphMode where
 	pangoLayoutSet l =
 		pangoLayoutSetSingleParagraphMode l . getSingleParagraphMode
 	pangoLayoutGet l =
-		SingleParagraphMode <$> pangoLayoutGetSingleParagraphMode l
+		SingleParagraphMode $ pangoLayoutGetSingleParagraphMode l
 
-pangoLayoutSetSingleParagraphMode :: PangoLayout -> Bool -> IO ()
-pangoLayoutSetSingleParagraphMode (PangoLayout fl) spm = unsafeIOToPrim
+pangoLayoutSetSingleParagraphMode ::
+	PrimMonad m => PangoLayoutPrim (PrimState m) -> Bool -> m ()
+pangoLayoutSetSingleParagraphMode (PangoLayoutPrim fl) spm = unsafeIOToPrim
 	$ withForeignPtr fl \pl ->
 		c_pango_layout_set_single_paragraph_mode pl (boolToGboolean spm)
 
-pangoLayoutGetSingleParagraphMode :: PangoLayout -> IO Bool
-pangoLayoutGetSingleParagraphMode (PangoLayout fl) = unsafeIOToPrim
+pangoLayoutGetSingleParagraphMode :: PangoLayout -> Bool
+pangoLayoutGetSingleParagraphMode (PangoLayout_ fl) = unsafePerformIO
 	$ (<$> withForeignPtr fl c_pango_layout_get_single_paragraph_mode) \case
 		#{const FALSE} -> False; #{const TRUE} -> True
 		_ -> error "never occur"
@@ -431,7 +458,7 @@ instance PangoLayoutInfo CharacterCount where
 	pangoLayoutInfo = (CharacterCount <$>) . pangoLayoutGetCharacterCount
 
 pangoLayoutGetCharacterCount :: PangoLayout -> IO CInt
-pangoLayoutGetCharacterCount (PangoLayout fpl) =
+pangoLayoutGetCharacterCount (PangoLayout_ fpl) =
 	withForeignPtr fpl c_pango_layout_get_character_count
 
 foreign import ccall "pango_layout_get_character_count"
@@ -443,7 +470,7 @@ instance PangoLayoutInfo IsEllipsized where
 	pangoLayoutInfo = (IsEllipsized <$>) . pangoLayoutIsEllipsized
 
 pangoLayoutIsEllipsized :: PangoLayout -> IO Bool
-pangoLayoutIsEllipsized (PangoLayout fl) =
+pangoLayoutIsEllipsized (PangoLayout_ fl) =
 	(<$> withForeignPtr fl c_pango_layout_is_ellipsized) \case
 		#{const FALSE} -> False
 		#{const TRUE} -> True
@@ -458,7 +485,7 @@ instance PangoLayoutInfo IsWrapped where
 	pangoLayoutInfo = (IsWrapped <$>) . pangoLayoutIsWrapped
 
 pangoLayoutIsWrapped :: PangoLayout -> IO Bool
-pangoLayoutIsWrapped (PangoLayout fl) =
+pangoLayoutIsWrapped (PangoLayout_ fl) =
 	(<$> withForeignPtr fl c_pango_layout_is_wrapped) \case
 		#{const FALSE} -> False
 		#{const TRUE} -> True
@@ -473,7 +500,7 @@ instance PangoLayoutInfo UnknownGlyphsCount where
 	pangoLayoutInfo = (UnknownGlyphsCount <$>) . pangoLayoutGetUnknownGlyphsCount
 
 pangoLayoutGetUnknownGlyphsCount :: PangoLayout -> IO CInt
-pangoLayoutGetUnknownGlyphsCount (PangoLayout fpl) =
+pangoLayoutGetUnknownGlyphsCount (PangoLayout_ fpl) =
 	withForeignPtr fpl c_pango_layout_get_unknown_glyphs_count
 
 foreign import ccall "pango_layout_get_unknown_glyphs_count"
@@ -553,7 +580,7 @@ foreign import ccall "pango_log_attr_to_struct" c_pango_log_attr_to_struct ::
 	Ptr PangoLogAttr -> Ptr PangoLogAttrStruct -> IO ()
 
 instance PangoLayoutInfo PangoLogAttrs where
-	pangoLayoutInfo = pangoLayoutGetLogAttrs
+	pangoLayoutInfo = pure . pangoLayoutGetLogAttrs
 
 data PangoLogAttrs = PangoLogAttrs (ForeignPtr PangoLogAttr) CInt deriving Show
 
@@ -564,9 +591,9 @@ mkPangoLogAttrs p n =
 foreign import ccall "g_free" c_g_free_pango_log_attr ::
 	Ptr PangoLogAttr -> IO ()
 
-pangoLayoutGetLogAttrs :: PangoLayout -> IO PangoLogAttrs
-pangoLayoutGetLogAttrs (PangoLayout fl) =
-	withForeignPtr fl \pl -> alloca \plas -> alloca \pn -> do
+pangoLayoutGetLogAttrs :: PangoLayout -> PangoLogAttrs
+pangoLayoutGetLogAttrs (PangoLayout_ fl) = unsafePerformIO
+	$ withForeignPtr fl \pl -> alloca \plas -> alloca \pn -> do
 		c_pango_layout_get_log_attrs pl plas pn
 		uncurry mkPangoLogAttrs =<< (,) <$> peek plas <*> peek pn
 
@@ -589,7 +616,7 @@ instance PangoLayoutInfo Extents where
 	pangoLayoutInfo = (uncurry Extents <$>) . pangoLayoutGetExtents
 
 pangoLayoutGetExtents :: PangoLayout -> IO (PangoRectangle, PangoRectangle)
-pangoLayoutGetExtents (PangoLayout fpl) = withForeignPtr fpl \pl -> do
+pangoLayoutGetExtents (PangoLayout_ fpl) = withForeignPtr fpl \pl -> do
 	irct <- mallocBytes #{size PangoRectangle}
 	lrct <- mallocBytes #{size PangoRectangle}
 	c_pango_layout_get_extents pl irct lrct
@@ -607,7 +634,7 @@ instance PangoLayoutInfo PixelExtents where
 	pangoLayoutInfo = (uncurry PixelExtents <$>) . pangoLayoutGetPixelExtents
 
 pangoLayoutGetPixelExtents :: PangoLayout -> IO (PangoRectanglePixel, PangoRectanglePixel)
-pangoLayoutGetPixelExtents (PangoLayout fpl) =
+pangoLayoutGetPixelExtents (PangoLayout_ fpl) =
 	withForeignPtr fpl \pl -> do
 		irct <- mallocBytes #{size PangoRectangle}
 		lrct <- mallocBytes #{size PangoRectangle}
@@ -626,7 +653,7 @@ instance PangoLayoutInfo LayoutSize where
 	pangoLayoutInfo = (uncurry LayoutSize <$>) . pangoLayoutGetSize
 
 pangoLayoutGetSize :: PangoLayout -> IO (PangoFixed, PangoFixed)
-pangoLayoutGetSize (PangoLayout fpl) =
+pangoLayoutGetSize (PangoLayout_ fpl) =
 	withForeignPtr fpl \pl -> alloca \pw -> alloca \ph -> do
 		c_pango_layout_get_size pl pw ph
 		(\w h -> (toPangoFixed w, toPangoFixed h)) <$> peek pw <*> peek ph
@@ -642,7 +669,7 @@ instance PangoLayoutInfo LayoutPixelSize where
 	pangoLayoutInfo = (uncurry LayoutPixelSize <$>) . pangoLayoutGetPixelSize
 
 pangoLayoutGetPixelSize :: PangoLayout -> IO (CInt, CInt)
-pangoLayoutGetPixelSize (PangoLayout fpl) =
+pangoLayoutGetPixelSize (PangoLayout_ fpl) =
 	withForeignPtr fpl \pl -> alloca \w -> alloca \h -> do
 		c_pango_layout_get_pixel_size pl w h
 		(,) <$> peek w <*> peek h
@@ -656,7 +683,7 @@ instance PangoLayoutInfo Baseline where
 	pangoLayoutInfo = (Baseline <$>) . pangoLayoutGetBaseline
 
 pangoLayoutGetBaseline :: PangoLayout -> IO CInt
-pangoLayoutGetBaseline (PangoLayout fpl) =
+pangoLayoutGetBaseline (PangoLayout_ fpl) =
 	withForeignPtr fpl c_pango_layout_get_baseline
 
 foreign import ccall "pango_layout_get_baseline" c_pango_layout_get_baseline ::
@@ -668,14 +695,14 @@ instance PangoLayoutInfo LineCount where
 	pangoLayoutInfo = (LineCount <$>) . pangoLayoutGetLineCount
 
 pangoLayoutGetLineCount :: PangoLayout -> IO CInt
-pangoLayoutGetLineCount (PangoLayout fpl) =
+pangoLayoutGetLineCount (PangoLayout_ fpl) =
 	withForeignPtr fpl c_pango_layout_get_line_count
 
 foreign import ccall "pango_layout_get_line_count" c_pango_layout_get_line_count ::
 	Ptr PangoLayout -> IO CInt
 
 pangoLayoutIndexToPos :: PangoLayout -> Int -> IO (Maybe PangoRectangle)
-pangoLayoutIndexToPos (PangoLayout fl) idx = withForeignPtr fl \pl -> do
+pangoLayoutIndexToPos (PangoLayout_ fl) idx = withForeignPtr fl \pl -> do
 	pos <- mallocBytes #{size PangoRectangle}
 	t <- c_pango_layout_get_text pl
 	is <- byteIndices =<< toCStringLen t
@@ -695,7 +722,7 @@ foreign import ccall "pango_layout_index_to_pos" c_pango_layout_index_to_pos ::
 	Ptr PangoLayout -> CInt -> Ptr PangoRectangle -> IO ()
 
 pangoLayoutIndexToLineX :: PangoLayout -> Int -> Bool -> IO (Maybe (CInt, PangoFixed))
-pangoLayoutIndexToLineX (PangoLayout fpl) idx tr =
+pangoLayoutIndexToLineX (PangoLayout_ fpl) idx tr =
 	withForeignPtr fpl \pl -> alloca \ln -> alloca \xpos -> do
 		t <- c_pango_layout_get_text pl
 		is <- byteIndices =<< toCStringLen t
@@ -710,7 +737,7 @@ foreign import ccall "pango_layout_index_to_line_x"
 	Ptr PangoLayout -> CInt -> #{type gboolean} -> Ptr CInt -> Ptr CInt -> IO ()
 
 pangoLayoutXyToIndex :: PangoLayout -> PangoFixed -> PangoFixed -> IO (Int, CInt, Bool)
-pangoLayoutXyToIndex (PangoLayout fpl) x_ y_ =
+pangoLayoutXyToIndex (PangoLayout_ fpl) x_ y_ =
 	withForeignPtr fpl \pl -> alloca \idx -> alloca \tr -> do
 		t <- c_pango_layout_get_text pl
 		is <- byteIndices =<< toCStringLen t
@@ -723,7 +750,7 @@ foreign import ccall "pango_layout_xy_to_index" c_pango_layout_xy_to_index ::
 	Ptr PangoLayout -> CInt -> CInt -> Ptr CInt -> Ptr CInt -> IO #type gboolean
 
 pangoLayoutGetCursorPos :: PangoLayout -> Int -> IO (Maybe (PangoRectangle, PangoRectangle))
-pangoLayoutGetCursorPos (PangoLayout fpl) idx = withForeignPtr fpl \pl -> do
+pangoLayoutGetCursorPos (PangoLayout_ fpl) idx = withForeignPtr fpl \pl -> do
 	spos <- mallocBytes #{size PangoRectangle}
 	wpos <- mallocBytes #{size PangoRectangle}
 	t <- c_pango_layout_get_text pl
@@ -744,7 +771,7 @@ data Dir = L | R deriving Show
 
 pangoLayoutMoveCursorVisually ::
 	PangoLayout -> Bool -> Int -> Bool -> Dir -> IO (Maybe (MinMax Int, CInt))
-pangoLayoutMoveCursorVisually (PangoLayout fpl) str oidx otr dir =
+pangoLayoutMoveCursorVisually (PangoLayout_ fpl) str oidx otr dir =
 	withForeignPtr fpl \pl -> alloca \nidx -> alloca \ntr -> do
 		t <- c_pango_layout_get_text pl
 		is <- byteIndices =<< toCStringLen t

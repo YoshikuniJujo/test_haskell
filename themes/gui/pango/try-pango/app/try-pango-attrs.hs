@@ -52,7 +52,7 @@ main = do
 
 --	pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは、世界!"
 	pangoLayoutSet pl al'
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	al2 <- pangoTextAttrListNew "源ノ角ゴシック 思源黑體 思源黑体"
 --	at2 <- pangoAttrNew $ Family "Source Han Sans VF"
@@ -63,14 +63,14 @@ main = do
 
 	cairoMoveTo cr 0 70
 	pangoLayoutSet pl al2'
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	at4 <- pangoAttrNew $ pangoLanguageFromString "zh-tw"
 	pangoTextAttrListInsert al2 at4 0 maxBound
 
 	cairoMoveTo cr 0 90
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al2
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	al3 <- pangoTextAttrListNew "Hello, world! こんにちは、世界!"
 	at5 <- pangoAttrNew pangoStyleOblique
@@ -80,7 +80,7 @@ main = do
 
 	cairoMoveTo cr 0 110
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al3
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	al4 <- pangoTextAttrListNew "華華華華華華華華華華華華華! こんにちは、世界!"
 	at7 <- pangoAttrNew $ Family "Source Han Sans VF"
@@ -93,7 +93,7 @@ main = do
 
 	cairoMoveTo cr 0 130
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al4
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	fd <- pangoFontDescriptionNew
 --	pangoFontDescriptionSet fd $ Family "Source Han Sans VF"
@@ -107,7 +107,7 @@ main = do
 
 	cairoMoveTo cr 0 150
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al5
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	al6 <- pangoTextAttrListNew . pangoLanguageGetSampleString =<< pangoLanguageGetDefault
 	at9 <- pangoAttrNew $ ForegroundColor 0 (maxBound `div` 2) 0
@@ -117,7 +117,7 @@ main = do
 
 	cairoMoveTo cr 0 170
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al6
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	al7 <- pangoTextAttrListNew . pangoLanguageGetSampleString =<< pangoLanguageGetDefault
 	at11 <- pangoAttrNew $ Strikethrough True
@@ -127,7 +127,7 @@ main = do
 
 	cairoMoveTo cr 0 190
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al7
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	al8 <- pangoTextAttrListNew . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
 	applyInOrder' al8 $ (`zip` [6, 12 .. ]) [
@@ -139,7 +139,7 @@ main = do
 
 	cairoMoveTo cr 0 210
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al8
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	al9 <- pangoTextAttrListNew . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
 	at13 <- pangoAttrNew $ Shape
@@ -150,29 +150,29 @@ main = do
 
 	cairoMoveTo cr 0 230
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al9
-	print =<< pangoLayoutGetExtents pl
-	pangoCairoShowLayout cr pl
+	print =<< pangoLayoutGetExtents =<< pangoLayoutFreeze pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	al10 <- pangoTextAttrListNew . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
 	applyInOrder' al10 $ zip (Scale <$> [0.7, 0.8 .. 2.4] <> [2.3, 2.2 ..]) [1, 2 .. 42]
 
 	cairoMoveTo cr 0 240
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al10
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	al11 <- pangoTextAttrListNew . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
 	applyInOrder' al11 $ zip (Rise <$> [0, 0.5 .. 7.5] <> [7.0, 6.5 .. ]) [1 .. 42]
 
 	cairoMoveTo cr 0 280
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al11
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	al12 <- pangoTextAttrListNew . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
 	applyInOrder' al12 $ zip (LetterSpacing <$> [0, 0.5 .. 7.5] <> [7.0, 6.5 .. ]) [1 .. 42]
 
 	cairoMoveTo cr 0 310
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al12
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	al13 <- pangoTextAttrListNew . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
 	applyInOrder' al13 $ (`zip` [5, 10 .. 42]) [
@@ -181,7 +181,7 @@ main = do
 
 	cairoMoveTo cr 0 330
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al13
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 --	al14 <- pangoAttrListThaw =<< pangoAttrListFreeze al13
 --	pangoAttrListInsert al14 =<< pangoAttrNew PangoGravityHintNatural
@@ -228,7 +228,7 @@ main = do
 	cairoMoveTo cr 0 370
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al14
 	pangoLayoutSet @T.Text pl "あいうえおかきくけこabcdefg"
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	al15 <- pangoTextAttrListNew . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
 	applyInOrder' al15 $ zip (ForegroundAlpha <$> [maxBound `div` 42, maxBound `div` 21 .. ]) [1 .. 42]
@@ -236,7 +236,7 @@ main = do
 	cairoMoveTo cr 0 400
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al15
 	pangoLayoutSet pl . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	al16 <- pangoTextAttrListNew . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
 	(\a -> pangoTextAttrListChange al16 a 0 maxBound) =<< pangoAttrNew (BackgroundColor 0 (maxBound `div` 2) 0)
@@ -244,7 +244,7 @@ main = do
 
 	cairoMoveTo cr 0 430
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al16
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	tal <- pangoTextAttrListNew "Hello"
 	attr <- pangoAttrNew $ Size 20
@@ -252,7 +252,7 @@ main = do
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze tal
 
 	cairoMoveTo cr 0 450
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	tal' <- pangoTextAttrListNew "あいうえお"
 	attr' <- pangoAttrNew $ Size 20
@@ -260,7 +260,7 @@ main = do
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze tal'
 
 	cairoMoveTo cr 0 470
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-attrs.png" $ cairoArgb32ToJuicyRGBA8 a

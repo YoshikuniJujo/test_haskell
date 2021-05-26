@@ -53,7 +53,7 @@ main = getArgs >>= \case
 		pangoLayoutSetFontDescription pl fd'
 		pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは、世界!\n\x1f9a5"
 
-		pangoCairoShowLayout cr pl
+		pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 		cairoImageSurfaceGetCairoImage s >>= \case
 			CairoImageArgb32 a -> writePng "try-pango-fonts.png" $ cairoArgb32ToJuicyRGBA8 a

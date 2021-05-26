@@ -130,6 +130,7 @@ todo
 * [x] `pango_layout_set_markup_with_accel`
 * [x] use `PangoRectanglePixel`
 	+ [x] `data PixelExtents`
+* [x] try to use c-struct in `PangoLayout`
 
 not todo yet
 ------------

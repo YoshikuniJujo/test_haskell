@@ -36,19 +36,19 @@ main = do
 
 	pl <- pangoCairoCreateLayout cr
 	pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは、世界!"
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	pangoLayoutSet @T.Text pl "a\tb\tc\td\te\tf\tg"
 	cairoMoveTo cr 0 50
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	cairoMoveTo cr 0 70
 	pangoLayoutSet pl tad'
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	cairoMoveTo cr 0 90
 	pangoLayoutSet pl tai'
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-tab-array.png" $ cairoArgb32ToJuicyRGBA8 a

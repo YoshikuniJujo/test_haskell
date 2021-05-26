@@ -22,7 +22,7 @@ main = do
 
 	pl <- pangoCairoCreateLayout cr
 	pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは、世界!"
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-simple.png" $ cairoArgb32ToJuicyRGBA8 a

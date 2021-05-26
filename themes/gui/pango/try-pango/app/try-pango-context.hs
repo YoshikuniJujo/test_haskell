@@ -57,7 +57,7 @@ main = do
 	pangoLayoutSetFontDescription pl =<< pangoFontDescriptionFreeze pfd
 
 	pangoLayoutSet @T.Text pl "こんにちは世界!"
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 --	void $ writeDynamicPng "tmp2.png" =<< cairoImageSurfaceGetImage s
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-context.png" $ cairoArgb32ToJuicyRGBA8 a

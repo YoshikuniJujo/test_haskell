@@ -25,14 +25,14 @@ import Graphics.Pango.PangoRectangle
 
 
 pangoLayoutGetLine :: PangoLayout -> CInt -> IO PangoLayoutLine
-pangoLayoutGetLine (PangoLayout fpl) ln =
+pangoLayoutGetLine (PangoLayout_ fpl) ln =
 	makePangoLayoutLine0 =<< withForeignPtr fpl \pl -> c_pango_layout_get_line_readonly pl ln
 
 foreign import ccall "pango_layout_get_lines_readonly" c_pango_layout_get_lines_readonly ::
 	Ptr PangoLayout -> IO (Ptr (GSList PangoLayoutLine))
 
 pangoLayoutGetLines :: PangoLayout -> IO [PangoLayoutLine]
-pangoLayoutGetLines (PangoLayout fpl) =
+pangoLayoutGetLines (PangoLayout_ fpl) =
 	withForeignPtr fpl \pl ->
 		mapM makePangoLayoutLine0 =<< g_slist_to_list =<< c_pango_layout_get_lines_readonly pl
 
@@ -40,7 +40,7 @@ foreign import ccall "pango_layout_get_iter" c_pango_layout_get_iter ::
 	Ptr PangoLayout -> IO (Ptr (PangoLayoutIter s))
 
 pangoLayoutGetIter :: PrimMonad m => PangoLayout -> m (PangoLayoutIter (PrimState m))
-pangoLayoutGetIter (PangoLayout fpl) = unsafeIOToPrim
+pangoLayoutGetIter (PangoLayout_ fpl) = unsafeIOToPrim
 	$ makePangoLayoutIter =<< withForeignPtr fpl c_pango_layout_get_iter
 
 foreign import ccall "pango_layout_iter_next_run" c_pango_layout_iter_next_run ::

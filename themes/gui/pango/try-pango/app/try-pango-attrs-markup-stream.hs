@@ -75,7 +75,7 @@ main = do
 
 			pl <- pangoCairoCreateLayout cr
 			pangoLayoutSet pl tpal
-			pangoCairoShowLayout cr pl
+			pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 			cairoImageSurfaceGetCairoImage s >>= \case
 				CairoImageArgb32 a -> writePng "try-pango-attrs-markup-stream.png" $ cairoArgb32ToJuicyRGBA8 a

@@ -43,13 +43,13 @@ main = do
 	pangoFontDescriptionSet pfd $ Family "sans-serif"
 	pangoFontDescriptionSet pfd $ Size 30
 	pangoLayoutSet pl =<< pangoFontDescriptionFreeze pfd
-	print @(Maybe Family) . pangoFontDescriptionGet =<< pangoLayoutGet pl
+	print @(Maybe Family) . pangoFontDescriptionGet . pangoLayoutGet =<< pangoLayoutFreeze pl
 
 	pangoLayoutSetWidth pl (200 * pangoScale)
 	pangoLayoutSetEllipsize pl pangoEllipsizeMiddle
 	pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは世界!"
 	cairoMoveTo cr 100 50
-	pangoCairoShowLayout cr pl
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	pl2 <- pangoCairoCreateLayout cr
 	pfd2 <- pangoFontDescriptionNew
@@ -62,7 +62,7 @@ main = do
 	pangoLayoutSetAlignment pl2 pangoAlignCenter
 	pangoLayoutSet pl2 $ T.pack someText
 	cairoMoveTo cr 100 150
-	let	fpl2 = pl2
+	fpl2 <- pangoLayoutFreeze pl2
 	putStrLn "0, 1, 5, 6"
 	print =<< pangoLayoutIndexToPos fpl2 0
 	print =<< pangoLayoutIndexToPos fpl2 1
@@ -155,39 +155,39 @@ main = do
 	pangoLayoutSetTabs pl3 $ tabArray True [100, 200, 300, 400, 500, 600]
 	pangoLayoutSet @T.Text pl3 "タブの\tテスト\tだよ\tHello,\tworld\t!"
 	cairoMoveTo cr 100 540
-	pangoCairoShowLayout cr pl3
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
 	cairoMoveTo cr 100 560
 	pangoLayoutSetTabs pl3 . tabArray False $ (* 1024) <$> [100, 210, 300, 400, 500, 600]
-	pangoCairoShowLayout cr pl3
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
 	pangoLayoutSetTabs pl3 $ tabArray False $ (* pangoScale) <$> [100, 200, 300, 350, 450, 490, 490, 490, 490]
 	cairoMoveTo cr 100 580
-	pangoCairoShowLayout cr pl3
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
 	cairoMoveTo cr 100 600
 	pangoLayoutSet @T.Text pl3
 		"タブのテストテストテストテスト\tテスト\tだよ\tHello,\tworld\t!\t!\t!\t!\t!"
-	pangoCairoShowLayout cr pl3
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
 	cairoMoveTo cr 100 620
 	pangoLayoutSetTabs pl3 $ tabArray True [100, 200, 0, 0]
 	pangoLayoutSet @T.Text pl3 "a\tb\tc\td\te\tf\tg"
-	pangoCairoShowLayout cr pl3
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
 	cairoMoveTo cr 100 640
 	pangoLayoutSetTabs pl3 $ tabArray True [100, 200, 300, 400]
-	pangoCairoShowLayout cr pl3
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
 	cairoMoveTo cr 100 660
 	pangoLayoutSetTabs pl3 $ tabArray True [100, 200]
-	pangoCairoShowLayout cr pl3
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
 	pl4 <- pangoCairoCreateLayout cr
 	pangoLayoutSet @T.Text pl4 "try\nsingle\tparagraph\nmode"
 	pangoLayoutSetSingleParagraphMode pl4 True
 	cairoMoveTo cr 100 675
-	pangoCairoShowLayout cr pl4
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl4
 
 	pl5 <- pangoCairoCreateLayout cr
 	pangoLayoutSet @T.Text pl5 $
@@ -195,7 +195,7 @@ main = do
 		"Bad1 \x1f16f Bad2 \x1f16e fffi"
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0 1
 	cairoMoveTo cr 100 700
-	let	fpl5 = pl5
+	fpl5 <- pangoLayoutFreeze pl5
 	print =<< pangoLayoutGetUnknownGlyphsCount fpl5
 	pangoCairoShowLayout cr fpl5
 
