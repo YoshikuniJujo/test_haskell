@@ -29,4 +29,5 @@ function
 todo
 ----
 
+* [x] make module `Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter`
 * [ ] repair about `PangoLayoutIter`

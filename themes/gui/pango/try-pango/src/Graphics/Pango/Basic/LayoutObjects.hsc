@@ -16,6 +16,7 @@ import Graphics.Pango.Types
 import System.Glib.SinglyLinkedLists
 
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
+import Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter
 
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 

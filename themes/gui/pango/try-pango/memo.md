@@ -61,7 +61,7 @@ todo
 	+ [x] `Graphics.Pango.Basic.LayoutObjects.PangoLayout`
 * [ ] use newtype type for ffi
 * [ ] use `Fixed` instead of `Double`
-* [ ] Basic Pango Interfaces
+* [x] Basic Pango Interfaces
 	+ [x] Fonts
 		- [x] PangoFontDescription
 	+ [x] Text Attributes
@@ -81,6 +81,7 @@ todo
 		- [x] `pango_context_get_matrix`
 		- [x] `pango_context_set_matrix`
 	+ [x] Vertical Text
+* [ ] `Graphics.Pango.LayoutObjects.PangoLayoutIter`
 * [ ] Rendering with Pango
 	+ [ ] Cairo Rendering
 * [ ] think about package name
