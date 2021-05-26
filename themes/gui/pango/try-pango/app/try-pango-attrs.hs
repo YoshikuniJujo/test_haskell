@@ -97,13 +97,13 @@ main = do
 
 	fd <- pangoFontDescriptionNew
 --	pangoFontDescriptionSet fd $ Family "Source Han Sans VF"
-	pangoFontDescriptionSet fd $ pangoGravityEast
+	pangoFontDescriptionSet fd $ PangoGravityEast
 	al5 <- pangoTextAttrListNew "あいうえおabcdefg"
 	at8 <- pangoAttrFontDescNew fd
 	pangoTextAttrListInsert al5 at8 0 8
 
 	(\a -> pangoTextAttrListInsert al5 a 5 maxBound)
-		=<< pangoAttrNew pangoGravityNorth
+		=<< pangoAttrNew PangoGravityNorth
 
 	cairoMoveTo cr 0 150
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al5
@@ -176,53 +176,53 @@ main = do
 
 	al13 <- pangoTextAttrListNew . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
 	applyInOrder' al13 $ (`zip` [5, 10 .. 42]) [
-		pangoGravitySouth, pangoGravityEast, pangoGravityNorth,
-		pangoGravityWest ] -- pangoGravityAuto ]
+		PangoGravitySouth, PangoGravityEast, PangoGravityNorth,
+		PangoGravityWest ] -- PangoGravityAuto ]
 
 	cairoMoveTo cr 0 330
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al13
 	pangoCairoShowLayout cr pl
 
 --	al14 <- pangoAttrListThaw =<< pangoAttrListFreeze al13
---	pangoAttrListInsert al14 =<< pangoAttrNew pangoGravityHintNatural
---	pangoAttrListInsert al14 =<< pangoAttrNew pangoGravityHintLine
---	pangoAttrListInsertBefore al14 =<< pangoAttrNew pangoGravityHintStrong
+--	pangoAttrListInsert al14 =<< pangoAttrNew PangoGravityHintNatural
+--	pangoAttrListInsert al14 =<< pangoAttrNew PangoGravityHintLine
+--	pangoAttrListInsertBefore al14 =<< pangoAttrNew PangoGravityHintStrong
 
 	al14 <- pangoTextAttrListNew . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
 	(\a -> pangoTextAttrListInsert al14 a 0 maxBound) =<< pangoAttrNew (Family "Source Han Sans VF")
-	(\a -> pangoTextAttrListInsert al14 a 3 maxBound) =<< pangoAttrNew pangoGravityEast
+	(\a -> pangoTextAttrListInsert al14 a 3 maxBound) =<< pangoAttrNew PangoGravityEast
 
 	{-
 	applyInOrder al14 $ (`zip` [6, 12 ..]) [
-		pangoGravitySouth, pangoGravityEast, pangoGravityNorth,
-		pangoGravityWest ] -- pangoGravityAuto ]
+		PangoGravitySouth, PangoGravityEast, PangoGravityNorth,
+		PangoGravityWest ] -- PangoGravityAuto ]
 		-}
 	{-
-	pangoAttrListInsert al14 =<< pangoAttrNew pangoGravityHintLine
+	pangoAttrListInsert al14 =<< pangoAttrNew PangoGravityHintLine
 	pangoAttrListInsert al14 =<< do
-		a <- pangoAttrNew pangoGravitySouth
+		a <- pangoAttrNew PangoGravitySouth
 		a <$ do	pangoAttributeSetStartIndex a 0
 			pangoAttributeSetEndIndex a 5
-	pangoAttrListInsert al14 =<< pangoAttrNew pangoGravityHintLine
+	pangoAttrListInsert al14 =<< pangoAttrNew PangoGravityHintLine
 	pangoAttrListInsert al14 =<< do
-		a <- pangoAttrNew pangoGravityEast
+		a <- pangoAttrNew PangoGravityEast
 		a <$ do	pangoAttributeSetStartIndex a 5
 			pangoAttributeSetEndIndex a 10
-	pangoAttrListInsert al14 =<< pangoAttrNew pangoGravityHintLine
+	pangoAttrListInsert al14 =<< pangoAttrNew PangoGravityHintLine
 	pangoAttrListInsert al14 =<< do
-		a <- pangoAttrNew pangoGravityNorth
+		a <- pangoAttrNew PangoGravityNorth
 		a <$ do	pangoAttributeSetStartIndex a 10
 			pangoAttributeSetEndIndex a 15
 	pangoAttrListInsert al14 =<< do
-		a <- pangoAttrNew pangoGravityHintStrong
+		a <- pangoAttrNew PangoGravityHintStrong
 		pure a
 --		a <$ do	pangoAttributeSetStartIndex a 15
 	pangoAttrListInsert al14 =<< do
-		a <- pangoAttrNew pangoGravityNorth
+		a <- pangoAttrNew PangoGravityNorth
 		pure a
 		a <$ do	pangoAttributeSetStartIndex a 1
 --			pangoAttributeSetEndIndex a 20
-	pangoAttrListInsert al14 =<< pangoAttrNew pangoGravityHintNatural
+	pangoAttrListInsert al14 =<< pangoAttrNew PangoGravityHintNatural
 			-}
 
 	cairoMoveTo cr 0 370

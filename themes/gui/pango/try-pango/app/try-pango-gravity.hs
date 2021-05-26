@@ -30,7 +30,7 @@ main = do
 	cairoRotate cr (pi / 2)
 
 	ctx <- pangoCairoCreateContext cr
-	pangoContextSet ctx $ BaseGravity pangoGravityEast
+	pangoContextSet ctx $ BaseGravity PangoGravityEast
 	pangoContextSet ctx sourceHanSans
 	pl <- pangoLayoutNew ctx
 	cairoMoveTo cr 5 50

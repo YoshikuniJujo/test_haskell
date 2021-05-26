@@ -109,9 +109,9 @@ readSize = \case
 
 readGravity :: String -> PangoGravity
 readGravity = \case
-	"south" -> pangoGravitySouth
-	"east" -> pangoGravityEast
-	"north" -> pangoGravityNorth
-	"west" -> pangoGravityWest
-	"auto" -> pangoGravityAuto
-	_ -> pangoGravityAuto
+	"south" -> PangoGravitySouth
+	"east" -> PangoGravityEast
+	"north" -> PangoGravityNorth
+	"west" -> PangoGravityWest
+	"auto" -> PangoGravityAuto
+	_ -> PangoGravityAuto

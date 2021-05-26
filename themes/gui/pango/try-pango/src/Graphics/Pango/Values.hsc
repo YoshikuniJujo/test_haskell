@@ -1,7 +1,10 @@
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Values where
 
+import Foreign.C.Enum
 import Data.Word
 
 #include <pango/pango.h>
@@ -34,10 +37,12 @@ newtype PangoStretch = PangoStretch #{type PangoStretch} deriving Show
 	PANGO_STRETCH_SEMI_EXPANDED, PANGO_STRETCH_EXPANDED, \
 	PANGO_STRETCH_EXTRA_EXPANDED, PANGO_STRETCH_ULTRA_EXPANDED
 
-newtype PangoGravity = PangoGravity #{type PangoGravity} deriving Show
-
-#enum PangoGravity, PangoGravity, PANGO_GRAVITY_SOUTH, PANGO_GRAVITY_EAST, \
-	PANGO_GRAVITY_NORTH, PANGO_GRAVITY_WEST, PANGO_GRAVITY_AUTO
+enum "PangoGravity" ''#{type PangoGravity} [''Show] [
+	("PangoGravitySouth", #{const PANGO_GRAVITY_SOUTH}),
+	("PangoGravityEast", #{const PANGO_GRAVITY_EAST}),
+	("PangoGravityNorth", #{const PANGO_GRAVITY_NORTH}),
+	("PangoGravityWest", #{const PANGO_GRAVITY_WEST}),
+	("PangoGravityAuto", #{const PANGO_GRAVITY_AUTO}) ]
 
 newtype PangoGravityHint = PangoGravityHint #{type PangoGravityHint} deriving Show
 
