@@ -27,17 +27,8 @@ struct "PangoRectangle" #{size PangoRectangle}
 	[''Show]
 
 c_pango_rectangle_copy :: Ptr PangoRectangle -> IO (Ptr PangoRectangle)
-c_pango_rectangle_copy s = do
-	d <- mallocBytes #{size PangoRectangle}
-	#{poke PangoRectangle, x} d
-		=<< (#{peek PangoRectangle, x} s :: IO CInt)
-	#{poke PangoRectangle, y} d
-		=<< (#{peek PangoRectangle, y} s :: IO CInt)
-	#{poke PangoRectangle, width} d
-		=<< (#{peek PangoRectangle, width} s :: IO CInt)
-	#{poke PangoRectangle, height} d
-		=<< (#{peek PangoRectangle, height} s :: IO CInt)
-	pure d
+c_pango_rectangle_copy s = mallocBytes #{size PangoRectangle} >>= \d ->
+	d <$ copyBytes d s #{size PangoRectangle}
 
 c_pango_rectangle_free :: Ptr PangoRectangle -> IO ()
 c_pango_rectangle_free = free
