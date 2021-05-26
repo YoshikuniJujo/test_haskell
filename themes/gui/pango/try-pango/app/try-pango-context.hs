@@ -1,16 +1,19 @@
-{-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
+import Control.Monad.ST
 import Codec.Picture
 
 import Graphics.Cairo.Drawing.CairoT
+import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
 
 import Graphics.Pango.Basic.Rendering
+import Graphics.Pango.Basic.GlyphStorage.PangoMatrix
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
@@ -24,9 +27,25 @@ import qualified Data.Text as T
 
 main :: IO ()
 main = do
-	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
+	s <- cairoImageSurfaceCreate cairoFormatArgb32 700 600
 	cr <- cairoCreate s
+	cairoScale cr 2.5 2
+	cairoRotate cr (pi / 4)
+	cairoTranslate cr 60 0
 	cxt <- pangoCairoCreateContext cr
+
+	cm <- pangoContextGet cxt
+	print cm
+	print $ pangoMatrixFromNullable cm
+
+{-
+	pangoContextSet cxt . pangoMatrixToNullable . Just
+		. (`pangoMatrixRotatePure` Degree 45) $ PangoMatrix 2 0 0 2 0 0
+
+	cm <- pangoContextGet cxt
+	print cm
+	print $ pangoMatrixFromNullable cm
+-}
 
 	pangoContextSetFontDescription cxt PangoFontDescriptionNull
 
@@ -42,3 +61,9 @@ main = do
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-context.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
+
+pangoMatrixRotatePure :: PangoMatrix -> Angle -> PangoMatrix
+pangoMatrixRotatePure m a = runST do
+	mp <- pangoMatrixThaw m
+	pangoMatrixRotate mp a
+	pangoMatrixFreeze mp

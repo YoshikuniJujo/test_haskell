@@ -56,3 +56,4 @@ todo
 * [x] `pango_context_set_matrix`
 * [x] define `PangoMatrixNullable`
 * [x] use `PangoMatrixNullable`
+* [x] make sample of `instance PangoContextSetting PangoMatrixNullable`
