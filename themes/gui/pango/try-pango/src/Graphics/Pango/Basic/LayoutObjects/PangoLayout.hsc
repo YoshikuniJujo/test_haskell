@@ -67,6 +67,15 @@ pangoLayoutNew (PangoContext fc) = unsafeIOToPrim
 foreign import ccall "pango_layout_new" c_pango_layout_new ::
 	Ptr PangoContext -> IO (Ptr PangoLayout)
 
+pangoLayoutContextChanged ::
+	PrimMonad m => PangoLayoutPrim (PrimState m) -> m ()
+pangoLayoutContextChanged (PangoLayoutPrim fl) = unsafeIOToPrim
+	$ withForeignPtr fl c_pango_layout_context_changed
+
+foreign import ccall "pango_layout_context_changed"
+	c_pango_layout_context_changed ::
+	Ptr PangoLayout -> IO ()
+
 class PangoLayoutSetting s where
 	pangoLayoutSet ::
 		PrimMonad m => PangoLayoutPrim (PrimState m) -> s -> m ()
