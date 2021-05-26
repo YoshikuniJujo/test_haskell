@@ -11,7 +11,7 @@ Cairo Rendering memo
 review
 ------
 
-* [ ] pangoCairoCreateContext
+* [x] pangoCairoCreateContext
 * [ ] pangoCairoUpdateContext
 * [ ] pangoCairoCreateLayout
 * [ ] pangoCairoUpdateLayout

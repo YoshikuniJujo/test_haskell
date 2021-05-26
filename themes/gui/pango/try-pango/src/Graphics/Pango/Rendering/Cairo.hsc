@@ -15,9 +15,10 @@ import Data.CairoContext
 import Graphics.Pango.Basic.Rendering
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 
-pangoCairoCreateContext :: CairoT RealWorld -> IO PangoContext
-pangoCairoCreateContext (CairoT fcr) = withForeignPtr fcr \cr ->
-	mkPangoContext =<< c_pango_cairo_create_context cr
+pangoCairoCreateContext :: PrimMonad m => CairoT (PrimState m) -> m PangoContext
+pangoCairoCreateContext (CairoT fcr) = unsafeIOToPrim
+	$ withForeignPtr fcr \pcr ->
+		mkPangoContext =<< c_pango_cairo_create_context pcr
 
 foreign import ccall "pango_cairo_create_context"
 	c_pango_cairo_create_context :: Ptr (CairoT s) -> IO (Ptr PangoContext)
