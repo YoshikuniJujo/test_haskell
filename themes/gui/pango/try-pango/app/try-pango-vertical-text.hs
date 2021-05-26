@@ -4,7 +4,9 @@
 module Main where
 
 import Control.Monad.ST
+import Graphics.Pango.Values
 import Graphics.Pango.Basic.GlyphStorage.PangoMatrix
+import Graphics.Pango.Basic.ScriptsAndLanguages.PangoScript
 import Graphics.Pango.Basic.VerticalText
 
 unit :: PangoMatrix
@@ -22,6 +24,11 @@ main = do
 	print . pangoGravityGetForMatrix . pangoMatrixRotatePure unit $ Degree 240
 	print . pangoGravityGetForMatrix . pangoMatrixRotatePure unit $ Degree 300
 	print . pangoGravityGetForMatrix . pangoMatrixRotatePure unit $ Degree 330
+
+	print $ pangoGravityGetForScript
+		PangoScriptHan PangoGravitySouth PangoGravityHintNatural
+	print $ pangoGravityGetForScript
+		PangoScriptHan PangoGravityWest PangoGravityHintNatural
 
 pangoMatrixRotatePure :: PangoMatrix -> Angle -> PangoMatrix
 pangoMatrixRotatePure m a = runST do
