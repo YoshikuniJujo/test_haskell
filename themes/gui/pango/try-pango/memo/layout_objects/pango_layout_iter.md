@@ -33,7 +33,7 @@ todo
 * [x] repair about `PangoLayoutIter`
 * [ ] move functions to this module
 	+ [x] pangoLayoutGetIter
-	+ [ ] pangoLayoutIterNextRun
+	+ [x] pangoLayoutIterNextRun
 	+ [ ] pangoLayoutIterNextChar
 	+ [ ] pangoLayoutIterNextCluster
 	+ [ ] pangoLayoutIterNextLine
