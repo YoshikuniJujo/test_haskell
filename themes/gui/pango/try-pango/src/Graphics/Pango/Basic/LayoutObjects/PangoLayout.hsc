@@ -617,10 +617,6 @@ pangoLogAttrsGetLogAttr (PangoLogAttrs fla sz) i
 	| 0 <= i && i < fromIntegral sz = Just $ PangoLogAttr_ fla i
 	| otherwise = Nothing
 
-data Extents = Extents {
-	extentsInkRect :: PangoRectangle,
-	extentsLogicalRect :: PangoRectangle } deriving Show
-
 instance PangoLayoutInfo Extents where
 	pangoLayoutInfo = (uncurry Extents <$>) . pangoLayoutGetExtents
 
@@ -634,10 +630,6 @@ pangoLayoutGetExtents (PangoLayout_ fpl) = withForeignPtr fpl \pl -> do
 
 foreign import ccall "pango_layout_get_extents" c_pango_layout_get_extents ::
 	Ptr PangoLayout -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
-
-data PixelExtents = PixelExtents {
-	pixelExtentsInkRect :: PangoRectanglePixel,
-	pixelExtentsLogicalRect :: PangoRectanglePixel } deriving Show
 
 instance PangoLayoutInfo PixelExtents where
 	pangoLayoutInfo = (uncurry PixelExtents <$>) . pangoLayoutGetPixelExtents

@@ -71,3 +71,11 @@ c_pango_rectangle_pixel_free = c_pango_rectangle_free . castPtr
 
 structPrim "PangoRectanglePixel" 'c_pango_rectangle_pixel_copy
 	'c_pango_rectangle_pixel_free [''Show]
+
+data Extents = Extents {
+	extentsInkRect :: PangoRectangle,
+	extentsLogicalRect :: PangoRectangle } deriving Show
+
+data PixelExtents = PixelExtents {
+	pixelExtentsInkRect :: PangoRectanglePixel,
+	pixelExtentsLogicalRect :: PangoRectanglePixel } deriving Show
