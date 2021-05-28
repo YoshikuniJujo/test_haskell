@@ -38,7 +38,7 @@ todo
 	+ [x] pangoLayoutIterNextCluster
 	+ [x] pangoLayoutIterNextLine
 	+ [x] pangoLayoutIterAtLastLine
-	+ [ ] pangoLayoutIterGetIndex
+	+ [x] pangoLayoutIterGetIndex
 	+ [ ] pangoLayoutIterGetBaseline
 	+ [ ] others
 * [ ] others

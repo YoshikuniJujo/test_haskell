@@ -5,6 +5,7 @@ module Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter where
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
+import Foreign.C.Types
 import Data.Int
 
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
@@ -53,20 +54,28 @@ foreign import ccall "pango_layout_iter_next_cluster"
 	Ptr PangoLayoutIter -> IO #type gboolean
 
 pangoLayoutIterNextLine :: PangoLayoutIter -> IO Bool
-pangoLayoutIterNextLine (PangoLayoutIter fpli) =
-	gbooleanToBool <$> withForeignPtr fpli c_pango_layout_iter_next_line
+pangoLayoutIterNextLine (PangoLayoutIter fli) =
+	gbooleanToBool <$> withForeignPtr fli c_pango_layout_iter_next_line
 
 foreign import ccall "pango_layout_iter_next_line"
 	c_pango_layout_iter_next_line ::
 	Ptr PangoLayoutIter -> IO #type gboolean
 
 pangoLayoutIterAtLastLine :: PangoLayoutIter -> IO Bool
-pangoLayoutIterAtLastLine (PangoLayoutIter fpli) =
-	gbooleanToBool <$> withForeignPtr fpli c_pango_layout_iter_at_last_line
+pangoLayoutIterAtLastLine (PangoLayoutIter fli) =
+	gbooleanToBool <$> withForeignPtr fli c_pango_layout_iter_at_last_line
 
 foreign import ccall "pango_layout_iter_at_last_line"
 	c_pango_layout_iter_at_last_line ::
 	Ptr PangoLayoutIter -> IO #type gboolean
+
+pangoLayoutIterGetIndex :: PangoLayoutIter -> IO CInt
+pangoLayoutIterGetIndex (PangoLayoutIter fli) =
+	withForeignPtr fli c_pango_layout_iter_get_index
+
+foreign import ccall "pango_layout_iter_get_index"
+	c_pango_layout_iter_get_index ::
+	Ptr PangoLayoutIter -> IO CInt
 
 gbooleanToBool :: #{type gboolean} -> Bool
 gbooleanToBool #{const FALSE} = False
