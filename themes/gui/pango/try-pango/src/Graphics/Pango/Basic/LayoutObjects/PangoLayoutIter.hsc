@@ -37,11 +37,19 @@ foreign import ccall "pango_layout_iter_next_run"
 	Ptr PangoLayoutIter -> IO #type gboolean
 
 pangoLayoutIterNextChar :: PangoLayoutIter -> IO Bool
-pangoLayoutIterNextChar (PangoLayoutIter fpli) =
-	gbooleanToBool <$> withForeignPtr fpli c_pango_layout_iter_next_char
+pangoLayoutIterNextChar (PangoLayoutIter fli) =
+	gbooleanToBool <$> withForeignPtr fli c_pango_layout_iter_next_char
 
 foreign import ccall "pango_layout_iter_next_char"
 	c_pango_layout_iter_next_char ::
+	Ptr PangoLayoutIter -> IO #type gboolean
+
+pangoLayoutIterNextCluster :: PangoLayoutIter -> IO Bool
+pangoLayoutIterNextCluster (PangoLayoutIter fli) =
+	gbooleanToBool <$> withForeignPtr fli c_pango_layout_iter_next_cluster
+
+foreign import ccall "pango_layout_iter_next_cluster"
+	c_pango_layout_iter_next_cluster ::
 	Ptr PangoLayoutIter -> IO #type gboolean
 
 gbooleanToBool :: #{type gboolean} -> Bool
