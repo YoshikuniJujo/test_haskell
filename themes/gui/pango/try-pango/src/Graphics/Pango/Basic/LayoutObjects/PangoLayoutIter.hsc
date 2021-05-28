@@ -154,6 +154,20 @@ foreign import ccall "pango_layout_iter_get_line_yrange"
 	c_pango_layout_iter_get_line_yrange ::
 	Ptr PangoLayoutIter -> Ptr CInt -> Ptr CInt -> IO ()
 
+pangoLayoutIterGetLineExtents ::
+	PangoLayoutIter -> IO (PangoRectangle, PangoRectangle)
+pangoLayoutIterGetLineExtents (PangoLayoutIter fli) =
+	withForeignPtr fli \pli -> do
+		irct <- mallocBytes #{size PangoRectangle}
+		lrct <- mallocBytes #{size PangoRectangle}
+		c_pango_layout_iter_get_line_extents pli irct lrct
+		(,)	<$> (PangoRectangle_ <$> newForeignPtr irct (free irct))
+			<*> (PangoRectangle_ <$> newForeignPtr lrct (free lrct))
+
+foreign import ccall "pango_layout_iter_get_line_extents"
+	c_pango_layout_iter_get_line_extents ::
+	Ptr PangoLayoutIter -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+
 gbooleanToBool :: #{type gboolean} -> Bool
 gbooleanToBool #{const FALSE} = False
 gbooleanToBool #{const TRUE} = True

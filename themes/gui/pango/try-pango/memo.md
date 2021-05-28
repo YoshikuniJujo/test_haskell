@@ -81,7 +81,8 @@ todo
 		- [x] `pango_context_get_matrix`
 		- [x] `pango_context_set_matrix`
 	+ [x] Vertical Text
-* [ ] `Graphics.Pango.LayoutObjects.PangoLayoutIter`
+* [x] `Graphics.Pango.LayoutObjects.PangoLayoutIter`
+* [ ] `Graphics.Pango.LayoutObjects.PangoLayoutLine`
 * [ ] Rendering with Pango
 	+ [ ] Cairo Rendering
 * [ ] think about package name
