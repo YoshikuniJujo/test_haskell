@@ -47,6 +47,6 @@ todo
 	+ [x] pangoLayoutIterGetCharExtents
 	+ [x] pangoLayoutIterGetClusterExtents
 	+ [x] pangoLayoutIterGetRunExtents
-	+ [ ] pangoLayoutIterGetLineYrange
+	+ [x] pangoLayoutIterGetLineYrange
 	+ [ ] pangoLayoutIterGetLineExtents
 * [ ] others

@@ -7,6 +7,7 @@ import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Marshal
+import Foreign.Storable
 import Foreign.C.Types
 import Data.Int
 
@@ -142,6 +143,16 @@ pangoLayoutIterGetRunExtents (PangoLayoutIter fli) =
 foreign import ccall "pango_layout_iter_get_run_extents"
 	c_pango_layout_iter_get_run_extents ::
 	Ptr PangoLayoutIter -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+
+pangoLayoutIterGetLineYrange :: PangoLayoutIter -> IO (CInt, CInt)
+pangoLayoutIterGetLineYrange (PangoLayoutIter fli) =
+	withForeignPtr fli \pli -> alloca \y0 -> alloca \y1 -> do
+		c_pango_layout_iter_get_line_yrange pli y0 y1
+		(,) <$> peek y0 <*> peek y1
+
+foreign import ccall "pango_layout_iter_get_line_yrange"
+	c_pango_layout_iter_get_line_yrange ::
+	Ptr PangoLayoutIter -> Ptr CInt -> Ptr CInt -> IO ()
 
 gbooleanToBool :: #{type gboolean} -> Bool
 gbooleanToBool #{const FALSE} = False

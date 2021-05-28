@@ -36,15 +36,6 @@ pangoLayoutGetLines (PangoLayout_ fpl) =
 	withForeignPtr fpl \pl ->
 		mapM makePangoLayoutLine0 =<< g_slist_to_list =<< c_pango_layout_get_lines_readonly pl
 
-foreign import ccall "pango_layout_iter_get_line_yrange" c_pango_layout_iter_get_line_yrange ::
-	Ptr PangoLayoutIter -> Ptr #{type int} -> Ptr #{type int} -> IO ()
-
-pangoLayoutIterGetLineYrange :: PangoLayoutIter -> IO (#{type int}, #{type int})
-pangoLayoutIterGetLineYrange (PangoLayoutIter fpli) =
-	withForeignPtr fpli \pli -> alloca \y0 -> alloca \y1 -> do
-		c_pango_layout_iter_get_line_yrange pli y0 y1
-		(,) <$> peek y0 <*> peek y1
-
 foreign import ccall "pango_layout_iter_get_line_extents" c_pango_layout_iter_get_line_extents ::
 	Ptr PangoLayoutIter -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
 
