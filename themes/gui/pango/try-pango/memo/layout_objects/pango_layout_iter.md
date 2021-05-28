@@ -41,7 +41,7 @@ todo
 	+ [x] pangoLayoutIterGetIndex
 	+ [x] pangoLayoutIterGetBaseline
 	+ [x] pangoLayoutIterGetRun
-	+ [ ] pangoLayoutIterGetLine
+	+ [x] pangoLayoutIterGetLine
 	+ [ ] pangoLayoutIterGetLayout
 	+ [ ] others
 * [ ] others

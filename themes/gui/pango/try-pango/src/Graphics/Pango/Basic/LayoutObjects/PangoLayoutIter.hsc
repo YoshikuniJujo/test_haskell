@@ -93,6 +93,14 @@ pangoLayoutIterGetRun (PangoLayoutIter fli) = makePangoGlyphItemMaybe
 foreign import ccall "pango_layout_iter_get_run" c_pango_layout_iter_get_run ::
 	Ptr PangoLayoutIter -> IO (Ptr PangoLayoutRun)
 
+pangoLayoutIterGetLine :: PangoLayoutIter -> IO PangoLayoutLine
+pangoLayoutIterGetLine (PangoLayoutIter fpli) =
+	makePangoLayoutLine =<< withForeignPtr fpli c_pango_layout_iter_get_line
+
+foreign import ccall "pango_layout_iter_get_line"
+	c_pango_layout_iter_get_line ::
+	Ptr PangoLayoutIter -> IO (Ptr PangoLayoutLine)
+
 gbooleanToBool :: #{type gboolean} -> Bool
 gbooleanToBool #{const FALSE} = False
 gbooleanToBool #{const TRUE} = True
