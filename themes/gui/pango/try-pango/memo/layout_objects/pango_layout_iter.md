@@ -39,6 +39,9 @@ todo
 	+ [x] pangoLayoutIterNextLine
 	+ [x] pangoLayoutIterAtLastLine
 	+ [x] pangoLayoutIterGetIndex
-	+ [ ] pangoLayoutIterGetBaseline
+	+ [x] pangoLayoutIterGetBaseline
+	+ [ ] pangoLayoutIterGetRun
+	+ [ ] pangoLayoutIterGetLine
+	+ [ ] pangoLayoutIterGetLayout
 	+ [ ] others
 * [ ] others

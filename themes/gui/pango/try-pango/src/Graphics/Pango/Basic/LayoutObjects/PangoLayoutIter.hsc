@@ -77,6 +77,14 @@ foreign import ccall "pango_layout_iter_get_index"
 	c_pango_layout_iter_get_index ::
 	Ptr PangoLayoutIter -> IO CInt
 
+pangoLayoutIterGetBaseline :: PangoLayoutIter -> IO CInt
+pangoLayoutIterGetBaseline (PangoLayoutIter fli) =
+	withForeignPtr fli c_pango_layout_iter_get_baseline
+
+foreign import ccall "pango_layout_iter_get_baseline"
+	c_pango_layout_iter_get_baseline ::
+	Ptr PangoLayoutIter -> IO CInt
+
 gbooleanToBool :: #{type gboolean} -> Bool
 gbooleanToBool #{const FALSE} = False
 gbooleanToBool #{const TRUE} = True
