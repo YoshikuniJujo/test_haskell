@@ -14,6 +14,7 @@ import Data.CairoContext
 
 import Graphics.Pango.Basic.Rendering
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
+import Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine
 
 pangoCairoCreateContext :: PrimMonad m => CairoT (PrimState m) -> m PangoContext
 pangoCairoCreateContext (CairoT fcr) = unsafeIOToPrim

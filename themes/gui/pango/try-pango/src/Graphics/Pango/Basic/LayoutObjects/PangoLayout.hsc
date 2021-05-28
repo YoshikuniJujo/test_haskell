@@ -806,6 +806,3 @@ pangoExtentsToPixelsNearest ::
 	PrimMonad m => PangoRectanglePrim (PrimState m) -> m ()
 pangoExtentsToPixelsNearest (PangoRectanglePrim fr) = unsafeIOToPrim
 	. withForeignPtr fr $ c_pango_extents_to_pixels nullPtr
-
-foreign import ccall "pango_layout_get_line_readonly" c_pango_layout_get_line_readonly ::
-	Ptr PangoLayout -> CInt -> IO (Ptr PangoLayoutLine)

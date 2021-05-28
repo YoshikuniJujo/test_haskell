@@ -8,14 +8,13 @@ import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
-import Foreign.C
 import Data.Int
 
-import Graphics.Pango.Types
 import System.Glib.SinglyLinkedLists
 
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter
+import Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine
 
 import Graphics.Pango.Basic.Fonts.PangoFontDescription hiding (gbooleanToBool)
 
@@ -23,18 +22,13 @@ import Graphics.Pango.PangoRectangle
 
 #include <pango/pango.h>
 
-
-pangoLayoutGetLine :: PangoLayout -> CInt -> IO PangoLayoutLine
-pangoLayoutGetLine (PangoLayout_ fpl) ln =
-	makePangoLayoutLine0 =<< withForeignPtr fpl \pl -> c_pango_layout_get_line_readonly pl ln
-
-foreign import ccall "pango_layout_get_lines_readonly" c_pango_layout_get_lines_readonly ::
-	Ptr PangoLayout -> IO (Ptr (GSList PangoLayoutLine))
-
 pangoLayoutGetLines :: PangoLayout -> IO [PangoLayoutLine]
 pangoLayoutGetLines (PangoLayout_ fpl) =
 	withForeignPtr fpl \pl ->
 		mapM makePangoLayoutLine0 =<< g_slist_to_list =<< c_pango_layout_get_lines_readonly pl
+
+foreign import ccall "pango_layout_get_lines_readonly" c_pango_layout_get_lines_readonly ::
+	Ptr PangoLayout -> IO (Ptr (GSList PangoLayoutLine))
 
 foreign import ccall "pango_layout_line_get_extents" c_pango_layout_line_get_extents ::
 	Ptr PangoLayoutLine -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()

@@ -14,6 +14,7 @@ import Data.Int
 import Graphics.Pango.Types
 import Graphics.Pango.PangoRectangle
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
+import Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine
 
 #include <pango/pango.h>
 

@@ -49,17 +49,6 @@ makePangoTabArray p
 foreign import ccall "pango_tab_array_free" c_pango_tab_array_free ::
 	Ptr PangoTabArray -> IO ()
 
-newtype PangoLayoutLine = PangoLayoutLine (ForeignPtr PangoLayoutLine) deriving Show
-
-makePangoLayoutLine0 :: Ptr PangoLayoutLine -> IO PangoLayoutLine
-makePangoLayoutLine0 p = PangoLayoutLine <$> newForeignPtr p (pure ())
-
-makePangoLayoutLine :: Ptr PangoLayoutLine -> IO PangoLayoutLine
-makePangoLayoutLine p = PangoLayoutLine <$> newForeignPtr p (c_pango_layout_line_unref p)
-
-foreign import ccall "pango_layout_line_unref" c_pango_layout_line_unref ::
-	Ptr PangoLayoutLine -> IO ()
-
 newtype PangoGlyphItem = PangoGlyphItem (ForeignPtr PangoGlyphItem) deriving Show
 
 makePangoGlyphItem0, makePangoGlyphItem :: Ptr PangoGlyphItem -> IO PangoGlyphItem

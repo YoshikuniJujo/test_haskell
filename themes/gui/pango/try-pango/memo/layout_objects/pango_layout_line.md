@@ -26,7 +26,7 @@ todo
 
 * [x] move data `Extents` and `PixelExtents` to module `Graphics.Pango.PangoRectangle`
 * [ ] move from `Graphics.Pango.Basic.LayoutObjects`
-	+ [ ] `pangoLayoutGetLine`
+	+ [x] `pangoLayoutGetLine`
 	+ [ ] `pangoLayoutGetLines`
 	+ [ ] `pangoLayoutLineGetExtents`
 	+ [ ] `pangoLayoutLineGetPixelExtents`
