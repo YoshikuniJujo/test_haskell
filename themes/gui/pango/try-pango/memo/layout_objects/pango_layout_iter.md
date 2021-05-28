@@ -45,7 +45,7 @@ todo
 	+ [x] remove pangoLayoutIterGetLayout
 	+ [x] remove pangoLayoutIterGetLayoutExtents
 	+ [x] pangoLayoutIterGetCharExtents
-	+ [ ] pangoLayoutIterGetClusterExtents
+	+ [x] pangoLayoutIterGetClusterExtents
 	+ [ ] pangoLayoutIterGetRunExtents
 	+ [ ] pangoLayoutIterGetLineYrange
 	+ [ ] pangoLayoutIterGetLineExtents

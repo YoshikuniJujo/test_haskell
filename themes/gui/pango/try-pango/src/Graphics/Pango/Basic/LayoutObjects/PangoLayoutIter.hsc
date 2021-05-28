@@ -111,9 +111,23 @@ pangoLayoutIterGetCharExtents (PangoLayoutIter fli) =
 		c_pango_layout_iter_get_char_extents pli rct
 		PangoRectangle_ <$> newForeignPtr rct (free rct)
 
-foreign import ccall "pango_layout_iter_get_char_extents" c_pango_layout_iter_get_char_extents ::
+foreign import ccall "pango_layout_iter_get_char_extents"
+	c_pango_layout_iter_get_char_extents ::
 	Ptr PangoLayoutIter -> Ptr PangoRectangle -> IO ()
 
+pangoLayoutIterGetClusterExtents ::
+	PangoLayoutIter -> IO (PangoRectangle, PangoRectangle)
+pangoLayoutIterGetClusterExtents (PangoLayoutIter fli) =
+	withForeignPtr fli \pli -> do
+		irct <- mallocBytes #{size PangoRectangle}
+		lrct <- mallocBytes #{size PangoRectangle}
+		c_pango_layout_iter_get_cluster_extents pli irct lrct
+		(,)	<$> (PangoRectangle_ <$> newForeignPtr irct (free irct))
+			<*> (PangoRectangle_ <$> newForeignPtr lrct (free lrct))
+
+foreign import ccall "pango_layout_iter_get_cluster_extents"
+	c_pango_layout_iter_get_cluster_extents ::
+	Ptr PangoLayoutIter -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
 
 gbooleanToBool :: #{type gboolean} -> Bool
 gbooleanToBool #{const FALSE} = False
