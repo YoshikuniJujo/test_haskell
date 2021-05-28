@@ -9,7 +9,6 @@ import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C
-import Control.Monad.Primitive
 import Data.Int
 
 import Graphics.Pango.Types
@@ -36,17 +35,6 @@ pangoLayoutGetLines :: PangoLayout -> IO [PangoLayoutLine]
 pangoLayoutGetLines (PangoLayout_ fpl) =
 	withForeignPtr fpl \pl ->
 		mapM makePangoLayoutLine0 =<< g_slist_to_list =<< c_pango_layout_get_lines_readonly pl
-
-foreign import ccall "pango_layout_iter_get_char_extents" c_pango_layout_iter_get_char_extents ::
-	Ptr PangoLayoutIter -> Ptr PangoRectangle -> IO ()
-
-pangoLayoutIterGetCharExtents :: PangoLayoutIter -> IO PangoRectangle
-pangoLayoutIterGetCharExtents (PangoLayoutIter fpli) = unsafeIOToPrim
-	$ withForeignPtr fpli \pli -> do
-		rct <- mallocBytes #{size PangoRectangle}
-		c_pango_layout_iter_get_char_extents pli rct
-		PangoRectangle_ <$> newForeignPtr rct (free rct)
-
 
 foreign import ccall "pango_layout_iter_get_cluster_extents" c_pango_layout_iter_get_cluster_extents ::
 	Ptr PangoLayoutIter -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()

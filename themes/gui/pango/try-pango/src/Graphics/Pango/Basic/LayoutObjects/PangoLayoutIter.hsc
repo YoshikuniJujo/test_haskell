@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter where
@@ -5,10 +6,12 @@ module Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter where
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
+import Foreign.Marshal
 import Foreign.C.Types
 import Data.Int
 
 import Graphics.Pango.Types
+import Graphics.Pango.PangoRectangle
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 
 #include <pango/pango.h>
@@ -94,12 +97,23 @@ foreign import ccall "pango_layout_iter_get_run" c_pango_layout_iter_get_run ::
 	Ptr PangoLayoutIter -> IO (Ptr PangoLayoutRun)
 
 pangoLayoutIterGetLine :: PangoLayoutIter -> IO PangoLayoutLine
-pangoLayoutIterGetLine (PangoLayoutIter fpli) =
-	makePangoLayoutLine =<< withForeignPtr fpli c_pango_layout_iter_get_line
+pangoLayoutIterGetLine (PangoLayoutIter fli) =
+	makePangoLayoutLine =<< withForeignPtr fli c_pango_layout_iter_get_line
 
 foreign import ccall "pango_layout_iter_get_line"
 	c_pango_layout_iter_get_line ::
 	Ptr PangoLayoutIter -> IO (Ptr PangoLayoutLine)
+
+pangoLayoutIterGetCharExtents :: PangoLayoutIter -> IO PangoRectangle
+pangoLayoutIterGetCharExtents (PangoLayoutIter fli) =
+	withForeignPtr fli \pli -> do
+		rct <- mallocBytes #{size PangoRectangle}
+		c_pango_layout_iter_get_char_extents pli rct
+		PangoRectangle_ <$> newForeignPtr rct (free rct)
+
+foreign import ccall "pango_layout_iter_get_char_extents" c_pango_layout_iter_get_char_extents ::
+	Ptr PangoLayoutIter -> Ptr PangoRectangle -> IO ()
+
 
 gbooleanToBool :: #{type gboolean} -> Bool
 gbooleanToBool #{const FALSE} = False
