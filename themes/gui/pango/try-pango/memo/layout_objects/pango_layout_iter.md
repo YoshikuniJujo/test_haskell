@@ -36,6 +36,7 @@ todo
 	+ [x] pangoLayoutIterNextRun
 	+ [x] pangoLayoutIterNextChar
 	+ [x] pangoLayoutIterNextCluster
-	+ [ ] pangoLayoutIterNextLine
+	+ [x] pangoLayoutIterNextLine
+	+ [ ] pangoLayoutIterAtLastLine
 	+ [ ] others
 * [ ] others
