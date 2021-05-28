@@ -34,7 +34,7 @@ todo
 * [ ] move functions to this module
 	+ [x] pangoLayoutGetIter
 	+ [x] pangoLayoutIterNextRun
-	+ [ ] pangoLayoutIterNextChar
+	+ [x] pangoLayoutIterNextChar
 	+ [ ] pangoLayoutIterNextCluster
 	+ [ ] pangoLayoutIterNextLine
 	+ [ ] others

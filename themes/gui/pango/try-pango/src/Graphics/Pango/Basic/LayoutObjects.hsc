@@ -37,13 +37,6 @@ pangoLayoutGetLines (PangoLayout_ fpl) =
 	withForeignPtr fpl \pl ->
 		mapM makePangoLayoutLine0 =<< g_slist_to_list =<< c_pango_layout_get_lines_readonly pl
 
-foreign import ccall "pango_layout_iter_next_char" c_pango_layout_iter_next_char ::
-	Ptr PangoLayoutIter -> IO #type gboolean
-
-pangoLayoutIterNextChar :: PangoLayoutIter -> IO Bool
-pangoLayoutIterNextChar (PangoLayoutIter fpli) =
-	gbooleanToBool <$> withForeignPtr fpli c_pango_layout_iter_next_char
-
 foreign import ccall "pango_layout_iter_next_cluster" c_pango_layout_iter_next_cluster ::
 	Ptr PangoLayoutIter -> IO #type gboolean
 

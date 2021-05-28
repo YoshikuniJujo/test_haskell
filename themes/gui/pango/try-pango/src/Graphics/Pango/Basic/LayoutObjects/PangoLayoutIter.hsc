@@ -36,6 +36,14 @@ foreign import ccall "pango_layout_iter_next_run"
 	c_pango_layout_iter_next_run ::
 	Ptr PangoLayoutIter -> IO #type gboolean
 
+pangoLayoutIterNextChar :: PangoLayoutIter -> IO Bool
+pangoLayoutIterNextChar (PangoLayoutIter fpli) =
+	gbooleanToBool <$> withForeignPtr fpli c_pango_layout_iter_next_char
+
+foreign import ccall "pango_layout_iter_next_char"
+	c_pango_layout_iter_next_char ::
+	Ptr PangoLayoutIter -> IO #type gboolean
+
 gbooleanToBool :: #{type gboolean} -> Bool
 gbooleanToBool #{const FALSE} = False
 gbooleanToBool #{const TRUE} = True

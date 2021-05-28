@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: nightly-2021-05-23
+resolver: nightly-2021-05-27
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -40,7 +40,6 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
 extra-deps:
-- c-struct-0.1.0.0
 - git: https://github.com/YoshikuniJujo/simple-cairo
   commit: 02f2ee2f5f888d5378e93ec3ba52e2b78bce0d44
 - git: https://github.com/YoshikuniJujo/cairo-image

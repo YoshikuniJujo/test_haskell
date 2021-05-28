@@ -5,13 +5,6 @@
 
 packages:
 - completed:
-    hackage: c-struct-0.1.0.0@sha256:8a9c5a12638023db8adb51348567243fc04fed6be5825afa00bb6075f4b1b985,1418
-    pantry-tree:
-      size: 438
-      sha256: c71ca4ebcd71e91f9825ecfe8d805dcb8877d626feca5da2e63b8fa095c18bd5
-  original:
-    hackage: c-struct-0.1.0.0
-- completed:
     name: simple-cairo
     version: 0.1.0.0
     git: https://github.com/YoshikuniJujo/simple-cairo
@@ -46,7 +39,7 @@ packages:
     commit: 67aceebb48e90e72a2e60c095b91bc6e56b0ca19
 snapshots:
 - completed:
-    size: 585826
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2021/5/23.yaml
-    sha256: 47369c594d7d7f8cf77fc840a1677caed6839f3b7e0f4cf831651a5ec46f5ff7
-  original: nightly-2021-05-23
+    size: 586887
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2021/5/27.yaml
+    sha256: a3828df4902b262c595415ae1733bc7c5789700c18eedf19b28c05810b13b72b
+  original: nightly-2021-05-27
