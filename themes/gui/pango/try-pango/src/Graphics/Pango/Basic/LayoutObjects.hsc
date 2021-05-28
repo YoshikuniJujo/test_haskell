@@ -37,13 +37,6 @@ pangoLayoutGetLines (PangoLayout_ fpl) =
 	withForeignPtr fpl \pl ->
 		mapM makePangoLayoutLine0 =<< g_slist_to_list =<< c_pango_layout_get_lines_readonly pl
 
-foreign import ccall "pango_layout_iter_get_run_readonly" c_pango_layout_iter_get_run_readonly ::
-	Ptr PangoLayoutIter -> IO (Ptr PangoLayoutRun)
-
-pangoLayoutIterGetRun :: PangoLayoutIter -> IO (Maybe PangoLayoutRun)
-pangoLayoutIterGetRun (PangoLayoutIter fpli) =
-	makePangoGlyphItemMaybe0 =<< withForeignPtr fpli c_pango_layout_iter_get_run_readonly
-
 foreign import ccall "pango_layout_iter_get_line_readonly" c_pango_layout_iter_get_line_readonly ::
 	Ptr PangoLayoutIter -> IO (Ptr PangoLayoutLine)
 

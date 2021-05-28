@@ -8,6 +8,7 @@ import Foreign.Concurrent
 import Foreign.C.Types
 import Data.Int
 
+import Graphics.Pango.Types
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 
 #include <pango/pango.h>
@@ -84,6 +85,13 @@ pangoLayoutIterGetBaseline (PangoLayoutIter fli) =
 foreign import ccall "pango_layout_iter_get_baseline"
 	c_pango_layout_iter_get_baseline ::
 	Ptr PangoLayoutIter -> IO CInt
+
+pangoLayoutIterGetRun :: PangoLayoutIter -> IO (Maybe PangoLayoutRun)
+pangoLayoutIterGetRun (PangoLayoutIter fli) = makePangoGlyphItemMaybe
+	=<< withForeignPtr fli c_pango_layout_iter_get_run
+
+foreign import ccall "pango_layout_iter_get_run" c_pango_layout_iter_get_run ::
+	Ptr PangoLayoutIter -> IO (Ptr PangoLayoutRun)
 
 gbooleanToBool :: #{type gboolean} -> Bool
 gbooleanToBool #{const FALSE} = False

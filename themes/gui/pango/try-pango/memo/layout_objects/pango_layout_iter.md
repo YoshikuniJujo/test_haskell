@@ -40,7 +40,7 @@ todo
 	+ [x] pangoLayoutIterAtLastLine
 	+ [x] pangoLayoutIterGetIndex
 	+ [x] pangoLayoutIterGetBaseline
-	+ [ ] pangoLayoutIterGetRun
+	+ [x] pangoLayoutIterGetRun
 	+ [ ] pangoLayoutIterGetLine
 	+ [ ] pangoLayoutIterGetLayout
 	+ [ ] others

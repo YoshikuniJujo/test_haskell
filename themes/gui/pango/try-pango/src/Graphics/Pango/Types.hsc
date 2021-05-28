@@ -1,9 +1,10 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Types where
 
 import Foreign.Ptr
+import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 
@@ -65,7 +66,13 @@ makePangoGlyphItem0, makePangoGlyphItem :: Ptr PangoGlyphItem -> IO PangoGlyphIt
 makePangoGlyphItem0 p = PangoGlyphItem <$> newForeignPtr p (pure ())
 makePangoGlyphItem p = PangoGlyphItem <$> newForeignPtr p (c_pango_glyph_item_free p)
 
-makePangoGlyphItemMaybe0 :: Ptr PangoGlyphItem -> IO (Maybe PangoGlyphItem)
+makePangoGlyphItemMaybe, makePangoGlyphItemMaybe0 ::
+	Ptr PangoGlyphItem -> IO (Maybe PangoGlyphItem)
+makePangoGlyphItemMaybe = \case
+	NullPtr -> pure Nothing
+	p -> Just . PangoGlyphItem
+		<$> newForeignPtr p (c_pango_glyph_item_free p)
+
 makePangoGlyphItemMaybe0 p
 	| p == nullPtr = pure Nothing
 	| otherwise = Just . PangoGlyphItem <$> newForeignPtr p (pure ())
