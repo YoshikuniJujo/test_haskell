@@ -8,8 +8,11 @@ import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Marshal
+import Foreign.Storable
 import Foreign.C.Types
+import Data.Int
 
+import Graphics.Pango.Bool
 import Graphics.Pango.PangoRectangle
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import System.Glib.SinglyLinkedLists
@@ -74,3 +77,12 @@ foreign import ccall "pango_layout_line_get_pixel_extents"
 	c_pango_layout_line_get_pixel_extents ::
 	Ptr PangoLayoutLine ->
 	Ptr PangoRectanglePixel -> Ptr PangoRectanglePixel -> IO ()
+
+pangoLayoutLineIndexToX :: PangoLayoutLine -> CInt -> Bool -> IO CInt
+pangoLayoutLineIndexToX (PangoLayoutLine fpll) idx trl =
+	withForeignPtr fpll \pll -> alloca \xpos -> do
+		c_pango_layout_line_index_to_x pll idx (boolToGboolean trl) xpos
+		peek xpos
+
+foreign import ccall "pango_layout_line_index_to_x" c_pango_layout_line_index_to_x ::
+	Ptr PangoLayoutLine -> CInt -> #{type gboolean} -> Ptr CInt -> IO ()

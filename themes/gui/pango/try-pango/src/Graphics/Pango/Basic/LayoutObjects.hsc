@@ -5,33 +5,20 @@ module Graphics.Pango.Basic.LayoutObjects where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
-import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
+import Foreign.C.Types
 import Data.Int
 
-import Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter
+import Graphics.Pango.Bool
 import Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine
-
-import Graphics.Pango.Basic.Fonts.PangoFontDescription hiding (gbooleanToBool)
-
-import Graphics.Pango.PangoRectangle
 
 #include <pango/pango.h>
 
-foreign import ccall "pango_layout_line_index_to_x" c_pango_layout_line_index_to_x ::
-	Ptr PangoLayoutLine -> #{type int} -> #{type gboolean} -> Ptr #{type int} -> IO ()
-
-pangoLayoutLineIndexToX :: PangoLayoutLine -> #{type int} -> Bool -> IO #type int
-pangoLayoutLineIndexToX (PangoLayoutLine fpll) idx trl =
-	withForeignPtr fpll \pll -> alloca \xpos -> do
-		c_pango_layout_line_index_to_x pll idx (boolToGboolean trl) xpos
-		peek xpos
-
 foreign import ccall "pango_layout_line_x_to_index" c_pango_layout_line_x_to_index ::
-	Ptr PangoLayoutLine -> #{type int} -> Ptr #{type int} -> Ptr #{type int} -> IO #type gboolean
+	Ptr PangoLayoutLine -> CInt -> Ptr CInt -> Ptr CInt -> IO #type gboolean
 
-pangoLayoutLineXToIndex :: PangoLayoutLine -> #{type int} -> IO (#{type int}, #{type int}, Bool)
+pangoLayoutLineXToIndex :: PangoLayoutLine -> CInt -> IO (CInt, CInt, Bool)
 pangoLayoutLineXToIndex (PangoLayoutLine fpll) xpos =
 	withForeignPtr fpll \pll -> alloca \idx -> alloca \trl -> do
 		isd <- c_pango_layout_line_x_to_index pll xpos idx trl

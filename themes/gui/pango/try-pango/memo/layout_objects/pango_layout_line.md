@@ -33,6 +33,7 @@ todo
 	+ [x] `pangoLayoutLineGetPixelExtents`
 		- [x] move
 		- [x] use `PixelExtents`
-	+ [ ] `pangoLayoutLineIndexToX`
+	+ [x] `pangoLayoutLineIndexToX`
+	+ [ ] remove duplicated `boolToGboolean` and `gbooleanAndBool`
 	+ [ ] `pangoLayoutLineXToIndex`
 	+ [ ] `pangoLayoutLineGetXRanges`

@@ -17,6 +17,7 @@ import Data.Bool
 import Data.Word
 import Data.Int
 
+import Graphics.Pango.Bool
 import Graphics.Pango.Values
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 
@@ -213,14 +214,6 @@ pangoFontDescriptionGetSizeIsAbsolute PangoFontDescriptionNull = error "PangoFon
 pangoFontDescriptionGetSizeIsAbsolute (PangoFontDescription fpfd) = unsafePerformIO
 	$ withForeignPtr fpfd \pfd ->
 		gbooleanToBool <$> c_pango_font_description_get_size_is_absolute pfd
-
-gbooleanToBool :: #{type gboolean} -> Bool
-gbooleanToBool #{const FALSE} = False
-gbooleanToBool _ = True
-
-boolToGboolean :: Bool -> #{type gboolean}
-boolToGboolean False = #{const FALSE}
-boolToGboolean True = #{const TRUE}
 
 foreign import ccall "pango_font_description_get_size_is_absolute"
 	c_pango_font_description_get_size_is_absolute ::

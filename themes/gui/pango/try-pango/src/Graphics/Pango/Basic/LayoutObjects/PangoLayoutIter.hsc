@@ -11,6 +11,7 @@ import Foreign.Storable
 import Foreign.C.Types
 import Data.Int
 
+import Graphics.Pango.Bool
 import Graphics.Pango.Types
 import Graphics.Pango.PangoRectangle
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
@@ -168,8 +169,3 @@ pangoLayoutIterGetLineExtents (PangoLayoutIter fli) =
 foreign import ccall "pango_layout_iter_get_line_extents"
 	c_pango_layout_iter_get_line_extents ::
 	Ptr PangoLayoutIter -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
-
-gbooleanToBool :: #{type gboolean} -> Bool
-gbooleanToBool #{const FALSE} = False
-gbooleanToBool #{const TRUE} = True
-gbooleanToBool _ = error "bad gboolean"
