@@ -59,3 +59,18 @@ pangoLayoutLineGetExtents (PangoLayoutLine fll) =
 foreign import ccall "pango_layout_line_get_extents"
 	c_pango_layout_line_get_extents ::
 	Ptr PangoLayoutLine -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+
+pangoLayoutLineGetPixelExtents :: PangoLayoutLine -> IO PixelExtents
+pangoLayoutLineGetPixelExtents (PangoLayoutLine fpll) =
+	withForeignPtr fpll \pll -> do
+		irct <- mallocBytes #{size PangoRectangle}
+		lrct <- mallocBytes #{size PangoRectangle}
+		c_pango_layout_line_get_pixel_extents pll irct lrct
+		PixelExtents
+			<$> (PangoRectanglePixel_ <$> newForeignPtr irct (free irct))
+			<*> (PangoRectanglePixel_ <$> newForeignPtr lrct (free lrct))
+
+foreign import ccall "pango_layout_line_get_pixel_extents"
+	c_pango_layout_line_get_pixel_extents ::
+	Ptr PangoLayoutLine ->
+	Ptr PangoRectanglePixel -> Ptr PangoRectanglePixel -> IO ()

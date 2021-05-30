@@ -30,7 +30,9 @@ todo
 		- [x] to check NULL
 	+ [x] `pangoLayoutGetLines`
 	+ [x] `pangoLayoutLineGetExtents`
-	+ [ ] `pangoLayoutLineGetPixelExtents`
+	+ [x] `pangoLayoutLineGetPixelExtents`
+		- [x] move
+		- [x] use `PixelExtents`
 	+ [ ] `pangoLayoutLineIndexToX`
 	+ [ ] `pangoLayoutLineXToIndex`
 	+ [ ] `pangoLayoutLineGetXRanges`
