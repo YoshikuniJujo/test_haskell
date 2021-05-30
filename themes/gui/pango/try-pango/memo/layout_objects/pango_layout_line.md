@@ -25,7 +25,7 @@ todo
 ----
 
 * [x] move data `Extents` and `PixelExtents` to module `Graphics.Pango.PangoRectangle`
-* [ ] move from `Graphics.Pango.Basic.LayoutObjects`
+* [x] move from `Graphics.Pango.Basic.LayoutObjects`
 	+ [x] `pangoLayoutGetLine`
 		- [x] to check NULL
 	+ [x] `pangoLayoutGetLines`
@@ -36,4 +36,4 @@ todo
 	+ [x] `pangoLayoutLineIndexToX`
 	+ [x] remove duplicated `boolToGboolean` and `gbooleanAndBool`
 	+ [x] `pangoLayoutLineXToIndex`
-	+ [ ] `pangoLayoutLineGetXRanges`
+	+ [x] `pangoLayoutLineGetXRanges`

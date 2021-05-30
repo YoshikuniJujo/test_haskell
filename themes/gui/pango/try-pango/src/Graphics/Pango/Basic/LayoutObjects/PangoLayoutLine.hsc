@@ -97,3 +97,16 @@ pangoLayoutLineXToIndex (PangoLayoutLine fpll) xpos =
 foreign import ccall "pango_layout_line_x_to_index"
 	c_pango_layout_line_x_to_index ::
 	Ptr PangoLayoutLine -> CInt -> Ptr CInt -> Ptr CInt -> IO #type gboolean
+
+pangoLayoutLineGetXRanges :: PangoLayoutLine -> CInt -> CInt -> IO [CInt]
+pangoLayoutLineGetXRanges (PangoLayoutLine fpll) st ed =
+	withForeignPtr fpll \pll -> alloca \prngs -> alloca \pn -> do
+		c_pango_layout_line_get_x_ranges pll st ed prngs pn
+		rngs <- peek prngs
+		n <- peek pn
+		peekArray (fromIntegral $ 2 * n) rngs <* c_g_free rngs
+
+foreign import ccall "pango_layout_line_get_x_ranges" c_pango_layout_line_get_x_ranges ::
+	Ptr PangoLayoutLine -> CInt -> CInt -> Ptr (Ptr CInt) -> Ptr CInt -> IO ()
+
+foreign import ccall "g_free" c_g_free :: Ptr a -> IO ()
