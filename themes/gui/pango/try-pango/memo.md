@@ -66,10 +66,10 @@ todo
 		- [x] PangoFontDescription
 	+ [x] Text Attributes
 	+ [x] Tab Stops
-	+ [ ] LayoutObjects
+	+ [x] LayoutObjects
 		- [x] PangoLayout
-		- [ ] PangoLayoutIter
-		- [ ] PangoLayoutLine
+		- [x] PangoLayoutIter
+		- [x] PangoLayoutLine
 	+ [x] Scripts and Languages
 		- [x] PangoScript
 		- [x] PangoLanguage
@@ -82,7 +82,7 @@ todo
 		- [x] `pango_context_set_matrix`
 	+ [x] Vertical Text
 * [x] `Graphics.Pango.LayoutObjects.PangoLayoutIter`
-* [ ] `Graphics.Pango.LayoutObjects.PangoLayoutLine`
+* [x] `Graphics.Pango.LayoutObjects.PangoLayoutLine`
 * [ ] Rendering with Pango
 	+ [ ] Cairo Rendering
 * [ ] think about package name
