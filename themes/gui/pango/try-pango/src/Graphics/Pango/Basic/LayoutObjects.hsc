@@ -15,15 +15,6 @@ import Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine
 
 #include <pango/pango.h>
 
-foreign import ccall "pango_layout_line_x_to_index" c_pango_layout_line_x_to_index ::
-	Ptr PangoLayoutLine -> CInt -> Ptr CInt -> Ptr CInt -> IO #type gboolean
-
-pangoLayoutLineXToIndex :: PangoLayoutLine -> CInt -> IO (CInt, CInt, Bool)
-pangoLayoutLineXToIndex (PangoLayoutLine fpll) xpos =
-	withForeignPtr fpll \pll -> alloca \idx -> alloca \trl -> do
-		isd <- c_pango_layout_line_x_to_index pll xpos idx trl
-		(,,) <$> peek idx <*> peek trl <*> pure (gbooleanToBool isd)
-
 foreign import ccall "pango_layout_line_get_x_ranges" c_pango_layout_line_get_x_ranges ::
 	Ptr PangoLayoutLine -> #{type int} -> #{type int} -> Ptr (Ptr #{type int}) -> Ptr #{type int} -> IO ()
 

@@ -84,5 +84,16 @@ pangoLayoutLineIndexToX (PangoLayoutLine fpll) idx trl =
 		c_pango_layout_line_index_to_x pll idx (boolToGboolean trl) xpos
 		peek xpos
 
-foreign import ccall "pango_layout_line_index_to_x" c_pango_layout_line_index_to_x ::
+foreign import ccall "pango_layout_line_index_to_x"
+	c_pango_layout_line_index_to_x ::
 	Ptr PangoLayoutLine -> CInt -> #{type gboolean} -> Ptr CInt -> IO ()
+
+pangoLayoutLineXToIndex :: PangoLayoutLine -> CInt -> IO (CInt, CInt, Bool)
+pangoLayoutLineXToIndex (PangoLayoutLine fpll) xpos =
+	withForeignPtr fpll \pll -> alloca \idx -> alloca \trl -> do
+		isd <- c_pango_layout_line_x_to_index pll xpos idx trl
+		(,,) <$> peek idx <*> peek trl <*> pure (gbooleanToBool isd)
+
+foreign import ccall "pango_layout_line_x_to_index"
+	c_pango_layout_line_x_to_index ::
+	Ptr PangoLayoutLine -> CInt -> Ptr CInt -> Ptr CInt -> IO #type gboolean
