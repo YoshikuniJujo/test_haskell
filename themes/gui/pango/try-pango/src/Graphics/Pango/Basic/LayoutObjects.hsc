@@ -19,18 +19,6 @@ import Graphics.Pango.PangoRectangle
 
 #include <pango/pango.h>
 
-foreign import ccall "pango_layout_line_get_extents" c_pango_layout_line_get_extents ::
-	Ptr PangoLayoutLine -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
-
-pangoLayoutLineGetExtents :: PangoLayoutLine -> IO (PangoRectangle, PangoRectangle)
-pangoLayoutLineGetExtents (PangoLayoutLine fpll) =
-	withForeignPtr fpll \pll -> do
-		irct <- mallocBytes #{size PangoRectangle}
-		lrct <- mallocBytes #{size PangoRectangle}
-		c_pango_layout_line_get_extents pll irct lrct
-		(,)	<$> (PangoRectangle_ <$> newForeignPtr irct (free irct))
-			<*> (PangoRectangle_ <$> newForeignPtr lrct (free lrct))
-
 foreign import ccall "pango_layout_line_get_pixel_extents" c_pango_layout_line_get_pixel_extents ::
 	Ptr PangoLayoutLine -> Ptr PangoRectanglePixel -> Ptr PangoRectanglePixel -> IO ()
 

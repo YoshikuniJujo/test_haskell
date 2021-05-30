@@ -29,7 +29,7 @@ todo
 	+ [x] `pangoLayoutGetLine`
 		- [x] to check NULL
 	+ [x] `pangoLayoutGetLines`
-	+ [ ] `pangoLayoutLineGetExtents`
+	+ [x] `pangoLayoutLineGetExtents`
 	+ [ ] `pangoLayoutLineGetPixelExtents`
 	+ [ ] `pangoLayoutLineIndexToX`
 	+ [ ] `pangoLayoutLineXToIndex`

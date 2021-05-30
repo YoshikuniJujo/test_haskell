@@ -7,10 +7,14 @@ import Foreign.Ptr
 import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
+import Foreign.Marshal
 import Foreign.C.Types
 
+import Graphics.Pango.PangoRectangle
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import System.Glib.SinglyLinkedLists
+
+#include <pango/pango.h>
 
 pangoLayoutGetLine :: PangoLayout -> CInt -> IO (Maybe PangoLayoutLine)
 pangoLayoutGetLine (PangoLayout_ fpl) ln = makePangoLayoutLineMaybe
@@ -42,3 +46,16 @@ pangoLayoutGetLines (PangoLayout_ fl) = withForeignPtr fl \pl ->
 
 foreign import ccall "pango_layout_get_lines" c_pango_layout_get_lines ::
 	Ptr PangoLayout -> IO (Ptr (GSList PangoLayoutLine))
+
+pangoLayoutLineGetExtents :: PangoLayoutLine -> IO Extents
+pangoLayoutLineGetExtents (PangoLayoutLine fll) =
+	withForeignPtr fll \pll -> do
+		irct <- mallocBytes #{size PangoRectangle}
+		lrct <- mallocBytes #{size PangoRectangle}
+		c_pango_layout_line_get_extents pll irct lrct
+		Extents	<$> (PangoRectangle_ <$> newForeignPtr irct (free irct))
+			<*> (PangoRectangle_ <$> newForeignPtr lrct (free lrct))
+
+foreign import ccall "pango_layout_line_get_extents"
+	c_pango_layout_line_get_extents ::
+	Ptr PangoLayoutLine -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
