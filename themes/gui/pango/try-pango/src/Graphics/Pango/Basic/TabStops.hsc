@@ -15,6 +15,7 @@ import Data.Word
 import Data.Int
 import System.IO.Unsafe
 
+import Graphics.Pango.Bool
 import Graphics.Pango.Types
 import Graphics.Pango.Values
 
@@ -22,14 +23,6 @@ import Graphics.Pango.Values
 
 foreign import ccall "pango_tab_array_new" c_pango_tab_array_new ::
 	CInt -> #{type gboolean} -> IO (Ptr (PangoTabArrayPrim s))
-
-boolToGboolean :: Bool -> #{type gboolean}
-boolToGboolean False = #const FALSE
-boolToGboolean True = #const TRUE
-
-gbooleanToBool :: #{type gboolean} -> Bool
-gbooleanToBool #{const FALSE} = False
-gbooleanToBool _ = True
 
 pangoTabArrayDoubleNew ::
 	PrimMonad m => m (PangoTabArrayDouble (PrimState m))
