@@ -28,7 +28,7 @@ todo
 * [ ] move from `Graphics.Pango.Basic.LayoutObjects`
 	+ [x] `pangoLayoutGetLine`
 		- [x] to check NULL
-	+ [ ] `pangoLayoutGetLines`
+	+ [x] `pangoLayoutGetLines`
 	+ [ ] `pangoLayoutLineGetExtents`
 	+ [ ] `pangoLayoutLineGetPixelExtents`
 	+ [ ] `pangoLayoutLineIndexToX`

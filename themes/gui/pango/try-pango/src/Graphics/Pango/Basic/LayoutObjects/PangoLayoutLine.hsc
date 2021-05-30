@@ -10,6 +10,7 @@ import Foreign.Concurrent
 import Foreign.C.Types
 
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
+import System.Glib.SinglyLinkedLists
 
 pangoLayoutGetLine :: PangoLayout -> CInt -> IO (Maybe PangoLayoutLine)
 pangoLayoutGetLine (PangoLayout_ fpl) ln = makePangoLayoutLineMaybe
@@ -34,3 +35,10 @@ makePangoLayoutLine0 p = PangoLayoutLine <$> newForeignPtr p (pure ())
 
 foreign import ccall "pango_layout_line_unref" c_pango_layout_line_unref ::
 	Ptr PangoLayoutLine -> IO ()
+
+pangoLayoutGetLines :: PangoLayout -> IO [PangoLayoutLine]
+pangoLayoutGetLines (PangoLayout_ fl) = withForeignPtr fl \pl ->
+	(makePangoLayoutLine `mapM`) =<< g_slist_to_list =<< c_pango_layout_get_lines pl
+
+foreign import ccall "pango_layout_get_lines" c_pango_layout_get_lines ::
+	Ptr PangoLayout -> IO (Ptr (GSList PangoLayoutLine))
