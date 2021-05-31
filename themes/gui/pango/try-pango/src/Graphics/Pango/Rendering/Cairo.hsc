@@ -55,10 +55,10 @@ pangoCairoUpdateLayout (CairoT fcr) (PangoLayoutPrim fl) = unsafeIOToPrim
 foreign import ccall "pango_cairo_update_layout" c_pango_cairo_update_layout ::
 	Ptr (CairoT s) -> Ptr PangoLayout -> IO ()
 
-pangoCairoShowGlyphItem :: CairoT RealWorld -> T.Text -> PangoGlyphItem -> IO ()
-pangoCairoShowGlyphItem (CairoT fcr) txt (PangoGlyphItem fgi) =
-	withForeignPtr fcr \cr -> T.withCStringLen txt \(ctxt, _) ->
-		withForeignPtr fgi $ c_pango_cairo_show_glyph_item cr ctxt
+pangoCairoShowGlyphItem :: CairoTIO -> T.Text -> PangoGlyphItem -> IO ()
+pangoCairoShowGlyphItem (CairoT fcr) t (PangoGlyphItem fgi) =
+	withForeignPtr fcr \cr -> T.withCStringLen t \(ct, _) ->
+		withForeignPtr fgi $ c_pango_cairo_show_glyph_item cr ct
 
 foreign import ccall "pango_cairo_show_glyph_item"
 	c_pango_cairo_show_glyph_item ::

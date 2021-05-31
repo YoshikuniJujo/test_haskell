@@ -15,10 +15,10 @@ review
 * [x] pangoCairoUpdateContext
 * [x] pangoCairoCreateLayout
 * [x] pangoCairoUpdateLayout
-* [ ] define type `CairoTIO`
-* [ ] pangoCairoShowGlyphItem
+* [x] define type `CairoTIO`
+* [x] pangoCairoShowGlyphItem
 	+ [x] use `Text`
-	+ [ ] others
+	+ [x] others
 * [ ] pangoCairoShowLayoutLine
 * [ ] pangoCairoShowLayout
 * [ ] pangoCairoShowErrorUnderline
