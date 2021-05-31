@@ -16,6 +16,9 @@ import Graphics.Pango.Basic.Rendering
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine
 
+import qualified Data.Text as T
+import qualified Data.Text.Foreign as T
+
 pangoCairoCreateContext :: PrimMonad m => CairoT (PrimState m) -> m PangoContext
 pangoCairoCreateContext (CairoT fcr) = unsafeIOToPrim
 	$ withForeignPtr fcr \pcr ->
@@ -52,10 +55,10 @@ pangoCairoUpdateLayout (CairoT fcr) (PangoLayoutPrim fl) = unsafeIOToPrim
 foreign import ccall "pango_cairo_update_layout" c_pango_cairo_update_layout ::
 	Ptr (CairoT s) -> Ptr PangoLayout -> IO ()
 
-pangoCairoShowGlyphItem :: CairoT RealWorld -> String -> PangoGlyphItem -> IO ()
-pangoCairoShowGlyphItem (CairoT fcr) txt (PangoGlyphItem fpgi) =
-	withForeignPtr fcr \cr -> withCString txt \ctxt -> withForeignPtr fpgi \pgi ->
-		c_pango_cairo_show_glyph_item cr ctxt pgi
+pangoCairoShowGlyphItem :: CairoT RealWorld -> T.Text -> PangoGlyphItem -> IO ()
+pangoCairoShowGlyphItem (CairoT fcr) txt (PangoGlyphItem fgi) =
+	withForeignPtr fcr \cr -> T.withCStringLen txt \(ctxt, _) ->
+		withForeignPtr fgi $ c_pango_cairo_show_glyph_item cr ctxt
 
 foreign import ccall "pango_cairo_show_glyph_item"
 	c_pango_cairo_show_glyph_item ::

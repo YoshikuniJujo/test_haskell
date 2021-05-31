@@ -61,7 +61,7 @@ main = do
 	pangoLayoutSetIndent pl2 (30 * pangoScale)
 --	pangoLayoutSetLineSpacing pl2 2
 	pangoLayoutSetAlignment pl2 pangoAlignCenter
-	pangoLayoutSet pl2 $ T.pack someText
+	pangoLayoutSet pl2 someText
 	cairoMoveTo cr 100 150
 	fpl2 <- pangoLayoutFreeze pl2
 	putStrLn "0, 1, 5, 6"
@@ -237,9 +237,9 @@ main = do
 		CairoImageArgb32 a -> writePng "try-pango-layout.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
 
-someText :: String
-someText = unlines [
-	concat $ lines [nowdoc|
+someText :: T.Text
+someText = T.unlines [
+	T.concat $ T.lines [nowdoc|
 Haskellとの出会いは、
 「Rubyソースコード完全解説」という書籍の、
 「(Rubyのソースコードは)少なくともHaskellやPL/Iで
@@ -247,7 +247,7 @@ Haskellとの出会いは、
 「『一般人に読め』ないHaskellとは、一体、何だ?」と興味を持ち、
 「Haskell: The Craft of Functional Programming」という書籍を購入しました。
 |],
-	concat $ lines [nowdoc|
+	T.concat $ T.lines [nowdoc|
 この本は洋書でしたが、実際に手を動かしながら、学んでいくことができたので、
 楽しく読み進めることができました。
 それまでにも、いくつかのプログラミング言語を学んだ経験があったのですが、
