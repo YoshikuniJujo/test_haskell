@@ -106,7 +106,7 @@ todo
 	+ [x] `Data.Text.CString`
 	+ [ ] `System.Glib`
 	+ [ ] `Graphics.Pango`
-* [ ] use `c-enum` in `System.Glib.SinglyLInkedList`
+* [x] use `c-enum` in `System.Glib.SinglyLInkedList`
 * [ ] make export list
 	+ [x] `Foreign.Ptr.Misc`
 	+ [x] `Foreign.C.String`
