@@ -2,7 +2,18 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module System.Glib.SimpleXmlSubsetParser where
+module System.Glib.SimpleXmlSubsetParser (
+	GMarkupParseContext(..), mkGMarkupParseContext,
+	gMarkupParseContextParse,
+	pattern GErrorMarkup,
+	pattern GMarkupErrorBadUtf8,
+	pattern GMarkupErrorEmpty,
+	pattern GMarkupErrorParse,
+	pattern GMarkupErrorUnknownElement,
+	pattern GMarkupErrorUnknownAttribute,
+	pattern GMarkupErrorInvalidContent,
+	pattern GMarkupErrorMissingAttribute
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)

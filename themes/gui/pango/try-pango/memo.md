@@ -106,6 +106,7 @@ todo
 	+ [x] `Data.Text.CString`
 	+ [ ] `System.Glib`
 	+ [ ] `Graphics.Pango`
+* [ ] use `c-enum` in `System.Glib.SinglyLInkedList`
 * [ ] make export list
 	+ [x] `Foreign.Ptr.Misc`
 	+ [x] `Foreign.C.String`
@@ -117,7 +118,7 @@ todo
 		- [x] `Foreign.StringPartial`
 	+ [ ] `System.Glib`
 		- [x] `SinglyLinkedLists`
-		- [ ] `SimpleXmlSubsetParser`
+		- [x] `SimpleXmlSubsetParser`
 		- [ ] `ErrorReporting`
 		- [ ] `Quarks`
 			* [ ] itself
