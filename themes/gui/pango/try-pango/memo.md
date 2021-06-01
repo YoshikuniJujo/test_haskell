@@ -88,6 +88,13 @@ todo
 * [ ] remove unused modules
 	+ [x] remove `Foreign.C.StringPartial`
 	+ [ ] others
+* [ ] rename modules
+	+ [x] rename `Foreign.C.String.Tools` to `Foreign.C.String.Misc`
+	+ [ ] others
+* [ ] separate modules from modules
+	+ [x] separate `Foreign.C.String.ForeignCStringLen` from
+		`Foreign.C.String.Misc`
+	+ [ ] others
 * [ ] make export list
 	+ [ ] `Foreign.Ptr.Misc`
 	+ [ ] `Foreign.C`
@@ -515,7 +522,8 @@ src
 ├── Foreign
 │   ├── C
 │   │   └── String
-│   │       ├── Tools.hs
+│   │       ├── ForeignCStringLen.hs
+│   │       ├── Misc.hs
 │   │       └── Utf8.hs
 │   └── Ptr
 │       └── Misc.hs
@@ -563,5 +571,5 @@ src
         ├── SimpleXmlSubsetParser.hsc
         └── SinglyLinkedLists.hsc
 
-20 directories, 36 files
+20 directories, 37 files
 ```

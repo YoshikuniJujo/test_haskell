@@ -37,7 +37,8 @@ import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
 import Foreign.C.String.Utf8
-import Foreign.C.String.Tools
+import Foreign.C.String.Misc
+import Foreign.C.String.ForeignCStringLen
 import Control.Monad.Primitive
 import Data.Array
 import Data.Bool

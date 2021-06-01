@@ -13,7 +13,8 @@ import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
 import Foreign.C.String.Utf8
-import Foreign.C.String.Tools
+import Foreign.C.String.ForeignCStringLen
+import Foreign.C.String.Misc
 import Foreign.C.Enum
 import Foreign.C.Struct
 import Control.Monad.Primitive
