@@ -27,6 +27,7 @@ library
   exposed-modules:
       Classical
       Lib
+      Triple
   other-modules:
       Paths_try_curry_howard
   hs-source-dirs:
