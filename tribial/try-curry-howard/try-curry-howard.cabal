@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Classical
       Lib
   other-modules:
       Paths_try_curry_howard
