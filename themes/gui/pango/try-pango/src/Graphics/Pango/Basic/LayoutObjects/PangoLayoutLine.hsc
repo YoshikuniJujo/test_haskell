@@ -20,22 +20,22 @@ import System.Glib.SinglyLinkedLists
 #include <pango/pango.h>
 
 pangoLayoutGetLine :: PangoLayout -> CInt -> IO (Maybe PangoLayoutLine)
-pangoLayoutGetLine (PangoLayout_ fpl) ln = makePangoLayoutLineMaybe
-	=<< withForeignPtr fpl \pl -> c_pango_layout_get_line pl ln
+pangoLayoutGetLine (PangoLayout_ fl) ln = makePangoLayoutLineMaybe fl
+	=<< withForeignPtr fl \pl -> c_pango_layout_get_line pl ln
 
 foreign import ccall "pango_layout_get_line" c_pango_layout_get_line ::
 	Ptr PangoLayout -> CInt -> IO (Ptr PangoLayoutLine)
 
 newtype PangoLayoutLine = PangoLayoutLine (ForeignPtr PangoLayoutLine) deriving Show
 
-makePangoLayoutLine :: Ptr PangoLayoutLine -> IO PangoLayoutLine
-makePangoLayoutLine p = PangoLayoutLine <$> newForeignPtr p (c_pango_layout_line_unref p)
+makePangoLayoutLine :: ForeignPtr PangoLayout -> Ptr PangoLayoutLine -> IO PangoLayoutLine
+makePangoLayoutLine fl p = PangoLayoutLine <$> newForeignPtr p (touchForeignPtr fl)
 
-makePangoLayoutLineMaybe :: Ptr PangoLayoutLine -> IO (Maybe PangoLayoutLine)
-makePangoLayoutLineMaybe = \case
+makePangoLayoutLineMaybe :: ForeignPtr PangoLayout -> Ptr PangoLayoutLine -> IO (Maybe PangoLayoutLine)
+makePangoLayoutLineMaybe fl = \case
 	NullPtr -> pure Nothing
 	p -> Just . PangoLayoutLine
-		<$> newForeignPtr p (c_pango_layout_line_unref p)
+		<$> newForeignPtr p (touchForeignPtr fl)
 
 makePangoLayoutLine0 :: Ptr PangoLayoutLine -> IO PangoLayoutLine
 makePangoLayoutLine0 p = PangoLayoutLine <$> newForeignPtr p (pure ())
@@ -45,7 +45,7 @@ foreign import ccall "pango_layout_line_unref" c_pango_layout_line_unref ::
 
 pangoLayoutGetLines :: PangoLayout -> IO [PangoLayoutLine]
 pangoLayoutGetLines (PangoLayout_ fl) = withForeignPtr fl \pl ->
-	(makePangoLayoutLine `mapM`) =<< g_slist_to_list =<< c_pango_layout_get_lines pl
+	(makePangoLayoutLine fl `mapM`) =<< g_slist_to_list' =<< c_pango_layout_get_lines pl
 
 foreign import ccall "pango_layout_get_lines" c_pango_layout_get_lines ::
 	Ptr PangoLayout -> IO (Ptr (GSList PangoLayoutLine))

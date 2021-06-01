@@ -37,3 +37,6 @@ todo
 	+ [x] remove duplicated `boolToGboolean` and `gbooleanAndBool`
 	+ [x] `pangoLayoutLineXToIndex`
 	+ [x] `pangoLayoutLineGetXRanges`
+* [x] repair about GC
+	+ [x] `pangoLayoutGetLine`
+	+ [x] `pangoLayoutGetLines`

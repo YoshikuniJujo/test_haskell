@@ -22,16 +22,16 @@ import Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine
 newtype PangoLayoutIter = PangoLayoutIter (ForeignPtr PangoLayoutIter)
 	deriving Show
 
-makePangoLayoutIter :: Ptr PangoLayoutIter -> IO PangoLayoutIter
-makePangoLayoutIter p =
-	PangoLayoutIter <$> newForeignPtr p (c_pango_layout_iter_free p)
+makePangoLayoutIter :: ForeignPtr PangoLayout -> Ptr PangoLayoutIter -> IO PangoLayoutIter
+makePangoLayoutIter fl p =
+	PangoLayoutIter <$> newForeignPtr p (c_pango_layout_iter_free p >> touchForeignPtr fl)
 
 foreign import ccall "pango_layout_iter_free" c_pango_layout_iter_free ::
 	Ptr PangoLayoutIter -> IO ()
 
 pangoLayoutGetIter :: PangoLayout -> IO PangoLayoutIter
 pangoLayoutGetIter (PangoLayout_ fl) =
-	makePangoLayoutIter =<< withForeignPtr fl c_pango_layout_get_iter
+	makePangoLayoutIter fl =<< withForeignPtr fl c_pango_layout_get_iter
 
 foreign import ccall "pango_layout_get_iter" c_pango_layout_get_iter ::
 	Ptr PangoLayout -> IO (Ptr PangoLayoutIter)
@@ -101,7 +101,10 @@ foreign import ccall "pango_layout_iter_get_run" c_pango_layout_iter_get_run ::
 
 pangoLayoutIterGetLine :: PangoLayoutIter -> IO PangoLayoutLine
 pangoLayoutIterGetLine (PangoLayoutIter fli) =
-	makePangoLayoutLine =<< withForeignPtr fli c_pango_layout_iter_get_line
+	makePangoLayoutLine' fli =<< withForeignPtr fli c_pango_layout_iter_get_line
+
+makePangoLayoutLine' :: ForeignPtr PangoLayoutIter -> Ptr PangoLayoutLine -> IO PangoLayoutLine
+makePangoLayoutLine' fli p = PangoLayoutLine <$> newForeignPtr p (touchForeignPtr fli)
 
 foreign import ccall "pango_layout_iter_get_line"
 	c_pango_layout_iter_get_line ::

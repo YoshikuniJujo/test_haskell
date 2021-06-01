@@ -49,3 +49,5 @@ todo
 	+ [x] pangoLayoutIterGetRunExtents
 	+ [x] pangoLayoutIterGetLineYrange
 	+ [x] pangoLayoutIterGetLineExtents
+* [x] repair about GC
+	+ [x] pangoLayoutGetIter
