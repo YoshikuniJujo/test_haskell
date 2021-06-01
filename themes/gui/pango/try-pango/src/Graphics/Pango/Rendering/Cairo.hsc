@@ -73,13 +73,12 @@ foreign import ccall "pango_cairo_show_layout_line"
 	c_pango_cairo_show_layout_line ::
 	Ptr (CairoT s) -> Ptr PangoLayoutLine -> IO ()
 
+pangoCairoShowLayout :: CairoT RealWorld -> PangoLayout -> IO ()
+pangoCairoShowLayout (CairoT fcr) (PangoLayout_ fl) = withForeignPtr fcr \cr ->
+	withForeignPtr fl $ c_pango_cairo_show_layout cr
+
 foreign import ccall "pango_cairo_show_layout" c_pango_cairo_show_layout ::
 	Ptr (CairoT s) -> Ptr PangoLayout -> IO ()
-
-pangoCairoShowLayout :: CairoT RealWorld -> PangoLayout -> IO ()
-pangoCairoShowLayout (CairoT fcr) (PangoLayout_ fpl) =
-	withForeignPtr fcr \cr -> withForeignPtr fpl \pl ->
-		c_pango_cairo_show_layout cr pl
 
 foreign import ccall "pango_cairo_show_error_underline" c_pango_cairo_show_error_underline ::
 	Ptr (CairoT s) -> #{type double} -> #{type double} -> #{type double} -> #{type double} -> IO ()

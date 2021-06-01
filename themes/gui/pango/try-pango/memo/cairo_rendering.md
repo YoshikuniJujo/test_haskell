@@ -20,7 +20,7 @@ review
 	+ [x] use `Text`
 	+ [x] others
 * [x] pangoCairoShowLayoutLine
-* [ ] pangoCairoShowLayout
+* [x] pangoCairoShowLayout
 * [ ] pangoCairoShowErrorUnderline
 * [ ] pangoCairoLayoutLinePath
 * [ ] pangoCairoLayoutPath
