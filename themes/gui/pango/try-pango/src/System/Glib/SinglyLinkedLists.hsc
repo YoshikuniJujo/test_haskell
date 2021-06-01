@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module System.Glib.SinglyLinkedLists where
+module System.Glib.SinglyLinkedLists (GSList, g_slist_to_list) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)

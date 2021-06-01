@@ -85,6 +85,9 @@ todo
 * [x] `Graphics.Pango.LayoutObjects.PangoLayoutLine`
 * [x] Rendering with Pango
 	+ [x] Cairo Rendering
+* [ ] review `pangoLayoutGetLine`
+* [ ] review `pangoLayoutGetLines`
+* [ ] review `pangoLayoutGetIter`
 * [ ] remove unused modules
 	+ [x] remove `Foreign.C.StringPartial`
 	+ [x] remove `Data.Text.Gunichar`
@@ -113,6 +116,12 @@ todo
 		- [x] `CString`
 		- [x] `Foreign.StringPartial`
 	+ [ ] `System.Glib`
+		- [ ] `SinglyLinkedLists`
+		- [ ] `SimpleXmlSubsetParser`
+		- [ ] `ErrorReporting`
+		- [ ] `Quarks`
+			* [ ] itself
+			* [ ] `Internal`
 	+ [ ] `Graphics.Pango`
 * [ ] think about package name
 	+ simple-cairo-pango ?
