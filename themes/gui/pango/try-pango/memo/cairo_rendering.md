@@ -21,7 +21,7 @@ review
 	+ [x] others
 * [x] pangoCairoShowLayoutLine
 * [x] pangoCairoShowLayout
-* [ ] pangoCairoShowErrorUnderline
+* [x] pangoCairoShowErrorUnderline
 * [ ] pangoCairoLayoutLinePath
 * [ ] pangoCairoLayoutPath
 * [ ] pangoCairoErrorUnderlinePath
