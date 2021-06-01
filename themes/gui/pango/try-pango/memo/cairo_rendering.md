@@ -19,7 +19,7 @@ review
 * [x] pangoCairoShowGlyphItem
 	+ [x] use `Text`
 	+ [x] others
-* [ ] pangoCairoShowLayoutLine
+* [x] pangoCairoShowLayoutLine
 * [ ] pangoCairoShowLayout
 * [ ] pangoCairoShowErrorUnderline
 * [ ] pangoCairoLayoutLinePath

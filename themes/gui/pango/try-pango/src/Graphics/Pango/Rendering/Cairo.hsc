@@ -64,14 +64,14 @@ foreign import ccall "pango_cairo_show_glyph_item"
 	c_pango_cairo_show_glyph_item ::
 	Ptr (CairoT s) -> CString -> Ptr PangoGlyphItem -> IO ()
 
+pangoCairoShowLayoutLine :: CairoT RealWorld -> PangoLayoutLine -> IO ()
+pangoCairoShowLayoutLine (CairoT fcr) (PangoLayoutLine fll) =
+	withForeignPtr fcr \cr ->
+		withForeignPtr fll $ c_pango_cairo_show_layout_line cr
+
 foreign import ccall "pango_cairo_show_layout_line"
 	c_pango_cairo_show_layout_line ::
-	Ptr (CairoT s) -> Ptr PangoLayoutLine -> IO()
-
-pangoCairoShowLayoutLine :: CairoT RealWorld -> PangoLayoutLine -> IO ()
-pangoCairoShowLayoutLine (CairoT fcr) (PangoLayoutLine fpll) =
-	withForeignPtr fcr \cr -> withForeignPtr fpll \pll ->
-		c_pango_cairo_show_layout_line cr pll
+	Ptr (CairoT s) -> Ptr PangoLayoutLine -> IO ()
 
 foreign import ccall "pango_cairo_show_layout" c_pango_cairo_show_layout ::
 	Ptr (CairoT s) -> Ptr PangoLayout -> IO ()
