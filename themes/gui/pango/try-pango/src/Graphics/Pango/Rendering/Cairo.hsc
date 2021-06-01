@@ -64,7 +64,7 @@ foreign import ccall "pango_cairo_show_glyph_item"
 	c_pango_cairo_show_glyph_item ::
 	Ptr (CairoT s) -> CString -> Ptr PangoGlyphItem -> IO ()
 
-pangoCairoShowLayoutLine :: CairoT RealWorld -> PangoLayoutLine -> IO ()
+pangoCairoShowLayoutLine :: CairoTIO -> PangoLayoutLine -> IO ()
 pangoCairoShowLayoutLine (CairoT fcr) (PangoLayoutLine fll) =
 	withForeignPtr fcr \cr ->
 		withForeignPtr fll $ c_pango_cairo_show_layout_line cr
@@ -73,7 +73,7 @@ foreign import ccall "pango_cairo_show_layout_line"
 	c_pango_cairo_show_layout_line ::
 	Ptr (CairoT s) -> Ptr PangoLayoutLine -> IO ()
 
-pangoCairoShowLayout :: CairoT RealWorld -> PangoLayout -> IO ()
+pangoCairoShowLayout :: CairoTIO -> PangoLayout -> IO ()
 pangoCairoShowLayout (CairoT fcr) (PangoLayout_ fl) = withForeignPtr fcr \cr ->
 	withForeignPtr fl $ c_pango_cairo_show_layout cr
 
@@ -81,7 +81,7 @@ foreign import ccall "pango_cairo_show_layout" c_pango_cairo_show_layout ::
 	Ptr (CairoT s) -> Ptr PangoLayout -> IO ()
 
 pangoCairoShowErrorUnderline ::
-	CairoT RealWorld -> CDouble -> CDouble -> CDouble -> CDouble -> IO ()
+	CairoTIO -> CDouble -> CDouble -> CDouble -> CDouble -> IO ()
 pangoCairoShowErrorUnderline (CairoT fcr) x y w h =
 	withForeignPtr fcr \cr -> c_pango_cairo_show_error_underline cr x y w h
 
@@ -89,17 +89,14 @@ foreign import ccall "pango_cairo_show_error_underline"
 	c_pango_cairo_show_error_underline ::
 	Ptr (CairoT s) -> CDouble -> CDouble -> CDouble -> CDouble -> IO ()
 
-foreign import ccall "pango_cairo_layout_line_path" c_pango_cairo_layout_line_path ::
+pangoCairoLayoutLinePath :: CairoTIO -> PangoLayoutLine -> IO ()
+pangoCairoLayoutLinePath (CairoT fcr) (PangoLayoutLine fll) =
+	withForeignPtr fcr \cr ->
+		withForeignPtr fll $ c_pango_cairo_layout_line_path cr
+
+foreign import ccall "pango_cairo_layout_line_path"
+	c_pango_cairo_layout_line_path ::
 	Ptr (CairoT s) -> Ptr PangoLayoutLine -> IO ()
-
-pangoCairoLayoutLinePath :: PrimMonad m =>
-	CairoT (PrimState m) -> PangoLayoutLine -> m ()
-pangoCairoLayoutLinePath (CairoT fcr) (PangoLayoutLine fpll) = unsafeIOToPrim
-	$ withForeignPtr fcr \cr -> withForeignPtr fpll \pll ->
-		c_pango_cairo_layout_line_path cr pll
-
-foreign import ccall "pango_cairo_layout_path" c_pango_cairo_layout_path ::
-	Ptr (CairoT s) -> Ptr PangoLayout -> IO ()
 
 pangoCairoLayoutPath :: PrimMonad m =>
 	CairoT (PrimState m) -> PangoLayout -> m ()
@@ -107,10 +104,13 @@ pangoCairoLayoutPath (CairoT fcr) (PangoLayout_ fpl) = unsafeIOToPrim
 	$ withForeignPtr fcr \cr -> withForeignPtr fpl \pl ->
 		c_pango_cairo_layout_path cr pl
 
-foreign import ccall "pango_cairo_error_underline_path" c_pango_cairo_error_underline_path ::
-	Ptr (CairoT s) -> #{type double} -> #{type double} -> #{type double} -> #{type double} -> IO ()
+foreign import ccall "pango_cairo_layout_path" c_pango_cairo_layout_path ::
+	Ptr (CairoT s) -> Ptr PangoLayout -> IO ()
 
 pangoCairoErrorUnderlinePath :: PrimMonad m =>
 	CairoT (PrimState m) -> #{type double} -> #{type double} -> #{type double} -> #{type double} -> m ()
 pangoCairoErrorUnderlinePath (CairoT fcr) x y w h = unsafeIOToPrim
 	$ withForeignPtr fcr \cr -> c_pango_cairo_error_underline_path cr x y w h
+
+foreign import ccall "pango_cairo_error_underline_path" c_pango_cairo_error_underline_path ::
+	Ptr (CairoT s) -> #{type double} -> #{type double} -> #{type double} -> #{type double} -> IO ()
