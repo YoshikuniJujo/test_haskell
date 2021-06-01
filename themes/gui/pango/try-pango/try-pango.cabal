@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 258d363394dbf3c33c54358e02b2002d1ba5ecc179748b08d3af846c1ee4119d
+-- hash: 3a49c72690094ac4409039de2e046216dd6dd34ce1cec55cc5e45f253cd53466
 
 name:           try-pango
 version:        0.1.0.0
@@ -29,7 +29,6 @@ library
   exposed-modules:
       Data.Text.CString
       Data.Text.Foreign.StringPartial
-      Data.Text.Gunichar
       Foreign.C.String.ForeignCStringLen
       Foreign.C.String.Misc
       Foreign.C.String.Utf8

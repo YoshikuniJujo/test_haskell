@@ -87,6 +87,7 @@ todo
 	+ [x] Cairo Rendering
 * [ ] remove unused modules
 	+ [x] remove `Foreign.C.StringPartial`
+	+ [x] remove `Data.Text.Gunichar`
 	+ [ ] others
 * [ ] rename modules
 	+ [x] rename `Foreign.C.String.Tools` to `Foreign.C.String.Misc`
@@ -95,13 +96,16 @@ todo
 	+ [x] separate `Foreign.C.String.ForeignCStringLen` from
 		`Foreign.C.String.Misc`
 	+ [ ] others
+* [ ] remove functions
+	+ [x] `Data.Text.CString`
+	+ [ ] others
 * [ ] make export list
 	+ [ ] `Foreign.Ptr.Misc`
 	+ [ ] `Foreign.C`
-		- [ ] String
-			* [ ] Tools
-			* [ ] Utf8
-		- [ ] StringPartial
+		- [ ] `String`
+			* [ ] `ForeignCStringLen`
+			* [ ] `Utf8`
+			* [ ] `Misc`
 	+ [ ] `Data.Text`
 		- [ ] `CString`
 		- [ ] `Foreign`
