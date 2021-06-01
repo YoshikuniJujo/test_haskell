@@ -83,8 +83,9 @@ todo
 	+ [x] Vertical Text
 * [x] `Graphics.Pango.LayoutObjects.PangoLayoutIter`
 * [x] `Graphics.Pango.LayoutObjects.PangoLayoutLine`
-* [ ] Rendering with Pango
-	+ [ ] Cairo Rendering
+* [x] Rendering with Pango
+	+ [x] Cairo Rendering
+* [ ] make export list
 * [ ] think about package name
 	+ simple-cairo-pango ?
 * [ ] consider to remove `deriving Show` of many types

@@ -98,19 +98,18 @@ foreign import ccall "pango_cairo_layout_line_path"
 	c_pango_cairo_layout_line_path ::
 	Ptr (CairoT s) -> Ptr PangoLayoutLine -> IO ()
 
-pangoCairoLayoutPath :: PrimMonad m =>
-	CairoT (PrimState m) -> PangoLayout -> m ()
-pangoCairoLayoutPath (CairoT fcr) (PangoLayout_ fpl) = unsafeIOToPrim
-	$ withForeignPtr fcr \cr -> withForeignPtr fpl \pl ->
-		c_pango_cairo_layout_path cr pl
+pangoCairoLayoutPath :: CairoTIO -> PangoLayout -> IO ()
+pangoCairoLayoutPath (CairoT fcr) (PangoLayout_ fl) = withForeignPtr fcr \cr ->
+	withForeignPtr fl $ c_pango_cairo_layout_path cr
 
 foreign import ccall "pango_cairo_layout_path" c_pango_cairo_layout_path ::
 	Ptr (CairoT s) -> Ptr PangoLayout -> IO ()
 
-pangoCairoErrorUnderlinePath :: PrimMonad m =>
-	CairoT (PrimState m) -> #{type double} -> #{type double} -> #{type double} -> #{type double} -> m ()
-pangoCairoErrorUnderlinePath (CairoT fcr) x y w h = unsafeIOToPrim
-	$ withForeignPtr fcr \cr -> c_pango_cairo_error_underline_path cr x y w h
+pangoCairoErrorUnderlinePath ::
+	CairoTIO -> CDouble -> CDouble -> CDouble -> CDouble -> IO ()
+pangoCairoErrorUnderlinePath (CairoT fcr) x y w h = withForeignPtr fcr \cr ->
+	c_pango_cairo_error_underline_path cr x y w h
 
-foreign import ccall "pango_cairo_error_underline_path" c_pango_cairo_error_underline_path ::
-	Ptr (CairoT s) -> #{type double} -> #{type double} -> #{type double} -> #{type double} -> IO ()
+foreign import ccall "pango_cairo_error_underline_path"
+	c_pango_cairo_error_underline_path ::
+	Ptr (CairoT s) -> CDouble -> CDouble -> CDouble -> CDouble -> IO ()

@@ -23,5 +23,5 @@ review
 * [x] pangoCairoShowLayout
 * [x] pangoCairoShowErrorUnderline
 * [x] pangoCairoLayoutLinePath
-* [ ] pangoCairoLayoutPath
-* [ ] pangoCairoErrorUnderlinePath
+* [x] pangoCairoLayoutPath
+* [x] pangoCairoErrorUnderlinePath
