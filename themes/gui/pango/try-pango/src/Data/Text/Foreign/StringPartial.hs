@@ -2,13 +2,18 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Text.Foreign.StringPartial (
-	CStringPart, peekCStringPart, withCStringPart ) where
+	CStringPart, emptyOrCStringPart, peekCStringPart, withCStringPart ) where
 
 import Foreign.Ptr
-import Foreign.C.StringPartial (CStringPart)
+import Foreign.C.Types
 
 import qualified Data.Text as T
 import qualified Data.Text.Foreign as T
+
+type CStringPart = (Ptr CChar, Ptr CChar)
+
+emptyOrCStringPart :: a -> a -> CStringPart -> a
+emptyOrCStringPart d f (s, e) | s == e = d | otherwise = f
 
 peekCStringPart :: CStringPart -> IO T.Text
 peekCStringPart (s, e) = T.peekCStringLen (s, e `minusPtr` s)

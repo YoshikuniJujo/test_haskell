@@ -10,7 +10,6 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
-import Foreign.C.StringPartial
 import Foreign.C.Enum
 import Control.Exception
 import Data.Traversable
@@ -200,7 +199,7 @@ foreign import ccall "pango_script_iter_free" c_pango_script_iter_free ::
 pangoScriptIterGetRanges :: Ptr PangoScriptIter -> IO [(T.CStringPart, PangoScript)]
 pangoScriptIterGetRanges i = unsafeInterleaveIO do
 	rs@(r, _) <- pangoScriptIterGetRange i
-	(\r' e f -> emptyOrCStringPart e f r') r (pure [])
+	(\r' e f -> T.emptyOrCStringPart e f r') r (pure [])
 		$ pangoScriptIterNext i
 			>>= bool (pure [rs]) ((rs :) <$> pangoScriptIterGetRanges i)
 

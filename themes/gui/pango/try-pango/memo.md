@@ -85,7 +85,23 @@ todo
 * [x] `Graphics.Pango.LayoutObjects.PangoLayoutLine`
 * [x] Rendering with Pango
 	+ [x] Cairo Rendering
+* [ ] remove unused modules
+	+ [x] remove `Foreign.C.StringPartial`
+	+ [ ] others
 * [ ] make export list
+	+ [ ] `Foreign.Ptr.Misc`
+	+ [ ] `Foreign.C`
+		- [ ] String
+			* [ ] Tools
+			* [ ] Utf8
+		- [ ] StringPartial
+	+ [ ] `Data.Text`
+		- [ ] `CString`
+		- [ ] `Foreign`
+			* [ ] `StringPartial`
+		- [ ] `Gunichar`
+	+ [ ] `System.Glib`
+	+ [ ] `Graphics.Pango`
 * [ ] think about package name
 	+ simple-cairo-pango ?
 * [ ] consider to remove `deriving Show` of many types
@@ -485,3 +501,67 @@ old
 ### consider
 
 * to separate System.Glib.SinglyLinkedLists as simple-glib-linked-lists with System.Glib.DoublyLinkedLists
+
+### directory tree
+
+```
+src
+├── Data
+│   └── Text
+│       ├── CString.hs
+│       ├── Foreign
+│       │   └── StringPartial.hs
+│       └── Gunichar.hsc
+├── Foreign
+│   ├── C
+│   │   └── String
+│   │       ├── Tools.hs
+│   │       └── Utf8.hs
+│   └── Ptr
+│       └── Misc.hs
+├── Graphics
+│   └── Pango
+│       ├── Angle.hs
+│       ├── Basic
+│       │   ├── BidirectionalText.hsc
+│       │   ├── Fonts
+│       │   │   ├── PangoFontDescription
+│       │   │   │   ├── Type.hs
+│       │   │   │   └── Variations.hs
+│       │   │   └── PangoFontDescription.hsc
+│       │   ├── GlyphStorage
+│       │   │   └── PangoMatrix.hsc
+│       │   ├── LayoutObjects
+│       │   │   ├── PangoLayout.hsc
+│       │   │   ├── PangoLayoutIter.hsc
+│       │   │   └── PangoLayoutLine.hsc
+│       │   ├── Rendering.hsc
+│       │   ├── ScriptsAndLanguages
+│       │   │   ├── PangoLanguage.hsc
+│       │   │   ├── PangoScript.hsc
+│       │   │   └── Types.hsc
+│       │   ├── TabStops.hsc
+│       │   ├── TextAttributes
+│       │   │   ├── Internal.hsc
+│       │   │   └── Template.hsc
+│       │   ├── TextAttributes.hs
+│       │   └── VerticalText.hsc
+│       ├── Bool.hsc
+│       ├── PangoFixed.hsc
+│       ├── PangoRectangle.hsc
+│       ├── Rendering
+│       │   └── Cairo.hsc
+│       ├── Template.hs
+│       ├── Types.hsc
+│       └── Values.hsc
+└── System
+    └── Glib
+        ├── ErrorReporting.hsc
+        ├── Quarks
+        │   └── Internal.hsc
+        ├── Quarks.hsc
+        ├── SimpleXmlSubsetParser.hsc
+        └── SinglyLinkedLists.hsc
+
+20 directories, 36 files
+```
