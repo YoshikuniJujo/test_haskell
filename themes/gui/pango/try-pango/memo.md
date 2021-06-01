@@ -85,9 +85,9 @@ todo
 * [x] `Graphics.Pango.LayoutObjects.PangoLayoutLine`
 * [x] Rendering with Pango
 	+ [x] Cairo Rendering
-* [ ] review `pangoLayoutGetLine`
-* [ ] review `pangoLayoutGetLines`
-* [ ] review `pangoLayoutGetIter`
+* [x] review `pangoLayoutGetLine`
+* [x] review `pangoLayoutGetLines`
+* [x] review `pangoLayoutGetIter`
 * [ ] remove unused modules
 	+ [x] remove `Foreign.C.StringPartial`
 	+ [x] remove `Data.Text.Gunichar`
@@ -116,7 +116,7 @@ todo
 		- [x] `CString`
 		- [x] `Foreign.StringPartial`
 	+ [ ] `System.Glib`
-		- [ ] `SinglyLinkedLists`
+		- [x] `SinglyLinkedLists`
 		- [ ] `SimpleXmlSubsetParser`
 		- [ ] `ErrorReporting`
 		- [ ] `Quarks`
