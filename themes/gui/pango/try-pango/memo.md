@@ -88,29 +88,30 @@ todo
 * [ ] remove unused modules
 	+ [x] remove `Foreign.C.StringPartial`
 	+ [x] remove `Data.Text.Gunichar`
-	+ [ ] others
+	+ [ ] `System.Glib`
+	+ [ ] `Graphics.Pango`
 * [ ] rename modules
 	+ [x] rename `Foreign.C.String.Tools` to `Foreign.C.String.Misc`
-	+ [ ] others
+	+ [ ] `System.Glib`
+	+ [ ] `Graphics.Pango`
 * [ ] separate modules from modules
 	+ [x] separate `Foreign.C.String.ForeignCStringLen` from
 		`Foreign.C.String.Misc`
-	+ [ ] others
+	+ [ ] `System.Glib`
+	+ [ ] `Graphics.Pango`
 * [ ] remove functions
 	+ [x] `Data.Text.CString`
-	+ [ ] others
+	+ [ ] `System.Glib`
+	+ [ ] `Graphics.Pango`
 * [ ] make export list
-	+ [ ] `Foreign.Ptr.Misc`
-	+ [ ] `Foreign.C`
-		- [ ] `String`
-			* [ ] `ForeignCStringLen`
-			* [ ] `Utf8`
-			* [ ] `Misc`
-	+ [ ] `Data.Text`
-		- [ ] `CString`
-		- [ ] `Foreign`
-			* [ ] `StringPartial`
-		- [ ] `Gunichar`
+	+ [x] `Foreign.Ptr.Misc`
+	+ [x] `Foreign.C.String`
+		- [x] `ForeignCStringLen`
+		- [x] `Utf8`
+		- [x] `Misc`
+	+ [x] `Data.Text`
+		- [x] `CString`
+		- [x] `Foreign.StringPartial`
 	+ [ ] `System.Glib`
 	+ [ ] `Graphics.Pango`
 * [ ] think about package name
@@ -520,9 +521,8 @@ src
 ├── Data
 │   └── Text
 │       ├── CString.hs
-│       ├── Foreign
-│       │   └── StringPartial.hs
-│       └── Gunichar.hsc
+│       └── Foreign
+│           └── StringPartial.hs
 ├── Foreign
 │   ├── C
 │   │   └── String
@@ -575,5 +575,5 @@ src
         ├── SimpleXmlSubsetParser.hsc
         └── SinglyLinkedLists.hsc
 
-20 directories, 37 files
+20 directories, 36 files
 ```

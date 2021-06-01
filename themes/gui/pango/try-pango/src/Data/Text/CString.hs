@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Text.CString where
+module Data.Text.CString (peekCStringText) where
 
 import Foreign.C.String
 import Foreign.C.String.Misc

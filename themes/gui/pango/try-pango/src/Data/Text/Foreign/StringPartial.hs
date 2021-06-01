@@ -2,7 +2,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Text.Foreign.StringPartial (
-	CStringPart, emptyOrCStringPart, peekCStringPart, withCStringPart ) where
+	CStringPart, emptyOrCStringPart, peekCStringPart, withCStringPart
+	) where
 
 import Foreign.Ptr
 import Foreign.C.Types
