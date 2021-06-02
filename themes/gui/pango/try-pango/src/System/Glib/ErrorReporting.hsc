@@ -1,6 +1,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module System.Glib.ErrorReporting where
+module System.Glib.ErrorReporting (
+	GError(..), mkGError, gErrorReport
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable

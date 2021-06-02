@@ -119,7 +119,7 @@ todo
 	+ [ ] `System.Glib`
 		- [x] `SinglyLinkedLists`
 		- [x] `SimpleXmlSubsetParser`
-		- [ ] `ErrorReporting`
+		- [x] `ErrorReporting`
 		- [ ] `Quarks`
 			* [ ] itself
 			* [ ] `Internal`
