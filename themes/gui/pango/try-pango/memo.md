@@ -116,13 +116,13 @@ todo
 	+ [x] `Data.Text`
 		- [x] `CString`
 		- [x] `Foreign.StringPartial`
-	+ [ ] `System.Glib`
+	+ [x] `System.Glib`
 		- [x] `SinglyLinkedLists`
 		- [x] `SimpleXmlSubsetParser`
 		- [x] `ErrorReporting`
-		- [ ] `Quarks`
-			* [ ] itself
-			* [ ] `Internal`
+		- [x] `Quarks`
+			* [x] itself
+			* [x] `Internal`
 	+ [ ] `Graphics.Pango`
 * [ ] think about package name
 	+ simple-cairo-pango ?

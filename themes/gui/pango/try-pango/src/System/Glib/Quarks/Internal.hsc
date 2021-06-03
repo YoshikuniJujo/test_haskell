@@ -2,7 +2,10 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module System.Glib.Quarks.Internal where
+module System.Glib.Quarks.Internal (
+	GQuark(..),
+	gQuarkFromString, gQuarkToString, gInternString, gUninternString,
+	gQuarkTryString ) where
 
 import Foreign.Storable
 import Foreign.C.String
