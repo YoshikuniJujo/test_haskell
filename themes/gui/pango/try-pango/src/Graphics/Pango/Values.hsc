@@ -11,10 +11,6 @@ import Data.Word
 pangoScale :: Num n => n
 pangoScale = #const PANGO_SCALE
 
-newtype PangoVariant = PangoVariant #{type PangoVariant} deriving Show
-
-#enum PangoVariant, PangoVariant, PANGO_VARIANT_NORMAL, PANGO_VARIANT_SMALL_CAPS
-
 newtype PangoWeight = PangoWeight #{type PangoWeight} deriving Show
 
 #enum PangoWeight, PangoWeight, PANGO_WEIGHT_THIN, PANGO_WEIGHT_ULTRALIGHT, \

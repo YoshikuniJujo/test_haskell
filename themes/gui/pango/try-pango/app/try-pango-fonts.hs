@@ -68,9 +68,9 @@ readStyle "italic" = PangoStyleItalic
 readStyle _ = PangoStyleNormal
 
 readVariant :: String -> PangoVariant
-readVariant "normal" = pangoVariantNormal
-readVariant "small-caps" = pangoVariantSmallCaps
-readVariant _ = pangoVariantNormal
+readVariant "normal" = PangoVariantNormal
+readVariant "small-caps" = PangoVariantSmallCaps
+readVariant _ = PangoVariantNormal
 
 readWeight :: String -> PangoWeight
 readWeight "thin" = pangoWeightThin

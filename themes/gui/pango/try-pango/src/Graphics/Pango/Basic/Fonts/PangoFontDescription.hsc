@@ -135,6 +135,10 @@ pangoFontDescriptionGetStyle (PangoFontDescription fpfd) = unsafePerformIO
 foreign import ccall "pango_font_description_get_style" c_pango_font_description_get_style ::
 	Ptr PangoFontDescription -> IO #type PangoStyle
 
+enum "PangoVariant" ''#{type PangoVariant} [''Show] [
+	("PangoVariantNormal", #{const PANGO_VARIANT_NORMAL}),
+	("PangoVariantSmallCaps", #{const PANGO_VARIANT_SMALL_CAPS}) ]
+
 instance PangoFontDescriptionSetting PangoVariant where
 	pangoFontDescriptionSet = pangoFontDescriptionSetVariant
 	pangoFontDescriptionGetUnsafe = pangoFontDescriptionGetVariant
