@@ -59,10 +59,10 @@ main = getArgs >>= \case
 	_ -> error "no family"
 
 readStyle :: String -> PangoStyle
-readStyle "normal" = pangoStyleNormal
-readStyle "oblique" = pangoStyleOblique
-readStyle "italic" = pangoStyleItalic
-readStyle _ = pangoStyleNormal
+readStyle "normal" = PangoStyleNormal
+readStyle "oblique" = PangoStyleOblique
+readStyle "italic" = PangoStyleItalic
+readStyle _ = PangoStyleNormal
 
 readVariant :: String -> PangoVariant
 readVariant "normal" = pangoVariantNormal

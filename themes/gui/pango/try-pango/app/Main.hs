@@ -35,19 +35,19 @@ main = do
 
 	helloWorld cr (0, 0.5, 0)
 		"sans-serif"
-		pangoStyleNormal pangoVariantNormal pangoWeightThin pangoStretchNormal
+		PangoStyleNormal pangoVariantNormal pangoWeightThin pangoStretchNormal
 		(0, 0)
 	helloWorld cr (0.3, 0.25, 0)
 		"serif"
-		pangoStyleNormal pangoVariantNormal pangoWeightUltraheavy pangoStretchNormal
+		PangoStyleNormal pangoVariantNormal pangoWeightUltraheavy pangoStretchNormal
 		(0, 100)
 	helloWorld cr (0.3, 0.25, 0)
 		"serif"
-		pangoStyleOblique pangoVariantNormal pangoWeightNormal pangoStretchUltraCondensed
+		PangoStyleOblique pangoVariantNormal pangoWeightNormal pangoStretchUltraCondensed
 		(0, 200)
 	helloWorld cr (0.3, 0.25, 0)
 		"serif"
-		pangoStyleItalic pangoVariantSmallCaps pangoWeightNormal pangoStretchUltraExpanded
+		PangoStyleItalic pangoVariantSmallCaps pangoWeightNormal pangoStretchUltraExpanded
 		(0, 300)
 
 	cairoImageSurfaceGetCairoImage s >>= \case

@@ -14,7 +14,6 @@ import Data.Word
 import Data.Int
 import System.IO.Unsafe
 import Graphics.Pango.Angle
-import Graphics.Pango.Values
 import Graphics.Pango.Basic.GlyphStorage.PangoMatrix
 import Graphics.Pango.Basic.ScriptsAndLanguages.PangoScript
 

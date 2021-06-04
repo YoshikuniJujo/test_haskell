@@ -22,6 +22,7 @@ import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage
 import Graphics.Pango.Basic.ScriptsAndLanguages.Types
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
+import Graphics.Pango.Basic.VerticalText
 
 import qualified Data.Text as T
 
@@ -73,8 +74,8 @@ main = do
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	al3 <- pangoTextAttrListNew "Hello, world! こんにちは、世界!"
-	at5 <- pangoAttrNew pangoStyleOblique
-	at6 <- pangoAttrNew pangoStyleItalic
+	at5 <- pangoAttrNew PangoStyleOblique
+	at6 <- pangoAttrNew PangoStyleItalic
 	pangoTextAttrListInsert al3 at5 0 5
 	pangoTextAttrListInsert al3 at6 10 maxBound
 

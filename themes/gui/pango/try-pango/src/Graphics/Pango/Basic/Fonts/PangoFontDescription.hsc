@@ -1,6 +1,8 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.Fonts.PangoFontDescription where
@@ -11,6 +13,7 @@ import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.C.Types
 import Foreign.C.String
+import Foreign.C.Enum
 import Control.Monad.Primitive
 import Data.Bits
 import Data.Bool
@@ -41,9 +44,29 @@ pangoFontDescriptionGet = \case
 		PangoFontMask mb = pangoFontDescriptionMaskBit @s in
 		bool Nothing (Just $ pangoFontDescriptionGetUnsafe fd) $ fm .&. mb /= zeroBits
 
+pangoFontDescriptionGetSetFields :: PangoFontDescription -> PangoFontMask
+pangoFontDescriptionGetSetFields PangoFontDescriptionNull = PangoFontMask 0
+pangoFontDescriptionGetSetFields (PangoFontDescription fpfd) = unsafePerformIO
+	$ withForeignPtr fpfd \pfd ->
+		PangoFontMask <$> c_pango_font_description_get_set_fields pfd
+
+foreign import ccall "pango_font_description_get_set_fields"
+	c_pango_font_description_get_set_fields ::
+	Ptr PangoFontDescription -> IO #type PangoFontMask
+
 pangoFontDescriptionUnset :: forall s m . (PangoFontDescriptionSetting s, PrimMonad m) =>
 	PangoFontDescriptionPrim (PrimState m) -> m ()
 pangoFontDescriptionUnset fd = pangoFontDescriptionUnsetFields fd (pangoFontDescriptionMaskBit @s)
+
+pangoFontDescriptionUnsetFields :: PrimMonad m =>
+	PangoFontDescriptionPrim (PrimState m) -> PangoFontMask -> m ()
+pangoFontDescriptionUnsetFields (PangoFontDescriptionPrim fpfd) (PangoFontMask msk) = unsafeIOToPrim
+	$ withForeignPtr fpfd \pfd ->
+		c_pango_font_description_unset_fields pfd msk
+
+foreign import ccall "pango_font_description_unset_fields"
+	c_pango_font_description_unset_fields ::
+	Ptr (PangoFontDescriptionPrim s) -> #{type PangoFontMask} -> IO ()
 
 newtype Family = Family String deriving Show
 
@@ -85,6 +108,11 @@ pangoFontDescriptionGetFamily (PangoFontDescription fpfd) = unsafePerformIO
 
 foreign import ccall "pango_font_description_get_family" c_pango_font_description_get_family ::
 	Ptr PangoFontDescription -> IO CString
+
+enum "PangoStyle" ''#{type PangoStyle} [''Show] [
+	("PangoStyleNormal", #{const PANGO_STYLE_NORMAL}),
+	("PangoStyleOblique", #{const PANGO_STYLE_OBLIQUE}),
+	("PangoStyleItalic", #{const PANGO_STYLE_ITALIC}) ]
 
 instance PangoFontDescriptionSetting PangoStyle where
 	pangoFontDescriptionSet = pangoFontDescriptionSetStyle
@@ -244,26 +272,6 @@ pangoFontDescriptionGetGravity (PangoFontDescription fpfd) = unsafePerformIO
 foreign import ccall "pango_font_description_get_gravity"
 	c_pango_font_description_get_gravity ::
 	Ptr PangoFontDescription -> IO #type PangoGravity
-
-pangoFontDescriptionGetSetFields :: PangoFontDescription -> PangoFontMask
-pangoFontDescriptionGetSetFields PangoFontDescriptionNull = PangoFontMask 0
-pangoFontDescriptionGetSetFields (PangoFontDescription fpfd) = unsafePerformIO
-	$ withForeignPtr fpfd \pfd ->
-		PangoFontMask <$> c_pango_font_description_get_set_fields pfd
-
-foreign import ccall "pango_font_description_get_set_fields"
-	c_pango_font_description_get_set_fields ::
-	Ptr PangoFontDescription -> IO #type PangoFontMask
-
-pangoFontDescriptionUnsetFields :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> PangoFontMask -> m ()
-pangoFontDescriptionUnsetFields (PangoFontDescriptionPrim fpfd) (PangoFontMask msk) = unsafeIOToPrim
-	$ withForeignPtr fpfd \pfd ->
-		c_pango_font_description_unset_fields pfd msk
-
-foreign import ccall "pango_font_description_unset_fields"
-	c_pango_font_description_unset_fields ::
-	Ptr (PangoFontDescriptionPrim s) -> #{type PangoFontMask} -> IO ()
 
 pangoFontDescriptionMerge :: PrimMonad m =>
 	PangoFontDescriptionPrim (PrimState m) ->

@@ -15,6 +15,7 @@ import Graphics.Cairo.Values
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
+import Graphics.Pango.Basic.VerticalText
 import Graphics.Pango.Rendering.Cairo
 
 import Graphics.Pango.Values
@@ -61,10 +62,10 @@ main = getArgs >>= \case
 	_ -> error "no family"
 
 readStyle :: String -> PangoStyle
-readStyle "normal" = pangoStyleNormal
-readStyle "oblique" = pangoStyleOblique
-readStyle "italic" = pangoStyleItalic
-readStyle _ = pangoStyleNormal
+readStyle "normal" = PangoStyleNormal
+readStyle "oblique" = PangoStyleOblique
+readStyle "italic" = PangoStyleItalic
+readStyle _ = PangoStyleNormal
 
 readVariant :: String -> PangoVariant
 readVariant "normal" = pangoVariantNormal
