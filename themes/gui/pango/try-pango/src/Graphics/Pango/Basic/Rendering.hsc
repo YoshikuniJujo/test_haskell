@@ -10,10 +10,10 @@ import Foreign.Concurrent
 import Data.Word
 
 import Graphics.Pango.Types
-import Graphics.Pango.Values
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 
 import Graphics.Pango.Basic.GlyphStorage.PangoMatrix
+import Graphics.Pango.Basic.VerticalText
 
 #include <pango/pango.h>
 

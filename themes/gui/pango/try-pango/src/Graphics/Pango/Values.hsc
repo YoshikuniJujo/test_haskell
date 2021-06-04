@@ -37,18 +37,6 @@ newtype PangoStretch = PangoStretch #{type PangoStretch} deriving Show
 	PANGO_STRETCH_SEMI_EXPANDED, PANGO_STRETCH_EXPANDED, \
 	PANGO_STRETCH_EXTRA_EXPANDED, PANGO_STRETCH_ULTRA_EXPANDED
 
-enum "PangoGravity" ''#{type PangoGravity} [''Show] [
-	("PangoGravitySouth", #{const PANGO_GRAVITY_SOUTH}),
-	("PangoGravityEast", #{const PANGO_GRAVITY_EAST}),
-	("PangoGravityNorth", #{const PANGO_GRAVITY_NORTH}),
-	("PangoGravityWest", #{const PANGO_GRAVITY_WEST}),
-	("PangoGravityAuto", #{const PANGO_GRAVITY_AUTO}) ]
-
-enum "PangoGravityHint" ''#{type PangoGravityHint} [''Show] [
-	("PangoGravityHintNatural", #{const PANGO_GRAVITY_HINT_NATURAL}),
-	("PangoGravityHintStrong", #{const PANGO_GRAVITY_HINT_STRONG}),
-	("PangoGravityHintLine", #{const PANGO_GRAVITY_HINT_LINE}) ]
-
 newtype PangoFontMask = PangoFontMask #{type PangoFontMask} deriving Show
 
 #enum PangoFontMask, PangoFontMask, PANGO_FONT_MASK_FAMILY, \

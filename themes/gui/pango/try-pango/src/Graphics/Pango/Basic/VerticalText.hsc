@@ -1,4 +1,6 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.VerticalText where
@@ -6,6 +8,7 @@ module Graphics.Pango.Basic.VerticalText where
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.C.Types
+import Foreign.C.Enum
 import Data.Bool
 import Data.Word
 import Data.Int
@@ -16,6 +19,18 @@ import Graphics.Pango.Basic.GlyphStorage.PangoMatrix
 import Graphics.Pango.Basic.ScriptsAndLanguages.PangoScript
 
 #include <pango/pango.h>
+
+enum "PangoGravity" ''#{type PangoGravity} [''Show] [
+	("PangoGravitySouth", #{const PANGO_GRAVITY_SOUTH}),
+	("PangoGravityEast", #{const PANGO_GRAVITY_EAST}),
+	("PangoGravityNorth", #{const PANGO_GRAVITY_NORTH}),
+	("PangoGravityWest", #{const PANGO_GRAVITY_WEST}),
+	("PangoGravityAuto", #{const PANGO_GRAVITY_AUTO}) ]
+
+enum "PangoGravityHint" ''#{type PangoGravityHint} [''Show] [
+	("PangoGravityHintNatural", #{const PANGO_GRAVITY_HINT_NATURAL}),
+	("PangoGravityHintStrong", #{const PANGO_GRAVITY_HINT_STRONG}),
+	("PangoGravityHintLine", #{const PANGO_GRAVITY_HINT_LINE}) ]
 
 pangoGravityGetForMatrix :: PangoMatrix -> PangoGravity
 pangoGravityGetForMatrix (PangoMatrix_ fm) = unsafePerformIO

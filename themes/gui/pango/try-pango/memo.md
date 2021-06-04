@@ -91,13 +91,13 @@ todo
 * [ ] remove unused modules
 	+ [x] remove `Foreign.C.StringPartial`
 	+ [x] remove `Data.Text.Gunichar`
-	+ [ ] `System.Glib`
 	+ [ ] `Graphics.Pango`
+		- [x] `Template`
+		- [ ] `Values`
+		- [ ] others
 * [ ] rename modules
 	+ [x] rename `Foreign.C.String.Tools` to `Foreign.C.String.Misc`
 	+ [ ] `Graphics.Pango`
-		- [x] Template
-		- [ ] others
 * [ ] separate modules from modules
 	+ [x] separate `Foreign.C.String.ForeignCStringLen` from
 		`Foreign.C.String.Misc`
@@ -129,7 +129,6 @@ todo
 		- [ ] Bool
 		- [ ] PangoFixed
 		- [ ] PangoRectangle
-		- [ ] Template
 		- [ ] Types
 		- [ ] Values
 		- [ ] Basic

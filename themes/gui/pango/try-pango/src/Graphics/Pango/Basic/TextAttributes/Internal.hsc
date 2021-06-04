@@ -58,6 +58,7 @@ import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.ScriptsAndLanguages.Types
 import Graphics.Pango.Values
+import Graphics.Pango.Basic.VerticalText
 
 import Graphics.Pango.PangoRectangle
 
