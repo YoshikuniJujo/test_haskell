@@ -21,13 +21,22 @@ import Data.Word
 import Data.Int
 
 import Graphics.Pango.Bool
-import Graphics.Pango.Values
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.VerticalText
 
 import System.IO.Unsafe
 
 #include <pango/pango.h>
+
+enum "PangoFontMask" ''#{type PangoFontMask} [''Show] [
+	("PangoFontMaskFamily", #{const PANGO_FONT_MASK_FAMILY}),
+	("PangoFontMaskStyle", #{const PANGO_FONT_MASK_STYLE}),
+	("PangoFontMaskVariant", #{const PANGO_FONT_MASK_VARIANT}),
+	("PangoFontMaskWeight", #{const PANGO_FONT_MASK_WEIGHT}),
+	("PangoFontMaskStretch", #{const PANGO_FONT_MASK_STRETCH}),
+	("PangoFontMaskSize", #{const PANGO_FONT_MASK_SIZE}),
+	("PangoFontMaskGravity", #{const PANGO_FONT_MASK_GRAVITY}),
+	("PangoFontMaskVariations", #{const PANGO_FONT_MASK_VARIATIONS}) ]
 
 class PangoFontDescriptionSetting s where
 	pangoFontDescriptionSet :: PrimMonad m =>
@@ -73,7 +82,7 @@ newtype Family = Family String deriving Show
 instance PangoFontDescriptionSetting Family where
 	pangoFontDescriptionSet fd (Family f) = pangoFontDescriptionSetFamily fd f
 	pangoFontDescriptionGetUnsafe fd = Family $ pangoFontDescriptionGetFamily fd
-	pangoFontDescriptionMaskBit = pangoFontMaskFamily
+	pangoFontDescriptionMaskBit = PangoFontMaskFamily
 
 pangoFontDescriptionSetFamily :: PrimMonad m =>
 	PangoFontDescriptionPrim (PrimState m) -> String -> m ()
@@ -117,7 +126,7 @@ enum "PangoStyle" ''#{type PangoStyle} [''Show] [
 instance PangoFontDescriptionSetting PangoStyle where
 	pangoFontDescriptionSet = pangoFontDescriptionSetStyle
 	pangoFontDescriptionGetUnsafe = pangoFontDescriptionGetStyle
-	pangoFontDescriptionMaskBit = pangoFontMaskStyle
+	pangoFontDescriptionMaskBit = PangoFontMaskStyle
 
 pangoFontDescriptionSetStyle :: PrimMonad m =>
 	PangoFontDescriptionPrim (PrimState m) -> PangoStyle -> m ()
@@ -142,7 +151,7 @@ enum "PangoVariant" ''#{type PangoVariant} [''Show] [
 instance PangoFontDescriptionSetting PangoVariant where
 	pangoFontDescriptionSet = pangoFontDescriptionSetVariant
 	pangoFontDescriptionGetUnsafe = pangoFontDescriptionGetVariant
-	pangoFontDescriptionMaskBit = pangoFontMaskVariant
+	pangoFontDescriptionMaskBit = PangoFontMaskVariant
 
 pangoFontDescriptionSetVariant :: PrimMonad m =>
 	PangoFontDescriptionPrim (PrimState m) -> PangoVariant -> m ()
@@ -178,7 +187,7 @@ enum "PangoWeight" ''#{type PangoWeight} [''Show] [
 instance PangoFontDescriptionSetting PangoWeight where
 	pangoFontDescriptionSet = pangoFontDescriptionSetWeight
 	pangoFontDescriptionGetUnsafe = pangoFontDescriptionGetWeight
-	pangoFontDescriptionMaskBit = pangoFontMaskWeight
+	pangoFontDescriptionMaskBit = PangoFontMaskWeight
 
 pangoFontDescriptionSetWeight :: PrimMonad m =>
 	PangoFontDescriptionPrim (PrimState m) -> PangoWeight -> m ()
@@ -211,7 +220,7 @@ enum "PangoStretch" ''#{type PangoStretch} [''Show] [
 instance PangoFontDescriptionSetting PangoStretch where
 	pangoFontDescriptionSet = pangoFontDescriptionSetStretch
 	pangoFontDescriptionGetUnsafe = pangoFontDescriptionGetStretch
-	pangoFontDescriptionMaskBit = pangoFontMaskStretch
+	pangoFontDescriptionMaskBit = PangoFontMaskStretch
 
 pangoFontDescriptionSetStretch :: PrimMonad m =>
 	PangoFontDescriptionPrim (PrimState m) -> PangoStretch -> m ()
@@ -239,7 +248,7 @@ instance PangoFontDescriptionSetting Size where
 		let	a = pangoFontDescriptionGetSizeIsAbsolute fd
 			s = pangoFontDescriptionGetSize fd in
 		bool (Size $ fromIntegral s / #{const PANGO_SCALE}) (AbsoluteSize $ fromIntegral s / #{const PANGO_SCALE}) a
-	pangoFontDescriptionMaskBit = pangoFontMaskSize
+	pangoFontDescriptionMaskBit = PangoFontMaskSize
 
 pangoFontDescriptionSetSize :: PrimMonad m =>
 	PangoFontDescriptionPrim (PrimState m) -> CInt -> m ()
@@ -280,7 +289,7 @@ foreign import ccall "pango_font_description_get_size_is_absolute"
 instance PangoFontDescriptionSetting PangoGravity where
 	pangoFontDescriptionSet = pangoFontDescriptionSetGravity
 	pangoFontDescriptionGetUnsafe = pangoFontDescriptionGetGravity
-	pangoFontDescriptionMaskBit = pangoFontMaskGravity
+	pangoFontDescriptionMaskBit = PangoFontMaskGravity
 
 pangoFontDescriptionSetGravity :: PrimMonad m =>
 	PangoFontDescriptionPrim (PrimState m) -> PangoGravity -> m ()

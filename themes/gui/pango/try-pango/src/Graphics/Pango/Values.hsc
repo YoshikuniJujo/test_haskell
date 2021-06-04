@@ -11,14 +11,6 @@ import Data.Word
 pangoScale :: Num n => n
 pangoScale = #const PANGO_SCALE
 
-newtype PangoFontMask = PangoFontMask #{type PangoFontMask} deriving Show
-
-#enum PangoFontMask, PangoFontMask, PANGO_FONT_MASK_FAMILY, \
-	PANGO_FONT_MASK_STYLE, PANGO_FONT_MASK_VARIANT, \
-	PANGO_FONT_MASK_WEIGHT, PANGO_FONT_MASK_STRETCH, \
-	PANGO_FONT_MASK_SIZE, PANGO_FONT_MASK_GRAVITY, \
-	PANGO_FONT_MASK_VARIATIONS
-
 newtype PangoEllipsizeMode = PangoEllipsizeMode #{type PangoEllipsizeMode} deriving Show
 
 #enum PangoEllipsizeMode, PangoEllipsizeMode, PANGO_ELLIPSIZE_NONE, \
