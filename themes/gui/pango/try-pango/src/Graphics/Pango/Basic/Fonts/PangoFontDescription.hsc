@@ -197,6 +197,17 @@ pangoFontDescriptionGetWeight (PangoFontDescription fpfd) = unsafePerformIO
 foreign import ccall "pango_font_description_get_weight" c_pango_font_description_get_weight ::
 	Ptr PangoFontDescription -> IO #type PangoWeight
 
+enum "PangoStretch" ''#{type PangoStretch} [''Show] [
+	("PangoStretchUltraCondensed", #{const PANGO_STRETCH_ULTRA_CONDENSED}),
+	("PangoStretchExtraCondensed", #{const PANGO_STRETCH_EXTRA_CONDENSED}),
+	("PangoStretchCondensed", #{const PANGO_STRETCH_CONDENSED}),
+	("PangoStretchSemiCondensed", #{const PANGO_STRETCH_SEMI_CONDENSED}),
+	("PangoStretchNormal", #{const PANGO_STRETCH_NORMAL}),
+	("PangoStretchSemiExpanded", #{const PANGO_STRETCH_SEMI_EXPANDED}),
+	("PangoStretchExpanded", #{const PANGO_STRETCH_EXPANDED}),
+	("PangoStretchExtraExpanded", #{const PANGO_STRETCH_EXTRA_EXPANDED}),
+	("PangoStretchUltraExpanded", #{const PANGO_STRETCH_ULTRA_EXPANDED}) ]
+
 instance PangoFontDescriptionSetting PangoStretch where
 	pangoFontDescriptionSet = pangoFontDescriptionSetStretch
 	pangoFontDescriptionGetUnsafe = pangoFontDescriptionGetStretch

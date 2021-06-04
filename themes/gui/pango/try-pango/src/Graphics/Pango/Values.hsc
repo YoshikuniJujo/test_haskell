@@ -11,14 +11,6 @@ import Data.Word
 pangoScale :: Num n => n
 pangoScale = #const PANGO_SCALE
 
-newtype PangoStretch = PangoStretch #{type PangoStretch} deriving Show
-
-#enum PangoStretch, PangoStretch, PANGO_STRETCH_ULTRA_CONDENSED, \
-	PANGO_STRETCH_EXTRA_CONDENSED, PANGO_STRETCH_CONDENSED, \
-	PANGO_STRETCH_SEMI_CONDENSED, PANGO_STRETCH_NORMAL, \
-	PANGO_STRETCH_SEMI_EXPANDED, PANGO_STRETCH_EXPANDED, \
-	PANGO_STRETCH_EXTRA_EXPANDED, PANGO_STRETCH_ULTRA_EXPANDED
-
 newtype PangoFontMask = PangoFontMask #{type PangoFontMask} deriving Show
 
 #enum PangoFontMask, PangoFontMask, PANGO_FONT_MASK_FAMILY, \
@@ -38,6 +30,5 @@ newtype PangoAlignment = PangoAlignment #{type PangoAlignment} deriving Show
 	PANGO_ALIGN_RIGHT
 
 newtype PangoTabAlign = PangoTabAlign #{type PangoTabAlign} deriving Show
-
 
 #enum PangoTabAlign, PangoTabAlign, PANGO_TAB_LEFT

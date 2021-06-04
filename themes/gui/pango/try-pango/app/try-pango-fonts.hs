@@ -18,8 +18,6 @@ import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Basic.VerticalText
 import Graphics.Pango.Rendering.Cairo
 
-import Graphics.Pango.Values
-
 import qualified Data.Text as T
 
 main :: IO ()
@@ -91,16 +89,16 @@ readWeight s
 
 readStretch :: String -> PangoStretch
 readStretch = \case
-	"ultra-condensed" -> pangoStretchUltraCondensed
-	"extra-condensed" -> pangoStretchExtraCondensed
-	"condensed" -> pangoStretchCondensed
-	"semi-condensed" -> pangoStretchSemiCondensed
-	"normal" -> pangoStretchNormal
-	"semi-expanded" -> pangoStretchSemiExpanded
-	"expanded" -> pangoStretchExpanded
-	"extra-expanded" -> pangoStretchExtraExpanded
-	"ultra-expanded" -> pangoStretchUltraExpanded
-	_ -> pangoStretchNormal
+	"ultra-condensed" -> PangoStretchUltraCondensed
+	"extra-condensed" -> PangoStretchExtraCondensed
+	"condensed" -> PangoStretchCondensed
+	"semi-condensed" -> PangoStretchSemiCondensed
+	"normal" -> PangoStretchNormal
+	"semi-expanded" -> PangoStretchSemiExpanded
+	"expanded" -> PangoStretchExpanded
+	"extra-expanded" -> PangoStretchExtraExpanded
+	"ultra-expanded" -> PangoStretchUltraExpanded
+	_ -> PangoStretchNormal
 
 readSize :: String -> Size
 readSize = \case
