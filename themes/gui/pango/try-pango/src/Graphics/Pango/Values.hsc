@@ -11,14 +11,6 @@ import Data.Word
 pangoScale :: Num n => n
 pangoScale = #const PANGO_SCALE
 
-newtype PangoWeight = PangoWeight #{type PangoWeight} deriving Show
-
-#enum PangoWeight, PangoWeight, PANGO_WEIGHT_THIN, PANGO_WEIGHT_ULTRALIGHT, \
-	PANGO_WEIGHT_LIGHT, PANGO_WEIGHT_SEMILIGHT, PANGO_WEIGHT_BOOK, \
-	PANGO_WEIGHT_NORMAL, PANGO_WEIGHT_MEDIUM, PANGO_WEIGHT_SEMIBOLD, \
-	PANGO_WEIGHT_BOLD, PANGO_WEIGHT_ULTRABOLD, PANGO_WEIGHT_HEAVY, \
-	PANGO_WEIGHT_ULTRAHEAVY
-
 newtype PangoStretch = PangoStretch #{type PangoStretch} deriving Show
 
 #enum PangoStretch, PangoStretch, PANGO_STRETCH_ULTRA_CONDENSED, \

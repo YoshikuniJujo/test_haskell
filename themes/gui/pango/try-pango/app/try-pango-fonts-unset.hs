@@ -70,21 +70,21 @@ readVariant "small-caps" = PangoVariantSmallCaps
 readVariant _ = PangoVariantNormal
 
 readWeight :: String -> PangoWeight
-readWeight "thin" = pangoWeightThin
-readWeight "ultralight" = pangoWeightUltralight
-readWeight "light" = pangoWeightLight
-readWeight "semilight" = pangoWeightSemilight
-readWeight "book" = pangoWeightBook
-readWeight "normal" = pangoWeightNormal
-readWeight "medium" = pangoWeightMedium
-readWeight "semibold" = pangoWeightSemibold
-readWeight "bold" = pangoWeightBold
-readWeight "ultrabold" = pangoWeightUltrabold
-readWeight "heavy" = pangoWeightHeavy
-readWeight "ultraheavy" = pangoWeightUltraheavy
+readWeight "thin" = PangoWeightThin
+readWeight "ultralight" = PangoWeightUltralight
+readWeight "light" = PangoWeightLight
+readWeight "semilight" = PangoWeightSemilight
+readWeight "book" = PangoWeightBook
+readWeight "normal" = PangoWeightNormal
+readWeight "medium" = PangoWeightMedium
+readWeight "semibold" = PangoWeightSemibold
+readWeight "bold" = PangoWeightBold
+readWeight "ultrabold" = PangoWeightUltrabold
+readWeight "heavy" = PangoWeightHeavy
+readWeight "ultraheavy" = PangoWeightUltraheavy
 readWeight s
 	| all isDigit s = PangoWeight $ read s
-	| otherwise = pangoWeightNormal
+	| otherwise = PangoWeightNormal
 
 readStretch :: String -> PangoStretch
 readStretch = \case

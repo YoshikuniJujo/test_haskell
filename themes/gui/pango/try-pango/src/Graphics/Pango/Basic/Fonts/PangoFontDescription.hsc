@@ -161,6 +161,20 @@ pangoFontDescriptionGetVariant (PangoFontDescription fpfd) = unsafePerformIO
 foreign import ccall "pango_font_description_get_variant" c_pango_font_description_get_variant ::
 	Ptr PangoFontDescription -> IO #type PangoVariant
 
+enum "PangoWeight" ''#{type PangoWeight} [''Show] [
+	("PangoWeightThin", #{const PANGO_WEIGHT_THIN}),
+	("PangoWeightUltralight", #{const PANGO_WEIGHT_ULTRALIGHT}),
+	("PangoWeightLight", #{const PANGO_WEIGHT_LIGHT}),
+	("PangoWeightSemilight", #{const PANGO_WEIGHT_SEMILIGHT}),
+	("PangoWeightBook", #{const PANGO_WEIGHT_BOOK}),
+	("PangoWeightNormal", #{const PANGO_WEIGHT_NORMAL}),
+	("PangoWeightMedium", #{const PANGO_WEIGHT_MEDIUM}),
+	("PangoWeightSemibold", #{const PANGO_WEIGHT_SEMIBOLD}),
+	("PangoWeightBold", #{const PANGO_WEIGHT_BOLD}),
+	("PangoWeightUltrabold", #{const PANGO_WEIGHT_ULTRABOLD}),
+	("PangoWeightHeavy", #{const PANGO_WEIGHT_HEAVY}),
+	("PangoWeightUltraheavy", #{const PANGO_WEIGHT_ULTRAHEAVY}) ]
+
 instance PangoFontDescriptionSetting PangoWeight where
 	pangoFontDescriptionSet = pangoFontDescriptionSetWeight
 	pangoFontDescriptionGetUnsafe = pangoFontDescriptionGetWeight

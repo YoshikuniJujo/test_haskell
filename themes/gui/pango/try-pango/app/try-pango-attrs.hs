@@ -87,10 +87,10 @@ main = do
 	at7 <- pangoAttrNew $ Family "Source Han Sans VF"
 	pangoTextAttrListInsert al4 at7 0 maxBound
 	applyInOrder' al4 $ (`zip` [1 .. ]) [
-		pangoWeightThin, pangoWeightUltralight, pangoWeightLight,
-		pangoWeightSemilight, pangoWeightBook, pangoWeightNormal,
-		pangoWeightMedium, pangoWeightSemibold, pangoWeightBold,
-		pangoWeightUltrabold, pangoWeightHeavy, pangoWeightUltraheavy ]
+		PangoWeightThin, PangoWeightUltralight, PangoWeightLight,
+		PangoWeightSemilight, PangoWeightBook, PangoWeightNormal,
+		PangoWeightMedium, PangoWeightSemibold, PangoWeightBold,
+		PangoWeightUltrabold, PangoWeightHeavy, PangoWeightUltraheavy ]
 
 	cairoMoveTo cr 0 130
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al4
