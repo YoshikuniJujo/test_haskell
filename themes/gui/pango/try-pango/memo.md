@@ -95,8 +95,9 @@ todo
 	+ [ ] `Graphics.Pango`
 * [ ] rename modules
 	+ [x] rename `Foreign.C.String.Tools` to `Foreign.C.String.Misc`
-	+ [ ] `System.Glib`
 	+ [ ] `Graphics.Pango`
+		- [x] Template
+		- [ ] others
 * [ ] separate modules from modules
 	+ [x] separate `Foreign.C.String.ForeignCStringLen` from
 		`Foreign.C.String.Misc`
@@ -124,6 +125,15 @@ todo
 			* [x] itself
 			* [x] `Internal`
 	+ [ ] `Graphics.Pango`
+		- [ ] Angle
+		- [ ] Bool
+		- [ ] PangoFixed
+		- [ ] PangoRectangle
+		- [ ] Template
+		- [ ] Types
+		- [ ] Values
+		- [ ] Basic
+		- [ ] Rendering
 * [ ] think about package name
 	+ simple-cairo-pango ?
 * [ ] consider to remove `deriving Show` of many types

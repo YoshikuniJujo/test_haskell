@@ -39,6 +39,7 @@ import Foreign.C.String
 import Foreign.C.String.Utf8
 import Foreign.C.String.Misc
 import Foreign.C.String.ForeignCStringLen
+import Foreign.C.Enum
 import Control.Monad.Primitive
 import Data.Array
 import Data.Bool
@@ -55,7 +56,6 @@ import qualified Data.Text.Foreign as T
 
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
-import Graphics.Pango.Basic.TextAttributes.Template
 import Graphics.Pango.Basic.ScriptsAndLanguages.Types
 import Graphics.Pango.Values
 
@@ -130,13 +130,6 @@ foreign import ccall "pango_markup_parser_finish"
 	c_pango_markup_parser_finish ::
 	Ptr (GMarkupParseContext s) -> Ptr (Ptr PangoAttrList) -> Ptr CString ->
 	Ptr #{type gunichar} -> Ptr (Ptr GError) -> IO #{type gboolean}
-
-{-
-mkMemberAttrType "PangoAttrInvalid" #{const PANGO_ATTR_INVALID}
-mkMemberAttrType "PangoAttrLanguage" #{const PANGO_ATTR_LANGUAGE}
-mkMemberAttrType "PangoAttrFamily" #{const PANGO_ATTR_FAMILY}
-mkMemberAttrType "PangoAttrStyle" #{const PANGO_ATTR_STYLE}
--}
 
 newtype PangoAttribute s = PangoAttribute (ForeignPtr (PangoAttribute s))
 	deriving Show
@@ -298,11 +291,12 @@ pangoAttrStrikethroughColorNew (StrikethroughColor r g b) = unsafeIOToPrim
 foreign import ccall "pango_attr_strikethrough_color_new" c_pango_attr_strikethrough_color_new ::
 	Word16 -> Word16 -> Word16 -> IO (Ptr (PangoAttribute s))
 
-mkMemberPangoUnderline "PangoUnderlineNone" #{const PANGO_UNDERLINE_NONE}
-mkMemberPangoUnderline "PangoUnderlineSingle" #{const PANGO_UNDERLINE_SINGLE}
-mkMemberPangoUnderline "PangoUnderlineDouble" #{const PANGO_UNDERLINE_DOUBLE}
-mkMemberPangoUnderline "PangoUnderlineLow" #{const PANGO_UNDERLINE_LOW}
-mkMemberPangoUnderline "PangoUnderlineError" #{const PANGO_UNDERLINE_ERROR}
+enum "PangoUnderline" ''#{type PangoUnderline} [''Show] [
+	("PangoUnderlineNone", #{const PANGO_UNDERLINE_NONE}),
+	("PangoUnderlineSingle", #{const PANGO_UNDERLINE_SINGLE}),
+	("PangoUnderlineDouble", #{const PANGO_UNDERLINE_DOUBLE}),
+	("PangoUnderlineLow", #{const PANGO_UNDERLINE_LOW}),
+	("PangoUnderlineError", #{const PANGO_UNDERLINE_ERROR}) ]
 
 instance PangoAttributeValue PangoUnderline where
 	pangoAttrNew = pangoAttrUnderlineNew
