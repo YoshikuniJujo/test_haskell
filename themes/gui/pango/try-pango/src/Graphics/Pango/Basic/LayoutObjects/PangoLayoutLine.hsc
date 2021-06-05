@@ -45,7 +45,7 @@ foreign import ccall "pango_layout_line_unref" c_pango_layout_line_unref ::
 
 pangoLayoutGetLines :: PangoLayout -> IO [PangoLayoutLine]
 pangoLayoutGetLines (PangoLayout_ fl) = withForeignPtr fl \pl ->
-	(makePangoLayoutLine fl `mapM`) =<< g_slist_to_list' =<< c_pango_layout_get_lines pl
+	(makePangoLayoutLine fl `mapM`) =<< g_slist_to_list =<< c_pango_layout_get_lines pl
 
 foreign import ccall "pango_layout_get_lines" c_pango_layout_get_lines ::
 	Ptr PangoLayout -> IO (Ptr (GSList PangoLayoutLine))
