@@ -8,8 +8,10 @@ module Main where
 import Foreign.C.Types
 import Control.Monad
 import Control.Monad.ST
+import Data.Kind
 import Data.Foldable
 import Data.Maybe
+import Data.Fixed
 import Text.Nowdoc
 import Codec.Picture
 
@@ -26,13 +28,16 @@ import Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine
 import Graphics.Pango.Basic.TabStops
 import Graphics.Pango.Rendering.Cairo
 import Graphics.Pango.Types
-import Graphics.Pango.Values
+import Graphics.Pango.PangoFixed
 
 import Data.Color
 import Data.CairoImage
 import Data.JuicyCairo
 
 import qualified Data.Text as T
+
+pangoScale :: Num n => n
+pangoScale = fromIntegral $ resolution @Type @PU undefined
 
 main :: IO ()
 main = do

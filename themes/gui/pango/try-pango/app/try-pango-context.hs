@@ -5,6 +5,8 @@
 module Main where
 
 import Control.Monad.ST
+import Data.Kind
+import Data.Fixed
 import Codec.Picture
 
 import Graphics.Cairo.Drawing.CairoT
@@ -19,7 +21,7 @@ import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Rendering.Cairo
 import Graphics.Pango.Angle
-import Graphics.Pango.Values
+import Graphics.Pango.PangoFixed
 
 import Data.CairoImage
 import Data.JuicyCairo
@@ -53,7 +55,7 @@ main = do
 	pl <- pangoLayoutNew cxt
 
 	pfd <- pangoFontDescriptionNew
-	pangoFontDescriptionSetSize pfd (30 * pangoScale)
+	pangoFontDescriptionSetSize pfd . fromIntegral $ 30 * resolution @Type @PU undefined
 	pangoLayoutSetFontDescription pl =<< pangoFontDescriptionFreeze pfd
 
 	pangoLayoutSet @T.Text pl "こんにちは世界!"

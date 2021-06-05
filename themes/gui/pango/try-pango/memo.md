@@ -88,6 +88,7 @@ todo
 * [x] review `pangoLayoutGetLine`
 * [x] review `pangoLayoutGetLines`
 * [x] review `pangoLayoutGetIter`
+* [ ] bug fix: try-pango-layout: segmentation fault
 * [ ] remove unused modules
 	+ [x] remove `Foreign.C.StringPartial`
 	+ [x] remove `Data.Text.Gunichar`

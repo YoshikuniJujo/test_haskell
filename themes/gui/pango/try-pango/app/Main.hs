@@ -8,7 +8,9 @@ import Foreign.C.Types
 
 import Control.Monad.Primitive
 import Codec.Picture
+import Data.Kind
 import Data.Maybe
+import Data.Fixed
 
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Transformations
@@ -18,7 +20,7 @@ import Graphics.Cairo.Values
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
-import Graphics.Pango.Values
+import Graphics.Pango.PangoFixed
 import Graphics.Pango.Rendering.Cairo
 
 import Data.Color
@@ -62,7 +64,7 @@ helloWorld cr (r, g, b) ff stl vr wt strc (x, y) = do
 	pl <- pangoCairoCreateLayout cr
 	pfd <- pangoFontDescriptionNew
 	pangoFontDescriptionSetFamily pfd ff
-	pangoFontDescriptionSetSize pfd (30 * pangoScale)
+	pangoFontDescriptionSetSize pfd . fromIntegral $ 30 * resolution @Type @PU undefined
 	pangoFontDescriptionSetStyle pfd stl
 	pangoFontDescriptionSetVariant pfd vr
 	pangoFontDescriptionSetWeight pfd wt
