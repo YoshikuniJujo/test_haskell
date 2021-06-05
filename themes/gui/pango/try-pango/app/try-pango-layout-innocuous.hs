@@ -54,7 +54,7 @@ main = do
 
 	print =<< pangoLayoutInfo @CharacterCount =<< pangoLayoutFreeze pl
 
-	pangoLayoutSet pl $ pangoEllipsizeMiddle
+	pangoLayoutSet pl $ PangoEllipsizeMiddle
 	pangoLayoutSet pl $ Width 180
 	pangoLayoutSet pl $ LinesPerParagraph 3
 	print =<< pangoLayoutInfo @IsEllipsized =<< pangoLayoutFreeze pl
@@ -129,7 +129,7 @@ main = do
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	pangoLayoutSet pl pangoAlignLeft
-	pangoLayoutSet pl pangoEllipsizeNone
+	pangoLayoutSet pl PangoEllipsizeNone
 	let	txt =  T.take 60 sampleText' <> "\n" <> T.take 60 sampleText2
 	pangoLayoutSet pl txt
 

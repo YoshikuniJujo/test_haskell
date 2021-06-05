@@ -47,7 +47,7 @@ main = do
 	print @(Maybe Family) . pangoFontDescriptionGet . pangoLayoutGet =<< pangoLayoutFreeze pl
 
 	pangoLayoutSetWidth pl (200 * pangoScale)
-	pangoLayoutSetEllipsize pl pangoEllipsizeMiddle
+	pangoLayoutSetEllipsize pl PangoEllipsizeMiddle
 	pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは世界!"
 	cairoMoveTo cr 100 50
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl

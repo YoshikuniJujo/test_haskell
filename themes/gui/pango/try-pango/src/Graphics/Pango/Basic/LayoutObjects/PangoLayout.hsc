@@ -269,6 +269,12 @@ foreign import ccall "pango_layout_set_wrap" c_pango_layout_set_wrap ::
 foreign import ccall "pango_layout_get_wrap" c_pango_layout_get_wrap ::
 	Ptr PangoLayout -> IO #{type PangoWrapMode}
 
+enum "PangoEllipsizeMode" ''#{type PangoEllipsizeMode} [''Show] [
+	("PangoEllipsizeNone", #{const PANGO_ELLIPSIZE_NONE}),
+	("PangoEllipsizeStart", #{const PANGO_ELLIPSIZE_START}),
+	("PangoEllipsizeMiddle", #{const PANGO_ELLIPSIZE_MIDDLE}),
+	("PangoEllipsizeEnd", #{const PANGO_ELLIPSIZE_END}) ]
+
 instance PangoLayoutSetting PangoEllipsizeMode where
 	pangoLayoutSet = pangoLayoutSetEllipsize
 	pangoLayoutGet = pangoLayoutGetEllipsize

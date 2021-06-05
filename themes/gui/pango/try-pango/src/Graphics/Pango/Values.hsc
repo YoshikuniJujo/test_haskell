@@ -11,11 +11,6 @@ import Data.Word
 pangoScale :: Num n => n
 pangoScale = #const PANGO_SCALE
 
-newtype PangoEllipsizeMode = PangoEllipsizeMode #{type PangoEllipsizeMode} deriving Show
-
-#enum PangoEllipsizeMode, PangoEllipsizeMode, PANGO_ELLIPSIZE_NONE, \
-	PANGO_ELLIPSIZE_START, PANGO_ELLIPSIZE_MIDDLE, PANGO_ELLIPSIZE_END
-
 newtype PangoAlignment = PangoAlignment #{type PangoAlignment} deriving Show
 
 #enum PangoAlignment, PangoAlignment, PANGO_ALIGN_LEFT, PANGO_ALIGN_CENTER, \
