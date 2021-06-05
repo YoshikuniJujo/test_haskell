@@ -5,7 +5,7 @@ module Main where
 
 import Foreign.C.Types
 import Control.Monad.ST
-import Graphics.Pango.Angle
+import Data.Angle
 import Graphics.Pango.Basic.GlyphStorage.PangoMatrix
 import Graphics.Pango.Basic.ScriptsAndLanguages.PangoScript
 import Graphics.Pango.Basic.VerticalText

@@ -11,12 +11,12 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
 import Control.Monad.Primitive
+import Data.Angle
 import System.IO.Unsafe
 
 import Foreign.C.Struct
 
 import Graphics.Pango.PangoRectangle
-import Graphics.Pango.Angle
 
 #include <pango/pango.h>
 

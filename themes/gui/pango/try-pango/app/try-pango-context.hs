@@ -8,6 +8,7 @@ import Foreign.C.Types
 import Control.Monad.ST
 import Data.Kind
 import Data.Fixed
+import Data.Angle
 import Codec.Picture
 
 import Graphics.Cairo.Drawing.CairoT
@@ -21,7 +22,6 @@ import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Rendering.Cairo
-import Graphics.Pango.Angle
 import Graphics.Pango.PangoFixed
 
 import Data.CairoImage

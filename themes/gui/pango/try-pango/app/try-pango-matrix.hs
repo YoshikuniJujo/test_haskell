@@ -5,9 +5,9 @@ module Main where
 
 import Foreign.C.Types
 import Control.Monad.ST
+import Data.Angle
 
 import Graphics.Pango.Basic.GlyphStorage.PangoMatrix
-import Graphics.Pango.Angle
 import Graphics.Pango.PangoRectangle
 
 main :: IO ()

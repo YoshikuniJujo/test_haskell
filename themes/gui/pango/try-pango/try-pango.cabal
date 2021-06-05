@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f8fd227aa3e77e4e18fd44dca21eff27eacdc16891d00e87435e53c54682dad8
+-- hash: f9d6a537691600df5fc3507938668d69d369533cf6282a57c5bf0b459c374d7a
 
 name:           try-pango
 version:        0.1.0.0
@@ -27,13 +27,13 @@ source-repository head
 
 library
   exposed-modules:
+      Data.Angle
       Data.Text.CString
       Data.Text.Foreign.StringPartial
       Foreign.C.String.ForeignCStringLen
       Foreign.C.String.Misc
       Foreign.C.String.Utf8
       Foreign.Ptr.Misc
-      Graphics.Pango.Angle
       Graphics.Pango.Basic.BidirectionalText
       Graphics.Pango.Basic.Fonts.PangoFontDescription
       Graphics.Pango.Basic.Fonts.PangoFontDescription.Type

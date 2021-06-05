@@ -2,7 +2,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Angle where
+module Data.Angle where
 
 data Angle f = Radian_ f | Degree_ f deriving Show
 

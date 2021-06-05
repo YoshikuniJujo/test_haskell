@@ -12,8 +12,8 @@ import Foreign.C.Enum
 import Data.Bool
 import Data.Word
 import Data.Int
+import Data.Angle
 import System.IO.Unsafe
-import Graphics.Pango.Angle
 import Graphics.Pango.Basic.GlyphStorage.PangoMatrix
 import Graphics.Pango.Basic.ScriptsAndLanguages.PangoScript
 
