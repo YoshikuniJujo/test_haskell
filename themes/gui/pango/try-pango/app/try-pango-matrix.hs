@@ -40,7 +40,7 @@ pangoMatrixScalePure m sx sy = runST do
 	pangoMatrixScale m' sx sy
 	pangoMatrixFreeze m'
 
-pangoMatrixRotatePure :: PangoMatrix -> Angle -> PangoMatrix
+pangoMatrixRotatePure :: PangoMatrix -> Angle CDouble -> PangoMatrix
 pangoMatrixRotatePure m a = runST do
 	m' <- pangoMatrixThaw m
 	pangoMatrixRotate m' a

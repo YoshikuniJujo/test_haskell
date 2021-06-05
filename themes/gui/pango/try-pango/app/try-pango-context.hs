@@ -4,6 +4,7 @@
 
 module Main where
 
+import Foreign.C.Types
 import Control.Monad.ST
 import Data.Kind
 import Data.Fixed
@@ -65,7 +66,7 @@ main = do
 		CairoImageArgb32 a -> writePng "try-pango-context.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
 
-pangoMatrixRotatePure :: PangoMatrix -> Angle -> PangoMatrix
+pangoMatrixRotatePure :: PangoMatrix -> Angle CDouble -> PangoMatrix
 pangoMatrixRotatePure m a = runST do
 	mp <- pangoMatrixThaw m
 	pangoMatrixRotate mp a

@@ -60,7 +60,7 @@ foreign import ccall "pango_matrix_scale" c_pango_matrix_scale ::
 	Ptr PangoMatrix -> CDouble -> CDouble -> IO ()
 
 pangoMatrixRotate :: PrimMonad m =>
-	PangoMatrixPrim (PrimState m) -> Angle -> m ()
+	PangoMatrixPrim (PrimState m) -> Angle CDouble -> m ()
 pangoMatrixRotate (PangoMatrixPrim fm) (Degree dgr) = unsafeIOToPrim
 	$ withForeignPtr fm \pm -> c_pango_matrix_rotate pm dgr
 

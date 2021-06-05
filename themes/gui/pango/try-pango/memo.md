@@ -88,13 +88,16 @@ todo
 * [x] review `pangoLayoutGetLine`
 * [x] review `pangoLayoutGetLines`
 * [x] review `pangoLayoutGetIter`
-* [ ] bug fix: try-pango-layout: segmentation fault
+* [x] bug fix: try-pango-layout: segmentation fault
+* [ ] Graphics.Pango.Angle
+	+ [x] more general
+	+ [ ] move this module to `Data.Angle`
 * [ ] remove unused modules
 	+ [x] remove `Foreign.C.StringPartial`
 	+ [x] remove `Data.Text.Gunichar`
 	+ [ ] `Graphics.Pango`
 		- [x] `Template`
-		- [ ] `Values`
+		- [x] `Values`
 		- [ ] others
 * [ ] rename modules
 	+ [x] rename `Foreign.C.String.Tools` to `Foreign.C.String.Misc`
@@ -131,7 +134,6 @@ todo
 		- [ ] PangoFixed
 		- [ ] PangoRectangle
 		- [ ] Types
-		- [ ] Values
 		- [ ] Basic
 		- [ ] Rendering
 * [ ] think about package name
@@ -574,26 +576,24 @@ src
 │       │   │   └── Types.hsc
 │       │   ├── TabStops.hsc
 │       │   ├── TextAttributes
-│       │   │   ├── Internal.hsc
-│       │   │   └── Template.hsc
+│       │   │   └── Internal.hsc
 │       │   ├── TextAttributes.hs
 │       │   └── VerticalText.hsc
 │       ├── Bool.hsc
+│       ├── LowLevel
 │       ├── PangoFixed.hsc
 │       ├── PangoRectangle.hsc
 │       ├── Rendering
 │       │   └── Cairo.hsc
-│       ├── Template.hs
-│       ├── Types.hsc
-│       └── Values.hsc
+│       └── Types.hsc
 └── System
     └── Glib
         ├── ErrorReporting.hsc
         ├── Quarks
         │   └── Internal.hsc
-        ├── Quarks.hsc
+        ├── Quarks.hs
         ├── SimpleXmlSubsetParser.hsc
         └── SinglyLinkedLists.hsc
 
-20 directories, 36 files
+21 directories, 33 files
 ```

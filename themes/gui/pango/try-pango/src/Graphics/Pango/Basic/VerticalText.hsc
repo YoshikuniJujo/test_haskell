@@ -62,7 +62,7 @@ foreign import ccall "pango_gravity_get_for_script_and_width"
 	#{type PangoScript} -> #{type gboolean} -> #{type PangoGravity} ->
 	#{type PangoGravityHint} -> IO #{type PangoGravity}
 
-pangoGravityToRotation :: PangoGravity -> Angle
+pangoGravityToRotation :: PangoGravity -> Angle CDouble
 pangoGravityToRotation (PangoGravity g) =
 	unsafePerformIO $ Radian <$> c_pango_gravity_to_rotation g
 

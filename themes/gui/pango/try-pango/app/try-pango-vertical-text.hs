@@ -3,6 +3,7 @@
 
 module Main where
 
+import Foreign.C.Types
 import Control.Monad.ST
 import Graphics.Pango.Angle
 import Graphics.Pango.Basic.GlyphStorage.PangoMatrix
@@ -41,7 +42,7 @@ main = do
 	print $ pangoGravityToRotation PangoGravityNorth
 	print $ pangoGravityToRotation PangoGravityWest
 
-pangoMatrixRotatePure :: PangoMatrix -> Angle -> PangoMatrix
+pangoMatrixRotatePure :: PangoMatrix -> Angle CDouble -> PangoMatrix
 pangoMatrixRotatePure m a = runST do
 	mp <- pangoMatrixThaw m
 	pangoMatrixRotate mp a
