@@ -31,7 +31,6 @@ import System.IO.Unsafe
 
 import Graphics.Pango.Bool
 import Graphics.Pango.Types
-import Graphics.Pango.Values
 import Graphics.Pango.Basic.Rendering
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.TextAttributes.Internal
@@ -396,6 +395,11 @@ foreign import ccall "pango_layout_set_auto_dir" c_pango_layout_set_auto_dir ::
 
 foreign import ccall "pango_layout_get_auto_dir" c_pango_layout_get_auto_dir ::
 	Ptr PangoLayout -> IO #{type gboolean}
+
+enum "PangoAlignment" ''#{type PangoAlignment} [''Show] [
+	("PangoAlignLeft", #{const PANGO_ALIGN_LEFT}),
+	("PangoAlignCenter", #{const PANGO_ALIGN_CENTER}),
+	("PangoAlignRight", #{const PANGO_ALIGN_RIGHT}) ]
 
 instance PangoLayoutSetting PangoAlignment where
 	pangoLayoutSet = pangoLayoutSetAlignment

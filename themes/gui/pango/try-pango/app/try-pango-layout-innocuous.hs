@@ -14,7 +14,6 @@ import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
-import Graphics.Pango.Values
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage
 import Graphics.Pango.Basic.ScriptsAndLanguages.Types
@@ -121,14 +120,14 @@ main = do
 	cairoMoveTo cr 0 750
 	pangoLayoutSet pl $ Justify False
 	pangoLayoutSet pl $ sampleText <> "\n" <> sampleText2
-	pangoLayoutSet pl pangoAlignCenter
+	pangoLayoutSet pl PangoAlignCenter
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	cairoMoveTo cr 0 900
-	pangoLayoutSet pl pangoAlignRight
+	pangoLayoutSet pl PangoAlignRight
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
-	pangoLayoutSet pl pangoAlignLeft
+	pangoLayoutSet pl PangoAlignLeft
 	pangoLayoutSet pl PangoEllipsizeNone
 	let	txt =  T.take 60 sampleText' <> "\n" <> T.take 60 sampleText2
 	pangoLayoutSet pl txt

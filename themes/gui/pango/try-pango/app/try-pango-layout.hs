@@ -60,7 +60,7 @@ main = do
 	pangoLayoutSetWidth pl2 (400 * pangoScale)
 	pangoLayoutSetIndent pl2 (30 * pangoScale)
 --	pangoLayoutSetLineSpacing pl2 2
-	pangoLayoutSetAlignment pl2 pangoAlignCenter
+	pangoLayoutSetAlignment pl2 PangoAlignCenter
 	pangoLayoutSet pl2 someText
 	cairoMoveTo cr 100 150
 	fpl2 <- pangoLayoutFreeze pl2
@@ -152,7 +152,7 @@ main = do
 	pangoCairoShowLayout cr fpl2
 
 	pl3 <- pangoCairoCreateLayout cr
-	pangoLayoutSetAlignment pl3 pangoAlignCenter
+	pangoLayoutSetAlignment pl3 PangoAlignCenter
 	pangoLayoutSetTabs pl3 $ tabArray True [100, 200, 300, 400, 500, 600]
 	pangoLayoutSet @T.Text pl3 "タブの\tテスト\tだよ\tHello,\tworld\t!"
 	cairoMoveTo cr 100 540
