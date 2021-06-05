@@ -258,5 +258,5 @@ Haskellとの出会いは、
 tabArray :: Bool -> [CInt] -> PangoTabArray
 tabArray pip ps = runST do
 	pta <- pangoTabArrayNew (fromIntegral $ length ps) pip
-	for_ (zip [0 ..] ps) \(i, p) -> pangoTabArraySetTab pta i pangoTabLeft p
+	for_ (zip [0 ..] ps) \(i, p) -> pangoTabArraySetTab pta i PangoTabLeft p
 	pangoTabArrayFreeze pta

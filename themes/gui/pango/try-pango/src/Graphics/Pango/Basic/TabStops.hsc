@@ -1,4 +1,6 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.TabStops where
@@ -8,6 +10,7 @@ import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
+import Foreign.C.Enum
 import Control.Arrow
 import Control.Monad.Primitive
 import Data.Foldable
@@ -17,12 +20,14 @@ import System.IO.Unsafe
 
 import Graphics.Pango.Bool
 import Graphics.Pango.Types
-import Graphics.Pango.Values
 
 #include <pango/pango.h>
 
 foreign import ccall "pango_tab_array_new" c_pango_tab_array_new ::
 	CInt -> #{type gboolean} -> IO (Ptr (PangoTabArrayPrim s))
+
+foreign import ccall "pango_tab_array_set_tab" c_pango_tab_array_set_tab ::
+	Ptr (PangoTabArrayPrim s) -> CInt -> #{type PangoTabAlign} -> CInt -> IO ()
 
 pangoTabArrayDoubleNew ::
 	PrimMonad m => m (PangoTabArrayDouble (PrimState m))
@@ -53,6 +58,14 @@ pangoTabArrayDoubleSetTab (PangoTabArrayDouble fta) idx x = unsafeIOToPrim
 			for_ (zip [sz .. sz' - 1] tss) \(i, xx) ->
 				c_pango_tab_array_set_tab pta i #{const PANGO_TAB_LEFT}
 					. round $ xx * #{const PANGO_SCALE}
+
+tempPangoTabArrayGetTab :: Ptr (PangoTabArrayPrim s) -> CInt -> IO CInt
+tempPangoTabArrayGetTab pta idx = alloca \px -> do
+	c_pango_tab_array_get_tab_prim pta idx nullPtr px
+	peek px
+
+foreign import ccall "pango_tab_array_get_tab" c_pango_tab_array_get_tab_prim ::
+	Ptr (PangoTabArrayPrim s) -> CInt -> Ptr #{type PangoTabAlign} -> Ptr CInt -> IO ()
 
 calculateDouble :: CInt -> CInt -> Double -> Double -> Maybe (CInt, [Double])
 calculateDouble sz idx lst x
@@ -96,18 +109,13 @@ pangoTabArrayResize :: PrimMonad m =>
 pangoTabArrayResize (PangoTabArrayPrim fpta) sz = unsafeIOToPrim
 	$ withForeignPtr fpta \pta -> c_pango_tab_array_resize pta sz
 
-foreign import ccall "pango_tab_array_set_tab" c_pango_tab_array_set_tab ::
-	Ptr (PangoTabArrayPrim s) -> CInt -> #{type PangoTabAlign} -> CInt -> IO ()
+enum "PangoTabAlign" ''#{type PangoTabAlign} [''Show] [
+	("PangoTabLeft", #{const PANGO_TAB_LEFT}) ]
 
 pangoTabArraySetTab :: PrimMonad m =>
 	PangoTabArrayPrim (PrimState m) -> CInt -> PangoTabAlign -> CInt -> m ()
 pangoTabArraySetTab (PangoTabArrayPrim fpta) idx (PangoTabAlign algn) loc = unsafeIOToPrim
 	$ withForeignPtr fpta \pta -> c_pango_tab_array_set_tab pta idx algn loc
-
-tempPangoTabArrayGetTab :: Ptr (PangoTabArrayPrim s) -> CInt -> IO CInt
-tempPangoTabArrayGetTab pta idx = alloca \px -> do
-	c_pango_tab_array_get_tab_prim pta idx nullPtr px
-	peek px
 
 pangoTabArrayGetTab :: PangoTabArray -> CInt -> Maybe (Either Double CInt)
 pangoTabArrayGetTab PangoTabArrayNull _ = Nothing
@@ -120,9 +128,6 @@ pangoTabArrayGetTab (PangoTabArray fta) idx = unsafePerformIO
 				Left . (/ #{const PANGO_SCALE}) . fromIntegral
 			#{const TRUE} -> Right
 			_ -> error "never occur"
-
-foreign import ccall "pango_tab_array_get_tab" c_pango_tab_array_get_tab_prim ::
-	Ptr (PangoTabArrayPrim s) -> CInt -> Ptr #{type PangoTabAlign} -> Ptr CInt -> IO ()
 
 foreign import ccall "pango_tab_array_get_tab" c_pango_tab_array_get_tab ::
 	Ptr PangoTabArray -> CInt -> Ptr #{type PangoTabAlign} -> Ptr CInt -> IO ()

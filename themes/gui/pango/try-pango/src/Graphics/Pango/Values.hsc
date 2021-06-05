@@ -4,13 +4,7 @@
 
 module Graphics.Pango.Values where
 
-import Data.Word
-
 #include <pango/pango.h>
 
 pangoScale :: Num n => n
 pangoScale = #const PANGO_SCALE
-
-newtype PangoTabAlign = PangoTabAlign #{type PangoTabAlign} deriving Show
-
-#enum PangoTabAlign, PangoTabAlign, PANGO_TAB_LEFT
