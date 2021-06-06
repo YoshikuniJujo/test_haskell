@@ -4,6 +4,7 @@
 
 module Data.Angle where
 
+import Control.Arrow (second)
 import Text.Read
 
 data Angle f = Radian_ f | Degree_ f
@@ -87,3 +88,9 @@ instance Floating f => Floating (Angle f) where
 	asinh = applyAngle asinh
 	acosh = applyAngle acosh
 	atanh = applyAngle atanh
+
+instance (Floating f, RealFrac f) => RealFrac (Angle f) where
+	properFraction = \case
+		Degree_ x -> (Degree_ . (* 180) . (/ pi))
+			`second` properFraction (x * pi / 180)
+		Radian_ x -> Radian `second` properFraction x

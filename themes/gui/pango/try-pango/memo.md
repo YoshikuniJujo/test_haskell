@@ -101,7 +101,7 @@ todo
 		- [x] Fractional
 		- [x] Real
 		- [x] Floating
-		- [ ] RealFrac
+		- [x] RealFrac
 		- [ ] RealFloat
 * [ ] remove unused modules
 	+ [x] remove `Foreign.C.StringPartial`
