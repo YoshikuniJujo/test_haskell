@@ -4,7 +4,15 @@
 
 module Data.Angle where
 
-data Angle f = Radian_ f | Degree_ f deriving Show
+data Angle f = Radian_ f | Degree_ f
+
+instance Show f => Show (Angle f) where
+	showsPrec d = \case
+		Radian_ x -> showParen (d > 10)
+			$ ("Radian " ++) . showsPrec 11 x
+		Degree_ x -> showParen (d > 10)
+			$ ("Degree " ++) . showsPrec 11 x
+
 
 {-# COMPLETE Radian #-}
 
