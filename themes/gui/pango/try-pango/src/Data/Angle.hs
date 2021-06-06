@@ -59,3 +59,11 @@ instance Floating f => Num (Angle f) where
 	fromInteger = Radian_ . fromInteger
 	Degree_ x * Degree_ y = Degree_ $ x * y * pi / 180
 	Radian x * Radian y = Radian_ $ x * y
+
+instance Floating f => Fractional (Angle f) where
+	recip (Degree_ x) = Degree_ $ recip x * (180 / pi) ^ (2 :: Int)
+	recip (Radian_ x) = Radian_ $ recip x
+	fromRational = Radian_ . fromRational
+
+instance (Floating f, Real f) => Real (Angle f) where
+	toRational = toRational . radian

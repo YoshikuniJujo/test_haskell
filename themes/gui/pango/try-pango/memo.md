@@ -98,8 +98,8 @@ todo
 		- [x] Eq
 		- [x] Ord
 		- [x] Num
-		- [ ] Fractional
-		- [ ] Real
+		- [x] Fractional
+		- [x] Real
 		- [ ] Floating
 		- [ ] RealFrac
 		- [ ] RealFloat
