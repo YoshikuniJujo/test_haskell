@@ -94,7 +94,7 @@ todo
 	+ [x] move this module to `Data.Angle`
 	+ [ ] instance Foo Angle
 		- [x] Show
-		- [ ] Read
+		- [x] Read
 		- [ ] Eq
 		- [ ] Ord
 		- [ ] Num

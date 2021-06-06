@@ -1,8 +1,10 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Angle where
+
+import Text.Read
 
 data Angle f = Radian_ f | Degree_ f
 
@@ -12,6 +14,16 @@ instance Show f => Show (Angle f) where
 			$ ("Radian " ++) . showsPrec 11 x
 		Degree_ x -> showParen (d > 10)
 			$ ("Degree " ++) . showsPrec 11 x
+
+instance (Read f, Floating f) => Read (Angle f) where
+	readPrec = parens $ prec 10 do
+			Ident "Radian" <- lexP
+			f <- step readPrec
+			pure $ Radian_ f
+		+++ prec 10 do
+			Ident "Degree" <- lexP
+			f <- step readPrec
+			pure $ Degree_ f
 
 
 {-# COMPLETE Radian #-}
