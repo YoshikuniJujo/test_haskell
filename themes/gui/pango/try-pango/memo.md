@@ -100,7 +100,7 @@ todo
 		- [x] Num
 		- [x] Fractional
 		- [x] Real
-		- [ ] Floating
+		- [x] Floating
 		- [ ] RealFrac
 		- [ ] RealFloat
 * [ ] remove unused modules

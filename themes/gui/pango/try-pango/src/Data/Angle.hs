@@ -67,3 +67,23 @@ instance Floating f => Fractional (Angle f) where
 
 instance (Floating f, Real f) => Real (Angle f) where
 	toRational = toRational . radian
+
+applyAngle :: Floating f => (f -> f) -> Angle f -> Angle f
+applyAngle f = \case
+	Degree_ x -> Degree_ $ f (x * pi / 180) * 180 / pi
+	Radian_ x -> Radian_ $ f x
+
+instance Floating f => Floating (Angle f) where
+	pi = Radian_ pi
+	exp = applyAngle exp
+	log = applyAngle log
+	sin = applyAngle sin
+	cos = applyAngle cos
+	asin = applyAngle asin
+	acos = applyAngle acos
+	atan = applyAngle atan
+	sinh = applyAngle sinh
+	cosh = applyAngle cosh
+	asinh = applyAngle asinh
+	acosh = applyAngle acosh
+	atanh = applyAngle atanh
