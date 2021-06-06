@@ -95,7 +95,7 @@ todo
 	+ [ ] instance Foo Angle
 		- [x] Show
 		- [x] Read
-		- [ ] Eq
+		- [x] Eq
 		- [ ] Ord
 		- [ ] Num
 		- [ ] Fractional
