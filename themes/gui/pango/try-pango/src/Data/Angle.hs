@@ -44,3 +44,7 @@ instance (Read f, Floating f) => Read (Angle f) where
 instance (Eq f, Floating f) => Eq (Angle f) where
 	Degree_ x == Degree_ y = x == y
 	Radian x == Radian y = x == y
+
+instance (Ord f, Floating f) => Ord (Angle f) where
+	Degree_ x <= Degree_ y = x <= y
+	Radian x <= Radian y = x <= y

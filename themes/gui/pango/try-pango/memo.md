@@ -96,7 +96,7 @@ todo
 		- [x] Show
 		- [x] Read
 		- [x] Eq
-		- [ ] Ord
+		- [x] Ord
 		- [ ] Num
 		- [ ] Fractional
 		- [ ] Real
