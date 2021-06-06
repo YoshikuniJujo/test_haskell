@@ -97,7 +97,7 @@ todo
 		- [x] Read
 		- [x] Eq
 		- [x] Ord
-		- [ ] Num
+		- [x] Num
 		- [ ] Fractional
 		- [ ] Real
 		- [ ] Floating
