@@ -76,21 +76,17 @@ instance Floating f => Num (Angle f) where
 	negate = \case Radian_ x -> Radian_ $ - x; Degree_ x -> Degree_ $ - x
 	abs = \case Radian_ x -> Radian_ $ abs x; Degree_ x -> Degree_ $ abs x
 	signum = \case
-		Degree_ x -> Radian_ $ signum x; Radian_ x -> Radian_ $ signum x
+		Radian_ x -> Radian_ $ signum x; Degree_ x -> Radian_ $ signum x
 	fromInteger = Radian_ . fromInteger
 
 instance Floating f => Fractional (Angle f) where
-	recip (Degree_ x) = Degree_ $ recip x * (180 / pi) ^ (2 :: Int)
-	recip (Radian_ x) = Radian_ $ recip x
+	recip = \case
+		Radian_ x -> Radian_ $ recip x
+		Degree_ x -> Degree_ $ recip x * (180 / pi) ^ (2 :: Int)
 	fromRational = Radian_ . fromRational
 
 instance (Floating f, Real f) => Real (Angle f) where
 	toRational = toRational . radian
-
-applyAngle :: Floating f => (f -> f) -> Angle f -> Angle f
-applyAngle f = \case
-	Degree_ x -> Degree_ $ f (x * pi / 180) * 180 / pi
-	Radian_ x -> Radian_ $ f x
 
 instance Floating f => Floating (Angle f) where
 	pi = Radian_ pi
@@ -106,6 +102,11 @@ instance Floating f => Floating (Angle f) where
 	asinh = applyAngle asinh
 	acosh = applyAngle acosh
 	atanh = applyAngle atanh
+
+applyAngle :: Floating f => (f -> f) -> Angle f -> Angle f
+applyAngle f = \case
+	Degree_ x -> Degree_ $ f (x * pi / 180) * 180 / pi
+	Radian_ x -> Radian_ $ f x
 
 instance (Floating f, RealFrac f) => RealFrac (Angle f) where
 	properFraction = \case
