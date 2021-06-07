@@ -57,22 +57,16 @@ instance Show f => Show (Angle f) where
 			$ ("Degree " ++) . showsPrec 11 x
 
 instance (Read f, Floating f) => Read (Angle f) where
-	readPrec = parens $ prec 10 do
-			Ident "Radian" <- lexP
-			f <- step readPrec
-			pure $ Radian_ f
-		+++ prec 10 do
-			Ident "Degree" <- lexP
-			f <- step readPrec
-			pure $ Degree_ f
+	readPrec = parens $
+		prec 10 do Ident "Radian" <- lexP; Radian_ <$> step readPrec
+		+++
+		prec 10 do Ident "Degree" <- lexP; Degree_ <$> step readPrec
 
 instance (Eq f, Floating f) => Eq (Angle f) where
-	Degree_ x == Degree_ y = x == y
-	Radian x == Radian y = x == y
+	Degree_ x == Degree_ y = x == y; Radian x == Radian y = x == y
 
 instance (Ord f, Floating f) => Ord (Angle f) where
-	Degree_ x <= Degree_ y = x <= y
-	Radian x <= Radian y = x <= y
+	Degree_ x <= Degree_ y = x <= y; Radian x <= Radian y = x <= y
 
 instance Floating f => Num (Angle f) where
 	Degree_ x + Degree_ y = Degree_ $ x + y

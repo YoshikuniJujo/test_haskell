@@ -115,10 +115,10 @@ todo
 				+ [x] pattern Degree
 				+ [x] function degree
 			* [ ] INSTANCE DEFINITION
-				+ [ ] Show
-				+ [ ] Read
-				+ [ ] Eq
-				+ [ ] Ord
+				+ [x] Show
+				+ [x] Read
+				+ [x] Eq
+				+ [x] Ord
 				+ [ ] Num
 				+ [ ] Fractional
 				+ [ ] Real
