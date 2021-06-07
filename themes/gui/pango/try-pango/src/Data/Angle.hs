@@ -2,12 +2,23 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Angle where
+module Data.Angle (Angle, pattern Radian, radian, pattern Degree, degree) where
 
 import Control.Arrow (second)
 import Text.Read
 
 data Angle f = Radian_ f | Degree_ f
+
+-- ^ >>> Radian pi
+-- Radian 3.141592653589793
+-- >>> degree it
+-- 180.0
+--
+-- >>> Degree 180
+-- Degree 180.0
+--
+-- >>> Radian pi + Degree 180
+-- Radian 6.283185307179586
 
 {-# COMPLETE Radian #-}
 

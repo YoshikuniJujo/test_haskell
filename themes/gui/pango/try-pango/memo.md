@@ -89,10 +89,10 @@ todo
 * [x] review `pangoLayoutGetLines`
 * [x] review `pangoLayoutGetIter`
 * [x] bug fix: try-pango-layout: segmentation fault
-* [ ] Graphics.Pango.Angle
+* [ ] Data.Angle
 	+ [x] more general
 	+ [x] move this module to `Data.Angle`
-	+ [ ] instance Foo Angle
+	+ [x] instance Foo Angle
 		- [x] Show
 		- [x] Read
 		- [x] Eq
@@ -102,7 +102,14 @@ todo
 		- [x] Real
 		- [x] Floating
 		- [x] RealFrac
-		- [ ] RealFloat
+		- no RealFloat
+	+ [ ] refactoring
+		- [x] export list
+		- [ ] import list
+		- [ ] structure
+		- [ ] body
+	+ [ ] independent package `union-angle`
+	+ [ ] document
 * [ ] remove unused modules
 	+ [x] remove `Foreign.C.StringPartial`
 	+ [x] remove `Data.Text.Gunichar`
