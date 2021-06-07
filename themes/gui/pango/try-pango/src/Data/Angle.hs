@@ -105,11 +105,11 @@ instance Floating f => Floating (Angle f) where
 
 applyAngle :: Floating f => (f -> f) -> Angle f -> Angle f
 applyAngle f = \case
-	Degree_ x -> Degree_ $ f (x * pi / 180) * 180 / pi
 	Radian_ x -> Radian_ $ f x
+	Degree_ x -> Degree_ $ f (x * pi / 180) * 180 / pi
 
 instance (Floating f, RealFrac f) => RealFrac (Angle f) where
 	properFraction = \case
-		Degree_ x -> (Degree_ . (* 180) . (/ pi))
-			`second` properFraction (x * pi / 180)
 		Radian_ x -> Radian `second` properFraction x
+		Degree_ x -> (Degree_ . (/ pi) . (* 180))
+			`second` properFraction (x * pi / 180)

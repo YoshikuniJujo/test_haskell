@@ -103,18 +103,18 @@ todo
 		- [x] Floating
 		- [x] RealFrac
 		- no RealFloat
-	+ [ ] refactoring
+	+ [x] refactoring
 		- [x] export list
 		- [x] import list
 		- [x] structure
-		- [ ] body
+		- [x] body
 			* [x] DATA TYPE AND PATTERN
 				+ [x] data Angle
 				+ [x] pattern Radian
 				+ [x] function radian
 				+ [x] pattern Degree
 				+ [x] function degree
-			* [ ] INSTANCE DEFINITION
+			* [x] INSTANCE DEFINITION
 				+ [x] Show
 				+ [x] Read
 				+ [x] Eq
@@ -122,8 +122,8 @@ todo
 				+ [x] Num
 				+ [x] Fractional
 				+ [x] Real
-				+ [ ] Floating
-				+ [ ] RealFrac
+				+ [x] Floating
+				+ [x] RealFrac
 	+ [ ] independent package `union-angle`
 	+ [ ] document
 * [ ] remove unused modules
