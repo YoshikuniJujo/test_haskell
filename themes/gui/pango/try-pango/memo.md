@@ -108,12 +108,12 @@ todo
 		- [x] import list
 		- [x] structure
 		- [ ] body
-			* [ ] DATA TYPE AND PATTERN
-				+ [ ] data Angle
-				+ [ ] pattern Radian
-				+ [ ] function radian
-				+ [ ] pattern Degree
-				+ [ ] function degree
+			* [x] DATA TYPE AND PATTERN
+				+ [x] data Angle
+				+ [x] pattern Radian
+				+ [x] function radian
+				+ [x] pattern Degree
+				+ [x] function degree
 			* [ ] INSTANCE DEFINITION
 				+ [ ] Show
 				+ [ ] Read

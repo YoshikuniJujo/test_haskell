@@ -35,7 +35,7 @@ pattern Radian :: Floating f => f -> Angle f
 pattern Radian r <- (radian -> r) where Radian = Radian_
 
 radian :: Floating f => Angle f -> f
-radian = \case Radian_ r -> r; Degree_ d -> d / 360 * 2 * pi
+radian = \case Radian_ r -> r; Degree_ d -> d * pi / 180
 
 {-# COMPLETE Degree #-}
 
@@ -43,7 +43,7 @@ pattern Degree :: Floating f => f -> Angle f
 pattern Degree d <- (degree -> d) where Degree = Degree_
 
 degree :: Floating f => Angle f -> f
-degree = \case Radian_ r -> r / (2 * pi) * 360; Degree_ d -> d
+degree = \case Radian_ r -> r * 180 / pi; Degree_ d -> d
 
 ---------------------------------------------------------------------------
 -- INSTANCE DEFINITION
