@@ -71,13 +71,13 @@ instance (Ord f, Floating f) => Ord (Angle f) where
 instance Floating f => Num (Angle f) where
 	Degree_ x + Degree_ y = Degree_ $ x + y
 	Radian x + Radian y = Radian_ $ x + y
-	negate = \case Degree_ x -> Degree_ $ - x; Radian_ x -> Radian_ $ - x
-	abs = \case Degree_ x -> Degree_ $ abs x; Radian_ x -> Radian_ $ abs x
+	Degree_ x * Degree_ y = Degree_ $ x * y * pi / 180
+	Radian x * Radian y = Radian_ $ x * y
+	negate = \case Radian_ x -> Radian_ $ - x; Degree_ x -> Degree_ $ - x
+	abs = \case Radian_ x -> Radian_ $ abs x; Degree_ x -> Degree_ $ abs x
 	signum = \case
 		Degree_ x -> Radian_ $ signum x; Radian_ x -> Radian_ $ signum x
 	fromInteger = Radian_ . fromInteger
-	Degree_ x * Degree_ y = Degree_ $ x * y * pi / 180
-	Radian x * Radian y = Radian_ $ x * y
 
 instance Floating f => Fractional (Angle f) where
 	recip (Degree_ x) = Degree_ $ recip x * (180 / pi) ^ (2 :: Int)
