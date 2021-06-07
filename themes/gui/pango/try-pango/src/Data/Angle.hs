@@ -5,7 +5,7 @@
 module Data.Angle (Angle, pattern Radian, radian, pattern Degree, degree) where
 
 import Control.Arrow (second)
-import Text.Read
+import Text.Read (Lexeme(..), readPrec, step, parens, prec, lexP, (+++))
 
 data Angle f = Radian_ f | Degree_ f
 
