@@ -106,8 +106,24 @@ todo
 	+ [ ] refactoring
 		- [x] export list
 		- [x] import list
-		- [ ] structure
+		- [x] structure
 		- [ ] body
+			* [ ] DATA TYPE AND PATTERN
+				+ [ ] data Angle
+				+ [ ] pattern Radian
+				+ [ ] function radian
+				+ [ ] pattern Degree
+				+ [ ] function degree
+			* [ ] INSTANCE DEFINITION
+				+ [ ] Show
+				+ [ ] Read
+				+ [ ] Eq
+				+ [ ] Ord
+				+ [ ] Num
+				+ [ ] Fractional
+				+ [ ] Real
+				+ [ ] Floating
+				+ [ ] RealFrac
 	+ [ ] independent package `union-angle`
 	+ [ ] document
 * [ ] remove unused modules

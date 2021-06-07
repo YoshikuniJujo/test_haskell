@@ -7,6 +7,15 @@ module Data.Angle (Angle, pattern Radian, radian, pattern Degree, degree) where
 import Control.Arrow (second)
 import Text.Read (Lexeme(..), readPrec, step, parens, prec, lexP, (+++))
 
+---------------------------------------------------------------------------
+
+-- * DATA TYPE AND PATTERN
+-- * INSTANCE DEFINITION
+
+---------------------------------------------------------------------------
+-- DATA TYPE AND PATTERN
+---------------------------------------------------------------------------
+
 data Angle f = Radian_ f | Degree_ f
 
 -- ^ >>> Radian pi
@@ -35,6 +44,10 @@ pattern Degree d <- (degree -> d) where Degree = Degree_
 
 degree :: Floating f => Angle f -> f
 degree = \case Radian_ r -> r / (2 * pi) * 360; Degree_ d -> d
+
+---------------------------------------------------------------------------
+-- INSTANCE DEFINITION
+---------------------------------------------------------------------------
 
 instance Show f => Show (Angle f) where
 	showsPrec d = \case
