@@ -7,18 +7,20 @@
 module Graphics.Pango.Basic.GlyphStorage (
 	PangoFixed, PU, fromCInt, toCInt,
 
-	PangoRectangle(..),
+	PangoRectangleFixed(..),
 
+	{-
 	pattern PangoRectangle,
 	pangoRectangleX, pangoRectangleY,
 	pangoRectangleWidth, pangoRectangleHeight,
+	-}
 
 	pattern PangoRectangleFixed,
 	pangoRectangleFixedX, pangoRectangleFixedY,
 	pangoRectangleFixedWidth, pangoRectangleFixedHeight,
 
-	PangoRectanglePrim(..), PangoRectangleST, PangoRectangleIO,
-	pangoRectangleFreeze, pangoRectangleThaw, pangoRectangleCopy,
+	PangoRectangleFixedPrim(..), PangoRectangleFixedST, PangoRectangleFixedIO,
+	pangoRectangleFixedFreeze, pangoRectangleFixedThaw, pangoRectangleFixedCopy,
 
 	PangoRectanglePixel(..),
 
@@ -71,27 +73,28 @@ toCInt (MkFixed i)
 		putStrLn $ prettyCallStack callStack
 		throw Overflow
 
-struct "PangoRectangle" #{size PangoRectangle}
-	[	("x", ''CInt, [| #{peek PangoRectangle, x} |],
-			[| #{poke PangoRectangle, x} |]),
-		("y", ''CInt, [| #{peek PangoRectangle, y} |],
-			[| #{poke PangoRectangle, y} |]),
-		("width", ''CInt, [| #{peek PangoRectangle, width} |],
-			[| #{poke PangoRectangle, width} |]),
-		("height", ''CInt, [| #{peek PangoRectangle, height} |],
-			[| #{poke PangoRectangle, height} |]) ]
+struct "PangoRectangleFixed" #{size PangoRectangle}
+	[	("x", ''PangoFixed, [| (fromCInt <$>) . #{peek PangoRectangle, x} |],
+			[| \p -> #{poke PangoRectangle, x} p . toCInt |]),
+		("y", ''PangoFixed, [| (fromCInt <$>) . #{peek PangoRectangle, y} |],
+			[| \p -> #{poke PangoRectangle, y} p . toCInt |]),
+		("width", ''PangoFixed, [| (fromCInt <$>) . #{peek PangoRectangle, width} |],
+			[| \p -> #{poke PangoRectangle, width} p . toCInt |]),
+		("height", ''PangoFixed, [| (fromCInt <$>) . #{peek PangoRectangle, height} |],
+			[| \p -> #{poke PangoRectangle, height} p . toCInt |]) ]
 	[''Show]
 
-c_pango_rectangle_copy :: Ptr PangoRectangle -> IO (Ptr PangoRectangle)
+c_pango_rectangle_copy :: Ptr PangoRectangleFixed -> IO (Ptr PangoRectangleFixed)
 c_pango_rectangle_copy s = mallocBytes #{size PangoRectangle} >>= \d ->
 	d <$ copyBytes d s #{size PangoRectangle}
 
-c_pango_rectangle_free :: Ptr PangoRectangle -> IO ()
+c_pango_rectangle_free :: Ptr PangoRectangleFixed -> IO ()
 c_pango_rectangle_free = free
 
-structPrim "PangoRectangle" 'c_pango_rectangle_copy 'c_pango_rectangle_free
+structPrim "PangoRectangleFixed" 'c_pango_rectangle_copy 'c_pango_rectangle_free
 	[''Show]
 
+{-
 pattern PangoRectangleFixed ::
 	PangoFixed -> PangoFixed -> PangoFixed -> PangoFixed -> PangoRectangle
 pattern PangoRectangleFixed {
@@ -107,6 +110,7 @@ pangoRectangleFixed ::
 pangoRectangleFixed (PangoRectangle
 	(fromCInt -> x) (fromCInt -> y)
 	(fromCInt -> w) (fromCInt -> h)) = (x, y, w, h)
+	-}
 
 struct "PangoRectanglePixel" #{size PangoRectangle}
 	[	("x", ''CInt, [| #{peek PangoRectangle, x} |],
@@ -129,8 +133,8 @@ structPrim "PangoRectanglePixel" 'c_pango_rectangle_pixel_copy
 	'c_pango_rectangle_pixel_free [''Show]
 
 data Extents = Extents {
-	extentsInkRect :: PangoRectangle,
-	extentsLogicalRect :: PangoRectangle } deriving Show
+	extentsInkRect :: PangoRectangleFixed,
+	extentsLogicalRect :: PangoRectangleFixed } deriving Show
 
 data PixelExtents = PixelExtents {
 	pixelExtentsInkRect :: PangoRectanglePixel,

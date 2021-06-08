@@ -321,19 +321,19 @@ pangoAttrUnderlineColorNew (UnderlineColor r g b) = unsafeIOToPrim
 foreign import ccall "pango_attr_underline_color_new" c_pango_attr_underline_color_new ::
 	Word16 -> Word16 -> Word16 -> IO (Ptr (PangoAttribute s))
 
-data Shape = Shape PangoRectangle PangoRectangle deriving Show
+data Shape = Shape PangoRectangleFixed PangoRectangleFixed deriving Show
 
 instance PangoAttributeValue Shape where
 	pangoAttrNew (Shape ir lr) = pangoAttrShapeNew ir lr
 
 pangoAttrShapeNew :: PrimMonad m =>
-	PangoRectangle -> PangoRectangle -> m (PangoAttribute (PrimState m))
-pangoAttrShapeNew (PangoRectangle_ fir) (PangoRectangle_ flr) = unsafeIOToPrim
+	PangoRectangleFixed -> PangoRectangleFixed -> m (PangoAttribute (PrimState m))
+pangoAttrShapeNew (PangoRectangleFixed_ fir) (PangoRectangleFixed_ flr) = unsafeIOToPrim
 	$ withForeignPtr fir \pir -> withForeignPtr flr \plr ->
 		mkPangoAttribute =<< c_pango_attr_shape_new pir plr
 
 foreign import ccall "pango_attr_shape_new" c_pango_attr_shape_new ::
-	Ptr PangoRectangle -> Ptr PangoRectangle -> IO (Ptr (PangoAttribute s))
+	Ptr PangoRectangleFixed -> Ptr PangoRectangleFixed -> IO (Ptr (PangoAttribute s))
 
 newtype Scale = Scale CDouble deriving Show
 

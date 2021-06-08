@@ -142,8 +142,8 @@ main = do
 
 	al9 <- pangoTextAttrListNew . pangoLanguageGetSampleString $ pangoLanguageFromString "en"
 	at13 <- pangoAttrNew $ Shape
-		(PangoRectangle 5 3072 16384 16384)
-		(PangoRectangle 0 0 19456 19456)
+		(PangoRectangleFixed 5 3 16 16)
+		(PangoRectangleFixed 0 0 19 19)
 --	at13 <- pangoAttrNew $ Shape (PangoRectangle 5 0 30 30) (PangoRectangle 5 0 35 35)
 	pangoTextAttrListInsert al9 at13 5 8
 

@@ -53,11 +53,11 @@ pangoMatrixConcatPure m1 m2 = runST do
 	pangoMatrixFreeze m1'
 
 pangoMatrixTransformRectanglePure ::
-	PangoMatrix -> PangoRectangle -> PangoRectangle
+	PangoMatrix -> PangoRectangleFixed -> PangoRectangleFixed
 pangoMatrixTransformRectanglePure m r = runST do
-	rp <- pangoRectangleThaw r
+	rp <- pangoRectangleFixedThaw r
 	pangoMatrixTransformRectangle m rp
-	pangoRectangleFreeze rp
+	pangoRectangleFixedFreeze rp
 
 pangoMatrixTransformPixelRectanglePure ::
 	PangoMatrix -> PangoRectanglePixel -> PangoRectanglePixel

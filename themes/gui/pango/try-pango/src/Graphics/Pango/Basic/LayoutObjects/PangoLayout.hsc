@@ -628,16 +628,16 @@ pangoLogAttrsGetLogAttr (PangoLogAttrs fla sz) i
 instance PangoLayoutInfo Extents where
 	pangoLayoutInfo = (uncurry Extents <$>) . pangoLayoutGetExtents
 
-pangoLayoutGetExtents :: PangoLayout -> IO (PangoRectangle, PangoRectangle)
+pangoLayoutGetExtents :: PangoLayout -> IO (PangoRectangleFixed, PangoRectangleFixed)
 pangoLayoutGetExtents (PangoLayout_ fpl) = withForeignPtr fpl \pl -> do
 	irct <- mallocBytes #{size PangoRectangle}
 	lrct <- mallocBytes #{size PangoRectangle}
 	c_pango_layout_get_extents pl irct lrct
-	(,)	<$> (PangoRectangle_ <$> newForeignPtr irct (free irct))
-		<*> (PangoRectangle_ <$> newForeignPtr lrct (free lrct))
+	(,)	<$> (PangoRectangleFixed_ <$> newForeignPtr irct (free irct))
+		<*> (PangoRectangleFixed_ <$> newForeignPtr lrct (free lrct))
 
 foreign import ccall "pango_layout_get_extents" c_pango_layout_get_extents ::
-	Ptr PangoLayout -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+	Ptr PangoLayout -> Ptr PangoRectangleFixed -> Ptr PangoRectangleFixed -> IO ()
 
 instance PangoLayoutInfo PixelExtents where
 	pangoLayoutInfo = (uncurry PixelExtents <$>) . pangoLayoutGetPixelExtents
@@ -710,7 +710,7 @@ pangoLayoutGetLineCount (PangoLayout_ fpl) =
 foreign import ccall "pango_layout_get_line_count" c_pango_layout_get_line_count ::
 	Ptr PangoLayout -> IO CInt
 
-pangoLayoutIndexToPos :: PangoLayout -> Int -> IO (Maybe PangoRectangle)
+pangoLayoutIndexToPos :: PangoLayout -> Int -> IO (Maybe PangoRectangleFixed)
 pangoLayoutIndexToPos (PangoLayout_ fl) idx = withForeignPtr fl \pl -> do
 	pos <- mallocBytes #{size PangoRectangle}
 	t <- c_pango_layout_get_text pl
@@ -719,7 +719,7 @@ pangoLayoutIndexToPos (PangoLayout_ fl) idx = withForeignPtr fl \pl -> do
 		Nothing -> pure Nothing
 		Just i -> do
 			c_pango_layout_index_to_pos pl (fromIntegral i) pos
-			Just . PangoRectangle_ <$> newForeignPtr pos (free pos)
+			Just . PangoRectangleFixed_ <$> newForeignPtr pos (free pos)
 
 maybeIndex :: [a] -> Int -> Maybe a
 maybeIndex _ i | i < 0 = Nothing
@@ -728,7 +728,7 @@ maybeIndex (x : _) 0 = Just x
 maybeIndex (_ : xs) i = maybeIndex xs (i - 1)
 
 foreign import ccall "pango_layout_index_to_pos" c_pango_layout_index_to_pos ::
-	Ptr PangoLayout -> CInt -> Ptr PangoRectangle -> IO ()
+	Ptr PangoLayout -> CInt -> Ptr PangoRectangleFixed -> IO ()
 
 pangoLayoutIndexToLineX :: PangoLayout -> Int -> Bool -> IO (Maybe (CInt, PangoFixed))
 pangoLayoutIndexToLineX (PangoLayout_ fpl) idx tr =
@@ -758,7 +758,7 @@ pangoLayoutXyToIndex (PangoLayout_ fpl) x_ y_ =
 foreign import ccall "pango_layout_xy_to_index" c_pango_layout_xy_to_index ::
 	Ptr PangoLayout -> CInt -> CInt -> Ptr CInt -> Ptr CInt -> IO #type gboolean
 
-pangoLayoutGetCursorPos :: PangoLayout -> Int -> IO (Maybe (PangoRectangle, PangoRectangle))
+pangoLayoutGetCursorPos :: PangoLayout -> Int -> IO (Maybe (PangoRectangleFixed, PangoRectangleFixed))
 pangoLayoutGetCursorPos (PangoLayout_ fpl) idx = withForeignPtr fpl \pl -> do
 	spos <- mallocBytes #{size PangoRectangle}
 	wpos <- mallocBytes #{size PangoRectangle}
@@ -769,11 +769,11 @@ pangoLayoutGetCursorPos (PangoLayout_ fpl) idx = withForeignPtr fpl \pl -> do
 		Just i -> do
 			c_pango_layout_get_cursor_pos pl (fromIntegral i) spos wpos
 			(Just <$>) $ (,)
-				<$> (PangoRectangle_ <$> newForeignPtr spos (free spos))
-				<*> (PangoRectangle_ <$> newForeignPtr wpos (free wpos))
+				<$> (PangoRectangleFixed_ <$> newForeignPtr spos (free spos))
+				<*> (PangoRectangleFixed_ <$> newForeignPtr wpos (free wpos))
 
 foreign import ccall "pango_layout_get_cursor_pos" c_pango_layout_get_cursor_pos ::
-	Ptr PangoLayout -> CInt -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+	Ptr PangoLayout -> CInt -> Ptr PangoRectangleFixed -> Ptr PangoRectangleFixed -> IO ()
 
 data MinMax a = Min | Jst a | Max deriving Show
 data Dir = L | R deriving Show
@@ -803,14 +803,14 @@ foreign import ccall "pango_layout_move_cursor_visually" c_pango_layout_move_cur
 	Ptr CInt -> Ptr CInt -> IO ()
 
 foreign import ccall "pango_extents_to_pixels" c_pango_extents_to_pixels ::
-	Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+	Ptr PangoRectangleFixed -> Ptr PangoRectangleFixed -> IO ()
 
 pangoExtentsToPixelsInclusive ::
-	PrimMonad m => PangoRectanglePrim (PrimState m) -> m ()
-pangoExtentsToPixelsInclusive (PangoRectanglePrim fr) = unsafeIOToPrim
+	PrimMonad m => PangoRectangleFixedPrim (PrimState m) -> m ()
+pangoExtentsToPixelsInclusive (PangoRectangleFixedPrim fr) = unsafeIOToPrim
 	$ withForeignPtr fr (`c_pango_extents_to_pixels` nullPtr)
 
 pangoExtentsToPixelsNearest ::
-	PrimMonad m => PangoRectanglePrim (PrimState m) -> m ()
-pangoExtentsToPixelsNearest (PangoRectanglePrim fr) = unsafeIOToPrim
+	PrimMonad m => PangoRectangleFixedPrim (PrimState m) -> m ()
+pangoExtentsToPixelsNearest (PangoRectangleFixedPrim fr) = unsafeIOToPrim
 	. withForeignPtr fr $ c_pango_extents_to_pixels nullPtr

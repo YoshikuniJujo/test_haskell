@@ -109,44 +109,44 @@ foreign import ccall "pango_layout_iter_get_line"
 	c_pango_layout_iter_get_line ::
 	Ptr PangoLayoutIter -> IO (Ptr PangoLayoutLine)
 
-pangoLayoutIterGetCharExtents :: PangoLayoutIter -> IO PangoRectangle
+pangoLayoutIterGetCharExtents :: PangoLayoutIter -> IO PangoRectangleFixed
 pangoLayoutIterGetCharExtents (PangoLayoutIter fli) =
 	withForeignPtr fli \pli -> do
 		rct <- mallocBytes #{size PangoRectangle}
 		c_pango_layout_iter_get_char_extents pli rct
-		PangoRectangle_ <$> newForeignPtr rct (free rct)
+		PangoRectangleFixed_ <$> newForeignPtr rct (free rct)
 
 foreign import ccall "pango_layout_iter_get_char_extents"
 	c_pango_layout_iter_get_char_extents ::
-	Ptr PangoLayoutIter -> Ptr PangoRectangle -> IO ()
+	Ptr PangoLayoutIter -> Ptr PangoRectangleFixed -> IO ()
 
 pangoLayoutIterGetClusterExtents ::
-	PangoLayoutIter -> IO (PangoRectangle, PangoRectangle)
+	PangoLayoutIter -> IO (PangoRectangleFixed, PangoRectangleFixed)
 pangoLayoutIterGetClusterExtents (PangoLayoutIter fli) =
 	withForeignPtr fli \pli -> do
 		irct <- mallocBytes #{size PangoRectangle}
 		lrct <- mallocBytes #{size PangoRectangle}
 		c_pango_layout_iter_get_cluster_extents pli irct lrct
-		(,)	<$> (PangoRectangle_ <$> newForeignPtr irct (free irct))
-			<*> (PangoRectangle_ <$> newForeignPtr lrct (free lrct))
+		(,)	<$> (PangoRectangleFixed_ <$> newForeignPtr irct (free irct))
+			<*> (PangoRectangleFixed_ <$> newForeignPtr lrct (free lrct))
 
 foreign import ccall "pango_layout_iter_get_cluster_extents"
 	c_pango_layout_iter_get_cluster_extents ::
-	Ptr PangoLayoutIter -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+	Ptr PangoLayoutIter -> Ptr PangoRectangleFixed -> Ptr PangoRectangleFixed -> IO ()
 
 pangoLayoutIterGetRunExtents ::
-	PangoLayoutIter -> IO (PangoRectangle, PangoRectangle)
+	PangoLayoutIter -> IO (PangoRectangleFixed, PangoRectangleFixed)
 pangoLayoutIterGetRunExtents (PangoLayoutIter fli) =
 	withForeignPtr fli \pli -> do
 		irct <- mallocBytes #{size PangoRectangle}
 		lrct <- mallocBytes #{size PangoRectangle}
 		c_pango_layout_iter_get_run_extents pli irct lrct
-		(,)	<$> (PangoRectangle_ <$> newForeignPtr irct (free irct))
-			<*> (PangoRectangle_ <$> newForeignPtr lrct (free lrct))
+		(,)	<$> (PangoRectangleFixed_ <$> newForeignPtr irct (free irct))
+			<*> (PangoRectangleFixed_ <$> newForeignPtr lrct (free lrct))
 
 foreign import ccall "pango_layout_iter_get_run_extents"
 	c_pango_layout_iter_get_run_extents ::
-	Ptr PangoLayoutIter -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+	Ptr PangoLayoutIter -> Ptr PangoRectangleFixed -> Ptr PangoRectangleFixed -> IO ()
 
 pangoLayoutIterGetLineYrange :: PangoLayoutIter -> IO (CInt, CInt)
 pangoLayoutIterGetLineYrange (PangoLayoutIter fli) =
@@ -159,15 +159,15 @@ foreign import ccall "pango_layout_iter_get_line_yrange"
 	Ptr PangoLayoutIter -> Ptr CInt -> Ptr CInt -> IO ()
 
 pangoLayoutIterGetLineExtents ::
-	PangoLayoutIter -> IO (PangoRectangle, PangoRectangle)
+	PangoLayoutIter -> IO (PangoRectangleFixed, PangoRectangleFixed)
 pangoLayoutIterGetLineExtents (PangoLayoutIter fli) =
 	withForeignPtr fli \pli -> do
 		irct <- mallocBytes #{size PangoRectangle}
 		lrct <- mallocBytes #{size PangoRectangle}
 		c_pango_layout_iter_get_line_extents pli irct lrct
-		(,)	<$> (PangoRectangle_ <$> newForeignPtr irct (free irct))
-			<*> (PangoRectangle_ <$> newForeignPtr lrct (free lrct))
+		(,)	<$> (PangoRectangleFixed_ <$> newForeignPtr irct (free irct))
+			<*> (PangoRectangleFixed_ <$> newForeignPtr lrct (free lrct))
 
 foreign import ccall "pango_layout_iter_get_line_extents"
 	c_pango_layout_iter_get_line_extents ::
-	Ptr PangoLayoutIter -> Ptr PangoRectangle -> Ptr PangoRectangle -> IO ()
+	Ptr PangoLayoutIter -> Ptr PangoRectangleFixed -> Ptr PangoRectangleFixed -> IO ()

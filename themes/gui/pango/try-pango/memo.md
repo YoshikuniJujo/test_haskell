@@ -147,6 +147,7 @@ todo
 	+ [ ] `System.Glib`
 	+ [ ] `Graphics.Pango`
 * [x] use `c-enum` in `System.Glib.SinglyLInkedList`
+* [ ] repair try-pango-layout: segmentation fault
 * [ ] make export list
 	+ [x] `Foreign.Ptr.Misc`
 	+ [x] `Foreign.C.String`
@@ -175,7 +176,7 @@ todo
 			* [ ] GlyphStorage
 				+ [ ] `Graphics.Pango.Basic.GlyphStorage`
 					- [x] add export list
-					- [ ] review `PangoRectangle` and `PangoRectangleFixed`
+					- [x] review `PangoRectangle` and `PangoRectangleFixed`
 					- [ ] others
 				+ [ ] `Graphics.Pango.Basic.GlyphStorage.PangoMatrix`
 			* [ ] Fonts
