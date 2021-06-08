@@ -8,16 +8,16 @@ eight :: PangoFixed
 eight = 8
 
 minBoundPangoFixed :: PangoFixed
-minBoundPangoFixed = toPangoFixed minBound
+minBoundPangoFixed = fromCInt minBound
 
 maxBoundPangoFixed :: PangoFixed
-maxBoundPangoFixed = toPangoFixed maxBound
+maxBoundPangoFixed = fromCInt maxBound
 
 main :: IO ()
 main = do
 	print eight
 	print $ toCInt eight
-	print $ toPangoFixed 8192
+	print $ fromCInt 8192
 	print minBoundPangoFixed
 	print maxBoundPangoFixed
 	print $ minBoundPangoFixed - 1

@@ -668,7 +668,7 @@ pangoLayoutGetSize :: PangoLayout -> IO (PangoFixed, PangoFixed)
 pangoLayoutGetSize (PangoLayout_ fpl) =
 	withForeignPtr fpl \pl -> alloca \pw -> alloca \ph -> do
 		c_pango_layout_get_size pl pw ph
-		(\w h -> (toPangoFixed w, toPangoFixed h)) <$> peek pw <*> peek ph
+		(\w h -> (fromCInt w, fromCInt h)) <$> peek pw <*> peek ph
 
 foreign import ccall "pango_layout_get_size" c_pango_layout_get_size ::
 	Ptr PangoLayout -> Ptr CInt -> Ptr CInt -> IO ()
@@ -742,7 +742,7 @@ pangoLayoutIndexToLineX (PangoLayout_ fpl) idx tr =
 			Nothing -> pure Nothing
 			Just i -> do
 				c_pango_layout_index_to_line_x pl (fromIntegral i) (boolToGboolean tr) ln xpos
-				Just <$> ((,) <$> peek ln <*> (toPangoFixed <$> peek xpos))
+				Just <$> ((,) <$> peek ln <*> (fromCInt <$> peek xpos))
 
 foreign import ccall "pango_layout_index_to_line_x"
 	c_pango_layout_index_to_line_x ::

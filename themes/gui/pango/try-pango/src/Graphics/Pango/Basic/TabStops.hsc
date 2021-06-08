@@ -73,7 +73,7 @@ pangoTabArrayFixedSetTab (PangoTabArrayFixed fta) idx x = unsafeIOToPrim
 		if idx < sz
 		then c_pango_tab_array_set_tab pta idx #{const PANGO_TAB_LEFT} $ toCInt x
 		else do	lst <- tempPangoTabArrayGetTab pta (sz - 1)
-			let	Just (sz', tss) = calculateFixed sz idx (toPangoFixed lst) x
+			let	Just (sz', tss) = calculateFixed sz idx (fromCInt lst) x
 			c_pango_tab_array_resize pta sz'
 			for_ (zip [sz .. sz' - 1] tss) \(i, xx) ->
 				c_pango_tab_array_set_tab pta i #{const PANGO_TAB_LEFT}

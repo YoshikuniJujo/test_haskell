@@ -49,8 +49,8 @@ pattern PangoRectangleFixed {
 pangoRectangleFixed ::
 	PangoRectangle -> (PangoFixed, PangoFixed, PangoFixed, PangoFixed)
 pangoRectangleFixed (PangoRectangle
-	(toPangoFixed -> x) (toPangoFixed -> y)
-	(toPangoFixed -> w) (toPangoFixed -> h)) = (x, y, w, h)
+	(fromCInt -> x) (fromCInt -> y)
+	(fromCInt -> w) (fromCInt -> h)) = (x, y, w, h)
 
 struct "PangoRectanglePixel" #{size PangoRectangle}
 	[	("x", ''CInt, [| #{peek PangoRectangle, x} |],

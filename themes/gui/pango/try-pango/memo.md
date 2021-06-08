@@ -164,10 +164,10 @@ todo
 			* [x] itself
 			* [x] `Internal`
 	+ [ ] `Graphics.Pango`
-		- [ ] PangoFixed
+		- [x] PangoFixed
 			* [x] rename `fromPangoFixed` to `toCInt`
-			* [ ] rename `toPangoFixed`
-			* [ ] make export list
+			* [x] rename `toPangoFixed` to `fromCInt`
+			* [x] make export list
 		- [ ] PangoRectangle
 		- [ ] Basic
 		- [ ] Rendering
