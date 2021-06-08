@@ -160,16 +160,16 @@ main = do
 
 	pl3 <- pangoCairoCreateLayout cr
 	pangoLayoutSetAlignment pl3 PangoAlignCenter
-	pangoLayoutSetTabs pl3 $ tabArray True [100, 200, 300, 400, 500, 600]
+	pangoLayoutSetTabs pl3 $ tabArrayInt [100, 200, 300, 400, 500, 600]
 	pangoLayoutSet @T.Text pl3 "タブの\tテスト\tだよ\tHello,\tworld\t!"
 	cairoMoveTo cr 100 540
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
 	cairoMoveTo cr 100 560
-	pangoLayoutSetTabs pl3 . tabArray False $ (* 1024) <$> [100, 210, 300, 400, 500, 600]
+	pangoLayoutSetTabs pl3 . tabArrayFixed $ [100, 210, 300, 400, 500, 600]
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
-	pangoLayoutSetTabs pl3 $ tabArray False $ (* pangoScale) <$> [100, 200, 300, 350, 450, 490, 490, 490, 490]
+	pangoLayoutSetTabs pl3 $ tabArrayFixed $ [100, 200, 300, 350, 450, 490, 490, 490, 490]
 	cairoMoveTo cr 100 580
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
@@ -179,16 +179,16 @@ main = do
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
 	cairoMoveTo cr 100 620
-	pangoLayoutSetTabs pl3 $ tabArray True [100, 200, 0, 0]
+--	pangoLayoutSetTabs pl3 $ tabArrayInt [100, 200, 0, 0]
 	pangoLayoutSet @T.Text pl3 "a\tb\tc\td\te\tf\tg"
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
 	cairoMoveTo cr 100 640
-	pangoLayoutSetTabs pl3 $ tabArray True [100, 200, 300, 400]
+	pangoLayoutSetTabs pl3 $ tabArrayInt [100, 200, 300, 400]
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
 	cairoMoveTo cr 100 660
-	pangoLayoutSetTabs pl3 $ tabArray True [100, 200]
+	pangoLayoutSetTabs pl3 $ tabArrayInt [100, 200]
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
 	pl4 <- pangoCairoCreateLayout cr
@@ -262,8 +262,14 @@ Haskellとの出会いは、
 |]
 	]
 
-tabArray :: Bool -> [CInt] -> PangoTabArray
-tabArray pip ps = runST do
-	pta <- pangoTabArrayNew (fromIntegral $ length ps) pip
-	for_ (zip [0 ..] ps) \(i, p) -> pangoTabArraySetTab pta i PangoTabLeft p
-	pangoTabArrayFreeze pta
+tabArrayFixed :: [PangoFixed] -> PangoTabArray
+tabArrayFixed ps = runST do
+	pta <- pangoTabArrayFixedNew
+	for_ (zip [0 ..] ps) \(i, p) -> pangoTabArrayFixedSetTab pta i p
+	pangoTabArrayFixedFreeze pta
+
+tabArrayInt :: [CInt] -> PangoTabArray
+tabArrayInt ps = runST do
+	pta <- pangoTabArrayIntNew
+	for_ (zip [0 ..] ps) \(i, p) -> pangoTabArrayIntSetTab pta i p
+	pangoTabArrayIntFreeze pta

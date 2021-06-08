@@ -12,29 +12,24 @@ import Foreign.Concurrent
 
 foreign import ccall "g_object_unref" c_g_object_unref :: Ptr a -> IO ()
 
-newtype PangoTabArrayPrim s = PangoTabArrayPrim (ForeignPtr (PangoTabArrayPrim s)) deriving Show
-
-makePangoTabArrayPrim :: Ptr (PangoTabArrayPrim s) -> IO (PangoTabArrayPrim s)
-makePangoTabArrayPrim p = PangoTabArrayPrim <$> newForeignPtr p (c_pango_tab_array_prim_free p)
-
 newtype PangoTabArrayInt s =
-	PangoTabArrayInt (ForeignPtr (PangoTabArrayPrim s)) deriving Show
+	PangoTabArrayInt (ForeignPtr PangoTabArray) deriving Show
 
 mkPangoTabArrayInt ::
-	Ptr (PangoTabArrayPrim s) -> IO (PangoTabArrayInt s)
+	Ptr PangoTabArray -> IO (PangoTabArrayInt s)
 mkPangoTabArrayInt p =
 	PangoTabArrayInt <$> newForeignPtr p (c_pango_tab_array_prim_free p)
 
 newtype PangoTabArrayFixed s =
-	PangoTabArrayFixed (ForeignPtr (PangoTabArrayPrim s)) deriving Show
+	PangoTabArrayFixed (ForeignPtr PangoTabArray) deriving Show
 
 mkPangoTabArrayFixed ::
-	Ptr (PangoTabArrayPrim s) -> IO (PangoTabArrayFixed s)
+	Ptr PangoTabArray -> IO (PangoTabArrayFixed s)
 mkPangoTabArrayFixed p =
 	PangoTabArrayFixed <$> newForeignPtr p (c_pango_tab_array_prim_free p)
 
 foreign import ccall "pango_tab_array_free" c_pango_tab_array_prim_free ::
-	Ptr (PangoTabArrayPrim s) -> IO ()
+	Ptr PangoTabArray -> IO ()
 
 data PangoTabArray
 	= PangoTabArrayNull

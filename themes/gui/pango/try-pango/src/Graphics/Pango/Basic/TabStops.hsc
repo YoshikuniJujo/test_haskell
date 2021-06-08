@@ -18,32 +18,23 @@ import Data.Word
 import Data.Int
 import System.IO.Unsafe
 
-import Graphics.Pango.Bool
 import Graphics.Pango.Types
 import Graphics.Pango.PangoFixed
 
 #include <pango/pango.h>
-
-foreign import ccall "pango_tab_array_new" c_pango_tab_array_new ::
-	CInt -> #{type gboolean} -> IO (Ptr (PangoTabArrayPrim s))
-
-foreign import ccall "pango_tab_array_set_tab" c_pango_tab_array_set_tab ::
-	Ptr (PangoTabArrayPrim s) -> CInt -> #{type PangoTabAlign} -> CInt -> IO ()
-
-pangoTabArrayIntNew ::
-	PrimMonad m => m (PangoTabArrayInt (PrimState m))
-pangoTabArrayIntNew = unsafeIOToPrim
-	$ mkPangoTabArrayInt =<< c_pango_tab_array_new 1 #{const TRUE}
 
 pangoTabArrayFixedNew ::
 	PrimMonad m => m (PangoTabArrayFixed (PrimState m))
 pangoTabArrayFixedNew = unsafeIOToPrim
 	$ mkPangoTabArrayFixed =<< c_pango_tab_array_new 1 #{const FALSE}
 
-pangoTabArrayNew :: PrimMonad m =>
-	CInt -> Bool -> m (PangoTabArrayPrim (PrimState m))
-pangoTabArrayNew sz px = unsafeIOToPrim
-	$ makePangoTabArrayPrim =<< c_pango_tab_array_new sz (boolToGboolean px)
+pangoTabArrayIntNew ::
+	PrimMonad m => m (PangoTabArrayInt (PrimState m))
+pangoTabArrayIntNew = unsafeIOToPrim
+	$ mkPangoTabArrayInt =<< c_pango_tab_array_new 1 #{const TRUE}
+
+foreign import ccall "pango_tab_array_new" c_pango_tab_array_new ::
+	CInt -> #{type gboolean} -> IO (Ptr PangoTabArray)
 
 pangoTabArrayFixedSetTab :: PrimMonad m =>
 	PangoTabArrayFixed (PrimState m) -> CInt -> PangoFixed -> m ()
@@ -59,13 +50,16 @@ pangoTabArrayFixedSetTab (PangoTabArrayFixed fta) idx x = unsafeIOToPrim
 				c_pango_tab_array_set_tab pta i #{const PANGO_TAB_LEFT}
 					. round $ xx * #{const PANGO_SCALE}
 
-tempPangoTabArrayGetTab :: Ptr (PangoTabArrayPrim s) -> CInt -> IO CInt
+foreign import ccall "pango_tab_array_set_tab" c_pango_tab_array_set_tab ::
+	Ptr PangoTabArray -> CInt -> #{type PangoTabAlign} -> CInt -> IO ()
+
+tempPangoTabArrayGetTab :: Ptr PangoTabArray -> CInt -> IO CInt
 tempPangoTabArrayGetTab pta idx = alloca \px -> do
 	c_pango_tab_array_get_tab_prim pta idx nullPtr px
 	peek px
 
 foreign import ccall "pango_tab_array_get_tab" c_pango_tab_array_get_tab_prim ::
-	Ptr (PangoTabArrayPrim s) -> CInt -> Ptr #{type PangoTabAlign} -> Ptr CInt -> IO ()
+	Ptr PangoTabArray -> CInt -> Ptr #{type PangoTabAlign} -> Ptr CInt -> IO ()
 
 calculateFixed :: CInt -> CInt -> PangoFixed -> PangoFixed -> Maybe (CInt, [PangoFixed])
 calculateFixed sz idx lst x
@@ -104,26 +98,16 @@ calculateCInt sz idx lst x =
 	second (round <$>) <$> calculateDouble sz idx (fromIntegral lst) (fromIntegral x)
 
 foreign import ccall "pango_tab_array_get_size" c_pango_tab_array_get_size_prim ::
-	Ptr (PangoTabArrayPrim s) -> IO CInt
+	Ptr PangoTabArray -> IO CInt
 
 foreign import ccall "pango_tab_array_get_size" c_pango_tab_array_get_size ::
 	Ptr PangoTabArray -> IO CInt
 
 foreign import ccall "pango_tab_array_resize" c_pango_tab_array_resize ::
-	Ptr (PangoTabArrayPrim s) -> CInt -> IO ()
-
-pangoTabArrayResize :: PrimMonad m =>
-	PangoTabArrayPrim (PrimState m) -> CInt -> m ()
-pangoTabArrayResize (PangoTabArrayPrim fpta) sz = unsafeIOToPrim
-	$ withForeignPtr fpta \pta -> c_pango_tab_array_resize pta sz
+	Ptr PangoTabArray -> CInt -> IO ()
 
 enum "PangoTabAlign" ''#{type PangoTabAlign} [''Show] [
 	("PangoTabLeft", #{const PANGO_TAB_LEFT}) ]
-
-pangoTabArraySetTab :: PrimMonad m =>
-	PangoTabArrayPrim (PrimState m) -> CInt -> PangoTabAlign -> CInt -> m ()
-pangoTabArraySetTab (PangoTabArrayPrim fpta) idx (PangoTabAlign algn) loc = unsafeIOToPrim
-	$ withForeignPtr fpta \pta -> c_pango_tab_array_set_tab pta idx algn loc
 
 pangoTabArrayGetTab :: PangoTabArray -> CInt -> Maybe (Either Double CInt)
 pangoTabArrayGetTab PangoTabArrayNull _ = Nothing
@@ -175,11 +159,6 @@ pangoTabArrayFixedFreeze (PangoTabArrayFixed fta) =
 	unsafeIOToPrim $ withForeignPtr fta \pta ->
 		makePangoTabArray =<< c_pango_tab_array_freeze pta
 
-pangoTabArrayFreeze :: PrimMonad m =>
-	PangoTabArrayPrim (PrimState m) -> m PangoTabArray
-pangoTabArrayFreeze (PangoTabArrayPrim fpta) = unsafeIOToPrim
-	$ withForeignPtr fpta \pta -> makePangoTabArray =<< c_pango_tab_array_freeze pta
-
 pangoTabArrayThaw :: PrimMonad m => PangoTabArray -> m (Maybe (Either
 	(PangoTabArrayFixed (PrimState m))
 	(PangoTabArrayInt (PrimState m))))
@@ -193,7 +172,7 @@ pangoTabArrayThaw (PangoTabArray fta) =
 			_ -> error "never occur"
 
 foreign import ccall "pango_tab_array_copy" c_pango_tab_array_freeze ::
-	Ptr (PangoTabArrayPrim s) -> IO (Ptr PangoTabArray)
+	Ptr PangoTabArray -> IO (Ptr PangoTabArray)
 
 foreign import ccall "pango_tab_array_copy" c_pango_tab_array_thaw ::
-	Ptr PangoTabArray -> IO (Ptr (PangoTabArrayPrim s))
+	Ptr PangoTabArray -> IO (Ptr PangoTabArray)
