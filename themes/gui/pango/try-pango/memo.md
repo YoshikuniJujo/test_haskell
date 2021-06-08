@@ -164,7 +164,6 @@ todo
 			* [x] itself
 			* [x] `Internal`
 	+ [ ] `Graphics.Pango`
-		- [ ] Types
 		- [ ] Bool
 		- [ ] PangoFixed
 		- [ ] PangoRectangle
@@ -598,6 +597,7 @@ src
 │       │   │   └── PangoFontDescription.hsc
 │       │   ├── GlyphStorage
 │       │   │   └── PangoMatrix.hsc
+│       │   ├── GlyphStorage.hs
 │       │   ├── LayoutObjects
 │       │   │   ├── PangoLayout.hsc
 │       │   │   ├── PangoLayoutIter.hsc
@@ -615,9 +615,8 @@ src
 │       ├── Bool.hsc
 │       ├── PangoFixed.hsc
 │       ├── PangoRectangle.hsc
-│       ├── Rendering
-│       │   └── Cairo.hsc
-│       └── Types.hsc
+│       └── Rendering
+│           └── Cairo.hsc
 └── System
     └── Glib
         ├── ErrorReporting.hsc

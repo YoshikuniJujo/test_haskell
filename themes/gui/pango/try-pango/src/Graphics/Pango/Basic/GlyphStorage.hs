@@ -1,14 +1,12 @@
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Types where
+module Graphics.Pango.Basic.GlyphStorage where
 
 import Foreign.Ptr
 import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
-
-#include <pango/pango.h>
 
 newtype PangoGlyphItem = PangoGlyphItem (ForeignPtr PangoGlyphItem) deriving Show
 
@@ -31,5 +29,3 @@ foreign import ccall "pango_glyph_item_free" c_pango_glyph_item_free ::
 	Ptr PangoGlyphItem -> IO ()
 
 type PangoLayoutRun = PangoGlyphItem
-
-foreign import ccall "g_object_unref" c_g_object_unref :: Ptr a -> IO ()

@@ -12,8 +12,8 @@ import Foreign.C.Types
 import Data.Int
 
 import Graphics.Pango.Bool
-import Graphics.Pango.Types
 import Graphics.Pango.PangoRectangle
+import Graphics.Pango.Basic.GlyphStorage
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine
 

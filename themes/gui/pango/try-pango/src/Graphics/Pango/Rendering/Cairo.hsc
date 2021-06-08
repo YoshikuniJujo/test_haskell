@@ -8,10 +8,9 @@ import Foreign.ForeignPtr
 import Foreign.C
 import Control.Monad.Primitive
 
-import Graphics.Pango.Types
-
 import Data.CairoContext
 
+import Graphics.Pango.Basic.GlyphStorage
 import Graphics.Pango.Basic.Rendering
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine

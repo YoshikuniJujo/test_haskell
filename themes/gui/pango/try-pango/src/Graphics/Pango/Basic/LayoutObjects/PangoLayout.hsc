@@ -30,7 +30,6 @@ import Data.Text.CString
 import System.IO.Unsafe
 
 import Graphics.Pango.Bool
-import Graphics.Pango.Types
 import Graphics.Pango.Basic.Rendering
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.TextAttributes.Internal
