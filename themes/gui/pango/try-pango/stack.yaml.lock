@@ -5,6 +5,13 @@
 
 packages:
 - completed:
+    hackage: union-angle-0.1.0.1@sha256:1aad0108ec091196e0aeb1ba75a31bdeb8d0b8c5dbdb5656e7b5e17349c2bfc0,1307
+    pantry-tree:
+      size: 363
+      sha256: 9a8b5e0104052a92a159fff8969e31cb3cbb41296a46b3cdf35f910d568fe89e
+  original:
+    hackage: union-angle-0.1.0.1
+- completed:
     name: simple-cairo
     version: 0.1.0.0
     git: https://github.com/YoshikuniJujo/simple-cairo

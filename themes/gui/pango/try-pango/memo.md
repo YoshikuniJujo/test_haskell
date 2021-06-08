@@ -89,7 +89,7 @@ todo
 * [x] review `pangoLayoutGetLines`
 * [x] review `pangoLayoutGetIter`
 * [x] bug fix: try-pango-layout: segmentation fault
-* [ ] Data.Angle
+* [x] Data.Angle
 	+ [x] more general
 	+ [x] move this module to `Data.Angle`
 	+ [x] instance Foo Angle
@@ -124,8 +124,8 @@ todo
 				+ [x] Real
 				+ [x] Floating
 				+ [x] RealFrac
-	+ [ ] independent package `union-angle`
-	+ [ ] document
+	+ [x] independent package `union-angle`
+	+ [x] document
 * [ ] remove unused modules
 	+ [x] remove `Foreign.C.StringPartial`
 	+ [x] remove `Data.Text.Gunichar`
@@ -163,11 +163,10 @@ todo
 			* [x] itself
 			* [x] `Internal`
 	+ [ ] `Graphics.Pango`
-		- [ ] Angle
+		- [ ] Types
 		- [ ] Bool
 		- [ ] PangoFixed
 		- [ ] PangoRectangle
-		- [ ] Types
 		- [ ] Basic
 		- [ ] Rendering
 * [ ] think about package name
@@ -589,7 +588,6 @@ src
 │       └── Misc.hs
 ├── Graphics
 │   └── Pango
-│       ├── Angle.hs
 │       ├── Basic
 │       │   ├── BidirectionalText.hsc
 │       │   ├── Fonts
@@ -614,7 +612,6 @@ src
 │       │   ├── TextAttributes.hs
 │       │   └── VerticalText.hsc
 │       ├── Bool.hsc
-│       ├── LowLevel
 │       ├── PangoFixed.hsc
 │       ├── PangoRectangle.hsc
 │       ├── Rendering
@@ -629,5 +626,5 @@ src
         ├── SimpleXmlSubsetParser.hsc
         └── SinglyLinkedLists.hsc
 
-21 directories, 33 files
+20 directories, 32 files
 ```
