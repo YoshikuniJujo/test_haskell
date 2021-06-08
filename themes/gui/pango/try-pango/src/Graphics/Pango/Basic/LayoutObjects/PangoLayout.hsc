@@ -756,7 +756,7 @@ pangoLayoutXyToIndex (PangoLayout_ fpl) x_ y_ =
 		isd <- c_pango_layout_xy_to_index pl x y idx tr
 		(,,) <$> (fromJust . (`elemIndex` is) . fromIntegral <$> peek idx) <*> peek tr <*> pure (gbooleanToBool isd)
 	where
-	[x, y] = fromPangoFixed <$> [x_, y_]
+	[x, y] = toCInt <$> [x_, y_]
 
 foreign import ccall "pango_layout_xy_to_index" c_pango_layout_xy_to_index ::
 	Ptr PangoLayout -> CInt -> CInt -> Ptr CInt -> Ptr CInt -> IO #type gboolean

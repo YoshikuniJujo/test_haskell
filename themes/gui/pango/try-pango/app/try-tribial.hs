@@ -16,9 +16,9 @@ maxBoundPangoFixed = toPangoFixed maxBound
 main :: IO ()
 main = do
 	print eight
-	print $ fromPangoFixed eight
+	print $ toCInt eight
 	print $ toPangoFixed 8192
 	print minBoundPangoFixed
 	print maxBoundPangoFixed
 	print $ minBoundPangoFixed - 1
-	print . fromPangoFixed $ minBoundPangoFixed - 1
+	print . toCInt $ minBoundPangoFixed - 1

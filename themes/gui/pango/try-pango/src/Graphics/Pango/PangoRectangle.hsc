@@ -44,7 +44,7 @@ pattern PangoRectangleFixed {
 	pangoRectangleFixedX, pangoRectangleFixedY,
 	pangoRectangleFixedWidth, pangoRectangleFixedHeight )) where
 	PangoRectangleFixed x y w h =
-		PangoRectangle (fromPangoFixed x) (fromPangoFixed y) (fromPangoFixed w) (fromPangoFixed h)
+		PangoRectangle (toCInt x) (toCInt y) (toCInt w) (toCInt h)
 
 pangoRectangleFixed ::
 	PangoRectangle -> (PangoFixed, PangoFixed, PangoFixed, PangoFixed)

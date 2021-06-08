@@ -165,6 +165,9 @@ todo
 			* [x] `Internal`
 	+ [ ] `Graphics.Pango`
 		- [ ] PangoFixed
+			* [x] rename `fromPangoFixed` to `toCInt`
+			* [ ] rename `toPangoFixed`
+			* [ ] make export list
 		- [ ] PangoRectangle
 		- [ ] Basic
 		- [ ] Rendering

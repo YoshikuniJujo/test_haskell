@@ -22,12 +22,12 @@ minCInt, maxCInt :: Integer
 minCInt = fromIntegral (minBound @CInt)
 maxCInt = fromIntegral (maxBound @CInt)
 
-toPangoFixed :: CInt -> PangoFixed
-toPangoFixed = MkFixed . fromIntegral
-
-fromPangoFixed :: HasCallStack => PangoFixed -> CInt
-fromPangoFixed (MkFixed i)
+toCInt :: HasCallStack => PangoFixed -> CInt
+toCInt (MkFixed i)
 	| minCInt <= i && i <= maxCInt = fromIntegral i
 	| otherwise = unsafePerformIO do
 		putStrLn $ prettyCallStack callStack
 		throw Overflow
+
+toPangoFixed :: CInt -> PangoFixed
+toPangoFixed = MkFixed . fromIntegral
