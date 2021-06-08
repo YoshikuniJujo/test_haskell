@@ -17,14 +17,6 @@ newtype PangoTabArrayPrim s = PangoTabArrayPrim (ForeignPtr (PangoTabArrayPrim s
 makePangoTabArrayPrim :: Ptr (PangoTabArrayPrim s) -> IO (PangoTabArrayPrim s)
 makePangoTabArrayPrim p = PangoTabArrayPrim <$> newForeignPtr p (c_pango_tab_array_prim_free p)
 
-newtype PangoTabArrayDouble s =
-	PangoTabArrayDouble (ForeignPtr (PangoTabArrayPrim s)) deriving Show
-
-mkPangoTabArrayDouble ::
-	Ptr (PangoTabArrayPrim s) -> IO (PangoTabArrayDouble s)
-mkPangoTabArrayDouble p =
-	PangoTabArrayDouble <$> newForeignPtr p (c_pango_tab_array_prim_free p)
-
 newtype PangoTabArrayInt s =
 	PangoTabArrayInt (ForeignPtr (PangoTabArrayPrim s)) deriving Show
 

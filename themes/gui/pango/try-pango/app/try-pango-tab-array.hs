@@ -20,12 +20,6 @@ import qualified Data.Text as T
 
 main :: IO ()
 main = do
-	tad <- pangoTabArrayDoubleNew
-	pangoTabArrayDoubleSetTab tad 3 100
-	pangoTabArrayDoubleSetTab tad 5 250
-	tad' <- pangoTabArrayDoubleFreeze tad
-	print $ pangoTabArrayGetTabs tad'
-
 	taf <- pangoTabArrayFixedNew
 	pangoTabArrayFixedSetTab taf 3 100
 	pangoTabArrayFixedSetTab taf 5 250
@@ -46,10 +40,6 @@ main = do
 
 	pangoLayoutSet @T.Text pl "a\tb\tc\td\te\tf\tg"
 	cairoMoveTo cr 0 60
-	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
-
-	cairoMoveTo cr 0 130
-	pangoLayoutSet pl tad'
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	cairoMoveTo cr 0 150
