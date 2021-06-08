@@ -54,12 +54,11 @@ import System.Glib.SimpleXmlSubsetParser
 import qualified Data.Text as T
 import qualified Data.Text.Foreign as T
 
+import Graphics.Pango.Basic.GlyphStorage
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.ScriptsAndLanguages.Types
 import Graphics.Pango.Basic.VerticalText
-
-import Graphics.Pango.PangoRectangle
 
 #include <pango/pango.h>
 

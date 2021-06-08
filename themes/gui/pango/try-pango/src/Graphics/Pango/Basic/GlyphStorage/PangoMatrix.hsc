@@ -16,7 +16,7 @@ import System.IO.Unsafe
 
 import Foreign.C.Struct
 
-import Graphics.Pango.PangoRectangle
+import Graphics.Pango.Basic.GlyphStorage
 
 #include <pango/pango.h>
 

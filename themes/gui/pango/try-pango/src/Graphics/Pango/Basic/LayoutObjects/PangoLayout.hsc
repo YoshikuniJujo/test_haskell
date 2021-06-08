@@ -24,22 +24,18 @@ import Data.Bool
 import Data.Word
 import Data.Int
 import Data.Char
-
 import Data.Text.CString
-
 import System.IO.Unsafe
 
 import System.Glib.Bool
 import Graphics.Pango.Basic.Rendering
+import Graphics.Pango.Basic.GlyphStorage
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.TextAttributes.Internal
 import Graphics.Pango.Basic.TabStops
 
 import qualified Data.Text as T
 import qualified Data.Text.Foreign as T
-
-import Graphics.Pango.Basic.GlyphStorage
-import Graphics.Pango.PangoRectangle
 
 #include <pango/pango.h>
 #include "pango_log_attr.h"

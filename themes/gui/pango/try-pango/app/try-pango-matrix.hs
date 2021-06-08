@@ -7,8 +7,8 @@ import Foreign.C.Types
 import Control.Monad.ST
 import Data.Angle
 
+import Graphics.Pango.Basic.GlyphStorage
 import Graphics.Pango.Basic.GlyphStorage.PangoMatrix
-import Graphics.Pango.PangoRectangle
 
 main :: IO ()
 main = do

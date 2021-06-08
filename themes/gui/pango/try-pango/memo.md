@@ -164,7 +164,6 @@ todo
 			* [x] itself
 			* [x] `Internal`
 	+ [ ] `Graphics.Pango`
-		- [ ] PangoRectangle
 		- [ ] Basic
 		- [ ] Rendering
 * [ ] think about package name
@@ -610,7 +609,6 @@ src
 │       │   │   └── Internal.hsc
 │       │   ├── TextAttributes.hs
 │       │   └── VerticalText.hsc
-│       ├── PangoRectangle.hsc
 │       └── Rendering
 │           └── Cairo.hsc
 └── System
@@ -623,5 +621,5 @@ src
         ├── SimpleXmlSubsetParser.hsc
         └── SinglyLinkedLists.hsc
 
-20 directories, 31 files
+20 directories, 30 files
 ```
