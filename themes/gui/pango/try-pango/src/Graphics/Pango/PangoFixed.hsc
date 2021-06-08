@@ -1,7 +1,14 @@
+{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE TypeApplications #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
 module Graphics.Pango.PangoFixed where
 
+import GHC.Stack
 import Foreign.C.Types
+import Control.Exception
 import Data.Fixed
+import System.IO.Unsafe
 
 #include <pango/pango.h>
 
@@ -11,8 +18,16 @@ instance HasResolution PU where resolution _ = #{const PANGO_SCALE}
 
 type PangoFixed = Fixed PU
 
+minCInt, maxCInt :: Integer
+minCInt = fromIntegral (minBound @CInt)
+maxCInt = fromIntegral (maxBound @CInt)
+
 toPangoFixed :: CInt -> PangoFixed
 toPangoFixed = MkFixed . fromIntegral
 
-fromPangoFixed :: PangoFixed -> CInt
-fromPangoFixed (MkFixed i) = fromIntegral i
+fromPangoFixed :: HasCallStack => PangoFixed -> CInt
+fromPangoFixed (MkFixed i)
+	| minCInt <= i && i <= maxCInt = fromIntegral i
+	| otherwise = unsafePerformIO do
+		putStrLn $ prettyCallStack callStack
+		throw Overflow
