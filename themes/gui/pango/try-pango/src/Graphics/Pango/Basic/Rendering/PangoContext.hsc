@@ -1,7 +1,13 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Basic.Rendering.PangoContext where
+module Graphics.Pango.Basic.Rendering.PangoContext (
+	PangoContext(..), mkPangoContext, PangoContextSetting(..),
+	BaseGravity(..),
+	pangoMatrixFromNullable,
+	pangoContextSetFontDescription,
+	c_g_object_unref
+	) where
 
 import Foreign.Ptr
 import Foreign.Ptr.Misc

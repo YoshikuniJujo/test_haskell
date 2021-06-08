@@ -167,8 +167,14 @@ todo
 		- [ ] Basic
 			* [ ] Rendering
 				+ [x] move to `Graphics.Pango.Rendering.PangoContext`
+				+ [x] make export list
+				+ [ ] separate `Graphics.Pango.Rendering.PangoContext.Internal`
+			* [ ] `Graphics.Pango.Rendering.PangoContext`
+				+ [ ] refactor export list
 				+ [ ] others
-				+ [ ] make export list
+			* [ ] `Graphics.Pango.Rendering.PangoContext.Internal`
+				+ [ ] refactor export list
+				+ [ ] others
 			* [ ] GlyphStorage
 			* [ ] Fonts
 			* [ ] TextAttributes
