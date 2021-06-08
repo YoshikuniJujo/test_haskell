@@ -164,7 +164,6 @@ todo
 			* [x] itself
 			* [x] `Internal`
 	+ [ ] `Graphics.Pango`
-		- [ ] Bool
 		- [ ] PangoFixed
 		- [ ] PangoRectangle
 		- [ ] Basic
@@ -612,13 +611,13 @@ src
 │       │   │   └── Internal.hsc
 │       │   ├── TextAttributes.hs
 │       │   └── VerticalText.hsc
-│       ├── Bool.hsc
 │       ├── PangoFixed.hsc
 │       ├── PangoRectangle.hsc
 │       └── Rendering
 │           └── Cairo.hsc
 └── System
     └── Glib
+        ├── Bool.hsc
         ├── ErrorReporting.hsc
         ├── Quarks
         │   └── Internal.hsc

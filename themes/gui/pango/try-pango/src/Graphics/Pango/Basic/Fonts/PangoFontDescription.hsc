@@ -20,7 +20,7 @@ import Data.Bool
 import Data.Word
 import Data.Int
 
-import Graphics.Pango.Bool
+import System.Glib.Bool
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.VerticalText
 

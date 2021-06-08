@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Bool where
+module System.Glib.Bool where
 
 import Data.Int
 

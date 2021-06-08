@@ -12,7 +12,7 @@ import Foreign.Storable
 import Foreign.C.Types
 import Data.Int
 
-import Graphics.Pango.Bool
+import System.Glib.Bool
 import Graphics.Pango.PangoRectangle
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import System.Glib.SinglyLinkedLists
