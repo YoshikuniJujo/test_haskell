@@ -126,6 +126,7 @@ todo
 				+ [x] RealFrac
 	+ [x] independent package `union-angle`
 	+ [x] document
+* [ ] review `Graphics.Pango.Basic.TabStops`
 * [ ] remove unused modules
 	+ [x] remove `Foreign.C.StringPartial`
 	+ [x] remove `Data.Text.Gunichar`

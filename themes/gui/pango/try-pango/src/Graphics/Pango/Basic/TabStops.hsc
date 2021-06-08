@@ -20,6 +20,7 @@ import System.IO.Unsafe
 
 import Graphics.Pango.Bool
 import Graphics.Pango.Types
+import Graphics.Pango.PangoFixed
 
 #include <pango/pango.h>
 
@@ -38,6 +39,11 @@ pangoTabArrayIntNew ::
 	PrimMonad m => m (PangoTabArrayInt (PrimState m))
 pangoTabArrayIntNew = unsafeIOToPrim
 	$ mkPangoTabArrayInt =<< c_pango_tab_array_new 1 #{const TRUE}
+
+pangoTabArrayFixedNew ::
+	PrimMonad m => m (PangoTabArrayFixed (PrimState m))
+pangoTabArrayFixedNew = unsafeIOToPrim
+	$ mkPangoTabArrayFixed =<< c_pango_tab_array_new 1 #{const FALSE}
 
 pangoTabArrayNew :: PrimMonad m =>
 	CInt -> Bool -> m (PangoTabArrayPrim (PrimState m))
@@ -59,6 +65,20 @@ pangoTabArrayDoubleSetTab (PangoTabArrayDouble fta) idx x = unsafeIOToPrim
 				c_pango_tab_array_set_tab pta i #{const PANGO_TAB_LEFT}
 					. round $ xx * #{const PANGO_SCALE}
 
+pangoTabArrayFixedSetTab :: PrimMonad m =>
+	PangoTabArrayFixed (PrimState m) -> CInt -> PangoFixed -> m ()
+pangoTabArrayFixedSetTab (PangoTabArrayFixed fta) idx x = unsafeIOToPrim
+	$ withForeignPtr fta \pta -> do
+		sz <- c_pango_tab_array_get_size_prim pta
+		if idx < sz
+		then c_pango_tab_array_set_tab pta idx #{const PANGO_TAB_LEFT} $ fromPangoFixed x
+		else do	lst <- tempPangoTabArrayGetTab pta (sz - 1)
+			let	Just (sz', tss) = calculateFixed sz idx (toPangoFixed lst) x
+			c_pango_tab_array_resize pta sz'
+			for_ (zip [sz .. sz' - 1] tss) \(i, xx) ->
+				c_pango_tab_array_set_tab pta i #{const PANGO_TAB_LEFT}
+					. round $ xx * #{const PANGO_SCALE}
+
 tempPangoTabArrayGetTab :: Ptr (PangoTabArrayPrim s) -> CInt -> IO CInt
 tempPangoTabArrayGetTab pta idx = alloca \px -> do
 	c_pango_tab_array_get_tab_prim pta idx nullPtr px
@@ -66,6 +86,14 @@ tempPangoTabArrayGetTab pta idx = alloca \px -> do
 
 foreign import ccall "pango_tab_array_get_tab" c_pango_tab_array_get_tab_prim ::
 	Ptr (PangoTabArrayPrim s) -> CInt -> Ptr #{type PangoTabAlign} -> Ptr CInt -> IO ()
+
+calculateFixed :: CInt -> CInt -> PangoFixed -> PangoFixed -> Maybe (CInt, [PangoFixed])
+calculateFixed sz idx lst x
+	| idx < sz = Nothing
+	| otherwise = Just (sz', take (fromIntegral $ sz' - sz) [lst + dx, lst + 2 * dx ..])
+	where
+	sz' = nextPow2 $ idx + 1
+	dx = (x - lst) / fromIntegral (idx - sz + 1)
 
 calculateDouble :: CInt -> CInt -> Double -> Double -> Maybe (CInt, [Double])
 calculateDouble sz idx lst x
@@ -164,6 +192,12 @@ pangoTabArrayDoubleFreeze (PangoTabArrayDouble fta) =
 pangoTabArrayIntFreeze :: PrimMonad m =>
 	PangoTabArrayInt (PrimState m) -> m PangoTabArray
 pangoTabArrayIntFreeze (PangoTabArrayInt fta) =
+	unsafeIOToPrim $ withForeignPtr fta \pta ->
+		makePangoTabArray =<< c_pango_tab_array_freeze pta
+
+pangoTabArrayFixedFreeze :: PrimMonad m =>
+	PangoTabArrayFixed (PrimState m) -> m PangoTabArray
+pangoTabArrayFixedFreeze (PangoTabArrayFixed fta) =
 	unsafeIOToPrim $ withForeignPtr fta \pta ->
 		makePangoTabArray =<< c_pango_tab_array_freeze pta
 

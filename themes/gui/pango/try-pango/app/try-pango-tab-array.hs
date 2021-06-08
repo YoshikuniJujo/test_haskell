@@ -26,6 +26,12 @@ main = do
 	tad' <- pangoTabArrayDoubleFreeze tad
 	print $ pangoTabArrayGetTabs tad'
 
+	taf <- pangoTabArrayFixedNew
+	pangoTabArrayFixedSetTab taf 3 100
+	pangoTabArrayFixedSetTab taf 5 250
+	taf' <- pangoTabArrayFixedFreeze taf
+	print $ pangoTabArrayGetTabs taf'
+
 	tai <- pangoTabArrayIntNew
 	pangoTabArrayIntSetTab tai 10 100
 	tai' <- pangoTabArrayIntFreeze tai
@@ -39,14 +45,18 @@ main = do
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	pangoLayoutSet @T.Text pl "a\tb\tc\td\te\tf\tg"
-	cairoMoveTo cr 0 50
+	cairoMoveTo cr 0 60
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
-	cairoMoveTo cr 0 70
+	cairoMoveTo cr 0 130
 	pangoLayoutSet pl tad'
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
-	cairoMoveTo cr 0 90
+	cairoMoveTo cr 0 150
+	pangoLayoutSet pl taf'
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
+
+	cairoMoveTo cr 0 200
 	pangoLayoutSet pl tai'
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 

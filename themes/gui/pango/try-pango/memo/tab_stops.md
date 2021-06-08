@@ -38,6 +38,8 @@ todo
 * [x] `pangoTabArrayGetTabs`
 	+ `:: PangoTabArray -> Either [Double] [Int]`
 * [x] `pango_tab_array_get_positions_in_pixels`
+* [x] use PangoFixed
+* [ ] organize PangoTabArrayFoos
 * [ ] add `pattern PangoTabArrayDefault`
 	+ but ...
 

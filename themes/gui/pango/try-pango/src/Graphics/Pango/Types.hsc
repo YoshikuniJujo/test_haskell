@@ -33,6 +33,14 @@ mkPangoTabArrayInt ::
 mkPangoTabArrayInt p =
 	PangoTabArrayInt <$> newForeignPtr p (c_pango_tab_array_prim_free p)
 
+newtype PangoTabArrayFixed s =
+	PangoTabArrayFixed (ForeignPtr (PangoTabArrayPrim s)) deriving Show
+
+mkPangoTabArrayFixed ::
+	Ptr (PangoTabArrayPrim s) -> IO (PangoTabArrayFixed s)
+mkPangoTabArrayFixed p =
+	PangoTabArrayFixed <$> newForeignPtr p (c_pango_tab_array_prim_free p)
+
 foreign import ccall "pango_tab_array_free" c_pango_tab_array_prim_free ::
 	Ptr (PangoTabArrayPrim s) -> IO ()
 
