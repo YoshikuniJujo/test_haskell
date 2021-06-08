@@ -34,6 +34,7 @@ import Graphics.Pango.Types
 import Graphics.Pango.Basic.Rendering
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.TextAttributes.Internal
+import Graphics.Pango.Basic.TabStops
 
 import qualified Data.Text as T
 import qualified Data.Text.Foreign as T

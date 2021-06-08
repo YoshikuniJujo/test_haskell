@@ -6,7 +6,8 @@
 module Graphics.Pango.Basic.TabStops where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
+import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
@@ -18,10 +19,38 @@ import Data.Word
 import Data.Int
 import System.IO.Unsafe
 
-import Graphics.Pango.Types
 import Graphics.Pango.PangoFixed
 
 #include <pango/pango.h>
+
+data PangoTabArray
+	= PangoTabArrayNull
+	| PangoTabArray (ForeignPtr PangoTabArray)
+	deriving Show
+
+makePangoTabArray :: Ptr PangoTabArray -> IO PangoTabArray
+makePangoTabArray p
+	| p == nullPtr = pure PangoTabArrayNull
+	| otherwise = PangoTabArray <$> newForeignPtr p (c_pango_tab_array_free p)
+
+newtype PangoTabArrayFixed s =
+	PangoTabArrayFixed (ForeignPtr PangoTabArray) deriving Show
+
+mkPangoTabArrayFixed ::
+	Ptr PangoTabArray -> IO (PangoTabArrayFixed s)
+mkPangoTabArrayFixed p =
+	PangoTabArrayFixed <$> newForeignPtr p (c_pango_tab_array_free p)
+
+newtype PangoTabArrayInt s =
+	PangoTabArrayInt (ForeignPtr PangoTabArray) deriving Show
+
+mkPangoTabArrayInt ::
+	Ptr PangoTabArray -> IO (PangoTabArrayInt s)
+mkPangoTabArrayInt p =
+	PangoTabArrayInt <$> newForeignPtr p (c_pango_tab_array_free p)
+
+foreign import ccall "pango_tab_array_free" c_pango_tab_array_free ::
+	Ptr PangoTabArray -> IO ()
 
 pangoTabArrayFixedNew ::
 	PrimMonad m => m (PangoTabArrayFixed (PrimState m))
