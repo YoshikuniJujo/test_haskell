@@ -13,7 +13,7 @@ import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
-import Graphics.Pango.Basic.Rendering
+import Graphics.Pango.Basic.Rendering.PangoContext
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout

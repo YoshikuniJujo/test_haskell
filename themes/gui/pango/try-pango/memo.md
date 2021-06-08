@@ -165,7 +165,19 @@ todo
 			* [x] `Internal`
 	+ [ ] `Graphics.Pango`
 		- [ ] Basic
-		- [ ] Rendering
+			* [ ] Rendering
+				+ [x] move to `Graphics.Pango.Rendering.PangoContext`
+				+ [ ] others
+				+ [ ] make export list
+			* [ ] GlyphStorage
+			* [ ] Fonts
+			* [ ] TextAttributes
+			* [ ] TabStops
+			* [ ] LayoutObjects
+			* [ ] ScriptsAndLanguages
+			* [ ] BidirectionalText
+			* [ ] VerticalText
+		- [ ] Rendering.Cairo
 * [ ] think about package name
 	+ simple-cairo-pango ?
 * [ ] consider to remove `deriving Show` of many types
@@ -599,7 +611,8 @@ src
 │       │   │   ├── PangoLayout.hsc
 │       │   │   ├── PangoLayoutIter.hsc
 │       │   │   └── PangoLayoutLine.hsc
-│       │   ├── Rendering.hsc
+│       │   ├── Rendering
+│       │   │   └── PangoContext.hsc
 │       │   ├── ScriptsAndLanguages
 │       │   │   ├── PangoLanguage.hsc
 │       │   │   ├── PangoScript.hsc
@@ -621,5 +634,5 @@ src
         ├── SimpleXmlSubsetParser.hsc
         └── SinglyLinkedLists.hsc
 
-20 directories, 30 files
+21 directories, 30 files
 ```

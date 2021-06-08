@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Basic.Rendering where
+module Graphics.Pango.Basic.Rendering.PangoContext where
 
 import Foreign.Ptr
 import Foreign.Ptr.Misc

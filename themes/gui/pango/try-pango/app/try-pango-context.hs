@@ -17,7 +17,7 @@ import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
 
 import Graphics.Pango.Basic.GlyphStorage
-import Graphics.Pango.Basic.Rendering
+import Graphics.Pango.Basic.Rendering.PangoContext
 import Graphics.Pango.Basic.GlyphStorage.PangoMatrix
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
