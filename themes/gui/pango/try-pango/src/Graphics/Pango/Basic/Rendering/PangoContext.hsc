@@ -2,16 +2,15 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.Rendering.PangoContext (
-	PangoContext(..), mkPangoContext, PangoContextSetting(..),
-	BaseGravity(..),
-	c_g_object_unref
-	) where
+	PangoContext(..), mkPangoContext,
+	PangoContextSetting(..), BaseGravity(..) ) where
 
 import Foreign.Ptr
 import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Data.Word
+import System.Glib.GObject
 
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 
@@ -98,5 +97,3 @@ pangoContextSetMatrix (PangoContext fc) m = withForeignPtr fc \pc -> case m of
 
 foreign import ccall "pango_context_set_matrix" c_pango_context_set_matrix ::
 	Ptr PangoContext -> Ptr PangoMatrix -> IO ()
-
-foreign import ccall "g_object_unref" c_g_object_unref :: Ptr a -> IO ()
