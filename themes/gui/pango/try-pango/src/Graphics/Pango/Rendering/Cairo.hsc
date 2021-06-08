@@ -10,8 +10,8 @@ import Control.Monad.Primitive
 
 import Data.CairoContext
 
+import Graphics.Pango.Basic.Rendering.PangoContext.Internal
 import Graphics.Pango.Basic.GlyphStorage
-import Graphics.Pango.Basic.Rendering.PangoContext
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine
 

@@ -29,7 +29,7 @@ import System.IO.Unsafe
 import System.Glib.Bool
 import System.Glib.GObject
 
-import Graphics.Pango.Basic.Rendering.PangoContext
+import Graphics.Pango.Basic.Rendering.PangoContext.Internal
 import Graphics.Pango.Basic.GlyphStorage
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.TextAttributes.Internal

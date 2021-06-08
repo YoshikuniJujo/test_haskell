@@ -165,18 +165,19 @@ todo
 			* [x] `Internal`
 	+ [ ] `Graphics.Pango`
 		- [ ] Basic
-			* [ ] Rendering
-				+ [x] move to `Graphics.Pango.Rendering.PangoContext`
+			* [x] Rendering
+				+ [x] move to `Graphics.Pango.Basic.Rendering.PangoContext`
 				+ [x] make export list
-				+ [ ] refactor export list
-				+ [ ] separate `Graphics.Pango.Rendering.PangoContext.Internal`
-			* [ ] `Graphics.Pango.Rendering.PangoContext`
-				+ [ ] refactor export list
-				+ [ ] others
-			* [ ] `Graphics.Pango.Rendering.PangoContext.Internal`
-				+ [ ] refactor export list
-				+ [ ] others
+				+ [x] refactor export list
+				+ [x] separate `Graphics.Pango.Basic.Rendering.PangoContext.Internal`
+			* [x] `Graphics.Pango.Basic.Rendering.PangoContext`
+			* [x] `Graphics.Pango.Basic.Rendering.PangoContext.Internal`
 			* [ ] GlyphStorage
+				+ [ ] `Graphics.Pango.Basic.GlyphStorage`
+					- [x] add export list
+					- [ ] review `PangoRectangle` and `PangoRectangleFixed`
+					- [ ] others
+				+ [ ] `Graphics.Pango.Basic.GlyphStorage.PangoMatrix`
 			* [ ] Fonts
 			* [ ] TextAttributes
 			* [ ] TabStops
@@ -619,7 +620,9 @@ src
 │       │   │   ├── PangoLayoutIter.hsc
 │       │   │   └── PangoLayoutLine.hsc
 │       │   ├── Rendering
-│       │   │   └── PangoContext.hsc
+│       │   │   ├── PangoContext
+│       │   │   │   └── Internal.hsc
+│       │   │   └── PangoContext.hs
 │       │   ├── ScriptsAndLanguages
 │       │   │   ├── PangoLanguage.hsc
 │       │   │   ├── PangoScript.hsc
@@ -635,11 +638,12 @@ src
     └── Glib
         ├── Bool.hsc
         ├── ErrorReporting.hsc
+        ├── GObject.hs
         ├── Quarks
         │   └── Internal.hsc
         ├── Quarks.hs
         ├── SimpleXmlSubsetParser.hsc
         └── SinglyLinkedLists.hsc
 
-21 directories, 30 files
+22 directories, 32 files
 ```
