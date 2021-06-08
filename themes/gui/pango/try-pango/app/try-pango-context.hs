@@ -51,7 +51,7 @@ main = do
 	print $ pangoMatrixFromNullable cm
 -}
 
-	pangoContextSetFontDescription cxt PangoFontDescriptionNull
+	pangoContextSet cxt PangoFontDescriptionNull
 
 	pl <- pangoLayoutNew cxt
 

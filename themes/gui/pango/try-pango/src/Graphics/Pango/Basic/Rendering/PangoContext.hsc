@@ -5,7 +5,6 @@ module Graphics.Pango.Basic.Rendering.PangoContext (
 	PangoContext(..), mkPangoContext, PangoContextSetting(..),
 	BaseGravity(..),
 	pangoMatrixFromNullable,
-	pangoContextSetFontDescription,
 	c_g_object_unref
 	) where
 

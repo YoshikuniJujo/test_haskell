@@ -168,6 +168,7 @@ todo
 			* [ ] Rendering
 				+ [x] move to `Graphics.Pango.Rendering.PangoContext`
 				+ [x] make export list
+				+ [ ] refactor export list
 				+ [ ] separate `Graphics.Pango.Rendering.PangoContext.Internal`
 			* [ ] `Graphics.Pango.Rendering.PangoContext`
 				+ [ ] refactor export list
