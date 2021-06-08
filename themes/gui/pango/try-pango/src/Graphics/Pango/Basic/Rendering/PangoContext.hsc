@@ -4,7 +4,6 @@
 module Graphics.Pango.Basic.Rendering.PangoContext (
 	PangoContext(..), mkPangoContext, PangoContextSetting(..),
 	BaseGravity(..),
-	pangoMatrixFromNullable,
 	c_g_object_unref
 	) where
 
@@ -77,28 +76,6 @@ foreign import ccall "pango_context_set_font_description"
 foreign import ccall "pango_context_get_font_description"
 	c_pango_context_get_font_description ::
 	Ptr PangoContext -> IO (Ptr PangoFontDescription)
-
--- pangoMatrixNullable :: PangoMatrixNullable -> Maybe PangoMatrix
-
-pangoMatrixNullable :: Ptr PangoMatrix -> IO PangoMatrixNullable
-pangoMatrixNullable = \case
-	NullPtr -> pure PangoMatrixNull
-	p -> PangoMatrixNotNull <$> newForeignPtr p (c_pango_matrix_free p)
-
-data PangoMatrixNullable
-	= PangoMatrixNull
-	| PangoMatrixNotNull (ForeignPtr PangoMatrix)
-	deriving Show
-
-pangoMatrixToNullable :: Maybe PangoMatrix -> PangoMatrixNullable
-pangoMatrixToNullable = \case
-	Nothing -> PangoMatrixNull
-	Just (PangoMatrix_ f) -> PangoMatrixNotNull f
-
-pangoMatrixFromNullable :: PangoMatrixNullable -> Maybe PangoMatrix
-pangoMatrixFromNullable = \case
-	PangoMatrixNull -> Nothing
-	PangoMatrixNotNull f -> Just $ PangoMatrix_ f
 
 instance PangoContextSetting PangoMatrixNullable where
 	pangoContextSet = pangoContextSetMatrix

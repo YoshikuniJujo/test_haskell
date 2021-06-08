@@ -6,7 +6,9 @@
 module Graphics.Pango.Basic.GlyphStorage.PangoMatrix where
 
 import Foreign.Ptr
+import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
@@ -138,3 +140,23 @@ pangoMatrixGetFontScaleFactors (PangoMatrix_ fm) = unsafePerformIO
 foreign import ccall "pango_matrix_get_font_scale_factors"
 	c_pango_matrix_get_font_scale_factors ::
 	Ptr PangoMatrix -> Ptr CDouble -> Ptr CDouble -> IO ()
+
+data PangoMatrixNullable
+	= PangoMatrixNull
+	| PangoMatrixNotNull (ForeignPtr PangoMatrix)
+	deriving Show
+
+pangoMatrixNullable :: Ptr PangoMatrix -> IO PangoMatrixNullable
+pangoMatrixNullable = \case
+	NullPtr -> pure PangoMatrixNull
+	p -> PangoMatrixNotNull <$> newForeignPtr p (c_pango_matrix_free p)
+
+pangoMatrixToNullable :: Maybe PangoMatrix -> PangoMatrixNullable
+pangoMatrixToNullable = \case
+	Nothing -> PangoMatrixNull
+	Just (PangoMatrix_ f) -> PangoMatrixNotNull f
+
+pangoMatrixFromNullable :: PangoMatrixNullable -> Maybe PangoMatrix
+pangoMatrixFromNullable = \case
+	PangoMatrixNull -> Nothing
+	PangoMatrixNotNull f -> Just $ PangoMatrix_ f
