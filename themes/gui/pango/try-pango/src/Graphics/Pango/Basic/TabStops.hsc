@@ -19,7 +19,7 @@ import Data.Word
 import Data.Int
 import System.IO.Unsafe
 
-import Graphics.Pango.PangoFixed
+import Graphics.Pango.Basic.GlyphStorage
 
 #include <pango/pango.h>
 

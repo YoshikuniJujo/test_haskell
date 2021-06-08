@@ -20,6 +20,7 @@ import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
 
+import Graphics.Pango.Basic.GlyphStorage
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
@@ -27,7 +28,6 @@ import Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter
 import Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine
 import Graphics.Pango.Basic.TabStops
 import Graphics.Pango.Rendering.Cairo
-import Graphics.Pango.PangoFixed
 
 import Data.Color
 import Data.CairoImage

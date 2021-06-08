@@ -164,10 +164,6 @@ todo
 			* [x] itself
 			* [x] `Internal`
 	+ [ ] `Graphics.Pango`
-		- [x] PangoFixed
-			* [x] rename `fromPangoFixed` to `toCInt`
-			* [x] rename `toPangoFixed` to `fromCInt`
-			* [x] make export list
 		- [ ] PangoRectangle
 		- [ ] Basic
 		- [ ] Rendering
@@ -599,7 +595,7 @@ src
 │       │   │   └── PangoFontDescription.hsc
 │       │   ├── GlyphStorage
 │       │   │   └── PangoMatrix.hsc
-│       │   ├── GlyphStorage.hs
+│       │   ├── GlyphStorage.hsc
 │       │   ├── LayoutObjects
 │       │   │   ├── PangoLayout.hsc
 │       │   │   ├── PangoLayoutIter.hsc
@@ -614,7 +610,6 @@ src
 │       │   │   └── Internal.hsc
 │       │   ├── TextAttributes.hs
 │       │   └── VerticalText.hsc
-│       ├── PangoFixed.hsc
 │       ├── PangoRectangle.hsc
 │       └── Rendering
 │           └── Cairo.hsc
@@ -628,5 +623,5 @@ src
         ├── SimpleXmlSubsetParser.hsc
         └── SinglyLinkedLists.hsc
 
-20 directories, 32 files
+20 directories, 31 files
 ```

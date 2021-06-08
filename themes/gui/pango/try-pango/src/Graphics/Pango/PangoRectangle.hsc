@@ -11,7 +11,7 @@ import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.Struct
 
-import Graphics.Pango.PangoFixed
+import Graphics.Pango.Basic.GlyphStorage
 
 #include <pango/pango.h>
 

@@ -38,7 +38,7 @@ import Graphics.Pango.Basic.TabStops
 import qualified Data.Text as T
 import qualified Data.Text.Foreign as T
 
-import Graphics.Pango.PangoFixed
+import Graphics.Pango.Basic.GlyphStorage
 import Graphics.Pango.PangoRectangle
 
 #include <pango/pango.h>

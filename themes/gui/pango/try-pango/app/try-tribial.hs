@@ -2,7 +2,7 @@
 
 module Main where
 
-import Graphics.Pango.PangoFixed
+import Graphics.Pango.Basic.GlyphStorage
 
 eight :: PangoFixed
 eight = 8
