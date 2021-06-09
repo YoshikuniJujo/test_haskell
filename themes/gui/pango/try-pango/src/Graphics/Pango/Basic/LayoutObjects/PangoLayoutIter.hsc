@@ -101,7 +101,7 @@ foreign import ccall "pango_layout_iter_get_baseline"
 	Ptr (PangoLayoutIter s) -> IO CInt
 
 pangoLayoutIterGetRun :: PangoLayoutIter s -> IO (Maybe PangoLayoutRun)
-pangoLayoutIterGetRun (PangoLayoutIter fli) = makePangoGlyphItemMaybe
+pangoLayoutIterGetRun (PangoLayoutIter fli) = makePangoGlyphItemMaybe0
 	=<< withForeignPtr fli c_pango_layout_iter_get_run
 
 foreign import ccall "pango_layout_iter_get_run" c_pango_layout_iter_get_run ::

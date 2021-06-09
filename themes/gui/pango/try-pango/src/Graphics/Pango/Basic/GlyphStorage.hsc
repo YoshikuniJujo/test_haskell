@@ -30,7 +30,9 @@ module Graphics.Pango.Basic.GlyphStorage (
 	Extents(..), PixelExtents(..),
 
 	-- * PANGO GLYPH ITEM
-	PangoGlyphItem(..), PangoLayoutRun, makePangoGlyphItemMaybe,
+	PangoGlyphItem(..), PangoLayoutRun,
+	makePangoGlyphItemMaybe, makePangoGlyphItemMaybe0,
+	c_pango_glyph_item_copy, c_pango_glyph_item_free
 	) where
 
 import GHC.Stack
@@ -137,6 +139,12 @@ data PixelExtents = PixelExtents {
 
 newtype PangoGlyphItem = PangoGlyphItem (ForeignPtr PangoGlyphItem) deriving Show
 
+makePangoGlyphItemMaybe0 :: Ptr PangoGlyphItem -> IO (Maybe PangoGlyphItem)
+makePangoGlyphItemMaybe0 = \case
+	NullPtr -> pure Nothing
+	p -> Just . PangoGlyphItem
+		<$> newForeignPtr p (pure ())
+
 makePangoGlyphItemMaybe :: Ptr PangoGlyphItem -> IO (Maybe PangoGlyphItem)
 makePangoGlyphItemMaybe = \case
 	NullPtr -> pure Nothing
@@ -145,5 +153,8 @@ makePangoGlyphItemMaybe = \case
 
 foreign import ccall "pango_glyph_item_free" c_pango_glyph_item_free ::
 	Ptr PangoGlyphItem -> IO ()
+
+foreign import ccall "pango_glyph_item_copy" c_pango_glyph_item_copy ::
+	Ptr PangoGlyphItem -> IO (Ptr PangoGlyphItem)
 
 type PangoLayoutRun = PangoGlyphItem
