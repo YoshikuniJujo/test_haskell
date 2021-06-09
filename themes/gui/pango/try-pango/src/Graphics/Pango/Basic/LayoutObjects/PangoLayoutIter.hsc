@@ -1,9 +1,10 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter where
 
 import Foreign.Ptr
+import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Marshal
@@ -23,7 +24,11 @@ newtype PangoLayoutIter = PangoLayoutIter (ForeignPtr PangoLayoutIter)
 
 makePangoLayoutIter :: ForeignPtr PangoLayout -> Ptr PangoLayoutIter -> IO PangoLayoutIter
 makePangoLayoutIter fl p =
-	PangoLayoutIter <$> newForeignPtr p (c_pango_layout_iter_free p >> touchForeignPtr fl)
+--	PangoLayoutIter <$> newForeignPtr p (c_pango_layout_iter_free p >> touchForeignPtr fl)
+	PangoLayoutIter <$> newForeignPtr p (touchForeignPtr fl)
+
+pangoLayoutIterFree :: PangoLayoutIter -> IO ()
+pangoLayoutIterFree (PangoLayoutIter fli) = withForeignPtr fli c_pango_layout_iter_free
 
 foreign import ccall "pango_layout_iter_free" c_pango_layout_iter_free ::
 	Ptr PangoLayoutIter -> IO ()
@@ -92,8 +97,14 @@ foreign import ccall "pango_layout_iter_get_baseline"
 	Ptr PangoLayoutIter -> IO CInt
 
 pangoLayoutIterGetRun :: PangoLayoutIter -> IO (Maybe PangoLayoutRun)
-pangoLayoutIterGetRun (PangoLayoutIter fli) = makePangoGlyphItemMaybe
+pangoLayoutIterGetRun (PangoLayoutIter fli) = makePangoGlyphItemMaybe' fli
 	=<< withForeignPtr fli c_pango_layout_iter_get_run
+
+makePangoGlyphItemMaybe' :: ForeignPtr PangoLayoutIter -> Ptr PangoGlyphItem -> IO (Maybe PangoGlyphItem)
+makePangoGlyphItemMaybe' fli = \case
+	NullPtr -> pure Nothing
+	p -> Just . PangoGlyphItem
+		<$> newForeignPtr p (c_pango_glyph_item_free p >> touchForeignPtr fli)
 
 foreign import ccall "pango_layout_iter_get_run" c_pango_layout_iter_get_run ::
 	Ptr PangoLayoutIter -> IO (Ptr PangoLayoutRun)

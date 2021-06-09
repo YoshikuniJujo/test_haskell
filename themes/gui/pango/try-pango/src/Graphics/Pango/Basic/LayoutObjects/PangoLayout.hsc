@@ -6,7 +6,7 @@
 module Graphics.Pango.Basic.LayoutObjects.PangoLayout where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.ForeignPtr hiding (newForeignPtr, addForeignPtrFinalizer)
 import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
@@ -84,8 +84,15 @@ instance PangoLayoutSetting T.Text where
 
 pangoLayoutSetText :: PangoLayoutPrim s -> T.Text -> IO ()
 pangoLayoutSetText (PangoLayoutPrim fpl) s =
-	withForeignPtr fpl \pl -> T.withCStringLen s \(cs, n) ->
-		c_pango_layout_set_text pl cs $ fromIntegral n
+	withForeignPtr fpl \pl -> T.withCStringLen s \(cs, n) -> do
+		cs' <- copyCString cs n
+		addForeignPtrFinalizer fpl $ free cs'
+		c_pango_layout_set_text pl cs' $ fromIntegral n
+
+copyCString :: CString -> Int -> IO CString
+copyCString cs n = do
+	cs' <- mallocBytes n
+	cs' <$ copyBytes cs' cs n
 
 foreign import ccall "pango_layout_set_text" c_pango_layout_set_text ::
 	Ptr PangoLayout -> CString -> CInt -> IO ()
@@ -165,9 +172,11 @@ instance PangoLayoutSetting PangoFontDescription where
 pangoLayoutSetFontDescription :: PrimMonad m =>
 	PangoLayoutPrim (PrimState m) -> PangoFontDescription -> m ()
 pangoLayoutSetFontDescription (PangoLayoutPrim fpl) fd = unsafeIOToPrim
-	$ withForeignPtr fpl \pl -> ($ c_pango_layout_set_font_description pl) case fd of
-		PangoFontDescriptionNull -> ($ nullPtr)
-		PangoFontDescription ffd -> withForeignPtr ffd
+	$ withForeignPtr fpl \pl -> case fd of
+		PangoFontDescriptionNull -> c_pango_layout_set_font_description pl nullPtr
+		PangoFontDescription ffd -> do
+			addForeignPtrFinalizer fpl $ touchForeignPtr ffd
+			withForeignPtr ffd $ c_pango_layout_set_font_description pl
 
 foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font_description ::
 	Ptr PangoLayout -> Ptr PangoFontDescription -> IO ()
@@ -424,9 +433,11 @@ instance PangoLayoutSetting PangoTabArray where
 pangoLayoutSetTabs ::
 	PrimMonad m => PangoLayoutPrim (PrimState m) -> PangoTabArray -> m ()
 pangoLayoutSetTabs (PangoLayoutPrim fl) ta = unsafeIOToPrim
-	$ withForeignPtr fl \pl -> ($ c_pango_layout_set_tabs pl) case ta of
-		PangoTabArrayNull -> ($ nullPtr)
-		PangoTabArray fta -> withForeignPtr fta
+	$ withForeignPtr fl \pl -> case ta of
+		PangoTabArrayNull -> c_pango_layout_set_tabs pl nullPtr
+		PangoTabArray fta -> do
+			addForeignPtrFinalizer fl $ touchForeignPtr fta
+			withForeignPtr fta $ c_pango_layout_set_tabs pl
 
 pangoLayoutGetTabs :: PangoLayout -> PangoTabArray
 pangoLayoutGetTabs (PangoLayout_ fl) = unsafePerformIO

@@ -42,7 +42,7 @@ packages:
 extra-deps:
 - union-angle-0.1.0.1
 - git: https://github.com/YoshikuniJujo/simple-cairo
-  commit: 5d2917ef3dadf1d2be4aa34eef2d61e623a51f21
+  commit: 09819dfc2bc0ad92eba2a9d693abd8407fdc5e94
 - git: https://github.com/YoshikuniJujo/cairo-image
   commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
 - git: https://github.com/YoshikuniJujo/JuicyCairo
