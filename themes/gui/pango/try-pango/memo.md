@@ -174,11 +174,10 @@ todo
 			* [x] `Graphics.Pango.Basic.Rendering.PangoContext`
 			* [x] `Graphics.Pango.Basic.Rendering.PangoContext.Internal`
 			* [ ] GlyphStorage
-				+ [ ] `Graphics.Pango.Basic.GlyphStorage`
+				+ [x] `Graphics.Pango.Basic.GlyphStorage`
 					- [x] add export list
 					- [x] review `PangoRectangle` and `PangoRectangleFixed`
-					- [ ] separate `Graphics.Pango.Basic.GlyphStorage.Internal`
-					- [ ] others
+					- [x] separate `Graphics.Pango.Basic.GlyphStorage.Internal`
 				+ [ ] `Graphics.Pango.Basic.GlyphStorage.PangoMatrix`
 			* [ ] Fonts
 			* [ ] TextAttributes

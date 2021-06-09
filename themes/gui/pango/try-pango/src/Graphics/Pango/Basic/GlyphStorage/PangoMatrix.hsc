@@ -18,7 +18,7 @@ import System.IO.Unsafe
 
 import Foreign.C.Struct
 
-import Graphics.Pango.Basic.GlyphStorage
+import Graphics.Pango.Basic.GlyphStorage.Internal
 
 #include <pango/pango.h>
 
