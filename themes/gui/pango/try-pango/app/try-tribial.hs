@@ -1,7 +1,9 @@
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
+import Control.Exception
 import Graphics.Pango.Basic.GlyphStorage
 
 eight :: PangoFixed
@@ -21,6 +23,8 @@ main = do
 	print minBoundPangoFixed
 	print maxBoundPangoFixed
 	print $ minBoundPangoFixed - 1
-	print . toCInt $ minBoundPangoFixed - 1
+	print (toCInt $ minBoundPangoFixed - 1) `catch` print @ArithException
 
-	print $ PangoRectangleFixed 3 8 20 25
+	let	r = PangoRectangleFixed 3 8 20 25
+	print r
+	print $ r { pangoRectangleFixedWidth = 28 }

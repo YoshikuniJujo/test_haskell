@@ -177,6 +177,7 @@ todo
 				+ [ ] `Graphics.Pango.Basic.GlyphStorage`
 					- [x] add export list
 					- [x] review `PangoRectangle` and `PangoRectangleFixed`
+					- [ ] separate `Graphics.Pango.Basic.GlyphStorage.Internal`
 					- [ ] others
 				+ [ ] `Graphics.Pango.Basic.GlyphStorage.PangoMatrix`
 			* [ ] Fonts

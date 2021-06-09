@@ -9,6 +9,7 @@ module Graphics.Pango.Basic.GlyphStorage (
 	PangoFixed, PU, fromCInt, toCInt,
 
 	-- * PANGO RECTANGLE AND EXTENTS
+	-- ** PangoRectangleFixed
 	PangoRectangleFixed(..),
 	pattern PangoRectangleFixed,
 	pangoRectangleFixedX, pangoRectangleFixedY,
@@ -17,6 +18,7 @@ module Graphics.Pango.Basic.GlyphStorage (
 	PangoRectangleFixedPrim(..), PangoRectangleFixedST, PangoRectangleFixedIO,
 	pangoRectangleFixedFreeze, pangoRectangleFixedThaw, pangoRectangleFixedCopy,
 
+	-- ** PangoRectanglePixel
 	PangoRectanglePixel(..),
 	pattern PangoRectanglePixel,
 	pangoRectanglePixelX, pangoRectanglePixelY,
@@ -27,6 +29,7 @@ module Graphics.Pango.Basic.GlyphStorage (
 	pangoRectanglePixelFreeze, pangoRectanglePixelThaw,
 	pangoRectanglePixelCopy,
 
+	-- ** Extents and PixelExtents
 	Extents(..), PixelExtents(..),
 
 	-- * PANGO GLYPH ITEM
