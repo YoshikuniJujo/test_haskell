@@ -31,8 +31,7 @@ module Graphics.Pango.Basic.GlyphStorage (
 
 	-- * PANGO GLYPH ITEM
 	PangoGlyphItem(..), PangoLayoutRun,
-	makePangoGlyphItemMaybe, makePangoGlyphItemMaybe0,
-	c_pango_glyph_item_copy, c_pango_glyph_item_free
+	makePangoGlyphItemMaybe, makePangoGlyphItemMaybe0
 	) where
 
 import GHC.Stack
@@ -142,8 +141,9 @@ newtype PangoGlyphItem = PangoGlyphItem (ForeignPtr PangoGlyphItem) deriving Sho
 makePangoGlyphItemMaybe0 :: Ptr PangoGlyphItem -> IO (Maybe PangoGlyphItem)
 makePangoGlyphItemMaybe0 = \case
 	NullPtr -> pure Nothing
-	p -> Just . PangoGlyphItem
-		<$> newForeignPtr p (pure ())
+	p -> Just . PangoGlyphItem <$> do
+		p' <- c_pango_glyph_item_copy p
+		newForeignPtr p' $ c_pango_glyph_item_free p'
 
 makePangoGlyphItemMaybe :: Ptr PangoGlyphItem -> IO (Maybe PangoGlyphItem)
 makePangoGlyphItemMaybe = \case

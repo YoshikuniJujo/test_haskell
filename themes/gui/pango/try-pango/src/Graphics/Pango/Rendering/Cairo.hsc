@@ -61,16 +61,7 @@ pangoCairoShowGlyphItem (CairoT fcr) t (PangoGlyphItem fgi) =
 	withForeignPtr fcr \cr -> T.withCStringLen t \(ct, n) -> do
 		cs' <- copyCString ct n
 		addForeignPtrFinalizer fcr $ free cs'
-		gi' <- withForeignPtr fgi c_pango_glyph_item_copy
---		addForeignPtrFinalizer fcr $ c_pango_glyph_item_free gi'
-		c_pango_cairo_show_glyph_item cr cs' gi'
-
-{-
-copyCString :: CString -> Int -> IO CString
-copyCString cs n = do
-	cs' <- mallocBytes n
-	cs' <$ copyBytes cs' cs n
-	-}
+		withForeignPtr fgi $ c_pango_cairo_show_glyph_item cr cs'
 
 foreign import ccall "pango_cairo_show_glyph_item"
 	c_pango_cairo_show_glyph_item ::
