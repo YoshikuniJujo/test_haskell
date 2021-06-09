@@ -51,3 +51,5 @@ todo
 	+ [x] pangoLayoutIterGetLineExtents
 * [x] repair about GC
 	+ [x] pangoLayoutGetIter
+* [x] `PangoLayoutIter s`
+* [ ] pangoLayoutWithIter
