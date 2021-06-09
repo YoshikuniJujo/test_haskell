@@ -5,7 +5,6 @@
 module Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter where
 
 import Foreign.Ptr
-import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Marshal
@@ -102,14 +101,8 @@ foreign import ccall "pango_layout_iter_get_baseline"
 	Ptr (PangoLayoutIter s) -> IO CInt
 
 pangoLayoutIterGetRun :: PangoLayoutIter s -> IO (Maybe PangoLayoutRun)
-pangoLayoutIterGetRun (PangoLayoutIter fli) = makePangoGlyphItemMaybe' fli
+pangoLayoutIterGetRun (PangoLayoutIter fli) = makePangoGlyphItemMaybe
 	=<< withForeignPtr fli c_pango_layout_iter_get_run
-
-makePangoGlyphItemMaybe' :: ForeignPtr (PangoLayoutIter s) -> Ptr PangoGlyphItem -> IO (Maybe PangoGlyphItem)
-makePangoGlyphItemMaybe' fli = \case
-	NullPtr -> pure Nothing
-	p -> Just . PangoGlyphItem
-		<$> newForeignPtr p (c_pango_glyph_item_free p >> touchForeignPtr fli)
 
 foreign import ccall "pango_layout_iter_get_run" c_pango_layout_iter_get_run ::
 	Ptr (PangoLayoutIter s) -> IO (Ptr PangoLayoutRun)

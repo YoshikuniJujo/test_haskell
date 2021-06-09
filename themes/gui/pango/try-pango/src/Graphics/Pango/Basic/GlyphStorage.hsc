@@ -36,7 +36,6 @@ module Graphics.Pango.Basic.GlyphStorage (
 	Extents(..), PixelExtents(..),
 
 	PangoGlyphItem(..), PangoLayoutRun, makePangoGlyphItemMaybe,
-	c_pango_glyph_item_free
 	) where
 
 import GHC.Stack
