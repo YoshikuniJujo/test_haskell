@@ -179,6 +179,10 @@ todo
 					- [x] review `PangoRectangle` and `PangoRectangleFixed`
 					- [x] separate `Graphics.Pango.Basic.GlyphStorage.Internal`
 				+ [ ] `Graphics.Pango.Basic.GlyphStorage.PangoMatrix`
+					- [x] add export list
+					- [ ] `mkPangoMatrixNullable0`
+					- [ ] separate to Internal
+					- [ ] others
 			* [ ] Fonts
 			* [ ] TextAttributes
 			* [ ] TabStops

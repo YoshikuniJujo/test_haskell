@@ -3,12 +3,36 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Basic.GlyphStorage.PangoMatrix where
+module Graphics.Pango.Basic.GlyphStorage.PangoMatrix (
+
+	-- * TYPE
+	-- ** PangoMatrix
+	PangoMatrix(..), pattern PangoMatrix,
+	pangoMatrixXx, pangoMatrixXy, pangoMatrixYx, pangoMatrixYy,
+	pangoMatrixX0, pangoMatrixY0,
+
+	-- ** PangoMatrixPrim
+	PangoMatrixPrim, PangoMatrixST, PangoMatrixIO,
+	pangoMatrixFreeze, pangoMatrixThaw, pangoMatrixCopy,
+
+	-- ** PangoMatrixNullable
+	PangoMatrixNullable(..), pangoMatrixFromNullable, pangoMatrixToNullable,
+
+	-- * FUNCTION
+	pangoMatrixTranslate, pangoMatrixScale, pangoMatrixRotate,
+	pangoMatrixConcat,
+
+	pangoMatrixTransformPoint, pangoMatrixTransformDistance,
+	pangoMatrixTransformRectangle, pangoMatrixTransformPixelRectangle,
+	pangoMatrixGetFontScaleFactor, pangoMatrixGetFontScaleFactors,
+
+	-- * C FFI
+	c_pango_matrix_copy, c_pango_matrix_free,
+
+	) where
 
 import Foreign.Ptr
-import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
-import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
@@ -145,11 +169,6 @@ data PangoMatrixNullable
 	= PangoMatrixNull
 	| PangoMatrixNotNull (ForeignPtr PangoMatrix)
 	deriving Show
-
-pangoMatrixNullable :: Ptr PangoMatrix -> IO PangoMatrixNullable
-pangoMatrixNullable = \case
-	NullPtr -> pure PangoMatrixNull
-	p -> PangoMatrixNotNull <$> newForeignPtr p (c_pango_matrix_free p)
 
 pangoMatrixToNullable :: Maybe PangoMatrix -> PangoMatrixNullable
 pangoMatrixToNullable = \case
