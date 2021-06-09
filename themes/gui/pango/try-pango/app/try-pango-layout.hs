@@ -206,37 +206,37 @@ main = do
 	print =<< pangoLayoutGetUnknownGlyphsCount fpl5
 	pangoCairoShowLayout cr fpl5
 
-	itr <- pangoLayoutGetIter fpl2
-	cairoMoveTo cr 100 740
-	pangoCairoShowGlyphItem cr someText . fromJust =<< pangoLayoutIterGetRun itr
-	void $ pangoLayoutIterNextRun itr
-	void $ pangoLayoutIterNextChar itr
-	print =<< pangoLayoutIterGetIndex itr
-	void $ pangoLayoutIterNextChar itr
-	print =<< pangoLayoutIterGetIndex itr
-	cairoMoveTo cr 200 740
-	pangoCairoShowGlyphItem cr someText . fromJust =<< pangoLayoutIterGetRun itr
-	void $ pangoLayoutIterNextRun itr
-	cairoMoveTo cr 300 740
-	pangoCairoShowGlyphItem cr someText . fromJust =<< pangoLayoutIterGetRun itr
+	pangoLayoutWithIter fpl2 \itr -> do
+		cairoMoveTo cr 100 740
+		pangoCairoShowGlyphItem cr someText . fromJust =<< pangoLayoutIterGetRun itr
+		void $ pangoLayoutIterNextRun itr
+		void $ pangoLayoutIterNextChar itr
+		print =<< pangoLayoutIterGetIndex itr
+		void $ pangoLayoutIterNextChar itr
+		print =<< pangoLayoutIterGetIndex itr
+		cairoMoveTo cr 200 740
+		pangoCairoShowGlyphItem cr someText . fromJust =<< pangoLayoutIterGetRun itr
+		void $ pangoLayoutIterNextRun itr
+		cairoMoveTo cr 300 740
+		pangoCairoShowGlyphItem cr someText . fromJust =<< pangoLayoutIterGetRun itr
 
-	itr2 <- pangoLayoutGetIter fpl2
-	print =<< pangoLayoutIterGetIndex itr2
-	void $ pangoLayoutIterNextCluster itr2
-	print =<< pangoLayoutIterGetIndex itr2
-	void $ pangoLayoutIterNextLine itr2
-	cairoMoveTo cr 100 770
-	pangoCairoShowGlyphItem cr someText . fromJust =<< pangoLayoutIterGetRun itr2
-	cairoMoveTo cr 100 820
-	pll <- pangoLayoutIterGetLine itr2
-	pangoCairoShowLayoutLine cr pll
-	putStrLn "pangoLayoutIterGetCharExtents:"
-	print =<< pangoLayoutIterGetCharExtents itr2
-	print =<< pangoLayoutIterGetClusterExtents itr2
-	print =<< pangoLayoutIterGetRunExtents itr2
-	print =<< pangoLayoutIterGetLineYrange itr2
-	print =<< pangoLayoutIterGetLineExtents itr2
-	print =<< pangoLayoutLineGetXRanges pll 10 100
+	pangoLayoutWithIter fpl2 \itr2 -> do
+		print =<< pangoLayoutIterGetIndex itr2
+		void $ pangoLayoutIterNextCluster itr2
+		print =<< pangoLayoutIterGetIndex itr2
+		void $ pangoLayoutIterNextLine itr2
+		cairoMoveTo cr 100 770
+		pangoCairoShowGlyphItem cr someText . fromJust =<< pangoLayoutIterGetRun itr2
+		cairoMoveTo cr 100 820
+		pll <- pangoLayoutIterGetLine itr2
+		pangoCairoShowLayoutLine cr pll
+		putStrLn "pangoLayoutIterGetCharExtents:"
+		print =<< pangoLayoutIterGetCharExtents itr2
+		print =<< pangoLayoutIterGetClusterExtents itr2
+		print =<< pangoLayoutIterGetRunExtents itr2
+		print =<< pangoLayoutIterGetLineYrange itr2
+		print =<< pangoLayoutIterGetLineExtents itr2
+		print =<< pangoLayoutLineGetXRanges pll 10 100
 
 --	void $ writeDynamicPng "tmp3.png" =<< cairoImageSurfaceGetImage s
 	cairoImageSurfaceGetCairoImage s >>= \case

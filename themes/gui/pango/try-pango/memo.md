@@ -147,7 +147,7 @@ todo
 	+ [ ] `System.Glib`
 	+ [ ] `Graphics.Pango`
 * [x] use `c-enum` in `System.Glib.SinglyLInkedList`
-* [ ] repair try-pango-layout: segmentation fault
+* [x] repair try-pango-layout: segmentation fault
 * [ ] make export list
 	+ [x] `Foreign.Ptr.Misc`
 	+ [x] `Foreign.C.String`

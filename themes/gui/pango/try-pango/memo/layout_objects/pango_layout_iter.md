@@ -52,4 +52,4 @@ todo
 * [x] repair about GC
 	+ [x] pangoLayoutGetIter
 * [x] `PangoLayoutIter s`
-* [ ] pangoLayoutWithIter
+* [x] pangoLayoutWithIter

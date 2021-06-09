@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE RankNTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter where
@@ -32,6 +33,10 @@ pangoLayoutIterFree (PangoLayoutIter fli) = withForeignPtr fli c_pango_layout_it
 
 foreign import ccall "pango_layout_iter_free" c_pango_layout_iter_free ::
 	Ptr (PangoLayoutIter s) -> IO ()
+
+pangoLayoutWithIter :: PangoLayout -> (forall s . PangoLayoutIter s -> IO a) -> IO a
+pangoLayoutWithIter l f =
+	pangoLayoutGetIter l >>= \li -> f li <* pangoLayoutIterFree li
 
 pangoLayoutGetIter :: PangoLayout -> IO (PangoLayoutIter s)
 pangoLayoutGetIter (PangoLayout_ fl) =
