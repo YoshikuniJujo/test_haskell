@@ -22,3 +22,5 @@ main = do
 	print maxBoundPangoFixed
 	print $ minBoundPangoFixed - 1
 	print . toCInt $ minBoundPangoFixed - 1
+
+	print $ PangoRectangleFixed 3 8 20 25

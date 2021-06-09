@@ -5,16 +5,11 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.GlyphStorage (
+	-- * PANGO FIXED
 	PangoFixed, PU, fromCInt, toCInt,
 
+	-- * PANGO RECTANGLE AND EXTENTS
 	PangoRectangleFixed(..),
-
-	{-
-	pattern PangoRectangle,
-	pangoRectangleX, pangoRectangleY,
-	pangoRectangleWidth, pangoRectangleHeight,
-	-}
-
 	pattern PangoRectangleFixed,
 	pangoRectangleFixedX, pangoRectangleFixedY,
 	pangoRectangleFixedWidth, pangoRectangleFixedHeight,
@@ -23,7 +18,6 @@ module Graphics.Pango.Basic.GlyphStorage (
 	pangoRectangleFixedFreeze, pangoRectangleFixedThaw, pangoRectangleFixedCopy,
 
 	PangoRectanglePixel(..),
-
 	pattern PangoRectanglePixel,
 	pangoRectanglePixelX, pangoRectanglePixelY,
 	pangoRectanglePixelWidth, pangoRectanglePixelHeight,
@@ -35,6 +29,7 @@ module Graphics.Pango.Basic.GlyphStorage (
 
 	Extents(..), PixelExtents(..),
 
+	-- * PANGO GLYPH ITEM
 	PangoGlyphItem(..), PangoLayoutRun, makePangoGlyphItemMaybe,
 	) where
 
