@@ -20,7 +20,6 @@ import Graphics.Pango.Basic.GlyphStorage
 import Graphics.Pango.Basic.Rendering.PangoContext
 import Graphics.Pango.Basic.GlyphStorage.PangoMatrix
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
-import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Rendering.Cairo
 

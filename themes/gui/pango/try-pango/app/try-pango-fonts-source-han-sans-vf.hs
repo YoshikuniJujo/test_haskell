@@ -18,7 +18,6 @@ import Graphics.Pango.Rendering.Cairo
 
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations
-import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 
 import Graphics.Cairo.Drawing.Paths
 
