@@ -206,8 +206,8 @@ todo
 					- [x] add export list
 					- [x] refactor export list
 			* [ ] TextAttributes
-				+ [ ] `Graphics.Pango.Basic.TextAttributes`
-					- [ ] refactor export list
+				+ [x] `Graphics.Pango.Basic.TextAttributes`
+					- [x] refactor export list
 				+ [ ] `Graphics.Pango.Basic.TextAttributes.Internal`
 					- [x] use `PangoFixed` instead of `Double`
 						* [x] Rise

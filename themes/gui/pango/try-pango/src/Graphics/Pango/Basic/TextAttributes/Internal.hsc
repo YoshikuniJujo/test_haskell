@@ -23,7 +23,7 @@ module Graphics.Pango.Basic.TextAttributes.Internal (
 	ForegroundAlpha(..), BackgroundAlpha(..),
 	PangoGravity(..), PangoGravityHint(..),
 
-	pangoColorParse, pangoColorToString,
+	PangoColor(..), pangoColorParse, pangoColorToString,
 
 	PangoAttrList(..), mkPangoAttrList,
 	) where

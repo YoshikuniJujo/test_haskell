@@ -31,7 +31,7 @@ module Graphics.Pango.Basic.TextAttributes (
 	PangoGravity(..), PangoGravityHint(..),
 
 	-- * PangoColor
-	pangoColorParse, pangoColorToString,
+	PangoColor(..), pangoColorParse, pangoColorToString,
 	) where
 
 import Graphics.Pango.Basic.TextAttributes.Internal
