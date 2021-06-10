@@ -28,7 +28,7 @@ main = getArgs >>= \case
 		s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
 		cr <- cairoCreate s
 
-		fd <- pangoFontDescriptionPrimNew
+		fd <- pangoFontDescriptionNew
 
 		pangoFontDescriptionSet fd $ Family "Literata"
 		pangoFontDescriptionSet fd $ Size 20

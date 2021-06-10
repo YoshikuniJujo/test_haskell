@@ -62,7 +62,7 @@ helloWorld :: CairoT RealWorld ->
 	(CDouble, CDouble) -> IO ()
 helloWorld cr (r, g, b) ff stl vr wt strc (x, y) = do
 	pl <- pangoCairoCreateLayout cr
-	pfd <- pangoFontDescriptionPrimNew
+	pfd <- pangoFontDescriptionNew
 	pangoFontDescriptionSet pfd $ Family ff
 	pangoFontDescriptionSet pfd . Size . fromIntegral $ 30 * resolution @Type @PU undefined
 	pangoFontDescriptionSet pfd stl

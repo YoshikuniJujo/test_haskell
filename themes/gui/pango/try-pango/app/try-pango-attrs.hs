@@ -20,7 +20,6 @@ import Graphics.Pango.Basic.TextAttributes
 import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage
 import Graphics.Pango.Basic.ScriptsAndLanguages.Types
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
-import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.VerticalText
 import Graphics.Pango.Rendering.Cairo
 
@@ -94,7 +93,7 @@ main = do
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al4
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
-	fd <- pangoFontDescriptionPrimNew
+	fd <- pangoFontDescriptionNew
 --	pangoFontDescriptionSet fd $ Family "Source Han Sans VF"
 	pangoFontDescriptionSet fd $ PangoGravityEast
 	al5 <- pangoTextAttrListNew "あいうえおabcdefg"

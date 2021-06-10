@@ -7,6 +7,7 @@
 
 module Graphics.Pango.Basic.Fonts.PangoFontDescription (
 	-- * FUNCTION
+	pangoFontDescriptionNew,
 	PangoFontDescriptionSetting,
 	pangoFontDescriptionSet, pangoFontDescriptionGet,
 	pangoFontDescriptionUnset,
@@ -76,6 +77,14 @@ enum "PangoFontMask" ''#{type PangoFontMask} [''Show] [
 	("PangoFontMaskSize", #{const PANGO_FONT_MASK_SIZE}),
 	("PangoFontMaskGravity", #{const PANGO_FONT_MASK_GRAVITY}),
 	("PangoFontMaskVariations", #{const PANGO_FONT_MASK_VARIATIONS}) ]
+
+pangoFontDescriptionNew ::
+	PrimMonad m => m (PangoFontDescriptionPrim (PrimState m))
+pangoFontDescriptionNew = unsafeIOToPrim
+	$ mkPangoFontDescriptionPrim =<< c_pango_font_description_new
+
+foreign import ccall "pango_font_description_new"
+	c_pango_font_description_new :: IO (Ptr PangoFontDescription)
 
 class PangoFontDescriptionSetting s where
 	pangoFontDescriptionSet :: PrimMonad m =>

@@ -44,7 +44,7 @@ main = do
 	cr <- cairoCreate s
 
 	pl <- pangoCairoCreateLayout cr
-	pfd <- pangoFontDescriptionPrimNew
+	pfd <- pangoFontDescriptionNew
 	pangoFontDescriptionSet pfd $ Family "sans-serif"
 	pangoFontDescriptionSet pfd $ Size 30
 	pangoLayoutSet pl . pangoFontDescriptionToNullable . Just =<< pangoFontDescriptionFreeze pfd
@@ -57,7 +57,7 @@ main = do
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	pl2 <- pangoCairoCreateLayout cr
-	pfd2 <- pangoFontDescriptionPrimNew
+	pfd2 <- pangoFontDescriptionNew
 	pangoFontDescriptionSet pfd2 $ Family "serif"
 	pangoFontDescriptionSet pfd2 $ Size 15
 	pangoLayoutSet pl2 . pangoFontDescriptionToNullable . Just =<< pangoFontDescriptionFreeze pfd2

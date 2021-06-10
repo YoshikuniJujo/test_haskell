@@ -26,7 +26,7 @@ main = getArgs >>= \case
 		cr <- cairoCreate s
 		pl <- pangoCairoCreateLayout cr
 
-		fd <- pangoFontDescriptionPrimNew
+		fd <- pangoFontDescriptionNew
 		case f of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ Family f
 		pangoFontDescriptionUnset @Family fd
 		case stl of "-" -> pure (); _ -> pangoFontDescriptionSet fd $ readStyle stl

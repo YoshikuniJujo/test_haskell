@@ -15,8 +15,8 @@ module Graphics.Pango.Basic.Fonts.PangoFontDescription.Type (
 
 	-- * PANGO FONT DESCRIPTION FOR PRIMITIVE MONAD
 	PangoFontDescriptionPrim(..),
+	mkPangoFontDescriptionPrim,
 	PangoFontDescriptionST, PangoFontDescriptionIO,
-	pangoFontDescriptionPrimNew,
 	pangoFontDescriptionFreeze, pangoFontDescriptionThaw,
 	pangoFontDescriptionCopy
 	) where
@@ -26,7 +26,6 @@ import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr, addForeignPtrFinalizer)
 import Foreign.Concurrent
 import Foreign.C.Struct
-import Control.Monad.Primitive
 
 data PangoFontDescription
 	= PangoFontDescription_ (ForeignPtr PangoFontDescription)
@@ -73,11 +72,3 @@ mkPangoFontDescriptionPrim ::
 	Ptr PangoFontDescription -> IO (PangoFontDescriptionPrim s)
 mkPangoFontDescriptionPrim p = PangoFontDescriptionPrim
 	<$> newForeignPtr p (c_pango_font_description_free p)
-
-pangoFontDescriptionPrimNew ::
-	PrimMonad m => m (PangoFontDescriptionPrim (PrimState m))
-pangoFontDescriptionPrimNew = unsafeIOToPrim
-	$ mkPangoFontDescriptionPrim =<< c_pango_font_description_new
-
-foreign import ccall "pango_font_description_new"
-	c_pango_font_description_new :: IO (Ptr PangoFontDescription)

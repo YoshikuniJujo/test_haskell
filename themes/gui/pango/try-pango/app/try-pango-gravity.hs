@@ -43,7 +43,7 @@ main = do
 
 sourceHanSans :: PangoFontDescription
 sourceHanSans = runST do
-	fd <- pangoFontDescriptionPrimNew
+	fd <- pangoFontDescriptionNew
 	pangoFontDescriptionSet fd $ Family "Source Han Sans VF"
 --	pangoFontDescriptionSet fd $ Family "Sazanami Mincho"
 	pangoFontDescriptionSet fd $ Size 13
