@@ -192,7 +192,7 @@ todo
 					- [x] change to
 						`PangoFontDescriptionPrim (Ptr PangoFontDescription)`
 					- [x] rename to `PangoFontDescription_`
-					- [ ] use `structPrim` of c-struct
+					- [x] use `structPrim` of c-struct
 					- [ ] remove this module
 				+ [ ] `Graphics.Pango.Basic.Fonts.PangoFontDescription`
 				+ [ ] `Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations`

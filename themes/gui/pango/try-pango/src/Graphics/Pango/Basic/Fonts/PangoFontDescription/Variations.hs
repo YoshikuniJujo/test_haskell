@@ -40,8 +40,7 @@ pangoFontDescriptionGetAxis ::
 	forall a . PangoFontDescriptionAxis a => PangoFontDescription -> Maybe a
 pangoFontDescriptionGetAxis fd = unsafePerformIO do
 	pangoFontDescriptionThaw fd >>= \case
-		Nothing -> pure Nothing
-		Just fd' -> do
+		fd' -> do
 			as <- pangoFontDescriptionGetVariationsMap fd'
 			pure $ pangoFontDescriptionAxisFromDouble
 				<$> M.lookup (pangoFontDescriptionAxisTag @a) as
