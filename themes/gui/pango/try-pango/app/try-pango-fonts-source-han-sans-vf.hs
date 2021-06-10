@@ -41,7 +41,7 @@ main = do
 		pangoFontDescriptionSetAxis fd $ Weight w
 		fd' <- pangoFontDescriptionFreeze fd
 		print $ pangoFontDescriptionGetAxis @Weight fd'
-		pangoLayoutSetFontDescription pl fd'
+		pangoLayoutSetFontDescription pl . pangoFontDescriptionToNullable $ Just fd'
 		cairoMoveTo cr 0 y
 		pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 

@@ -49,7 +49,7 @@ main = getArgs >>= \case
 		print $ pangoFontDescriptionToString fd'
 		print $ pangoFontDescriptionToFilename fd'
 
-		pangoLayoutSetFontDescription pl fd'
+		pangoLayoutSetFontDescription pl . pangoFontDescriptionToNullable $ Just fd'
 		pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは、世界!\n\x1f9a5"
 
 		pangoCairoShowLayout cr =<< pangoLayoutFreeze pl

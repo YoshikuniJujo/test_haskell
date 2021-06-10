@@ -47,8 +47,8 @@ main = do
 	pfd <- pangoFontDescriptionPrimNew
 	pangoFontDescriptionSet pfd $ Family "sans-serif"
 	pangoFontDescriptionSet pfd $ Size 30
-	pangoLayoutSet pl =<< pangoFontDescriptionFreeze pfd
-	print @(Maybe Family) . pangoFontDescriptionGet . pangoLayoutGet =<< pangoLayoutFreeze pl
+	pangoLayoutSet pl . pangoFontDescriptionToNullable . Just =<< pangoFontDescriptionFreeze pfd
+	print @(Maybe Family) . pangoFontDescriptionGet . fromJust . pangoFontDescriptionFromNullable . pangoLayoutGet =<< pangoLayoutFreeze pl
 
 	pangoLayoutSetWidth pl (200 * pangoScale)
 	pangoLayoutSetEllipsize pl PangoEllipsizeMiddle
@@ -60,7 +60,7 @@ main = do
 	pfd2 <- pangoFontDescriptionPrimNew
 	pangoFontDescriptionSet pfd2 $ Family "serif"
 	pangoFontDescriptionSet pfd2 $ Size 15
-	pangoLayoutSet pl2 =<< pangoFontDescriptionFreeze pfd2
+	pangoLayoutSet pl2 . pangoFontDescriptionToNullable . Just =<< pangoFontDescriptionFreeze pfd2
 	pangoLayoutSetWidth pl2 (400 * pangoScale)
 	pangoLayoutSetIndent pl2 (30 * pangoScale)
 --	pangoLayoutSetLineSpacing pl2 2

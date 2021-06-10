@@ -51,13 +51,14 @@ main = do
 	print $ pangoMatrixFromNullable cm
 -}
 
-	pangoContextSet cxt PangoFontDescriptionNull
+--	pangoContextSet cxt PangoFontDescriptionNull
 
 	pl <- pangoLayoutNew cxt
 
 	pfd <- pangoFontDescriptionPrimNew
 	pangoFontDescriptionSetSize pfd . fromIntegral $ 30 * resolution @Type @PU undefined
-	pangoLayoutSetFontDescription pl =<< pangoFontDescriptionFreeze pfd
+	pangoLayoutSetFontDescription pl . pangoFontDescriptionToNullable . Just
+		=<< pangoFontDescriptionFreeze pfd
 
 	pangoLayoutSet @T.Text pl "こんにちは世界!"
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl

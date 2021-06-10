@@ -49,7 +49,7 @@ main = do
 		Nothing -> putStrLn "mattr0' is Nothing"
 		Just attr0' -> pangoAttrListInsert attr0' =<< pangoAttrNew (Size 20)
 		-}
-	fd0 <- pangoLayoutGet @PangoFontDescription <$> pangoLayoutFreeze pl
+	fd0 <- pangoLayoutGet @PangoFontDescriptionNullable <$> pangoLayoutFreeze pl
 	print fd0
 
 	print =<< pangoLayoutInfo @CharacterCount =<< pangoLayoutFreeze pl

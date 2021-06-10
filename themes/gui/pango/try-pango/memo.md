@@ -186,8 +186,8 @@ todo
 				+ [ ] `Graphics.Pango.Basic.Fonts.PangoFontDescription.Type`
 					- [x] define `PangoFontDescriptionNullable`
 					- [x] rename to `pangoFontDescriptionPrimNew`
-					- [ ] use `PangoFontDescriptionNulable`
-					- [ ] remove Null from `PangoFontDescription`
+					- [x] use `PangoFontDescriptionNulable`
+					- [x] remove Null from `PangoFontDescription`
 					- [ ] rename Null of `PangoFontDescriptionNullable`
 					- [ ] change to
 						`PangoFontDescriptionPrim (Ptr PangoFontDescription)`

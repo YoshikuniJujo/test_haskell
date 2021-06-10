@@ -165,25 +165,25 @@ foreign import ccall "pango_layout_get_attributes"
 foreign import ccall "pango_attr_list_ref" c_pango_attr_list_ref ::
 	Ptr PangoAttrList -> IO (Ptr PangoAttrList)
 
-instance PangoLayoutSetting PangoFontDescription where
+instance PangoLayoutSetting PangoFontDescriptionNullable where
 	pangoLayoutSet = pangoLayoutSetFontDescription
 	pangoLayoutGet = pangoLayoutGetFontDescription
 
 pangoLayoutSetFontDescription :: PrimMonad m =>
-	PangoLayoutPrim (PrimState m) -> PangoFontDescription -> m ()
+	PangoLayoutPrim (PrimState m) -> PangoFontDescriptionNullable -> m ()
 pangoLayoutSetFontDescription (PangoLayoutPrim fpl) fd = unsafeIOToPrim
 	$ withForeignPtr fpl \pl -> case fd of
-		PangoFontDescriptionNull -> c_pango_layout_set_font_description pl nullPtr
-		PangoFontDescription ffd -> do
+		PangoFontDescriptionNull' -> c_pango_layout_set_font_description pl nullPtr
+		PangoFontDescriptionNotNull ffd -> do
 			addForeignPtrFinalizer fpl $ touchForeignPtr ffd
 			withForeignPtr ffd $ c_pango_layout_set_font_description pl
 
 foreign import ccall "pango_layout_set_font_description" c_pango_layout_set_font_description ::
 	Ptr PangoLayout -> Ptr PangoFontDescription -> IO ()
 
-pangoLayoutGetFontDescription :: PangoLayout -> PangoFontDescription
+pangoLayoutGetFontDescription :: PangoLayout -> PangoFontDescriptionNullable
 pangoLayoutGetFontDescription (PangoLayout_ fpl) = unsafePerformIO
-	$ mkPangoFontDescription =<< withForeignPtr fpl \ppl ->
+	$ mkPangoFontDescriptionNullable =<< withForeignPtr fpl \ppl ->
 		c_pango_font_description_copy
 			=<< c_pango_layout_get_font_description ppl
 
