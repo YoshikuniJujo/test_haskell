@@ -183,7 +183,7 @@ todo
 					- [x] `mkPangoMatrixNullable0`
 					- [x] separate to Internal
 			* [ ] Fonts
-				+ [ ] `Graphics.Pango.Basic.Fonts.PangoFontDescription.Type`
+				+ [x] `Graphics.Pango.Basic.Fonts.PangoFontDescription.Type`
 					- [x] define `PangoFontDescriptionNullable`
 					- [x] rename to `pangoFontDescriptionPrimNew`
 					- [x] use `PangoFontDescriptionNulable`
@@ -193,7 +193,7 @@ todo
 						`PangoFontDescriptionPrim (Ptr PangoFontDescription)`
 					- [x] rename to `PangoFontDescription_`
 					- [x] use `structPrim` of c-struct
-					- [ ] remove this module
+					- [x] refactor export list
 				+ [ ] `Graphics.Pango.Basic.Fonts.PangoFontDescription`
 				+ [ ] `Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations`
 			* [ ] TextAttributes

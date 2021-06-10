@@ -5,10 +5,15 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.Fonts.PangoFontDescription.Type (
+	-- * PANGO FONT DESCRIPTION
 	PangoFontDescription(..), mkPangoFontDescription,
+
+	-- * PANGO FONT DESCRIPTION NULLABLE
 	PangoFontDescriptionNullable(..),
 	mkPangoFontDescriptionNullable,
 	pangoFontDescriptionFromNullable, pangoFontDescriptionToNullable,
+
+	-- * PANGO FONT DESCRIPTION FOR PRIMITIVE MONAD
 	PangoFontDescriptionPrim(..),
 	PangoFontDescriptionST, PangoFontDescriptionIO,
 	pangoFontDescriptionPrimNew,
