@@ -4,8 +4,13 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module System.Glib.SimpleXmlSubsetParser (
+	-- * TYPE
 	GMarkupParseContext(..), mkGMarkupParseContext,
+
+	-- * FUNCTION
 	gMarkupParseContextParse,
+
+	-- * G MARKUP ERROR
 	pattern GErrorMarkup,
 	pattern GMarkupErrorBadUtf8,
 	pattern GMarkupErrorEmpty,
