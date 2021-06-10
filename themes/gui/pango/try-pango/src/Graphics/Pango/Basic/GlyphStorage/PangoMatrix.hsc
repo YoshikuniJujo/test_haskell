@@ -17,6 +17,7 @@ module Graphics.Pango.Basic.GlyphStorage.PangoMatrix (
 
 	-- ** PangoMatrixNullable
 	PangoMatrixNullable(..), pangoMatrixFromNullable, pangoMatrixToNullable,
+	mkPangoMatrixNullable0,
 
 	-- * FUNCTION
 	pangoMatrixTranslate, pangoMatrixScale, pangoMatrixRotate,
@@ -24,15 +25,14 @@ module Graphics.Pango.Basic.GlyphStorage.PangoMatrix (
 
 	pangoMatrixTransformPoint, pangoMatrixTransformDistance,
 	pangoMatrixTransformRectangle, pangoMatrixTransformPixelRectangle,
-	pangoMatrixGetFontScaleFactor, pangoMatrixGetFontScaleFactors,
-
-	-- * C FFI
-	c_pango_matrix_copy, c_pango_matrix_free,
+	pangoMatrixGetFontScaleFactor, pangoMatrixGetFontScaleFactors
 
 	) where
 
 import Foreign.Ptr
+import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
@@ -179,3 +179,10 @@ pangoMatrixFromNullable :: PangoMatrixNullable -> Maybe PangoMatrix
 pangoMatrixFromNullable = \case
 	PangoMatrixNull -> Nothing
 	PangoMatrixNotNull f -> Just $ PangoMatrix_ f
+
+mkPangoMatrixNullable0 :: Ptr PangoMatrix -> IO PangoMatrixNullable
+mkPangoMatrixNullable0 = \case
+	NullPtr -> pure PangoMatrixNull
+	pm -> PangoMatrixNotNull <$> do
+		pm' <- c_pango_matrix_copy pm
+		newForeignPtr pm' $ c_pango_matrix_free pm'

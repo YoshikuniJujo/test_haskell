@@ -180,7 +180,7 @@ todo
 					- [x] separate `Graphics.Pango.Basic.GlyphStorage.Internal`
 				+ [ ] `Graphics.Pango.Basic.GlyphStorage.PangoMatrix`
 					- [x] add export list
-					- [ ] `mkPangoMatrixNullable0`
+					- [x] `mkPangoMatrixNullable0`
 					- [ ] separate to Internal
 					- [ ] others
 			* [ ] Fonts

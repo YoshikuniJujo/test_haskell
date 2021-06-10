@@ -81,11 +81,8 @@ instance PangoContextSetting PangoMatrixNullable where
 	pangoContextGet = pangoContextGetMatrix
 
 pangoContextGetMatrix :: PangoContext -> IO PangoMatrixNullable
-pangoContextGetMatrix (PangoContext fc) =
-	withForeignPtr fc c_pango_context_get_matrix >>= \case
-		NullPtr -> pure PangoMatrixNull
-		p -> do	p' <- c_pango_matrix_copy p
-			PangoMatrixNotNull <$> newForeignPtr p' (c_pango_matrix_free p')
+pangoContextGetMatrix (PangoContext fc) = mkPangoMatrixNullable0 =<<
+	withForeignPtr fc c_pango_context_get_matrix
 
 foreign import ccall "pango_context_get_matrix" c_pango_context_get_matrix ::
 	Ptr PangoContext -> IO (Ptr PangoMatrix)
