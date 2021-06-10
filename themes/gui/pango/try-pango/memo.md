@@ -206,8 +206,13 @@ todo
 					- [x] add export list
 					- [x] refactor export list
 			* [ ] TextAttributes
-				+ [ ] use `PangoFixed` instead of `Double`
-				+ [ ] refactor export list
+				+ [ ] `Graphics.Pango.Basic.TextAttributes`
+					- [ ] refactor export list
+				+ [ ] `Graphics.Pango.Basic.TextAttributes.Internal`
+					- [ ] use `PangoFixed` instead of `Double`
+						* [x] Rise
+						* [ ] LetterSpacing
+					- [ ] refactor export list
 			* [ ] TabStops
 			* [ ] LayoutObjects
 			* [ ] ScriptsAndLanguages

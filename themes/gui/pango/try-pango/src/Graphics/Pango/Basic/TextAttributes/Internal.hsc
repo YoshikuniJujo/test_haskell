@@ -349,9 +349,9 @@ foreign import ccall "pango_attr_scale_new" c_pango_attr_scale_new ::
 
 newtype Rise = RiseInPangoUnit { getRiseInPangoUnit :: CInt } deriving Show
 
-pattern Rise :: Double -> Rise
-pattern Rise r <- ((/ #{const PANGO_SCALE}) . fromIntegral . getRiseInPangoUnit -> r) where
-	Rise r = RiseInPangoUnit . round $ r * #{const PANGO_SCALE}
+pattern Rise :: PangoFixed -> Rise
+pattern Rise r <- (fromCInt . getRiseInPangoUnit -> r) where
+	Rise = RiseInPangoUnit . toCInt
 
 instance PangoAttributeValue Rise where
 	pangoAttrNew = pangoAttrRiseNew . getRiseInPangoUnit
