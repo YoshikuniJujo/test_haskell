@@ -201,6 +201,7 @@ todo
 					- [x] rename to `pangoFontDescriptionNew`
 					- [x] separate `Internal`
 					- [x] export type `PangoFontDescriptionFoo` from here
+					- [x] remove `Internal`
 					- [ ] refactor export list again
 				+ [ ] `Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations`
 			* [ ] TextAttributes
