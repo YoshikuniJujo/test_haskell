@@ -19,7 +19,7 @@ import Foreign.Concurrent
 import Control.Monad.Primitive
 
 data PangoFontDescription
-	= PangoFontDescription (ForeignPtr PangoFontDescription)
+	= PangoFontDescription_ (ForeignPtr PangoFontDescription)
 	deriving Show
 
 data PangoFontDescriptionNullable
@@ -29,13 +29,13 @@ data PangoFontDescriptionNullable
 
 pangoFontDescriptionToNullable :: Maybe PangoFontDescription -> PangoFontDescriptionNullable
 pangoFontDescriptionToNullable Nothing = PangoFontDescriptionNull
-pangoFontDescriptionToNullable (Just (PangoFontDescription f)) =
+pangoFontDescriptionToNullable (Just (PangoFontDescription_ f)) =
 	PangoFontDescriptionNotNull f
 
 pangoFontDescriptionFromNullable :: PangoFontDescriptionNullable -> Maybe PangoFontDescription
 pangoFontDescriptionFromNullable PangoFontDescriptionNull = Nothing
 pangoFontDescriptionFromNullable (PangoFontDescriptionNotNull f) =
-	Just $ PangoFontDescription f
+	Just $ PangoFontDescription_ f
 
 newtype PangoFontDescriptionPrim s =
 	PangoFontDescriptionPrim (ForeignPtr PangoFontDescription) deriving Show
@@ -56,7 +56,7 @@ mkPangoFontDescriptionPrim p = PangoFontDescriptionPrim
 mkPangoFontDescription :: Ptr PangoFontDescription -> IO PangoFontDescription
 mkPangoFontDescription = \case
 	NullPtr -> error "bad"
-	p -> PangoFontDescription
+	p -> PangoFontDescription_
 		<$> newForeignPtr p (c_pango_font_description_free p)
 
 mkPangoFontDescriptionNullable :: Ptr PangoFontDescription -> IO PangoFontDescriptionNullable
@@ -73,7 +73,7 @@ pangoFontDescriptionFreeze (PangoFontDescriptionPrim ffd) =
 
 pangoFontDescriptionThaw :: PrimMonad m =>
 	PangoFontDescription -> m (Maybe (PangoFontDescriptionPrim (PrimState m)))
-pangoFontDescriptionThaw (PangoFontDescription ffd) =
+pangoFontDescriptionThaw (PangoFontDescription_ ffd) =
 	unsafeIOToPrim $ (Just <$>) . mkPangoFontDescriptionPrim
 		=<< withForeignPtr ffd c_pango_font_description_copy
 

@@ -191,6 +191,7 @@ todo
 					- [x] rename Null of `PangoFontDescriptionNullable`
 					- [x] change to
 						`PangoFontDescriptionPrim (Ptr PangoFontDescription)`
+					- [x] rename to `PangoFontDescription_`
 					- [ ] use `structPrim` of c-struct
 					- [ ] remove this module
 				+ [ ] `Graphics.Pango.Basic.Fonts.PangoFontDescription`
