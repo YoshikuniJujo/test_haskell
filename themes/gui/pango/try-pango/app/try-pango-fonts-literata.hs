@@ -30,7 +30,7 @@ main = getArgs >>= \case
 
 		fd <- pangoFontDescriptionPrimNew
 
-		pangoFontDescriptionSetFamily fd "Literata"
+		pangoFontDescriptionSet fd $ Family "Literata"
 		pangoFontDescriptionSet fd $ Size 20
 		pangoFontDescriptionSetAxis fd . OpticalSize $ read opsz
 

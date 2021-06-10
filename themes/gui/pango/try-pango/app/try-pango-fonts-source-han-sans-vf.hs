@@ -27,7 +27,7 @@ import qualified Data.Text as T
 main :: IO ()
 main = do
 	fd <- pangoFontDescriptionPrimNew
-	pangoFontDescriptionSetFamily fd "Source Han Sans VF"
+	pangoFontDescriptionSet fd $ Family "Source Han Sans VF"
 	pangoFontDescriptionSet fd $ Size 20
 
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 1120

@@ -195,6 +195,10 @@ todo
 					- [x] use `structPrim` of c-struct
 					- [x] refactor export list
 				+ [ ] `Graphics.Pango.Basic.Fonts.PangoFontDescription`
+					- [x] add export list
+					- [ ] refactor export list
+					- [ ] move `pangoFontDescriptionPrimNew` here
+					- [ ] refactor export list again
 				+ [ ] `Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations`
 			* [ ] TextAttributes
 			* [ ] TabStops

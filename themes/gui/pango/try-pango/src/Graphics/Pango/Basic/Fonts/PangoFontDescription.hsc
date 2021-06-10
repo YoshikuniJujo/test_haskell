@@ -5,12 +5,43 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Basic.Fonts.PangoFontDescription where
+module Graphics.Pango.Basic.Fonts.PangoFontDescription (
+	PangoFontDescriptionSetting,
+	pangoFontDescriptionSet, pangoFontDescriptionGet,
+	pangoFontDescriptionUnset,
+	pangoFontDescriptionMerge, pangoFontDescriptionBetterMatch,
+	pangoFontDescriptionToString, pangoFontDescriptionToFilename,
+
+	Family(..),
+
+	PangoStyle(..),
+	pattern PangoStyleNormal, pattern PangoStyleOblique,
+	pattern PangoStyleItalic,
+
+	PangoVariant(..),
+	pattern PangoVariantNormal, pattern PangoVariantSmallCaps,
+
+	PangoWeight(..),
+	pattern PangoWeightThin, pattern PangoWeightUltralight,
+	pattern PangoWeightLight, pattern PangoWeightSemilight,
+	pattern PangoWeightBook, pattern PangoWeightNormal,
+	pattern PangoWeightMedium, pattern PangoWeightSemibold,
+	pattern PangoWeightBold, pattern PangoWeightUltrabold,
+	pattern PangoWeightHeavy, pattern PangoWeightUltraheavy,
+
+	PangoStretch(..),
+	pattern PangoStretchUltraCondensed, pattern PangoStretchExtraCondensed,
+	pattern PangoStretchCondensed, pattern PangoStretchSemiCondensed,
+	pattern PangoStretchNormal, pattern PangoStretchSemiExpanded,
+	pattern PangoStretchExpanded, pattern PangoStretchExtraExpanded,
+	pattern PangoStretchUltraExpanded,
+
+	Size(..)
+
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr, addForeignPtrFinalizer)
-import Foreign.Concurrent
-import Foreign.Marshal
 import Foreign.C.Types
 import Foreign.C.String
 import Foreign.C.Enum
@@ -90,22 +121,6 @@ pangoFontDescriptionSetFamily (PangoFontDescriptionPrim fpfd) f = unsafeIOToPrim
 
 foreign import ccall "pango_font_description_set_family" c_pango_font_description_set_family ::
 	Ptr PangoFontDescription -> CString -> IO ()
-
-foreign import ccall "pango_font_description_set_family_static" c_pango_font_description_set_family_static ::
-	Ptr PangoFontDescription -> CString -> IO ()
-
-newForeignCString :: String -> IO (ForeignPtr CChar)
-newForeignCString s = do
-	p <- newCString s
-	newForeignPtr p (free p)
-
-pangoFontDescriptionSetFamilyStatic :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> String -> m ()
-pangoFontDescriptionSetFamilyStatic (PangoFontDescriptionPrim fpfd) f = unsafeIOToPrim do
-	fcf <- newForeignCString f
-	addForeignPtrFinalizer fpfd $ touchForeignPtr fcf
-	withForeignPtr fpfd \pfd -> withForeignPtr fcf \cf ->
-		c_pango_font_description_set_family_static pfd cf
 
 pangoFontDescriptionGetFamily :: PangoFontDescription  -> String
 pangoFontDescriptionGetFamily (PangoFontDescription_ fpfd) = unsafePerformIO

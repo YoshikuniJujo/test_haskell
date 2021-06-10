@@ -30,7 +30,7 @@ main = getArgs >>= \case
 
 		fd <- pangoFontDescriptionPrimNew
 
-		pangoFontDescriptionSetFamily fd "Soulcraft"
+		pangoFontDescriptionSet fd $ Family "Soulcraft"
 		pangoFontDescriptionSet fd $ Size 20
 		pangoFontDescriptionSetVariation fd "wght=500"
 		pangoFontDescriptionSetAxis fd . V.Width $ read wdth

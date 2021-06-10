@@ -29,7 +29,7 @@ main = getArgs >>= \case
 
 		fd <- pangoFontDescriptionPrimNew
 
-		pangoFontDescriptionSetFamily fd "Montserrat"
+		pangoFontDescriptionSet fd $ Family "Montserrat"
 		pangoFontDescriptionSet fd $ Size 20
 		pangoFontDescriptionSetAxis fd . Weight $ read wght
 

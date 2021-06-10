@@ -48,7 +48,7 @@ main = getArgs >>= \case
 
 		fd <- pangoFontDescriptionPrimNew
 
-		pangoFontDescriptionSetFamily fd "Decovar Alpha"
+		pangoFontDescriptionSet fd $ Family "Decovar Alpha"
 		pangoFontDescriptionSet fd $ Size 80
 
 		setAxisFromString fd Inline blda

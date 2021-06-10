@@ -63,12 +63,12 @@ helloWorld :: CairoT RealWorld ->
 helloWorld cr (r, g, b) ff stl vr wt strc (x, y) = do
 	pl <- pangoCairoCreateLayout cr
 	pfd <- pangoFontDescriptionPrimNew
-	pangoFontDescriptionSetFamily pfd ff
-	pangoFontDescriptionSetSize pfd . fromIntegral $ 30 * resolution @Type @PU undefined
-	pangoFontDescriptionSetStyle pfd stl
-	pangoFontDescriptionSetVariant pfd vr
-	pangoFontDescriptionSetWeight pfd wt
-	pangoFontDescriptionSetStretch pfd strc
+	pangoFontDescriptionSet pfd $ Family ff
+	pangoFontDescriptionSet pfd . Size . fromIntegral $ 30 * resolution @Type @PU undefined
+	pangoFontDescriptionSet pfd stl
+	pangoFontDescriptionSet pfd vr
+	pangoFontDescriptionSet pfd wt
+	pangoFontDescriptionSet pfd strc
 
 	pfd' <- pangoFontDescriptionFreeze pfd
 	print $ pangoFontDescriptionToString pfd'
