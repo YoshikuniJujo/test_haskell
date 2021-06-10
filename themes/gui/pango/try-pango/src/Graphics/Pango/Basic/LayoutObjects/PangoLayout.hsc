@@ -173,7 +173,7 @@ pangoLayoutSetFontDescription :: PrimMonad m =>
 	PangoLayoutPrim (PrimState m) -> PangoFontDescriptionNullable -> m ()
 pangoLayoutSetFontDescription (PangoLayoutPrim fpl) fd = unsafeIOToPrim
 	$ withForeignPtr fpl \pl -> case fd of
-		PangoFontDescriptionNull' -> c_pango_layout_set_font_description pl nullPtr
+		PangoFontDescriptionNull -> c_pango_layout_set_font_description pl nullPtr
 		PangoFontDescriptionNotNull ffd -> do
 			addForeignPtrFinalizer fpl $ touchForeignPtr ffd
 			withForeignPtr ffd $ c_pango_layout_set_font_description pl

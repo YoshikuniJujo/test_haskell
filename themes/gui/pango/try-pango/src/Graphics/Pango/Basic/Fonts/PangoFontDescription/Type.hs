@@ -23,17 +23,17 @@ data PangoFontDescription
 	deriving Show
 
 data PangoFontDescriptionNullable
-	= PangoFontDescriptionNull'
+	= PangoFontDescriptionNull
 	| PangoFontDescriptionNotNull (ForeignPtr PangoFontDescription)
 	deriving Show
 
 pangoFontDescriptionToNullable :: Maybe PangoFontDescription -> PangoFontDescriptionNullable
-pangoFontDescriptionToNullable Nothing = PangoFontDescriptionNull'
+pangoFontDescriptionToNullable Nothing = PangoFontDescriptionNull
 pangoFontDescriptionToNullable (Just (PangoFontDescription f)) =
 	PangoFontDescriptionNotNull f
 
 pangoFontDescriptionFromNullable :: PangoFontDescriptionNullable -> Maybe PangoFontDescription
-pangoFontDescriptionFromNullable PangoFontDescriptionNull' = Nothing
+pangoFontDescriptionFromNullable PangoFontDescriptionNull = Nothing
 pangoFontDescriptionFromNullable (PangoFontDescriptionNotNull f) =
 	Just $ PangoFontDescription f
 
@@ -64,7 +64,7 @@ mkPangoFontDescription = \case
 
 mkPangoFontDescriptionNullable :: Ptr PangoFontDescription -> IO PangoFontDescriptionNullable
 mkPangoFontDescriptionNullable = \case
-	NullPtr -> pure PangoFontDescriptionNull'
+	NullPtr -> pure PangoFontDescriptionNull
 	p -> PangoFontDescriptionNotNull
 		<$> newForeignPtr p (c_pango_font_description_free p)
 
