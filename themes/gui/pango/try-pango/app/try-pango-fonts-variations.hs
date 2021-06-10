@@ -46,7 +46,7 @@ main = getArgs >>= \case
 		s <- cairoImageSurfaceCreate cairoFormatArgb32 1000 400
 		cr <- cairoCreate s
 
-		fd <- pangoFontDescriptionNew
+		fd <- pangoFontDescriptionPrimNew
 
 		pangoFontDescriptionSetFamily fd "Decovar Alpha"
 		pangoFontDescriptionSet fd $ Size 80

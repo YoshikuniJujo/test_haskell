@@ -27,7 +27,7 @@ main = getArgs >>= \case
 		s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
 		cr <- cairoCreate s
 
-		fd <- pangoFontDescriptionNew
+		fd <- pangoFontDescriptionPrimNew
 
 		pangoFontDescriptionSetFamily fd "Montserrat"
 		pangoFontDescriptionSet fd $ Size 20

@@ -5,9 +5,9 @@
 
 module Graphics.Pango.Basic.Fonts.PangoFontDescription.Type (
 	PangoFontDescription(..),
-	mkPangoFontDescription, pangoFontDescriptionNew,
+	mkPangoFontDescription,
 	PangoFontDescriptionNullable(..),
-	PangoFontDescriptionPrim(..),
+	PangoFontDescriptionPrim(..), pangoFontDescriptionPrimNew,
 	pangoFontDescriptionFreeze, pangoFontDescriptionThaw
 	) where
 
@@ -31,9 +31,9 @@ newtype PangoFontDescriptionPrim s =
 instance Show (PangoFontDescriptionPrim s) where
 	show _ = "PangoFontDescription"
 
-pangoFontDescriptionNew ::
+pangoFontDescriptionPrimNew ::
 	PrimMonad m => m (PangoFontDescriptionPrim (PrimState m))
-pangoFontDescriptionNew = unsafeIOToPrim
+pangoFontDescriptionPrimNew = unsafeIOToPrim
 	$ mkPangoFontDescriptionPrim =<< c_pango_font_description_new
 
 foreign import ccall "pango_font_description_new"

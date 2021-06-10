@@ -26,7 +26,7 @@ import qualified Data.Text as T
 
 main :: IO ()
 main = do
-	fd <- pangoFontDescriptionNew
+	fd <- pangoFontDescriptionPrimNew
 	pangoFontDescriptionSetFamily fd "Source Han Sans VF"
 	pangoFontDescriptionSet fd $ Size 20
 

@@ -55,7 +55,7 @@ main = do
 
 	pl <- pangoLayoutNew cxt
 
-	pfd <- pangoFontDescriptionNew
+	pfd <- pangoFontDescriptionPrimNew
 	pangoFontDescriptionSetSize pfd . fromIntegral $ 30 * resolution @Type @PU undefined
 	pangoLayoutSetFontDescription pl =<< pangoFontDescriptionFreeze pfd
 

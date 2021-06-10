@@ -94,7 +94,7 @@ main = do
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al4
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
-	fd <- pangoFontDescriptionNew
+	fd <- pangoFontDescriptionPrimNew
 --	pangoFontDescriptionSet fd $ Family "Source Han Sans VF"
 	pangoFontDescriptionSet fd $ PangoGravityEast
 	al5 <- pangoTextAttrListNew "あいうえおabcdefg"
