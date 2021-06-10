@@ -206,6 +206,8 @@ todo
 					- [x] add export list
 					- [x] refactor export list
 			* [ ] TextAttributes
+				+ [ ] use `PangoFixed` instead of `Double`
+				+ [ ] refactor export list
 			* [ ] TabStops
 			* [ ] LayoutObjects
 			* [ ] ScriptsAndLanguages

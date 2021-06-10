@@ -12,7 +12,7 @@ module Graphics.Pango.Basic.TextAttributes.Internal (
 	pangoTextAttrListInsert, pangoTextAttrListInsertBefore,
 	pangoTextAttrListChange,
 
-	PangoAttributeValue, pangoAttrNew, pangoAttrFontDescNew,
+	PangoAttribute, PangoAttributeValue, pangoAttrNew, pangoAttrFontDescNew,
 	Strikethrough(..), StrikethroughColor(..),
 	PangoUnderline, pattern PangoUnderlineNone,
 	pattern PangoUnderlineSingle, pattern PangoUnderlineDouble,

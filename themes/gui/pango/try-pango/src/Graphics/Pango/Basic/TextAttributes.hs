@@ -16,7 +16,7 @@ module Graphics.Pango.Basic.TextAttributes (
 
 	-- * PangoAttributeValue
 	-- ** Class
-	PangoAttributeValue, pangoAttrNew,
+	PangoAttributeValue, PangoAttribute, pangoAttrNew,
 
 	-- ** Instance
 	pangoAttrFontDescNew,
