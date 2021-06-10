@@ -189,7 +189,7 @@ todo
 					- [x] use `PangoFontDescriptionNulable`
 					- [x] remove Null from `PangoFontDescription`
 					- [x] rename Null of `PangoFontDescriptionNullable`
-					- [ ] change to
+					- [x] change to
 						`PangoFontDescriptionPrim (Ptr PangoFontDescription)`
 					- [ ] use `structPrim` of c-struct
 					- [ ] remove this module

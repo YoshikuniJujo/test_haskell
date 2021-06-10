@@ -103,7 +103,7 @@ pangoFontDescriptionSetVariation (PangoFontDescriptionPrim fpfd) f = unsafeIOToP
 
 foreign import ccall "pango_font_description_set_variations"
 	c_pango_font_description_set_variations ::
-	Ptr (PangoFontDescriptionPrim s) -> CString -> IO ()
+	Ptr PangoFontDescription -> CString -> IO ()
 
 pangoFontDescriptionGetVariationsMap :: PrimMonad m =>
 	PangoFontDescriptionPrim (PrimState m) -> m Variations
@@ -116,7 +116,7 @@ myPackCString cs | cs == nullPtr = pure "" | otherwise = BS.packCString cs
 
 foreign import ccall "pango_font_description_get_variations"
 	c_pango_font_description_get_variations ::
-	Ptr (PangoFontDescriptionPrim s) -> IO CString
+	Ptr PangoFontDescription -> IO CString
 
 pangoFontDescriptionAddAxis :: String -> String -> DecsQ
 pangoFontDescriptionAddAxis a t = (\n i -> [n, i])

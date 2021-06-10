@@ -235,7 +235,7 @@ pangoAttrFontDescNew (PangoFontDescriptionPrim ffd) = unsafeIOToPrim
 	$ mkPangoAttribute =<< withForeignPtr ffd c_pango_attr_font_desc_new
 
 foreign import ccall "pango_attr_font_desc_new" c_pango_attr_font_desc_new ::
-	Ptr (PangoFontDescriptionPrim s) -> IO (Ptr (PangoAttribute s))
+	Ptr PangoFontDescription -> IO (Ptr (PangoAttribute s))
 
 data ForegroundColor = ForegroundColor Word16 Word16 Word16 deriving Show
 
