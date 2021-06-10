@@ -173,17 +173,19 @@ todo
 				+ [x] separate `Graphics.Pango.Basic.Rendering.PangoContext.Internal`
 			* [x] `Graphics.Pango.Basic.Rendering.PangoContext`
 			* [x] `Graphics.Pango.Basic.Rendering.PangoContext.Internal`
-			* [ ] GlyphStorage
+			* [x] GlyphStorage
 				+ [x] `Graphics.Pango.Basic.GlyphStorage`
 					- [x] add export list
 					- [x] review `PangoRectangle` and `PangoRectangleFixed`
 					- [x] separate `Graphics.Pango.Basic.GlyphStorage.Internal`
-				+ [ ] `Graphics.Pango.Basic.GlyphStorage.PangoMatrix`
+				+ [x] `Graphics.Pango.Basic.GlyphStorage.PangoMatrix`
 					- [x] add export list
 					- [x] `mkPangoMatrixNullable0`
-					- [ ] separate to Internal
-					- [ ] others
+					- [x] separate to Internal
 			* [ ] Fonts
+				+ [ ] `Graphics.Pango.Basic.Fonts.PangoFontDescription`
+				+ [ ] `Graphics.Pango.Basic.Fonts.PangoFontDescription.Type`
+				+ [ ] `Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations`
 			* [ ] TextAttributes
 			* [ ] TabStops
 			* [ ] LayoutObjects

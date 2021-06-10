@@ -14,7 +14,7 @@ import System.Glib.GObject
 
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 
-import Graphics.Pango.Basic.GlyphStorage.PangoMatrix
+import Graphics.Pango.Basic.GlyphStorage.PangoMatrix.Internal
 import Graphics.Pango.Basic.VerticalText
 
 #include <pango/pango.h>
