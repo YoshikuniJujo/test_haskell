@@ -31,7 +31,7 @@ main = getArgs >>= \case
 
 		pangoFontDescriptionSet fd $ Family "Soulcraft"
 		pangoFontDescriptionSet fd $ Size 20
-		pangoFontDescriptionSetVariation fd "wght=500"
+		pangoFontDescriptionSetAxis fd $ Weight 500
 		pangoFontDescriptionSetAxis fd . V.Width $ read wdth
 		pangoFontDescriptionSetAxis fd . Slant $ read slnt
 

@@ -4,7 +4,16 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations where
+module Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations (
+	-- * AXIS CLASS
+	PangoFontDescriptionAxis,
+	-- * ADD AXIS
+	pangoFontDescriptionAddAxis,
+	-- * SET AND GET AXIS
+	pangoFontDescriptionSetAxis, pangoFontDescriptionGetAxis,
+	-- * DEFAULT AXES
+	Weight(..), Width(..), Slant(..), Italic(..), OpticalSize(..)
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr

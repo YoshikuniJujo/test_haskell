@@ -182,7 +182,7 @@ todo
 					- [x] add export list
 					- [x] `mkPangoMatrixNullable0`
 					- [x] separate to Internal
-			* [ ] Fonts
+			* [x] Fonts
 				+ [x] `Graphics.Pango.Basic.Fonts.PangoFontDescription.Type`
 					- [x] define `PangoFontDescriptionNullable`
 					- [x] rename to `pangoFontDescriptionPrimNew`
@@ -194,7 +194,7 @@ todo
 					- [x] rename to `PangoFontDescription_`
 					- [x] use `structPrim` of c-struct
 					- [x] refactor export list
-				+ [ ] `Graphics.Pango.Basic.Fonts.PangoFontDescription`
+				+ [x] `Graphics.Pango.Basic.Fonts.PangoFontDescription`
 					- [x] add export list
 					- [x] refactor export list
 					- [x] move `pangoFontDescriptionPrimNew` here
@@ -202,8 +202,9 @@ todo
 					- [x] separate `Internal`
 					- [x] export type `PangoFontDescriptionFoo` from here
 					- [x] remove `Internal`
-					- [ ] refactor export list again
-				+ [ ] `Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations`
+				+ [x] `Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations`
+					- [x] add export list
+					- [x] refactor export list
 			* [ ] TextAttributes
 			* [ ] TabStops
 			* [ ] LayoutObjects
