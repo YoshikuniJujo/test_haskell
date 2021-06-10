@@ -6,21 +6,27 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.Fonts.PangoFontDescription (
+	-- * FUNCTION
 	PangoFontDescriptionSetting,
 	pangoFontDescriptionSet, pangoFontDescriptionGet,
 	pangoFontDescriptionUnset,
 	pangoFontDescriptionMerge, pangoFontDescriptionBetterMatch,
 	pangoFontDescriptionToString, pangoFontDescriptionToFilename,
 
+	-- * SETTING
+	-- ** Family
 	Family(..),
 
+	-- ** Style
 	PangoStyle(..),
 	pattern PangoStyleNormal, pattern PangoStyleOblique,
 	pattern PangoStyleItalic,
 
+	-- ** Variant
 	PangoVariant(..),
 	pattern PangoVariantNormal, pattern PangoVariantSmallCaps,
 
+	-- ** Weight
 	PangoWeight(..),
 	pattern PangoWeightThin, pattern PangoWeightUltralight,
 	pattern PangoWeightLight, pattern PangoWeightSemilight,
@@ -29,6 +35,7 @@ module Graphics.Pango.Basic.Fonts.PangoFontDescription (
 	pattern PangoWeightBold, pattern PangoWeightUltrabold,
 	pattern PangoWeightHeavy, pattern PangoWeightUltraheavy,
 
+	-- ** Stretch
 	PangoStretch(..),
 	pattern PangoStretchUltraCondensed, pattern PangoStretchExtraCondensed,
 	pattern PangoStretchCondensed, pattern PangoStretchSemiCondensed,
@@ -36,6 +43,7 @@ module Graphics.Pango.Basic.Fonts.PangoFontDescription (
 	pattern PangoStretchExpanded, pattern PangoStretchExtraExpanded,
 	pattern PangoStretchUltraExpanded,
 
+	-- ** Size
 	Size(..)
 
 	) where

@@ -196,7 +196,7 @@ todo
 					- [x] refactor export list
 				+ [ ] `Graphics.Pango.Basic.Fonts.PangoFontDescription`
 					- [x] add export list
-					- [ ] refactor export list
+					- [x] refactor export list
 					- [ ] move `pangoFontDescriptionPrimNew` here
 					- [ ] refactor export list again
 				+ [ ] `Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations`
