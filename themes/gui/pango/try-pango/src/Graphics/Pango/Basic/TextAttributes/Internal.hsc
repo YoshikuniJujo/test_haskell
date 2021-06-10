@@ -370,12 +370,10 @@ newtype LetterSpacing =
 instance PangoAttributeValue LetterSpacing where
 	pangoAttrNew = pangoAttrLetterSpacingNew . getLetterSpacingInPangoUnit
 
-pattern LetterSpacing :: Double -> LetterSpacing
+pattern LetterSpacing :: PangoFixed -> LetterSpacing
 pattern LetterSpacing s <-
-	((/ #{const PANGO_SCALE}) . fromIntegral . getLetterSpacingInPangoUnit
-		-> s) where
-	LetterSpacing s =
-		LetterSpacingInPangoUnit . round $ s * #{const PANGO_SCALE}
+	(fromCInt . getLetterSpacingInPangoUnit -> s) where
+	LetterSpacing = LetterSpacingInPangoUnit . toCInt
 
 pangoAttrLetterSpacingNew ::
 	PrimMonad m => CInt -> m (PangoAttribute (PrimState m))
