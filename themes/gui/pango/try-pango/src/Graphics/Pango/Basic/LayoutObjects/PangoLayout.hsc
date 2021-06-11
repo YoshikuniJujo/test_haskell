@@ -28,30 +28,37 @@ module Graphics.Pango.Basic.LayoutObjects.PangoLayout (
 
 	-- * SETTING
 
+	-- ** Width and Height
 	Width(..), Height(..),
 
-	PangoWrapMode,
+	-- ** PangoWrapMode
+	PangoWrapMode(..),
 	pattern PangoWrapWord, pattern PangoWrapChar, pattern PangoWrapWordChar,
 
-	PangoLogAttrs, pangoLogAttrsGetLogAttr, pangoLogAttrsGetSize,
-
-	PangoEllipsizeMode,
+	-- ** PangoEllipsizeMode
+	PangoEllipsizeMode(..),
 	pattern PangoEllipsizeNone, pattern PangoEllipsizeStart,
 	pattern PangoEllipsizeMiddle, pattern PangoEllipsizeEnd,
 
+	-- ** Indent, Spacint, Justify and AutoDir
 	Indent(..), Spacing(..), Justify(..), AutoDir(..),
 
-	PangoAlignment,
+	-- ** PangoAlignment
+	PangoAlignment(..),
 	pattern PangoAlignLeft, pattern PangoAlignCenter,
 	pattern PangoAlignRight,
 
+	-- ** SingleParagraphMode
 	SingleParagraphMode(..),
 
 	-- * INFO
 
-	CharacterCount, IsWrapped, IsEllipsized, UnknownGlyphsCount,
+	-- ** CharacterCount, IsWrapped, IsEllipsized and UnknownGlyphCount
+	CharacterCount(..), IsWrapped(..), IsEllipsized(..), UnknownGlyphsCount(..),
 
-	PangoLogAttr(..),
+	-- ** PangoLogAttrs
+	PangoLogAttrs, pangoLogAttrsGetLogAttr, pangoLogAttrsGetSize,
+	PangoLogAttr,
 	pattern PangoLogAttr,
 	pangoLogAttrIsLineBreak, pangoLogAttrIsMandatoryBreak,
 	pangoLogAttrIsCharBreak, pangoLogAttrIsWhite,
@@ -62,7 +69,8 @@ module Graphics.Pango.Basic.LayoutObjects.PangoLayout (
 	pangoLogAttrBackspaceDeleteCharacter, pangoLogAttrIsExpandableSpace,
 	pangoLogAttrIsWordBoundary,
 
-	PixelExtents, LayoutSize, LayoutPixelSize, Baseline, LineCount,
+	-- ** LayoutSize, LayoutPixelSize, Baseline and LineCount
+	LayoutSize(..), LayoutPixelSize(..), Baseline(..), LineCount(..),
 
 	) where
 

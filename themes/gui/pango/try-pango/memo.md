@@ -229,8 +229,12 @@ todo
 					- [x] add export list
 					- [x] move `pangoExtentsToPixelsInclusive` and `...Nearest` to `GlyphStorage`
 					- [x] move `copyCString` to `Foreign.C.String.Foo`
-					- [ ] refactor export list
+					- [x] refactor export list
+					- [ ] use `PangoFixed` in `Width` and `Height`
+					- [ ] use `PangoFixed` in `Indent` and `Spacing`
+					- [ ] refactor export list again
 					- [ ] separate to `Internal`
+					- [ ] refactor export list again
 				+ [ ] `Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter`
 				+ [ ] `Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine`
 			* [ ] ScriptsAndLanguages
@@ -238,6 +242,7 @@ todo
 			* [ ] VerticalText
 		- [ ] Rendering.Cairo
 * [ ] check `pangoTabArrayGetTab` what happen if index is out of bounds
+* [ ] check `pangoLayoutGetBaseline`
 * [ ] think about package name
 	+ simple-cairo-pango ?
 * [ ] consider to remove `deriving Show` of many types
