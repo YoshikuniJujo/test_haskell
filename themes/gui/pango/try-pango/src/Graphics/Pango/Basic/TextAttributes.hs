@@ -2,20 +2,20 @@
 {-# OPTIOnS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.TextAttributes (
-	-- * PangoTextAttrList and PangoTextAttrListPrim
+	-- * TYPE
 	PangoTextAttrList, PangoTextAttrListPrim,
 	pangoTextAttrListNew,
 	pangoTextAttrListFreeze, pangoTextAttrListThaw,
 	pangoTextAttrListCopy,
 
-	-- * Parse Markup
+	-- * PARSE MARKUP
 	pangoParseMarkup, pangoMarkupParserNew, pangoMarkupParserFinish,
 
-	-- * Insert an Attribute to PangoTextAttrListPrim
+	-- * INSERT AN ATTRIBUTE TO PANGO TEXT ATTRIBUTE LIST FOR PRIMITIVE MONAD
 	pangoTextAttrListInsert, pangoTextAttrListInsertBefore,
 	pangoTextAttrListChange,
 
-	-- * PangoAttributeValue
+	-- * PANGO ATTRIBUTE VALUE
 	-- ** Class
 	PangoAttributeValue, PangoAttribute, pangoAttrNew,
 
@@ -61,7 +61,7 @@ module Graphics.Pango.Basic.TextAttributes (
 	pattern PangoGravityHintNatural, pattern PangoGravityHintStrong,
 	pattern PangoGravityHintLine,
 
-	-- * PangoColor
+	-- * PANGO COLOR
 	PangoColor(..), pangoColorParse, pangoColorToString,
 	) where
 
