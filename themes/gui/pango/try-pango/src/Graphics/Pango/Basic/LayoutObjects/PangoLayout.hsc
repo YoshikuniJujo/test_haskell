@@ -64,9 +64,6 @@ module Graphics.Pango.Basic.LayoutObjects.PangoLayout (
 
 	PixelExtents, LayoutSize, LayoutPixelSize, Baseline, LineCount,
 
-	-- * C FFI
-
-	copyCString
 	) where
 
 import Foreign.Ptr
@@ -149,11 +146,6 @@ pangoLayoutSetText (PangoLayoutPrim fpl) s =
 		cs' <- copyCString cs n
 		addForeignPtrFinalizer fpl $ free cs'
 		c_pango_layout_set_text pl cs' $ fromIntegral n
-
-copyCString :: CString -> Int -> IO CString
-copyCString cs n = do
-	cs' <- mallocBytes n
-	cs' <$ copyBytes cs' cs n
 
 foreign import ccall "pango_layout_set_text" c_pango_layout_set_text ::
 	Ptr PangoLayout -> CString -> CInt -> IO ()

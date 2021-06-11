@@ -8,6 +8,7 @@ import Foreign.ForeignPtr hiding (addForeignPtrFinalizer)
 import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.C
+import Foreign.C.String.Misc
 import Control.Monad.Primitive
 
 import Data.CairoContext
