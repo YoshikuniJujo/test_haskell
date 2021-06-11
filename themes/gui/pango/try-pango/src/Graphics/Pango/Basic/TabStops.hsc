@@ -3,7 +3,19 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Basic.TabStops where
+module Graphics.Pango.Basic.TabStops (
+	-- * PANGO TAB ARRAY
+	PangoTabArray(..), makePangoTabArray, pangoTabArrayThaw,
+	pangoTabArrayGetTab, pangoTabArrayGetTabs,
+
+	-- * PANGO TAB ARRAY FIXED
+	PangoTabArrayFixed, pangoTabArrayFixedFreeze,
+	pangoTabArrayFixedNew, pangoTabArrayFixedSetTab,
+
+	-- * PANGO TAB ARRAY INT
+	PangoTabArrayInt, pangoTabArrayIntFreeze,
+	pangoTabArrayIntNew, pangoTabArrayIntSetTab,
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)

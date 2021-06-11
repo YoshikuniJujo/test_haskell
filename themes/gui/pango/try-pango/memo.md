@@ -214,6 +214,8 @@ todo
 						* [x] LetterSpacing
 					- [x] refactor export list
 			* [ ] TabStops
+				+ [x] add export list
+				+ [ ] refactor export list
 			* [ ] LayoutObjects
 			* [ ] ScriptsAndLanguages
 			* [ ] BidirectionalText
