@@ -34,8 +34,8 @@ main = do
 	cr <- cairoCreate s
 
 	T.putStrLn . pangoLanguageGetSampleString =<< pangoLanguageGetDefault
-	T.putStrLn . pangoLanguageGetSampleString $ pangoLanguageFromString "is-is"
-	T.putStrLn . pangoLanguageGetSampleString $ pangoLanguageFromString "zh-tw"
+	T.putStrLn . pangoLanguageGetSampleString $ PangoLanguage "is-is"
+	T.putStrLn . pangoLanguageGetSampleString $ PangoLanguage "zh-tw"
 	T.putStrLn sampleText
 	T.putStrLn sampleText2
 
@@ -230,21 +230,21 @@ main = do
 
 sampleText, sampleText', sampleText2, arabic :: T.Text
 sampleText = T.unwords $
-	pangoLanguageGetSampleString . pangoLanguageFromString <$> [
+	pangoLanguageGetSampleString . PangoLanguage <$> [
 		"is-is", "ga-ie", "ga", "en", "ja-jp", "zh-tw"
 		]
 
 sampleText' = ("\x1f9a5\x1f16f\x1f16e" <>) . T.unwords $
-	pangoLanguageGetSampleString . pangoLanguageFromString <$> [
+	pangoLanguageGetSampleString . PangoLanguage <$> [
 		"is-is", "ga-ie", "ga", "en", "ja-jp", "zh-tw"
 		]
 
 sampleText2 = T.unwords $
-	pangoLanguageGetSampleString . pangoLanguageFromString <$> [
+	pangoLanguageGetSampleString . PangoLanguage <$> [
 		"af", "ar", "sq"
 		]
 
-arabic = pangoLanguageGetSampleString $ pangoLanguageFromString "ar"
+arabic = pangoLanguageGetSampleString $ PangoLanguage "ar"
 
 pangoLogAttrsToList :: PangoLogAttrs -> [PangoLogAttr]
 pangoLogAttrsToList las = fromJust . pangoLogAttrsGetLogAttr las <$> [0 .. pangoLogAttrsGetSize las - 1]
