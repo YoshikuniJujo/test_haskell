@@ -43,11 +43,11 @@ main = do
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	cairoMoveTo cr 0 150
-	pangoLayoutSet pl taf'
+	pangoLayoutSet pl . pangoTabArrayToNullable $ Just taf'
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	cairoMoveTo cr 0 200
-	pangoLayoutSet pl tai'
+	pangoLayoutSet pl . pangoTabArrayToNullable $ Just tai'
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	cairoImageSurfaceGetCairoImage s >>= \case

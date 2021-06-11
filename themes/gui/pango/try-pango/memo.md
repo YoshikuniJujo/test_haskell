@@ -215,6 +215,14 @@ todo
 					- [x] refactor export list
 			* [ ] TabStops
 				+ [x] add export list
+				+ [x] add `PangoTabArrayNullable`
+					- [x] define `PangoTabArrayNullable`
+					- [x] remove Null from `PangoTabArray`
+					- [x] define `pangoTabArrayFromNullable`
+					- [x] define `pangoTabArrayToNullable`
+					- [x] use `PangoTabArrayNullable`
+					- [x] rename Null of `PangoTabArrayNullable`
+				+ [ ] separate `Internal`
 				+ [ ] refactor export list
 			* [ ] LayoutObjects
 			* [ ] ScriptsAndLanguages

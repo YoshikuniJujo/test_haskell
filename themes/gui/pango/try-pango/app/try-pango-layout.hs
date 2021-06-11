@@ -260,14 +260,14 @@ Haskellとの出会いは、
 |]
 	]
 
-tabArrayFixed :: [PangoFixed] -> PangoTabArray
-tabArrayFixed ps = runST do
+tabArrayFixed :: [PangoFixed] -> PangoTabArrayNullable
+tabArrayFixed ps = pangoTabArrayToNullable . Just $ runST do
 	pta <- pangoTabArrayFixedNew
 	for_ (zip [0 ..] ps) \(i, p) -> pangoTabArrayFixedSetTab pta i p
 	pangoTabArrayFixedFreeze pta
 
-tabArrayInt :: [CInt] -> PangoTabArray
-tabArrayInt ps = runST do
+tabArrayInt :: [CInt] -> PangoTabArrayNullable
+tabArrayInt ps = pangoTabArrayToNullable . Just $ runST do
 	pta <- pangoTabArrayIntNew
 	for_ (zip [0 ..] ps) \(i, p) -> pangoTabArrayIntSetTab pta i p
 	pangoTabArrayIntFreeze pta

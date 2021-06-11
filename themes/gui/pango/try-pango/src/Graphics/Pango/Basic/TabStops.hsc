@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -7,6 +7,10 @@ module Graphics.Pango.Basic.TabStops (
 	-- * PANGO TAB ARRAY
 	PangoTabArray(..), makePangoTabArray, pangoTabArrayThaw,
 	pangoTabArrayGetTab, pangoTabArrayGetTabs,
+
+	-- * PANGO TAB ARRAY NULLABLE
+	PangoTabArrayNullable(..), makePangoTabArrayNullable,
+	pangoTabArrayFromNullable, pangoTabArrayToNullable,
 
 	-- * PANGO TAB ARRAY FIXED
 	PangoTabArrayFixed, pangoTabArrayFixedFreeze,
@@ -18,6 +22,7 @@ module Graphics.Pango.Basic.TabStops (
 	) where
 
 import Foreign.Ptr
+import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Marshal
@@ -35,15 +40,32 @@ import Graphics.Pango.Basic.GlyphStorage
 
 #include <pango/pango.h>
 
-data PangoTabArray
-	= PangoTabArrayNull
-	| PangoTabArray (ForeignPtr PangoTabArray)
-	deriving Show
+newtype PangoTabArray = PangoTabArray (ForeignPtr PangoTabArray) deriving Show
 
 makePangoTabArray :: Ptr PangoTabArray -> IO PangoTabArray
-makePangoTabArray p
-	| p == nullPtr = pure PangoTabArrayNull
-	| otherwise = PangoTabArray <$> newForeignPtr p (c_pango_tab_array_free p)
+makePangoTabArray = \case
+	NullPtr -> error "bad"
+	p -> PangoTabArray <$> newForeignPtr p (c_pango_tab_array_free p)
+
+data PangoTabArrayNullable
+	= PangoTabArrayNull
+	| PangoTabArrayNotNull (ForeignPtr PangoTabArray)
+	deriving Show
+
+makePangoTabArrayNullable :: Ptr PangoTabArray -> IO PangoTabArrayNullable
+makePangoTabArrayNullable = \case
+	NullPtr -> pure PangoTabArrayNull
+	p -> PangoTabArrayNotNull <$> newForeignPtr p (c_pango_tab_array_free p)
+
+pangoTabArrayFromNullable :: PangoTabArrayNullable -> Maybe PangoTabArray
+pangoTabArrayFromNullable = \case
+	PangoTabArrayNull -> Nothing
+	PangoTabArrayNotNull fta -> Just $ PangoTabArray fta
+
+pangoTabArrayToNullable :: Maybe PangoTabArray -> PangoTabArrayNullable
+pangoTabArrayToNullable = \case
+	Nothing -> PangoTabArrayNull
+	Just (PangoTabArray fta) -> PangoTabArrayNotNull fta
 
 newtype PangoTabArrayFixed s =
 	PangoTabArrayFixed (ForeignPtr PangoTabArray) deriving Show
@@ -150,10 +172,9 @@ foreign import ccall "pango_tab_array_resize" c_pango_tab_array_resize ::
 enum "PangoTabAlign" ''#{type PangoTabAlign} [''Show] [
 	("PangoTabLeft", #{const PANGO_TAB_LEFT}) ]
 
-pangoTabArrayGetTab :: PangoTabArray -> CInt -> Maybe (Either Double CInt)
-pangoTabArrayGetTab PangoTabArrayNull _ = Nothing
+pangoTabArrayGetTab :: PangoTabArray -> CInt -> Either Double CInt
 pangoTabArrayGetTab (PangoTabArray fta) idx = unsafePerformIO
-	$ Just <$> withForeignPtr fta \pta -> alloca \loc -> do
+	$ withForeignPtr fta \pta -> alloca \loc -> do
 		px <- c_pango_tab_array_get_positions_in_pixels pta
 		c_pango_tab_array_get_tab pta idx nullPtr loc
 		(<$> peek loc) case px of
@@ -165,10 +186,9 @@ pangoTabArrayGetTab (PangoTabArray fta) idx = unsafePerformIO
 foreign import ccall "pango_tab_array_get_tab" c_pango_tab_array_get_tab ::
 	Ptr PangoTabArray -> CInt -> Ptr #{type PangoTabAlign} -> Ptr CInt -> IO ()
 
-pangoTabArrayGetTabs :: PangoTabArray -> Maybe (Either [Double] [CInt])
-pangoTabArrayGetTabs PangoTabArrayNull = Nothing
+pangoTabArrayGetTabs :: PangoTabArray -> Either [Double] [CInt]
 pangoTabArrayGetTabs (PangoTabArray fta) = unsafePerformIO
-	$ Just <$> withForeignPtr fta \pta -> alloca \locs -> do
+	$ withForeignPtr fta \pta -> alloca \locs -> do
 		n <- c_pango_tab_array_get_size pta
 		px <- c_pango_tab_array_get_positions_in_pixels pta
 		c_pango_tab_array_get_tabs pta nullPtr locs
@@ -200,12 +220,11 @@ pangoTabArrayFixedFreeze (PangoTabArrayFixed fta) =
 	unsafeIOToPrim $ withForeignPtr fta \pta ->
 		makePangoTabArray =<< c_pango_tab_array_freeze pta
 
-pangoTabArrayThaw :: PrimMonad m => PangoTabArray -> m (Maybe (Either
+pangoTabArrayThaw :: PrimMonad m => PangoTabArray -> m (Either
 	(PangoTabArrayFixed (PrimState m))
-	(PangoTabArrayInt (PrimState m))))
-pangoTabArrayThaw PangoTabArrayNull = pure Nothing
+	(PangoTabArrayInt (PrimState m)))
 pangoTabArrayThaw (PangoTabArray fta) =
-	unsafeIOToPrim $ Just <$> withForeignPtr fta \pta -> do
+	unsafeIOToPrim $ withForeignPtr fta \pta -> do
 		px <- c_pango_tab_array_get_positions_in_pixels pta
 		c_pango_tab_array_thaw pta >>= case px of
 			#{const FALSE} -> (Left <$>) . mkPangoTabArrayFixed

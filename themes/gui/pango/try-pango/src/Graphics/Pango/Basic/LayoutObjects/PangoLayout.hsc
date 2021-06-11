@@ -426,22 +426,22 @@ foreign import ccall "pango_layout_set_alignment" c_pango_layout_set_alignment :
 foreign import ccall "pango_layout_get_alignment" c_pango_layout_get_alignment ::
 	Ptr PangoLayout -> IO #{type PangoAlignment}
 
-instance PangoLayoutSetting PangoTabArray where
+instance PangoLayoutSetting PangoTabArrayNullable where
 	pangoLayoutSet = pangoLayoutSetTabs
 	pangoLayoutGet = pangoLayoutGetTabs
 
 pangoLayoutSetTabs ::
-	PrimMonad m => PangoLayoutPrim (PrimState m) -> PangoTabArray -> m ()
+	PrimMonad m => PangoLayoutPrim (PrimState m) -> PangoTabArrayNullable -> m ()
 pangoLayoutSetTabs (PangoLayoutPrim fl) ta = unsafeIOToPrim
 	$ withForeignPtr fl \pl -> case ta of
 		PangoTabArrayNull -> c_pango_layout_set_tabs pl nullPtr
-		PangoTabArray fta -> do
+		PangoTabArrayNotNull fta -> do
 			addForeignPtrFinalizer fl $ touchForeignPtr fta
 			withForeignPtr fta $ c_pango_layout_set_tabs pl
 
-pangoLayoutGetTabs :: PangoLayout -> PangoTabArray
+pangoLayoutGetTabs :: PangoLayout -> PangoTabArrayNullable
 pangoLayoutGetTabs (PangoLayout_ fl) = unsafePerformIO
-	$ makePangoTabArray =<< withForeignPtr fl c_pango_layout_get_tabs
+	$ makePangoTabArrayNullable =<< withForeignPtr fl c_pango_layout_get_tabs
 
 foreign import ccall "pango_layout_set_tabs" c_pango_layout_set_tabs ::
 	Ptr PangoLayout -> Ptr PangoTabArray -> IO ()
