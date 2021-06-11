@@ -230,7 +230,7 @@ todo
 					- [x] move `pangoExtentsToPixelsInclusive` and `...Nearest` to `GlyphStorage`
 					- [x] move `copyCString` to `Foreign.C.String.Foo`
 					- [x] refactor export list
-					- [ ] use `PangoFixed` in `Width` and `Height`
+					- [x] use `PangoFixed` in `Width` and `Height`
 					- [ ] use `PangoFixed` in `Indent` and `Spacing`
 					- [ ] refactor export list again
 					- [ ] separate to `Internal`
