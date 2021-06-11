@@ -222,13 +222,15 @@ todo
 					- [x] define `pangoTabArrayToNullable`
 					- [x] use `PangoTabArrayNullable`
 					- [x] rename Null of `PangoTabArrayNullable`
-				+ [ ] separate `Internal`
-				+ [ ] refactor export list
+				+ [x] separate `Internal`
+				+ [x] refactor export list
+				+ [ ] to `Ptr PangoTabArray`
 			* [ ] LayoutObjects
 			* [ ] ScriptsAndLanguages
 			* [ ] BidirectionalText
 			* [ ] VerticalText
 		- [ ] Rendering.Cairo
+* [ ] check `pangoTabArrayGetTab` what happen if index is out of bounds
 * [ ] think about package name
 	+ simple-cairo-pango ?
 * [ ] consider to remove `deriving Show` of many types
