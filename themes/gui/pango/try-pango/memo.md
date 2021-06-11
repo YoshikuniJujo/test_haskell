@@ -225,16 +225,18 @@ todo
 				+ [x] separate `Internal`
 				+ [x] refactor export list
 			* [ ] LayoutObjects
-				+ [ ] `Graphics.Pango.Basic.LayoutObjects.PangoLayout`
+				+ [x] `Graphics.Pango.Basic.LayoutObjects.PangoLayout`
 					- [x] add export list
 					- [x] move `pangoExtentsToPixelsInclusive` and `...Nearest` to `GlyphStorage`
 					- [x] move `copyCString` to `Foreign.C.String.Foo`
 					- [x] refactor export list
 					- [x] use `PangoFixed` in `Width` and `Height`
 					- [x] use `PangoFixed` in `Indent` and `Spacing`
-					- [ ] separate to `Internal`
-					- [ ] refactor export list again
+					- [x] separate to `Internal`
+					- [x] refactor export list again
 				+ [ ] `Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter`
+					- [ ] add export list
+					- [ ] refactor export list
 				+ [ ] `Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine`
 			* [ ] ScriptsAndLanguages
 			* [ ] BidirectionalText

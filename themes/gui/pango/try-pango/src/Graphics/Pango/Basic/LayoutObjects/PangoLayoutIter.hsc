@@ -14,7 +14,7 @@ import Data.Int
 
 import System.Glib.Bool
 import Graphics.Pango.Basic.GlyphStorage.Internal
-import Graphics.Pango.Basic.LayoutObjects.PangoLayout
+import Graphics.Pango.Basic.LayoutObjects.PangoLayout.Internal
 import Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine
 
 #include <pango/pango.h>
