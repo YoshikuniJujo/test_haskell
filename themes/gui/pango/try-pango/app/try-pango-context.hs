@@ -56,7 +56,7 @@ main = do
 
 	pfd <- pangoFontDescriptionNew
 	pangoFontDescriptionSet pfd . Size . fromIntegral $ 30 * resolution @Type @PU undefined
-	pangoLayoutSetFontDescription pl . pangoFontDescriptionToNullable . Just
+	pangoLayoutSet pl . pangoFontDescriptionToNullable . Just
 		=<< pangoFontDescriptionFreeze pfd
 
 	pangoLayoutSet @T.Text pl "こんにちは世界!"

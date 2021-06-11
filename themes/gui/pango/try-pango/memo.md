@@ -213,7 +213,7 @@ todo
 						* [x] Rise
 						* [x] LetterSpacing
 					- [x] refactor export list
-			* [ ] TabStops
+			* [x] TabStops
 				+ [x] add export list
 				+ [x] add `PangoTabArrayNullable`
 					- [x] define `PangoTabArrayNullable`
@@ -224,8 +224,15 @@ todo
 					- [x] rename Null of `PangoTabArrayNullable`
 				+ [x] separate `Internal`
 				+ [x] refactor export list
-				+ [ ] to `Ptr PangoTabArray`
 			* [ ] LayoutObjects
+				+ [ ] `Graphics.Pango.Basic.LayoutObjects.PangoLayout`
+					- [x] add export list
+					- [ ] move `pangoExtentsToPixelsInclusive` and `...Nearest` to `GlyphStorage`
+					- [ ] move `copyCString` to `Foreign.C.String.Foo`
+					- [ ] refactor export list
+					- [ ] separate to `Internal`
+				+ [ ] `Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter`
+				+ [ ] `Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine`
 			* [ ] ScriptsAndLanguages
 			* [ ] BidirectionalText
 			* [ ] VerticalText

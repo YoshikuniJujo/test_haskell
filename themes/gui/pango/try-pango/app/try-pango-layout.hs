@@ -49,8 +49,8 @@ main = do
 	pangoLayoutSet pl . pangoFontDescriptionToNullable . Just =<< pangoFontDescriptionFreeze pfd
 	print @(Maybe Family) . pangoFontDescriptionGet . fromJust . pangoFontDescriptionFromNullable . pangoLayoutGet =<< pangoLayoutFreeze pl
 
-	pangoLayoutSetWidth pl (200 * pangoScale)
-	pangoLayoutSetEllipsize pl PangoEllipsizeMiddle
+	pangoLayoutSet pl . Width $ 200 * pangoScale
+	pangoLayoutSet pl PangoEllipsizeMiddle
 	pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは世界!"
 	cairoMoveTo cr 100 50
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
@@ -60,10 +60,10 @@ main = do
 	pangoFontDescriptionSet pfd2 $ Family "serif"
 	pangoFontDescriptionSet pfd2 $ Size 15
 	pangoLayoutSet pl2 . pangoFontDescriptionToNullable . Just =<< pangoFontDescriptionFreeze pfd2
-	pangoLayoutSetWidth pl2 (400 * pangoScale)
-	pangoLayoutSetIndent pl2 (30 * pangoScale)
+	pangoLayoutSet pl2 . Width $ 400 * pangoScale
+	pangoLayoutSet pl2 . Indent $ 30 * pangoScale
 --	pangoLayoutSetLineSpacing pl2 2
-	pangoLayoutSetAlignment pl2 PangoAlignCenter
+	pangoLayoutSet pl2 PangoAlignCenter
 	pangoLayoutSet pl2 someText
 	cairoMoveTo cr 100 150
 	fpl2 <- pangoLayoutFreeze pl2
@@ -143,12 +143,12 @@ main = do
 	print =<< pangoLayoutMoveCursorVisually fpl2 True 108 False R
 	print =<< pangoLayoutMoveCursorVisually fpl2 True 109 False R
 	putStrLn "extents"
-	print =<< pangoLayoutGetExtents fpl2
+	print =<< pangoLayoutInfo @Extents fpl2
 	putStrLn "pangoLayoutGetPixelExtents:"
-	print =<< pangoLayoutGetPixelExtents fpl2
-	print =<< pangoLayoutGetPixelSize fpl2
-	print =<< pangoLayoutGetBaseline fpl2
-	print =<< pangoLayoutGetLineCount fpl2
+	print =<< pangoLayoutInfo @PixelExtents fpl2
+	print =<< pangoLayoutInfo @LayoutPixelSize fpl2
+	print =<< pangoLayoutInfo @Baseline fpl2
+	print =<< pangoLayoutInfo @LineCount fpl2
 	print =<< pangoLayoutLineGetExtents . fromJust =<< pangoLayoutGetLine fpl2 2
 	putStrLn "foo"
 	print =<< pangoLayoutLineGetPixelExtents . fromJust =<< pangoLayoutGetLine fpl2 2
@@ -157,17 +157,17 @@ main = do
 	pangoCairoShowLayout cr fpl2
 
 	pl3 <- pangoCairoCreateLayout cr
-	pangoLayoutSetAlignment pl3 PangoAlignCenter
-	pangoLayoutSetTabs pl3 $ tabArrayInt [100, 200, 300, 400, 500, 600]
+	pangoLayoutSet pl3 PangoAlignCenter
+	pangoLayoutSet pl3 $ tabArrayInt [100, 200, 300, 400, 500, 600]
 	pangoLayoutSet @T.Text pl3 "タブの\tテスト\tだよ\tHello,\tworld\t!"
 	cairoMoveTo cr 100 540
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
 	cairoMoveTo cr 100 560
-	pangoLayoutSetTabs pl3 . tabArrayFixed $ [100, 210, 300, 400, 500, 600]
+	pangoLayoutSet pl3 . tabArrayFixed $ [100, 210, 300, 400, 500, 600]
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
-	pangoLayoutSetTabs pl3 $ tabArrayFixed $ [100, 200, 300, 350, 450, 490, 490, 490, 490]
+	pangoLayoutSet pl3 $ tabArrayFixed $ [100, 200, 300, 350, 450, 490, 490, 490, 490]
 	cairoMoveTo cr 100 580
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
@@ -177,21 +177,21 @@ main = do
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
 	cairoMoveTo cr 100 620
---	pangoLayoutSetTabs pl3 $ tabArrayInt [100, 200, 0, 0]
+--	pangoLayoutSet pl3 $ tabArrayInt [100, 200, 0, 0]
 	pangoLayoutSet @T.Text pl3 "a\tb\tc\td\te\tf\tg"
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
 	cairoMoveTo cr 100 640
-	pangoLayoutSetTabs pl3 $ tabArrayInt [100, 200, 300, 400]
+	pangoLayoutSet pl3 $ tabArrayInt [100, 200, 300, 400]
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
 	cairoMoveTo cr 100 660
-	pangoLayoutSetTabs pl3 $ tabArrayInt [100, 200]
+	pangoLayoutSet pl3 $ tabArrayInt [100, 200]
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl3
 
 	pl4 <- pangoCairoCreateLayout cr
 	pangoLayoutSet @T.Text pl4 "try\nsingle\tparagraph\nmode"
-	pangoLayoutSetSingleParagraphMode pl4 True
+	pangoLayoutSet pl4 $ SingleParagraphMode True
 	cairoMoveTo cr 100 675
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl4
 
@@ -202,7 +202,7 @@ main = do
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0 1
 	cairoMoveTo cr 100 700
 	fpl5 <- pangoLayoutFreeze pl5
-	print =<< pangoLayoutGetUnknownGlyphsCount fpl5
+	print =<< pangoLayoutInfo @UnknownGlyphsCount fpl5
 	pangoCairoShowLayout cr fpl5
 
 	pangoLayoutWithIter fpl2 \itr -> do

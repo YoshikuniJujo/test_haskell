@@ -38,7 +38,7 @@ main = getArgs >>= \case
 		print $ pangoFontDescriptionGetAxis @OpticalSize fd'
 
 		pl <- pangoCairoCreateLayout cr
-		pangoLayoutSetFontDescription pl . pangoFontDescriptionToNullable $ Just fd'
+		pangoLayoutSet pl . pangoFontDescriptionToNullable $ Just fd'
 		pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは、世界!"
 		pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 

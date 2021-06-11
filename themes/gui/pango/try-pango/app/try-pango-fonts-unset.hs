@@ -45,7 +45,7 @@ main = getArgs >>= \case
 		print $ pangoFontDescriptionGet @PangoWeight fd'
 		print $ pangoFontDescriptionGet @PangoStretch fd'
 
-		pangoLayoutSetFontDescription pl . pangoFontDescriptionToNullable $ Just fd'
+		pangoLayoutSet pl . pangoFontDescriptionToNullable $ Just fd'
 		pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは、世界!\x1f9a5"
 
 		pangoCairoShowLayout cr =<< pangoLayoutFreeze pl

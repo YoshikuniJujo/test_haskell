@@ -3,7 +3,73 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Basic.LayoutObjects.PangoLayout where
+module Graphics.Pango.Basic.LayoutObjects.PangoLayout (
+	-- * TYPE
+	PangoLayout(..),
+	PangoLayoutPrim(..), PangoLayoutST, PangoLayoutIO, mkPangoLayoutPrim,
+	pangoLayoutFreeze, pangoLayoutThaw, pangoLayoutCopy,
+
+	-- * CLASS
+	-- ** PangoLayoutSetting
+	PangoLayoutSetting, pangoLayoutSet, pangoLayoutGet,
+
+	-- ** PangoLayoutInfo
+	PangoLayoutInfo, pangoLayoutInfo,
+
+	-- * FUNCTION
+	pangoLayoutNew, pangoLayoutContextChanged,
+	pangoLayoutSetMarkup, pangoLayoutSetMarkupWithAccel,
+
+	pangoLayoutIndexToPos,
+	pangoLayoutIndexToLineX,
+	pangoLayoutXyToIndex,
+	pangoLayoutGetCursorPos,
+	pangoLayoutMoveCursorVisually, Dir(..),
+
+	pangoExtentsToPixelsInclusive, pangoExtentsToPixelsNearest,
+
+	-- * SETTING
+
+	Width(..), Height(..),
+
+	PangoWrapMode,
+	pattern PangoWrapWord, pattern PangoWrapChar, pattern PangoWrapWordChar,
+
+	PangoLogAttrs, pangoLogAttrsGetLogAttr, pangoLogAttrsGetSize,
+
+	PangoEllipsizeMode,
+	pattern PangoEllipsizeNone, pattern PangoEllipsizeStart,
+	pattern PangoEllipsizeMiddle, pattern PangoEllipsizeEnd,
+
+	Indent(..), Spacing(..), Justify(..), AutoDir(..),
+
+	PangoAlignment,
+	pattern PangoAlignLeft, pattern PangoAlignCenter,
+	pattern PangoAlignRight,
+
+	SingleParagraphMode(..),
+
+	-- * INFO
+
+	CharacterCount, IsWrapped, IsEllipsized, UnknownGlyphsCount,
+
+	PangoLogAttr(..),
+	pattern PangoLogAttr,
+	pangoLogAttrIsLineBreak, pangoLogAttrIsMandatoryBreak,
+	pangoLogAttrIsCharBreak, pangoLogAttrIsWhite,
+	pangoLogAttrIsCursorPosition,
+	pangoLogAttrIsWordStart, pangoLogAttrIsWordEnd,
+	pangoLogAttrIsSentenceBoundary,
+	pangoLogAttrIsSentenceStart, pangoLogAttrIsSentenceEnd,
+	pangoLogAttrBackspaceDeleteCharacter, pangoLogAttrIsExpandableSpace,
+	pangoLogAttrIsWordBoundary,
+
+	PixelExtents, LayoutSize, LayoutPixelSize, Baseline, LineCount,
+
+	-- * C FFI
+
+	copyCString
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr, addForeignPtrFinalizer)
@@ -50,9 +116,6 @@ foreign import ccall "g_object_unref" c_pango_layout_free ::
 	Ptr PangoLayout -> IO ()
 
 structPrim "PangoLayout" 'c_pango_layout_copy 'c_pango_layout_free [''Show]
-
-mkPangoLayout :: Ptr PangoLayout -> IO PangoLayout
-mkPangoLayout p = PangoLayout_ <$> newForeignPtr p (c_g_object_unref p)
 
 mkPangoLayoutPrim :: Ptr PangoLayout -> IO (PangoLayoutPrim s)
 mkPangoLayoutPrim p = PangoLayoutPrim <$> newForeignPtr p (c_g_object_unref p)
