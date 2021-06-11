@@ -4,28 +4,58 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.TextAttributes.Internal (
-	PangoTextAttrList(..), PangoTextAttrListPrim,
-	pangoTextAttrListNew, pangoTextAttrListCopy,
+	-- * TYPE
+	PangoTextAttrList(..),
+	PangoTextAttrListPrim,
+	pangoTextAttrListNew,
 	pangoTextAttrListFreeze, pangoTextAttrListThaw,
+	pangoTextAttrListCopy,
 
+	-- * PARSE MARKUP
 	pangoParseMarkup, pangoMarkupParserNew, pangoMarkupParserFinish,
+
+	-- * INSERT AN ATTRIBUTE TO PANGO TEXT ATTRIBUTE LIST FOR PRIMITIVE MONAD
 	pangoTextAttrListInsert, pangoTextAttrListInsertBefore,
 	pangoTextAttrListChange,
 
-	PangoAttribute, PangoAttributeValue, pangoAttrNew, pangoAttrFontDescNew,
+	-- * PANGO ATTRIBUTE VALUE
+	-- ** Class
+	PangoAttribute, PangoAttributeValue, pangoAttrNew,
+
+	-- ** Instance
+	-- *** FontDescription
+	pangoAttrFontDescNew,
+
+	-- *** Strikethrough and StrikethroughColor
 	Strikethrough(..), StrikethroughColor(..),
+
+	-- *** PangoUnderline and UnderlineColor
 	PangoUnderline, pattern PangoUnderlineNone,
 	pattern PangoUnderlineSingle, pattern PangoUnderlineDouble,
 	pattern PangoUnderlineLow, pattern PangoUnderlineError,
-	UnderlineColor(..), Shape(..), Scale(..),
-	Rise, pattern Rise, LetterSpacing, pattern LetterSpacing,
+	UnderlineColor(..),
+
+	-- *** Shape
+	Shape(..),
+
+	-- *** Scale
+	Scale(..),
+
+	-- *** Rise
+	Rise, pattern Rise,
+
+	-- *** LetterSpacing
+	LetterSpacing, pattern LetterSpacing,
+
+	-- *** Color and Alpha of Foreground and Background
 	ForegroundColor(..), BackgroundColor(..),
 	ForegroundAlpha(..), BackgroundAlpha(..),
 
+	-- * PANGO COLOR
 	PangoColor(..), pangoColorParse, pangoColorToString,
 
-	PangoAttrList(..), mkPangoAttrList,
-	) where
+	-- * INTERNAL
+	PangoAttrList(..), mkPangoAttrList ) where
 
 import GHC.Stack
 import Foreign.Ptr
