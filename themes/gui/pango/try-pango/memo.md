@@ -255,7 +255,7 @@ todo
 				+ [x] add PangoScript.Enum
 				+ [x] add PangoScript.Internal
 				+ [x] PangoScript
-				+ [ ] remove PangoLanguageType
+				+ [x] remove PangoLanguageType
 				+ [ ] PangoLanguage
 					- [ ] export type `PangoLanguage` and so on
 					- [ ] others
