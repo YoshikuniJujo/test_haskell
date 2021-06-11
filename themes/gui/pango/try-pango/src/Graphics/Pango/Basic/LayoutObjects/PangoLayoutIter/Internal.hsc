@@ -2,9 +2,9 @@
 {-# LANGUAGE RankNTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter (
+module Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter.Internal (
 	-- * TYPE
-	PangoLayoutIter,
+	PangoLayoutIter(..),
 
 	-- * GET ITERATOR
 	pangoLayoutGetIter,
