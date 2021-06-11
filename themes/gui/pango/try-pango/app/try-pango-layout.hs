@@ -60,12 +60,14 @@ main = do
 	pangoFontDescriptionSet pfd2 $ Family "serif"
 	pangoFontDescriptionSet pfd2 $ Size 15
 	pangoLayoutSet pl2 . pangoFontDescriptionToNullable . Just =<< pangoFontDescriptionFreeze pfd2
-	pangoLayoutSet pl2 . Width $ 400 * pangoScale
-	pangoLayoutSet pl2 . Indent $ 30 * pangoScale
+	pangoLayoutSet pl2 $ Width 400
+	pangoLayoutSet pl2 $ Indent 30
 --	pangoLayoutSetLineSpacing pl2 2
 	pangoLayoutSet pl2 PangoAlignCenter
 	pangoLayoutSet pl2 someText
 	cairoMoveTo cr 100 150
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl2
+
 	fpl2 <- pangoLayoutFreeze pl2
 	putStrLn "0, 1, 5, 6"
 	print =<< pangoLayoutIndexToPos fpl2 0
@@ -154,6 +156,7 @@ main = do
 	print =<< pangoLayoutLineGetPixelExtents . fromJust =<< pangoLayoutGetLine fpl2 2
 	putStrLn "bar"
 	print =<< mapM pangoLayoutLineGetPixelExtents =<< pangoLayoutGetLines fpl2
+
 	pangoCairoShowLayout cr fpl2
 
 	pl3 <- pangoCairoCreateLayout cr
@@ -205,7 +208,9 @@ main = do
 	print =<< pangoLayoutInfo @UnknownGlyphsCount fpl5
 	pangoCairoShowLayout cr fpl5
 
-	pangoLayoutWithIter fpl2 \itr -> do
+--	pangoLayoutWithIter fpl2 \itr -> do
+	itr <- pangoLayoutGetIter fpl2
+	do
 		cairoMoveTo cr 100 740
 		pangoCairoShowGlyphItem cr someText . fromJust =<< pangoLayoutIterGetRun itr
 		void $ pangoLayoutIterNextRun itr
@@ -219,7 +224,9 @@ main = do
 		cairoMoveTo cr 300 740
 		pangoCairoShowGlyphItem cr someText . fromJust =<< pangoLayoutIterGetRun itr
 
-	pangoLayoutWithIter fpl2 \itr2 -> do
+--	pangoLayoutWithIter fpl2 \itr2 -> do
+	itr2 <- pangoLayoutGetIter fpl2
+	do
 		print =<< pangoLayoutIterGetIndex itr2
 		void $ pangoLayoutIterNextCluster itr2
 		print =<< pangoLayoutIterGetIndex itr2

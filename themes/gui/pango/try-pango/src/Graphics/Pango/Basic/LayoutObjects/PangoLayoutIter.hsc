@@ -2,7 +2,27 @@
 {-# LANGUAGE RankNTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter where
+module Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter (
+	pangoLayoutGetIter,
+
+	pangoLayoutIterNextRun,
+	pangoLayoutIterNextChar,
+	pangoLayoutIterNextCluster,
+	pangoLayoutIterNextLine,
+
+	pangoLayoutIterGetIndex,
+	pangoLayoutIterGetRun,
+	pangoLayoutIterGetLine,
+	pangoLayoutIterGetRunExtents,
+	pangoLayoutIterGetCharExtents,
+	pangoLayoutIterGetClusterExtents,
+	pangoLayoutIterGetLineExtents,
+	pangoLayoutIterGetLineYrange,
+	pangoLayoutIterGetBaseline,
+
+	pangoLayoutIterAtLastLine,
+	
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
@@ -24,7 +44,10 @@ newtype PangoLayoutIter s = PangoLayoutIter (ForeignPtr (PangoLayoutIter s))
 
 makePangoLayoutIter :: ForeignPtr PangoLayout -> Ptr (PangoLayoutIter s) -> IO (PangoLayoutIter s)
 makePangoLayoutIter fl p =
---	PangoLayoutIter <$> newForeignPtr p (c_pango_layout_iter_free p >> touchForeignPtr fl)
+	PangoLayoutIter <$> newForeignPtr p (c_pango_layout_iter_free p >> touchForeignPtr fl)
+
+makePangoLayoutIterNoGC :: ForeignPtr PangoLayout -> Ptr (PangoLayoutIter s) -> IO (PangoLayoutIter s)
+makePangoLayoutIterNoGC fl p =
 	PangoLayoutIter <$> newForeignPtr p (touchForeignPtr fl)
 
 pangoLayoutIterFree :: PangoLayoutIter s -> IO ()
@@ -33,13 +56,17 @@ pangoLayoutIterFree (PangoLayoutIter fli) = withForeignPtr fli c_pango_layout_it
 foreign import ccall "pango_layout_iter_free" c_pango_layout_iter_free ::
 	Ptr (PangoLayoutIter s) -> IO ()
 
-pangoLayoutWithIter :: PangoLayout -> (forall s . PangoLayoutIter s -> IO a) -> IO a
-pangoLayoutWithIter l f =
-	pangoLayoutGetIter l >>= \li -> f li <* pangoLayoutIterFree li
-
 pangoLayoutGetIter :: PangoLayout -> IO (PangoLayoutIter s)
 pangoLayoutGetIter (PangoLayout_ fl) =
 	makePangoLayoutIter fl =<< withForeignPtr fl c_pango_layout_get_iter
+
+pangoLayoutWithIter :: PangoLayout -> (forall s . PangoLayoutIter s -> IO a) -> IO a
+pangoLayoutWithIter l f =
+	pangoLayoutGetIterNoGC l >>= \li -> f li <* pangoLayoutIterFree li
+
+pangoLayoutGetIterNoGC :: PangoLayout -> IO (PangoLayoutIter s)
+pangoLayoutGetIterNoGC (PangoLayout_ fl) =
+	makePangoLayoutIterNoGC fl =<< withForeignPtr fl c_pango_layout_get_iter
 
 foreign import ccall "pango_layout_get_iter" c_pango_layout_get_iter ::
 	Ptr PangoLayout -> IO (Ptr (PangoLayoutIter s))

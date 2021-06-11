@@ -235,7 +235,13 @@ todo
 					- [x] separate to `Internal`
 					- [x] refactor export list again
 				+ [ ] `Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter`
-					- [ ] add export list
+					- [x] add export list
+					- [x] try to use `pangoLayoutGetIter`
+						* [x] rename `pangoLayoutGetIter` to `pangoLayoutGetIterNoGC`
+						* [x] make `pangoLayoutGetIter`
+						* [x] test in `try-pango-layout`
+					- [ ] remove `pangoLayoutWithIter`
+					- [ ] change `PangoLayoutIter s` to `PangoLayoutIter`
 					- [ ] refactor export list
 				+ [ ] `Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine`
 			* [ ] ScriptsAndLanguages
