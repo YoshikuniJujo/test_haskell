@@ -26,8 +26,6 @@ module Graphics.Pango.Basic.LayoutObjects.PangoLayout (
 	pangoLayoutGetCursorPos,
 	pangoLayoutMoveCursorVisually, Dir(..),
 
-	pangoExtentsToPixelsInclusive, pangoExtentsToPixelsNearest,
-
 	-- * SETTING
 
 	Width(..), Height(..),
@@ -875,16 +873,3 @@ pangoLayoutMoveCursorVisually (PangoLayout_ fpl) str oidx otr dir =
 foreign import ccall "pango_layout_move_cursor_visually" c_pango_layout_move_cursor_visually ::
 	Ptr PangoLayout -> #{type gboolean} -> CInt -> CInt -> CInt ->
 	Ptr CInt -> Ptr CInt -> IO ()
-
-foreign import ccall "pango_extents_to_pixels" c_pango_extents_to_pixels ::
-	Ptr PangoRectangleFixed -> Ptr PangoRectangleFixed -> IO ()
-
-pangoExtentsToPixelsInclusive ::
-	PrimMonad m => PangoRectangleFixedPrim (PrimState m) -> m ()
-pangoExtentsToPixelsInclusive (PangoRectangleFixedPrim fr) = unsafeIOToPrim
-	$ withForeignPtr fr (`c_pango_extents_to_pixels` nullPtr)
-
-pangoExtentsToPixelsNearest ::
-	PrimMonad m => PangoRectangleFixedPrim (PrimState m) -> m ()
-pangoExtentsToPixelsNearest (PangoRectangleFixedPrim fr) = unsafeIOToPrim
-	. withForeignPtr fr $ c_pango_extents_to_pixels nullPtr

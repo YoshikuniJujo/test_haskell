@@ -227,7 +227,7 @@ todo
 			* [ ] LayoutObjects
 				+ [ ] `Graphics.Pango.Basic.LayoutObjects.PangoLayout`
 					- [x] add export list
-					- [ ] move `pangoExtentsToPixelsInclusive` and `...Nearest` to `GlyphStorage`
+					- [x] move `pangoExtentsToPixelsInclusive` and `...Nearest` to `GlyphStorage`
 					- [ ] move `copyCString` to `Foreign.C.String.Foo`
 					- [ ] refactor export list
 					- [ ] separate to `Internal`

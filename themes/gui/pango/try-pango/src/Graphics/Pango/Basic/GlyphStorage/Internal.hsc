@@ -31,6 +31,7 @@ module Graphics.Pango.Basic.GlyphStorage.Internal (
 
 	-- ** Extents and PixelExtents
 	Extents(..), PixelExtents(..),
+	pangoExtentsToPixelsInclusive, pangoExtentsToPixelsNearest,
 
 	-- * PANGO GLYPH ITEM
 	PangoGlyphItem(..), PangoLayoutRun,
@@ -46,6 +47,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.Struct
+import Control.Monad.Primitive
 import Control.Exception
 import Data.Fixed
 import System.IO.Unsafe
@@ -155,3 +157,16 @@ foreign import ccall "pango_glyph_item_copy" c_pango_glyph_item_copy ::
 	Ptr PangoGlyphItem -> IO (Ptr PangoGlyphItem)
 
 type PangoLayoutRun = PangoGlyphItem
+
+pangoExtentsToPixelsInclusive ::
+	PrimMonad m => PangoRectangleFixedPrim (PrimState m) -> m ()
+pangoExtentsToPixelsInclusive (PangoRectangleFixedPrim fr) = unsafeIOToPrim
+	$ withForeignPtr fr (`c_pango_extents_to_pixels` nullPtr)
+
+pangoExtentsToPixelsNearest ::
+	PrimMonad m => PangoRectangleFixedPrim (PrimState m) -> m ()
+pangoExtentsToPixelsNearest (PangoRectangleFixedPrim fr) = unsafeIOToPrim
+	. withForeignPtr fr $ c_pango_extents_to_pixels nullPtr
+
+foreign import ccall "pango_extents_to_pixels" c_pango_extents_to_pixels ::
+	Ptr PangoRectangleFixed -> Ptr PangoRectangleFixed -> IO ()
