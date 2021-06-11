@@ -4,8 +4,9 @@
 module Graphics.Pango.Basic.TextAttributes (
 	-- * PangoTextAttrList and PangoTextAttrListPrim
 	PangoTextAttrList, PangoTextAttrListPrim,
-	pangoTextAttrListNew, pangoTextAttrListCopy,
+	pangoTextAttrListNew,
 	pangoTextAttrListFreeze, pangoTextAttrListThaw,
+	pangoTextAttrListCopy,
 
 	-- * Parse Markup
 	pangoParseMarkup, pangoMarkupParserNew, pangoMarkupParserFinish,
@@ -19,19 +20,51 @@ module Graphics.Pango.Basic.TextAttributes (
 	PangoAttributeValue, PangoAttribute, pangoAttrNew,
 
 	-- ** Instance
+	-- *** FontDescription
+	PangoFontDescriptionPrim,
 	pangoAttrFontDescNew,
-	Strikethrough(..), StrikethroughColor(..),
+
+	-- *** Strikethrough and StrikethroughColor
+	Strikethrough(..),
+	StrikethroughColor(..),
+
+	-- *** PangoUnderline and UnderlineColor
 	PangoUnderline, pattern PangoUnderlineNone,
 	pattern PangoUnderlineSingle, pattern PangoUnderlineDouble,
 	pattern PangoUnderlineLow, pattern PangoUnderlineError,
-	UnderlineColor(..), Shape(..), Scale(..),
-	Rise, pattern Rise, LetterSpacing, pattern LetterSpacing,
+
+	UnderlineColor(..),
+
+	-- *** Shape
+	Shape(..),
+
+	-- *** Scale
+	Scale(..),
+
+	-- *** Rise
+	Rise, pattern Rise,
+
+	-- *** LetterSpacing
+	LetterSpacing, pattern LetterSpacing,
+
+	-- *** Color and Alpha of Foreground and Background
 	ForegroundColor(..), BackgroundColor(..),
 	ForegroundAlpha(..), BackgroundAlpha(..),
-	PangoGravity(..), PangoGravityHint(..),
+
+	-- *** PangoGravity and PangoGravityHint
+	PangoGravity(..),
+	pattern PangoGravitySouth, pattern PangoGravityEast,
+	pattern PangoGravityNorth, pattern PangoGravityWest,
+	pattern PangoGravityAuto,
+
+	PangoGravityHint(..),
+	pattern PangoGravityHintNatural, pattern PangoGravityHintStrong,
+	pattern PangoGravityHintLine,
 
 	-- * PangoColor
 	PangoColor(..), pangoColorParse, pangoColorToString,
 	) where
 
 import Graphics.Pango.Basic.TextAttributes.Internal
+import Graphics.Pango.Basic.Fonts.PangoFontDescription
+import Graphics.Pango.Basic.VerticalText

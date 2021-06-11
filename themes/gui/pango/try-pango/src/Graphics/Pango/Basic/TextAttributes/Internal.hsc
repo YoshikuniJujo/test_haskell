@@ -21,7 +21,6 @@ module Graphics.Pango.Basic.TextAttributes.Internal (
 	Rise, pattern Rise, LetterSpacing, pattern LetterSpacing,
 	ForegroundColor(..), BackgroundColor(..),
 	ForegroundAlpha(..), BackgroundAlpha(..),
-	PangoGravity(..), PangoGravityHint(..),
 
 	PangoColor(..), pangoColorParse, pangoColorToString,
 
