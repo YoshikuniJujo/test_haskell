@@ -231,8 +231,7 @@ todo
 					- [x] move `copyCString` to `Foreign.C.String.Foo`
 					- [x] refactor export list
 					- [x] use `PangoFixed` in `Width` and `Height`
-					- [ ] use `PangoFixed` in `Indent` and `Spacing`
-					- [ ] refactor export list again
+					- [x] use `PangoFixed` in `Indent` and `Spacing`
 					- [ ] separate to `Internal`
 					- [ ] refactor export list again
 				+ [ ] `Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter`

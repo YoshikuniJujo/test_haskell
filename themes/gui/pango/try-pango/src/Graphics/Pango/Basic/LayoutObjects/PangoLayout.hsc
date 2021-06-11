@@ -360,13 +360,11 @@ foreign import ccall "pango_layout_set_ellipsize" c_pango_layout_set_ellipsize :
 foreign import ccall "pango_layout_get_ellipsize" c_pango_layout_get_ellipsize ::
 	Ptr PangoLayout -> IO #{type PangoEllipsizeMode}
 
-newtype Indent = Indent { getIndent :: Double } deriving Show
+newtype Indent = Indent { getIndent :: PangoFixed } deriving Show
 
 instance PangoLayoutSetting Indent where
-	pangoLayoutSet l =
-		pangoLayoutSetIndent l . round . (* #{const PANGO_SCALE}) . getIndent
-	pangoLayoutGet l =
-		Indent . (/ #{const PANGO_SCALE}) . fromIntegral $ pangoLayoutGetIndent l
+	pangoLayoutSet l = pangoLayoutSetIndent l . toCInt . getIndent
+	pangoLayoutGet l = Indent . fromCInt $ pangoLayoutGetIndent l
 
 pangoLayoutSetIndent ::
 	PrimMonad m => PangoLayoutPrim (PrimState m) -> CInt -> m ()
@@ -383,13 +381,11 @@ foreign import ccall "pango_layout_set_indent" c_pango_layout_set_indent ::
 foreign import ccall "pango_layout_get_indent" c_pango_layout_get_indent ::
 	Ptr PangoLayout -> IO CInt
 
-newtype Spacing = Spacing { getSpacing :: Double } deriving Show
+newtype Spacing = Spacing { getSpacing :: PangoFixed } deriving Show
 
 instance PangoLayoutSetting Spacing where
-	pangoLayoutSet l = pangoLayoutSetSpacing l
-		. round . (* #{const PANGO_SCALE}) . getSpacing
-	pangoLayoutGet l = Spacing . (/ #{const PANGO_SCALE})
-		. fromIntegral $ pangoLayoutGetSpacing l
+	pangoLayoutSet l = pangoLayoutSetSpacing l . toCInt . getSpacing
+	pangoLayoutGet l = Spacing . fromCInt $ pangoLayoutGetSpacing l
 
 pangoLayoutSetSpacing ::
 	PrimMonad m => PangoLayoutPrim (PrimState m) -> CInt -> m ()
