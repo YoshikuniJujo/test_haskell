@@ -224,7 +224,7 @@ todo
 					- [x] rename Null of `PangoTabArrayNullable`
 				+ [x] separate `Internal`
 				+ [x] refactor export list
-			* [ ] LayoutObjects
+			* [x] LayoutObjects
 				+ [x] `Graphics.Pango.Basic.LayoutObjects.PangoLayout`
 					- [x] add export list
 					- [x] move `pangoExtentsToPixelsInclusive` and `...Nearest` to `GlyphStorage`
@@ -244,11 +244,11 @@ todo
 					- [x] change `PangoLayoutIter s` to `PangoLayoutIter`
 					- [x] refactor export list
 					- [x] separate to `Internal`
-				+ [ ] `Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine`
+				+ [x] `Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine`
 					- [x] add export list
 					- [x] refactor export list again
-					- [ ] separate to `Internal`
-					- [ ] refactor export list again
+					- [x] separate to `Internal`
+					- [x] refactor export list again
 			* [ ] ScriptsAndLanguages
 			* [ ] BidirectionalText
 			* [ ] VerticalText

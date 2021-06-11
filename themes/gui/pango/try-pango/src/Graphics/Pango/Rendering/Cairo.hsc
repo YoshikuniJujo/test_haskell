@@ -16,7 +16,7 @@ import Data.CairoContext
 import Graphics.Pango.Basic.Rendering.PangoContext.Internal
 import Graphics.Pango.Basic.GlyphStorage.Internal
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout.Internal
-import Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine
+import Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine.Internal
 
 import qualified Data.Text as T
 import qualified Data.Text.Foreign as T

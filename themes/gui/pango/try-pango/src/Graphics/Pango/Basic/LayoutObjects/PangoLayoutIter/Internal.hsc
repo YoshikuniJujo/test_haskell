@@ -37,7 +37,7 @@ import Data.Int
 import System.Glib.Bool
 import Graphics.Pango.Basic.GlyphStorage.Internal
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout.Internal
-import Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine
+import Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine.Internal
 
 #include <pango/pango.h>
 
