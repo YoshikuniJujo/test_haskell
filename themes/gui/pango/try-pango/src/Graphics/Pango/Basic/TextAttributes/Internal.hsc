@@ -86,7 +86,7 @@ import qualified Data.Text.Foreign as T
 import Graphics.Pango.Basic.GlyphStorage.Internal
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
-import Graphics.Pango.Basic.ScriptsAndLanguages.Types
+import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguageType
 import Graphics.Pango.Basic.VerticalText
 
 #include <pango/pango.h>

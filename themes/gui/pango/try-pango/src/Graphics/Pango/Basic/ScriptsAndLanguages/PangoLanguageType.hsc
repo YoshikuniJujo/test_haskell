@@ -2,7 +2,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Basic.ScriptsAndLanguages.Types (
+module Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguageType (
 	PangoLanguage(..), pattern PangoLanguage, getPangoLanguage, pangoLanguageFromString,
 	) where
 

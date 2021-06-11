@@ -19,7 +19,7 @@ import Data.Int
 import Data.Char
 import System.IO.Unsafe
 
-import Graphics.Pango.Basic.ScriptsAndLanguages.Types
+import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguageType
 
 import qualified Data.Text as T
 import qualified Data.Text.Foreign as T

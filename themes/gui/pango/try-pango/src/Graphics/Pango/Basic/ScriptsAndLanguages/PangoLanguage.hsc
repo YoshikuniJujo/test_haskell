@@ -13,7 +13,7 @@ import Data.Text.CString
 import System.IO.Unsafe
 
 import Graphics.Pango.Basic.ScriptsAndLanguages.PangoScript
-import Graphics.Pango.Basic.ScriptsAndLanguages.Types
+import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguageType
 
 import qualified Data.Text as T
 

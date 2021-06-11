@@ -250,6 +250,12 @@ todo
 					- [x] separate to `Internal`
 					- [x] refactor export list again
 			* [ ] ScriptsAndLanguages
+				+ [ ] PangoLanguageType
+					- [ ] move `getPangoLanguage` to module `...PangoLanguage`
+					- [ ] move `pangoLanguageFromString` to module `...PangoLanguage`
+					- [ ] others
+				+ [ ] PangoScript
+				+ [ ] PangoLanguage
 			* [ ] BidirectionalText
 			* [ ] VerticalText
 		- [ ] Rendering.Cairo

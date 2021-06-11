@@ -7,7 +7,7 @@ module Main where
 import System.Environment
 import Graphics.Pango.Basic.ScriptsAndLanguages.PangoScript
 import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage
-import Graphics.Pango.Basic.ScriptsAndLanguages.Types
+import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguageType
 
 main :: IO ()
 main = do
