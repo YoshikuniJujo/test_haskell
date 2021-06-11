@@ -234,7 +234,7 @@ todo
 					- [x] use `PangoFixed` in `Indent` and `Spacing`
 					- [x] separate to `Internal`
 					- [x] refactor export list again
-				+ [x] `Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter`
+				+ [ ] `Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter`
 					- [x] add export list
 					- [x] try to use `pangoLayoutGetIter`
 						* [x] rename `pangoLayoutGetIter` to `pangoLayoutGetIterNoGC`
@@ -243,9 +243,12 @@ todo
 					- [x] remove `pangoLayoutWithIter`
 					- [x] change `PangoLayoutIter s` to `PangoLayoutIter`
 					- [x] refactor export list
+					- [ ] separate to `Internal`
 				+ [ ] `Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine`
-					- [ ] add export list
-					- [ ] refactor export list
+					- [x] add export list
+					- [x] refactor export list again
+					- [ ] separate to `Internal`
+					- [ ] refactor export list again
 			* [ ] ScriptsAndLanguages
 			* [ ] BidirectionalText
 			* [ ] VerticalText

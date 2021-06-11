@@ -1,7 +1,18 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine where
+module Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine (
+
+	-- * TYPE
+	PangoLayoutLine(..),
+
+	-- * GET LINE
+	pangoLayoutGetLine, pangoLayoutGetLines,
+
+	-- * GET FROM LINE
+	pangoLayoutLineGetExtents, pangoLayoutLineGetPixelExtents,
+	pangoLayoutLineIndexToX, pangoLayoutLineXToIndex,
+	pangoLayoutLineGetXRanges ) where
 
 import Foreign.Ptr
 import Foreign.Ptr.Misc
@@ -36,12 +47,6 @@ makePangoLayoutLineMaybe fl = \case
 	NullPtr -> pure Nothing
 	p -> Just . PangoLayoutLine
 		<$> newForeignPtr p (touchForeignPtr fl)
-
-makePangoLayoutLine0 :: Ptr PangoLayoutLine -> IO PangoLayoutLine
-makePangoLayoutLine0 p = PangoLayoutLine <$> newForeignPtr p (pure ())
-
-foreign import ccall "pango_layout_line_unref" c_pango_layout_line_unref ::
-	Ptr PangoLayoutLine -> IO ()
 
 pangoLayoutGetLines :: PangoLayout -> IO [PangoLayoutLine]
 pangoLayoutGetLines (PangoLayout_ fl) = withForeignPtr fl \pl ->
