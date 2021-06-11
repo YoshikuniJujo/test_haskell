@@ -252,7 +252,10 @@ todo
 			* [ ] ScriptsAndLanguages
 				+ [x] PangoLanguageType
 					- [x] remove `pangoLanguageFromString` from export list
-				+ [ ] PangoScript
+				+ [x] add PangoScript.Enum
+				+ [x] add PangoScript.Internal
+				+ [x] PangoScript
+				+ [ ] remove PangoLanguageType
 				+ [ ] PangoLanguage
 					- [ ] export type `PangoLanguage` and so on
 					- [ ] others

@@ -15,7 +15,7 @@ import Data.Int
 import Data.Angle
 import System.IO.Unsafe
 import Graphics.Pango.Basic.GlyphStorage.PangoMatrix.Internal
-import Graphics.Pango.Basic.ScriptsAndLanguages.PangoScript
+import Graphics.Pango.Basic.ScriptsAndLanguages.PangoScript.Enum
 
 #include <pango/pango.h>
 
