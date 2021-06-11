@@ -103,12 +103,6 @@ pangoFontDescriptionSetVariationsMap (PangoFontDescriptionPrim ffd) v = unsafeIO
 	$ withForeignPtr ffd \pfd -> BS.useAsCString (showVariations v) \cv ->
 		c_pango_font_description_set_variations pfd cv
 
-pangoFontDescriptionSetVariation :: PrimMonad m =>
-	PangoFontDescriptionPrim (PrimState m) -> String -> m ()
-pangoFontDescriptionSetVariation (PangoFontDescriptionPrim fpfd) f = unsafeIOToPrim
-	$ withForeignPtr fpfd \pfd -> withCString f \cf ->
-		c_pango_font_description_set_variations pfd cf
-
 foreign import ccall "pango_font_description_set_variations"
 	c_pango_font_description_set_variations ::
 	Ptr PangoFontDescription -> CString -> IO ()

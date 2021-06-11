@@ -682,9 +682,14 @@ src
 │       │   │   │   └── Variations.hs
 │       │   │   └── PangoFontDescription.hsc
 │       │   ├── GlyphStorage
-│       │   │   └── PangoMatrix.hsc
+│       │   │   ├── Internal.hsc
+│       │   │   ├── PangoMatrix
+│       │   │   │   └── Internal.hsc
+│       │   │   └── PangoMatrix.hs
 │       │   ├── GlyphStorage.hsc
 │       │   ├── LayoutObjects
+│       │   │   ├── PangoLayout
+│       │   │   │   └── Internal.hsc
 │       │   │   ├── PangoLayout.hsc
 │       │   │   ├── PangoLayoutIter.hsc
 │       │   │   └── PangoLayoutLine.hsc
@@ -696,7 +701,9 @@ src
 │       │   │   ├── PangoLanguage.hsc
 │       │   │   ├── PangoScript.hsc
 │       │   │   └── Types.hsc
-│       │   ├── TabStops.hsc
+│       │   ├── TabStops
+│       │   │   └── Internal.hsc
+│       │   ├── TabStops.hs
 │       │   ├── TextAttributes
 │       │   │   └── Internal.hsc
 │       │   ├── TextAttributes.hs
@@ -714,5 +721,5 @@ src
         ├── SimpleXmlSubsetParser.hsc
         └── SinglyLinkedLists.hsc
 
-22 directories, 32 files
+25 directories, 36 files
 ```
