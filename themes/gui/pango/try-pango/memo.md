@@ -257,8 +257,10 @@ todo
 				+ [x] PangoScript
 				+ [x] remove PangoLanguageType
 				+ [ ] PangoLanguage
-					- [ ] export type `PangoLanguage` and so on
-					- [ ] others
+					- [x] add export list
+					- [ ] refactor export list
+					- [ ] separate to Internal
+					- [ ] refactor export list again
 			* [ ] BidirectionalText
 			* [ ] VerticalText
 		- [ ] Rendering.Cairo

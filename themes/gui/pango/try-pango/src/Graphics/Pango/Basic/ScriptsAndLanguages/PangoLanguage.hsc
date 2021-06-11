@@ -2,7 +2,11 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage where
+module Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage (
+	PangoLanguage(..), pattern PangoLanguage, getPangoLanguage,
+	pangoLanguageMatches, pangoLanguageIncludesScript,
+	pangoLanguageGetScripts, pangoLanguageGetDefault,
+	pangoLanguageGetSampleString ) where
 
 import Foreign.Ptr
 import Foreign.Marshal
