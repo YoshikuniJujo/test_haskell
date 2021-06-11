@@ -240,8 +240,8 @@ todo
 						* [x] rename `pangoLayoutGetIter` to `pangoLayoutGetIterNoGC`
 						* [x] make `pangoLayoutGetIter`
 						* [x] test in `try-pango-layout`
-					- [ ] remove `pangoLayoutWithIter`
-					- [ ] change `PangoLayoutIter s` to `PangoLayoutIter`
+					- [x] remove `pangoLayoutWithIter`
+					- [x] change `PangoLayoutIter s` to `PangoLayoutIter`
 					- [ ] refactor export list
 				+ [ ] `Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine`
 			* [ ] ScriptsAndLanguages
