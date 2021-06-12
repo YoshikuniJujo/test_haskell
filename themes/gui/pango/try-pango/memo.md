@@ -259,7 +259,7 @@ todo
 				+ [ ] PangoLanguage
 					- [x] add export list
 					- [x] refactor export list
-					- [ ] separate to Internal
+					- [x] separate to Internal
 					- [ ] refactor export list again
 			* [ ] BidirectionalText
 			* [ ] VerticalText
