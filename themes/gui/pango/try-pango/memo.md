@@ -249,18 +249,18 @@ todo
 					- [x] refactor export list again
 					- [x] separate to `Internal`
 					- [x] refactor export list again
-			* [ ] ScriptsAndLanguages
+			* [x] ScriptsAndLanguages
 				+ [x] PangoLanguageType
 					- [x] remove `pangoLanguageFromString` from export list
 				+ [x] add PangoScript.Enum
 				+ [x] add PangoScript.Internal
 				+ [x] PangoScript
 				+ [x] remove PangoLanguageType
-				+ [ ] PangoLanguage
+				+ [x] PangoLanguage
 					- [x] add export list
 					- [x] refactor export list
 					- [x] separate to Internal
-					- [ ] refactor export list again
+					- [x] refactor export list again
 			* [ ] BidirectionalText
 			* [ ] VerticalText
 		- [ ] Rendering.Cairo

@@ -23,7 +23,7 @@ import Data.Int
 import Data.Char
 import System.IO.Unsafe
 
-import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage
+import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage.Internal
 import Graphics.Pango.Basic.ScriptsAndLanguages.PangoScript.Enum
 
 import qualified Data.Text as T

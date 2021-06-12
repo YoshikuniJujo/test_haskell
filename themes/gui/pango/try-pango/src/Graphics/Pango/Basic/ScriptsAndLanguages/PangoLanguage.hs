@@ -3,7 +3,7 @@
 
 module Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage (
 	-- * TYPE
-	PangoLanguage(..), pattern PangoLanguage, getPangoLanguage,
+	PangoLanguage, pattern PangoLanguage, getPangoLanguage,
 
 	-- * FUNCTION
 	pangoLanguageMatches, pangoLanguageIncludesScript,
