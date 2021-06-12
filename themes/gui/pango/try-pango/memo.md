@@ -258,7 +258,7 @@ todo
 				+ [x] remove PangoLanguageType
 				+ [ ] PangoLanguage
 					- [x] add export list
-					- [ ] refactor export list
+					- [x] refactor export list
 					- [ ] separate to Internal
 					- [ ] refactor export list again
 			* [ ] BidirectionalText
