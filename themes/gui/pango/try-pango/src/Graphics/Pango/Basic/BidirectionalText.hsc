@@ -3,7 +3,8 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Basic.BidirectionalText where
+module Graphics.Pango.Basic.BidirectionalText (
+	pangoUnicharDirection, pangoFindBaseDir, pangoBidiTypeForUnichar ) where
 
 import Foreign.C.Types
 import Foreign.C.String

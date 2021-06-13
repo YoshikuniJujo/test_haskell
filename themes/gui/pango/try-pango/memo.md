@@ -262,6 +262,8 @@ todo
 					- [x] separate to Internal
 					- [x] refactor export list again
 			* [ ] BidirectionalText
+				+ [x] add export list
+				+ [ ] refactor export list
 			* [ ] VerticalText
 		- [ ] Rendering.Cairo
 * [ ] check `pangoTabArrayGetTab` what happen if index is out of bounds
