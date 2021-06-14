@@ -276,7 +276,8 @@ todo
 * [x] rename `...PangoLayout.hsc` to `...PangoLayout.hs`
 * [x] move TabStops to LowLevel...
 * [x] move PangoContext to LowLevel...
-* [ ] check `pangoTabArrayGetTab` what happen if index is out of bounds
+* [x] check `pangoTabArrayGetTab` what happen if index is out of bounds
+* [x] use `Maybe` in `pangoTabArrayGetTab`
 * [ ] check `pangoLayoutGetBaseline`
 * [ ] think about package name
 	+ simple-cairo-pango ?

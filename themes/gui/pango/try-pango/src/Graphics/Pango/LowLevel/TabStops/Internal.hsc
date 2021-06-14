@@ -172,16 +172,19 @@ foreign import ccall "pango_tab_array_resize" c_pango_tab_array_resize ::
 enum "PangoTabAlign" ''#{type PangoTabAlign} [''Show] [
 	("PangoTabLeft", #{const PANGO_TAB_LEFT}) ]
 
-pangoTabArrayGetTab :: PangoTabArray -> CInt -> Either Double CInt
+pangoTabArrayGetTab :: PangoTabArray -> CInt -> Maybe (Either Double CInt)
 pangoTabArrayGetTab (PangoTabArray fta) idx = unsafePerformIO
 	$ withForeignPtr fta \pta -> alloca \loc -> do
 		px <- c_pango_tab_array_get_positions_in_pixels pta
-		c_pango_tab_array_get_tab pta idx nullPtr loc
-		(<$> peek loc) case px of
-			#{const FALSE} ->
-				Left . (/ #{const PANGO_SCALE}) . fromIntegral
-			#{const TRUE} -> Right
-			_ -> error "never occur"
+		sz <- c_pango_tab_array_get_size pta
+		if 0 <= idx && idx < sz then Just <$> do
+			c_pango_tab_array_get_tab pta idx nullPtr loc
+			(<$> peek loc) case px of
+				#{const FALSE} ->
+					Left . (/ #{const PANGO_SCALE}) . fromIntegral
+				#{const TRUE} -> Right
+				_ -> error "never occur"
+		else pure Nothing
 
 foreign import ccall "pango_tab_array_get_tab" c_pango_tab_array_get_tab ::
 	Ptr PangoTabArray -> CInt -> Ptr #{type PangoTabAlign} -> Ptr CInt -> IO ()

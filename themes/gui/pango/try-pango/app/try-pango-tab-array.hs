@@ -25,6 +25,10 @@ main = do
 	pangoTabArrayFixedSetTab taf 5 250
 	taf' <- pangoTabArrayFixedFreeze taf
 	print $ pangoTabArrayGetTabs taf'
+	print $ pangoTabArrayGetTab taf' 0
+	print $ pangoTabArrayGetTab taf' 7
+	print $ pangoTabArrayGetTab taf' (- 1)
+	print $ pangoTabArrayGetTab taf' 8
 
 	tai <- pangoTabArrayIntNew
 	pangoTabArrayIntSetTab tai 10 100
