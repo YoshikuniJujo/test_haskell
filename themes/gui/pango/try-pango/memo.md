@@ -273,7 +273,7 @@ todo
 			* [x] refactor export list
 * [x] remove enum `PangoGravity` and `PangoGravityHint` from export list of `TextAttributes`
 * [x] add function for version 1.48.5
-* [ ] rename `...PangoLayout.hsc` to `...PangoLayout.hs`
+* [x] rename `...PangoLayout.hsc` to `...PangoLayout.hs`
 * [ ] move TabStops to LowLevel...
 * [ ] check `pangoTabArrayGetTab` what happen if index is out of bounds
 * [ ] check `pangoLayoutGetBaseline`
