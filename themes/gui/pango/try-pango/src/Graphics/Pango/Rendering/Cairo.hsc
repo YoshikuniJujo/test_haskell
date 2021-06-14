@@ -2,14 +2,19 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Rendering.Cairo (
+	-- * CREATE
 	pangoCairoCreateContext,
 	pangoCairoUpdateContext,
 	pangoCairoCreateLayout,
 	pangoCairoUpdateLayout,
+
+	-- * SHOW
 	pangoCairoShowLayout,
 	pangoCairoShowErrorUnderline,
 	pangoCairoShowGlyphItem,
 	pangoCairoShowLayoutLine,
+
+	-- * PATH
 	pangoCairoLayoutLinePath,
 	pangoCairoLayoutPath,
 	pangoCairoErrorUnderlinePath ) where

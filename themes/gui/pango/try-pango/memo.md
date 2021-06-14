@@ -148,7 +148,7 @@ todo
 	+ [ ] `Graphics.Pango`
 * [x] use `c-enum` in `System.Glib.SinglyLInkedList`
 * [x] repair try-pango-layout: segmentation fault
-* [ ] make export list
+* [x] make export list
 	+ [x] `Foreign.Ptr.Misc`
 	+ [x] `Foreign.C.String`
 		- [x] `ForeignCStringLen`
@@ -164,7 +164,7 @@ todo
 		- [x] `Quarks`
 			* [x] itself
 			* [x] `Internal`
-	+ [ ] `Graphics.Pango`
+	+ [x] `Graphics.Pango`
 		- [x] Basic
 			* [x] Rendering
 				+ [x] move to `Graphics.Pango.Basic.Rendering.PangoContext`
@@ -268,9 +268,9 @@ todo
 				+ [x] add export list
 				+ [x] refactor export list
 				+ [x] check export list
-		- [ ] Rendering.Cairo
+		- [x] Rendering.Cairo
 			* [x] add export list
-			* [ ] refactor export list
+			* [x] refactor export list
 * [ ] remove enum `PangoGravity` and `PangoGravityHInt` from export list of `TextAttributes`
 * [ ] add function for version 1.48.5
 * [ ] move TabStops to LowLevel...
