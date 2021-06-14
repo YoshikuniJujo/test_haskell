@@ -51,20 +51,9 @@ module Graphics.Pango.Basic.TextAttributes (
 	ForegroundColor(..), BackgroundColor(..),
 	ForegroundAlpha(..), BackgroundAlpha(..),
 
-	-- *** PangoGravity and PangoGravityHint
-	PangoGravity(..),
-	pattern PangoGravitySouth, pattern PangoGravityEast,
-	pattern PangoGravityNorth, pattern PangoGravityWest,
-	pattern PangoGravityAuto,
-
-	PangoGravityHint(..),
-	pattern PangoGravityHintNatural, pattern PangoGravityHintStrong,
-	pattern PangoGravityHintLine,
-
 	-- * PANGO COLOR
 	PangoColor(..), pangoColorParse, pangoColorToString,
 	) where
 
 import Graphics.Pango.Basic.TextAttributes.Internal
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
-import Graphics.Pango.Basic.VerticalText

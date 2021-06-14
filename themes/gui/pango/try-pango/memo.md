@@ -271,7 +271,7 @@ todo
 		- [x] Rendering.Cairo
 			* [x] add export list
 			* [x] refactor export list
-* [ ] remove enum `PangoGravity` and `PangoGravityHInt` from export list of `TextAttributes`
+* [x] remove enum `PangoGravity` and `PangoGravityHInt` from export list of `TextAttributes`
 * [ ] add function for version 1.48.5
 * [ ] move TabStops to LowLevel...
 * [ ] check `pangoTabArrayGetTab` what happen if index is out of bounds
