@@ -766,10 +766,10 @@ pangoLayoutGetPixelSize (PangoLayout_ fpl) =
 foreign import ccall "pango_layout_get_pixel_size" c_pango_layout_get_pixel_size ::
 	Ptr PangoLayout -> Ptr CInt -> Ptr CInt -> IO ()
 
-newtype Baseline = Baseline CInt deriving Show
+newtype Baseline = Baseline PangoFixed deriving Show
 
 instance PangoLayoutInfo Baseline where
-	pangoLayoutInfo = (Baseline <$>) . pangoLayoutGetBaseline
+	pangoLayoutInfo = (Baseline . fromCInt <$>) . pangoLayoutGetBaseline
 
 pangoLayoutGetBaseline :: PangoLayout -> IO CInt
 pangoLayoutGetBaseline (PangoLayout_ fpl) =

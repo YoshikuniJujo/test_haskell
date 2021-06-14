@@ -149,6 +149,7 @@ main = do
 	putStrLn "pangoLayoutGetPixelExtents:"
 	print =<< pangoLayoutInfo @PixelExtents fpl2
 	print =<< pangoLayoutInfo @LayoutPixelSize fpl2
+	putStrLn "pangoLayoutInfo @Baseline"
 	print =<< pangoLayoutInfo @Baseline fpl2
 	print =<< pangoLayoutInfo @LineCount fpl2
 	print =<< pangoLayoutLineGetExtents . fromJust =<< pangoLayoutGetLine fpl2 2

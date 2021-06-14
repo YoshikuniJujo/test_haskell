@@ -278,7 +278,8 @@ todo
 * [x] move PangoContext to LowLevel...
 * [x] check `pangoTabArrayGetTab` what happen if index is out of bounds
 * [x] use `Maybe` in `pangoTabArrayGetTab`
-* [ ] check `pangoLayoutGetBaseline`
+* [x] check `pangoLayoutGetBaseline`
+* [x] use `PangoFixed` in `pangoLayoutGetBaseline`
 * [ ] think about package name
 	+ simple-cairo-pango ?
 * [ ] consider to remove `deriving Show` of many types
