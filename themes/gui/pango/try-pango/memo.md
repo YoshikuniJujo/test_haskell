@@ -165,7 +165,7 @@ todo
 			* [x] itself
 			* [x] `Internal`
 	+ [ ] `Graphics.Pango`
-		- [ ] Basic
+		- [x] Basic
 			* [x] Rendering
 				+ [x] move to `Graphics.Pango.Basic.Rendering.PangoContext`
 				+ [x] make export list
@@ -264,12 +264,14 @@ todo
 			* [x] BidirectionalText
 				+ [x] add export list
 				+ [x] refactor export list
-			* [ ] VerticalText
+			* [x] VerticalText
 				+ [x] add export list
 				+ [x] refactor export list
-				+ [ ] separate to Internal
-				+ [ ] refactor export list again
+				+ [x] check export list
 		- [ ] Rendering.Cairo
+			* [x] add export list
+			* [ ] refactor export list
+* [ ] remove enum `PangoGravity` and `PangoGravityHInt` from export list of `TextAttributes`
 * [ ] add function for version 1.48.5
 * [ ] move TabStops to LowLevel...
 * [ ] check `pangoTabArrayGetTab` what happen if index is out of bounds

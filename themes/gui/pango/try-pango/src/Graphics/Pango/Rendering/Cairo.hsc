@@ -1,7 +1,18 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Rendering.Cairo where
+module Graphics.Pango.Rendering.Cairo (
+	pangoCairoCreateContext,
+	pangoCairoUpdateContext,
+	pangoCairoCreateLayout,
+	pangoCairoUpdateLayout,
+	pangoCairoShowLayout,
+	pangoCairoShowErrorUnderline,
+	pangoCairoShowGlyphItem,
+	pangoCairoShowLayoutLine,
+	pangoCairoLayoutLinePath,
+	pangoCairoLayoutPath,
+	pangoCairoErrorUnderlinePath ) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (addForeignPtrFinalizer)
