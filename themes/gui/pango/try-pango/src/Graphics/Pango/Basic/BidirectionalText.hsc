@@ -21,9 +21,9 @@ module Graphics.Pango.Basic.BidirectionalText (
 	pattern PangoBidiTypeEn, pattern PangoBidiTypeEs,
 	pattern PangoBidiTypeEt, pattern PangoBidiTypeAn,
 	pattern PangoBidiTypeCs, pattern PangoBidiTypeNsm,
-	pattern PangoBidiTypeBn, pattern PangoBidiTypeBn,
-	pattern PangoBidiTypeB, pattern PangoBidiTypeS,
-	pattern PangoBidiTypeWs, pattern PangoBidiTypeOn,
+	pattern PangoBidiTypeBn, pattern PangoBidiTypeB,
+	pattern PangoBidiTypeS, pattern PangoBidiTypeWs,
+	pattern PangoBidiTypeOn,
 
 	-- * FUNCTION
 	pangoUnicharDirection, pangoFindBaseDir, pangoBidiTypeForUnichar ) where

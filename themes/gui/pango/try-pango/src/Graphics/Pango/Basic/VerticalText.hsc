@@ -3,7 +3,28 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Basic.VerticalText where
+module Graphics.Pango.Basic.VerticalText (
+	-- * ENUM
+	-- ** PangoGravity
+	PangoGravity(..),
+	pattern PangoGravitySouth,
+	pattern PangoGravityEast,
+	pattern PangoGravityNorth,
+	pattern PangoGravityWest,
+	pattern PangoGravityAuto,
+
+	-- ** PangoGravityHint
+	PangoGravityHint(..),
+	pattern PangoGravityHintNatural,
+	pattern PangoGravityHintStrong,
+	pattern PangoGravityHintLine,
+
+	-- * FUNCTION
+	pangoGravityGetForMatrix,
+	pangoGravityGetForScript,
+	pangoGravityGetForScriptAndWidth,
+	pangoGravityToRotation
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr

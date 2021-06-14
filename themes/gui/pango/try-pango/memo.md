@@ -265,8 +265,13 @@ todo
 				+ [x] add export list
 				+ [x] refactor export list
 			* [ ] VerticalText
+				+ [x] add export list
+				+ [x] refactor export list
+				+ [ ] separate to Internal
+				+ [ ] refactor export list again
 		- [ ] Rendering.Cairo
 * [ ] add function for version 1.48.5
+* [ ] move TabStops to LowLevel...
 * [ ] check `pangoTabArrayGetTab` what happen if index is out of bounds
 * [ ] check `pangoLayoutGetBaseline`
 * [ ] think about package name
