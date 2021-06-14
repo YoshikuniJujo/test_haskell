@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Basic.TabStops (
+module Graphics.Pango.LowLevel.TabStops (
 	-- * PANGO TAB ARRAY
 	PangoTabArray, pangoTabArrayThaw,
 	pangoTabArrayGetTab, pangoTabArrayGetTabs,
@@ -18,4 +18,4 @@ module Graphics.Pango.Basic.TabStops (
 	pangoTabArrayIntNew, pangoTabArrayIntSetTab,
 	) where
 
-import Graphics.Pango.Basic.TabStops.Internal
+import Graphics.Pango.LowLevel.TabStops.Internal

@@ -25,8 +25,8 @@ import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Basic.LayoutObjects.PangoLayoutIter
 import Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine
-import Graphics.Pango.Basic.TabStops
 import Graphics.Pango.Rendering.Cairo
+import Graphics.Pango.LowLevel.TabStops
 
 import Data.Color
 import Data.CairoImage

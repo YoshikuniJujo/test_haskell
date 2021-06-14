@@ -102,7 +102,7 @@ import Graphics.Pango.Basic.Rendering.PangoContext.Internal
 import Graphics.Pango.Basic.GlyphStorage.Internal
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Type
 import Graphics.Pango.Basic.TextAttributes.Internal
-import Graphics.Pango.Basic.TabStops.Internal
+import Graphics.Pango.LowLevel.TabStops.Internal
 
 import qualified Data.Text as T
 import qualified Data.Text.Foreign as T

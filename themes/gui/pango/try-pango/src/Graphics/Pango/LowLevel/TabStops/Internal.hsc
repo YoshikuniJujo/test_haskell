@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Basic.TabStops.Internal (
+module Graphics.Pango.LowLevel.TabStops.Internal (
 	-- * PANGO TAB ARRAY
 	PangoTabArray(..), makePangoTabArray, pangoTabArrayThaw,
 	pangoTabArrayGetTab, pangoTabArrayGetTabs,
