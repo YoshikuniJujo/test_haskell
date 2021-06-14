@@ -261,11 +261,12 @@ todo
 					- [x] refactor export list
 					- [x] separate to Internal
 					- [x] refactor export list again
-			* [ ] BidirectionalText
+			* [x] BidirectionalText
 				+ [x] add export list
-				+ [ ] refactor export list
+				+ [x] refactor export list
 			* [ ] VerticalText
 		- [ ] Rendering.Cairo
+* [ ] add function for version 1.48.5
 * [ ] check `pangoTabArrayGetTab` what happen if index is out of bounds
 * [ ] check `pangoLayoutGetBaseline`
 * [ ] think about package name

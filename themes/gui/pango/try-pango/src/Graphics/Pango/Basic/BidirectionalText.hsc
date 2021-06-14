@@ -4,6 +4,28 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Pango.Basic.BidirectionalText (
+	-- * ENUM
+	-- ** PangoDirection
+	PangoDirection,
+	pattern PangoDirectionLtr, pattern PangoDirectionRtl,
+	pattern PangoDirectionTtbLtr, pattern PangoDirectionTtbRtl,
+	pattern PangoDirectionWeakLtr, pattern PangoDirectionWeakRtl,
+	pattern PangoDirectionNeutral,
+
+	-- ** PangoBidiType
+	PangoBidiType,
+	pattern PangoBidiTypeL, pattern PangoBidiTypeLre,
+	pattern PangoBidiTypeLro, pattern PangoBidiTypeR,
+	pattern PangoBidiTypeAl, pattern PangoBidiTypeRle,
+	pattern PangoBidiTypeRlo, pattern PangoBidiTypePdf,
+	pattern PangoBidiTypeEn, pattern PangoBidiTypeEs,
+	pattern PangoBidiTypeEt, pattern PangoBidiTypeAn,
+	pattern PangoBidiTypeCs, pattern PangoBidiTypeNsm,
+	pattern PangoBidiTypeBn, pattern PangoBidiTypeBn,
+	pattern PangoBidiTypeB, pattern PangoBidiTypeS,
+	pattern PangoBidiTypeWs, pattern PangoBidiTypeOn,
+
+	-- * FUNCTION
 	pangoUnicharDirection, pangoFindBaseDir, pangoBidiTypeForUnichar ) where
 
 import Foreign.C.Types
