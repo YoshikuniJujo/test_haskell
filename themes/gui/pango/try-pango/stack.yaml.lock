@@ -12,6 +12,17 @@ packages:
   original:
     hackage: union-angle-0.1.0.1
 - completed:
+    name: simple-pango
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/simple-pango
+    pantry-tree:
+      size: 4187
+      sha256: 77a5507e2a0e731405102145ea64b3c4927b840ab90bfc8ac338d4bfed09720e
+    commit: c714c6edc872da06207e01cd7d5ef4428b54534e
+  original:
+    git: https://github.com/YoshikuniJujo/simple-pango
+    commit: c714c6edc872da06207e01cd7d5ef4428b54534e
+- completed:
     name: simple-cairo
     version: 0.1.0.0
     git: https://github.com/YoshikuniJujo/simple-cairo

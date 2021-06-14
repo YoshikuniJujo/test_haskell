@@ -22,19 +22,15 @@ description:         Please see the README on GitHub at <https://github.com/gith
 dependencies:
 - base >= 4.7 && < 5
 - template-haskell
-- containers
-- array
-- bytestring
-- text
 - primitive
-- simple-cairo
-- cairo-image
-- JuicyCairo
+- text
 - JuicyPixels
+- JuicyCairo
 - nowdoc
-- c-enum
-- c-struct
 - union-angle
+- cairo-image
+- simple-cairo
+- simple-pango
 
 library:
   source-dirs: src

@@ -41,6 +41,8 @@ packages:
 #
 extra-deps:
 - union-angle-0.1.0.1
+- git: https://github.com/YoshikuniJujo/simple-pango
+  commit: c714c6edc872da06207e01cd7d5ef4428b54534e
 - git: https://github.com/YoshikuniJujo/simple-cairo
   commit: 09819dfc2bc0ad92eba2a9d693abd8407fdc5e94
 - git: https://github.com/YoshikuniJujo/cairo-image
