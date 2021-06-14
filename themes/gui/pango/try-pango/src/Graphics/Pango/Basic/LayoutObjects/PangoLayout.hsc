@@ -38,8 +38,8 @@ module Graphics.Pango.Basic.LayoutObjects.PangoLayout (
 	pattern PangoEllipsizeNone, pattern PangoEllipsizeStart,
 	pattern PangoEllipsizeMiddle, pattern PangoEllipsizeEnd,
 
-	-- ** Indent, Spacint, Justify and AutoDir
-	Indent(..), Spacing(..), Justify(..), AutoDir(..),
+	-- ** Indent, Spacing, LineSpacing, Justify and AutoDir
+	Indent(..), Spacing(..), LineSpacing(..), Justify(..), AutoDir(..),
 
 	-- ** PangoAlignment
 	PangoAlignment(..),

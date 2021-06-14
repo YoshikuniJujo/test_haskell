@@ -40,8 +40,8 @@ module Graphics.Pango.Basic.LayoutObjects.PangoLayout.Internal (
 	pattern PangoEllipsizeNone, pattern PangoEllipsizeStart,
 	pattern PangoEllipsizeMiddle, pattern PangoEllipsizeEnd,
 
-	-- ** Indent, Spacint, Justify and AutoDir
-	Indent(..), Spacing(..), Justify(..), AutoDir(..),
+	-- ** Indent, Spacing, LineSpacing, Justify and AutoDir
+	Indent(..), Spacing(..), LineSpacing(..), Justify(..), AutoDir(..),
 
 	-- ** PangoAlignment
 	PangoAlignment(..),
@@ -402,14 +402,26 @@ foreign import ccall "pango_layout_set_spacing" c_pango_layout_set_spacing ::
 foreign import ccall "pango_layout_get_spacing" c_pango_layout_get_spacing ::
 	Ptr PangoLayout -> IO CInt
 
-{-
-foreign import ccall "pango_layout_set_line_spacing" c_pango_layout_set_line_spacing ::
-	Ptr PangoLayoutIo -> #{type float} -> IO ()
+newtype LineSpacing = LineSpacing { getLineSpacing :: CFloat } deriving Show
 
-pangoLayoutSetLineSpacing :: PangoLayoutIo -> #{type float} -> IO ()
-pangoLayoutSetLineSpacing (PangoLayoutIo fpl) fct = withForeignPtr fpl \pl ->
-	c_pango_layout_set_line_spacing pl fct
-	-}
+instance PangoLayoutSetting LineSpacing where
+	pangoLayoutSet l = pangoLayoutSetLineSpacing l . getLineSpacing
+	pangoLayoutGet l = LineSpacing $ pangoLayoutGetLineSpacing l
+
+pangoLayoutSetLineSpacing ::
+	PrimMonad m => PangoLayoutPrim (PrimState m) -> CFloat -> m ()
+pangoLayoutSetLineSpacing (PangoLayoutPrim fpl) fct = unsafeIOToPrim
+	$ withForeignPtr fpl \pl -> c_pango_layout_set_line_spacing pl fct
+
+pangoLayoutGetLineSpacing :: PangoLayout -> CFloat
+pangoLayoutGetLineSpacing (PangoLayout_ fl) = unsafePerformIO
+	$ withForeignPtr fl c_pango_layout_get_line_spacing
+
+foreign import ccall "pango_layout_set_line_spacing" c_pango_layout_set_line_spacing ::
+	Ptr PangoLayout -> CFloat -> IO ()
+
+foreign import ccall "pango_layout_get_line_spacing" c_pango_layout_get_line_spacing ::
+	Ptr PangoLayout -> IO CFloat
 
 newtype Justify = Justify { getJustify :: Bool } deriving Show
 
