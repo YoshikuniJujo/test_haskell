@@ -29,10 +29,10 @@ import Control.Monad.Primitive
 
 import Data.CairoContext
 
-import Graphics.Pango.Basic.Rendering.PangoContext.Internal
 import Graphics.Pango.Basic.GlyphStorage.Internal
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout.Internal
 import Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine.Internal
+import Graphics.Pango.LowLevel.Contexts.Internal
 
 import qualified Data.Text as T
 import qualified Data.Text.Foreign as T

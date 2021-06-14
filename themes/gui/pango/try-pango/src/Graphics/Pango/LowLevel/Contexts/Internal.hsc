@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Pango.Basic.Rendering.PangoContext.Internal (
+module Graphics.Pango.LowLevel.Contexts.Internal (
 	PangoContext(..), mkPangoContext,
 	PangoContextSetting(..), BaseGravity(..) ) where
 

@@ -17,11 +17,11 @@ import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
 
 import Graphics.Pango.Basic.GlyphStorage
-import Graphics.Pango.Basic.Rendering.PangoContext
 import Graphics.Pango.Basic.GlyphStorage.PangoMatrix
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Rendering.Cairo
+import Graphics.Pango.LowLevel.Contexts
 
 import Data.CairoImage
 import Data.JuicyCairo

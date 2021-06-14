@@ -13,11 +13,11 @@ import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
-import Graphics.Pango.Basic.Rendering.PangoContext
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Basic.VerticalText
 import Graphics.Pango.Rendering.Cairo
+import Graphics.Pango.LowLevel.Contexts
 
 import qualified Data.Text as T
 
