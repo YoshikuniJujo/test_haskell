@@ -38,6 +38,7 @@ import Control.Arrow
 import Control.Exception
 import Data.Word
 import Data.Int
+import System.IO.Unsafe
 
 import Graphics.Gdk.Events
 import Graphics.Gdk.Exception
@@ -65,8 +66,9 @@ foreign import ccall "gdk_display_get_default" c_gdk_display_get_default ::
 foreign import ccall "gdk_display_get_name" c_gdk_display_get_name ::
 	Ptr GdkDisplay -> IO CString
 
-gdkDisplayGetName :: GdkDisplay -> IO String
-gdkDisplayGetName (GdkDisplay p) = peekCString =<< c_gdk_display_get_name p
+gdkDisplayGetName :: GdkDisplay -> String
+gdkDisplayGetName (GdkDisplay p) =
+	unsafePerformIO $ peekCString =<< c_gdk_display_get_name p
 
 foreign import ccall "gdk_display_get_default_screen" c_gdk_display_get_default_screen ::
 	Ptr GdkDisplay -> IO (Ptr GdkScreen)

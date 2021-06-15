@@ -46,8 +46,8 @@ main = do
 	print =<< gdkGetProgramClass
 	gdkSetProgramClass "Foo"
 	print =<< gdkGetProgramClass
-	putStrLn =<< gdkDisplayGetName =<< gdkDisplayManagerGetDefaultDisplay =<< gdkDisplayManagerGet
-	print =<< mapM gdkDisplayGetName =<< gdkDisplayManagerListDisplays =<< gdkDisplayManagerGet
+	putStrLn . gdkDisplayGetName =<< gdkDisplayManagerGetDefaultDisplay =<< gdkDisplayManagerGet
+	print . (gdkDisplayGetName <$>) =<< gdkDisplayManagerListDisplays =<< gdkDisplayManagerGet
 	d <- gdkDisplayGetDefault
 	print =<< gdkScreenGetResolution =<< gdkDisplayGetDefaultScreen d
 --	st <- gdkDisplayGetDefaultSeat d
@@ -144,7 +144,7 @@ main = do
 	print =<< gdkWindowGetDecorations w
 	print gdkWindowToplevel
 	print gdkWindowRoot
-	putStrLn =<< gdkDisplayGetName =<< gdkWindowGetDisplay w
+	putStrLn . gdkDisplayGetName =<< gdkWindowGetDisplay w
 	print =<< gdkScreenGetResolution =<< gdkWindowGetScreen w
 	print =<< gdkVisualGetDepth =<< gdkWindowGetVisual w
 	putStrLn . ("Window is destroyed: " ++) . show =<< gdkWindowIsDestroyed w

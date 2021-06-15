@@ -65,7 +65,8 @@ now
 	+ [x] repair: add argument `display_name`
 * [x] `gdk_display_get_default`
 	+ [x] process NULL: throw exception
-* [ ] `gdk_display_get_name`
+* [x] `gdk_display_get_name`
+	+ this is pure
 * [ ] `gdk_display_get_default_screen`
 * [ ] `gdk_display_device_is_grabbed`
 * [ ] `gdk_display_sync`
