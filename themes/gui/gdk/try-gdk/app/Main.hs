@@ -39,9 +39,11 @@ main = do
 	pn <- getProgName
 	as <- getArgs
 	gdkSetAllowedBackends "win32,x11,*"
-	print =<< gdkInit pn as
+	as' <- gdkInit pn as
+	print as'
 	print =<< gdkGetShowEvents
 	print =<< gdkGetDisplayArgName
+	print =<< gdkGetProgramClass
 	gdkSetProgramClass "Foo"
 	print =<< gdkGetProgramClass
 	putStrLn =<< gdkDisplayGetName =<< gdkDisplayManagerGetDefaultDisplay =<< gdkDisplayManagerGet
@@ -152,6 +154,7 @@ main = do
 	putStrLn . ("Window is shaped: " ++) . show =<< gdkWindowIsShaped w
 	putStrLn . ("Window state: " ++) . show =<< gdkWindowGetState w
 	gdkWindowShow w
+	if "--startup-notify" `elem` as' then gdkNotifyStartupComplete else pure ()
 	gdkWindowSetOpacity w 0.5
 	putStrLn . ("Window is visible: " ++) . show =<< gdkWindowIsVisible w
 	putStrLn . ("Window is viewable: " ++) . show =<< gdkWindowIsViewable w

@@ -2,11 +2,10 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.General (
-	gdkInit,
-	gdkGetDisplayArgName,
+	gdkInit, gdkGetDisplayArgName,
+	gdkNotifyStartupComplete,
 	gdkSetAllowedBackends,
-	gdkGetProgramClass, gdkSetProgramClass
-	) where
+	gdkGetProgramClass, gdkSetProgramClass ) where
 
 import Foreign.Ptr
 import Foreign.Marshal
@@ -46,6 +45,12 @@ gdkGetDisplayArgName :: IO (Maybe String)
 gdkGetDisplayArgName = c_gdk_get_display_arg_name >>= \case
 	p	| p == nullPtr -> pure Nothing
 		| otherwise -> Just <$> peekCString p
+
+gdkNotifyStartupComplete :: IO ()
+gdkNotifyStartupComplete = c_gdk_notify_startup_complete
+
+foreign import ccall "gdk_notify_startup_complete"
+	c_gdk_notify_startup_complete :: IO ()
 
 foreign import ccall "gdk_set_allowed_backends" c_gdk_set_allowed_backends ::
 	CString -> IO ()
