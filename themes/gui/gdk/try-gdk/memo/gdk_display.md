@@ -62,9 +62,9 @@ now
 
 * [x] `gdk_display_open`
 	+ [x] process NULL
-	+ [x] repair: add argument `display_ name`
-* [ ] `gdk_display_get_default`
-	+ [ ] process NULL: throw exception
+	+ [x] repair: add argument `display_name`
+* [x] `gdk_display_get_default`
+	+ [x] process NULL: throw exception
 * [ ] `gdk_display_get_name`
 * [ ] `gdk_display_get_default_screen`
 * [ ] `gdk_display_device_is_grabbed`
