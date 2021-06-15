@@ -15,5 +15,5 @@ todo
 
 * [x] process NULL for `gdk_display_manager_get_default_display`
 	+ use maybe value or exception
-* [ ] process NULL for `gdk_display_manager_open_display`
+* [x] process NULL for `gdk_display_manager_open_display`
 	+ use maybe value or exception

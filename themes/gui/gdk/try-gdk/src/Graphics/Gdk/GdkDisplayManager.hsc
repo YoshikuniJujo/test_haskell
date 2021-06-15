@@ -50,5 +50,7 @@ foreign import ccall "gdk_display_manager_open_display" c_gdk_display_manager_op
 	Ptr GdkDisplayManager -> CString -> IO (Ptr GdkDisplay)
 
 gdkDisplayManagerOpenDisplay :: GdkDisplayManager -> String -> IO GdkDisplay
-gdkDisplayManagerOpenDisplay (GdkDisplayManager p) n = GdkDisplay
-	<$> withCString n \cn -> c_gdk_display_manager_open_display p cn
+gdkDisplayManagerOpenDisplay (GdkDisplayManager pdm) n = GdkDisplay
+	<$> withCString n \cn ->
+		c_gdk_display_manager_open_display pdm cn >>= \case
+			NullPtr -> throw GdkCannotOpenDisplay; pd -> pure pd

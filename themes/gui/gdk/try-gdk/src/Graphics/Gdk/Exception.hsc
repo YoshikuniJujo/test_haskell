@@ -9,10 +9,11 @@ import Control.Exception.Hierarchy
 
 data GdkInitFail = GdkInitFail deriving Show
 data GdkNoDefaultDisplay = GdkNoDefaultDisplay deriving Show
+data GdkCannotOpenDisplay = GdkCannotOpenDisplay deriving Show
 
 exceptionHierarchy Nothing $ ExNode "GdkException" [
 	ExType ''GdkInitFail,
-	ExType ''GdkNoDefaultDisplay
+	ExType ''GdkNoDefaultDisplay, ExType ''GdkCannotOpenDisplay
 	]
 
 gdkInitFail :: IO a
