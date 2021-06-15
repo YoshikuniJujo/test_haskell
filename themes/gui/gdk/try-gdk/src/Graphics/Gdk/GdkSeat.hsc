@@ -18,7 +18,7 @@ import Graphics.Gdk.Events
 import Graphics.Gdk.Types
 import Graphics.Gdk.Values
 
-import System.Glib.DoublyLinkedLists
+import System.GLib.DoublyLinkedLists
 
 #include <gdk/gdk.h>
 

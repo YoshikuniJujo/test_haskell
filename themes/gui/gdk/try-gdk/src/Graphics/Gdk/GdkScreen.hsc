@@ -8,7 +8,7 @@ import Control.Arrow
 import Data.Int
 
 import Graphics.Gdk.Types
-import System.Glib.DoublyLinkedLists
+import System.GLib.DoublyLinkedLists
 
 #include <gdk/gdk.h>
 

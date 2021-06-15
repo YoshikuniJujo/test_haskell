@@ -24,6 +24,7 @@ dependencies:
 - primitive
 - simple-cairo
 - exception-hierarchy
+- glib-stopgap
 
 library:
   source-dirs: src

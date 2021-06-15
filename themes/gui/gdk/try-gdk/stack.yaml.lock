@@ -26,9 +26,20 @@ packages:
   original:
     git: https://github.com/YoshikuniJujo/cairo-image
     commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
+- completed:
+    name: glib-stopgap
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/glib-stopgap
+    pantry-tree:
+      size: 1095
+      sha256: 2d85abc9bc1a83d09c6554d13537a265a3ea8d387d40db891d731cc4975dd8c5
+    commit: 6aa289a5c71f72bda5a766709d9870794cacb512
+  original:
+    git: https://github.com/YoshikuniJujo/glib-stopgap
+    commit: 6aa289a5c71f72bda5a766709d9870794cacb512
 snapshots:
 - completed:
-    size: 567679
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/17/15.yaml
-    sha256: 72e87841a0ab5b72f6f018e8ee692fd972b7bb32a944990f028e10d6eb528e63
-  original: lts-17.15
+    size: 585393
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2021/6/14.yaml
+    sha256: a5edd4e65bdb6e56760e7d7c1275d2c3b24fb95e730e957e9d60824315e8801d
+  original: nightly-2021-06-14

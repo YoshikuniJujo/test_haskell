@@ -7,7 +7,7 @@ import Foreign.Ptr
 import Foreign.C
 
 import Graphics.Gdk.Types
-import System.Glib.SinglyLinkedLists
+import System.GLib.SinglyLinkedLists
 
 #include <gdk/gdk.h>
 
@@ -36,7 +36,7 @@ foreign import ccall "gdk_display_manager_list_displays" c_gdk_display_manager_l
 gdkDisplayManagerListDisplays :: GdkDisplayManager -> IO [GdkDisplay]
 gdkDisplayManagerListDisplays (GdkDisplayManager p) = map GdkDisplay <$> do
 	lst <- c_gdk_display_manager_list_displays p
-	g_slist_to_list lst <* c_g_slist_free lst
+	g_slist_to_list' lst
 
 foreign import ccall "gdk_display_manager_open_display" c_gdk_display_manager_open_display ::
 	Ptr GdkDisplayManager -> CString -> IO (Ptr GdkDisplay)

@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: lts-17.15
+resolver: nightly-2021-06-14
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -44,6 +44,8 @@ extra-deps:
   commit: 02f2ee2f5f888d5378e93ec3ba52e2b78bce0d44
 - git: https://github.com/YoshikuniJujo/cairo-image
   commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
+- git: https://github.com/YoshikuniJujo/glib-stopgap
+  commit: 6aa289a5c71f72bda5a766709d9870794cacb512
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
