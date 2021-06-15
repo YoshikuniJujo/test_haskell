@@ -1,7 +1,32 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.GdkDisplay where
+module Graphics.Gdk.GdkDisplay (
+	gdkDisplayOpen,
+	gdkDisplayGetDefault,
+	gdkDisplayGetName,
+	gdkDisplayGetDefaultScreen,
+	gdkDisplayDeviceIsGrabbed,
+	gdkDisplaySync,
+	gdkDisplayFlush,
+	gdkDisplayClose,
+	gdkDisplayIsClosed,
+	gdkDisplayGetEvent,
+	gdkDisplayPeekEvent,
+	gdkDisplayPutEvent,
+	gdkDisplayHasPending,
+	gdkDisplaySupportsCursorColor,
+	gdkDisplaySupportsCursorAlpha,
+	gdkDisplayGetDefaultCursorSize,
+	gdkDisplayGetMaximalCursorSize,
+	gdkDisplayGetDefaultSeat,
+	gdkDisplayListSeats,
+	gdkDisplayGetNMonitors,
+	gdkDisplayGetMonitor,
+	gdkDisplayGetPrimaryMonitor,
+	gdkDisplayGetMonitorAtPoint,
+	gdkDisplayGetMonitorAtWindow
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr

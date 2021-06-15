@@ -7,7 +7,7 @@ API Reference contents
 ### review now
 
 * [x] General
-* [ ] GdkDisplayManager
+* [x] GdkDisplayManager
 * [ ] GdkDisplay
 * [ ] GdkScreen
 * [ ] GdkSeat
