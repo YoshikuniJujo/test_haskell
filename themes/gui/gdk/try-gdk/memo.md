@@ -4,6 +4,8 @@ memo
 API Reference contents
 ----------------------
 
+### now
+
 * General
 * GdkDisplayManager
 * GdkDisplay
@@ -11,30 +13,63 @@ API Reference contents
 * GdkSeat
 * GdkMonitor
 * GdkDevice
+* Points and Rectangles
+* Visuals
+* Cursors
+* Windows
+* GdkDrawingContext
+* Events
+
+### all
+
+#### big
+
+* GdkDisplay
+* GdkScreen
+* GdkDevice
+* Windows
+* Events
+* X Window System Interaction
+
+#### middle
+
+* General
+* Visuals
+* GdkGLContext
+* Key Values
+* Drag And Drop
+
+#### small
+
+* GdkSeat
+* GdkMonitor
+* Cursors
+* Frame clock
+* Frame timings
+* Selections
+* Properties and Atoms
+* Threads
+* Cairo Interaction
+* Application launching
+
+### tiny
+
+* GdkDisplayManager
 * GdkDevicePad
 * Points and Rectangles
 * Pixbufs
 * RGBA Colors
-* Visuals
-* Cursors
-* Windows
-* Frame clock
-* Frame timings
 * GdkDrawingContext
-* GdkGLContext
-* Events
-* Event Structures
-* Key Values
-* Selections
-* Drag And Drop
-* Properties and Atoms
-* Threads
 * Pango Interaction
-* Cairo Interaction
-* X Window System Interaction
-* Wayland Interaction
-* Application launching
 * Testing
+
+### only types
+
+* Event Structures
+
+### tribial
+
+* Wayland Interaction
 
 todo
 ----
