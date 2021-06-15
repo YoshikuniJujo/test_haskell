@@ -47,11 +47,11 @@ import System.GLib.DoublyLinkedLists
 #include <gdk/gdk.h>
 
 foreign import ccall "gdk_display_open" c_gdk_display_open ::
-	IO (Ptr GdkDisplay)
+	CString -> IO (Ptr GdkDisplay)
 
-gdkDisplayOpen :: IO GdkDisplay
-gdkDisplayOpen = (GdkDisplay <$>)
-	$ c_gdk_display_open >>= \case
+gdkDisplayOpen :: String -> IO GdkDisplay
+gdkDisplayOpen dn = (GdkDisplay <$>)
+	$ withCString dn c_gdk_display_open >>= \case
 		NullPtr -> throw GdkCannotOpenDisplay; pd -> pure pd
 
 foreign import ccall "gdk_display_get_default" c_gdk_display_get_default ::

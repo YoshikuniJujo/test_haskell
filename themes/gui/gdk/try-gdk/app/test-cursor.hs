@@ -5,7 +5,6 @@ module Main where
 
 import Control.Monad
 import Control.Monad.Primitive
-import Data.Foldable
 import Data.Char
 import System.Environment
 
@@ -23,7 +22,6 @@ import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Surfaces.CairoSurfaceT.Internal
 import Graphics.Cairo.Surfaces.ImageSurfaces
-import Graphics.Cairo.Types
 import Graphics.Cairo.Values
 
 import Data.Color
@@ -39,7 +37,7 @@ main = do
 	d <- gdkWindowGetDisplay w
 	st <- gdkDisplayGetDefaultSeat d
 	pnt <- gdkSeatGetPointer st
-	([], pds) <- gdkDeviceListSlaveDevices pnt
+	([], _pds) <- gdkDeviceListSlaveDevices pnt
 	{-
 	for_ (zip pds ["wait", "cell", "crosshair", "text", "vertical-text"]) \(pd, nm) ->
 		gdkWindowSetDeviceCursor w pd =<< gdkCursorNewFromName d nm
