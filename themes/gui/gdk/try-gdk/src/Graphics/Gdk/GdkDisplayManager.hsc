@@ -1,7 +1,10 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.GdkDisplayManager where
+module Graphics.Gdk.GdkDisplayManager (
+	gdkDisplayManagerGet,
+	gdkDisplayManagerGetDefaultDisplay, gdkDisplayManagerSetDefaultDisplay,
+	gdkDisplayManagerListDisplays, gdkDisplayManagerOpenDisplay ) where
 
 import Foreign.Ptr
 import Foreign.C

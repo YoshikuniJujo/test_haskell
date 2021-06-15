@@ -4,21 +4,21 @@ memo
 API Reference contents
 ----------------------
 
-### now
+### review now
 
-* General
-* GdkDisplayManager
-* GdkDisplay
-* GdkScreen
-* GdkSeat
-* GdkMonitor
-* GdkDevice
-* Points and Rectangles
-* Visuals
-* Cursors
-* Windows
-* GdkDrawingContext
-* Events
+* [x] General
+* [ ] GdkDisplayManager
+* [ ] GdkDisplay
+* [ ] GdkScreen
+* [ ] GdkSeat
+* [ ] GdkMonitor
+* [ ] GdkDevice
+* [ ] Points and Rectangles
+* [ ] Visuals
+* [ ] Cursors
+* [ ] Windows
+* [ ] GdkDrawingContext
+* [ ] Events
 
 ### all
 
