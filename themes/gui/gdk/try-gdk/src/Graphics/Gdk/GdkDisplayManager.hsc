@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkDisplayManager (
@@ -7,9 +7,12 @@ module Graphics.Gdk.GdkDisplayManager (
 	gdkDisplayManagerListDisplays, gdkDisplayManagerOpenDisplay ) where
 
 import Foreign.Ptr
+import Foreign.Ptr.Misc
 import Foreign.C
+import Control.Exception
 
 import Graphics.Gdk.Types
+import Graphics.Gdk.Exception
 import System.GLib.SinglyLinkedLists
 
 #include <gdk/gdk.h>
@@ -23,8 +26,10 @@ foreign import ccall "gdk_display_manager_get_default_display" c_gdk_display_man
 	Ptr GdkDisplayManager -> IO (Ptr GdkDisplay)
 
 gdkDisplayManagerGetDefaultDisplay :: GdkDisplayManager -> IO GdkDisplay
-gdkDisplayManagerGetDefaultDisplay (GdkDisplayManager p) =
-	GdkDisplay <$> c_gdk_display_manager_get_default_display p
+gdkDisplayManagerGetDefaultDisplay (GdkDisplayManager pdm) = (GdkDisplay <$>)
+	$ c_gdk_display_manager_get_default_display pdm >>= \case
+		NullPtr -> throw GdkNoDefaultDisplay; pd -> pure pd
+	
 
 foreign import ccall "gdk_display_manager_set_default_display" c_gdk_display_manager_set_default_display ::
 	Ptr GdkDisplayManager -> Ptr GdkDisplay -> IO ()

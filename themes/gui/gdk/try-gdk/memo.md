@@ -20,6 +20,25 @@ API Reference contents
 * [ ] GdkDrawingContext
 * [ ] Events
 
+### not now
+
+* GdkDevicePad			TINY
+* Pixbufs			TINY
+* RGBA Colors			TINY
+* Frame clock			SMALL
+* Frame timings			SMALL
+* Event Structures		ONLY TYPES
+* Key Values			MIDDLE
+* Drag and Drop			MIDDLE
+* Properties and Atoms		SMALL
+* Threads			SMALL
+* Pango Interaction		TINY
+* Cairo Interaction		SMALL
+* X Window System Internaction	BIG
+* Wayland Interaction		TRIBIAL
+* Application launching		SMALL
+* Testing			TINY
+
 ### all
 
 #### big
