@@ -191,6 +191,11 @@ main = do
 	putStrLn . ("Window is visible: " ++) . show =<< gdkWindowIsVisible w
 	putStrLn . ("Window is viewable: " ++) . show =<< gdkWindowIsViewable w
 
+	putStrLn "CLOSE DISPLAY"
+	print =<< gdkDisplayIsClosed d
+	gdkDisplayClose d
+--	print =<< gdkDisplayIsClosed d
+
 checkEvent :: GdkDisplay -> GdkSeat -> GdkEvent -> IO Bool
 checkEvent d st = \case
 	GdkEventGdkNothing n -> do

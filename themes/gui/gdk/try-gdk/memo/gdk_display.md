@@ -60,35 +60,40 @@ Function
 now
 ---
 
-* [x] `gdk_display_open`
-	+ [x] process NULL
-	+ [x] repair: add argument `display_name`
-* [x] `gdk_display_get_default`
-	+ [x] process NULL: throw exception
-* [x] `gdk_display_get_name`
-	+ this is pure
-* [x] `gdk_display_get_default_screen`
-	+ this is pure
-* [x] `gdk_display_device_is_grabbed`
-* [ ] `gdk_display_sync`
-* [ ] `gdk_display_flush`
-* [ ] `gdk_display_close`
-* [ ] `gdk_display_is_closed`
-* [ ] `gdk_display_get_event`
-* [ ] `gdk_display_peek_event`
-* [ ] `gdk_display_put_event`
-* [ ] `gdk_display_has_pending`
-* [ ] `gdk_display_supports_cursor_color`
-* [ ] `gdk_display_supports_cursor_alpha`
-* [ ] `gdk_display_get_default_cursor_size`
-* [ ] `gdk_display_get_maximal_cursor_size`
-* [ ] `gdk_display_get_default_seat`
-* [ ] `gdk_display_list_seats`
-* [ ] `gdk_display_get_n_monitors`
-* [ ] `gdk_display_get_monitor`
-* [ ] `gdk_display_get_primary_monitor`
-* [ ] `gdk_display_get_monitor_at_point`
-* [ ] `gdk_display_get_monitor_at_window`
+* [x] DISPLAY
+	+ [x] `gdk_display_open`
+		- [x] process NULL
+		- [x] repair: add argument `display_name`
+	+ [x] `gdk_display_get_default`
+		- [x] process NULL: throw exception
+	+ [x] `gdk_display_get_name`
+		- this is pure
+	+ [x] `gdk_display_get_default_screen`
+		- this is pure
+	+ [x] `gdk_display_device_is_grabbed`
+	+ [x] `gdk_display_sync`
+	+ [x] `gdk_display_flush`
+	+ [x] `gdk_display_close`
+	+ [x] `gdk_display_is_closed`
+* [ ] EVENT
+	+ [ ] `gdk_display_get_event`
+	+ [ ] `gdk_display_peek_event`
+	+ [ ] `gdk_display_put_event`
+	+ [ ] `gdk_display_has_pending`
+* [ ] CURSOR
+	+ [ ] `gdk_display_supports_cursor_color`
+	+ [ ] `gdk_display_supports_cursor_alpha`
+	+ [ ] `gdk_display_get_default_cursor_size`
+	+ [ ] `gdk_display_get_maximal_cursor_size`
+* [ ] SEAT
+	+ [ ] `gdk_display_get_default_seat`
+	+ [ ] `gdk_display_list_seats`
+* [ ] MONITOR
+	+ [ ] `gdk_display_get_n_monitors`
+	+ [ ] `gdk_display_get_monitor`
+	+ [ ] `gdk_display_get_primary_monitor`
+	+ [ ] `gdk_display_get_monitor_at_point`
+	+ [ ] `gdk_display_get_monitor_at_window`
 
 not now
 -------

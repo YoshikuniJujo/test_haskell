@@ -2,6 +2,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkDisplay (
+	-- * DISPLAY
 	gdkDisplayOpen,
 	gdkDisplayGetDefault,
 	gdkDisplayGetName,
@@ -11,22 +12,29 @@ module Graphics.Gdk.GdkDisplay (
 	gdkDisplayFlush,
 	gdkDisplayClose,
 	gdkDisplayIsClosed,
+
+	-- * EVENT
 	gdkDisplayGetEvent,
 	gdkDisplayPeekEvent,
 	gdkDisplayPutEvent,
 	gdkDisplayHasPending,
+
+	-- * CURSOR
 	gdkDisplaySupportsCursorColor,
 	gdkDisplaySupportsCursorAlpha,
 	gdkDisplayGetDefaultCursorSize,
 	gdkDisplayGetMaximalCursorSize,
+
+	-- * SEAT
 	gdkDisplayGetDefaultSeat,
 	gdkDisplayListSeats,
+
+	-- * MONITOR
 	gdkDisplayGetNMonitors,
 	gdkDisplayGetMonitor,
 	gdkDisplayGetPrimaryMonitor,
 	gdkDisplayGetMonitorAtPoint,
-	gdkDisplayGetMonitorAtWindow
-	) where
+	gdkDisplayGetMonitorAtWindow ) where
 
 import Foreign.Ptr
 import Foreign.Ptr.Misc
@@ -85,23 +93,23 @@ gdkDisplayDeviceIsGrabbed :: GdkDisplay -> GdkDevice -> IO Bool
 gdkDisplayDeviceIsGrabbed (GdkDisplay dpy) (GdkDevice fdvc) = gbooleanToBool
 	<$> withForeignPtr fdvc (c_gdk_display_device_is_grabbed dpy)
 
-foreign import ccall "gdk_display_sync" c_gdk_display_sync ::
-	Ptr GdkDisplay -> IO ()
-
 gdkDisplaySync :: GdkDisplay -> IO ()
 gdkDisplaySync (GdkDisplay p) = c_gdk_display_sync p
 
-foreign import ccall "gdk_display_flush" c_gdk_display_flush ::
+foreign import ccall "gdk_display_sync" c_gdk_display_sync ::
 	Ptr GdkDisplay -> IO ()
 
 gdkDisplayFlush :: GdkDisplay -> IO ()
 gdkDisplayFlush (GdkDisplay p) = c_gdk_display_flush p
 
-foreign import ccall "gdk_display_close" c_gdk_display_close ::
+foreign import ccall "gdk_display_flush" c_gdk_display_flush ::
 	Ptr GdkDisplay -> IO ()
 
 gdkDisplayClose :: GdkDisplay -> IO ()
 gdkDisplayClose (GdkDisplay p) = c_gdk_display_close p
+
+foreign import ccall "gdk_display_close" c_gdk_display_close ::
+	Ptr GdkDisplay -> IO ()
 
 foreign import ccall "gdk_display_is_closed" c_gdk_display_is_closed ::
 	Ptr GdkDisplay -> IO #type gboolean
