@@ -90,12 +90,12 @@ now
 * [x] SEAT
 	+ [x] `gdk_display_get_default_seat`
 	+ [x] `gdk_display_list_seats`
-* [ ] MONITOR
+* [x] MONITOR
 	+ [x] `gdk_display_get_n_monitors`
 	+ [x] `gdk_display_get_monitor`
-	+ [ ] `gdk_display_get_primary_monitor`
-	+ [ ] `gdk_display_get_monitor_at_point`
-	+ [ ] `gdk_display_get_monitor_at_window`
+	+ [x] `gdk_display_get_primary_monitor`
+	+ [x] `gdk_display_get_monitor_at_point`
+	+ [x] `gdk_display_get_monitor_at_window`
 
 not now
 -------
