@@ -162,17 +162,17 @@ gdkDisplayGetDefaultCursorSize (GdkDisplay p) = c_gdk_display_get_default_cursor
 foreign import ccall "gdk_display_get_default_cursor_size" c_gdk_display_get_default_cursor_size ::
 	Ptr GdkDisplay -> IO CUInt
 
-foreign import ccall "gdk_display_get_default_seat" c_gdk_display_get_default_seat ::
-	Ptr GdkDisplay -> IO (Ptr GdkSeat)
-
 gdkDisplayGetDefaultSeat :: GdkDisplay -> IO GdkSeat
 gdkDisplayGetDefaultSeat (GdkDisplay p) = GdkSeat <$> c_gdk_display_get_default_seat p
 
-foreign import ccall "gdk_display_list_seats" c_gdk_display_list_seats ::
-	Ptr GdkDisplay -> IO (Ptr (GList GdkSeat))
+foreign import ccall "gdk_display_get_default_seat" c_gdk_display_get_default_seat ::
+	Ptr GdkDisplay -> IO (Ptr GdkSeat)
 
 gdkDisplayListSeats :: GdkDisplay -> IO ([GdkSeat], [GdkSeat])
 gdkDisplayListSeats (GdkDisplay p) = (map GdkSeat *** map GdkSeat) <$> (gListListPtr =<< GListRef <$> c_gdk_display_list_seats p)
+
+foreign import ccall "gdk_display_list_seats" c_gdk_display_list_seats ::
+	Ptr GdkDisplay -> IO (Ptr (GList GdkSeat))
 
 foreign import ccall "gdk_display_get_n_monitors" c_gdk_display_get_n_monitors ::
 	Ptr GdkDisplay -> IO #type int

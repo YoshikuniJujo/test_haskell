@@ -88,7 +88,7 @@ now
 	+ [x] `gdk_display_supports_cursor_alpha`
 	+ [x] `gdk_display_get_default_cursor_size`
 * [ ] SEAT
-	+ [ ] `gdk_display_get_default_seat`
+	+ [x] `gdk_display_get_default_seat`
 	+ [ ] `gdk_display_list_seats`
 * [ ] MONITOR
 	+ [ ] `gdk_display_get_n_monitors`

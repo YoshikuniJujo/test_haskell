@@ -50,8 +50,10 @@ main = do
 	print . (gdkDisplayGetName <$>) =<< gdkDisplayManagerListDisplays =<< gdkDisplayManagerGet
 	d <- gdkDisplayGetDefault
 	print =<< gdkScreenGetResolution (gdkDisplayGetDefaultScreen d)
---	st <- gdkDisplayGetDefaultSeat d
+	st0 <- gdkDisplayGetDefaultSeat d
 	([], [st]) <- gdkDisplayListSeats d
+	print st0
+	print st
 
 	checkGrabbedPointerKeyboard d st
 
