@@ -79,7 +79,6 @@ main = do
 	putStrLn . ("Supports cursor color: " ++) . show =<< gdkDisplaySupportsCursorColor d
 	putStrLn . ("Supports cursor alpha: " ++) . show =<< gdkDisplaySupportsCursorAlpha d
 	putStrLn . ("Default cursor size: " ++) . show =<< gdkDisplayGetDefaultCursorSize d
-	putStrLn . ("Maximal cursor size: " ++) . show =<< gdkDisplayGetMaximalCursorSize d
 	putStrLn . ("Number of monitors: " ++) . show =<< gdkDisplayGetNMonitors d
 	scrn <- gdkScreenGetDefault
 	vsl <- gdkScreenGetSystemVisual scrn

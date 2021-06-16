@@ -25,7 +25,6 @@ Function
 * `gdk_display_supports_cursor_color`
 * `gdk_display_supports_cursor_alpha`
 * `gdk_display_get_default_cursor_size`
-* `gdk_display_get_maximal_cursor_size`
 * `gdk_display_get_default_group`		--
 * `gdk_display_supports_selection_notification`	--
 * `gdk_display_requext_selection_notification`	--
@@ -57,6 +56,10 @@ Function
 * `gdk_display_warp_pointer`
 * `gdk_display_supports_composite`
 
+### semi-deprecated
+
+* `gdk_display_get_maximal_cursor_size`
+
 now
 ---
 
@@ -80,11 +83,10 @@ now
 	+ [x] `gdk_display_peek_event`
 	+ [x] `gdk_display_put_event`
 	+ [x] `gdk_display_has_pending`
-* [ ] CURSOR
-	+ [ ] `gdk_display_supports_cursor_color`
-	+ [ ] `gdk_display_supports_cursor_alpha`
-	+ [ ] `gdk_display_get_default_cursor_size`
-	+ [ ] `gdk_display_get_maximal_cursor_size`
+* [x] CURSOR
+	+ [x] `gdk_display_supports_cursor_color`
+	+ [x] `gdk_display_supports_cursor_alpha`
+	+ [x] `gdk_display_get_default_cursor_size`
 * [ ] SEAT
 	+ [ ] `gdk_display_get_default_seat`
 	+ [ ] `gdk_display_list_seats`
