@@ -184,7 +184,9 @@ foreign import ccall "gdk_display_get_monitor" c_gdk_display_get_monitor ::
 	Ptr GdkDisplay -> #{type int} -> IO (Ptr GdkMonitor)
 
 gdkDisplayGetMonitor :: GdkDisplay -> #{type int} -> IO GdkMonitor
-gdkDisplayGetMonitor (GdkDisplay p) n = GdkMonitor <$> c_gdk_display_get_monitor p n
+gdkDisplayGetMonitor (GdkDisplay pd) n = (GdkMonitor <$>)
+	$ c_gdk_display_get_monitor pd n >>= \case
+		NullPtr -> throw GdkIndexOutOfRange; pm -> pure pm
 
 foreign import ccall "gdk_display_get_primary_monitor" c_gdk_display_get_primary_monitor ::
 	Ptr GdkDisplay -> IO (Ptr GdkMonitor)

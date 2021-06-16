@@ -87,12 +87,12 @@ now
 	+ [x] `gdk_display_supports_cursor_color`
 	+ [x] `gdk_display_supports_cursor_alpha`
 	+ [x] `gdk_display_get_default_cursor_size`
-* [ ] SEAT
+* [x] SEAT
 	+ [x] `gdk_display_get_default_seat`
-	+ [ ] `gdk_display_list_seats`
+	+ [x] `gdk_display_list_seats`
 * [ ] MONITOR
-	+ [ ] `gdk_display_get_n_monitors`
-	+ [ ] `gdk_display_get_monitor`
+	+ [x] `gdk_display_get_n_monitors`
+	+ [x] `gdk_display_get_monitor`
 	+ [ ] `gdk_display_get_primary_monitor`
 	+ [ ] `gdk_display_get_monitor_at_point`
 	+ [ ] `gdk_display_get_monitor_at_window`
