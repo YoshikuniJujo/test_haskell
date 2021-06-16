@@ -67,7 +67,8 @@ now
 	+ [x] process NULL: throw exception
 * [x] `gdk_display_get_name`
 	+ this is pure
-* [ ] `gdk_display_get_default_screen`
+* [x] `gdk_display_get_default_screen`
+	+ this is pure
 * [ ] `gdk_display_device_is_grabbed`
 * [ ] `gdk_display_sync`
 * [ ] `gdk_display_flush`

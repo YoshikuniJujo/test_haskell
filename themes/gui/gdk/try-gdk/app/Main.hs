@@ -49,7 +49,7 @@ main = do
 	putStrLn . gdkDisplayGetName =<< gdkDisplayManagerGetDefaultDisplay =<< gdkDisplayManagerGet
 	print . (gdkDisplayGetName <$>) =<< gdkDisplayManagerListDisplays =<< gdkDisplayManagerGet
 	d <- gdkDisplayGetDefault
-	print =<< gdkScreenGetResolution =<< gdkDisplayGetDefaultScreen d
+	print =<< gdkScreenGetResolution (gdkDisplayGetDefaultScreen d)
 --	st <- gdkDisplayGetDefaultSeat d
 	([], [st]) <- gdkDisplayListSeats d
 	pnt <- gdkSeatGetPointer st

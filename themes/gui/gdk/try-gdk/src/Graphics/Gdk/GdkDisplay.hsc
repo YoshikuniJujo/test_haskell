@@ -73,9 +73,9 @@ gdkDisplayGetName (GdkDisplay p) =
 foreign import ccall "gdk_display_get_default_screen" c_gdk_display_get_default_screen ::
 	Ptr GdkDisplay -> IO (Ptr GdkScreen)
 
-gdkDisplayGetDefaultScreen :: GdkDisplay -> IO GdkScreen
+gdkDisplayGetDefaultScreen :: GdkDisplay -> GdkScreen
 gdkDisplayGetDefaultScreen (GdkDisplay p) =
-	GdkScreen <$> c_gdk_display_get_default_screen p
+	unsafePerformIO $ GdkScreen <$> c_gdk_display_get_default_screen p
 
 foreign import ccall "gdk_display_device_is_grabbed" c_gdk_display_device_is_grabbed ::
 	Ptr GdkDisplay -> Ptr GdkDevice -> IO #type gboolean
