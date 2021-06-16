@@ -83,9 +83,11 @@ now
 	+ [x] `gdk_display_peek_event`
 	+ [x] `gdk_display_put_event`
 	+ [x] `gdk_display_has_pending`
-* [ ] DOUBLE CLICK
+* [x] DOUBLE CLICK
 	+ [x] `gdk_display_set_double_click_time`
-	+ [ ] `gdk_display_set_double_click_distance`
+	+ [x] `gdk_display_set_double_click_distance`
+* [ ] GROUP
+	+ [ ] `gdk_display_get_default_group`
 * [x] CURSOR
 	+ [x] `gdk_display_supports_cursor_color`
 	+ [x] `gdk_display_supports_cursor_alpha`
@@ -104,7 +106,6 @@ not now
 -------
 
 * [x] `gdk_display_beep`
-* [ ] `gdk_display_get_default_group`
 * [ ] `gdk_display_supports_selection_notification`
 * [ ] `gdk_display_requext_selection_notification`
 * [ ] `gdk_display_supports_clipboard_persistence`

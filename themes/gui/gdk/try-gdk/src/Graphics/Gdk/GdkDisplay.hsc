@@ -21,6 +21,7 @@ module Graphics.Gdk.GdkDisplay (
 
 	-- * DOUBLE CLICK
 	gdkDisplaySetDoubleClickTime,
+	gdkDisplaySetDoubleClickDistance,
 
 	-- * CURSOR
 	gdkDisplaySupportsCursorColor,
@@ -153,6 +154,14 @@ gdkDisplaySetDoubleClickTime (GdkDisplay d) =
 
 foreign import ccall "gdk_display_set_double_click_time"
 	c_gdk_display_set_double_click_time :: Ptr GdkDisplay -> CUInt -> IO ()
+
+gdkDisplaySetDoubleClickDistance :: GdkDisplay -> CUInt -> IO ()
+gdkDisplaySetDoubleClickDistance (GdkDisplay d) =
+	c_gdk_display_set_double_click_distance d
+
+foreign import ccall "gdk_display_set_double_click_distance"
+	c_gdk_display_set_double_click_distance ::
+	Ptr GdkDisplay -> CUInt -> IO ()
 
 -- CURSOR
 
