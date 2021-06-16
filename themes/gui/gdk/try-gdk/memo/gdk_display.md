@@ -69,7 +69,7 @@ now
 	+ this is pure
 * [x] `gdk_display_get_default_screen`
 	+ this is pure
-* [ ] `gdk_display_device_is_grabbed`
+* [x] `gdk_display_device_is_grabbed`
 * [ ] `gdk_display_sync`
 * [ ] `gdk_display_flush`
 * [ ] `gdk_display_close`

@@ -52,12 +52,9 @@ main = do
 	print =<< gdkScreenGetResolution (gdkDisplayGetDefaultScreen d)
 --	st <- gdkDisplayGetDefaultSeat d
 	([], [st]) <- gdkDisplayListSeats d
-	pnt <- gdkSeatGetPointer st
-	kbd <- gdkSeatGetKeyboard st
-	putStrLn =<< gdkDeviceGetName pnt
-	print =<< gdkDisplayDeviceIsGrabbed d pnt
-	putStrLn =<< gdkDeviceGetName kbd
-	print =<< gdkDisplayDeviceIsGrabbed d kbd
+
+	checkGrabbedPointerKeyboard d st
+
 	([], slvs) <- gdkSeatGetSlaves st gdkSeatCapabilityAll
 	putStrLn "Slave devices:"
 	for_ slvs \slv -> do
@@ -181,11 +178,12 @@ main = do
 			putStrLn "no pre windows"
 			for_ tws \tw -> print =<< gdkWindowGetWindowType tw
 		(_, _) -> putStrLn "pre and post windows"
+	checkGrabbedPointerKeyboard d st
 	doWhile_ do
 		threadDelay 100000
 		doWhile $ gdkEventGet >>= \case
 			Just e -> do
-				b <- checkEvent e
+				b <- checkEvent d st e
 				pure if b then Nothing else Just False
 			Nothing -> pure $ Just True
 	gdkWindowDestroy w
@@ -193,13 +191,13 @@ main = do
 	putStrLn . ("Window is visible: " ++) . show =<< gdkWindowIsVisible w
 	putStrLn . ("Window is viewable: " ++) . show =<< gdkWindowIsViewable w
 
-checkEvent :: GdkEvent -> IO Bool
-checkEvent = \case
+checkEvent :: GdkDisplay -> GdkSeat -> GdkEvent -> IO Bool
+checkEvent d st = \case
 	GdkEventGdkNothing n -> do
 		putStrLn $ "GDK_NOTHING: " ++ show n
 		pure True
-	GdkEventGdkDelete d -> do
-		putStrLn $ "GDK_DELETE: " ++ show d
+	GdkEventGdkDelete dl -> do
+		putStrLn $ "GDK_DELETE: " ++ show dl
 		pure False
 	GdkEventGdkKeyPress k -> do
 		w <- gdkEventKeyWindow k
@@ -225,6 +223,7 @@ checkEvent = \case
 			putStrLn . ("Window size: " ++) . show =<< gdkWindowGetPosition w
 		when (kv == fromIntegral (ord 's')) $ do
 			putStrLn . ("Window size: " ++) . show =<< (,) <$> gdkWindowGetWidth w <*> gdkWindowGetHeight w
+		when (kv == fromIntegral (ord 'g')) $ checkGrabbedPointerKeyboard d st
 		pure $ kv /= fromIntegral (ord 'q')
 	GdkEventGdkKeyRelease k -> do
 		kv <- gdkEventKeyKeyval k
@@ -270,6 +269,18 @@ checkEvent = \case
 	GdkEvent et p -> do	
 		putStrLn $ show et ++ " " ++ show p
 		pure True
+
+checkGrabbedPointerKeyboard :: GdkDisplay -> GdkSeat -> IO ()
+checkGrabbedPointerKeyboard d st = do
+	putStrLn "\nPOINTER:"
+	pnt <- gdkSeatGetPointer st
+	putStrLn =<< gdkDeviceGetName pnt
+	print =<< gdkDisplayDeviceIsGrabbed d pnt
+	putStrLn "KEYBOARD"
+	kbd <- gdkSeatGetKeyboard st
+	putStrLn =<< gdkDeviceGetName kbd
+	print =<< gdkDisplayDeviceIsGrabbed d kbd
+	putStrLn ""
 
 doWhile_ :: Monad m => m Bool -> m ()
 doWhile_ act = bool (pure ()) (doWhile_ act) =<< act
