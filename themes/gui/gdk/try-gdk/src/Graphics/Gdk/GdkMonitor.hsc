@@ -9,6 +9,7 @@ import Foreign.Storable
 import Foreign.C
 import Data.Word
 import Data.Int
+import System.GLib.Bool
 
 import Graphics.Gdk.Types
 import Graphics.Gdk.Values
@@ -79,10 +80,6 @@ gdkMonitorGetSubpixelLayout (GdkMonitor p) = GdkSubpixelLayout <$> c_gdk_monitor
 
 foreign import ccall "gdk_monitor_is_primary" c_gdk_monitor_is_primary ::
 	Ptr GdkMonitor -> IO #type gboolean
-
-gbooleanToBool :: #{type gboolean} -> Bool
-gbooleanToBool #{const FALSE} = False
-gbooleanToBool _ = True
 
 gdkMonitorIsPrimary :: GdkMonitor -> IO Bool
 gdkMonitorIsPrimary (GdkMonitor p) = gbooleanToBool <$> c_gdk_monitor_is_primary p

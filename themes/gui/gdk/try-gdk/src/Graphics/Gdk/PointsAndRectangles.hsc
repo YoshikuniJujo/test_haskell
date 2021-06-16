@@ -7,6 +7,7 @@ import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
 import Data.Int
+import System.GLib.Bool
 
 import Graphics.Gdk.Types
 
@@ -35,9 +36,6 @@ gdkRectangleUnion src1 src2 = alloca \s1 -> alloca \s2 -> alloca \d -> do
 
 foreign import ccall "gdk_rectangle_equal" c_gdk_rectangle_equal ::
 	Ptr GdkRectangle -> Ptr GdkRectangle -> IO #type gboolean
-
-gbooleanToBool :: #{type gboolean} -> Bool
-gbooleanToBool = \case #{const FALSE} -> False; _ -> True
 
 gdkRectangleEqual :: GdkRectangle -> GdkRectangle -> IO Bool
 gdkRectangleEqual rect1 rect2 = alloca \r1 -> alloca \r2 -> do

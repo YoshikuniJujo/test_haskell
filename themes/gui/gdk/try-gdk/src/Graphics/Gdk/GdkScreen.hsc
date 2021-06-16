@@ -6,9 +6,10 @@ module Graphics.Gdk.GdkScreen where
 import Foreign.Ptr
 import Control.Arrow
 import Data.Int
+import System.GLib.Bool
+import System.GLib.DoublyLinkedLists
 
 import Graphics.Gdk.Types
-import System.GLib.DoublyLinkedLists
 
 #include <gdk/gdk.h>
 
@@ -37,10 +38,6 @@ foreign import ccall "gdk_screen_is_composited" c_gdk_screen_is_composited ::
 
 gdkScreenIsComposited :: GdkScreen -> IO Bool
 gdkScreenIsComposited (GdkScreen s) = gbooleanToBool <$> c_gdk_screen_is_composited s
-
-gbooleanToBool :: #{type gboolean} -> Bool
-gbooleanToBool #{const FALSE} = False
-gbooleanToBool _ = True
 
 foreign import ccall "gdk_screen_get_root_window" c_gdk_screen_get_root_window ::
 	Ptr GdkScreen -> IO (Ptr GdkWindow)

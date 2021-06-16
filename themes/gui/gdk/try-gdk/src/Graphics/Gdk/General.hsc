@@ -13,15 +13,13 @@ import Foreign.Storable
 import Foreign.C
 import Data.Bool
 import Data.Int
+import System.GLib.Bool
 
 import Graphics.Gdk.Exception
 
 #include <gdk/gdk.h>
 
 foreign import ccall "gdk_init_check" c_gdk_init_check :: Ptr CInt -> Ptr (Ptr CString) -> IO #type gboolean
-
-gbooleanToBool :: #{type gboolean} -> Bool
-gbooleanToBool = \case #{const FALSE} -> False; _ -> True
 
 gdkInit :: String ->[String] -> IO (String, [String])
 gdkInit prn as = (\(prn' : as') -> (prn', as')) <$> allocaArray (length (prn : as)) \arr -> withCStrings (prn : as) \cas -> do

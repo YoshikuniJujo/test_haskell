@@ -39,6 +39,7 @@ import Control.Exception
 import Data.Word
 import Data.Int
 import System.IO.Unsafe
+import System.GLib.Bool
 
 import Graphics.Gdk.Events
 import Graphics.Gdk.Exception

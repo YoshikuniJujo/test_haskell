@@ -13,6 +13,7 @@ import Foreign.Storable
 import Data.Bool
 import Data.Word
 import Data.Int
+import System.GLib.Bool
 
 import Graphics.Gdk.Types
 import Graphics.Gdk.Values
@@ -41,10 +42,6 @@ mkGdkEvent p = do
 	GDK_SETTING, GDK_OWNER_CHANGE, GDK_GRAB_BROKEN
 
 foreign import ccall "gdk_events_pending" c_gdk_events_pending :: IO #type gboolean
-
-gbooleanToBool :: #{type gboolean} -> Bool
-gbooleanToBool #{const FALSE} = False
-gbooleanToBool _ = True
 
 gdkEventsPending :: IO Bool
 gdkEventsPending = gbooleanToBool <$> c_gdk_events_pending

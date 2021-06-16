@@ -34,6 +34,7 @@ import Foreign.C
 import Control.Exception
 import Data.Word
 import Data.Int
+import System.GLib.Bool
 
 import Graphics.Gdk.Types
 import Graphics.Gdk.Values
@@ -95,10 +96,6 @@ gdkWindowHide :: GdkWindow -> IO ()
 gdkWindowHide (GdkWindow w) = c_gdk_window_hide w
 
 foreign import ccall "gdk_window_is_destroyed" c_gdk_window_is_destroyed :: Ptr GdkWindow -> IO #type gboolean
-
-gbooleanToBool :: #{type gboolean} -> Bool
-gbooleanToBool #{const FALSE} = False
-gbooleanToBool _ = True
 
 gdkWindowIsDestroyed :: GdkWindow -> IO Bool
 gdkWindowIsDestroyed (GdkWindow p) = gbooleanToBool <$> c_gdk_window_is_destroyed p
@@ -174,10 +171,6 @@ gdkWindowInvalidateRect (GdkWindow win) (x, y) (w, h) b = allocaBytes #{size Gdk
 	#{poke GdkRectangle, width} p w
 	#{poke GdkRectangle, height} p h
 	c_gdk_window_invalidate_rect win p $ boolToGboolean b
-
-boolToGboolean :: Bool -> #type gboolean
-boolToGboolean False = #const FALSE
-boolToGboolean True = #const TRUE
 
 foreign import ccall "gdk_window_freeze_updates" c_gdk_window_freeze_updates :: Ptr GdkWindow -> IO ()
 
