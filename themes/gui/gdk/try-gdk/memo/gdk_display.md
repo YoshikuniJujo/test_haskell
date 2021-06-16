@@ -75,11 +75,11 @@ now
 	+ [x] `gdk_display_flush`
 	+ [x] `gdk_display_close`
 	+ [x] `gdk_display_is_closed`
-* [ ] EVENT
-	+ [ ] `gdk_display_get_event`
-	+ [ ] `gdk_display_peek_event`
-	+ [ ] `gdk_display_put_event`
-	+ [ ] `gdk_display_has_pending`
+* [x] EVENT
+	+ [x] `gdk_display_get_event`
+	+ [x] `gdk_display_peek_event`
+	+ [x] `gdk_display_put_event`
+	+ [x] `gdk_display_has_pending`
 * [ ] CURSOR
 	+ [ ] `gdk_display_supports_cursor_color`
 	+ [ ] `gdk_display_supports_cursor_alpha`

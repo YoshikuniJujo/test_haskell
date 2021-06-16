@@ -111,21 +111,18 @@ gdkDisplayClose (GdkDisplay p) = c_gdk_display_close p
 foreign import ccall "gdk_display_close" c_gdk_display_close ::
 	Ptr GdkDisplay -> IO ()
 
-foreign import ccall "gdk_display_is_closed" c_gdk_display_is_closed ::
-	Ptr GdkDisplay -> IO #type gboolean
-
 gdkDisplayIsClosed :: GdkDisplay -> IO Bool
 gdkDisplayIsClosed (GdkDisplay p) = gbooleanToBool <$> c_gdk_display_is_closed p
 
-foreign import ccall "gdk_display_get_event" c_gdk_display_get_event ::
-	Ptr GdkDisplay -> IO (Ptr GdkEvent)
+foreign import ccall "gdk_display_is_closed" c_gdk_display_is_closed ::
+	Ptr GdkDisplay -> IO #type gboolean
 
 gdkDisplayGetEvent :: GdkDisplay -> IO (Maybe GdkEvent)
 gdkDisplayGetEvent (GdkDisplay d) = c_gdk_display_get_event d >>= \case
 	p	| p == nullPtr -> pure Nothing
 		| otherwise -> Just <$> mkGdkEvent p
 
-foreign import ccall "gdk_display_peek_event" c_gdk_display_peek_event ::
+foreign import ccall "gdk_display_get_event" c_gdk_display_get_event ::
 	Ptr GdkDisplay -> IO (Ptr GdkEvent)
 
 gdkDisplayPeekEvent :: GdkDisplay -> IO (Maybe GdkEvent)
@@ -133,18 +130,21 @@ gdkDisplayPeekEvent (GdkDisplay d) = c_gdk_display_peek_event d >>= \case
 	p	| p == nullPtr -> pure Nothing
 		| otherwise -> Just <$> mkGdkEvent p
 
-foreign import ccall "gdk_display_put_event" c_gdk_display_put_event ::
-	Ptr GdkDisplay -> Ptr GdkEvent -> IO ()
+foreign import ccall "gdk_display_peek_event" c_gdk_display_peek_event ::
+	Ptr GdkDisplay -> IO (Ptr GdkEvent)
 
 gdkDisplayPutEvent :: GdkDisplay -> GdkEvent -> IO ()
 gdkDisplayPutEvent (GdkDisplay d) (GdkEvent _ fe) = withForeignPtr fe \e ->
 	c_gdk_display_put_event d e
 
-foreign import ccall "gdk_display_has_pending" c_gdk_display_has_pending ::
-	Ptr GdkDisplay -> IO #type gboolean
+foreign import ccall "gdk_display_put_event" c_gdk_display_put_event ::
+	Ptr GdkDisplay -> Ptr GdkEvent -> IO ()
 
 gdkDisplayHasPending :: GdkDisplay -> IO Bool
 gdkDisplayHasPending (GdkDisplay p) = gbooleanToBool <$> c_gdk_display_has_pending p
+
+foreign import ccall "gdk_display_has_pending" c_gdk_display_has_pending ::
+	Ptr GdkDisplay -> IO #type gboolean
 
 foreign import ccall "gdk_display_supports_cursor_color" c_gdk_display_supports_cursor_color ::
 	Ptr GdkDisplay -> IO #type gboolean
