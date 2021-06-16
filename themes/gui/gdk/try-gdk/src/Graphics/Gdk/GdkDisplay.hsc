@@ -19,6 +19,9 @@ module Graphics.Gdk.GdkDisplay (
 	gdkDisplayPutEvent,
 	gdkDisplayHasPending,
 
+	-- * DOUBLE CLICK
+	gdkDisplaySetDoubleClickTime,
+
 	-- * CURSOR
 	gdkDisplaySupportsCursorColor,
 	gdkDisplaySupportsCursorAlpha,
@@ -141,6 +144,17 @@ gdkDisplayHasPending (GdkDisplay p) = gbooleanToBool <$> c_gdk_display_has_pendi
 
 foreign import ccall "gdk_display_has_pending" c_gdk_display_has_pending ::
 	Ptr GdkDisplay -> IO #type gboolean
+
+-- DOUBLE CLICK
+
+gdkDisplaySetDoubleClickTime :: GdkDisplay -> CUInt -> IO ()
+gdkDisplaySetDoubleClickTime (GdkDisplay d) =
+	c_gdk_display_set_double_click_time d
+
+foreign import ccall "gdk_display_set_double_click_time"
+	c_gdk_display_set_double_click_time :: Ptr GdkDisplay -> CUInt -> IO ()
+
+-- CURSOR
 
 gdkDisplaySupportsCursorColor :: GdkDisplay -> IO Bool
 gdkDisplaySupportsCursorColor (GdkDisplay p) =
