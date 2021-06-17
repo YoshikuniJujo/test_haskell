@@ -19,6 +19,7 @@ API Reference contents
 * [ ] Windows
 * [ ] GdkDrawingContext
 * [ ] Events
+* [ ] Properties and Atoms: Atoms
 
 ### not now
 
@@ -30,7 +31,7 @@ API Reference contents
 * Event Structures		ONLY TYPES
 * Key Values			MIDDLE
 * Drag and Drop			MIDDLE
-* Properties and Atoms		SMALL
+* Properties and Atoms: Properties	TINY
 * Threads			SMALL
 * Pango Interaction		TINY
 * Cairo Interaction		SMALL
