@@ -86,15 +86,18 @@ now
 * [x] DOUBLE CLICK
 	+ [x] `gdk_display_set_double_click_time`
 	+ [x] `gdk_display_set_double_click_distance`
-* [x] GROUP
-	+ [x] `gdk_display_get_default_group`
 * [x] CURSOR
 	+ [x] `gdk_display_supports_cursor_color`
 	+ [x] `gdk_display_supports_cursor_alpha`
 	+ [x] `gdk_display_get_default_cursor_size`
+* [x] GROUP
+	+ [x] `gdk_display_get_default_group`
 * [ ] SELECTION NOTIFICATION
-	+ [ ] `gdk_display_supports_selection_notification`
+	+ [x] `gdk_display_supports_selection_notification`
 	+ [ ] `gdk_display_request_selection_notification`
+* [ ] CLIPBOARD
+	+ [ ] `gdk_display_supports_clipboard_persistence`
+	+ [ ] `gdk_display_store_clipboard`
 * [x] SEAT
 	+ [x] `gdk_display_get_default_seat`
 	+ [x] `gdk_display_list_seats`
@@ -109,8 +112,6 @@ not now
 -------
 
 * [x] `gdk_display_beep`
-* [ ] `gdk_display_supports_clipboard_persistence`
-* [ ] `gdk_display_store_clipboard`
 * [ ] `gdk_display_supports_shapes`
 * [ ] `gdk_display_supports_input_shapes`
 * [ ] `gdk_display_get_app_launch_context`

@@ -49,6 +49,8 @@ main = do
 	putStrLn . gdkDisplayGetName =<< gdkDisplayManagerGetDefaultDisplay =<< gdkDisplayManagerGet
 	print . (gdkDisplayGetName <$>) =<< gdkDisplayManagerListDisplays =<< gdkDisplayManagerGet
 	d <- gdkDisplayGetDefault
+	putStr "gdkDisplaySupportsSelectionNotification: "
+	print =<< gdkDisplaySupportsSelectionNotification d
 	print =<< gdkScreenGetResolution (gdkDisplayGetDefaultScreen d)
 	st0 <- gdkDisplayGetDefaultSeat d
 	([], [st]) <- gdkDisplayListSeats d

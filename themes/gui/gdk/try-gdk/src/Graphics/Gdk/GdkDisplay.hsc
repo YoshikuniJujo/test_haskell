@@ -31,6 +31,9 @@ module Graphics.Gdk.GdkDisplay (
 	-- * GROUP
 	gdkDisplayGetDefaultGroup,
 
+	-- * SELECTION
+	gdkDisplaySupportsSelectionNotification,
+
 	-- * SEAT
 	gdkDisplayGetDefaultSeat,
 	gdkDisplayListSeats,
@@ -170,6 +173,16 @@ foreign import ccall "gdk_display_set_double_click_distance"
 
 foreign import ccall "gdk_display_get_default_group"
 	gdkDisplayGetDefaultGroup :: GdkDisplay -> IO GdkWindow
+
+-- SELECTION
+
+gdkDisplaySupportsSelectionNotification :: GdkDisplay -> IO Bool
+gdkDisplaySupportsSelectionNotification d =
+	gbooleanToBool <$> c_gdk_display_supports_selection_notification d
+
+foreign import ccall "gdk_display_supports_selection_notification"
+	c_gdk_display_supports_selection_notification ::
+	GdkDisplay -> IO #{type gboolean}
 
 -- CURSOR
 
