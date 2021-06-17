@@ -28,6 +28,9 @@ module Graphics.Gdk.GdkDisplay (
 	gdkDisplaySupportsCursorAlpha,
 	gdkDisplayGetDefaultCursorSize,
 
+	-- * GROUP
+	gdkDisplayGetDefaultGroup,
+
 	-- * SEAT
 	gdkDisplayGetDefaultSeat,
 	gdkDisplayListSeats,
@@ -162,6 +165,11 @@ gdkDisplaySetDoubleClickDistance (GdkDisplay d) =
 foreign import ccall "gdk_display_set_double_click_distance"
 	c_gdk_display_set_double_click_distance ::
 	Ptr GdkDisplay -> CUInt -> IO ()
+
+-- GROUP
+
+foreign import ccall "gdk_display_get_default_group"
+	gdkDisplayGetDefaultGroup :: GdkDisplay -> IO GdkWindow
 
 -- CURSOR
 
