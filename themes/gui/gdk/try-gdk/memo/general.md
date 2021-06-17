@@ -40,13 +40,13 @@ Function
 * [x] `gdk_init_check`
 * [x] `gdk_get_display_arg_name`
 * [x] `gdk_notify_startup_complete`
+* [x] `gdk_notify_startup_complete_with_id`
 * [x] `gdk_set_allowed_backends`
 * [x] `gdk_get_program_class`
 * [x] `gdk_set_program_class`
 
 ### not implement yet
 * `gdk_parse_args`
-* `gdk_notify_startup_complete_with_id`
 
 ### won't implement
 

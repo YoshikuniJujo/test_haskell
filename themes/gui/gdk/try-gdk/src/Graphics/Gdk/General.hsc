@@ -3,7 +3,7 @@
 
 module Graphics.Gdk.General (
 	gdkInit, gdkGetDisplayArgName,
-	gdkNotifyStartupComplete,
+	gdkNotifyStartupComplete, gdkNotifyStartupCompleteWithId,
 	gdkSetAllowedBackends,
 	gdkGetProgramClass, gdkSetProgramClass ) where
 
@@ -49,6 +49,13 @@ gdkNotifyStartupComplete = c_gdk_notify_startup_complete
 
 foreign import ccall "gdk_notify_startup_complete"
 	c_gdk_notify_startup_complete :: IO ()
+
+gdkNotifyStartupCompleteWithId :: String -> IO ()
+gdkNotifyStartupCompleteWithId i =
+	withCString i c_gdk_notify_startup_complete_with_id
+
+foreign import ccall "gdk_notify_startup_complete_with_id"
+	c_gdk_notify_startup_complete_with_id :: CString -> IO ()
 
 foreign import ccall "gdk_set_allowed_backends" c_gdk_set_allowed_backends ::
 	CString -> IO ()
