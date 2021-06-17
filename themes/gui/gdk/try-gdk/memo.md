@@ -19,9 +19,9 @@ API Reference contents
 * [ ] Windows
 * [ ] GdkDrawingContext
 * [ ] Events
-* [ ] Properties and Atoms: Atoms
+* [x] Properties and Atoms: Atoms
 	+ [x] add gdkAtomName
-	+ [ ] add export list
+	+ [x] add export list
 
 ### not now
 

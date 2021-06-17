@@ -1,7 +1,8 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.PropertiesAndAtoms.GdkAtom where
+module Graphics.Gdk.PropertiesAndAtoms.GdkAtom (
+	GdkAtom, gdkAtomIntern, gdkAtomName ) where
 
 import Foreign.Ptr
 import Foreign.C.String
