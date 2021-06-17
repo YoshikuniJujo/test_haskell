@@ -17,3 +17,13 @@ gdkAtomIntern nm = (GdkAtom <$>)
 
 foreign import ccall "gdk_atom_intern" c_gdk_atom_intern ::
 	CString -> #{type gboolean} -> IO (Ptr GdkAtom)
+
+gdkAtomName :: GdkAtom -> IO String
+gdkAtomName (GdkAtom a) = do
+	cnm <- c_gdk_atom_name a
+	peekCString cnm <* c_g_free cnm
+
+foreign import ccall "gdk_atom_name" c_gdk_atom_name ::
+	Ptr GdkAtom -> IO CString
+
+foreign import ccall "g_free" c_g_free :: Ptr a -> IO ()

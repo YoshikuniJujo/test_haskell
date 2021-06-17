@@ -20,6 +20,8 @@ API Reference contents
 * [ ] GdkDrawingContext
 * [ ] Events
 * [ ] Properties and Atoms: Atoms
+	+ [x] add gdkAtomName
+	+ [ ] add export list
 
 ### not now
 
