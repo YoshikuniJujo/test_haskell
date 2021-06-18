@@ -92,9 +92,9 @@ now
 	+ [x] `gdk_display_get_default_cursor_size`
 * [x] GROUP
 	+ [x] `gdk_display_get_default_group`
-* [ ] SELECTION NOTIFICATION
+* [x] SELECTION NOTIFICATION
 	+ [x] `gdk_display_supports_selection_notification`
-	+ [ ] `gdk_display_request_selection_notification`
+	+ [x] `gdk_display_request_selection_notification`
 * [ ] CLIPBOARD
 	+ [ ] `gdk_display_supports_clipboard_persistence`
 	+ [ ] `gdk_display_store_clipboard`

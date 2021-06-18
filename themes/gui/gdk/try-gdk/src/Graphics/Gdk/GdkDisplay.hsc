@@ -33,6 +33,7 @@ module Graphics.Gdk.GdkDisplay (
 
 	-- * SELECTION
 	gdkDisplaySupportsSelectionNotification,
+	gdkDisplayRequestSelectionNotification,
 
 	-- * SEAT
 	gdkDisplayGetDefaultSeat,
@@ -56,6 +57,7 @@ import System.IO.Unsafe
 import System.GLib.Bool
 
 import Graphics.Gdk.Events
+import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
 import Graphics.Gdk.Exception
 import Graphics.Gdk.Types
 import System.GLib.DoublyLinkedLists
@@ -183,6 +185,14 @@ gdkDisplaySupportsSelectionNotification d =
 foreign import ccall "gdk_display_supports_selection_notification"
 	c_gdk_display_supports_selection_notification ::
 	GdkDisplay -> IO #{type gboolean}
+
+gdkDisplayRequestSelectionNotification :: GdkDisplay -> GdkAtom -> IO Bool
+gdkDisplayRequestSelectionNotification d s =
+	gbooleanToBool <$> c_gdk_display_request_selection_notification d s
+
+foreign import ccall "gdk_display_request_selection_notification"
+	c_gdk_display_request_selection_notification ::
+	GdkDisplay -> GdkAtom -> IO #{type gboolean}
 
 -- CURSOR
 
