@@ -35,6 +35,9 @@ module Graphics.Gdk.GdkDisplay (
 	gdkDisplaySupportsSelectionNotification,
 	gdkDisplayRequestSelectionNotification,
 
+	-- * CLIPBOARD
+	gdkDisplaySupportsClipboardPersistence,
+
 	-- * SEAT
 	gdkDisplayGetDefaultSeat,
 	gdkDisplayListSeats,
@@ -193,6 +196,16 @@ gdkDisplayRequestSelectionNotification d s =
 foreign import ccall "gdk_display_request_selection_notification"
 	c_gdk_display_request_selection_notification ::
 	GdkDisplay -> GdkAtom -> IO #{type gboolean}
+
+-- CLIPBOARD
+
+gdkDisplaySupportsClipboardPersistence :: GdkDisplay -> IO Bool
+gdkDisplaySupportsClipboardPersistence d =
+	gbooleanToBool <$> c_gdk_display_supports_clipboard_persistence d
+
+foreign import ccall "gdk_display_supports_clipboard_persistence"
+	c_gdk_display_supports_clipboard_persistence ::
+	GdkDisplay -> IO #{type gboolean}
 
 -- CURSOR
 

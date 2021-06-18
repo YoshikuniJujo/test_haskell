@@ -51,6 +51,8 @@ main = do
 	d <- gdkDisplayGetDefault
 	putStr "gdkDisplaySupportsSelectionNotification: "
 	print =<< gdkDisplaySupportsSelectionNotification d
+	putStr "gdkDisplaySupportsClipboarPersistence: "
+	print =<< gdkDisplaySupportsClipboardPersistence d
 	print =<< gdkScreenGetResolution (gdkDisplayGetDefaultScreen d)
 	st0 <- gdkDisplayGetDefaultSeat d
 	([], [st]) <- gdkDisplayListSeats d

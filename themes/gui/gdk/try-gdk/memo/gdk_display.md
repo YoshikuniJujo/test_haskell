@@ -96,7 +96,7 @@ now
 	+ [x] `gdk_display_supports_selection_notification`
 	+ [x] `gdk_display_request_selection_notification`
 * [ ] CLIPBOARD
-	+ [ ] `gdk_display_supports_clipboard_persistence`
+	+ [x] `gdk_display_supports_clipboard_persistence`
 	+ [ ] `gdk_display_store_clipboard`
 * [x] SEAT
 	+ [x] `gdk_display_get_default_seat`
