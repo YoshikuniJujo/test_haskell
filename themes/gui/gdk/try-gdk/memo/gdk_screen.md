@@ -49,7 +49,7 @@ Function
 * [x] `gdk_screen_get_rgba_visual`
 * [x] `gdk_screen_is_composited`
 * [x] `gdk_screen_get_root_window`
-* [ ] `gdk_screen_get_display`
+* [x] `gdk_screen_get_display`
 * [ ] `gdk_screen_list_visuals`
 * [ ] `gdk_screen_get_toplevel_windows`
 * [ ] `gdk_screen_get_resolution`
