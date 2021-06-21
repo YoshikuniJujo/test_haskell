@@ -1,7 +1,18 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.GdkScreen where
+module Graphics.Gdk.GdkScreen (
+	gdkScreenGetDefault,
+	gdkScreenGetSystemVisual,
+	gdkScreenGetRgbaVisual,
+	gdkScreenIsComposited,
+	gdkScreenGetRootWindow,
+	gdkScreenGetDisplay,
+	gdkScreenListVisuals,
+	gdkScreenGetToplevelWindows,
+	gdkScreenGetResolution,
+	gdkScreenGetWindowStack
+	) where
 
 import Foreign.Ptr
 import Control.Arrow
@@ -29,7 +40,7 @@ foreign import ccall "gdk_screen_get_rgba_visual" c_gdk_screen_get_rgba_visual :
 	Ptr GdkScreen -> IO (Ptr GdkVisual)
 
 gdkScreenGetRgbaVisual :: GdkScreen -> IO (Maybe GdkVisual)
-gdkScreenGetRgbaVisual (GdkScreen s) = (<$> c_gdk_screen_get_system_visual s) \case
+gdkScreenGetRgbaVisual (GdkScreen s) = (<$> c_gdk_screen_get_rgba_visual s) \case
 	v	| v == nullPtr -> Nothing
 		| otherwise -> Just $ GdkVisual v
 
