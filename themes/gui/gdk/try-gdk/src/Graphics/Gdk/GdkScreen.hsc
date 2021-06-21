@@ -25,20 +25,17 @@ import Graphics.Gdk.Types
 
 #include <gdk/gdk.h>
 
-foreign import ccall "gdk_screen_get_default" c_gdk_screen_get_default ::
-	IO (Ptr GdkScreen)
-
 gdkScreenGetDefault :: IO (Maybe GdkScreen)
 gdkScreenGetDefault = (<$> c_gdk_screen_get_default) \case
 	NullPtr -> Nothing; p -> Just $ GdkScreen p
 
-foreign import ccall "gdk_screen_get_system_visual" c_gdk_screen_get_system_visual ::
-	Ptr GdkScreen -> IO (Ptr GdkVisual)
+foreign import ccall "gdk_screen_get_default" c_gdk_screen_get_default ::
+	IO (Ptr GdkScreen)
 
 gdkScreenGetSystemVisual :: GdkScreen -> IO GdkVisual
 gdkScreenGetSystemVisual (GdkScreen p) = GdkVisual <$> c_gdk_screen_get_system_visual p
 
-foreign import ccall "gdk_screen_get_rgba_visual" c_gdk_screen_get_rgba_visual ::
+foreign import ccall "gdk_screen_get_system_visual" c_gdk_screen_get_system_visual ::
 	Ptr GdkScreen -> IO (Ptr GdkVisual)
 
 gdkScreenGetRgbaVisual :: GdkScreen -> IO (Maybe GdkVisual)
@@ -46,17 +43,20 @@ gdkScreenGetRgbaVisual (GdkScreen s) = (<$> c_gdk_screen_get_rgba_visual s) \cas
 	v	| v == nullPtr -> Nothing
 		| otherwise -> Just $ GdkVisual v
 
-foreign import ccall "gdk_screen_is_composited" c_gdk_screen_is_composited ::
-	Ptr GdkScreen -> IO #type gboolean
+foreign import ccall "gdk_screen_get_rgba_visual" c_gdk_screen_get_rgba_visual ::
+	Ptr GdkScreen -> IO (Ptr GdkVisual)
 
 gdkScreenIsComposited :: GdkScreen -> IO Bool
 gdkScreenIsComposited (GdkScreen s) = gbooleanToBool <$> c_gdk_screen_is_composited s
 
-foreign import ccall "gdk_screen_get_root_window" c_gdk_screen_get_root_window ::
-	Ptr GdkScreen -> IO (Ptr GdkWindow)
+foreign import ccall "gdk_screen_is_composited" c_gdk_screen_is_composited ::
+	Ptr GdkScreen -> IO #type gboolean
 
 gdkScreenGetRootWindow :: GdkScreen -> IO GdkWindow
 gdkScreenGetRootWindow (GdkScreen p) = GdkWindow <$> c_gdk_screen_get_root_window p
+
+foreign import ccall "gdk_screen_get_root_window" c_gdk_screen_get_root_window ::
+	Ptr GdkScreen -> IO (Ptr GdkWindow)
 
 foreign import ccall "gdk_screen_get_display" c_gdk_screen_get_display ::
 	Ptr GdkScreen -> IO (Ptr GdkDisplay)
