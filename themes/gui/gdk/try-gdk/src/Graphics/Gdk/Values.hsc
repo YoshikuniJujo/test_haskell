@@ -1,7 +1,10 @@
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.Values where
 
+import Foreign.C.Enum
 import Data.Bits
 import Data.Word
 import Data.Int
@@ -27,9 +30,10 @@ mergeGdkEventMask :: [GdkEventMask] -> #{type GdkEventMask}
 mergeGdkEventMask [] = 0
 mergeGdkEventMask (GdkEventMask em : ems) = em .|. mergeGdkEventMask ems
 
-newtype GdkWindowType = GdkWindowType #{type GdkWindowType} deriving Show
-#enum GdkWindowType, GdkWindowType, GDK_WINDOW_ROOT, GDK_WINDOW_TOPLEVEL, \
-	GDK_WINDOW_CHILD
+enum "GdkWindowType" ''#{type GdkWindowType} [''Show] [
+	("GdkWindowRoot", #{const GDK_WINDOW_ROOT}),
+	("GdkWindowToplevel", #{const GDK_WINDOW_TOPLEVEL}),
+	("GdkWindowChild", #{const GDK_WINDOW_CHILD}) ]
 
 newtype GdkWindowWindowClass = GdkWindowWindowClass #{type GdkWindowWindowClass} deriving Show
 #enum GdkWindowWindowClass, GdkWindowWindowClass, GDK_INPUT_OUTPUT, GDK_INPUT_ONLY

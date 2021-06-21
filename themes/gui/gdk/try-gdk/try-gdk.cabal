@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c5d483704a8e61e5342a0e6ad00638cf18942bf79b97ca9d7aa0e0de71385373
+-- hash: e1c0eb3aff495d38270a91bea86ec2895f16e5417f7de3ecce6e36f239350298
 
 name:           try-gdk
 version:        0.1.0.0
@@ -54,6 +54,7 @@ library
       gdk-3.0
   build-depends:
       base >=4.7 && <5
+    , c-enum
     , exception-hierarchy
     , glib-stopgap
     , primitive
@@ -70,6 +71,7 @@ executable simple
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , c-enum
     , exception-hierarchy
     , glib-stopgap
     , primitive
@@ -87,6 +89,7 @@ executable test-cursor
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , c-enum
     , exception-hierarchy
     , glib-stopgap
     , primitive
@@ -104,6 +107,7 @@ executable try-display
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , c-enum
     , exception-hierarchy
     , glib-stopgap
     , primitive
@@ -120,6 +124,7 @@ executable try-gdk-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , c-enum
     , exception-hierarchy
     , glib-stopgap
     , primitive
@@ -137,6 +142,7 @@ test-suite try-gdk-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , c-enum
     , exception-hierarchy
     , glib-stopgap
     , primitive

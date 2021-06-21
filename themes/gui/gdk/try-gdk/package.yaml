@@ -25,6 +25,7 @@ dependencies:
 - simple-cairo
 - exception-hierarchy
 - glib-stopgap
+- c-enum
 
 library:
   source-dirs: src

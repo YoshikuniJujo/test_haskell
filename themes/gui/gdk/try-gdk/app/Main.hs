@@ -139,13 +139,13 @@ main = do
 				gdkAllEventsMask, gdkPointerMotionMask
 				]
 			400 400
-			gdkInputOutput gdkWindowToplevel
+			gdkInputOutput GdkWindowToplevel
 	w <- gdkWindowNew Nothing wattr { gdkWindowAttrTitle = Just "試験窓" }
 	print =<< gdkWindowGetWindowType w
 	print =<< gdkWindowGetWindowType =<< gdkWindowGetParent w
 	print =<< gdkWindowGetDecorations w
-	print gdkWindowToplevel
-	print gdkWindowRoot
+	print GdkWindowToplevel
+	print GdkWindowRoot
 	putStrLn . gdkDisplayGetName =<< gdkWindowGetDisplay w
 	print =<< gdkScreenGetResolution =<< gdkWindowGetScreen w
 	print =<< gdkVisualGetDepth =<< gdkWindowGetVisual w

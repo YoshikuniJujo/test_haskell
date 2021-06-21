@@ -45,9 +45,9 @@ Function
 
 * [x] `gdk_screen_get_default`
 	+ [x] check NULL
-* [ ] `gdk_screen_get_system_visual`
-* [ ] `gdk_screen_get_rgba_visual`
-* [ ] `gdk_screen_is_composited`
+* [x] `gdk_screen_get_system_visual`
+* [x] `gdk_screen_get_rgba_visual`
+* [x] `gdk_screen_is_composited`
 * [ ] `gdk_screen_get_root_window`
 * [ ] `gdk_screen_get_display`
 * [ ] `gdk_screen_list_visuals`
@@ -61,3 +61,11 @@ Function
 * [ ] `gdk_screen_get_font_options`
 * [ ] `gdk_screen_set_font_options`
 * [ ] `gdk_screen_set_resolution`
+
+todo
+----
+
+* [x] use c-enum in `GdkWindowType`
+* [ ] use c-enum in `GdkWindowState`
+* [ ] move `GdkWindowType` to the appropriate module.
+* [ ] move `GdkWindowState` to the appropriate module.

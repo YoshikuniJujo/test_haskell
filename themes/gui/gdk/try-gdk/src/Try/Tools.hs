@@ -30,4 +30,4 @@ defaultGdkWindowAttr = mkGdkWindowAttr [
 		gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkPointerMotionMask, gdkButtonMotionMask,
 		gdkButtonReleaseMask, gdkAllEventsMask
 		]
-	400 400 gdkInputOutput gdkWindowToplevel
+	400 400 gdkInputOutput GdkWindowToplevel
