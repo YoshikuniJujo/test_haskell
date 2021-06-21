@@ -10,7 +10,6 @@ import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
-import Control.Arrow
 import Data.Word
 import Data.Int
 

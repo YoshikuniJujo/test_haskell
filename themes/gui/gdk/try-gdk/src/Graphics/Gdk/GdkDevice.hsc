@@ -7,7 +7,6 @@ import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.C
-import Control.Arrow
 import Data.Word
 
 import Graphics.Gdk.Types

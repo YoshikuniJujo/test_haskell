@@ -30,11 +30,6 @@ mergeGdkEventMask :: [GdkEventMask] -> #{type GdkEventMask}
 mergeGdkEventMask [] = 0
 mergeGdkEventMask (GdkEventMask em : ems) = em .|. mergeGdkEventMask ems
 
-enum "GdkWindowType" ''#{type GdkWindowType} [''Show] [
-	("GdkWindowRoot", #{const GDK_WINDOW_ROOT}),
-	("GdkWindowToplevel", #{const GDK_WINDOW_TOPLEVEL}),
-	("GdkWindowChild", #{const GDK_WINDOW_CHILD}) ]
-
 newtype GdkWindowWindowClass = GdkWindowWindowClass #{type GdkWindowWindowClass} deriving Show
 #enum GdkWindowWindowClass, GdkWindowWindowClass, GDK_INPUT_OUTPUT, GDK_INPUT_ONLY
 

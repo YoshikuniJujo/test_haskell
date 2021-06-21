@@ -7,8 +7,8 @@ import Control.Concurrent
 import Data.Bool
 
 import Graphics.Gdk.Events
-import Graphics.Gdk.Types
 import Graphics.Gdk.Values
+import Graphics.Gdk.Windows
 
 mainLoop :: (GdkEvent -> IO Bool) -> IO ()
 mainLoop f = doWhile_ do

@@ -10,7 +10,6 @@ import Data.Int
 
 import Graphics.Gdk.Types
 import Graphics.Gdk.Values
-import Graphics.Cairo.Types
 
 import Graphics.Cairo.Surfaces.CairoSurfaceT.Internal
 
