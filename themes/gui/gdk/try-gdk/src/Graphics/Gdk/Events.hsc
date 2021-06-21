@@ -17,6 +17,7 @@ import System.GLib.Bool
 
 import Graphics.Gdk.Types
 import Graphics.Gdk.Values
+import Graphics.Gdk.EventStructures
 
 #include <gdk/gdk.h>
 

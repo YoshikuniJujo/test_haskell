@@ -68,4 +68,4 @@ todo
 * [x] use c-enum in `GdkWindowType`
 * [x] use c-enum in `GdkWindowState`
 * [x] move `GdkWindowType` to the appropriate module.
-* [ ] move `GdkWindowState` to the appropriate module.
+* [x] move `GdkWindowState` to the appropriate module.

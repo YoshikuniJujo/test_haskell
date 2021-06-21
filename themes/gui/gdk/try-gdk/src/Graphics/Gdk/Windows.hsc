@@ -46,6 +46,8 @@ import System.GLib.Bool
 
 import Graphics.Gdk.Types
 import Graphics.Gdk.Values
+import Graphics.Gdk.EventStructures
+
 import Graphics.Cairo.Types
 
 import Data.Bits
