@@ -15,6 +15,7 @@ module Graphics.Gdk.GdkScreen (
 	) where
 
 import Foreign.Ptr
+import Foreign.Ptr.Misc
 import Control.Arrow
 import Data.Int
 import System.GLib.Bool
@@ -27,8 +28,9 @@ import Graphics.Gdk.Types
 foreign import ccall "gdk_screen_get_default" c_gdk_screen_get_default ::
 	IO (Ptr GdkScreen)
 
-gdkScreenGetDefault :: IO GdkScreen
-gdkScreenGetDefault = GdkScreen <$> c_gdk_screen_get_default
+gdkScreenGetDefault :: IO (Maybe GdkScreen)
+gdkScreenGetDefault = (<$> c_gdk_screen_get_default) \case
+	NullPtr -> Nothing; p -> Just $ GdkScreen p
 
 foreign import ccall "gdk_screen_get_system_visual" c_gdk_screen_get_system_visual ::
 	Ptr GdkScreen -> IO (Ptr GdkVisual)

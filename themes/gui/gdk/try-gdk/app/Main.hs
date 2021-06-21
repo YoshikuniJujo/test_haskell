@@ -86,7 +86,7 @@ main = do
 	putStrLn . ("Supports cursor alpha: " ++) . show =<< gdkDisplaySupportsCursorAlpha d
 	putStrLn . ("Default cursor size: " ++) . show =<< gdkDisplayGetDefaultCursorSize d
 	putStrLn . ("Number of monitors: " ++) . show =<< gdkDisplayGetNMonitors d
-	scrn <- gdkScreenGetDefault
+	Just scrn <- gdkScreenGetDefault
 	vsl <- gdkScreenGetSystemVisual scrn
 	putStrLn . ("Depth of system visual: " ++) . show =<< gdkVisualGetDepth vsl
 	maybe (putStrLn "No rgba visual") (\v -> putStrLn . ("Depth of rgba visual: " ++) . show =<< gdkVisualGetDepth v)
