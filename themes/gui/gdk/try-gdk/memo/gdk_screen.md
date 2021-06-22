@@ -54,8 +54,8 @@ Function
 * [x] `gdk_screen_get_toplevel_windows`
 * [x] `gdk_screen_get_resolution`
 * [x] `gdk_screen_set_resolution`
-* [ ] `gdk_screen_get_window_stack`
-	+ [ ] need `g_object_unref` for returned windows
+* [x] `gdk_screen_get_window_stack`
+	+ [x] need `g_object_unref` for returned windows
 
 ### not now
 

@@ -121,7 +121,7 @@ main = do
 		tws -> for_ tws \tw -> print =<< gdkWindowGetWindowType tw
 	putStrLn "gdkScreenGetWindowStack #1"
 	gdkScreenGetWindowStack scrn >>=
-		mapM_ \tw -> print =<< gdkWindowGetWindowType tw
+		mapM_ \tw -> print =<< withGdkWindowAutoUnref tw gdkWindowGetWindowType
 	print =<< gdkSeatGetCapabilities st
 	let wattr = mkGdkWindowAttr [
 				gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkFocusChangeMask,
@@ -165,7 +165,7 @@ main = do
 		mapM_ \tw -> print =<< gdkWindowGetWindowType tw
 	putStrLn "gdkScreenGetWindowStack #2"
 	gdkScreenGetWindowStack scrn >>=
-		mapM_ \tw -> print =<< gdkWindowGetWindowType tw
+		mapM_ \tw -> print =<< withGdkWindowAutoUnref tw gdkWindowGetWindowType
 	checkGrabbedPointerKeyboard d st
 	doWhile_ do
 		threadDelay 100000
