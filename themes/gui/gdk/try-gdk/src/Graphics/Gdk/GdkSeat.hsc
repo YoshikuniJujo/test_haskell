@@ -10,7 +10,7 @@ module Graphics.Gdk.GdkSeat (
 	-- * FUNCTION
 
 	gdkSeatGetDisplay,
-	gdkSeatGrab, gdkSeatGrabSimple, GdkSeatGrabPrepareFunc, -- gdkSeatUngrab,
+	gdkSeatGrab, gdkSeatGrabSimple, -- gdkSeatUngrab,
 	gdkSeatGetCapabilities,
 	gdkSeatGetPointer, gdkSeatGetKeyboard,
 	gdkSeatGetSlaves,
@@ -28,7 +28,12 @@ module Graphics.Gdk.GdkSeat (
 	GdkSeatCapabilities,
 	pattern GdkSeatCapabilityNone,
 	pattern GdkSeatCapabilityAllPointing,
-	pattern GdkSeatCapabilityAll ) where
+	pattern GdkSeatCapabilityAll,
+
+	-- * GDK SEAT GRAB PREPARE FUNC
+	GdkSeatGrabPrepareFunc, Pointerable,
+
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
