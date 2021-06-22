@@ -4,6 +4,7 @@
 
 module Graphics.Gdk.Values where
 
+import Foreign.C.Enum
 import Data.Bits
 import Data.Word
 import Data.Int
@@ -32,11 +33,13 @@ mergeGdkEventMask (GdkEventMask em : ems) = em .|. mergeGdkEventMask ems
 newtype GdkWindowWindowClass = GdkWindowWindowClass #{type GdkWindowWindowClass} deriving Show
 #enum GdkWindowWindowClass, GdkWindowWindowClass, GDK_INPUT_OUTPUT, GDK_INPUT_ONLY
 
-newtype GdkVisualType = GdkVisualType #{type GdkVisualType} deriving (Show, Eq)
-
-#enum GdkVisualType, GdkVisualType, GDK_VISUAL_STATIC_GRAY, \
-	GDK_VISUAL_GRAYSCALE, GDK_VISUAL_STATIC_COLOR, GDK_VISUAL_PSEUDO_COLOR, \
-	GDK_VISUAL_TRUE_COLOR, GDK_VISUAL_DIRECT_COLOR
+enum "GdkVisualType" ''#{type GdkVisualType} [''Show, ''Eq] [
+	("GdkVisualStaticGray", #{const GDK_VISUAL_STATIC_GRAY}),
+	("GdkVisualGrayscale", #{const GDK_VISUAL_GRAYSCALE}),
+	("GdkVisualStaticColor", #{const GDK_VISUAL_STATIC_COLOR}),
+	("GdkVisualPseudoColor", #{const GDK_VISUAL_PSEUDO_COLOR}),
+	("GdkVisualTrueColor", #{const GDK_VISUAL_TRUE_COLOR}),
+	("GdkVisualDirectColor", #{const GDK_VISUAL_DIRECT_COLOR}) ]
 
 newtype GdkSeatCapabilities = GdkSeatCapabilities #{type GdkSeatCapabilities} deriving Show
 
