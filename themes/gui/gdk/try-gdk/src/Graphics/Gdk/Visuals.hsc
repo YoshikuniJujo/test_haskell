@@ -1,4 +1,6 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.Visuals where
@@ -6,13 +8,21 @@ module Graphics.Gdk.Visuals where
 import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
+import Foreign.C.Enum
 import Data.Int
 import Data.Word
 
 import Graphics.Gdk.Types
-import Graphics.Gdk.Values
 
 #include <gdk/gdk.h>
+
+enum "GdkVisualType" ''#{type GdkVisualType} [''Show, ''Eq] [
+	("GdkVisualStaticGray", #{const GDK_VISUAL_STATIC_GRAY}),
+	("GdkVisualGrayscale", #{const GDK_VISUAL_GRAYSCALE}),
+	("GdkVisualStaticColor", #{const GDK_VISUAL_STATIC_COLOR}),
+	("GdkVisualPseudoColor", #{const GDK_VISUAL_PSEUDO_COLOR}),
+	("GdkVisualTrueColor", #{const GDK_VISUAL_TRUE_COLOR}),
+	("GdkVisualDirectColor", #{const GDK_VISUAL_DIRECT_COLOR}) ]
 
 foreign import ccall "gdk_visual_get_depth" c_gdk_visual_get_depth ::
 	Ptr GdkVisual -> IO #type gint
