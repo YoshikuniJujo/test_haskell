@@ -77,38 +77,38 @@ gdkSeatCapabilities :: [GdkSeatCapability] -> GdkSeatCapabilities
 gdkSeatCapabilities = foldr consGdkSeatCapability GdkSeatCapabilityNone
 
 foreign import ccall "gdk_seat_get_display" c_gdk_seat_get_display ::
-	Ptr GdkSeat -> IO (Ptr GdkDisplay)
+	GdkSeat -> IO (Ptr GdkDisplay)
 
 gdkSeatGetDisplay :: GdkSeat -> IO GdkDisplay
-gdkSeatGetDisplay (GdkSeat p) = GdkDisplay <$> c_gdk_seat_get_display p
+gdkSeatGetDisplay p = GdkDisplay <$> c_gdk_seat_get_display p
 
 foreign import ccall "gdk_seat_get_pointer" c_gdk_seat_get_pointer ::
-	Ptr GdkSeat -> IO (Ptr GdkDevice)
+	GdkSeat -> IO (Ptr GdkDevice)
 
 gdkSeatGetPointer :: GdkSeat -> IO GdkDevice
-gdkSeatGetPointer (GdkSeat p) = GdkDevice
+gdkSeatGetPointer p = GdkDevice
 	<$> (flip newForeignPtr (pure ()) =<< c_gdk_seat_get_pointer p)
 
 foreign import ccall "gdk_seat_get_keyboard" c_gdk_seat_get_keyboard ::
-	Ptr GdkSeat -> IO (Ptr GdkDevice)
+	GdkSeat -> IO (Ptr GdkDevice)
 
 gdkSeatGetKeyboard :: GdkSeat -> IO GdkDevice
-gdkSeatGetKeyboard (GdkSeat p) = GdkDevice <$> (flip newForeignPtr (pure ()) =<< c_gdk_seat_get_keyboard p)
+gdkSeatGetKeyboard p = GdkDevice <$> (flip newForeignPtr (pure ()) =<< c_gdk_seat_get_keyboard p)
 
 foreign import ccall "gdk_seat_get_capabilities" c_gdk_seat_get_capabilities ::
-	Ptr GdkSeat -> IO #type GdkSeatCapabilities
+	GdkSeat -> IO #type GdkSeatCapabilities
 
 gdkSeatGetCapabilities :: GdkSeat -> IO GdkSeatCapabilities
-gdkSeatGetCapabilities (GdkSeat p) = GdkSeatCapabilities <$> c_gdk_seat_get_capabilities p
+gdkSeatGetCapabilities p = GdkSeatCapabilities <$> c_gdk_seat_get_capabilities p
 
 foreign import ccall "gdk_seat_get_slaves" c_gdk_seat_get_slaves ::
-	Ptr GdkSeat -> #{type GdkSeatCapabilities} -> IO (Ptr (GList GdkDevice))
+	GdkSeat -> #{type GdkSeatCapabilities} -> IO (Ptr (GList GdkDevice))
 
 mkGdkDevice :: Ptr GdkDevice -> IO GdkDevice
 mkGdkDevice p = GdkDevice <$> newForeignPtr p (pure ())
 
 gdkSeatGetSlaves :: GdkSeat -> GdkSeatCapabilities -> IO [GdkDevice]
-gdkSeatGetSlaves (GdkSeat p) (GdkSeatCapabilities cps) = do
+gdkSeatGetSlaves p (GdkSeatCapabilities cps) = do
 	gl <- c_gdk_seat_get_slaves p cps
 	mapM mkGdkDevice =<< g_list_to_list gl <* c_g_list_free gl
 
@@ -116,17 +116,17 @@ gdkSeatGrab ::
 	Pointerable a =>
 	GdkSeat -> GdkWindow -> GdkSeatCapabilities -> Bool -> Maybe GdkCursor ->
 	Maybe GdkEvent -> Maybe (GdkSeatGrabPrepareFunc a, a) -> IO GdkGrabStatus
-gdkSeatGrab (GdkSeat st) (GdkWindow wn) (GdkSeatCapabilities cp) oe
+gdkSeatGrab st (GdkWindow wn) (GdkSeatCapabilities cp) oe
 	crs ev fx = withGdkCursor crs \pcrs -> withGdkEvent ev \pev -> do
 	(fp, px) <- maybeGdkSeatGrabPrepareFunc fx
 	GdkGrabStatus <$> c_gdk_seat_grab st wn cp (boolToGboolean oe) pcrs pev fp px
 
 foreign import ccall "gdk_seat_grab" c_gdk_seat_grab ::
-	Ptr GdkSeat -> Ptr GdkWindow -> #{type GdkSeatCapabilities} -> #{type gboolean} ->
+	GdkSeat -> Ptr GdkWindow -> #{type GdkSeatCapabilities} -> #{type gboolean} ->
 	Ptr GdkCursor -> Ptr GdkEvent ->
 	FunPtr (C_GdkSeatGrabPrepareFunc a) -> Ptr a -> IO #{type GdkGrabStatus}
 
-type C_GdkSeatGrabPrepareFunc a = Ptr GdkSeat -> Ptr GdkWindow -> Ptr a -> IO ()
+type C_GdkSeatGrabPrepareFunc a = GdkSeat -> Ptr GdkWindow -> Ptr a -> IO ()
 
 class Pointerable a where toPtr :: a -> IO (Ptr a); fromPtr :: Ptr a -> IO a
 
@@ -138,7 +138,7 @@ type GdkSeatGrabPrepareFunc a = GdkSeat -> GdkWindow -> a -> IO ()
 
 convertGdkSeatGrabPrepareFunc ::
 	Pointerable a => GdkSeatGrabPrepareFunc a -> C_GdkSeatGrabPrepareFunc a
-convertGdkSeatGrabPrepareFunc f st wn x = f (GdkSeat st) (GdkWindow wn) =<< fromPtr x
+convertGdkSeatGrabPrepareFunc f st wn x = f st (GdkWindow wn) =<< fromPtr x
 
 foreign import ccall "wrapper" wrap_GdkSeatGrabPrepareFunc :: C_GdkSeatGrabPrepareFunc a -> IO (FunPtr (C_GdkSeatGrabPrepareFunc a))
 
