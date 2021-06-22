@@ -52,6 +52,7 @@ import Graphics.Gdk.Types
 import Graphics.Gdk.Values
 
 import System.GLib.DoublyLinkedLists
+import System.GLib.Bool
 
 #include <gdk/gdk.h>
 
@@ -168,9 +169,5 @@ maybeGdkSeatGrabPrepareFunc = \case
 		fp <- wrap_GdkSeatGrabPrepareFunc $ convertGdkSeatGrabPrepareFunc f
 		px <- toPtr x
 		pure (fp, px)
-
-boolToGboolean :: Bool -> #{type gboolean}
-boolToGboolean False = #const FALSE
-boolToGboolean True = #const TRUE
 
 -- foreign import ccall "gdk_seat_ungrab" c_gdk_seat_

@@ -10,4 +10,4 @@ todo
 * [x] move `GdkSeat` from `Types`
 * [x] use `GdkSeat` instead of `Ptr GdkSeat`
 * [ ] define `gdkSeatUngrab`
-* [ ] use `boolToGboolean` of `System.GLib.Bool`
+* [x] use `boolToGboolean` of `System.GLib.Bool`
