@@ -51,16 +51,17 @@ Function
 * [x] `gdk_screen_get_root_window`
 * [x] `gdk_screen_get_display`
 * [x] `gdk_screen_list_visuals`
-* [ ] `gdk_screen_get_toplevel_windows`
-* [ ] `gdk_screen_get_resolution`
+* [x] `gdk_screen_get_toplevel_windows`
+* [x] `gdk_screen_get_resolution`
+* [x] `gdk_screen_set_resolution`
 * [ ] `gdk_screen_get_window_stack`
+	+ [ ] need `g_object_unref` for returned windows
 
 ### not now
 
-* [ ] `gdk_screen_get_setting`
-* [ ] `gdk_screen_get_font_options`
-* [ ] `gdk_screen_set_font_options`
-* [ ] `gdk_screen_set_resolution`
+* [x] `gdk_screen_get_setting`
+* [x] `gdk_screen_get_font_options`
+* [x] `gdk_screen_set_font_options`
 
 todo
 ----

@@ -2,20 +2,31 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkScreen (
+	-- * DEFAULT SCREEN
 	gdkScreenGetDefault,
+	-- * VISUAL
 	gdkScreenGetSystemVisual,
 	gdkScreenGetRgbaVisual,
-	gdkScreenIsComposited,
-	gdkScreenGetRootWindow,
-	gdkScreenGetDisplay,
 	gdkScreenListVisuals,
+
+	-- * IS COMPOSITED
+	gdkScreenIsComposited,
+
+	-- * WINDOW
+	gdkScreenGetRootWindow,
 	gdkScreenGetToplevelWindows,
+	gdkScreenGetWindowStack,
+
+	-- * DISPLAY
+	gdkScreenGetDisplay,
+
+	-- * RESOLUTION
 	gdkScreenGetResolution,
-	gdkScreenGetWindowStack
-	) where
+	gdkScreenSetResolution ) where
 
 import Foreign.Ptr
 import Foreign.Ptr.Misc
+import Foreign.C.Types
 import Data.Int
 import System.GLib.Bool
 import System.GLib.DoublyLinkedLists
@@ -79,11 +90,11 @@ gdkScreenGetToplevelWindows (GdkScreen p) = do
 foreign import ccall "gdk_screen_get_toplevel_windows" c_gdk_screen_get_toplevel_windows ::
 	Ptr GdkScreen -> IO (Ptr (GList GdkWindow))
 
-gdkScreenGetResolution :: GdkScreen -> IO Double
-gdkScreenGetResolution (GdkScreen p) = c_gdk_screen_get_resolution p
+foreign import ccall "gdk_screen_get_resolution" gdkScreenGetResolution ::
+	GdkScreen -> IO CDouble
 
-foreign import ccall "gdk_screen_get_resolution" c_gdk_screen_get_resolution ::
-	Ptr GdkScreen -> IO #type gdouble
+foreign import ccall "gdk_screen_set_resolution" gdkScreenSetResolution ::
+	GdkScreen -> CDouble -> IO ()
 
 gdkScreenGetWindowStack :: GdkScreen -> IO [GdkWindow]
 gdkScreenGetWindowStack (GdkScreen p) = do

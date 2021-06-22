@@ -53,6 +53,7 @@ main = do
 	print =<< gdkDisplaySupportsSelectionNotification d
 	putStr "gdkDisplaySupportsClipboarPersistence: "
 	print =<< gdkDisplaySupportsClipboardPersistence d
+	putStrLn "gdkScreenGetResolution #1"
 	print =<< gdkScreenGetResolution (gdkDisplayGetDefaultScreen d)
 	st0 <- gdkDisplayGetDefaultSeat d
 	[st] <- gdkDisplayListSeats d
@@ -119,8 +120,8 @@ main = do
 	gdkScreenGetToplevelWindows scrn >>= \case
 		tws -> for_ tws \tw -> print =<< gdkWindowGetWindowType tw
 	putStrLn "gdkScreenGetWindowStack #1"
-	gdkScreenGetWindowStack scrn >>= \case
-		tws -> for_ tws \tw -> print =<< gdkWindowGetWindowType tw
+	gdkScreenGetWindowStack scrn >>=
+		mapM_ \tw -> print =<< gdkWindowGetWindowType tw
 	print =<< gdkSeatGetCapabilities st
 	let wattr = mkGdkWindowAttr [
 				gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkFocusChangeMask,
@@ -136,6 +137,7 @@ main = do
 	print GdkWindowToplevel
 	print GdkWindowRoot
 	putStrLn . gdkDisplayGetName =<< gdkWindowGetDisplay w
+	putStrLn "gdkScreenGetResolution #2"
 	print =<< gdkScreenGetResolution =<< gdkWindowGetScreen w
 	print =<< gdkVisualGetDepth =<< gdkWindowGetVisual w
 	putStrLn . ("Window is destroyed: " ++) . show =<< gdkWindowIsDestroyed w
@@ -162,10 +164,8 @@ main = do
 	gdkScreenGetToplevelWindows scrn >>=
 		mapM_ \tw -> print =<< gdkWindowGetWindowType tw
 	putStrLn "gdkScreenGetWindowStack #2"
-	gdkScreenGetWindowStack scrn >>= \case
-		tws -> do
-			putStrLn "no pre windows"
-			for_ tws \tw -> print =<< gdkWindowGetWindowType tw
+	gdkScreenGetWindowStack scrn >>=
+		mapM_ \tw -> print =<< gdkWindowGetWindowType tw
 	checkGrabbedPointerKeyboard d st
 	doWhile_ do
 		threadDelay 100000
