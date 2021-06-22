@@ -37,7 +37,7 @@ main = do
 	d <- gdkWindowGetDisplay w
 	st <- gdkDisplayGetDefaultSeat d
 	pnt <- gdkSeatGetPointer st
-	([], _pds) <- gdkDeviceListSlaveDevices pnt
+	_pds <- gdkDeviceListSlaveDevices pnt
 	{-
 	for_ (zip pds ["wait", "cell", "crosshair", "text", "vertical-text"]) \(pd, nm) ->
 		gdkWindowSetDeviceCursor w pd =<< gdkCursorNewFromName d nm

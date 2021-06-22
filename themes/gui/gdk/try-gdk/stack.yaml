@@ -45,7 +45,7 @@ extra-deps:
 - git: https://github.com/YoshikuniJujo/cairo-image
   commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
 - git: https://github.com/YoshikuniJujo/glib-stopgap
-  commit: 6aa289a5c71f72bda5a766709d9870794cacb512
+  commit: cfab6c45c0eaed6dbd7453e5d0c67c289ac2cc17
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

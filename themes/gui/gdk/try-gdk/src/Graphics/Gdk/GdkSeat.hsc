@@ -52,13 +52,10 @@ foreign import ccall "gdk_seat_get_slaves" c_gdk_seat_get_slaves ::
 mkGdkDevice :: Ptr GdkDevice -> IO GdkDevice
 mkGdkDevice p = GdkDevice <$> newForeignPtr p (pure ())
 
-gdkSeatGetSlaves :: GdkSeat -> GdkSeatCapabilities -> IO ([GdkDevice], [GdkDevice])
+gdkSeatGetSlaves :: GdkSeat -> GdkSeatCapabilities -> IO [GdkDevice]
 gdkSeatGetSlaves (GdkSeat p) (GdkSeatCapabilities cps) = do
 	gl <- c_gdk_seat_get_slaves p cps
-	(\(x, y) -> (,) <$> mapM mkGdkDevice x <*> mapM mkGdkDevice y) =<< gListListPtr (GListRef gl)
-		<* c_g_list_free gl
-
-foreign import ccall "g_list_free" c_g_list_free :: Ptr (GList a) -> IO ()
+	mapM mkGdkDevice =<< g_list_to_list gl <* c_g_list_free gl
 
 foreign import ccall "gdk_seat_grab" c_gdk_seat_grab ::
 	Ptr GdkSeat -> Ptr GdkWindow -> #{type GdkSeatCapabilities} -> #{type gboolean} ->

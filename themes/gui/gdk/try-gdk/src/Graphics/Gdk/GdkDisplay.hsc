@@ -53,7 +53,6 @@ import Foreign.Ptr
 import Foreign.Ptr.Misc
 import Foreign.ForeignPtr
 import Foreign.C
-import Control.Arrow
 import Control.Exception
 import Data.Int
 import System.IO.Unsafe
@@ -235,8 +234,8 @@ gdkDisplayGetDefaultSeat (GdkDisplay p) = GdkSeat <$> c_gdk_display_get_default_
 foreign import ccall "gdk_display_get_default_seat" c_gdk_display_get_default_seat ::
 	Ptr GdkDisplay -> IO (Ptr GdkSeat)
 
-gdkDisplayListSeats :: GdkDisplay -> IO ([GdkSeat], [GdkSeat])
-gdkDisplayListSeats (GdkDisplay p) = (map GdkSeat *** map GdkSeat) <$> (gListListPtr =<< GListRef <$> c_gdk_display_list_seats p)
+gdkDisplayListSeats :: GdkDisplay -> IO [GdkSeat]
+gdkDisplayListSeats (GdkDisplay p) = map GdkSeat <$> (g_list_to_list =<< c_gdk_display_list_seats p)
 
 foreign import ccall "gdk_display_list_seats" c_gdk_display_list_seats ::
 	Ptr GdkDisplay -> IO (Ptr (GList GdkSeat))

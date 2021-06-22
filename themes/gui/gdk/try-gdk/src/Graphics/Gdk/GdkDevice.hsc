@@ -50,14 +50,10 @@ foreign import ccall "gdk_device_list_slave_devices" c_gdk_device_list_slave_dev
 mkGdkDevice :: Ptr GdkDevice -> IO GdkDevice
 mkGdkDevice p = GdkDevice <$> newForeignPtr p (pure ())
 
-gdkDeviceListSlaveDevices :: GdkDevice -> IO ([GdkDevice], [GdkDevice])
+gdkDeviceListSlaveDevices :: GdkDevice -> IO [GdkDevice]
 gdkDeviceListSlaveDevices (GdkDevice fp) = withForeignPtr fp \p -> do
 	gl <- c_gdk_device_list_slave_devices p
-	(\(x, y) -> (,) <$> mapM mkGdkDevice x <*> mapM mkGdkDevice y) =<< gListListPtr (GListRef gl)
-		<* c_g_list_free gl
-
-foreign import ccall "g_list_free" c_g_list_free ::
-	Ptr (GList a) -> IO ()
+	mapM mkGdkDevice =<< g_list_to_list gl <* c_g_list_free gl
 
 {-
 foreign import ccall "gdk_device_get_device_tool" c_gdk_device_get_device_tool ::

@@ -55,13 +55,13 @@ main = do
 	print =<< gdkDisplaySupportsClipboardPersistence d
 	print =<< gdkScreenGetResolution (gdkDisplayGetDefaultScreen d)
 	st0 <- gdkDisplayGetDefaultSeat d
-	([], [st]) <- gdkDisplayListSeats d
+	[st] <- gdkDisplayListSeats d
 	print st0
 	print st
 
 	checkGrabbedPointerKeyboard d st
 
-	([], slvs) <- gdkSeatGetSlaves st gdkSeatCapabilityAll
+	slvs <- gdkSeatGetSlaves st gdkSeatCapabilityAll
 	putStrLn "Slave devices:"
 	for_ slvs \slv -> do
 		putStrLn . ("\t" ++) =<< gdkDeviceGetName slv
@@ -96,11 +96,8 @@ main = do
 	putStrLn . ("Window type of root window: " ++) . show =<< gdkWindowGetWindowType rtwn
 	putStrLn . ("State of root window: " ++) . show =<< gdkWindowGetState rtwn
 	gdkScreenListVisuals scrn >>= \case
-		([], []) -> putStrLn "no visuals"
-		(_, []) -> putStrLn "no post visuals"
-		([], vs) -> do
+		vs -> do
 		--	print vs
-			putStrLn "no pre visuals"
 			ds <- for vs gdkVisualGetDepth
 			putStrLn $ "Depth of visuals: " ++ show ((head &&& length) <$> group ds)
 			ts <- for vs gdkVisualGetVisualType
@@ -117,21 +114,10 @@ main = do
 				putStrLn . ("Green pixel details of visual: " ++) . show =<< gdkVisualGetGreenPixelDetails v
 				putStrLn . ("Blue pixel details of visual: " ++) . show =<< gdkVisualGetBluePixelDetails v
 				-}
-		(_, _) -> putStrLn "pre and post visuals"
 	gdkScreenGetToplevelWindows scrn >>= \case
-		([], []) -> putStrLn "no toplevel windows"
-		(_, []) -> putStrLn "no post toplevel windows"
-		([], tws) -> do
-			putStrLn "no pre toplevel windows"
-			for_ tws \tw -> print =<< gdkWindowGetWindowType tw
-		(_, _) -> putStrLn "pre and post toplevel windows"
+		tws -> for_ tws \tw -> print =<< gdkWindowGetWindowType tw
 	gdkScreenGetWindowStack scrn >>= \case
-		([], []) -> putStrLn "no windows"
-		(_, []) -> putStrLn "no post windows"
-		([], tws) -> do
-			putStrLn "no pre windows"
-			for_ tws \tw -> print =<< gdkWindowGetWindowType tw
-		(_, _) -> putStrLn "pre and post windows"
+		tws -> for_ tws \tw -> print =<< gdkWindowGetWindowType tw
 	print =<< gdkSeatGetCapabilities st
 	let wattr = mkGdkWindowAttr [
 				gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkFocusChangeMask,
@@ -170,19 +156,13 @@ main = do
 --	gdkWindowFreezeUpdates w
 --	gdkWindowThawUpdates w
 	gdkScreenGetToplevelWindows scrn >>= \case
-		([], []) -> putStrLn "no toplevel windows"
-		(_, []) -> putStrLn "no post toplevel windows"
-		([], tws) -> do
+		tws -> do
 			putStrLn "no pre toplevel windows"
 			for_ tws \tw -> print =<< gdkWindowGetWindowType tw
-		(_, _) -> putStrLn "pre and post toplevel windows"
 	gdkScreenGetWindowStack scrn >>= \case
-		([], []) -> putStrLn "no windows"
-		(_, []) -> putStrLn "no post windows"
-		([], tws) -> do
+		tws -> do
 			putStrLn "no pre windows"
 			for_ tws \tw -> print =<< gdkWindowGetWindowType tw
-		(_, _) -> putStrLn "pre and post windows"
 	checkGrabbedPointerKeyboard d st
 	doWhile_ do
 		threadDelay 100000
