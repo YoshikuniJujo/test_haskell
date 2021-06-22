@@ -12,7 +12,7 @@ module Graphics.Gdk.GdkSeat (
 	-- * FUNCTION
 
 	gdkSeatGetDisplay,
-	gdkSeatGrab, gdkSeatGrabSimple, -- gdkSeatUngrab,
+	gdkSeatGrab, gdkSeatGrabSimple, gdkSeatUngrab,
 	gdkSeatGetCapabilities,
 	gdkSeatGetPointer, gdkSeatGetKeyboard,
 	gdkSeatGetSlaves,
@@ -170,4 +170,4 @@ maybeGdkSeatGrabPrepareFunc = \case
 		px <- toPtr x
 		pure (fp, px)
 
--- foreign import ccall "gdk_seat_ungrab" c_gdk_seat_
+foreign import ccall "gdk_seat_ungrab" gdkSeatUngrab :: GdkSeat -> IO ()
