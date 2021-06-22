@@ -9,7 +9,7 @@ API Reference contents
 * [x] General
 * [x] GdkDisplayManager
 * [ ] GdkDisplay
-* [ ] GdkScreen
+* [x] GdkScreen
 * [ ] GdkSeat
 * [ ] GdkMonitor
 * [ ] GdkDevice

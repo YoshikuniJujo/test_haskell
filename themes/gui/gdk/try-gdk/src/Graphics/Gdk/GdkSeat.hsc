@@ -3,7 +3,12 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.GdkSeat where
+module Graphics.Gdk.GdkSeat (
+	gdkSeatGetDisplay,
+	gdkSeatGrab, gdkSeatGrabSimple, GdkSeatGrabPrepareFunc, -- gdkSeatUngrab,
+	gdkSeatGetCapabilities,
+	gdkSeatGetPointer, gdkSeatGetKeyboard,
+	gdkSeatGetSlaves ) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
