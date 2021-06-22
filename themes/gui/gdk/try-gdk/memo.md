@@ -93,8 +93,13 @@ API Reference contents
 
 * Wayland Interaction
 
-todo
-----
+todo new
+--------
+
+* [ ] move `Pointerable` to `glib-stopgap`
+
+todo old
+--------
 
 * [x] move cairoRegionWithRectangle to simple-cairo
 	+ [x] consider to use ForeignPtr to it

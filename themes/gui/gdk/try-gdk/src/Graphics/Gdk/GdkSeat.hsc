@@ -31,7 +31,7 @@ module Graphics.Gdk.GdkSeat (
 	pattern GdkSeatCapabilityAll,
 
 	-- * GDK SEAT GRAB PREPARE FUNC
-	GdkSeatGrabPrepareFunc, Pointerable,
+	GdkSeatGrabPrepareFunc, Pointerable(..),
 
 	) where
 
