@@ -62,7 +62,7 @@ main = do
 
 	checkGrabbedPointerKeyboard d st
 
-	slvs <- gdkSeatGetSlaves st gdkSeatCapabilityAll
+	slvs <- gdkSeatGetSlaves st GdkSeatCapabilityAll
 	putStrLn "Slave devices:"
 	for_ slvs \slv -> do
 		putStrLn . ("\t" ++) =<< gdkDeviceGetName slv

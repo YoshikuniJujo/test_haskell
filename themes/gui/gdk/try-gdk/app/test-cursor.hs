@@ -70,10 +70,10 @@ main = do
 			when (kv == fromIntegral (ord 'd'))
 				$ gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
 			when (kv == fromIntegral (ord 'g'))
-				$ print =<< gdkSeatGrab st w gdkSeatCapabilityAllPointing False Nothing Nothing
+				$ print =<< gdkSeatGrab st w GdkSeatCapabilityAllPointing False Nothing Nothing
 						(Nothing :: Maybe (GdkSeatGrabPrepareFunc (), ()))
 			when (kv == fromIntegral (ord 'h'))
-				$ print =<< gdkSeatGrab st w gdkSeatCapabilityAllPointing True Nothing Nothing
+				$ print =<< gdkSeatGrab st w GdkSeatCapabilityAllPointing True Nothing Nothing
 						(Nothing :: Maybe (GdkSeatGrabPrepareFunc (), ()))
 			pure $ kv /= fromIntegral (ord 'q')
 		e -> True <$ print e

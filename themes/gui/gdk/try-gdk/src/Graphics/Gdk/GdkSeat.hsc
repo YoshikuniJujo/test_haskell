@@ -86,7 +86,7 @@ foreign import ccall "wrapper" wrap_GdkSeatGrabPrepareFunc :: C_GdkSeatGrabPrepa
 gdkSeatGrabSimple :: GdkSeat -> GdkWindow -> IO GdkGrabStatus
 gdkSeatGrabSimple st wn =
 -- gdkSeatGrabSimple (GdkSeat st) (GdkWindow wn) =
-	gdkSeatGrab st wn gdkSeatCapabilityAllPointing False Nothing Nothing (Nothing :: Maybe (GdkSeatGrabPrepareFunc (), ()))
+	gdkSeatGrab st wn GdkSeatCapabilityAllPointing False Nothing Nothing (Nothing :: Maybe (GdkSeatGrabPrepareFunc (), ()))
 --	c_gdk_seat_grab st wn #{const GDK_SEAT_CAPABILITY_ALL_POINTING} #{const TRUE} nullPtr nullPtr nullPtr nullPtr
 --	c_gdk_seat_grab st wn #{const GDK_SEAT_CAPABILITY_ALL_POINTING} #{const FALSE} nullPtr nullPtr nullFunPtr nullPtr
 

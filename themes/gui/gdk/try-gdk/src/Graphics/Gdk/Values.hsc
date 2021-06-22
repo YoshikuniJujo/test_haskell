@@ -4,6 +4,7 @@
 
 module Graphics.Gdk.Values where
 
+import Foreign.C.Enum
 import Data.Bits
 import Data.Word
 import Data.Int
@@ -32,12 +33,14 @@ mergeGdkEventMask (GdkEventMask em : ems) = em .|. mergeGdkEventMask ems
 newtype GdkWindowWindowClass = GdkWindowWindowClass #{type GdkWindowWindowClass} deriving Show
 #enum GdkWindowWindowClass, GdkWindowWindowClass, GDK_INPUT_OUTPUT, GDK_INPUT_ONLY
 
-newtype GdkSeatCapabilities = GdkSeatCapabilities #{type GdkSeatCapabilities} deriving Show
-
-#enum GdkSeatCapabilities, GdkSeatCapabilities, GDK_SEAT_CAPABILITY_NONE, \
-	GDK_SEAT_CAPABILITY_POINTER, GDK_SEAT_CAPABILITY_TOUCH, \
-	GDK_SEAT_CAPABILITY_TABLET_STYLUS, GDK_SEAT_CAPABILITY_KEYBOARD, \
-	GDK_SEAT_CAPABILITY_ALL_POINTING, GDK_SEAT_CAPABILITY_ALL
+enum "GdkSeatCapabilities" ''#{type GdkSeatCapabilities} [''Show] [
+	("GdkSeatCapabilityNone", #{const GDK_SEAT_CAPABILITY_NONE}),
+	("GdkSeatCapabilityPointer", #{const GDK_SEAT_CAPABILITY_POINTER}),
+	("GdkSeatCapabilityTouch", #{const GDK_SEAT_CAPABILITY_TOUCH}),
+	("GdkSeatCapabilityTabletStylus", #{const GDK_SEAT_CAPABILITY_TABLET_STYLUS}),
+	("GdkSeatCapabilityKeyboard", #{const GDK_SEAT_CAPABILITY_KEYBOARD}),
+	("GdkSeatCapabilityAllPointing", #{const GDK_SEAT_CAPABILITY_ALL_POINTING}),
+	("GdkSeatCapabilityAll", #{const GDK_SEAT_CAPABILITY_ALL}) ]
 
 newtype GdkSubpixelLayout = GdkSubpixelLayout #{type GdkSubpixelLayout} deriving Show
 
