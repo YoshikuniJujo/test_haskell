@@ -114,8 +114,11 @@ main = do
 				putStrLn . ("Green pixel details of visual: " ++) . show =<< gdkVisualGetGreenPixelDetails v
 				putStrLn . ("Blue pixel details of visual: " ++) . show =<< gdkVisualGetBluePixelDetails v
 				-}
+
+	putStrLn "gdkScreenGetToplevelWindows #1"
 	gdkScreenGetToplevelWindows scrn >>= \case
 		tws -> for_ tws \tw -> print =<< gdkWindowGetWindowType tw
+	putStrLn "gdkScreenGetWindowStack #1"
 	gdkScreenGetWindowStack scrn >>= \case
 		tws -> for_ tws \tw -> print =<< gdkWindowGetWindowType tw
 	print =<< gdkSeatGetCapabilities st
@@ -155,10 +158,10 @@ main = do
 	gdkWindowInvalidateRect w (50, 50) (100, 100) False
 --	gdkWindowFreezeUpdates w
 --	gdkWindowThawUpdates w
-	gdkScreenGetToplevelWindows scrn >>= \case
-		tws -> do
-			putStrLn "no pre toplevel windows"
-			for_ tws \tw -> print =<< gdkWindowGetWindowType tw
+	putStrLn "gdkScreenGetTopLevelWindows #2"
+	gdkScreenGetToplevelWindows scrn >>=
+		mapM_ \tw -> print =<< gdkWindowGetWindowType tw
+	putStrLn "gdkScreenGetWindowStack #2"
 	gdkScreenGetWindowStack scrn >>= \case
 		tws -> do
 			putStrLn "no pre windows"

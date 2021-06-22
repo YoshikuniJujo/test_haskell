@@ -59,7 +59,11 @@ import Data.Maybe
 enum "GdkWindowType" ''#{type GdkWindowType} [''Show] [
 	("GdkWindowRoot", #{const GDK_WINDOW_ROOT}),
 	("GdkWindowToplevel", #{const GDK_WINDOW_TOPLEVEL}),
-	("GdkWindowChild", #{const GDK_WINDOW_CHILD}) ]
+	("GdkWindowChild", #{const GDK_WINDOW_CHILD}),
+	("GdkWindowTemp", #{const GDK_WINDOW_TEMP}),
+	("GdkWindowForeign", #{const GDK_WINDOW_FOREIGN}),
+	("GdkWindowOffscreen", #{const GDK_WINDOW_OFFSCREEN}),
+	("GdkWindowSubsurface", #{const GDK_WINDOW_SUBSURFACE}) ]
 
 data GdkWindowAttr = GdkWindowAttr {
 	gdkWindowAttrTitle :: Maybe String,
