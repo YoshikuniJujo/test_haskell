@@ -33,25 +33,6 @@ mergeGdkEventMask (GdkEventMask em : ems) = em .|. mergeGdkEventMask ems
 newtype GdkWindowWindowClass = GdkWindowWindowClass #{type GdkWindowWindowClass} deriving Show
 #enum GdkWindowWindowClass, GdkWindowWindowClass, GDK_INPUT_OUTPUT, GDK_INPUT_ONLY
 
-enum "GdkSeatCapability" ''#{type GdkSeatCapabilities} [''Show] [
-	("GdkSeatCapabilityPointer", #{const GDK_SEAT_CAPABILITY_POINTER}),
-	("GdkSeatCapabilityTouch", #{const GDK_SEAT_CAPABILITY_TOUCH}),
-	("GdkSeatCapabilityTabletStylus", #{const GDK_SEAT_CAPABILITY_TABLET_STYLUS}),
-	("GdkSeatCapabilityKeyboard", #{const GDK_SEAT_CAPABILITY_KEYBOARD}) ]
-
-enum "GdkSeatCapabilities" ''#{type GdkSeatCapabilities} [''Show] [
-	("GdkSeatCapabilityNone", #{const GDK_SEAT_CAPABILITY_NONE}),
-	("GdkSeatCapabilityAllPointing", #{const GDK_SEAT_CAPABILITY_ALL_POINTING}),
-	("GdkSeatCapabilityAll", #{const GDK_SEAT_CAPABILITY_ALL}) ]
-
-consGdkSeatCapability ::
-	GdkSeatCapability -> GdkSeatCapabilities -> GdkSeatCapabilities
-consGdkSeatCapability (GdkSeatCapability c) (GdkSeatCapabilities cs) =
-	GdkSeatCapabilities $ c .|. cs
-
-gdkSeatCapabilities :: [GdkSeatCapability] -> GdkSeatCapabilities
-gdkSeatCapabilities = foldr consGdkSeatCapability GdkSeatCapabilityNone
-
 newtype GdkSubpixelLayout = GdkSubpixelLayout #{type GdkSubpixelLayout} deriving Show
 
 #enum GdkSubpixelLayout, GdkSubpixelLayout, GDK_SUBPIXEL_LAYOUT_UNKNOWN, \

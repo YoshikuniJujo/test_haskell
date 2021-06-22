@@ -1,20 +1,42 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkSeat (
+
+	-- * FUNCTION
+
 	gdkSeatGetDisplay,
 	gdkSeatGrab, gdkSeatGrabSimple, GdkSeatGrabPrepareFunc, -- gdkSeatUngrab,
 	gdkSeatGetCapabilities,
 	gdkSeatGetPointer, gdkSeatGetKeyboard,
-	gdkSeatGetSlaves ) where
+	gdkSeatGetSlaves,
+
+	-- * GDK SEAT CAPABILITIES
+
+	gdkSeatCapabilities,
+
+	GdkSeatCapability,
+	pattern GdkSeatCapabilityPointer,
+	pattern GdkSeatCapabilityTouch,
+	pattern GdkSeatCapabilityTabletStylus,
+	pattern GdkSeatCapabilityKeyboard,
+
+	GdkSeatCapabilities,
+	pattern GdkSeatCapabilityNone,
+	pattern GdkSeatCapabilityAllPointing,
+	pattern GdkSeatCapabilityAll ) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
+import Foreign.C.Enum
+import Data.Bits
 import Data.Word
 import Data.Int
 
@@ -25,6 +47,25 @@ import Graphics.Gdk.Values
 import System.GLib.DoublyLinkedLists
 
 #include <gdk/gdk.h>
+
+enum "GdkSeatCapability" ''#{type GdkSeatCapabilities} [''Show] [
+	("GdkSeatCapabilityPointer", #{const GDK_SEAT_CAPABILITY_POINTER}),
+	("GdkSeatCapabilityTouch", #{const GDK_SEAT_CAPABILITY_TOUCH}),
+	("GdkSeatCapabilityTabletStylus", #{const GDK_SEAT_CAPABILITY_TABLET_STYLUS}),
+	("GdkSeatCapabilityKeyboard", #{const GDK_SEAT_CAPABILITY_KEYBOARD}) ]
+
+enum "GdkSeatCapabilities" ''#{type GdkSeatCapabilities} [''Show] [
+	("GdkSeatCapabilityNone", #{const GDK_SEAT_CAPABILITY_NONE}),
+	("GdkSeatCapabilityAllPointing", #{const GDK_SEAT_CAPABILITY_ALL_POINTING}),
+	("GdkSeatCapabilityAll", #{const GDK_SEAT_CAPABILITY_ALL}) ]
+
+consGdkSeatCapability ::
+	GdkSeatCapability -> GdkSeatCapabilities -> GdkSeatCapabilities
+consGdkSeatCapability (GdkSeatCapability c) (GdkSeatCapabilities cs) =
+	GdkSeatCapabilities $ c .|. cs
+
+gdkSeatCapabilities :: [GdkSeatCapability] -> GdkSeatCapabilities
+gdkSeatCapabilities = foldr consGdkSeatCapability GdkSeatCapabilityNone
 
 foreign import ccall "gdk_seat_get_display" c_gdk_seat_get_display ::
 	Ptr GdkSeat -> IO (Ptr GdkDisplay)
