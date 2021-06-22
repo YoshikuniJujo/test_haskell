@@ -7,6 +7,7 @@ import Control.Concurrent
 import Data.Bool
 
 import Graphics.Gdk.Events
+import Graphics.Gdk.EventStructures
 import Graphics.Gdk.Values
 import Graphics.Gdk.Windows
 

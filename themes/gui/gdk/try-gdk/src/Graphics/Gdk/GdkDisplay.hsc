@@ -58,7 +58,8 @@ import Data.Int
 import System.IO.Unsafe
 import System.GLib.Bool
 
-import Graphics.Gdk.Events
+import Graphics.Gdk.GdkSeat
+import Graphics.Gdk.EventStructures
 import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
 import Graphics.Gdk.Exception
 import Graphics.Gdk.Types

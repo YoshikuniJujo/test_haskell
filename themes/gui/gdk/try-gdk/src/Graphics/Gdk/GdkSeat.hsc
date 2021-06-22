@@ -6,6 +6,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkSeat (
+	-- * TYPE
+	GdkSeat(..),
 
 	-- * FUNCTION
 
@@ -45,13 +47,15 @@ import Data.Bits
 import Data.Word
 import Data.Int
 
-import Graphics.Gdk.Events
+import Graphics.Gdk.EventStructures
 import Graphics.Gdk.Types
 import Graphics.Gdk.Values
 
 import System.GLib.DoublyLinkedLists
 
 #include <gdk/gdk.h>
+
+newtype GdkSeat = GdkSeat (Ptr GdkSeat) deriving Show
 
 enum "GdkSeatCapability" ''#{type GdkSeatCapabilities} [''Show] [
 	("GdkSeatCapabilityPointer", #{const GDK_SEAT_CAPABILITY_POINTER}),
@@ -108,6 +112,15 @@ gdkSeatGetSlaves (GdkSeat p) (GdkSeatCapabilities cps) = do
 	gl <- c_gdk_seat_get_slaves p cps
 	mapM mkGdkDevice =<< g_list_to_list gl <* c_g_list_free gl
 
+gdkSeatGrab ::
+	Pointerable a =>
+	GdkSeat -> GdkWindow -> GdkSeatCapabilities -> Bool -> Maybe GdkCursor ->
+	Maybe GdkEvent -> Maybe (GdkSeatGrabPrepareFunc a, a) -> IO GdkGrabStatus
+gdkSeatGrab (GdkSeat st) (GdkWindow wn) (GdkSeatCapabilities cp) oe
+	crs ev fx = withGdkCursor crs \pcrs -> withGdkEvent ev \pev -> do
+	(fp, px) <- maybeGdkSeatGrabPrepareFunc fx
+	GdkGrabStatus <$> c_gdk_seat_grab st wn cp (boolToGboolean oe) pcrs pev fp px
+
 foreign import ccall "gdk_seat_grab" c_gdk_seat_grab ::
 	Ptr GdkSeat -> Ptr GdkWindow -> #{type GdkSeatCapabilities} -> #{type gboolean} ->
 	Ptr GdkCursor -> Ptr GdkEvent ->
@@ -156,15 +169,8 @@ maybeGdkSeatGrabPrepareFunc = \case
 		px <- toPtr x
 		pure (fp, px)
 
-gdkSeatGrab ::
-	Pointerable a =>
-	GdkSeat -> GdkWindow -> GdkSeatCapabilities -> Bool -> Maybe GdkCursor ->
-	Maybe GdkEvent -> Maybe (GdkSeatGrabPrepareFunc a, a) -> IO GdkGrabStatus
-gdkSeatGrab (GdkSeat st) (GdkWindow wn) (GdkSeatCapabilities cp) oe
-	crs ev fx = withGdkCursor crs \pcrs -> withGdkEvent ev \pev -> do
-	(fp, px) <- maybeGdkSeatGrabPrepareFunc fx
-	GdkGrabStatus <$> c_gdk_seat_grab st wn cp (boolToGboolean oe) pcrs pev fp px
-
 boolToGboolean :: Bool -> #{type gboolean}
 boolToGboolean False = #const FALSE
 boolToGboolean True = #const TRUE
+
+-- foreign import ccall "gdk_seat_ungrab" c_gdk_seat_
