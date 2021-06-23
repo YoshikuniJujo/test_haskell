@@ -14,7 +14,7 @@ todo
 * [x] review export list
 * [ ] repair `toPtr`
 	+ [x] define `withGdkSeatGrabPrepareFunc`
-	+ [ ] use `withGdkSeatGrabPrepareFunc`
+	+ [x] use `withGdkSeatGrabPrepareFunc`
 	+ [ ] define `withPtr`
 	+ [ ] use `withPtr`
 	+ [ ] repair `class Pointerable`

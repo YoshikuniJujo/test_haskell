@@ -119,8 +119,8 @@ gdkSeatGrab ::
 	Maybe GdkEvent -> Maybe (GdkSeatGrabPrepareFunc a, a) -> IO GdkGrabStatus
 gdkSeatGrab st (GdkWindow wn) (GdkSeatCapabilities cp) oe
 	crs ev fx = withGdkCursor crs \pcrs -> withGdkEvent ev \pev -> do
-	(fp, px) <- maybeGdkSeatGrabPrepareFunc fx
-	GdkGrabStatus <$> c_gdk_seat_grab st wn cp (boolToGboolean oe) pcrs pev fp px
+	withGdkSeatGrabPrepareFunc fx \fp px ->
+		GdkGrabStatus <$> c_gdk_seat_grab st wn cp (boolToGboolean oe) pcrs pev fp px
 
 foreign import ccall "gdk_seat_grab" c_gdk_seat_grab ::
 	GdkSeat -> Ptr GdkWindow -> #{type GdkSeatCapabilities} -> #{type gboolean} ->
@@ -170,15 +170,5 @@ withGdkSeatGrabPrepareFunc xx ff = case xx of
 		fp <- wrap_GdkSeatGrabPrepareFunc $ convertGdkSeatGrabPrepareFunc f
 		px <- toPtr x
 		ff fp px
-
-maybeGdkSeatGrabPrepareFunc ::
-	Pointerable a =>
-	Maybe (GdkSeatGrabPrepareFunc a, a) -> IO (FunPtr (C_GdkSeatGrabPrepareFunc a), Ptr a)
-maybeGdkSeatGrabPrepareFunc = \case
-	Nothing -> pure (nullFunPtr, nullPtr)
-	Just (f, x) -> do
-		fp <- wrap_GdkSeatGrabPrepareFunc $ convertGdkSeatGrabPrepareFunc f
-		px <- toPtr x
-		pure (fp, px)
 
 foreign import ccall "gdk_seat_ungrab" gdkSeatUngrab :: GdkSeat -> IO ()
