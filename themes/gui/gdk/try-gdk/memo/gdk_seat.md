@@ -11,4 +11,10 @@ todo
 * [x] use `GdkSeat` instead of `Ptr GdkSeat`
 * [x] define `gdkSeatUngrab`
 * [x] use `boolToGboolean` of `System.GLib.Bool`
-* [ ] review export list
+* [x] review export list
+* [ ] repair `toPtr`
+	+ [x] define `withGdkSeatGrabPrepareFunc`
+	+ [ ] use `withGdkSeatGrabPrepareFunc`
+	+ [ ] define `withPtr`
+	+ [ ] use `withPtr`
+	+ [ ] repair `class Pointerable`

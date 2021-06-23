@@ -160,6 +160,17 @@ withGdkEvent me f = case me of
 	Nothing -> f nullPtr
 	Just (GdkEvent _ fev) -> withForeignPtr fev f
 
+withGdkSeatGrabPrepareFunc ::
+	Pointerable a =>
+	Maybe (GdkSeatGrabPrepareFunc a, a) ->
+	(FunPtr (C_GdkSeatGrabPrepareFunc a) -> Ptr a -> IO b) -> IO b
+withGdkSeatGrabPrepareFunc xx ff = case xx of
+	Nothing -> ff nullFunPtr nullPtr
+	Just (f, x) -> do
+		fp <- wrap_GdkSeatGrabPrepareFunc $ convertGdkSeatGrabPrepareFunc f
+		px <- toPtr x
+		ff fp px
+
 maybeGdkSeatGrabPrepareFunc ::
 	Pointerable a =>
 	Maybe (GdkSeatGrabPrepareFunc a, a) -> IO (FunPtr (C_GdkSeatGrabPrepareFunc a), Ptr a)
