@@ -18,4 +18,4 @@ todo
 	+ [x] define `withPtr`
 	+ [x] use `withPtr`
 	+ [x] repair `class Pointerable`
-* [ ] move `class Pointerable` to package `glib-stopgap`
+* [x] move `class Pointerable` to package `glib-stopgap`

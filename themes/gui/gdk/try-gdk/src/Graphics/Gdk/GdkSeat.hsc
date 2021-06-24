@@ -1,21 +1,23 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkSeat (
-	-- * TYPE
+	-- * GDK SEAT
 	GdkSeat(..),
 
-	-- * FUNCTION
+	-- * GET
 
 	gdkSeatGetDisplay,
-	gdkSeatGrab, gdkSeatGrabSimple, gdkSeatUngrab,
 	gdkSeatGetCapabilities,
 	gdkSeatGetPointer, gdkSeatGetKeyboard,
 	gdkSeatGetSlaves,
+
+	-- * GRAB
+
+	gdkSeatGrab, gdkSeatGrabSimple, gdkSeatUngrab,
 
 	-- * GDK SEAT CAPABILITIES
 
@@ -32,16 +34,14 @@ module Graphics.Gdk.GdkSeat (
 	pattern GdkSeatCapabilityAllPointing,
 	pattern GdkSeatCapabilityAll,
 
-	-- * GDK SEAT GRAB PREPARE FUNC
-	GdkSeatGrabPrepareFunc, Pointerable(..),
+	-- * GDK SEAT GRAB PREPARE FUNCTION
+	GdkSeatGrabPrepareFunc
 
 	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
-import Foreign.Marshal
-import Foreign.Storable
 import Foreign.C.Enum
 import Data.Bits
 import Data.Word
@@ -52,6 +52,7 @@ import Graphics.Gdk.Types
 import Graphics.Gdk.Values
 
 import System.GLib.DoublyLinkedLists
+import System.GLib.Pointerable
 import System.GLib.Bool
 
 #include <gdk/gdk.h>
@@ -128,13 +129,6 @@ foreign import ccall "gdk_seat_grab" c_gdk_seat_grab ::
 	FunPtr (C_GdkSeatGrabPrepareFunc a) -> Ptr a -> IO #{type GdkGrabStatus}
 
 type C_GdkSeatGrabPrepareFunc a = GdkSeat -> Ptr GdkWindow -> Ptr a -> IO ()
-
-class Pointerable a where
-	withPtr :: a -> (Ptr a -> IO b) -> IO b; fromPtr :: Ptr a -> IO a
-
-instance {-# OVERLAPPABLE #-} Storable a => Pointerable a where
-	withPtr x f = alloca \p -> poke p x >> f p
-	fromPtr = peek
 
 type GdkSeatGrabPrepareFunc a = GdkSeat -> GdkWindow -> a -> IO ()
 
