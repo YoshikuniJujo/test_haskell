@@ -129,10 +129,11 @@ foreign import ccall "gdk_seat_grab" c_gdk_seat_grab ::
 
 type C_GdkSeatGrabPrepareFunc a = GdkSeat -> Ptr GdkWindow -> Ptr a -> IO ()
 
-class Pointerable a where toPtr :: a -> IO (Ptr a); fromPtr :: Ptr a -> IO a
+class Pointerable a where
+	withPtr :: a -> (Ptr a -> IO b) -> IO b; fromPtr :: Ptr a -> IO a
 
 instance {-# OVERLAPPABLE #-} Storable a => Pointerable a where
-	toPtr x = alloca \p -> p <$ poke p x
+	withPtr x f = alloca \p -> poke p x >> f p
 	fromPtr = peek
 
 type GdkSeatGrabPrepareFunc a = GdkSeat -> GdkWindow -> a -> IO ()
@@ -168,7 +169,6 @@ withGdkSeatGrabPrepareFunc xx ff = case xx of
 	Nothing -> ff nullFunPtr nullPtr
 	Just (f, x) -> do
 		fp <- wrap_GdkSeatGrabPrepareFunc $ convertGdkSeatGrabPrepareFunc f
-		px <- toPtr x
-		ff fp px
+		withPtr x $ ff fp
 
 foreign import ccall "gdk_seat_ungrab" gdkSeatUngrab :: GdkSeat -> IO ()

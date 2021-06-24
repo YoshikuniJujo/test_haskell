@@ -12,9 +12,10 @@ todo
 * [x] define `gdkSeatUngrab`
 * [x] use `boolToGboolean` of `System.GLib.Bool`
 * [x] review export list
-* [ ] repair `toPtr`
+* [x] repair `toPtr`
 	+ [x] define `withGdkSeatGrabPrepareFunc`
 	+ [x] use `withGdkSeatGrabPrepareFunc`
-	+ [ ] define `withPtr`
-	+ [ ] use `withPtr`
-	+ [ ] repair `class Pointerable`
+	+ [x] define `withPtr`
+	+ [x] use `withPtr`
+	+ [x] repair `class Pointerable`
+* [ ] move `class Pointerable` to package `glib-stopgap`
