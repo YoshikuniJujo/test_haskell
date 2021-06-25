@@ -15,8 +15,7 @@ module Graphics.Gdk.GdkMonitor (
 	gdkMonitorIsPrimary ) where
 
 import Foreign.Ptr
-import Foreign.Marshal
-import Foreign.Storable
+import Foreign.ForeignPtr
 import Foreign.C
 import Data.Word
 import Data.Int
@@ -34,18 +33,22 @@ foreign import ccall "gdk_monitor_get_display" c_gdk_monitor_get_display ::
 	Ptr GdkMonitor -> IO (Ptr GdkDisplay)
 
 gdkMonitorGetGeometry :: GdkMonitor -> IO GdkRectangle
-gdkMonitorGetGeometry (GdkMonitor m) = alloca \r ->
-	c_gdk_monitor_get_geometry m r >> peek r
+gdkMonitorGetGeometry (GdkMonitor m) = do
+	r@(GdkRectanglePrim fr) <- gdkRectangleNew
+	withForeignPtr fr $ c_gdk_monitor_get_geometry m
+	gdkRectangleFreeze r
 
 foreign import ccall "gdk_monitor_get_geometry" c_gdk_monitor_get_geometry ::
 	Ptr GdkMonitor -> Ptr GdkRectangle -> IO ()
 
+gdkMonitorGetWorkarea :: GdkMonitor -> IO GdkRectangle
+gdkMonitorGetWorkarea (GdkMonitor m) = do
+	r@(GdkRectanglePrim fr) <- gdkRectangleNew
+	withForeignPtr fr $ c_gdk_monitor_get_workarea m
+	gdkRectangleFreeze r
+
 foreign import ccall "gdk_monitor_get_workarea" c_gdk_monitor_get_workarea ::
 	Ptr GdkMonitor -> Ptr GdkRectangle -> IO()
-
-gdkMonitorGetWorkarea :: GdkMonitor -> IO GdkRectangle
-gdkMonitorGetWorkarea (GdkMonitor m) = alloca \r ->
-	c_gdk_monitor_get_workarea m r >> peek r
 
 foreign import ccall "gdk_monitor_get_width_mm" c_gdk_monitor_get_width_mm ::
 	Ptr GdkMonitor -> IO #type int

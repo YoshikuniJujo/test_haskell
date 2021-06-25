@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bdc3a80839c7185dc328c9bebae86e5ccb86e56f74492bce551b3caa9a778dde
+-- hash: aacb9b0a0017fb20574c1b14073e060308aac97e096986136f613d38bf2bdfc6
 
 name:           try-gdk
 version:        0.1.0.0
@@ -56,6 +56,7 @@ library
   build-depends:
       base >=4.7 && <5
     , c-enum
+    , c-struct
     , exception-hierarchy
     , glib-stopgap
     , primitive
@@ -73,6 +74,7 @@ executable simple
   build-depends:
       base >=4.7 && <5
     , c-enum
+    , c-struct
     , exception-hierarchy
     , glib-stopgap
     , primitive
@@ -91,6 +93,7 @@ executable test-cursor
   build-depends:
       base >=4.7 && <5
     , c-enum
+    , c-struct
     , exception-hierarchy
     , glib-stopgap
     , primitive
@@ -109,6 +112,7 @@ executable try-display
   build-depends:
       base >=4.7 && <5
     , c-enum
+    , c-struct
     , exception-hierarchy
     , glib-stopgap
     , primitive
@@ -126,6 +130,7 @@ executable try-gdk-exe
   build-depends:
       base >=4.7 && <5
     , c-enum
+    , c-struct
     , exception-hierarchy
     , glib-stopgap
     , primitive
@@ -144,6 +149,7 @@ test-suite try-gdk-test
   build-depends:
       base >=4.7 && <5
     , c-enum
+    , c-struct
     , exception-hierarchy
     , glib-stopgap
     , primitive

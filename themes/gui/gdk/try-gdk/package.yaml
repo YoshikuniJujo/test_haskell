@@ -26,6 +26,7 @@ dependencies:
 - exception-hierarchy
 - glib-stopgap
 - c-enum
+- c-struct
 
 library:
   source-dirs: src

@@ -19,5 +19,5 @@ review
 todo
 ----
 
-* [ ] try to use `c-struct` in type `GdkRectangle`
+* [x] try to use `c-struct` in type `GdkRectangle`
 * [ ] move `GdkRectangle` to the appropriate module
