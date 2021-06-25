@@ -20,4 +20,4 @@ todo
 ----
 
 * [x] try to use `c-struct` in type `GdkRectangle`
-* [ ] move `GdkRectangle` to the appropriate module
+* [x] move `GdkRectangle` to the appropriate module

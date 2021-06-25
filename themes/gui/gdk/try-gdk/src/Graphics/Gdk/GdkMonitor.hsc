@@ -21,6 +21,7 @@ import Data.Word
 import Data.Int
 import System.GLib.Bool
 
+import Graphics.Gdk.PointsAndRectangles
 import Graphics.Gdk.Types
 import Graphics.Gdk.Values
 

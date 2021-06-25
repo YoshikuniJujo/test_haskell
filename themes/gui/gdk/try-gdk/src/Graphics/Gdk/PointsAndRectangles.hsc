@@ -1,17 +1,52 @@
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.PointsAndRectangles where
 
 import Control.Monad.Primitive
 import Foreign.Ptr
-import Foreign.ForeignPtr
+import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.Concurrent
+import Foreign.Marshal
+import Foreign.Storable
+import Foreign.C.Types
+import Foreign.C.Struct
 import Data.Int
 import System.GLib.Bool
 
-import Graphics.Gdk.Types
-
 #include <gdk/gdk.h>
+
+struct "GdkRectangle" #{size GdkRectangle}
+	[	("x", ''CInt, [| #{peek GdkRectangle, x} |],
+			[| #{poke GdkRectangle, x} |]),
+		("y", ''CInt, [| #{peek GdkRectangle, y} |],
+			[| #{poke GdkRectangle, y} |]),
+		("width", ''CInt, [| #{peek GdkRectangle, width} |],
+			[| #{poke GdkRectangle, width} |]),
+		("height", ''CInt, [| #{peek GdkRectangle, height} |],
+			[| #{poke GdkRectangle, height} |])	]
+	[''Show, ''Eq]
+
+c_gdk_rectangle_copy :: Ptr GdkRectangle -> IO (Ptr GdkRectangle)
+c_gdk_rectangle_copy s = do
+	d <- mallocBytes #{size GdkRectangle}
+	#{poke GdkRectangle, x} d =<< (#{peek GdkRectangle, x} s :: IO CInt)
+	#{poke GdkRectangle, y} d =<< (#{peek GdkRectangle, y} s :: IO CInt)
+	#{poke GdkRectangle, width} d =<< (#{peek GdkRectangle, width} s :: IO CInt)
+	#{poke GdkRectangle, height} d =<< (#{peek GdkRectangle, height} s :: IO CInt)
+	pure d
+
+c_gdk_rectangle_free :: Ptr GdkRectangle -> IO ()
+c_gdk_rectangle_free p = free p
+
+structPrim "GdkRectangle" 'c_gdk_rectangle_copy 'c_gdk_rectangle_free [''Show]
+
+gdkRectangleNew :: PrimMonad m => m (GdkRectanglePrim (PrimState m))
+gdkRectangleNew = GdkRectanglePrim <$> unsafeIOToPrim do
+	p <- mallocBytes #{size GdkRectangle}
+	newForeignPtr p $ free p
 
 gdkRectangleIntersect :: PrimMonad m =>
 	GdkRectangle -> GdkRectangle -> GdkRectanglePrim (PrimState m) -> m Bool

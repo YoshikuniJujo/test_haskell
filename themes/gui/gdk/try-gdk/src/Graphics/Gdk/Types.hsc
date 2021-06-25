@@ -1,18 +1,13 @@
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, TupleSections #-}
-{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.Types where
 
-import Control.Monad.Primitive
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr, addForeignPtrFinalizer)
 import Foreign.Concurrent
 import Foreign.Marshal
-import Foreign.Storable
 import Foreign.C
-import Foreign.C.Struct
 
 #include <gdk/gdk.h>
 
@@ -58,35 +53,5 @@ newtype GdkDisplayManager = GdkDisplayManager (Ptr GdkDisplayManager) deriving S
 newtype GdkDevice = GdkDevice (ForeignPtr GdkDevice) deriving Show
 
 newtype GdkMonitor = GdkMonitor (Ptr GdkMonitor) deriving Show
-
-struct "GdkRectangle" #{size GdkRectangle}
-	[	("x", ''CInt, [| #{peek GdkRectangle, x} |],
-			[| #{poke GdkRectangle, x} |]),
-		("y", ''CInt, [| #{peek GdkRectangle, y} |],
-			[| #{poke GdkRectangle, y} |]),
-		("width", ''CInt, [| #{peek GdkRectangle, width} |],
-			[| #{poke GdkRectangle, width} |]),
-		("height", ''CInt, [| #{peek GdkRectangle, height} |],
-			[| #{poke GdkRectangle, height} |])	]
-	[''Show, ''Eq]
-
-c_gdk_rectangle_copy :: Ptr GdkRectangle -> IO (Ptr GdkRectangle)
-c_gdk_rectangle_copy s = do
-	d <- mallocBytes #{size GdkRectangle}
-	#{poke GdkRectangle, x} d =<< (#{peek GdkRectangle, x} s :: IO CInt)
-	#{poke GdkRectangle, y} d =<< (#{peek GdkRectangle, y} s :: IO CInt)
-	#{poke GdkRectangle, width} d =<< (#{peek GdkRectangle, width} s :: IO CInt)
-	#{poke GdkRectangle, height} d =<< (#{peek GdkRectangle, height} s :: IO CInt)
-	pure d
-
-c_gdk_rectangle_free :: Ptr GdkRectangle -> IO ()
-c_gdk_rectangle_free p = free p
-
-structPrim "GdkRectangle" 'c_gdk_rectangle_copy 'c_gdk_rectangle_free [''Show]
-
-gdkRectangleNew :: PrimMonad m => m (GdkRectanglePrim (PrimState m))
-gdkRectangleNew = GdkRectanglePrim <$> unsafeIOToPrim do
-	p <- mallocBytes #{size GdkRectangle}
-	newForeignPtr p $ free p
 
 newtype GdkDeviceTool = GdkDeviceTool (ForeignPtr GdkDeviceTool) deriving Show
