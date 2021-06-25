@@ -1,7 +1,14 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.GdkDevice where
+module Graphics.Gdk.GdkDevice (
+	gdkDeviceGetName,
+	gdkDeviceGetVendorId,
+	gdkDeviceGetProductId,
+	gdkDeviceGetSource,
+	gdkDeviceListSlaveDevices,
+	gdkDeviceToolGetToolType
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
