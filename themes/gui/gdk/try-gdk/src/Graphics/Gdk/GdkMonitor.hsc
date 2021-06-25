@@ -116,14 +116,17 @@ enum "GdkSubpixelLayout" ''#{type GdkSubpixelLayout} [''Show] [
 	("GdkSubpixelLayoutVerticalBgr",
 		#{const GDK_SUBPIXEL_LAYOUT_VERTICAL_BGR}) ]
 
-foreign import ccall "gdk_monitor_get_subpixel_layout" c_gdk_monitor_get_subpixel_layout ::
+gdkMonitorGetSubpixelLayout :: GdkMonitor -> IO GdkSubpixelLayout
+gdkMonitorGetSubpixelLayout (GdkMonitor p) =
+	GdkSubpixelLayout <$> c_gdk_monitor_get_subpixel_layout p
+
+foreign import ccall "gdk_monitor_get_subpixel_layout"
+	c_gdk_monitor_get_subpixel_layout ::
 	Ptr GdkMonitor -> IO #type GdkSubpixelLayout
 
-gdkMonitorGetSubpixelLayout :: GdkMonitor -> IO GdkSubpixelLayout
-gdkMonitorGetSubpixelLayout (GdkMonitor p) = GdkSubpixelLayout <$> c_gdk_monitor_get_subpixel_layout p
+gdkMonitorIsPrimary :: GdkMonitor -> IO Bool
+gdkMonitorIsPrimary (GdkMonitor p) =
+	gbooleanToBool <$> c_gdk_monitor_is_primary p
 
 foreign import ccall "gdk_monitor_is_primary" c_gdk_monitor_is_primary ::
 	Ptr GdkMonitor -> IO #type gboolean
-
-gdkMonitorIsPrimary :: GdkMonitor -> IO Bool
-gdkMonitorIsPrimary (GdkMonitor p) = gbooleanToBool <$> c_gdk_monitor_is_primary p

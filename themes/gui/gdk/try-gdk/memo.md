@@ -11,7 +11,7 @@ API Reference contents
 * [ ] GdkDisplay
 * [x] GdkScreen
 * [x] GdkSeat
-* [ ] GdkMonitor
+* [x] GdkMonitor
 * [ ] GdkDevice
 * [ ] Points and Rectangles
 * [ ] Visuals

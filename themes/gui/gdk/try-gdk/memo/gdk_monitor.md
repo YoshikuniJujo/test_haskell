@@ -13,8 +13,8 @@ review
 * [x] `gdkMonitorGetModel`
 * [x] `gdkMonitorGetScaleFactor`
 * [x] `gdkMonitorGetRefreshRate`
-* [ ] `gdkMonitorGetSubpixelLayout`
-* [ ] `gdkMonitorIsPrimary`
+* [x] `gdkMonitorGetSubpixelLayout`
+* [x] `gdkMonitorIsPrimary`
 
 todo
 ----
