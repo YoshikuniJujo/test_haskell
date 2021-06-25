@@ -11,6 +11,7 @@ module Graphics.Gdk.GdkDevice (
 	) where
 
 import Foreign.Ptr
+import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.C
@@ -23,27 +24,29 @@ import System.GLib.DoublyLinkedLists
 
 #include <gdk/gdk.h>
 
+gdkDeviceGetName :: GdkDevice -> IO String
+gdkDeviceGetName (GdkDevice fp) =
+	withForeignPtr fp \p -> peekCString =<< c_gdk_device_get_name p
+
 foreign import ccall "gdk_device_get_name" c_gdk_device_get_name ::
 	Ptr GdkDevice -> IO CString
 
-gdkDeviceGetName :: GdkDevice -> IO String
-gdkDeviceGetName (GdkDevice fp) = withForeignPtr fp \p -> peekCString =<< c_gdk_device_get_name p
+gdkDeviceGetVendorId :: GdkDevice -> IO (Maybe String)
+gdkDeviceGetVendorId (GdkDevice fp) =
+	withForeignPtr fp \p -> c_gdk_device_get_vendor_id p >>= \case
+		NullPtr -> pure Nothing
+		cs -> Just <$> peekCString cs
 
 foreign import ccall "gdk_device_get_vendor_id" c_gdk_device_get_vendor_id ::
-	Ptr GdkDevice -> IO CString
-
-gdkDeviceGetVendorId :: GdkDevice -> IO (Maybe String)
-gdkDeviceGetVendorId (GdkDevice fp) = withForeignPtr fp \p -> c_gdk_device_get_vendor_id p >>= \case
-	cs	| cs == nullPtr -> pure Nothing
-		| otherwise -> Just <$> peekCString cs
-
-foreign import ccall "gdk_device_get_product_id" c_gdk_device_get_product_id ::
 	Ptr GdkDevice -> IO CString
 
 gdkDeviceGetProductId :: GdkDevice -> IO (Maybe String)
 gdkDeviceGetProductId (GdkDevice fp) = withForeignPtr fp \p -> c_gdk_device_get_product_id p >>= \case
 	cs	| cs == nullPtr -> pure Nothing
 		| otherwise -> Just <$> peekCString cs
+
+foreign import ccall "gdk_device_get_product_id" c_gdk_device_get_product_id ::
+	Ptr GdkDevice -> IO CString
 
 foreign import ccall "gdk_device_get_source" c_gdk_device_get_source ::
 	Ptr GdkDevice -> IO #type GdkInputSource
