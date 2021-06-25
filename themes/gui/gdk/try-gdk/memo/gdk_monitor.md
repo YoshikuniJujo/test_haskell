@@ -11,8 +11,8 @@ review
 * [x] `gdkMonitorGetHeightMm`
 * [x] `gdkMonitorGetManufacturer`
 * [x] `gdkMonitorGetModel`
-* [ ] `gdkMonitorGetScaleFactor`
-* [ ] `gdkMonitorGetRefreshRate`
+* [x] `gdkMonitorGetScaleFactor`
+* [x] `gdkMonitorGetRefreshRate`
 * [ ] `gdkMonitorGetSubpixelLayout`
 * [ ] `gdkMonitorIsPrimary`
 
@@ -21,3 +21,5 @@ todo
 
 * [x] try to use `c-struct` in type `GdkRectangle`
 * [x] move `GdkRectangle` to the appropriate module
+* [x] use `c-enum` in type `GdkSubpixelLayout`
+* [ ] move `GdkSubpixelLayout` to the appropriate module

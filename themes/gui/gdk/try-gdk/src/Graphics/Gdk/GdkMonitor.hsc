@@ -77,17 +77,17 @@ gdkMonitorGetModel (GdkMonitor p) = c_gdk_monitor_get_model p >>= \case
 foreign import ccall "gdk_monitor_get_model" c_gdk_monitor_get_model ::
 	Ptr GdkMonitor -> IO CString
 
-foreign import ccall "gdk_monitor_get_scale_factor" c_gdk_monitor_get_scale_factor ::
-	Ptr GdkMonitor -> IO #type int
-
-gdkMonitorGetScaleFactor :: GdkMonitor -> IO #type int
+gdkMonitorGetScaleFactor :: GdkMonitor -> IO CInt
 gdkMonitorGetScaleFactor (GdkMonitor p) = c_gdk_monitor_get_scale_factor p
 
-foreign import ccall "gdk_monitor_get_refresh_rate" c_gdk_monitor_get_refresh_rate ::
-	Ptr GdkMonitor -> IO #type int
+foreign import ccall "gdk_monitor_get_scale_factor" c_gdk_monitor_get_scale_factor ::
+	Ptr GdkMonitor -> IO CInt
 
-gdkMonitorGetRefreshRate :: GdkMonitor -> IO #type int
+gdkMonitorGetRefreshRate :: GdkMonitor -> IO CInt
 gdkMonitorGetRefreshRate (GdkMonitor p) = c_gdk_monitor_get_refresh_rate p
+
+foreign import ccall "gdk_monitor_get_refresh_rate" c_gdk_monitor_get_refresh_rate ::
+	Ptr GdkMonitor -> IO CInt
 
 foreign import ccall "gdk_monitor_get_subpixel_layout" c_gdk_monitor_get_subpixel_layout ::
 	Ptr GdkMonitor -> IO #type GdkSubpixelLayout
