@@ -4,7 +4,6 @@
 
 module Graphics.Gdk.Values where
 
-import Foreign.C.Enum
 import Data.Bits
 import Data.Word
 import Data.Int
@@ -32,18 +31,6 @@ mergeGdkEventMask (GdkEventMask em : ems) = em .|. mergeGdkEventMask ems
 
 newtype GdkWindowWindowClass = GdkWindowWindowClass #{type GdkWindowWindowClass} deriving Show
 #enum GdkWindowWindowClass, GdkWindowWindowClass, GDK_INPUT_OUTPUT, GDK_INPUT_ONLY
-
-enum "GdkSubpixelLayout" ''#{type GdkSubpixelLayout} [''Show] [
-	("GdkSubPixelLayoutUnknown", #{const GDK_SUBPIXEL_LAYOUT_UNKNOWN}),
-	("GdkSubPixelLayoutNone", #{const GDK_SUBPIXEL_LAYOUT_NONE}),
-	("GdkSubPixelLayoutHorizontalRgb",
-		#{const GDK_SUBPIXEL_LAYOUT_HORIZONTAL_RGB}),
-	("GdkSubPixelLayoutHorizontalBgr",
-		#{const GDK_SUBPIXEL_LAYOUT_HORIZONTAL_BGR}),
-	("GdkSubPixelLayoutVerticalRgb",
-		#{const GDK_SUBPIXEL_LAYOUT_VERTICAL_RGB}),
-	("GdkSubPixelLayoutVerticalBgr",
-		#{const GDK_SUBPIXEL_LAYOUT_VERTICAL_BGR}) ]
 
 newtype GdkInputSource = GdkInputSource #{type GdkInputSource} deriving (Show, Eq)
 

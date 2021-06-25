@@ -1,4 +1,6 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkMonitor (
@@ -18,13 +20,13 @@ import Foreign.Ptr
 import Foreign.Ptr.Misc
 import Foreign.ForeignPtr
 import Foreign.C
+import Foreign.C.Enum
 import Data.Word
 import Data.Int
 import System.GLib.Bool
 
 import Graphics.Gdk.PointsAndRectangles
 import Graphics.Gdk.Types
-import Graphics.Gdk.Values
 
 #include <gdk/gdk.h>
 
@@ -88,6 +90,18 @@ gdkMonitorGetRefreshRate (GdkMonitor p) = c_gdk_monitor_get_refresh_rate p
 
 foreign import ccall "gdk_monitor_get_refresh_rate" c_gdk_monitor_get_refresh_rate ::
 	Ptr GdkMonitor -> IO CInt
+
+enum "GdkSubpixelLayout" ''#{type GdkSubpixelLayout} [''Show] [
+	("GdkSubPixelLayoutUnknown", #{const GDK_SUBPIXEL_LAYOUT_UNKNOWN}),
+	("GdkSubPixelLayoutNone", #{const GDK_SUBPIXEL_LAYOUT_NONE}),
+	("GdkSubPixelLayoutHorizontalRgb",
+		#{const GDK_SUBPIXEL_LAYOUT_HORIZONTAL_RGB}),
+	("GdkSubPixelLayoutHorizontalBgr",
+		#{const GDK_SUBPIXEL_LAYOUT_HORIZONTAL_BGR}),
+	("GdkSubPixelLayoutVerticalRgb",
+		#{const GDK_SUBPIXEL_LAYOUT_VERTICAL_RGB}),
+	("GdkSubPixelLayoutVerticalBgr",
+		#{const GDK_SUBPIXEL_LAYOUT_VERTICAL_BGR}) ]
 
 foreign import ccall "gdk_monitor_get_subpixel_layout" c_gdk_monitor_get_subpixel_layout ::
 	Ptr GdkMonitor -> IO #type GdkSubpixelLayout

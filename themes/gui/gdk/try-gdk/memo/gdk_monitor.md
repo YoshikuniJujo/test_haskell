@@ -22,4 +22,4 @@ todo
 * [x] try to use `c-struct` in type `GdkRectangle`
 * [x] move `GdkRectangle` to the appropriate module
 * [x] use `c-enum` in type `GdkSubpixelLayout`
-* [ ] move `GdkSubpixelLayout` to the appropriate module
+* [x] move `GdkSubpixelLayout` to the appropriate module
