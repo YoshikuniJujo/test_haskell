@@ -4,6 +4,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkMonitor (
+
+	-- * FUNCTION
 	gdkMonitorGetDisplay,
 	gdkMonitorGetGeometry,
 	gdkMonitorGetWorkarea,
@@ -14,7 +16,18 @@ module Graphics.Gdk.GdkMonitor (
 	gdkMonitorGetScaleFactor,
 	gdkMonitorGetRefreshRate,
 	gdkMonitorGetSubpixelLayout,
-	gdkMonitorIsPrimary ) where
+	gdkMonitorIsPrimary,
+
+	-- * GDK SUBPIXEL LAYOUT
+	GdkSubpixelLayout(..),
+	pattern GdkSubpixelLayoutUnknown,
+	pattern GdkSubpixelLayoutNone,
+	pattern GdkSubpixelLayoutHorizontalRgb,
+	pattern GdkSubpixelLayoutHorizontalBgr,
+	pattern GdkSubpixelLayoutVerticalRgb,
+	pattern GdkSubpixelLayoutVerticalBgr
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Ptr.Misc
@@ -92,15 +105,15 @@ foreign import ccall "gdk_monitor_get_refresh_rate" c_gdk_monitor_get_refresh_ra
 	Ptr GdkMonitor -> IO CInt
 
 enum "GdkSubpixelLayout" ''#{type GdkSubpixelLayout} [''Show] [
-	("GdkSubPixelLayoutUnknown", #{const GDK_SUBPIXEL_LAYOUT_UNKNOWN}),
-	("GdkSubPixelLayoutNone", #{const GDK_SUBPIXEL_LAYOUT_NONE}),
-	("GdkSubPixelLayoutHorizontalRgb",
+	("GdkSubpixelLayoutUnknown", #{const GDK_SUBPIXEL_LAYOUT_UNKNOWN}),
+	("GdkSubpixelLayoutNone", #{const GDK_SUBPIXEL_LAYOUT_NONE}),
+	("GdkSubpixelLayoutHorizontalRgb",
 		#{const GDK_SUBPIXEL_LAYOUT_HORIZONTAL_RGB}),
-	("GdkSubPixelLayoutHorizontalBgr",
+	("GdkSubpixelLayoutHorizontalBgr",
 		#{const GDK_SUBPIXEL_LAYOUT_HORIZONTAL_BGR}),
-	("GdkSubPixelLayoutVerticalRgb",
+	("GdkSubpixelLayoutVerticalRgb",
 		#{const GDK_SUBPIXEL_LAYOUT_VERTICAL_RGB}),
-	("GdkSubPixelLayoutVerticalBgr",
+	("GdkSubpixelLayoutVerticalBgr",
 		#{const GDK_SUBPIXEL_LAYOUT_VERTICAL_BGR}) ]
 
 foreign import ccall "gdk_monitor_get_subpixel_layout" c_gdk_monitor_get_subpixel_layout ::
