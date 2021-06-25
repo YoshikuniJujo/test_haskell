@@ -5,12 +5,12 @@ review
 ------
 
 * [x] `gdkMonitorGetDisplay`
-* [ ] `gdkMonitorGetGeometry`
-* [ ] `gdkMonitorGetWorkarea`
-* [ ] `gdkMonitorGetWidthMm`
-* [ ] `gdkMonitorGetHeightMm`
-* [ ] `gdkMonitorGetManufacturer`
-* [ ] `gdkMonitorGetModel`
+* [x] `gdkMonitorGetGeometry`
+* [x] `gdkMonitorGetWorkarea`
+* [x] `gdkMonitorGetWidthMm`
+* [x] `gdkMonitorGetHeightMm`
+* [x] `gdkMonitorGetManufacturer`
+* [x] `gdkMonitorGetModel`
 * [ ] `gdkMonitorGetScaleFactor`
 * [ ] `gdkMonitorGetRefreshRate`
 * [ ] `gdkMonitorGetSubpixelLayout`

@@ -15,6 +15,7 @@ module Graphics.Gdk.GdkMonitor (
 	gdkMonitorIsPrimary ) where
 
 import Foreign.Ptr
+import Foreign.Ptr.Misc
 import Foreign.ForeignPtr
 import Foreign.C
 import Data.Word
@@ -51,29 +52,30 @@ gdkMonitorGetWorkarea (GdkMonitor m) = do
 foreign import ccall "gdk_monitor_get_workarea" c_gdk_monitor_get_workarea ::
 	Ptr GdkMonitor -> Ptr GdkRectangle -> IO()
 
-foreign import ccall "gdk_monitor_get_width_mm" c_gdk_monitor_get_width_mm ::
-	Ptr GdkMonitor -> IO #type int
-
-foreign import ccall "gdk_monitor_get_height_mm" c_gdk_monitor_get_height_mm ::
-	Ptr GdkMonitor -> IO #type int
-
-gdkMonitorGetWidthMm, gdkMonitorGetHeightMm :: GdkMonitor -> IO #type int
+gdkMonitorGetWidthMm, gdkMonitorGetHeightMm :: GdkMonitor -> IO CInt
 gdkMonitorGetWidthMm (GdkMonitor p) = c_gdk_monitor_get_width_mm p
 gdkMonitorGetHeightMm (GdkMonitor p) = c_gdk_monitor_get_height_mm p
 
-foreign import ccall "gdk_monitor_get_manufacturer" c_gdk_monitor_get_manufacturer ::
-	Ptr GdkMonitor -> IO CString
+foreign import ccall "gdk_monitor_get_width_mm" c_gdk_monitor_get_width_mm ::
+	Ptr GdkMonitor -> IO CInt
+
+foreign import ccall "gdk_monitor_get_height_mm" c_gdk_monitor_get_height_mm ::
+	Ptr GdkMonitor -> IO CInt
 
 gdkMonitorGetManufacturer :: GdkMonitor -> IO (Maybe String)
-gdkMonitorGetManufacturer (GdkMonitor p) = c_gdk_monitor_get_manufacturer p >>= \case
-	cs	| cs == nullPtr -> pure Nothing
-		| otherwise -> Just <$> peekCString cs
+gdkMonitorGetManufacturer (GdkMonitor p) =
+	c_gdk_monitor_get_manufacturer p >>= \case
+		NullPtr -> pure Nothing; cs -> Just <$> peekCString cs
+
+foreign import ccall "gdk_monitor_get_manufacturer"
+	c_gdk_monitor_get_manufacturer :: Ptr GdkMonitor -> IO CString
+
+gdkMonitorGetModel :: GdkMonitor -> IO (Maybe String)
+gdkMonitorGetModel (GdkMonitor p) = c_gdk_monitor_get_model p >>= \case
+	NullPtr -> pure Nothing; cs -> Just <$> peekCString cs
 
 foreign import ccall "gdk_monitor_get_model" c_gdk_monitor_get_model ::
 	Ptr GdkMonitor -> IO CString
-
-gdkMonitorGetModel :: GdkMonitor -> IO String
-gdkMonitorGetModel (GdkMonitor p) = peekCString =<< c_gdk_monitor_get_model p
 
 foreign import ccall "gdk_monitor_get_scale_factor" c_gdk_monitor_get_scale_factor ::
 	Ptr GdkMonitor -> IO #type int
