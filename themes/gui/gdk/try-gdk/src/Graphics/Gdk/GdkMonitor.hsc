@@ -1,7 +1,18 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.GdkMonitor where
+module Graphics.Gdk.GdkMonitor (
+	gdkMonitorGetDisplay,
+	gdkMonitorGetGeometry,
+	gdkMonitorGetWorkarea,
+	gdkMonitorGetWidthMm,
+	gdkMonitorGetHeightMm,
+	gdkMonitorGetManufacturer,
+	gdkMonitorGetModel,
+	gdkMonitorGetScaleFactor,
+	gdkMonitorGetRefreshRate,
+	gdkMonitorGetSubpixelLayout,
+	gdkMonitorIsPrimary ) where
 
 import Foreign.Ptr
 import Foreign.Marshal
@@ -16,18 +27,18 @@ import Graphics.Gdk.Values
 
 #include <gdk/gdk.h>
 
-foreign import ccall "gdk_monitor_get_display" c_gdk_monitor_get_display ::
-	Ptr GdkMonitor -> IO (Ptr GdkDisplay)
-
 gdkMonitorGetDisplay :: GdkMonitor -> IO GdkDisplay
 gdkMonitorGetDisplay (GdkMonitor p) = GdkDisplay <$> c_gdk_monitor_get_display p
 
-foreign import ccall "gdk_monitor_get_geometry" c_gdk_monitor_get_geometry ::
-	Ptr GdkMonitor -> Ptr GdkRectangle -> IO ()
+foreign import ccall "gdk_monitor_get_display" c_gdk_monitor_get_display ::
+	Ptr GdkMonitor -> IO (Ptr GdkDisplay)
 
 gdkMonitorGetGeometry :: GdkMonitor -> IO GdkRectangle
 gdkMonitorGetGeometry (GdkMonitor m) = alloca \r ->
 	c_gdk_monitor_get_geometry m r >> peek r
+
+foreign import ccall "gdk_monitor_get_geometry" c_gdk_monitor_get_geometry ::
+	Ptr GdkMonitor -> Ptr GdkRectangle -> IO ()
 
 foreign import ccall "gdk_monitor_get_workarea" c_gdk_monitor_get_workarea ::
 	Ptr GdkMonitor -> Ptr GdkRectangle -> IO()
