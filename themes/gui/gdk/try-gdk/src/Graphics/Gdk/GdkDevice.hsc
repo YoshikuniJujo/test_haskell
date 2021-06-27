@@ -34,16 +34,15 @@ foreign import ccall "gdk_device_get_name" c_gdk_device_get_name ::
 gdkDeviceGetVendorId :: GdkDevice -> IO (Maybe String)
 gdkDeviceGetVendorId (GdkDevice fp) =
 	withForeignPtr fp \p -> c_gdk_device_get_vendor_id p >>= \case
-		NullPtr -> pure Nothing
-		cs -> Just <$> peekCString cs
+		NullPtr -> pure Nothing; cs -> Just <$> peekCString cs
 
 foreign import ccall "gdk_device_get_vendor_id" c_gdk_device_get_vendor_id ::
 	Ptr GdkDevice -> IO CString
 
 gdkDeviceGetProductId :: GdkDevice -> IO (Maybe String)
-gdkDeviceGetProductId (GdkDevice fp) = withForeignPtr fp \p -> c_gdk_device_get_product_id p >>= \case
-	cs	| cs == nullPtr -> pure Nothing
-		| otherwise -> Just <$> peekCString cs
+gdkDeviceGetProductId (GdkDevice fp) =
+	withForeignPtr fp \p -> c_gdk_device_get_product_id p >>= \case
+		NullPtr -> pure Nothing; cs -> Just <$> peekCString cs
 
 foreign import ccall "gdk_device_get_product_id" c_gdk_device_get_product_id ::
 	Ptr GdkDevice -> IO CString

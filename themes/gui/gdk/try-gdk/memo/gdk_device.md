@@ -8,7 +8,7 @@ Function
 
 * [x] `gdk_device_get_name`
 * [x] `gdk_device_get_vendor_id`
-* [ ] `gdk_device_get_product_id`
+* [x] `gdk_device_get_product_id`
 * [ ] `gdk_device_get_source`
 * [ ] `gdk_device_list_slave_devices`
 * [ ] `gdk_device_tool_get_tool_type`
