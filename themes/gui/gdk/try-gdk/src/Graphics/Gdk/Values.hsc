@@ -4,7 +4,6 @@
 
 module Graphics.Gdk.Values where
 
-import Foreign.C.Enum
 import Data.Bits
 import Data.Word
 import Data.Int
@@ -32,17 +31,6 @@ mergeGdkEventMask (GdkEventMask em : ems) = em .|. mergeGdkEventMask ems
 
 newtype GdkWindowWindowClass = GdkWindowWindowClass #{type GdkWindowWindowClass} deriving Show
 #enum GdkWindowWindowClass, GdkWindowWindowClass, GDK_INPUT_OUTPUT, GDK_INPUT_ONLY
-
-enum "GdkInputSource" ''#{type GdkInputSource} [''Show, ''Eq] [
-	("GdkSourceMouse", #{const GDK_SOURCE_MOUSE}),
-	("GdkSourcePen", #{const GDK_SOURCE_PEN}),
-	("GdkSourceEraser", #{const GDK_SOURCE_ERASER}),
-	("GdkSourceCursor", #{const GDK_SOURCE_CURSOR}),
-	("GdkSourceKeyboard", #{const GDK_SOURCE_KEYBOARD}),
-	("GdkSourceTouchscreen", #{const GDK_SOURCE_TOUCHSCREEN}),
-	("GdkSourceTouchpad", #{const GDK_SOURCE_TOUCHPAD}),
-	("GdkSourceTrackpoint", #{const GDK_SOURCE_TRACKPOINT}),
-	("GdkSourceTabletPad", #{const GDK_SOURCE_TABLET_PAD}) ]
 
 newtype GdkCursorType = GdkCursorType #{type GdkCursorType} deriving Show
 

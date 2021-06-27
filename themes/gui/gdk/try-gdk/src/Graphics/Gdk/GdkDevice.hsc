@@ -1,13 +1,23 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkDevice (
+	-- * FUNCTION
 	gdkDeviceGetName,
 	gdkDeviceGetVendorId,
 	gdkDeviceGetProductId,
 	gdkDeviceGetSource,
 	gdkDeviceListSlaveDevices,
-	gdkDeviceToolGetToolType
+	gdkDeviceToolGetToolType,
+
+	-- * GDK INPUT SOURCE
+	GdkInputSource(..),
+	pattern GdkSourceMouse, pattern GdkSourcePen, pattern GdkSourceEraser,
+	pattern GdkSourceCursor, pattern GdkSourceKeyboard,
+	pattern GdkSourceTouchscreen, pattern GdkSourceTouchpad,
+	pattern GdkSourceTrackpoint, pattern GdkSourceTabletPad
 	) where
 
 import Foreign.Ptr
@@ -15,6 +25,7 @@ import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.C
+import Foreign.C.Enum
 import Data.Word
 
 import Graphics.Gdk.Types
@@ -47,11 +58,22 @@ gdkDeviceGetProductId (GdkDevice fp) =
 foreign import ccall "gdk_device_get_product_id" c_gdk_device_get_product_id ::
 	Ptr GdkDevice -> IO CString
 
-foreign import ccall "gdk_device_get_source" c_gdk_device_get_source ::
-	Ptr GdkDevice -> IO #type GdkInputSource
+enum "GdkInputSource" ''#{type GdkInputSource} [''Show, ''Eq] [
+	("GdkSourceMouse", #{const GDK_SOURCE_MOUSE}),
+	("GdkSourcePen", #{const GDK_SOURCE_PEN}),
+	("GdkSourceEraser", #{const GDK_SOURCE_ERASER}),
+	("GdkSourceCursor", #{const GDK_SOURCE_CURSOR}),
+	("GdkSourceKeyboard", #{const GDK_SOURCE_KEYBOARD}),
+	("GdkSourceTouchscreen", #{const GDK_SOURCE_TOUCHSCREEN}),
+	("GdkSourceTouchpad", #{const GDK_SOURCE_TOUCHPAD}),
+	("GdkSourceTrackpoint", #{const GDK_SOURCE_TRACKPOINT}),
+	("GdkSourceTabletPad", #{const GDK_SOURCE_TABLET_PAD}) ]
 
 gdkDeviceGetSource :: GdkDevice -> IO GdkInputSource
 gdkDeviceGetSource (GdkDevice fp) = withForeignPtr fp \p -> GdkInputSource <$> c_gdk_device_get_source p
+
+foreign import ccall "gdk_device_get_source" c_gdk_device_get_source ::
+	Ptr GdkDevice -> IO #type GdkInputSource
 
 foreign import ccall "gdk_device_list_slave_devices" c_gdk_device_list_slave_devices ::
 	Ptr GdkDevice -> IO (Ptr (GList GdkDevice))

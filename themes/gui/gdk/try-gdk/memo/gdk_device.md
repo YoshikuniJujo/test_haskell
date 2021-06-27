@@ -52,4 +52,4 @@ todo
 ----
 
 * [x] use c-enum in `GdkInputSource`
-* [ ] move `GdkInputSource` to the appropriate module
+* [x] move `GdkInputSource` to the appropriate module
