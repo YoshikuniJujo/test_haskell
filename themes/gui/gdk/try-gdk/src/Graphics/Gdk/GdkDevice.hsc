@@ -70,21 +70,26 @@ enum "GdkInputSource" ''#{type GdkInputSource} [''Show, ''Eq] [
 	("GdkSourceTabletPad", #{const GDK_SOURCE_TABLET_PAD}) ]
 
 gdkDeviceGetSource :: GdkDevice -> IO GdkInputSource
-gdkDeviceGetSource (GdkDevice fp) = withForeignPtr fp \p -> GdkInputSource <$> c_gdk_device_get_source p
+gdkDeviceGetSource (GdkDevice fp) =
+	withForeignPtr fp \p -> GdkInputSource <$> c_gdk_device_get_source p
 
 foreign import ccall "gdk_device_get_source" c_gdk_device_get_source ::
 	Ptr GdkDevice -> IO #type GdkInputSource
-
-foreign import ccall "gdk_device_list_slave_devices" c_gdk_device_list_slave_devices ::
-	Ptr GdkDevice -> IO (Ptr (GList GdkDevice))
-
-mkGdkDevice :: Ptr GdkDevice -> IO GdkDevice
-mkGdkDevice p = GdkDevice <$> newForeignPtr p (pure ())
 
 gdkDeviceListSlaveDevices :: GdkDevice -> IO [GdkDevice]
 gdkDeviceListSlaveDevices (GdkDevice fp) = withForeignPtr fp \p -> do
 	gl <- c_gdk_device_list_slave_devices p
 	mapM mkGdkDevice =<< g_list_to_list gl <* c_g_list_free gl
+
+mkGdkDevice :: Ptr GdkDevice -> IO GdkDevice
+mkGdkDevice p = GdkDevice <$> newForeignPtr p (pure ())
+
+foreign import ccall "gdk_device_list_slave_devices" c_gdk_device_list_slave_devices ::
+	Ptr GdkDevice -> IO (Ptr (GList GdkDevice))
+
+gdkDeviceToolGetToolType :: GdkDeviceTool -> IO GdkDeviceToolType
+gdkDeviceToolGetToolType (GdkDeviceTool fdt) = withForeignPtr fdt \dt ->
+	GdkDeviceToolType <$> c_gdk_device_get_tool_type dt
 
 {-
 foreign import ccall "gdk_device_get_device_tool" c_gdk_device_get_device_tool ::
@@ -93,7 +98,3 @@ foreign import ccall "gdk_device_get_device_tool" c_gdk_device_get_device_tool :
 
 foreign import ccall "gdk_device_tool_get_tool_type" c_gdk_device_get_tool_type ::
 	Ptr GdkDeviceTool -> IO #type GdkDeviceToolType
-
-gdkDeviceToolGetToolType :: GdkDeviceTool -> IO GdkDeviceToolType
-gdkDeviceToolGetToolType (GdkDeviceTool fdt) = withForeignPtr fdt \dt ->
-	GdkDeviceToolType <$> c_gdk_device_get_tool_type dt
