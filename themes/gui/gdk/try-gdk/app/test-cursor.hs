@@ -60,9 +60,9 @@ main = do
 			mis <- maybe (pure Nothing) ((Just <$>) . gdkDeviceGetSource)  sd
 			case mis of
 				Nothing -> pure ()
-				Just is	| is == gdkSourceMouse -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "wait"
-					| is == gdkSourcePen -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "text"
-					| is == gdkSourceTouchpad -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
+				Just is	| is == GdkSourceMouse -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "wait"
+					| is == GdkSourcePen -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "text"
+					| is == GdkSourceTouchpad -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
 					| otherwise -> pure ()
 		GdkEventGdkKeyPress k -> do
 			kv <- gdkEventKeyKeyval k

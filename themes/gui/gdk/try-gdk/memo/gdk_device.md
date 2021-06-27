@@ -47,3 +47,9 @@ Function
 
 * `gdk_device_grab`
 * `gdk_device_ungrab`
+
+todo
+----
+
+* [x] use c-enum in `GdkInputSource`
+* [ ] move `GdkInputSource` to the appropriate module
