@@ -12,6 +12,7 @@ import Foreign.C.Enum
 import Data.Int
 import Data.Word
 
+import Graphics.Gdk.GdkScreen
 import Graphics.Gdk.Types
 
 #include <gdk/gdk.h>

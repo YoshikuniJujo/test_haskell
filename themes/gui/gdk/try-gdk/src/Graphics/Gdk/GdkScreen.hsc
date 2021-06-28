@@ -2,6 +2,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkScreen (
+	-- * TYPE
+	GdkScreen(..),
+
 	-- * DEFAULT SCREEN
 	gdkScreenGetDefault,
 	-- * VISUAL
@@ -31,10 +34,12 @@ import Data.Int
 import System.GLib.Bool
 import System.GLib.DoublyLinkedLists
 
-import Graphics.Gdk.GdkDisplay
+import {-# SOURCE #-} Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.Types
 
 #include <gdk/gdk.h>
+
+newtype GdkScreen = GdkScreen (Ptr GdkScreen) deriving Show
 
 gdkScreenGetDefault :: IO (Maybe GdkScreen)
 gdkScreenGetDefault = (<$> c_gdk_screen_get_default) \case

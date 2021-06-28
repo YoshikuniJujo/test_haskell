@@ -44,8 +44,6 @@ newForeignCString s = do
 
 type ForeignCString = ForeignPtr CChar
 
-newtype GdkScreen = GdkScreen (Ptr GdkScreen) deriving Show
-
 newtype GdkDisplayManager = GdkDisplayManager (Ptr GdkDisplayManager) deriving Show
 
 newtype GdkMonitor = GdkMonitor (Ptr GdkMonitor) deriving Show

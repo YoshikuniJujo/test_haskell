@@ -17,6 +17,7 @@ module Graphics.Gdk.GdkDevice (
 	gdkDeviceGetDeviceType,
 	gdkDeviceGetDisplay,
 	gdkDeviceGetHasCursor,
+	gdkDeviceWarp,
 	gdkDeviceToolGetToolType,
 
 	-- * GDK INPUT SOURCE
@@ -49,6 +50,7 @@ import System.GLib.DoublyLinkedLists
 import System.GLib.Bool
 
 import {-# SOURCE #-} Graphics.Gdk.GdkDisplay
+import {-# SOURCE #-} Graphics.Gdk.GdkScreen
 
 #include <gdk/gdk.h>
 
@@ -123,6 +125,12 @@ gdkDeviceGetHasCursor (GdkDevice pd) =
 
 foreign import ccall "gdk_device_get_has_cursor" c_gdk_device_get_has_cursor ::
 	Ptr GdkDevice -> IO #{type gboolean}
+
+gdkDeviceWarp :: GdkDevice -> GdkScreen -> CInt -> CInt -> IO ()
+gdkDeviceWarp (GdkDevice pd) (GdkScreen ps) x y = c_gdk_device_warp pd ps x y
+
+foreign import ccall "gdk_device_warp" c_gdk_device_warp ::
+	Ptr GdkDevice -> Ptr GdkScreen -> CInt -> CInt -> IO ()
 
 newtype GdkDeviceTool = GdkDeviceTool (Ptr GdkDeviceTool) deriving Show
 

@@ -61,6 +61,7 @@ import Data.Int
 import System.IO.Unsafe
 import System.GLib.Bool
 
+import Graphics.Gdk.GdkScreen
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.EventStructures

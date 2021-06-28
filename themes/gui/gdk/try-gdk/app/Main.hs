@@ -219,6 +219,9 @@ checkEvent d st = \case
 		when (kv == fromIntegral (ord 's')) $ do
 			putStrLn . ("Window size: " ++) . show =<< (,) <$> gdkWindowGetWidth w <*> gdkWindowGetHeight w
 		when (kv == fromIntegral (ord 'g')) $ checkGrabbedPointerKeyboard d st
+		when (kv == fromIntegral (ord 'w'))  do
+			pnt <- gdkSeatGetPointer st
+			gdkDeviceWarp pnt (gdkDisplayGetDefaultScreen d) 100 100
 		pure $ kv /= fromIntegral (ord 'q')
 	GdkEventGdkKeyRelease k -> do
 		kv <- gdkEventKeyKeyval k

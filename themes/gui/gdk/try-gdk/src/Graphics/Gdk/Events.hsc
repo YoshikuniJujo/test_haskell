@@ -15,6 +15,7 @@ import Data.Word
 import Data.Int
 import System.GLib.Bool
 
+import Graphics.Gdk.GdkScreen
 import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.Types
