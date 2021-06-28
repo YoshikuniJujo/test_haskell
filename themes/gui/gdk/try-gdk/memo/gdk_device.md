@@ -12,7 +12,7 @@ Function
 * [x] `gdk_device_get_source`
 * [x] `gdk_device_list_slave_devices`
 * [x] `gdk_device_tool_get_tool_type`
-* [ ] `gdk_device_get_device_type`
+* [x] `gdk_device_get_device_type`
 * [ ] `gdk_device_get_display`
 * [ ] `gdk_device_get_has_cursor`
 * [ ] `gdk_device_warp`

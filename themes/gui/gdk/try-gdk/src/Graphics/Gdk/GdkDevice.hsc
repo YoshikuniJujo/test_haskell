@@ -14,6 +14,7 @@ module Graphics.Gdk.GdkDevice (
 	gdkDeviceGetProductId,
 	gdkDeviceGetSource,
 	gdkDeviceListSlaveDevices,
+	gdkDeviceGetDeviceType,
 	gdkDeviceToolGetToolType,
 
 	-- * GDK INPUT SOURCE
@@ -92,6 +93,18 @@ gdkDeviceListSlaveDevices (GdkDevice p) = do
 
 foreign import ccall "gdk_device_list_slave_devices" c_gdk_device_list_slave_devices ::
 	Ptr GdkDevice -> IO (Ptr (GList GdkDevice))
+
+enum "GdkDeviceType" ''#{type GdkDeviceType} [''Show] [
+	("GdkDeviceTypeMaster", #{const GDK_DEVICE_TYPE_MASTER}),
+	("GdkDeviceTypeSlave", #{const GDK_DEVICE_TYPE_SLAVE}),
+	("GdkDeviceTypeFloating", #{const GDK_DEVICE_TYPE_FLOATING}) ]
+
+gdkDeviceGetDeviceType :: GdkDevice -> IO GdkDeviceType
+gdkDeviceGetDeviceType (GdkDevice pd) =
+	GdkDeviceType <$> c_gdk_device_get_device_type pd
+
+foreign import ccall "gdk_device_get_device_type" c_gdk_device_get_device_type ::
+	Ptr GdkDevice -> IO #{type GdkDeviceType}
 
 newtype GdkDeviceTool = GdkDeviceTool (Ptr GdkDeviceTool) deriving Show
 
