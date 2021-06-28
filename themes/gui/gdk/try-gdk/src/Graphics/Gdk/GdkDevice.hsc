@@ -15,6 +15,7 @@ module Graphics.Gdk.GdkDevice (
 	gdkDeviceGetSource,
 	gdkDeviceListSlaveDevices,
 	gdkDeviceGetDeviceType,
+	gdkDeviceGetDisplay,
 	gdkDeviceToolGetToolType,
 
 	-- * GDK INPUT SOURCE
@@ -42,8 +43,9 @@ import Foreign.Ptr.Misc
 import Foreign.C
 import Foreign.C.Enum
 import Data.Word
-
 import System.GLib.DoublyLinkedLists
+
+import {-# SOURCE #-} Graphics.Gdk.GdkDisplay
 
 #include <gdk/gdk.h>
 
@@ -105,6 +107,12 @@ gdkDeviceGetDeviceType (GdkDevice pd) =
 
 foreign import ccall "gdk_device_get_device_type" c_gdk_device_get_device_type ::
 	Ptr GdkDevice -> IO #{type GdkDeviceType}
+
+gdkDeviceGetDisplay :: GdkDevice -> IO GdkDisplay
+gdkDeviceGetDisplay (GdkDevice pd) = GdkDisplay <$> c_gdk_device_get_display pd
+
+foreign import ccall "gdk_device_get_display" c_gdk_device_get_display ::
+	Ptr GdkDevice -> IO (Ptr GdkDisplay)
 
 newtype GdkDeviceTool = GdkDeviceTool (Ptr GdkDeviceTool) deriving Show
 
