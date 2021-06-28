@@ -21,6 +21,7 @@ module Graphics.Gdk.GdkDevice (
 	gdkDeviceGetSeat,
 	gdkDeviceGetPosition,
 	gdkDeviceGetPositionDouble,
+	gdkDeviceGetWindowAtPosition,
 	gdkDeviceToolGetToolType,
 
 	-- * GDK INPUT SOURCE
@@ -149,6 +150,15 @@ gdkDeviceGetPositionDouble d = alloca \pps -> alloca \px -> alloca \py -> do
 foreign import ccall "gdk_device_get_position_double"
 	c_gdk_device_get_position_double ::
 	GdkDevice -> Ptr (Ptr GdkScreen) -> Ptr CDouble -> Ptr CDouble -> IO ()
+
+gdkDeviceGetWindowAtPosition :: GdkDevice -> IO (CInt, CInt)
+gdkDeviceGetWindowAtPosition d = alloca \px -> alloca \py -> do
+	c_gdk_device_get_window_at_position d px py
+	(,) <$> peek px <*> peek py
+
+foreign import ccall "gdk_device_get_window_at_position"
+	c_gdk_device_get_window_at_position ::
+	GdkDevice -> Ptr CInt -> Ptr CInt -> IO ()
 
 newtype GdkDeviceTool = GdkDeviceTool (Ptr GdkDeviceTool) deriving Show
 
