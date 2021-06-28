@@ -57,24 +57,24 @@ import {-# SOURCE #-} Graphics.Gdk.GdkScreen
 newtype GdkDevice = GdkDevice (Ptr GdkDevice) deriving Show
 
 gdkDeviceGetName :: GdkDevice -> IO String
-gdkDeviceGetName (GdkDevice p) = peekCString =<< c_gdk_device_get_name p
+gdkDeviceGetName d = peekCString =<< c_gdk_device_get_name d
 
 foreign import ccall "gdk_device_get_name" c_gdk_device_get_name ::
-	Ptr GdkDevice -> IO CString
+	GdkDevice -> IO CString
 
 gdkDeviceGetVendorId :: GdkDevice -> IO (Maybe String)
-gdkDeviceGetVendorId (GdkDevice p) = c_gdk_device_get_vendor_id p >>= \case
+gdkDeviceGetVendorId d = c_gdk_device_get_vendor_id d >>= \case
 	NullPtr -> pure Nothing; cs -> Just <$> peekCString cs
 
 foreign import ccall "gdk_device_get_vendor_id" c_gdk_device_get_vendor_id ::
-	Ptr GdkDevice -> IO CString
+	GdkDevice -> IO CString
 
 gdkDeviceGetProductId :: GdkDevice -> IO (Maybe String)
-gdkDeviceGetProductId (GdkDevice p) = c_gdk_device_get_product_id p >>= \case
+gdkDeviceGetProductId d = c_gdk_device_get_product_id d >>= \case
 	NullPtr -> pure Nothing; cs -> Just <$> peekCString cs
 
 foreign import ccall "gdk_device_get_product_id" c_gdk_device_get_product_id ::
-	Ptr GdkDevice -> IO CString
+	GdkDevice -> IO CString
 
 enum "GdkInputSource" ''#{type GdkInputSource} [''Show, ''Eq] [
 	("GdkSourceMouse", #{const GDK_SOURCE_MOUSE}),
@@ -88,18 +88,18 @@ enum "GdkInputSource" ''#{type GdkInputSource} [''Show, ''Eq] [
 	("GdkSourceTabletPad", #{const GDK_SOURCE_TABLET_PAD}) ]
 
 gdkDeviceGetSource :: GdkDevice -> IO GdkInputSource
-gdkDeviceGetSource (GdkDevice p) = GdkInputSource <$> c_gdk_device_get_source p
+gdkDeviceGetSource d = GdkInputSource <$> c_gdk_device_get_source d
 
 foreign import ccall "gdk_device_get_source" c_gdk_device_get_source ::
-	Ptr GdkDevice -> IO #type GdkInputSource
+	GdkDevice -> IO #type GdkInputSource
 
 gdkDeviceListSlaveDevices :: GdkDevice -> IO [GdkDevice]
-gdkDeviceListSlaveDevices (GdkDevice p) = do
-	gl <- c_gdk_device_list_slave_devices p
+gdkDeviceListSlaveDevices d = do
+	gl <- c_gdk_device_list_slave_devices d
 	map GdkDevice <$> (g_list_to_list gl <* c_g_list_free gl)
 
 foreign import ccall "gdk_device_list_slave_devices" c_gdk_device_list_slave_devices ::
-	Ptr GdkDevice -> IO (Ptr (GList GdkDevice))
+	GdkDevice -> IO (Ptr (GList GdkDevice))
 
 enum "GdkDeviceType" ''#{type GdkDeviceType} [''Show] [
 	("GdkDeviceTypeMaster", #{const GDK_DEVICE_TYPE_MASTER}),
@@ -107,30 +107,22 @@ enum "GdkDeviceType" ''#{type GdkDeviceType} [''Show] [
 	("GdkDeviceTypeFloating", #{const GDK_DEVICE_TYPE_FLOATING}) ]
 
 gdkDeviceGetDeviceType :: GdkDevice -> IO GdkDeviceType
-gdkDeviceGetDeviceType (GdkDevice pd) =
-	GdkDeviceType <$> c_gdk_device_get_device_type pd
+gdkDeviceGetDeviceType d = GdkDeviceType <$> c_gdk_device_get_device_type d
 
 foreign import ccall "gdk_device_get_device_type" c_gdk_device_get_device_type ::
-	Ptr GdkDevice -> IO #{type GdkDeviceType}
+	GdkDevice -> IO #{type GdkDeviceType}
 
-gdkDeviceGetDisplay :: GdkDevice -> IO GdkDisplay
-gdkDeviceGetDisplay (GdkDevice pd) = GdkDisplay <$> c_gdk_device_get_display pd
-
-foreign import ccall "gdk_device_get_display" c_gdk_device_get_display ::
-	Ptr GdkDevice -> IO (Ptr GdkDisplay)
+foreign import ccall "gdk_device_get_display" gdkDeviceGetDisplay ::
+	GdkDevice -> IO GdkDisplay
 
 gdkDeviceGetHasCursor :: GdkDevice -> IO Bool
-gdkDeviceGetHasCursor (GdkDevice pd) =
-	gbooleanToBool <$> c_gdk_device_get_has_cursor pd
+gdkDeviceGetHasCursor d = gbooleanToBool <$> c_gdk_device_get_has_cursor d
 
 foreign import ccall "gdk_device_get_has_cursor" c_gdk_device_get_has_cursor ::
-	Ptr GdkDevice -> IO #{type gboolean}
+	GdkDevice -> IO #{type gboolean}
 
-gdkDeviceWarp :: GdkDevice -> GdkScreen -> CInt -> CInt -> IO ()
-gdkDeviceWarp (GdkDevice pd) (GdkScreen ps) x y = c_gdk_device_warp pd ps x y
-
-foreign import ccall "gdk_device_warp" c_gdk_device_warp ::
-	Ptr GdkDevice -> Ptr GdkScreen -> CInt -> CInt -> IO ()
+foreign import ccall "gdk_device_warp" gdkDeviceWarp ::
+	GdkDevice -> GdkScreen -> CInt -> CInt -> IO ()
 
 newtype GdkDeviceTool = GdkDeviceTool (Ptr GdkDeviceTool) deriving Show
 
@@ -145,8 +137,7 @@ enum "GdkDeviceToolType" ''#{type GdkDeviceToolType} [''Show] [
 	("GdkDeviceToolTypeLens", #{const GDK_DEVICE_TOOL_TYPE_LENS}) ]
 
 gdkDeviceToolGetToolType :: GdkDeviceTool -> IO GdkDeviceToolType
-gdkDeviceToolGetToolType (GdkDeviceTool dt) =
-	GdkDeviceToolType <$> c_gdk_device_get_tool_type dt
+gdkDeviceToolGetToolType t = GdkDeviceToolType <$> c_gdk_device_get_tool_type t
 
 foreign import ccall "gdk_device_tool_get_tool_type" c_gdk_device_get_tool_type ::
-	Ptr GdkDeviceTool -> IO #type GdkDeviceToolType
+	GdkDeviceTool -> IO #type GdkDeviceToolType
