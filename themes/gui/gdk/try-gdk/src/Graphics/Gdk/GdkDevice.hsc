@@ -16,6 +16,7 @@ module Graphics.Gdk.GdkDevice (
 	gdkDeviceListSlaveDevices,
 	gdkDeviceGetDeviceType,
 	gdkDeviceGetDisplay,
+	gdkDeviceGetHasCursor,
 	gdkDeviceToolGetToolType,
 
 	-- * GDK INPUT SOURCE
@@ -43,7 +44,9 @@ import Foreign.Ptr.Misc
 import Foreign.C
 import Foreign.C.Enum
 import Data.Word
+import Data.Int
 import System.GLib.DoublyLinkedLists
+import System.GLib.Bool
 
 import {-# SOURCE #-} Graphics.Gdk.GdkDisplay
 
@@ -113,6 +116,13 @@ gdkDeviceGetDisplay (GdkDevice pd) = GdkDisplay <$> c_gdk_device_get_display pd
 
 foreign import ccall "gdk_device_get_display" c_gdk_device_get_display ::
 	Ptr GdkDevice -> IO (Ptr GdkDisplay)
+
+gdkDeviceGetHasCursor :: GdkDevice -> IO Bool
+gdkDeviceGetHasCursor (GdkDevice pd) =
+	gbooleanToBool <$> c_gdk_device_get_has_cursor pd
+
+foreign import ccall "gdk_device_get_has_cursor" c_gdk_device_get_has_cursor ::
+	Ptr GdkDevice -> IO #{type gboolean}
 
 newtype GdkDeviceTool = GdkDeviceTool (Ptr GdkDeviceTool) deriving Show
 

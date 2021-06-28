@@ -14,7 +14,7 @@ Function
 * [x] `gdk_device_tool_get_tool_type`
 * [x] `gdk_device_get_device_type`
 * [x] `gdk_device_get_display`
-* [ ] `gdk_device_get_has_cursor`
+* [x] `gdk_device_get_has_cursor`
 * [ ] `gdk_device_warp`
 * [ ] `gdk_device_get_seat`
 * [ ] `gdk_device_get_position`
