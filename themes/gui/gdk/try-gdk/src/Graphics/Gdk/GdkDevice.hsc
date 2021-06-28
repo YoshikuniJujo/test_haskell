@@ -4,6 +4,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkDevice (
+	-- * TYPE
+	GdkDevice(..),
+
 	-- * FUNCTION
 	gdkDeviceGetName,
 	gdkDeviceGetVendorId,
@@ -33,6 +36,8 @@ import Graphics.Gdk.Values
 import System.GLib.DoublyLinkedLists
 
 #include <gdk/gdk.h>
+
+newtype GdkDevice = GdkDevice (Ptr GdkDevice) deriving Show
 
 gdkDeviceGetName :: GdkDevice -> IO String
 gdkDeviceGetName (GdkDevice p) = peekCString =<< c_gdk_device_get_name p

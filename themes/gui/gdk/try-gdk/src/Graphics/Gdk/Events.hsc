@@ -16,10 +16,11 @@ import Data.Word
 import Data.Int
 import System.GLib.Bool
 
+import Graphics.Gdk.GdkDevice
+import Graphics.Gdk.EventStructures
 import Graphics.Gdk.Types
 import Graphics.Gdk.Values
 import Graphics.Gdk.GdkSeat
-import Graphics.Gdk.EventStructures
 
 #include <gdk/gdk.h>
 
