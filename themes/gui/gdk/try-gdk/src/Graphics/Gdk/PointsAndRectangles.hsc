@@ -3,7 +3,19 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.PointsAndRectangles where
+module Graphics.Gdk.PointsAndRectangles (
+	-- * GDK RECTANGLE
+	GdkRectangle(..),
+	pattern GdkRectangle,
+	gdkRectangleX, gdkRectangleY, gdkRectangleWidth, gdkRectangleHeight,
+
+	-- * GDK RECTANGLE PRIM
+	GdkRectanglePrim(..), GdkRectangleIO, GdkRectangleST,
+	gdkRectangleNew, gdkRectangleFreeze, gdkRectangleThaw, gdkRectangleCopy,
+
+	-- * FUNCTION
+	gdkRectangleIntersect, gdkRectangleUnion, gdkRectangleEqual,
+	) where
 
 import Control.Monad.Primitive
 import Foreign.Ptr

@@ -13,7 +13,7 @@ API Reference contents
 * [x] GdkSeat
 * [x] GdkMonitor
 * [x] GdkDevice
-* [ ] Points and Rectangles
+* [x] Points and Rectangles
 * [ ] Visuals
 * [ ] Cursors
 * [ ] Windows
