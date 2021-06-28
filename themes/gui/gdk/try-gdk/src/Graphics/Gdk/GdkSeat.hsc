@@ -48,6 +48,7 @@ import Data.Int
 
 import {-# SOURCE #-} Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkDevice
+import Graphics.Gdk.Windows
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.Types
 import Graphics.Gdk.Values

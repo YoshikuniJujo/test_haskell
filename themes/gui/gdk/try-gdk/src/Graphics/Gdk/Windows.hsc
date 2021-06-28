@@ -4,6 +4,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.Windows (
+	-- * TYPE
+	GdkWindow(..), withGdkWindowAutoUnref,
+
 	-- * Checked
 	gdkWindowNew, gdkWindowDestroy, gdkWindowGetWindowType,
 	gdkWindowGetDisplay, gdkWindowGetScreen, gdkWindowGetVisual,
@@ -44,8 +47,8 @@ import Data.Word
 import Data.Int
 import System.GLib.Bool
 
-import Graphics.Gdk.GdkDisplay
-import Graphics.Gdk.GdkScreen
+import {-# SOURCE #-} Graphics.Gdk.GdkDisplay
+import {-# SOURCE #-} Graphics.Gdk.GdkScreen
 import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.PointsAndRectangles
 import Graphics.Gdk.Types
@@ -59,6 +62,12 @@ import Data.Bool
 import Data.Maybe
 
 #include <gdk/gdk.h>
+
+newtype GdkWindow = GdkWindow (Ptr GdkWindow) deriving Show
+
+withGdkWindowAutoUnref :: GdkWindowAutoUnref -> (GdkWindow -> IO a) -> IO a
+withGdkWindowAutoUnref (GdkWindowAutoUnref fwnu) f =
+	withForeignPtr fwnu \pwnu -> f (GdkWindow $ castPtr pwnu)
 
 enum "GdkWindowType" ''#{type GdkWindowType} [''Show] [
 	("GdkWindowRoot", #{const GDK_WINDOW_ROOT}),

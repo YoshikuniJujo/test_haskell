@@ -10,6 +10,7 @@ import Data.Int
 import System.GLib.Bool
 
 import Data.CairoContext
+import Graphics.Gdk.Windows
 import Graphics.Gdk.Types
 
 import Graphics.Cairo.Types

@@ -21,9 +21,7 @@ Function
 * [x] `gdk_device_get_position_double`
 * [x] `gdk_device_get_window_at_position`
 * [x] `gdk_device_get_window_at_position_double`
-* [ ] `gdk_device_get_history`
-* [ ] `gdk_device_free_history`
-* [ ] `gdk_device_get_last_event_window`
+* [x] `gdk_device_get_last_event_window`
 
 ### not to do for a while
 
@@ -38,6 +36,8 @@ Function
 * `gdk_device_get_n_keys`
 * `gdk_device_get_axes`
 * `gdk_device_get_state`
+* `gdk_device_get_history`
+* `gdk_device_free_history`
 * `gdk_device_get_axis`
 * `gdk_device_list_axes`
 * `gdk_device_get_axis_value`

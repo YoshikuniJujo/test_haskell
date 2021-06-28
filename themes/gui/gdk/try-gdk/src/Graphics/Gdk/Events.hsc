@@ -17,8 +17,8 @@ import System.GLib.Bool
 
 import Graphics.Gdk.GdkScreen
 import Graphics.Gdk.GdkDevice
+import Graphics.Gdk.Windows
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.Types
 import Graphics.Gdk.Values
 import Graphics.Gdk.GdkSeat
 

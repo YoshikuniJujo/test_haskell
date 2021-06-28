@@ -35,6 +35,7 @@ import System.GLib.Bool
 import System.GLib.DoublyLinkedLists
 
 import {-# SOURCE #-} Graphics.Gdk.GdkDisplay
+import Graphics.Gdk.Windows
 import Graphics.Gdk.Types
 
 #include <gdk/gdk.h>

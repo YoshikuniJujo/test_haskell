@@ -11,17 +11,11 @@ import Foreign.C
 
 #include <gdk/gdk.h>
 
-newtype GdkWindow = GdkWindow (Ptr GdkWindow) deriving Show
-
 newtype GdkWindowAutoUnref = GdkWindowAutoUnref (ForeignPtr GdkWindowNeedUnref) deriving Show
 data GdkWindowNeedUnref
 
 mkGdkWindowAutoUnref :: Ptr GdkWindowNeedUnref -> IO GdkWindowAutoUnref
 mkGdkWindowAutoUnref p = GdkWindowAutoUnref <$> newForeignPtr p (c_g_object_unref p)
-
-withGdkWindowAutoUnref :: GdkWindowAutoUnref -> (GdkWindow -> IO a) -> IO a
-withGdkWindowAutoUnref (GdkWindowAutoUnref fwnu) f =
-	withForeignPtr fwnu \pwnu -> f (GdkWindow $ castPtr pwnu)
 
 newtype GdkDrawingContext = GdkDrawingContext (Ptr GdkDrawingContext) deriving Show
 

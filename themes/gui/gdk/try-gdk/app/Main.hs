@@ -24,7 +24,6 @@ import Graphics.Gdk.Windows
 import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.Types
 import Graphics.Gdk.Values
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Regions
