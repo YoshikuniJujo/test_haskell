@@ -74,13 +74,3 @@ newtype GdkGrabStatus = GdkGrabStatus #{type GdkGrabStatus} deriving Show
 #enum GdkGrabStatus, GdkGrabStatus, GDK_GRAB_SUCCESS, \
 	GDK_GRAB_ALREADY_GRABBED, GDK_GRAB_INVALID_TIME, GDK_GRAB_NOT_VIEWABLE, \
 	GDK_GRAB_FROZEN, GDK_GRAB_FAILED
-
-enum "GdkDeviceToolType" ''#{type GdkDeviceToolType} [''Show] [
-	("GdkDeviceToolTypeUnknown", #{const GDK_DEVICE_TOOL_TYPE_UNKNOWN}),
-	("GdkDeviceToolTypePen", #{const GDK_DEVICE_TOOL_TYPE_PEN}),
-	("GdkDeviceToolTypeEraser", #{const GDK_DEVICE_TOOL_TYPE_ERASER}),
-	("GdkDeviceToolTypeBrush", #{const GDK_DEVICE_TOOL_TYPE_BRUSH}),
-	("GdkDeviceToolTypePencil", #{const GDK_DEVICE_TOOL_TYPE_PENCIL}),
-	("GdkDeviceToolTypeAirbrush", #{const GDK_DEVICE_TOOL_TYPE_AIRBRUSH}),
-	("GdkDeviceToolTypeMouse", #{const GDK_DEVICE_TOOL_TYPE_MOUSE}),
-	("GdkDeviceToolTypeLens", #{const GDK_DEVICE_TOOL_TYPE_LENS}) ]
