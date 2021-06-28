@@ -6,6 +6,7 @@
 module Graphics.Gdk.GdkDevice (
 	-- * TYPE
 	GdkDevice(..),
+	GdkDeviceTool(..),
 
 	-- * FUNCTION
 	gdkDeviceGetName,
@@ -40,8 +41,6 @@ import Foreign.Ptr.Misc
 import Foreign.C
 import Foreign.C.Enum
 import Data.Word
-
-import Graphics.Gdk.Types
 
 import System.GLib.DoublyLinkedLists
 
@@ -94,6 +93,8 @@ gdkDeviceListSlaveDevices (GdkDevice p) = do
 foreign import ccall "gdk_device_list_slave_devices" c_gdk_device_list_slave_devices ::
 	Ptr GdkDevice -> IO (Ptr (GList GdkDevice))
 
+newtype GdkDeviceTool = GdkDeviceTool (Ptr GdkDeviceTool) deriving Show
+
 enum "GdkDeviceToolType" ''#{type GdkDeviceToolType} [''Show] [
 	("GdkDeviceToolTypeUnknown", #{const GDK_DEVICE_TOOL_TYPE_UNKNOWN}),
 	("GdkDeviceToolTypePen", #{const GDK_DEVICE_TOOL_TYPE_PEN}),
@@ -107,11 +108,6 @@ enum "GdkDeviceToolType" ''#{type GdkDeviceToolType} [''Show] [
 gdkDeviceToolGetToolType :: GdkDeviceTool -> IO GdkDeviceToolType
 gdkDeviceToolGetToolType (GdkDeviceTool dt) =
 	GdkDeviceToolType <$> c_gdk_device_get_tool_type dt
-
-{-
-foreign import ccall "gdk_device_get_device_tool" c_gdk_device_get_device_tool ::
-	Ptr GdkDevice -> IO (Ptr GdkDeviceTool)
-	-}
 
 foreign import ccall "gdk_device_tool_get_tool_type" c_gdk_device_get_tool_type ::
 	Ptr GdkDeviceTool -> IO #type GdkDeviceToolType

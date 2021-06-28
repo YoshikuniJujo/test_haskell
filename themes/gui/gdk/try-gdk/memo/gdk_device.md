@@ -11,18 +11,11 @@ Function
 * [x] `gdk_device_get_product_id`
 * [x] `gdk_device_get_source`
 * [x] `gdk_device_list_slave_devices`
-* [ ] `gdk_device_tool_get_tool_type`
+* [x] `gdk_device_tool_get_tool_type`
+* [ ] `gdk_device_get_device_type`
 
 ### not now
 
-* `gdk_device_set_mode`
-* `gdk_device_get_mode`
-* `gdk_device_set_key`
-* `gdk_device_get_key`
-* `gdk_device_set_axis_use`
-* `gdk_device_get_axis_use`
-* `gdk_device_get_associated_device`
-* `gdk_device_get_device_type`
 * `gdk_device_get_display`
 * `gdk_device_get_has_cursor`
 * `gdk_device_get_n_axes`
@@ -43,6 +36,16 @@ Function
 * `gdk_device_get_last_event_window`
 * `gdk_device_tool_get_serial`
 
+### not to do for a while
+
+* `gdk_device_set_mode`
+* `gdk_device_get_mode`
+* `gdk_device_set_key`
+* `gdk_device_get_key`
+* `gdk_device_set_axis_use`
+* `gdk_device_get_axis_use`
+* `gdk_device_get_associated_device`
+
 ### deprecated
 
 * `gdk_device_grab`
@@ -58,4 +61,4 @@ todo
 * [x] use c-enum in `GdkDeviceToolType`
 * [x] move `GdkDeviceToolType` to the appropriate module
 * [x] use `Ptr` instead of `ForeignPtr` in `GdkDeviceTool`
-* [ ] move `GdkDeviceTool` to the appropriate module
+* [x] move `GdkDeviceTool` to the appropriate module
