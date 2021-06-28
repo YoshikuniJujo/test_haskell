@@ -18,7 +18,7 @@ Function
 * [x] `gdk_device_warp`
 * [x] `gdk_device_get_seat`
 * [x] `gdk_device_get_position`
-* [ ] `gdk_device_get_position_double`
+* [x] `gdk_device_get_position_double`
 * [ ] `gdk_device_get_window_at_position`
 * [ ] `gdk_device_get_window_at_position_double`
 * [ ] `gdk_device_get_history`

@@ -225,6 +225,7 @@ checkEvent d st = \case
 		when (kv == fromIntegral (ord 'r')) do
 			pnt <- gdkSeatGetPointer st
 			print =<< gdkDeviceGetPosition pnt
+			print =<< gdkDeviceGetPositionDouble pnt
 		pure $ kv /= fromIntegral (ord 'q')
 	GdkEventGdkKeyRelease k -> do
 		kv <- gdkEventKeyKeyval k
