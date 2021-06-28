@@ -101,8 +101,8 @@ foreign import ccall "gdk_display_device_is_grabbed" c_gdk_display_device_is_gra
 	Ptr GdkDisplay -> Ptr GdkDevice -> IO #type gboolean
 
 gdkDisplayDeviceIsGrabbed :: GdkDisplay -> GdkDevice -> IO Bool
-gdkDisplayDeviceIsGrabbed (GdkDisplay dpy) (GdkDevice fdvc) = gbooleanToBool
-	<$> withForeignPtr fdvc (c_gdk_display_device_is_grabbed dpy)
+gdkDisplayDeviceIsGrabbed (GdkDisplay dpy) (GdkDevice pdvc) = gbooleanToBool
+	<$> c_gdk_display_device_is_grabbed dpy pdvc
 
 gdkDisplaySync :: GdkDisplay -> IO ()
 gdkDisplaySync (GdkDisplay p) = c_gdk_display_sync p

@@ -53,3 +53,5 @@ todo
 
 * [x] use c-enum in `GdkInputSource`
 * [x] move `GdkInputSource` to the appropriate module
+* [x] use `Ptr` instead of `ForeignPtr` in `GdkDevice`
+* [ ] move `GdkDevice` to the appropriate module

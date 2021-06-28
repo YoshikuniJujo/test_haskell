@@ -23,7 +23,6 @@ module Graphics.Gdk.GdkDevice (
 import Foreign.Ptr
 import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
-import Foreign.Concurrent
 import Foreign.C
 import Foreign.C.Enum
 import Data.Word
@@ -36,24 +35,21 @@ import System.GLib.DoublyLinkedLists
 #include <gdk/gdk.h>
 
 gdkDeviceGetName :: GdkDevice -> IO String
-gdkDeviceGetName (GdkDevice fp) =
-	withForeignPtr fp \p -> peekCString =<< c_gdk_device_get_name p
+gdkDeviceGetName (GdkDevice p) = peekCString =<< c_gdk_device_get_name p
 
 foreign import ccall "gdk_device_get_name" c_gdk_device_get_name ::
 	Ptr GdkDevice -> IO CString
 
 gdkDeviceGetVendorId :: GdkDevice -> IO (Maybe String)
-gdkDeviceGetVendorId (GdkDevice fp) =
-	withForeignPtr fp \p -> c_gdk_device_get_vendor_id p >>= \case
-		NullPtr -> pure Nothing; cs -> Just <$> peekCString cs
+gdkDeviceGetVendorId (GdkDevice p) = c_gdk_device_get_vendor_id p >>= \case
+	NullPtr -> pure Nothing; cs -> Just <$> peekCString cs
 
 foreign import ccall "gdk_device_get_vendor_id" c_gdk_device_get_vendor_id ::
 	Ptr GdkDevice -> IO CString
 
 gdkDeviceGetProductId :: GdkDevice -> IO (Maybe String)
-gdkDeviceGetProductId (GdkDevice fp) =
-	withForeignPtr fp \p -> c_gdk_device_get_product_id p >>= \case
-		NullPtr -> pure Nothing; cs -> Just <$> peekCString cs
+gdkDeviceGetProductId (GdkDevice p) = c_gdk_device_get_product_id p >>= \case
+	NullPtr -> pure Nothing; cs -> Just <$> peekCString cs
 
 foreign import ccall "gdk_device_get_product_id" c_gdk_device_get_product_id ::
 	Ptr GdkDevice -> IO CString
@@ -70,19 +66,15 @@ enum "GdkInputSource" ''#{type GdkInputSource} [''Show, ''Eq] [
 	("GdkSourceTabletPad", #{const GDK_SOURCE_TABLET_PAD}) ]
 
 gdkDeviceGetSource :: GdkDevice -> IO GdkInputSource
-gdkDeviceGetSource (GdkDevice fp) =
-	withForeignPtr fp \p -> GdkInputSource <$> c_gdk_device_get_source p
+gdkDeviceGetSource (GdkDevice p) = GdkInputSource <$> c_gdk_device_get_source p
 
 foreign import ccall "gdk_device_get_source" c_gdk_device_get_source ::
 	Ptr GdkDevice -> IO #type GdkInputSource
 
 gdkDeviceListSlaveDevices :: GdkDevice -> IO [GdkDevice]
-gdkDeviceListSlaveDevices (GdkDevice fp) = withForeignPtr fp \p -> do
+gdkDeviceListSlaveDevices (GdkDevice p) = do
 	gl <- c_gdk_device_list_slave_devices p
-	mapM mkGdkDevice =<< g_list_to_list gl <* c_g_list_free gl
-
-mkGdkDevice :: Ptr GdkDevice -> IO GdkDevice
-mkGdkDevice p = GdkDevice <$> newForeignPtr p (pure ())
+	map GdkDevice <$> (g_list_to_list gl <* c_g_list_free gl)
 
 foreign import ccall "gdk_device_list_slave_devices" c_gdk_device_list_slave_devices ::
 	Ptr GdkDevice -> IO (Ptr (GList GdkDevice))

@@ -6,6 +6,7 @@ module Graphics.Gdk.Events where
 
 import GHC.Stack
 import Foreign.Ptr
+import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Marshal
@@ -201,24 +202,23 @@ foreign import ccall "gdk_event_get_device" c_gdk_event_get_device ::
 	Ptr GdkEvent -> IO (Ptr GdkDevice)
 
 gdkEventGetDevice :: GdkEvent -> IO GdkDevice
-gdkEventGetDevice (GdkEvent _ fe) = withForeignPtr fe \e ->
-	GdkDevice <$> (flip newForeignPtr (touchForeignPtr fe) =<< c_gdk_event_get_device e)
+gdkEventGetDevice (GdkEvent _ fe) =
+	withForeignPtr fe \e -> GdkDevice <$> c_gdk_event_get_device e
 
 foreign import ccall "gdk_event_set_device" c_gdk_event_set_device ::
 	Ptr GdkEvent -> Ptr GdkDevice -> IO ()
 
 gdkEventSetDevice :: GdkEvent -> GdkDevice -> IO ()
-gdkEventSetDevice (GdkEvent _ fe) (GdkDevice fd) = withForeignPtr fe \e -> withForeignPtr fd \d ->
-	c_gdk_event_set_device e d
+gdkEventSetDevice (GdkEvent _ fe) (GdkDevice d) =
+	withForeignPtr fe \e -> c_gdk_event_set_device e d
 
 foreign import ccall "gdk_event_get_source_device" c_gdk_event_get_source_device ::
 	Ptr GdkEvent -> IO (Ptr GdkDevice)
 
 gdkEventGetSourceDevice :: GdkEvent -> IO (Maybe GdkDevice)
 gdkEventGetSourceDevice (GdkEvent _ fe) = withForeignPtr fe \e ->
-	c_gdk_event_get_source_device e >>= \case
-		p	| p == nullPtr -> pure Nothing
-			| otherwise -> Just . GdkDevice <$> newForeignPtr p (touchForeignPtr fe)
+	(<$> c_gdk_event_get_source_device e) \case
+		NullPtr -> Nothing; p -> Just $ GdkDevice p
 
 newtype GdkEventConfigure = GdkEventConfigure (ForeignPtr GdkEventConfigure) deriving Show
 		
@@ -321,9 +321,8 @@ foreign import ccall "gdk_event_set_source_device" c_gdk_event_set_source_device
 	Ptr GdkEvent -> Ptr GdkDevice -> IO ()
 
 gdkEventSetSourceDevice :: GdkEvent -> GdkDevice -> IO ()
-gdkEventSetSourceDevice (GdkEvent _ fe) (GdkDevice fd) =
-	withForeignPtr fe \e -> withForeignPtr fd \d ->
-		c_gdk_event_set_source_device e d
+gdkEventSetSourceDevice (GdkEvent _ fe) (GdkDevice pd) =
+	withForeignPtr fe \e -> c_gdk_event_set_source_device e pd
 
 foreign import ccall "gdk_event_get_device_tool" c_gdk_event_get_device_tool ::
 	Ptr GdkEvent -> IO (Ptr GdkDeviceTool)

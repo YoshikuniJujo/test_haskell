@@ -50,7 +50,7 @@ newtype GdkScreen = GdkScreen (Ptr GdkScreen) deriving Show
 
 newtype GdkDisplayManager = GdkDisplayManager (Ptr GdkDisplayManager) deriving Show
 
-newtype GdkDevice = GdkDevice (ForeignPtr GdkDevice) deriving Show
+newtype GdkDevice = GdkDevice (Ptr GdkDevice) deriving Show
 
 newtype GdkMonitor = GdkMonitor (Ptr GdkMonitor) deriving Show
 
