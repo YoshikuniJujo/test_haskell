@@ -227,6 +227,7 @@ checkEvent d st = \case
 			print =<< gdkDeviceGetPosition pnt
 			print =<< gdkDeviceGetPositionDouble pnt
 			print =<< gdkDeviceGetWindowAtPosition pnt
+			print =<< gdkDeviceGetWindowAtPositionDouble pnt
 		pure $ kv /= fromIntegral (ord 'q')
 	GdkEventGdkKeyRelease k -> do
 		kv <- gdkEventKeyKeyval k
