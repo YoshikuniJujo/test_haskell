@@ -4,7 +4,6 @@
 
 module Graphics.Gdk.Values where
 
-import Foreign.C.Enum
 import Data.Bits
 import Data.Word
 import Data.Int

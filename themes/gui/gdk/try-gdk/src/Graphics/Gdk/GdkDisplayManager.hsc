@@ -11,6 +11,7 @@ import Foreign.Ptr.Misc
 import Foreign.C
 import Control.Exception
 
+import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.Types
 import Graphics.Gdk.Exception
 import System.GLib.SinglyLinkedLists

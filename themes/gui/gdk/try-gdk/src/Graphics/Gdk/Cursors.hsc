@@ -8,6 +8,7 @@ import Foreign.ForeignPtr
 import Foreign.C
 import Data.Int
 
+import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.Types
 import Graphics.Gdk.Values
 

@@ -46,6 +46,7 @@ import Data.Bits
 import Data.Word
 import Data.Int
 
+import {-# SOURCE #-} Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.Types

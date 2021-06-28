@@ -31,6 +31,7 @@ import Data.Int
 import System.GLib.Bool
 import System.GLib.DoublyLinkedLists
 
+import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.Types
 
 #include <gdk/gdk.h>

@@ -2,6 +2,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkDisplay (
+	-- * TYPE
+	GdkDisplay(..),
+
 	-- * DISPLAY
 	gdkDisplayOpen,
 	gdkDisplayGetDefault,
@@ -67,6 +70,8 @@ import Graphics.Gdk.Types
 import System.GLib.DoublyLinkedLists
 
 #include <gdk/gdk.h>
+
+newtype GdkDisplay = GdkDisplay (Ptr GdkDisplay) deriving Show
 
 gdkDisplayOpen :: String -> IO GdkDisplay
 gdkDisplayOpen dn = (GdkDisplay <$>)
