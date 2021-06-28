@@ -10,7 +10,7 @@ Function
 * [x] `gdk_device_get_vendor_id`
 * [x] `gdk_device_get_product_id`
 * [x] `gdk_device_get_source`
-* [ ] `gdk_device_list_slave_devices`
+* [x] `gdk_device_list_slave_devices`
 * [ ] `gdk_device_tool_get_tool_type`
 
 ### not now
@@ -55,3 +55,5 @@ todo
 * [x] move `GdkInputSource` to the appropriate module
 * [x] use `Ptr` instead of `ForeignPtr` in `GdkDevice`
 * [x] move `GdkDevice` to the appropriate module
+* [x] use c-enum in `GdkDeviceToolType`
+* [ ] move `GdkDeviceToolType` to the appropriate module

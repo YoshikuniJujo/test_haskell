@@ -4,6 +4,7 @@
 
 module Graphics.Gdk.Values where
 
+import Foreign.C.Enum
 import Data.Bits
 import Data.Word
 import Data.Int
@@ -74,10 +75,12 @@ newtype GdkGrabStatus = GdkGrabStatus #{type GdkGrabStatus} deriving Show
 	GDK_GRAB_ALREADY_GRABBED, GDK_GRAB_INVALID_TIME, GDK_GRAB_NOT_VIEWABLE, \
 	GDK_GRAB_FROZEN, GDK_GRAB_FAILED
 
-newtype GdkDeviceToolType = GdkDeviceToolType #{type GdkDeviceToolType} deriving Show
-
-#enum GdkDeviceToolType, GdkDeviceToolType, GDK_DEVICE_TOOL_TYPE_UNKNOWN, \
-	GDK_DEVICE_TOOL_TYPE_PEN, GDK_DEVICE_TOOL_TYPE_ERASER, \
-	GDK_DEVICE_TOOL_TYPE_BRUSH, \
-	GDK_DEVICE_TOOL_TYPE_PENCIL, GDK_DEVICE_TOOL_TYPE_AIRBRUSH, \
-	GDK_DEVICE_TOOL_TYPE_MOUSE, GDK_DEVICE_TOOL_TYPE_LENS
+enum "GdkDeviceToolType" ''#{type GdkDeviceToolType} [''Show] [
+	("GdkDeviceToolTypeUnknown", #{const GDK_DEVICE_TOOL_TYPE_UNKNOWN}),
+	("GdkDeviceToolTypePen", #{const GDK_DEVICE_TOOL_TYPE_PEN}),
+	("GdkDeviceToolTypeEraser", #{const GDK_DEVICE_TOOL_TYPE_ERASER}),
+	("GdkDeviceToolTypeBrush", #{const GDK_DEVICE_TOOL_TYPE_BRUSH}),
+	("GdkDeviceToolTypePencil", #{const GDK_DEVICE_TOOL_TYPE_PENCIL}),
+	("GdkDeviceToolTypeAirbrush", #{const GDK_DEVICE_TOOL_TYPE_AIRBRUSH}),
+	("GdkDeviceToolTypeMouse", #{const GDK_DEVICE_TOOL_TYPE_MOUSE}),
+	("GdkDeviceToolTypeLens", #{const GDK_DEVICE_TOOL_TYPE_LENS}) ]
