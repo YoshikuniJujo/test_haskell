@@ -37,7 +37,6 @@ module Graphics.Gdk.GdkDevice (
 
 import Foreign.Ptr
 import Foreign.Ptr.Misc
-import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.C
 import Foreign.C.Enum
 import Data.Word
@@ -106,7 +105,7 @@ enum "GdkDeviceToolType" ''#{type GdkDeviceToolType} [''Show] [
 	("GdkDeviceToolTypeLens", #{const GDK_DEVICE_TOOL_TYPE_LENS}) ]
 
 gdkDeviceToolGetToolType :: GdkDeviceTool -> IO GdkDeviceToolType
-gdkDeviceToolGetToolType (GdkDeviceTool fdt) = withForeignPtr fdt \dt ->
+gdkDeviceToolGetToolType (GdkDeviceTool dt) =
 	GdkDeviceToolType <$> c_gdk_device_get_tool_type dt
 
 {-

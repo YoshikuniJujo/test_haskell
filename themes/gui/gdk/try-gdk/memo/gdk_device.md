@@ -57,5 +57,5 @@ todo
 * [x] move `GdkDevice` to the appropriate module
 * [x] use c-enum in `GdkDeviceToolType`
 * [x] move `GdkDeviceToolType` to the appropriate module
-* [ ] use `Ptr` instead of `ForeignPtr` in `GdkDeviceTool`
+* [x] use `Ptr` instead of `ForeignPtr` in `GdkDeviceTool`
 * [ ] move `GdkDeviceTool` to the appropriate module

@@ -8,7 +8,6 @@ import GHC.Stack
 import Foreign.Ptr
 import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
-import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
 import Data.Bool
@@ -330,6 +329,5 @@ foreign import ccall "gdk_event_get_device_tool" c_gdk_event_get_device_tool ::
 
 gdkEventGetDeviceTool :: GdkEvent -> IO (Maybe GdkDeviceTool)
 gdkEventGetDeviceTool (GdkEvent _ fe) = withForeignPtr fe \e -> do
-	c_gdk_event_get_device_tool e >>= \case
-		p	| p == nullPtr -> pure Nothing
-			| otherwise -> Just . GdkDeviceTool <$> newForeignPtr p (touchForeignPtr fe)
+	(<$> c_gdk_event_get_device_tool e) \case
+		NullPtr -> Nothing; p -> Just $ GdkDeviceTool p

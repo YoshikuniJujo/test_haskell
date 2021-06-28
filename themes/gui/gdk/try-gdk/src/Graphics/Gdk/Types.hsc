@@ -52,4 +52,4 @@ newtype GdkDisplayManager = GdkDisplayManager (Ptr GdkDisplayManager) deriving S
 
 newtype GdkMonitor = GdkMonitor (Ptr GdkMonitor) deriving Show
 
-newtype GdkDeviceTool = GdkDeviceTool (ForeignPtr GdkDeviceTool) deriving Show
+newtype GdkDeviceTool = GdkDeviceTool (Ptr GdkDeviceTool) deriving Show
