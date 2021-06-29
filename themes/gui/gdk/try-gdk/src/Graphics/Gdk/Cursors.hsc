@@ -32,6 +32,12 @@ module Graphics.Gdk.Cursors (
 	pattern GdkHand2, pattern GdkHeart,
 	pattern GdkIcon, pattern GdkIronCross,
 	pattern GdkLeftPtr, pattern GdkLeftSide,
+	pattern GdkLeftTee, pattern GdkLeftbutton,
+	pattern GdkLlAngle, pattern GdkLrAngle,
+	pattern GdkMan, pattern GdkMiddlebutton,
+	pattern GdkMouse, pattern GdkPencil,
+	pattern GdkPirate, pattern GdkPlus,
+	pattern GdkQuestionArrow, pattern GdkRightPtr,
 
 	) where
 
@@ -98,7 +104,19 @@ enum "GdkCursorType" ''#{type GdkCursorType} [''Show] [
 	("GdkIcon", #{const GDK_ICON}),
 	("GdkIronCross", #{const GDK_IRON_CROSS}),
 	("GdkLeftPtr", #{const GDK_LEFT_PTR}),
-	("GdkLeftSide", #{const GDK_LEFT_SIDE})
+	("GdkLeftSide", #{const GDK_LEFT_SIDE}),
+	("GdkLeftTee", #{const GDK_LEFT_TEE}),
+	("GdkLeftbutton", #{const GDK_LEFTBUTTON}),
+	("GdkLlAngle", #{const GDK_LL_ANGLE}),
+	("GdkLrAngle", #{const GDK_LR_ANGLE}),
+	("GdkMan", #{const GDK_MAN}),
+	("GdkMiddlebutton", #{const GDK_MIDDLEBUTTON}),
+	("GdkMouse", #{const GDK_MOUSE}),
+	("GdkPencil", #{const GDK_PENCIL}),
+	("GdkPirate", #{const GDK_PIRATE}),
+	("GdkPlus", #{const GDK_PLUS}),
+	("GdkQuestionArrow", #{const GDK_QUESTION_ARROW}),
+	("GdkRightPtr", #{const GDK_RIGHT_PTR})
 	]
 
 gdkCursorNewForDisplay :: GdkDisplay -> GdkCursorType -> IO GdkCursor

@@ -38,7 +38,7 @@ todo
 		- [x] `Gdk_CROSS_REVERSE` to `GDK_EXCHANGE`
 		- [x] `GDK_FLEUR` to `GDK_HAND2`
 		- [x] `GDK_HEART` to `GDK_LEFT_SIDE`
-		- [ ] `GDK_LEFT_TEE` to `GDK_RIGHT_PTR`
+		- [x] `GDK_LEFT_TEE` to `GDK_RIGHT_PTR`
 		- [ ] `GDK_RIGHT_SIDE` to `GDK_SHUTTLE`
 		- [ ] `GDK_SIZING` to `GDK_TREK`
 		- [ ] `GDK_UL_ANGLE` to `GDK_CURSOR_IS_PIXMAP`

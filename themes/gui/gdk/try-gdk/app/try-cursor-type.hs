@@ -93,6 +93,18 @@ cursorType1 kv
 	| kv == toKeyval 'h' = GdkIronCross
 	| kv == toKeyval 'i' = GdkLeftPtr
 	| kv == toKeyval 'j' = GdkLeftSide
+	| kv == toKeyval 'k' = GdkLeftTee
+	| kv == toKeyval 'l' = GdkLeftbutton
+	| kv == toKeyval 'm' = GdkLlAngle
+	| kv == toKeyval 'n' = GdkLrAngle
+	| kv == toKeyval 'o' = GdkMan
+	| kv == toKeyval 'p' = GdkMiddlebutton
+	| kv == toKeyval 'r' = GdkMouse
+	| kv == toKeyval 's' = GdkPencil
+	| kv == toKeyval 't' = GdkPirate
+	| kv == toKeyval 'u' = GdkPlus
+	| kv == toKeyval 'v' = GdkQuestionArrow
+	| kv == toKeyval 'w' = GdkRightPtr
 	| otherwise = GdkFleur
 
 toKeyval :: Char -> Word32
