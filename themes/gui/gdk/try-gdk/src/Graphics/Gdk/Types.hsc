@@ -21,8 +21,6 @@ newtype GdkDrawingContext = GdkDrawingContext (Ptr GdkDrawingContext) deriving S
 
 -- newtype GdkRectangle = GdkRectangle (Ptr GdkRectangle) deriving Show
 
-newtype GdkVisual = GdkVisual (Ptr GdkVisual) deriving Show
-
 newtype GdkCursor = GdkCursor (ForeignPtr GdkCursor) deriving Show
 newtype GdkCursorRef = GdkCursorRef (Ptr GdkCursor) deriving Show
 

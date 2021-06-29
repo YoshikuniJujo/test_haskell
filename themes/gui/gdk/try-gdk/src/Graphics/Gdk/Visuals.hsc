@@ -4,6 +4,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.Visuals (
+	-- * TYPE
+	GdkVisual(..),
+
 	-- * FUNCTION
 	gdkVisualGetDepth,
 	gdkVisualGetRedPixelDetails,
@@ -26,10 +29,11 @@ import Foreign.C.Enum
 import Data.Int
 import Data.Word
 
-import Graphics.Gdk.GdkScreen
-import Graphics.Gdk.Types
+import {-# SOURCE #-} Graphics.Gdk.GdkScreen
 
 #include <gdk/gdk.h>
+
+newtype GdkVisual = GdkVisual (Ptr GdkVisual) deriving Show
 
 enum "GdkVisualType" ''#{type GdkVisualType} [''Show, ''Eq] [
 	("GdkVisualStaticGray", #{const GDK_VISUAL_STATIC_GRAY}),
