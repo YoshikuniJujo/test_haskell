@@ -6,12 +6,12 @@ Function
 
 ### now
 
-* [ ] `gdk_visual_get_depth`
-* [ ] `gdk_visual_get_red_pixel_details`
-* [ ] `gdk_visual_get_green_pixel_details`
-* [ ] `gdk_visual_get_blue_pixel_detauls`
-* [ ] `gdk_visual_get_visual_type`
-* [ ] `gdk_visual_get_screen`
+* [x] `gdk_visual_get_depth`
+* [x] `gdk_visual_get_red_pixel_details`
+* [x] `gdk_visual_get_green_pixel_details`
+* [x] `gdk_visual_get_blue_pixel_detauls`
+* [x] `gdk_visual_get_visual_type`
+* [x] `gdk_visual_get_screen`
 
 ### deprecated
 

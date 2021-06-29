@@ -1,7 +1,12 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.Cursors where
+module Graphics.Gdk.Cursors (
+	gdkCursorNewFromSurface,
+	gdkCursorNewFromName,
+	gdkCursorGetDisplay,
+	gdkCursorGetSurface,
+	gdkCursorGetCursorType ) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
