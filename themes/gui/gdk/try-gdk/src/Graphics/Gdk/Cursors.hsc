@@ -49,7 +49,11 @@ module Graphics.Gdk.Cursors (
 	pattern GdkTarget, pattern GdkTcross,
 	pattern GdkTopLeftArrow, pattern GdkTopLeftCorner,
 	pattern GdkTopRightCorner, pattern GdkTopSide,
-	pattern GdkTopTee, pattern GdkTrek
+	pattern GdkTopTee, pattern GdkTrek,
+	pattern GdkUlAngle, pattern GdkUmbrella,
+	pattern GdkUrAngle, pattern GdkWatch,
+	pattern GdkXterm, pattern GdkLastCursor,
+	pattern GdkBlankCursor, pattern GdkCursorIsPixmap
 
 	) where
 
@@ -152,7 +156,15 @@ enum "GdkCursorType" ''#{type GdkCursorType} [''Show] [
 	("GdkTopRightCorner", #{const GDK_TOP_RIGHT_CORNER}),
 	("GdkTopSide", #{const GDK_TOP_SIDE}),
 	("GdkTopTee", #{const GDK_TOP_TEE}),
-	("GdkTrek", #{const GDK_TREK})
+	("GdkTrek", #{const GDK_TREK}),
+	("GdkUlAngle", #{const GDK_UL_ANGLE}),
+	("GdkUmbrella", #{const GDK_UMBRELLA}),
+	("GdkUrAngle", #{const GDK_UR_ANGLE}),
+	("GdkWatch", #{const GDK_WATCH}),
+	("GdkXterm", #{const GDK_XTERM}),
+	("GdkLastCursor", #{const GDK_LAST_CURSOR}),
+	("GdkBlankCursor", #{const GDK_BLANK_CURSOR}),
+	("GdkCursorIsPixmap", #{const GDK_CURSOR_IS_PIXMAP})
 	]
 
 gdkCursorNewForDisplay :: GdkDisplay -> GdkCursorType -> IO GdkCursor

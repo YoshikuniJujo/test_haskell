@@ -48,8 +48,8 @@ main = do
 		_ -> pure True
 
 cursorType :: Int -> Word32 -> GdkCursorType
-cursorType n = case n `mod` 3 of
-	0 -> cursorType0; 1 -> cursorType1; 2 -> cursorType2
+cursorType n = case n `mod` 4 of
+	0 -> cursorType0; 1 -> cursorType1; 2 -> cursorType2; 3 -> cursorType3
 	_ -> error "never occur"
 
 cursorType0 :: Word32 -> GdkCursorType
@@ -133,7 +133,19 @@ cursorType2 kv
 	| kv == toKeyval 't' = GdkTopSide
 	| kv == toKeyval 'u' = GdkTopTee
 	| kv == toKeyval 'v' = GdkTrek
+	| kv == toKeyval 'w' = GdkUlAngle
+	| kv == toKeyval 'x' = GdkUmbrella
+	| kv == toKeyval 'y' = GdkUrAngle
+	| kv == toKeyval 'z' = GdkWatch
 	| otherwise = GdkRtlLogo
+
+cursorType3 :: Word32 -> GdkCursorType
+cursorType3 kv
+	| kv == toKeyval 'a' = GdkXterm
+--	| kv == toKeyval 'b' = GdkLastCursor
+	| kv == toKeyval 'c' = GdkBlankCursor
+--	| kv == toKeyval 'd' = GdkCursorIsPixmap
+	| otherwise = GdkXterm
 
 toKeyval :: Char -> Word32
 toKeyval = fromIntegral . ord

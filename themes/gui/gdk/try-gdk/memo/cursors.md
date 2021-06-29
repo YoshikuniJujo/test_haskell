@@ -12,7 +12,8 @@ Function
 	+ [x] define
 	+ [x] make test
 	+ [x] repair test
-	+ [ ] more cursor types
+	+ [x] more cursor types
+	+ [ ] review
 * [ ] `gdk_cursor_get_display`
 * [ ] `gdk_cusror_get_surface`
 * [ ] `gdk_cursor_get_cursor_type`
@@ -31,9 +32,9 @@ Function
 todo
 ----
 
-* [ ] use `c-enum` in `GdkCursorType`
+* [x] use `c-enum` in `GdkCursorType`
 	+ [x] define `GdkCursorType`
-	+ [ ] define more members
+	+ [x] define more members
 		- [x] `Gdk_BOTTOM_SIDE` to `GDK_CROSS`
 		- [x] `Gdk_CROSS_REVERSE` to `GDK_EXCHANGE`
 		- [x] `GDK_FLEUR` to `GDK_HAND2`
@@ -41,7 +42,7 @@ todo
 		- [x] `GDK_LEFT_TEE` to `GDK_RIGHT_PTR`
 		- [x] `GDK_RIGHT_SIDE` to `GDK_SHUTTLE`
 		- [x] `GDK_SIZING` to `GDK_TREK`
-		- [ ] `GDK_UL_ANGLE` to `GDK_CURSOR_IS_PIXMAP`
-* [ ] move `GdkCursorType` to here
+		- [x] `GDK_UL_ANGLE` to `GDK_CURSOR_IS_PIXMAP`
+* [x] move `GdkCursorType` to here
 * [ ] move `GdkCursor` to here
 * [ ] think about `ref` and `unref`
