@@ -36,7 +36,8 @@ todo
 	+ [ ] define more members
 		- [x] `Gdk_BOTTOM_SIDE` to `GDK_CROSS`
 		- [x] `Gdk_CROSS_REVERSE` to `GDK_EXCHANGE`
-		- [ ] `GDK_FLEUR` to `GDK_LEFT_SIDE`
+		- [x] `GDK_FLEUR` to `GDK_HAND2`
+		- [ ] `GDK_HEART` to `GDK_LEFT_SIDE`
 		- [ ] `GDK_LEFT_TEE` to `GDK_RIGHT_PTR`
 		- [ ] `GDK_RIGHT_SIDE` to `GDK_SHUTTLE`
 		- [ ] `GDK_SIZING` to `GDK_TREK`

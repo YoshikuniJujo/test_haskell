@@ -27,6 +27,9 @@ module Graphics.Gdk.Cursors (
 	pattern GdkDotbox, pattern GdkDoubleArrow,
 	pattern GdkDraftLarge, pattern GdkDraftSmall,
 	pattern GdkDrapedBox, pattern GdkExchange,
+	pattern GdkFleur, pattern GdkGobbler,
+	pattern GdkGumby, pattern GdkHand1,
+	pattern GdkHand2,
 
 	) where
 
@@ -83,7 +86,12 @@ enum "GdkCursorType" ''#{type GdkCursorType} [''Show] [
 	("GdkDraftLarge", #{const GDK_DRAFT_LARGE}),
 	("GdkDraftSmall", #{const GDK_DRAFT_SMALL}),
 	("GdkDrapedBox", #{const GDK_DRAPED_BOX}),
-	("GdkExchange", #{const GDK_EXCHANGE})
+	("GdkExchange", #{const GDK_EXCHANGE}),
+	("GdkFleur", #{const GDK_FLEUR}),
+	("GdkGobbler", #{const GDK_GOBBLER}),
+	("GdkGumby", #{const GDK_GUMBY}),
+	("GdkHand1", #{const GDK_HAND1}),
+	("GdkHand2", #{const GDK_HAND2})
 	]
 
 gdkCursorNewForDisplay :: GdkDisplay -> GdkCursorType -> IO GdkCursor
