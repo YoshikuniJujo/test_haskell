@@ -46,5 +46,5 @@ todo
 * [x] move `GdkCursorType` to here
 * [x] check pointer address of GdkCursor to set and GdkCursor to get
 * [x] remove `GdkCursorRef`
-* [ ] move `GdkCursor` to here
-* [ ] think about `ref` and `unref`
+* [x] move `GdkCursor` to here
+* [x] think about `ref` and `unref`

@@ -4,6 +4,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.Cursors (
+	-- * TYPE
+	GdkCursor(..),
+
 	-- * FUNCTION
 	gdkCursorGetDisplay,
 	gdkCursorNewFromSurface,
@@ -57,17 +60,24 @@ module Graphics.Gdk.Cursors (
 	) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
+import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.Concurrent
 import Foreign.C
 import Foreign.C.Enum
 import Data.Int
 
-import Graphics.Gdk.GdkDisplay
-import Graphics.Gdk.Types
+import {-# SOURCE #-} Graphics.Gdk.GdkDisplay
 
 import Graphics.Cairo.Surfaces.CairoSurfaceT.Internal
 
 #include <gdk/gdk.h>
+
+newtype GdkCursor = GdkCursor (ForeignPtr GdkCursor) deriving Show
+
+mkGdkCursor :: Ptr GdkCursor -> IO GdkCursor
+mkGdkCursor p = GdkCursor <$> newForeignPtr p (c_g_object_unref p)
+
+foreign import ccall "g_object_unref" c_g_object_unref :: Ptr a -> IO ()
 
 gdkCursorNewFromSurface :: GdkDisplay -> CairoSurfaceT s ps -> #{type gdouble} -> #{type gdouble} -> IO GdkCursor
 gdkCursorNewFromSurface (GdkDisplay d) (CairoSurfaceT fs) x y = withForeignPtr fs \s ->

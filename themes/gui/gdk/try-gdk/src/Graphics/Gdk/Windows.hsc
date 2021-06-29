@@ -52,6 +52,7 @@ import {-# SOURCE #-} Graphics.Gdk.GdkScreen
 import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.PointsAndRectangles
 import Graphics.Gdk.Visuals
+import Graphics.Gdk.Cursors
 import Graphics.Gdk.Types
 import Graphics.Gdk.Values
 import Graphics.Gdk.EventStructures

@@ -21,11 +21,6 @@ newtype GdkDrawingContext = GdkDrawingContext (Ptr GdkDrawingContext) deriving S
 
 -- newtype GdkRectangle = GdkRectangle (Ptr GdkRectangle) deriving Show
 
-newtype GdkCursor = GdkCursor (ForeignPtr GdkCursor) deriving Show
-
-mkGdkCursor :: Ptr GdkCursor -> IO GdkCursor
-mkGdkCursor p = GdkCursor <$> newForeignPtr p (c_g_object_unref p)
-
 foreign import ccall "g_object_unref" c_g_object_unref :: Ptr a -> IO ()
 
 newForeignCString :: String -> IO ForeignCString
