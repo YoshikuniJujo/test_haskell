@@ -86,12 +86,16 @@ gdkCursorGetDisplay (GdkCursor fc) =
 foreign import ccall "gdk_cursor_get_display" c_gdk_cursor_get_display ::
 	Ptr GdkCursor -> IO (Ptr GdkDisplay)
 
-gdkCursorNewFromSurface :: GdkDisplay -> CairoSurfaceT s ps -> #{type gdouble} -> #{type gdouble} -> IO GdkCursor
-gdkCursorNewFromSurface (GdkDisplay d) (CairoSurfaceT fs) x y = withForeignPtr fs \s ->
-	mkGdkCursor =<< c_gdk_cursor_new_from_surface d s x y
+gdkCursorNewFromSurface ::
+	GdkDisplay -> CairoSurfaceT s ps -> CDouble -> CDouble -> IO GdkCursor
+gdkCursorNewFromSurface (GdkDisplay d) (CairoSurfaceT fs) x y =
+	withForeignPtr fs \s ->
+		mkGdkCursor =<< c_gdk_cursor_new_from_surface d s x y
 
-foreign import ccall "gdk_cursor_new_from_surface" c_gdk_cursor_new_from_surface ::
-	Ptr GdkDisplay -> Ptr (CairoSurfaceT s ps) -> #{type gdouble} -> #{type gdouble} -> IO (Ptr GdkCursor)
+foreign import ccall "gdk_cursor_new_from_surface"
+	c_gdk_cursor_new_from_surface ::
+	Ptr GdkDisplay -> Ptr (CairoSurfaceT s ps) -> CDouble -> CDouble ->
+	IO (Ptr GdkCursor)
 
 gdkCursorNewFromName :: GdkDisplay -> String -> IO GdkCursor
 gdkCursorNewFromName (GdkDisplay d) nm = withCString nm \cnm ->
