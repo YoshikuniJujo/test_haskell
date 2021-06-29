@@ -5,15 +5,14 @@
 
 module Graphics.Gdk.Cursors (
 	-- * FUNCTION
+	gdkCursorGetDisplay,
 	gdkCursorNewFromSurface,
 	gdkCursorNewFromName,
-	gdkCursorGetDisplay,
 	gdkCursorGetSurface,
-	gdkCursorGetCursorType,
 
 	-- * GDK CURSOR TYPE
 	GdkCursorType(..),
-	gdkCursorNewForDisplay,
+	gdkCursorNewForDisplay, gdkCursorGetCursorType,
 	pattern GdkXCursor, pattern GdkArrow,
 	pattern GdkBasedArrowDown, pattern GdkBasedArrowUp,
 	pattern GdkBoat, pattern GdkBogosity,
