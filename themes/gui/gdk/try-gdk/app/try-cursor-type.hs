@@ -6,6 +6,7 @@ module Main where
 import Control.Monad
 import Data.Word
 import Data.Char
+import Data.IORef
 import System.Environment
 
 import Graphics.Gdk.General
@@ -18,6 +19,7 @@ import Try.Tools
 
 main :: IO ()
 main = do
+	cnt <- newIORef 0
 	print =<< join (gdkInit <$> getProgName <*> getArgs)
 	w <- gdkWindowNew Nothing defaultGdkWindowAttr
 	d <- gdkWindowGetDisplay w
@@ -38,12 +40,20 @@ main = do
 					| otherwise -> pure ()
 		GdkEventGdkKeyPress k -> do
 			kv <- gdkEventKeyKeyval k
-			gdkWindowSetCursor w =<< gdkCursorNewForDisplay d (cursorType kv)
+			print kv
+			when (kv == 65505 || kv == 65506) $ modifyIORef cnt (+ 1)
+			n <- readIORef cnt
+			gdkWindowSetCursor w =<< gdkCursorNewForDisplay d (cursorType n kv)
 			pure $ kv /= fromIntegral (ord 'q')
 		_ -> pure True
 
-cursorType :: Word32 -> GdkCursorType
-cursorType kv
+cursorType :: Int -> Word32 -> GdkCursorType
+cursorType n = case n `mod` 4 of
+	0 -> cursorType0; 1 -> cursorType1; 2 -> cursorType0; 3 -> cursorType1
+	_ -> error "never occur"
+
+cursorType0 :: Word32 -> GdkCursorType
+cursorType0 kv
 	| kv == toKeyval 'a' = GdkXCursor
 	| kv == toKeyval 'b' = GdkArrow
 	| kv == toKeyval 'c' = GdkBasedArrowDown
@@ -70,6 +80,15 @@ cursorType kv
 	| kv == toKeyval 'y' = GdkDrapedBox
 	| kv == toKeyval 'z' = GdkExchange
 	| otherwise = GdkXCursor
+
+cursorType1 :: Word32 -> GdkCursorType
+cursorType1 kv
+	| kv == toKeyval 'a' = GdkFleur
+	| kv == toKeyval 'b' = GdkGobbler
+	| kv == toKeyval 'c' = GdkGumby
+	| kv == toKeyval 'd' = GdkHand1
+	| kv == toKeyval 'e' = GdkHand2
+	| otherwise = GdkFleur
 
 toKeyval :: Char -> Word32
 toKeyval = fromIntegral . ord

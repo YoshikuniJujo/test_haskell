@@ -11,7 +11,7 @@ Function
 * [ ] `gdk_cursor_new_for_display`
 	+ [x] define
 	+ [x] make test
-	+ [ ] repair test
+	+ [x] repair test
 	+ [ ] more cursor types
 * [ ] `gdk_cursor_get_display`
 * [ ] `gdk_cusror_get_surface`
@@ -44,3 +44,4 @@ todo
 		- [ ] `GDK_UL_ANGLE` to `GDK_CURSOR_IS_PIXMAP`
 * [ ] move `GdkCursorType` to here
 * [ ] move `GdkCursor` to here
+* [ ] think about `ref` and `unref`
