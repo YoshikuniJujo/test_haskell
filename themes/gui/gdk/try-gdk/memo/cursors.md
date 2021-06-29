@@ -9,7 +9,7 @@ Function
 * [ ] `gdk_cursor_new_from_surface`
 * [ ] `gdk_cursor_new_from_name`
 * [ ] `gdk_cursor_new_for_display`
-	+ [ ] define
+	+ [x] define
 	+ [ ] make test
 	+ [ ] more cursor types
 * [ ] `gdk_cursor_get_display`
