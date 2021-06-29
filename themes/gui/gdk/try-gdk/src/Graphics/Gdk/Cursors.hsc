@@ -22,6 +22,11 @@ module Graphics.Gdk.Cursors (
 	pattern GdkBoxSpiral, pattern GdkCenterPtr,
 	pattern GdkCircle, pattern GdkClock,
 	pattern GdkCoffeeMug, pattern GdkCross,
+	pattern GdkCrossReverse, pattern GdkCrosshair,
+	pattern GdkDiamondCross, pattern GdkDot,
+	pattern GdkDotbox, pattern GdkDoubleArrow,
+	pattern GdkDraftLarge, pattern GdkDraftSmall,
+	pattern GdkDrapedBox, pattern GdkExchange,
 
 	) where
 
@@ -68,7 +73,17 @@ enum "GdkCursorType" ''#{type GdkCursorType} [''Show] [
 	("GdkCircle", #{const GDK_CIRCLE}),
 	("GdkClock", #{const GDK_CLOCK}),
 	("GdkCoffeeMug", #{const GDK_COFFEE_MUG}),
-	("GdkCross", #{const GDK_CROSS})
+	("GdkCross", #{const GDK_CROSS}),
+	("GdkCrossReverse", #{const GDK_CROSS_REVERSE}),
+	("GdkCrosshair", #{const GDK_CROSSHAIR}),
+	("GdkDiamondCross", #{const GDK_DIAMOND_CROSS}),
+	("GdkDot", #{const GDK_DOT}),
+	("GdkDotbox", #{const GDK_DOTBOX}),
+	("GdkDoubleArrow", #{const GDK_DOUBLE_ARROW}),
+	("GdkDraftLarge", #{const GDK_DRAFT_LARGE}),
+	("GdkDraftSmall", #{const GDK_DRAFT_SMALL}),
+	("GdkDrapedBox", #{const GDK_DRAPED_BOX}),
+	("GdkExchange", #{const GDK_EXCHANGE})
 	]
 
 gdkCursorNewForDisplay :: GdkDisplay -> GdkCursorType -> IO GdkCursor

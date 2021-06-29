@@ -60,6 +60,15 @@ cursorType kv
 	| kv == toKeyval 'n' = GdkClock
 	| kv == toKeyval 'o' = GdkCoffeeMug
 	| kv == toKeyval 'p' = GdkCross
+	| kv == toKeyval 'r' = GdkCrossReverse
+	| kv == toKeyval 's' = GdkDiamondCross
+	| kv == toKeyval 't' = GdkDot
+	| kv == toKeyval 'u' = GdkDotbox
+	| kv == toKeyval 'v' = GdkDoubleArrow
+	| kv == toKeyval 'w' = GdkDraftLarge
+	| kv == toKeyval 'x' = GdkDraftSmall
+	| kv == toKeyval 'y' = GdkDrapedBox
+	| kv == toKeyval 'z' = GdkExchange
 	| otherwise = GdkXCursor
 
 toKeyval :: Char -> Word32

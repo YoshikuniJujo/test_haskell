@@ -11,6 +11,7 @@ Function
 * [ ] `gdk_cursor_new_for_display`
 	+ [x] define
 	+ [x] make test
+	+ [ ] repair test
 	+ [ ] more cursor types
 * [ ] `gdk_cursor_get_display`
 * [ ] `gdk_cusror_get_surface`
@@ -34,7 +35,7 @@ todo
 	+ [x] define `GdkCursorType`
 	+ [ ] define more members
 		- [x] `Gdk_BOTTOM_SIDE` to `GDK_CROSS`
-		- [ ] `Gdk_CROSS_REVERSE` to `GDK_EXCHANGE`
+		- [x] `Gdk_CROSS_REVERSE` to `GDK_EXCHANGE`
 		- [ ] `GDK_FLEUR` to `GDK_LEFT_SIDE`
 		- [ ] `GDK_LEFT_TEE` to `GDK_RIGHT_PTR`
 		- [ ] `GDK_RIGHT_SIDE` to `GDK_SHUTTLE`
