@@ -45,6 +45,6 @@ todo
 		- [x] `GDK_UL_ANGLE` to `GDK_CURSOR_IS_PIXMAP`
 * [x] move `GdkCursorType` to here
 * [x] check pointer address of GdkCursor to set and GdkCursor to get
-* [ ] remove `GdkCursorRef`
+* [x] remove `GdkCursorRef`
 * [ ] move `GdkCursor` to here
 * [ ] think about `ref` and `unref`

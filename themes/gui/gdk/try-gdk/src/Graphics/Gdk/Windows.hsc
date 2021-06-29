@@ -311,8 +311,13 @@ gdkWindowSetCursor (GdkWindow w) (GdkCursor fc) = withForeignPtr fc \c ->
 
 foreign import ccall "gdk_window_get_cursor" c_gdk_window_get_cursor :: Ptr GdkWindow -> IO (Ptr GdkCursor)
 
-gdkWindowGetCursor :: GdkWindow -> IO GdkCursorRef
-gdkWindowGetCursor (GdkWindow w) = GdkCursorRef <$> c_gdk_window_get_cursor w
+gdkWindowGetCursor :: GdkWindow -> IO GdkCursor
+gdkWindowGetCursor (GdkWindow w) = do
+	c <- c_gdk_window_get_cursor w
+	c_g_object_ref c
+	GdkCursor <$> newForeignPtr c (c_g_object_unref c)
+
+foreign import ccall "g_object_ref" c_g_object_ref :: Ptr a -> IO ()
 
 foreign import ccall "gdk_window_get_width" c_gdk_window_get_width :: Ptr GdkWindow -> IO #type int
 
