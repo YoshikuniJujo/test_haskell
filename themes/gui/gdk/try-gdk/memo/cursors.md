@@ -10,7 +10,7 @@ Function
 * [ ] `gdk_cursor_new_from_name`
 * [ ] `gdk_cursor_new_for_display`
 	+ [x] define
-	+ [ ] make test
+	+ [x] make test
 	+ [ ] more cursor types
 * [ ] `gdk_cursor_get_display`
 * [ ] `gdk_cusror_get_surface`
@@ -33,4 +33,11 @@ todo
 * [ ] use `c-enum` in `GdkCursorType`
 	+ [x] define `GdkCursorType`
 	+ [ ] define more members
+		- [ ] `Gdk_BOTTOM_SIDE` to `GDK_CROSS`
+		- [ ] `Gdk_CROSS_REVERSE` to `GDK_EXCHANGE`
+		- [ ] `GDK_FLEUR` to `GDK_LEFT_SIDE`
+		- [ ] `GDK_LEFT_TEE` to `GDK_RIGHT_PTR`
+		- [ ] `GDK_RIGHT_SIDE` to `GDK_SHUTTLE`
+		- [ ] `GDK_SIZING` to `GDK_TREK`
+		- [ ] `GDK_UL_ANGLE` to `GDK_CURSOR_IS_PIXMAP`
 * [ ] move `GdkCursorType` to here
