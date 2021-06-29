@@ -121,6 +121,18 @@ cursorType2 kv
 	| kv == toKeyval 'g' = GdkSbUpArrow
 	| kv == toKeyval 'h' = GdkSbVDoubleArrow
 	| kv == toKeyval 'i' = GdkShuttle
+	| kv == toKeyval 'j' = GdkSizing
+	| kv == toKeyval 'k' = GdkSpider
+	| kv == toKeyval 'l' = GdkSpraycan
+	| kv == toKeyval 'm' = GdkStar
+	| kv == toKeyval 'n' = GdkTarget
+	| kv == toKeyval 'o' = GdkTcross
+	| kv == toKeyval 'p' = GdkTopLeftArrow
+	| kv == toKeyval 'r' = GdkTopLeftCorner
+	| kv == toKeyval 's' = GdkTopRightCorner
+	| kv == toKeyval 't' = GdkTopSide
+	| kv == toKeyval 'u' = GdkTopTee
+	| kv == toKeyval 'v' = GdkTrek
 	| otherwise = GdkRtlLogo
 
 toKeyval :: Char -> Word32

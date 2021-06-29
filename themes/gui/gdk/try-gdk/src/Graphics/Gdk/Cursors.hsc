@@ -44,6 +44,12 @@ module Graphics.Gdk.Cursors (
 	pattern GdkSbHDoubleArrow, pattern GdkSbLeftArrow,
 	pattern GdkSbRightArrow, pattern GdkSbUpArrow,
 	pattern GdkSbVDoubleArrow, pattern GdkShuttle,
+	pattern GdkSizing, pattern GdkSpider,
+	pattern GdkSpraycan, pattern GdkStar,
+	pattern GdkTarget, pattern GdkTcross,
+	pattern GdkTopLeftArrow, pattern GdkTopLeftCorner,
+	pattern GdkTopRightCorner, pattern GdkTopSide,
+	pattern GdkTopTee, pattern GdkTrek
 
 	) where
 
@@ -134,7 +140,19 @@ enum "GdkCursorType" ''#{type GdkCursorType} [''Show] [
 	("GdkSbRightArrow", #{const GDK_SB_RIGHT_ARROW}),
 	("GdkSbUpArrow", #{const GDK_SB_UP_ARROW}),
 	("GdkSbVDoubleArrow", #{const GDK_SB_V_DOUBLE_ARROW}),
-	("GdkShuttle", #{const GDK_SHUTTLE})
+	("GdkShuttle", #{const GDK_SHUTTLE}),
+	("GdkSizing", #{const GDK_SIZING}),
+	("GdkSpider", #{const GDK_SPIDER}),
+	("GdkSpraycan", #{const GDK_SPRAYCAN}),
+	("GdkStar", #{const GDK_STAR}),
+	("GdkTarget", #{const GDK_TARGET}),
+	("GdkTcross", #{const GDK_TCROSS}),
+	("GdkTopLeftArrow", #{const GDK_TOP_LEFT_ARROW}),
+	("GdkTopLeftCorner", #{const GDK_TOP_LEFT_CORNER}),
+	("GdkTopRightCorner", #{const GDK_TOP_RIGHT_CORNER}),
+	("GdkTopSide", #{const GDK_TOP_SIDE}),
+	("GdkTopTee", #{const GDK_TOP_TEE}),
+	("GdkTrek", #{const GDK_TREK})
 	]
 
 gdkCursorNewForDisplay :: GdkDisplay -> GdkCursorType -> IO GdkCursor

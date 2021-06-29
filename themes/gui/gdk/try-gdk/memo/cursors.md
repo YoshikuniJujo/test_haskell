@@ -40,7 +40,7 @@ todo
 		- [x] `GDK_HEART` to `GDK_LEFT_SIDE`
 		- [x] `GDK_LEFT_TEE` to `GDK_RIGHT_PTR`
 		- [x] `GDK_RIGHT_SIDE` to `GDK_SHUTTLE`
-		- [ ] `GDK_SIZING` to `GDK_TREK`
+		- [x] `GDK_SIZING` to `GDK_TREK`
 		- [ ] `GDK_UL_ANGLE` to `GDK_CURSOR_IS_PIXMAP`
 * [ ] move `GdkCursorType` to here
 * [ ] move `GdkCursor` to here
