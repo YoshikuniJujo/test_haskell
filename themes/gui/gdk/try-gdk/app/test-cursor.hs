@@ -3,6 +3,7 @@
 
 module Main where
 
+import Foreign.C.Types
 import Control.Monad
 import Control.Monad.Primitive
 import Data.Char
@@ -21,7 +22,6 @@ import Try.Tools
 
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
-import Graphics.Cairo.Surfaces.CairoSurfaceT.Internal
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
 
@@ -67,9 +67,11 @@ main = do
 		GdkEventGdkKeyPress k -> do
 			kv <- gdkEventKeyKeyval k
 			when (kv == fromIntegral (ord 'c'))
-				$ gdkWindowSetCursor w =<< (\s -> gdkCursorNewFromSurface d s 15 15) =<< drawCursor
+--				$ gdkWindowSetCursor w =<< (\s -> gdkCursorNewFromSurface d s 15 15) =<< drawCursor
+				$ gdkWindowSetCursor w =<< (\s -> getSurfaceCursor d s 15 15) =<< drawCursor
 			when (kv == fromIntegral (ord 'd'))
-				$ gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
+--				$ gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
+				$ gdkWindowSetCursor w =<< getNameCursor d "crosshair"
 			when (kv == fromIntegral (ord 'g'))
 				$ print =<< gdkSeatGrab st w GdkSeatCapabilityAllPointing False Nothing Nothing
 						(Nothing :: Maybe (GdkSeatGrabPrepareFunc (), ()))
@@ -79,7 +81,19 @@ main = do
 			pure $ kv /= fromIntegral (ord 'q')
 		e -> True <$ print e
 
-drawCursor :: PrimMonad m => m (CairoSurfaceT s (PrimState m))
+getSurfaceCursor :: GdkDisplay -> CairoSurfaceImageT s ps -> CDouble -> CDouble -> IO GdkCursor
+getSurfaceCursor d si x y = do
+	c <- gdkCursorNewFromSurface d si x y
+	print =<< gdkCursorGetSurface c
+	pure c
+
+getNameCursor :: GdkDisplay -> String -> IO GdkCursor
+getNameCursor d n = do
+	c <- gdkCursorNewFromName d n
+	print =<< gdkCursorGetSurface c
+	pure c
+
+drawCursor :: PrimMonad m => m (CairoSurfaceImageT s (PrimState m))
 drawCursor = do
 	s <- cairoImageSurfaceCreate cairoFormatArgb32 50 50
 	cr <- cairoCreate s
@@ -94,7 +108,7 @@ drawCursor = do
 	cairoMoveTo cr 15 15
 	cairoLineTo cr 35 35
 	cairoStroke cr
-	pure $ toCairoSurfaceT s
+	pure s
 
 gdkEventMotionPos :: GdkEventMotion -> IO (Double, Double)
 gdkEventMotionPos m = (,) <$> gdkEventMotionX m <*> gdkEventMotionY m

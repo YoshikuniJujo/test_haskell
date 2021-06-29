@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.Cursors (
@@ -60,6 +60,7 @@ module Graphics.Gdk.Cursors (
 	) where
 
 import Foreign.Ptr
+import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.C
@@ -69,6 +70,7 @@ import Data.Int
 import {-# SOURCE #-} Graphics.Gdk.GdkDisplay
 
 import Graphics.Cairo.Surfaces.CairoSurfaceT.Internal
+import Graphics.Cairo.Surfaces.ImageSurfaces
 
 #include <gdk/gdk.h>
 
@@ -87,8 +89,8 @@ foreign import ccall "gdk_cursor_get_display" c_gdk_cursor_get_display ::
 	Ptr GdkCursor -> IO (Ptr GdkDisplay)
 
 gdkCursorNewFromSurface ::
-	GdkDisplay -> CairoSurfaceT s ps -> CDouble -> CDouble -> IO GdkCursor
-gdkCursorNewFromSurface (GdkDisplay d) (CairoSurfaceT fs) x y =
+	GdkDisplay -> CairoSurfaceImageT s ps -> CDouble -> CDouble -> IO GdkCursor
+gdkCursorNewFromSurface (GdkDisplay d) (toCairoSurfaceT -> CairoSurfaceT fs) x y =
 	withForeignPtr fs \s ->
 		mkGdkCursor =<< c_gdk_cursor_new_from_surface d s x y
 
@@ -195,12 +197,20 @@ foreign import ccall "gdk_cursor_new_for_display"
 	c_gdk_cursor_new_for_display ::
 	GdkDisplay -> #{type GdkCursorType} -> IO (Ptr GdkCursor)
 
-gdkCursorGetSurface :: GdkCursor -> IO (CairoSurfaceT s ps)
+gdkCursorGetSurface :: GdkCursor -> IO (Maybe (CairoSurfaceImageT s ps))
 gdkCursorGetSurface (GdkCursor fc) = withForeignPtr fc \c ->
-	mkCairoSurfaceT =<< c_gdk_cursor_get_surface c
+	(getCairoSurfaceImageT <$>) <$> (mkCairoSurfaceT' =<< c_gdk_cursor_get_surface c NullPtr NullPtr)
+
+mkCairoSurfaceT' :: Ptr (CairoSurfaceT s ps) -> IO (Maybe (CairoSurfaceT s ps))
+mkCairoSurfaceT' = \case
+	NullPtr -> pure Nothing
+	p -> Just <$> mkCairoSurfaceT p
+
+getCairoSurfaceImageT :: CairoSurfaceT s ps -> CairoSurfaceImageT s ps
+getCairoSurfaceImageT = \case CairoSurfaceTImage si -> si; _ -> error "bad"
 
 foreign import ccall "gdk_cursor_get_surface" c_gdk_cursor_get_surface ::
-	Ptr GdkCursor -> IO (Ptr (CairoSurfaceT s ps))
+	Ptr GdkCursor -> Ptr CDouble -> Ptr CDouble -> IO (Ptr (CairoSurfaceT s ps))
 
 gdkCursorGetCursorType :: GdkCursor -> IO GdkCursorType
 gdkCursorGetCursorType (GdkCursor fc) = withForeignPtr fc \c ->
