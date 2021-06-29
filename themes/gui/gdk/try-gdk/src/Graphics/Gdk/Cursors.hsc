@@ -38,6 +38,12 @@ module Graphics.Gdk.Cursors (
 	pattern GdkMouse, pattern GdkPencil,
 	pattern GdkPirate, pattern GdkPlus,
 	pattern GdkQuestionArrow, pattern GdkRightPtr,
+	pattern GdkRightSide, pattern GdkRightTee,
+	pattern GdkRightbutton, pattern GdkRtlLogo,
+	pattern GdkSailboat, pattern GdkSbDownArrow,
+	pattern GdkSbHDoubleArrow, pattern GdkSbLeftArrow,
+	pattern GdkSbRightArrow, pattern GdkSbUpArrow,
+	pattern GdkSbVDoubleArrow, pattern GdkShuttle,
 
 	) where
 
@@ -116,7 +122,19 @@ enum "GdkCursorType" ''#{type GdkCursorType} [''Show] [
 	("GdkPirate", #{const GDK_PIRATE}),
 	("GdkPlus", #{const GDK_PLUS}),
 	("GdkQuestionArrow", #{const GDK_QUESTION_ARROW}),
-	("GdkRightPtr", #{const GDK_RIGHT_PTR})
+	("GdkRightPtr", #{const GDK_RIGHT_PTR}),
+	("GdkRightSide", #{const GDK_RIGHT_SIDE}),
+	("GdkRightTee", #{const GDK_RIGHT_TEE}),
+	("GdkRightbutton", #{const GDK_RIGHTBUTTON}),
+	("GdkRtlLogo", #{const GDK_RTL_LOGO}),
+	("GdkSailboat", #{const GDK_SAILBOAT}),
+	("GdkSbDownArrow", #{const GDK_SB_DOWN_ARROW}),
+	("GdkSbHDoubleArrow", #{const GDK_SB_H_DOUBLE_ARROW}),
+	("GdkSbLeftArrow", #{const GDK_SB_LEFT_ARROW}),
+	("GdkSbRightArrow", #{const GDK_SB_RIGHT_ARROW}),
+	("GdkSbUpArrow", #{const GDK_SB_UP_ARROW}),
+	("GdkSbVDoubleArrow", #{const GDK_SB_V_DOUBLE_ARROW}),
+	("GdkShuttle", #{const GDK_SHUTTLE})
 	]
 
 gdkCursorNewForDisplay :: GdkDisplay -> GdkCursorType -> IO GdkCursor
