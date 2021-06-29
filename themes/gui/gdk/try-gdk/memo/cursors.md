@@ -6,7 +6,9 @@ Function
 
 ### now
 
+* [x] `gdk_cursor_get_display`
 * [ ] `gdk_cursor_new_from_surface`
+* [ ] `gdk_cusror_get_surface`
 * [ ] `gdk_cursor_new_from_name`
 * [ ] `gdk_cursor_new_for_display`
 	+ [x] define
@@ -14,8 +16,6 @@ Function
 	+ [x] repair test
 	+ [x] more cursor types
 	+ [ ] review
-* [ ] `gdk_cursor_get_display`
-* [ ] `gdk_cusror_get_surface`
 * [ ] `gdk_cursor_get_cursor_type`
 
 ### not now

@@ -10,8 +10,8 @@ module Graphics.Gdk.Cursors (
 	-- * FUNCTION
 	gdkCursorGetDisplay,
 	gdkCursorNewFromSurface,
-	gdkCursorNewFromName,
 	gdkCursorGetSurface,
+	gdkCursorNewFromName,
 
 	-- * GDK CURSOR TYPE
 	GdkCursorType(..),
@@ -78,6 +78,13 @@ mkGdkCursor :: Ptr GdkCursor -> IO GdkCursor
 mkGdkCursor p = GdkCursor <$> newForeignPtr p (c_g_object_unref p)
 
 foreign import ccall "g_object_unref" c_g_object_unref :: Ptr a -> IO ()
+
+gdkCursorGetDisplay :: GdkCursor -> IO GdkDisplay
+gdkCursorGetDisplay (GdkCursor fc) =
+	withForeignPtr fc \c -> GdkDisplay <$> c_gdk_cursor_get_display c
+
+foreign import ccall "gdk_cursor_get_display" c_gdk_cursor_get_display ::
+	Ptr GdkCursor -> IO (Ptr GdkDisplay)
 
 gdkCursorNewFromSurface :: GdkDisplay -> CairoSurfaceT s ps -> #{type gdouble} -> #{type gdouble} -> IO GdkCursor
 gdkCursorNewFromSurface (GdkDisplay d) (CairoSurfaceT fs) x y = withForeignPtr fs \s ->
@@ -183,13 +190,6 @@ gdkCursorNewForDisplay d (GdkCursorType t) =
 foreign import ccall "gdk_cursor_new_for_display"
 	c_gdk_cursor_new_for_display ::
 	GdkDisplay -> #{type GdkCursorType} -> IO (Ptr GdkCursor)
-
-gdkCursorGetDisplay :: GdkCursor -> IO GdkDisplay
-gdkCursorGetDisplay (GdkCursor fc) = withForeignPtr fc \c ->
-	GdkDisplay <$> c_gdk_cursor_get_display c
-
-foreign import ccall "gdk_cursor_get_display" c_gdk_cursor_get_display ::
-	Ptr GdkCursor -> IO (Ptr GdkDisplay)
 
 gdkCursorGetSurface :: GdkCursor -> IO (CairoSurfaceT s ps)
 gdkCursorGetSurface (GdkCursor fc) = withForeignPtr fc \c ->
