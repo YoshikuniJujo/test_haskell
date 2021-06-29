@@ -3,7 +3,21 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.Visuals where
+module Graphics.Gdk.Visuals (
+	-- * FUNCTION
+	gdkVisualGetDepth,
+	gdkVisualGetRedPixelDetails,
+	gdkVisualGetGreenPixelDetails,
+	gdkVisualGetBluePixelDetails,
+	gdkVisualGetScreen,
+
+	-- * GDK VISUAL TYPE
+	GdkVisualType(..),
+	gdkVisualGetVisualType,
+	pattern GdkVisualStaticGray, pattern GdkVisualGrayscale,
+	pattern GdkVisualStaticColor, pattern GdkVisualPseudoColor,
+	pattern GdkVisualTrueColor, pattern GdkVisualDirectColor
+) where
 
 import Foreign.Ptr
 import Foreign.Marshal
