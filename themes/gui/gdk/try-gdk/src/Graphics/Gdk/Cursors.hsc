@@ -1,22 +1,38 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.Cursors (
+	-- * FUNCTION
 	gdkCursorNewFromSurface,
 	gdkCursorNewFromName,
-	gdkCursorNewForDisplay,
 	gdkCursorGetDisplay,
 	gdkCursorGetSurface,
-	gdkCursorGetCursorType ) where
+	gdkCursorGetCursorType,
+
+	-- * GDK CURSOR TYPE
+	GdkCursorType(..),
+	gdkCursorNewForDisplay,
+	pattern GdkXCursor, pattern GdkArrow,
+	pattern GdkBasedArrowDown, pattern GdkBasedArrowUp,
+	pattern GdkBoat, pattern GdkBogosity,
+	pattern GdkBottomLeftCorner, pattern GdkBottomRightCorner,
+	pattern GdkBottomSide, pattern GdkBottomTee,
+	pattern GdkBoxSpiral, pattern GdkCenterPtr,
+	pattern GdkCircle, pattern GdkClock,
+	pattern GdkCoffeeMug, pattern GdkCross,
+
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.C
+import Foreign.C.Enum
 import Data.Int
 
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.Types
-import Graphics.Gdk.Values
 
 import Graphics.Cairo.Surfaces.CairoSurfaceT.Internal
 
@@ -35,6 +51,25 @@ gdkCursorNewFromName (GdkDisplay d) nm = withCString nm \cnm ->
 
 foreign import ccall "gdk_cursor_new_from_name" c_gdk_cursor_new_from_name ::
 	Ptr GdkDisplay -> CString -> IO (Ptr GdkCursor)
+
+enum "GdkCursorType" ''#{type GdkCursorType} [''Show] [
+	("GdkXCursor", #{const GDK_X_CURSOR}),
+	("GdkArrow", #{const GDK_ARROW}),
+	("GdkBasedArrowDown", #{const GDK_BASED_ARROW_DOWN}),
+	("GdkBasedArrowUp", #{const GDK_BASED_ARROW_UP}),
+	("GdkBoat", #{const GDK_BOAT}),
+	("GdkBogosity", #{const GDK_BOGOSITY}),
+	("GdkBottomLeftCorner", #{const GDK_BOTTOM_LEFT_CORNER}),
+	("GdkBottomRightCorner", #{const GDK_BOTTOM_RIGHT_CORNER}),
+	("GdkBottomSide", #{const GDK_BOTTOM_SIDE}),
+	("GdkBottomTee", #{const GDK_BOTTOM_TEE}),
+	("GdkBoxSpiral", #{const GDK_BOX_SPIRAL}),
+	("GdkCenterPtr", #{const GDK_CENTER_PTR}),
+	("GdkCircle", #{const GDK_CIRCLE}),
+	("GdkClock", #{const GDK_CLOCK}),
+	("GdkCoffeeMug", #{const GDK_COFFEE_MUG}),
+	("GdkCross", #{const GDK_CROSS})
+	]
 
 gdkCursorNewForDisplay :: GdkDisplay -> GdkCursorType -> IO GdkCursor
 gdkCursorNewForDisplay d (GdkCursorType t) =

@@ -52,6 +52,14 @@ cursorType kv
 	| kv == toKeyval 'f' = GdkBogosity
 	| kv == toKeyval 'g' = GdkBottomLeftCorner
 	| kv == toKeyval 'h' = GdkBottomRightCorner
+	| kv == toKeyval 'i' = GdkBottomSide
+	| kv == toKeyval 'j' = GdkBottomTee
+	| kv == toKeyval 'k' = GdkBoxSpiral
+	| kv == toKeyval 'l' = GdkCenterPtr
+	| kv == toKeyval 'm' = GdkCircle
+	| kv == toKeyval 'n' = GdkClock
+	| kv == toKeyval 'o' = GdkCoffeeMug
+	| kv == toKeyval 'p' = GdkCross
 	| otherwise = GdkXCursor
 
 toKeyval :: Char -> Word32

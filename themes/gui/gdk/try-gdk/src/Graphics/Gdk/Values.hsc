@@ -4,10 +4,8 @@
 
 module Graphics.Gdk.Values where
 
-import Foreign.C.Enum
 import Data.Bits
 import Data.Word
-import Data.Int
 
 #include <gdk/gdk.h>
 
@@ -32,17 +30,6 @@ mergeGdkEventMask (GdkEventMask em : ems) = em .|. mergeGdkEventMask ems
 
 newtype GdkWindowWindowClass = GdkWindowWindowClass #{type GdkWindowWindowClass} deriving Show
 #enum GdkWindowWindowClass, GdkWindowWindowClass, GDK_INPUT_OUTPUT, GDK_INPUT_ONLY
-
-enum "GdkCursorType" ''#{type GdkCursorType} [''Show] [
-	("GdkXCursor", #{const GDK_X_CURSOR}),
-	("GdkArrow", #{const GDK_ARROW}),
-	("GdkBasedArrowDown", #{const GDK_BASED_ARROW_DOWN}),
-	("GdkBasedArrowUp", #{const GDK_BASED_ARROW_UP}),
-	("GdkBoat", #{const GDK_BOAT}),
-	("GdkBogosity", #{const GDK_BOGOSITY}),
-	("GdkBottomLeftCorner", #{const GDK_BOTTOM_LEFT_CORNER}),
-	("GdkBottomRightCorner", #{const GDK_BOTTOM_RIGHT_CORNER})
-	]
 
 newtype GdkWMDecoration = GdkWMDecoration #{type GdkWMDecoration} deriving Show
 
