@@ -88,6 +88,11 @@ cursorType1 kv
 	| kv == toKeyval 'c' = GdkGumby
 	| kv == toKeyval 'd' = GdkHand1
 	| kv == toKeyval 'e' = GdkHand2
+	| kv == toKeyval 'f' = GdkHeart
+	| kv == toKeyval 'g' = GdkIcon
+	| kv == toKeyval 'h' = GdkIronCross
+	| kv == toKeyval 'i' = GdkLeftPtr
+	| kv == toKeyval 'j' = GdkLeftSide
 	| otherwise = GdkFleur
 
 toKeyval :: Char -> Word32
