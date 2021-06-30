@@ -15,7 +15,7 @@ API Reference contents
 * [x] GdkDevice
 * [x] Points and Rectangles
 * [x] Visuals
-* [ ] Cursors
+* [x] Cursors
 * [ ] Windows
 * [ ] GdkDrawingContext
 * [ ] Events

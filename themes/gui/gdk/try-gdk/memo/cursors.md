@@ -11,13 +11,14 @@ Function
 	+ [x] use `CairoSurfaceImageT` instead of `CairoSurfaceT`
 	+ [x] use `cairo_surface_reference` and `cairo_surface_destroy`
 * [x] `gdk_cursor_new_from_name`
-* [ ] `gdk_cursor_new_for_display`
+* [x] `gdk_cursor_new_for_display`
 	+ [x] define
 	+ [x] make test
 	+ [x] repair test
 	+ [x] more cursor types
-	+ [ ] review
-* [ ] `gdk_cursor_get_cursor_type`
+	+ [x] review
+* [x] `gdk_cursor_get_cursor_type`
+	+ [x] make a trial
 
 ### not now
 

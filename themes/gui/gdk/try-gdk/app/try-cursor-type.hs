@@ -43,7 +43,9 @@ main = do
 			print kv
 			when (kv == 65505 || kv == 65506) $ modifyIORef cnt (+ 1)
 			n <- readIORef cnt
-			gdkWindowSetCursor w =<< gdkCursorNewForDisplay d (cursorType n kv)
+			c <- gdkCursorNewForDisplay d $ cursorType n kv
+			print =<< gdkCursorGetCursorType c
+			gdkWindowSetCursor w c
 			pure $ kv /= fromIntegral (ord 'q')
 		_ -> pure True
 
