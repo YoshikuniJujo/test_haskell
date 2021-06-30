@@ -22,7 +22,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowFreezeUpdates, gdkWindowThawUpdates,
 	gdkWindowWithDrawFrame, gdkWindowInvalidateRect, gdkWindowSetEvents,
 
-	gdkWindowSetTitle, gdkWindowSetCursor, gdkWindowGetCursor,
+	gdkWindowSetTitle, c_gdk_window_set_title, gdkWindowSetCursor, gdkWindowGetCursor,
 	gdkWindowGetWidth, gdkWindowGetHeight, gdkWindowGetPosition,
 
 	gdkWindowGetParent, gdkWindowGetDecorations, gdkGetDefaultRootWindow,
@@ -214,11 +214,10 @@ foreign import ccall "gdk_window_set_events" c_gdk_window_set_events :: Ptr GdkW
 gdkWindowSetEvents :: GdkWindow -> [GdkEventMask] -> IO ()
 gdkWindowSetEvents (GdkWindow p) m = c_gdk_window_set_events p (mergeGdkEventMask m)
 
-foreign import ccall "gdk_window_set_title" c_gdk_window_set_title :: Ptr GdkWindow -> CString -> IO ()
-
 gdkWindowSetTitle :: GdkWindow -> String -> IO ()
-gdkWindowSetTitle (GdkWindow p) ttl = withCString ttl \cttl ->
-	c_gdk_window_set_title p cttl
+gdkWindowSetTitle w ttl = withCString ttl \cttl -> c_gdk_window_set_title w cttl
+
+foreign import ccall "gdk_window_set_title" c_gdk_window_set_title :: GdkWindow -> CString -> IO ()
 
 foreign import ccall "gdk_window_set_cursor" c_gdk_window_set_cursor :: Ptr GdkWindow -> Ptr GdkCursor -> IO ()
 

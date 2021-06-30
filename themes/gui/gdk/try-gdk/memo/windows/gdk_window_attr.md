@@ -14,5 +14,6 @@ todo
 * [ ] review it
 	+ [x] do
 	+ [ ] more
-* [ ] check title is copy or not
+* [x] check title is copy or not
+	+ [x] make sample code
 * [ ] check cursor is copy or not
