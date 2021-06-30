@@ -22,7 +22,6 @@ import Data.Bits
 import Data.Bool
 import Data.Maybe
 import Data.Word
-import Data.Int
 
 import Graphics.Gdk.Visuals
 import Graphics.Gdk.Cursors
@@ -44,8 +43,8 @@ newtype GdkWindowTypeHint = GdkWindowTypeHint #{type GdkWindowTypeHint} deriving
 data GdkWindowAttr = GdkWindowAttr {
 	gdkWindowAttrTitle :: Maybe String,
 	gdkWindowAttrEventMask :: [GdkEventMask],
-	gdkWindowAttrX, gdkWindowAttrY :: Maybe #{type gint},
-	gdkWindowAttrWidth, gdkWindowAttrHeight :: #{type gint},
+	gdkWindowAttrX, gdkWindowAttrY :: Maybe CInt,
+	gdkWindowAttrWidth, gdkWindowAttrHeight :: CInt,
 	gdkWindowAttrWclass :: GdkWindowWindowClass,
 	gdkWindowAttrVisual :: Maybe GdkVisual,
 	gdkWindowAttrWindowType :: GdkWindowType,
@@ -54,7 +53,7 @@ data GdkWindowAttr = GdkWindowAttr {
 	gdkWindowAttrTypeHint :: Maybe GdkWindowTypeHint } deriving Show
 
 mkGdkWindowAttr ::
-	[GdkEventMask] -> #{type gint} -> #{type gint} ->
+	[GdkEventMask] -> CInt -> CInt ->
 	GdkWindowWindowClass -> GdkWindowType -> GdkWindowAttr
 mkGdkWindowAttr em w h wc wt = GdkWindowAttr
 	Nothing em Nothing Nothing w h wc Nothing wt Nothing Nothing Nothing
