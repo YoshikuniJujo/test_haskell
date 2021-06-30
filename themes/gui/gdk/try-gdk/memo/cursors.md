@@ -12,6 +12,8 @@ Function
 	+ [ ] use `cairo_surface_reference` and `cairo_surface_destroy`
 * [ ] `gdk_cusror_get_surface`
 	+ [x] use `CairoSurfaceImateT`
+	+ [x] try to return hot point
+	+ [ ] remove
 	+ [ ] use `cairo_surface_reference` and `cairo_surface_destroy`
 	+ [ ] get `x_hot` and `y_hot`
 	+ [x] process `NULL`

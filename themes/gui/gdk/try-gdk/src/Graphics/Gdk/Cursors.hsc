@@ -63,6 +63,8 @@ import Foreign.Ptr
 import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
+import Foreign.Marshal
+import Foreign.Storable
 import Foreign.C
 import Foreign.C.Enum
 import Data.Int
@@ -197,9 +199,13 @@ foreign import ccall "gdk_cursor_new_for_display"
 	c_gdk_cursor_new_for_display ::
 	GdkDisplay -> #{type GdkCursorType} -> IO (Ptr GdkCursor)
 
-gdkCursorGetSurface :: GdkCursor -> IO (Maybe (CairoSurfaceImageT s ps))
-gdkCursorGetSurface (GdkCursor fc) = withForeignPtr fc \c ->
-	(getCairoSurfaceImageT <$>) <$> (mkCairoSurfaceT' =<< c_gdk_cursor_get_surface c NullPtr NullPtr)
+gdkCursorGetSurface :: GdkCursor -> IO (Maybe (CairoSurfaceImageT s ps), (CDouble, CDouble))
+gdkCursorGetSurface (GdkCursor fc) = withForeignPtr fc \c -> alloca \px -> alloca \py -> do
+	poke px 12345
+	poke py 54321
+	r <- c_gdk_cursor_get_surface c px py
+	(,)	<$> (getCairoSurfaceImageT <$>) <$> mkCairoSurfaceT' r
+		<*> ((,) <$> peek px <*> peek py)
 
 mkCairoSurfaceT' :: Ptr (CairoSurfaceT s ps) -> IO (Maybe (CairoSurfaceT s ps))
 mkCairoSurfaceT' = \case
