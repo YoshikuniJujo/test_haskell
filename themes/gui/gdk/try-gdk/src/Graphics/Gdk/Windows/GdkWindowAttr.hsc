@@ -77,17 +77,14 @@ minimalGdkWindowAttr em w h wc wt = GdkWindowAttr
 withGdkWindowAttr :: GdkWindowAttr ->
 	(Ptr GdkWindowAttr -> GdkWindowAttributesTypes -> IO a) -> IO a
 withGdkWindowAttr attr f =
-	allocaBytes #{size GdkWindowAttr} \pattr -> fpoke2 pattr attr f
-
-fpoke2 :: Ptr a -> GdkWindowAttr -> (Ptr a -> GdkWindowAttributesTypes -> IO b) -> IO b
-fpoke2 pa attr f = case gdkWindowAttrTitle attr of
-	Nothing -> do
-		fpoke1 pa attr
-		f pa $ gdkWindowAttrToTypes attr
-	Just ttl -> withCString ttl \cttl -> do
-		#{poke GdkWindowAttr, title} pa cttl
-		fpoke1 pa attr
-		f pa $ gdkWindowAttrToTypes attr
+	allocaBytes #{size GdkWindowAttr} \pattr -> case gdkWindowAttrTitle attr of
+		Nothing -> do
+			fpoke1 pattr attr
+			f pattr $ gdkWindowAttrToTypes attr
+		Just ttl -> withCString ttl \cttl -> do
+			#{poke GdkWindowAttr, title} pattr cttl
+			fpoke1 pattr attr
+			f pattr $ gdkWindowAttrToTypes attr
 
 fpoke1 :: Ptr b -> GdkWindowAttr -> IO ()
 fpoke1 pa a = do
