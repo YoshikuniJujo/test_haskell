@@ -12,3 +12,7 @@ todo
 * [x] make `withGdkWindowAttr`
 * [x] rename `fpoke1` to `setAttributes`
 * [ ] review it
+	+ [x] do
+	+ [ ] more
+* [ ] check title is copy or not
+* [ ] check cursor is copy or not
