@@ -11,9 +11,9 @@ todo
 * [x] remove `newGdkWindowAttr`
 * [x] make `withGdkWindowAttr`
 * [x] rename `fpoke1` to `setAttributes`
-* [ ] review it
+* [x] review it
 	+ [x] do
-	+ [ ] more
+	+ [x] more
 * [x] check title is copy or not
 	+ [x] make sample code
-* [ ] check cursor is copy or not
+* [x] check cursor is copy or not

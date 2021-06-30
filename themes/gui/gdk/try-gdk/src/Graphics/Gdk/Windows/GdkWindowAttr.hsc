@@ -78,6 +78,10 @@ gdkWindowAttrVisualPtr a = (\(GdkVisual v) -> v) <$> gdkWindowAttrVisual a
 gdkWindowAttrWindowTypeRaw :: GdkWindowAttr -> #{type GdkWindowType}
 gdkWindowAttrWindowTypeRaw = (\(GdkWindowType t) -> t) . gdkWindowAttrWindowType
 
+gdkWindowAttrTypeHintRaw :: GdkWindowAttr -> Maybe #{type GdkWindowTypeHint}
+gdkWindowAttrTypeHintRaw a =
+	(\(GdkWindowTypeHint th) -> th) <$> gdkWindowAttrTypeHint a
+
 minimalGdkWindowAttr ::
 	[GdkEventMask] -> CInt -> CInt ->
 	GdkWindowWindowClass -> GdkWindowType -> GdkWindowAttr
@@ -98,30 +102,27 @@ withGdkWindowAttr attr f =
 
 setAttributes :: Ptr b -> GdkWindowAttr -> IO ()
 setAttributes pa a = do
-		#{poke GdkWindowAttr, event_mask} pa
-			. mergeGdkEventMask $ gdkWindowAttrEventMask a
-		whenMaybe (#{poke GdkWindowAttr, x} pa) $ gdkWindowAttrX a
-		whenMaybe (#{poke GdkWindowAttr, y} pa) $ gdkWindowAttrY a
-		#{poke GdkWindowAttr, width} pa $ gdkWindowAttrWidth a
-		#{poke GdkWindowAttr, height} pa $ gdkWindowAttrHeight a
-		#{poke GdkWindowAttr, wclass} pa $ gdkWindowAttrWclassRaw a
-		whenMaybe (#{poke GdkWindowAttr, visual} pa)
-			$ gdkWindowAttrVisualPtr a
-		#{poke GdkWindowAttr, window_type} pa
-			$ gdkWindowAttrWindowTypeRaw a
-		case gdkWindowAttrCursor a of
-			Nothing -> pure ()
-			Just (GdkCursor fc) -> withForeignPtr fc \pc ->
-				#{poke GdkWindowAttr, cursor} pa pc
-		whenMaybe
-			(#{poke GdkWindowAttr, override_redirect} pa)
-			(gdkWindowAttrOverrideRedirect a)
-		whenMaybe
-			(#{poke GdkWindowAttr, type_hint} pa . (\(GdkWindowTypeHint th) -> th))
-			(gdkWindowAttrTypeHint a)
+	#{poke GdkWindowAttr, event_mask} pa
+		. mergeGdkEventMask $ gdkWindowAttrEventMask a
+	whenMaybe (#{poke GdkWindowAttr, x} pa) $ gdkWindowAttrX a
+	whenMaybe (#{poke GdkWindowAttr, y} pa) $ gdkWindowAttrY a
+	#{poke GdkWindowAttr, width} pa $ gdkWindowAttrWidth a
+	#{poke GdkWindowAttr, height} pa $ gdkWindowAttrHeight a
+	#{poke GdkWindowAttr, wclass} pa $ gdkWindowAttrWclassRaw a
+	whenMaybe (#{poke GdkWindowAttr, visual} pa) $ gdkWindowAttrVisualPtr a
+	#{poke GdkWindowAttr, window_type} pa $ gdkWindowAttrWindowTypeRaw a
+	whenMaybe (`withGdkCursor` #{poke GdkWindowAttr, cursor} pa)
+		$ gdkWindowAttrCursor a
+	whenMaybe (#{poke GdkWindowAttr, override_redirect} pa)
+		$ gdkWindowAttrOverrideRedirect a
+	whenMaybe (#{poke GdkWindowAttr, type_hint} pa)
+		$ gdkWindowAttrTypeHintRaw a
 
 whenMaybe :: Applicative m => (a -> m b) -> Maybe a -> m ()
 whenMaybe f mx = maybe (pure ()) (void . f) mx
+
+withGdkCursor :: GdkCursor -> (Ptr GdkCursor -> IO a) -> IO a
+withGdkCursor (GdkCursor fc) = withForeignPtr fc
 
 gdkWindowAttrToTypes :: GdkWindowAttr -> GdkWindowAttributesTypes
 gdkWindowAttrToTypes = gdkWindowAttributesTypes . gdkWindowAttrToTypeList
