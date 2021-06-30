@@ -77,6 +77,9 @@ newtype GdkCursor = GdkCursor (ForeignPtr GdkCursor) deriving Show
 mkGdkCursor :: Ptr GdkCursor -> IO GdkCursor
 mkGdkCursor p = GdkCursor <$> newForeignPtr p (c_g_object_unref p)
 
+mkGdkCursor' :: IO () -> Ptr GdkCursor -> IO GdkCursor
+mkGdkCursor' f p = GdkCursor <$> newForeignPtr p (f >> c_g_object_unref p)
+
 foreign import ccall "g_object_unref" c_g_object_unref :: Ptr a -> IO ()
 
 gdkCursorGetDisplay :: GdkCursor -> IO GdkDisplay
@@ -89,8 +92,15 @@ foreign import ccall "gdk_cursor_get_display" c_gdk_cursor_get_display ::
 gdkCursorNewFromSurface ::
 	GdkDisplay -> CairoSurfaceImageT s ps -> CDouble -> CDouble -> IO GdkCursor
 gdkCursorNewFromSurface (GdkDisplay d) (toCairoSurfaceT -> CairoSurfaceT fs) x y =
-	withForeignPtr fs \s ->
-		mkGdkCursor =<< c_gdk_cursor_new_from_surface d s x y
+	withForeignPtr fs \s -> do
+		c_cairo_surface_reference s
+		mkGdkCursor' (c_cairo_surface_destroy s) =<< c_gdk_cursor_new_from_surface d s x y
+
+foreign import ccall "cairo_surface_reference" c_cairo_surface_reference ::
+	Ptr (CairoSurfaceT s ps) -> IO ()
+
+-- foreign import ccall "cairo_surface_destroy" c_cairo_surface_destroy ::
+--	Ptr (CairoSurfaceT s ps) -> IO ()
 
 foreign import ccall "gdk_cursor_new_from_surface"
 	c_gdk_cursor_new_from_surface ::
