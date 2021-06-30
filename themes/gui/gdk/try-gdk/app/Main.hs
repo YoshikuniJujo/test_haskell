@@ -124,7 +124,7 @@ main = do
 	gdkScreenGetWindowStack scrn >>=
 		mapM_ \tw -> print =<< withGdkWindowAutoUnref tw gdkWindowGetWindowType
 	print =<< gdkSeatGetCapabilities st
-	let wattr = mkGdkWindowAttr [
+	let wattr = minimalGdkWindowAttr [
 				gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkFocusChangeMask,
 				gdkEnterNotifyMask, gdkLeaveNotifyMask, gdkPointerMotionMask,
 				gdkAllEventsMask, gdkPointerMotionMask

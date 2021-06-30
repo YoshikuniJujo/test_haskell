@@ -4,8 +4,8 @@ GdkWindowAttr memo
 todo
 ----
 
-* [x] `newGdkWidnwoAttr` use `GdkWindowAttributesTypes` instead of `Word32`
+* [x] `newGdkWindowAttr` use `GdkWindowAttributesTypes` instead of `Word32`
 	+ [x] define `GdkWindowAttributesTypes`
 	+ [x] define function of type `[GdkWindowAttributesType] -> GdkWindowAttributesTypes`
-* [ ] rename `mkGdkWindowAttr`
+* [x] rename `mkGdkWindowAttr` to `minimalGdkWindowAttr`
 * [ ] rename `newGdkWindowAttr`

@@ -4,7 +4,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.Windows.GdkWindowAttr (
-	GdkWindowAttr(..), newGdkWindowAttr, mkGdkWindowAttr,
+	GdkWindowAttr(..), newGdkWindowAttr, minimalGdkWindowAttr,
 	GdkWindowAttributesTypes(..),
 	GdkWindowType(..),
 	pattern GdkWindowRoot, pattern GdkWindowToplevel,
@@ -68,10 +68,10 @@ data GdkWindowAttr = GdkWindowAttr {
 	gdkWindowAttrOverrideRedirect :: Maybe Bool,
 	gdkWindowAttrTypeHint :: Maybe GdkWindowTypeHint } deriving Show
 
-mkGdkWindowAttr ::
+minimalGdkWindowAttr ::
 	[GdkEventMask] -> CInt -> CInt ->
 	GdkWindowWindowClass -> GdkWindowType -> GdkWindowAttr
-mkGdkWindowAttr em w h wc wt = GdkWindowAttr
+minimalGdkWindowAttr em w h wc wt = GdkWindowAttr
 	Nothing em Nothing Nothing w h wc Nothing wt Nothing Nothing Nothing
 
 newGdkWindowAttr :: GdkWindowAttr -> IO (ForeignPtr GdkWindowAttr, GdkWindowAttributesTypes)

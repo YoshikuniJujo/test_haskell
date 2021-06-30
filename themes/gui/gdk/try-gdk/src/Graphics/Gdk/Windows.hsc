@@ -30,7 +30,7 @@ module Graphics.Gdk.Windows (
 
 	gdkWindowSetEventCompression,
 
-	GdkWindowAttr(..), mkGdkWindowAttr,
+	GdkWindowAttr(..), minimalGdkWindowAttr,
 
 	-- * GdkWindowType
 	GdkWindowType(..),
