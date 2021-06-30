@@ -178,3 +178,7 @@ todo
 * [x] use `c-enum` in `GdkWindowAttributesType`
 * [x] move `GdkWindowAttributesType` to the appropriate module
 * [x] make `Graphics.Gdk.Windows.GdkWindowAttr`
+* [x] use `g_object_ref` at gdkWindowNew
+* [x] use `g_object_unref` at gdkWindowDestroy
+* [x] use `g_object_unref` at gdkWindowSetCursor
+* [x] use `g_object_ref` at gdkWindowSetCursor

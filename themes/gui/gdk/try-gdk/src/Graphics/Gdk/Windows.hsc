@@ -71,23 +71,30 @@ withGdkWindowAutoUnref (GdkWindowAutoUnref fwnu) f =
 	withForeignPtr fwnu \pwnu -> f (GdkWindow $ castPtr pwnu)
 
 gdkWindowNew :: Maybe GdkWindow -> GdkWindowAttr -> IO GdkWindow
-gdkWindowNew mp wattr = maybe ($ nullPtr) (\(GdkWindow p) -> ($ p)) mp \p ->
+gdkWindowNew mp wattr = maybe ($ nullPtr) (\(GdkWindow p) -> ($ p)) mp \p -> do
+	maybe (pure ()) cursorRef $ gdkWindowAttrCursor wattr
 	withGdkWindowAttr wattr \wa ts -> GdkWindow <$> c_gdk_window_new p wa ts
 
 foreign import ccall "gdk_window_new" c_gdk_window_new ::
 	Ptr GdkWindow -> Ptr GdkWindowAttr -> GdkWindowAttributesTypes -> IO (Ptr GdkWindow)
 
-foreign import ccall "gdk_window_destroy" c_gdk_window_destroy ::
-	Ptr GdkWindow -> IO ()
-
 gdkWindowDestroy :: GdkWindow -> IO ()
-gdkWindowDestroy (GdkWindow p) = c_gdk_window_destroy p
+gdkWindowDestroy w = do
+	pc <- c_gdk_window_get_cursor w
+	c_g_object_unref pc
+	c_gdk_window_destroy w
 
-foreign import ccall "gdk_window_get_window_type" c_gdk_window_get_window_type ::
-	Ptr GdkWindow -> IO #type GdkWindowType
+foreign import ccall "gdk_window_destroy" c_gdk_window_destroy ::
+	GdkWindow -> IO ()
+
+cursorRef :: GdkCursor -> IO ()
+cursorRef (GdkCursor fc) = withForeignPtr fc c_g_object_ref
 
 gdkWindowGetWindowType :: GdkWindow -> IO GdkWindowType
 gdkWindowGetWindowType (GdkWindow p) = GdkWindowType <$> c_gdk_window_get_window_type p
+
+foreign import ccall "gdk_window_get_window_type" c_gdk_window_get_window_type ::
+	Ptr GdkWindow -> IO #type GdkWindowType
 
 foreign import ccall "gdk_window_get_display" c_gdk_window_get_display ::
 	Ptr GdkWindow -> IO (Ptr GdkDisplay)
@@ -219,19 +226,23 @@ gdkWindowSetTitle w ttl = withCString ttl \cttl -> c_gdk_window_set_title w cttl
 
 foreign import ccall "gdk_window_set_title" c_gdk_window_set_title :: GdkWindow -> CString -> IO ()
 
-foreign import ccall "gdk_window_set_cursor" c_gdk_window_set_cursor :: Ptr GdkWindow -> Ptr GdkCursor -> IO ()
-
 gdkWindowSetCursor :: GdkWindow -> GdkCursor -> IO ()
-gdkWindowSetCursor (GdkWindow w) (GdkCursor fc) = withForeignPtr fc \c ->
-	c_gdk_window_set_cursor w c
+gdkWindowSetCursor w (GdkCursor fc) = do
+	po <- c_gdk_window_get_cursor w
+	c_g_object_unref po
+	withForeignPtr fc \c -> do
+		c_g_object_ref c
+		c_gdk_window_set_cursor w c
 
-foreign import ccall "gdk_window_get_cursor" c_gdk_window_get_cursor :: Ptr GdkWindow -> IO (Ptr GdkCursor)
+foreign import ccall "gdk_window_set_cursor" c_gdk_window_set_cursor :: GdkWindow -> Ptr GdkCursor -> IO ()
 
 gdkWindowGetCursor :: GdkWindow -> IO GdkCursor
-gdkWindowGetCursor (GdkWindow w) = do
+gdkWindowGetCursor w = do
 	c <- c_gdk_window_get_cursor w
 	c_g_object_ref c
 	GdkCursor <$> newForeignPtr c (c_g_object_unref c)
+
+foreign import ccall "gdk_window_get_cursor" c_gdk_window_get_cursor :: GdkWindow -> IO (Ptr GdkCursor)
 
 foreign import ccall "g_object_ref" c_g_object_ref :: Ptr a -> IO ()
 
