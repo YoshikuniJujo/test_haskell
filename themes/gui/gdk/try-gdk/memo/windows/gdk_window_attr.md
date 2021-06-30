@@ -10,5 +10,5 @@ todo
 * [x] rename `mkGdkWindowAttr` to `minimalGdkWindowAttr`
 * [x] remove `newGdkWindowAttr`
 * [x] make `withGdkWindowAttr`
-* [ ] rename `fpoke1`
+* [x] rename `fpoke1` to `setAttributes`
 * [ ] review it
