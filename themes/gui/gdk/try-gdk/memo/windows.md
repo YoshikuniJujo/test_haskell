@@ -171,3 +171,9 @@ Function
 * `gdk_window_set_background_pattern`
 * `gdk_window_get_background_pattern`
 * `gdk_window_get_pointer`
+
+todo
+----
+
+* [x] use `c-enum` in `GdkWindowAttributesType`
+* [ ] move `GdkWindowAttributesType` to the appropriate module
