@@ -389,3 +389,11 @@ bToGboolean True = #const TRUE
 
 gdkWindowSetEventCompression :: GdkWindow -> Bool -> IO ()
 gdkWindowSetEventCompression (GdkWindow w) = c_gdk_window_set_event_compression w . bToGboolean
+
+enum "GdkWindowAttributesType" ''#{type GdkWindowAttributesType} [''Show] [
+	("GdkWaTitle", #{const GDK_WA_TITLE}),
+	("GdkWaX", #{const GDK_WA_X}), ("GdkWaY", #{const GDK_WA_Y}),
+	("GdkWaCursor", #{const GDK_WA_CURSOR}),
+	("GdkWaVisual", #{const GDK_WA_VISUAL}),
+	("GdkWaWmclass", #{const GDK_WA_WMCLASS}),
+	("GdkWaTypeHint", #{const GDK_WA_TYPE_HINT}) ]

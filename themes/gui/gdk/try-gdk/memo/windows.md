@@ -176,4 +176,4 @@ todo
 ----
 
 * [x] use `c-enum` in `GdkWindowAttributesType`
-* [ ] move `GdkWindowAttributesType` to the appropriate module
+* [x] move `GdkWindowAttributesType` to the appropriate module

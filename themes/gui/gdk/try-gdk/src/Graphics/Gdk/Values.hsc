@@ -4,19 +4,10 @@
 
 module Graphics.Gdk.Values where
 
-import Foreign.C.Enum
 import Data.Bits
 import Data.Word
 
 #include <gdk/gdk.h>
-
-enum "GdkWindowAttributesType" ''#{type GdkWindowAttributesType} [''Show] [
-	("GdkWaTitle", #{const GDK_WA_TITLE}),
-	("GdkWaX", #{const GDK_WA_X}), ("GdkWaY", #{const GDK_WA_Y}),
-	("GdkWaCursor", #{const GDK_WA_CURSOR}),
-	("GdkWaVisual", #{const GDK_WA_VISUAL}),
-	("GdkWaWmclass", #{const GDK_WA_WMCLASS}),
-	("GdkWaTypeHint", #{const GDK_WA_TYPE_HINT}) ]
 
 newtype GdkEventMask = GdkEventMask #{type GdkEventMask} deriving Show
 
