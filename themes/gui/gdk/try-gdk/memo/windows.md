@@ -6,7 +6,7 @@ Function
 
 ### now
 
-* [ ] `gdk_window_new`
+* [x] `gdk_window_new`
 * [ ] `gdk_window_destroy`
 * [ ] `gdk_window_get_window_type`
 * [ ] `gdk_window_get_display`

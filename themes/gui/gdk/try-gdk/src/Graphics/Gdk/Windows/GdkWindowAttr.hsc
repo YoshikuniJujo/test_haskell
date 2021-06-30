@@ -10,7 +10,8 @@ module Graphics.Gdk.Windows.GdkWindowAttr (
 	pattern GdkWindowRoot, pattern GdkWindowToplevel,
 	pattern GdkWindowChild, pattern GdkWindowTemp,
 	pattern GdkWindowForeign, pattern GdkWindowOffscreen,
-	pattern GdkWindowSubsurface ) where
+	pattern GdkWindowSubsurface,
+	whenMaybe ) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr, addForeignPtrFinalizer)
