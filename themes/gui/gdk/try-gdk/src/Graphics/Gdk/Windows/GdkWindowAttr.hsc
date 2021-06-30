@@ -4,7 +4,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.Windows.GdkWindowAttr (
-	GdkWindowAttr(..), newGdkWindowAttr, minimalGdkWindowAttr,
+	GdkWindowAttr(..), withGdkWindowAttr, minimalGdkWindowAttr,
 	GdkWindowAttributesTypes(..),
 	GdkWindowType(..),
 	pattern GdkWindowRoot, pattern GdkWindowToplevel,
@@ -12,8 +12,8 @@ module Graphics.Gdk.Windows.GdkWindowAttr (
 	pattern GdkWindowForeign, pattern GdkWindowOffscreen,
 	pattern GdkWindowSubsurface ) where
 
+import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr, addForeignPtrFinalizer)
-import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
@@ -74,21 +74,23 @@ minimalGdkWindowAttr ::
 minimalGdkWindowAttr em w h wc wt = GdkWindowAttr
 	Nothing em Nothing Nothing w h wc Nothing wt Nothing Nothing Nothing
 
-newGdkWindowAttr :: GdkWindowAttr -> IO (ForeignPtr GdkWindowAttr, GdkWindowAttributesTypes)
-newGdkWindowAttr wattr = do
-	p <- mallocBytes #{size GdkWindowAttr}
-	fp <- newForeignPtr p (free p)
-	fpoke fp wattr
-	pure (fp, gdkWindowAttrToTypes wattr)
-	where
-	fpoke fa a = withForeignPtr fa \pa -> do
-		case gdkWindowAttrTitle a of
-			Nothing -> pure ()
-			Just ttl -> do
-				ttl' <- newForeignCString ttl
-				withForeignPtr ttl' \ttl'' ->
-					#{poke GdkWindowAttr, title} pa ttl''
-				addForeignPtrFinalizer fa $ touchForeignPtr ttl'
+withGdkWindowAttr :: GdkWindowAttr ->
+	(Ptr GdkWindowAttr -> GdkWindowAttributesTypes -> IO a) -> IO a
+withGdkWindowAttr attr f =
+	allocaBytes #{size GdkWindowAttr} \pattr -> fpoke2 pattr attr f
+
+fpoke2 :: Ptr a -> GdkWindowAttr -> (Ptr a -> GdkWindowAttributesTypes -> IO b) -> IO b
+fpoke2 pa attr f = case gdkWindowAttrTitle attr of
+	Nothing -> do
+		fpoke1 pa attr
+		f pa $ gdkWindowAttrToTypes attr
+	Just ttl -> withCString ttl \cttl -> do
+		#{poke GdkWindowAttr, title} pa cttl
+		fpoke1 pa attr
+		f pa $ gdkWindowAttrToTypes attr
+
+fpoke1 :: Ptr b -> GdkWindowAttr -> IO ()
+fpoke1 pa a = do
 		#{poke GdkWindowAttr, event_mask} pa
 			. mergeGdkEventMask $ gdkWindowAttrEventMask a
 		maybe (pure ()) (#{poke GdkWindowAttr, x} pa) $ gdkWindowAttrX a
@@ -112,13 +114,6 @@ newGdkWindowAttr wattr = do
 		maybe (pure ())
 			(#{poke GdkWindowAttr, type_hint} pa . (\(GdkWindowTypeHint th) -> th))
 			(gdkWindowAttrTypeHint a)
-
-type ForeignCString = ForeignPtr CChar
-
-newForeignCString :: String -> IO ForeignCString
-newForeignCString s = do
-	cs <- newCString s
-	newForeignPtr cs (free cs)
 
 gdkWindowAttrToTypes :: GdkWindowAttr -> GdkWindowAttributesTypes
 gdkWindowAttrToTypes = gdkWindowAttributesTypes . gdkWindowAttrToTypeList

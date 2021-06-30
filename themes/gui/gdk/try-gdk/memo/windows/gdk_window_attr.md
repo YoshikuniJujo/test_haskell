@@ -8,4 +8,5 @@ todo
 	+ [x] define `GdkWindowAttributesTypes`
 	+ [x] define function of type `[GdkWindowAttributesType] -> GdkWindowAttributesTypes`
 * [x] rename `mkGdkWindowAttr` to `minimalGdkWindowAttr`
-* [ ] rename `newGdkWindowAttr`
+* [x] remove `newGdkWindowAttr`
+* [x] make `withGdkWindowAttr`

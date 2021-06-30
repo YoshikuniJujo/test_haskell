@@ -71,9 +71,8 @@ withGdkWindowAutoUnref (GdkWindowAutoUnref fwnu) f =
 	withForeignPtr fwnu \pwnu -> f (GdkWindow $ castPtr pwnu)
 
 gdkWindowNew :: Maybe GdkWindow -> GdkWindowAttr -> IO GdkWindow
-gdkWindowNew mp wattr = maybe ($ nullPtr) (\(GdkWindow p) -> ($ p)) mp \p -> do
-	(fwa, wam) <- newGdkWindowAttr wattr
-	withForeignPtr fwa \wa -> GdkWindow <$> c_gdk_window_new p wa wam
+gdkWindowNew mp wattr = maybe ($ nullPtr) (\(GdkWindow p) -> ($ p)) mp \p ->
+	withGdkWindowAttr wattr \wa ts -> GdkWindow <$> c_gdk_window_new p wa ts
 
 foreign import ccall "gdk_window_new" c_gdk_window_new ::
 	Ptr GdkWindow -> Ptr GdkWindowAttr -> GdkWindowAttributesTypes -> IO (Ptr GdkWindow)
