@@ -5,6 +5,7 @@
 
 module Graphics.Gdk.Windows.GdkWindowAttr (
 	GdkWindowAttr(..), newGdkWindowAttr, mkGdkWindowAttr,
+	GdkWindowAttributesTypes(..),
 	GdkWindowType(..),
 	pattern GdkWindowRoot, pattern GdkWindowToplevel,
 	pattern GdkWindowChild, pattern GdkWindowTemp,
@@ -40,6 +41,21 @@ enum "GdkWindowType" ''#{type GdkWindowType} [''Show] [
 
 newtype GdkWindowTypeHint = GdkWindowTypeHint #{type GdkWindowTypeHint} deriving Show
 
+newtype GdkWindowAttributesTypes =
+	GdkWindowAttributesTypes #{type GdkWindowAttributesType} deriving Show
+
+emptyGdkWindowAttributesTypes :: GdkWindowAttributesTypes
+emptyGdkWindowAttributesTypes = GdkWindowAttributesTypes 0
+
+enum "GdkWindowAttributesType" ''#{type GdkWindowAttributesType} [''Show] [
+	("GdkWaTitle", #{const GDK_WA_TITLE}),
+	("GdkWaX", #{const GDK_WA_X}), ("GdkWaY", #{const GDK_WA_Y}),
+	("GdkWaCursor", #{const GDK_WA_CURSOR}),
+	("GdkWaVisual", #{const GDK_WA_VISUAL}),
+	("GdkWaWmclass", #{const GDK_WA_WMCLASS}),
+	("GdkWaNoredir", #{const GDK_WA_NOREDIR}),
+	("GdkWaTypeHint", #{const GDK_WA_TYPE_HINT}) ]
+
 data GdkWindowAttr = GdkWindowAttr {
 	gdkWindowAttrTitle :: Maybe String,
 	gdkWindowAttrEventMask :: [GdkEventMask],
@@ -58,12 +74,12 @@ mkGdkWindowAttr ::
 mkGdkWindowAttr em w h wc wt = GdkWindowAttr
 	Nothing em Nothing Nothing w h wc Nothing wt Nothing Nothing Nothing
 
-newGdkWindowAttr :: GdkWindowAttr -> IO (ForeignPtr GdkWindowAttr, #{type GdkWindowAttributesType})
+newGdkWindowAttr :: GdkWindowAttr -> IO (ForeignPtr GdkWindowAttr, GdkWindowAttributesTypes)
 newGdkWindowAttr wattr = do
 	p <- mallocBytes #{size GdkWindowAttr}
 	fp <- newForeignPtr p (free p)
 	fpoke fp wattr
-	pure (fp, gdkWindowAttributesTypeMerged wattr)
+	pure (fp, gdkWindowAttrToTypes wattr)
 	where
 	fpoke fa a = withForeignPtr fa \pa -> do
 		case gdkWindowAttrTitle a of
@@ -97,20 +113,6 @@ newGdkWindowAttr wattr = do
 			(#{poke GdkWindowAttr, type_hint} pa . (\(GdkWindowTypeHint th) -> th))
 			(gdkWindowAttrTypeHint a)
 
-gdkWindowAttributesTypeMerged :: GdkWindowAttr -> #type GdkWindowAttributesType
-gdkWindowAttributesTypeMerged = merge . gdkWindowAttributesTypeList
-	where merge [] = 0; merge (at : ats) = at .|. merge ats
-
-gdkWindowAttributesTypeList :: GdkWindowAttr -> [#type GdkWindowAttributesType]
-gdkWindowAttributesTypeList a = catMaybes [
-	bool Nothing (Just #const GDK_WA_TITLE) . isJust $ gdkWindowAttrTitle a,
-	bool Nothing (Just #const GDK_WA_X) . isJust $ gdkWindowAttrX a,
-	bool Nothing (Just #const GDK_WA_Y) . isJust $ gdkWindowAttrY a,
-	bool Nothing (Just #const GDK_WA_CURSOR) . isJust $ gdkWindowAttrCursor a,
-	bool Nothing (Just #const GDK_WA_VISUAL) . isJust $ gdkWindowAttrVisual a,
-	bool Nothing (Just #const GDK_WA_NOREDIR) . isJust $ gdkWindowAttrOverrideRedirect a,
-	bool Nothing (Just #const GDK_WA_TYPE_HINT) . isJust $ gdkWindowAttrTypeHint a ]
-
 type ForeignCString = ForeignPtr CChar
 
 newForeignCString :: String -> IO ForeignCString
@@ -118,10 +120,28 @@ newForeignCString s = do
 	cs <- newCString s
 	newForeignPtr cs (free cs)
 
-enum "GdkWindowAttributesType" ''#{type GdkWindowAttributesType} [''Show] [
-	("GdkWaTitle", #{const GDK_WA_TITLE}),
-	("GdkWaX", #{const GDK_WA_X}), ("GdkWaY", #{const GDK_WA_Y}),
-	("GdkWaCursor", #{const GDK_WA_CURSOR}),
-	("GdkWaVisual", #{const GDK_WA_VISUAL}),
-	("GdkWaWmclass", #{const GDK_WA_WMCLASS}),
-	("GdkWaTypeHint", #{const GDK_WA_TYPE_HINT}) ]
+gdkWindowAttrToTypes :: GdkWindowAttr -> GdkWindowAttributesTypes
+gdkWindowAttrToTypes = gdkWindowAttributesTypes . gdkWindowAttrToTypeList
+
+gdkWindowAttrToTypeList :: GdkWindowAttr -> [GdkWindowAttributesType]
+gdkWindowAttrToTypeList a = catMaybes [
+	bool Nothing (Just GdkWaTitle) . isJust $ gdkWindowAttrTitle a,
+	bool Nothing (Just GdkWaX) . isJust $ gdkWindowAttrX a,
+	bool Nothing (Just GdkWaY) . isJust $ gdkWindowAttrY a,
+	bool Nothing (Just GdkWaCursor) . isJust $ gdkWindowAttrCursor a,
+	bool Nothing (Just GdkWaVisual) . isJust $ gdkWindowAttrVisual a,
+	bool Nothing (Just GdkWaNoredir)
+		. isJust $ gdkWindowAttrOverrideRedirect a,
+	bool Nothing (Just GdkWaTypeHint) . isJust $ gdkWindowAttrTypeHint a ]
+
+consGdkWindowAttributesType ::
+	GdkWindowAttributesType -> GdkWindowAttributesTypes ->
+	GdkWindowAttributesTypes
+consGdkWindowAttributesType
+	(GdkWindowAttributesType t) (GdkWindowAttributesTypes ts) =
+	GdkWindowAttributesTypes $ t .|. ts
+
+gdkWindowAttributesTypes ::
+	[GdkWindowAttributesType] -> GdkWindowAttributesTypes
+gdkWindowAttributesTypes =
+	foldr consGdkWindowAttributesType emptyGdkWindowAttributesTypes
