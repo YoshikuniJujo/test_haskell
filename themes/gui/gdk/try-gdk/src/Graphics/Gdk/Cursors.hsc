@@ -10,7 +10,6 @@ module Graphics.Gdk.Cursors (
 	-- * FUNCTION
 	gdkCursorGetDisplay,
 	gdkCursorNewFromSurface,
-	gdkCursorGetSurface,
 	gdkCursorNewFromName,
 
 	-- * GDK CURSOR TYPE
@@ -60,11 +59,8 @@ module Graphics.Gdk.Cursors (
 	) where
 
 import Foreign.Ptr
-import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
-import Foreign.Marshal
-import Foreign.Storable
 import Foreign.C
 import Foreign.C.Enum
 import Data.Int
@@ -198,25 +194,6 @@ gdkCursorNewForDisplay d (GdkCursorType t) =
 foreign import ccall "gdk_cursor_new_for_display"
 	c_gdk_cursor_new_for_display ::
 	GdkDisplay -> #{type GdkCursorType} -> IO (Ptr GdkCursor)
-
-gdkCursorGetSurface :: GdkCursor -> IO (Maybe (CairoSurfaceImageT s ps), (CDouble, CDouble))
-gdkCursorGetSurface (GdkCursor fc) = withForeignPtr fc \c -> alloca \px -> alloca \py -> do
-	poke px 12345
-	poke py 54321
-	r <- c_gdk_cursor_get_surface c px py
-	(,)	<$> (getCairoSurfaceImageT <$>) <$> mkCairoSurfaceT' r
-		<*> ((,) <$> peek px <*> peek py)
-
-mkCairoSurfaceT' :: Ptr (CairoSurfaceT s ps) -> IO (Maybe (CairoSurfaceT s ps))
-mkCairoSurfaceT' = \case
-	NullPtr -> pure Nothing
-	p -> Just <$> mkCairoSurfaceT p
-
-getCairoSurfaceImageT :: CairoSurfaceT s ps -> CairoSurfaceImageT s ps
-getCairoSurfaceImageT = \case CairoSurfaceTImage si -> si; _ -> error "bad"
-
-foreign import ccall "gdk_cursor_get_surface" c_gdk_cursor_get_surface ::
-	Ptr GdkCursor -> Ptr CDouble -> Ptr CDouble -> IO (Ptr (CairoSurfaceT s ps))
 
 gdkCursorGetCursorType :: GdkCursor -> IO GdkCursorType
 gdkCursorGetCursorType (GdkCursor fc) = withForeignPtr fc \c ->

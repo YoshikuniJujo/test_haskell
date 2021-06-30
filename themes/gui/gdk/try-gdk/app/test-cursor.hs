@@ -84,13 +84,11 @@ main = do
 getSurfaceCursor :: GdkDisplay -> CairoSurfaceImageT s ps -> CDouble -> CDouble -> IO GdkCursor
 getSurfaceCursor d si x y = do
 	c <- gdkCursorNewFromSurface d si x y
-	print =<< gdkCursorGetSurface c
 	pure c
 
 getNameCursor :: GdkDisplay -> String -> IO GdkCursor
 getNameCursor d n = do
 	c <- gdkCursorNewFromName d n
-	print =<< gdkCursorGetSurface c
 	pure c
 
 drawCursor :: PrimMonad m => m (CairoSurfaceImageT s (PrimState m))

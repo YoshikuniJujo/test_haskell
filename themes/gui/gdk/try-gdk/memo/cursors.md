@@ -10,13 +10,6 @@ Function
 * [ ] `gdk_cursor_new_from_surface`
 	+ [x] use `CairoSurfaceImageT` instead of `CairoSurfaceT`
 	+ [ ] use `cairo_surface_reference` and `cairo_surface_destroy`
-* [ ] `gdk_cusror_get_surface`
-	+ [x] use `CairoSurfaceImateT`
-	+ [x] try to return hot point
-	+ [ ] remove
-	+ [ ] use `cairo_surface_reference` and `cairo_surface_destroy`
-	+ [ ] get `x_hot` and `y_hot`
-	+ [x] process `NULL`
 * [ ] `gdk_cursor_new_from_name`
 * [ ] `gdk_cursor_new_for_display`
 	+ [x] define
@@ -29,6 +22,7 @@ Function
 ### not now
 
 * `gdk_cursor_new_from_pixbuf`
+* `gdk_cusror_get_surface`
 * `gdk_cusror_get_image`
 
 ### deprecated
