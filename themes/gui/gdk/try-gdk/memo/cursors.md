@@ -10,7 +10,7 @@ Function
 * [x] `gdk_cursor_new_from_surface`
 	+ [x] use `CairoSurfaceImageT` instead of `CairoSurfaceT`
 	+ [x] use `cairo_surface_reference` and `cairo_surface_destroy`
-* [ ] `gdk_cursor_new_from_name`
+* [x] `gdk_cursor_new_from_name`
 * [ ] `gdk_cursor_new_for_display`
 	+ [x] define
 	+ [x] make test
