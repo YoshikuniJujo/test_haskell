@@ -177,3 +177,4 @@ todo
 
 * [x] use `c-enum` in `GdkWindowAttributesType`
 * [x] move `GdkWindowAttributesType` to the appropriate module
+* [x] make `Graphics.Gdk.Windows.GdkWindowAttr`

@@ -23,13 +23,6 @@ newtype GdkDrawingContext = GdkDrawingContext (Ptr GdkDrawingContext) deriving S
 
 foreign import ccall "g_object_unref" c_g_object_unref :: Ptr a -> IO ()
 
-newForeignCString :: String -> IO ForeignCString
-newForeignCString s = do
-	cs <- newCString s
-	newForeignPtr cs (free cs)
-
-type ForeignCString = ForeignPtr CChar
-
 newtype GdkDisplayManager = GdkDisplayManager (Ptr GdkDisplayManager) deriving Show
 
 newtype GdkMonitor = GdkMonitor (Ptr GdkMonitor) deriving Show
