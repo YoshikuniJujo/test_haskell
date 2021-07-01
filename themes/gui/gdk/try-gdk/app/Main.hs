@@ -195,10 +195,9 @@ checkEvent d st = \case
 		when (kv == fromIntegral (ord 'h')) $ do
 			putStrLn "`h' pressed"
 			gdkWindowHide w
---			threadDelay 1000000
-			threadDelay 300000
-			gdkWindowShow w
---			void getChar
+			void . forkIO $ do
+				threadDelay 3000000
+				gdkWindowShow w
 		when (kv == fromIntegral (ord 'i')) $ do
 			putStrLn "`i' pressed"
 			gdkWindowIconify w

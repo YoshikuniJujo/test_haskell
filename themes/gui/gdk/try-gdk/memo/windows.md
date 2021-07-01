@@ -15,8 +15,8 @@ Function
 	+ [x] make a trial
 * [x] `gdk_window_show`
 * [x] `gdk_window_show_unraised`
-* [ ] `gdk_window_hide`
-	+ [ ] make a trial
+* [x] `gdk_window_hide`
+	+ [x] make a trial
 * [ ] `gdk_window_is_destroyed`
 * [ ] `gdk_window_is_visible`
 * [ ] `gdk_window_is_viewable`
