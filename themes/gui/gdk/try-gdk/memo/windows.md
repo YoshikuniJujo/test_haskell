@@ -35,6 +35,8 @@ Function
 * [x] `gdk_window_unfullscreen`
 * [x] `gdk_window_get_fullscreen_mode`
 * [x] `gdk_window_set_fullscreen_mode`
+* [x] `gdk_window_set_keep_above`
+* [ ] `gdk_window_set_keep_below`
 * [ ] `gdk_window_set_opacity`
 * [ ] `gdk_window_freeze_updates`
 * [ ] `gdk_window_thaw_updates`
@@ -55,8 +57,6 @@ Function
 ### not now
 
 * `gdk_window_fullscreen_on_monitor`
-* `gdk_window_set_keep_above`
-* `gdk_window_set_keep_below`
 * `gdk_window_set_pass_through`
 * `gdk_window_get_pass_through`
 * `gdk_window_move`

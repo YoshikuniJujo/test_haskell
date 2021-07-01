@@ -237,6 +237,13 @@ checkEvent d st = \case
 			void . forkIO $ do
 				threadDelay 1000000
 				print . gdkWindowStateList =<< gdkWindowGetState w
+		when (kv == fromIntegral (ord 'a')) $ do
+			putStrLn "`a' pressed"
+			s <- gdkWindowGetState w
+			gdkWindowSetKeepAbove w . not $ gdkWindowStateCheck GdkWindowStateAbove s
+			void . forkIO $ do
+				threadDelay 1000000
+				print . gdkWindowStateList =<< gdkWindowGetState w
 		when (kv == fromIntegral (ord 'p')) $ do
 			putStrLn . ("Window size: " ++) . show =<< gdkWindowGetPosition w
 		when (kv == fromIntegral (ord 's')) $ do

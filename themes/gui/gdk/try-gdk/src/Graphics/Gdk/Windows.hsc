@@ -18,6 +18,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowMaximize, gdkWindowUnmaximize,
 	gdkWindowFullscreen, gdkWindowUnfullscreen,
 	gdkWindowGetFullscreenMode, gdkWindowSetFullscreenMode,
+	gdkWindowSetKeepAbove,
 	gdkWindowSetOpacity,
 
 	-- * Not Checked
@@ -191,6 +192,12 @@ foreign import ccall "gdk_window_get_fullscreen_mode"
 
 foreign import ccall "gdk_window_set_fullscreen_mode"
 	gdkWindowSetFullscreenMode :: GdkWindow -> GdkFullscreenMode -> IO ()
+
+gdkWindowSetKeepAbove :: GdkWindow -> Bool -> IO ()
+gdkWindowSetKeepAbove w = c_gdk_window_set_keep_above w . boolToGboolean
+
+foreign import ccall "gdk_window_set_keep_above"
+	c_gdk_window_set_keep_above :: GdkWindow -> #{type gboolean} -> IO ()
 
 gdkWindowSetOpacity :: GdkWindow -> #{type gdouble} -> IO ()
 gdkWindowSetOpacity (GdkWindow p) o = c_gdk_window_set_opacity p o
