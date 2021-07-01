@@ -17,6 +17,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowIconify, gdkWindowDeiconify, gdkWindowStick, gdkWindowUnstick,
 	gdkWindowMaximize, gdkWindowUnmaximize,
 	gdkWindowFullscreen, gdkWindowUnfullscreen,
+	gdkWindowGetFullscreenMode, gdkWindowSetFullscreenMode,
 	gdkWindowSetOpacity,
 
 	-- * Not Checked
@@ -46,6 +47,7 @@ import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C
+import Foreign.C.Enum
 import Control.Exception
 import Data.Word
 import Data.Int
@@ -82,6 +84,8 @@ foreign import ccall "gdk_window_new" c_gdk_window_new ::
 	Ptr GdkWindow -> Ptr GdkWindowAttr -> GdkWindowAttributesTypes ->
 	IO GdkWindow
 
+foreign import ccall "g_object_ref" c_g_object_ref :: Ptr a -> IO ()
+
 gdkWindowDestroy :: GdkWindow -> IO ()
 gdkWindowDestroy w = do
 	whenMaybe c_g_object_unref =<< c_gdk_window_get_cursor' w
@@ -89,6 +93,12 @@ gdkWindowDestroy w = do
 
 foreign import ccall "gdk_window_destroy"
 	c_gdk_window_destroy :: GdkWindow -> IO ()
+
+c_gdk_window_get_cursor' :: GdkWindow -> IO (Maybe (Ptr GdkCursor))
+c_gdk_window_get_cursor' w = (<$> c_gdk_window_get_cursor w) \case
+	NullPtr -> Nothing; p -> Just p
+
+foreign import ccall "gdk_window_get_cursor" c_gdk_window_get_cursor :: GdkWindow -> IO (Ptr GdkCursor)
 
 foreign import ccall "gdk_window_get_window_type"
 	gdkWindowGetWindowType :: GdkWindow -> IO GdkWindowType
@@ -170,6 +180,18 @@ foreign import ccall "gdk_window_fullscreen"
 foreign import ccall "gdk_window_unfullscreen"
 	gdkWindowUnfullscreen :: GdkWindow -> IO ()
 
+enum "GdkFullscreenMode" ''#{type GdkFullscreenMode} [''Show] [
+	("GdkFullscreenOnCurrentMonitor",
+		#{const GDK_FULLSCREEN_ON_CURRENT_MONITOR}),
+	("GdkFullscreenOnAllMonitors",
+		#{const GDK_FULLSCREEN_ON_ALL_MONITORS}) ]
+
+foreign import ccall "gdk_window_get_fullscreen_mode"
+	gdkWindowGetFullscreenMode :: GdkWindow -> IO GdkFullscreenMode
+
+foreign import ccall "gdk_window_set_fullscreen_mode"
+	gdkWindowSetFullscreenMode :: GdkWindow -> GdkFullscreenMode -> IO ()
+
 gdkWindowSetOpacity :: GdkWindow -> #{type gdouble} -> IO ()
 gdkWindowSetOpacity (GdkWindow p) o = c_gdk_window_set_opacity p o
 
@@ -234,14 +256,6 @@ gdkWindowGetCursor w = do
 	case mc of
 		Nothing -> pure Nothing
 		Just c -> Just . GdkCursor <$> newForeignPtr c (c_g_object_unref c)
-
-c_gdk_window_get_cursor' :: GdkWindow -> IO (Maybe (Ptr GdkCursor))
-c_gdk_window_get_cursor' w = (<$> c_gdk_window_get_cursor w) \case
-	NullPtr -> Nothing; p -> Just p
-
-foreign import ccall "gdk_window_get_cursor" c_gdk_window_get_cursor :: GdkWindow -> IO (Ptr GdkCursor)
-
-foreign import ccall "g_object_ref" c_g_object_ref :: Ptr a -> IO ()
 
 foreign import ccall "gdk_window_get_width" c_gdk_window_get_width :: Ptr GdkWindow -> IO #type int
 
