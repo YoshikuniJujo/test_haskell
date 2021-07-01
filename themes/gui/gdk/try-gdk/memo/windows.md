@@ -26,6 +26,7 @@ Function
 	+ [ ] make a trial
 * [x] `gdk_window_withdraw`
 * [x] `gdk_window_iconify`
+* [x] `gdk_window_deiconify`
 * [ ] `gdk_window_maximize`
 * [ ] `gdk_window_fullscreen`
 * [ ] `gdk_window_set_opacity`
@@ -47,7 +48,6 @@ Function
 
 ### not now
 
-* `gdk_window_deiconify`
 * `gdk_window_stick`
 * `gdk_window_unstick`
 * `gdk_window_unmaximize`
