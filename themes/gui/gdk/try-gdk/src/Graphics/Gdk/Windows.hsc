@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -39,6 +39,7 @@ module Graphics.Gdk.Windows (
 	pattern GdkWindowOffscreen, pattern GdkWindowSubsurface ) where
 
 import Foreign.Ptr
+import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr, addForeignPtrFinalizer)
 import Foreign.Concurrent
 import Foreign.Marshal
@@ -82,7 +83,7 @@ foreign import ccall "gdk_window_new" c_gdk_window_new ::
 
 gdkWindowDestroy :: GdkWindow -> IO ()
 gdkWindowDestroy w = do
-	c_g_object_unref =<< c_gdk_window_get_cursor w
+	whenMaybe c_g_object_unref =<< c_gdk_window_get_cursor' w
 	c_gdk_window_destroy w
 
 foreign import ccall "gdk_window_destroy"
@@ -208,19 +209,25 @@ foreign import ccall "gdk_window_set_title" c_gdk_window_set_title :: GdkWindow 
 
 gdkWindowSetCursor :: GdkWindow -> GdkCursor -> IO ()
 gdkWindowSetCursor w (GdkCursor fc) = do
-	po <- c_gdk_window_get_cursor w
-	c_g_object_unref po
+	po <- c_gdk_window_get_cursor' w
+	whenMaybe c_g_object_unref po
 	withForeignPtr fc \c -> do
 		c_g_object_ref c
 		c_gdk_window_set_cursor w c
 
 foreign import ccall "gdk_window_set_cursor" c_gdk_window_set_cursor :: GdkWindow -> Ptr GdkCursor -> IO ()
 
-gdkWindowGetCursor :: GdkWindow -> IO GdkCursor
+gdkWindowGetCursor :: GdkWindow -> IO (Maybe GdkCursor)
 gdkWindowGetCursor w = do
-	c <- c_gdk_window_get_cursor w
-	c_g_object_ref c
-	GdkCursor <$> newForeignPtr c (c_g_object_unref c)
+	mc <- c_gdk_window_get_cursor' w
+	whenMaybe c_g_object_ref mc
+	case mc of
+		Nothing -> pure Nothing
+		Just c -> Just . GdkCursor <$> newForeignPtr c (c_g_object_unref c)
+
+c_gdk_window_get_cursor' :: GdkWindow -> IO (Maybe (Ptr GdkCursor))
+c_gdk_window_get_cursor' w = (<$> c_gdk_window_get_cursor w) \case
+	NullPtr -> Nothing; p -> Just p
 
 foreign import ccall "gdk_window_get_cursor" c_gdk_window_get_cursor :: GdkWindow -> IO (Ptr GdkCursor)
 

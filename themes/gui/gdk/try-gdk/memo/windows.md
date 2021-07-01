@@ -184,3 +184,4 @@ todo
 * [x] use `g_object_unref` at gdkWindowDestroy
 * [x] use `g_object_unref` at gdkWindowSetCursor
 * [x] use `g_object_ref` at gdkWindowSetCursor
+* [x] process NULL in `gdk_window_get_cursor`
