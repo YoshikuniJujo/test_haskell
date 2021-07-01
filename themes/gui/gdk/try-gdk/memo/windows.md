@@ -17,11 +17,11 @@ Function
 * [x] `gdk_window_show_unraised`
 * [x] `gdk_window_hide`
 	+ [x] make a trial
-* [ ] `gdk_window_is_destroyed`
-* [ ] `gdk_window_is_visible`
-* [ ] `gdk_window_is_viewable`
-* [ ] `gdk_window_is_input_only`
-* [ ] `gdk_window_is_shaped`
+* [x] `gdk_window_is_destroyed`
+* [x] `gdk_window_is_visible`
+* [x] `gdk_window_is_viewable`
+* [x] `gdk_window_is_input_only`
+* [x] `gdk_window_is_shaped`
 * [ ] `gdk_window_get_state`
 * [ ] `gdk_window_withdraw`
 * [ ] `gdk_window_iconify`

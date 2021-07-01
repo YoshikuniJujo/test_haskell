@@ -111,39 +111,44 @@ foreign import ccall "gdk_window_hide"
 	gdkWindowHide :: GdkWindow -> IO ()
 
 gdkWindowIsDestroyed :: GdkWindow -> IO Bool
-gdkWindowIsDestroyed (GdkWindow p) = gbooleanToBool <$> c_gdk_window_is_destroyed p
+gdkWindowIsDestroyed w = gbooleanToBool <$> c_gdk_window_is_destroyed w
 
-foreign import ccall "gdk_window_is_destroyed" c_gdk_window_is_destroyed :: Ptr GdkWindow -> IO #type gboolean
+foreign import ccall "gdk_window_is_destroyed"
+	c_gdk_window_is_destroyed :: GdkWindow -> IO #type gboolean
 
 gdkWindowIsVisible :: GdkWindow -> IO Bool
-gdkWindowIsVisible (GdkWindow p) = gbooleanToBool <$> c_gdk_window_is_visible p
+gdkWindowIsVisible w = gbooleanToBool <$> c_gdk_window_is_visible w
 
-foreign import ccall "gdk_window_is_visible" c_gdk_window_is_visible :: Ptr GdkWindow -> IO #type gboolean
+foreign import ccall "gdk_window_is_visible"
+	c_gdk_window_is_visible :: GdkWindow -> IO #type gboolean
 
 gdkWindowIsViewable :: GdkWindow -> IO Bool
-gdkWindowIsViewable (GdkWindow p) = gbooleanToBool <$> c_gdk_window_is_viewable p
+gdkWindowIsViewable w = gbooleanToBool <$> c_gdk_window_is_viewable w
 
-foreign import ccall "gdk_window_is_viewable" c_gdk_window_is_viewable :: Ptr GdkWindow -> IO #type gboolean
-
-foreign import ccall "gdk_window_is_input_only" c_gdk_window_is_input_only :: Ptr GdkWindow -> IO #type gboolean
+foreign import ccall "gdk_window_is_viewable"
+	c_gdk_window_is_viewable :: GdkWindow -> IO #type gboolean
 
 gdkWindowIsInputOnly :: GdkWindow -> IO Bool
-gdkWindowIsInputOnly (GdkWindow p) = gbooleanToBool <$> c_gdk_window_is_input_only p
+gdkWindowIsInputOnly w = gbooleanToBool <$> c_gdk_window_is_input_only w
 
-foreign import ccall "gdk_window_is_shaped" c_gdk_window_is_shaped :: Ptr GdkWindow -> IO #type gboolean
+foreign import ccall "gdk_window_is_input_only"
+	c_gdk_window_is_input_only :: GdkWindow -> IO #type gboolean
 
 gdkWindowIsShaped :: GdkWindow -> IO Bool
-gdkWindowIsShaped (GdkWindow p) = gbooleanToBool <$> c_gdk_window_is_shaped p
+gdkWindowIsShaped w = gbooleanToBool <$> c_gdk_window_is_shaped w
 
-foreign import ccall "gdk_window_get_state" c_gdk_window_get_state :: Ptr GdkWindow -> IO #type GdkWindowState
+foreign import ccall "gdk_window_is_shaped"
+	c_gdk_window_is_shaped :: GdkWindow -> IO #type gboolean
 
 gdkWindowGetState :: GdkWindow -> IO [GdkWindowState]
 gdkWindowGetState (GdkWindow p) = gdkWindowStateList <$> c_gdk_window_get_state p
 
-foreign import ccall "gdk_window_withdraw" c_gdk_window_withdraw :: Ptr GdkWindow -> IO ()
+foreign import ccall "gdk_window_get_state" c_gdk_window_get_state :: Ptr GdkWindow -> IO #type GdkWindowState
 
 gdkWindowWithdraw :: GdkWindow -> IO ()
 gdkWindowWithdraw (GdkWindow p) = c_gdk_window_withdraw p
+
+foreign import ccall "gdk_window_withdraw" c_gdk_window_withdraw :: Ptr GdkWindow -> IO ()
 
 foreign import ccall "gdk_window_iconify" c_gdk_window_iconify :: Ptr GdkWindow -> IO ()
 
