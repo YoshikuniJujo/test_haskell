@@ -89,16 +89,16 @@ foreign import ccall "gdk_window_destroy" c_gdk_window_destroy ::
 	GdkWindow -> IO ()
 
 gdkWindowGetWindowType :: GdkWindow -> IO GdkWindowType
-gdkWindowGetWindowType (GdkWindow p) = GdkWindowType <$> c_gdk_window_get_window_type p
+gdkWindowGetWindowType w = GdkWindowType <$> c_gdk_window_get_window_type w
 
-foreign import ccall "gdk_window_get_window_type" c_gdk_window_get_window_type ::
-	Ptr GdkWindow -> IO #type GdkWindowType
-
-foreign import ccall "gdk_window_get_display" c_gdk_window_get_display ::
-	Ptr GdkWindow -> IO (Ptr GdkDisplay)
+foreign import ccall "gdk_window_get_window_type"
+	c_gdk_window_get_window_type :: GdkWindow -> IO #type GdkWindowType
 
 gdkWindowGetDisplay :: GdkWindow -> IO GdkDisplay
 gdkWindowGetDisplay (GdkWindow p) = GdkDisplay <$> c_gdk_window_get_display p
+
+foreign import ccall "gdk_window_get_display" c_gdk_window_get_display ::
+	Ptr GdkWindow -> IO (Ptr GdkDisplay)
 
 foreign import ccall "gdk_window_get_screen" c_gdk_window_get_screen ::
 	Ptr GdkWindow -> IO (Ptr GdkScreen)
