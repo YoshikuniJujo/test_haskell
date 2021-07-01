@@ -209,6 +209,13 @@ checkEvent d st = \case
 				print =<< gdkWindowGetState w
 				threadDelay 1000000
 				print =<< gdkWindowGetState w
+		when (kv == fromIntegral (ord 'j')) $ do
+			putStrLn "'j' pressed"
+			gdkWindowStick w
+			print =<< gdkWindowGetState w
+			void . forkIO $ do
+				threadDelay 1000000
+				print =<< gdkWindowGetState w
 		when (kv == fromIntegral (ord 'm')) $ do
 			putStrLn "`m' pressed"
 			gdkWindowMaximize w

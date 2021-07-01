@@ -13,7 +13,9 @@ module Graphics.Gdk.Windows (
 	gdkWindowShow, gdkWindowShowUnraised, gdkWindowHide,
 	gdkWindowIsDestroyed, gdkWindowIsVisible, gdkWindowIsViewable,
 	gdkWindowIsInputOnly, gdkWindowIsShaped, gdkWindowGetState,
-	gdkWindowWithdraw, gdkWindowIconify, gdkWindowDeiconify,
+	gdkWindowWithdraw,
+	gdkWindowIconify, gdkWindowDeiconify,
+	gdkWindowStick,
 	gdkWindowMaximize,
 	gdkWindowFullscreen,
 	gdkWindowSetOpacity,
@@ -153,6 +155,8 @@ foreign import ccall "gdk_window_iconify" gdkWindowIconify :: GdkWindow -> IO ()
 
 foreign import ccall "gdk_window_deiconify"
 	gdkWindowDeiconify :: GdkWindow -> IO ()
+
+foreign import ccall "gdk_window_stick" gdkWindowStick :: GdkWindow -> IO ()
 
 foreign import ccall "gdk_window_maximize"
 	gdkWindowMaximize :: GdkWindow -> IO ()

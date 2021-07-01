@@ -27,6 +27,8 @@ Function
 * [x] `gdk_window_withdraw`
 * [x] `gdk_window_iconify`
 * [x] `gdk_window_deiconify`
+* [x] `gdk_window_stick`
+* [ ] `gdk_window_unstick`
 * [ ] `gdk_window_maximize`
 * [ ] `gdk_window_fullscreen`
 * [ ] `gdk_window_set_opacity`
@@ -48,8 +50,6 @@ Function
 
 ### not now
 
-* `gdk_window_stick`
-* `gdk_window_unstick`
 * `gdk_window_unmaximize`
 * `gdk_window_fullscreen_on_monitor`
 * `gdk_window_unfullscreen`
