@@ -23,8 +23,9 @@ Function
 * [x] `gdk_window_is_input_only`
 * [x] `gdk_window_is_shaped`
 * [ ] `gdk_window_get_state`
-* [ ] `gdk_window_withdraw`
-* [ ] `gdk_window_iconify`
+	+ [ ] make a trial
+* [x] `gdk_window_withdraw`
+* [x] `gdk_window_iconify`
 * [ ] `gdk_window_maximize`
 * [ ] `gdk_window_fullscreen`
 * [ ] `gdk_window_set_opacity`

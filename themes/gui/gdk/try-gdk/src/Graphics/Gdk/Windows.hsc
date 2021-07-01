@@ -141,35 +141,27 @@ foreign import ccall "gdk_window_is_shaped"
 	c_gdk_window_is_shaped :: GdkWindow -> IO #type gboolean
 
 gdkWindowGetState :: GdkWindow -> IO [GdkWindowState]
-gdkWindowGetState (GdkWindow p) = gdkWindowStateList <$> c_gdk_window_get_state p
+gdkWindowGetState w = gdkWindowStateList <$> c_gdk_window_get_state w
 
-foreign import ccall "gdk_window_get_state" c_gdk_window_get_state :: Ptr GdkWindow -> IO #type GdkWindowState
+foreign import ccall "gdk_window_get_state"
+	c_gdk_window_get_state :: GdkWindow -> IO #type GdkWindowState
 
-gdkWindowWithdraw :: GdkWindow -> IO ()
-gdkWindowWithdraw (GdkWindow p) = c_gdk_window_withdraw p
+foreign import ccall "gdk_window_withdraw"
+	gdkWindowWithdraw :: GdkWindow -> IO ()
 
-foreign import ccall "gdk_window_withdraw" c_gdk_window_withdraw :: Ptr GdkWindow -> IO ()
+foreign import ccall "gdk_window_iconify" gdkWindowIconify :: GdkWindow -> IO ()
 
-foreign import ccall "gdk_window_iconify" c_gdk_window_iconify :: Ptr GdkWindow -> IO ()
+foreign import ccall "gdk_window_maximize"
+	gdkWindowMaximize :: GdkWindow -> IO ()
 
-gdkWindowIconify :: GdkWindow -> IO ()
-gdkWindowIconify (GdkWindow p) = c_gdk_window_iconify p
-
-foreign import ccall "gdk_window_maximize" c_gdk_window_maximize :: Ptr GdkWindow -> IO ()
-
-gdkWindowMaximize :: GdkWindow -> IO ()
-gdkWindowMaximize (GdkWindow p) = c_gdk_window_maximize p
-
-foreign import ccall "gdk_window_fullscreen" c_gdk_window_fullscreen :: Ptr GdkWindow -> IO ()
-
-gdkWindowFullscreen :: GdkWindow -> IO ()
-gdkWindowFullscreen (GdkWindow p) = c_gdk_window_fullscreen p
-
-foreign import ccall "gdk_window_set_opacity" c_gdk_window_set_opacity ::
-	Ptr GdkWindow -> #{type gdouble} -> IO ()
+foreign import ccall "gdk_window_fullscreen"
+	gdkWindowFullscreen :: GdkWindow -> IO ()
 
 gdkWindowSetOpacity :: GdkWindow -> #{type gdouble} -> IO ()
 gdkWindowSetOpacity (GdkWindow p) o = c_gdk_window_set_opacity p o
+
+foreign import ccall "gdk_window_set_opacity" c_gdk_window_set_opacity ::
+	Ptr GdkWindow -> #{type gdouble} -> IO ()
 
 foreign import ccall "gdk_window_begin_draw_frame" c_gdk_window_begin_draw_frame ::
 	Ptr GdkWindow -> Ptr (CairoRegionT s) -> IO (Ptr GdkDrawingContext)
