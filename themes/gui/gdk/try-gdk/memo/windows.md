@@ -12,9 +12,11 @@ Function
 * [x] `gdk_window_get_display`
 * [x] `gdk_window_get_screen`
 * [x] `gdk_window_get_visual`
+	+ [x] make a trial
 * [x] `gdk_window_show`
 * [x] `gdk_window_show_unraised`
-* [x] `gdk_window_hide`
+* [ ] `gdk_window_hide`
+	+ [ ] make a trial
 * [ ] `gdk_window_is_destroyed`
 * [ ] `gdk_window_is_visible`
 * [ ] `gdk_window_is_viewable`

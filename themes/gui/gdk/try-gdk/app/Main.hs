@@ -110,13 +110,6 @@ main = do
 			putStrLn $ "Green pixel details of visuals: " ++ show ((head &&& length) <$> group grs)
 			bls <- for vs gdkVisualGetBluePixelDetails
 			putStrLn $ "Blue pixel details of visuals: " ++ show ((head &&& length) <$> group bls)
-			{-
-			for_ vs \v -> do
-				putStrLn . ("Red pixel details of visual: " ++) . show =<< gdkVisualGetRedPixelDetails v
-				putStrLn . ("Green pixel details of visual: " ++) . show =<< gdkVisualGetGreenPixelDetails v
-				putStrLn . ("Blue pixel details of visual: " ++) . show =<< gdkVisualGetBluePixelDetails v
-				-}
-
 	putStrLn "gdkScreenGetToplevelWindows #1"
 	gdkScreenGetToplevelWindows scrn >>= \case
 		tws -> for_ tws \tw -> print =<< gdkWindowGetWindowType tw
@@ -131,9 +124,11 @@ main = do
 				]
 			400 400
 			gdkInputOutput GdkWindowToplevel
+	putStrLn "*** GDK WINDOW NEW ***"
 	w <- gdkWindowNew Nothing wattr { gdkWindowAttrTitle = Just "試験窓" }
 	print =<< gdkWindowGetWindowType w
 	print =<< gdkWindowGetWindowType =<< gdkWindowGetParent w
+	printVisual =<< gdkWindowGetVisual w
 	print =<< gdkWindowGetDecorations w
 	print GdkWindowToplevel
 	print GdkWindowRoot
@@ -290,3 +285,16 @@ doWhile_ act = bool (pure ()) (doWhile_ act) =<< act
 
 doWhile :: Monad m => m (Maybe a) -> m a
 doWhile act = maybe (doWhile act) pure =<< act
+		
+printVisual :: GdkVisual -> IO ()
+printVisual v = do
+	d <- gdkVisualGetDepth v
+	putStrLn $ "Depth of visual: " ++ show d
+	t <- gdkVisualGetVisualType v
+	putStrLn $ "Types of visual: " ++ show t
+	rd <- gdkVisualGetRedPixelDetails v
+	putStrLn $ "Red pixel details of visual: " ++ show rd
+	gr <- gdkVisualGetGreenPixelDetails v
+	putStrLn $ "Green pixel details of visual: " ++ show gr
+	bl <- gdkVisualGetBluePixelDetails v
+	putStrLn $ "Blue pixel details of visual: " ++ show bl
