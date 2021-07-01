@@ -221,7 +221,13 @@ checkEvent d st = \case
 				print . gdkWindowStateList =<< gdkWindowGetState w
 		when (kv == fromIntegral (ord 'm')) $ do
 			putStrLn "`m' pressed"
-			gdkWindowMaximize w
+			s <- gdkWindowGetState w
+			if gdkWindowStateCheck GdkWindowStateMaximized s
+				then gdkWindowUnmaximize w
+				else gdkWindowMaximize w
+			void . forkIO $ do
+				threadDelay 1000000
+				print . gdkWindowStateList =<< gdkWindowGetState w
 		when (kv == fromIntegral (ord 'f')) $ do
 			putStrLn "`f' pressed"
 			gdkWindowFullscreen w
