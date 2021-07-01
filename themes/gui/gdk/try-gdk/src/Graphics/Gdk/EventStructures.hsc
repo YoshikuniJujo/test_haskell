@@ -38,6 +38,8 @@ foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 	GDK_CLIENT_EVENT, GDK_VISIBILITY_NOTIFY, GDK_SCROLL, GDK_WINDOW_STATE, \
 	GDK_SETTING, GDK_OWNER_CHANGE, GDK_GRAB_BROKEN
 
+newtype GdkWindowStates = GdkWindowStates #{type GdkWindowState} deriving Show
+
 enum "GdkWindowState" ''#{type GdkWindowState} [''Show] [
 	("GdkWindowStateWithdrawn", #{const GDK_WINDOW_STATE_WITHDRAWN}),
 	("GdkWindowStateIconified", #{const GDK_WINDOW_STATE_ICONIFIED}),
@@ -59,8 +61,11 @@ enum "GdkWindowState" ''#{type GdkWindowState} [''Show] [
 	("GdkWindowStateLeftResizable",
 		#{const GDK_WINDOW_STATE_LEFT_RESIZABLE}) ]
 
-gdkWindowStateList :: #{type GdkWindowState} -> [GdkWindowState]
-gdkWindowStateList = (GdkWindowState <$>) . separateBits 32
+gdkWindowStateCheck :: GdkWindowState -> GdkWindowStates -> Bool
+gdkWindowStateCheck (GdkWindowState s) (GdkWindowStates ss) = s .&. ss /= zeroBits
+
+gdkWindowStateList :: GdkWindowStates -> [GdkWindowState]
+gdkWindowStateList (GdkWindowStates ss) = GdkWindowState <$> separateBits 32 ss
 
 separateBits :: Bits n => Int -> n -> [n]
 separateBits c n = filter (/= zeroBits) $ (\i -> n .&. bit i) <$> [0 .. c - 1]

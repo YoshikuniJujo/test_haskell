@@ -14,8 +14,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowIsDestroyed, gdkWindowIsVisible, gdkWindowIsViewable,
 	gdkWindowIsInputOnly, gdkWindowIsShaped, gdkWindowGetState,
 	gdkWindowWithdraw,
-	gdkWindowIconify, gdkWindowDeiconify,
-	gdkWindowStick,
+	gdkWindowIconify, gdkWindowDeiconify, gdkWindowStick, gdkWindowUnstick,
 	gdkWindowMaximize,
 	gdkWindowFullscreen,
 	gdkWindowSetOpacity,
@@ -142,8 +141,8 @@ gdkWindowIsShaped w = gbooleanToBool <$> c_gdk_window_is_shaped w
 foreign import ccall "gdk_window_is_shaped"
 	c_gdk_window_is_shaped :: GdkWindow -> IO #type gboolean
 
-gdkWindowGetState :: GdkWindow -> IO [GdkWindowState]
-gdkWindowGetState w = gdkWindowStateList <$> c_gdk_window_get_state w
+gdkWindowGetState :: GdkWindow -> IO GdkWindowStates
+gdkWindowGetState w = GdkWindowStates <$> c_gdk_window_get_state w
 
 foreign import ccall "gdk_window_get_state"
 	c_gdk_window_get_state :: GdkWindow -> IO #type GdkWindowState
@@ -157,6 +156,7 @@ foreign import ccall "gdk_window_deiconify"
 	gdkWindowDeiconify :: GdkWindow -> IO ()
 
 foreign import ccall "gdk_window_stick" gdkWindowStick :: GdkWindow -> IO ()
+foreign import ccall "gdk_window_unstick" gdkWindowUnstick :: GdkWindow -> IO ()
 
 foreign import ccall "gdk_window_maximize"
 	gdkWindowMaximize :: GdkWindow -> IO ()

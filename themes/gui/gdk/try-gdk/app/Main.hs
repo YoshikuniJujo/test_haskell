@@ -96,7 +96,7 @@ main = do
 	putStrLn . ("Screen is composited: " ++) . show =<< gdkScreenIsComposited scrn
 	rtwn <- gdkScreenGetRootWindow scrn
 	putStrLn . ("Window type of root window: " ++) . show =<< gdkWindowGetWindowType rtwn
-	putStrLn . ("State of root window: " ++) . show =<< gdkWindowGetState rtwn
+	putStrLn . ("State of root window: " ++) . show . gdkWindowStateList =<< gdkWindowGetState rtwn
 	gdkScreenListVisuals scrn >>= \case
 		vs -> do
 		--	print vs
@@ -141,13 +141,13 @@ main = do
 	putStrLn . ("Window is viewable: " ++) . show =<< gdkWindowIsViewable w
 	putStrLn . ("Window is input only: " ++) . show =<< gdkWindowIsInputOnly w
 	putStrLn . ("Window is shaped: " ++) . show =<< gdkWindowIsShaped w
-	putStrLn . ("Window state: " ++) . show =<< gdkWindowGetState w
+	putStrLn . ("Window state: " ++) . show . gdkWindowStateList =<< gdkWindowGetState w
 	gdkWindowShow w
 	if "--startup-notify" `elem` as' then gdkNotifyStartupComplete else pure ()
 	gdkWindowSetOpacity w 0.5
 	putStrLn . ("Window is visible: " ++) . show =<< gdkWindowIsVisible w
 	putStrLn . ("Window is viewable: " ++) . show =<< gdkWindowIsViewable w
-	putStrLn . ("Window state: " ++) . show =<< gdkWindowGetState w
+	putStrLn . ("Window state: " ++) . show . gdkWindowStateList =<< gdkWindowGetState w
 	gdkWindowSetEvents w [
 		gdkExposureMask, gdkButtonPressMask, gdkFocusChangeMask, gdkKeyPressMask,
 		gdkPointerMotionMask, gdkAllEventsMask ]
@@ -201,21 +201,24 @@ checkEvent d st = \case
 		when (kv == fromIntegral (ord 'i')) $ do
 			putStrLn "`i' pressed"
 			gdkWindowIconify w
-			print =<< gdkWindowGetState w
+			print . gdkWindowStateList =<< gdkWindowGetState w
 			void . forkIO $ do
 				threadDelay 1000000
-				print =<< gdkWindowGetState w
+				print . gdkWindowStateList =<< gdkWindowGetState w
 				gdkWindowDeiconify w
-				print =<< gdkWindowGetState w
+				print . gdkWindowStateList =<< gdkWindowGetState w
 				threadDelay 1000000
-				print =<< gdkWindowGetState w
+				print . gdkWindowStateList =<< gdkWindowGetState w
 		when (kv == fromIntegral (ord 'j')) $ do
 			putStrLn "'j' pressed"
-			gdkWindowStick w
-			print =<< gdkWindowGetState w
+			s <- gdkWindowGetState w
+			if gdkWindowStateCheck GdkWindowStateSticky s
+				then gdkWindowUnstick w
+				else gdkWindowStick w
+			print . gdkWindowStateList =<< gdkWindowGetState w
 			void . forkIO $ do
 				threadDelay 1000000
-				print =<< gdkWindowGetState w
+				print . gdkWindowStateList =<< gdkWindowGetState w
 		when (kv == fromIntegral (ord 'm')) $ do
 			putStrLn "`m' pressed"
 			gdkWindowMaximize w

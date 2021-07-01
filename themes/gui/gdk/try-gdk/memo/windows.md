@@ -28,7 +28,7 @@ Function
 * [x] `gdk_window_iconify`
 * [x] `gdk_window_deiconify`
 * [x] `gdk_window_stick`
-* [ ] `gdk_window_unstick`
+* [x] `gdk_window_unstick`
 * [ ] `gdk_window_maximize`
 * [ ] `gdk_window_fullscreen`
 * [ ] `gdk_window_set_opacity`
