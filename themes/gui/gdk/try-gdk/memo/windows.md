@@ -9,12 +9,12 @@ Function
 * [x] `gdk_window_new`
 * [x] `gdk_window_destroy`
 * [x] `gdk_window_get_window_type`
-* [ ] `gdk_window_get_display`
-* [ ] `gdk_window_get_screen`
-* [ ] `gdk_window_get_visual`
-* [ ] `gdk_window_show`
-* [ ] `gdk_window_show_unraised`
-* [ ] `gdk_window_hide`
+* [x] `gdk_window_get_display`
+* [x] `gdk_window_get_screen`
+* [x] `gdk_window_get_visual`
+* [x] `gdk_window_show`
+* [x] `gdk_window_show_unraised`
+* [x] `gdk_window_hide`
 * [ ] `gdk_window_is_destroyed`
 * [ ] `gdk_window_is_visible`
 * [ ] `gdk_window_is_viewable`

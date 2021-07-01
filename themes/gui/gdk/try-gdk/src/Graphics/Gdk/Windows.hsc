@@ -85,62 +85,44 @@ gdkWindowDestroy w = do
 	c_g_object_unref =<< c_gdk_window_get_cursor w
 	c_gdk_window_destroy w
 
-foreign import ccall "gdk_window_destroy" c_gdk_window_destroy ::
-	GdkWindow -> IO ()
-
-gdkWindowGetWindowType :: GdkWindow -> IO GdkWindowType
-gdkWindowGetWindowType w = GdkWindowType <$> c_gdk_window_get_window_type w
+foreign import ccall "gdk_window_destroy"
+	c_gdk_window_destroy :: GdkWindow -> IO ()
 
 foreign import ccall "gdk_window_get_window_type"
-	c_gdk_window_get_window_type :: GdkWindow -> IO #type GdkWindowType
+	gdkWindowGetWindowType :: GdkWindow -> IO GdkWindowType
 
-gdkWindowGetDisplay :: GdkWindow -> IO GdkDisplay
-gdkWindowGetDisplay (GdkWindow p) = GdkDisplay <$> c_gdk_window_get_display p
+foreign import ccall "gdk_window_get_display"
+	gdkWindowGetDisplay :: GdkWindow -> IO GdkDisplay
 
-foreign import ccall "gdk_window_get_display" c_gdk_window_get_display ::
-	Ptr GdkWindow -> IO (Ptr GdkDisplay)
+foreign import ccall "gdk_window_get_screen"
+	gdkWindowGetScreen :: GdkWindow -> IO GdkScreen
 
-foreign import ccall "gdk_window_get_screen" c_gdk_window_get_screen ::
-	Ptr GdkWindow -> IO (Ptr GdkScreen)
+foreign import ccall "gdk_window_get_visual"
+	gdkWindowGetVisual :: GdkWindow -> IO GdkVisual
 
-gdkWindowGetScreen :: GdkWindow -> IO GdkScreen
-gdkWindowGetScreen (GdkWindow p) = GdkScreen <$> c_gdk_window_get_screen p
+foreign import ccall "gdk_window_show"
+	gdkWindowShow :: GdkWindow -> IO ()
 
-foreign import ccall "gdk_window_get_visual" c_gdk_window_get_visual ::
-	Ptr GdkWindow -> IO (Ptr GdkVisual)
+foreign import ccall "gdk_window_show_unraised"
+	gdkWindowShowUnraised :: GdkWindow -> IO ()
 
-gdkWindowGetVisual :: GdkWindow -> IO GdkVisual
-gdkWindowGetVisual (GdkWindow p) = GdkVisual <$> c_gdk_window_get_visual p
-
-foreign import ccall "gdk_window_show" c_gdk_window_show :: Ptr GdkWindow -> IO ()
-
-gdkWindowShow :: GdkWindow -> IO ()
-gdkWindowShow (GdkWindow w) = c_gdk_window_show w
-
-foreign import ccall "gdk_window_show_unraised" c_gdk_window_show_unraised :: Ptr GdkWindow -> IO ()
-
-gdkWindowShowUnraised :: GdkWindow -> IO ()
-gdkWindowShowUnraised (GdkWindow w) = c_gdk_window_show_unraised w
-
-foreign import ccall "gdk_window_hide" c_gdk_window_hide :: Ptr GdkWindow -> IO ()
-
-gdkWindowHide :: GdkWindow -> IO ()
-gdkWindowHide (GdkWindow w) = c_gdk_window_hide w
-
-foreign import ccall "gdk_window_is_destroyed" c_gdk_window_is_destroyed :: Ptr GdkWindow -> IO #type gboolean
+foreign import ccall "gdk_window_hide"
+	gdkWindowHide :: GdkWindow -> IO ()
 
 gdkWindowIsDestroyed :: GdkWindow -> IO Bool
 gdkWindowIsDestroyed (GdkWindow p) = gbooleanToBool <$> c_gdk_window_is_destroyed p
 
-foreign import ccall "gdk_window_is_visible" c_gdk_window_is_visible :: Ptr GdkWindow -> IO #type gboolean
+foreign import ccall "gdk_window_is_destroyed" c_gdk_window_is_destroyed :: Ptr GdkWindow -> IO #type gboolean
 
 gdkWindowIsVisible :: GdkWindow -> IO Bool
 gdkWindowIsVisible (GdkWindow p) = gbooleanToBool <$> c_gdk_window_is_visible p
 
-foreign import ccall "gdk_window_is_viewable" c_gdk_window_is_viewable :: Ptr GdkWindow -> IO #type gboolean
+foreign import ccall "gdk_window_is_visible" c_gdk_window_is_visible :: Ptr GdkWindow -> IO #type gboolean
 
 gdkWindowIsViewable :: GdkWindow -> IO Bool
 gdkWindowIsViewable (GdkWindow p) = gbooleanToBool <$> c_gdk_window_is_viewable p
+
+foreign import ccall "gdk_window_is_viewable" c_gdk_window_is_viewable :: Ptr GdkWindow -> IO #type gboolean
 
 foreign import ccall "gdk_window_is_input_only" c_gdk_window_is_input_only :: Ptr GdkWindow -> IO #type gboolean
 
