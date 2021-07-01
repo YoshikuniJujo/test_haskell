@@ -16,7 +16,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowWithdraw,
 	gdkWindowIconify, gdkWindowDeiconify, gdkWindowStick, gdkWindowUnstick,
 	gdkWindowMaximize, gdkWindowUnmaximize,
-	gdkWindowFullscreen,
+	gdkWindowFullscreen, gdkWindowUnfullscreen,
 	gdkWindowSetOpacity,
 
 	-- * Not Checked
@@ -166,6 +166,9 @@ foreign import ccall "gdk_window_unmaximize"
 
 foreign import ccall "gdk_window_fullscreen"
 	gdkWindowFullscreen :: GdkWindow -> IO ()
+
+foreign import ccall "gdk_window_unfullscreen"
+	gdkWindowUnfullscreen :: GdkWindow -> IO ()
 
 gdkWindowSetOpacity :: GdkWindow -> #{type gdouble} -> IO ()
 gdkWindowSetOpacity (GdkWindow p) o = c_gdk_window_set_opacity p o
