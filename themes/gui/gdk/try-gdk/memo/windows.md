@@ -191,3 +191,4 @@ todo
 * [x] give an argument `s` to `GdkDrawingContext`
 * [x] move `GdkDrawingContext s` to module `Graphics.Gdk.GdkDrawingContext`
 * [x] get contents of CairoRegionT
+* [ ] check focus event
