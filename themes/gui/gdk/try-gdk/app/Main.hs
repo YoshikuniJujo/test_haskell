@@ -42,7 +42,6 @@ main = do
 	opacity <- newIORef 1.0
 	pos <- newIORef 0
 	size <- newIORef 0
-	raised <- newIORef True
 	pn <- getProgName
 	as <- getArgs
 	gdkSetAllowedBackends "win32,x11,*"
@@ -174,7 +173,7 @@ main = do
 		threadDelay 100000
 		doWhile $ gdkEventGet >>= \case
 			Just e -> do
-				b <- checkEvent opacity pos size raised d st e
+				b <- checkEvent opacity pos size d st e
 				pure if b then Nothing else Just False
 			Nothing -> pure $ Just True
 	gdkWindowDestroy w
@@ -187,8 +186,8 @@ main = do
 	gdkDisplayClose d
 --	print =<< gdkDisplayIsClosed d
 
-checkEvent :: IORef CDouble -> IORef Int -> IORef Int -> IORef Bool -> GdkDisplay -> GdkSeat -> GdkEvent -> IO Bool
-checkEvent opacity pos size raised d st = \case
+checkEvent :: IORef CDouble -> IORef Int -> IORef Int -> GdkDisplay -> GdkSeat -> GdkEvent -> IO Bool
+checkEvent opacity pos size d st = \case
 	GdkEventGdkNothing n -> do
 		putStrLn $ "GDK_NOTHING: " ++ show n
 		pure True
@@ -289,9 +288,8 @@ checkEvent opacity pos size raised d st = \case
 				7 -> (100, 300)
 				_ -> error "never occur"
 		when (kv == fromIntegral (ord 'v')) $ do
-			modifyIORef raised not
-			r <- readIORef raised
-			if r then gdkWindowLower w else gdkWindowRaise w
+			gdkWindowLower w
+			void . forkIO $ threadDelay 2000000 >> gdkWindowRaise w
 		when (kv == fromIntegral (ord 'p')) $ do
 			putStrLn . ("Window size: " ++) . show =<< gdkWindowGetPosition w
 		when (kv == fromIntegral (ord 's')) $ do
