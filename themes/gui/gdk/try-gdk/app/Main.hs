@@ -42,6 +42,7 @@ main = do
 	opacity <- newIORef 1.0
 	pos <- newIORef 0
 	size <- newIORef 0
+	scrl <- newIORef 0
 	pn <- getProgName
 	as <- getArgs
 	gdkSetAllowedBackends "win32,x11,*"
@@ -173,7 +174,7 @@ main = do
 		threadDelay 100000
 		doWhile $ gdkEventGet >>= \case
 			Just e -> do
-				b <- checkEvent opacity pos size d st e
+				b <- checkEvent opacity pos size scrl d st e
 				pure if b then Nothing else Just False
 			Nothing -> pure $ Just True
 	gdkWindowDestroy w
@@ -186,8 +187,8 @@ main = do
 	gdkDisplayClose d
 --	print =<< gdkDisplayIsClosed d
 
-checkEvent :: IORef CDouble -> IORef Int -> IORef Int -> GdkDisplay -> GdkSeat -> GdkEvent -> IO Bool
-checkEvent opacity pos size d st = \case
+checkEvent :: IORef CDouble -> IORef Int -> IORef Int -> IORef Int -> GdkDisplay -> GdkSeat -> GdkEvent -> IO Bool
+checkEvent opacity pos size scrl d st = \case
 	GdkEventGdkNothing n -> do
 		putStrLn $ "GDK_NOTHING: " ++ show n
 		pure True
@@ -264,31 +265,39 @@ checkEvent opacity pos size d st = \case
 		when (kv == fromIntegral (ord 't')) $ do
 			modifyIORef pos (+ 1)
 			p <- readIORef pos
-			uncurry (gdkWindowMove w)
-				$ case p `mod` 8 of
-					0 -> (100, 100)
-					1 -> (500, 100)
-					2 -> (900, 100)
-					3 -> (900, 300)
-					4 -> (900, 500)
-					5 -> (500, 500)
-					6 -> (100, 500)
-					7 -> (100, 300)
-					_ -> error "never occur"
+			uncurry (gdkWindowMove w) $ case p `mod` 8 of
+				0 -> (100, 100)
+				1 -> (500, 100)
+				2 -> (900, 100)
+				3 -> (900, 300)
+				4 -> (900, 500)
+				5 -> (500, 500)
+				6 -> (100, 500)
+				7 -> (100, 300)
+				_ -> error "never occur"
 		when (kv == fromIntegral (ord 'u')) $ do
 			modifyIORef size (+ 1)
 			s <- readIORef size
-			uncurry (gdkWindowResize w)
-				$ case s `mod` 8 of
-					0 -> (100, 100)
-					1 -> (500, 100)
-					2 -> (900, 100)
-					3 -> (900, 300)
-					4 -> (900, 500)
-					5 -> (500, 500)
-					6 -> (100, 500)
-					7 -> (100, 300)
-					_ -> error "never occur"
+			uncurry (gdkWindowResize w) $ case s `mod` 8 of
+				0 -> (100, 100)
+				1 -> (500, 100)
+				2 -> (900, 100)
+				3 -> (900, 300)
+				4 -> (900, 500)
+				5 -> (500, 500)
+				6 -> (100, 500)
+				7 -> (100, 300)
+				_ -> error "never occur"
+		when (kv == fromIntegral (ord 'v')) $ do
+			modifyIORef scrl (+ 1)
+			s <- readIORef scrl
+			print =<< readIORef scrl
+			uncurry (gdkWindowScroll w) $ case s `div` 16 `mod` 4 of
+				0 -> (4, 0)
+				1 -> (0, 4)
+				2 -> (- 4, 0)
+				3 -> (0, - 4)
+				_ -> error "never occur"
 		when (kv == fromIntegral (ord 'p')) $ do
 			putStrLn . ("Window size: " ++) . show =<< gdkWindowGetPosition w
 		when (kv == fromIntegral (ord 's')) $ do

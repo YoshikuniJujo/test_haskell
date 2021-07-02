@@ -43,7 +43,7 @@ Function
 * [x] `gdk_window_move`
 * [x] `gdk_window_resize`
 * [x] `gdk_window_move_resize`
-* [ ] `gdk_window_scroll`
+* [x] `gdk_window_scroll`
 * [ ] `gdk_window_freeze_updates`
 * [ ] `gdk_window_thaw_updates`
 * [ ] `gdk_window_invalidate_rect`
