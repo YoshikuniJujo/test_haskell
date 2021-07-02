@@ -31,7 +31,7 @@ import Graphics.Gdk.Values
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Regions
 import Graphics.Cairo.Drawing.Paths
-import Graphics.Cairo.Types
+import Graphics.Cairo.Utilities.Types
 
 import Data.Bool
 

@@ -74,7 +74,7 @@ import Graphics.Gdk.Types
 import Graphics.Gdk.Values
 import Graphics.Gdk.EventStructures
 
-import Graphics.Cairo.Types
+import Graphics.Cairo.Drawing.Regions
 
 #include <gdk/gdk.h>
 

@@ -12,7 +12,7 @@ import System.GLib.Bool
 import Data.CairoContext
 import {-# SOURCE #-} Graphics.Gdk.Windows
 
-import Graphics.Cairo.Types
+import Graphics.Cairo.Drawing.Regions
 
 #include <gdk/gdk.h>
 
