@@ -132,7 +132,7 @@ main = do
 			gdkInputOutput GdkWindowToplevel
 	putStrLn "*** GDK WINDOW NEW ***"
 	w <- gdkWindowNew Nothing wattr { gdkWindowAttrTitle = Just "試験窓" }
-	print =<< gdkWindowGetVisibleRegion w
+	printVisibleRegion w
 	print =<< gdkWindowGetWindowType w
 	print =<< gdkWindowGetWindowType =<< gdkWindowGetParent w
 	printVisual =<< gdkWindowGetVisual w
@@ -150,6 +150,7 @@ main = do
 	putStrLn . ("Window is shaped: " ++) . show =<< gdkWindowIsShaped w
 	putStrLn . ("Window state: " ++) . show . gdkWindowStateList =<< gdkWindowGetState w
 	gdkWindowShow w
+	printVisibleRegion w
 	if "--startup-notify" `elem` as' then gdkNotifyStartupComplete else pure ()
 	gdkWindowSetOpacity w 0.5
 	putStrLn . ("Window is visible: " ++) . show =<< gdkWindowIsVisible w
@@ -379,3 +380,12 @@ printVisual v = do
 	putStrLn $ "Green pixel details of visual: " ++ show gr
 	bl <- gdkVisualGetBluePixelDetails v
 	putStrLn $ "Blue pixel details of visual: " ++ show bl
+
+printVisibleRegion :: GdkWindow -> IO ()
+printVisibleRegion w = do
+	vr <- gdkWindowGetVisibleRegion w
+	print vr
+	print =<< cairoRegionNumRectangles vr
+	vrrp <- cairoRectangleIntTNew
+	cairoRegionGetRectangle vr 0 vrrp
+	print =<< cairoRectangleIntTFreeze vrrp

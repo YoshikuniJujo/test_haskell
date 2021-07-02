@@ -190,4 +190,4 @@ todo
 * [x] process NULL in `gdk_window_get_cursor`
 * [x] give an argument `s` to `GdkDrawingContext`
 * [x] move `GdkDrawingContext s` to module `Graphics.Gdk.GdkDrawingContext`
-* [ ] get contents of CairoRegionT
+* [x] get contents of CairoRegionT
