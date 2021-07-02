@@ -43,7 +43,6 @@ Function
 * [x] `gdk_window_move`
 * [x] `gdk_window_resize`
 * [x] `gdk_window_move_resize`
-* [x] `gdk_window_scroll`
 * [ ] `gdk_window_freeze_updates`
 * [ ] `gdk_window_thaw_updates`
 * [ ] `gdk_window_invalidate_rect`
@@ -63,6 +62,7 @@ Function
 ### not now
 
 * `gdk_window_fullscreen_on_monitor`
+* `gdk_window_scroll`
 * `gdk_window_move_to_rect`
 * `gdk_window_move_region`
 * `gdk_window_has_native`
