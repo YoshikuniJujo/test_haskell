@@ -65,6 +65,7 @@ import {-# SOURCE #-} Graphics.Gdk.GdkScreen
 import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.PointsAndRectangles
 import Graphics.Gdk.Visuals
+import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.Cursors
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Types

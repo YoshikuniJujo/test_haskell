@@ -15,8 +15,6 @@ data GdkWindowNeedUnref
 mkGdkWindowAutoUnref :: Ptr GdkWindowNeedUnref -> IO GdkWindowAutoUnref
 mkGdkWindowAutoUnref p = GdkWindowAutoUnref <$> newForeignPtr p (c_g_object_unref p)
 
-newtype GdkDrawingContext s = GdkDrawingContext (Ptr (GdkDrawingContext s)) deriving Show
-
 -- newtype GdkRectangle = GdkRectangle (Ptr GdkRectangle) deriving Show
 
 foreign import ccall "g_object_unref" c_g_object_unref :: Ptr a -> IO ()

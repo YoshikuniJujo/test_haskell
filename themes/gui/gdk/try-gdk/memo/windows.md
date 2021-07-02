@@ -189,4 +189,4 @@ todo
 * [x] use `g_object_ref` at gdkWindowSetCursor
 * [x] process NULL in `gdk_window_get_cursor`
 * [x] give an argument `s` to `GdkDrawingContext`
-* [ ] move `GdkDrawingContext s` to module `Graphics.Gdk.GdkDrawingContext`
+* [x] move `GdkDrawingContext s` to module `Graphics.Gdk.GdkDrawingContext`

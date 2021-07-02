@@ -10,12 +10,13 @@ import Data.Int
 import System.GLib.Bool
 
 import Data.CairoContext
-import Graphics.Gdk.Windows
-import Graphics.Gdk.Types
+import {-# SOURCE #-} Graphics.Gdk.Windows
 
 import Graphics.Cairo.Types
 
 #include <gdk/gdk.h>
+
+newtype GdkDrawingContext s = GdkDrawingContext (Ptr (GdkDrawingContext s)) deriving Show
 
 foreign import ccall "gdk_drawing_context_get_window" c_gdk_drawing_context_get_window ::
 	Ptr (GdkDrawingContext s) -> IO (Ptr GdkWindow)
