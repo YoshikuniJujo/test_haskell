@@ -37,7 +37,7 @@ Function
 * [x] `gdk_window_set_fullscreen_mode`
 * [x] `gdk_window_set_keep_above`
 * [x] `gdk_window_set_keep_below`
-* [ ] `gdk_window_set_opacity`
+* [x] `gdk_window_set_opacity`
 * [ ] `gdk_window_freeze_updates`
 * [ ] `gdk_window_thaw_updates`
 * [ ] `gdk_window_invalidate_rect`

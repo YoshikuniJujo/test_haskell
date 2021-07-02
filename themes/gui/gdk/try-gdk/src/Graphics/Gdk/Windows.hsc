@@ -205,11 +205,8 @@ gdkWindowSetKeepBelow w = c_gdk_window_set_keep_below w . boolToGboolean
 foreign import ccall "gdk_window_set_keep_below"
 	c_gdk_window_set_keep_below :: GdkWindow -> #{type gboolean} -> IO ()
 
-gdkWindowSetOpacity :: GdkWindow -> #{type gdouble} -> IO ()
-gdkWindowSetOpacity (GdkWindow p) o = c_gdk_window_set_opacity p o
-
-foreign import ccall "gdk_window_set_opacity" c_gdk_window_set_opacity ::
-	Ptr GdkWindow -> #{type gdouble} -> IO ()
+foreign import ccall "gdk_window_set_opacity"
+	gdkWindowSetOpacity :: GdkWindow -> CDouble -> IO ()
 
 foreign import ccall "gdk_window_begin_draw_frame" c_gdk_window_begin_draw_frame ::
 	Ptr GdkWindow -> Ptr (CairoRegionT s) -> IO (Ptr GdkDrawingContext)

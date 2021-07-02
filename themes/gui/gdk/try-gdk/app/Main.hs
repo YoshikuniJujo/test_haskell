@@ -1,8 +1,10 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
+import Foreign.C.Types
 import Control.Arrow
 import Control.Monad
 import Control.Concurrent
@@ -11,6 +13,7 @@ import Data.Traversable
 import Data.Maybe
 import Data.List
 import Data.Char
+import Data.IORef
 import System.Environment
 import Graphics.Gdk.General
 import Graphics.Gdk.GdkDisplayManager
@@ -36,6 +39,7 @@ import Data.Color
 
 main :: IO ()
 main = do
+	opacity <- newIORef 1.0
 	pn <- getProgName
 	as <- getArgs
 	gdkSetAllowedBackends "win32,x11,*"
@@ -167,7 +171,7 @@ main = do
 		threadDelay 100000
 		doWhile $ gdkEventGet >>= \case
 			Just e -> do
-				b <- checkEvent d st e
+				b <- checkEvent opacity d st e
 				pure if b then Nothing else Just False
 			Nothing -> pure $ Just True
 	gdkWindowDestroy w
@@ -180,8 +184,8 @@ main = do
 	gdkDisplayClose d
 --	print =<< gdkDisplayIsClosed d
 
-checkEvent :: GdkDisplay -> GdkSeat -> GdkEvent -> IO Bool
-checkEvent d st = \case
+checkEvent :: IORef CDouble -> GdkDisplay -> GdkSeat -> GdkEvent -> IO Bool
+checkEvent opacity d st = \case
 	GdkEventGdkNothing n -> do
 		putStrLn $ "GDK_NOTHING: " ++ show n
 		pure True
@@ -251,6 +255,9 @@ checkEvent d st = \case
 			void . forkIO $ do
 				threadDelay 1000000
 				print . gdkWindowStateList =<< gdkWindowGetState w
+		when (kv == fromIntegral (ord 'o')) $ do
+			modifyIORef opacity (snd . properFraction @_ @Int . (+ 0.1))
+			gdkWindowSetOpacity w =<< readIORef opacity
 		when (kv == fromIntegral (ord 'p')) $ do
 			putStrLn . ("Window size: " ++) . show =<< gdkWindowGetPosition w
 		when (kv == fromIntegral (ord 's')) $ do
