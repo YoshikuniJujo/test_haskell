@@ -42,7 +42,7 @@ Function
 * [x] `gdk_window_get_pass_through`
 * [x] `gdk_window_move`
 * [x] `gdk_window_resize`
-* [ ] `gdk_window_move_resize`
+* [x] `gdk_window_move_resize`
 * [ ] `gdk_window_scroll`
 * [ ] `gdk_window_freeze_updates`
 * [ ] `gdk_window_thaw_updates`
