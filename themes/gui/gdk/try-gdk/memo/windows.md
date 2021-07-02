@@ -46,7 +46,6 @@ Function
 * [x] `gdk_window_reparent`
 * [x] `gdk_window_raise`
 * [x] `gdk_window_lower`
-* [ ] `gdk_window_restack`
 * [x] `gdk_window_focus`
 * [ ] `gdk_window_show_window_menu`
 * [ ] `gdk_window_begin_draw_frame`
@@ -108,6 +107,7 @@ Function
 * `gdk_window_move_region`
 * `gdk_window_has_native`
 * `gdk_window_ensure_native`
+* `gdk_window_restack`
 * `gdk_window_register_dnd`
 * `gdk_window_begin_resize_drag`
 * `gdk_window_begin_resize_drag_for_device`
