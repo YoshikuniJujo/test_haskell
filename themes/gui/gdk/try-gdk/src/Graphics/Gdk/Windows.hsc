@@ -24,6 +24,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowMove, gdkWindowResize, gdkWindowMoveResize,
 	gdkWindowReparent,
 	gdkWindowRaise, gdkWindowLower,
+	gdkWindowFocus,
 
 	-- * Not Checked
 	gdkWindowFreezeUpdates, gdkWindowThawUpdates,
@@ -239,6 +240,9 @@ foreign import ccall "gdk_window_reparent"
 
 foreign import ccall "gdk_window_raise" gdkWindowRaise :: GdkWindow -> IO ()
 foreign import ccall "gdk_window_lower" gdkWindowLower :: GdkWindow -> IO ()
+
+foreign import ccall "gdk_window_focus"
+	gdkWindowFocus :: GdkWindow -> Word32 -> IO ()
 
 foreign import ccall "gdk_window_begin_draw_frame" c_gdk_window_begin_draw_frame ::
 	Ptr GdkWindow -> Ptr (CairoRegionT s) -> IO (Ptr GdkDrawingContext)

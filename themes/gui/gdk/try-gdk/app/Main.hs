@@ -289,7 +289,7 @@ checkEvent opacity pos size d st = \case
 				_ -> error "never occur"
 		when (kv == fromIntegral (ord 'v')) $ do
 			gdkWindowLower w
-			void . forkIO $ threadDelay 2000000 >> gdkWindowRaise w
+			void . forkIO $ threadDelay 2000000 >> gdkWindowRaise w >> gdkWindowFocus w 0
 		when (kv == fromIntegral (ord 'p')) $ do
 			putStrLn . ("Window size: " ++) . show =<< gdkWindowGetPosition w
 		when (kv == fromIntegral (ord 's')) $ do
