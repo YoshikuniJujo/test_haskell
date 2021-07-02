@@ -332,14 +332,13 @@ checkEvent opacity pos size d st = \case
 		w <- gdkEventVisibilityWindow v
 		vs <- gdkEventVisibilityState v
 		r <- cairoRegionCreateRectangle $ CairoRectangleIntT 50 50 100 100
-		do
-			gdkWindowWithDrawFrame w r \cxt -> do
-				cr <- gdkDrawingContextGetCairoContext cxt
-				cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.2 0.2
-				cairoSetLineWidth cr 5
-				cairoMoveTo cr 10 10
-				cairoLineTo cr 90 90
-				cairoStroke cr
+		gdkWindowWithDrawFrame w r \cxt -> do
+			cr <- gdkDrawingContextGetCairoContext cxt
+			cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.2 0.2
+			cairoSetLineWidth cr 5
+			cairoMoveTo cr 10 10
+			cairoLineTo cr 90 90
+			cairoStroke cr
 		putStrLn $ "GDK_VISIBILITY_NOTIFY: " ++ show v ++ ": " ++ show vs
 		pure True
 	GdkEventGdkWindowState s -> do

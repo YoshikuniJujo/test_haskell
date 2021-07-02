@@ -47,8 +47,8 @@ Function
 * [x] `gdk_window_raise`
 * [x] `gdk_window_lower`
 * [x] `gdk_window_focus`
-* [ ] `gdk_window_begin_draw_frame`
-* [ ] `gdk_window_end_draw_frame`
+* [x] `gdk_window_begin_draw_frame`
+* [x] `gdk_window_end_draw_frame`
 * [ ] `gdk_window_get_visible_region`
 * [ ] `gdk_window_freeze_updates`
 * [ ] `gdk_window_thaw_updates`

@@ -246,18 +246,18 @@ foreign import ccall "gdk_window_lower" gdkWindowLower :: GdkWindow -> IO ()
 foreign import ccall "gdk_window_focus"
 	gdkWindowFocus :: GdkWindow -> Word32 -> IO ()
 
-foreign import ccall "gdk_window_begin_draw_frame" c_gdk_window_begin_draw_frame ::
-	Ptr GdkWindow -> Ptr (CairoRegionT s) -> IO (Ptr (GdkDrawingContext s))
+gdkWindowWithDrawFrame :: GdkWindow ->
+	CairoRegionT s -> (forall t . GdkDrawingContext t -> IO a) -> IO a
+gdkWindowWithDrawFrame w (CairoRegionT fr) act = withForeignPtr fr \r -> bracket
+	(c_gdk_window_begin_draw_frame w r) (c_gdk_window_end_draw_frame w) act
 
-foreign import ccall "gdk_window_end_draw_frame" c_gdk_window_end_draw_frame ::
-	Ptr GdkWindow -> Ptr (GdkDrawingContext s) -> IO ()
+foreign import ccall "gdk_window_begin_draw_frame"
+	c_gdk_window_begin_draw_frame ::
+		GdkWindow -> Ptr (CairoRegionT s) -> IO (GdkDrawingContext s)
 
-gdkWindowWithDrawFrame :: GdkWindow -> CairoRegionT s -> (forall s' . GdkDrawingContext s' -> IO a) -> IO a
-gdkWindowWithDrawFrame (GdkWindow w) (CairoRegionT fr) act = withForeignPtr fr \r -> bracket
-	(c_gdk_window_begin_draw_frame w r) (c_gdk_window_end_draw_frame w) $ (. GdkDrawingContext) act
-
-foreign import ccall "gdk_window_invalidate_rect" c_gdk_window_invalidate_rect ::
-	Ptr GdkWindow -> Ptr GdkRectangle -> #{type gboolean} -> IO ()
+foreign import ccall "gdk_window_end_draw_frame"
+	c_gdk_window_end_draw_frame ::
+		GdkWindow -> GdkDrawingContext s -> IO ()
 
 gdkWindowInvalidateRect :: GdkWindow -> (#{type int}, #{type int}) -> (#{type int}, #{type int}) -> Bool -> IO ()
 gdkWindowInvalidateRect (GdkWindow win) (x, y) (w, h) b = allocaBytes #{size GdkRectangle} \p -> do
@@ -266,6 +266,10 @@ gdkWindowInvalidateRect (GdkWindow win) (x, y) (w, h) b = allocaBytes #{size Gdk
 	#{poke GdkRectangle, width} p w
 	#{poke GdkRectangle, height} p h
 	c_gdk_window_invalidate_rect win p $ boolToGboolean b
+
+foreign import ccall "gdk_window_invalidate_rect"
+	c_gdk_window_invalidate_rect ::
+		Ptr GdkWindow -> Ptr GdkRectangle -> #{type gboolean} -> IO ()
 
 foreign import ccall "gdk_window_freeze_updates" c_gdk_window_freeze_updates :: Ptr GdkWindow -> IO ()
 
