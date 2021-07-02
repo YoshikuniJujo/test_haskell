@@ -29,7 +29,7 @@ module Graphics.Gdk.Windows (
 
 	-- * Not Checked
 	gdkWindowFreezeUpdates, gdkWindowThawUpdates,
-	gdkWindowWithDrawFrame, gdkWindowInvalidateRect, gdkWindowSetEvents,
+	gdkWindowWithDrawFrame, gdkWindowSetEvents,
 
 	gdkWindowSetTitle, c_gdk_window_set_title, gdkWindowSetCursor, gdkWindowGetCursor,
 	gdkWindowGetWidth, gdkWindowGetHeight, gdkWindowGetPosition,
@@ -63,7 +63,6 @@ import System.GLib.Bool
 import {-# SOURCE #-} Graphics.Gdk.GdkDisplay
 import {-# SOURCE #-} Graphics.Gdk.GdkScreen
 import Graphics.Gdk.GdkDevice
-import Graphics.Gdk.PointsAndRectangles
 import Graphics.Gdk.Visuals
 import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.Cursors
@@ -258,18 +257,6 @@ foreign import ccall "gdk_window_begin_draw_frame"
 foreign import ccall "gdk_window_end_draw_frame"
 	c_gdk_window_end_draw_frame ::
 		GdkWindow -> GdkDrawingContext s -> IO ()
-
-gdkWindowInvalidateRect :: GdkWindow -> (#{type int}, #{type int}) -> (#{type int}, #{type int}) -> Bool -> IO ()
-gdkWindowInvalidateRect (GdkWindow win) (x, y) (w, h) b = allocaBytes #{size GdkRectangle} \p -> do
-	#{poke GdkRectangle, x} p x
-	#{poke GdkRectangle, y} p y
-	#{poke GdkRectangle, width} p w
-	#{poke GdkRectangle, height} p h
-	c_gdk_window_invalidate_rect win p $ boolToGboolean b
-
-foreign import ccall "gdk_window_invalidate_rect"
-	c_gdk_window_invalidate_rect ::
-		Ptr GdkWindow -> Ptr GdkRectangle -> #{type gboolean} -> IO ()
 
 foreign import ccall "gdk_window_freeze_updates" c_gdk_window_freeze_updates :: Ptr GdkWindow -> IO ()
 

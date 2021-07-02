@@ -159,7 +159,6 @@ main = do
 		gdkPointerMotionMask, gdkAllEventsMask ]
 	print gdkExposureMask
 	print gdkPointerMotionMask
-	gdkWindowInvalidateRect w (50, 50) (100, 100) False
 --	gdkWindowFreezeUpdates w
 --	gdkWindowThawUpdates w
 	putStrLn "gdkScreenGetTopLevelWindows #2"

@@ -121,7 +121,7 @@ Function
 * `gdk_window_mark_paint_from_clip`
 * `gdk_window_get_clip_region`
 * `gdk_window_set_invalidate_handler`
-* [ ] `gdk_window_invalidate_rect`
+* [x] `gdk_window_invalidate_rect`
 	+ remove it
 * `gdk_window_invalidate_region`
 * `gdk_window_invalidate_maybe_recurse`
