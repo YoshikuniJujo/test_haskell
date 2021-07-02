@@ -49,7 +49,7 @@ Function
 * [x] `gdk_window_focus`
 * [x] `gdk_window_begin_draw_frame`
 * [x] `gdk_window_end_draw_frame`
-* [ ] `gdk_window_get_visible_region`
+* [x] `gdk_window_get_visible_region`
 * [ ] `gdk_window_freeze_updates`
 * [ ] `gdk_window_thaw_updates`
 * [ ] `gdk_window_set_override_redirect`
@@ -190,3 +190,4 @@ todo
 * [x] process NULL in `gdk_window_get_cursor`
 * [x] give an argument `s` to `GdkDrawingContext`
 * [x] move `GdkDrawingContext s` to module `Graphics.Gdk.GdkDrawingContext`
+* [ ] get contents of CairoRegionT

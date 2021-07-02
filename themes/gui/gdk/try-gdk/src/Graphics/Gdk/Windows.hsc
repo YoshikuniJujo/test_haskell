@@ -26,10 +26,12 @@ module Graphics.Gdk.Windows (
 	gdkWindowReparent,
 	gdkWindowRaise, gdkWindowLower,
 	gdkWindowFocus,
+	gdkWindowWithDrawFrame,
+	gdkWindowGetVisibleRegion,
 
 	-- * Not Checked
 	gdkWindowFreezeUpdates, gdkWindowThawUpdates,
-	gdkWindowWithDrawFrame, gdkWindowSetEvents,
+	gdkWindowSetEvents,
 
 	gdkWindowSetTitle, c_gdk_window_set_title, gdkWindowSetCursor, gdkWindowGetCursor,
 	gdkWindowGetWidth, gdkWindowGetHeight, gdkWindowGetPosition,
@@ -55,6 +57,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C
 import Foreign.C.Enum
+import Control.Monad.ST
 import Control.Exception
 import Data.Word
 import Data.Int
@@ -257,6 +260,15 @@ foreign import ccall "gdk_window_begin_draw_frame"
 foreign import ccall "gdk_window_end_draw_frame"
 	c_gdk_window_end_draw_frame ::
 		GdkWindow -> GdkDrawingContext s -> IO ()
+
+gdkWindowGetVisibleRegion :: GdkWindow -> IO (CairoRegionT RealWorld)
+gdkWindowGetVisibleRegion w = CairoRegionT <$> do
+	pr <- c_gdk_window_get_visible_region w
+	newForeignPtr pr $ c_cairo_region_destroy pr
+
+foreign import ccall "gdk_window_get_visible_region"
+	c_gdk_window_get_visible_region ::
+		GdkWindow -> IO (Ptr (CairoRegionT s))
 
 foreign import ccall "gdk_window_freeze_updates" c_gdk_window_freeze_updates :: Ptr GdkWindow -> IO ()
 

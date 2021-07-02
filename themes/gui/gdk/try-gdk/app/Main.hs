@@ -132,6 +132,7 @@ main = do
 			gdkInputOutput GdkWindowToplevel
 	putStrLn "*** GDK WINDOW NEW ***"
 	w <- gdkWindowNew Nothing wattr { gdkWindowAttrTitle = Just "試験窓" }
+	print =<< gdkWindowGetVisibleRegion w
 	print =<< gdkWindowGetWindowType w
 	print =<< gdkWindowGetWindowType =<< gdkWindowGetParent w
 	printVisual =<< gdkWindowGetVisual w
