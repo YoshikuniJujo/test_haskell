@@ -38,6 +38,8 @@ Function
 * [x] `gdk_window_set_keep_above`
 * [x] `gdk_window_set_keep_below`
 * [x] `gdk_window_set_opacity`
+* [x] `gdk_window_set_pass_through`
+* [x] `gdk_window_get_pass_through`
 * [ ] `gdk_window_freeze_updates`
 * [ ] `gdk_window_thaw_updates`
 * [ ] `gdk_window_invalidate_rect`
@@ -57,8 +59,6 @@ Function
 ### not now
 
 * `gdk_window_fullscreen_on_monitor`
-* `gdk_window_set_pass_through`
-* `gdk_window_get_pass_through`
 * `gdk_window_move`
 * `gdk_window_resize`
 * `gdk_window_move_resize`
