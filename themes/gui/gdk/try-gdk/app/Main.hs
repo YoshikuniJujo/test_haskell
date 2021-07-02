@@ -256,8 +256,9 @@ checkEvent opacity d st = \case
 				threadDelay 1000000
 				print . gdkWindowStateList =<< gdkWindowGetState w
 		when (kv == fromIntegral (ord 'o')) $ do
-			modifyIORef opacity (snd . properFraction @_ @Int . (+ 0.1))
+			modifyIORef opacity (snd . properFraction @_ @Int . (+ 0.0625))
 			gdkWindowSetOpacity w =<< readIORef opacity
+			print =<< readIORef opacity
 		when (kv == fromIntegral (ord 'p')) $ do
 			putStrLn . ("Window size: " ++) . show =<< gdkWindowGetPosition w
 		when (kv == fromIntegral (ord 's')) $ do
