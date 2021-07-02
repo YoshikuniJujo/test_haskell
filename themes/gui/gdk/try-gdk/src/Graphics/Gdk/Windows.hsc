@@ -22,6 +22,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowSetOpacity,
 	gdkWindowSetPassThrough, gdkWindowGetPassThrough,
 	gdkWindowMove, gdkWindowResize, gdkWindowMoveResize,
+	gdkWindowReparent,
 
 	-- * Not Checked
 	gdkWindowFreezeUpdates, gdkWindowThawUpdates,
@@ -231,6 +232,9 @@ foreign import ccall "gdk_window_resize"
 foreign import ccall "gdk_window_move_resize"
 	gdkWindowMoveResize ::
 	GdkWindow -> CInt -> CInt -> CInt -> CInt -> IO ()
+
+foreign import ccall "gdk_window_reparent"
+	gdkWindowReparent :: GdkWindow -> GdkWindow -> CInt -> CInt -> IO ()
 
 foreign import ccall "gdk_window_begin_draw_frame" c_gdk_window_begin_draw_frame ::
 	Ptr GdkWindow -> Ptr (CairoRegionT s) -> IO (Ptr GdkDrawingContext)

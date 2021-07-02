@@ -43,7 +43,7 @@ Function
 * [x] `gdk_window_move`
 * [x] `gdk_window_resize`
 * [x] `gdk_window_move_resize`
-* [ ] `gdk_window_reparent`
+* [x] `gdk_window_reparent`
 * [ ] `gdk_window_raise`
 * [ ] `gdk_window_lower`
 * [ ] `gdk_window_restack`
