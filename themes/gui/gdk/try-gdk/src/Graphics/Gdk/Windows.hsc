@@ -21,6 +21,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowSetKeepAbove, gdkWindowSetKeepBelow,
 	gdkWindowSetOpacity,
 	gdkWindowSetPassThrough, gdkWindowGetPassThrough,
+	gdkWindowMove,
 
 	-- * Not Checked
 	gdkWindowFreezeUpdates, gdkWindowThawUpdates,
@@ -220,6 +221,9 @@ gdkWindowGetPassThrough w = gbooleanToBool <$> c_gdk_window_get_pass_through w
 
 foreign import ccall "gdk_window_get_pass_through"
 	c_gdk_window_get_pass_through :: GdkWindow -> IO #{type gboolean}
+
+foreign import ccall "gdk_window_move"
+	gdkWindowMove :: GdkWindow -> CInt -> CInt -> IO ()
 
 foreign import ccall "gdk_window_begin_draw_frame" c_gdk_window_begin_draw_frame ::
 	Ptr GdkWindow -> Ptr (CairoRegionT s) -> IO (Ptr GdkDrawingContext)
