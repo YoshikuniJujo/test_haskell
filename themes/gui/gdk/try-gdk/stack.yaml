@@ -41,7 +41,7 @@ packages:
 #
 extra-deps:
 - git: https://github.com/YoshikuniJujo/simple-cairo
-  commit: a9f00ae79d0f4cb89e8fab4a0649244584d254a1
+  commit: 14a7a00d259b0b92aa076e8bd1f2f25c563e737e
 - git: https://github.com/YoshikuniJujo/cairo-image
   commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
 - git: https://github.com/YoshikuniJujo/glib-stopgap

@@ -96,6 +96,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-gdk
+  try-cairo-tribial:
+    main:                try-cairo-tribial.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-gdk
 
 tests:
   try-gdk-test:
