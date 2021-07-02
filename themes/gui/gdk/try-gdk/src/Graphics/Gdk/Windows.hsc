@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -245,12 +246,12 @@ foreign import ccall "gdk_window_focus"
 	gdkWindowFocus :: GdkWindow -> Word32 -> IO ()
 
 foreign import ccall "gdk_window_begin_draw_frame" c_gdk_window_begin_draw_frame ::
-	Ptr GdkWindow -> Ptr (CairoRegionT s) -> IO (Ptr GdkDrawingContext)
+	Ptr GdkWindow -> Ptr (CairoRegionT s) -> IO (Ptr (GdkDrawingContext s))
 
 foreign import ccall "gdk_window_end_draw_frame" c_gdk_window_end_draw_frame ::
-	Ptr GdkWindow -> Ptr GdkDrawingContext -> IO ()
+	Ptr GdkWindow -> Ptr (GdkDrawingContext s) -> IO ()
 
-gdkWindowWithDrawFrame :: GdkWindow -> CairoRegionT s -> (GdkDrawingContext -> IO a) -> IO a
+gdkWindowWithDrawFrame :: GdkWindow -> CairoRegionT s -> (forall s' . GdkDrawingContext s' -> IO a) -> IO a
 gdkWindowWithDrawFrame (GdkWindow w) (CairoRegionT fr) act = withForeignPtr fr \r -> bracket
 	(c_gdk_window_begin_draw_frame w r) (c_gdk_window_end_draw_frame w) $ (. GdkDrawingContext) act
 

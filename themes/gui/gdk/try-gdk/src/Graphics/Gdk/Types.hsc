@@ -6,8 +6,6 @@ module Graphics.Gdk.Types where
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr, addForeignPtrFinalizer)
 import Foreign.Concurrent
-import Foreign.Marshal
-import Foreign.C
 
 #include <gdk/gdk.h>
 
@@ -17,7 +15,7 @@ data GdkWindowNeedUnref
 mkGdkWindowAutoUnref :: Ptr GdkWindowNeedUnref -> IO GdkWindowAutoUnref
 mkGdkWindowAutoUnref p = GdkWindowAutoUnref <$> newForeignPtr p (c_g_object_unref p)
 
-newtype GdkDrawingContext = GdkDrawingContext (Ptr GdkDrawingContext) deriving Show
+newtype GdkDrawingContext s = GdkDrawingContext (Ptr (GdkDrawingContext s)) deriving Show
 
 -- newtype GdkRectangle = GdkRectangle (Ptr GdkRectangle) deriving Show
 
