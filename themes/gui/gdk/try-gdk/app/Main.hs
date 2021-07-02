@@ -4,8 +4,6 @@
 
 module Main where
 
-import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.C.Types
 import Control.Arrow
 import Control.Monad
@@ -196,7 +194,7 @@ checkEvent opacity pos size d st = \case
 	GdkEventGdkDelete dl -> do
 		putStrLn $ "GDK_DELETE: " ++ show dl
 		pure False
-	GdkEventGdkKeyPress k@(GdkEventKey fek) -> do
+	GdkEventGdkKeyPress k -> do
 		w <- gdkEventKeyWindow k
 		kv <- gdkEventKeyKeyval k
 		putStrLn $ "GDK_KEY_PRESS: " ++ show k ++ ": " ++ show kv
@@ -292,9 +290,6 @@ checkEvent opacity pos size d st = \case
 		when (kv == fromIntegral (ord 'v')) $ do
 			gdkWindowLower w
 			void . forkIO $ threadDelay 2000000 >> gdkWindowRaise w >> gdkWindowFocus w 0
-		when (kv == fromIntegral (ord 'x')) $ do
-			withForeignPtr fek $ c_gdk_window_show_window_menu w . castPtr
-			pure ()
 		when (kv == fromIntegral (ord 'p')) $ do
 			putStrLn . ("Window size: " ++) . show =<< gdkWindowGetPosition w
 		when (kv == fromIntegral (ord 's')) $ do

@@ -47,7 +47,6 @@ Function
 * [x] `gdk_window_raise`
 * [x] `gdk_window_lower`
 * [x] `gdk_window_focus`
-* [ ] `gdk_window_show_window_menu`
 * [ ] `gdk_window_begin_draw_frame`
 * [ ] `gdk_window_end_draw_frame`
 * [ ] `gdk_window_get_visible_region`
@@ -113,6 +112,9 @@ Function
 * `gdk_window_begin_resize_drag_for_device`
 * `gdk_window_begin_move_drag`
 * `gdk_window_begin_move_drag_for_device`
+* `gdk_window_show_window_menu`
+* `gdk_window_constraint_size`
+* `gdk_window_beep`
 * `gdk_window_get_scale_factor`
 * `gdk_window_set_opaque_region`
 * `gdk_window_create_gl_context`
@@ -174,8 +176,6 @@ Function
 * `gdk_window_set_background_pattern`
 * `gdk_window_get_background_pattern`
 * `gdk_window_get_pointer`
-* `gdk_window_constraint_size`
-* `gdk_window_beep`
 
 todo
 ----
