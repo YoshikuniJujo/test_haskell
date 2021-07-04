@@ -96,6 +96,8 @@ API Reference contents
 todo new
 --------
 
+* [x] use c-enum in `GdkEventType`
+* [ ] try `GDK_MAP`
 * [ ] move `Pointerable` to `glib-stopgap`
 
 todo old

@@ -30,9 +30,9 @@ import Data.Maybe
 
 main :: IO ()
 main = do
-	print gdkKeyPress
-	print gdkEnterNotify
-	print gdkLeaveNotify
+	print GdkKeyPress
+	print GdkEnterNotify
+	print GdkLeaveNotify
 	print =<< join (gdkInit <$> getProgName <*> getArgs)
 	w <- gdkWindowNew Nothing defaultGdkWindowAttr
 	d <- gdkWindowGetDisplay w
