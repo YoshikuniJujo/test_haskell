@@ -267,6 +267,9 @@ gdkEventVisibilityWindow (GdkEventVisibility p) =
 --	GdkWindow <$> (c_g_object_ref =<< withForeignPtr p #peek GdkEventVisibility, window)
 	GdkWindow <$> withForeignPtr p #peek GdkEventVisibility, window
 
+gdkEventAnyWindow :: GdkEventAny -> IO GdkWindow
+gdkEventAnyWindow (GdkEventAny _ p) = GdkWindow <$> withForeignPtr p #peek GdkEventAny, window
+
 foreign import ccall "g_object_ref" c_g_object_ref :: Ptr a -> IO (Ptr a)
 
 gdkEventVisibilityState :: GdkEventVisibility -> IO GdkVisibilityState
