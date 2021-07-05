@@ -25,6 +25,8 @@ API Reference contents
 
 ### not now
 
+#### items
+
 * GdkDevicePad			TINY
 * Pixbufs			TINY
 * RGBA Colors			TINY
@@ -41,6 +43,12 @@ API Reference contents
 * Wayland Interaction		TRIBIAL
 * Application launching		SMALL
 * Testing			TINY
+
+#### maybe other packages
+
+* simple-gdk3-axes
+* simple-gdk3-clipboard (selections)
+* simple-gdk3-property
 
 ### all
 
@@ -97,7 +105,9 @@ todo new
 --------
 
 * [x] use c-enum in `GdkEventType`
-* [ ] try `GDK_MAP`
+* [x] try `GDK_MAP`
+* [x] draw when `GDK_CONFIGURE`
+* [ ] draw when `GDK_FOCUS_CHANGE`
 * [ ] move `Pointerable` to `glib-stopgap`
 
 todo old

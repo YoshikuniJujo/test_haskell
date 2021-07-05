@@ -66,6 +66,7 @@ checkEvent = \case
 		putStrLn $ "GDK_CONFIGURE: " ++ show c ++ ": (" ++
 			show x ++ ", " ++ show y ++ ") (" ++
 			show w ++ ", " ++ show h ++ ")"
+		drawRedLine =<< gdkEventConfigureWindow c
 		pure True
 	GdkEventGdkWindowState s -> do
 		ns <- gdkEventWindowStateNewWindowState s
