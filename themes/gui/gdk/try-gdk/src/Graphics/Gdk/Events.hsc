@@ -243,13 +243,13 @@ gdkEventWindowStateNewWindowState :: GdkEventWindowState -> IO GdkWindowState
 gdkEventWindowStateNewWindowState (GdkEventWindowState p) =
 	GdkWindowState <$> withForeignPtr p #peek GdkEventWindowState, new_window_state
 
-data GdkEventAny = GdkEventAny #{type GdkEventType} (ForeignPtr GdkEventAny) deriving Show
+data GdkEventAny = GdkEventAny GdkEventType (ForeignPtr GdkEventAny) deriving Show
 
 pattern GdkEventGdkMap :: GdkEventAny -> GdkEvent
-pattern GdkEventGdkMap p <- GdkEvent (GdkEventType #const GDK_MAP) (GdkEventAny #{const GDK_MAP} . castForeignPtr -> p)
+pattern GdkEventGdkMap p <- GdkEvent t@(GdkEventType #const GDK_MAP) (GdkEventAny t . castForeignPtr -> p)
 
 pattern GdkEventGdkUnmap :: GdkEventAny -> GdkEvent
-pattern GdkEventGdkUnmap p <- GdkEvent (GdkEventType #const GDK_UNMAP) (GdkEventAny #{const GDK_UNMAP} . castForeignPtr -> p)
+pattern GdkEventGdkUnmap p <- GdkEvent t@(GdkEventType #const GDK_UNMAP) (GdkEventAny t . castForeignPtr -> p)
 
 newtype GdkEventVisibility = GdkEventVisibility (ForeignPtr GdkEventVisibility) deriving Show
 
@@ -273,10 +273,10 @@ gdkEventVisibilityState :: GdkEventVisibility -> IO GdkVisibilityState
 gdkEventVisibilityState (GdkEventVisibility p) = GdkVisibilityState <$> withForeignPtr p #peek GdkEventVisibility, state
 
 pattern GdkEventGdkDelete :: GdkEventAny -> GdkEvent
-pattern GdkEventGdkDelete p <- GdkEvent (GdkEventType #const GDK_DELETE) (GdkEventAny #{const GDK_DELETE} . castForeignPtr -> p)
+pattern GdkEventGdkDelete p <- GdkEvent t@(GdkEventType #const GDK_DELETE) (GdkEventAny t . castForeignPtr -> p)
 
 pattern GdkEventGdkNothing :: GdkEventAny -> GdkEvent
-pattern GdkEventGdkNothing p <- GdkEvent (GdkEventType (#const GDK_NOTHING)) (GdkEventAny (#const GDK_NOTHING) . castForeignPtr -> p)
+pattern GdkEventGdkNothing p <- GdkEvent t@(GdkEventType (#const GDK_NOTHING)) (GdkEventAny t . castForeignPtr -> p)
 -- pattern GdkEventGdkNothing p <- GdkEvent (GdkEventType (#const GDK_NOTHING)) (GdkEventAny . castForeignPtr -> p)
 
 newtype GdkEventKey = GdkEventKey (ForeignPtr GdkEventKey) deriving Show
