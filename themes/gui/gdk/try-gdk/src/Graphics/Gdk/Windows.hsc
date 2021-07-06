@@ -33,7 +33,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowGetGeometry,
 	gdkWindowGetWidth, gdkWindowGetHeight,
 	gdkWindowSetModalHint, gdkWindowGetModalHint,
-	gdkWindowSetTypeHint,
+	gdkWindowSetTypeHint, gdkWindowGetTypeHint,
 
 	-- * Not Checked
 	gdkWindowSetEvents,
@@ -350,6 +350,9 @@ enum "GdkWindowTypeHint" ''#{type GdkWindowTypeHint} [''Show, ''Read] [
 
 foreign import ccall "gdk_window_set_type_hint"
 	gdkWindowSetTypeHint :: GdkWindow -> GdkWindowTypeHint -> IO ()
+
+foreign import ccall "gdk_window_get_type_hint"
+	gdkWindowGetTypeHint :: GdkWindow -> IO GdkWindowTypeHint
 
 gdkWindowGetModalHint :: GdkWindow -> IO Bool
 gdkWindowGetModalHint w = gbooleanToBool <$> c_gdk_window_get_modal_hint w

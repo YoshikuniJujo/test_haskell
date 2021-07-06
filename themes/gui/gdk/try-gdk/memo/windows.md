@@ -59,8 +59,7 @@ Function
 * [x] `gdk_window_set_modal_hint`
 * [x] `gdk_window_get_modal_hint`
 * [x] `gdk_window_set_type_hint`
-* [ ] `gdk_window_get_type_hint`
-* [ ] `gdk_window_set_shadow_width`
+* [x] `gdk_window_get_type_hint`
 * [ ] `gdk_window_set_skip_taskbar_hint`
 * [ ] `gdk_window_set_skip_pager_hint`
 * [ ] `gdk_window_set_urgency_hint`
@@ -145,6 +144,7 @@ Function
 * `gdk_window_get_user_data`
 * `gdk_window_set_geometry_hints`
 * `gdk_window_set_icon_list`
+* `gdk_window_set_shadow_width`
 * `gdk_window_get_device_position`
 * `gdk_window_get_device_posittion_double`
 * `gdk_window_get_children_with_user_data`
