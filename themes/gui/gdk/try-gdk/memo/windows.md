@@ -51,7 +51,7 @@ Function
 * [x] `gdk_window_end_draw_frame`
 * [x] `gdk_window_get_visible_region`
 * [x] `gdk_window_set_title`
-* [ ] `gdk_window_set_cursor`
+* [x] `gdk_window_set_cursor`
 * [ ] `gdk_window_get_cursor`
 * [ ] `gdk_window_get_geometry`
 * [ ] `gdk_window_get_width`

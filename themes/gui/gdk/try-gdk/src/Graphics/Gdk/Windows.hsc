@@ -29,11 +29,11 @@ module Graphics.Gdk.Windows (
 	gdkWindowWithDrawFrame,
 	gdkWindowGetVisibleRegion,
 	gdkWindowSetTitle,
+	gdkWindowSetCursor, gdkWindowGetCursor,
 
 	-- * Not Checked
 	gdkWindowSetEvents,
 
-	gdkWindowSetCursor, gdkWindowGetCursor,
 	gdkWindowGetWidth, gdkWindowGetHeight, gdkWindowGetPosition,
 
 	gdkWindowGetParent, gdkWindowGetDecorations, gdkGetDefaultRootWindow,
@@ -283,13 +283,11 @@ foreign import ccall "gdk_window_set_events" c_gdk_window_set_events :: Ptr GdkW
 
 gdkWindowSetCursor :: GdkWindow -> GdkCursor -> IO ()
 gdkWindowSetCursor w (GdkCursor fc) = do
-	po <- c_gdk_window_get_cursor' w
-	whenMaybe c_g_object_unref po
-	withForeignPtr fc \c -> do
-		c_g_object_ref c
-		c_gdk_window_set_cursor w c
+	whenMaybe c_g_object_unref =<< c_gdk_window_get_cursor' w
+	withForeignPtr fc \c -> c_g_object_ref c >> c_gdk_window_set_cursor w c
 
-foreign import ccall "gdk_window_set_cursor" c_gdk_window_set_cursor :: GdkWindow -> Ptr GdkCursor -> IO ()
+foreign import ccall "gdk_window_set_cursor"
+	c_gdk_window_set_cursor :: GdkWindow -> Ptr GdkCursor -> IO ()
 
 gdkWindowGetCursor :: GdkWindow -> IO (Maybe GdkCursor)
 gdkWindowGetCursor w = do
