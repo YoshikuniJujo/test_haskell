@@ -50,7 +50,7 @@ Function
 * [x] `gdk_window_begin_draw_frame`
 * [x] `gdk_window_end_draw_frame`
 * [x] `gdk_window_get_visible_region`
-* [ ] `gdk_window_set_title`
+* [x] `gdk_window_set_title`
 * [ ] `gdk_window_set_cursor`
 * [ ] `gdk_window_get_cursor`
 * [ ] `gdk_window_get_geometry`

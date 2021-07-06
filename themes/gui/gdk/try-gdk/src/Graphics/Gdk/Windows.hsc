@@ -28,11 +28,12 @@ module Graphics.Gdk.Windows (
 	gdkWindowFocus,
 	gdkWindowWithDrawFrame,
 	gdkWindowGetVisibleRegion,
+	gdkWindowSetTitle,
 
 	-- * Not Checked
 	gdkWindowSetEvents,
 
-	gdkWindowSetTitle, c_gdk_window_set_title, gdkWindowSetCursor, gdkWindowGetCursor,
+	gdkWindowSetCursor, gdkWindowGetCursor,
 	gdkWindowGetWidth, gdkWindowGetHeight, gdkWindowGetPosition,
 
 	gdkWindowGetParent, gdkWindowGetDecorations, gdkGetDefaultRootWindow,
@@ -269,15 +270,16 @@ foreign import ccall "gdk_window_get_visible_region"
 	c_gdk_window_get_visible_region ::
 		GdkWindow -> IO (Ptr (CairoRegionT s))
 
-foreign import ccall "gdk_window_set_events" c_gdk_window_set_events :: Ptr GdkWindow -> #{type GdkEventMask} -> IO ()
+gdkWindowSetTitle :: GdkWindow -> String -> IO ()
+gdkWindowSetTitle w t = withCString t \ct -> c_gdk_window_set_title w ct
+
+foreign import ccall "gdk_window_set_title"
+	c_gdk_window_set_title :: GdkWindow -> CString -> IO ()
 
 gdkWindowSetEvents :: GdkWindow -> [GdkEventMask] -> IO ()
 gdkWindowSetEvents (GdkWindow p) m = c_gdk_window_set_events p (mergeGdkEventMask m)
 
-gdkWindowSetTitle :: GdkWindow -> String -> IO ()
-gdkWindowSetTitle w ttl = withCString ttl \cttl -> c_gdk_window_set_title w cttl
-
-foreign import ccall "gdk_window_set_title" c_gdk_window_set_title :: GdkWindow -> CString -> IO ()
+foreign import ccall "gdk_window_set_events" c_gdk_window_set_events :: Ptr GdkWindow -> #{type GdkEventMask} -> IO ()
 
 gdkWindowSetCursor :: GdkWindow -> GdkCursor -> IO ()
 gdkWindowSetCursor w (GdkCursor fc) = do
