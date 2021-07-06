@@ -31,11 +31,12 @@ module Graphics.Gdk.Windows (
 	gdkWindowSetTitle,
 	gdkWindowSetCursor, gdkWindowGetCursor,
 	gdkWindowGetGeometry,
+	gdkWindowGetWidth, gdkWindowGetHeight,
 
 	-- * Not Checked
 	gdkWindowSetEvents,
 
-	gdkWindowGetWidth, gdkWindowGetHeight, gdkWindowGetPosition,
+	gdkWindowGetPosition,
 
 	gdkWindowGetParent, gdkWindowGetDecorations, gdkGetDefaultRootWindow,
 	gdkWindowSetDeviceCursor, gdkWindowSetDeviceEvents, gdkWindowSetSourceEvents,
@@ -306,15 +307,11 @@ foreign import ccall "gdk_window_get_geometry"
 		GdkWindow ->
 		Ptr CInt -> Ptr CInt -> Ptr CInt -> Ptr CInt -> IO ()
 
-gdkWindowGetWidth :: GdkWindow -> IO #type int
-gdkWindowGetWidth (GdkWindow w) = c_gdk_window_get_width w
+foreign import ccall "gdk_window_get_width"
+	gdkWindowGetWidth :: GdkWindow -> IO CInt
 
-foreign import ccall "gdk_window_get_width" c_gdk_window_get_width :: Ptr GdkWindow -> IO #type int
-
-gdkWindowGetHeight :: GdkWindow -> IO #type int
-gdkWindowGetHeight (GdkWindow w) = c_gdk_window_get_height w
-
-foreign import ccall "gdk_window_get_height" c_gdk_window_get_height :: Ptr GdkWindow -> IO #type int
+foreign import ccall "gdk_window_get_height"
+	gdkWindowGetHeight :: GdkWindow -> IO CInt
 
 gdkWindowGetPosition :: GdkWindow -> IO (#{type gint}, #{type gint})
 gdkWindowGetPosition (GdkWindow p) = alloca \x -> alloca \y -> do

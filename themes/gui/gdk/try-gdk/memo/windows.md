@@ -54,8 +54,8 @@ Function
 * [x] `gdk_window_set_cursor`
 * [x] `gdk_window_get_cursor`
 * [x] `gdk_window_get_geometry`
-* [ ] `gdk_window_get_width`
-* [ ] `gdk_window_get_height`
+* [x] `gdk_window_get_width`
+* [x] `gdk_window_get_height`
 * [ ] `gdk_window_set_modal_hint`
 * [ ] `gdk_window_get_modal_hint`
 * [ ] `gdk_window_set_type_hint`
