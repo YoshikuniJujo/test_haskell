@@ -107,7 +107,7 @@ todo new
 * [x] use c-enum in `GdkEventType`
 * [x] try `GDK_MAP`
 * [x] draw when `GDK_CONFIGURE`
-* [ ] draw when `GDK_FOCUS_CHANGE`
+* [x] draw when `GDK_FOCUS_CHANGE`
 * [ ] move `Pointerable` to `glib-stopgap`
 
 todo old

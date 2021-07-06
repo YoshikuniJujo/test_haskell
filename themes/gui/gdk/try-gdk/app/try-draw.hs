@@ -68,6 +68,10 @@ checkEvent = \case
 			show w ++ ", " ++ show h ++ ")"
 		drawRedLine =<< gdkEventConfigureWindow c
 		pure True
+	GdkEventGdkFocusChange f -> do
+		putStrLn $ "GDK_FOCUS_CHANGE"
+		drawRedLine =<< gdkEventFocusWindow f
+		pure True
 	GdkEventGdkWindowState s -> do
 		ns <- gdkEventWindowStateNewWindowState s
 		putStrLn $ "GDK_WINDOW_STATE: " ++ show s ++ ": " ++ show ns
