@@ -57,7 +57,7 @@ Function
 * [x] `gdk_window_get_width`
 * [x] `gdk_window_get_height`
 * [x] `gdk_window_set_modal_hint`
-* [ ] `gdk_window_get_modal_hint`
+* [x] `gdk_window_get_modal_hint`
 * [ ] `gdk_window_set_type_hint`
 * [ ] `gdk_window_get_type_hint`
 * [ ] `gdk_window_set_shadow_width`

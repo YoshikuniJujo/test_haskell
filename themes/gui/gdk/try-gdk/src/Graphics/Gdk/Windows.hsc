@@ -32,7 +32,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowSetCursor, gdkWindowGetCursor,
 	gdkWindowGetGeometry,
 	gdkWindowGetWidth, gdkWindowGetHeight,
-	gdkWindowSetModalHint,
+	gdkWindowSetModalHint, gdkWindowGetModalHint,
 
 	-- * Not Checked
 	gdkWindowSetEvents,
@@ -321,6 +321,12 @@ gdkWindowSetModalHint w = c_gdk_window_set_modal_hint w . boolToGboolean
 
 foreign import ccall "gdk_window_set_modal_hint"
 	c_gdk_window_set_modal_hint :: GdkWindow -> #{type gboolean} -> IO ()
+
+gdkWindowGetModalHint :: GdkWindow -> IO Bool
+gdkWindowGetModalHint w = gbooleanToBool <$> c_gdk_window_get_modal_hint w
+
+foreign import ccall "gdk_window_get_modal_hint"
+	c_gdk_window_get_modal_hint :: GdkWindow -> IO #{type gboolean}
 
 gdkWindowGetPosition :: GdkWindow -> IO (#{type gint}, #{type gint})
 gdkWindowGetPosition (GdkWindow p) = alloca \x -> alloca \y -> do
