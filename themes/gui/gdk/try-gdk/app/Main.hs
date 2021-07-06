@@ -304,14 +304,10 @@ checkEvent opacity pos size d st = \case
 			print =<< gdkDeviceGetWindowAtPosition pnt
 			print =<< gdkDeviceGetWindowAtPositionDouble pnt
 		when (kv == fromIntegral (ord 'c')) do
-			void . forkIO $ do
-				w' <- gdkWindowNew Nothing $ minimalGdkWindowAttr
-					[] 100 100 gdkInputOnly GdkWindowToplevel
-				gdkWindowShow w'
-				threadDelay 1000000
-				gdkWindowSetOverrideRedirect w' True
---				threadDelay 1000000
---				gdkWindowDestroy w'
+			w' <- gdkWindowNew Nothing $ minimalGdkWindowAttr
+				[] 100 100 gdkInputOnly GdkWindowToplevel
+			gdkWindowSetOverrideRedirect w' True
+			gdkWindowShow w'
 		pure $ kv /= fromIntegral (ord 'q')
 	GdkEventGdkKeyRelease k -> do
 		kv <- gdkEventKeyKeyval k
