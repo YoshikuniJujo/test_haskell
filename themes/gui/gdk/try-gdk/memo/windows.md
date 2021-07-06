@@ -66,7 +66,7 @@ Function
 * [x] `gdk_window_get_position`
 * [x] `gdk_window_get_root_origin`
 * [x] `gdk_window_get_frame_extents`
-* [ ] `gdk_window_get_origin`
+* [x] `gdk_window_get_origin`
 * [ ] `gdk_window_get_root_coords`
 * [ ] `gdk_window_get_parent`
 * [ ] `gdk_window_get_toplevel`

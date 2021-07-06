@@ -314,6 +314,7 @@ checkEvent opacity pos size d st = \case
 			r <- gdkRectangleNew
 			gdkWindowGetFrameExtents w r
 			print =<< gdkRectangleFreeze r
+			print =<< gdkWindowGetOrigin w
 		when (kv == fromIntegral (ord 'd')) do
 			putStrLn "`d' pressed"
 			w' <- gdkWindowNew Nothing $ minimalGdkWindowAttr

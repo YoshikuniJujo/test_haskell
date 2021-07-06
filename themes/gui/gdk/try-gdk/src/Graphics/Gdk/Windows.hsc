@@ -38,6 +38,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowSetUrgencyHint,
 	gdkWindowGetPosition, gdkWindowGetRootOrigin,
 	gdkWindowGetFrameExtents,
+	gdkWindowGetOrigin,
 
 	-- * Not Checked
 	gdkWindowSetEvents,
@@ -409,8 +410,15 @@ gdkWindowGetFrameExtents w (GdkRectanglePrim fr) =
 	withForeignPtr fr $ c_gdk_window_get_frame_extents w
 
 foreign import ccall "gdk_window_get_frame_extents"
-	c_gdk_window_get_frame_extents ::
-		GdkWindow -> Ptr GdkRectangle -> IO ()
+	c_gdk_window_get_frame_extents :: GdkWindow -> Ptr GdkRectangle -> IO ()
+
+gdkWindowGetOrigin :: GdkWindow -> IO (CInt, CInt)
+gdkWindowGetOrigin w = alloca \x -> alloca \y -> do
+	c_gdk_window_get_origin w x y
+	(,) <$> peek x <*> peek y
+
+foreign import ccall "gdk_window_get_origin"
+	c_gdk_window_get_origin :: GdkWindow -> Ptr CInt -> Ptr CInt -> IO ()
 
 gdkWindowGetParent :: GdkWindow -> IO GdkWindow
 gdkWindowGetParent (GdkWindow p) = GdkWindow <$> c_gdk_window_get_parent p
