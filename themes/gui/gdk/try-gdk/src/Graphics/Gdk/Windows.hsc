@@ -28,7 +28,6 @@ module Graphics.Gdk.Windows (
 	gdkWindowFocus,
 	gdkWindowWithDrawFrame,
 	gdkWindowGetVisibleRegion,
-	gdkWindowSetOverrideRedirect,
 
 	-- * Not Checked
 	gdkWindowSetEvents,
@@ -269,14 +268,6 @@ gdkWindowGetVisibleRegion w = CairoRegionT <$> do
 foreign import ccall "gdk_window_get_visible_region"
 	c_gdk_window_get_visible_region ::
 		GdkWindow -> IO (Ptr (CairoRegionT s))
-
-gdkWindowSetOverrideRedirect :: GdkWindow -> Bool -> IO ()
-gdkWindowSetOverrideRedirect w =
-	c_gdk_window_set_override_redirect w . boolToGboolean
-
-foreign import ccall "gdk_window_set_override_redirect"
-	c_gdk_window_set_override_redirect ::
-		GdkWindow -> #{type gboolean} -> IO ()
 
 foreign import ccall "gdk_window_set_events" c_gdk_window_set_events :: Ptr GdkWindow -> #{type GdkEventMask} -> IO ()
 
