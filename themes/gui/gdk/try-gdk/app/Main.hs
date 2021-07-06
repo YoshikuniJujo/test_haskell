@@ -305,6 +305,7 @@ checkEvent opacity pos size d st = \case
 			print =<< gdkDeviceGetWindowAtPositionDouble pnt
 		when (kv == fromIntegral (ord 'c')) do
 			putStrLn "`c' pressed"
+			gdkWindowSetAcceptFocus w False
 		pure $ kv /= fromIntegral (ord 'q')
 	GdkEventGdkKeyRelease k -> do
 		kv <- gdkEventKeyKeyval k
