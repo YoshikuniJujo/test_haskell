@@ -50,10 +50,6 @@ Function
 * [x] `gdk_window_begin_draw_frame`
 * [x] `gdk_window_end_draw_frame`
 * [x] `gdk_window_get_visible_region`
-* [x] `gdk_window_set_accept_focus`
-* [x] `gdk_window_get_accept_focus`
-* [x] `gdk_window_set_focus_on_map`
-* [ ] `gdk_window_get_focus_on_map`
 * [ ] `gdk_window_set_title`
 * [ ] `gdk_window_set_cursor`
 * [ ] `gdk_window_get_cursor`
@@ -131,6 +127,13 @@ Function
 * `gdk_window_set_user_data`
 * [x] `gdk_window_set_override_redirect`
 	+ remove it
+* [x] `gdk_window_set_accept_focus`
+	+ remove it
+* [x] `gdk_window_get_accept_focus`
+	+ remove it
+* [x] `gdk_window_set_focus_on_map`
+	+ remove it
+* `gdk_window_get_focus_on_map`
 * `gdk_window_add_filter`
 * `gdk_window_remove_filter`
 * `gdk_window_shape_combine_region`
