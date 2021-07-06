@@ -290,12 +290,10 @@ foreign import ccall "gdk_window_set_cursor"
 	c_gdk_window_set_cursor :: GdkWindow -> Ptr GdkCursor -> IO ()
 
 gdkWindowGetCursor :: GdkWindow -> IO (Maybe GdkCursor)
-gdkWindowGetCursor w = do
-	mc <- c_gdk_window_get_cursor' w
-	whenMaybe c_g_object_ref mc
-	case mc of
-		Nothing -> pure Nothing
-		Just c -> Just . GdkCursor <$> newForeignPtr c (c_g_object_unref c)
+gdkWindowGetCursor w = c_gdk_window_get_cursor w >>= \case
+	NullPtr -> pure Nothing
+	c -> Just . GdkCursor
+		<$> (c_g_object_ref c >> newForeignPtr c (c_g_object_unref c))
 
 foreign import ccall "gdk_window_get_width" c_gdk_window_get_width :: Ptr GdkWindow -> IO #type int
 

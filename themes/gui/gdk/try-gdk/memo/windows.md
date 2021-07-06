@@ -52,7 +52,7 @@ Function
 * [x] `gdk_window_get_visible_region`
 * [x] `gdk_window_set_title`
 * [x] `gdk_window_set_cursor`
-* [ ] `gdk_window_get_cursor`
+* [x] `gdk_window_get_cursor`
 * [ ] `gdk_window_get_geometry`
 * [ ] `gdk_window_get_width`
 * [ ] `gdk_window_get_height`
