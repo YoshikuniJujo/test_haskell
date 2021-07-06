@@ -327,6 +327,12 @@ checkEvent opacity pos size d st = \case
 		when (kv == fromIntegral (ord 'n')) do
 			putStrLn "`n' pressed"
 			gdkWindowSetSkipPagerHint w False
+		when (kv == fromIntegral (ord '1')) do
+			putStrLn "`1' pressed"
+			gdkWindowSetUrgencyHint w True
+		when (kv == fromIntegral (ord '2')) do
+			putStrLn "`2' pressed"
+			gdkWindowSetUrgencyHint w False
 		pure $ kv /= fromIntegral (ord 'q')
 	GdkEventGdkKeyRelease k -> do
 		kv <- gdkEventKeyKeyval k

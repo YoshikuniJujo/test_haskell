@@ -62,7 +62,7 @@ Function
 * [x] `gdk_window_get_type_hint`
 * [x] `gdk_window_set_skip_taskbar_hint`
 * [x] `gdk_window_set_skip_pager_hint`
-* [ ] `gdk_window_set_urgency_hint`
+* [x] `gdk_window_set_urgency_hint`
 * [ ] `gdk_window_get_position`
 * [ ] `gdk_window_get_root_origin`
 * [ ] `gdk_window_get_frame_extents`

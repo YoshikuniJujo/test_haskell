@@ -35,6 +35,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowSetModalHint, gdkWindowGetModalHint,
 	gdkWindowSetTypeHint, gdkWindowGetTypeHint,
 	gdkWindowSetSkipTaskbarHint, gdkWindowSetSkipPagerHint,
+	gdkWindowSetUrgencyHint,
 
 	-- * Not Checked
 	gdkWindowSetEvents,
@@ -329,6 +330,12 @@ gdkWindowSetModalHint w = c_gdk_window_set_modal_hint w . boolToGboolean
 foreign import ccall "gdk_window_set_modal_hint"
 	c_gdk_window_set_modal_hint :: GdkWindow -> #{type gboolean} -> IO ()
 
+gdkWindowGetModalHint :: GdkWindow -> IO Bool
+gdkWindowGetModalHint w = gbooleanToBool <$> c_gdk_window_get_modal_hint w
+
+foreign import ccall "gdk_window_get_modal_hint"
+	c_gdk_window_get_modal_hint :: GdkWindow -> IO #{type gboolean}
+
 enum "GdkWindowTypeHint" ''#{type GdkWindowTypeHint} [''Show, ''Read] [
 	("GdkWindowTypeHintNormal", #{const GDK_WINDOW_TYPE_HINT_NORMAL}),
 	("GdkWindowTypeHintDialog", #{const GDK_WINDOW_TYPE_HINT_DIALOG}),
@@ -371,11 +378,12 @@ foreign import ccall "gdk_window_set_skip_pager_hint"
 	c_gdk_window_set_skip_pager_hint ::
 		GdkWindow -> #{type gboolean} -> IO ()
 
-gdkWindowGetModalHint :: GdkWindow -> IO Bool
-gdkWindowGetModalHint w = gbooleanToBool <$> c_gdk_window_get_modal_hint w
+gdkWindowSetUrgencyHint :: GdkWindow -> Bool -> IO ()
+gdkWindowSetUrgencyHint w = c_gdk_window_set_urgency_hint w . boolToGboolean
 
-foreign import ccall "gdk_window_get_modal_hint"
-	c_gdk_window_get_modal_hint :: GdkWindow -> IO #{type gboolean}
+foreign import ccall "gdk_window_set_urgency_hint"
+	c_gdk_window_set_urgency_hint ::
+		GdkWindow -> #{type gboolean} -> IO ()
 
 gdkWindowGetPosition :: GdkWindow -> IO (#{type gint}, #{type gint})
 gdkWindowGetPosition (GdkWindow p) = alloca \x -> alloca \y -> do
