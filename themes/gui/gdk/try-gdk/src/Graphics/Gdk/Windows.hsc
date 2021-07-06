@@ -30,6 +30,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowGetVisibleRegion,
 	gdkWindowSetTitle,
 	gdkWindowSetCursor, gdkWindowGetCursor,
+	gdkWindowGetGeometry,
 
 	-- * Not Checked
 	gdkWindowSetEvents,
@@ -295,29 +296,39 @@ gdkWindowGetCursor w = c_gdk_window_get_cursor w >>= \case
 	c -> Just . GdkCursor
 		<$> (c_g_object_ref c >> newForeignPtr c (c_g_object_unref c))
 
-foreign import ccall "gdk_window_get_width" c_gdk_window_get_width :: Ptr GdkWindow -> IO #type int
+gdkWindowGetGeometry :: GdkWindow -> IO (CInt, CInt, CInt, CInt)
+gdkWindowGetGeometry wn = alloca \x -> alloca \y -> alloca \w -> alloca \h -> do
+	c_gdk_window_get_geometry wn x y w h
+	(,,,) <$> peek x <*> peek y <*> peek w <*> peek h
+
+foreign import ccall "gdk_window_get_geometry"
+	c_gdk_window_get_geometry ::
+		GdkWindow ->
+		Ptr CInt -> Ptr CInt -> Ptr CInt -> Ptr CInt -> IO ()
 
 gdkWindowGetWidth :: GdkWindow -> IO #type int
 gdkWindowGetWidth (GdkWindow w) = c_gdk_window_get_width w
 
-foreign import ccall "gdk_window_get_height" c_gdk_window_get_height :: Ptr GdkWindow -> IO #type int
+foreign import ccall "gdk_window_get_width" c_gdk_window_get_width :: Ptr GdkWindow -> IO #type int
 
 gdkWindowGetHeight :: GdkWindow -> IO #type int
 gdkWindowGetHeight (GdkWindow w) = c_gdk_window_get_height w
 
-foreign import ccall "gdk_window_get_position" c_gdk_window_get_position ::
-	Ptr GdkWindow -> Ptr #{type gint} -> Ptr #{type gint} -> IO ()
+foreign import ccall "gdk_window_get_height" c_gdk_window_get_height :: Ptr GdkWindow -> IO #type int
 
 gdkWindowGetPosition :: GdkWindow -> IO (#{type gint}, #{type gint})
 gdkWindowGetPosition (GdkWindow p) = alloca \x -> alloca \y -> do
 	c_gdk_window_get_position p x y
 	(,) <$> peek x <*> peek y
 
-foreign import ccall "gdk_window_get_parent" c_gdk_window_get_parent ::
-	Ptr GdkWindow -> IO (Ptr GdkWindow)
+foreign import ccall "gdk_window_get_position" c_gdk_window_get_position ::
+	Ptr GdkWindow -> Ptr #{type gint} -> Ptr #{type gint} -> IO ()
 
 gdkWindowGetParent :: GdkWindow -> IO GdkWindow
 gdkWindowGetParent (GdkWindow p) = GdkWindow <$> c_gdk_window_get_parent p
+
+foreign import ccall "gdk_window_get_parent" c_gdk_window_get_parent ::
+	Ptr GdkWindow -> IO (Ptr GdkWindow)
 
 foreign import ccall "gdk_window_get_decorations" c_gdk_window_get_decorations ::
 	Ptr GdkWindow -> IO #type GdkWMDecoration

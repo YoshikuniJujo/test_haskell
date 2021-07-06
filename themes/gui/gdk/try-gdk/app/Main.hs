@@ -305,6 +305,7 @@ checkEvent opacity pos size d st = \case
 			print =<< gdkDeviceGetWindowAtPositionDouble pnt
 		when (kv == fromIntegral (ord 'c')) do
 			putStrLn "`c' pressed"
+			print =<< gdkWindowGetGeometry w
 		when (kv == fromIntegral (ord 'd')) do
 			putStrLn "`d' pressed"
 		pure $ kv /= fromIntegral (ord 'q')
