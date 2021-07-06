@@ -50,7 +50,7 @@ Function
 * [x] `gdk_window_begin_draw_frame`
 * [x] `gdk_window_end_draw_frame`
 * [x] `gdk_window_get_visible_region`
-* [ ] `gdk_window_set_override_redirect`
+* [x] `gdk_window_set_override_redirect`
 * [ ] `gdk_window_set_accept_focus`
 * [ ] `gdk_window_get_accept_focus`
 * [ ] `gdk_window_set_focus_on_map`
