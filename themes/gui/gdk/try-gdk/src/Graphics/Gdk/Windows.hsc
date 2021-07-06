@@ -36,11 +36,11 @@ module Graphics.Gdk.Windows (
 	gdkWindowSetTypeHint, gdkWindowGetTypeHint,
 	gdkWindowSetSkipTaskbarHint, gdkWindowSetSkipPagerHint,
 	gdkWindowSetUrgencyHint,
+	gdkWindowGetPosition,
 
 	-- * Not Checked
 	gdkWindowSetEvents,
 
-	gdkWindowGetPosition,
 
 	gdkWindowGetParent, gdkWindowGetDecorations, gdkGetDefaultRootWindow,
 	gdkWindowSetDeviceCursor, gdkWindowSetDeviceEvents, gdkWindowSetSourceEvents,
@@ -385,13 +385,13 @@ foreign import ccall "gdk_window_set_urgency_hint"
 	c_gdk_window_set_urgency_hint ::
 		GdkWindow -> #{type gboolean} -> IO ()
 
-gdkWindowGetPosition :: GdkWindow -> IO (#{type gint}, #{type gint})
-gdkWindowGetPosition (GdkWindow p) = alloca \x -> alloca \y -> do
-	c_gdk_window_get_position p x y
+gdkWindowGetPosition :: GdkWindow -> IO (CInt, CInt)
+gdkWindowGetPosition w = alloca \x -> alloca \y -> do
+	c_gdk_window_get_position w x y
 	(,) <$> peek x <*> peek y
 
 foreign import ccall "gdk_window_get_position" c_gdk_window_get_position ::
-	Ptr GdkWindow -> Ptr #{type gint} -> Ptr #{type gint} -> IO ()
+	GdkWindow -> Ptr CInt -> Ptr CInt -> IO ()
 
 gdkWindowGetParent :: GdkWindow -> IO GdkWindow
 gdkWindowGetParent (GdkWindow p) = GdkWindow <$> c_gdk_window_get_parent p

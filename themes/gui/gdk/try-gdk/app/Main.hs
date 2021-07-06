@@ -308,6 +308,7 @@ checkEvent opacity pos size d st = \case
 			print =<< gdkWindowGetGeometry w
 			print =<< (,)
 				<$> gdkWindowGetWidth w <*> gdkWindowGetHeight w
+			print =<< gdkWindowGetPosition w
 		when (kv == fromIntegral (ord 'd')) do
 			putStrLn "`d' pressed"
 			w' <- gdkWindowNew Nothing $ minimalGdkWindowAttr
