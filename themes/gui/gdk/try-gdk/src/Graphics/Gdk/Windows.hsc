@@ -36,7 +36,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowSetTypeHint, gdkWindowGetTypeHint,
 	gdkWindowSetSkipTaskbarHint, gdkWindowSetSkipPagerHint,
 	gdkWindowSetUrgencyHint,
-	gdkWindowGetPosition,
+	gdkWindowGetPosition, gdkWindowGetRootOrigin,
 
 	-- * Not Checked
 	gdkWindowSetEvents,
@@ -391,6 +391,14 @@ gdkWindowGetPosition w = alloca \x -> alloca \y -> do
 	(,) <$> peek x <*> peek y
 
 foreign import ccall "gdk_window_get_position" c_gdk_window_get_position ::
+	GdkWindow -> Ptr CInt -> Ptr CInt -> IO ()
+
+gdkWindowGetRootOrigin :: GdkWindow -> IO (CInt, CInt)
+gdkWindowGetRootOrigin w = alloca \x -> alloca \y -> do
+	c_gdk_window_get_root_origin w x y
+	(,) <$> peek x <*> peek y
+
+foreign import ccall "gdk_window_get_root_origin" c_gdk_window_get_root_origin ::
 	GdkWindow -> Ptr CInt -> Ptr CInt -> IO ()
 
 gdkWindowGetParent :: GdkWindow -> IO GdkWindow

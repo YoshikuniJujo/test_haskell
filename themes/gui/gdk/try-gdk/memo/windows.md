@@ -64,7 +64,7 @@ Function
 * [x] `gdk_window_set_skip_pager_hint`
 * [x] `gdk_window_set_urgency_hint`
 * [x] `gdk_window_get_position`
-* [ ] `gdk_window_get_root_origin`
+* [x] `gdk_window_get_root_origin`
 * [ ] `gdk_window_get_frame_extents`
 * [ ] `gdk_window_get_origin`
 * [ ] `gdk_window_get_root_coords`
