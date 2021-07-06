@@ -33,6 +33,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowGetGeometry,
 	gdkWindowGetWidth, gdkWindowGetHeight,
 	gdkWindowSetModalHint, gdkWindowGetModalHint,
+	gdkWindowSetTypeHint,
 
 	-- * Not Checked
 	gdkWindowSetEvents,
@@ -52,7 +53,12 @@ module Graphics.Gdk.Windows (
 	GdkWindowType(..),
 	pattern GdkWindowRoot, pattern GdkWindowToplevel,
 	pattern GdkWindowChild, pattern GdkWindowTemp, pattern GdkWindowForeign,
-	pattern GdkWindowOffscreen, pattern GdkWindowSubsurface ) where
+	pattern GdkWindowOffscreen, pattern GdkWindowSubsurface,
+
+	-- * GdkWindowTypeHint
+	GdkWindowTypeHint,
+	pattern GdkWindowTypeHintNormal, pattern GdkWindowTypeHintDialog,
+	) where
 
 import Foreign.Ptr
 import Foreign.Ptr.Misc
@@ -321,6 +327,29 @@ gdkWindowSetModalHint w = c_gdk_window_set_modal_hint w . boolToGboolean
 
 foreign import ccall "gdk_window_set_modal_hint"
 	c_gdk_window_set_modal_hint :: GdkWindow -> #{type gboolean} -> IO ()
+
+enum "GdkWindowTypeHint" ''#{type GdkWindowTypeHint} [''Show, ''Read] [
+	("GdkWindowTypeHintNormal", #{const GDK_WINDOW_TYPE_HINT_NORMAL}),
+	("GdkWindowTypeHintDialog", #{const GDK_WINDOW_TYPE_HINT_DIALOG}),
+	("GdkWindowTypeHintMenu", #{const GDK_WINDOW_TYPE_HINT_MENU}),
+	("GdkWindowTypeHintToolbar", #{const GDK_WINDOW_TYPE_HINT_TOOLBAR}),
+	("GdkWindowTypeHintSplashscreen",
+		#{const GDK_WINDOW_TYPE_HINT_SPLASHSCREEN}),
+	("GdkWindowTypeHintUtility", #{const GDK_WINDOW_TYPE_HINT_UTILITY}),
+	("GdkWindowTypeHintDock", #{const GDK_WINDOW_TYPE_HINT_DOCK}),
+	("GdkWindowTypeHintDesktop", #{const GDK_WINDOW_TYPE_HINT_DESKTOP}),
+	("GdkWindowTypeHintDropdownMenu",
+		#{const GDK_WINDOW_TYPE_HINT_DROPDOWN_MENU}),
+	("GdkWindowTypeHintPopupMenu",
+		#{const GDK_WINDOW_TYPE_HINT_POPUP_MENU}),
+	("GdkWindowTypeHintTooltip", #{const GDK_WINDOW_TYPE_HINT_TOOLTIP}),
+	("GdkWindowTypeHintNotification",
+		#{const GDK_WINDOW_TYPE_HINT_NOTIFICATION}),
+	("GdkWindowTypeHintCombo", #{const GDK_WINDOW_TYPE_HINT_COMBO}),
+	("GdkWindowTypeHintDnd", #{const GDK_WINDOW_TYPE_HINT_DND}) ]
+
+foreign import ccall "gdk_window_set_type_hint"
+	gdkWindowSetTypeHint :: GdkWindow -> GdkWindowTypeHint -> IO ()
 
 gdkWindowGetModalHint :: GdkWindow -> IO Bool
 gdkWindowGetModalHint w = gbooleanToBool <$> c_gdk_window_get_modal_hint w
