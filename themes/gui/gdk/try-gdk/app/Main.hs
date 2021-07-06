@@ -310,6 +310,11 @@ checkEvent opacity pos size d st = \case
 				<$> gdkWindowGetWidth w <*> gdkWindowGetHeight w
 		when (kv == fromIntegral (ord 'd')) do
 			putStrLn "`d' pressed"
+			w' <- gdkWindowNew Nothing $ minimalGdkWindowAttr
+				[] 100 100 gdkInputOutput GdkWindowToplevel
+			gdkWindowSetTransientFor w' w
+			gdkWindowSetModalHint w' True
+			gdkWindowShow w'
 		pure $ kv /= fromIntegral (ord 'q')
 	GdkEventGdkKeyRelease k -> do
 		kv <- gdkEventKeyKeyval k

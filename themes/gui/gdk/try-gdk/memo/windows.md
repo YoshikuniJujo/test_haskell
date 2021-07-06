@@ -56,7 +56,7 @@ Function
 * [x] `gdk_window_get_geometry`
 * [x] `gdk_window_get_width`
 * [x] `gdk_window_get_height`
-* [ ] `gdk_window_set_modal_hint`
+* [x] `gdk_window_set_modal_hint`
 * [ ] `gdk_window_get_modal_hint`
 * [ ] `gdk_window_set_type_hint`
 * [ ] `gdk_window_get_type_hint`
@@ -76,7 +76,7 @@ Function
 * [ ] `gdk_window_get_events`
 * [ ] `gdk_window_set_events`
 * [ ] `gdk_window_set_icon_name`
-* [ ] `gdk_window_set_transient_for`
+* [x] `gdk_window_set_transient_for`
 * [ ] `gdk_window_set_decorations`
 * [ ] `gdk_window_get_decorations`
 * [ ] `gdk_get_default_root_window`

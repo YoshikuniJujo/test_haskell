@@ -32,6 +32,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowSetCursor, gdkWindowGetCursor,
 	gdkWindowGetGeometry,
 	gdkWindowGetWidth, gdkWindowGetHeight,
+	gdkWindowSetModalHint,
 
 	-- * Not Checked
 	gdkWindowSetEvents,
@@ -44,6 +45,8 @@ module Graphics.Gdk.Windows (
 	gdkWindowSetEventCompression,
 
 	GdkWindowAttr(..), minimalGdkWindowAttr,
+
+	gdkWindowSetTransientFor,
 
 	-- * GdkWindowType
 	GdkWindowType(..),
@@ -313,6 +316,12 @@ foreign import ccall "gdk_window_get_width"
 foreign import ccall "gdk_window_get_height"
 	gdkWindowGetHeight :: GdkWindow -> IO CInt
 
+gdkWindowSetModalHint :: GdkWindow -> Bool -> IO ()
+gdkWindowSetModalHint w = c_gdk_window_set_modal_hint w . boolToGboolean
+
+foreign import ccall "gdk_window_set_modal_hint"
+	c_gdk_window_set_modal_hint :: GdkWindow -> #{type gboolean} -> IO ()
+
 gdkWindowGetPosition :: GdkWindow -> IO (#{type gint}, #{type gint})
 gdkWindowGetPosition (GdkWindow p) = alloca \x -> alloca \y -> do
 	c_gdk_window_get_position p x y
@@ -365,3 +374,6 @@ foreign import ccall "gdk_window_set_event_compression" c_gdk_window_set_event_c
 
 gdkWindowSetEventCompression :: GdkWindow -> Bool -> IO ()
 gdkWindowSetEventCompression (GdkWindow w) = c_gdk_window_set_event_compression w . boolToGboolean
+
+foreign import ccall "gdk_window_set_transient_for"
+	gdkWindowSetTransientFor :: GdkWindow -> GdkWindow -> IO ()
