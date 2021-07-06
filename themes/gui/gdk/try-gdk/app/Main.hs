@@ -315,6 +315,12 @@ checkEvent opacity pos size d st = \case
 			gdkWindowSetTransientFor w' w
 			gdkWindowSetModalHint w' True
 			gdkWindowShow w'
+		when (kv == fromIntegral (ord 'e')) do
+			putStrLn "`e' pressed"
+			gdkWindowSetSkipTaskbarHint w True
+		when (kv == fromIntegral (ord 'k')) do
+			putStrLn "`k' pressed"
+			gdkWindowSetSkipTaskbarHint w False
 		pure $ kv /= fromIntegral (ord 'q')
 	GdkEventGdkKeyRelease k -> do
 		kv <- gdkEventKeyKeyval k

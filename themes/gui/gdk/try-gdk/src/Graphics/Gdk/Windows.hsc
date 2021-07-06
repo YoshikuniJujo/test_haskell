@@ -34,6 +34,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowGetWidth, gdkWindowGetHeight,
 	gdkWindowSetModalHint, gdkWindowGetModalHint,
 	gdkWindowSetTypeHint, gdkWindowGetTypeHint,
+	gdkWindowSetSkipTaskbarHint,
 
 	-- * Not Checked
 	gdkWindowSetEvents,
@@ -353,6 +354,14 @@ foreign import ccall "gdk_window_set_type_hint"
 
 foreign import ccall "gdk_window_get_type_hint"
 	gdkWindowGetTypeHint :: GdkWindow -> IO GdkWindowTypeHint
+
+gdkWindowSetSkipTaskbarHint :: GdkWindow -> Bool -> IO ()
+gdkWindowSetSkipTaskbarHint w =
+	c_gdk_window_set_skip_taskbar_hint w . boolToGboolean
+
+foreign import ccall "gdk_window_set_skip_taskbar_hint"
+	c_gdk_window_set_skip_taskbar_hint ::
+	GdkWindow -> #{type gboolean} -> IO ()
 
 gdkWindowGetModalHint :: GdkWindow -> IO Bool
 gdkWindowGetModalHint w = gbooleanToBool <$> c_gdk_window_get_modal_hint w

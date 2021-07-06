@@ -60,7 +60,7 @@ Function
 * [x] `gdk_window_get_modal_hint`
 * [x] `gdk_window_set_type_hint`
 * [x] `gdk_window_get_type_hint`
-* [ ] `gdk_window_set_skip_taskbar_hint`
+* [x] `gdk_window_set_skip_taskbar_hint`
 * [ ] `gdk_window_set_skip_pager_hint`
 * [ ] `gdk_window_set_urgency_hint`
 * [ ] `gdk_window_get_position`
