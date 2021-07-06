@@ -40,12 +40,13 @@ module Graphics.Gdk.Windows (
 	gdkWindowGetFrameExtents,
 	gdkWindowGetOrigin,
 	gdkWindowGetRootCoords,
+	gdkWindowGetParent,
 
 	-- * Not Checked
 	gdkWindowSetEvents,
 
 
-	gdkWindowGetParent, gdkWindowGetDecorations, gdkGetDefaultRootWindow,
+	gdkWindowGetDecorations, gdkGetDefaultRootWindow,
 	gdkWindowSetDeviceCursor, gdkWindowSetDeviceEvents, gdkWindowSetSourceEvents,
 
 	gdkWindowSetEventCompression,
@@ -430,11 +431,8 @@ foreign import ccall "gdk_window_get_root_coords"
 	c_gdk_window_get_root_coords ::
 		GdkWindow -> CInt -> CInt -> Ptr CInt -> Ptr CInt -> IO ()
 
-gdkWindowGetParent :: GdkWindow -> IO GdkWindow
-gdkWindowGetParent (GdkWindow p) = GdkWindow <$> c_gdk_window_get_parent p
-
-foreign import ccall "gdk_window_get_parent" c_gdk_window_get_parent ::
-	Ptr GdkWindow -> IO (Ptr GdkWindow)
+foreign import ccall "gdk_window_get_parent"
+	gdkWindowGetParent :: GdkWindow -> IO GdkWindow
 
 foreign import ccall "gdk_window_get_decorations" c_gdk_window_get_decorations ::
 	Ptr GdkWindow -> IO #type GdkWMDecoration

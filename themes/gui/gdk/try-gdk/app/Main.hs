@@ -135,6 +135,7 @@ main = do
 	w <- gdkWindowNew Nothing wattr { gdkWindowAttrTitle = Just "試験窓" }
 	printVisibleRegion w
 	print =<< gdkWindowGetWindowType w
+	putStr "PARENT WINDOW: "
 	print =<< gdkWindowGetWindowType =<< gdkWindowGetParent w
 	printVisual =<< gdkWindowGetVisual w
 	print =<< gdkWindowGetDecorations w
