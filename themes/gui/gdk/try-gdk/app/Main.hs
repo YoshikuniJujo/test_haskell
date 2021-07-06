@@ -161,8 +161,6 @@ main = do
 		gdkPointerMotionMask, gdkAllEventsMask ]
 	print gdkExposureMask
 	print gdkPointerMotionMask
---	gdkWindowFreezeUpdates w
---	gdkWindowThawUpdates w
 	putStrLn "gdkScreenGetTopLevelWindows #2"
 	gdkScreenGetToplevelWindows scrn >>=
 		mapM_ \tw -> print =<< gdkWindowGetWindowType tw

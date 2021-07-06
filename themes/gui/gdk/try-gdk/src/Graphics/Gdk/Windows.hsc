@@ -30,7 +30,6 @@ module Graphics.Gdk.Windows (
 	gdkWindowGetVisibleRegion,
 
 	-- * Not Checked
-	gdkWindowFreezeUpdates, gdkWindowThawUpdates,
 	gdkWindowSetEvents,
 
 	gdkWindowSetTitle, c_gdk_window_set_title, gdkWindowSetCursor, gdkWindowGetCursor,
@@ -269,16 +268,6 @@ gdkWindowGetVisibleRegion w = CairoRegionT <$> do
 foreign import ccall "gdk_window_get_visible_region"
 	c_gdk_window_get_visible_region ::
 		GdkWindow -> IO (Ptr (CairoRegionT s))
-
-foreign import ccall "gdk_window_freeze_updates" c_gdk_window_freeze_updates :: Ptr GdkWindow -> IO ()
-
-gdkWindowFreezeUpdates :: GdkWindow -> IO ()
-gdkWindowFreezeUpdates (GdkWindow p) = c_gdk_window_freeze_updates p
-
-foreign import ccall "gdk_window_thaw_updates" c_gdk_window_thaw_updates :: Ptr GdkWindow -> IO ()
-
-gdkWindowThawUpdates :: GdkWindow -> IO ()
-gdkWindowThawUpdates (GdkWindow p) = c_gdk_window_thaw_updates p
 
 foreign import ccall "gdk_window_set_events" c_gdk_window_set_events :: Ptr GdkWindow -> #{type GdkEventMask} -> IO ()
 

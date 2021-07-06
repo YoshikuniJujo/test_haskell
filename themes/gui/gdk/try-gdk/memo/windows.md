@@ -50,8 +50,6 @@ Function
 * [x] `gdk_window_begin_draw_frame`
 * [x] `gdk_window_end_draw_frame`
 * [x] `gdk_window_get_visible_region`
-* [ ] `gdk_window_freeze_updates`
-* [ ] `gdk_window_thaw_updates`
 * [ ] `gdk_window_set_override_redirect`
 * [ ] `gdk_window_set_accept_focus`
 * [ ] `gdk_window_get_accept_focus`
@@ -126,6 +124,10 @@ Function
 * `gdk_window_invalidate_region`
 * `gdk_window_invalidate_maybe_recurse`
 * `gdk_window_get_update_area`
+* [x] `gdk_window_freeze_updates`
+	+ remove it
+* [x] `gdk_window_thaw_updates`
+	+ remove it
 * `gdk_window_get_frame_clock`
 * `gdk_window_set_user_data`
 * `gdk_window_add_filter`
