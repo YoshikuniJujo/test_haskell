@@ -65,7 +65,7 @@ Function
 * [x] `gdk_window_set_urgency_hint`
 * [x] `gdk_window_get_position`
 * [x] `gdk_window_get_root_origin`
-* [ ] `gdk_window_get_frame_extents`
+* [x] `gdk_window_get_frame_extents`
 * [ ] `gdk_window_get_origin`
 * [ ] `gdk_window_get_root_coords`
 * [ ] `gdk_window_get_parent`

@@ -22,6 +22,7 @@ import Graphics.Gdk.GdkScreen
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkMonitor
 import Graphics.Gdk.GdkDevice
+import Graphics.Gdk.PointsAndRectangles
 import Graphics.Gdk.Visuals
 import Graphics.Gdk.Windows
 import Graphics.Gdk.GdkDrawingContext
@@ -310,6 +311,9 @@ checkEvent opacity pos size d st = \case
 				<$> gdkWindowGetWidth w <*> gdkWindowGetHeight w
 			print =<< gdkWindowGetPosition w
 			print =<< gdkWindowGetRootOrigin w
+			r <- gdkRectangleNew
+			gdkWindowGetFrameExtents w r
+			print =<< gdkRectangleFreeze r
 		when (kv == fromIntegral (ord 'd')) do
 			putStrLn "`d' pressed"
 			w' <- gdkWindowNew Nothing $ minimalGdkWindowAttr

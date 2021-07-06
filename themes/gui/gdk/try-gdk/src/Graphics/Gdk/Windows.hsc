@@ -37,6 +37,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowSetSkipTaskbarHint, gdkWindowSetSkipPagerHint,
 	gdkWindowSetUrgencyHint,
 	gdkWindowGetPosition, gdkWindowGetRootOrigin,
+	gdkWindowGetFrameExtents,
 
 	-- * Not Checked
 	gdkWindowSetEvents,
@@ -79,6 +80,7 @@ import System.GLib.Bool
 import {-# SOURCE #-} Graphics.Gdk.GdkDisplay
 import {-# SOURCE #-} Graphics.Gdk.GdkScreen
 import Graphics.Gdk.GdkDevice
+import Graphics.Gdk.PointsAndRectangles
 import Graphics.Gdk.Visuals
 import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.Cursors
@@ -398,8 +400,17 @@ gdkWindowGetRootOrigin w = alloca \x -> alloca \y -> do
 	c_gdk_window_get_root_origin w x y
 	(,) <$> peek x <*> peek y
 
-foreign import ccall "gdk_window_get_root_origin" c_gdk_window_get_root_origin ::
-	GdkWindow -> Ptr CInt -> Ptr CInt -> IO ()
+foreign import ccall "gdk_window_get_root_origin"
+	c_gdk_window_get_root_origin ::
+		GdkWindow -> Ptr CInt -> Ptr CInt -> IO ()
+
+gdkWindowGetFrameExtents :: GdkWindow -> GdkRectangleIO -> IO ()
+gdkWindowGetFrameExtents w (GdkRectanglePrim fr) =
+	withForeignPtr fr $ c_gdk_window_get_frame_extents w
+
+foreign import ccall "gdk_window_get_frame_extents"
+	c_gdk_window_get_frame_extents ::
+		GdkWindow -> Ptr GdkRectangle -> IO ()
 
 gdkWindowGetParent :: GdkWindow -> IO GdkWindow
 gdkWindowGetParent (GdkWindow p) = GdkWindow <$> c_gdk_window_get_parent p
