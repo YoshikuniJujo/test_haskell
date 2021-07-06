@@ -39,6 +39,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowGetPosition, gdkWindowGetRootOrigin,
 	gdkWindowGetFrameExtents,
 	gdkWindowGetOrigin,
+	gdkWindowGetRootCoords,
 
 	-- * Not Checked
 	gdkWindowSetEvents,
@@ -419,6 +420,15 @@ gdkWindowGetOrigin w = alloca \x -> alloca \y -> do
 
 foreign import ccall "gdk_window_get_origin"
 	c_gdk_window_get_origin :: GdkWindow -> Ptr CInt -> Ptr CInt -> IO ()
+
+gdkWindowGetRootCoords :: GdkWindow -> CInt -> CInt -> IO (CInt, CInt)
+gdkWindowGetRootCoords w x y = alloca \x' -> alloca \y' -> do
+	c_gdk_window_get_root_coords w x y x' y'
+	(,) <$> peek x' <*> peek y'
+
+foreign import ccall "gdk_window_get_root_coords"
+	c_gdk_window_get_root_coords ::
+		GdkWindow -> CInt -> CInt -> Ptr CInt -> Ptr CInt -> IO ()
 
 gdkWindowGetParent :: GdkWindow -> IO GdkWindow
 gdkWindowGetParent (GdkWindow p) = GdkWindow <$> c_gdk_window_get_parent p
