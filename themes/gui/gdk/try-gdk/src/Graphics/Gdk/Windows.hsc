@@ -29,6 +29,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowWithDrawFrame,
 	gdkWindowGetVisibleRegion,
 	gdkWindowSetAcceptFocus, gdkWindowGetAcceptFocus,
+	gdkWindowSetFocusOnMap,
 
 	-- * Not Checked
 	gdkWindowSetEvents,
@@ -282,6 +283,12 @@ gdkWindowGetAcceptFocus w = gbooleanToBool <$> c_gdk_window_get_accept_focus w
 
 foreign import ccall "gdk_window_get_accept_focus"
 	c_gdk_window_get_accept_focus :: GdkWindow -> IO #{type gboolean}
+
+gdkWindowSetFocusOnMap :: GdkWindow -> Bool -> IO ()
+gdkWindowSetFocusOnMap w = c_gdk_window_set_focus_on_map w . boolToGboolean
+
+foreign import ccall "gdk_window_set_focus_on_map"
+	c_gdk_window_set_focus_on_map :: GdkWindow -> #{type gboolean} -> IO ()
 
 foreign import ccall "gdk_window_set_events" c_gdk_window_set_events :: Ptr GdkWindow -> #{type GdkEventMask} -> IO ()
 

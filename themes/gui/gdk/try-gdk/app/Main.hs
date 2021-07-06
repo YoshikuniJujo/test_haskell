@@ -306,6 +306,12 @@ checkEvent opacity pos size d st = \case
 		when (kv == fromIntegral (ord 'c')) do
 			putStrLn "`c' pressed"
 			gdkWindowSetAcceptFocus w False
+		when (kv == fromIntegral (ord 'd')) do
+			putStrLn "`d' pressed"
+			w' <- gdkWindowNew Nothing $ minimalGdkWindowAttr
+				[] 100 100 gdkInputOutput GdkWindowToplevel
+			gdkWindowSetFocusOnMap w' False
+			gdkWindowShow w'
 		pure $ kv /= fromIntegral (ord 'q')
 	GdkEventGdkKeyRelease k -> do
 		kv <- gdkEventKeyKeyval k

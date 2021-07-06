@@ -52,7 +52,7 @@ Function
 * [x] `gdk_window_get_visible_region`
 * [x] `gdk_window_set_accept_focus`
 * [x] `gdk_window_get_accept_focus`
-* [ ] `gdk_window_set_focus_on_map`
+* [x] `gdk_window_set_focus_on_map`
 * [ ] `gdk_window_get_focus_on_map`
 * [ ] `gdk_window_set_title`
 * [ ] `gdk_window_set_cursor`
