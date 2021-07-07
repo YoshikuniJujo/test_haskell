@@ -70,8 +70,7 @@ Function
 * [x] `gdk_window_get_root_coords`
 * [x] `gdk_window_get_parent`
 * [x] `gdk_window_get_toplevel`
-* [ ] `gdk_window_get_children`
-* [ ] `gdk_window_peek_children`
+* [x] `gdk_window_peek_children`
 * [ ] `gdk_window_get_events`
 * [ ] `gdk_window_set_events`
 * [ ] `gdk_window_set_icon_name`
@@ -147,6 +146,7 @@ Function
 * `gdk_window_set_shadow_width`
 * `gdk_window_get_device_position`
 * `gdk_window_get_device_posittion_double`
+* `gdk_window_get_children`
 * `gdk_window_get_children_with_user_data`
 * `gdk_window_set_role`
 * `gdk_window_set_startup_id`

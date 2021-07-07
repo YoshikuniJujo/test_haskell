@@ -42,6 +42,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowGetRootCoords,
 	gdkWindowGetParent,
 	gdkWindowGetToplevel,
+	gdkWindowPeekChildren,
 
 	-- * Not Checked
 	gdkWindowSetEvents,
@@ -80,6 +81,7 @@ import Control.Exception
 import Data.Word
 import Data.Int
 import System.GLib.Bool
+import System.GLib.DoublyLinkedLists
 
 import {-# SOURCE #-} Graphics.Gdk.GdkDisplay
 import {-# SOURCE #-} Graphics.Gdk.GdkScreen
@@ -437,6 +439,13 @@ foreign import ccall "gdk_window_get_parent"
 
 foreign import ccall "gdk_window_get_toplevel"
 	gdkWindowGetToplevel :: GdkWindow -> IO GdkWindow
+
+gdkWindowPeekChildren :: GdkWindow -> IO [GdkWindow]
+gdkWindowPeekChildren w =
+	map GdkWindow <$> (g_list_to_list =<< c_gdk_window_peek_children w)
+
+foreign import ccall "gdk_window_peek_children"
+	c_gdk_window_peek_children :: GdkWindow -> IO (Ptr (GList GdkWindow))
 
 foreign import ccall "gdk_window_get_decorations" c_gdk_window_get_decorations ::
 	Ptr GdkWindow -> IO #type GdkWMDecoration
