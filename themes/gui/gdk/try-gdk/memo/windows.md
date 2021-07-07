@@ -69,7 +69,7 @@ Function
 * [x] `gdk_window_get_origin`
 * [x] `gdk_window_get_root_coords`
 * [x] `gdk_window_get_parent`
-* [ ] `gdk_window_get_toplevel`
+* [x] `gdk_window_get_toplevel`
 * [ ] `gdk_window_get_children`
 * [ ] `gdk_window_peek_children`
 * [ ] `gdk_window_get_events`

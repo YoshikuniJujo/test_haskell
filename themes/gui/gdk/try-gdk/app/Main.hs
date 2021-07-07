@@ -137,6 +137,10 @@ main = do
 	print =<< gdkWindowGetWindowType w
 	putStr "PARENT WINDOW: "
 	print =<< gdkWindowGetWindowType =<< gdkWindowGetParent w
+	putStr "THIS WINDOW"
+	print w
+	putStr "TOPLEVEL WINDOW:"
+	print =<< gdkWindowGetToplevel w
 	printVisual =<< gdkWindowGetVisual w
 	print =<< gdkWindowGetDecorations w
 	print GdkWindowToplevel
