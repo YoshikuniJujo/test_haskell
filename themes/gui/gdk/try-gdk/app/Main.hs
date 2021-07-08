@@ -160,6 +160,8 @@ main = do
 	putStrLn . ("Window is input only: " ++) . show =<< gdkWindowIsInputOnly w
 	putStrLn . ("Window is shaped: " ++) . show =<< gdkWindowIsShaped w
 	putStrLn . ("Window state: " ++) . show . gdkWindowStateList =<< gdkWindowGetState w
+	putStr "GDK WINDOW GET EVENTS: "
+	print . gdkEventMaskSingleBitList =<< gdkWindowGetEvents w
 	gdkWindowShow w
 	printVisibleRegion w
 	if "--startup-notify" `elem` as' then gdkNotifyStartupComplete else pure ()

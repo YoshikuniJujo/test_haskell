@@ -43,6 +43,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowGetParent,
 	gdkWindowGetToplevel,
 	gdkWindowPeekChildren,
+	gdkWindowGetEvents,
 
 	-- * Not Checked
 	gdkWindowSetEvents,
@@ -446,6 +447,9 @@ gdkWindowPeekChildren w =
 
 foreign import ccall "gdk_window_peek_children"
 	c_gdk_window_peek_children :: GdkWindow -> IO (Ptr (GList GdkWindow))
+
+foreign import ccall "gdk_window_get_events"
+	gdkWindowGetEvents :: GdkWindow -> IO GdkEventMaskMultiBits
 
 foreign import ccall "gdk_window_get_decorations" c_gdk_window_get_decorations ::
 	Ptr GdkWindow -> IO #type GdkWMDecoration

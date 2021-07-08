@@ -208,6 +208,6 @@ todo
 	- [x] move `separateBits` to `Data.Bits.Misc`
 	- [x] define `gdkEventMaskSingleBitList ::`
 		`GdkEventMaskMultiBits -> [GdkEventMaskSingleBit]`
-	- [ ] use `GdkEventMaskMultiBits` in `gdkWindowGetEvents`
+	- [x] use `GdkEventMaskMultiBits` in `gdkWindowGetEvents`
 	- [ ] use `GdkEventMaskMultiBits` in `gdkWindowSetEvents`
 	- [ ] move to the appropriate module
