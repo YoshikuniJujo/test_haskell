@@ -36,17 +36,12 @@ module Graphics.Gdk.Windows (
 	gdkWindowSetTypeHint, gdkWindowGetTypeHint,
 	gdkWindowSetSkipTaskbarHint, gdkWindowSetSkipPagerHint,
 	gdkWindowSetUrgencyHint,
-	gdkWindowGetPosition, gdkWindowGetRootOrigin,
-	gdkWindowGetFrameExtents,
-	gdkWindowGetOrigin,
-	gdkWindowGetRootCoords,
-	gdkWindowGetParent,
-	gdkWindowGetToplevel,
-	gdkWindowPeekChildren,
-	gdkWindowGetEvents,
+	gdkWindowGetPosition, gdkWindowGetRootOrigin, gdkWindowGetFrameExtents,
+	gdkWindowGetOrigin, gdkWindowGetRootCoords,
+	gdkWindowGetParent, gdkWindowGetToplevel, gdkWindowPeekChildren,
+	gdkWindowGetEvents, gdkWindowSetEvents,
 
 	-- * Not Checked
-	gdkWindowSetEvents,
 
 
 	gdkWindowGetDecorations, gdkGetDefaultRootWindow,
@@ -298,11 +293,6 @@ gdkWindowSetTitle w t = withCString t \ct -> c_gdk_window_set_title w ct
 foreign import ccall "gdk_window_set_title"
 	c_gdk_window_set_title :: GdkWindow -> CString -> IO ()
 
-gdkWindowSetEvents :: GdkWindow -> [GdkEventMaskSingleBit] -> IO ()
-gdkWindowSetEvents (GdkWindow p) m = c_gdk_window_set_events p (mergeGdkEventMask m)
-
-foreign import ccall "gdk_window_set_events" c_gdk_window_set_events :: Ptr GdkWindow -> #{type GdkEventMask} -> IO ()
-
 gdkWindowSetCursor :: GdkWindow -> GdkCursor -> IO ()
 gdkWindowSetCursor w (GdkCursor fc) = do
 	whenMaybe c_g_object_unref =<< c_gdk_window_get_cursor' w
@@ -450,6 +440,9 @@ foreign import ccall "gdk_window_peek_children"
 
 foreign import ccall "gdk_window_get_events"
 	gdkWindowGetEvents :: GdkWindow -> IO GdkEventMaskMultiBits
+
+foreign import ccall "gdk_window_set_events"
+	gdkWindowSetEvents :: GdkWindow -> GdkEventMaskMultiBits -> IO ()
 
 foreign import ccall "gdk_window_get_decorations" c_gdk_window_get_decorations ::
 	Ptr GdkWindow -> IO #type GdkWMDecoration

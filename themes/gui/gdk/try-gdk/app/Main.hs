@@ -169,7 +169,7 @@ main = do
 	putStrLn . ("Window is visible: " ++) . show =<< gdkWindowIsVisible w
 	putStrLn . ("Window is viewable: " ++) . show =<< gdkWindowIsViewable w
 	putStrLn . ("Window state: " ++) . show . gdkWindowStateList =<< gdkWindowGetState w
-	gdkWindowSetEvents w [
+	gdkWindowSetEvents w $ gdkEventMaskMultiBits [
 		GdkExposureMask, GdkButtonPressMask, GdkFocusChangeMask, GdkKeyPressMask,
 		GdkPointerMotionMask ] -- , gdkAllEventsMask ]
 	print GdkExposureMask

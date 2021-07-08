@@ -45,7 +45,9 @@ main = do
 		-}
 	gdkWindowShow w
 	gdkWindowSetEventCompression w False
-	gdkWindowSetEvents w [GdkPointerMotionMask, GdkButtonPressMask, GdkButtonReleaseMask, GdkKeyPressMask] -- , gdkAllEventsMask]
+	gdkWindowSetEvents w $ gdkEventMaskMultiBits [
+		GdkPointerMotionMask, GdkButtonPressMask,
+		GdkButtonReleaseMask, GdkKeyPressMask ] -- , gdkAllEventsMask]
 	gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False

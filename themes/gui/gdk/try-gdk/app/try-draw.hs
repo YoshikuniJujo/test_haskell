@@ -40,7 +40,7 @@ main = do
 			gdkInputOutput GdkWindowToplevel
 	w <- gdkWindowNew Nothing wattr { gdkWindowAttrTitle = Just "試験窓" }
 	gdkWindowShow w
-	gdkWindowSetEvents w [
+	gdkWindowSetEvents w $ gdkEventMaskMultiBits [
 		GdkExposureMask, GdkButtonPressMask, GdkFocusChangeMask, GdkKeyPressMask,
 		GdkPointerMotionMask ] -- , GdkAllEventsMask ]
 	doWhile_ do

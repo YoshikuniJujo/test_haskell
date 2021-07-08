@@ -71,8 +71,8 @@ Function
 * [x] `gdk_window_get_parent`
 * [x] `gdk_window_get_toplevel`
 * [x] `gdk_window_peek_children`
-* [ ] `gdk_window_get_events`
-* [ ] `gdk_window_set_events`
+* [x] `gdk_window_get_events`
+* [x] `gdk_window_set_events`
 * [ ] `gdk_window_set_icon_name`
 * [x] `gdk_window_set_transient_for`
 * [ ] `gdk_window_set_decorations`
@@ -209,5 +209,5 @@ todo
 	- [x] define `gdkEventMaskSingleBitList ::`
 		`GdkEventMaskMultiBits -> [GdkEventMaskSingleBit]`
 	- [x] use `GdkEventMaskMultiBits` in `gdkWindowGetEvents`
-	- [ ] use `GdkEventMaskMultiBits` in `gdkWindowSetEvents`
+	- [x] use `GdkEventMaskMultiBits` in `gdkWindowSetEvents`
 	- [ ] move to the appropriate module
