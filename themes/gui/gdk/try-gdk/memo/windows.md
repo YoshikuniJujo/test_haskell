@@ -198,9 +198,11 @@ todo
 * [x] move `GdkDrawingContext s` to module `Graphics.Gdk.GdkDrawingContext`
 * [x] get contents of CairoRegionT
 * [ ] `GdkEventMask`
-	- [ ] use `c-enum`
+	- [x] use `c-enum`
 		* [x] `GdkEventMaskSignleBit`
-		* [ ] `GdkEventMaskMultiBits` (only `GDK_ALL_EVENTS_MASK`)
+		* [x] `GdkEventMaskMultiBits` (only `GDK_ALL_EVENTS_MASK`)
+	- [ ] define `gdkEventMaskMultiBits ::`
+		`[GdkEventMaskSingleBit] -> GdkEventMaskMultiBits`
 	- [ ] make `GdkEventMaskSingleBit` and `GdkEventMaskMultiBits`
 	- [ ] use `GdkEventMaskMultiBits` in `gdkWindowGetEvents`
 	- [ ] use `GdkEventMaskMultiBits` in `gdkWindowSetEvents`

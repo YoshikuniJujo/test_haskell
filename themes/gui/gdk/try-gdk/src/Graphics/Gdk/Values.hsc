@@ -36,6 +36,9 @@ enum "GdkEventMaskSingleBit" ''#{type GdkEventMask} [''Show] [
 	("GdkTouchpadGestureMask", #{const GDK_TOUCHPAD_GESTURE_MASK}),
 	("GdkTabletPadMask", #{const GDK_TABLET_PAD_MASK}) ]
 
+enum "GdkEventMaskMultiBits" ''#{type GdkEventMask} [''Show] [
+	("GdkAllEventsMask", #{const GDK_ALL_EVENTS_MASK}) ]
+
 mergeGdkEventMask :: [GdkEventMaskSingleBit] -> #{type GdkEventMask}
 mergeGdkEventMask [] = 0
 mergeGdkEventMask (GdkEventMaskSingleBit em : ems) = em .|. mergeGdkEventMask ems
