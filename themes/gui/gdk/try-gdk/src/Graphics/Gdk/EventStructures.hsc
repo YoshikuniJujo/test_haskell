@@ -9,9 +9,10 @@ import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Storable
 import Foreign.C.Enum
+import Data.Bits
+import Data.Bits.Misc
 import Data.Word
 import Data.Int
-import Data.Bits
 
 #include <gdk/gdk.h>
 
@@ -90,6 +91,3 @@ gdkWindowStateCheck (GdkWindowState s) (GdkWindowStates ss) = s .&. ss /= zeroBi
 
 gdkWindowStateList :: GdkWindowStates -> [GdkWindowState]
 gdkWindowStateList (GdkWindowStates ss) = GdkWindowState <$> separateBits 32 ss
-
-separateBits :: Bits n => Int -> n -> [n]
-separateBits c n = filter (/= zeroBits) $ (\i -> n .&. bit i) <$> [0 .. c - 1]
