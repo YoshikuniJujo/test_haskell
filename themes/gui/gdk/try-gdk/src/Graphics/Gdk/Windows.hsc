@@ -87,9 +87,10 @@ import Graphics.Gdk.Visuals
 import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.Cursors
 import Graphics.Gdk.Windows.GdkWindowAttr
+import Graphics.Gdk.Events
+import Graphics.Gdk.EventStructures
 import Graphics.Gdk.Types
 import Graphics.Gdk.Values
-import Graphics.Gdk.EventStructures
 
 import Graphics.Cairo.Drawing.Regions
 
