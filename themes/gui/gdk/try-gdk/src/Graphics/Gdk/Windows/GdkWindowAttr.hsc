@@ -60,7 +60,7 @@ enum "GdkWindowAttributesType" ''#{type GdkWindowAttributesType} [''Show] [
 
 data GdkWindowAttr = GdkWindowAttr {
 	gdkWindowAttrTitle :: Maybe String,
-	gdkWindowAttrEventMask :: [GdkEventMask],
+	gdkWindowAttrEventMask :: [GdkEventMaskSingleBit],
 	gdkWindowAttrX, gdkWindowAttrY :: Maybe CInt,
 	gdkWindowAttrWidth, gdkWindowAttrHeight :: CInt,
 	gdkWindowAttrWclass :: GdkWindowWindowClass,
@@ -84,7 +84,7 @@ gdkWindowAttrTypeHintRaw a =
 	(\(GdkWindowTypeHint th) -> th) <$> gdkWindowAttrTypeHint a
 
 minimalGdkWindowAttr ::
-	[GdkEventMask] -> CInt -> CInt ->
+	[GdkEventMaskSingleBit] -> CInt -> CInt ->
 	GdkWindowWindowClass -> GdkWindowType -> GdkWindowAttr
 minimalGdkWindowAttr em w h wc wt = GdkWindowAttr
 	Nothing em Nothing Nothing w h wc Nothing wt Nothing Nothing Nothing

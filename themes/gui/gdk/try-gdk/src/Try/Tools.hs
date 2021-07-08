@@ -28,7 +28,7 @@ doWhile act = maybe (doWhile act) pure =<< act
 
 defaultGdkWindowAttr :: GdkWindowAttr
 defaultGdkWindowAttr = minimalGdkWindowAttr [
-		gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkPointerMotionMask, gdkButtonMotionMask,
-		gdkButtonReleaseMask, gdkAllEventsMask
+		GdkExposureMask, GdkButtonPressMask, GdkKeyPressMask, GdkPointerMotionMask, GdkButtonMotionMask,
+		GdkButtonReleaseMask -- , gdkAllEventsMask
 		]
 	400 400 gdkInputOutput GdkWindowToplevel

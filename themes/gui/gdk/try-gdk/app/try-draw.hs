@@ -31,17 +31,18 @@ main = do
 	d <- gdkDisplayGetDefault
 
 	let wattr = minimalGdkWindowAttr [
-				gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkFocusChangeMask,
-				gdkEnterNotifyMask, gdkLeaveNotifyMask, gdkPointerMotionMask,
-				gdkAllEventsMask, gdkPointerMotionMask
+				GdkExposureMask, GdkButtonPressMask, GdkKeyPressMask, GdkFocusChangeMask,
+				GdkEnterNotifyMask, GdkLeaveNotifyMask, GdkPointerMotionMask,
+--				GdkAllEventsMask,
+				GdkPointerMotionMask
 				]
 			400 400
 			gdkInputOutput GdkWindowToplevel
 	w <- gdkWindowNew Nothing wattr { gdkWindowAttrTitle = Just "試験窓" }
 	gdkWindowShow w
 	gdkWindowSetEvents w [
-		gdkExposureMask, gdkButtonPressMask, gdkFocusChangeMask, gdkKeyPressMask,
-		gdkPointerMotionMask, gdkAllEventsMask ]
+		GdkExposureMask, GdkButtonPressMask, GdkFocusChangeMask, GdkKeyPressMask,
+		GdkPointerMotionMask ] -- , GdkAllEventsMask ]
 	doWhile_ do
 		threadDelay 100000
 		doWhile $ gdkEventGet >>= \case

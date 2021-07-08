@@ -125,9 +125,10 @@ main = do
 		mapM_ \tw -> print =<< withGdkWindowAutoUnref tw gdkWindowGetWindowType
 	print =<< gdkSeatGetCapabilities st
 	let wattr = minimalGdkWindowAttr [
-				gdkExposureMask, gdkButtonPressMask, gdkKeyPressMask, gdkFocusChangeMask,
-				gdkEnterNotifyMask, gdkLeaveNotifyMask, gdkPointerMotionMask,
-				gdkAllEventsMask, gdkPointerMotionMask
+				GdkExposureMask, GdkButtonPressMask, GdkKeyPressMask, GdkFocusChangeMask,
+				GdkEnterNotifyMask, GdkLeaveNotifyMask, GdkPointerMotionMask,
+--				GdkAllEventsMask,
+				GdkPointerMotionMask
 				]
 			400 400
 			gdkInputOutput GdkWindowToplevel
@@ -167,10 +168,10 @@ main = do
 	putStrLn . ("Window is viewable: " ++) . show =<< gdkWindowIsViewable w
 	putStrLn . ("Window state: " ++) . show . gdkWindowStateList =<< gdkWindowGetState w
 	gdkWindowSetEvents w [
-		gdkExposureMask, gdkButtonPressMask, gdkFocusChangeMask, gdkKeyPressMask,
-		gdkPointerMotionMask, gdkAllEventsMask ]
-	print gdkExposureMask
-	print gdkPointerMotionMask
+		GdkExposureMask, GdkButtonPressMask, GdkFocusChangeMask, GdkKeyPressMask,
+		GdkPointerMotionMask ] -- , gdkAllEventsMask ]
+	print GdkExposureMask
+	print GdkPointerMotionMask
 	putStrLn "gdkScreenGetTopLevelWindows #2"
 	gdkScreenGetToplevelWindows scrn >>=
 		mapM_ \tw -> print =<< gdkWindowGetWindowType tw

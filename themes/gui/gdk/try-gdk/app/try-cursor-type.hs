@@ -25,7 +25,7 @@ main = do
 	d <- gdkWindowGetDisplay w
 	gdkWindowShow w
 	gdkWindowSetEventCompression w False
-	gdkWindowSetEvents w [gdkPointerMotionMask, gdkButtonPressMask, gdkButtonReleaseMask, gdkKeyPressMask] -- , gdkAllEventsMask]
+	gdkWindowSetEvents w [GdkPointerMotionMask, GdkButtonPressMask, GdkButtonReleaseMask, GdkKeyPressMask] -- , gdkAllEventsMask]
 	gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False

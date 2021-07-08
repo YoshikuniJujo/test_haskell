@@ -297,7 +297,7 @@ gdkWindowSetTitle w t = withCString t \ct -> c_gdk_window_set_title w ct
 foreign import ccall "gdk_window_set_title"
 	c_gdk_window_set_title :: GdkWindow -> CString -> IO ()
 
-gdkWindowSetEvents :: GdkWindow -> [GdkEventMask] -> IO ()
+gdkWindowSetEvents :: GdkWindow -> [GdkEventMaskSingleBit] -> IO ()
 gdkWindowSetEvents (GdkWindow p) m = c_gdk_window_set_events p (mergeGdkEventMask m)
 
 foreign import ccall "gdk_window_set_events" c_gdk_window_set_events :: Ptr GdkWindow -> #{type GdkEventMask} -> IO ()
@@ -469,14 +469,14 @@ gdkWindowSetDeviceCursor (GdkWindow w) (GdkDevice d) (GdkCursor fc) =
 foreign import ccall "gdk_window_set_device_events" c_gdk_window_set_device_events ::
 	Ptr GdkWindow -> Ptr GdkDevice -> #{type GdkEventMask} -> IO ()
 
-gdkWindowSetDeviceEvents :: GdkWindow -> GdkDevice -> [GdkEventMask] -> IO ()
+gdkWindowSetDeviceEvents :: GdkWindow -> GdkDevice -> [GdkEventMaskSingleBit] -> IO ()
 gdkWindowSetDeviceEvents (GdkWindow w) (GdkDevice d) ems =
 	c_gdk_window_set_device_events w d $ mergeGdkEventMask ems
 
 foreign import ccall "gdk_window_set_source_events" c_gdk_window_set_source_events ::
 	Ptr GdkWindow -> #{type GdkInputSource} -> #{type GdkEventMask} -> IO ()
 
-gdkWindowSetSourceEvents :: GdkWindow -> GdkInputSource -> [GdkEventMask] -> IO ()
+gdkWindowSetSourceEvents :: GdkWindow -> GdkInputSource -> [GdkEventMaskSingleBit] -> IO ()
 gdkWindowSetSourceEvents (GdkWindow w) (GdkInputSource is) ems =
 	c_gdk_window_set_source_events w is $ mergeGdkEventMask ems
 
