@@ -124,12 +124,12 @@ main = do
 	gdkScreenGetWindowStack scrn >>=
 		mapM_ \tw -> print =<< withGdkWindowAutoUnref tw gdkWindowGetWindowType
 	print =<< gdkSeatGetCapabilities st
-	let wattr = minimalGdkWindowAttr [
+	let wattr = minimalGdkWindowAttr (gdkEventMaskMultiBits [
 				GdkExposureMask, GdkButtonPressMask, GdkKeyPressMask, GdkFocusChangeMask,
 				GdkEnterNotifyMask, GdkLeaveNotifyMask, GdkPointerMotionMask,
 --				GdkAllEventsMask,
 				GdkPointerMotionMask
-				]
+				])
 			400 400
 			gdkInputOutput GdkWindowToplevel
 	putStrLn "*** GDK WINDOW NEW ***"
@@ -336,7 +336,7 @@ checkEvent opacity pos size d st = \case
 		when (kv == fromIntegral (ord 'd')) do
 			putStrLn "`d' pressed"
 			w' <- gdkWindowNew Nothing $ minimalGdkWindowAttr
-				[] 100 100 gdkInputOutput GdkWindowToplevel
+				GdkZeroEventsMask 100 100 gdkInputOutput GdkWindowToplevel
 			gdkWindowSetTransientFor w' w
 			gdkWindowSetModalHint w' True
 			gdkWindowShow w'

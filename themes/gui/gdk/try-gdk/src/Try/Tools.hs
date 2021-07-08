@@ -27,8 +27,8 @@ doWhile :: Monad m => m (Maybe a) -> m a
 doWhile act = maybe (doWhile act) pure =<< act
 
 defaultGdkWindowAttr :: GdkWindowAttr
-defaultGdkWindowAttr = minimalGdkWindowAttr [
+defaultGdkWindowAttr = minimalGdkWindowAttr (gdkEventMaskMultiBits [
 		GdkExposureMask, GdkButtonPressMask, GdkKeyPressMask, GdkPointerMotionMask, GdkButtonMotionMask,
 		GdkButtonReleaseMask -- , gdkAllEventsMask
-		]
+		])
 	400 400 gdkInputOutput GdkWindowToplevel

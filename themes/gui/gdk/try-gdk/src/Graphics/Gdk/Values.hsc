@@ -37,7 +37,11 @@ enum "GdkEventMaskSingleBit" ''#{type GdkEventMask} [''Show] [
 	("GdkTabletPadMask", #{const GDK_TABLET_PAD_MASK}) ]
 
 enum "GdkEventMaskMultiBits" ''#{type GdkEventMask} [''Show] [
+	("GdkZeroEventsMask", 0),
 	("GdkAllEventsMask", #{const GDK_ALL_EVENTS_MASK}) ]
+
+getGdkEventMask :: GdkEventMaskMultiBits -> #{type GdkEventMask}
+getGdkEventMask (GdkEventMaskMultiBits em) = em
 
 gdkEventMaskMultiBits :: [GdkEventMaskSingleBit] -> GdkEventMaskMultiBits
 gdkEventMaskMultiBits = GdkEventMaskMultiBits . mergeGdkEventMask

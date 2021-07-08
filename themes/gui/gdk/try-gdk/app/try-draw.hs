@@ -30,12 +30,12 @@ main = do
 	_ <- join $ gdkInit <$> getProgName <*> getArgs
 	d <- gdkDisplayGetDefault
 
-	let wattr = minimalGdkWindowAttr [
+	let wattr = minimalGdkWindowAttr (gdkEventMaskMultiBits [
 				GdkExposureMask, GdkButtonPressMask, GdkKeyPressMask, GdkFocusChangeMask,
 				GdkEnterNotifyMask, GdkLeaveNotifyMask, GdkPointerMotionMask,
 --				GdkAllEventsMask,
 				GdkPointerMotionMask
-				]
+				])
 			400 400
 			gdkInputOutput GdkWindowToplevel
 	w <- gdkWindowNew Nothing wattr { gdkWindowAttrTitle = Just "試験窓" }

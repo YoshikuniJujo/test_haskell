@@ -19,7 +19,7 @@ main :: IO ()
 main = do
 	gdkInit "foo" []
 	w <- gdkWindowNew Nothing $ minimalGdkWindowAttr
-		[] 100 100 gdkInputOutput GdkWindowToplevel
+		GdkZeroEventsMask 100 100 gdkInputOutput GdkWindowToplevel
 	h <- fromMaybe GdkWindowTypeHintNormal . readMaybe . head <$> getArgs
 	print h
 	gdkWindowSetTypeHint w h

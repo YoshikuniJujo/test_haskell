@@ -60,7 +60,7 @@ enum "GdkWindowAttributesType" ''#{type GdkWindowAttributesType} [''Show] [
 
 data GdkWindowAttr = GdkWindowAttr {
 	gdkWindowAttrTitle :: Maybe String,
-	gdkWindowAttrEventMask :: [GdkEventMaskSingleBit],
+	gdkWindowAttrEventMask :: GdkEventMaskMultiBits,
 	gdkWindowAttrX, gdkWindowAttrY :: Maybe CInt,
 	gdkWindowAttrWidth, gdkWindowAttrHeight :: CInt,
 	gdkWindowAttrWclass :: GdkWindowWindowClass,
@@ -83,8 +83,7 @@ gdkWindowAttrTypeHintRaw :: GdkWindowAttr -> Maybe #{type GdkWindowTypeHint}
 gdkWindowAttrTypeHintRaw a =
 	(\(GdkWindowTypeHint th) -> th) <$> gdkWindowAttrTypeHint a
 
-minimalGdkWindowAttr ::
-	[GdkEventMaskSingleBit] -> CInt -> CInt ->
+minimalGdkWindowAttr :: GdkEventMaskMultiBits -> CInt -> CInt ->
 	GdkWindowWindowClass -> GdkWindowType -> GdkWindowAttr
 minimalGdkWindowAttr em w h wc wt = GdkWindowAttr
 	Nothing em Nothing Nothing w h wc Nothing wt Nothing Nothing Nothing
@@ -104,7 +103,7 @@ withGdkWindowAttr attr f =
 setAttributes :: Ptr b -> GdkWindowAttr -> IO ()
 setAttributes pa a = do
 	#{poke GdkWindowAttr, event_mask} pa
-		. mergeGdkEventMask $ gdkWindowAttrEventMask a
+		. getGdkEventMask $ gdkWindowAttrEventMask a
 	whenMaybe (#{poke GdkWindowAttr, x} pa) $ gdkWindowAttrX a
 	whenMaybe (#{poke GdkWindowAttr, y} pa) $ gdkWindowAttrY a
 	#{poke GdkWindowAttr, width} pa $ gdkWindowAttrWidth a
