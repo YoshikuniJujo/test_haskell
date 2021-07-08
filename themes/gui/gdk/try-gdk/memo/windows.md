@@ -201,10 +201,10 @@ todo
 	- [x] use `c-enum`
 		* [x] `GdkEventMaskSignleBit`
 		* [x] `GdkEventMaskMultiBits` (only `GDK_ALL_EVENTS_MASK`)
-	- [ ] define `gdkEventMaskMultiBits ::`
+	- [x] define `gdkEventMaskMultiBits ::`
 		`[GdkEventMaskSingleBit] -> GdkEventMaskMultiBits`
-	- [ ] make `GdkEventMaskSingleBit` and `GdkEventMaskMultiBits`
+	- [x] define `GdkEventMaskSingleBit` and `GdkEventMaskMultiBits`
+	- [ ] use `GdkEventMaskMultiBits` in `minimalWindowAttr`
 	- [ ] use `GdkEventMaskMultiBits` in `gdkWindowGetEvents`
 	- [ ] use `GdkEventMaskMultiBits` in `gdkWindowSetEvents`
-	- [ ] use `GdkEventMaskMultiBits` in `minimalWindowAttr`
 	- [ ] move to the appropriate module
