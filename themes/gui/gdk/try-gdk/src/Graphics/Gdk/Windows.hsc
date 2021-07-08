@@ -40,7 +40,6 @@ module Graphics.Gdk.Windows (
 	gdkWindowGetOrigin, gdkWindowGetRootCoords,
 	gdkWindowGetParent, gdkWindowGetToplevel, gdkWindowPeekChildren,
 	gdkWindowGetEvents, gdkWindowSetEvents,
-	gdkWindowSetIconName,
 	gdkWindowSetTransientFor,
 
 	-- * Not Checked
@@ -91,7 +90,6 @@ import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.Types
-import Graphics.Gdk.Values
 
 import Graphics.Cairo.Drawing.Regions
 
@@ -446,17 +444,31 @@ foreign import ccall "gdk_window_get_events"
 foreign import ccall "gdk_window_set_events"
 	gdkWindowSetEvents :: GdkWindow -> GdkEventMaskMultiBits -> IO ()
 
+foreign import ccall "gdk_window_set_transient_for"
+	gdkWindowSetTransientFor :: GdkWindow -> GdkWindow -> IO ()
+
+enum "GdkWMDecoration" ''#{type GdkWMDecoration} [''Show] [
+	("GdkDecorAll", #{const GDK_DECOR_ALL}),
+	("GdkDecorBorder", #{const GDK_DECOR_BORDER}),
+	("GdkDecorResizeh", #{const GDK_DECOR_RESIZEH}),
+	("GdkDecorTitle", #{const GDK_DECOR_TITLE}),
+	("GdkDecorMenu", #{const GDK_DECOR_MENU}),
+	("GdkDecorMinimize", #{const GDK_DECOR_MINIMIZE}),
+	("GdkDecorMaximize", #{const GDK_DECOR_MAXIMIZE}) ]
+
+newtype GdkWMDecorations = GdkWMDecorations #{type GdkWMDecoration} deriving Show
+
+gdkWindowGetDecorations :: GdkWindow -> IO GdkWMDecorations
+gdkWindowGetDecorations (GdkWindow p) = GdkWMDecorations <$> c_gdk_window_get_decorations p
+
 foreign import ccall "gdk_window_get_decorations" c_gdk_window_get_decorations ::
 	Ptr GdkWindow -> IO #type GdkWMDecoration
 
-gdkWindowGetDecorations :: GdkWindow -> IO GdkWMDecoration
-gdkWindowGetDecorations (GdkWindow p) = GdkWMDecoration <$> c_gdk_window_get_decorations p
+gdkGetDefaultRootWindow :: IO GdkWindow
+gdkGetDefaultRootWindow = GdkWindow <$> c_gdk_get_default_root_window
 
 foreign import ccall "gdk_get_default_root_window" c_gdk_get_default_root_window ::
 	IO (Ptr GdkWindow)
-
-gdkGetDefaultRootWindow :: IO GdkWindow
-gdkGetDefaultRootWindow = GdkWindow <$> c_gdk_get_default_root_window
 
 foreign import ccall "gdk_window_set_device_cursor" c_gdk_window_set_device_cursor ::
 	Ptr GdkWindow -> Ptr GdkDevice -> Ptr GdkCursor -> IO ()
@@ -484,6 +496,3 @@ foreign import ccall "gdk_window_set_event_compression" c_gdk_window_set_event_c
 
 gdkWindowSetEventCompression :: GdkWindow -> Bool -> IO ()
 gdkWindowSetEventCompression (GdkWindow w) = c_gdk_window_set_event_compression w . boolToGboolean
-
-foreign import ccall "gdk_window_set_transient_for"
-	gdkWindowSetTransientFor :: GdkWindow -> GdkWindow -> IO ()

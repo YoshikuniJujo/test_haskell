@@ -12,12 +12,6 @@ import Data.Word
 newtype GdkWindowWindowClass = GdkWindowWindowClass #{type GdkWindowWindowClass} deriving Show
 #enum GdkWindowWindowClass, GdkWindowWindowClass, GDK_INPUT_OUTPUT, GDK_INPUT_ONLY
 
-newtype GdkWMDecoration = GdkWMDecoration #{type GdkWMDecoration} deriving Show
-
-#enum GdkWMDecoration, GdkWMDecoration, GDK_DECOR_ALL, GDK_DECOR_BORDER, \
-	GDK_DECOR_RESIZEH, GDK_DECOR_TITLE, GDK_DECOR_MENU, \
-	GDK_DECOR_MINIMIZE, GDK_DECOR_MAXIMIZE
-
 newtype GdkAxisUse = GdkAxisUse #{type GdkAxisUse} deriving Show
 
 #enum GdkAxisUse, GdkAxisUse, GDK_AXIS_IGNORE, \

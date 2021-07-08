@@ -75,7 +75,13 @@ Function
 * [x] `gdk_window_set_events`
 * [x] `gdk_window_set_transient_for`
 * [ ] `gdk_window_set_decorations`
+	+ [x] define `GdkWMDecoration`
+	+ [x] define `newtype GdkWMDecorations`
+	+ [ ] define `gdkWMDecorations :: [GdkWMDecoration] -> GdkWMDecorations`
+	+ [ ] define `gdkWindowSetDecorations`
 * [ ] `gdk_window_get_decorations`
+	+ [ ] define `gdkWMDecorationList :: GdkWMDecorations -> [GdkWMDecoration]`
+	+ [ ] define `gdkWindowGetDecorations`
 * [ ] `gdk_get_default_root_window`
 * [ ] `gdk_window_get_support_multidevice`
 * [ ] `gdk_window_set_support_multidevice`
