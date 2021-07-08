@@ -206,7 +206,7 @@ todo
 	- [x] define `GdkEventMaskSingleBit` and `GdkEventMaskMultiBits`
 	- [x] use `GdkEventMaskMultiBits` in `minimalWindowAttr`
 	- [x] move `separateBits` to `Data.Bits.Misc`
-	- [ ] define `gdkEventMaskSingleBitList ::`
+	- [x] define `gdkEventMaskSingleBitList ::`
 		`GdkEventMaskMultiBits -> [GdkEventMaskSingleBit]`
 	- [ ] use `GdkEventMaskMultiBits` in `gdkWindowGetEvents`
 	- [ ] use `GdkEventMaskMultiBits` in `gdkWindowSetEvents`

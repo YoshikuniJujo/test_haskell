@@ -6,6 +6,7 @@ module Graphics.Gdk.Values where
 
 import Foreign.C.Enum
 import Data.Bits
+import Data.Bits.Misc
 import Data.Word
 
 #include <gdk/gdk.h>
@@ -45,6 +46,10 @@ getGdkEventMask (GdkEventMaskMultiBits em) = em
 
 gdkEventMaskMultiBits :: [GdkEventMaskSingleBit] -> GdkEventMaskMultiBits
 gdkEventMaskMultiBits = GdkEventMaskMultiBits . mergeGdkEventMask
+
+gdkEventMaskSingleBitList :: GdkEventMaskMultiBits -> [GdkEventMaskSingleBit]
+gdkEventMaskSingleBitList (GdkEventMaskMultiBits ems) =
+	GdkEventMaskSingleBit <$> separateBits (#{size GdkEventMask} * 8) ems
 
 mergeGdkEventMask :: [GdkEventMaskSingleBit] -> #{type GdkEventMask}
 mergeGdkEventMask [] = 0
