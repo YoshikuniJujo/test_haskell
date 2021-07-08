@@ -73,7 +73,6 @@ Function
 * [x] `gdk_window_peek_children`
 * [x] `gdk_window_get_events`
 * [x] `gdk_window_set_events`
-* [ ] `gdk_window_set_icon_name`
 * [x] `gdk_window_set_transient_for`
 * [ ] `gdk_window_set_decorations`
 * [ ] `gdk_window_get_decorations`
@@ -148,6 +147,8 @@ Function
 * `gdk_window_get_device_posittion_double`
 * `gdk_window_get_children`
 * `gdk_window_get_children_with_user_data`
+* [x] `gdk_window_set_icon_name`
+	+ remove it
 * `gdk_window_set_role`
 * `gdk_window_set_startup_id`
 * `gdk_window_set_group`

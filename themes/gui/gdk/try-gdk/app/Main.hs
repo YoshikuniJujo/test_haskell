@@ -134,7 +134,6 @@ main = do
 			gdkInputOutput GdkWindowToplevel
 	putStrLn "*** GDK WINDOW NEW ***"
 	w <- gdkWindowNew Nothing wattr { gdkWindowAttrTitle = Just "試験窓" }
-	gdkWindowSetIconName w "ボク、ドラエモン"
 	printVisibleRegion w
 	print =<< gdkWindowGetWindowType w
 	putStr "PARENT WINDOW: "

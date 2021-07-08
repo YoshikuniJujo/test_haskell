@@ -446,12 +446,6 @@ foreign import ccall "gdk_window_get_events"
 foreign import ccall "gdk_window_set_events"
 	gdkWindowSetEvents :: GdkWindow -> GdkEventMaskMultiBits -> IO ()
 
-gdkWindowSetIconName :: GdkWindow -> String -> IO ()
-gdkWindowSetIconName w n = withCString n $ c_gdk_window_set_icon_name w
-
-foreign import ccall "gdk_window_set_icon_name"
-	c_gdk_window_set_icon_name :: GdkWindow -> CString -> IO ()
-
 foreign import ccall "gdk_window_get_decorations" c_gdk_window_get_decorations ::
 	Ptr GdkWindow -> IO #type GdkWMDecoration
 
