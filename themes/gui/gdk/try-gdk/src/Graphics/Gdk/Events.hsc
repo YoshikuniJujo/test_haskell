@@ -16,8 +16,7 @@ module Graphics.Gdk.Events (
 
 	gdkEventGet,
 
-	GdkEventMotion,
-	pattern GdkEventGdkDelete, pattern GdkEventGdkMotionNotify,
+	pattern GdkEventGdkDelete,
 	pattern GdkEventGdkKeyPress,
 	pattern GdkEventGdkUnmap, pattern GdkEventGdkConfigure,
 	pattern GdkEventGdkWindowState,
@@ -25,7 +24,7 @@ module Graphics.Gdk.Events (
 	pattern GdkEventGdkNothing, pattern GdkEventGdkKeyRelease,
 	pattern GdkEventGdkMap,
 
-	gdkEventMotionX, gdkEventMotionY, gdkEventGetDeviceTool,
+	gdkEventGetDeviceTool,
 	gdkEventGetSourceDevice,
 
 	gdkEventConfigureHeight,
@@ -321,15 +320,6 @@ gint16ToBool _ = error "something wrong"
 
 gdkEventFocusIn :: GdkEventFocus -> IO Bool
 gdkEventFocusIn (GdkEventFocus p) = gint16ToBool <$> withForeignPtr p #peek GdkEventFocus, in
-
-newtype GdkEventMotion = GdkEventMotion (ForeignPtr GdkEventMotion) deriving Show
-
-pattern GdkEventGdkMotionNotify :: GdkEventMotion -> GdkEvent
-pattern GdkEventGdkMotionNotify p <- GdkEvent (GdkEventType #const GDK_MOTION_NOTIFY) (GdkEventMotion . castForeignPtr -> p)
-
-gdkEventMotionX, gdkEventMotionY :: GdkEventMotion -> IO #type gdouble
-gdkEventMotionX (GdkEventMotion fm) = withForeignPtr fm #peek GdkEventMotion, x
-gdkEventMotionY (GdkEventMotion fm) = withForeignPtr fm #peek GdkEventMotion, y
 
 foreign import ccall "gdk_event_set_source_device" c_gdk_event_set_source_device ::
 	Ptr GdkEvent -> Ptr GdkDevice -> IO ()
