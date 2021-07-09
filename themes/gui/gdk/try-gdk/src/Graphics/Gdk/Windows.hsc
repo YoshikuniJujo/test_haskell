@@ -46,11 +46,11 @@ module Graphics.Gdk.Windows (
 	pattern GdkDecorAll, pattern GdkDecorBorder, pattern GdkDecorResizeh,
 	pattern GdkDecorTitle, pattern GdkDecorMenu, pattern GdkDecorMinimize,
 	pattern GdkDecorMaximize,
-
 	gdkWindowSetDecorations, gdkWindowGetDecorations,
 
-	-- * Not Checked
 	gdkGetDefaultRootWindow,
+
+	-- * Not Checked
 	gdkWindowSetDeviceCursor, gdkWindowSetDeviceEvents, gdkWindowSetSourceEvents,
 
 	gdkWindowSetEventCompression,
@@ -491,11 +491,8 @@ gdkWindowGetDecorations w = alloca \d -> do
 foreign import ccall "gdk_window_get_decorations"
 	c_gdk_window_get_decorations :: GdkWindow -> Ptr #{type GdkWMDecoration} -> IO #{type gboolean}
 
-gdkGetDefaultRootWindow :: IO GdkWindow
-gdkGetDefaultRootWindow = GdkWindow <$> c_gdk_get_default_root_window
-
-foreign import ccall "gdk_get_default_root_window" c_gdk_get_default_root_window ::
-	IO (Ptr GdkWindow)
+foreign import ccall "gdk_get_default_root_window"
+	gdkGetDefaultRootWindow :: IO GdkWindow
 
 foreign import ccall "gdk_window_set_device_cursor" c_gdk_window_set_device_cursor ::
 	Ptr GdkWindow -> Ptr GdkDevice -> Ptr GdkCursor -> IO ()
