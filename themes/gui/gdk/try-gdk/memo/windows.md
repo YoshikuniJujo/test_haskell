@@ -83,8 +83,8 @@ Function
 	+ [x] define `gdkWMDecorationList :: GdkWMDecorations -> [GdkWMDecoration]`
 	+ [x] define `gdkWindowGetDecorations`
 * [x] `gdk_get_default_root_window`
-* [ ] `gdk_window_get_support_multidevice`
-* [ ] `gdk_window_set_support_multidevice`
+* [x] `gdk_window_get_support_multidevice`
+* [x] `gdk_window_set_support_multidevice`
 * [ ] `gdk_window_get_device_cursor`
 * [ ] `gdk_window_get_device_events`
 * [ ] `gdk_window_set_device_events`

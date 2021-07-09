@@ -23,6 +23,7 @@ main = do
 		(gdkEventMaskMultiBits [GdkKeyPressMask])
 		100 100 gdkInputOutput GdkWindowToplevel
 	gdkWindowShow w
+	gdkWindowSetSupportMultidevice w True
 	print =<< gdkWindowGetSupportMultidevice w
 	doWhile_ do
 		threadDelay 100000
