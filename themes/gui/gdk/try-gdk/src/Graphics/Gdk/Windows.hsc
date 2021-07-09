@@ -53,9 +53,9 @@ module Graphics.Gdk.Windows (
 	gdkWindowGetSupportMultidevice, gdkWindowSetSupportMultidevice,
 	gdkWindowGetDeviceCursor, gdkWindowSetDeviceCursor,
 	gdkWindowGetDeviceEvents, gdkWindowSetDeviceEvents,
+	gdkWindowGetSourceEvents, gdkWindowSetSourceEvents,
 
 	-- * Not Checked
-	gdkWindowSetSourceEvents,
 
 	gdkWindowSetEventCompression,
 
@@ -553,6 +553,10 @@ foreign import ccall "gdk_window_get_device_events"
 foreign import ccall "gdk_window_set_device_events"
 	gdkWindowSetDeviceEvents ::
 		GdkWindow -> GdkDevice -> GdkEventMaskMultiBits -> IO ()
+
+foreign import ccall "gdk_window_get_source_events"
+	gdkWindowGetSourceEvents ::
+		GdkWindow -> GdkInputSource -> IO GdkEventMaskMultiBits
 
 foreign import ccall "gdk_window_set_source_events"
 	gdkWindowSetSourceEvents ::
