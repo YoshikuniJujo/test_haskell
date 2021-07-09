@@ -4,6 +4,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.Events (
+	-- * CHECKED
+
 	-- * USE
 	GdkEventMaskMultiBits(..), getGdkEventMask, gdkEventMaskMultiBits,
 	pattern GdkExposureMask, pattern GdkPointerMotionMask,
@@ -18,7 +20,7 @@ module Graphics.Gdk.Events (
 	pattern GdkEventGdkDelete, pattern GdkEventGdkMotionNotify,
 	pattern GdkEventGdkKeyPress,
 	pattern GdkEventGdkUnmap, pattern GdkEventGdkConfigure,
-	pattern GdkEventGdkVisibilityNotify, pattern GdkEventGdkWindowState,
+	pattern GdkEventGdkWindowState,
 	pattern GdkEventGdkFocusChange,
 	pattern GdkEventGdkNothing, pattern GdkEventGdkKeyRelease,
 	pattern GdkEventGdkMap,
@@ -26,13 +28,13 @@ module Graphics.Gdk.Events (
 	gdkEventMotionX, gdkEventMotionY, gdkEventKeyKeyval, gdkEventGetDeviceTool,
 	gdkEventGetSourceDevice,
 
-	gdkEventConfigureHeight, gdkEventVisibilityWindow, gdkEventVisibilityState,
+	gdkEventConfigureHeight,
 	gdkEventWindowStateNewWindowState,
 	gdkEventConfigureX, gdkEventConfigureY, gdkEventConfigureWidth,
 	gdkEventFocusIn, pattern GdkZeroEventsMask, gdkEventKeyWindow, pattern GdkFocusChangeMask,
 
 	gdkGetShowEvents, pattern GdkEnterNotifyMask, pattern GdkLeaveNotifyMask,
-	gdkEventMaskSingleBitList, gdkEventFocusWindow, gdkEventConfigureWindow, gdkEventAnyWindow,
+	gdkEventMaskSingleBitList, gdkEventFocusWindow, gdkEventConfigureWindow,
 
 	-- * NOT USE
 	gdkEventsPending, gdkEventPeek, gdkEventPut, gdkEventNew, gdkEventCopy, gdkEventGetAxis,
@@ -40,7 +42,7 @@ module Graphics.Gdk.Events (
 	gdkEventGetRootCoords, gdkEventGetScrollDirection, gdkEventGetScrollDeltas, gdkEventIsScrollStopEvent,
 	gdkEventGetState, gdkEventGetTime, gdkEventGetWindow, gdkEventGetEventType, gdkEventGetSeat,
 	gdkEventGetScancode, gdkEventSetScreen, gdkEventGetScreen, gdkEventGetDevice, gdkEventSetDevice,
-	gdkEventSetSourceDevice, gdkVisibilityUnobscured, gdkVisibilityPartial, gdkVisibilityFullyObscured
+	gdkEventSetSourceDevice,
 
 	) where
 
@@ -286,32 +288,11 @@ gdkEventWindowStateNewWindowState :: GdkEventWindowState -> IO GdkWindowState
 gdkEventWindowStateNewWindowState (GdkEventWindowState p) =
 	GdkWindowState <$> withForeignPtr p #peek GdkEventWindowState, new_window_state
 
-data GdkEventAny = GdkEventAny GdkEventType (ForeignPtr GdkEventAny) deriving Show
-
 pattern GdkEventGdkMap :: GdkEventAny -> GdkEvent
 pattern GdkEventGdkMap p <- GdkEvent t@(GdkEventType #const GDK_MAP) (GdkEventAny t . castForeignPtr -> p)
 
 pattern GdkEventGdkUnmap :: GdkEventAny -> GdkEvent
 pattern GdkEventGdkUnmap p <- GdkEvent t@(GdkEventType #const GDK_UNMAP) (GdkEventAny t . castForeignPtr -> p)
-
-newtype GdkEventVisibility = GdkEventVisibility (ForeignPtr GdkEventVisibility) deriving Show
-
-pattern GdkEventGdkVisibilityNotify :: GdkEventVisibility -> GdkEvent
-pattern GdkEventGdkVisibilityNotify p <-
-	GdkEvent (GdkEventType #const GDK_VISIBILITY_NOTIFY) (GdkEventVisibility . castForeignPtr -> p)
-
-newtype GdkVisibilityState = GdkVisibilityState #{type GdkVisibilityState} deriving Show
-
-#enum GdkVisibilityState, GdkVisibilityState, GDK_VISIBILITY_UNOBSCURED, \
-	GDK_VISIBILITY_PARTIAL, GDK_VISIBILITY_FULLY_OBSCURED
-
-gdkEventVisibilityWindow :: GdkEventVisibility -> IO GdkWindow
-gdkEventVisibilityWindow (GdkEventVisibility p) =
---	GdkWindow <$> (c_g_object_ref =<< withForeignPtr p #peek GdkEventVisibility, window)
-	GdkWindow <$> withForeignPtr p #peek GdkEventVisibility, window
-
-gdkEventAnyWindow :: GdkEventAny -> IO GdkWindow
-gdkEventAnyWindow (GdkEventAny _ p) = GdkWindow <$> withForeignPtr p #peek GdkEventAny, window
 
 gdkEventConfigureWindow :: GdkEventConfigure -> IO GdkWindow
 gdkEventConfigureWindow (GdkEventConfigure p) = GdkWindow <$> withForeignPtr p #peek GdkEventConfigure, window
@@ -319,9 +300,6 @@ gdkEventConfigureWindow (GdkEventConfigure p) = GdkWindow <$> withForeignPtr p #
 gdkEventFocusWindow :: GdkEventFocus -> IO GdkWindow
 gdkEventFocusWindow (GdkEventFocus p) =
 	GdkWindow <$> withForeignPtr p #peek GdkEventFocus, window
-
-gdkEventVisibilityState :: GdkEventVisibility -> IO GdkVisibilityState
-gdkEventVisibilityState (GdkEventVisibility p) = GdkVisibilityState <$> withForeignPtr p #peek GdkEventVisibility, state
 
 pattern GdkEventGdkDelete :: GdkEventAny -> GdkEvent
 pattern GdkEventGdkDelete p <- GdkEvent t@(GdkEventType #const GDK_DELETE) (GdkEventAny t . castForeignPtr -> p)
@@ -340,8 +318,8 @@ gdkEventKeyKeyval (GdkEventKey p) = withForeignPtr p #peek GdkEventKey, keyval
 
 gdkEventKeyWindow :: GdkEventKey -> IO GdkWindow
 gdkEventKeyWindow (GdkEventKey p) =
---	GdkWindow <$> (c_g_object_ref =<< withForeignPtr p #peek GdkEventVisibility, window)
-	GdkWindow <$> withForeignPtr p #peek GdkEventVisibility, window
+--	GdkWindow <$> (c_g_object_ref =<< withForeignPtr p #peek GdkEventKey, window)
+	GdkWindow <$> withForeignPtr p #peek GdkEventKey, window
 
 pattern GdkEventGdkKeyRelease :: GdkEventKey -> GdkEvent
 pattern GdkEventGdkKeyRelease p <- GdkEvent (GdkEventType #const GDK_KEY_RELEASE) (GdkEventKey . castForeignPtr -> p)

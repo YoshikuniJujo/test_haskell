@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.EventStructures where
@@ -13,6 +13,8 @@ import Data.Bits
 import Data.Bits.Misc
 import Data.Word
 import Data.Int
+
+import {-# SOURCE #-} Graphics.Gdk.Windows
 
 #include <gdk/gdk.h>
 
@@ -91,3 +93,27 @@ gdkWindowStateCheck (GdkWindowState s) (GdkWindowStates ss) = s .&. ss /= zeroBi
 
 gdkWindowStateList :: GdkWindowStates -> [GdkWindowState]
 gdkWindowStateList (GdkWindowStates ss) = GdkWindowState <$> separateBits 32 ss
+
+data GdkEventAny = GdkEventAny GdkEventType (ForeignPtr GdkEventAny) deriving Show
+
+gdkEventAnyWindow :: GdkEventAny -> IO GdkWindow
+gdkEventAnyWindow (GdkEventAny _ p) = GdkWindow <$> withForeignPtr p #peek GdkEventAny, window
+
+newtype GdkEventVisibility = GdkEventVisibility (ForeignPtr GdkEventVisibility) deriving Show
+
+pattern GdkEventGdkVisibilityNotify :: GdkEventVisibility -> GdkEvent
+pattern GdkEventGdkVisibilityNotify p <-
+	GdkEvent (GdkEventType #const GDK_VISIBILITY_NOTIFY) (GdkEventVisibility . castForeignPtr -> p)
+
+newtype GdkVisibilityState = GdkVisibilityState #{type GdkVisibilityState} deriving Show
+
+#enum GdkVisibilityState, GdkVisibilityState, GDK_VISIBILITY_UNOBSCURED, \
+	GDK_VISIBILITY_PARTIAL, GDK_VISIBILITY_FULLY_OBSCURED
+
+gdkEventVisibilityWindow :: GdkEventVisibility -> IO GdkWindow
+gdkEventVisibilityWindow (GdkEventVisibility p) =
+--	GdkWindow <$> (c_g_object_ref =<< withForeignPtr p #peek GdkEventVisibility, window)
+	GdkWindow <$> withForeignPtr p #peek GdkEventVisibility, window
+
+gdkEventVisibilityState :: GdkEventVisibility -> IO GdkVisibilityState
+gdkEventVisibilityState (GdkEventVisibility p) = GdkVisibilityState <$> withForeignPtr p #peek GdkEventVisibility, state
