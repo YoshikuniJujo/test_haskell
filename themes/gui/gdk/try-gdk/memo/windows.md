@@ -89,6 +89,7 @@ Function
 * [ ] `gdk_window_set_device_cursor`
 	+ [x] get seat
 	+ [x] get devices
+	+ [x] get device sources
 	+ [ ] make cursor
 	+ [ ] define `gdkWindowSetDeviceCursor`
 * [ ] `gdk_window_get_device_events`

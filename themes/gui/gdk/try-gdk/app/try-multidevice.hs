@@ -27,10 +27,10 @@ main = do
 	dvp <- gdkSeatGetPointer st
 	print d
 	print st
-	print =<< gdkDeviceGetName dvp
+	print =<< gdkDeviceGetNameAndSource dvp
 	print =<< gdkDeviceGetDeviceType dvp
 	slv <- gdkDeviceListSlaveDevices dvp
-	mapM_ (print <=< gdkDeviceGetName) slv
+	mapM_ (print <=< gdkDeviceGetNameAndSource) slv
 	w <- gdkWindowNew Nothing $ minimalGdkWindowAttr
 		(gdkEventMaskMultiBits [GdkKeyPressMask])
 		100 100 gdkInputOutput GdkWindowToplevel
@@ -45,3 +45,7 @@ main = do
 				pure . Just $ kv /= fromIntegral (ord 'q')
 			Just _ -> pure Nothing
 			Nothing -> pure $ Just True
+
+gdkDeviceGetNameAndSource :: GdkDevice -> IO (String, GdkInputSource)
+gdkDeviceGetNameAndSource d =
+	(,) <$> gdkDeviceGetName d <*> gdkDeviceGetSource d
