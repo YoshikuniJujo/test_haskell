@@ -50,6 +50,8 @@ module Graphics.Gdk.Windows (
 
 	gdkGetDefaultRootWindow,
 
+	gdkWindowGetSupportMultidevice,
+
 	-- * Not Checked
 	gdkWindowSetDeviceCursor, gdkWindowSetDeviceEvents, gdkWindowSetSourceEvents,
 
@@ -493,6 +495,13 @@ foreign import ccall "gdk_window_get_decorations"
 
 foreign import ccall "gdk_get_default_root_window"
 	gdkGetDefaultRootWindow :: IO GdkWindow
+
+gdkWindowGetSupportMultidevice :: GdkWindow -> IO Bool
+gdkWindowGetSupportMultidevice w =
+	gbooleanToBool <$> c_gdk_window_get_support_multidevice w
+
+foreign import ccall "gdk_window_get_support_multidevice"
+	c_gdk_window_get_support_multidevice :: GdkWindow -> IO #{type gboolean}
 
 foreign import ccall "gdk_window_set_device_cursor" c_gdk_window_set_device_cursor ::
 	Ptr GdkWindow -> Ptr GdkDevice -> Ptr GdkCursor -> IO ()
