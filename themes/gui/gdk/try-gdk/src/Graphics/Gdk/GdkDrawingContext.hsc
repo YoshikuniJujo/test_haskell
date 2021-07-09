@@ -33,7 +33,7 @@ foreign import ccall "gdk_drawing_context_get_clip"
 	c_gdk_drawing_context_get_clip ::
 		GdkDrawingContext s -> IO (Ptr (CairoRegionT s))
 
-gdkDrawingContextGetCairoContext :: GdkDrawingContext s -> IO (CairoT s')
+gdkDrawingContextGetCairoContext :: GdkDrawingContext s -> IO (CairoTIO s)
 gdkDrawingContextGetCairoContext dc = do
 	p <- c_gdk_drawing_context_get_cairo_context dc
 	fp <- newForeignPtr p $ pure ()
@@ -41,7 +41,7 @@ gdkDrawingContextGetCairoContext dc = do
 
 foreign import ccall "gdk_drawing_context_get_cairo_context"
 	c_gdk_drawing_context_get_cairo_context ::
-		GdkDrawingContext s -> IO (Ptr (CairoT s'))
+		GdkDrawingContext s -> IO (Ptr (CairoTIO s))
 
 gdkDrawingContextIsValid :: GdkDrawingContext s -> IO Bool
 gdkDrawingContextIsValid dc =
