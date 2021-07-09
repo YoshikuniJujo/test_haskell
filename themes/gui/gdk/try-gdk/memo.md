@@ -16,7 +16,7 @@ API Reference contents
 * [x] Points and Rectangles
 * [x] Visuals
 * [x] Cursors
-* [ ] Windows
+* [x] Windows
 * [ ] GdkDrawingContext
 * [ ] Events
 * [x] Properties and Atoms: Atoms

@@ -54,7 +54,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowGetDeviceCursor, gdkWindowSetDeviceCursor,
 	gdkWindowGetDeviceEvents, gdkWindowSetDeviceEvents,
 	gdkWindowGetSourceEvents, gdkWindowSetSourceEvents,
-	gdkWindowSetEventCompression,
+	gdkWindowGetEventCompression, gdkWindowSetEventCompression,
 
 	-- * GdkWindowType
 	GdkWindowType(..),
@@ -555,6 +555,14 @@ foreign import ccall "gdk_window_get_source_events"
 foreign import ccall "gdk_window_set_source_events"
 	gdkWindowSetSourceEvents ::
 		GdkWindow -> GdkInputSource -> GdkEventMaskMultiBits -> IO ()
+
+gdkWindowGetEventCompression :: GdkWindow -> IO Bool
+gdkWindowGetEventCompression w =
+	gbooleanToBool <$> c_gdk_window_get_event_compression w
+
+foreign import ccall "gdk_window_get_event_compression"
+	c_gdk_window_get_event_compression ::
+		GdkWindow -> IO #{type gboolean}
 
 gdkWindowSetEventCompression :: GdkWindow -> Bool -> IO ()
 gdkWindowSetEventCompression w =
