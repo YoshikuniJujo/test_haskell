@@ -4,14 +4,17 @@ Events memo
 * [x] add an export list
 * [ ] move GdkEvent structures to Graphics.Gdk.EventStructures
 	+ [x] `GdkEventAny`
-	+ [x] `GdkEventVisibility`
-	+ [ ] `GdkEventMotion`
+	+ [x] `GdkEventKey`
 	+ [ ] `GdkEventButton`
 	+ [ ] `GdkEventTouch`
 	+ [ ] `GdkEventScroll`
-	+ [ ] `GdkEventKey`
+	+ [ ] `GdkEventMotion`
+	+ [x] `GdkEventVisibility`
+	+ [ ] `GdkEventCrossing`
+	+ [ ] `GdkEventFocus`
 	+ [ ] more
 	+ [ ] about `GdkEventAny`
+* [ ] use `c-struct` in `GdkEventFoo`
 
 Function
 --------

@@ -99,6 +99,22 @@ data GdkEventAny = GdkEventAny GdkEventType (ForeignPtr GdkEventAny) deriving Sh
 gdkEventAnyWindow :: GdkEventAny -> IO GdkWindow
 gdkEventAnyWindow (GdkEventAny _ p) = GdkWindow <$> withForeignPtr p #peek GdkEventAny, window
 
+newtype GdkEventKey = GdkEventKey (ForeignPtr GdkEventKey) deriving Show
+
+pattern GdkEventGdkKeyPress :: GdkEventKey -> GdkEvent
+pattern GdkEventGdkKeyPress p <- GdkEvent (GdkEventType #const GDK_KEY_PRESS) (GdkEventKey . castForeignPtr -> p)
+
+gdkEventKeyKeyval :: GdkEventKey -> IO #type guint
+gdkEventKeyKeyval (GdkEventKey p) = withForeignPtr p #peek GdkEventKey, keyval
+
+gdkEventKeyWindow :: GdkEventKey -> IO GdkWindow
+gdkEventKeyWindow (GdkEventKey p) =
+--	GdkWindow <$> (c_g_object_ref =<< withForeignPtr p #peek GdkEventKey, window)
+	GdkWindow <$> withForeignPtr p #peek GdkEventKey, window
+
+pattern GdkEventGdkKeyRelease :: GdkEventKey -> GdkEvent
+pattern GdkEventGdkKeyRelease p <- GdkEvent (GdkEventType #const GDK_KEY_RELEASE) (GdkEventKey . castForeignPtr -> p)
+
 newtype GdkEventVisibility = GdkEventVisibility (ForeignPtr GdkEventVisibility) deriving Show
 
 pattern GdkEventGdkVisibilityNotify :: GdkEventVisibility -> GdkEvent

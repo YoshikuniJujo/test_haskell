@@ -11,6 +11,7 @@ import Graphics.Gdk.General
 import Graphics.Gdk.Cursors
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Events
+import Graphics.Gdk.EventStructures
 import Try.Tools
 
 main :: IO ()

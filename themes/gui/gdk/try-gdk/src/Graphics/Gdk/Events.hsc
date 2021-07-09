@@ -25,13 +25,13 @@ module Graphics.Gdk.Events (
 	pattern GdkEventGdkNothing, pattern GdkEventGdkKeyRelease,
 	pattern GdkEventGdkMap,
 
-	gdkEventMotionX, gdkEventMotionY, gdkEventKeyKeyval, gdkEventGetDeviceTool,
+	gdkEventMotionX, gdkEventMotionY, gdkEventGetDeviceTool,
 	gdkEventGetSourceDevice,
 
 	gdkEventConfigureHeight,
 	gdkEventWindowStateNewWindowState,
 	gdkEventConfigureX, gdkEventConfigureY, gdkEventConfigureWidth,
-	gdkEventFocusIn, pattern GdkZeroEventsMask, gdkEventKeyWindow, pattern GdkFocusChangeMask,
+	gdkEventFocusIn, pattern GdkZeroEventsMask, pattern GdkFocusChangeMask,
 
 	gdkGetShowEvents, pattern GdkEnterNotifyMask, pattern GdkLeaveNotifyMask,
 	gdkEventMaskSingleBitList, gdkEventFocusWindow, gdkEventConfigureWindow,
@@ -307,22 +307,6 @@ pattern GdkEventGdkDelete p <- GdkEvent t@(GdkEventType #const GDK_DELETE) (GdkE
 pattern GdkEventGdkNothing :: GdkEventAny -> GdkEvent
 pattern GdkEventGdkNothing p <- GdkEvent t@(GdkEventType (#const GDK_NOTHING)) (GdkEventAny t . castForeignPtr -> p)
 -- pattern GdkEventGdkNothing p <- GdkEvent (GdkEventType (#const GDK_NOTHING)) (GdkEventAny . castForeignPtr -> p)
-
-newtype GdkEventKey = GdkEventKey (ForeignPtr GdkEventKey) deriving Show
-
-pattern GdkEventGdkKeyPress :: GdkEventKey -> GdkEvent
-pattern GdkEventGdkKeyPress p <- GdkEvent (GdkEventType #const GDK_KEY_PRESS) (GdkEventKey . castForeignPtr -> p)
-
-gdkEventKeyKeyval :: GdkEventKey -> IO #type guint
-gdkEventKeyKeyval (GdkEventKey p) = withForeignPtr p #peek GdkEventKey, keyval
-
-gdkEventKeyWindow :: GdkEventKey -> IO GdkWindow
-gdkEventKeyWindow (GdkEventKey p) =
---	GdkWindow <$> (c_g_object_ref =<< withForeignPtr p #peek GdkEventKey, window)
-	GdkWindow <$> withForeignPtr p #peek GdkEventKey, window
-
-pattern GdkEventGdkKeyRelease :: GdkEventKey -> GdkEvent
-pattern GdkEventGdkKeyRelease p <- GdkEvent (GdkEventType #const GDK_KEY_RELEASE) (GdkEventKey . castForeignPtr -> p)
 
 newtype GdkEventFocus = GdkEventFocus (ForeignPtr GdkEventFocus) deriving Show
 
