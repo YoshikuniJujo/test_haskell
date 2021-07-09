@@ -143,6 +143,22 @@ gint16ToBool #{const TRUE} = True
 gint16ToBool #{const FALSE} = False
 gint16ToBool _ = error "something wrong"
 
+newtype GdkEventConfigure = GdkEventConfigure (ForeignPtr GdkEventConfigure) deriving Show
+		
+gdkEventConfigureWidth, gdkEventConfigureHeight :: GdkEventConfigure -> IO #type gint
+gdkEventConfigureWidth (GdkEventConfigure p) = withForeignPtr p #peek GdkEventConfigure, width
+gdkEventConfigureHeight (GdkEventConfigure p) = withForeignPtr p #peek GdkEventConfigure, height
+
+gdkEventConfigureX, gdkEventConfigureY :: GdkEventConfigure -> IO #type gint
+gdkEventConfigureX (GdkEventConfigure p) = withForeignPtr p #peek GdkEventConfigure, x
+gdkEventConfigureY (GdkEventConfigure p) = withForeignPtr p #peek GdkEventConfigure, y
+
+pattern GdkEventGdkConfigure :: GdkEventConfigure -> GdkEvent
+pattern GdkEventGdkConfigure p <- GdkEvent (GdkEventType #{const GDK_CONFIGURE}) (GdkEventConfigure . castForeignPtr -> p)
+
+gdkEventConfigureWindow :: GdkEventConfigure -> IO GdkWindow
+gdkEventConfigureWindow (GdkEventConfigure p) = GdkWindow <$> withForeignPtr p #peek GdkEventConfigure, window
+
 newtype GdkEventVisibility = GdkEventVisibility (ForeignPtr GdkEventVisibility) deriving Show
 
 pattern GdkEventGdkVisibilityNotify :: GdkEventVisibility -> GdkEvent

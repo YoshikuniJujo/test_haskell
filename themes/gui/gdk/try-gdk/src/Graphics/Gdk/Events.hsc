@@ -30,10 +30,10 @@ module Graphics.Gdk.Events (
 	gdkEventConfigureHeight,
 	gdkEventWindowStateNewWindowState,
 	gdkEventConfigureX, gdkEventConfigureY, gdkEventConfigureWidth,
-	gdkEventFocusIn, pattern GdkZeroEventsMask, pattern GdkFocusChangeMask,
+	pattern GdkZeroEventsMask, pattern GdkFocusChangeMask,
 
 	gdkGetShowEvents, pattern GdkEnterNotifyMask, pattern GdkLeaveNotifyMask,
-	gdkEventMaskSingleBitList, gdkEventFocusWindow, gdkEventConfigureWindow,
+	gdkEventMaskSingleBitList, gdkEventConfigureWindow,
 
 	-- * NOT USE
 	gdkEventsPending, gdkEventPeek, gdkEventPut, gdkEventNew, gdkEventCopy, gdkEventGetAxis,
@@ -264,19 +264,6 @@ gdkEventGetSourceDevice (GdkEvent _ fe) = withForeignPtr fe \e ->
 	(<$> c_gdk_event_get_source_device e) \case
 		NullPtr -> Nothing; p -> Just $ GdkDevice p
 
-newtype GdkEventConfigure = GdkEventConfigure (ForeignPtr GdkEventConfigure) deriving Show
-		
-gdkEventConfigureWidth, gdkEventConfigureHeight :: GdkEventConfigure -> IO #type gint
-gdkEventConfigureWidth (GdkEventConfigure p) = withForeignPtr p #peek GdkEventConfigure, width
-gdkEventConfigureHeight (GdkEventConfigure p) = withForeignPtr p #peek GdkEventConfigure, height
-
-gdkEventConfigureX, gdkEventConfigureY :: GdkEventConfigure -> IO #type gint
-gdkEventConfigureX (GdkEventConfigure p) = withForeignPtr p #peek GdkEventConfigure, x
-gdkEventConfigureY (GdkEventConfigure p) = withForeignPtr p #peek GdkEventConfigure, y
-
-pattern GdkEventGdkConfigure :: GdkEventConfigure -> GdkEvent
-pattern GdkEventGdkConfigure p <- GdkEvent (GdkEventType #{const GDK_CONFIGURE}) (GdkEventConfigure . castForeignPtr -> p)
-
 newtype GdkEventWindowState = GdkEventWindowState (ForeignPtr GdkEventWindowState) deriving Show
 
 pattern GdkEventGdkWindowState :: GdkEventWindowState -> GdkEvent
@@ -291,9 +278,6 @@ pattern GdkEventGdkMap p <- GdkEvent t@(GdkEventType #const GDK_MAP) (GdkEventAn
 
 pattern GdkEventGdkUnmap :: GdkEventAny -> GdkEvent
 pattern GdkEventGdkUnmap p <- GdkEvent t@(GdkEventType #const GDK_UNMAP) (GdkEventAny t . castForeignPtr -> p)
-
-gdkEventConfigureWindow :: GdkEventConfigure -> IO GdkWindow
-gdkEventConfigureWindow (GdkEventConfigure p) = GdkWindow <$> withForeignPtr p #peek GdkEventConfigure, window
 
 pattern GdkEventGdkDelete :: GdkEventAny -> GdkEvent
 pattern GdkEventGdkDelete p <- GdkEvent t@(GdkEventType #const GDK_DELETE) (GdkEventAny t . castForeignPtr -> p)

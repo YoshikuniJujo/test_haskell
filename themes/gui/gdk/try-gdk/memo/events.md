@@ -8,7 +8,7 @@ Events memo
 	+ [x] `GdkEventMotion`
 	+ [x] `GdkEventVisibility`
 	+ [x] `GdkEventFocus`
-	+ [ ] `GdkEventConfigure`
+	+ [x] `GdkEventConfigure`
 	+ [ ] `GdkEventProperty`
 	+ [ ] `GdkEventSelection`
 	+ [ ] `GdkEventDND`
@@ -16,8 +16,22 @@ Events memo
 	+ [ ] `GdkEventWindowState`
 	+ [ ] `GdkEventSetting`
 	+ [ ] `GdkEventOwnerChange`
-	+ [ ] more
+	+ [ ] `GdkEventGrabBroken`
+	+ [ ] `GdkEventTouchpadSwipe`
+	+ [ ] `GdkEventTouchpadPinch`
+	+ [ ] `GdkEventPadButton`
+	+ [ ] `GdkEventPadAxis`
+	+ [ ] `GdkEventPadGroupMode`
 	+ [ ] about `GdkEventAny`
+* [ ] move enums to Graphics.Gdk.EventStructures
+	+ [ ] GdkScrollDirection
+	+ [ ] GdkVisibilityState
+	+ [ ] GdkCrossingMode
+	+ [ ] GdkNotifyType
+	+ [ ] GdkPropertyState
+	+ [ ] GdkWindowState
+	+ [ ] GdkSettingAction
+	+ [ ] GdkOwnerChange
 * [ ] use `c-struct` in `GdkEventFoo`
 
 Function
