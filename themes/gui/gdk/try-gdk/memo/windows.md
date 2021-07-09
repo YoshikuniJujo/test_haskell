@@ -96,7 +96,9 @@ Function
 	+ [x] define `gdkWindowSetDeviceCursor`
 	+ [x] repair `gdkWindowSetDeviceCursor`
 		- [x] repair `gdkWindowDestroy`
-* [ ] `gdk_window_get_device_events`
+* [x] `gdk_window_get_device_events`
+	+ [x] foreign import
+	+ [x] define `gdkWindowGetDeviceEvents`
 * [ ] `gdk_window_set_device_events`
 * [ ] `gdk_window_get_source_events`
 * [ ] `gdk_window_set_source_events`
