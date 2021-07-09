@@ -51,7 +51,7 @@ module Graphics.Gdk.Windows (
 	gdkGetDefaultRootWindow,
 
 	gdkWindowGetSupportMultidevice, gdkWindowSetSupportMultidevice,
-	gdkWindowSetDeviceCursor,
+	gdkWindowGetDeviceCursor, gdkWindowSetDeviceCursor,
 
 	-- * Not Checked
 	gdkWindowSetDeviceEvents, gdkWindowSetSourceEvents,
@@ -512,12 +512,23 @@ foreign import ccall "gdk_window_set_support_multidevice"
 	c_gdk_window_set_support_multidevice ::
 		GdkWindow -> #{type gboolean} -> IO ()
 
+gdkWindowGetDeviceCursor :: GdkWindow -> GdkDevice -> IO (Maybe GdkCursor)
+gdkWindowGetDeviceCursor w dv = c_gdk_window_get_device_cursor w dv >>= \case
+	NullPtr -> pure Nothing
+	c -> Just . GdkCursor
+		<$> (c_g_object_ref c >> newForeignPtr c (c_g_object_unref c))
+
+foreign import ccall "gdk_window_get_device_cursor"
+	c_gdk_window_get_device_cursor ::
+		GdkWindow -> GdkDevice -> IO (Ptr GdkCursor)
+
 gdkWindowSetDeviceCursor :: GdkWindow -> GdkDevice -> GdkCursor -> IO ()
 gdkWindowSetDeviceCursor w d (GdkCursor fc) =
 	withForeignPtr fc $ c_gdk_window_set_device_cursor w d
 
-foreign import ccall "gdk_window_set_device_cursor" c_gdk_window_set_device_cursor ::
-	GdkWindow -> GdkDevice -> Ptr GdkCursor -> IO ()
+foreign import ccall "gdk_window_set_device_cursor"
+	c_gdk_window_set_device_cursor ::
+		GdkWindow -> GdkDevice -> Ptr GdkCursor -> IO ()
 
 foreign import ccall "gdk_window_set_device_events" c_gdk_window_set_device_events ::
 	Ptr GdkWindow -> Ptr GdkDevice -> #{type GdkEventMask} -> IO ()
