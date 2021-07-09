@@ -12,6 +12,7 @@ import Graphics.Gdk.General
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkDevice
+import Graphics.Gdk.Cursors
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Events
 import Graphics.Gdk.Values
@@ -30,12 +31,14 @@ main = do
 	print =<< gdkDeviceGetNameAndSource dvp
 	print =<< gdkDeviceGetDeviceType dvp
 	slv <- gdkDeviceListSlaveDevices dvp
-	mapM_ (print <=< gdkDeviceGetNameAndSource) slv
+	(print <=< gdkDeviceGetNameAndSource) `mapM_` slv
 	w <- gdkWindowNew Nothing $ minimalGdkWindowAttr
 		(gdkEventMaskMultiBits [GdkKeyPressMask])
 		100 100 gdkInputOutput GdkWindowToplevel
 	gdkWindowShow w
 	gdkWindowSetSupportMultidevice w True
+--	gdkWindowSetCursor w =<< gdkCursorNewForDisplay d GdkHand2
+	gdkWindowSetDeviceCursor w dvp =<< gdkCursorNewForDisplay d GdkMouse
 	print =<< gdkWindowGetSupportMultidevice w
 	doWhile_ do
 		threadDelay 100000
