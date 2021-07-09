@@ -2,7 +2,7 @@ GdkDrawingContext memo
 ======================
 
 * [x] make export list
-* [ ] `gdkDrawingContextGetWindow`
+* [x] `gdkDrawingContextGetWindow`
 * [ ] `gdkDrawingContextGetClip`
 * [ ] `gdkDrawingContextGetCairoContext`
 * [ ] `gdkDrawingContextIsValid`

@@ -19,13 +19,11 @@ import Graphics.Cairo.Drawing.Regions
 
 #include <gdk/gdk.h>
 
-newtype GdkDrawingContext s = GdkDrawingContext (Ptr (GdkDrawingContext s)) deriving Show
+newtype GdkDrawingContext s = GdkDrawingContext (Ptr (GdkDrawingContext s))
+	deriving Show
 
-foreign import ccall "gdk_drawing_context_get_window" c_gdk_drawing_context_get_window ::
-	Ptr (GdkDrawingContext s) -> IO (Ptr GdkWindow)
-
-gdkDrawingContextGetWindow :: GdkDrawingContext s -> IO GdkWindow
-gdkDrawingContextGetWindow (GdkDrawingContext p) = GdkWindow <$> c_gdk_drawing_context_get_window p
+foreign import ccall "gdk_drawing_context_get_window"
+	gdkDrawingContextGetWindow :: GdkDrawingContext s -> IO GdkWindow
 
 foreign import ccall "gdk_drawing_context_get_clip" c_gdk_drawing_context_get_clip ::
 	Ptr (GdkDrawingContext s) -> IO (Ptr (CairoRegionT s))
