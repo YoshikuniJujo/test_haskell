@@ -88,13 +88,14 @@ Function
 * [x] `gdk_window_get_device_cursor`
 	+ [x] foreign import
 	+ [x] define `gdkWindowGetDeviceCursor`
-* [ ] `gdk_window_set_device_cursor`
+* [x] `gdk_window_set_device_cursor`
 	+ [x] get seat
 	+ [x] get devices
 	+ [x] get device sources
 	+ [x] make cursor
 	+ [x] define `gdkWindowSetDeviceCursor`
-	+ [ ] repair `gdkWindowSetDeviceCursor`
+	+ [x] repair `gdkWindowSetDeviceCursor`
+		- [x] repair `gdkWindowDestroy`
 * [ ] `gdk_window_get_device_events`
 * [ ] `gdk_window_set_device_events`
 * [ ] `gdk_window_get_source_events`

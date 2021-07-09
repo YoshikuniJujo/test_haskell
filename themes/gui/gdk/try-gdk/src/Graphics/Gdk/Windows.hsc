@@ -82,6 +82,7 @@ import Foreign.C
 import Foreign.C.Enum
 import Control.Monad.ST
 import Control.Exception
+import Data.Maybe
 import Data.Bits
 import Data.Bits.Misc
 import Data.Word
@@ -89,8 +90,9 @@ import Data.Int
 import System.GLib.Bool
 import System.GLib.DoublyLinkedLists
 
-import {-# SOURCE #-} Graphics.Gdk.GdkDisplay
+import Graphics.Gdk.GdkDisplay
 import {-# SOURCE #-} Graphics.Gdk.GdkScreen
+import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.PointsAndRectangles
 import Graphics.Gdk.Visuals
@@ -126,13 +128,29 @@ foreign import ccall "g_object_ref" c_g_object_ref :: Ptr a -> IO ()
 gdkWindowDestroy :: GdkWindow -> IO ()
 gdkWindowDestroy w = do
 	whenMaybe c_g_object_unref =<< c_gdk_window_get_cursor' w
+	d <- gdkWindowGetDisplay w
+	dvps <- allPointerDevice d
+	cs <- catMaybes <$> mapM (c_gdk_window_get_device_cursor' w) dvps
+	mapM_ c_g_object_unref cs
 	c_gdk_window_destroy w
+
+allPointerDevice :: GdkDisplay -> IO [GdkDevice]
+allPointerDevice d = mapM gdkSeatGetPointer =<< gdkDisplayListSeats d
 
 foreign import ccall "gdk_window_destroy"
 	c_gdk_window_destroy :: GdkWindow -> IO ()
 
 c_gdk_window_get_cursor' :: GdkWindow -> IO (Maybe (Ptr GdkCursor))
 c_gdk_window_get_cursor' w = (<$> c_gdk_window_get_cursor w) \case
+	NullPtr -> Nothing; p -> Just p
+
+foreign import ccall "gdk_window_get_device_cursor"
+	c_gdk_window_get_device_cursor ::
+		GdkWindow -> GdkDevice -> IO (Ptr GdkCursor)
+
+c_gdk_window_get_device_cursor' ::
+	GdkWindow -> GdkDevice -> IO (Maybe (Ptr GdkCursor))
+c_gdk_window_get_device_cursor' w dv = (<$> c_gdk_window_get_device_cursor w dv) \case
 	NullPtr -> Nothing; p -> Just p
 
 foreign import ccall "gdk_window_get_cursor" c_gdk_window_get_cursor :: GdkWindow -> IO (Ptr GdkCursor)
@@ -517,15 +535,6 @@ gdkWindowGetDeviceCursor w dv = c_gdk_window_get_device_cursor w dv >>= \case
 	NullPtr -> pure Nothing
 	c -> Just . GdkCursor
 		<$> (c_g_object_ref c >> newForeignPtr c (c_g_object_unref c))
-
-foreign import ccall "gdk_window_get_device_cursor"
-	c_gdk_window_get_device_cursor ::
-		GdkWindow -> GdkDevice -> IO (Ptr GdkCursor)
-
-c_gdk_window_get_device_cursor' ::
-	GdkWindow -> GdkDevice -> IO (Maybe (Ptr GdkCursor))
-c_gdk_window_get_device_cursor' w dv = (<$> c_gdk_window_get_device_cursor w dv) \case
-	NullPtr -> Nothing; p -> Just p
 
 gdkWindowSetDeviceCursor :: GdkWindow -> GdkDevice -> GdkCursor -> IO ()
 gdkWindowSetDeviceCursor w d (GdkCursor fc) = do

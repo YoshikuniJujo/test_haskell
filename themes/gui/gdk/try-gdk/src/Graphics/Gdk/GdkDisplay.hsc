@@ -61,10 +61,10 @@ import Data.Int
 import System.IO.Unsafe
 import System.GLib.Bool
 
-import Graphics.Gdk.GdkScreen
+import {-# SOURCE #-} Graphics.Gdk.GdkScreen
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkDevice
-import Graphics.Gdk.Windows
+import {-# SOURCE #-} Graphics.Gdk.Windows
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
 import Graphics.Gdk.Exception
