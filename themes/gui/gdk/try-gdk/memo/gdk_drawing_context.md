@@ -3,6 +3,7 @@ GdkDrawingContext memo
 
 * [x] make export list
 * [x] `gdkDrawingContextGetWindow`
-* [ ] `gdkDrawingContextGetClip`
+* [x] `gdkDrawingContextGetClip`
 * [ ] `gdkDrawingContextGetCairoContext`
+	+ [ ] add one more variable to `CairoT`
 * [x] `gdkDrawingContextIsValid`
