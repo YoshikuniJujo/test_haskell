@@ -37,7 +37,8 @@ main = do
 	print ds
 	gdkWindowSetDecorations w ds'
 	print $ gdkWMDecorationList ds'
-	print . gdkWMDecorationList =<< gdkWindowGetDecorations w
+	maybe (putStrLn "no decorations") (print . gdkWMDecorationList)
+		=<< gdkWindowGetDecorations w
 	gdkWindowShow w
 	doWhile_ do
 		threadDelay 100000

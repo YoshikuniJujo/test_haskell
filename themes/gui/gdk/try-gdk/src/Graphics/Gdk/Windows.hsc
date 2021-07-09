@@ -481,8 +481,15 @@ gdkWMDecorationList = map GdkWMDecoration
 foreign import ccall "gdk_window_set_decorations"
 	gdkWindowSetDecorations :: GdkWindow -> GdkWMDecorations -> IO ()
 
+gdkWindowGetDecorations :: GdkWindow -> IO (Maybe GdkWMDecorations)
+gdkWindowGetDecorations w = alloca \d -> do
+	c_gdk_window_get_decorations w d >>= \case
+		#{const FALSE} -> pure Nothing
+		#{const TRUE} -> Just . GdkWMDecorations <$> peek d
+		_ -> error "gboolean should be FALSE or TRUE"
+
 foreign import ccall "gdk_window_get_decorations"
-	gdkWindowGetDecorations :: GdkWindow -> IO GdkWMDecorations
+	c_gdk_window_get_decorations :: GdkWindow -> Ptr #{type GdkWMDecoration} -> IO #{type gboolean}
 
 gdkGetDefaultRootWindow :: IO GdkWindow
 gdkGetDefaultRootWindow = GdkWindow <$> c_gdk_get_default_root_window
