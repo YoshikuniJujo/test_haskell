@@ -4,6 +4,7 @@
 
 module Graphics.Gdk.EventStructures where
 
+import GHC.Stack
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
@@ -123,6 +124,24 @@ pattern GdkEventGdkMotionNotify p <- GdkEvent (GdkEventType #const GDK_MOTION_NO
 gdkEventMotionX, gdkEventMotionY :: GdkEventMotion -> IO #type gdouble
 gdkEventMotionX (GdkEventMotion fm) = withForeignPtr fm #peek GdkEventMotion, x
 gdkEventMotionY (GdkEventMotion fm) = withForeignPtr fm #peek GdkEventMotion, y
+
+gdkEventFocusWindow :: GdkEventFocus -> IO GdkWindow
+gdkEventFocusWindow (GdkEventFocus p) =
+	GdkWindow <$> withForeignPtr p #peek GdkEventFocus, window
+
+newtype GdkEventFocus = GdkEventFocus (ForeignPtr GdkEventFocus) deriving Show
+
+pattern GdkEventGdkFocusChange :: GdkEventFocus -> GdkEvent
+pattern GdkEventGdkFocusChange p <-
+	GdkEvent (GdkEventType #const GDK_FOCUS_CHANGE) (GdkEventFocus . castForeignPtr -> p)
+
+gdkEventFocusIn :: GdkEventFocus -> IO Bool
+gdkEventFocusIn (GdkEventFocus p) = gint16ToBool <$> withForeignPtr p #peek GdkEventFocus, in
+
+gint16ToBool :: HasCallStack => #{type gint16} -> Bool
+gint16ToBool #{const TRUE} = True
+gint16ToBool #{const FALSE} = False
+gint16ToBool _ = error "something wrong"
 
 newtype GdkEventVisibility = GdkEventVisibility (ForeignPtr GdkEventVisibility) deriving Show
 

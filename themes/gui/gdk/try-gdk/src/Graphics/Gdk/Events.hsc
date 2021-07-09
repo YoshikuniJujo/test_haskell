@@ -45,7 +45,6 @@ module Graphics.Gdk.Events (
 
 	) where
 
-import GHC.Stack
 import Foreign.Ptr
 import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
@@ -296,30 +295,12 @@ pattern GdkEventGdkUnmap p <- GdkEvent t@(GdkEventType #const GDK_UNMAP) (GdkEve
 gdkEventConfigureWindow :: GdkEventConfigure -> IO GdkWindow
 gdkEventConfigureWindow (GdkEventConfigure p) = GdkWindow <$> withForeignPtr p #peek GdkEventConfigure, window
 
-gdkEventFocusWindow :: GdkEventFocus -> IO GdkWindow
-gdkEventFocusWindow (GdkEventFocus p) =
-	GdkWindow <$> withForeignPtr p #peek GdkEventFocus, window
-
 pattern GdkEventGdkDelete :: GdkEventAny -> GdkEvent
 pattern GdkEventGdkDelete p <- GdkEvent t@(GdkEventType #const GDK_DELETE) (GdkEventAny t . castForeignPtr -> p)
 
 pattern GdkEventGdkNothing :: GdkEventAny -> GdkEvent
 pattern GdkEventGdkNothing p <- GdkEvent t@(GdkEventType (#const GDK_NOTHING)) (GdkEventAny t . castForeignPtr -> p)
 -- pattern GdkEventGdkNothing p <- GdkEvent (GdkEventType (#const GDK_NOTHING)) (GdkEventAny . castForeignPtr -> p)
-
-newtype GdkEventFocus = GdkEventFocus (ForeignPtr GdkEventFocus) deriving Show
-
-pattern GdkEventGdkFocusChange :: GdkEventFocus -> GdkEvent
-pattern GdkEventGdkFocusChange p <-
-	GdkEvent (GdkEventType #const GDK_FOCUS_CHANGE) (GdkEventFocus . castForeignPtr -> p)
-
-gint16ToBool :: HasCallStack => #{type gint16} -> Bool
-gint16ToBool #{const TRUE} = True
-gint16ToBool #{const FALSE} = False
-gint16ToBool _ = error "something wrong"
-
-gdkEventFocusIn :: GdkEventFocus -> IO Bool
-gdkEventFocusIn (GdkEventFocus p) = gint16ToBool <$> withForeignPtr p #peek GdkEventFocus, in
 
 foreign import ccall "gdk_event_set_source_device" c_gdk_event_set_source_device ::
 	Ptr GdkEvent -> Ptr GdkDevice -> IO ()

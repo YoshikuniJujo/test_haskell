@@ -7,12 +7,15 @@ Events memo
 	+ [x] `GdkEventKey`
 	+ [x] `GdkEventMotion`
 	+ [x] `GdkEventVisibility`
-	+ [ ] `GdkEventCrossing`
-	+ [ ] `GdkEventFocus`
+	+ [x] `GdkEventFocus`
 	+ [ ] `GdkEventConfigure`
 	+ [ ] `GdkEventProperty`
 	+ [ ] `GdkEventSelection`
 	+ [ ] `GdkEventDND`
+	+ [ ] `GdkEventProximity`
+	+ [ ] `GdkEventWindowState`
+	+ [ ] `GdkEventSetting`
+	+ [ ] `GdkEventOwnerChange`
 	+ [ ] more
 	+ [ ] about `GdkEventAny`
 * [ ] use `c-struct` in `GdkEventFoo`
