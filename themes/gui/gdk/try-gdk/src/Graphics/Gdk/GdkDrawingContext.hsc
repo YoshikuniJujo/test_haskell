@@ -2,7 +2,10 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.GdkDrawingContext where
+module Graphics.Gdk.GdkDrawingContext (
+	GdkDrawingContext(..),
+	gdkDrawingContextGetWindow, gdkDrawingContextGetClip,
+	gdkDrawingContextGetCairoContext, gdkDrawingContextIsValid ) where
 
 import Foreign.Ptr
 import Foreign.Concurrent
