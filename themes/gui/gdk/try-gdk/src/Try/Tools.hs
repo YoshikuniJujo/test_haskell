@@ -10,6 +10,7 @@ import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.Values
 import Graphics.Gdk.Windows
+import Graphics.Gdk.Windows.GdkWindowAttr
 
 mainLoop :: (GdkEvent -> IO Bool) -> IO ()
 mainLoop f = doWhile_ do

@@ -54,13 +54,7 @@ module Graphics.Gdk.Windows (
 	gdkWindowGetDeviceCursor, gdkWindowSetDeviceCursor,
 	gdkWindowGetDeviceEvents, gdkWindowSetDeviceEvents,
 	gdkWindowGetSourceEvents, gdkWindowSetSourceEvents,
-
-	-- * Not Checked
-
 	gdkWindowSetEventCompression,
-
-	GdkWindowAttr(..), minimalGdkWindowAttr,
-
 
 	-- * GdkWindowType
 	GdkWindowType(..),

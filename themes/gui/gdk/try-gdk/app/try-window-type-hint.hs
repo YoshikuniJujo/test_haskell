@@ -10,6 +10,7 @@ import System.Environment
 
 import Graphics.Gdk.General
 import Graphics.Gdk.Windows
+import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.Values
