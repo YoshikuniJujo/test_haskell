@@ -46,7 +46,7 @@ main = do
 			writePng "try-cairo-operator.png" $ cairoArgb32ToJuicyRGBA8 ci
 		_ -> error "never occur"
 
-sample :: PrimMonad m => CairoT (PrimState m) -> Operator -> m ()
+sample :: PrimMonad m => CairoT r (PrimState m) -> Operator -> m ()
 sample cr o = do
 	cairoSave cr
 	cairoRectangle cr 0 0 256 128

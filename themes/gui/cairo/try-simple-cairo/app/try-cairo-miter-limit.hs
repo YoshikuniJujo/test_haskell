@@ -57,7 +57,7 @@ main = do
 			writePng "try-cairo-miter-limit.png" $ cairoArgb32ToJuicyRGBA8 ci
 		_ -> error "never occur"
 
-sampleLines :: PrimMonad m => CairoT (PrimState m) -> CDouble -> CDouble -> m ()
+sampleLines :: PrimMonad m => CairoT r (PrimState m) -> CDouble -> CDouble -> m ()
 sampleLines cr x y = do
 	cairoMoveTo cr 16 16
 	cairoLineTo cr 88 16

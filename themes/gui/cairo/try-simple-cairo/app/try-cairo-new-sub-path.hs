@@ -35,7 +35,7 @@ main = do
 			writePng "try-cairo-new-sub-path.png" $ cairoArgb32ToJuicyRGBA8 ci
 		_ -> error "never occur"
 
-sample :: PrimMonad m => CairoT (PrimState m) -> Bool -> m ()
+sample :: PrimMonad m => CairoT r (PrimState m) -> Bool -> m ()
 sample cr b = do
 	cairoMoveTo cr 32 32
 	cairoLineTo cr 96 32

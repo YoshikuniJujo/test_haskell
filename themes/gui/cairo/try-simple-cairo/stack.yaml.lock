@@ -9,12 +9,12 @@ packages:
     version: 0.1.0.0
     git: https://github.com/YoshikuniJujo/simple-cairo
     pantry-tree:
-      size: 4652
-      sha256: 54d9ff2aa61754507da7c05064925062875926f5e21d1bc67d9be4bcf14e4837
-    commit: d397d6603b3cc042694e4b44724b80e5236f6765
+      size: 5014
+      sha256: 86472182329a8e8a3640f7131e8fe8fd04ca0e8f1103a154c8d8310ac30b672a
+    commit: 5c5f2b52247918141586b137fe3ea1ccd2714675
   original:
     git: https://github.com/YoshikuniJujo/simple-cairo
-    commit: d397d6603b3cc042694e4b44724b80e5236f6765
+    commit: 5c5f2b52247918141586b137fe3ea1ccd2714675
 - completed:
     name: cairo-image
     version: 0.1.0.0
@@ -39,7 +39,7 @@ packages:
     commit: ff6c900967213c6c5df1c2b748cfb8e2ce5a1fe0
 snapshots:
 - completed:
-    size: 565720
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/17/8.yaml
-    sha256: 76bf8992ff8dfe6eda9c02f81866138c2369344d5011ab39ae403457c4448b03
-  original: lts-17.8
+    size: 585392
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/1.yaml
+    sha256: 4e4c5e435a2f1c6f3c650f282db0f387f806406ed4fe6ef1aa4e6add9035d065
+  original: lts-18.1

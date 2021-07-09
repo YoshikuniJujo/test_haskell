@@ -49,7 +49,7 @@ main = do
 			writePng "try-cairo-fill-rule.png" $ cairoArgb32ToJuicyRGBA8 ci
 		_ -> error "never occur"
 
-figure :: PrimMonad m => CairoT (PrimState m) -> m ()
+figure :: PrimMonad m => CairoT r (PrimState m) -> m ()
 figure cr = do
 	cairoMoveTo cr 10 70
 	cairoLineTo cr 50 100

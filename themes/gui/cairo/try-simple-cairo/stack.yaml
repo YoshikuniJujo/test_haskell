@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: lts-17.8
+resolver: lts-18.1
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -41,7 +41,7 @@ packages:
 #
 extra-deps:
 - git: https://github.com/YoshikuniJujo/simple-cairo
-  commit: d397d6603b3cc042694e4b44724b80e5236f6765
+  commit: 5c5f2b52247918141586b137fe3ea1ccd2714675
 - git: https://github.com/YoshikuniJujo/cairo-image
   commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
 - git: https://github.com/YoshikuniJujo/JuicyCairo

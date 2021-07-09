@@ -42,7 +42,7 @@ main = do
 			writePng "try-cairo-line-cap.png" $ cairoArgb32ToJuicyRGBA8 ci
 		_ -> error "never occur"
 
-sampleLine :: PrimMonad m => CairoT (PrimState m) -> m ()
+sampleLine :: PrimMonad m => CairoT r (PrimState m) -> m ()
 sampleLine cr = do
 	cairoMoveTo cr 16 32
 	cairoLineTo cr 112 32
