@@ -17,8 +17,9 @@ API Reference contents
 * [x] Visuals
 * [x] Cursors
 * [x] Windows
-* [ ] GdkDrawingContext
+* [x] GdkDrawingContext
 * [ ] Events
+* [ ] EventStructures
 * [x] Properties and Atoms: Atoms
 	+ [x] add gdkAtomName
 	+ [x] add export list

@@ -3,7 +3,46 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.Events where
+module Graphics.Gdk.Events (
+	-- * USE
+	GdkEventMaskMultiBits(..), getGdkEventMask, gdkEventMaskMultiBits,
+	pattern GdkExposureMask, pattern GdkPointerMotionMask,
+	pattern GdkButtonMotionMask, pattern GdkButton1MotionMask,
+	pattern GdkButton2MotionMask, pattern GdkButton3MotionMask,
+	pattern GdkButtonPressMask, pattern GdkButtonReleaseMask,
+	pattern GdkKeyPressMask, pattern GdkKeyReleaseMask,
+
+	gdkEventGet,
+
+	GdkEventMotion,
+	pattern GdkEventGdkDelete, pattern GdkEventGdkMotionNotify,
+	pattern GdkEventGdkKeyPress,
+	pattern GdkEventGdkUnmap, pattern GdkEventGdkConfigure,
+	pattern GdkEventGdkVisibilityNotify, pattern GdkEventGdkWindowState,
+	pattern GdkEventGdkFocusChange,
+	pattern GdkEventGdkNothing, pattern GdkEventGdkKeyRelease,
+	pattern GdkEventGdkMap,
+
+	gdkEventMotionX, gdkEventMotionY, gdkEventKeyKeyval, gdkEventGetDeviceTool,
+	gdkEventGetSourceDevice,
+
+	gdkEventConfigureHeight, gdkEventVisibilityWindow, gdkEventVisibilityState,
+	gdkEventWindowStateNewWindowState,
+	gdkEventConfigureX, gdkEventConfigureY, gdkEventConfigureWidth,
+	gdkEventFocusIn, pattern GdkZeroEventsMask, gdkEventKeyWindow, pattern GdkFocusChangeMask,
+
+	gdkGetShowEvents, pattern GdkEnterNotifyMask, pattern GdkLeaveNotifyMask,
+	gdkEventMaskSingleBitList, gdkEventFocusWindow, gdkEventConfigureWindow, gdkEventAnyWindow,
+
+	-- * NOT USE
+	gdkEventsPending, gdkEventPeek, gdkEventPut, gdkEventNew, gdkEventCopy, gdkEventGetAxis,
+	gdkEventGetButton, gdkEventGetClickCount, gdkEventGetCoords, gdkEventGetKeycode, gdkEventGetKeyval,
+	gdkEventGetRootCoords, gdkEventGetScrollDirection, gdkEventGetScrollDeltas, gdkEventIsScrollStopEvent,
+	gdkEventGetState, gdkEventGetTime, gdkEventGetWindow, gdkEventGetEventType, gdkEventGetSeat,
+	gdkEventGetScancode, gdkEventSetScreen, gdkEventGetScreen, gdkEventGetDevice, gdkEventSetDevice,
+	gdkEventSetSourceDevice, gdkVisibilityUnobscured, gdkVisibilityPartial, gdkVisibilityFullyObscured
+
+	) where
 
 import GHC.Stack
 import Foreign.Ptr
