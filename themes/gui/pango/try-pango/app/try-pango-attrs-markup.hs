@@ -7,7 +7,7 @@ module Main where
 import Data.CairoImage
 import Data.JuicyCairo
 import System.Environment
-import System.Glib.ErrorReporting
+import System.GLib.ErrorReporting
 import Codec.Picture
 import Graphics.Cairo.Values
 import Graphics.Cairo.Drawing.CairoT
@@ -16,7 +16,7 @@ import Graphics.Pango.Basic.TextAttributes
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Rendering.Cairo
 
-import System.Glib.SimpleXmlSubsetParser
+import System.GLib.SimpleXmlSubsetParser
 
 import qualified Data.Text as T
 

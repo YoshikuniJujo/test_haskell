@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: nightly-2021-05-27
+resolver: lts-18.1
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,13 +42,15 @@ packages:
 extra-deps:
 - union-angle-0.1.0.1
 - git: https://github.com/YoshikuniJujo/simple-pango
-  commit: c714c6edc872da06207e01cd7d5ef4428b54534e
+  commit: 0aacf7eee92726f40494b3a2903647b6f12a0cf6
 - git: https://github.com/YoshikuniJujo/simple-cairo
-  commit: 09819dfc2bc0ad92eba2a9d693abd8407fdc5e94
+  commit: b054b5cedf3f950363ea5823b6d5cf5788787c3f
 - git: https://github.com/YoshikuniJujo/cairo-image
   commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
 - git: https://github.com/YoshikuniJujo/JuicyCairo
   commit: 67aceebb48e90e72a2e60c095b91bc6e56b0ca19
+- git: https://github.com/YOshikuniJujo/glib-stopgap
+  commit: 7e668ebcd7784080f4da33d291b567659a66357c
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

@@ -55,7 +55,7 @@ main = do
 		CairoImageArgb32 a -> writePng "try-pango-exe.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
 
-helloWorld :: CairoT RealWorld ->
+helloWorld :: CairoT r RealWorld ->
 	(CDouble, CDouble, CDouble) ->
 	String -> PangoStyle -> PangoVariant -> PangoWeight -> PangoStretch ->
 	(CDouble, CDouble) -> IO ()

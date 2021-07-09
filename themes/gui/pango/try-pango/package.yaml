@@ -31,6 +31,7 @@ dependencies:
 - cairo-image
 - simple-cairo
 - simple-pango
+- glib-stopgap
 
 library:
   source-dirs: src

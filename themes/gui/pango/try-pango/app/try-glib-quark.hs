@@ -2,7 +2,7 @@
 
 module Main where
 
-import System.Glib.Quarks.Internal
+import System.GLib.Quarks.Internal
 
 main :: IO ()
 main = do

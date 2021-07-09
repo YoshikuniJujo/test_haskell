@@ -16,23 +16,23 @@ packages:
     version: 0.1.0.0
     git: https://github.com/YoshikuniJujo/simple-pango
     pantry-tree:
-      size: 4187
-      sha256: 77a5507e2a0e731405102145ea64b3c4927b840ab90bfc8ac338d4bfed09720e
-    commit: c714c6edc872da06207e01cd7d5ef4428b54534e
+      size: 3680
+      sha256: ee81b1b694d4ea06101df2cf8870fbd2c24f47c29af5498433f897e1619c296b
+    commit: 0aacf7eee92726f40494b3a2903647b6f12a0cf6
   original:
     git: https://github.com/YoshikuniJujo/simple-pango
-    commit: c714c6edc872da06207e01cd7d5ef4428b54534e
+    commit: 0aacf7eee92726f40494b3a2903647b6f12a0cf6
 - completed:
     name: simple-cairo
     version: 0.1.0.0
     git: https://github.com/YoshikuniJujo/simple-cairo
     pantry-tree:
-      size: 4744
-      sha256: f00ead567bf1f6de193a5699436ae4a661da981651c91fea834efda28cbe350d
-    commit: 09819dfc2bc0ad92eba2a9d693abd8407fdc5e94
+      size: 5014
+      sha256: 1f93542acd1705e91dad32435e7dcb1f7589cbec89bc84e4151bd1bb4a831c28
+    commit: b054b5cedf3f950363ea5823b6d5cf5788787c3f
   original:
     git: https://github.com/YoshikuniJujo/simple-cairo
-    commit: 09819dfc2bc0ad92eba2a9d693abd8407fdc5e94
+    commit: b054b5cedf3f950363ea5823b6d5cf5788787c3f
 - completed:
     name: cairo-image
     version: 0.1.0.0
@@ -55,9 +55,20 @@ packages:
   original:
     git: https://github.com/YoshikuniJujo/JuicyCairo
     commit: 67aceebb48e90e72a2e60c095b91bc6e56b0ca19
+- completed:
+    name: glib-stopgap
+    version: 0.1.0.0
+    git: https://github.com/YOshikuniJujo/glib-stopgap
+    pantry-tree:
+      size: 1273
+      sha256: 5d50e297eb50604d1a574308569432937529832206bde31408f6bbf0e126c397
+    commit: 7e668ebcd7784080f4da33d291b567659a66357c
+  original:
+    git: https://github.com/YOshikuniJujo/glib-stopgap
+    commit: 7e668ebcd7784080f4da33d291b567659a66357c
 snapshots:
 - completed:
-    size: 586887
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2021/5/27.yaml
-    sha256: a3828df4902b262c595415ae1733bc7c5789700c18eedf19b28c05810b13b72b
-  original: nightly-2021-05-27
+    size: 585392
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/1.yaml
+    sha256: 4e4c5e435a2f1c6f3c650f282db0f387f806406ed4fe6ef1aa4e6add9035d065
+  original: lts-18.1

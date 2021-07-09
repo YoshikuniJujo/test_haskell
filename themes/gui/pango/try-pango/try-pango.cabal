@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: eab01d95ba8839efa34ad2a93fa29c233b2d2b8441bc00f4a2abdda8c05795a4
+-- hash: 06864bc62040a72eb83ac02dd7a147afe41c762612984447364b015d0dd9b26c
 
 name:           try-pango
 version:        0.1.0.0
@@ -41,6 +41,7 @@ library
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -63,6 +64,7 @@ executable try-glib-quark
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -86,6 +88,7 @@ executable try-pango-attrs
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -109,6 +112,7 @@ executable try-pango-attrs-markup
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -132,6 +136,7 @@ executable try-pango-attrs-markup-stream
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -155,6 +160,7 @@ executable try-pango-bidirectional-text
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -178,6 +184,7 @@ executable try-pango-context
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -200,6 +207,7 @@ executable try-pango-exe
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -223,6 +231,7 @@ executable try-pango-font-description-add-axis
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -246,6 +255,7 @@ executable try-pango-fonts
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -269,6 +279,7 @@ executable try-pango-fonts-literata
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -292,6 +303,7 @@ executable try-pango-fonts-montserrat
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -315,6 +327,7 @@ executable try-pango-fonts-soulcraft
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -338,6 +351,7 @@ executable try-pango-fonts-source-han-sans-vf
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -361,6 +375,7 @@ executable try-pango-fonts-unset
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -384,6 +399,7 @@ executable try-pango-fonts-variations
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -407,6 +423,7 @@ executable try-pango-gravity
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -430,6 +447,7 @@ executable try-pango-language
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -453,6 +471,7 @@ executable try-pango-layout
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -476,6 +495,7 @@ executable try-pango-layout-innocuous
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -499,6 +519,7 @@ executable try-pango-markup
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -522,6 +543,7 @@ executable try-pango-matrix
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -545,6 +567,7 @@ executable try-pango-simple
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -568,6 +591,7 @@ executable try-pango-tab-array
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -591,6 +615,7 @@ executable try-pango-vertical-text
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -614,6 +639,7 @@ executable try-tribial
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -637,6 +663,7 @@ executable try-variations
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
@@ -660,6 +687,7 @@ test-suite try-pango-test
     , JuicyPixels
     , base >=4.7 && <5
     , cairo-image
+    , glib-stopgap
     , nowdoc
     , primitive
     , simple-cairo
