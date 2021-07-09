@@ -556,8 +556,10 @@ foreign import ccall "gdk_window_set_source_events"
 	gdkWindowSetSourceEvents ::
 		GdkWindow -> GdkInputSource -> GdkEventMaskMultiBits -> IO ()
 
-foreign import ccall "gdk_window_set_event_compression" c_gdk_window_set_event_compression ::
-	Ptr GdkWindow -> #{type gboolean} -> IO ()
-
 gdkWindowSetEventCompression :: GdkWindow -> Bool -> IO ()
-gdkWindowSetEventCompression (GdkWindow w) = c_gdk_window_set_event_compression w . boolToGboolean
+gdkWindowSetEventCompression w =
+	c_gdk_window_set_event_compression w . boolToGboolean
+
+foreign import ccall "gdk_window_set_event_compression"
+	c_gdk_window_set_event_compression ::
+		GdkWindow -> #{type gboolean} -> IO ()

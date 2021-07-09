@@ -103,7 +103,7 @@ Function
 * [x] `gdk_window_get_source_events`
 * [x] `gdk_window_set_source_events`
 * [ ] `gdk_window_get_event_compression`
-* [ ] `gdk_window_set_event_compression`
+* [x] `gdk_window_set_event_compression`
 
 ### not now
 
