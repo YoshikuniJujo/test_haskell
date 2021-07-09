@@ -25,23 +25,28 @@ newtype GdkDrawingContext s = GdkDrawingContext (Ptr (GdkDrawingContext s))
 foreign import ccall "gdk_drawing_context_get_window"
 	gdkDrawingContextGetWindow :: GdkDrawingContext s -> IO GdkWindow
 
-foreign import ccall "gdk_drawing_context_get_clip" c_gdk_drawing_context_get_clip ::
-	Ptr (GdkDrawingContext s) -> IO (Ptr (CairoRegionT s))
-
 gdkDrawingContextGetClip :: GdkDrawingContext s -> IO (CairoRegionT s)
-gdkDrawingContextGetClip (GdkDrawingContext p) = makeCairoRegionT =<< c_gdk_drawing_context_get_clip p
+gdkDrawingContextGetClip dc =
+	makeCairoRegionT =<< c_gdk_drawing_context_get_clip dc
 
-foreign import ccall "gdk_drawing_context_get_cairo_context" c_gdk_drawing_context_get_cairo_context ::
-	Ptr (GdkDrawingContext s) -> IO (Ptr (CairoT s'))
+foreign import ccall "gdk_drawing_context_get_clip"
+	c_gdk_drawing_context_get_clip ::
+		GdkDrawingContext s -> IO (Ptr (CairoRegionT s))
 
 gdkDrawingContextGetCairoContext :: GdkDrawingContext s -> IO (CairoT s')
-gdkDrawingContextGetCairoContext (GdkDrawingContext c) = do
-	p <- c_gdk_drawing_context_get_cairo_context c
+gdkDrawingContextGetCairoContext dc = do
+	p <- c_gdk_drawing_context_get_cairo_context dc
 	fp <- newForeignPtr p $ pure ()
 	pure $ CairoT fp
 
-foreign import ccall "gdk_drawing_context_is_valid" c_gdk_drawing_context_is_valid ::
-	Ptr (GdkDrawingContext s) -> IO #type gboolean
+foreign import ccall "gdk_drawing_context_get_cairo_context"
+	c_gdk_drawing_context_get_cairo_context ::
+		GdkDrawingContext s -> IO (Ptr (CairoT s'))
 
 gdkDrawingContextIsValid :: GdkDrawingContext s -> IO Bool
-gdkDrawingContextIsValid (GdkDrawingContext p) = gbooleanToBool <$> c_gdk_drawing_context_is_valid p
+gdkDrawingContextIsValid dc =
+	gbooleanToBool <$> c_gdk_drawing_context_is_valid dc
+
+foreign import ccall "gdk_drawing_context_is_valid"
+	c_gdk_drawing_context_is_valid ::
+		GdkDrawingContext s -> IO #{type gboolean}

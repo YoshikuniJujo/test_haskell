@@ -5,4 +5,4 @@ GdkDrawingContext memo
 * [x] `gdkDrawingContextGetWindow`
 * [ ] `gdkDrawingContextGetClip`
 * [ ] `gdkDrawingContextGetCairoContext`
-* [ ] `gdkDrawingContextIsValid`
+* [x] `gdkDrawingContextIsValid`
