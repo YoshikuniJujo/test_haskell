@@ -42,17 +42,15 @@ module Graphics.Gdk.Windows (
 	gdkWindowGetEvents, gdkWindowSetEvents,
 	gdkWindowSetTransientFor,
 
-	GdkWMDecoration, GdkWMDecorations, gdkWMDecorations,
+	GdkWMDecoration, GdkWMDecorations, gdkWMDecorations, gdkWMDecorationList,
 	pattern GdkDecorAll, pattern GdkDecorBorder, pattern GdkDecorResizeh,
 	pattern GdkDecorTitle, pattern GdkDecorMenu, pattern GdkDecorMinimize,
 	pattern GdkDecorMaximize,
 
-	gdkWindowSetDecorations,
+	gdkWindowSetDecorations, gdkWindowGetDecorations,
 
 	-- * Not Checked
-
-
-	gdkWindowGetDecorations, gdkGetDefaultRootWindow,
+	gdkGetDefaultRootWindow,
 	gdkWindowSetDeviceCursor, gdkWindowSetDeviceEvents, gdkWindowSetSourceEvents,
 
 	gdkWindowSetEventCompression,
@@ -82,6 +80,7 @@ import Foreign.C.Enum
 import Control.Monad.ST
 import Control.Exception
 import Data.Bits
+import Data.Bits.Misc
 import Data.Word
 import Data.Int
 import System.GLib.Bool
@@ -469,17 +468,21 @@ newtype GdkWMDecorations = GdkWMDecorations #{type GdkWMDecoration} deriving Sho
 getGdkWMDecoration :: GdkWMDecoration -> #{type GdkWMDecoration}
 getGdkWMDecoration (GdkWMDecoration wmd) = wmd
 
+getGdkWMDecorations :: GdkWMDecorations -> #{type GdkWMDecoration}
+getGdkWMDecorations (GdkWMDecorations wmd) = wmd
+
 gdkWMDecorations :: [GdkWMDecoration] -> GdkWMDecorations
 gdkWMDecorations = GdkWMDecorations . foldr (.|.) 0 . map getGdkWMDecoration
+
+gdkWMDecorationList :: GdkWMDecorations -> [GdkWMDecoration]
+gdkWMDecorationList = map GdkWMDecoration
+	. separateBits (#{size GdkWMDecoration} * 8) . getGdkWMDecorations
 
 foreign import ccall "gdk_window_set_decorations"
 	gdkWindowSetDecorations :: GdkWindow -> GdkWMDecorations -> IO ()
 
-gdkWindowGetDecorations :: GdkWindow -> IO GdkWMDecorations
-gdkWindowGetDecorations (GdkWindow p) = GdkWMDecorations <$> c_gdk_window_get_decorations p
-
-foreign import ccall "gdk_window_get_decorations" c_gdk_window_get_decorations ::
-	Ptr GdkWindow -> IO #type GdkWMDecoration
+foreign import ccall "gdk_window_get_decorations"
+	gdkWindowGetDecorations :: GdkWindow -> IO GdkWMDecorations
 
 gdkGetDefaultRootWindow :: IO GdkWindow
 gdkGetDefaultRootWindow = GdkWindow <$> c_gdk_get_default_root_window
