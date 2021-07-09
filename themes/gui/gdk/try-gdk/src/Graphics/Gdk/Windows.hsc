@@ -522,9 +522,15 @@ foreign import ccall "gdk_window_get_device_cursor"
 	c_gdk_window_get_device_cursor ::
 		GdkWindow -> GdkDevice -> IO (Ptr GdkCursor)
 
+c_gdk_window_get_device_cursor' ::
+	GdkWindow -> GdkDevice -> IO (Maybe (Ptr GdkCursor))
+c_gdk_window_get_device_cursor' w dv = (<$> c_gdk_window_get_device_cursor w dv) \case
+	NullPtr -> Nothing; p -> Just p
+
 gdkWindowSetDeviceCursor :: GdkWindow -> GdkDevice -> GdkCursor -> IO ()
-gdkWindowSetDeviceCursor w d (GdkCursor fc) =
-	withForeignPtr fc $ c_gdk_window_set_device_cursor w d
+gdkWindowSetDeviceCursor w d (GdkCursor fc) = do
+	whenMaybe c_g_object_unref =<< c_gdk_window_get_device_cursor' w d
+	withForeignPtr fc $ \c -> c_g_object_ref c >> c_gdk_window_set_device_cursor w d c
 
 foreign import ccall "gdk_window_set_device_cursor"
 	c_gdk_window_set_device_cursor ::
