@@ -42,6 +42,13 @@ module Graphics.Gdk.Windows (
 	gdkWindowGetEvents, gdkWindowSetEvents,
 	gdkWindowSetTransientFor,
 
+	GdkWMDecoration, GdkWMDecorations, gdkWMDecorations,
+	pattern GdkDecorAll, pattern GdkDecorBorder, pattern GdkDecorResizeh,
+	pattern GdkDecorTitle, pattern GdkDecorMenu, pattern GdkDecorMinimize,
+	pattern GdkDecorMaximize,
+
+	gdkWindowSetDecorations,
+
 	-- * Not Checked
 
 
@@ -74,6 +81,7 @@ import Foreign.C
 import Foreign.C.Enum
 import Control.Monad.ST
 import Control.Exception
+import Data.Bits
 import Data.Word
 import Data.Int
 import System.GLib.Bool
@@ -447,7 +455,7 @@ foreign import ccall "gdk_window_set_events"
 foreign import ccall "gdk_window_set_transient_for"
 	gdkWindowSetTransientFor :: GdkWindow -> GdkWindow -> IO ()
 
-enum "GdkWMDecoration" ''#{type GdkWMDecoration} [''Show] [
+enum "GdkWMDecoration" ''#{type GdkWMDecoration} [''Show, ''Read] [
 	("GdkDecorAll", #{const GDK_DECOR_ALL}),
 	("GdkDecorBorder", #{const GDK_DECOR_BORDER}),
 	("GdkDecorResizeh", #{const GDK_DECOR_RESIZEH}),
@@ -457,6 +465,15 @@ enum "GdkWMDecoration" ''#{type GdkWMDecoration} [''Show] [
 	("GdkDecorMaximize", #{const GDK_DECOR_MAXIMIZE}) ]
 
 newtype GdkWMDecorations = GdkWMDecorations #{type GdkWMDecoration} deriving Show
+
+getGdkWMDecoration :: GdkWMDecoration -> #{type GdkWMDecoration}
+getGdkWMDecoration (GdkWMDecoration wmd) = wmd
+
+gdkWMDecorations :: [GdkWMDecoration] -> GdkWMDecorations
+gdkWMDecorations = GdkWMDecorations . foldr (.|.) 0 . map getGdkWMDecoration
+
+foreign import ccall "gdk_window_set_decorations"
+	gdkWindowSetDecorations :: GdkWindow -> GdkWMDecorations -> IO ()
 
 gdkWindowGetDecorations :: GdkWindow -> IO GdkWMDecorations
 gdkWindowGetDecorations (GdkWindow p) = GdkWMDecorations <$> c_gdk_window_get_decorations p
