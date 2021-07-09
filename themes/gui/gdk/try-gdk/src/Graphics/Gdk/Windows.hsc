@@ -289,7 +289,7 @@ foreign import ccall "gdk_window_focus"
 	gdkWindowFocus :: GdkWindow -> Word32 -> IO ()
 
 gdkWindowWithDrawFrame :: GdkWindow ->
-	CairoRegionT s -> (forall t . GdkDrawingContext t -> IO a) -> IO a
+	CairoRegionT RealWorld -> (forall t . GdkDrawingContext t -> IO a) -> IO a
 gdkWindowWithDrawFrame w (CairoRegionT fr) act = withForeignPtr fr \r -> bracket
 	(c_gdk_window_begin_draw_frame w r) (c_gdk_window_end_draw_frame w) act
 
