@@ -86,9 +86,13 @@ Function
 * [x] `gdk_window_get_support_multidevice`
 * [x] `gdk_window_set_support_multidevice`
 * [ ] `gdk_window_get_device_cursor`
+* [ ] `gdk_window_set_device_cursor`
+	+ [x] get seat
+	+ [x] get devices
+	+ [ ] make cursor
+	+ [ ] define `gdkWindowSetDeviceCursor`
 * [ ] `gdk_window_get_device_events`
 * [ ] `gdk_window_set_device_events`
-* [ ] `gdk_window_set_device_cursor`
 * [ ] `gdk_window_get_source_events`
 * [ ] `gdk_window_set_source_events`
 * [ ] `gdk_window_get_event_compression`
