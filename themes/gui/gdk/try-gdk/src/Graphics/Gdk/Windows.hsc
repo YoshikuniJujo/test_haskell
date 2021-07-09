@@ -554,12 +554,9 @@ foreign import ccall "gdk_window_set_device_events"
 	gdkWindowSetDeviceEvents ::
 		GdkWindow -> GdkDevice -> GdkEventMaskMultiBits -> IO ()
 
-foreign import ccall "gdk_window_set_source_events" c_gdk_window_set_source_events ::
-	Ptr GdkWindow -> #{type GdkInputSource} -> #{type GdkEventMask} -> IO ()
-
-gdkWindowSetSourceEvents :: GdkWindow -> GdkInputSource -> [GdkEventMaskSingleBit] -> IO ()
-gdkWindowSetSourceEvents (GdkWindow w) (GdkInputSource is) ems =
-	c_gdk_window_set_source_events w is $ mergeGdkEventMask ems
+foreign import ccall "gdk_window_set_source_events"
+	gdkWindowSetSourceEvents ::
+		GdkWindow -> GdkInputSource -> GdkEventMaskMultiBits -> IO ()
 
 foreign import ccall "gdk_window_set_event_compression" c_gdk_window_set_event_compression ::
 	Ptr GdkWindow -> #{type gboolean} -> IO ()
