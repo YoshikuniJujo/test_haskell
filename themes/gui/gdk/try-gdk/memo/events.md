@@ -26,6 +26,8 @@ Events memo
 		- [x] `send_event`
 		- [x] `time`
 		- [ ] `state`
+			* [ ] define GdkModifierType
+			* [ ] add `state`
 		- [ ] `keyval`
 		- [ ] `hardware_keycode`
 		- [ ] `group`

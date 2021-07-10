@@ -20,6 +20,7 @@ import Data.Word
 import Data.Int
 
 import {-# SOURCE #-} Graphics.Gdk.Windows
+import Graphics.Gdk.Windows.GdkModifierType
 
 #include <gdk/gdk.h>
 
