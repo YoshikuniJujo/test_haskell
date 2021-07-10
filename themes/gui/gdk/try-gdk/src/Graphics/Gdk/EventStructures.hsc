@@ -144,18 +144,10 @@ pattern GdkEventGdkVisibilityNotify :: GdkEventVisibility -> GdkEvent
 pattern GdkEventGdkVisibilityNotify p <-
 	GdkEvent (GdkEventType #const GDK_VISIBILITY_NOTIFY) (GdkEventVisibility . castForeignPtr -> p)
 
-newtype GdkVisibilityState = GdkVisibilityState #{type GdkVisibilityState} deriving Show
-
-#enum GdkVisibilityState, GdkVisibilityState, GDK_VISIBILITY_UNOBSCURED, \
-	GDK_VISIBILITY_PARTIAL, GDK_VISIBILITY_FULLY_OBSCURED
-
 gdkEventVisibilityWindow :: GdkEventVisibility -> IO GdkWindow
 gdkEventVisibilityWindow (GdkEventVisibility p) =
 --	GdkWindow <$> (c_g_object_ref =<< withForeignPtr p #peek GdkEventVisibility, window)
 	GdkWindow <$> withForeignPtr p #peek GdkEventVisibility, window
-
-gdkEventVisibilityState :: GdkEventVisibility -> IO GdkVisibilityState
-gdkEventVisibilityState (GdkEventVisibility p) = GdkVisibilityState <$> withForeignPtr p #peek GdkEventVisibility, state
 
 gdkEventFocusWindow :: GdkEventFocus -> IO GdkWindow
 gdkEventFocusWindow (GdkEventFocus p) =
@@ -206,3 +198,11 @@ enum "GdkScrollDirection" ''#{type GdkScrollDirection} [''Show] [
 	("GdkScrollLeft", #{const GDK_SCROLL_LEFT}),
 	("GdkScrollRight", #{const GDK_SCROLL_RIGHT}),
 	("GdkScrollSmooth", #{const GDK_SCROLL_SMOOTH}) ]
+
+enum "GdkVisibilityState" ''#{type GdkVisibilityState} [''Show] [
+	("GdkVisibilityUnobscured", #{const GDK_VISIBILITY_UNOBSCURED}),
+	("GdkVisibilityPartial", #{const GDK_VISIBILITY_PARTIAL}),
+	("GdkVisibilityFullyObscured", #{const GDK_VISIBILITY_FULLY_OBSCURED}) ]
+
+gdkEventVisibilityState :: GdkEventVisibility -> IO GdkVisibilityState
+gdkEventVisibilityState (GdkEventVisibility p) = GdkVisibilityState <$> withForeignPtr p #peek GdkEventVisibility, state

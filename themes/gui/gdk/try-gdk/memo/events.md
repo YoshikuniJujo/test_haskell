@@ -15,14 +15,9 @@ Events memo
 	+ [x] GdkScrollDirection
 		- [x] use `c-enum`
 		- [x] move to `Graphics.Gdk.EventStructures`
-	+ [ ] GdkVisibilityState
-		- [ ] use `c-enum`
-	+ [ ] GdkCrossingMode
-	+ [ ] GdkNotifyType
-	+ [ ] GdkPropertyState
+	+ [x] GdkVisibilityState
+		- [x] use `c-enum`
 	+ [ ] GdkWindowState
-	+ [ ] GdkSettingAction
-	+ [ ] GdkOwnerChange
 * [ ] use `c-struct` in `GdkEventFoo`
 
 Function
