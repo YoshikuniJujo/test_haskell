@@ -34,8 +34,5 @@ enum "GdkModifierTypeMultiBits" ''#{type GdkModifierType} [''Show] [
 
 gdkModifierTypeMultiBits ::
 	[GdkModifierTypeSingleBit] -> GdkModifierTypeMultiBits
-gdkModifierTypeMultiBits [] = GdkNoModifierMask
-gdkModifierTypeMultiBits (GdkModifierTypeSingleBit mt : mts) =
-	GdkModifierTypeMultiBits . (mt .|.)
-		. (\(GdkModifierTypeMultiBits mtm) -> mtm)
-		$ gdkModifierTypeMultiBits mts
+gdkModifierTypeMultiBits = GdkModifierTypeMultiBits
+	. foldr ((.|.) . (\(GdkModifierTypeSingleBit mt) -> mt)) 0
