@@ -107,7 +107,9 @@ foreign import capi "gdkhs.h poke_gdk_event_key_is_modifier"
 	c_poke_gdk_event_key_is_modifier :: Ptr GdkEventKey' -> BoolCUInt -> IO ()
 
 struct "GdkEventKey" #{size GdkEventKey}
-	[	("isModifier", ''BoolCUInt, [| c_peek_gdk_event_key_is_modifier . castPtr |],
+	[	("type", ''GdkEventType, [| #{peek GdkEventKey, type} |],
+			[| #{poke GdkEventKey, type} |]),
+		("isModifier", ''BoolCUInt, [| c_peek_gdk_event_key_is_modifier . castPtr |],
 			[| c_poke_gdk_event_key_is_modifier . castPtr |])
 		]
 	[''Show]

@@ -21,7 +21,7 @@ Events memo
 * [ ] use `c-struct` in `GdkEventFoo`
 	+ [x] `GdkEventAny`
 	+ [ ] `GdkEventKey`
-		- [ ] `type`
+		- [x] `type`
 		- [ ] `window`
 		- [ ] `send_event`
 		- [ ] `time`
