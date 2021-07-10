@@ -1,4 +1,3 @@
-__GDK_KEYSYMS_H__
 GDK_KEY_VoidSymbol
 GDK_KEY_BackSpace
 GDK_KEY_Tab

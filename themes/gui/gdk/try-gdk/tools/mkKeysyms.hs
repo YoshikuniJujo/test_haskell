@@ -14,4 +14,4 @@ main = do
 		. filter ("gtk-3.0" `isSuffixOf`)
 		. words <$> readProcess "pkg-config" ["--cflags", "gdk-3.0"] ""
 	writeFile dstFile . unlines . map ((!! 1) . words)
-		. filter ("#define " `isPrefixOf`) . lines =<< readFile fp
+		. filter ("#define GDK_KEY_" `isPrefixOf`) . lines =<< readFile fp
