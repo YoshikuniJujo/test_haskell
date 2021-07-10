@@ -4,7 +4,6 @@
 
 module Graphics.Gdk.Values where
 
-import Foreign.C.Enum
 import Data.Bits
 import Data.Word
 
@@ -19,13 +18,6 @@ newtype GdkAxisUse = GdkAxisUse #{type GdkAxisUse} deriving Show
 	GDK_AXIS_X, GDK_AXIS_Y, GDK_AXIS_PRESSURE, GDK_AXIS_XTILT, \
 	GDK_AXIS_YTILT, GDK_AXIS_WHEEL, GDK_AXIS_DISTANCE, GDK_AXIS_ROTATION, \
 	GDK_AXIS_SLIDER, GDK_AXIS_LAST
-
-enum "GdkScrollDirection" ''#{type GdkScrollDirection} [''Show] [
-	("GdkScrollUp", #{const GDK_SCROLL_UP}),
-	("GdkScrollDown", #{const GDK_SCROLL_DOWN}),
-	("GdkScrollLeft", #{const GDK_SCROLL_LEFT}),
-	("GdkScrollRight", #{const GDK_SCROLL_RIGHT}),
-	("GdkScrollSmooth", #{const GDK_SCROLL_SMOOTH}) ]
 
 toGdkModifierType :: #{type GdkModifierType} -> [GdkModifierType]
 toGdkModifierType = (GdkModifierType <$>)

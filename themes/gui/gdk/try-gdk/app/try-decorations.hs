@@ -45,7 +45,7 @@ main = do
 	doWhile_ do
 		threadDelay 100000
 		doWhile $ gdkEventGet >>= \case
-			Just (GdkEventGdkMap m) -> do
+			Just (GdkEventGdkMap _m) -> do
 				r <- cairoRegionCreateRectangle $ CairoRectangleIntT 0 0 100 100
 				gdkWindowWithDrawFrame w r \cxt -> do
 					cr <- gdkDrawingContextGetCairoContext cxt

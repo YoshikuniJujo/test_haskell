@@ -199,3 +199,10 @@ pattern GdkEventGdkWindowState p <- GdkEvent (GdkEventType #{const GDK_WINDOW_ST
 gdkEventWindowStateNewWindowState :: GdkEventWindowState -> IO GdkWindowState
 gdkEventWindowStateNewWindowState (GdkEventWindowState p) =
 	GdkWindowState <$> withForeignPtr p #peek GdkEventWindowState, new_window_state
+
+enum "GdkScrollDirection" ''#{type GdkScrollDirection} [''Show] [
+	("GdkScrollUp", #{const GDK_SCROLL_UP}),
+	("GdkScrollDown", #{const GDK_SCROLL_DOWN}),
+	("GdkScrollLeft", #{const GDK_SCROLL_LEFT}),
+	("GdkScrollRight", #{const GDK_SCROLL_RIGHT}),
+	("GdkScrollSmooth", #{const GDK_SCROLL_SMOOTH}) ]
