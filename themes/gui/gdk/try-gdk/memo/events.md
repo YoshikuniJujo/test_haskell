@@ -2,7 +2,7 @@ Events memo
 ===========
 
 * [x] add an export list
-* [x] move GdkEvent structures to Graphics.Gdk.EventStructures
+* [x] move GdkEvent structures to `Graphics.Gdk.EventStructures`
 	+ [x] `GdkEventAny`
 	+ [x] `GdkEventKey`
 	+ [x] `GdkEventMotion`
@@ -11,8 +11,10 @@ Events memo
 	+ [x] `GdkEventConfigure`
 	+ [x] `GdkEventWindowState`
 	+ [x] about `GdkEventAny`
-* [ ] move enums to Graphics.Gdk.EventStructures
+* [ ] move enums to `Graphics.Gdk.EventStructures`
 	+ [ ] GdkScrollDirection
+		- [x] use `c-enum`
+		- [ ] move to `Graphics.Gdk.EventStructures`
 	+ [ ] GdkVisibilityState
 	+ [ ] GdkCrossingMode
 	+ [ ] GdkNotifyType
