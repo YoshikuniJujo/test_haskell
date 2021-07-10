@@ -125,6 +125,25 @@ gdkEventMotionX, gdkEventMotionY :: GdkEventMotion -> IO #type gdouble
 gdkEventMotionX (GdkEventMotion fm) = withForeignPtr fm #peek GdkEventMotion, x
 gdkEventMotionY (GdkEventMotion fm) = withForeignPtr fm #peek GdkEventMotion, y
 
+newtype GdkEventVisibility = GdkEventVisibility (ForeignPtr GdkEventVisibility) deriving Show
+
+pattern GdkEventGdkVisibilityNotify :: GdkEventVisibility -> GdkEvent
+pattern GdkEventGdkVisibilityNotify p <-
+	GdkEvent (GdkEventType #const GDK_VISIBILITY_NOTIFY) (GdkEventVisibility . castForeignPtr -> p)
+
+newtype GdkVisibilityState = GdkVisibilityState #{type GdkVisibilityState} deriving Show
+
+#enum GdkVisibilityState, GdkVisibilityState, GDK_VISIBILITY_UNOBSCURED, \
+	GDK_VISIBILITY_PARTIAL, GDK_VISIBILITY_FULLY_OBSCURED
+
+gdkEventVisibilityWindow :: GdkEventVisibility -> IO GdkWindow
+gdkEventVisibilityWindow (GdkEventVisibility p) =
+--	GdkWindow <$> (c_g_object_ref =<< withForeignPtr p #peek GdkEventVisibility, window)
+	GdkWindow <$> withForeignPtr p #peek GdkEventVisibility, window
+
+gdkEventVisibilityState :: GdkEventVisibility -> IO GdkVisibilityState
+gdkEventVisibilityState (GdkEventVisibility p) = GdkVisibilityState <$> withForeignPtr p #peek GdkEventVisibility, state
+
 gdkEventFocusWindow :: GdkEventFocus -> IO GdkWindow
 gdkEventFocusWindow (GdkEventFocus p) =
 	GdkWindow <$> withForeignPtr p #peek GdkEventFocus, window
@@ -159,21 +178,11 @@ pattern GdkEventGdkConfigure p <- GdkEvent (GdkEventType #{const GDK_CONFIGURE})
 gdkEventConfigureWindow :: GdkEventConfigure -> IO GdkWindow
 gdkEventConfigureWindow (GdkEventConfigure p) = GdkWindow <$> withForeignPtr p #peek GdkEventConfigure, window
 
-newtype GdkEventVisibility = GdkEventVisibility (ForeignPtr GdkEventVisibility) deriving Show
+newtype GdkEventWindowState = GdkEventWindowState (ForeignPtr GdkEventWindowState) deriving Show
 
-pattern GdkEventGdkVisibilityNotify :: GdkEventVisibility -> GdkEvent
-pattern GdkEventGdkVisibilityNotify p <-
-	GdkEvent (GdkEventType #const GDK_VISIBILITY_NOTIFY) (GdkEventVisibility . castForeignPtr -> p)
+pattern GdkEventGdkWindowState :: GdkEventWindowState -> GdkEvent
+pattern GdkEventGdkWindowState p <- GdkEvent (GdkEventType #{const GDK_WINDOW_STATE}) (GdkEventWindowState . castForeignPtr -> p)
 
-newtype GdkVisibilityState = GdkVisibilityState #{type GdkVisibilityState} deriving Show
-
-#enum GdkVisibilityState, GdkVisibilityState, GDK_VISIBILITY_UNOBSCURED, \
-	GDK_VISIBILITY_PARTIAL, GDK_VISIBILITY_FULLY_OBSCURED
-
-gdkEventVisibilityWindow :: GdkEventVisibility -> IO GdkWindow
-gdkEventVisibilityWindow (GdkEventVisibility p) =
---	GdkWindow <$> (c_g_object_ref =<< withForeignPtr p #peek GdkEventVisibility, window)
-	GdkWindow <$> withForeignPtr p #peek GdkEventVisibility, window
-
-gdkEventVisibilityState :: GdkEventVisibility -> IO GdkVisibilityState
-gdkEventVisibilityState (GdkEventVisibility p) = GdkVisibilityState <$> withForeignPtr p #peek GdkEventVisibility, state
+gdkEventWindowStateNewWindowState :: GdkEventWindowState -> IO GdkWindowState
+gdkEventWindowStateNewWindowState (GdkEventWindowState p) =
+	GdkWindowState <$> withForeignPtr p #peek GdkEventWindowState, new_window_state

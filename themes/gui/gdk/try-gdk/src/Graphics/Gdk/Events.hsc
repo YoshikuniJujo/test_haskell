@@ -19,7 +19,6 @@ module Graphics.Gdk.Events (
 	pattern GdkEventGdkDelete,
 	pattern GdkEventGdkKeyPress,
 	pattern GdkEventGdkUnmap, pattern GdkEventGdkConfigure,
-	pattern GdkEventGdkWindowState,
 	pattern GdkEventGdkFocusChange,
 	pattern GdkEventGdkNothing, pattern GdkEventGdkKeyRelease,
 	pattern GdkEventGdkMap,
@@ -28,7 +27,6 @@ module Graphics.Gdk.Events (
 	gdkEventGetSourceDevice,
 
 	gdkEventConfigureHeight,
-	gdkEventWindowStateNewWindowState,
 	gdkEventConfigureX, gdkEventConfigureY, gdkEventConfigureWidth,
 	pattern GdkZeroEventsMask, pattern GdkFocusChangeMask,
 
@@ -263,15 +261,6 @@ gdkEventGetSourceDevice :: GdkEvent -> IO (Maybe GdkDevice)
 gdkEventGetSourceDevice (GdkEvent _ fe) = withForeignPtr fe \e ->
 	(<$> c_gdk_event_get_source_device e) \case
 		NullPtr -> Nothing; p -> Just $ GdkDevice p
-
-newtype GdkEventWindowState = GdkEventWindowState (ForeignPtr GdkEventWindowState) deriving Show
-
-pattern GdkEventGdkWindowState :: GdkEventWindowState -> GdkEvent
-pattern GdkEventGdkWindowState p <- GdkEvent (GdkEventType #{const GDK_WINDOW_STATE}) (GdkEventWindowState . castForeignPtr -> p)
-
-gdkEventWindowStateNewWindowState :: GdkEventWindowState -> IO GdkWindowState
-gdkEventWindowStateNewWindowState (GdkEventWindowState p) =
-	GdkWindowState <$> withForeignPtr p #peek GdkEventWindowState, new_window_state
 
 pattern GdkEventGdkMap :: GdkEventAny -> GdkEvent
 pattern GdkEventGdkMap p <- GdkEvent t@(GdkEventType #const GDK_MAP) (GdkEventAny t . castForeignPtr -> p)

@@ -9,11 +9,7 @@ Events memo
 	+ [x] `GdkEventVisibility`
 	+ [x] `GdkEventFocus`
 	+ [x] `GdkEventConfigure`
-	+ [ ] `GdkEventProperty`
-	+ [ ] `GdkEventSelection`
-	+ [ ] `GdkEventDND`
-	+ [ ] `GdkEventProximity`
-	+ [ ] `GdkEventWindowState`
+	+ [x] `GdkEventWindowState`
 	+ [ ] `GdkEventSetting`
 	+ [ ] `GdkEventOwnerChange`
 	+ [ ] `GdkEventGrabBroken`
