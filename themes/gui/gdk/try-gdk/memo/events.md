@@ -24,7 +24,7 @@ Events memo
 		- [x] `type`
 		- [x] `window`
 		- [x] `send_event`
-		- [ ] `time`
+		- [x] `time`
 		- [ ] `state`
 		- [ ] `keyval`
 		- [ ] `hardware_keycode`

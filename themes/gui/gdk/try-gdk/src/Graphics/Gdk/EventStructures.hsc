@@ -106,6 +106,8 @@ foreign import capi "gdkhs.h peek_gdk_event_key_is_modifier"
 foreign import capi "gdkhs.h poke_gdk_event_key_is_modifier"
 	c_poke_gdk_event_key_is_modifier :: Ptr GdkEventKey' -> BoolCUInt -> IO ()
 
+newtype MilliSecond = MilliSecond #{type guint32} deriving (Show, Storable)
+
 struct "GdkEventKey" #{size GdkEventKey}
 	[	("type", ''GdkEventType, [| #{peek GdkEventKey, type} |],
 			[| #{poke GdkEventKey, type} |]),
@@ -113,6 +115,8 @@ struct "GdkEventKey" #{size GdkEventKey}
 			[| #{poke GdkEventKey, window} |]),
 		("sendEvent", ''BoolGInt8, [| #{peek GdkEventKey, send_event} |],
 			[| #{poke GdkEventKey, send_event} |]),
+		("time", ''MilliSecond, [| #{peek GdkEventKey, time} |],
+			[| #{poke GdkEventKey, time} |]),
 		("isModifier", ''BoolCUInt, [| c_peek_gdk_event_key_is_modifier . castPtr |],
 			[| c_poke_gdk_event_key_is_modifier . castPtr |])
 		]
