@@ -11,13 +11,13 @@ Events memo
 	+ [x] `GdkEventConfigure`
 	+ [x] `GdkEventWindowState`
 	+ [x] about `GdkEventAny`
-* [ ] move enums to `Graphics.Gdk.EventStructures`
+* [x] move enums to `Graphics.Gdk.EventStructures`
 	+ [x] GdkScrollDirection
 		- [x] use `c-enum`
 		- [x] move to `Graphics.Gdk.EventStructures`
 	+ [x] GdkVisibilityState
 		- [x] use `c-enum`
-	+ [ ] GdkWindowState
+	+ [x] GdkWindowState
 * [ ] use `c-struct` in `GdkEventFoo`
 
 Function

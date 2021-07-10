@@ -66,35 +66,6 @@ mkGdkEvent p = do
 
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
-newtype GdkWindowStates = GdkWindowStates #{type GdkWindowState} deriving Show
-
-enum "GdkWindowState" ''#{type GdkWindowState} [''Show] [
-	("GdkWindowStateWithdrawn", #{const GDK_WINDOW_STATE_WITHDRAWN}),
-	("GdkWindowStateIconified", #{const GDK_WINDOW_STATE_ICONIFIED}),
-	("GdkWindowStateMaximized", #{const GDK_WINDOW_STATE_MAXIMIZED}),
-	("GdkWindowStateSticky", #{const GDK_WINDOW_STATE_STICKY}),
-	("GdkWindowStateFullscreen", #{const GDK_WINDOW_STATE_FULLSCREEN}),
-	("GdkWindowStateAbove", #{const GDK_WINDOW_STATE_ABOVE}),
-	("GdkWindowStateBelow", #{const GDK_WINDOW_STATE_BELOW}),
-	("GdkWindowStateFocused", #{const GDK_WINDOW_STATE_FOCUSED}),
-	("GdkWindowStateTopTiled", #{const GDK_WINDOW_STATE_TOP_TILED}),
-	("GdkWidnwoStateTopResizable", #{const GDK_WINDOW_STATE_TOP_RESIZABLE}),
-	("GdkWindowStateRightTiled", #{const GDK_WINDOW_STATE_RIGHT_TILED}),
-	("GdkWindowStateRightResizable",
-		#{const GDK_WINDOW_STATE_RIGHT_RESIZABLE}),
-	("GdkWindowStateBottomTiled", #{const GDK_WINDOW_STATE_BOTTOM_TILED}),
-	("GdkWindowStaetBottomResizable",
-		#{const GDK_WINDOW_STATE_BOTTOM_RESIZABLE}),
-	("GdkWindowStateLeftTiled", #{const GDK_WINDOW_STATE_LEFT_TILED}),
-	("GdkWindowStateLeftResizable",
-		#{const GDK_WINDOW_STATE_LEFT_RESIZABLE}) ]
-
-gdkWindowStateCheck :: GdkWindowState -> GdkWindowStates -> Bool
-gdkWindowStateCheck (GdkWindowState s) (GdkWindowStates ss) = s .&. ss /= zeroBits
-
-gdkWindowStateList :: GdkWindowStates -> [GdkWindowState]
-gdkWindowStateList (GdkWindowStates ss) = GdkWindowState <$> separateBits 32 ss
-
 data GdkEventAny = GdkEventAny GdkEventType (ForeignPtr GdkEventAny) deriving Show
 
 gdkEventAnyWindow :: GdkEventAny -> IO GdkWindow
@@ -188,10 +159,6 @@ newtype GdkEventWindowState = GdkEventWindowState (ForeignPtr GdkEventWindowStat
 pattern GdkEventGdkWindowState :: GdkEventWindowState -> GdkEvent
 pattern GdkEventGdkWindowState p <- GdkEvent (GdkEventType #{const GDK_WINDOW_STATE}) (GdkEventWindowState . castForeignPtr -> p)
 
-gdkEventWindowStateNewWindowState :: GdkEventWindowState -> IO GdkWindowState
-gdkEventWindowStateNewWindowState (GdkEventWindowState p) =
-	GdkWindowState <$> withForeignPtr p #peek GdkEventWindowState, new_window_state
-
 enum "GdkScrollDirection" ''#{type GdkScrollDirection} [''Show] [
 	("GdkScrollUp", #{const GDK_SCROLL_UP}),
 	("GdkScrollDown", #{const GDK_SCROLL_DOWN}),
@@ -206,3 +173,36 @@ enum "GdkVisibilityState" ''#{type GdkVisibilityState} [''Show] [
 
 gdkEventVisibilityState :: GdkEventVisibility -> IO GdkVisibilityState
 gdkEventVisibilityState (GdkEventVisibility p) = GdkVisibilityState <$> withForeignPtr p #peek GdkEventVisibility, state
+
+newtype GdkWindowStates = GdkWindowStates #{type GdkWindowState} deriving Show
+
+enum "GdkWindowState" ''#{type GdkWindowState} [''Show] [
+	("GdkWindowStateWithdrawn", #{const GDK_WINDOW_STATE_WITHDRAWN}),
+	("GdkWindowStateIconified", #{const GDK_WINDOW_STATE_ICONIFIED}),
+	("GdkWindowStateMaximized", #{const GDK_WINDOW_STATE_MAXIMIZED}),
+	("GdkWindowStateSticky", #{const GDK_WINDOW_STATE_STICKY}),
+	("GdkWindowStateFullscreen", #{const GDK_WINDOW_STATE_FULLSCREEN}),
+	("GdkWindowStateAbove", #{const GDK_WINDOW_STATE_ABOVE}),
+	("GdkWindowStateBelow", #{const GDK_WINDOW_STATE_BELOW}),
+	("GdkWindowStateFocused", #{const GDK_WINDOW_STATE_FOCUSED}),
+	("GdkWindowStateTopTiled", #{const GDK_WINDOW_STATE_TOP_TILED}),
+	("GdkWidnwoStateTopResizable", #{const GDK_WINDOW_STATE_TOP_RESIZABLE}),
+	("GdkWindowStateRightTiled", #{const GDK_WINDOW_STATE_RIGHT_TILED}),
+	("GdkWindowStateRightResizable",
+		#{const GDK_WINDOW_STATE_RIGHT_RESIZABLE}),
+	("GdkWindowStateBottomTiled", #{const GDK_WINDOW_STATE_BOTTOM_TILED}),
+	("GdkWindowStaetBottomResizable",
+		#{const GDK_WINDOW_STATE_BOTTOM_RESIZABLE}),
+	("GdkWindowStateLeftTiled", #{const GDK_WINDOW_STATE_LEFT_TILED}),
+	("GdkWindowStateLeftResizable",
+		#{const GDK_WINDOW_STATE_LEFT_RESIZABLE}) ]
+
+gdkWindowStateCheck :: GdkWindowState -> GdkWindowStates -> Bool
+gdkWindowStateCheck (GdkWindowState s) (GdkWindowStates ss) = s .&. ss /= zeroBits
+
+gdkWindowStateList :: GdkWindowStates -> [GdkWindowState]
+gdkWindowStateList (GdkWindowStates ss) = GdkWindowState <$> separateBits 32 ss
+
+gdkEventWindowStateNewWindowState :: GdkEventWindowState -> IO GdkWindowState
+gdkEventWindowStateNewWindowState (GdkEventWindowState p) =
+	GdkWindowState <$> withForeignPtr p #peek GdkEventWindowState, new_window_state
