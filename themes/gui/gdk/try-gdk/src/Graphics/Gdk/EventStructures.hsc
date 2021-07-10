@@ -114,10 +114,14 @@ struct "GdkEventKey" #{size GdkEventKey}
 			[| #{poke GdkEventKey, type} |]),
 		("window", ''GdkWindow, [| #{peek GdkEventKey, window} |],
 			[| #{poke GdkEventKey, window} |]),
-		("sendEvent", ''BoolGInt8, [| #{peek GdkEventKey, send_event} |],
+		("sendEvent", ''BoolGInt8,
+			[| #{peek GdkEventKey, send_event} |],
 			[| #{poke GdkEventKey, send_event} |]),
 		("time", ''MilliSecond, [| #{peek GdkEventKey, time} |],
 			[| #{poke GdkEventKey, time} |]),
+		("state", ''GdkModifierTypeMultiBits,
+			[| #{peek GdkEventKey, state} |],
+			[| #{poke GdkEventKey, state} |]),
 		("isModifier", ''BoolCUInt, [| c_peek_gdk_event_key_is_modifier . castPtr |],
 			[| c_poke_gdk_event_key_is_modifier . castPtr |])
 		]

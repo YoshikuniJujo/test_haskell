@@ -26,6 +26,7 @@ import Graphics.Gdk.PointsAndRectangles
 import Graphics.Gdk.Visuals
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
+import Graphics.Gdk.Windows.GdkModifierType
 import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
@@ -211,6 +212,8 @@ checkEvent opacity pos size d st = \case
 		let	w = gdkEventKeyWindow k
 		kv <- gdkEventKeyKeyval k
 		putStrLn $ "GDK_KEY_PRESS: " ++ show k ++ ": " ++ show kv
+		putStrLn $ "GdkModifierType: " ++
+			show (gdkModifierTypeSingleBitList $ gdkEventKeyState k)
 		when (kv == fromIntegral (ord 'h')) $ do
 			putStrLn "`h' pressed"
 			gdkWindowHide w

@@ -1,9 +1,11 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.Windows.GdkModifierType where
 
+import Foreign.Storable
 import Foreign.C.Enum
 import Data.Bits
 import Data.Bits.Misc
@@ -29,7 +31,7 @@ enum "GdkModifierTypeSingleBit" ''#{type GdkModifierType} [''Show] [
 	("GdkHyperMask", #{const GDK_HYPER_MASK}),
 	("GdkMetaMask", #{const GDK_META_MASK}) ]
 
-enum "GdkModifierTypeMultiBits" ''#{type GdkModifierType} [''Show] [
+enum "GdkModifierTypeMultiBits" ''#{type GdkModifierType} [''Show, ''Storable] [
 	("GdkNoModifierMask", 0),
 	("GdkModifierMask", #{const GDK_MODIFIER_MASK}) ]
 
