@@ -18,4 +18,4 @@ GdkModifierType memo
 	+ [x] `GdkNoModifierMask`
 	+ [x] `GDK_MODIFIER_MASK`
 * [x] define `gdkModifierTypeMultiBits`
-* [ ] define `gdkModifierTypeSingleBitList`
+* [x] define `gdkModifierTypeSingleBitList`

@@ -6,6 +6,7 @@ module Graphics.Gdk.Windows.GdkModifierType where
 
 import Foreign.C.Enum
 import Data.Bits
+import Data.Bits.Misc
 import Data.Word
 
 #include <gdk/gdk.h>
@@ -36,3 +37,9 @@ gdkModifierTypeMultiBits ::
 	[GdkModifierTypeSingleBit] -> GdkModifierTypeMultiBits
 gdkModifierTypeMultiBits = GdkModifierTypeMultiBits
 	. foldr ((.|.) . (\(GdkModifierTypeSingleBit mt) -> mt)) 0
+
+gdkModifierTypeSingleBitList ::
+	GdkModifierTypeMultiBits -> [GdkModifierTypeSingleBit]
+gdkModifierTypeSingleBitList (GdkModifierTypeMultiBits mts) =
+	GdkModifierTypeSingleBit
+		<$> separateBits (#{size GdkModifierType} * 8) mts
