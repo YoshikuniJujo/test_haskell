@@ -12,6 +12,10 @@ GdkModifierType memo
 	+ [ ] `GDK_MOD4_MASK`
 	+ [ ] `GDK_MOD5_MASK`
 	+ [ ] `GDK_BUTTON1_MASK`
+	+ [ ] `GDK_BUTTON2_MASK`
+	+ [ ] `GDK_BUTTON3_MASK`
 	+ [ ] ... more
 	+ [x] `GdkNoModifierMask`
 	+ [x] `GDK_MODIFIER_MASK`
+* [ ] define `gdkModifierTypeMultiBits`
+* [ ] define `gdkModifierTypeSingleBitList`

@@ -10,6 +10,7 @@ import Data.Word
 #include <gdk/gdk.h>
 
 enum "GdkModifierTypeSingleBit" ''#{type GdkModifierType} [''Show] [
+	("GdkShiftMask", #{const GDK_SHIFT_MASK})
 	]
 
 enum "GdkModifierTypeMultiBits" ''#{type GdkModifierType} [''Show] [
