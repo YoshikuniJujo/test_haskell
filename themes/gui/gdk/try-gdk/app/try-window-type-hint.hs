@@ -18,7 +18,7 @@ import Try.Tools
 
 main :: IO ()
 main = do
-	gdkInit "foo" []
+	_ <- gdkInit "foo" []
 	w <- gdkWindowNew Nothing $ minimalGdkWindowAttr
 		GdkZeroEventsMask 100 100 gdkInputOutput GdkWindowToplevel
 	h <- fromMaybe GdkWindowTypeHintNormal . readMaybe . head <$> getArgs

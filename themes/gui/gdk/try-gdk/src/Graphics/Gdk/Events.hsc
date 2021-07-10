@@ -16,13 +16,6 @@ module Graphics.Gdk.Events (
 
 	gdkEventGet,
 
-	pattern GdkEventGdkDelete,
-	pattern GdkEventGdkKeyPress,
-	pattern GdkEventGdkUnmap, pattern GdkEventGdkConfigure,
-	pattern GdkEventGdkFocusChange,
-	pattern GdkEventGdkNothing, pattern GdkEventGdkKeyRelease,
-	pattern GdkEventGdkMap,
-
 	gdkEventGetDeviceTool,
 	gdkEventGetSourceDevice,
 
@@ -261,19 +254,6 @@ gdkEventGetSourceDevice :: GdkEvent -> IO (Maybe GdkDevice)
 gdkEventGetSourceDevice (GdkEvent _ fe) = withForeignPtr fe \e ->
 	(<$> c_gdk_event_get_source_device e) \case
 		NullPtr -> Nothing; p -> Just $ GdkDevice p
-
-pattern GdkEventGdkMap :: GdkEventAny -> GdkEvent
-pattern GdkEventGdkMap p <- GdkEvent t@(GdkEventType #const GDK_MAP) (GdkEventAny t . castForeignPtr -> p)
-
-pattern GdkEventGdkUnmap :: GdkEventAny -> GdkEvent
-pattern GdkEventGdkUnmap p <- GdkEvent t@(GdkEventType #const GDK_UNMAP) (GdkEventAny t . castForeignPtr -> p)
-
-pattern GdkEventGdkDelete :: GdkEventAny -> GdkEvent
-pattern GdkEventGdkDelete p <- GdkEvent t@(GdkEventType #const GDK_DELETE) (GdkEventAny t . castForeignPtr -> p)
-
-pattern GdkEventGdkNothing :: GdkEventAny -> GdkEvent
-pattern GdkEventGdkNothing p <- GdkEvent t@(GdkEventType (#const GDK_NOTHING)) (GdkEventAny t . castForeignPtr -> p)
--- pattern GdkEventGdkNothing p <- GdkEvent (GdkEventType (#const GDK_NOTHING)) (GdkEventAny . castForeignPtr -> p)
 
 foreign import ccall "gdk_event_set_source_device" c_gdk_event_set_source_device ::
 	Ptr GdkEvent -> Ptr GdkDevice -> IO ()

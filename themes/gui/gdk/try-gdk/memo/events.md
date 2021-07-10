@@ -2,7 +2,7 @@ Events memo
 ===========
 
 * [x] add an export list
-* [ ] move GdkEvent structures to Graphics.Gdk.EventStructures
+* [x] move GdkEvent structures to Graphics.Gdk.EventStructures
 	+ [x] `GdkEventAny`
 	+ [x] `GdkEventKey`
 	+ [x] `GdkEventMotion`
@@ -10,15 +10,7 @@ Events memo
 	+ [x] `GdkEventFocus`
 	+ [x] `GdkEventConfigure`
 	+ [x] `GdkEventWindowState`
-	+ [ ] `GdkEventSetting`
-	+ [ ] `GdkEventOwnerChange`
-	+ [ ] `GdkEventGrabBroken`
-	+ [ ] `GdkEventTouchpadSwipe`
-	+ [ ] `GdkEventTouchpadPinch`
-	+ [ ] `GdkEventPadButton`
-	+ [ ] `GdkEventPadAxis`
-	+ [ ] `GdkEventPadGroupMode`
-	+ [ ] about `GdkEventAny`
+	+ [x] about `GdkEventAny`
 * [ ] move enums to Graphics.Gdk.EventStructures
 	+ [ ] GdkScrollDirection
 	+ [ ] GdkVisibilityState

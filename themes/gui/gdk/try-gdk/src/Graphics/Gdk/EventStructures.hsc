@@ -100,6 +100,19 @@ data GdkEventAny = GdkEventAny GdkEventType (ForeignPtr GdkEventAny) deriving Sh
 gdkEventAnyWindow :: GdkEventAny -> IO GdkWindow
 gdkEventAnyWindow (GdkEventAny _ p) = GdkWindow <$> withForeignPtr p #peek GdkEventAny, window
 
+pattern GdkEventGdkMap :: GdkEventAny -> GdkEvent
+pattern GdkEventGdkMap p <- GdkEvent t@(GdkEventType #const GDK_MAP) (GdkEventAny t . castForeignPtr -> p)
+
+pattern GdkEventGdkUnmap :: GdkEventAny -> GdkEvent
+pattern GdkEventGdkUnmap p <- GdkEvent t@(GdkEventType #const GDK_UNMAP) (GdkEventAny t . castForeignPtr -> p)
+
+pattern GdkEventGdkDelete :: GdkEventAny -> GdkEvent
+pattern GdkEventGdkDelete p <- GdkEvent t@(GdkEventType #const GDK_DELETE) (GdkEventAny t . castForeignPtr -> p)
+
+pattern GdkEventGdkNothing :: GdkEventAny -> GdkEvent
+pattern GdkEventGdkNothing p <- GdkEvent t@(GdkEventType (#const GDK_NOTHING)) (GdkEventAny t . castForeignPtr -> p)
+-- pattern GdkEventGdkNothing p <- GdkEvent (GdkEventType (#const GDK_NOTHING)) (GdkEventAny . castForeignPtr -> p)
+
 newtype GdkEventKey = GdkEventKey (ForeignPtr GdkEventKey) deriving Show
 
 pattern GdkEventGdkKeyPress :: GdkEventKey -> GdkEvent

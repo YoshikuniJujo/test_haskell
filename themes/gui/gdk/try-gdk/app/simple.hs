@@ -9,7 +9,6 @@ import System.Environment
 
 import Graphics.Gdk.General
 import Graphics.Gdk.Windows
-import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
 import Try.Tools
 
