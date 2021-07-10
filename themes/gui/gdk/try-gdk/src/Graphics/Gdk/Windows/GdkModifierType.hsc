@@ -5,6 +5,7 @@
 module Graphics.Gdk.Windows.GdkModifierType where
 
 import Foreign.C.Enum
+import Data.Bits
 import Data.Word
 
 #include <gdk/gdk.h>
@@ -30,3 +31,11 @@ enum "GdkModifierTypeSingleBit" ''#{type GdkModifierType} [''Show] [
 enum "GdkModifierTypeMultiBits" ''#{type GdkModifierType} [''Show] [
 	("GdkNoModifierMask", 0),
 	("GdkModifierMask", #{const GDK_MODIFIER_MASK}) ]
+
+gdkModifierTypeMultiBits ::
+	[GdkModifierTypeSingleBit] -> GdkModifierTypeMultiBits
+gdkModifierTypeMultiBits [] = GdkNoModifierMask
+gdkModifierTypeMultiBits (GdkModifierTypeSingleBit mt : mts) =
+	GdkModifierTypeMultiBits . (mt .|.)
+		. (\(GdkModifierTypeMultiBits mtm) -> mtm)
+		$ gdkModifierTypeMultiBits mts
