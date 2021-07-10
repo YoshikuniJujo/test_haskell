@@ -21,11 +21,21 @@ Events memo
 * [ ] use `c-struct` in `GdkEventFoo`
 	+ [x] `GdkEventAny`
 	+ [ ] `GdkEventKey`
+		- [ ] `type`
+		- [ ] `window`
+		- [ ] `send_event`
+		- [ ] `time`
+		- [ ] `state`
+		- [ ] `keyval`
+		- [ ] `hardware_keycode`
+		- [ ] `group`
+		- [ ] `is_modifier`
 	+ [ ] `GdkEventMotion`
 	+ [ ] `GdkEventVisibility`
 	+ [ ] `GdkEventFocus`
 	+ [ ] `GdkEventConfigure`
 	+ [ ] `GdkEventWindowState`
+* [x] try to peek and poke bit field by capi
 
 Function
 --------
