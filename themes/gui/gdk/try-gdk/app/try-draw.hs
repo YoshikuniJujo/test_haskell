@@ -58,7 +58,7 @@ checkEvent :: GdkEvent -> IO Bool
 checkEvent = \case
 	GdkEventGdkMap m -> do
 		putStrLn $ "GDK_MAP: " ++ show m
-		drawRedLine =<< gdkEventAnyWindow m
+		drawRedLine $ gdkEventAnyWindow m
 		pure True
 	GdkEventGdkConfigure c -> do
 		x <- gdkEventConfigureX c

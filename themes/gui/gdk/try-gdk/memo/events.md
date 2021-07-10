@@ -19,6 +19,13 @@ Events memo
 		- [x] use `c-enum`
 	+ [x] GdkWindowState
 * [ ] use `c-struct` in `GdkEventFoo`
+	+ [x] `GdkEventAny`
+	+ [ ] `GdkEventKey`
+	+ [ ] `GdkEventMotion`
+	+ [ ] `GdkEventVisibility`
+	+ [ ] `GdkEventFocus`
+	+ [ ] `GdkEventConfigure`
+	+ [ ] `GdkEventWindowState`
 
 Function
 --------

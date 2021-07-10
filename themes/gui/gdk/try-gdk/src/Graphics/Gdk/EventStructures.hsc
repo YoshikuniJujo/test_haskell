@@ -1,5 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE GeneralisedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.EventStructures where
@@ -10,6 +12,7 @@ import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Storable
 import Foreign.C.Enum
+import Foreign.C.Struct
 import Data.Bits
 import Data.Bits.Misc
 import Data.Word
@@ -19,7 +22,7 @@ import {-# SOURCE #-} Graphics.Gdk.Windows
 
 #include <gdk/gdk.h>
 
-enum "GdkEventType" ''#{type GdkEventType} [''Show] [
+enum "GdkEventType" ''#{type GdkEventType} [''Show, ''Storable] [
 	("GdkNothing", #{const GDK_NOTHING}), ("GdkDelete", #{const GDK_DELETE}),
 	("GdkExpose", #{const GDK_EXPOSE}),
 	("GdkMotionNotify", #{const GDK_MOTION_NOTIFY}),
@@ -66,23 +69,30 @@ mkGdkEvent p = do
 
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
-data GdkEventAny = GdkEventAny GdkEventType (ForeignPtr GdkEventAny) deriving Show
+enum "BoolGInt8" ''#{type gint8} [''Show, ''Storable] [
+	("False8", #{const FALSE}), ("True8", #{const TRUE}) ]
 
-gdkEventAnyWindow :: GdkEventAny -> IO GdkWindow
-gdkEventAnyWindow (GdkEventAny _ p) = GdkWindow <$> withForeignPtr p #peek GdkEventAny, window
+struct "GdkEventAny" #{size GdkEventAny}
+	[	("type", ''GdkEventType, [| #{peek GdkEventAny, type} |],
+			[| #{poke GdkEventAny, type} |]),
+		("window", ''GdkWindow, [| #{peek GdkEventAny, window} |],
+			[| #{poke GdkEventAny, window} |]),
+		("sendEvent", ''BoolGInt8,
+			[| #{peek GdkEventAny, send_event} |],
+			[| #{poke GdkEventAny, send_event} |]) ]
+	[''Show]
 
 pattern GdkEventGdkMap :: GdkEventAny -> GdkEvent
-pattern GdkEventGdkMap p <- GdkEvent t@(GdkEventType #const GDK_MAP) (GdkEventAny t . castForeignPtr -> p)
+pattern GdkEventGdkMap p <- GdkEvent GdkMap (GdkEventAny_ . castForeignPtr -> p)
 
 pattern GdkEventGdkUnmap :: GdkEventAny -> GdkEvent
-pattern GdkEventGdkUnmap p <- GdkEvent t@(GdkEventType #const GDK_UNMAP) (GdkEventAny t . castForeignPtr -> p)
+pattern GdkEventGdkUnmap p <- GdkEvent GdkUnmap (GdkEventAny_ . castForeignPtr -> p)
 
 pattern GdkEventGdkDelete :: GdkEventAny -> GdkEvent
-pattern GdkEventGdkDelete p <- GdkEvent t@(GdkEventType #const GDK_DELETE) (GdkEventAny t . castForeignPtr -> p)
+pattern GdkEventGdkDelete p <- GdkEvent GdkDelete (GdkEventAny_ . castForeignPtr -> p)
 
 pattern GdkEventGdkNothing :: GdkEventAny -> GdkEvent
-pattern GdkEventGdkNothing p <- GdkEvent t@(GdkEventType (#const GDK_NOTHING)) (GdkEventAny t . castForeignPtr -> p)
--- pattern GdkEventGdkNothing p <- GdkEvent (GdkEventType (#const GDK_NOTHING)) (GdkEventAny . castForeignPtr -> p)
+pattern GdkEventGdkNothing p <- GdkEvent GdkNothing (GdkEventAny_ . castForeignPtr -> p)
 
 newtype GdkEventKey = GdkEventKey (ForeignPtr GdkEventKey) deriving Show
 

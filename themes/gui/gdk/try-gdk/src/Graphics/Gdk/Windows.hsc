@@ -2,6 +2,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE GeneralisedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.Windows (
@@ -102,7 +103,7 @@ import Graphics.Cairo.Drawing.Regions
 
 #include <gdk/gdk.h>
 
-newtype GdkWindow = GdkWindow (Ptr GdkWindow) deriving Show
+newtype GdkWindow = GdkWindow (Ptr GdkWindow) deriving (Show, Storable)
 
 withGdkWindowAutoUnref :: GdkWindowAutoUnref -> (GdkWindow -> IO a) -> IO a
 withGdkWindowAutoUnref (GdkWindowAutoUnref fwnu) f =
