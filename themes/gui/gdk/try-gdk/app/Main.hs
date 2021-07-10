@@ -208,7 +208,7 @@ checkEvent opacity pos size d st = \case
 		putStrLn $ "GDK_DELETE: " ++ show dl
 		pure False
 	GdkEventGdkKeyPress k -> do
-		w <- gdkEventKeyWindow k
+		let	w = gdkEventKeyWindow k
 		kv <- gdkEventKeyKeyval k
 		putStrLn $ "GDK_KEY_PRESS: " ++ show k ++ ": " ++ show kv
 		when (kv == fromIntegral (ord 'h')) $ do

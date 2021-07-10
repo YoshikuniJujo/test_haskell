@@ -22,7 +22,7 @@ Events memo
 	+ [x] `GdkEventAny`
 	+ [ ] `GdkEventKey`
 		- [x] `type`
-		- [ ] `window`
+		- [x] `window`
 		- [ ] `send_event`
 		- [ ] `time`
 		- [ ] `state`

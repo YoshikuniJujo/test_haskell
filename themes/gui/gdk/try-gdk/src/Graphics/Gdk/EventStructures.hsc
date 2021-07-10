@@ -109,6 +109,8 @@ foreign import capi "gdkhs.h poke_gdk_event_key_is_modifier"
 struct "GdkEventKey" #{size GdkEventKey}
 	[	("type", ''GdkEventType, [| #{peek GdkEventKey, type} |],
 			[| #{poke GdkEventKey, type} |]),
+		("window", ''GdkWindow, [| #{peek GdkEventKey, window} |],
+			[| #{poke GdkEventKey, window} |]),
 		("isModifier", ''BoolCUInt, [| c_peek_gdk_event_key_is_modifier . castPtr |],
 			[| c_poke_gdk_event_key_is_modifier . castPtr |])
 		]
@@ -119,11 +121,6 @@ pattern GdkEventGdkKeyPress p <- GdkEvent (GdkEventType #const GDK_KEY_PRESS) (G
 
 gdkEventKeyKeyval :: GdkEventKey -> IO #type guint
 gdkEventKeyKeyval (GdkEventKey_ p) = withForeignPtr p #peek GdkEventKey, keyval
-
-gdkEventKeyWindow :: GdkEventKey -> IO GdkWindow
-gdkEventKeyWindow (GdkEventKey_ p) =
---	GdkWindow <$> (c_g_object_ref =<< withForeignPtr p #peek GdkEventKey, window)
-	GdkWindow <$> withForeignPtr p #peek GdkEventKey, window
 
 pattern GdkEventGdkKeyRelease :: GdkEventKey -> GdkEvent
 pattern GdkEventGdkKeyRelease p <- GdkEvent (GdkEventType #const GDK_KEY_RELEASE) (GdkEventKey_ . castForeignPtr -> p)
