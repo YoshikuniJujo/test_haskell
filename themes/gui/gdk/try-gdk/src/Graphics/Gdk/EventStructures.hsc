@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, CApiFFI #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralisedNewtypeDeriving #-}
@@ -11,6 +11,7 @@ import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Storable
+import Foreign.C.Types
 import Foreign.C.Enum
 import Foreign.C.Struct
 import Data.Bits
@@ -94,21 +95,36 @@ pattern GdkEventGdkDelete p <- GdkEvent GdkDelete (GdkEventAny_ . castForeignPtr
 pattern GdkEventGdkNothing :: GdkEventAny -> GdkEvent
 pattern GdkEventGdkNothing p <- GdkEvent GdkNothing (GdkEventAny_ . castForeignPtr -> p)
 
-newtype GdkEventKey = GdkEventKey (ForeignPtr GdkEventKey) deriving Show
+data {-# CTYPE "gdk/gdk.h" "GdkEventKey" #-} GdkEventKey'
+
+enum "BoolCUInt" ''CUInt [''Show] [
+	("FalseCUInt", #{const FALSE}), ("TrueCUInt", #{const TRUE}) ]
+
+foreign import capi "gdkhs.h peek_gdk_event_key_is_modifier"
+	c_peek_gdk_event_key_is_modifier :: Ptr GdkEventKey' -> IO BoolCUInt
+
+foreign import capi "gdkhs.h poke_gdk_event_key_is_modifier"
+	c_poke_gdk_event_key_is_modifier :: Ptr GdkEventKey' -> BoolCUInt -> IO ()
+
+struct "GdkEventKey" #{size GdkEventKey}
+	[	("isModifier", ''BoolCUInt, [| c_peek_gdk_event_key_is_modifier . castPtr |],
+			[| c_poke_gdk_event_key_is_modifier . castPtr |])
+		]
+	[''Show]
 
 pattern GdkEventGdkKeyPress :: GdkEventKey -> GdkEvent
-pattern GdkEventGdkKeyPress p <- GdkEvent (GdkEventType #const GDK_KEY_PRESS) (GdkEventKey . castForeignPtr -> p)
+pattern GdkEventGdkKeyPress p <- GdkEvent (GdkEventType #const GDK_KEY_PRESS) (GdkEventKey_ . castForeignPtr -> p)
 
 gdkEventKeyKeyval :: GdkEventKey -> IO #type guint
-gdkEventKeyKeyval (GdkEventKey p) = withForeignPtr p #peek GdkEventKey, keyval
+gdkEventKeyKeyval (GdkEventKey_ p) = withForeignPtr p #peek GdkEventKey, keyval
 
 gdkEventKeyWindow :: GdkEventKey -> IO GdkWindow
-gdkEventKeyWindow (GdkEventKey p) =
+gdkEventKeyWindow (GdkEventKey_ p) =
 --	GdkWindow <$> (c_g_object_ref =<< withForeignPtr p #peek GdkEventKey, window)
 	GdkWindow <$> withForeignPtr p #peek GdkEventKey, window
 
 pattern GdkEventGdkKeyRelease :: GdkEventKey -> GdkEvent
-pattern GdkEventGdkKeyRelease p <- GdkEvent (GdkEventType #const GDK_KEY_RELEASE) (GdkEventKey . castForeignPtr -> p)
+pattern GdkEventGdkKeyRelease p <- GdkEvent (GdkEventType #const GDK_KEY_RELEASE) (GdkEventKey_ . castForeignPtr -> p)
 
 newtype GdkEventMotion = GdkEventMotion (ForeignPtr GdkEventMotion) deriving Show
 

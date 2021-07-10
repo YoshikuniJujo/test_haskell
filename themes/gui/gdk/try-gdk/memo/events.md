@@ -29,7 +29,7 @@ Events memo
 		- [ ] `keyval`
 		- [ ] `hardware_keycode`
 		- [ ] `group`
-		- [ ] `is_modifier`
+		- [x] `is_modifier`
 	+ [ ] `GdkEventMotion`
 	+ [ ] `GdkEventVisibility`
 	+ [ ] `GdkEventFocus`

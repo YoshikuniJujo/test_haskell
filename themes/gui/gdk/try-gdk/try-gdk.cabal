@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 919f20aa202219d4a0e1f550d18ad97b49ece6fef4aa5cac6309cf3303ebb44a
+-- hash: 12d902da7ed4fa6b18c95c65a3c298ecaf2b457775ea2a9d309da60dcfd79ec3
 
 name:           try-gdk
 version:        0.1.0.0
@@ -53,6 +53,8 @@ library
       Paths_try_gdk
   hs-source-dirs:
       src
+  include-dirs:
+      include
   pkgconfig-depends:
       gdk-3.0
   build-depends:

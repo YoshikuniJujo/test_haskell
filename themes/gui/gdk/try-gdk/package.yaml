@@ -31,6 +31,7 @@ dependencies:
 library:
   source-dirs: src
   pkg-config-dependencies: gdk-3.0
+  include-dirs: include
 
 executables:
   try-gdk-exe:
