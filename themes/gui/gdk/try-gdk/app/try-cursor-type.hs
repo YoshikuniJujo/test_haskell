@@ -14,6 +14,7 @@ import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
+import Graphics.Gdk.EventStructures.GdkKeySyms
 import Graphics.Gdk.Cursors
 import Try.Tools
 
@@ -41,7 +42,7 @@ main = do
 					| is == GdkSourceTouchpad -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
 					| otherwise -> pure ()
 		GdkEventGdkKeyPress k -> do
-			kv <- gdkEventKeyKeyval k
+			let	kv = gdkEventKeyKeyval k
 			print kv
 			when (kv == 65505 || kv == 65506) $ modifyIORef cnt (+ 1)
 			n <- readIORef cnt
@@ -51,12 +52,12 @@ main = do
 			pure $ kv /= fromIntegral (ord 'q')
 		_ -> pure True
 
-cursorType :: Int -> Word32 -> GdkCursorType
+cursorType :: Int -> GdkKeySym -> GdkCursorType
 cursorType n = case n `mod` 4 of
 	0 -> cursorType0; 1 -> cursorType1; 2 -> cursorType2; 3 -> cursorType3
 	_ -> error "never occur"
 
-cursorType0 :: Word32 -> GdkCursorType
+cursorType0 :: GdkKeySym -> GdkCursorType
 cursorType0 kv
 	| kv == toKeyval 'a' = GdkXCursor
 	| kv == toKeyval 'b' = GdkArrow
@@ -85,7 +86,7 @@ cursorType0 kv
 	| kv == toKeyval 'z' = GdkExchange
 	| otherwise = GdkXCursor
 
-cursorType1 :: Word32 -> GdkCursorType
+cursorType1 :: GdkKeySym -> GdkCursorType
 cursorType1 kv
 	| kv == toKeyval 'a' = GdkFleur
 	| kv == toKeyval 'b' = GdkGobbler
@@ -114,7 +115,7 @@ cursorType1 kv
 	| kv == toKeyval 'z' = GdkRightbutton
 	| otherwise = GdkFleur
 
-cursorType2 :: Word32 -> GdkCursorType
+cursorType2 :: GdkKeySym -> GdkCursorType
 cursorType2 kv
 	| kv == toKeyval 'a' = GdkRtlLogo
 	| kv == toKeyval 'b' = GdkSailboat
@@ -143,7 +144,7 @@ cursorType2 kv
 	| kv == toKeyval 'z' = GdkWatch
 	| otherwise = GdkRtlLogo
 
-cursorType3 :: Word32 -> GdkCursorType
+cursorType3 :: GdkKeySym -> GdkCursorType
 cursorType3 kv
 	| kv == toKeyval 'a' = GdkXterm
 --	| kv == toKeyval 'b' = GdkLastCursor
@@ -151,5 +152,5 @@ cursorType3 kv
 --	| kv == toKeyval 'd' = GdkCursorIsPixmap
 	| otherwise = GdkXterm
 
-toKeyval :: Char -> Word32
+toKeyval :: Char -> GdkKeySym
 toKeyval = fromIntegral . ord

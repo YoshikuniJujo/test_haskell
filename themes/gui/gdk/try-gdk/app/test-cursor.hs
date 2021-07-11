@@ -66,7 +66,7 @@ main = do
 					| is == GdkSourceTouchpad -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
 					| otherwise -> pure ()
 		GdkEventGdkKeyPress k -> do
-			kv <- gdkEventKeyKeyval k
+			let	kv = gdkEventKeyKeyval k
 			when (kv == fromIntegral (ord 'c'))
 --				$ gdkWindowSetCursor w =<< (\s -> gdkCursorNewFromSurface d s 15 15) =<< drawCursor
 				$ gdkWindowSetCursor w =<< (\s -> getSurfaceCursor d s 15 15) =<< drawCursor

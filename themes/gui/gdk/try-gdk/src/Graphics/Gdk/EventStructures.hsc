@@ -21,6 +21,7 @@ import Data.Int
 
 import {-# SOURCE #-} Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkModifierType
+import Graphics.Gdk.EventStructures.GdkKeySyms
 
 #include <gdk/gdk.h>
 
@@ -122,6 +123,8 @@ struct "GdkEventKey" #{size GdkEventKey}
 		("state", ''GdkModifierTypeMultiBits,
 			[| #{peek GdkEventKey, state} |],
 			[| #{poke GdkEventKey, state} |]),
+		("keyval", ''GdkKeySym, [| #{peek GdkEventKey, keyval} |],
+			[| #{poke GdkEventKey, keyval} |]),
 		("isModifier", ''BoolCUInt, [| c_peek_gdk_event_key_is_modifier . castPtr |],
 			[| c_poke_gdk_event_key_is_modifier . castPtr |])
 		]
@@ -129,9 +132,6 @@ struct "GdkEventKey" #{size GdkEventKey}
 
 pattern GdkEventGdkKeyPress :: GdkEventKey -> GdkEvent
 pattern GdkEventGdkKeyPress p <- GdkEvent (GdkEventType #const GDK_KEY_PRESS) (GdkEventKey_ . castForeignPtr -> p)
-
-gdkEventKeyKeyval :: GdkEventKey -> IO #type guint
-gdkEventKeyKeyval (GdkEventKey_ p) = withForeignPtr p #peek GdkEventKey, keyval
 
 pattern GdkEventGdkKeyRelease :: GdkEventKey -> GdkEvent
 pattern GdkEventGdkKeyRelease p <- GdkEvent (GdkEventType #const GDK_KEY_RELEASE) (GdkEventKey_ . castForeignPtr -> p)

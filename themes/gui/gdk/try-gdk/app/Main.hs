@@ -210,7 +210,7 @@ checkEvent opacity pos size d st = \case
 		pure False
 	GdkEventGdkKeyPress k -> do
 		let	w = gdkEventKeyWindow k
-		kv <- gdkEventKeyKeyval k
+			kv = gdkEventKeyKeyval k
 		putStrLn $ "GDK_KEY_PRESS: " ++ show k ++ ": " ++ show kv
 		putStrLn $ "GdkModifierType: " ++
 			show (gdkModifierTypeSingleBitList $ gdkEventKeyState k)
@@ -366,7 +366,7 @@ checkEvent opacity pos size d st = \case
 			gdkWindowSetUrgencyHint w False
 		pure $ kv /= fromIntegral (ord 'q')
 	GdkEventGdkKeyRelease k -> do
-		kv <- gdkEventKeyKeyval k
+		let	kv = gdkEventKeyKeyval k
 		putStrLn $ "GDK_KEY_RELEASE: " ++ show k ++ ": " ++ show kv
 		pure True
 	GdkEventGdkFocusChange f -> do

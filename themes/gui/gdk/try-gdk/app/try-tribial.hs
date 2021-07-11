@@ -31,6 +31,6 @@ main = do
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
 		GdkEventGdkKeyPress k -> do
-			kv <- gdkEventKeyKeyval k
+			let	kv = gdkEventKeyKeyval k
 			pure $ kv /= fromIntegral (ord 'q')
 		_ -> pure True

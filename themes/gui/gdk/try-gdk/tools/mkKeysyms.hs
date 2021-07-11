@@ -22,16 +22,18 @@ File auto-generated from script tools/mkGdkKeySyms.hs using the input file
 
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE GeneralisedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.EventStructures.GdkKeySyms where
 
+import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.Enum
 
 #include <gdk/gdk.h>
 
-enum "GdkKeySym" ''CUInt [''Show] [
+enum "GdkKeySym" ''CUInt [''Show, ''Eq, ''Num, ''Storable] [
 |]
 
 main :: IO ()

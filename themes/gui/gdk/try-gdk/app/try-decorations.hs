@@ -56,7 +56,7 @@ main = do
 					cairoStroke cr
 				pure Nothing
 			Just (GdkEventGdkKeyPress k) -> do
-				kv <- gdkEventKeyKeyval k
+				let	kv = gdkEventKeyKeyval k
 				pure . Just $ kv /= fromIntegral (ord 'q')
 			Just _ -> pure Nothing
 			Nothing -> pure $ Just True

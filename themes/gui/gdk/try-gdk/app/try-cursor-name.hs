@@ -13,6 +13,7 @@ import Graphics.Gdk.General
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
+import Graphics.Gdk.EventStructures.GdkKeySyms
 import Graphics.Gdk.Cursors
 import Try.Tools
 
@@ -31,7 +32,7 @@ main = do
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
 		GdkEventGdkKeyPress k -> do
-			kv <- gdkEventKeyKeyval k
+			let	kv = gdkEventKeyKeyval k
 			print kv
 			when (kv == 65505 || kv == 65506) $ modifyIORef cnt (+ 1)
 			n <- readIORef cnt
@@ -39,11 +40,11 @@ main = do
 			pure $ kv /= fromIntegral (ord 'q')
 		_ -> pure True
 
-cursorName :: Int -> Word32 -> String
+cursorName :: Int -> GdkKeySym -> String
 cursorName n = case n `mod` 2 of
 	0 -> cursorName0; 1 -> cursorName1; _ -> error "never occur"
 
-cursorName0 :: Word32 -> String
+cursorName0 :: GdkKeySym -> String
 cursorName0 kv
 	| kv == toKeyval 'a' = "none"
 	| kv == toKeyval 'b' = "default"
@@ -72,7 +73,7 @@ cursorName0 kv
 	| kv == toKeyval 'z' = "w-resize"
 	| otherwise = "default"
 
-cursorName1 :: Word32 -> String
+cursorName1 :: GdkKeySym -> String
 cursorName1 kv
 	| kv == toKeyval 'a' = "ne-resize"
 	| kv == toKeyval 'b' = "nw-resize"
@@ -86,5 +87,5 @@ cursorName1 kv
 	| kv == toKeyval 'j' = "zoom-out"
 	| otherwise = "ne-resize"
 
-toKeyval :: Char -> Word32
+toKeyval :: Char -> GdkKeySym
 toKeyval = fromIntegral . ord
