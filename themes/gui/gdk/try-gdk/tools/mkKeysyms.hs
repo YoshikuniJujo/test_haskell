@@ -9,7 +9,7 @@ import Text.Nowdoc
 import System.Process
 
 dstFile :: FilePath
-dstFile = "./src/Graphics/Gdk/Events/GdkKeySyms.hsc"
+dstFile = "./src/Graphics/Gdk/EventStructures/GdkKeySyms.hsc"
 
 header :: String
 header = [nowdoc|
@@ -24,7 +24,7 @@ File auto-generated from script tools/mkGdkKeySyms.hs using the input file
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.Events.GdkKeySyms where
+module Graphics.Gdk.EventStructures.GdkKeySyms where
 
 import Foreign.C.Types
 import Foreign.C.Enum
