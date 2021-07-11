@@ -22,5 +22,6 @@ main = do
 		GdkEventGdkDelete _d -> pure False
 		GdkEventGdkKeyPress k -> do
 			let	kv = gdkEventKeyKeyval k
+			print k
 			pure $ kv /= fromIntegral (ord 'q')
 		e -> True <$ print e
