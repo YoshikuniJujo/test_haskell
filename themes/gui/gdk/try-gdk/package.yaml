@@ -27,6 +27,7 @@ dependencies:
 - glib-stopgap
 - c-enum
 - c-struct
+- nowdoc
 
 library:
   source-dirs: src
