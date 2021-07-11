@@ -109,6 +109,7 @@ todo new
 * [x] try `GDK_MAP`
 * [x] draw when `GDK_CONFIGURE`
 * [x] draw when `GDK_FOCUS_CHANGE`
+* [ ] make `Graphics.Gdk.Events.GdkKeySyms`
 * [ ] move `Pointerable` to `glib-stopgap`
 
 todo old
