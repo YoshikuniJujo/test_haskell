@@ -36,9 +36,9 @@ Events memo
 		- [x] `is_modifier`
 	+ [ ] `GdkEventMotion`
 		- [x] `type`
-		- [ ] `window`
-		- [ ] `send_event`
-		- [ ] `time`
+		- [x] `window`
+		- [x] `send_event`
+		- [x] `time`
 		- [ ] `x`
 		- [ ] `y`
 		- [ ] `axes`

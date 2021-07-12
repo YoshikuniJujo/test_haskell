@@ -148,7 +148,14 @@ pattern GdkEventGdkKeyRelease p <- GdkEvent (GdkEventType #const GDK_KEY_RELEASE
 
 struct "GdkEventMotion" #{size GdkEventMotion}
 	[	("type", ''GdkEventType, [| #{peek GdkEventMotion, type} |],
-			[| #{poke GdkEventMotion, type} |])
+			[| #{poke GdkEventMotion, type} |]),
+		("window", ''GdkWindow, [| #{peek GdkEventKey, window} |],
+			[| #{poke GdkEventKey, window} |]),
+		("sendEvent", ''BoolGInt8,
+			[| #{peek GdkEventKey, send_event} |],
+			[| #{poke GdkEventKey, send_event} |]),
+		("time", ''MilliSecond, [| #{peek GdkEventKey, time} |],
+			[| #{poke GdkEventKey, time} |])
 		]
 	[''Show]
 
