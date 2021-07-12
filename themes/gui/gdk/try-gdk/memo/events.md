@@ -39,8 +39,8 @@ Events memo
 		- [x] `window`
 		- [x] `send_event`
 		- [x] `time`
-		- [ ] `x`
-		- [ ] `y`
+		- [x] `x`
+		- [x] `y`
 		- [ ] `axes`
 		- [ ] `state`
 		- [ ] `is_hint`

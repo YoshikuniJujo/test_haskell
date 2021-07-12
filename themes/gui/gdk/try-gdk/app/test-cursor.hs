@@ -53,7 +53,7 @@ main = do
 		GdkEventGdkDelete _d -> pure False
 		e@(GdkEventGdkMotionNotify m) -> True <$ do
 			putStr "GDK_MOTION_NOTIFY: "
-			print =<< gdkEventMotionPos m
+			print $ gdkEventMotionPos m
 			sd <- gdkEventGetSourceDevice e
 			print sd
 			putStrLn =<< maybe (pure "No source device") gdkDeviceGetName sd
@@ -110,5 +110,5 @@ drawCursor = do
 	cairoStroke cr
 	pure s
 
-gdkEventMotionPos :: GdkEventMotion -> IO (Double, Double)
-gdkEventMotionPos m = (,) <$> gdkEventMotionX m <*> gdkEventMotionY m
+gdkEventMotionPos :: GdkEventMotion -> (CDouble, CDouble)
+gdkEventMotionPos m = (gdkEventMotionX m, gdkEventMotionY m)
