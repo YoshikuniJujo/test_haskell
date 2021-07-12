@@ -13,6 +13,7 @@ import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
+import Graphics.Gdk.EventStructures.GdkKeySyms
 import Graphics.Gdk.Values
 import Try.Tools
 
@@ -28,7 +29,7 @@ main = do
 	mainLoop \case
 		GdkEventGdkKeyPress k -> do
 			let	kv = gdkEventKeyKeyval k
-			pure $ kv /= fromIntegral (ord 'q')
+			pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
 		GdkEvent et p -> do
 			putStrLn $ show et ++ " " ++ show p
 			pure True

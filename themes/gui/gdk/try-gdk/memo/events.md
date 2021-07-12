@@ -28,7 +28,9 @@ Events memo
 		- [x] `state`
 			* [x] define GdkModifierType
 			* [x] add `state`
-		- [ ] `keyval`
+		- [x] `keyval`
+		- [ ] `lengthDeprecated`
+		- [ ] `stringDeprecated`
 		- [ ] `hardware_keycode`
 		- [ ] `group`
 		- [x] `is_modifier`
@@ -38,6 +40,7 @@ Events memo
 	+ [ ] `GdkEventConfigure`
 	+ [ ] `GdkEventWindowState`
 * [x] try to peek and poke bit field by capi
+* [x] remove `deriving Num` from `GdkKeySym`
 
 Function
 --------

@@ -18,7 +18,7 @@ import Foreign.C.Enum
 
 #include <gdk/gdk.h>
 
-enum "GdkKeySym" ''CUInt [''Show, ''Eq, ''Num, ''Storable] [
+enum "GdkKeySym" ''CUInt [''Show, ''Eq, ''Storable] [
 	("GdkKey_VoidSymbol", #{const GDK_KEY_VoidSymbol}),
 	("GdkKey_BackSpace", #{const GDK_KEY_BackSpace}),
 	("GdkKey_Tab", #{const GDK_KEY_Tab}),

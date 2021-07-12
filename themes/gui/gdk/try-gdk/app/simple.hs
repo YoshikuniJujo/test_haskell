@@ -10,6 +10,7 @@ import System.Environment
 import Graphics.Gdk.General
 import Graphics.Gdk.Windows
 import Graphics.Gdk.EventStructures
+import Graphics.Gdk.EventStructures.GdkKeySyms
 import Try.Tools
 
 main :: IO ()
@@ -23,5 +24,5 @@ main = do
 		GdkEventGdkKeyPress k -> do
 			let	kv = gdkEventKeyKeyval k
 			print k
-			pure $ kv /= fromIntegral (ord 'q')
+			pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
 		e -> True <$ print e

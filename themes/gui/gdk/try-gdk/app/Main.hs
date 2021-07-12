@@ -30,6 +30,7 @@ import Graphics.Gdk.Windows.GdkModifierType
 import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
+import Graphics.Gdk.EventStructures.GdkKeySyms
 import Graphics.Gdk.Values
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Regions
@@ -214,13 +215,13 @@ checkEvent opacity pos size d st = \case
 		putStrLn $ "GDK_KEY_PRESS: " ++ show k ++ ": " ++ show kv
 		putStrLn $ "GdkModifierType: " ++
 			show (gdkModifierTypeSingleBitList $ gdkEventKeyState k)
-		when (kv == fromIntegral (ord 'h')) $ do
+		when (checkKeyVal 'h' kv) $ do
 			putStrLn "`h' pressed"
 			gdkWindowHide w
 			void . forkIO $ do
 				threadDelay 3000000
 				gdkWindowShow w
-		when (kv == fromIntegral (ord 'i')) $ do
+		when (checkKeyVal 'i' kv) $ do
 			putStrLn "`i' pressed"
 			gdkWindowIconify w
 			print . gdkWindowStateList =<< gdkWindowGetState w
@@ -231,7 +232,7 @@ checkEvent opacity pos size d st = \case
 				print . gdkWindowStateList =<< gdkWindowGetState w
 				threadDelay 1000000
 				print . gdkWindowStateList =<< gdkWindowGetState w
-		when (kv == fromIntegral (ord 'j')) $ do
+		when (checkKeyVal 'j' kv) $ do
 			putStrLn "'j' pressed"
 			s <- gdkWindowGetState w
 			if gdkWindowStateCheck GdkWindowStateSticky s
@@ -241,7 +242,7 @@ checkEvent opacity pos size d st = \case
 			void . forkIO $ do
 				threadDelay 1000000
 				print . gdkWindowStateList =<< gdkWindowGetState w
-		when (kv == fromIntegral (ord 'm')) $ do
+		when (checkKeyVal 'm' kv) $ do
 			putStrLn "`m' pressed"
 			s <- gdkWindowGetState w
 			if gdkWindowStateCheck GdkWindowStateMaximized s
@@ -250,7 +251,7 @@ checkEvent opacity pos size d st = \case
 			void . forkIO $ do
 				threadDelay 1000000
 				print . gdkWindowStateList =<< gdkWindowGetState w
-		when (kv == fromIntegral (ord 'f')) $ do
+		when (checkKeyVal 'f' kv) $ do
 			putStrLn "`f' pressed"
 			s <- gdkWindowGetState w
 			if gdkWindowStateCheck GdkWindowStateFullscreen s
@@ -259,25 +260,25 @@ checkEvent opacity pos size d st = \case
 			void . forkIO $ do
 				threadDelay 1000000
 				print . gdkWindowStateList =<< gdkWindowGetState w
-		when (kv == fromIntegral (ord 'a')) $ do
+		when (checkKeyVal 'a' kv) $ do
 			putStrLn "`a' pressed"
 			s <- gdkWindowGetState w
 			gdkWindowSetKeepAbove w . not $ gdkWindowStateCheck GdkWindowStateAbove s
 			void . forkIO $ do
 				threadDelay 1000000
 				print . gdkWindowStateList =<< gdkWindowGetState w
-		when (kv == fromIntegral (ord 'b')) $ do
+		when (checkKeyVal 'b' kv) $ do
 			putStrLn "`b' pressed"
 			s <- gdkWindowGetState w
 			gdkWindowSetKeepBelow w . not $ gdkWindowStateCheck GdkWindowStateBelow s
 			void . forkIO $ do
 				threadDelay 1000000
 				print . gdkWindowStateList =<< gdkWindowGetState w
-		when (kv == fromIntegral (ord 'o')) $ do
+		when (checkKeyVal 'o' kv) $ do
 			modifyIORef opacity (snd . properFraction @_ @Int . (+ 0.0625))
 			gdkWindowSetOpacity w =<< readIORef opacity
 			print =<< readIORef opacity
-		when (kv == fromIntegral (ord 't')) $ do
+		when (checkKeyVal 't' kv) $ do
 			modifyIORef pos (+ 1)
 			p <- readIORef pos
 			uncurry (gdkWindowMove w) $ case p `mod` 8 of
@@ -290,7 +291,7 @@ checkEvent opacity pos size d st = \case
 				6 -> (100, 500)
 				7 -> (100, 300)
 				_ -> error "never occur"
-		when (kv == fromIntegral (ord 'u')) $ do
+		when (checkKeyVal 'u' kv) $ do
 			modifyIORef size (+ 1)
 			s <- readIORef size
 			uncurry (gdkWindowResize w) $ case s `mod` 8 of
@@ -303,24 +304,24 @@ checkEvent opacity pos size d st = \case
 				6 -> (100, 500)
 				7 -> (100, 300)
 				_ -> error "never occur"
-		when (kv == fromIntegral (ord 'v')) $ do
+		when (checkKeyVal 'v' kv) $ do
 			gdkWindowLower w
 			void . forkIO $ threadDelay 2000000 >> gdkWindowRaise w >> gdkWindowFocus w 0
-		when (kv == fromIntegral (ord 'p')) $ do
+		when (checkKeyVal 'p' kv) $ do
 			putStrLn . ("Window size: " ++) . show =<< gdkWindowGetPosition w
-		when (kv == fromIntegral (ord 's')) $ do
+		when (checkKeyVal 's' kv) $ do
 			putStrLn . ("Window size: " ++) . show =<< (,) <$> gdkWindowGetWidth w <*> gdkWindowGetHeight w
-		when (kv == fromIntegral (ord 'g')) $ checkGrabbedPointerKeyboard d st
-		when (kv == fromIntegral (ord 'w')) do
+		when (checkKeyVal 'g' kv) $ checkGrabbedPointerKeyboard d st
+		when (checkKeyVal 'w' kv) do
 			pnt <- gdkSeatGetPointer st
 			gdkDeviceWarp pnt (gdkDisplayGetDefaultScreen d) 100 100
-		when (kv == fromIntegral (ord 'r')) do
+		when (checkKeyVal 'r' kv) do
 			pnt <- gdkSeatGetPointer st
 			print =<< gdkDeviceGetPosition pnt
 			print =<< gdkDeviceGetPositionDouble pnt
 			print =<< gdkDeviceGetWindowAtPosition pnt
 			print =<< gdkDeviceGetWindowAtPositionDouble pnt
-		when (kv == fromIntegral (ord 'c')) do
+		when (checkKeyVal 'c' kv) do
 			putStrLn "`c' pressed!"
 			putStr "gdkWindowGetGeometry: "
 			print =<< gdkWindowGetGeometry w
@@ -339,32 +340,32 @@ checkEvent opacity pos size d st = \case
 			print =<< gdkWindowGetOrigin w
 			putStr "gdkWindowGetRootCoords w 100 200: "
 			print =<< gdkWindowGetRootCoords w 100 200
-		when (kv == fromIntegral (ord 'd')) do
+		when (checkKeyVal 'd' kv) do
 			putStrLn "`d' pressed"
 			w' <- gdkWindowNew Nothing $ minimalGdkWindowAttr
 				GdkZeroEventsMask 100 100 gdkInputOutput GdkWindowToplevel
 			gdkWindowSetTransientFor w' w
 			gdkWindowSetModalHint w' True
 			gdkWindowShow w'
-		when (kv == fromIntegral (ord 'e')) do
+		when (checkKeyVal 'e' kv) do
 			putStrLn "`e' pressed"
 			gdkWindowSetSkipTaskbarHint w True
-		when (kv == fromIntegral (ord 'k')) do
+		when (checkKeyVal 'k' kv) do
 			putStrLn "`k' pressed"
 			gdkWindowSetSkipTaskbarHint w False
-		when (kv == fromIntegral (ord 'l')) do
+		when (checkKeyVal 'l' kv) do
 			putStrLn "`l' pressed"
 			gdkWindowSetSkipPagerHint w True
-		when (kv == fromIntegral (ord 'n')) do
+		when (checkKeyVal 'n' kv) do
 			putStrLn "`n' pressed"
 			gdkWindowSetSkipPagerHint w False
-		when (kv == fromIntegral (ord '1')) do
+		when (checkKeyVal '1' kv) do
 			putStrLn "`1' pressed"
 			gdkWindowSetUrgencyHint w True
-		when (kv == fromIntegral (ord '2')) do
+		when (checkKeyVal '2' kv) do
 			putStrLn "`2' pressed"
 			gdkWindowSetUrgencyHint w False
-		pure $ kv /= fromIntegral (ord 'q')
+		pure $ checkKeyVal 'q' kv
 	GdkEventGdkKeyRelease k -> do
 		let	kv = gdkEventKeyKeyval k
 		putStrLn $ "GDK_KEY_RELEASE: " ++ show k ++ ": " ++ show kv
@@ -448,3 +449,6 @@ printVisibleRegion w = do
 	vrrp <- cairoRectangleIntTNew
 	cairoRegionGetRectangle vr 0 vrrp
 	print =<< cairoRectangleIntTFreeze vrrp
+
+checkKeyVal :: Char -> GdkKeySym -> Bool
+checkKeyVal c ks = ks == GdkKeySym (fromIntegral $ ord c)

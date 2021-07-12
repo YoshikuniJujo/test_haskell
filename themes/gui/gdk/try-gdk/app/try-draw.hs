@@ -16,6 +16,7 @@ import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
+import Graphics.Gdk.EventStructures.GdkKeySyms
 import Graphics.Gdk.Values
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Regions
@@ -85,7 +86,7 @@ checkEvent = \case
 		pure True
 	GdkEventGdkKeyPress k -> do
 		let	kv = gdkEventKeyKeyval k
-		pure $ kv /= fromIntegral (ord 'q')
+		pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
 	GdkEvent et p -> do	
 		putStrLn $ show et ++ " " ++ show p
 		pure True

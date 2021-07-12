@@ -16,6 +16,7 @@ import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
+import Graphics.Gdk.EventStructures.GdkKeySyms
 import Graphics.Gdk.Cursors
 import Try.Tools
 
@@ -67,19 +68,19 @@ main = do
 					| otherwise -> pure ()
 		GdkEventGdkKeyPress k -> do
 			let	kv = gdkEventKeyKeyval k
-			when (kv == fromIntegral (ord 'c'))
+			when (kv == GdkKeySym (fromIntegral $ ord 'c'))
 --				$ gdkWindowSetCursor w =<< (\s -> gdkCursorNewFromSurface d s 15 15) =<< drawCursor
 				$ gdkWindowSetCursor w =<< (\s -> getSurfaceCursor d s 15 15) =<< drawCursor
-			when (kv == fromIntegral (ord 'd'))
+			when (kv == GdkKeySym (fromIntegral $ ord 'd'))
 --				$ gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
 				$ gdkWindowSetCursor w =<< getNameCursor d "crosshair"
-			when (kv == fromIntegral (ord 'g'))
+			when (kv == GdkKeySym (fromIntegral $ ord 'g'))
 				$ print =<< gdkSeatGrab st w GdkSeatCapabilityAllPointing False Nothing Nothing
 						(Nothing :: Maybe (GdkSeatGrabPrepareFunc (), ()))
-			when (kv == fromIntegral (ord 'h'))
+			when (kv == GdkKeySym (fromIntegral $ ord 'h'))
 				$ print =<< gdkSeatGrab st w GdkSeatCapabilityAllPointing True Nothing Nothing
 						(Nothing :: Maybe (GdkSeatGrabPrepareFunc (), ()))
-			pure $ kv /= fromIntegral (ord 'q')
+			pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
 		e -> True <$ print e
 
 getSurfaceCursor :: GdkDisplay -> CairoSurfaceImageT s ps -> CDouble -> CDouble -> IO GdkCursor

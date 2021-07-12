@@ -33,7 +33,7 @@ import Foreign.C.Enum
 
 #include <gdk/gdk.h>
 
-enum "GdkKeySym" ''CUInt [''Show, ''Eq, ''Num, ''Storable] [
+enum "GdkKeySym" ''CUInt [''Show, ''Eq, ''Storable] [
 |]
 
 main :: IO ()

@@ -34,10 +34,10 @@ main = do
 		GdkEventGdkKeyPress k -> do
 			let	kv = gdkEventKeyKeyval k
 			print kv
-			when (kv == 65505 || kv == 65506) $ modifyIORef cnt (+ 1)
+			when (kv == GdkKeySym 65505 || kv == GdkKeySym 65506) $ modifyIORef cnt (+ 1)
 			n <- readIORef cnt
 			gdkWindowSetCursor w =<< gdkCursorNewFromName d (cursorName n kv)
-			pure $ kv /= fromIntegral (ord 'q')
+			pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
 		_ -> pure True
 
 cursorName :: Int -> GdkKeySym -> String
@@ -88,4 +88,4 @@ cursorName1 kv
 	| otherwise = "ne-resize"
 
 toKeyval :: Char -> GdkKeySym
-toKeyval = fromIntegral . ord
+toKeyval = GdkKeySym . fromIntegral . ord

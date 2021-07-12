@@ -17,6 +17,7 @@ import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
+import Graphics.Gdk.EventStructures.GdkKeySyms
 import Graphics.Gdk.Values
 
 import Try.Tools
@@ -47,7 +48,7 @@ main = do
 		doWhile $ gdkEventGet >>= \case
 			Just (GdkEventGdkKeyPress k) -> do
 				let	kv = gdkEventKeyKeyval k
-				pure . Just $ kv /= fromIntegral (ord 'q')
+				pure . Just $ kv /= GdkKeySym (fromIntegral $ ord 'q')
 			Just _ -> pure Nothing
 			Nothing -> pure $ Just True
 

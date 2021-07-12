@@ -11,6 +11,7 @@ import Graphics.Gdk.General
 import Graphics.Gdk.Cursors
 import Graphics.Gdk.Windows
 import Graphics.Gdk.EventStructures
+import Graphics.Gdk.EventStructures.GdkKeySyms
 import Try.Tools
 
 main :: IO ()
@@ -32,5 +33,5 @@ main = do
 		GdkEventGdkDelete _d -> pure False
 		GdkEventGdkKeyPress k -> do
 			let	kv = gdkEventKeyKeyval k
-			pure $ kv /= fromIntegral (ord 'q')
+			pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
 		_ -> pure True

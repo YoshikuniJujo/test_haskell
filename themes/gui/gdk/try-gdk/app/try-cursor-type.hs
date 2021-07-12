@@ -4,7 +4,6 @@
 module Main where
 
 import Control.Monad
-import Data.Word
 import Data.Char
 import Data.IORef
 import System.Environment
@@ -44,12 +43,12 @@ main = do
 		GdkEventGdkKeyPress k -> do
 			let	kv = gdkEventKeyKeyval k
 			print kv
-			when (kv == 65505 || kv == 65506) $ modifyIORef cnt (+ 1)
+			when (kv == GdkKeySym 65505 || kv == GdkKeySym 65506) $ modifyIORef cnt (+ 1)
 			n <- readIORef cnt
 			c <- gdkCursorNewForDisplay d $ cursorType n kv
 			print =<< gdkCursorGetCursorType c
 			gdkWindowSetCursor w c
-			pure $ kv /= fromIntegral (ord 'q')
+			pure $ kv == GdkKey_q
 		_ -> pure True
 
 cursorType :: Int -> GdkKeySym -> GdkCursorType
@@ -59,98 +58,101 @@ cursorType n = case n `mod` 4 of
 
 cursorType0 :: GdkKeySym -> GdkCursorType
 cursorType0 kv
-	| kv == toKeyval 'a' = GdkXCursor
-	| kv == toKeyval 'b' = GdkArrow
-	| kv == toKeyval 'c' = GdkBasedArrowDown
-	| kv == toKeyval 'd' = GdkBasedArrowUp
-	| kv == toKeyval 'e' = GdkBoat
-	| kv == toKeyval 'f' = GdkBogosity
-	| kv == toKeyval 'g' = GdkBottomLeftCorner
-	| kv == toKeyval 'h' = GdkBottomRightCorner
-	| kv == toKeyval 'i' = GdkBottomSide
-	| kv == toKeyval 'j' = GdkBottomTee
-	| kv == toKeyval 'k' = GdkBoxSpiral
-	| kv == toKeyval 'l' = GdkCenterPtr
-	| kv == toKeyval 'm' = GdkCircle
-	| kv == toKeyval 'n' = GdkClock
-	| kv == toKeyval 'o' = GdkCoffeeMug
-	| kv == toKeyval 'p' = GdkCross
-	| kv == toKeyval 'r' = GdkCrossReverse
-	| kv == toKeyval 's' = GdkDiamondCross
-	| kv == toKeyval 't' = GdkDot
-	| kv == toKeyval 'u' = GdkDotbox
-	| kv == toKeyval 'v' = GdkDoubleArrow
-	| kv == toKeyval 'w' = GdkDraftLarge
-	| kv == toKeyval 'x' = GdkDraftSmall
-	| kv == toKeyval 'y' = GdkDrapedBox
-	| kv == toKeyval 'z' = GdkExchange
+	| checkKeyVal kv 'a' = GdkXCursor
+	| checkKeyVal kv 'b' = GdkArrow
+	| checkKeyVal kv 'c' = GdkBasedArrowDown
+	| checkKeyVal kv 'd' = GdkBasedArrowUp
+	| checkKeyVal kv 'e' = GdkBoat
+	| checkKeyVal kv 'f' = GdkBogosity
+	| checkKeyVal kv 'g' = GdkBottomLeftCorner
+	| checkKeyVal kv 'h' = GdkBottomRightCorner
+	| checkKeyVal kv 'i' = GdkBottomSide
+	| checkKeyVal kv 'j' = GdkBottomTee
+	| checkKeyVal kv 'k' = GdkBoxSpiral
+	| checkKeyVal kv 'l' = GdkCenterPtr
+	| checkKeyVal kv 'm' = GdkCircle
+	| checkKeyVal kv 'n' = GdkClock
+	| checkKeyVal kv 'o' = GdkCoffeeMug
+	| checkKeyVal kv 'p' = GdkCross
+	| checkKeyVal kv 'r' = GdkCrossReverse
+	| checkKeyVal kv 's' = GdkDiamondCross
+	| checkKeyVal kv 't' = GdkDot
+	| checkKeyVal kv 'u' = GdkDotbox
+	| checkKeyVal kv 'v' = GdkDoubleArrow
+	| checkKeyVal kv 'w' = GdkDraftLarge
+	| checkKeyVal kv 'x' = GdkDraftSmall
+	| checkKeyVal kv 'y' = GdkDrapedBox
+	| checkKeyVal kv 'z' = GdkExchange
 	| otherwise = GdkXCursor
 
 cursorType1 :: GdkKeySym -> GdkCursorType
 cursorType1 kv
-	| kv == toKeyval 'a' = GdkFleur
-	| kv == toKeyval 'b' = GdkGobbler
-	| kv == toKeyval 'c' = GdkGumby
-	| kv == toKeyval 'd' = GdkHand1
-	| kv == toKeyval 'e' = GdkHand2
-	| kv == toKeyval 'f' = GdkHeart
-	| kv == toKeyval 'g' = GdkIcon
-	| kv == toKeyval 'h' = GdkIronCross
-	| kv == toKeyval 'i' = GdkLeftPtr
-	| kv == toKeyval 'j' = GdkLeftSide
-	| kv == toKeyval 'k' = GdkLeftTee
-	| kv == toKeyval 'l' = GdkLeftbutton
-	| kv == toKeyval 'm' = GdkLlAngle
-	| kv == toKeyval 'n' = GdkLrAngle
-	| kv == toKeyval 'o' = GdkMan
-	| kv == toKeyval 'p' = GdkMiddlebutton
-	| kv == toKeyval 'r' = GdkMouse
-	| kv == toKeyval 's' = GdkPencil
-	| kv == toKeyval 't' = GdkPirate
-	| kv == toKeyval 'u' = GdkPlus
-	| kv == toKeyval 'v' = GdkQuestionArrow
-	| kv == toKeyval 'w' = GdkRightPtr
-	| kv == toKeyval 'x' = GdkRightSide
-	| kv == toKeyval 'y' = GdkRightTee
-	| kv == toKeyval 'z' = GdkRightbutton
+	| checkKeyVal kv 'a' = GdkFleur
+	| checkKeyVal kv 'b' = GdkGobbler
+	| checkKeyVal kv 'c' = GdkGumby
+	| checkKeyVal kv 'd' = GdkHand1
+	| checkKeyVal kv 'e' = GdkHand2
+	| checkKeyVal kv 'f' = GdkHeart
+	| checkKeyVal kv 'g' = GdkIcon
+	| checkKeyVal kv 'h' = GdkIronCross
+	| checkKeyVal kv 'i' = GdkLeftPtr
+	| checkKeyVal kv 'j' = GdkLeftSide
+	| checkKeyVal kv 'k' = GdkLeftTee
+	| checkKeyVal kv 'l' = GdkLeftbutton
+	| checkKeyVal kv 'm' = GdkLlAngle
+	| checkKeyVal kv 'n' = GdkLrAngle
+	| checkKeyVal kv 'o' = GdkMan
+	| checkKeyVal kv 'p' = GdkMiddlebutton
+	| checkKeyVal kv 'r' = GdkMouse
+	| checkKeyVal kv 's' = GdkPencil
+	| checkKeyVal kv 't' = GdkPirate
+	| checkKeyVal kv 'u' = GdkPlus
+	| checkKeyVal kv 'v' = GdkQuestionArrow
+	| checkKeyVal kv 'w' = GdkRightPtr
+	| checkKeyVal kv 'x' = GdkRightSide
+	| checkKeyVal kv 'y' = GdkRightTee
+	| checkKeyVal kv 'z' = GdkRightbutton
 	| otherwise = GdkFleur
 
 cursorType2 :: GdkKeySym -> GdkCursorType
 cursorType2 kv
-	| kv == toKeyval 'a' = GdkRtlLogo
-	| kv == toKeyval 'b' = GdkSailboat
-	| kv == toKeyval 'c' = GdkSbDownArrow
-	| kv == toKeyval 'd' = GdkSbHDoubleArrow
-	| kv == toKeyval 'e' = GdkSbLeftArrow
-	| kv == toKeyval 'f' = GdkSbRightArrow
-	| kv == toKeyval 'g' = GdkSbUpArrow
-	| kv == toKeyval 'h' = GdkSbVDoubleArrow
-	| kv == toKeyval 'i' = GdkShuttle
-	| kv == toKeyval 'j' = GdkSizing
-	| kv == toKeyval 'k' = GdkSpider
-	| kv == toKeyval 'l' = GdkSpraycan
-	| kv == toKeyval 'm' = GdkStar
-	| kv == toKeyval 'n' = GdkTarget
-	| kv == toKeyval 'o' = GdkTcross
-	| kv == toKeyval 'p' = GdkTopLeftArrow
-	| kv == toKeyval 'r' = GdkTopLeftCorner
-	| kv == toKeyval 's' = GdkTopRightCorner
-	| kv == toKeyval 't' = GdkTopSide
-	| kv == toKeyval 'u' = GdkTopTee
-	| kv == toKeyval 'v' = GdkTrek
-	| kv == toKeyval 'w' = GdkUlAngle
-	| kv == toKeyval 'x' = GdkUmbrella
-	| kv == toKeyval 'y' = GdkUrAngle
-	| kv == toKeyval 'z' = GdkWatch
+	| checkKeyVal kv 'a' = GdkRtlLogo
+	| checkKeyVal kv 'b' = GdkSailboat
+	| checkKeyVal kv 'c' = GdkSbDownArrow
+	| checkKeyVal kv 'd' = GdkSbHDoubleArrow
+	| checkKeyVal kv 'e' = GdkSbLeftArrow
+	| checkKeyVal kv 'f' = GdkSbRightArrow
+	| checkKeyVal kv 'g' = GdkSbUpArrow
+	| checkKeyVal kv 'h' = GdkSbVDoubleArrow
+	| checkKeyVal kv 'i' = GdkShuttle
+	| checkKeyVal kv 'j' = GdkSizing
+	| checkKeyVal kv 'k' = GdkSpider
+	| checkKeyVal kv 'l' = GdkSpraycan
+	| checkKeyVal kv 'm' = GdkStar
+	| checkKeyVal kv 'n' = GdkTarget
+	| checkKeyVal kv 'o' = GdkTcross
+	| checkKeyVal kv 'p' = GdkTopLeftArrow
+	| checkKeyVal kv 'r' = GdkTopLeftCorner
+	| checkKeyVal kv 's' = GdkTopRightCorner
+	| checkKeyVal kv 't' = GdkTopSide
+	| checkKeyVal kv 'u' = GdkTopTee
+	| checkKeyVal kv 'v' = GdkTrek
+	| checkKeyVal kv 'w' = GdkUlAngle
+	| checkKeyVal kv 'x' = GdkUmbrella
+	| checkKeyVal kv 'y' = GdkUrAngle
+	| checkKeyVal kv 'z' = GdkWatch
 	| otherwise = GdkRtlLogo
 
 cursorType3 :: GdkKeySym -> GdkCursorType
 cursorType3 kv
-	| kv == toKeyval 'a' = GdkXterm
---	| kv == toKeyval 'b' = GdkLastCursor
-	| kv == toKeyval 'c' = GdkBlankCursor
---	| kv == toKeyval 'd' = GdkCursorIsPixmap
+	| checkKeyVal kv 'a' = GdkXterm
+--	| checkKeyVal kv 'b' = GdkLastCursor
+	| checkKeyVal kv 'c' = GdkBlankCursor
+--	| checkKeyVal kv 'd' = GdkCursorIsPixmap
 	| otherwise = GdkXterm
 
 toKeyval :: Char -> GdkKeySym
-toKeyval = fromIntegral . ord
+toKeyval = GdkKeySym . fromIntegral . ord
+
+checkKeyVal :: GdkKeySym -> Char -> Bool
+checkKeyVal kv c = kv == toKeyval c
