@@ -365,7 +365,7 @@ checkEvent opacity pos size d st = \case
 		when (checkKeyVal '2' kv) do
 			putStrLn "`2' pressed"
 			gdkWindowSetUrgencyHint w False
-		pure $ checkKeyVal 'q' kv
+		pure . not $ checkKeyVal 'q' kv
 	GdkEventGdkKeyRelease k -> do
 		let	kv = gdkEventKeyKeyval k
 		putStrLn $ "GDK_KEY_RELEASE: " ++ show k ++ ": " ++ show kv

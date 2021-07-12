@@ -125,6 +125,8 @@ struct "GdkEventKey" #{size GdkEventKey}
 			[| #{poke GdkEventKey, state} |]),
 		("keyval", ''GdkKeySym, [| #{peek GdkEventKey, keyval} |],
 			[| #{poke GdkEventKey, keyval} |]),
+		("lengthDeprecated", ''CInt, [| #{peek GdkEventKey, length} |],
+			[| \p _ -> #{poke GdkEventKey, length} p (0 :: CInt) |]),
 		("isModifier", ''BoolCUInt, [| c_peek_gdk_event_key_is_modifier . castPtr |],
 			[| c_poke_gdk_event_key_is_modifier . castPtr |])
 		]

@@ -29,7 +29,7 @@ Events memo
 			* [x] define GdkModifierType
 			* [x] add `state`
 		- [x] `keyval`
-		- [ ] `lengthDeprecated`
+		- [x] `lengthDeprecated`
 		- [ ] `stringDeprecated`
 		- [ ] `hardware_keycode`
 		- [ ] `group`
