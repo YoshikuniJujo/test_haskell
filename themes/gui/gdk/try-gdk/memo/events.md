@@ -35,6 +35,18 @@ Events memo
 		- [x] `group`
 		- [x] `is_modifier`
 	+ [ ] `GdkEventMotion`
+		- [x] `type`
+		- [ ] `window`
+		- [ ] `send_event`
+		- [ ] `time`
+		- [ ] `x`
+		- [ ] `y`
+		- [ ] `axes`
+		- [ ] `state`
+		- [ ] `is_hint`
+		- [ ] `device`
+		- [ ] `x_root`
+		- [ ] `y_root`
 	+ [ ] `GdkEventVisibility`
 	+ [ ] `GdkEventFocus`
 	+ [ ] `GdkEventConfigure`
