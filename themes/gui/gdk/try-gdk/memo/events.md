@@ -30,7 +30,7 @@ Events memo
 			* [x] add `state`
 		- [x] `keyval`
 		- [x] `lengthDeprecated`
-		- [ ] `stringDeprecated`
+		- [x] `stringDeprecated`
 		- [ ] `hardware_keycode`
 		- [ ] `group`
 		- [x] `is_modifier`

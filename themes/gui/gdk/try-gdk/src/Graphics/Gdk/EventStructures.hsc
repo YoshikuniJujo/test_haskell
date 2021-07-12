@@ -12,6 +12,7 @@ import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Storable
 import Foreign.C.Types
+import Foreign.C.String
 import Foreign.C.Enum
 import Foreign.C.Struct
 import Data.Bits
@@ -127,6 +128,8 @@ struct "GdkEventKey" #{size GdkEventKey}
 			[| #{poke GdkEventKey, keyval} |]),
 		("lengthDeprecated", ''CInt, [| #{peek GdkEventKey, length} |],
 			[| \p _ -> #{poke GdkEventKey, length} p (0 :: CInt) |]),
+		("stringDeprecated", ''CString, [| #{peek GdkEventKey, string} |],
+			[| \p _ -> #{poke GdkEventKey, string} p nullPtr |]),
 		("isModifier", ''BoolCUInt, [| c_peek_gdk_event_key_is_modifier . castPtr |],
 			[| c_poke_gdk_event_key_is_modifier . castPtr |])
 		]

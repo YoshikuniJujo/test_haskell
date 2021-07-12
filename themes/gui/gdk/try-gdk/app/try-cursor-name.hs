@@ -4,7 +4,6 @@
 module Main where
 
 import Control.Monad
-import Data.Word
 import Data.Char
 import Data.IORef
 import System.Environment
