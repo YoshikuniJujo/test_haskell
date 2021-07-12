@@ -20,7 +20,7 @@ Events memo
 	+ [x] GdkWindowState
 * [ ] use `c-struct` in `GdkEventFoo`
 	+ [x] `GdkEventAny`
-	+ [ ] `GdkEventKey`
+	+ [x] `GdkEventKey`
 		- [x] `type`
 		- [x] `window`
 		- [x] `send_event`
@@ -32,7 +32,7 @@ Events memo
 		- [x] `lengthDeprecated`
 		- [x] `stringDeprecated`
 		- [x] `hardware_keycode`
-		- [ ] `group`
+		- [x] `group`
 		- [x] `is_modifier`
 	+ [ ] `GdkEventMotion`
 	+ [ ] `GdkEventVisibility`
