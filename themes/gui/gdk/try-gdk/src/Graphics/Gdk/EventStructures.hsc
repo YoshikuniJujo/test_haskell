@@ -130,6 +130,9 @@ struct "GdkEventKey" #{size GdkEventKey}
 			[| \p _ -> #{poke GdkEventKey, length} p (0 :: CInt) |]),
 		("stringDeprecated", ''CString, [| #{peek GdkEventKey, string} |],
 			[| \p _ -> #{poke GdkEventKey, string} p nullPtr |]),
+		("hardwareKeycode", ''Int16,
+			[| #{peek GdkEventKey, hardware_keycode} |],
+			[| #{poke GdkEventKey, hardware_keycode} |]),
 		("isModifier", ''BoolCUInt, [| c_peek_gdk_event_key_is_modifier . castPtr |],
 			[| c_poke_gdk_event_key_is_modifier . castPtr |])
 		]

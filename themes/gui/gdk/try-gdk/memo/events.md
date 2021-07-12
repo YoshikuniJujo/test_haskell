@@ -31,7 +31,7 @@ Events memo
 		- [x] `keyval`
 		- [x] `lengthDeprecated`
 		- [x] `stringDeprecated`
-		- [ ] `hardware_keycode`
+		- [x] `hardware_keycode`
 		- [ ] `group`
 		- [x] `is_modifier`
 	+ [ ] `GdkEventMotion`
