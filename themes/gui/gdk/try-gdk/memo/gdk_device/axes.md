@@ -4,6 +4,7 @@ GdkDevice axes memo
 Function
 --------
 
+* [x] define `GdkAxes`
 * [ ] `gdk_device_set_axis_use`
 * [ ] `gdk_device_get_axis_use`
 * [ ] `gdk_device_get_n_axes`
