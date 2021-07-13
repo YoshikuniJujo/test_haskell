@@ -32,7 +32,9 @@ import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
+import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
 import Graphics.Gdk.Values
+
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Regions
 import Graphics.Cairo.Drawing.Paths
@@ -82,8 +84,9 @@ main = do
 		putStrLn . ("\t\t" ++) . show =<< gdkDeviceGetProductId slv
 		s <- gdkDeviceGetSource slv
 		putStrLn $ "\t\t" ++ show s
-		when (s /= GdkSourceKeyboard)
-			$ putStrLn . ("\t\t" ++) . show =<< gdkDeviceGetNAxes slv
+		when (s /= GdkSourceKeyboard) do
+			putStrLn . ("\t\t" ++) . show =<< gdkDeviceGetNAxes slv
+			putStrLn . ("\t\t" ++) . show =<< mapM gdkAtomName =<< gdkDeviceListAxes slv
 	gdkDisplayGetPrimaryMonitor d >>= \case
 		Nothing -> putStrLn "no primary monitor"
 		Just mntr -> do
