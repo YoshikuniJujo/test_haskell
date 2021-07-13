@@ -22,6 +22,7 @@ import Graphics.Gdk.GdkScreen
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkMonitor
 import Graphics.Gdk.GdkDevice
+import Graphics.Gdk.GdkDevice.GdkAxes
 import Graphics.Gdk.PointsAndRectangles
 import Graphics.Gdk.Visuals
 import Graphics.Gdk.Windows
@@ -79,7 +80,10 @@ main = do
 		putStrLn . ("\t" ++) =<< gdkDeviceGetName slv
 		putStrLn . ("\t\t" ++) . show =<< gdkDeviceGetVendorId slv
 		putStrLn . ("\t\t" ++) . show =<< gdkDeviceGetProductId slv
-		putStrLn . ("\t\t" ++) . show =<< gdkDeviceGetSource slv
+		s <- gdkDeviceGetSource slv
+		putStrLn $ "\t\t" ++ show s
+		when (s /= GdkSourceKeyboard)
+			$ putStrLn . ("\t\t" ++) . show =<< gdkDeviceGetNAxes slv
 	gdkDisplayGetPrimaryMonitor d >>= \case
 		Nothing -> putStrLn "no primary monitor"
 		Just mntr -> do
