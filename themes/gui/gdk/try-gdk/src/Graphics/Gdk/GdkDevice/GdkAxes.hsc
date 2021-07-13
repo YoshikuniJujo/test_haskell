@@ -20,6 +20,22 @@ import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
 
 newtype Axes = Axes (ForeignPtr CDouble) deriving Show
 
+enum "GdkAxisUse" ''#{type GdkAxisUse} [''Show] [
+	("GdkAxisIgnore", #{const GDK_AXIS_IGNORE}),
+	("GdkAxisX", #{const GDK_AXIS_X}),
+	("GdkAxisY", #{const GDK_AXIS_Y}),
+	("GdkAxisPressure", #{const GDK_AXIS_PRESSURE}),
+	("GdkAxisXtilt", #{const GDK_AXIS_XTILT}),
+	("GdkAxisYtilt", #{const GDK_AXIS_YTILT}),
+	("GdkAxisWheel", #{const GDK_AXIS_WHEEL}),
+	("GdkAxisDistance", #{const GDK_AXIS_DISTANCE}),
+	("GdkAxisRotation", #{const GDK_AXIS_ROTATION}),
+	("GdkAxisSlider", #{const GDK_AXIS_SLIDER}),
+	("GdkAxisLast", #{const GDK_AXIS_LAST}) ]
+
+foreign import ccall "gdk_device_get_axis_use"
+	gdkDeviceGetAxisUse :: GdkDevice -> CUInt -> IO GdkAxisUse
+
 foreign import ccall "gdk_device_get_n_axes"
 	gdkDeviceGetNAxes :: GdkDevice -> IO CInt
 

@@ -85,9 +85,12 @@ main = do
 		s <- gdkDeviceGetSource slv
 		putStrLn $ "\t\t" ++ show s
 		when (s /= GdkSourceKeyboard) do
-			putStrLn . ("\t\t" ++) . show =<< gdkDeviceGetNAxes slv
+			n <- gdkDeviceGetNAxes slv
+			putStrLn $ "\t\t" ++ show n
 			putStrLn . ("\t\t" ++) . show =<< mapM gdkAtomName =<< gdkDeviceListAxes slv
 			putStrLn . ("\t\t" ++) . show . gdkAxisFlagList =<< gdkDeviceGetAxes slv
+			for_ [0 .. fromIntegral n - 1] \i ->
+				putStrLn . ("\t\t" ++) . show =<< gdkDeviceGetAxisUse slv i
 	gdkDisplayGetPrimaryMonitor d >>= \case
 		Nothing -> putStrLn "no primary monitor"
 		Just mntr -> do
