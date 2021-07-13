@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell, CApiFFI #-}
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE BlockArguments, TupleSections #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralisedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -146,6 +146,8 @@ pattern GdkEventGdkKeyPress p <- GdkEvent (GdkEventType #const GDK_KEY_PRESS) (G
 pattern GdkEventGdkKeyRelease :: GdkEventKey -> GdkEvent
 pattern GdkEventGdkKeyRelease p <- GdkEvent (GdkEventType #const GDK_KEY_RELEASE) (GdkEventKey_ . castForeignPtr -> p)
 
+type PtrCDouble = Ptr CDouble
+
 struct "GdkEventMotion" #{size GdkEventMotion}
 	[	("type", ''GdkEventType, [| #{peek GdkEventMotion, type} |],
 			[| #{poke GdkEventMotion, type} |]),
@@ -159,9 +161,19 @@ struct "GdkEventMotion" #{size GdkEventMotion}
 		("x", ''CDouble, [| #{peek GdkEventMotion, x} |],
 			[| #{poke GdkEventMotion, x} |]),
 		("y", ''CDouble, [| #{peek GdkEventMotion, y} |],
-			[| #{poke GdkEventMotion, y} |])
+			[| #{poke GdkEventMotion, y} |]),
+		("axes", ''PtrCDouble, [| #{peek GdkEventMotion, axes} |],
+			[| #{poke GdkEventMotion, axes} |])
 		]
 	[''Show]
+
+tryGdkEventMotionCopy :: GdkEventMotion -> IO GdkEventMotion
+tryGdkEventMotionCopy (GdkEventMotion_ fem) = GdkEventMotion_ <$> withForeignPtr fem \pem -> do
+	pem' <- c_gdk_event_copy' pem
+	newForeignPtr pem' . c_gdk_event_free $ castPtr pem'
+
+foreign import ccall "gdk_event_copy"
+	c_gdk_event_copy' :: Ptr a -> IO (Ptr a)
 
 pattern GdkEventGdkMotionNotify :: GdkEventMotion -> GdkEvent
 pattern GdkEventGdkMotionNotify p <- GdkEvent (GdkEventType #const GDK_MOTION_NOTIFY) (GdkEventMotion_ . castForeignPtr -> p)

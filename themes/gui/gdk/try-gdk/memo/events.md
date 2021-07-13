@@ -34,6 +34,7 @@ Events memo
 		- [x] `hardware_keycode`
 		- [x] `group`
 		- [x] `is_modifier`
+	+ [x] check `gdk_event_copy`
 	+ [ ] make module `Graphics.Gdk.GdkDevice.Axes`
 	+ [ ] define type `GdkAxes`
 	+ [ ] `GdkEventMotion`

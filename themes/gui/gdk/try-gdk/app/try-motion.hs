@@ -23,5 +23,9 @@ main = do
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
 		GdkEventGdkKeyPress GdkEventKey { gdkEventKeyKeyval = GdkKey_q } -> pure False
-		GdkEventGdkMotionNotify m -> True <$ print m
+		GdkEventGdkMotionNotify m -> do
+			print m
+			m' <- tryGdkEventMotionCopy m
+			print m'
+			True <$ print (gdkEventMotionAxes m == gdkEventMotionAxes m')
 		e -> True <$ print e
