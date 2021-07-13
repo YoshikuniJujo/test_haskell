@@ -87,6 +87,7 @@ main = do
 		when (s /= GdkSourceKeyboard) do
 			putStrLn . ("\t\t" ++) . show =<< gdkDeviceGetNAxes slv
 			putStrLn . ("\t\t" ++) . show =<< mapM gdkAtomName =<< gdkDeviceListAxes slv
+			putStrLn . ("\t\t" ++) . show . gdkAxisFlagList =<< gdkDeviceGetAxes slv
 	gdkDisplayGetPrimaryMonitor d >>= \case
 		Nothing -> putStrLn "no primary monitor"
 		Just mntr -> do
