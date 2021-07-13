@@ -34,6 +34,8 @@ Events memo
 		- [x] `hardware_keycode`
 		- [x] `group`
 		- [x] `is_modifier`
+	+ [ ] make module `Graphics.Gdk.GdkDevice.Axes`
+	+ [ ] define type `GdkAxes`
 	+ [ ] `GdkEventMotion`
 		- [x] `type`
 		- [x] `window`
