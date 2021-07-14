@@ -167,7 +167,7 @@ struct "GdkEventMotionRaw" #{size GdkEventMotion}
 			[| #{poke GdkEventMotion, axes} |]),
 		("state", ''GdkModifierTypeMultiBits,
 			[| #{peek GdkEventMotion, state} |],
-			[| #{poke GdkEventKey, state} |]),
+			[| #{poke GdkEventMotion, state} |]),
 		("isHint", ''Int16, [| #{peek GdkEventMotion, is_hint} |],
 			[| #{poke GdkEventMotion, is_hint} |]),
 		("device", ''GdkDevice, [| #{peek GdkEventMotion, device} |],
