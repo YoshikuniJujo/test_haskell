@@ -75,7 +75,10 @@ gdkEventGet = do
 	p <- c_gdk_event_get
 	if p == nullPtr
 		then pure Nothing
-		else Just <$> mkGdkEvent p
+		else do	p' <- c_gdk_event_copy p
+			c_gdk_event_free p
+			Just <$> mkGdkEvent p'
+			
 
 foreign import ccall "gdk_event_put" c_gdk_event_put :: Ptr GdkEvent -> IO ()
 
