@@ -18,4 +18,4 @@ Function
 	+ [x] define `gdkDeviceGetAxes`
 * [x] `gdk_device_get_axis`
 * [x] `gdk_device_list_axes`		Since: 3.0
-* [ ] `gdk_device_get_axis_value`	Since: 3.0
+* [x] `gdk_device_get_axis_value`	Since: 3.0

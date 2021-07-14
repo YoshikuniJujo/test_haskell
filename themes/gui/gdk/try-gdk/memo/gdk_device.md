@@ -44,7 +44,7 @@ Function
 * [x] `gdk_device_get_axes`
 * [x] `gdk_device_get_axis`
 * [x] `gdk_device_list_axes`
-* [ ] `gdk_device_get_axis_value`
+* [x] `gdk_device_get_axis_value`
 
 ### deprecated
 
