@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkDevice (
@@ -64,7 +65,7 @@ import {-# SOURCE #-} Graphics.Gdk.Windows
 
 #include <gdk/gdk.h>
 
-newtype GdkDevice = GdkDevice (Ptr GdkDevice) deriving Show
+newtype GdkDevice = GdkDevice (Ptr GdkDevice) deriving (Show, Storable)
 
 gdkDeviceGetName :: GdkDevice -> IO String
 gdkDeviceGetName d = peekCString =<< c_gdk_device_get_name d

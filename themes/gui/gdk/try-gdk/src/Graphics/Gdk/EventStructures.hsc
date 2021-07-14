@@ -20,6 +20,7 @@ import Data.Bits.Misc
 import Data.Word
 import Data.Int
 
+import Graphics.Gdk.GdkDevice
 import {-# SOURCE #-} Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkModifierType
 import Graphics.Gdk.EventStructures.GdkKeySyms
@@ -168,7 +169,9 @@ struct "GdkEventMotionRaw" #{size GdkEventMotion}
 			[| #{peek GdkEventMotion, state} |],
 			[| #{poke GdkEventKey, state} |]),
 		("isHint", ''Int16, [| #{peek GdkEventMotion, is_hint} |],
-			[| #{poke GdkEventMotion, is_hint} |])
+			[| #{poke GdkEventMotion, is_hint} |]),
+		("device", ''GdkDevice, [| #{peek GdkEventMotion, device} |],
+			[| #{poke GdkEventMotion, device} |])
 		]
 	[''Show]
 

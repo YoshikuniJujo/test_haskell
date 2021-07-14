@@ -49,7 +49,7 @@ Events memo
 		- [x] `axes`
 		- [x] `state`
 		- [x] `is_hint`
-		- [ ] `device`
+		- [x] `device`
 		- [ ] `x_root`
 		- [ ] `y_root`
 	+ [ ] `GdkEventMotionNoAxes`
