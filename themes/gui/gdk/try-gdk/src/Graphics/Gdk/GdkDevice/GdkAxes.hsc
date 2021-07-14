@@ -33,6 +33,9 @@ enum "GdkAxisUse" ''#{type GdkAxisUse} [''Show] [
 	("GdkAxisSlider", #{const GDK_AXIS_SLIDER}),
 	("GdkAxisLast", #{const GDK_AXIS_LAST}) ]
 
+foreign import ccall "gdk_device_set_axis_use"
+	gdkDeviceSetAxisUse :: GdkDevice -> CUInt -> GdkAxisUse -> IO ()
+
 foreign import ccall "gdk_device_get_axis_use"
 	gdkDeviceGetAxisUse :: GdkDevice -> CUInt -> IO GdkAxisUse
 

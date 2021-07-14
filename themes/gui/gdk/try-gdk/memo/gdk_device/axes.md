@@ -5,7 +5,7 @@ Function
 --------
 
 * [x] define `GdkAxes`
-* [ ] `gdk_device_set_axis_use`
+* [x] `gdk_device_set_axis_use`
 * [x] `gdk_device_get_axis_use`		Since: 2.20
 	+ [x] define `GdkAxisUse`
 	+ [x] define `gdkDeviceGetAxisUse`

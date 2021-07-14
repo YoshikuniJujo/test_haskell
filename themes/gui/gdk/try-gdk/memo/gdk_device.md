@@ -29,19 +29,22 @@ Function
 * `gdk_device_get_mode`
 * `gdk_device_set_key`
 * `gdk_device_get_key`
-* `gdk_device_set_axis_use`
-* `gdk_device_get_axis_use`
 * `gdk_device_get_associated_device`
-* `gdk_device_get_n_axes`
 * `gdk_device_get_n_keys`
-* `gdk_device_get_axes`
 * `gdk_device_get_state`
 * `gdk_device_get_history`
 * `gdk_device_free_history`
-* `gdk_device_get_axis`
-* `gdk_device_list_axes`
-* `gdk_device_get_axis_value`
 * `gdk_device_tool_get_serial`
+
+### axes
+
+* [x] `gdk_device_set_axis_use`
+* [x] `gdk_device_get_axis_use`
+* [x] `gdk_device_get_n_axes`
+* [x] `gdk_device_get_axes`
+* [ ] `gdk_device_get_axis`
+* [x] `gdk_device_list_axes`
+* [ ] `gdk_device_get_axis_value`
 
 ### deprecated
 
