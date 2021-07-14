@@ -148,7 +148,7 @@ pattern GdkEventGdkKeyRelease p <- GdkEvent (GdkEventType #const GDK_KEY_RELEASE
 
 type PtrCDouble = Ptr CDouble
 
-struct "GdkEventMotion" #{size GdkEventMotion}
+struct "GdkEventMotionRaw" #{size GdkEventMotion}
 	[	("type", ''GdkEventType, [| #{peek GdkEventMotion, type} |],
 			[| #{poke GdkEventMotion, type} |]),
 		("window", ''GdkWindow, [| #{peek GdkEventMotion, window} |],
@@ -167,16 +167,16 @@ struct "GdkEventMotion" #{size GdkEventMotion}
 		]
 	[''Show]
 
-tryGdkEventMotionCopy :: GdkEventMotion -> IO GdkEventMotion
-tryGdkEventMotionCopy (GdkEventMotion_ fem) = GdkEventMotion_ <$> withForeignPtr fem \pem -> do
+tryGdkEventMotionCopy :: GdkEventMotionRaw -> IO GdkEventMotionRaw
+tryGdkEventMotionCopy (GdkEventMotionRaw_ fem) = GdkEventMotionRaw_ <$> withForeignPtr fem \pem -> do
 	pem' <- c_gdk_event_copy' pem
 	newForeignPtr pem' . c_gdk_event_free $ castPtr pem'
 
 foreign import ccall "gdk_event_copy"
 	c_gdk_event_copy' :: Ptr a -> IO (Ptr a)
 
-pattern GdkEventGdkMotionNotify :: GdkEventMotion -> GdkEvent
-pattern GdkEventGdkMotionNotify p <- GdkEvent (GdkEventType #const GDK_MOTION_NOTIFY) (GdkEventMotion_ . castForeignPtr -> p)
+pattern GdkEventGdkMotionNotify :: GdkEventMotionRaw -> GdkEvent
+pattern GdkEventGdkMotionNotify p <- GdkEvent (GdkEventType #const GDK_MOTION_NOTIFY) (GdkEventMotionRaw_ . castForeignPtr -> p)
 
 newtype GdkEventVisibility = GdkEventVisibility (ForeignPtr GdkEventVisibility) deriving Show
 

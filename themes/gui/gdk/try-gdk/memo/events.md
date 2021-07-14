@@ -35,9 +35,11 @@ Events memo
 		- [x] `group`
 		- [x] `is_modifier`
 	+ [x] check `gdk_event_copy`
-	+ [ ] make module `Graphics.Gdk.GdkDevice.Axes`
-	+ [ ] define type `GdkAxes`
-	+ [ ] `GdkEventMotion`
+	+ [x] make module `Graphics.Gdk.GdkDevice.Axes`
+	+ [x] define type `GdkAxes`
+	+ [x] rename `GdkEventMotion` to `GdkEventMotionRaw`
+	+ [ ] rename `GdkEventGdkEventMotion` to `GdkEventGdkEventMotionRaw`
+	+ [ ] `GdkEventMotionRaw`
 		- [x] `type`
 		- [x] `window`
 		- [x] `send_event`
@@ -50,6 +52,24 @@ Events memo
 		- [ ] `device`
 		- [ ] `x_root`
 		- [ ] `y_root`
+	+ [ ] `GdkEventMotionNoAxes`
+		- [ ] `type`
+		- [ ] `window`
+		- [ ] `send_event`
+		- [ ] `time`
+		- [ ] `x`
+		- [ ] `y`
+		- [ ] `state`
+		- [ ] `is_hint`
+		- [ ] `device`
+		- [ ] `x_root`
+		- [ ] `y_root`
+	+ [ ] `GdkEventMotion`
+	+ [ ] converter from `GdkEventMotionRaw` to `GdkEventMotion`
+	+ [ ] define `GdkEventGdkEventMotion`
+	+ [ ] use `GdkEventGdkEventMotion`
+	+ [ ] remove `GdkEventGdkEventMotionRaw`
+	+ [ ] remove `tryGdkEventMotionCopy`
 	+ [ ] `GdkEventVisibility`
 	+ [ ] `GdkEventFocus`
 	+ [ ] `GdkEventConfigure`
@@ -99,3 +119,17 @@ Function
 * `gdk_event_get_device_tool`
 * `gdk_event_set_device_tool`
 * `gdk_setting_get`
+
+Dessin
+------
+
+### GdkEventMotion
+
+* rename `GdkEvenMotion` to `GdkEventMotionRaw`
+* rename `GdkEventGdkEventMotion` to `GdkEventGdkEventMotionRaw`
+* define `GdkEventMotionNoAxes`
+* define as `data GdkEventMotion = GdkEventMotion GdkEventMotionNoAxes GdkAxes`
+* define converter from `GdkEventMotionRaw` to `GdkEventMotion`
+* define pattern `GdkEventGdkEventMotion`
+* use `GdkEventGdkEventMotion` instead of `GdkEventGdkEventMotionRaw`
+* remove `GdkEventGdkEventMotionRaw`

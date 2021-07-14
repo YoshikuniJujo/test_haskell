@@ -110,5 +110,5 @@ drawCursor = do
 	cairoStroke cr
 	pure s
 
-gdkEventMotionPos :: GdkEventMotion -> (CDouble, CDouble)
-gdkEventMotionPos m = (gdkEventMotionX m, gdkEventMotionY m)
+gdkEventMotionPos :: GdkEventMotionRaw -> (CDouble, CDouble)
+gdkEventMotionPos m = (gdkEventMotionRawX m, gdkEventMotionRawY m)

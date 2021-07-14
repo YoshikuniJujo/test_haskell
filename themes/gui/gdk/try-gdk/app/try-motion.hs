@@ -27,5 +27,5 @@ main = do
 			print m
 			m' <- tryGdkEventMotionCopy m
 			print m'
-			True <$ print (gdkEventMotionAxes m == gdkEventMotionAxes m')
+			True <$ print (gdkEventMotionRawAxes m == gdkEventMotionRawAxes m')
 		e -> True <$ print e
