@@ -42,7 +42,7 @@ Function
 * [x] `gdk_device_get_axis_use`
 * [x] `gdk_device_get_n_axes`
 * [x] `gdk_device_get_axes`
-* [ ] `gdk_device_get_axis`
+* [x] `gdk_device_get_axis`
 * [x] `gdk_device_list_axes`
 * [ ] `gdk_device_get_axis_value`
 

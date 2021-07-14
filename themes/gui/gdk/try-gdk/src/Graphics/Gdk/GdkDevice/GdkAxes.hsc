@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -6,11 +7,14 @@ module Graphics.Gdk.GdkDevice.GdkAxes where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
+import Foreign.Marshal
+import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.Enum
 import Data.Bits
 import Data.Bits.Misc
 import Data.Word
+import Data.Int
 import System.GLib.DoublyLinkedLists
 
 import Graphics.Gdk.GdkDevice
@@ -18,7 +22,7 @@ import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
 
 #include <gdk/gdk.h>
 
-newtype Axes = Axes (ForeignPtr CDouble) deriving Show
+newtype GdkAxes = GdkAxes (ForeignPtr CDouble) deriving Show
 
 enum "GdkAxisUse" ''#{type GdkAxisUse} [''Show] [
 	("GdkAxisIgnore", #{const GDK_AXIS_IGNORE}),
@@ -64,6 +68,19 @@ gdkAxisFlagList (GdkAxisFlags afs) =
 
 foreign import ccall "gdk_device_get_axes"
 	gdkDeviceGetAxes :: GdkDevice -> IO GdkAxisFlags
+
+gdkDeviceGetAxis :: GdkDevice -> GdkAxes -> GdkAxisUse -> IO (Maybe CDouble)
+gdkDeviceGetAxis d (GdkAxes fas) au = withForeignPtr fas \pas -> alloca \v -> do
+	b <- c_gdk_device_get_axis d pas au v
+	case b of
+		#{const FALSE} -> pure Nothing
+		#{const TRUE} -> Just <$> peek v
+		_ -> error "gdk_device_get_axis should return FALSE or TRUE"
+
+foreign import ccall "gdk_device_get_axis"
+	c_gdk_device_get_axis ::
+		GdkDevice -> Ptr CDouble -> GdkAxisUse -> Ptr CDouble ->
+		IO #{type gboolean}
 
 gdkDeviceListAxes :: GdkDevice -> IO [GdkAtom]
 gdkDeviceListAxes d =
