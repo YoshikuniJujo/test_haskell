@@ -175,8 +175,8 @@ tryGdkEventMotionCopy (GdkEventMotionRaw_ fem) = GdkEventMotionRaw_ <$> withFore
 foreign import ccall "gdk_event_copy"
 	c_gdk_event_copy' :: Ptr a -> IO (Ptr a)
 
-pattern GdkEventGdkMotionNotify :: GdkEventMotionRaw -> GdkEvent
-pattern GdkEventGdkMotionNotify p <- GdkEvent (GdkEventType #const GDK_MOTION_NOTIFY) (GdkEventMotionRaw_ . castForeignPtr -> p)
+pattern GdkEventGdkMotionNotifyRaw :: GdkEventMotionRaw -> GdkEvent
+pattern GdkEventGdkMotionNotifyRaw p <- GdkEvent (GdkEventType #const GDK_MOTION_NOTIFY) (GdkEventMotionRaw_ . castForeignPtr -> p)
 
 newtype GdkEventVisibility = GdkEventVisibility (ForeignPtr GdkEventVisibility) deriving Show
 

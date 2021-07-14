@@ -51,7 +51,7 @@ main = do
 	gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
-		e@(GdkEventGdkMotionNotify m) -> True <$ do
+		e@(GdkEventGdkMotionNotifyRaw m) -> True <$ do
 			putStr "GDK_MOTION_NOTIFY: "
 			print $ gdkEventMotionPos m
 			sd <- gdkEventGetSourceDevice e

@@ -4,7 +4,6 @@
 module Main where
 
 import Control.Monad
-import Data.Char
 import System.Environment
 
 import Graphics.Gdk.General
@@ -23,7 +22,7 @@ main = do
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
 		GdkEventGdkKeyPress GdkEventKey { gdkEventKeyKeyval = GdkKey_q } -> pure False
-		GdkEventGdkMotionNotify m -> do
+		GdkEventGdkMotionNotifyRaw m -> do
 			print m
 			m' <- tryGdkEventMotionCopy m
 			print m'

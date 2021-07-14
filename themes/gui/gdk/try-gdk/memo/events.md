@@ -38,7 +38,7 @@ Events memo
 	+ [x] make module `Graphics.Gdk.GdkDevice.Axes`
 	+ [x] define type `GdkAxes`
 	+ [x] rename `GdkEventMotion` to `GdkEventMotionRaw`
-	+ [ ] rename `GdkEventGdkEventMotion` to `GdkEventGdkEventMotionRaw`
+	+ [x] rename `GdkEventGdkEventMotion` to `GdkEventGdkEventMotionRaw`
 	+ [ ] `GdkEventMotionRaw`
 		- [x] `type`
 		- [x] `window`
