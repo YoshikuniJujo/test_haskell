@@ -163,7 +163,10 @@ struct "GdkEventMotionRaw" #{size GdkEventMotion}
 		("y", ''CDouble, [| #{peek GdkEventMotion, y} |],
 			[| #{poke GdkEventMotion, y} |]),
 		("axes", ''PtrCDouble, [| #{peek GdkEventMotion, axes} |],
-			[| #{poke GdkEventMotion, axes} |])
+			[| #{poke GdkEventMotion, axes} |]),
+		("state", ''GdkModifierTypeMultiBits,
+			[| #{peek GdkEventMotion, state} |],
+			[| #{poke GdkEventKey, state} |])
 		]
 	[''Show]
 

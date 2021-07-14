@@ -8,6 +8,7 @@ import System.Environment
 
 import Graphics.Gdk.General
 import Graphics.Gdk.Windows
+import Graphics.Gdk.Windows.GdkModifierType
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
 import Try.Tools
@@ -24,6 +25,7 @@ main = do
 		GdkEventGdkKeyPress GdkEventKey { gdkEventKeyKeyval = GdkKey_q } -> pure False
 		GdkEventGdkMotionNotifyRaw m -> do
 			print m
+			print . gdkModifierTypeSingleBitList $ gdkEventMotionRawState m
 			m' <- tryGdkEventMotionCopy m
 			print m'
 			True <$ print (gdkEventMotionRawAxes m == gdkEventMotionRawAxes m')
