@@ -417,6 +417,7 @@ checkEvent opacity pos size d st = \case
 		ns <- gdkEventWindowStateNewWindowState s
 		putStrLn $ "GDK_WINDOW_STATE: " ++ show s ++ ": " ++ show ns
 		pure True
+	GdkEventGdkMotionNotifyRaw m -> True <$ print m
 	GdkEvent et p -> do	
 		putStrLn $ show et ++ " " ++ show p
 		pure True

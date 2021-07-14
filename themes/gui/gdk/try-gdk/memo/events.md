@@ -48,7 +48,7 @@ Events memo
 		- [x] `y`
 		- [x] `axes`
 		- [x] `state`
-		- [ ] `is_hint`
+		- [x] `is_hint`
 		- [ ] `device`
 		- [ ] `x_root`
 		- [ ] `y_root`
