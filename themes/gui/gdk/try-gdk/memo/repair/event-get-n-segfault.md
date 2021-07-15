@@ -11,11 +11,25 @@ plan 1
 	+ [x] `GdkEventAny`
 	+ [x] `GdkEventKey`
 	+ [x] `GdkEventMotion`
+	+ [ ] more
+* [ ] make `Data.Sealed.Internal`
 * [ ] define `GdkEventFoo`
+	+ [ ] `GdkEventAny`
+	+ [ ] `GdkEventKey`
+	+ [ ] `GdkEventMotion`
+	+ [ ] more
 * [ ] define converter whose type is `Sealed s GdkEventFooRaw -> GdkEventFoo`
-* [ ] define converter from `GdkEventRaw s` to `GdkEvent`
-* [ ] define `gdkWithEvent`
-* [ ] use `gdkWithEvent`
+	+ [ ] `GdkEventAny`
+	+ [ ] `GdkEventKey`
+	+ [ ] `GdkEventMotion`
+	+ [ ] more
+* [ ] define converter from `GdkEventSealed s` to `Sealed s GdkEventFooRaw`
+	+ [ ] `GdkEventAny`
+	+ [x] `GdkEventKey`
+	+ [ ] `GdkEventMotion`
+	+ [ ] more
+* [x] define `gdkWithEvent`
+* [x] use `gdkWithEvent`
 * [ ] remove `gdkEventGet`
 * [ ] remove `GdkEvent`
 

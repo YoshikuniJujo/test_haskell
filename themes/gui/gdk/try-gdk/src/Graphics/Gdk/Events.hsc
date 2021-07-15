@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -14,7 +15,7 @@ module Graphics.Gdk.Events (
 	pattern GdkButtonPressMask, pattern GdkButtonReleaseMask,
 	pattern GdkKeyPressMask, pattern GdkKeyReleaseMask,
 
-	gdkEventGet,
+	gdkEventGet, gdkWithEvent,
 
 	gdkEventGetDeviceTool,
 	gdkEventGetSourceDevice,
@@ -40,6 +41,7 @@ module Graphics.Gdk.Events (
 import Foreign.Ptr
 import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Enum
@@ -79,7 +81,13 @@ gdkEventGet = do
 		else do	p' <- c_gdk_event_copy p
 			c_gdk_event_free p
 			Just <$> mkGdkEvent p'
-			
+
+gdkWithEvent :: (forall s . Maybe (GdkEventSealed s) -> IO a) -> IO a
+gdkWithEvent f = c_gdk_event_get >>= \case
+	NullPtr -> f Nothing
+	p -> do	t <- GdkEventType <$> #{peek GdkEvent, type} p
+		f . Just . GdkEventSealed t =<< newForeignPtr p (pure ())
+			<* c_gdk_event_free p
 
 foreign import ccall "gdk_event_put" c_gdk_event_put :: Ptr GdkEvent -> IO ()
 
