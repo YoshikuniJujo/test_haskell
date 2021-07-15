@@ -27,7 +27,8 @@ module Graphics.Gdk.Events (
 	gdkEventMaskSingleBitList, gdkEventConfigureWindow,
 
 	-- * NOT USE
-	gdkEventsPending, gdkEventPeek, gdkEventPut, gdkEventNew, gdkEventCopy, gdkEventGetAxis,
+	gdkEventsPending, gdkEventPeek, gdkEventPut, gdkEventNew, gdkEventNew', gdkEventFree,
+	gdkEventCopy, gdkEventGetAxis,
 	gdkEventGetButton, gdkEventGetClickCount, gdkEventGetCoords, gdkEventGetKeycode, gdkEventGetKeyval,
 	gdkEventGetRootCoords, gdkEventGetScrollDirection, gdkEventGetScrollDeltas, gdkEventIsScrollStopEvent,
 	gdkEventGetState, gdkEventGetTime, gdkEventGetWindow, gdkEventGetEventType, gdkEventGetSeat,
@@ -89,6 +90,12 @@ foreign import ccall "gdk_event_new" c_gdk_event_new :: IO (Ptr GdkEvent)
 
 gdkEventNew :: IO GdkEvent
 gdkEventNew = mkGdkEvent =<< c_gdk_event_new
+
+gdkEventNew' :: IO (Ptr GdkEvent)
+gdkEventNew' = c_gdk_event_new
+
+gdkEventFree :: Ptr GdkEvent -> IO ()
+gdkEventFree = c_gdk_event_free
 
 foreign import ccall "gdk_event_copy" c_gdk_event_copy :: Ptr GdkEvent -> IO (Ptr GdkEvent)
 

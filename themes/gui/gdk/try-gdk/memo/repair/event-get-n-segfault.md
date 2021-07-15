@@ -1,6 +1,13 @@
 gdkEventGet and Segmentation fault memo
 =======================================
 
+todo
+----
+
+* [x] check `try-motion`
+* [x] make simple trial
+* [x] make no problem trial
+
 plan 2
 ------
 
