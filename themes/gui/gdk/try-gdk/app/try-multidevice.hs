@@ -20,7 +20,7 @@ import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
 import Graphics.Gdk.Values
 
-import Try.Tools
+import Try.Tools.DoWhile
 
 main :: IO ()
 main = do

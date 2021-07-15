@@ -19,6 +19,7 @@ import Data.Bits
 import Data.Bits.Misc
 import Data.Word
 import Data.Int
+import Data.Sealed
 
 import Graphics.Gdk.GdkDevice
 import {-# SOURCE #-} Graphics.Gdk.Windows
@@ -72,7 +73,7 @@ mkGdkEvent p = do
 	t <- GdkEventType <$> #{peek GdkEvent, type} p
 	GdkEvent t <$> newForeignPtr p (c_gdk_event_free p)
 
-newtype GdkEventSealed s = GdkEventSealed (ForeignPtr GdkEvent) deriving Show
+data GdkEventSealed s = GdkEventSealed GdkEventType (ForeignPtr GdkEvent) deriving Show
 
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
@@ -142,6 +143,9 @@ struct "GdkEventKeyRaw" #{size GdkEventKey}
 			[| c_poke_gdk_event_key_is_modifier . castPtr |])
 		]
 	[''Show]
+
+pattern GdkEventSealedGdkKeyPress :: Sealed s GdkEventKeyRaw -> GdkEventSealed s
+pattern GdkEventSealedGdkKeyPress s <- GdkEventSealed GdkKeyPress (Sealed . GdkEventKeyRaw_ . castForeignPtr -> s)
 
 pattern GdkEventGdkKeyPress :: GdkEventKeyRaw -> GdkEvent
 pattern GdkEventGdkKeyPress p <- GdkEvent (GdkEventType #const GDK_KEY_PRESS) (GdkEventKeyRaw_ . castForeignPtr -> p)

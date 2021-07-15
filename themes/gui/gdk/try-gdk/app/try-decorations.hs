@@ -26,7 +26,7 @@ import Graphics.Gdk.EventStructures.GdkKeySyms
 import Graphics.Gdk.Values
 import Graphics.Gdk.GdkDrawingContext
 
-import Try.Tools
+import Try.Tools.DoWhile
 
 main :: IO ()
 main = do

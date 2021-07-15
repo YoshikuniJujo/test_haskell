@@ -4,13 +4,14 @@
 module Try.Tools where
 
 import Control.Concurrent
-import Data.Bool
 
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.Values
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
+
+import Try.Tools.DoWhile
 
 mainLoop :: (GdkEvent -> IO Bool) -> IO ()
 mainLoop f = doWhile_ do
@@ -20,12 +21,6 @@ mainLoop f = doWhile_ do
 			b <- f e
 			pure if b then Nothing else Just False
 		Nothing -> pure $ Just True
-
-doWhile_ :: Monad m => m Bool -> m ()
-doWhile_ act = bool (pure ()) (doWhile_ act) =<< act
-
-doWhile :: Monad m => m (Maybe a) -> m a
-doWhile act = maybe (doWhile act) pure =<< act
 
 defaultGdkWindowAttr :: GdkWindowAttr
 defaultGdkWindowAttr = minimalGdkWindowAttr (gdkEventMaskMultiBits [
