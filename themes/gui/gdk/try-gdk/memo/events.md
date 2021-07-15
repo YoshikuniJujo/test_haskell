@@ -39,7 +39,7 @@ Events memo
 	+ [x] define type `GdkAxes`
 	+ [x] rename `GdkEventMotion` to `GdkEventMotionRaw`
 	+ [x] rename `GdkEventGdkEventMotion` to `GdkEventGdkEventMotionRaw`
-	+ [ ] `GdkEventMotionRaw`
+	+ [x] `GdkEventMotionRaw`
 		- [x] `type`
 		- [x] `window`
 		- [x] `send_event`
@@ -50,8 +50,8 @@ Events memo
 		- [x] `state`
 		- [x] `is_hint`
 		- [x] `device`
-		- [ ] `x_root`
-		- [ ] `y_root`
+		- [x] `x_root`
+		- [x] `y_root`
 	+ [ ] `GdkEventMotionNoAxes`
 		- [ ] `type`
 		- [ ] `window`

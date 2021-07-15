@@ -204,7 +204,11 @@ struct "GdkEventMotionRaw" #{size GdkEventMotion}
 		("isHint", ''Int16, [| #{peek GdkEventMotion, is_hint} |],
 			[| #{poke GdkEventMotion, is_hint} |]),
 		("device", ''GdkDevice, [| #{peek GdkEventMotion, device} |],
-			[| #{poke GdkEventMotion, device} |])
+			[| #{poke GdkEventMotion, device} |]),
+		("xRoot", ''CDouble, [| #{peek GdkEventMotion, x_root} |],
+			[| #{poke GdkEventMotion, x_root} |]),
+		("yRoot", ''CDouble, [| #{peek GdkEventMotion, y_root} |],
+			[| #{poke GdkEventMotion, y_root} |])
 		]
 	[''Show]
 
