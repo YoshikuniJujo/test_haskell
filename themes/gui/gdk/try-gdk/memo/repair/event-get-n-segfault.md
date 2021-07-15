@@ -26,7 +26,7 @@ plan 1
 * [ ] define converter from `GdkEventSealed s` to `Sealed s GdkEventFooRaw`
 	+ [ ] `GdkEventAny`
 	+ [x] `GdkEventKey`
-	+ [ ] `GdkEventMotion`
+	+ [x] `GdkEventMotion`
 	+ [ ] more
 * [x] define `gdkWithEvent`
 * [x] use `gdkWithEvent`

@@ -20,15 +20,11 @@ main = do
 	gdkWindowSetEventCompression w False
 	gdkWindowSetTitle w "あいうえお"
 	gdkWindowShow w
-	mainLoop \case
-		GdkEventGdkDelete _d -> pure False
-		GdkEventGdkKeyPress GdkEventKeyRaw { gdkEventKeyRawKeyval = GdkKey_q } -> pure False
-		GdkEventGdkMotionNotifyRaw m -> do
-			let	GdkEventMotionRaw_ p = m
-			print p
-			print m
-			print . gdkModifierTypeSingleBitList $ gdkEventMotionRawState m
-			m' <- tryGdkEventMotionCopy m
-			print m'
-			True <$ print (gdkEventMotionRawAxes m == gdkEventMotionRawAxes m')
+	mainLoopNew \case
+		GdkEventSealedGdkKeyPress k -> case gdkEventKey k of
+			GdkEventKey { gdkEventKeyKeyval = GdkKey_q } -> pure False
+			_ -> pure True
+--		GdkEventGdkDelete _d -> pure False
+--		GdkEventGdkKeyPress GdkEventKeyRaw { gdkEventKeyRawKeyval = GdkKey_q } -> pure False
+		GdkEventSealedGdkMotionNotify m -> True <$ print m
 		e -> True <$ print e

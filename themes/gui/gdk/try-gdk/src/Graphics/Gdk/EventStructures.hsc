@@ -216,6 +216,9 @@ tryGdkEventMotionCopy (GdkEventMotionRaw_ fem) = GdkEventMotionRaw_ <$> withFore
 foreign import ccall "gdk_event_copy"
 	c_gdk_event_copy' :: Ptr a -> IO (Ptr a)
 
+pattern GdkEventSealedGdkMotionNotify :: Sealed s GdkEventMotionRaw -> GdkEventSealed s
+pattern GdkEventSealedGdkMotionNotify s <- GdkEventSealed GdkMotionNotify (Sealed . GdkEventMotionRaw_ . castForeignPtr -> s)
+
 pattern GdkEventGdkMotionNotifyRaw :: GdkEventMotionRaw -> GdkEvent
 pattern GdkEventGdkMotionNotifyRaw p <- GdkEvent (GdkEventType #const GDK_MOTION_NOTIFY) (GdkEventMotionRaw_ . castForeignPtr -> p)
 
