@@ -41,7 +41,7 @@ main = do
 					| is == GdkSourceTouchpad -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
 					| otherwise -> pure ()
 		GdkEventGdkKeyPress k -> do
-			let	kv = gdkEventKeyKeyval k
+			let	kv = gdkEventKeyRawKeyval k
 			print kv
 			when (kv == GdkKeySym 65505 || kv == GdkKeySym 65506) $ modifyIORef cnt (+ 1)
 			n <- readIORef cnt

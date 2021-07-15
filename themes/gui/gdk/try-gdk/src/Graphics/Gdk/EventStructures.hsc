@@ -114,7 +114,7 @@ foreign import capi "gdkhs.h poke_gdk_event_key_is_modifier"
 
 newtype MilliSecond = MilliSecond #{type guint32} deriving (Show, Storable)
 
-struct "GdkEventKey" #{size GdkEventKey}
+struct "GdkEventKeyRaw" #{size GdkEventKey}
 	[	("type", ''GdkEventType, [| #{peek GdkEventKey, type} |],
 			[| #{poke GdkEventKey, type} |]),
 		("window", ''GdkWindow, [| #{peek GdkEventKey, window} |],
@@ -143,11 +143,11 @@ struct "GdkEventKey" #{size GdkEventKey}
 		]
 	[''Show]
 
-pattern GdkEventGdkKeyPress :: GdkEventKey -> GdkEvent
-pattern GdkEventGdkKeyPress p <- GdkEvent (GdkEventType #const GDK_KEY_PRESS) (GdkEventKey_ . castForeignPtr -> p)
+pattern GdkEventGdkKeyPress :: GdkEventKeyRaw -> GdkEvent
+pattern GdkEventGdkKeyPress p <- GdkEvent (GdkEventType #const GDK_KEY_PRESS) (GdkEventKeyRaw_ . castForeignPtr -> p)
 
-pattern GdkEventGdkKeyRelease :: GdkEventKey -> GdkEvent
-pattern GdkEventGdkKeyRelease p <- GdkEvent (GdkEventType #const GDK_KEY_RELEASE) (GdkEventKey_ . castForeignPtr -> p)
+pattern GdkEventGdkKeyRelease :: GdkEventKeyRaw -> GdkEvent
+pattern GdkEventGdkKeyRelease p <- GdkEvent (GdkEventType #const GDK_KEY_RELEASE) (GdkEventKeyRaw_ . castForeignPtr -> p)
 
 type PtrCDouble = Ptr CDouble
 

@@ -22,7 +22,7 @@ main = do
 	gdkWindowShow w
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
-		GdkEventGdkKeyPress GdkEventKey { gdkEventKeyKeyval = GdkKey_q } -> pure False
+		GdkEventGdkKeyPress GdkEventKeyRaw { gdkEventKeyRawKeyval = GdkKey_q } -> pure False
 		GdkEventGdkMotionNotifyRaw m -> do
 			let	GdkEventMotionRaw_ p = m
 			print p

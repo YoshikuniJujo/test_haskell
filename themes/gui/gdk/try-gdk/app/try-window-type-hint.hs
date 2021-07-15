@@ -28,7 +28,7 @@ main = do
 	gdkWindowShow w
 	mainLoop \case
 		GdkEventGdkKeyPress k -> do
-			let	kv = gdkEventKeyKeyval k
+			let	kv = gdkEventKeyRawKeyval k
 			pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
 		GdkEvent et p -> do
 			putStrLn $ show et ++ " " ++ show p

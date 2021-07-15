@@ -85,7 +85,7 @@ checkEvent = \case
 --		drawRedLine =<< gdkEventVisibilityWindow v
 		pure True
 	GdkEventGdkKeyPress k -> do
-		let	kv = gdkEventKeyKeyval k
+		let	kv = gdkEventKeyRawKeyval k
 		pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
 	GdkEvent et p -> do	
 		putStrLn $ show et ++ " " ++ show p

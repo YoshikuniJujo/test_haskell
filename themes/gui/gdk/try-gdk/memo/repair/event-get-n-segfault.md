@@ -7,10 +7,10 @@ plan 1
 * [x] define `GdkEventSealed s`
 * [x] make module `Data.Sealed`
 * [x] define `Sealed s a`
-* [ ] rename `GdkEventFoo` to `GdkEventFooRaw`
+* [x] rename `GdkEventFoo` to `GdkEventFooRaw`
 	+ [x] `GdkEventAny`
-	+ [ ] `GdkEventKey`
-	+ [ ] `GdkEventMotion`
+	+ [x] `GdkEventKey`
+	+ [x] `GdkEventMotion`
 * [ ] define `GdkEventFoo`
 * [ ] define converter whose type is `Sealed s GdkEventFooRaw -> GdkEventFoo`
 * [ ] define converter from `GdkEventRaw s` to `GdkEvent`

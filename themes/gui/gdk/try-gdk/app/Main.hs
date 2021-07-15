@@ -221,11 +221,11 @@ checkEvent opacity pos size d st = \case
 		putStrLn $ "GDK_DELETE: " ++ show dl
 		pure False
 	GdkEventGdkKeyPress k -> do
-		let	w = gdkEventKeyWindow k
-			kv = gdkEventKeyKeyval k
+		let	w = gdkEventKeyRawWindow k
+			kv = gdkEventKeyRawKeyval k
 		putStrLn $ "GDK_KEY_PRESS: " ++ show k ++ ": " ++ show kv
 		putStrLn $ "GdkModifierType: " ++
-			show (gdkModifierTypeSingleBitList $ gdkEventKeyState k)
+			show (gdkModifierTypeSingleBitList $ gdkEventKeyRawState k)
 		when (checkKeyVal 'h' kv) $ do
 			putStrLn "`h' pressed"
 			gdkWindowHide w
@@ -378,7 +378,7 @@ checkEvent opacity pos size d st = \case
 			gdkWindowSetUrgencyHint w False
 		pure . not $ checkKeyVal 'q' kv
 	GdkEventGdkKeyRelease k -> do
-		let	kv = gdkEventKeyKeyval k
+		let	kv = gdkEventKeyRawKeyval k
 		putStrLn $ "GDK_KEY_RELEASE: " ++ show k ++ ": " ++ show kv
 		pure True
 	GdkEventGdkFocusChange f -> do
