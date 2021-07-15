@@ -72,6 +72,8 @@ mkGdkEvent p = do
 	t <- GdkEventType <$> #{peek GdkEvent, type} p
 	GdkEvent t <$> newForeignPtr p (c_gdk_event_free p)
 
+newtype GdkEventSealed s = GdkEventSealed (ForeignPtr GdkEvent) deriving Show
+
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
 enum "BoolGInt8" ''#{type gint8} [''Show, ''Storable] [

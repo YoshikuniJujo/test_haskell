@@ -8,12 +8,7 @@ import Data.Foldable
 import System.Environment
 
 import Graphics.Gdk.General
-import Graphics.Gdk.Windows
-import Graphics.Gdk.Windows.GdkModifierType
 import Graphics.Gdk.Events
-import Graphics.Gdk.EventStructures
-import Graphics.Gdk.EventStructures.GdkKeySyms
-import Try.Tools
 
 main :: IO ()
 main = join (gdkInit <$> getProgName <*> getArgs) >>= \case

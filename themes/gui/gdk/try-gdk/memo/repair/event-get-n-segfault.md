@@ -1,6 +1,21 @@
 gdkEventGet and Segmentation fault memo
 =======================================
 
+plan 1
+------
+
+* [x] define `GdkEventSealed s`
+* [ ] make module `Data.Sealed`
+* [ ] define `Sealed s a`
+* [ ] rename `GdkEventFoo` to `GdkEventFooRaw`
+* [ ] define `GdkEventFoo`
+* [ ] define converter whose type is `Sealed s GdkEventFooRaw -> GdkEventFoo`
+* [ ] define converter from `GdkEventRaw s` to `GdkEvent`
+* [ ] define `gdkWithEvent`
+* [ ] use `gdkWithEvent`
+* [ ] remove `gdkEventGet`
+* [ ] remove `GdkEvent`
+
 todo
 ----
 
@@ -8,16 +23,7 @@ todo
 * [x] make simple trial
 * [x] make no problem trial
 
-plan 2
-------
+plan 2 - bad
+------------
 
 * [x] copy in `gdkEventGet`
-
-plan 1
-------
-
-* [ ] define `GdkEventRaw s`
-* [ ] define converter from `GdkEventRaw s` to `GdkEvent`
-* [ ] define `gdkWithEvent`
-* [ ] use `gdkWithEvent`
-* [ ] remove `gdkEventGet`
