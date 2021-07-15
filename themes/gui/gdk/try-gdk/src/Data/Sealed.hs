@@ -1,3 +1,3 @@
-module Data.Sealed where
+module Data.Sealed (Sealed) where
 
-newtype Sealed s a = Sealed a deriving Show
+import Data.Sealed.Internal

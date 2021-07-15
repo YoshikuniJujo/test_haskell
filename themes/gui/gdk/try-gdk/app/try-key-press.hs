@@ -5,7 +5,6 @@ module Main where
 
 import Control.Monad
 import Control.Concurrent
-import Data.Sealed
 import System.Environment
 
 import Graphics.Gdk.General
@@ -26,8 +25,11 @@ main = do
 	doWhile_ do
 		threadDelay 100000
 		doWhile $ gdkWithEvent \case
-			Just (GdkEventSealedGdkKeyPress (Sealed (GdkEventKeyRaw { gdkEventKeyRawKeyval = GdkKey_q }))) -> pure $ Just False
-			Just (GdkEventSealedGdkKeyPress k) -> Nothing <$ print k
+			Just (GdkEventSealedGdkKeyPress k) -> do
+				print k
+				pure case gdkEventKey k of
+					GdkEventKey { gdkEventKeyKeyval = GdkKey_q } -> Just False
+					_ -> Nothing
 			Just e -> Nothing <$ print e
 			Nothing -> pure $ Just True
 

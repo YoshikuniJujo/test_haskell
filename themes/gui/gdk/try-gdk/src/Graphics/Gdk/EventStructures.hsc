@@ -19,7 +19,7 @@ import Data.Bits
 import Data.Bits.Misc
 import Data.Word
 import Data.Int
-import Data.Sealed
+import Data.Sealed.Internal
 
 import Graphics.Gdk.GdkDevice
 import {-# SOURCE #-} Graphics.Gdk.Windows
@@ -77,7 +77,7 @@ data GdkEventSealed s = GdkEventSealed GdkEventType (ForeignPtr GdkEvent) derivi
 
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
-enum "BoolGInt8" ''#{type gint8} [''Show, ''Storable] [
+enum "BoolGInt8" ''#{type gint8} [''Show, ''Storable, ''Eq, ''Num] [
 	("False8", #{const FALSE}), ("True8", #{const TRUE}) ]
 
 struct "GdkEventAnyRaw" #{size GdkEventAny}
@@ -104,7 +104,7 @@ pattern GdkEventGdkNothing p <- GdkEvent GdkNothing (GdkEventAnyRaw_ . castForei
 
 data {-# CTYPE "gdk/gdk.h" "GdkEventKey" #-} GdkEventKey'
 
-enum "BoolCUInt" ''CUInt [''Show] [
+enum "BoolCUInt" ''CUInt [''Show, ''Eq, ''Num] [
 	("FalseCUInt", #{const FALSE}), ("TrueCUInt", #{const TRUE}) ]
 
 foreign import capi "gdkhs.h peek_gdk_event_key_is_modifier"
@@ -143,6 +143,33 @@ struct "GdkEventKeyRaw" #{size GdkEventKey}
 			[| c_poke_gdk_event_key_is_modifier . castPtr |])
 		]
 	[''Show]
+
+data GdkEventKey = GdkEventKey {
+	gdkEventKeyWindow :: GdkWindow,
+	gdkEventKeySendEvent :: Bool,
+	gdkEventKeyTime :: MilliSecond,
+	gdkEventKeyState :: [GdkModifierTypeSingleBit],
+	gdkEventKeyKeyval :: GdkKeySym,
+	gdkEventKeyHardwareKeycode :: Word16,
+	gdkEventKeyGroup :: Word8,
+	gdkEventKeyIsModifier :: Bool }
+
+gdkEventKey :: Sealed s GdkEventKeyRaw -> GdkEventKey
+gdkEventKey (Sealed r) = GdkEventKey
+	(gdkEventKeyRawWindow r)
+	(case gdkEventKeyRawSendEvent r of
+		#{const FALSE} -> False
+		#{const TRUE} -> True
+		_ -> error "gdkEventKeyRawSendEvent should be FALSE or TRUE")
+	(gdkEventKeyRawTime r)
+	(gdkModifierTypeSingleBitList $ gdkEventKeyRawState r)
+	(gdkEventKeyRawKeyval r)
+	(gdkEventKeyRawHardwareKeycode r)
+	(gdkEventKeyRawGroup r)
+	(case gdkEventKeyRawIsModifier r of
+		#{const FALSE} -> False
+		#{const TRUE} -> True
+		_ -> error "gdkEventKeyRawIsModifier should be FALSE or TRUE")
 
 pattern GdkEventSealedGdkKeyPress :: Sealed s GdkEventKeyRaw -> GdkEventSealed s
 pattern GdkEventSealedGdkKeyPress s <- GdkEventSealed GdkKeyPress (Sealed . GdkEventKeyRaw_ . castForeignPtr -> s)
