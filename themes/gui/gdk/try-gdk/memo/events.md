@@ -53,12 +53,8 @@ Events memo
 		- [x] `x_root`
 		- [x] `y_root`
 	+ [x] `gdkAxesCopy :: GdkDevice -> GdkAxes -> IO GdkAxes`
-	+ [ ] `GdkEventMotion`
-	+ [ ] `gdkEventMotion :: Sealed s GdkEventMotionRaw -> GdkEventMotion`
-	+ [ ] converter from `GdkEventMotionRaw` to `GdkEventMotion`
-	+ [ ] define `GdkEventGdkEventMotion`
-	+ [ ] use `GdkEventGdkEventMotion`
-	+ [ ] remove `GdkEventGdkEventMotionRaw`
+	+ [x] `GdkEventMotion`
+	+ [x] `gdkEventMotion :: Sealed s GdkEventMotionRaw -> GdkEventMotion`
 	+ [ ] remove `tryGdkEventMotionCopy`
 	+ [ ] `GdkEventVisibility`
 	+ [ ] `GdkEventFocus`

@@ -104,9 +104,9 @@ foreign import ccall "gdk_device_get_axis_value"
 		GdkDevice -> Ptr CDouble -> GdkAtom -> Ptr CDouble ->
 		IO #{type gboolean}
 
-gdkAxesCopy :: GdkDevice -> GdkAxes -> IO GdkAxes
-gdkAxesCopy d (GdkAxes fa) = GdkAxes <$> do
+gdkAxesCopyFromPtr :: GdkDevice -> Ptr CDouble -> IO GdkAxes
+gdkAxesCopyFromPtr d a = GdkAxes <$> do
 	n <- gdkDeviceGetNAxes d
 	p <- mallocArray $ fromIntegral n
-	withForeignPtr fa \a -> copyArray p a $ fromIntegral n
+	copyArray p a $ fromIntegral n
 	newForeignPtr p $ free p

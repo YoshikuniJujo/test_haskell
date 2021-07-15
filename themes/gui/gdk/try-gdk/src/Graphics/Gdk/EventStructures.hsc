@@ -20,8 +20,10 @@ import Data.Bits.Misc
 import Data.Word
 import Data.Int
 import Data.Sealed.Internal
+import System.IO.Unsafe
 
 import Graphics.Gdk.GdkDevice
+import Graphics.Gdk.GdkDevice.GdkAxes
 import {-# SOURCE #-} Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkModifierType
 import Graphics.Gdk.EventStructures.GdkKeySyms
@@ -211,6 +213,37 @@ struct "GdkEventMotionRaw" #{size GdkEventMotion}
 			[| #{poke GdkEventMotion, y_root} |])
 		]
 	[''Show]
+
+data GdkEventMotion = GdkEventMotion {
+	gdkEventMotionWindow :: GdkWindow,
+	gdkEventMotionSendEvent :: Bool,
+	gdkEventMotionTime :: MilliSecond,
+	gdkEventMotionX :: CDouble, gdkEventMotionY :: CDouble,
+	gdkEventMotionAxes :: GdkAxes,
+	gdkEventMotionState :: [GdkModifierTypeSingleBit],
+	gdkEventMotionIsHint :: Bool,
+	gdkEventMotionDevice :: GdkDevice,
+	gdkEventMotionXRoot :: CDouble, gdkEventMotionYRoot :: CDouble
+	} deriving Show
+
+gdkEventMotion :: Sealed s GdkEventMotionRaw -> GdkEventMotion
+gdkEventMotion (Sealed r) = GdkEventMotion
+	(gdkEventMotionRawWindow r)
+	(case gdkEventMotionRawSendEvent r of
+		#{const FALSE} -> False
+		#{const TRUE} -> True
+		_ -> error "gdkEventMotionRawSendEvent should be FALSE or TRUE")
+	(gdkEventMotionRawTime r)
+	(gdkEventMotionRawX r) (gdkEventMotionRawY r)
+	(unsafePerformIO $ gdkAxesCopyFromPtr
+		(gdkEventMotionRawDevice r) (gdkEventMotionRawAxes r))
+	(gdkModifierTypeSingleBitList $ gdkEventMotionRawState r)
+	(case gdkEventMotionRawIsHint r of
+		#{const FALSE} -> False
+		#{const TRUE} -> True
+		_ -> error "gdkEventMotionRawIsHint should be FALSE or TRUE")
+	(gdkEventMotionRawDevice r)
+	(gdkEventMotionRawXRoot r) (gdkEventMotionRawYRoot r)
 
 tryGdkEventMotionCopy :: GdkEventMotionRaw -> IO GdkEventMotionRaw
 tryGdkEventMotionCopy (GdkEventMotionRaw_ fem) = GdkEventMotionRaw_ <$> withForeignPtr fem \pem -> do

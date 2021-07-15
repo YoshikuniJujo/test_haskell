@@ -8,7 +8,6 @@ import System.Environment
 
 import Graphics.Gdk.General
 import Graphics.Gdk.Windows
-import Graphics.Gdk.Windows.GdkModifierType
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
 import Try.Tools
@@ -26,5 +25,5 @@ main = do
 			_ -> pure True
 --		GdkEventGdkDelete _d -> pure False
 --		GdkEventGdkKeyPress GdkEventKeyRaw { gdkEventKeyRawKeyval = GdkKey_q } -> pure False
-		GdkEventSealedGdkMotionNotify m -> True <$ print m
+		GdkEventSealedGdkMotionNotify m -> True <$ print (gdkEventMotion m)
 		e -> True <$ print e
