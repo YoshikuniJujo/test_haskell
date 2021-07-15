@@ -79,7 +79,7 @@ foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 enum "BoolGInt8" ''#{type gint8} [''Show, ''Storable] [
 	("False8", #{const FALSE}), ("True8", #{const TRUE}) ]
 
-struct "GdkEventAny" #{size GdkEventAny}
+struct "GdkEventAnyRaw" #{size GdkEventAny}
 	[	("type", ''GdkEventType, [| #{peek GdkEventAny, type} |],
 			[| #{poke GdkEventAny, type} |]),
 		("window", ''GdkWindow, [| #{peek GdkEventAny, window} |],
@@ -89,17 +89,17 @@ struct "GdkEventAny" #{size GdkEventAny}
 			[| #{poke GdkEventAny, send_event} |]) ]
 	[''Show]
 
-pattern GdkEventGdkMap :: GdkEventAny -> GdkEvent
-pattern GdkEventGdkMap p <- GdkEvent GdkMap (GdkEventAny_ . castForeignPtr -> p)
+pattern GdkEventGdkMap :: GdkEventAnyRaw -> GdkEvent
+pattern GdkEventGdkMap p <- GdkEvent GdkMap (GdkEventAnyRaw_ . castForeignPtr -> p)
 
-pattern GdkEventGdkUnmap :: GdkEventAny -> GdkEvent
-pattern GdkEventGdkUnmap p <- GdkEvent GdkUnmap (GdkEventAny_ . castForeignPtr -> p)
+pattern GdkEventGdkUnmap :: GdkEventAnyRaw -> GdkEvent
+pattern GdkEventGdkUnmap p <- GdkEvent GdkUnmap (GdkEventAnyRaw_ . castForeignPtr -> p)
 
-pattern GdkEventGdkDelete :: GdkEventAny -> GdkEvent
-pattern GdkEventGdkDelete p <- GdkEvent GdkDelete (GdkEventAny_ . castForeignPtr -> p)
+pattern GdkEventGdkDelete :: GdkEventAnyRaw -> GdkEvent
+pattern GdkEventGdkDelete p <- GdkEvent GdkDelete (GdkEventAnyRaw_ . castForeignPtr -> p)
 
-pattern GdkEventGdkNothing :: GdkEventAny -> GdkEvent
-pattern GdkEventGdkNothing p <- GdkEvent GdkNothing (GdkEventAny_ . castForeignPtr -> p)
+pattern GdkEventGdkNothing :: GdkEventAnyRaw -> GdkEvent
+pattern GdkEventGdkNothing p <- GdkEvent GdkNothing (GdkEventAnyRaw_ . castForeignPtr -> p)
 
 data {-# CTYPE "gdk/gdk.h" "GdkEventKey" #-} GdkEventKey'
 
