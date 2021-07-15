@@ -6,7 +6,8 @@
 module Graphics.Gdk.GdkDevice.GdkAxes where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
+import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
@@ -102,3 +103,10 @@ foreign import ccall "gdk_device_get_axis_value"
 	c_gdk_device_get_axis_value ::
 		GdkDevice -> Ptr CDouble -> GdkAtom -> Ptr CDouble ->
 		IO #{type gboolean}
+
+gdkAxesCopy :: GdkDevice -> GdkAxes -> IO GdkAxes
+gdkAxesCopy d (GdkAxes fa) = GdkAxes <$> do
+	n <- gdkDeviceGetNAxes d
+	p <- mallocArray $ fromIntegral n
+	withForeignPtr fa \a -> copyArray p a $ fromIntegral n
+	newForeignPtr p $ free p

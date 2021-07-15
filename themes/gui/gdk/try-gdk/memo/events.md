@@ -52,19 +52,9 @@ Events memo
 		- [x] `device`
 		- [x] `x_root`
 		- [x] `y_root`
-	+ [ ] `GdkEventMotionNoAxes`
-		- [ ] `type`
-		- [ ] `window`
-		- [ ] `send_event`
-		- [ ] `time`
-		- [ ] `x`
-		- [ ] `y`
-		- [ ] `state`
-		- [ ] `is_hint`
-		- [ ] `device`
-		- [ ] `x_root`
-		- [ ] `y_root`
+	+ [x] `gdkAxesCopy :: GdkDevice -> GdkAxes -> IO GdkAxes`
 	+ [ ] `GdkEventMotion`
+	+ [ ] `gdkEventMotion :: Sealed s GdkEventMotionRaw -> GdkEventMotion`
 	+ [ ] converter from `GdkEventMotionRaw` to `GdkEventMotion`
 	+ [ ] define `GdkEventGdkEventMotion`
 	+ [ ] use `GdkEventGdkEventMotion`
