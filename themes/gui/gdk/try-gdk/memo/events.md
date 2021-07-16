@@ -1,6 +1,27 @@
 Events memo
 ===========
 
+Function
+--------
+
+* [x] `gdk_event_pending`
+* [ ] `gdk_event_peek`
+* [ ] `gdk_event_get`
+* [ ] `gdk_event_put`
+* [ ] `gdk_event_new`
+* [ ] `gdk_event_copy`
+* [ ] `gdk_event_free`
+* [ ] `gdk_event_get_axis`
+* [ ] `gdk_event_get_button`
+* [ ] `gdk_event_get_click_count`
+* [ ] `gdk_event_get_coords`
+* [ ] `gdk_event_get_keycode`
+* [ ] `gdk_event_get_keyval`
+* [ ] more
+
+EventStructures
+---------------
+
 * [x] add an export list
 * [x] move GdkEvent structures to `Graphics.Gdk.EventStructures`
 	+ [x] `GdkEventAny`
@@ -55,6 +76,8 @@ Events memo
 	+ [x] try-window-type-hint
 * [x] remove `gdkEventGet`
 * [ ] remove `GdkEvent` and so on
+	+ [ ] `Graphics.Gdk.Events`: use `GdkEventSealed`
+	+ [ ] remove `GdkEvent`
 * [ ] use `c-struct` in `GdkEventFoo`
 	+ [x] `GdkEventAny`
 	+ [x] `GdkEventKey`

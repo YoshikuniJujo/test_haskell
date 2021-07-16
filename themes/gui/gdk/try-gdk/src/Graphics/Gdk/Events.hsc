@@ -6,6 +6,7 @@
 
 module Graphics.Gdk.Events (
 	-- * CHECKED
+	gdkEventsPending,
 
 	-- * USE
 	GdkEventMaskMultiBits(..), getGdkEventMask, gdkEventMaskMultiBits,
@@ -15,7 +16,7 @@ module Graphics.Gdk.Events (
 	pattern GdkButtonPressMask, pattern GdkButtonReleaseMask,
 	pattern GdkKeyPressMask, pattern GdkKeyReleaseMask,
 
-	gdkWithEvent,
+	gdkWithEventGet,
 
 	gdkEventGetDeviceTool,
 	gdkEventSealedGetDeviceTool,
@@ -30,7 +31,7 @@ module Graphics.Gdk.Events (
 	gdkEventMaskSingleBitList, gdkEventConfigureWindow,
 
 	-- * NOT USE
-	gdkEventsPending, gdkEventPeek, gdkEventPut, gdkEventNew, gdkEventNew', gdkEventFree,
+	gdkEventPeek, gdkEventPut, gdkEventNew, gdkEventNew', gdkEventFree,
 	gdkEventCopy, gdkEventGetAxis,
 	gdkEventGetButton, gdkEventGetClickCount, gdkEventGetCoords, gdkEventGetKeycode, gdkEventGetKeyval,
 	gdkEventGetRootCoords, gdkEventGetScrollDirection, gdkEventGetScrollDeltas, gdkEventIsScrollStopEvent,
@@ -63,30 +64,29 @@ import {-# SOURCE #-} Graphics.Gdk.GdkSeat
 
 #include <gdk/gdk.h>
 
-foreign import ccall "gdk_events_pending" c_gdk_events_pending :: IO #type gboolean
-
 gdkEventsPending :: IO Bool
 gdkEventsPending = gbooleanToBool <$> c_gdk_events_pending
 
-foreign import ccall "gdk_event_peek" c_gdk_event_peek :: IO (Ptr GdkEvent)
+foreign import ccall "gdk_events_pending"
+	c_gdk_events_pending :: IO #type gboolean
 
 gdkEventPeek :: IO GdkEvent
 gdkEventPeek = mkGdkEvent =<< c_gdk_event_peek
 
-foreign import ccall "gdk_event_get" c_gdk_event_get :: IO (Ptr GdkEvent)
+foreign import ccall "gdk_event_peek" c_gdk_event_peek :: IO (Ptr GdkEvent)
 
-gdkWithEvent :: (forall s . Maybe (GdkEventSealed s) -> IO a) -> IO a
-gdkWithEvent f = c_gdk_event_get >>= \case
+gdkWithEventGet :: (forall s . Maybe (GdkEventSealed s) -> IO a) -> IO a
+gdkWithEventGet f = c_gdk_event_get >>= \case
 	NullPtr -> f Nothing
 	p -> (f . Just . GdkEventSealed =<< newForeignPtr p (pure ()))
 		<* c_gdk_event_free p
 
-foreign import ccall "gdk_event_put" c_gdk_event_put :: Ptr GdkEvent -> IO ()
+foreign import ccall "gdk_event_get" c_gdk_event_get :: IO (Ptr GdkEvent)
 
 gdkEventPut :: GdkEvent -> IO ()
 gdkEventPut (GdkEvent _ fe) = withForeignPtr fe c_gdk_event_put
 
-foreign import ccall "gdk_event_new" c_gdk_event_new :: IO (Ptr GdkEvent)
+foreign import ccall "gdk_event_put" c_gdk_event_put :: Ptr GdkEvent -> IO ()
 
 gdkEventNew :: IO GdkEvent
 gdkEventNew = mkGdkEvent =<< c_gdk_event_new
@@ -94,13 +94,15 @@ gdkEventNew = mkGdkEvent =<< c_gdk_event_new
 gdkEventNew' :: IO (Ptr GdkEvent)
 gdkEventNew' = c_gdk_event_new
 
+foreign import ccall "gdk_event_new" c_gdk_event_new :: IO (Ptr GdkEvent)
+
 gdkEventFree :: Ptr GdkEvent -> IO ()
 gdkEventFree = c_gdk_event_free
 
-foreign import ccall "gdk_event_copy" c_gdk_event_copy :: Ptr GdkEvent -> IO (Ptr GdkEvent)
-
 gdkEventCopy :: GdkEvent -> IO GdkEvent
 gdkEventCopy (GdkEvent _ fe) = withForeignPtr fe \e -> mkGdkEvent =<< c_gdk_event_copy e
+
+foreign import ccall "gdk_event_copy" c_gdk_event_copy :: Ptr GdkEvent -> IO (Ptr GdkEvent)
 
 foreign import ccall "gdk_event_get_axis" c_gdk_event_get_axis ::
 	Ptr GdkEvent -> #{type GdkAxisUse} -> Ptr #{type gdouble} -> IO #type gboolean

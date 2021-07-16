@@ -17,7 +17,7 @@ import Try.Tools.DoWhile
 mainLoopNew :: (forall s . GdkEventSealed s -> IO Bool) -> IO ()
 mainLoopNew f = doWhile_ do
 	threadDelay 100000
-	doWhile $ gdkWithEvent \case
+	doWhile $ gdkWithEventGet \case
 		Just e -> do
 			b <- f e
 			pure if b then Nothing else Just False

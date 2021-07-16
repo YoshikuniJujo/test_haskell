@@ -45,7 +45,7 @@ main = do
 	print =<< gdkWindowGetSupportMultidevice w
 	doWhile_ do
 		threadDelay 100000
-		doWhile $ gdkWithEvent \case
+		doWhile $ gdkWithEventGet \case
 			Just (GdkEventSealedGdkKeyPress k) -> do
 				let	kv = gdkEventKeyKeyval $ gdkEventKey k
 				pure . Just $ kv /= GdkKeySym (fromIntegral $ ord 'q')

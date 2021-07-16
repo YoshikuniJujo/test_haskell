@@ -24,7 +24,7 @@ main = do
 	gdkWindowShow w
 	doWhile_ do
 		threadDelay 100000
-		doWhile $ gdkWithEvent \case
+		doWhile $ gdkWithEventGet \case
 			Just (GdkEventSealedGdkKeyPress k) -> do
 				print k
 				pure case gdkEventKey k of
