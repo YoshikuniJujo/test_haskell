@@ -34,7 +34,7 @@ Function
 * [ ] `gdk_event_get_button`
 	+ [ ] make `GdkEventButton`
 		- [x] define `GdkEventButtonRaw`
-		- [ ] define `GdkEventSealedGdkButtonPress`
+		- [x] define `GdkEventSealedGdkButtonPress`
 		- [ ] define `GdkEventButton`
 		- [ ] define `gdkEventButton`
 	+ [ ] try `GdkEventButton`

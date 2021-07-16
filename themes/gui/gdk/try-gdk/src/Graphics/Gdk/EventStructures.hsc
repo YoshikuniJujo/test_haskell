@@ -38,8 +38,9 @@ enum "GdkEventType" ''#{type GdkEventType} [''Show, ''Storable] [
 	("GdkButtonPress", #{const GDK_BUTTON_PRESS}),
 	("Gdk2ButtonPress", #{const GDK_2BUTTON_PRESS}),
 	("GdkDoubleButtonPress", #{const GDK_DOUBLE_BUTTON_PRESS}),
-	("Gdk3ButtonPress", #{const GDK_TRIPLE_BUTTON_PRESS}),
-	("GdkButtonRelesae", #{const GDK_BUTTON_RELEASE}),
+	("Gdk3ButtonPress", #{const GDK_3BUTTON_PRESS}),
+	("GdkTripleButtonPress", #{const GDK_TRIPLE_BUTTON_PRESS}),
+	("GdkButtonRelease", #{const GDK_BUTTON_RELEASE}),
 	("GdkKeyPress", #{const GDK_KEY_PRESS}),
 	("GdkKeyRelease", #{const GDK_KEY_RELEASE}),
 	("GdkEnterNotify", #{const GDK_ENTER_NOTIFY}),
@@ -251,6 +252,22 @@ struct "GdkEventButtonRaw" #{size GdkEventButton}
 		("yRoot", ''CDouble, [| #{peek GdkEventButton, y_root} |],
 			[| #{poke GdkEventButton, y_root} |]) ]
 	[''Show]
+
+pattern GdkEventSealedGdkButtonPress :: Sealed s GdkEventButtonRaw -> GdkEventSealed s
+pattern GdkEventSealedGdkButtonPress e <-
+	GdkEventSealed (gdkEventTypeRaw GdkEventButtonRaw_ -> (GdkButtonPress, e))
+
+pattern GdkEventSealedGdkDoubleButtonPress :: Sealed s GdkEventButtonRaw -> GdkEventSealed s
+pattern GdkEventSealedGdkDoubleButtonPress e <-
+	GdkEventSealed (gdkEventTypeRaw GdkEventButtonRaw_ -> (GdkDoubleButtonPress, e))
+
+pattern GdkEventSealedGdkTripleButtonPress :: Sealed s GdkEventButtonRaw -> GdkEventSealed s
+pattern GdkEventSealedGdkTripleButtonPress e <-
+	GdkEventSealed (gdkEventTypeRaw GdkEventButtonRaw_ -> (GdkTripleButtonPress, e))
+
+pattern GdkEventSealedGdkButtonRelease :: Sealed s GdkEventButtonRaw -> GdkEventSealed s
+pattern GdkEventSealedGdkButtonRelease e <-
+	GdkEventSealed (gdkEventTypeRaw GdkEventButtonRaw_ -> (GdkButtonRelease, e))
 
 struct "GdkEventMotionRaw" #{size GdkEventMotion}
 	[	("type", ''GdkEventType, [| #{peek GdkEventMotion, type} |],
