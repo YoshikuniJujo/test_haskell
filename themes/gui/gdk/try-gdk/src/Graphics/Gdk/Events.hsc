@@ -6,7 +6,8 @@
 
 module Graphics.Gdk.Events (
 	-- * CHECKED
-	gdkEventsPending, gdkWithEventPeek,
+	gdkEventsPending, gdkWithEventPeek, gdkWithEventGet, gdkEventPut,
+	gdkWithEventNew,
 
 	-- * USE
 	GdkEventMaskMultiBits(..), getGdkEventMask, gdkEventMaskMultiBits,
@@ -15,8 +16,6 @@ module Graphics.Gdk.Events (
 	pattern GdkButton2MotionMask, pattern GdkButton3MotionMask,
 	pattern GdkButtonPressMask, pattern GdkButtonReleaseMask,
 	pattern GdkKeyPressMask, pattern GdkKeyReleaseMask,
-
-	gdkWithEventGet,
 
 	gdkEventGetDeviceTool,
 	gdkEventSealedGetDeviceTool,
@@ -31,7 +30,7 @@ module Graphics.Gdk.Events (
 	gdkEventMaskSingleBitList, gdkEventConfigureWindow,
 
 	-- * NOT USE
-	gdkEventPut, gdkEventNew, gdkEventNew', gdkEventFree,
+	gdkEventFree,
 	gdkEventCopy, gdkEventGetAxis,
 	gdkEventGetButton, gdkEventGetClickCount, gdkEventGetCoords, gdkEventGetKeycode, gdkEventGetKeyval,
 	gdkEventGetRootCoords, gdkEventGetScrollDirection, gdkEventGetScrollDeltas, gdkEventIsScrollStopEvent,
@@ -91,11 +90,11 @@ gdkEventPut (GdkEventSealed fe) = withForeignPtr fe c_gdk_event_put
 
 foreign import ccall "gdk_event_put" c_gdk_event_put :: Ptr GdkEvent -> IO ()
 
-gdkEventNew :: IO GdkEvent
-gdkEventNew = mkGdkEvent =<< c_gdk_event_new
-
-gdkEventNew' :: IO (Ptr GdkEvent)
-gdkEventNew' = c_gdk_event_new
+gdkWithEventNew :: (forall s . GdkEventSealed s -> IO a) -> IO a
+gdkWithEventNew f = c_gdk_event_new >>= \case
+	NullPtr -> error "c_gdk_event_new cannot return NULL"
+	p -> (f . GdkEventSealed =<< newForeignPtr p (pure ()))
+		<* c_gdk_event_free p
 
 foreign import ccall "gdk_event_new" c_gdk_event_new :: IO (Ptr GdkEvent)
 

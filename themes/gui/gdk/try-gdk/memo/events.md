@@ -8,8 +8,10 @@ Function
 * [x] `gdk_event_peek`
 * [x] `gdk_event_get`
 * [x] `gdk_event_put`
-* [ ] `gdk_event_new`
+* [x] `gdk_event_new`
+	+ `gdkWithEventNew`
 * [ ] `gdk_event_copy`
+	+ `gdkWithEventCopy`
 * [ ] `gdk_event_free`
 * [ ] `gdk_event_get_axis`
 * [ ] `gdk_event_get_button`
