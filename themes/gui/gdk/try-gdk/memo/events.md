@@ -29,8 +29,8 @@ Events memo
 	+ [x] FocusChange
 	+ [x] Map
 	+ [x] Unmap
-	+ [ ] Configure
-	+ [ ] VisibilityNOtify
+	+ [x] Configure
+	+ [ ] VisibilityNotify
 	+ [ ] WindowState
 	+ [ ] MotionNotify
 * [ ] define `GdkFoo` and converter
@@ -84,7 +84,7 @@ Events memo
 	+ [ ] remove `tryGdkEventMotionCopy`
 	+ [ ] `GdkEventVisibility`
 	+ [ ] `GdkEventFocus`
-	+ [ ] `GdkEventConfigure`
+	+ [x] `GdkEventConfigure`
 	+ [ ] `GdkEventWindowState`
 * [x] try to peek and poke bit field by capi
 * [x] remove `deriving Num` from `GdkKeySym`

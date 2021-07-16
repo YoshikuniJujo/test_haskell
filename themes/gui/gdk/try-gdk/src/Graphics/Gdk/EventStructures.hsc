@@ -45,7 +45,7 @@ enum "GdkEventType" ''#{type GdkEventType} [''Show, ''Storable] [
 	("GdkEnterNotify", #{const GDK_ENTER_NOTIFY}),
 	("GdkLeaveNotify", #{const GDK_LEAVE_NOTIFY}),
 	("GdkFocusChange", #{const GDK_FOCUS_CHANGE}),
-	("GdkConfiguyre", #{const GDK_CONFIGURE}),
+	("GdkConfigure", #{const GDK_CONFIGURE}),
 	("GdkMap", #{const GDK_MAP}),
 	("GdkUnmap", #{const GDK_UNMAP}),
 	("GdkPropertyNotify", #{const GDK_PROPERTY_NOTIFY}),
@@ -336,21 +336,43 @@ gint16ToBool #{const TRUE} = True
 gint16ToBool #{const FALSE} = False
 gint16ToBool _ = error "something wrong"
 
-newtype GdkEventConfigure = GdkEventConfigure (ForeignPtr GdkEventConfigure) deriving Show
+struct "GdkEventConfigureRaw" #{size GdkEventConfigure}
+	[	("type", ''GdkEventType, [| #{peek GdkEventConfigure, type} |],
+			[| #{poke GdkEventConfigure, type} |]),
+		("window", ''GdkWindow, [| #{peek GdkEventConfigure, window} |],
+			[| #{poke GdkEventConfigure, window} |]),
+		("sendEvent", ''BoolGInt8,
+			[| #{peek GdkEventConfigure, send_event} |],
+			[| #{poke GdkEventConfigure, send_event} |]),
+		("x", ''CInt, [| #{peek GdkEventConfigure, x} |],
+			[| #{poke GdkEventConfigure, x} |]),
+		("y", ''CInt, [| #{peek GdkEventConfigure, x} |],
+			[| #{poke GdkEventConfigure, y} |]),
+		("width", ''CInt, [| #{peek GdkEventConfigure, width} |],
+			[| #{poke GdkEventConfigure, width} |]),
+		("height", ''CInt, [| #{peek GdkEventConfigure, height} |],
+			[| #{poke GdkEventConfigure, height} |]) ]
+	[''Show]
 		
-gdkEventConfigureWidth, gdkEventConfigureHeight :: GdkEventConfigure -> IO #type gint
-gdkEventConfigureWidth (GdkEventConfigure p) = withForeignPtr p #peek GdkEventConfigure, width
-gdkEventConfigureHeight (GdkEventConfigure p) = withForeignPtr p #peek GdkEventConfigure, height
+gdkEventConfigureWidth, gdkEventConfigureHeight :: GdkEventConfigureRaw -> IO #type gint
+gdkEventConfigureWidth (GdkEventConfigureRaw_ p) = withForeignPtr p #peek GdkEventConfigure, width
+gdkEventConfigureHeight (GdkEventConfigureRaw_ p) = withForeignPtr p #peek GdkEventConfigure, height
 
-gdkEventConfigureX, gdkEventConfigureY :: GdkEventConfigure -> IO #type gint
-gdkEventConfigureX (GdkEventConfigure p) = withForeignPtr p #peek GdkEventConfigure, x
-gdkEventConfigureY (GdkEventConfigure p) = withForeignPtr p #peek GdkEventConfigure, y
+gdkEventConfigureX, gdkEventConfigureY :: GdkEventConfigureRaw -> IO #type gint
+gdkEventConfigureX (GdkEventConfigureRaw_ p) = withForeignPtr p #peek GdkEventConfigure, x
+gdkEventConfigureY (GdkEventConfigureRaw_ p) = withForeignPtr p #peek GdkEventConfigure, y
 
-pattern GdkEventGdkConfigure :: GdkEventConfigure -> GdkEvent
-pattern GdkEventGdkConfigure p <- GdkEvent (GdkEventType #{const GDK_CONFIGURE}) (GdkEventConfigure . castForeignPtr -> p)
+pattern GdkEventSealedGdkConfigure ::
+	Sealed s GdkEventConfigureRaw -> GdkEventSealed s
+pattern GdkEventSealedGdkConfigure e <-
+	GdkEventSealed
+		(gdkEventTypeRaw GdkEventConfigureRaw_ -> (GdkConfigure, e))
 
-gdkEventConfigureWindow :: GdkEventConfigure -> IO GdkWindow
-gdkEventConfigureWindow (GdkEventConfigure p) = GdkWindow <$> withForeignPtr p #peek GdkEventConfigure, window
+pattern GdkEventGdkConfigure :: GdkEventConfigureRaw -> GdkEvent
+pattern GdkEventGdkConfigure p <- GdkEvent (GdkEventType #{const GDK_CONFIGURE}) (GdkEventConfigureRaw_ . castForeignPtr -> p)
+
+gdkEventConfigureWindow :: GdkEventConfigureRaw -> IO GdkWindow
+gdkEventConfigureWindow (GdkEventConfigureRaw_ p) = GdkWindow <$> withForeignPtr p #peek GdkEventConfigure, window
 
 newtype GdkEventWindowState = GdkEventWindowState (ForeignPtr GdkEventWindowState) deriving Show
 
