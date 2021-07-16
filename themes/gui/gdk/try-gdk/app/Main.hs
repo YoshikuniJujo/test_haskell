@@ -197,9 +197,9 @@ main = do
 	checkGrabbedPointerKeyboard d st
 	doWhile_ do
 		threadDelay 100000
-		doWhile $ gdkEventGet >>= \case
+		doWhile $ gdkWithEvent \case
 			Just e -> do
-				b <- checkEvent opacity pos size d st e
+				b <- checkEventSealed opacity pos size d st e
 				pure if b then Nothing else Just False
 			Nothing -> pure $ Just True
 	gdkWindowDestroy w
@@ -212,20 +212,63 @@ main = do
 	gdkDisplayClose d
 --	print =<< gdkDisplayIsClosed d
 
-checkEvent :: IORef CDouble -> IORef Int -> IORef Int -> GdkDisplay -> GdkSeat -> GdkEvent -> IO Bool
-checkEvent opacity pos size d st = \case
-	GdkEventGdkNothing n -> do
+checkGrabbedPointerKeyboard :: GdkDisplay -> GdkSeat -> IO ()
+checkGrabbedPointerKeyboard d st = do
+	putStrLn "\nPOINTER:"
+	pnt <- gdkSeatGetPointer st
+	putStrLn =<< gdkDeviceGetName pnt
+	print =<< gdkDisplayDeviceIsGrabbed d pnt
+	putStrLn "KEYBOARD"
+	kbd <- gdkSeatGetKeyboard st
+	putStrLn =<< gdkDeviceGetName kbd
+	print =<< gdkDisplayDeviceIsGrabbed d kbd
+	putStrLn ""
+
+doWhile_ :: Monad m => m Bool -> m ()
+doWhile_ act = bool (pure ()) (doWhile_ act) =<< act
+
+doWhile :: Monad m => m (Maybe a) -> m a
+doWhile act = maybe (doWhile act) pure =<< act
+		
+printVisual :: GdkVisual -> IO ()
+printVisual v = do
+	d <- gdkVisualGetDepth v
+	putStrLn $ "Depth of visual: " ++ show d
+	t <- gdkVisualGetVisualType v
+	putStrLn $ "Types of visual: " ++ show t
+	rd <- gdkVisualGetRedPixelDetails v
+	putStrLn $ "Red pixel details of visual: " ++ show rd
+	gr <- gdkVisualGetGreenPixelDetails v
+	putStrLn $ "Green pixel details of visual: " ++ show gr
+	bl <- gdkVisualGetBluePixelDetails v
+	putStrLn $ "Blue pixel details of visual: " ++ show bl
+
+printVisibleRegion :: GdkWindow -> IO ()
+printVisibleRegion w = do
+	vr <- gdkWindowGetVisibleRegion w
+	print vr
+	print =<< cairoRegionNumRectangles vr
+	vrrp <- cairoRectangleIntTNew
+	cairoRegionGetRectangle vr 0 vrrp
+	print =<< cairoRectangleIntTFreeze vrrp
+
+checkKeyVal :: Char -> GdkKeySym -> Bool
+checkKeyVal c ks = ks == GdkKeySym (fromIntegral $ ord c)
+
+checkEventSealed :: IORef CDouble -> IORef Int -> IORef Int -> GdkDisplay -> GdkSeat -> GdkEventSealed s -> IO Bool
+checkEventSealed opacity pos size d st = \case
+	GdkEventSealedGdkNothing n -> do
 		putStrLn $ "GDK_NOTHING: " ++ show n
 		pure True
-	GdkEventGdkDelete dl -> do
+	GdkEventSealedGdkDelete dl -> do
 		putStrLn $ "GDK_DELETE: " ++ show dl
 		pure False
-	GdkEventGdkKeyPress k -> do
-		let	w = gdkEventKeyRawWindow k
-			kv = gdkEventKeyRawKeyval k
+	GdkEventSealedGdkKeyPress k_ -> do
+		let	k = gdkEventKey k_
+			w = gdkEventKeyWindow k
+			kv = gdkEventKeyKeyval k
 		putStrLn $ "GDK_KEY_PRESS: " ++ show k ++ ": " ++ show kv
-		putStrLn $ "GdkModifierType: " ++
-			show (gdkModifierTypeSingleBitList $ gdkEventKeyRawState k)
+		putStrLn $ "GdkModifierType: " ++ show (gdkEventKeyState k)
 		when (checkKeyVal 'h' kv) $ do
 			putStrLn "`h' pressed"
 			gdkWindowHide w
@@ -377,32 +420,18 @@ checkEvent opacity pos size d st = \case
 			putStrLn "`2' pressed"
 			gdkWindowSetUrgencyHint w False
 		pure . not $ checkKeyVal 'q' kv
-	GdkEventGdkKeyRelease k -> do
-		let	kv = gdkEventKeyRawKeyval k
-		putStrLn $ "GDK_KEY_RELEASE: " ++ show k ++ ": " ++ show kv
-		pure True
-	GdkEventGdkFocusChange f -> do
-		i <- gdkEventFocusIn f
-		putStrLn $ "GDK_FOCUS_CHANGE: " ++ show f ++ ": " ++ show i
-		pure True
-	GdkEventGdkMap m -> do
+	GdkEventSealedGdkKeyRelease k -> True <$ print k
+	GdkEventSealedGdkFocusChange f -> True <$ print f
+	GdkEventSealedGdkMap m -> do
 		putStrLn $ "GDK_MAP: " ++ show m
 		pure True
-	GdkEventGdkUnmap m -> do
+	GdkEventSealedGdkUnmap m -> do
 		putStrLn $ "GDK_UNMAP: " ++ show m
 		pure True
-	GdkEventGdkConfigure c -> do
-		x <- gdkEventConfigureX c
-		y <- gdkEventConfigureY c
-		w <- gdkEventConfigureWidth c
-		h <- gdkEventConfigureHeight c
-		putStrLn $ "GDK_CONFIGURE: " ++ show c ++ ": (" ++
-			show x ++ ", " ++ show y ++ ") (" ++
-			show w ++ ", " ++ show h ++ ")"
-		pure True
-	GdkEventGdkVisibilityNotify v -> do
-		w <- gdkEventVisibilityWindow v
-		vs <- gdkEventVisibilityState v
+	GdkEventSealedGdkConfigure c -> True <$ print c
+	GdkEventSealedGdkVisibilityNotify v -> do
+		print v
+		let	w = tryGdkEventVisibilitySealedWindow v
 		r <- cairoRegionCreateRectangle $ CairoRectangleIntT 50 50 100 100
 		gdkWindowWithDrawFrame w r \cxt -> do
 			cr <- gdkDrawingContextGetCairoContext cxt
@@ -411,56 +440,7 @@ checkEvent opacity pos size d st = \case
 			cairoMoveTo cr 10 10
 			cairoLineTo cr 90 90
 			cairoStroke cr
-		putStrLn $ "GDK_VISIBILITY_NOTIFY: " ++ show v ++ ": " ++ show vs
 		pure True
-	GdkEventGdkWindowState s -> do
-		ns <- gdkEventWindowStateNewWindowState s
-		putStrLn $ "GDK_WINDOW_STATE: " ++ show s ++ ": " ++ show ns
-		pure True
-	GdkEventGdkMotionNotifyRaw m -> True <$ print m
-	GdkEvent et p -> do	
-		putStrLn $ show et ++ " " ++ show p
-		pure True
-
-checkGrabbedPointerKeyboard :: GdkDisplay -> GdkSeat -> IO ()
-checkGrabbedPointerKeyboard d st = do
-	putStrLn "\nPOINTER:"
-	pnt <- gdkSeatGetPointer st
-	putStrLn =<< gdkDeviceGetName pnt
-	print =<< gdkDisplayDeviceIsGrabbed d pnt
-	putStrLn "KEYBOARD"
-	kbd <- gdkSeatGetKeyboard st
-	putStrLn =<< gdkDeviceGetName kbd
-	print =<< gdkDisplayDeviceIsGrabbed d kbd
-	putStrLn ""
-
-doWhile_ :: Monad m => m Bool -> m ()
-doWhile_ act = bool (pure ()) (doWhile_ act) =<< act
-
-doWhile :: Monad m => m (Maybe a) -> m a
-doWhile act = maybe (doWhile act) pure =<< act
-		
-printVisual :: GdkVisual -> IO ()
-printVisual v = do
-	d <- gdkVisualGetDepth v
-	putStrLn $ "Depth of visual: " ++ show d
-	t <- gdkVisualGetVisualType v
-	putStrLn $ "Types of visual: " ++ show t
-	rd <- gdkVisualGetRedPixelDetails v
-	putStrLn $ "Red pixel details of visual: " ++ show rd
-	gr <- gdkVisualGetGreenPixelDetails v
-	putStrLn $ "Green pixel details of visual: " ++ show gr
-	bl <- gdkVisualGetBluePixelDetails v
-	putStrLn $ "Blue pixel details of visual: " ++ show bl
-
-printVisibleRegion :: GdkWindow -> IO ()
-printVisibleRegion w = do
-	vr <- gdkWindowGetVisibleRegion w
-	print vr
-	print =<< cairoRegionNumRectangles vr
-	vrrp <- cairoRectangleIntTNew
-	cairoRegionGetRectangle vr 0 vrrp
-	print =<< cairoRectangleIntTFreeze vrrp
-
-checkKeyVal :: Char -> GdkKeySym -> Bool
-checkKeyVal c ks = ks == GdkKeySym (fromIntegral $ ord c)
+	GdkEventSealedGdkWindowState s -> True <$ print s
+	GdkEventSealedGdkMotionNotify m -> True <$ print m
+	GdkEventSealedGdkEventAny a -> True <$ print a

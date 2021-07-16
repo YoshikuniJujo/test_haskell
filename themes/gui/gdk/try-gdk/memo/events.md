@@ -37,7 +37,7 @@ Events memo
 	+ [ ] Visibility
 	+ [ ] WindowState
 * [ ] use `gdkWithEvent`
-	+ [ ] Main
+	+ [x] Main
 	+ [ ] simple
 	+ [ ] test-cursor
 	+ [ ] more

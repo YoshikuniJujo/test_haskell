@@ -187,7 +187,7 @@ data GdkEventKey = GdkEventKey {
 	gdkEventKeyKeyval :: GdkKeySym,
 	gdkEventKeyHardwareKeycode :: Word16,
 	gdkEventKeyGroup :: Word8,
-	gdkEventKeyIsModifier :: Bool }
+	gdkEventKeyIsModifier :: Bool } deriving Show
 
 gdkEventKey :: Sealed s GdkEventKeyRaw -> GdkEventKey
 gdkEventKey (Sealed r) = GdkEventKey
@@ -321,6 +321,9 @@ struct "GdkEventVisibilityRaw" #{size GdkEventVisibility}
 			[| #{poke GdkEventVisibility, state} |]) ]
 	[''Show]
 
+tryGdkEventVisibilitySealedWindow :: Sealed s GdkEventVisibilityRaw -> GdkWindow
+tryGdkEventVisibilitySealedWindow (Sealed e) = gdkEventVisibilityRawWindow e
+
 gdkEventVisibilityState :: GdkEventVisibilityRaw -> IO GdkVisibilityState
 gdkEventVisibilityState (GdkEventVisibilityRaw_ p) = GdkVisibilityState <$> withForeignPtr p #peek GdkEventVisibility, state
 
@@ -345,8 +348,8 @@ gdkEventFocusWindow (GdkEventFocus p) =
 
 newtype GdkEventFocus = GdkEventFocus (ForeignPtr GdkEventFocus) deriving Show
 
-pattern GdkEventSealedGdkEventFocus :: Sealed s GdkEventFocus -> GdkEventSealed s
-pattern GdkEventSealedGdkEventFocus e <-
+pattern GdkEventSealedGdkFocusChange :: Sealed s GdkEventFocus -> GdkEventSealed s
+pattern GdkEventSealedGdkFocusChange e <-
 	GdkEventSealed (gdkEventTypeRaw GdkEventFocus -> (GdkFocusChange, e))
 
 pattern GdkEventGdkFocusChange :: GdkEventFocus -> GdkEvent
