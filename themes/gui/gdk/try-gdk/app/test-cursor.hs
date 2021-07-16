@@ -7,6 +7,7 @@ import Foreign.C.Types
 import Control.Monad
 import Control.Monad.Primitive
 import Data.Char
+import Data.Sealed
 import System.Environment
 
 import Graphics.Gdk.General
@@ -49,16 +50,16 @@ main = do
 		GdkPointerMotionMask, GdkButtonPressMask,
 		GdkButtonReleaseMask, GdkKeyPressMask ] -- , gdkAllEventsMask]
 	gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
-	mainLoop \case
-		GdkEventGdkDelete _d -> pure False
-		e@(GdkEventGdkMotionNotifyRaw m) -> True <$ do
+	mainLoopNew \case
+		GdkEventSealedGdkDelete _d -> pure False
+		e@(GdkEventSealedGdkMotionNotify m) -> True <$ do
 			putStr "GDK_MOTION_NOTIFY: "
 			print $ gdkEventMotionPos m
-			sd <- gdkEventGetSourceDevice e
+			sd <- gdkEventSealedGetSourceDevice e
 			print sd
 			putStrLn =<< maybe (pure "No source device") gdkDeviceGetName sd
 			putStrLn =<< maybe (pure "No device tool") ((show <$>) . gdkDeviceToolGetToolType)
-				=<< gdkEventGetDeviceTool e
+				=<< gdkEventSealedGetDeviceTool e
 			mis <- maybe (pure Nothing) ((Just <$>) . gdkDeviceGetSource)  sd
 			case mis of
 				Nothing -> pure ()
@@ -66,8 +67,8 @@ main = do
 					| is == GdkSourcePen -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "text"
 					| is == GdkSourceTouchpad -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
 					| otherwise -> pure ()
-		GdkEventGdkKeyPress k -> do
-			let	kv = gdkEventKeyRawKeyval k
+		GdkEventSealedGdkKeyPress k -> do
+			let	kv = gdkEventKeyKeyval $ gdkEventKey k
 			when (kv == GdkKeySym (fromIntegral $ ord 'c'))
 --				$ gdkWindowSetCursor w =<< (\s -> gdkCursorNewFromSurface d s 15 15) =<< drawCursor
 				$ gdkWindowSetCursor w =<< (\s -> getSurfaceCursor d s 15 15) =<< drawCursor
@@ -110,5 +111,6 @@ drawCursor = do
 	cairoStroke cr
 	pure s
 
-gdkEventMotionPos :: GdkEventMotionRaw -> (CDouble, CDouble)
-gdkEventMotionPos m = (gdkEventMotionRawX m, gdkEventMotionRawY m)
+gdkEventMotionPos :: Sealed s GdkEventMotionRaw -> (CDouble, CDouble)
+gdkEventMotionPos m_ = (gdkEventMotionX m, gdkEventMotionY m)
+	where m = gdkEventMotion m_

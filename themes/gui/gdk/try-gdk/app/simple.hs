@@ -19,10 +19,10 @@ main = do
 	w <- gdkWindowNew Nothing defaultGdkWindowAttr
 	gdkWindowSetTitle w "あいうえお"
 	gdkWindowShow w
-	mainLoop \case
-		GdkEventGdkDelete _d -> pure False
-		GdkEventGdkKeyPress k -> do
-			let	kv = gdkEventKeyRawKeyval k
+	mainLoopNew \case
+		GdkEventSealedGdkDelete _d -> pure False
+		GdkEventSealedGdkKeyPress k -> do
+			let	kv = gdkEventKeyKeyval $ gdkEventKey k
 			print k
 			pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
 		e -> True <$ print e

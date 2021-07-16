@@ -18,7 +18,9 @@ module Graphics.Gdk.Events (
 	gdkEventGet, gdkWithEvent,
 
 	gdkEventGetDeviceTool,
+	gdkEventSealedGetDeviceTool,
 	gdkEventGetSourceDevice,
+	gdkEventSealedGetSourceDevice,
 
 	gdkEventConfigureHeight,
 	gdkEventConfigureX, gdkEventConfigureY, gdkEventConfigureWidth,
@@ -267,6 +269,11 @@ gdkEventSetDevice (GdkEvent _ fe) (GdkDevice d) =
 foreign import ccall "gdk_event_get_source_device" c_gdk_event_get_source_device ::
 	Ptr GdkEvent -> IO (Ptr GdkDevice)
 
+gdkEventSealedGetSourceDevice :: GdkEventSealed s -> IO (Maybe GdkDevice)
+gdkEventSealedGetSourceDevice (GdkEventSealed fe) = withForeignPtr fe \e ->
+	(<$> c_gdk_event_get_source_device e) \case
+		NullPtr -> Nothing; p -> Just $ GdkDevice p
+
 gdkEventGetSourceDevice :: GdkEvent -> IO (Maybe GdkDevice)
 gdkEventGetSourceDevice (GdkEvent _ fe) = withForeignPtr fe \e ->
 	(<$> c_gdk_event_get_source_device e) \case
@@ -281,6 +288,11 @@ gdkEventSetSourceDevice (GdkEvent _ fe) (GdkDevice pd) =
 
 foreign import ccall "gdk_event_get_device_tool" c_gdk_event_get_device_tool ::
 	Ptr GdkEvent -> IO (Ptr GdkDeviceTool)
+
+gdkEventSealedGetDeviceTool :: GdkEventSealed s -> IO (Maybe GdkDeviceTool)
+gdkEventSealedGetDeviceTool (GdkEventSealed fe) = withForeignPtr fe \e -> do
+	(<$> c_gdk_event_get_device_tool e) \case
+		NullPtr -> Nothing; p -> Just $ GdkDeviceTool p
 
 gdkEventGetDeviceTool :: GdkEvent -> IO (Maybe GdkDeviceTool)
 gdkEventGetDeviceTool (GdkEvent _ fe) = withForeignPtr fe \e -> do

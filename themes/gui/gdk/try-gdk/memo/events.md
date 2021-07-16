@@ -38,8 +38,14 @@ Events memo
 	+ [ ] WindowState
 * [ ] use `gdkWithEvent`
 	+ [x] Main
-	+ [ ] simple
-	+ [ ] test-cursor
+	+ [x] simple
+	+ [x] test-cursor
+	+ [ ] try-cairo-tribial
+	+ [ ] try-cursor-name
+	+ [ ] try-cursor-type
+	+ [ ] try-decorations
+	+ [ ] try-display
+	+ [ ] try-draw
 	+ [ ] more
 * [ ] remove `gdkEventGet`
 * [ ] remove `GdkEvent` and so on
