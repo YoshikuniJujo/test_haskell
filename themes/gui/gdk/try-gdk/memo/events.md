@@ -30,9 +30,8 @@ Events memo
 	+ [x] Map
 	+ [x] Unmap
 	+ [x] Configure
-	+ [ ] VisibilityNotify
+	+ [x] VisibilityNotify
 	+ [ ] WindowState
-	+ [ ] MotionNotify
 * [ ] define `GdkFoo` and converter
 	+ [ ] Configure
 	+ [ ] Visibility
@@ -82,7 +81,7 @@ Events memo
 	+ [x] `GdkEventMotion`
 	+ [x] `gdkEventMotion :: Sealed s GdkEventMotionRaw -> GdkEventMotion`
 	+ [ ] remove `tryGdkEventMotionCopy`
-	+ [ ] `GdkEventVisibility`
+	+ [x] `GdkEventVisibility`
 	+ [ ] `GdkEventFocus`
 	+ [x] `GdkEventConfigure`
 	+ [ ] `GdkEventWindowState`
