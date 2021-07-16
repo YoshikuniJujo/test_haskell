@@ -18,6 +18,10 @@ Events memo
 	+ [x] GdkVisibilityState
 		- [x] use `c-enum`
 	+ [x] GdkWindowState
+* [x] define `newtype GdkEventAnyRaw`
+* [x] define `pattern GdkEventSealedGdkEventAny`
+* [x] use `GdkEventAny` to get type
+* [x] remove first argument of `GdkEventSealed`
 * [ ] use `c-struct` in `GdkEventFoo`
 	+ [x] `GdkEventAny`
 	+ [x] `GdkEventKey`

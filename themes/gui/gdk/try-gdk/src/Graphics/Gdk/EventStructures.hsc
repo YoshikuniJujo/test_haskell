@@ -15,6 +15,7 @@ import Foreign.C.Types
 import Foreign.C.String
 import Foreign.C.Enum
 import Foreign.C.Struct
+import Control.Arrow
 import Data.Bits
 import Data.Bits.Misc
 import Data.Word
@@ -75,7 +76,7 @@ mkGdkEvent p = do
 	t <- GdkEventType <$> #{peek GdkEvent, type} p
 	GdkEvent t <$> newForeignPtr p (c_gdk_event_free p)
 
-data GdkEventSealed s = GdkEventSealed GdkEventType (ForeignPtr GdkEvent) deriving Show
+newtype GdkEventSealed s = GdkEventSealed (ForeignPtr GdkEvent) deriving Show
 
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
@@ -91,6 +92,14 @@ struct "GdkEventAnyRaw" #{size GdkEventAny}
 			[| #{peek GdkEventAny, send_event} |],
 			[| #{poke GdkEventAny, send_event} |]) ]
 	[''Show]
+
+{-# COMPLETE GdkEventSealedGdkEventAny #-}
+
+pattern GdkEventSealedGdkEventAny :: Sealed s GdkEventAnyRaw -> GdkEventSealed s
+pattern GdkEventSealedGdkEventAny ea <- GdkEventSealed (Sealed . GdkEventAnyRaw_ . castForeignPtr -> ea)
+
+gdkEventSealedType :: GdkEventSealed s -> GdkEventType
+gdkEventSealedType (GdkEventSealedGdkEventAny (Sealed ea)) = gdkEventAnyRawType ea
 
 pattern GdkEventGdkMap :: GdkEventAnyRaw -> GdkEvent
 pattern GdkEventGdkMap p <- GdkEvent GdkMap (GdkEventAnyRaw_ . castForeignPtr -> p)
@@ -174,7 +183,10 @@ gdkEventKey (Sealed r) = GdkEventKey
 		_ -> error "gdkEventKeyRawIsModifier should be FALSE or TRUE")
 
 pattern GdkEventSealedGdkKeyPress :: Sealed s GdkEventKeyRaw -> GdkEventSealed s
-pattern GdkEventSealedGdkKeyPress s <- GdkEventSealed GdkKeyPress (Sealed . GdkEventKeyRaw_ . castForeignPtr -> s)
+pattern GdkEventSealedGdkKeyPress s <-
+	GdkEventSealed (
+		gdkEventSealedType . GdkEventSealed &&&
+		Sealed . GdkEventKeyRaw_ . castForeignPtr -> (GdkKeyPress, s) )
 
 pattern GdkEventGdkKeyPress :: GdkEventKeyRaw -> GdkEvent
 pattern GdkEventGdkKeyPress p <- GdkEvent (GdkEventType #const GDK_KEY_PRESS) (GdkEventKeyRaw_ . castForeignPtr -> p)
@@ -253,8 +265,13 @@ tryGdkEventMotionCopy (GdkEventMotionRaw_ fem) = GdkEventMotionRaw_ <$> withFore
 foreign import ccall "gdk_event_copy"
 	c_gdk_event_copy' :: Ptr a -> IO (Ptr a)
 
-pattern GdkEventSealedGdkMotionNotify :: Sealed s GdkEventMotionRaw -> GdkEventSealed s
-pattern GdkEventSealedGdkMotionNotify s <- GdkEventSealed GdkMotionNotify (Sealed . GdkEventMotionRaw_ . castForeignPtr -> s)
+pattern GdkEventSealedGdkMotionNotify ::
+	Sealed s GdkEventMotionRaw -> GdkEventSealed s
+pattern GdkEventSealedGdkMotionNotify s <-
+	GdkEventSealed (
+		gdkEventSealedType . GdkEventSealed &&&
+		Sealed . GdkEventMotionRaw_ . castForeignPtr ->
+		(GdkMotionNotify, s) )
 
 pattern GdkEventGdkMotionNotifyRaw :: GdkEventMotionRaw -> GdkEvent
 pattern GdkEventGdkMotionNotifyRaw p <- GdkEvent (GdkEventType #const GDK_MOTION_NOTIFY) (GdkEventMotionRaw_ . castForeignPtr -> p)

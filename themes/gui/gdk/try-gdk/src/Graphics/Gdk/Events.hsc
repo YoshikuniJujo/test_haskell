@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RankNTypes, TypeApplications #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -85,9 +85,8 @@ gdkEventGet = do
 gdkWithEvent :: (forall s . Maybe (GdkEventSealed s) -> IO a) -> IO a
 gdkWithEvent f = c_gdk_event_get >>= \case
 	NullPtr -> f Nothing
-	p -> do	t <- GdkEventType <$> #{peek GdkEvent, type} p
-		f . Just . GdkEventSealed t =<< newForeignPtr p (pure ())
-			<* c_gdk_event_free p
+	p -> (f . Just . GdkEventSealed =<< newForeignPtr p (pure ()))
+		<* c_gdk_event_free p
 
 foreign import ccall "gdk_event_put" c_gdk_event_put :: Ptr GdkEvent -> IO ()
 
