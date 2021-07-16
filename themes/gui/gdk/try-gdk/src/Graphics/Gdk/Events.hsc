@@ -106,22 +106,19 @@ gdkWithEventCopy (GdkEventSealed fe) f = withForeignPtr fe c_gdk_event_copy >>= 
 
 foreign import ccall "gdk_event_copy" c_gdk_event_copy :: Ptr GdkEvent -> IO (Ptr GdkEvent)
 
-foreign import ccall "gdk_event_get_axis" c_gdk_event_get_axis ::
-	Ptr GdkEvent -> #{type GdkAxisUse} -> Ptr #{type gdouble} -> IO #type gboolean
-
 gdkEventGetAxis :: GdkEvent -> GdkAxisUse -> IO (Maybe #type gdouble)
 gdkEventGetAxis (GdkEvent _ fe) (GdkAxisUse ax) =
 	withForeignPtr fe \e -> alloca \v -> c_gdk_event_get_axis e ax v >>=
 		bool (pure Nothing) (Just <$> peek v) . gbooleanToBool
 
-foreign import ccall "gdk_event_get_button" c_gdk_event_get_button ::
-	Ptr GdkEvent -> Ptr #{type guint} -> IO #type gboolean
+foreign import ccall "gdk_event_get_axis" c_gdk_event_get_axis ::
+	Ptr GdkEvent -> #{type GdkAxisUse} -> Ptr #{type gdouble} -> IO #type gboolean
 
 gdkEventGetButton :: GdkEvent -> IO (Maybe #type guint)
 gdkEventGetButton (GdkEvent _ fe) = withForeignPtr fe \e -> alloca \b ->
 	c_gdk_event_get_button e b >>= bool (pure Nothing) (Just <$> peek b) . gbooleanToBool
 
-foreign import ccall "gdk_event_get_click_count" c_gdk_event_get_click_count ::
+foreign import ccall "gdk_event_get_button" c_gdk_event_get_button ::
 	Ptr GdkEvent -> Ptr #{type guint} -> IO #type gboolean
 
 gdkEventGetClickCount :: GdkEvent -> IO (Maybe #type guint)
@@ -129,13 +126,16 @@ gdkEventGetClickCount (GdkEvent _ fe) = withForeignPtr fe \e -> alloca \cc ->
 	c_gdk_event_get_click_count e cc
 		>>= bool (pure Nothing) (Just <$> peek cc) . gbooleanToBool
 
-foreign import ccall "gdk_event_get_coords" c_gdk_event_get_coords ::
-	Ptr GdkEvent -> Ptr #{type gdouble} -> Ptr #{type gdouble} -> IO #type gboolean
+foreign import ccall "gdk_event_get_click_count" c_gdk_event_get_click_count ::
+	Ptr GdkEvent -> Ptr #{type guint} -> IO #type gboolean
 
 gdkEventGetCoords :: GdkEvent -> IO (Maybe (#{type gdouble}, #type gdouble))
 gdkEventGetCoords (GdkEvent _ fe) = withForeignPtr fe \e -> alloca \xw -> alloca \yw ->
 	c_gdk_event_get_coords e xw yw
 		>>= bool (pure Nothing) ((\x y -> Just (x, y)) <$> peek xw <*> peek yw) . gbooleanToBool
+
+foreign import ccall "gdk_event_get_coords" c_gdk_event_get_coords ::
+	Ptr GdkEvent -> Ptr #{type gdouble} -> Ptr #{type gdouble} -> IO #type gboolean
 
 foreign import ccall "gdk_event_get_keycode" c_gdk_event_get_keycode ::
 	Ptr GdkEvent -> Ptr #{type guint16} -> IO #type gboolean
