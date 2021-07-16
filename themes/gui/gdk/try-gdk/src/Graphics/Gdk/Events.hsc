@@ -7,7 +7,7 @@
 module Graphics.Gdk.Events (
 	-- * CHECKED
 	gdkEventsPending, gdkWithEventPeek, gdkWithEventGet, gdkEventPut,
-	gdkWithEventNew,
+	gdkWithEventNew, gdkWithEventCopy,
 
 	-- * USE
 	GdkEventMaskMultiBits(..), getGdkEventMask, gdkEventMaskMultiBits,
@@ -30,8 +30,7 @@ module Graphics.Gdk.Events (
 	gdkEventMaskSingleBitList, gdkEventConfigureWindow,
 
 	-- * NOT USE
-	gdkEventFree,
-	gdkEventCopy, gdkEventGetAxis,
+	gdkEventGetAxis,
 	gdkEventGetButton, gdkEventGetClickCount, gdkEventGetCoords, gdkEventGetKeycode, gdkEventGetKeyval,
 	gdkEventGetRootCoords, gdkEventGetScrollDirection, gdkEventGetScrollDeltas, gdkEventIsScrollStopEvent,
 	gdkEventGetState, gdkEventGetTime, gdkEventGetWindow, gdkEventGetEventType, gdkEventGetSeat,
@@ -92,17 +91,18 @@ foreign import ccall "gdk_event_put" c_gdk_event_put :: Ptr GdkEvent -> IO ()
 
 gdkWithEventNew :: (forall s . GdkEventSealed s -> IO a) -> IO a
 gdkWithEventNew f = c_gdk_event_new >>= \case
-	NullPtr -> error "c_gdk_event_new cannot return NULL"
+	NullPtr -> error "gdk_event_new cannot return NULL"
 	p -> (f . GdkEventSealed =<< newForeignPtr p (pure ()))
 		<* c_gdk_event_free p
 
 foreign import ccall "gdk_event_new" c_gdk_event_new :: IO (Ptr GdkEvent)
 
-gdkEventFree :: Ptr GdkEvent -> IO ()
-gdkEventFree = c_gdk_event_free
-
-gdkEventCopy :: GdkEvent -> IO GdkEvent
-gdkEventCopy (GdkEvent _ fe) = withForeignPtr fe \e -> mkGdkEvent =<< c_gdk_event_copy e
+gdkWithEventCopy ::
+	GdkEventSealed s -> (forall t . GdkEventSealed t -> IO a) -> IO a
+gdkWithEventCopy (GdkEventSealed fe) f = withForeignPtr fe c_gdk_event_copy >>= \case
+	NullPtr -> error "gdk_event_copy cannot return NULL"
+	p -> (f . GdkEventSealed =<< newForeignPtr p (pure ()))
+		<* c_gdk_event_free p
 
 foreign import ccall "gdk_event_copy" c_gdk_event_copy :: Ptr GdkEvent -> IO (Ptr GdkEvent)
 

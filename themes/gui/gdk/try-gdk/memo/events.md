@@ -10,9 +10,9 @@ Function
 * [x] `gdk_event_put`
 * [x] `gdk_event_new`
 	+ `gdkWithEventNew`
-* [ ] `gdk_event_copy`
+* [x] `gdk_event_copy`
 	+ `gdkWithEventCopy`
-* [ ] `gdk_event_free`
+* [x] `gdk_event_free`
 * [ ] `gdk_event_get_axis`
 * [ ] `gdk_event_get_button`
 * [ ] `gdk_event_get_click_count`
