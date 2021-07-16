@@ -36,7 +36,7 @@ Events memo
 	+ [ ] Configure
 	+ [ ] Visibility
 	+ [ ] WindowState
-* [ ] use `gdkWithEvent`
+* [x] use `gdkWithEvent`
 	+ [x] Main
 	+ [x] simple
 	+ [x] test-cursor
@@ -46,13 +46,13 @@ Events memo
 	+ [x] try-decorations
 	+ [x] try-display
 	+ [x] try-draw
-	+ [ ] try-key-press
-	+ [ ] try-memory-bug-fix
-	+ [ ] try-memory-bug
-	+ [ ] try-motion
-	+ [ ] try-multidevice
-	+ [ ] try-tribial
-	+ [ ] try-window-type-hint
+	+ [x] try-key-press
+	+ [x] try-memory-bug-fix
+	+ [x] try-memory-bug
+	+ [x] try-motion
+	+ [x] try-multidevice
+	+ [x] try-tribial
+	+ [x] try-window-type-hint
 * [ ] remove `gdkEventGet`
 * [ ] remove `GdkEvent` and so on
 * [ ] use `c-struct` in `GdkEventFoo`

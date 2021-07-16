@@ -29,9 +29,9 @@ main = do
 	gdkWindowSetCursor w d
 	print d
 	print =<< gdkWindowGetCursor w
-	mainLoop \case
-		GdkEventGdkDelete _d -> pure False
-		GdkEventGdkKeyPress k -> do
-			let	kv = gdkEventKeyRawKeyval k
+	mainLoopNew \case
+		GdkEventSealedGdkDelete _d -> pure False
+		GdkEventSealedGdkKeyPress k -> do
+			let	kv = gdkEventKeyKeyval $ gdkEventKey k
 			pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
 		_ -> pure True
