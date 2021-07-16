@@ -27,7 +27,7 @@ Events memo
 	+ [x] Delete
 	+ [x] KeyRelease
 	+ [x] FocusChange
-	+ [ ] Map
+	+ [x] Map
 	+ [ ] Unmap
 	+ [ ] Configure
 	+ [ ] VisibilityNOtify
