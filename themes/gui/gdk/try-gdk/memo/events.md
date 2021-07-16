@@ -25,7 +25,7 @@ Events memo
 * [ ] define `GdkEventSealedGdkFoo`
 	+ [x] Nothing
 	+ [x] Delete
-	+ [ ] KeyRelease
+	+ [x] KeyRelease
 	+ [ ] FocusChange
 	+ [ ] Map
 	+ [ ] Unmap

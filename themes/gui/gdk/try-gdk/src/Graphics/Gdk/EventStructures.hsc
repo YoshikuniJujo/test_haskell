@@ -105,13 +105,13 @@ pattern GdkEventSealedGdkNothing :: Sealed s GdkEventAnyRaw -> GdkEventSealed s
 pattern GdkEventSealedGdkNothing ea <-
 	GdkEventSealed (
 		gdkEventSealedType . GdkEventSealed &&&
-		Sealed . GdkEventAnyRaw_ . castForeignPtr -> (GdkNothing, ea) )
+		sealEvent GdkEventAnyRaw_ -> (GdkNothing, ea) )
 
 pattern GdkEventSealedGdkDelete :: Sealed s GdkEventAnyRaw -> GdkEventSealed s
 pattern GdkEventSealedGdkDelete ea <-
 	GdkEventSealed (
 		gdkEventSealedType . GdkEventSealed &&&
-		Sealed . GdkEventAnyRaw_ . castForeignPtr -> (GdkDelete, ea) )
+		sealEvent GdkEventAnyRaw_ -> (GdkDelete, ea) )
 
 pattern GdkEventGdkMap :: GdkEventAnyRaw -> GdkEvent
 pattern GdkEventGdkMap p <- GdkEvent GdkMap (GdkEventAnyRaw_ . castForeignPtr -> p)
@@ -124,6 +124,9 @@ pattern GdkEventGdkDelete p <- GdkEvent GdkDelete (GdkEventAnyRaw_ . castForeign
 
 pattern GdkEventGdkNothing :: GdkEventAnyRaw -> GdkEvent
 pattern GdkEventGdkNothing p <- GdkEvent GdkNothing (GdkEventAnyRaw_ . castForeignPtr -> p)
+
+sealEvent :: (ForeignPtr x -> a) -> ForeignPtr y -> Sealed s a
+sealEvent c = Sealed . c . castForeignPtr
 
 data {-# CTYPE "gdk/gdk.h" "GdkEventKey" #-} GdkEventKey'
 
@@ -198,7 +201,14 @@ pattern GdkEventSealedGdkKeyPress :: Sealed s GdkEventKeyRaw -> GdkEventSealed s
 pattern GdkEventSealedGdkKeyPress s <-
 	GdkEventSealed (
 		gdkEventSealedType . GdkEventSealed &&&
-		Sealed . GdkEventKeyRaw_ . castForeignPtr -> (GdkKeyPress, s) )
+		sealEvent GdkEventKeyRaw_ -> (GdkKeyPress, s) )
+
+pattern GdkEventSealedGdkKeyRelease ::
+	Sealed s GdkEventKeyRaw -> GdkEventSealed s
+pattern GdkEventSealedGdkKeyRelease ke <-
+	GdkEventSealed (
+		gdkEventSealedType . GdkEventSealed &&&
+		sealEvent GdkEventKeyRaw_ -> (GdkKeyRelease, ke) )
 
 pattern GdkEventGdkKeyPress :: GdkEventKeyRaw -> GdkEvent
 pattern GdkEventGdkKeyPress p <- GdkEvent (GdkEventType #const GDK_KEY_PRESS) (GdkEventKeyRaw_ . castForeignPtr -> p)
