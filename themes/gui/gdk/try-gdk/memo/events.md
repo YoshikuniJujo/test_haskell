@@ -4,6 +4,8 @@ Events memo
 Function
 --------
 
+### now
+
 * [x] `gdk_event_pending`
 * [x] `gdk_event_peek`
 * [x] `gdk_event_get`
@@ -13,13 +15,24 @@ Function
 * [x] `gdk_event_copy`
 	+ `gdkWithEventCopy`
 * [x] `gdk_event_free`
-* [ ] `gdk_event_get_axis`
 * [ ] `gdk_event_get_button`
 * [ ] `gdk_event_get_click_count`
 * [ ] `gdk_event_get_coords`
 * [ ] `gdk_event_get_keycode`
 * [ ] `gdk_event_get_keyval`
+* [ ] `gdk_event_get_root_coords`
+* [ ] `gdk_event_get_scroll_direction`
+* [ ] `gdk_event_is_scroll_stop_event`
+* [ ] `gdk_event_get_state`
+* [ ] `gdk_event_get_time`
+* [ ] `gdk_event_get_window`
+* [ ] `gdk_event_get_event_type`
 * [ ] more
+
+### not now
+
+* [x] `gdk_event_get_axis`
+	+ remove it
 
 EventStructures
 ---------------
