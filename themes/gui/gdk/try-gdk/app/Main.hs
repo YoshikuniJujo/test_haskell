@@ -27,7 +27,6 @@ import Graphics.Gdk.PointsAndRectangles
 import Graphics.Gdk.Visuals
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
-import Graphics.Gdk.Windows.GdkModifierType
 import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures

@@ -15,7 +15,7 @@ module Graphics.Gdk.Events (
 	pattern GdkButtonPressMask, pattern GdkButtonReleaseMask,
 	pattern GdkKeyPressMask, pattern GdkKeyReleaseMask,
 
-	gdkEventGet, gdkWithEvent,
+	gdkWithEvent,
 
 	gdkEventGetDeviceTool,
 	gdkEventSealedGetDeviceTool,
@@ -74,15 +74,6 @@ gdkEventPeek :: IO GdkEvent
 gdkEventPeek = mkGdkEvent =<< c_gdk_event_peek
 
 foreign import ccall "gdk_event_get" c_gdk_event_get :: IO (Ptr GdkEvent)
-
-gdkEventGet :: IO (Maybe GdkEvent)
-gdkEventGet = do
-	p <- c_gdk_event_get
-	if p == nullPtr
-		then pure Nothing
-		else do	p' <- c_gdk_event_copy p
-			c_gdk_event_free p
-			Just <$> mkGdkEvent p'
 
 gdkWithEvent :: (forall s . Maybe (GdkEventSealed s) -> IO a) -> IO a
 gdkWithEvent f = c_gdk_event_get >>= \case

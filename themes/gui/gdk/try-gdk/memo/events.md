@@ -53,7 +53,7 @@ Events memo
 	+ [x] try-multidevice
 	+ [x] try-tribial
 	+ [x] try-window-type-hint
-* [ ] remove `gdkEventGet`
+* [x] remove `gdkEventGet`
 * [ ] remove `GdkEvent` and so on
 * [ ] use `c-struct` in `GdkEventFoo`
 	+ [x] `GdkEventAny`

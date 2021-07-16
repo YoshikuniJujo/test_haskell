@@ -14,15 +14,6 @@ import Graphics.Gdk.Windows.GdkWindowAttr
 
 import Try.Tools.DoWhile
 
-mainLoop :: (GdkEvent -> IO Bool) -> IO ()
-mainLoop f = doWhile_ do
-	threadDelay 100000
-	doWhile $ gdkEventGet >>= \case
-		Just e -> do
-			b <- f e
-			pure if b then Nothing else Just False
-		Nothing -> pure $ Just True
-
 mainLoopNew :: (forall s . GdkEventSealed s -> IO Bool) -> IO ()
 mainLoopNew f = doWhile_ do
 	threadDelay 100000
