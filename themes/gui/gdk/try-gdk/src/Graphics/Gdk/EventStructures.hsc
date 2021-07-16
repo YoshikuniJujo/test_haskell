@@ -253,6 +253,36 @@ struct "GdkEventButtonRaw" #{size GdkEventButton}
 			[| #{poke GdkEventButton, y_root} |]) ]
 	[''Show]
 
+data GdkEventButton = GdkEventButton {
+	gdkEventButtonType :: GdkEventType,
+	gdkEventButtonWindow :: GdkWindow,
+	gdkEventButtonSendEvent :: Bool,
+	gdkEventButtonTime :: MilliSecond,
+	gdkEventButtonX, gdkEventButtonY :: CDouble,
+	gdkEventButtonAxes :: GdkAxes,
+	gdkEventButtonState :: [GdkModifierTypeSingleBit],
+	gdkEventButtonButton :: CUInt,
+	gdkEventButtonDevice :: GdkDevice,
+	gdkEventButtonXRoot, gdkEventButtonYRoot :: CDouble
+	} deriving Show
+
+gdkEventButton :: Sealed s GdkEventButtonRaw -> GdkEventButton
+gdkEventButton (Sealed r) = GdkEventButton
+	(gdkEventButtonRawType r)
+	(gdkEventButtonRawWindow r)
+	(case gdkEventButtonRawSendEvent r of
+		#{const FALSE} -> False
+		#{const TRUE} -> True
+		_ -> error "gdkEventButtonSendEvent should be FALSE or TRUE")
+	(gdkEventButtonRawTime r)
+	(gdkEventButtonRawX r) (gdkEventButtonRawY r)
+	(unsafePerformIO $ gdkAxesCopyFromPtr
+		(gdkEventButtonRawDevice r) (gdkEventButtonRawAxes r))
+	(gdkModifierTypeSingleBitList $ gdkEventButtonRawState r)
+	(gdkEventButtonRawButton r)
+	(gdkEventButtonRawDevice r)
+	(gdkEventButtonRawXRoot r) (gdkEventButtonRawYRoot r)
+
 pattern GdkEventSealedGdkButtonPress :: Sealed s GdkEventButtonRaw -> GdkEventSealed s
 pattern GdkEventSealedGdkButtonPress e <-
 	GdkEventSealed (gdkEventTypeRaw GdkEventButtonRaw_ -> (GdkButtonPress, e))

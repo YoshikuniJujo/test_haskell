@@ -32,12 +32,12 @@ Function
 * [x] `gdk_event_get_axis`
 	+ remove it
 * [ ] `gdk_event_get_button`
-	+ [ ] make `GdkEventButton`
+	+ [x] make `GdkEventButton`
 		- [x] define `GdkEventButtonRaw`
 		- [x] define `GdkEventSealedGdkButtonPress`
-		- [ ] define `GdkEventButton`
-		- [ ] define `gdkEventButton`
-	+ [ ] try `GdkEventButton`
+		- [x] define `GdkEventButton`
+		- [x] define `gdkEventButton`
+	+ [x] try `GdkEventButton`
 	+ [ ] remove it
 * [ ] `gdk_event_get_click_count`
 	+ remove it
