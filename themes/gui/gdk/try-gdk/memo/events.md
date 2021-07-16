@@ -28,7 +28,7 @@ Events memo
 	+ [x] KeyRelease
 	+ [x] FocusChange
 	+ [x] Map
-	+ [ ] Unmap
+	+ [x] Unmap
 	+ [ ] Configure
 	+ [ ] VisibilityNOtify
 	+ [ ] WindowState

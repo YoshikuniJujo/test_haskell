@@ -114,6 +114,10 @@ pattern GdkEventSealedGdkMap :: Sealed s GdkEventAnyRaw -> GdkEventSealed s
 pattern GdkEventSealedGdkMap e <-
 	GdkEventSealed (gdkEventTypeRaw GdkEventAnyRaw_ -> (GdkMap, e))
 
+pattern GdkEventSealedGdkUnmap :: Sealed s GdkEventAnyRaw -> GdkEventSealed s
+pattern GdkEventSealedGdkUnmap e <-
+	GdkEventSealed (gdkEventTypeRaw GdkEventAnyRaw_ -> (GdkUnmap, e))
+
 pattern GdkEventGdkMap :: GdkEventAnyRaw -> GdkEvent
 pattern GdkEventGdkMap p <- GdkEvent GdkMap (GdkEventAnyRaw_ . castForeignPtr -> p)
 
