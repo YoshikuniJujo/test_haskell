@@ -47,7 +47,7 @@ main = do
 		GdkPointerMotionMask ] -- , GdkAllEventsMask ]
 	doWhile_ do
 		threadDelay 100000
-		doWhile $ gdkEventGet >>= \case
+		doWhile $ gdkWithEvent \case
 			Just e -> do
 				b <- checkEvent e
 				pure if b then Nothing else Just False
@@ -55,41 +55,23 @@ main = do
 	gdkWindowDestroy w
 	gdkDisplayClose d
 
-checkEvent :: GdkEvent -> IO Bool
+checkEvent :: GdkEventSealed s -> IO Bool
 checkEvent = \case
-	GdkEventGdkMap m -> do
+	GdkEventSealedGdkMap m -> do
 		putStrLn $ "GDK_MAP: " ++ show m
-		drawRedLine $ gdkEventAnyRawWindow m
+		drawRedLine $ tryGdkEventSealedMapWindow m
 		pure True
-	GdkEventGdkConfigure c -> do
-		x <- gdkEventConfigureX c
-		y <- gdkEventConfigureY c
-		w <- gdkEventConfigureWidth c
-		h <- gdkEventConfigureHeight c
-		putStrLn $ "GDK_CONFIGURE: " ++ show c ++ ": (" ++
-			show x ++ ", " ++ show y ++ ") (" ++
-			show w ++ ", " ++ show h ++ ")"
-		drawRedLine =<< gdkEventConfigureWindow c
+	GdkEventSealedGdkConfigure c -> do
+		print c
+		drawRedLine $ tryGdkEventSealedConfigureWindow c
 		pure True
-	GdkEventGdkFocusChange f -> do
-		putStrLn $ "GDK_FOCUS_CHANGE"
-		drawRedLine =<< gdkEventFocusWindow f
-		pure True
-	GdkEventGdkWindowState s -> do
-		ns <- gdkEventWindowStateNewWindowState s
-		putStrLn $ "GDK_WINDOW_STATE: " ++ show s ++ ": " ++ show ns
-		pure True
-	GdkEventGdkVisibilityNotify v -> do
-		vs <- gdkEventVisibilityState v
-		putStrLn $ "GDK_VISIBILITY_NOTIFY: " ++ show v ++ ": " ++ show vs
---		drawRedLine =<< gdkEventVisibilityWindow v
-		pure True
-	GdkEventGdkKeyPress k -> do
-		let	kv = gdkEventKeyRawKeyval k
+	GdkEventSealedGdkFocusChange f -> True <$ print f
+	GdkEventSealedGdkWindowState s -> True <$ print s
+	GdkEventSealedGdkVisibilityNotify v -> True <$ print v
+	GdkEventSealedGdkKeyPress k -> do
+		let	kv = gdkEventKeyKeyval $ gdkEventKey k
 		pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
-	GdkEvent et p -> do	
-		putStrLn $ show et ++ " " ++ show p
-		pure True
+	GdkEventSealedGdkEventAny a -> True <$ print a
 
 drawRedLine :: GdkWindow -> IO ()
 drawRedLine w = do

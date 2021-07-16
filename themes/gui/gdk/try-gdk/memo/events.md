@@ -40,13 +40,19 @@ Events memo
 	+ [x] Main
 	+ [x] simple
 	+ [x] test-cursor
-	+ [ ] try-cairo-tribial
-	+ [ ] try-cursor-name
-	+ [ ] try-cursor-type
-	+ [ ] try-decorations
-	+ [ ] try-display
-	+ [ ] try-draw
-	+ [ ] more
+	+ [x] try-cairo-tribial
+	+ [x] try-cursor-name
+	+ [x] try-cursor-type
+	+ [x] try-decorations
+	+ [x] try-display
+	+ [x] try-draw
+	+ [ ] try-key-press
+	+ [ ] try-memory-bug-fix
+	+ [ ] try-memory-bug
+	+ [ ] try-motion
+	+ [ ] try-multidevice
+	+ [ ] try-tribial
+	+ [ ] try-window-type-hint
 * [ ] remove `gdkEventGet`
 * [ ] remove `GdkEvent` and so on
 * [ ] use `c-struct` in `GdkEventFoo`

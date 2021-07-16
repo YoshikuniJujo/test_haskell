@@ -324,6 +324,9 @@ struct "GdkEventVisibilityRaw" #{size GdkEventVisibility}
 tryGdkEventVisibilitySealedWindow :: Sealed s GdkEventVisibilityRaw -> GdkWindow
 tryGdkEventVisibilitySealedWindow (Sealed e) = gdkEventVisibilityRawWindow e
 
+tryGdkEventSealedMapWindow :: Sealed s GdkEventAnyRaw -> GdkWindow
+tryGdkEventSealedMapWindow (Sealed e) = gdkEventAnyRawWindow e
+
 gdkEventVisibilityState :: GdkEventVisibilityRaw -> IO GdkVisibilityState
 gdkEventVisibilityState (GdkEventVisibilityRaw_ p) = GdkVisibilityState <$> withForeignPtr p #peek GdkEventVisibility, state
 
@@ -381,6 +384,9 @@ struct "GdkEventConfigureRaw" #{size GdkEventConfigure}
 		("height", ''CInt, [| #{peek GdkEventConfigure, height} |],
 			[| #{poke GdkEventConfigure, height} |]) ]
 	[''Show]
+
+tryGdkEventSealedConfigureWindow :: Sealed s GdkEventConfigureRaw -> GdkWindow
+tryGdkEventSealedConfigureWindow (Sealed e) = gdkEventConfigureRawWindow e
 		
 gdkEventConfigureWidth, gdkEventConfigureHeight :: GdkEventConfigureRaw -> IO #type gint
 gdkEventConfigureWidth (GdkEventConfigureRaw_ p) = withForeignPtr p #peek GdkEventConfigure, width

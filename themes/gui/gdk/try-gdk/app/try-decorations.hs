@@ -45,8 +45,8 @@ main = do
 	gdkWindowShow w
 	doWhile_ do
 		threadDelay 100000
-		doWhile $ gdkEventGet >>= \case
-			Just (GdkEventGdkMap _m) -> do
+		doWhile $ gdkWithEvent \case
+			Just (GdkEventSealedGdkMap _m) -> do
 				r <- cairoRegionCreateRectangle $ CairoRectangleIntT 0 0 100 100
 				gdkWindowWithDrawFrame w r \cxt -> do
 					cr <- gdkDrawingContextGetCairoContext cxt
@@ -56,8 +56,8 @@ main = do
 					cairoLineTo cr 90 90
 					cairoStroke cr
 				pure Nothing
-			Just (GdkEventGdkKeyPress k) -> do
-				let	kv = gdkEventKeyRawKeyval k
+			Just (GdkEventSealedGdkKeyPress k) -> do
+				let	kv = gdkEventKeyKeyval $ gdkEventKey k
 				pure . Just $ kv /= GdkKeySym (fromIntegral $ ord 'q')
 			Just _ -> pure Nothing
 			Nothing -> pure $ Just True
