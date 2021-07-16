@@ -22,6 +22,28 @@ Events memo
 * [x] define `pattern GdkEventSealedGdkEventAny`
 * [x] use `GdkEventAny` to get type
 * [x] remove first argument of `GdkEventSealed`
+* [ ] define `GdkEventSealedGdkFoo`
+	+ [x] Nothing
+	+ [ ] Delete
+	+ [ ] KeyRelease
+	+ [ ] FocusChange
+	+ [ ] Map
+	+ [ ] Unmap
+	+ [ ] Configure
+	+ [ ] VisibilityNOtify
+	+ [ ] WindowState
+	+ [ ] MotionNotify
+* [ ] define `GdkFoo` and converter
+	+ [ ] Configure
+	+ [ ] Visibility
+	+ [ ] WindowState
+* [ ] use `gdkWithEvent`
+	+ [ ] Main
+	+ [ ] simple
+	+ [ ] test-cursor
+	+ [ ] more
+* [ ] remove `gdkEventGet`
+* [ ] remove `GdkEvent` and so on
 * [ ] use `c-struct` in `GdkEventFoo`
 	+ [x] `GdkEventAny`
 	+ [x] `GdkEventKey`
