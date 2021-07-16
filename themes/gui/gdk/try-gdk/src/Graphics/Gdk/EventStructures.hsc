@@ -399,21 +399,9 @@ pattern GdkEventGdkConfigure p <- GdkEvent (GdkEventType #{const GDK_CONFIGURE})
 gdkEventConfigureWindow :: GdkEventConfigureRaw -> IO GdkWindow
 gdkEventConfigureWindow (GdkEventConfigureRaw_ p) = GdkWindow <$> withForeignPtr p #peek GdkEventConfigure, window
 
-newtype GdkEventWindowState = GdkEventWindowState (ForeignPtr GdkEventWindowState) deriving Show
-
-pattern GdkEventGdkWindowState :: GdkEventWindowState -> GdkEvent
-pattern GdkEventGdkWindowState p <- GdkEvent (GdkEventType #{const GDK_WINDOW_STATE}) (GdkEventWindowState . castForeignPtr -> p)
-
-enum "GdkScrollDirection" ''#{type GdkScrollDirection} [''Show] [
-	("GdkScrollUp", #{const GDK_SCROLL_UP}),
-	("GdkScrollDown", #{const GDK_SCROLL_DOWN}),
-	("GdkScrollLeft", #{const GDK_SCROLL_LEFT}),
-	("GdkScrollRight", #{const GDK_SCROLL_RIGHT}),
-	("GdkScrollSmooth", #{const GDK_SCROLL_SMOOTH}) ]
-
 newtype GdkWindowStates = GdkWindowStates #{type GdkWindowState} deriving Show
 
-enum "GdkWindowState" ''#{type GdkWindowState} [''Show] [
+enum "GdkWindowState" ''#{type GdkWindowState} [''Show, ''Storable] [
 	("GdkWindowStateWithdrawn", #{const GDK_WINDOW_STATE_WITHDRAWN}),
 	("GdkWindowStateIconified", #{const GDK_WINDOW_STATE_ICONIFIED}),
 	("GdkWindowStateMaximized", #{const GDK_WINDOW_STATE_MAXIMIZED}),
@@ -440,6 +428,36 @@ gdkWindowStateCheck (GdkWindowState s) (GdkWindowStates ss) = s .&. ss /= zeroBi
 gdkWindowStateList :: GdkWindowStates -> [GdkWindowState]
 gdkWindowStateList (GdkWindowStates ss) = GdkWindowState <$> separateBits 32 ss
 
-gdkEventWindowStateNewWindowState :: GdkEventWindowState -> IO GdkWindowState
-gdkEventWindowStateNewWindowState (GdkEventWindowState p) =
+struct "GdkEventWindowStateRaw" #{size GdkEventWindowState}
+	[	("type", ''GdkEventType,
+			[| #{peek GdkEventWindowState, type} |],
+			[| #{poke GdkEventWindowState, type} |]),
+		("window", ''GdkWindow,
+			[| #{peek GdkEventWindowState, window} |],
+			[| #{poke GdkEventWindowState, window} |]),
+		("changedMask", ''GdkWindowState,
+			[| #{peek GdkEventWindowState, changed_mask} |],
+			[| #{poke GdkEventWindowState, changed_mask} |]),
+		("newWindowState", ''GdkWindowState,
+			[| #{peek GdkEventWindowState, new_window_state} |],
+			[| #{poke GdkEventWindowState, new_window_state} |]) ]
+	[''Show]
+
+gdkEventWindowStateNewWindowState :: GdkEventWindowStateRaw -> IO GdkWindowState
+gdkEventWindowStateNewWindowState (GdkEventWindowStateRaw_ p) =
 	GdkWindowState <$> withForeignPtr p #peek GdkEventWindowState, new_window_state
+
+pattern GdkEventSealedGdkWindowState ::
+	Sealed s GdkEventWindowStateRaw -> GdkEventSealed s
+pattern GdkEventSealedGdkWindowState e <-
+	GdkEventSealed (gdkEventTypeRaw GdkEventWindowStateRaw_ -> (GdkWindowState_, e))
+
+pattern GdkEventGdkWindowState :: GdkEventWindowStateRaw -> GdkEvent
+pattern GdkEventGdkWindowState p <- GdkEvent (GdkEventType #{const GDK_WINDOW_STATE}) (GdkEventWindowStateRaw_ . castForeignPtr -> p)
+
+enum "GdkScrollDirection" ''#{type GdkScrollDirection} [''Show] [
+	("GdkScrollUp", #{const GDK_SCROLL_UP}),
+	("GdkScrollDown", #{const GDK_SCROLL_DOWN}),
+	("GdkScrollLeft", #{const GDK_SCROLL_LEFT}),
+	("GdkScrollRight", #{const GDK_SCROLL_RIGHT}),
+	("GdkScrollSmooth", #{const GDK_SCROLL_SMOOTH}) ]

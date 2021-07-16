@@ -22,7 +22,7 @@ Events memo
 * [x] define `pattern GdkEventSealedGdkEventAny`
 * [x] use `GdkEventAny` to get type
 * [x] remove first argument of `GdkEventSealed`
-* [ ] define `GdkEventSealedGdkFoo`
+* [x] define `GdkEventSealedGdkFoo`
 	+ [x] Nothing
 	+ [x] Delete
 	+ [x] KeyRelease
@@ -31,7 +31,7 @@ Events memo
 	+ [x] Unmap
 	+ [x] Configure
 	+ [x] VisibilityNotify
-	+ [ ] WindowState
+	+ [x] WindowState
 * [ ] define `GdkFoo` and converter
 	+ [ ] Configure
 	+ [ ] Visibility
@@ -84,7 +84,7 @@ Events memo
 	+ [x] `GdkEventVisibility`
 	+ [ ] `GdkEventFocus`
 	+ [x] `GdkEventConfigure`
-	+ [ ] `GdkEventWindowState`
+	+ [x] `GdkEventWindowState`
 * [x] try to peek and poke bit field by capi
 * [x] remove `deriving Num` from `GdkKeySym`
 
