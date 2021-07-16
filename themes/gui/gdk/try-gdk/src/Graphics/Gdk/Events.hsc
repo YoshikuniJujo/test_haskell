@@ -86,8 +86,8 @@ gdkWithEventGet f = c_gdk_event_get >>= \case
 
 foreign import ccall "gdk_event_get" c_gdk_event_get :: IO (Ptr GdkEvent)
 
-gdkEventPut :: GdkEvent -> IO ()
-gdkEventPut (GdkEvent _ fe) = withForeignPtr fe c_gdk_event_put
+gdkEventPut :: GdkEventSealed s -> IO ()
+gdkEventPut (GdkEventSealed fe) = withForeignPtr fe c_gdk_event_put
 
 foreign import ccall "gdk_event_put" c_gdk_event_put :: Ptr GdkEvent -> IO ()
 
