@@ -223,6 +223,35 @@ pattern GdkEventGdkKeyRelease p <- GdkEvent (GdkEventType #const GDK_KEY_RELEASE
 
 type PtrCDouble = Ptr CDouble
 
+struct "GdkEventButtonRaw" #{size GdkEventButton}
+	[	("type", ''GdkEventType, [| #{peek GdkEventButton, type} |],
+			[| #{poke GdkEventButton, type} |]),
+		("window", ''GdkWindow, [| #{peek GdkEventButton, window} |],
+			[| #{poke GdkEventButton, window} |]),
+		("sendEvent", ''BoolGInt8,
+			[| #{peek GdkEventButton, send_event} |],
+			[| #{poke GdkEventButton, send_event} |]),
+		("time", ''MilliSecond, [| #{peek GdkEventButton, time} |],
+			[| #{poke GdkEventButton, time} |]),
+		("x", ''CDouble, [| #{peek GdkEventButton, x} |],
+			[| #{poke GdkEventButton, x} |]),
+		("y", ''CDouble, [| #{peek GdkEventButton, y} |],
+			[| #{poke GdkEventButton, y} |]),
+		("axes", ''PtrCDouble, [| #{peek GdkEventButton, axes} |],
+			[| #{poke GdkEventButton, axes} |]),
+		("state", ''GdkModifierTypeMultiBits,
+			[| #{peek GdkEventButton, state} |],
+			[| #{poke GdkEventButton, state} |]),
+		("button", ''CUInt, [| #{peek GdkEventButton, button} |],
+			[| #{poke GdkEventButton, button} |]),
+		("device", ''GdkDevice, [| #{peek GdkEventButton, device} |],
+			[| #{poke GdkEventButton, device} |]),
+		("xRoot", ''CDouble, [| #{peek GdkEventButton, x_root} |],
+			[| #{poke GdkEventButton, x_root} |]),
+		("yRoot", ''CDouble, [| #{peek GdkEventButton, y_root} |],
+			[| #{poke GdkEventButton, y_root} |]) ]
+	[''Show]
+
 struct "GdkEventMotionRaw" #{size GdkEventMotion}
 	[	("type", ''GdkEventType, [| #{peek GdkEventMotion, type} |],
 			[| #{poke GdkEventMotion, type} |]),

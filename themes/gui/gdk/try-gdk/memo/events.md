@@ -15,8 +15,6 @@ Function
 * [x] `gdk_event_copy`
 	+ `gdkWithEventCopy`
 * [x] `gdk_event_free`
-* [ ] `gdk_event_get_button`
-* [ ] `gdk_event_get_click_count`
 * [ ] `gdk_event_get_coords`
 * [ ] `gdk_event_get_keycode`
 * [ ] `gdk_event_get_keyval`
@@ -32,6 +30,16 @@ Function
 ### not now
 
 * [x] `gdk_event_get_axis`
+	+ remove it
+* [ ] `gdk_event_get_button`
+	+ [ ] make `GdkEventButton`
+		- [x] define `GdkEventButtonRaw`
+		- [ ] define `GdkEventSealedGdkButtonPress`
+		- [ ] define `GdkEventButton`
+		- [ ] define `gdkEventButton`
+	+ [ ] try `GdkEventButton`
+	+ [ ] remove it
+* [ ] `gdk_event_get_click_count`
 	+ remove it
 
 EventStructures
