@@ -6,7 +6,7 @@
 
 module Graphics.Gdk.Events (
 	-- * CHECKED
-	gdkEventsPending,
+	gdkEventsPending, gdkWithEventPeek,
 
 	-- * USE
 	GdkEventMaskMultiBits(..), getGdkEventMask, gdkEventMaskMultiBits,
@@ -31,7 +31,7 @@ module Graphics.Gdk.Events (
 	gdkEventMaskSingleBitList, gdkEventConfigureWindow,
 
 	-- * NOT USE
-	gdkEventPeek, gdkEventPut, gdkEventNew, gdkEventNew', gdkEventFree,
+	gdkEventPut, gdkEventNew, gdkEventNew', gdkEventFree,
 	gdkEventCopy, gdkEventGetAxis,
 	gdkEventGetButton, gdkEventGetClickCount, gdkEventGetCoords, gdkEventGetKeycode, gdkEventGetKeyval,
 	gdkEventGetRootCoords, gdkEventGetScrollDirection, gdkEventGetScrollDeltas, gdkEventIsScrollStopEvent,
@@ -70,8 +70,11 @@ gdkEventsPending = gbooleanToBool <$> c_gdk_events_pending
 foreign import ccall "gdk_events_pending"
 	c_gdk_events_pending :: IO #type gboolean
 
-gdkEventPeek :: IO GdkEvent
-gdkEventPeek = mkGdkEvent =<< c_gdk_event_peek
+gdkWithEventPeek :: (forall s . Maybe (GdkEventSealed s) -> IO a) -> IO a
+gdkWithEventPeek f = c_gdk_event_peek >>= \case
+	NullPtr -> f Nothing
+	p -> (f . Just . GdkEventSealed =<< newForeignPtr p (pure ()))
+		<* c_gdk_event_free p
 
 foreign import ccall "gdk_event_peek" c_gdk_event_peek :: IO (Ptr GdkEvent)
 

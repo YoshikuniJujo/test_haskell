@@ -5,8 +5,8 @@ Function
 --------
 
 * [x] `gdk_event_pending`
-* [ ] `gdk_event_peek`
-* [ ] `gdk_event_get`
+* [x] `gdk_event_peek`
+* [x] `gdk_event_get`
 * [ ] `gdk_event_put`
 * [ ] `gdk_event_new`
 * [ ] `gdk_event_copy`
