@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -7,6 +8,7 @@ import Control.Monad
 import System.Environment
 
 import Graphics.Gdk.General
+import Graphics.Gdk.GdkDevice.GdkAxes
 import Graphics.Gdk.Windows
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
@@ -23,7 +25,10 @@ main = do
 		GdkEventSealedGdkKeyPress k -> case gdkEventKey k of
 			GdkEventKey { gdkEventKeyKeyval = GdkKey_q } -> pure False
 			_ -> pure True
---		GdkEventGdkDelete _d -> pure False
---		GdkEventGdkKeyPress GdkEventKeyRaw { gdkEventKeyRawKeyval = GdkKey_q } -> pure False
-		GdkEventSealedGdkMotionNotify m -> True <$ print (gdkEventMotion m)
+		GdkEventSealedGdkDelete _d -> pure False
+		GdkEventSealedGdkMotionNotify (gdkEventMotion -> m) -> True <$ do
+			let	d = gdkEventMotionDevice m
+				as = gdkEventMotionAxes m
+			print m
+			print =<< gdkDeviceGetAxis d as GdkAxisPressure
 		e -> True <$ print e
