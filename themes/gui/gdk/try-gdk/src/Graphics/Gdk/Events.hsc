@@ -30,7 +30,7 @@ module Graphics.Gdk.Events (
 	gdkEventMaskSingleBitList, gdkEventConfigureWindow,
 
 	-- * NOT USE
-	gdkEventGetRootCoords, gdkEventGetScrollDirection, gdkEventGetScrollDeltas, gdkEventIsScrollStopEvent,
+	gdkEventGetScrollDirection, gdkEventGetScrollDeltas, gdkEventIsScrollStopEvent,
 	gdkEventGetState, gdkEventGetTime, gdkEventGetWindow, gdkEventGetEventType, gdkEventGetSeat,
 	gdkEventGetScancode, gdkEventSetScreen, gdkEventGetScreen, gdkEventGetDevice, gdkEventSetDevice,
 	gdkEventSetSourceDevice,
@@ -104,14 +104,6 @@ gdkWithEventCopy (GdkEventSealed fe) f = withForeignPtr fe c_gdk_event_copy >>= 
 		<* c_gdk_event_free p
 
 foreign import ccall "gdk_event_copy" c_gdk_event_copy :: Ptr GdkEvent -> IO (Ptr GdkEvent)
-
-foreign import ccall "gdk_event_get_root_coords" c_gdk_event_get_root_coords ::
-	Ptr GdkEvent -> Ptr #{type gdouble} -> Ptr #{type gdouble} -> IO #type gboolean
-
-gdkEventGetRootCoords :: GdkEvent -> IO (Maybe (#{type gdouble}, #type gdouble))
-gdkEventGetRootCoords (GdkEvent _ fe) = withForeignPtr fe \e -> alloca \xr -> alloca \yr ->
-	c_gdk_event_get_root_coords e xr yr
-		>>= bool (pure Nothing) ((\x y -> Just (x, y)) <$> peek xr <*> peek yr) . gbooleanToBool
 
 foreign import ccall "gdk_event_get_scroll_direction" c_gdk_event_get_scroll_direction ::
 	Ptr GdkEvent -> Ptr #{type GdkScrollDirection} -> IO #type gboolean

@@ -30,5 +30,9 @@ main = do
 			let	d = gdkEventMotionDevice m
 				as = gdkEventMotionAxes m
 			print m
+			print $ gdkEventMotionX m
+			print $ gdkEventMotionY m
+			print $ gdkEventMotionXRoot m
+			print $ gdkEventMotionYRoot m
 			print =<< gdkDeviceGetAxis d as GdkAxisPressure
 		e -> True <$ print e
