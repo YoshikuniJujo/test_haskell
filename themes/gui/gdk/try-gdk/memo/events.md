@@ -15,8 +15,6 @@ Function
 * [x] `gdk_event_copy`
 	+ `gdkWithEventCopy`
 * [x] `gdk_event_free`
-* [ ] `gdk_event_get_coords`
-* [ ] `gdk_event_get_keycode`
 * [ ] `gdk_event_get_keyval`
 * [ ] `gdk_event_get_root_coords`
 * [ ] `gdk_event_get_scroll_direction`
@@ -41,6 +39,11 @@ Function
 	+ [x] remove it
 * [x] `gdk_event_get_click_count`
 	+ remove it
+* [x] `gdk_event_get_coords`
+	+ remove it
+* [ ] `gdk_event_get_keycode`
+	+ [ ] check keycode
+	+ [ ] remove it
 
 EventStructures
 ---------------
