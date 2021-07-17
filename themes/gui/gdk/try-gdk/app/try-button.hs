@@ -21,7 +21,8 @@ main = do
 	w <- gdkWindowNew Nothing defaultGdkWindowAttr {
 		gdkWindowAttrEventMask = gdkEventMaskMultiBits [
 			GdkKeyPressMask,
-			GdkButtonPressMask, GdkButtonReleaseMask ] }
+			GdkButtonPressMask, GdkButtonReleaseMask,
+			GdkScrollMask, GdkSmoothScrollMask ] }
 	gdkWindowShow w
 	mainLoopNew \case
 		GdkEventSealedGdkKeyPress k -> case gdkEventKey k of
@@ -39,6 +40,7 @@ main = do
 		GdkEventSealedGdkButtonRelease b -> True <$ do
 			putStrLn ("GdkButtonRelease: " ++ show (gdkEventButton b))
 			print (1 :: Int)
+		GdkEventSealedGdkScroll s -> True <$ print s
 		e -> True <$ print e
 
 getClickCount :: GdkEventSealed s -> Maybe Int

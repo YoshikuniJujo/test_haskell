@@ -16,6 +16,7 @@ module Graphics.Gdk.Events (
 	pattern GdkButton2MotionMask, pattern GdkButton3MotionMask,
 	pattern GdkButtonPressMask, pattern GdkButtonReleaseMask,
 	pattern GdkKeyPressMask, pattern GdkKeyReleaseMask,
+	pattern GdkScrollMask, pattern GdkSmoothScrollMask,
 
 	gdkEventGetDeviceTool,
 	gdkEventSealedGetDeviceTool,
@@ -258,7 +259,7 @@ enum "GdkEventMaskSingleBit" ''#{type GdkEventMask} [''Show] [
 	("GdkProximityInMask", #{const GDK_PROXIMITY_IN_MASK}),
 	("GdkProximityOutMask", #{const GDK_PROXIMITY_OUT_MASK}),
 	("GdkSubstructureMask", #{const GDK_SUBSTRUCTURE_MASK}),
-	("GdkScrollMssk", #{const GDK_SCROLL_MASK}),
+	("GdkScrollMask", #{const GDK_SCROLL_MASK}),
 	("GdkTouchMask", #{const GDK_TOUCH_MASK}),
 	("GdkSmoothScrollMask", #{const GDK_SMOOTH_SCROLL_MASK}),
 	("GdkTouchpadGestureMask", #{const GDK_TOUCHPAD_GESTURE_MASK}),

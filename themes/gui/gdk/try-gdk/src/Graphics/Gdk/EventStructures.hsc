@@ -299,6 +299,61 @@ pattern GdkEventSealedGdkButtonRelease :: Sealed s GdkEventButtonRaw -> GdkEvent
 pattern GdkEventSealedGdkButtonRelease e <-
 	GdkEventSealed (gdkEventTypeRaw GdkEventButtonRaw_ -> (GdkButtonRelease, e))
 
+enum "GdkScrollDirection" ''#{type GdkScrollDirection} [''Show, ''Storable] [
+	("GdkScrollUp", #{const GDK_SCROLL_UP}),
+	("GdkScrollDown", #{const GDK_SCROLL_DOWN}),
+	("GdkScrollLeft", #{const GDK_SCROLL_LEFT}),
+	("GdkScrollRight", #{const GDK_SCROLL_RIGHT}),
+	("GdkScrollSmooth", #{const GDK_SCROLL_SMOOTH}) ]
+
+data {-# CTYPE "gdk/gdk.h" "GdkEventScroll" #-} GdkEventScroll'
+
+foreign import capi "gdkhs.h peek_gdk_event_scroll_is_stop"
+	c_peek_gdk_event_scroll_is_stop :: Ptr GdkEventScroll' -> IO BoolCUInt
+
+foreign import capi "gdkhs.h poke_gdk_event_scroll_is_stop"
+	c_poke_gdk_event_scroll_is_stop :: Ptr GdkEventScroll' -> BoolCUInt -> IO ()
+
+struct "GdkEventScrollRaw" #{size GdkEventScroll}
+	[	("type", ''GdkEventType, [| #{peek GdkEventScroll, type} |],
+			[| #{poke GdkEventScroll, type} |]),
+		("window", ''GdkWindow, [| #{peek GdkEventScroll, window} |],
+			[| #{poke GdkEventScroll, window} |]),
+		("send_event", ''BoolGInt8,
+			[| #{peek GdkEventScroll, send_event} |],
+			[| #{poke GdkEventScroll, send_event} |]),
+		("time", ''MilliSecond, [| #{peek GdkEventScroll, time} |],
+			[| #{poke GdkEventScroll, time} |]),
+		("x", ''CDouble, [| #{peek GdkEventScroll, x} |],
+			[| #{poke GdkEventScroll, x} |]),
+		("y", ''CDouble, [| #{peek GdkEventScroll, y} |],
+			[| #{poke GdkEventScroll, y} |]),
+		("state", ''GdkModifierTypeMultiBits,
+			[| #{peek GdkEventScroll, state} |],
+			[| #{poke GdkEventScroll, state} |]),
+		("direction", ''GdkScrollDirection,
+			[| #{peek GdkEventScroll, direction} |],
+			[| #{poke GdkEventScroll, direction} |]),
+		("device", ''GdkDevice,
+			[| #{peek GdkEventScroll, device} |],
+			[| #{poke GdkEventScroll, device} |]),
+		("xRoot", ''CDouble, [| #{peek GdkEventScroll, x_root} |],
+			[| #{poke GdkEventScroll, x_root} |]),
+		("yRoot", ''CDouble, [| #{peek GdkEventScroll, y_root} |],
+			[| #{poke GdkEventScroll, y_root} |]),
+		("deltaX", ''CDouble, [| #{peek GdkEventScroll, delta_x} |],
+			[| #{poke GdkEventScroll, delta_x} |]),
+		("deltaY", ''CDouble, [| #{peek GdkEventScroll, delta_y} |],
+			[| #{poke GdkEventScroll, delta_y} |]),
+		("isStop", ''BoolCUInt, [| c_peek_gdk_event_scroll_is_stop . castPtr |],
+			[| c_poke_gdk_event_scroll_is_stop . castPtr |])
+		]
+	[''Show]
+
+pattern GdkEventSealedGdkScroll :: Sealed s GdkEventScrollRaw -> GdkEventSealed s
+pattern GdkEventSealedGdkScroll s <-
+	GdkEventSealed (gdkEventTypeRaw GdkEventScrollRaw_ -> (GdkScroll, s))
+
 struct "GdkEventMotionRaw" #{size GdkEventMotion}
 	[	("type", ''GdkEventType, [| #{peek GdkEventMotion, type} |],
 			[| #{poke GdkEventMotion, type} |]),
@@ -539,10 +594,3 @@ pattern GdkEventSealedGdkWindowState e <-
 
 pattern GdkEventGdkWindowState :: GdkEventWindowStateRaw -> GdkEvent
 pattern GdkEventGdkWindowState p <- GdkEvent (GdkEventType #{const GDK_WINDOW_STATE}) (GdkEventWindowStateRaw_ . castForeignPtr -> p)
-
-enum "GdkScrollDirection" ''#{type GdkScrollDirection} [''Show] [
-	("GdkScrollUp", #{const GDK_SCROLL_UP}),
-	("GdkScrollDown", #{const GDK_SCROLL_DOWN}),
-	("GdkScrollLeft", #{const GDK_SCROLL_LEFT}),
-	("GdkScrollRight", #{const GDK_SCROLL_RIGHT}),
-	("GdkScrollSmooth", #{const GDK_SCROLL_SMOOTH}) ]
