@@ -27,12 +27,24 @@ main = do
 		GdkEventSealedGdkKeyPress k -> case gdkEventKey k of
 			GdkEventKey { gdkEventKeyKeyval = GdkKey_q } -> pure False
 			_ -> pure True
-		GdkEventSealedGdkButtonPress b -> True <$
+		GdkEventSealedGdkButtonPress b -> True <$ do
 			putStrLn ("GdkButtonPress: " ++ show (gdkEventButton b))
-		GdkEventSealedGdkDoubleButtonPress b -> True <$
+			print (1 :: Int)
+		GdkEventSealedGdkDoubleButtonPress b -> True <$ do
 			putStrLn ("GdkDoubleButtonPress: " ++ show (gdkEventButton b))
-		GdkEventSealedGdkTripleButtonPress b -> True <$
+			print (2 :: Int)
+		GdkEventSealedGdkTripleButtonPress b -> True <$ do
 			putStrLn ("GdkTripleButtonPress: " ++ show (gdkEventButton b))
-		GdkEventSealedGdkButtonRelease b -> True <$
+			print (3 :: Int)
+		GdkEventSealedGdkButtonRelease b -> True <$ do
 			putStrLn ("GdkButtonRelease: " ++ show (gdkEventButton b))
+			print (1 :: Int)
 		e -> True <$ print e
+
+getClickCount :: GdkEventSealed s -> Maybe Int
+getClickCount = \case
+	GdkEventSealedGdkButtonPress _ -> Just 1
+	GdkEventSealedGdkButtonRelease _ -> Just 1
+	GdkEventSealedGdkDoubleButtonPress _ -> Just 2
+	GdkEventSealedGdkTripleButtonPress _ -> Just 3
+	_ -> Nothing

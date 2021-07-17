@@ -39,7 +39,7 @@ Function
 		- [x] define `gdkEventButton`
 	+ [x] try `GdkEventButton`
 	+ [x] remove it
-* [ ] `gdk_event_get_click_count`
+* [x] `gdk_event_get_click_count`
 	+ remove it
 
 EventStructures
