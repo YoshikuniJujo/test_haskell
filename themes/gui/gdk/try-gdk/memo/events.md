@@ -41,10 +41,10 @@ Function
 	+ remove it
 * [x] `gdk_event_get_coords`
 	+ remove it
-* [ ] `gdk_event_get_keycode`
+* [x] `gdk_event_get_keycode`
 	+ [x] check keycode
-	+ [ ] check keycode and scancode
-	+ [ ] remove it
+	+ [x] check keycode and scancode
+	+ [x] remove it
 
 EventStructures
 ---------------
