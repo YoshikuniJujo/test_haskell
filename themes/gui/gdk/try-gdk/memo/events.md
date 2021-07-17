@@ -42,7 +42,8 @@ Function
 * [x] `gdk_event_get_coords`
 	+ remove it
 * [ ] `gdk_event_get_keycode`
-	+ [ ] check keycode
+	+ [x] check keycode
+	+ [ ] check keycode and scancode
 	+ [ ] remove it
 
 EventStructures

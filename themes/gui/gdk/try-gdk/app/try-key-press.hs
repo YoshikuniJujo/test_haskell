@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -25,9 +26,11 @@ main = do
 	doWhile_ do
 		threadDelay 100000
 		doWhile $ gdkWithEventGet \case
-			Just (GdkEventSealedGdkKeyPress k) -> do
-				print k
-				pure case gdkEventKey k of
+			Just e@(GdkEventSealedGdkKeyPress (gdkEventKey -> k)) -> do
+				print $ gdkEventKeyHardwareKeycode k
+				print =<< gdkEventGetKeycode e
+				print =<< gdkEventGetScancode e
+				pure case k of
 					GdkEventKey { gdkEventKeyKeyval = GdkKey_q } -> Just False
 					_ -> Nothing
 			Just e -> Nothing <$ print e

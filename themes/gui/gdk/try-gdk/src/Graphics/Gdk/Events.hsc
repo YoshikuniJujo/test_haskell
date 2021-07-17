@@ -44,6 +44,7 @@ import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
+import Foreign.C.Types
 import Foreign.C.Enum
 import Data.Bits
 import Data.Bits.Misc
@@ -108,8 +109,8 @@ foreign import ccall "gdk_event_copy" c_gdk_event_copy :: Ptr GdkEvent -> IO (Pt
 foreign import ccall "gdk_event_get_keycode" c_gdk_event_get_keycode ::
 	Ptr GdkEvent -> Ptr #{type guint16} -> IO #type gboolean
 
-gdkEventGetKeycode :: GdkEvent -> IO (Maybe #type guint16)
-gdkEventGetKeycode (GdkEvent _ fe) = withForeignPtr fe \e -> alloca \kc ->
+gdkEventGetKeycode :: GdkEventSealed s -> IO (Maybe #type guint16)
+gdkEventGetKeycode (GdkEventSealed fe) = withForeignPtr fe \e -> alloca \kc ->
 	c_gdk_event_get_keycode e kc
 		>>= bool (pure Nothing) (Just <$> peek kc) . gbooleanToBool
 
@@ -190,10 +191,10 @@ gdkEventGetSeat (GdkEvent _ fe) = withForeignPtr fe \e ->
 	GdkSeat <$> c_gdk_event_get_seat e
 
 foreign import ccall "gdk_event_get_scancode" c_gdk_event_get_scancode ::
-	Ptr GdkEvent -> IO #type int
+	Ptr GdkEvent -> IO CInt
 
-gdkEventGetScancode :: GdkEvent -> IO #type int
-gdkEventGetScancode (GdkEvent _ fe) = withForeignPtr fe c_gdk_event_get_scancode
+gdkEventGetScancode :: GdkEventSealed s -> IO CInt
+gdkEventGetScancode (GdkEventSealed fe) = withForeignPtr fe c_gdk_event_get_scancode
 
 foreign import ccall "gdk_get_show_events" c_gdk_get_show_events ::
 	IO #type gboolean
