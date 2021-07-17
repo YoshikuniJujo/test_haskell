@@ -15,8 +15,6 @@ Function
 * [x] `gdk_event_copy`
 	+ `gdkWithEventCopy`
 * [x] `gdk_event_free`
-* [ ] `gdk_event_get_keyval`
-* [ ] `gdk_event_get_root_coords`
 * [ ] `gdk_event_get_scroll_direction`
 * [ ] `gdk_event_is_scroll_stop_event`
 * [ ] `gdk_event_get_state`
@@ -45,6 +43,10 @@ Function
 	+ [x] check keycode
 	+ [x] check keycode and scancode
 	+ [x] remove it
+* [x] `gdk_event_get_keyval`
+	+ remove it
+* [ ] `gdk_event_get_root_coords`
+	+ remove it
 
 EventStructures
 ---------------

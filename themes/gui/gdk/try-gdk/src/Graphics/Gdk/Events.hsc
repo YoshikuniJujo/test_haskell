@@ -30,7 +30,6 @@ module Graphics.Gdk.Events (
 	gdkEventMaskSingleBitList, gdkEventConfigureWindow,
 
 	-- * NOT USE
-	gdkEventGetKeyval,
 	gdkEventGetRootCoords, gdkEventGetScrollDirection, gdkEventGetScrollDeltas, gdkEventIsScrollStopEvent,
 	gdkEventGetState, gdkEventGetTime, gdkEventGetWindow, gdkEventGetEventType, gdkEventGetSeat,
 	gdkEventGetScancode, gdkEventSetScreen, gdkEventGetScreen, gdkEventGetDevice, gdkEventSetDevice,
@@ -105,14 +104,6 @@ gdkWithEventCopy (GdkEventSealed fe) f = withForeignPtr fe c_gdk_event_copy >>= 
 		<* c_gdk_event_free p
 
 foreign import ccall "gdk_event_copy" c_gdk_event_copy :: Ptr GdkEvent -> IO (Ptr GdkEvent)
-
-foreign import ccall "gdk_event_get_keyval" c_gdk_event_get_keyval ::
-	Ptr GdkEvent -> Ptr #{type guint} -> IO #type gboolean
-
-gdkEventGetKeyval :: GdkEvent -> IO (Maybe #type guint)
-gdkEventGetKeyval (GdkEvent _ fe) = withForeignPtr fe \e -> alloca \kv ->
-	c_gdk_event_get_keyval e kv
-		>>= bool (pure Nothing) (Just <$> peek kv) . gbooleanToBool
 
 foreign import ccall "gdk_event_get_root_coords" c_gdk_event_get_root_coords ::
 	Ptr GdkEvent -> Ptr #{type gdouble} -> Ptr #{type gdouble} -> IO #type gboolean
