@@ -15,7 +15,6 @@ Function
 * [x] `gdk_event_copy`
 	+ `gdkWithEventCopy`
 * [x] `gdk_event_free`
-* [ ] `gdk_event_is_scroll_stop_event`
 * [ ] `gdk_event_get_state`
 * [ ] `gdk_event_get_time`
 * [ ] `gdk_event_get_window`
@@ -69,9 +68,11 @@ Function
 * [x] `gdk_event_get_scroll_direction`
 	+ [x] try to get scroll direction
 	+ [x] remove it
-* [ ] `gdk_event_get_scroll_deltas`
+* [x] `gdk_event_get_scroll_deltas`
 	+ [x] from `delta_x` and `delta_y` to `Maybe (delta_x, delta_y)`
-	+ [ ] remove it
+	+ [x] remove it
+* [ ] `gdk_event_is_scroll_stop_event`
+	+ remove it
 
 EventStructures
 ---------------
