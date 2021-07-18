@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -40,7 +41,7 @@ main = do
 		GdkEventSealedGdkButtonRelease b -> True <$ do
 			putStrLn ("GdkButtonRelease: " ++ show (gdkEventButton b))
 			print (1 :: Int)
-		GdkEventSealedGdkScroll s -> True <$ print s
+		GdkEventSealedGdkScroll (gdkEventScroll -> s) -> True <$ print s
 		e -> True <$ print e
 
 getClickCount :: GdkEventSealed s -> Maybe Int

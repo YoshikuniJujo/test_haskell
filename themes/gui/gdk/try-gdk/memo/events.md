@@ -94,11 +94,11 @@ EventStructures
 * [x] define `pattern GdkEventSealedGdkEventAny`
 * [x] use `GdkEventAny` to get type
 * [x] remove first argument of `GdkEventSealed`
-* [ ] `GdkEventScroll`
+* [x] `GdkEventScroll`
 	+ [x] `GdkEventScrollRaw`
 	+ [x] `GdkEventSealedGdkEventScroll`
 	+ [x] `GdkEventScroll`
-	+ [ ] `gdkEventScroll`
+	+ [x] `gdkEventScroll`
 * [x] define `GdkEventSealedGdkFoo`
 	+ [x] Nothing
 	+ [x] Delete

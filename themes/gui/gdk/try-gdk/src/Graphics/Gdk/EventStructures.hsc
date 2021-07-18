@@ -319,7 +319,7 @@ struct "GdkEventScrollRaw" #{size GdkEventScroll}
 			[| #{poke GdkEventScroll, type} |]),
 		("window", ''GdkWindow, [| #{peek GdkEventScroll, window} |],
 			[| #{poke GdkEventScroll, window} |]),
-		("send_event", ''BoolGInt8,
+		("sendEvent", ''BoolGInt8,
 			[| #{peek GdkEventScroll, send_event} |],
 			[| #{poke GdkEventScroll, send_event} |]),
 		("time", ''MilliSecond, [| #{peek GdkEventScroll, time} |],
@@ -363,6 +363,26 @@ data GdkEventScroll = GdkEventScroll {
 	gdkEventScrollDeltaX, gdkEventScrollDeltaY :: CDouble,
 	gdkEventScrollIsStop :: Bool }
 	deriving Show
+
+gdkEventScroll :: Sealed s GdkEventScrollRaw -> GdkEventScroll
+gdkEventScroll (Sealed s) = GdkEventScroll
+	(gdkEventScrollRawType s)
+	(gdkEventScrollRawWindow s)
+	(case gdkEventScrollRawSendEvent s of
+		#{const FALSE} -> False
+		#{const TRUE} -> True
+		_ -> error "gdkEventScrollRawSendEvent should be FALSE or TRUE")
+	(gdkEventScrollRawTime s)
+	(gdkEventScrollRawX s) (gdkEventScrollRawY s)
+	(gdkModifierTypeSingleBitList $ gdkEventScrollRawState s)
+	(gdkEventScrollRawDirection s)
+	(gdkEventScrollRawDevice s)
+	(gdkEventScrollRawXRoot s) (gdkEventScrollRawYRoot s)
+	(gdkEventScrollRawDeltaX s) (gdkEventScrollRawDeltaY s)
+	(case gdkEventScrollRawIsStop s of
+		#{const FALSE} -> False
+		#{const TRUE} -> True
+		_ -> error "never occur")
 
 pattern GdkEventSealedGdkScroll :: Sealed s GdkEventScrollRaw -> GdkEventSealed s
 pattern GdkEventSealedGdkScroll s <-
