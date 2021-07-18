@@ -71,7 +71,7 @@ Function
 * [x] `gdk_event_get_scroll_deltas`
 	+ [x] from `delta_x` and `delta_y` to `Maybe (delta_x, delta_y)`
 	+ [x] remove it
-* [ ] `gdk_event_is_scroll_stop_event`
+* [x] `gdk_event_is_scroll_stop_event`
 	+ remove it
 
 EventStructures

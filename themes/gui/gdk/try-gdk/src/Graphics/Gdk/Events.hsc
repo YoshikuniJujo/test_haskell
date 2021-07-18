@@ -31,7 +31,6 @@ module Graphics.Gdk.Events (
 	gdkEventMaskSingleBitList, gdkEventConfigureWindow,
 
 	-- * NOT USE
-	gdkEventIsScrollStopEvent,
 	gdkEventGetState, gdkEventGetTime, gdkEventGetWindow, gdkEventGetEventType, gdkEventGetSeat,
 	gdkEventGetScancode, gdkEventSetScreen, gdkEventGetScreen, gdkEventGetDevice, gdkEventSetDevice,
 	gdkEventSetSourceDevice,
@@ -105,13 +104,6 @@ gdkWithEventCopy (GdkEventSealed fe) f = withForeignPtr fe c_gdk_event_copy >>= 
 		<* c_gdk_event_free p
 
 foreign import ccall "gdk_event_copy" c_gdk_event_copy :: Ptr GdkEvent -> IO (Ptr GdkEvent)
-
-foreign import ccall "gdk_event_is_scroll_stop_event" c_gdk_event_is_scroll_stop_event ::
-	Ptr GdkEvent -> IO #type gboolean
-
-gdkEventIsScrollStopEvent :: GdkEvent -> IO Bool
-gdkEventIsScrollStopEvent (GdkEvent _ fe) = withForeignPtr fe \e ->
-	gbooleanToBool <$> c_gdk_event_is_scroll_stop_event e
 
 foreign import ccall "gdk_event_get_state" c_gdk_event_get_state ::
 	Ptr GdkEvent -> Ptr #{type GdkModifierType} -> IO #type gboolean
