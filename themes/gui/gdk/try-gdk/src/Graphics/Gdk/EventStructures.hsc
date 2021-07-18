@@ -350,6 +350,20 @@ struct "GdkEventScrollRaw" #{size GdkEventScroll}
 		]
 	[''Show]
 
+data GdkEventScroll = GdkEventScroll {
+	gdkEventScrollType :: GdkEventType,
+	gdkEventScrollWindow :: GdkWindow,
+	gdkEventScrollSendEvent :: Bool,
+	gdkEventScrollTime :: MilliSecond,
+	gdkEventScrollX, gdkEventScrollY :: CDouble,
+	gdkEventScrollState :: [GdkModifierTypeSingleBit],
+	gdkEventScrollDirection :: GdkScrollDirection,
+	gdkEventScrollDevice :: GdkDevice,
+	gdkEventScrollXRoot, gdkEventScrollYRoot :: CDouble,
+	gdkEventScrollDeltaX, gdkEventScrollDeltaY :: CDouble,
+	gdkEventScrollIsStop :: Bool }
+	deriving Show
+
 pattern GdkEventSealedGdkScroll :: Sealed s GdkEventScrollRaw -> GdkEventSealed s
 pattern GdkEventSealedGdkScroll s <-
 	GdkEventSealed (gdkEventTypeRaw GdkEventScrollRaw_ -> (GdkScroll, s))

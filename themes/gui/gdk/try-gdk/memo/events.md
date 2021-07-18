@@ -97,7 +97,7 @@ EventStructures
 * [ ] `GdkEventScroll`
 	+ [x] `GdkEventScrollRaw`
 	+ [x] `GdkEventSealedGdkEventScroll`
-	+ [ ] `GdkEventScroll`
+	+ [x] `GdkEventScroll`
 	+ [ ] `gdkEventScroll`
 * [x] define `GdkEventSealedGdkFoo`
 	+ [x] Nothing
