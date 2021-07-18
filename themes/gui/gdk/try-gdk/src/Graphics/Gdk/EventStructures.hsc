@@ -360,7 +360,7 @@ data GdkEventScroll = GdkEventScroll {
 	gdkEventScrollDirection :: GdkScrollDirection,
 	gdkEventScrollDevice :: GdkDevice,
 	gdkEventScrollXRoot, gdkEventScrollYRoot :: CDouble,
-	gdkEventScrollDeltaX, gdkEventScrollDeltaY :: CDouble,
+	gdkEventScrollDeltas :: Maybe (CDouble, CDouble),
 	gdkEventScrollIsStop :: Bool }
 	deriving Show
 
@@ -378,7 +378,10 @@ gdkEventScroll (Sealed s) = GdkEventScroll
 	(gdkEventScrollRawDirection s)
 	(gdkEventScrollRawDevice s)
 	(gdkEventScrollRawXRoot s) (gdkEventScrollRawYRoot s)
-	(gdkEventScrollRawDeltaX s) (gdkEventScrollRawDeltaY s)
+	(case gdkEventScrollRawDirection s of
+		GdkScrollSmooth -> Just
+			(gdkEventScrollRawDeltaX s, gdkEventScrollRawDeltaY s)
+		_ -> Nothing)
 	(case gdkEventScrollRawIsStop s of
 		#{const FALSE} -> False
 		#{const TRUE} -> True
