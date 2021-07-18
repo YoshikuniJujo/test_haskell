@@ -66,9 +66,9 @@ Function
 	+ remove it
 * [x] `gdk_event_get_root_coords`
 	+ remove it
-* [ ] `gdk_event_get_scroll_direction`
-	+ [ ] try to get scroll direction
-	+ [ ] remove it
+* [x] `gdk_event_get_scroll_direction`
+	+ [x] try to get scroll direction
+	+ [x] remove it
 
 EventStructures
 ---------------
