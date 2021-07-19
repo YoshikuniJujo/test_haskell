@@ -32,7 +32,7 @@ module Graphics.Gdk.Events (
 	gdkEventMaskSingleBitList, gdkEventConfigureWindow,
 
 	-- * NOT USE
-	gdkEventGetEventType, gdkEventGetSeat,
+	gdkEventGetSeat,
 	gdkEventGetScancode, gdkEventSetScreen, gdkEventGetScreen, gdkEventGetDevice, gdkEventSetDevice,
 	gdkEventSetSourceDevice,
 
@@ -100,13 +100,6 @@ gdkWithEventCopy (GdkEventSealed fe) f = withForeignPtr fe c_gdk_event_copy >>= 
 		<* c_gdk_event_free p
 
 foreign import ccall "gdk_event_copy" c_gdk_event_copy :: Ptr GdkEvent -> IO (Ptr GdkEvent)
-
-foreign import ccall "gdk_event_get_event_type" c_gdk_event_get_event_type ::
-	Ptr GdkEvent -> IO #type GdkEventType
-
-gdkEventGetEventType :: GdkEvent -> IO GdkEventType
-gdkEventGetEventType (GdkEvent _ fe) = withForeignPtr fe \e ->
-	GdkEventType <$> c_gdk_event_get_event_type e
 
 foreign import ccall "gdk_event_get_seat" c_gdk_event_get_seat ::
 	Ptr GdkEvent -> IO (Ptr GdkSeat)

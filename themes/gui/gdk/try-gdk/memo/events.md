@@ -19,8 +19,7 @@ Function
 * [x] `gdk_event_copy`
 	+ `gdkWithEventCopy`
 * [x] `gdk_event_free`
-* [ ] `gdk_event_get_event_sequence`
-* [ ] `gdk_event__request_motions`
+* [ ] `gdk_event_request_motions`
 * [ ] `gdk_event_get_angle`
 * [ ] `gdk_event_get_center`
 * [ ] `gdk_event_get_distance`
@@ -83,8 +82,10 @@ Function
 	+ [x] `GdkEventAny`
 	+ [x] `gdkEventAny`
 	+ [x] remove it
-* [ ] `gdk_event_get_event_type`
-	+ [ ] remove it
+* [x] `gdk_event_get_event_type`
+	+ remove it
+* [ ] `gdk_event_get_event_sequence`
+	+ remove it
 
 EventStructures
 ---------------
