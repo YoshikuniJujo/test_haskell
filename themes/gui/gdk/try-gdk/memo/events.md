@@ -20,7 +20,7 @@ Function
 	+ `gdkWithEventCopy`
 * [x] `gdk_event_free`
 * [x] `gdk_get_show_events`
-* [ ] `gdk_set_show_events`
+* [x] `gdk_set_show_events`
 * [ ] `gdk_event_set_screen`
 * [ ] `gdk_event_get_screen`
 * [ ] `gdk_event_get_device`

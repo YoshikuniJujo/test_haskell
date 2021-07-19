@@ -8,6 +8,7 @@ module Graphics.Gdk.Events (
 	-- * CHECKED
 	gdkEventsPending, gdkWithEventPeek, gdkWithEventGet, gdkEventPut,
 	gdkWithEventNew, gdkWithEventCopy,
+	gdkGetShowEvents, gdkSetShowEvents,
 
 	-- * USE
 	GdkEventMaskMultiBits(..), getGdkEventMask, gdkEventMaskMultiBits,
@@ -28,7 +29,7 @@ module Graphics.Gdk.Events (
 	gdkEventConfigureX, gdkEventConfigureY, gdkEventConfigureWidth,
 	pattern GdkZeroEventsMask, pattern GdkFocusChangeMask,
 
-	gdkGetShowEvents, pattern GdkEnterNotifyMask, pattern GdkLeaveNotifyMask,
+	pattern GdkEnterNotifyMask, pattern GdkLeaveNotifyMask,
 	gdkEventMaskSingleBitList, gdkEventConfigureWindow,
 
 	-- * NOT USE
@@ -103,6 +104,12 @@ gdkGetShowEvents = gbooleanToBool <$> c_gdk_get_show_events
 
 foreign import ccall "gdk_get_show_events"
 	c_gdk_get_show_events :: IO #type gboolean
+
+gdkSetShowEvents :: Bool -> IO ()
+gdkSetShowEvents = c_gdk_set_show_events . boolToGboolean
+
+foreign import ccall "gdk_set_show_events"
+	c_gdk_set_show_events :: #{type gboolean} -> IO ()
 
 foreign import ccall "gdk_event_set_screen" c_gdk_event_set_screen ::
 	Ptr GdkEvent -> Ptr GdkScreen -> IO ()
