@@ -4,6 +4,10 @@ Events memo
 Function
 --------
 
+### todo
+
+* [ ] try to add `GdkTouchMask`
+
 ### now
 
 * [x] `gdk_event_pending`

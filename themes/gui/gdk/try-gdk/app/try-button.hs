@@ -23,7 +23,7 @@ main = do
 		gdkWindowAttrEventMask = gdkEventMaskMultiBits [
 			GdkKeyPressMask,
 			GdkButtonPressMask, GdkButtonReleaseMask,
-			GdkScrollMask, GdkSmoothScrollMask ] }
+			GdkScrollMask, GdkTouchMask, GdkSmoothScrollMask ] }
 	gdkWindowShow w
 	mainLoopNew \case
 		GdkEventSealedGdkKeyPress k -> case gdkEventKey k of

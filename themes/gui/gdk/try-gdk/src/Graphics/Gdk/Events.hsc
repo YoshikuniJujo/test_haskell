@@ -16,7 +16,8 @@ module Graphics.Gdk.Events (
 	pattern GdkButton2MotionMask, pattern GdkButton3MotionMask,
 	pattern GdkButtonPressMask, pattern GdkButtonReleaseMask,
 	pattern GdkKeyPressMask, pattern GdkKeyReleaseMask,
-	pattern GdkScrollMask, pattern GdkSmoothScrollMask,
+	pattern GdkScrollMask, pattern GdkTouchMask,
+	pattern GdkSmoothScrollMask,
 
 	gdkEventGetDeviceTool,
 	gdkEventSealedGetDeviceTool,
