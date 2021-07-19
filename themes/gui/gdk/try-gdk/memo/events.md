@@ -19,12 +19,6 @@ Function
 * [x] `gdk_event_copy`
 	+ `gdkWithEventCopy`
 * [x] `gdk_event_free`
-* [ ] `gdk_event_request_motions`
-* [ ] `gdk_event_get_angle`
-* [ ] `gdk_event_get_center`
-* [ ] `gdk_event_get_distance`
-* [ ] `gdk_event_triggers_context_menu`
-* [ ] `gdk_event_get_seat`
 * [ ] `gdk_event_get_scancode`
 * [ ] `gdk_event_get_pointer_emulated`
 * [ ] `gdk_event_handler_set`
@@ -84,8 +78,13 @@ Function
 	+ [x] remove it
 * [x] `gdk_event_get_event_type`
 	+ remove it
-* [ ] `gdk_event_get_event_sequence`
-	+ remove it
+* `gdk_event_get_event_sequence`
+* `gdk_event_request_motions`
+* `gdk_event_get_angle`
+* `gdk_event_get_center`
+* `gdk_event_get_distance`
+* `gdk_event_triggers_context_menu`
+* `gdk_event_get_seat`
 
 EventStructures
 ---------------
@@ -222,7 +221,6 @@ Function
 * `gdk_event_get_angle`
 * `gdk_event_get_center`
 * `gdk_event_get_distance`
-* `gdk_event_triggers_context_menu`
 * `gdk_event_get_seat`
 * `gdk_event_get_scancode`
 * `gdk_event_get_pointer_enulated`
