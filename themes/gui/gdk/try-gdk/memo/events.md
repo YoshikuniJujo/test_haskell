@@ -76,6 +76,7 @@ Function
 	+ [x] check `GDK_CURRENT_TIME`
 	+ [x] remove it
 * [ ] `gdk_event_get_window`
+	+ [x] rename `GdkEventSealedGdkEventAny` to `GdkEventSealedGdkAny`
 	+ [ ] `GdkEventAny`
 	+ [ ] `gdkEventAny`
 	+ [ ] remove it

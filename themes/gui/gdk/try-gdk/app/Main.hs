@@ -442,4 +442,4 @@ checkEventSealed opacity pos size d st = \case
 		pure True
 	GdkEventSealedGdkWindowState s -> True <$ print s
 	GdkEventSealedGdkMotionNotify m -> True <$ print m
-	GdkEventSealedGdkEventAny a -> True <$ print a
+	GdkEventSealedGdkAny a -> True <$ print a

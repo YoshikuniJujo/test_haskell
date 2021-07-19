@@ -94,14 +94,14 @@ struct "GdkEventAnyRaw" #{size GdkEventAny}
 			[| #{poke GdkEventAny, send_event} |]) ]
 	[''Show]
 
-{-# COMPLETE GdkEventSealedGdkEventAny #-}
+{-# COMPLETE GdkEventSealedGdkAny #-}
 
-pattern GdkEventSealedGdkEventAny :: Sealed s GdkEventAnyRaw -> GdkEventSealed s
-pattern GdkEventSealedGdkEventAny ea <-
+pattern GdkEventSealedGdkAny :: Sealed s GdkEventAnyRaw -> GdkEventSealed s
+pattern GdkEventSealedGdkAny ea <-
 	GdkEventSealed (Sealed . GdkEventAnyRaw_ . castForeignPtr -> ea)
 
 gdkEventSealedType :: GdkEventSealed s -> GdkEventType
-gdkEventSealedType (GdkEventSealedGdkEventAny (Sealed ea)) = gdkEventAnyRawType ea
+gdkEventSealedType (GdkEventSealedGdkAny (Sealed ea)) = gdkEventAnyRawType ea
 
 pattern GdkEventSealedGdkNothing :: Sealed s GdkEventAnyRaw -> GdkEventSealed s
 pattern GdkEventSealedGdkNothing ea <-

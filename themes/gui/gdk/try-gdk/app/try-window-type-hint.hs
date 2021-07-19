@@ -30,4 +30,4 @@ main = do
 		GdkEventSealedGdkKeyPress k -> do
 			let	kv = gdkEventKeyKeyval $ gdkEventKey k
 			pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
-		GdkEventSealedGdkEventAny a -> True <$ print a
+		GdkEventSealedGdkAny a -> True <$ print a

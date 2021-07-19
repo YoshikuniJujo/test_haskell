@@ -71,7 +71,7 @@ checkEvent = \case
 	GdkEventSealedGdkKeyPress k -> do
 		let	kv = gdkEventKeyKeyval $ gdkEventKey k
 		pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
-	GdkEventSealedGdkEventAny a -> True <$ print a
+	GdkEventSealedGdkAny a -> True <$ print a
 
 drawRedLine :: GdkWindow -> IO ()
 drawRedLine w = do
