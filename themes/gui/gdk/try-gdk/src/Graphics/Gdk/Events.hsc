@@ -32,7 +32,7 @@ module Graphics.Gdk.Events (
 	gdkEventMaskSingleBitList, gdkEventConfigureWindow,
 
 	-- * NOT USE
-	gdkEventGetScancode, gdkEventSetScreen, gdkEventGetScreen, gdkEventGetDevice, gdkEventSetDevice,
+	gdkEventSetScreen, gdkEventGetScreen, gdkEventGetDevice, gdkEventSetDevice,
 	gdkEventSetSourceDevice,
 
 	) where
@@ -41,7 +41,6 @@ import Foreign.Ptr
 import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
-import Foreign.C.Types
 import Foreign.C.Enum
 import Data.Bits
 import Data.Bits.Misc
@@ -52,7 +51,6 @@ import System.GLib.Bool
 import {-# SOURCE #-} Graphics.Gdk.GdkScreen
 import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.EventStructures
-import {-# SOURCE #-} Graphics.Gdk.GdkSeat
 
 #include <gdk/gdk.h>
 
@@ -99,12 +97,6 @@ gdkWithEventCopy (GdkEventSealed fe) f = withForeignPtr fe c_gdk_event_copy >>= 
 		<* c_gdk_event_free p
 
 foreign import ccall "gdk_event_copy" c_gdk_event_copy :: Ptr GdkEvent -> IO (Ptr GdkEvent)
-
-foreign import ccall "gdk_event_get_scancode" c_gdk_event_get_scancode ::
-	Ptr GdkEvent -> IO CInt
-
-gdkEventGetScancode :: GdkEventSealed s -> IO CInt
-gdkEventGetScancode (GdkEventSealed fe) = withForeignPtr fe c_gdk_event_get_scancode
 
 foreign import ccall "gdk_get_show_events" c_gdk_get_show_events ::
 	IO #type gboolean

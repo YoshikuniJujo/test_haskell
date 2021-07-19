@@ -29,7 +29,6 @@ main = do
 			Just e@(GdkEventSealedGdkKeyPress (gdkEventKey -> k)) -> do
 				print $ gdkEventKeyHardwareKeycode k
 				print $ gdkEventKeyKeyval k
-				print =<< gdkEventGetScancode e
 				pure case k of
 					GdkEventKey { gdkEventKeyKeyval = GdkKey_q } -> Just False
 					_ -> Nothing
