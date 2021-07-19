@@ -31,7 +31,7 @@ module Graphics.Gdk.Events (
 	gdkEventMaskSingleBitList, gdkEventConfigureWindow,
 
 	-- * NOT USE
-	gdkEventGetTime, gdkEventGetWindow, gdkEventGetEventType, gdkEventGetSeat,
+	gdkEventGetWindow, gdkEventGetEventType, gdkEventGetSeat,
 	gdkEventGetScancode, gdkEventSetScreen, gdkEventGetScreen, gdkEventGetDevice, gdkEventSetDevice,
 	gdkEventSetSourceDevice,
 
@@ -100,14 +100,6 @@ gdkWithEventCopy (GdkEventSealed fe) f = withForeignPtr fe c_gdk_event_copy >>= 
 		<* c_gdk_event_free p
 
 foreign import ccall "gdk_event_copy" c_gdk_event_copy :: Ptr GdkEvent -> IO (Ptr GdkEvent)
-
-foreign import ccall "gdk_event_get_time" c_gdk_event_get_time ::
-	Ptr GdkEvent -> IO #type guint32
-
-gdkEventGetTime :: GdkEvent -> IO (Maybe #type guint32)
-gdkEventGetTime (GdkEvent _ fe) = withForeignPtr fe \e -> (<$> c_gdk_event_get_time e) \case
-	t	| t == #{const GDK_CURRENT_TIME} -> Nothing
-		| otherwise -> Just t
 
 foreign import ccall "gdk_event_get_window" c_gdk_event_get_window ::
 	Ptr GdkEvent -> IO (Ptr GdkWindow)
