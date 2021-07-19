@@ -98,11 +98,11 @@ gdkWithEventCopy (GdkEventSealed fe) f = withForeignPtr fe c_gdk_event_copy >>= 
 
 foreign import ccall "gdk_event_copy" c_gdk_event_copy :: Ptr GdkEvent -> IO (Ptr GdkEvent)
 
-foreign import ccall "gdk_get_show_events" c_gdk_get_show_events ::
-	IO #type gboolean
-
 gdkGetShowEvents :: IO Bool
 gdkGetShowEvents = gbooleanToBool <$> c_gdk_get_show_events
+
+foreign import ccall "gdk_get_show_events"
+	c_gdk_get_show_events :: IO #type gboolean
 
 foreign import ccall "gdk_event_set_screen" c_gdk_event_set_screen ::
 	Ptr GdkEvent -> Ptr GdkScreen -> IO ()

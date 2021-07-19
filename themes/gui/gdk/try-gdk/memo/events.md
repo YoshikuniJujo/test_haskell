@@ -19,8 +19,7 @@ Function
 * [x] `gdk_event_copy`
 	+ `gdkWithEventCopy`
 * [x] `gdk_event_free`
-* [ ] `gdk_event_handler_set`
-* [ ] `gdk_get_show_events`
+* [x] `gdk_get_show_events`
 * [ ] `gdk_set_show_events`
 * [ ] `gdk_event_set_screen`
 * [ ] `gdk_event_get_screen`
@@ -86,6 +85,7 @@ Function
 * [x] `gdk_event_get_scancode`
 	+ remove it
 * `gdk_event_get_pointer_emulated`
+* `gdk_event_handler_set`
 
 EventStructures
 ---------------
