@@ -94,6 +94,21 @@ struct "GdkEventAnyRaw" #{size GdkEventAny}
 			[| #{poke GdkEventAny, send_event} |]) ]
 	[''Show]
 
+data GdkEventAny = GdkEventAny {
+	gdkEventAnyType :: GdkEventType,
+	gdkEventAnyWindow :: GdkWindow,
+	gdkEventAnySendEvent :: Bool }
+	deriving Show
+
+gdkEventAny :: Sealed s GdkEventAnyRaw -> GdkEventAny
+gdkEventAny (Sealed r) = GdkEventAny
+	(gdkEventAnyRawType r)
+	(gdkEventAnyRawWindow r)
+	(case gdkEventAnyRawSendEvent r of
+		#{const FALSE} -> False
+		#{const TRUE} -> True
+		_ -> error "gdkEventAnyRawSendEvent should be FALSE or TRUE")
+
 {-# COMPLETE GdkEventSealedGdkAny #-}
 
 pattern GdkEventSealedGdkAny :: Sealed s GdkEventAnyRaw -> GdkEventSealed s

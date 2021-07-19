@@ -42,7 +42,7 @@ main = do
 			putStrLn ("GdkButtonRelease: " ++ show (gdkEventButton b))
 			print (1 :: Int)
 		GdkEventSealedGdkScroll (gdkEventScroll -> s) -> True <$ print s
-		GdkEventSealedGdkAny e -> True <$ print e
+		GdkEventSealedGdkAny (gdkEventAny -> e) -> True <$ print e
 
 getClickCount :: GdkEventSealed s -> Maybe Int
 getClickCount = \case

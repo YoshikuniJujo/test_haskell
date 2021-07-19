@@ -77,8 +77,8 @@ Function
 	+ [x] remove it
 * [ ] `gdk_event_get_window`
 	+ [x] rename `GdkEventSealedGdkEventAny` to `GdkEventSealedGdkAny`
-	+ [ ] `GdkEventAny`
-	+ [ ] `gdkEventAny`
+	+ [x] `GdkEventAny`
+	+ [x] `gdkEventAny`
 	+ [ ] remove it
 
 EventStructures
