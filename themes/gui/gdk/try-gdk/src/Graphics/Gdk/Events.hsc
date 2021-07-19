@@ -31,7 +31,7 @@ module Graphics.Gdk.Events (
 	gdkEventMaskSingleBitList, gdkEventConfigureWindow,
 
 	-- * NOT USE
-	gdkEventGetState, gdkEventGetTime, gdkEventGetWindow, gdkEventGetEventType, gdkEventGetSeat,
+	gdkEventGetTime, gdkEventGetWindow, gdkEventGetEventType, gdkEventGetSeat,
 	gdkEventGetScancode, gdkEventSetScreen, gdkEventGetScreen, gdkEventGetDevice, gdkEventSetDevice,
 	gdkEventSetSourceDevice,
 
@@ -41,13 +41,10 @@ import Foreign.Ptr
 import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
-import Foreign.Marshal
-import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.Enum
 import Data.Bits
 import Data.Bits.Misc
-import Data.Bool
 import Data.Word
 import Data.Int
 import System.GLib.Bool
@@ -56,7 +53,6 @@ import {-# SOURCE #-} Graphics.Gdk.GdkScreen
 import Graphics.Gdk.GdkDevice
 import {-# SOURCE #-} Graphics.Gdk.Windows
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.Values
 import {-# SOURCE #-} Graphics.Gdk.GdkSeat
 
 #include <gdk/gdk.h>
@@ -104,14 +100,6 @@ gdkWithEventCopy (GdkEventSealed fe) f = withForeignPtr fe c_gdk_event_copy >>= 
 		<* c_gdk_event_free p
 
 foreign import ccall "gdk_event_copy" c_gdk_event_copy :: Ptr GdkEvent -> IO (Ptr GdkEvent)
-
-foreign import ccall "gdk_event_get_state" c_gdk_event_get_state ::
-	Ptr GdkEvent -> Ptr #{type GdkModifierType} -> IO #type gboolean
-
-gdkEventGetState :: GdkEvent -> IO (Maybe [GdkModifierType])
-gdkEventGetState (GdkEvent _ fe) = withForeignPtr fe \e -> alloca \mt -> do
-	c_gdk_event_get_state e mt
-		>>= bool (pure Nothing) (Just . toGdkModifierType <$> peek mt) . gbooleanToBool
 
 foreign import ccall "gdk_event_get_time" c_gdk_event_get_time ::
 	Ptr GdkEvent -> IO #type guint32

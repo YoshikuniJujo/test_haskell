@@ -15,8 +15,6 @@ Function
 * [x] `gdk_event_copy`
 	+ `gdkWithEventCopy`
 * [x] `gdk_event_free`
-* [ ] `gdk_event_get_state`
-* [ ] `gdk_event_get_time`
 * [ ] `gdk_event_get_window`
 * [ ] `gdk_event_get_event_type`
 * [ ] `gdk_event_get_event_sequence`
@@ -73,6 +71,11 @@ Function
 	+ [x] remove it
 * [x] `gdk_event_is_scroll_stop_event`
 	+ remove it
+* [x] `gdk_event_get_state`
+	+ remove it
+* [ ] `gdk_event_get_time`
+	+ [ ] check `GDK_CURRENT_TIME`
+	+ [ ] remove it
 
 EventStructures
 ---------------
