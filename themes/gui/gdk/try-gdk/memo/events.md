@@ -15,7 +15,6 @@ Function
 * [x] `gdk_event_copy`
 	+ `gdkWithEventCopy`
 * [x] `gdk_event_free`
-* [ ] `gdk_event_get_event_type`
 * [ ] `gdk_event_get_event_sequence`
 * [ ] `gdk_event__request_motions`
 * [ ] `gdk_event_get_angle`
@@ -75,10 +74,12 @@ Function
 * [x] `gdk_event_get_time`
 	+ [x] check `GDK_CURRENT_TIME`
 	+ [x] remove it
-* [ ] `gdk_event_get_window`
+* [x] `gdk_event_get_window`
 	+ [x] rename `GdkEventSealedGdkEventAny` to `GdkEventSealedGdkAny`
 	+ [x] `GdkEventAny`
 	+ [x] `gdkEventAny`
+	+ [x] remove it
+* [ ] `gdk_event_get_event_type`
 	+ [ ] remove it
 
 EventStructures
