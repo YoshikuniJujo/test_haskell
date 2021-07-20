@@ -6,8 +6,7 @@
 
 module Graphics.Gdk.Events (
 	-- * CHECKED
-	gdkEventsPending, gdkWithEventPeek, gdkWithEventGet, gdkEventPut,
-	gdkWithEventNew, gdkWithEventCopy,
+	gdkEventsPending, gdkWithEventPeek, gdkWithEventGet,
 	gdkGetShowEvents, gdkSetShowEvents,
 
 	-- * USE
@@ -31,7 +30,6 @@ module Graphics.Gdk.Events (
 
 import Foreign.Ptr
 import Foreign.Ptr.Misc
-import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.C.Enum
 import Data.Bits
@@ -65,28 +63,6 @@ gdkWithEventGet f = c_gdk_event_get >>= \case
 		<* c_gdk_event_free p
 
 foreign import ccall "gdk_event_get" c_gdk_event_get :: IO (Ptr GdkEvent)
-
-gdkEventPut :: GdkEventSealed s -> IO ()
-gdkEventPut (GdkEventSealed fe) = withForeignPtr fe c_gdk_event_put
-
-foreign import ccall "gdk_event_put" c_gdk_event_put :: Ptr GdkEvent -> IO ()
-
-gdkWithEventNew :: (forall s . GdkEventSealed s -> IO a) -> IO a
-gdkWithEventNew f = c_gdk_event_new >>= \case
-	NullPtr -> error "gdk_event_new cannot return NULL"
-	p -> (f . GdkEventSealed =<< newForeignPtr p (pure ()))
-		<* c_gdk_event_free p
-
-foreign import ccall "gdk_event_new" c_gdk_event_new :: IO (Ptr GdkEvent)
-
-gdkWithEventCopy ::
-	GdkEventSealed s -> (forall t . GdkEventSealed t -> IO a) -> IO a
-gdkWithEventCopy (GdkEventSealed fe) f = withForeignPtr fe c_gdk_event_copy >>= \case
-	NullPtr -> error "gdk_event_copy cannot return NULL"
-	p -> (f . GdkEventSealed =<< newForeignPtr p (pure ()))
-		<* c_gdk_event_free p
-
-foreign import ccall "gdk_event_copy" c_gdk_event_copy :: Ptr GdkEvent -> IO (Ptr GdkEvent)
 
 gdkGetShowEvents :: IO Bool
 gdkGetShowEvents = gbooleanToBool <$> c_gdk_get_show_events

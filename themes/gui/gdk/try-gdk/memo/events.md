@@ -6,7 +6,12 @@ Function
 
 ### todo
 
-* [ ] try to add `GdkTouchMask`
+* [ ] refactor expor list
+* [ ] remove
+	+ [x] gdkEventCopy
+	+ [x] gdkEventNew
+	+ [x] gdkEventPut
+	+ [ ] more
 
 ### now
 
