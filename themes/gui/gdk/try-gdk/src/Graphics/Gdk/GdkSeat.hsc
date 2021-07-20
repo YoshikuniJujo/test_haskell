@@ -115,7 +115,7 @@ gdkSeatGetSlaves p (GdkSeatCapabilities cps) = do
 gdkSeatGrab ::
 	Pointerable a =>
 	GdkSeat -> GdkWindow -> GdkSeatCapabilities -> Bool -> Maybe GdkCursor ->
-	Maybe (GdkEventSealed s) -> Maybe (GdkSeatGrabPrepareFunc a, a) -> IO GdkGrabStatus
+	Maybe (GdkEvent s) -> Maybe (GdkSeatGrabPrepareFunc a, a) -> IO GdkGrabStatus
 gdkSeatGrab st (GdkWindow wn) (GdkSeatCapabilities cp) oe
 	crs ev fx = withGdkCursor crs \pcrs -> withGdkEvent ev \pev -> do
 	withGdkSeatGrabPrepareFunc fx \fp px ->
@@ -148,10 +148,10 @@ withGdkCursor mc f = case mc of
 	Nothing -> f nullPtr
 	Just (GdkCursor fc) -> withForeignPtr fc f
 
-withGdkEvent :: Maybe (GdkEventSealed s) -> (Ptr GdkEventTag -> IO a) -> IO a
+withGdkEvent :: Maybe (GdkEvent s) -> (Ptr GdkEventTag -> IO a) -> IO a
 withGdkEvent me f = case me of
 	Nothing -> f nullPtr
-	Just (GdkEventSealed fev) -> withForeignPtr fev f
+	Just (GdkEvent fev) -> withForeignPtr fev f
 
 withGdkSeatGrabPrepareFunc ::
 	Pointerable a =>

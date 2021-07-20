@@ -56,7 +56,7 @@ main = do
 	gdkWindowDestroy w
 	gdkDisplayClose d
 
-checkEvent :: GdkEventSealed s -> IO Bool
+checkEvent :: GdkEvent s -> IO Bool
 checkEvent = \case
 	GdkEventSealedGdkMap m -> do
 		putStrLn $ "GDK_MAP: " ++ show m

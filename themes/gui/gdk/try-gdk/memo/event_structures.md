@@ -2,7 +2,7 @@ Event Structures memo
 =====================
 
 * [x] rename `GdkEvent` to `GdkEventTag`
-* [ ] rename `GdkEventSealed` to `GdkEvent`
+* [x] rename `GdkEventSealed` to `GdkEvent`
 * [ ] add rest
 * [ ] add export list
 * [ ] define `gdkDisplayWithEventGet` instead of `gdkDisplayGetEvent`

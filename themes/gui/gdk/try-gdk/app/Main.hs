@@ -255,7 +255,7 @@ printVisibleRegion w = do
 checkKeyVal :: Char -> GdkKeySym -> Bool
 checkKeyVal c ks = ks == GdkKeySym (fromIntegral $ ord c)
 
-checkEventSealed :: IORef CDouble -> IORef Int -> IORef Int -> GdkDisplay -> GdkSeat -> GdkEventSealed s -> IO Bool
+checkEventSealed :: IORef CDouble -> IORef Int -> IORef Int -> GdkDisplay -> GdkSeat -> GdkEvent s -> IO Bool
 checkEventSealed opacity pos size d st = \case
 	GdkEventSealedGdkNothing n -> do
 		putStrLn $ "GDK_NOTHING: " ++ show n

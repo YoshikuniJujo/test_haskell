@@ -29,18 +29,18 @@ gdkEventsPending = gbooleanToBool <$> c_gdk_events_pending
 foreign import ccall "gdk_events_pending"
 	c_gdk_events_pending :: IO #type gboolean
 
-gdkWithEventPeek :: (forall s . Maybe (GdkEventSealed s) -> IO a) -> IO a
+gdkWithEventPeek :: (forall s . Maybe (GdkEvent s) -> IO a) -> IO a
 gdkWithEventPeek f = c_gdk_event_peek >>= \case
 	NullPtr -> f Nothing
-	p -> (f . Just . GdkEventSealed =<< newForeignPtr p (pure ()))
+	p -> (f . Just . GdkEvent =<< newForeignPtr p (pure ()))
 		<* c_gdk_event_free p
 
 foreign import ccall "gdk_event_peek" c_gdk_event_peek :: IO (Ptr GdkEventTag)
 
-gdkWithEventGet :: (forall s . Maybe (GdkEventSealed s) -> IO a) -> IO a
+gdkWithEventGet :: (forall s . Maybe (GdkEvent s) -> IO a) -> IO a
 gdkWithEventGet f = c_gdk_event_get >>= \case
 	NullPtr -> f Nothing
-	p -> (f . Just . GdkEventSealed =<< newForeignPtr p (pure ()))
+	p -> (f . Just . GdkEvent =<< newForeignPtr p (pure ()))
 		<* c_gdk_event_free p
 
 foreign import ccall "gdk_event_get" c_gdk_event_get :: IO (Ptr GdkEventTag)

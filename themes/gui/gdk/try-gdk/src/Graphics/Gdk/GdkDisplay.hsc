@@ -136,24 +136,24 @@ gdkDisplayIsClosed (GdkDisplay p) = gbooleanToBool <$> c_gdk_display_is_closed p
 foreign import ccall "gdk_display_is_closed" c_gdk_display_is_closed ::
 	Ptr GdkDisplay -> IO #type gboolean
 
-gdkDisplayGetEvent :: GdkDisplay -> IO (Maybe (GdkEventSealed s))
+gdkDisplayGetEvent :: GdkDisplay -> IO (Maybe (GdkEvent s))
 gdkDisplayGetEvent (GdkDisplay d) = c_gdk_display_get_event d >>= \case
 	p	| p == nullPtr -> pure Nothing
-		| otherwise -> Just <$> mkGdkEventSealed p
+		| otherwise -> Just <$> mkGdkEvent p
 
 foreign import ccall "gdk_display_get_event" c_gdk_display_get_event ::
 	Ptr GdkDisplay -> IO (Ptr GdkEventTag)
 
-gdkDisplayPeekEvent :: GdkDisplay -> IO (Maybe (GdkEventSealed s))
+gdkDisplayPeekEvent :: GdkDisplay -> IO (Maybe (GdkEvent s))
 gdkDisplayPeekEvent (GdkDisplay d) = c_gdk_display_peek_event d >>= \case
 	p	| p == nullPtr -> pure Nothing
-		| otherwise -> Just <$> mkGdkEventSealed p
+		| otherwise -> Just <$> mkGdkEvent p
 
 foreign import ccall "gdk_display_peek_event" c_gdk_display_peek_event ::
 	Ptr GdkDisplay -> IO (Ptr GdkEventTag)
 
-gdkDisplayPutEvent :: GdkDisplay -> GdkEventSealed s -> IO ()
-gdkDisplayPutEvent (GdkDisplay d) (GdkEventSealed fe) = withForeignPtr fe \e ->
+gdkDisplayPutEvent :: GdkDisplay -> GdkEvent s -> IO ()
+gdkDisplayPutEvent (GdkDisplay d) (GdkEvent fe) = withForeignPtr fe \e ->
 	c_gdk_display_put_event d e
 
 foreign import ccall "gdk_display_put_event" c_gdk_display_put_event ::

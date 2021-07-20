@@ -44,7 +44,7 @@ main = do
 		GdkEventSealedGdkScroll (gdkEventScroll -> s) -> True <$ print s
 		GdkEventSealedGdkAny (gdkEventAny -> e) -> True <$ print e
 
-getClickCount :: GdkEventSealed s -> Maybe Int
+getClickCount :: GdkEvent s -> Maybe Int
 getClickCount = \case
 	GdkEventSealedGdkButtonPress _ -> Just 1
 	GdkEventSealedGdkButtonRelease _ -> Just 1
