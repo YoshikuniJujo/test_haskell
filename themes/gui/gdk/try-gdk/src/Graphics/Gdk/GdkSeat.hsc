@@ -123,7 +123,7 @@ gdkSeatGrab st (GdkWindow wn) (GdkSeatCapabilities cp) oe
 
 foreign import ccall "gdk_seat_grab" c_gdk_seat_grab ::
 	GdkSeat -> Ptr GdkWindow -> #{type GdkSeatCapabilities} -> #{type gboolean} ->
-	Ptr GdkCursor -> Ptr GdkEvent ->
+	Ptr GdkCursor -> Ptr GdkEventTag ->
 	FunPtr (C_GdkSeatGrabPrepareFunc a) -> Ptr a -> IO #{type GdkGrabStatus}
 
 type C_GdkSeatGrabPrepareFunc a = GdkSeat -> Ptr GdkWindow -> Ptr a -> IO ()
@@ -148,7 +148,7 @@ withGdkCursor mc f = case mc of
 	Nothing -> f nullPtr
 	Just (GdkCursor fc) -> withForeignPtr fc f
 
-withGdkEvent :: Maybe (GdkEventSealed s) -> (Ptr GdkEvent -> IO a) -> IO a
+withGdkEvent :: Maybe (GdkEventSealed s) -> (Ptr GdkEventTag -> IO a) -> IO a
 withGdkEvent me f = case me of
 	Nothing -> f nullPtr
 	Just (GdkEventSealed fev) -> withForeignPtr fev f

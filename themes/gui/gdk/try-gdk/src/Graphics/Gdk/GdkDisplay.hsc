@@ -142,7 +142,7 @@ gdkDisplayGetEvent (GdkDisplay d) = c_gdk_display_get_event d >>= \case
 		| otherwise -> Just <$> mkGdkEventSealed p
 
 foreign import ccall "gdk_display_get_event" c_gdk_display_get_event ::
-	Ptr GdkDisplay -> IO (Ptr GdkEvent)
+	Ptr GdkDisplay -> IO (Ptr GdkEventTag)
 
 gdkDisplayPeekEvent :: GdkDisplay -> IO (Maybe (GdkEventSealed s))
 gdkDisplayPeekEvent (GdkDisplay d) = c_gdk_display_peek_event d >>= \case
@@ -150,14 +150,14 @@ gdkDisplayPeekEvent (GdkDisplay d) = c_gdk_display_peek_event d >>= \case
 		| otherwise -> Just <$> mkGdkEventSealed p
 
 foreign import ccall "gdk_display_peek_event" c_gdk_display_peek_event ::
-	Ptr GdkDisplay -> IO (Ptr GdkEvent)
+	Ptr GdkDisplay -> IO (Ptr GdkEventTag)
 
 gdkDisplayPutEvent :: GdkDisplay -> GdkEventSealed s -> IO ()
 gdkDisplayPutEvent (GdkDisplay d) (GdkEventSealed fe) = withForeignPtr fe \e ->
 	c_gdk_display_put_event d e
 
 foreign import ccall "gdk_display_put_event" c_gdk_display_put_event ::
-	Ptr GdkDisplay -> Ptr GdkEvent -> IO ()
+	Ptr GdkDisplay -> Ptr GdkEventTag -> IO ()
 
 gdkDisplayHasPending :: GdkDisplay -> IO Bool
 gdkDisplayHasPending (GdkDisplay p) = gbooleanToBool <$> c_gdk_display_has_pending p

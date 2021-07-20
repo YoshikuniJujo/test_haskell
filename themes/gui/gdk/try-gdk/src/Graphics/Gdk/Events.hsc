@@ -35,7 +35,7 @@ gdkWithEventPeek f = c_gdk_event_peek >>= \case
 	p -> (f . Just . GdkEventSealed =<< newForeignPtr p (pure ()))
 		<* c_gdk_event_free p
 
-foreign import ccall "gdk_event_peek" c_gdk_event_peek :: IO (Ptr GdkEvent)
+foreign import ccall "gdk_event_peek" c_gdk_event_peek :: IO (Ptr GdkEventTag)
 
 gdkWithEventGet :: (forall s . Maybe (GdkEventSealed s) -> IO a) -> IO a
 gdkWithEventGet f = c_gdk_event_get >>= \case
@@ -43,7 +43,7 @@ gdkWithEventGet f = c_gdk_event_get >>= \case
 	p -> (f . Just . GdkEventSealed =<< newForeignPtr p (pure ()))
 		<* c_gdk_event_free p
 
-foreign import ccall "gdk_event_get" c_gdk_event_get :: IO (Ptr GdkEvent)
+foreign import ccall "gdk_event_get" c_gdk_event_get :: IO (Ptr GdkEventTag)
 
 gdkGetShowEvents :: IO Bool
 gdkGetShowEvents = gbooleanToBool <$> c_gdk_get_show_events

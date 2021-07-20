@@ -69,14 +69,14 @@ enum "GdkEventType" ''#{type GdkEventType} [''Show, ''Storable] [
 	("GdkOwnerChange", #{const GDK_OWNER_CHANGE}),
 	("GdkGrabBroken", #{const GDK_GRAB_BROKEN}) ]
 
-newtype GdkEventSealed s = GdkEventSealed (ForeignPtr GdkEvent) deriving Show
+newtype GdkEventSealed s = GdkEventSealed (ForeignPtr GdkEventTag) deriving Show
 
-data GdkEvent
+data GdkEventTag
 
-mkGdkEventSealed :: Ptr GdkEvent -> IO (GdkEventSealed s)
+mkGdkEventSealed :: Ptr GdkEventTag -> IO (GdkEventSealed s)
 mkGdkEventSealed pe = GdkEventSealed <$> newForeignPtr pe (c_gdk_event_free pe)
 
-foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
+foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEventTag -> IO ()
 
 enum "BoolGInt8" ''#{type gint8} [''Show, ''Storable, ''Eq, ''Num] [
 	("False8", #{const FALSE}), ("True8", #{const TRUE}) ]
@@ -132,7 +132,7 @@ pattern GdkEventSealedGdkUnmap e <-
 	GdkEventSealed (gdkEventTypeRaw GdkEventAnyRaw_ -> (GdkUnmap, e))
 
 gdkEventTypeRaw ::
-	(ForeignPtr x -> a) -> ForeignPtr GdkEvent -> (GdkEventType, Sealed s a)
+	(ForeignPtr x -> a) -> ForeignPtr GdkEventTag -> (GdkEventType, Sealed s a)
 gdkEventTypeRaw c = gdkEventSealedType . GdkEventSealed &&& sealEvent c
 
 sealEvent :: (ForeignPtr x -> a) -> ForeignPtr y -> Sealed s a
