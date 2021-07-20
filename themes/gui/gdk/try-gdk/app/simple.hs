@@ -20,7 +20,7 @@ main = do
 	gdkWindowSetTitle w "あいうえお"
 	gdkWindowShow w
 	mainLoopNew \case
-		GdkEventSealedGdkDelete _d -> pure False
+		GdkEventGdkDelete _d -> pure False
 		GdkEventSealedGdkKeyPress k -> do
 			let	kv = gdkEventKeyKeyval $ gdkEventKey k
 			print k

@@ -32,4 +32,4 @@ main = do
 		GdkEventSealedGdkKeyPress k -> case gdkEventKey k of
 			GdkEventKey { gdkEventKeyKeyval = GdkKey_q } -> pure False
 			_ -> pure True
-		GdkEventSealedGdkAny _ -> pure True
+		GdkEventGdkAny _ -> pure True

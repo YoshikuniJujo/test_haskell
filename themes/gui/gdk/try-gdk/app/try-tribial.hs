@@ -30,7 +30,7 @@ main = do
 	print d
 	print =<< gdkWindowGetCursor w
 	mainLoopNew \case
-		GdkEventSealedGdkDelete _d -> pure False
+		GdkEventGdkDelete _d -> pure False
 		GdkEventSealedGdkKeyPress k -> do
 			let	kv = gdkEventKeyKeyval $ gdkEventKey k
 			pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')

@@ -31,6 +31,10 @@ import Graphics.Gdk.EventStructures.GdkKeySyms
 
 #include <gdk/gdk.h>
 
+---------------------------------------------------------------------------
+-- GDK EVENT TYPE                                                        --
+---------------------------------------------------------------------------
+
 enum "GdkEventType" ''#{type GdkEventType} [''Show, ''Storable] [
 	("GdkNothing", #{const GDK_NOTHING}), ("GdkDelete", #{const GDK_DELETE}),
 	("GdkExpose", #{const GDK_EXPOSE}),
@@ -69,71 +73,84 @@ enum "GdkEventType" ''#{type GdkEventType} [''Show, ''Storable] [
 	("GdkOwnerChange", #{const GDK_OWNER_CHANGE}),
 	("GdkGrabBroken", #{const GDK_GRAB_BROKEN}) ]
 
+---------------------------------------------------------------------------
+-- GDK EVENT                                                             --
+---------------------------------------------------------------------------
+
 newtype GdkEvent s = GdkEvent (ForeignPtr GdkEventTag) deriving Show
 
 data GdkEventTag
 
-foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEventTag -> IO ()
+---------------------------------------------------------------------------
+-- GDK EVENT ANY                                                         --
+---------------------------------------------------------------------------
 
-enum "BoolGInt8" ''#{type gint8} [''Show, ''Storable, ''Eq, ''Num] [
-	("False8", #{const FALSE}), ("True8", #{const TRUE}) ]
+enum "BoolInt8" ''Int8 [''Show, ''Storable, ''Eq, ''Num] [
+	("FalseInt8", #{const FALSE}), ("TrueInt8", #{const TRUE}) ]
 
 struct "GdkEventAnyRaw" #{size GdkEventAny}
 	[	("type", ''GdkEventType, [| #{peek GdkEventAny, type} |],
 			[| #{poke GdkEventAny, type} |]),
 		("window", ''GdkWindow, [| #{peek GdkEventAny, window} |],
 			[| #{poke GdkEventAny, window} |]),
-		("sendEvent", ''BoolGInt8,
+		("sendEvent", ''BoolInt8,
 			[| #{peek GdkEventAny, send_event} |],
 			[| #{poke GdkEventAny, send_event} |]) ]
 	[''Show]
 
 data GdkEventAny = GdkEventAny {
-	gdkEventAnyType :: GdkEventType,
-	gdkEventAnyWindow :: GdkWindow,
+	gdkEventAnyType :: GdkEventType, gdkEventAnyWindow :: GdkWindow,
 	gdkEventAnySendEvent :: Bool }
 	deriving Show
 
 gdkEventAny :: Sealed s GdkEventAnyRaw -> GdkEventAny
 gdkEventAny (Sealed r) = GdkEventAny
-	(gdkEventAnyRawType r)
-	(gdkEventAnyRawWindow r)
+	(gdkEventAnyRawType r) (gdkEventAnyRawWindow r)
 	(case gdkEventAnyRawSendEvent r of
-		#{const FALSE} -> False
-		#{const TRUE} -> True
+		FalseInt8 -> False
+		TrueInt8 -> True
 		_ -> error "gdkEventAnyRawSendEvent should be FALSE or TRUE")
 
-{-# COMPLETE GdkEventSealedGdkAny #-}
+{-# COMPLETE GdkEventGdkAny #-}
 
-pattern GdkEventSealedGdkAny :: Sealed s GdkEventAnyRaw -> GdkEvent s
-pattern GdkEventSealedGdkAny ea <-
+pattern GdkEventGdkAny :: Sealed s GdkEventAnyRaw -> GdkEvent s
+pattern GdkEventGdkAny ea <-
 	GdkEvent (Sealed . GdkEventAnyRaw_ . castForeignPtr -> ea)
 
-gdkEventSealedType :: GdkEvent s -> GdkEventType
-gdkEventSealedType (GdkEventSealedGdkAny (Sealed ea)) = gdkEventAnyRawType ea
-
-pattern GdkEventSealedGdkNothing :: Sealed s GdkEventAnyRaw -> GdkEvent s
-pattern GdkEventSealedGdkNothing ea <-
+pattern GdkEventGdkNothing :: Sealed s GdkEventAnyRaw -> GdkEvent s
+pattern GdkEventGdkNothing ea <-
 	GdkEvent (gdkEventTypeRaw GdkEventAnyRaw_ -> (GdkNothing, ea))
 
-pattern GdkEventSealedGdkDelete :: Sealed s GdkEventAnyRaw -> GdkEvent s
-pattern GdkEventSealedGdkDelete ea <-
+pattern GdkEventGdkDelete :: Sealed s GdkEventAnyRaw -> GdkEvent s
+pattern GdkEventGdkDelete ea <-
 	GdkEvent (gdkEventTypeRaw GdkEventAnyRaw_ -> (GdkDelete, ea))
 
-pattern GdkEventSealedGdkMap :: Sealed s GdkEventAnyRaw -> GdkEvent s
-pattern GdkEventSealedGdkMap e <-
+pattern GdkEventGdkMap :: Sealed s GdkEventAnyRaw -> GdkEvent s
+pattern GdkEventGdkMap e <-
 	GdkEvent (gdkEventTypeRaw GdkEventAnyRaw_ -> (GdkMap, e))
 
-pattern GdkEventSealedGdkUnmap :: Sealed s GdkEventAnyRaw -> GdkEvent s
-pattern GdkEventSealedGdkUnmap e <-
+pattern GdkEventGdkUnmap :: Sealed s GdkEventAnyRaw -> GdkEvent s
+pattern GdkEventGdkUnmap e <-
 	GdkEvent (gdkEventTypeRaw GdkEventAnyRaw_ -> (GdkUnmap, e))
 
-gdkEventTypeRaw ::
-	(ForeignPtr x -> a) -> ForeignPtr GdkEventTag -> (GdkEventType, Sealed s a)
-gdkEventTypeRaw c = gdkEventSealedType . GdkEvent &&& sealEvent c
+---------------------------------------------------------------------------
+-- COMMON                                                                --
+---------------------------------------------------------------------------
 
-sealEvent :: (ForeignPtr x -> a) -> ForeignPtr y -> Sealed s a
-sealEvent c = Sealed . c . castForeignPtr
+foreign import ccall "gdk_event_free"
+	c_gdk_event_free :: Ptr GdkEventTag -> IO ()
+
+gdkEventTypeRaw :: (ForeignPtr x -> a) ->
+	ForeignPtr GdkEventTag -> (GdkEventType, Sealed s a)
+gdkEventTypeRaw c =
+	gdkEventSealedType . GdkEvent &&& Sealed . c . castForeignPtr
+
+gdkEventSealedType :: GdkEvent s -> GdkEventType
+gdkEventSealedType (GdkEventGdkAny (Sealed ea)) = gdkEventAnyRawType ea
+
+---------------------------------------------------------------------------
+-- GDK EVENT KEY                                                         --
+---------------------------------------------------------------------------
 
 data {-# CTYPE "gdk/gdk.h" "GdkEventKey" #-} GdkEventKey'
 
@@ -153,7 +170,7 @@ struct "GdkEventKeyRaw" #{size GdkEventKey}
 			[| #{poke GdkEventKey, type} |]),
 		("window", ''GdkWindow, [| #{peek GdkEventKey, window} |],
 			[| #{poke GdkEventKey, window} |]),
-		("sendEvent", ''BoolGInt8,
+		("sendEvent", ''BoolInt8,
 			[| #{peek GdkEventKey, send_event} |],
 			[| #{poke GdkEventKey, send_event} |]),
 		("time", ''MilliSecond, [| #{peek GdkEventKey, time} |],
@@ -220,7 +237,7 @@ struct "GdkEventButtonRaw" #{size GdkEventButton}
 			[| #{poke GdkEventButton, type} |]),
 		("window", ''GdkWindow, [| #{peek GdkEventButton, window} |],
 			[| #{poke GdkEventButton, window} |]),
-		("sendEvent", ''BoolGInt8,
+		("sendEvent", ''BoolInt8,
 			[| #{peek GdkEventButton, send_event} |],
 			[| #{poke GdkEventButton, send_event} |]),
 		("time", ''MilliSecond, [| #{peek GdkEventButton, time} |],
@@ -310,7 +327,7 @@ struct "GdkEventScrollRaw" #{size GdkEventScroll}
 			[| #{poke GdkEventScroll, type} |]),
 		("window", ''GdkWindow, [| #{peek GdkEventScroll, window} |],
 			[| #{poke GdkEventScroll, window} |]),
-		("sendEvent", ''BoolGInt8,
+		("sendEvent", ''BoolInt8,
 			[| #{peek GdkEventScroll, send_event} |],
 			[| #{poke GdkEventScroll, send_event} |]),
 		("time", ''MilliSecond, [| #{peek GdkEventScroll, time} |],
@@ -387,7 +404,7 @@ struct "GdkEventMotionRaw" #{size GdkEventMotion}
 			[| #{poke GdkEventMotion, type} |]),
 		("window", ''GdkWindow, [| #{peek GdkEventMotion, window} |],
 			[| #{poke GdkEventMotion, window} |]),
-		("sendEvent", ''BoolGInt8,
+		("sendEvent", ''BoolInt8,
 			[| #{peek GdkEventMotion, send_event} |],
 			[| #{poke GdkEventMotion, send_event} |]),
 		("time", ''MilliSecond, [| #{peek GdkEventMotion, time} |],
@@ -469,7 +486,7 @@ struct "GdkEventVisibilityRaw" #{size GdkEventVisibility}
 			[| #{poke GdkEventVisibility, type} |]),
 		("window", ''GdkWindow, [| #{peek GdkEventVisibility, window} |],
 			[| #{poke GdkEventVisibility, window} |]),
-		("sendEvent", ''BoolGInt8,
+		("sendEvent", ''BoolInt8,
 			[| #{peek GdkEventVisibility, send_event} |],
 			[| #{poke GdkEventVisibility, send_event} |]),
 		("state", ''GdkVisibilityState,
@@ -519,7 +536,7 @@ struct "GdkEventConfigureRaw" #{size GdkEventConfigure}
 			[| #{poke GdkEventConfigure, type} |]),
 		("window", ''GdkWindow, [| #{peek GdkEventConfigure, window} |],
 			[| #{poke GdkEventConfigure, window} |]),
-		("sendEvent", ''BoolGInt8,
+		("sendEvent", ''BoolInt8,
 			[| #{peek GdkEventConfigure, send_event} |],
 			[| #{poke GdkEventConfigure, send_event} |]),
 		("x", ''CInt, [| #{peek GdkEventConfigure, x} |],

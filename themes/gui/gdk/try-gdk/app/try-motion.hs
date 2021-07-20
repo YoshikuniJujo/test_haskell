@@ -25,7 +25,7 @@ main = do
 		GdkEventSealedGdkKeyPress k -> case gdkEventKey k of
 			GdkEventKey { gdkEventKeyKeyval = GdkKey_q } -> pure False
 			_ -> pure True
-		GdkEventSealedGdkDelete _d -> pure False
+		GdkEventGdkDelete _d -> pure False
 		GdkEventSealedGdkMotionNotify (gdkEventMotion -> m) -> True <$ do
 			let	d = gdkEventMotionDevice m
 				as = gdkEventMotionAxes m

@@ -29,7 +29,7 @@ main = do
 		GdkKeyPressMask ] -- , gdkAllEventsMask]
 	gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
 	mainLoopNew \case
-		GdkEventSealedGdkDelete _d -> pure False
+		GdkEventGdkDelete _d -> pure False
 		GdkEventSealedGdkKeyPress k -> do
 			let	kv = gdkEventKeyKeyval $ gdkEventKey k
 			print kv

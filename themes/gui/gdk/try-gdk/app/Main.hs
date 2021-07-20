@@ -257,10 +257,10 @@ checkKeyVal c ks = ks == GdkKeySym (fromIntegral $ ord c)
 
 checkEventSealed :: IORef CDouble -> IORef Int -> IORef Int -> GdkDisplay -> GdkSeat -> GdkEvent s -> IO Bool
 checkEventSealed opacity pos size d st = \case
-	GdkEventSealedGdkNothing n -> do
+	GdkEventGdkNothing n -> do
 		putStrLn $ "GDK_NOTHING: " ++ show n
 		pure True
-	GdkEventSealedGdkDelete dl -> do
+	GdkEventGdkDelete dl -> do
 		putStrLn $ "GDK_DELETE: " ++ show dl
 		pure False
 	GdkEventSealedGdkKeyPress k_ -> do
@@ -422,10 +422,10 @@ checkEventSealed opacity pos size d st = \case
 		pure . not $ checkKeyVal 'q' kv
 	GdkEventSealedGdkKeyRelease k -> True <$ print k
 	GdkEventSealedGdkFocusChange f -> True <$ print f
-	GdkEventSealedGdkMap m -> do
+	GdkEventGdkMap m -> do
 		putStrLn $ "GDK_MAP: " ++ show m
 		pure True
-	GdkEventSealedGdkUnmap m -> do
+	GdkEventGdkUnmap m -> do
 		putStrLn $ "GDK_UNMAP: " ++ show m
 		pure True
 	GdkEventSealedGdkConfigure c -> True <$ print c
@@ -443,4 +443,4 @@ checkEventSealed opacity pos size d st = \case
 		pure True
 	GdkEventSealedGdkWindowState s -> True <$ print s
 	GdkEventSealedGdkMotionNotify m -> True <$ print m
-	GdkEventSealedGdkAny a -> True <$ print a
+	GdkEventGdkAny a -> True <$ print a

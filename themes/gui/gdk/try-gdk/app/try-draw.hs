@@ -58,7 +58,7 @@ main = do
 
 checkEvent :: GdkEvent s -> IO Bool
 checkEvent = \case
-	GdkEventSealedGdkMap m -> do
+	GdkEventGdkMap m -> do
 		putStrLn $ "GDK_MAP: " ++ show m
 		drawRedLine $ tryGdkEventSealedMapWindow m
 		pure True
@@ -72,7 +72,7 @@ checkEvent = \case
 	GdkEventSealedGdkKeyPress k -> do
 		let	kv = gdkEventKeyKeyval $ gdkEventKey k
 		pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
-	GdkEventSealedGdkAny a -> True <$ print a
+	GdkEventGdkAny a -> True <$ print a
 
 drawRedLine :: GdkWindow -> IO ()
 drawRedLine w = do

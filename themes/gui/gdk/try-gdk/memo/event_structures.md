@@ -13,8 +13,8 @@ Event Structures memo
 Types
 -----
 
-* [ ] GdkEvent
-* [ ] GdkEventAny
+* [x] GdkEvent
+* [x] GdkEventAny
 * [ ] GdkEventKey
 * [ ] GdkEventButton
 * [ ] GdkEventTouch
