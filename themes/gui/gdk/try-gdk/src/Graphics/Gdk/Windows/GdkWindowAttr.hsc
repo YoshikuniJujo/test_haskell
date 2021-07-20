@@ -104,7 +104,7 @@ withGdkWindowAttr attr f =
 setAttributes :: Ptr b -> GdkWindowAttr -> IO ()
 setAttributes pa a = do
 	#{poke GdkWindowAttr, event_mask} pa
-		. getGdkEventMask $ gdkWindowAttrEventMask a
+		. (\(GdkEventMaskMultiBits ms) -> ms) $ gdkWindowAttrEventMask a
 	whenMaybe (#{poke GdkWindowAttr, x} pa) $ gdkWindowAttrX a
 	whenMaybe (#{poke GdkWindowAttr, y} pa) $ gdkWindowAttrY a
 	#{poke GdkWindowAttr, width} pa $ gdkWindowAttrWidth a

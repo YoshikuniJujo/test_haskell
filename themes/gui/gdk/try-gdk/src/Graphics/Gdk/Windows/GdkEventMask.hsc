@@ -2,7 +2,27 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.Windows.GdkEventMask where
+module Graphics.Gdk.Windows.GdkEventMask (
+	-- * TYPES
+	GdkEventMaskMultiBits(..), GdkEventMaskSingleBit,
+	gdkEventMaskMultiBits, gdkEventMaskSingleBitList,
+
+	-- * MEMBERS OF GDK EVENT MASK MULTI BITS
+	pattern GdkZeroEventsMask, pattern GdkAllEventsMask,
+
+	-- * MEMBERS OF GDK EVENT MASK SINGLE BIT
+	pattern GdkExposureMask, pattern GdkPointerMotionMask,
+	pattern GdkButtonMotionMask, pattern GdkButton1MotionMask,
+	pattern GdkButton2MotionMask, pattern GdkButton3MotionMask,
+	pattern GdkButtonPressMask, pattern GdkButtonReleaseMask,
+	pattern GdkKeyPressMask, pattern GdkKeyReleaseMask,
+	pattern GdkEnterNotifyMask, pattern GdkLeaveNotifyMask,
+	pattern GdkFocusChangeMask, pattern GdkStructureMask,
+	pattern GdkPropertyChangeMask, pattern GdkVisibilityNotifyMask,
+	pattern GdkProximityInMask, pattern GdkProximityOutMask,
+	pattern GdkSubstructureMask, pattern GdkScrollMask,
+	pattern GdkTouchMask, pattern GdkSmoothScrollMask,
+	pattern GdkTouchpadGestureMask, pattern GdkTabletPadMask ) where
 
 import Foreign.C.Enum
 import Data.Bits
@@ -40,9 +60,6 @@ enum "GdkEventMaskSingleBit" ''#{type GdkEventMask} [''Show] [
 enum "GdkEventMaskMultiBits" ''#{type GdkEventMask} [''Show] [
 	("GdkZeroEventsMask", 0),
 	("GdkAllEventsMask", #{const GDK_ALL_EVENTS_MASK}) ]
-
-getGdkEventMask :: GdkEventMaskMultiBits -> #{type GdkEventMask}
-getGdkEventMask (GdkEventMaskMultiBits em) = em
 
 gdkEventMaskMultiBits :: [GdkEventMaskSingleBit] -> GdkEventMaskMultiBits
 gdkEventMaskMultiBits = GdkEventMaskMultiBits . mergeGdkEventMask
