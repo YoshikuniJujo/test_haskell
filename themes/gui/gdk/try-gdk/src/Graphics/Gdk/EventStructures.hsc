@@ -67,17 +67,14 @@ enum "GdkEventType" ''#{type GdkEventType} [''Show, ''Storable] [
 	("GdkWindowState_", #{const GDK_WINDOW_STATE}),
 	("GdkSetting", #{const GDK_SETTING}),
 	("GdkOwnerChange", #{const GDK_OWNER_CHANGE}),
-	("GdkGrabBroken", #{const GDK_GRAB_BROKEN})
-	]
-
-data GdkEvent = GdkEvent GdkEventType (ForeignPtr GdkEvent) deriving Show
-
-mkGdkEvent :: Ptr GdkEvent -> IO GdkEvent
-mkGdkEvent p = do
-	t <- GdkEventType <$> #{peek GdkEvent, type} p
-	GdkEvent t <$> newForeignPtr p (c_gdk_event_free p)
+	("GdkGrabBroken", #{const GDK_GRAB_BROKEN}) ]
 
 newtype GdkEventSealed s = GdkEventSealed (ForeignPtr GdkEvent) deriving Show
+
+data GdkEvent
+
+mkGdkEventSealed :: Ptr GdkEvent -> IO (GdkEventSealed s)
+mkGdkEventSealed pe = GdkEventSealed <$> newForeignPtr pe (c_gdk_event_free pe)
 
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEvent -> IO ()
 
@@ -133,18 +130,6 @@ pattern GdkEventSealedGdkMap e <-
 pattern GdkEventSealedGdkUnmap :: Sealed s GdkEventAnyRaw -> GdkEventSealed s
 pattern GdkEventSealedGdkUnmap e <-
 	GdkEventSealed (gdkEventTypeRaw GdkEventAnyRaw_ -> (GdkUnmap, e))
-
-pattern GdkEventGdkMap :: GdkEventAnyRaw -> GdkEvent
-pattern GdkEventGdkMap p <- GdkEvent GdkMap (GdkEventAnyRaw_ . castForeignPtr -> p)
-
-pattern GdkEventGdkUnmap :: GdkEventAnyRaw -> GdkEvent
-pattern GdkEventGdkUnmap p <- GdkEvent GdkUnmap (GdkEventAnyRaw_ . castForeignPtr -> p)
-
-pattern GdkEventGdkDelete :: GdkEventAnyRaw -> GdkEvent
-pattern GdkEventGdkDelete p <- GdkEvent GdkDelete (GdkEventAnyRaw_ . castForeignPtr -> p)
-
-pattern GdkEventGdkNothing :: GdkEventAnyRaw -> GdkEvent
-pattern GdkEventGdkNothing p <- GdkEvent GdkNothing (GdkEventAnyRaw_ . castForeignPtr -> p)
 
 gdkEventTypeRaw ::
 	(ForeignPtr x -> a) -> ForeignPtr GdkEvent -> (GdkEventType, Sealed s a)
@@ -230,12 +215,6 @@ pattern GdkEventSealedGdkKeyRelease ::
 	Sealed s GdkEventKeyRaw -> GdkEventSealed s
 pattern GdkEventSealedGdkKeyRelease e <-
 	GdkEventSealed (gdkEventTypeRaw GdkEventKeyRaw_ -> (GdkKeyRelease, e))
-
-pattern GdkEventGdkKeyPress :: GdkEventKeyRaw -> GdkEvent
-pattern GdkEventGdkKeyPress p <- GdkEvent (GdkEventType #const GDK_KEY_PRESS) (GdkEventKeyRaw_ . castForeignPtr -> p)
-
-pattern GdkEventGdkKeyRelease :: GdkEventKeyRaw -> GdkEvent
-pattern GdkEventGdkKeyRelease p <- GdkEvent (GdkEventType #const GDK_KEY_RELEASE) (GdkEventKeyRaw_ . castForeignPtr -> p)
 
 type PtrCDouble = Ptr CDouble
 
@@ -483,9 +462,6 @@ pattern GdkEventSealedGdkMotionNotify s <-
 		Sealed . GdkEventMotionRaw_ . castForeignPtr ->
 		(GdkMotionNotify, s) )
 
-pattern GdkEventGdkMotionNotifyRaw :: GdkEventMotionRaw -> GdkEvent
-pattern GdkEventGdkMotionNotifyRaw p <- GdkEvent (GdkEventType #const GDK_MOTION_NOTIFY) (GdkEventMotionRaw_ . castForeignPtr -> p)
-
 enum "GdkVisibilityState" ''#{type GdkVisibilityState} [''Show, ''Storable] [
 	("GdkVisibilityUnobscured", #{const GDK_VISIBILITY_UNOBSCURED}),
 	("GdkVisibilityPartial", #{const GDK_VISIBILITY_PARTIAL}),
@@ -519,10 +495,6 @@ pattern GdkEventSealedGdkVisibilityNotify e <-
 	GdkEventSealed
 		(gdkEventTypeRaw GdkEventVisibilityRaw_ -> (GdkVisibilityNotify, e))
 
-pattern GdkEventGdkVisibilityNotify :: GdkEventVisibilityRaw -> GdkEvent
-pattern GdkEventGdkVisibilityNotify p <-
-	GdkEvent (GdkEventType #const GDK_VISIBILITY_NOTIFY) (GdkEventVisibilityRaw_ . castForeignPtr -> p)
-
 gdkEventVisibilityWindow :: GdkEventVisibilityRaw -> IO GdkWindow
 gdkEventVisibilityWindow (GdkEventVisibilityRaw_ p) =
 --	GdkWindow <$> (c_g_object_ref =<< withForeignPtr p #peek GdkEventVisibility, window)
@@ -537,10 +509,6 @@ newtype GdkEventFocus = GdkEventFocus (ForeignPtr GdkEventFocus) deriving Show
 pattern GdkEventSealedGdkFocusChange :: Sealed s GdkEventFocus -> GdkEventSealed s
 pattern GdkEventSealedGdkFocusChange e <-
 	GdkEventSealed (gdkEventTypeRaw GdkEventFocus -> (GdkFocusChange, e))
-
-pattern GdkEventGdkFocusChange :: GdkEventFocus -> GdkEvent
-pattern GdkEventGdkFocusChange p <-
-	GdkEvent (GdkEventType #const GDK_FOCUS_CHANGE) (GdkEventFocus . castForeignPtr -> p)
 
 gdkEventFocusIn :: GdkEventFocus -> IO Bool
 gdkEventFocusIn (GdkEventFocus p) = gint16ToBool <$> withForeignPtr p #peek GdkEventFocus, in
@@ -584,9 +552,6 @@ pattern GdkEventSealedGdkConfigure ::
 pattern GdkEventSealedGdkConfigure e <-
 	GdkEventSealed
 		(gdkEventTypeRaw GdkEventConfigureRaw_ -> (GdkConfigure, e))
-
-pattern GdkEventGdkConfigure :: GdkEventConfigureRaw -> GdkEvent
-pattern GdkEventGdkConfigure p <- GdkEvent (GdkEventType #{const GDK_CONFIGURE}) (GdkEventConfigureRaw_ . castForeignPtr -> p)
 
 gdkEventConfigureWindow :: GdkEventConfigureRaw -> IO GdkWindow
 gdkEventConfigureWindow (GdkEventConfigureRaw_ p) = GdkWindow <$> withForeignPtr p #peek GdkEventConfigure, window
@@ -643,6 +608,3 @@ pattern GdkEventSealedGdkWindowState ::
 	Sealed s GdkEventWindowStateRaw -> GdkEventSealed s
 pattern GdkEventSealedGdkWindowState e <-
 	GdkEventSealed (gdkEventTypeRaw GdkEventWindowStateRaw_ -> (GdkWindowState_, e))
-
-pattern GdkEventGdkWindowState :: GdkEventWindowStateRaw -> GdkEvent
-pattern GdkEventGdkWindowState p <- GdkEvent (GdkEventType #{const GDK_WINDOW_STATE}) (GdkEventWindowStateRaw_ . castForeignPtr -> p)
