@@ -21,15 +21,8 @@ Function
 * [x] `gdk_event_free`
 * [x] `gdk_get_show_events`
 * [x] `gdk_set_show_events`
-* [ ] `gdk_event_set_screen`
-* [ ] `gdk_event_get_screen`
-* [ ] `gdk_event_get_device`
-* [ ] `gdk_event_set_device`
-* [ ] `gdk_event_get_source_device`
-* [ ] `gdk_event_set_source_device`
 * [ ] `gdk_event_get_device_tool`
-* [ ] `gdk_event_set_device_tool`
-* [ ] `gdk_setting_get`
+	+ add to motion event structure
 
 ### not now
 
@@ -86,6 +79,20 @@ Function
 	+ remove it
 * `gdk_event_get_pointer_emulated`
 * `gdk_event_handler_set`
+* [ ] `gdk_event_set_screen`
+	+ remove it
+* [ ] `gdk_event_get_screen`
+	+ remove it
+* [ ] `gdk_event_get_device`
+	+ remove it
+* [ ] `gdk_event_set_device`
+	+ remove it
+* [ ] `gdk_event_get_source_device`
+	+ remove it
+* [ ] `gdk_event_set_source_device`
+	+ remove it
+* `gdk_event_set_device_tool`
+* `gdk_setting_get`
 
 EventStructures
 ---------------

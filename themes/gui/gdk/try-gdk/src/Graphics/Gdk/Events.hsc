@@ -20,8 +20,6 @@ module Graphics.Gdk.Events (
 	pattern GdkScrollMask, pattern GdkTouchMask,
 	pattern GdkSmoothScrollMask,
 
-	gdkEventGetDeviceTool,
-	gdkEventSealedGetDeviceTool,
 	gdkEventGetSourceDevice,
 	gdkEventSealedGetSourceDevice,
 
@@ -158,19 +156,6 @@ foreign import ccall "gdk_event_set_source_device" c_gdk_event_set_source_device
 gdkEventSetSourceDevice :: GdkEvent -> GdkDevice -> IO ()
 gdkEventSetSourceDevice (GdkEvent _ fe) (GdkDevice pd) =
 	withForeignPtr fe \e -> c_gdk_event_set_source_device e pd
-
-foreign import ccall "gdk_event_get_device_tool" c_gdk_event_get_device_tool ::
-	Ptr GdkEvent -> IO (Ptr GdkDeviceTool)
-
-gdkEventSealedGetDeviceTool :: GdkEventSealed s -> IO (Maybe GdkDeviceTool)
-gdkEventSealedGetDeviceTool (GdkEventSealed fe) = withForeignPtr fe \e -> do
-	(<$> c_gdk_event_get_device_tool e) \case
-		NullPtr -> Nothing; p -> Just $ GdkDeviceTool p
-
-gdkEventGetDeviceTool :: GdkEvent -> IO (Maybe GdkDeviceTool)
-gdkEventGetDeviceTool (GdkEvent _ fe) = withForeignPtr fe \e -> do
-	(<$> c_gdk_event_get_device_tool e) \case
-		NullPtr -> Nothing; p -> Just $ GdkDeviceTool p
 
 enum "GdkEventMaskSingleBit" ''#{type GdkEventMask} [''Show] [
 	("GdkExposureMask", #{const GDK_EXPOSURE_MASK}),

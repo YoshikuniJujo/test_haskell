@@ -58,8 +58,6 @@ main = do
 			sd <- gdkEventSealedGetSourceDevice e
 			print sd
 			putStrLn =<< maybe (pure "No source device") gdkDeviceGetName sd
-			putStrLn =<< maybe (pure "No device tool") ((show <$>) . gdkDeviceToolGetToolType)
-				=<< gdkEventSealedGetDeviceTool e
 			mis <- maybe (pure Nothing) ((Just <$>) . gdkDeviceGetSource)  sd
 			case mis of
 				Nothing -> pure ()
