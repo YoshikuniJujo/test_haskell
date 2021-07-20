@@ -13,11 +13,12 @@ Event Structures memo
 Types
 -----
 
+### now
+
 * [x] GdkEvent
 * [x] GdkEventAny
 * [x] GdkEventKey
-* [ ] GdkEventButton
-* [ ] GdkEventTouch
+* [x] GdkEventButton
 * [ ] GdkEventScroll
 * [ ] GdkEventMotion
 * [ ] GdkEventExpose
@@ -38,6 +39,10 @@ Types
 * [ ] GdkEventPadButton
 * [ ] GdkEventPadAxis
 * [ ] GdkEventPadGroupMode
+
+### not now
+
+* GdkEventTouch
 
 Values
 ------

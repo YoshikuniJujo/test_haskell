@@ -262,8 +262,7 @@ struct "GdkEventButtonRaw" #{size GdkEventButton}
 	[''Show]
 
 data GdkEventButton = GdkEventButton {
-	gdkEventButtonType :: GdkEventType,
-	gdkEventButtonWindow :: GdkWindow,
+	gdkEventButtonType :: GdkEventType, gdkEventButtonWindow :: GdkWindow,
 	gdkEventButtonSendEvent :: Bool,
 	gdkEventButtonTime :: MilliSecond,
 	gdkEventButtonX, gdkEventButtonY :: CDouble,
@@ -271,16 +270,14 @@ data GdkEventButton = GdkEventButton {
 	gdkEventButtonState :: [GdkModifierTypeSingleBit],
 	gdkEventButtonButton :: CUInt,
 	gdkEventButtonDevice :: GdkDevice,
-	gdkEventButtonXRoot, gdkEventButtonYRoot :: CDouble
-	} deriving Show
+	gdkEventButtonXRoot, gdkEventButtonYRoot :: CDouble }
+	deriving Show
 
 gdkEventButton :: Sealed s GdkEventButtonRaw -> GdkEventButton
 gdkEventButton (Sealed r) = GdkEventButton
-	(gdkEventButtonRawType r)
-	(gdkEventButtonRawWindow r)
+	(gdkEventButtonRawType r) (gdkEventButtonRawWindow r)
 	(case gdkEventButtonRawSendEvent r of
-		#{const FALSE} -> False
-		#{const TRUE} -> True
+		FalseInt8 -> False; TrueInt8 -> True
 		_ -> error "gdkEventButtonSendEvent should be FALSE or TRUE")
 	(gdkEventButtonRawTime r)
 	(gdkEventButtonRawX r) (gdkEventButtonRawY r)
@@ -291,21 +288,25 @@ gdkEventButton (Sealed r) = GdkEventButton
 	(gdkEventButtonRawDevice r)
 	(gdkEventButtonRawXRoot r) (gdkEventButtonRawYRoot r)
 
-pattern GdkEventSealedGdkButtonPress :: Sealed s GdkEventButtonRaw -> GdkEvent s
-pattern GdkEventSealedGdkButtonPress e <-
+pattern GdkEventGdkButtonPress :: Sealed s GdkEventButtonRaw -> GdkEvent s
+pattern GdkEventGdkButtonPress e <-
 	GdkEvent (gdkEventTypeRaw GdkEventButtonRaw_ -> (GdkButtonPress, e))
 
-pattern GdkEventSealedGdkDoubleButtonPress :: Sealed s GdkEventButtonRaw -> GdkEvent s
-pattern GdkEventSealedGdkDoubleButtonPress e <-
+pattern GdkEventGdkDoubleButtonPress :: Sealed s GdkEventButtonRaw -> GdkEvent s
+pattern GdkEventGdkDoubleButtonPress e <-
 	GdkEvent (gdkEventTypeRaw GdkEventButtonRaw_ -> (GdkDoubleButtonPress, e))
 
-pattern GdkEventSealedGdkTripleButtonPress :: Sealed s GdkEventButtonRaw -> GdkEvent s
-pattern GdkEventSealedGdkTripleButtonPress e <-
+pattern GdkEventGdkTripleButtonPress :: Sealed s GdkEventButtonRaw -> GdkEvent s
+pattern GdkEventGdkTripleButtonPress e <-
 	GdkEvent (gdkEventTypeRaw GdkEventButtonRaw_ -> (GdkTripleButtonPress, e))
 
-pattern GdkEventSealedGdkButtonRelease :: Sealed s GdkEventButtonRaw -> GdkEvent s
-pattern GdkEventSealedGdkButtonRelease e <-
+pattern GdkEventGdkButtonRelease :: Sealed s GdkEventButtonRaw -> GdkEvent s
+pattern GdkEventGdkButtonRelease e <-
 	GdkEvent (gdkEventTypeRaw GdkEventButtonRaw_ -> (GdkButtonRelease, e))
+
+---------------------------------------------------------------------------
+-- GDK EVENT SCROLL                                                      --
+---------------------------------------------------------------------------
 
 enum "GdkScrollDirection" ''#{type GdkScrollDirection} [''Show, ''Storable] [
 	("GdkScrollUp", #{const GDK_SCROLL_UP}),
