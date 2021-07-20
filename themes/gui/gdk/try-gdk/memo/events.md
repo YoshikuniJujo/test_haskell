@@ -79,17 +79,17 @@ Function
 	+ remove it
 * `gdk_event_get_pointer_emulated`
 * `gdk_event_handler_set`
-* [ ] `gdk_event_set_screen`
+* [x] `gdk_event_set_screen`
 	+ remove it
-* [ ] `gdk_event_get_screen`
+* [x] `gdk_event_get_screen`
 	+ remove it
-* [ ] `gdk_event_get_device`
+* [x] `gdk_event_get_device`
 	+ remove it
-* [ ] `gdk_event_set_device`
+* [x] `gdk_event_set_device`
 	+ remove it
-* [ ] `gdk_event_get_source_device`
+* [x] `gdk_event_get_source_device`
 	+ remove it
-* [ ] `gdk_event_set_source_device`
+* [x] `gdk_event_set_source_device`
 	+ remove it
 * `gdk_event_set_device_tool`
 * `gdk_setting_get`

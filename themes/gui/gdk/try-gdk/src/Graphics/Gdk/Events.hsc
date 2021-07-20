@@ -20,19 +20,12 @@ module Graphics.Gdk.Events (
 	pattern GdkScrollMask, pattern GdkTouchMask,
 	pattern GdkSmoothScrollMask,
 
-	gdkEventGetSourceDevice,
-	gdkEventSealedGetSourceDevice,
-
 	gdkEventConfigureHeight,
 	gdkEventConfigureX, gdkEventConfigureY, gdkEventConfigureWidth,
 	pattern GdkZeroEventsMask, pattern GdkFocusChangeMask,
 
 	pattern GdkEnterNotifyMask, pattern GdkLeaveNotifyMask,
 	gdkEventMaskSingleBitList, gdkEventConfigureWindow,
-
-	-- * NOT USE
-	gdkEventSetScreen, gdkEventGetScreen, gdkEventGetDevice, gdkEventSetDevice,
-	gdkEventSetSourceDevice,
 
 	) where
 
@@ -47,8 +40,6 @@ import Data.Word
 import Data.Int
 import System.GLib.Bool
 
-import {-# SOURCE #-} Graphics.Gdk.GdkScreen
-import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.EventStructures
 
 #include <gdk/gdk.h>
@@ -108,54 +99,6 @@ gdkSetShowEvents = c_gdk_set_show_events . boolToGboolean
 
 foreign import ccall "gdk_set_show_events"
 	c_gdk_set_show_events :: #{type gboolean} -> IO ()
-
-foreign import ccall "gdk_event_set_screen" c_gdk_event_set_screen ::
-	Ptr GdkEvent -> Ptr GdkScreen -> IO ()
-
-gdkEventSetScreen :: GdkEvent -> GdkScreen -> IO ()
-gdkEventSetScreen (GdkEvent _ fe) (GdkScreen s) = withForeignPtr fe \e ->
-	c_gdk_event_set_screen e s
-
-foreign import ccall "gdk_event_get_screen" c_gdk_event_get_screen ::
-	Ptr GdkEvent -> IO (Ptr GdkScreen)
-
-gdkEventGetScreen :: GdkEvent -> IO GdkScreen
-gdkEventGetScreen (GdkEvent _ fe) = withForeignPtr fe \e ->
-	GdkScreen <$> c_gdk_event_get_screen e
-
-foreign import ccall "gdk_event_get_device" c_gdk_event_get_device ::
-	Ptr GdkEvent -> IO (Ptr GdkDevice)
-
-gdkEventGetDevice :: GdkEvent -> IO GdkDevice
-gdkEventGetDevice (GdkEvent _ fe) =
-	withForeignPtr fe \e -> GdkDevice <$> c_gdk_event_get_device e
-
-foreign import ccall "gdk_event_set_device" c_gdk_event_set_device ::
-	Ptr GdkEvent -> Ptr GdkDevice -> IO ()
-
-gdkEventSetDevice :: GdkEvent -> GdkDevice -> IO ()
-gdkEventSetDevice (GdkEvent _ fe) (GdkDevice d) =
-	withForeignPtr fe \e -> c_gdk_event_set_device e d
-
-foreign import ccall "gdk_event_get_source_device" c_gdk_event_get_source_device ::
-	Ptr GdkEvent -> IO (Ptr GdkDevice)
-
-gdkEventSealedGetSourceDevice :: GdkEventSealed s -> IO (Maybe GdkDevice)
-gdkEventSealedGetSourceDevice (GdkEventSealed fe) = withForeignPtr fe \e ->
-	(<$> c_gdk_event_get_source_device e) \case
-		NullPtr -> Nothing; p -> Just $ GdkDevice p
-
-gdkEventGetSourceDevice :: GdkEvent -> IO (Maybe GdkDevice)
-gdkEventGetSourceDevice (GdkEvent _ fe) = withForeignPtr fe \e ->
-	(<$> c_gdk_event_get_source_device e) \case
-		NullPtr -> Nothing; p -> Just $ GdkDevice p
-
-foreign import ccall "gdk_event_set_source_device" c_gdk_event_set_source_device ::
-	Ptr GdkEvent -> Ptr GdkDevice -> IO ()
-
-gdkEventSetSourceDevice :: GdkEvent -> GdkDevice -> IO ()
-gdkEventSetSourceDevice (GdkEvent _ fe) (GdkDevice pd) =
-	withForeignPtr fe \e -> c_gdk_event_set_source_device e pd
 
 enum "GdkEventMaskSingleBit" ''#{type GdkEventMask} [''Show] [
 	("GdkExposureMask", #{const GDK_EXPOSURE_MASK}),

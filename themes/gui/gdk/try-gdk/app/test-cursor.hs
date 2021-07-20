@@ -52,19 +52,9 @@ main = do
 	gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
 	mainLoopNew \case
 		GdkEventSealedGdkDelete _d -> pure False
-		e@(GdkEventSealedGdkMotionNotify m) -> True <$ do
+		GdkEventSealedGdkMotionNotify m -> True <$ do
 			putStr "GDK_MOTION_NOTIFY: "
 			print $ gdkEventMotionPos m
-			sd <- gdkEventSealedGetSourceDevice e
-			print sd
-			putStrLn =<< maybe (pure "No source device") gdkDeviceGetName sd
-			mis <- maybe (pure Nothing) ((Just <$>) . gdkDeviceGetSource)  sd
-			case mis of
-				Nothing -> pure ()
-				Just is	| is == GdkSourceMouse -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "wait"
-					| is == GdkSourcePen -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "text"
-					| is == GdkSourceTouchpad -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
-					| otherwise -> pure ()
 		GdkEventSealedGdkKeyPress k -> do
 			let	kv = gdkEventKeyKeyval $ gdkEventKey k
 			when (kv == GdkKeySym (fromIntegral $ ord 'c'))

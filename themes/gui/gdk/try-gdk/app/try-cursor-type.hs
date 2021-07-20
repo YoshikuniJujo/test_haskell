@@ -9,7 +9,6 @@ import Data.IORef
 import System.Environment
 
 import Graphics.Gdk.General
-import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
@@ -31,15 +30,7 @@ main = do
 	gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
 	mainLoopNew \case
 		GdkEventSealedGdkDelete _d -> pure False
-		e@(GdkEventSealedGdkMotionNotify _) -> True <$ do
-			sd <- gdkEventSealedGetSourceDevice e
-			mis <- maybe (pure Nothing) ((Just <$>) . gdkDeviceGetSource)  sd
-			case mis of
-				Nothing -> pure ()
-				Just is	| is == GdkSourceMouse -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "wait"
-					| is == GdkSourcePen -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "text"
-					| is == GdkSourceTouchpad -> gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
-					| otherwise -> pure ()
+		GdkEventSealedGdkMotionNotify _ -> pure True
 		GdkEventSealedGdkKeyPress k -> do
 			let	kv = gdkEventKeyKeyval $ gdkEventKey k
 			print kv
