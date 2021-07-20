@@ -360,8 +360,8 @@ struct "GdkEventScrollRaw" #{size GdkEventScroll}
 	[''Show]
 
 data GdkEventScroll = GdkEventScroll {
-	gdkEventScrollType :: GdkEventType, gdkEventScrollWindow :: GdkWindow,
-	gdkEventScrollSendEvent :: Bool, gdkEventScrollTime :: MilliSecond,
+	gdkEventScrollWindow :: GdkWindow, gdkEventScrollSendEvent :: Bool,
+	gdkEventScrollTime :: MilliSecond,
 	gdkEventScrollX, gdkEventScrollY :: CDouble,
 	gdkEventScrollState :: [GdkModifierTypeSingleBit],
 	gdkEventScrollDirection :: GdkScrollDirection,
@@ -373,11 +373,9 @@ data GdkEventScroll = GdkEventScroll {
 
 gdkEventScroll :: Sealed s GdkEventScrollRaw -> GdkEventScroll
 gdkEventScroll (Sealed s) = GdkEventScroll
-	(gdkEventScrollRawType s)
 	(gdkEventScrollRawWindow s)
 	(case gdkEventScrollRawSendEvent s of
-		#{const FALSE} -> False
-		#{const TRUE} -> True
+		FalseInt8 -> False; TrueInt8 -> True
 		_ -> error "gdkEventScrollRawSendEvent should be FALSE or TRUE")
 	(gdkEventScrollRawTime s)
 	(gdkEventScrollRawX s) (gdkEventScrollRawY s)
@@ -390,12 +388,11 @@ gdkEventScroll (Sealed s) = GdkEventScroll
 			(gdkEventScrollRawDeltaX s, gdkEventScrollRawDeltaY s)
 		_ -> Nothing)
 	(case gdkEventScrollRawIsStop s of
-		#{const FALSE} -> False
-		#{const TRUE} -> True
+		FalseCUInt -> False; TrueCUInt -> True
 		_ -> error "never occur")
 
-pattern GdkEventSealedGdkScroll :: Sealed s GdkEventScrollRaw -> GdkEvent s
-pattern GdkEventSealedGdkScroll s <-
+pattern GdkEventGdkScroll :: Sealed s GdkEventScrollRaw -> GdkEvent s
+pattern GdkEventGdkScroll s <-
 	GdkEvent (gdkEventTypeRaw GdkEventScrollRaw_ -> (GdkScroll, s))
 
 ---------------------------------------------------------------------------

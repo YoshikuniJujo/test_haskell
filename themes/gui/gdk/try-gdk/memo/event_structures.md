@@ -19,7 +19,7 @@ Types
 * [x] GdkEventAny
 * [x] GdkEventKey
 * [x] GdkEventButton
-* [ ] GdkEventScroll
+* [x] GdkEventScroll
 * [ ] GdkEventMotion
 * [ ] GdkEventExpose
 * [ ] GdkEventVisibility
