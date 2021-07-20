@@ -27,7 +27,7 @@ main = do
 	gdkWindowSetTypeHint w h
 	gdkWindowShow w
 	mainLoopNew \case
-		GdkEventSealedGdkKeyPress k -> do
+		GdkEventGdkKeyPress k -> do
 			let	kv = gdkEventKeyKeyval $ gdkEventKey k
 			pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
 		GdkEventGdkAny a -> True <$ print a

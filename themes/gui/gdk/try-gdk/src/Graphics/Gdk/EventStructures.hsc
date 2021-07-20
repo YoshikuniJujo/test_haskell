@@ -82,11 +82,18 @@ newtype GdkEvent s = GdkEvent (ForeignPtr GdkEventTag) deriving Show
 data GdkEventTag
 
 ---------------------------------------------------------------------------
--- GDK EVENT ANY                                                         --
+-- BOOLS                                                                 --
 ---------------------------------------------------------------------------
 
 enum "BoolInt8" ''Int8 [''Show, ''Storable, ''Eq, ''Num] [
 	("FalseInt8", #{const FALSE}), ("TrueInt8", #{const TRUE}) ]
+
+enum "BoolCUInt" ''CUInt [''Show, ''Eq, ''Num] [
+	("FalseCUInt", #{const FALSE}), ("TrueCUInt", #{const TRUE}) ]
+
+---------------------------------------------------------------------------
+-- GDK EVENT ANY                                                         --
+---------------------------------------------------------------------------
 
 struct "GdkEventAnyRaw" #{size GdkEventAny}
 	[	("type", ''GdkEventType, [| #{peek GdkEventAny, type} |],
@@ -107,8 +114,7 @@ gdkEventAny :: Sealed s GdkEventAnyRaw -> GdkEventAny
 gdkEventAny (Sealed r) = GdkEventAny
 	(gdkEventAnyRawType r) (gdkEventAnyRawWindow r)
 	(case gdkEventAnyRawSendEvent r of
-		FalseInt8 -> False
-		TrueInt8 -> True
+		FalseInt8 -> False; TrueInt8 -> True
 		_ -> error "gdkEventAnyRawSendEvent should be FALSE or TRUE")
 
 {-# COMPLETE GdkEventGdkAny #-}
@@ -143,10 +149,10 @@ foreign import ccall "gdk_event_free"
 gdkEventTypeRaw :: (ForeignPtr x -> a) ->
 	ForeignPtr GdkEventTag -> (GdkEventType, Sealed s a)
 gdkEventTypeRaw c =
-	gdkEventSealedType . GdkEvent &&& Sealed . c . castForeignPtr
+	unsafePerformIO . (`withForeignPtr` #{peek GdkEventAny, type}) &&&
+	Sealed . c . castForeignPtr
 
-gdkEventSealedType :: GdkEvent s -> GdkEventType
-gdkEventSealedType (GdkEventGdkAny (Sealed ea)) = gdkEventAnyRawType ea
+newtype MilliSecond = MilliSecond #{type guint32} deriving (Show, Storable)
 
 ---------------------------------------------------------------------------
 -- GDK EVENT KEY                                                         --
@@ -154,16 +160,12 @@ gdkEventSealedType (GdkEventGdkAny (Sealed ea)) = gdkEventAnyRawType ea
 
 data {-# CTYPE "gdk/gdk.h" "GdkEventKey" #-} GdkEventKey'
 
-enum "BoolCUInt" ''CUInt [''Show, ''Eq, ''Num] [
-	("FalseCUInt", #{const FALSE}), ("TrueCUInt", #{const TRUE}) ]
-
 foreign import capi "gdkhs.h peek_gdk_event_key_is_modifier"
 	c_peek_gdk_event_key_is_modifier :: Ptr GdkEventKey' -> IO BoolCUInt
 
 foreign import capi "gdkhs.h poke_gdk_event_key_is_modifier"
-	c_poke_gdk_event_key_is_modifier :: Ptr GdkEventKey' -> BoolCUInt -> IO ()
-
-newtype MilliSecond = MilliSecond #{type guint32} deriving (Show, Storable)
+	c_poke_gdk_event_key_is_modifier ::
+		Ptr GdkEventKey' -> BoolCUInt -> IO ()
 
 struct "GdkEventKeyRaw" #{size GdkEventKey}
 	[	("type", ''GdkEventType, [| #{peek GdkEventKey, type} |],
@@ -195,40 +197,38 @@ struct "GdkEventKeyRaw" #{size GdkEventKey}
 	[''Show]
 
 data GdkEventKey = GdkEventKey {
-	gdkEventKeyWindow :: GdkWindow,
-	gdkEventKeySendEvent :: Bool,
+	gdkEventKeyWindow :: GdkWindow, gdkEventKeySendEvent :: Bool,
 	gdkEventKeyTime :: MilliSecond,
 	gdkEventKeyState :: [GdkModifierTypeSingleBit],
-	gdkEventKeyKeyval :: GdkKeySym,
-	gdkEventKeyHardwareKeycode :: Word16,
-	gdkEventKeyGroup :: Word8,
-	gdkEventKeyIsModifier :: Bool } deriving Show
+	gdkEventKeyKeyval :: GdkKeySym, gdkEventKeyHardwareKeycode :: Word16,
+	gdkEventKeyGroup :: Word8, gdkEventKeyIsModifier :: Bool }
+	deriving Show
 
 gdkEventKey :: Sealed s GdkEventKeyRaw -> GdkEventKey
 gdkEventKey (Sealed r) = GdkEventKey
 	(gdkEventKeyRawWindow r)
 	(case gdkEventKeyRawSendEvent r of
-		#{const FALSE} -> False
-		#{const TRUE} -> True
+		FalseInt8 -> False; TrueInt8 -> True
 		_ -> error "gdkEventKeyRawSendEvent should be FALSE or TRUE")
 	(gdkEventKeyRawTime r)
 	(gdkModifierTypeSingleBitList $ gdkEventKeyRawState r)
-	(gdkEventKeyRawKeyval r)
-	(gdkEventKeyRawHardwareKeycode r)
+	(gdkEventKeyRawKeyval r) (gdkEventKeyRawHardwareKeycode r)
 	(gdkEventKeyRawGroup r)
 	(case gdkEventKeyRawIsModifier r of
-		#{const FALSE} -> False
-		#{const TRUE} -> True
+		FalseCUInt -> False; TrueCUInt -> True
 		_ -> error "gdkEventKeyRawIsModifier should be FALSE or TRUE")
 
-pattern GdkEventSealedGdkKeyPress :: Sealed s GdkEventKeyRaw -> GdkEvent s
-pattern GdkEventSealedGdkKeyPress s <-
+pattern GdkEventGdkKeyPress :: Sealed s GdkEventKeyRaw -> GdkEvent s
+pattern GdkEventGdkKeyPress s <-
 	GdkEvent (gdkEventTypeRaw GdkEventKeyRaw_ -> (GdkKeyPress, s))
 
-pattern GdkEventSealedGdkKeyRelease ::
-	Sealed s GdkEventKeyRaw -> GdkEvent s
-pattern GdkEventSealedGdkKeyRelease e <-
+pattern GdkEventGdkKeyRelease :: Sealed s GdkEventKeyRaw -> GdkEvent s
+pattern GdkEventGdkKeyRelease e <-
 	GdkEvent (gdkEventTypeRaw GdkEventKeyRaw_ -> (GdkKeyRelease, e))
+
+---------------------------------------------------------------------------
+-- GDK EVENT BUTTON
+---------------------------------------------------------------------------
 
 type PtrCDouble = Ptr CDouble
 
@@ -471,10 +471,7 @@ foreign import ccall "gdk_event_copy"
 pattern GdkEventSealedGdkMotionNotify ::
 	Sealed s GdkEventMotionRaw -> GdkEvent s
 pattern GdkEventSealedGdkMotionNotify s <-
-	GdkEvent (
-		gdkEventSealedType . GdkEvent &&&
-		Sealed . GdkEventMotionRaw_ . castForeignPtr ->
-		(GdkMotionNotify, s) )
+	GdkEvent (gdkEventTypeRaw GdkEventMotionRaw_ -> (GdkMotionNotify, s))
 
 enum "GdkVisibilityState" ''#{type GdkVisibilityState} [''Show, ''Storable] [
 	("GdkVisibilityUnobscured", #{const GDK_VISIBILITY_UNOBSCURED}),

@@ -55,7 +55,7 @@ main = do
 		GdkEventSealedGdkMotionNotify m -> True <$ do
 			putStr "GDK_MOTION_NOTIFY: "
 			print $ gdkEventMotionPos m
-		GdkEventSealedGdkKeyPress k -> do
+		GdkEventGdkKeyPress k -> do
 			let	kv = gdkEventKeyKeyval $ gdkEventKey k
 			when (kv == GdkKeySym (fromIntegral $ ord 'c'))
 --				$ gdkWindowSetCursor w =<< (\s -> gdkCursorNewFromSurface d s 15 15) =<< drawCursor

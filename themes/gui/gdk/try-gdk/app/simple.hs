@@ -21,7 +21,7 @@ main = do
 	gdkWindowShow w
 	mainLoopNew \case
 		GdkEventGdkDelete _d -> pure False
-		GdkEventSealedGdkKeyPress k -> do
+		GdkEventGdkKeyPress k -> do
 			let	kv = gdkEventKeyKeyval $ gdkEventKey k
 			print k
 			pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')

@@ -263,7 +263,7 @@ checkEventSealed opacity pos size d st = \case
 	GdkEventGdkDelete dl -> do
 		putStrLn $ "GDK_DELETE: " ++ show dl
 		pure False
-	GdkEventSealedGdkKeyPress k_ -> do
+	GdkEventGdkKeyPress k_ -> do
 		let	k = gdkEventKey k_
 			w = gdkEventKeyWindow k
 			kv = gdkEventKeyKeyval k
@@ -420,7 +420,7 @@ checkEventSealed opacity pos size d st = \case
 			putStrLn "`2' pressed"
 			gdkWindowSetUrgencyHint w False
 		pure . not $ checkKeyVal 'q' kv
-	GdkEventSealedGdkKeyRelease k -> True <$ print k
+	GdkEventGdkKeyRelease k -> True <$ print k
 	GdkEventSealedGdkFocusChange f -> True <$ print f
 	GdkEventGdkMap m -> do
 		putStrLn $ "GDK_MAP: " ++ show m

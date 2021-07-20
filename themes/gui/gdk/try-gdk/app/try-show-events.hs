@@ -29,7 +29,7 @@ main = do
 	gdkSetShowEvents True
 	print =<< gdkGetShowEvents
 	mainLoopNew \case
-		GdkEventSealedGdkKeyPress k -> case gdkEventKey k of
+		GdkEventGdkKeyPress k -> case gdkEventKey k of
 			GdkEventKey { gdkEventKeyKeyval = GdkKey_q } -> pure False
 			_ -> pure True
 		GdkEventGdkAny _ -> pure True

@@ -15,7 +15,7 @@ Types
 
 * [x] GdkEvent
 * [x] GdkEventAny
-* [ ] GdkEventKey
+* [x] GdkEventKey
 * [ ] GdkEventButton
 * [ ] GdkEventTouch
 * [ ] GdkEventScroll

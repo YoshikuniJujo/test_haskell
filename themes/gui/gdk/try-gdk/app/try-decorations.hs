@@ -57,7 +57,7 @@ main = do
 					cairoLineTo cr 90 90
 					cairoStroke cr
 				pure Nothing
-			Just (GdkEventSealedGdkKeyPress k) -> do
+			Just (GdkEventGdkKeyPress k) -> do
 				let	kv = gdkEventKeyKeyval $ gdkEventKey k
 				pure . Just $ kv /= GdkKeySym (fromIntegral $ ord 'q')
 			Just _ -> pure Nothing

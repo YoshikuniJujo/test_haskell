@@ -69,7 +69,7 @@ checkEvent = \case
 	GdkEventSealedGdkFocusChange f -> True <$ print f
 	GdkEventSealedGdkWindowState s -> True <$ print s
 	GdkEventSealedGdkVisibilityNotify v -> True <$ print v
-	GdkEventSealedGdkKeyPress k -> do
+	GdkEventGdkKeyPress k -> do
 		let	kv = gdkEventKeyKeyval $ gdkEventKey k
 		pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
 	GdkEventGdkAny a -> True <$ print a

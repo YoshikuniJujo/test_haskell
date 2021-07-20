@@ -47,7 +47,7 @@ main = do
 	doWhile_ do
 		threadDelay 100000
 		doWhile $ gdkWithEventGet \case
-			Just (GdkEventSealedGdkKeyPress k) -> do
+			Just (GdkEventGdkKeyPress k) -> do
 				let	kv = gdkEventKeyKeyval $ gdkEventKey k
 				pure . Just $ kv /= GdkKeySym (fromIntegral $ ord 'q')
 			Just _ -> pure Nothing
