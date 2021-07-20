@@ -442,5 +442,5 @@ checkEventSealed opacity pos size d st = \case
 			cairoStroke cr
 		pure True
 	GdkEventSealedGdkWindowState s -> True <$ print s
-	GdkEventSealedGdkMotionNotify m -> True <$ print m
+	GdkEventGdkMotionNotify m -> True <$ print m
 	GdkEventGdkAny a -> True <$ print a

@@ -9,7 +9,6 @@ module Graphics.Gdk.EventStructures where
 import GHC.Stack
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
-import Foreign.Concurrent
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
@@ -87,6 +86,9 @@ data GdkEventTag
 
 enum "BoolInt8" ''Int8 [''Show, ''Storable, ''Eq, ''Num] [
 	("FalseInt8", #{const FALSE}), ("TrueInt8", #{const TRUE}) ]
+
+enum"BoolInt16" ''Int16 [''Show, ''Storable, ''Eq, ''Num] [
+	("FalseInt16", #{const FALSE}), ("TrueInt16", #{const TRUE}) ]
 
 enum "BoolCUInt" ''CUInt [''Show, ''Eq, ''Num] [
 	("FalseCUInt", #{const FALSE}), ("TrueCUInt", #{const TRUE}) ]
@@ -418,35 +420,32 @@ struct "GdkEventMotionRaw" #{size GdkEventMotion}
 		("state", ''GdkModifierTypeMultiBits,
 			[| #{peek GdkEventMotion, state} |],
 			[| #{poke GdkEventMotion, state} |]),
-		("isHint", ''Int16, [| #{peek GdkEventMotion, is_hint} |],
+		("isHint", ''BoolInt16, [| #{peek GdkEventMotion, is_hint} |],
 			[| #{poke GdkEventMotion, is_hint} |]),
 		("device", ''GdkDevice, [| #{peek GdkEventMotion, device} |],
 			[| #{poke GdkEventMotion, device} |]),
 		("xRoot", ''CDouble, [| #{peek GdkEventMotion, x_root} |],
 			[| #{poke GdkEventMotion, x_root} |]),
 		("yRoot", ''CDouble, [| #{peek GdkEventMotion, y_root} |],
-			[| #{poke GdkEventMotion, y_root} |])
-		]
+			[| #{poke GdkEventMotion, y_root} |]) ]
 	[''Show]
 
 data GdkEventMotion = GdkEventMotion {
-	gdkEventMotionWindow :: GdkWindow,
-	gdkEventMotionSendEvent :: Bool,
+	gdkEventMotionWindow :: GdkWindow, gdkEventMotionSendEvent :: Bool,
 	gdkEventMotionTime :: MilliSecond,
 	gdkEventMotionX :: CDouble, gdkEventMotionY :: CDouble,
 	gdkEventMotionAxes :: GdkAxes,
 	gdkEventMotionState :: [GdkModifierTypeSingleBit],
 	gdkEventMotionIsHint :: Bool,
 	gdkEventMotionDevice :: GdkDevice,
-	gdkEventMotionXRoot :: CDouble, gdkEventMotionYRoot :: CDouble
-	} deriving Show
+	gdkEventMotionXRoot :: CDouble, gdkEventMotionYRoot :: CDouble }
+	deriving Show
 
 gdkEventMotion :: Sealed s GdkEventMotionRaw -> GdkEventMotion
 gdkEventMotion (Sealed r) = GdkEventMotion
 	(gdkEventMotionRawWindow r)
 	(case gdkEventMotionRawSendEvent r of
-		#{const FALSE} -> False
-		#{const TRUE} -> True
+		FalseInt8 -> False; TrueInt8 -> True
 		_ -> error "gdkEventMotionRawSendEvent should be FALSE or TRUE")
 	(gdkEventMotionRawTime r)
 	(gdkEventMotionRawX r) (gdkEventMotionRawY r)
@@ -454,24 +453,18 @@ gdkEventMotion (Sealed r) = GdkEventMotion
 		(gdkEventMotionRawDevice r) (gdkEventMotionRawAxes r))
 	(gdkModifierTypeSingleBitList $ gdkEventMotionRawState r)
 	(case gdkEventMotionRawIsHint r of
-		#{const FALSE} -> False
-		#{const TRUE} -> True
+		FalseInt16 -> False; TrueInt16 -> True
 		_ -> error "gdkEventMotionRawIsHint should be FALSE or TRUE")
 	(gdkEventMotionRawDevice r)
 	(gdkEventMotionRawXRoot r) (gdkEventMotionRawYRoot r)
 
-tryGdkEventMotionCopy :: GdkEventMotionRaw -> IO GdkEventMotionRaw
-tryGdkEventMotionCopy (GdkEventMotionRaw_ fem) = GdkEventMotionRaw_ <$> withForeignPtr fem \pem -> do
-	pem' <- c_gdk_event_copy' pem
-	newForeignPtr pem' . c_gdk_event_free $ castPtr pem'
-
-foreign import ccall "gdk_event_copy"
-	c_gdk_event_copy' :: Ptr a -> IO (Ptr a)
-
-pattern GdkEventSealedGdkMotionNotify ::
-	Sealed s GdkEventMotionRaw -> GdkEvent s
-pattern GdkEventSealedGdkMotionNotify s <-
+pattern GdkEventGdkMotionNotify :: Sealed s GdkEventMotionRaw -> GdkEvent s
+pattern GdkEventGdkMotionNotify s <-
 	GdkEvent (gdkEventTypeRaw GdkEventMotionRaw_ -> (GdkMotionNotify, s))
+
+---------------------------------------------------------------------------
+-- GDK EVENT EXPOSE                                                      --
+---------------------------------------------------------------------------
 
 enum "GdkVisibilityState" ''#{type GdkVisibilityState} [''Show, ''Storable] [
 	("GdkVisibilityUnobscured", #{const GDK_VISIBILITY_UNOBSCURED}),

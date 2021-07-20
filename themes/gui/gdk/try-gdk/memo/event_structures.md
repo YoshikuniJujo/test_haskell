@@ -20,7 +20,9 @@ Types
 * [x] GdkEventKey
 * [x] GdkEventButton
 * [x] GdkEventScroll
-* [ ] GdkEventMotion
+* [x] GdkEventMotion
+	+ [x] define BoolInt16
+	+ [x] others
 * [ ] GdkEventExpose
 * [ ] GdkEventVisibility
 * [ ] GdkEventCrossing
