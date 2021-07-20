@@ -73,9 +73,6 @@ newtype GdkEvent s = GdkEvent (ForeignPtr GdkEventTag) deriving Show
 
 data GdkEventTag
 
-mkGdkEvent :: Ptr GdkEventTag -> IO (GdkEvent s)
-mkGdkEvent pe = GdkEvent <$> newForeignPtr pe (c_gdk_event_free pe)
-
 foreign import ccall "gdk_event_free" c_gdk_event_free :: Ptr GdkEventTag -> IO ()
 
 enum "BoolGInt8" ''#{type gint8} [''Show, ''Storable, ''Eq, ''Num] [

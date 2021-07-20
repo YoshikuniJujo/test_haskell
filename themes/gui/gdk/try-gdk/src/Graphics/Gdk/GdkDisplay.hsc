@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE RankNTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkDisplay (
@@ -17,8 +18,8 @@ module Graphics.Gdk.GdkDisplay (
 	gdkDisplayIsClosed,
 
 	-- * EVENT
-	gdkDisplayGetEvent,
-	gdkDisplayPeekEvent,
+	gdkDisplayWithEventGet,
+	gdkDisplayWithEventPeek,
 	gdkDisplayPutEvent,
 	gdkDisplayHasPending,
 
@@ -54,7 +55,8 @@ module Graphics.Gdk.GdkDisplay (
 
 import Foreign.Ptr
 import Foreign.Ptr.Misc
-import Foreign.ForeignPtr
+import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.Concurrent
 import Foreign.C
 import Control.Exception
 import Data.Int
@@ -136,21 +138,23 @@ gdkDisplayIsClosed (GdkDisplay p) = gbooleanToBool <$> c_gdk_display_is_closed p
 foreign import ccall "gdk_display_is_closed" c_gdk_display_is_closed ::
 	Ptr GdkDisplay -> IO #type gboolean
 
-gdkDisplayGetEvent :: GdkDisplay -> IO (Maybe (GdkEvent s))
-gdkDisplayGetEvent (GdkDisplay d) = c_gdk_display_get_event d >>= \case
-	p	| p == nullPtr -> pure Nothing
-		| otherwise -> Just <$> mkGdkEvent p
+gdkDisplayWithEventGet :: GdkDisplay -> (forall s . Maybe (GdkEvent s) -> IO a) -> IO a
+gdkDisplayWithEventGet d f = c_gdk_display_get_event d >>= \case
+	NullPtr -> f Nothing
+	p -> (f . Just . GdkEvent =<< newForeignPtr p (pure ()))
+		<* c_gdk_event_free p
 
-foreign import ccall "gdk_display_get_event" c_gdk_display_get_event ::
-	Ptr GdkDisplay -> IO (Ptr GdkEventTag)
+foreign import ccall "gdk_display_get_event"
+	c_gdk_display_get_event :: GdkDisplay -> IO (Ptr GdkEventTag)
 
-gdkDisplayPeekEvent :: GdkDisplay -> IO (Maybe (GdkEvent s))
-gdkDisplayPeekEvent (GdkDisplay d) = c_gdk_display_peek_event d >>= \case
-	p	| p == nullPtr -> pure Nothing
-		| otherwise -> Just <$> mkGdkEvent p
+gdkDisplayWithEventPeek :: GdkDisplay -> (forall s . Maybe (GdkEvent s) -> IO a) -> IO a
+gdkDisplayWithEventPeek d f = c_gdk_display_peek_event d >>= \case
+	NullPtr -> f Nothing
+	p -> (f . Just . GdkEvent =<< newForeignPtr p (pure ()))
+		<* c_gdk_event_free p
 
 foreign import ccall "gdk_display_peek_event" c_gdk_display_peek_event ::
-	Ptr GdkDisplay -> IO (Ptr GdkEventTag)
+	GdkDisplay -> IO (Ptr GdkEventTag)
 
 gdkDisplayPutEvent :: GdkDisplay -> GdkEvent s -> IO ()
 gdkDisplayPutEvent (GdkDisplay d) (GdkEvent fe) = withForeignPtr fe \e ->
