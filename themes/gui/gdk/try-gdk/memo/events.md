@@ -6,13 +6,12 @@ Function
 
 ### todo
 
-* [ ] refactor expor list
-* [ ] remove
+* [x] refactor expor list
+* [x] remove
 	+ [x] gdkEventCopy
 	+ [x] gdkEventNew
 	+ [x] gdkEventPut
-	+ [ ] more
-* [ ] move GdkEventMaskFoo to `Graphics.Gdk.Windows`
+* [x] move GdkEventMaskFoo to `Graphics.Gdk.Windows`
 
 ### now
 

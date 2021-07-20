@@ -5,15 +5,11 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.Events (
-	-- * CHECKED
+	-- * GET EVENT
 	gdkWithEventGet, gdkWithEventPeek, gdkEventsPending,
-	gdkGetShowEvents, gdkSetShowEvents,
 
-	-- * USE
-	gdkEventConfigureHeight,
-	gdkEventConfigureX, gdkEventConfigureY, gdkEventConfigureWidth,
-
-	gdkEventConfigureWindow,
+	-- * DEBUG
+	gdkGetShowEvents, gdkSetShowEvents
 
 	) where
 
