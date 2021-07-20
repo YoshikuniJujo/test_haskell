@@ -5,7 +5,7 @@ Event Structures memo
 * [x] rename `GdkEventSealed` to `GdkEvent`
 * [x] define `gdkDisplayWithEventGet` instead of `gdkDisplayGetEvent`
 * [x] define `gdkDisplayWithEventPeek` instead of `gdkDisplayPeekEvent`
-* [ ] remove `gdkDisplayPutEvent`
+* [x] remove `gdkDisplayPutEvent`
 * [x] remove `mkGdkEvent`
 * [ ] add rest
 * [ ] add export list

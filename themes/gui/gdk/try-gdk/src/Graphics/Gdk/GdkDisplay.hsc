@@ -20,7 +20,6 @@ module Graphics.Gdk.GdkDisplay (
 	-- * EVENT
 	gdkDisplayWithEventGet,
 	gdkDisplayWithEventPeek,
-	gdkDisplayPutEvent,
 	gdkDisplayHasPending,
 
 	-- * DOUBLE CLICK
@@ -55,7 +54,6 @@ module Graphics.Gdk.GdkDisplay (
 
 import Foreign.Ptr
 import Foreign.Ptr.Misc
-import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.C
 import Control.Exception
@@ -155,13 +153,6 @@ gdkDisplayWithEventPeek d f = c_gdk_display_peek_event d >>= \case
 
 foreign import ccall "gdk_display_peek_event" c_gdk_display_peek_event ::
 	GdkDisplay -> IO (Ptr GdkEventTag)
-
-gdkDisplayPutEvent :: GdkDisplay -> GdkEvent s -> IO ()
-gdkDisplayPutEvent (GdkDisplay d) (GdkEvent fe) = withForeignPtr fe \e ->
-	c_gdk_display_put_event d e
-
-foreign import ccall "gdk_display_put_event" c_gdk_display_put_event ::
-	Ptr GdkDisplay -> Ptr GdkEventTag -> IO ()
 
 gdkDisplayHasPending :: GdkDisplay -> IO Bool
 gdkDisplayHasPending (GdkDisplay p) = gbooleanToBool <$> c_gdk_display_has_pending p
