@@ -95,7 +95,7 @@ import Graphics.Gdk.Visuals
 import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.Cursors
 import Graphics.Gdk.Windows.GdkWindowAttr
-import Graphics.Gdk.Events
+import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.Types
 

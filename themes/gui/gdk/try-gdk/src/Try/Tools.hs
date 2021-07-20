@@ -11,6 +11,7 @@ import Graphics.Gdk.EventStructures
 import Graphics.Gdk.Values
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
+import Graphics.Gdk.Windows.GdkEventMask
 
 import Try.Tools.DoWhile
 

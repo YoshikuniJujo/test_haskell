@@ -12,6 +12,7 @@ Function
 	+ [x] gdkEventNew
 	+ [x] gdkEventPut
 	+ [ ] more
+* [ ] move GdkEventMaskFoo to `Graphics.Gdk.Windows`
 
 ### now
 

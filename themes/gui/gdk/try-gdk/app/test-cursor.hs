@@ -15,7 +15,7 @@ import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.Windows
-import Graphics.Gdk.Events
+import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
 import Graphics.Gdk.Cursors

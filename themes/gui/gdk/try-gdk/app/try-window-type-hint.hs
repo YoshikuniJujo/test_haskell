@@ -11,7 +11,7 @@ import System.Environment
 import Graphics.Gdk.General
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
-import Graphics.Gdk.Events
+import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
 import Graphics.Gdk.Values

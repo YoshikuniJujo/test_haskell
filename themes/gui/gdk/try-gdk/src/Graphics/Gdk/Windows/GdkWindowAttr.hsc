@@ -28,7 +28,7 @@ import Data.Word
 
 import Graphics.Gdk.Visuals
 import Graphics.Gdk.Cursors
-import Graphics.Gdk.Events
+import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.Values
 
 #include <gdk/gdk.h>
