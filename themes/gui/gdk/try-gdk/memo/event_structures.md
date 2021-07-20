@@ -24,6 +24,10 @@ Types
 	+ [x] define BoolInt16
 	+ [x] others
 * [ ] GdkEventExpose
+	+ [ ] `GdkEventExposeRaw`
+	+ [ ] `GdkEventExpose`
+	+ [ ] `gdkEventExpose`
+	+ [ ] `GdkEventGdkExpose`
 * [ ] GdkEventVisibility
 * [ ] GdkEventCrossing
 * [ ] GdkEventFocus

@@ -466,6 +466,23 @@ pattern GdkEventGdkMotionNotify s <-
 -- GDK EVENT EXPOSE                                                      --
 ---------------------------------------------------------------------------
 
+{-
+struct "GdkEventExpose" #{size GdkEventExpose}
+	[	("type", ''GdkEventType, [| #{peek GdkEventExpose, type} |],
+			[| #{poke GdkEventExpose, type} |]),
+		("window", ''GdkWindow, [| #{peek GdkEventExpose, window} |],
+			[| #{poke GdkEventExpose, window} |]),
+		("sendEvent", ''BoolInt8,
+			[| #{peek GdkEventExpose, send_event} |],
+			[| #{poke GdkEventExpose, send_event} |]),
+
+	[''Show]
+	-}
+
+---------------------------------------------------------------------------
+-- GDK EVENT VISIBILITY                                                  --
+---------------------------------------------------------------------------
+
 enum "GdkVisibilityState" ''#{type GdkVisibilityState} [''Show, ''Storable] [
 	("GdkVisibilityUnobscured", #{const GDK_VISIBILITY_UNOBSCURED}),
 	("GdkVisibilityPartial", #{const GDK_VISIBILITY_PARTIAL}),
