@@ -262,8 +262,7 @@ struct "GdkEventButtonRaw" #{size GdkEventButton}
 	[''Show]
 
 data GdkEventButton = GdkEventButton {
-	gdkEventButtonType :: GdkEventType, gdkEventButtonWindow :: GdkWindow,
-	gdkEventButtonSendEvent :: Bool,
+	gdkEventButtonWindow :: GdkWindow, gdkEventButtonSendEvent :: Bool,
 	gdkEventButtonTime :: MilliSecond,
 	gdkEventButtonX, gdkEventButtonY :: CDouble,
 	gdkEventButtonAxes :: GdkAxes,
@@ -275,7 +274,7 @@ data GdkEventButton = GdkEventButton {
 
 gdkEventButton :: Sealed s GdkEventButtonRaw -> GdkEventButton
 gdkEventButton (Sealed r) = GdkEventButton
-	(gdkEventButtonRawType r) (gdkEventButtonRawWindow r)
+	(gdkEventButtonRawWindow r)
 	(case gdkEventButtonRawSendEvent r of
 		FalseInt8 -> False; TrueInt8 -> True
 		_ -> error "gdkEventButtonSendEvent should be FALSE or TRUE")
@@ -293,12 +292,12 @@ pattern GdkEventGdkButtonPress e <-
 	GdkEvent (gdkEventTypeRaw GdkEventButtonRaw_ -> (GdkButtonPress, e))
 
 pattern GdkEventGdkDoubleButtonPress :: Sealed s GdkEventButtonRaw -> GdkEvent s
-pattern GdkEventGdkDoubleButtonPress e <-
-	GdkEvent (gdkEventTypeRaw GdkEventButtonRaw_ -> (GdkDoubleButtonPress, e))
+pattern GdkEventGdkDoubleButtonPress e <- GdkEvent
+	(gdkEventTypeRaw GdkEventButtonRaw_ -> (GdkDoubleButtonPress, e))
 
 pattern GdkEventGdkTripleButtonPress :: Sealed s GdkEventButtonRaw -> GdkEvent s
-pattern GdkEventGdkTripleButtonPress e <-
-	GdkEvent (gdkEventTypeRaw GdkEventButtonRaw_ -> (GdkTripleButtonPress, e))
+pattern GdkEventGdkTripleButtonPress e <- GdkEvent
+	(gdkEventTypeRaw GdkEventButtonRaw_ -> (GdkTripleButtonPress, e))
 
 pattern GdkEventGdkButtonRelease :: Sealed s GdkEventButtonRaw -> GdkEvent s
 pattern GdkEventGdkButtonRelease e <-
@@ -321,7 +320,8 @@ foreign import capi "gdkhs.h peek_gdk_event_scroll_is_stop"
 	c_peek_gdk_event_scroll_is_stop :: Ptr GdkEventScroll' -> IO BoolCUInt
 
 foreign import capi "gdkhs.h poke_gdk_event_scroll_is_stop"
-	c_poke_gdk_event_scroll_is_stop :: Ptr GdkEventScroll' -> BoolCUInt -> IO ()
+	c_poke_gdk_event_scroll_is_stop ::
+		Ptr GdkEventScroll' -> BoolCUInt -> IO ()
 
 struct "GdkEventScrollRaw" #{size GdkEventScroll}
 	[	("type", ''GdkEventType, [| #{peek GdkEventScroll, type} |],
@@ -354,16 +354,14 @@ struct "GdkEventScrollRaw" #{size GdkEventScroll}
 			[| #{poke GdkEventScroll, delta_x} |]),
 		("deltaY", ''CDouble, [| #{peek GdkEventScroll, delta_y} |],
 			[| #{poke GdkEventScroll, delta_y} |]),
-		("isStop", ''BoolCUInt, [| c_peek_gdk_event_scroll_is_stop . castPtr |],
-			[| c_poke_gdk_event_scroll_is_stop . castPtr |])
-		]
+		("isStop", ''BoolCUInt,
+			[| c_peek_gdk_event_scroll_is_stop . castPtr |],
+			[| c_poke_gdk_event_scroll_is_stop . castPtr |]) ]
 	[''Show]
 
 data GdkEventScroll = GdkEventScroll {
-	gdkEventScrollType :: GdkEventType,
-	gdkEventScrollWindow :: GdkWindow,
-	gdkEventScrollSendEvent :: Bool,
-	gdkEventScrollTime :: MilliSecond,
+	gdkEventScrollType :: GdkEventType, gdkEventScrollWindow :: GdkWindow,
+	gdkEventScrollSendEvent :: Bool, gdkEventScrollTime :: MilliSecond,
 	gdkEventScrollX, gdkEventScrollY :: CDouble,
 	gdkEventScrollState :: [GdkModifierTypeSingleBit],
 	gdkEventScrollDirection :: GdkScrollDirection,
@@ -399,6 +397,10 @@ gdkEventScroll (Sealed s) = GdkEventScroll
 pattern GdkEventSealedGdkScroll :: Sealed s GdkEventScrollRaw -> GdkEvent s
 pattern GdkEventSealedGdkScroll s <-
 	GdkEvent (gdkEventTypeRaw GdkEventScrollRaw_ -> (GdkScroll, s))
+
+---------------------------------------------------------------------------
+-- GDK EVENT MOTION                                                      --
+---------------------------------------------------------------------------
 
 struct "GdkEventMotionRaw" #{size GdkEventMotion}
 	[	("type", ''GdkEventType, [| #{peek GdkEventMotion, type} |],

@@ -47,8 +47,8 @@ Types
 Values
 ------
 
-* [ ] GdkEventType
-* [ ] GdkScrollDirection
+* [x] GdkEventType
+* [x] GdkScrollDirection
 * [ ] GdkVisibilityState
 * [ ] GdkCrossingMode
 * [ ] GdkNotifyType
