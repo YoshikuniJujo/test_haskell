@@ -31,13 +31,13 @@ Types
 	+ [x] remove `tryGdkEventVisibilitySealedWindow`
 * [ ] GdkEventCrossing
 	+ [x] add `GdkEnterNotifyMask` and `GdkLeaveNotifyMask`
-	+ [ ] `GdkCrossingMode`
+	+ [x] `GdkCrossingMode`
 	+ [ ] `GdkNotifyType`
 	+ [ ] `GdkEventCrossingRaw`
 		- [x] some
 		- [x] `x_root`
 		- [x] `y_root`
-		- [ ] `mode`
+		- [x] `mode`
 		- [ ] `detail`
 		- [ ] `focus`
 		- [ ] `state`

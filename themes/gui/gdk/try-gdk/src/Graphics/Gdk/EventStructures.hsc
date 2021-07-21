@@ -509,6 +509,17 @@ pattern GdkEventGdkVisibilityNotify e <- GdkEvent
 -- GDK EVENT CROSSING                                                    --
 ---------------------------------------------------------------------------
 
+enum "GdkCrossingMode" ''#{type GdkCrossingMode} [''Show, ''Storable] [
+	("GdkCrossingNormal", #{const GDK_CROSSING_NORMAL}),
+	("GdkCrossingGrab", #{const GDK_CROSSING_GRAB}),
+	("GdkCrossingUngrab", #{const GDK_CROSSING_UNGRAB}),
+	("GdkCrossingGtkGrab", #{const GDK_CROSSING_GTK_GRAB}),
+	("GdkCrossingGtkUngrab", #{const GDK_CROSSING_GTK_UNGRAB}),
+	("GdkCrossingStateChanged", #{const GDK_CROSSING_STATE_CHANGED}),
+	("GdkCrossingTouchBegin", #{const GDK_CROSSING_TOUCH_BEGIN}),
+	("GdkCrossingTouchEnd", #{const GDK_CROSSING_TOUCH_END}),
+	("GdkCrossingDeviceSwitch", #{const GDK_CROSSING_DEVICE_SWITCH}) ]
+
 struct "GdkEventCrossingRaw" #{size GdkEventCrossing}
 	[	("type", ''GdkEventType, [| #{peek GdkEventCrossing, type} |],
 			[| #{poke GdkEventCrossing, type} |]),
@@ -529,7 +540,10 @@ struct "GdkEventCrossingRaw" #{size GdkEventCrossing}
 		("xRoot", ''CDouble, [| #{peek GdkEventCrossing, x_root} |],
 			[| #{poke GdkEventCrossing, x_root} |]),
 		("yRoot", ''CDouble, [| #{peek GdkEventCrossing, y_root} |],
-			[| #{poke GdkEventCrossing, y_root} |])
+			[| #{poke GdkEventCrossing, y_root} |]),
+		("mode", ''GdkCrossingMode,
+			[| #{peek GdkEventCrossing, mode} |],
+			[| #{poke GdkEventCrossing, mode} |])
 		]
 	[''Show]
 
