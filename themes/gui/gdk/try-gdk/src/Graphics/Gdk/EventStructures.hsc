@@ -619,8 +619,8 @@ struct "GdkEventFocusRaw" #{size GdkEventFocus}
 			[| #{poke GdkEventFocus, in} |]) ]
 	[''Show]
 
-pattern GdkEventSealedGdkFocusChange :: Sealed s GdkEventFocusRaw -> GdkEvent s
-pattern GdkEventSealedGdkFocusChange e <-
+pattern GdkEventGdkFocusChange :: Sealed s GdkEventFocusRaw -> GdkEvent s
+pattern GdkEventGdkFocusChange e <-
 	GdkEvent (gdkEventTypeRaw GdkEventFocusRaw_ -> (GdkFocusChange, e))
 
 gdkEventFocusIn :: GdkEventFocusRaw -> IO Bool

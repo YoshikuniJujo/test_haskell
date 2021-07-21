@@ -74,7 +74,7 @@ checkEvent = \case
 		print c
 		drawRedLine $ tryGdkEventSealedConfigureWindow c
 		pure True
-	GdkEventSealedGdkFocusChange f -> True <$ print f
+	GdkEventGdkFocusChange f -> True <$ print f
 	GdkEventSealedGdkWindowState s -> True <$ print s
 	GdkEventGdkAny a -> True <$ print a
 

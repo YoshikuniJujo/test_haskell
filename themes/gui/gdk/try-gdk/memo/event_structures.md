@@ -48,7 +48,7 @@ Types
 	+ [x] `gdkEventCrossing`
 * [ ] GdkEventFocus
 	+ [x] `GdkEventFocusRaw`
-	+ [ ] `GdkEventGdkFocusChange`
+	+ [x] `GdkEventGdkFocusChange`
 	+ [ ] `GdkEventFocus`
 	+ [ ] `gdkEventFocus`
 * [ ] GdkEventConfigure

@@ -422,7 +422,7 @@ checkEventSealed opacity pos size d st = \case
 			gdkWindowSetUrgencyHint w False
 		pure . not $ checkKeyVal 'q' kv
 	GdkEventGdkKeyRelease k -> True <$ print k
-	GdkEventSealedGdkFocusChange f -> True <$ print f
+	GdkEventGdkFocusChange f -> True <$ print f
 	GdkEventGdkMap m -> do
 		putStrLn $ "GDK_MAP: " ++ show m
 		pure True
