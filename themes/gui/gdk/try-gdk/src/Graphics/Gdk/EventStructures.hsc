@@ -619,16 +619,24 @@ struct "GdkEventFocusRaw" #{size GdkEventFocus}
 			[| #{poke GdkEventFocus, in} |]) ]
 	[''Show]
 
+data GdkEventFocus = GdkEventFocus {
+	gdkEventFocusWindow :: GdkWindow, gdkEventFocusSendEvent :: Bool,
+	gdkEventFocusIn :: Bool }
+	deriving Show
+
+gdkEventFocus :: Sealed s GdkEventFocusRaw -> GdkEventFocus
+gdkEventFocus (Sealed r) = GdkEventFocus
+	(gdkEventFocusRawWindow r)
+	(case gdkEventFocusRawSendEvent r of
+		FalseInt8 -> False; TrueInt8 -> True;
+		_ -> error "gdkEventFocusRawSendEvent shoudl be FALSE or TRUE")
+	(case gdkEventFocusRawIn r of
+		FalseInt16 -> False; TrueInt16 -> True;
+		_ -> error "gdkEventFocusRawIn should be FALSE or TRUE")
+
 pattern GdkEventGdkFocusChange :: Sealed s GdkEventFocusRaw -> GdkEvent s
 pattern GdkEventGdkFocusChange e <-
 	GdkEvent (gdkEventTypeRaw GdkEventFocusRaw_ -> (GdkFocusChange, e))
-
-gdkEventFocusIn :: GdkEventFocusRaw -> IO Bool
-gdkEventFocusIn (GdkEventFocusRaw_ p) = gint16ToBool <$> withForeignPtr p #peek GdkEventFocus, in
-
-gdkEventFocusWindow :: GdkEventFocusRaw -> IO GdkWindow
-gdkEventFocusWindow (GdkEventFocusRaw_ p) =
-	GdkWindow <$> withForeignPtr p #peek GdkEventFocus, window
 
 gint16ToBool :: HasCallStack => #{type gint16} -> Bool
 gint16ToBool #{const TRUE} = True
