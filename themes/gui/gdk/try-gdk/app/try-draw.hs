@@ -67,13 +67,13 @@ checkEvent = \case
 	GdkEventGdkEnterNotify (gdkEventCrossing -> e) -> True <$ putStrLn ("ENTER: " ++ show e)
 	GdkEventGdkLeaveNotify (gdkEventCrossing -> l) -> True <$ putStrLn ("LEAVE: " ++ show l)
 	GdkEventGdkFocusChange (gdkEventFocus -> f) -> True <$ print f
+	GdkEventGdkConfigure c -> do
+		print c
+		drawRedLine $ tryGdkEventSealedConfigureWindow c
+		pure True
 	GdkEventGdkMap m -> do
 		putStrLn $ "GDK_MAP: " ++ show m
 		drawRedLine $ tryGdkEventSealedMapWindow m
-		pure True
-	GdkEventSealedGdkConfigure c -> do
-		print c
-		drawRedLine $ tryGdkEventSealedConfigureWindow c
 		pure True
 	GdkEventSealedGdkWindowState s -> True <$ print s
 	GdkEventGdkAny a -> True <$ print a

@@ -429,7 +429,7 @@ checkEventSealed opacity pos size d st = \case
 	GdkEventGdkUnmap m -> do
 		putStrLn $ "GDK_UNMAP: " ++ show m
 		pure True
-	GdkEventSealedGdkConfigure c -> True <$ print c
+	GdkEventGdkConfigure c -> True <$ print c
 	GdkEventGdkVisibilityNotify (gdkEventVisibility -> v) -> do
 		print v
 		let	w = gdkEventVisibilityWindow v

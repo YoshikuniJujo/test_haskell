@@ -6,7 +6,6 @@
 
 module Graphics.Gdk.EventStructures where
 
-import GHC.Stack
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Storable
@@ -638,10 +637,9 @@ pattern GdkEventGdkFocusChange :: Sealed s GdkEventFocusRaw -> GdkEvent s
 pattern GdkEventGdkFocusChange e <-
 	GdkEvent (gdkEventTypeRaw GdkEventFocusRaw_ -> (GdkFocusChange, e))
 
-gint16ToBool :: HasCallStack => #{type gint16} -> Bool
-gint16ToBool #{const TRUE} = True
-gint16ToBool #{const FALSE} = False
-gint16ToBool _ = error "something wrong"
+---------------------------------------------------------------------------
+-- GDK EVENT CONFIGURE                                                   --
+---------------------------------------------------------------------------
 
 struct "GdkEventConfigureRaw" #{size GdkEventConfigure}
 	[	("type", ''GdkEventType, [| #{peek GdkEventConfigure, type} |],
@@ -661,8 +659,9 @@ struct "GdkEventConfigureRaw" #{size GdkEventConfigure}
 			[| #{poke GdkEventConfigure, height} |]) ]
 	[''Show]
 
-tryGdkEventSealedMapWindow :: Sealed s GdkEventAnyRaw -> GdkWindow
-tryGdkEventSealedMapWindow (Sealed e) = gdkEventAnyRawWindow e
+pattern GdkEventGdkConfigure :: Sealed s GdkEventConfigureRaw -> GdkEvent s
+pattern GdkEventGdkConfigure e <-
+	GdkEvent (gdkEventTypeRaw GdkEventConfigureRaw_ -> (GdkConfigure, e))
 
 tryGdkEventSealedConfigureWindow :: Sealed s GdkEventConfigureRaw -> GdkWindow
 tryGdkEventSealedConfigureWindow (Sealed e) = gdkEventConfigureRawWindow e
@@ -675,13 +674,12 @@ gdkEventConfigureX, gdkEventConfigureY :: GdkEventConfigureRaw -> IO #type gint
 gdkEventConfigureX (GdkEventConfigureRaw_ p) = withForeignPtr p #peek GdkEventConfigure, x
 gdkEventConfigureY (GdkEventConfigureRaw_ p) = withForeignPtr p #peek GdkEventConfigure, y
 
-pattern GdkEventSealedGdkConfigure ::
-	Sealed s GdkEventConfigureRaw -> GdkEvent s
-pattern GdkEventSealedGdkConfigure e <-
-	GdkEvent (gdkEventTypeRaw GdkEventConfigureRaw_ -> (GdkConfigure, e))
-
 gdkEventConfigureWindow :: GdkEventConfigureRaw -> IO GdkWindow
 gdkEventConfigureWindow (GdkEventConfigureRaw_ p) = GdkWindow <$> withForeignPtr p #peek GdkEventConfigure, window
+
+---------------------------------------------------------------------------
+-- GDK EVENT PROPERTY                                                    --
+---------------------------------------------------------------------------
 
 newtype GdkWindowStates = GdkWindowStates #{type GdkWindowState} deriving Show
 
@@ -735,3 +733,6 @@ pattern GdkEventSealedGdkWindowState ::
 	Sealed s GdkEventWindowStateRaw -> GdkEvent s
 pattern GdkEventSealedGdkWindowState e <-
 	GdkEvent (gdkEventTypeRaw GdkEventWindowStateRaw_ -> (GdkWindowState_, e))
+
+tryGdkEventSealedMapWindow :: Sealed s GdkEventAnyRaw -> GdkWindow
+tryGdkEventSealedMapWindow (Sealed e) = gdkEventAnyRawWindow e
