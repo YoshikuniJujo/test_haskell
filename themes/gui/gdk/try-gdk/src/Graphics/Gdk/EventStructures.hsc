@@ -93,6 +93,9 @@ enum"BoolInt16" ''Int16 [''Show, ''Storable, ''Eq, ''Num] [
 enum "BoolCUInt" ''CUInt [''Show, ''Eq, ''Num] [
 	("FalseCUInt", #{const FALSE}), ("TrueCUInt", #{const TRUE}) ]
 
+enum "GBoolean" ''#{type gboolean} [''Show, ''Storable, ''Eq, ''Num] [
+	("FalseGBoolean", #{const FALSE}), ("TrueGBoolean" , #{const TRUE}) ]
+
 ---------------------------------------------------------------------------
 -- GDK EVENT ANY                                                         --
 ---------------------------------------------------------------------------
@@ -554,7 +557,9 @@ struct "GdkEventCrossingRaw" #{size GdkEventCrossing}
 			[| #{poke GdkEventCrossing, mode} |]),
 		("detail", ''GdkNotifyType,
 			[| #{peek GdkEventCrossing, detail} |],
-			[| #{poke GdkEventCrossing, detail} |])
+			[| #{poke GdkEventCrossing, detail} |]),
+		("focus", ''GBoolean, [| #{peek GdkEventCrossing, focus} |],
+			[| #{poke GdkEventCrossing, focus} |])
 		]
 	[''Show]
 
