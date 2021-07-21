@@ -58,6 +58,7 @@ main = do
 
 checkEvent :: GdkEvent s -> IO Bool
 checkEvent = \case
+	GdkEventGdkExpose e -> True <$ print e
 	GdkEventGdkMap m -> do
 		putStrLn $ "GDK_MAP: " ++ show m
 		drawRedLine $ tryGdkEventSealedMapWindow m

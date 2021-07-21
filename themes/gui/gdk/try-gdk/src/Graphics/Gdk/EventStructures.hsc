@@ -471,7 +471,7 @@ pattern GdkEventGdkMotionNotify s <-
 
 type PtrCairoRegionTIO = Ptr (CairoRegionT RealWorld)
 
-struct "GdkEventExpose" #{size GdkEventExpose}
+struct "GdkEventExposeRaw" #{size GdkEventExpose}
 	[	("type", ''GdkEventType, [| #{peek GdkEventExpose, type} |],
 			[| #{poke GdkEventExpose, type} |]),
 		("window", ''GdkWindow, [| #{peek GdkEventExpose, window} |],
@@ -505,6 +505,10 @@ struct "GdkEventExpose" #{size GdkEventExpose}
 		("count", ''CInt, [| #{peek GdkEventExpose, count} |],
 			[| #{poke GdkEventExpose, count} |]) ]
 	[''Show]
+
+pattern GdkEventGdkExpose :: Sealed s GdkEventExposeRaw -> GdkEvent s
+pattern GdkEventGdkExpose e <-
+	GdkEvent (gdkEventTypeRaw GdkEventExposeRaw_ -> (GdkExpose, e))
 
 ---------------------------------------------------------------------------
 -- GDK EVENT VISIBILITY                                                  --

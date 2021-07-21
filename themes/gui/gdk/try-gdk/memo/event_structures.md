@@ -25,7 +25,7 @@ Types
 	+ [x] others
 * [ ] GdkEventExpose
 	+ [x] `GdkEventExposeRaw`
-	+ [ ] `GdkEventGdkExpose`
+	+ [x] `GdkEventGdkExpose`
 	+ [ ] define `cairoRegionCopy` or `cairoRegionReference`
 	+ [ ] `GdkEventExpose`
 	+ [ ] `gdkEventExpose`
