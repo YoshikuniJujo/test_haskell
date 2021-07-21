@@ -1,5 +1,6 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -429,9 +430,9 @@ checkEventSealed opacity pos size d st = \case
 		putStrLn $ "GDK_UNMAP: " ++ show m
 		pure True
 	GdkEventSealedGdkConfigure c -> True <$ print c
-	GdkEventGdkVisibilityNotify v -> do
+	GdkEventGdkVisibilityNotify (gdkEventVisibility -> v) -> do
 		print v
-		let	w = tryGdkEventVisibilitySealedWindow v
+		let	w = gdkEventVisibilityWindow v
 		r <- cairoRegionCreateRectangle $ CairoRectangleIntT 50 50 100 100
 		gdkWindowWithDrawFrame w r \cxt -> do
 			cr <- gdkDrawingContextGetCairoContext cxt

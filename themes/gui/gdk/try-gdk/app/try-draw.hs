@@ -1,5 +1,6 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -68,7 +69,7 @@ checkEvent = \case
 		pure True
 	GdkEventSealedGdkFocusChange f -> True <$ print f
 	GdkEventSealedGdkWindowState s -> True <$ print s
-	GdkEventGdkVisibilityNotify v -> True <$ print v
+	GdkEventGdkVisibilityNotify (gdkEventVisibility -> v) -> True <$ print v
 	GdkEventGdkKeyPress k -> do
 		let	kv = gdkEventKeyKeyval $ gdkEventKey k
 		pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')

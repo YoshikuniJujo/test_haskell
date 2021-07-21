@@ -23,13 +23,19 @@ Types
 * [x] GdkEventMotion
 	+ [x] define BoolInt16
 	+ [x] others
-* [ ] GdkEventVisibility
+* [x] GdkEventVisibility
 	+ [x] `GdkEventVisibilityRaw`
 	+ [x] `GdkEventGdkVisibilityNotify`
-	+ [ ] `GdkEventVisibility`
-	+ [ ] `gdkEventVisibility`
-	+ [ ] remove `tryGdkEventVisibilitySealedWindow`
+	+ [x] `GdkEventVisibility`
+	+ [x] `gdkEventVisibility`
+	+ [x] remove `tryGdkEventVisibilitySealedWindow`
 * [ ] GdkEventCrossing
+	+ [ ] add `GdkEnterNotifyMask` and `GdkLeaveNotifyMask`
+	+ [ ] `GdkEventCrossingRaw`
+	+ [ ] `GdkEventGdkEnterNotify`
+	+ [ ] `GdkEventGdkLeaveNotify`
+	+ [ ] `GdkEventCrossing`
+	+ [ ] `gdkEventCrossing`
 * [ ] GdkEventFocus
 * [ ] GdkEventConfigure
 * [ ] GdkEventProperty

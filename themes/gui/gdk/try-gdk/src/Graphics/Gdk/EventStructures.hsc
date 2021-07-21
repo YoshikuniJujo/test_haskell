@@ -485,13 +485,25 @@ struct "GdkEventVisibilityRaw" #{size GdkEventVisibility}
 			[| #{poke GdkEventVisibility, state} |]) ]
 	[''Show]
 
+data GdkEventVisibility = GdkEventVisibility {
+	gdkEventVisibilityWindow :: GdkWindow,
+	gdkEventVisibilitySendEvent :: Bool,
+	gdkEventVisibilityState :: GdkVisibilityState }
+	deriving Show
+
+gdkEventVisibility :: Sealed s GdkEventVisibilityRaw -> GdkEventVisibility
+gdkEventVisibility (Sealed r) = GdkEventVisibility
+	(gdkEventVisibilityRawWindow r)
+	(case gdkEventVisibilityRawSendEvent r of
+		FalseInt8 -> False; TrueInt8 -> True
+		_ -> error $ "gdkEventVisibilityRawSendEvent "
+			++ "should be FALSE or TRUE")
+	(gdkEventVisibilityRawState r)
+
 pattern GdkEventGdkVisibilityNotify ::
 	Sealed s GdkEventVisibilityRaw -> GdkEvent s
 pattern GdkEventGdkVisibilityNotify e <- GdkEvent
 	(gdkEventTypeRaw GdkEventVisibilityRaw_ -> (GdkVisibilityNotify, e))
-
-tryGdkEventVisibilitySealedWindow :: Sealed s GdkEventVisibilityRaw -> GdkWindow
-tryGdkEventVisibilitySealedWindow (Sealed e) = gdkEventVisibilityRawWindow e
 
 ---------------------------------------------------------------------------
 -- GDK EVENT CROSSING
@@ -499,14 +511,6 @@ tryGdkEventVisibilitySealedWindow (Sealed e) = gdkEventVisibilityRawWindow e
 
 tryGdkEventSealedMapWindow :: Sealed s GdkEventAnyRaw -> GdkWindow
 tryGdkEventSealedMapWindow (Sealed e) = gdkEventAnyRawWindow e
-
-gdkEventVisibilityState :: GdkEventVisibilityRaw -> IO GdkVisibilityState
-gdkEventVisibilityState (GdkEventVisibilityRaw_ p) = GdkVisibilityState <$> withForeignPtr p #peek GdkEventVisibility, state
-
-gdkEventVisibilityWindow :: GdkEventVisibilityRaw -> IO GdkWindow
-gdkEventVisibilityWindow (GdkEventVisibilityRaw_ p) =
---	GdkWindow <$> (c_g_object_ref =<< withForeignPtr p #peek GdkEventVisibility, window)
-	GdkWindow <$> withForeignPtr p #peek GdkEventVisibility, window
 
 gdkEventFocusWindow :: GdkEventFocus -> IO GdkWindow
 gdkEventFocusWindow (GdkEventFocus p) =
