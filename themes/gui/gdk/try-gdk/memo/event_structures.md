@@ -58,7 +58,11 @@ Types
 	+ [x] `gdkEventConfigure`
 	+ [x] remove `tryGdkEventSealedConfigureWindow`
 * [ ] GdkEventProperty
-* [ ] GdkEventSelection
+	+ [x] add `GdkPropertyChangeMask`
+	+ [ ] `GdkEventPropertyRaw`
+	+ [ ] `GdkEventGdkPropertyNOtify`
+	+ [ ] `GdkEventProperty`
+	+ [ ] `gdkEventProperty`
 * [ ] GdkEventDND
 * [ ] GdkEventProximity
 * [ ] GdkEventWindowState
@@ -76,6 +80,7 @@ Types
 * GdkEventTouch
 * [x] GdkEventExpose
 	+ remove it
+* GdkEventSelection
 
 Values
 ------

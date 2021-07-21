@@ -46,7 +46,7 @@ main = do
 	gdkWindowShow w
 	gdkWindowSetEvents w $ gdkEventMaskMultiBits [
 		GdkExposureMask, GdkButtonPressMask, GdkFocusChangeMask, GdkKeyPressMask,
-		GdkEnterNotifyMask, GdkLeaveNotifyMask,
+		GdkEnterNotifyMask, GdkLeaveNotifyMask, GdkPropertyChangeMask,
 		GdkPointerMotionMask ] -- , GdkAllEventsMask ]
 	doWhile_ do
 		threadDelay 100000
