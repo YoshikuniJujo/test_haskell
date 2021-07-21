@@ -525,7 +525,11 @@ struct "GdkEventCrossingRaw" #{size GdkEventCrossing}
 		("x", ''CDouble, [| #{peek GdkEventCrossing, x} |],
 			[| #{poke GdkEventCrossing, x} |]),
 		("y", ''CDouble, [| #{peek GdkEventCrossing, y} |],
-			[| #{poke GdkEventCrossing, y} |])
+			[| #{poke GdkEventCrossing, y} |]),
+		("xRoot", ''CDouble, [| #{peek GdkEventCrossing, x_root} |],
+			[| #{poke GdkEventCrossing, x_root} |]),
+		("yRoot", ''CDouble, [| #{peek GdkEventCrossing, y_root} |],
+			[| #{poke GdkEventCrossing, y_root} |])
 		]
 	[''Show]
 

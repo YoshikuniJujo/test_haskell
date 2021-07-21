@@ -34,9 +34,9 @@ Types
 	+ [ ] `GdkCrossingMode`
 	+ [ ] `GdkNotifyType`
 	+ [ ] `GdkEventCrossingRaw`
-		- [ ] some
-		- [ ] `x_root`
-		- [ ] `y_root`
+		- [x] some
+		- [x] `x_root`
+		- [x] `y_root`
 		- [ ] `mode`
 		- [ ] `detail`
 		- [ ] `focus`
