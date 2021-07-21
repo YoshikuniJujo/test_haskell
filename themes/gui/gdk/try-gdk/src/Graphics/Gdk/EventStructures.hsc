@@ -26,6 +26,7 @@ import Graphics.Gdk.GdkDevice.GdkAxes
 import {-# SOURCE #-} Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkModifierType
 import Graphics.Gdk.EventStructures.GdkKeySyms
+import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
 
 #include <gdk/gdk.h>
 
@@ -682,6 +683,33 @@ pattern GdkEventGdkConfigure e <-
 
 ---------------------------------------------------------------------------
 -- GDK EVENT PROPERTY                                                    --
+---------------------------------------------------------------------------
+
+enum "GdkPropertyState" ''#{type GdkPropertyState} [''Show, ''Storable] [
+	("GdkPropertyNewValue", #{const GDK_PROPERTY_NEW_VALUE}),
+	("GdkPropertyDelete", #{const GDK_PROPERTY_DELETE}) ]
+
+struct "GdkEventPropertyRaw" #{size GdkEventProperty}
+	[	("type", ''GdkEventType, [| #{peek GdkEventProperty, type} |],
+			[| #{poke GdkEventProperty, type} |]),
+		("window", ''GdkWindow, [| #{peek GdkEventProperty, window} |],
+			[| #{poke GdkEventProperty, window} |]),
+		("sendEvent", ''BoolInt8,
+			[| #{peek GdkEventProperty, send_event} |],
+			[| #{poke GdkEventProperty, send_event} |]),
+		("atom", ''GdkAtom, [| #{peek GdkEventProperty, atom} |],
+			[| #{poke GdkEventProperty, atom} |]),
+		("state", ''GdkPropertyState,
+			[| #{peek GdkEventProperty, state} |],
+			[| #{poke GdkEventProperty, state} |]) ]
+	[''Show]
+
+pattern GdkEventGdkPropertyNotify :: Sealed s GdkEventPropertyRaw -> GdkEvent s
+pattern GdkEventGdkPropertyNotify p <- GdkEvent
+	(gdkEventTypeRaw GdkEventPropertyRaw_ -> (GdkPropertyNotify, p))
+
+---------------------------------------------------------------------------
+-- GDK EVENT DRAG AND DROP                                               --
 ---------------------------------------------------------------------------
 
 newtype GdkWindowStates = GdkWindowStates #{type GdkWindowState} deriving Show

@@ -69,6 +69,7 @@ checkEvent = \case
 	GdkEventGdkFocusChange (gdkEventFocus -> f) -> True <$ print f
 	GdkEventGdkConfigure (gdkEventConfigure -> c) ->
 		True <$ (print c >> drawRedLine (gdkEventConfigureWindow c))
+	GdkEventGdkPropertyNotify p -> True <$ print p
 	GdkEventGdkMap m -> do
 		putStrLn $ "GDK_MAP: " ++ show m
 		drawRedLine $ tryGdkEventSealedMapWindow m

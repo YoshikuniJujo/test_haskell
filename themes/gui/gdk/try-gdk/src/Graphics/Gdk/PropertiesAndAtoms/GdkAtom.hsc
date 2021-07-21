@@ -1,16 +1,18 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.PropertiesAndAtoms.GdkAtom (
 	GdkAtom(..), gdkAtomIntern, gdkAtomName ) where
 
 import Foreign.Ptr
+import Foreign.Storable
 import Foreign.C.String
 import Data.Int
 
 #include <gdk/gdk.h>
 
-newtype GdkAtom = GdkAtom (Ptr GdkAtom) deriving Show
+newtype GdkAtom = GdkAtom (Ptr GdkAtom) deriving (Show, Storable)
 
 gdkAtomIntern :: String -> IO GdkAtom
 gdkAtomIntern nm = (GdkAtom <$>)
