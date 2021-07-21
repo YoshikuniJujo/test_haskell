@@ -23,12 +23,6 @@ Types
 * [x] GdkEventMotion
 	+ [x] define BoolInt16
 	+ [x] others
-* [ ] GdkEventExpose
-	+ [x] `GdkEventExposeRaw`
-	+ [x] `GdkEventGdkExpose`
-	+ [ ] define `cairoRegionCopy` or `cairoRegionReference`
-	+ [ ] `GdkEventExpose`
-	+ [ ] `gdkEventExpose`
 * [ ] GdkEventVisibility
 * [ ] GdkEventCrossing
 * [ ] GdkEventFocus
@@ -50,6 +44,8 @@ Types
 ### not now
 
 * GdkEventTouch
+* [x] GdkEventExpose
+	+ remove it
 
 Values
 ------

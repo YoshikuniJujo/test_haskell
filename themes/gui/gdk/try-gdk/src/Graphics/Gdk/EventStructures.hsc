@@ -15,7 +15,6 @@ import Foreign.C.String
 import Foreign.C.Enum
 import Foreign.C.Struct
 import Control.Arrow
-import Control.Monad.ST
 import Data.Bits
 import Data.Bits.Misc
 import Data.Word
@@ -28,8 +27,6 @@ import Graphics.Gdk.GdkDevice.GdkAxes
 import {-# SOURCE #-} Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkModifierType
 import Graphics.Gdk.EventStructures.GdkKeySyms
-
-import Graphics.Cairo.Drawing.Regions
 
 #include <gdk/gdk.h>
 
@@ -466,51 +463,6 @@ pattern GdkEventGdkMotionNotify s <-
 	GdkEvent (gdkEventTypeRaw GdkEventMotionRaw_ -> (GdkMotionNotify, s))
 
 ---------------------------------------------------------------------------
--- GDK EVENT EXPOSE                                                      --
----------------------------------------------------------------------------
-
-type PtrCairoRegionTIO = Ptr (CairoRegionT RealWorld)
-
-struct "GdkEventExposeRaw" #{size GdkEventExpose}
-	[	("type", ''GdkEventType, [| #{peek GdkEventExpose, type} |],
-			[| #{poke GdkEventExpose, type} |]),
-		("window", ''GdkWindow, [| #{peek GdkEventExpose, window} |],
-			[| #{poke GdkEventExpose, window} |]),
-		("sendEvent", ''BoolInt8,
-			[| #{peek GdkEventExpose, send_event} |],
-			[| #{poke GdkEventExpose, send_event} |]),
-		("areaX", ''CInt,
-			[| #{peek GdkRectangle, x}
-				. #{ptr GdkEventExpose, area} |],
-			[| #{poke GdkRectangle, x}
-				. #{ptr GdkEventExpose, area} |]),
-		("areaY", ''CInt,
-			[| #{peek GdkRectangle, y}
-				. #{ptr GdkEventExpose, area} |],
-			[| #{poke GdkRectangle, y}
-				. #{ptr GdkEventExpose, area} |]),
-		("areaWidth", ''CInt,
-			[| #{peek GdkRectangle, width}
-				. #{ptr GdkEventExpose, area} |],
-			[| #{poke GdkRectangle, height}
-				. #{ptr GdkEventExpose, area} |]),
-		("areaHeight", ''CInt,
-			[| #{peek GdkRectangle, height}
-				. #{ptr GdkEventExpose, area} |],
-			[| #{poke GdkRectangle, height}
-				. #{ptr GdkEventExpose, area} |]),
-		("region", ''PtrCairoRegionTIO,
-			[| #{peek GdkEventExpose, region} |],
-			[| #{poke GdkEventExpose, region} |]),
-		("count", ''CInt, [| #{peek GdkEventExpose, count} |],
-			[| #{poke GdkEventExpose, count} |]) ]
-	[''Show]
-
-pattern GdkEventGdkExpose :: Sealed s GdkEventExposeRaw -> GdkEvent s
-pattern GdkEventGdkExpose e <-
-	GdkEvent (gdkEventTypeRaw GdkEventExposeRaw_ -> (GdkExpose, e))
-
----------------------------------------------------------------------------
 -- GDK EVENT VISIBILITY                                                  --
 ---------------------------------------------------------------------------
 
@@ -534,6 +486,10 @@ struct "GdkEventVisibilityRaw" #{size GdkEventVisibility}
 
 tryGdkEventVisibilitySealedWindow :: Sealed s GdkEventVisibilityRaw -> GdkWindow
 tryGdkEventVisibilitySealedWindow (Sealed e) = gdkEventVisibilityRawWindow e
+
+---------------------------------------------------------------------------
+-- GDK EVENT CROSSING
+---------------------------------------------------------------------------
 
 tryGdkEventSealedMapWindow :: Sealed s GdkEventAnyRaw -> GdkWindow
 tryGdkEventSealedMapWindow (Sealed e) = gdkEventAnyRawWindow e
