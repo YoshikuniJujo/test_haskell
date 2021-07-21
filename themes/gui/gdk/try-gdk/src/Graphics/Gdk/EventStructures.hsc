@@ -566,6 +566,36 @@ struct "GdkEventCrossingRaw" #{size GdkEventCrossing}
 		]
 	[''Show]
 
+data GdkEventCrossing = GdkEventCrossing {
+	gdkEventCrossingWindow :: GdkWindow,
+	gdkEventCrossingSendEvent :: Bool,
+	gdkEventCrossingSubwindow :: GdkWindow,
+	gdkEventCrossingTime :: MilliSecond,
+	gdkEventCrossingX, gdkEventCrossingY :: CDouble,
+	gdkEventCrossingXRoot, gdkEventCrossingYRoot :: CDouble,
+	gdkEventCrossingMode :: GdkCrossingMode,
+	gdkEventCrossingDetail :: GdkNotifyType,
+	gdkEventCrossingFocus :: Bool,
+	gdkEventCrossingState :: [GdkModifierTypeSingleBit] }
+	deriving Show
+
+gdkEventCrossing :: Sealed s GdkEventCrossingRaw -> GdkEventCrossing
+gdkEventCrossing (Sealed r) = GdkEventCrossing
+	(gdkEventCrossingRawWindow r)
+	(case gdkEventCrossingRawSendEvent r of
+		FalseInt8 -> False; TrueInt8 -> True
+		_ -> error $ "gdkEventCrossingRawSendEvent " ++
+			"should be FALSE or TRUE")
+	(gdkEventCrossingRawSubwindow r)
+	(gdkEventCrossingRawTime r)
+	(gdkEventCrossingRawX r) (gdkEventCrossingRawY r)
+	(gdkEventCrossingRawXRoot r) (gdkEventCrossingRawYRoot r)
+	(gdkEventCrossingRawMode r) (gdkEventCrossingRawDetail r)
+	(case gdkEventCrossingRawFocus r of
+		FalseGBoolean -> False; TrueGBoolean -> True
+		_ -> error $ "gdkEventCrossingRawFocus should be FALSE or TRUE")
+	(gdkModifierTypeSingleBitList $ gdkEventCrossingRawState r)
+
 pattern GdkEventGdkEnterNotify :: Sealed s GdkEventCrossingRaw -> GdkEvent s
 pattern GdkEventGdkEnterNotify e <- GdkEvent
 	(gdkEventTypeRaw GdkEventCrossingRaw_ -> (GdkEnterNotify, e))
