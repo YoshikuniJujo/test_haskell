@@ -474,7 +474,8 @@ enum "GdkVisibilityState" ''#{type GdkVisibilityState} [''Show, ''Storable] [
 struct "GdkEventVisibilityRaw" #{size GdkEventVisibility}
 	[	("type", ''GdkEventType, [| #{peek GdkEventVisibility, type} |],
 			[| #{poke GdkEventVisibility, type} |]),
-		("window", ''GdkWindow, [| #{peek GdkEventVisibility, window} |],
+		("window", ''GdkWindow,
+			[| #{peek GdkEventVisibility, window} |],
 			[| #{poke GdkEventVisibility, window} |]),
 		("sendEvent", ''BoolInt8,
 			[| #{peek GdkEventVisibility, send_event} |],
@@ -483,6 +484,11 @@ struct "GdkEventVisibilityRaw" #{size GdkEventVisibility}
 			[| #{peek GdkEventVisibility, state} |],
 			[| #{poke GdkEventVisibility, state} |]) ]
 	[''Show]
+
+pattern GdkEventGdkVisibilityNotify ::
+	Sealed s GdkEventVisibilityRaw -> GdkEvent s
+pattern GdkEventGdkVisibilityNotify e <- GdkEvent
+	(gdkEventTypeRaw GdkEventVisibilityRaw_ -> (GdkVisibilityNotify, e))
 
 tryGdkEventVisibilitySealedWindow :: Sealed s GdkEventVisibilityRaw -> GdkWindow
 tryGdkEventVisibilitySealedWindow (Sealed e) = gdkEventVisibilityRawWindow e
@@ -496,11 +502,6 @@ tryGdkEventSealedMapWindow (Sealed e) = gdkEventAnyRawWindow e
 
 gdkEventVisibilityState :: GdkEventVisibilityRaw -> IO GdkVisibilityState
 gdkEventVisibilityState (GdkEventVisibilityRaw_ p) = GdkVisibilityState <$> withForeignPtr p #peek GdkEventVisibility, state
-
-pattern GdkEventSealedGdkVisibilityNotify ::
-	Sealed s GdkEventVisibilityRaw -> GdkEvent s
-pattern GdkEventSealedGdkVisibilityNotify e <-
-	GdkEvent (gdkEventTypeRaw GdkEventVisibilityRaw_ -> (GdkVisibilityNotify, e))
 
 gdkEventVisibilityWindow :: GdkEventVisibilityRaw -> IO GdkWindow
 gdkEventVisibilityWindow (GdkEventVisibilityRaw_ p) =

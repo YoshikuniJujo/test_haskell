@@ -429,7 +429,7 @@ checkEventSealed opacity pos size d st = \case
 		putStrLn $ "GDK_UNMAP: " ++ show m
 		pure True
 	GdkEventSealedGdkConfigure c -> True <$ print c
-	GdkEventSealedGdkVisibilityNotify v -> do
+	GdkEventGdkVisibilityNotify v -> do
 		print v
 		let	w = tryGdkEventVisibilitySealedWindow v
 		r <- cairoRegionCreateRectangle $ CairoRectangleIntT 50 50 100 100

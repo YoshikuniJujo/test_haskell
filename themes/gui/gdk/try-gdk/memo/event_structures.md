@@ -24,6 +24,11 @@ Types
 	+ [x] define BoolInt16
 	+ [x] others
 * [ ] GdkEventVisibility
+	+ [x] `GdkEventVisibilityRaw`
+	+ [x] `GdkEventGdkVisibilityNotify`
+	+ [ ] `GdkEventVisibility`
+	+ [ ] `gdkEventVisibility`
+	+ [ ] remove `tryGdkEventVisibilitySealedWindow`
 * [ ] GdkEventCrossing
 * [ ] GdkEventFocus
 * [ ] GdkEventConfigure
@@ -52,7 +57,7 @@ Values
 
 * [x] GdkEventType
 * [x] GdkScrollDirection
-* [ ] GdkVisibilityState
+* [x] GdkVisibilityState
 * [ ] GdkCrossingMode
 * [ ] GdkNotifyType
 * [ ] GdkPropertyState
