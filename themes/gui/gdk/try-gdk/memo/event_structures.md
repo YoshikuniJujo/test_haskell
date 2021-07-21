@@ -24,10 +24,11 @@ Types
 	+ [x] define BoolInt16
 	+ [x] others
 * [ ] GdkEventExpose
-	+ [ ] `GdkEventExposeRaw`
+	+ [x] `GdkEventExposeRaw`
+	+ [ ] `GdkEventGdkExpose`
+	+ [ ] define `cairoRegionCopy` or `cairoRegionReference`
 	+ [ ] `GdkEventExpose`
 	+ [ ] `gdkEventExpose`
-	+ [ ] `GdkEventGdkExpose`
 * [ ] GdkEventVisibility
 * [ ] GdkEventCrossing
 * [ ] GdkEventFocus
