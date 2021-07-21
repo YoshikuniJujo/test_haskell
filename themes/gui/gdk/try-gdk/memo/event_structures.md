@@ -32,13 +32,13 @@ Types
 * [ ] GdkEventCrossing
 	+ [x] add `GdkEnterNotifyMask` and `GdkLeaveNotifyMask`
 	+ [x] `GdkCrossingMode`
-	+ [ ] `GdkNotifyType`
+	+ [x] `GdkNotifyType`
 	+ [ ] `GdkEventCrossingRaw`
 		- [x] some
 		- [x] `x_root`
 		- [x] `y_root`
 		- [x] `mode`
-		- [ ] `detail`
+		- [x] `detail`
 		- [ ] `focus`
 		- [ ] `state`
 	+ [x] `GdkEventGdkEnterNotify`

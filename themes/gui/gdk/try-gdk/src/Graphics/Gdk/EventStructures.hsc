@@ -520,6 +520,14 @@ enum "GdkCrossingMode" ''#{type GdkCrossingMode} [''Show, ''Storable] [
 	("GdkCrossingTouchEnd", #{const GDK_CROSSING_TOUCH_END}),
 	("GdkCrossingDeviceSwitch", #{const GDK_CROSSING_DEVICE_SWITCH}) ]
 
+enum "GdkNotifyType" ''#{type GdkNotifyType} [''Show, ''Storable] [
+	("GdkNotifyAncestor", #{const GDK_NOTIFY_ANCESTOR}),
+	("GdkNotifyVirtural", #{const GDK_NOTIFY_VIRTUAL}),
+	("GdkNotifyInferior", #{const GDK_NOTIFY_INFERIOR}),
+	("GdkNotifyNonlinear", #{const GDK_NOTIFY_NONLINEAR}),
+	("GdkNotifyNonlinearVirtual", #{const GDK_NOTIFY_NONLINEAR_VIRTUAL}),
+	("GdkNotifyUnknown", #{const GDK_NOTIFY_UNKNOWN}) ]
+
 struct "GdkEventCrossingRaw" #{size GdkEventCrossing}
 	[	("type", ''GdkEventType, [| #{peek GdkEventCrossing, type} |],
 			[| #{poke GdkEventCrossing, type} |]),
@@ -543,7 +551,10 @@ struct "GdkEventCrossingRaw" #{size GdkEventCrossing}
 			[| #{poke GdkEventCrossing, y_root} |]),
 		("mode", ''GdkCrossingMode,
 			[| #{peek GdkEventCrossing, mode} |],
-			[| #{poke GdkEventCrossing, mode} |])
+			[| #{poke GdkEventCrossing, mode} |]),
+		("detail", ''GdkNotifyType,
+			[| #{peek GdkEventCrossing, detail} |],
+			[| #{poke GdkEventCrossing, detail} |])
 		]
 	[''Show]
 
