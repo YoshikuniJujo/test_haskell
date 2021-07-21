@@ -570,6 +570,10 @@ pattern GdkEventGdkEnterNotify :: Sealed s GdkEventCrossingRaw -> GdkEvent s
 pattern GdkEventGdkEnterNotify e <- GdkEvent
 	(gdkEventTypeRaw GdkEventCrossingRaw_ -> (GdkEnterNotify, e))
 
+pattern GdkEventGdkLeaveNotify :: Sealed s GdkEventCrossingRaw -> GdkEvent s
+pattern GdkEventGdkLeaveNotify l <- GdkEvent
+	(gdkEventTypeRaw GdkEventCrossingRaw_ -> (GdkLeaveNotify, l))
+
 ---------------------------------------------------------------------------
 -- GDK EVENT FOCUS                                                       --
 ---------------------------------------------------------------------------

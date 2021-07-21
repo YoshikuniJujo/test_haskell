@@ -65,6 +65,7 @@ checkEvent = \case
 		pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
 	GdkEventGdkVisibilityNotify (gdkEventVisibility -> v) -> True <$ print v
 	GdkEventGdkEnterNotify e -> True <$ print e
+	GdkEventGdkLeaveNotify l -> True <$ print l
 	GdkEventGdkMap m -> do
 		putStrLn $ "GDK_MAP: " ++ show m
 		drawRedLine $ tryGdkEventSealedMapWindow m

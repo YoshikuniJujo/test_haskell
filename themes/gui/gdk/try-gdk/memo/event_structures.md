@@ -43,7 +43,7 @@ Types
 		- [x] `focus`
 		- [x] `state`
 	+ [x] `GdkEventGdkEnterNotify`
-	+ [ ] `GdkEventGdkLeaveNotify`
+	+ [x] `GdkEventGdkLeaveNotify`
 	+ [ ] `GdkEventCrossing`
 	+ [ ] `gdkEventCrossing`
 * [ ] GdkEventFocus
