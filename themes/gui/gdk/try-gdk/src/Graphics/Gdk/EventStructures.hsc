@@ -684,7 +684,7 @@ pattern GdkEventGdkConfigure e <-
 -- GDK EVENT DRAG AND DROP                                               --
 ---------------------------------------------------------------------------
 
-newtype GdkWindowStates = GdkWindowStates #{type GdkWindowState} deriving Show
+newtype GdkWindowStates = GdkWindowStates #{type GdkWindowState} deriving (Show, Storable)
 
 enum "GdkWindowState" ''#{type GdkWindowState} [''Show, ''Storable] [
 	("GdkWindowStateWithdrawn", #{const GDK_WINDOW_STATE_WITHDRAWN}),
@@ -720,10 +720,10 @@ struct "GdkEventWindowStateRaw" #{size GdkEventWindowState}
 		("window", ''GdkWindow,
 			[| #{peek GdkEventWindowState, window} |],
 			[| #{poke GdkEventWindowState, window} |]),
-		("changedMask", ''GdkWindowState,
+		("changedMask", ''GdkWindowStates,
 			[| #{peek GdkEventWindowState, changed_mask} |],
 			[| #{poke GdkEventWindowState, changed_mask} |]),
-		("newWindowState", ''GdkWindowState,
+		("newWindowState", ''GdkWindowStates,
 			[| #{peek GdkEventWindowState, new_window_state} |],
 			[| #{poke GdkEventWindowState, new_window_state} |]) ]
 	[''Show]

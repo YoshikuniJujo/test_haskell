@@ -58,6 +58,12 @@ Types
 	+ [x] `gdkEventConfigure`
 	+ [x] remove `tryGdkEventSealedConfigureWindow`
 * [ ] GdkEventWindowState
+	+ [ ] `newtype GdkWindowStates`
+	+ [ ] `newtype GdkWindowState`
+	+ [ ] struct `GdkEventWindowStateRaw`
+	+ [ ] `pattern GdkEventGdkWindowState`
+	+ [ ] `data GdkEventWindowState`
+	+ [ ] function `gdkEventWindowState`
 * [ ] GdkEventSetting
 * [ ] GdkEventOwnerChange
 * [ ] GdkEventGrabBroken
