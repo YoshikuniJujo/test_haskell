@@ -26,7 +26,6 @@ import Graphics.Gdk.GdkDevice.GdkAxes
 import {-# SOURCE #-} Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkModifierType
 import Graphics.Gdk.EventStructures.GdkKeySyms
-import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
 
 #include <gdk/gdk.h>
 
@@ -680,49 +679,6 @@ gdkEventConfigure (Sealed r) = GdkEventConfigure
 pattern GdkEventGdkConfigure :: Sealed s GdkEventConfigureRaw -> GdkEvent s
 pattern GdkEventGdkConfigure e <-
 	GdkEvent (gdkEventTypeRaw GdkEventConfigureRaw_ -> (GdkConfigure, e))
-
----------------------------------------------------------------------------
--- GDK EVENT PROPERTY                                                    --
----------------------------------------------------------------------------
-
-enum "GdkPropertyState" ''#{type GdkPropertyState} [''Show, ''Storable] [
-	("GdkPropertyNewValue", #{const GDK_PROPERTY_NEW_VALUE}),
-	("GdkPropertyDelete", #{const GDK_PROPERTY_DELETE}) ]
-
-struct "GdkEventPropertyRaw" #{size GdkEventProperty}
-	[	("type", ''GdkEventType, [| #{peek GdkEventProperty, type} |],
-			[| #{poke GdkEventProperty, type} |]),
-		("window", ''GdkWindow, [| #{peek GdkEventProperty, window} |],
-			[| #{poke GdkEventProperty, window} |]),
-		("sendEvent", ''BoolInt8,
-			[| #{peek GdkEventProperty, send_event} |],
-			[| #{poke GdkEventProperty, send_event} |]),
-		("atom", ''GdkAtom, [| #{peek GdkEventProperty, atom} |],
-			[| #{poke GdkEventProperty, atom} |]),
-		("state", ''GdkPropertyState,
-			[| #{peek GdkEventProperty, state} |],
-			[| #{poke GdkEventProperty, state} |]) ]
-	[''Show]
-
-data GdkEventProperty = GdkEventProperty {
-	gdkEventPropertyWindow :: GdkWindow, gdkEventPropertySendEvent :: Bool,
-	gdkEventPropertyAtom :: GdkAtom,
-	gdkEventPropertyState :: GdkPropertyState }
-	deriving Show
-
-gdkEventProperty :: Sealed s GdkEventPropertyRaw -> GdkEventProperty
-gdkEventProperty (Sealed r) = GdkEventProperty
-	(gdkEventPropertyRawWindow r)
-	(case gdkEventPropertyRawSendEvent r of
-		FalseInt8 -> False; TrueInt8 -> True
-		_ -> error $ "gdkEventPropertyRawSendEvent " ++
-			"should be FALSE or TRUE")
-	(gdkEventPropertyRawAtom r)
-	(gdkEventPropertyRawState r)
-
-pattern GdkEventGdkPropertyNotify :: Sealed s GdkEventPropertyRaw -> GdkEvent s
-pattern GdkEventGdkPropertyNotify p <- GdkEvent
-	(gdkEventTypeRaw GdkEventPropertyRaw_ -> (GdkPropertyNotify, p))
 
 ---------------------------------------------------------------------------
 -- GDK EVENT DRAG AND DROP                                               --
