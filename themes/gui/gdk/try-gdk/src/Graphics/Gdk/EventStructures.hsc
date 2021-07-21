@@ -608,21 +608,27 @@ pattern GdkEventGdkLeaveNotify l <- GdkEvent
 -- GDK EVENT FOCUS                                                       --
 ---------------------------------------------------------------------------
 
-tryGdkEventSealedMapWindow :: Sealed s GdkEventAnyRaw -> GdkWindow
-tryGdkEventSealedMapWindow (Sealed e) = gdkEventAnyRawWindow e
+struct "GdkEventFocusRaw" #{size GdkEventFocus}
+	[	("type", ''GdkEventType, [| #{peek GdkEventFocus, type} |],
+			[| #{poke GdkEventFocus, type} |]),
+		("window", ''GdkWindow, [| #{peek GdkEventFocus, window} |],
+			[| #{poke GdkEventFocus, window} |]),
+		("sendEvent", ''BoolInt8, [| #{peek GdkEventFocus, send_event} |],
+			[| #{poke GdkEventFocus, send_event} |]),
+		("in", ''BoolInt16, [| #{peek GdkEventFocus, in} |],
+			[| #{poke GdkEventFocus, in} |]) ]
+	[''Show]
 
-gdkEventFocusWindow :: GdkEventFocus -> IO GdkWindow
-gdkEventFocusWindow (GdkEventFocus p) =
-	GdkWindow <$> withForeignPtr p #peek GdkEventFocus, window
-
-newtype GdkEventFocus = GdkEventFocus (ForeignPtr GdkEventFocus) deriving Show
-
-pattern GdkEventSealedGdkFocusChange :: Sealed s GdkEventFocus -> GdkEvent s
+pattern GdkEventSealedGdkFocusChange :: Sealed s GdkEventFocusRaw -> GdkEvent s
 pattern GdkEventSealedGdkFocusChange e <-
-	GdkEvent (gdkEventTypeRaw GdkEventFocus -> (GdkFocusChange, e))
+	GdkEvent (gdkEventTypeRaw GdkEventFocusRaw_ -> (GdkFocusChange, e))
 
-gdkEventFocusIn :: GdkEventFocus -> IO Bool
-gdkEventFocusIn (GdkEventFocus p) = gint16ToBool <$> withForeignPtr p #peek GdkEventFocus, in
+gdkEventFocusIn :: GdkEventFocusRaw -> IO Bool
+gdkEventFocusIn (GdkEventFocusRaw_ p) = gint16ToBool <$> withForeignPtr p #peek GdkEventFocus, in
+
+gdkEventFocusWindow :: GdkEventFocusRaw -> IO GdkWindow
+gdkEventFocusWindow (GdkEventFocusRaw_ p) =
+	GdkWindow <$> withForeignPtr p #peek GdkEventFocus, window
 
 gint16ToBool :: HasCallStack => #{type gint16} -> Bool
 gint16ToBool #{const TRUE} = True
@@ -646,6 +652,9 @@ struct "GdkEventConfigureRaw" #{size GdkEventConfigure}
 		("height", ''CInt, [| #{peek GdkEventConfigure, height} |],
 			[| #{poke GdkEventConfigure, height} |]) ]
 	[''Show]
+
+tryGdkEventSealedMapWindow :: Sealed s GdkEventAnyRaw -> GdkWindow
+tryGdkEventSealedMapWindow (Sealed e) = gdkEventAnyRawWindow e
 
 tryGdkEventSealedConfigureWindow :: Sealed s GdkEventConfigureRaw -> GdkWindow
 tryGdkEventSealedConfigureWindow (Sealed e) = gdkEventConfigureRawWindow e
