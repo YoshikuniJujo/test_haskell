@@ -506,7 +506,35 @@ pattern GdkEventGdkVisibilityNotify e <- GdkEvent
 	(gdkEventTypeRaw GdkEventVisibilityRaw_ -> (GdkVisibilityNotify, e))
 
 ---------------------------------------------------------------------------
--- GDK EVENT CROSSING
+-- GDK EVENT CROSSING                                                    --
+---------------------------------------------------------------------------
+
+struct "GdkEventCrossingRaw" #{size GdkEventCrossing}
+	[	("type", ''GdkEventType, [| #{peek GdkEventCrossing, type} |],
+			[| #{poke GdkEventCrossing, type} |]),
+		("window", ''GdkWindow, [| #{peek GdkEventCrossing, window} |],
+			[| #{poke GdkEventCrossing, window} |]),
+		("sendEvent", ''BoolInt8,
+			[| #{peek GdkEventCrossing, send_event} |],
+			[| #{poke GdkEventCrossing, send_event} |]),
+		("subwindow", ''GdkWindow,
+			[| #{peek GdkEventCrossing, subwindow} |],
+			[| #{poke GdkEventCrossing, subwindow} |]),
+		("time", ''MilliSecond, [| #{peek GdkEventCrossing, time} |],
+			[| #{poke GdkEventCrossing, time} |]),
+		("x", ''CDouble, [| #{peek GdkEventCrossing, x} |],
+			[| #{poke GdkEventCrossing, x} |]),
+		("y", ''CDouble, [| #{peek GdkEventCrossing, y} |],
+			[| #{poke GdkEventCrossing, y} |])
+		]
+	[''Show]
+
+pattern GdkEventGdkEnterNotify :: Sealed s GdkEventCrossingRaw -> GdkEvent s
+pattern GdkEventGdkEnterNotify e <- GdkEvent
+	(gdkEventTypeRaw GdkEventCrossingRaw_ -> (GdkEnterNotify, e))
+
+---------------------------------------------------------------------------
+-- GDK EVENT FOCUS                                                       --
 ---------------------------------------------------------------------------
 
 tryGdkEventSealedMapWindow :: Sealed s GdkEventAnyRaw -> GdkWindow

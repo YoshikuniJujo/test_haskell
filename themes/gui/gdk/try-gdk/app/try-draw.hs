@@ -46,6 +46,7 @@ main = do
 	gdkWindowShow w
 	gdkWindowSetEvents w $ gdkEventMaskMultiBits [
 		GdkExposureMask, GdkButtonPressMask, GdkFocusChangeMask, GdkKeyPressMask,
+		GdkEnterNotifyMask, GdkLeaveNotifyMask,
 		GdkPointerMotionMask ] -- , GdkAllEventsMask ]
 	doWhile_ do
 		threadDelay 100000
@@ -59,6 +60,11 @@ main = do
 
 checkEvent :: GdkEvent s -> IO Bool
 checkEvent = \case
+	GdkEventGdkKeyPress k -> do
+		let	kv = gdkEventKeyKeyval $ gdkEventKey k
+		pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
+	GdkEventGdkVisibilityNotify (gdkEventVisibility -> v) -> True <$ print v
+	GdkEventGdkEnterNotify e -> True <$ print e
 	GdkEventGdkMap m -> do
 		putStrLn $ "GDK_MAP: " ++ show m
 		drawRedLine $ tryGdkEventSealedMapWindow m
@@ -69,10 +75,6 @@ checkEvent = \case
 		pure True
 	GdkEventSealedGdkFocusChange f -> True <$ print f
 	GdkEventSealedGdkWindowState s -> True <$ print s
-	GdkEventGdkVisibilityNotify (gdkEventVisibility -> v) -> True <$ print v
-	GdkEventGdkKeyPress k -> do
-		let	kv = gdkEventKeyKeyval $ gdkEventKey k
-		pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
 	GdkEventGdkAny a -> True <$ print a
 
 drawRedLine :: GdkWindow -> IO ()
