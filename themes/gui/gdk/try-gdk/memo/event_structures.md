@@ -57,8 +57,6 @@ Types
 	+ [x] `GdkEventConfigure`
 	+ [x] `gdkEventConfigure`
 	+ [x] remove `tryGdkEventSealedConfigureWindow`
-* [ ] GdkEventDND
-* [ ] GdkEventProximity
 * [ ] GdkEventWindowState
 * [ ] GdkEventSetting
 * [ ] GdkEventOwnerChange
@@ -79,6 +77,8 @@ Types
 	+ remove it
 * [x] `gdkPropertyGet` in `Graphics.Gdk.PropertiesAndAtoms.Properties`
 	+ remove it and this module
+* GdkEventDND
+* GdkEventProximity
 
 Values
 ------
