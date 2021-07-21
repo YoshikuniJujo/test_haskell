@@ -704,6 +704,22 @@ struct "GdkEventPropertyRaw" #{size GdkEventProperty}
 			[| #{poke GdkEventProperty, state} |]) ]
 	[''Show]
 
+data GdkEventProperty = GdkEventProperty {
+	gdkEventPropertyWindow :: GdkWindow, gdkEventPropertySendEvent :: Bool,
+	gdkEventPropertyAtom :: GdkAtom,
+	gdkEventPropertyState :: GdkPropertyState }
+	deriving Show
+
+gdkEventProperty :: Sealed s GdkEventPropertyRaw -> GdkEventProperty
+gdkEventProperty (Sealed r) = GdkEventProperty
+	(gdkEventPropertyRawWindow r)
+	(case gdkEventPropertyRawSendEvent r of
+		FalseInt8 -> False; TrueInt8 -> True
+		_ -> error $ "gdkEventPropertyRawSendEvent " ++
+			"should be FALSE or TRUE")
+	(gdkEventPropertyRawAtom r)
+	(gdkEventPropertyRawState r)
+
 pattern GdkEventGdkPropertyNotify :: Sealed s GdkEventPropertyRaw -> GdkEvent s
 pattern GdkEventGdkPropertyNotify p <- GdkEvent
 	(gdkEventTypeRaw GdkEventPropertyRaw_ -> (GdkPropertyNotify, p))

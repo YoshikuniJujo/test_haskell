@@ -19,7 +19,9 @@ import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
+import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
 import Graphics.Gdk.Values
+
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Regions
 import Graphics.Cairo.Drawing.Paths
@@ -69,7 +71,9 @@ checkEvent = \case
 	GdkEventGdkFocusChange (gdkEventFocus -> f) -> True <$ print f
 	GdkEventGdkConfigure (gdkEventConfigure -> c) ->
 		True <$ (print c >> drawRedLine (gdkEventConfigureWindow c))
-	GdkEventGdkPropertyNotify p -> True <$ print p
+	GdkEventGdkPropertyNotify (gdkEventProperty -> p) -> True <$ do
+		print p
+		print =<< gdkAtomName (gdkEventPropertyAtom p)
 	GdkEventGdkMap m -> do
 		putStrLn $ "GDK_MAP: " ++ show m
 		drawRedLine $ tryGdkEventSealedMapWindow m
