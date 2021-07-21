@@ -559,7 +559,10 @@ struct "GdkEventCrossingRaw" #{size GdkEventCrossing}
 			[| #{peek GdkEventCrossing, detail} |],
 			[| #{poke GdkEventCrossing, detail} |]),
 		("focus", ''GBoolean, [| #{peek GdkEventCrossing, focus} |],
-			[| #{poke GdkEventCrossing, focus} |])
+			[| #{poke GdkEventCrossing, focus} |]),
+		("state", ''GdkModifierTypeMultiBits,
+			[| #{peek GdkEventCrossing, state} |],
+			[| #{poke GdkEventCrossing, state} |])
 		]
 	[''Show]
 

@@ -34,14 +34,14 @@ Types
 	+ [x] `GdkCrossingMode`
 	+ [x] `GdkNotifyType`
 	+ [x] `GBoolean`
-	+ [ ] `GdkEventCrossingRaw`
+	+ [x] `GdkEventCrossingRaw`
 		- [x] some
 		- [x] `x_root`
 		- [x] `y_root`
 		- [x] `mode`
 		- [x] `detail`
 		- [x] `focus`
-		- [ ] `state`
+		- [x] `state`
 	+ [x] `GdkEventGdkEnterNotify`
 	+ [ ] `GdkEventGdkLeaveNotify`
 	+ [ ] `GdkEventCrossing`
