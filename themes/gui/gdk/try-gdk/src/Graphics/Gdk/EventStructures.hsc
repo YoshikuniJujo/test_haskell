@@ -651,7 +651,7 @@ struct "GdkEventConfigureRaw" #{size GdkEventConfigure}
 			[| #{poke GdkEventConfigure, send_event} |]),
 		("x", ''CInt, [| #{peek GdkEventConfigure, x} |],
 			[| #{poke GdkEventConfigure, x} |]),
-		("y", ''CInt, [| #{peek GdkEventConfigure, x} |],
+		("y", ''CInt, [| #{peek GdkEventConfigure, y} |],
 			[| #{poke GdkEventConfigure, y} |]),
 		("width", ''CInt, [| #{peek GdkEventConfigure, width} |],
 			[| #{poke GdkEventConfigure, width} |]),
@@ -659,23 +659,26 @@ struct "GdkEventConfigureRaw" #{size GdkEventConfigure}
 			[| #{poke GdkEventConfigure, height} |]) ]
 	[''Show]
 
+data GdkEventConfigure = GdkEventConfigure {
+	gdkEventConfigureWindow :: GdkWindow,
+	gdkEventConfigureSendEvent :: Bool,
+	gdkEventConfigureX, gdkEventConfigureY :: CInt,
+	gdkEventConfigureWidth, gdkEventConfigureHeight :: CInt }
+	deriving Show
+
+gdkEventConfigure :: Sealed s GdkEventConfigureRaw -> GdkEventConfigure
+gdkEventConfigure (Sealed r) = GdkEventConfigure
+	(gdkEventConfigureRawWindow r)
+	(case gdkEventConfigureRawSendEvent r of
+		FalseInt8 -> False; TrueInt8 -> True
+		_ -> error $ "gdkEventConfigureRawSendEvent " ++
+			"should be FALSE or TRUE")
+	(gdkEventConfigureRawX r) (gdkEventConfigureRawY r)
+	(gdkEventConfigureRawWidth r) (gdkEventConfigureRawHeight r)
+
 pattern GdkEventGdkConfigure :: Sealed s GdkEventConfigureRaw -> GdkEvent s
 pattern GdkEventGdkConfigure e <-
 	GdkEvent (gdkEventTypeRaw GdkEventConfigureRaw_ -> (GdkConfigure, e))
-
-tryGdkEventSealedConfigureWindow :: Sealed s GdkEventConfigureRaw -> GdkWindow
-tryGdkEventSealedConfigureWindow (Sealed e) = gdkEventConfigureRawWindow e
-		
-gdkEventConfigureWidth, gdkEventConfigureHeight :: GdkEventConfigureRaw -> IO #type gint
-gdkEventConfigureWidth (GdkEventConfigureRaw_ p) = withForeignPtr p #peek GdkEventConfigure, width
-gdkEventConfigureHeight (GdkEventConfigureRaw_ p) = withForeignPtr p #peek GdkEventConfigure, height
-
-gdkEventConfigureX, gdkEventConfigureY :: GdkEventConfigureRaw -> IO #type gint
-gdkEventConfigureX (GdkEventConfigureRaw_ p) = withForeignPtr p #peek GdkEventConfigure, x
-gdkEventConfigureY (GdkEventConfigureRaw_ p) = withForeignPtr p #peek GdkEventConfigure, y
-
-gdkEventConfigureWindow :: GdkEventConfigureRaw -> IO GdkWindow
-gdkEventConfigureWindow (GdkEventConfigureRaw_ p) = GdkWindow <$> withForeignPtr p #peek GdkEventConfigure, window
 
 ---------------------------------------------------------------------------
 -- GDK EVENT PROPERTY                                                    --

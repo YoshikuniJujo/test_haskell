@@ -51,12 +51,12 @@ Types
 	+ [x] `GdkEventGdkFocusChange`
 	+ [x] `GdkEventFocus`
 	+ [x] `gdkEventFocus`
-* [ ] GdkEventConfigure
+* [x] GdkEventConfigure
 	+ [x] `GdkEventConfigureRaw`
 	+ [x] `GdkEventGdkConfigure`
-	+ [ ] `GdkEventConfigure`
-	+ [ ] `gdkEventConfigure`
-	+ [ ] remove `tryGdkEventSealedConfigureWindow`
+	+ [x] `GdkEventConfigure`
+	+ [x] `gdkEventConfigure`
+	+ [x] remove `tryGdkEventSealedConfigureWindow`
 * [ ] GdkEventProperty
 * [ ] GdkEventSelection
 * [ ] GdkEventDND
