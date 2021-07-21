@@ -19,6 +19,7 @@ import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
+import Graphics.Gdk.PropertiesAndAtoms.Properties
 import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
 import Graphics.Gdk.Values
 
@@ -74,6 +75,13 @@ checkEvent = \case
 	GdkEventGdkPropertyNotify (gdkEventProperty -> p) -> True <$ do
 		print p
 		print =<< gdkAtomName (gdkEventPropertyAtom p)
+		gdkPropertyGet
+			(gdkEventPropertyWindow p)
+			(gdkEventPropertyAtom p) GdkNone 0 100 False >>= \case
+			Just (at, af, al, dt) -> do
+				atn <- gdkAtomName at
+				print (atn, af, al, dt)
+			Nothing -> pure ()
 	GdkEventGdkMap m -> do
 		putStrLn $ "GDK_MAP: " ++ show m
 		drawRedLine $ tryGdkEventSealedMapWindow m
