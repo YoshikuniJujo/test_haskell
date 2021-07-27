@@ -681,10 +681,11 @@ pattern GdkEventGdkConfigure e <-
 	GdkEvent (gdkEventTypeRaw GdkEventConfigureRaw_ -> (GdkConfigure, e))
 
 ---------------------------------------------------------------------------
--- GDK EVENT DRAG AND DROP                                               --
+-- GDK EVENT WINDOW STATES
 ---------------------------------------------------------------------------
 
-newtype GdkWindowStates = GdkWindowStates #{type GdkWindowState} deriving (Show, Storable)
+enum "GdkWindowStates" ''#{type GdkWindowState} [''Show, ''Storable] [
+	("GdkWindowStateZero", 0) ]
 
 enum "GdkWindowState" ''#{type GdkWindowState} [''Show, ''Storable] [
 	("GdkWindowStateWithdrawn", #{const GDK_WINDOW_STATE_WITHDRAWN}),
@@ -708,7 +709,8 @@ enum "GdkWindowState" ''#{type GdkWindowState} [''Show, ''Storable] [
 		#{const GDK_WINDOW_STATE_LEFT_RESIZABLE}) ]
 
 gdkWindowStateCheck :: GdkWindowState -> GdkWindowStates -> Bool
-gdkWindowStateCheck (GdkWindowState s) (GdkWindowStates ss) = s .&. ss /= zeroBits
+gdkWindowStateCheck (GdkWindowState s) (GdkWindowStates ss) =
+	s .&. ss /= zeroBits
 
 gdkWindowStateList :: GdkWindowStates -> [GdkWindowState]
 gdkWindowStateList (GdkWindowStates ss) = GdkWindowState <$> separateBits 32 ss
@@ -736,6 +738,10 @@ pattern GdkEventSealedGdkWindowState ::
 	Sealed s GdkEventWindowStateRaw -> GdkEvent s
 pattern GdkEventSealedGdkWindowState e <-
 	GdkEvent (gdkEventTypeRaw GdkEventWindowStateRaw_ -> (GdkWindowState_, e))
+
+---------------------------------------------------------------------------
+-- GDK EVENT SETTING
+---------------------------------------------------------------------------
 
 tryGdkEventSealedMapWindow :: Sealed s GdkEventAnyRaw -> GdkWindow
 tryGdkEventSealedMapWindow (Sealed e) = gdkEventAnyRawWindow e
