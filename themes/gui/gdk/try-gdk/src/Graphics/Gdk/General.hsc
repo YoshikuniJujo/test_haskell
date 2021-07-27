@@ -1,17 +1,23 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.General (
 	gdkInit, gdkGetDisplayArgName,
 	gdkNotifyStartupComplete, gdkNotifyStartupCompleteWithId,
 	gdkSetAllowedBackends,
-	gdkGetProgramClass, gdkSetProgramClass ) where
+	gdkGetProgramClass, gdkSetProgramClass,
+	GdkGrabStatus(..),
+	) where
 
 import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C
+import Foreign.C.Enum
 import Data.Bool
+import Data.Word
 import Data.Int
 import System.GLib.Bool
 
@@ -74,3 +80,11 @@ foreign import ccall "gdk_set_program_class" c_gdk_set_program_class :: CString 
 
 gdkSetProgramClass :: String -> IO ()
 gdkSetProgramClass c = withCString c c_gdk_set_program_class
+
+enum "GdkGrabStatus" ''#{type GdkGrabStatus} [''Show] [
+	("GdkGrabSuccess", #{const GDK_GRAB_SUCCESS}),
+	("GdkGrabAlreadyGrabbed", #{const GDK_GRAB_ALREADY_GRABBED}),
+	("GdkGrabInvalidTime", #{const GDK_GRAB_INVALID_TIME}),
+	("GdkGrabNotViewable", #{const GDK_GRAB_NOT_VIEWABLE}),
+	("GdkGrabFrozen", #{const GDK_GRAB_FROZEN}),
+	("GdkGrabFailed", #{const GDK_GRAB_FAILED}) ]

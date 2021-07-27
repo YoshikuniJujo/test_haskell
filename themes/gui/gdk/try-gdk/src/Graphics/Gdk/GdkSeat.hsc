@@ -46,12 +46,12 @@ import Data.Bits
 import Data.Word
 import Data.Int
 
+import Graphics.Gdk.General
 import {-# SOURCE #-} Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.Cursors
 import {-# SOURCE #-} Graphics.Gdk.Windows
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.Values
 
 import System.GLib.DoublyLinkedLists
 import System.GLib.Pointerable

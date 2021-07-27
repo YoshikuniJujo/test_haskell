@@ -4,14 +4,14 @@ memo
 todo new
 --------
 
-* [ ] use `c-enum` in Values
+* [x] use `c-enum` in Values
 	+ [x] `GdkWindowWindowClass`
 	+ [x] `GdkAxisUse`
 	+ [x] `GdkModifierType`
-	+ [ ] `GdkGrabStatus`
-* [ ] move contents of module Values to appropriate module
+	+ [x] `GdkGrabStatus`
+* [x] move contents of module Values to appropriate module
 	+ [x] `GdkWindowWindowClass`
-	+ [ ] `GdkGrabStatus`
+	+ [x] `GdkGrabStatus`
 * [ ] move contents of module Types to appropriate module
 * [ ] refactor export list
 
@@ -46,7 +46,6 @@ module hierarchy
 	+ PropertiesAndAtoms.GdkAtom
 	+ Exception
 	+ Types
-	+ Values
 * Try.Tools
 	+ DoWhile
 
