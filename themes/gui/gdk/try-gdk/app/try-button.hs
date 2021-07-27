@@ -25,7 +25,7 @@ main = do
 			GdkButtonPressMask, GdkButtonReleaseMask,
 			GdkScrollMask, GdkTouchMask, GdkSmoothScrollMask ] }
 	gdkWindowShow w
-	mainLoopNew \case
+	mainLoop \case
 		GdkEventGdkKeyPress k -> case gdkEventKey k of
 			GdkEventKey { gdkEventKeyKeyval = GdkKey_q } -> pure False
 			_ -> pure True

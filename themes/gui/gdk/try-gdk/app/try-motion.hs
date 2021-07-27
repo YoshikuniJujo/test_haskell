@@ -21,7 +21,7 @@ main = do
 	gdkWindowSetEventCompression w False
 	gdkWindowSetTitle w "あいうえお"
 	gdkWindowShow w
-	mainLoopNew \case
+	mainLoop \case
 		GdkEventGdkKeyPress k -> case gdkEventKey k of
 			GdkEventKey { gdkEventKeyKeyval = GdkKey_q } -> pure False
 			_ -> pure True

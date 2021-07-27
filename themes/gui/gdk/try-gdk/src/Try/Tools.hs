@@ -14,8 +14,8 @@ import Graphics.Gdk.Windows.GdkEventMask
 
 import Try.Tools.DoWhile
 
-mainLoopNew :: (forall s . GdkEvent s -> IO Bool) -> IO ()
-mainLoopNew f = doWhile_ do
+mainLoop :: (forall s . GdkEvent s -> IO Bool) -> IO ()
+mainLoop f = doWhile_ do
 	threadDelay 100000
 	doWhile $ gdkWithEventGet \case
 		Just e -> do

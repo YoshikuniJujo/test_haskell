@@ -29,7 +29,7 @@ main = do
 	gdkWindowSetCursor w d
 	print d
 	print =<< gdkWindowGetCursor w
-	mainLoopNew \case
+	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
 		GdkEventGdkKeyPress k -> do
 			let	kv = gdkEventKeyKeyval $ gdkEventKey k

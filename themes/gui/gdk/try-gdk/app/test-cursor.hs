@@ -50,7 +50,7 @@ main = do
 		GdkPointerMotionMask, GdkButtonPressMask,
 		GdkButtonReleaseMask, GdkKeyPressMask ] -- , gdkAllEventsMask]
 	gdkWindowSetCursor w =<< gdkCursorNewFromName d "crosshair"
-	mainLoopNew \case
+	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
 		GdkEventGdkMotionNotify m -> True <$ do
 			putStr "GDK_MOTION_NOTIFY: "
