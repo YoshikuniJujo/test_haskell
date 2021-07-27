@@ -5,6 +5,8 @@
 
 module Graphics.Gdk.GdkMonitor (
 
+	GdkMonitor(..),
+
 	-- * FUNCTION
 	gdkMonitorGetDisplay,
 	gdkMonitorGetGeometry,
@@ -38,11 +40,12 @@ import Data.Word
 import Data.Int
 import System.GLib.Bool
 
-import Graphics.Gdk.GdkDisplay
+import {-# SOURCE #-} Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.PointsAndRectangles
-import Graphics.Gdk.Types
 
 #include <gdk/gdk.h>
+
+newtype GdkMonitor = GdkMonitor (Ptr GdkMonitor) deriving Show
 
 gdkMonitorGetDisplay :: GdkMonitor -> IO GdkDisplay
 gdkMonitorGetDisplay (GdkMonitor p) = GdkDisplay <$> c_gdk_monitor_get_display p

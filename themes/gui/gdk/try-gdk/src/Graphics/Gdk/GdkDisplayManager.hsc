@@ -12,11 +12,12 @@ import Foreign.C
 import Control.Exception
 
 import Graphics.Gdk.GdkDisplay
-import Graphics.Gdk.Types
 import Graphics.Gdk.Exception
 import System.GLib.SinglyLinkedLists
 
 #include <gdk/gdk.h>
+
+newtype GdkDisplayManager = GdkDisplayManager (Ptr GdkDisplayManager) deriving Show
 
 foreign import ccall "gdk_display_manager_get" c_gdk_display_manager_get :: IO (Ptr GdkDisplayManager)
 

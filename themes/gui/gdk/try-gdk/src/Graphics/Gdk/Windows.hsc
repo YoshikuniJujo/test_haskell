@@ -8,6 +8,7 @@
 module Graphics.Gdk.Windows (
 	-- * TYPE
 	GdkWindow(..), withGdkWindowAutoUnref,
+	GdkWindowAutoUnref(..), GdkWindowNeedUnref, mkGdkWindowAutoUnref,
 
 	-- * Checked
 	gdkWindowNew, gdkWindowDestroy, gdkWindowGetWindowType,
@@ -97,11 +98,18 @@ import Graphics.Gdk.Cursors
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.Types
 
 import Graphics.Cairo.Drawing.Regions
 
 #include <gdk/gdk.h>
+
+foreign import ccall "g_object_unref" c_g_object_unref :: Ptr a -> IO ()
+
+newtype GdkWindowAutoUnref = GdkWindowAutoUnref (ForeignPtr GdkWindowNeedUnref) deriving Show
+data GdkWindowNeedUnref
+
+mkGdkWindowAutoUnref :: Ptr GdkWindowNeedUnref -> IO GdkWindowAutoUnref
+mkGdkWindowAutoUnref p = GdkWindowAutoUnref <$> newForeignPtr p (c_g_object_unref p)
 
 newtype GdkWindow = GdkWindow (Ptr GdkWindow) deriving (Show, Storable)
 

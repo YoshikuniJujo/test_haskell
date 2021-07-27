@@ -63,12 +63,12 @@ import System.GLib.Bool
 
 import {-# SOURCE #-} Graphics.Gdk.GdkScreen
 import Graphics.Gdk.GdkSeat
+import Graphics.Gdk.GdkMonitor
 import Graphics.Gdk.GdkDevice
 import {-# SOURCE #-} Graphics.Gdk.Windows
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
 import Graphics.Gdk.Exception
-import Graphics.Gdk.Types
 import System.GLib.DoublyLinkedLists
 
 #include <gdk/gdk.h>
