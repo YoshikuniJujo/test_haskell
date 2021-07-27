@@ -20,7 +20,7 @@ API Reference contents
 	+ [x] GdkEventMask
 * [x] GdkDrawingContext
 * [x] Events
-* [ ] EventStructures
+* [x] EventStructures
 * [x] Properties and Atoms: Atoms
 	+ [x] add gdkAtomName
 	+ [x] add export list

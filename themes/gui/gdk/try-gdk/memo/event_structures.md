@@ -57,22 +57,14 @@ Types
 	+ [x] `GdkEventConfigure`
 	+ [x] `gdkEventConfigure`
 	+ [x] remove `tryGdkEventSealedConfigureWindow`
-* [ ] GdkEventWindowState
+* [x] GdkEventWindowState
 	+ [x] try it
 	+ [x] `newtype GdkWindowStates`
 	+ [x] `newtype GdkWindowState`
 	+ [x] struct `GdkEventWindowStateRaw`
 	+ [x] `pattern GdkEventGdkWindowState`
-	+ [ ] `data GdkEventWindowState`
-	+ [ ] function `gdkEventWindowState`
-* [ ] GdkEventSetting
-* [ ] GdkEventOwnerChange
-* [ ] GdkEventGrabBroken
-* [ ] GdkEventTouchpadSwipe
-* [ ] GdkEventTouchpadPinch
-* [ ] GdkEventPadButton
-* [ ] GdkEventPadAxis
-* [ ] GdkEventPadGroupMode
+	+ [x] `data GdkEventWindowState`
+	+ [x] function `gdkEventWindowState`
 
 ### not now
 
@@ -86,6 +78,14 @@ Types
 	+ remove it and this module
 * GdkEventDND
 * GdkEventProximity
+* GdkEventSetting
+* GdkEventOwnerChange
+* GdkEventGrabBroken
+* GdkEventTouchpadSwipe
+* GdkEventTouchpadPinch
+* GdkEventPadButton
+* GdkEventPadAxis
+* GdkEventPadGroupMode
 
 Values
 ------

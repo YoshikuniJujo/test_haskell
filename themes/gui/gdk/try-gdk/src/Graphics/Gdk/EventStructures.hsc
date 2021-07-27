@@ -730,13 +730,21 @@ struct "GdkEventWindowStateRaw" #{size GdkEventWindowState}
 			[| #{poke GdkEventWindowState, new_window_state} |]) ]
 	[''Show]
 
-gdkEventWindowStateNewWindowState :: GdkEventWindowStateRaw -> IO GdkWindowState
-gdkEventWindowStateNewWindowState (GdkEventWindowStateRaw_ p) =
-	GdkWindowState <$> withForeignPtr p #peek GdkEventWindowState, new_window_state
+data GdkEventWindowState = GdkEventWindowState {
+	gdkEventWindowStateWindow :: GdkWindow,
+	gdkEventWindowStateChangedMask :: GdkWindowStates,
+	gdkEventWindowStateNewWindowState :: GdkWindowStates }
+	deriving Show
+
+gdkEventWindowState :: Sealed s GdkEventWindowStateRaw -> GdkEventWindowState
+gdkEventWindowState (Sealed r) = GdkEventWindowState
+	(gdkEventWindowStateRawWindow r)
+	(gdkEventWindowStateRawChangedMask r)
+	(gdkEventWindowStateRawNewWindowState r)
 
 pattern GdkEventGdkWindowState :: Sealed s GdkEventWindowStateRaw -> GdkEvent s
-pattern GdkEventGdkWindowState e <-
-	GdkEvent (gdkEventTypeRaw GdkEventWindowStateRaw_ -> (GdkWindowState_, e))
+pattern GdkEventGdkWindowState e <- GdkEvent
+	(gdkEventTypeRaw GdkEventWindowStateRaw_ -> (GdkWindowState_, e))
 
 ---------------------------------------------------------------------------
 -- GDK EVENT SETTING
