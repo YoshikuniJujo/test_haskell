@@ -6,23 +6,9 @@ module Graphics.Gdk.Values where
 
 import Foreign.C.Enum
 
-import Data.Bits
 import Data.Word
 
 #include <gdk/gdk.h>
-
-toGdkModifierType :: #{type GdkModifierType} -> [GdkModifierType]
-toGdkModifierType = (GdkModifierType <$>)
-	. filter (/= zeroBits) . (<$> [0 .. 30]) . (\mt n -> mt .&. bit n)
-
-newtype GdkModifierType = GdkModifierType #{type GdkModifierType} deriving Show
-
-#enum GdkModifierType, GdkModifierType, GDK_SHIFT_MASK, \
-	GDK_LOCK_MASK, GDK_CONTROL_MASK, GDK_MOD1_MASK, GDK_MOD2_MASK, \
-	GDK_MOD3_MASK, GDK_MOD4_MASK, GDK_MOD5_MASK, GDK_BUTTON1_MASK, \
-	GDK_BUTTON2_MASK, GDK_BUTTON3_MASK, GDK_BUTTON4_MASK, \
-	GDK_BUTTON5_MASK, GDK_SUPER_MASK, GDK_HYPER_MASK, GDK_META_MASK, \
-	GDK_MODIFIER_MASK
 
 newtype GdkGrabStatus = GdkGrabStatus #{type GdkGrabStatus} deriving Show
 

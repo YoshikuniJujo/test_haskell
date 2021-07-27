@@ -7,12 +7,10 @@ todo new
 * [ ] use `c-enum` in Values
 	+ [x] `GdkWindowWindowClass`
 	+ [x] `GdkAxisUse`
-	+ [ ] `GdkModifierType`
+	+ [x] `GdkModifierType`
 	+ [ ] `GdkGrabStatus`
 * [ ] move contents of module Values to appropriate module
 	+ [x] `GdkWindowWindowClass`
-	+ [ ] `GdkAxisUse`
-	+ [ ] `GdkModifierType`
 	+ [ ] `GdkGrabStatus`
 * [ ] move contents of module Types to appropriate module
 * [ ] refactor export list
