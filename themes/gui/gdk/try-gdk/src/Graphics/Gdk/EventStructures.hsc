@@ -734,9 +734,8 @@ gdkEventWindowStateNewWindowState :: GdkEventWindowStateRaw -> IO GdkWindowState
 gdkEventWindowStateNewWindowState (GdkEventWindowStateRaw_ p) =
 	GdkWindowState <$> withForeignPtr p #peek GdkEventWindowState, new_window_state
 
-pattern GdkEventSealedGdkWindowState ::
-	Sealed s GdkEventWindowStateRaw -> GdkEvent s
-pattern GdkEventSealedGdkWindowState e <-
+pattern GdkEventGdkWindowState :: Sealed s GdkEventWindowStateRaw -> GdkEvent s
+pattern GdkEventGdkWindowState e <-
 	GdkEvent (gdkEventTypeRaw GdkEventWindowStateRaw_ -> (GdkWindowState_, e))
 
 ---------------------------------------------------------------------------

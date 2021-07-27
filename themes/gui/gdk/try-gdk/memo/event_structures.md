@@ -62,7 +62,7 @@ Types
 	+ [x] `newtype GdkWindowStates`
 	+ [x] `newtype GdkWindowState`
 	+ [x] struct `GdkEventWindowStateRaw`
-	+ [ ] `pattern GdkEventGdkWindowState`
+	+ [x] `pattern GdkEventGdkWindowState`
 	+ [ ] `data GdkEventWindowState`
 	+ [ ] function `gdkEventWindowState`
 * [ ] GdkEventSetting
