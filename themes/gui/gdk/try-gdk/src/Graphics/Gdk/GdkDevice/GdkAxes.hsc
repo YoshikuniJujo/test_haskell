@@ -27,8 +27,7 @@ newtype GdkAxes = GdkAxes (ForeignPtr CDouble) deriving Show
 
 enum "GdkAxisUse" ''#{type GdkAxisUse} [''Show] [
 	("GdkAxisIgnore", #{const GDK_AXIS_IGNORE}),
-	("GdkAxisX", #{const GDK_AXIS_X}),
-	("GdkAxisY", #{const GDK_AXIS_Y}),
+	("GdkAxisX", #{const GDK_AXIS_X}), ("GdkAxisY", #{const GDK_AXIS_Y}),
 	("GdkAxisPressure", #{const GDK_AXIS_PRESSURE}),
 	("GdkAxisXtilt", #{const GDK_AXIS_XTILT}),
 	("GdkAxisYtilt", #{const GDK_AXIS_YTILT}),

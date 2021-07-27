@@ -6,7 +6,7 @@ todo new
 
 * [ ] use `c-enum` in Values
 	+ [x] `GdkWindowWindowClass`
-	+ [ ] `GdkAxisUse`
+	+ [x] `GdkAxisUse`
 	+ [ ] `GdkModifierType`
 	+ [ ] `GdkGrabStatus`
 * [ ] move contents of module Values to appropriate module
