@@ -14,10 +14,10 @@ todo new
 	+ [x] `GdkGrabStatus`
 * [x] move contents of module Types to appropriate module
 * [ ] refactor export list
-	+ [ ] Data
+	+ [x] Data
 		- [x] Bits.Misc
-		- [ ] Sealed
-		- [ ] Sealed.Internal
+		- [x] Sealed
+		- [x] Sealed.Internal
 	+ [ ] Try.Tools
 		- [ ] itself
 		- [ ] DoWhile
