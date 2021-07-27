@@ -14,14 +14,13 @@ import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
-import Graphics.Gdk.Values
 import Try.Tools
 
 main :: IO ()
 main = do
 	_ <- gdkInit "foo" []
 	w <- gdkWindowNew Nothing $ minimalGdkWindowAttr
-		GdkZeroEventsMask 100 100 gdkInputOutput GdkWindowToplevel
+		GdkZeroEventsMask 100 100 GdkInputOutput GdkWindowToplevel
 	h <- fromMaybe GdkWindowTypeHintNormal . readMaybe . head <$> getArgs
 	print h
 	gdkWindowSetTypeHint w h

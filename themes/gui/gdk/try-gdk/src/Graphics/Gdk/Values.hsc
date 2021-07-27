@@ -4,13 +4,12 @@
 
 module Graphics.Gdk.Values where
 
+import Foreign.C.Enum
+
 import Data.Bits
 import Data.Word
 
 #include <gdk/gdk.h>
-
-newtype GdkWindowWindowClass = GdkWindowWindowClass #{type GdkWindowWindowClass} deriving Show
-#enum GdkWindowWindowClass, GdkWindowWindowClass, GDK_INPUT_OUTPUT, GDK_INPUT_ONLY
 
 newtype GdkAxisUse = GdkAxisUse #{type GdkAxisUse} deriving Show
 

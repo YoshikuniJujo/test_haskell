@@ -24,7 +24,6 @@ import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
-import Graphics.Gdk.Values
 import Graphics.Gdk.GdkDrawingContext
 
 import Try.Tools.DoWhile
@@ -37,7 +36,7 @@ main = do
 		ds' = gdkWMDecorations ds
 	w <- gdkWindowNew Nothing $ minimalGdkWindowAttr
 		(gdkEventMaskMultiBits [GdkKeyPressMask])
-		100 100 gdkInputOutput GdkWindowToplevel
+		100 100 GdkInputOutput GdkWindowToplevel
 	print ds
 	gdkWindowSetDecorations w ds'
 	print $ gdkWMDecorationList ds'

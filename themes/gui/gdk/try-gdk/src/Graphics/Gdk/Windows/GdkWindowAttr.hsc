@@ -6,6 +6,7 @@
 module Graphics.Gdk.Windows.GdkWindowAttr (
 	GdkWindowAttr(..), withGdkWindowAttr, minimalGdkWindowAttr,
 	GdkWindowAttributesTypes(..),
+	GdkWindowWindowClass(..), pattern GdkInputOutput, pattern GdkInputOnly,
 	GdkWindowType(..),
 	pattern GdkWindowRoot, pattern GdkWindowToplevel,
 	pattern GdkWindowChild, pattern GdkWindowTemp,
@@ -29,7 +30,6 @@ import Data.Word
 import Graphics.Gdk.Visuals
 import Graphics.Gdk.Cursors
 import Graphics.Gdk.Windows.GdkEventMask
-import Graphics.Gdk.Values
 
 #include <gdk/gdk.h>
 
@@ -58,6 +58,10 @@ enum "GdkWindowAttributesType" ''#{type GdkWindowAttributesType} [''Show] [
 	("GdkWaWmclass", #{const GDK_WA_WMCLASS}),
 	("GdkWaNoredir", #{const GDK_WA_NOREDIR}),
 	("GdkWaTypeHint", #{const GDK_WA_TYPE_HINT}) ]
+
+enum "GdkWindowWindowClass" ''#{type GdkWindowWindowClass} [''Show] [
+	("GdkInputOutput", #{const GDK_INPUT_OUTPUT}),
+	("GdkInputOnly", #{const GDK_INPUT_ONLY}) ]
 
 data GdkWindowAttr = GdkWindowAttr {
 	gdkWindowAttrTitle :: Maybe String,

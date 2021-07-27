@@ -15,7 +15,6 @@ import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
-import Graphics.Gdk.Values
 
 import Try.Tools.DoWhile
 
@@ -38,5 +37,5 @@ main = do
 
 gdkWindowAttr :: GdkWindowAttr
 gdkWindowAttr = minimalGdkWindowAttr
-	(gdkEventMaskMultiBits [GdkKeyPressMask]) 400 400 gdkInputOutput
+	(gdkEventMaskMultiBits [GdkKeyPressMask]) 400 400 GdkInputOutput
 	GdkWindowToplevel

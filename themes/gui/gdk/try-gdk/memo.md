@@ -1,6 +1,57 @@
 memo
 ====
 
+todo new
+--------
+
+* [ ] use `c-enum` in Values
+	+ [x] `GdkWindowWindowClass`
+	+ [ ] `GdkAxisUse`
+	+ [ ] `GdkModifierType`
+	+ [ ] `GdkGrabStatus`
+* [ ] move contents of module Values to appropriate module
+	+ [x] `GdkWindowWindowClass`
+	+ [ ] `GdkAxisUse`
+	+ [ ] `GdkModifierType`
+	+ [ ] `GdkGrabStatus`
+* [ ] move contents of module Types to appropriate module
+* [ ] refactor export list
+
+module hierarchy
+----------------
+
+* Data
+	+ Bits.Misc
+	+ Sealed
+		- Internal
+* Foreign.Ptr.Misc
+* Graphics.Gdk
+	+ General
+	+ GdkDisplayManager
+	+ GdkDisplay
+	+ GdkScreen
+	+ GdkSeat
+	+ GdkMonitor
+	+ GdkDevice
+		- GdkAxes
+	+ PointsAndRectangle
+	+ Visuals
+	+ Cursors
+	+ Windows
+		- GdkWindowAttr
+		- GdkEventMask
+		- GdkModifierType
+	+ GdkDrawingContext
+	+ Events
+	+ EventStructures
+		- GdkKeySyms
+	+ PropertiesAndAtoms.GdkAtom
+	+ Exception
+	+ Types
+	+ Values
+* Try.Tools
+	+ DoWhile
+
 API Reference contents
 ----------------------
 

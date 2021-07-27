@@ -19,7 +19,6 @@ import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
-import Graphics.Gdk.Values
 
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Regions
@@ -42,7 +41,7 @@ main = do
 				GdkPointerMotionMask
 				])
 			400 400
-			gdkInputOutput GdkWindowToplevel
+			GdkInputOutput GdkWindowToplevel
 	w <- gdkWindowNew Nothing wattr { gdkWindowAttrTitle = Just "試験窓" }
 	gdkWindowShow w
 	gdkWindowSetEvents w $ gdkEventMaskMultiBits [

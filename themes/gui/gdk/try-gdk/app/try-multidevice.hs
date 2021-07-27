@@ -19,7 +19,6 @@ import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
-import Graphics.Gdk.Values
 
 import Try.Tools.DoWhile
 
@@ -38,7 +37,7 @@ main = do
 	(print <=< gdkDeviceGetNameAndSource) `mapM_` slv
 	w <- gdkWindowNew Nothing $ minimalGdkWindowAttr
 		(gdkEventMaskMultiBits [GdkKeyPressMask])
-		100 100 gdkInputOutput GdkWindowToplevel
+		100 100 GdkInputOutput GdkWindowToplevel
 	gdkWindowShow w
 	gdkWindowSetSupportMultidevice w True
 --	gdkWindowSetCursor w =<< gdkCursorNewForDisplay d GdkHand2

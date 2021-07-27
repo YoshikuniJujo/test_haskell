@@ -8,7 +8,6 @@ import Control.Concurrent
 
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.Values
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
@@ -29,4 +28,4 @@ defaultGdkWindowAttr = minimalGdkWindowAttr (gdkEventMaskMultiBits [
 		GdkExposureMask, GdkButtonPressMask, GdkKeyPressMask, GdkPointerMotionMask, GdkButtonMotionMask,
 		GdkButtonReleaseMask -- , gdkAllEventsMask
 		])
-	400 400 gdkInputOutput GdkWindowToplevel
+	400 400 GdkInputOutput GdkWindowToplevel

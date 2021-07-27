@@ -34,7 +34,6 @@ import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
 import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
-import Graphics.Gdk.Values
 
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Regions
@@ -146,7 +145,7 @@ main = do
 				GdkPointerMotionMask
 				])
 			400 400
-			gdkInputOutput GdkWindowToplevel
+			GdkInputOutput GdkWindowToplevel
 	putStrLn "*** GDK WINDOW NEW ***"
 	w <- gdkWindowNew Nothing wattr { gdkWindowAttrTitle = Just "試験窓" }
 	printVisibleRegion w
@@ -398,7 +397,7 @@ checkEventSealed opacity pos size d st = \case
 		when (checkKeyVal 'd' kv) do
 			putStrLn "`d' pressed"
 			w' <- gdkWindowNew Nothing $ minimalGdkWindowAttr
-				GdkZeroEventsMask 100 100 gdkInputOutput GdkWindowToplevel
+				GdkZeroEventsMask 100 100 GdkInputOutput GdkWindowToplevel
 			gdkWindowSetTransientFor w' w
 			gdkWindowSetModalHint w' True
 			gdkWindowShow w'
