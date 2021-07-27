@@ -12,8 +12,16 @@ todo new
 * [x] move contents of module Values to appropriate module
 	+ [x] `GdkWindowWindowClass`
 	+ [x] `GdkGrabStatus`
-* [ ] move contents of module Types to appropriate module
+* [x] move contents of module Types to appropriate module
 * [ ] refactor export list
+	+ [ ] Data
+		- [x] Bits.Misc
+		- [ ] Sealed
+		- [ ] Sealed.Internal
+	+ [ ] Try.Tools
+		- [ ] itself
+		- [ ] DoWhile
+	+ [ ] Graphics.Gdk
 
 module hierarchy
 ----------------
@@ -45,7 +53,6 @@ module hierarchy
 		- GdkKeySyms
 	+ PropertiesAndAtoms.GdkAtom
 	+ Exception
-	+ Types
 * Try.Tools
 	+ DoWhile
 

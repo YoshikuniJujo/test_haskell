@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Bits.Misc where
+module Data.Bits.Misc (separateBits) where
 
 import Data.Bits
 
