@@ -43,7 +43,7 @@ todo new
 				+ [x] `gdkDisplayManagerGet`
 				+ [x] `gdkDisplayManagerGetDefaultDisplay`
 				+ [ ] `gdkDisplayManagerSetDefaultDisplay`
-				+ [ ] `gdkDsiplayManagerListDisplays`
+				+ [x] `gdkDsiplayManagerListDisplays`
 				+ [ ] `gdkDisplayManagerOpenDisplay`
 			* [ ] refactor export list
 		- [ ] GdkDisplay

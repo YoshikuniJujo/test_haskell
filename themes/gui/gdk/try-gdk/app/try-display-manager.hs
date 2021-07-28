@@ -16,3 +16,5 @@ main = do
 	d <- gdkDisplayManagerGetDefaultDisplay dm
 	print d
 	print $ gdkDisplayGetName d
+	ds <- gdkDisplayManagerListDisplays dm
+	print ds
