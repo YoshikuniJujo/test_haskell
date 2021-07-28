@@ -2,6 +2,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkDisplayManager (
+	GdkDisplayManager,
 	gdkDisplayManagerGet,
 	gdkDisplayManagerGetDefaultDisplay, gdkDisplayManagerSetDefaultDisplay,
 	gdkDisplayManagerListDisplays, gdkDisplayManagerOpenDisplay ) where

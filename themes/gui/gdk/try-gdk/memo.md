@@ -38,6 +38,14 @@ todo new
 				+ [x] `gdkSetProgramClass`
 			* [x] refactor export list
 		- [ ] GdkDisplayManager
+			* [x] add type `GdkDisplayManager` to export list
+			* [ ] make trial
+				+ [ ] `gdkDisplayManagerGet`
+				+ [ ] `gdkDisplayManagerGetDefaultDisplay`
+				+ [ ] `gdkDisplayManagerSetDefaultDisplay`
+				+ [ ] `gdkDsiplayManagerListDisplays`
+				+ [ ] `gdkDisplayManagerOpenDisplay`
+			* [ ] refactor export list
 		- [ ] GdkDisplay
 		- [ ] GdkScreen
 		- [ ] GdkSeat
