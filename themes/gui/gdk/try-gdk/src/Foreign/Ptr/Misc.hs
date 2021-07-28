@@ -1,7 +1,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Foreign.Ptr.Misc where
+module Foreign.Ptr.Misc (pattern NullPtr) where
 
 import Foreign.Ptr
 

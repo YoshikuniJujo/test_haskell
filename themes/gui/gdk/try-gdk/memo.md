@@ -21,6 +21,7 @@ todo new
 	+ [x] Try.Tools
 		- [x] itself
 		- [x] DoWhile
+	+ [x] Foreign.Ptr.Misc
 	+ [ ] Graphics.Gdk
 		- [ ] General
 		- [ ] GdkDisplayManager
