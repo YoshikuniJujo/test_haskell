@@ -45,7 +45,7 @@ todo new
 				+ [ ] `gdkDisplayManagerSetDefaultDisplay`
 				+ [x] `gdkDsiplayManagerListDisplays`
 				+ [ ] `gdkDisplayManagerOpenDisplay`
-			* [ ] refactor export list
+			* [x] refactor export list
 		- [ ] GdkDisplay
 		- [ ] GdkScreen
 		- [ ] GdkSeat
