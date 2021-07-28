@@ -40,8 +40,8 @@ todo new
 		- [ ] GdkDisplayManager
 			* [x] add type `GdkDisplayManager` to export list
 			* [ ] make trial
-				+ [ ] `gdkDisplayManagerGet`
-				+ [ ] `gdkDisplayManagerGetDefaultDisplay`
+				+ [x] `gdkDisplayManagerGet`
+				+ [x] `gdkDisplayManagerGetDefaultDisplay`
 				+ [ ] `gdkDisplayManagerSetDefaultDisplay`
 				+ [ ] `gdkDsiplayManagerListDisplays`
 				+ [ ] `gdkDisplayManagerOpenDisplay`
