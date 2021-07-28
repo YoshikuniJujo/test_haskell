@@ -115,7 +115,7 @@ data GdkEventAny = GdkEventAny {
 	deriving Show
 
 gdkEventAny :: Sealed s GdkEventAnyRaw -> GdkEventAny
-gdkEventAny (Sealed r) = GdkEventAny
+gdkEventAny (unsafeUnseal -> r) = GdkEventAny
 	(gdkEventAnyRawType r) (gdkEventAnyRawWindow r)
 	(case gdkEventAnyRawSendEvent r of
 		FalseInt8 -> False; TrueInt8 -> True
@@ -125,7 +125,7 @@ gdkEventAny (Sealed r) = GdkEventAny
 
 pattern GdkEventGdkAny :: Sealed s GdkEventAnyRaw -> GdkEvent s
 pattern GdkEventGdkAny ea <-
-	GdkEvent (Sealed . GdkEventAnyRaw_ . castForeignPtr -> ea)
+	GdkEvent (seal . GdkEventAnyRaw_ . castForeignPtr -> ea)
 
 pattern GdkEventGdkNothing :: Sealed s GdkEventAnyRaw -> GdkEvent s
 pattern GdkEventGdkNothing ea <-
@@ -154,7 +154,7 @@ gdkEventTypeRaw :: (ForeignPtr x -> a) ->
 	ForeignPtr GdkEventTag -> (GdkEventType, Sealed s a)
 gdkEventTypeRaw c =
 	unsafePerformIO . (`withForeignPtr` #{peek GdkEventAny, type}) &&&
-	Sealed . c . castForeignPtr
+	seal . c . castForeignPtr
 
 newtype MilliSecond = MilliSecond #{type guint32} deriving (Show, Storable)
 
@@ -209,7 +209,7 @@ data GdkEventKey = GdkEventKey {
 	deriving Show
 
 gdkEventKey :: Sealed s GdkEventKeyRaw -> GdkEventKey
-gdkEventKey (Sealed r) = GdkEventKey
+gdkEventKey (unsafeUnseal -> r) = GdkEventKey
 	(gdkEventKeyRawWindow r)
 	(case gdkEventKeyRawSendEvent r of
 		FalseInt8 -> False; TrueInt8 -> True
@@ -277,7 +277,7 @@ data GdkEventButton = GdkEventButton {
 	deriving Show
 
 gdkEventButton :: Sealed s GdkEventButtonRaw -> GdkEventButton
-gdkEventButton (Sealed r) = GdkEventButton
+gdkEventButton (unsafeUnseal -> r) = GdkEventButton
 	(gdkEventButtonRawWindow r)
 	(case gdkEventButtonRawSendEvent r of
 		FalseInt8 -> False; TrueInt8 -> True
@@ -376,7 +376,7 @@ data GdkEventScroll = GdkEventScroll {
 	deriving Show
 
 gdkEventScroll :: Sealed s GdkEventScrollRaw -> GdkEventScroll
-gdkEventScroll (Sealed s) = GdkEventScroll
+gdkEventScroll (unsafeUnseal -> s) = GdkEventScroll
 	(gdkEventScrollRawWindow s)
 	(case gdkEventScrollRawSendEvent s of
 		FalseInt8 -> False; TrueInt8 -> True
@@ -444,7 +444,7 @@ data GdkEventMotion = GdkEventMotion {
 	deriving Show
 
 gdkEventMotion :: Sealed s GdkEventMotionRaw -> GdkEventMotion
-gdkEventMotion (Sealed r) = GdkEventMotion
+gdkEventMotion (unsafeUnseal -> r) = GdkEventMotion
 	(gdkEventMotionRawWindow r)
 	(case gdkEventMotionRawSendEvent r of
 		FalseInt8 -> False; TrueInt8 -> True
@@ -494,7 +494,7 @@ data GdkEventVisibility = GdkEventVisibility {
 	deriving Show
 
 gdkEventVisibility :: Sealed s GdkEventVisibilityRaw -> GdkEventVisibility
-gdkEventVisibility (Sealed r) = GdkEventVisibility
+gdkEventVisibility (unsafeUnseal -> r) = GdkEventVisibility
 	(gdkEventVisibilityRawWindow r)
 	(case gdkEventVisibilityRawSendEvent r of
 		FalseInt8 -> False; TrueInt8 -> True
@@ -579,7 +579,7 @@ data GdkEventCrossing = GdkEventCrossing {
 	deriving Show
 
 gdkEventCrossing :: Sealed s GdkEventCrossingRaw -> GdkEventCrossing
-gdkEventCrossing (Sealed r) = GdkEventCrossing
+gdkEventCrossing (unsafeUnseal -> r) = GdkEventCrossing
 	(gdkEventCrossingRawWindow r)
 	(case gdkEventCrossingRawSendEvent r of
 		FalseInt8 -> False; TrueInt8 -> True
@@ -624,7 +624,7 @@ data GdkEventFocus = GdkEventFocus {
 	deriving Show
 
 gdkEventFocus :: Sealed s GdkEventFocusRaw -> GdkEventFocus
-gdkEventFocus (Sealed r) = GdkEventFocus
+gdkEventFocus (unsafeUnseal -> r) = GdkEventFocus
 	(gdkEventFocusRawWindow r)
 	(case gdkEventFocusRawSendEvent r of
 		FalseInt8 -> False; TrueInt8 -> True;
@@ -667,7 +667,7 @@ data GdkEventConfigure = GdkEventConfigure {
 	deriving Show
 
 gdkEventConfigure :: Sealed s GdkEventConfigureRaw -> GdkEventConfigure
-gdkEventConfigure (Sealed r) = GdkEventConfigure
+gdkEventConfigure (unsafeUnseal -> r) = GdkEventConfigure
 	(gdkEventConfigureRawWindow r)
 	(case gdkEventConfigureRawSendEvent r of
 		FalseInt8 -> False; TrueInt8 -> True
@@ -737,7 +737,7 @@ data GdkEventWindowState = GdkEventWindowState {
 	deriving Show
 
 gdkEventWindowState :: Sealed s GdkEventWindowStateRaw -> GdkEventWindowState
-gdkEventWindowState (Sealed r) = GdkEventWindowState
+gdkEventWindowState (unsafeUnseal -> r) = GdkEventWindowState
 	(gdkEventWindowStateRawWindow r)
 	(gdkEventWindowStateRawChangedMask r)
 	(gdkEventWindowStateRawNewWindowState r)
@@ -751,4 +751,4 @@ pattern GdkEventGdkWindowState e <- GdkEvent
 ---------------------------------------------------------------------------
 
 tryGdkEventSealedMapWindow :: Sealed s GdkEventAnyRaw -> GdkWindow
-tryGdkEventSealedMapWindow (Sealed e) = gdkEventAnyRawWindow e
+tryGdkEventSealedMapWindow (unsafeUnseal -> e) = gdkEventAnyRawWindow e
