@@ -1,6 +1,19 @@
 GdkDisplay memo
 ===============
 
+refactor export list
+--------------------
+
+* [x] remove SELECTION and CLIPBOARD
+* [ ] TYPE
+* [ ] DISPLAY
+* [ ] EVENT
+* [ ] DOUBLE CLICK
+* [ ] CURSOR
+* [ ] GROUP
+* [ ] SEAT
+* [ ] MONITOR
+
 Function
 --------
 

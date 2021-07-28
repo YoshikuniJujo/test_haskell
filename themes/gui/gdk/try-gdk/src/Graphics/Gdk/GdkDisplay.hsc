@@ -34,13 +34,6 @@ module Graphics.Gdk.GdkDisplay (
 	-- * GROUP
 	gdkDisplayGetDefaultGroup,
 
-	-- * SELECTION
-	gdkDisplaySupportsSelectionNotification,
-	gdkDisplayRequestSelectionNotification,
-
-	-- * CLIPBOARD
-	gdkDisplaySupportsClipboardPersistence,
-
 	-- * SEAT
 	gdkDisplayGetDefaultSeat,
 	gdkDisplayListSeats,
@@ -67,7 +60,6 @@ import Graphics.Gdk.GdkMonitor
 import Graphics.Gdk.GdkDevice
 import {-# SOURCE #-} Graphics.Gdk.Windows
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
 import Graphics.Gdk.Exception
 import System.GLib.DoublyLinkedLists
 
@@ -181,34 +173,6 @@ foreign import ccall "gdk_display_set_double_click_distance"
 
 foreign import ccall "gdk_display_get_default_group"
 	gdkDisplayGetDefaultGroup :: GdkDisplay -> IO GdkWindow
-
--- SELECTION
-
-gdkDisplaySupportsSelectionNotification :: GdkDisplay -> IO Bool
-gdkDisplaySupportsSelectionNotification d =
-	gbooleanToBool <$> c_gdk_display_supports_selection_notification d
-
-foreign import ccall "gdk_display_supports_selection_notification"
-	c_gdk_display_supports_selection_notification ::
-	GdkDisplay -> IO #{type gboolean}
-
-gdkDisplayRequestSelectionNotification :: GdkDisplay -> GdkAtom -> IO Bool
-gdkDisplayRequestSelectionNotification d s =
-	gbooleanToBool <$> c_gdk_display_request_selection_notification d s
-
-foreign import ccall "gdk_display_request_selection_notification"
-	c_gdk_display_request_selection_notification ::
-	GdkDisplay -> GdkAtom -> IO #{type gboolean}
-
--- CLIPBOARD
-
-gdkDisplaySupportsClipboardPersistence :: GdkDisplay -> IO Bool
-gdkDisplaySupportsClipboardPersistence d =
-	gbooleanToBool <$> c_gdk_display_supports_clipboard_persistence d
-
-foreign import ccall "gdk_display_supports_clipboard_persistence"
-	c_gdk_display_supports_clipboard_persistence ::
-	GdkDisplay -> IO #{type gboolean}
 
 -- CURSOR
 
