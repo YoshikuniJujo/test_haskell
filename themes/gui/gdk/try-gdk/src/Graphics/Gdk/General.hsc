@@ -4,9 +4,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.General (
-	-- * INIT, STARTUP, BACKENDS AND PROGRAM CLASS
+	-- * INIT, DISPLAY ARGUMENT NAME, BACKENDS AND PROGRAM CLASS
 	gdkInit, gdkGetDisplayArgName,
-	gdkNotifyStartupComplete, gdkNotifyStartupCompleteWithId,
 	gdkSetAllowedBackends,
 	gdkGetProgramClass, gdkSetProgramClass,
 
@@ -54,19 +53,6 @@ gdkGetDisplayArgName :: IO (Maybe String)
 gdkGetDisplayArgName = c_gdk_get_display_arg_name >>= \case
 	p	| p == nullPtr -> pure Nothing
 		| otherwise -> Just <$> peekCString p
-
-gdkNotifyStartupComplete :: IO ()
-gdkNotifyStartupComplete = c_gdk_notify_startup_complete
-
-foreign import ccall "gdk_notify_startup_complete"
-	c_gdk_notify_startup_complete :: IO ()
-
-gdkNotifyStartupCompleteWithId :: String -> IO ()
-gdkNotifyStartupCompleteWithId i =
-	withCString i c_gdk_notify_startup_complete_with_id
-
-foreign import ccall "gdk_notify_startup_complete_with_id"
-	c_gdk_notify_startup_complete_with_id :: CString -> IO ()
 
 foreign import ccall "gdk_set_allowed_backends" c_gdk_set_allowed_backends ::
 	CString -> IO ()

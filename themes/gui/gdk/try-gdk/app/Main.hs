@@ -178,7 +178,6 @@ main = do
 	print . gdkEventMaskSingleBitList =<< gdkWindowGetEvents w
 	gdkWindowShow w
 	printVisibleRegion w
-	if "--startup-notify" `elem` as' then gdkNotifyStartupComplete else pure ()
 	gdkWindowSetOpacity w 0.5
 	putStrLn . ("Window is visible: " ++) . show =<< gdkWindowIsVisible w
 	putStrLn . ("Window is viewable: " ++) . show =<< gdkWindowIsViewable w

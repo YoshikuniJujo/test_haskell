@@ -29,8 +29,10 @@ todo new
 					- [x] try it
 					- [x] check exception
 				+ [x] `gdkGetDisplayArgName`
-				+ [ ] `gdkNotifyStartupComplete`
-				+ [ ] `gdkNotifyStartupCompleteWithId`
+				+ [x] `gdkNotifyStartupComplete`
+					- [x] remove it
+				+ [x] `gdkNotifyStartupCompleteWithId`
+					- [x] remove it
 				+ [ ] `gdkSetAllowedBackends`
 				+ [ ] `gdkGetProgramClass`
 				+ [ ] `gdkSetProgramClass`
