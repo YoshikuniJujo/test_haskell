@@ -24,6 +24,17 @@ todo new
 	+ [x] Foreign.Ptr.Misc
 	+ [ ] Graphics.Gdk
 		- [ ] General
+			* [ ] make trial
+				+ [ ] `gdkInit`
+					- [x] try it
+					- [ ] check exception
+				+ [ ] `gdkGetDisplayArgName`
+				+ [ ] `gdkNotifyStartupComplete`
+				+ [ ] `gdkNotifyStartupCompleteWithId`
+				+ [ ] `gdkSetAllowedBackends`
+				+ [ ] `gdkGetProgramClass`
+				+ [ ] `gdkSetProgramClass`
+			* [ ] refactor export list
 		- [ ] GdkDisplayManager
 		- [ ] GdkDisplay
 		- [ ] GdkScreen

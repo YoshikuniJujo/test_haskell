@@ -4,12 +4,17 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.General (
+	-- * Foo
 	gdkInit, gdkGetDisplayArgName,
 	gdkNotifyStartupComplete, gdkNotifyStartupCompleteWithId,
 	gdkSetAllowedBackends,
 	gdkGetProgramClass, gdkSetProgramClass,
+
+	-- * GDK GRAB STATUS
 	GdkGrabStatus(..),
-	) where
+	pattern GdkGrabSuccess, pattern GdkGrabAlreadyGrabbed,
+	pattern GdkGrabInvalidTime, pattern GdkGrabNotViewable,
+	pattern GdkGrabFrozen, pattern GdkGrabFailed ) where
 
 import Foreign.Ptr
 import Foreign.Marshal
