@@ -9,3 +9,4 @@ import Graphics.Gdk.General
 main :: IO ()
 main = do
 	print =<< join (gdkInit <$> getProgName <*> getArgs)
+	print =<< gdkGetDisplayArgName

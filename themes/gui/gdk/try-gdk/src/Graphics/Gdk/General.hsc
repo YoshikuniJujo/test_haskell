@@ -4,7 +4,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.General (
-	-- * Foo
+	-- * INIT, STARTUP, BACKENDS AND PROGRAM CLASS
 	gdkInit, gdkGetDisplayArgName,
 	gdkNotifyStartupComplete, gdkNotifyStartupCompleteWithId,
 	gdkSetAllowedBackends,

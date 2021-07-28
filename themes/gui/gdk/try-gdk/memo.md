@@ -25,10 +25,10 @@ todo new
 	+ [ ] Graphics.Gdk
 		- [ ] General
 			* [ ] make trial
-				+ [ ] `gdkInit`
+				+ [x] `gdkInit`
 					- [x] try it
-					- [ ] check exception
-				+ [ ] `gdkGetDisplayArgName`
+					- [x] check exception
+				+ [x] `gdkGetDisplayArgName`
 				+ [ ] `gdkNotifyStartupComplete`
 				+ [ ] `gdkNotifyStartupCompleteWithId`
 				+ [ ] `gdkSetAllowedBackends`
