@@ -2,7 +2,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Try.Tools where
+module Try.Tools (mainLoop, defaultGdkWindowAttr) where
 
 import Control.Concurrent
 

@@ -18,10 +18,33 @@ todo new
 		- [x] Bits.Misc
 		- [x] Sealed
 		- [x] Sealed.Internal
-	+ [ ] Try.Tools
-		- [ ] itself
-		- [ ] DoWhile
+	+ [x] Try.Tools
+		- [x] itself
+		- [x] DoWhile
 	+ [ ] Graphics.Gdk
+		- [ ] General
+		- [ ] GdkDisplayManager
+		- [ ] GdkDisplay
+		- [ ] GdkScreen
+		- [ ] GdkSeat
+		- [ ] GdkMonitor
+		- [ ] GdkDevice
+			* [ ] itself
+			* [ ] GdkAxes
+		- [ ] PointsAndRectangle
+		- [ ] Visuals
+		- [ ] Cursors
+		- [ ] Windows
+			* [ ] itself
+			* [ ] GdkWindowAttr
+			* [ ] GdkEventMask
+			* [ ] GdkModifierType
+		- [ ] GdkDrawingContext
+		- [ ] Events
+		- [ ] EventStructures
+			* [ ] GdkKeySyms
+		- [ ] PropertiesAndAtoms.GdkAtom
+		- [ ] Exception
 
 module hierarchy
 ----------------

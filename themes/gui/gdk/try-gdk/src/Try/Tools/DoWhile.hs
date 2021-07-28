@@ -1,4 +1,4 @@
-module Try.Tools.DoWhile where
+module Try.Tools.DoWhile (doWhile_, doWhile) where
 
 import Data.Bool
 
