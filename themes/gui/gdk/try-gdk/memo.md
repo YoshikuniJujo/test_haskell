@@ -33,7 +33,7 @@ todo new
 					- [x] remove it
 				+ [x] `gdkNotifyStartupCompleteWithId`
 					- [x] remove it
-				+ [ ] `gdkSetAllowedBackends`
+				+ [x] `gdkSetAllowedBackends`
 				+ [ ] `gdkGetProgramClass`
 				+ [ ] `gdkSetProgramClass`
 			* [ ] refactor export list

@@ -8,5 +8,7 @@ import Graphics.Gdk.General
 
 main :: IO ()
 main = do
-	print =<< join (gdkInit <$> getProgName <*> getArgs)
+	a : as <- getArgs
+	gdkSetAllowedBackends a
+	print =<< join (gdkInit <$> getProgName <*> pure as)
 	print =<< gdkGetDisplayArgName
