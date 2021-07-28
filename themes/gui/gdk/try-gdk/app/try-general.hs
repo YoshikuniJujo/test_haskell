@@ -12,3 +12,6 @@ main = do
 	gdkSetAllowedBackends a
 	print =<< join (gdkInit <$> getProgName <*> pure as)
 	print =<< gdkGetDisplayArgName
+	print =<< gdkGetProgramClass
+	gdkSetProgramClass "baribari"
+	print =<< gdkGetProgramClass

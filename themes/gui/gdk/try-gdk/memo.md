@@ -23,8 +23,8 @@ todo new
 		- [x] DoWhile
 	+ [x] Foreign.Ptr.Misc
 	+ [ ] Graphics.Gdk
-		- [ ] General
-			* [ ] make trial
+		- [x] General
+			* [x] make trial
 				+ [x] `gdkInit`
 					- [x] try it
 					- [x] check exception
@@ -34,9 +34,9 @@ todo new
 				+ [x] `gdkNotifyStartupCompleteWithId`
 					- [x] remove it
 				+ [x] `gdkSetAllowedBackends`
-				+ [ ] `gdkGetProgramClass`
-				+ [ ] `gdkSetProgramClass`
-			* [ ] refactor export list
+				+ [x] `gdkGetProgramClass`
+				+ [x] `gdkSetProgramClass`
+			* [x] refactor export list
 		- [ ] GdkDisplayManager
 		- [ ] GdkDisplay
 		- [ ] GdkScreen
