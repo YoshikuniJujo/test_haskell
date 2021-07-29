@@ -40,7 +40,7 @@ import Data.Word
 import Data.Int
 import System.GLib.Bool
 
-import {-# SOURCE #-} Graphics.Gdk.GdkDisplay
+import {-# SOURCE #-} Graphics.Gdk.GdkDisplay.Internal
 import Graphics.Gdk.PointsAndRectangles
 
 #include <gdk/gdk.h>

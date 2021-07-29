@@ -47,7 +47,7 @@ import Data.Word
 import Data.Int
 
 import Graphics.Gdk.General
-import {-# SOURCE #-} Graphics.Gdk.GdkDisplay
+import {-# SOURCE #-} Graphics.Gdk.GdkDisplay.Internal
 import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.Cursors
 import {-# SOURCE #-} Graphics.Gdk.Windows

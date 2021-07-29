@@ -5,6 +5,7 @@ refactor export list
 --------------------
 
 * [x] remove SELECTION and CLIPBOARD
+* [x] make `Graphics.Gdk.GdkDisplay.Internal`
 * [ ] TYPE
 * [ ] DISPLAY
 * [ ] EVENT

@@ -46,6 +46,7 @@ todo new
 				+ [x] `gdkDsiplayManagerListDisplays`
 				+ [ ] `gdkDisplayManagerOpenDisplay`
 			* [x] refactor export list
+			* [ ] make `Graphics.Gdk.GdkDisplayManager.Internal`
 		- [ ] GdkDisplay
 		- [ ] GdkScreen
 		- [ ] GdkSeat

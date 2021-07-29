@@ -65,7 +65,7 @@ import Foreign.C
 import Foreign.C.Enum
 import Data.Int
 
-import {-# SOURCE #-} Graphics.Gdk.GdkDisplay
+import {-# SOURCE #-} Graphics.Gdk.GdkDisplay.Internal
 
 import Graphics.Cairo.Surfaces.CairoSurfaceT.Internal
 import Graphics.Cairo.Surfaces.ImageSurfaces

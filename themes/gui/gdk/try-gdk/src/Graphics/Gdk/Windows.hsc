@@ -87,7 +87,7 @@ import Data.Int
 import System.GLib.Bool
 import System.GLib.DoublyLinkedLists
 
-import Graphics.Gdk.GdkDisplay
+import Graphics.Gdk.GdkDisplay.Internal
 import {-# SOURCE #-} Graphics.Gdk.GdkScreen
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkDevice

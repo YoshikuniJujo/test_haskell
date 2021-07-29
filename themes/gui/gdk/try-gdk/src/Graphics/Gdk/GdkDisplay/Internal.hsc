@@ -2,7 +2,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.GdkDisplay (
+module Graphics.Gdk.GdkDisplay.Internal (
 	-- * TYPE
 	GdkDisplay(..),
 
