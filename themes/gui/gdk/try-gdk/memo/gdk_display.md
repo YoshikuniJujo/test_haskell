@@ -9,7 +9,8 @@ refactor export list
 * [x] TYPE
 * [ ] DISPLAY
 	+ [ ] `gdkDisplayOpen`
-		- [ ] add primitive example of Qiita
+		- [x] add primitive example of Qiita
+		- [ ] refactor try-primitive
 	+ [ ] `gdkDisplayGetDefault`
 	+ [ ] `gdkDisplayGetName`
 	+ [ ] `gdkDisplayGetDefaultScreen`
