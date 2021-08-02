@@ -20,8 +20,8 @@ refactor export list
 	+ [x] `gdkDisplayClose`
 	+ [x] `gdkDisplayIsClosed`
 * [ ] EVENT
-	+ [ ] `gdkDisplayWithEventGet`
-		- [ ] rename to `gdkDisplayWithEvent`
+	+ [x] `gdkDisplayWithEventGet`
+		- [x] rename to `gdkDisplayWithEvent`
 	+ [x] `gdkDisplayWithEventPeek`
 		- [x] remove it
 	+ [ ] `gdkDisplayHasPending`

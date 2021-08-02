@@ -27,7 +27,7 @@ mainLoop f = doWhile_ do
 mainLoopDisplay :: GdkDisplay -> (forall s . GdkEvent s -> IO Bool) -> IO ()
 mainLoopDisplay d f = doWhile_ do
 	threadDelay 100000
-	doWhile $ gdkDisplayWithEventGet d \case
+	doWhile $ gdkDisplayWithEvent d \case
 		Just e -> do
 			b <- f e
 			pure if b then Nothing else Just False

@@ -18,7 +18,7 @@ module Graphics.Gdk.GdkDisplay.Internal (
 	gdkDisplayIsClosed,
 
 	-- * EVENT
-	gdkDisplayWithEventGet,
+	gdkDisplayWithEvent,
 	gdkDisplayHasPending,
 
 	-- * DOUBLE CLICK
@@ -127,8 +127,8 @@ gdkDisplayIsClosed (GdkDisplay p) = gbooleanToBool <$> c_gdk_display_is_closed p
 foreign import ccall "gdk_display_is_closed" c_gdk_display_is_closed ::
 	Ptr GdkDisplay -> IO #type gboolean
 
-gdkDisplayWithEventGet :: GdkDisplay -> (forall s . Maybe (GdkEvent s) -> IO a) -> IO a
-gdkDisplayWithEventGet d f = c_gdk_display_get_event d >>= \case
+gdkDisplayWithEvent :: GdkDisplay -> (forall s . Maybe (GdkEvent s) -> IO a) -> IO a
+gdkDisplayWithEvent d f = c_gdk_display_get_event d >>= \case
 	NullPtr -> f Nothing
 	p -> (f . Just . GdkEvent =<< newForeignPtr p (pure ()))
 		<* c_gdk_event_free p
