@@ -19,7 +19,6 @@ module Graphics.Gdk.GdkDisplay.Internal (
 
 	-- * EVENT
 	gdkDisplayWithEventGet,
-	gdkDisplayWithEventPeek,
 	gdkDisplayHasPending,
 
 	-- * DOUBLE CLICK
@@ -136,15 +135,6 @@ gdkDisplayWithEventGet d f = c_gdk_display_get_event d >>= \case
 
 foreign import ccall "gdk_display_get_event"
 	c_gdk_display_get_event :: GdkDisplay -> IO (Ptr GdkEventTag)
-
-gdkDisplayWithEventPeek :: GdkDisplay -> (forall s . Maybe (GdkEvent s) -> IO a) -> IO a
-gdkDisplayWithEventPeek d f = c_gdk_display_peek_event d >>= \case
-	NullPtr -> f Nothing
-	p -> (f . Just . GdkEvent =<< newForeignPtr p (pure ()))
-		<* c_gdk_event_free p
-
-foreign import ccall "gdk_display_peek_event" c_gdk_display_peek_event ::
-	GdkDisplay -> IO (Ptr GdkEventTag)
 
 gdkDisplayHasPending :: GdkDisplay -> IO Bool
 gdkDisplayHasPending (GdkDisplay p) = gbooleanToBool <$> c_gdk_display_has_pending p

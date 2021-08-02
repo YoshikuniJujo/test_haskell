@@ -17,7 +17,6 @@ module Graphics.Gdk.GdkDisplay (
 
 	-- * EVENT
 	gdkDisplayWithEventGet,
-	gdkDisplayWithEventPeek,
 	gdkDisplayHasPending,
 
 	-- * DOUBLE CLICK
