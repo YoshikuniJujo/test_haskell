@@ -1,16 +1,20 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
 import Control.Monad
+import Control.Exception
 import System.Environment
 import System.Console.GetOpt
 
 import Graphics.Gdk.General
 import Graphics.Gdk.GdkDisplay
+import Graphics.Gdk.Exception
 
 main :: IO ()
 main = do
+	(print =<< gdkDisplayGetDefault) `catch` \(e :: GdkNoDefaultDisplay) -> print e
 	(_pn, args) <- join $ gdkInit <$> getProgName <*> getArgs
 	let	(os, as, es) = getOpt Permute optDescrs args
 		sts = optionsToSettings os
