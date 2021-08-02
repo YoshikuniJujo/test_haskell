@@ -19,7 +19,6 @@ module Graphics.Gdk.GdkDisplay.Internal (
 
 	-- * EVENT
 	gdkDisplayWithEvent,
-	gdkDisplayHasPending,
 
 	-- * DOUBLE CLICK
 	gdkDisplaySetDoubleClickTime,
@@ -127,6 +126,8 @@ gdkDisplayIsClosed (GdkDisplay p) = gbooleanToBool <$> c_gdk_display_is_closed p
 foreign import ccall "gdk_display_is_closed" c_gdk_display_is_closed ::
 	Ptr GdkDisplay -> IO #type gboolean
 
+-- EVENT
+
 gdkDisplayWithEvent :: GdkDisplay -> (forall s . Maybe (GdkEvent s) -> IO a) -> IO a
 gdkDisplayWithEvent d f = c_gdk_display_get_event d >>= \case
 	NullPtr -> f Nothing
@@ -135,12 +136,6 @@ gdkDisplayWithEvent d f = c_gdk_display_get_event d >>= \case
 
 foreign import ccall "gdk_display_get_event"
 	c_gdk_display_get_event :: GdkDisplay -> IO (Ptr GdkEventTag)
-
-gdkDisplayHasPending :: GdkDisplay -> IO Bool
-gdkDisplayHasPending (GdkDisplay p) = gbooleanToBool <$> c_gdk_display_has_pending p
-
-foreign import ccall "gdk_display_has_pending" c_gdk_display_has_pending ::
-	Ptr GdkDisplay -> IO #type gboolean
 
 -- DOUBLE CLICK
 

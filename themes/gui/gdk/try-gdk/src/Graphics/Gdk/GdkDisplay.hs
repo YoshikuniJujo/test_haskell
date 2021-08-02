@@ -17,7 +17,6 @@ module Graphics.Gdk.GdkDisplay (
 
 	-- * EVENT
 	gdkDisplayWithEvent,
-	gdkDisplayHasPending,
 
 	-- * DOUBLE CLICK
 	gdkDisplaySetDoubleClickTime,

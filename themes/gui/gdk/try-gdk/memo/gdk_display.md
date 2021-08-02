@@ -19,12 +19,13 @@ refactor export list
 	+ [x] `gdkDisplayFlush`
 	+ [x] `gdkDisplayClose`
 	+ [x] `gdkDisplayIsClosed`
-* [ ] EVENT
+* [x] EVENT
 	+ [x] `gdkDisplayWithEventGet`
 		- [x] rename to `gdkDisplayWithEvent`
 	+ [x] `gdkDisplayWithEventPeek`
 		- [x] remove it
-	+ [ ] `gdkDisplayHasPending`
+	+ [x] `gdkDisplayHasPending`
+		- [x] remove it
 * [ ] DOUBLE CLICK
 * [ ] CURSOR
 * [ ] GROUP
