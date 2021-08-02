@@ -12,9 +12,9 @@ refactor export list
 		- [x] add primitive example of Qiita
 		- [x] refactor try-primitive
 	+ [x] `gdkDisplayGetDefault`
-	+ [ ] `gdkDisplayGetName`
-	+ [ ] `gdkDisplayGetDefaultScreen`
-	+ [ ] `gdkDisplayDeviceIsGrabbed`
+	+ [x] `gdkDisplayGetName`
+	+ [x] `gdkDisplayGetDefaultScreen`
+	+ [x] `gdkDisplayDeviceIsGrabbed`
 	+ [ ] `gdkDisplaySync`
 	+ [ ] `gdkDisplayFlush`
 	+ [ ] `gdkDisplayClose`

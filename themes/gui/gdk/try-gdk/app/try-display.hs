@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -10,7 +11,13 @@ import System.Console.GetOpt
 
 import Graphics.Gdk.General
 import Graphics.Gdk.GdkDisplay
+import Graphics.Gdk.GdkSeat
+import Graphics.Gdk.Windows
+import Graphics.Gdk.EventStructures
+import Graphics.Gdk.EventStructures.GdkKeySyms
 import Graphics.Gdk.Exception
+
+import Try.Tools
 
 main :: IO ()
 main = do
@@ -23,12 +30,32 @@ main = do
 	print es
 	dd <- gdkDisplayGetDefault
 	print $ gdkDisplayGetName dd
+	st <- gdkDisplayGetDefaultSeat dd
+	ptr <- gdkSeatGetPointer st
+	print ptr
+	print =<< gdkDisplayDeviceIsGrabbed dd ptr
 	case settingsMyDisplayName sts of
 		Just n -> do
 			nd <- gdkDisplayOpen n
 			print $ gdkDisplayGetName nd
 			gdkDisplayClose nd
 		Nothing -> pure ()
+	w <- gdkWindowNew Nothing defaultGdkWindowAttr
+	gdkWindowShow w
+	mainLoop \case
+		GdkEventGdkDelete _d -> pure False
+		GdkEventGdkKeyPress k_ -> do
+			case gdkEventKey k_ of
+				GdkEventKey { gdkEventKeyKeyval = GdkKey_q } ->
+					pure False
+				GdkEventKey { gdkEventKeyKeyval = GdkKey_g } ->
+					True <$ gdkSeatGrabSimple st w
+				GdkEventKey { gdkEventKeyKeyval = GdkKey_u } ->
+					True <$ gdkSeatUngrab st
+				k -> True <$ print k
+		e -> True <$ do
+			print e
+			print =<< gdkDisplayDeviceIsGrabbed dd ptr
 
 data Settings = Settings {
 	settingsMyDisplayName :: Maybe String
