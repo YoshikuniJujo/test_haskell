@@ -42,7 +42,7 @@ main = do
 		Nothing -> pure ()
 	w <- gdkWindowNew Nothing defaultGdkWindowAttr
 	gdkWindowShow w
-	mainLoop \case
+	mainLoopDisplay dd \case
 		GdkEventGdkDelete _d -> pure False
 		GdkEventGdkKeyPress k_ -> do
 			case gdkEventKey k_ of

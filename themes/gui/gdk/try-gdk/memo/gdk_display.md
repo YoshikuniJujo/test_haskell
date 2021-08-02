@@ -7,7 +7,7 @@ refactor export list
 * [x] remove SELECTION and CLIPBOARD
 * [x] make `Graphics.Gdk.GdkDisplay.Internal`
 * [x] TYPE
-* [ ] DISPLAY
+* [x] DISPLAY
 	+ [x] `gdkDisplayOpen`
 		- [x] add primitive example of Qiita
 		- [x] refactor try-primitive
@@ -15,11 +15,14 @@ refactor export list
 	+ [x] `gdkDisplayGetName`
 	+ [x] `gdkDisplayGetDefaultScreen`
 	+ [x] `gdkDisplayDeviceIsGrabbed`
-	+ [ ] `gdkDisplaySync`
-	+ [ ] `gdkDisplayFlush`
-	+ [ ] `gdkDisplayClose`
-	+ [ ] `gdkDisplayIsClosed`
+	+ [x] `gdkDisplaySync`
+	+ [x] `gdkDisplayFlush`
+	+ [x] `gdkDisplayClose`
+	+ [x] `gdkDisplayIsClosed`
 * [ ] EVENT
+	+ [x] `gdkDisplayWithEventGet`
+	+ [ ] `gdkDisplayWithEventPeek`
+	+ [ ] `gdkDisplayHasPending`
 * [ ] DOUBLE CLICK
 * [ ] CURSOR
 * [ ] GROUP
