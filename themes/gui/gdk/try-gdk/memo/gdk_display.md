@@ -33,9 +33,17 @@ refactor export list
 	+ [x] `gdkDisplaySupportsCursorColor`
 	+ [x] `gdkDisplaySupportsCursorAlpha`
 	+ [x] `gdkDisplayGetDefaultCursorSize`
-* [ ] GROUP
-* [ ] SEAT
+* [x] GROUP
+	+ [x] `gdkDisplayGetDefaultGroup`
+* [x] SEAT
+	+ [x] `gdkDisplayGetDefaultSeat`
+	+ [x] `gdkDisplayListSeats`
 * [ ] MONITOR
+	+ [ ] `gdkDisplayGetNMonitors`
+	+ [ ] `gdkDisplayGetMonitor`
+	+ [ ] `gdkDisplayGetPrimaryMonitor`
+	+ [ ] `gdkDisplayGetMonitorAtPoint`
+	+ [ ] `gdkDisplayGetMonitorAtWindow`
 
 Function
 --------

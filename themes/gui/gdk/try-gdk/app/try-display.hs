@@ -11,6 +11,7 @@ import System.Console.GetOpt
 
 import Graphics.Gdk.General
 import Graphics.Gdk.GdkDisplay
+import Graphics.Gdk.GdkScreen
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.Windows
 import Graphics.Gdk.EventStructures
@@ -30,7 +31,13 @@ main = do
 	print es
 	dd <- gdkDisplayGetDefault
 	print $ gdkDisplayGetName dd
+	let	scr = gdkDisplayGetDefaultScreen dd
+	print scr
+	print =<< gdkScreenGetRootWindow scr
 	st <- gdkDisplayGetDefaultSeat dd
+	print st
+	print =<< gdkDisplayListSeats dd
+	print =<< gdkDisplayGetDefaultGroup dd
 	ptr <- gdkSeatGetPointer st
 	print ptr
 	print =<< gdkDisplayDeviceIsGrabbed dd ptr
