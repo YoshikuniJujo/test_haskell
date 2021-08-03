@@ -30,9 +30,9 @@ run scr = do
 	print =<< gdkScreenIsComposited scr
 	maybe (putStrLn "No Window Stack") (mapM_ printWindowStack) =<< gdkScreenGetWindowStack scr
 
-printWindowStack :: GdkWindowAutoUnref -> IO (CInt, CInt)
+printWindowStack :: GdkWindowAutoUnref -> IO ()
 printWindowStack wau = withGdkWindowAutoUnref wau \w ->
-	gdkWindowGetOrigin w
+	print =<< gdkWindowGetOrigin w
 
 printVisual :: String -> GdkVisual -> IO ()
 printVisual ttl v = do
