@@ -73,10 +73,11 @@ import Foreign.Ptr
 import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr, addForeignPtrFinalizer)
 import Foreign.Concurrent
-import Foreign.Marshal
+import Foreign.Marshal hiding (void)
 import Foreign.Storable
 import Foreign.C
 import Foreign.C.Enum
+import Control.Monad
 import Control.Monad.ST
 import Control.Exception
 import Data.Maybe
@@ -113,9 +114,9 @@ mkGdkWindowAutoUnref p = GdkWindowAutoUnref <$> newForeignPtr p (c_g_object_unre
 
 newtype GdkWindow = GdkWindow (Ptr GdkWindow) deriving (Show, Storable)
 
-withGdkWindowAutoUnref :: GdkWindowAutoUnref -> (GdkWindow -> IO a) -> IO a
-withGdkWindowAutoUnref (GdkWindowAutoUnref fwnu) f =
-	withForeignPtr fwnu \pwnu -> f (GdkWindow $ castPtr pwnu)
+withGdkWindowAutoUnref :: GdkWindowAutoUnref -> (GdkWindow -> IO a) -> IO ()
+withGdkWindowAutoUnref (GdkWindowAutoUnref fwnu) f = void
+	$ withForeignPtr fwnu \pwnu -> f (GdkWindow $ castPtr pwnu)
 
 gdkWindowNew :: Maybe GdkWindow -> GdkWindowAttr -> IO GdkWindow
 gdkWindowNew mw a = maybe ($ nullPtr) (\(GdkWindow pw) -> ($ pw)) mw \pw -> do
