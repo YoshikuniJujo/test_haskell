@@ -6,8 +6,8 @@ todo
 
 * [x] make `Graphics.Gdk.GdkScreen.Internal`
 * [ ] refactor export list
-	+ [ ] TYPE
-	+ [ ] DEFAULT SCREEN
+	+ [x] TYPE
+	+ [x] DEFAULT SCREEN
 	+ [ ] VISUAL
 	+ [ ] IS COMPOSITED
 	+ [ ] WINDOW
