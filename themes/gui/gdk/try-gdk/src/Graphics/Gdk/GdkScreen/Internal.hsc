@@ -89,10 +89,10 @@ gdkScreenListVisuals (GdkScreen p) = do
 foreign import ccall "gdk_screen_list_visuals" c_gdk_screen_list_visuals ::
 	Ptr GdkScreen -> IO (Ptr (GList GdkVisual))
 
-gdkScreenGetToplevelWindows :: GdkScreen -> IO (Maybe [GdkWindow])
+gdkScreenGetToplevelWindows :: GdkScreen -> IO [GdkWindow]
 gdkScreenGetToplevelWindows (GdkScreen p) = do
 	gl <- c_gdk_screen_get_toplevel_windows p
-	(map GdkWindow <$>) <$> g_list_to_list gl <* c_g_list_free gl
+	maybe [] (map GdkWindow) <$> g_list_to_list gl <* c_g_list_free gl
 
 foreign import ccall "gdk_screen_get_toplevel_windows" c_gdk_screen_get_toplevel_windows ::
 	Ptr GdkScreen -> IO (Ptr (GList GdkWindow))

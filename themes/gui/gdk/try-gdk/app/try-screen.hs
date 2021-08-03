@@ -29,8 +29,7 @@ run scr = do
 	putStr "gdkScreenIsComposited: "
 	print =<< gdkScreenIsComposited scr
 	print =<< gdkWindowGetWindowType =<< gdkScreenGetRootWindow scr
-	print =<< maybe (pure []) (mapM gdkWindowGetWindowType)
-		=<< gdkScreenGetToplevelWindows scr
+	print =<< mapM gdkWindowGetWindowType =<< gdkScreenGetToplevelWindows scr
 	maybe (putStrLn "No Window Stack") (mapM_ printWindowStack) =<< gdkScreenGetWindowStack scr
 
 printWindowStack :: GdkWindowAutoUnref -> IO ()

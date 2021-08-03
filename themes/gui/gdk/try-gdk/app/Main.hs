@@ -128,8 +128,8 @@ main = do
 			bls <- for vs gdkVisualGetBluePixelDetails
 			putStrLn $ "Blue pixel details of visuals: " ++ show ((head &&& length) <$> group bls)
 	putStrLn "gdkScreenGetToplevelWindows #1"
-	gdkScreenGetToplevelWindows scrn >>= \case
-		Just tws -> for_ tws \tw -> print =<< gdkWindowGetWindowType tw
+	gdkScreenGetToplevelWindows scrn >>=
+		\tws -> for_ tws \tw -> print =<< gdkWindowGetWindowType tw
 	putStrLn "gdkScreenGetWindowStack #1"
 	gdkScreenGetWindowStack scrn >>=
 		maybe (putStrLn "No Window Stacks") (mapM_ \tw -> print =<< withGdkWindowAutoUnref tw gdkWindowGetWindowType)
@@ -184,8 +184,7 @@ main = do
 	print GdkExposureMask
 	print GdkPointerMotionMask
 	putStrLn "gdkScreenGetTopLevelWindows #2"
-	gdkScreenGetToplevelWindows scrn >>=
-		maybe (putStrLn "No Toplevel Windows") (mapM_ \tw -> print =<< gdkWindowGetWindowType tw)
+	gdkScreenGetToplevelWindows scrn >>= mapM_ \tw -> print =<< gdkWindowGetWindowType tw
 	putStrLn "gdkScreenGetWindowStack #2"
 	gdkScreenGetWindowStack scrn >>=
 		maybe (putStrLn "No Window Stacks") (mapM_ \tw -> print =<< withGdkWindowAutoUnref tw gdkWindowGetWindowType)

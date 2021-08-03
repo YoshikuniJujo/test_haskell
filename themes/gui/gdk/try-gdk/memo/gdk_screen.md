@@ -15,8 +15,8 @@ todo
 	+ [x] IS COMPOSITED
 		- `gdkScreenIsComposited`
 	+ [ ] WINDOW
-		- [ ] `gdkScreenGetRootWindow`
-		- [ ] `gdkScreenGetToplevelWindows`
+		- [x] `gdkScreenGetRootWindow`
+		- [x] `gdkScreenGetToplevelWindows`
 		- [ ] `gdkScreenGetWindowStack`
 			* [x] about `GdkWindowAutoUnref`
 	+ [ ] DISPLAY
