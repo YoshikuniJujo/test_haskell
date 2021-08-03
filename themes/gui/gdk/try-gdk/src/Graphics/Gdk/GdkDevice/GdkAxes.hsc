@@ -82,9 +82,9 @@ foreign import ccall "gdk_device_get_axis"
 		GdkDevice -> Ptr CDouble -> GdkAxisUse -> Ptr CDouble ->
 		IO #{type gboolean}
 
-gdkDeviceListAxes :: GdkDevice -> IO [GdkAtom]
+gdkDeviceListAxes :: GdkDevice -> IO (Maybe [GdkAtom])
 gdkDeviceListAxes d =
-	map GdkAtom <$> (g_list_to_list =<< c_gdk_device_list_axes d)
+	(map GdkAtom <$>) <$> (g_list_to_list =<< c_gdk_device_list_axes d)
 
 foreign import ccall "gdk_device_list_axes"
 	c_gdk_device_list_axes :: GdkDevice -> IO (Ptr (GList GdkAtom))

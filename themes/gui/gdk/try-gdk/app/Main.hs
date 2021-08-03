@@ -73,7 +73,7 @@ main = do
 
 	slvs <- gdkSeatGetSlaves st GdkSeatCapabilityAll
 	putStrLn "Slave devices:"
-	for_ slvs \slv -> do
+	for_ (fromJust slvs) \slv -> do
 		putStrLn . ("\t" ++) . show =<< gdkDeviceGetDeviceType slv
 		putStrLn . ("\t" ++) =<< gdkDeviceGetName slv
 		putStrLn . ("\t\t" ++) . show =<< gdkDeviceGetVendorId slv
@@ -83,7 +83,7 @@ main = do
 		when (s /= GdkSourceKeyboard) do
 			n <- gdkDeviceGetNAxes slv
 			putStrLn $ "\t\t" ++ show n
-			putStrLn . ("\t\t" ++) . show =<< mapM gdkAtomName =<< gdkDeviceListAxes slv
+			putStrLn . ("\t\t" ++) . show =<< mapM gdkAtomName . fromJust =<< gdkDeviceListAxes slv
 			putStrLn . ("\t\t" ++) . show . gdkAxisFlagList =<< gdkDeviceGetAxes slv
 			for_ [0 .. fromIntegral n - 1] \i ->
 				putStrLn . ("\t\t" ++) . show =<< gdkDeviceGetAxisUse slv i
@@ -129,10 +129,10 @@ main = do
 			putStrLn $ "Blue pixel details of visuals: " ++ show ((head &&& length) <$> group bls)
 	putStrLn "gdkScreenGetToplevelWindows #1"
 	gdkScreenGetToplevelWindows scrn >>= \case
-		tws -> for_ tws \tw -> print =<< gdkWindowGetWindowType tw
+		Just tws -> for_ tws \tw -> print =<< gdkWindowGetWindowType tw
 	putStrLn "gdkScreenGetWindowStack #1"
 	gdkScreenGetWindowStack scrn >>=
-		mapM_ \tw -> print =<< withGdkWindowAutoUnref tw gdkWindowGetWindowType
+		maybe (putStrLn "No Window Stacks") (mapM_ \tw -> print =<< withGdkWindowAutoUnref tw gdkWindowGetWindowType)
 	print =<< gdkSeatGetCapabilities st
 	let wattr = minimalGdkWindowAttr (gdkEventMaskMultiBits [
 				GdkExposureMask, GdkButtonPressMask, GdkKeyPressMask, GdkFocusChangeMask,
@@ -155,7 +155,7 @@ main = do
 	putStr "CHILDREN OF THIS WINDOW: "
 	print =<< gdkWindowPeekChildren w
 	putStr "CHILDREN OF PARENT WINDOW: "
-	print =<< mapM gdkWindowGetWindowType =<< gdkWindowPeekChildren =<< gdkWindowGetParent w
+	print =<< mapM gdkWindowGetWindowType . fromJust =<< gdkWindowPeekChildren =<< gdkWindowGetParent w
 	printVisual =<< gdkWindowGetVisual w
 	print =<< gdkWindowGetDecorations w
 	print GdkWindowToplevel
@@ -185,10 +185,10 @@ main = do
 	print GdkPointerMotionMask
 	putStrLn "gdkScreenGetTopLevelWindows #2"
 	gdkScreenGetToplevelWindows scrn >>=
-		mapM_ \tw -> print =<< gdkWindowGetWindowType tw
+		maybe (putStrLn "No Toplevel Windows") (mapM_ \tw -> print =<< gdkWindowGetWindowType tw)
 	putStrLn "gdkScreenGetWindowStack #2"
 	gdkScreenGetWindowStack scrn >>=
-		mapM_ \tw -> print =<< withGdkWindowAutoUnref tw gdkWindowGetWindowType
+		maybe (putStrLn "No Window Stacks") (mapM_ \tw -> print =<< withGdkWindowAutoUnref tw gdkWindowGetWindowType)
 	checkGrabbedPointerKeyboard d st
 	doWhile_ do
 		threadDelay 100000

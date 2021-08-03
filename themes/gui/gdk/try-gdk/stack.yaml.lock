@@ -32,11 +32,11 @@ packages:
     git: https://github.com/YoshikuniJujo/glib-stopgap
     pantry-tree:
       size: 1273
-      sha256: 5d50e297eb50604d1a574308569432937529832206bde31408f6bbf0e126c397
-    commit: 7e668ebcd7784080f4da33d291b567659a66357c
+      sha256: c5f5ebe1aa61232c3fc8b6f2fc30e13d4f9195e289de7754d15edc1d8826ab1e
+    commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
   original:
     git: https://github.com/YoshikuniJujo/glib-stopgap
-    commit: 7e668ebcd7784080f4da33d291b567659a66357c
+    commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
 snapshots:
 - completed:
     size: 585393

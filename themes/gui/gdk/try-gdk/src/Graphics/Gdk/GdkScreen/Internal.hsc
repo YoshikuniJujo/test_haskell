@@ -84,15 +84,15 @@ foreign import ccall "gdk_screen_get_display" c_gdk_screen_get_display ::
 gdkScreenListVisuals :: GdkScreen -> IO [GdkVisual]
 gdkScreenListVisuals (GdkScreen p) = do
 	gl <- c_gdk_screen_list_visuals p
-	map GdkVisual <$> g_list_to_list gl <* c_g_list_free gl
+	maybe [] (map GdkVisual) <$> g_list_to_list gl <* c_g_list_free gl
 
 foreign import ccall "gdk_screen_list_visuals" c_gdk_screen_list_visuals ::
 	Ptr GdkScreen -> IO (Ptr (GList GdkVisual))
 
-gdkScreenGetToplevelWindows :: GdkScreen -> IO [GdkWindow]
+gdkScreenGetToplevelWindows :: GdkScreen -> IO (Maybe [GdkWindow])
 gdkScreenGetToplevelWindows (GdkScreen p) = do
 	gl <- c_gdk_screen_get_toplevel_windows p
-	map GdkWindow <$> g_list_to_list gl <* c_g_list_free gl
+	(map GdkWindow <$>) <$> g_list_to_list gl <* c_g_list_free gl
 
 foreign import ccall "gdk_screen_get_toplevel_windows" c_gdk_screen_get_toplevel_windows ::
 	Ptr GdkScreen -> IO (Ptr (GList GdkWindow))
@@ -103,10 +103,10 @@ foreign import ccall "gdk_screen_get_resolution" gdkScreenGetResolution ::
 foreign import ccall "gdk_screen_set_resolution" gdkScreenSetResolution ::
 	GdkScreen -> CDouble -> IO ()
 
-gdkScreenGetWindowStack :: GdkScreen -> IO [GdkWindowAutoUnref]
+gdkScreenGetWindowStack :: GdkScreen -> IO (Maybe [GdkWindowAutoUnref])
 gdkScreenGetWindowStack (GdkScreen p) = do
 	gl <- c_gdk_screen_get_window_stack p
-	mapM mkGdkWindowAutoUnref =<< g_list_to_list gl <* c_g_list_free gl
+	maybe (pure Nothing) ((Just <$>) . mapM mkGdkWindowAutoUnref) =<< g_list_to_list gl <* c_g_list_free gl
 
 foreign import ccall "gdk_screen_get_window_stack" c_gdk_screen_get_window_stack ::
 	Ptr GdkScreen -> IO (Ptr (GList GdkWindowNeedUnref))

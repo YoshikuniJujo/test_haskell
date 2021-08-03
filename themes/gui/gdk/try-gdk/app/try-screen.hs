@@ -25,6 +25,7 @@ run scr = do
 	mapM_ print . map packGroup . group =<< mapM peekVisual =<< gdkScreenListVisuals scr
 	putStr "gdkScreenIsComposited: "
 	print =<< gdkScreenIsComposited scr
+	print =<< gdkScreenGetWindowStack scr
 
 printVisual :: String -> GdkVisual -> IO ()
 printVisual ttl v = do

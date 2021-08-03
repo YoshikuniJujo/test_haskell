@@ -104,10 +104,10 @@ gdkDeviceGetSource d = GdkInputSource <$> c_gdk_device_get_source d
 foreign import ccall "gdk_device_get_source" c_gdk_device_get_source ::
 	GdkDevice -> IO #type GdkInputSource
 
-gdkDeviceListSlaveDevices :: GdkDevice -> IO [GdkDevice]
+gdkDeviceListSlaveDevices :: GdkDevice -> IO (Maybe [GdkDevice])
 gdkDeviceListSlaveDevices d = do
 	gl <- c_gdk_device_list_slave_devices d
-	map GdkDevice <$> (g_list_to_list gl <* c_g_list_free gl)
+	(map GdkDevice <$>) <$> (g_list_to_list gl <* c_g_list_free gl)
 
 foreign import ccall "gdk_device_list_slave_devices" c_gdk_device_list_slave_devices ::
 	GdkDevice -> IO (Ptr (GList GdkDevice))

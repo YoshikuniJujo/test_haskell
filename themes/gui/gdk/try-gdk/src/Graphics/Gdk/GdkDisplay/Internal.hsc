@@ -188,7 +188,7 @@ foreign import ccall "gdk_display_get_default_seat" c_gdk_display_get_default_se
 	Ptr GdkDisplay -> IO (Ptr GdkSeat)
 
 gdkDisplayListSeats :: GdkDisplay -> IO [GdkSeat]
-gdkDisplayListSeats (GdkDisplay p) = map GdkSeat <$> (g_list_to_list =<< c_gdk_display_list_seats p)
+gdkDisplayListSeats (GdkDisplay p) = maybe [] (map GdkSeat) <$> (g_list_to_list =<< c_gdk_display_list_seats p)
 
 foreign import ccall "gdk_display_list_seats" c_gdk_display_list_seats ::
 	Ptr GdkDisplay -> IO (Ptr (GList GdkSeat))

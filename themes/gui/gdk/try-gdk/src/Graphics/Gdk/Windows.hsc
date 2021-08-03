@@ -463,9 +463,9 @@ foreign import ccall "gdk_window_get_parent"
 foreign import ccall "gdk_window_get_toplevel"
 	gdkWindowGetToplevel :: GdkWindow -> IO GdkWindow
 
-gdkWindowPeekChildren :: GdkWindow -> IO [GdkWindow]
+gdkWindowPeekChildren :: GdkWindow -> IO (Maybe [GdkWindow])
 gdkWindowPeekChildren w =
-	map GdkWindow <$> (g_list_to_list =<< c_gdk_window_peek_children w)
+	(map GdkWindow <$>) <$> (g_list_to_list =<< c_gdk_window_peek_children w)
 
 foreign import ccall "gdk_window_peek_children"
 	c_gdk_window_peek_children :: GdkWindow -> IO (Ptr (GList GdkWindow))
