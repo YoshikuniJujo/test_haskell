@@ -8,11 +8,12 @@ todo
 * [ ] refactor export list
 	+ [x] TYPE
 	+ [x] DEFAULT SCREEN
-	+ [ ] VISUAL
+	+ [x] VISUAL
 		- [x] `gdkScreenGetSystemVisual`
 		- [x] `gdkScreenGetRgbaVisual`
-		- [ ] `gdkScreenListVisuals`
+		- [x] `gdkScreenListVisuals`
 	+ [ ] IS COMPOSITED
+		- `gdkScreenIsComposited`
 	+ [ ] WINDOW
 	+ [ ] DISPLAY
 	+ [ ] RESOLUTION
