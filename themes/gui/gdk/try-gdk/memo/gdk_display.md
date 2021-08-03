@@ -26,8 +26,13 @@ refactor export list
 		- [x] remove it
 	+ [x] `gdkDisplayHasPending`
 		- [x] remove it
-* [ ] DOUBLE CLICK
-* [ ] CURSOR
+* [x] DOUBLE CLICK
+	+ [x] `gdkDisplaySetDoubleClickTime`
+	+ [x] `gdkDisplaySetDoubleClickDistance`
+* [x] CURSOR
+	+ [x] `gdkDisplaySupportsCursorColor`
+	+ [x] `gdkDisplaySupportsCursorAlpha`
+	+ [x] `gdkDisplayGetDefaultCursorSize`
 * [ ] GROUP
 * [ ] SEAT
 * [ ] MONITOR

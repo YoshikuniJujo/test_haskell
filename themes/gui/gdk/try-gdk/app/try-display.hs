@@ -42,6 +42,12 @@ main = do
 		Nothing -> pure ()
 	w <- gdkWindowNew Nothing defaultGdkWindowAttr
 	gdkWindowShow w
+	putStr "gdkDisplaySupportsCursorColor: "
+	print =<< gdkDisplaySupportsCursorColor dd
+	putStr "gdkDisplaySupportCursorAlpha: "
+	print =<< gdkDisplaySupportsCursorAlpha dd
+	putStr "gdkDisplayGetDefaultCursorSize: "
+	print =<< gdkDisplayGetDefaultCursorSize dd
 	mainLoopDisplay dd \case
 		GdkEventGdkDelete _d -> pure False
 		GdkEventGdkKeyPress k_ -> do
