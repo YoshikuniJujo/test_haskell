@@ -9,6 +9,9 @@ todo
 	+ [x] TYPE
 	+ [x] DEFAULT SCREEN
 	+ [ ] VISUAL
+		- [x] `gdkScreenGetSystemVisual`
+		- [x] `gdkScreenGetRgbaVisual`
+		- [ ] `gdkScreenListVisuals`
 	+ [ ] IS COMPOSITED
 	+ [ ] WINDOW
 	+ [ ] DISPLAY
