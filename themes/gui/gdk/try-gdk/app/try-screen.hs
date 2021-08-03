@@ -1,7 +1,9 @@
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
+import Foreign.C.Types
 import Control.Monad
 import Data.List
 import Data.Word
@@ -9,6 +11,7 @@ import Data.Int
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkScreen
 import Graphics.Gdk.Visuals
+import Graphics.Gdk.Windows
 
 main :: IO ()
 main = do
@@ -25,7 +28,11 @@ run scr = do
 	mapM_ print . map packGroup . group =<< mapM peekVisual =<< gdkScreenListVisuals scr
 	putStr "gdkScreenIsComposited: "
 	print =<< gdkScreenIsComposited scr
-	print =<< gdkScreenGetWindowStack scr
+	maybe (putStrLn "No Window Stack") (mapM_ printWindowStack) =<< gdkScreenGetWindowStack scr
+
+printWindowStack :: GdkWindowAutoUnref -> IO (CInt, CInt)
+printWindowStack wau = withGdkWindowAutoUnref wau \w ->
+	gdkWindowGetOrigin w
 
 printVisual :: String -> GdkVisual -> IO ()
 printVisual ttl v = do
