@@ -38,12 +38,12 @@ refactor export list
 * [x] SEAT
 	+ [x] `gdkDisplayGetDefaultSeat`
 	+ [x] `gdkDisplayListSeats`
-* [ ] MONITOR
+* [x] MONITOR
 	+ [x] `gdkDisplayGetNMonitors`
-	+ [ ] `gdkDisplayGetMonitor`
-	+ [ ] `gdkDisplayGetPrimaryMonitor`
-	+ [ ] `gdkDisplayGetMonitorAtPoint`
-	+ [ ] `gdkDisplayGetMonitorAtWindow`
+	+ [x] `gdkDisplayGetMonitor`
+	+ [x] `gdkDisplayGetPrimaryMonitor`
+	+ [x] `gdkDisplayGetMonitorAtPoint`
+	+ [x] `gdkDisplayGetMonitorAtWindow`
 
 Function
 --------

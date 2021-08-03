@@ -13,6 +13,7 @@ import Graphics.Gdk.General
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkScreen
 import Graphics.Gdk.GdkSeat
+import Graphics.Gdk.GdkMonitor
 import Graphics.Gdk.Windows
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
@@ -33,7 +34,8 @@ main = do
 	print $ gdkDisplayGetName dd
 	let	scr = gdkDisplayGetDefaultScreen dd
 	print scr
-	print =<< gdkScreenGetRootWindow scr
+	wr <- gdkScreenGetRootWindow scr
+	print wr
 	st <- gdkDisplayGetDefaultSeat dd
 	print st
 	print =<< gdkDisplayListSeats dd
@@ -44,6 +46,11 @@ main = do
 
 	putStr "gdkDisplayGetNMonitors: "
 	print =<< gdkDisplayGetNMonitors dd
+	printMonitor =<< gdkDisplayGetMonitor dd 0
+	maybe (putStrLn "no primary monitors") printMonitor =<< gdkDisplayGetPrimaryMonitor dd
+	printMonitor =<< gdkDisplayGetMonitorAtPoint dd 100 100
+	printMonitor =<< gdkDisplayGetMonitorAtWindow dd wr
+
 	case settingsMyDisplayName sts of
 		Just n -> do
 			nd <- gdkDisplayOpen n
@@ -98,3 +105,11 @@ optionSet (MyDisplayName dn) s = s { settingsMyDisplayName = Just dn }
 optionsToSettings :: [Option] -> Settings
 optionsToSettings [] = initialSettings
 optionsToSettings (o : os) = optionSet o $ optionsToSettings os
+
+printMonitor :: GdkMonitor -> IO ()
+printMonitor m = do
+	mn <- gdkMonitorGetManufacturer m
+	md <- gdkMonitorGetModel m
+	putStrLn "Monitor: "
+	putStrLn $ "\tManufacturer: " ++ show mn
+	putStrLn $ "\tModel       : " ++ show md
