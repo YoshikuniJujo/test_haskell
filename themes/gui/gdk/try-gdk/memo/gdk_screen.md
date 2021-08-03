@@ -1,6 +1,19 @@
 GdkScreen memo
 ==============
 
+todo
+----
+
+* [x] make `Graphics.Gdk.GdkScreen.Internal`
+* [ ] refactor export list
+	+ [ ] TYPE
+	+ [ ] DEFAULT SCREEN
+	+ [ ] VISUAL
+	+ [ ] IS COMPOSITED
+	+ [ ] WINDOW
+	+ [ ] DISPLAY
+	+ [ ] RESOLUTION
+
 Function
 --------
 

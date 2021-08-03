@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.GdkScreen (
+module Graphics.Gdk.GdkScreen.Internal (
 	-- * TYPE
 	GdkScreen(..),
 

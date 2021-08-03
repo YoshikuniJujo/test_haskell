@@ -29,7 +29,7 @@ import Foreign.C.Enum
 import Data.Int
 import Data.Word
 
-import {-# SOURCE #-} Graphics.Gdk.GdkScreen
+import {-# SOURCE #-} Graphics.Gdk.GdkScreen.Internal
 
 #include <gdk/gdk.h>
 

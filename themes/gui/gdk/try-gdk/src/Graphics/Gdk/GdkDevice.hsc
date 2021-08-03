@@ -59,7 +59,7 @@ import System.GLib.DoublyLinkedLists
 import System.GLib.Bool
 
 import {-# SOURCE #-} Graphics.Gdk.GdkDisplay.Internal
-import {-# SOURCE #-} Graphics.Gdk.GdkScreen
+import {-# SOURCE #-} Graphics.Gdk.GdkScreen.Internal
 import {-# SOURCE #-} Graphics.Gdk.GdkSeat
 import {-# SOURCE #-} Graphics.Gdk.Windows
 

@@ -52,7 +52,7 @@ import Data.Int
 import System.IO.Unsafe
 import System.GLib.Bool
 
-import {-# SOURCE #-} Graphics.Gdk.GdkScreen
+import {-# SOURCE #-} Graphics.Gdk.GdkScreen.Internal
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkMonitor
 import Graphics.Gdk.GdkDevice
