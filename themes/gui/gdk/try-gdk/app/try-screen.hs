@@ -23,6 +23,8 @@ run scr = do
 	maybe (putStrLn "No rgba visuals") (printVisual "Rgba Visual")
 		=<< gdkScreenGetRgbaVisual scr
 	mapM_ print . map packGroup . group =<< mapM peekVisual =<< gdkScreenListVisuals scr
+	putStr "gdkScreenIsComposited: "
+	print =<< gdkScreenIsComposited scr
 
 printVisual :: String -> GdkVisual -> IO ()
 printVisual ttl v = do

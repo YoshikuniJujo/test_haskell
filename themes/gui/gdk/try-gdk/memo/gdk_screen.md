@@ -12,9 +12,12 @@ todo
 		- [x] `gdkScreenGetSystemVisual`
 		- [x] `gdkScreenGetRgbaVisual`
 		- [x] `gdkScreenListVisuals`
-	+ [ ] IS COMPOSITED
+	+ [x] IS COMPOSITED
 		- `gdkScreenIsComposited`
 	+ [ ] WINDOW
+		- [ ] `gdkScreenGetRootWindow`
+		- [ ] `gdkScreenGetToplevelWindows`
+		- [ ] `gdkScreenGetWindowStack`
 	+ [ ] DISPLAY
 	+ [ ] RESOLUTION
 
