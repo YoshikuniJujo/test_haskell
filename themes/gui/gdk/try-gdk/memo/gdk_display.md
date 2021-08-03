@@ -39,7 +39,7 @@ refactor export list
 	+ [x] `gdkDisplayGetDefaultSeat`
 	+ [x] `gdkDisplayListSeats`
 * [ ] MONITOR
-	+ [ ] `gdkDisplayGetNMonitors`
+	+ [x] `gdkDisplayGetNMonitors`
 	+ [ ] `gdkDisplayGetMonitor`
 	+ [ ] `gdkDisplayGetPrimaryMonitor`
 	+ [ ] `gdkDisplayGetMonitorAtPoint`

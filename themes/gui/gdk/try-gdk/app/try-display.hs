@@ -41,6 +41,9 @@ main = do
 	ptr <- gdkSeatGetPointer st
 	print ptr
 	print =<< gdkDisplayDeviceIsGrabbed dd ptr
+
+	putStr "gdkDisplayGetNMonitors: "
+	print =<< gdkDisplayGetNMonitors dd
 	case settingsMyDisplayName sts of
 		Just n -> do
 			nd <- gdkDisplayOpen n
