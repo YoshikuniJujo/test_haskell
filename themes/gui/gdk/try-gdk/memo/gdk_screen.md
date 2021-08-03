@@ -24,9 +24,9 @@ todo
 	+ [ ] RESOLUTION
 		- [x] make window
 		- [x] draw rectangle
-		- [ ] add pango to stack.yaml
-		- [ ] add pango to package.yaml
-		- [ ] draw text
+		- [x] add pango to stack.yaml
+		- [x] add pango to package.yaml
+		- [x] draw text
 		- [ ] `gdkScreenGetResolution`
 		- [ ] `gdkScreenSetResolution`
 

@@ -1,4 +1,5 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -10,6 +11,8 @@ import Data.List
 import Data.Word
 import Data.Int
 import Data.Color
+import System.Environment
+
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkScreen
 import Graphics.Gdk.Visuals
@@ -21,14 +24,22 @@ import Graphics.Cairo.Drawing.Regions
 import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Utilities.Types
 
+import Graphics.Pango.Basic.Fonts.PangoFontDescription
+import Graphics.Pango.Basic.LayoutObjects.PangoLayout
+import Graphics.Pango.Rendering.Cairo
+
 import Try.Tools
+
+import qualified Data.Text as T
 
 main :: IO ()
 main = do
+	as <- getArgs
+	let	rsl = case as of [] -> 24; r_ : _ -> read r_
 	void $ gdkDisplayOpen ""
 	mscr <- gdkScreenGetDefault
 	print mscr
-	maybe (putStrLn "No default screens") run mscr
+	maybe (putStrLn "No default screens") (run rsl) mscr
 	win <- gdkWindowNew Nothing defaultGdkWindowAttr
 	gdkWindowShow win
 	gdkDisplayFlush =<< gdkDisplayGetDefault
@@ -39,13 +50,21 @@ main = do
 		cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.2 0.2
 		cairoRectangle cr 10 10 100 100
 		cairoFill cr
+		cairoMoveTo cr 50 50
+		cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.8 0.8
+		pl <- pangoCairoCreateLayout cr
+		fd <- pangoFontDescriptionNew
+		pangoFontDescriptionSet fd $ Size 24
+		pangoLayoutSet pl . pangoFontDescriptionToNullable . Just =<< pangoFontDescriptionFreeze fd
+		pangoLayoutSet @T.Text pl "Hello, world!"
+		pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 	gdkDisplayFlush =<< gdkDisplayGetDefault
 	void getLine
 	gdkWindowDestroy win
 	gdkDisplayClose =<< gdkDisplayGetDefault
 
-run :: GdkScreen -> IO ()
-run scr = do
+run :: CDouble -> GdkScreen -> IO ()
+run r scr = do
 	printVisual "System Visual" =<< gdkScreenGetSystemVisual scr
 	maybe (putStrLn "No rgba visuals") (printVisual "Rgba Visual")
 		=<< gdkScreenGetRgbaVisual scr
@@ -57,6 +76,9 @@ run scr = do
 	maybe (putStrLn "No Window Stack") (mapM_ printWindowStack) =<< gdkScreenGetWindowStack scr
 	print =<< gdkDisplayGetDefault
 	print =<< gdkScreenGetDisplay scr
+	print =<< gdkScreenGetResolution scr
+	gdkScreenSetResolution scr r
+	print =<< gdkScreenGetResolution scr
 
 printWindowStack :: GdkWindowAutoUnref -> IO ()
 printWindowStack wau = withGdkWindowAutoUnref wau \w ->

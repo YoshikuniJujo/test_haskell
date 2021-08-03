@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d17584fcd3f320ac29f95c489186100bc257486e47ee518d8263bd11e78b7c2b
+-- hash: b07c7323790242b134971691ff965378ae9750168bfff799001054cfa84716ff
 
 name:           try-gdk
 version:        0.1.0.0
@@ -74,6 +74,8 @@ library
     , nowdoc
     , primitive
     , simple-cairo
+    , simple-pango
+    , text
   default-language: Haskell2010
 
 executable simple
@@ -93,6 +95,8 @@ executable simple
     , nowdoc
     , primitive
     , simple-cairo
+    , simple-pango
+    , text
     , try-gdk
   default-language: Haskell2010
 
@@ -113,6 +117,8 @@ executable test-cursor
     , nowdoc
     , primitive
     , simple-cairo
+    , simple-pango
+    , text
     , try-gdk
   default-language: Haskell2010
 
@@ -133,6 +139,8 @@ executable try-button
     , nowdoc
     , primitive
     , simple-cairo
+    , simple-pango
+    , text
     , try-gdk
   default-language: Haskell2010
 
@@ -153,6 +161,8 @@ executable try-cairo-tribial
     , nowdoc
     , primitive
     , simple-cairo
+    , simple-pango
+    , text
     , try-gdk
   default-language: Haskell2010
 
@@ -173,6 +183,8 @@ executable try-cursor-name
     , nowdoc
     , primitive
     , simple-cairo
+    , simple-pango
+    , text
     , try-gdk
   default-language: Haskell2010
 
@@ -193,6 +205,8 @@ executable try-cursor-type
     , nowdoc
     , primitive
     , simple-cairo
+    , simple-pango
+    , text
     , try-gdk
   default-language: Haskell2010
 
@@ -213,6 +227,8 @@ executable try-decorations
     , nowdoc
     , primitive
     , simple-cairo
+    , simple-pango
+    , text
     , try-gdk
   default-language: Haskell2010
 
@@ -233,6 +249,8 @@ executable try-display
     , nowdoc
     , primitive
     , simple-cairo
+    , simple-pango
+    , text
     , try-gdk
   default-language: Haskell2010
 
@@ -253,6 +271,8 @@ executable try-display-manager
     , nowdoc
     , primitive
     , simple-cairo
+    , simple-pango
+    , text
     , try-gdk
   default-language: Haskell2010
 
@@ -273,6 +293,8 @@ executable try-draw
     , nowdoc
     , primitive
     , simple-cairo
+    , simple-pango
+    , text
     , try-gdk
   default-language: Haskell2010
 
@@ -292,6 +314,8 @@ executable try-gdk-exe
     , nowdoc
     , primitive
     , simple-cairo
+    , simple-pango
+    , text
     , try-gdk
   default-language: Haskell2010
 
@@ -312,6 +336,8 @@ executable try-general
     , nowdoc
     , primitive
     , simple-cairo
+    , simple-pango
+    , text
     , try-gdk
   default-language: Haskell2010
 
@@ -332,6 +358,8 @@ executable try-key-press
     , nowdoc
     , primitive
     , simple-cairo
+    , simple-pango
+    , text
     , try-gdk
   default-language: Haskell2010
 
@@ -352,6 +380,8 @@ executable try-motion
     , nowdoc
     , primitive
     , simple-cairo
+    , simple-pango
+    , text
     , try-gdk
   default-language: Haskell2010
 
@@ -372,6 +402,8 @@ executable try-multidevice
     , nowdoc
     , primitive
     , simple-cairo
+    , simple-pango
+    , text
     , try-gdk
   default-language: Haskell2010
 
@@ -392,6 +424,8 @@ executable try-primitive
     , nowdoc
     , primitive
     , simple-cairo
+    , simple-pango
+    , text
     , try-gdk
   default-language: Haskell2010
 
@@ -412,6 +446,8 @@ executable try-screen
     , nowdoc
     , primitive
     , simple-cairo
+    , simple-pango
+    , text
     , try-gdk
   default-language: Haskell2010
 
@@ -432,6 +468,8 @@ executable try-show-events
     , nowdoc
     , primitive
     , simple-cairo
+    , simple-pango
+    , text
     , try-gdk
   default-language: Haskell2010
 
@@ -452,6 +490,8 @@ executable try-tribial
     , nowdoc
     , primitive
     , simple-cairo
+    , simple-pango
+    , text
     , try-gdk
   default-language: Haskell2010
 
@@ -472,6 +512,8 @@ executable try-window-type-hint
     , nowdoc
     , primitive
     , simple-cairo
+    , simple-pango
+    , text
     , try-gdk
   default-language: Haskell2010
 
@@ -492,5 +534,7 @@ test-suite try-gdk-test
     , nowdoc
     , primitive
     , simple-cairo
+    , simple-pango
+    , text
     , try-gdk
   default-language: Haskell2010
