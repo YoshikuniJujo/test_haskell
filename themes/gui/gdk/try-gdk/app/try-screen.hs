@@ -31,6 +31,8 @@ run scr = do
 	print =<< gdkWindowGetWindowType =<< gdkScreenGetRootWindow scr
 	print =<< mapM gdkWindowGetWindowType =<< gdkScreenGetToplevelWindows scr
 	maybe (putStrLn "No Window Stack") (mapM_ printWindowStack) =<< gdkScreenGetWindowStack scr
+	print =<< gdkDisplayGetDefault
+	print =<< gdkScreenGetDisplay scr
 
 printWindowStack :: GdkWindowAutoUnref -> IO ()
 printWindowStack wau = withGdkWindowAutoUnref wau \w ->
