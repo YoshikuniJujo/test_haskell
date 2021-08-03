@@ -18,7 +18,7 @@ todo
 		- [ ] `gdkScreenGetRootWindow`
 		- [ ] `gdkScreenGetToplevelWindows`
 		- [ ] `gdkScreenGetWindowStack`
-			* [ ] about `GdkWindowAutoUnref`
+			* [x] about `GdkWindowAutoUnref`
 	+ [ ] DISPLAY
 		- `gdkScreenGetDisplay`
 	+ [ ] RESOLUTION
