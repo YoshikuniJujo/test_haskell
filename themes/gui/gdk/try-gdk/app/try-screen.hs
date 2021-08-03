@@ -5,13 +5,23 @@ module Main where
 
 import Foreign.C.Types
 import Control.Monad
+import Data.Maybe
 import Data.List
 import Data.Word
 import Data.Int
+import Data.Color
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkScreen
 import Graphics.Gdk.Visuals
 import Graphics.Gdk.Windows
+import Graphics.Gdk.GdkDrawingContext
+
+import Graphics.Cairo.Drawing.CairoT
+import Graphics.Cairo.Drawing.Regions
+import Graphics.Cairo.Drawing.Paths
+import Graphics.Cairo.Utilities.Types
+
+import Try.Tools
 
 main :: IO ()
 main = do
@@ -19,6 +29,20 @@ main = do
 	mscr <- gdkScreenGetDefault
 	print mscr
 	maybe (putStrLn "No default screens") run mscr
+	win <- gdkWindowNew Nothing defaultGdkWindowAttr
+	gdkWindowShow win
+	gdkDisplayFlush =<< gdkDisplayGetDefault
+	void getLine
+	r <- cairoRegionCreateRectangle $ CairoRectangleIntT 50 50 200 200
+	gdkWindowWithDrawFrame win r \cxt -> do
+		cr <- gdkDrawingContextGetCairoContext cxt
+		cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.2 0.2
+		cairoRectangle cr 10 10 100 100
+		cairoFill cr
+	gdkDisplayFlush =<< gdkDisplayGetDefault
+	void getLine
+	gdkWindowDestroy win
+	gdkDisplayClose =<< gdkDisplayGetDefault
 
 run :: GdkScreen -> IO ()
 run scr = do

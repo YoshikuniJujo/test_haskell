@@ -22,8 +22,8 @@ todo
 	+ [x] DISPLAY
 		- `gdkScreenGetDisplay`
 	+ [ ] RESOLUTION
-		- [ ] make window
-		- [ ] draw rectangle
+		- [x] make window
+		- [x] draw rectangle
 		- [ ] add pango to stack.yaml
 		- [ ] add pango to package.yaml
 		- [ ] draw text
