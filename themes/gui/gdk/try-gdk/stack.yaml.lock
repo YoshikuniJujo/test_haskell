@@ -43,11 +43,11 @@ packages:
     git: https://github.com/YoshikuniJujo/simple-pango
     pantry-tree:
       size: 3680
-      sha256: 75e9d5d5ede9f1afd218adce2306bffbea2210262f6faccd1fb4ae2f9c14cdfc
-    commit: 279d3ea3f23bd2c8652f3bc2af1e1721667a61f9
+      sha256: aa444daaacd9b6a71e53d026412f99794f167c6f298968c01b352a575f3623b7
+    commit: 3c065e68211cee948bca336ac85671832a43aa42
   original:
     git: https://github.com/YoshikuniJujo/simple-pango
-    commit: 279d3ea3f23bd2c8652f3bc2af1e1721667a61f9
+    commit: 3c065e68211cee948bca336ac85671832a43aa42
 snapshots:
 - completed:
     size: 585393

@@ -52,7 +52,10 @@ main = do
 		cairoFill cr
 		cairoMoveTo cr 50 50
 		cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.8 0.8
-		pl <- pangoCairoCreateLayout cr
+		ctx <- pangoCairoCreateContext cr
+		print =<< pangoCairoContextGetResolution ctx
+		pangoCairoContextSetResolution ctx rsl
+		pl <- pangoLayoutNew ctx
 		fd <- pangoFontDescriptionNew
 		pangoFontDescriptionSet fd $ Size 24
 		pangoLayoutSet pl . pangoFontDescriptionToNullable . Just =<< pangoFontDescriptionFreeze fd
