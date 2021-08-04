@@ -12,3 +12,4 @@ main = do
 	print st
 	print dpy
 	print =<< gdkSeatGetDisplay st
+	print . gdkSeatCapabilityList =<< gdkSeatGetCapabilities st

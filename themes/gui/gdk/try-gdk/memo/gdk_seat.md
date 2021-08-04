@@ -25,7 +25,7 @@ todo
 	+ [x] GDK SEAT
 	+ [ ] GET
 		- [x] `gdkSeatGetDisplay`
-		- [ ] `gdkSeatGetCapabilities`
+		- [x] `gdkSeatGetCapabilities`
 		- [ ] `gdkSeatGetPointer`
 		- [ ] `gdkSeatGetKeyboard`
 		- [ ] `gdkSeatGetSlaves`
