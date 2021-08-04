@@ -46,8 +46,8 @@ todo
 			* [x] try to grab
 		- [x] `gdkSeatUngrab`
 		- [x] `GdkSeatGrabPrepareFunc`
-	+ [ ] GDK SEAT CAPABILITIES
-		- [ ] `GdkSeatCapabilities`
-		- [ ] `gdkSeatCapabilities`
-		- [ ] `GdkSeatCapability`
-		- [ ] `gdkSeatCapabilityList`
+	+ [x] GDK SEAT CAPABILITIES
+		- [x] `GdkSeatCapabilities`
+		- [x] `gdkSeatCapabilities`
+		- [x] `GdkSeatCapability`
+		- [x] `gdkSeatCapabilityList`

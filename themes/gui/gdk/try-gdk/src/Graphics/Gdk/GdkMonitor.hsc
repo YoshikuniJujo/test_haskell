@@ -5,19 +5,28 @@
 
 module Graphics.Gdk.GdkMonitor (
 
+	-- * GDK MONITOR
 	GdkMonitor(..),
 
-	-- * FUNCTION
+	-- * DISPLAY
 	gdkMonitorGetDisplay,
+
+	-- * GEOMETRY
 	gdkMonitorGetGeometry,
 	gdkMonitorGetWorkarea,
 	gdkMonitorGetWidthMm,
 	gdkMonitorGetHeightMm,
+
+	-- * MANUFACTURER AND MODEL
 	gdkMonitorGetManufacturer,
 	gdkMonitorGetModel,
+
+	-- * PROPERTIES
 	gdkMonitorGetScaleFactor,
 	gdkMonitorGetRefreshRate,
 	gdkMonitorGetSubpixelLayout,
+
+	-- * IS PRIMARY
 	gdkMonitorIsPrimary,
 
 	-- * GDK SUBPIXEL LAYOUT

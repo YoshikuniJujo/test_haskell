@@ -49,7 +49,7 @@ todo new
 			* [x] make `Graphics.Gdk.GdkDisplayManager.Internal`
 		- [x] GdkDisplay
 		- [x] GdkScreen
-		- [ ] GdkSeat
+		- [x] GdkSeat
 		- [ ] GdkMonitor
 		- [ ] GdkDevice
 			* [ ] itself

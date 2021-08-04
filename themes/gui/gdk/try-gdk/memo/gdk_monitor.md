@@ -1,6 +1,19 @@
 GdkMonitor memo
 ================
 
+refactor export list
+--------------------
+
+* [x] refactor structure
+* [ ] make `Graphics.Gdk.GdkMonitor.Internal`
+* [ ] GDK MONITOR
+* [ ] DISPLAY
+* [ ] GEOMETRY
+* [ ] MANUFACTURER AND MODEL
+* [ ] PROPERTIES
+* [ ] IS PRIMARY
+* [ ] GDK SUBPIXEL LAYOUT
+
 review
 ------
 
