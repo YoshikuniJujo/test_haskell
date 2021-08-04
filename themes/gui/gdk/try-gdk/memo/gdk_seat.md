@@ -29,7 +29,7 @@ todo
 		- [x] `gdkSeatGetPointer`
 		- [x] `gdkSeatGetKeyboard`
 		- [ ] `gdkSeatGetSlaves`
-			* [ ] return value: whether or not to use maybe value
+			* [x] return value: whether or not to use maybe value
 			* [ ] others
 	+ [ ] GRAB
 		- [ ] `gdkSeatGrab`

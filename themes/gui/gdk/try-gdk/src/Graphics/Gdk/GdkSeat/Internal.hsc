@@ -110,10 +110,10 @@ gdkSeatGetCapabilities p = GdkSeatCapabilities <$> c_gdk_seat_get_capabilities p
 foreign import ccall "gdk_seat_get_slaves" c_gdk_seat_get_slaves ::
 	GdkSeat -> #{type GdkSeatCapabilities} -> IO (Ptr (GList GdkDevice))
 
-gdkSeatGetSlaves :: GdkSeat -> GdkSeatCapabilities -> IO (Maybe [GdkDevice])
+gdkSeatGetSlaves :: GdkSeat -> GdkSeatCapabilities -> IO [GdkDevice]
 gdkSeatGetSlaves p (GdkSeatCapabilities cps) = do
 	gl <- c_gdk_seat_get_slaves p cps
-	(map GdkDevice <$>) <$> (g_list_to_list gl <* c_g_list_free gl)
+	maybe [] (map GdkDevice) <$> (g_list_to_list gl <* c_g_list_free gl)
 
 gdkSeatGrab ::
 	Pointerable a =>
