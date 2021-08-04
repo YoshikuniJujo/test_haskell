@@ -14,9 +14,9 @@ refactor export list
 	+ [x] `gdkMonitorGetWorkarea`
 	+ [x] `gdkMonitorGetWidthMm`
 	+ [x] `gdkMonitorGetHeightMm`
-* [ ] MANUFACTURER AND MODEL
-	+ [ ] `gdkMonitorGetManufacturer`
-	+ [ ] `gdkMonitorGetModel`
+* [x] MANUFACTURER AND MODEL
+	+ [x] `gdkMonitorGetManufacturer`
+	+ [x] `gdkMonitorGetModel`
 * [ ] PROPERTIES
 	+ [ ] `gdkMonitorGetScaleFactor`
 	+ [ ] `gdkMonitorGetRefreshRate`

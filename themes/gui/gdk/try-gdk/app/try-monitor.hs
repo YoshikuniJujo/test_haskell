@@ -12,6 +12,7 @@ main = do
 	print mnt
 	print dpy
 	print =<< gdkMonitorGetDisplay mnt
+
 	putStrLn "\nGEOMETRY"
 	putStr "gdkMonitorGetGeometry: "
 	print =<< gdkMonitorGetGeometry mnt
@@ -21,3 +22,9 @@ main = do
 	print =<< gdkMonitorGetWidthMm mnt
 	putStr "gdkMonitorGetHeightMm: "
 	print =<< gdkMonitorGetHeightMm mnt
+
+	putStrLn "\nMANUFACTURER AND MODEL"
+	putStr "gdkMonitorGetManufacturer: "
+	print =<< gdkMonitorGetManufacturer mnt
+	putStr "gdkMonitorGetModel       : "
+	print =<< gdkMonitorGetModel mnt
