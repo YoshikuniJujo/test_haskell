@@ -52,6 +52,11 @@ main = do
 			(print =<< gdkSeatGrab st win
 				GdkSeatCapabilityAll
 				False (Just gmb) Nothing noGdkSeatGrabPrepare)
+		e@(GdkEventGdkKeyPress
+			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_e)) -> True <$
+			(print =<< gdkSeatGrab st win
+				GdkSeatCapabilityAll
+				False Nothing (Just e) noGdkSeatGrabPrepare)
 		GdkEventGdkKeyPress
 			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_u) ->
 			True <$ gdkSeatUngrab st
