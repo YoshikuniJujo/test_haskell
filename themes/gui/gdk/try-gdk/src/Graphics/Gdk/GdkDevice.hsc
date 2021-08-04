@@ -60,7 +60,7 @@ import System.GLib.Bool
 
 import {-# SOURCE #-} Graphics.Gdk.GdkDisplay.Internal
 import {-# SOURCE #-} Graphics.Gdk.GdkScreen.Internal
-import {-# SOURCE #-} Graphics.Gdk.GdkSeat
+import {-# SOURCE #-} Graphics.Gdk.GdkSeat.Internal
 import {-# SOURCE #-} Graphics.Gdk.Windows
 
 #include <gdk/gdk.h>

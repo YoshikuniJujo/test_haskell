@@ -19,7 +19,7 @@ todo
 	+ [x] use `withPtr`
 	+ [x] repair `class Pointerable`
 * [x] move `class Pointerable` to package `glib-stopgap`
-* [ ] make `Graphics.Gdk.GdkSeat.Internal`
+* [x] make `Graphics.Gdk.GdkSeat.Internal`
 * [ ] refactor export list
 	+ [x] structure
 	+ [ ] GDK SEAT

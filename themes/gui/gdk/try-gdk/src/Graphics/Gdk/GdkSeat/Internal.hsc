@@ -4,7 +4,7 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.GdkSeat (
+module Graphics.Gdk.GdkSeat.Internal (
 	-- * GDK SEAT
 	GdkSeat(..),
 

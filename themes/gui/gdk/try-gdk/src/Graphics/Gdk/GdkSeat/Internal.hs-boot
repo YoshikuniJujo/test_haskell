@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.GdkSeat where
+module Graphics.Gdk.GdkSeat.Internal where
 
 import Foreign.Ptr
 
