@@ -10,6 +10,7 @@ import Data.Maybe
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkDevice
+import Graphics.Gdk.Cursors
 import Graphics.Gdk.Windows
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
@@ -32,6 +33,7 @@ main = do
 	gdkWindowShow win
 	gdkWindowShow win2
 	gdkDisplayFlush dpy
+	gmb <- gdkCursorNewForDisplay dpy GdkGumby
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
 		GdkEventGdkKeyPress
@@ -41,10 +43,15 @@ main = do
 			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_s) ->
 			True <$ (print =<< gdkSeatGrabSimple st win)
 		GdkEventGdkKeyPress
-			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_o) ->
-			True <$ (print =<< gdkSeatGrab st win
+			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_o) -> True <$
+			(print =<< gdkSeatGrab st win
 				GdkSeatCapabilityAll
 				True Nothing Nothing noGdkSeatGrabPrepare)
+		GdkEventGdkKeyPress
+			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_c) -> True <$
+			(print =<< gdkSeatGrab st win
+				GdkSeatCapabilityAll
+				False (Just gmb) Nothing noGdkSeatGrabPrepare)
 		GdkEventGdkKeyPress
 			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_u) ->
 			True <$ gdkSeatUngrab st

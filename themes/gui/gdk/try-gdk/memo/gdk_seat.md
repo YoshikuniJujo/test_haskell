@@ -37,7 +37,7 @@ todo
 				+ [x] make 2 window
 				+ [x] 'o': owner_events is True
 				+ [x] check event's window
-			* [ ] try `cursor` parameter
+			* [x] try `cursor` parameter
 			* [ ] try `event` parameter
 			* [ ] try `prepare_func` parameter
 		- [x] `gdkSeatGrabSimple`
