@@ -18,6 +18,7 @@ main = do
 	print . gdkSeatCapabilityList =<< gdkSeatGetCapabilities st
 	printGdkDevice =<< gdkSeatGetPointer st
 	printGdkDevice =<< gdkSeatGetKeyboard st
+	mapM_ printGdkDevice =<< gdkSeatGetSlaves st GdkSeatCapabilityAll
 
 printGdkDevice :: GdkDevice -> IO ()
 printGdkDevice d = do

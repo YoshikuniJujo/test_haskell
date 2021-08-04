@@ -23,14 +23,14 @@ todo
 * [ ] refactor export list
 	+ [x] structure
 	+ [x] GDK SEAT
-	+ [ ] GET
+	+ [x] GET
 		- [x] `gdkSeatGetDisplay`
 		- [x] `gdkSeatGetCapabilities`
 		- [x] `gdkSeatGetPointer`
 		- [x] `gdkSeatGetKeyboard`
-		- [ ] `gdkSeatGetSlaves`
+		- [x] `gdkSeatGetSlaves`
 			* [x] return value: whether or not to use maybe value
-			* [ ] others
+			* [x] others
 	+ [ ] GRAB
 		- [ ] `gdkSeatGrab`
 		- [ ] `gdkSeatGrabSimple`
