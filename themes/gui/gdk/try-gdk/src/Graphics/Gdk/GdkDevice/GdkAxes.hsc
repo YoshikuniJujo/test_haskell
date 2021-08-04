@@ -18,7 +18,7 @@ import Data.Word
 import Data.Int
 import System.GLib.DoublyLinkedLists
 
-import Graphics.Gdk.GdkDevice
+import Graphics.Gdk.GdkDevice.Internal
 import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
 
 #include <gdk/gdk.h>

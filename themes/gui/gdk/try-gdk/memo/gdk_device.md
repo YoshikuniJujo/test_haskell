@@ -6,7 +6,7 @@ refactor export list
 
 * [x] consider to remove GdkDeviceTool
 * [x] refactor structure
-* [ ] make `Graphics.Gdk.GdkDevice.Internal`
+* [x] make `Graphics.Gdk.GdkDevice.Internal`
 * [ ] GDK DEVICE
 * [ ] DISPLAY AND SEAT
 * [ ] IDENTITY

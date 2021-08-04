@@ -4,7 +4,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.GdkDevice (
+module Graphics.Gdk.GdkDevice.Internal (
 	-- * GDK DEVICE
 	GdkDevice(..),
 
