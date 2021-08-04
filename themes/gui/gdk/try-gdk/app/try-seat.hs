@@ -30,6 +30,7 @@ main = do
 	mapM_ printGdkDevice =<< gdkSeatGetSlaves st GdkSeatCapabilityAll
 	win <- gdkWindowNew Nothing defaultGdkWindowAttr
 	win2 <- gdkWindowNew Nothing defaultGdkWindowAttr
+	wt <- gdkWindowNew Nothing defaultGdkWindowAttr
 	gdkWindowShow win
 	gdkWindowShow win2
 	gdkDisplayFlush dpy
@@ -58,11 +59,26 @@ main = do
 				GdkSeatCapabilityAll
 				False Nothing (Just e) noGdkSeatGrabPrepare)
 		GdkEventGdkKeyPress
+			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_p) -> True
+			<$ (print =<< gdkSeatGrab st win
+				GdkSeatCapabilityAll
+				False Nothing Nothing (Just (fun, 123)))
+		GdkEventGdkKeyPress
 			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_u) ->
 			True <$ gdkSeatUngrab st
+		GdkEventGdkKeyPress
+			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_h) -> True
+			<$ gdkWindowHide win
 		GdkEventGdkAny (gdkEventAny -> e) -> True <$ do
 			print e
 			print $ gdkEventAnyWindow e
+
+fun :: GdkSeatGrabPrepareFunc Int
+fun st wn n = do
+	print st
+	print wn
+	print n
+	gdkWindowShow wn
 
 printGdkDevice :: GdkDevice -> IO ()
 printGdkDevice d = do

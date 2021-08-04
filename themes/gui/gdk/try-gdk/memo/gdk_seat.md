@@ -31,21 +31,21 @@ todo
 		- [x] `gdkSeatGetSlaves`
 			* [x] return value: whether or not to use maybe value
 			* [x] others
-	+ [ ] GRAB
-		- [ ] `gdkSeatGrab`
+	+ [x] GRAB
+		- [x] `gdkSeatGrab`
 			* [x] try `owner_events` parameter
 				+ [x] make 2 window
 				+ [x] 'o': owner_events is True
 				+ [x] check event's window
 			* [x] try `cursor` parameter
 			* [x] try `event` parameter
-			* [ ] try `prepare_func` parameter
+			* [x] try `prepare_func` parameter
 		- [x] `gdkSeatGrabSimple`
 			* [x] create window
 			* [x] use mainLoop
 			* [x] try to grab
 		- [x] `gdkSeatUngrab`
-		- [ ] `GdkSeatGrabPrepareFunc`
+		- [x] `GdkSeatGrabPrepareFunc`
 	+ [ ] GDK SEAT CAPABILITIES
 		- [ ] `GdkSeatCapabilities`
 		- [ ] `gdkSeatCapabilities`

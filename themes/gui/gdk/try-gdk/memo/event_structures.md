@@ -7,6 +7,8 @@ Event Structures memo
 * [x] define `gdkDisplayWithEventPeek` instead of `gdkDisplayPeekEvent`
 * [x] remove `gdkDisplayPutEvent`
 * [x] remove `mkGdkEvent`
+* [ ] add `GdkEventGrabBroken`
+	+ see `app/try-seat.hs`
 * [ ] add rest
 * [ ] add export list
 
