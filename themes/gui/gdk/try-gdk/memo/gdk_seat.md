@@ -26,8 +26,8 @@ todo
 	+ [ ] GET
 		- [x] `gdkSeatGetDisplay`
 		- [x] `gdkSeatGetCapabilities`
-		- [ ] `gdkSeatGetPointer`
-		- [ ] `gdkSeatGetKeyboard`
+		- [x] `gdkSeatGetPointer`
+		- [x] `gdkSeatGetKeyboard`
 		- [ ] `gdkSeatGetSlaves`
 			* [ ] return value: whether or not to use maybe value
 			* [ ] others

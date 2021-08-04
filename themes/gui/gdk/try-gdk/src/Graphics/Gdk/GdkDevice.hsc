@@ -27,6 +27,11 @@ module Graphics.Gdk.GdkDevice (
 	gdkDeviceGetLastEventWindow,
 	gdkDeviceToolGetToolType,
 
+	-- * GDK DEVICE TYPE
+	GdkDeviceType(..),
+	pattern GdkDeviceTypeMaster, pattern GdkDeviceTypeSlave,
+	pattern GdkDeviceTypeFloating,
+
 	-- * GDK INPUT SOURCE
 	GdkInputSource(..),
 	pattern GdkSourceMouse, pattern GdkSourcePen, pattern GdkSourceEraser,
