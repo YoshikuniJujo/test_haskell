@@ -21,11 +21,7 @@ module Graphics.Gdk.GdkScreen.Internal (
 	gdkScreenGetWindowStack,
 
 	-- * DISPLAY
-	gdkScreenGetDisplay,
-
-	-- * RESOLUTION
-	gdkScreenGetResolution,
-	gdkScreenSetResolution ) where
+	gdkScreenGetDisplay ) where
 
 import Foreign.Ptr
 import Foreign.Ptr.Misc
@@ -96,12 +92,6 @@ gdkScreenGetToplevelWindows (GdkScreen p) = do
 
 foreign import ccall "gdk_screen_get_toplevel_windows" c_gdk_screen_get_toplevel_windows ::
 	Ptr GdkScreen -> IO (Ptr (GList GdkWindow))
-
-foreign import ccall "gdk_screen_get_resolution" gdkScreenGetResolution ::
-	GdkScreen -> IO CDouble
-
-foreign import ccall "gdk_screen_set_resolution" gdkScreenSetResolution ::
-	GdkScreen -> CDouble -> IO ()
 
 gdkScreenGetWindowStack :: GdkScreen -> IO (Maybe [GdkWindowAutoUnref])
 gdkScreenGetWindowStack (GdkScreen p) = do

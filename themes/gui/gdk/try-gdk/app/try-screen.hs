@@ -39,7 +39,7 @@ main = do
 	void $ gdkDisplayOpen ""
 	mscr <- gdkScreenGetDefault
 	print mscr
-	maybe (putStrLn "No default screens") (run rsl) mscr
+	maybe (putStrLn "No default screens") run mscr
 	win <- gdkWindowNew Nothing defaultGdkWindowAttr
 	gdkWindowShow win
 	gdkDisplayFlush =<< gdkDisplayGetDefault
@@ -66,8 +66,8 @@ main = do
 	gdkWindowDestroy win
 	gdkDisplayClose =<< gdkDisplayGetDefault
 
-run :: CDouble -> GdkScreen -> IO ()
-run r scr = do
+run :: GdkScreen -> IO ()
+run scr = do
 	printVisual "System Visual" =<< gdkScreenGetSystemVisual scr
 	maybe (putStrLn "No rgba visuals") (printVisual "Rgba Visual")
 		=<< gdkScreenGetRgbaVisual scr
@@ -79,9 +79,6 @@ run r scr = do
 	maybe (putStrLn "No Window Stack") (mapM_ printWindowStack) =<< gdkScreenGetWindowStack scr
 	print =<< gdkDisplayGetDefault
 	print =<< gdkScreenGetDisplay scr
-	print =<< gdkScreenGetResolution scr
-	gdkScreenSetResolution scr r
-	print =<< gdkScreenGetResolution scr
 
 printWindowStack :: GdkWindowAutoUnref -> IO ()
 printWindowStack wau = withGdkWindowAutoUnref wau \w ->

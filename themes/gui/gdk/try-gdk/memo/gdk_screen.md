@@ -21,16 +21,16 @@ todo
 			* [x] about `GdkWindowAutoUnref`
 	+ [x] DISPLAY
 		- `gdkScreenGetDisplay`
-	+ [ ] RESOLUTION
+	+ [x] RESOLUTION
 		- [x] make window
 		- [x] draw rectangle
 		- [x] add pango to stack.yaml
 		- [x] add pango to package.yaml
 		- [x] draw text
 		- [x] repair `pangoCairoContextGetResolution` to return maybe value
-		- [ ] `gdkScreenGetResolution`
+		- [x] `gdkScreenGetResolution`
 			* remove it
-		- [ ] `gdkScreenSetResolution`
+		- [x] `gdkScreenSetResolution`
 			* remove it
 
 Function
@@ -84,8 +84,6 @@ Function
 * [x] `gdk_screen_get_display`
 * [x] `gdk_screen_list_visuals`
 * [x] `gdk_screen_get_toplevel_windows`
-* [x] `gdk_screen_get_resolution`
-* [x] `gdk_screen_set_resolution`
 * [x] `gdk_screen_get_window_stack`
 	+ [x] need `g_object_unref` for returned windows
 
@@ -94,6 +92,11 @@ Function
 * [x] `gdk_screen_get_setting`
 * [x] `gdk_screen_get_font_options`
 * [x] `gdk_screen_set_font_options`
+
+### removed
+
+* `gdk_screen_get_resolution`
+* `gdk_screen_set_resolution`
 
 todo
 ----

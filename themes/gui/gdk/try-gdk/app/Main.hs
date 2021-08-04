@@ -62,8 +62,6 @@ main = do
 	putStrLn . gdkDisplayGetName =<< gdkDisplayManagerGetDefaultDisplay =<< gdkDisplayManagerGet
 	print . (gdkDisplayGetName <$>) =<< gdkDisplayManagerListDisplays =<< gdkDisplayManagerGet
 	d <- gdkDisplayGetDefault
-	putStrLn "gdkScreenGetResolution #1"
-	print =<< gdkScreenGetResolution (gdkDisplayGetDefaultScreen d)
 	st0 <- gdkDisplayGetDefaultSeat d
 	[st] <- gdkDisplayListSeats d
 	print st0
@@ -161,8 +159,6 @@ main = do
 	print GdkWindowToplevel
 	print GdkWindowRoot
 	putStrLn . gdkDisplayGetName =<< gdkWindowGetDisplay w
-	putStrLn "gdkScreenGetResolution #2"
-	print =<< gdkScreenGetResolution =<< gdkWindowGetScreen w
 	print =<< gdkVisualGetDepth =<< gdkWindowGetVisual w
 	putStrLn . ("Window is destroyed: " ++) . show =<< gdkWindowIsDestroyed w
 	putStrLn . ("Window is visible: " ++) . show =<< gdkWindowIsVisible w

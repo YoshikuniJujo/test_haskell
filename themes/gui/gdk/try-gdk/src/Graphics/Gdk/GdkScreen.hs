@@ -20,10 +20,6 @@ module Graphics.Gdk.GdkScreen (
 	gdkScreenGetWindowStack,
 
 	-- * DISPLAY
-	gdkScreenGetDisplay,
-
-	-- * RESOLUTION
-	gdkScreenGetResolution,
-	gdkScreenSetResolution ) where
+	gdkScreenGetDisplay ) where
 
 import Graphics.Gdk.GdkScreen.Internal
