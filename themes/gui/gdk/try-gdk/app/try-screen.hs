@@ -54,7 +54,7 @@ main = do
 		cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.8 0.8
 		ctx <- pangoCairoCreateContext cr
 		print =<< pangoCairoContextGetResolution ctx
-		pangoCairoContextSetResolution ctx rsl
+		pangoCairoContextSetResolution ctx $ Just rsl
 		pl <- pangoLayoutNew ctx
 		fd <- pangoFontDescriptionNew
 		pangoFontDescriptionSet fd $ Size 24

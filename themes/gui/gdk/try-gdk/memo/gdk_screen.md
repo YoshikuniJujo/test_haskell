@@ -27,11 +27,11 @@ todo
 		- [x] add pango to stack.yaml
 		- [x] add pango to package.yaml
 		- [x] draw text
-		- [ ] repair `pangoCairoContextGetResolution` to return maybe value
+		- [x] repair `pangoCairoContextGetResolution` to return maybe value
 		- [ ] `gdkScreenGetResolution`
-			* [ ] remove it
+			* remove it
 		- [ ] `gdkScreenSetResolution`
-			* [ ] remove it
+			* remove it
 
 Function
 --------
