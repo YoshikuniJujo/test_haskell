@@ -15,9 +15,16 @@ refactor export list
 	+ [ ] `gdkMonitorGetWidthMm`
 	+ [ ] `gdkMonitorGetHeightMm`
 * [ ] MANUFACTURER AND MODEL
+	+ [ ] `gdkMonitorGetManufacturer`
+	+ [ ] `gdkMonitorGetModel`
 * [ ] PROPERTIES
+	+ [ ] `gdkMonitorGetScaleFactor`
+	+ [ ] `gdkMonitorGetRefreshRate`
+	+ [ ] `gdkMonitorGetSubpixelLayout`
 * [ ] IS PRIMARY
+	+ `gdkMonitorIsPrimary`
 * [ ] GDK SUBPIXEL LAYOUT
+	+ enum `GdkSubpixelLayout`
 
 review
 ------

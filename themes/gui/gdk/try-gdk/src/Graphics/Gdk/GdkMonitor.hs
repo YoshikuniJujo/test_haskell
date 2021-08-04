@@ -28,7 +28,7 @@ module Graphics.Gdk.GdkMonitor (
 	gdkMonitorIsPrimary,
 
 	-- * GDK SUBPIXEL LAYOUT
-	GdkSubpixelLayout(..),
+	GdkSubpixelLayout,
 	pattern GdkSubpixelLayoutUnknown,
 	pattern GdkSubpixelLayoutNone,
 	pattern GdkSubpixelLayoutHorizontalRgb,

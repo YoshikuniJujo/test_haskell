@@ -21,14 +21,14 @@ module Graphics.Gdk.GdkSeat.Internal (
 
 	-- * GDK SEAT CAPABILITIES
 
-	GdkSeatCapabilities,
+	GdkSeatCapabilities(..),
 	pattern GdkSeatCapabilityNone,
 	pattern GdkSeatCapabilityAllPointing,
 	pattern GdkSeatCapabilityAll,
 
 	gdkSeatCapabilities,
 
-	GdkSeatCapability,
+	GdkSeatCapability(..),
 	pattern GdkSeatCapabilityPointer,
 	pattern GdkSeatCapabilityTouch,
 	pattern GdkSeatCapabilityTabletStylus,
