@@ -17,9 +17,14 @@ module Graphics.Gdk.GdkSeat (
 
 	-- * GRAB
 
-	gdkSeatGrab, gdkSeatGrabSimple, gdkSeatUngrab,
+	gdkSeatGrab, gdkSeatGrabSimple, gdkSeatUngrab, GdkSeatGrabPrepareFunc,
 
 	-- * GDK SEAT CAPABILITIES
+
+	GdkSeatCapabilities,
+	pattern GdkSeatCapabilityNone,
+	pattern GdkSeatCapabilityAllPointing,
+	pattern GdkSeatCapabilityAll,
 
 	gdkSeatCapabilities,
 
@@ -29,13 +34,7 @@ module Graphics.Gdk.GdkSeat (
 	pattern GdkSeatCapabilityTabletStylus,
 	pattern GdkSeatCapabilityKeyboard,
 
-	GdkSeatCapabilities,
-	pattern GdkSeatCapabilityNone,
-	pattern GdkSeatCapabilityAllPointing,
-	pattern GdkSeatCapabilityAll,
-
-	-- * GDK SEAT GRAB PREPARE FUNCTION
-	GdkSeatGrabPrepareFunc
+	gdkSeatCapabilityList,
 
 	) where
 
@@ -43,6 +42,7 @@ import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.C.Enum
 import Data.Bits
+import Data.Bits.Misc
 import Data.Word
 import Data.Int
 
@@ -79,6 +79,9 @@ consGdkSeatCapability (GdkSeatCapability c) (GdkSeatCapabilities cs) =
 
 gdkSeatCapabilities :: [GdkSeatCapability] -> GdkSeatCapabilities
 gdkSeatCapabilities = foldr consGdkSeatCapability GdkSeatCapabilityNone
+
+gdkSeatCapabilityList :: GdkSeatCapabilities -> [GdkSeatCapability]
+gdkSeatCapabilityList (GdkSeatCapabilities cs) = map GdkSeatCapability $ separateBits 32 cs
 
 foreign import ccall "gdk_seat_get_display" c_gdk_seat_get_display ::
 	GdkSeat -> IO (Ptr GdkDisplay)

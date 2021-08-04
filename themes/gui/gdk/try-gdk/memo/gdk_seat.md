@@ -19,3 +19,25 @@ todo
 	+ [x] use `withPtr`
 	+ [x] repair `class Pointerable`
 * [x] move `class Pointerable` to package `glib-stopgap`
+* [ ] make `Graphics.Gdk.GdkSeat.Internal`
+* [ ] refactor export list
+	+ [x] structure
+	+ [ ] GDK SEAT
+	+ [ ] GET
+		- [ ] `gdkSeatGetDisplay`
+		- [ ] `gdkSeatGetCapabilities`
+		- [ ] `gdkSeatGetPointer`
+		- [ ] `gdkSeatGetKeyboard`
+		- [ ] `gdkSeatGetSlaves`
+			* [ ] return value: whether or not to use maybe value
+			* [ ] others
+	+ [ ] GRAB
+		- [ ] `gdkSeatGrab`
+		- [ ] `gdkSeatGrabSimple`
+		- [ ] `gdkSeatUngrab`
+		- [ ] `GdkSeatGrabPrepareFunc`
+	+ [ ] GDK SEAT CAPABILITIES
+		- [ ] `GdkSeatCapabilities`
+		- [ ] `gdkSeatCapabilities`
+		- [ ] `GdkSeatCapability`
+		- [ ] `gdkSeatCapabilityList`

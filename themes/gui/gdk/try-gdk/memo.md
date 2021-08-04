@@ -48,7 +48,7 @@ todo new
 			* [x] refactor export list
 			* [x] make `Graphics.Gdk.GdkDisplayManager.Internal`
 		- [x] GdkDisplay
-		- [ ] GdkScreen
+		- [x] GdkScreen
 		- [ ] GdkSeat
 		- [ ] GdkMonitor
 		- [ ] GdkDevice
