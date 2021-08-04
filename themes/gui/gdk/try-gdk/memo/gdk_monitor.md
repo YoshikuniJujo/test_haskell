@@ -9,11 +9,11 @@ refactor export list
 * [x] GDK MONITOR
 * [x] DISPLAY
 	+ `gdkMonitorGetDisplay`
-* [ ] GEOMETRY
-	+ [ ] `gdkMonitorGetGeometory`
-	+ [ ] `gdkMonitorGetWorkarea`
-	+ [ ] `gdkMonitorGetWidthMm`
-	+ [ ] `gdkMonitorGetHeightMm`
+* [x] GEOMETRY
+	+ [x] `gdkMonitorGetGeometory`
+	+ [x] `gdkMonitorGetWorkarea`
+	+ [x] `gdkMonitorGetWidthMm`
+	+ [x] `gdkMonitorGetHeightMm`
 * [ ] MANUFACTURER AND MODEL
 	+ [ ] `gdkMonitorGetManufacturer`
 	+ [ ] `gdkMonitorGetModel`
