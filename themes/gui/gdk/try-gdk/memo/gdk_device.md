@@ -1,6 +1,21 @@
 GdkDevice memo
 ==============
 
+refactor export list
+--------------------
+
+* [x] consider to remove GdkDeviceTool
+* [x] refactor structure
+* [ ] make `Graphics.Gdk.GdkDevice.Internal`
+* [ ] GDK DEVICE
+* [ ] DISPLAY AND SEAT
+* [ ] IDENTITY
+* [ ] SLAVES
+* [ ] GEOMETRY
+* [ ] STATE
+* [ ] GDK DEVICE TYPE
+* [ ] GDK INPUT SOURCE
+
 Function
 --------
 

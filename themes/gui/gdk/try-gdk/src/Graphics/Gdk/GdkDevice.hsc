@@ -5,27 +5,32 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkDevice (
-	-- * TYPE
+	-- * GDK DEVICE
 	GdkDevice(..),
-	GdkDeviceTool(..),
 
-	-- * FUNCTION
+	-- * DISPLAY AND SEAT
+	gdkDeviceGetDisplay, gdkDeviceGetSeat,
+
+	-- * IDENTITY
 	gdkDeviceGetName,
 	gdkDeviceGetVendorId,
 	gdkDeviceGetProductId,
 	gdkDeviceGetSource,
-	gdkDeviceListSlaveDevices,
 	gdkDeviceGetDeviceType,
-	gdkDeviceGetDisplay,
-	gdkDeviceGetHasCursor,
+
+	-- * SLAVES
+	gdkDeviceListSlaveDevices,
+
+	-- * GEOMETRY
 	gdkDeviceWarp,
-	gdkDeviceGetSeat,
 	gdkDeviceGetPosition,
 	gdkDeviceGetPositionDouble,
 	gdkDeviceGetWindowAtPosition,
 	gdkDeviceGetWindowAtPositionDouble,
+
+	-- * STATE
+	gdkDeviceGetHasCursor,
 	gdkDeviceGetLastEventWindow,
-	gdkDeviceToolGetToolType,
 
 	-- * GDK DEVICE TYPE
 	GdkDeviceType(..),
@@ -38,17 +43,6 @@ module Graphics.Gdk.GdkDevice (
 	pattern GdkSourceCursor, pattern GdkSourceKeyboard,
 	pattern GdkSourceTouchscreen, pattern GdkSourceTouchpad,
 	pattern GdkSourceTrackpoint, pattern GdkSourceTabletPad,
-
-	-- * GDK DEVICE TOOL TYPE
-	GdkDeviceToolType(..),
-	pattern GdkDeviceToolTypeUnknown,
-	pattern GdkDeviceToolTypePen,
-	pattern GdkDeviceToolTypeEraser,
-	pattern GdkDeviceToolTypeBrush,
-	pattern GdkDeviceToolTypePencil,
-	pattern GdkDeviceToolTypeAirbrush,
-	pattern GdkDeviceToolTypeMouse,
-	pattern GdkDeviceToolTypeLens
 
 	) where
 
@@ -180,21 +174,3 @@ foreign import ccall "gdk_device_get_window_at_position_double"
 
 foreign import ccall "gdk_device_get_last_event_window"
 	gdkDeviceGetLastEventWindow :: GdkDevice -> IO GdkWindow
-
-newtype GdkDeviceTool = GdkDeviceTool (Ptr GdkDeviceTool) deriving Show
-
-enum "GdkDeviceToolType" ''#{type GdkDeviceToolType} [''Show] [
-	("GdkDeviceToolTypeUnknown", #{const GDK_DEVICE_TOOL_TYPE_UNKNOWN}),
-	("GdkDeviceToolTypePen", #{const GDK_DEVICE_TOOL_TYPE_PEN}),
-	("GdkDeviceToolTypeEraser", #{const GDK_DEVICE_TOOL_TYPE_ERASER}),
-	("GdkDeviceToolTypeBrush", #{const GDK_DEVICE_TOOL_TYPE_BRUSH}),
-	("GdkDeviceToolTypePencil", #{const GDK_DEVICE_TOOL_TYPE_PENCIL}),
-	("GdkDeviceToolTypeAirbrush", #{const GDK_DEVICE_TOOL_TYPE_AIRBRUSH}),
-	("GdkDeviceToolTypeMouse", #{const GDK_DEVICE_TOOL_TYPE_MOUSE}),
-	("GdkDeviceToolTypeLens", #{const GDK_DEVICE_TOOL_TYPE_LENS}) ]
-
-gdkDeviceToolGetToolType :: GdkDeviceTool -> IO GdkDeviceToolType
-gdkDeviceToolGetToolType t = GdkDeviceToolType <$> c_gdk_device_get_tool_type t
-
-foreign import ccall "gdk_device_tool_get_tool_type" c_gdk_device_get_tool_type ::
-	GdkDeviceTool -> IO #type GdkDeviceToolType
