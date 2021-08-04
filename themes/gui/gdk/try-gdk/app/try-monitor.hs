@@ -28,3 +28,15 @@ main = do
 	print =<< gdkMonitorGetManufacturer mnt
 	putStr "gdkMonitorGetModel       : "
 	print =<< gdkMonitorGetModel mnt
+
+	putStrLn "\nPROPERTIES"
+	putStr "gdkMonitorGetScaleFactor  : "
+	print =<< gdkMonitorGetScaleFactor mnt
+	putStr "gdkMonitorGetRefreshRate  : "
+	print =<< gdkMonitorGetRefreshRate mnt
+	putStr "gdkMonitorGetSubpixelLyout: "
+	print =<< gdkMonitorGetSubpixelLayout mnt
+
+	putStrLn "\nIS PRIMARY"
+	putStr "gdkMonitorIsPrimary: "
+	print =<< gdkMonitorIsPrimary mnt

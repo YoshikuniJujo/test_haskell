@@ -50,7 +50,7 @@ todo new
 		- [x] GdkDisplay
 		- [x] GdkScreen
 		- [x] GdkSeat
-		- [ ] GdkMonitor
+		- [x] GdkMonitor
 		- [ ] GdkDevice
 			* [ ] itself
 			* [ ] GdkAxes
