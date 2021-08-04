@@ -137,14 +137,12 @@ convertGdkSeatGrabPrepareFunc ::
 	Pointerable a => GdkSeatGrabPrepareFunc a -> C_GdkSeatGrabPrepareFunc a
 convertGdkSeatGrabPrepareFunc f st wn x = f st (GdkWindow wn) =<< fromPtr x
 
-foreign import ccall "wrapper" wrap_GdkSeatGrabPrepareFunc :: C_GdkSeatGrabPrepareFunc a -> IO (FunPtr (C_GdkSeatGrabPrepareFunc a))
+foreign import ccall "wrapper" wrap_GdkSeatGrabPrepareFunc ::
+	C_GdkSeatGrabPrepareFunc a -> IO (FunPtr (C_GdkSeatGrabPrepareFunc a))
 
 gdkSeatGrabSimple :: GdkSeat -> GdkWindow -> IO GdkGrabStatus
-gdkSeatGrabSimple st wn =
--- gdkSeatGrabSimple (GdkSeat st) (GdkWindow wn) =
-	gdkSeatGrab st wn GdkSeatCapabilityAllPointing False Nothing Nothing (Nothing :: Maybe (GdkSeatGrabPrepareFunc (), ()))
---	c_gdk_seat_grab st wn #{const GDK_SEAT_CAPABILITY_ALL_POINTING} #{const TRUE} nullPtr nullPtr nullPtr nullPtr
---	c_gdk_seat_grab st wn #{const GDK_SEAT_CAPABILITY_ALL_POINTING} #{const FALSE} nullPtr nullPtr nullFunPtr nullPtr
+gdkSeatGrabSimple st wn = gdkSeatGrab st wn GdkSeatCapabilityAllPointing
+	False Nothing Nothing (Nothing :: Maybe (GdkSeatGrabPrepareFunc (), ()))
 
 withGdkCursor :: Maybe GdkCursor -> (Ptr GdkCursor -> IO a) -> IO a
 withGdkCursor mc f = case mc of

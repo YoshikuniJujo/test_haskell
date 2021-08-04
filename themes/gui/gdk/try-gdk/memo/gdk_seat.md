@@ -33,8 +33,11 @@ todo
 			* [x] others
 	+ [ ] GRAB
 		- [ ] `gdkSeatGrab`
-		- [ ] `gdkSeatGrabSimple`
-		- [ ] `gdkSeatUngrab`
+		- [x] `gdkSeatGrabSimple`
+			* [x] create window
+			* [x] use mainLoop
+			* [x] try to grab
+		- [x] `gdkSeatUngrab`
 		- [ ] `GdkSeatGrabPrepareFunc`
 	+ [ ] GDK SEAT CAPABILITIES
 		- [ ] `GdkSeatCapabilities`

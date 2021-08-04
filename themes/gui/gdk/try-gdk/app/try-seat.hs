@@ -1,12 +1,20 @@
+{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIOnS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
+import Control.Monad
 import Data.Maybe
 
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkDevice
+import Graphics.Gdk.Windows
+import Graphics.Gdk.EventStructures
+import Graphics.Gdk.EventStructures.GdkKeySyms
+
+import Try.Tools
 
 main :: IO ()
 main = do
@@ -19,6 +27,21 @@ main = do
 	printGdkDevice =<< gdkSeatGetPointer st
 	printGdkDevice =<< gdkSeatGetKeyboard st
 	mapM_ printGdkDevice =<< gdkSeatGetSlaves st GdkSeatCapabilityAll
+	win <- gdkWindowNew Nothing defaultGdkWindowAttr
+	gdkWindowShow win
+	gdkDisplayFlush dpy
+	mainLoop \case
+		GdkEventGdkDelete _d -> pure False
+		GdkEventGdkKeyPress
+			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
+			pure False
+		GdkEventGdkKeyPress
+			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_s) ->
+			True <$ (print =<< gdkSeatGrabSimple st win)
+		GdkEventGdkKeyPress
+			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_u) ->
+			True <$ gdkSeatUngrab st
+		e -> True <$ print e
 
 printGdkDevice :: GdkDevice -> IO ()
 printGdkDevice d = do
