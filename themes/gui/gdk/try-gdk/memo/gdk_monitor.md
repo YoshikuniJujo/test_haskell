@@ -5,10 +5,15 @@ refactor export list
 --------------------
 
 * [x] refactor structure
-* [ ] make `Graphics.Gdk.GdkMonitor.Internal`
+* [x] make `Graphics.Gdk.GdkMonitor.Internal`
 * [ ] GDK MONITOR
 * [ ] DISPLAY
+	+ `gdkMonitorGetDisplay`
 * [ ] GEOMETRY
+	+ [ ] `gdkMonitorGetGeometory`
+	+ [ ] `gdkMonitorGetWorkarea`
+	+ [ ] `gdkMonitorGetWidthMm`
+	+ [ ] `gdkMonitorGetHeightMm`
 * [ ] MANUFACTURER AND MODEL
 * [ ] PROPERTIES
 * [ ] IS PRIMARY

@@ -4,7 +4,6 @@
 
 module Main where
 
-import Foreign.C.Types
 import Control.Monad
 import Data.Maybe
 import Data.List

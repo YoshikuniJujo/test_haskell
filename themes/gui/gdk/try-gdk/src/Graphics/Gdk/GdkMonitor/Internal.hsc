@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.GdkMonitor (
+module Graphics.Gdk.GdkMonitor.Internal (
 
 	-- * GDK MONITOR
 	GdkMonitor(..),

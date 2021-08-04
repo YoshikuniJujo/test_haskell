@@ -54,7 +54,7 @@ import System.GLib.Bool
 
 import {-# SOURCE #-} Graphics.Gdk.GdkScreen.Internal
 import Graphics.Gdk.GdkSeat.Internal
-import Graphics.Gdk.GdkMonitor
+import Graphics.Gdk.GdkMonitor.Internal
 import Graphics.Gdk.GdkDevice
 import {-# SOURCE #-} Graphics.Gdk.Windows
 import Graphics.Gdk.EventStructures

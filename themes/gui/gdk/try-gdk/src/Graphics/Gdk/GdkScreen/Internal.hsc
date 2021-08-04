@@ -25,7 +25,6 @@ module Graphics.Gdk.GdkScreen.Internal (
 
 import Foreign.Ptr
 import Foreign.Ptr.Misc
-import Foreign.C.Types
 import Data.Int
 import System.GLib.Bool
 import System.GLib.DoublyLinkedLists

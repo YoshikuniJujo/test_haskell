@@ -4,9 +4,6 @@
 
 module Main where
 
-import Control.Monad
-import Data.Maybe
-
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkDevice
@@ -30,7 +27,6 @@ main = do
 	mapM_ printGdkDevice =<< gdkSeatGetSlaves st GdkSeatCapabilityAll
 	win <- gdkWindowNew Nothing defaultGdkWindowAttr
 	win2 <- gdkWindowNew Nothing defaultGdkWindowAttr
-	wt <- gdkWindowNew Nothing defaultGdkWindowAttr
 	gdkWindowShow win
 	gdkWindowShow win2
 	gdkDisplayFlush dpy
