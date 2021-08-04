@@ -22,9 +22,9 @@ todo
 * [x] make `Graphics.Gdk.GdkSeat.Internal`
 * [ ] refactor export list
 	+ [x] structure
-	+ [ ] GDK SEAT
+	+ [x] GDK SEAT
 	+ [ ] GET
-		- [ ] `gdkSeatGetDisplay`
+		- [x] `gdkSeatGetDisplay`
 		- [ ] `gdkSeatGetCapabilities`
 		- [ ] `gdkSeatGetPointer`
 		- [ ] `gdkSeatGetKeyboard`
