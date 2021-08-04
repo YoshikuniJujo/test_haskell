@@ -28,7 +28,9 @@ main = do
 	printGdkDevice =<< gdkSeatGetKeyboard st
 	mapM_ printGdkDevice =<< gdkSeatGetSlaves st GdkSeatCapabilityAll
 	win <- gdkWindowNew Nothing defaultGdkWindowAttr
+	win2 <- gdkWindowNew Nothing defaultGdkWindowAttr
 	gdkWindowShow win
+	gdkWindowShow win2
 	gdkDisplayFlush dpy
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
@@ -39,9 +41,16 @@ main = do
 			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_s) ->
 			True <$ (print =<< gdkSeatGrabSimple st win)
 		GdkEventGdkKeyPress
+			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_o) ->
+			True <$ (print =<< gdkSeatGrab st win
+				GdkSeatCapabilityAll
+				True Nothing Nothing noGdkSeatGrabPrepare)
+		GdkEventGdkKeyPress
 			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_u) ->
 			True <$ gdkSeatUngrab st
-		e -> True <$ print e
+		GdkEventGdkAny (gdkEventAny -> e) -> True <$ do
+			print e
+			print $ gdkEventAnyWindow e
 
 printGdkDevice :: GdkDevice -> IO ()
 printGdkDevice d = do

@@ -33,6 +33,13 @@ todo
 			* [x] others
 	+ [ ] GRAB
 		- [ ] `gdkSeatGrab`
+			* [x] try `owner_events` parameter
+				+ [x] make 2 window
+				+ [x] 'o': owner_events is True
+				+ [x] check event's window
+			* [ ] try `cursor` parameter
+			* [ ] try `event` parameter
+			* [ ] try `prepare_func` parameter
 		- [x] `gdkSeatGrabSimple`
 			* [x] create window
 			* [x] use mainLoop

@@ -14,7 +14,8 @@ module Graphics.Gdk.GdkSeat (
 
 	-- * GRAB
 
-	gdkSeatGrab, gdkSeatGrabSimple, gdkSeatUngrab, GdkSeatGrabPrepareFunc,
+	gdkSeatGrab, gdkSeatGrabSimple, gdkSeatUngrab,
+	GdkSeatGrabPrepareFunc, noGdkSeatGrabPrepare,
 
 	-- * GDK SEAT CAPABILITIES
 
@@ -36,3 +37,6 @@ module Graphics.Gdk.GdkSeat (
 	) where
 
 import Graphics.Gdk.GdkSeat.Internal
+
+noGdkSeatGrabPrepare :: Maybe (GdkSeatGrabPrepareFunc (), ())
+noGdkSeatGrabPrepare = Nothing
