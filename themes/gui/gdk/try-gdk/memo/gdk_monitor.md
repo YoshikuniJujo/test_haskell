@@ -6,8 +6,8 @@ refactor export list
 
 * [x] refactor structure
 * [x] make `Graphics.Gdk.GdkMonitor.Internal`
-* [ ] GDK MONITOR
-* [ ] DISPLAY
+* [x] GDK MONITOR
+* [x] DISPLAY
 	+ `gdkMonitorGetDisplay`
 * [ ] GEOMETRY
 	+ [ ] `gdkMonitorGetGeometory`
