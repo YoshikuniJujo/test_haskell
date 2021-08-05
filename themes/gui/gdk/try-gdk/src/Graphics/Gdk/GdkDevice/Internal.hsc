@@ -55,6 +55,7 @@ import Foreign.C
 import Foreign.C.Enum
 import Data.Word
 import Data.Int
+import System.IO.Unsafe
 import System.GLib.DoublyLinkedLists
 import System.GLib.Bool
 
@@ -89,19 +90,20 @@ gdkDeviceGetName d = peekCString =<< c_gdk_device_get_name (toGdkDevice d)
 foreign import ccall "gdk_device_get_name" c_gdk_device_get_name ::
 	GdkDevice -> IO CString
 
-gdkDeviceGetVendorId :: GdkDevice -> IO (Maybe String)
-gdkDeviceGetVendorId d = c_gdk_device_get_vendor_id d >>= \case
-	NullPtr -> pure Nothing; cs -> Just <$> peekCString cs
+gdkDeviceGetVendorId :: GdkDevicePhysical -> String
+gdkDeviceGetVendorId d = unsafePerformIO $ c_gdk_device_get_vendor_id d >>= \case
+	NullPtr -> error "never occur"
+	cs -> peekCString cs
 
 foreign import ccall "gdk_device_get_vendor_id" c_gdk_device_get_vendor_id ::
-	GdkDevice -> IO CString
+	GdkDevicePhysical -> IO CString
 
-gdkDeviceGetProductId :: GdkDevice -> IO (Maybe String)
-gdkDeviceGetProductId d = c_gdk_device_get_product_id d >>= \case
-	NullPtr -> pure Nothing; cs -> Just <$> peekCString cs
+gdkDeviceGetProductId :: GdkDevicePhysical -> String
+gdkDeviceGetProductId d = unsafePerformIO $ c_gdk_device_get_product_id d >>= \case
+	NullPtr -> error "never occur"; cs -> peekCString cs
 
 foreign import ccall "gdk_device_get_product_id" c_gdk_device_get_product_id ::
-	GdkDevice -> IO CString
+	GdkDevicePhysical -> IO CString
 
 enum "GdkInputSource" ''#{type GdkInputSource} [''Show, ''Eq] [
 	("GdkSourceMouse", #{const GDK_SOURCE_MOUSE}),

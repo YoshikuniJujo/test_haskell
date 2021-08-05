@@ -13,11 +13,11 @@ GdkDevice memo
 * [ ] repair `Graphics.Gdk.GdkDevice`
 	+ [x] `gdkDeviceGetDisplay`
 	+ [x] `gdkDeviceGetSeat`
-	+ [ ] `gdkDeviceGetName`
+	+ [x] `gdkDeviceGetName`
 	+ [x] `gdkDeviceGetDeviceType`
 	+ [x] `gdkDeviceGetSource`
-	+ [ ] `gdkDeviceGetVendorId`
-	+ [ ] `gdkDeviceGetProductId`
+	+ [x] `gdkDeviceGetVendorId`
+	+ [x] `gdkDeviceGetProductId`
 	+ [ ] `gdkDeviceGetSlaveDevices`
 	+ [ ] `gdkDeviceWarp`
 	+ [ ] `gdkDeviceGetPosition`
