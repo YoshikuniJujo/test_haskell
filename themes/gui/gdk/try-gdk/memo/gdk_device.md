@@ -4,8 +4,8 @@ GdkDevice memo
 * [x] make class IsGdkDevice
 * [x] make GdkDevice
 * [x] make GdkDeviceMaster and GdkDevicePhysical
-* [ ] repair `Graphics.Gdk.GdkDevice`
-	+ [ ] gdkDisplayDeviceIsGrabbed
+* [x] repair `Graphics.Gdk.GdkDevice`
+	+ [x] gdkDisplayDeviceIsGrabbed
 * [ ] repair `Graphics.Gdk.GdkSeat`
 	+ [ ] `gdkSeatGetPointer`
 	+ [ ] `gdkSeatGetKeyboard`
@@ -26,6 +26,7 @@ GdkDevice memo
 	+ [ ] `gdkDeviceGetWindowAtPositionDouble`
 	+ [ ] `gdkDeviceGetHasCursor`
 	+ [ ] `gdkDeviceGetLastEventWindow`
+* [ ] repair `Graphics.Gdk.GdkDevice.GdkAxes`
 
 refactor export list
 --------------------

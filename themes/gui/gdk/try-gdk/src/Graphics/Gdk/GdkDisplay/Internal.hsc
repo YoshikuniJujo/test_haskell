@@ -96,11 +96,11 @@ gdkDisplayGetDefaultScreen (GdkDisplay p) =
 	unsafePerformIO $ GdkScreen <$> c_gdk_display_get_default_screen p
 
 foreign import ccall "gdk_display_device_is_grabbed" c_gdk_display_device_is_grabbed ::
-	Ptr GdkDisplay -> Ptr GdkDevice -> IO #type gboolean
+	GdkDisplay -> GdkDevice -> IO #type gboolean
 
-gdkDisplayDeviceIsGrabbed :: GdkDisplay -> GdkDevice -> IO Bool
-gdkDisplayDeviceIsGrabbed (GdkDisplay dpy) (GdkDevice pdvc) = gbooleanToBool
-	<$> c_gdk_display_device_is_grabbed dpy pdvc
+gdkDisplayDeviceIsGrabbed :: IsGdkDevice d => GdkDisplay -> d -> IO Bool
+gdkDisplayDeviceIsGrabbed dpy dvc = gbooleanToBool
+	<$> c_gdk_display_device_is_grabbed dpy (toGdkDevice dvc)
 
 gdkDisplaySync :: GdkDisplay -> IO ()
 gdkDisplaySync (GdkDisplay p) = c_gdk_display_sync p
