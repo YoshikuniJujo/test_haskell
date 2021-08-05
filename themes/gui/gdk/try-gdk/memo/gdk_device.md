@@ -12,12 +12,12 @@ refactor export list
 	+ [x] `gdkDeviceGetDisplay`
 	+ [x] `gdkDeviceGetSeat`
 * [ ] IDENTITY
-	+ [ ] rearrange
+	+ [x] rearrange
 	+ [ ] `gdkDeviceGetName`
+	+ [ ] `gdkDeviceGetDeviceType`
+	+ [ ] `gdkDeviceGetSource`
 	+ [ ] `gdkDeviceGetVenderId`
 	+ [ ] `gdkDeviceGetProductId`
-	+ [ ] `gdkDeviceGetSource`
-	+ [ ] `gdkDeviceGetDeviceType`
 * [ ] SLAVES
 * [ ] GEOMETRY
 * [ ] STATE

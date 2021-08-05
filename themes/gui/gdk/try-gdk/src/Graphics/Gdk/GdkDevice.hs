@@ -10,10 +10,10 @@ module Graphics.Gdk.GdkDevice (
 
 	-- * IDENTITY
 	gdkDeviceGetName,
+	gdkDeviceGetDeviceType,
+	gdkDeviceGetSource,
 	gdkDeviceGetVendorId,
 	gdkDeviceGetProductId,
-	gdkDeviceGetSource,
-	gdkDeviceGetDeviceType,
 
 	-- * SLAVES
 	gdkDeviceListSlaveDevices,
