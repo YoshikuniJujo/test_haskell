@@ -24,15 +24,13 @@ main = do
 	print =<< gdkDeviceGetSeat kbd
 	putStrLn ""
 
-	mpnts <- gdkDeviceListSlaveDevices pnt
-	mkbds <- gdkDeviceListSlaveDevices kbd
+	pnts <- gdkDeviceListSlaveDevices pnt
+	kbds <- gdkDeviceListSlaveDevices kbd
 	putStrLn =<< gdkDeviceGetName pnt
-	flip (maybe $ pure ()) mpnts \pnts -> for_ pnts \ps ->
-		putStrLn . ('\t' :) =<< gdkDeviceGetName ps
+	for_ pnts \ps -> putStrLn . ('\t' :) =<< gdkDeviceGetName ps
 	putStrLn ""
 	putStrLn =<< gdkDeviceGetName kbd
-	flip (maybe $ pure ()) mkbds \kbds -> for_ kbds \ks ->
-		putStrLn . ('\t' :) =<< gdkDeviceGetName ks
+	for_ kbds \ks -> putStrLn . ('\t' :) =<< gdkDeviceGetName ks
 	putStrLn ""
 
 	printDevice pnt

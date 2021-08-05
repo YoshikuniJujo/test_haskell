@@ -5,7 +5,6 @@ module Main where
 
 import Control.Monad
 import Control.Concurrent
-import Data.Maybe
 import Data.Char
 import System.Environment
 
@@ -35,7 +34,7 @@ main = do
 	print =<< gdkDeviceGetNameAndSource dvp
 	print =<< gdkDeviceGetDeviceType dvp
 	slv <- gdkDeviceListSlaveDevices dvp
-	(print <=< gdkDeviceGetNameAndSource) `mapM_` fromJust slv
+	(print <=< gdkDeviceGetNameAndSource) `mapM_` slv
 	w <- gdkWindowNew Nothing $ minimalGdkWindowAttr
 		(gdkEventMaskMultiBits [GdkKeyPressMask])
 		100 100 GdkInputOutput GdkWindowToplevel

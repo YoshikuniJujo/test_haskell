@@ -18,7 +18,7 @@ GdkDevice memo
 	+ [x] `gdkDeviceGetSource`
 	+ [x] `gdkDeviceGetVendorId`
 	+ [x] `gdkDeviceGetProductId`
-	+ [ ] `gdkDeviceGetSlaveDevices`
+	+ [x] `gdkDeviceListSlaveDevices`
 	+ [ ] `gdkDeviceWarp`
 	+ [ ] `gdkDeviceGetPosition`
 	+ [ ] `gdkDeviceGetPositionDouble`
