@@ -92,14 +92,14 @@ gdkSeatGetDisplay p = GdkDisplay <$> c_gdk_seat_get_display p
 foreign import ccall "gdk_seat_get_pointer" c_gdk_seat_get_pointer ::
 	GdkSeat -> IO (Ptr GdkDevice)
 
-gdkSeatGetPointer :: GdkSeat -> IO GdkDeviceMaster
-gdkSeatGetPointer p = GdkDeviceMaster <$> c_gdk_seat_get_pointer p
+gdkSeatGetPointer :: GdkSeat -> IO GdkDeviceMasterPointer
+gdkSeatGetPointer p = GdkDeviceMasterPointer <$> c_gdk_seat_get_pointer p
 
 foreign import ccall "gdk_seat_get_keyboard" c_gdk_seat_get_keyboard ::
 	GdkSeat -> IO (Ptr GdkDevice)
 
-gdkSeatGetKeyboard :: GdkSeat -> IO GdkDeviceMaster
-gdkSeatGetKeyboard p = GdkDeviceMaster <$> c_gdk_seat_get_keyboard p
+gdkSeatGetKeyboard :: GdkSeat -> IO GdkDeviceMasterKeyboard
+gdkSeatGetKeyboard p = GdkDeviceMasterKeyboard <$> c_gdk_seat_get_keyboard p
 
 foreign import ccall "gdk_seat_get_capabilities" c_gdk_seat_get_capabilities ::
 	GdkSeat -> IO #type GdkSeatCapabilities

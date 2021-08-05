@@ -4,6 +4,10 @@ GdkDevice memo
 * [x] make class IsGdkDevice
 * [x] make GdkDevice
 * [x] make GdkDeviceMaster and GdkDevicePhysical
+* [x] consider separate GdkDeviceMaster to
+	+ GdkDeviceMasterPointer
+	+ GdkDeviceMasterKeyboard
+	+ consder to make class IsGdkDeviceMaster
 * [x] repair `Graphics.Gdk.GdkDevice`
 	+ [x] gdkDisplayDeviceIsGrabbed
 * [x] repair `Graphics.Gdk.GdkSeat`
@@ -18,9 +22,9 @@ GdkDevice memo
 	+ [x] `gdkDeviceGetSource`
 	+ [x] `gdkDeviceGetVendorId`
 	+ [x] `gdkDeviceGetProductId`
-	+ [x] `gdkDeviceListSlaveDevices`
+	+ [ ] `gdkDeviceListSlaveDevices`
 	+ [ ] GEOMETRY
-		+ [ ] `gdkDeviceWarp`
+		+ [x] `gdkDeviceWarp`
 			- [x] try it with master
 			- [x] try it with physical
 		+ [ ] `gdkDeviceGetPosition`
@@ -39,12 +43,6 @@ GdkDevice memo
 	+ [ ] `gdkDeviceListAxes`
 	+ [ ] `gdkDeviceGetAxisValue`
 	+ [ ] `gdkAxesCopyFromPtr`
-* [ ] consider separate GdkDeviceMaster to
-	+ GdkDeviceMasterPointer
-	+ GdkDeviceMasterKeyboard
-	+ consder to make class IsGdkDeviceMaster
-	+ [ ] check GEOMETRY
-	+ [ ] others
 
 refactor export list
 --------------------

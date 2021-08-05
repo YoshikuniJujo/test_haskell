@@ -139,7 +139,7 @@ gdkWindowDestroy w = do
 	mapM_ c_g_object_unref cs
 	c_gdk_window_destroy w
 
-allPointerDevice :: GdkDisplay -> IO [GdkDeviceMaster]
+allPointerDevice :: GdkDisplay -> IO [GdkDeviceMasterPointer]
 allPointerDevice d = mapM gdkSeatGetPointer =<< gdkDisplayListSeats d
 
 foreign import ccall "gdk_window_destroy"
@@ -151,10 +151,10 @@ c_gdk_window_get_cursor' w = (<$> c_gdk_window_get_cursor w) \case
 
 foreign import ccall "gdk_window_get_device_cursor"
 	c_gdk_window_get_device_cursor ::
-		GdkWindow -> GdkDeviceMaster -> IO (Ptr GdkCursor)
+		GdkWindow -> GdkDeviceMasterPointer -> IO (Ptr GdkCursor)
 
 c_gdk_window_get_device_cursor' ::
-	GdkWindow -> GdkDeviceMaster -> IO (Maybe (Ptr GdkCursor))
+	GdkWindow -> GdkDeviceMasterPointer -> IO (Maybe (Ptr GdkCursor))
 c_gdk_window_get_device_cursor' w dv = (<$> c_gdk_window_get_device_cursor w dv) \case
 	NullPtr -> Nothing; p -> Just p
 
@@ -535,20 +535,20 @@ foreign import ccall "gdk_window_set_support_multidevice"
 	c_gdk_window_set_support_multidevice ::
 		GdkWindow -> #{type gboolean} -> IO ()
 
-gdkWindowGetDeviceCursor :: GdkWindow -> GdkDeviceMaster -> IO (Maybe GdkCursor)
+gdkWindowGetDeviceCursor :: GdkWindow -> GdkDeviceMasterPointer -> IO (Maybe GdkCursor)
 gdkWindowGetDeviceCursor w dv = c_gdk_window_get_device_cursor w dv >>= \case
 	NullPtr -> pure Nothing
 	c -> Just . GdkCursor
 		<$> (c_g_object_ref c >> newForeignPtr c (c_g_object_unref c))
 
-gdkWindowSetDeviceCursor :: GdkWindow -> GdkDeviceMaster -> GdkCursor -> IO ()
+gdkWindowSetDeviceCursor :: GdkWindow -> GdkDeviceMasterPointer -> GdkCursor -> IO ()
 gdkWindowSetDeviceCursor w d (GdkCursor fc) = do
 	whenMaybe c_g_object_unref =<< c_gdk_window_get_device_cursor' w d
 	withForeignPtr fc $ \c -> c_g_object_ref c >> c_gdk_window_set_device_cursor w d c
 
 foreign import ccall "gdk_window_set_device_cursor"
 	c_gdk_window_set_device_cursor ::
-		GdkWindow -> GdkDeviceMaster -> Ptr GdkCursor -> IO ()
+		GdkWindow -> GdkDeviceMasterPointer -> Ptr GdkCursor -> IO ()
 
 foreign import ccall "gdk_window_get_device_events"
 	gdkWindowGetDeviceEvents ::
