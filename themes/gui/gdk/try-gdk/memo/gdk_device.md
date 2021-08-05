@@ -8,10 +8,16 @@ refactor export list
 * [x] refactor structure
 * [x] make `Graphics.Gdk.GdkDevice.Internal`
 * [x] GDK DEVICE
-* [ ] DISPLAY AND SEAT
+* [x] DISPLAY AND SEAT
 	+ [x] `gdkDeviceGetDisplay`
-	+ [ ] `gdkDeviceGetSeat`
+	+ [x] `gdkDeviceGetSeat`
 * [ ] IDENTITY
+	+ [ ] rearrange
+	+ [ ] `gdkDeviceGetName`
+	+ [ ] `gdkDeviceGetVenderId`
+	+ [ ] `gdkDeviceGetProductId`
+	+ [ ] `gdkDeviceGetSource`
+	+ [ ] `gdkDeviceGetDeviceType`
 * [ ] SLAVES
 * [ ] GEOMETRY
 * [ ] STATE

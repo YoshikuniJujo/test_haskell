@@ -18,3 +18,5 @@ main = do
 	print kbd
 	print =<< gdkDeviceGetDisplay pnt
 	print =<< gdkDeviceGetDisplay kbd
+	print =<< gdkDeviceGetSeat pnt
+	print =<< gdkDeviceGetSeat kbd
