@@ -154,7 +154,7 @@ foreign import ccall "gdk_device_get_has_cursor" c_gdk_device_get_has_cursor ::
 	GdkDevice -> IO #{type gboolean}
 
 foreign import ccall "gdk_device_warp" gdkDeviceWarp ::
-	GdkDevice -> GdkScreen -> CInt -> CInt -> IO ()
+	GdkDeviceMaster -> GdkScreen -> CInt -> CInt -> IO ()
 
 gdkDeviceGetSeat :: IsGdkDevice d => d -> IO GdkSeat
 gdkDeviceGetSeat = c_gdk_device_get_seat . toGdkDevice

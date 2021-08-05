@@ -357,7 +357,7 @@ checkEventSealed opacity pos size d st = \case
 			putStrLn . ("Window size: " ++) . show =<< (,) <$> gdkWindowGetWidth w <*> gdkWindowGetHeight w
 		when (checkKeyVal 'g' kv) $ checkGrabbedPointerKeyboard d st
 		when (checkKeyVal 'w' kv) do
-			pnt <- toGdkDevice <$> gdkSeatGetPointer st
+			pnt <- gdkSeatGetPointer st
 			gdkDeviceWarp pnt (gdkDisplayGetDefaultScreen d) 100 100
 		when (checkKeyVal 'r' kv) do
 			pnt <- toGdkDevice <$> gdkSeatGetPointer st

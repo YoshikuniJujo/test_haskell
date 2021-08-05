@@ -6,12 +6,14 @@ module Main where
 import Data.Foldable
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkSeat
-import Graphics.Gdk.GdkDevice
+import Graphics.Gdk.GdkDevice.Internal
 
 main :: IO ()
 main = do
 	dpy <- gdkDisplayOpen ""
+	let	scr = gdkDisplayGetDefaultScreen dpy
 	print dpy
+	print scr
 	st <- gdkDisplayGetDefaultSeat dpy
 	print st
 	pnt <- gdkSeatGetPointer st
@@ -34,6 +36,11 @@ main = do
 	putStrLn ""
 
 	printDevice pnt
+
+	gdkDeviceWarp pnt scr 100 100
+--	gdkDeviceWarp (toGdkDevice kbd) scr 100 100
+--	gdkDeviceWarp (toGdkDevice $ pnts !! 1) scr 100 100
+	gdkDisplayFlush dpy
 
 printDevice :: IsGdkDevice d => d -> IO ()
 printDevice d = do
