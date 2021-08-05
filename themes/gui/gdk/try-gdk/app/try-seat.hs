@@ -76,21 +76,25 @@ fun st wn n = do
 	print n
 	gdkWindowShow wn
 
-printGdkDevice :: GdkDevice -> IO ()
+printGdkDevice :: IsGdkDevice d => d -> IO ()
 printGdkDevice d = do
 	n <- gdkDeviceGetName d
 	t <- gdkDeviceGetDeviceType d
 	s <- gdkDeviceGetSource d
+	{-
 	mvp <- case t of
 		GdkDeviceTypeMaster -> pure Nothing
 		_ -> do	mv <- gdkDeviceGetVendorId d
 			mp <- gdkDeviceGetProductId d
 			pure $ (,) <$> mv <*> mp
+	-}
 	putStrLn n
 	putStrLn $ "\tDeviceType: " ++ show t
 	putStrLn $ "\tSource    : " ++ show s
+	{-
 	case mvp of
 		Nothing -> pure ()
 		Just (v, p) -> do
 			putStrLn $ "\tVendorId  : " ++ v
 			putStrLn $ "\tProductId : " ++ p
+	-}

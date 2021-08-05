@@ -53,6 +53,6 @@ main = do
 			Just _ -> pure Nothing
 			Nothing -> pure $ Just True
 
-gdkDeviceGetNameAndSource :: GdkDevice -> IO (String, GdkInputSource)
+gdkDeviceGetNameAndSource :: IsGdkDevice d => d -> IO (String, GdkInputSource)
 gdkDeviceGetNameAndSource d =
 	(,) <$> gdkDeviceGetName d <*> gdkDeviceGetSource d

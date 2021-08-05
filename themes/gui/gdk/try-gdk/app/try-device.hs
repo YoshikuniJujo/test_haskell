@@ -27,18 +27,17 @@ main = do
 	mpnts <- gdkDeviceListSlaveDevices pnt
 	mkbds <- gdkDeviceListSlaveDevices kbd
 	putStrLn =<< gdkDeviceGetName pnt
-	flip (maybe $ pure ()) mpnts \pnts -> for_ pnts \ps -> do
+	flip (maybe $ pure ()) mpnts \pnts -> for_ pnts \ps ->
 		putStrLn . ('\t' :) =<< gdkDeviceGetName ps
 	putStrLn ""
 	putStrLn =<< gdkDeviceGetName kbd
-	flip (maybe $ pure ()) mkbds \kbds -> for_ kbds \ks -> do
+	flip (maybe $ pure ()) mkbds \kbds -> for_ kbds \ks ->
 		putStrLn . ('\t' :) =<< gdkDeviceGetName ks
-		gdkDeviceListSlaveDevices ks
 	putStrLn ""
 
 	printDevice pnt
 
-printDevice :: GdkDevice -> IO ()
+printDevice :: IsGdkDevice d => d -> IO ()
 printDevice d = do
 	n <- gdkDeviceGetName d
 	t <- gdkDeviceGetDeviceType d
@@ -47,8 +46,10 @@ printDevice d = do
 	putStrLn $ '\t' : show t
 	putStrLn $ '\t' : show s
 
+{-
 	v <- gdkDeviceGetVendorId d
 	p <- gdkDeviceGetProductId d
 	putStrLn $ '\t' : show v
 	putStrLn $ '\t' : show p
 	putStrLn ""
+	-}

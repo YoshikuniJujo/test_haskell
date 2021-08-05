@@ -22,7 +22,7 @@ import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkScreen
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkMonitor
-import Graphics.Gdk.GdkDevice
+import Graphics.Gdk.GdkDevice.Internal
 import Graphics.Gdk.GdkDevice.GdkAxes
 import Graphics.Gdk.PointsAndRectangles
 import Graphics.Gdk.Visuals
@@ -71,7 +71,7 @@ main = do
 
 	slvs <- gdkSeatGetSlaves st GdkSeatCapabilityAll
 	putStrLn "Slave devices:"
-	for_ slvs \slv -> do
+	for_ slvs \(toGdkDevice -> slv) -> do
 		putStrLn . ("\t" ++) . show =<< gdkDeviceGetDeviceType slv
 		putStrLn . ("\t" ++) =<< gdkDeviceGetName slv
 		putStrLn . ("\t\t" ++) . show =<< gdkDeviceGetVendorId slv
@@ -357,10 +357,10 @@ checkEventSealed opacity pos size d st = \case
 			putStrLn . ("Window size: " ++) . show =<< (,) <$> gdkWindowGetWidth w <*> gdkWindowGetHeight w
 		when (checkKeyVal 'g' kv) $ checkGrabbedPointerKeyboard d st
 		when (checkKeyVal 'w' kv) do
-			pnt <- gdkSeatGetPointer st
+			pnt <- toGdkDevice <$> gdkSeatGetPointer st
 			gdkDeviceWarp pnt (gdkDisplayGetDefaultScreen d) 100 100
 		when (checkKeyVal 'r' kv) do
-			pnt <- gdkSeatGetPointer st
+			pnt <- toGdkDevice <$> gdkSeatGetPointer st
 			print =<< gdkDeviceGetPosition pnt
 			print =<< gdkDeviceGetPositionDouble pnt
 			print =<< gdkDeviceGetWindowAtPosition pnt

@@ -114,27 +114,27 @@ enum "GdkInputSource" ''#{type GdkInputSource} [''Show, ''Eq] [
 	("GdkSourceTrackpoint", #{const GDK_SOURCE_TRACKPOINT}),
 	("GdkSourceTabletPad", #{const GDK_SOURCE_TABLET_PAD}) ]
 
-gdkDeviceGetSource :: GdkDevice -> IO GdkInputSource
-gdkDeviceGetSource d = GdkInputSource <$> c_gdk_device_get_source d
+gdkDeviceGetSource :: IsGdkDevice d => d -> IO GdkInputSource
+gdkDeviceGetSource d = GdkInputSource <$> c_gdk_device_get_source (toGdkDevice d)
 
 foreign import ccall "gdk_device_get_source" c_gdk_device_get_source ::
 	GdkDevice -> IO #type GdkInputSource
 
-gdkDeviceListSlaveDevices :: GdkDevice -> IO (Maybe [GdkDevice])
+gdkDeviceListSlaveDevices :: GdkDeviceMaster -> IO (Maybe [GdkDevicePhysical])
 gdkDeviceListSlaveDevices d = do
 	gl <- c_gdk_device_list_slave_devices d
-	(map GdkDevice <$>) <$> (g_list_to_list gl <* c_g_list_free gl)
+	(map GdkDevicePhysical <$>) <$> (g_list_to_list gl <* c_g_list_free gl)
 
 foreign import ccall "gdk_device_list_slave_devices" c_gdk_device_list_slave_devices ::
-	GdkDevice -> IO (Ptr (GList GdkDevice))
+	GdkDeviceMaster -> IO (Ptr (GList GdkDevice))
 
 enum "GdkDeviceType" ''#{type GdkDeviceType} [''Show] [
 	("GdkDeviceTypeMaster", #{const GDK_DEVICE_TYPE_MASTER}),
 	("GdkDeviceTypeSlave", #{const GDK_DEVICE_TYPE_SLAVE}),
 	("GdkDeviceTypeFloating", #{const GDK_DEVICE_TYPE_FLOATING}) ]
 
-gdkDeviceGetDeviceType :: GdkDevice -> IO GdkDeviceType
-gdkDeviceGetDeviceType d = GdkDeviceType <$> c_gdk_device_get_device_type d
+gdkDeviceGetDeviceType :: IsGdkDevice d => d -> IO GdkDeviceType
+gdkDeviceGetDeviceType d = GdkDeviceType <$> c_gdk_device_get_device_type (toGdkDevice d)
 
 foreign import ccall "gdk_device_get_device_type" c_gdk_device_get_device_type ::
 	GdkDevice -> IO #{type GdkDeviceType}
@@ -154,8 +154,11 @@ foreign import ccall "gdk_device_get_has_cursor" c_gdk_device_get_has_cursor ::
 foreign import ccall "gdk_device_warp" gdkDeviceWarp ::
 	GdkDevice -> GdkScreen -> CInt -> CInt -> IO ()
 
-foreign import ccall "gdk_device_get_seat" gdkDeviceGetSeat ::
-	GdkDevice -> IO GdkSeat
+gdkDeviceGetSeat :: IsGdkDevice d => d -> IO GdkSeat
+gdkDeviceGetSeat = c_gdk_device_get_seat . toGdkDevice
+
+foreign import ccall "gdk_device_get_seat"
+	c_gdk_device_get_seat :: GdkDevice -> IO GdkSeat
 
 gdkDeviceGetPosition :: GdkDevice -> IO (GdkScreen, (CInt, CInt))
 gdkDeviceGetPosition d = alloca \pps -> alloca \px -> alloca \py -> do

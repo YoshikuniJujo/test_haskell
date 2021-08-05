@@ -6,16 +6,16 @@ GdkDevice memo
 * [x] make GdkDeviceMaster and GdkDevicePhysical
 * [x] repair `Graphics.Gdk.GdkDevice`
 	+ [x] gdkDisplayDeviceIsGrabbed
-* [ ] repair `Graphics.Gdk.GdkSeat`
-	+ [ ] `gdkSeatGetPointer`
-	+ [ ] `gdkSeatGetKeyboard`
-	+ [ ] `gdkSeatGetSlaves`
+* [x] repair `Graphics.Gdk.GdkSeat`
+	+ [x] `gdkSeatGetPointer`
+	+ [x] `gdkSeatGetKeyboard`
+	+ [x] `gdkSeatGetSlaves`
 * [ ] repair `Graphics.Gdk.GdkDevice`
 	+ [x] `gdkDeviceGetDisplay`
-	+ [ ] `gdkDeviceGetSeat`
+	+ [x] `gdkDeviceGetSeat`
 	+ [ ] `gdkDeviceGetName`
-	+ [ ] `gdkDeviceGetDeviceType`
-	+ [ ] `gdkDeviceGetSource`
+	+ [x] `gdkDeviceGetDeviceType`
+	+ [x] `gdkDeviceGetSource`
 	+ [ ] `gdkDeviceGetVendorId`
 	+ [ ] `gdkDeviceGetProductId`
 	+ [ ] `gdkDeviceGetSlaveDevices`
@@ -27,6 +27,14 @@ GdkDevice memo
 	+ [ ] `gdkDeviceGetHasCursor`
 	+ [ ] `gdkDeviceGetLastEventWindow`
 * [ ] repair `Graphics.Gdk.GdkDevice.GdkAxes`
+	+ [ ] `gdkDeviceSetAxisUse`
+	+ [ ] `gdkDeviceGetAxisUse`
+	+ [ ] `gdkDeviceGetNAxes`
+	+ [ ] `gdkDeviceGetAxes`
+	+ [ ] `gdkDeviceGetAxis`
+	+ [ ] `gdkDeviceListAxes`
+	+ [ ] `gdkDeviceGetAxisValue`
+	+ [ ] `gdkAxesCopyFromPtr`
 
 refactor export list
 --------------------

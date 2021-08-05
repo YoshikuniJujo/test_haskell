@@ -92,14 +92,14 @@ gdkSeatGetDisplay p = GdkDisplay <$> c_gdk_seat_get_display p
 foreign import ccall "gdk_seat_get_pointer" c_gdk_seat_get_pointer ::
 	GdkSeat -> IO (Ptr GdkDevice)
 
-gdkSeatGetPointer :: GdkSeat -> IO GdkDevice
-gdkSeatGetPointer p = GdkDevice <$> c_gdk_seat_get_pointer p
+gdkSeatGetPointer :: GdkSeat -> IO GdkDeviceMaster
+gdkSeatGetPointer p = GdkDeviceMaster <$> c_gdk_seat_get_pointer p
 
 foreign import ccall "gdk_seat_get_keyboard" c_gdk_seat_get_keyboard ::
 	GdkSeat -> IO (Ptr GdkDevice)
 
-gdkSeatGetKeyboard :: GdkSeat -> IO GdkDevice
-gdkSeatGetKeyboard p = GdkDevice <$> c_gdk_seat_get_keyboard p
+gdkSeatGetKeyboard :: GdkSeat -> IO GdkDeviceMaster
+gdkSeatGetKeyboard p = GdkDeviceMaster <$> c_gdk_seat_get_keyboard p
 
 foreign import ccall "gdk_seat_get_capabilities" c_gdk_seat_get_capabilities ::
 	GdkSeat -> IO #type GdkSeatCapabilities
@@ -110,10 +110,10 @@ gdkSeatGetCapabilities p = GdkSeatCapabilities <$> c_gdk_seat_get_capabilities p
 foreign import ccall "gdk_seat_get_slaves" c_gdk_seat_get_slaves ::
 	GdkSeat -> #{type GdkSeatCapabilities} -> IO (Ptr (GList GdkDevice))
 
-gdkSeatGetSlaves :: GdkSeat -> GdkSeatCapabilities -> IO [GdkDevice]
+gdkSeatGetSlaves :: GdkSeat -> GdkSeatCapabilities -> IO [GdkDevicePhysical]
 gdkSeatGetSlaves p (GdkSeatCapabilities cps) = do
 	gl <- c_gdk_seat_get_slaves p cps
-	maybe [] (map GdkDevice) <$> (g_list_to_list gl <* c_g_list_free gl)
+	maybe [] (map GdkDevicePhysical) <$> (g_list_to_list gl <* c_g_list_free gl)
 
 gdkSeatGrab ::
 	Pointerable a =>
