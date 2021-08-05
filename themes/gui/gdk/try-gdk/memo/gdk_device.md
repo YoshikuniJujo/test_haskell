@@ -1,6 +1,12 @@
 GdkDevice memo
 ==============
 
+* [ ] make class IsGdkDevice
+* [ ] make GdkDevice
+* [ ] make GdkDeviceMaster and GdkDevicePhysical
+* [ ] repair `Graphics.Gdk.GdkSeat`
+* [ ] repair `Graphics.Gdk.GdkDevice`
+
 refactor export list
 --------------------
 
