@@ -6,7 +6,8 @@
 
 module Graphics.Gdk.GdkDevice.Internal (
 	-- * GDK DEVICE
-	GdkDevice(..),
+	IsGdkDevice(..),
+	GdkDevice(..), GdkDeviceMaster(..), GdkDevicePhysical(..),
 
 	-- * DISPLAY AND SEAT
 	gdkDeviceGetDisplay, gdkDeviceGetSeat,
@@ -66,8 +67,24 @@ import {-# SOURCE #-} Graphics.Gdk.Windows
 
 newtype GdkDevice = GdkDevice (Ptr GdkDevice) deriving (Show, Storable)
 
-gdkDeviceGetName :: GdkDevice -> IO String
-gdkDeviceGetName d = peekCString =<< c_gdk_device_get_name d
+class IsGdkDevice d where toGdkDevice :: d -> GdkDevice
+
+instance IsGdkDevice GdkDevice where toGdkDevice = id
+
+newtype GdkDeviceMaster = GdkDeviceMaster (Ptr GdkDevice)
+	deriving (Show, Storable)
+
+instance IsGdkDevice GdkDeviceMaster where
+	toGdkDevice (GdkDeviceMaster pd) = GdkDevice pd
+
+newtype GdkDevicePhysical = GdkDevicePhysical (Ptr GdkDevice)
+	deriving (Show, Storable)
+
+instance IsGdkDevice GdkDevicePhysical where
+	toGdkDevice (GdkDevicePhysical pd) = GdkDevice pd
+
+gdkDeviceGetName :: IsGdkDevice d => d -> IO String
+gdkDeviceGetName d = peekCString =<< c_gdk_device_get_name (toGdkDevice d)
 
 foreign import ccall "gdk_device_get_name" c_gdk_device_get_name ::
 	GdkDevice -> IO CString
@@ -122,8 +139,11 @@ gdkDeviceGetDeviceType d = GdkDeviceType <$> c_gdk_device_get_device_type d
 foreign import ccall "gdk_device_get_device_type" c_gdk_device_get_device_type ::
 	GdkDevice -> IO #{type GdkDeviceType}
 
-foreign import ccall "gdk_device_get_display" gdkDeviceGetDisplay ::
-	GdkDevice -> IO GdkDisplay
+gdkDeviceGetDisplay :: IsGdkDevice d => d -> IO GdkDisplay
+gdkDeviceGetDisplay = c_gdk_device_get_display . toGdkDevice
+
+foreign import ccall "gdk_device_get_display"
+	c_gdk_device_get_display :: GdkDevice -> IO GdkDisplay
 
 gdkDeviceGetHasCursor :: GdkDevice -> IO Bool
 gdkDeviceGetHasCursor d = gbooleanToBool <$> c_gdk_device_get_has_cursor d
