@@ -13,12 +13,15 @@ refactor export list
 	+ [x] `gdkDeviceGetSeat`
 * [ ] IDENTITY
 	+ [x] rearrange
-	+ [ ] `gdkDeviceGetName`
+	+ [x] `gdkDeviceGetName`
 	+ [ ] `gdkDeviceGetDeviceType`
 	+ [ ] `gdkDeviceGetSource`
 	+ [ ] `gdkDeviceGetVenderId`
 	+ [ ] `gdkDeviceGetProductId`
-* [ ] SLAVES
+* [x] SLAVES
+	+ `gdkDeviceListSlaveDevices`
+	+ [x] consider whether or not to use maybe value
+	+ [x] others
 * [ ] GEOMETRY
 * [ ] STATE
 * [ ] GDK DEVICE TYPE

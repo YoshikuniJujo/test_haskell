@@ -1,7 +1,9 @@
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
+import Data.Foldable
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkDevice
@@ -20,3 +22,13 @@ main = do
 	print =<< gdkDeviceGetDisplay kbd
 	print =<< gdkDeviceGetSeat pnt
 	print =<< gdkDeviceGetSeat kbd
+	putStrLn ""
+	mpnts <- gdkDeviceListSlaveDevices pnt
+	mkbds <- gdkDeviceListSlaveDevices kbd
+	putStrLn =<< gdkDeviceGetName pnt
+	flip (maybe $ pure ()) mpnts \pnts -> for_ pnts \ps -> do
+		putStrLn . ('\t' :) =<< gdkDeviceGetName ps
+	putStrLn ""
+	putStrLn =<< gdkDeviceGetName kbd
+	flip (maybe $ pure ()) mkbds \kbds -> for_ kbds \ks -> do
+		putStrLn . ('\t' :) =<< gdkDeviceGetName ks
