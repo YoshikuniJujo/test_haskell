@@ -13,6 +13,12 @@ GdkDevice memo
 	+ [x] define `SomeGdkDeviceMaster`
 	+ [x] refactor about it
 	+ [x] refactor export list
+* [ ] consider to make `GdkDeviceMaster :: PK -> *`
+		and `GdkDevicePhysical :: PK -> *`
+	+ [x] define `data PK = Pointer | Keyboard derivng Show`
+	+ [x] define `newtype GdkDevicePhysical pk = ...`
+	+ [ ] define `newtype GdkDeviceMaster pk = ...`
+	+ [ ] others
 * [x] repair `Graphics.Gdk.GdkDevice`
 	+ [x] gdkDisplayDeviceIsGrabbed
 * [x] repair `Graphics.Gdk.GdkSeat`

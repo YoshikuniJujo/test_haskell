@@ -1,5 +1,6 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -69,7 +70,7 @@ main = do
 
 	checkGrabbedPointerKeyboard d st
 
-	slvs <- gdkSeatGetSlaves st GdkSeatCapabilityAll
+	slvs :: [GdkDevicePhysical Pointer] <- gdkSeatGetSlaves st GdkSeatCapabilityAll
 	putStrLn "Slave devices:"
 	for_ slvs \slv@(getGdkDevice . toGdkDevice -> slv') -> do
 		putStrLn . ("\t" ++) . show =<< gdkDeviceGetDeviceType slv
@@ -85,6 +86,7 @@ main = do
 			putStrLn . ("\t\t" ++) . show . gdkAxisFlagList =<< gdkDeviceGetAxes slv'
 			for_ [0 .. fromIntegral n - 1] \i ->
 				putStrLn . ("\t\t" ++) . show =<< gdkDeviceGetAxisUse slv' i
+
 	gdkDisplayGetPrimaryMonitor d >>= \case
 		Nothing -> putStrLn "no primary monitor"
 		Just mntr -> do

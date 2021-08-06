@@ -1,5 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -92,14 +94,14 @@ gdkSeatGetDisplay p = GdkDisplay <$> c_gdk_seat_get_display p
 foreign import ccall "gdk_seat_get_pointer" c_gdk_seat_get_pointer ::
 	GdkSeat -> IO (Ptr GdkDevice)
 
-gdkSeatGetPointer :: GdkSeat -> IO GdkDeviceMasterPointer
+gdkSeatGetPointer :: GdkSeat -> IO (GdkDeviceMasterPointer Pointer)
 gdkSeatGetPointer p = GdkDeviceMasterPointer <$> c_gdk_seat_get_pointer p
 
 foreign import ccall "gdk_seat_get_keyboard" c_gdk_seat_get_keyboard ::
 	GdkSeat -> IO (Ptr GdkDevice)
 
-gdkSeatGetKeyboard :: GdkSeat -> IO GdkDeviceMasterKeyboard
-gdkSeatGetKeyboard p = GdkDeviceMasterKeyboard <$> c_gdk_seat_get_keyboard p
+gdkSeatGetKeyboard :: GdkSeat -> IO (GdkDeviceMasterKeyboard Keyboard)
+gdkSeatGetKeyboard p = GdkDeviceMasterPointer <$> c_gdk_seat_get_keyboard p
 
 foreign import ccall "gdk_seat_get_capabilities" c_gdk_seat_get_capabilities ::
 	GdkSeat -> IO #type GdkSeatCapabilities
@@ -110,10 +112,10 @@ gdkSeatGetCapabilities p = GdkSeatCapabilities <$> c_gdk_seat_get_capabilities p
 foreign import ccall "gdk_seat_get_slaves" c_gdk_seat_get_slaves ::
 	GdkSeat -> #{type GdkSeatCapabilities} -> IO (Ptr (GList GdkDevice))
 
-gdkSeatGetSlaves :: GdkSeat -> GdkSeatCapabilities -> IO [GdkDevicePhysical]
+gdkSeatGetSlaves :: forall pk . PointerOrKeyboard pk => GdkSeat -> GdkSeatCapabilities -> IO [GdkDevicePhysical pk]
 gdkSeatGetSlaves p (GdkSeatCapabilities cps) = do
 	gl <- c_gdk_seat_get_slaves p cps
-	maybe [] (map GdkDevicePhysical) <$> (g_list_to_list gl <* c_g_list_free gl)
+	maybe (pure []) ((map GdkDevicePhysical <$>) . filterPK @pk) =<< (g_list_to_list gl <* c_g_list_free gl)
 
 gdkSeatGrab ::
 	Pointerable a =>

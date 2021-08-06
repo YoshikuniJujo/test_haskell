@@ -1,4 +1,6 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIOnS_GHC -Wall -fno-warn-tabs #-}
 
@@ -6,7 +8,7 @@ module Main where
 
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkSeat
-import Graphics.Gdk.GdkDevice
+import Graphics.Gdk.GdkDevice.Internal
 import Graphics.Gdk.Cursors
 import Graphics.Gdk.Windows
 import Graphics.Gdk.EventStructures
@@ -24,7 +26,8 @@ main = do
 	print . gdkSeatCapabilityList =<< gdkSeatGetCapabilities st
 	printGdkDevice =<< gdkSeatGetPointer st
 	printGdkDevice =<< gdkSeatGetKeyboard st
-	mapM_ printGdkDevice =<< gdkSeatGetSlaves st GdkSeatCapabilityAll
+	mapM_ (printGdkDevice @_ @'Pointer) =<< gdkSeatGetSlaves st GdkSeatCapabilityAll
+	mapM_ (printGdkDevice @_ @'Keyboard) =<< gdkSeatGetSlaves st GdkSeatCapabilityAll
 	win <- gdkWindowNew Nothing defaultGdkWindowAttr
 	win2 <- gdkWindowNew Nothing defaultGdkWindowAttr
 	gdkWindowShow win
@@ -76,7 +79,7 @@ fun st wn n = do
 	print n
 	gdkWindowShow wn
 
-printGdkDevice :: IsGdkDevice d => d -> IO ()
+printGdkDevice :: IsGdkDevice d => d pk -> IO ()
 printGdkDevice d = do
 	n <- gdkDeviceGetName d
 	t <- gdkDeviceGetDeviceType d

@@ -49,14 +49,14 @@ main = do
 
 	print =<< gdkDeviceGetNAxes pnt
 	for_ pnts \ps -> print =<< gdkDeviceGetNAxes ps
---	print =<< gdkDeviceGetNAxes kbd
+	print =<< gdkDeviceGetNAxes kbd
 --	for_ kbds \ks -> print =<< gdkDeviceGetNAxes ks
 
 	print =<< mapM gdkAtomName . fromJust =<< gdkDeviceListAxes pnt
 	for_ pnts \ps ->
 		print =<< mapM gdkAtomName . fromJust =<< gdkDeviceListAxes ps
 
-printDevice :: IsGdkDevice d => d -> IO ()
+printDevice :: IsGdkDevice d => d pk -> IO ()
 printDevice d = do
 	n <- gdkDeviceGetName d
 	t <- gdkDeviceGetDeviceType d
