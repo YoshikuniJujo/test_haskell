@@ -11,7 +11,6 @@ module Graphics.Gdk.GdkDevice.Internal (
 	-- * GDK DEVICE
 	GetGdkDevice (..), IsGdkDevice(..),
 	GdkDevice(..), GdkDevicePhysical(..),
-	IsGdkDeviceMaster(..),
 	GdkDeviceMasterPointer(..), GdkDeviceMasterKeyboard,
 
 	PK(..), PointerOrKeyboard, filterPK,
@@ -83,10 +82,10 @@ data PK = Pointer | Keyboard deriving Show
 class PointerOrKeyboard (pk :: PK) where
 	pointerOrKeyboard :: Ptr GdkDevice -> IO Bool
 
-instance PointerOrKeyboard Pointer where
+instance PointerOrKeyboard 'Pointer where
 	pointerOrKeyboard d = (/= GdkSourceKeyboard) . GdkInputSource <$> c_gdk_device_get_source (GdkDevice d)
 
-instance PointerOrKeyboard Keyboard where
+instance PointerOrKeyboard 'Keyboard where
 	pointerOrKeyboard d = (== GdkSourceKeyboard) . GdkInputSource <$> c_gdk_device_get_source (GdkDevice d)
 
 filterPK :: forall (pk :: PK) . PointerOrKeyboard pk => [Ptr GdkDevice] -> IO [Ptr GdkDevice]
@@ -99,7 +98,7 @@ newtype GdkDevice = GdkDevice (Ptr GdkDevice) deriving (Show, Storable)
 class IsGdkDevice (d :: PK -> *) where toGdkDevice :: d pk -> SomeGdkDevice pk
 
 data SomeGdkDevice pk
-	= SomeGdkDeviceMaster (SomeGdkDeviceMaster pk)
+	= SomeGdkDeviceMaster (GdkDeviceMasterPointer pk)
 	| SomeGdkDevicePhysical (GdkDevicePhysical pk)
 	deriving Show
 
@@ -110,30 +109,13 @@ instance GetGdkDevice (SomeGdkDevice pk) where
 
 instance IsGdkDevice SomeGdkDevice where toGdkDevice = id
 
-class IsGdkDeviceMaster dm where toGdkDeviceMaster :: dm pk -> SomeGdkDeviceMaster pk
-
-data SomeGdkDeviceMaster pk
-	= SomeGdkDeviceMasterPointer (GdkDeviceMasterPointer pk)
-	deriving Show
-
-instance GetGdkDevice (SomeGdkDeviceMaster pk) where
-	getGdkDevice = \case
-		SomeGdkDeviceMasterPointer dmp -> getGdkDevice dmp
-
-instance IsGdkDevice SomeGdkDeviceMaster where toGdkDevice = SomeGdkDeviceMaster
-instance IsGdkDeviceMaster SomeGdkDeviceMaster where toGdkDeviceMaster = id
+instance IsGdkDevice GdkDeviceMasterPointer where toGdkDevice = SomeGdkDeviceMaster
 
 newtype GdkDeviceMasterPointer (pk :: PK) = GdkDeviceMasterPointer (Ptr GdkDevice)
 	deriving (Show, Storable)
 
 instance GetGdkDevice (GdkDeviceMasterPointer pk) where
 	getGdkDevice (GdkDeviceMasterPointer pd) = GdkDevice pd
-
-instance IsGdkDevice GdkDeviceMasterPointer where
-	toGdkDevice = toGdkDevice . toGdkDeviceMaster
-
-instance IsGdkDeviceMaster GdkDeviceMasterPointer where
-	toGdkDeviceMaster = SomeGdkDeviceMasterPointer
 
 type GdkDeviceMasterKeyboard = GdkDeviceMasterPointer
 
@@ -172,9 +154,9 @@ gdkDeviceGetSource d = GdkInputSource <$> c_gdk_device_get_source (getGdkDevice 
 foreign import ccall "gdk_device_get_source" c_gdk_device_get_source ::
 	GdkDevice -> IO #type GdkInputSource
 
-gdkDeviceListSlaveDevices :: IsGdkDeviceMaster d => d pk -> IO [GdkDevicePhysical pk]
+gdkDeviceListSlaveDevices :: GdkDeviceMasterPointer pk -> IO [GdkDevicePhysical pk]
 gdkDeviceListSlaveDevices d = do
-	gl <- c_gdk_device_list_slave_devices . getGdkDevice . toGdkDevice $ toGdkDeviceMaster d
+	gl <- c_gdk_device_list_slave_devices . getGdkDevice $ toGdkDevice d
 	maybe (error "never occur") (map GdkDevicePhysical) <$> (g_list_to_list gl <* c_g_list_free gl)
 
 foreign import ccall "gdk_device_list_slave_devices" c_gdk_device_list_slave_devices ::

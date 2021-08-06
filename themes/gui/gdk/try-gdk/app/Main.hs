@@ -70,7 +70,7 @@ main = do
 
 	checkGrabbedPointerKeyboard d st
 
-	slvs :: [GdkDevicePhysical Pointer] <- gdkSeatGetSlaves st GdkSeatCapabilityAll
+	slvs :: [GdkDevicePhysical 'Pointer] <- gdkSeatGetSlaves st GdkSeatCapabilityAll
 	putStrLn "Slave devices:"
 	for_ slvs \slv@(getGdkDevice . toGdkDevice -> slv') -> do
 		putStrLn . ("\t" ++) . show =<< gdkDeviceGetDeviceType slv
