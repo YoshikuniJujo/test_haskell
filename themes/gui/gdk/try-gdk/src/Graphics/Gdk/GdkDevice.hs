@@ -27,9 +27,6 @@ module Graphics.Gdk.GdkDevice (
 	gdkDeviceWarp,
 	gdkDeviceGetPosition, gdkDeviceGetPositionDouble,
 	gdkDeviceGetWindowAtPosition, gdkDeviceGetWindowAtPositionDouble,
-
-	-- * STATE
-	gdkDeviceGetHasCursor,
 	gdkDeviceGetLastEventWindow,
 
 	-- * GDK DEVICE TYPE

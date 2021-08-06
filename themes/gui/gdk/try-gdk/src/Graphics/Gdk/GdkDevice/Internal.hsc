@@ -28,9 +28,6 @@ module Graphics.Gdk.GdkDevice.Internal (
 	gdkDeviceWarp,
 	gdkDeviceGetPosition, gdkDeviceGetPositionDouble,
 	gdkDeviceGetWindowAtPosition, gdkDeviceGetWindowAtPositionDouble,
-
-	-- * STATE
-	gdkDeviceGetHasCursor,
 	gdkDeviceGetLastEventWindow,
 
 	-- * GDK DEVICE TYPE
@@ -54,10 +51,8 @@ import Foreign.Storable
 import Foreign.C
 import Foreign.C.Enum
 import Data.Word
-import Data.Int
 import System.IO.Unsafe
 import System.GLib.DoublyLinkedLists
-import System.GLib.Bool
 
 import {-# SOURCE #-} Graphics.Gdk.GdkDisplay.Internal
 import {-# SOURCE #-} Graphics.Gdk.GdkScreen.Internal
@@ -193,12 +188,6 @@ gdkDeviceGetDisplay = c_gdk_device_get_display . getGdkDevice . toGdkDevice
 
 foreign import ccall "gdk_device_get_display"
 	c_gdk_device_get_display :: GdkDevice -> IO GdkDisplay
-
-gdkDeviceGetHasCursor :: IsGdkDevice d => d -> IO Bool
-gdkDeviceGetHasCursor d = gbooleanToBool <$> c_gdk_device_get_has_cursor (getGdkDevice $ toGdkDevice d)
-
-foreign import ccall "gdk_device_get_has_cursor" c_gdk_device_get_has_cursor ::
-	GdkDevice -> IO #{type gboolean}
 
 foreign import ccall "gdk_device_warp" gdkDeviceWarp ::
 	GdkDeviceMasterPointer -> GdkScreen -> CInt -> CInt -> IO ()

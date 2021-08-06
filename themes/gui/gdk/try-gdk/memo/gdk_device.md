@@ -37,10 +37,12 @@ GdkDevice memo
 		+ [x] `gdkDeviceGetWindowAtPosition`
 		+ [x] `gdkDeviceGetWindowAtPositionDouble`
 	+ [ ] STATE
-		+ [ ] `gdkDeviceGetHasCursor`
+		+ [x] `gdkDeviceGetHasCursor`
 			- [x] check
-			- [ ] others
+			- [x] remove it
 		+ [ ] `gdkDeviceGetLastEventWindow`
+			- [x] move it to GEOMETRY
+			- [ ] others
 * [ ] repair `Graphics.Gdk.GdkDevice.GdkAxes`
 	+ [ ] `gdkDeviceSetAxisUse`
 	+ [ ] `gdkDeviceGetAxisUse`
