@@ -194,8 +194,8 @@ gdkDeviceGetDisplay = c_gdk_device_get_display . getGdkDevice . toGdkDevice
 foreign import ccall "gdk_device_get_display"
 	c_gdk_device_get_display :: GdkDevice -> IO GdkDisplay
 
-gdkDeviceGetHasCursor :: GdkDevice -> IO Bool
-gdkDeviceGetHasCursor d = gbooleanToBool <$> c_gdk_device_get_has_cursor d
+gdkDeviceGetHasCursor :: IsGdkDevice d => d -> IO Bool
+gdkDeviceGetHasCursor d = gbooleanToBool <$> c_gdk_device_get_has_cursor (getGdkDevice $ toGdkDevice d)
 
 foreign import ccall "gdk_device_get_has_cursor" c_gdk_device_get_has_cursor ::
 	GdkDevice -> IO #{type gboolean}

@@ -42,6 +42,11 @@ main = do
 --	gdkDeviceWarp (toGdkDevice $ pnts !! 1) scr 100 100
 	gdkDisplayFlush dpy
 
+	print =<< gdkDeviceGetHasCursor pnt
+	print =<< gdkDeviceGetHasCursor kbd
+	for_ pnts \ps -> print =<< gdkDeviceGetHasCursor ps
+	for_ kbds \ks -> print =<< gdkDeviceGetHasCursor ks
+
 printDevice :: IsGdkDevice d => d -> IO ()
 printDevice d = do
 	n <- gdkDeviceGetName d

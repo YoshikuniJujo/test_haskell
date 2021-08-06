@@ -38,6 +38,8 @@ GdkDevice memo
 		+ [x] `gdkDeviceGetWindowAtPositionDouble`
 	+ [ ] STATE
 		+ [ ] `gdkDeviceGetHasCursor`
+			- [x] check
+			- [ ] others
 		+ [ ] `gdkDeviceGetLastEventWindow`
 * [ ] repair `Graphics.Gdk.GdkDevice.GdkAxes`
 	+ [ ] `gdkDeviceSetAxisUse`
