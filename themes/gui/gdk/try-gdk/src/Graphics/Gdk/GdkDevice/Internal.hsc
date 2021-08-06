@@ -9,7 +9,7 @@
 
 module Graphics.Gdk.GdkDevice.Internal (
 	-- * GDK DEVICE
-	GetGdkDevice (..), IsGdkDevice(..),
+	GetGdkDevice (..), IsGdkDevice,
 	GdkDevice(..), GdkDevicePhysical(..),
 	GdkDeviceMasterPointer(..), GdkDeviceMasterKeyboard,
 
@@ -91,30 +91,18 @@ instance PointerOrKeyboard 'Keyboard where
 filterPK :: forall (pk :: PK) . PointerOrKeyboard pk => [Ptr GdkDevice] -> IO [Ptr GdkDevice]
 filterPK = filterM (pointerOrKeyboard @pk)
 
-class GetGdkDevice d where getGdkDevice :: d -> GdkDevice
+class GetGdkDevice (d :: PK -> *) where getGdkDevice :: d pk -> GdkDevice
 
 newtype GdkDevice = GdkDevice (Ptr GdkDevice) deriving (Show, Storable)
 
-class IsGdkDevice (d :: PK -> *) where toGdkDevice :: d pk -> SomeGdkDevice pk
+class GetGdkDevice d => IsGdkDevice (d :: PK -> *)
 
-data SomeGdkDevice pk
-	= SomeGdkDeviceMaster (GdkDeviceMasterPointer pk)
-	| SomeGdkDevicePhysical (GdkDevicePhysical pk)
-	deriving Show
-
-instance GetGdkDevice (SomeGdkDevice pk) where
-	getGdkDevice = \case
-		SomeGdkDeviceMaster dm -> getGdkDevice dm
-		SomeGdkDevicePhysical dp -> getGdkDevice dp
-
-instance IsGdkDevice SomeGdkDevice where toGdkDevice = id
-
-instance IsGdkDevice GdkDeviceMasterPointer where toGdkDevice = SomeGdkDeviceMaster
+instance IsGdkDevice GdkDeviceMasterPointer
 
 newtype GdkDeviceMasterPointer (pk :: PK) = GdkDeviceMasterPointer (Ptr GdkDevice)
 	deriving (Show, Storable)
 
-instance GetGdkDevice (GdkDeviceMasterPointer pk) where
+instance GetGdkDevice GdkDeviceMasterPointer where
 	getGdkDevice (GdkDeviceMasterPointer pd) = GdkDevice pd
 
 type GdkDeviceMasterKeyboard = GdkDeviceMasterPointer
@@ -122,13 +110,13 @@ type GdkDeviceMasterKeyboard = GdkDeviceMasterPointer
 newtype GdkDevicePhysical (pk :: PK)  = GdkDevicePhysical (Ptr GdkDevice)
 	deriving (Show, Storable)
 
-instance GetGdkDevice (GdkDevicePhysical pk) where
+instance GetGdkDevice GdkDevicePhysical where
 	getGdkDevice (GdkDevicePhysical pd) = GdkDevice pd
 
-instance IsGdkDevice GdkDevicePhysical where toGdkDevice = SomeGdkDevicePhysical
+instance IsGdkDevice GdkDevicePhysical
 
 gdkDeviceGetName :: IsGdkDevice d => d pk -> IO String
-gdkDeviceGetName d = peekCString =<< c_gdk_device_get_name (getGdkDevice $ toGdkDevice d)
+gdkDeviceGetName d = peekCString =<< c_gdk_device_get_name (getGdkDevice d)
 
 foreign import ccall "gdk_device_get_name" c_gdk_device_get_name ::
 	GdkDevice -> IO CString
@@ -149,14 +137,14 @@ foreign import ccall "gdk_device_get_product_id" c_gdk_device_get_product_id ::
 	GdkDevicePhysical pk -> IO CString
 
 gdkDeviceGetSource :: IsGdkDevice d => d pk -> IO GdkInputSource
-gdkDeviceGetSource d = GdkInputSource <$> c_gdk_device_get_source (getGdkDevice $ toGdkDevice d)
+gdkDeviceGetSource d = GdkInputSource <$> c_gdk_device_get_source (getGdkDevice d)
 
 foreign import ccall "gdk_device_get_source" c_gdk_device_get_source ::
 	GdkDevice -> IO #type GdkInputSource
 
 gdkDeviceListSlaveDevices :: GdkDeviceMasterPointer pk -> IO [GdkDevicePhysical pk]
 gdkDeviceListSlaveDevices d = do
-	gl <- c_gdk_device_list_slave_devices . getGdkDevice $ toGdkDevice d
+	gl <- c_gdk_device_list_slave_devices $ getGdkDevice d
 	maybe (error "never occur") (map GdkDevicePhysical) <$> (g_list_to_list gl <* c_g_list_free gl)
 
 foreign import ccall "gdk_device_list_slave_devices" c_gdk_device_list_slave_devices ::
@@ -168,13 +156,13 @@ enum "GdkDeviceType" ''#{type GdkDeviceType} [''Show] [
 	("GdkDeviceTypeFloating", #{const GDK_DEVICE_TYPE_FLOATING}) ]
 
 gdkDeviceGetDeviceType :: IsGdkDevice d => d pk -> IO GdkDeviceType
-gdkDeviceGetDeviceType d = GdkDeviceType <$> c_gdk_device_get_device_type (getGdkDevice $ toGdkDevice d)
+gdkDeviceGetDeviceType d = GdkDeviceType <$> c_gdk_device_get_device_type (getGdkDevice d)
 
 foreign import ccall "gdk_device_get_device_type" c_gdk_device_get_device_type ::
 	GdkDevice -> IO #{type GdkDeviceType}
 
 gdkDeviceGetDisplay :: IsGdkDevice d => d pk -> IO GdkDisplay
-gdkDeviceGetDisplay = c_gdk_device_get_display . getGdkDevice . toGdkDevice
+gdkDeviceGetDisplay = c_gdk_device_get_display . getGdkDevice
 
 foreign import ccall "gdk_device_get_display"
 	c_gdk_device_get_display :: GdkDevice -> IO GdkDisplay
@@ -183,7 +171,7 @@ foreign import ccall "gdk_device_warp" gdkDeviceWarp ::
 	GdkDeviceMasterPointer pk -> GdkScreen -> CInt -> CInt -> IO ()
 
 gdkDeviceGetSeat :: IsGdkDevice d => d pk -> IO GdkSeat
-gdkDeviceGetSeat = c_gdk_device_get_seat . getGdkDevice . toGdkDevice
+gdkDeviceGetSeat = c_gdk_device_get_seat . getGdkDevice
 
 foreign import ccall "gdk_device_get_seat"
 	c_gdk_device_get_seat :: GdkDevice -> IO GdkSeat

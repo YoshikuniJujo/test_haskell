@@ -72,7 +72,7 @@ main = do
 
 	slvs :: [GdkDevicePhysical 'Pointer] <- gdkSeatGetSlaves st GdkSeatCapabilityAll
 	putStrLn "Slave devices:"
-	for_ slvs \slv@(getGdkDevice . toGdkDevice -> slv') -> do
+	for_ slvs \slv@(getGdkDevice -> slv') -> do
 		putStrLn . ("\t" ++) . show =<< gdkDeviceGetDeviceType slv
 		putStrLn . ("\t" ++) =<< gdkDeviceGetName slv
 		putStrLn $ "\t\t" ++ gdkDeviceGetVendorId slv
