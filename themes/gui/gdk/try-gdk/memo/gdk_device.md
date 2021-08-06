@@ -44,7 +44,7 @@ GdkDevice memo
 * [ ] repair `Graphics.Gdk.GdkDevice.GdkAxes`
 	+ [x] `gdkDeviceSetAxisUse`
 	+ [x] `gdkDeviceGetAxisUse`
-	+ [ ] `gdkDeviceGetNAxes`
+	+ [x] `gdkDeviceGetNAxes`
 	+ [ ] `gdkDeviceGetAxes`
 	+ [ ] `gdkDeviceGetAxis`
 	+ [ ] `gdkDeviceListAxes`

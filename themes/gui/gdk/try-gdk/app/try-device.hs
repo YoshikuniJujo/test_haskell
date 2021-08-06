@@ -47,8 +47,6 @@ main = do
 
 	print =<< gdkDeviceGetNAxes pnt
 	for_ pnts \ps -> print =<< gdkDeviceGetNAxes ps
-	print =<< gdkDeviceGetNAxes kbd
---	for_ kbds \ks -> print =<< gdkDeviceGetNAxes ks
 
 	print =<< mapM gdkAtomName . fromJust =<< gdkDeviceListAxes pnt
 	for_ pnts \ps ->
